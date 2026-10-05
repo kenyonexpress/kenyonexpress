@@ -65,13 +65,13 @@ export default function ProductShareRow({
           message={message}
           appendCurrentUrl
           url={shareHref}
-          className="inline-flex items-center gap-2 text-base font-bold text-whatsapp-ink transition-colors hover:text-whatsapp-ink-hover"
+          className="tap-area [--tap-size:36px] inline-flex items-center gap-2 text-base font-bold text-whatsapp-ink transition-colors hover:text-whatsapp-ink-hover"
         />
 
         <button
           type="button"
           onClick={() => void handleShareClick()}
-          className="inline-flex items-center gap-2 text-sm font-semibold text-heading transition-colors hover:opacity-80"
+          className="tap-area [--tap-size:36px] inline-flex items-center gap-2 text-sm font-semibold text-heading transition-colors hover:opacity-80"
         >
           <Share2 size={18} />
           {t('share.shareLabel')}
@@ -88,7 +88,7 @@ export default function ProductShareRow({
           <TelegramShareButton text={message} url={shareHref} />
           <a
             href={`mailto:?subject=${encodeURIComponent(message)}&body=${encodeURIComponent(`${message}\n${shareHref()}`)}`}
-            className="inline-flex items-center gap-2 text-sm font-semibold text-heading transition-colors hover:opacity-80"
+            className="tap-area [--tap-size:36px] inline-flex items-center gap-2 text-sm font-semibold text-heading transition-colors hover:opacity-80"
           >
             <Mail size={18} />
             {t('share.emailLabel')}

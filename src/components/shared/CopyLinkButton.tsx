@@ -30,7 +30,7 @@ export default function CopyLinkButton({
       onClick={() => void handleClick()}
       className={
         className ??
-        'inline-flex items-center gap-2 text-sm font-semibold text-heading transition-colors hover:opacity-80'
+        'tap-area [--tap-size:36px] inline-flex items-center gap-2 text-sm font-semibold text-heading transition-colors hover:opacity-80'
       }
     >
       <LinkIcon size={18} />

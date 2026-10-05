@@ -51,6 +51,12 @@
 }
 
 .legal-breadcrumb a {
+  /* W13: "בית" measured 22x24 at 390px, under the 24px target floor. A 24px
+     minimum on both axes adds 2px of hit box and moves no text. */
+  display: inline-block;
+  min-inline-size: 24px;
+  min-block-size: 24px;
+  text-align: center;
   color: var(--color-heading);
   text-decoration: none;
 }

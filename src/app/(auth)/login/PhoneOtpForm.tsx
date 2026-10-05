@@ -74,7 +74,7 @@ export default function PhoneOtpForm({ next }: { next?: string }) {
           className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-start placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
         />
         {getError(sendState) && (
-          <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">
+          <p role="alert" className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">
             {getError(sendState)}
           </p>
         )}
@@ -119,7 +119,7 @@ export default function PhoneOtpForm({ next }: { next?: string }) {
       />
 
       {getError(verifyState) && (
-        <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">
+        <p role="alert" className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">
           {getError(verifyState)}
         </p>
       )}

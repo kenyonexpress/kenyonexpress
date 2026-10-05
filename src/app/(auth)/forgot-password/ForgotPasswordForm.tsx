@@ -42,7 +42,11 @@ export default function ForgotPasswordForm() {
             />
           </div>
 
-          {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
+          {error && (
+            <p role="alert" className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">
+              {error}
+            </p>
+          )}
 
           <button
             type="submit"

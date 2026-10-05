@@ -126,6 +126,10 @@ const PAGES: Array<{ name: string; path: string }> = [
   { name: 'legal accessibility', path: '/legal/accessibility' },
   { name: 'terms and conditions', path: '/terms-and-conditions' },
   { name: 'privacy policy', path: '/privacy-policy' },
+  // W13: the statement at the URL the footer links (the legal alias above
+  // redirects here), and the checkout as a first visitor meets it.
+  { name: 'accessibility statement', path: '/accessibility' },
+  { name: 'checkout, empty', path: '/checkout' },
 ]
 
 for (const { name, path } of PAGES) {
@@ -670,4 +674,49 @@ test('the search combobox says which suggestion is selected', async ({ page, vie
   await page.waitForURL(/\/product\//)
   const heading = (await page.locator('h1').first().textContent()) ?? ''
   expect(announced, `announced "${announced}" and opened "${heading}"`).toContain(heading.trim())
+})
+
+/**
+ * W13 (2026-10-05). The category drawer is `role="dialog" aria-modal="true"`,
+ * and until this item it had Escape and focus-in but no Tab trap: a third Tab
+ * from its last link landed on the header behind the scrim, with the drawer
+ * still painted over it. `aria-modal` tells a screen reader the page behind
+ * is inert; it does not make it so. Phone project only: the trigger is
+ * `xl:hidden`.
+ */
+test('the category drawer keeps Tab inside it and Escape returns focus to its trigger', async ({
+  page,
+  viewport,
+}) => {
+  test.skip((viewport?.width ?? 1280) >= 1280, 'the drawer trigger is hidden at desktop widths')
+  await page.goto('/')
+  await page.waitForLoadState('domcontentloaded')
+  const trigger = page.locator('button[aria-haspopup="dialog"]').first()
+  await trigger.click()
+  const dialog = page.locator('[role="dialog"][aria-modal="true"]:visible').first()
+  await expect(dialog).toBeVisible()
+
+  // Forty Tabs is more than the drawer has links, so at least one wrap.
+  for (let i = 0; i < 40; i += 1) {
+    await page.keyboard.press('Tab')
+    const inside = await page.evaluate(() => {
+      const d = document.querySelector('[role="dialog"][aria-modal="true"]')
+      return d?.contains(document.activeElement) ?? false
+    })
+    expect(inside, `Tab #${i + 1} left the open drawer`).toBe(true)
+  }
+  for (let i = 0; i < 5; i += 1) {
+    await page.keyboard.press('Shift+Tab')
+    const inside = await page.evaluate(() => {
+      const d = document.querySelector('[role="dialog"][aria-modal="true"]')
+      return d?.contains(document.activeElement) ?? false
+    })
+    expect(inside, `Shift+Tab #${i + 1} left the open drawer`).toBe(true)
+  }
+
+  // Closed means slid off-screen (translate-x-full), which Playwright still
+  // counts as visible; the trigger's aria-expanded is the honest signal.
+  await page.keyboard.press('Escape')
+  await expect(trigger).toHaveAttribute('aria-expanded', 'false')
+  await expect(trigger).toBeFocused()
 })

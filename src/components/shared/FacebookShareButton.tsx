@@ -36,7 +36,7 @@ export default function FacebookShareButton({
       onClick={handleClick}
       className={
         className ??
-        'inline-flex items-center gap-2 text-sm font-semibold text-facebook transition-colors hover:opacity-80'
+        'tap-area [--tap-size:36px] inline-flex items-center gap-2 text-sm font-semibold text-facebook transition-colors hover:opacity-80'
       }
     >
       <FacebookIcon size={18} />

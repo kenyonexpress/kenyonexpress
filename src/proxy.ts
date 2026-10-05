@@ -273,6 +273,26 @@ export async function proxy(request: NextRequest, event?: NextFetchEvent) {
   // The options are the shared builder's, not a second copy. This block and
   // `ensureGuestSessionId` each used to spell them out, and `secure` was absent
   // from both — neither looked wrong, because each matched the other.
+  // A visitor with no account and no guest session has no cart row to read:
+  // the cart is keyed by one or the other, so it is certainly empty. The page
+  // sends an empty-handed shopper to /cart (checkout/page.tsx), but from
+  // inside a streamed render that `redirect()` reaches a browser as
+  // `<meta http-equiv="refresh" content="1;url=/cart">`, which axe flags
+  // critical (meta-refresh, WCAG 2.2.1) and which a no-JS visitor waits a
+  // second for. Measured in W13, 2026-10-05, on a first visit to /checkout.
+  // Decided here, before any render, it is a real 307. A guest WITH a session
+  // cookie may own items, so only the identity-less case is settled here and
+  // the page keeps deciding the rest. GET only: a POST to /checkout is a
+  // server action, and a 307 on one would replay it against /cart.
+  if (
+    pathname === '/checkout' &&
+    request.method === 'GET' &&
+    !user &&
+    !request.cookies.get(GUEST_SESSION_COOKIE)
+  ) {
+    return withRequestId(NextResponse.redirect(new URL('/cart', request.url), 307), requestId)
+  }
+
   if (!user && !request.cookies.get(GUEST_SESSION_COOKIE)) {
     supabaseResponse.cookies.set(
       GUEST_SESSION_COOKIE,

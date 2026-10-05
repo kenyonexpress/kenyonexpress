@@ -64,12 +64,27 @@
 }
 
 /* 44px of thumb without a pixel of paint: the painted box stays Electro's
-   22.7 wide, and the hit area is widened invisibly on both sides. */
+   22.7 x 40.45, and the hit area is widened invisibly on every side.
+
+   Block: -2.8px each side, 46 tall. W13 measured the block growth missing
+   (40.45 tall read as 40 to the touch-target gate).
+
+   Inline: HALF THE GAP, not a fixed 44. The handheld row pitches the icons
+   42px apart (gap 20px), so a 44px box on each would overlap its neighbour
+   and a tap in the overlap would go to whichever icon painted last. Boxes
+   grown to half the gap touch and do not overlap: 42.7 wide here, and 44.0
+   at xl where the gap is 37.996px (set below). */
 .header-icon__trigger::before {
   content: "";
   position: absolute;
-  inset-block: 0;
-  inset-inline: -10.65px;
+  inset-block: -2.8px;
+  inset-inline: -10px;
+}
+
+@media (min-width: 80rem) {
+  .header-icon__trigger::before {
+    inset-inline: -10.65px;
+  }
 }
 
 /* The `<i class="ec">` box: 22.7031 x 20.5622, inline-block, vertical-align

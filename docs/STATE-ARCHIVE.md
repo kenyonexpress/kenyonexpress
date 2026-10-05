@@ -2,6 +2,62 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## W12 (הועבר מ-STATE.md ב-W13, לשמירה על תקרת 300 שורות)
+
+**W12 - DONE (05.10.2026): SEO AND PERFORMANCE. כל מה שהבריף דורש היה קיים
+ואומת על build נקי ושרת של אותו build; שלושה פגמים נמדדו ותוקנו בקוד. Lighthouse
+mobile (devtools throttling, הנתון המקומי הכן): בית 99/100/100/100, קטגוריה
+99/100/100/100, מוצר 99/100/100/100. parity product 4.76% / 4.17% / 2.44% ו-home
+7.92% / 9.03% / 4.16% PASS ב-380 / 768 / 1440.** `pwd` אומת, HEAD בהגעה `b1632df45`,
+עץ נקי. W12 לא הופיע ב-STATE.md, ב-BACKLOG או ב-`git log -20`. **דפי המדגם:** `/`,
+`/category/beauty-health` (13 מוצרים), `/product/אוזניות-איירפודס-3` (slug נקי, 10
+במלאי). **build:** `rm -rf .next`, env של ה-harness מנוקה (112 שמות), ‏`NEXT_PUBLIC_APP_URL=http://localhost:3512`
+ב-build וב-start, ‏canonical אחד ב-`index.html`, ה-listener על 3512 אומת לפי cwd.
+**מה כבר היה (נמדד ב-HTML המוגש):** `<html lang="he" dir="rtl">`; כותרות עבריות;
+canonical בשלושת הדפים; og:title/description/url/locale/image (OG image מ-`opengraph-image.tsx`
+לכל דף); JSON-LD: Organization+WebSite בבית, BreadcrumbList בקטגוריה, Product+Offer
+(מחיר, מטבע, זמינות, מוכר, strikethrough) + BreadcrumbList במוצר; `robots.txt` עם
+17 Disallow (אסימונים חתומים, חשבון, ספק, אדמין, סל, קופה, api) ו-`Sitemap:` יחיד;
+`sitemap.xml` הוא sitemapindex לחמישה קבצים, ‏lastmod מ-`updated_at`: products 46/46,
+categories 13/13, suppliers 7/7, content 14/15 (contact בלי, מתועד), regions 0/17
+(**בכוונה**, מתועד ב-`sitemap-sections.ts`: דף אזור אין לו תאריך אמיתי). תמונות: כל
+`<img>` בשלושת הדפים (85/15/7) יוצא מ-`next/image`/`getImageProps` עם srcset ו-sizes,
+‏`formats: avif, webp` ב-`next.config.ts`. **מה נמדד שבור ותוקן:** (1) **twitter:title
+בקטגוריה ובמוצר היה כותרת הבית** ("קניון אקספרס | קופונים ומבצעים") בעוד og:title
+של הדף נכון: ה-layout הגדיר `twitter` עם title קבוע, ו-Next ממזג את השדה בשלמותו
+לכל דף שלא כתב `twitter`. תוקן ב-`layout.tsx`: `twitter: { card }` בלבד, ואז Next
+ממלא מ-openGraph של הדף (אומת ב-`resolve-metadata.js`, ‏`postProcessMetadata`).
+נמדד אחרי: קטגוריה twitter:title "טיפוח בריאות ויופי", מוצר "אוזניות AirPods 3", בית
+ללא שינוי. פין: `src/app/layout-twitter-inherits-page.test.ts`. (2) **Organization
+ו-WebSite נקראו `KenyonExpress`** (לטינית, מחרוזת שאינה מופיעה בשום מקום גלוי) בעוד
+`og:site_name`, תבנית הכותרת וה-header אומרים קניון אקספרס; גוגל קורא את שם האתר
+מ-WebSite. תוקן ב-`json-ld.ts`: `name` עברי, `alternateName: KenyonExpress`, טסט
+ב-`json-ld.test.ts`. (3) **Lighthouse נגישות 97 במוצר, color-contrast 4.48:1** על
+`product-question-note` (W10, ‏`text-heading/70` ב-12px = #70787f על לבן). תוקן
+ל-`/80` (#5c656d, 5.9:1); אחרי: 100. **Lighthouse (build `X0EKPhR6htKNwz5hBwjVK`,
+3512, Lighthouse 13.5.0, mobile):** devtools: בית perf 99 / a11y 100 / bp 100 / seo 100,
+CLS 0.003, LCP 1.6s; קטגוריה 99 / 100 / 100 / 100, CLS 0.015, LCP 1.6s; מוצר
+99 / 100 / 100 / 100, CLS 0.002, LCP 1.6s. simulate (Lantern, לרישום בלבד, ראו
+`LIGHTHOUSE-AUDIT.md`): בית 86 / 100 / 100 / 100, קטגוריה 93 / 100 / 100 / 100, מוצר
+86 / 100 / 100 / 100, CLS זהה. אין layout shift (CLS ≤ 0.015 בכולם). **החלטות
+שהתקבלו לבד:** (א) **Heebo לא נטען ב-preload, בכוונה ונשאר כך**: `preload: false`
+ב-`layout.tsx` עם הנימוק המדוד [24] (פסקת ה-LCP היא Arial, ו-preload של הפונט מתחרה
+בה); Heebo כן בשימוש (`--font-sans → --font-heebo`), שלושה קובצי woff2 (hebrew+latin,
+13+31+16 KB) נטענים דרך ה-CSS, ו-CLS 0.003 מוכיח שה-fallback המותאם של next/font
+עושה את העבודה. הבריף אמר "preloaded", המדידה אומרת שאין מה לתקן. (ב) SearchAction
+ב-WebSite נשאר: `/search` עונה, ואין שדה חיפוש ב-UI (הכלל על ה-UI, לא על
+sitelinks של גוגל). (ג) regions.xml בלי lastmod נשאר, מתועד. (ד) description של
+הבית ("דילים") שונה מ-og:description ("מבצעים"), שניהם עבריים ונכונים, לא נגעתי.
+(ה) `HEBREW_LITERAL_CEILING` 606→605 (שתי מחרוזות twitter הוסרו; ה-ratchet דרש).
+(ו) push לענף כמו W01..W11. **שערים:** `pnpm type-check` 0; `pnpm lint` 0 (i18n
+605/605, docs-index 282); `pnpm test` **637/637 קבצים, 7634 עברו, 12 דולגו** תחת
+env מנוקה; build exit 0 פעמיים; **השער בחזית**: product `--baseline='refs/electro_product_{width}.png'`
+380: 4.76% PASS; 768: 4.17% PASS; 1440: 2.44% PASS (זהה ל-W10, שינוי צבע של שורה
+אחת), home `--baseline='refs/ke_live_{width}.png'` 380: 7.92% PASS; 768: 9.03% PASS;
+1440: 4.16% PASS (זהה ל-W11); שש שורות ב-`docs/UI-PARITY-REPORT.md` (`b1632df45-dirty`).
+**לא נעשה:** אין מיגרציה, אין שינוי DB/env/DNS/Vercel, אין מחיקה, אין שדה חיפוש,
+אין שינוי פונטים.
+
 ## W11 (הועבר מ-STATE.md ב-W12, לשמירה על תקרת 300 שורות)
 
 **W11 - DONE (05.10.2026): ANALYTICS WIRING. שלוש הרגליים אומתו בקוד, ב-build

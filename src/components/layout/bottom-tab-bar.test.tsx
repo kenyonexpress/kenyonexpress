@@ -122,10 +122,16 @@ describe('BottomTabBar', () => {
     expect(screen.getByRole('navigation', { name: t('nav.tabbar.label') })).toBeTruthy()
   })
 
-  it('uses logical inset so RTL needs no override', () => {
+  it('spans the full width with a symmetric inset, so RTL needs no override', () => {
+    // `inset-inline-0` is NOT a Tailwind v4 utility. Measured in W13
+    // (2026-10-05) on the built CSS: zero rules for it, and the bar rendered
+    // 199px wide, shrink-wrapped to its labels, at the right edge of a 390px
+    // phone. `inset-x-0` is left:0 and right:0 at once, which is the same
+    // thing in both directions and is what the class used to promise.
     const { container } = renderAt('/')
     const cls = container.querySelector('[data-bottom-tab-bar]')?.className ?? ''
-    expect(cls).toContain('inset-inline-0')
+    expect(cls).toContain('inset-x-0')
+    expect(cls).not.toContain('inset-inline-0')
     expect(cls).not.toMatch(/\b(left|right)-0\b/)
   })
 })

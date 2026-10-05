@@ -1,64 +1,72 @@
-RESUME FROM: W13
-Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט W12 DONE: SEO
-וביצועים; הכל היה קיים חוץ משלושה פגמים שנמדדו ותוקנו; Lighthouse mobile
-99/100/100/100 בשלושת הדפים; W11 הועבר לארכיון; RESUME FROM מצביע ל-W13, ואם אין
-W13 בתור, ההמשך הוא M02-c96)
+RESUME FROM: W14
+Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט W13 DONE: נגישות
+ת"י 5568; רוב הבריף היה קיים, שישה פגמים נמדדו ותוקנו, ביניהם סרגל טאבים ברוחב 199px
+ו-meta-refresh ב-/checkout; W12 הועבר לארכיון; RESUME FROM מצביע ל-W14, ואם אין
+W14 בתור, ההמשך הוא M02-c96)
 
 ## המשך מ:
 
-**W12 - DONE (05.10.2026): SEO AND PERFORMANCE. כל מה שהבריף דורש היה קיים
-ואומת על build נקי ושרת של אותו build; שלושה פגמים נמדדו ותוקנו בקוד. Lighthouse
-mobile (devtools throttling, הנתון המקומי הכן): בית 99/100/100/100, קטגוריה
-99/100/100/100, מוצר 99/100/100/100. parity product 4.76% / 4.17% / 2.44% ו-home
-7.92% / 9.03% / 4.16% PASS ב-380 / 768 / 1440.** `pwd` אומת, HEAD בהגעה `b1632df45`,
-עץ נקי. W12 לא הופיע ב-STATE.md, ב-BACKLOG או ב-`git log -20`. **דפי המדגם:** `/`,
-`/category/beauty-health` (13 מוצרים), `/product/אוזניות-איירפודס-3` (slug נקי, 10
-במלאי). **build:** `rm -rf .next`, env של ה-harness מנוקה (112 שמות), ‏`NEXT_PUBLIC_APP_URL=http://localhost:3512`
-ב-build וב-start, ‏canonical אחד ב-`index.html`, ה-listener על 3512 אומת לפי cwd.
-**מה כבר היה (נמדד ב-HTML המוגש):** `<html lang="he" dir="rtl">`; כותרות עבריות;
-canonical בשלושת הדפים; og:title/description/url/locale/image (OG image מ-`opengraph-image.tsx`
-לכל דף); JSON-LD: Organization+WebSite בבית, BreadcrumbList בקטגוריה, Product+Offer
-(מחיר, מטבע, זמינות, מוכר, strikethrough) + BreadcrumbList במוצר; `robots.txt` עם
-17 Disallow (אסימונים חתומים, חשבון, ספק, אדמין, סל, קופה, api) ו-`Sitemap:` יחיד;
-`sitemap.xml` הוא sitemapindex לחמישה קבצים, ‏lastmod מ-`updated_at`: products 46/46,
-categories 13/13, suppliers 7/7, content 14/15 (contact בלי, מתועד), regions 0/17
-(**בכוונה**, מתועד ב-`sitemap-sections.ts`: דף אזור אין לו תאריך אמיתי). תמונות: כל
-`<img>` בשלושת הדפים (85/15/7) יוצא מ-`next/image`/`getImageProps` עם srcset ו-sizes,
-‏`formats: avif, webp` ב-`next.config.ts`. **מה נמדד שבור ותוקן:** (1) **twitter:title
-בקטגוריה ובמוצר היה כותרת הבית** ("קניון אקספרס | קופונים ומבצעים") בעוד og:title
-של הדף נכון: ה-layout הגדיר `twitter` עם title קבוע, ו-Next ממזג את השדה בשלמותו
-לכל דף שלא כתב `twitter`. תוקן ב-`layout.tsx`: `twitter: { card }` בלבד, ואז Next
-ממלא מ-openGraph של הדף (אומת ב-`resolve-metadata.js`, ‏`postProcessMetadata`).
-נמדד אחרי: קטגוריה twitter:title "טיפוח בריאות ויופי", מוצר "אוזניות AirPods 3", בית
-ללא שינוי. פין: `src/app/layout-twitter-inherits-page.test.ts`. (2) **Organization
-ו-WebSite נקראו `KenyonExpress`** (לטינית, מחרוזת שאינה מופיעה בשום מקום גלוי) בעוד
-`og:site_name`, תבנית הכותרת וה-header אומרים קניון אקספרס; גוגל קורא את שם האתר
-מ-WebSite. תוקן ב-`json-ld.ts`: `name` עברי, `alternateName: KenyonExpress`, טסט
-ב-`json-ld.test.ts`. (3) **Lighthouse נגישות 97 במוצר, color-contrast 4.48:1** על
-`product-question-note` (W10, ‏`text-heading/70` ב-12px = #70787f על לבן). תוקן
-ל-`/80` (#5c656d, 5.9:1); אחרי: 100. **Lighthouse (build `X0EKPhR6htKNwz5hBwjVK`,
-3512, Lighthouse 13.5.0, mobile):** devtools: בית perf 99 / a11y 100 / bp 100 / seo 100,
-CLS 0.003, LCP 1.6s; קטגוריה 99 / 100 / 100 / 100, CLS 0.015, LCP 1.6s; מוצר
-99 / 100 / 100 / 100, CLS 0.002, LCP 1.6s. simulate (Lantern, לרישום בלבד, ראו
-`LIGHTHOUSE-AUDIT.md`): בית 86 / 100 / 100 / 100, קטגוריה 93 / 100 / 100 / 100, מוצר
-86 / 100 / 100 / 100, CLS זהה. אין layout shift (CLS ≤ 0.015 בכולם). **החלטות
-שהתקבלו לבד:** (א) **Heebo לא נטען ב-preload, בכוונה ונשאר כך**: `preload: false`
-ב-`layout.tsx` עם הנימוק המדוד [24] (פסקת ה-LCP היא Arial, ו-preload של הפונט מתחרה
-בה); Heebo כן בשימוש (`--font-sans → --font-heebo`), שלושה קובצי woff2 (hebrew+latin,
-13+31+16 KB) נטענים דרך ה-CSS, ו-CLS 0.003 מוכיח שה-fallback המותאם של next/font
-עושה את העבודה. הבריף אמר "preloaded", המדידה אומרת שאין מה לתקן. (ב) SearchAction
-ב-WebSite נשאר: `/search` עונה, ואין שדה חיפוש ב-UI (הכלל על ה-UI, לא על
-sitelinks של גוגל). (ג) regions.xml בלי lastmod נשאר, מתועד. (ד) description של
-הבית ("דילים") שונה מ-og:description ("מבצעים"), שניהם עבריים ונכונים, לא נגעתי.
-(ה) `HEBREW_LITERAL_CEILING` 606→605 (שתי מחרוזות twitter הוסרו; ה-ratchet דרש).
-(ו) push לענף כמו W01..W11. **שערים:** `pnpm type-check` 0; `pnpm lint` 0 (i18n
-605/605, docs-index 282); `pnpm test` **637/637 קבצים, 7634 עברו, 12 דולגו** תחת
-env מנוקה; build exit 0 פעמיים; **השער בחזית**: product `--baseline='refs/electro_product_{width}.png'`
-380: 4.76% PASS; 768: 4.17% PASS; 1440: 2.44% PASS (זהה ל-W10, שינוי צבע של שורה
-אחת), home `--baseline='refs/ke_live_{width}.png'` 380: 7.92% PASS; 768: 9.03% PASS;
-1440: 4.16% PASS (זהה ל-W11); שש שורות ב-`docs/UI-PARITY-REPORT.md` (`b1632df45-dirty`).
-**לא נעשה:** אין מיגרציה, אין שינוי DB/env/DNS/Vercel, אין מחיקה, אין שדה חיפוש,
-אין שינוי פונטים.
+**W13 - DONE (05.10.2026): ACCESSIBILITY IS 5568. רוב הבריף היה קיים ונמדד; שישה
+פגמים נמדדו ותוקנו בקוד, אחד מהם פגם פריסה גלוי בכל דף נייד. axe (WCAG 2.0/2.1 A+AA)
+אפס הפרות על 21 מסלולים ציבוריים בשני ויופורטים, על עמוד המוצר, על הסל והקופה הזרועים
+ועל 16 מסלולי /account מחוברים. parity home 7.92% / 9.03% / 4.16%, product 4.80% /
+4.39% / 2.46% PASS ב-380 / 768 / 1440.** `pwd` אומת, HEAD בהגעה `9d5da2fac`, עץ נקי.
+W13 לא הופיע ב-STATE.md, ב-BACKLOG או ב-`git log -20`. **מה כבר היה (נמדד):** קישור
+דילוג (`SkipLink`) ראשון בכל שש ה-layouts עם `main#main-content tabIndex=-1` (ל-(auth)
+אין header חוזר ואין מה לדלג); `:focus-visible` גלובלי (צהוב 3px + צל כהה 6px);
+`prefers-reduced-motion` גלובלי; תפריטי החשבון והאזור עם Enter/Space/חצים/Escape
+והחזרת פוקוס; מגירת הסל עם מלכודת Tab; סליידר ה-hero נעצר ב-focus ונקודותיו כפתורים
+עם תווית עברית; אפס `aria-label` לטיני ב-src; טופס הקופה 13 `aria-invalid`, 12
+`aria-describedby`, 13 `role="alert"`; הצהרת נגישות ב-`/accessibility` (ת"י 5568 רמה
+AA, החוק והתקנות, מה הונגש, מגבלות, פנייה ב-support@ ובטופס, תאריך) מקושרת מהפוטר עם
+טסט תוכן ב-`legal-pages.test.ts`; `e2e/a11y.spec.ts` (axe על 19 מסלולים) ו-
+`e2e/a11y-authenticated.spec.ts` על /account (16/16 ירוק מול השרת). ניגודיות על
+`#fed700`: axe ירוק, הדיו על הצהוב `#333e48`. **מה נמדד שבור ותוקן:** (1) **סרגל
+הטאבים התחתון היה ברוחב 199px במקום 390 בכל דף נייד**: `inset-inline-0` אינו utility של
+Tailwind v4 (אפס כללים ב-CSS הבנוי), ה-nav ה-fixed התכווץ לתוכנו והקישורים נמדדו 32px
+רוחב. תוקן ל-`inset-x-0` (סימטרי, RTL-safe) + `w-full` על הקישור; הטסט עודכן. (2)
+**מגירת הקטגוריות (`aria-modal`) בלי מלכודת Tab**: Tab שלישי מהקישור האחרון נחת על
+ה-header מאחורי ה-scrim. נוספה מלכודת כמו ב-CartDrawer + טסט ב-a11y.spec (Tab×40,
+Shift+Tab×5, Escape מחזיר פוקוס). (3) **שגיאות טופסי ההתחברות בלי הכרזה**: 10 הודעות
+אדומות ב-(auth) (login, signup, forgot, reset, OTP, MFA, passkey) ללא `role="alert"`;
+נוסף. (4) **`/checkout` לראשון-מבקר החזיר 200 עם `meta http-equiv=refresh`
+`content="1;url=/cart"`** (ה-`redirect()` של Next בתוך render מוזרם), axe critical
+`meta-refresh`. תוקן ב-`proxy.ts`: GET ל-`/checkout` בלי משתמש ובלי עוגיית אורח (אין
+שורת סל) מקבל 307 אמיתי; אורח עם עוגייה נשאר בהכרעת הדף. נמדד: `curl /checkout` 307 ל-
+/cart; checkout.spec (מצפה להגעה ל-/cart) נשאר תקף. (5) **מטרות מגע**: שער
+`touch-targets.spec.ts` היה אדום מאז W01 (אייקוני ה-header נמדדו 23px) ולא רץ באף
+פריט. נמדד ב-390 על שבעה דפים: 16px wishlist, 20-24px שורת השיתוף והשאלה, 28px "הוסף
+לסל" בכרטיסי related, 16-18px קישורי קטגוריה בכרטיסים, 16px "שכחתם סיסמה", 20-22px
+פירורי לחם. תוקן בלי להזיז פיקסל: `.tap-area` (pseudo-element שמגדיל hit box ל-44, או
+36/24 בשורות צפופות) ב-globals.css; `.p_con__category` ל-inline-block (24); פירורי לחם
+min 24×24; אייקוני ה-header: ה-pseudo גדל לחצי המרווח (42.7 בנייד, 44 ב-xl) כי בנייד
+ה-pitch הוא 42px ו-44 היה חופף לשכן. (6) **השער עצמו מדד paint ולא hit area**: נכתב
+מחדש למדידת `elementFromPoint` מהמרכז החוצה (pseudo-elements נספרים, כיסוי נתפס), שישה
+מסלולים + מוצר, רצפה 24 לכל פקד (2.5.8 AA) ו-44 לפקדים ראשיים (אייקוני header 40
+בנייד, מתועד), ההסכמה נכתבת כעוגייה לפני הניווט (לחיצה על server action בתוך מדידה
+רצה נגד ה-reload). 99 passed / 3 skipped בשני הפרויקטים. **החלטות שהתקבלו לבד:** (א)
+44px לפקדים ראשיים בלבד: ת"י 5568 = WCAG 2.0 AA ללא קריטריון גודל מטרה, 44 הוא AAA
+(2.5.5), והכרטיסים בגאומטריית Electro לא מגיעים ל-44 בלי לשבור parity; רצפת 24
+(2.5.8) לכולם. (ב) אייקוני ה-header בנייד 42×46 ולא 44: pitch של 42px, מתועד בקוד
+ובשער. (ג) `/checkout` ל-identity-less בלבד ב-proxy, לא מצב "עגלה ריקה" בדף
+(checkout.spec מצמיד את ההפניה). (ד) `globals.css` מכיל שלושה בלוקים כמעט זהים של
+focus/reduced-motion (D14 מוזג שלוש פעמים); לא נגעתי, מחוץ לפריט. (ה)
+`ProductCard.tsx` שורה 384 מחשב `Math.round(Number(kenyon_price) * 100)` במסלול הכסף
+(float); מחוץ לפריט, נרשם כאן. (ו) push לענף כמו W01..W12. **שערים:** type-check 0;
+lint 0 (i18n 605/605, docs-index 282); test 637/637, 7634 עברו, 12 דולגו (env מנוקה,
+104 שמות); build exit 0 ארבע פעמים (`5H9vEfD8Rt4lT7b1cFAGH` אחרון, 3512, listener לפי
+cwd); e2e a11y+touch 99 passed / 3 skipped; a11y-authenticated customer 16/16; **השער
+בחזית**: home `--baseline='refs/ke_live_{width}.png'` 380: 7.92% PASS; 768: 9.03%
+PASS; 1440: 4.16% PASS (זהה ל-W12); product `--baseline='refs/electro_product_{width}.png'`
+380: 4.80% PASS; 768: 4.39% PASS; 1440: 2.46% PASS (W12: 4.76 / 4.17 / 2.44, פירורי
+הלחם גדלו ב-2px); שש שורות ב-`docs/UI-PARITY-REPORT.md` (`9d5da2fac-dirty`). **לא
+נעשה:** אין מיגרציה, אין שינוי DB/env/DNS/Vercel, אין מחיקה, אין שדה חיפוש, אין
+בדיקת מורשה נגישות חיצונית (ההצהרה אומרת זאת במפורש).
+
+**W12 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
+ב-W13): SEO וביצועים; הכל היה קיים חוץ משלושה פגמים שנמדדו ותוקנו (twitter:title,
+שם Organization/WebSite, ניגודיות 4.48:1); Lighthouse mobile 99/100/100/100 בשלושת
+הדפים; parity home 7.92 / 9.03 / 4.16, product 4.76 / 4.17 / 2.44 PASS.
 
 **W11 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
 ב-W12): חיווט אנליטיקה; Sentry/PostHog/Axiom אומתו, ארבעה פגמים נמדדו ותוקנו

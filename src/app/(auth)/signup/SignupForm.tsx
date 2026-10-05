@@ -28,7 +28,9 @@ export default function SignupForm({ next }: Props) {
       <h2 className="text-xl font-semibold mb-6">יצירת חשבון</h2>
 
       {topError && (
-        <div className="mb-4 text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{topError}</div>
+        <div role="alert" className="mb-4 text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">
+          {topError}
+        </div>
       )}
 
       {/* Google sign-up */}
@@ -121,7 +123,9 @@ export default function SignupForm({ next }: Props) {
         </div>
 
         {getError(state) && (
-          <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{getError(state)}</p>
+          <p role="alert" className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">
+            {getError(state)}
+          </p>
         )}
 
         {/* Renders nothing unless a Turnstile key pair is configured. The

@@ -428,3 +428,37 @@ body:has([data-home]) .topbar-greeting {
   inline-size: 0;
   overflow: hidden;
 }
+
+/* ============================================================================
+   TAP AREA — W13, 2026-10-05
+   ============================================================================ */
+
+/*
+  A HIT BOX LARGER THAN THE PAINT, WITHOUT MOVING A PIXEL.
+
+  Measured at 390px on the six key pages: the product page's wishlist link
+  (16px tall), its share and question rows (20-24px), the related-product
+  "add to cart" (28px) and the sign-in page's "forgot password" (16px) were
+  all under the 24px floor WCAG 2.5.8 sets, and far under the 44px this site
+  asks of a thumb. Padding would reach 44 but would also change the paint,
+  which the parity gate measures against Electro; a pseudo-element grows the
+  hit area and nothing else, because a hit on a pseudo-element targets its
+  originating element.
+
+  `--tap-size` is the floor the box grows to, 44px by default. A row of small
+  controls stacked 8px apart cannot each take 44 without the later sibling's
+  box covering the earlier one's text, so those rows set 36px or 24px inline
+  (`[--tap-size:36px]`), which is still at or above the AA floor. The
+  `min(0px, ...)` keeps a control that is already larger than the floor
+  exactly as it is.
+*/
+.tap-area {
+  position: relative;
+}
+
+.tap-area::after {
+  content: "";
+  position: absolute;
+  inset-block: min(0px, calc((100% - var(--tap-size, 44px)) / 2));
+  inset-inline: min(0px, calc((100% - var(--tap-size, 44px)) / 2));
+}

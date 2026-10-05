@@ -60,7 +60,7 @@ export default function ProductQuestionLink({
             ...(productId ? { product_id: productId } : {}),
           })
         }
-        className="inline-flex items-center gap-2 text-sm font-semibold text-heading transition-colors hover:opacity-80"
+        className="tap-area [--tap-size:36px] inline-flex items-center gap-2 text-sm font-semibold text-heading transition-colors hover:opacity-80"
       >
         <WhatsAppIcon size={18} />
         {via === 'supplier' ? t('contact.askBusiness') : t('contact.productQuestion')}

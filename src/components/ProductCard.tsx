@@ -265,7 +265,7 @@ function DefaultProductCard({ product }: { product: Product }) {
         {product.category && (
           <Link
             href={`/category/${product.category.slug}`}
-            className="block text-xs text-muted-2 hover:text-heading line-clamp-1"
+            className="relative -my-1 block py-1 text-xs text-muted-2 hover:text-heading line-clamp-1"
           >
             {product.category.name_he}
           </Link>
@@ -381,7 +381,7 @@ function DefaultProductCard({ product }: { product: Product }) {
               productId={product.id}
               productName={product.name_he}
               priceAgorot={Math.round(Number(product.kenyon_price ?? 0) * 100)}
-              className="rounded-lg bg-brand-primary px-3 py-1.5 text-xs font-bold text-brand-dark hover:bg-brand-primary-hover transition-colors"
+              className="tap-area rounded-lg bg-brand-primary px-3 py-1.5 text-xs font-bold text-brand-dark hover:bg-brand-primary-hover transition-colors"
             >
               הוסף לסל
             </AddToCartButton>

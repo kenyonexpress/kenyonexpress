@@ -76,7 +76,7 @@ export default function WishlistHeart({
           disabled={busy}
           aria-pressed={saved}
           aria-label={ariaLabel}
-          className="inline-flex items-center gap-2 text-xs text-heading underline-offset-4 transition-opacity hover:underline disabled:opacity-50"
+          className="tap-area inline-flex items-center gap-2 text-xs text-heading underline-offset-4 transition-opacity hover:underline disabled:opacity-50"
         >
           <Heart
             size={16}

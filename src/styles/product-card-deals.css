@@ -108,6 +108,9 @@
 }
 
 .p_con__category {
+  /* inline-block, not inline: an inline link's hit box is its 18px glyph
+     area, not the 24px line box it sits in. Same paint, 24px of thumb. */
+  display: inline-block;
   font-size: 12px;
   font-weight: 400;
   line-height: 24px; /* live: category row is 24px tall */

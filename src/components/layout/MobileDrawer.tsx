@@ -85,6 +85,44 @@ export default function MobileDrawer() {
     if (open) panelRef.current?.focus()
   }, [open])
 
+  // Tab stays inside the panel while it is open. `aria-modal="true"` tells a
+  // screen reader the rest of the page is inert, but it does not make it so:
+  // measured in W13, a third Tab from the last drawer link landed on the
+  // header behind the scrim, with the drawer still painted over it. Same
+  // wrap-both-ways trap as CartDrawer, including the case where focus is
+  // already outside the panel when Tab is pressed.
+  useEffect(() => {
+    if (!open) return
+    const panel = panelRef.current
+    if (!panel) return
+    const focusables = () =>
+      [
+        ...panel.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])',
+        ),
+      ].filter((el) => el.getClientRects().length > 0)
+    const onTab = (event: KeyboardEvent) => {
+      if (event.key !== 'Tab') return
+      const items = focusables()
+      if (items.length === 0) return
+      const first = items[0] as HTMLElement
+      const last = items[items.length - 1] as HTMLElement
+      const active = document.activeElement
+      if (!panel.contains(active)) {
+        event.preventDefault()
+        ;(event.shiftKey ? last : first).focus()
+      } else if (event.shiftKey && (active === first || active === panel)) {
+        event.preventDefault()
+        last.focus()
+      } else if (!event.shiftKey && active === last) {
+        event.preventDefault()
+        first.focus()
+      }
+    }
+    document.addEventListener('keydown', onTab)
+    return () => document.removeEventListener('keydown', onTab)
+  }, [open])
+
   return (
     <>
       <button

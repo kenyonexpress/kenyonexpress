@@ -122,6 +122,13 @@
 }
 
 .pdp-breadcrumb a {
+  /* W13: "בית" measured 20x24 and a category 97x22 at 390px, under the 24px
+     target floor. inline-block with a 24px minimum on both axes grows the hit
+     box by up to 4px and moves no text. */
+  display: inline-block;
+  min-inline-size: 24px;
+  min-block-size: 24px;
+  text-align: center;
   color: var(--pdp-ink);
   text-decoration: none;
 }

@@ -194,7 +194,7 @@ export function BottomTabBarView({ active }: { active: string | null }) {
     <nav
       data-bottom-tab-bar=""
       aria-label={t('nav.tabbar.label')}
-      className="fixed inset-inline-0 bottom-0 z-30 border-t border-border bg-white md:hidden"
+      className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-white md:hidden"
       // The home indicator on a notched phone sits over the bar's lower edge.
       // Padding rather than height so the 44px targets are unaffected.
       style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
@@ -203,11 +203,11 @@ export function BottomTabBarView({ active }: { active: string | null }) {
         {TABS.map((tab) => {
           const isActive = active === tab.href
           return (
-            <li key={tab.href} className="flex-1">
+            <li key={tab.href} className="flex flex-1">
               <Link
                 href={tab.href}
                 aria-current={isActive ? 'page' : undefined}
-                className={`flex min-h-11 flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-micro focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${
+                className={`flex w-full min-h-11 flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-micro focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${
                   isActive ? 'font-bold text-heading' : 'text-muted'
                 }`}
               >

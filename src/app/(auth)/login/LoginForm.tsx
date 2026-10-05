@@ -64,7 +64,9 @@ export default function LoginForm({ next, callbackError, magic, phoneEnabled = f
       )}
 
       {topError && (
-        <div className="mb-4 text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{topError}</div>
+        <div role="alert" className="mb-4 text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">
+          {topError}
+        </div>
       )}
 
       {/* Google sign-in */}
@@ -147,7 +149,10 @@ export default function LoginForm({ next, callbackError, magic, phoneEnabled = f
             <label htmlFor="password" className="block text-sm font-medium text-gray-700">
               סיסמה
             </label>
-            <Link href="/forgot-password" className="text-xs text-link hover:underline">
+            <Link
+              href="/forgot-password"
+              className="tap-area [--tap-size:24px] text-xs text-link hover:underline"
+            >
               שכחתם סיסמה?
             </Link>
           </div>
@@ -163,7 +168,7 @@ export default function LoginForm({ next, callbackError, magic, phoneEnabled = f
         </div>
 
         {getError(emailState) && (
-          <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">
+          <p role="alert" className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">
             {getError(emailState)}
           </p>
         )}
@@ -183,7 +188,7 @@ export default function LoginForm({ next, callbackError, magic, phoneEnabled = f
           <button
             type="button"
             onClick={() => setShowMagic(true)}
-            className="w-full text-sm text-center text-gray-500 hover:text-link"
+            className="tap-area w-full text-sm text-center text-gray-500 hover:text-link"
           >
             כניסה ללא סיסמה (קישור מאובטח לאימייל)
           </button>
@@ -208,7 +213,7 @@ export default function LoginForm({ next, callbackError, magic, phoneEnabled = f
               </p>
             )}
             {getError(magicState) && (
-              <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">
+              <p role="alert" className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">
                 {getError(magicState)}
               </p>
             )}

@@ -41,7 +41,9 @@ export default function AdminMfaForm({
             שהיא מציגה.
           </p>
           {enrolError && (
-            <div className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{enrolError}</div>
+            <div role="alert" className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">
+              {enrolError}
+            </div>
           )}
           <button
             type="button"
@@ -96,7 +98,7 @@ export default function AdminMfaForm({
             />
           </div>
           {verifyState?.error && (
-            <div className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">
+            <div role="alert" className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">
               {verifyState.error}
             </div>
           )}
