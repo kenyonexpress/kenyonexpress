@@ -12,6 +12,7 @@ import { productQuantityCeiling } from '@/lib/cart/format'
 import type { CouponOffer } from '@/lib/commerce/coupon-offer'
 import { isImplausibleDiscount } from '@/lib/commerce/implausible-discount'
 import { type RecurringOffer, describeRecurringPrice } from '@/lib/commerce/recurring'
+import type { AskBusinessTarget } from '@/lib/contact/channels'
 import { cityByName } from '@/lib/geo/cities'
 import { t } from '@/lib/i18n/messages'
 import { shekelsFromIls as sharedShekelsFromIls } from '@/lib/money-format'
@@ -91,6 +92,13 @@ interface Props {
    * columns, so the page quotes exactly what the renewal worker will charge.
    */
   recurringOffer?: RecurringOffer | null
+  /**
+   * Who a product question reaches (`askBusinessHref` on the page): the
+   * supplier's WhatsApp when the product opted in, otherwise customer service.
+   * Null falls back to the store number. Same target the supplier block uses,
+   * so the two question links on one page cannot disagree.
+   */
+  ask?: AskBusinessTarget | null
 }
 
 /**
@@ -132,6 +140,7 @@ export default function ProductInfo({
   isCoupon,
   couponOffer,
   recurringOffer = null,
+  ask = null,
 }: Props) {
   const { addToCart, isPending } = useCart()
 
@@ -469,7 +478,7 @@ export default function ProductInfo({
           productId={productId}
           message={buildShareMessage({ name, priceIls: price, offer: couponOffer })}
         />
-        <ProductQuestionLink productName={name} />
+        <ProductQuestionLink productName={name} productId={productId} ask={ask} />
       </div>
     </div>
   )

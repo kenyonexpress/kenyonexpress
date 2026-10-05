@@ -2,6 +2,56 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## W09 (הועבר מ-STATE.md ב-W10, לשמירה על תקרת 300 שורות)
+
+**W09 - DONE (05.10.2026): FILTER CHIPS. שלושה מחמשת הצ'יפים היו קיימים מ-Q14
+(25.09) ואומתו בקוד ובדפדפן; שניים נבנו: "עד ₪99" ו"החדשים". אין שדה חיפוש.
+parity 3.72% / 2.88% / 1.71% PASS ב-380 / 768 / 1440.** `pwd` אומת, HEAD בהגעה
+`3043995e9`, עץ נקי. W09 לא הופיע ב-STATE.md, ב-BACKLOG או ב-`git log -20`;
+בארכיון: Q14 בנה את השורה (`FilterChips`, `NearMeChip`, `lib/catalogue/filter-chips.ts`).
+**מה כבר היה (נמדד, לא נבנה שוב):** "פתוח בסופ״ש" = `?open=weekend` על התג
+`open-weekend` ב-`products.tags` (עמודה שקיימת בפרודקשן); "משלוח חינם" =
+`?shipping=free` על `requires_shipping` + `shipping_price_agorot=0` עם נפילה
+ל-42703 עד 243; "קרוב אליי" = כפתור, ההסכמה היא הלחיצה (`getCurrentPosition`
+רק ב-`toggle`, לעולם לא ב-mount), `?near=lat,lng` מעוגל ל-4 ספרות, המיון
+לפי מרחק אחרי הקריאה המקושרת (`sortByDistance`), והמרחק מוצג על הכרטיס
+(`formatDistance`). **מגבלה שנמדדה ולא שונתה:** המרחק הוא מכתובת העסק ברזולוציית
+עיר (`suppliers.city` → `cityByName`), כי `latitude`/`longitude` הן ב-136 הממתינה
+ואינן בפרודקשן; `supplierLocation` כבר מעדיף אותן ברגע שיהיו. **מה חסר ונבנה:**
+(1) "עד ₪99" כותב `max=99`, הפרמטר שפאסט המחיר בסיידבר כבר כותב והשרת כבר
+מסנן (`kenyon_price <= max`); `99` הוא גבול אוסף `under-99` (`collectionRule`).
+כשהצ'יפ נדלק הוא זורק `min` שגדול או שווה ל-99 (קבוצה ריקה מבנייה) ומוריד
+`page`. (2) "החדשים" כותב `sort=newest`, הערך שבורר המיון כבר קורא. אין פרמטר
+חדש ואין שני מצבים ל-URL אחד: הצ'יפ, הפאסט והבורר מסכימים כי יש ערך אחד.
+`quickChipsFromParams`, `under99ChipHref`, `newestChipHref` טהורים ב-
+`lib/catalogue/filter-chips.ts`; `FilterChips` מרנדר חמישה בסדר הפריט (סופ״ש,
+משלוח, קרוב אליי, עד 99, החדשים), כולם קישורים חוץ מקרוב אליי, אותן מחלקות
+`category-chips__chip` (גלולה 44px, גבול 18%, פעיל בצהוב המותג, RTL מהמסמך).
+אפס שינוי בשני הדפים (`/category/[slug]`, `/products`): שניהם כבר מעבירים
+`sort`/`max` ב-`params`. מפתחות `filterChips.under99`/`newest` ב-`he.json`+`en.json`.
+**הוכחה בשרת (build טרי `n5544SzEg42wM8iw3hrwj` על 3412, cwd אומת):**
+`/category/hot-deals` מרנדר חמישה `data-testid="filter-chip-*"` עם
+`?max=99`/`?sort=newest`; `?max=99&sort=newest` נותן שני `aria-current="true"`;
+`/category/vacation` ללא סינון 9 מחירים 300..3900, עם `?max=99` אפס שורות;
+`?sort=newest` מחליף את סדר שתי השורות של hot-deals לפי `created_at`.
+**בדיקות:** +5 ב-`filter-chips.test.ts` (פרסינג, הדלקה/כיבוי, זריקת min,
+שמירת near, החלפת sort) ו-+2 ב-`filter-chips.test.tsx` (חמישה צ'יפים בסדר,
+אין `<input>`, שני פעילים). **שערים:** `pnpm type-check` 0; `pnpm lint` נקי
+(i18n 606/606, המחרוזות החדשות ב-JSON); `pnpm test` **630/630 קבצים, 7567+
+עברו, 12 דולגו** (`invoices.test` נופל רק עם `CARDCOM_*`/`VOUCHER_QR_SECRET`
+של ההארנס בסביבה ועובר 24/24 כשהם מוסרים, env ולא קוד, כמו ב-W08); build exit 0
+אחרי `rm -rf .next`; **השער, בחזית, `--baseline='refs/electro_shop_{width}.png'`,
+`--widths=380,768,1440`, שלוש שורות ב-`docs/UI-PARITY-REPORT.md` (`3043995e9-dirty`):
+380: 3.72% PASS; 768: 2.88% PASS; 1440: 1.71% PASS** (Q27/M03-c71: 3.53/2.52/1.69;
+הסטייה היא שני הצ'יפים הנוספים בשורה). השרת שלי נסגר; listener זר על 3311
+(`pnpm start` יתום מ-W08, BUILD_ID `Pg_w3auIci8lYa6ozPHFk`) לא הופעל ולא נסגר.
+**החלטות שהתקבלו לבד:** (א) הצ'יפים רוכבים על `max`/`sort` ולא על פרמטר משלהם.
+(ב) "עד ₪99" פעיל רק ב-`max=99` בדיוק; `max=120` הוא סינון מחיר אך לא הצ'יפ.
+(ג) העיצוב לא שונה: שורת Q14 כבר נמדדה בשער ותואמת את טוקני Electro
+(גלולה 22px, צהוב `#fed700`, `#333e48`). (ד) push לענף נעשה לפי הוראת הפריט
+כמו W01..W08, בידיעה ש-Vercel מחובר לענף (זיכרון 05.10). **לא נעשה:** אין
+מיגרציה, אין שינוי DB/env/DNS/Vercel, אין מחיקה, אין שדה חיפוש.
+
 ## W08 (הועבר מ-STATE.md ב-W09, לשמירה על תקרת 300 שורות)
 
 **W08 - DONE (05.10.2026): AFFILIATE PROGRAM. שש מתוך שמונה הרגליים היו קיימות

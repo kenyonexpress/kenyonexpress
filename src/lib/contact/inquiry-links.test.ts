@@ -1,5 +1,28 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { orderContactLink, productQuestionLink } from './inquiry-links'
+import { appendPageUrl, orderContactLink, productQuestionLink } from './inquiry-links'
+
+describe('appendPageUrl', () => {
+  const href = `https://wa.me/972501234567?text=${encodeURIComponent('שלום, יש לי שאלה על X')}`
+
+  it('adds the page address on its own line, encoded like waChatLink', () => {
+    const out = appendPageUrl(href, 'https://www.kenyonexpress.co.il/product/x')
+    expect(out.startsWith('https://wa.me/972501234567?text=')).toBe(true)
+    expect(out).not.toContain('+')
+    expect(decodeURIComponent(out.split('text=')[1] ?? '')).toBe(
+      'שלום, יש לי שאלה על X\nhttps://www.kenyonexpress.co.il/product/x',
+    )
+  })
+
+  it('does not stack a second copy on re-render', () => {
+    const once = appendPageUrl(href, 'https://www.kenyonexpress.co.il/product/x')
+    expect(appendPageUrl(once, 'https://www.kenyonexpress.co.il/product/x')).toBe(once)
+  })
+
+  it('fills an empty text with the address alone', () => {
+    const out = appendPageUrl('https://wa.me/972501234567', 'https://k.e/p')
+    expect(decodeURIComponent(out.split('text=')[1] ?? '')).toBe('https://k.e/p')
+  })
+})
 
 describe('inquiry links', () => {
   afterEach(() => vi.unstubAllEnvs())

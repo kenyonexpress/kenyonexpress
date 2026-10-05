@@ -380,6 +380,7 @@ export default async function ProductPage({ params }: Props) {
             isCoupon={isCoupon}
             couponOffer={couponOffer}
             recurringOffer={recurringOffer}
+            ask={ask}
           />
         </div>
 

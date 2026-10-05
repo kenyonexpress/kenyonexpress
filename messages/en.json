@@ -457,7 +457,8 @@
     "askBusiness": "Ask the business on WhatsApp",
     "askStore": "Ask customer service on WhatsApp",
     "footerHeading": "WhatsApp by topic",
-    "viaStore": "Your message reaches KenyonExpress customer service"
+    "viaStore": "Your message reaches KenyonExpress customer service, with the product name and page link",
+    "viaSupplier": "Your question goes straight to the business, with the product name and page link"
   },
   "pdp": {
     "priceSource": "Basis of the regular price",

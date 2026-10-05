@@ -184,6 +184,11 @@ export function channelHref(
  * switched on and the supplier has a number; otherwise customer service, with
  * the same product name in the opener so the operator knows what was asked.
  */
+export interface AskBusinessTarget {
+  href: string
+  via: 'supplier' | 'customer_service'
+}
+
 export function askBusinessHref(input: {
   supplierWhatsapp: string | null | undefined
   whatsappEnabled: boolean
@@ -191,7 +196,7 @@ export function askBusinessHref(input: {
   customerService: ContactChannel | null
   storeNumber: string | null
   supplierOpener: string
-}): { href: string; via: 'supplier' | 'customer_service' } | null {
+}): AskBusinessTarget | null {
   if (input.whatsappEnabled && input.supplierWhatsapp) {
     const href = waChatLink(input.supplierWhatsapp, input.supplierOpener)
     if (href) return { href, via: 'supplier' }

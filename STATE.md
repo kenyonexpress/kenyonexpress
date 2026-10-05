@@ -1,57 +1,56 @@
-RESUME FROM: W10
-Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט W09 DONE: צ'יפי סינון
-בדף הקטגוריה; שלושה מחמישה היו מ-Q14 ואומתו, שניים נבנו ("עד ₪99", "החדשים");
-W08 הועבר לארכיון; RESUME FROM מצביע ל-W10, ואם אין W10 בתור, ההמשך הוא M02-c96)
+RESUME FROM: W11
+Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט W10 DONE: שיתוף וקשר;
+ארבע מחמש הרגליים היו קיימות, קישור השאלה בסיכום המוצר קיבל את יעד הספק עם
+הסבר; W09 הועבר לארכיון; RESUME FROM מצביע ל-W11, ואם אין W11 בתור, ההמשך הוא M02-c96)
 
 ## המשך מ:
 
-**W09 - DONE (05.10.2026): FILTER CHIPS. שלושה מחמשת הצ'יפים היו קיימים מ-Q14
-(25.09) ואומתו בקוד ובדפדפן; שניים נבנו: "עד ₪99" ו"החדשים". אין שדה חיפוש.
-parity 3.72% / 2.88% / 1.71% PASS ב-380 / 768 / 1440.** `pwd` אומת, HEAD בהגעה
-`3043995e9`, עץ נקי. W09 לא הופיע ב-STATE.md, ב-BACKLOG או ב-`git log -20`;
-בארכיון: Q14 בנה את השורה (`FilterChips`, `NearMeChip`, `lib/catalogue/filter-chips.ts`).
-**מה כבר היה (נמדד, לא נבנה שוב):** "פתוח בסופ״ש" = `?open=weekend` על התג
-`open-weekend` ב-`products.tags` (עמודה שקיימת בפרודקשן); "משלוח חינם" =
-`?shipping=free` על `requires_shipping` + `shipping_price_agorot=0` עם נפילה
-ל-42703 עד 243; "קרוב אליי" = כפתור, ההסכמה היא הלחיצה (`getCurrentPosition`
-רק ב-`toggle`, לעולם לא ב-mount), `?near=lat,lng` מעוגל ל-4 ספרות, המיון
-לפי מרחק אחרי הקריאה המקושרת (`sortByDistance`), והמרחק מוצג על הכרטיס
-(`formatDistance`). **מגבלה שנמדדה ולא שונתה:** המרחק הוא מכתובת העסק ברזולוציית
-עיר (`suppliers.city` → `cityByName`), כי `latitude`/`longitude` הן ב-136 הממתינה
-ואינן בפרודקשן; `supplierLocation` כבר מעדיף אותן ברגע שיהיו. **מה חסר ונבנה:**
-(1) "עד ₪99" כותב `max=99`, הפרמטר שפאסט המחיר בסיידבר כבר כותב והשרת כבר
-מסנן (`kenyon_price <= max`); `99` הוא גבול אוסף `under-99` (`collectionRule`).
-כשהצ'יפ נדלק הוא זורק `min` שגדול או שווה ל-99 (קבוצה ריקה מבנייה) ומוריד
-`page`. (2) "החדשים" כותב `sort=newest`, הערך שבורר המיון כבר קורא. אין פרמטר
-חדש ואין שני מצבים ל-URL אחד: הצ'יפ, הפאסט והבורר מסכימים כי יש ערך אחד.
-`quickChipsFromParams`, `under99ChipHref`, `newestChipHref` טהורים ב-
-`lib/catalogue/filter-chips.ts`; `FilterChips` מרנדר חמישה בסדר הפריט (סופ״ש,
-משלוח, קרוב אליי, עד 99, החדשים), כולם קישורים חוץ מקרוב אליי, אותן מחלקות
-`category-chips__chip` (גלולה 44px, גבול 18%, פעיל בצהוב המותג, RTL מהמסמך).
-אפס שינוי בשני הדפים (`/category/[slug]`, `/products`): שניהם כבר מעבירים
-`sort`/`max` ב-`params`. מפתחות `filterChips.under99`/`newest` ב-`he.json`+`en.json`.
-**הוכחה בשרת (build טרי `n5544SzEg42wM8iw3hrwj` על 3412, cwd אומת):**
-`/category/hot-deals` מרנדר חמישה `data-testid="filter-chip-*"` עם
-`?max=99`/`?sort=newest`; `?max=99&sort=newest` נותן שני `aria-current="true"`;
-`/category/vacation` ללא סינון 9 מחירים 300..3900, עם `?max=99` אפס שורות;
-`?sort=newest` מחליף את סדר שתי השורות של hot-deals לפי `created_at`.
-**בדיקות:** +5 ב-`filter-chips.test.ts` (פרסינג, הדלקה/כיבוי, זריקת min,
-שמירת near, החלפת sort) ו-+2 ב-`filter-chips.test.tsx` (חמישה צ'יפים בסדר,
-אין `<input>`, שני פעילים). **שערים:** `pnpm type-check` 0; `pnpm lint` נקי
-(i18n 606/606, המחרוזות החדשות ב-JSON); `pnpm test` **630/630 קבצים, 7567+
-עברו, 12 דולגו** (`invoices.test` נופל רק עם `CARDCOM_*`/`VOUCHER_QR_SECRET`
-של ההארנס בסביבה ועובר 24/24 כשהם מוסרים, env ולא קוד, כמו ב-W08); build exit 0
-אחרי `rm -rf .next`; **השער, בחזית, `--baseline='refs/electro_shop_{width}.png'`,
-`--widths=380,768,1440`, שלוש שורות ב-`docs/UI-PARITY-REPORT.md` (`3043995e9-dirty`):
-380: 3.72% PASS; 768: 2.88% PASS; 1440: 1.71% PASS** (Q27/M03-c71: 3.53/2.52/1.69;
-הסטייה היא שני הצ'יפים הנוספים בשורה). השרת שלי נסגר; listener זר על 3311
-(`pnpm start` יתום מ-W08, BUILD_ID `Pg_w3auIci8lYa6ozPHFk`) לא הופעל ולא נסגר.
-**החלטות שהתקבלו לבד:** (א) הצ'יפים רוכבים על `max`/`sort` ולא על פרמטר משלהם.
-(ב) "עד ₪99" פעיל רק ב-`max=99` בדיוק; `max=120` הוא סינון מחיר אך לא הצ'יפ.
-(ג) העיצוב לא שונה: שורת Q14 כבר נמדדה בשער ותואמת את טוקני Electro
-(גלולה 22px, צהוב `#fed700`, `#333e48`). (ד) push לענף נעשה לפי הוראת הפריט
-כמו W01..W08, בידיעה ש-Vercel מחובר לענף (זיכרון 05.10). **לא נעשה:** אין
-מיגרציה, אין שינוי DB/env/DNS/Vercel, אין מחיקה, אין שדה חיפוש.
+**W10 - DONE (05.10.2026): SHARE AND CONTACT. ארבע מחמש הרגליים היו קיימות
+ואומתו בקוד ובשרת בנוי; פער אחד נמדד ונבנה. parity product 4.76% / 4.17% / 2.44%
+PASS ב-380 / 768 / 1440.** `pwd` אומת, HEAD בהגעה `6e4edd589`, עץ נקי. W10 לא
+הופיע ב-STATE.md, ב-BACKLOG או ב-`git log -20`. **מה כבר היה (נמדד, לא נבנה
+שוב):** (1) שורת שיתוף בדף המוצר בסדר וואטסאפ, שיתוף מקורי (`navigator.share`,
+נפילה לרשימת ערוצים רק אחרי לחיצה שהוכיחה שאין), העתקת קישור (`ProductShareRow`);
+הטקסט העברי מ-`buildShareMessage` לפי ההצעה שהדף מציג, ה-URL עם `?ref=` לשותף
+(`useShareAttribution`), בדיקה קיימת לסדר. (2) כפתור שאלה לבית העסק ב-"פרטי
+הספק" (`AskBusinessButton` + `askBusinessHref`): לספק כשהמוצר מאופשר ויש מספר,
+אחרת לשירות הלקוחות עם שם המוצר בפתיח. (3) וואטסאפ להזמנה ב-`/account/orders/[id]`
+וב-`/checkout/return` עם מזהה קצר, פריטים וסכום (`orderContactLink`,
+`buildOrderInquiryText`). (4) תפריט חמישה ערוצים: שירות לקוחות, הצעות, שיתופי
+פעולה, תקלה באתר, הצטרפות כבית עסק (`DEFAULT_CONTACT_CHANNELS` = seed של 236
+הממתינה, טבלה אם קיימת) ב-`/contact`, בכפתור הצף ובפוטר. **מה חסר ונבנה:**
+`ProductQuestionLink` בסיכום המוצר חייג תמיד לחנות ובלי הסבר, כך שבאותו דף היו
+שני קישורי שאלה לשני יעדים. עכשיו הוא מקבל `ask` (פלט `askBusinessHref`) מהדף
+דרך `ProductInfo`, מוסיף את כתובת העמוד בצד הלקוח אחרי mount (`appendPageUrl`,
+אידמפוטנטי, קידוד כמו `waChatLink`), התווית לפי היעד, ושורת הסבר קצרה מתחת:
+`contact.viaSupplier` (חדש) או `contact.viaStore` (מפתח שהיה מת ב-`he.json`,
+כעת בשימוש, מורחב); סופר `whatsapp_click` עם `surface=product_question`.
+**אין הודעות וואטסאפ ביוזמת האתר, נמדד:** כל המשטחים הם קישורי `wa.me` שהלקוח
+שולח; בדיקת שער חדשה `no-outbound-whatsapp.test.ts` נופלת אם רכיב שיתוף/קשר
+מייבא את `server/whatsapp`. המסלול התפעולי (173 `whatsapp_outbox` + Twilio)
+הוא לעדכוני הזמנה למי שהצטרף במילת מפתח בלבד, ובפרודקשן הוא אינרטי:
+`TWILIO_WHATSAPP_FROM` חסר ב-Vercel Production (שמות בלבד, קריאה בלבד), ולכן
+`loadTwilioEnv` מחזיר null וכל שורה `skipped`; גם ה-cron עונה 401 (חוסם 10).
+לא נמחק (כלל). **הוכחה בשרת (build טרי `41QI5HLRtbUWfgvnw96BP` על 3413, cwd
+אומת; listener זר על 3311 לא נגע):** `/product/מוצר-לדוגמא` 200 עם
+`data-via="customer_service"`, שורת ההסבר, ו-`wa.me/972524635550?text=` שנושא
+את שם המוצר. מסלול הספק אינו ניתן לרינדור חי: `whatsapp_enabled` כבוי בכל
+המוצרים (תוכן, החלטת אדמין פר מוצר). **בדיקות:** +3 `appendPageUrl`, +4
+`product-question-link.test.tsx`, +גיט click-to-chat. **שערים:** `pnpm type-check`
+0; `pnpm lint` נקי (i18n 606/606); `pnpm test` **632/632 קבצים, 7596 עברו, 12
+דולגו** תחת `env -i` (סביבת ההארנס מפילה 8 בדיקות "key unset" ב-`resend.test`
+ו-`invoices.test`, env ולא קוד, הוכח בריצה בסביבה מינימלית); build exit 0 אחרי
+`rm -rf .next`; **השער, בחזית, `--baseline='refs/electro_product_{width}.png'`,
+`--widths=380,768,1440`, שלוש שורות ב-`docs/UI-PARITY-REPORT.md` (`6e4edd589-dirty`):
+380: 4.76% PASS; 768: 4.17% PASS; 1440: 2.44% PASS** (04.10: 4.95/4.55/3.25).
+**החלטות שהתקבלו לבד:** (א) שני קישורי השאלה חולקים יעד אחד ולא הוסר אחד מהם.
+(ב) ההסבר הוא שורת טקסט 12px מתחת לקישור, לא tooltip. (ג) מסלול Twilio נשאר,
+מתועד כהסכמה-בלבד ואינרטי. (ד) push לענף לפי הוראת הפריט כמו W01..W09.
+**לא נעשה:** אין מיגרציה, אין שינוי DB/env/DNS/Vercel, אין מחיקה, אין שדה חיפוש.
+
+**W09 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
+ב-W10): צ'יפי סינון בדף הקטגוריה; שלושה מחמישה היו מ-Q14, נבנו "עד ₪99"
+ו"החדשים" על `max`/`sort`; parity 3.72 / 2.88 / 1.71 PASS.
 
 **W08 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר ב-W09):
 תוכנית השותפים; שש מתוך שמונה הרגליים היו מ-Q16, נבנו ספירת קליקים ובקשת
