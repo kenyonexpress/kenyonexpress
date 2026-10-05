@@ -40,7 +40,7 @@ jobs:
     timeout-minutes: 30
     if: vars.DB_BACKUP_ENABLED == 'true'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # The server is Postgres 17.6; a 16.x pg_dump refuses to connect, and
       # ubuntu-latest ships 16. PGDG has 17.
