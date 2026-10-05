@@ -357,6 +357,21 @@ the escrow leg, because there is no escrow to release.
 > switched on, **vouchers do not expire on their own and expiry warnings are
 > never sent.** This is the highest-impact consequence of the unscheduled cron
 > situation on the voucher path.
+>
+> Measured 2026-10-05 (W06): `cron.job` holds one foreign job, and
+> `notification_outbox` has never held a `voucher_expiring` row. The clock is
+> `migrations/pending/250_expiry_reminders_schedule.sql`: pg_cron + pg_net
+> (both installed since 161) call `/api/cron/expire-vouchers` nightly after
+> Jerusalem midnight and `/api/cron/notifications` every five minutes, with
+> `GET` and the bearer read from the vault at run time. It is blocked on one
+> vault value (`APP_BASE_URL` is the apex host, which redirects); the file
+> refuses to apply until that is re-seeded. The reminder itself is T-7 and T-1:
+> `enqueue_expiring_voucher_notices([7, 1])` keyed `voucher_expiring:<id>:<bucket>`
+> (the outbox's UNIQUE `dedupe_key` is the ledger, one row per voucher per
+> bucket), delivered as Hebrew email through Resend, web push to every
+> subscribed browser and the in-app bell, each leg behind `mayNotify` and so
+> behind the personal area's "everything in the app" switch. The selection
+> window's edges are pinned in `src/lib/vouchers/expiry-reminders.test.ts`.
 
 ---
 

@@ -492,6 +492,12 @@ unchanged. No migration applied, no code change -- verification only.
    ב-Asia/Jerusalem) בעוד GitHub cron מפיל ריצות (8 ב-04.10 על 13 לוחות);
    יום שנפל משמיט את דלי התזכורת שלו לצמיתות. חלון של ימים (`between`) עם
    `dedupe_key` הקיים היה סוגר זאת.
+   **W06 (05.10):** החלון כתוב ב-227 (ממתינה). השעון כתוב ב-250 (ממתינה):
+   pg_cron + pg_net קוראים ל-`expire-vouchers` ול-`notifications` ב-GET עם
+   הסוד מה-vault בזמן ריצה; ה-vault כבר מחזיק `CRON_SECRET` ו-`APP_BASE_URL`
+   (לא `cron_secret`/`app_url` ש-162 מחפשת), אבל `APP_BASE_URL` הוא ה-apex
+   שעונה 308 ל-`www`, ו-250 מסרבת עד שיוחלף ל-`https://www.kenyonexpress.co.il`.
+   162 כפי שהיא קוראת `http_post` ונתיבי ה-cron עונים 405 (נמדד חי).
 3. **סביבת Production ב-Vercel לפני כל פריסה.** להוסיף
    `CARDCOM_TERMINAL_NUMBER`, `CARDCOM_API_NAME`, `CARDCOM_API_PASSWORD`
    (השמות שהקוד קורא בפועל; `CARDCOM_API_KEY`/`CLIENT_ID`/`MERCHANT_ID`

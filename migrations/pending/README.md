@@ -1,5 +1,38 @@
 # `migrations/pending/`
 
+## 2026-10-05: 250 WRITTEN, not applied - השעון של תזכורות התפוגה: pg_cron + pg_net קוראים לשני נתיבי ה-cron ב-GET
+
+‏`250_expiry_reminders_schedule.sql` + ‏`preflight_250.sql`. ‏W06. **מה כבר
+קיים ונמדד בפרודקשן ב-05.10:** ‏`enqueue_expiring_voucher_notices` חיה (התאמה
+ליום מדויק; 227 הממתינה מרחיבה לחלון), ‏`notification_outbox.dedupe_key`
+‏UNIQUE עם ‏`voucher_expiring:<id>:<bucket>` הוא פנקס התזכורות (שורה אחת לכל
+שובר לכל דלי, לעולם), ‏`/api/cron/expire-vouchers` מריץ sweep → זיכוי → enqueue
+‏`[7, 1]`, ו-`/api/cron/notifications` מנקז למייל עברי דרך Resend, ל-web push
+לכל ‏`push_subscriptions` של הלקוח ולפעמון, כל רגל מאחורי ‏`mayNotify` מול
+‏`notification_preferences`, שהיא בדיוק הטבלה שמתג "הכל באפליקציה" כותב
+(‏push + in_app לכל סוג אופציונלי, ‏`voucher_expiring` כלול). **מה חסר:**
+אף אחד לא קורא לשני הנתיבים: ‏`cron.job` מחזיק רק ‏`report_tables_nightly`,
+ול-`notification_outbox` **מעולם לא הייתה** שורת ‏`voucher_expiring`. 18 שוברים
+‏issued עם תפוגה, 0 בתוך 7 ימים היום. **הקובץ מתזמן שלוש עבודות בלבד**
+(‏`ke-expire-vouchers` ‏`15 23 * * *` GMT = אחרי חצות ישראל, ‏`ke-notifications`
+‏`*/5`, ‏`ke-cron-history-prune` 7 ימים), בלוח הזהה ל-`scripts/cron-jobs.json`
+(נעוץ ב-`src/__tests__/expiry-reminders-schedule.test.ts`), קורא סוד וכתובת
+מה-vault **בזמן ריצה** בשמות שקיימים בפועל: ‏`CRON_SECRET`, ‏`APP_BASE_URL`.
+**למה לא 162 (נמדד):** 162 קוראת ‏`net.http_post` ונתיבי ה-cron מייצאים GET
+בלבד, ‏Next עונה 405 (אומת חי: ‏POST ‏`/api/cron/health` → 405, ‏GET → 401);
+162 מחפשת ‏`cron_secret`/`app_url` וה-vault מחזיק ‏`CRON_SECRET`/`APP_BASE_URL`;
+וה-preflight שלה דורש ‏`*.vercel.app`. **חוסם להחלה:** ‏`APP_BASE_URL` ב-vault הוא
+ה-apex ‏`https://kenyonexpress.co.il`, שעונה ‏308 ל-`www` (נמדד), ובקשת bearer
+לא שורדת redirect; בלוק ה-DO של 250 **מסרב** בקול במצב הזה (חוזה ב-BEGIN/ROLLBACK
+מול פרודקשן: ה-guard עלה; בלי ה-guard שלושת הלוחות נכנסו ונקראו חזרה עם
+‏http_get + vault, ואז ‏ROLLBACK, 0 שאריות). תיקון: ‏`vault.update_secret` ל-
+‏`https://www.kenyonexpress.co.il` (או alias ‏`*.vercel.app` של הפרויקט שמגיש
+את הדומיין), ראו ‏`preflight_250.sql` בלוק 5. **סדר:** אחרי 161 (חלה); בלתי
+תלוי ב-227; אם 162 תוחל כפי שהיא, היא תדרוס את שני השמות חזרה ל-POST, לכן
+162 חייבת תיקון בשלוש הנקודות לפני החלה, ו-250 אחריה (או במקומה לשני
+השמות). **Reversal:** ‏`select cron.unschedule(jobname) from cron.job where
+jobname in ('ke-expire-vouchers','ke-notifications','ke-cron-history-prune');`.
+
 ## 2026-10-05: 249 WRITTEN, not applied - פרסום מתוזמן למוצר, עמודה אחת על `products`
 
 ‏`249_product_publish_at.sql`. ‏W03. ‏`products.publish_at timestamptz` (NULL =

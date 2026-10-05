@@ -1035,8 +1035,16 @@ describe('the pending migration inventory', () => {
       // a partial index for the cron read and a NOT VALID CHECK that a
       // schedule sits only on a draft. No RLS or data change; no dependency.
       '249_product_publish_at.sql',
+      // W06 (05.10): the expiry reminders' clock. Three cron.schedule upserts
+      // (ke-expire-vouchers, ke-notifications, ke-cron-history-prune) through
+      // pg_cron + pg_net with http_get and the vault names production holds
+      // (CRON_SECRET, APP_BASE_URL). No table, function, grant or data. Its DO
+      // block refuses the apex host; rehearsed on production in BEGIN/ROLLBACK
+      // on 05.10 (guard raised; schedules inserted and rolled back, 0 residue).
+      '250_expiry_reminders_schedule.sql',
       'preflight_162.sql',
       'preflight_184.sql',
+      'preflight_250.sql',
     ])
   })
 

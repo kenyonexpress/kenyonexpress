@@ -1,5 +1,25 @@
 # Apply order
 
+## 2026-10-05: 250, AFTER 161 (applied), AFTER a corrected 162 if 162 is applied at all, independent of 227
+
+`250_expiry_reminders_schedule.sql` upserts three `cron.job` rows
+(`ke-expire-vouchers` 15 23 * * *, `ke-notifications` */5, `ke-cron-history-prune`
+0 3 * * *) that call `/api/cron/expire-vouchers` and `/api/cron/notifications`
+through `net.http_get`, with the bearer and the base URL read from the vault at
+run time under the names production holds (`CRON_SECRET`, `APP_BASE_URL`).
+Nothing but schedules: no table, function, grant or data. Run
+`preflight_250.sql` first. **Block 5 fails today**: `APP_BASE_URL` is the apex
+host, which 308s to `www`, and the file's DO block refuses that on purpose
+(rehearsed on production in BEGIN/ROLLBACK 2026-10-05: raised). Re-seed the
+secret to `https://www.kenyonexpress.co.il`, then apply. Independent of 227
+(the route calls whichever `enqueue_expiring_voucher_notices` is live).
+**162**: as written it uses `http_post` (every cron route is GET-only, Next
+answers 405) and the vault names `cron_secret`/`app_url`, and `cron.schedule`
+upserts by name, so applying 162 after 250 would overwrite the two shared names
+with broken commands. Correct 162 on those points before applying it, and apply
+250 after it. **Reversal:** `select cron.unschedule(jobname) from cron.job
+where jobname in ('ke-expire-vouchers','ke-notifications','ke-cron-history-prune');`.
+
 ## 2026-09-29: 247, any order, one GRANT
 
 `247_reviews_grant_anon_select.sql` grants `anon` SELECT on `public.reviews`.

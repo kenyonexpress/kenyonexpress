@@ -80,7 +80,7 @@ const INVENTORY: Record<string, number> = {
   'src/server/actions/admin/users.ts': 1,
   'src/server/actions/auth.ts': 1,
   'src/server/actions/cart.ts': 4,
-  'src/server/actions/gifts.ts': 2,
+  'src/server/actions/gifts.ts': 1,
   'src/server/actions/newsletter.ts': 2,
   'src/server/actions/orders.ts': 1,
   'src/server/actions/payments/refund.ts': 6,
