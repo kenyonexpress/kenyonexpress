@@ -51,6 +51,18 @@
       "cta": "Enable notifications",
       "label": "Notification suggestion",
       "dismiss": "Not now"
+    },
+    "install_prompt": {
+      "label": "Install the app",
+      "title": "Install Kenyon Express",
+      "body": "Quick access from your home screen, no browser needed.",
+      "first_purchase_title": "First order done, now as an app too",
+      "first_purchase_body": "Install Kenyon Express on your home screen: coupons and orders one tap away, and notifications land there.",
+      "install": "Install",
+      "dismiss": "Not now",
+      "ios_title": "Add Kenyon Express to your home screen",
+      "ios_body": "On iPhone and iPad: tap the browser's share button, then \"Add to Home Screen\".",
+      "ios_got_it": "Got it"
     }
   },
   "admin": {
@@ -659,6 +671,24 @@
     },
     "cookiesPage": {
       "contactIntro": "For questions about cookies, the measurement tools or withdrawing consent, reach us here:"
+    }
+  },
+  "pushOptIn": {
+    "ios_hint": "On iPhone and iPad, notifications only work after the site is added to the home screen: tap the browser's share button, then \"Add to Home Screen\", and open Kenyon Express from there."
+  },
+  "push": {
+    "security_alert": {
+      "title": "Security alert on your account",
+      "fallback": "The way into your account changed.",
+      "suffix": "Not you? Sign in and review your sign-in methods."
+    },
+    "invoice_ready": {
+      "title": "Your invoice is ready",
+      "tax_invoice_receipt": "Tax invoice/receipt",
+      "coupon_receipt": "Receipt",
+      "credit_note": "Credit note",
+      "body": "{document} {number} for order {ref} is ready to download on the order page.",
+      "body_no_ref": "{document} {number} is ready to download on the order page."
     }
   }
 }

@@ -2,6 +2,65 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## W13 (הועבר מ-STATE.md ב-W14, לשמירה על תקרת 300 שורות)
+
+**W13 - DONE (05.10.2026): ACCESSIBILITY IS 5568. רוב הבריף היה קיים ונמדד; שישה
+פגמים נמדדו ותוקנו בקוד, אחד מהם פגם פריסה גלוי בכל דף נייד. axe (WCAG 2.0/2.1 A+AA)
+אפס הפרות על 21 מסלולים ציבוריים בשני ויופורטים, על עמוד המוצר, על הסל והקופה הזרועים
+ועל 16 מסלולי /account מחוברים. parity home 7.92% / 9.03% / 4.16%, product 4.80% /
+4.39% / 2.46% PASS ב-380 / 768 / 1440.** `pwd` אומת, HEAD בהגעה `9d5da2fac`, עץ נקי.
+W13 לא הופיע ב-STATE.md, ב-BACKLOG או ב-`git log -20`. **מה כבר היה (נמדד):** קישור
+דילוג (`SkipLink`) ראשון בכל שש ה-layouts עם `main#main-content tabIndex=-1` (ל-(auth)
+אין header חוזר ואין מה לדלג); `:focus-visible` גלובלי (צהוב 3px + צל כהה 6px);
+`prefers-reduced-motion` גלובלי; תפריטי החשבון והאזור עם Enter/Space/חצים/Escape
+והחזרת פוקוס; מגירת הסל עם מלכודת Tab; סליידר ה-hero נעצר ב-focus ונקודותיו כפתורים
+עם תווית עברית; אפס `aria-label` לטיני ב-src; טופס הקופה 13 `aria-invalid`, 12
+`aria-describedby`, 13 `role="alert"`; הצהרת נגישות ב-`/accessibility` (ת"י 5568 רמה
+AA, החוק והתקנות, מה הונגש, מגבלות, פנייה ב-support@ ובטופס, תאריך) מקושרת מהפוטר עם
+טסט תוכן ב-`legal-pages.test.ts`; `e2e/a11y.spec.ts` (axe על 19 מסלולים) ו-
+`e2e/a11y-authenticated.spec.ts` על /account (16/16 ירוק מול השרת). ניגודיות על
+`#fed700`: axe ירוק, הדיו על הצהוב `#333e48`. **מה נמדד שבור ותוקן:** (1) **סרגל
+הטאבים התחתון היה ברוחב 199px במקום 390 בכל דף נייד**: `inset-inline-0` אינו utility של
+Tailwind v4 (אפס כללים ב-CSS הבנוי), ה-nav ה-fixed התכווץ לתוכנו והקישורים נמדדו 32px
+רוחב. תוקן ל-`inset-x-0` (סימטרי, RTL-safe) + `w-full` על הקישור; הטסט עודכן. (2)
+**מגירת הקטגוריות (`aria-modal`) בלי מלכודת Tab**: Tab שלישי מהקישור האחרון נחת על
+ה-header מאחורי ה-scrim. נוספה מלכודת כמו ב-CartDrawer + טסט ב-a11y.spec (Tab×40,
+Shift+Tab×5, Escape מחזיר פוקוס). (3) **שגיאות טופסי ההתחברות בלי הכרזה**: 10 הודעות
+אדומות ב-(auth) (login, signup, forgot, reset, OTP, MFA, passkey) ללא `role="alert"`;
+נוסף. (4) **`/checkout` לראשון-מבקר החזיר 200 עם `meta http-equiv=refresh`
+`content="1;url=/cart"`** (ה-`redirect()` של Next בתוך render מוזרם), axe critical
+`meta-refresh`. תוקן ב-`proxy.ts`: GET ל-`/checkout` בלי משתמש ובלי עוגיית אורח (אין
+שורת סל) מקבל 307 אמיתי; אורח עם עוגייה נשאר בהכרעת הדף. נמדד: `curl /checkout` 307 ל-
+/cart; checkout.spec (מצפה להגעה ל-/cart) נשאר תקף. (5) **מטרות מגע**: שער
+`touch-targets.spec.ts` היה אדום מאז W01 (אייקוני ה-header נמדדו 23px) ולא רץ באף
+פריט. נמדד ב-390 על שבעה דפים: 16px wishlist, 20-24px שורת השיתוף והשאלה, 28px "הוסף
+לסל" בכרטיסי related, 16-18px קישורי קטגוריה בכרטיסים, 16px "שכחתם סיסמה", 20-22px
+פירורי לחם. תוקן בלי להזיז פיקסל: `.tap-area` (pseudo-element שמגדיל hit box ל-44, או
+36/24 בשורות צפופות) ב-globals.css; `.p_con__category` ל-inline-block (24); פירורי לחם
+min 24×24; אייקוני ה-header: ה-pseudo גדל לחצי המרווח (42.7 בנייד, 44 ב-xl) כי בנייד
+ה-pitch הוא 42px ו-44 היה חופף לשכן. (6) **השער עצמו מדד paint ולא hit area**: נכתב
+מחדש למדידת `elementFromPoint` מהמרכז החוצה (pseudo-elements נספרים, כיסוי נתפס), שישה
+מסלולים + מוצר, רצפה 24 לכל פקד (2.5.8 AA) ו-44 לפקדים ראשיים (אייקוני header 40
+בנייד, מתועד), ההסכמה נכתבת כעוגייה לפני הניווט (לחיצה על server action בתוך מדידה
+רצה נגד ה-reload). 99 passed / 3 skipped בשני הפרויקטים. **החלטות שהתקבלו לבד:** (א)
+44px לפקדים ראשיים בלבד: ת"י 5568 = WCAG 2.0 AA ללא קריטריון גודל מטרה, 44 הוא AAA
+(2.5.5), והכרטיסים בגאומטריית Electro לא מגיעים ל-44 בלי לשבור parity; רצפת 24
+(2.5.8) לכולם. (ב) אייקוני ה-header בנייד 42×46 ולא 44: pitch של 42px, מתועד בקוד
+ובשער. (ג) `/checkout` ל-identity-less בלבד ב-proxy, לא מצב "עגלה ריקה" בדף
+(checkout.spec מצמיד את ההפניה). (ד) `globals.css` מכיל שלושה בלוקים כמעט זהים של
+focus/reduced-motion (D14 מוזג שלוש פעמים); לא נגעתי, מחוץ לפריט. (ה)
+`ProductCard.tsx` שורה 384 מחשב `Math.round(Number(kenyon_price) * 100)` במסלול הכסף
+(float); מחוץ לפריט, נרשם כאן. (ו) push לענף כמו W01..W12. **שערים:** type-check 0;
+lint 0 (i18n 605/605, docs-index 282); test 637/637, 7634 עברו, 12 דולגו (env מנוקה,
+104 שמות); build exit 0 ארבע פעמים (`5H9vEfD8Rt4lT7b1cFAGH` אחרון, 3512, listener לפי
+cwd); e2e a11y+touch 99 passed / 3 skipped; a11y-authenticated customer 16/16; **השער
+בחזית**: home `--baseline='refs/ke_live_{width}.png'` 380: 7.92% PASS; 768: 9.03%
+PASS; 1440: 4.16% PASS (זהה ל-W12); product `--baseline='refs/electro_product_{width}.png'`
+380: 4.80% PASS; 768: 4.39% PASS; 1440: 2.46% PASS (W12: 4.76 / 4.17 / 2.44, פירורי
+הלחם גדלו ב-2px); שש שורות ב-`docs/UI-PARITY-REPORT.md` (`9d5da2fac-dirty`). **לא
+נעשה:** אין מיגרציה, אין שינוי DB/env/DNS/Vercel, אין מחיקה, אין שדה חיפוש, אין
+בדיקת מורשה נגישות חיצונית (ההצהרה אומרת זאת במפורש).
+
 ## W12 (הועבר מ-STATE.md ב-W13, לשמירה על תקרת 300 שורות)
 
 **W12 - DONE (05.10.2026): SEO AND PERFORMANCE. כל מה שהבריף דורש היה קיים

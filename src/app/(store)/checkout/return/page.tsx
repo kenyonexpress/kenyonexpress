@@ -1,5 +1,6 @@
 import FirstPurchaseBanner from '@/components/checkout/FirstPurchaseBanner'
 import InvoiceDownloadLink from '@/components/checkout/InvoiceDownloadLink'
+import InstallPrompt from '@/components/pwa/InstallPrompt'
 import PostPurchasePushPrompt from '@/components/pwa/PostPurchasePushPrompt'
 import WhatsAppIcon from '@/components/shared/WhatsAppIcon'
 import {
@@ -224,7 +225,18 @@ async function CheckoutReturnBody({ searchParams }: Props) {
         <InvoiceDownloadLink orderId={order.id} />
 
         {(await isFirstPaidOrder(admin, order.id)) ? (
-          <FirstPurchaseBanner />
+          <>
+            <FirstPurchaseBanner />
+            {/*
+              W14: the install invitation, at the value moment ARCHITECTURE-PWA
+              §5.1 names (first paid order). Inline, under the first-purchase
+              banner, with no interaction gate: the purchase was the
+              interaction. On iOS it is the share-then-add hint instead; the
+              root layout's fixed banner is hidden on every /checkout path and
+              does not double up with this one.
+            */}
+            <InstallPrompt moment="first-purchase" />
+          </>
         ) : (
           <PostPurchasePushPrompt />
         )}

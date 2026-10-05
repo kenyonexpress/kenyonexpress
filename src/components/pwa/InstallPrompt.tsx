@@ -1,5 +1,7 @@
 'use client'
 
+import { t } from '@/lib/i18n/messages'
+import { readPlatform, wantsIosInstallHint } from '@/lib/pwa/platform'
 import { useEffect, useState } from 'react'
 
 /**
@@ -16,6 +18,28 @@ import { useEffect, useState } from 'react'
  *
  * A dismissal is remembered in localStorage. Re-asking every visit is how a
  * prompt gets ignored permanently, and there is no second chance after that.
+ *
+ * TWO MOMENTS, ONE COMPONENT (W14, 05.10.2026, ARCHITECTURE-PWA §5.1).
+ *
+ *   `browse`         The root layout's copy. Fixed to the bottom, after a
+ *                    real interaction, once per device. Hidden on every
+ *                    money and account path.
+ *   `first-purchase` The order confirmation's copy, rendered INLINE under
+ *                    the first-purchase banner and only when the server said
+ *                    this was the customer's first paid order. The purchase
+ *                    IS the interaction, so there is no scroll gate; and the
+ *                    path rule does not apply, because the order is already
+ *                    paid and there is nothing left on the page to cover.
+ *                    It ignores the browse moment's "shown once" flag but
+ *                    honours an explicit "not now": a banner scrolled past
+ *                    on a category page is not an answer, a pressed button
+ *                    is.
+ *
+ * iOS HAS NO `beforeinstallprompt`, so on an iPhone or iPad in a browser tab
+ * the same two moments show a hint instead of a button: share, then "Add to
+ * Home Screen". The hint is gated exactly like the banner (interaction, once,
+ * dismissal) and is never shown inside the installed app, which
+ * `lib/pwa/platform` decides.
  */
 
 const DISMISSED_KEY = 'ke:pwa-install-dismissed'
@@ -67,12 +91,17 @@ type InstallPromptEvent = Event & {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
 }
 
-export default function InstallPrompt() {
+export type InstallMoment = 'browse' | 'first-purchase'
+
+export default function InstallPrompt({ moment = 'browse' }: { moment?: InstallMoment }) {
   const [deferred, setDeferred] = useState<InstallPromptEvent | null>(null)
-  const [engaged, setEngaged] = useState(false)
+  const [ios, setIos] = useState(false)
+  const [engaged, setEngaged] = useState(moment === 'first-purchase')
 
   // The interaction gate. Registered once, torn down after the first signal.
+  // The purchase moment is already past it.
   useEffect(() => {
+    if (moment === 'first-purchase') return
     const onInteract = () => setEngaged(true)
     for (const type of INTERACTION_EVENTS) {
       window.addEventListener(type, onInteract, { once: true, passive: true })
@@ -80,7 +109,7 @@ export default function InstallPrompt() {
     return () => {
       for (const type of INTERACTION_EVENTS) window.removeEventListener(type, onInteract)
     }
-  }, [])
+  }, [moment])
 
   useEffect(() => {
     // `matchMedia` rather than a userAgent test: this is the only reliable way
@@ -88,8 +117,17 @@ export default function InstallPrompt() {
     // case offering to install it is nonsense.
     if (window.matchMedia('(display-mode: standalone)').matches) return
     if (localStorage.getItem(DISMISSED_KEY) === '1') return
-    if (localStorage.getItem(SHOWN_KEY) === '1') return
-    if (HIDDEN_ON.some((path) => window.location.pathname.startsWith(path))) return
+    if (moment === 'browse') {
+      if (localStorage.getItem(SHOWN_KEY) === '1') return
+      if (HIDDEN_ON.some((path) => window.location.pathname.startsWith(path))) return
+    }
+
+    const platform = readPlatform()
+    if (platform && wantsIosInstallHint(platform)) {
+      // No event will ever come on iOS. The hint stands in for the button.
+      setIos(true)
+      return
+    }
 
     const onPrompt = (event: Event) => {
       // Suppresses Chrome's own infobar. From here the offer is ours to make.
@@ -99,28 +137,33 @@ export default function InstallPrompt() {
 
     window.addEventListener('beforeinstallprompt', onPrompt)
     return () => window.removeEventListener('beforeinstallprompt', onPrompt)
-  }, [])
+  }, [moment])
 
-  const visible = deferred !== null && engaged
+  const visible = (deferred !== null || ios) && engaged
+  const fixed = moment === 'browse'
 
   // Reserve the space for exactly as long as the banner occupies it, and spend
   // the one showing this device gets. Both are keyed off the same moment
-  // because they are the same moment: the banner is on screen.
+  // because they are the same moment: the banner is on screen. The inline
+  // purchase-page copy occupies its own flow and reserves nothing.
   useEffect(() => {
     if (!visible) return
     localStorage.setItem(SHOWN_KEY, '1')
+    if (!fixed) return
     document.documentElement.setAttribute(RESERVE_ATTRIBUTE, '')
     return () => document.documentElement.removeAttribute(RESERVE_ATTRIBUTE)
-  }, [visible])
+  }, [visible, fixed])
 
   if (!visible) return null
 
   const dismiss = () => {
     localStorage.setItem(DISMISSED_KEY, '1')
     setDeferred(null)
+    setIos(false)
   }
 
   const install = async () => {
+    if (!deferred) return
     // The event is single-use: once prompted it cannot be prompted again, so
     // it is cleared regardless of the outcome.
     setDeferred(null)
@@ -132,41 +175,70 @@ export default function InstallPrompt() {
     }
   }
 
+  const title = ios
+    ? t('common.install_prompt.ios_title')
+    : moment === 'first-purchase'
+      ? t('common.install_prompt.first_purchase_title')
+      : t('common.install_prompt.title')
+  const body = ios
+    ? t('common.install_prompt.ios_body')
+    : moment === 'first-purchase'
+      ? t('common.install_prompt.first_purchase_body')
+      : t('common.install_prompt.body')
+
+  const frame = fixed
+    ? 'fixed inset-x-3 z-40 flex items-center gap-3 rounded-2xl border border-gray-200 bg-white p-3 shadow-lg sm:inset-x-auto sm:end-4 sm:max-w-sm'
+    : 'mx-auto mt-4 flex max-w-xl items-center gap-3 rounded-2xl border border-gray-200 bg-white p-4 text-start'
+
   return (
     // A section, not role="dialog". This is a passive suggestion the shopper
     // can ignore: it traps no focus and blocks nothing, and announcing it as a
     // dialog would promise assistive tech a modal that does not exist.
     <section
       dir="rtl"
-      aria-label="התקנת האפליקציה"
+      aria-label={t('common.install_prompt.label')}
+      data-moment={moment}
+      data-platform={ios ? 'ios' : 'prompt'}
       // `bottom` is the consent reservation plus the inset, not a fixed 12px.
       // Both banners are `fixed` at the bottom of the viewport, so with a
       // constant offset this one lands ON TOP of the consent banner whenever a
       // visitor has not answered it yet -- covering the two buttons they have
       // to press before anything else on the site works.
-      style={{ insetBlockEnd: 'calc(0.75rem + var(--reserve-consent))' }}
-      className="fixed inset-x-3 z-40 flex items-center gap-3 rounded-2xl border border-gray-200 bg-white p-3 shadow-lg sm:inset-x-auto sm:end-4 sm:max-w-sm"
+      style={fixed ? { insetBlockEnd: 'calc(0.75rem + var(--reserve-consent))' } : undefined}
+      className={frame}
     >
       <img src="/icons/icon-192.png" alt="" width={40} height={40} className="rounded-xl" />
       <div className="min-w-0 flex-1">
-        <p className="font-bold text-heading text-sm">התקינו את KenyonExpress</p>
-        <p className="text-gray-500 text-xs">גישה מהירה מהמסך הראשי, גם בלי דפדפן.</p>
+        <p className="font-bold text-heading text-sm">{title}</p>
+        <p className="text-gray-500 text-xs leading-relaxed">{body}</p>
       </div>
       <div className="flex shrink-0 items-center gap-1">
-        <button
-          type="button"
-          onClick={dismiss}
-          className="min-h-touch-min min-w-touch-min rounded-xl px-2 text-gray-500 text-xs transition-colors hover:text-gray-900 focus-visible:outline-2 focus-visible:outline-brand-dark focus-visible:outline-offset-2"
-        >
-          לא עכשיו
-        </button>
-        <button
-          type="button"
-          onClick={install}
-          className="min-h-touch-min rounded-xl bg-brand-primary px-4 font-bold text-heading text-xs transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-brand-dark focus-visible:outline-offset-2"
-        >
-          התקנה
-        </button>
+        {ios ? (
+          <button
+            type="button"
+            onClick={dismiss}
+            className="min-h-touch-min rounded-xl bg-brand-primary px-4 font-bold text-heading text-xs transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-brand-dark focus-visible:outline-offset-2"
+          >
+            {t('common.install_prompt.ios_got_it')}
+          </button>
+        ) : (
+          <>
+            <button
+              type="button"
+              onClick={dismiss}
+              className="min-h-touch-min min-w-touch-min rounded-xl px-2 text-gray-500 text-xs transition-colors hover:text-gray-900 focus-visible:outline-2 focus-visible:outline-brand-dark focus-visible:outline-offset-2"
+            >
+              {t('common.install_prompt.dismiss')}
+            </button>
+            <button
+              type="button"
+              onClick={install}
+              className="min-h-touch-min rounded-xl bg-brand-primary px-4 font-bold text-heading text-xs transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-brand-dark focus-visible:outline-offset-2"
+            >
+              {t('common.install_prompt.install')}
+            </button>
+          </>
+        )}
       </div>
     </section>
   )

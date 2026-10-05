@@ -1,4 +1,5 @@
 import { APP_PATHS, universalLink } from '@/lib/app/deep-links'
+import { t } from '@/lib/i18n/messages'
 
 /**
  * Push copy, in Hebrew, for every customer kind the outbox carries.
@@ -363,6 +364,86 @@ function backInStock(payload: Record<string, unknown>, siteUrl: string): PushCon
 }
 
 /**
+ * W14 (05.10.2026). THE TWO EVENTS THAT ARE NOT OUTBOX ROWS.
+ *
+ * The security alert and the invoice are the two customer events this file
+ * did not cover, and both for the same reason: neither goes through
+ * `notification_outbox`. The alert is mailed straight from the auth action
+ * (`server/auth/security-alert-send`), and the invoice is issued by its own
+ * queue (`server/payments/invoices`). The kinds below exist so that those two
+ * call sites can hand `pushOutboxRow` a row-shaped object with no `id`, and
+ * get the same copy, preference and delivery-log treatment as everything
+ * else -- WITHOUT widening `notification_outbox_kind_check`, which is a
+ * migration that cannot be applied from here.
+ *
+ * Neither kind is a preference kind, so `mayNotify` returns true for push: a
+ * customer cannot switch off being told that a passkey was added to their
+ * account, and the invoice is a legal document they are owed.
+ *
+ * The security alert carries NO LINK IN THE BODY and its click target is the
+ * security page, the same rule the mail follows (`securityAlert.noLink`): a
+ * notification telling somebody their password changed must not train them
+ * to tap a link in a notification telling them their password changed.
+ */
+function securityAlert(payload: Record<string, unknown>, siteUrl: string): PushContent | null {
+  const event = text(payload, 'event')
+  const headline =
+    event === 'password_changed'
+      ? t('securityAlert.passwordChangedHeadline')
+      : event === 'totp_enabled'
+        ? t('securityAlert.totpEnabledHeadline')
+        : event === 'passkey_added'
+          ? t('securityAlert.passkeyAddedHeadline')
+          : event === 'passkey_removed'
+            ? t('securityAlert.passkeyRemovedHeadline')
+            : t('push.security_alert.fallback')
+  return {
+    title: t('push.security_alert.title'),
+    body: `${headline}. ${t('push.security_alert.suffix')}`,
+    data: {
+      kind: 'security_alert',
+      event,
+      path: APP_PATHS.home,
+      ...links(siteUrl, '/account/security'),
+      // One notification per event type, so four quick passkey changes do not
+      // stack four cards; a different event is a different card.
+      tag: `security-alert:${event ?? 'unknown'}`,
+    },
+  }
+}
+
+function invoiceReady(payload: Record<string, unknown>, siteUrl: string): PushContent | null {
+  const number = text(payload, 'document_number')
+  if (!number) return null
+  const orderId = text(payload, 'order_id')
+  const documentType = text(payload, 'document_type')
+  const documentName =
+    documentType === 'coupon_receipt'
+      ? t('push.invoice_ready.coupon_receipt')
+      : documentType === 'credit_note'
+        ? t('push.invoice_ready.credit_note')
+        : t('push.invoice_ready.tax_invoice_receipt')
+  const ref = text(payload, 'order_ref') ?? (orderId ? orderId.slice(0, 8).toUpperCase() : null)
+  const body = (ref ? t('push.invoice_ready.body') : t('push.invoice_ready.body_no_ref'))
+    .replace('{document}', documentName)
+    .replace('{number}', number)
+    .replace('{ref}', ref ?? '')
+  return {
+    title: t('push.invoice_ready.title'),
+    body,
+    data: {
+      kind: 'invoice_ready',
+      path: orderId ? APP_PATHS.order(orderId) : APP_PATHS.home,
+      ...links(siteUrl, orderPagePath(payload)),
+      order_id: orderId,
+      document_number: number,
+      document_type: documentType,
+      tag: `invoice-ready:${number}`,
+    },
+  }
+}
+
+/**
  * Returns `null` for every kind that owes no push. The caller must treat that
  * as a settled state, not as a failure to retry.
  */
@@ -394,6 +475,10 @@ export function buildPushContent(
       return priceDrop(payload, siteUrl)
     case 'back_in_stock':
       return backInStock(payload, siteUrl)
+    case 'security_alert':
+      return securityAlert(payload, siteUrl)
+    case 'invoice_ready':
+      return invoiceReady(payload, siteUrl)
     default:
       return null
   }
@@ -412,4 +497,6 @@ export const PUSHABLE_KINDS = [
   'order_shipped',
   'price_drop',
   'back_in_stock',
+  'security_alert',
+  'invoice_ready',
 ] as const

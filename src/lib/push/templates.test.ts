@@ -50,6 +50,8 @@ describe('buildPushContent gating', () => {
       'order_shipped',
       'price_drop',
       'back_in_stock',
+      'security_alert',
+      'invoice_ready',
     ])
     for (const kind of PUSHABLE_KINDS) {
       expect(buildPushContent(kind, {}, SITE)).not.toBeUndefined()
@@ -72,6 +74,9 @@ describe('buildPushContent gating', () => {
       saved_agorot: 2000,
       now_agorot: 1500,
       vouchers: [{ id: 'v1', product_name: 'עיסוי' }],
+      document_number: '20260001',
+      document_type: 'tax_invoice_receipt',
+      event: 'password_changed',
     }
     for (const kind of PUSHABLE_KINDS) {
       const content = buildPushContent(kind, rich, SITE)
@@ -274,5 +279,53 @@ describe('cashback_credited', () => {
     expect(
       buildPushContent('cashback_credited', { amount_agorot: 100, order_id: 'o1' }, SITE)?.data.url,
     ).toBe('/account/orders/o1')
+  })
+})
+
+describe('W14: the two kinds that never pass through the outbox', () => {
+  it('security_alert names the event, targets the security page and carries no link in the body', () => {
+    const content = buildPushContent('security_alert', { event: 'passkey_added' }, SITE)
+    expect(content).not.toBeNull()
+    expect(content?.title).toBe('התראת אבטחה בחשבון שלך')
+    expect(content?.body).toContain('נוסף מפתח כניסה')
+    expect(content?.body).not.toMatch(/https?:/)
+    expect(content?.data.url).toBe('/account/security')
+    expect(content?.data.tag).toBe('security-alert:passkey_added')
+  })
+
+  it('security_alert still fires, with a generic line, for an event it has no copy for', () => {
+    const content = buildPushContent('security_alert', { event: 'something_new' }, SITE)
+    expect(content?.body).toContain('אמצעי הכניסה לחשבון שלך השתנו')
+  })
+
+  it('invoice_ready names the document and number and opens the order page', () => {
+    const content = buildPushContent(
+      'invoice_ready',
+      {
+        order_id: 'o1',
+        order_ref: 'ORDER1',
+        document_number: '20260001',
+        document_type: 'tax_invoice_receipt',
+      },
+      SITE,
+    )
+    expect(content?.title).toBe('החשבונית שלך מוכנה')
+    expect(content?.body).toContain('חשבונית מס/קבלה 20260001')
+    expect(content?.body).toContain('ORDER1')
+    expect(content?.data.url).toBe('/account/orders/o1')
+    expect(content?.data.tag).toBe('invoice-ready:20260001')
+  })
+
+  it('invoice_ready owes nothing without a document number: there is nothing ready', () => {
+    expect(buildPushContent('invoice_ready', { order_id: 'o1' }, SITE)).toBeNull()
+  })
+
+  it('invoice_ready calls a credit note a credit note', () => {
+    const content = buildPushContent(
+      'invoice_ready',
+      { order_id: 'o1', document_number: 'CN-1', document_type: 'credit_note' },
+      SITE,
+    )
+    expect(content?.body).toContain('חשבונית זיכוי CN-1')
   })
 })

@@ -49,7 +49,23 @@ beforeEach(() => {
   })) as unknown as typeof window.matchMedia)
 })
 
-afterEach(() => vi.unstubAllGlobals())
+afterEach(() => {
+  vi.unstubAllGlobals()
+  window.history.replaceState({}, '', '/')
+})
+
+const IPHONE_UA =
+  'Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Mobile/15E148 Safari/604.1'
+
+function pretendIphone(standalone = false) {
+  vi.stubGlobal('navigator', {
+    ...navigator,
+    userAgent: IPHONE_UA,
+    platform: 'iPhone',
+    maxTouchPoints: 5,
+    standalone,
+  })
+}
 
 describe('InstallPrompt', () => {
   it('stays hidden until the visitor has actually done something', () => {
@@ -129,5 +145,89 @@ describe('InstallPrompt', () => {
       expect(button.className).toContain('min-h-touch-min')
       expect(button.className).toContain('focus-visible:outline-2')
     }
+  })
+})
+
+describe('InstallPrompt, the first-purchase moment (W14)', () => {
+  it('appears on the confirmation page with no interaction, inline, and reserves nothing', () => {
+    window.history.replaceState({}, '', '/checkout/return?order_id=o1')
+    render(<InstallPrompt moment="first-purchase" />)
+    fireInstallPrompt()
+    const region = screen.getByRole('region', { name: 'התקנת האפליקציה' })
+    expect(region.getAttribute('data-moment')).toBe('first-purchase')
+    expect(region.className).not.toContain('fixed')
+    expect(region.textContent).toContain('ההזמנה הראשונה הושלמה')
+    expect(document.documentElement.hasAttribute('data-pwa-prompt')).toBe(false)
+    expect(localStorage.getItem('ke:pwa-install-shown')).toBe('1')
+  })
+
+  it('is not stopped by the browse banner having been shown once, but is by a pressed "not now"', () => {
+    localStorage.setItem('ke:pwa-install-shown', '1')
+    const { unmount } = render(<InstallPrompt moment="first-purchase" />)
+    fireInstallPrompt()
+    expect(screen.getByRole('region', { name: 'התקנת האפליקציה' })).toBeTruthy()
+    unmount()
+
+    localStorage.setItem('ke:pwa-install-dismissed', '1')
+    render(<InstallPrompt moment="first-purchase" />)
+    fireInstallPrompt()
+    expect(screen.queryByRole('region', { name: 'התקנת האפליקציה' })).toBeNull()
+  })
+
+  it('the browse banner still stays off the confirmation page', () => {
+    window.history.replaceState({}, '', '/checkout/return?order_id=o1')
+    render(<InstallPrompt />)
+    fireInstallPrompt()
+    act(() => {
+      window.dispatchEvent(new Event('scroll'))
+    })
+    expect(screen.queryByRole('region', { name: 'התקנת האפליקציה' })).toBeNull()
+  })
+})
+
+describe('InstallPrompt on iOS (W14)', () => {
+  it('shows the share-then-add hint after an interaction, with no install event ever firing', () => {
+    pretendIphone()
+    render(<InstallPrompt />)
+    expect(screen.queryByRole('region', { name: 'התקנת האפליקציה' })).toBeNull()
+    act(() => {
+      window.dispatchEvent(new Event('scroll'))
+    })
+    const region = screen.getByRole('region', { name: 'התקנת האפליקציה' })
+    expect(region.getAttribute('data-platform')).toBe('ios')
+    expect(region.textContent).toContain('הוסף למסך הבית')
+    expect(screen.queryByRole('button', { name: 'התקנה' })).toBeNull()
+    expect(screen.getByRole('button', { name: 'הבנתי' })).toBeTruthy()
+    expect(localStorage.getItem('ke:pwa-install-shown')).toBe('1')
+  })
+
+  it('"got it" is a dismissal: the hint does not come back', () => {
+    pretendIphone()
+    render(<InstallPrompt />)
+    act(() => {
+      window.dispatchEvent(new Event('scroll'))
+    })
+    act(() => {
+      screen.getByRole('button', { name: 'הבנתי' }).click()
+    })
+    expect(screen.queryByRole('region', { name: 'התקנת האפליקציה' })).toBeNull()
+    expect(localStorage.getItem('ke:pwa-install-dismissed')).toBe('1')
+  })
+
+  it('never inside the installed app', () => {
+    pretendIphone(true)
+    render(<InstallPrompt />)
+    act(() => {
+      window.dispatchEvent(new Event('scroll'))
+    })
+    expect(screen.queryByRole('region', { name: 'התקנת האפליקציה' })).toBeNull()
+  })
+
+  it('on the confirmation page too, inline', () => {
+    pretendIphone()
+    render(<InstallPrompt moment="first-purchase" />)
+    const region = screen.getByRole('region', { name: 'התקנת האפליקציה' })
+    expect(region.getAttribute('data-platform')).toBe('ios')
+    expect(region.className).not.toContain('fixed')
   })
 })

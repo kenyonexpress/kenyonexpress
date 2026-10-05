@@ -1,6 +1,8 @@
 'use client'
 
+import { t } from '@/lib/i18n/messages'
 import { urlBase64ToUint8Array, vapidPublicKey } from '@/lib/push/vapid'
+import { readPlatform, wantsIosInstallHint } from '@/lib/pwa/platform'
 import { removePushSubscription, savePushSubscription } from '@/server/actions/push'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -40,6 +42,15 @@ export default function PushOptIn() {
   // The device list under this card is server-rendered; a refresh after
   // either write is what makes this browser appear in it, or leave it.
   const router = useRouter()
+  // W14: an iPhone or iPad in a browser tab. There `PushManager` is absent by
+  // design and present once the site is on the home screen, so "unsupported"
+  // is the wrong word: the right one is the share-then-add hint.
+  const [iosTab, setIosTab] = useState(false)
+
+  useEffect(() => {
+    const platform = readPlatform()
+    setIosTab(platform !== null && wantsIosInstallHint(platform))
+  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -141,7 +152,16 @@ export default function PushOptIn() {
   return (
     <section className="account-card">
       <h2 className="account-card__title">התראות דחיפה</h2>
-      <p className="account-row__meta">{status === 'busy' ? COPY.checking : COPY[status]}</p>
+      <p
+        className="account-row__meta"
+        data-ios-hint={status === 'unsupported' && iosTab ? '' : undefined}
+      >
+        {status === 'busy'
+          ? COPY.checking
+          : status === 'unsupported' && iosTab
+            ? t('pushOptIn.ios_hint')
+            : COPY[status]}
+      </p>
       {error && (
         <p className="account-row__meta" role="alert">
           {error}

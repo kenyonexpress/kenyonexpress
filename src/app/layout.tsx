@@ -91,7 +91,8 @@ export const metadata: Metadata = {
   // icon, which on this site is a yellow banner.
   appleWebApp: {
     capable: true,
-    title: 'Kenyon',
+    // Matches the manifest's short_name; iOS prints this under the icon.
+    title: 'קניון',
     statusBarStyle: 'default',
     // One launch image per device size; without an exact match Safari shows
     // white. The table and the generator are in src/lib/pwa/splash.ts.
@@ -99,6 +100,14 @@ export const metadata: Metadata = {
   },
   icons: {
     apple: '/icons/apple-touch-icon.png',
+  },
+  // Next renders `appleWebApp.capable` as the standard `mobile-web-app-capable`
+  // tag, which Safari reads from iOS 17.4 and ignores before that. The
+  // apple-prefixed name is what every earlier iOS reads, and it is what
+  // decides whether a home-screen launch opens standalone or as a Safari tab.
+  // Measured by scripts/pwa-installability.mjs (W14, 05.10.2026).
+  other: {
+    'apple-mobile-web-app-capable': 'yes',
   },
 }
 

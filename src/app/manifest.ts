@@ -25,8 +25,11 @@ export default function manifest(): MetadataRoute.Manifest {
     // A stable identity for the installed app, independent of start_url, so a
     // later change to where the app opens does not read as a second app.
     id: '/',
-    name: 'KenyonExpress',
-    short_name: 'Kenyon',
+    // The name the launcher prints under the icon. Hebrew, because that is
+    // the language of every other word on the site (W14, 05.10.2026); the
+    // short form is what fits under a 48px icon.
+    name: 'קניון אקספרס',
+    short_name: 'קניון',
     description: 'קופונים ומוצרים מעסקים בישראל',
     start_url: '/',
     scope: '/',

@@ -51,6 +51,20 @@ describe('web app manifest', () => {
 
     expect(m.lang).toBe('he')
     expect(m.dir).toBe('rtl')
+    // The launcher label too (W14): a Latin name under the icon on a Hebrew
+    // phone is the one place the site would not be in its own language.
+    expect(m.name).toMatch(/[\u0590-\u05FF]/)
+    expect(m.short_name).toMatch(/[\u0590-\u05FF]/)
+    expect(m.short_name?.length ?? 99).toBeLessThanOrEqual(12)
+  })
+
+  it('declares the maskable icon as a 512 PNG and every icon file exists', () => {
+    for (const icon of manifest().icons ?? []) {
+      expect(existsSync(`public${icon.src}`), icon.src).toBe(true)
+      expect(icon.type).toBe('image/png')
+    }
+    const maskable = manifest().icons?.find((i) => i.purpose === 'maskable')
+    expect(maskable?.sizes).toBe('512x512')
   })
 
   it('starts at a bare URL, so the cached document is the one that is served', () => {

@@ -20,6 +20,7 @@ import { log } from '@/lib/observability/log'
 import { getPaymentProvider } from '@/lib/payments'
 import { readAmountAgorot, resolvePaymentMoneySchema } from '@/lib/payments/payment-money-columns'
 import type { CreateDocumentResult } from '@/lib/payments/types'
+import { pushOutboxRow } from '@/lib/push/dispatch'
 import { getInvoiceSettings } from '@/server/queries/invoice-settings'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
@@ -142,6 +143,8 @@ interface OrderInvoiceContext {
    * that decides the tax document must be the one the lines were built from.
    */
   productTypes: string[]
+  /** The account the order belongs to; the push leg of `invoice_ready` needs it. */
+  userId: string | null
   customer: { name: string | null; email: string | null; phone: string | null }
   transactionId: string | null
   /**
@@ -306,6 +309,7 @@ async function loadOrderContext(
         discountAgorot,
       }),
       productTypes: items.map((item) => item.product_type),
+      userId: order.user_id ?? null,
       customer: {
         name: customerName,
         email: customerRow?.email ?? null,
@@ -535,15 +539,22 @@ async function buildDocumentForRow(
   admin: AdminClient,
   row: InvoiceRow,
 ): Promise<
-  | { document: InvoiceDocument; transactionId: string | null; cardcomAccountId: string | null }
+  | {
+      document: InvoiceDocument
+      transactionId: string | null
+      cardcomAccountId: string | null
+      customerUserId: string | null
+    }
   | { error: string }
 > {
   if (row.document_type === 'credit_note') {
     const deal = await loadPaymentDeal(admin, row.payment_id)
+    const { userId: customerUserId, ...customer } = await loadCustomerForOrder(admin, row.order_id)
     return {
+      customerUserId,
       document: buildInvoiceDocument({
         documentType: 'credit_note',
-        customer: await loadCustomerForOrder(admin, row.order_id),
+        customer,
         lines: [
           {
             description: `זיכוי בגין הזמנה ${row.order_id.slice(0, 8)}`,
@@ -585,20 +596,26 @@ async function buildDocumentForRow(
     document,
     transactionId: loaded.context.transactionId,
     cardcomAccountId: loaded.context.cardcomAccountId,
+    customerUserId: loaded.context.userId,
   }
 }
 
 async function loadCustomerForOrder(
   admin: AdminClient,
   orderId: string,
-): Promise<{ name: string | null; email: string | null; phone: string | null }> {
+): Promise<{
+  name: string | null
+  email: string | null
+  phone: string | null
+  userId: string | null
+}> {
   const { data: order } = await admin
     .from('orders')
     .select('user_id')
     .eq('id', orderId)
     .maybeSingle()
   const userId = (order as { user_id: string } | null)?.user_id
-  if (!userId) return { name: null, email: null, phone: null }
+  if (!userId) return { name: null, email: null, phone: null, userId: null }
   const { data: profile } = await admin
     .from('profiles')
     .select('email, full_name, phone')
@@ -609,7 +626,12 @@ async function loadCustomerForOrder(
     full_name: string | null
     phone: string | null
   } | null
-  return { name: row?.full_name ?? null, email: row?.email ?? null, phone: row?.phone ?? null }
+  return {
+    name: row?.full_name ?? null,
+    email: row?.email ?? null,
+    phone: row?.phone ?? null,
+    userId,
+  }
 }
 
 async function loadPaymentDeal(
@@ -813,7 +835,7 @@ export async function issueInvoice(
   }
   if ('error' in built) return fail(built.error)
 
-  const { document, transactionId, cardcomAccountId } = built
+  const { document, transactionId, cardcomAccountId, customerUserId } = built
 
   // The document provider, chosen by INVOICE_PROVIDER and defaulting to
   // cardcom -- which is what this line used to do unconditionally. Who issues
@@ -885,6 +907,14 @@ export async function issueInvoice(
     mirrored: mirrored != null,
   })
 
+  await tryPushInvoiceReady(admin, {
+    orderId: row.order_id,
+    documentType: row.document_type,
+    documentNumber: result.documentNumber,
+    userId: customerUserId,
+    email: document.customer.email,
+  })
+
   return {
     ok: true,
     documentNumber: result.documentNumber,
@@ -893,6 +923,62 @@ export async function issueInvoice(
 }
 
 /** Rows the queue owes work on, oldest deadline first. */
+/**
+ * W14 (05.10.2026). "Your invoice is ready", pushed to every device the
+ * customer subscribed, the moment the provider hands back a document number.
+ *
+ * NOT AN OUTBOX ROW, for the reason `security-alert-send.ts` gives: the kind
+ * is not in `notification_outbox_kind_check`, and the invoice queue is its own
+ * retry loop with its own idempotency, so a second queue for the same event
+ * is a second place for it to be lost. `pushOutboxRow` with no `id` is the
+ * outbox-less send the delivery log already knows how to record.
+ *
+ * AFTER THE ROW IS MARKED ISSUED, NEVER BEFORE. The document exists at the
+ * provider whether or not this push goes; a push failure that un-issued the
+ * invoice would make the queue issue it again, and the provider would mint a
+ * second document for the same order. So this is fire-and-log: it cannot
+ * change the outcome, and it cannot throw past this line.
+ *
+ * The mail copy is the provider's own (`sendByEmail: true` above); this is
+ * only the lock-screen line that says the document is there.
+ */
+async function tryPushInvoiceReady(
+  admin: AdminClient,
+  input: {
+    orderId: string
+    documentType: InvoiceDocumentType
+    documentNumber: string
+    userId: string | null
+    email: string | null
+  },
+): Promise<void> {
+  if (!input.userId) return
+  try {
+    const result = await pushOutboxRow(
+      admin as never,
+      {
+        kind: 'invoice_ready',
+        payload: {
+          order_id: input.orderId,
+          document_number: input.documentNumber,
+          document_type: input.documentType,
+        },
+        user_id: input.userId,
+        recipient_email: input.email ?? '',
+      },
+      process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il',
+    )
+    if (result.outcome === 'retry') {
+      log.warn('invoices.push_retry', { orderId: input.orderId, reason: result.reason })
+    }
+  } catch (error) {
+    log.warn('invoices.push_threw', {
+      orderId: input.orderId,
+      reason: error instanceof Error ? error.message : 'unknown',
+    })
+  }
+}
+
 export async function loadDueInvoices(
   admin: AdminClient,
   limit: number,

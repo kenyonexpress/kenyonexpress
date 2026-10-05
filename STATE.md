@@ -1,67 +1,78 @@
-RESUME FROM: W14
-Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט W13 DONE: נגישות
-ת"י 5568; רוב הבריף היה קיים, שישה פגמים נמדדו ותוקנו, ביניהם סרגל טאבים ברוחב 199px
-ו-meta-refresh ב-/checkout; W12 הועבר לארכיון; RESUME FROM מצביע ל-W14, ואם אין
-W14 בתור, ההמשך הוא M02-c96)
+RESUME FROM: W15
+Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט W14 DONE: PWA ו-push;
+רוב הבריף היה קיים, חמישה פערים נמדדו ונבנו, שער התקנה חדש 30/30; W13 הועבר
+לארכיון; RESUME FROM מצביע ל-W15, ואם אין W15 בתור, ההמשך הוא M02-c96)
 
 ## המשך מ:
 
-**W13 - DONE (05.10.2026): ACCESSIBILITY IS 5568. רוב הבריף היה קיים ונמדד; שישה
-פגמים נמדדו ותוקנו בקוד, אחד מהם פגם פריסה גלוי בכל דף נייד. axe (WCAG 2.0/2.1 A+AA)
-אפס הפרות על 21 מסלולים ציבוריים בשני ויופורטים, על עמוד המוצר, על הסל והקופה הזרועים
-ועל 16 מסלולי /account מחוברים. parity home 7.92% / 9.03% / 4.16%, product 4.80% /
-4.39% / 2.46% PASS ב-380 / 768 / 1440.** `pwd` אומת, HEAD בהגעה `9d5da2fac`, עץ נקי.
-W13 לא הופיע ב-STATE.md, ב-BACKLOG או ב-`git log -20`. **מה כבר היה (נמדד):** קישור
-דילוג (`SkipLink`) ראשון בכל שש ה-layouts עם `main#main-content tabIndex=-1` (ל-(auth)
-אין header חוזר ואין מה לדלג); `:focus-visible` גלובלי (צהוב 3px + צל כהה 6px);
-`prefers-reduced-motion` גלובלי; תפריטי החשבון והאזור עם Enter/Space/חצים/Escape
-והחזרת פוקוס; מגירת הסל עם מלכודת Tab; סליידר ה-hero נעצר ב-focus ונקודותיו כפתורים
-עם תווית עברית; אפס `aria-label` לטיני ב-src; טופס הקופה 13 `aria-invalid`, 12
-`aria-describedby`, 13 `role="alert"`; הצהרת נגישות ב-`/accessibility` (ת"י 5568 רמה
-AA, החוק והתקנות, מה הונגש, מגבלות, פנייה ב-support@ ובטופס, תאריך) מקושרת מהפוטר עם
-טסט תוכן ב-`legal-pages.test.ts`; `e2e/a11y.spec.ts` (axe על 19 מסלולים) ו-
-`e2e/a11y-authenticated.spec.ts` על /account (16/16 ירוק מול השרת). ניגודיות על
-`#fed700`: axe ירוק, הדיו על הצהוב `#333e48`. **מה נמדד שבור ותוקן:** (1) **סרגל
-הטאבים התחתון היה ברוחב 199px במקום 390 בכל דף נייד**: `inset-inline-0` אינו utility של
-Tailwind v4 (אפס כללים ב-CSS הבנוי), ה-nav ה-fixed התכווץ לתוכנו והקישורים נמדדו 32px
-רוחב. תוקן ל-`inset-x-0` (סימטרי, RTL-safe) + `w-full` על הקישור; הטסט עודכן. (2)
-**מגירת הקטגוריות (`aria-modal`) בלי מלכודת Tab**: Tab שלישי מהקישור האחרון נחת על
-ה-header מאחורי ה-scrim. נוספה מלכודת כמו ב-CartDrawer + טסט ב-a11y.spec (Tab×40,
-Shift+Tab×5, Escape מחזיר פוקוס). (3) **שגיאות טופסי ההתחברות בלי הכרזה**: 10 הודעות
-אדומות ב-(auth) (login, signup, forgot, reset, OTP, MFA, passkey) ללא `role="alert"`;
-נוסף. (4) **`/checkout` לראשון-מבקר החזיר 200 עם `meta http-equiv=refresh`
-`content="1;url=/cart"`** (ה-`redirect()` של Next בתוך render מוזרם), axe critical
-`meta-refresh`. תוקן ב-`proxy.ts`: GET ל-`/checkout` בלי משתמש ובלי עוגיית אורח (אין
-שורת סל) מקבל 307 אמיתי; אורח עם עוגייה נשאר בהכרעת הדף. נמדד: `curl /checkout` 307 ל-
-/cart; checkout.spec (מצפה להגעה ל-/cart) נשאר תקף. (5) **מטרות מגע**: שער
-`touch-targets.spec.ts` היה אדום מאז W01 (אייקוני ה-header נמדדו 23px) ולא רץ באף
-פריט. נמדד ב-390 על שבעה דפים: 16px wishlist, 20-24px שורת השיתוף והשאלה, 28px "הוסף
-לסל" בכרטיסי related, 16-18px קישורי קטגוריה בכרטיסים, 16px "שכחתם סיסמה", 20-22px
-פירורי לחם. תוקן בלי להזיז פיקסל: `.tap-area` (pseudo-element שמגדיל hit box ל-44, או
-36/24 בשורות צפופות) ב-globals.css; `.p_con__category` ל-inline-block (24); פירורי לחם
-min 24×24; אייקוני ה-header: ה-pseudo גדל לחצי המרווח (42.7 בנייד, 44 ב-xl) כי בנייד
-ה-pitch הוא 42px ו-44 היה חופף לשכן. (6) **השער עצמו מדד paint ולא hit area**: נכתב
-מחדש למדידת `elementFromPoint` מהמרכז החוצה (pseudo-elements נספרים, כיסוי נתפס), שישה
-מסלולים + מוצר, רצפה 24 לכל פקד (2.5.8 AA) ו-44 לפקדים ראשיים (אייקוני header 40
-בנייד, מתועד), ההסכמה נכתבת כעוגייה לפני הניווט (לחיצה על server action בתוך מדידה
-רצה נגד ה-reload). 99 passed / 3 skipped בשני הפרויקטים. **החלטות שהתקבלו לבד:** (א)
-44px לפקדים ראשיים בלבד: ת"י 5568 = WCAG 2.0 AA ללא קריטריון גודל מטרה, 44 הוא AAA
-(2.5.5), והכרטיסים בגאומטריית Electro לא מגיעים ל-44 בלי לשבור parity; רצפת 24
-(2.5.8) לכולם. (ב) אייקוני ה-header בנייד 42×46 ולא 44: pitch של 42px, מתועד בקוד
-ובשער. (ג) `/checkout` ל-identity-less בלבד ב-proxy, לא מצב "עגלה ריקה" בדף
-(checkout.spec מצמיד את ההפניה). (ד) `globals.css` מכיל שלושה בלוקים כמעט זהים של
-focus/reduced-motion (D14 מוזג שלוש פעמים); לא נגעתי, מחוץ לפריט. (ה)
-`ProductCard.tsx` שורה 384 מחשב `Math.round(Number(kenyon_price) * 100)` במסלול הכסף
-(float); מחוץ לפריט, נרשם כאן. (ו) push לענף כמו W01..W12. **שערים:** type-check 0;
-lint 0 (i18n 605/605, docs-index 282); test 637/637, 7634 עברו, 12 דולגו (env מנוקה,
-104 שמות); build exit 0 ארבע פעמים (`5H9vEfD8Rt4lT7b1cFAGH` אחרון, 3512, listener לפי
-cwd); e2e a11y+touch 99 passed / 3 skipped; a11y-authenticated customer 16/16; **השער
-בחזית**: home `--baseline='refs/ke_live_{width}.png'` 380: 7.92% PASS; 768: 9.03%
-PASS; 1440: 4.16% PASS (זהה ל-W12); product `--baseline='refs/electro_product_{width}.png'`
-380: 4.80% PASS; 768: 4.39% PASS; 1440: 2.46% PASS (W12: 4.76 / 4.17 / 2.44, פירורי
-הלחם גדלו ב-2px); שש שורות ב-`docs/UI-PARITY-REPORT.md` (`9d5da2fac-dirty`). **לא
-נעשה:** אין מיגרציה, אין שינוי DB/env/DNS/Vercel, אין מחיקה, אין שדה חיפוש, אין
-בדיקת מורשה נגישות חיצונית (ההצהרה אומרת זאת במפורש).
+**W14 - DONE (05.10.2026): PWA AND PUSH. רוב הבריף היה קיים ונמדד; חמישה פערים
+נמדדו ונבנו. שער התקנה חדש `pnpm pwa:installable` 30/30 מול build נקי; parity home
+7.92% / 9.03% / 4.16%, product 4.80% / 4.39% / 2.46% PASS ב-380 / 768 / 1440 (זהה
+ל-W13, אין פיקסל שזז בדפדפן headless).** `pwd` אומת, HEAD בהגעה `a023a6e27`, עץ נקי.
+W14 לא הופיע ב-STATE.md, ב-BACKLOG או ב-`git log -20`. **מה כבר היה (נמדד):**
+`app/manifest.ts` כ-metadata route (id, start_url `/`, scope, standalone, lang he,
+dir rtl, theme/background מהטוקנים, שלושה shortcuts, אייקונים 192/512 `any` +
+‏512 `maskable` נפרד, כולם PNG בגודל המוצהר, נמדד מהקובץ); `public/sw.js` ידני
+(‏300 שורות, ‏`ke-v3`): cache-first ל-`/_next/static` ואייקונים, SWR לתמונות עם
+תקרה 60, network-first לניווט עם נפילה לעמוד שנראה ואז ל-`/offline`, אפס מגע
+ב-api/cart/checkout/account/admin, מאזיני `push` ו-`notificationclick` עם יעד
+same-origin בלבד; `/offline` סטטי בעברית; `ServiceWorkerRegistrar` ב-production
+בלבד אחרי `load`; `InstallPrompt` ב-layout (אירוע `beforeinstallprompt`, אחרי
+אינטראקציה, פעם אחת למכשיר, מוסתר במסלולי הכסף); ‏10 splash ל-iOS +
+‏`apple-touch-icon`; `push_subscriptions` (‏179 הוחלה) עם `endpoint` ייחודי,
+‏`user_id`, ‏`user_agent`, RLS select/delete own, service-role בלבד לכתיבה,
+‏`savePushSubscription` upsert על endpoint (מכשיר) עם rate limit; רשימת מכשירים
+‏`PushDevices` ב-/account/notifications; `PushOptIn` מבקש הרשאה מלחיצה בלבד;
+‏`PostPurchasePushPrompt` בדף האישור; 11 סוגי push ב-`lib/push/templates.ts` דרך
+‏`notification_outbox` עם לוג משלוחים (‏215 ממתינה). **מה נמדד חסר ונבנה:** (1)
+**שם המניפסט היה לטיני** (`KenyonExpress`/`Kenyon`): עכשיו `קניון אקספרס`/`קניון`,
+וגם `appleWebApp.title`; טסט מניפסט דורש עברית ו-short_name עד 12. (2) **אין באנר
+התקנה אחרי רכישה ראשונה** (ARCHITECTURE-PWA §5.1 דרש "value moment"): `InstallPrompt`
+קיבל `moment="first-purchase"`, מרונדר inline בדף האישור תחת `FirstPurchaseBanner`
+רק כש-`isFirstPaidOrder`, בלי שער אינטראקציה (הרכישה היא האינטראקציה), מתעלם מ-
+"הוצג פעם אחת" של הגלישה אך מכבד "לא עכשיו" מפורש; הבאנר הגלובלי נשאר מוסתר
+ב-/checkout. (3) **אין רמז iOS**: ל-iOS אין `beforeinstallprompt`; `lib/pwa/platform.ts`
+(iPhone/iPad כולל iPad שמתחזה ל-Mac לפי touch points, ולא בתוך האפליקציה המותקנת)
+ושני הרגעים מציגים "שיתוף ואז הוסף למסך הבית" עם "הבנתי" שהוא dismissal; ב-`PushOptIn`
+מצב "לא נתמך" באייפון בטאב מוחלף ברמז שהתראות עובדות רק מהמסך הראשי. (4) **אין
+push להתראת אבטחה**: הייתה מייל בלבד (`trySendSecurityAlert`); נוסף סוג `security_alert`
+בתבניות (כותרת, headline לפי אירוע מ-`securityAlert.*`, בלי קישור בגוף, יעד
+‏`/account/security`, tag לפי אירוע) ונשלח דרך `pushOutboxRow` בלי שורת outbox
+(ה-constraint `notification_outbox_kind_check` אינו מכיל אותו והרחבתו היא
+מיגרציה), לכל המכשירים (web + Expo), גם בלי מייל ובלי `RESEND_API_KEY`, לעולם
+לא חוסם את המייל. (5) **אין push "חשבונית מוכנה"**: `issueInvoice` שולח
+‏`invoice_ready` אחרי שהשורה סומנה issued (לעולם לא לפני, כדי שכשל push לא יגרום
+למסמך כפול), עם שם המסמך ומספרו, יעד דף ההזמנה; `userId` עובר דרך ה-context ולא
+בקריאה נוספת (ה-mock של הטסט מקצה תוצאות לפי טבלה). (6) **`apple-mobile-web-app-capable`
+לא היה מוגש**: Next מרנדר את `appleWebApp.capable` כ-`mobile-web-app-capable`
+התקני, ש-iOS לפני 17.4 מתעלם ממנו; נוסף ב-`metadata.other`, נמדד בשער. **Lighthouse
+PWA:** Lighthouse 13.5 שבריפו אין לו קטגוריית PWA (הוסרה ב-12; `installable`
+מופיע 0 פעמים ב-default-config) ולבדיקת ההתקנה של Chrome אין API headless; לכן
+נכתב `scripts/pwa-installability.mjs` שמודד כל דרישה ברמת הרשת (קישור מניפסט,
+שדות, start_url בתוך scope, display, שלושה אייקונים לפי IHDR, SW עם `fetch`+`push`,
+‏cache-control לא immutable, `/offline` 200 ועברי, apple meta, registrar בצ'אנק) ו-
+רץ 30/30 PASS על 3396 (listener לפי cwd). **החלטות שהתקבלו לבד:** (א) שני ה-push
+החדשים עוקפים את ה-outbox במקום מיגרציה ל-constraint; `mayNotify` מחזיר true
+לסוג שאינו preference kind, כלומר אי אפשר לכבות התראת אבטחה, וזה נכון. (ב) הרמז
+ל-iOS לא מזהה Safari דווקא: כל דפדפן ב-iOS עוטף WebKit ומציע "הוסף למסך הבית"
+מתפריט השיתוף שלו. (ג) `common.install_prompt.*`, `push.*`, `pushOptIn.*` בקטלוג
+(he+en, זהות מפתחות נבדקת), תקרת i18n ירדה 605 → 603. (ד) לא נגעתי בשרת הזר
+על 3311 (אותו checkout, סשן אחר); נמדד על 3396. (ה) push לענף כמו W01..W13.
+**שערים:** type-check 0; lint 0 (i18n 603/603, docs-index 282); test 638/638,
+7659 עברו, 12 דולגו (`env -i`, ה-harness מזריק VAPID ו-CARDCOM_* שמפילים שני
+טסטים גם על baseline); build exit 0 פעמיים (`rm -rf .next`); `pnpm pwa:installable`
+30/30; **השער בחזית**: home `--widths=380,768,1440 --baseline='refs/ke_live_{width}.png'`
+380: 7.92% PASS; 768: 9.03% PASS; 1440: 4.16% PASS; product
+`--baseline='refs/electro_product_{width}.png'` 380: 4.80% PASS; 768: 4.39% PASS;
+1440: 2.46% PASS; שש שורות ב-`docs/UI-PARITY-REPORT.md` (`a023a6e27-dirty`). **לא
+נעשה:** אין מיגרציה, אין שינוי DB/env/DNS/Vercel, אין מחיקה, אין שדה חיפוש; מפתחות
+VAPID בפרודקשן לא נבדקו (Sensitive), ולכן משלוח push חי לא נמדד, רק הקוד והטסטים.
+
+**W13 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
+ב-W14): נגישות ת"י 5568; רוב הבריף היה קיים, שישה פגמים נמדדו ותוקנו (סרגל טאבים
+199px, מלכודת Tab במגירת הקטגוריות, role=alert בטופסי auth, meta-refresh ב-/checkout,
+מטרות מגע, השער עצמו); axe אפס הפרות; parity home 7.92 / 9.03 / 4.16, product
+4.80 / 4.39 / 2.46 PASS.
 
 **W12 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
 ב-W13): SEO וביצועים; הכל היה קיים חוץ משלושה פגמים שנמדדו ותוקנו (twitter:title,

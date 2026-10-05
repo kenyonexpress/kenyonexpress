@@ -3,14 +3,21 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 const sendEmail = vi.hoisted(() => vi.fn())
 const siteUrl = vi.hoisted(() => vi.fn(() => 'https://kenyonexpress.co.il'))
 
+const pushOutboxRow = vi.hoisted(() => vi.fn())
+const createAdminClient = vi.hoisted(() => vi.fn(() => ({ tag: 'admin' })))
+
 vi.mock('@/lib/email/resend', () => ({ sendEmail }))
 vi.mock('@/lib/site-url', () => ({ siteUrl }))
+vi.mock('@/lib/push/dispatch', () => ({ pushOutboxRow }))
+vi.mock('@/lib/supabase/admin', () => ({ createAdminClient }))
 
 import { trySendSecurityAlert } from './security-alert-send'
 
 describe('trySendSecurityAlert', () => {
   beforeEach(() => {
     sendEmail.mockReset()
+    pushOutboxRow.mockReset()
+    pushOutboxRow.mockResolvedValue({ outcome: 'none' })
     process.env.RESEND_API_KEY = 're_test'
     sendEmail.mockResolvedValue({ ok: true, id: 'msg_1' })
   })
@@ -63,5 +70,36 @@ describe('trySendSecurityAlert', () => {
     await expect(
       trySendSecurityAlert({ email: 'a@b.co', event: 'passkey_removed', userId: 'u1' }),
     ).resolves.toBe(false)
+  })
+
+  it('W14: pushes the event to every subscribed device, outbox-less, even with no address and no Resend key', async () => {
+    // biome-ignore lint/performance/noDelete: the tested condition is absence
+    delete process.env.RESEND_API_KEY
+    await trySendSecurityAlert({ email: null, event: 'passkey_added', userId: 'u1' })
+    expect(pushOutboxRow).toHaveBeenCalledTimes(1)
+    const [, row, site] = pushOutboxRow.mock.calls[0] as [
+      unknown,
+      {
+        kind: string
+        user_id: string
+        recipient_email: string
+        payload: { event: string }
+        id?: string
+      },
+      string,
+    ]
+    expect(row.kind).toBe('security_alert')
+    expect(row.user_id).toBe('u1')
+    expect(row.payload.event).toBe('passkey_added')
+    expect(row.id).toBeUndefined()
+    expect(site).toBe('https://kenyonexpress.co.il')
+  })
+
+  it('W14: a push failure never stops the mail and never throws', async () => {
+    pushOutboxRow.mockRejectedValue(new Error('push service down'))
+    await expect(
+      trySendSecurityAlert({ email: 'a@b.co', event: 'password_changed', userId: 'u1' }),
+    ).resolves.toBe(true)
+    expect(sendEmail).toHaveBeenCalledTimes(1)
   })
 })

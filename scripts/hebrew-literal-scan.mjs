@@ -189,5 +189,10 @@ export function totalHebrewLiterals(files = scannedFiles()) {
  * (argued there). Its literals were operator copy that had been counted as
  * shopper copy since the scan began; nothing moved to or from the catalog.
  * 624 -> 606.
+ * 2026-10-05, W14: `InstallPrompt` moved its four strings (label, title,
+ * body, two buttons) to `common.install_prompt.*` and grew the first-purchase
+ * and iOS variants there; the two new push kinds (`security_alert`,
+ * `invoice_ready`) and the push opt-in's iOS hint were born in the catalog
+ * (`push.*`, `pushOptIn.*`). 605 -> 603.
  */
-export const HEBREW_LITERAL_CEILING = 605
+export const HEBREW_LITERAL_CEILING = 603

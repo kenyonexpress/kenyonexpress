@@ -67,6 +67,9 @@ const adminClient = {
   },
 }
 
+const pushOutboxRow = vi.hoisted(() => vi.fn(async () => ({ outcome: 'none' as const })))
+vi.mock('@/lib/push/dispatch', () => ({ pushOutboxRow }))
+
 const createDocument = vi.fn()
 vi.mock('@/lib/payments', () => ({
   getPaymentProvider: (accountId?: string | null) => ({
@@ -345,6 +348,62 @@ describe('issueInvoice', () => {
     vat_percent: 18,
     attempts: 0,
   }
+
+  it('W14: pushes "invoice ready" to the customer once the document number exists, outbox-less', async () => {
+    pushOutboxRow.mockClear()
+    scriptPaidOrder()
+    createDocument.mockResolvedValue({
+      success: true,
+      documentNumber: 'A-4471',
+      documentUrl: 'https://provider.example/doc.pdf',
+      failureCode: null,
+      failureMessage: null,
+      raw: { ok: true },
+    })
+
+    await issueInvoice(adminClient as never, row)
+    expect(pushOutboxRow).toHaveBeenCalledTimes(1)
+    const [, pushed] = pushOutboxRow.mock.calls[0] as unknown as [
+      unknown,
+      { kind: string; user_id: string; id?: string; payload: Record<string, unknown> },
+    ]
+    expect(pushed.kind).toBe('invoice_ready')
+    expect(pushed.user_id).toBe('user-1')
+    expect(pushed.id).toBeUndefined()
+    expect(pushed.payload).toMatchObject({
+      order_id: ORDER_ID,
+      document_number: 'A-4471',
+      document_type: 'tax_invoice_receipt',
+    })
+  })
+
+  it('W14: pushes nothing when the provider refuses, and a push failure cannot un-issue a document', async () => {
+    pushOutboxRow.mockClear()
+    scriptPaidOrder()
+    createDocument.mockResolvedValue({
+      success: false,
+      documentNumber: null,
+      documentUrl: null,
+      failureCode: 'E1',
+      failureMessage: 'nope',
+      raw: {},
+    })
+    await issueInvoice(adminClient as never, row)
+    expect(pushOutboxRow).not.toHaveBeenCalled()
+
+    pushOutboxRow.mockRejectedValueOnce(new Error('push service down'))
+    scriptPaidOrder()
+    createDocument.mockResolvedValue({
+      success: true,
+      documentNumber: 'A-4472',
+      documentUrl: null,
+      failureCode: null,
+      failureMessage: null,
+      raw: { ok: true },
+    })
+    const outcome = await issueInvoice(adminClient as never, row)
+    expect(outcome).toMatchObject({ ok: true, documentNumber: 'A-4472' })
+  })
 
   it('writes the document number onto the order, which had no writer before [55]', async () => {
     scriptPaidOrder()
