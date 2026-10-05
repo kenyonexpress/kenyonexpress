@@ -14,6 +14,7 @@ import { log } from '@/lib/observability/log'
 import { createClient } from '@/lib/supabase/server'
 import { listPasskeys } from '@/server/actions/passkeys'
 import { getAccountProfile, getWalletSummary } from '@/server/queries/account'
+import { getClubStanding } from '@/server/queries/club'
 import { unreadCount } from '@/server/queries/notifications'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
@@ -50,10 +51,20 @@ async function AccountSideNav() {
     redirect(`/login?next=${encodeURIComponent('/account')}`)
   }
 
-  const [profile, wallet, unread, passkeys] = await Promise.all([
+  const [profile, wallet, unread, club, passkeys] = await Promise.all([
     getAccountProfile(),
     getWalletSummary(),
     unreadCount(),
+    // The badge under the name (W07). Best-effort like the passkey read: a
+    // failed standing hides the badge and is already logged by `orFail`.
+    getClubStanding().catch((cause): null => {
+      if (!isPrerenderAbort(cause)) {
+        log.warn('club.nav_badge_threw', {
+          message: cause instanceof Error ? cause.message : String(cause),
+        })
+      }
+      return null
+    }),
     // Best-effort: the register-a-passkey nudge is a nice-to-have, not
     // something worth failing the whole side nav over.
     listPasskeys().catch((cause): Awaited<ReturnType<typeof listPasskeys>> => {
@@ -102,6 +113,7 @@ async function AccountSideNav() {
         fullName={profile?.fullName ?? null}
         email={profile?.email ?? user.email ?? ''}
         walletBalanceAgorot={wallet.balanceAgorot}
+        clubTier={club?.tier.id ?? null}
       />
     </div>
   )

@@ -1,6 +1,8 @@
 'use client'
 
+import { clubTierName } from '@/components/account/club-tier-name'
 import User from '@/components/icons/electro/User'
+import { type ClubTierId, isClubTierId } from '@/lib/club/tiers'
 import { t } from '@/lib/i18n/messages'
 import Link from 'next/link'
 import { useCallback, useEffect, useId, useRef, useState } from 'react'
@@ -31,11 +33,37 @@ import { useCallback, useEffect, useId, useRef, useState } from 'react'
  * on every prerendered route, and either would opt the subtree into dynamic
  * rendering under `cacheComponents`. A signed-in visitor who presses sign in
  * lands on /login, which already sends them to their account.
+ *
+ * THE CLUB TIER (W07) IS FETCHED, NOT READ. The first time the panel opens it
+ * asks `/api/account/club` once; a signed-out visitor gets `{ tier: null }`
+ * and sees the sign-in block exactly as before. A signed-in customer sees
+ * their tier badge and a link to the account instead of a sign-in prompt
+ * they do not need. The fetch happens on open, not on mount, so the header
+ * costs a visitor nothing until they ask for it; and it is a plain fetch to a
+ * same-origin route, so the component stays static and client-only.
  */
 export default function AccountMenu() {
   const [pinned, setPinned] = useState(false)
   const [hovered, setHovered] = useState(false)
   const open = pinned || hovered
+  const [tier, setTier] = useState<ClubTierId | null>(null)
+  const asked = useRef(false)
+
+  useEffect(() => {
+    if (!open || asked.current) return
+    asked.current = true
+    const controller = new AbortController()
+    fetch('/api/account/club', { credentials: 'same-origin', signal: controller.signal })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((body: { tier?: unknown } | null) => {
+        if (body && isClubTierId(body.tier)) setTier(body.tier)
+      })
+      .catch(() => {
+        // A failed read shows no badge; the sign-in block stays, which is the
+        // right thing for an unknown session.
+      })
+    return () => controller.abort()
+  }, [open])
   const wrapRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
   const menuId = useId()
@@ -107,27 +135,51 @@ export default function AccountMenu() {
       {open ? (
         <div id={menuId} dir="rtl" className="header-icon__menu">
           <div className="header-icon__menu-inner">
-            <div className="header-icon__sign-in">
-              <p>{t('nav.returningCustomer')}</p>
-              <div className="header-icon__sign-in-action">
-                <Link
-                  href="/login"
-                  data-account-item=""
-                  onClick={close}
-                  className="header-icon__sign-in-button"
-                >
-                  {t('auth.login')}
-                </Link>
+            {tier ? (
+              <div className="header-icon__club" data-testid="account-menu-club" data-tier={tier}>
+                <p>
+                  <span className="club-badge" data-tier={tier}>
+                    {clubTierName(tier)}
+                  </span>
+                </p>
+                <p>{t('club.menuTier').replace('{tier}', clubTierName(tier))}</p>
+                <div className="header-icon__sign-in-action">
+                  <Link
+                    href="/account"
+                    data-account-item=""
+                    onClick={close}
+                    className="header-icon__sign-in-button"
+                  >
+                    {t('club.menuLink')}
+                  </Link>
+                </div>
               </div>
-            </div>
-            <div className="header-icon__register">
-              <p>{t('nav.noAccountYet')}</p>
-              <div className="header-icon__register-action">
-                <Link href="/signup" data-account-item="" onClick={close}>
-                  {t('auth.signup')}
-                </Link>
-              </div>
-            </div>
+            ) : null}
+            {tier ? null : (
+              <>
+                <div className="header-icon__sign-in">
+                  <p>{t('nav.returningCustomer')}</p>
+                  <div className="header-icon__sign-in-action">
+                    <Link
+                      href="/login"
+                      data-account-item=""
+                      onClick={close}
+                      className="header-icon__sign-in-button"
+                    >
+                      {t('auth.login')}
+                    </Link>
+                  </div>
+                </div>
+                <div className="header-icon__register">
+                  <p>{t('nav.noAccountYet')}</p>
+                  <div className="header-icon__register-action">
+                    <Link href="/signup" data-account-item="" onClick={close}>
+                      {t('auth.signup')}
+                    </Link>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
       ) : null}

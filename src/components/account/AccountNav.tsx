@@ -1,6 +1,8 @@
 'use client'
 
+import { clubTierName } from '@/components/account/club-tier-name'
 import { formatIls } from '@/lib/account/format'
+import type { ClubTierId } from '@/lib/club/tiers'
 import { t } from '@/lib/i18n/messages'
 import type { Agorot } from '@/lib/money'
 import Link from 'next/link'
@@ -32,10 +34,13 @@ export default function AccountNav({
   fullName,
   email,
   walletBalanceAgorot,
+  clubTier = null,
 }: {
   fullName: string | null
   email: string
   walletBalanceAgorot: Agorot
+  /** The customer's club tier (W07); null when the standing could not be read. */
+  clubTier?: ClubTierId | null
 }) {
   const pathname = usePathname()
 
@@ -44,6 +49,17 @@ export default function AccountNav({
       <div className="account-nav__head">
         <p className="account-nav__name">{fullName || t('account.greeting')}</p>
         <p className="account-nav__email">{email}</p>
+        {clubTier ? (
+          <p className="account-nav__club">
+            <span
+              className="club-badge"
+              data-tier={clubTier}
+              aria-label={t('club.badge').replace('{tier}', clubTierName(clubTier))}
+            >
+              {clubTierName(clubTier)}
+            </span>
+          </p>
+        ) : null}
       </div>
       <ul className="account-nav__list">
         {ITEMS.map((item) => {

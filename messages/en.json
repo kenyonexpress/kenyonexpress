@@ -564,7 +564,10 @@
     "spend": "Purchases in the last 12 months: {amount}",
     "toNext": "{amount} more to reach {tier} ({percent} of the way)",
     "top": "You have reached the top tier",
-    "window": "The tier is based on purchases paid on the site in the last 12 months."
+    "window": "The tier is based on purchases paid on the site in the last 12 months.",
+    "badge": "Club tier: {tier}",
+    "menuTier": "Your club tier: {tier}",
+    "menuLink": "To your account"
   },
   "affiliate": {
     "title": "Affiliate programme",

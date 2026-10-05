@@ -1,5 +1,38 @@
 # Apply order
 
+## 2026-10-05: 251 written, not applied, independent of every other pending file
+
+`251_club_tiers.sql`. One new table (`club_tiers`, four seeded rows), one
+SELECT policy for `authenticated`, no function, no trigger beyond
+`set_updated_at` (010), two nullable columns on `orders` with CHECKs. Depends
+on 010, applied. Nothing existing is altered beyond the two ADD COLUMNs, so it
+has **no ordering constraint against any other pending file**. Apply it
+whenever. The application works on both sides of it (defaults in code, own
+statement for the snapshot).
+
+**What to check after applying.**
+
+```sql
+SELECT id, rank, min_agorot FROM public.club_tiers ORDER BY rank;
+SELECT policyname, cmd, roles FROM pg_policies WHERE tablename = 'club_tiers';
+SELECT grantee, privilege_type FROM information_schema.role_table_grants
+ WHERE table_name = 'club_tiers' AND grantee IN ('anon', 'authenticated');
+SELECT column_name, data_type FROM information_schema.columns
+ WHERE table_name = 'orders' AND column_name IN ('club_tier', 'club_spend_agorot');
+```
+
+Expect four rows `member 0 0`, `silver 1 100000`, `gold 2 300000`,
+`platinum 3 1000000`; one policy, `SELECT`, `{authenticated}`; exactly one
+grant row, `(authenticated, SELECT)`, nothing for `anon`; two columns, `text`
+and `bigint`. Then open `/admin/settings`: the club section reads "הספים
+נקראים מהטבלה" and the three fields are editable. The next checkout writes
+`club_tier` on its order; `SELECT club_tier, club_spend_agorot FROM orders
+ORDER BY created_at DESC LIMIT 1` shows it.
+
+**Reversal:** `DROP TABLE public.club_tiers; ALTER TABLE public.orders DROP
+COLUMN club_tier, DROP COLUMN club_spend_agorot;`. Orders already labelled
+lose the label; nothing else reads it.
+
 ## 2026-10-05: 250, AFTER 161 (applied), AFTER a corrected 162 if 162 is applied at all, independent of 227
 
 `250_expiry_reminders_schedule.sql` upserts three `cron.job` rows

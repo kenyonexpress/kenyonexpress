@@ -167,3 +167,36 @@
 .header-icon__sign-in-button:hover {
   opacity: 0.8;
 }
+
+/* The club tier block in the account panel (W07): the same 12px centred copy as
+   the sign-in block, so the panel is the same height whether it greets a
+   visitor or a member. */
+.header-icon__club p {
+  margin: 0;
+}
+
+/* The club badge: one chip, shown in the account panel, the account card and
+   the account nav. Tones are data-driven so the four tiers share one rule. */
+.club-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: #ebebeb;
+  color: #333e48;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 18px;
+}
+
+.club-badge[data-tier="silver"] {
+  background: #d9dde3;
+}
+
+.club-badge[data-tier="gold"] {
+  background: #fed700;
+}
+
+.club-badge[data-tier="platinum"] {
+  background: #333e48;
+  color: #fff;
+}

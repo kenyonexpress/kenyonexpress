@@ -7,6 +7,7 @@ import {
   clubWindowStart,
   sumClubSpend,
 } from '@/lib/club/tiers'
+import { readClubTiers } from '@/lib/club/tiers-config'
 import {
   moneyColumnProbe,
   orderMoneySelect,
@@ -41,6 +42,11 @@ import { createClient } from '@/lib/supabase/server'
  *
  * `orFail`, not `const { data }`: a failed read here must not render as
  * "member, ₪0" to a platinum customer with nothing in any log.
+ *
+ * THE THRESHOLDS COME FROM `club_tiers` (pending 251) through `readClubTiers`,
+ * which answers the compiled defaults when the table is absent or its rows do
+ * not validate, so this works on both schema states. The tier list is read
+ * once per standing and handed to the pure rule.
  */
 export async function getClubStanding(clock?: Date): Promise<ClubStanding | null> {
   const supabase = await createClient()
@@ -56,21 +62,40 @@ export async function getClubStanding(clock?: Date): Promise<ClubStanding | null
   // request-scoped, and `clock` exists for the test.
   const now = clock ?? new Date()
 
-  const admin = createAdminClient()
-  const generation = await resolveOrderGeneration(moneyColumnProbe(admin as never))
+  return computeClubStanding(createAdminClient(), user.id, now)
+}
+
+/**
+ * The standing of one customer, by id, on a client the caller already holds.
+ *
+ * This is the half `getClubStanding` shares with checkout, which snapshots the
+ * tier onto the order it has just created (`server/club/snapshot.ts`) and with
+ * the header's `/api/account/club` read. `userId` is the caller's business:
+ * `getClubStanding` takes it from the session, checkout from the order's
+ * buyer, and nothing else should call this with an id it did not verify.
+ */
+export async function computeClubStanding(
+  admin: ReturnType<typeof createAdminClient>,
+  userId: string,
+  now: Date,
+): Promise<ClubStanding> {
+  const [generation, tiersRead] = await Promise.all([
+    resolveOrderGeneration(moneyColumnProbe(admin as never)),
+    readClubTiers(admin as never),
+  ])
   const windowStart = clubWindowStart(now)
 
   const rows = orFail(
     await admin
       .from('orders')
       .select(`status, paid_at, created_at, ${orderMoneySelect(generation)}`)
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .is('deleted_at', null)
       .in('status', [...CLUB_SPEND_STATUSES])
       .gte('created_at', windowStart)
       .limit(1000),
     'club.spend_read_failed',
-    { userId: user.id },
+    { userId },
   )
 
   type SpendRow = Record<string, unknown> & {
@@ -87,5 +112,5 @@ export async function getClubStanding(clock?: Date): Promise<ClubStanding | null
     totalAgorot: agorot(readOrderMoney(generation, order).totalAgorot),
   }))
 
-  return clubStanding(sumClubSpend(spendRows, now), now)
+  return clubStanding(sumClubSpend(spendRows, now), now, tiersRead.tiers)
 }

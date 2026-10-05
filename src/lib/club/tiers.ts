@@ -27,6 +27,16 @@ import { type Agorot, agorot, divRoundHalfUp } from '@/lib/money'
  * THRESHOLDS ARE INTEGER AGOROT and the tier is a step function, so every tier
  * boundary is one integer comparison. Progress towards the next tier is a
  * half-up integer percentage through `divRoundHalfUp`; no float touches money.
+ *
+ * THE THRESHOLDS ARE CONFIGURATION, THE IDS ARE NOT (W07). The four ids are
+ * fixed here: the Hebrew names are `club.tiers.<id>` in messages/he.json and
+ * the admin form edits amounts, not tiers. The amounts come from the
+ * `club_tiers` table (pending 251) through `tiersFromRows`, which accepts the
+ * rows only if they are the four known ids with the floor at zero and strictly
+ * ascending, and otherwise answers the compiled defaults below, so a half-edited
+ * or missing table can never put a customer in no tier or in two. Every
+ * function here takes the tier list as a parameter and defaults to
+ * `CLUB_TIERS`, so the pure rule is unchanged for a caller that has no table.
  */
 
 export const CLUB_WINDOW_DAYS = 365
@@ -41,7 +51,14 @@ export const CLUB_SPEND_STATUSES = [
 
 export type ClubSpendStatus = (typeof CLUB_SPEND_STATUSES)[number]
 
-export type ClubTierId = 'member' | 'silver' | 'gold' | 'platinum'
+/** Ascending. Fixed: names are keyed by id in the message catalog. */
+export const CLUB_TIER_IDS = ['member', 'silver', 'gold', 'platinum'] as const
+
+export type ClubTierId = (typeof CLUB_TIER_IDS)[number]
+
+export function isClubTierId(value: unknown): value is ClubTierId {
+  return typeof value === 'string' && (CLUB_TIER_IDS as readonly string[]).includes(value)
+}
 
 export interface ClubTier {
   id: ClubTierId
@@ -52,13 +69,63 @@ export interface ClubTier {
 /** The floor: applies to everybody, including a customer with no orders. */
 export const CLUB_FLOOR_TIER: ClubTier = { id: 'member', minAgorot: agorot(0) }
 
-/** Ascending. The first entry is the floor. */
+/**
+ * The compiled defaults: what 251 seeds, and what every reader falls back to
+ * when the table is absent or its rows do not pass `tiersFromRows`. Ascending.
+ * The first entry is the floor.
+ */
 export const CLUB_TIERS: readonly ClubTier[] = [
   CLUB_FLOOR_TIER,
   { id: 'silver', minAgorot: agorot(100_000) }, // ₪1,000
   { id: 'gold', minAgorot: agorot(300_000) }, // ₪3,000
   { id: 'platinum', minAgorot: agorot(1_000_000) }, // ₪10,000
 ]
+
+/** One row of `club_tiers` as it comes back from the database. */
+export interface ClubTierRow {
+  id: string
+  min_agorot: number | string | null
+}
+
+export type TiersFromRows =
+  | { ok: true; tiers: readonly ClubTier[] }
+  | { ok: false; reason: string; tiers: readonly ClubTier[] }
+
+/**
+ * The thresholds the table holds, in the order the ids are declared, or the
+ * compiled defaults with a reason when the rows cannot be trusted: a missing
+ * or unknown id, a floor that is not zero, a non-integer or negative amount,
+ * or amounts that are not strictly ascending. `tiers` is always usable.
+ */
+export function tiersFromRows(rows: readonly ClubTierRow[] | null | undefined): TiersFromRows {
+  const fallback = (reason: string): TiersFromRows => ({ ok: false, reason, tiers: CLUB_TIERS })
+  if (!rows) return fallback('no rows')
+  const byId = new Map<string, ClubTierRow>()
+  for (const row of rows) {
+    if (!isClubTierId(row.id)) return fallback(`unknown tier id ${JSON.stringify(row.id)}`)
+    if (byId.has(row.id)) return fallback(`duplicate tier id ${row.id}`)
+    byId.set(row.id, row)
+  }
+  const tiers: ClubTier[] = []
+  for (const id of CLUB_TIER_IDS) {
+    const row = byId.get(id)
+    if (!row) return fallback(`missing tier ${id}`)
+    const value = typeof row.min_agorot === 'string' ? Number(row.min_agorot) : row.min_agorot
+    if (value === null || !Number.isSafeInteger(value) || value < 0) {
+      return fallback(`${id}: min_agorot is not a non-negative integer`)
+    }
+    tiers.push({ id, minAgorot: agorot(value) })
+  }
+  if (tiers[0]?.minAgorot !== 0) return fallback('member is not at 0')
+  for (let i = 1; i < tiers.length; i++) {
+    const below = tiers[i - 1]
+    const here = tiers[i]
+    if (!below || !here || here.minAgorot <= below.minAgorot) {
+      return fallback('thresholds are not strictly ascending')
+    }
+  }
+  return { ok: true, tiers }
+}
 
 export interface ClubStanding {
   tier: ClubTier
@@ -108,19 +175,26 @@ export function sumClubSpend(rows: readonly ClubOrderRow[], now: Date): Agorot {
   return agorot(total)
 }
 
-/** The tier a twelve-month spend earns. */
-export function clubTierForSpend(spendAgorot: Agorot): ClubTier {
-  let tier: ClubTier = CLUB_FLOOR_TIER
-  for (const candidate of CLUB_TIERS) {
+/** The tier a twelve-month spend earns, against `tiers` (ascending, floor first). */
+export function clubTierForSpend(
+  spendAgorot: Agorot,
+  tiers: readonly ClubTier[] = CLUB_TIERS,
+): ClubTier {
+  let tier: ClubTier = tiers[0] ?? CLUB_FLOOR_TIER
+  for (const candidate of tiers) {
     if (spendAgorot >= candidate.minAgorot) tier = candidate
   }
   return tier
 }
 
-export function clubStanding(spendAgorot: Agorot, now: Date): ClubStanding {
-  const tier = clubTierForSpend(spendAgorot)
-  const index = CLUB_TIERS.findIndex((t) => t.id === tier.id)
-  const nextTier = CLUB_TIERS[index + 1] ?? null
+export function clubStanding(
+  spendAgorot: Agorot,
+  now: Date,
+  tiers: readonly ClubTier[] = CLUB_TIERS,
+): ClubStanding {
+  const tier = clubTierForSpend(spendAgorot, tiers)
+  const index = tiers.findIndex((t) => t.id === tier.id)
+  const nextTier = tiers[index + 1] ?? null
   if (!nextTier) {
     return {
       tier,

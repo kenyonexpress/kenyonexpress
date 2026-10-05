@@ -826,6 +826,12 @@
   background: var(--account-yellow);
 }
 
+/* The tier badge under the name in the side nav (W07); the chip itself is
+   `.club-badge` in header-icons.css, shared with the header's account panel. */
+.account-nav__club {
+  margin: 6px 0 0;
+}
+
 /* Affiliate programme */
 .affiliate-terms {
   list-style: none;

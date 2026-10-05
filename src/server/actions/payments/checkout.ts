@@ -57,6 +57,7 @@ import {
   stampOrderAttribution,
   trackServerEvent,
 } from '@/server/analytics/track'
+import { snapshotClubTierOnOrder } from '@/server/club/snapshot'
 import { type SettlementLineInput, calculateSettlement } from '@/server/domain/orders/settlement'
 import { readBlocklistMatches, readVelocityCounts, scoreOrder } from '@/server/fraud/signals'
 import { finalizeOrder } from '@/server/payments/finalize'
@@ -823,6 +824,11 @@ async function runBeginCheckout(
   // an unattributed order, never an uncreated one. Decided at finalize, not
   // here (server/affiliates/convert.ts).
   await snapshotAffiliateAttribution(admin, { orderId: order.id, userId: user.id })
+
+  // The buyer's club tier at this moment (W07, pending 251), in its OWN
+  // statement for the same reason: display only, and a missing column costs
+  // an unlabelled order, never an uncreated one (server/club/snapshot.ts).
+  await snapshotClubTierOnOrder(admin, { orderId: order.id, userId: user.id, now })
 
   // The gift intent (108), written in its OWN statement and not added to the
   // insert above. This whole module exists because naming a column the hosted

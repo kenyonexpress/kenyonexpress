@@ -1042,6 +1042,7 @@ describe('the pending migration inventory', () => {
       // block refuses the apex host; rehearsed on production in BEGIN/ROLLBACK
       // on 05.10 (guard raised; schedules inserted and rolled back, 0 residue).
       '250_expiry_reminders_schedule.sql',
+      '251_club_tiers.sql',
       'preflight_162.sql',
       'preflight_184.sql',
       'preflight_250.sql',

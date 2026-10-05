@@ -1,5 +1,33 @@
 # `migrations/pending/`
 
+## 2026-10-05: 251 WRITTEN, not applied - דרגות המועדון: טבלת ספים נערכת באדמין + צילום הדרגה על ההזמנה
+
+‏`251_club_tiers.sql`. ‏W07. **מה כבר היה (Q15, 25.09, חי):** כלל הדרגה (פונקציית
+מדרגות על מה שהלקוח **שילם** באתר ב-365 הימים האחרונים, ‏`paid_at` עם נפילה
+ל-`created_at`, סטטוסים paid/partially_fulfilled/fulfilled/platform_settled),
+מחושב בזמן קריאה ב-`server/queries/club.ts` ומוצג בכרטיס ב-`/account`. אין
+דרגה מאוחסנת פר לקוח ואין עבודת לילה, בכוונה. **מה הקובץ מוסיף, ורק זה:**
+(1) ‏`club_tiers`: ארבע שורות לפי ה-id הקבועים בקוד (‏member/silver/gold/platinum,
+‏CHECK; השמות בעברית ב-`messages/he.json`), ‏`min_agorot bigint` = ההוצאה
+ב-12 חודשים שממנה הדרגה חלה, ‏`member` נעוץ ל-0 ב-CHECK, זריעה של הקבועים
+שבקוד (0 / 100000 / 300000 / 1000000) ב-`ON CONFLICT DO NOTHING` כדי שהרצה
+חוזרת לא תדרוס עריכה של מפעיל. RLS: ‏SELECT ל-`authenticated` בלבד, אפס
+מדיניות כתיבה, ‏REVOKE ALL ל-`anon` ול-`authenticated` ואז ‏GRANT SELECT.
+עולה (כסף < זהב < פלטינה) נאכף בפעולת האדמין (‏zod על שלוש השורות יחד) ונבדק
+שוב בקורא (‏`tiersFromRows` נופל לברירות המחדל ורושם לוג), לא בטריגר: פונקציה
+הייתה דורשת ביקורת EXECUTE משלה (143/158). (2) ‏`orders.club_tier text` +
+‏`orders.club_spend_agorot bigint`: הדרגה והסכום שהצדיק אותה **ברגע יצירת
+ההזמנה**, נכתבים בקופה בהצהרה **נפרדת** אחרי ה-INSERT (אותה צורה כמו עמודות
+המתנה: עמודה חסרה = הזמנה בלי תווית, לעולם לא הזמנה שלא נוצרה). תצוגה בלבד,
+שום הנחה לא קוראת אותן. **התנהגות לפני ההחלה:** ‏`club_tiers` חסרה (PGRST205)
+→ הקורא משתמש בברירות המחדל שבקוד ורושם ‏`club.tiers_table_missing` פעם אחת;
+‏`/admin/settings` מציג את ברירות המחדל לקריאה בלבד עם שם הקובץ; ‏`orders.club_tier`
+חסרה → ‏`checkout.club_tier_not_recorded` וההזמנה עומדת. נעוץ ב-
+‏`src/__tests__/club-tiers-migration.test.ts` (הזריעה = ‏`CLUB_TIERS`, רשימת
+ה-id זהה בשני ה-CHECK, אפס פונקציות, אפס grant כתיבה). **סדר:** אחרי 010
+(חלה); בלתי תלוי בכל קובץ ממתין אחר. **Reversal:** ‏`DROP TABLE public.club_tiers;
+ALTER TABLE public.orders DROP COLUMN club_tier, DROP COLUMN club_spend_agorot;`.
+
 ## 2026-10-05: 250 WRITTEN, not applied - השעון של תזכורות התפוגה: pg_cron + pg_net קוראים לשני נתיבי ה-cron ב-GET
 
 ‏`250_expiry_reminders_schedule.sql` + ‏`preflight_250.sql`. ‏W06. **מה כבר

@@ -2,6 +2,74 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## W06 (הועבר מ-STATE.md ב-W07, לשמירה על תקרת 300 שורות)
+
+**W06 - DONE (05.10.2026): EXPIRY REMINDERS. כל רגל של התזכורת הייתה קיימת
+וחיה חוץ מהשעון; נכתב השעון כמיגרציה ממתינה (250), נמצא ונמדד למה 162 לא
+הייתה עובדת, ונעוצו גבולות שאילתת הבחירה בבדיקות יחידה. parity 7.92% / 9.03% /
+4.16% PASS ב-380 / 768 / 1440.** `pwd` אומת, HEAD בהגעה `6e9838d4f`, עץ נקי.
+W06 לא הופיע ב-STATE.md, ב-BACKLOG או ב-`git log -20`.
+**מה כבר היה (נמדד מול פרודקשן `ixvwfbuvfxxsjiywhbbb`, קריאה בלבד דרך טוקן
+ה-CLI, 05.10):** `enqueue_expiring_voucher_notices(integer[])` חיה ומתאימה
+**יום מדויק** (`::date = today + bucket`; 227 הממתינה מרחיבה לחלון);
+`notification_outbox.dedupe_key` UNIQUE + ON CONFLICT DO NOTHING עם המפתח
+`voucher_expiring:<id>:<bucket>` = **פנקס התזכורות**, שורה אחת לשובר לדלי
+לעולם; `/api/cron/expire-vouchers` מריץ sweep → זיכוי → enqueue `[7, 1]`;
+`/api/cron/notifications` מנקז למייל עברי RTL דרך Resend (`voucher_expiring`
+ברשימת Q09), ל-web push לכל `push_subscriptions` של הלקוח (+Expo) ולפעמון,
+כל רגל מאחורי `mayNotify` מול `notification_preferences`; מתג "הכל
+באפליקציה" (`setEverythingInApp`) כותב בדיוק לטבלה הזאת (push + in_app לכל
+סוג אופציונלי, `voucher_expiring` כלול), כך שהתזכורת מכבדת אותו בלי שינוי
+קוד. pg_cron 1.6.4 + pg_net 0.20.0 מותקנים (161). **מה חסר:** אף אחד לא קורא
+לנתיבים: `cron.job` = `report_tables_nightly` בלבד; ל-outbox **מעולם לא
+הייתה** שורת `voucher_expiring`; 18 שוברים issued עם תפוגה, 0 בתוך 7 ימים,
+0 ממתינים ל-sweep; `push_subscriptions` 0, `notification_preferences` 0,
+`app_consent_events` לא קיימת (240 ממתינה).
+**שלושה פגמים ב-162 (נמדדו, לא תוקנו בקובץ):** (1) `net.http_post` מול נתיבים
+שמייצאים GET בלבד; אומת חי: `POST /api/cron/health` → **405**, `GET` → 401.
+(2) מחפשת `cron_secret`/`app_url`; ה-vault מחזיק **`CRON_SECRET`**
+ו-**`APP_BASE_URL`** (שמות בלבד נקראו). (3) `APP_BASE_URL` הוא ה-apex
+`https://kenyonexpress.co.il` שעונה **308** ל-`www` (נמדד ב-HEAD אחד), ובקשת
+bearer לא שורדת redirect. `cron.timezone` = GMT.
+**מה נבנה:** (1) `migrations/pending/250_expiry_reminders_schedule.sql` +
+`preflight_250.sql`: שלושה `cron.schedule` (upsert לפי שם): `ke-expire-vouchers`
+`15 23 * * *` (01:15/02:15 ישראל, אחרי חצות ירושלים כי החלון נספר בתאריכי
+ירושלים), `ke-notifications` `*/5`, `ke-cron-history-prune` (7 ימים); `net.http_get`
+עם bearer וכתובת מה-vault **בזמן ריצה** בשמות האמיתיים; בלוק DO שמסרב אם
+חסרות ההרחבות/הסודות או אם הכתובת היא ה-apex. **חזרה מול פרודקשן ב-BEGIN/ROLLBACK:**
+הקובץ המלא → ה-guard עלה (`P0001 ... apex host`); בלי ה-DO → שלושת הלוחות
+נכנסו ונקראו חזרה (`is_get`/`uses_vault`/`by_name` = true לשני ה-HTTP), ואז
+ROLLBACK; אחרי: `ke-%` = 0, `cron.job` = 1. (2) `src/lib/vouchers/expiry-reminders.ts`:
+מראה TS של כלל הבחירה (חלונות חצי-פתוחים לפי דלי, ימי לוח ירושלים דרך
+`toJerusalemDateInput`, `> now()`, issued בלבד, email לא NULL, מפתח dedupe) +
+26 בדיקות גבולות ב-`expiry-reminders.test.ts`: 8→∅, 7→7, 2→7, 1→1, 0→1,
+עבר→∅, `expires_at == now()`→∅, חצות ירושלים לעומת UTC, סוף שעון קיץ 25.10,
+סדר/כפילות/שלילי בדליים, אין שני דליים ללילה, מפתח זהה בכל לילה בחלון.
+(3) `src/__tests__/expiry-reminders-schedule.test.ts`: 250 קוראת GET ולא POST
+(בקוד, לא בהערות), אותו ביטוי cron כמו `scripts/cron-jobs.json` לכל נתיב,
+הנתיב קיים, vault בשמות `CRON_SECRET`/`APP_BASE_URL` ולא בשמות 162, אפס
+סוד מילולי, ה-guard על ה-apex; 227 נעוצה ל-`BETWEEN v_floor + 1 AND v_bucket`,
+`> now()`, תאריכי ירושלים ומפתח ה-dedupe; הנתיב קורא `p_buckets: [7, 1]`
+= `REMINDER_BUCKETS`. (4) רישום: README/APPLY-ORDER של pending, מלאי
+המיגרציות, `VOUCHER-LIFECYCLE.md` §5, BACKLOG סעיף 2.
+**החלטות שהתקבלו לבד:** (א) **אין טבלת פנקס חדשה**: ה-outbox עם dedupe_key
+UNIQUE לכל שובר-דלי הוא הפנקס, וטבלה שנייה היא שתי תשובות ל"האם נשלח".
+(ב) 162 **לא נערכה**: קובץ מאושר של אופיר ואולי בידי סשן מקביל; הפגמים
+תועדו ב-250, README, APPLY-ORDER, וסדר ההחלה דורש תיקון 162 לפני 250 (או
+250 במקומה לשני השמות). (ג) 250 מתזמנת רק את שתי העבודות של התזכורת
+(+prune), לא את 21 עבודות המניפסט. (ד) המייל נשאר דלוק לתזכורת גם תחת
+"הכל באפליקציה", לפי מדיניות Q09 (`EMAIL_POLICY_EXEMPT_KINDS`), המתג נוגע
+ב-push/in_app בלבד; לא שונה. (ה) `discarded-read-inventory` ירד ל-1 עבור
+`gifts.ts`: W05 תיקן קריאה אחת והשאיר את המלאי ישן (נפל ב-`pnpm test` מלא).
+**שערים:** `pnpm type-check` 0; `pnpm lint` נקי; `pnpm test` 621/621 קבצים,
+7477 עברו, 12 דולגו (תחת `env -u` ל-55 שמות); build exit 0 ב-33 שניות,
+`BUILD_ID` `Nc4CO4JONfKmz1CNiFbyY` (שלושת ה-`next-server` הזרים על
+4722/4824/3311 קיבלו שוב `.next` דרוס); **השער, בחזית, `--baseline`,
+`--widths=380,768,1440`, שלוש שורות ב-`docs/UI-PARITY-REPORT.md`
+(`6e9838d4f-dirty`): 380: 7.92% PASS; 768: 9.03% PASS; 1440: 4.16% PASS**,
+מול build מקומי על 3399 (pid אומת ב-cwd הזה). השרת נסגר.
+**לא נעשה:** אין `--apply`, אין שינוי vault/env/DNS/Vercel, אין מחיקה, אין עריכה של 162/227, אין UI.
+
 ## W05 (הועבר מ-STATE.md ב-W06, לשמירה על תקרת 300 שורות)
 
 **W05 - DONE (05.10.2026): GIFT AND TRANSFER. המנגנון היה קיים ברובו; נבנו

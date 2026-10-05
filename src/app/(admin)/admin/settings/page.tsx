@@ -1,9 +1,12 @@
+import { thresholdInputs } from '@/lib/admin/club-tiers-settings'
 import { canWriteSection } from '@/lib/admin/permissions'
 import { requireSection } from '@/lib/admin/rbac'
+import { readClubTiers } from '@/lib/club/tiers-config'
 import { formatDateTime } from '@/lib/i18n/format'
 import { agorot, agorotToIls } from '@/lib/money'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
+import ClubTiersForm from './ClubTiersForm'
 import ReferralSettingsForm from './ReferralSettingsForm'
 
 export const metadata = { title: 'הגדרות מערכת' }
@@ -49,6 +52,12 @@ export default async function AdminSettingsPage() {
     .maybeSingle()
   const row = (data as SettingsRow | null) ?? null
 
+  // The club thresholds (W07, pending 251), on the admin's own session: the
+  // table's policy is an authenticated SELECT. Absent table -> the compiled
+  // defaults, shown read-only with the file to apply.
+  const clubTiers = await readClubTiers(supabase as never)
+  const clubValues = thresholdInputs(clubTiers.tiers)
+
   const values = {
     is_active: row?.is_active ?? false,
     referrer_bonus_ils: ilsInput(row?.referrer_bonus_agorot),
@@ -87,6 +96,20 @@ export default async function AdminSettingsPage() {
         ) : (
           <ReferralSettingsForm values={values} readOnly={!canEdit} />
         )}
+      </section>
+
+      <section className="rounded-xl border border-gray-200 bg-white p-5">
+        <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2 border-b pb-2">
+          <h2 className="text-sm font-semibold text-gray-700">דרגות המועדון (club_tiers)</h2>
+          <span className="text-xs text-gray-500">
+            {clubTiers.tableMissing
+              ? 'הטבלה עדיין לא קיימת: מוצגים ספי ברירת המחדל מהקוד; להחיל את 251_club_tiers.sql'
+              : clubTiers.source === 'defaults'
+                ? `השורות בטבלה נדחו (${clubTiers.reason ?? ''}); מוצגים ספי ברירת המחדל`
+                : 'הספים נקראים מהטבלה'}
+          </span>
+        </div>
+        <ClubTiersForm values={clubValues} readOnly={!canEdit || clubTiers.tableMissing} />
       </section>
 
       <section className="rounded-xl border border-gray-200 bg-white p-5">

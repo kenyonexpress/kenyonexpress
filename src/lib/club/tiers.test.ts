@@ -3,10 +3,14 @@ import { describe, expect, it } from 'vitest'
 import {
   CLUB_SPEND_STATUSES,
   CLUB_TIERS,
+  CLUB_TIER_IDS,
+  type ClubTier,
   clubStanding,
   clubTierForSpend,
   clubWindowStart,
+  isClubTierId,
   sumClubSpend,
+  tiersFromRows,
 } from './tiers'
 
 const now = new Date('2026-09-25T12:00:00Z')
@@ -121,5 +125,111 @@ describe('club tiers: standing', () => {
     expect(standing.nextTier).toBeNull()
     expect(standing.remainingAgorot).toBe(0)
     expect(standing.progressPercent).toBe(100)
+  })
+})
+
+describe('club tiers: configurable thresholds (W07)', () => {
+  const custom: readonly ClubTier[] = [
+    { id: 'member', minAgorot: agorot(0) },
+    { id: 'silver', minAgorot: agorot(50_000) },
+    { id: 'gold', minAgorot: agorot(120_000) },
+    { id: 'platinum', minAgorot: agorot(500_000) },
+  ]
+
+  it('the ids are fixed and the defaults carry exactly those ids in order', () => {
+    expect(CLUB_TIERS.map((t) => t.id)).toEqual([...CLUB_TIER_IDS])
+    expect(isClubTierId('gold')).toBe(true)
+    expect(isClubTierId('diamond')).toBe(false)
+    expect(isClubTierId(null)).toBe(false)
+  })
+
+  it('the step function and the standing follow the tiers they are handed', () => {
+    expect(clubTierForSpend(agorot(119_999), custom).id).toBe('silver')
+    expect(clubTierForSpend(agorot(120_000), custom).id).toBe('gold')
+    // The same spend against the defaults is one tier lower.
+    expect(clubTierForSpend(agorot(120_000)).id).toBe('silver')
+    const standing = clubStanding(agorot(150_000), now, custom)
+    expect(standing.tier.id).toBe('gold')
+    expect(standing.nextTier?.id).toBe('platinum')
+    expect(standing.remainingAgorot).toBe(350_000)
+    // (150000 - 120000) * 100 / 380000 = 7.89 -> 8, half-up integer
+    expect(standing.progressPercent).toBe(8)
+  })
+
+  it('tiersFromRows accepts the four known rows, in any order, with text amounts', () => {
+    const parsed = tiersFromRows([
+      { id: 'platinum', min_agorot: '500000' },
+      { id: 'member', min_agorot: 0 },
+      { id: 'gold', min_agorot: 120_000 },
+      { id: 'silver', min_agorot: 50_000 },
+    ])
+    expect(parsed.ok).toBe(true)
+    expect(parsed.tiers).toEqual(custom)
+  })
+
+  it.each([
+    ['no rows', null],
+    ['an empty table', []],
+    ['a missing tier', [{ id: 'member', min_agorot: 0 }]],
+    [
+      'an unknown id',
+      [
+        { id: 'member', min_agorot: 0 },
+        { id: 'silver', min_agorot: 1 },
+        { id: 'gold', min_agorot: 2 },
+        { id: 'platinum', min_agorot: 3 },
+        { id: 'diamond', min_agorot: 4 },
+      ],
+    ],
+    [
+      'a floor above zero',
+      [
+        { id: 'member', min_agorot: 1 },
+        { id: 'silver', min_agorot: 2 },
+        { id: 'gold', min_agorot: 3 },
+        { id: 'platinum', min_agorot: 4 },
+      ],
+    ],
+    [
+      'thresholds that are not strictly ascending',
+      [
+        { id: 'member', min_agorot: 0 },
+        { id: 'silver', min_agorot: 200_000 },
+        { id: 'gold', min_agorot: 100_000 },
+        { id: 'platinum', min_agorot: 1_000_000 },
+      ],
+    ],
+    [
+      'an equal pair',
+      [
+        { id: 'member', min_agorot: 0 },
+        { id: 'silver', min_agorot: 100_000 },
+        { id: 'gold', min_agorot: 100_000 },
+        { id: 'platinum', min_agorot: 1_000_000 },
+      ],
+    ],
+    [
+      'a float',
+      [
+        { id: 'member', min_agorot: 0 },
+        { id: 'silver', min_agorot: 100_000.5 },
+        { id: 'gold', min_agorot: 300_000 },
+        { id: 'platinum', min_agorot: 1_000_000 },
+      ],
+    ],
+    [
+      'a duplicate id',
+      [
+        { id: 'member', min_agorot: 0 },
+        { id: 'silver', min_agorot: 100_000 },
+        { id: 'silver', min_agorot: 300_000 },
+        { id: 'platinum', min_agorot: 1_000_000 },
+      ],
+    ],
+  ])('tiersFromRows falls back to the defaults on %s, with a reason', (_label, rows) => {
+    const parsed = tiersFromRows(rows as never)
+    expect(parsed.ok).toBe(false)
+    if (!parsed.ok) expect(parsed.reason.length).toBeGreaterThan(0)
+    expect(parsed.tiers).toBe(CLUB_TIERS)
   })
 })
