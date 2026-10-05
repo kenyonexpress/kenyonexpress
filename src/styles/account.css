@@ -911,3 +911,16 @@
   color: var(--account-red);
   margin: 0 0 12px;
 }
+
+.affiliate-payout__history {
+  margin: 16px 0 8px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--account-ink);
+}
+
+.affiliate-payout__sent {
+  font-size: 14px;
+  color: var(--account-ink);
+  margin: 0;
+}

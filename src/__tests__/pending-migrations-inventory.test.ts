@@ -1043,6 +1043,11 @@ describe('the pending migration inventory', () => {
       // on 05.10 (guard raised; schedules inserted and rolled back, 0 residue).
       '250_expiry_reminders_schedule.sql',
       '251_club_tiers.sql',
+      // W08 (05.10): affiliate clicks and payout requests. Two new tables, one
+      // BEFORE INSERT trigger (invoker) that resolves the code and bumps the
+      // 010 counter, four SELECT policies, no client write. After 010 and
+      // 098 (applied); independent of 244 and of every other pending file.
+      '252_affiliate_clicks_payouts.sql',
       'preflight_162.sql',
       'preflight_184.sql',
       'preflight_250.sql',

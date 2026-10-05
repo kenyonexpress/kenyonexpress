@@ -1,5 +1,43 @@
 # Apply order
 
+## 2026-10-05: 252 written, not applied, independent of every other pending file
+
+`252_affiliate_clicks_payouts.sql`. Two new tables (`affiliate_clicks`,
+`affiliate_payout_requests`), one BEFORE INSERT trigger function
+(`fn_affiliate_click_before_insert`, SECURITY INVOKER, EXECUTE revoked from
+the client roles), four SELECT policies, no client write, `set_updated_at`
+(010) on the requests table. Depends on 010 and 098, both applied. Nothing
+existing is altered, so it has **no ordering constraint against any other
+pending file**, 244 included: neither table references the 244 tables. Apply
+it whenever. The application works on both sides of it (42P01 caught in the
+proxy, the account page, the request action and the admin tab).
+
+**What to check after applying.**
+
+```sql
+SELECT tablename, policyname, cmd FROM pg_policies
+ WHERE tablename IN ('affiliate_clicks', 'affiliate_payout_requests');
+SELECT table_name, grantee, privilege_type
+  FROM information_schema.role_table_grants
+ WHERE table_name IN ('affiliate_clicks', 'affiliate_payout_requests')
+   AND grantee IN ('anon', 'authenticated');
+SELECT grantee, privilege_type FROM information_schema.routine_privileges
+ WHERE routine_name = 'fn_affiliate_click_before_insert';
+```
+
+Expect four policies, all `SELECT`; only `(authenticated, SELECT)` rows from
+the grants query, nothing for `anon`; no `anon` or `authenticated` row for the
+function. Then open any product page with `?ref=<an approved affiliate's
+code>` in a fresh browser: `SELECT count(*) FROM affiliate_clicks` grows by
+one and that affiliate's `total_clicks` with it, and /account/affiliate shows
+the number under "כניסות דרך הקישור". A press on "בקשת משיכה" writes one
+`pending` row that /admin/affiliates?tab=payouts lists.
+
+**Reversal:** `DROP TABLE public.affiliate_payout_requests; DROP TABLE
+public.affiliate_clicks; DROP FUNCTION public.fn_affiliate_click_before_insert();`.
+Wallet entries already written stay, as ledger entries must; `total_clicks`
+keeps whatever it reached.
+
 ## 2026-10-05: 251 written, not applied, independent of every other pending file
 
 `251_club_tiers.sql`. One new table (`club_tiers`, four seeded rows), one

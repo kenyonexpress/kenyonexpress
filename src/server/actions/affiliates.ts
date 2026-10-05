@@ -7,6 +7,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit } from '@/lib/utils/rate-limit'
 import { recordUserSignals, requestSignals } from '@/server/affiliates/signals'
+import { getMyAffiliateStanding } from '@/server/queries/affiliates'
 import { getReferralProgram } from '@/server/referrals/program'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -15,6 +16,8 @@ export type JoinAffiliateState = { ok: boolean; error?: string }
 
 /** Postgres: unique_violation. `affiliates.user_id` is UNIQUE. */
 const UNIQUE_VIOLATION = '23505'
+/** Postgres: undefined_table. A database without 252 has no payout table. */
+const UNDEFINED_TABLE = '42P01'
 
 const joinSchema = z.object({
   channel: z.string().trim().max(300, 'עד 300 תווים').optional().default(''),
@@ -150,4 +153,95 @@ async function runGetMyShareCode(): Promise<string | null> {
 
 export async function getMyShareCode(): Promise<string | null> {
   return withActionContext('account.affiliate.share_code', () => runGetMyShareCode())
+}
+
+export type PayoutRequestState = { ok: boolean; error?: string; amountAgorot?: number }
+
+const payoutSchema = z.object({
+  note: z.string().trim().max(300, 'עד 300 תווים').optional().default(''),
+})
+
+/**
+ * Writes one payout request for the SIGNED-IN affiliate: the row Ofir reads
+ * on /admin/affiliates?tab=payouts.
+ *
+ * THE AMOUNT IS NOT AN INPUT. It is `requestablePayoutAgorot` over the same
+ * reads the account page makes (`getMyAffiliateStanding`), so the number on
+ * the button and the number in the row are one function over one state. A
+ * form field for the amount would be a second source for the same figure,
+ * and the ceiling (paid commissions, minus earlier asks, capped by the wallet)
+ * would have to be re-derived to validate it anyway.
+ *
+ * ONE OPEN REQUEST. The page hides the button while one waits; the 252
+ * partial unique index refuses a second one regardless, and 23505 is read as
+ * exactly that. On the service key after the session read, uuid from the
+ * session and from nowhere else: 252 grants no client write.
+ */
+async function runRequestAffiliatePayout(
+  _: PayoutRequestState | null,
+  formData: FormData,
+): Promise<PayoutRequestState> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { ok: false, error: 'צריך להתחבר כדי לבקש משיכה.' }
+
+  const parsed = payoutSchema.safeParse({ note: formData.get('note') ?? '' })
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? 'קלט לא תקין' }
+
+  const allowed = await checkRateLimit(`affiliate-payout:${user.id}`, 5, 3600)
+  if (!allowed) return { ok: false, error: 'יותר מדי בקשות. נסו שוב בעוד כמה דקות.' }
+
+  const standing = await getMyAffiliateStanding()
+  const enrolment = standing?.enrolment ?? null
+  if (!standing || !enrolment) return { ok: false, error: 'לא נמצאה הרשמה לתוכנית השותפים.' }
+  if (enrolment.status !== 'approved') {
+    return { ok: false, error: 'משיכה אפשרית רק לשותף מאושר.' }
+  }
+  if (standing.payoutsUnavailable) {
+    return { ok: false, error: 'בקשות משיכה עדיין לא פתוחות.' }
+  }
+  if (standing.hasOpenPayout) return { ok: false, error: 'כבר יש בקשת משיכה שממתינה לטיפול.' }
+  if (standing.requestableAgorot <= 0) return { ok: false, error: 'אין כרגע סכום זמין למשיכה.' }
+
+  const admin = createAdminClient()
+  const { error } = await admin.from('affiliate_payout_requests' as never).insert({
+    affiliate_id: enrolment.id,
+    user_id: user.id,
+    amount_agorot: standing.requestableAgorot,
+    note: parsed.data.note || null,
+  } as never)
+  if (error) {
+    if (error.code === UNIQUE_VIOLATION) {
+      return { ok: false, error: 'כבר יש בקשת משיכה שממתינה לטיפול.' }
+    }
+    if (error.code === UNDEFINED_TABLE) {
+      log.info('affiliates.payouts_table_missing', {
+        detail:
+          'affiliate_payout_requests absent: apply migrations/pending/252_affiliate_clicks_payouts.sql',
+      })
+      return { ok: false, error: 'בקשות משיכה עדיין לא פתוחות.' }
+    }
+    log.warn('affiliates.payout_insert_failed', { reason: error.message })
+    return { ok: false, error: 'שליחת הבקשה נכשלה. נסו שוב.' }
+  }
+
+  log.info('affiliates.payout_requested', {
+    userId: user.id,
+    affiliateId: enrolment.id,
+    amountAgorot: standing.requestableAgorot,
+  })
+  revalidatePath('/account/affiliate')
+  revalidatePath('/admin/affiliates')
+  return { ok: true, amountAgorot: standing.requestableAgorot }
+}
+
+export async function requestAffiliatePayout(
+  _: PayoutRequestState | null,
+  formData: FormData,
+): Promise<PayoutRequestState> {
+  return withActionContext('account.affiliate.payout_request', () =>
+    runRequestAffiliatePayout(_, formData),
+  )
 }

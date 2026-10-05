@@ -143,6 +143,14 @@ export const RATE_LIMIT_POLICIES = {
     windowSeconds: 3600,
     reason: 'affiliate programme enrolment, per user',
   },
+  // W08: one payout request row per press, on the user's own enrolment; the
+  // 252 partial unique index already refuses a second open one, so this only
+  // bounds a held-down button and the log lines it would write.
+  'affiliate-payout': {
+    limit: 5,
+    windowSeconds: 3600,
+    reason: 'affiliate payout request, per user',
+  },
   // The public /r/<code> short link, same shape as coupon_qr_apply: anonymous,
   // guessable by brute force, and the route itself does nothing worse than a
   // redirect, so the ceiling only has to stop scripted enumeration rather than

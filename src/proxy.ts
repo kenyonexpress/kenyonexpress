@@ -13,8 +13,9 @@ import { isPaymentFramePath } from '@/lib/security/frame-policy'
 import { lookupRedirect } from '@/lib/seo/redirects'
 import { requireAnonKey } from '@/lib/supabase/anon-key'
 import { supabaseAuthCookieOptions } from '@/lib/supabase/cookie-options'
+import { recordAffiliateClick } from '@/server/affiliates/clicks'
 import { createServerClient } from '@supabase/ssr'
-import { type NextRequest, NextResponse } from 'next/server'
+import { type NextFetchEvent, type NextRequest, NextResponse } from 'next/server'
 
 // Next.js 16: middleware.ts is deprecated — this file replaces it.
 // The exported function must be named `proxy` (not `middleware`).
@@ -78,7 +79,7 @@ export function pathRequiresAuth(pathname: string): boolean {
   )
 }
 
-export async function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest, event?: NextFetchEvent) {
   const { pathname } = request.nextUrl
 
   // Minted here and nowhere else, so one visitor request is one id no matter
@@ -250,6 +251,20 @@ export async function proxy(request: NextRequest) {
         code,
         referralCookieOptions(request.headers.get('x-forwarded-proto') ?? request.nextUrl.protocol),
       )
+      // THE CLICK IS THIS COOKIE WRITE, counted after the response is sent.
+      // One browser re-opening the same code inside the window sets nothing
+      // and counts nothing; a different code is a new click. The recorder is
+      // best-effort end to end (252 missing, no service key, any error): it
+      // can cost a dashboard number, never the visit. `event` is optional
+      // only for the unit tests that call proxy() by hand.
+      const forwarded = request.headers.get('x-forwarded-for')
+      const click = recordAffiliateClick({
+        code,
+        pathname,
+        ip: forwarded?.split(',')[0]?.trim() || request.headers.get('x-real-ip')?.trim() || null,
+        deviceToken: request.cookies.get(GUEST_SESSION_COOKIE)?.value ?? null,
+      })
+      if (event) event.waitUntil(click)
     }
   }
 

@@ -84,6 +84,9 @@ export const WALLET_REASON_LABELS: Record<string, string> = {
   // finalize.ts, so account-labels.test.ts does not find it by regex; it is
   // pinned by affiliates/wired.test.ts instead.
   affiliate_commission: 'עמלת שותפים על מכירה',
+  // The debit when the operator marks a payout request paid
+  // (server/actions/admin/affiliate-payouts.ts, AFFILIATE_PAYOUT_REASON).
+  affiliate_payout: 'משיכת עמלות שותפים',
   referral_bonus: 'בונוס חבר מביא חבר',
 }
 

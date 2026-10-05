@@ -57,6 +57,7 @@
 | `begin_checkout` | 10 | 1 min | Cardcom low-profile creation |
 | `referral-code` | 10 | 1 h | referral code mint, per user |
 | `affiliate-join` | 5 | 1 h | affiliate programme enrolment, per user |
+| `affiliate-payout` | 5 | 1 h | affiliate payout request, per user |
 | `referral_link_visit` | 60 | 1 h | referral short-link redirect, per IP |
 | `refund-request` | 10 | 1 h | refund requests across orders, per user |
 | `support-open` | 10 | 1 h | new support tickets, per user |

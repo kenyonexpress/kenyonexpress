@@ -1,5 +1,38 @@
 # `migrations/pending/`
 
+## 2026-10-05: 252 WRITTEN, not applied - תוכנית השותפים: קליקים ובקשות משיכה
+
+‏`252_affiliate_clicks_payouts.sql`. ‏W08. **מה כבר היה (Q16, 25.09; 244 ממתינה):**
+קוד שותף = קוד ההפניה (`profiles.referral_code`), קישור `?ref=` ועוגיית
+‏`ke_ref` ל-30 יום (מגע אחרון, ‏`src/proxy.ts`), צילום הקוד על ההזמנה בקופה
+(`orders.affiliate_code`), קמפיינים עם עמלה באחוזים (244), המרות (244),
+זיכוי לארנק דרך ‏`fn_wallet_transfer` באגורות שלמות. **מה חסר ונמדד:**
+‏`affiliates.total_clicks` (010) מעולם לא נכתב על ידי אף שורת קוד, ואין
+שום דרך לשותף לבקש משיכה. **מה הקובץ מוסיף, ורק זה:** (1) ‏`affiliate_clicks`:
+שורה לכל כתיבת עוגייה לקוד של שותף, נכתבת מה-proxy על מפתח השירות אחרי
+התשובה (`event.waitUntil`); טריגר ‏BEFORE INSERT (invoker, ‏EXECUTE נשלל
+מ-`anon`/`authenticated`) פותר את הקוד לשורת השותף, מגדיל את
+‏`affiliates.total_clicks`, ומפיל בשקט (RETURN NULL) קוד שאינו של שותף
+(קישור חבר-מביא-חבר אינו קליק של שותף). טביעות אצבע כמו ב-`referral_signals`
+(098), מגובבות, לעולם לא גולמיות. ‏CHECK על הקוד = האלפבית של 098 בדיוק.
+(2) ‏`affiliate_payout_requests`: השותף מבקש משיכה של עמלות ששולמו, הסכום
+נקבע בשרת (עמלות ‏`paid` פחות בקשות קודמות ‏pending/paid, מוגבל ליתרת
+הארנק, ‏`lib/affiliates/payout.ts`), **בקשה פתוחה אחת לשותף** באינדקס
+ייחודי חלקי. סימון "שולם" באדמין **מחייב קודם את הארנק** דרך
+‏`fn_wallet_transfer` (ארנק השותף → ‏`platform:cashback_reserve`, reason
+‏`affiliate_payout`, idempotency ‏`affiliate_payout:<id>`) ורק אז הופך סטטוס.
+אין ספק תשלום; הכסף עובר מחוץ למערכת והשורה מתעדת. כסף = ‏`bigint` אגורות,
+‏CHECK > 0. ‏RLS: ‏SELECT לבעלים ולאדמין בשתי הטבלאות, אפס כתיבה ללקוח.
+**לא משנה enum:** ‏`wallet_entries.reason` הוא ‏`text` בפרודקשן לפי הטיפוסים
+המחוללים (`p_reason: string`). **התנהגות לפני ההחלה:** ‏42P01 נתפס בכל
+קורא וכותב: ה-proxy רושם ‏`affiliates.clicks_table_missing` פעם אחת ומפיל
+את הקליק, הדשבורד מציג את מונה 010 (0) ו"בקשות משיכה ייפתחו בקרוב", הכפתור
+לא כותב, לשונית האדמין מציגה את שם הקובץ. נעוץ ב-
+‏`src/__tests__/affiliate-clicks-payouts-migration.test.ts`. **סדר:** אחרי 010
+ו-098 (חלו); בלתי תלוי ב-244 ובכל קובץ ממתין אחר. **Reversal:**
+‏`DROP TABLE public.affiliate_payout_requests; DROP TABLE public.affiliate_clicks;
+DROP FUNCTION public.fn_affiliate_click_before_insert();`.
+
 ## 2026-10-05: 251 WRITTEN, not applied - דרגות המועדון: טבלת ספים נערכת באדמין + צילום הדרגה על ההזמנה
 
 ‏`251_club_tiers.sql`. ‏W07. **מה כבר היה (Q15, 25.09, חי):** כלל הדרגה (פונקציית

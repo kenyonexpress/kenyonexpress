@@ -1,12 +1,20 @@
 import AffiliateJoinForm from '@/components/account/AffiliateJoinForm'
+import AffiliatePayoutForm from '@/components/account/AffiliatePayoutForm'
 import ReferralShareCard from '@/components/account/ReferralShareCard'
 import { formatDate, formatIls } from '@/lib/account/format'
 import type { AffiliateCampaign, ConversionStatus } from '@/lib/affiliates/commission'
 import { commissionPercent } from '@/lib/affiliates/format'
+import type { PayoutRequestStatus } from '@/lib/affiliates/payout'
+import { formatNumber } from '@/lib/i18n/format'
 import { type MessageKey, t } from '@/lib/i18n/messages'
 import { REFERRAL_QUERY_PARAM } from '@/lib/referrals/code'
 import { siteUrl } from '@/lib/site-url'
-import type { AffiliateConversionRow, AffiliateEnrolment } from '@/server/queries/affiliates'
+import type {
+  AffiliateConversionRow,
+  AffiliateEnrolment,
+  AffiliatePayoutRow,
+  AffiliateStanding,
+} from '@/server/queries/affiliates'
 import { getMyAffiliateStanding } from '@/server/queries/affiliates'
 
 export const metadata = { title: t('affiliate.title') }
@@ -43,6 +51,68 @@ const CONVERSION_TONE: Record<ConversionStatus, string> = {
   flagged: 'warn',
   paid: 'ok',
   rejected: 'dead',
+}
+
+const PAYOUT_KEY: Record<PayoutRequestStatus, MessageKey> = {
+  pending: 'affiliate.payoutStatusPending',
+  paid: 'affiliate.payoutStatusPaid',
+  rejected: 'affiliate.payoutStatusRejected',
+}
+
+const PAYOUT_TONE: Record<PayoutRequestStatus, string> = {
+  pending: 'warn',
+  paid: 'ok',
+  rejected: 'dead',
+}
+
+function PayoutListRow({ row }: { row: AffiliatePayoutRow }) {
+  return (
+    <li className="account-row">
+      <div className="account-row__main">
+        <p className="account-row__title">
+          {t('affiliate.payoutRow').replace('{date}', formatDate(row.createdAt))}
+        </p>
+        <p className="account-row__meta">
+          <span className={`referral-status referral-status--${PAYOUT_TONE[row.status]}`}>
+            {t(PAYOUT_KEY[row.status])}
+          </span>
+        </p>
+      </div>
+      <div className="account-row__actions">
+        <span
+          className={
+            row.status === 'paid' ? 'referral-bonus' : 'referral-bonus referral-bonus--pending'
+          }
+        >
+          {formatIls(row.amountAgorot)}
+        </span>
+      </div>
+    </li>
+  )
+}
+
+/**
+ * Which of the five payout states the section is in, so the page shows ONE
+ * sentence and not a stack of conditions. The order is the order a reader
+ * would ask: is it open at all, am I approved, is one already waiting, is
+ * there anything to ask for.
+ */
+function payoutState(
+  standing: AffiliateStanding,
+  enrolment: AffiliateEnrolment,
+): 'unavailable' | 'not_approved' | 'open' | 'nothing' | 'ready' {
+  if (standing.payoutsUnavailable) return 'unavailable'
+  if (enrolment.status !== 'approved') return 'not_approved'
+  if (standing.hasOpenPayout) return 'open'
+  if (standing.requestableAgorot <= 0) return 'nothing'
+  return 'ready'
+}
+
+const PAYOUT_STATE_KEY: Record<'unavailable' | 'not_approved' | 'open' | 'nothing', MessageKey> = {
+  unavailable: 'affiliate.payoutUnavailable',
+  not_approved: 'affiliate.payoutNotApproved',
+  open: 'affiliate.payoutOpen',
+  nothing: 'affiliate.payoutNothing',
 }
 
 function CampaignRow({ campaign }: { campaign: AffiliateCampaign }) {
@@ -107,6 +177,7 @@ function ConversionListRow({ row }: { row: AffiliateConversionRow }) {
 export default async function AffiliatePage() {
   const standing = await getMyAffiliateStanding()
   const enrolment = standing?.enrolment ?? null
+  const payout = standing && enrolment ? payoutState(standing, enrolment) : null
 
   return (
     <>
@@ -187,6 +258,35 @@ export default async function AffiliatePage() {
       )}
 
       {enrolment && standing && (
+        <section className="account-card" data-testid="affiliate-stats">
+          <h2 className="account-card__title">{t('affiliate.statsTitle')}</h2>
+          {/* Clicks are the 010 counter the 252 trigger bumps; orders are the
+              conversion rows this person can read; earnings are the paid sum.
+              Three numbers, the same three the admin console shows per row. */}
+          <div className="affiliate-totals">
+            <div>
+              <span className="affiliate-totals__label">{t('affiliate.statsClicks')}</span>
+              <span className="affiliate-totals__value" data-testid="affiliate-clicks">
+                {formatNumber(enrolment.totalClicks)}
+              </span>
+            </div>
+            <div>
+              <span className="affiliate-totals__label">{t('affiliate.statsOrders')}</span>
+              <span className="affiliate-totals__value" data-testid="affiliate-orders">
+                {formatNumber(standing.conversions.length)}
+              </span>
+            </div>
+            <div>
+              <span className="affiliate-totals__label">{t('affiliate.statsEarned')}</span>
+              <span className="affiliate-totals__value" data-testid="affiliate-earned">
+                {formatIls(standing.paidAgorot)}
+              </span>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {enrolment && standing && (
         <section className="account-card">
           <h2 className="account-card__title">{t('affiliate.earningsTitle')}</h2>
           <div className="affiliate-totals">
@@ -207,6 +307,36 @@ export default async function AffiliatePage() {
                 <ConversionListRow key={row.id} row={row} />
               ))}
             </ul>
+          )}
+        </section>
+      )}
+
+      {enrolment && standing && payout && (
+        <section className="account-card" data-testid="affiliate-payout" data-state={payout}>
+          <h2 className="account-card__title">{t('affiliate.payoutTitle')}</h2>
+          <p className="account-empty">{t('affiliate.payoutIntro')}</p>
+          <div className="affiliate-totals">
+            <div>
+              <span className="affiliate-totals__label">{t('affiliate.payoutAvailable')}</span>
+              <span className="affiliate-totals__value" data-testid="affiliate-requestable">
+                {formatIls(standing.requestableAgorot)}
+              </span>
+            </div>
+          </div>
+          {payout === 'ready' ? (
+            <AffiliatePayoutForm requestableAgorot={standing.requestableAgorot} />
+          ) : (
+            <p className="account-empty">{t(PAYOUT_STATE_KEY[payout])}</p>
+          )}
+          {standing.payouts.length > 0 && (
+            <>
+              <h3 className="affiliate-payout__history">{t('affiliate.payoutHistoryTitle')}</h3>
+              <ul className="account-list">
+                {standing.payouts.map((row) => (
+                  <PayoutListRow key={row.id} row={row} />
+                ))}
+              </ul>
+            </>
           )}
         </section>
       )}

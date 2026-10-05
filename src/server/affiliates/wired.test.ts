@@ -121,3 +121,90 @@ describe('the enrolment', () => {
     expect(code('src/components/account/AccountNav.tsx')).toContain("'/account/affiliate'")
   })
 })
+
+describe('the click (W08)', () => {
+  it('is recorded by the proxy at the one place the cookie is written, after the response', () => {
+    const proxy = code('src/proxy.ts')
+    const cookieAt = proxy.indexOf('supabaseResponse.cookies.set(\n        REFERRAL_COOKIE')
+    const clickAt = proxy.indexOf('recordAffiliateClick({')
+    expect(cookieAt).toBeGreaterThan(0)
+    expect(clickAt).toBeGreaterThan(cookieAt)
+    expect(proxy).toContain('event.waitUntil(click)')
+    // Inside the same guard as the cookie: a repeat of the same code counts nothing.
+    expect(proxy).toContain('request.cookies.get(REFERRAL_COOKIE)?.value !== code')
+  })
+
+  it('writes one row and lets the 252 trigger resolve and count', () => {
+    const clicks = code('src/server/affiliates/clicks.ts')
+    expect(clicks).toContain("from('affiliate_clicks' as never).insert(")
+    expect(clicks).not.toContain("from('affiliates')")
+    expect(clicks).not.toContain('total_clicks')
+    expect(clicks).toContain("referralFingerprint('ip'")
+    expect(clicks).toContain("referralFingerprint('device'")
+  })
+
+  it('keeps next/headers out of the proxy bundle', () => {
+    expect(code('src/server/affiliates/clicks.ts')).not.toContain("'next/headers'")
+    expect(code('src/proxy.ts')).not.toContain("@/lib/cart/guest-session'")
+  })
+
+  it('reads a missing 252 as one log line and not as a failed visit', () => {
+    const clicks = code('src/server/affiliates/clicks.ts')
+    expect(clicks).toContain("'42P01'")
+    expect(clicks).toContain('affiliates.clicks_table_missing')
+    expect(clicks).toContain('affiliates.click_threw')
+  })
+
+  it('is shown on the account dashboard from the counter the trigger bumps', () => {
+    const page = code('src/app/(account)/account/affiliate/page.tsx')
+    expect(page).toContain('enrolment.totalClicks')
+    expect(page).toContain('standing.conversions.length')
+    expect(code('src/server/queries/affiliates.ts')).toContain('total_clicks')
+  })
+})
+
+describe('the payout request (W08)', () => {
+  it('fixes the amount on the server from the same reads the page makes', () => {
+    const action = code('src/server/actions/affiliates.ts')
+    expect(action).toContain('getMyAffiliateStanding()')
+    expect(action).toContain('amount_agorot: standing.requestableAgorot')
+    expect(action).not.toContain("formData.get('amount')")
+    expect(action).toContain("from('affiliate_payout_requests' as never).insert(")
+  })
+
+  it('refuses an unapproved affiliate, a second open request and a zero amount', () => {
+    const action = code('src/server/actions/affiliates.ts')
+    expect(action).toContain("enrolment.status !== 'approved'")
+    expect(action).toContain('standing.hasOpenPayout')
+    expect(action).toContain('standing.requestableAgorot <= 0')
+    expect(action).toContain('UNIQUE_VIOLATION')
+  })
+
+  it('computes the amount through the one pure rule, wallet-capped', () => {
+    const queries = code('src/server/queries/affiliates.ts')
+    expect(queries).toContain('requestablePayoutAgorot({')
+    expect(queries).toContain('walletBalanceAgorot: wallet.balanceAgorot')
+    expect(queries).toContain('requestCovers(r.status)')
+  })
+
+  it('has a button on the account page and a tab on the admin console', () => {
+    expect(code('src/app/(account)/account/affiliate/page.tsx')).toContain('<AffiliatePayoutForm')
+    const admin = code('src/app/(admin)/admin/affiliates/page.tsx')
+    expect(admin).toContain("'payouts'")
+    expect(admin).toContain("from('affiliate_payout_requests' as never)")
+    expect(admin).toContain('<AffiliatePayoutActionsClient')
+  })
+
+  it('debits the wallet through fn_wallet_transfer before the row says paid', () => {
+    const decide = code('src/server/actions/admin/affiliate-payouts.ts')
+    const transferAt = decide.indexOf("rpc('fn_wallet_transfer'")
+    const flipAt = decide.indexOf(".eq('status', 'pending')")
+    expect(transferAt).toBeGreaterThan(0)
+    expect(flipAt).toBeGreaterThan(transferAt)
+    expect(decide).toContain('p_idempotency: `affiliate_payout:${row.id}`')
+    expect(decide).toContain('p_amount_ils: agorotToIls(amount)')
+    expect(decide).not.toMatch(/\/\s*100\b/)
+    expect(decide).toContain("requireSection('affiliates', 'write')")
+    expect(decide).toContain('writeAuditLog({')
+  })
+})

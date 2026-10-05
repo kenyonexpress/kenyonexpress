@@ -2,6 +2,62 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## W07 (הועבר מ-STATE.md ב-W08, לשמירה על תקרת 300 שורות)
+
+**W07 - DONE (05.10.2026): CLUB TIERS. כלל הדרגה, הכרטיס והשאילתה היו קיימים
+מ-Q15; נבנו שלושת הפערים: טבלת ספים נערכת באדמין (251 ממתינה), הדרגה בתפריט
+החשבון שבכותרת ותג בסרגל האזור האישי, וצילום הדרגה על ההזמנה. parity
+7.92% / 9.03% / 4.16% PASS ב-380 / 768 / 1440.** `pwd` אומת, HEAD בהגעה
+`9a755c597`, עץ נקי. W07 לא הופיע ב-STATE.md, ב-BACKLOG או ב-`git log -20`;
+בארכיון: Q15 בנה את הכלל, Q42 (01.10) חסם "דף תג והטבות" כהחלטת מוצר.
+**מה כבר היה (נמדד בקוד, לא נבנה שוב):** `lib/club/tiers.ts` (365 יום לפי
+`paid_at`, ארבעה סטטוסים נספרים, ספים 0/₪1,000/₪3,000/₪10,000 כקבועים, אחוז
+שלם דרך `divRoundHalfUp`), `server/queries/club.ts` (`getClubStanding`,
+session + admin מוצמד ל-`user_id`, `orFail`), `ClubTierCard` ב-`/account`
+עם פס התקדמות. **מה חסר ונבנה:** (1) **ספים כתצורה:** `251_club_tiers.sql`
+ב-`migrations/pending` בלבד: `club_tiers` (4 שורות לפי id קבוע ב-CHECK,
+`min_agorot bigint`, `member` נעוץ ל-0 ב-CHECK, זריעה של הקבועים ב-`ON CONFLICT
+DO NOTHING`, RLS SELECT ל-`authenticated` בלבד, REVOKE ALL + GRANT SELECT, אפס
+פונקציות) + `orders.club_tier text` ו-`orders.club_spend_agorot bigint` עם CHECK.
+`lib/club/tiers.ts` מקבל עכשיו רשימת דרגות כפרמטר (ברירת מחדל `CLUB_TIERS`)
+ו-`tiersFromRows` מקבל שורות רק אם ארבעת ה-id, רצפה 0, עולה ממש, אחרת נופל
+לברירות המחדל עם סיבה; `lib/club/tiers-config.ts` `readClubTiers` קורא
+`club_tiers` (PGRST205 → ברירות מחדל + אזהרה פעם אחת בשם 251). (2) **אדמין:**
+סעיף "דרגות המועדון" ב-`/admin/settings` (`ClubTiersForm`, שלושה שדות ₪ לכסף/
+זהב/פלטינה, `member` מוצג קבוע), פעולה `updateClubTiers` מאחורי `payments: write`,
+`parseIls` בלבד (אפס float), zod על שלוש השורות יחד (עולה ממש, ≥ ₪0.01,
+≤ ₪1,000,000), upsert אחד, audit לפני/אחרי, טבלה חסרה → קריאה בלבד עם שם הקובץ.
+(3) **תפריט החשבון בכותרת:** `AccountMenu` נשאר סטטי (אפס קריאת session,
+לפי ההערה שלו); בפתיחה הראשונה בלבד הוא מביא `GET /api/account/club` (נתיב חדש,
+`no-store`, מחזיר `{tier:null}` 200 למנותק, 503 על קריאה שנכשלה, רק id ואחוז,
+בלי סכום) ומציג `.club-badge` + קישור לאזור האישי במקום בלוק ההתחברות; נמדד חי
+על 3399: `200`, `cache-control: no-store`, `{"tier":null}`. (4) **תג באזור
+האישי:** `AccountNav` מקבל `clubTier` מה-layout (קריאה best-effort כמו passkeys)
+ומציג את התג מתחת לשם; הכרטיס מציג את השם כתג; `clubTierName` הועבר ל-
+`components/account/club-tier-name.ts` כדי לשרת גם את הקליינט. (5) **צילום על
+ההזמנה:** `server/club/snapshot.ts` נקרא ב-`beginCheckout` אחרי ה-INSERT, בהצהרה
+נפרדת (אותה צורה כמו עמודות המתנה), לעולם לא זורק: עמודה חסרה →
+`checkout.club_tier_not_recorded`. ההזמנה `pending` ולא נספרת לעצמה. **אפס לוגיקת
+הנחות**, לפי הפריט. **בדיקות:** 5 קבצים חדשים (tiers-config, club-tiers-settings,
+snapshot, AccountMenu ב-jsdom עם fetch מדומה, `club-tiers-migration` שנועץ:
+זריעת 251 = `CLUB_TIERS`, אותה רשימת id בשני ה-CHECK, אפס GRANT כתיבה, אפס
+פונקציות, רישום ב-README/APPLY-ORDER) + הרחבות ב-`tiers.test`, `club.test`
+(ספים מהטבלה משנים דרגה לאותה הוצאה; שורות לא תקפות → ברירות מחדל) ובמלאי
+המיגרציות. **החלטות שהתקבלו לבד:** (א) ה-id קבועים והסכומים נערכים: השמות
+בעברית ב-`messages/he.json` לפי id, ודרגה חמישית הייתה מפתח מנוקד. (ב) אין
+טריגר מונוטוניות: הפרסר והקורא אוכפים, פונקציה הייתה דורשת ביקורת EXECUTE.
+(ג) `set_updated_at` לא מוגדרת מחדש ב-251 (עמדת 244). (ד) התפריט מביא בפתיחה
+ולא בטעינה, כדי שהכותרת תעלה לאורח אפס. (ה) `-u` גם לשמות `SUPABASE*`:
+בלעדיהם `resend.test.ts` נופל 7 כי `isSuppressed` פוגע ב-Supabase האמיתי (env,
+לא קוד; מתועד בארכיון W05 ובזיכרון). **שערים:** `pnpm type-check` 0; `pnpm lint`
+נקי (i18n 606/606, כל המחרוזות החדשות ב-`he.json`+`en.json`); `pnpm test`
+626/626 קבצים, 7523 עברו, 12 דולגו (59 שמות ב-`env -u`); build exit 0 אחרי
+`rm -rf .next`, `BUILD_ID` `xpra0LhYSM1jpNW0dpj73`; **השער, בחזית, `--baseline`,
+`--widths=380,768,1440`, שלוש שורות ב-`docs/UI-PARITY-REPORT.md` (`9a755c597-dirty`):
+380: 7.92% PASS; 768: 9.03% PASS; 1440: 4.16% PASS**, מול build מקומי על 3399
+(pid 80142, cwd אומת). השרת נסגר. **לא נעשה:** אין `--apply`, אין שינוי
+DB/vault/env/DNS/Vercel, אין מחיקה, אין הנחות לפי דרגה, אין דף הטבות (Q42 עומד).
+
 ## W06 (הועבר מ-STATE.md ב-W07, לשמירה על תקרת 300 שורות)
 
 **W06 - DONE (05.10.2026): EXPIRY REMINDERS. כל רגל של התזכורת הייתה קיימת

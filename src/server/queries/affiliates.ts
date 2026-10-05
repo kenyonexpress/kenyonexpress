@@ -5,20 +5,38 @@ import {
   campaignFromRow,
   campaignIsLive,
 } from '@/lib/affiliates/commission'
+import {
+  type PayoutRequestStatus,
+  payoutRequestStatus,
+  requestCovers,
+  requestablePayoutAgorot,
+} from '@/lib/affiliates/payout'
 import { type Agorot, agorot, sumAgorot } from '@/lib/money'
 import { log } from '@/lib/observability/log'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
+import { getWalletSummary } from '@/server/queries/account'
 
 /** Postgres: undefined_table. A database without 244 has neither new table. */
 const UNDEFINED_TABLE = '42P01'
 
 export type AffiliateEnrolment = {
+  id: string
   status: 'pending_review' | 'approved' | 'rejected' | 'suspended'
   code: string
   channel: string | null
+  /** `affiliates.total_clicks`, bumped by the 252 trigger on every recorded click. */
+  totalClicks: number
   totalConversions: number
   totalEarningsAgorot: Agorot
+}
+
+export interface AffiliatePayoutRow {
+  id: string
+  status: PayoutRequestStatus
+  amountAgorot: Agorot
+  createdAt: string
+  decidedAt: string | null
 }
 
 export interface AffiliateConversionRow {
@@ -40,6 +58,14 @@ export interface AffiliateStanding {
   conversions: AffiliateConversionRow[]
   paidAgorot: Agorot
   pendingAgorot: Agorot
+  /** The affiliate's own payout requests, newest first. */
+  payouts: AffiliatePayoutRow[]
+  /** True when 252 is not applied: no request can be written. */
+  payoutsUnavailable: boolean
+  /** What a request made now would ask for; zero disables the button. */
+  requestableAgorot: Agorot
+  /** A `pending` request exists; the button waits for it. */
+  hasOpenPayout: boolean
 }
 
 const STATUSES: ReadonlySet<string> = new Set(['pending', 'flagged', 'paid', 'rejected'])
@@ -78,24 +104,37 @@ export async function getMyAffiliateStanding(clock?: Date): Promise<AffiliateSta
   // After the session read, never as a parameter default: see getClubStanding.
   const now = clock ?? new Date()
 
-  const [enrolment, campaignsResult, conversionsResult] = await Promise.all([
+  const [enrolment, campaignsResult, conversionsResult, payoutsResult, wallet] = await Promise.all([
     readEnrolment(supabase, user.id),
     readLiveCampaigns(now),
     readMyConversions(supabase),
+    readMyPayouts(supabase),
+    getWalletSummary(),
   ])
 
   const paid = conversionsResult.rows.filter((r) => r.status === 'paid')
   const pending = conversionsResult.rows.filter(
     (r) => r.status === 'pending' || r.status === 'flagged',
   )
+  const paidAgorot = sumAgorot(paid.map((r) => r.commissionAgorot))
 
   return {
     enrolment,
     campaigns: campaignsResult.campaigns,
     programmeUnavailable: campaignsResult.missing || conversionsResult.missing,
     conversions: conversionsResult.rows,
-    paidAgorot: sumAgorot(paid.map((r) => r.commissionAgorot)),
+    paidAgorot,
     pendingAgorot: sumAgorot(pending.map((r) => r.commissionAgorot)),
+    payouts: payoutsResult.rows,
+    payoutsUnavailable: payoutsResult.missing,
+    requestableAgorot: requestablePayoutAgorot({
+      paidCommissionAgorot: paidAgorot,
+      coveredByRequestsAgorot: payoutsResult.rows
+        .filter((r) => requestCovers(r.status))
+        .map((r) => r.amountAgorot),
+      walletBalanceAgorot: wallet.balanceAgorot,
+    }),
+    hasOpenPayout: payoutsResult.rows.some((r) => r.status === 'pending'),
   }
 }
 
@@ -106,7 +145,7 @@ async function readEnrolment(
   const { data, error } = await supabase
     .from('affiliates')
     .select(
-      'status, affiliate_code, channel_description, total_conversions, total_earnings_ils_agorot',
+      'id, status, affiliate_code, channel_description, total_clicks, total_conversions, total_earnings_ils_agorot',
     )
     .eq('user_id', userId)
     .is('deleted_at', null)
@@ -120,9 +159,11 @@ async function readEnrolment(
     ? (data.status as AffiliateEnrolment['status'])
     : 'pending_review'
   return {
+    id: data.id,
     status,
     code: data.affiliate_code,
     channel: data.channel_description,
+    totalClicks: data.total_clicks ?? 0,
     totalConversions: data.total_conversions ?? 0,
     totalEarningsAgorot: columnAgorot(data.total_earnings_ils_agorot),
   }
@@ -176,6 +217,31 @@ async function readMyConversions(
     paidAt: (row.paid_at as string | null) ?? null,
     baseAgorot: columnAgorot(row.order_agorot),
     commissionAgorot: columnAgorot(row.commission_agorot),
+  }))
+  return { rows, missing: false }
+}
+
+async function readMyPayouts(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+): Promise<{ rows: AffiliatePayoutRow[]; missing: boolean }> {
+  // The 252 policy is `user_id = auth.uid()`: the request-scoped client
+  // returns this person's rows and nobody else's, with no filter to forget.
+  const { data, error } = await supabase
+    .from('affiliate_payout_requests' as never)
+    .select('id, status, amount_agorot, created_at, decided_at')
+    .order('created_at', { ascending: false })
+    .limit(50)
+  if (error) {
+    if (error.code === UNDEFINED_TABLE) return { rows: [], missing: true }
+    log.warn('affiliates.payouts_read_failed', { reason: error.message })
+    return { rows: [], missing: false }
+  }
+  const rows = ((data ?? []) as unknown as Array<Record<string, unknown>>).map((row) => ({
+    id: String(row.id),
+    status: payoutRequestStatus(row.status),
+    amountAgorot: columnAgorot(row.amount_agorot),
+    createdAt: String(row.created_at),
+    decidedAt: (row.decided_at as string | null) ?? null,
   }))
   return { rows, missing: false }
 }

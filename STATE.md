@@ -1,85 +1,77 @@
-RESUME FROM: W08
-Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט W07 DONE: דרגות
-מועדון; הכלל והכרטיס היו מ-Q15, נבנו טבלת ספים נערכת באדמין (251 ממתינה),
-הדרגה בתפריט החשבון ותג באזור האישי, וצילום הדרגה על ההזמנה; W06 הועבר
-לארכיון; RESUME FROM מצביע ל-W08, ואם אין W08 בתור, ההמשך הוא M02-c96)
+RESUME FROM: W09
+Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט W08 DONE: תוכנית
+השותפים; הקוד, הקישור, העוגייה, הקמפיינים, הצילום על ההזמנה והזיכוי לארנק היו
+מ-Q16, נבנו שני הפערים שנמדדו: ספירת קליקים (מעולם לא נכתבה) ובקשת משיכה
+(252 ממתינה); W07 הועבר לארכיון; RESUME FROM מצביע ל-W09, ואם אין W09 בתור,
+ההמשך הוא M02-c96)
 
 ## המשך מ:
 
-**W07 - DONE (05.10.2026): CLUB TIERS. כלל הדרגה, הכרטיס והשאילתה היו קיימים
-מ-Q15; נבנו שלושת הפערים: טבלת ספים נערכת באדמין (251 ממתינה), הדרגה בתפריט
-החשבון שבכותרת ותג בסרגל האזור האישי, וצילום הדרגה על ההזמנה. parity
-7.92% / 9.03% / 4.16% PASS ב-380 / 768 / 1440.** `pwd` אומת, HEAD בהגעה
-`9a755c597`, עץ נקי. W07 לא הופיע ב-STATE.md, ב-BACKLOG או ב-`git log -20`;
-בארכיון: Q15 בנה את הכלל, Q42 (01.10) חסם "דף תג והטבות" כהחלטת מוצר.
-**מה כבר היה (נמדד בקוד, לא נבנה שוב):** `lib/club/tiers.ts` (365 יום לפי
-`paid_at`, ארבעה סטטוסים נספרים, ספים 0/₪1,000/₪3,000/₪10,000 כקבועים, אחוז
-שלם דרך `divRoundHalfUp`), `server/queries/club.ts` (`getClubStanding`,
-session + admin מוצמד ל-`user_id`, `orFail`), `ClubTierCard` ב-`/account`
-עם פס התקדמות. **מה חסר ונבנה:** (1) **ספים כתצורה:** `251_club_tiers.sql`
-ב-`migrations/pending` בלבד: `club_tiers` (4 שורות לפי id קבוע ב-CHECK,
-`min_agorot bigint`, `member` נעוץ ל-0 ב-CHECK, זריעה של הקבועים ב-`ON CONFLICT
-DO NOTHING`, RLS SELECT ל-`authenticated` בלבד, REVOKE ALL + GRANT SELECT, אפס
-פונקציות) + `orders.club_tier text` ו-`orders.club_spend_agorot bigint` עם CHECK.
-`lib/club/tiers.ts` מקבל עכשיו רשימת דרגות כפרמטר (ברירת מחדל `CLUB_TIERS`)
-ו-`tiersFromRows` מקבל שורות רק אם ארבעת ה-id, רצפה 0, עולה ממש, אחרת נופל
-לברירות המחדל עם סיבה; `lib/club/tiers-config.ts` `readClubTiers` קורא
-`club_tiers` (PGRST205 → ברירות מחדל + אזהרה פעם אחת בשם 251). (2) **אדמין:**
-סעיף "דרגות המועדון" ב-`/admin/settings` (`ClubTiersForm`, שלושה שדות ₪ לכסף/
-זהב/פלטינה, `member` מוצג קבוע), פעולה `updateClubTiers` מאחורי `payments: write`,
-`parseIls` בלבד (אפס float), zod על שלוש השורות יחד (עולה ממש, ≥ ₪0.01,
-≤ ₪1,000,000), upsert אחד, audit לפני/אחרי, טבלה חסרה → קריאה בלבד עם שם הקובץ.
-(3) **תפריט החשבון בכותרת:** `AccountMenu` נשאר סטטי (אפס קריאת session,
-לפי ההערה שלו); בפתיחה הראשונה בלבד הוא מביא `GET /api/account/club` (נתיב חדש,
-`no-store`, מחזיר `{tier:null}` 200 למנותק, 503 על קריאה שנכשלה, רק id ואחוז,
-בלי סכום) ומציג `.club-badge` + קישור לאזור האישי במקום בלוק ההתחברות; נמדד חי
-על 3399: `200`, `cache-control: no-store`, `{"tier":null}`. (4) **תג באזור
-האישי:** `AccountNav` מקבל `clubTier` מה-layout (קריאה best-effort כמו passkeys)
-ומציג את התג מתחת לשם; הכרטיס מציג את השם כתג; `clubTierName` הועבר ל-
-`components/account/club-tier-name.ts` כדי לשרת גם את הקליינט. (5) **צילום על
-ההזמנה:** `server/club/snapshot.ts` נקרא ב-`beginCheckout` אחרי ה-INSERT, בהצהרה
-נפרדת (אותה צורה כמו עמודות המתנה), לעולם לא זורק: עמודה חסרה →
-`checkout.club_tier_not_recorded`. ההזמנה `pending` ולא נספרת לעצמה. **אפס לוגיקת
-הנחות**, לפי הפריט. **בדיקות:** 5 קבצים חדשים (tiers-config, club-tiers-settings,
-snapshot, AccountMenu ב-jsdom עם fetch מדומה, `club-tiers-migration` שנועץ:
-זריעת 251 = `CLUB_TIERS`, אותה רשימת id בשני ה-CHECK, אפס GRANT כתיבה, אפס
-פונקציות, רישום ב-README/APPLY-ORDER) + הרחבות ב-`tiers.test`, `club.test`
-(ספים מהטבלה משנים דרגה לאותה הוצאה; שורות לא תקפות → ברירות מחדל) ובמלאי
-המיגרציות. **החלטות שהתקבלו לבד:** (א) ה-id קבועים והסכומים נערכים: השמות
-בעברית ב-`messages/he.json` לפי id, ודרגה חמישית הייתה מפתח מנוקד. (ב) אין
-טריגר מונוטוניות: הפרסר והקורא אוכפים, פונקציה הייתה דורשת ביקורת EXECUTE.
-(ג) `set_updated_at` לא מוגדרת מחדש ב-251 (עמדת 244). (ד) התפריט מביא בפתיחה
-ולא בטעינה, כדי שהכותרת תעלה לאורח אפס. (ה) `-u` גם לשמות `SUPABASE*`:
-בלעדיהם `resend.test.ts` נופל 7 כי `isSuppressed` פוגע ב-Supabase האמיתי (env,
-לא קוד; מתועד בארכיון W05 ובזיכרון). **שערים:** `pnpm type-check` 0; `pnpm lint`
-נקי (i18n 606/606, כל המחרוזות החדשות ב-`he.json`+`en.json`); `pnpm test`
-626/626 קבצים, 7523 עברו, 12 דולגו (59 שמות ב-`env -u`); build exit 0 אחרי
-`rm -rf .next`, `BUILD_ID` `xpra0LhYSM1jpNW0dpj73`; **השער, בחזית, `--baseline`,
-`--widths=380,768,1440`, שלוש שורות ב-`docs/UI-PARITY-REPORT.md` (`9a755c597-dirty`):
-380: 7.92% PASS; 768: 9.03% PASS; 1440: 4.16% PASS**, מול build מקומי על 3399
-(pid 80142, cwd אומת). השרת נסגר. **לא נעשה:** אין `--apply`, אין שינוי
-DB/vault/env/DNS/Vercel, אין מחיקה, אין הנחות לפי דרגה, אין דף הטבות (Q42 עומד).
+**W08 - DONE (05.10.2026): AFFILIATE PROGRAM. שש מתוך שמונה הרגליים היו קיימות
+מ-Q16 (25.09) ואומתו בקוד; שני פערים נמדדו ונבנו: ספירת קליקים ובקשת משיכה.
+parity 7.92% / 9.03% / 4.16% PASS ב-380 / 768 / 1440.** `pwd` אומת, HEAD בהגעה
+`81bbd1385`, עץ נקי. W08 לא הופיע ב-STATE.md, ב-BACKLOG או ב-`git log -20`;
+בארכיון: Q16 בנה את התוכנית, Q41 (01.10) מדד אותה "בנויה במלואה" ולא ראה את
+שני הפערים. **מה כבר היה (נמדד בקוד, לא נבנה שוב):** קוד לכל משתמש
+(`profiles.referral_code`, `fn_ensure_referral_code`, הצטרפות ב-`joinAffiliateProgram`);
+קישור `?ref=` ו-`/r/<code>` עם עוגיית `ke_ref` ל-30 יום בדיוק
+(`REFERRAL_COOKIE_MAX_AGE = 60*60*24*30`, מגע אחרון, `src/proxy.ts`); קמפיינים
+באדמין עם אחוז עמלה פר קמפיין (`commission_bp`, `CampaignForm`, 244 ממתינה);
+צילום הקוד על ההזמנה בקופה (`snapshotAffiliateAttribution` → `orders.affiliate_code`);
+זיכוי לארנק באגורות דרך `fn_wallet_transfer` (`pay.ts`, idempotency
+`affiliate:<id>`); דשבורד ב-`/account/affiliate` עם רכישות ורווחים. **מה חסר
+ונמדד:** (א) `affiliates.total_clicks` (010) לא נכתב על ידי אף שורה בריפו, האדמין
+הציג "0 / n" מאז 010 ולדשבורד לא היו קליקים כלל. (ב) אין שום דרך לבקש משיכה,
+וטקסט התנאים אמר "ללא משיכה למזומן". **מה נבנה:** (1) `252_affiliate_clicks_payouts.sql`
+ב-`migrations/pending` בלבד: `affiliate_clicks` (שורה לכל כתיבת עוגייה, טריגר
+BEFORE INSERT invoker שפותר קוד→שותף, מגדיל `total_clicks` ומפיל קוד שאינו של
+שותף; CHECK על האלפבית של 098 בדיוק, טביעות אצבע מגובבות כמו `referral_signals`) +
+`affiliate_payout_requests` (`amount_agorot bigint` CHECK>0, שלושה סטטוסים,
+בקשה פתוחה אחת לשותף באינדקס ייחודי חלקי, `decided_*`). RLS SELECT לבעלים
+ולאדמין, אפס כתיבה ללקוח, אפס ALTER TYPE. (2) **ספירת קליקים:** `server/affiliates/clicks.ts`
+נקרא מה-proxy בתוך אותו תנאי שכותב את העוגייה (קוד חדש או שונה), דרך
+`event.waitUntil`, best-effort מקצה לקצה (42P01 פעם אחת בתהליך, admin client
+שזורק, כל שגיאה אחרת); `next/headers` לא נכנס לחבילת ה-proxy (הפרסור של
+טוקן האורח שוכפל ב-4 שורות עם הסבר). (3) **דשבורד:** כרטיס "המספרים שלי" עם
+כניסות (`total_clicks`), רכישות (`conversions.length`) וסך עמלות שזוכו; כרטיס
+"משיכת עמלות" עם הסכום הזמין וכפתור. הסכום **נקבע בשרת בלבד**
+(`lib/affiliates/payout.ts`, טהור: עמלות `paid` פחות בקשות `pending`/`paid`,
+מוגבל ליתרת הארנק, לעולם לא מתחת ל-0), אין שדה סכום בטופס; הפעולה
+`requestAffiliatePayout` מסרבת ללא-מאושר, לבקשה פתוחה, ל-0 ול-23505, מוגבלת
+`affiliate-payout` 5/שעה. (4) **אדמין:** לשונית "בקשות משיכה" ב-`/admin/affiliates`
++ `decideAffiliatePayout` מאחורי `affiliates: write`: "שולם" **מחייב קודם את
+הארנק** (`fn_wallet_transfer` ארנק→`platform:cashback_reserve`, reason
+`affiliate_payout` עם תווית בפנקס, idempotency `affiliate_payout:<id>`,
+`agorotToIls` פעם אחת בגבול) ורק אז הופך סטטוס; "דחייה" עם הערה; audit לכל
+החלטה. אין ספק תשלום. **החלטות שהתקבלו לבד:** (א) קליק = כתיבת עוגייה, לא
+צפייה: אותו דפדפן על אותו קוד בחלון 30 יום נספר פעם אחת. (ב) הטריגר invoker
+ולא definer, EXECUTE נשלל מהלקוחות; הפתרון בטריגר כדי שה-proxy יכתוב משפט
+אחד. (ג) enum `wallet_reason` לא נוגעים: בפרודקשן `reason` הוא `text` לפי
+הטיפוסים המחוללים (`p_reason: string`, והפנקס החי כבר נושא `order_cashback`
+שה-enum של 026 אינו מכיר). (ד) טקסט התנאים עודכן ל"משיכה בבקשה, מטופלת
+ידנית" כי הפריט דורש כפתור משיכה. (ה) הסכום אינו קלט משתמש. **בדיקות:** 4 קבצים
+חדשים (`affiliate-clicks-payouts-migration` נועץ אלפבית/סטטוסים/RLS/אפס enum,
+`payout.test` 7, `clicks.test` 8 עם admin מדומה, `AffiliatePayoutForm.test` jsdom 3)
++ 10 עיגונים חדשים ב-`affiliates/wired.test.ts` + רישום 252 במלאי. **שערים:**
+`pnpm type-check` 0; `pnpm lint` נקי (i18n 606/606, 25 מפתחות חדשים ב-`he.json`+
+`en.json`); `pnpm test` **630/630 קבצים, 7561 עברו, 12 דולגו** תחת `env -u` של
+92 שמות (`[SENSITIVE]`, `SUPABASE*`, `VERCEL*`) + `CARDCOM_*`/`VOUCHER_QR_SECRET`
+לקובץ `invoices.test` (env, לא קוד); build exit 0 אחרי `rm -rf .next`, `BUILD_ID`
+`Pg_w3auIci8lYa6ozPHFk`; **השער, בחזית, `--baseline`, `--widths=380,768,1440`,
+שלוש שורות ב-`docs/UI-PARITY-REPORT.md` (`81bbd1385-dirty`): 380: 7.92% PASS;
+768: 9.03% PASS; 1440: 4.16% PASS**, מול build מקומי על 3399 (pid 95662, cwd
+אומת, BUILD_ID אומת ב-HTML). השרת נסגר. **לא נעשה:** אין `--apply`, אין שינוי
+DB/vault/env/DNS/Vercel, אין מחיקה, אין ספק תשלום, אין שינוי ב-244.
 
-**W06 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
-ב-W07): תזכורות תפוגה T-7/T-1; המנגנון כולו היה קיים חוץ מהשעון, נכתבה 250
-(pg_cron + pg_net, GET, vault בשמות האמיתיים) שחוזתה ב-BEGIN/ROLLBACK מול
-פרודקשן, מראה TS של שאילתת הבחירה עם 26 בדיקות גבולות, ושלושה פגמים נמדדו
-ב-162 (חוסם 16); parity 7.92 / 9.03 / 4.16 PASS, ארבעת השערים ירוקים.
-
-**W05 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
-ב-W06): מתנה והעברה אומתו מקצה לקצה; דף ההזמנה מסתיר קוד/QR של מתנה
-ומקשר להעברה, שורות audit לשלושת המעברים, Playwright 3/3, ותוקן באג
-(`suppliers!vouchers_supplier_id_fkey`) שהשבית כל קישור מתנה; parity
-7.92 / 9.03 / 4.16 PASS, ארבעת השערים ירוקים.
-
-**W04 - BLOCKED no-dev-database (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
-(הועבר ב-W05): סקריפטי זריעה והסרה של קטלוג דמו (60 קופונים + 12 פיזיים ב-11
-קטגוריות) נבנו ונבדקו; `--apply` לא הורץ על שום מסד כי אין מסד פיתוח (חוסם 15);
+**W07 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
+ב-W08): דרגות המועדון; הכלל והכרטיס היו מ-Q15, נבנו טבלת ספים נערכת באדמין
+(251 ממתינה), הדרגה בתפריט החשבון ותג באזור האישי, וצילום הדרגה על ההזמנה;
 parity 7.92 / 9.03 / 4.16 PASS, ארבעת השערים ירוקים.
 
-**W03, W02, W01, M01-c96, L12, L11, M18-c95, M17-c95** — סגורים ב-05.10.2026 (L11
-BLOCKED cardcom-creds, השאר DONE), ארכיון מלא ב-`docs/STATE-ARCHIVE.md`; התקצירים
-שישבו כאן הועברו לשם ב-W06 (תקרת 300 שורות), שום שורה לא נמחקה.
+**W06, W05, W04, W03, W02, W01, M01-c96, L12, L11, M18-c95, M17-c95** — סגורים
+ב-05.10.2026 (W04 BLOCKED no-dev-database, L11 BLOCKED cardcom-creds, השאר DONE),
+ארכיון מלא ב-`docs/STATE-ARCHIVE.md`; התקצירים שישבו כאן הועברו לשם ב-W06 וב-W08
+(תקרת 300 שורות), שום שורה לא נמחקה.
 
 **M16-c95, M15-c95, M14-c95, M13-c95, M12-c95, M11-c95, M10-c95, M09-c95, M08-c95, M07-c95, M17-c94, M16-c94, M15-c94, M12-c94, M09-c94, M08-c94,
 M07-c94, M06-c94, M05-c94, M10-c94** וכל מה שקדם להם (M04-c94..M01-c94,

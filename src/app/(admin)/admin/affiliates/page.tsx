@@ -15,6 +15,7 @@ import type { Affiliate, AffiliateStatus, Referral } from '@/types/database'
 import Link from 'next/link'
 import { z } from 'zod'
 import AffiliateActionsClient from './AffiliateActionsClient'
+import AffiliatePayoutActionsClient from './AffiliatePayoutActionsClient'
 import CampaignForm, { type CampaignFormValues } from './CampaignForm'
 import ConversionActionsClient from './ConversionActionsClient'
 
@@ -22,7 +23,7 @@ export const metadata = { title: 'שותפים והפניות' }
 
 const AFFILIATE_STATUSES = Object.keys(AFFILIATE_STATUS_LABELS) as AffiliateStatus[]
 
-const TABS = ['affiliates', 'referrals', 'campaigns', 'conversions'] as const
+const TABS = ['affiliates', 'referrals', 'campaigns', 'conversions', 'payouts'] as const
 type Tab = (typeof TABS)[number]
 
 const TAB_LABELS: Record<Tab, string> = {
@@ -30,7 +31,23 @@ const TAB_LABELS: Record<Tab, string> = {
   referrals: 'הפניות חבר-מביא-חבר',
   campaigns: 'קמפיינים ועמלות',
   conversions: 'מכירות שותפים',
+  payouts: 'בקשות משיכה',
 }
+
+const PAYOUT_LABELS: Record<string, string> = {
+  pending: 'ממתין לטיפול',
+  paid: 'שולם',
+  rejected: 'נדחה',
+}
+
+const PAYOUT_COLORS: Record<string, string> = {
+  pending: 'bg-amber-100 text-amber-800',
+  paid: 'bg-green-100 text-green-700',
+  rejected: 'bg-red-100 text-red-700',
+}
+
+const PAYOUTS_NOT_APPLIED_NOTICE =
+  'טבלת בקשות המשיכה עדיין לא קיימת בבסיס הנתונים. יש להחיל את migrations/pending/252_affiliate_clicks_payouts.sql.'
 
 const paramsSchema = baseListParamsSchema.extend({
   tab: z.enum(TABS).catch('affiliates'),
@@ -114,6 +131,21 @@ type ConversionRow = ConversionDb & {
   buyerName: string
   campaignName: string
 }
+
+interface PayoutDb {
+  id: string
+  affiliate_id: string
+  user_id: string
+  amount_agorot: number
+  status: string
+  note: string | null
+  decision_note: string | null
+  wallet_entry_id: string | null
+  created_at: string
+  decided_at: string | null
+}
+
+type PayoutRow = PayoutDb & { affiliateName: string; affiliateCode: string }
 
 function columnAgorot(value: number | null | undefined): Agorot {
   return agorot(Math.round(Number(value ?? 0)))
@@ -457,6 +489,119 @@ export default async function AdminAffiliatesPage(props: {
         basePath="/admin/affiliates"
         params={urlParams}
         emptyMessage={missing ? 'אין טבלת קמפיינים' : 'אין קמפיינים. צרו את הראשון למעלה.'}
+      />
+    )
+  } else if (params.tab === 'payouts') {
+    const { data, error, count } = await supabase
+      .from('affiliate_payout_requests' as never)
+      .select(
+        'id, affiliate_id, user_id, amount_agorot, status, note, decision_note, wallet_entry_id, created_at, decided_at',
+        { count: 'exact' },
+      )
+      .order('created_at', { ascending: false })
+      .range(from, to)
+    total = count ?? 0
+    const missing = error?.code === UNDEFINED_TABLE
+    const requests = (missing || error ? [] : (data ?? [])) as unknown as PayoutDb[]
+
+    const affiliateIds = [...new Set(requests.map((r) => r.affiliate_id))]
+    const { data: affiliates } = affiliateIds.length
+      ? await supabase.from('affiliates').select('id, affiliate_code').in('id', affiliateIds)
+      : { data: [] as Array<{ id: string; affiliate_code: string }> }
+    const codeById = new Map((affiliates ?? []).map((a) => [a.id, a.affiliate_code]))
+    const userIds = [...new Set(requests.map((r) => r.user_id))]
+    const { data: users } = userIds.length
+      ? await supabase.from('profiles').select('id, full_name, email').in('id', userIds)
+      : { data: [] }
+    const userById = new Map((users ?? []).map((u) => [u.id, u.full_name ?? u.email]))
+
+    const rows: PayoutRow[] = requests.map((r) => ({
+      ...r,
+      affiliateName: userById.get(r.user_id) ?? r.user_id.slice(0, 8),
+      affiliateCode: codeById.get(r.affiliate_id) ?? r.affiliate_id.slice(0, 8),
+    }))
+
+    above = missing ? (
+      <p className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+        {PAYOUTS_NOT_APPLIED_NOTICE}
+      </p>
+    ) : error ? (
+      <p className="rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-800">
+        קריאת הבקשות נכשלה: {error.message}
+      </p>
+    ) : null
+
+    const columns: ServerColumn<PayoutRow>[] = [
+      {
+        id: 'affiliate',
+        header: 'שותף',
+        cell: (r) => (
+          <Link href={`/admin/users/${r.user_id}`} className="font-medium hover:underline">
+            {r.affiliateName}
+          </Link>
+        ),
+      },
+      {
+        id: 'code',
+        header: 'קוד שותף',
+        className: 'font-mono text-xs',
+        cell: (r) => r.affiliateCode,
+      },
+      { id: 'amount', header: 'סכום', cell: (r) => formatIls(columnAgorot(r.amount_agorot)) },
+      {
+        id: 'note',
+        header: 'הערת השותף',
+        className: 'max-w-48 truncate text-xs text-black/60',
+        cell: (r) => r.note ?? '',
+      },
+      {
+        id: 'status',
+        header: 'סטטוס',
+        cell: (r) => (
+          <span className="flex flex-col gap-0.5">
+            <span
+              className={`inline-flex w-fit rounded px-2 py-0.5 text-xs font-medium ${PAYOUT_COLORS[r.status] ?? ''}`}
+            >
+              {PAYOUT_LABELS[r.status] ?? r.status}
+            </span>
+            {r.decision_note && <span className="text-xs text-black/60">{r.decision_note}</span>}
+          </span>
+        ),
+      },
+      {
+        id: 'created_at',
+        header: 'הוגש',
+        sortKey: 'created_at',
+        className: 'whitespace-nowrap text-xs text-black/60',
+        cell: (r) => formatDateShort(r.created_at),
+      },
+      {
+        id: 'decided_at',
+        header: 'טופל',
+        className: 'whitespace-nowrap text-xs text-black/60',
+        cell: (r) => (r.decided_at ? formatDateShort(r.decided_at) : ''),
+      },
+      ...(canEdit
+        ? [
+            {
+              id: 'actions',
+              header: 'פעולות',
+              cell: (r: PayoutRow) => (
+                <AffiliatePayoutActionsClient requestId={r.id} status={r.status} />
+              ),
+            } satisfies ServerColumn<PayoutRow>,
+          ]
+        : []),
+    ]
+
+    table = (
+      <ServerDataTable
+        rows={rows}
+        columns={columns}
+        rowKey={(r) => r.id}
+        basePath="/admin/affiliates"
+        params={urlParams}
+        emptyMessage={missing ? 'אין טבלת בקשות' : 'אין בקשות משיכה'}
       />
     )
   } else {
