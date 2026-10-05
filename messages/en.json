@@ -128,6 +128,8 @@
     "openWeekend": "Open on weekends",
     "freeShipping": "Free shipping",
     "nearMe": "Near me",
+    "under99": "Under ₪99",
+    "newest": "Newest",
     "locating": "Locating...",
     "nearMeUnsupported": "This browser does not support location",
     "nearMeInvalid": "We could not read your location",

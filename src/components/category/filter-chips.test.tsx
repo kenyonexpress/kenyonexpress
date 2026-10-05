@@ -26,6 +26,31 @@ describe('filter chips', () => {
     expect(html).toContain('משלוח חינם')
   })
 
+  it('renders five chips and no search field, in the order the row is specified', () => {
+    const html = renderToStaticMarkup(
+      <FilterChips pathname="/category/spa" params={{}} filters={{}} />,
+    )
+    const order = ['weekend', 'shipping', 'near', 'under99', 'newest'].map((id) =>
+      html.indexOf(`data-testid="filter-chip-${id}"`),
+    )
+    expect(order.every((i) => i >= 0)).toBe(true)
+    expect([...order].sort((a, b) => a - b)).toEqual(order)
+    expect(html).toContain('עד ₪99')
+    expect(html).toContain('החדשים')
+    expect(html).not.toMatch(/<input/)
+    expect(html).toContain('href="/category/spa?max=99"')
+    expect(html).toContain('href="/category/spa?sort=newest"')
+  })
+
+  it('marks under-99 and newest active off the page params and links them to off', () => {
+    const html = renderToStaticMarkup(
+      <FilterChips pathname="/products" params={{ max: '99', sort: 'newest' }} filters={{}} />,
+    )
+    expect(html.match(/aria-current="true"/g)).toHaveLength(2)
+    expect(html).toContain('href="/products?sort=newest"')
+    expect(html).toContain('href="/products?max=99"')
+  })
+
   it('renders the near-me chip as a button that reflects the near query', () => {
     const html = renderToStaticMarkup(
       <FilterChips pathname="/category/spa" params={{}} filters={{}} />,

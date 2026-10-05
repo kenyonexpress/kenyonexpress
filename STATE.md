@@ -1,67 +1,61 @@
-RESUME FROM: W09
-Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט W08 DONE: תוכנית
-השותפים; הקוד, הקישור, העוגייה, הקמפיינים, הצילום על ההזמנה והזיכוי לארנק היו
-מ-Q16, נבנו שני הפערים שנמדדו: ספירת קליקים (מעולם לא נכתבה) ובקשת משיכה
-(252 ממתינה); W07 הועבר לארכיון; RESUME FROM מצביע ל-W09, ואם אין W09 בתור,
-ההמשך הוא M02-c96)
+RESUME FROM: W10
+Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט W09 DONE: צ'יפי סינון
+בדף הקטגוריה; שלושה מחמישה היו מ-Q14 ואומתו, שניים נבנו ("עד ₪99", "החדשים");
+W08 הועבר לארכיון; RESUME FROM מצביע ל-W10, ואם אין W10 בתור, ההמשך הוא M02-c96)
 
 ## המשך מ:
 
-**W08 - DONE (05.10.2026): AFFILIATE PROGRAM. שש מתוך שמונה הרגליים היו קיימות
-מ-Q16 (25.09) ואומתו בקוד; שני פערים נמדדו ונבנו: ספירת קליקים ובקשת משיכה.
-parity 7.92% / 9.03% / 4.16% PASS ב-380 / 768 / 1440.** `pwd` אומת, HEAD בהגעה
-`81bbd1385`, עץ נקי. W08 לא הופיע ב-STATE.md, ב-BACKLOG או ב-`git log -20`;
-בארכיון: Q16 בנה את התוכנית, Q41 (01.10) מדד אותה "בנויה במלואה" ולא ראה את
-שני הפערים. **מה כבר היה (נמדד בקוד, לא נבנה שוב):** קוד לכל משתמש
-(`profiles.referral_code`, `fn_ensure_referral_code`, הצטרפות ב-`joinAffiliateProgram`);
-קישור `?ref=` ו-`/r/<code>` עם עוגיית `ke_ref` ל-30 יום בדיוק
-(`REFERRAL_COOKIE_MAX_AGE = 60*60*24*30`, מגע אחרון, `src/proxy.ts`); קמפיינים
-באדמין עם אחוז עמלה פר קמפיין (`commission_bp`, `CampaignForm`, 244 ממתינה);
-צילום הקוד על ההזמנה בקופה (`snapshotAffiliateAttribution` → `orders.affiliate_code`);
-זיכוי לארנק באגורות דרך `fn_wallet_transfer` (`pay.ts`, idempotency
-`affiliate:<id>`); דשבורד ב-`/account/affiliate` עם רכישות ורווחים. **מה חסר
-ונמדד:** (א) `affiliates.total_clicks` (010) לא נכתב על ידי אף שורה בריפו, האדמין
-הציג "0 / n" מאז 010 ולדשבורד לא היו קליקים כלל. (ב) אין שום דרך לבקש משיכה,
-וטקסט התנאים אמר "ללא משיכה למזומן". **מה נבנה:** (1) `252_affiliate_clicks_payouts.sql`
-ב-`migrations/pending` בלבד: `affiliate_clicks` (שורה לכל כתיבת עוגייה, טריגר
-BEFORE INSERT invoker שפותר קוד→שותף, מגדיל `total_clicks` ומפיל קוד שאינו של
-שותף; CHECK על האלפבית של 098 בדיוק, טביעות אצבע מגובבות כמו `referral_signals`) +
-`affiliate_payout_requests` (`amount_agorot bigint` CHECK>0, שלושה סטטוסים,
-בקשה פתוחה אחת לשותף באינדקס ייחודי חלקי, `decided_*`). RLS SELECT לבעלים
-ולאדמין, אפס כתיבה ללקוח, אפס ALTER TYPE. (2) **ספירת קליקים:** `server/affiliates/clicks.ts`
-נקרא מה-proxy בתוך אותו תנאי שכותב את העוגייה (קוד חדש או שונה), דרך
-`event.waitUntil`, best-effort מקצה לקצה (42P01 פעם אחת בתהליך, admin client
-שזורק, כל שגיאה אחרת); `next/headers` לא נכנס לחבילת ה-proxy (הפרסור של
-טוקן האורח שוכפל ב-4 שורות עם הסבר). (3) **דשבורד:** כרטיס "המספרים שלי" עם
-כניסות (`total_clicks`), רכישות (`conversions.length`) וסך עמלות שזוכו; כרטיס
-"משיכת עמלות" עם הסכום הזמין וכפתור. הסכום **נקבע בשרת בלבד**
-(`lib/affiliates/payout.ts`, טהור: עמלות `paid` פחות בקשות `pending`/`paid`,
-מוגבל ליתרת הארנק, לעולם לא מתחת ל-0), אין שדה סכום בטופס; הפעולה
-`requestAffiliatePayout` מסרבת ללא-מאושר, לבקשה פתוחה, ל-0 ול-23505, מוגבלת
-`affiliate-payout` 5/שעה. (4) **אדמין:** לשונית "בקשות משיכה" ב-`/admin/affiliates`
-+ `decideAffiliatePayout` מאחורי `affiliates: write`: "שולם" **מחייב קודם את
-הארנק** (`fn_wallet_transfer` ארנק→`platform:cashback_reserve`, reason
-`affiliate_payout` עם תווית בפנקס, idempotency `affiliate_payout:<id>`,
-`agorotToIls` פעם אחת בגבול) ורק אז הופך סטטוס; "דחייה" עם הערה; audit לכל
-החלטה. אין ספק תשלום. **החלטות שהתקבלו לבד:** (א) קליק = כתיבת עוגייה, לא
-צפייה: אותו דפדפן על אותו קוד בחלון 30 יום נספר פעם אחת. (ב) הטריגר invoker
-ולא definer, EXECUTE נשלל מהלקוחות; הפתרון בטריגר כדי שה-proxy יכתוב משפט
-אחד. (ג) enum `wallet_reason` לא נוגעים: בפרודקשן `reason` הוא `text` לפי
-הטיפוסים המחוללים (`p_reason: string`, והפנקס החי כבר נושא `order_cashback`
-שה-enum של 026 אינו מכיר). (ד) טקסט התנאים עודכן ל"משיכה בבקשה, מטופלת
-ידנית" כי הפריט דורש כפתור משיכה. (ה) הסכום אינו קלט משתמש. **בדיקות:** 4 קבצים
-חדשים (`affiliate-clicks-payouts-migration` נועץ אלפבית/סטטוסים/RLS/אפס enum,
-`payout.test` 7, `clicks.test` 8 עם admin מדומה, `AffiliatePayoutForm.test` jsdom 3)
-+ 10 עיגונים חדשים ב-`affiliates/wired.test.ts` + רישום 252 במלאי. **שערים:**
-`pnpm type-check` 0; `pnpm lint` נקי (i18n 606/606, 25 מפתחות חדשים ב-`he.json`+
-`en.json`); `pnpm test` **630/630 קבצים, 7561 עברו, 12 דולגו** תחת `env -u` של
-92 שמות (`[SENSITIVE]`, `SUPABASE*`, `VERCEL*`) + `CARDCOM_*`/`VOUCHER_QR_SECRET`
-לקובץ `invoices.test` (env, לא קוד); build exit 0 אחרי `rm -rf .next`, `BUILD_ID`
-`Pg_w3auIci8lYa6ozPHFk`; **השער, בחזית, `--baseline`, `--widths=380,768,1440`,
-שלוש שורות ב-`docs/UI-PARITY-REPORT.md` (`81bbd1385-dirty`): 380: 7.92% PASS;
-768: 9.03% PASS; 1440: 4.16% PASS**, מול build מקומי על 3399 (pid 95662, cwd
-אומת, BUILD_ID אומת ב-HTML). השרת נסגר. **לא נעשה:** אין `--apply`, אין שינוי
-DB/vault/env/DNS/Vercel, אין מחיקה, אין ספק תשלום, אין שינוי ב-244.
+**W09 - DONE (05.10.2026): FILTER CHIPS. שלושה מחמשת הצ'יפים היו קיימים מ-Q14
+(25.09) ואומתו בקוד ובדפדפן; שניים נבנו: "עד ₪99" ו"החדשים". אין שדה חיפוש.
+parity 3.72% / 2.88% / 1.71% PASS ב-380 / 768 / 1440.** `pwd` אומת, HEAD בהגעה
+`3043995e9`, עץ נקי. W09 לא הופיע ב-STATE.md, ב-BACKLOG או ב-`git log -20`;
+בארכיון: Q14 בנה את השורה (`FilterChips`, `NearMeChip`, `lib/catalogue/filter-chips.ts`).
+**מה כבר היה (נמדד, לא נבנה שוב):** "פתוח בסופ״ש" = `?open=weekend` על התג
+`open-weekend` ב-`products.tags` (עמודה שקיימת בפרודקשן); "משלוח חינם" =
+`?shipping=free` על `requires_shipping` + `shipping_price_agorot=0` עם נפילה
+ל-42703 עד 243; "קרוב אליי" = כפתור, ההסכמה היא הלחיצה (`getCurrentPosition`
+רק ב-`toggle`, לעולם לא ב-mount), `?near=lat,lng` מעוגל ל-4 ספרות, המיון
+לפי מרחק אחרי הקריאה המקושרת (`sortByDistance`), והמרחק מוצג על הכרטיס
+(`formatDistance`). **מגבלה שנמדדה ולא שונתה:** המרחק הוא מכתובת העסק ברזולוציית
+עיר (`suppliers.city` → `cityByName`), כי `latitude`/`longitude` הן ב-136 הממתינה
+ואינן בפרודקשן; `supplierLocation` כבר מעדיף אותן ברגע שיהיו. **מה חסר ונבנה:**
+(1) "עד ₪99" כותב `max=99`, הפרמטר שפאסט המחיר בסיידבר כבר כותב והשרת כבר
+מסנן (`kenyon_price <= max`); `99` הוא גבול אוסף `under-99` (`collectionRule`).
+כשהצ'יפ נדלק הוא זורק `min` שגדול או שווה ל-99 (קבוצה ריקה מבנייה) ומוריד
+`page`. (2) "החדשים" כותב `sort=newest`, הערך שבורר המיון כבר קורא. אין פרמטר
+חדש ואין שני מצבים ל-URL אחד: הצ'יפ, הפאסט והבורר מסכימים כי יש ערך אחד.
+`quickChipsFromParams`, `under99ChipHref`, `newestChipHref` טהורים ב-
+`lib/catalogue/filter-chips.ts`; `FilterChips` מרנדר חמישה בסדר הפריט (סופ״ש,
+משלוח, קרוב אליי, עד 99, החדשים), כולם קישורים חוץ מקרוב אליי, אותן מחלקות
+`category-chips__chip` (גלולה 44px, גבול 18%, פעיל בצהוב המותג, RTL מהמסמך).
+אפס שינוי בשני הדפים (`/category/[slug]`, `/products`): שניהם כבר מעבירים
+`sort`/`max` ב-`params`. מפתחות `filterChips.under99`/`newest` ב-`he.json`+`en.json`.
+**הוכחה בשרת (build טרי `n5544SzEg42wM8iw3hrwj` על 3412, cwd אומת):**
+`/category/hot-deals` מרנדר חמישה `data-testid="filter-chip-*"` עם
+`?max=99`/`?sort=newest`; `?max=99&sort=newest` נותן שני `aria-current="true"`;
+`/category/vacation` ללא סינון 9 מחירים 300..3900, עם `?max=99` אפס שורות;
+`?sort=newest` מחליף את סדר שתי השורות של hot-deals לפי `created_at`.
+**בדיקות:** +5 ב-`filter-chips.test.ts` (פרסינג, הדלקה/כיבוי, זריקת min,
+שמירת near, החלפת sort) ו-+2 ב-`filter-chips.test.tsx` (חמישה צ'יפים בסדר,
+אין `<input>`, שני פעילים). **שערים:** `pnpm type-check` 0; `pnpm lint` נקי
+(i18n 606/606, המחרוזות החדשות ב-JSON); `pnpm test` **630/630 קבצים, 7567+
+עברו, 12 דולגו** (`invoices.test` נופל רק עם `CARDCOM_*`/`VOUCHER_QR_SECRET`
+של ההארנס בסביבה ועובר 24/24 כשהם מוסרים, env ולא קוד, כמו ב-W08); build exit 0
+אחרי `rm -rf .next`; **השער, בחזית, `--baseline='refs/electro_shop_{width}.png'`,
+`--widths=380,768,1440`, שלוש שורות ב-`docs/UI-PARITY-REPORT.md` (`3043995e9-dirty`):
+380: 3.72% PASS; 768: 2.88% PASS; 1440: 1.71% PASS** (Q27/M03-c71: 3.53/2.52/1.69;
+הסטייה היא שני הצ'יפים הנוספים בשורה). השרת שלי נסגר; listener זר על 3311
+(`pnpm start` יתום מ-W08, BUILD_ID `Pg_w3auIci8lYa6ozPHFk`) לא הופעל ולא נסגר.
+**החלטות שהתקבלו לבד:** (א) הצ'יפים רוכבים על `max`/`sort` ולא על פרמטר משלהם.
+(ב) "עד ₪99" פעיל רק ב-`max=99` בדיוק; `max=120` הוא סינון מחיר אך לא הצ'יפ.
+(ג) העיצוב לא שונה: שורת Q14 כבר נמדדה בשער ותואמת את טוקני Electro
+(גלולה 22px, צהוב `#fed700`, `#333e48`). (ד) push לענף נעשה לפי הוראת הפריט
+כמו W01..W08, בידיעה ש-Vercel מחובר לענף (זיכרון 05.10). **לא נעשה:** אין
+מיגרציה, אין שינוי DB/env/DNS/Vercel, אין מחיקה, אין שדה חיפוש.
+
+**W08 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר ב-W09):
+תוכנית השותפים; שש מתוך שמונה הרגליים היו מ-Q16, נבנו ספירת קליקים ובקשת
+משיכה (252 ממתינה); parity 7.92 / 9.03 / 4.16 PASS.
 
 **W07 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
 ב-W08): דרגות המועדון; הכלל והכרטיס היו מ-Q15, נבנו טבלת ספים נערכת באדמין

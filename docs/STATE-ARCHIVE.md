@@ -2,6 +2,64 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## W08 (הועבר מ-STATE.md ב-W09, לשמירה על תקרת 300 שורות)
+
+**W08 - DONE (05.10.2026): AFFILIATE PROGRAM. שש מתוך שמונה הרגליים היו קיימות
+מ-Q16 (25.09) ואומתו בקוד; שני פערים נמדדו ונבנו: ספירת קליקים ובקשת משיכה.
+parity 7.92% / 9.03% / 4.16% PASS ב-380 / 768 / 1440.** `pwd` אומת, HEAD בהגעה
+`81bbd1385`, עץ נקי. W08 לא הופיע ב-STATE.md, ב-BACKLOG או ב-`git log -20`;
+בארכיון: Q16 בנה את התוכנית, Q41 (01.10) מדד אותה "בנויה במלואה" ולא ראה את
+שני הפערים. **מה כבר היה (נמדד בקוד, לא נבנה שוב):** קוד לכל משתמש
+(`profiles.referral_code`, `fn_ensure_referral_code`, הצטרפות ב-`joinAffiliateProgram`);
+קישור `?ref=` ו-`/r/<code>` עם עוגיית `ke_ref` ל-30 יום בדיוק
+(`REFERRAL_COOKIE_MAX_AGE = 60*60*24*30`, מגע אחרון, `src/proxy.ts`); קמפיינים
+באדמין עם אחוז עמלה פר קמפיין (`commission_bp`, `CampaignForm`, 244 ממתינה);
+צילום הקוד על ההזמנה בקופה (`snapshotAffiliateAttribution` → `orders.affiliate_code`);
+זיכוי לארנק באגורות דרך `fn_wallet_transfer` (`pay.ts`, idempotency
+`affiliate:<id>`); דשבורד ב-`/account/affiliate` עם רכישות ורווחים. **מה חסר
+ונמדד:** (א) `affiliates.total_clicks` (010) לא נכתב על ידי אף שורה בריפו, האדמין
+הציג "0 / n" מאז 010 ולדשבורד לא היו קליקים כלל. (ב) אין שום דרך לבקש משיכה,
+וטקסט התנאים אמר "ללא משיכה למזומן". **מה נבנה:** (1) `252_affiliate_clicks_payouts.sql`
+ב-`migrations/pending` בלבד: `affiliate_clicks` (שורה לכל כתיבת עוגייה, טריגר
+BEFORE INSERT invoker שפותר קוד→שותף, מגדיל `total_clicks` ומפיל קוד שאינו של
+שותף; CHECK על האלפבית של 098 בדיוק, טביעות אצבע מגובבות כמו `referral_signals`) +
+`affiliate_payout_requests` (`amount_agorot bigint` CHECK>0, שלושה סטטוסים,
+בקשה פתוחה אחת לשותף באינדקס ייחודי חלקי, `decided_*`). RLS SELECT לבעלים
+ולאדמין, אפס כתיבה ללקוח, אפס ALTER TYPE. (2) **ספירת קליקים:** `server/affiliates/clicks.ts`
+נקרא מה-proxy בתוך אותו תנאי שכותב את העוגייה (קוד חדש או שונה), דרך
+`event.waitUntil`, best-effort מקצה לקצה (42P01 פעם אחת בתהליך, admin client
+שזורק, כל שגיאה אחרת); `next/headers` לא נכנס לחבילת ה-proxy (הפרסור של
+טוקן האורח שוכפל ב-4 שורות עם הסבר). (3) **דשבורד:** כרטיס "המספרים שלי" עם
+כניסות (`total_clicks`), רכישות (`conversions.length`) וסך עמלות שזוכו; כרטיס
+"משיכת עמלות" עם הסכום הזמין וכפתור. הסכום **נקבע בשרת בלבד**
+(`lib/affiliates/payout.ts`, טהור: עמלות `paid` פחות בקשות `pending`/`paid`,
+מוגבל ליתרת הארנק, לעולם לא מתחת ל-0), אין שדה סכום בטופס; הפעולה
+`requestAffiliatePayout` מסרבת ללא-מאושר, לבקשה פתוחה, ל-0 ול-23505, מוגבלת
+`affiliate-payout` 5/שעה. (4) **אדמין:** לשונית "בקשות משיכה" ב-`/admin/affiliates`
++ `decideAffiliatePayout` מאחורי `affiliates: write`: "שולם" **מחייב קודם את
+הארנק** (`fn_wallet_transfer` ארנק→`platform:cashback_reserve`, reason
+`affiliate_payout` עם תווית בפנקס, idempotency `affiliate_payout:<id>`,
+`agorotToIls` פעם אחת בגבול) ורק אז הופך סטטוס; "דחייה" עם הערה; audit לכל
+החלטה. אין ספק תשלום. **החלטות שהתקבלו לבד:** (א) קליק = כתיבת עוגייה, לא
+צפייה: אותו דפדפן על אותו קוד בחלון 30 יום נספר פעם אחת. (ב) הטריגר invoker
+ולא definer, EXECUTE נשלל מהלקוחות; הפתרון בטריגר כדי שה-proxy יכתוב משפט
+אחד. (ג) enum `wallet_reason` לא נוגעים: בפרודקשן `reason` הוא `text` לפי
+הטיפוסים המחוללים (`p_reason: string`, והפנקס החי כבר נושא `order_cashback`
+שה-enum של 026 אינו מכיר). (ד) טקסט התנאים עודכן ל"משיכה בבקשה, מטופלת
+ידנית" כי הפריט דורש כפתור משיכה. (ה) הסכום אינו קלט משתמש. **בדיקות:** 4 קבצים
+חדשים (`affiliate-clicks-payouts-migration` נועץ אלפבית/סטטוסים/RLS/אפס enum,
+`payout.test` 7, `clicks.test` 8 עם admin מדומה, `AffiliatePayoutForm.test` jsdom 3)
++ 10 עיגונים חדשים ב-`affiliates/wired.test.ts` + רישום 252 במלאי. **שערים:**
+`pnpm type-check` 0; `pnpm lint` נקי (i18n 606/606, 25 מפתחות חדשים ב-`he.json`+
+`en.json`); `pnpm test` **630/630 קבצים, 7561 עברו, 12 דולגו** תחת `env -u` של
+92 שמות (`[SENSITIVE]`, `SUPABASE*`, `VERCEL*`) + `CARDCOM_*`/`VOUCHER_QR_SECRET`
+לקובץ `invoices.test` (env, לא קוד); build exit 0 אחרי `rm -rf .next`, `BUILD_ID`
+`Pg_w3auIci8lYa6ozPHFk`; **השער, בחזית, `--baseline`, `--widths=380,768,1440`,
+שלוש שורות ב-`docs/UI-PARITY-REPORT.md` (`81bbd1385-dirty`): 380: 7.92% PASS;
+768: 9.03% PASS; 1440: 4.16% PASS**, מול build מקומי על 3399 (pid 95662, cwd
+אומת, BUILD_ID אומת ב-HTML). השרת נסגר. **לא נעשה:** אין `--apply`, אין שינוי
+DB/vault/env/DNS/Vercel, אין מחיקה, אין ספק תשלום, אין שינוי ב-244.
+
 ## W07 (הועבר מ-STATE.md ב-W08, לשמירה על תקרת 300 שורות)
 
 **W07 - DONE (05.10.2026): CLUB TIERS. כלל הדרגה, הכרטיס והשאילתה היו קיימים

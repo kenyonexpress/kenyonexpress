@@ -6,9 +6,12 @@ import {
   chipLinkParams,
   hasActiveChip,
   isMissingShippingColumn,
+  newestChipHref,
   parseOpen,
   parseShipping,
+  quickChipsFromParams,
   toggleChipHref,
+  under99ChipHref,
 } from './filter-chips'
 
 describe('chip parsers', () => {
@@ -121,5 +124,46 @@ describe('isMissingShippingColumn', () => {
       false,
     )
     expect(isMissingShippingColumn(null)).toBe(false)
+  })
+})
+
+describe('the two chips that ride on existing parameters', () => {
+  it('reads under-99 and newest off the same params the facet and the sort select write', () => {
+    expect(quickChipsFromParams({})).toEqual({ under99: false, newest: false })
+    expect(quickChipsFromParams({ max: '99', sort: 'newest' })).toEqual({
+      under99: true,
+      newest: true,
+    })
+    // A different cap is a price filter, but not this chip.
+    expect(quickChipsFromParams({ max: '120' }).under99).toBe(false)
+    expect(quickChipsFromParams({ max: '99.0' }).under99).toBe(false)
+    expect(quickChipsFromParams({ sort: 'price_asc' }).newest).toBe(false)
+  })
+
+  it('under-99 turns on by writing max=99, replaces a different cap, and drops the page', () => {
+    expect(under99ChipHref('/category/spa', { page: '2', open: 'weekend' })).toBe(
+      '/category/spa?open=weekend&max=99',
+    )
+    expect(under99ChipHref('/category/spa', { max: '150' })).toBe('/category/spa?max=99')
+  })
+
+  it('under-99 drops a min at or above the cap so the result is never empty by construction', () => {
+    expect(under99ChipHref('/category/spa', { min: '120' })).toBe('/category/spa?max=99')
+    expect(under99ChipHref('/category/spa', { min: '99' })).toBe('/category/spa?max=99')
+    // A min below the cap is a narrower band the customer chose; it stays.
+    expect(under99ChipHref('/category/spa', { min: '50' })).toBe('/category/spa?min=50&max=99')
+  })
+
+  it('under-99 turns off by removing max and keeps everything else, including near', () => {
+    expect(under99ChipHref('/category/spa', { max: '99', near: '32.08,34.78', min: '50' })).toBe(
+      '/category/spa?near=32.08%2C34.78&min=50',
+    )
+  })
+
+  it('newest toggles sort=newest and falls back to the default order', () => {
+    expect(newestChipHref('/products', { max: '99' })).toBe('/products?max=99&sort=newest')
+    expect(newestChipHref('/products', { sort: 'newest', page: '4' })).toBe('/products')
+    // Another sort is replaced, not stacked: one sort parameter, one order.
+    expect(newestChipHref('/products', { sort: 'price_asc' })).toBe('/products?sort=newest')
   })
 })

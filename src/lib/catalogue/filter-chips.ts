@@ -1,6 +1,6 @@
 /**
- * The three filter chips under the category row: open on the weekend, free
- * shipping, near me.
+ * The five filter chips under the category row: open on the weekend, free
+ * shipping, near me, under 99, newest.
  *
  * Pure. The URL tokens, the parsers that read them back, the href that toggles
  * one, and the filter each one adds to a PostgREST query. No React and no
@@ -145,4 +145,73 @@ export function isMissingShippingColumn(
 
 export function hasActiveChip(filters: ChipFilters): boolean {
   return Boolean(filters.openWeekend || filters.freeShipping)
+}
+
+/*
+ * THE TWO CHIPS THAT RIDE ON PARAMETERS THE PAGE ALREADY HAS.
+ *
+ * "Under 99" and "newest" are not new filters: `?max=` is the price facet the
+ * sidebar writes and `getCategoryProducts` applies as `kenyon_price <= max`,
+ * and `?sort=newest` is the control bar's "most recent" order. A chip that
+ * minted a second parameter for the same thing would let the URL say two
+ * things at once (`max=150&under=99`), and the sidebar, the sort select and
+ * the chip would each show a different state for one result set. So the chip
+ * writes the parameter the other control reads, and all three agree because
+ * there is one value to agree on.
+ *
+ * 99 is the bound of the `under-99` collection (`collectionRule`), so the chip
+ * on any category page shows the same rows the collection page shows for that
+ * category. It compares a whole-shekel bound against `kenyon_price` like the
+ * facet does; no arithmetic, so it does not go through the money module.
+ */
+
+export const PRICE_MAX_PARAM = 'max'
+export const PRICE_MIN_PARAM = 'min'
+export const SORT_PARAM = 'sort'
+export const UNDER_PRICE_ILS = 99
+export const NEWEST_SORT = 'newest'
+
+export interface QuickChips {
+  under99: boolean
+  newest: boolean
+}
+
+/**
+ * Whether the two parameter-backed chips are on, read from the page's link
+ * params (strings, as the links carry them). `max=99` exactly: a customer who
+ * typed 120 into the facet has a price cap, but not this one, and the chip
+ * then links to the URL that tightens it to 99.
+ */
+export function quickChipsFromParams(params: Record<string, string | undefined>): QuickChips {
+  return {
+    under99: params[PRICE_MAX_PARAM] === String(UNDER_PRICE_ILS),
+    newest: params[SORT_PARAM] === NEWEST_SORT,
+  }
+}
+
+/**
+ * The href of the under-99 chip. `toggleChipHref` on `max=99`, plus one rule:
+ * a `min` at or above the cap is dropped when the chip turns on, because
+ * `min=120&max=99` is an empty set by construction and the customer did not
+ * ask for an empty page, they asked for the cheap ones.
+ */
+export function under99ChipHref(
+  pathname: string,
+  params: Record<string, string | undefined>,
+): string {
+  const turningOn = params[PRICE_MAX_PARAM] !== String(UNDER_PRICE_ILS)
+  const min = Number.parseFloat(params[PRICE_MIN_PARAM] ?? '')
+  const next =
+    turningOn && Number.isFinite(min) && min >= UNDER_PRICE_ILS
+      ? { ...params, [PRICE_MIN_PARAM]: undefined }
+      : params
+  return toggleChipHref(pathname, next, PRICE_MAX_PARAM, String(UNDER_PRICE_ILS))
+}
+
+/** The href of the newest chip: `sort=newest` on, or back to the default order. */
+export function newestChipHref(
+  pathname: string,
+  params: Record<string, string | undefined>,
+): string {
+  return toggleChipHref(pathname, params, SORT_PARAM, NEWEST_SORT)
 }
