@@ -71,6 +71,8 @@ export function projectRefOf(url) {
  *
  * Pure, so `seed-target-guard.test.mjs` can drive every branch without touching
  * a database or an environment.
+ *
+ * @param {{ url?: string, override?: string, productionRef?: string }} [input]
  */
 export function checkSeedTarget({ url, override, productionRef = PRODUCTION_PROJECT_REF } = {}) {
   const ref = projectRefOf(url)
