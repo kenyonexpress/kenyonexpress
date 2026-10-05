@@ -190,4 +190,4 @@ export function totalHebrewLiterals(files = scannedFiles()) {
  * shopper copy since the scan began; nothing moved to or from the catalog.
  * 624 -> 606.
  */
-export const HEBREW_LITERAL_CEILING = 606
+export const HEBREW_LITERAL_CEILING = 605

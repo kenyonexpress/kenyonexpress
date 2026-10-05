@@ -65,7 +65,13 @@ export default function ProductQuestionLink({
         <WhatsAppIcon size={18} />
         {via === 'supplier' ? t('contact.askBusiness') : t('contact.productQuestion')}
       </a>
-      <p className="text-xs text-heading/70" data-testid="product-question-note">
+      {/*
+        /80 and not /70: at 12px the note is small text and needs 4.5:1. The
+        heading colour at 70% on white is #70787f, 4.48:1, and Lighthouse
+        mobile failed the product page's accessibility on exactly this node
+        (2026-10-05, W12, score 97). At 80% it is #5c656d, 5.9:1.
+      */}
+      <p className="text-xs text-heading/80" data-testid="product-question-note">
         {via === 'supplier' ? t('contact.viaSupplier') : t('contact.viaStore')}
       </p>
     </div>

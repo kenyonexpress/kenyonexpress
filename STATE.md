@@ -1,85 +1,75 @@
-RESUME FROM: W12
-Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט W11 DONE: חיווט
-אנליטיקה; Sentry/PostHog/Axiom אומתו, ארבעה פגמים נמדדו ותוקנו בקוד, שני ערכי env
-נשארו לאופיר; W10 הועבר לארכיון; RESUME FROM מצביע ל-W12, ואם אין W12 בתור,
-ההמשך הוא M02-c96)
+RESUME FROM: W13
+Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט W12 DONE: SEO
+וביצועים; הכל היה קיים חוץ משלושה פגמים שנמדדו ותוקנו; Lighthouse mobile
+99/100/100/100 בשלושת הדפים; W11 הועבר לארכיון; RESUME FROM מצביע ל-W13, ואם אין
+W13 בתור, ההמשך הוא M02-c96)
 
 ## המשך מ:
 
-**W11 - DONE (05.10.2026): ANALYTICS WIRING. שלוש הרגליים אומתו בקוד, ב-build
-ובדפדפן; ארבעה פגמים נמדדו ותוקנו בקוד; שני ערכי env חסרים ב-Vercel ונרשמו לאופיר,
-לא נוצרו. parity home 7.92% / 9.03% / 4.16% PASS ב-380 / 768 / 1440.** `pwd` אומת,
-HEAD בהגעה `39c44ebf2`, עץ נקי. W11 לא הופיע ב-STATE.md, ב-BACKLOG או ב-`git log -20`;
-L08 (ארכיון) מדד את אותן רגליים מול פרודקשן ונחסם על env. **Sentry, מה היה:** init
-בשלושת הזמנים (`sentry.server.config.ts`, `sentry.edge.config.ts`,
-`instrumentation-client.ts`, נטענים מ-`src/instrumentation.ts`), release =
-`SENTRY_RELEASE ?? VERCEL_GIT_COMMIT_SHA` בשרת וב-edge ו-`NEXT_PUBLIC_*` בדפדפן
-(`autoExposeSystemEnvs: true` בפרויקט, נקרא), מנהרת `/monitoring`, scrub, ‏`sendDefaultPii:false`.
-**מה נמדד שבור:** לוג ה-build של הפריסה החיה `dpl_E9PfZCJMGjNH3kjwLKRFb2B4KowM`
-(`vercel inspect --logs`): `No org provided. Will not upload source maps.` ב-Production
-יש `SENTRY_AUTH_TOKEN` ושני DSN אבל לא `SENTRY_ORG`/`SENTRY_PROJECT`, ולכן **אף source
-map לא עלה מעולם** וכל stack trace בפרודקשן נשאר minified עם build ירוק. **תוקן בקוד,
-בלי env:** ה-slugs הציבוריים (`kenyonexpress`/`kenyonexpress-web`, מתועדים
-ב-`SENTRY-SETUP.md`) וה-host האירופי `https://de.sentry.io` כברירת מחדל
-ב-`next.config.ts`, `errorHandler` שהופך כשל העלאה לאזהרה ולא לכשל deploy;
-`src/__tests__/sentry-build-config.test.ts` מצמיד. build מקומי עם
-`SENTRY_KEEP_SOURCEMAPS=1`: 150 קובצי `.map` נוצרו (ההעלאה עצמה דורשת את הטוקן
-שאינו מקומי, נמדד בפריסה הבאה). `pnpm sentry:verify` לא הורץ: אין `SENTRY_DSN`
-ב-`.env.local`; קבלת ingest מפרודקשן נמדדה ב-L08. **PostHog, מה היה:** fan-out
-בדפדפן (`commerce-client.ts`) ובשרת (`track.ts`), ‏`$pageview`, הסכמה בשני המקומות,
-replay מותנה. **מה נמדד שבור ותוקן:** (1) **ה-CSP לא הכיל את מארח PostHog**: build
-מקומי עם מפתח ו-host מקומיים, הסכמה ניתנה, הדפדפן סירב לכל `/capture/` על
-`connect-src` ואפס אירועים יצאו; בפרודקשן זה היה המצב ביום שהמפתח ייכנס (חצי שרת
-מגיע, חצי דפדפן נחסם). ‏`postHogCspHosts` ב-`frame-policy.ts`, מותנה במפתח כמו
-Turnstile, פותח `connect-src`+`script-src` ל-host המוגדר ולמארח ה-assets של
-PostHog Cloud (us/eu), `csp-posthog.test.ts`. (2) **שניים מששת השמות הגיעו בשם
-אחר**: `view_item` (GA4) ו-`voucher_redeemed` (רשימה לבנה פרוסה). טבלת שמות אחת
-`src/lib/analytics/posthog-names.ts` ששני ה-fan-outs עוברים דרכה: `view_product`,
-`coupon_redeemed`. (3) **אין identify**: `identifyPostHogUser` ב-`track.ts`, נקרא
-בשלושת מסלולי הכניסה (`signInWithEmail`, `verifyPhoneOtp`, `/auth/callback`), ‏`$identify`
-עם uuid בלבד ו-`$anon_distinct_id` מעוגיית ה-PostHog, **מותנה בהסכמה** (בניגוד
-לאירועי הכסף; הנימוק בקוד). (4) **אין `gift_sent`**: `trackPostHogServerEvent`
-(PostHog בלבד, כי הרשימה הלבנה הפרוסה תפיל אותו ב-200 שקט) מ-`finalizeOrder`
-כשמייל מתנה נכנס לתור ומ-`transferVoucher`. `add_to_cart`, `begin_checkout`,
-`purchase` היו נכונים. **אומת בדפדפן (dev):** `scripts/posthog-sink.mjs` (חדש,
-מחליף את `/capture/` מקומית; עונה ל-`/array/<key>/config` ול-`/flags/` כי בלעדיהם
-posthog-js לא שולח כלל), build `9_7T9OM6JhDyOQj103gn1` על 3417 (cwd אומת), Chromium
-עם UA רגיל ו-`navigator.webdriver` מוסווה (posthog-js מפיל כל capture מאוטומציה,
-שלוש הדקות שנמדדו): **בלי הסכמה 0 אירועים; עם הסכמה `$pageview` על `/`,
-`$pageview` על המוצר ו-`view_product` (value_agorot 9900) תחת `distinct_id` אחד;
-כניסה אמיתית של משתמש E2E הפיקה `$identify` עם uuid ו-`$anon_distinct_id` זהה
-למזהה הדפדפן** (ארבע כניסות על prod auth במהלך הפריט, מגבלה 10/שעה). ‏`purchase`,
-`gift_sent`, `coupon_redeemed` לא הורצו חיים (כתיבה לפרודקשן); מכוסים ביחידה
-(`track-posthog-identify.test.ts`, ‏`track-posthog-fanout.test.ts`). **Axiom:** אין
-Vercel log drain (`/v1/drains` ו-`/v1/integrations/log-drains` ריקים, קריאה
-בלבד) **ואין צורך**: `log.ts` משגר כל שורה מובנית ל-Axiom ב-fetch כשיש
-`AXIOM_TOKEN`+`AXIOM_DATASET`, **ושניהם קיימים ב-Production** (שמות בלבד);
-`with-request-log.ts` עוטף מסלולי API, `log-coverage.test.ts` שומר. **env:** אפס
-משתנים נוצרו/שונו. **לאופיר:** (א) `NEXT_PUBLIC_POSTHOG_KEY` (+`NEXT_PUBLIC_POSTHOG_HOST`
-אם EU) ב-Vercel Production ופריסה; עד אז PostHog אינרטי (BACKLOG 20). (ב) אחרי
-הפריסה הבאה לקרוא `vercel inspect <dpl> --logs` ולראות העלאת source maps; אם
-הטוקן חסר `project:releases` תהיה אזהרה (BACKLOG 21). **נמדד ולא תוקן:** GA4
-ו-Meta גם הם מחוץ ל-CSP (BACKLOG 22, קוד). `begin_checkout` נשלח פעמיים
-(דפדפן+שרת), משפך סופר אנשים ולא אירועים, תועד ב-`ANALYTICS-EVENTS.md` §8.
-**החלטות שהתקבלו לבד:** (א) slugs של Sentry בקוד ולא env חדש. (ב) `gift_sent`
-PostHog-only, בלי מיגרציה. (ג) identify מהשרת ומותנה בהסכמה. (ד) שמות PostHog
-לפי הבריף, הרשימה הלבנה לא נגעה. (ה) push לענף כמו W01..W10. **שערים:**
-`pnpm type-check` 0; `pnpm lint` 0 (i18n 606/606, docs-index 282); `pnpm test`
-**636/636 קבצים, 7631 עברו, 12 דולגו** תחת `env -i`; build exit 0 פעמיים
-(`rm -rf .next`); **השער בחזית, `--page=home --baseline='refs/ke_live_{width}.png'
---widths=380,768,1440`, שלוש שורות ב-`docs/UI-PARITY-REPORT.md` (`39c44ebf2-dirty`):
-380: 7.92% PASS; 768: 9.03% PASS; 1440: 4.16% PASS** (M01-c96: 8.58/9.01/4.16; נמדד
-על ה-build הראשון, לפני תיקון ה-CSP, שאינו משנה פיקסל). **לא נעשה:** אין מיגרציה,
-אין שינוי DB/env/DNS/Vercel, אין מחיקה, אין שדה חיפוש.
+**W12 - DONE (05.10.2026): SEO AND PERFORMANCE. כל מה שהבריף דורש היה קיים
+ואומת על build נקי ושרת של אותו build; שלושה פגמים נמדדו ותוקנו בקוד. Lighthouse
+mobile (devtools throttling, הנתון המקומי הכן): בית 99/100/100/100, קטגוריה
+99/100/100/100, מוצר 99/100/100/100. parity product 4.76% / 4.17% / 2.44% ו-home
+7.92% / 9.03% / 4.16% PASS ב-380 / 768 / 1440.** `pwd` אומת, HEAD בהגעה `b1632df45`,
+עץ נקי. W12 לא הופיע ב-STATE.md, ב-BACKLOG או ב-`git log -20`. **דפי המדגם:** `/`,
+`/category/beauty-health` (13 מוצרים), `/product/אוזניות-איירפודס-3` (slug נקי, 10
+במלאי). **build:** `rm -rf .next`, env של ה-harness מנוקה (112 שמות), ‏`NEXT_PUBLIC_APP_URL=http://localhost:3512`
+ב-build וב-start, ‏canonical אחד ב-`index.html`, ה-listener על 3512 אומת לפי cwd.
+**מה כבר היה (נמדד ב-HTML המוגש):** `<html lang="he" dir="rtl">`; כותרות עבריות;
+canonical בשלושת הדפים; og:title/description/url/locale/image (OG image מ-`opengraph-image.tsx`
+לכל דף); JSON-LD: Organization+WebSite בבית, BreadcrumbList בקטגוריה, Product+Offer
+(מחיר, מטבע, זמינות, מוכר, strikethrough) + BreadcrumbList במוצר; `robots.txt` עם
+17 Disallow (אסימונים חתומים, חשבון, ספק, אדמין, סל, קופה, api) ו-`Sitemap:` יחיד;
+`sitemap.xml` הוא sitemapindex לחמישה קבצים, ‏lastmod מ-`updated_at`: products 46/46,
+categories 13/13, suppliers 7/7, content 14/15 (contact בלי, מתועד), regions 0/17
+(**בכוונה**, מתועד ב-`sitemap-sections.ts`: דף אזור אין לו תאריך אמיתי). תמונות: כל
+`<img>` בשלושת הדפים (85/15/7) יוצא מ-`next/image`/`getImageProps` עם srcset ו-sizes,
+‏`formats: avif, webp` ב-`next.config.ts`. **מה נמדד שבור ותוקן:** (1) **twitter:title
+בקטגוריה ובמוצר היה כותרת הבית** ("קניון אקספרס | קופונים ומבצעים") בעוד og:title
+של הדף נכון: ה-layout הגדיר `twitter` עם title קבוע, ו-Next ממזג את השדה בשלמותו
+לכל דף שלא כתב `twitter`. תוקן ב-`layout.tsx`: `twitter: { card }` בלבד, ואז Next
+ממלא מ-openGraph של הדף (אומת ב-`resolve-metadata.js`, ‏`postProcessMetadata`).
+נמדד אחרי: קטגוריה twitter:title "טיפוח בריאות ויופי", מוצר "אוזניות AirPods 3", בית
+ללא שינוי. פין: `src/app/layout-twitter-inherits-page.test.ts`. (2) **Organization
+ו-WebSite נקראו `KenyonExpress`** (לטינית, מחרוזת שאינה מופיעה בשום מקום גלוי) בעוד
+`og:site_name`, תבנית הכותרת וה-header אומרים קניון אקספרס; גוגל קורא את שם האתר
+מ-WebSite. תוקן ב-`json-ld.ts`: `name` עברי, `alternateName: KenyonExpress`, טסט
+ב-`json-ld.test.ts`. (3) **Lighthouse נגישות 97 במוצר, color-contrast 4.48:1** על
+`product-question-note` (W10, ‏`text-heading/70` ב-12px = #70787f על לבן). תוקן
+ל-`/80` (#5c656d, 5.9:1); אחרי: 100. **Lighthouse (build `X0EKPhR6htKNwz5hBwjVK`,
+3512, Lighthouse 13.5.0, mobile):** devtools: בית perf 99 / a11y 100 / bp 100 / seo 100,
+CLS 0.003, LCP 1.6s; קטגוריה 99 / 100 / 100 / 100, CLS 0.015, LCP 1.6s; מוצר
+99 / 100 / 100 / 100, CLS 0.002, LCP 1.6s. simulate (Lantern, לרישום בלבד, ראו
+`LIGHTHOUSE-AUDIT.md`): בית 86 / 100 / 100 / 100, קטגוריה 93 / 100 / 100 / 100, מוצר
+86 / 100 / 100 / 100, CLS זהה. אין layout shift (CLS ≤ 0.015 בכולם). **החלטות
+שהתקבלו לבד:** (א) **Heebo לא נטען ב-preload, בכוונה ונשאר כך**: `preload: false`
+ב-`layout.tsx` עם הנימוק המדוד [24] (פסקת ה-LCP היא Arial, ו-preload של הפונט מתחרה
+בה); Heebo כן בשימוש (`--font-sans → --font-heebo`), שלושה קובצי woff2 (hebrew+latin,
+13+31+16 KB) נטענים דרך ה-CSS, ו-CLS 0.003 מוכיח שה-fallback המותאם של next/font
+עושה את העבודה. הבריף אמר "preloaded", המדידה אומרת שאין מה לתקן. (ב) SearchAction
+ב-WebSite נשאר: `/search` עונה, ואין שדה חיפוש ב-UI (הכלל על ה-UI, לא על
+sitelinks של גוגל). (ג) regions.xml בלי lastmod נשאר, מתועד. (ד) description של
+הבית ("דילים") שונה מ-og:description ("מבצעים"), שניהם עבריים ונכונים, לא נגעתי.
+(ה) `HEBREW_LITERAL_CEILING` 606→605 (שתי מחרוזות twitter הוסרו; ה-ratchet דרש).
+(ו) push לענף כמו W01..W11. **שערים:** `pnpm type-check` 0; `pnpm lint` 0 (i18n
+605/605, docs-index 282); `pnpm test` **637/637 קבצים, 7634 עברו, 12 דולגו** תחת
+env מנוקה; build exit 0 פעמיים; **השער בחזית**: product `--baseline='refs/electro_product_{width}.png'`
+380: 4.76% PASS; 768: 4.17% PASS; 1440: 2.44% PASS (זהה ל-W10, שינוי צבע של שורה
+אחת), home `--baseline='refs/ke_live_{width}.png'` 380: 7.92% PASS; 768: 9.03% PASS;
+1440: 4.16% PASS (זהה ל-W11); שש שורות ב-`docs/UI-PARITY-REPORT.md` (`b1632df45-dirty`).
+**לא נעשה:** אין מיגרציה, אין שינוי DB/env/DNS/Vercel, אין מחיקה, אין שדה חיפוש,
+אין שינוי פונטים.
 
-**W10 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
-ב-W11): שיתוף וקשר; ארבע מחמש הרגליים היו קיימות, קישור השאלה בסיכום המוצר
-קיבל את יעד הספק עם הסבר; parity product 4.76 / 4.17 / 2.44 PASS.
+**W11 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
+ב-W12): חיווט אנליטיקה; Sentry/PostHog/Axiom אומתו, ארבעה פגמים נמדדו ותוקנו
+בקוד (CSP ל-PostHog, שמות אירועים, identify, gift_sent), source maps של Sentry
+עם slugs בקוד; שני ערכי env נשארו לאופיר; parity home 7.92 / 9.03 / 4.16 PASS.
 
-**W09, W08, W07, W06, W05, W04, W03, W02, W01, M01-c96, L12, L11, M18-c95, M17-c95** —
+**W10, W09, W08, W07, W06, W05, W04, W03, W02, W01, M01-c96, L12, L11, M18-c95, M17-c95** —
 סגורים ב-05.10.2026 (W04 BLOCKED no-dev-database, L11 BLOCKED cardcom-creds, השאר
 DONE), ארכיון מלא ב-`docs/STATE-ARCHIVE.md`; התקצירים שישבו כאן הועברו לשם ב-W06,
-ב-W08 וב-W11 (תקרת 300 שורות), שום שורה לא נמחקה.
+ב-W08, ב-W11 וב-W12 (תקרת 300 שורות), שום שורה לא נמחקה.
+
 
 **M16-c95, M15-c95, M14-c95, M13-c95, M12-c95, M11-c95, M10-c95, M09-c95, M08-c95, M07-c95, M17-c94, M16-c94, M15-c94, M12-c94, M09-c94, M08-c94,
 M07-c94, M06-c94, M05-c94, M10-c94** וכל מה שקדם להם (M04-c94..M01-c94,

@@ -59,10 +59,21 @@ export const metadata: Metadata = {
     description: 'קופונים, מבצעים ומוצרים במחיר הכי טוב. בפריסה ארצית.',
     url: '/',
   },
+  // The card type ONLY. No title and no description here, on purpose.
+  //
+  // Next merges a segment's `metadata` over the layout's field by field, and
+  // `twitter` is one field: a page that sets `openGraph` and not `twitter`
+  // inherits this whole object. Measured 2026-10-05 (W12) on the built HTML:
+  // /category/beauty-health carried og:title "טיפוח בריאות ויופי" and
+  // twitter:title "קניון אקספרס | קופונים ומבצעים", the product page the same,
+  // so every shared category and product link previewed as the home page on
+  // X and on every reader that prefers the twitter:* tags. When `twitter` has
+  // no title, Next fills title, description and images from the RESOLVED
+  // openGraph instead (node_modules/next/dist/lib/metadata/resolve-metadata.js,
+  // postProcessMetadata), which is the page's own. The home page is unchanged:
+  // its og:title is the one that used to be written here.
   twitter: {
     card: 'summary_large_image',
-    title: 'קניון אקספרס | קופונים ומבצעים',
-    description: 'קופונים, מבצעים ומוצרים במחיר הכי טוב. בפריסה ארצית.',
   },
   alternates: {
     canonical: '/',

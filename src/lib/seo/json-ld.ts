@@ -292,6 +292,19 @@ export function buildBreadcrumbJsonLd(entries: readonly BreadcrumbEntry[], siteU
 }
 
 /**
+ * The name search engines show as the SITE NAME in a result. Google reads it
+ * from the `WebSite` node (and falls back to the `Organization`), and it should
+ * be the name the page itself shows: the title template, `og:site_name` and
+ * the header all say קניון אקספרס. Measured 2026-10-05 (W12): both nodes said
+ * `KenyonExpress`, a string that appears nowhere a visitor can see, so the one
+ * machine-readable claim about the brand disagreed with every human-readable
+ * one. The Latin form stays as `alternateName`, which is what the property is
+ * for, so a query typed in Latin letters still matches.
+ */
+const SITE_NAME_HE = 'קניון אקספרס'
+const SITE_NAME_LATIN = 'KenyonExpress'
+
+/**
  * `Organization` and `WebSite` for the home page.
  *
  * `SearchAction` points at the search route that exists (`/search?q=`). A
@@ -304,14 +317,16 @@ export function buildSiteJsonLd(siteUrl: string): JsonLdNode[] {
     {
       '@context': SCHEMA,
       '@type': 'Organization',
-      name: 'KenyonExpress',
+      name: SITE_NAME_HE,
+      alternateName: SITE_NAME_LATIN,
       url: site,
       logo: `${site}/logo.png`,
     },
     {
       '@context': SCHEMA,
       '@type': 'WebSite',
-      name: 'KenyonExpress',
+      name: SITE_NAME_HE,
+      alternateName: SITE_NAME_LATIN,
       url: site,
       inLanguage: 'he-IL',
       potentialAction: {

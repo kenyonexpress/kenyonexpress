@@ -188,6 +188,15 @@ describe('buildBreadcrumbJsonLd', () => {
 })
 
 describe('buildSiteJsonLd', () => {
+  // The site name Google displays comes from these nodes; it has to be the
+  // name the page shows, with the Latin spelling as the alternate.
+  it('names the site in Hebrew, as the page does, with the Latin form as alternateName', () => {
+    for (const node of buildSiteJsonLd(SITE)) {
+      expect(node.name).toBe('קניון אקספרס')
+      expect(node.alternateName).toBe('KenyonExpress')
+    }
+  })
+
   it('declares the search action against the route that answers', () => {
     const website = buildSiteJsonLd(SITE).find((node) => node['@type'] === 'WebSite')
     const action = website?.potentialAction as Record<string, unknown>
