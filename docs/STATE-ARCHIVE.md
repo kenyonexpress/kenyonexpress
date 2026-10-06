@@ -2,6 +2,88 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## W14, ותקצירי W13..W11 (הועברו מ-STATE.md ב-M11-c110, לשמירה על תקרת 300 שורות)
+
+**W14 - DONE (05.10.2026): PWA AND PUSH. רוב הבריף היה קיים ונמדד; חמישה פערים
+נמדדו ונבנו. שער התקנה חדש `pnpm pwa:installable` 30/30 מול build נקי; parity home
+7.92% / 9.03% / 4.16%, product 4.80% / 4.39% / 2.46% PASS ב-380 / 768 / 1440 (זהה
+ל-W13, אין פיקסל שזז בדפדפן headless).** `pwd` אומת, HEAD בהגעה `a023a6e27`, עץ נקי.
+W14 לא הופיע ב-STATE.md, ב-BACKLOG או ב-`git log -20`. **מה כבר היה (נמדד):**
+`app/manifest.ts` כ-metadata route (id, start_url `/`, scope, standalone, lang he,
+dir rtl, theme/background מהטוקנים, שלושה shortcuts, אייקונים 192/512 `any` +
+‏512 `maskable` נפרד, כולם PNG בגודל המוצהר, נמדד מהקובץ); `public/sw.js` ידני
+(‏300 שורות, ‏`ke-v3`): cache-first ל-`/_next/static` ואייקונים, SWR לתמונות עם
+תקרה 60, network-first לניווט עם נפילה לעמוד שנראה ואז ל-`/offline`, אפס מגע
+ב-api/cart/checkout/account/admin, מאזיני `push` ו-`notificationclick` עם יעד
+same-origin בלבד; `/offline` סטטי בעברית; `ServiceWorkerRegistrar` ב-production
+בלבד אחרי `load`; `InstallPrompt` ב-layout (אירוע `beforeinstallprompt`, אחרי
+אינטראקציה, פעם אחת למכשיר, מוסתר במסלולי הכסף); ‏10 splash ל-iOS +
+‏`apple-touch-icon`; `push_subscriptions` (‏179 הוחלה) עם `endpoint` ייחודי,
+‏`user_id`, ‏`user_agent`, RLS select/delete own, service-role בלבד לכתיבה,
+‏`savePushSubscription` upsert על endpoint (מכשיר) עם rate limit; רשימת מכשירים
+‏`PushDevices` ב-/account/notifications; `PushOptIn` מבקש הרשאה מלחיצה בלבד;
+‏`PostPurchasePushPrompt` בדף האישור; 11 סוגי push ב-`lib/push/templates.ts` דרך
+‏`notification_outbox` עם לוג משלוחים (‏215 ממתינה). **מה נמדד חסר ונבנה:** (1)
+**שם המניפסט היה לטיני** (`KenyonExpress`/`Kenyon`): עכשיו `קניון אקספרס`/`קניון`,
+וגם `appleWebApp.title`; טסט מניפסט דורש עברית ו-short_name עד 12. (2) **אין באנר
+התקנה אחרי רכישה ראשונה** (ARCHITECTURE-PWA §5.1 דרש "value moment"): `InstallPrompt`
+קיבל `moment="first-purchase"`, מרונדר inline בדף האישור תחת `FirstPurchaseBanner`
+רק כש-`isFirstPaidOrder`, בלי שער אינטראקציה (הרכישה היא האינטראקציה), מתעלם מ-
+"הוצג פעם אחת" של הגלישה אך מכבד "לא עכשיו" מפורש; הבאנר הגלובלי נשאר מוסתר
+ב-/checkout. (3) **אין רמז iOS**: ל-iOS אין `beforeinstallprompt`; `lib/pwa/platform.ts`
+(iPhone/iPad כולל iPad שמתחזה ל-Mac לפי touch points, ולא בתוך האפליקציה המותקנת)
+ושני הרגעים מציגים "שיתוף ואז הוסף למסך הבית" עם "הבנתי" שהוא dismissal; ב-`PushOptIn`
+מצב "לא נתמך" באייפון בטאב מוחלף ברמז שהתראות עובדות רק מהמסך הראשי. (4) **אין
+push להתראת אבטחה**: הייתה מייל בלבד (`trySendSecurityAlert`); נוסף סוג `security_alert`
+בתבניות (כותרת, headline לפי אירוע מ-`securityAlert.*`, בלי קישור בגוף, יעד
+‏`/account/security`, tag לפי אירוע) ונשלח דרך `pushOutboxRow` בלי שורת outbox
+(ה-constraint `notification_outbox_kind_check` אינו מכיל אותו והרחבתו היא
+מיגרציה), לכל המכשירים (web + Expo), גם בלי מייל ובלי `RESEND_API_KEY`, לעולם
+לא חוסם את המייל. (5) **אין push "חשבונית מוכנה"**: `issueInvoice` שולח
+‏`invoice_ready` אחרי שהשורה סומנה issued (לעולם לא לפני, כדי שכשל push לא יגרום
+למסמך כפול), עם שם המסמך ומספרו, יעד דף ההזמנה; `userId` עובר דרך ה-context ולא
+בקריאה נוספת (ה-mock של הטסט מקצה תוצאות לפי טבלה). (6) **`apple-mobile-web-app-capable`
+לא היה מוגש**: Next מרנדר את `appleWebApp.capable` כ-`mobile-web-app-capable`
+התקני, ש-iOS לפני 17.4 מתעלם ממנו; נוסף ב-`metadata.other`, נמדד בשער. **Lighthouse
+PWA:** Lighthouse 13.5 שבריפו אין לו קטגוריית PWA (הוסרה ב-12; `installable`
+מופיע 0 פעמים ב-default-config) ולבדיקת ההתקנה של Chrome אין API headless; לכן
+נכתב `scripts/pwa-installability.mjs` שמודד כל דרישה ברמת הרשת (קישור מניפסט,
+שדות, start_url בתוך scope, display, שלושה אייקונים לפי IHDR, SW עם `fetch`+`push`,
+‏cache-control לא immutable, `/offline` 200 ועברי, apple meta, registrar בצ'אנק) ו-
+רץ 30/30 PASS על 3396 (listener לפי cwd). **החלטות שהתקבלו לבד:** (א) שני ה-push
+החדשים עוקפים את ה-outbox במקום מיגרציה ל-constraint; `mayNotify` מחזיר true
+לסוג שאינו preference kind, כלומר אי אפשר לכבות התראת אבטחה, וזה נכון. (ב) הרמז
+ל-iOS לא מזהה Safari דווקא: כל דפדפן ב-iOS עוטף WebKit ומציע "הוסף למסך הבית"
+מתפריט השיתוף שלו. (ג) `common.install_prompt.*`, `push.*`, `pushOptIn.*` בקטלוג
+(he+en, זהות מפתחות נבדקת), תקרת i18n ירדה 605 → 603. (ד) לא נגעתי בשרת הזר
+על 3311 (אותו checkout, סשן אחר); נמדד על 3396. (ה) push לענף כמו W01..W13.
+**שערים:** type-check 0; lint 0 (i18n 603/603, docs-index 282); test 638/638,
+7659 עברו, 12 דולגו (`env -i`, ה-harness מזריק VAPID ו-CARDCOM_* שמפילים שני
+טסטים גם על baseline); build exit 0 פעמיים (`rm -rf .next`); `pnpm pwa:installable`
+30/30; **השער בחזית**: home `--widths=380,768,1440 --baseline='refs/ke_live_{width}.png'`
+380: 7.92% PASS; 768: 9.03% PASS; 1440: 4.16% PASS; product
+`--baseline='refs/electro_product_{width}.png'` 380: 4.80% PASS; 768: 4.39% PASS;
+1440: 2.46% PASS; שש שורות ב-`docs/UI-PARITY-REPORT.md` (`a023a6e27-dirty`). **לא
+נעשה:** אין מיגרציה, אין שינוי DB/env/DNS/Vercel, אין מחיקה, אין שדה חיפוש; מפתחות
+VAPID בפרודקשן לא נבדקו (Sensitive), ולכן משלוח push חי לא נמדד, רק הקוד והטסטים.
+
+**W13 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
+ב-W14): נגישות ת"י 5568; רוב הבריף היה קיים, שישה פגמים נמדדו ותוקנו (סרגל טאבים
+199px, מלכודת Tab במגירת הקטגוריות, role=alert בטופסי auth, meta-refresh ב-/checkout,
+מטרות מגע, השער עצמו); axe אפס הפרות; parity home 7.92 / 9.03 / 4.16, product
+4.80 / 4.39 / 2.46 PASS.
+
+**W12 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
+ב-W13): SEO וביצועים; הכל היה קיים חוץ משלושה פגמים שנמדדו ותוקנו (twitter:title,
+שם Organization/WebSite, ניגודיות 4.48:1); Lighthouse mobile 99/100/100/100 בשלושת
+הדפים; parity home 7.92 / 9.03 / 4.16, product 4.76 / 4.17 / 2.44 PASS.
+
+**W11 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
+ב-W12): חיווט אנליטיקה; Sentry/PostHog/Axiom אומתו, ארבעה פגמים נמדדו ותוקנו
+בקוד (CSP ל-PostHog, שמות אירועים, identify, gift_sent), source maps של Sentry
+עם slugs בקוד; שני ערכי env נשארו לאופיר; parity home 7.92 / 9.03 / 4.16 PASS.
+
+
 ## W13 (הועבר מ-STATE.md ב-W14, לשמירה על תקרת 300 שורות)
 
 **W13 - DONE (05.10.2026): ACCESSIBILITY IS 5568. רוב הבריף היה קיים ונמדד; שישה

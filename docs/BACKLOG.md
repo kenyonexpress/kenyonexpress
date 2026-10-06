@@ -811,6 +811,16 @@ unchanged. No migration applied, no code change -- verification only.
     שם). לא תוקן ב-W11 כי הפריט נקב ב-PostHog בלבד. **פעולה (קוד):** `withGa`/
     `withMeta` באותו דפוס של `withTurnstile`/`withPostHog`, מותנים במזהים,
     ובדיקת CSP לכל אחד. מקור: W11.
+23. **כל כתובות ה-sitemap וה-canonical הן הפניות 308** (נמדד 06.10.2026,
+    M11-c110). `NEXT_PUBLIC_APP_URL` בפרודקשן הוא ה-apex
+    `https://kenyonexpress.co.il`, וה-apex עונה 308 ל-`www`. לכן כל 98 ה-`<loc>`
+    ב-`/sitemap.xml` ותתי-המפות, וה-`<link rel="canonical">` של כל דף, מצביעים על
+    כתובת שמפנה; Search Console מדווח על זה "דף עם הפניה". **פעולה (אחת מהשתיים,
+    לא שתיהן):** (א) ב-Vercel, פרויקט `kenyonexpress`, Production:
+    `NEXT_PUBLIC_APP_URL=https://www.kenyonexpress.co.il` ובנייה מחדש (המשתנה
+    נאפה בזמן build), או (ב) להפוך את ה-apex לדומיין הראשי ואת `www` להפניה.
+    (ב) שומרת את ה-canonical הקיים ואת `APP_BASE_URL` שב-vault (סעיף 2 למעלה) נכונים
+    בלי שינוי; (א) מחייבת גם את תיקון ה-vault של סעיף 2. מקור: STATE.md M11-c110.
 
 ## מה לא ברשימה, ולמה
 
