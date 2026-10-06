@@ -1,7 +1,25 @@
 RESUME FROM: M16-c111
-Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M15-c111 DONE: אפס console errors ואפס hydration warnings על `/` ועל דגימת המוצר, 4/4 PASS בבנייה טרייה)
+Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M17-c111 DONE: RTL על `/` ועל דגימת המוצר, 12/12 PASS, אפס דליפות LTR, parity 7.92/9.03/4.16)
 
 ## המשך מ:
+
+**M17-c111 - DONE (06.10.2026): RTL על `/` ועל דגימת `/product`, אפס דליפות LTR. אין שינוי קוד.**
+`pwd` אומת, HEAD `4cc28b788`. מאז M17-c110 (`f82b0cb77`) השתנו 7 קבצים ב-`src` (הסרת exports של M09-c111),
+ולכן נמדד מחדש ולא הועתק. בעץ הראשי WIP זר (account/coupon/gifts/sitemap), לא נגעתי ולא חויב; הכל רץ
+ב-worktree נקי `/tmp/ke-m17-c111` (HEAD, `node_modules` כ-APFS clone, `.env.local` כ-symlink, `refs/` הועתק;
+נשאר במקומו, לא נמחק). build טרי תחת `env -i` עם `CARDCOM_USE_MOCK=true`: exit 0, אפס `Invalid API key`,
+`BUILD_ID` `0ZBHbGElh_lbWllyEUB1B`; `pnpm start -p 4997`, cwd של המאזין אומת ב-`lsof`. פרוב Playwright זמני
+(מחוץ לריפו, לא חויב) על `/` ועל שלושת סלאגי הדגימה (`samsung-galaxy-s22-128gb-samsung-galaxy-s22-128gb-5g`,
+`חבילת-גלידה`, `חיתולי-האגיס`) ב-380/768/1440: **12 טעינות, 12 PASS, כולן 200**: `<html lang="he" dir="rtl">`,
+`body` מחושב `rtl`, `scrollWidth` = `clientWidth` בכולן, **אפס** אלמנט גלוי עם `direction: ltr` מחושב שמחזיק
+טקסט עברי ישיר, **אפס** טקסט עברי בתוך `[dir="ltr"]`. 12 אלמנטים מחוץ למסך ב-380/768 בכל דף, וכולם בתוך
+המגירה הסגורה של `MobileDrawer` (`fixed inset-y-0 right-0 dir="rtl"`), מחליקה מימין ואינה מוסיפה גלילה; ממצא
+הנגישות שלה כבר ב-BACKLOG #24. **parity (בית, `--baseline='refs/ke_live_{width}.png'`, בחזית):** 380 **7.92%**,
+768 **9.03%**, 1440 **4.16%**, כולם PASS מתחת ל-11%, זהים בביט ל-M17-c110; שלוש השורות נכתבו על ידי השער
+ל-`docs/UI-PARITY-REPORT.md` והועברו כמו שהן. השרת נעצר לפי PID המאזין בלבד (INT). **שערים** (אותו worktree,
+`env -i`): type-check 0; lint 0 (docs-path-audit 155 ידועים, input-dir 25/25); test 638/638, 7659 עברו, 12 דולגו;
+build 0. **החלטה שהתקבלה לבד:** `RESUME FROM` נשאר M16-c111, שעדיין בלי commit; M17-c111 סגור עם ראיה.
+M07-c111 הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות.
 
 **M15-c111 - DONE (06.10.2026): אפס console errors על `/` ועל דגימת המוצר, בבנייה טרייה של קוד HEAD.**
 `pwd` אומת, HEAD `15d495254`. מאז M15-c95 (`9278fd3be`) השתנו 178 קבצים ב-`src`/`e2e`/`next.config.ts`, ולכן
@@ -97,26 +115,6 @@ type-check 0; lint: 12 השערים הראשונים נקיים, docs-path-audit
 12 דולגו**; `rm -rf .next` ואז build עם `CARDCOM_USE_MOCK=true`: exit 0, 340/340, אפס `Invalid API key`, `BUILD_ID`
 `vO4eYPYB-YEapJR_scr0b`. אפס שינוי UI (הסרת `export` בלבד), `compare.mjs` לא נדרש. M02-c111 ו-M17-c110 הועברו
 ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות. `RESUME FROM` נשאר M12-c110, כמו בשאר פריטי c111.
-
-**M07-c111, אימות שני (06.10.2026):** סשן מקביל חייב את הפריט (`14ade8a88`) בזמן שרצתי עליו. אומת
-באופן עצמאי: אותם שני `TODO(cardcom)` בלבד (blame 24.07/07.08), `final-audit` `ok 0 work markers (of 2)`.
-שערים ב-worktree נקי על `df54456a4` תחת `env -i`: type-check 0, lint 0, test 638/638 (7659/12 דולגו),
-build 0 340/340 `COSxbgGNr5A8uhkPFtICs`. שורת אימות נוספה ל-`docs/BACKLOG.md` §6.
-
-**M07-c111 - DONE (06.10.2026): TODO/FIXME נסרק מחדש, אפס סמן חדש, אפס שינוי קוד.**
-משימת התור: "Scan TODO FIXME older than 7 days resolve or file in docs/BACKLOG.md". `pwd` אומת, HEAD
-`c1d64b886` (בזמן העבודה נכנס `df54456a4` של M06-c111, `STATE.md` בלבד). `git grep` על כל הריפו (מלבד
-md/json/lock/refs) ועל ה-WIP הזר הלא-מחויב בעץ הראשי: **שני סמנים אמיתיים בלבד**,
-`src/lib/payments/cardcom.ts:254` ו-`:319` (`TODO(cardcom)`, מ-24.07/07.08.2026, מקושרים ל-#41/#42),
-שניהם כבר רשומים ב-`docs/BACKLOG.md` סעיף 6 כחסומים על מפתחות Cardcom חיים (לאופיר); לא ניתנים לפתרון
-בלי טרמינל אמיתי, ולכן לא נגעתי. שאר הפגיעות אינן סמני עבודה: `scripts/final-audit*.mjs` (הסורק עצמו
-והטסטים שלו) ו-`src/lib/whatsapp.test.ts:91` (מחרוזת ליטרלית `'TODO'`). `node scripts/final-audit.mjs
---verbose`: **`ok 0 work markers (TODO/FIXME/HACK/XXX) (of 2)`**, זהה ל-M07-c93/c76/c67. **שערים** בחזית
-תחת `env -i` ב-worktree נקי `/tmp/ke-m05-c111` (הועבר ל-`c1d64b886`, נשאר במקומו): type-check 0; lint:
-docs-path-audit נכשל ב-worktree רק על `refs/` שב-gitignore, ונקי בעץ הראשי (155 ידועים); test **638/638,
-7659 עברו, 12 דולגו**; `rm -rf .next` ואז build עם `CARDCOM_USE_MOCK=true`: exit 0, אפס `Invalid API key`.
-לא פריט חזותי, `compare.mjs` לא נדרש. `docs/BACKLOG.md` לא שונה: אין מה להוסיף.
-**החלטה שהתקבלה לבד:** `RESUME FROM` נשאר M12-c110, כמו ב-M02/M03/M05/M06-c111.
 
 **M11-c110 - DONE** (sitemap.xml טרי, 98/98 כתובות 200, ממצא apex→www ב-BACKLOG),
 ו-W14..W01, M01-c96, L12, L11 וכל מה שקדם: ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, החדש למעלה.
