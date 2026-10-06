@@ -1,7 +1,24 @@
 RESUME FROM: M16-c111
-Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M16-c112 DONE: 46/46 דפי מוצר עם JSON-LD `Product` ו-`BreadcrumbList` אחד בדיוק, בבנייה טרייה של `e1d941308`)
+Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M17-c112 DONE: RTL 12/12 PASS על `/` ודגימת המוצר, parity 7.92/9.03/4.16, בבנייה טרייה של `7cd0e4b9c`)
 
 ## המשך מ:
+
+**M17-c112 - DONE (06.10.2026): RTL על `/` ועל דגימת `/product`, אפס דליפות LTR, בבנייה טרייה של HEAD `7cd0e4b9c`. אין שינוי קוד.**
+משימת התור: "Verify RTL on / and /product sample no LTR leaks". `pwd` אומת, HEAD `7cd0e4b9c` = `origin/audit/final-audit`. מאז M17-c111
+(`89e8d357f`) השתנו 6 קבצי `src` (הסרת `export` ב-M09-c112), ולכן נמדד מחדש ולא הועתק. בעץ הראשי WIP זר (account/coupon/gifts/sitemap,
+וגם `docs/UI-PARITY-REPORT.md`), לא נגעתי ולא חויב. הכל רץ ב-worktree הנקי `/tmp/ke-m11-c112wt`, שהועבר (detached) ל-`7cd0e4b9c` ונשאר
+במקומו. `rm -rf .next`, `env -i`, `CARDCOM_USE_MOCK=true`: build 0, 340/340, אפס `Invalid API key`, `BUILD_ID` `YQKLxCQgRbiQMKgpUMine`.
+`pnpm start -p 4882` (PID 42435, cwd המאזין אומת ב-`lsof` `/private/tmp/ke-m11-c112wt`, נעצר ב-INT, 0 מאזינים אחר כך).
+**נמדד:** פרוב Playwright זמני (`/tmp/m17c112/probe.mjs`, מחוץ לריפו, לא חויב) על `/` ושלושת סלאגי הדגימה (`samsung-galaxy-s22-128gb-
+samsung-galaxy-s22-128gb-5g`, `חבילת-גלידה`, `חיתולי-האגיס`) ב-380/768/1440: **12/12 PASS, כולן 200**: `<html lang="he" dir="rtl">`,
+`body` מחושב `rtl`, `scrollWidth` = `clientWidth` בכולן, **אפס** אלמנט גלוי עם `direction: ltr` מחושב שמחזיק טקסט עברי ישיר, **אפס**
+טקסט עברי בתוך `[dir="ltr"]`. זהה ל-M17-c111.
+**parity (בית, `--baseline='refs/ke_live_{width}.png'`, בחזית, מול אותו שרת):** 380 **7.92%**, 768 **9.03%**, 1440 **4.16%**, כולם PASS
+מתחת ל-11%, זהים ל-M17-c111. (ריצה ראשונה סורבה כי `refs/ke_live_*.png` שב-gitignore חסרו ב-worktree; הועתקו מהעץ הראשי ונמדד שוב.)
+**החלטה שהתקבלה לבד:** שורות ה-parity לא חויבו ל-`docs/UI-PARITY-REPORT.md`, כי הקובץ בעץ הראשי נושא WIP זר; המספרים רשומים כאן.
+**שערים** (אותו worktree, `env -i`): type-check 0; lint: כל השערים נקיים מלבד docs-path-audit ב-worktree, שנכשל רק על הפניות ל-`refs/`
+ו-`supabase/.temp` (שניהם ב-gitignore), נקי בעץ הראשי (`OK. 155 known`); test **638/638, 7659 עברו, 12 דולגו**. אין שינוי UI.
+M11-c112 הועבר ל-`docs/STATE-ARCHIVE.md`. `RESUME FROM` נשאר M16-c111, כמו בשאר פריטי c112.
 
 **M16-c112 - DONE (06.10.2026): כל דפי המוצר נושאים בדיוק בלוק JSON-LD `Product` אחד ובלוק `BreadcrumbList` אחד, 46/46, בבנייה טרייה של HEAD `e1d941308`.**
 משימת התור: "Verify all product pages have JSON-LD Product and BreadcrumbList". `pwd` אומת, HEAD `e1d941308` = `origin/audit/final-audit`.
@@ -85,20 +102,6 @@ src/app/robots.ts` עדיין `4d3702025` (M12-c67), אין WIP על `robots.ts`
 docs-path-audit נכשל ב-worktree רק על 84 הפניות ל-`refs/` ו-`supabase/.temp` שב-gitignore, נקי בעץ הראשי (155 ידועים, ללא שינוי);
 test **638/638, 7659 עברו, 12 דולגו**. אין שינוי UI, ולכן `compare.mjs` לא נדרש. M01-c112 הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה
 על תקרת 300 שורות. `RESUME FROM` נשאר M16-c111, כמו בשאר פריטי c112.
-
-**M11-c112 - DONE (06.10.2026): `sitemap.xml` נמדד שוב חי, טרי ונגיש, 98/98 כתובות 200. אין שינוי קוד.**
-משימת התור: "Verify sitemap.xml fresh and reachable". `pwd` אומת, HEAD `7a4a2f437` = `origin/audit/final-audit`. בעץ הראשי WIP זר
-(account/coupon/gifts, כולל `src/lib/seo/sitemap-*`), לא נגעתי ולא חויב; לכן נמדד האתר החי והשערים רצו על קוד ה-HEAD.
-**נמדד חי מול `www.kenyonexpress.co.il`:** `/sitemap.xml` 200 `application/xml; charset=utf-8`, `<sitemapindex>` עם חמש תתי-מפות
-(content, categories, products, regions, suppliers), כולן 200 `application/xml`, עם 15/13/46/17/7 = **98 `<loc>`, אפס כפילויות**;
-lastmod החדש ביותר 2026-10-05T01:07:49Z (content, products, יום לפני המדידה), categories 2026-09-16, suppliers 2026-09-16, regions
-ללא lastmod. `robots.txt` 200 ומפנה ל-`Sitemap: https://kenyonexpress.co.il/sitemap.xml`. כל 98 הכתובות נבדקו אחת-אחת עם `curl -L`:
-**98/98 200, כל אחת אחרי הפניה אחת** (apex 308 ל-`www`), זהה ל-M11-c111; הממצא כבר רשום כ-BACKLOG #23 (Vercel env או דומיין
-ראשי, מחוץ לסמכות הסוכן), ולכן לא נרשם שוב. **שערים** ב-worktree נקי חדש `/tmp/ke-m11-c112wt` על `7a4a2f437` (`node_modules` כ-APFS
-clone, `.env.local` כ-symlink, נשאר במקומו) תחת `env -i`: type-check 0; lint: 12 השערים הראשונים נקיים, docs-path-audit נכשל
-ב-worktree רק על 84 הפניות ל-`refs/` ו-`supabase/.temp` שב-gitignore, נקי בעץ הראשי (155 ידועים, ללא שינוי); test **638/638, 7659
-עברו, 12 דולגו**; `rm -rf .next` ואז build עם `CARDCOM_USE_MOCK=true`: exit 0, 340/340, אפס `Invalid API key`, `BUILD_ID`
-`p1T2TKtK-nob_RF8wc79X`. אין שינוי UI, ולכן `compare.mjs` לא נדרש. `RESUME FROM` נשאר M16-c111, כמו בשאר פריטי c112.
 
 **M11-c110 - DONE** (sitemap.xml טרי, 98/98 כתובות 200, ממצא apex→www ב-BACKLOG),
 ו-W14..W01, M01-c96, L12, L11 וכל מה שקדם: ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, החדש למעלה.
