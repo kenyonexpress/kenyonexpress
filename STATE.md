@@ -1,7 +1,23 @@
 RESUME FROM: M16-c111
-Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M11-c112 DONE: sitemap.xml חי נמדד מחדש, טרי ונגיש, 98/98 כתובות 200, אפס שינוי קוד)
+Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M12-c112 DONE: robots.txt חי נמדד מחדש, בטוח לפרודקשן, זהה בביט לבנייה של HEAD, אפס שינוי קוד)
 
 ## המשך מ:
+
+**M12-c112 - DONE (06.10.2026): `robots.txt` נמדד שוב, בטוח לפרודקשן, החי זהה בביט לבנייה של HEAD. אין שינוי קוד.**
+משימת התור: "Verify robots.txt production-safe". `pwd` אומת, HEAD `f2b209471` = `origin/audit/final-audit`. `git log -1 --
+src/app/robots.ts` עדיין `4d3702025` (M12-c67), אין WIP על `robots.ts`/`site-url.ts`. בעץ הראשי WIP זר (account/coupon/gifts/sitemap),
+לא נגעתי ולא חויב. **חי** (`www.kenyonexpress.co.il/robots.txt`): 200 `text/plain; charset=utf-8`, etag `b36a25fd...`, sha256
+`6c0d631f...` (זהה ל-M12-c111). `User-Agent: *`, `Allow: /`, אין `Disallow: /` גורף (האתר ניתן לאינדוקס), **16 שורות `Disallow`**:
+כל כתובות-האסימון (`/redeem/`, `/coupon/`, `/gift/`, `/order/`, `/wishlist/s/`) ו-`/account/`, `/supplier/`, `/scan`, `/admin/`,
+`/checkout`, `/cart`, `/auth/`, `/api/`, `/reset-password`, `/forgot-password`, `/debug/`. `Host:`/`Sitemap:` ל-apex, שעונה 308 ל-`www`
+ו-`/sitemap.xml` שם 200 `application/xml`. שכבת noindex חיה: `/redeem/foo` ו-`/wishlist/s/foo` `noindex, nofollow`, `/gift/foo`
+`noindex`, `/order/foo` ו-`/debug/foo` 404 עם `noindex`, `/coupon/foo` 307. **בנייה מקומית של HEAD** (worktree נקי `/tmp/ke-m11-c112wt`
+הועבר ל-`f2b209471`, נשאר במקומו, `rm -rf .next`, `env -i`, `CARDCOM_USE_MOCK=true`): build 0, 340/340, אפס `Invalid API key`, `BUILD_ID`
+`M3A9xIbLyTcaoZ-THzDWf`; `next start` על 4872 (cwd המאזין אומת ב-`lsof`, נעצר לפי PID ב-INT, הפורט פנוי), ו-`/robots.txt` המקומי
+**זהה בביט לחי** (`diff` 0, אותו sha256). **שערים** (אותו worktree, `env -i`): type-check 0; lint: 12 השערים הראשונים נקיים,
+docs-path-audit נכשל ב-worktree רק על 84 הפניות ל-`refs/` ו-`supabase/.temp` שב-gitignore, נקי בעץ הראשי (155 ידועים, ללא שינוי);
+test **638/638, 7659 עברו, 12 דולגו**. אין שינוי UI, ולכן `compare.mjs` לא נדרש. M01-c112 הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה
+על תקרת 300 שורות. `RESUME FROM` נשאר M16-c111, כמו בשאר פריטי c112.
 
 **M11-c112 - DONE (06.10.2026): `sitemap.xml` נמדד שוב חי, טרי ונגיש, 98/98 כתובות 200. אין שינוי קוד.**
 משימת התור: "Verify sitemap.xml fresh and reachable". `pwd` אומת, HEAD `7a4a2f437` = `origin/audit/final-audit`. בעץ הראשי WIP זר
@@ -69,25 +85,6 @@ lint: נכשל רק ב-docs-path-audit על 81 הפניות ל-`refs/` שב-giti
 test **638/638, 7659 עברו, 12 דולגו**; build למעלה exit 0. לא פריט חזותי, אפס שינוי UI, `compare.mjs` לא נדרש (תקדים M08-c80 ואילך).
 M06-c112 ו-M15-c111 הועברו ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות. **החלטה שהתקבלה לבד:** `RESUME FROM` נשאר M16-c111,
 שעדיין בלי commit עם ראיה, כמו בשאר פריטי c111/c112.
-
-**M01-c112 - DONE (06.10.2026): parity של `/` נמדד מחדש ב-380/768/1440, כולם PASS, אפס הפרש.**
-`pwd` אומת, HEAD `89e8d357f`. בעץ הראשי WIP זר (account/coupon/gifts/sitemap), לא נגעתי ולא חויב; הכל רץ ב-worktree
-נקי `/tmp/ke-m01-c112` (HEAD, `node_modules` כ-APFS clone, `.env.local` כ-symlink, `refs/` הועתק; נשאר במקומו).
-build טרי תחת `env -i` עם `CARDCOM_USE_MOCK=true`: exit 0, אפס `Invalid API key`, `BUILD_ID` `V1135Uqk6oqmw89LPtdYA`;
-`pnpm start -p 4998` (PID 23230, cwd המאזין אומת ב-`lsof`, נעצר ב-INT, הפורט פנוי). `compare.mjs --page=home
---width=W --baseline=refs/ke_live_W.png`, בחזית, רוחב אחרי רוחב:
-
-| רוחב | M01-c112 | M17-c111 (`89e8d357f`) | הפרש | overall | סטטוס |
-|---|---|---|---|---|---|
-| 380 | **7.92%** | 7.92% | 0.00 | 14.38% | PASS |
-| 768 | **9.03%** | 9.03% | 0.00 | 16.28% | PASS |
-| 1440 | **4.16%** | 4.16% | 0.00 | 14.89% | PASS |
-
-כולם מתחת ל-11%, זהים בביט למדידה הקודמת; שלוש השורות נכתבו על ידי השער ל-`docs/UI-PARITY-REPORT.md` והועברו
-כמו שהן (`-dirty` בשורות 768/1440 הוא הדוח עצמו, שהשורה הראשונה שינתה). **שערים** (אותו worktree, `env -i`):
-type-check 0; lint: כל השערים נקיים מלבד docs-path-audit ב-worktree, שנכשל רק על `supabase/.temp` (ב-gitignore),
-נקי בעץ הראשי (155 ידועים); test 638/638, 7659 עברו, 12 דולגו; build 0. **החלטה שהתקבלה לבד:** `RESUME FROM`
-נשאר M16-c111, שעדיין בלי commit עם ראיה, כמו בשאר פריטי c111.
 
 **M14-c111 - DONE (06.10.2026): release של Sentry תואם ל-HEAD. ממצא חדש: `SENTRY_AUTH_TOKEN` נדחה 401.**
 `pwd` אומת, HEAD `bd44390f4` = `origin/audit/final-audit`. קוד: release הוא `SENTRY_RELEASE ?? VERCEL_GIT_COMMIT_SHA`

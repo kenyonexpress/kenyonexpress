@@ -2,6 +2,27 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M01-c112 (הועבר מ-STATE.md ב-M12-c112, לשמירה על תקרת 300 שורות)
+
+**M01-c112 - DONE (06.10.2026): parity של `/` נמדד מחדש ב-380/768/1440, כולם PASS, אפס הפרש.**
+`pwd` אומת, HEAD `89e8d357f`. בעץ הראשי WIP זר (account/coupon/gifts/sitemap), לא נגעתי ולא חויב; הכל רץ ב-worktree
+נקי `/tmp/ke-m01-c112` (HEAD, `node_modules` כ-APFS clone, `.env.local` כ-symlink, `refs/` הועתק; נשאר במקומו).
+build טרי תחת `env -i` עם `CARDCOM_USE_MOCK=true`: exit 0, אפס `Invalid API key`, `BUILD_ID` `V1135Uqk6oqmw89LPtdYA`;
+`pnpm start -p 4998` (PID 23230, cwd המאזין אומת ב-`lsof`, נעצר ב-INT, הפורט פנוי). `compare.mjs --page=home
+--width=W --baseline=refs/ke_live_W.png`, בחזית, רוחב אחרי רוחב:
+
+| רוחב | M01-c112 | M17-c111 (`89e8d357f`) | הפרש | overall | סטטוס |
+|---|---|---|---|---|---|
+| 380 | **7.92%** | 7.92% | 0.00 | 14.38% | PASS |
+| 768 | **9.03%** | 9.03% | 0.00 | 16.28% | PASS |
+| 1440 | **4.16%** | 4.16% | 0.00 | 14.89% | PASS |
+
+כולם מתחת ל-11%, זהים בביט למדידה הקודמת; שלוש השורות נכתבו על ידי השער ל-`docs/UI-PARITY-REPORT.md` והועברו
+כמו שהן (`-dirty` בשורות 768/1440 הוא הדוח עצמו, שהשורה הראשונה שינתה). **שערים** (אותו worktree, `env -i`):
+type-check 0; lint: כל השערים נקיים מלבד docs-path-audit ב-worktree, שנכשל רק על `supabase/.temp` (ב-gitignore),
+נקי בעץ הראשי (155 ידועים); test 638/638, 7659 עברו, 12 דולגו; build 0. **החלטה שהתקבלה לבד:** `RESUME FROM`
+נשאר M16-c111, שעדיין בלי commit עם ראיה, כמו בשאר פריטי c111.
+
 ## M17-c111 (הועבר מ-STATE.md ב-M10-c112, לשמירה על תקרת 300 שורות)
 
 **M17-c111 - DONE (06.10.2026): RTL על `/` ועל דגימת `/product`, אפס דליפות LTR. אין שינוי קוד.**
