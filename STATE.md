@@ -1,7 +1,24 @@
 RESUME FROM: M16-c111
-Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M06-c112 DONE: `pnpm build` נמדד מחדש על HEAD נקי, 340/340, אפס דריפט)
+Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M07-c112 DONE: TODO/FIXME נסרק מחדש, רק שני ה-`TODO(cardcom)` הרשומים, אפס חדשים)
 
 ## המשך מ:
+
+**M07-c112 - DONE (06.10.2026): TODO/FIXME נסרק מחדש, אפס סמן חדש, אפס שינוי קוד.**
+משימת התור: "Scan TODO FIXME older than 7 days resolve or file in docs/BACKLOG.md". `pwd` אומת, HEAD `52f525794`
+= `origin/audit/final-audit`. `git grep -nwE 'TODO|FIXME|HACK|XXX' HEAD` (מלבד md/json/lock/refs ו-`scripts/final-audit*`)
+ועל ה-WIP הזר הלא-מחויב בעץ הראשי (diff + קבצים לא-מנוטרים): **שני סמנים אמיתיים בלבד**,
+`src/lib/payments/cardcom.ts:254` ו-`:319` (`TODO(cardcom)`, blame 24.07/07.08.2026, #41/#42), כבר רשומים
+ב-`docs/BACKLOG.md` סעיף 6 כחסומים על טרמינל Cardcom חי (לאופיר); לא ניתנים לפתרון בלי טרמינל, לא נגעתי.
+שאר הפגיעות אינן סמני עבודה: `05X-XXX-XXXX` בתיעוד פורמט טלפון (`sms/twilio.ts:74`, `whatsapp.ts:85`,
+`whatsapp/twilio.ts:45`) ו-`whatsapp.test.ts:91` (מחרוזת ליטרלית `'TODO'`). `node scripts/final-audit.mjs --verbose`:
+**`ok 0 work markers (TODO/FIXME/HACK/XXX) (of 2)`**. **שערים** בחזית תחת `env -i` ב-worktree נקי `/tmp/ke-m06-c112`
+(הועבר ל-`52f525794`, נשאר במקומו): type-check 0; lint: 12 השערים הראשונים נקיים, docs-path-audit נכשל ב-worktree רק
+על `refs/` שב-gitignore, נקי בעץ הראשי (155 ידועים, ללא שינוי); test **638/638, 7659 עברו, 12 דולגו** (ריצה ראשונה
+עם `CARDCOM_USE_MOCK=true` דלף ל-env של הטסטים הפילה את `invoices.test.ts` "no credentials at all", כצפוי מהטסט;
+בלי המשתנה, כמו בפריטים קודמים, 638/638); `rm -rf .next` ואז build עם `CARDCOM_USE_MOCK=true`: exit 0, 340/340,
+אפס `Invalid API key`, `BUILD_ID` `-NZfr47-jigwB5cAOyNeo`. לא פריט חזותי, `compare.mjs` לא נדרש. נוספה שורת
+אימות ל-`docs/BACKLOG.md` סעיף 6. M12-c111 הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות.
+**החלטה שהתקבלה לבד:** `RESUME FROM` נשאר M16-c111, שעדיין בלי commit עם ראיה, כמו בשאר פריטי c111/c112.
 
 **M06-c112 - DONE (06.10.2026): `pnpm build` נמדד מחדש על HEAD נקי, exit 0, 340/340, אפס דריפט, אין מה לתקן.**
 משימת התור: "pnpm build fix drift commit". `pwd` אומת, HEAD `38db6670b` = `origin/audit/final-audit`. מאז M06-c111
@@ -102,21 +119,6 @@ production` מכיל רק `SENTRY_DSN`/`NEXT_PUBLIC_SENTRY_DSN`/`SENTRY_AUTH_TOK
 ו-`supabase/.temp` שב-gitignore ואינם ב-worktree, נקי בעץ הראשי (155 ידועים); test 638/638, 7659 עברו, 12 דולגו;
 `rm -rf .next` ואז build עם `CARDCOM_USE_MOCK=true`: 0, 340/340, אפס `Invalid API key`, `BUILD_ID` `f9XjdDE8sFw_ikugbT-ZC`.
 אין שינוי UI ולכן אין parity. `RESUME FROM` נשאר M15-c111.
-
-**M12-c111 - DONE (06.10.2026): `robots.txt` נמדד שוב, בטוח לפרודקשן. אין שינוי קוד.**
-`pwd` אומת, HEAD `5060bcedd` (בזמן העבודה נכנס `11ed72a09` של M11-c111, `STATE.md` בלבד). `git log -1 --
-src/app/robots.ts` עדיין `4d3702025` (M12-c67). **חי** (`www.kenyonexpress.co.il/robots.txt`): ‏200
-`text/plain; charset=utf-8`, etag `b36a25fd...`, sha256 `6c0d631f...`, **16 שורות `Disallow`** כולל ארבע
-שורות M12-c67 (`/gift/`, `/order/`, `/wishlist/s/`, `/debug/`), כלומר הפער שתועד ב-M12-c68..c95 סגור מאז
-פריסת L01. `Sitemap:`/`Host:` ל-apex, שעונה 308 ל-`www` ו-`/sitemap.xml` שם ‏200 `application/xml`. שכבת
-noindex חיה: `/gift/foo` `noindex`, `/wishlist/s/foo` ו-`/redeem/foo` `noindex, nofollow`; `/order/foo` ו-`/debug/foo`
-‏404, `/coupon/foo` ‏307. **בנייה מקומית של HEAD** (worktree נקי `/tmp/ke-m09-c111` על `5060bcedd`, נשאר במקומו,
-`rm -rf .next`, `env -i`, `CARDCOM_USE_MOCK=true`): build 0, 340/340, אפס `Invalid API key`, `BUILD_ID`
-`4AegN9rtjUaSrjpKHoCcb`; `next start` על 4871 (cwd המאזין אומת ב-`lsof`, נעצר לפי PID ב-INT), ו-`/robots.txt`
-המקומי **זהה בביט לחי** (`diff` 0). **שערים**: type-check 0; lint: כל השערים נקיים מלבד docs-path-audit
-ב-worktree, שנכשל רק על `supabase/.temp` (ב-gitignore) ונקי בעץ הראשי (155 ידועים); test 638/638, 7659
-עברו, 12 דולגו. אין שינוי UI, ולכן parity לא נדרש. M03-c111 ו-M18-c110 הועברו ל-`docs/STATE-ARCHIVE.md`.
-**החלטה שהתקבלה לבד:** `RESUME FROM` מצביע ל-M13-c111, הפריט הבא ב-`final-queue.txt`, לפי כלל שורה 1.
 
 **M11-c110 - DONE** (sitemap.xml טרי, 98/98 כתובות 200, ממצא apex→www ב-BACKLOG),
 ו-W14..W01, M01-c96, L12, L11 וכל מה שקדם: ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, החדש למעלה.

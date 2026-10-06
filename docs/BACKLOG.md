@@ -539,6 +539,7 @@ unchanged. No migration applied, no code change -- verification only.
    מ-24.07/07.08.2026); `src/lib/whatsapp.test.ts:91` אינו סמן עבודה
    אלא מחרוזת ליטרלית `'TODO'` שבודקת דחיית מספר לא מוגדר.
    **נבדק שוב M07-c111, 06.10.2026:** אותם שני סמנים בלבד, אפס חדשים בכל העץ.
+   **נבדק שוב M07-c112, 06.10.2026:** אותם שני סמנים בלבד, אפס חדשים, כולל ה-WIP הלא-מחויב.
    **נמדד שוב ב-05.10.2026, L11, קריאה בלבד:** `CARDCOM_TERMINAL_NUMBER`,
    `CARDCOM_API_NAME`, `CARDCOM_API_PASSWORD` ו-`CARDCOM_SANDBOX` קיימים
    ב-Production כ-`sensitive` (אינם ניתנים לקריאה בשום API/CLI), נוצרו

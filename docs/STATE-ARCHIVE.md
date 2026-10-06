@@ -2,6 +2,23 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M12-c111 (הועבר מ-STATE.md ב-M07-c112, לשמירה על תקרת 300 שורות)
+
+**M12-c111 - DONE (06.10.2026): `robots.txt` נמדד שוב, בטוח לפרודקשן. אין שינוי קוד.**
+`pwd` אומת, HEAD `5060bcedd` (בזמן העבודה נכנס `11ed72a09` של M11-c111, `STATE.md` בלבד). `git log -1 --
+src/app/robots.ts` עדיין `4d3702025` (M12-c67). **חי** (`www.kenyonexpress.co.il/robots.txt`): ‏200
+`text/plain; charset=utf-8`, etag `b36a25fd...`, sha256 `6c0d631f...`, **16 שורות `Disallow`** כולל ארבע
+שורות M12-c67 (`/gift/`, `/order/`, `/wishlist/s/`, `/debug/`), כלומר הפער שתועד ב-M12-c68..c95 סגור מאז
+פריסת L01. `Sitemap:`/`Host:` ל-apex, שעונה 308 ל-`www` ו-`/sitemap.xml` שם ‏200 `application/xml`. שכבת
+noindex חיה: `/gift/foo` `noindex`, `/wishlist/s/foo` ו-`/redeem/foo` `noindex, nofollow`; `/order/foo` ו-`/debug/foo`
+‏404, `/coupon/foo` ‏307. **בנייה מקומית של HEAD** (worktree נקי `/tmp/ke-m09-c111` על `5060bcedd`, נשאר במקומו,
+`rm -rf .next`, `env -i`, `CARDCOM_USE_MOCK=true`): build 0, 340/340, אפס `Invalid API key`, `BUILD_ID`
+`4AegN9rtjUaSrjpKHoCcb`; `next start` על 4871 (cwd המאזין אומת ב-`lsof`, נעצר לפי PID ב-INT), ו-`/robots.txt`
+המקומי **זהה בביט לחי** (`diff` 0). **שערים**: type-check 0; lint: כל השערים נקיים מלבד docs-path-audit
+ב-worktree, שנכשל רק על `supabase/.temp` (ב-gitignore) ונקי בעץ הראשי (155 ידועים); test 638/638, 7659
+עברו, 12 דולגו. אין שינוי UI, ולכן parity לא נדרש. M03-c111 ו-M18-c110 הועברו ל-`docs/STATE-ARCHIVE.md`.
+**החלטה שהתקבלה לבד:** `RESUME FROM` מצביע ל-M13-c111, הפריט הבא ב-`final-queue.txt`, לפי כלל שורה 1.
+
 ## M11-c111 (הועבר מ-STATE.md ב-M06-c112, לשמירה על תקרת 300 שורות)
 
 **M11-c111 - DONE (06.10.2026): `sitemap.xml` נמדד שוב חי, טרי ונגיש. אין שינוי קוד.**
