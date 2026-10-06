@@ -48050,3 +48050,35 @@ M18-c110 למטה); M17-c110 סגור עכשיו עם ראיה.
 12 דולגו**; `rm -rf .next` ואז build עם `CARDCOM_USE_MOCK=true`: exit 0, 340/340, אפס `Invalid API key`, `BUILD_ID`
 `vO4eYPYB-YEapJR_scr0b`. אפס שינוי UI (הסרת `export` בלבד), `compare.mjs` לא נדרש. M02-c111 ו-M17-c110 הועברו
 ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות. `RESUME FROM` נשאר M12-c110, כמו בשאר פריטי c111.
+
+## M06-c112 (הועבר מ-STATE.md ב-M08-c112, לשמירה על תקרת 300 שורות)
+
+**M06-c112 - DONE (06.10.2026): `pnpm build` נמדד מחדש על HEAD נקי, exit 0, 340/340, אפס דריפט, אין מה לתקן.**
+משימת התור: "pnpm build fix drift commit". `pwd` אומת, HEAD `38db6670b` = `origin/audit/final-audit`. מאז M06-c111
+(`df54456a4`) השתנו 7 קבצים ב-`src` (הסרת ה-exports של M09-c111), ולכן נבנה מחדש ולא הועתק. בעץ הראשי WIP זר
+(account/coupon/gifts/sitemap), לא נגעתי ולא חויב; הכל רץ ב-worktree נקי `/tmp/ke-m06-c112` (HEAD, `node_modules`
+כ-APFS clone, `.env.local` כ-symlink, `refs/` הועתק, `supabase/.temp` ריק; נשאר במקומו, לא נמחק). **שערים** בחזית
+תחת `env -i`: type-check 0; lint: 12 השערים הראשונים נקיים, docs-path-audit נכשל ב-worktree רק על 81 הפניות
+ל-`refs/`/`supabase/.temp` שב-gitignore, נקי בעץ הראשי (155 ידועים, ללא שינוי); test **638/638, 7659 עברו, 12 דולגו**;
+**`rm -rf .next` ואז build עם `CARDCOM_USE_MOCK=true`: exit 0, 340/340 דפים, אפס `Invalid API key`, `BUILD_ID`
+`1r8e3FZPT4UWRlllqINJR`**. 92 שורות `rls_denied` על `reviews` בזמן prerender, אותו מספר כמו ב-M06-c111 (חוסם #3,
+מיגרציה 247), ואלה כל 92 שורות ה-error בלוג; לא דריפט. לא פריט חזותי, `compare.mjs` לא נדרש. M11-c111 הועבר
+ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות. **החלטה שהתקבלה לבד:** `RESUME FROM` נשאר M16-c111, שעדיין
+בלי commit עם ראיה, כמו בשאר פריטי c111/c112.
+
+## M15-c111 (הועבר מ-STATE.md ב-M08-c112, לשמירה על תקרת 300 שורות)
+
+**M15-c111 - DONE (06.10.2026): אפס console errors על `/` ועל דגימת המוצר, בבנייה טרייה של קוד HEAD.**
+`pwd` אומת, HEAD `15d495254`. מאז M15-c95 (`9278fd3be`) השתנו 178 קבצים ב-`src`/`e2e`/`next.config.ts`, ולכן
+רץ אימות מלא ולא הסתמכות על ריצה קודמת. בעץ הראשי WIP זר (account/coupon/gifts/sitemap), לא נגעתי ולא חויב;
+`/tmp/ke-m14-c111` היה תפוס ב-vitest של סשן מקביל, ולכן נמדד ב-worktree `/tmp/ke-m09-c111` על `bd44390f4`
+(קוד זהה ל-HEAD, ההפרש `STATE.md`/`docs` בלבד; נשאר במקומו). `rm -rf .next`, `env -i`, `CARDCOM_USE_MOCK=true`:
+build 0, 340/340, אפס `Invalid API key`, `BUILD_ID` `dGCyW5GkkRMlS5Xpc757f`. `pnpm start -p 4879` (PID 12360, cwd
+המאזין אומת ב-`lsof`, נעצר ב-INT, הפורט פנוי). `e2e/route-audit.spec.ts --grep "anon /$|anon dynamic catalogue
+routes"` עם `ROUTE_AUDIT_REPORT=/tmp/route-audit-m15c111.jsonl`: **4/4 PASS** (chromium + mobile-chrome, 57.1 שניות).
+הדוח, 16 שורות: **אפס `consoleErrors` ואפס `hydrationWarnings` בכל אחת**, כולן 200: `/`, `/product/צימר-מאסטר`
+ו-`/reviews` שלו (דגימת המוצר), `/category/hot-deals`, `/city/תל-אביב`, `/coupons/<id>`, `/page/how-it-works`, `/s/<id>`.
+**שערים** (אותו worktree, `env -i`): type-check 0; lint: כל השערים נקיים מלבד docs-path-audit ב-worktree, שנכשל רק על
+`supabase/.temp` (ב-gitignore), נקי בעץ הראשי (155 ידועים); test 638/638, 7659 עברו, 12 דולגו. אין שינוי UI, ולכן
+`compare.mjs` לא נדרש. M06-c111 הועבר ל-`docs/STATE-ARCHIVE.md`. **החלטה שהתקבלה לבד:** `RESUME FROM` מצביע
+ל-M16-c111, הפריט הבא ב-`final-queue.txt`.

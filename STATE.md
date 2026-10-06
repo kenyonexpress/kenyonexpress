@@ -1,7 +1,28 @@
 RESUME FROM: M16-c111
-Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M07-c112 DONE + אימות שני עצמאי: אותם שני `TODO(cardcom)` בלבד, שערים ירוקים)
+Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M08-c112 DONE: Lighthouse mobile `/` 99-100/100/100, מוצר 100/100/100, אפס שינוי קוד, שערים ירוקים)
 
 ## המשך מ:
+
+**M08-c112 - DONE (06.10.2026): Lighthouse mobile על `/` ו-`/product/צימר-מאסטר` נמדד מחדש, 99-100/100/100, אפס דריפט.**
+משימת התור: "Lighthouse mobile on / and /product sample log scores". `pwd` אומת, HEAD `dde41012f` = `origin/audit/final-audit`.
+`git diff --stat 52f525794 HEAD -- src public packages next.config.* package.json pnpm-lock.yaml messages` ריק: אפס שינוי קוד.
+בעץ הראשי WIP זר (account/coupon/gifts/sitemap), לא נגעתי ולא חויב; הכל רץ ב-worktree הנקי `/tmp/ke-m06-c112`, שהועבר
+(detached) ל-`dde41012f` ונשאר במקומו. `rm -rf .next` ואז `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4831
+pnpm build` תחת `env -i`: exit 0, 340/340, אפס `Invalid API key`, `BUILD_ID` `RnGhfaosr-yTfFufPpYwj`. `PORT=4831 pnpm start`
+(פורט אומת פנוי, `cwd` של המאזין PID 49907 אומת `/private/tmp/ke-m06-c112`), שני הדפים `200` וחוממו פעמיים.
+`LOCAL_BASE=http://localhost:4831 node scripts/lighthouse-smoke.mjs --throttling-method=provided` (ו-`--url=` למוצר), בחזית:
+
+| דף | perf | a11y | seo | M08-c95 (`53a09bc1c`) |
+|---|---|---|---|---|
+| `/` (3 ריצות) | 99 / 100 / 99 | 100 | 100 | 100/100/100 |
+| `/product/צימר-מאסטר` | 100 | 100 | 100 | 100/100/100 |
+
+ה-99 ב-`/` מתחלף עם 100 בין ריצות על אותו build בלי שינוי קוד, כלומר רעש מדידה מקומי (ראה `docs/PERFORMANCE-BUDGET.md`),
+לא רגרסיה; הסף של הסקריפט הוא 90, exit 0. שרת נסגר ב-`INT`, פורט 4831 אומת פנוי. **שערים** ב-worktree תחת `env -i`: type-check 0;
+lint: נכשל רק ב-docs-path-audit על 81 הפניות ל-`refs/` שב-gitignore (כמו M06/M07-c112), נקי בעץ הראשי (155 ידועים, ללא שינוי);
+test **638/638, 7659 עברו, 12 דולגו**; build למעלה exit 0. לא פריט חזותי, אפס שינוי UI, `compare.mjs` לא נדרש (תקדים M08-c80 ואילך).
+M06-c112 ו-M15-c111 הועברו ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות. **החלטה שהתקבלה לבד:** `RESUME FROM` נשאר M16-c111,
+שעדיין בלי commit עם ראיה, כמו בשאר פריטי c111/c112.
 
 **M07-c112 - DONE (06.10.2026): TODO/FIXME נסרק מחדש, אפס סמן חדש, אפס שינוי קוד.**
 משימת התור: "Scan TODO FIXME older than 7 days resolve or file in docs/BACKLOG.md". `pwd` אומת, HEAD `52f525794`
@@ -25,19 +46,6 @@ Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M07-c112 DONE + אימ
 שערים ב-`/tmp/ke-m06-c112` על `52f525794` תחת `env -i`: type-check 0; lint נקי מלבד docs-path-audit ב-worktree (81 הפניות
 ל-`refs/` שב-gitignore), נקי בעץ הראשי (155 ידועים); test 638/638 (7659/12 דולגו; אותו כשל `invoices.test.ts` כש-`CARDCOM_USE_MOCK`
 דלף ל-env הטסטים, נעלם בלעדיו); build 0 340/340 `NkiPz517S0iAFQb6-qmVG`. M14-c111 אימות שני הועבר לארכיון (תקרת 300).
-
-**M06-c112 - DONE (06.10.2026): `pnpm build` נמדד מחדש על HEAD נקי, exit 0, 340/340, אפס דריפט, אין מה לתקן.**
-משימת התור: "pnpm build fix drift commit". `pwd` אומת, HEAD `38db6670b` = `origin/audit/final-audit`. מאז M06-c111
-(`df54456a4`) השתנו 7 קבצים ב-`src` (הסרת ה-exports של M09-c111), ולכן נבנה מחדש ולא הועתק. בעץ הראשי WIP זר
-(account/coupon/gifts/sitemap), לא נגעתי ולא חויב; הכל רץ ב-worktree נקי `/tmp/ke-m06-c112` (HEAD, `node_modules`
-כ-APFS clone, `.env.local` כ-symlink, `refs/` הועתק, `supabase/.temp` ריק; נשאר במקומו, לא נמחק). **שערים** בחזית
-תחת `env -i`: type-check 0; lint: 12 השערים הראשונים נקיים, docs-path-audit נכשל ב-worktree רק על 81 הפניות
-ל-`refs/`/`supabase/.temp` שב-gitignore, נקי בעץ הראשי (155 ידועים, ללא שינוי); test **638/638, 7659 עברו, 12 דולגו**;
-**`rm -rf .next` ואז build עם `CARDCOM_USE_MOCK=true`: exit 0, 340/340 דפים, אפס `Invalid API key`, `BUILD_ID`
-`1r8e3FZPT4UWRlllqINJR`**. 92 שורות `rls_denied` על `reviews` בזמן prerender, אותו מספר כמו ב-M06-c111 (חוסם #3,
-מיגרציה 247), ואלה כל 92 שורות ה-error בלוג; לא דריפט. לא פריט חזותי, `compare.mjs` לא נדרש. M11-c111 הועבר
-ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות. **החלטה שהתקבלה לבד:** `RESUME FROM` נשאר M16-c111, שעדיין
-בלי commit עם ראיה, כמו בשאר פריטי c111/c112.
 
 **M01-c112 - DONE (06.10.2026): parity של `/` נמדד מחדש ב-380/768/1440, כולם PASS, אפס הפרש.**
 `pwd` אומת, HEAD `89e8d357f`. בעץ הראשי WIP זר (account/coupon/gifts/sitemap), לא נגעתי ולא חויב; הכל רץ ב-worktree
@@ -83,21 +91,6 @@ build מתחרה. פרוב Playwright נפרד שלי (מחוץ לריפו, `/tm
 **שערים** (worktree `/tmp/ke-m17-c111`, קוד זהה ל-HEAD, `env -i`): type-check 0; lint 0; test 7659 עברו,
 12 דולגו; build 0 עם `CARDCOM_USE_MOCK=true`, 340/340, אפס `Invalid API key`, `BUILD_ID` `ryvGQg6dIFDPqMBdsW5KI`.
 אין שינוי UI, ולכן parity לא נמדד מחדש (המספרים 7.92/9.03/4.16 של `89e8d357f` עומדים).
-
-**M15-c111 - DONE (06.10.2026): אפס console errors על `/` ועל דגימת המוצר, בבנייה טרייה של קוד HEAD.**
-`pwd` אומת, HEAD `15d495254`. מאז M15-c95 (`9278fd3be`) השתנו 178 קבצים ב-`src`/`e2e`/`next.config.ts`, ולכן
-רץ אימות מלא ולא הסתמכות על ריצה קודמת. בעץ הראשי WIP זר (account/coupon/gifts/sitemap), לא נגעתי ולא חויב;
-`/tmp/ke-m14-c111` היה תפוס ב-vitest של סשן מקביל, ולכן נמדד ב-worktree `/tmp/ke-m09-c111` על `bd44390f4`
-(קוד זהה ל-HEAD, ההפרש `STATE.md`/`docs` בלבד; נשאר במקומו). `rm -rf .next`, `env -i`, `CARDCOM_USE_MOCK=true`:
-build 0, 340/340, אפס `Invalid API key`, `BUILD_ID` `dGCyW5GkkRMlS5Xpc757f`. `pnpm start -p 4879` (PID 12360, cwd
-המאזין אומת ב-`lsof`, נעצר ב-INT, הפורט פנוי). `e2e/route-audit.spec.ts --grep "anon /$|anon dynamic catalogue
-routes"` עם `ROUTE_AUDIT_REPORT=/tmp/route-audit-m15c111.jsonl`: **4/4 PASS** (chromium + mobile-chrome, 57.1 שניות).
-הדוח, 16 שורות: **אפס `consoleErrors` ואפס `hydrationWarnings` בכל אחת**, כולן 200: `/`, `/product/צימר-מאסטר`
-ו-`/reviews` שלו (דגימת המוצר), `/category/hot-deals`, `/city/תל-אביב`, `/coupons/<id>`, `/page/how-it-works`, `/s/<id>`.
-**שערים** (אותו worktree, `env -i`): type-check 0; lint: כל השערים נקיים מלבד docs-path-audit ב-worktree, שנכשל רק על
-`supabase/.temp` (ב-gitignore), נקי בעץ הראשי (155 ידועים); test 638/638, 7659 עברו, 12 דולגו. אין שינוי UI, ולכן
-`compare.mjs` לא נדרש. M06-c111 הועבר ל-`docs/STATE-ARCHIVE.md`. **החלטה שהתקבלה לבד:** `RESUME FROM` מצביע
-ל-M16-c111, הפריט הבא ב-`final-queue.txt`.
 
 **M14-c111 - DONE (06.10.2026): release של Sentry תואם ל-HEAD. ממצא חדש: `SENTRY_AUTH_TOKEN` נדחה 401.**
 `pwd` אומת, HEAD `bd44390f4` = `origin/audit/final-audit`. קוד: release הוא `SENTRY_RELEASE ?? VERCEL_GIT_COMMIT_SHA`
