@@ -1,7 +1,20 @@
 RESUME FROM: M16-c111
-Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M01-c112 DONE: parity בית נמדד מחדש, 7.92/9.03/4.16, אפס הפרש)
+Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M06-c112 DONE: `pnpm build` נמדד מחדש על HEAD נקי, 340/340, אפס דריפט)
 
 ## המשך מ:
+
+**M06-c112 - DONE (06.10.2026): `pnpm build` נמדד מחדש על HEAD נקי, exit 0, 340/340, אפס דריפט, אין מה לתקן.**
+משימת התור: "pnpm build fix drift commit". `pwd` אומת, HEAD `38db6670b` = `origin/audit/final-audit`. מאז M06-c111
+(`df54456a4`) השתנו 7 קבצים ב-`src` (הסרת ה-exports של M09-c111), ולכן נבנה מחדש ולא הועתק. בעץ הראשי WIP זר
+(account/coupon/gifts/sitemap), לא נגעתי ולא חויב; הכל רץ ב-worktree נקי `/tmp/ke-m06-c112` (HEAD, `node_modules`
+כ-APFS clone, `.env.local` כ-symlink, `refs/` הועתק, `supabase/.temp` ריק; נשאר במקומו, לא נמחק). **שערים** בחזית
+תחת `env -i`: type-check 0; lint: 12 השערים הראשונים נקיים, docs-path-audit נכשל ב-worktree רק על 81 הפניות
+ל-`refs/`/`supabase/.temp` שב-gitignore, נקי בעץ הראשי (155 ידועים, ללא שינוי); test **638/638, 7659 עברו, 12 דולגו**;
+**`rm -rf .next` ואז build עם `CARDCOM_USE_MOCK=true`: exit 0, 340/340 דפים, אפס `Invalid API key`, `BUILD_ID`
+`1r8e3FZPT4UWRlllqINJR`**. 92 שורות `rls_denied` על `reviews` בזמן prerender, אותו מספר כמו ב-M06-c111 (חוסם #3,
+מיגרציה 247), ואלה כל 92 שורות ה-error בלוג; לא דריפט. לא פריט חזותי, `compare.mjs` לא נדרש. M11-c111 הועבר
+ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות. **החלטה שהתקבלה לבד:** `RESUME FROM` נשאר M16-c111, שעדיין
+בלי commit עם ראיה, כמו בשאר פריטי c111/c112.
 
 **M01-c112 - DONE (06.10.2026): parity של `/` נמדד מחדש ב-380/768/1440, כולם PASS, אפס הפרש.**
 `pwd` אומת, HEAD `89e8d357f`. בעץ הראשי WIP זר (account/coupon/gifts/sitemap), לא נגעתי ולא חויב; הכל רץ ב-worktree
@@ -104,22 +117,6 @@ noindex חיה: `/gift/foo` `noindex`, `/wishlist/s/foo` ו-`/redeem/foo` `noind
 ב-worktree, שנכשל רק על `supabase/.temp` (ב-gitignore) ונקי בעץ הראשי (155 ידועים); test 638/638, 7659
 עברו, 12 דולגו. אין שינוי UI, ולכן parity לא נדרש. M03-c111 ו-M18-c110 הועברו ל-`docs/STATE-ARCHIVE.md`.
 **החלטה שהתקבלה לבד:** `RESUME FROM` מצביע ל-M13-c111, הפריט הבא ב-`final-queue.txt`, לפי כלל שורה 1.
-
-**M11-c111 - DONE (06.10.2026): `sitemap.xml` נמדד שוב חי, טרי ונגיש. אין שינוי קוד.**
-`pwd` אומת, HEAD `5060bcedd`. **נמדד חי מול `www.kenyonexpress.co.il`:** `/sitemap.xml` ‏200
-`application/xml; charset=utf-8`, `<sitemapindex>` עם חמש תתי-מפות (content, categories, products,
-regions, suppliers), כולן 200 `application/xml`, עם 15/13/46/17/7 = **98 `<loc>`, אפס כפילויות**;
-lastmod החדש ביותר 2026-10-05T01:07:49Z (content, products), regions ללא lastmod. `robots.txt` ‏200 ומפנה
-ל-`Sitemap: https://kenyonexpress.co.il/sitemap.xml`. כל 98 הכתובות נבדקו אחת-אחת עם `curl -L`:
-**98/98 ‏200, כל אחת אחרי הפניה אחת** (apex ‏308 ל-`www`), זהה ל-M11-c110; הממצא כבר רשום כ-BACKLOG #23
-(תיקון ב-Vercel env או בדומיין הראשי, שניהם מחוץ לסמכות הסוכן), ולכן לא נרשם שוב. **שערים** ב-worktree
-נקי `/tmp/ke-m05-c111` על `8905d60c5` (הקוד של HEAD; `5060bcedd` נוגע ב-`STATE.md` בלבד) תחת `env -i`:
-type-check 0; lint: 12 השערים הראשונים נקיים, docs-path-audit נכשל ב-worktree רק על `refs/` ו-`supabase/.temp`
-שב-gitignore (84), נקי בעץ הראשי (155 ידועים, ללא שינוי); test 638/638, 7659 עברו, 12 דולגו;
-`rm -rf .next` ואז build עם `CARDCOM_USE_MOCK=true`: exit 0, 340/340, אפס `Invalid API key`,
-`BUILD_ID` `4oqdTpgDlGgDAnZRcdVnQ`. אין שינוי UI, ולכן `compare.mjs` לא נדרש. ה-WIP הזר בעץ הראשי
-(כולל `src/lib/seo/sitemap-*`) לא נגעתי בו ולא חויב. **החלטה שהתקבלה לבד:** `RESUME FROM` נשאר M12-c110,
-כמו בשאר פריטי c111.
 
 **M11-c110 - DONE** (sitemap.xml טרי, 98/98 כתובות 200, ממצא apex→www ב-BACKLOG),
 ו-W14..W01, M01-c96, L12, L11 וכל מה שקדם: ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, החדש למעלה.
