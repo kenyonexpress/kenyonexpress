@@ -1,7 +1,22 @@
-RESUME FROM: M12-c110
-Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M11-c111 DONE: sitemap.xml חי, טרי, 98/98 כתובות 200)
+RESUME FROM: M13-c111
+Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M12-c111 DONE: robots.txt חי עם 16 `Disallow`, זהה בביט לבנייה מקומית של HEAD)
 
 ## המשך מ:
+
+**M12-c111 - DONE (06.10.2026): `robots.txt` נמדד שוב, בטוח לפרודקשן. אין שינוי קוד.**
+`pwd` אומת, HEAD `5060bcedd` (בזמן העבודה נכנס `11ed72a09` של M11-c111, `STATE.md` בלבד). `git log -1 --
+src/app/robots.ts` עדיין `4d3702025` (M12-c67). **חי** (`www.kenyonexpress.co.il/robots.txt`): ‏200
+`text/plain; charset=utf-8`, etag `b36a25fd...`, sha256 `6c0d631f...`, **16 שורות `Disallow`** כולל ארבע
+שורות M12-c67 (`/gift/`, `/order/`, `/wishlist/s/`, `/debug/`), כלומר הפער שתועד ב-M12-c68..c95 סגור מאז
+פריסת L01. `Sitemap:`/`Host:` ל-apex, שעונה 308 ל-`www` ו-`/sitemap.xml` שם ‏200 `application/xml`. שכבת
+noindex חיה: `/gift/foo` `noindex`, `/wishlist/s/foo` ו-`/redeem/foo` `noindex, nofollow`; `/order/foo` ו-`/debug/foo`
+‏404, `/coupon/foo` ‏307. **בנייה מקומית של HEAD** (worktree נקי `/tmp/ke-m09-c111` על `5060bcedd`, נשאר במקומו,
+`rm -rf .next`, `env -i`, `CARDCOM_USE_MOCK=true`): build 0, 340/340, אפס `Invalid API key`, `BUILD_ID`
+`4AegN9rtjUaSrjpKHoCcb`; `next start` על 4871 (cwd המאזין אומת ב-`lsof`, נעצר לפי PID ב-INT), ו-`/robots.txt`
+המקומי **זהה בביט לחי** (`diff` 0). **שערים**: type-check 0; lint: כל השערים נקיים מלבד docs-path-audit
+ב-worktree, שנכשל רק על `supabase/.temp` (ב-gitignore) ונקי בעץ הראשי (155 ידועים); test 638/638, 7659
+עברו, 12 דולגו. אין שינוי UI, ולכן parity לא נדרש. M03-c111 ו-M18-c110 הועברו ל-`docs/STATE-ARCHIVE.md`.
+**החלטה שהתקבלה לבד:** `RESUME FROM` מצביע ל-M13-c111, הפריט הבא ב-`final-queue.txt`, לפי כלל שורה 1.
 
 **M11-c111 - DONE (06.10.2026): `sitemap.xml` נמדד שוב חי, טרי ונגיש. אין שינוי קוד.**
 `pwd` אומת, HEAD `5060bcedd`. **נמדד חי מול `www.kenyonexpress.co.il`:** `/sitemap.xml` ‏200
@@ -81,38 +96,6 @@ docs-index 282, docs-path-audit 155 ידועים); test **638/638 קבצים, 76
 docs-path-audit נכשל ב-worktree רק על קבצי `refs/` שב-gitignore (84 "חדשים"), ונקי בעץ הראשי
 (155 ידועים, ללא שינוי); build 0 (`CARDCOM_USE_MOCK=true`), אפס `Invalid API key`. parity לא רלוונטי:
 אין שינוי UI. **החלטה שהתקבלה לבד:** `RESUME FROM` נשאר M12-c110, כמו ב-M02-c111 ו-M17/M18-c110.
-
-**M03-c111 - DONE (06.10.2026): `compare.mjs` על `/category` נמדד מחדש, 3.72 / 2.88 / 1.71 PASS.**
-אין שינוי קוד. `pwd` אומת, HEAD `f82b0cb77` (`src` זהה ל-`bef85ac52`, W14; בזמן העבודה נכנס `b6b4ef5a9`
-של M02-c111, docs בלבד). בעץ הראשי WIP זר של account/coupon/gifts שלא נגעתי בו, ולכן worktree נקי
-`/tmp/ke-m03-c111` (HEAD, `node_modules` כ-APFS clone, `.env.local` כ-symlink, `refs/` הועתק; נשאר
-במקומו, לא נמחק). build טרי תחת `env -i` עם `CARDCOM_USE_MOCK=true`, exit 0, אפס `Invalid API key`,
-`BUILD_ID` `TL2rYC8UUaYfsJL1p-8NP`. `next start` על **4995**, cwd של המאזין אומת ב-`lsof`. השער רץ
-בחזית: `--page=category --widths=380,768,1440 --baseline='refs/electro_shop_{width}.png'` (דגימת
-`/category/hot-deals`, 200). **380 3.72% PASS, 768 2.88% PASS**; ב-1440 השרת קיבל SIGINT מבחוץ
-(exit 130, כנראה ה-`pkill` של M02-c111 שתועד למעלה) והריצה נכשלה עם `ERR_CONNECTION_REFUSED`, בלי
-מספר. השרת הופעל מחדש מאותו worktree על **4996** (cwd אומת) ו-1440 רץ שוב בחזית: **1.71% PASS**.
-שלושת המספרים זהים בביט ל-W09 (`6e4edd589`, 05.10), כלומר W10..W14 לא הזיזו את דף הקטגוריה. שלוש
-השורות נכתבו ל-`docs/UI-PARITY-REPORT.md` על ידי השער (ב-worktree) והועברו כמו שהן; הסיומת `-dirty`
-ב-768/1440 היא הדוח עצמו שהשער כתב בשורה הקודמת. השרת נעצר לפי PID המאזין בלבד (INT).
-**שערים** (worktree, `env -i`): type-check 0; lint: 10 שערים נקיים, docs-path-audit נכשל ב-worktree
-רק על `supabase/.temp` (ב-gitignore), נקי בעץ הראשי (155 ידועים); test 638/638, 7659 עברו, 12 דולגו;
-build 0.
-**החלטה שהתקבלה לבד:** `RESUME FROM` נשאר M12-c110, כמו ב-M02-c111 ו-M17/M18-c110.
-
-**M18-c110 - DONE (06.10.2026): STATE.md קוצץ.** בהגעה 249 שורות (כבר מתחת ל-300);
-הסעיף הזה החזיק את הרשומה המלאה של M11-c110 ושלוש רשומות היסטוריות סגורות
-(DEPLOY-UNBLOCK שנפתר ב-L01, M14-c73 שנסגר ב-L01, מצביע M18-c58..M01-c55). כולן
-הועברו מילה במילה לראש `docs/STATE-ARCHIVE.md`; שום שורה לא נמחקה. נשארו: שורת
-ה-resume, טבלת התור, החוסמים הפתוחים והפריטים הידניים לאופיר.
-**החלטה שהתקבלה לבד:** `RESUME FROM` נשאר M12-c110. ב-`final-done.txt` של הלולאה
-‏M12..M17-c110 רשומים כבוצעו, אבל אין להם commit ב-`git log` ואין רשומה כאן, ולכן
-לפי הכלל "אין DONE בלי ראיה" הם לא נחשבים סגורים. M18-c110 הוא השורה האחרונה בתור.
-**שערים** (worktree נקי `/tmp/ke-m18`, HEAD + שני הקבצים, תחת `env -i`, כי בעץ הראשי WIP
-זר של account/coupon/gifts שלא נגעתי בו): type-check 0; lint 11 שערים נקיים (i18n 603/603,
-docs-index 282), docs-path-audit נקי בעץ הראשי (155 ידועים, ב-worktree חסרים קבצי `refs/`
-שב-gitignore); test 638/638, 7659 עברו, 12 דולגו; build 0, 340 דפים. parity לא רלוונטי:
-אין שינוי UI. ה-worktree נשאר במקומו, לא נמחק.
 
 **M11-c110 - DONE** (sitemap.xml טרי, 98/98 כתובות 200, ממצא apex→www ב-BACKLOG),
 ו-W14..W01, M01-c96, L12, L11 וכל מה שקדם: ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, החדש למעלה.

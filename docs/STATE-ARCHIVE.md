@@ -2,6 +2,40 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M03-c111 ו-M18-c110 (הועברו מ-STATE.md ב-M12-c111, לשמירה על תקרת 300 שורות)
+
+**M03-c111 - DONE (06.10.2026): `compare.mjs` על `/category` נמדד מחדש, 3.72 / 2.88 / 1.71 PASS.**
+אין שינוי קוד. `pwd` אומת, HEAD `f82b0cb77` (`src` זהה ל-`bef85ac52`, W14; בזמן העבודה נכנס `b6b4ef5a9`
+של M02-c111, docs בלבד). בעץ הראשי WIP זר של account/coupon/gifts שלא נגעתי בו, ולכן worktree נקי
+`/tmp/ke-m03-c111` (HEAD, `node_modules` כ-APFS clone, `.env.local` כ-symlink, `refs/` הועתק; נשאר
+במקומו, לא נמחק). build טרי תחת `env -i` עם `CARDCOM_USE_MOCK=true`, exit 0, אפס `Invalid API key`,
+`BUILD_ID` `TL2rYC8UUaYfsJL1p-8NP`. `next start` על **4995**, cwd של המאזין אומת ב-`lsof`. השער רץ
+בחזית: `--page=category --widths=380,768,1440 --baseline='refs/electro_shop_{width}.png'` (דגימת
+`/category/hot-deals`, 200). **380 3.72% PASS, 768 2.88% PASS**; ב-1440 השרת קיבל SIGINT מבחוץ
+(exit 130, כנראה ה-`pkill` של M02-c111 שתועד למעלה) והריצה נכשלה עם `ERR_CONNECTION_REFUSED`, בלי
+מספר. השרת הופעל מחדש מאותו worktree על **4996** (cwd אומת) ו-1440 רץ שוב בחזית: **1.71% PASS**.
+שלושת המספרים זהים בביט ל-W09 (`6e4edd589`, 05.10), כלומר W10..W14 לא הזיזו את דף הקטגוריה. שלוש
+השורות נכתבו ל-`docs/UI-PARITY-REPORT.md` על ידי השער (ב-worktree) והועברו כמו שהן; הסיומת `-dirty`
+ב-768/1440 היא הדוח עצמו שהשער כתב בשורה הקודמת. השרת נעצר לפי PID המאזין בלבד (INT).
+**שערים** (worktree, `env -i`): type-check 0; lint: 10 שערים נקיים, docs-path-audit נכשל ב-worktree
+רק על `supabase/.temp` (ב-gitignore), נקי בעץ הראשי (155 ידועים); test 638/638, 7659 עברו, 12 דולגו;
+build 0.
+**החלטה שהתקבלה לבד:** `RESUME FROM` נשאר M12-c110, כמו ב-M02-c111 ו-M17/M18-c110.
+
+**M18-c110 - DONE (06.10.2026): STATE.md קוצץ.** בהגעה 249 שורות (כבר מתחת ל-300);
+הסעיף הזה החזיק את הרשומה המלאה של M11-c110 ושלוש רשומות היסטוריות סגורות
+(DEPLOY-UNBLOCK שנפתר ב-L01, M14-c73 שנסגר ב-L01, מצביע M18-c58..M01-c55). כולן
+הועברו מילה במילה לראש `docs/STATE-ARCHIVE.md`; שום שורה לא נמחקה. נשארו: שורת
+ה-resume, טבלת התור, החוסמים הפתוחים והפריטים הידניים לאופיר.
+**החלטה שהתקבלה לבד:** `RESUME FROM` נשאר M12-c110. ב-`final-done.txt` של הלולאה
+‏M12..M17-c110 רשומים כבוצעו, אבל אין להם commit ב-`git log` ואין רשומה כאן, ולכן
+לפי הכלל "אין DONE בלי ראיה" הם לא נחשבים סגורים. M18-c110 הוא השורה האחרונה בתור.
+**שערים** (worktree נקי `/tmp/ke-m18`, HEAD + שני הקבצים, תחת `env -i`, כי בעץ הראשי WIP
+זר של account/coupon/gifts שלא נגעתי בו): type-check 0; lint 11 שערים נקיים (i18n 603/603,
+docs-index 282), docs-path-audit נקי בעץ הראשי (155 ידועים, ב-worktree חסרים קבצי `refs/`
+שב-gitignore); test 638/638, 7659 עברו, 12 דולגו; build 0, 340 דפים. parity לא רלוונטי:
+אין שינוי UI. ה-worktree נשאר במקומו, לא נמחק.
+
 ## M11-c110 ורשומות היסטוריות סגורות (הועברו מ-STATE.md ב-M18-c110, לשמירה על תקרת 300 שורות)
 
 **M11-c110 - DONE (06.10.2026): SITEMAP.XML טרי ונגיש בפרודקשן. אין שינוי קוד.**
