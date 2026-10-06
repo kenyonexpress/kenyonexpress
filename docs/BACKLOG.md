@@ -473,6 +473,25 @@ round. The 19-file blocker (204, 209, 218, 220, 223, 224, 234, 235,
 236, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248) stands
 unchanged. No migration applied, no code change -- verification only.
 
+**Re-checked 2026-10-06 (M10-c112), item 5, against production directly
+(read-only CLI-keychain-token, `POST .../database/query` with
+`read_only: true`, one `SELECT`, zero DDL):** queue item "Verify
+migrations/pending/ applied or file blocker" recurred. Since M10-c95's
+probe (`f5564d638`) four new files landed: 249 (`products.publish_at`),
+250 (pg_cron expiry-reminder clock, plus `preflight_250.sql`), 251
+(`club_tiers`, `orders.club_tier`), 252 (`affiliate_clicks`,
+`affiliate_payout_requests`). `migrations/pending/*.sql` is now 65 (was
+60); `git log -1 -- migrations/pending/` is `3043995e9` (252). Probed 17
+objects from 15 files, all absent: tables from 204/234/235/236/240/244/
+251/252; columns from 218 (`profiles.supplier_id`), 223 (`outbox_id`),
+242, 249, 251; 220's `fn_wallet_entries_block_mutation` `proconfig`
+still `NULL`; `cron.job` holds only `report_tables_nightly` (none of
+250's three jobs); 82 products with `city IS NULL` (241 unapplied).
+**Decision taken alone:** 249..252 folded into the blocking list above,
+now 23 files, since shipped code paths (scheduled publish, expiry
+reminders, club tiers, affiliate clicks/payouts) depend on them; each
+degrades gracefully until applied. No migration applied, no code change.
+
 ## ידני לאופיר, לפי סדר קריטיות
 
 1. **DNS ברשם — RESOLVED (נמדד 29.09, M01-c52, שורת החסימה עודכנה ב-LAUNCH-READINESS.md ב-M15-c53).**
@@ -526,7 +545,9 @@ unchanged. No migration applied, no code change -- verification only.
    224, 234, 235, 236, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248**
    (19 קבצים, ‏247 בלי תלות בשום קובץ אחר; **248 נוסף 01.10, Q55/Q32** —
    גרנט `anon`/`authenticated` על `suppliers.opening_hours` ו-
-   `google_reviews_url`, אחרי 232 ואחרי 242). אחרי ההחלה: `pnpm db:types` ו-commit.
+   `google_reviews_url`, אחרי 232 ואחרי 242). **M10-c112 (06.10): נוספו 249, 250,
+   251, 252** (23 קבצים; כל אחד בלתי תלוי באחרים לפי `APPLY-ORDER.md`, 250 דורש
+   קודם את `preflight_250.sql` ותיקון ה-vault). אחרי ההחלה: `pnpm db:types` ו-commit.
 6. **Cardcom אמיתי.** לבדוק את הערכים של `CARDCOM_API_KEY`/`CLIENT_ID`/
    `MERCHANT_ID` הקיימים בשם ב-Vercel, לקבוע `CARDCOM_USE_MOCK=false` ו-
    `CHECKOUT_ENABLED=true`, לפרוס מחדש (ה-CSP נאפה בזמן build, לא בזמן

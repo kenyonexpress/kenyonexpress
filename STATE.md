@@ -1,7 +1,24 @@
 RESUME FROM: M16-c111
-Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M09-c112 DONE: knip 277→276 exports, 199→194 types, 6 exports מתים הוסרו, אפס תלות הוסרה, שערים ירוקים)
+Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M10-c112 DONE: migrations/pending נבדק מול פרודקשן, 65 קבצים, אף אחד לא הוחל, החוסם 19→23 קבצים עם 249..252)
 
 ## המשך מ:
+
+**M10-c112 - DONE (06.10.2026): migrations/pending נבדק ישירות מול פרודקשן, אף קובץ לא הוחל, החוסם גדל מ-19 ל-23 קבצים.**
+משימת התור: "Verify migrations/pending/ applied or file blocker". `pwd` אומת, HEAD `b36f8cbda`. בעץ הראשי WIP זר
+(account/coupon/gifts/sitemap), לא נגעתי ולא חויב. מאז הבדיקה הישירה האחרונה (M10-c95, `f5564d638`) נוספו ל-`migrations/pending/`
+ארבעה קבצים חדשים: 249 (`products.publish_at`), 250 (שעון pg_cron לתזכורות תפוגה), 251 (`club_tiers`), 252 (`affiliate_clicks`
+ו-`affiliate_payout_requests`), ועוד `preflight_250.sql`: **65 קבצי `.sql`** (היה 60), `git log -1 -- migrations/pending/` הוא
+`3043995e9` (252). בדיקה ישירה טרייה, קריאה בלבד: טוקן ה-CLI מה-keychain (לא הודפס), `POST .../database/query` עם
+`read_only: true`, `SELECT` יחיד, אפס DDL. **17 אובייקטים מ-15 קבצים, כולם חסרים:** טבלאות של 204/234/235/236/240/244/251/252
+(×2) לא קיימות (`to_regclass` ריק); עמודות של 218 (`profiles.supplier_id`), 223 (`outbox_id`), 242, 249, 251 (`orders.club_tier`)
+לא קיימות; `proconfig` של `fn_wallet_entries_block_mutation` עדיין `NULL` (220); ב-`cron.job` רק `report_tables_nightly`, אף אחת
+משלוש המשימות של 250; 82 מוצרים עם `city IS NULL` (241 לא הוחל). **החלטה שהתקבלה לבד:** 249..252 נוספו לרשימת החוסם ב-BACKLOG
+סעיף 5 (23 קבצים), כי פיצ'רים שכבר בקוד (פרסום מתוזמן, תזכורות תפוגה, דרגות מועדון, קליקים ומשיכות של שותפים) תלויים בהם; 250
+חסומה בנוסף על ערך ה-vault (חוסם 16). לא הוחלה שום מיגרציה, אפס שינוי קוד, אפס שינוי UI, `compare.mjs` לא נדרש. **שערים** ב-worktree נקי חדש `/tmp/ke-m10-c112wt` (HEAD + שלושת קבצי ה-docs,
+`env -i`, נשאר במקומו): type-check 0; lint: 12 השערים הראשונים נקיים, docs-path-audit נכשל ב-worktree רק על 81 הפניות ל-`refs/`
+ו-3 ל-`supabase/.temp` שב-gitignore, נקי בעץ הראשי (155 ידועים, ללא שינוי); test **638/638, 7659 עברו, 12 דולגו**; `rm -rf .next`
+ואז build עם `CARDCOM_USE_MOCK=true`: exit 0, 340/340, אפס `Invalid API key`, `BUILD_ID` `kOgsAXgvDGVUyPpHYS18H`. M17-c111 הועבר
+ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות. `RESUME FROM` נשאר M16-c111, כמו בשאר פריטי c112.
 
 **M09-c112 - DONE (06.10.2026): knip נמדד מחדש, 6 exports מתים הוסרו (שנדחו ב-M09-c111), אפס תלות הוסרה.**
 משימת התור: "Remove unused deps and dead exports". `pwd` אומת, HEAD `1c51e73c3`. `git diff 8905d60c5 HEAD -- src packages
@@ -57,32 +74,6 @@ build טרי תחת `env -i` עם `CARDCOM_USE_MOCK=true`: exit 0, אפס `Inval
 type-check 0; lint: כל השערים נקיים מלבד docs-path-audit ב-worktree, שנכשל רק על `supabase/.temp` (ב-gitignore),
 נקי בעץ הראשי (155 ידועים); test 638/638, 7659 עברו, 12 דולגו; build 0. **החלטה שהתקבלה לבד:** `RESUME FROM`
 נשאר M16-c111, שעדיין בלי commit עם ראיה, כמו בשאר פריטי c111.
-
-**M17-c111 - DONE (06.10.2026): RTL על `/` ועל דגימת `/product`, אפס דליפות LTR. אין שינוי קוד.**
-`pwd` אומת, HEAD `4cc28b788`. מאז M17-c110 (`f82b0cb77`) השתנו 7 קבצים ב-`src` (הסרת exports של M09-c111),
-ולכן נמדד מחדש ולא הועתק. בעץ הראשי WIP זר (account/coupon/gifts/sitemap), לא נגעתי ולא חויב; הכל רץ
-ב-worktree נקי `/tmp/ke-m17-c111` (HEAD, `node_modules` כ-APFS clone, `.env.local` כ-symlink, `refs/` הועתק;
-נשאר במקומו, לא נמחק). build טרי תחת `env -i` עם `CARDCOM_USE_MOCK=true`: exit 0, אפס `Invalid API key`,
-`BUILD_ID` `0ZBHbGElh_lbWllyEUB1B`; `pnpm start -p 4997`, cwd של המאזין אומת ב-`lsof`. פרוב Playwright זמני
-(מחוץ לריפו, לא חויב) על `/` ועל שלושת סלאגי הדגימה (`samsung-galaxy-s22-128gb-samsung-galaxy-s22-128gb-5g`,
-`חבילת-גלידה`, `חיתולי-האגיס`) ב-380/768/1440: **12 טעינות, 12 PASS, כולן 200**: `<html lang="he" dir="rtl">`,
-`body` מחושב `rtl`, `scrollWidth` = `clientWidth` בכולן, **אפס** אלמנט גלוי עם `direction: ltr` מחושב שמחזיק
-טקסט עברי ישיר, **אפס** טקסט עברי בתוך `[dir="ltr"]`. 12 אלמנטים מחוץ למסך ב-380/768 בכל דף, וכולם בתוך
-המגירה הסגורה של `MobileDrawer` (`fixed inset-y-0 right-0 dir="rtl"`), מחליקה מימין ואינה מוסיפה גלילה; ממצא
-הנגישות שלה כבר ב-BACKLOG #24. **parity (בית, `--baseline='refs/ke_live_{width}.png'`, בחזית):** 380 **7.92%**,
-768 **9.03%**, 1440 **4.16%**, כולם PASS מתחת ל-11%, זהים בביט ל-M17-c110; שלוש השורות נכתבו על ידי השער
-ל-`docs/UI-PARITY-REPORT.md` והועברו כמו שהן. השרת נעצר לפי PID המאזין בלבד (INT). **שערים** (אותו worktree,
-`env -i`): type-check 0; lint 0 (docs-path-audit 155 ידועים, input-dir 25/25); test 638/638, 7659 עברו, 12 דולגו;
-build 0. **החלטה שהתקבלה לבד:** `RESUME FROM` נשאר M16-c111, שעדיין בלי commit; M17-c111 סגור עם ראיה.
-M07-c111 הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות.
-
-**M17-c111, אימות שני (06.10.2026):** סשן מקביל חייב ודחף את הפריט (`89e8d357f`) בזמן שהתחלתי, ולכן לא נבנה
-build מתחרה. פרוב Playwright נפרד שלי (מחוץ לריפו, `/tmp/ke-m17-c111-probe`, לא חויב) רץ מול אותו שרת HEAD
-על 4997 לפני שנעצר: `/` ושלושת סלאגי הדגימה ב-380/768/1440, **12/12 PASS, כולן 200**, `lang="he" dir="rtl"`,
-`body` ‏`rtl`, `scrollWidth` = `clientWidth`, אפס עברית תחת `ltr` מחושב ואפס עברית בתוך `[dir="ltr"]`. תואם.
-**שערים** (worktree `/tmp/ke-m17-c111`, קוד זהה ל-HEAD, `env -i`): type-check 0; lint 0; test 7659 עברו,
-12 דולגו; build 0 עם `CARDCOM_USE_MOCK=true`, 340/340, אפס `Invalid API key`, `BUILD_ID` `ryvGQg6dIFDPqMBdsW5KI`.
-אין שינוי UI, ולכן parity לא נמדד מחדש (המספרים 7.92/9.03/4.16 של `89e8d357f` עומדים).
 
 **M14-c111 - DONE (06.10.2026): release של Sentry תואם ל-HEAD. ממצא חדש: `SENTRY_AUTH_TOKEN` נדחה 401.**
 `pwd` אומת, HEAD `bd44390f4` = `origin/audit/final-audit`. קוד: release הוא `SENTRY_RELEASE ?? VERCEL_GIT_COMMIT_SHA`
@@ -168,10 +159,10 @@ SHOWABLE: no, ראו "חוסמים
    בלי הרשאת SELECT על `reviews`, נמדד M18-c52; בלעדיה דף הביקורות הציבורי
    נכשל תמיד, ללא תלות בשום קובץ אחר). סדר והתנאים
    ב-`docs/RUNBOOK.md`, סקירה ב-`docs/MIGRATION-REVIEW.md`. **אומת שוב
-   M10-c95 (05.10, בדיקה ישירה מול פרודקשן בפועל דרך CLI-keychain-token,
-   לא רק git, 15 אובייקטים של 13 קבצים): כל 19 הקבצים החוסמים עדיין לא
-   הוחלו, אפס סחיפה מ-M10-c93.**
-   60 קבצים ב-`migrations/pending/`, `git log -1` עדיין `48c8792dd` (248).
+   M10-c112 (06.10, בדיקה ישירה מול פרודקשן דרך CLI-keychain-token, קריאה
+   בלבד, 17 אובייקטים של 15 קבצים): אף קובץ לא הוחל; החוסם עכשיו 23 קבצים
+   (19 הקודמים + 249, 250, 251, 252).**
+   65 קבצים ב-`migrations/pending/`, `git log -1` הוא `3043995e9` (252).
 4. **R2 לא מופעל בחשבון Cloudflare** (10.09): תמונות המוצר נופלות ל-Supabase
    Storage, וגיבויי ה-DB החיצוניים אינם נכתבים כלל.
 5. **צילומי reference ב-380 וב-768 לסל ולקופה**: קיימים רק ב-1440

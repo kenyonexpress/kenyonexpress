@@ -2,6 +2,34 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M17-c111 (הועבר מ-STATE.md ב-M10-c112, לשמירה על תקרת 300 שורות)
+
+**M17-c111 - DONE (06.10.2026): RTL על `/` ועל דגימת `/product`, אפס דליפות LTR. אין שינוי קוד.**
+`pwd` אומת, HEAD `4cc28b788`. מאז M17-c110 (`f82b0cb77`) השתנו 7 קבצים ב-`src` (הסרת exports של M09-c111),
+ולכן נמדד מחדש ולא הועתק. בעץ הראשי WIP זר (account/coupon/gifts/sitemap), לא נגעתי ולא חויב; הכל רץ
+ב-worktree נקי `/tmp/ke-m17-c111` (HEAD, `node_modules` כ-APFS clone, `.env.local` כ-symlink, `refs/` הועתק;
+נשאר במקומו, לא נמחק). build טרי תחת `env -i` עם `CARDCOM_USE_MOCK=true`: exit 0, אפס `Invalid API key`,
+`BUILD_ID` `0ZBHbGElh_lbWllyEUB1B`; `pnpm start -p 4997`, cwd של המאזין אומת ב-`lsof`. פרוב Playwright זמני
+(מחוץ לריפו, לא חויב) על `/` ועל שלושת סלאגי הדגימה (`samsung-galaxy-s22-128gb-samsung-galaxy-s22-128gb-5g`,
+`חבילת-גלידה`, `חיתולי-האגיס`) ב-380/768/1440: **12 טעינות, 12 PASS, כולן 200**: `<html lang="he" dir="rtl">`,
+`body` מחושב `rtl`, `scrollWidth` = `clientWidth` בכולן, **אפס** אלמנט גלוי עם `direction: ltr` מחושב שמחזיק
+טקסט עברי ישיר, **אפס** טקסט עברי בתוך `[dir="ltr"]`. 12 אלמנטים מחוץ למסך ב-380/768 בכל דף, וכולם בתוך
+המגירה הסגורה של `MobileDrawer` (`fixed inset-y-0 right-0 dir="rtl"`), מחליקה מימין ואינה מוסיפה גלילה; ממצא
+הנגישות שלה כבר ב-BACKLOG #24. **parity (בית, `--baseline='refs/ke_live_{width}.png'`, בחזית):** 380 **7.92%**,
+768 **9.03%**, 1440 **4.16%**, כולם PASS מתחת ל-11%, זהים בביט ל-M17-c110; שלוש השורות נכתבו על ידי השער
+ל-`docs/UI-PARITY-REPORT.md` והועברו כמו שהן. השרת נעצר לפי PID המאזין בלבד (INT). **שערים** (אותו worktree,
+`env -i`): type-check 0; lint 0 (docs-path-audit 155 ידועים, input-dir 25/25); test 638/638, 7659 עברו, 12 דולגו;
+build 0. **החלטה שהתקבלה לבד:** `RESUME FROM` נשאר M16-c111, שעדיין בלי commit; M17-c111 סגור עם ראיה.
+M07-c111 הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות.
+
+**M17-c111, אימות שני (06.10.2026):** סשן מקביל חייב ודחף את הפריט (`89e8d357f`) בזמן שהתחלתי, ולכן לא נבנה
+build מתחרה. פרוב Playwright נפרד שלי (מחוץ לריפו, `/tmp/ke-m17-c111-probe`, לא חויב) רץ מול אותו שרת HEAD
+על 4997 לפני שנעצר: `/` ושלושת סלאגי הדגימה ב-380/768/1440, **12/12 PASS, כולן 200**, `lang="he" dir="rtl"`,
+`body` ‏`rtl`, `scrollWidth` = `clientWidth`, אפס עברית תחת `ltr` מחושב ואפס עברית בתוך `[dir="ltr"]`. תואם.
+**שערים** (worktree `/tmp/ke-m17-c111`, קוד זהה ל-HEAD, `env -i`): type-check 0; lint 0; test 7659 עברו,
+12 דולגו; build 0 עם `CARDCOM_USE_MOCK=true`, 340/340, אפס `Invalid API key`, `BUILD_ID` `ryvGQg6dIFDPqMBdsW5KI`.
+אין שינוי UI, ולכן parity לא נמדד מחדש (המספרים 7.92/9.03/4.16 של `89e8d357f` עומדים).
+
 ## M14-c111 אימות שני (הועבר מ-STATE.md ב-M07-c112 אימות שני, לשמירה על תקרת 300 שורות)
 
 **M14-c111, אימות שני (06.10.2026):** סשן מקביל חייב ודחף את הפריט (`b0363aaed`) בזמן שמדדתי; נמדד בנפרד ותואם:
