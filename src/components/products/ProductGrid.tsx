@@ -114,12 +114,16 @@ export default function ProductGrid({
       </p>
       {isLoading ? <CategoryGridSkeleton count={SCROLL_SKELETON_COUNT} unclipped /> : null}
       {loadError && !isLoading ? (
-        <button type="button" className="product-grid__retry" onClick={() => void load()}>
+        <button
+          type="button"
+          className="product-grid__retry mt-3 cursor-pointer rounded-lg border border-[var(--cat-line)] bg-[var(--cat-surface)] py-2 ps-4 pe-4 text-sm text-[var(--cat-ink)]"
+          onClick={() => void load()}
+        >
           נסו שוב
         </button>
       ) : null}
       {hasMore ? (
-        <div ref={sentinelRef} className="product-grid__sentinel" aria-hidden="true" />
+        <div ref={sentinelRef} className="product-grid__sentinel h-px" aria-hidden="true" />
       ) : null}
     </>
   )
