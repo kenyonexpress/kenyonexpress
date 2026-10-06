@@ -283,7 +283,7 @@ one.
 
 ## Audits, reports and measurements
 
-24 documents.
+26 documents.
 
 | Document | Status | What it is |
 |---|---|---|
@@ -309,6 +309,7 @@ one.
 | [PERFORMANCE-REPORT.md](PERFORMANCE-REPORT.md) | ✅ | Section 62 of ~/ke-goals/SECTIONS.md. Measured 2026-09-09 against the build at |
 | [PIXEL-WAVE-REPORT.md](PIXEL-WAVE-REPORT.md) | 🕯️ | עודכן: ‏2026-08-19, ענף feat/pixel-wave, בילד jKlu531ZpXzULKt4Qrff (‏10:49). |
 | [PROJECT-COMPLETE.md](PROJECT-COMPLETE.md) | 🕯️ | ‏נכתב ‏19.08.2026, בילד qOQvgn9UgRyJr71kDu3ia, ענף phase5/homepage. |
+| [STATE-ARCHIVE.md](STATE-ARCHIVE.md) | 🕯️ | STATE.md history up to 2026-10-06, moved out so STATE.md stays under 300 lines. Not maintained. |
 | [SEED-REPORT.md](SEED-REPORT.md) | 🕯️ | עודכן: ‏2026-08-19. הכלי: scripts/seed-catalogue.mjs, הנתונים: |
 | [UI-PARITY-REPORT.md](UI-PARITY-REPORT.md) | ✅ | Every scripts/compare.mjs run appends a row here automatically -- the gate |
 | [WP-IMPORT-REPORT.md](WP-IMPORT-REPORT.md) | 🕯️ | מקור: data-import/wp-backup/kenyonexpress-wxr-2026-07-29.xml (‏5,942,638 בתים) |
