@@ -72,6 +72,7 @@
 | `search` | 120 | 5 min | search queries hit Meilisearch |
 | `search-suggest` | 300 | 5 min | typeahead fires per keystroke |
 | `search-facets` | 60 | 5 min | faceted search, filters + counts |
+| `products-list` | 120 | 5 min | shop archive infinite scroll, per IP |
 | `analytics` | 120 | 1 min | beacon endpoint, per IP |
 | `contact` | 5 | 1 h | contact form mail |
 | `supplier-lead` | 5 | 1 h | supplier lead mail |

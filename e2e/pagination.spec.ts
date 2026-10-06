@@ -7,8 +7,9 @@ import { expect, test } from '@playwright/test'
  * THE SECTION SAYS 50 PER PAGE. NOTHING HERE IS 50.
  * =========================================================================
  *
- * Measured 2026-09-10: `CATEGORY_PAGE_SIZE = 12`, `SHOP_PAGE_SIZE = 24`,
+ * Measured 2026-10-06: `CATEGORY_PAGE_SIZE = 12`, `SHOP_PAGE_SIZE = 20`,
  * `SUPPLIER_PAGE_SIZE = 24`. SECTIONS 35 and SECTIONS 31 both ask for 50.
+ * /products now appends pages through GET /api/products instead of ?page=.
  *
  * A test that asserted 50 would fail on working code, and changing the code to
  * 50 is a layout decision, not a bug fix: 12 is a whole number of rows in the
@@ -64,26 +65,24 @@ async function slugsOn(page: import('@playwright/test').Page): Promise<string[]>
 }
 
 test.describe('archive pagination', () => {
-  test('the shop archive puts different products on page 2', async ({ page }) => {
+  test('scrolling the shop archive appends different products without duplicates', async ({
+    page,
+  }) => {
     await page.goto(ARCHIVE)
 
     const first = await slugsOn(page)
     test.skip(first.length === 0, 'shop archive renders no products in this catalogue')
 
-    await page.goto(`${ARCHIVE}?page=2`)
-    const second = await slugsOn(page)
+    const sentinel = page.getByTestId('load-more-sentinel')
+    test.skip((await sentinel.count()) === 0, 'the catalogue does not fill a second page')
 
-    // An archive smaller than one page clamps page 2 back to page 1, which is
-    // the documented behaviour and not a pagination bug. Nothing to compare.
-    test.skip(
-      second.length === 0 || JSON.stringify(second) === JSON.stringify(first),
-      'the catalogue does not fill a second page',
-    )
+    const next = page.waitForResponse((res) => res.url().includes('/api/products') && res.ok())
+    await sentinel.scrollIntoViewIfNeeded()
+    await next
+    const combined = await slugsOn(page)
 
-    // The off-by-one this exists for: a repeated product means `from` overlaps
-    // the previous range, and both pages still look healthy.
-    const overlap = second.filter((slug) => first.includes(slug))
-    expect(overlap, `page 2 repeats page 1: ${overlap.join(', ')}`).toEqual([])
+    expect(combined.length).toBeGreaterThan(first.length)
+    expect(new Set(combined).size).toBe(combined.length)
   })
 
   test('page 1 never renders more products than the archive counts', async ({ page }) => {

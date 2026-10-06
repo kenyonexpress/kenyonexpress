@@ -6,6 +6,7 @@ import { enabledProductTypes } from '@/lib/commerce/phases'
 import { cityBySlug } from '@/lib/geo/cities'
 import { filterByCity } from '@/lib/geo/distance'
 import { repairPriceOrder } from '@/lib/money-format'
+import { PRODUCTS_PAGE_SIZE } from '@/lib/products-feed'
 import { createPublicClient } from '@/lib/supabase/anon'
 import { cacheLife, cacheTag } from 'next/cache'
 import { cache } from 'react'
@@ -524,12 +525,13 @@ export async function getAllCategories(): Promise<{ slug: string; name_he: strin
   return (data ?? []).map((row) => ({ ...row, name_he: repairPriceOrder(row.name_he) }))
 }
 
-export const SHOP_PAGE_SIZE = 24
+export const SHOP_PAGE_SIZE = PRODUCTS_PAGE_SIZE
 
 /** All active products for /products (live /shop/ archive), same sort rules. */
 export async function getShopProducts(opts: {
   sort: SortValue
   page: number
+  limit?: number
   priceMin?: number
   priceMax?: number
   productType?: ProductTypeFilter
@@ -538,8 +540,9 @@ export async function getShopProducts(opts: {
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
   const { sort, page, priceMin, priceMax, productType } = opts
+  const pageSize = opts.limit ?? SHOP_PAGE_SIZE
   const supabase = createPublicClient()
-  const from = (page - 1) * SHOP_PAGE_SIZE
+  const from = (page - 1) * pageSize
 
   let query = supabase
     .from('products')
@@ -586,9 +589,9 @@ export async function getShopProducts(opts: {
   }
 
   const { data, count } = orFailWithCount(
-    await query.range(from, from + SHOP_PAGE_SIZE - 1),
+    await query.range(from, from + pageSize - 1),
     'catalogue.shop_products_failed',
-    { page, sort },
+    { page, sort, limit: pageSize },
   )
   const items = (data ?? []).map((row) => {
     const r = row as CategoryProductRow

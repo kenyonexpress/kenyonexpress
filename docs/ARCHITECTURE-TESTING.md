@@ -903,7 +903,7 @@ with the reason named, the same stance `admin-refund.spec.ts` takes.
 
 ### The section asks for 50 per page. Nothing here is 50
 
-Measured: `CATEGORY_PAGE_SIZE = 12`, `SHOP_PAGE_SIZE = 24`,
+Measured: `CATEGORY_PAGE_SIZE = 12`, `SHOP_PAGE_SIZE = 20`,
 `SUPPLIER_PAGE_SIZE = 24`. A test asserting 50 would fail on working code, and
 changing the code to 50 is a layout decision rather than a bug fix.
 
@@ -912,7 +912,8 @@ a page never renders more cards than the archive counts, and page 2 holds
 DIFFERENT products. The disjointness check is the one that earns its place - an
 off-by-one in `range(from, from + SIZE - 1)` shows up as page 2 repeating page
 1's last row or skipping a product, and both render as a perfectly healthy grid.
-Verified live: `/products` shows 1-24 of 44, `?page=2` shows 25-44, no overlap.
+Verified live: `/products` first paint is 20 of the catalogue, further pages
+append through GET `/api/products`, no overlap.
 
 ### A false finding, caught before it was written down
 
