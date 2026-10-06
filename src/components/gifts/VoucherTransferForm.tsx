@@ -10,7 +10,20 @@ import { useState, useTransition } from 'react'
  * stranger a working claim link, and that has to be a deliberate act with the
  * recipient's address typed by the sender.
  */
-export default function VoucherTransferForm({ voucherId }: { voucherId: string }) {
+export type VoucherSendMode = 'gift' | 'transfer'
+
+/**
+ * `mode` decides the shape of the form, not what it does: both end in
+ * `transferVoucher`. A gift carries a greeting; a transfer is the coupon alone,
+ * so the greeting field is not shown and nothing is sent in its place.
+ */
+export default function VoucherTransferForm({
+  voucherId,
+  mode = 'gift',
+}: {
+  voucherId: string
+  mode?: VoucherSendMode
+}) {
   const [error, setError] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
   const router = useRouter()
@@ -19,6 +32,7 @@ export default function VoucherTransferForm({ voucherId }: { voucherId: string }
     <form
       className="mt-4 flex flex-col gap-3"
       data-testid="gift-transfer-form"
+      data-mode={mode}
       onSubmit={(event) => {
         event.preventDefault()
         const form = new FormData(event.currentTarget)
@@ -58,18 +72,24 @@ export default function VoucherTransferForm({ voucherId }: { voucherId: string }
           className="rounded-lg border border-heading/20 px-3 py-2 text-base"
         />
       </label>
-      <label className="flex flex-col gap-1 text-sm">
-        <span>{t('giftTransfer.messageLabel')}</span>
-        <textarea
-          name="message"
-          rows={3}
-          maxLength={500}
-          className="rounded-lg border border-heading/20 px-3 py-2 text-base"
-        />
-      </label>
+      {mode === 'gift' && (
+        <label className="flex flex-col gap-1 text-sm">
+          <span>{t('giftTransfer.messageLabel')}</span>
+          <textarea
+            name="message"
+            rows={3}
+            maxLength={500}
+            className="rounded-lg border border-heading/20 px-3 py-2 text-base"
+          />
+        </label>
+      )}
       <div>
         <button type="submit" disabled={pending} className="account-btn account-btn--primary">
-          {pending ? t('giftTransfer.submitting') : t('giftTransfer.submit')}
+          {pending
+            ? t('giftTransfer.submitting')
+            : mode === 'transfer'
+              ? t('giftTransfer.transferSubmit')
+              : t('giftTransfer.submit')}
         </button>
       </div>
       {error && (

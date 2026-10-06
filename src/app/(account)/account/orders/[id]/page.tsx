@@ -1,5 +1,9 @@
+import BuyAgainButton from '@/components/account/BuyAgainButton'
 import OrderHelpForm from '@/components/account/OrderHelpForm'
 import RefundRequestForm from '@/components/account/RefundRequestForm'
+import QrFullscreen from '@/components/coupon/QrFullscreen'
+import ValidityCountdown from '@/components/coupon/ValidityCountdown'
+import VoucherSendButtons from '@/components/coupon/VoucherSendButtons'
 import ReviewForm from '@/components/reviews/ReviewForm'
 import { formatDate, formatIls, orderStatusLabel, orderStatusTone } from '@/lib/account/format'
 import { orderContactLink } from '@/lib/contact/inquiry-links'
@@ -7,7 +11,9 @@ import { giftHeldCopy } from '@/lib/gifts/held-copy'
 import { t } from '@/lib/i18n/messages'
 import { REVIEWABLE_ORDER_STATUSES } from '@/lib/reviews/eligibility'
 import { COUPON_TONE_CHIP, couponStatusView } from '@/lib/vouchers/coupon-view'
+import { wazeSearchLink } from '@/lib/waze'
 import { refundRequestStatus } from '@/server/actions/refund-requests'
+import { computeCancellationFee } from '@/server/domain/orders/refund'
 import { getOrderDetail } from '@/server/queries/orders'
 import { getMyReviewsForItems } from '@/server/queries/reviews'
 import Link from 'next/link'
@@ -29,6 +35,11 @@ export default async function OrderDetailPage({ params }: Props) {
   // and a client that fetched them would render the form before knowing whether
   // it is allowed.
   const refund = await refundRequestStatus(id)
+  // The statutory fee for a voluntary cancellation of THIS order, so the form
+  // can print the number beside the rule. Integer agorot through `applyBp`;
+  // the defect-claim case is zero and the form decides which applies from the
+  // reason the customer picks.
+  const cancellationFeeAgorot = computeCancellationFee(order.totalAgorot, false)
   const existing = await getMyReviewsForItems(order.lines.map((line) => line.id))
   const canReview = (REVIEWABLE_ORDER_STATUSES as readonly string[]).includes(order.status)
   // Prefilled with what was bought and what was paid, so the first WhatsApp
@@ -183,6 +194,45 @@ export default async function OrderDetailPage({ params }: Props) {
                     {line.supplier.name}
                     {line.supplier.city ? ` · ${line.supplier.city}` : ''}
                     {line.supplier.phone ? ` · ${line.supplier.phone}` : ''}
+                    {/*
+                      Navigation to the business, only when a street address
+                      exists: `wazeSearchLink` returns null for a city alone,
+                      because a button that confidently lands in a city centre
+                      is worse than none. Same helper as the coupon page.
+                    */}
+                    {(() => {
+                      const waze = wazeSearchLink(line.supplier.address, line.supplier.city)
+                      return waze ? (
+                        <>
+                          {' · '}
+                          <a
+                            href={waze}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            data-testid="order-supplier-waze"
+                          >
+                            {t('supplierLocation.waze')}
+                          </a>
+                        </>
+                      ) : null
+                    })()}
+                  </p>
+                )}
+
+                {/*
+                  One tap back to the checkout with this line in the cart. The
+                  saved address and phone are filled there; the card never is,
+                  see BuyAgainButton. Only for a product that still exists in
+                  the catalogue (has an id and a slug); a deleted one keeps its
+                  name on the order and nothing to buy.
+                */}
+                {line.productId && line.productSlug && (
+                  <p style={{ marginTop: 8 }}>
+                    <BuyAgainButton
+                      productId={line.productId}
+                      productName={line.productName}
+                      quantity={line.quantity}
+                    />
                   </p>
                 )}
 
@@ -212,12 +262,23 @@ export default async function OrderDetailPage({ params }: Props) {
                           data-testid={held ? 'order-voucher-gift' : 'order-voucher'}
                         >
                           {voucher.qrDataUrl && (
-                            <img
-                              src={voucher.qrDataUrl}
-                              alt={`קוד QR לקופון ${voucher.code}`}
-                              width={120}
-                              height={120}
-                            />
+                            <div style={{ display: 'grid', gap: 8, justifyItems: 'center' }}>
+                              <img
+                                src={voucher.qrDataUrl}
+                                alt={`קוד QR לקופון ${voucher.code}`}
+                                width={120}
+                                height={120}
+                              />
+                              {/* Full screen for the scanner. The data URL is
+                                  non-null only for a presentable, un-gifted
+                                  voucher (`getOrderDetail`), so the button
+                                  inherits that decision. */}
+                              <QrFullscreen
+                                qrDataUrl={voucher.qrDataUrl}
+                                code={voucher.code}
+                                alt={`קוד QR לקופון ${voucher.code}`}
+                              />
+                            </div>
                           )}
                           <div>
                             {held ? (
@@ -235,6 +296,17 @@ export default async function OrderDetailPage({ params }: Props) {
                                 ? ` · בתוקף עד ${formatDate(voucher.expiresAt)}`
                                 : ''}
                             </p>
+                            {/* The live counter, for a coupon that can still be
+                                used by this reader. The static date above stays
+                                as the fact both paints agree on. */}
+                            {!held && status.presentable && voucher.expiresAt && (
+                              <p className="account-row__meta">
+                                <ValidityCountdown
+                                  expiresAt={voucher.expiresAt}
+                                  fallback={t('validity.label')}
+                                />
+                              </p>
+                            )}
                             {held && <p className="account-row__meta">{held.explanation}</p>}
                             {voucher.collectAmountAgorot != null &&
                               voucher.collectAmountAgorot > 0 && (
@@ -262,14 +334,9 @@ export default async function OrderDetailPage({ params }: Props) {
                                 </Link>
                               </p>
                             ) : status.presentable ? (
-                              <p style={{ marginTop: 8 }}>
-                                <Link
-                                  className="account-btn"
-                                  href={`/account/coupons/${voucher.id}/gift`}
-                                  data-testid="order-voucher-gift-transfer"
-                                >
-                                  {t('giftTransfer.cta')}
-                                </Link>
+                              <p style={{ marginTop: 8 }} data-testid="order-voucher-gift-transfer">
+                                {/* Two buttons, one mechanism: see VoucherSendButtons. */}
+                                <VoucherSendButtons voucherId={voucher.id} />
                               </p>
                             ) : null}
                           </div>
@@ -302,6 +369,8 @@ export default async function OrderDetailPage({ params }: Props) {
         blockedMessage={refund.message}
         remaining={refund.remaining}
         requests={refund.requests}
+        chargedAgorot={order.totalAgorot}
+        feeAgorot={cancellationFeeAgorot}
       />
 
       <p>

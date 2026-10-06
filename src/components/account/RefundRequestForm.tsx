@@ -1,7 +1,9 @@
 'use client'
 
+import { formatIls } from '@/lib/account/format'
 import { formatDateShort } from '@/lib/i18n/format'
 import { t } from '@/lib/i18n/messages'
+import { agorot } from '@/lib/money'
 import { type RefundRequestState, requestRefund } from '@/server/actions/refund-requests'
 import Link from 'next/link'
 import { useActionState, useId, useState } from 'react'
@@ -49,10 +51,6 @@ const REASONS: Array<{ value: string; label: string; fullRefund: boolean }> = [
   { value: 'other', label: 'סיבה אחרת', fullRefund: false },
 ]
 
-const FULL_REFUND_NOTE = 'במקרה הזה ההחזר מלא: 100% מהסכום ששולם, בלי דמי ביטול.'
-const FEE_NOTE =
-  'בביטול מרצון נגבים דמי ביטול לפי חוק: הנמוך מבין 5% מסכום העסקה או ₪100. אם המוצר פגום או אינו כפי שתואר, בחרו באחת האפשרויות למעלה ולא ייגבו דמי ביטול.'
-
 const STATUS_LABEL: Record<string, string> = {
   pending: 'ממתינה לבדיקה',
   approved: 'אושרה',
@@ -66,6 +64,14 @@ type Props = {
   blockedMessage: string | null
   remaining: number
   requests: Array<{ status: string; created_at: string; reason_code: string }>
+  /** What was paid on site for this order, integer agorot. */
+  chargedAgorot: number
+  /**
+   * The statutory fee for a voluntary cancellation of THIS order, integer
+   * agorot, computed on the server by `computeCancellationFee` and passed down
+   * so the sentence beside the reason carries the number and not only the rule.
+   */
+  feeAgorot: number
 }
 
 export default function RefundRequestForm({
@@ -74,6 +80,8 @@ export default function RefundRequestForm({
   blockedMessage,
   remaining,
   requests,
+  chargedAgorot,
+  feeAgorot,
 }: Props) {
   const [state, action, pending] = useActionState(requestRefund, EMPTY)
   const [open, setOpen] = useState(false)
@@ -151,7 +159,36 @@ export default function RefundRequestForm({
                 </option>
               ))}
             </select>
-            <p className="account-note">{fullRefund ? FULL_REFUND_NOTE : FEE_NOTE}</p>
+            {/*
+              THE FEE IN AGOROT, FOR THIS ORDER, BEFORE THE SUBMIT. The sentence
+              used to state the rule ("the lower of 5% or ₪100") and leave the
+              arithmetic to the customer. Both numbers are integers computed on
+              the server through `applyBp`; the component only formats them.
+              The data attributes carry the raw agorot so a test can check the
+              arithmetic without parsing a shekel string.
+            */}
+            <dl
+              className="account-note"
+              data-testid="cancellation-fee-preview"
+              data-fee-agorot={fullRefund ? 0 : feeAgorot}
+              data-refund-agorot={fullRefund ? chargedAgorot : chargedAgorot - feeAgorot}
+            >
+              <div className="flex justify-between gap-3">
+                <dt>{t('cancellation.paidLabel')}</dt>
+                <dd>{formatIls(agorot(chargedAgorot))}</dd>
+              </div>
+              <div className="flex justify-between gap-3">
+                <dt>{t('cancellation.feeLabel')}</dt>
+                <dd>{formatIls(agorot(fullRefund ? 0 : feeAgorot))}</dd>
+              </div>
+              <div className="flex justify-between gap-3 font-semibold">
+                <dt>{t('cancellation.refundLabel')}</dt>
+                <dd>{formatIls(agorot(fullRefund ? chargedAgorot : chargedAgorot - feeAgorot))}</dd>
+              </div>
+            </dl>
+            <p className="account-note">
+              {fullRefund ? t('cancellation.fullRefundRule') : t('cancellation.feeRule')}
+            </p>
           </div>
 
           <div>

@@ -1,4 +1,4 @@
-import VoucherTransferForm from '@/components/gifts/VoucherTransferForm'
+import VoucherTransferForm, { type VoucherSendMode } from '@/components/gifts/VoucherTransferForm'
 import VoucherTransferRevoke from '@/components/gifts/VoucherTransferRevoke'
 import { giftHeldCopy } from '@/lib/gifts/held-copy'
 import { transferEligibility } from '@/lib/gifts/transfer'
@@ -19,25 +19,48 @@ import { Suspense } from 'react'
  * for anything redeemed, expired or void. The read is RLS-scoped, so a
  * voucher id that is not this customer's is a 404 here exactly as a made-up
  * one is.
+ *
+ * TWO ENTRANCES, ONE FORM. `?mode=gift` (the default, and what every older
+ * link means) shows the greeting and calls the act a gift; `?mode=transfer`
+ * hides the greeting and calls it a transfer. Both submit `transferVoucher`.
+ * The mode is a presentation choice read from the URL, so an unknown value
+ * falls back to gift rather than to an error page.
  */
 export const metadata: Metadata = { title: t('giftTransfer.title') }
 
-type Props = { params: Promise<{ id: string }> }
+type Props = {
+  params: Promise<{ id: string }>
+  searchParams: Promise<{ mode?: string | string[] }>
+}
 
-export default function VoucherGiftPage(props: Props) {
+function readMode(raw: string | string[] | undefined): VoucherSendMode {
+  const value = Array.isArray(raw) ? raw[0] : raw
+  return value === 'transfer' ? 'transfer' : 'gift'
+}
+
+export default async function VoucherGiftPage(props: Props) {
+  const mode = readMode((await props.searchParams).mode)
   return (
     <>
-      <h1 className="account-title">{t('giftTransfer.title')}</h1>
+      <h1 className="account-title">
+        {mode === 'transfer' ? t('giftTransfer.transferTitle') : t('giftTransfer.title')}
+      </h1>
       <section className="account-card">
         <Suspense fallback={<p className="account-empty">…</p>}>
-          <VoucherGiftBody {...props} />
+          <VoucherGiftBody params={props.params} mode={mode} />
         </Suspense>
       </section>
     </>
   )
 }
 
-async function VoucherGiftBody({ params }: Props) {
+async function VoucherGiftBody({
+  params,
+  mode,
+}: {
+  params: Props['params']
+  mode: VoucherSendMode
+}) {
   const { id } = await params
   const voucher = await getCustomerVoucher(id)
   if (!voucher) notFound()
@@ -90,8 +113,10 @@ async function VoucherGiftBody({ params }: Props) {
         <p className="account-row__meta">
           {t('giftTransfer.validUntil')} {formatCouponDate(voucher.expires_at)}
         </p>
-        <p className="account-row__meta">{t('giftTransfer.intro')}</p>
-        <VoucherTransferForm voucherId={voucher.id} />
+        <p className="account-row__meta">
+          {mode === 'transfer' ? t('giftTransfer.transferIntro') : t('giftTransfer.intro')}
+        </p>
+        <VoucherTransferForm voucherId={voucher.id} mode={mode} />
       </div>
     </div>
   )

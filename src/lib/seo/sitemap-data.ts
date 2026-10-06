@@ -7,6 +7,7 @@ import {
   type SitemapSection,
   categorySitemapEntries,
   contentSitemapEntries,
+  isE2eFixtureSlug,
   productSitemapEntries,
   regionSitemapEntries,
   supplierSitemapEntries,
@@ -111,7 +112,11 @@ async function readSuppliers() {
  */
 async function catalogueTouched(): Promise<Date | undefined> {
   const [products, categories] = await Promise.all([readProducts(), readCategories()])
-  return newestTimestamp([...products, ...categories].map((row) => row.updated_at))
+  return newestTimestamp(
+    [...products, ...categories]
+      .filter((row) => !isE2eFixtureSlug(row.slug))
+      .map((row) => row.updated_at),
+  )
 }
 
 /** One section's entries, ready to serialise. */

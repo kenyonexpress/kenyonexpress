@@ -7,6 +7,7 @@ import {
   resolveOrderGeneration,
   resolveOrderItemGeneration,
 } from '@/lib/commerce/order-money-columns'
+import type { GiftCollectedState } from '@/lib/gifts/collected'
 import { type Agorot, agorot } from '@/lib/money'
 import { type TrackingView, trackingView } from '@/lib/shipping/carriers'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -52,6 +53,13 @@ export interface OrderVoucher {
   usedAt: string | null
   /** Set only when the code above has been withheld; what the page shows in its place. */
   gift: VoucherGiftState | null
+  /**
+   * Set once a gifted coupon has been COLLECTED and so belongs to somebody
+   * else. The code and QR are blank for it too, and the page offers no
+   * transfer: there is nothing of this customer's left to transfer. See
+   * `lib/gifts/collected.ts` for why `gift` alone could not say this.
+   */
+  collected: GiftCollectedState | null
 }
 
 export interface OrderLineSupplier {
@@ -386,6 +394,7 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
               queuedAt: coupon.gift_sent_at ?? null,
             }
           : null,
+        collected: null,
       })
     }
 

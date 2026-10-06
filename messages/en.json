@@ -166,7 +166,12 @@
     "notEligible": "This coupon cannot be transferred. Only a valid, unredeemed coupon can be.",
     "back": "Back to my coupons",
     "coupon": "Coupon",
-    "validUntil": "Valid until"
+    "validUntil": "Valid until",
+    "transferCta": "Transfer to another account",
+    "giftCta": "Send as a gift",
+    "transferTitle": "Transfer this coupon to another account",
+    "transferIntro": "The recipient gets an email with a personal link, and the coupon moves to their account the moment they collect it. No greeting, just the coupon. Until then it stays in your account and you can cancel.",
+    "transferSubmit": "Transfer the coupon"
   },
   "couponExpiry": {
     "choose": "Choose validity",
@@ -504,7 +509,12 @@
     "policyLink": "Full cancellation policy",
     "openCta": "Request a cancellation or refund on this order",
     "thankYou": "Changed your mind? Cancelling under section 14C of the Consumer Protection Law is done from the order page in your account.",
-    "thankYouCta": "To the order page"
+    "thankYouCta": "To the order page",
+    "paidLabel": "Paid on site",
+    "feeLabel": "Statutory cancellation fee",
+    "refundLabel": "Expected refund",
+    "feeRule": "The lower of 5% of the transaction or 100 shekels, under the Consumer Protection Law. The final amount is set when the request is approved.",
+    "fullRefundRule": "In this case the refund is full: 100% of the amount paid, with no cancellation fee."
   },
   "purchaseConfirmation": {
     "subject": "Purchase confirmation",
@@ -690,5 +700,31 @@
       "body": "{document} {number} for order {ref} is ready to download on the order page.",
       "body_no_ref": "{document} {number} is ready to download on the order page."
     }
+  },
+  "validity": {
+    "label": "Time left to redeem",
+    "daysHours": "{days} days and {hours} hours left",
+    "hoursMinutes": "{hours} hours and {minutes} minutes left",
+    "minutesSeconds": "{minutes} minutes and {seconds} seconds left",
+    "expired": "Expired"
+  },
+  "qrFullscreen": {
+    "open": "Show full screen for scanning",
+    "title": "QR code to scan at the business",
+    "hint": "Show this screen to the cashier.",
+    "close": "Close"
+  },
+  "buyAgain": {
+    "cta": "Buy again",
+    "pending": "Adding to cart...",
+    "hint": "Your saved details are filled in at checkout. Card details are never stored on the site."
+  },
+  "supplierLocation": {
+    "waze": "Navigate with Waze"
+  },
+  "giftCollected": {
+    "badge": "Gift collected",
+    "headline": "The gift was collected by {who}",
+    "explanation": "The coupon moved to the recipient's account, and the code and QR are shown only there. The order stays here for your records and the invoice."
   }
 }

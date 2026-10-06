@@ -131,10 +131,38 @@ export function sitemapIndexXml(entries: readonly { loc: string; lastModified?: 
 export type SlugRow = { slug: string | null; updated_at?: string | null }
 export type IdRow = { id: string; updated_at?: string | null }
 
+/**
+ * THE E2E FIXTURES ARE LIVE ROWS, AND THEY WERE BEING SUBMITTED. Measured on
+ * production 06.10: `scripts/seed-test-data.mjs` keeps a category, a supplier
+ * and two products active in the real catalogue (the Playwright money path
+ * buys them), and all four were in the sitemap - "קופון בדיקות אוטומטיות" sent
+ * to Google as a product. Worse, a seed run touches their `updated_at`, so the
+ * fixtures were the newest rows in the shop and set the lastmod of the content
+ * file: the sitemap looked fresh because a test ran, not because the catalogue
+ * moved. The homepage grid hides them by the missing picture (`deals.ts`);
+ * here the rule is the fixture identity itself, because a real product without
+ * a picture still belongs in the sitemap. Slugs share the `e2e-` prefix; the
+ * supplier is addressed by id, so it is listed by id.
+ */
+const E2E_FIXTURE_SLUG_PREFIX = 'e2e-'
+const E2E_FIXTURE_SUPPLIER_IDS: ReadonlySet<string> = new Set([
+  'f47ac10b-58cc-4372-a567-0e02b2c3d901',
+])
+
+export function isE2eFixtureSlug(slug: string | null): boolean {
+  return slug?.startsWith(E2E_FIXTURE_SLUG_PREFIX) ?? false
+}
+
+export function isE2eFixtureSupplierId(id: string): boolean {
+  return E2E_FIXTURE_SUPPLIER_IDS.has(id)
+}
+
 export function categorySitemapEntries(base: string, rows: readonly SlugRow[]): SitemapEntry[] {
   const site = trimBase(base)
   return rows
-    .filter((row): row is SlugRow & { slug: string } => Boolean(row.slug))
+    .filter(
+      (row): row is SlugRow & { slug: string } => Boolean(row.slug) && !isE2eFixtureSlug(row.slug),
+    )
     .map((row) => ({
       url: `${site}/category/${encodeURIComponent(row.slug)}`,
       ...(row.updated_at ? { lastModified: new Date(row.updated_at) } : {}),
@@ -146,7 +174,9 @@ export function categorySitemapEntries(base: string, rows: readonly SlugRow[]): 
 export function productSitemapEntries(base: string, rows: readonly SlugRow[]): SitemapEntry[] {
   const site = trimBase(base)
   return rows
-    .filter((row): row is SlugRow & { slug: string } => Boolean(row.slug))
+    .filter(
+      (row): row is SlugRow & { slug: string } => Boolean(row.slug) && !isE2eFixtureSlug(row.slug),
+    )
     .map((row) => ({
       url: `${site}/product/${encodeURIComponent(row.slug)}`,
       ...(row.updated_at ? { lastModified: new Date(row.updated_at) } : {}),
@@ -157,12 +187,14 @@ export function productSitemapEntries(base: string, rows: readonly SlugRow[]): S
 
 export function supplierSitemapEntries(base: string, rows: readonly IdRow[]): SitemapEntry[] {
   const site = trimBase(base)
-  return rows.map((row) => ({
-    url: `${site}/s/${row.id}`,
-    ...(row.updated_at ? { lastModified: new Date(row.updated_at) } : {}),
-    changeFrequency: 'weekly' as const,
-    priority: 0.6,
-  }))
+  return rows
+    .filter((row) => !isE2eFixtureSupplierId(row.id))
+    .map((row) => ({
+      url: `${site}/s/${row.id}`,
+      ...(row.updated_at ? { lastModified: new Date(row.updated_at) } : {}),
+      changeFrequency: 'weekly' as const,
+      priority: 0.6,
+    }))
 }
 
 /**

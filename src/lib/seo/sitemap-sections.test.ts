@@ -1,9 +1,13 @@
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { REGIONS } from '@/lib/regions'
 import { describe, expect, it } from 'vitest'
 import {
   SITEMAP_SECTIONS,
   categorySitemapEntries,
   contentSitemapEntries,
+  isE2eFixtureSlug,
+  isE2eFixtureSupplierId,
   productSitemapEntries,
   regionSitemapEntries,
   sectionPath,
@@ -71,6 +75,37 @@ describe('catalogue entries', () => {
     expect(categorySitemapEntries(BASE, [{ slug: null, updated_at: null }])).toEqual([])
   })
 
+  it('never submits the E2E fixtures that live in the production catalogue', () => {
+    // Measured 06.10: e2e-test-coupon, e2e-test-physical, e2e-test-category and
+    // the fixture supplier were all in the live sitemap.
+    expect(
+      productSitemapEntries(BASE, [
+        { slug: 'e2e-test-coupon', updated_at: null },
+        { slug: 'e2e-test-physical', updated_at: null },
+        { slug: 'צימר-מאסטר', updated_at: null },
+      ]).map((entry) => entry.url),
+    ).toEqual([`${BASE}/product/${encodeURIComponent('צימר-מאסטר')}`])
+    expect(categorySitemapEntries(BASE, [{ slug: 'e2e-test-category', updated_at: null }])).toEqual(
+      [],
+    )
+    expect(
+      supplierSitemapEntries(BASE, [
+        { id: 'f47ac10b-58cc-4372-a567-0e02b2c3d901', updated_at: null },
+      ]),
+    ).toEqual([])
+  })
+
+  it('names the same fixtures the seed script creates', () => {
+    // The filter is only as good as its agreement with the seed. If a fixture
+    // slug or the supplier id changes there, this fails here.
+    const seed = readFileSync(join(process.cwd(), 'scripts/seed-test-data.mjs'), 'utf8')
+    const slugs = [...seed.matchAll(/slug: '([^']+)'/g)].map((m) => m[1] ?? '')
+    expect(slugs.length).toBeGreaterThan(0)
+    for (const slug of slugs) expect(isE2eFixtureSlug(slug)).toBe(true)
+    const supplierId = /supplier: '([0-9a-f-]{36})'/.exec(seed)?.[1] ?? ''
+    expect(isE2eFixtureSupplierId(supplierId)).toBe(true)
+  })
+
   it('omits lastModified when the row has no updated_at', () => {
     const [entry] = categorySitemapEntries(BASE, [{ slug: 'vacation', updated_at: null }])
     expect(entry?.lastModified).toBeUndefined()
@@ -78,7 +113,7 @@ describe('catalogue entries', () => {
 
   it('carries the row updated_at when it has one', () => {
     const [entry] = supplierSitemapEntries(BASE, [
-      { id: 'f47ac10b-58cc-4372-a567-0e02b2c3d901', updated_at: '2026-09-01T10:00:00Z' },
+      { id: '0b1c2d3e-4f50-4617-8899-aabbccddeeff', updated_at: '2026-09-01T10:00:00Z' },
     ])
     expect(entry?.lastModified?.toISOString()).toBe('2026-09-01T10:00:00.000Z')
   })

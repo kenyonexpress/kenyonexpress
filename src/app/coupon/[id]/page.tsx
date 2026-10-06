@@ -1,5 +1,9 @@
+import QrFullscreen from '@/components/coupon/QrFullscreen'
+import ValidityCountdown from '@/components/coupon/ValidityCountdown'
+import VoucherSendButtons from '@/components/coupon/VoucherSendButtons'
 import WalletButtons from '@/components/coupon/WalletButtons'
 import { giftHeldCopy } from '@/lib/gifts/held-copy'
+import { t } from '@/lib/i18n/messages'
 import { createClient } from '@/lib/supabase/server'
 import { buildSupplierContact } from '@/lib/supplier-contact'
 import {
@@ -158,13 +162,22 @@ async function CouponPageBody({ params }: Props) {
           ) : status.presentable ? (
             <div className="flex flex-col items-center gap-3">
               {qrDataUrl ? (
-                <img
-                  src={qrDataUrl}
-                  alt={`QR של שובר ${formatCouponCode(voucher.code)}`}
-                  width={240}
-                  height={240}
-                  className="rounded-xl"
-                />
+                <>
+                  <img
+                    src={qrDataUrl}
+                    alt={`QR של שובר ${formatCouponCode(voucher.code)}`}
+                    width={240}
+                    height={240}
+                    className="rounded-xl"
+                  />
+                  {/* The same QR, viewport-sized, for the scanner. */}
+                  <QrFullscreen
+                    qrDataUrl={qrDataUrl}
+                    code={formatCouponCode(voucher.code)}
+                    alt={`QR של שובר ${formatCouponCode(voucher.code)}`}
+                    className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-900"
+                  />
+                </>
               ) : (
                 <p className="rounded-xl bg-gray-50 px-4 py-6 text-center text-sm text-gray-500">
                   לא ניתן להציג QR כרגע. הקריאו את הקוד לקופאי.
@@ -226,6 +239,20 @@ async function CouponPageBody({ params }: Props) {
           */}
           {!gift && <WalletButtons voucher={voucher} presentable={status.presentable} />}
 
+          {/*
+            Sending it on, from the coupon itself. Transfer and gift are the two
+            buttons every other coupon surface has; this page used to be the one
+            place a customer held a live coupon and had no way to pass it on.
+          */}
+          {!gift && status.presentable && (
+            <div className="mt-4 flex justify-center">
+              <VoucherSendButtons
+                voucherId={voucher.id}
+                buttonClassName="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-900"
+              />
+            </div>
+          )}
+
           {status.presentable && status.expiringSoon && (
             <p className="mt-4 rounded-xl bg-amber-50 px-4 py-2.5 text-center text-sm font-medium text-amber-800">
               {status.daysLeft === 0
@@ -246,6 +273,20 @@ async function CouponPageBody({ params }: Props) {
               <dt className="text-gray-500">בתוקף עד</dt>
               <dd className="font-medium text-gray-900">{formatCouponDate(voucher.expires_at)}</dd>
             </div>
+            {/* The live counter under the date, only while the coupon can be
+                used by this reader; a withheld gift or a dead coupon shows the
+                date alone. */}
+            {!gift && status.presentable && (
+              <div className="flex items-center justify-between">
+                <dt className="text-gray-500">{t('validity.label')}</dt>
+                <dd className="font-medium text-gray-900">
+                  <ValidityCountdown
+                    expiresAt={voucher.expires_at}
+                    fallback={formatCouponDate(voucher.expires_at)}
+                  />
+                </dd>
+              </div>
+            )}
           </dl>
 
           {!money.conserved && (
@@ -274,8 +315,9 @@ async function CouponPageBody({ params }: Props) {
                         target="_blank"
                         rel="noopener noreferrer"
                         className="ms-2 font-semibold text-gray-900 underline"
+                        data-testid="coupon-supplier-waze"
                       >
-                        ניווט ב-Waze
+                        {t('supplierLocation.waze')}
                       </a>
                     )}
                   </dd>
