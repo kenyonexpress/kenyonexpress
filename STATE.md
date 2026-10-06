@@ -1,7 +1,9 @@
 RESUME FROM: M12-c110
-Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M09-c111 DONE: knip, 15 exports מתים הוסרו, אפס תלות הוסרה)
+Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M09-c111 DONE ואומת שוב: knip 277, כל השערים ירוקים על `8905d60c5`)
 
 ## המשך מ:
+
+**M09-c111, אימות שני (06.10.2026):** סשן מקביל חייב ודחף את הפריט (`8905d60c5`) בזמן שרצתי עליו; עבודתי החופפת (19 הסרות `export`, 13 מהן זהות) נזרקה ולא חויבה. אומת על `8905d60c5` ב-worktree נקי `/tmp/ke-m09-c111` (נשאר במקומו) תחת `env -i`: knip **204 / 5 / 1 / 277 / 199 / 4**, כפי שנרשם (292→277); type-check 0; lint 11 שערים נקיים, docs-path-audit נקי בעץ הראשי (155 ידועים); test 638/638, 7659 עברו, 12 דולגו; build 0, 340/340 דפים. אין שינוי UI, ולכן parity לא נדרש. **החלטה שהתקבלה לבד:** לא הורחב ההיקף ל-`readAttributionSnapshot` ולחמשת הטיפוסים שנותרו (`ClubSpendStatus`, `LegalSection`, `ImportRecord`, `SupplierOptionalFields`, `GiftAuditSource`), כדי לכבד את גבול ההיקף שה-commit המקורי קבע; `RESUME FROM` נשאר M12-c110.
 
 **M09-c111 - DONE (06.10.2026): knip נמדד מחדש, 15 exports מתים הוסרו, אפס תלות הוסרה.**
 משימת התור: "Remove unused deps and dead exports". `pwd` אומת. בעץ הראשי WIP זר של account/coupon/gifts/sitemap
