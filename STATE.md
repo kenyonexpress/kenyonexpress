@@ -1,7 +1,29 @@
 RESUME FROM: M16-c111
-Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M18-c112 DONE: STATE.md קוצץ, M12..M17-c112 הועברו ל-`docs/STATE-ARCHIVE.md`)
+Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M01-c113 DONE: parity של `/` נמדד מחדש, 7.92/9.03/4.16 PASS, אפס הפרש)
 
 ## המשך מ:
+
+**M01-c113 - DONE (06.10.2026): parity של `/` נמדד מחדש ב-380/768/1440 על build טרי של HEAD `c70765cf5`, כולם PASS, אפס הפרש.**
+משימת התור: "Re-measure compare.mjs 380 768 1440 on / and record diffs in STATE.md". `pwd` אומת, HEAD `c70765cf5` = `origin/audit/final-audit`.
+בעץ הראשי WIP זר (account/coupon/gifts/sitemap ו-`docs/UI-PARITY-REPORT.md`), לא נגעתי ולא חויב; הכל רץ ב-worktree נקי
+`/tmp/ke-m01-c113` (HEAD, `node_modules` כ-APFS clone, `.env.local` כ-symlink, `refs/` הועתק; נשאר במקומו). build טרי תחת `env -i`
+עם `CARDCOM_USE_MOCK=true`: exit 0, אפס `Invalid API key`, `BUILD_ID` `jinSR-fJQ3nKJwM8j8Gzi`; `pnpm start -p 4998` (cwd המאזין אומת
+ב-`lsof`, נעצר ב-INT, הפורט פנוי). `LOCAL_BASE=http://localhost:4998 node scripts/compare.mjs --page=home --width=W --baseline=refs/ke_live_W.png`,
+בחזית, רוחב אחרי רוחב, כל אחד exit 0:
+
+| רוחב | M01-c113 (`c70765cf5`) | M01-c112 (`89e8d357f`) | הפרש | overall | סטטוס |
+|---|---|---|---|---|---|
+| 380 | **7.92%** | 7.92% | 0.00 | 14.38% | PASS |
+| 768 | **9.03%** | 9.03% | 0.00 | 16.28% | PASS |
+| 1440 | **4.16%** | 4.16% | 0.00 | 14.89% | PASS |
+
+כולם מתחת ל-11%, זהים למדידה הקודמת (אין שינוי UI מאז). שלוש השורות נכתבו על ידי השער ל-`docs/UI-PARITY-REPORT.md` וחויבו כמו
+שהן (`-dirty` בשורות 768/1440 הוא הדוח עצמו, שהשורה הראשונה שינתה); בעץ הראשי הן נוספו אחרי שורות ה-category הזרות, שלא חויבו.
+**שערים** (אותו worktree, `env -i`): type-check 0; lint: כל השערים נקיים מלבד docs-path-audit ב-worktree, שנכשל רק על `supabase/.temp`
+(ב-gitignore), נקי בעץ הראשי (`OK. 155 known`, ללא שינוי); test **638/638, 7659 עברו, 12 דולגו**; build 0. ריצת test ראשונה עם
+`CARDCOM_USE_MOCK=true` בסביבה נכשלה בבדיקה אחת (`invoices.test.ts`, "no credentials at all"), כי הדגל מכריח את `documentIssuingMode`
+ל-`mock`; זה ארטיפקט של ההרצה ולא של הקוד, ובלי הדגל הכל עובר. **החלטה שהתקבלה לבד:** אין קובץ תור c113 בריפו, ולכן `RESUME FROM`
+נשאר M16-c111, שעדיין בלי commit עם ראיה, כמו בשאר פריטי c112.
 
 **M18-c112 - DONE (06.10.2026): ‏STATE.md קוצץ לשורת ההמשך, טבלת התור, החוסמים הפתוחים והידני לאופיר. אין שינוי קוד.**
 משימת התור: "Trim STATE.md under 300 lines archive rest to docs/STATE-ARCHIVE.md". `pwd` אומת, HEAD `c5113f433` = `origin/audit/final-audit`.
