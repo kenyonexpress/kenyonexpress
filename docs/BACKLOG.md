@@ -561,6 +561,7 @@ degrades gracefully until applied. No migration applied, no code change.
    אלא מחרוזת ליטרלית `'TODO'` שבודקת דחיית מספר לא מוגדר.
    **נבדק שוב M07-c111, 06.10.2026:** אותם שני סמנים בלבד, אפס חדשים בכל העץ.
    **נבדק שוב M07-c112, 06.10.2026:** אותם שני סמנים בלבד, אפס חדשים, כולל ה-WIP הלא-מחויב.
+   **נבדק שוב M07-c113, 06.10.2026 (HEAD `6ae2b05de`):** אותם שני סמנים בלבד (blame: 24.07 ו-07.08), אפס חדשים; `final-audit.mjs` 0 לא-מתועדים מתוך 2.
    **נמדד שוב ב-05.10.2026, L11, קריאה בלבד:** `CARDCOM_TERMINAL_NUMBER`,
    `CARDCOM_API_NAME`, `CARDCOM_API_PASSWORD` ו-`CARDCOM_SANDBOX` קיימים
    ב-Production כ-`sensitive` (אינם ניתנים לקריאה בשום API/CLI), נוצרו

@@ -2,6 +2,85 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M03-c113, M02-c113, M01-c113, M18-c112 (הועברו מ-STATE.md ב-M07-c113, לשמירה על תקרת 300 שורות)
+
+**M03-c113 - DONE (06.10.2026): `compare.mjs` על `/category` נמדד מחדש ב-380/768/1440 על build טרי של HEAD `d0cc3be4f`, כולם PASS, אפס הפרש.**
+משימת התור: "Re-measure compare.mjs on /category sample". `pwd` אומת, HEAD `d0cc3be4f` = `origin/audit/final-audit` (אחרי `git fetch`).
+בעץ הראשי אותו WIP זר (account/coupon/gifts/sitemap ו-`docs/UI-PARITY-REPORT.md`), לא נגעתי בו ולא חויב. ה-worktree הנקי
+`/tmp/ke-m01-c113` הועבר ל-`d0cc3be4f` (detached; ההפרש מ-`9cb9ceb6b` הוא docs בלבד, אפס שינוי ב-`src`), `rm -rf .next`, build טרי
+תחת `env -i` עם `CARDCOM_USE_MOCK=true` `NEXT_PUBLIC_APP_URL=http://localhost:4997`: exit 0, אפס `Invalid API key`, `BUILD_ID`
+`v6cTwAqvVP5qmp3IQWykA`; `pnpm start -p 4997` (דגימת `/category/hot-deals` החזירה 200, cwd המאזין אומת ב-`lsof`, נעצר ב-INT לפי
+PID 71366 בלבד, הפורט פנוי). השער רץ בחזית:
+`LOCAL_BASE=http://localhost:4997 node scripts/compare.mjs --page=category --widths=380,768,1440 --baseline='refs/electro_shop_{width}.png'`:
+
+| רוחב | M03-c113 (`d0cc3be4f`) | M03-c111 (`f82b0cb77`) | הפרש | overall | סטטוס |
+|---|---|---|---|---|---|
+| 380 | **3.72%** | 3.72% | 0.00 | 30.46% | PASS |
+| 768 | **2.88%** | 2.88% | 0.00 | 31.77% | PASS |
+| 1440 | **1.71%** | 1.71% | 0.00 | 18.33% | PASS |
+
+כולם מתחת ל-11%, זהים למדידה הקודמת (אין שינוי UI מאז). שלוש השורות שהשער כתב ל-`docs/UI-PARITY-REPORT.md` חויבו על גבי
+גרסת HEAD של הקובץ בלבד (blob שנבנה ידנית ונכנס ל-index), כך ששורות ה-category הזרות מ-07:24..07:28 בעץ הראשי לא נכנסו ל-commit.
+**שערים** (אותו worktree, `env -i`, בלי `CARDCOM_USE_MOCK`): type-check 0; lint: כל השערים נקיים מלבד docs-path-audit ב-worktree,
+שנכשל רק על `supabase/.temp` (ב-gitignore), נקי בעץ הראשי (`OK. 155 known`, ללא שינוי); test **638/638, 7659 עברו, 12 דולגו**; build 0.
+**החלטה שהתקבלה לבד:** הפריט הבא בקובץ התור (`~/ke-goals/final-queue.txt`, קריאה בלבד, שורה 2123) הוא M04-c113, ולכן
+`RESUME FROM` עודכן ל-M04-c113. ל-M16-c111 עדיין אין commit עם ראיה; הפער רשום כאן ולא נסגר.
+
+**M02-c113 - DONE (06.10.2026): `compare.mjs` על `/product` נמדד מחדש ב-380/768/1440 על build טרי של HEAD `9cb9ceb6b`, כולם PASS, אפס הפרש.**
+משימת התור: "Re-measure compare.mjs on /product sample". `pwd` אומת, HEAD `9cb9ceb6b` = `origin/audit/final-audit` (אחרי `git fetch`).
+בעץ הראשי אותו WIP זר (account/coupon/gifts/sitemap ו-`docs/UI-PARITY-REPORT.md`), לא נגעתי בו ולא חויב. ה-worktree הנקי
+`/tmp/ke-m01-c113` הועבר ל-`9cb9ceb6b` (detached; ההפרש מ-`c70765cf5` הוא docs בלבד), `rm -rf .next`, build טרי תחת `env -i`
+עם `CARDCOM_USE_MOCK=true` `NEXT_PUBLIC_APP_URL=http://localhost:4997`: exit 0, אפס `Invalid API key`, `BUILD_ID` `W25i2lvUtiggwG9CY2CRo`;
+`pnpm start -p 4997` (cwd המאזין אומת ב-`lsof`, נעצר ב-INT לפי PID 63465 בלבד, הפורט פנוי). השער רץ בחזית:
+`LOCAL_BASE=http://localhost:4997 node scripts/compare.mjs --page=product --widths=380,768,1440 --baseline='refs/electro_product_{width}.png'`, exit 0:
+
+| רוחב | M02-c113 (`9cb9ceb6b`) | M02-c111 (`ad1591dff`) | הפרש | overall | סטטוס |
+|---|---|---|---|---|---|
+| 380 | **4.80%** | 4.80% | 0.00 | 32.69% | PASS |
+| 768 | **4.39%** | 4.39% | 0.00 | 30.98% | PASS |
+| 1440 | **2.46%** | 2.46% | 0.00 | 20.02% | PASS |
+
+כולם מתחת ל-11%, זהים למדידה הקודמת (אין שינוי UI מאז). שלוש השורות שהשער כתב ל-`docs/UI-PARITY-REPORT.md` חויבו על גבי
+גרסת HEAD של הקובץ בלבד (blob שנבנה ידנית ונכנס ל-index), כך ששורות ה-category הזרות בעץ הראשי לא נכנסו ל-commit.
+**שערים** (אותו worktree, `env -i`, בלי `CARDCOM_USE_MOCK`): type-check 0; lint: כל השערים נקיים מלבד docs-path-audit ב-worktree,
+שנכשל רק על `supabase/.temp` (ב-gitignore), נקי בעץ הראשי (`OK. 155 known`, ללא שינוי); test **638/638, 7659 עברו, 12 דולגו**; build 0.
+**החלטה שהתקבלה לבד:** קובץ התור נמצא (`~/ke-goals/final-queue.txt`, קריאה בלבד, שורה 2121), והפריט הבא בו הוא M03-c113, ולכן
+`RESUME FROM` עודכן ל-M03-c113 לפי כלל השורה הראשונה. ל-M16-c111 עדיין אין commit עם ראיה; הפער רשום כאן ולא נסגר.
+
+**M01-c113 - DONE (06.10.2026): parity של `/` נמדד מחדש ב-380/768/1440 על build טרי של HEAD `c70765cf5`, כולם PASS, אפס הפרש.**
+משימת התור: "Re-measure compare.mjs 380 768 1440 on / and record diffs in STATE.md". `pwd` אומת, HEAD `c70765cf5` = `origin/audit/final-audit`.
+בעץ הראשי WIP זר (account/coupon/gifts/sitemap ו-`docs/UI-PARITY-REPORT.md`), לא נגעתי ולא חויב; הכל רץ ב-worktree נקי
+`/tmp/ke-m01-c113` (HEAD, `node_modules` כ-APFS clone, `.env.local` כ-symlink, `refs/` הועתק; נשאר במקומו). build טרי תחת `env -i`
+עם `CARDCOM_USE_MOCK=true`: exit 0, אפס `Invalid API key`, `BUILD_ID` `jinSR-fJQ3nKJwM8j8Gzi`; `pnpm start -p 4998` (cwd המאזין אומת
+ב-`lsof`, נעצר ב-INT, הפורט פנוי). `LOCAL_BASE=http://localhost:4998 node scripts/compare.mjs --page=home --width=W --baseline=refs/ke_live_W.png`,
+בחזית, רוחב אחרי רוחב, כל אחד exit 0:
+
+| רוחב | M01-c113 (`c70765cf5`) | M01-c112 (`89e8d357f`) | הפרש | overall | סטטוס |
+|---|---|---|---|---|---|
+| 380 | **7.92%** | 7.92% | 0.00 | 14.38% | PASS |
+| 768 | **9.03%** | 9.03% | 0.00 | 16.28% | PASS |
+| 1440 | **4.16%** | 4.16% | 0.00 | 14.89% | PASS |
+
+כולם מתחת ל-11%, זהים למדידה הקודמת (אין שינוי UI מאז). שלוש השורות נכתבו על ידי השער ל-`docs/UI-PARITY-REPORT.md` וחויבו כמו
+שהן (`-dirty` בשורות 768/1440 הוא הדוח עצמו, שהשורה הראשונה שינתה); בעץ הראשי הן נוספו אחרי שורות ה-category הזרות, שלא חויבו.
+**שערים** (אותו worktree, `env -i`): type-check 0; lint: כל השערים נקיים מלבד docs-path-audit ב-worktree, שנכשל רק על `supabase/.temp`
+(ב-gitignore), נקי בעץ הראשי (`OK. 155 known`, ללא שינוי); test **638/638, 7659 עברו, 12 דולגו**; build 0. ריצת test ראשונה עם
+`CARDCOM_USE_MOCK=true` בסביבה נכשלה בבדיקה אחת (`invoices.test.ts`, "no credentials at all"), כי הדגל מכריח את `documentIssuingMode`
+ל-`mock`; זה ארטיפקט של ההרצה ולא של הקוד, ובלי הדגל הכל עובר. **החלטה שהתקבלה לבד:** אין קובץ תור c113 בריפו, ולכן `RESUME FROM`
+נשאר M16-c111, שעדיין בלי commit עם ראיה, כמו בשאר פריטי c112.
+
+**M18-c112 - DONE (06.10.2026): ‏STATE.md קוצץ לשורת ההמשך, טבלת התור, החוסמים הפתוחים והידני לאופיר. אין שינוי קוד.**
+משימת התור: "Trim STATE.md under 300 lines archive rest to docs/STATE-ARCHIVE.md". `pwd` אומת, HEAD `c5113f433` = `origin/audit/final-audit`.
+בתחילת הפריט STATE.md היה 280 שורות, כלומר כבר מתחת לתקרה, אבל עדיין נשא שש רשומות פריט מלאות (M12..M17-c112, שורות 6-105).
+**החלטה שהתקבלה לבד:** להעביר את כולן ל-`docs/STATE-ARCHIVE.md` (בראש הקובץ, החדש למעלה, מילה במילה, אף שורה לא נמחקה) ולא רק
+לאשר את המספר, כי כלל התור הוא שב-STATE.md נשארים רק שורת ההמשך, טבלת התור, החוסמים והידני. בעץ הראשי WIP זר
+(account/coupon/gifts/sitemap ו-`docs/UI-PARITY-REPORT.md`), לא נגעתי ולא חויב; חויבו רק `STATE.md` ו-`docs/STATE-ARCHIVE.md`.
+אין שינוי קוד או UI, ולכן `compare.mjs` לא נדרש. M18-c112 הוא הפריט האחרון ב-`final-queue.txt`; `RESUME FROM` נשאר M16-c111,
+שעדיין אין לו commit משלו, כמו בשאר פריטי c112.
+**שערים** (worktree נקי `/tmp/ke-m11-c112wt` הועבר ל-`c5113f433` עם שני הקבצים האלה, `env -i`): type-check 0; lint: כל השערים נקיים מלבד
+docs-path-audit ב-worktree, שנכשל רק על הפניות ל-`refs/` ו-`supabase/.temp` (שניהם ב-gitignore), נקי בעץ הראשי (`OK. 155 known`, ללא שינוי);
+test **638/638, 7659 עברו, 12 דולגו**; `rm -rf .next` ואז build עם `CARDCOM_USE_MOCK=true`: 0, 340/340, אפס `Invalid API key`, `BUILD_ID` `bKejAV8fni08vk0eVUqrb`.
+
 ## M17-c112, M16-c112, M15-c112, M14-c112, M13-c112, M12-c112 (הועברו מ-STATE.md ב-M18-c112, כדי ש-STATE.md יכיל רק שורת המשך, טבלת תור, חוסמים וידני)
 
 **M17-c112 - DONE (06.10.2026): RTL על `/` ועל דגימת `/product`, אפס דליפות LTR, בבנייה טרייה של HEAD `7cd0e4b9c`. אין שינוי קוד.**
