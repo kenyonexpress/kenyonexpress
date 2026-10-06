@@ -1,7 +1,18 @@
-RESUME FROM: M04-c113
-Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M03-c113 DONE: parity של `/category` נמדד מחדש, 3.72/2.88/1.71 PASS, אפס הפרש)
+RESUME FROM: M05-c113
+Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M04-c113 DONE: `pnpm type-check` נקי על HEAD `f0c73423f`, אפס drift, אין מה לתקן)
 
 ## המשך מ:
+
+**M04-c113 - DONE (06.10.2026): `pnpm type-check` רץ על worktree נקי של HEAD `f0c73423f`, exit 0, אפס שגיאות, אפס drift; אין שינוי קוד.**
+משימת התור: "pnpm type-check fix drift commit". `pwd` אומת, HEAD `f0c73423f` = `origin/audit/final-audit` (אחרי `git fetch`).
+בעץ הראשי אותו WIP זר (`docs/UI-PARITY-REPORT.md`), לא נגעתי בו ולא חויב. ה-worktree הנקי `/tmp/ke-m01-c113` הועבר ל-`f0c73423f`
+(detached). לשם כך שינוי השער שנשאר בו ב-`docs/UI-PARITY-REPORT.md` מ-M03-c113 גובה קודם ל-`/tmp/m04c113-worktree-UI-PARITY-REPORT.backup.md`
+ורק אז הוחזר לגרסת ה-commit. ההפרש מ-`d0cc3be4f` כולל את `ebbb72628` (fix: L1 LANDMINES, 17 קבצים ב-`src`), ו-type-check עובר גם איתו.
+**שערים** (אותו worktree, `env -i`): type-check **0** (`tsc --noEmit`, אפס פלט); lint: eslint ושאר השערים נקיים מלבד docs-path-audit
+ב-worktree, שנכשל רק על `supabase/.temp` (ב-gitignore), נקי בעץ הראשי (`OK. 155 known`, ללא שינוי); test **640/640, 7674 עברו, 12 דולגו**;
+`rm -rf .next` ואז build עם `CARDCOM_USE_MOCK=true`: 0, 340/340, אפס `Invalid API key`, `BUILD_ID` `19K9yT18GhFO2-hIUtJSD`.
+אין שינוי UI, ולכן `compare.mjs` לא נדרש. **החלטה שהתקבלה לבד:** הפריט הבא ב-`~/ke-goals/final-queue.txt` (קריאה בלבד, שורה 2124)
+הוא M05-c113, ולכן `RESUME FROM` עודכן ל-M05-c113. ל-M16-c111 עדיין אין commit עם ראיה; הפער רשום כאן ולא נסגר.
 
 **M03-c113 - DONE (06.10.2026): `compare.mjs` על `/category` נמדד מחדש ב-380/768/1440 על build טרי של HEAD `d0cc3be4f`, כולם PASS, אפס הפרש.**
 משימת התור: "Re-measure compare.mjs on /category sample". `pwd` אומת, HEAD `d0cc3be4f` = `origin/audit/final-audit` (אחרי `git fetch`).
