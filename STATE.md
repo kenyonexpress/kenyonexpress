@@ -1,7 +1,16 @@
-RESUME FROM: M06-c113
-Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M05-c113 DONE: `pnpm test` ירוק על HEAD `b93675616`, 640/640, אפס drift, אין מה לתקן)
+RESUME FROM: M07-c113
+Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M06-c113 DONE: `pnpm build` ירוק על HEAD `86137f52a`, 340/340, אפס drift, אין מה לתקן)
 
 ## המשך מ:
+
+**M06-c113 - DONE (06.10.2026): `pnpm build` רץ על worktree נקי של HEAD `86137f52a`, exit 0, 340/340 דפים, אפס `Invalid API key`, אפס drift; אין שינוי קוד.**
+משימת התור: "pnpm build fix drift commit". HEAD `86137f52a` = `origin/audit/final-audit` (אחרי `git fetch`). העץ הראשי עדיין על `main` `3f6ca53c3`
+(ahead 193, behind 110 מול `origin/main`), ושם STATE.md הוא הגרסה הישנה בת 21134 שורות. **החלטה שהתקבלה לבד:** כמו ב-M05-c113, לא נגעתי בעץ הראשי
+ולא באף ref מקומי; העבודה וה-commit נעשו ב-worktree הנקי `/tmp/ke-m01-c113`, ונדחפו כ-fast-forward ל-`origin/audit/final-audit` בלבד.
+**שערים** (אותו worktree, `env -i`): `rm -rf .next` ואז build עם `CARDCOM_USE_MOCK=true`: **0, 340/340**, אפס `Invalid API key`, `BUILD_ID` `AaY8VeWt_iKKzFOWAQHfg`;
+type-check **0**; test **640/640, 7674 עברו, 12 דולגו**; lint: שאר השערים נקיים, docs-path-audit נכשל ב-worktree רק על `supabase/.temp`
+(ב-gitignore, לא קיים ב-worktree), אותו כשל תלוי סביבה שתועד ב-M04-c113 וב-M05-c113, ולא drift. אין שינוי UI, ולכן `compare.mjs` לא נדרש.
+**ידני לאופיר (עדיין פתוח):** להחזיר את `audit/final-audit` המקומי ל-`origin/audit/final-audit` ואת העץ הראשי לענף הזה.
 
 **M05-c113 - DONE (06.10.2026): `pnpm test` רץ על worktree נקי של HEAD `b93675616`, 640/640 קבצים, 7674 עברו, 12 דולגו, אפס כשלים, אפס drift; אין שינוי קוד.**
 משימת התור: "pnpm test fix drift commit". `pwd` אומת, HEAD `b93675616` = `origin/audit/final-audit` (אחרי `git fetch`). ה-worktree הנקי
