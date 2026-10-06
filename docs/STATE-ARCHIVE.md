@@ -2,6 +2,108 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M17-c112, M16-c112, M15-c112, M14-c112, M13-c112, M12-c112 (הועברו מ-STATE.md ב-M18-c112, כדי ש-STATE.md יכיל רק שורת המשך, טבלת תור, חוסמים וידני)
+
+**M17-c112 - DONE (06.10.2026): RTL על `/` ועל דגימת `/product`, אפס דליפות LTR, בבנייה טרייה של HEAD `7cd0e4b9c`. אין שינוי קוד.**
+משימת התור: "Verify RTL on / and /product sample no LTR leaks". `pwd` אומת, HEAD `7cd0e4b9c` = `origin/audit/final-audit`. מאז M17-c111
+(`89e8d357f`) השתנו 6 קבצי `src` (הסרת `export` ב-M09-c112), ולכן נמדד מחדש ולא הועתק. בעץ הראשי WIP זר (account/coupon/gifts/sitemap,
+וגם `docs/UI-PARITY-REPORT.md`), לא נגעתי ולא חויב. הכל רץ ב-worktree הנקי `/tmp/ke-m11-c112wt`, שהועבר (detached) ל-`7cd0e4b9c` ונשאר
+במקומו. `rm -rf .next`, `env -i`, `CARDCOM_USE_MOCK=true`: build 0, 340/340, אפס `Invalid API key`, `BUILD_ID` `YQKLxCQgRbiQMKgpUMine`.
+`pnpm start -p 4882` (PID 42435, cwd המאזין אומת ב-`lsof` `/private/tmp/ke-m11-c112wt`, נעצר ב-INT, 0 מאזינים אחר כך).
+**נמדד:** פרוב Playwright זמני (`/tmp/m17c112/probe.mjs`, מחוץ לריפו, לא חויב) על `/` ושלושת סלאגי הדגימה (`samsung-galaxy-s22-128gb-
+samsung-galaxy-s22-128gb-5g`, `חבילת-גלידה`, `חיתולי-האגיס`) ב-380/768/1440: **12/12 PASS, כולן 200**: `<html lang="he" dir="rtl">`,
+`body` מחושב `rtl`, `scrollWidth` = `clientWidth` בכולן, **אפס** אלמנט גלוי עם `direction: ltr` מחושב שמחזיק טקסט עברי ישיר, **אפס**
+טקסט עברי בתוך `[dir="ltr"]`. זהה ל-M17-c111.
+**parity (בית, `--baseline='refs/ke_live_{width}.png'`, בחזית, מול אותו שרת):** 380 **7.92%**, 768 **9.03%**, 1440 **4.16%**, כולם PASS
+מתחת ל-11%, זהים ל-M17-c111. (ריצה ראשונה סורבה כי `refs/ke_live_*.png` שב-gitignore חסרו ב-worktree; הועתקו מהעץ הראשי ונמדד שוב.)
+**החלטה שהתקבלה לבד:** שורות ה-parity לא חויבו ל-`docs/UI-PARITY-REPORT.md`, כי הקובץ בעץ הראשי נושא WIP זר; המספרים רשומים כאן.
+**שערים** (אותו worktree, `env -i`): type-check 0; lint: כל השערים נקיים מלבד docs-path-audit ב-worktree, שנכשל רק על הפניות ל-`refs/`
+ו-`supabase/.temp` (שניהם ב-gitignore), נקי בעץ הראשי (`OK. 155 known`); test **638/638, 7659 עברו, 12 דולגו**. אין שינוי UI.
+M11-c112 הועבר ל-`docs/STATE-ARCHIVE.md`. `RESUME FROM` נשאר M16-c111, כמו בשאר פריטי c112.
+
+**M16-c112 - DONE (06.10.2026): כל דפי המוצר נושאים בדיוק בלוק JSON-LD `Product` אחד ובלוק `BreadcrumbList` אחד, 46/46, בבנייה טרייה של HEAD `e1d941308`.**
+משימת התור: "Verify all product pages have JSON-LD Product and BreadcrumbList". `pwd` אומת, HEAD `e1d941308` = `origin/audit/final-audit`.
+`git diff 8877de66a e1d941308 -- src packages e2e next.config.ts` ריק; הדף עדיין מזריק `buildProductJsonLd` ו-`buildBreadcrumbJsonLd` דרך
+`jsonLdScript` (`src/app/(store)/product/[slug]/page.tsx` שורות 229/263/282/287). בעץ הראשי WIP זר (account/coupon/gifts/sitemap), לא נגעתי
+ולא חויב. הכל רץ ב-worktree הנקי `/tmp/ke-m11-c112wt`, שהועבר (detached) ל-`e1d941308` ונשאר במקומו. `rm -rf .next`, `env -i`,
+`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4881`: build 0, 340/340, אפס `Invalid API key`, `BUILD_ID` `RTEJPpO6ZXy9Ui_znkdRb`.
+`pnpm start -p 4881` (PID 37785, cwd המאזין אומת ב-`lsof` `/private/tmp/ke-m11-c112wt`, נעצר ב-INT, 0 מאזינים אחר כך).
+**נמדד:** סקריפט node (`/tmp/m16c112/probe.mjs`) לקח את איחוד הסלאגים מ-`supabase/catalogue-snapshot.json` (44) ומ-`/sitemap/products.xml`
+של השרת (46; `sitemap.xml` הוא sitemapindex), ולכל אחד שלף את הדף, חילץ כל `<script type="application/ld+json">` והריץ `JSON.parse`:
+**46/46 מחזירים 200 עם `Product` אחד ו-`BreadcrumbList` אחד בדיוק, אפס שגיאות JSON, אפס כשלים.** דגימה `/product/צימר-מאסטר`: `Product`
+עם `name,url,category,image,brand,offers`, ו-`BreadcrumbList` `בית > צימרים מלונות ונופש > <המוצר>`. בנוסף `e2e/seo-markup.spec.ts`
+מול אותו שרת, בחזית: **10/10 PASS** (chromium + mobile-chrome, 19.1 שניות). לעומת M16-c95 (44/44) נוספו שני מוצרים בקטלוג, אפס דריפט בקוד.
+**שערים** (אותו worktree, `env -i`): type-check 0; lint: כל השערים נקיים מלבד docs-path-audit ב-worktree, שנכשל רק על הפניות ל-`refs/`
+ו-`supabase/.temp` (שניהם ב-gitignore), נקי בעץ הראשי (`OK. 155 known`); test **638/638, 7659 עברו, 12 דולגו**. אין שינוי UI, ולכן
+`compare.mjs` לא נדרש. M10-c112 הועבר ל-`docs/STATE-ARCHIVE.md`. **החלטה שהתקבלה לבד:** `RESUME FROM` נשאר M16-c111, כמו בשאר פריטי c112.
+
+**M15-c112 - DONE (06.10.2026): אפס console errors ואפס hydration warnings על `/` ועל דגימת המוצר, בבנייה טרייה של HEAD `8877de66a`.**
+משימת התור: "Verify no console errors on / and /product sample". `pwd` אומת, HEAD `8877de66a` = `origin/audit/final-audit`.
+מאז M15-c111 (`4cc28b788`) השתנו 6 קבצי `src` (הסרת `export` ב-M09-c112), ולכן רץ אימות מלא ולא הסתמכות על הריצה הקודמת.
+בעץ הראשי WIP זר (account/coupon/gifts/sitemap, ובו גם שגיאת biome ב-`src/server/queries/orders.ts` ו-`collected.test.ts`), לא נגעתי
+ולא חויב; הכל רץ ב-worktree הנקי `/tmp/ke-m11-c112wt`, שהועבר (detached) ל-`8877de66a` ונשאר במקומו. `rm -rf .next`, `env -i`,
+`CARDCOM_USE_MOCK=true`: build 0, 340/340, אפס `Invalid API key`, `BUILD_ID` `E58qhgyvnRo0KkxyB6cAS`. `pnpm start -p 4880` (PID 32843,
+cwd המאזין אומת ב-`lsof` `/private/tmp/ke-m11-c112wt`, נעצר ב-INT, הפורט פנוי). `E2E_BASE_URL=http://localhost:4880
+ROUTE_AUDIT_REPORT=/tmp/route-audit-m15c112.jsonl playwright test e2e/route-audit.spec.ts --grep "anon /$|anon dynamic catalogue routes"`,
+בחזית: **4/4 PASS** (chromium + mobile-chrome, 45.0 שניות). הדוח, 16 שורות: **אפס `consoleErrors` ואפס `hydrationWarnings` בכל אחת**,
+כולן 200 ו-`rtl:true`: `/`, `/product/צימר-מאסטר` ו-`/reviews` שלו (דגימת המוצר), `/category/hot-deals`, `/city/תל-אביב`,
+`/coupons/<id>`, `/page/how-it-works`, `/s/<id>`. זהה ל-M15-c111.
+**שערים** (אותו worktree, `env -i`): type-check 0; lint: כל השערים נקיים מלבד docs-path-audit ב-worktree, שנכשל רק על הפניות
+ל-`refs/` ו-`supabase/.temp` (שניהם ב-gitignore), נקי בעץ הראשי (`OK. 155 known`); test **638/638, 7659 עברו, 12 דולגו**. אין שינוי UI,
+ולכן `compare.mjs` לא נדרש. M09-c112 הועבר ל-`docs/STATE-ARCHIVE.md`. `RESUME FROM` נשאר M16-c111, כמו בשאר פריטי c112.
+
+**M14-c112 - DONE (06.10.2026): release של Sentry בפרודקשן תואם ל-HEAD `d8942154e`. טוקן ההעלאה עדיין נדחה 401 (BACKLOG #21).**
+משימת התור: "Verify Sentry release matches HEAD commit". `pwd` אומת, HEAD `d8942154e` = `origin/audit/final-audit`. קוד ה-release
+לא השתנה (`SENTRY_RELEASE ?? VERCEL_GIT_COMMIT_SHA` בשרת/edge, `NEXT_PUBLIC_SENTRY_RELEASE ?? NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA` בלקוח;
+הקומיט האחרון על קובצי האתחול ו-`next.config` עדיין `b1632df45`). בעץ הראשי WIP זר (account/coupon/gifts/sitemap), לא נגעתי ולא חויב.
+**נמדד:** `vercel api /v6/deployments` (Production): הפריסה של HEAD `dpl_AdgHsyDsv2hgd8maFj8FJEnoegZ8` הייתה BUILDING, חיכיתי בחזית
+עד READY, ואז `/v4/aliases/www.kenyonexpress.co.il` מצביע עליה (קודם `dpl_91M48...` על `29ce235cb`). ב-Production עדיין אין
+`SENTRY_RELEASE`/`NEXT_PUBLIC_SENTRY_RELEASE` (`vercel env ls`, שמות בלבד: `SENTRY_DSN`, `NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_AUTH_TOKEN`),
+כך שה-fallback ל-SHA קובע. **בבאנדל הלקוח החי** (21 קבצי JS של `/`, ה-HTML נושא `dpl=dpl_AdgHsy...`): בדיוק chunk אחד,
+`immutable/chunks/34l4yzfbgcvpf.js`, מכיל `release:"d8942154e39801e3f179b063cd0ee539403c9b49"`, **זהה ל-HEAD**. לוג ה-build של אותה פריסה
+(`vercel inspect --logs`) מריץ `sentry-cli releases new d8942154e...` ו-`sourcemaps upload -p kenyonexpress-web --release d8942154e...`,
+**ושניהם עדיין `Invalid token (http status: 401)`** כאזהרה בלבד: ה-release לא נרשם בצד Sentry ואין source maps. MCP של Sentry דורש
+הזדהות, כך שרשימת ה-releases ב-Sentry לא נקראה. ללא שינוי מ-M14-c111, כבר רשום ב-BACKLOG #21 (טוקן חדש, לאופיר), נוספה שורת מדידה.
+**החלטה שהתקבלה לבד:** DONE ולא BLOCKED, כי תנאי הפריט (release = HEAD) מתקיים ונמדד בבאנדל החי; ה-401 הוא ממצא ידוע ונפרד.
+**שערים** (worktree נקי `/tmp/ke-m11-c112wt` הועבר ל-`d8942154e`, `env -i`): type-check 0; lint: נכשל ב-worktree רק על docs-path-audit
+(הפניות ל-`refs/` שב-gitignore), בעץ הראשי `docs-path-audit: OK. 155 known`; test **638/638, 7659 עברו, 12 דולגו**; `rm -rf .next` ואז
+build עם `CARDCOM_USE_MOCK=true`: 0, 340/340, אפס `Invalid API key`, `BUILD_ID` `HnrQJPgq0FQ3FYp3eOM13`. אין שינוי UI, `compare.mjs` לא נדרש.
+**M14-c111** הועבר ל-`docs/STATE-ARCHIVE.md` (הוחלף ברשומה זו). `RESUME FROM` נשאר M16-c111, כמו בשאר פריטי c112.
+
+**M13-c112 - BLOCKED (06.10.2026): `/api/health` חי 200, אבל `/api/ready` חי 503 על `meilisearch:"down"`, חיצוני ורשום (BACKLOG #16).**
+משימת התור: "Verify /api/health and /api/ready return 200 with real deps". `pwd` אומת, HEAD `29ce235cb` = `origin/audit/final-audit`.
+הקומיט האחרון על `src/app/api/health`, `src/app/api/ready`, `src/lib/health` עדיין `64728ff8d` (02.09), ואין WIP עליהם (בעץ הראשי WIP
+זר account/coupon/gifts/sitemap, לא נגעתי ולא חויב). **חי** מול `www.kenyonexpress.co.il`, שלוש פעמים ברצף, יציב: `/api/health`
+**200** `{"ok":true,"database":"ok","latency_ms":233}`; `/api/ready` **503** `cache-control: no-store`,
+`{"database":"ok","redis":"ok","meilisearch":"down","r2":"not_configured","cardcom":"ok"}`. ביחס ל-M13-c67 השינוי היחיד הוא
+`cardcom` שעבר מ-`not_configured` ל-`ok` (ידוע מ-L11, חוסם 8). `/api/search?q=test` עונה 200, כלומר הנפילה ל-Postgres עובדת
+והלקוח לא נפגע. `r2 not_configured` אינו מפיל את ה-ready (רק `down` מפיל) ותואם לחוסם 4 ול-`R2_BUCKET_NAME` (BACKLOG #19).
+**למה BLOCKED ולא DONE:** תנאי הפריט ("return 200") לא מתקיים ל-`/api/ready`, והתיקון הוא אינסטנס Meilisearch חי ו-
+`MEILISEARCH_HOST`/`MEILISEARCH_API_KEY` תואמים ב-Vercel, שניהם מחוץ לסמכות הסוכן (אסור לגעת ב-env של Vercel, אין גישה לשירות).
+**החלטה שהתקבלה לבד:** לא שיניתי את `checkSearch` כדי שידווח `not_configured` או `ok`, כי זה היה מסתיר תקלה אמיתית ממוניטור.
+**שערים** (worktree נקי `/tmp/ke-m11-c112wt` הועבר ל-`29ce235cb`, `env -i`): type-check 0; lint: 12 השערים הראשונים נקיים,
+docs-path-audit נכשל ב-worktree רק על הפניות ל-`refs/` שב-gitignore, נקי בעץ הראשי; test **638/638, 7659 עברו, 12 דולגו**
+(ריצה ראשונה עם `CARDCOM_USE_MOCK=true` בסביבה הפילה בעקביות את `invoices.test.ts` "does not spend an attempt when there are no
+credentials", כי הדגל נראה כמו אישורים; בלעדיו 26/26. ארטיפקט של הרצה, לא רגרסיה, וכמו בפריטים הקודמים הדגל שייך ל-build בלבד);
+`rm -rf .next` ואז build עם `CARDCOM_USE_MOCK=true`: 0, 340/340, אפס `Invalid API key`, `BUILD_ID` `NQ_44_4L5xMPECXtIgmnr`.
+אין שינוי UI, `compare.mjs` לא נדרש. M08-c112 הועבר ל-`docs/STATE-ARCHIVE.md`. `RESUME FROM` נשאר M16-c111, כמו בשאר פריטי c112.
+
+**M12-c112 - DONE (06.10.2026): `robots.txt` נמדד שוב, בטוח לפרודקשן, החי זהה בביט לבנייה של HEAD. אין שינוי קוד.**
+משימת התור: "Verify robots.txt production-safe". `pwd` אומת, HEAD `f2b209471` = `origin/audit/final-audit`. `git log -1 --
+src/app/robots.ts` עדיין `4d3702025` (M12-c67), אין WIP על `robots.ts`/`site-url.ts`. בעץ הראשי WIP זר (account/coupon/gifts/sitemap),
+לא נגעתי ולא חויב. **חי** (`www.kenyonexpress.co.il/robots.txt`): 200 `text/plain; charset=utf-8`, etag `b36a25fd...`, sha256
+`6c0d631f...` (זהה ל-M12-c111). `User-Agent: *`, `Allow: /`, אין `Disallow: /` גורף (האתר ניתן לאינדוקס), **16 שורות `Disallow`**:
+כל כתובות-האסימון (`/redeem/`, `/coupon/`, `/gift/`, `/order/`, `/wishlist/s/`) ו-`/account/`, `/supplier/`, `/scan`, `/admin/`,
+`/checkout`, `/cart`, `/auth/`, `/api/`, `/reset-password`, `/forgot-password`, `/debug/`. `Host:`/`Sitemap:` ל-apex, שעונה 308 ל-`www`
+ו-`/sitemap.xml` שם 200 `application/xml`. שכבת noindex חיה: `/redeem/foo` ו-`/wishlist/s/foo` `noindex, nofollow`, `/gift/foo`
+`noindex`, `/order/foo` ו-`/debug/foo` 404 עם `noindex`, `/coupon/foo` 307. **בנייה מקומית של HEAD** (worktree נקי `/tmp/ke-m11-c112wt`
+הועבר ל-`f2b209471`, נשאר במקומו, `rm -rf .next`, `env -i`, `CARDCOM_USE_MOCK=true`): build 0, 340/340, אפס `Invalid API key`, `BUILD_ID`
+`M3A9xIbLyTcaoZ-THzDWf`; `next start` על 4872 (cwd המאזין אומת ב-`lsof`, נעצר לפי PID ב-INT, הפורט פנוי), ו-`/robots.txt` המקומי
+**זהה בביט לחי** (`diff` 0, אותו sha256). **שערים** (אותו worktree, `env -i`): type-check 0; lint: 12 השערים הראשונים נקיים,
+docs-path-audit נכשל ב-worktree רק על 84 הפניות ל-`refs/` ו-`supabase/.temp` שב-gitignore, נקי בעץ הראשי (155 ידועים, ללא שינוי);
+test **638/638, 7659 עברו, 12 דולגו**. אין שינוי UI, ולכן `compare.mjs` לא נדרש. M01-c112 הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה
+על תקרת 300 שורות. `RESUME FROM` נשאר M16-c111, כמו בשאר פריטי c112.
+
 ## M11-c112 (הועבר מ-STATE.md ב-M17-c112, לשמירה על תקרת 300 שורות)
 
 **M11-c112 - DONE (06.10.2026): `sitemap.xml` נמדד שוב חי, טרי ונגיש, 98/98 כתובות 200. אין שינוי קוד.**
