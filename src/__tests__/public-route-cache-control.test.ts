@@ -37,6 +37,7 @@ const LEDGER: Record<string, Policy> = {
   'src/app/api/alerts/uptimerobot/route.ts': 'private',
   'src/app/api/cart/route.ts': 'private',
   'src/app/api/health/route.ts': 'private',
+  'src/app/api/products/route.ts': 'public',
   'src/app/api/ready/route.ts': 'private',
   'src/app/api/search/facets/route.ts': 'public',
   'src/app/api/search/quick-links/route.ts': 'private',

@@ -363,6 +363,13 @@
   overflow: hidden;
 }
 
+/* The scroll loader asks for six cards and means six. The shell placeholder
+   above stays clipped to two rows so a phone does not reserve five. */
+.category-products.category-products--unclipped {
+  max-height: none;
+  overflow: visible;
+}
+
 /* Product grid - measured: display flex, wrap, no gap, 234px fixed cards */
 .category-products {
   display: flex;
@@ -1100,4 +1107,21 @@
 .search-facets__count {
   color: var(--cat-muted);
   font-variant-numeric: tabular-nums;
+}
+
+/* One pixel is enough for IntersectionObserver. A taller box would open a
+   gap under the last row that the live archive does not have. */
+.product-grid__sentinel {
+  height: 1px;
+}
+
+.product-grid__retry {
+  margin-block-start: 12px;
+  padding: 8px 16px;
+  border: 1px solid var(--cat-line);
+  border-radius: 9px;
+  background: var(--cat-surface);
+  color: var(--cat-ink);
+  font-size: 14px;
+  cursor: pointer;
 }

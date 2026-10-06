@@ -488,10 +488,18 @@ export async function getAllCategories(): Promise<{ slug: string; name_he: strin
 
 export const SHOP_PAGE_SIZE = 24
 
-/** All active products for /products (live /shop/ archive), same sort rules. */
+/**
+ * All active products for /products (live /shop/ archive), same sort rules.
+ *
+ * `pageSize` defaults to the live archive's 24. The shop's infinite scroll
+ * passes 20 (`PRODUCTS_PAGE_LIMIT`) so the first paint and `/api/products`
+ * describe the same window. A value outside 1..24 falls back to 24 rather
+ * than letting a query string choose an unbounded read.
+ */
 export async function getShopProducts(opts: {
   sort: SortValue
   page: number
+  pageSize?: number
   priceMin?: number
   priceMax?: number
   productType?: ProductTypeFilter
@@ -500,8 +508,15 @@ export async function getShopProducts(opts: {
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
   const { sort, page, priceMin, priceMax, productType } = opts
+  const pageSize =
+    typeof opts.pageSize === 'number' &&
+    Number.isInteger(opts.pageSize) &&
+    opts.pageSize >= 1 &&
+    opts.pageSize <= SHOP_PAGE_SIZE
+      ? opts.pageSize
+      : SHOP_PAGE_SIZE
   const supabase = createCatalogueReadClient()
-  const from = (page - 1) * SHOP_PAGE_SIZE
+  const from = (page - 1) * pageSize
 
   let query = supabase
     .from('products')
@@ -536,10 +551,16 @@ export async function getShopProducts(opts: {
       query = query.order('name_he', { ascending: true })
   }
 
+  // `id` is the tie-break that makes a page boundary stable. Price and
+  // created_at are not unique, and an unstable order duplicates a row on
+  // page 2 that page 1 already showed, or skips one. Infinite scroll appends
+  // pages, so that skip would be a product the shopper never sees.
+  query = query.order('id', { ascending: true })
+
   const { data, count } = orFailWithCount(
-    await query.range(from, from + SHOP_PAGE_SIZE - 1),
+    await query.range(from, from + pageSize - 1),
     'catalogue.shop_products_failed',
-    { page, sort },
+    { page, sort, pageSize },
   )
   const items = (data ?? []).map((row) => {
     const r = row as CategoryProductRow

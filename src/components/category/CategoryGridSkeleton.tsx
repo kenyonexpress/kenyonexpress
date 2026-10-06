@@ -6,9 +6,20 @@
  * exact measured card geometry so the layout does not jump when the real grid
  * streams in.
  */
-export default function CategoryGridSkeleton({ count = 8 }: { count?: number }) {
+export default function CategoryGridSkeleton({
+  count = 8,
+  unclipped = false,
+}: {
+  count?: number
+  /** The next-page skeleton must show every card. The shell placeholder stays clipped. */
+  unclipped?: boolean
+}) {
   return (
-    <ul className="category-products" aria-busy="true" aria-label="טוען מוצרים">
+    <ul
+      className={`category-products${unclipped ? ' category-products--unclipped' : ''}`}
+      aria-busy="true"
+      aria-label="טוען מוצרים"
+    >
       {Array.from({ length: count }, (_, i) => (
         // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length placeholder, never reordered
         <li key={i} className="category-products__item">
