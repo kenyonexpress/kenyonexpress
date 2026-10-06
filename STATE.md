@@ -1,7 +1,23 @@
 RESUME FROM: M12-c110
-Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M09-c111 DONE ואומת שוב: knip 277, כל השערים ירוקים על `8905d60c5`)
+Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M11-c111 DONE: sitemap.xml חי, טרי, 98/98 כתובות 200)
 
 ## המשך מ:
+
+**M11-c111 - DONE (06.10.2026): `sitemap.xml` נמדד שוב חי, טרי ונגיש. אין שינוי קוד.**
+`pwd` אומת, HEAD `5060bcedd`. **נמדד חי מול `www.kenyonexpress.co.il`:** `/sitemap.xml` ‏200
+`application/xml; charset=utf-8`, `<sitemapindex>` עם חמש תתי-מפות (content, categories, products,
+regions, suppliers), כולן 200 `application/xml`, עם 15/13/46/17/7 = **98 `<loc>`, אפס כפילויות**;
+lastmod החדש ביותר 2026-10-05T01:07:49Z (content, products), regions ללא lastmod. `robots.txt` ‏200 ומפנה
+ל-`Sitemap: https://kenyonexpress.co.il/sitemap.xml`. כל 98 הכתובות נבדקו אחת-אחת עם `curl -L`:
+**98/98 ‏200, כל אחת אחרי הפניה אחת** (apex ‏308 ל-`www`), זהה ל-M11-c110; הממצא כבר רשום כ-BACKLOG #23
+(תיקון ב-Vercel env או בדומיין הראשי, שניהם מחוץ לסמכות הסוכן), ולכן לא נרשם שוב. **שערים** ב-worktree
+נקי `/tmp/ke-m05-c111` על `8905d60c5` (הקוד של HEAD; `5060bcedd` נוגע ב-`STATE.md` בלבד) תחת `env -i`:
+type-check 0; lint: 12 השערים הראשונים נקיים, docs-path-audit נכשל ב-worktree רק על `refs/` ו-`supabase/.temp`
+שב-gitignore (84), נקי בעץ הראשי (155 ידועים, ללא שינוי); test 638/638, 7659 עברו, 12 דולגו;
+`rm -rf .next` ואז build עם `CARDCOM_USE_MOCK=true`: exit 0, 340/340, אפס `Invalid API key`,
+`BUILD_ID` `4oqdTpgDlGgDAnZRcdVnQ`. אין שינוי UI, ולכן `compare.mjs` לא נדרש. ה-WIP הזר בעץ הראשי
+(כולל `src/lib/seo/sitemap-*`) לא נגעתי בו ולא חויב. **החלטה שהתקבלה לבד:** `RESUME FROM` נשאר M12-c110,
+כמו בשאר פריטי c111.
 
 **M09-c111, אימות שני (06.10.2026):** סשן מקביל חייב ודחף את הפריט (`8905d60c5`) בזמן שרצתי עליו; עבודתי החופפת (19 הסרות `export`, 13 מהן זהות) נזרקה ולא חויבה. אומת על `8905d60c5` ב-worktree נקי `/tmp/ke-m09-c111` (נשאר במקומו) תחת `env -i`: knip **204 / 5 / 1 / 277 / 199 / 4**, כפי שנרשם (292→277); type-check 0; lint 11 שערים נקיים, docs-path-audit נקי בעץ הראשי (155 ידועים); test 638/638, 7659 עברו, 12 דולגו; build 0, 340/340 דפים. אין שינוי UI, ולכן parity לא נדרש. **החלטה שהתקבלה לבד:** לא הורחב ההיקף ל-`readAttributionSnapshot` ולחמשת הטיפוסים שנותרו (`ClubSpendStatus`, `LegalSection`, `ImportRecord`, `SupplierOptionalFields`, `GiftAuditSource`), כדי לכבד את גבול ההיקף שה-commit המקורי קבע; `RESUME FROM` נשאר M12-c110.
 
