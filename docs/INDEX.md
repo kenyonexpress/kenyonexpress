@@ -48,7 +48,7 @@ operational rather than architectural.
 
 Every document in `docs/`, what it is for, and whether you can trust it.
 
-**255 documents.** 176 carry no banner, 47 carry a correction, 34 are historical snapshots.
+**256 documents.** 177 carry no banner, 47 carry a correction, 34 are historical snapshots.
 
 **This file is generated and then curated, and it is checked.**
 `scripts/docs-index-gate.mjs` fails if a file exists in `docs/` that has no row
@@ -283,12 +283,13 @@ one.
 
 ## Audits, reports and measurements
 
-23 documents.
+24 documents.
 
 | Document | Status | What it is |
 |---|---|---|
 | [A11Y-SWEEP-REPORT.md](A11Y-SWEEP-REPORT.md) | 🕯️ | ‏MISSION-FINAL שלב 8 מבקש ביקורת נגישות על כל דף. עד היום השער |
 | [BACKUP-RECOVERY.md](BACKUP-RECOVERY.md) | ⚠️ | ‏נמדד ‏10.09.2026. ששת פריטי הגיבוי אחד אחד: ‏PITR לא נרכש, ‏R2 לא מופעל ואין בו |
+| [BIG-SITE-GAP.md](BIG-SITE-GAP.md) | ✅ | Measured 2026-10-06 against this tree. Feature matrix vs Groupon/Zap/Wolt/Booking, |
 | [BRANCH-AUDIT.md](BRANCH-AUDIT.md) | ✅ | Measured 2026-09-06 against closeout/v1-final at 48ea88353. Every number |
 | [CATEGORY-1TO1-FINDINGS.md](CATEGORY-1TO1-FINDINGS.md) | 🕯️ | מדידות מהאתר החי ומ-localhost ב-1440x2600, דרך scripts/cat-probe.mjs, |
 | [COPY-AUDIT.md](COPY-AUDIT.md) | ✅ | Every Latin-script string a visitor can read on the funnel, with a verdict. |
