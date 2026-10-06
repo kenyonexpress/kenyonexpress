@@ -115,15 +115,6 @@ docs-index 282, docs-path-audit 155 ידועים); test **638/638 קבצים, 76
 #3, מיגרציה 247), ואלה כל שורות ה-error בלוג; לא דריפט. לא פריט חזותי, `compare.mjs` לא נדרש.
 **החלטה שהתקבלה לבד:** `RESUME FROM` נשאר M12-c110, כמו ב-M02/M03/M05-c111.
 
-**M05-c111 - DONE (06.10.2026): `pnpm test` נמדד מחדש על HEAD נקי, 638/638, אפס דריפט, אין מה לתקן.**
-`pwd` אומת, HEAD `b6b4ef5a9`. בעץ הראשי WIP זר של account/coupon/gifts/sitemap (11 קבצים שונו, 9 חדשים)
-שלא נגעתי בו ולא חויב, ולכן הכל רץ ב-worktree נקי `/tmp/ke-m05-c111` (HEAD, `node_modules` כ-APFS clone,
-`.env.local` כ-symlink; נשאר במקומו, לא נמחק). **שערים** תחת `env -i`: test **638/638 קבצים, 7659 עברו,
-12 דולגו**, זהה למספרים של M02-c111 ו-M17-c110; type-check 0; lint: 11 השערים הראשונים בשרשרת נקיים,
-docs-path-audit נכשל ב-worktree רק על קבצי `refs/` שב-gitignore (84 "חדשים"), ונקי בעץ הראשי
-(155 ידועים, ללא שינוי); build 0 (`CARDCOM_USE_MOCK=true`), אפס `Invalid API key`. parity לא רלוונטי:
-אין שינוי UI. **החלטה שהתקבלה לבד:** `RESUME FROM` נשאר M12-c110, כמו ב-M02-c111 ו-M17/M18-c110.
-
 **M11-c110 - DONE** (sitemap.xml טרי, 98/98 כתובות 200, ממצא apex→www ב-BACKLOG),
 ו-W14..W01, M01-c96, L12, L11 וכל מה שקדם: ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, החדש למעלה.
 

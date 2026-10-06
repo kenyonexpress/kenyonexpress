@@ -2,6 +2,17 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M05-c111 (הועבר מ-STATE.md ב-M14-c111, לשמירה על תקרת 300 שורות)
+
+**M05-c111 - DONE (06.10.2026): `pnpm test` נמדד מחדש על HEAD נקי, 638/638, אפס דריפט, אין מה לתקן.**
+`pwd` אומת, HEAD `b6b4ef5a9`. בעץ הראשי WIP זר של account/coupon/gifts/sitemap (11 קבצים שונו, 9 חדשים)
+שלא נגעתי בו ולא חויב, ולכן הכל רץ ב-worktree נקי `/tmp/ke-m05-c111` (HEAD, `node_modules` כ-APFS clone,
+`.env.local` כ-symlink; נשאר במקומו, לא נמחק). **שערים** תחת `env -i`: test **638/638 קבצים, 7659 עברו,
+12 דולגו**, זהה למספרים של M02-c111 ו-M17-c110; type-check 0; lint: 11 השערים הראשונים בשרשרת נקיים,
+docs-path-audit נכשל ב-worktree רק על קבצי `refs/` שב-gitignore (84 "חדשים"), ונקי בעץ הראשי
+(155 ידועים, ללא שינוי); build 0 (`CARDCOM_USE_MOCK=true`), אפס `Invalid API key`. parity לא רלוונטי:
+אין שינוי UI. **החלטה שהתקבלה לבד:** `RESUME FROM` נשאר M12-c110, כמו ב-M02-c111 ו-M17/M18-c110.
+
 ## M03-c111 ו-M18-c110 (הועברו מ-STATE.md ב-M12-c111, לשמירה על תקרת 300 שורות)
 
 **M03-c111 - DONE (06.10.2026): `compare.mjs` על `/category` נמדד מחדש, 3.72 / 2.88 / 1.71 PASS.**
