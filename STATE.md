@@ -1,7 +1,25 @@
 RESUME FROM: M16-c111
-Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M12-c112 DONE: robots.txt חי נמדד מחדש, בטוח לפרודקשן, זהה בביט לבנייה של HEAD, אפס שינוי קוד)
+Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M13-c112 BLOCKED: `/api/health` 200, `/api/ready` 503 על meilisearch down, חיצוני, BACKLOG #16)
 
 ## המשך מ:
+
+**M13-c112 - BLOCKED (06.10.2026): `/api/health` חי 200, אבל `/api/ready` חי 503 על `meilisearch:"down"`, חיצוני ורשום (BACKLOG #16).**
+משימת התור: "Verify /api/health and /api/ready return 200 with real deps". `pwd` אומת, HEAD `29ce235cb` = `origin/audit/final-audit`.
+הקומיט האחרון על `src/app/api/health`, `src/app/api/ready`, `src/lib/health` עדיין `64728ff8d` (02.09), ואין WIP עליהם (בעץ הראשי WIP
+זר account/coupon/gifts/sitemap, לא נגעתי ולא חויב). **חי** מול `www.kenyonexpress.co.il`, שלוש פעמים ברצף, יציב: `/api/health`
+**200** `{"ok":true,"database":"ok","latency_ms":233}`; `/api/ready` **503** `cache-control: no-store`,
+`{"database":"ok","redis":"ok","meilisearch":"down","r2":"not_configured","cardcom":"ok"}`. ביחס ל-M13-c67 השינוי היחיד הוא
+`cardcom` שעבר מ-`not_configured` ל-`ok` (ידוע מ-L11, חוסם 8). `/api/search?q=test` עונה 200, כלומר הנפילה ל-Postgres עובדת
+והלקוח לא נפגע. `r2 not_configured` אינו מפיל את ה-ready (רק `down` מפיל) ותואם לחוסם 4 ול-`R2_BUCKET_NAME` (BACKLOG #19).
+**למה BLOCKED ולא DONE:** תנאי הפריט ("return 200") לא מתקיים ל-`/api/ready`, והתיקון הוא אינסטנס Meilisearch חי ו-
+`MEILISEARCH_HOST`/`MEILISEARCH_API_KEY` תואמים ב-Vercel, שניהם מחוץ לסמכות הסוכן (אסור לגעת ב-env של Vercel, אין גישה לשירות).
+**החלטה שהתקבלה לבד:** לא שיניתי את `checkSearch` כדי שידווח `not_configured` או `ok`, כי זה היה מסתיר תקלה אמיתית ממוניטור.
+**שערים** (worktree נקי `/tmp/ke-m11-c112wt` הועבר ל-`29ce235cb`, `env -i`): type-check 0; lint: 12 השערים הראשונים נקיים,
+docs-path-audit נכשל ב-worktree רק על הפניות ל-`refs/` שב-gitignore, נקי בעץ הראשי; test **638/638, 7659 עברו, 12 דולגו**
+(ריצה ראשונה עם `CARDCOM_USE_MOCK=true` בסביבה הפילה בעקביות את `invoices.test.ts` "does not spend an attempt when there are no
+credentials", כי הדגל נראה כמו אישורים; בלעדיו 26/26. ארטיפקט של הרצה, לא רגרסיה, וכמו בפריטים הקודמים הדגל שייך ל-build בלבד);
+`rm -rf .next` ואז build עם `CARDCOM_USE_MOCK=true`: 0, 340/340, אפס `Invalid API key`, `BUILD_ID` `NQ_44_4L5xMPECXtIgmnr`.
+אין שינוי UI, `compare.mjs` לא נדרש. M08-c112 הועבר ל-`docs/STATE-ARCHIVE.md`. `RESUME FROM` נשאר M16-c111, כמו בשאר פריטי c112.
 
 **M12-c112 - DONE (06.10.2026): `robots.txt` נמדד שוב, בטוח לפרודקשן, החי זהה בביט לבנייה של HEAD. אין שינוי קוד.**
 משימת התור: "Verify robots.txt production-safe". `pwd` אומת, HEAD `f2b209471` = `origin/audit/final-audit`. `git log -1 --
@@ -64,27 +82,6 @@ package.json pnpm-lock.yaml scripts` ריק, כלומר אין דריפט מאז
 על 6 הקבצים נקי; test **638/638, 7659 עברו, 12 דולגו**; `rm -rf .next` ואז build עם `CARDCOM_USE_MOCK=true`: exit 0, 340/340,
 אפס `Invalid API key`, `BUILD_ID` `PB5Kj7zYfMJRKpkLHPk0h`. אפס שינוי UI (הסרת `export` בלבד), `compare.mjs` לא נדרש. M07-c112
 הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות. `RESUME FROM` נשאר M16-c111, כמו בשאר פריטי c112.
-
-**M08-c112 - DONE (06.10.2026): Lighthouse mobile על `/` ו-`/product/צימר-מאסטר` נמדד מחדש, 99-100/100/100, אפס דריפט.**
-משימת התור: "Lighthouse mobile on / and /product sample log scores". `pwd` אומת, HEAD `dde41012f` = `origin/audit/final-audit`.
-`git diff --stat 52f525794 HEAD -- src public packages next.config.* package.json pnpm-lock.yaml messages` ריק: אפס שינוי קוד.
-בעץ הראשי WIP זר (account/coupon/gifts/sitemap), לא נגעתי ולא חויב; הכל רץ ב-worktree הנקי `/tmp/ke-m06-c112`, שהועבר
-(detached) ל-`dde41012f` ונשאר במקומו. `rm -rf .next` ואז `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4831
-pnpm build` תחת `env -i`: exit 0, 340/340, אפס `Invalid API key`, `BUILD_ID` `RnGhfaosr-yTfFufPpYwj`. `PORT=4831 pnpm start`
-(פורט אומת פנוי, `cwd` של המאזין PID 49907 אומת `/private/tmp/ke-m06-c112`), שני הדפים `200` וחוממו פעמיים.
-`LOCAL_BASE=http://localhost:4831 node scripts/lighthouse-smoke.mjs --throttling-method=provided` (ו-`--url=` למוצר), בחזית:
-
-| דף | perf | a11y | seo | M08-c95 (`53a09bc1c`) |
-|---|---|---|---|---|
-| `/` (3 ריצות) | 99 / 100 / 99 | 100 | 100 | 100/100/100 |
-| `/product/צימר-מאסטר` | 100 | 100 | 100 | 100/100/100 |
-
-ה-99 ב-`/` מתחלף עם 100 בין ריצות על אותו build בלי שינוי קוד, כלומר רעש מדידה מקומי (ראה `docs/PERFORMANCE-BUDGET.md`),
-לא רגרסיה; הסף של הסקריפט הוא 90, exit 0. שרת נסגר ב-`INT`, פורט 4831 אומת פנוי. **שערים** ב-worktree תחת `env -i`: type-check 0;
-lint: נכשל רק ב-docs-path-audit על 81 הפניות ל-`refs/` שב-gitignore (כמו M06/M07-c112), נקי בעץ הראשי (155 ידועים, ללא שינוי);
-test **638/638, 7659 עברו, 12 דולגו**; build למעלה exit 0. לא פריט חזותי, אפס שינוי UI, `compare.mjs` לא נדרש (תקדים M08-c80 ואילך).
-M06-c112 ו-M15-c111 הועברו ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות. **החלטה שהתקבלה לבד:** `RESUME FROM` נשאר M16-c111,
-שעדיין בלי commit עם ראיה, כמו בשאר פריטי c111/c112.
 
 **M14-c111 - DONE (06.10.2026): release של Sentry תואם ל-HEAD. ממצא חדש: `SENTRY_AUTH_TOKEN` נדחה 401.**
 `pwd` אומת, HEAD `bd44390f4` = `origin/audit/final-audit`. קוד: release הוא `SENTRY_RELEASE ?? VERCEL_GIT_COMMIT_SHA`

@@ -2,6 +2,29 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M08-c112 (הועבר מ-STATE.md ב-M13-c112, לשמירה על תקרת 300 שורות)
+
+**M08-c112 - DONE (06.10.2026): Lighthouse mobile על `/` ו-`/product/צימר-מאסטר` נמדד מחדש, 99-100/100/100, אפס דריפט.**
+משימת התור: "Lighthouse mobile on / and /product sample log scores". `pwd` אומת, HEAD `dde41012f` = `origin/audit/final-audit`.
+`git diff --stat 52f525794 HEAD -- src public packages next.config.* package.json pnpm-lock.yaml messages` ריק: אפס שינוי קוד.
+בעץ הראשי WIP זר (account/coupon/gifts/sitemap), לא נגעתי ולא חויב; הכל רץ ב-worktree הנקי `/tmp/ke-m06-c112`, שהועבר
+(detached) ל-`dde41012f` ונשאר במקומו. `rm -rf .next` ואז `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4831
+pnpm build` תחת `env -i`: exit 0, 340/340, אפס `Invalid API key`, `BUILD_ID` `RnGhfaosr-yTfFufPpYwj`. `PORT=4831 pnpm start`
+(פורט אומת פנוי, `cwd` של המאזין PID 49907 אומת `/private/tmp/ke-m06-c112`), שני הדפים `200` וחוממו פעמיים.
+`LOCAL_BASE=http://localhost:4831 node scripts/lighthouse-smoke.mjs --throttling-method=provided` (ו-`--url=` למוצר), בחזית:
+
+| דף | perf | a11y | seo | M08-c95 (`53a09bc1c`) |
+|---|---|---|---|---|
+| `/` (3 ריצות) | 99 / 100 / 99 | 100 | 100 | 100/100/100 |
+| `/product/צימר-מאסטר` | 100 | 100 | 100 | 100/100/100 |
+
+ה-99 ב-`/` מתחלף עם 100 בין ריצות על אותו build בלי שינוי קוד, כלומר רעש מדידה מקומי (ראה `docs/PERFORMANCE-BUDGET.md`),
+לא רגרסיה; הסף של הסקריפט הוא 90, exit 0. שרת נסגר ב-`INT`, פורט 4831 אומת פנוי. **שערים** ב-worktree תחת `env -i`: type-check 0;
+lint: נכשל רק ב-docs-path-audit על 81 הפניות ל-`refs/` שב-gitignore (כמו M06/M07-c112), נקי בעץ הראשי (155 ידועים, ללא שינוי);
+test **638/638, 7659 עברו, 12 דולגו**; build למעלה exit 0. לא פריט חזותי, אפס שינוי UI, `compare.mjs` לא נדרש (תקדים M08-c80 ואילך).
+M06-c112 ו-M15-c111 הועברו ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות. **החלטה שהתקבלה לבד:** `RESUME FROM` נשאר M16-c111,
+שעדיין בלי commit עם ראיה, כמו בשאר פריטי c111/c112.
+
 ## M01-c112 (הועבר מ-STATE.md ב-M12-c112, לשמירה על תקרת 300 שורות)
 
 **M01-c112 - DONE (06.10.2026): parity של `/` נמדד מחדש ב-380/768/1440, כולם PASS, אפס הפרש.**

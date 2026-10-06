@@ -642,7 +642,9 @@ degrades gracefully until applied. No migration applied, no code change.
     M13-c67, אפס דריפט**: `/api/health` `200` (`database:"ok"`), `/api/ready`
     עדיין `503` עם `meilisearch:"down"` זהה, `redis:"ok"`,
     `r2`/`cardcom` עדיין `not_configured` (תואם חוסמים 4 ו-8 למעלה, לא ממצא
-    חדש).
+    חדש). **נמדד שוב 06.10.2026, M13-c112, שלוש פעמים ברצף**: `/api/health`
+    `200`, `/api/ready` עדיין `503` עם `meilisearch:"down"`; `cardcom` עכשיו
+    `ok` (L11), `r2` עדיין `not_configured`, `/api/search?q=test` `200`.
 17. **`SENTRY_DSN` ו-`NEXT_PUBLIC_SENTRY_DSN` חסרים ב-Production של
     הפרויקט שמגיש את הדומיין** (נמדד 01.10.2026, M14-c66, `filter_project_envs`
     קריאה-בלבד על `kenyonexpress`/`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`). קיים
