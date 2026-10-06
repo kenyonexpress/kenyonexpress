@@ -27,7 +27,7 @@ import type { Json } from '@/types/database'
  * the recipient.
  */
 
-export type GiftAuditSource = 'voucher_transfer' | 'voucher_transfer_revoke' | 'gift_claim'
+type GiftAuditSource = 'voucher_transfer' | 'voucher_transfer_revoke' | 'gift_claim'
 
 export interface GiftAuditInput {
   /** The signed-in customer who asked for the transition. */

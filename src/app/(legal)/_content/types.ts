@@ -17,7 +17,7 @@ export type LegalBlock =
   | { type: 'note'; text: string }
   | { type: 'table'; caption?: string; head: string[]; rows: string[][] }
 
-export interface LegalSection {
+interface LegalSection {
   /**
    * The URL fragment this section is linked by. Stable across edits: a support
    * macro or an email that points at `#coupon-redemption` must keep working

@@ -49,7 +49,7 @@ export const CLUB_SPEND_STATUSES = [
   'platform_settled',
 ] as const
 
-export type ClubSpendStatus = (typeof CLUB_SPEND_STATUSES)[number]
+type ClubSpendStatus = (typeof CLUB_SPEND_STATUSES)[number]
 
 /** Ascending. Fixed: names are keyed by id in the message catalog. */
 export const CLUB_TIER_IDS = ['member', 'silver', 'gold', 'platinum'] as const

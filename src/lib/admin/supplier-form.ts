@@ -63,7 +63,7 @@ export interface SupplierFormFields {
  * reviews link (242). Kept off `SupplierFormFields` so a plain
  * `update(parsed.data)` never names a column production lacks.
  */
-export interface SupplierOptionalFields {
+interface SupplierOptionalFields {
   google_reviews_url: string | null
 }
 

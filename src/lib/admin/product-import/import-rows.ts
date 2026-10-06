@@ -46,7 +46,7 @@ export const IMPORT_COLUMNS = [
 
 export type ImportColumnKey = (typeof IMPORT_COLUMNS)[number]['key']
 
-export type ImportRecord = Partial<Record<ImportColumnKey, string>>
+type ImportRecord = Partial<Record<ImportColumnKey, string>>
 
 const COLUMN_LABELS: Record<string, string> = Object.fromEntries(
   IMPORT_COLUMNS.map((c) => [c.key, c.label]),

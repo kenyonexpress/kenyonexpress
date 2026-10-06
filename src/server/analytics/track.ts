@@ -331,7 +331,7 @@ export async function linkAnalyticsIdentity(
  * once, never updated after payment: a report of last October must not move
  * because the customer clicked a new campaign in March.
  */
-export async function readAttributionSnapshot(): Promise<Attribution | null> {
+async function readAttributionSnapshot(): Promise<Attribution | null> {
   try {
     const cookieStore = await cookies()
     return parseAttribution(cookieStore.get(ATTRIBUTION_COOKIE)?.value)

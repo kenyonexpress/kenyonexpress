@@ -1,7 +1,22 @@
 RESUME FROM: M16-c111
-Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M08-c112 DONE: Lighthouse mobile `/` 99-100/100/100, מוצר 100/100/100, אפס שינוי קוד, שערים ירוקים)
+Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M09-c112 DONE: knip 277→276 exports, 199→194 types, 6 exports מתים הוסרו, אפס תלות הוסרה, שערים ירוקים)
 
 ## המשך מ:
+
+**M09-c112 - DONE (06.10.2026): knip נמדד מחדש, 6 exports מתים הוסרו (שנדחו ב-M09-c111), אפס תלות הוסרה.**
+משימת התור: "Remove unused deps and dead exports". `pwd` אומת, HEAD `1c51e73c3`. `git diff 8905d60c5 HEAD -- src packages
+package.json pnpm-lock.yaml scripts` ריק, כלומר אין דריפט מאז M09-c111. בעץ הראשי WIP זר (account/coupon/gifts/sitemap), לא נגעתי
+ולא חויב; המדידה והשערים ב-worktree הנקי `/tmp/ke-m09-c111` (הועבר ל-`1c51e73c3` + ה-patch, נשאר במקומו). `pnpm dlx knip
+--no-config-hints` לפני: **204 / 5 / 1 / 277 / 199 / 4** (כמו M09-c111). אומת ב-`grep -rnw` על `src e2e scripts packages` בעץ
+הראשי (כולל ה-WIP): כל אחד מהשישה שנדחו ב-M09-c111 נקרא רק בתוך הקובץ שלו, ולכן **הוסרה מילת `export`**: `readAttributionSnapshot`
+(`server/analytics/track.ts`, `server-only` ולא `'use server'`), `ClubSpendStatus`, `LegalSection`, `ImportRecord`,
+`SupplierOptionalFields`, `GiftAuditSource`. אחרי: **204 / 5 / 1 / 276 / 194 / 4**. **החלטות שהתקבלו לבד:** (1) חמש התלויות ובינארי
+`supabase` נשארים, הכרעת מפעיל מאז M09-c66. (2) server actions (`deleteVariant`, `setSupplierStatus`, `softDeleteSupplier`,
+`signOutAll`), `scripts/` וקבצי ה-WIP הזר לא נגעו. **שערים** (worktree, `env -i`): type-check 0; lint: 12 השערים הראשונים
+נקיים, docs-path-audit נכשל ב-worktree רק על `supabase/.temp` שב-gitignore (3), נקי בעץ הראשי (155 ידועים, ללא שינוי); biome
+על 6 הקבצים נקי; test **638/638, 7659 עברו, 12 דולגו**; `rm -rf .next` ואז build עם `CARDCOM_USE_MOCK=true`: exit 0, 340/340,
+אפס `Invalid API key`, `BUILD_ID` `PB5Kj7zYfMJRKpkLHPk0h`. אפס שינוי UI (הסרת `export` בלבד), `compare.mjs` לא נדרש. M07-c112
+הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות. `RESUME FROM` נשאר M16-c111, כמו בשאר פריטי c112.
 
 **M08-c112 - DONE (06.10.2026): Lighthouse mobile על `/` ו-`/product/צימר-מאסטר` נמדד מחדש, 99-100/100/100, אפס דריפט.**
 משימת התור: "Lighthouse mobile on / and /product sample log scores". `pwd` אומת, HEAD `dde41012f` = `origin/audit/final-audit`.
@@ -23,29 +38,6 @@ lint: נכשל רק ב-docs-path-audit על 81 הפניות ל-`refs/` שב-giti
 test **638/638, 7659 עברו, 12 דולגו**; build למעלה exit 0. לא פריט חזותי, אפס שינוי UI, `compare.mjs` לא נדרש (תקדים M08-c80 ואילך).
 M06-c112 ו-M15-c111 הועברו ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות. **החלטה שהתקבלה לבד:** `RESUME FROM` נשאר M16-c111,
 שעדיין בלי commit עם ראיה, כמו בשאר פריטי c111/c112.
-
-**M07-c112 - DONE (06.10.2026): TODO/FIXME נסרק מחדש, אפס סמן חדש, אפס שינוי קוד.**
-משימת התור: "Scan TODO FIXME older than 7 days resolve or file in docs/BACKLOG.md". `pwd` אומת, HEAD `52f525794`
-= `origin/audit/final-audit`. `git grep -nwE 'TODO|FIXME|HACK|XXX' HEAD` (מלבד md/json/lock/refs ו-`scripts/final-audit*`)
-ועל ה-WIP הזר הלא-מחויב בעץ הראשי (diff + קבצים לא-מנוטרים): **שני סמנים אמיתיים בלבד**,
-`src/lib/payments/cardcom.ts:254` ו-`:319` (`TODO(cardcom)`, blame 24.07/07.08.2026, #41/#42), כבר רשומים
-ב-`docs/BACKLOG.md` סעיף 6 כחסומים על טרמינל Cardcom חי (לאופיר); לא ניתנים לפתרון בלי טרמינל, לא נגעתי.
-שאר הפגיעות אינן סמני עבודה: `05X-XXX-XXXX` בתיעוד פורמט טלפון (`sms/twilio.ts:74`, `whatsapp.ts:85`,
-`whatsapp/twilio.ts:45`) ו-`whatsapp.test.ts:91` (מחרוזת ליטרלית `'TODO'`). `node scripts/final-audit.mjs --verbose`:
-**`ok 0 work markers (TODO/FIXME/HACK/XXX) (of 2)`**. **שערים** בחזית תחת `env -i` ב-worktree נקי `/tmp/ke-m06-c112`
-(הועבר ל-`52f525794`, נשאר במקומו): type-check 0; lint: 12 השערים הראשונים נקיים, docs-path-audit נכשל ב-worktree רק
-על `refs/` שב-gitignore, נקי בעץ הראשי (155 ידועים, ללא שינוי); test **638/638, 7659 עברו, 12 דולגו** (ריצה ראשונה
-עם `CARDCOM_USE_MOCK=true` דלף ל-env של הטסטים הפילה את `invoices.test.ts` "no credentials at all", כצפוי מהטסט;
-בלי המשתנה, כמו בפריטים קודמים, 638/638); `rm -rf .next` ואז build עם `CARDCOM_USE_MOCK=true`: exit 0, 340/340,
-אפס `Invalid API key`, `BUILD_ID` `-NZfr47-jigwB5cAOyNeo`. לא פריט חזותי, `compare.mjs` לא נדרש. נוספה שורת
-אימות ל-`docs/BACKLOG.md` סעיף 6. M12-c111 הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות.
-**החלטה שהתקבלה לבד:** `RESUME FROM` נשאר M16-c111, שעדיין בלי commit עם ראיה, כמו בשאר פריטי c111/c112.
-
-**M07-c112, אימות שני (06.10.2026):** סשן מקביל חייב ודחף את הפריט (`8b398f888`) בזמן שרצתי עליו. אומת באופן עצמאי:
-`git grep` על HEAD ועל ה-WIP הזר: אותם שני `TODO(cardcom)` בלבד (`cardcom.ts:254`/`:319`), `final-audit` `ok 0 work markers (of 2)`.
-שערים ב-`/tmp/ke-m06-c112` על `52f525794` תחת `env -i`: type-check 0; lint נקי מלבד docs-path-audit ב-worktree (81 הפניות
-ל-`refs/` שב-gitignore), נקי בעץ הראשי (155 ידועים); test 638/638 (7659/12 דולגו; אותו כשל `invoices.test.ts` כש-`CARDCOM_USE_MOCK`
-דלף ל-env הטסטים, נעלם בלעדיו); build 0 340/340 `NkiPz517S0iAFQb6-qmVG`. M14-c111 אימות שני הועבר לארכיון (תקרת 300).
 
 **M01-c112 - DONE (06.10.2026): parity של `/` נמדד מחדש ב-380/768/1440, כולם PASS, אפס הפרש.**
 `pwd` אומת, HEAD `89e8d357f`. בעץ הראשי WIP זר (account/coupon/gifts/sitemap), לא נגעתי ולא חויב; הכל רץ ב-worktree
