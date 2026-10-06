@@ -1,7 +1,22 @@
-RESUME FROM: M15-c111
-Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M14-c111 DONE: release של Sentry בפרודקשן = HEAD `bd44390f4`; טוקן ההעלאה נדחה 401, נרשם ב-BACKLOG #21)
+RESUME FROM: M16-c111
+Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M15-c111 DONE: אפס console errors ואפס hydration warnings על `/` ועל דגימת המוצר, 4/4 PASS בבנייה טרייה)
 
 ## המשך מ:
+
+**M15-c111 - DONE (06.10.2026): אפס console errors על `/` ועל דגימת המוצר, בבנייה טרייה של קוד HEAD.**
+`pwd` אומת, HEAD `15d495254`. מאז M15-c95 (`9278fd3be`) השתנו 178 קבצים ב-`src`/`e2e`/`next.config.ts`, ולכן
+רץ אימות מלא ולא הסתמכות על ריצה קודמת. בעץ הראשי WIP זר (account/coupon/gifts/sitemap), לא נגעתי ולא חויב;
+`/tmp/ke-m14-c111` היה תפוס ב-vitest של סשן מקביל, ולכן נמדד ב-worktree `/tmp/ke-m09-c111` על `bd44390f4`
+(קוד זהה ל-HEAD, ההפרש `STATE.md`/`docs` בלבד; נשאר במקומו). `rm -rf .next`, `env -i`, `CARDCOM_USE_MOCK=true`:
+build 0, 340/340, אפס `Invalid API key`, `BUILD_ID` `dGCyW5GkkRMlS5Xpc757f`. `pnpm start -p 4879` (PID 12360, cwd
+המאזין אומת ב-`lsof`, נעצר ב-INT, הפורט פנוי). `e2e/route-audit.spec.ts --grep "anon /$|anon dynamic catalogue
+routes"` עם `ROUTE_AUDIT_REPORT=/tmp/route-audit-m15c111.jsonl`: **4/4 PASS** (chromium + mobile-chrome, 57.1 שניות).
+הדוח, 16 שורות: **אפס `consoleErrors` ואפס `hydrationWarnings` בכל אחת**, כולן 200: `/`, `/product/צימר-מאסטר`
+ו-`/reviews` שלו (דגימת המוצר), `/category/hot-deals`, `/city/תל-אביב`, `/coupons/<id>`, `/page/how-it-works`, `/s/<id>`.
+**שערים** (אותו worktree, `env -i`): type-check 0; lint: כל השערים נקיים מלבד docs-path-audit ב-worktree, שנכשל רק על
+`supabase/.temp` (ב-gitignore), נקי בעץ הראשי (155 ידועים); test 638/638, 7659 עברו, 12 דולגו. אין שינוי UI, ולכן
+`compare.mjs` לא נדרש. M06-c111 הועבר ל-`docs/STATE-ARCHIVE.md`. **החלטה שהתקבלה לבד:** `RESUME FROM` מצביע
+ל-M16-c111, הפריט הבא ב-`final-queue.txt`.
 
 **M14-c111 - DONE (06.10.2026): release של Sentry תואם ל-HEAD. ממצא חדש: `SENTRY_AUTH_TOKEN` נדחה 401.**
 `pwd` אומת, HEAD `bd44390f4` = `origin/audit/final-audit`. קוד: release הוא `SENTRY_RELEASE ?? VERCEL_GIT_COMMIT_SHA`
@@ -102,18 +117,6 @@ docs-path-audit נכשל ב-worktree רק על `refs/` שב-gitignore, ונקי 
 7659 עברו, 12 דולגו**; `rm -rf .next` ואז build עם `CARDCOM_USE_MOCK=true`: exit 0, אפס `Invalid API key`.
 לא פריט חזותי, `compare.mjs` לא נדרש. `docs/BACKLOG.md` לא שונה: אין מה להוסיף.
 **החלטה שהתקבלה לבד:** `RESUME FROM` נשאר M12-c110, כמו ב-M02/M03/M05/M06-c111.
-
-**M06-c111 - DONE (06.10.2026): `pnpm build` נמדד מחדש על HEAD נקי, exit 0, אפס דריפט, אין מה לתקן.**
-משימת התור: "pnpm build fix drift commit". `pwd` אומת, HEAD `13a7d8ba7` (בזמן העבודה נכנס `c1d64b886` של
-M05-c111, `STATE.md` בלבד). `git diff bef85ac52 HEAD -- src` ריק: אפס שינוי קוד מאז W14. בעץ הראשי WIP זר
-של account/coupon/gifts/sitemap שלא נגעתי בו ולא חויב, ולכן worktree נקי `/tmp/ke-m06-c111` (HEAD,
-`node_modules` כ-APFS clone, `.env.local` כ-symlink, `refs/` הועתק ו-`supabase/.temp` ריק נוצר כי שניהם
-ב-gitignore; נשאר במקומו, לא נמחק). **שערים** בחזית תחת `env -i`: type-check 0; lint 0 (כל 13 השערים,
-docs-index 282, docs-path-audit 155 ידועים); test **638/638 קבצים, 7659 עברו, 12 דולגו**; **`rm -rf .next`
-ואז build עם `CARDCOM_USE_MOCK=true`: exit 0, 340/340 דפים, אפס `Invalid API key`, `BUILD_ID`
-`nKUqsugxjWnR2gkz_Kp9Y`**. 92 שורות `rls_denied` על `reviews` בזמן prerender, אותו מספר כמו ב-M06-c95 (חוסם
-#3, מיגרציה 247), ואלה כל שורות ה-error בלוג; לא דריפט. לא פריט חזותי, `compare.mjs` לא נדרש.
-**החלטה שהתקבלה לבד:** `RESUME FROM` נשאר M12-c110, כמו ב-M02/M03/M05-c111.
 
 **M11-c110 - DONE** (sitemap.xml טרי, 98/98 כתובות 200, ממצא apex→www ב-BACKLOG),
 ו-W14..W01, M01-c96, L12, L11 וכל מה שקדם: ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, החדש למעלה.

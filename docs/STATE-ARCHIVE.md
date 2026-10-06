@@ -2,6 +2,20 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M06-c111 (הועבר מ-STATE.md ב-M15-c111, לשמירה על תקרת 300 שורות)
+
+**M06-c111 - DONE (06.10.2026): `pnpm build` נמדד מחדש על HEAD נקי, exit 0, אפס דריפט, אין מה לתקן.**
+משימת התור: "pnpm build fix drift commit". `pwd` אומת, HEAD `13a7d8ba7` (בזמן העבודה נכנס `c1d64b886` של
+M05-c111, `STATE.md` בלבד). `git diff bef85ac52 HEAD -- src` ריק: אפס שינוי קוד מאז W14. בעץ הראשי WIP זר
+של account/coupon/gifts/sitemap שלא נגעתי בו ולא חויב, ולכן worktree נקי `/tmp/ke-m06-c111` (HEAD,
+`node_modules` כ-APFS clone, `.env.local` כ-symlink, `refs/` הועתק ו-`supabase/.temp` ריק נוצר כי שניהם
+ב-gitignore; נשאר במקומו, לא נמחק). **שערים** בחזית תחת `env -i`: type-check 0; lint 0 (כל 13 השערים,
+docs-index 282, docs-path-audit 155 ידועים); test **638/638 קבצים, 7659 עברו, 12 דולגו**; **`rm -rf .next`
+ואז build עם `CARDCOM_USE_MOCK=true`: exit 0, 340/340 דפים, אפס `Invalid API key`, `BUILD_ID`
+`nKUqsugxjWnR2gkz_Kp9Y`**. 92 שורות `rls_denied` על `reviews` בזמן prerender, אותו מספר כמו ב-M06-c95 (חוסם
+#3, מיגרציה 247), ואלה כל שורות ה-error בלוג; לא דריפט. לא פריט חזותי, `compare.mjs` לא נדרש.
+**החלטה שהתקבלה לבד:** `RESUME FROM` נשאר M12-c110, כמו ב-M02/M03/M05-c111.
+
 ## M05-c111 (הועבר מ-STATE.md ב-M14-c111, לשמירה על תקרת 300 שורות)
 
 **M05-c111 - DONE (06.10.2026): `pnpm test` נמדד מחדש על HEAD נקי, 638/638, אפס דריפט, אין מה לתקן.**
