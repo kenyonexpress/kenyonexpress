@@ -1,7 +1,23 @@
 RESUME FROM: M16-c111
-Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M15-c112 DONE: אפס console errors ואפס hydration warnings על `/` ועל דגימת המוצר, 4/4 PASS בבנייה טרייה של `8877de66a`)
+Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M16-c112 DONE: 46/46 דפי מוצר עם JSON-LD `Product` ו-`BreadcrumbList` אחד בדיוק, בבנייה טרייה של `e1d941308`)
 
 ## המשך מ:
+
+**M16-c112 - DONE (06.10.2026): כל דפי המוצר נושאים בדיוק בלוק JSON-LD `Product` אחד ובלוק `BreadcrumbList` אחד, 46/46, בבנייה טרייה של HEAD `e1d941308`.**
+משימת התור: "Verify all product pages have JSON-LD Product and BreadcrumbList". `pwd` אומת, HEAD `e1d941308` = `origin/audit/final-audit`.
+`git diff 8877de66a e1d941308 -- src packages e2e next.config.ts` ריק; הדף עדיין מזריק `buildProductJsonLd` ו-`buildBreadcrumbJsonLd` דרך
+`jsonLdScript` (`src/app/(store)/product/[slug]/page.tsx` שורות 229/263/282/287). בעץ הראשי WIP זר (account/coupon/gifts/sitemap), לא נגעתי
+ולא חויב. הכל רץ ב-worktree הנקי `/tmp/ke-m11-c112wt`, שהועבר (detached) ל-`e1d941308` ונשאר במקומו. `rm -rf .next`, `env -i`,
+`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4881`: build 0, 340/340, אפס `Invalid API key`, `BUILD_ID` `RTEJPpO6ZXy9Ui_znkdRb`.
+`pnpm start -p 4881` (PID 37785, cwd המאזין אומת ב-`lsof` `/private/tmp/ke-m11-c112wt`, נעצר ב-INT, 0 מאזינים אחר כך).
+**נמדד:** סקריפט node (`/tmp/m16c112/probe.mjs`) לקח את איחוד הסלאגים מ-`supabase/catalogue-snapshot.json` (44) ומ-`/sitemap/products.xml`
+של השרת (46; `sitemap.xml` הוא sitemapindex), ולכל אחד שלף את הדף, חילץ כל `<script type="application/ld+json">` והריץ `JSON.parse`:
+**46/46 מחזירים 200 עם `Product` אחד ו-`BreadcrumbList` אחד בדיוק, אפס שגיאות JSON, אפס כשלים.** דגימה `/product/צימר-מאסטר`: `Product`
+עם `name,url,category,image,brand,offers`, ו-`BreadcrumbList` `בית > צימרים מלונות ונופש > <המוצר>`. בנוסף `e2e/seo-markup.spec.ts`
+מול אותו שרת, בחזית: **10/10 PASS** (chromium + mobile-chrome, 19.1 שניות). לעומת M16-c95 (44/44) נוספו שני מוצרים בקטלוג, אפס דריפט בקוד.
+**שערים** (אותו worktree, `env -i`): type-check 0; lint: כל השערים נקיים מלבד docs-path-audit ב-worktree, שנכשל רק על הפניות ל-`refs/`
+ו-`supabase/.temp` (שניהם ב-gitignore), נקי בעץ הראשי (`OK. 155 known`); test **638/638, 7659 עברו, 12 דולגו**. אין שינוי UI, ולכן
+`compare.mjs` לא נדרש. M10-c112 הועבר ל-`docs/STATE-ARCHIVE.md`. **החלטה שהתקבלה לבד:** `RESUME FROM` נשאר M16-c111, כמו בשאר פריטי c112.
 
 **M15-c112 - DONE (06.10.2026): אפס console errors ואפס hydration warnings על `/` ועל דגימת המוצר, בבנייה טרייה של HEAD `8877de66a`.**
 משימת התור: "Verify no console errors on / and /product sample". `pwd` אומת, HEAD `8877de66a` = `origin/audit/final-audit`.
@@ -83,23 +99,6 @@ clone, `.env.local` כ-symlink, נשאר במקומו) תחת `env -i`: type-che
 ב-worktree רק על 84 הפניות ל-`refs/` ו-`supabase/.temp` שב-gitignore, נקי בעץ הראשי (155 ידועים, ללא שינוי); test **638/638, 7659
 עברו, 12 דולגו**; `rm -rf .next` ואז build עם `CARDCOM_USE_MOCK=true`: exit 0, 340/340, אפס `Invalid API key`, `BUILD_ID`
 `p1T2TKtK-nob_RF8wc79X`. אין שינוי UI, ולכן `compare.mjs` לא נדרש. `RESUME FROM` נשאר M16-c111, כמו בשאר פריטי c112.
-
-**M10-c112 - DONE (06.10.2026): migrations/pending נבדק ישירות מול פרודקשן, אף קובץ לא הוחל, החוסם גדל מ-19 ל-23 קבצים.**
-משימת התור: "Verify migrations/pending/ applied or file blocker". `pwd` אומת, HEAD `b36f8cbda`. בעץ הראשי WIP זר
-(account/coupon/gifts/sitemap), לא נגעתי ולא חויב. מאז הבדיקה הישירה האחרונה (M10-c95, `f5564d638`) נוספו ל-`migrations/pending/`
-ארבעה קבצים חדשים: 249 (`products.publish_at`), 250 (שעון pg_cron לתזכורות תפוגה), 251 (`club_tiers`), 252 (`affiliate_clicks`
-ו-`affiliate_payout_requests`), ועוד `preflight_250.sql`: **65 קבצי `.sql`** (היה 60), `git log -1 -- migrations/pending/` הוא
-`3043995e9` (252). בדיקה ישירה טרייה, קריאה בלבד: טוקן ה-CLI מה-keychain (לא הודפס), `POST .../database/query` עם
-`read_only: true`, `SELECT` יחיד, אפס DDL. **17 אובייקטים מ-15 קבצים, כולם חסרים:** טבלאות של 204/234/235/236/240/244/251/252
-(×2) לא קיימות (`to_regclass` ריק); עמודות של 218 (`profiles.supplier_id`), 223 (`outbox_id`), 242, 249, 251 (`orders.club_tier`)
-לא קיימות; `proconfig` של `fn_wallet_entries_block_mutation` עדיין `NULL` (220); ב-`cron.job` רק `report_tables_nightly`, אף אחת
-משלוש המשימות של 250; 82 מוצרים עם `city IS NULL` (241 לא הוחל). **החלטה שהתקבלה לבד:** 249..252 נוספו לרשימת החוסם ב-BACKLOG
-סעיף 5 (23 קבצים), כי פיצ'רים שכבר בקוד (פרסום מתוזמן, תזכורות תפוגה, דרגות מועדון, קליקים ומשיכות של שותפים) תלויים בהם; 250
-חסומה בנוסף על ערך ה-vault (חוסם 16). לא הוחלה שום מיגרציה, אפס שינוי קוד, אפס שינוי UI, `compare.mjs` לא נדרש. **שערים** ב-worktree נקי חדש `/tmp/ke-m10-c112wt` (HEAD + שלושת קבצי ה-docs,
-`env -i`, נשאר במקומו): type-check 0; lint: 12 השערים הראשונים נקיים, docs-path-audit נכשל ב-worktree רק על 81 הפניות ל-`refs/`
-ו-3 ל-`supabase/.temp` שב-gitignore, נקי בעץ הראשי (155 ידועים, ללא שינוי); test **638/638, 7659 עברו, 12 דולגו**; `rm -rf .next`
-ואז build עם `CARDCOM_USE_MOCK=true`: exit 0, 340/340, אפס `Invalid API key`, `BUILD_ID` `kOgsAXgvDGVUyPpHYS18H`. M17-c111 הועבר
-ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות. `RESUME FROM` נשאר M16-c111, כמו בשאר פריטי c112.
 
 **M11-c110 - DONE** (sitemap.xml טרי, 98/98 כתובות 200, ממצא apex→www ב-BACKLOG),
 ו-W14..W01, M01-c96, L12, L11 וכל מה שקדם: ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, החדש למעלה.

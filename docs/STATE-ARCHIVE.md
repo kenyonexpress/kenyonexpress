@@ -2,6 +2,25 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M10-c112 (הועבר מ-STATE.md ב-M16-c112, לשמירה על תקרת 300 שורות)
+
+**M10-c112 - DONE (06.10.2026): migrations/pending נבדק ישירות מול פרודקשן, אף קובץ לא הוחל, החוסם גדל מ-19 ל-23 קבצים.**
+משימת התור: "Verify migrations/pending/ applied or file blocker". `pwd` אומת, HEAD `b36f8cbda`. בעץ הראשי WIP זר
+(account/coupon/gifts/sitemap), לא נגעתי ולא חויב. מאז הבדיקה הישירה האחרונה (M10-c95, `f5564d638`) נוספו ל-`migrations/pending/`
+ארבעה קבצים חדשים: 249 (`products.publish_at`), 250 (שעון pg_cron לתזכורות תפוגה), 251 (`club_tiers`), 252 (`affiliate_clicks`
+ו-`affiliate_payout_requests`), ועוד `preflight_250.sql`: **65 קבצי `.sql`** (היה 60), `git log -1 -- migrations/pending/` הוא
+`3043995e9` (252). בדיקה ישירה טרייה, קריאה בלבד: טוקן ה-CLI מה-keychain (לא הודפס), `POST .../database/query` עם
+`read_only: true`, `SELECT` יחיד, אפס DDL. **17 אובייקטים מ-15 קבצים, כולם חסרים:** טבלאות של 204/234/235/236/240/244/251/252
+(×2) לא קיימות (`to_regclass` ריק); עמודות של 218 (`profiles.supplier_id`), 223 (`outbox_id`), 242, 249, 251 (`orders.club_tier`)
+לא קיימות; `proconfig` של `fn_wallet_entries_block_mutation` עדיין `NULL` (220); ב-`cron.job` רק `report_tables_nightly`, אף אחת
+משלוש המשימות של 250; 82 מוצרים עם `city IS NULL` (241 לא הוחל). **החלטה שהתקבלה לבד:** 249..252 נוספו לרשימת החוסם ב-BACKLOG
+סעיף 5 (23 קבצים), כי פיצ'רים שכבר בקוד (פרסום מתוזמן, תזכורות תפוגה, דרגות מועדון, קליקים ומשיכות של שותפים) תלויים בהם; 250
+חסומה בנוסף על ערך ה-vault (חוסם 16). לא הוחלה שום מיגרציה, אפס שינוי קוד, אפס שינוי UI, `compare.mjs` לא נדרש. **שערים** ב-worktree נקי חדש `/tmp/ke-m10-c112wt` (HEAD + שלושת קבצי ה-docs,
+`env -i`, נשאר במקומו): type-check 0; lint: 12 השערים הראשונים נקיים, docs-path-audit נכשל ב-worktree רק על 81 הפניות ל-`refs/`
+ו-3 ל-`supabase/.temp` שב-gitignore, נקי בעץ הראשי (155 ידועים, ללא שינוי); test **638/638, 7659 עברו, 12 דולגו**; `rm -rf .next`
+ואז build עם `CARDCOM_USE_MOCK=true`: exit 0, 340/340, אפס `Invalid API key`, `BUILD_ID` `kOgsAXgvDGVUyPpHYS18H`. M17-c111 הועבר
+ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות. `RESUME FROM` נשאר M16-c111, כמו בשאר פריטי c112.
+
 ## M09-c112 (הועבר מ-STATE.md ב-M15-c112, לשמירה על תקרת 300 שורות)
 
 **M09-c112 - DONE (06.10.2026): knip נמדד מחדש, 6 exports מתים הוסרו (שנדחו ב-M09-c111), אפס תלות הוסרה.**
