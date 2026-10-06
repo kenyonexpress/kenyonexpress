@@ -1,7 +1,21 @@
 RESUME FROM: M16-c111
-Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M10-c112 DONE: migrations/pending נבדק מול פרודקשן, 65 קבצים, אף אחד לא הוחל, החוסם 19→23 קבצים עם 249..252)
+Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M11-c112 DONE: sitemap.xml חי נמדד מחדש, טרי ונגיש, 98/98 כתובות 200, אפס שינוי קוד)
 
 ## המשך מ:
+
+**M11-c112 - DONE (06.10.2026): `sitemap.xml` נמדד שוב חי, טרי ונגיש, 98/98 כתובות 200. אין שינוי קוד.**
+משימת התור: "Verify sitemap.xml fresh and reachable". `pwd` אומת, HEAD `7a4a2f437` = `origin/audit/final-audit`. בעץ הראשי WIP זר
+(account/coupon/gifts, כולל `src/lib/seo/sitemap-*`), לא נגעתי ולא חויב; לכן נמדד האתר החי והשערים רצו על קוד ה-HEAD.
+**נמדד חי מול `www.kenyonexpress.co.il`:** `/sitemap.xml` 200 `application/xml; charset=utf-8`, `<sitemapindex>` עם חמש תתי-מפות
+(content, categories, products, regions, suppliers), כולן 200 `application/xml`, עם 15/13/46/17/7 = **98 `<loc>`, אפס כפילויות**;
+lastmod החדש ביותר 2026-10-05T01:07:49Z (content, products, יום לפני המדידה), categories 2026-09-16, suppliers 2026-09-16, regions
+ללא lastmod. `robots.txt` 200 ומפנה ל-`Sitemap: https://kenyonexpress.co.il/sitemap.xml`. כל 98 הכתובות נבדקו אחת-אחת עם `curl -L`:
+**98/98 200, כל אחת אחרי הפניה אחת** (apex 308 ל-`www`), זהה ל-M11-c111; הממצא כבר רשום כ-BACKLOG #23 (Vercel env או דומיין
+ראשי, מחוץ לסמכות הסוכן), ולכן לא נרשם שוב. **שערים** ב-worktree נקי חדש `/tmp/ke-m11-c112wt` על `7a4a2f437` (`node_modules` כ-APFS
+clone, `.env.local` כ-symlink, נשאר במקומו) תחת `env -i`: type-check 0; lint: 12 השערים הראשונים נקיים, docs-path-audit נכשל
+ב-worktree רק על 84 הפניות ל-`refs/` ו-`supabase/.temp` שב-gitignore, נקי בעץ הראשי (155 ידועים, ללא שינוי); test **638/638, 7659
+עברו, 12 דולגו**; `rm -rf .next` ואז build עם `CARDCOM_USE_MOCK=true`: exit 0, 340/340, אפס `Invalid API key`, `BUILD_ID`
+`p1T2TKtK-nob_RF8wc79X`. אין שינוי UI, ולכן `compare.mjs` לא נדרש. `RESUME FROM` נשאר M16-c111, כמו בשאר פריטי c112.
 
 **M10-c112 - DONE (06.10.2026): migrations/pending נבדק ישירות מול פרודקשן, אף קובץ לא הוחל, החוסם גדל מ-19 ל-23 קבצים.**
 משימת התור: "Verify migrations/pending/ applied or file blocker". `pwd` אומת, HEAD `b36f8cbda`. בעץ הראשי WIP זר
