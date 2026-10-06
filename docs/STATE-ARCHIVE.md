@@ -2,6 +2,25 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M14-c111 (הועבר מ-STATE.md ב-M14-c112, הוחלף ברשומת M14-c112)
+
+**M14-c111 - DONE (06.10.2026): release של Sentry תואם ל-HEAD. ממצא חדש: `SENTRY_AUTH_TOKEN` נדחה 401.**
+`pwd` אומת, HEAD `bd44390f4` = `origin/audit/final-audit`. קוד: release הוא `SENTRY_RELEASE ?? VERCEL_GIT_COMMIT_SHA`
+(שרת/edge) ו-`NEXT_PUBLIC_SENTRY_RELEASE ?? NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA` (לקוח), ללא שינוי מאז M14-c95.
+**נמדד:** `vercel api /v6/deployments` (פרויקט `kenyonexpress`, Production): העליונה `dpl_3JMMsSXC7MmySVs4k363pH8z5rjB`
+READY על `audit/final-audit@bd44390f4`, ו-`/v4/aliases/www.kenyonexpress.co.il` מצביע עליה. ב-Production אין
+`SENTRY_RELEASE`/`NEXT_PUBLIC_SENTRY_RELEASE` (`vercel env ls`, שמות בלבד: `SENTRY_DSN`, `NEXT_PUBLIC_SENTRY_DSN`,
+`SENTRY_AUTH_TOKEN`), כך שה-fallback ל-SHA קובע. **בבאנדל הלקוח החי** (`chunks/21833t7py3y96.js` מתוך 21 של `/`):
+`release:"bd44390f4c710b801a5da2274b065934a4582b27"`, **זהה ל-HEAD**. לוג ה-build של אותה פריסה (`vercel inspect --logs`)
+מריץ `sentry-cli releases new bd44390f4...` ו-`sourcemaps upload --release bd44390f4...`, **ושניהם נכשלים
+`Invalid token (http status: 401)`** כאזהרה בלבד: ה-release לא נרשם ב-Sentry ואין source maps. MCP של Sentry
+דורש הזדהות, ולכן רשימת ה-releases בצד Sentry לא נקראה. נרשם ב-`docs/BACKLOG.md` #21 (טוקן חדש, לאופיר).
+**שערים** (worktree נקי `/tmp/ke-m09-c111` על `bd44390f4`, `env -i`): type-check 0; lint: נכשל ב-worktree רק על
+`supabase/.temp` שב-gitignore, docs-path-audit נקי בעץ הראשי עם עריכת BACKLOG (155 ידועים); test 638/638, 7659
+עברו, 12 דולגו; `rm -rf .next` ואז build עם `CARDCOM_USE_MOCK=true`: 0, 340/340, אפס `Invalid API key`, `BUILD_ID`
+`7Jw8meP8MEkF9W7gNmhYU`. אין שינוי UI, parity לא נדרש. **החלטה שהתקבלה לבד:** לא החלפתי טוקן ולא נגעתי ב-env
+של Vercel (אסור); `RESUME FROM` מצביע ל-M15-c111, הפריט הבא ב-`final-queue.txt`.
+
 ## M08-c112 (הועבר מ-STATE.md ב-M13-c112, לשמירה על תקרת 300 שורות)
 
 **M08-c112 - DONE (06.10.2026): Lighthouse mobile על `/` ו-`/product/צימר-מאסטר` נמדד מחדש, 99-100/100/100, אפס דריפט.**

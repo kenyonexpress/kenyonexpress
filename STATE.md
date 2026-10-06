@@ -1,7 +1,25 @@
 RESUME FROM: M16-c111
-Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M13-c112 BLOCKED: `/api/health` 200, `/api/ready` 503 על meilisearch down, חיצוני, BACKLOG #16)
+Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M14-c112 DONE: release של Sentry בפרודקשן = HEAD `d8942154e`, טוקן ההעלאה עדיין 401, BACKLOG #21)
 
 ## המשך מ:
+
+**M14-c112 - DONE (06.10.2026): release של Sentry בפרודקשן תואם ל-HEAD `d8942154e`. טוקן ההעלאה עדיין נדחה 401 (BACKLOG #21).**
+משימת התור: "Verify Sentry release matches HEAD commit". `pwd` אומת, HEAD `d8942154e` = `origin/audit/final-audit`. קוד ה-release
+לא השתנה (`SENTRY_RELEASE ?? VERCEL_GIT_COMMIT_SHA` בשרת/edge, `NEXT_PUBLIC_SENTRY_RELEASE ?? NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA` בלקוח;
+הקומיט האחרון על קובצי האתחול ו-`next.config` עדיין `b1632df45`). בעץ הראשי WIP זר (account/coupon/gifts/sitemap), לא נגעתי ולא חויב.
+**נמדד:** `vercel api /v6/deployments` (Production): הפריסה של HEAD `dpl_AdgHsyDsv2hgd8maFj8FJEnoegZ8` הייתה BUILDING, חיכיתי בחזית
+עד READY, ואז `/v4/aliases/www.kenyonexpress.co.il` מצביע עליה (קודם `dpl_91M48...` על `29ce235cb`). ב-Production עדיין אין
+`SENTRY_RELEASE`/`NEXT_PUBLIC_SENTRY_RELEASE` (`vercel env ls`, שמות בלבד: `SENTRY_DSN`, `NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_AUTH_TOKEN`),
+כך שה-fallback ל-SHA קובע. **בבאנדל הלקוח החי** (21 קבצי JS של `/`, ה-HTML נושא `dpl=dpl_AdgHsy...`): בדיוק chunk אחד,
+`immutable/chunks/34l4yzfbgcvpf.js`, מכיל `release:"d8942154e39801e3f179b063cd0ee539403c9b49"`, **זהה ל-HEAD**. לוג ה-build של אותה פריסה
+(`vercel inspect --logs`) מריץ `sentry-cli releases new d8942154e...` ו-`sourcemaps upload -p kenyonexpress-web --release d8942154e...`,
+**ושניהם עדיין `Invalid token (http status: 401)`** כאזהרה בלבד: ה-release לא נרשם בצד Sentry ואין source maps. MCP של Sentry דורש
+הזדהות, כך שרשימת ה-releases ב-Sentry לא נקראה. ללא שינוי מ-M14-c111, כבר רשום ב-BACKLOG #21 (טוקן חדש, לאופיר), נוספה שורת מדידה.
+**החלטה שהתקבלה לבד:** DONE ולא BLOCKED, כי תנאי הפריט (release = HEAD) מתקיים ונמדד בבאנדל החי; ה-401 הוא ממצא ידוע ונפרד.
+**שערים** (worktree נקי `/tmp/ke-m11-c112wt` הועבר ל-`d8942154e`, `env -i`): type-check 0; lint: נכשל ב-worktree רק על docs-path-audit
+(הפניות ל-`refs/` שב-gitignore), בעץ הראשי `docs-path-audit: OK. 155 known`; test **638/638, 7659 עברו, 12 דולגו**; `rm -rf .next` ואז
+build עם `CARDCOM_USE_MOCK=true`: 0, 340/340, אפס `Invalid API key`, `BUILD_ID` `HnrQJPgq0FQ3FYp3eOM13`. אין שינוי UI, `compare.mjs` לא נדרש.
+**M14-c111** הועבר ל-`docs/STATE-ARCHIVE.md` (הוחלף ברשומה זו). `RESUME FROM` נשאר M16-c111, כמו בשאר פריטי c112.
 
 **M13-c112 - BLOCKED (06.10.2026): `/api/health` חי 200, אבל `/api/ready` חי 503 על `meilisearch:"down"`, חיצוני ורשום (BACKLOG #16).**
 משימת התור: "Verify /api/health and /api/ready return 200 with real deps". `pwd` אומת, HEAD `29ce235cb` = `origin/audit/final-audit`.
@@ -82,23 +100,6 @@ package.json pnpm-lock.yaml scripts` ריק, כלומר אין דריפט מאז
 על 6 הקבצים נקי; test **638/638, 7659 עברו, 12 דולגו**; `rm -rf .next` ואז build עם `CARDCOM_USE_MOCK=true`: exit 0, 340/340,
 אפס `Invalid API key`, `BUILD_ID` `PB5Kj7zYfMJRKpkLHPk0h`. אפס שינוי UI (הסרת `export` בלבד), `compare.mjs` לא נדרש. M07-c112
 הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות. `RESUME FROM` נשאר M16-c111, כמו בשאר פריטי c112.
-
-**M14-c111 - DONE (06.10.2026): release של Sentry תואם ל-HEAD. ממצא חדש: `SENTRY_AUTH_TOKEN` נדחה 401.**
-`pwd` אומת, HEAD `bd44390f4` = `origin/audit/final-audit`. קוד: release הוא `SENTRY_RELEASE ?? VERCEL_GIT_COMMIT_SHA`
-(שרת/edge) ו-`NEXT_PUBLIC_SENTRY_RELEASE ?? NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA` (לקוח), ללא שינוי מאז M14-c95.
-**נמדד:** `vercel api /v6/deployments` (פרויקט `kenyonexpress`, Production): העליונה `dpl_3JMMsSXC7MmySVs4k363pH8z5rjB`
-READY על `audit/final-audit@bd44390f4`, ו-`/v4/aliases/www.kenyonexpress.co.il` מצביע עליה. ב-Production אין
-`SENTRY_RELEASE`/`NEXT_PUBLIC_SENTRY_RELEASE` (`vercel env ls`, שמות בלבד: `SENTRY_DSN`, `NEXT_PUBLIC_SENTRY_DSN`,
-`SENTRY_AUTH_TOKEN`), כך שה-fallback ל-SHA קובע. **בבאנדל הלקוח החי** (`chunks/21833t7py3y96.js` מתוך 21 של `/`):
-`release:"bd44390f4c710b801a5da2274b065934a4582b27"`, **זהה ל-HEAD**. לוג ה-build של אותה פריסה (`vercel inspect --logs`)
-מריץ `sentry-cli releases new bd44390f4...` ו-`sourcemaps upload --release bd44390f4...`, **ושניהם נכשלים
-`Invalid token (http status: 401)`** כאזהרה בלבד: ה-release לא נרשם ב-Sentry ואין source maps. MCP של Sentry
-דורש הזדהות, ולכן רשימת ה-releases בצד Sentry לא נקראה. נרשם ב-`docs/BACKLOG.md` #21 (טוקן חדש, לאופיר).
-**שערים** (worktree נקי `/tmp/ke-m09-c111` על `bd44390f4`, `env -i`): type-check 0; lint: נכשל ב-worktree רק על
-`supabase/.temp` שב-gitignore, docs-path-audit נקי בעץ הראשי עם עריכת BACKLOG (155 ידועים); test 638/638, 7659
-עברו, 12 דולגו; `rm -rf .next` ואז build עם `CARDCOM_USE_MOCK=true`: 0, 340/340, אפס `Invalid API key`, `BUILD_ID`
-`7Jw8meP8MEkF9W7gNmhYU`. אין שינוי UI, parity לא נדרש. **החלטה שהתקבלה לבד:** לא החלפתי טוקן ולא נגעתי ב-env
-של Vercel (אסור); `RESUME FROM` מצביע ל-M15-c111, הפריט הבא ב-`final-queue.txt`.
 
 **M11-c110 - DONE** (sitemap.xml טרי, 98/98 כתובות 200, ממצא apex→www ב-BACKLOG),
 ו-W14..W01, M01-c96, L12, L11 וכל מה שקדם: ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, החדש למעלה.

@@ -835,6 +835,9 @@ degrades gracefully until applied. No migration applied, no code change.
     הנכון, אבל ה-release לא נרשם ב-Sentry ואין source maps. **לאופיר:** ליצור
     Organization Auth Token חדש ב-`de.sentry.io` (`kenyonexpress`), להחליף את
     `SENTRY_AUTH_TOKEN` בפרויקט `kenyonexpress` ב-Vercel ולפרוס מחדש.
+    **M14-c112 (06.10), נמדד שוב:** release בבאנדל הלקוח החי `d8942154e`, זהה ל-HEAD
+    (`dpl_AdgHsyDsv2hgd8maFj8FJEnoegZ8`), ו-`releases new`/`sourcemaps upload` באותו
+    build עדיין `Invalid token (http status: 401)`. ללא שינוי, עדיין לאופיר.
 
 22. **ה-CSP אינו מכיל את מארחי GA4 ו-Meta Pixel** (נמדד 05.10.2026, W11,
     `src/lib/security/frame-policy.ts`). `ThirdPartyTags` טוען את
