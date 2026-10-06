@@ -1,7 +1,29 @@
-RESUME FROM: M03-c113
-Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M02-c113 DONE: parity של `/product` נמדד מחדש, 4.80/4.39/2.46 PASS, אפס הפרש)
+RESUME FROM: M04-c113
+Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M03-c113 DONE: parity של `/category` נמדד מחדש, 3.72/2.88/1.71 PASS, אפס הפרש)
 
 ## המשך מ:
+
+**M03-c113 - DONE (06.10.2026): `compare.mjs` על `/category` נמדד מחדש ב-380/768/1440 על build טרי של HEAD `d0cc3be4f`, כולם PASS, אפס הפרש.**
+משימת התור: "Re-measure compare.mjs on /category sample". `pwd` אומת, HEAD `d0cc3be4f` = `origin/audit/final-audit` (אחרי `git fetch`).
+בעץ הראשי אותו WIP זר (account/coupon/gifts/sitemap ו-`docs/UI-PARITY-REPORT.md`), לא נגעתי בו ולא חויב. ה-worktree הנקי
+`/tmp/ke-m01-c113` הועבר ל-`d0cc3be4f` (detached; ההפרש מ-`9cb9ceb6b` הוא docs בלבד, אפס שינוי ב-`src`), `rm -rf .next`, build טרי
+תחת `env -i` עם `CARDCOM_USE_MOCK=true` `NEXT_PUBLIC_APP_URL=http://localhost:4997`: exit 0, אפס `Invalid API key`, `BUILD_ID`
+`v6cTwAqvVP5qmp3IQWykA`; `pnpm start -p 4997` (דגימת `/category/hot-deals` החזירה 200, cwd המאזין אומת ב-`lsof`, נעצר ב-INT לפי
+PID 71366 בלבד, הפורט פנוי). השער רץ בחזית:
+`LOCAL_BASE=http://localhost:4997 node scripts/compare.mjs --page=category --widths=380,768,1440 --baseline='refs/electro_shop_{width}.png'`:
+
+| רוחב | M03-c113 (`d0cc3be4f`) | M03-c111 (`f82b0cb77`) | הפרש | overall | סטטוס |
+|---|---|---|---|---|---|
+| 380 | **3.72%** | 3.72% | 0.00 | 30.46% | PASS |
+| 768 | **2.88%** | 2.88% | 0.00 | 31.77% | PASS |
+| 1440 | **1.71%** | 1.71% | 0.00 | 18.33% | PASS |
+
+כולם מתחת ל-11%, זהים למדידה הקודמת (אין שינוי UI מאז). שלוש השורות שהשער כתב ל-`docs/UI-PARITY-REPORT.md` חויבו על גבי
+גרסת HEAD של הקובץ בלבד (blob שנבנה ידנית ונכנס ל-index), כך ששורות ה-category הזרות מ-07:24..07:28 בעץ הראשי לא נכנסו ל-commit.
+**שערים** (אותו worktree, `env -i`, בלי `CARDCOM_USE_MOCK`): type-check 0; lint: כל השערים נקיים מלבד docs-path-audit ב-worktree,
+שנכשל רק על `supabase/.temp` (ב-gitignore), נקי בעץ הראשי (`OK. 155 known`, ללא שינוי); test **638/638, 7659 עברו, 12 דולגו**; build 0.
+**החלטה שהתקבלה לבד:** הפריט הבא בקובץ התור (`~/ke-goals/final-queue.txt`, קריאה בלבד, שורה 2123) הוא M04-c113, ולכן
+`RESUME FROM` עודכן ל-M04-c113. ל-M16-c111 עדיין אין commit עם ראיה; הפער רשום כאן ולא נסגר.
 
 **M02-c113 - DONE (06.10.2026): `compare.mjs` על `/product` נמדד מחדש ב-380/768/1440 על build טרי של HEAD `9cb9ceb6b`, כולם PASS, אפס הפרש.**
 משימת התור: "Re-measure compare.mjs on /product sample". `pwd` אומת, HEAD `9cb9ceb6b` = `origin/audit/final-audit` (אחרי `git fetch`).
