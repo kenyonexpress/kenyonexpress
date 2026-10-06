@@ -96,7 +96,7 @@ export function daysInHebrew(days: number): string {
 }
 
 /** The order page when the payload names an order, the list when it does not. */
-export function orderPagePath(payload: Record<string, unknown>): string {
+function orderPagePath(payload: Record<string, unknown>): string {
   const orderId = text(payload, 'order_id')
   return orderId ? `/account/orders/${orderId}` : '/account/orders'
 }

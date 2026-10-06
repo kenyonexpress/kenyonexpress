@@ -17,7 +17,7 @@
  * `server/analytics/track.ts` on the server) go through `postHogEventName`,
  * so a rename is one edit and the two halves of the funnel cannot disagree.
  */
-export const POSTHOG_EVENT_NAMES: Readonly<Record<string, string>> = {
+const POSTHOG_EVENT_NAMES: Readonly<Record<string, string>> = {
   view_item: 'view_product',
   voucher_redeemed: 'coupon_redeemed',
 }

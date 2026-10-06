@@ -45,10 +45,6 @@ export const CANONICAL_PATH: Record<LegalSlug, string> = {
   accessibility: '/accessibility',
 }
 
-export function legalPath(slug: LegalSlug): string {
-  return CANONICAL_PATH[slug]
-}
-
 export function getLegalDoc(slug: LegalSlug): LegalDoc {
   const doc = LEGAL_DOCS.find((candidate) => candidate.slug === slug)
   if (!doc) throw new Error(`Unknown legal document: ${slug}`)

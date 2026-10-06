@@ -47853,3 +47853,48 @@ pnpm build` exit 0 (`.next/BUILD_ID` נוצר, manifest תקין, אין שגי�
 build). אפס שינוי קוד, לכן אין שינוי UI ו-`compare.mjs` לא נדרש.
 `STATE.md` עודכן, M18-c93 הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה על
 תקרת 300 שורות. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
+
+## M02-c111, M17-c110 (הועברו מ-STATE.md ב-M09-c111, לשמירה על תקרת 300 שורות)
+
+**M02-c111 - DONE (06.10.2026): `compare.mjs` על `/product` נמדד מחדש, 4.80 / 4.39 / 2.46 PASS.**
+אין שינוי קוד. `pwd` אומת, HEAD `ad1591dff` (בזמן המדידה נכנס `f82b0cb77` של סשן מקביל, docs בלבד,
+אפס שינוי ב-`src`). בעץ הראשי WIP זר של account/coupon/gifts שלא נגעתי בו, ולכן worktree נקי
+`/tmp/ke-m02-c111` (HEAD, `pnpm install --frozen-lockfile`, `refs/` הועתק כי הוא ב-gitignore; נשאר
+במקומו, לא נמחק). `.next` טרי, build תחת `env -i` עם `CARDCOM_USE_MOCK=true`
+`NEXT_PUBLIC_APP_URL=http://localhost:3312`, exit 0, 340 דפים. 3311 היה תפוס בשרת של סשן אחר,
+ולכן `pnpm start` על **3312**, cwd של המאזין אומת ב-`lsof`. השער רץ בחזית:
+`--page=product --widths=380,768,1440 --baseline='refs/electro_product_{width}.png'`, exit 0:
+**380 4.80% PASS, 768 4.39% PASS, 1440 2.46% PASS**, זהה בביט ל-`9d5da2fac` ול-`a023a6e27`. אפס
+דריפט. שלוש השורות נכתבו ל-`docs/UI-PARITY-REPORT.md` על ידי השער (ב-worktree) והועברו כמו שהן.
+**תקלה שלי, תוקנה:** פקודת ה-`pkill` שעצרה את שרת 3312 תפסה גם את `next-server` של סשן אחר
+על 3311 (pid 56540, עלה ב-04.10) ועצרה אותו. הוא הופעל מחדש מיד מהשורש הראשי
+(`env -i PORT=3311 pnpm start`, `/` 200, cwd אומת ב-`lsof`), אבל מגיש עכשיו את ה-`.next`
+של 05.10 13:48 שבעץ הראשי, לא את מה שהיה טעון בזיכרון קודם. מעכשיו: עצירה לפי PID של המאזין בלבד.
+**שערים** (worktree, `env -i`): type-check 0; lint: 10 שערים נקיים, ו-docs-path-audit נכשל
+ב-worktree רק על `supabase/.temp` (תיקייה ב-gitignore שלא קיימת בו), נקי בעץ הראשי (155 ידועים);
+test 638/638, 7659 עברו, 12 דולגו; build 0.
+**החלטה שהתקבלה לבד:** `RESUME FROM` נשאר M12-c110, כמו ב-M17/M18-c110: ל-M12..M16-c110
+עדיין אין ראיה ב-`git log`.
+
+**M17-c110 - DONE (06.10.2026): RTL על `/` ועל דגימת `/product`, אפס דליפות LTR. אין שינוי קוד.**
+מאז הבדיקה הקודמת (M17-c95, `1c7cc58ba`) השתנו 177 קבצים תחת `src` (W01..W14), ולכן נמדד מחדש
+ולא הועתק. `pwd` אומת, HEAD `4186fef7e`. בעץ הראשי WIP זר של account/coupon/gifts שלא נגעתי בו,
+ולכן הכל רץ ב-worktree נקי `/tmp/ke-m17-c110` (HEAD, `node_modules` כ-APFS clone, `.env.local`
+כ-symlink; נשאר במקומו, לא נמחק). build טרי (worktree חדש, בלי `.next` קודם) תחת `env -i` עם `CARDCOM_USE_MOCK=true`,
+exit 0, אפס `Invalid API key`, `BUILD_ID` `BYQXH11oZG_KI-CE7NQer`; `pnpm start -p 4993` (cwd של
+המאזין אומת ב-`lsof`). פרוב Playwright זמני (נמחק, לא חויב) על `/` ועל שלושת סלאגי הדגימה של
+M17-c93..c95 (`samsung-galaxy-s22-128gb-samsung-galaxy-s22-128gb-5g`, `חבילת-גלידה`, `חיתולי-האגיס`,
+אומתו ב-`catalogue-snapshot.json`) ב-380/768/1440: **12 טעינות, 12 PASS, כולן 200**: `<html lang="he"
+dir="rtl">`, `body` מחושב `rtl`, `scrollWidth` = `clientWidth` בכולן, **אפס** אלמנט גלוי עם `direction:
+ltr` מחושב שמחזיק טקסט עברי ישיר, **אפס** טקסט עברי בתוך `[dir="ltr"]`. 27 אלמנטים מחוץ למסך
+ב-380/768 זוהו: המגירה הסגורה של `MobileDrawer` (`fixed right-0 translate-x-full dir="rtl"`), כלומר
+מחליקה מימין כמו שצריך ב-RTL ואינה מוסיפה גלילה. **ממצא נלווה, לא RTL, נוסף ל-BACKLOG #24:** המגירה
+הסגורה אינה `inert` ואינה `aria-hidden`, כך שהקישורים שבה נגישים ל-Tab ולקורא מסך כשהיא סגורה.
+**parity (בית, `--baseline=refs/ke_live_{width}.png`, foreground):** 380 **7.92%**, 768 **9.03%**,
+1440 **4.16%**, כולם PASS מתחת ל-11%. הריצה הראשונה בלי `--baseline` סורבה נכון ("live side is
+our-build", הדומיין מגיש את הבילד שלנו); ארבע השורות נרשמו ב-`docs/UI-PARITY-REPORT.md`. **שערים**
+(אותו worktree, `env -i`): type-check 0; lint 11 שערים נקיים (rtl-logical נקי, input-dir 25/25,
+i18n 603/603), docs-path-audit נקי בעץ הראשי (155 ידועים); test 638/638, 7659 עברו, 12 דולגו;
+build 0. **החלטה שהתקבלה לבד:** `RESUME FROM` נשאר M12-c110 (M12..M16-c110 עדיין בלי ראיה, ראו
+M18-c110 למטה); M17-c110 סגור עכשיו עם ראיה.

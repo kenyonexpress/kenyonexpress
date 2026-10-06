@@ -39,7 +39,7 @@ import { type Agorot, agorot, divRoundHalfUp } from '@/lib/money'
  * `CLUB_TIERS`, so the pure rule is unchanged for a caller that has no table.
  */
 
-export const CLUB_WINDOW_DAYS = 365
+const CLUB_WINDOW_DAYS = 365
 
 /** Order statuses that count towards club spend. Paid, and not reversed. */
 export const CLUB_SPEND_STATUSES = [
@@ -67,7 +67,7 @@ export interface ClubTier {
 }
 
 /** The floor: applies to everybody, including a customer with no orders. */
-export const CLUB_FLOOR_TIER: ClubTier = { id: 'member', minAgorot: agorot(0) }
+const CLUB_FLOOR_TIER: ClubTier = { id: 'member', minAgorot: agorot(0) }
 
 /**
  * The compiled defaults: what 251 seeds, and what every reader falls back to
@@ -140,7 +140,7 @@ export interface ClubStanding {
   windowStart: string
 }
 
-export function isClubSpendStatus(status: string): status is ClubSpendStatus {
+function isClubSpendStatus(status: string): status is ClubSpendStatus {
   return (CLUB_SPEND_STATUSES as readonly string[]).includes(status)
 }
 

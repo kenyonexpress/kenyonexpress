@@ -198,7 +198,7 @@ export function upgradesInsecureRequests(source: NodeJS.ProcessEnv = process.env
  * mock-provider check above: `next.config.ts` loads this module before the
  * path aliases exist.
  */
-export function postHogCspHosts(source: NodeJS.ProcessEnv = process.env): string[] {
+function postHogCspHosts(source: NodeJS.ProcessEnv = process.env): string[] {
   if (!source.NEXT_PUBLIC_POSTHOG_KEY?.trim()) return []
   const raw = source.NEXT_PUBLIC_POSTHOG_HOST?.trim() || 'https://us.i.posthog.com'
   let origin: string
@@ -263,7 +263,7 @@ export const DEFAULT_CONTENT_SECURITY_POLICY = contentSecurityPolicyFor('/')
  */
 export const CAMERA_PATHS = ['/scan', '/supplier/scan'] as const
 
-export function isCameraPath(pathname: string): boolean {
+function isCameraPath(pathname: string): boolean {
   return CAMERA_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`))
 }
 

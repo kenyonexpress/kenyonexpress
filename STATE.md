@@ -1,8 +1,27 @@
 RESUME FROM: M12-c110
-Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M07-c111 DONE: סריקת TODO/FIXME, שני סמנים בלבד,
-שניהם ישנים ומתועדים ב-`docs/BACKLOG.md` סעיף 6, אפס חדש)
+Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M09-c111 DONE: knip, 15 exports מתים הוסרו, אפס תלות הוסרה)
 
 ## המשך מ:
+
+**M09-c111 - DONE (06.10.2026): knip נמדד מחדש, 15 exports מתים הוסרו, אפס תלות הוסרה.**
+משימת התור: "Remove unused deps and dead exports". `pwd` אומת. בעץ הראשי WIP זר של account/coupon/gifts/sitemap
+שלא נגעתי בו ולא חויב; המדידה והשערים ב-worktree נקי `/tmp/ke-m05-c111` (הועבר ל-`14ade8a88`, נשאר במקומו).
+`pnpm dlx knip --no-config-hints` (ephemeral): **204 files / 5 deps / 1 binary / 292 exports / 199 types / 4 dup**,
+לעומת 201/5/1/271/197/4 ב-M09-c95: הדריפט הוא W04..W14. סינון לקבצים ששונו מאז `681222eb4` ואימות `grep -w` על
+`src e2e scripts apps packages` בעץ הראשי (כולל ה-WIP הלא-מחויב): **הוסר** `legalPath` (`(legal)/_content/index.ts`,
+מת לגמרי, אפס קורא), **הוסרה מילת `export`** מ-14 ערכים שנקראים רק בתוך הקובץ שלהם: `clubTiersSchema`,
+`thresholdInput`, `POSTHOG_EVENT_NAMES`, חמשת קבועי `filter-chips.ts` (`PRICE_MAX_PARAM`..`NEWEST_SORT`),
+`CLUB_WINDOW_DAYS`, `CLUB_FLOOR_TIER`, `isClubSpendStatus`, `orderPagePath`, `postHogCspHosts`, `isCameraPath`.
+אחרי: **292 → 277 exports**, שאר הספירות ללא שינוי. **החלטות שהתקבלו לבד:** (1) חמש התלויות
+(`@radix-ui/react-dropdown-menu`, `@radix-ui/react-select`, `drizzle-orm`, `postgres`, `react-hook-form`) ובינארי
+`supabase` לא הוסרו, כמו מאז M09-c66: הכרעת מפעיל. (2) 204 ה"קבצים" הם בעיקר סקריפטי CLI ונקודות כניסה (אין
+`knip.json`), לא נמחק קובץ. (3) לא נגעתי ב-server actions (`deleteVariant`, `setSupplierStatus`, `softDeleteSupplier`,
+`signOutAll`, `readAttributionSnapshot`), ב-types, ב-`scripts/`, ולא בקבצים שה-WIP הזר משנה (`queries/orders.ts`,
+`seo/sitemap-*`). **שערים** (worktree, `env -i`): type-check 0; lint: 12 השערים הראשונים נקיים, docs-path-audit נכשל
+ב-worktree רק על `refs/` שב-gitignore (84), ונקי בעץ הראשי (155 ידועים, ללא שינוי); test **638/638, 7659 עברו,
+12 דולגו**; `rm -rf .next` ואז build עם `CARDCOM_USE_MOCK=true`: exit 0, 340/340, אפס `Invalid API key`, `BUILD_ID`
+`vO4eYPYB-YEapJR_scr0b`. אפס שינוי UI (הסרת `export` בלבד), `compare.mjs` לא נדרש. M02-c111 ו-M17-c110 הועברו
+ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות. `RESUME FROM` נשאר M12-c110, כמו בשאר פריטי c111.
 
 **M07-c111, אימות שני (06.10.2026):** סשן מקביל חייב את הפריט (`14ade8a88`) בזמן שרצתי עליו. אומת
 באופן עצמאי: אותם שני `TODO(cardcom)` בלבד (blame 24.07/07.08), `final-audit` `ok 0 work markers (of 2)`.
@@ -62,48 +81,6 @@ docs-path-audit נכשל ב-worktree רק על קבצי `refs/` שב-gitignore (
 רק על `supabase/.temp` (ב-gitignore), נקי בעץ הראשי (155 ידועים); test 638/638, 7659 עברו, 12 דולגו;
 build 0.
 **החלטה שהתקבלה לבד:** `RESUME FROM` נשאר M12-c110, כמו ב-M02-c111 ו-M17/M18-c110.
-
-**M02-c111 - DONE (06.10.2026): `compare.mjs` על `/product` נמדד מחדש, 4.80 / 4.39 / 2.46 PASS.**
-אין שינוי קוד. `pwd` אומת, HEAD `ad1591dff` (בזמן המדידה נכנס `f82b0cb77` של סשן מקביל, docs בלבד,
-אפס שינוי ב-`src`). בעץ הראשי WIP זר של account/coupon/gifts שלא נגעתי בו, ולכן worktree נקי
-`/tmp/ke-m02-c111` (HEAD, `pnpm install --frozen-lockfile`, `refs/` הועתק כי הוא ב-gitignore; נשאר
-במקומו, לא נמחק). `.next` טרי, build תחת `env -i` עם `CARDCOM_USE_MOCK=true`
-`NEXT_PUBLIC_APP_URL=http://localhost:3312`, exit 0, 340 דפים. 3311 היה תפוס בשרת של סשן אחר,
-ולכן `pnpm start` על **3312**, cwd של המאזין אומת ב-`lsof`. השער רץ בחזית:
-`--page=product --widths=380,768,1440 --baseline='refs/electro_product_{width}.png'`, exit 0:
-**380 4.80% PASS, 768 4.39% PASS, 1440 2.46% PASS**, זהה בביט ל-`9d5da2fac` ול-`a023a6e27`. אפס
-דריפט. שלוש השורות נכתבו ל-`docs/UI-PARITY-REPORT.md` על ידי השער (ב-worktree) והועברו כמו שהן.
-**תקלה שלי, תוקנה:** פקודת ה-`pkill` שעצרה את שרת 3312 תפסה גם את `next-server` של סשן אחר
-על 3311 (pid 56540, עלה ב-04.10) ועצרה אותו. הוא הופעל מחדש מיד מהשורש הראשי
-(`env -i PORT=3311 pnpm start`, `/` 200, cwd אומת ב-`lsof`), אבל מגיש עכשיו את ה-`.next`
-של 05.10 13:48 שבעץ הראשי, לא את מה שהיה טעון בזיכרון קודם. מעכשיו: עצירה לפי PID של המאזין בלבד.
-**שערים** (worktree, `env -i`): type-check 0; lint: 10 שערים נקיים, ו-docs-path-audit נכשל
-ב-worktree רק על `supabase/.temp` (תיקייה ב-gitignore שלא קיימת בו), נקי בעץ הראשי (155 ידועים);
-test 638/638, 7659 עברו, 12 דולגו; build 0.
-**החלטה שהתקבלה לבד:** `RESUME FROM` נשאר M12-c110, כמו ב-M17/M18-c110: ל-M12..M16-c110
-עדיין אין ראיה ב-`git log`.
-
-**M17-c110 - DONE (06.10.2026): RTL על `/` ועל דגימת `/product`, אפס דליפות LTR. אין שינוי קוד.**
-מאז הבדיקה הקודמת (M17-c95, `1c7cc58ba`) השתנו 177 קבצים תחת `src` (W01..W14), ולכן נמדד מחדש
-ולא הועתק. `pwd` אומת, HEAD `4186fef7e`. בעץ הראשי WIP זר של account/coupon/gifts שלא נגעתי בו,
-ולכן הכל רץ ב-worktree נקי `/tmp/ke-m17-c110` (HEAD, `node_modules` כ-APFS clone, `.env.local`
-כ-symlink; נשאר במקומו, לא נמחק). build טרי (worktree חדש, בלי `.next` קודם) תחת `env -i` עם `CARDCOM_USE_MOCK=true`,
-exit 0, אפס `Invalid API key`, `BUILD_ID` `BYQXH11oZG_KI-CE7NQer`; `pnpm start -p 4993` (cwd של
-המאזין אומת ב-`lsof`). פרוב Playwright זמני (נמחק, לא חויב) על `/` ועל שלושת סלאגי הדגימה של
-M17-c93..c95 (`samsung-galaxy-s22-128gb-samsung-galaxy-s22-128gb-5g`, `חבילת-גלידה`, `חיתולי-האגיס`,
-אומתו ב-`catalogue-snapshot.json`) ב-380/768/1440: **12 טעינות, 12 PASS, כולן 200**: `<html lang="he"
-dir="rtl">`, `body` מחושב `rtl`, `scrollWidth` = `clientWidth` בכולן, **אפס** אלמנט גלוי עם `direction:
-ltr` מחושב שמחזיק טקסט עברי ישיר, **אפס** טקסט עברי בתוך `[dir="ltr"]`. 27 אלמנטים מחוץ למסך
-ב-380/768 זוהו: המגירה הסגורה של `MobileDrawer` (`fixed right-0 translate-x-full dir="rtl"`), כלומר
-מחליקה מימין כמו שצריך ב-RTL ואינה מוסיפה גלילה. **ממצא נלווה, לא RTL, נוסף ל-BACKLOG #24:** המגירה
-הסגורה אינה `inert` ואינה `aria-hidden`, כך שהקישורים שבה נגישים ל-Tab ולקורא מסך כשהיא סגורה.
-**parity (בית, `--baseline=refs/ke_live_{width}.png`, foreground):** 380 **7.92%**, 768 **9.03%**,
-1440 **4.16%**, כולם PASS מתחת ל-11%. הריצה הראשונה בלי `--baseline` סורבה נכון ("live side is
-our-build", הדומיין מגיש את הבילד שלנו); ארבע השורות נרשמו ב-`docs/UI-PARITY-REPORT.md`. **שערים**
-(אותו worktree, `env -i`): type-check 0; lint 11 שערים נקיים (rtl-logical נקי, input-dir 25/25,
-i18n 603/603), docs-path-audit נקי בעץ הראשי (155 ידועים); test 638/638, 7659 עברו, 12 דולגו;
-build 0. **החלטה שהתקבלה לבד:** `RESUME FROM` נשאר M12-c110 (M12..M16-c110 עדיין בלי ראיה, ראו
-M18-c110 למטה); M17-c110 סגור עכשיו עם ראיה.
 
 **M18-c110 - DONE (06.10.2026): STATE.md קוצץ.** בהגעה 249 שורות (כבר מתחת ל-300);
 הסעיף הזה החזיק את הרשומה המלאה של M11-c110 ושלוש רשומות היסטוריות סגורות

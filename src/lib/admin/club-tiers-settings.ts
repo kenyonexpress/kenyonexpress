@@ -46,7 +46,7 @@ const thresholdField = (label: string) =>
     .min(1, `${label}: חייב להיות מעל ₪0`)
     .max(CLUB_THRESHOLD_MAX_AGOROT, `${label}: מוגבל ל-1,000,000 ₪`)
 
-export const clubTiersSchema = z
+const clubTiersSchema = z
   .object({
     silver: thresholdField('כסף'),
     gold: thresholdField('זהב'),
@@ -104,7 +104,7 @@ export function thresholdsToRows(
 }
 
 /** Agorot -> the plain decimal the form shows and `parseIls` reads back. */
-export function thresholdInput(value: Agorot | number): string {
+function thresholdInput(value: Agorot | number): string {
   return agorotToIls(agorot(value)).toFixed(2)
 }
 

@@ -165,11 +165,11 @@ export function hasActiveChip(filters: ChipFilters): boolean {
  * facet does; no arithmetic, so it does not go through the money module.
  */
 
-export const PRICE_MAX_PARAM = 'max'
-export const PRICE_MIN_PARAM = 'min'
-export const SORT_PARAM = 'sort'
-export const UNDER_PRICE_ILS = 99
-export const NEWEST_SORT = 'newest'
+const PRICE_MAX_PARAM = 'max'
+const PRICE_MIN_PARAM = 'min'
+const SORT_PARAM = 'sort'
+const UNDER_PRICE_ILS = 99
+const NEWEST_SORT = 'newest'
 
 export interface QuickChips {
   under99: boolean
