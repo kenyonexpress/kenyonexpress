@@ -1,8 +1,26 @@
 RESUME FROM: M12-c110
-Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M02-c111 DONE: parity על `/product`
-380/768/1440 = 4.80/4.39/2.46 PASS, זהה בביט ל-`a023a6e27`)
+Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M03-c111 DONE: parity על `/category`
+380/768/1440 = 3.72/2.88/1.71 PASS, זהה בביט ל-W09 `6e4edd589`)
 
 ## המשך מ:
+
+**M03-c111 - DONE (06.10.2026): `compare.mjs` על `/category` נמדד מחדש, 3.72 / 2.88 / 1.71 PASS.**
+אין שינוי קוד. `pwd` אומת, HEAD `f82b0cb77` (`src` זהה ל-`bef85ac52`, W14; בזמן העבודה נכנס `b6b4ef5a9`
+של M02-c111, docs בלבד). בעץ הראשי WIP זר של account/coupon/gifts שלא נגעתי בו, ולכן worktree נקי
+`/tmp/ke-m03-c111` (HEAD, `node_modules` כ-APFS clone, `.env.local` כ-symlink, `refs/` הועתק; נשאר
+במקומו, לא נמחק). build טרי תחת `env -i` עם `CARDCOM_USE_MOCK=true`, exit 0, אפס `Invalid API key`,
+`BUILD_ID` `TL2rYC8UUaYfsJL1p-8NP`. `next start` על **4995**, cwd של המאזין אומת ב-`lsof`. השער רץ
+בחזית: `--page=category --widths=380,768,1440 --baseline='refs/electro_shop_{width}.png'` (דגימת
+`/category/hot-deals`, 200). **380 3.72% PASS, 768 2.88% PASS**; ב-1440 השרת קיבל SIGINT מבחוץ
+(exit 130, כנראה ה-`pkill` של M02-c111 שתועד למעלה) והריצה נכשלה עם `ERR_CONNECTION_REFUSED`, בלי
+מספר. השרת הופעל מחדש מאותו worktree על **4996** (cwd אומת) ו-1440 רץ שוב בחזית: **1.71% PASS**.
+שלושת המספרים זהים בביט ל-W09 (`6e4edd589`, 05.10), כלומר W10..W14 לא הזיזו את דף הקטגוריה. שלוש
+השורות נכתבו ל-`docs/UI-PARITY-REPORT.md` על ידי השער (ב-worktree) והועברו כמו שהן; הסיומת `-dirty`
+ב-768/1440 היא הדוח עצמו שהשער כתב בשורה הקודמת. השרת נעצר לפי PID המאזין בלבד (INT).
+**שערים** (worktree, `env -i`): type-check 0; lint: 10 שערים נקיים, docs-path-audit נכשל ב-worktree
+רק על `supabase/.temp` (ב-gitignore), נקי בעץ הראשי (155 ידועים); test 638/638, 7659 עברו, 12 דולגו;
+build 0.
+**החלטה שהתקבלה לבד:** `RESUME FROM` נשאר M12-c110, כמו ב-M02-c111 ו-M17/M18-c110.
 
 **M02-c111 - DONE (06.10.2026): `compare.mjs` על `/product` נמדד מחדש, 4.80 / 4.39 / 2.46 PASS.**
 אין שינוי קוד. `pwd` אומת, HEAD `ad1591dff` (בזמן המדידה נכנס `f82b0cb77` של סשן מקביל, docs בלבד,
