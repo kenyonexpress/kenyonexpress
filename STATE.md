@@ -5,6 +5,8 @@ Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M11-c110 DONE: sitemap
 ## המשך מ:
 
 **M11-c110 - DONE (06.10.2026): SITEMAP.XML טרי ונגיש בפרודקשן. אין שינוי קוד.**
+**אימות חוזר (06.10, סשן שני):** הפריט כבר סגור ב-`4186fef7e`; נמדד שוב חי: `/sitemap.xml` ‏200 `application/xml`,
+`robots.txt` ‏200, חמש תתי-מפות עם 15/13/46/17/7 = 98 `<loc>`, lastmod חדש ביותר 2026-10-05T01:07:49Z. זהה לרשום, אין שינוי.
 `pwd` אומת, HEAD בהגעה `bef85ac52`; בעץ עבודה של סשן אחר (account/coupon/gifts) שלא
 נגעתי בו ולא נכלל ב-commit. **נמדד חי מול `www.kenyonexpress.co.il`:** `/sitemap.xml`
 ‏200 `application/xml`, `<sitemapindex>` עם חמש תתי-מפות (content, categories,
