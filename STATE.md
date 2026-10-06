@@ -1,8 +1,28 @@
 RESUME FROM: M12-c110
-Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M17-c110 DONE: RTL על / ועל דגימת מוצרים, אפס
-דליפות LTR, parity בית 7.92/9.03/4.16 PASS)
+Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M02-c111 DONE: parity על `/product`
+380/768/1440 = 4.80/4.39/2.46 PASS, זהה בביט ל-`a023a6e27`)
 
 ## המשך מ:
+
+**M02-c111 - DONE (06.10.2026): `compare.mjs` על `/product` נמדד מחדש, 4.80 / 4.39 / 2.46 PASS.**
+אין שינוי קוד. `pwd` אומת, HEAD `ad1591dff` (בזמן המדידה נכנס `f82b0cb77` של סשן מקביל, docs בלבד,
+אפס שינוי ב-`src`). בעץ הראשי WIP זר של account/coupon/gifts שלא נגעתי בו, ולכן worktree נקי
+`/tmp/ke-m02-c111` (HEAD, `pnpm install --frozen-lockfile`, `refs/` הועתק כי הוא ב-gitignore; נשאר
+במקומו, לא נמחק). `.next` טרי, build תחת `env -i` עם `CARDCOM_USE_MOCK=true`
+`NEXT_PUBLIC_APP_URL=http://localhost:3312`, exit 0, 340 דפים. 3311 היה תפוס בשרת של סשן אחר,
+ולכן `pnpm start` על **3312**, cwd של המאזין אומת ב-`lsof`. השער רץ בחזית:
+`--page=product --widths=380,768,1440 --baseline='refs/electro_product_{width}.png'`, exit 0:
+**380 4.80% PASS, 768 4.39% PASS, 1440 2.46% PASS**, זהה בביט ל-`9d5da2fac` ול-`a023a6e27`. אפס
+דריפט. שלוש השורות נכתבו ל-`docs/UI-PARITY-REPORT.md` על ידי השער (ב-worktree) והועברו כמו שהן.
+**תקלה שלי, תוקנה:** פקודת ה-`pkill` שעצרה את שרת 3312 תפסה גם את `next-server` של סשן אחר
+על 3311 (pid 56540, עלה ב-04.10) ועצרה אותו. הוא הופעל מחדש מיד מהשורש הראשי
+(`env -i PORT=3311 pnpm start`, `/` 200, cwd אומת ב-`lsof`), אבל מגיש עכשיו את ה-`.next`
+של 05.10 13:48 שבעץ הראשי, לא את מה שהיה טעון בזיכרון קודם. מעכשיו: עצירה לפי PID של המאזין בלבד.
+**שערים** (worktree, `env -i`): type-check 0; lint: 10 שערים נקיים, ו-docs-path-audit נכשל
+ב-worktree רק על `supabase/.temp` (תיקייה ב-gitignore שלא קיימת בו), נקי בעץ הראשי (155 ידועים);
+test 638/638, 7659 עברו, 12 דולגו; build 0.
+**החלטה שהתקבלה לבד:** `RESUME FROM` נשאר M12-c110, כמו ב-M17/M18-c110: ל-M12..M16-c110
+עדיין אין ראיה ב-`git log`.
 
 **M17-c110 - DONE (06.10.2026): RTL על `/` ועל דגימת `/product`, אפס דליפות LTR. אין שינוי קוד.**
 מאז הבדיקה הקודמת (M17-c95, `1c7cc58ba`) השתנו 177 קבצים תחת `src` (W01..W14), ולכן נמדד מחדש
