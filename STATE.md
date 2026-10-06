@@ -1,7 +1,22 @@
 RESUME FROM: M16-c111
-Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M14-c112 DONE: release של Sentry בפרודקשן = HEAD `d8942154e`, טוקן ההעלאה עדיין 401, BACKLOG #21)
+Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M15-c112 DONE: אפס console errors ואפס hydration warnings על `/` ועל דגימת המוצר, 4/4 PASS בבנייה טרייה של `8877de66a`)
 
 ## המשך מ:
+
+**M15-c112 - DONE (06.10.2026): אפס console errors ואפס hydration warnings על `/` ועל דגימת המוצר, בבנייה טרייה של HEAD `8877de66a`.**
+משימת התור: "Verify no console errors on / and /product sample". `pwd` אומת, HEAD `8877de66a` = `origin/audit/final-audit`.
+מאז M15-c111 (`4cc28b788`) השתנו 6 קבצי `src` (הסרת `export` ב-M09-c112), ולכן רץ אימות מלא ולא הסתמכות על הריצה הקודמת.
+בעץ הראשי WIP זר (account/coupon/gifts/sitemap, ובו גם שגיאת biome ב-`src/server/queries/orders.ts` ו-`collected.test.ts`), לא נגעתי
+ולא חויב; הכל רץ ב-worktree הנקי `/tmp/ke-m11-c112wt`, שהועבר (detached) ל-`8877de66a` ונשאר במקומו. `rm -rf .next`, `env -i`,
+`CARDCOM_USE_MOCK=true`: build 0, 340/340, אפס `Invalid API key`, `BUILD_ID` `E58qhgyvnRo0KkxyB6cAS`. `pnpm start -p 4880` (PID 32843,
+cwd המאזין אומת ב-`lsof` `/private/tmp/ke-m11-c112wt`, נעצר ב-INT, הפורט פנוי). `E2E_BASE_URL=http://localhost:4880
+ROUTE_AUDIT_REPORT=/tmp/route-audit-m15c112.jsonl playwright test e2e/route-audit.spec.ts --grep "anon /$|anon dynamic catalogue routes"`,
+בחזית: **4/4 PASS** (chromium + mobile-chrome, 45.0 שניות). הדוח, 16 שורות: **אפס `consoleErrors` ואפס `hydrationWarnings` בכל אחת**,
+כולן 200 ו-`rtl:true`: `/`, `/product/צימר-מאסטר` ו-`/reviews` שלו (דגימת המוצר), `/category/hot-deals`, `/city/תל-אביב`,
+`/coupons/<id>`, `/page/how-it-works`, `/s/<id>`. זהה ל-M15-c111.
+**שערים** (אותו worktree, `env -i`): type-check 0; lint: כל השערים נקיים מלבד docs-path-audit ב-worktree, שנכשל רק על הפניות
+ל-`refs/` ו-`supabase/.temp` (שניהם ב-gitignore), נקי בעץ הראשי (`OK. 155 known`); test **638/638, 7659 עברו, 12 דולגו**. אין שינוי UI,
+ולכן `compare.mjs` לא נדרש. M09-c112 הועבר ל-`docs/STATE-ARCHIVE.md`. `RESUME FROM` נשאר M16-c111, כמו בשאר פריטי c112.
 
 **M14-c112 - DONE (06.10.2026): release של Sentry בפרודקשן תואם ל-HEAD `d8942154e`. טוקן ההעלאה עדיין נדחה 401 (BACKLOG #21).**
 משימת התור: "Verify Sentry release matches HEAD commit". `pwd` אומת, HEAD `d8942154e` = `origin/audit/final-audit`. קוד ה-release
@@ -85,21 +100,6 @@ clone, `.env.local` כ-symlink, נשאר במקומו) תחת `env -i`: type-che
 ו-3 ל-`supabase/.temp` שב-gitignore, נקי בעץ הראשי (155 ידועים, ללא שינוי); test **638/638, 7659 עברו, 12 דולגו**; `rm -rf .next`
 ואז build עם `CARDCOM_USE_MOCK=true`: exit 0, 340/340, אפס `Invalid API key`, `BUILD_ID` `kOgsAXgvDGVUyPpHYS18H`. M17-c111 הועבר
 ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות. `RESUME FROM` נשאר M16-c111, כמו בשאר פריטי c112.
-
-**M09-c112 - DONE (06.10.2026): knip נמדד מחדש, 6 exports מתים הוסרו (שנדחו ב-M09-c111), אפס תלות הוסרה.**
-משימת התור: "Remove unused deps and dead exports". `pwd` אומת, HEAD `1c51e73c3`. `git diff 8905d60c5 HEAD -- src packages
-package.json pnpm-lock.yaml scripts` ריק, כלומר אין דריפט מאז M09-c111. בעץ הראשי WIP זר (account/coupon/gifts/sitemap), לא נגעתי
-ולא חויב; המדידה והשערים ב-worktree הנקי `/tmp/ke-m09-c111` (הועבר ל-`1c51e73c3` + ה-patch, נשאר במקומו). `pnpm dlx knip
---no-config-hints` לפני: **204 / 5 / 1 / 277 / 199 / 4** (כמו M09-c111). אומת ב-`grep -rnw` על `src e2e scripts packages` בעץ
-הראשי (כולל ה-WIP): כל אחד מהשישה שנדחו ב-M09-c111 נקרא רק בתוך הקובץ שלו, ולכן **הוסרה מילת `export`**: `readAttributionSnapshot`
-(`server/analytics/track.ts`, `server-only` ולא `'use server'`), `ClubSpendStatus`, `LegalSection`, `ImportRecord`,
-`SupplierOptionalFields`, `GiftAuditSource`. אחרי: **204 / 5 / 1 / 276 / 194 / 4**. **החלטות שהתקבלו לבד:** (1) חמש התלויות ובינארי
-`supabase` נשארים, הכרעת מפעיל מאז M09-c66. (2) server actions (`deleteVariant`, `setSupplierStatus`, `softDeleteSupplier`,
-`signOutAll`), `scripts/` וקבצי ה-WIP הזר לא נגעו. **שערים** (worktree, `env -i`): type-check 0; lint: 12 השערים הראשונים
-נקיים, docs-path-audit נכשל ב-worktree רק על `supabase/.temp` שב-gitignore (3), נקי בעץ הראשי (155 ידועים, ללא שינוי); biome
-על 6 הקבצים נקי; test **638/638, 7659 עברו, 12 דולגו**; `rm -rf .next` ואז build עם `CARDCOM_USE_MOCK=true`: exit 0, 340/340,
-אפס `Invalid API key`, `BUILD_ID` `PB5Kj7zYfMJRKpkLHPk0h`. אפס שינוי UI (הסרת `export` בלבד), `compare.mjs` לא נדרש. M07-c112
-הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות. `RESUME FROM` נשאר M16-c111, כמו בשאר פריטי c112.
 
 **M11-c110 - DONE** (sitemap.xml טרי, 98/98 כתובות 200, ממצא apex→www ב-BACKLOG),
 ו-W14..W01, M01-c96, L12, L11 וכל מה שקדם: ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, החדש למעלה.

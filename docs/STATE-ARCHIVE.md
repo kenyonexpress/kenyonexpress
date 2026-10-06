@@ -2,6 +2,23 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M09-c112 (הועבר מ-STATE.md ב-M15-c112, לשמירה על תקרת 300 שורות)
+
+**M09-c112 - DONE (06.10.2026): knip נמדד מחדש, 6 exports מתים הוסרו (שנדחו ב-M09-c111), אפס תלות הוסרה.**
+משימת התור: "Remove unused deps and dead exports". `pwd` אומת, HEAD `1c51e73c3`. `git diff 8905d60c5 HEAD -- src packages
+package.json pnpm-lock.yaml scripts` ריק, כלומר אין דריפט מאז M09-c111. בעץ הראשי WIP זר (account/coupon/gifts/sitemap), לא נגעתי
+ולא חויב; המדידה והשערים ב-worktree הנקי `/tmp/ke-m09-c111` (הועבר ל-`1c51e73c3` + ה-patch, נשאר במקומו). `pnpm dlx knip
+--no-config-hints` לפני: **204 / 5 / 1 / 277 / 199 / 4** (כמו M09-c111). אומת ב-`grep -rnw` על `src e2e scripts packages` בעץ
+הראשי (כולל ה-WIP): כל אחד מהשישה שנדחו ב-M09-c111 נקרא רק בתוך הקובץ שלו, ולכן **הוסרה מילת `export`**: `readAttributionSnapshot`
+(`server/analytics/track.ts`, `server-only` ולא `'use server'`), `ClubSpendStatus`, `LegalSection`, `ImportRecord`,
+`SupplierOptionalFields`, `GiftAuditSource`. אחרי: **204 / 5 / 1 / 276 / 194 / 4**. **החלטות שהתקבלו לבד:** (1) חמש התלויות ובינארי
+`supabase` נשארים, הכרעת מפעיל מאז M09-c66. (2) server actions (`deleteVariant`, `setSupplierStatus`, `softDeleteSupplier`,
+`signOutAll`), `scripts/` וקבצי ה-WIP הזר לא נגעו. **שערים** (worktree, `env -i`): type-check 0; lint: 12 השערים הראשונים
+נקיים, docs-path-audit נכשל ב-worktree רק על `supabase/.temp` שב-gitignore (3), נקי בעץ הראשי (155 ידועים, ללא שינוי); biome
+על 6 הקבצים נקי; test **638/638, 7659 עברו, 12 דולגו**; `rm -rf .next` ואז build עם `CARDCOM_USE_MOCK=true`: exit 0, 340/340,
+אפס `Invalid API key`, `BUILD_ID` `PB5Kj7zYfMJRKpkLHPk0h`. אפס שינוי UI (הסרת `export` בלבד), `compare.mjs` לא נדרש. M07-c112
+הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות. `RESUME FROM` נשאר M16-c111, כמו בשאר פריטי c112.
+
 ## M14-c111 (הועבר מ-STATE.md ב-M14-c112, הוחלף ברשומת M14-c112)
 
 **M14-c111 - DONE (06.10.2026): release של Sentry תואם ל-HEAD. ממצא חדש: `SENTRY_AUTH_TOKEN` נדחה 401.**
