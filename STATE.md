@@ -1,8 +1,23 @@
 RESUME FROM: M12-c110
-Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M06-c111 DONE: `pnpm build` נקי על HEAD נקי,
-340/340 דפים, אפס דריפט, ארבעת השערים ירוקים)
+Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M07-c111 DONE: סריקת TODO/FIXME, שני סמנים בלבד,
+שניהם ישנים ומתועדים ב-`docs/BACKLOG.md` סעיף 6, אפס חדש)
 
 ## המשך מ:
+
+**M07-c111 - DONE (06.10.2026): TODO/FIXME נסרק מחדש, אפס סמן חדש, אפס שינוי קוד.**
+משימת התור: "Scan TODO FIXME older than 7 days resolve or file in docs/BACKLOG.md". `pwd` אומת, HEAD
+`c1d64b886` (בזמן העבודה נכנס `df54456a4` של M06-c111, `STATE.md` בלבד). `git grep` על כל הריפו (מלבד
+md/json/lock/refs) ועל ה-WIP הזר הלא-מחויב בעץ הראשי: **שני סמנים אמיתיים בלבד**,
+`src/lib/payments/cardcom.ts:254` ו-`:319` (`TODO(cardcom)`, מ-24.07/07.08.2026, מקושרים ל-#41/#42),
+שניהם כבר רשומים ב-`docs/BACKLOG.md` סעיף 6 כחסומים על מפתחות Cardcom חיים (לאופיר); לא ניתנים לפתרון
+בלי טרמינל אמיתי, ולכן לא נגעתי. שאר הפגיעות אינן סמני עבודה: `scripts/final-audit*.mjs` (הסורק עצמו
+והטסטים שלו) ו-`src/lib/whatsapp.test.ts:91` (מחרוזת ליטרלית `'TODO'`). `node scripts/final-audit.mjs
+--verbose`: **`ok 0 work markers (TODO/FIXME/HACK/XXX) (of 2)`**, זהה ל-M07-c93/c76/c67. **שערים** בחזית
+תחת `env -i` ב-worktree נקי `/tmp/ke-m05-c111` (הועבר ל-`c1d64b886`, נשאר במקומו): type-check 0; lint:
+docs-path-audit נכשל ב-worktree רק על `refs/` שב-gitignore, ונקי בעץ הראשי (155 ידועים); test **638/638,
+7659 עברו, 12 דולגו**; `rm -rf .next` ואז build עם `CARDCOM_USE_MOCK=true`: exit 0, אפס `Invalid API key`.
+לא פריט חזותי, `compare.mjs` לא נדרש. `docs/BACKLOG.md` לא שונה: אין מה להוסיף.
+**החלטה שהתקבלה לבד:** `RESUME FROM` נשאר M12-c110, כמו ב-M02/M03/M05/M06-c111.
 
 **M06-c111 - DONE (06.10.2026): `pnpm build` נמדד מחדש על HEAD נקי, exit 0, אפס דריפט, אין מה לתקן.**
 משימת התור: "pnpm build fix drift commit". `pwd` אומת, HEAD `13a7d8ba7` (בזמן העבודה נכנס `c1d64b886` של
