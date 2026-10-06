@@ -21,6 +21,14 @@ Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M17-c111 DONE: RTL ע�
 build 0. **החלטה שהתקבלה לבד:** `RESUME FROM` נשאר M16-c111, שעדיין בלי commit; M17-c111 סגור עם ראיה.
 M07-c111 הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות.
 
+**M17-c111, אימות שני (06.10.2026):** סשן מקביל חייב ודחף את הפריט (`89e8d357f`) בזמן שהתחלתי, ולכן לא נבנה
+build מתחרה. פרוב Playwright נפרד שלי (מחוץ לריפו, `/tmp/ke-m17-c111-probe`, לא חויב) רץ מול אותו שרת HEAD
+על 4997 לפני שנעצר: `/` ושלושת סלאגי הדגימה ב-380/768/1440, **12/12 PASS, כולן 200**, `lang="he" dir="rtl"`,
+`body` ‏`rtl`, `scrollWidth` = `clientWidth`, אפס עברית תחת `ltr` מחושב ואפס עברית בתוך `[dir="ltr"]`. תואם.
+**שערים** (worktree `/tmp/ke-m17-c111`, קוד זהה ל-HEAD, `env -i`): type-check 0; lint 0; test 7659 עברו,
+12 דולגו; build 0 עם `CARDCOM_USE_MOCK=true`, 340/340, אפס `Invalid API key`, `BUILD_ID` `ryvGQg6dIFDPqMBdsW5KI`.
+אין שינוי UI, ולכן parity לא נמדד מחדש (המספרים 7.92/9.03/4.16 של `89e8d357f` עומדים).
+
 **M15-c111 - DONE (06.10.2026): אפס console errors על `/` ועל דגימת המוצר, בבנייה טרייה של קוד HEAD.**
 `pwd` אומת, HEAD `15d495254`. מאז M15-c95 (`9278fd3be`) השתנו 178 קבצים ב-`src`/`e2e`/`next.config.ts`, ולכן
 רץ אימות מלא ולא הסתמכות על ריצה קודמת. בעץ הראשי WIP זר (account/coupon/gifts/sitemap), לא נגעתי ולא חויב;
@@ -93,28 +101,6 @@ type-check 0; lint: 12 השערים הראשונים נקיים, docs-path-audit
 `BUILD_ID` `4oqdTpgDlGgDAnZRcdVnQ`. אין שינוי UI, ולכן `compare.mjs` לא נדרש. ה-WIP הזר בעץ הראשי
 (כולל `src/lib/seo/sitemap-*`) לא נגעתי בו ולא חויב. **החלטה שהתקבלה לבד:** `RESUME FROM` נשאר M12-c110,
 כמו בשאר פריטי c111.
-
-**M09-c111, אימות שני (06.10.2026):** סשן מקביל חייב ודחף את הפריט (`8905d60c5`) בזמן שרצתי עליו; עבודתי החופפת (19 הסרות `export`, 13 מהן זהות) נזרקה ולא חויבה. אומת על `8905d60c5` ב-worktree נקי `/tmp/ke-m09-c111` (נשאר במקומו) תחת `env -i`: knip **204 / 5 / 1 / 277 / 199 / 4**, כפי שנרשם (292→277); type-check 0; lint 11 שערים נקיים, docs-path-audit נקי בעץ הראשי (155 ידועים); test 638/638, 7659 עברו, 12 דולגו; build 0, 340/340 דפים. אין שינוי UI, ולכן parity לא נדרש. **החלטה שהתקבלה לבד:** לא הורחב ההיקף ל-`readAttributionSnapshot` ולחמשת הטיפוסים שנותרו (`ClubSpendStatus`, `LegalSection`, `ImportRecord`, `SupplierOptionalFields`, `GiftAuditSource`), כדי לכבד את גבול ההיקף שה-commit המקורי קבע; `RESUME FROM` נשאר M12-c110.
-
-**M09-c111 - DONE (06.10.2026): knip נמדד מחדש, 15 exports מתים הוסרו, אפס תלות הוסרה.**
-משימת התור: "Remove unused deps and dead exports". `pwd` אומת. בעץ הראשי WIP זר של account/coupon/gifts/sitemap
-שלא נגעתי בו ולא חויב; המדידה והשערים ב-worktree נקי `/tmp/ke-m05-c111` (הועבר ל-`14ade8a88`, נשאר במקומו).
-`pnpm dlx knip --no-config-hints` (ephemeral): **204 files / 5 deps / 1 binary / 292 exports / 199 types / 4 dup**,
-לעומת 201/5/1/271/197/4 ב-M09-c95: הדריפט הוא W04..W14. סינון לקבצים ששונו מאז `681222eb4` ואימות `grep -w` על
-`src e2e scripts apps packages` בעץ הראשי (כולל ה-WIP הלא-מחויב): **הוסר** `legalPath` (`(legal)/_content/index.ts`,
-מת לגמרי, אפס קורא), **הוסרה מילת `export`** מ-14 ערכים שנקראים רק בתוך הקובץ שלהם: `clubTiersSchema`,
-`thresholdInput`, `POSTHOG_EVENT_NAMES`, חמשת קבועי `filter-chips.ts` (`PRICE_MAX_PARAM`..`NEWEST_SORT`),
-`CLUB_WINDOW_DAYS`, `CLUB_FLOOR_TIER`, `isClubSpendStatus`, `orderPagePath`, `postHogCspHosts`, `isCameraPath`.
-אחרי: **292 → 277 exports**, שאר הספירות ללא שינוי. **החלטות שהתקבלו לבד:** (1) חמש התלויות
-(`@radix-ui/react-dropdown-menu`, `@radix-ui/react-select`, `drizzle-orm`, `postgres`, `react-hook-form`) ובינארי
-`supabase` לא הוסרו, כמו מאז M09-c66: הכרעת מפעיל. (2) 204 ה"קבצים" הם בעיקר סקריפטי CLI ונקודות כניסה (אין
-`knip.json`), לא נמחק קובץ. (3) לא נגעתי ב-server actions (`deleteVariant`, `setSupplierStatus`, `softDeleteSupplier`,
-`signOutAll`, `readAttributionSnapshot`), ב-types, ב-`scripts/`, ולא בקבצים שה-WIP הזר משנה (`queries/orders.ts`,
-`seo/sitemap-*`). **שערים** (worktree, `env -i`): type-check 0; lint: 12 השערים הראשונים נקיים, docs-path-audit נכשל
-ב-worktree רק על `refs/` שב-gitignore (84), ונקי בעץ הראשי (155 ידועים, ללא שינוי); test **638/638, 7659 עברו,
-12 דולגו**; `rm -rf .next` ואז build עם `CARDCOM_USE_MOCK=true`: exit 0, 340/340, אפס `Invalid API key`, `BUILD_ID`
-`vO4eYPYB-YEapJR_scr0b`. אפס שינוי UI (הסרת `export` בלבד), `compare.mjs` לא נדרש. M02-c111 ו-M17-c110 הועברו
-ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות. `RESUME FROM` נשאר M12-c110, כמו בשאר פריטי c111.
 
 **M11-c110 - DONE** (sitemap.xml טרי, 98/98 כתובות 200, ממצא apex→www ב-BACKLOG),
 ו-W14..W01, M01-c96, L12, L11 וכל מה שקדם: ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, החדש למעלה.
