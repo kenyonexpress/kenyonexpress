@@ -2,6 +2,18 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M14-c111 אימות שני (הועבר מ-STATE.md ב-M07-c112 אימות שני, לשמירה על תקרת 300 שורות)
+
+**M14-c111, אימות שני (06.10.2026):** סשן מקביל חייב ודחף את הפריט (`b0363aaed`) בזמן שמדדתי; נמדד בנפרד ותואם:
+`vercel api /v6/deployments?target=production` העליונה `dpl_3JMMsSXC7MmySVs4k363pH8z5rjB` ‏READY, `source=git`,
+`githubCommitSha` `bd44390f4c71...` = HEAD הקוד; `vercel inspect www.kenyonexpress.co.il` מחזיר אותה פריסה; `vercel env ls
+production` מכיל רק `SENTRY_DSN`/`NEXT_PUBLIC_SENTRY_DSN`/`SENTRY_AUTH_TOKEN`; לוג ה-build מראה `releases new bd44390f4...`
+ו-`sourcemaps upload --release bd44390f4...`, שניהם `Invalid token (http status: 401)`, כבר ב-BACKLOG #21. **שערים** ב-worktree
+חדש `/tmp/ke-m14-c111` על `b0363aaed` (נשאר במקומו), `env -i`: type-check 0; lint נכשל רק על docs-path-audit, 84 הפניות ל-`refs/`
+ו-`supabase/.temp` שב-gitignore ואינם ב-worktree, נקי בעץ הראשי (155 ידועים); test 638/638, 7659 עברו, 12 דולגו;
+`rm -rf .next` ואז build עם `CARDCOM_USE_MOCK=true`: 0, 340/340, אפס `Invalid API key`, `BUILD_ID` `f9XjdDE8sFw_ikugbT-ZC`.
+אין שינוי UI ולכן אין parity. `RESUME FROM` נשאר M15-c111.
+
 ## M12-c111 (הועבר מ-STATE.md ב-M07-c112, לשמירה על תקרת 300 שורות)
 
 **M12-c111 - DONE (06.10.2026): `robots.txt` נמדד שוב, בטוח לפרודקשן. אין שינוי קוד.**

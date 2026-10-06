@@ -1,5 +1,5 @@
 RESUME FROM: M16-c111
-Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M07-c112 DONE: TODO/FIXME נסרק מחדש, רק שני ה-`TODO(cardcom)` הרשומים, אפס חדשים)
+Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M07-c112 DONE + אימות שני עצמאי: אותם שני `TODO(cardcom)` בלבד, שערים ירוקים)
 
 ## המשך מ:
 
@@ -19,6 +19,12 @@ Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M07-c112 DONE: TODO/FI
 אפס `Invalid API key`, `BUILD_ID` `-NZfr47-jigwB5cAOyNeo`. לא פריט חזותי, `compare.mjs` לא נדרש. נוספה שורת
 אימות ל-`docs/BACKLOG.md` סעיף 6. M12-c111 הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות.
 **החלטה שהתקבלה לבד:** `RESUME FROM` נשאר M16-c111, שעדיין בלי commit עם ראיה, כמו בשאר פריטי c111/c112.
+
+**M07-c112, אימות שני (06.10.2026):** סשן מקביל חייב ודחף את הפריט (`8b398f888`) בזמן שרצתי עליו. אומת באופן עצמאי:
+`git grep` על HEAD ועל ה-WIP הזר: אותם שני `TODO(cardcom)` בלבד (`cardcom.ts:254`/`:319`), `final-audit` `ok 0 work markers (of 2)`.
+שערים ב-`/tmp/ke-m06-c112` על `52f525794` תחת `env -i`: type-check 0; lint נקי מלבד docs-path-audit ב-worktree (81 הפניות
+ל-`refs/` שב-gitignore), נקי בעץ הראשי (155 ידועים); test 638/638 (7659/12 דולגו; אותו כשל `invoices.test.ts` כש-`CARDCOM_USE_MOCK`
+דלף ל-env הטסטים, נעלם בלעדיו); build 0 340/340 `NkiPz517S0iAFQb6-qmVG`. M14-c111 אימות שני הועבר לארכיון (תקרת 300).
 
 **M06-c112 - DONE (06.10.2026): `pnpm build` נמדד מחדש על HEAD נקי, exit 0, 340/340, אפס דריפט, אין מה לתקן.**
 משימת התור: "pnpm build fix drift commit". `pwd` אומת, HEAD `38db6670b` = `origin/audit/final-audit`. מאז M06-c111
@@ -109,16 +115,6 @@ READY על `audit/final-audit@bd44390f4`, ו-`/v4/aliases/www.kenyonexpress.co.i
 עברו, 12 דולגו; `rm -rf .next` ואז build עם `CARDCOM_USE_MOCK=true`: 0, 340/340, אפס `Invalid API key`, `BUILD_ID`
 `7Jw8meP8MEkF9W7gNmhYU`. אין שינוי UI, parity לא נדרש. **החלטה שהתקבלה לבד:** לא החלפתי טוקן ולא נגעתי ב-env
 של Vercel (אסור); `RESUME FROM` מצביע ל-M15-c111, הפריט הבא ב-`final-queue.txt`.
-
-**M14-c111, אימות שני (06.10.2026):** סשן מקביל חייב ודחף את הפריט (`b0363aaed`) בזמן שמדדתי; נמדד בנפרד ותואם:
-`vercel api /v6/deployments?target=production` העליונה `dpl_3JMMsSXC7MmySVs4k363pH8z5rjB` ‏READY, `source=git`,
-`githubCommitSha` `bd44390f4c71...` = HEAD הקוד; `vercel inspect www.kenyonexpress.co.il` מחזיר אותה פריסה; `vercel env ls
-production` מכיל רק `SENTRY_DSN`/`NEXT_PUBLIC_SENTRY_DSN`/`SENTRY_AUTH_TOKEN`; לוג ה-build מראה `releases new bd44390f4...`
-ו-`sourcemaps upload --release bd44390f4...`, שניהם `Invalid token (http status: 401)`, כבר ב-BACKLOG #21. **שערים** ב-worktree
-חדש `/tmp/ke-m14-c111` על `b0363aaed` (נשאר במקומו), `env -i`: type-check 0; lint נכשל רק על docs-path-audit, 84 הפניות ל-`refs/`
-ו-`supabase/.temp` שב-gitignore ואינם ב-worktree, נקי בעץ הראשי (155 ידועים); test 638/638, 7659 עברו, 12 דולגו;
-`rm -rf .next` ואז build עם `CARDCOM_USE_MOCK=true`: 0, 340/340, אפס `Invalid API key`, `BUILD_ID` `f9XjdDE8sFw_ikugbT-ZC`.
-אין שינוי UI ולכן אין parity. `RESUME FROM` נשאר M15-c111.
 
 **M11-c110 - DONE** (sitemap.xml טרי, 98/98 כתובות 200, ממצא apex→www ב-BACKLOG),
 ו-W14..W01, M01-c96, L12, L11 וכל מה שקדם: ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, החדש למעלה.
