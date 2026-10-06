@@ -802,6 +802,15 @@ unchanged. No migration applied, no code change -- verification only.
     לקרוא ‏`vercel inspect <dpl> --logs` של הפריסה הבאה ולראות
     ‏`Successfully uploaded source maps`; אם הטוקן חסר היקף ‏`project:releases`,
     השורה תהיה אזהרה (לא כשל build) והתיקון הוא היקף הטוקן.
+    **M14-c111 (06.10), נמדד:** ה-org וה-project כבר נפתרים, וה-release נכון
+    (`bd44390f4`, זהה ל-HEAD, גם בבאנדל הלקוח החי). אבל לוג ה-build של
+    `dpl_3JMMsSXC7MmySVs4k363pH8z5rjB` מראה `sentry-cli releases new bd44390f4...`
+    ואז `sourcemaps upload` **שניהם `Invalid token (http status: 401)`**, כאזהרה
+    (`[sentry] source-map upload skipped`), build ‏READY. כלומר `SENTRY_AUTH_TOKEN`
+    ב-Production אינו תקף כלל (לא חסר היקף, נדחה). אירועים עדיין מתויגים ב-release
+    הנכון, אבל ה-release לא נרשם ב-Sentry ואין source maps. **לאופיר:** ליצור
+    Organization Auth Token חדש ב-`de.sentry.io` (`kenyonexpress`), להחליף את
+    `SENTRY_AUTH_TOKEN` בפרויקט `kenyonexpress` ב-Vercel ולפרוס מחדש.
 
 22. **ה-CSP אינו מכיל את מארחי GA4 ו-Meta Pixel** (נמדד 05.10.2026, W11,
     `src/lib/security/frame-policy.ts`). `ThirdPartyTags` טוען את
