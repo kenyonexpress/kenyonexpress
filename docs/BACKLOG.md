@@ -821,6 +821,13 @@ unchanged. No migration applied, no code change -- verification only.
     נאפה בזמן build), או (ב) להפוך את ה-apex לדומיין הראשי ואת `www` להפניה.
     (ב) שומרת את ה-canonical הקיים ואת `APP_BASE_URL` שב-vault (סעיף 2 למעלה) נכונים
     בלי שינוי; (א) מחייבת גם את תיקון ה-vault של סעיף 2. מקור: STATE.md M11-c110.
+24. **המגירה הסגורה במובייל נגישה ל-Tab ולקורא מסך** (נמדד 06.10.2026, M17-c110,
+    `src/components/layout/MobileDrawer.tsx`). כשהיא סגורה הפאנל רק מוזז
+    `translate-x-full` אל מחוץ למסך: `role="dialog" aria-modal="true"`, בלי `inert`
+    ובלי `aria-hidden`, `visibility: visible`. הקישורים והכפתורים שבתוכה נשארים
+    ברצף ה-Tab ובעץ הנגישות ב-380/768 בכל דף. **פעולה (קוד):** `inert={!open}` על
+    הפאנל (שומר על אנימציית ההחלקה, בניגוד ל-`hidden`), ובדיקה שקישור בתוך מגירה
+    סגורה אינו מקבל פוקוס ב-Tab. מקור: STATE.md M17-c110.
 
 ## מה לא ברשימה, ולמה
 

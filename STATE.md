@@ -1,8 +1,30 @@
 RESUME FROM: M12-c110
-Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M18-c110 DONE: STATE.md קוצץ ל-resume, טבלת תור,
-חוסמים ופריטים ידניים; ההיסטוריה הועברה ל-`docs/STATE-ARCHIVE.md`)
+Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M17-c110 DONE: RTL על / ועל דגימת מוצרים, אפס
+דליפות LTR, parity בית 7.92/9.03/4.16 PASS)
 
 ## המשך מ:
+
+**M17-c110 - DONE (06.10.2026): RTL על `/` ועל דגימת `/product`, אפס דליפות LTR. אין שינוי קוד.**
+מאז הבדיקה הקודמת (M17-c95, `1c7cc58ba`) השתנו 177 קבצים תחת `src` (W01..W14), ולכן נמדד מחדש
+ולא הועתק. `pwd` אומת, HEAD `4186fef7e`. בעץ הראשי WIP זר של account/coupon/gifts שלא נגעתי בו,
+ולכן הכל רץ ב-worktree נקי `/tmp/ke-m17-c110` (HEAD, `node_modules` כ-APFS clone, `.env.local`
+כ-symlink; נשאר במקומו, לא נמחק). build טרי (worktree חדש, בלי `.next` קודם) תחת `env -i` עם `CARDCOM_USE_MOCK=true`,
+exit 0, אפס `Invalid API key`, `BUILD_ID` `BYQXH11oZG_KI-CE7NQer`; `pnpm start -p 4993` (cwd של
+המאזין אומת ב-`lsof`). פרוב Playwright זמני (נמחק, לא חויב) על `/` ועל שלושת סלאגי הדגימה של
+M17-c93..c95 (`samsung-galaxy-s22-128gb-samsung-galaxy-s22-128gb-5g`, `חבילת-גלידה`, `חיתולי-האגיס`,
+אומתו ב-`catalogue-snapshot.json`) ב-380/768/1440: **12 טעינות, 12 PASS, כולן 200**: `<html lang="he"
+dir="rtl">`, `body` מחושב `rtl`, `scrollWidth` = `clientWidth` בכולן, **אפס** אלמנט גלוי עם `direction:
+ltr` מחושב שמחזיק טקסט עברי ישיר, **אפס** טקסט עברי בתוך `[dir="ltr"]`. 27 אלמנטים מחוץ למסך
+ב-380/768 זוהו: המגירה הסגורה של `MobileDrawer` (`fixed right-0 translate-x-full dir="rtl"`), כלומר
+מחליקה מימין כמו שצריך ב-RTL ואינה מוסיפה גלילה. **ממצא נלווה, לא RTL, נוסף ל-BACKLOG #24:** המגירה
+הסגורה אינה `inert` ואינה `aria-hidden`, כך שהקישורים שבה נגישים ל-Tab ולקורא מסך כשהיא סגורה.
+**parity (בית, `--baseline=refs/ke_live_{width}.png`, foreground):** 380 **7.92%**, 768 **9.03%**,
+1440 **4.16%**, כולם PASS מתחת ל-11%. הריצה הראשונה בלי `--baseline` סורבה נכון ("live side is
+our-build", הדומיין מגיש את הבילד שלנו); ארבע השורות נרשמו ב-`docs/UI-PARITY-REPORT.md`. **שערים**
+(אותו worktree, `env -i`): type-check 0; lint 11 שערים נקיים (rtl-logical נקי, input-dir 25/25,
+i18n 603/603), docs-path-audit נקי בעץ הראשי (155 ידועים); test 638/638, 7659 עברו, 12 דולגו;
+build 0. **החלטה שהתקבלה לבד:** `RESUME FROM` נשאר M12-c110 (M12..M16-c110 עדיין בלי ראיה, ראו
+M18-c110 למטה); M17-c110 סגור עכשיו עם ראיה.
 
 **M18-c110 - DONE (06.10.2026): STATE.md קוצץ.** בהגעה 249 שורות (כבר מתחת ל-300);
 הסעיף הזה החזיק את הרשומה המלאה של M11-c110 ושלוש רשומות היסטוריות סגורות
