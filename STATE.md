@@ -4,6 +4,11 @@ Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M07-c111 DONE: סרי�
 
 ## המשך מ:
 
+**M07-c111, אימות שני (06.10.2026):** סשן מקביל חייב את הפריט (`14ade8a88`) בזמן שרצתי עליו. אומת
+באופן עצמאי: אותם שני `TODO(cardcom)` בלבד (blame 24.07/07.08), `final-audit` `ok 0 work markers (of 2)`.
+שערים ב-worktree נקי על `df54456a4` תחת `env -i`: type-check 0, lint 0, test 638/638 (7659/12 דולגו),
+build 0 340/340 `COSxbgGNr5A8uhkPFtICs`. שורת אימות נוספה ל-`docs/BACKLOG.md` §6.
+
 **M07-c111 - DONE (06.10.2026): TODO/FIXME נסרק מחדש, אפס סמן חדש, אפס שינוי קוד.**
 משימת התור: "Scan TODO FIXME older than 7 days resolve or file in docs/BACKLOG.md". `pwd` אומת, HEAD
 `c1d64b886` (בזמן העבודה נכנס `df54456a4` של M06-c111, `STATE.md` בלבד). `git grep` על כל הריפו (מלבד
