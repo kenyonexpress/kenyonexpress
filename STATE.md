@@ -1,9 +1,9 @@
-RESUME FROM: M10-c115
+RESUME FROM: M11-c115
 
 # KenyonExpress — Project State
 
-Last item: **M09-c115 DONE** (2026-10-07): removed 9 unused npm dependencies and deleted 14 components nothing imported. No rendered page changed. Branch `feat/products-sort-infinite-scroll`.
-Previous: M08-c115 DONE (2026-10-07), M07-c115 DONE (2026-10-07), M06-c115 DONE (2026-10-07), M05-c115 DONE (2026-10-07), M04-c115 DONE (2026-10-07), M03-c115 BLOCKED (2026-10-07), M02-c115 BLOCKED (2026-10-07), M01-c115 BLOCKED (2026-10-07), M11-c113 DONE (2026-10-06).
+Last item: **M10-c115 BLOCKED** (2026-10-07): 22 of the 40 numbered files in `migrations/pending/` are confirmed not applied in production (21 by probe, plus 162), and 6 more are live but still sit in `pending/` with no record that they were applied. The agent may not apply them. Branch `feat/products-sort-infinite-scroll`.
+Previous: M09-c115 DONE (2026-10-07), M08-c115 DONE (2026-10-07), M07-c115 DONE (2026-10-07), M06-c115 DONE (2026-10-07), M05-c115 DONE (2026-10-07), M04-c115 DONE (2026-10-07), M03-c115 BLOCKED (2026-10-07), M02-c115 BLOCKED (2026-10-07), M01-c115 BLOCKED (2026-10-07), M11-c113 DONE (2026-10-06).
 History before this item lives in `docs/STATE-ARCHIVE.md` (21,138 lines moved there in this commit).
 
 ## Queue status (cycle c113)
@@ -25,6 +25,24 @@ The runner's `final-done.txt` lists M01–M10 of c113 as finished. This branch's
 | M07-c115 | TODO/FIXME older than 7 days: resolve or file in docs/BACKLOG.md | **DONE**: 1 resolved, 2 filed (see below) |
 | M08-c115 | Lighthouse mobile on / and /product sample, log scores | **DONE**: perf 82 / 84 median, a11y 100, BP 96, SEO 100 (see below) |
 | M09-c115 | Remove unused deps and dead exports | **DONE**: 9 deps removed, 14 dead components deleted (see below) |
+| M10-c115 | Verify migrations/pending/ applied or file blocker | **BLOCKED**: 22 files confirmed not applied, 6 live but unrecorded (see below) |
+
+## M10-c115: is migrations/pending/ applied? Read-only probe, 2026-10-07
+
+- **Method.** The Supabase MCP needs re-authorisation in this session, there is no DB URL on this machine, and `supabase` is not linked, so `schema_migrations` could not be read. Instead, one read-only `GET /rest/v1/` with the service key from `.env.local` fetched the PostgREST OpenAPI schema of production. Each numbered file's own tables, added columns and RPCs (parsed from its SQL) were checked against that schema. No key was printed and nothing was written. Files with no REST-visible effect (grants, cron, indexes, constraints, triggers, search_path) cannot be judged this way.
+- **Live but still in `pending/` (6).** Every object these files create is present in production, but each one's README section says "WRITTEN, not applied" and none is in the APPLIED IN PRODUCTION table or `migrations/applied/`:
+  - `189`: `reviews.title`, `reviews.verified_purchase`
+  - `190`: `abandoned_cart_nudges.reminder_number`
+  - `191`: `payment_discrepancies` and `fn_record_payment_discrepancies`
+  - `194`: `coupon_redemptions`, `coupons.max_uses_per_user`, `discount_redemptions.released_at`, plus the claim and release RPCs
+  - `197`: `shipping_zones`, `pickup_points`
+  - `201`: `scheduled_price_changes`
+
+  They were not moved to `applied/`. Without the `schema_migrations` row and a check of their constraints and policies, moving them would be a guess. Re-running them is probably harmless (they use `IF NOT EXISTS`), but nobody has checked that.
+- **Not applied (21 by probe).** None of their objects exists in production: `184` (`orders_invoice_numbers`), `202`–`205`, `207`, `210`–`213`, `215`–`217`, `219`, `221`–`223`, `225`, `226` and `228`, which is every table and column they add. `227` is also not applied: its two live RPCs predate it (its header says so), and `extend_voucher_expiry` is absent. `188` and `218` change existing functions only, so they count as unverified, not as applied.
+- **Cannot be judged over REST (11):** `162`, `192`, `196`, `206`, `208`, `209`, `214`, `220`, `224`, `229` and `230`. `162` is still known not applied (blocker 2). `230` is checked with the SQL in `APPLY-ORDER.md` (expect 0 rows, and 15 means not applied).
+- **Effect on the code.** The app already reads tables that are missing, such as `job_runs`, `content_pages`, `phase_config`, `sms_messages` and `push_deliveries`. Those paths depend on the pending files and fail closed until the files are applied. This item does not change that.
+- No code change. Gates: see the commit message.
 
 ## M09-c115: unused deps and dead exports, run 2026-10-07
 
@@ -147,6 +165,7 @@ Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=home 
 0. **The parity gate has no reference (M01-c115).** `compare.mjs` exits 5 at every width because `kenyonexpress.co.il` serves our build and `refs/ke_live_singlefile.html` does not exist. No UI item can show it is under 11% until a working reference is restored. Re-confirmed for `/product` in M02-c115 and `/category` in M03-c115 (see `docs/PARITY-REFERENCE.md`).
 1. **Apex vs www host mismatch (known since SECTIONS 21, still open).** Vercel serves `www` and redirects the apex with a 308. The site declares the apex as canonical: every sitemap `<loc>`, the robots `Sitemap:` line, `og:url` and canonicals all use `https://kenyonexpress.co.il` (from `NEXT_PUBLIC_APP_URL`, with the `layout.tsx` default). So all 94 sitemap URLs cost one 308 hop before they reach a 200. Fixing it means either setting `NEXT_PUBLIC_APP_URL=https://www.kenyonexpress.co.il` in Vercel or making the apex the primary domain in Vercel. Both are Vercel env or domain changes, which the agent is not allowed to make.
 2. Scheduled jobs (cron) do not run until migration 162 is applied. See below.
+5. **Pending migrations are not applied (M10-c115).** 22 numbered files are confirmed absent from production, and 6 (`189`, `190`, `191`, `194`, `197` and `201`) are live but not recorded as applied. Only Ofir applies migrations, and the bookkeeping for the 6 needs a `schema_migrations` read, which needs the Supabase MCP or a DB URL.
 3. The live catalogue has template rows and duplicates: 25 findings pinned in `supabase/catalogue-known-issues.json`. These are decisions for the operator.
 4. `main` diverged: local `main` is 193 commits ahead of `origin/main` and 110 behind (L9), and Vercel tracks `main`. Production is not built from this branch.
 
@@ -154,6 +173,7 @@ Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=home 
 
 - Provide a usable parity reference: either restore `refs/ke_live_singlefile.html` (a self-contained SingleFile save of the old WooCommerce home) or a host that still serves the old site. Until then compare.mjs cannot produce a number (M01-c115).
 - Choose one canonical host and set it in Vercel: either `NEXT_PUBLIC_APP_URL` = www, or make the apex primary (blocker 1). Then resubmit the sitemap in Search Console.
-- Apply `migrations/pending/` (38+ files, including 162 cron, 209 advisors and 220). The agent never applies them.
+- Apply `migrations/pending/` following `APPLY-ORDER.md`. As of M10-c115, 22 files are confirmed not live, including 162 cron, 228 `job_runs` and most of 202–227 (the list is in the M10-c115 section). Do not apply `200`.
+- Confirm that `189`, `190`, `191`, `194`, `197` and `201` are in `supabase_migrations.schema_migrations`. If they are, move them to `migrations/applied/` with README rows. Their objects are already live (M10-c115). Also re-authorise the Supabase MCP so agents can read `schema_migrations`.
 - Reconcile local `main` with `origin/main` before the next deploy.
 - Review the catalogue findings in `supabase/catalogue-known-issues.json`.
