@@ -76,6 +76,11 @@ const SECRET_AUTHENTICATED: { path: string; guard: RegExp; reason: string }[] = 
     reason: 'shared webhook secret, compared in constant time',
   },
   {
+    path: 'src/app/api/webhooks/images/purge/route.ts',
+    guard: /secretEquals\(/,
+    reason: 'shared purge secret or HMAC of the body, compared in constant time',
+  },
+  {
     path: 'src/app/api/webhooks/twilio-sms/route.ts',
     guard: /TWILIO_AUTH_TOKEN/,
     reason: 'Twilio request signature, keyed with the auth token',

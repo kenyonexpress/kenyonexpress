@@ -9,6 +9,7 @@ import {
   isValidHebrewAlt,
   validateImageDimensions,
 } from '@/lib/images/validate'
+import { loadWatermark } from '@/lib/images/watermark'
 import { withActionContext } from '@/lib/observability/action-context'
 import { createR2PresignedPutUrl, isR2Configured, r2BucketEnv, r2PublicUrl } from '@/lib/storage/r2'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -80,9 +81,12 @@ async function runProcessAndUploadImage(formData: FormData): Promise<UploadImage
   const bucket = String(formData.get('bucket') ?? 'product-images')
   const safeFolder = folder.replace(/[^a-z0-9/_-]/gi, '') || 'misc'
 
+  // EXIF is stripped and orientation baked inside processImage; the mark is
+  // optional and comes from IMAGE_WATERMARK_FILE (null when unset).
   let processed: Awaited<ReturnType<typeof processImage>>
   try {
-    processed = await processImage(Buffer.from(await file.arrayBuffer()))
+    const watermark = await loadWatermark()
+    processed = await processImage(Buffer.from(await file.arrayBuffer()), { watermark })
   } catch {
     return { error: 'הקובץ אינו תמונה תקינה' }
   }

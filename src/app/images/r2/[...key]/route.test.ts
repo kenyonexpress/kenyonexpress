@@ -46,11 +46,27 @@ describe('/images/r2/[...key]', () => {
     expect(res.headers.get('cache-control')).toBe(
       'public, max-age=31536000, s-maxage=31536000, immutable',
     )
+    expect(res.headers.get('vercel-cache-tag')).toBe(
+      `images,images:wp,image:${encodeURIComponent(key)}`,
+    )
     expect(res.headers.get('x-content-type-options')).toBe('nosniff')
     expect(res.headers.get('etag')).toBe('"abc"')
     expect(res.headers.get('content-length')).toBe('4')
     await expect(res.text()).resolves.toBe('RIFF')
     expect(getR2ImageObject).toHaveBeenCalledWith(key, { ifNoneMatch: null, method: 'GET' })
+  })
+
+  it('caches a named (replaceable) key 30 days with stale-while-revalidate, tagged for purge', async () => {
+    const key = 'products/b7.avif'
+    const res = await GET(request(key), context(key))
+
+    expect(res.status).toBe(200)
+    expect(res.headers.get('cache-control')).toBe(
+      'public, max-age=2592000, s-maxage=2592000, stale-while-revalidate=86400',
+    )
+    expect(res.headers.get('vercel-cache-tag')).toBe(
+      'images,images:products,image:products%2Fb7.avif',
+    )
   })
 
   it('refuses a key outside the promoted prefixes without touching the bucket', async () => {
@@ -77,6 +93,8 @@ describe('/images/r2/[...key]', () => {
 
     expect(res.status).toBe(304)
     expect(res.headers.get('etag')).toBe('"abc"')
+    expect(res.headers.get('cache-control')).toContain('max-age=2592000')
+    expect(res.headers.get('vercel-cache-tag')).toContain('image:products%2Fa.webp')
     expect(getR2ImageObject).toHaveBeenCalledWith(key, { ifNoneMatch: '"abc"', method: 'GET' })
   })
 

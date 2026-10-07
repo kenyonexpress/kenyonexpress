@@ -105,6 +105,36 @@ const schema = z
     UPTIMEROBOT_WEBHOOK_SECRET: z.string().min(20).optional().or(z.literal('')),
 
     /**
+     * Guards /api/webhooks/images/purge. Unset closes the route (401), so a
+     * missing secret is a purge nobody can fire, never one anybody can.
+     */
+    IMAGE_PURGE_WEBHOOK_SECRET: z.string().min(20).optional().or(z.literal('')),
+    /**
+     * The purge backends (src/lib/images/purge.ts). All optional: without a
+     * token the webhook answers 202 and names the backend it could not reach,
+     * and the 30-day ceiling on mutable image keys still expires on its own.
+     * VERCEL_PROJECT_ID / VERCEL_TEAM_ID are what Vercel's REST API wants in
+     * the query string; the platform does not inject them at runtime.
+     */
+    VERCEL_API_TOKEN: z.string().min(10).optional().or(z.literal('')),
+    VERCEL_PROJECT_ID: z.string().optional(),
+    VERCEL_TEAM_ID: z.string().optional(),
+    CLOUDFLARE_API_TOKEN: z.string().min(10).optional().or(z.literal('')),
+    CLOUDFLARE_ZONE_ID: z.string().optional(),
+    /**
+     * Optional watermark for the upload pipeline (src/lib/images/watermark.ts):
+     * a PNG or SVG on the server's filesystem, composited at a corner of every
+     * rendition the admin upload produces. Unset means no mark, which is the
+     * default and the state of every environment today.
+     */
+    IMAGE_WATERMARK_FILE: z.string().optional(),
+    IMAGE_WATERMARK_OPACITY: z
+      .string()
+      .regex(/^(0(\.\d+)?|1(\.0+)?)$/)
+      .optional()
+      .or(z.literal('')),
+
+    /**
      * The Axiom log leg. OPTIONAL EVERYWHERE and inert unless BOTH are set,
      * same contract as Upstash above: half a configuration degrades to the
      * console transport rather than failing anything. `lib/observability/

@@ -16,6 +16,67 @@ async function makeTestImage(width: number, height: number): Promise<Buffer> {
     .toBuffer()
 }
 
+async function makeMark(): Promise<Buffer> {
+  return sharp({
+    create: { width: 200, height: 80, channels: 4, background: { r: 0, g: 0, b: 255, alpha: 1 } },
+  })
+    .png()
+    .toBuffer()
+}
+
+async function cornerPixel(buffer: Buffer): Promise<[number, number, number]> {
+  const { data, info } = await sharp(buffer).raw().toBuffer({ resolveWithObject: true })
+  // 20px in from the bottom-right corner, inside the default 16px margin + mark.
+  const x = info.width - 24
+  const y = info.height - 24
+  const i = (y * info.width + x) * info.channels
+  return [data[i] ?? 0, data[i + 1] ?? 0, data[i + 2] ?? 0]
+}
+
+describe('processImage: EXIF and watermark', () => {
+  it('strips EXIF from every rendition and bakes the orientation in first', async () => {
+    const input = await sharp({
+      create: { width: 1200, height: 800, channels: 3, background: { r: 254, g: 215, b: 0 } },
+    })
+      .jpeg()
+      .withMetadata({ orientation: 6 })
+      .withExif({ IFD0: { Copyright: 'strip me' } })
+      .toBuffer()
+    const inputMeta = await sharp(input).metadata()
+    expect(inputMeta.exif).toBeDefined()
+    expect(inputMeta.orientation).toBe(6)
+
+    const result = await processImage(input)
+    // Orientation 6 is a 90 degree turn: the 1200x800 original displays as 800x1200.
+    expect(result.width).toBe(800)
+    expect(result.height).toBe(1200)
+    for (const r of result.renditions) {
+      const meta = await sharp(r.buffer).metadata()
+      expect(meta.exif, `${r.format} w${r.width}`).toBeUndefined()
+      expect(meta.orientation, `${r.format} w${r.width}`).toBeUndefined()
+      expect(meta.width, `${r.format} w${r.width}`).toBe(r.width)
+    }
+  }, 30000)
+
+  it('leaves the pixels alone without a watermark and marks every rendition with one', async () => {
+    const input = await makeTestImage(1600, 1200)
+    const plain = await processImage(input)
+    const marked = await processImage(input, { watermark: { image: await makeMark(), opacity: 1 } })
+
+    expect(marked.renditions.map((r) => [r.format, r.width])).toEqual(
+      plain.renditions.map((r) => [r.format, r.width]),
+    )
+    for (const [i, r] of marked.renditions.entries()) {
+      const before = await cornerPixel(plain.renditions[i]?.buffer ?? Buffer.alloc(0))
+      const after = await cornerPixel(r.buffer)
+      expect(before[2], 'unmarked corner is the yellow background').toBeLessThan(60)
+      expect(after[2], `${r.format} w${r.width} corner carries the blue mark`).toBeGreaterThan(150)
+    }
+    // The blur placeholder is never marked.
+    expect(marked.blurDataURL).toBe(plain.blurDataURL)
+  }, 30000)
+})
+
 describe('processImage', () => {
   it('produces webp renditions for every width below the original + one avif', async () => {
     const input = await makeTestImage(2000, 1500)

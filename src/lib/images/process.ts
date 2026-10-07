@@ -2,8 +2,30 @@
 // webp renditions at multiple widths, an avif rendition for the largest width,
 // and a tiny base64 blur placeholder. Pure module (Buffer in, Buffers out) so
 // it is unit-testable; uploading is the caller's concern.
+//
+// EXIF IS STRIPPED FROM EVERY RENDITION, and the orientation tag is baked
+// into the pixels first (`.rotate()` with no argument). sharp writes no
+// EXIF, XMP or IPTC unless `keepMetadata` / `withMetadata` is called, and
+// nothing here calls either; the test reads a rendition back and asserts
+// the tag is gone. The ICC profile is kept (`keepIccProfile`): it carries no
+// location or device data, and dropping it shifts a Display-P3 photo's
+// colours on every wide-gamut screen. The rule itself lives in optimize.mjs,
+// which the promotion script shares.
+//
+// WATERMARK is optional and off by default: a `watermark` spec (a PNG/SVG
+// buffer with opacity) is composited at the bottom-end corner of EVERY
+// rendition, sized to that rendition's width, so the mark reads the same on a
+// 400 and a 1600. The blur placeholder is never marked: at 16px it would be
+// a smudge.
 
 import sharp from 'sharp'
+import { type WatermarkSpec, applyWatermark, fittedSize, orientedSize } from './optimize.mjs'
+
+export type { WatermarkSpec }
+
+export type ProcessImageOptions = {
+  watermark?: WatermarkSpec | null
+}
 
 /** Target rendition widths, largest first. Originals are never upscaled. */
 export const RENDITION_WIDTHS = [1600, 800, 400] as const
@@ -50,20 +72,24 @@ export type ProcessedImage = {
   renditions: Rendition[]
 }
 
-export async function processImage(input: Buffer): Promise<ProcessedImage> {
+export async function processImage(
+  input: Buffer,
+  { watermark = null }: ProcessImageOptions = {},
+): Promise<ProcessedImage> {
   // .rotate() applies EXIF orientation so width/height are the visual ones.
-  const base = sharp(input).rotate()
-  const meta = await base.metadata()
-  const originalWidth = meta.width ?? 0
+  const base = sharp(input).rotate().keepIccProfile()
+  const meta = await sharp(input).metadata()
+  const oriented = orientedSize(meta)
+  const originalWidth = oriented.width
   if (!originalWidth) throw new Error('failed to read image dimensions')
 
   const widths = renditionWidthsFor(originalWidth)
 
   const renditions: Rendition[] = []
   for (const width of widths) {
-    const { data, info } = await base
-      .clone()
-      .resize({ width, withoutEnlargement: true })
+    const pipeline = base.clone().resize({ width, withoutEnlargement: true })
+    await applyWatermark(pipeline, watermark, fittedSize(oriented, width))
+    const { data, info } = await pipeline
       .webp({ quality: WEBP_QUALITY, effort: 4 })
       .toBuffer({ resolveWithObject: true })
     renditions.push({ format: 'webp', width: info.width, height: info.height, buffer: data })
@@ -73,9 +99,9 @@ export async function processImage(input: Buffer): Promise<ProcessedImage> {
   // widths are already tiny as webp.
   const largest = renditions[0]
   if (!largest) throw new Error('no renditions produced')
-  const avif = await base
-    .clone()
-    .resize({ width: largest.width, withoutEnlargement: true })
+  const avifPipeline = base.clone().resize({ width: largest.width, withoutEnlargement: true })
+  await applyWatermark(avifPipeline, watermark, { width: largest.width, height: largest.height })
+  const avif = await avifPipeline
     .avif({ quality: AVIF_QUALITY, effort: 4 })
     .toBuffer({ resolveWithObject: true })
   renditions.push({

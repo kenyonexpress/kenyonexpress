@@ -89,7 +89,19 @@ function signingKey(secret, date) {
  * success rather than a conflict. That is what makes a re-run after a crash
  * cost nothing instead of re-uploading a whole catalogue of images.
  */
-export async function r2Put(key, body, { contentType = 'image/webp', ifNoneMatch = true } = {}) {
+export async function r2Put(
+  key,
+  body,
+  {
+    contentType = 'image/webp',
+    ifNoneMatch = true,
+    // A year, immutable, by default: the content-addressed keys this module
+    // was written for never change their bytes. A caller uploading a NAMED
+    // key (products/<file>) passes the 30-day policy instead
+    // (src/lib/images/cache-policy.mjs), because that file can be replaced.
+    cacheControl = 'public, max-age=31536000, immutable',
+  } = {},
+) {
   if (!isR2Configured())
     throw new Error(
       'R2 is not configured (R2_ACCOUNT_ID / R2_ACCESS_KEY_ID / R2_SECRET_ACCESS_KEY / R2_BUCKET)',
@@ -112,9 +124,7 @@ export async function r2Put(key, body, { contentType = 'image/webp', ifNoneMatch
     'content-type': contentType,
     'x-amz-content-sha256': payloadHash,
     'x-amz-date': amzDate,
-    // A year, immutable: the key contains the content hash, so the bytes at a
-    // key can never change and any cache of them is valid forever.
-    'cache-control': 'public, max-age=31536000, immutable',
+    'cache-control': cacheControl,
   }
   if (ifNoneMatch) headers['if-none-match'] = '*'
 

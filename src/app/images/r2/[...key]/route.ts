@@ -1,3 +1,8 @@
+import {
+  MISSING_CACHE_CONTROL,
+  cacheControlForKey,
+  cacheTagHeaderForKey,
+} from '@/lib/images/cache-policy.mjs'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { getR2ImageObject, isR2ReadConfigured, isServableImageKey } from '@/lib/storage/r2-read'
@@ -8,9 +13,13 @@ import type { NextRequest } from 'next/server'
  * with a server-side signature and answered as if they were files under
  * public/.
  *
- * Every key is content-addressed or a promoted product file, so the bytes at
- * a path never change: a year, immutable, at the browser and at the edge
- * (`s-maxage` is what Vercel's cache reads for a function response). The
+ * Cache policy is per key (src/lib/images/cache-policy.mjs): a
+ * content-addressed `wp/` key can never change its bytes and is a year,
+ * immutable; a `products/` or `live-assets/` key is named after a file an
+ * admin can replace, so it is 30 days at the browser and at the edge
+ * (`s-maxage` is what Vercel's cache reads for a function response) with
+ * stale-while-revalidate, and every response carries `Vercel-Cache-Tag` so
+ * /api/webhooks/images/purge can evict it before the 30 days are up. The
  * image optimizer is the main caller, once per srcset rung per format, and
  * after that the edge answers. `If-None-Match` is forwarded so a revalidation
  * costs a HEAD-sized round trip and no body.
@@ -23,8 +32,6 @@ import type { NextRequest } from 'next/server'
  * Not behind the proxy's rate limiter: the matcher in src/proxy.ts excludes
  * image extensions, and the edge cache is the throttle that matters here.
  */
-
-const IMMUTABLE = 'public, max-age=31536000, s-maxage=31536000, immutable'
 
 type Context = { params: Promise<{ key: string[] }> }
 
@@ -53,18 +60,22 @@ async function serve(request: NextRequest, context: Context, method: 'GET' | 'HE
   }
 
   if (object.status === 404) {
-    return new Response(null, { status: 404, headers: { 'cache-control': 'public, max-age=60' } })
+    return new Response(null, { status: 404, headers: { 'cache-control': MISSING_CACHE_CONTROL } })
   }
 
+  const cacheControl = cacheControlForKey(key)
+  const cacheTag = cacheTagHeaderForKey(key)
+
   if (object.status === 304) {
-    const headers = new Headers({ 'cache-control': IMMUTABLE })
+    const headers = new Headers({ 'cache-control': cacheControl, 'vercel-cache-tag': cacheTag })
     if (object.etag) headers.set('etag', object.etag)
     return new Response(null, { status: 304, headers })
   }
 
   const headers = new Headers({
     'content-type': object.contentType,
-    'cache-control': IMMUTABLE,
+    'cache-control': cacheControl,
+    'vercel-cache-tag': cacheTag,
     'x-content-type-options': 'nosniff',
     'content-disposition': 'inline',
   })

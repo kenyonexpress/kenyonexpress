@@ -74,6 +74,7 @@ derived from `auth.uid()` inside the RPC and is **never taken from the request**
 |---|---|---|
 | `/api/payments/cardcom/webhook` | POST | **URL secret + mandatory re-verification.** Cardcom does not sign callbacks; there is no HMAC header. The `?s=` secret is compared in constant time against both the current and retiring secret **with no short circuit**, then `GetLpResult` is re-fetched server to server and that response is the only trusted source of amount, status and token. Journal first, dedup on `(provider, external_event_id)`, replay is a 200 no-op. |
 | `/api/webhooks/products` | POST | `SEARCH_WEBHOOK_SECRET`. Supabase DB webhook. Payload is a **change notification, never data**: the worker re-reads the row. |
+| `/api/webhooks/images/purge` | POST | `IMAGE_PURGE_WEBHOOK_SECRET` in `x-webhook-secret`, or hex HMAC-SHA256 of the body in `x-image-purge-signature`, constant time. Body `{ keys }`, `{ paths }`, `{ all: true }`, or a Supabase DB webhook on `media_assets`. Invalidates the proxied image's CDN tag and optimizer source image (src/lib/images/purge.ts). 202 with `reason` when no purge backend is configured. |
 | `/api/search/index-job` | POST | QStash JWS (`Upstash-Signature`, two rotating keys) or `CRON_SECRET`. |
 | `/api/search/index-dlq` | POST | Same. Failure sink. |
 

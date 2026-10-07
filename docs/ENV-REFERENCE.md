@@ -257,6 +257,13 @@ would mean the branch refuses to boot everywhere it is not yet provisioned,
 image upload is unavailable. `R2_PUBLIC_BASE_URL` wrong means images upload and
 then 404.
 
+| Variable | Tag | Without it |
+|---|---|---|
+| `IMAGE_WATERMARK_FILE`, `IMAGE_WATERMARK_OPACITY` | optional | No watermark on uploaded renditions. EXIF is stripped regardless. |
+| `IMAGE_PURGE_WEBHOOK_SECRET` | optional, **secret** | `/api/webhooks/images/purge` answers 401 to everyone. |
+| `VERCEL_API_TOKEN`, `VERCEL_PROJECT_ID`, `VERCEL_TEAM_ID` | optional, token **secret** | The purge cannot reach Vercel's CDN or optimizer cache; mutable image keys expire on the 30-day ceiling instead. |
+| `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ZONE_ID` | optional, token **secret** | No purge by URL on the public bucket domain (only matters with `R2_PUBLIC_BASE_URL`). |
+
 ### 3.10 Wallet passes
 
 `APPLE_WALLET_CERT_PEM`, `APPLE_WALLET_KEY_PEM`, `APPLE_WALLET_KEY_PASSPHRASE`,

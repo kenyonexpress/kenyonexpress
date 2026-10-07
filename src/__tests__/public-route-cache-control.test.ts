@@ -1,6 +1,7 @@
 import { readFileSync, readdirSync } from 'node:fs'
 import { join, relative, resolve } from 'node:path'
 import { CacheControl } from '@/lib/cache/http'
+import { IMMUTABLE_CACHE_CONTROL, MUTABLE_CACHE_CONTROL } from '@/lib/images/cache-policy.mjs'
 import { describe, expect, it } from 'vitest'
 
 /**
@@ -31,7 +32,13 @@ const EXCLUDED_SEGMENTS =
 /** `src/app/api/app/` is the till app's API, bearer-authenticated. */
 const EXCLUDED_PREFIXES = ['src/app/api/app/']
 
-type Policy = 'public' | 'private' | 'redirect'
+/**
+ * `image`: the R2 proxy. Public, but the policy is PER KEY (a year for a
+ * content-addressed key, 30 days for a replaceable one) and lives in
+ * `lib/images/cache-policy.mjs`, which the promotion script shares; the
+ * route must call it and carry no literal of its own.
+ */
+type Policy = 'public' | 'private' | 'redirect' | 'image'
 
 const LEDGER: Record<string, Policy> = {
   'src/app/api/alerts/uptimerobot/route.ts': 'private',
@@ -48,6 +55,7 @@ const LEDGER: Record<string, Policy> = {
   // Cache-Control and Vercel does not cache a header-less 3xx.
   'src/app/c/[code]/route.ts': 'redirect',
   'src/app/feed.xml/route.ts': 'public',
+  'src/app/images/r2/[...key]/route.ts': 'image',
   // The two web app manifests (STEP 14): static JSON, one per start URL.
   'src/app/manifest.webmanifest/route.ts': 'public',
   'src/app/merchant/manifest.webmanifest/route.ts': 'public',
@@ -85,6 +93,11 @@ describe('public GET route handlers', () => {
         expect(source).not.toMatch(/public,\s*(max-age|s-maxage)/)
         return
       }
+      if (policy === 'image') {
+        expect(source).toMatch(/cacheControlForKey\(/)
+        expect(source).not.toMatch(/['"]public,\s*(max-age|s-maxage)/)
+        return
+      }
       if (policy === 'public') {
         // The constant, not a literal: a literal is how three copies drift.
         expect(source).toMatch(/CacheControl\.(search|feed|postalCode)/)
@@ -103,5 +116,7 @@ describe('public GET route handlers', () => {
     expect(CacheControl.search.startsWith('public,')).toBe(true)
     expect(CacheControl.feed.startsWith('public,')).toBe(true)
     expect(CacheControl.private).toBe('private, no-store')
+    expect(IMMUTABLE_CACHE_CONTROL.startsWith('public,')).toBe(true)
+    expect(MUTABLE_CACHE_CONTROL).toContain('s-maxage=2592000')
   })
 })
