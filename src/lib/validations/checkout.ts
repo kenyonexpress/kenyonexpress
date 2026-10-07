@@ -236,10 +236,6 @@ export const beginCheckoutOutputSchema = z.discriminatedUnion('kind', [
   }),
 ])
 
-export const validateCartInputSchema = z.object({
-  // empty object: cart is loaded from session/user
-})
-
 export const calculateSplitInputSchema = z.object({
   lines: z
     .array(

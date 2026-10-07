@@ -464,7 +464,7 @@ Heebo({ variable: '--font-heebo', subsets: ['latin', 'hebrew'], display: 'swap' 
 
 כללים:
 
-1. קריאות קטלוג אנונימיות: קליינט `src/lib/supabase/public.ts` (anon, בלי
+1. קריאות קטלוג אנונימיות: קליינט `src/lib/supabase/anon.ts` (anon, בלי
    `cookies()`). רק כך מותר `use cache`.
 2. קריאות משתמש: `server.ts` + `<Suspense>`.
 3. Layouts של `(admin)`, `(account)`, supplier: `children` ב-Suspense.

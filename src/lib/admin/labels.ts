@@ -6,15 +6,10 @@ import type {
   AuditAction,
   CouponStatus,
   EscrowStatus,
-  OrderItemStatus,
   OrderStatus,
   PaymentKind,
   PaymentStatus,
-  ProductApprovalStatus,
-  ProductStatus,
-  ProductType,
   ReferralStatus,
-  SettlementStatus,
 } from '@/types/database'
 
 export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
@@ -27,15 +22,6 @@ export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   // The coupon settlement terminal: the prepayment settled to the platform at
   // payment time. Reached by the 137 guard's paid -> platform_settled edge.
   platform_settled: 'סולק לפלטפורמה',
-}
-
-export const ORDER_ITEM_STATUS_LABELS: Record<OrderItemStatus, string> = {
-  pending: 'ממתין',
-  issued: 'הונפק',
-  shipped: 'נשלח',
-  delivered: 'נמסר',
-  cancelled: 'בוטל',
-  refunded: 'הוחזר',
 }
 
 export const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
@@ -57,41 +43,6 @@ export const COUPON_STATUS_LABELS: Record<CouponStatus, string> = {
   used: 'מומש',
   expired: 'פג תוקף',
   refunded: 'הוחזר',
-}
-
-export const PRODUCT_STATUS_LABELS: Record<ProductStatus, string> = {
-  draft: 'טיוטה',
-  active: 'פעיל',
-  paused: 'מושהה',
-  sold_out: 'אזל',
-  archived: 'בארכיון',
-}
-
-export const PRODUCT_TYPE_LABELS: Record<ProductType, string> = {
-  coupon: 'קופון',
-  physical: 'מוצר פיזי',
-  service: 'שירות',
-  // 135a. Billed on a schedule through a saved card rather than once.
-  recurring: 'מנוי',
-}
-
-export const APPROVAL_STATUS_LABELS: Record<ProductApprovalStatus, string> = {
-  draft: 'טיוטה',
-  pending: 'ממתין לאישור',
-  approved: 'מאושר',
-  rejected: 'נדחה',
-}
-
-export const SETTLEMENT_STATUS_LABELS: Record<SettlementStatus, string> = {
-  pending: 'ממתין',
-  paid: 'שולם',
-  split_executed: 'פוצל לספק',
-  platform_settled: 'נסלק לפלטפורמה',
-  escrow_held: 'בנאמנות',
-  escrow_released: 'שוחרר מנאמנות',
-  redeemed: 'מומש',
-  refunded: 'הוחזר',
-  cancelled: 'בוטל',
 }
 
 export const ESCROW_STATUS_LABELS: Record<EscrowStatus, string> = {

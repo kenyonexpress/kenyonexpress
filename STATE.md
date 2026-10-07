@@ -1,11 +1,11 @@
-RESUME FROM: M09-c116
+RESUME FROM: M10-c116
 
 # KenyonExpress — Project State
 
-Last item: **M08-c116 DONE** (2026-10-07): Lighthouse mobile on `/` and `/product/מוצר-לדוגמא`, 3 runs each, on a fresh local production build of HEAD `c20e54637` (plus the two uncommitted UI edits). **Median Performance: home 82, product 84**, the same as M08-c115. Accessibility 100, Best Practices 96 (local-only console errors) and SEO 100 on all 6 runs. The full table is in the archive.
-Decision: c116 re-measures, so the scores were re-taken and not copied from M08-c115. No code change. Line 1 moves to `RESUME FROM: M09-c116`. The uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` edits and `logs/` are still left alone.
-M08-c116 gates (working tree incl. those two edits): `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6474 passed, 12 skipped), `pnpm build` 0 on attempt 1. Not a UI change, so compare.mjs does not apply (blocked anyway, blocker 0).
-Previous: M07-c116 DONE, M06-c116 DONE, M05-c116 DONE, M04-c116 DONE, M03-c116 BLOCKED, M02-c116 BLOCKED, M01-c116 BLOCKED, M18-c115 DONE, M16-c115 DONE, M15-c115 DONE, M14-c115 BLOCKED, M13-c115 BLOCKED, M12-c115 DONE, M11-c115 DONE, M10-c115 BLOCKED, M09-c115 DONE, M08-c115 DONE, M07-c115 DONE, M06-c115 DONE, M05-c115 DONE, M04-c115 DONE, M03-c115 BLOCKED, M02-c115 BLOCKED, M01-c115 BLOCKED (all 2026-10-07), M11-c113 DONE (2026-10-06).
+Last item: **M09-c116 DONE** (2026-10-07): unused deps and dead exports re-scanned. **0 deps removed**: every name in `package.json` has an importer, apart from the deliberate keeps from M09-c115. The component ledger is unchanged (0 new, 9 frozen). A new scan of non-component modules and runtime exports found more dead code. **Deleted 4 dead modules**: `hooks/useSearch.ts` (a client search hook, which the no-search rule forbids anyway), `lib/revslider-authored.ts`, `lib/supabase/public.ts` (a duplicate of `anon.ts`) and the `lib/observability/index.ts` barrel. **Deleted 9 dead exports**: 5 admin label maps, `HERO_ICONS`, `HOMEPAGE_206_NOT_APPLIED`, `validateCartInputSchema` and `getCategoryChildren`. The full list and the keeps are in the archive.
+Decision: kept the Cardcom functions (payments are out of scope), the unwired server actions and course, upload and storage modules (product decisions for Ofir), the redis and meilisearch clients, the drizzle schema, docs-cited symbols and the `__reset*` test seams. The uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` edits and `logs/` are still left alone.
+M09-c116 gates (working tree incl. those two edits): `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6474 passed, 12 skipped), `pnpm build` 0 on attempt 2. Attempt 1 hit the Supabase `fetch failed` network flake at `/coupons/[id]`. Nothing was mounted on a route, so this is not a UI change and compare.mjs does not apply (blocked anyway, blocker 0).
+Previous: M08-c116 DONE, M07-c116 DONE, M06-c116 DONE, M05-c116 DONE, M04-c116 DONE, M03-c116 BLOCKED, M02-c116 BLOCKED, M01-c116 BLOCKED, M18-c115 DONE, M16-c115 DONE, M15-c115 DONE, M14-c115 BLOCKED, M13-c115 BLOCKED, M12-c115 DONE, M11-c115 DONE, M10-c115 BLOCKED, M09-c115 DONE, M08-c115 DONE, M07-c115 DONE, M06-c115 DONE, M05-c115 DONE, M04-c115 DONE, M03-c115 BLOCKED, M02-c115 BLOCKED, M01-c115 BLOCKED (all 2026-10-07), M11-c113 DONE (2026-10-06).
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
 M18-c115 gates: `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6473 passed, 12 skipped), `pnpm build` 0 on attempt 1. These ran on the working tree, which still had the two uncommitted UI edits. Not a UI change, so compare.mjs does not apply (it is blocked anyway, blocker 0).
 
@@ -45,6 +45,7 @@ The runner's `final-done.txt` lists M01–M10 of c113 as finished. This branch's
 | M06-c116 | pnpm build, fix drift | **DONE**: exit 0 on attempt 4; fixed 254 false `db.query_failed` logs from the prerender abort (see archive) |
 | M07-c116 | TODO/FIXME older than 7 days: resolve or file in docs/BACKLOG.md | **DONE**: re-scan found only the 2 filed Cardcom markers (B1, B2), nothing new |
 | M08-c116 | Lighthouse mobile on / and /product sample, log scores | **DONE**: median perf 82 / 84, a11y 100, BP 96, SEO 100 (see archive) |
+| M09-c116 | Remove unused deps and dead exports | **DONE**: 0 deps to drop; 4 dead modules and 9 dead exports deleted (see archive) |
 
 ## Open blockers
 

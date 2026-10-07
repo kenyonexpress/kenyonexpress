@@ -413,7 +413,7 @@ Forbidden on Vercel functions: drizzle query runtime / raw `postgres` pools (PER
 
 | Client | File | When |
 |---|---|---|
-| Public anon | `src/lib/supabase/public.ts` | `use cache` catalog (no cookies) |
+| Public anon | `src/lib/supabase/anon.ts` | `use cache` catalog (no cookies) |
 | User session | `src/lib/supabase/server.ts` | Account, cart merge identity |
 | Browser | `src/lib/supabase/client.ts` | Interactive UI only |
 | Admin service | `src/lib/supabase/admin.ts` | Webhook, finalize, guest cart write, crons |

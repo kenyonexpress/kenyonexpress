@@ -53,9 +53,6 @@ export function homepageTableMissing(error: { code?: string } | null | undefined
 export const HOMEPAGE_NOT_APPLIED =
   'טבלאות עמוד הבית עדיין לא הוחלו. ראו migrations/applied/127_homepage_cms.sql'
 
-export const HOMEPAGE_206_NOT_APPLIED =
-  'הסוגים החדשים דורשים את migrations/pending/206_homepage_merchandising.sql, שעדיין לא הוחלה.'
-
 export async function listHomepageSections(): Promise<{
   sections: AdminSectionRow[]
   applied: boolean
