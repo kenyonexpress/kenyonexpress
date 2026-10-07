@@ -1,5 +1,18 @@
 # Apply order
 
+## 2026-10-07: 231, after 189 and 222
+
+`231_reviews_anon_select.sql` grants `anon` SELECT on the public columns of
+`reviews` (`id, product_id, rating, title, body, status, created_at,
+supplier_reply, supplier_replied_at, helpful_count`, whichever exist). Production
+has the `reviews_public_read_approved` policy but no anon grant, so every guest
+read 42501s (measured M06-c117). Apply after 189 and 222 so `title` and
+`helpful_count` are included; it is idempotent and can be re-run. It raises if
+`anon` ends up able to read `user_id` or `order_item_id`.
+
+**Check after applying:** the anon key on
+`/rest/v1/reviews?select=id,rating&status=eq.approved&limit=1` returns 200.
+
 ## 2026-09-10: 230, and it can go in at any point
 
 `230_revoke_surplus_client_dml.sql` takes INSERT, UPDATE and DELETE away from

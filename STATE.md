@@ -1,10 +1,10 @@
-RESUME FROM: M06-c117
+RESUME FROM: M07-c117
 
 # KenyonExpress — Project State
 
-Last item: **M05-c117 DONE** (2026-10-07): `pnpm test` (vitest) exits 0: 519 files passed, 6474 tests passed, 12 skipped, 0 failed. The jsdom "Not implemented: navigation" stderr lines are known noise, not failures. No drift to fix and no code change. Next ID: M06-c117.
-M05-c117 gates (working tree, the two uncommitted UI edits still unstaged): type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1. Docs-only change.
-Previous: M04-c117 DONE, M03-c117 BLOCKED, M02-c117 BLOCKED, M01-c117 BLOCKED, M18-c116 DONE, M17-c116 BLOCKED, M16-c116 DONE, M15-c116 DONE, M14-c116 BLOCKED, M13-c116 BLOCKED, M12-c116 DONE, M11-c116 DONE, M10-c116 BLOCKED, M09-c116 DONE, M08-c116 DONE, M07-c116 DONE, M06-c116 DONE, M05-c116 DONE, M04-c116 DONE, M03-c116 BLOCKED, M02-c116 BLOCKED, M01-c116 BLOCKED, M18-c115 DONE, M16-c115 DONE, M15-c115 DONE, M14-c115 BLOCKED, M13-c115 BLOCKED, M12-c115 DONE, M11-c115 DONE, M10-c115 BLOCKED, M09-c115 DONE, M08-c115 DONE, M07-c115 DONE, M06-c115 DONE, M05-c115 DONE, M04-c115 DONE, M03-c115 BLOCKED, M02-c115 BLOCKED, M01-c115 BLOCKED (all 2026-10-07), M11-c113 DONE (2026-10-06).
+Last item: **M06-c117 DONE** (2026-10-07): `pnpm build` exits 0 on attempt 1 (and again on the re-run after the fix). Drift found: 182 `supabase.rls_denied` ERROR lines on `reviews` (401, code 42501). Production `anon` has no SELECT grant on `reviews` although the `reviews_public_read_approved` policy exists, so every guest review/rating read fails. Fix written as `migrations/pending/231_reviews_anon_select.sql` (column-level grant on public columns only), not applied; the 182 lines stay until Ofir applies it. Next ID: M07-c117.
+M06-c117 gates (working tree, the two uncommitted UI edits still unstaged): type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0. Not a UI change, so compare.mjs does not apply (and is blocked anyway, blocker 0).
+Previous: M05-c117 DONE, M04-c117 DONE, M03-c117 BLOCKED, M02-c117 BLOCKED, M01-c117 BLOCKED, M18-c116 DONE, M17-c116 BLOCKED, M16-c116 DONE, M15-c116 DONE, M14-c116 BLOCKED, M13-c116 BLOCKED, M12-c116 DONE, M11-c116 DONE, M10-c116 BLOCKED, M09-c116 DONE, M08-c116 DONE, M07-c116 DONE, M06-c116 DONE, M05-c116 DONE, M04-c116 DONE, M03-c116 BLOCKED, M02-c116 BLOCKED, M01-c116 BLOCKED, M18-c115 DONE, M16-c115 DONE, M15-c115 DONE, M14-c115 BLOCKED, M13-c115 BLOCKED, M12-c115 DONE, M11-c115 DONE, M10-c115 BLOCKED, M09-c115 DONE, M08-c115 DONE, M07-c115 DONE, M06-c115 DONE, M05-c115 DONE, M04-c115 DONE, M03-c115 BLOCKED, M02-c115 BLOCKED, M01-c115 BLOCKED (all 2026-10-07), M11-c113 DONE (2026-10-06).
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
 
 ## Queue status (cycle c113)
@@ -58,6 +58,7 @@ The runner's `final-done.txt` lists M01–M10 of c113 as finished. This branch's
 | M03-c117 | Re-measure compare.mjs on /category | **BLOCKED**: exit 5 at 380/768/1440, gate refuses, no reference (see archive) |
 | M04-c117 | pnpm type-check, fix drift | **DONE**: exit 0, no drift, no code change |
 | M05-c117 | pnpm test, fix drift | **DONE**: exit 0, 6474 passed, 12 skipped, no drift, no code change |
+| M06-c117 | pnpm build, fix drift | **DONE**: exit 0; anon 42501 on `reviews` found, fix written as pending 231 (see archive) |
 
 ## Open blockers
 
@@ -71,6 +72,7 @@ The runner's `final-done.txt` lists M01–M10 of c113 as finished. This branch's
 
 ## Manual items for Ofir
 
+- Apply `migrations/pending/231_reviews_anon_select.sql` after 189 and 222 (M06-c117). Production `anon` cannot read `reviews` (42501), so guests see no ratings once reviews exist. Check: the anon key on `/rest/v1/reviews?select=id,rating&status=eq.approved&limit=1` returns 200.
 - Decide on the uncommitted `SiteFooter.tsx` edit. It fixes the one RTL leak M17-c116 found: the footer email placeholder renders flush left and, on HEAD, in flipped order. The agent cannot commit it while compare.mjs has no reference. Commit it yourself, or restore the reference first.
 
 - Provide a usable parity reference: either restore `refs/ke_live_singlefile.html` (a self-contained SingleFile save of the old WooCommerce home) or a host that still serves the old site. Until then compare.mjs cannot produce a number (M01-c115, re-confirmed M01-c116, M01-c117, M02-c116, M02-c117, M03-c116 and M03-c117).

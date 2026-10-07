@@ -944,6 +944,12 @@ describe('the pending migration inventory', () => {
       // roll itself back. Its guard refuses if any target has since gained a
       // client write policy or a column-level grant.
       '230_revoke_surplus_client_dml.sql',
+      // 231 WRITTEN 2026-10-07 (M06-c117), not applied. Production has the
+      // `reviews_public_read_approved` policy but `anon` holds no SELECT on
+      // `reviews`, so every guest read 42501s and the build logged 182
+      // `supabase.rls_denied` lines. Column-level grant on the public columns
+      // only; it raises if `anon` can read `user_id` or `order_item_id`.
+      '231_reviews_anon_select.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

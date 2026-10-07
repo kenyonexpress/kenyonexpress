@@ -1,5 +1,12 @@
 # `migrations/pending/`
 
+## 2026-10-07: 231 WRITTEN, not applied - ‏אורח לא יכול לקרוא ביקורות מאושרות
+
+‏`231_reviews_anon_select.sql`. ‏נמדד בפרודקשן (M06-c117): ‏`anon` מקבל ‏42501 על
+‏`reviews`, למרות שהמדיניות ‏`reviews_public_read_approved` קיימת. ‏הקובץ נותן
+‏`GRANT SELECT` ברמת עמודה על העמודות הציבוריות בלבד, בלי ‏`user_id` ו-`order_item_id`.
+‏להחיל אחרי 189 ו-222. ‏ראו ‏`APPLY-ORDER.md`.
+
 ## 2026-09-10: 230 WRITTEN, not applied - ‏114 הרשאות כתיבה שאף אחד לא יכול להשתמש בהן
 
 ‏`230_revoke_surplus_client_dml.sql`. ‏38 שורות ‏REVOKE, שני בלוקי ‏DO. לא נוצר

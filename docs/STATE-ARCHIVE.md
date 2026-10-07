@@ -21548,3 +21548,11 @@ Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=categ
 
 - No diff numbers, unchanged from M03-c116. `refs/ke_live_singlefile.html` is still absent. The gate appended four REFUSED rows to `docs/UI-PARITY-REPORT.md` (the fourth is a second 380 run to capture the refusal reason). They are committed with this item.
 - No code change. Gates: `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6474 passed, 12 skipped), `pnpm build` 0.
+
+## M06-c117 — pnpm build, fix drift (DONE, 2026-10-07)
+
+- `pnpm build` exited 0 on attempt 1. The log held 182 `supabase.rls_denied` ERROR lines on `reviews` (GET, 401) and matching `reviews.summaries_failed` / `reviews.read_failed` warns with code 42501. There were 0 `db.query_failed` lines.
+- Probe with the anon key: `/rest/v1/reviews?select=id&limit=1` returned 401 `42501 permission denied for table reviews` (hint: `GRANT SELECT ON public.reviews TO anon`), and `/rest/v1/products` returned 200. The `reviews_public_read_approved` policy (154) exists, but the grant under it does not. Guests get no review list and no rating stars. This is hidden today only because production holds 0 approved reviews.
+- Fix: `migrations/pending/231_reviews_anon_select.sql`, not applied. It grants column-level SELECT to `anon` on `id, product_id, rating, title, body, status, created_at, supplier_reply, supplier_replied_at, helpful_count` (only the columns that exist). It does not grant `user_id`, `order_item_id` or `reviewed_*`, and it raises if `anon` can read `user_id` or `order_item_id`. Apply it after 189 and 222. It is listed in `migrations/pending/README.md` and `APPLY-ORDER.md` and in the inventory test.
+- No app code changed. The build still logs the 182 lines until the file is applied.
+- Gates (working tree, with the uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` edits left untouched and unstaged): type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0. Not a UI change, so compare.mjs does not apply.
