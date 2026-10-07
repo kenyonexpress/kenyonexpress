@@ -228,7 +228,10 @@ function checkEmail(env: NodeJS.ProcessEnv): DependencyReport {
 /** Object storage for the image pipeline and the invoice PDFs. */
 function checkStorage(env: NodeJS.ProcessEnv): DependencyReport {
   const configured = Boolean(
-    env.R2_ACCOUNT_ID && env.R2_ACCESS_KEY_ID && env.R2_SECRET_ACCESS_KEY && env.R2_BUCKET,
+    env.R2_ACCOUNT_ID &&
+      env.R2_ACCESS_KEY_ID &&
+      env.R2_SECRET_ACCESS_KEY &&
+      (env.R2_BUCKET || env.R2_BUCKET_NAME),
   )
   return {
     name: 'storage',

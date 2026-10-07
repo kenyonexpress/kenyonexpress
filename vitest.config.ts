@@ -54,6 +54,7 @@ export default defineConfig({
       'src/**/*.test.tsx',
       'scripts/wp-import/**/*.test.mjs',
       'scripts/media-ingest/**/*.test.mjs',
+      'scripts/r2-promote/**/*.test.mjs',
       'scripts/seed/**/*.test.ts',
       'scripts/dr/**/*.test.mjs',
       'scripts/axiom/**/*.test.mjs',

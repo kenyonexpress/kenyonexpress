@@ -18,12 +18,21 @@ const ALGORITHM = 'AWS4-HMAC-SHA256'
 const REGION = 'auto'
 const SERVICE = 's3'
 
+/**
+ * The bucket under either name: the app reads `R2_BUCKET`, the Vercel project
+ * was provisioned with `R2_BUCKET_NAME` (measured 2026-10-06). Accepting both
+ * is cheaper than a rename that has to land in two places at once.
+ */
+export function r2BucketEnv(): string {
+  return process.env.R2_BUCKET || process.env.R2_BUCKET_NAME || ''
+}
+
 export function isR2Configured(): boolean {
   return Boolean(
     process.env.R2_ACCOUNT_ID &&
       process.env.R2_ACCESS_KEY_ID &&
       process.env.R2_SECRET_ACCESS_KEY &&
-      process.env.R2_BUCKET &&
+      r2BucketEnv() &&
       process.env.R2_PUBLIC_BASE_URL,
   )
 }
@@ -81,7 +90,7 @@ export async function createR2PresignedPutUrl(
   const accountId = process.env.R2_ACCOUNT_ID as string
   const accessKeyId = process.env.R2_ACCESS_KEY_ID as string
   const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY as string
-  const bucket = process.env.R2_BUCKET as string
+  const bucket = r2BucketEnv()
 
   const host = `${accountId}.r2.cloudflarestorage.com`
   const canonicalUri = `/${bucket}/${encodeKey(key)}`

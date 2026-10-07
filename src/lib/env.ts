@@ -20,6 +20,13 @@ const schema = z
     NEXT_PUBLIC_SUPABASE_URL: z.string().url().optional(),
     NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(20).optional(),
     /**
+     * '1' sends stored `/images/products/*` and `/images/cdn/*` paths through
+     * the signed R2 proxy (src/lib/images/r2-paths.ts). Set only after
+     * scripts/r2-promote has uploaded and verified every object; unset is the
+     * rollback. Inlined at build time, so it is a redeploy either way.
+     */
+    NEXT_PUBLIC_R2_IMAGES: z.enum(['0', '1']).optional(),
+    /**
      * Server-side override for the anon key, read first by
      * `lib/supabase/anon-key.ts`. Exists for rotation: an env change moves the
      * server to a new key without waiting for the rebuild that updates the

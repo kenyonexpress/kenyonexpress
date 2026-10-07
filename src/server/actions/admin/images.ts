@@ -10,7 +10,7 @@ import {
   validateImageDimensions,
 } from '@/lib/images/validate'
 import { withActionContext } from '@/lib/observability/action-context'
-import { createR2PresignedPutUrl, isR2Configured, r2PublicUrl } from '@/lib/storage/r2'
+import { createR2PresignedPutUrl, isR2Configured, r2BucketEnv, r2PublicUrl } from '@/lib/storage/r2'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 export type UploadedAsset = {
@@ -138,7 +138,7 @@ async function runProcessAndUploadImage(formData: FormData): Promise<UploadImage
         avif: avif.map(({ w, url }) => ({ w, url })),
       },
       provider: useR2 ? 'r2' : 'supabase',
-      bucket: useR2 ? process.env.R2_BUCKET : bucket,
+      bucket: useR2 ? r2BucketEnv() : bucket,
       base_path: basePath,
       created_by: session.userId,
     })

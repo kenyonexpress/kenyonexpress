@@ -16,12 +16,22 @@ const ALGORITHM = 'AWS4-HMAC-SHA256'
 const REGION = 'auto' // R2 has one region and requires this literal
 const SERVICE = 's3'
 
+/**
+ * The bucket, under either name. The app and these scripts read `R2_BUCKET`;
+ * the Vercel project was provisioned with `R2_BUCKET_NAME` (measured
+ * 2026-10-06 with `vercel env ls`). Accepting both is cheaper than a rename
+ * that has to land in two places at once.
+ */
+export function bucketName() {
+  return process.env.R2_BUCKET || process.env.R2_BUCKET_NAME || ''
+}
+
 export function isR2Configured() {
   return Boolean(
     process.env.R2_ACCOUNT_ID &&
       process.env.R2_ACCESS_KEY_ID &&
       process.env.R2_SECRET_ACCESS_KEY &&
-      process.env.R2_BUCKET,
+      bucketName(),
   )
 }
 
@@ -85,7 +95,7 @@ export async function r2Put(key, body, { contentType = 'image/webp', ifNoneMatch
       'R2 is not configured (R2_ACCOUNT_ID / R2_ACCESS_KEY_ID / R2_SECRET_ACCESS_KEY / R2_BUCKET)',
     )
 
-  const bucket = process.env.R2_BUCKET
+  const bucket = bucketName()
   const host = new URL(endpoint()).host
   const canonicalUri = `/${bucket}/${encodeKey(key)}`
 
@@ -144,6 +154,61 @@ export async function r2Put(key, body, { contentType = 'image/webp', ifNoneMatch
   }
 
   return { key, url: r2PublicUrl(key), skipped: false }
+}
+
+/**
+ * HEAD one object with a signed request: the verification step after a PUT,
+ * and the only read that works before a public domain exists on the bucket
+ * (a bucket with no custom domain and no r2.dev subdomain enabled answers
+ * nothing unsigned). Returns the metadata R2 reports, never throws on 404.
+ */
+export async function r2Head(key) {
+  if (!isR2Configured())
+    throw new Error(
+      'R2 is not configured (R2_ACCOUNT_ID / R2_ACCESS_KEY_ID / R2_SECRET_ACCESS_KEY / R2_BUCKET)',
+    )
+  const bucket = bucketName()
+  const host = new URL(endpoint()).host
+  const canonicalUri = `/${bucket}/${encodeKey(key)}`
+  const now = new Date()
+  const amzDate = `${now
+    .toISOString()
+    .replace(/[:-]|\.\d{3}/g, '')
+    .slice(0, 15)}Z`
+  const date = amzDate.slice(0, 8)
+  const payloadHash = hex(sha256(''))
+  const headers = { host, 'x-amz-content-sha256': payloadHash, 'x-amz-date': amzDate }
+  const signedHeaders = Object.keys(headers).sort()
+  const canonicalHeaders = `${signedHeaders.map((h) => `${h}:${headers[h]}`).join('\n')}\n`
+  const signedHeaderList = signedHeaders.join(';')
+  const canonicalRequest = [
+    'HEAD',
+    canonicalUri,
+    '',
+    canonicalHeaders,
+    signedHeaderList,
+    payloadHash,
+  ].join('\n')
+  const scope = `${date}/${REGION}/${SERVICE}/aws4_request`
+  const stringToSign = [ALGORITHM, amzDate, scope, hex(sha256(canonicalRequest))].join('\n')
+  const signature = hex(hmac(signingKey(process.env.R2_SECRET_ACCESS_KEY, date), stringToSign))
+  const response = await fetch(`${endpoint()}${canonicalUri}`, {
+    method: 'HEAD',
+    headers: {
+      ...headers,
+      Authorization: `${ALGORITHM} Credential=${process.env.R2_ACCESS_KEY_ID}/${scope}, SignedHeaders=${signedHeaderList}, Signature=${signature}`,
+    },
+  })
+  if (response.status === 404) return { key, exists: false, status: 404 }
+  if (!response.ok) throw new Error(`R2 HEAD ${key} failed: ${response.status}`)
+  return {
+    key,
+    exists: true,
+    status: response.status,
+    contentType: response.headers.get('content-type'),
+    contentLength: Number(response.headers.get('content-length') ?? 0),
+    etag: response.headers.get('etag'),
+  }
 }
 
 /**

@@ -213,6 +213,17 @@ const nextConfig: NextConfig = {
      * customer-facing page rather than a broken image.
      */
     remotePatterns: [...REMOTE_IMAGE_PATTERNS],
+    /**
+     * One loader for every image on the site, and it is Next's own loader
+     * with one addition: with NEXT_PUBLIC_R2_IMAGES=1 a stored
+     * `/images/products/*` or `/images/cdn/*` path is fetched by the
+     * optimizer from the signed R2 proxy (src/app/images/r2) instead of from
+     * public/. Byte-equal to the default for everything else; the test next
+     * to the file pins that, because a loader is in the path of every
+     * product photo and a drift here is a drift on every page.
+     */
+    loader: 'custom',
+    loaderFile: './src/lib/images/loader.ts',
   },
   compiler: {
     /**
