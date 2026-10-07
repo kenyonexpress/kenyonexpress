@@ -21899,3 +21899,15 @@ Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=categ
 > M17-c118 gates (working tree): type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (19 recoverable `supabase.timeout` logs, 0 `db.query_failed`).
 
 - Gates (working tree, with the uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` edits left unstaged): type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (9 recoverable `supabase.timeout` logs, 0 `db.query_failed`). Docs-only change, so compare.mjs does not apply (blocked anyway, blocker 0).
+
+## M06-c119 — pnpm build, fix drift (2026-10-08) — DONE
+
+- `pnpm build` exit 0 on attempt 1 at HEAD `7e8f58041`. No drift to fix, no code change.
+- Prerender log: 1 `db.query_failed` (`reviews`, `fetch failed`, 7 ms, transient, page rendered), 59 `db.query_slow` (1.5 to 5.4 s), `homepage.cms_read_failed`, `referrals.settings_read_failed` and `stock.available_read_failed` warnings from the expected prerender fetch abort, and the known `reviews` 42501 (401) that pending `231_reviews_anon_select.sql` fixes.
+- Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0. Uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` left unstaged. No compare.mjs run: not a UI item.
+
+## M05-c119: status lines moved from STATE.md
+
+> Last item: **M05-c119 DONE** (2026-10-08): `pnpm test` (vitest) exit 0 at HEAD `c38901d99`: 519 files, 6474 passed, 12 skipped, 0 failed. No drift, no code change. Unchanged from M05-c117 and M04-c119.
+>
+> M05-c119 gates (working tree, uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` UI edits left unstaged): type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (7 log lines matching `timeout`, all recovered; 0 `db.query_failed`). Blocker 7 did not recur. No compare.mjs run: not a UI item, no UI change committed.
