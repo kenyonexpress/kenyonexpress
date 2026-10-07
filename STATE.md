@@ -1,10 +1,10 @@
-RESUME FROM: M12-c117
+RESUME FROM: M13-c117
 
 # KenyonExpress — Project State
 
-Last item: **M11-c117 DONE** (2026-10-07): sitemap.xml re-verified against production. Index 200 `application/xml`, 5/5 section files 200, 94 URLs (content 15, categories 12, products 44, regions 17, suppliers 6), 0 duplicates, 0 `e2e-test` slugs, newest lastmods unchanged from M11-c116. All 94 URLs reach 200 on www (35 needed one retry after a local link drop). Apex still 308 to www (blocker 1). No code change. Next ID: M12-c117.
-M11-c117 gates: see the commit message. No UI change, so compare.mjs does not apply (blocked anyway, blocker 0).
-Previous: M10-c117 BLOCKED, M09-c117 DONE, M08-c117 DONE, M07-c117 DONE, M06-c117 DONE, M05-c117 DONE, M04-c117 DONE, M03-c117 BLOCKED, M02-c117 BLOCKED, M01-c117 BLOCKED, M18-c116 DONE, M17-c116 BLOCKED, M16-c116 DONE, M15-c116 DONE, M14-c116 BLOCKED, M13-c116 BLOCKED, M12-c116 DONE, M11-c116 DONE, M10-c116 BLOCKED, M09-c116 DONE, M08-c116 DONE, M07-c116 DONE, M06-c116 DONE, M05-c116 DONE, M04-c116 DONE, M03-c116 BLOCKED, M02-c116 BLOCKED, M01-c116 BLOCKED, M18-c115 DONE, M16-c115 DONE, M15-c115 DONE, M14-c115 BLOCKED, M13-c115 BLOCKED, M12-c115 DONE, M11-c115 DONE, M10-c115 BLOCKED, M09-c115 DONE, M08-c115 DONE, M07-c115 DONE, M06-c115 DONE, M05-c115 DONE, M04-c115 DONE, M03-c115 BLOCKED, M02-c115 BLOCKED, M01-c115 BLOCKED (all 2026-10-07), M11-c113 DONE (2026-10-06).
+Last item: **M12-c117 DONE** (2026-10-07): robots.txt re-verified against production at 14:13 UTC. www 200 `text/plain`, apex 308 to www (blocker 1). Live file identical to `src/app/robots.ts`: `Allow: /`, 16 `Disallow:` prefixes, `Host:` and `Sitemap:` on the apex. 0 of 94 sitemap URLs blocked; credential paths disallowed and noindex; home has no robots meta or `X-Robots-Tag`. No code change. Next ID: M13-c117.
+M12-c117 gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1. No UI change, so compare.mjs does not apply (blocked anyway, blocker 0).
+Previous: M11-c117 DONE, M10-c117 BLOCKED, M09-c117 DONE, M08-c117 DONE, M07-c117 DONE, M06-c117 DONE, M05-c117 DONE, M04-c117 DONE, M03-c117 BLOCKED, M02-c117 BLOCKED, M01-c117 BLOCKED, M18-c116 DONE, M17-c116 BLOCKED, M16-c116 DONE, M15-c116 DONE, M14-c116 BLOCKED, M13-c116 BLOCKED, M12-c116 DONE, M11-c116 DONE, M10-c116 BLOCKED, M09-c116 DONE, M08-c116 DONE, M07-c116 DONE, M06-c116 DONE, M05-c116 DONE, M04-c116 DONE, M03-c116 BLOCKED, M02-c116 BLOCKED, M01-c116 BLOCKED, M18-c115 DONE, M16-c115 DONE, M15-c115 DONE, M14-c115 BLOCKED, M13-c115 BLOCKED, M12-c115 DONE, M11-c115 DONE, M10-c115 BLOCKED, M09-c115 DONE, M08-c115 DONE, M07-c115 DONE, M06-c115 DONE, M05-c115 DONE, M04-c115 DONE, M03-c115 BLOCKED, M02-c115 BLOCKED, M01-c115 BLOCKED (all 2026-10-07), M11-c113 DONE (2026-10-06).
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
 
 ## Queue status (cycle c113)
@@ -64,6 +64,7 @@ The runner's `final-done.txt` lists M01–M10 of c113 as finished. This branch's
 | M09-c117 | Remove unused deps and dead exports | **DONE**: 0 deps to drop; `lib/search.ts` and 2 dead exports deleted (see archive) |
 | M10-c117 | Verify migrations/pending/ applied or file blocker | **BLOCKED**: re-probe unchanged, 6 live but unrecorded, 22 not applied, new 231 not applied (anon reviews 401); needs Ofir (see archive) |
 | M11-c117 | Verify sitemap.xml fresh and reachable | **DONE**: 5/5 section files 200, 94/94 URLs 200 on www, lastmods unchanged (see archive) |
+| M12-c117 | Verify robots.txt production-safe | **DONE**: live file matches source, 0/94 sitemap URLs blocked, credential paths disallowed + noindex, unchanged from M12-c116 (see archive) |
 
 ## Open blockers
 

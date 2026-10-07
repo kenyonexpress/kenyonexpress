@@ -156,6 +156,13 @@ Setup: the same as M08-c115. Lighthouse 13.4.1 from the repo (`pnpm exec lightho
 - Unit tests: `src/app/api/health` and `src/lib/health` have 3 files and 23 tests, and all pass. Production runs `origin/main`, not this branch (blocker 4), but the route code is the same contract.
 - Gates in this run: `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6473 passed, 12 skipped), `pnpm build` 0 on the first attempt. This is not a UI change, so compare.mjs was not needed (and it would refuse anyway, see blocker 0). `logs/` is untracked and not part of this commit.
 
+## M12-c117: robots.txt, re-measured 2026-10-07 14:13 UTC against production
+
+- `https://www.kenyonexpress.co.il/robots.txt` returns 200 `text/plain; charset=utf-8`; the apex returns 308 to `www` (blocker 1). Content is identical to what `src/app/robots.ts` emits: `User-Agent: *`, `Allow: /`, the same 16 `Disallow:` prefixes as M12-c116, `Host:` and `Sitemap:` on the apex.
+- Not over-blocking: the 94 `<loc>` URLs from the 5 live sitemap section files (0 duplicates) were matched against the 16 prefixes, raw and percent-decoded: **0 blocked**. The home page returns 200 with no robots meta and no `X-Robots-Tag`.
+- Not under-blocking, probed live: `/redeem/x` 200 noindex,nofollow; `/gift/x` 200 noindex; `/order/x/tracking` 200 noindex,nofollow; `/coupon/x` 307; `/debug/sentry` 200 noindex (disallowed); `/dev/emails` 404.
+- `src/app/robots.ts` and `robots.test.ts` have no diff against HEAD. No code change. Gates: see STATE.md.
+
 ## M12-c116: robots.txt, re-measured 2026-10-07 11:57 UTC against production
 
 - `https://www.kenyonexpress.co.il/robots.txt` returns 200 `text/plain; charset=utf-8`; the apex returns 308 to `www` (blocker 1). Content is identical to what `src/app/robots.ts` emits: `User-Agent: *`, `Allow: /`, 16 `Disallow:` lines (`/redeem/ /coupon/ /gift/ /order/ /wishlist/s/ /account/ /supplier/ /scan /admin/ /checkout /cart /auth/ /api/ /reset-password /forgot-password /debug/`), `Host:` and `Sitemap:` on the apex. Unchanged from M12-c115.
