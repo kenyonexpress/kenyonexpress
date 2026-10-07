@@ -17,7 +17,9 @@ to a 30-day retention window while never keeping fewer than the newest 7
 backups. `.github/workflows/db-restore-drill.yml` restores the newest dump into
 a throwaway Postgres 17 container every quarter and hard-gates on
 `scripts/dr/verify-restore.sql`. Both notify `ntfy.sh` (topic in the
-`CRON_NTFY_TOPIC` repo variable).
+`CRON_NTFY_TOPIC` repo variable). `.github/workflows/backup-health.yml` is the
+watchdog over both plus the Supabase platform backups and PITR (STEP 38; see
+Monitoring below).
 
 Server is Postgres 17.6; every client (`pg_dump`, `pg_restore`, `psql`) must be
 version 17 or newer, or `pg_dump` refuses to connect.
@@ -65,6 +67,83 @@ Enablement status, measured 2026-09-09:
 - Prerequisite 2 is already satisfied: the workflows, `scripts/dr/`, and this
   runbook are all merged to `origin/main`, so the crons arm the moment the
   settings exist.
+
+Re-measured 2026-10-08 (STEP 38), through the GitHub API and the Supabase
+management API, read-only:
+
+- `db-backup.yml` on `main` has fired every day; every run concludes
+  `skipped` (newest 2026-10-07T10:00Z, run 37604419442). `db-restore-drill.yml`
+  fired once on 2026-10-02 and was `skipped` too. Repo secrets are still
+  `CRON_SECRET` alone; `DB_BACKUP_ENABLED` is still absent. No R2 credential
+  exists in the shell, in either `.env.local`, or in Vercel (placeholders).
+  There is no `SUPABASE_DB_URL` (direct connection string) anywhere on this
+  machine either, so even the dump step could not be rehearsed locally.
+- Supabase (`GET /v1/projects/{ref}/database/backups`): Pro plan, 7 COMPLETED
+  physical backups, newest 20h old at measurement, `walg_enabled: true`,
+  `pitr_enabled: false`. Backup schedule customisation answers 402
+  (Enterprise only); the restore-point endpoint answers 400 (unavailable).
+- What changed in STEP 38: the watchdog below now says all of this out loud,
+  daily, instead of the two workflows finishing green while doing nothing.
+
+## Monitoring: `backup-health.yml` (daily, pages ntfy)
+
+`.github/workflows/backup-health.yml` runs `scripts/dr/backup-health.mjs` at
+06:30 UTC daily and on dispatch. It is deliberately **not** gated on
+`DB_BACKUP_ENABLED`: its job is to notice when the backups are off. Three legs,
+decided in `scripts/dr/health-lib.mjs` (unit-tested in
+`scripts/dr/health-lib.test.mjs`):
+
+| Leg | Needs | FAIL when | WARN when |
+|---|---|---|---|
+| GitHub Actions run history | the runner's own `GITHUB_TOKEN` (always present) | newest completed `db-backup` run is `skipped`, failed, missing, or a success older than 36h | last passing restore drill missing or older than 100 days; API unreachable |
+| Supabase platform backups | secret `SUPABASE_ACCESS_TOKEN` (optional) | no COMPLETED platform backup, or newest older than 36h | PITR off; WAL archiving off; API error |
+| R2 dump bucket | the four `BACKUP_R2_*` secrets (optional) | no dump under `postgres/`, or newest older than 36h | list error |
+
+A leg without credentials reports `unverified`, never healthy. Paging policy
+(`notifyPolicy`): any FAIL pages `ntfy.sh/$CRON_NTFY_TOPIC` at high priority
+on every run; a healthy state sends a Monday heartbeat carrying the warnings,
+so a silent Monday means the monitor itself is dead. The run exits 1 on any
+FAIL, so the Actions tab is red as well. Step summary carries the full table.
+
+Measured locally on 2026-10-08 (`node scripts/dr/backup-health.mjs --keychain
+--no-notify`, which borrows `gh auth token` and the Supabase CLI keychain token;
+CI never passes `--keychain`):
+
+```
+fail backup_skipped: db-backup.yml was skipped on 2026-10-07T10:00:01Z: DB_BACKUP_ENABLED is not "true", so zero dumps are written
+warn drill_never_passed: db-restore-drill.yml has never passed; no dump has ever been proven restorable
+info platform_backup_ok: Supabase platform backup 20h old, 7 completed in the window
+warn pitr_disabled: PITR is NOT enabled: RPO is 24h; enable with `node scripts/dr/pitr.mjs --enable --yes` (paid add-on)
+info r2_unverified: R2 backup bucket unverified (no BACKUP_R2_* credentials)
+error backups UNHEALTHY (1 fail)
+```
+
+That is the message Ofir's phone receives daily until `DB_BACKUP_ENABLED` and
+the secrets exist. To arm the two optional legs: a personal access token from
+`supabase.com/dashboard/account/tokens` as secret `SUPABASE_ACCESS_TOKEN`
+(optionally `SUPABASE_PROJECT_REF` as a variable; defaults to production), and
+the same `BACKUP_R2_*` four as the backup itself.
+
+## Point-in-time recovery: `scripts/dr/pitr.mjs`
+
+```bash
+node scripts/dr/pitr.mjs --status [--keychain]        # read-only
+node scripts/dr/pitr.mjs --enable --variant=pitr_7 --yes
+```
+
+Status reads `pitr_enabled`, `walg_enabled`, the newest platform backup, the
+compute tier and the PITR price list from the management API. Enable PATCHes
+`/v1/projects/{ref}/billing/addons` in the order `scripts/dr/pitr-lib.mjs`
+plans and prints the plan plus the monthly total first; it refuses without
+`--yes` because both steps are recurring charges on the organisation's card.
+
+Measured 2026-10-08: the project runs on Nano compute (`selected_addons: []`),
+and Supabase requires at least Small compute under PITR, so enabling costs
+**Small $15/month + pitr_7 $100/month = ~$115/month** (pitr_14 $200, pitr_28
+$400). This is a billing decision and it was **not** taken automatically; the
+watchdog reports `pitr_disabled` as a warning on every Monday heartbeat until
+it is. Once enabled, `docs/DISASTER-RECOVERY.md` §4 rows 1 and 2 drop from a
+24h RPO to minutes; row 3 (full project loss) does not change.
 
 ## Restore: quarterly drill (automated)
 
@@ -151,7 +230,9 @@ Implemented in `keysToPrune` (`scripts/dr/backup-lib.mjs`, unit-tested in
 | pg_dump cannot connect / wrong client version | `DB backup` run fails, ntfy fires |
 | Truncated or partial dump | TOC verification fails before upload; the bucket never sees it |
 | Corrupt object in R2 | sha256 mismatch in `restore-latest.mjs`; drill fails |
-| Backup job silently stopped (60-day repo inactivity pause, disabled variable) | Drill warns "newest dump over 36h old" and the dump age shows in every drill scorecard |
+| Backup job silently stopped (60-day repo inactivity pause, disabled variable, skipped on `if:`) | `backup-health.yml` pages ntfy daily with the reason (`backup_skipped` / `backup_stale`); the drill also warns "newest dump over 36h old" |
+| Supabase platform backup stopped or PITR silently off | `backup-health.yml` platform leg (`platform_backup_stale` FAIL, `pitr_disabled` WARN) once `SUPABASE_ACCESS_TOKEN` is set |
+| The monitor itself dies | No Monday heartbeat on ntfy |
 | Dump restores but data is wrong | `verify-restore.sql` floors; drill fails |
 
 ## Related
