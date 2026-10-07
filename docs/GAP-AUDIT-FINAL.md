@@ -80,7 +80,7 @@ Verified in code rather than rebuilt, which is what the brief asked for.
 | --- | --- | --- |
 | WhatsApp on the PDP with a per-product admin toggle | EXISTS | `SupplierInfo.tsx:72` reads `products.whatsapp_enabled`; the admin control is `ProductForm.tsx:1051`; column from `123_products_whatsapp_enabled.sql` |
 | Geo city tags + sorting | EXISTS | `src/components/geo/CityTags.tsx`, `src/lib/geo/cities.ts`, consumed by `src/lib/category-page.ts:4` |
-| Trust icons | EXISTS | `src/components/home/BenefitBar.tsx`, `src/components/layout/InfoBar.tsx` |
+| Trust icons | EXISTS | `src/components/home/BenefitBar.tsx` |
 | WordPress catalogue import | NOT NEEDED | The catalogue is real, not demo: 80 products, 45 active, with genuine Hebrew deals (hotels, treatments, restaurant platters) |
 
 **`whatsapp_enabled` is false on all 80 products.** The feature is built and

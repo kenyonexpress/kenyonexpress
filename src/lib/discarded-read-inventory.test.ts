@@ -68,7 +68,6 @@ const INVENTORY: Record<string, number> = {
   'src/app/api/cron/abandoned-cart/route.ts': 2,
   'src/app/api/supplier/vouchers/redeem/route.ts': 2,
   'src/app/auth/callback/route.ts': 1,
-  'src/components/home/FeaturedProducts.tsx': 1,
   'src/lib/admin/rbac.ts': 1,
   'src/lib/search/indexer.ts': 1,
   'src/proxy.ts': 1,

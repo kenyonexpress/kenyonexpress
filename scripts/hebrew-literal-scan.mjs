@@ -156,5 +156,10 @@ export function totalHebrewLiterals(files = scannedFiles()) {
  * lost one literal on the way -- its headline became a variable, because a
  * partial shipment must not claim the order "טופלה במלואה" -- so the number
  * fell by one. 662 -> 661.
+ *
+ * 2026-10-07, M09-c115: 14 components nothing imported were deleted (the
+ * store/ homepage generation, its shims, HeroExact, InfoBar, FeaturedProducts
+ * and its tabs, and four shadcn primitives). Their literals went with them.
+ * 661 -> 631.
  */
-export const HEBREW_LITERAL_CEILING = 661
+export const HEBREW_LITERAL_CEILING = 631

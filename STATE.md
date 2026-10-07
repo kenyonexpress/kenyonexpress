@@ -1,9 +1,9 @@
-RESUME FROM: M09-c115
+RESUME FROM: M10-c115
 
 # KenyonExpress — Project State
 
-Last item: **M08-c115 DONE** (2026-10-07): Lighthouse mobile on / and /product/מוצר-לדוגמא, 3 runs each against a local production build. Median Performance 82 (home) and 84 (product). Accessibility 100, Best Practices 96 and SEO 100 on both. No code change. Branch `feat/products-sort-infinite-scroll`.
-Previous: M07-c115 DONE (2026-10-07), M06-c115 DONE (2026-10-07), M05-c115 DONE (2026-10-07), M04-c115 DONE (2026-10-07), M03-c115 BLOCKED (2026-10-07), M02-c115 BLOCKED (2026-10-07), M01-c115 BLOCKED (2026-10-07), M11-c113 DONE (2026-10-06).
+Last item: **M09-c115 DONE** (2026-10-07): removed 9 unused npm dependencies and deleted 14 components nothing imported. No rendered page changed. Branch `feat/products-sort-infinite-scroll`.
+Previous: M08-c115 DONE (2026-10-07), M07-c115 DONE (2026-10-07), M06-c115 DONE (2026-10-07), M05-c115 DONE (2026-10-07), M04-c115 DONE (2026-10-07), M03-c115 BLOCKED (2026-10-07), M02-c115 BLOCKED (2026-10-07), M01-c115 BLOCKED (2026-10-07), M11-c113 DONE (2026-10-06).
 History before this item lives in `docs/STATE-ARCHIVE.md` (21,138 lines moved there in this commit).
 
 ## Queue status (cycle c113)
@@ -24,6 +24,17 @@ The runner's `final-done.txt` lists M01–M10 of c113 as finished. This branch's
 | M06-c115 | pnpm build, fix drift | **DONE**: exit 0 on attempt 4, no drift, no code change (see below) |
 | M07-c115 | TODO/FIXME older than 7 days: resolve or file in docs/BACKLOG.md | **DONE**: 1 resolved, 2 filed (see below) |
 | M08-c115 | Lighthouse mobile on / and /product sample, log scores | **DONE**: perf 82 / 84 median, a11y 100, BP 96, SEO 100 (see below) |
+| M09-c115 | Remove unused deps and dead exports | **DONE**: 9 deps removed, 14 dead components deleted (see below) |
+
+## M09-c115: unused deps and dead exports, run 2026-10-07
+
+- **Deps.** Each `dependencies`/`devDependencies` name was searched with `git grep` over the tracked tree (excluding docs, the lockfile and the archive). Removed, with zero importers: `@dnd-kit/core`, `@dnd-kit/sortable`, `@dnd-kit/utilities`, `@hookform/resolvers`, `@radix-ui/react-toast`. Then these were removed because their only importers were the deleted primitives below: `react-hook-form`, `@radix-ui/react-slot` (ui/form, ui/button), `@radix-ui/react-label` and `class-variance-authority` (ui/label).
+- **Kept on purpose**, even though no source imports them: `@types/*` (ambient types), `@vitest/coverage-v8` (`test:coverage`), `lint-staged` (`.husky/pre-commit`), and `@mdx-js/loader`, `@mdx-js/react` and `@types/mdx` (optional peers of `@next/mdx`, which `next.config.ts` uses). Removing a peer the MDX pipeline resolves at build time is not worth the risk for an item like this.
+- **Dead exports.** Deleted 12 of the 21 components frozen in `scripts/dead-component-known-issues.json`: the 3 `store/` re-export shims, `store/CategoryNav`, `store/CategoryProductSection`, `store/DealsSection`, `home/FeaturedProducts`, `home/HeroExact`, `layout/InfoBar` (its header said DEAD CODE), and `ui/button`, `ui/form`, `ui/textarea`. The deletions orphaned `home/FeaturedProductsTabs` and `ui/label`, so those 2 went too (14 files, about 700 lines). The ledger lists 9 now.
+- **Left in the ledger on purpose**: `home/Footer` (tokens.css names it), `admin/CategoryTree` (cited by other files' comments), `ui/dropdown-menu` and `ui/select` (named in `scripts/rtl-logical-scan.mjs`), `product/WishlistButton` (shim), and the unwired features `NewsletterSignup`, `LegalDocumentView`, `BlogPostHeader` and `CategorySort`. Wiring or dropping those is a product decision for Ofir, not a cleanup.
+- **Ratchets lowered** because of the deletions: `HEBREW_LITERAL_CEILING` went from 661 to 631 in `scripts/hebrew-literal-scan.mjs`. The `FeaturedProducts` entry left `src/lib/discarded-read-inventory.test.ts`. One stale doc path left `docs/GAP-AUDIT-FINAL.md`. `node scripts/final-audit.mjs` now reports 0 new and 0 stale dead components (184 scanned, 9 frozen).
+- Gates: `pnpm type-check` 0 and `pnpm lint` 0. `pnpm test` 0 on the second run (519 files, 6473 passed, 12 skipped). The first run failed for two reasons: the i18n ceiling, fixed above, and a 20 s timeout in `payment-alarm-push.test.ts` under load, which passed alone and in the full rerun. `pnpm build` 0 on the first attempt, with 46 `supabase.timeout` events that were absorbed.
+- Not a visual change, because no deleted file was mounted on any route. So compare.mjs was not run (it would refuse anyway, see blocker 0). The uncommitted `src/app/robots*.ts` edits (M12-c113) and `logs/` are not part of this commit.
 
 ## M08-c115: Lighthouse mobile on / and /product, run 2026-10-07 in the foreground
 
