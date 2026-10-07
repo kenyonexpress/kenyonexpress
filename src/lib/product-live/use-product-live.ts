@@ -1,6 +1,6 @@
 'use client'
 
-import { createClient } from '@/lib/supabase/client'
+import type { createClient } from '@/lib/supabase/client'
 import type { RealtimeChannel } from '@supabase/supabase-js'
 import { useEffect, useState } from 'react'
 import {
@@ -30,6 +30,12 @@ import {
  *
  * `scripts/verify-product-live.mjs` is the end-to-end proof that the path
  * delivers against production; this hook is only the wiring.
+ *
+ * THE BROWSER CLIENT IS IMPORTED LAZILY. A static import put the whole
+ * Supabase JS client (242 KB raw, 63.6 KB gzipped, STEP 34 measurement) in
+ * the product page's first load for a socket that opens after hydration. The
+ * `import()` resolves after paint; a page unmounted before it does is cleaned
+ * up by the `cancelled` flag.
  */
 export function useProductLive(
   productId: string,
@@ -38,23 +44,29 @@ export function useProductLive(
   const [state, setState] = useState<ProductLiveState>(() => initialProductLiveState(base))
 
   useEffect(() => {
+    let cancelled = false
     let channel: RealtimeChannel | null = null
     let supabase: ReturnType<typeof createClient> | null = null
-    try {
-      supabase = createClient()
-      channel = supabase
-        .channel(productLiveTopic(productId))
-        .on('broadcast', { event: PRODUCT_LIVE_EVENT }, (message) => {
-          const event = parseProductLiveEvent(message.payload)
-          if (!event) return
-          setState((prev) => applyProductLiveEvent(prev, event, productId))
-        })
-        .subscribe()
-    } catch {
-      // No anon key in this runtime, or no WebSocket. The cached page is the
-      // answer, and it was the answer before this hook too.
-    }
+    void import('@/lib/supabase/client')
+      .then((mod) => {
+        if (cancelled) return
+        supabase = mod.createClient()
+        channel = supabase
+          .channel(productLiveTopic(productId))
+          .on('broadcast', { event: PRODUCT_LIVE_EVENT }, (message) => {
+            const event = parseProductLiveEvent(message.payload)
+            if (!event) return
+            setState((prev) => applyProductLiveEvent(prev, event, productId))
+          })
+          .subscribe()
+      })
+      .catch(() => {
+        // No anon key in this runtime, no WebSocket, or the chunk did not load.
+        // The cached page is the answer, and it was the answer before this
+        // hook too.
+      })
     return () => {
+      cancelled = true
       if (supabase && channel) void supabase.removeChannel(channel)
     }
   }, [productId])

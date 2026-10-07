@@ -8,18 +8,22 @@ import {
 } from '@/lib/cart/store'
 import { EMPTY_CART } from '@/lib/cart/types'
 import type { CartView } from '@/lib/cart/types'
+import { notify } from '@/lib/ui/toast'
 import { type ReactNode, createContext, useContext, useEffect, useRef } from 'react'
-import { toast } from 'sonner'
 import { useStore } from 'zustand'
 
+// `notify` imports sonner on the first call (lib/ui/toast.ts). This provider
+// is in every storefront route's first load, and a static `toast` import here
+// was 40 KB raw / 11.8 KB gzipped of sonner before any feedback existed to
+// show; the Toaster itself was already deferred in DeferredStoreChrome.
 function showFeedback(feedback: CartFeedback): void {
   if (feedback.kind === 'error') {
-    toast.error(feedback.message)
+    notify('error', feedback.message)
   } else if (feedback.kind === 'queued') {
     // Neither a success nor a failure: the write is kept and will land later.
-    toast.info(feedback.message)
+    notify('info', feedback.message)
   } else {
-    toast.success(feedback.message)
+    notify('success', feedback.message)
   }
 }
 

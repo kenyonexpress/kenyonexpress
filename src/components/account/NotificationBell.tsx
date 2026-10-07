@@ -1,7 +1,7 @@
 'use client'
 
 import { BELL_PANEL_SIZE, type BellRow } from '@/lib/notifications/bell'
-import { createClient } from '@/lib/supabase/client'
+import type { createClient } from '@/lib/supabase/client'
 import { loadBell } from '@/server/actions/bell'
 import { markNotificationRead } from '@/server/actions/notifications'
 import { realtimeCredentials } from '@/server/actions/session'
@@ -86,6 +86,11 @@ export default function NotificationBell() {
       setUnread(snapshot.unread)
       setReady(true)
 
+      // Lazily: the account layout mounts this bell on every account page,
+      // and a static import carried the whole Supabase browser client (63.6
+      // KB gzipped) in that first load for a socket opened after two awaits.
+      const { createClient } = await import('@/lib/supabase/client')
+      if (cancelled) return
       supabase = createClient()
       supabase.realtime.setAuth(creds.accessToken)
       channel = supabase

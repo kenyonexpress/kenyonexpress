@@ -17,16 +17,22 @@ Judgements are based on the actual file contents (with `file:line` references wh
 | Component | File | Props (key props / type) | Used in (where imported) | Tokens compliant? | RTL safe? |
 |---|---|---|---|---|---|
 | SmartImage | src/components/ui/SmartImage.tsx | `ImageProps & { fallbackClassName?, iconSize? }` | home/HeroPromoBanners, home/HeroSlider, layout/SiteFooter (+4) | YES (`bg-slate-100`, `text-slate-400`) | YES (`inset-0`) |
-| Button | src/components/ui/button.tsx | `ButtonProps` (button attrs + `variant`, `size`, `asChild?`) | unused | YES (`bg-primary`, `text-primary-foreground`) | YES |
 | Card (+Header/Title/Content/Footer/Description) | src/components/ui/card.tsx | `React.HTMLAttributes<HTMLDivElement>` | admin/StatsCard | YES (`bg-card`, `text-card-foreground`) | YES |
 | Dialog (Radix wrappers) | src/components/ui/dialog.tsx | Radix Dialog primitives (`className`, children) | admin/CategoriesTable | YES (`bg-background`, `bg-accent`) | RISK: `right-4` close button (:47), `sm:text-left` (:57); `left-[50%]` is centering (safe) |
-| DropdownMenu (Radix wrappers) | src/components/ui/dropdown-menu.tsx | Radix DropdownMenu primitives (`inset?` on some) | unused | YES (`bg-popover`, `bg-accent`) | RISK: `pl-8`/`pr-2` (:100,:123), absolute `left-2` indicators (:106,:128), `ml-auto` (:37,:165) |
-| Form (react-hook-form wrappers) | src/components/ui/form.tsx | `ControllerProps`, HTML attrs | unused | YES (`text-destructive`, `text-muted-foreground`) | YES |
 | Input | src/components/ui/input.tsx | `React.ComponentProps<'input'>` | admin/DataTable | YES (`border-input`, `bg-background`) | YES |
-| Label | src/components/ui/label.tsx | Radix Label props + variants | ui/form | YES (semantic text utils) | YES |
-| Select (Radix wrappers) | src/components/ui/select.tsx | Radix Select primitives | unused | YES (`bg-popover`, `border-input`) | RISK: `pl-8`/`pr-2` (:101,:114), absolute `left-2` indicators (:119) |
 | Toaster | src/components/ui/sonner.tsx | `ToasterProps` (`ComponentProps<typeof Sonner>`) | app/(main)/layout, app/(store)/layout | YES (`group-[.toaster]:bg-background`) | YES |
 | Textarea | src/components/ui/textarea.tsx | `React.ComponentProps<'textarea'>` | unused | NO (`min-h-[80px]` :10) | YES |
+
+> **Removed in STEP 34 (2026-10-07):** `ui/button.tsx`, `ui/dropdown-menu.tsx`,
+> `ui/form.tsx`, `ui/label.tsx` and `ui/select.tsx`. Every one was listed above
+> as `unused` (Label's only importer was Form), and with them went the packages
+> only they imported: `react-hook-form`, `@hookform/resolvers`,
+> `@radix-ui/react-select`, `@radix-ui/react-dropdown-menu`,
+> `@radix-ui/react-label`, `@radix-ui/react-slot`, `class-variance-authority`,
+> plus `@radix-ui/react-toast` and the three `@dnd-kit/*` packages, which no
+> file imported at all. `cn()` in `lib/utils.ts` stays: Card, Input, Textarea
+> and Dialog use it.
+
 
 ## src/components (root, not in a listed subdir but part of the tree)
 

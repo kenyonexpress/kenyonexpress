@@ -7,7 +7,7 @@ import { CartProvider } from '@/components/cart/CartProvider'
 import SiteFooter from '@/components/layout/SiteFooter'
 import SiteHeader from '@/components/layout/SiteHeader'
 import WhatsAppFloat from '@/components/shared/WhatsAppFloat'
-import { Toaster } from '@/components/ui/sonner'
+import DeferredToaster from '@/components/ui/DeferredToaster'
 import { createClient } from '@/lib/supabase/server'
 import { getAccountProfile, getWalletSummary } from '@/server/queries/account'
 import Link from 'next/link'
@@ -101,7 +101,7 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
       </div>
       <CartDrawer />
       <WhatsAppFloat />
-      <Toaster position="top-center" dir="rtl" richColors closeButton />
+      <DeferredToaster position="top-center" dir="rtl" richColors closeButton />
     </CartProvider>
   )
 }

@@ -14,7 +14,8 @@ import {
   parseConsent,
   serializeConsent,
 } from '@/lib/analytics/consent'
-import { hasRequiredProps, ingestBatchSchema } from '@/lib/analytics/events'
+import { hasRequiredProps } from '@/lib/analytics/events'
+import { ingestBatchSchema } from '@/lib/analytics/events-schema'
 import { EventQueue } from '@/lib/analytics/queue'
 import { SESSION_IDLE_MS, SESSION_STORAGE_KEY, touchSession } from '@/lib/analytics/session'
 import { describe, expect, it, vi } from 'vitest'

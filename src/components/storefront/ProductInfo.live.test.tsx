@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 /**
@@ -84,7 +84,10 @@ const EVENT = {
   deleted_at: null,
 }
 
-function deliver(payload: unknown) {
+// The hook imports the browser client lazily (STEP 34), so the subscription
+// lands a microtask after render; wait for it before pushing a message.
+async function deliver(payload: unknown) {
+  await waitFor(() => expect(mock.handlers.length).toBeGreaterThan(0))
   act(() => {
     for (const cb of mock.handlers) cb({ payload })
   })
@@ -104,9 +107,9 @@ describe('the summary column on its live topic', () => {
     mock.saved = false
   })
 
-  it('listens on product:<id> and paints the cache until told otherwise', () => {
+  it('listens on product:<id> and paints the cache until told otherwise', async () => {
     render(<ProductInfo {...BASE} />)
-    expect(mock.topics).toEqual([`product:${ID}`])
+    await waitFor(() => expect(mock.topics).toEqual([`product:${ID}`]))
     expect(buy()).not.toBeDisabled()
     expect(stockLine()).toHaveTextContent('במלאי, מוכן למשלוח')
     expect(stockLine().getAttribute('data-live')).toBeNull()
@@ -114,9 +117,9 @@ describe('the summary column on its live topic', () => {
     expect(priceRow().querySelector('del')).toHaveTextContent('200')
   })
 
-  it('an emptied shelf disables the buy row and says so, with no reload', () => {
+  it('an emptied shelf disables the buy row and says so, with no reload', async () => {
     render(<ProductInfo {...BASE} />)
-    deliver({ ...EVENT, stock_quantity: 0, available: 0 })
+    await deliver({ ...EVENT, stock_quantity: 0, available: 0 })
     expect(buy()).toBeDisabled()
     expect(buy()).toHaveTextContent('אזל מהמלאי')
     expect(stockLine()).toHaveTextContent('אזל מהמלאי')
@@ -124,37 +127,41 @@ describe('the summary column on its live topic', () => {
     expect(screen.getByLabelText('כמות')).toBeDisabled()
   })
 
-  it('a live hold lowers the quantity ceiling to what is actually free', () => {
+  it('a live hold lowers the quantity ceiling to what is actually free', async () => {
     render(<ProductInfo {...BASE} />)
     const qty = () => screen.getByLabelText('כמות') as HTMLInputElement
     expect(qty().max).toBe('10')
-    deliver({ ...EVENT, stock_quantity: 10, available: 2 })
+    await deliver({ ...EVENT, stock_quantity: 10, available: 2 })
     expect(qty().max).toBe('2')
   })
 
-  it('a price change moves the number and the strike-through together', () => {
+  it('a price change moves the number and the strike-through together', async () => {
     render(<ProductInfo {...BASE} />)
-    deliver({ ...EVENT, kenyon_price: 120, full_price: 240 })
+    await deliver({ ...EVENT, kenyon_price: 120, full_price: 240 })
     expect(priceRow()).toHaveTextContent('120')
     expect(priceRow().querySelector('del')).toHaveTextContent('240')
     expect(priceRow()).toHaveTextContent('50%')
-    deliver({ ...EVENT, kenyon_price: 120, full_price: 120 })
+    await deliver({ ...EVENT, kenyon_price: 120, full_price: 120 })
     expect(priceRow().querySelector('del')).toBeNull()
   })
 
-  it('a withdrawn product stops offering itself', () => {
+  it('a withdrawn product stops offering itself', async () => {
     render(<ProductInfo {...BASE} />)
-    deliver({ ...EVENT, status: 'draft' })
+    await deliver({ ...EVENT, status: 'draft' })
     expect(buy()).toBeDisabled()
     expect(buy()).toHaveTextContent('לא זמין לרכישה')
     expect(stockLine()).toHaveTextContent('המוצר אינו זמין עוד')
     expect(screen.getByRole('button', { name: 'קנה עכשיו' })).toBeDisabled()
   })
 
-  it('ignores a malformed message and one about another product', () => {
+  it('ignores a malformed message and one about another product', async () => {
     render(<ProductInfo {...BASE} />)
-    deliver({ nonsense: true })
-    deliver({ ...EVENT, product_id: '22222222-2222-4222-8222-222222222222', stock_quantity: 0 })
+    await deliver({ nonsense: true })
+    await deliver({
+      ...EVENT,
+      product_id: '22222222-2222-4222-8222-222222222222',
+      stock_quantity: 0,
+    })
     expect(buy()).not.toBeDisabled()
     expect(stockLine().getAttribute('data-live')).toBeNull()
   })
@@ -282,16 +289,16 @@ describe('the cashback line under the price', () => {
     expect(text).not.toContain('10.00')
   })
 
-  it('a live price change moves the reward with it', () => {
+  it('a live price change moves the reward with it', async () => {
     render(<ProductInfo {...BASE} cashbackPercent={10} />)
     expect(line()?.textContent?.replace(/[\u2066\u2069\u00a0]/g, ' ')).toContain('15.00')
-    deliver({ ...EVENT, kenyon_price: 120, full_price: 240 })
+    await deliver({ ...EVENT, kenyon_price: 120, full_price: 240 })
     expect(line()?.textContent?.replace(/[\u2066\u2069\u00a0]/g, ' ')).toContain('12.00')
   })
 
-  it('a withdrawn product promises no reward', () => {
+  it('a withdrawn product promises no reward', async () => {
     render(<ProductInfo {...BASE} cashbackPercent={10} />)
-    deliver({ ...EVENT, status: 'draft' })
+    await deliver({ ...EVENT, status: 'draft' })
     expect(line()).toBeNull()
   })
 })

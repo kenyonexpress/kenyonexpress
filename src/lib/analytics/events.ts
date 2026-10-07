@@ -1,5 +1,3 @@
-import { z } from 'zod'
-
 // Canonical taxonomy. The database registry (analytics_event_definitions) is the
 // real source of truth and re-validates everything; this mirror exists so the
 // client cannot even build an event the server would silently drop.
@@ -60,46 +58,38 @@ export const REQUIRED_PROPS: Record<ClientEventName, readonly string[]> = {
 export const MAX_BATCH_SIZE = 20
 export const PROPS_MAX_BYTES = 4096
 
-const utmSchema = z
-  .object({
-    utm_source: z.string().max(120).optional(),
-    utm_medium: z.string().max(120).optional(),
-    utm_campaign: z.string().max(200).optional(),
-    utm_content: z.string().max(200).optional(),
-    utm_term: z.string().max(200).optional(),
-  })
-  .strict()
+/**
+ * THE SCHEMAS ARE NOT HERE. `utmSchema`, `clientEventSchema` and
+ * `ingestBatchSchema` live in `./events-schema`, which only the ingest route
+ * and its tests import. This module is in the browser tracker's graph, and
+ * until STEP 34 the `import { z } from 'zod'` at the top of it put 61.7 KB
+ * raw / 14.5 KB gzipped of zod on every storefront first load for a `.max()`
+ * the browser never calls (the server re-validates every batch). The types
+ * below are written by hand and `events-schema.ts` proves, at compile time,
+ * that they are exactly what the schemas infer.
+ */
+export type Utm = {
+  utm_source?: string
+  utm_medium?: string
+  utm_campaign?: string
+  utm_content?: string
+  utm_term?: string
+}
 
-export type Utm = z.infer<typeof utmSchema>
-
-// props is deliberately loose (jsonb on the other side) but never free-form: it
-// must be a flat-ish object, size-capped, and PII-free by convention. The 4KB
-// cap here mirrors the ingest function so an oversized event is rejected before
-// it costs a database round-trip.
-const propsSchema = z
-  .record(z.unknown())
-  .refine((p) => new TextEncoder().encode(JSON.stringify(p)).length <= PROPS_MAX_BYTES, {
-    message: 'props exceeds 4KB',
-  })
-
-export const clientEventSchema = z.object({
-  event_id: z.string().uuid(),
-  event_name: z.enum(CLIENT_EVENT_NAMES),
-  occurred_at: z.string().datetime({ offset: true }),
-  source: z.enum(['web', 'pwa']).default('web'),
-  source_app: z.literal('shop').default('shop'),
-  session_id: z.string().min(1).max(64),
-  path: z.string().max(300).optional(),
-  referrer: z.string().max(600).optional(),
-  utm: utmSchema.optional(),
-  props: propsSchema.default({}),
-})
-
-export type ClientEvent = z.infer<typeof clientEventSchema>
-
-export const ingestBatchSchema = z.object({
-  events: z.array(clientEventSchema).min(1).max(MAX_BATCH_SIZE),
-})
+export type ClientEvent = {
+  event_id: string
+  event_name: ClientEventName
+  occurred_at: string
+  source: 'web' | 'pwa'
+  source_app: 'shop'
+  session_id: string
+  path?: string
+  referrer?: string
+  utm?: Utm
+  // Deliberately loose (jsonb on the other side) but never free-form: flat-ish,
+  // size-capped by `PROPS_MAX_BYTES`, PII-free by convention.
+  props: Record<string, unknown>
+}
 
 /**
  * Registry-equivalent check, run before the network call. The database repeats

@@ -1,7 +1,7 @@
 'use client'
 
 import { markSessionBuggy } from '@/lib/analytics/replay-trigger'
-import * as Sentry from '@sentry/nextjs'
+import { withSentry } from '@/lib/observability/sentry-browser'
 import { useEffect } from 'react'
 
 /**
@@ -23,7 +23,9 @@ export default function GlobalError({
   error: Error & { digest?: string }
 }) {
   useEffect(() => {
-    Sentry.captureException(error)
+    // On demand, like error.tsx: the SDK is not in the first-load graph and a
+    // layout crash is exactly when it is worth one more request.
+    withSentry((Sentry) => Sentry.captureException(error))
     // The root layout is gone and the recorder with it, so this cannot start a
     // recording now; the flag survives in sessionStorage and the next page
     // the shopper reaches in this tab records from its first paint.

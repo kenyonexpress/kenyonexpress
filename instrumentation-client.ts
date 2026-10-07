@@ -1,6 +1,11 @@
+import {
+  installEarlyErrorBuffer,
+  registerSentryOptions,
+  routerTransitionStart,
+  scheduleSentryLoad,
+} from '@/lib/observability/sentry-browser'
 import { sentryEnvironment } from '@/lib/observability/sentry-environment'
 import { scrubSentryEvent } from '@/lib/observability/sentry-scrub'
-import * as Sentry from '@sentry/nextjs'
 
 /**
  * Browser instrumentation. Runs after the document loads and BEFORE React
@@ -8,9 +13,19 @@ import * as Sentry from '@sentry/nextjs'
  * itself - the class of bug that otherwise shows a blank page and reports
  * nothing.
  *
+ * THE SDK IS NOT IMPORTED HERE. It is ~95 KB gzipped with tracing on, and
+ * until STEP 34 it sat in the shared root chunk of every route, evaluated
+ * before hydration. This file now installs a synchronous error buffer (so the
+ * hydration-crash guarantee above still holds), registers the options, and
+ * schedules the import for the first idle period; lib/observability/
+ * sentry-browser.ts is the one loader, and every other browser caller goes
+ * through it. The options object stays in this file on purpose: it is what the
+ * build-config tests read, and it is the one place the browser's Sentry
+ * configuration can be found.
+ *
  * Next warns if this file takes longer than 16ms, so it does one thing.
  */
-Sentry.init({
+registerSentryOptions({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
 
   // The NEXT_PUBLIC_ pair, because only a literal `process.env.NEXT_PUBLIC_*`
@@ -34,6 +49,8 @@ Sentry.init({
 
   // Matches the server, so one page view and the request it makes land in the
   // same trace rather than two unrelated halves. See sentry.server.config.ts.
+  // The pageload span survives the deferred init: browserTracing backfills it
+  // from Navigation Timing, whose start is the document's time origin.
   tracesSampleRate: 0.1,
 
   // Session replay is off. It records the DOM, and this DOM contains addresses,
@@ -65,5 +82,11 @@ Sentry.init({
   ],
 })
 
+// Synchronous, before hydration: anything thrown from here on is kept and
+// replayed through the SDK the moment it arrives. The first buffered error
+// also triggers the import at once rather than waiting for idle.
+installEarlyErrorBuffer()
+scheduleSentryLoad()
+
 /** Navigation breadcrumbs, so an error report says how the user got there. */
-export const onRouterTransitionStart = Sentry.captureRouterTransitionStart
+export const onRouterTransitionStart = routerTransitionStart

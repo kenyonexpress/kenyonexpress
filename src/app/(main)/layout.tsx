@@ -7,7 +7,7 @@ import CartDrawer from '@/components/cart/CartDrawer'
 import { CartProvider } from '@/components/cart/CartProvider'
 import Header from '@/components/layout/Header'
 import WhatsAppFloat from '@/components/shared/WhatsAppFloat'
-import { Toaster } from '@/components/ui/sonner'
+import DeferredToaster from '@/components/ui/DeferredToaster'
 
 // Synchronous for the same reason as the store group's layout: the cart's two
 // cookie reads live in /api/cart, fetched client-side by <CartBootstrap>, so
@@ -68,7 +68,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
       </div>
       <CartDrawer />
       <WhatsAppFloat />
-      <Toaster position="top-center" dir="rtl" richColors closeButton />
+      <DeferredToaster position="top-center" dir="rtl" richColors closeButton />
     </CartProvider>
   )
 }

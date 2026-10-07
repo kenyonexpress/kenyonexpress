@@ -16,8 +16,16 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
  */
 
 const setUser = vi.hoisted(() => vi.fn())
+// Every name sentry-browser-sdk.ts re-exports: vitest throws on a read of a
+// missing export from a mocked module. Only setUser is asserted on.
 vi.mock('@sentry/nextjs', () => ({
   setUser: (...args: unknown[]) => setUser(...args),
+  captureException: vi.fn(),
+  captureMessage: vi.fn(),
+  captureRouterTransitionStart: vi.fn(),
+  init: vi.fn(),
+  setTag: vi.fn(),
+  withScope: vi.fn(),
 }))
 
 const session = vi.hoisted(() => ({

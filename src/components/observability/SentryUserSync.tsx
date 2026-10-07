@@ -1,7 +1,7 @@
 'use client'
 
+import { withSentry } from '@/lib/observability/sentry-browser'
 import { currentUserId } from '@/server/actions/session'
-import * as Sentry from '@sentry/nextjs'
 import { useEffect } from 'react'
 
 /**
@@ -44,7 +44,7 @@ export default function SentryUserSync() {
       void currentUserId()
         .then((id) => {
           if (cancelled) return
-          Sentry.setUser(id ? { id } : null)
+          withSentry((Sentry) => Sentry.setUser(id ? { id } : null))
         })
         .catch(() => {
           // A failed lookup tags nothing; it never becomes the page's error.

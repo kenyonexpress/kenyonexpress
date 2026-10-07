@@ -1,5 +1,5 @@
 import { CONSENT_COOKIE, isTrackingAllowed } from '@/lib/analytics/consent'
-import { ingestBatchSchema } from '@/lib/analytics/events'
+import { ingestBatchSchema } from '@/lib/analytics/events-schema'
 import { GUEST_SESSION_COOKIE, parseGuestSessionToken } from '@/lib/cart/guest-session'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'

@@ -1,7 +1,7 @@
 'use client'
 
 import { markSessionBuggy } from '@/lib/analytics/replay-trigger'
-import * as Sentry from '@sentry/nextjs'
+import { withSentry } from '@/lib/observability/sentry-browser'
 import Link from 'next/link'
 import { useEffect } from 'react'
 
@@ -39,17 +39,21 @@ export default function AppError({
     // The plain SDK, not the helpers in lib/observability: those run on
     // @sentry/node and tag everything area=payments, so importing them into a
     // client boundary would both fail to bundle and mislabel every UI error as
-    // a money-path one. The browser SDK itself is already initialised by
-    // instrumentation-client.ts, but its global handlers never see this error:
+    // a money-path one. The SDK's global handlers never see this error either:
     // a boundary CATCHES it, so nothing reaches window.onerror, and without
     // this call a client-side render crash is invisible except to the one
-    // customer looking at this page. `digest` is tagged because it is the only
-    // handle that ties the browser event to the server-side one
+    // customer looking at this page. `withSentry` loads the SDK on demand
+    // (lib/observability/sentry-browser.ts): a static import here would put
+    // ~95 KB gzipped back on every route's first load, since this boundary is
+    // part of the root layout's client graph. `digest` is tagged because it is
+    // the only handle that ties the browser event to the server-side one
     // onRequestError already reported.
-    Sentry.withScope((scope) => {
-      scope.setTag('boundary', 'app-error')
-      if (error.digest) scope.setTag('digest', error.digest)
-      Sentry.captureException(error)
+    withSentry((Sentry) => {
+      Sentry.withScope((scope) => {
+        scope.setTag('boundary', 'app-error')
+        if (error.digest) scope.setTag('digest', error.digest)
+        Sentry.captureException(error)
+      })
     })
 
     // Kept alongside, not replaced: lib/observability/log.ts reads its request

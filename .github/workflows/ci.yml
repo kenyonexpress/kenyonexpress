@@ -313,6 +313,13 @@ jobs:
 
       - run: pnpm build
 
+      # Per-route first-load JS, gzipped, against the budgets in
+      # scripts/route-js-report.mjs (STEP 34). Reads the build above; a route
+      # that regresses past its budget fails the job here rather than in a
+      # Lighthouse median three jobs later.
+      - name: Per-route first-load JS budgets
+        run: pnpm gate:route-js
+
       # Alert rules are code (scripts/sentry-alert-rules.mjs), applied by
       # upsert after a green build and only from main: a PR editing the rules
       # must not rewrite live alerting before it merges. Without the auth

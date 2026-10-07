@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
@@ -23,7 +23,17 @@ const { withScope, captureException, setTag } = vi.hoisted(() => {
   }
 })
 
-vi.mock('@sentry/nextjs', () => ({ withScope, captureException }))
+// Every name sentry-browser-sdk.ts re-exports, because vitest throws on a
+// read of a missing export from a mocked module; only two are asserted on.
+vi.mock('@sentry/nextjs', () => ({
+  withScope,
+  captureException,
+  captureMessage: vi.fn(),
+  captureRouterTransitionStart: vi.fn(),
+  init: vi.fn(),
+  setTag: vi.fn(),
+  setUser: vi.fn(),
+}))
 
 import { BUGGY_SESSION_STORAGE_KEY } from '@/lib/analytics/replay-trigger'
 import AppError from './error'
@@ -53,12 +63,14 @@ describe('not-found.tsx', () => {
 describe('error.tsx', () => {
   const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
 
-  it('reports the error to Sentry tagged with the digest, once', () => {
+  it('reports the error to Sentry tagged with the digest, once', async () => {
     const error = Object.assign(new Error('boom'), { digest: 'abc123' })
     render(<AppError error={error} reset={() => {}} />)
 
+    // The SDK is loaded on demand (lib/observability/sentry-browser.ts), so the
+    // report lands a microtask after render rather than inside it.
+    await waitFor(() => expect(captureException).toHaveBeenCalledWith(error))
     expect(captureException).toHaveBeenCalledTimes(1)
-    expect(captureException).toHaveBeenCalledWith(error)
     expect(setTag).toHaveBeenCalledWith('boundary', 'app-error')
     expect(setTag).toHaveBeenCalledWith('digest', 'abc123')
     // The bare console line stays: it is what still works when the DSN is unset.

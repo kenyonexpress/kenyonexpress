@@ -809,93 +809,59 @@ Budget: Heebo 400+700 subset ≤ **45 KB** compressed total.
 
 ## 5. Bundle analysis and JS budgets
 
-### 5.1 Scripts
+### 5.1 Scripts (as built, STEP 34)
 
 ```json
 // package.json (scripts excerpt)
 {
   "scripts": {
-    "analyze": "ANALYZE=true next build",
-    "analyze:bundle": "pnpm exec tsx scripts/perf/check-bundle-budgets.ts"
+    "analyze": "next experimental-analyze",
+    "analyze:routes": "node scripts/route-js-report.mjs \"/(store)\"",
+    "gate:route-js": "node scripts/route-js-report.mjs --gate",
+    "measure:route-js": "node scripts/route-js-browser.mjs"
   }
 }
 ```
 
-```ts
-// next.config.ts (analyzer excerpt)
-import type { NextConfig } from 'next'
-import bundleAnalyzer from '@next/bundle-analyzer'
-
-const withBundleAnalyzer = bundleAnalyzer({
-  enabled: process.env.ANALYZE === 'true',
-})
-
-const nextConfig: NextConfig = {
-  // ...existing config
-  experimental: {
-    optimizePackageImports: [
-      'lucide-react',
-      '@radix-ui/react-dialog',
-      '@radix-ui/react-dropdown-menu',
-      'date-fns',
-    ],
-  },
-}
-
-export default withBundleAnalyzer(/* withNextIntl(nextConfig) */)
-```
+`@next/bundle-analyzer` is a webpack plugin and is inert under Turbopack, so
+`pnpm analyze` is the CLI's own analyzer (`-o` writes
+`.next/diagnostics/analyze/` without serving it). The three scripts read the
+LAST `pnpm build`; none of them builds.
 
 ### 5.2 First-load JS budgets (compressed)
 
-| Route group | Max first-load JS | Notes |
-|---|---|---|
-| Store shell (layout + home) | 170 KB | No admin/supplier code |
-| Category | 190 KB | Filters client island only |
-| Product | 180 KB | Gallery + add-to-cart island |
-| Cart / checkout | 220 KB | Cardcom frame is iframe, not in JS |
-| Admin | uncapped in this doc | Must be separate route group / no shared store chunks |
+Enforced by `scripts/route-js-report.mjs --gate`, which CI runs right after
+`pnpm build`. The budgets live at the top of that script; this table mirrors
+them and the measurement that set them (2026-10-07, gzipped, module-capable
+browser, so the `noModule` polyfill is excluded).
 
-### 5.3 Budget checker
+| Route | Measured 2026-10-07 | Budget | Notes |
+|---|---|---|---|
+| shared root (React, router, runtime) | 132.0 KB | 140 KB | the floor; see §5.3 |
+| Home `/` | 189.9 KB | 195 KB | root + cart chrome + analytics islands |
+| Category `/category/[slug]` | 191.8 KB | 200 KB | filters island |
+| Product `/product/[slug]` | 198.5 KB | 205 KB | gallery + buy row; Supabase client deferred |
+| Cart `/cart` | 190.4 KB | 200 KB | |
+| Checkout `/checkout` | 197.2 KB | 205 KB | Cardcom is an iframe, not JS |
+| any other `/(store)` route | | 205 KB | |
+| Admin / supplier | uncapped here | | separate route groups, no shared store chunks |
 
-```ts
-// scripts/perf/check-bundle-budgets.ts
-import { readFileSync, readdirSync } from 'node:fs'
-import { join } from 'node:path'
+### 5.3 What the budgets are made of
 
-const BUDGETS: Record<string, number> = {
-  '/': 170_000,
-  '/category/[slug]': 190_000,
-  '/product/[slug]': 180_000,
-  '/cart': 220_000,
-}
+Before STEP 34 the home route's first load was 288 KB gzipped, of which the
+Sentry browser SDK was ~79 KB in the shared root (loaded before hydration on
+every route), zod 14.5 KB (two analytics schemas the browser never ran),
+sonner 11.8 KB (a `toast` import in `CartProvider`) and, on `/product`, the
+Supabase browser client 63.6 KB (a realtime hook's static import). Each of
+those is now a dynamic `import()` behind a loader, and
+`src/__tests__/first-load-client-graph.test.ts` refuses the static import
+coming back.
 
-type BuildManifest = {
-  pages?: Record<string, string[]>
-  // App Router uses different artifacts; adapt to .next/app-path-routes
-}
-
-function fail(msg: string): never {
-  console.error(msg)
-  process.exit(1)
-}
-
-// Prefer reading Next build traces / client manifests produced by `next build`.
-// Exact file layout depends on Next version; confirm under .next/ after build.
-const OUT = join(process.cwd(), '.next')
-
-try {
-  readdirSync(OUT)
-} catch {
-  fail('Run next build before check-bundle-budgets')
-}
-
-// Placeholder: integrate with @next/bundle-analyzer JSON export or
-// experimental build stats. Keep CI red if first-load JS exceeds BUDGETS.
-console.log('Bundle budget table (manual gate until analyzer export wired):')
-for (const [route, bytes] of Object.entries(BUDGETS)) {
-  console.log(`  ${route}: ≤ ${bytes} bytes gzip`)
-}
-```
+What remains is the frame: React DOM and the Next 16 app router are ~118 KB
+gzipped before a line of this site's code, and the store shell's cart chrome
+(provider, bootstrap, header count, mini-cart) is another ~29 KB. A budget
+below ~150 KB therefore means deferring the cart chrome itself, which is a
+visible UX change (the header count would appear after idle) and is not done.
 
 ### 5.4 Split rules
 

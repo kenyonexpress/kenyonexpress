@@ -44,11 +44,38 @@ const NOT_ON_FIRST_LOAD = [
   '@simplewebauthn/browser',
   'pdf-lib',
   'qrcode',
-  '@dnd-kit/core',
+  // STEP 34: the browser SDK was ~95 KB gzipped in the shared root chunk of
+  // every route. It is loaded by lib/observability/sentry-browser.ts on idle
+  // or on the first error, never statically from a first-load module.
+  '@sentry/nextjs',
+]
+
+/**
+ * Modules that are in every first load WITHOUT being layout islands: the
+ * error boundaries ship with the root segment, the instrumentation file runs
+ * before hydration, and the rest are the client graphs of the storefront's
+ * busiest routes. Each row names the package that was measured in its chunk
+ * (STEP 34, `node scripts/route-js-report.mjs`) and must stay out of it.
+ * `import type` is allowed: types are erased.
+ */
+const MUST_NOT_IMPORT: Array<[file: string, packages: string[]]> = [
+  ['instrumentation-client.ts', ['@sentry/nextjs']],
+  ['src/app/error.tsx', ['@sentry/nextjs']],
+  ['src/app/global-error.tsx', ['@sentry/nextjs']],
+  ['src/components/observability/SentryUserSync.tsx', ['@sentry/nextjs']],
+  // 61.7 KB raw / 14.5 KB gz of zod on the home route, via the tracker.
+  ['src/lib/analytics/events.ts', ['zod']],
+  ['src/lib/analytics/attribution.ts', ['zod']],
+  ['src/lib/analytics/tracker.ts', ['zod']],
+  // 40 KB raw / 11.8 KB gz of sonner on every store route, via `toast()`.
+  ['src/components/cart/CartProvider.tsx', ['sonner']],
+  // 242 KB raw / 63.6 KB gz of the Supabase browser client on /product.
+  ['src/lib/product-live/use-product-live.ts', ['@/lib/supabase/client', '@supabase/ssr']],
+  ['src/components/account/NotificationBell.tsx', ['@/lib/supabase/client', '@supabase/ssr']],
 ]
 
 function staticImports(source: string): string[] {
-  return [...source.matchAll(/^import\s[^'"]*['"]([^'"]+)['"]/gm)].map((m) => m[1] ?? '')
+  return [...source.matchAll(/^import\s(?!type\s)[^'"]*['"]([^'"]+)['"]/gm)].map((m) => m[1] ?? '')
 }
 
 function isClientComponent(source: string): boolean {
@@ -104,5 +131,33 @@ describe('the client components every route mounts', () => {
     expect(source).not.toContain('@/lib/supabase/client')
     expect(source).toContain('currentUserId')
     expect(source).toContain('requestIdleCallback')
+  })
+})
+
+describe('the modules every first load carries without being a layout island', () => {
+  it.each(MUST_NOT_IMPORT)('%s does not statically import %j', (file, packages) => {
+    const source = read(file)
+    const offenders = staticImports(source).filter((spec) =>
+      packages.some((pkg) => spec === pkg || spec.startsWith(`${pkg}/`)),
+    )
+    expect(offenders, `${file} must load these lazily, not on first paint`).toEqual([])
+  })
+
+  it('the loader imports the named subset, never the package namespace', () => {
+    // `import('@sentry/nextjs')` keeps every export alive: measured at 549 KB
+    // raw with replay and feedback inside, against ~250 KB through the subset.
+    const loader = read('src/lib/observability/sentry-browser.ts')
+    expect(loader).not.toContain("import('@sentry/nextjs')")
+    expect(loader).toContain("import('./sentry-browser-sdk')")
+    const subset = read('src/lib/observability/sentry-browser-sdk.ts')
+    expect(subset).not.toMatch(/export \* from/)
+  })
+
+  it('the boundaries still report, through the loader', () => {
+    for (const file of ['src/app/error.tsx', 'src/app/global-error.tsx']) {
+      const source = read(file)
+      expect(source).toContain("from '@/lib/observability/sentry-browser'")
+      expect(source).toContain('Sentry.captureException(error)')
+    }
   })
 })
