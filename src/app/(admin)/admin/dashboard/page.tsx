@@ -3,8 +3,10 @@ import { AUDIT_ACTION_LABELS, PENDING_QUEUE_LABELS, labelFor } from '@/lib/admin
 import { canSeeMoney } from '@/lib/admin/permissions'
 import { requireSection } from '@/lib/admin/rbac'
 import { shekelsFromIlsRounded } from '@/lib/money-format'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
-import { Coins, FileText, Package, QrCode, ShoppingCart, UserPlus } from 'lucide-react'
+import { LOW_RATING_MAX, readRatingsTile } from '@/server/queries/ratings-admin'
+import { Coins, FileText, Package, QrCode, ShoppingCart, Star, UserPlus } from 'lucide-react'
 import Link from 'next/link'
 
 export const metadata = { title: 'לוח בקרה' }
@@ -38,6 +40,7 @@ export default async function DashboardPage() {
     { count: activeProducts },
     { data: queues },
     { data: auditFeed },
+    ratings,
   ] = await Promise.all([
     supabase
       .from('orders')
@@ -73,6 +76,9 @@ export default async function DashboardPage() {
       .select('id, action, entity_type, actor_role, created_at')
       .order('created_at', { ascending: false })
       .limit(10),
+    // Service role: both rating tables are owner-scoped for the admin's own
+    // session (247, 154). The page is already behind requireSection.
+    readRatingsTile(createAdminClient(), 30),
   ])
 
   const cashInToday = (paymentsToday ?? [])
@@ -130,6 +136,47 @@ export default async function DashboardPage() {
           variant="admin"
         />
       </div>
+
+      {/* Row 1b: private ratings (STEP 45). Owner-only numbers; nothing here
+          is rendered on the storefront. */}
+      <section data-section="ratings-tile">
+        <Link
+          href="/admin/reviews"
+          className={`flex flex-wrap items-center gap-x-6 gap-y-2 rounded-xl border p-4 transition-colors hover:border-brand-primary ${
+            ratings.low > 0 ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-white'
+          }`}
+        >
+          <span className="flex items-center gap-2 text-sm font-semibold text-gray-800">
+            <Star size={16} aria-hidden="true" />
+            דירוגים (פנימי) · 30 ימים
+          </span>
+          {ratings.available ? (
+            <>
+              <span className="text-sm">
+                ממוצע חוויית הזמנה:{' '}
+                <strong className="text-heading">
+                  {ratings.average == null ? '—' : ratings.average.toLocaleString('he-IL')}
+                </strong>
+                <span className="text-black/50">
+                  {' '}
+                  / 5 ({ratings.count.toLocaleString('he-IL')})
+                </span>
+              </span>
+              <span className={`text-sm ${ratings.low > 0 ? 'text-red-700' : 'text-black/60'}`}>
+                נמוכים (עד {LOW_RATING_MAX}): {ratings.low.toLocaleString('he-IL')}
+              </span>
+              <span className="text-sm text-black/60">
+                ביקורות מוצר לעיון: {ratings.pendingReviews.toLocaleString('he-IL')}
+              </span>
+            </>
+          ) : (
+            <span className="text-sm text-black/50">
+              אין נתונים עדיין: טבלת המשוב (247) ממתינה להחלה.
+            </span>
+          )}
+          <span className="ms-auto text-xs text-brand">לכל הדירוגים</span>
+        </Link>
+      </section>
 
       {/* Row 2: pending queues */}
       <section>

@@ -7,7 +7,6 @@ import FacebookShareButton from '@/components/shared/FacebookShareButton'
 import ShareButton from '@/components/shared/ShareButton'
 import WhatsAppShareButton from '@/components/shared/WhatsAppShareButton'
 import CouponPricing from '@/components/storefront/CouponPricing'
-import RatingStars, { type RatingSummary } from '@/components/storefront/RatingStars'
 import { productQuantityCeiling } from '@/lib/cart/format'
 import { cashbackPreview } from '@/lib/cashback/preview'
 import type { CouponOffer } from '@/lib/commerce/coupon-offer'
@@ -73,12 +72,6 @@ interface Props {
    */
   recurringOffer?: RecurringOffer | null
   /**
-   * Average and count over APPROVED reviews, read through
-   * `product_rating_summary` (235). Null until the function exists or the
-   * first review is approved; the slot then carries the identifiers instead.
-   */
-  rating?: RatingSummary | null
-  /**
    * `products.cashback_percent` (or `cashback_bp` / 100 after 059), as a
    * percent. Read inside the product cache from whichever column exists, the
    * way the cart reads it. Zero or absent means the line is not rendered.
@@ -121,7 +114,6 @@ export default function ProductInfo({
   isCoupon,
   couponOffer,
   recurringOffer = null,
-  rating = null,
   cashbackPercent = null,
 }: Props) {
   const { addToCart, isPending } = useCart()
@@ -266,11 +258,12 @@ export default function ProductInfo({
         </p>
       )}
 
-      {/* Live's rating slot. Stars only once a review has been approved
-          (`rating` is null otherwise); the identifiers keep the line's height
-          either way, which is what the rhythm below depends on. */}
+      {/* Live's rating slot carries the identifiers only. No star row: per
+          the business rule (STEP 45) ratings are read by the owner in
+          /admin/reviews and never displayed to a visitor, not even as an
+          average. The line keeps its height either way, which is what the
+          rhythm below depends on. */}
       <p className="pdp-summary__meta" dir={effectiveSku ? 'rtl' : 'ltr'}>
-        <RatingStars rating={rating} />
         {effectiveSku ? (
           <>
             מק"ט: <span dir="ltr">{effectiveSku}</span>

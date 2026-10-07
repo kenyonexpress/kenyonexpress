@@ -35,17 +35,21 @@
 --      (`realtime.messages` policies: none, measured), so the topic prefix
 --      `product:` cannot collide.
 --
---   2. A RATING SUMMARY WITHOUT THE REVIEWS. 232 (applied 2026-09-10) closed
---      the anonymous read of `reviews` on the business rule that review
---      CONTENT is collected and moderated, not published. The product page
---      lost its rating slot in the same commit and has rendered SKU/name in
---      it since. `product_rating_summary` returns the average and the count
---      of APPROVED rows and nothing else: no body, no author, no dates, no
---      per-row anything. It is SECURITY DEFINER because the table is closed
---      to `anon`, and `STABLE` so PostgREST and the trigger planner can cache
---      it. Two numbers over moderated rows is the same claim JSON-LD's
---      AggregateRating makes, and the page attaches that claim only when the
---      count is above zero (json-ld.ts already refuses a zero-count rating).
+--   2. (REMOVED 2026-10-08, STEP 45.) This file used to add
+--      `product_rating_summary(uuid)`, a SECURITY DEFINER average-and-count
+--      over approved reviews for the product page's star row and its JSON-LD
+--      AggregateRating. The business rule is stricter than 232 read it:
+--      ratings are collected from buyers after delivery and read by the owner
+--      in /admin/reviews only; NO number derived from them is displayed to a
+--      visitor, not even an aggregate. Measured 2026-10-08 against production
+--      (`to_regprocedure`): the function never existed there, so removing it
+--      from the unapplied file is the whole change. The storefront reader
+--      (`loadRatingSummary`), the star row (`RatingStars`) and the JSON-LD
+--      node went in the same commit; src/__tests__/ratings-never-public.test.ts
+--      pins that this file creates no such function and grants `anon` nothing.
+--      The filename keeps its number and its name so the manifest, the
+--      inventory test and every earlier STATE entry still resolve.
+--
 --
 -- IDEMPOTENT: every statement is CREATE OR REPLACE / IF NOT EXISTS / DROP IF
 -- EXISTS, so a second apply is a no-op.
@@ -53,7 +57,6 @@
 -- ROLLBACK:
 --   DROP TRIGGER IF EXISTS products_broadcast_live ON public.products;
 --   DROP FUNCTION IF EXISTS public.products_broadcast_live();
---   DROP FUNCTION IF EXISTS public.product_rating_summary(uuid);
 
 BEGIN;
 
@@ -66,12 +69,6 @@ BEGIN
   END IF;
   IF to_regprocedure('public.available_stock(uuid, uuid, uuid)') IS NULL THEN
     RAISE EXCEPTION 'public.available_stock(uuid, uuid, uuid) is missing; the live payload cannot subtract reservations';
-  END IF;
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns
-     WHERE table_schema = 'public' AND table_name = 'reviews' AND column_name = 'deleted_at'
-  ) THEN
-    RAISE EXCEPTION 'reviews.deleted_at is missing (185 not applied?); the rating summary would count deleted rows';
   END IF;
 END $$;
 
@@ -125,31 +122,16 @@ CREATE TRIGGER products_broadcast_live
   FOR EACH ROW
   EXECUTE FUNCTION public.products_broadcast_live();
 
--- ------------------------------------------------------ 2. the rating summary
+-- ------------------------------------------------------ 2. (removed)
+--
+-- No rating summary. See the header: the owner reads ratings in
+-- /admin/reviews, visitors read none. If a `product_rating_summary` from an
+-- earlier draft of this file was ever applied by hand, it is dropped here so
+-- the schema matches the rule.
 
-CREATE OR REPLACE FUNCTION public.product_rating_summary(p_product_id uuid)
-RETURNS TABLE (average numeric, review_count integer)
-LANGUAGE sql
-STABLE
-SECURITY DEFINER
-SET search_path = ''
-AS $fn$
-  SELECT
-    round(avg(r.rating)::numeric, 1) AS average,
-    count(*)::integer                AS review_count
-  FROM public.reviews r
-  WHERE r.product_id = p_product_id
-    AND r.status = 'approved'
-    AND r.deleted_at IS NULL;
-$fn$;
+DROP FUNCTION IF EXISTS public.product_rating_summary(uuid);
 
-COMMENT ON FUNCTION public.product_rating_summary(uuid) IS
-  'Average (1 decimal) and count of APPROVED, undeleted reviews for one product. The only review data a visitor can read; 232 closed the rows themselves.';
-
-REVOKE ALL ON FUNCTION public.product_rating_summary(uuid) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.product_rating_summary(uuid) TO anon, authenticated, service_role;
-
--- ------------------------------------------------------------ post-conditions
+-- --------------------------------------------------------------- self-check
 
 DO $$
 BEGIN
@@ -159,8 +141,8 @@ BEGIN
   ) THEN
     RAISE EXCEPTION 'products_broadcast_live trigger did not land';
   END IF;
-  IF NOT has_function_privilege('anon', 'public.product_rating_summary(uuid)', 'EXECUTE') THEN
-    RAISE EXCEPTION 'anon cannot execute product_rating_summary; the page rating slot would stay empty';
+  IF to_regprocedure('public.product_rating_summary(uuid)') IS NOT NULL THEN
+    RAISE EXCEPTION 'product_rating_summary still exists; ratings are owner-only and must not be readable by visitors (STEP 45)';
   END IF;
 END $$;
 

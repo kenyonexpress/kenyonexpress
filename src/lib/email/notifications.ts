@@ -342,6 +342,10 @@ export function buildOrderShippedEmail(
  * order, and points at the order page, which is where feedback and support
  * both live.
  */
+/** The post-delivery rating ask, and the promise that goes with it. */
+const FEEDBACK_ASK = 'איך הייתה ההזמנה? דירוג קצר (1 עד 5) עוזר לנו להשתפר.'
+const FEEDBACK_PRIVATE = 'הדירוג פרטי: הוא נשלח לצוות קניון אקספרס בלבד ולא מתפרסם באתר.'
+
 export function buildOrderDeliveredEmail(
   payload: Record<string, unknown>,
   siteUrl: string,
@@ -353,6 +357,9 @@ export function buildOrderDeliveredEmail(
   const when = hebrewDateTime(payload.delivered_at)
   const site = trimSite(siteUrl)
   const url = orderId ? `${site}/account/orders/${orderId}` : `${site}/account/orders`
+  // The post-delivery ask (STEP 45): the order page's private feedback form,
+  // by anchor. Without an id there is no order to rate, so no second link.
+  const feedbackUrl = orderId ? `${url}#rating` : null
 
   const subject = `ההזמנה שלך נמסרה · ${ref}`
   const greeting = name ? `שלום ${name},` : 'שלום,'
@@ -368,6 +375,9 @@ export function buildOrderDeliveredEmail(
     '',
     'משהו לא בסדר עם המשלוח? אפשר לכתוב לנו מדף ההזמנה, ונטפל.',
     `לפרטי ההזמנה: ${ltrText(url)}`,
+    feedbackUrl ? FEEDBACK_ASK : '',
+    feedbackUrl ? FEEDBACK_PRIVATE : '',
+    feedbackUrl ? `לדירוג ההזמנה: ${ltrText(feedbackUrl)}` : '',
   ]
     .filter((line) => line !== '')
     .join('\n')
@@ -384,6 +394,13 @@ export function buildOrderDeliveredEmail(
         </div>
         <div style="font-size:13px;color:${MUTED};margin-top:12px">משהו לא בסדר עם המשלוח? אפשר לכתוב לנו מדף ההזמנה, ונטפל.</div>
         <a href="${escapeHtml(url)}" class="ke-btn" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">לפרטי ההזמנה</a>
+        ${
+          feedbackUrl
+            ? `<div style="font-size:14px;color:${INK};margin-top:20px;padding-top:16px;border-top:1px solid ${RULE}">${FEEDBACK_ASK}</div>
+        <div style="font-size:12px;color:${MUTED};margin-top:4px">${FEEDBACK_PRIVATE}</div>
+        <a href="${escapeHtml(feedbackUrl)}" data-feedback-link style="display:block;margin-top:12px;border:1px solid ${INK};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:11px 18px;border-radius:10px">לדירוג ההזמנה</a>`
+            : ''
+        }
       </div>`,
     'קיבלת את המייל הזה כי הזמנה שלך ב-KenyonExpress נמסרה.',
     subject,

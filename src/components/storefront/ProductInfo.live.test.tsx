@@ -173,20 +173,12 @@ describe('the three slots beside the price', () => {
     mock.saved = false
   })
 
-  it('shows stars only with an approved count, and never a zero-count score', () => {
-    const { unmount } = render(<ProductInfo {...BASE} rating={{ average: 4.5, count: 12 }} />)
-    expect(screen.getByRole('img', { name: 'דירוג 4.5 מתוך 5, 12 ביקורות' })).toBeInTheDocument()
-    unmount()
-
-    render(<ProductInfo {...BASE} rating={{ average: 5, count: 0 }} />)
+  it('shows no star rating at all: ratings are owner-only (STEP 45)', () => {
+    render(<ProductInfo {...BASE} />)
     expect(screen.queryByRole('img', { name: /דירוג/ })).toBeNull()
+    expect(document.querySelector('.pdp-rating')).toBeNull()
     // The identifiers still hold the slot.
     expect(screen.getByText(/מק"ט/)).toBeInTheDocument()
-  })
-
-  it('a single review is worded as one', () => {
-    render(<ProductInfo {...BASE} rating={{ average: 3, count: 1 }} />)
-    expect(screen.getByRole('img', { name: 'דירוג 3 מתוך 5, ביקורת אחת' })).toBeInTheDocument()
   })
 
   it('carries the wishlist heart and toggles it through the action', async () => {

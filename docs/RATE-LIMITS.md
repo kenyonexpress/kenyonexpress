@@ -76,6 +76,7 @@
 | `wishlist-toggle` | 60 | 1 h | held-down heart, per user |
 | `wishlist-share` | 20 | 1 h | share link mint and rotate, per user |
 | `order-feedback` | 10 | 1 h | feedback mail burst, per user |
+| `return-request` | 5 | 1 h | return request mail burst, per user |
 | `redeem` | 60 | 1 h | customer-facing redeem page, per IP |
 | `voucher-redeem` | 120 | 1 h | till scans, per supplier user |
 | `voucher-redeem-batch` | 40 | 1 h | batch scans, per supplier |

@@ -500,7 +500,7 @@ gift pattern beside it in `checkout.ts`). No reader names the column yet; the
 supplier and admin order pages gain it once this is applied. Idempotent, no
 dry-run against production yet; rollback is two `DROP COLUMN IF EXISTS`.
 
-## 2026-09-16: 235 PENDING (product live channel + rating summary)
+## 2026-09-16: 235 PENDING (product live channel; rating summary removed 2026-10-08)
 
 `235_product_live_and_rating.sql` gives the product page the two things it
 cannot get from its hour-long cache: a per-product broadcast topic and a
@@ -519,12 +519,18 @@ stock decrement and a broadcast must never roll a paid order back. Reader:
 `src/lib/product-live/use-product-live.ts`; proof against production:
 `scripts/verify-product-live.mjs`.
 
-**The rating summary** is `product_rating_summary(p_product_id)`, SECURITY
-DEFINER over the rows 232 closed to `anon`, returning the one-decimal
-average and the count of APPROVED, undeleted reviews and nothing else.
-Reader: `loadRatingSummary` in `src/lib/product-detail.ts`, which treats
-PGRST202 (function absent, i.e. 235 not applied) as "no rating" and renders
-the identifiers in the slot as before.
+**The rating summary was removed from this file on 2026-10-08 (STEP 45),
+before apply.** It used to add `product_rating_summary(p_product_id)`, a
+SECURITY DEFINER average-and-count over approved reviews for the product
+page's star row and JSON-LD. The business rule is that ratings are collected
+from buyers after delivery and read by the owner in `/admin/reviews` only;
+no number derived from them is shown to a visitor, not even an aggregate.
+Measured against production the same day: the function never existed there,
+so the amendment is the whole change. The file now `DROP FUNCTION IF EXISTS`
+it and the self-check raises if it is still present. The storefront reader,
+the star row and the JSON-LD node left the code in the same commit;
+`src/__tests__/ratings-never-public.test.ts` pins all of it. The filename
+keeps its name so the manifest and earlier STATE entries still resolve.
 
 Dry-run on production 2026-09-16 in a rolled-back DO block: both functions
 and the trigger created, `anon` can execute the summary (returned

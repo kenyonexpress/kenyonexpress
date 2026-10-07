@@ -24,6 +24,7 @@ import {
   Share2,
   ShieldAlert,
   ShoppingCart,
+  Star,
   Store,
   Tag,
   Undo2,
@@ -62,6 +63,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/admin/approvals', label: 'תור אישורים', icon: BadgeCheck, section: 'catalog' },
   { href: '/admin/orders', label: 'הזמנות', icon: ShoppingCart, section: 'orders' },
   { href: '/admin/orders/returns', label: 'בקשות החזרה', icon: Undo2, section: 'orders' },
+  { href: '/admin/reviews', label: 'דירוגים (פנימי)', icon: Star, section: 'orders' },
   { href: '/admin/users', label: 'משתמשים', icon: Users, section: 'users' },
   {
     href: '/admin/suppliers',

@@ -58,8 +58,6 @@ export interface ProductJsonLdInput {
   couponOffer: CouponOffer | null
   /** Physical stock. Null when the concept does not apply. */
   stockQuantity: number | null
-  /** Approved-review aggregate; null/absent renders no rating claim at all. */
-  rating?: { average: number; count: number } | null
 }
 
 const SCHEMA = 'https://schema.org'
@@ -112,17 +110,11 @@ export function buildProductJsonLd(input: ProductJsonLdInput): JsonLdNode {
   const offer = buildOfferNode(input, url)
   if (offer) node.offers = offer
 
-  // Only with at least one approved review. An AggregateRating of zero
-  // reviews is a fabricated claim, and search engines penalise exactly that.
-  if (input.rating && input.rating.count > 0) {
-    node.aggregateRating = {
-      '@type': 'AggregateRating',
-      ratingValue: input.rating.average,
-      reviewCount: input.rating.count,
-      bestRating: 5,
-      worstRating: 1,
-    }
-  }
+  // No AggregateRating, ever. Ratings are collected from buyers and read by
+  // the owner only (STEP 45); a rating claim in structured data that the page
+  // itself does not show would tell search engines something visitors cannot
+  // see, and the validator in json-ld-validate.ts still rejects the
+  // zero-count shape should anyone add the node back by hand.
 
   return node
 }

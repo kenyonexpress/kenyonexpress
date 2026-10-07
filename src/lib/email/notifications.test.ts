@@ -569,6 +569,24 @@ describe('buildOrderDeliveredEmail (STEP 16)', () => {
     expect(buildOrderDeliveredEmail({ order_ref: 'X' }, SITE).html).toContain('/account/orders"')
   })
 
+  it('asks for a private rating and links the feedback anchor on the order page (STEP 45)', () => {
+    const mail = buildOrderDeliveredEmail(payload, SITE)
+    expect(mail.html).toContain(
+      `href="${SITE}/account/orders/79f488aa-549a-40dd-af80-eb66d886668f#rating"`,
+    )
+    expect(mail.html).toContain('לדירוג ההזמנה')
+    expect(mail.html).toContain('לא מתפרסם באתר')
+    expect(mail.text).toContain('איך הייתה ההזמנה?')
+    expect(mail.text).toContain('#rating')
+    expect(mail.text).toContain('לצוות קניון אקספרס בלבד')
+  })
+
+  it('does not ask for a rating when there is no order to rate', () => {
+    const mail = buildOrderDeliveredEmail({ order_ref: 'X' }, SITE)
+    expect(mail.html).not.toContain('#rating')
+    expect(mail.text).not.toContain('לדירוג ההזמנה')
+  })
+
   it('greets by name when there is one and stays polite when there is not', () => {
     expect(buildOrderDeliveredEmail(payload, SITE).text).toContain('שלום דנה')
     expect(buildOrderDeliveredEmail({ ...payload, customer_name: null }, SITE).text).toContain(

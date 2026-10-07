@@ -256,7 +256,7 @@ export default async function OrderDetailPage({ params }: Props) {
       </section>
 
       {order.paidAt && feedback.available && (
-        <section className="account-card" data-section="order-feedback">
+        <section className="account-card" data-section="order-feedback" id="rating">
           <h2 className="account-card__title">חוויית ההזמנה</h2>
           {/* Private by construction: the row is owner-scoped (247), the copy
               goes to the shop inbox, and nothing renders it to anyone else.

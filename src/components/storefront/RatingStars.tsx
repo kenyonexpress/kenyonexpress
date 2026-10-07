@@ -1,48 +1,18 @@
-import { Star } from 'lucide-react'
-
-export interface RatingSummary {
-  /** One-decimal average over approved reviews, 1..5. */
-  average: number
-  count: number
-}
-
 /**
- * The star row live fills its rating slot with.
+ * THERE IS NO PUBLIC STAR ROW, AND THAT IS A DECISION, NOT A GAP (STEP 45).
  *
- * Only two numbers reach a visitor -- the average and the count -- and only
- * once at least one review has been approved. That is the whole of what
- * `product_rating_summary` (235) exposes; review text stays in moderation
- * (232). A zero-count rating renders nothing rather than five grey stars, so
- * the page never claims a score it does not have.
+ * This component used to paint an average and a count over approved reviews
+ * in the product page's rating slot, fed by `product_rating_summary` (the
+ * second half of pending 235). Per the business rule ratings are collected
+ * from buyers after delivery and read by the owner in /admin/reviews only;
+ * nothing derived from them, not even an aggregate, is displayed to a
+ * visitor. The function was removed from 235 before apply (measured
+ * 2026-10-08: it never existed in production), `loadRatingSummary` left
+ * src/lib/product-detail.ts, and json-ld.ts stopped emitting
+ * AggregateRating, all in the same commit.
+ *
+ * The file remains because deleting files is a stop-and-ask action in this
+ * project, and the tombstone is the answer to "where did RatingStars go".
+ * src/__tests__/ratings-never-public.test.ts pins that it stays empty.
  */
-export default function RatingStars({ rating }: { rating: RatingSummary | null }) {
-  if (!rating || rating.count <= 0) return null
-  const average = Math.min(5, Math.max(0, rating.average))
-  const rounded = Math.round(average * 2) / 2
-  const label = `דירוג ${average.toLocaleString('he-IL', { maximumFractionDigits: 1 })} מתוך 5, ${
-    rating.count === 1 ? 'ביקורת אחת' : `${rating.count} ביקורות`
-  }`
-
-  return (
-    <span className="pdp-rating" role="img" aria-label={label} title={label} dir="rtl">
-      <span className="pdp-rating__stars" aria-hidden="true">
-        {[1, 2, 3, 4, 5].map((n) => {
-          const fill = rounded >= n ? 'full' : rounded >= n - 0.5 ? 'half' : 'empty'
-          return (
-            <span key={n} className={`pdp-rating__star pdp-rating__star--${fill}`}>
-              <Star size={14} strokeWidth={1.5} />
-              {fill === 'half' && (
-                <span className="pdp-rating__half">
-                  <Star size={14} strokeWidth={1.5} />
-                </span>
-              )}
-            </span>
-          )
-        })}
-      </span>
-      <span className="pdp-rating__count" aria-hidden="true">
-        ({rating.count})
-      </span>
-    </span>
-  )
-}
+export {}

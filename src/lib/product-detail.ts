@@ -1,4 +1,3 @@
-import type { RatingSummary } from '@/components/storefront/RatingStars'
 import { CacheLife, CacheTags } from '@/lib/cache/tags'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { orFail } from '@/lib/catalogue-read'
@@ -107,7 +106,7 @@ export async function loadProductBySlug(slug: string) {
   // select. `lib/cart/load-products.ts` reads it exactly this way. It is read
   // HERE so the page quotes the rate `checkout.ts` will snapshot on the line,
   // not a rate of its own.
-  const [supplier, variants, galleryAssets, coupon054, stickerPriceIls, rating, cashback] =
+  const [supplier, variants, galleryAssets, coupon054, stickerPriceIls, cashback] =
     await Promise.all([
       loadSupplierPublicContact(product.supplier_id),
       supabase
@@ -128,7 +127,6 @@ export async function loadProductBySlug(slug: string) {
           ).then((rows) => rows.get(product.id))
         : Promise.resolve(undefined),
       isCoupon ? readStickerPriceIls(probe, product.id, 'product page') : Promise.resolve(null),
-      loadRatingSummary(product.id),
       readFirstAvailableColumn<number>(
         probe,
         CASHBACK_PERCENT_CANDIDATES,
@@ -177,46 +175,23 @@ export async function loadProductBySlug(slug: string) {
     stickerPriceIls,
     couponOffer,
     recurringOffer,
-    rating,
     cashbackPercent,
   }
 }
 
-/**
- * The two numbers a visitor may know about a product's reviews.
+/*
+ * NO RATING LEAVES THIS MODULE, AND THAT IS THE BUSINESS RULE (STEP 45).
  *
- * `product_rating_summary` (235) is SECURITY DEFINER over the rows 232 closed
- * to `anon`, and returns the average and the count of APPROVED reviews and
- * nothing else. It is read inside the hour cache because a rating moves on
- * moderation, not on traffic, and the admin moderation action already
- * invalidates the catalogue tag.
- *
- * NULL IS THE ANSWER FOR "NOT YET". The function does not exist until 235 is
- * applied (PostgREST answers PGRST202), and a zero count is not a rating.
- * Both render the identifiers in the slot instead, exactly as the page did
- * before. Only an unexpected error is logged -- a missing function on a
- * deployment that has not applied 235 is a state, not a fault.
+ * `loadRatingSummary` used to call `product_rating_summary` (the second half
+ * of pending 235) and hand the product page an average and a count over
+ * approved reviews, for a star row and a JSON-LD AggregateRating. Per the
+ * business rule ratings are collected from buyers and read by the owner in
+ * /admin/reviews only; no number derived from them is displayed to a visitor,
+ * not even an aggregate. 235 was amended before apply to drop the function
+ * (measured 2026-10-08: it never existed in production), and the storefront
+ * stopped asking for it in the same commit. A rebuilt public rating would
+ * start by reversing both, which is why this note stays here.
  */
-async function loadRatingSummary(productId: string): Promise<RatingSummary | null> {
-  const { data, error } = (await createCatalogueReadClient().rpc(
-    'product_rating_summary' as never,
-    { p_product_id: productId } as never,
-  )) as { data: unknown; error: { code?: string; message?: string } | null }
-  if (error) {
-    if (error.code !== 'PGRST202' && error.code !== '42883') {
-      log.warn('product_detail.rating_read_failed', { productId, reason: error.message })
-    }
-    return null
-  }
-  const row = (Array.isArray(data) ? data[0] : data) as
-    | { average: number | string | null; review_count: number | null }
-    | undefined
-  const count = Number(row?.review_count ?? 0)
-  const average = Number(row?.average)
-  if (!Number.isFinite(count) || count <= 0 || !Number.isFinite(average)) return null
-  return { average, count }
-}
-
 /**
  * `suppliers` RLS is admin-only, so the public-safe columns come through the
  * service client.

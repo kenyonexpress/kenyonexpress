@@ -13,6 +13,8 @@ export const ADMIN_SECTIONS = [
   { href: '/admin/suppliers', staffAllowed: false },
   { href: '/admin/vendors', staffAllowed: false },
   { href: '/admin/orders', staffAllowed: false },
+  // Private ratings (STEP 45): order feedback and product reviews, owner-only.
+  { href: '/admin/reviews', staffAllowed: false },
   { href: '/admin/cashback', staffAllowed: false },
   { href: '/admin/users', staffAllowed: false },
   { href: '/admin/audit-log', staffAllowed: false },

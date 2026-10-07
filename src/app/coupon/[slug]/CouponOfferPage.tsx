@@ -88,16 +88,8 @@ export default function CouponOfferPage({
 }) {
   if (!detail) notFound()
 
-  const {
-    product,
-    images,
-    supplier,
-    variants,
-    galleryAssets,
-    couponOffer,
-    rating,
-    cashbackPercent,
-  } = detail
+  const { product, images, supplier, variants, galleryAssets, couponOffer, cashbackPercent } =
+    detail
 
   if (!couponOffer) redirect(`/product/${encodeURIComponent(slug)}`)
 
@@ -137,7 +129,6 @@ export default function CouponOfferPage({
     fullPriceIls: null,
     couponOffer,
     stockQuantity: product.stock_quantity ?? null,
-    rating,
   })
   const crumbs = [
     { name: 'בית', path: '/' },
@@ -232,7 +223,6 @@ export default function CouponOfferPage({
               isCoupon
               couponOffer={couponOffer}
               recurringOffer={null}
-              rating={rating}
               cashbackPercent={cashbackPercent}
             />
           </div>

@@ -123,7 +123,6 @@ export default async function ProductPage({ params }: Props) {
     galleryAssets,
     couponOffer,
     recurringOffer,
-    rating,
     cashbackPercent,
   } = detail
 
@@ -159,10 +158,10 @@ export default async function ProductPage({ params }: Props) {
   // disagreed with. `couponOffer` is the object the commission engine bills
   // from, so the advertised price and the charged price cannot diverge.
   const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il'
-  // `rating` is the same two numbers the star row paints (235's
-  // product_rating_summary over APPROVED rows), or null. Review content stays
-  // out of the page (232), and json-ld.ts refuses a zero-count rating, so the
-  // claim search engines read is exactly the one the visitor sees.
+  // No rating reaches this node. Review content stays out of the page (232)
+  // and so does every number derived from it (STEP 45): ratings are read by
+  // the owner in /admin/reviews and never displayed, so search engines are
+  // told exactly what the visitor sees, which is no rating at all.
   const productLd = buildProductJsonLd({
     name: product.name_he,
     description: product.description_he ?? null,
@@ -177,7 +176,6 @@ export default async function ProductPage({ params }: Props) {
     fullPriceIls: isCoupon ? null : oldPrice,
     couponOffer,
     stockQuantity: product.stock_quantity ?? null,
-    rating,
   })
   const breadcrumbLd = buildBreadcrumbJsonLd(
     [
@@ -284,7 +282,6 @@ export default async function ProductPage({ params }: Props) {
             isCoupon={isCoupon}
             couponOffer={couponOffer}
             recurringOffer={recurringOffer}
-            rating={rating}
             cashbackPercent={cashbackPercent}
           />
         </div>

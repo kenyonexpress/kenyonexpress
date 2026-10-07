@@ -27,7 +27,6 @@ const physical = {
   fullPriceIls: 999,
   couponOffer: null,
   stockQuantity: 5,
-  rating: { average: 4.6, count: 12 },
 }
 
 const sellableCoupon: CouponOffer = {
@@ -64,8 +63,13 @@ function errorsOf(node: unknown): string[] {
  * what to fix rather than the test.
  */
 describe('every builder produces valid structured data', () => {
-  it('Product with a physical offer and a rating', () => {
+  it('Product with a physical offer', () => {
     expect(errorsOf(buildProductJsonLd(physical))).toEqual([])
+  })
+
+  it('Product never carries an AggregateRating: ratings are owner-only (STEP 45)', () => {
+    expect(buildProductJsonLd(physical)).not.toHaveProperty('aggregateRating')
+    expect(buildProductJsonLd(physical)).not.toHaveProperty('review')
   })
 
   it('Product with a sellable coupon offer', () => {
@@ -78,10 +82,10 @@ describe('every builder produces valid structured data', () => {
     expect(errorsOf(node)).toEqual([])
   })
 
-  it('Product with no offer and no rating is an error, which is the honest answer', () => {
+  it('Product with no offer is an error, which is the honest answer', () => {
     // A physical product with no price has nothing a rich result can show.
     // The page still renders; the node is what a crawler would discard.
-    const node = buildProductJsonLd({ ...physical, priceIls: null, rating: null })
+    const node = buildProductJsonLd({ ...physical, priceIls: null })
     expect(errorsOf(node)).toEqual([
       '$.offers: Product needs at least one of offers, aggregateRating or review',
     ])
