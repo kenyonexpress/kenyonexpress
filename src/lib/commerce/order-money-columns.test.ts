@@ -1,3 +1,4 @@
+import { HOSTED_COLUMNS } from '@/lib/commerce/hosted-columns'
 import {
   __resetMoneyGenerationCache,
   buildOrderItemMoneyRow,
@@ -13,77 +14,37 @@ import {
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 /**
- * The columns below are the hosted project's real ones, read from
- * information_schema on 2026-07-31. They are hard-coded here on purpose: the
- * test that matters is "every column this code writes exists in the database it
- * writes to", and that cannot be asserted against a schema nobody wrote down.
+ * The hosted project's real columns, read from information_schema on
+ * 2026-10-08 (hosted-columns.ts, STEP 40; the first list here was read on
+ * 2026-07-31). They are hard-coded on purpose: the test that matters is
+ * "every column this code writes exists in the database it writes to", and
+ * that cannot be asserted against a schema nobody wrote down.
  *
- * If production is migrated, these lists change in the same commit as the code,
- * which is exactly the review this project has been missing: the previous
- * literal named fourteen columns that had never existed here, and the INSERT
- * failed with 42703 before a single order could be created.
+ * If production is migrated, the fixture changes in the same commit as the
+ * code, which is exactly the review this project has been missing: the
+ * previous literal named fourteen columns that had never existed here, and the
+ * INSERT failed with 42703 before a single order could be created.
+ *
+ * A GENERATED column (the 138/147/224 agorot twins) exists but cannot be
+ * written (428C9), so the writable set excludes it on purpose.
  */
-const ORDERS_COLUMNS = new Set([
-  'accepted_terms_at',
-  'address_id',
-  'affiliate_code',
-  'cardcom_payment_id',
-  'cashback_applied_ils',
-  'created_at',
-  'currency',
-  'deleted_at',
-  'discount_ils',
-  'expires_at',
-  'id',
-  'invoice_number',
-  'notes',
-  'paid_at',
-  'referral_code_used',
-  'status',
-  'subtotal_ils',
-  'total_ils',
-  'updated_at',
-  'user_id',
-])
+function writable(table: string): Set<string> {
+  return new Set(
+    Object.entries(HOSTED_COLUMNS[table] ?? {})
+      .filter(([, meta]) => !meta.generated)
+      .map(([column]) => column),
+  )
+}
+function generated(table: string): Set<string> {
+  return new Set(
+    Object.entries(HOSTED_COLUMNS[table] ?? {})
+      .filter(([, meta]) => meta.generated)
+      .map(([column]) => column),
+  )
+}
 
-const ORDER_ITEMS_COLUMNS = new Set([
-  'balance_due_agorot',
-  'cashback_amount_agorot',
-  'cashback_earned_ils',
-  'cashback_percent',
-  'commission_agorot',
-  'commission_percent',
-  'commission_percent_snapshot',
-  'coupon_price_ils',
-  'created_at',
-  'deleted_at',
-  'discount_percent',
-  'escrow_held_agorot',
-  'escrow_release_agorot',
-  'face_value_agorot',
-  'fulfilled_at',
-  'id',
-  'item_status',
-  'order_id',
-  'paid_on_site_agorot',
-  'platform_percent',
-  'product_id',
-  'product_type',
-  'quantity',
-  'settlement_status',
-  'supplier_address',
-  'supplier_id',
-  'supplier_immediate_agorot',
-  'supplier_logo_url',
-  'supplier_name',
-  'supplier_payout_ils',
-  'supplier_phone',
-  'total_price_ils',
-  'unit_price_ils',
-  'updated_at',
-  'upfront_percent',
-  'variant_id',
-])
+const ORDERS_COLUMNS = writable('orders')
+const ORDER_ITEMS_COLUMNS = writable('order_items')
 
 /** NOT NULL with no default: omitting one fails the insert as surely as naming a missing column. */
 const ORDERS_REQUIRED = ['subtotal_ils', 'total_ils']
@@ -114,6 +75,13 @@ describe('orders row', () => {
   it('writes only columns the hosted project has', () => {
     for (const column of Object.keys(buildOrderMoneyRow('ils', ORDER_MONEY))) {
       expect(ORDERS_COLUMNS.has(column), `orders has no column ${column}`).toBe(true)
+    }
+  })
+
+  it('never writes the 224 cashback twin, which is GENERATED on the hosted project', () => {
+    expect(generated('orders').has('cashback_applied_agorot')).toBe(true)
+    for (const column of Object.keys(buildOrderMoneyRow('ils', ORDER_MONEY))) {
+      expect(generated('orders').has(column), `orders.${column} is GENERATED`).toBe(false)
     }
   })
 
@@ -157,6 +125,13 @@ describe('order_items row', () => {
   it('writes only columns the hosted project has', () => {
     for (const column of Object.keys(buildOrderItemMoneyRow('ils', ITEM_MONEY))) {
       expect(ORDER_ITEMS_COLUMNS.has(column), `order_items has no column ${column}`).toBe(true)
+    }
+  })
+
+  it('never writes the 224 unit price twin, which is GENERATED on the hosted project', () => {
+    expect(generated('order_items').has('unit_price_agorot')).toBe(true)
+    for (const column of Object.keys(buildOrderItemMoneyRow('ils', ITEM_MONEY))) {
+      expect(generated('order_items').has(column), `order_items.${column} is GENERATED`).toBe(false)
     }
   })
 

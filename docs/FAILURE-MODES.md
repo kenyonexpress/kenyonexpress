@@ -43,7 +43,7 @@ matching a symptom, not reading prose:
 |---|---|---|---|---|
 | 0 | **There is no deployment at all** | **Certain** | **Critical** | §2.0 |
 | 1 | Nothing scheduled runs | **Certain** | **Critical** | §2.1 |
-| 2 | The first real payment raises `42703` | **Certain** | **Critical** | §2.2 |
+| 2 | The first real payment raises `42703` | Closed 2026-10-08 (224 live, contract test) | **Critical** | §2.2 |
 | 3 | No browser has ever tested a change in CI | **Certain** | High | §2.3 |
 | 4 | `src/types/database.ts` is five weeks stale | **Certain** | Medium | §2.4 |
 | 5 | Search has no typo tolerance, synonyms or facets | **Certain** | Medium | §2.5 |
@@ -162,6 +162,24 @@ through the generation probe in `src/lib/commerce/order-money-columns.ts`:
 
 Re-verified against `information_schema` on 2026-09-01. This is the highest
 priority defect in the system and it is on the money path.
+
+**Status 2026-10-08 (STEP 40): closed, and now held closed by a test.**
+Migration 224 is live: `orders.cashback_applied_agorot` and
+`order_items.unit_price_agorot` exist in production as `GENERATED ALWAYS AS
+(round(<ils> * 100))::bigint STORED`, with 0 NULLs and 0 mismatches against
+their `ils` sources on all 46 orders and 46 order items. `total_price_agorot`
+is still absent and still aliased from `total_price_ils_agorot` by
+`orderItemPriceSelect('ils')`. Every column `finalize.ts` selects, filters on,
+inserts or updates, and every argument of its five RPCs, was checked against
+`information_schema` and `pg_proc`; all exist. The measured schema is
+hard-coded in `src/lib/commerce/hosted-columns.ts` and
+`src/server/payments/finalize-schema-contract.test.ts` reads `finalize.ts` as
+text on every `pnpm test` and fails on a column production lacks, on a WRITE
+to a generated twin (428C9), on an insert that omits a NOT NULL column, and on
+an RPC argument no overload has. No migration was needed. The remaining
+exposure is the probe: `buildOrderMoneyRow('agorot')` would write the
+generated twin, so the test also pins that `orders.total_agorot` and
+`order_items.platform_bp` are still absent.
 
 ### 2.3 No browser has ever tested a change in CI
 

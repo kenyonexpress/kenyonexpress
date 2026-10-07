@@ -1565,6 +1565,7 @@ export type Database = {
           total_price_ils: number
           total_price_ils_agorot: number | null
           tracking_number: string | null
+          unit_price_agorot: number | null
           unit_price_ils: number
           unit_price_ils_agorot: number | null
           updated_at: string
@@ -1613,6 +1614,7 @@ export type Database = {
           total_price_ils: number
           total_price_ils_agorot?: number | null
           tracking_number?: string | null
+          unit_price_agorot?: number | null
           unit_price_ils: number
           unit_price_ils_agorot?: number | null
           updated_at?: string
@@ -1661,6 +1663,7 @@ export type Database = {
           total_price_ils?: number
           total_price_ils_agorot?: number | null
           tracking_number?: string | null
+          unit_price_agorot?: number | null
           unit_price_ils?: number
           unit_price_ils_agorot?: number | null
           updated_at?: string
@@ -1711,6 +1714,7 @@ export type Database = {
           address_id: string | null
           affiliate_code: string | null
           cardcom_payment_id: string | null
+          cashback_applied_agorot: number | null
           cashback_applied_ils: number
           cashback_applied_ils_agorot: number | null
           created_at: string
@@ -1740,6 +1744,7 @@ export type Database = {
           address_id?: string | null
           affiliate_code?: string | null
           cardcom_payment_id?: string | null
+          cashback_applied_agorot?: number | null
           cashback_applied_ils?: number
           cashback_applied_ils_agorot?: number | null
           created_at?: string
@@ -1769,6 +1774,7 @@ export type Database = {
           address_id?: string | null
           affiliate_code?: string | null
           cardcom_payment_id?: string | null
+          cashback_applied_agorot?: number | null
           cashback_applied_ils?: number
           cashback_applied_ils_agorot?: number | null
           created_at?: string
