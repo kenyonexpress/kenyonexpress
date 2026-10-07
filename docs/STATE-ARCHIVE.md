@@ -17,6 +17,21 @@ Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=categ
 - Moved from STATE.md (verbatim): `Last item: **M02-c118 BLOCKED** (2026-10-07): compare.mjs on `/product` exits 5 (REFUSED, no diff number) at 380, 768 and 1440. `https://kenyonexpress.co.il/product/מוצר-לדוגמא/` is our own build (360 `/_next/` refs, 0 wp-content) and `refs/ke_live_singlefile.html` is still absent. Unchanged from M02-c117; open blocker 0. No code change. Detail in `docs/STATE-ARCHIVE.md`.` and `M02-c118 gates (working tree, uncommitted UI edits unstaged): type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 5 (attempts 1–4 hit Supabase 10s prerender timeouts).`
 - Decision: BLOCKED on open blocker 0. No code change.
 
+## M02-c119: compare.mjs on /product at 380, 768, 1440, run 2026-10-08 in the foreground
+
+Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=product --width=<w>` (server: `PORT=3311 pnpm start` on the existing build, HEAD `359b266f8` with the two uncommitted UI edits in the tree)
+
+| Width | Exit | Diff | Output |
+|---|---|---|---|
+| 380 | 5 | none | REFUSING: `https://kenyonexpress.co.il/product/מוצר-לדוגמא/` is not the reference (our build: 39 `/_next/` refs, Next runtime, 0 wp-content) |
+| 768 | 5 | none | REFUSING: same reason |
+| 1440 | 5 | none | REFUSING: same reason |
+
+- No diff numbers, unchanged from M02-c115 through M02-c118. `refs/ke_live_singlefile.html` is still absent. The gate wrote four REFUSED rows to `docs/UI-PARITY-REPORT.md` (one extra 380 run to capture the REFUSING line), committed with this item. The last real product number is still 10.96% (older archive).
+- Gates on the working tree: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1.
+- Moved from STATE.md (verbatim): `Last item: **M01-c119 BLOCKED** (2026-10-08): compare.mjs on / exits 5 at 380, 768 and 1440 with no diff number. The gate refuses because `https://kenyonexpress.co.il/` is this project's own build (35 `/_next/` refs, Next runtime, no wp-content) and `refs/ke_live_singlefile.html` is still absent. Run in the foreground against `PORT=3311 pnpm start`, HEAD `71b5c4852`. See blocker 0.` and `M01-c119 gates (working tree, uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` UI edits left unstaged): type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `supabase.timeout`, 0 `db.query_failed`). compare.mjs exit 5 x4 (blocker 0).`
+- Decision: BLOCKED on open blocker 0. No code change.
+
 ## M01-c119: compare.mjs on / at 380, 768, 1440, run 2026-10-08 in the foreground
 
 Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=home --width=<w>` (server: `PORT=3311 pnpm start` on the existing build, HEAD `71b5c4852` with the two uncommitted UI edits in the tree)
