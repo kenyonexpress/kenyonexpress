@@ -41,6 +41,15 @@ Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=home 
 - **Why BLOCKED:** the fix is a UI change. `LOCAL_BASE=http://localhost:3517 node scripts/compare.mjs --page=<home|product> --width=<380|768|1440>`, run in the foreground: 6/6 exit 5, REFUSED, the live side is our own build (blocker 0). The 6 REFUSED rows appended to `docs/UI-PARITY-REPORT.md` are committed with this item. `SiteFooter.tsx` and `HeroSlider.tsx` stay uncommitted and untouched.
 - Gates (working tree): type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `supabase.timeout`, 0 `db.query_failed`).
 
+## M16-c118: JSON-LD Product and BreadcrumbList re-verified 2026-10-08 in the foreground
+
+- Code: `git diff 4b37b6f47 HEAD -- src scripts package.json` is empty. The page still always renders both `application/ld+json` scripts (`page.tsx:248`, `:256`).
+- Method: same checks as M16-c117, Node probe kept outside the repo in `/tmp`. It reads `/sitemap/products.xml`, fetches every `/product/` URL and requires status 200, exactly one `Product` and one `BreadcrumbList`, no parse error, `name`, `image`, offers with price and `priceCurrency`, at least 2 crumbs with positions 1..n, names on all, `item` on every non-last crumb, and last crumb name equal to `Product.name`.
+- **Production** (`https://www.kenyonexpress.co.il`): 44 URLs, **44/44 have both nodes**, 43 pass every check. `/product/מזקקת-ויסקי` has no `image`.
+- **Local HEAD** `9444bbcf1` (`pnpm start -p 3518` on this run's build): 46 URLs, **46/46 have both nodes**, 43 pass every check. No `image` on `מזקקת-ויסקי`, `e2e-test-physical` and `e2e-test-coupon`.
+- Verdict: unchanged from M16-c117. No code change; the image gap and the e2e rows are already manual items for Ofir.
+- Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `supabase.timeout`, 0 `db.query_failed`). Not a UI change; compare.mjs does not apply. `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` are still uncommitted and not part of this commit.
+
 ## M16-c117: JSON-LD Product and BreadcrumbList re-verified 2026-10-07 in the foreground
 
 - Code: `git log 154b6c0d8..HEAD` has no commits on `src/app/(store)/product/`, `src/lib/seo/` or the sitemap. The page still always renders both `application/ld+json` scripts (`page.tsx:248`, `:256`).
