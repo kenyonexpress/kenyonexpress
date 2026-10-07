@@ -1,9 +1,9 @@
-RESUME FROM: M16-c115
+RESUME FROM: M17-c115
 
 # KenyonExpress — Project State
 
-Last item: **M15-c115 DONE** (2026-10-07): production `/` and `/product/מוצר-לדוגמא` log **0 console errors** at 380 and 1440 (Playwright, real Chromium). A local `next start` of HEAD shows only errors that come from the environment: the Vercel analytics scripts return 404 off Vercel, the HSTS/`upgrade-insecure-requests` upgrade fails on http localhost, and one Supabase-timeout 500 on `/api/cart` did not come back on the rerun. No code change. Branch `feat/products-sort-infinite-scroll`.
-Previous: M14-c115 BLOCKED (2026-10-07), M13-c115 BLOCKED (2026-10-07), M12-c115 DONE (2026-10-07), M11-c115 DONE (2026-10-07), M10-c115 BLOCKED (2026-10-07), M09-c115 DONE (2026-10-07), M08-c115 DONE (2026-10-07), M07-c115 DONE (2026-10-07), M06-c115 DONE (2026-10-07), M05-c115 DONE (2026-10-07), M04-c115 DONE (2026-10-07), M03-c115 BLOCKED (2026-10-07), M02-c115 BLOCKED (2026-10-07), M01-c115 BLOCKED (2026-10-07), M11-c113 DONE (2026-10-06).
+Last item: **M16-c115 DONE** (2026-10-07): every product page in the sitemap emits exactly one JSON-LD `Product` and one `BreadcrumbList`: **44/44 on production** (www) and **46/46 on a local `next start` of HEAD**. Both parse, the breadcrumb positions run 1..n and its last crumb equals `Product.name`, and every `Product` has `name` plus an `Offer` with price and `ILS`. Only gap: `image` is left out for products whose catalogue row has no images (1 live product, `מזקקת-ויסקי`, plus 2 `e2e-test-*` rows at HEAD). That is intended, the builder will not make up an image. No code change. Branch `feat/products-sort-infinite-scroll`.
+Previous: M15-c115 DONE (2026-10-07), M14-c115 BLOCKED (2026-10-07), M13-c115 BLOCKED (2026-10-07), M12-c115 DONE (2026-10-07), M11-c115 DONE (2026-10-07), M10-c115 BLOCKED (2026-10-07), M09-c115 DONE (2026-10-07), M08-c115 DONE (2026-10-07), M07-c115 DONE (2026-10-07), M06-c115 DONE (2026-10-07), M05-c115 DONE (2026-10-07), M04-c115 DONE (2026-10-07), M03-c115 BLOCKED (2026-10-07), M02-c115 BLOCKED (2026-10-07), M01-c115 BLOCKED (2026-10-07), M11-c113 DONE (2026-10-06).
 History before this item lives in `docs/STATE-ARCHIVE.md` (21,138 lines moved there in this commit).
 
 ## Queue status (cycle c113)
@@ -31,6 +31,16 @@ The runner's `final-done.txt` lists M01–M10 of c113 as finished. This branch's
 | M13-c115 | Verify /api/health and /api/ready return 200 with real deps | **BLOCKED**: health 200, ready 503 on `meilisearch: down` (see below) |
 | M14-c115 | Verify Sentry release matches HEAD commit | **BLOCKED**: prod release `1e84df0` (audit/final-audit), HEAD `b29fcbf` (see below) |
 | M15-c115 | Verify no console errors on / and /product sample | **DONE**: prod 0 errors on both pages at 380 and 1440; local errors come only from the environment (see below) |
+| M16-c115 | Verify all product pages have JSON-LD Product and BreadcrumbList | **DONE**: 44/44 prod, 46/46 HEAD, both nodes valid; 3 image-less rows have no `image` (see below) |
+
+## M16-c115: JSON-LD Product and BreadcrumbList on every product page, probed 2026-10-07 in the foreground
+
+- Code: `src/app/(store)/product/[slug]/page.tsx` always renders two `application/ld+json` scripts, `buildProductJsonLd` and `buildBreadcrumbJsonLd` (`src/lib/seo/json-ld.ts`). There is no conditional path. A product that is missing or has its type switched off returns `notFound()` before either node is built. `/product/[slug]` is the only storefront product route.
+- Method: a Node probe kept outside the repo reads `/sitemap/products.xml` and fetches every `/product/` URL in it. It parses every ld+json block and requires: status 200, exactly one `Product`, exactly one `BreadcrumbList`, no JSON parse error, `Product.name`, `Product.image`, an offer that has a price and `priceCurrency`, at least 2 breadcrumb items with positions 1..n, a name on every item, an `item` URL on every non-last item, and a last crumb name equal to `Product.name`.
+- **Production** (`https://www.kenyonexpress.co.il`, serving `audit/final-audit@1e84df0`): 44 URLs. **44/44 have both nodes.** 43 pass every check. 1, `/product/מזקקת-ויסקי`, has no `image` because its catalogue row has no images (the page shows the gallery placeholder). It still qualifies for product snippets (`name` + `offers`), but Google Merchant listings need an image.
+- **Local HEAD** (`pnpm start -p 3516` on this run's build): 46 URLs. **46/46 have both nodes.** The 3 without `image` are `מזקקת-ויסקי`, `e2e-test-physical` and `e2e-test-coupon`. The two `e2e-test-*` rows are active in the live DB, so HEAD's sitemap lists them. Production's older sitemap does not, so they would become public on the next deploy.
+- Observation, not changed: coupon and discounted offers set `highPrice` on an `Offer` (`json-ld.ts:147`, `:173`). That is documented as intended at `json-ld.ts:19`, but schema.org defines `highPrice` on `AggregateOffer`, so the Rich Results Test may warn about it. Filed here for review, not fixed in this verify item.
+- Gates in this run: `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6473 passed, 12 skipped), `pnpm build` 0 on attempt 1. No UI change, so compare.mjs does not apply (and it is blocked anyway, blocker 0).
 
 ## M15-c115: console errors on / and /product, probed 2026-10-07 in the foreground
 
@@ -231,3 +241,5 @@ Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=home 
 - Reconcile local `main` with `origin/main` before the next deploy.
 - Decide which branch production deploys from. Live is `audit/final-audit@1e84df0e5` (M14-c115). Deploy the branch you want live, then re-check that the client bundle's Sentry release equals that commit SHA. If you want server-side proof, look up the release list in the Sentry UI.
 - Review the catalogue findings in `supabase/catalogue-known-issues.json`.
+- Add at least one image to `מזקקת-ויסקי`. Without it, its JSON-LD `Product` has no `image` and Google Merchant listings skip it (M16-c115).
+- Set `e2e-test-physical` and `e2e-test-coupon` to draft, or exclude test fixtures from the sitemap, before the next deploy. They are active in the live DB and HEAD's sitemap lists them (M16-c115).
