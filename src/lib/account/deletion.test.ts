@@ -1,5 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { PURGED_ROWS, RETAINED_FOR_LAW, anonymizedEmail, runAnonymizationCascade } from './deletion'
+import {
+  DETACHED_ROWS,
+  PURGED_ROWS,
+  RETAINED_FOR_LAW,
+  anonymizedEmail,
+  runAnonymizationCascade,
+} from './deletion'
 
 /**
  * The cascade's promise is structural: money and accounting rows are never in
@@ -84,6 +90,23 @@ describe('the deletion plan itself', () => {
     expect(new Set(tables).size).toBe(tables.length)
   })
 
+  it('covers the four user-keyed tables STEP 31 measured as holes, and detaches BI rows', () => {
+    const purged = new Set(PURGED_ROWS.map((row) => row.table))
+    for (const table of [
+      'notifications',
+      'notification_outbox',
+      'user_rate_limits',
+      'supplier_members',
+    ]) {
+      expect(purged.has(table), `${table} still keeps the person after deletion`).toBe(true)
+    }
+    expect(DETACHED_ROWS.map((row) => row.table)).toContain('analytics_events')
+    for (const row of DETACHED_ROWS) {
+      expect(purged.has(row.table), `${row.table} cannot be both purged and detached`).toBe(false)
+      expect(RETAINED_FOR_LAW).not.toContain(row.table)
+    }
+  })
+
   it('keeps the money ledger on the retained list', () => {
     for (const table of ['orders', 'wallet_transactions', 'vouchers', 'audit_log']) {
       expect(RETAINED_FOR_LAW).toContain(table)
@@ -105,6 +128,17 @@ describe('runAnonymizationCascade', () => {
     for (const target of PURGED_ROWS) {
       const write = writes.find((w) => w.table === target.table && w.op === 'delete')
       expect(write, `${target.table} was not purged`).toBeTruthy()
+      expect(write?.filters).toEqual([{ method: 'eq', column: target.column, value: USER }])
+    }
+  })
+
+  it('nulls the user id on detached rows instead of deleting them', async () => {
+    const { admin, writes } = fakeAdmin()
+    await runAnonymizationCascade(admin as never, USER)
+    for (const target of DETACHED_ROWS) {
+      const write = writes.find((w) => w.table === target.table)
+      expect(write?.op, `${target.table} was not detached`).toBe('update')
+      expect(write?.values).toEqual({ [target.column]: null })
       expect(write?.filters).toEqual([{ method: 'eq', column: target.column, value: USER }])
     }
   })

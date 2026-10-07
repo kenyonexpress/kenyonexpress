@@ -82,6 +82,25 @@ describe('before consent', () => {
   })
 })
 
+describe('granular consent (STEP 31)', () => {
+  it('renders nothing for a visitor who allowed first-party analytics only', () => {
+    // The `analytics` word opens the first-party door and nothing else. GA4
+    // and the Pixel are the marketing door, so a tag here would be a
+    // transfer the visitor specifically declined.
+    setConsent(`analytics.${CONSENT_WORDING_VERSION}`)
+    const { container } = render(<ThirdPartyTags config={CONFIG} />)
+    expect(container.querySelectorAll('script')).toHaveLength(0)
+  })
+
+  it('loads both vendors for a visitor who allowed marketing only', () => {
+    setConsent(`marketing.${CONSENT_WORDING_VERSION}`)
+    const { container } = render(<ThirdPartyTags config={CONFIG} />)
+    const html = container.innerHTML
+    expect(html).toContain('googletagmanager.com/gtag/js?id=G-ABC1234567')
+    expect(html).toContain("fbq('init','123456789012')")
+  })
+})
+
 describe('after consent', () => {
   it('loads both vendors', () => {
     setConsent(`granted.${CONSENT_WORDING_VERSION}`)

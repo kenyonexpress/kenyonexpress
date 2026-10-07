@@ -6,8 +6,31 @@ const createClient = vi.hoisted(() => vi.fn())
 const checkRateLimit = vi.hoisted(() => vi.fn())
 const cookieGet = vi.hoisted(() => vi.fn())
 const writeAuditLog = vi.hoisted(() => vi.fn(async () => {}))
+const adminFilters = vi.hoisted(() => [] as Array<{ column: string; value: unknown }>)
 
 vi.mock('@/lib/supabase/server', () => ({ createClient }))
+vi.mock('@/lib/supabase/admin', () => ({
+  createAdminClient: () => ({
+    from: (table: string) => ({
+      select: () => {
+        const thenable = {
+          eq: (column: string, value: unknown) => {
+            adminFilters.push({ column, value })
+            return thenable
+          },
+          order: () => thenable,
+          limit: () => thenable,
+          // biome-ignore lint/suspicious/noThenProperty: the Supabase query builder IS a thenable; the stub must be awaitable mid-chain like the real one.
+          then: (resolve: (value: unknown) => unknown) =>
+            Promise.resolve({ data: table === 'analytics_events' ? [] : null, error: null }).then(
+              resolve,
+            ),
+        }
+        return thenable
+      },
+    }),
+  }),
+}))
 vi.mock('@/lib/utils/rate-limit', () => ({ checkRateLimit }))
 vi.mock('next/headers', () => ({ cookies: async () => ({ get: cookieGet }) }))
 vi.mock('@/lib/admin/audit', () => ({ writeAuditLog }))
@@ -123,6 +146,7 @@ describe('GET /api/account/export', () => {
     expect(body.format).toBe('kenyonexpress-data-export/1')
     expect(body.account).toMatchObject({ id: USER.id, email: USER.email })
     expect(body.analytics_consent).toEqual({ decision: 'granted', wordingVersion: 2 })
+    expect(body.analytics_consent_categories).toEqual({ analytics: true, marketing: true })
     for (const section of [
       'profile',
       'addresses',
@@ -132,10 +156,35 @@ describe('GET /api/account/export', () => {
       'wallet_transactions',
       'vouchers',
       'referrals',
+      // STEP 31
+      'notifications',
+      'reviews',
+      'wishlist',
+      'subscriptions',
+      'support_tickets',
+      'recent_searches',
+      'newsletter',
+      'whatsapp',
+      'push_subscriptions',
+      'analytics_events',
     ]) {
       expect(body, `missing section ${section}`).toHaveProperty(section)
     }
     expect(body.sections_unavailable).toEqual([])
+  })
+
+  it('reads behavioural events through the admin client scoped by the session id only', async () => {
+    adminFilters.length = 0
+    await GET(request())
+    expect(adminFilters).toEqual([{ column: 'user_id', value: USER.id }])
+  })
+
+  it('never exports a push delivery credential', async () => {
+    await GET(request())
+    expect(selectedColumns.push_subscriptions).not.toContain('endpoint')
+    expect(selectedColumns.push_subscriptions).not.toContain('p256dh')
+    expect(selectedColumns.push_subscriptions).not.toContain('auth')
+    expect(selectedColumns.newsletter_subscribers).not.toContain('token')
   })
 
   it('never selects the raw Cardcom token into the file', async () => {

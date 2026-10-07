@@ -511,3 +511,53 @@ scrub, applications שנדחו) מתווספות ל-`fn_execute_account_deletion
 (אחרי 036, לפי משמעת R31), והם expand-only: אף אחד מהם לא משנה אובייקט קיים, ולכן אין
 השפעה על סדר ההחלה 026-036 הקיים. עדכון מסמך האב (רישום 037 בטבלת 0.1/2.1) ייעשה על ידי
 בעלי docs/ באותו commit שבו ייכתב הקובץ.
+
+---
+
+## 7. רישום מעבדי משנה והסכמי עיבוד (DPA), נכון ל-07.10.2026 (STEP 31)
+
+הרישום המכונן הוא `src/lib/privacy/processors.ts`. מדיניות הפרטיות מרנדרת ממנו את טבלת
+"למי המידע נמסר", ו-`processors.test.ts` בודק לשני הכיוונים: כל שורה מצביעה על משתנה סביבה
+שהקוד באמת קורא, וכל משתנה שמפעיל ספק מופיע בשורה. ספק שנוסף לקוד בלי שורה הוא טסט אדום,
+לא מדיניות שמשקרת בשקט. הטבלה כאן היא העתק קריא; מקור האמת הוא הקובץ.
+
+| ספק | תפקיד | מה מגיע אליו | אזור | הסכם | איך מחייב | סטטוס |
+|---|---|---|---|---|---|---|
+| Vercel | מעבד | בקשות, IP, לוגים | EU/US | https://vercel.com/legal/dpa | מצורף לתנאי השירות, SCC כלולים | בתוקף |
+| Supabase | מעבד | מסד הנתונים כולו, עוגיות auth | EU | https://supabase.com/legal/dpa | מחייב עם קבלת התנאים (סעיף 12.2); עותק חתום מ-Dashboard > Legal Documents (PandaDoc) | **ממתין לחתימת אופיר** |
+| Cardcom | מעבד (ובעלת מאגר בפני עצמה) | פרטי תשלום במסך הסליקה, סכום | IL | הסכם סליקה | חוזה דו-צדדי | בתוקף |
+| Resend | מעבד | מייל, תוכן הודעה | US | https://resend.com/legal/dpa | חתום מראש, בתוקף מפתיחת החשבון; DPF | בתוקף |
+| Twilio | מעבד | טלפון, תוכן SMS/WhatsApp | US | https://www.twilio.com/en-us/legal/data-protection-addendum | מצורף לתנאי השירות | בתוקף |
+| Sentry | מעבד | שגיאות אחרי scrub | US | https://sentry.io/legal/dpa/ | מתקבל אלקטרונית עם התנאים | בתוקף |
+| PostHog | מעבד | אירועי שימוש בהסכמה (`analytics`) | US | https://posthog.com/dpa | מופק לבקשה בטופס, חוזר ב-PandaDoc | **ממתין לבקשה של אופיר** |
+| Google | שליטה משותפת | OAuth; GA4 בהסכמה (`marketing`) | EU/US | https://business.safety.google/adsprocessorterms/ | מתקבל בהגדרות הנכס ב-GA4 | בתוקף |
+| Meta | שליטה משותפת | Pixel בהסכמה (`marketing`) | EU/US | https://www.facebook.com/legal/terms/businesstools | מתקבל עם יצירת הפיקסל | בתוקף |
+
+לא ברישום, בכוונה: Anthropic (`src/server/ai/client.ts`) כבוי כברירת מחדל וכל קלט עובר
+`redact` לפני שליחה, כך שאין עיבוד של מידע אישי; Cloudflare R2 מחזיק תמונות מוצר בלבד.
+שניהם יצטרפו ביום שבו אחד מהם יקבל מידע אישי.
+
+**מה נשאר לאופיר (שתי פעולות, שתיהן בדפדפן):**
+
+1. Supabase: Dashboard > Organization > Legal Documents > DPA, למלא ולחתום ב-PandaDoc.
+   אחרי החתימה: `status: 'in-force'` בשורת `supabase` בקובץ, והערת "בתהליך החתמה" במדיניות
+   נעלמת מעצמה.
+2. PostHog: הטופס ב-https://posthog.com/dpa, לחתום על המסמך שחוזר במייל. אותו עדכון בשורת
+   `posthog`.
+
+**מה הקוד כבר מקיים (נמדד ב-07.10.2026):**
+
+- הסכמה פרטנית: שני סוגים (`analytics`, `marketing`) בעוגייה אחת, ארבע מילות החלטה
+  (`granted`/`denied`/`analytics`/`marketing`), בלי bump לגרסת הנוסח כי "כן" ישן כיסה את
+  שני הסוגים ו"לא" ישן אף אחד. GA4 ו-Meta נטענים רק על `marketing`; הכלים העצמיים,
+  PostHog, replay ו-flags רק על `analytics`. הבאנר נשאר Server Component בלי JS:
+  ההתאמה האישית היא `<details>` עם checkbox לכל סוג.
+- ייצוא עצמי (`/api/account/export`): 18 מקטעים, כולל התראות, ביקורות, משאלות, מנויים,
+  פניות, חיפושים, דיוור, WhatsApp, push (בלי credential) ואירועי שימוש (דרך admin client
+  מסונן ב-user id של הסשן בלבד, כי `analytics_events` היא admin-read).
+- מחיקה עצמית: `runAnonymizationCascade` מוחקת גם `notifications`, `notification_outbox`,
+  `user_rate_limits`, `supplier_members`, ומנתקת `analytics_events.user_id`. הארבע נמדדו מול
+  `pg_constraint` ומול הטיפוסים המחוללים כחורים שנשארו אחרי STEP 11.
+- מדיניות פרטיות: `updatedAt` 07.10.2026, טבלת הספקים מהרישום, סעיף העברה מרחיב ל-DPA
+  עם סעיף 17 לחוק ותקנה 15, הערת "בתהליך החתמה" נגזרת מ-`pendingAgreements()`.
+

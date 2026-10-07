@@ -4,7 +4,7 @@ import {
   CONSENT_COOKIE,
   CONSENT_MAX_AGE_SECONDS,
   CONSENT_WORDING_VERSION,
-  type ConsentDecision,
+  decisionFromForm,
   serializeConsent,
 } from '@/lib/analytics/consent'
 import { withActionContext } from '@/lib/observability/action-context'
@@ -25,9 +25,8 @@ import { redirect } from 'next/navigation'
  * on the next response with no client JS on the critical path ([25]).
  */
 async function runDecideConsent(formData: FormData): Promise<void> {
-  const raw = formData.get('decision')
-  if (raw !== 'granted' && raw !== 'denied') return
-  const decision = raw as ConsentDecision
+  const decision = decisionFromForm(formData)
+  if (decision === null) return
 
   const jar = await cookies()
   jar.set({

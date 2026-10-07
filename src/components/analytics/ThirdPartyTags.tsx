@@ -1,6 +1,6 @@
 'use client'
 
-import { CONSENT_COOKIE, isBehavioralTrackingAllowed } from '@/lib/analytics/consent'
+import { CONSENT_COOKIE, isBehavioralCategoryAllowed } from '@/lib/analytics/consent'
 import {
   type ThirdPartyAnalyticsConfig,
   hasAnyThirdParty,
@@ -61,9 +61,12 @@ export default function ThirdPartyTags({
   const valid = validatedConfig(config)
 
   useEffect(() => {
-    // Consent AND no Do Not Track / GPC signal: a browser that opted out
-    // gets no vendor script even after an Accept click (lib/analytics/consent.ts).
-    const check = () => setAllowed(isBehavioralTrackingAllowed(readCookie(CONSENT_COOKIE)))
+    // The MARKETING door specifically, AND no Do Not Track / GPC signal: a
+    // visitor who allowed first-party analytics but not ad measurement gets
+    // no vendor script, and a browser that opted out gets none even after an
+    // Accept click (lib/analytics/consent.ts).
+    const check = () =>
+      setAllowed(isBehavioralCategoryAllowed(readCookie(CONSENT_COOKIE), 'marketing'))
     check()
     window.addEventListener(CONSENT_GRANTED_EVENT, check)
     return () => window.removeEventListener(CONSENT_GRANTED_EVENT, check)

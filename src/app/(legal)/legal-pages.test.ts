@@ -1,5 +1,6 @@
 import { readdirSync } from 'node:fs'
 import { join } from 'node:path'
+import { PROCESSORS, pendingAgreements } from '@/lib/privacy/processors'
 import { describe, expect, it } from 'vitest'
 import { LEGAL_DOCS } from './_content'
 import type { LegalDoc } from './_content/types'
@@ -183,6 +184,33 @@ describe('the privacy policy matches the stack it describes', () => {
     expect(privacy).toContain('סעיף 13')
     expect(privacy).toContain('סעיף 14')
     expect(privacy).toContain('30 ימים')
+  })
+
+  // STEP 31: the sharing table is rendered from the processor register, so
+  // every vendor the code can call is named, with its purpose, in the policy.
+  it('names every processor in the register, by the name the register gives it', () => {
+    for (const processor of PROCESSORS) {
+      expect(privacy, `${processor.id} missing from the policy`).toContain(processor.name)
+      expect(privacy).toContain(processor.purpose)
+    }
+  })
+
+  it('describes consent as two categories and says where each can be withdrawn', () => {
+    expect(privacy).toContain('מדידת שימוש באתר')
+    expect(privacy).toContain('מדידת פרסום')
+    expect(privacy).toContain('לכל סוג בנפרד')
+    expect(privacy).toContain('פרטיות ונתונים')
+  })
+
+  it('names the data processing agreements and the law that requires them', () => {
+    expect(privacy).toContain('DPA')
+    expect(privacy).toContain('סעיף 17')
+    for (const processor of pendingAgreements()) {
+      expect(privacy, `${processor.id} is pending and the policy must say so`).toContain(
+        processor.name,
+      )
+      expect(privacy).toContain('בתהליך החתמה')
+    }
   })
 })
 

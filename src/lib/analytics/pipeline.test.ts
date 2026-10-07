@@ -5,6 +5,10 @@ import {
   CONSENT_DECIDED_VALUE,
   CONSENT_PREPAINT_SCRIPT,
   CONSENT_WORDING_VERSION,
+  consentCategories,
+  decisionFor,
+  decisionFromForm,
+  isCategoryAllowed,
   isTrackingAllowed,
   needsConsentDecision,
   parseConsent,
@@ -63,6 +67,55 @@ describe('consent', () => {
 })
 
 /**
+ * STEP 31: two doors behind one cookie. `granted` and `denied` keep meaning
+ * both and neither (which is why the wording version was not bumped), and
+ * the two new words open exactly one door each.
+ */
+describe('granular consent', () => {
+  const v = CONSENT_WORDING_VERSION
+
+  it('maps each of the four words to its pair of switches, and back', () => {
+    expect(consentCategories(`granted.${v}`)).toEqual({ analytics: true, marketing: true })
+    expect(consentCategories(`denied.${v}`)).toEqual({ analytics: false, marketing: false })
+    expect(consentCategories(`analytics.${v}`)).toEqual({ analytics: true, marketing: false })
+    expect(consentCategories(`marketing.${v}`)).toEqual({ analytics: false, marketing: true })
+    for (const word of ['granted', 'denied', 'analytics', 'marketing'] as const) {
+      expect(decisionFor(consentCategories(`${word}.${v}`))).toBe(word)
+    }
+  })
+
+  it('keeps isTrackingAllowed on the analytics door only', () => {
+    expect(isTrackingAllowed(`analytics.${v}`)).toBe(true)
+    expect(isTrackingAllowed(`marketing.${v}`)).toBe(false)
+    expect(isCategoryAllowed(`marketing.${v}`, 'marketing')).toBe(true)
+    expect(isCategoryAllowed(`analytics.${v}`, 'marketing')).toBe(false)
+  })
+
+  it('opens no door on stale wording or no cookie', () => {
+    expect(consentCategories('analytics.1')).toEqual({ analytics: false, marketing: false })
+    expect(consentCategories(null)).toEqual({ analytics: false, marketing: false })
+  })
+
+  it('folds the customise form into one word and an unticked box into no', () => {
+    const form = (entries: Record<string, string>) => {
+      const data = new FormData()
+      for (const [key, value] of Object.entries(entries)) data.set(key, value)
+      return data
+    }
+    expect(decisionFromForm(form({ decision: 'custom', analytics: 'on', marketing: 'on' }))).toBe(
+      'granted',
+    )
+    expect(decisionFromForm(form({ decision: 'custom', analytics: 'on' }))).toBe('analytics')
+    expect(decisionFromForm(form({ decision: 'custom', marketing: 'on' }))).toBe('marketing')
+    expect(decisionFromForm(form({ decision: 'custom' }))).toBe('denied')
+    expect(decisionFromForm(form({ decision: 'granted' }))).toBe('granted')
+    expect(decisionFromForm(form({ decision: 'marketing' }))).toBe('marketing')
+    expect(decisionFromForm(form({ decision: 'maybe' }))).toBeNull()
+    expect(decisionFromForm(form({}))).toBeNull()
+  })
+})
+
+/**
  * The banner's markup now ships to everyone and is hidden by CSS off an
  * attribute this snippet sets before first paint, so the snippet - not
  * `needsConsentDecision` - is what decides whether a visitor sees the banner on
@@ -88,6 +141,15 @@ describe('consent pre-paint snippet', () => {
   const cases: Array<[label: string, raw: string | null]> = [
     ['a current grant', serializeConsent({ decision: 'granted', wordingVersion: 1 })],
     ['a current decline', serializeConsent({ decision: 'denied', wordingVersion: 1 })],
+    [
+      'a current analytics-only grant',
+      serializeConsent({ decision: 'analytics', wordingVersion: 1 }),
+    ],
+    [
+      'a current marketing-only grant',
+      serializeConsent({ decision: 'marketing', wordingVersion: 1 }),
+    ],
+    ['a partial word on superseded wording', 'analytics.0'],
     ['superseded wording', serializeConsent({ decision: 'granted', wordingVersion: 0 })],
     ['a decision word with no version', 'granted'],
     ['a non-numeric version', 'granted.1abc'],

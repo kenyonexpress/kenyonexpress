@@ -54,6 +54,27 @@ export const PURGED_ROWS: ReadonlyArray<{ table: string; column: string }> = [
   { table: 'whatsapp_contacts', column: 'user_id' },
   { table: 'abandoned_cart_nudges', column: 'user_id' },
   { table: 'referral_signals', column: 'user_id' },
+  // STEP 31, measured against production on 2026-10-07 (pg_constraint and
+  // the generated types): four more user-keyed tables held the person after
+  // the cascade. In-app notifications and the email/push outbox carry names,
+  // order details and the recipient address (a pending outbox row would also
+  // have mailed a tombstone); the rate-limit rows are tracking; and a supplier
+  // membership is a login capability the ban should not be the only thing
+  // closing. None is money.
+  { table: 'notifications', column: 'user_id' },
+  { table: 'notification_outbox', column: 'user_id' },
+  { table: 'user_rate_limits', column: 'user_id' },
+  { table: 'supplier_members', column: 'user_id' },
+]
+
+/**
+ * Rows that stay for the aggregate but must stop pointing at the person.
+ * analytics_events is BI (13-month partitions, docs/ARCHITECTURE-LEGAL-COMPLIANCE
+ * §5 says "user_id reset on deletion"); deleting the rows would bend every
+ * historical count, nulling the id leaves a session with no owner.
+ */
+export const DETACHED_ROWS: ReadonlyArray<{ table: string; column: string }> = [
+  { table: 'analytics_events', column: 'user_id' },
 ]
 
 /**
@@ -109,6 +130,17 @@ export async function runAnonymizationCascade(
     if (error) {
       failed.push(target.table)
       log.error('privacy.purge_failed', { table: target.table, reason: error.message })
+    }
+  }
+
+  for (const target of DETACHED_ROWS) {
+    const { error } = await admin
+      .from(target.table)
+      .update({ [target.column]: null })
+      .eq(target.column, userId)
+    if (error) {
+      failed.push(target.table)
+      log.error('privacy.detach_failed', { table: target.table, reason: error.message })
     }
   }
 

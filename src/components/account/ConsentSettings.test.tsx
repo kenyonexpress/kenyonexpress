@@ -9,18 +9,28 @@ import ConsentSettings, { summarizeConsent } from './ConsentSettings'
 
 /**
  * Withdrawal must be as easy as consent: one click, from the account, with
- * the current state spelled out. The component reads the banner's cookie
- * and offers exactly the decision the visitor has not made.
+ * the current state spelled out per category. The component reads the
+ * banner's cookie, pre-ticks exactly the categories that are on, and keeps a
+ * one-click "withdraw everything" for anyone who has anything on.
  */
 
 async function html(): Promise<string> {
   return renderToStaticMarkup(await ConsentSettings())
 }
 
+/** `defaultChecked` renders as a bare `checked` attribute in static markup. */
+function checked(out: string, category: string): boolean {
+  const match = out.match(new RegExp(`<input[^>]*name="${category}"[^>]*>`))
+  if (!match) throw new Error(`no checkbox for ${category}`)
+  return / checked(?:=""|\s|\/|>)/.test(match[0])
+}
+
 describe('summarizeConsent', () => {
-  it('reads the banner cookie', () => {
+  it('reads the banner cookie, including the two partial words', () => {
     expect(summarizeConsent('granted.2')).toBe('granted')
     expect(summarizeConsent('denied.2')).toBe('denied')
+    expect(summarizeConsent('analytics.2')).toBe('partial')
+    expect(summarizeConsent('marketing.2')).toBe('partial')
   })
 
   it('treats no cookie, a broken one, or stale wording as undecided', () => {
@@ -36,29 +46,41 @@ describe('<ConsentSettings>', () => {
     cookieGet.mockReset()
   })
 
-  it('offers withdrawal, and only withdrawal, to someone who consented', async () => {
+  it('pre-ticks both boxes and offers withdrawal to someone who consented to all', async () => {
     cookieGet.mockReturnValue({ value: 'granted.2' })
     const out = await html()
     expect(out).toContain('data-consent-summary="granted"')
+    expect(checked(out, 'analytics')).toBe(true)
+    expect(checked(out, 'marketing')).toBe(true)
     expect(out).toContain('name="decision" value="denied"')
-    expect(out).not.toContain('name="decision" value="granted"')
-    expect(out).toContain('ביטול ההסכמה')
+    expect(out).toContain('ביטול ההסכמה כולה')
   })
 
-  it('offers consent, and only consent, to someone who declined', async () => {
+  it('pre-ticks only the category that is on, and still offers full withdrawal', async () => {
+    cookieGet.mockReturnValue({ value: 'analytics.2' })
+    const out = await html()
+    expect(out).toContain('data-consent-summary="partial"')
+    expect(checked(out, 'analytics')).toBe(true)
+    expect(checked(out, 'marketing')).toBe(false)
+    expect(out).toContain('name="decision" value="denied"')
+  })
+
+  it('ticks nothing and hides the withdraw button for someone who declined', async () => {
     cookieGet.mockReturnValue({ value: 'denied.2' })
     const out = await html()
     expect(out).toContain('data-consent-summary="denied"')
-    expect(out).toContain('name="decision" value="granted"')
+    expect(checked(out, 'analytics')).toBe(false)
+    expect(checked(out, 'marketing')).toBe(false)
     expect(out).not.toContain('name="decision" value="denied"')
   })
 
-  it('offers both to someone who has not decided', async () => {
+  it('posts through the custom decision so the cookie keeps one writer and one format', async () => {
     cookieGet.mockReturnValue(undefined)
     const out = await html()
     expect(out).toContain('data-consent-summary="undecided"')
-    expect(out).toContain('name="decision" value="granted"')
-    expect(out).toContain('name="decision" value="denied"')
+    expect(out).toContain('name="decision" value="custom"')
+    expect(checked(out, 'analytics')).toBe(false)
+    expect(checked(out, 'marketing')).toBe(false)
   })
 
   it('is Hebrew, with no Latin sentence a customer would read', async () => {

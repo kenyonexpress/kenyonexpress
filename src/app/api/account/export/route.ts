@@ -1,7 +1,8 @@
 import { writeAuditLog } from '@/lib/admin/audit'
-import { CONSENT_COOKIE, parseConsent } from '@/lib/analytics/consent'
+import { CONSENT_COOKIE, consentCategories, parseConsent } from '@/lib/analytics/consent'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit } from '@/lib/utils/rate-limit'
 import { cookies } from 'next/headers'
@@ -71,7 +72,72 @@ const SECTION_QUERIES = {
     db
       .from('referrals')
       .select('referral_code, status, bonus_paid_amount_ils, completed_at, created_at'),
+  // STEP 31: the access right covers everything held about the person, and
+  // measured on 2026-10-07 these nine owner-readable tables were missing from
+  // the file. Each has an owner SELECT policy in production (pg_policy), so
+  // the RLS line above still draws the boundary. Push subscriptions export
+  // the device description and date only: the endpoint and keys are a
+  // delivery credential, not a fact about the person.
+  notifications: (db: Db) =>
+    db
+      .from('notifications')
+      .select('kind, title_he, body_he, href, read_at, created_at')
+      .order('created_at', { ascending: false }),
+  reviews: (db: Db) =>
+    db
+      .from('reviews')
+      .select('product_id, rating, body, status, created_at')
+      .order('created_at', { ascending: false }),
+  wishlist: (db: Db) => db.from('wishlists').select('product_id, created_at'),
+  subscriptions: (db: Db) =>
+    db
+      .from('subscriptions')
+      .select(
+        'product_id, status, amount_agorot, billing_interval, billing_interval_count, next_charge_at, last_charge_at, canceled_at, cancel_reason, created_at',
+      ),
+  support_tickets: (db: Db) =>
+    db
+      .from('support_tickets')
+      .select('channel, subject, status, phone, created_at, closed_at')
+      .order('created_at', { ascending: false }),
+  recent_searches: (db: Db) =>
+    db
+      .from('user_recent_searches')
+      .select('term, searched_at')
+      .order('searched_at', { ascending: false }),
+  newsletter: (db: Db) =>
+    db
+      .from('newsletter_subscribers')
+      .select(
+        'email, status, source, consent_wording_version, confirmed_at, unsubscribed_at, unsubscribe_reason, created_at',
+      ),
+  whatsapp: (db: Db) =>
+    db
+      .from('whatsapp_contacts')
+      .select('phone, status, source, opted_in_at, opted_out_at, created_at'),
+  push_subscriptions: (db: Db) =>
+    db.from('push_subscriptions').select('user_agent, created_at, updated_at'),
 } as const
+
+/**
+ * Behavioural events are the one section RLS cannot serve: analytics_events
+ * is admin-read only in production, by design (a shopper has no business
+ * browsing the raw event table). They are still data about the person, so
+ * this one read goes through the admin client, scoped by the session's user
+ * id and nothing from the request, and selects the event shape without the
+ * user agent or the raw props. Capped so one heavy visitor's history cannot
+ * turn the file into a multi-megabyte download.
+ */
+const ANALYTICS_EVENTS_LIMIT = 2000
+
+function analyticsEventsQuery(userId: string) {
+  return createAdminClient()
+    .from('analytics_events')
+    .select('event_name, occurred_at, path, referrer, utm, source')
+    .eq('user_id', userId)
+    .order('occurred_at', { ascending: false })
+    .limit(ANALYTICS_EVENTS_LIMIT)
+}
 
 type Db = Awaited<ReturnType<typeof createClient>>
 
@@ -88,9 +154,10 @@ async function handleGET(): Promise<NextResponse> {
   if (!allowed) return NextResponse.json({ ok: false, error: 'rate_limited' }, { status: 429 })
 
   const names = Object.keys(SECTION_QUERIES) as Array<keyof typeof SECTION_QUERIES>
-  const entries = await Promise.all(
-    names.map(async (name) => ({ name, result: await SECTION_QUERIES[name](supabase) })),
-  )
+  const entries = await Promise.all([
+    ...names.map(async (name) => ({ name, result: await SECTION_QUERIES[name](supabase) })),
+    (async () => ({ name: 'analytics_events', result: await analyticsEventsQuery(user.id) }))(),
+  ])
 
   const sections: Record<string, unknown> = {}
   const unavailable: string[] = []
@@ -133,6 +200,9 @@ async function handleGET(): Promise<NextResponse> {
       last_sign_in_at: user.last_sign_in_at ?? null,
     },
     analytics_consent: parseConsent(consentRaw),
+    // The two switches as the visitor has them right now (STEP 31), so the
+    // file answers "what did I agree to" without decoding the cookie word.
+    analytics_consent_categories: consentCategories(consentRaw),
     sections_unavailable: unavailable,
     ...sections,
   }

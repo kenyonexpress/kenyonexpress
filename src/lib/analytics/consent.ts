@@ -20,11 +20,90 @@ export const CONSENT_MAX_AGE_SECONDS = 60 * 60 * 24 * 365 // 12 months
 // wrong: the same cookie value silently meaning something it never meant.
 export const CONSENT_WORDING_VERSION = 2
 
-export type ConsentDecision = 'granted' | 'denied'
+/**
+ * GRANULAR CONSENT: TWO CATEGORIES, FOUR DECISION WORDS, ONE COOKIE.
+ *
+ * The banner used to be yes/no, and "yes" covered everything behind the gate.
+ * Amendment 13 and the GDPR both read consent as specific: a visitor who is
+ * happy to help us count page views is not thereby happy to be measured for
+ * ads at Google and Meta. So the gate now has two doors:
+ *
+ *   analytics  first-party events (/api/a), web vitals, PostHog, session
+ *              replay (which keeps its own extra opt-in on top), feature flags.
+ *   marketing  GA4 and the Meta Pixel: the vendors that attribute advertising.
+ *
+ * "Necessary" (session, cart, login, this cookie) is not a category: it is not
+ * asked and cannot be refused, exactly as the policy says.
+ *
+ * The cookie keeps its `<word>.<version>` shape. `granted` and `denied` mean
+ * what they always meant (both / neither), which is why the wording version
+ * is NOT bumped here: a "yes" given to the old sentence already named Google
+ * and Meta alongside the first-party collection, so it covers both doors, and
+ * a "no" still covers neither. The two new words, `analytics` and `marketing`,
+ * each open exactly one door. A browser that never saw the new banner sends a
+ * cookie the new code reads identically; a cookie written by the new banner
+ * falls into the old code's "unknown decision" branch, i.e. denied, which is
+ * the safe side of a rollback.
+ */
+export type ConsentDecision = 'granted' | 'denied' | 'analytics' | 'marketing'
+
+export const CONSENT_DECISIONS: ReadonlyArray<ConsentDecision> = [
+  'granted',
+  'denied',
+  'analytics',
+  'marketing',
+]
+
+export type ConsentCategory = 'analytics' | 'marketing'
+
+export const CONSENT_CATEGORIES: ReadonlyArray<ConsentCategory> = ['analytics', 'marketing']
+
+export type ConsentCategories = Record<ConsentCategory, boolean>
 
 export type ConsentState = {
   decision: ConsentDecision
   wordingVersion: number
+}
+
+function isConsentDecision(value: string | undefined): value is ConsentDecision {
+  return (CONSENT_DECISIONS as ReadonlyArray<string>).includes(value ?? '')
+}
+
+/** Which doors a decision word opens. The only place the four words are interpreted. */
+export function categoriesOf(decision: ConsentDecision): ConsentCategories {
+  return {
+    analytics: decision === 'granted' || decision === 'analytics',
+    marketing: decision === 'granted' || decision === 'marketing',
+  }
+}
+
+/** The inverse: the one word that encodes a pair of switches. */
+export function decisionFor(categories: ConsentCategories): ConsentDecision {
+  if (categories.analytics && categories.marketing) return 'granted'
+  if (categories.analytics) return 'analytics'
+  if (categories.marketing) return 'marketing'
+  return 'denied'
+}
+
+/**
+ * A consent form's decision, as one of the four cookie words. The two
+ * one-click buttons post the word itself; the "customise" panel posts
+ * `custom` plus a checkbox per category, and the pair is folded into a word
+ * here so the cookie never learns a second format. An unchecked box is absent
+ * from the form data, which is the correct reading: not ticked is not
+ * consented. Pure, and here rather than in the server action, because a
+ * 'use server' module may export async functions only.
+ */
+export function decisionFromForm(formData: FormData): ConsentDecision | null {
+  const raw = formData.get('decision')
+  if (raw === 'custom') {
+    return decisionFor({
+      analytics: formData.get('analytics') === 'on',
+      marketing: formData.get('marketing') === 'on',
+    })
+  }
+  if (typeof raw !== 'string' || !isConsentDecision(raw)) return null
+  return raw
 }
 
 /** Serialized as `granted.1` so it stays a single short cookie value. */
@@ -35,19 +114,44 @@ export function serializeConsent(state: ConsentState): string {
 export function parseConsent(raw: string | undefined | null): ConsentState | null {
   if (!raw) return null
   const [decision, version] = raw.split('.')
-  if (decision !== 'granted' && decision !== 'denied') return null
+  if (!isConsentDecision(decision)) return null
   const wordingVersion = Number(version)
   if (!Number.isInteger(wordingVersion) || wordingVersion < 1) return null
   return { decision, wordingVersion }
 }
 
 /**
- * Whether browser events may be collected right now. A decision recorded
+ * The switches as the visitor currently has them: both off until a decision
+ * on current wording exists. This is what the account page shows and what
+ * the export file records.
+ */
+export function consentCategories(raw: string | undefined | null): ConsentCategories {
+  const state = parseConsent(raw)
+  if (state === null || state.wordingVersion < CONSENT_WORDING_VERSION) {
+    return { analytics: false, marketing: false }
+  }
+  return categoriesOf(state.decision)
+}
+
+/**
+ * Whether one category may be collected right now. A decision recorded
  * against superseded wording does not count as consent.
  */
+export function isCategoryAllowed(
+  raw: string | undefined | null,
+  category: ConsentCategory,
+): boolean {
+  return consentCategories(raw)[category]
+}
+
+/**
+ * Whether first-party browser events may be collected right now: the
+ * `analytics` door. Kept under its historical name because every first-party
+ * pipeline (the tracker, /api/a, PostHog, replay, flags) asks this question,
+ * and none of them is a marketing vendor.
+ */
 export function isTrackingAllowed(raw: string | undefined | null): boolean {
-  const state = parseConsent(raw)
-  return state?.decision === 'granted' && state.wordingVersion >= CONSENT_WORDING_VERSION
+  return isCategoryAllowed(raw, 'analytics')
 }
 
 /** True when the banner still has to be shown (no decision, or stale wording). */
@@ -84,7 +188,7 @@ export const CONSENT_DECIDED_VALUE = 'decided'
  * failure mode of a drift is a banner shown to someone who already answered, or
  * a banner never shown at all.
  */
-export const CONSENT_PREPAINT_SCRIPT = `(function(){try{var m=document.cookie.match(/(?:^|; )${CONSENT_COOKIE}=([^;]*)/);if(!m)return;var p=decodeURIComponent(m[1]).split(".");var v=Number(p[1]);if((p[0]==="granted"||p[0]==="denied")&&Number.isInteger(v)&&v>=${CONSENT_WORDING_VERSION})document.documentElement.setAttribute("${CONSENT_DECIDED_ATTRIBUTE}","${CONSENT_DECIDED_VALUE}")}catch(e){}})()`
+export const CONSENT_PREPAINT_SCRIPT = `(function(){try{var m=document.cookie.match(/(?:^|; )${CONSENT_COOKIE}=([^;]*)/);if(!m)return;var p=decodeURIComponent(m[1]).split(".");var v=Number(p[1]);if(${JSON.stringify(CONSENT_DECISIONS)}.indexOf(p[0])>=0&&Number.isInteger(v)&&v>=${CONSENT_WORDING_VERSION})document.documentElement.setAttribute("${CONSENT_DECIDED_ATTRIBUTE}","${CONSENT_DECIDED_VALUE}")}catch(e){}})()`
 
 /**
  * DO NOT TRACK AND GLOBAL PRIVACY CONTROL, HONOURED AS A HARD STOP.
@@ -161,5 +265,13 @@ export function doNotTrackFromHeaders(get: (name: string) => string | null | und
  * already read the cookie their own way.
  */
 export function isBehavioralTrackingAllowed(consentRaw: string | undefined | null): boolean {
-  return isTrackingAllowed(consentRaw) && !browserDoNotTrack()
+  return isBehavioralCategoryAllowed(consentRaw, 'analytics')
+}
+
+/** The same question for one named door; the marketing vendors ask this one. */
+export function isBehavioralCategoryAllowed(
+  consentRaw: string | undefined | null,
+  category: ConsentCategory,
+): boolean {
+  return isCategoryAllowed(consentRaw, category) && !browserDoNotTrack()
 }

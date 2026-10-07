@@ -119,19 +119,24 @@ html[data-consent="decided"] [data-consent-banner] {
   --reserve-pwa: 0rem;
 }
 
+/* STEP 31 (2026-10-07): the banner gained a collapsed "customise" row under
+   the copy (a 44px <summary> plus its 0.5rem margin, 3.25rem) so consent can
+   be given per category. Every tier below is the 2026-08-19 figure plus that
+   row, rounded up; the row is the same height at every width because the
+   summary never wraps. */
 html:not([data-consent="decided"]) {
-  --reserve-consent: 14.5rem;
+  --reserve-consent: 18rem;
 }
 
 @media (min-width: 640px) {
   html:not([data-consent="decided"]) {
-    --reserve-consent: 8rem;
+    --reserve-consent: 11.5rem;
   }
 }
 
 @media (min-width: 768px) {
   html:not([data-consent="decided"]) {
-    --reserve-consent: 7rem;
+    --reserve-consent: 10.5rem;
   }
 }
 

@@ -29,7 +29,7 @@
  * text is built from module constants only; `frame-policy.test.ts` recomputes
  * this hash from the live constant so the two cannot drift.
  */
-export const CONSENT_PREPAINT_SCRIPT_HASH = 'sha256-cskwcUrkgwvG+4v6zks2IZ6sL2dhCbC5JwkdBTRDS0c='
+export const CONSENT_PREPAINT_SCRIPT_HASH = 'sha256-NkB+bKWzwupbsiv4EI022OEm1NRWnmWhV+hDhjsrKXc='
 
 /**
  * React's render-timing probe, emitted by Fizz at the top of every prerendered
