@@ -45,6 +45,25 @@ const manifest = JSON.parse(read(MANIFEST_PATH)) as {
 const jobs = manifest.jobs
 
 describe('the scheduled job inventory', () => {
+  it('is restated job for job by migrations/pending/162_cron_schedule.sql, with GET', () => {
+    // 162 is the pg_cron form of the same schedule. It is NOT applied and,
+    // measured 2026-10-07, superseded by Vercel crons on the Pro plan (its
+    // header has the evidence). It stays in the queue only because the
+    // scheduler decision could be reversed, and a reversed decision must not
+    // find the file the way STEP 39 found it: twelve of twenty-nine jobs and
+    // net.http_post against routes that export GET only. So the VALUES block
+    // is pinned to the manifest, row for row, and the HTTP verb is pinned.
+    const sql = read('migrations/pending/162_cron_schedule.sql')
+    const rows = [...sql.matchAll(/\('(ke-[\w-]+)',\s*'([^']+)',\s*'([^']+)'\)/g)].map(
+      ([, jobname, cron, path]) => ({ jobname, cron, path }),
+    )
+    expect(rows).toEqual(
+      jobs.map((job) => ({ jobname: `ke-${job.name}`, cron: job.cron, path: job.path })),
+    )
+    expect(sql).toContain('net.http_get(')
+    expect(sql).not.toContain('net.http_post(')
+  })
+
   it('names the twenty-nine jobs and nothing else', () => {
     // A new cron route is a deliberate diff here. An undeclared one would be a
     // handler that exists, is reachable, and is never called by anything.

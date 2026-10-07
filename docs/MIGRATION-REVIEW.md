@@ -11,7 +11,7 @@ approval; the apply order and its preconditions are in `docs/RUNBOOK.md`.
 
 | # | What it changes | Applied out of order? | Reversible | Verdict |
 |---|---|---|---|---|
-| 162 | Schedules 12 pg_cron jobs | independent | yes, `cron.unschedule` | **BLOCKED** — needs vault secrets, which need a deployment URL that does not exist |
+| 162 | Schedules 29 pg_cron jobs | independent | yes, `cron.unschedule` | **NOT APPLIED** (re-measured 07.10): preflight fails (vault bearer answers 401, URL is the domain), the real `CRON_SECRET` is unrecoverable, and Vercel crons on the Pro plan supersede it; see `migrations/pending/APPLY-ORDER.md` 2026-10-07 |
 | 169 | Widens the analytics event whitelist | independent | yes, `CREATE OR REPLACE` back | **APPLY FIRST** — four funnel events are being silently discarded right now |
 | 170 | Ten indexes | independent | yes, `DROP INDEX` | **SAFE** — verified column by column, tables are tiny |
 | 171 | One category name's shekel order | independent | yes, one `UPDATE` | **SAFE, optional** — the app already repairs this on read |
@@ -170,6 +170,18 @@ reader that skips the helper agree with the page.
 ---
 
 ## 162 — the cron schedule, and why it cannot run
+
+> **Re-measured 2026-10-07 (STEP 39).** The deployment now exists
+> (`kenyonexpress.vercel.app` serves production), so the paragraph below is
+> history. What blocks 162 today is different and is recorded in the file's
+> own header and in `migrations/pending/APPLY-ORDER.md`: the vault's bearer is
+> rejected by production (401 from an in-database probe), the real
+> `CRON_SECRET` is unreadable anywhere, fixing that needs a rotation plus a
+> production deploy, and the team is on Vercel Pro with all 29 crons declared
+> in HEAD's `vercel.json`, which makes a pg_cron scheduler a second caller of
+> every job. Verdict: not applied, superseded unless the scheduler decision
+> is reversed.
+
 
 Twelve jobs, from `ke-notifications` every five minutes to `ke-weekly-digest`
 weekly. The file opens by refusing to proceed unless two vault secrets exist:

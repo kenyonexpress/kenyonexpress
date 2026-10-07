@@ -203,8 +203,9 @@ describe('the pending migration inventory', () => {
     // than inferred from the directory. Every file below was probed for the
     // objects it creates and production has none of them:
     //
-    //   162_cron_schedule                approved (CLOSEOUT §7), blocked on vault
-    //                                    seeding -- see "## חסמים לאופיר" in STATE.md
+    //   162_cron_schedule                approved (CLOSEOUT §7); re-measured
+    //                                    2026-10-07: preflight fails and Vercel
+    //                                    crons (Pro) supersede it -- file header
     //   184_orders_monthly_partitioning  orders_flat, orders_invoice_numbers: absent
     //
     // 184 IS NOT APPLIED AND THAT IS THE DECISION, not a pending question.

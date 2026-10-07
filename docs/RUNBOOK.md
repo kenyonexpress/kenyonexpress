@@ -876,6 +876,17 @@ the exact file list in both directories and will fail until it agrees.
 
 ### Batch B — 162, blocked
 
+> **2026-10-07 (STEP 39):** the chain below is superseded. The deployment
+> exists; what is missing is a `CRON_SECRET` anyone can read (Vercel stores it
+> as `sensitive`, the vault's copy answers 401, GitHub's fails every run). The
+> team is on Vercel Pro and HEAD's `vercel.json` declares all 29 crons, so the
+> honest path is: rotate `CRON_SECRET` into Vercel production + the GitHub
+> secret, set `CRON_SCHEDULER_ENABLED` off, deploy a commit with the `crons`
+> key. 162 is then redundant. If pg_cron is ever chosen instead, run
+> `preflight_162.sql` (six blocks, block 6 probes the bearer from inside the
+> DB) and apply 162 as regenerated from `scripts/cron-jobs.json`.
+
+
 `162_cron_schedule.sql` schedules twelve pg_cron jobs. Its own first statement
 refuses to run unless the vault carries `cron_secret` and `app_url`, and that
 guard is correct: without them the jobs would POST into the void every five

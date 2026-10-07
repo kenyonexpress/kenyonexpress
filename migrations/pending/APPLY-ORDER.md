@@ -1,5 +1,72 @@
 # Apply order
 
+## 2026-10-07 (STEP 39): 148, 149, 169 x2, 170, 171, 172 x2 RE-VERIFIED LIVE OBJECT BY OBJECT; 162 NOT APPLIED
+
+The goal named seven numbers to "apply one at a time with an approval log and a
+schema diff". Measured before anything was sent: six of the seven are in
+production's own ledger (`supabase_migrations.schema_migrations`) and their
+files have lived in `migrations/applied/` since 09.09 (f202f00ad, 77bc7f4e1,
+bf74b8161, d7906bcec). Re-applying a ledgered migration is not "applying" it,
+so nothing was re-sent. Instead every object each file creates was read back
+from production through the management API (read-only, no transaction left
+open) and compared with the file. All match. The Supabase MCP was
+unauthenticated in this session; the GitHub MCP too.
+
+**Approval log** (the goal of 2026-10-07 is the explicit approval for the seven
+numbers; the per-file decision and the evidence it rests on):
+
+| # | File | Ledger version / name | Verified in production (07.10, 18:3x UTC) | Decision |
+|---|---|---|---|---|
+| 148 | `148_refund_destination` | `20260902182227` / `148_refund_destination` | enum `refund_destination` = `{original_method,wallet}`; `refunds.destination refund_destination default 'original_method'` | already applied, verified, no action |
+| 149 | `149_audit_log_append_only` | `20260902182235` / `149_audit_log_append_only` | `fn_audit_log_append_only()` exists; trigger `tg_audit_log_append_only` on `audit_log`, enabled (`O`) | already applied, verified, no action |
+| 162 | `162_cron_schedule` | none | preflight (1) pass, (2) pass, (3) FAIL, (4) FAIL, (5) pass, (6) FAIL: see below | **NOT APPLIED** |
+| 169 | `169_audit_full_coverage` | `20260904001341` / `audit_full_coverage_169` | `audit_log.entity_id` is `text`; columns `before`, `after`, `request_id` present; `idx_audit_log_request_id`; `audit_log_trigger_fn()` | already applied, verified, no action |
+| 169 | `169_analytics_server_event_names` | `20260908200555` / `analytics_server_event_names_169` | `fn_ingest_analytics_events` body names `begin_checkout`, `purchase`, `voucher_redeemed`, `order_refunded` | already applied, verified, no action |
+| 170 | `170_reporting_tables` | `20260904003703` / `reporting_tables_170` | 4 `report_*` tables, RLS on each; 6 functions (`refresh_report_tables`, 5 `admin_report_*`/`admin_refresh_reports`); cron job `report_tables_nightly 30 1 * * *` active, last 5 runs succeeded | already applied, verified, no action |
+| 171 | `171_search_fts` | `20260904005239` / `search_fts_171` | extension `unaccent 1.1`; `fts_unaccent`, `fts_join`, `fts_prefix_query`, `search_products`; `products.search_vector`, `coupon_deals.search_vector`; both GIN indexes | already applied, verified, no action |
+| 172 | `172_rls_zero_policy_tables` | `20260904010757` + `20260904010826` (`_report_grants`) | `deny_all_client_roles` on `rate_limits`, `user_rate_limits`, `search_index_outbox` (plus six tables later files added it to); admin-read policy on all 7 named tables | already applied, verified, no action |
+| 172 | `172_hide_master_product_test_row` | none (DML through `execute_sql`, 09.09) | row `9bb347f8-…` (`restaurants-meat-3`): `status = draft`, `stock_quantity = 0` | already applied, verified, no action |
+
+**162, measured, and why it stays out.** The file's own header now carries the
+full account; the short form:
+
+- Vault holds `APP_BASE_URL` and `CRON_SECRET` (upper case, seeded 03.09), not
+  the `app_url`/`cron_secret` the file reads. `APP_BASE_URL` is the custom
+  domain (27 chars, `is_domain = true`), which block (4) forbids.
+- That `CRON_SECRET` is wrong. One `net.http_get` fired from inside production
+  to `<APP_BASE_URL>/api/cron/health` with the vault bearer came back **401**
+  (`net._http_response` id 1, 18:28:58 UTC). The deployment's real value is
+  unrecoverable: Vercel stores it as `sensitive` (re-set 16.09, unreadable), all
+  eleven local worktrees hold only the `.env.example` placeholder (also 401
+  against `kenyonexpress.vercel.app`), and the GitHub Actions secret from 02.09
+  has failed 40/40 scheduled runs with 401 since 10.09.
+- Seeding it honestly means rotating `CRON_SECRET`, and a rotated secret
+  reaches the running functions only through a production deploy: a stop
+  condition. Not done.
+- It is also superseded: the team is on **Vercel Pro** (`billing.plan = pro`),
+  HEAD's `vercel.json` declares all 29 jobs, and the explicit goal of 10.09
+  chose Vercel crons as the scheduler. The 06.10 production deployment shows
+  `crons: 0` only because `audit/final-audit`'s `vercel.json` has no `crons`
+  key. One deploy of a branch that has it registers all 29 with the
+  deployment's own bearer; pg_cron on top of that calls every job twice.
+- The file was stale on its own terms: 12 of 29 jobs, and `net.http_post`
+  against routes that export GET only (29/29 measured). Regenerated from
+  `scripts/cron-jobs.json` and pinned by `cron-schedule-inventory.test.ts`.
+- Live routes on the production deployment: 15 of 29 answer 401 (guarded,
+  present); 14 answer 404 because `audit/final-audit` predates them
+  (`job-dlq`, `expire-cashback`, `search-outbox`, `search-reindex`,
+  `expire-coupons`, `backup`, `wishlist-digest`, `daily-deals`, `email-retry`,
+  `cashback-settlement`, `slow-statements`, `sitemap-regen`,
+  `analytics-rollup`, `log-cleanup`).
+- Nothing drains the outbox today: `notification_outbox` has 17 `pending` rows
+  with 0 attempts since 05.10 00:48 UTC and 74 `dead` (http_401 from the mail
+  provider, an older problem).
+
+**Unblock for the scheduler as a whole (none of it is 162):** rotate
+`CRON_SECRET` once into the Vercel production env of project `kenyonexpress`
+and the GitHub Actions secret; deploy a commit whose `vercel.json` has the
+`crons` key; set `CRON_SCHEDULER_ENABLED` to anything but `true` first.
+
 ## 2026-10-01 (STEP 15): 252 WRITTEN, NOT DRY-RUN, NOT APPLIED
 
 `252_whatsapp_outbox_order_shipped.sql` is one CHECK widened on

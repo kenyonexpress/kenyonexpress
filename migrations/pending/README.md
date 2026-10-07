@@ -851,15 +851,22 @@ being dropped, harmlessly and documented at the emit sites. Preflight:
 `preflight_169.sql` — signature, before-picture of the whitelist,
 service_role-only grants.
 
-### `162_cron_schedule.sql` — PENDING, approved (CLOSEOUT §7), blocked on vault
+### `162_cron_schedule.sql` — PENDING, approved (CLOSEOUT §7), NOT APPLIED: preflight fails and Vercel crons supersede it (re-measured 2026-10-07, STEP 39)
 
-Schedules the twelve jobs of `scripts/cron-jobs.json` through pg_cron + pg_net
-(161 installed both). Job commands read `cron_secret` and `app_url` from vault
-at run time, so `cron.job.command` stores neither value. BLOCKED: the vault
-holds neither secret and seeding them needs the Vercel production env, which
-this machine cannot reach (no `vercel` CLI, no link). The exact seeding
-commands are under "## חסמים לאופיר" in STATE.md. Preflight:
-`preflight_162.sql` — every block must pass through MCP `execute_sql` first.
+Schedules the twenty-nine jobs of `scripts/cron-jobs.json` through pg_cron +
+pg_net (161 installed both), regenerated from the manifest on 07.10 (it named
+12 jobs and used `http_post` against GET-only routes) and pinned to it by
+`cron-schedule-inventory.test.ts`. Job commands read `cron_secret` and
+`app_url` from vault at run time, so `cron.job.command` stores neither value.
+NOT APPLIED: the vault holds an upper-case pair (`CRON_SECRET`, `APP_BASE_URL`)
+whose secret production rejects with 401 (probed from inside the DB), the real
+`CRON_SECRET` is unreadable everywhere (Vercel `sensitive`, no local copy,
+GitHub's fails 40/40), and seeding it means a rotation plus a production
+deploy. Meanwhile the team is on Vercel Pro and HEAD's `vercel.json` declares
+all 29 jobs, the scheduler the 10.09 goal chose; applying 162 on top would run
+every job twice. Evidence and the unblock chain: the file header and
+APPLY-ORDER.md, 2026-10-07. Preflight: `preflight_162.sql` (six blocks; block
+6 is the in-database bearer probe).
 
 ### `165_revoke_anon_helpers.sql` — CANCELLED 2026-09-04, moved to `migrations/cancelled/`
 
