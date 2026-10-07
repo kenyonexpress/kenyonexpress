@@ -2,6 +2,15 @@
 
 Everything below was STATE.md up to commit 02a45128f (2026-10-06), moved here by M11-c113 to keep STATE.md under 300 lines.
 
+## M18-c116: STATE.md trim check, 2026-10-07
+
+- STATE.md was 80 lines at the start of the item, under the 300-line limit, so nothing needed trimming.
+- Moved from STATE.md to here (verbatim):
+
+  - Last item: **M17-c116 BLOCKED** (2026-10-07): RTL on `/` and 6 sample `/product` pages at 380/768/1440. Production `https://www.kenyonexpress.co.il` and the local build: `lang=he dir=rtl` and overflow 0 in all 21 runs each, 0 Hebrew text in LTR, 0 left-aligned Hebrew. **One LTR leak:** the footer newsletter email field is `dir="ltr"` with a Hebrew placeholder, which renders flush left at 1440 on every page in production and on committed HEAD. On HEAD the bidi order is also flipped (`Email` first). The uncommitted `SiteFooter.tsx` edit fixes it (verified locally: right-aligned, correct order), but it is a UI change and compare.mjs exits 5 (REFUSED) at 380/768/1440 for home and product, so it cannot be committed (blocker 0). Detail in the archive.
+  - M17-c116 gates (working tree): `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6474 passed, 12 skipped), `pnpm build` 0 on attempt 2 (attempt 1 failed on a `supabase.timeout` while prerendering `/about`).
+  - M18-c115 gates: `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6473 passed, 12 skipped), `pnpm build` 0 on attempt 1. These ran on the working tree, which still had the two uncommitted UI edits. Not a UI change, so compare.mjs does not apply (it is blocked anyway, blocker 0).
+
 ## M17-c116: RTL on / and /product sample, probed 2026-10-07 in the foreground
 
 - Method: Playwright Chromium (`@playwright/test` from the repo, probe kept outside the repo). Pages: `/` and 6 sitemap product pages (`barbecue`, `bar-drink`, `תזונה-הוליסטית-טבעית-וצמחי-מרפא`, `ארוחה-בשרית-זוגית`, `מזקקת-ויסקי`, `עיסוי-מפנק-לגבר-45-דקות-רק-ב108`), at widths 380, 768 and 1440 (21 runs per target). For each run the probe checks `<html lang="he" dir="rtl">`, the computed direction of `body`, horizontal overflow (`scrollWidth - innerWidth`), visible elements whose computed `direction` is `ltr` and whose own text has Hebrew, visible elements with Hebrew text and computed `text-align: left`, and every `[dir="ltr"]` root. It also reads the `::placeholder` style of every `input[dir="ltr"]`.
