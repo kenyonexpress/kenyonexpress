@@ -21846,3 +21846,13 @@ Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=categ
 - `node scripts/final-audit.mjs`: `ok 0 work markers (of 2)`.
 - Change: a re-scan note in `docs/BACKLOG.md`. No code change.
 - Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1.
+
+## M18-c118 — Trim STATE.md under 300 lines (DONE, 2026-10-08)
+
+- STATE.md was 117 lines at the start (under 300), so no trim was needed. Following the M18-c116 and M18-c117 precedent, the M17-c118 status lines were moved here:
+
+> Last item: **M17-c118 BLOCKED** (2026-10-08): RTL re-probed in the foreground on `/` and 6 sitemap products at 380, 768 and 1440. Production (`www`, still `audit/final-audit@1e84df0`): 21/21 runs 200, `lang=he dir=rtl`, overflow 0, 0 Hebrew in LTR, 0 left-aligned Hebrew; the only leak is unchanged, the footer newsletter placeholder `הזן כתובת אימייל` computes `direction: ltr`, `text-align: start` (flush left) at 1440 on all 7 pages. Local (`pnpm start -p 3519`, HEAD `097130642` plus the uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` fix): 21/21 clean, placeholder `text-align: right`. The fix is a UI change and compare.mjs refuses: 6/6 exit 5 (home and product at 380/768/1440, blocker 0). The fix stays uncommitted.
+>
+> M17-c118 gates (working tree): type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (19 recoverable `supabase.timeout` logs, 0 `db.query_failed`).
+
+- Gates (working tree, with the uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` edits left unstaged): type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (9 recoverable `supabase.timeout` logs, 0 `db.query_failed`). Docs-only change, so compare.mjs does not apply (blocked anyway, blocker 0).
