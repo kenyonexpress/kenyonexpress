@@ -27,6 +27,12 @@ uncommitted working-tree files: unchanged. Only `cardcom.ts:254` (blame
 B2; they still need live Cardcom terminal credentials. `node
 scripts/final-audit.mjs` reports 0 untracked work markers (of 2).
 
+Re-scanned 2026-10-08 (M07-c119) with the same rule, including the two
+uncommitted working-tree files: unchanged. Only `cardcom.ts:254` (blame
+2026-07-24) and `cardcom.ts:319` (blame 2026-08-07) match, both filed as B1 and
+B2; they still need live Cardcom terminal credentials. `node
+scripts/final-audit.mjs` reports 0 untracked work markers (of 2).
+
 | Where | Since | Outcome |
 |---|---|---|
 | `scripts/screenshot-all.mjs:42` | 2026-07-23 | **Resolved** in M07-c115. The overrides it asked for already exist (env vars and positional args), so the marker became a plain note. |

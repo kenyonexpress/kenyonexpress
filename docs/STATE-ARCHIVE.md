@@ -21911,3 +21911,16 @@ Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=categ
 > Last item: **M05-c119 DONE** (2026-10-08): `pnpm test` (vitest) exit 0 at HEAD `c38901d99`: 519 files, 6474 passed, 12 skipped, 0 failed. No drift, no code change. Unchanged from M05-c117 and M04-c119.
 >
 > M05-c119 gates (working tree, uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` UI edits left unstaged): type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (7 log lines matching `timeout`, all recovered; 0 `db.query_failed`). Blocker 7 did not recur. No compare.mjs run: not a UI item, no UI change committed.
+
+## M06-c119: pnpm build, fix drift (DONE, 2026-10-08), status lines moved from STATE.md
+
+> Last item: **M06-c119 DONE** (2026-10-08): `pnpm build` exit 0 on attempt 1 at HEAD `7e8f58041`. No drift, no code change. Prerender logged 1 transient `fetch failed` on `reviews` (7 ms, recovered), 59 `db.query_slow` warnings and the known `reviews` 42501 (401) from pending 231. Unchanged in kind from M06-c118.
+>
+> M06-c119 gates (working tree, uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` UI edits left unstaged): type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1. Blocker 7 did not recur. No compare.mjs run: not a UI item, no UI change committed.
+
+## M07-c119: TODO/FIXME re-scan (DONE, 2026-10-08)
+
+- Scan: `git grep -nE '(^|[[:space:]])(TODO|FIXME|HACK|XXX)($|[[:space:]:(])'` excluding `docs/`, `refs/` and Markdown, plus the two uncommitted files (`HeroSlider.tsx`, `SiteFooter.tsx`, no markers). Real markers: `src/lib/payments/cardcom.ts:254` (blame 2026-07-24) and `:319` (blame 2026-08-07), already filed as B1 (#41) and B2 (#42). The other hits are the scanner's own doc comment and its test fixtures in `scripts/final-audit*.mjs`. No new markers, nothing to resolve.
+- `node scripts/final-audit.mjs`: `ok 0 work markers (of 2)`.
+- Change: a re-scan note in `docs/BACKLOG.md`. No code change.
+- Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1.
