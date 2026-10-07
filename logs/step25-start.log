@@ -1,0 +1,11 @@
+Already up to date
+Done in 197ms using pnpm v11.1.2
+$ next start
+▲ Next.js 16.3.3
+- Local:         http://localhost:3325
+- Network:       http://100.84.130.122:3325
+✓ Ready in 507ms
+✓ Running next.config.ts took 2.2s
+{"ts":"2026-10-07T06:46:44.293Z","level":"warn","event":"env.checks_skipped","request_id":null,"detail":"ALLOW_INCOMPLETE_ENV=true. Correct for a local `next start`; wrong anywhere a customer can reach."}
+{"ts":"2026-10-07T06:46:48.098Z","level":"info","event":"env.probe_ok","request_id":null,"checked":2}
+[ELIFECYCLE] Command failed with exit code 143.
