@@ -2,6 +2,21 @@
 
 Everything below was STATE.md up to commit 02a45128f (2026-10-06), moved here by M11-c113 to keep STATE.md under 300 lines.
 
+## M01-c120: compare.mjs on / at 380, 768, 1440, run 2026-10-08 in the foreground
+
+Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=home --width=<w>` (server: `PORT=3311 pnpm start` on the existing build, HEAD `903d09184` with the two uncommitted UI edits in the tree)
+
+| Width | Exit | Diff | Output |
+|---|---|---|---|
+| 380 | 5 | none | REFUSING: `https://kenyonexpress.co.il/` is this project's own build (35 `/_next/` refs, Next runtime, no wp-content) |
+| 768 | 5 | none | REFUSING: same reason |
+| 1440 | 5 | none | REFUSING: same reason |
+
+- No diff numbers, unchanged from M01-c119. `refs/ke_live_singlefile.html` is still absent. The gate wrote four REFUSED rows to `docs/UI-PARITY-REPORT.md` (one extra 380 run to capture the refusal reason), committed with this item. The last real home number is still 10.92 at 1440 (older archive).
+- Gates on the working tree: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1.
+- Moved from STATE.md (verbatim): `Last item: **M18-c119 DONE** (2026-10-08): STATE.md was 135 lines at the start (under 300), so no trim was needed. Following the M18-c116, M18-c117 and M18-c118 precedent, the 2 M17-c119 status lines were moved to `docs/STATE-ARCHIVE.md`. Resume line, queue table, open blockers and manual items are kept.` and `M18-c119 gates (working tree, uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` UI edits left unstaged): type-check 0, lint 0, build 0 on attempt 1 (2 recoverable `supabase.timeout`, 0 `db.query_failed`), test 0 (519 files, 6474 passed, 12 skipped) on the second run; the first run exited 1 with 47 vitest worker-start timeouts (472/472 files that started passed) because it ran concurrently with the build. Docs-only change, compare.mjs does not apply (blocker 0).`
+- Decision: BLOCKED on open blocker 0. No code change.
+
 ## M17-c119: RTL on / and /product sample, re-probed 2026-10-08 in the foreground
 
 - Method: the same as M17-c118 (probe copied to `/tmp/m17c119/rtl.mjs`, outside the repo, with the `page.goto` timeout raised from 60 s to 120 s). Playwright Chromium from the repo. Pages: `/` and the same 6 sitemap products (`barbecue`, `bar-drink`, `תזונה-הוליסטית-טבעית-וצמחי-מרפא`, `ארוחה-בשרית-זוגית`, `מזקקת-ויסקי`, `עיסוי-מפנק-לגבר-45-דקות-רק-ב108`) at 380, 768 and 1440, 21 runs per target. Checks: `<html lang dir>`, body direction, horizontal overflow, visible Hebrew text with computed `direction: ltr`, visible Hebrew text with `text-align: left`, visible `[dir="ltr"]` roots, and the `::placeholder` style of every visible `input[dir="ltr"]`.
