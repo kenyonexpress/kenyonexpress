@@ -1,9 +1,9 @@
-RESUME FROM: M14-c115
+RESUME FROM: M15-c115
 
 # KenyonExpress — Project State
 
-Last item: **M13-c115 BLOCKED** (2026-10-07): `/api/health` returns 200 with a real database probe, but `/api/ready` returns 503 because Meilisearch is configured in production and does not answer (3 of 3 probes). Fixing it needs either a running Meilisearch or removing `MEILISEARCH_*` from the Vercel env, both operator actions. No code change. Branch `feat/products-sort-infinite-scroll`.
-Previous: M12-c115 DONE (2026-10-07), M11-c115 DONE (2026-10-07), M10-c115 BLOCKED (2026-10-07), M09-c115 DONE (2026-10-07), M08-c115 DONE (2026-10-07), M07-c115 DONE (2026-10-07), M06-c115 DONE (2026-10-07), M05-c115 DONE (2026-10-07), M04-c115 DONE (2026-10-07), M03-c115 BLOCKED (2026-10-07), M02-c115 BLOCKED (2026-10-07), M01-c115 BLOCKED (2026-10-07), M11-c113 DONE (2026-10-06).
+Last item: **M14-c115 BLOCKED** (2026-10-07): the production Sentry release is `1e84df0e5457c9c80a46f7cb2155ac204ebc15ef` (tip of `origin/audit/final-audit`), not HEAD `b29fcbf1f`. The release wiring is correct (release = the deployed commit SHA), but this branch is not what Vercel serves. Making them match needs a deploy of this branch, which is an operator action. No code change. Branch `feat/products-sort-infinite-scroll`.
+Previous: M13-c115 BLOCKED (2026-10-07), M12-c115 DONE (2026-10-07), M11-c115 DONE (2026-10-07), M10-c115 BLOCKED (2026-10-07), M09-c115 DONE (2026-10-07), M08-c115 DONE (2026-10-07), M07-c115 DONE (2026-10-07), M06-c115 DONE (2026-10-07), M05-c115 DONE (2026-10-07), M04-c115 DONE (2026-10-07), M03-c115 BLOCKED (2026-10-07), M02-c115 BLOCKED (2026-10-07), M01-c115 BLOCKED (2026-10-07), M11-c113 DONE (2026-10-06).
 History before this item lives in `docs/STATE-ARCHIVE.md` (21,138 lines moved there in this commit).
 
 ## Queue status (cycle c113)
@@ -29,6 +29,16 @@ The runner's `final-done.txt` lists M01–M10 of c113 as finished. This branch's
 | M11-c115 | Verify sitemap.xml fresh and reachable | **DONE**: 5/5 section files 200, 94/94 URLs 200 on www (see below) |
 | M12-c115 | Verify robots.txt production-safe | **DONE**: 0/94 sitemap URLs blocked, credential paths disallowed, robots edits committed (see below) |
 | M13-c115 | Verify /api/health and /api/ready return 200 with real deps | **BLOCKED**: health 200, ready 503 on `meilisearch: down` (see below) |
+| M14-c115 | Verify Sentry release matches HEAD commit | **BLOCKED**: prod release `1e84df0` (audit/final-audit), HEAD `b29fcbf` (see below) |
+
+## M14-c115: Sentry release vs HEAD, probed 2026-10-07 against production
+
+- How the release is set: `instrumentation-client.ts` uses `NEXT_PUBLIC_SENTRY_RELEASE ?? NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA`. `sentry.server.config.ts` and `sentry.edge.config.ts` use `SENTRY_RELEASE ?? VERCEL_GIT_COMMIT_SHA`. So on Vercel the release is the commit SHA of the deployment.
+- Production client bundle: the home page (`x-vercel-id sin1::fra1::zdj7g-…`, deployment `dpl_AQ4woeMEd6mQMjemC8fGUK2tatKK`) loads 21 `/_next/static` chunks. One of them has the inlined init `release: …NEXT_PUBLIC_SENTRY_RELEASE ?? "1e84df0e5457c9c80a46f7cb2155ac204ebc15ef"`. That SHA is the only one that appears twice across the chunks. `NEXT_PUBLIC_SENTRY_RELEASE` was not inlined, so the build did not set it and the fallback SHA is the release.
+- `1e84df0e5` is `docs(m07-c113): TODO/FIXME scan…` (2026-10-06 17:50 +0700). It is the current tip of `origin/audit/final-audit`. It is **not** HEAD (`b29fcbf1f`, this branch), it is not an ancestor of HEAD (merge-base `3f6ca53c3`), and it is not `origin/main` (`7b7e01494`). So production is deployed from `audit/final-audit`, and that also corrects blocker 4, which said Vercel tracks `main`.
+- Server and edge release: there is no public endpoint that exposes it (`/api/version` 404, `/debug/sentry` is gated), and reading the Sentry releases API needs `SENTRY_AUTH_TOKEN`, which the agent must not print or use for this. The server reads the same `VERCEL_GIT_COMMIT_SHA` at runtime, so unless `SENTRY_RELEASE` is set in Vercel it is the same `1e84df0`. This was not verified directly.
+- Verdict: **mismatch.** The wiring is correct, because the release follows the deployed commit. HEAD is just not deployed. The fix is to deploy this branch (or merge it into whichever branch Vercel's production tracks), and that is an operator action. No code change.
+- Gates in this run: `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6473 passed, 12 skipped), `pnpm build` 0 on the first attempt (0 `supabase.timeout`). This is not a UI change, so compare.mjs was not needed (and it refuses anyway, see blocker 0). `logs/` is untracked and not part of this commit.
 
 ## M13-c115: /api/health and /api/ready, probed 2026-10-07 against production
 
@@ -198,7 +208,7 @@ Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=home 
 6. **`/api/ready` is 503 in production (M13-c115).** `meilisearch: down`: `MEILISEARCH_HOST` and `MEILISEARCH_API_KEY` are set, but the host does not answer `/health`. `/api/health` is 200.
 5. **Pending migrations are not applied (M10-c115).** 22 numbered files are confirmed absent from production, and 6 (`189`, `190`, `191`, `194`, `197` and `201`) are live but not recorded as applied. Only Ofir applies migrations, and the bookkeeping for the 6 needs a `schema_migrations` read, which needs the Supabase MCP or a DB URL.
 3. The live catalogue has template rows and duplicates: 25 findings pinned in `supabase/catalogue-known-issues.json`. These are decisions for the operator.
-4. `main` diverged: local `main` is 193 commits ahead of `origin/main` and 110 behind (L9), and Vercel tracks `main`. Production is not built from this branch.
+4. `main` diverged: local `main` is 193 commits ahead of `origin/main` and 110 behind (L9). Production is not built from this branch: as of M14-c115 the live client bundle's Sentry release is `1e84df0e5`, the tip of `origin/audit/final-audit`, not `origin/main`, so the Sentry release does not match HEAD `b29fcbf1f`.
 
 ## Manual items for Ofir
 
@@ -208,4 +218,5 @@ Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=home 
 - Confirm that `189`, `190`, `191`, `194`, `197` and `201` are in `supabase_migrations.schema_migrations`. If they are, move them to `migrations/applied/` with README rows. Their objects are already live (M10-c115). Also re-authorise the Supabase MCP so agents can read `schema_migrations`.
 - Fix Meilisearch for `/api/ready` (M13-c115). Either bring the configured instance back up, or remove `MEILISEARCH_HOST` and `MEILISEARCH_API_KEY` from Vercel production so search falls back to Postgres. Then re-probe `/api/ready` and expect 200.
 - Reconcile local `main` with `origin/main` before the next deploy.
+- Decide which branch production deploys from. Live is `audit/final-audit@1e84df0e5` (M14-c115). Deploy the branch you want live, then re-check that the client bundle's Sentry release equals that commit SHA. If you want server-side proof, look up the release list in the Sentry UI.
 - Review the catalogue findings in `supabase/catalogue-known-issues.json`.
