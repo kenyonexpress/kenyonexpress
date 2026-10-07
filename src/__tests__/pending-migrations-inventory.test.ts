@@ -477,6 +477,7 @@ describe('the pending migration inventory', () => {
       // skipped; REHEARSED inside BEGIN/ROLLBACK through the management API,
       // no error, schema unchanged. README carries the row.
       '256_finalize_money_twins_backfill.sql',
+      '257_invoices_email_delivery.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

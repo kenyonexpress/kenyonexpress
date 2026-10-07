@@ -1,5 +1,7 @@
 import { orderCashbackSelect, readOrderCashbackAgorot } from '@/lib/commerce/order-money-columns'
 import { adminAlertDedupeKey, adminAlertRecipient } from '@/lib/email/admin-alerts'
+import { buildInvoiceEmail } from '@/lib/email/invoice-email'
+import { sendEmail } from '@/lib/email/resend'
 import {
   type InvoiceDocument,
   type InvoiceDocumentType,
@@ -11,13 +13,24 @@ import {
   splitVatInclusive,
 } from '@/lib/invoices/document'
 import { formatInvoiceNumber, invoiceSeries, resolveInvoiceIssuer } from '@/lib/invoices/issuer'
+import { invoicePdfFileName, renderInvoicePdf } from '@/lib/invoices/pdf'
 import { log } from '@/lib/observability/log'
 import { getPaymentProvider } from '@/lib/payments'
 import { readAmountAgorot, resolvePaymentMoneySchema } from '@/lib/payments/payment-money-columns'
+import { siteUrl } from '@/lib/site-url'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 /**
  * The tax document for a sale, and the credit note for a refund.
+ *
+ * WHO ISSUES IT (STEP 42). The platform does. Each row is numbered from the
+ * platform's own per-terminal sequence (228), rendered as a Hebrew PDF by
+ * `lib/invoices/pdf.ts`, archived in R2 when R2 exists, recorded with OUR
+ * number in `document_number`, and mailed to the customer with the PDF
+ * attached. The payment provider's document module, whose wire format has
+ * never been confirmed against a live terminal, is asked for a reference copy
+ * and nothing more: its number lands in `provider_response`, never in
+ * `document_number`, and its absence or refusal does not hold the queue.
  *
  * SHAPE: A QUEUE, NOT A CALL
  *
@@ -81,6 +94,9 @@ export interface InvoiceRow {
   vat_agorot: number
   vat_percent: number
   attempts: number
+  /** 228's allocation, present once a number was drawn for this row. */
+  series?: string | null
+  internal_number?: number | null
 }
 
 /** Attempts before a row is parked as dead rather than retried forever. */
@@ -420,13 +436,18 @@ export async function enqueueRefundCreditNote(
 // Issue
 // ---------------------------------------------------------------------------
 
+interface BuiltRow {
+  document: InvoiceDocument
+  transactionId: string | null
+  cardcomAccountId: string | null
+  /** On a credit note: the sale document it reverses, when one was issued. */
+  relatedDocumentNumber: string | null
+}
+
 async function buildDocumentForRow(
   admin: AdminClient,
   row: InvoiceRow,
-): Promise<
-  | { document: InvoiceDocument; transactionId: string | null; cardcomAccountId: string | null }
-  | { error: string }
-> {
+): Promise<BuiltRow | { error: string }> {
   if (row.document_type === 'credit_note') {
     const deal = await loadPaymentDeal(admin, row.payment_id)
     return {
@@ -446,6 +467,7 @@ async function buildDocumentForRow(
       }),
       transactionId: deal.transactionId,
       cardcomAccountId: deal.cardcomAccountId,
+      relatedDocumentNumber: await loadSaleDocumentNumber(admin, row.order_id),
     }
   }
 
@@ -453,7 +475,7 @@ async function buildDocumentForRow(
   if ('skip' in loaded) return { error: loaded.skip }
 
   const document = buildInvoiceDocument({
-    documentType: 'tax_invoice_receipt',
+    documentType: row.document_type,
     customer: loaded.context.customer,
     lines: loaded.context.lines,
     chargedAgorot: loaded.context.chargedAgorot,
@@ -474,6 +496,7 @@ async function buildDocumentForRow(
     document,
     transactionId: loaded.context.transactionId,
     cardcomAccountId: loaded.context.cardcomAccountId,
+    relatedDocumentNumber: null,
   }
 }
 
@@ -522,45 +545,31 @@ async function loadPaymentDeal(
 }
 
 /**
- * Mirrors the provider's PDF into R2, so the link on the customer's order page
- * keeps working when the provider's own link does not.
- *
- * Best effort by design: the document has been issued and its number is the
- * fact that matters. A copy that could not be made is logged and the provider's
- * URL is kept, which is strictly better than failing an issued document.
+ * The number of the sale's own document, for a credit note to name. A credit
+ * note that does not say which invoice it reverses is a document a reader
+ * has to reconcile by amount, and two refunds of equal size make that
+ * impossible.
  */
-async function mirrorPdf(documentUrl: string, key: string): Promise<string | null> {
-  try {
-    // Imported here rather than at the top of the file: `lib/storage/r2` is
-    // `server-only`, and this module is reached from the refund action's tests
-    // through `refund.ts`. A static import makes those test files fail to
-    // resolve before a single assertion runs.
-    const { createR2PresignedPutUrl, isR2Configured, r2PublicUrl } = await import(
-      '@/lib/storage/r2'
-    )
-    if (!isR2Configured()) return null
-    const source = await fetch(documentUrl)
-    if (!source.ok) return null
-    const body = await source.arrayBuffer()
-    const { uploadUrl, publicUrl } = await createR2PresignedPutUrl(key)
-    const put = await fetch(uploadUrl, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/pdf' },
-      body,
-    })
-    if (!put.ok) {
-      log.warn('invoices.mirror_failed', { key, status: put.status })
-      return null
-    }
-    return publicUrl || r2PublicUrl(key)
-  } catch (error) {
-    log.warn('invoices.mirror_threw', {
-      key,
-      reason: error instanceof Error ? error.message : 'unknown',
-    })
+async function loadSaleDocumentNumber(admin: AdminClient, orderId: string): Promise<string | null> {
+  const { data, error } = await admin
+    .from('invoices')
+    .select('document_number')
+    .eq('order_id', orderId)
+    .neq('document_type', 'credit_note')
+    .eq('status', 'issued')
+    .maybeSingle()
+  if (error) {
+    // The credit note is still issued; it just cannot name what it reverses,
+    // and the PDF says so in words rather than printing a blank.
+    log.warn('invoices.sale_document_read_failed', { orderId, reason: error.message })
     return null
   }
+  return (data as { document_number: string | null } | null)?.document_number ?? null
 }
+
+// ---------------------------------------------------------------------------
+// Number
+// ---------------------------------------------------------------------------
 
 export interface InvoiceNumberAllocation {
   series: string
@@ -570,146 +579,96 @@ export interface InvoiceNumberAllocation {
 }
 
 /**
- * The platform's own sequential number for this document, from
- * `fn_next_invoice_number` (228): one counter per `<terminal>:<type>` series,
- * bumped atomically, so each terminal numbers its own books.
+ * The document's sequential number, from `fn_next_invoice_number` (228,
+ * measured live in production on 2026-10-08): one counter per
+ * `<terminal>:<type>` series, bumped atomically, so each terminal numbers its
+ * own books.
  *
- * Best effort BY POLICY, not by accident: on a database without 228 the RPC
- * does not exist, and a document that Cardcom has already numbered must still
- * be recorded as issued. A null here costs the supplementary PDF its own
- * number, never the document. The allocated number is written to the row
- * immediately, in its own UPDATE, so the issued-status write later cannot be
- * broken by the two columns not existing yet.
+ * REQUIRED, NOT BEST EFFORT. Until STEP 42 this was optional because the
+ * provider's number was the document's and this one only decorated a
+ * supplementary PDF. Now the platform's PDF IS the document, and an Israeli
+ * tax document without a sequential number is not a document, so a row that
+ * cannot be numbered is a row that retries rather than one that issues.
+ *
+ * GAPLESS UNDER RETRY. The allocation is written to the row in its own
+ * UPDATE the moment it is made, and a row that already carries one reuses it
+ * instead of drawing again. A render or upload that fails after the number
+ * was drawn therefore costs a retry, not a gap in the series - and a gap that
+ * corresponds to no document is the thing an auditor asks about.
  */
-async function allocateInvoiceNumber(
+async function ensureInvoiceNumber(
   admin: AdminClient,
   row: InvoiceRow,
   cardcomAccountId: string | null,
-): Promise<InvoiceNumberAllocation | null> {
-  const series = invoiceSeries(cardcomAccountId, row.document_type)
-  try {
-    const { data, error } = await admin.rpc('fn_next_invoice_number', { p_series: series })
-    if (error) {
-      log.warn('invoices.sequence_unavailable', { invoiceId: row.id, reason: error.message })
-      return null
-    }
-    const internalNumber = typeof data === 'number' ? data : Number(data)
-    if (!Number.isSafeInteger(internalNumber) || internalNumber < 1) {
-      log.warn('invoices.sequence_returned_nonsense', { invoiceId: row.id, series })
-      return null
-    }
-
-    const { error: writeError } = await admin
-      .from('invoices')
-      .update({ series, internal_number: internalNumber } as never)
-      .eq('id', row.id)
-    if (writeError) {
-      // 42703 here means 228's columns are missing while its function exists,
-      // which should not happen but must not fail the document if it does.
-      log.warn('invoices.internal_number_write_failed', {
-        invoiceId: row.id,
-        reason: writeError.message,
-      })
-    }
-
+): Promise<InvoiceNumberAllocation | { error: string }> {
+  if (row.series && row.internal_number != null && Number.isSafeInteger(row.internal_number)) {
+    // The series string names the terminal it was allocated on; the row, not
+    // today's payment read, is the authority on which books it belongs to.
+    const account = row.series.split(':')[0] || null
     return {
+      series: row.series,
+      internalNumber: row.internal_number,
+      formatted: formatInvoiceNumber(account, row.document_type, row.internal_number),
+    }
+  }
+
+  const series = invoiceSeries(cardcomAccountId, row.document_type)
+  let data: unknown
+  try {
+    const result = await admin.rpc('fn_next_invoice_number', { p_series: series })
+    if (result.error) return { error: `sequence_unavailable: ${result.error.message}` }
+    data = result.data
+  } catch (error) {
+    return { error: `sequence_threw: ${error instanceof Error ? error.message : 'unknown'}` }
+  }
+  const internalNumber = typeof data === 'number' ? data : Number(data)
+  if (!Number.isSafeInteger(internalNumber) || internalNumber < 1) {
+    return { error: `sequence_returned_nonsense: ${String(data)}` }
+  }
+
+  const { error: writeError } = await admin
+    .from('invoices')
+    .update({ series, internal_number: internalNumber } as never)
+    .eq('id', row.id)
+  if (writeError) {
+    // The number is drawn and cannot be un-drawn; recording it is what keeps
+    // the retry from drawing another. A failure here is logged with the
+    // number so the gap it will leave can be explained.
+    log.error('invoices.internal_number_write_failed', {
+      invoiceId: row.id,
       series,
       internalNumber,
-      formatted: formatInvoiceNumber(cardcomAccountId, row.document_type, internalNumber),
-    }
-  } catch (error) {
-    log.warn('invoices.sequence_threw', {
-      invoiceId: row.id,
-      reason: error instanceof Error ? error.message : 'unknown',
+      reason: writeError.message,
     })
-    return null
+    return { error: `allocation_write_failed: ${writeError.message}` }
+  }
+
+  return {
+    series,
+    internalNumber,
+    formatted: formatInvoiceNumber(cardcomAccountId, row.document_type, internalNumber),
   }
 }
 
-/**
- * Renders the platform's own Hebrew PDF and uploads it to R2, for the case
- * where the provider issued a number but no fetchable PDF (or the mirror of
- * its PDF failed). Best effort for the same reason `mirrorPdf` is: the
- * document's number is the fact that matters, and a missing supplementary PDF
- * is logged, not fatal. Returns the public URL, or null.
- */
-async function storeRenderedPdf(
-  document: InvoiceDocument,
-  row: InvoiceRow,
-  cardcomAccountId: string | null,
-  allocation: InvoiceNumberAllocation | null,
-  providerDocumentNumber: string,
-  issuedAt: Date,
-): Promise<string | null> {
-  try {
-    // Dynamic imports for the reason `mirrorPdf` documents about `server-only`.
-    const { createR2PresignedPutUrl, isR2Configured, r2PublicUrl } = await import(
-      '@/lib/storage/r2'
-    )
-    // Nowhere to store it means nothing to render.
-    if (!isR2Configured()) return null
-
-    const { renderInvoicePdf } = await import('@/lib/invoices/pdf')
-    const bytes = await renderInvoicePdf({
-      documentType: document.documentType,
-      documentNumber: allocation?.formatted ?? providerDocumentNumber,
-      providerDocumentNumber,
-      issuedAt,
-      issuer: resolveInvoiceIssuer(cardcomAccountId),
-      customer: document.customer,
-      lines: document.lines,
-      totalAgorot: document.totalAgorot,
-      netAgorot: document.netAgorot,
-      vatAgorot: document.vatAgorot,
-      vatPercent: document.vatPercent,
-      reference: document.reference,
-    })
-
-    const safeNumber = (allocation?.formatted ?? providerDocumentNumber).replace(/[^\w.-]/g, '_')
-    const key = `invoices/${row.order_id}/${safeNumber}.pdf`
-    const { uploadUrl, publicUrl } = await createR2PresignedPutUrl(key)
-    const put = await fetch(uploadUrl, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/pdf' },
-      body: bytes as unknown as BodyInit,
-    })
-    if (!put.ok) {
-      log.warn('invoices.own_pdf_upload_failed', { key, status: put.status })
-      return null
-    }
-    return publicUrl || r2PublicUrl(key)
-  } catch (error) {
-    log.warn('invoices.own_pdf_threw', {
-      invoiceId: row.id,
-      reason: error instanceof Error ? error.message : 'unknown',
-    })
-    return null
-  }
-}
-
-export type IssueOutcome =
-  | { ok: true; documentNumber: string; documentUrl: string | null }
-  | { ok: false; reason: string; dead: boolean; skipped?: false }
-  | { ok: false; reason: string; dead: false; skipped: true }
+// ---------------------------------------------------------------------------
+// Provider reference, archive, email
+// ---------------------------------------------------------------------------
 
 /**
- * Whether a document may be requested at all, and from what.
+ * Whether the provider's document module can be asked for a reference
+ * document, and from what.
  *
- * TWO FAILURES THIS PREVENTS, BOTH OF THEM QUIET.
+ * SINCE STEP 42 THIS DECIDES THE REFERENCE, NOT THE DOCUMENT. The platform
+ * issues its own numbered PDF whatever this answers; `unconfigured` means the
+ * document goes out without a clearing-side twin, and the moment the keys
+ * land the next sale gets one. Nothing is parked waiting for a credential.
  *
- * (1) No credentials is not a failure OF THE ROW. Cardcom keys are a listed
- * GO/NO-GO item and are not on this machine; without this check the first cron
- * run after deploy would burn all five attempts of every queued invoice against
- * a `Missing required env` throw and park them `dead` before anybody set a key.
- * The notification outbox already draws this distinction (`result.skipped`) and
- * for the same reason.
- *
- * (2) The mock must never write a document number to a real order. `useMock` is
- * true whenever `CARDCOM_TERMINAL_NUMBER` is absent outside production, which
- * is the normal state of a developer's machine - and this project runs against
- * the hosted database, so a mock run there would stamp `mock-doc-3` onto a real
- * order as its INVOICE NUMBER. The mock is therefore only accepted when it was
- * asked for explicitly.
+ * The mock must never stamp a number onto a real order as the document's own.
+ * `useMock` is true whenever `CARDCOM_TERMINAL_NUMBER` is absent outside
+ * production, which is the normal state of a developer's machine against the
+ * hosted database. The mock's `mock-doc-N` is therefore only ever recorded
+ * inside `provider_response`, never in `document_number`, and is only asked
+ * for at all when it was asked for explicitly.
  */
 export function documentIssuingMode(
   env: NodeJS.ProcessEnv = process.env,
@@ -717,6 +676,208 @@ export function documentIssuingMode(
   if (env.NODE_ENV === 'test' || env.CARDCOM_USE_MOCK === 'true') return 'mock'
   return env.CARDCOM_TERMINAL_NUMBER && env.CARDCOM_API_NAME ? 'ready' : 'unconfigured'
 }
+
+interface ProviderReference {
+  documentNumber: string | null
+  documentUrl: string | null
+  raw: Record<string, unknown> | null
+  error: string | null
+}
+
+/**
+ * Asks the terminal for its own copy of the document, as a reference.
+ *
+ * Best effort by policy: the provider's wire format for documents has never
+ * been confirmed against a live terminal (the legacy `/Interface/*.aspx`
+ * client, no `CARDCOM_*` on any machine that ran this), and a customer's
+ * invoice must not depend on it. A refusal is recorded on the row inside
+ * `provider_response` and logged; it is not an attempt against the queue.
+ * The provider is asked NOT to email: the platform sends its own document.
+ */
+async function requestProviderReference(
+  built: BuiltRow,
+  row: InvoiceRow,
+): Promise<ProviderReference> {
+  if (documentIssuingMode() === 'unconfigured') {
+    return { documentNumber: null, documentUrl: null, raw: null, error: 'provider_unconfigured' }
+  }
+  const { document } = built
+  try {
+    const result = await getPaymentProvider(built.cardcomAccountId).createDocument({
+      documentType: document.documentType,
+      customerName: document.customer.name,
+      customerEmail: document.customer.email,
+      customerPhone: document.customer.phone,
+      lines: document.lines,
+      totalAgorot: document.totalAgorot,
+      vatPercent: document.vatPercent,
+      transactionId: built.transactionId,
+      reference: document.reference,
+      sendByEmail: false,
+    })
+    if (!result.success || !result.documentNumber) {
+      const error =
+        result.failureMessage ?? `provider rejected (${result.failureCode ?? 'unknown'})`
+      log.warn('invoices.provider_reference_refused', { invoiceId: row.id, reason: error })
+      return { documentNumber: null, documentUrl: null, raw: result.raw, error }
+    }
+    return {
+      documentNumber: result.documentNumber,
+      documentUrl: result.documentUrl,
+      raw: result.raw,
+      error: null,
+    }
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : 'provider call failed'
+    log.warn('invoices.provider_reference_threw', { invoiceId: row.id, reason })
+    return { documentNumber: null, documentUrl: null, raw: null, error: reason }
+  }
+}
+
+/** Where a document's archived PDF lives in the bucket. */
+export function invoiceStorageKey(orderId: string, documentNumber: string): string {
+  return `invoices/${orderId}/${invoicePdfFileName(documentNumber)}`
+}
+
+/**
+ * Archives the rendered PDF in R2 and returns its public URL, or null.
+ *
+ * Best effort: the document is the row and its number, and the archive is
+ * a copy of it. On a deployment without R2 (the measured state of this
+ * account) the row keeps `document_url` null and the account route renders
+ * the same input on demand as a marked copy, so the customer is never
+ * without the document; they are without a CDN copy of it.
+ */
+async function archivePdf(
+  bytes: Uint8Array,
+  key: string,
+  invoiceId: string,
+): Promise<string | null> {
+  try {
+    // Imported here rather than at the top of the file: `lib/storage/r2` is
+    // `server-only`, and this module is reached from the refund action's tests
+    // through `refund.ts`. A static import makes those test files fail to
+    // resolve before a single assertion runs.
+    const { createR2PresignedPutUrl, isR2Configured, r2PublicUrl } = await import(
+      '@/lib/storage/r2'
+    )
+    if (!isR2Configured()) {
+      log.info('invoices.archive_skipped', { invoiceId, key, reason: 'r2_unconfigured' })
+      return null
+    }
+    const { uploadUrl, publicUrl } = await createR2PresignedPutUrl(key)
+    const put = await fetch(uploadUrl, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/pdf' },
+      body: bytes as unknown as BodyInit,
+    })
+    if (!put.ok) {
+      log.warn('invoices.archive_failed', { invoiceId, key, status: put.status })
+      return null
+    }
+    return publicUrl || r2PublicUrl(key)
+  } catch (error) {
+    log.warn('invoices.archive_threw', {
+      invoiceId,
+      key,
+      reason: error instanceof Error ? error.message : 'unknown',
+    })
+    return null
+  }
+}
+
+type EmailOutcome = 'sent' | 'skipped' | 'failed'
+
+/**
+ * Mails the document to the customer with the PDF attached.
+ *
+ * After the row is marked issued, never before: a mail that went out for a
+ * document whose issued-write then failed would be a mail about a document
+ * that is still pending and about to be issued again under the same number.
+ * Deduplicated by the provider on the invoice id, so a replayed issue (the
+ * cron re-finding a row whose issued-write raced) sends once.
+ *
+ * Never throws, and its outcome is recorded on the row in a separate,
+ * tolerant UPDATE: `emailed_at` / `email_error` arrive with pending 257, and
+ * a database without them must not fail a document that has been issued.
+ */
+async function emailDocument(
+  admin: AdminClient,
+  row: InvoiceRow,
+  document: InvoiceDocument,
+  documentNumber: string,
+  bytes: Uint8Array,
+  now: Date,
+): Promise<EmailOutcome> {
+  const to = document.customer.email?.trim()
+  if (!to) {
+    log.warn('invoices.email_skipped', { invoiceId: row.id, reason: 'no_recipient' })
+    return 'skipped'
+  }
+
+  let outcome: EmailOutcome
+  let error: string | null = null
+  try {
+    const built = buildInvoiceEmail({
+      customerName: document.customer.name,
+      documentType: document.documentType,
+      documentNumber,
+      orderId: row.order_id,
+      totalAgorot: document.totalAgorot,
+      siteUrl: siteUrl(),
+    })
+    const result = await sendEmail({
+      to,
+      subject: built.subject,
+      html: built.html,
+      text: built.text,
+      idempotencyKey: `invoice:${row.id}:issued`,
+      attachments: [
+        { filename: built.attachmentFileName, content: bytes, contentType: 'application/pdf' },
+      ],
+    })
+    if (result.ok) outcome = 'sent'
+    else if (result.skipped) {
+      outcome = 'skipped'
+      error = result.reason
+    } else {
+      outcome = 'failed'
+      error = result.reason
+    }
+  } catch (caught) {
+    outcome = 'failed'
+    error = caught instanceof Error ? caught.message : 'send threw'
+  }
+
+  const { error: writeError } = await admin
+    .from('invoices')
+    .update(
+      (outcome === 'sent'
+        ? { emailed_at: now.toISOString(), email_error: null }
+        : { email_error: (error ?? outcome).slice(0, 500) }) as never,
+    )
+    .eq('id', row.id)
+  if (writeError) {
+    // 42703 until 257 is applied. The send itself is logged either way.
+    log.info('invoices.email_state_not_recorded', { invoiceId: row.id, reason: writeError.message })
+  }
+
+  log[outcome === 'failed' ? 'warn' : 'info']('invoices.email', {
+    invoiceId: row.id,
+    orderId: row.order_id,
+    outcome,
+    reason: error,
+  })
+  return outcome
+}
+
+// ---------------------------------------------------------------------------
+// issueInvoice
+// ---------------------------------------------------------------------------
+
+export type IssueOutcome =
+  | { ok: true; documentNumber: string; documentUrl: string | null; emailed: boolean }
+  | { ok: false; reason: string; dead: boolean }
 
 /**
  * Tells an operator that a document has stopped retrying.
@@ -773,27 +934,32 @@ async function alertAdminInvoiceDead(
 }
 
 /**
- * Sends one queued document to the provider and records what came back.
+ * Issues one queued document: numbers it, renders the platform's own PDF,
+ * archives it, records it, and mails it.
  *
- * `orders.invoice_number` is written here and only here. Until [55] that column
- * had four readers and no writer, which is why searching the admin order list
- * by invoice number could not return a row.
+ * THE ORDER OF THE STEPS IS THE DESIGN.
+ *
+ *   1. Build the document from the order (refuses on a money mismatch).
+ *   2. Number it: the row's own allocation, or a fresh one written to the
+ *      row at once. Fails the attempt if the sequence cannot answer.
+ *   3. Ask the provider for a reference copy. Best effort; never fails.
+ *   4. Render the PDF under that number. Fails the attempt on a throw, with
+ *      the number kept on the row for the retry.
+ *   5. Archive to R2. Best effort; null URL without R2.
+ *   6. Mark issued: `document_number` is OUR number, `document_url` the
+ *      archive, `provider_response` carries the provider's reference and the
+ *      archive key. `orders.invoice_number` follows for the sale's document.
+ *   7. Email the customer with the PDF attached. Best effort, recorded.
+ *
+ * `orders.invoice_number` is written here and only here. Until [55] that
+ * column had four readers and no writer, which is why searching the admin
+ * order list by invoice number could not return a row.
  */
 export async function issueInvoice(
   admin: AdminClient,
   row: InvoiceRow,
   now: Date = new Date(),
 ): Promise<IssueOutcome> {
-  const mode = documentIssuingMode()
-  if (mode === 'unconfigured') {
-    // Not counted as an attempt, and nothing is written. See
-    // `documentIssuingMode`: the row is owed a document, the machine simply
-    // cannot ask for one yet, and the moment the keys are set the next cron run
-    // issues it with all five attempts still in hand.
-    log.info('invoices.provider_unconfigured', { invoiceId: row.id, orderId: row.order_id })
-    return { ok: false, reason: 'provider_unconfigured', dead: false, skipped: true }
-  }
-
   const attempts = row.attempts + 1
 
   const fail = async (reason: string): Promise<IssueOutcome> => {
@@ -819,6 +985,7 @@ export async function issueInvoice(
     return { ok: false, reason, dead }
   }
 
+  // 1. The document.
   let built: Awaited<ReturnType<typeof buildDocumentForRow>>
   try {
     built = await buildDocumentForRow(admin, row)
@@ -826,93 +993,104 @@ export async function issueInvoice(
     return fail(error instanceof Error ? error.message : 'build failed')
   }
   if ('error' in built) return fail(built.error)
+  const { document } = built
 
-  const { document, transactionId, cardcomAccountId } = built
+  // 2. The number.
+  const allocation = await ensureInvoiceNumber(admin, row, built.cardcomAccountId)
+  if ('error' in allocation) return fail(allocation.error)
 
-  let result: Awaited<ReturnType<ReturnType<typeof getPaymentProvider>['createDocument']>>
+  // 3. The provider's reference copy.
+  const provider = await requestProviderReference(built, row)
+
+  // 4. The PDF.
+  let bytes: Uint8Array
   try {
-    result = await getPaymentProvider(cardcomAccountId).createDocument({
+    bytes = await renderInvoicePdf({
       documentType: document.documentType,
-      customerName: document.customer.name,
-      customerEmail: document.customer.email,
-      customerPhone: document.customer.phone,
+      documentNumber: allocation.formatted,
+      providerDocumentNumber: provider.documentNumber,
+      issuedAt: now,
+      generatedAt: now,
+      copy: 'original',
+      issuer: resolveInvoiceIssuer(built.cardcomAccountId),
+      customer: document.customer,
       lines: document.lines,
       totalAgorot: document.totalAgorot,
+      netAgorot: document.netAgorot,
+      vatAgorot: document.vatAgorot,
       vatPercent: document.vatPercent,
-      transactionId,
       reference: document.reference,
-      sendByEmail: true,
+      payment: { method: 'card', transactionId: built.transactionId },
+      relatedDocumentNumber: built.relatedDocumentNumber,
     })
   } catch (error) {
-    return fail(error instanceof Error ? error.message : 'provider call failed')
+    return fail(`render_failed: ${error instanceof Error ? error.message : 'unknown'}`)
   }
 
-  if (!result.success || !result.documentNumber) {
-    return fail(result.failureMessage ?? `provider rejected (${result.failureCode ?? 'unknown'})`)
-  }
+  // 5. The archive.
+  const storageKey = invoiceStorageKey(row.order_id, allocation.formatted)
+  const archivedUrl = await archivePdf(bytes, storageKey, row.id)
 
-  // The platform's own sequential number, allocated only once the provider
-  // has actually issued: a failed attempt must not burn a number, because a
-  // gap that corresponds to no document is the thing an auditor asks about.
-  const allocation = await allocateInvoiceNumber(admin, row, cardcomAccountId)
-
-  const mirrored = result.documentUrl
-    ? await mirrorPdf(
-        result.documentUrl,
-        `invoices/${row.order_id}/${result.documentNumber.replace(/[^\w.-]/g, '_')}.pdf`,
-      )
-    : null
-
-  // No fetchable provider PDF in R2 means the customer's link would depend on
-  // the provider staying up, or would 404 outright. Render our own.
-  const ownPdf = mirrored
-    ? null
-    : await storeRenderedPdf(
-        document,
-        row,
-        cardcomAccountId,
-        allocation,
-        result.documentNumber,
-        now,
-      )
-
-  await admin
+  // 6. The record.
+  const { error: issuedError } = await admin
     .from('invoices')
     .update({
       status: 'issued',
       attempts,
-      document_number: result.documentNumber,
-      document_url: mirrored ?? ownPdf ?? result.documentUrl,
+      document_number: allocation.formatted,
+      document_url: archivedUrl,
       issued_at: now.toISOString(),
-      provider_response: result.raw as never,
+      provider_response: {
+        platform: {
+          series: allocation.series,
+          internal_number: allocation.internalNumber,
+          storage: archivedUrl ? 'r2' : 'none',
+          storage_key: storageKey,
+          issued_by: 'kenyonexpress',
+        },
+        provider: {
+          document_number: provider.documentNumber,
+          document_url: provider.documentUrl,
+          error: provider.error,
+          raw: provider.raw,
+        },
+      } as never,
       last_error: null,
     } as never)
     .eq('id', row.id)
+  if (issuedError) return fail(`issued_write_failed: ${issuedError.message}`)
 
-  if (row.document_type === 'tax_invoice_receipt' || row.document_type === 'coupon_receipt') {
+  if (row.document_type !== 'credit_note') {
     // Only the sale's own document names the order. A credit note has its own
     // number and must not overwrite the invoice number of the sale it reverses.
     await admin
       .from('orders')
-      .update({ invoice_number: result.documentNumber } as never)
+      .update({ invoice_number: allocation.formatted } as never)
       .eq('id', row.order_id)
   }
+
+  // 7. The customer's copy.
+  const emailed = await emailDocument(admin, row, document, allocation.formatted, bytes, now)
 
   log.info('invoices.issued', {
     invoiceId: row.id,
     orderId: row.order_id,
-    documentNumber: result.documentNumber,
-    internalNumber: allocation?.formatted ?? null,
-    mirrored: mirrored != null,
-    ownPdf: ownPdf != null,
+    documentNumber: allocation.formatted,
+    providerDocumentNumber: provider.documentNumber,
+    archived: archivedUrl != null,
+    emailed,
   })
 
   return {
     ok: true,
-    documentNumber: result.documentNumber,
-    documentUrl: mirrored ?? ownPdf ?? result.documentUrl,
+    documentNumber: allocation.formatted,
+    documentUrl: archivedUrl,
+    emailed: emailed === 'sent',
   }
 }
+
+const QUEUE_COLUMNS =
+  'id, order_id, payment_id, document_type, status, idempotency_key, total_agorot, net_agorot, vat_agorot, vat_percent, attempts, series, internal_number'
 
 /** Rows the queue owes work on, oldest deadline first. */
 export async function loadDueInvoices(
@@ -922,9 +1100,7 @@ export async function loadDueInvoices(
 ): Promise<InvoiceRow[]> {
   const { data, error } = await admin
     .from('invoices')
-    .select(
-      'id, order_id, payment_id, document_type, status, idempotency_key, total_agorot, net_agorot, vat_agorot, vat_percent, attempts',
-    )
+    .select(QUEUE_COLUMNS)
     .eq('status', 'pending')
     .lte('next_attempt_at', now.toISOString())
     .order('next_attempt_at', { ascending: true })
@@ -948,9 +1124,7 @@ export async function issueQueuedInvoice(admin: AdminClient, invoiceId: string):
   try {
     const { data } = await admin
       .from('invoices')
-      .select(
-        'id, order_id, payment_id, document_type, status, idempotency_key, total_agorot, net_agorot, vat_agorot, vat_percent, attempts',
-      )
+      .select(QUEUE_COLUMNS)
       .eq('id', invoiceId)
       .eq('status', 'pending')
       .maybeSingle()
@@ -965,31 +1139,112 @@ export async function issueQueuedInvoice(admin: AdminClient, invoiceId: string):
   }
 }
 
-/** The issued document for an order, if there is one. */
+// ---------------------------------------------------------------------------
+// Reading an issued document
+// ---------------------------------------------------------------------------
+
+/** The issued sale document for an order, if there is one. */
 export async function getOrderInvoice(
   admin: AdminClient,
   orderId: string,
 ): Promise<{
+  id: string
   documentNumber: string | null
   documentUrl: string | null
   issuedAt: string | null
 } | null> {
   const { data, error } = await admin
     .from('invoices')
-    .select('document_number, document_url, issued_at')
+    .select('id, document_number, document_url, issued_at')
     .eq('order_id', orderId)
-    .eq('document_type', 'tax_invoice_receipt')
+    .neq('document_type', 'credit_note')
     .eq('status', 'issued')
     .maybeSingle()
   if (error || !data) return null
   const row = data as unknown as {
+    id: string
     document_number: string | null
     document_url: string | null
     issued_at: string | null
   }
   return {
+    id: row.id,
     documentNumber: row.document_number,
     documentUrl: row.document_url,
     issuedAt: row.issued_at,
+  }
+}
+
+export interface RenderedInvoice {
+  bytes: Uint8Array
+  fileName: string
+  documentNumber: string
+}
+
+/**
+ * Re-renders an issued document from its row, marked "העתק".
+ *
+ * For the account route on a deployment without an archive (no R2), and for
+ * any archived copy that cannot be fetched. The input is the same the issue
+ * path used - the row's number, VAT split and issue date, the order's lines -
+ * so the copy cannot disagree with the original about the money, and
+ * `buildDocumentForRow` still refuses if the order has changed under it.
+ * Returns null for a row that is not issued, or whose order no longer
+ * describes the document.
+ */
+export async function renderIssuedInvoiceCopy(
+  admin: AdminClient,
+  invoiceId: string,
+  now: Date = new Date(),
+): Promise<RenderedInvoice | null> {
+  const { data, error } = await admin
+    .from('invoices')
+    .select(`${QUEUE_COLUMNS}, document_number, issued_at, provider_response`)
+    .eq('id', invoiceId)
+    .eq('status', 'issued')
+    .maybeSingle()
+  if (error) {
+    log.warn('invoices.copy_read_failed', { invoiceId, reason: error.message })
+    return null
+  }
+  const row = data as unknown as
+    | (InvoiceRow & {
+        document_number: string | null
+        issued_at: string | null
+        provider_response: { provider?: { document_number?: unknown } } | null
+      })
+    | null
+  if (!row?.document_number) return null
+
+  const built = await buildDocumentForRow(admin, row)
+  if ('error' in built) {
+    log.warn('invoices.copy_refused', { invoiceId, reason: built.error })
+    return null
+  }
+
+  const providerNumber = row.provider_response?.provider?.document_number
+  const bytes = await renderInvoicePdf({
+    documentType: built.document.documentType,
+    documentNumber: row.document_number,
+    providerDocumentNumber: typeof providerNumber === 'string' ? providerNumber : null,
+    issuedAt: row.issued_at ? new Date(row.issued_at) : now,
+    generatedAt: now,
+    copy: 'copy',
+    issuer: resolveInvoiceIssuer(built.cardcomAccountId),
+    customer: built.document.customer,
+    lines: built.document.lines,
+    totalAgorot: built.document.totalAgorot,
+    netAgorot: built.document.netAgorot,
+    vatAgorot: built.document.vatAgorot,
+    vatPercent: built.document.vatPercent,
+    reference: built.document.reference,
+    payment: { method: 'card', transactionId: built.transactionId },
+    relatedDocumentNumber: built.relatedDocumentNumber,
+  })
+
+  return {
+    bytes,
+    fileName: invoicePdfFileName(row.document_number),
+    documentNumber: row.document_number,
   }
 }

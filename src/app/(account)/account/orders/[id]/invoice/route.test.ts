@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 const getUser = vi.hoisted(() => vi.fn())
 const orderRead = vi.hoisted(() => vi.fn())
 const getOrderInvoice = vi.hoisted(() => vi.fn())
+const renderIssuedInvoiceCopy = vi.hoisted(() => vi.fn())
 const filters = vi.hoisted(() => [] as [string, unknown[]][])
 
 vi.mock('@/lib/supabase/server', () => ({
@@ -23,16 +24,18 @@ vi.mock('@/lib/supabase/admin', () => ({
     },
   }),
 }))
-vi.mock('@/server/payments/invoices', () => ({ getOrderInvoice }))
+vi.mock('@/server/payments/invoices', () => ({ getOrderInvoice, renderIssuedInvoiceCopy }))
 
 import { GET } from './route'
 
 /**
- * The invoice's door. The document lives at the provider (or on the R2
- * mirror), so the only thing this route may do is confirm, on every request,
- * that the caller owns the order, and only then hand over the location. A
- * foreign id and a missing order are the same 404, and an order whose
- * document has not been issued yet is a 404 too, not a 500.
+ * The invoice's door. The only thing this route may do before anything else
+ * is confirm, on every request, that the caller owns the order. Then it hands
+ * over the archived file's location when there is one, or renders the
+ * document itself as a marked copy when there is not (the measured state of
+ * this account: no R2). A foreign id and a missing order are the same 404,
+ * and an order whose document has not been issued yet is a 404 too, not a
+ * 500.
  */
 
 const ORDER_ID = '11111111-1111-4111-8111-111111111111'
@@ -51,10 +54,12 @@ beforeEach(() => {
   getUser.mockResolvedValue({ data: { user: USER } })
   orderRead.mockResolvedValue({ data: { id: ORDER_ID }, error: null })
   getOrderInvoice.mockResolvedValue({
-    documentNumber: 'INV-7',
+    id: 'inv-1',
+    documentNumber: 'KE-INV-000007',
     documentUrl: DOC_URL,
     issuedAt: '2026-09-10T12:00:00Z',
   })
+  renderIssuedInvoiceCopy.mockResolvedValue(null)
 })
 
 describe('GET /account/orders/[id]/invoice', () => {
@@ -87,15 +92,47 @@ describe('GET /account/orders/[id]/invoice', () => {
 
   it('answers 404, not 500, while the document is not issued yet', async () => {
     getOrderInvoice.mockResolvedValue(null)
-    expect((await call()).status).toBe(404)
-
-    getOrderInvoice.mockResolvedValue({ documentNumber: null, documentUrl: null, issuedAt: null })
     const response = await call()
     expect(response.status).toBe(404)
     expect(await response.text()).toContain('עדיין לא הונפקה')
+    expect(renderIssuedInvoiceCopy).not.toHaveBeenCalled()
   })
 
-  it('redirects the owner to the document and only then', async () => {
+  it('renders the document itself, as a copy, when there is no archived file', async () => {
+    getOrderInvoice.mockResolvedValue({
+      id: 'inv-1',
+      documentNumber: 'KE-INV-000007',
+      documentUrl: null,
+      issuedAt: '2026-09-10T12:00:00Z',
+    })
+    renderIssuedInvoiceCopy.mockResolvedValue({
+      bytes: new TextEncoder().encode('%PDF-fake'),
+      fileName: 'KE-INV-000007.pdf',
+      documentNumber: 'KE-INV-000007',
+    })
+
+    const response = await call()
+    expect(response.status).toBe(200)
+    expect(renderIssuedInvoiceCopy).toHaveBeenCalledWith(expect.anything(), 'inv-1')
+    expect(response.headers.get('content-type')).toBe('application/pdf')
+    expect(response.headers.get('content-disposition')).toBe('inline; filename="KE-INV-000007.pdf"')
+    // A tax document under a session: no shared cache may keep it.
+    expect(response.headers.get('cache-control')).toBe('private, no-store')
+    expect(await response.text()).toBe('%PDF-fake')
+  })
+
+  it('answers 404 when the copy cannot be drawn from the row', async () => {
+    getOrderInvoice.mockResolvedValue({
+      id: 'inv-1',
+      documentNumber: 'KE-INV-000007',
+      documentUrl: null,
+      issuedAt: '2026-09-10T12:00:00Z',
+    })
+    renderIssuedInvoiceCopy.mockResolvedValue(null)
+    expect((await call()).status).toBe(404)
+  })
+
+  it('redirects the owner to the archived document and only then', async () => {
     const response = await call()
     expect(response.status).toBeGreaterThanOrEqual(300)
     expect(response.status).toBeLessThan(400)

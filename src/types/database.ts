@@ -1221,6 +1221,8 @@ export type Database = {
           updated_at: string
           vat_agorot: number
           vat_percent: number
+          series: string | null
+          internal_number: number | null
         }
         Insert: {
           attempts?: number
@@ -1243,6 +1245,8 @@ export type Database = {
           updated_at?: string
           vat_agorot: number
           vat_percent: number
+          series?: string | null
+          internal_number?: number | null
         }
         Update: {
           attempts?: number
@@ -1265,6 +1269,8 @@ export type Database = {
           updated_at?: string
           vat_agorot?: number
           vat_percent?: number
+          series?: string | null
+          internal_number?: number | null
         }
         Relationships: [
           {

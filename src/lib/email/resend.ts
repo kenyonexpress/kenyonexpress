@@ -18,6 +18,17 @@ import { log } from '@/lib/observability/log'
  * one email rather than two.
  */
 
+/**
+ * A file carried by the mail. Bytes are base64-encoded on the wire, which
+ * is the only form Resend's JSON endpoint accepts; the caller keeps its
+ * `Uint8Array` and never has to know that.
+ */
+export interface EmailAttachment {
+  filename: string
+  content: Uint8Array
+  contentType?: string
+}
+
 export interface SendEmailInput {
   to: string
   subject: string
@@ -26,6 +37,25 @@ export interface SendEmailInput {
   /** Same key for the same logical email; Resend deduplicates on it. */
   idempotencyKey?: string
   replyTo?: string
+  /**
+   * Attached files, e.g. the tax document PDF. Omitted from the request
+   * body entirely when empty, so a mail without one is byte-identical to
+   * what was sent before attachments existed.
+   */
+  attachments?: readonly EmailAttachment[]
+}
+
+/** The wire shape of one attachment. Exported for the test that pins it. */
+export function serializeAttachment(attachment: EmailAttachment): {
+  filename: string
+  content: string
+  content_type?: string
+} {
+  return {
+    filename: attachment.filename,
+    content: Buffer.from(attachment.content).toString('base64'),
+    ...(attachment.contentType ? { content_type: attachment.contentType } : {}),
+  }
 }
 
 export type SendEmailResult =
@@ -69,6 +99,9 @@ export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult>
         html: input.html,
         text: input.text,
         ...(input.replyTo ? { reply_to: input.replyTo } : {}),
+        ...(input.attachments && input.attachments.length > 0
+          ? { attachments: input.attachments.map(serializeAttachment) }
+          : {}),
       }),
     })
 

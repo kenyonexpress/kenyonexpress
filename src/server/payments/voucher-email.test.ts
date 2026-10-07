@@ -38,7 +38,7 @@ function client(tables: {
             : { data: tables.vouchers ?? [] }
 
       const chain: Record<string, unknown> = {}
-      for (const method of ['select', 'eq', 'order']) {
+      for (const method of ['select', 'eq', 'neq', 'order']) {
         chain[method] = () => chain
       }
       chain.maybeSingle = async () => result

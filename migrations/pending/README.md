@@ -1,5 +1,28 @@
 # `migrations/pending/`
 
+## 2026-10-08: 257 PENDING (invoice email delivery record, STEP 42)
+
+`257_invoices_email_delivery.sql` adds `invoices.emailed_at timestamptz` and
+`invoices.email_error text`, both nullable, both `ADD COLUMN IF NOT EXISTS`,
+and rewrites the comments on `invoices.document_number` and
+`orders.invoice_number` to say what they hold since STEP 42: the platform's
+OWN sequential number (`fn_next_invoice_number` from 228, measured live on
+2026-10-08: `invoice_counters` and the function exist, `series` and
+`internal_number` are on the table), with the provider's reference number
+moved into `provider_response.provider`. The code
+(`src/server/payments/invoices.ts`) renders the Hebrew PDF itself, archives
+it in R2 when R2 is configured, mails it to the customer with the PDF
+attached, and records the send in these two columns through a separate
+UPDATE that treats 42703 as "257 not applied yet", so production issues and
+mails identically before and after this file; only the record is absent
+until it lands. **Measured on production before writing:** 22 columns on
+`invoices`, neither name present; 28 rows, all `issued`, all mock-provider
+documents from E2E runs (`mock-doc-N`, no internal number), left untouched
+because a tax document is never edited. **Rehearsed on production inside
+BEGIN/ROLLBACK through the management API the same day:** both columns
+present inside the transaction, zero present after the rollback. Rollback in
+the file header. Awaits the same explicit approval as every file here.
+
 ## 2026-10-08: 256 PENDING (`finalize` money twins add-if-missing + backfill, STEP 40)
 
 `256_finalize_money_twins_backfill.sql` is the idempotent companion to 224

@@ -38,7 +38,24 @@ Buyer name, last4 (not PAN), amounts in agorot, VAT treatment per counsel, order
 ## Forbidden
 Issuing supplier "payout invoice" that implies coupon prepaid was held in Escrow.
 
+## Implemented (STEP 42, 2026-10-08)
+
+The platform issues its own documents. The provider's document module is a
+reference, not the issuer.
+
+| Concern | Where | Rule |
+|---|---|---|
+| Queue | `invoices` (107, 116), filled by `finalizeOrder` and `refundOrder` | one row per document, `idempotency_key` unique, `net + vat = total` CHECK |
+| Number | `fn_next_invoice_number` (228, live) via `ensureInvoiceNumber` | one series per `<terminal>:<type>`; drawn once, written to the row, reused on retry (gapless) |
+| Format | `src/lib/invoices/pdf.ts`, `composeInvoiceText` | issuer name / ח.פ / address, title + number, מקור/העתק, issue date (Asia/Jerusalem), customer, lines, net / VAT % / gross, means of payment + clearing reference, "מסמך ממוחשב", page X of Y; credit note names the invoice it reverses |
+| VAT | `splitVatInclusive`, `VAT_RATE_BP` | extracted from the gross; coupon receipt states no VAT (advance) |
+| Archive | R2 `invoices/<order>/<number>.pdf` via `archivePdf` | best effort; `document_url` null without R2, the account route renders a marked העתק on demand |
+| Email | `buildInvoiceEmail` + `sendEmail` attachments | sent after the issued-write, idempotent on the invoice id, recorded in `emailed_at` / `email_error` (257, pending) |
+| Provider | `requestProviderReference` | best effort, `sendByEmail: false`, number kept in `provider_response.provider`; `mock-doc-N` never reaches `document_number` |
+| Not modelled | VAT exemption (Eilat, exempt dealer), allocation numbers (מספרי הקצאה) for invoices over the threshold | both need counsel and a field; neither is guessed |
+
 ## Revision
 | Date | Change |
 |---|---|
 | 2026-07-31 | Invoicing/tax skeleton in `ke-arch` (`arch/docs-queue`) |
+| 2026-10-08 | STEP 42: platform-issued PDF, own sequence, R2 archive, attached email; provider demoted to reference |
