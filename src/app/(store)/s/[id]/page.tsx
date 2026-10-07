@@ -1,6 +1,8 @@
 import CategoryGridSkeleton from '@/components/category/CategoryGridSkeleton'
 import CategoryProductCard from '@/components/category/CategoryProductCard'
 import Pagination from '@/components/category/Pagination'
+import { ABOVE_FOLD_CARD_COUNT } from '@/components/category/above-fold'
+import { blurEntryFor, firstImageOf } from '@/lib/images/blur'
 import { publicPageMetadata } from '@/lib/seo/page-metadata'
 import {
   SUPPLIER_PAGE_SIZE,
@@ -99,11 +101,21 @@ async function SupplierProductGrid({
 
       {items.length > 0 ? (
         <ul className="category-grid grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-          {items.map((product) => (
-            <li key={product.id}>
-              <CategoryProductCard product={product} />
-            </li>
-          ))}
+          {items.map((product, index) => {
+            // Same contract as the category page: see ABOVE_FOLD_CARD_COUNT.
+            const asset = blurEntryFor(firstImageOf(product.images))
+            return (
+              <li key={product.id}>
+                <CategoryProductCard
+                  product={product}
+                  priority={index === 0}
+                  eager={index < ABOVE_FOLD_CARD_COUNT}
+                  blurDataURL={asset?.blur}
+                  dimensions={asset ? { w: asset.w, h: asset.h } : undefined}
+                />
+              </li>
+            )
+          })}
         </ul>
       ) : null}
 

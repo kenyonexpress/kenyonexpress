@@ -710,6 +710,47 @@ type ProductImage = {
 
 Never compute blur on the request path. Precompute on upload with sharp.
 
+**Two sources, pipeline first (STEP 35, 2026-10-07).** `media_assets.blur_data_url`
+is the row the upload pipeline writes and it wins whenever it exists. Counted on
+production the day this was written: the table held zero rows, and 43 of the 46
+active products take their first image from `public/images/products/`, which the
+pipeline never saw. So the gallery's `placeholder="blur"` path had never fired on
+the live site and no card had one at all. The second source is a build artefact
+for exactly those files:
+
+- `pnpm images:blur` (`scripts/media-ingest/blur-manifest.mjs`) walks
+  `public/images/{products,categories,hero}`, encodes a 10px-wide WebP per
+  raster (~140 bytes of data URL on average, 400 max, asserted) and records the
+  oriented width/height. Output: `src/lib/images/blur-manifest.json`, committed.
+- `pnpm lint` runs the script's `--check`: file set on disk against manifest
+  keys, no decoding. A photo added without regenerating fails lint, and
+  `src/lib/images/blur.test.ts` fails the unit suite for the same reason.
+- `src/lib/images/blur.ts` is the only reader and is `server-only`. A server
+  component looks up ONE string per image and hands it to the card as a prop;
+  the JSON is ~20 KB and must never enter a client bundle (the route-JS gate in
+  section 5 would say so, and `blur.test.ts` greps for a `'use client'` importer).
+- next/image wraps the data URL in an inline SVG with a 20px Gaussian blur, so
+  the source only has to carry the colour layout; detail beyond 10px is wasted
+  bytes in every card's HTML.
+
+**The width/height pair is the CLS reservation, and it has to be the file's.**
+The manifest's `w`/`h` go on the `<img>` where the box is not `fill`-reserved
+(deal card, category card): a 186x186 reservation for a 600x417 file is a square
+that collapses to a landscape on load, and the image's own top edge moves. The
+slot around it is already fixed (`.p_con__image` pins 245px, `.category-card__thumb`
+pins the line box, `.pdp-gallery__frame` is `aspect-ratio: 1 / 1`, the related and
+category tiles are `aspect-square` with `fill`), so with the real ratio nothing
+in the card is drawn twice.
+
+**Loading hints are positional and come from the server caller.** One `priority`
+image per page (preload + `fetchpriority="high"`, which Next 16 passes through
+and never adds): the first deal card on `/`, the first grid card on
+`/category`, `/products`, `/search`, `/s/[id]` and the shared wishlist, the first
+gallery photo on `/product`. `ABOVE_FOLD_CARD_COUNT` (4, the widest first row)
+cards drop `loading="lazy"`; everything after stays lazy. The hero has no raster:
+every `image_url` in `hero-singlefile-data.ts` is null by content decision, so
+the desktop first paint is text and the placeholder mark.
+
 ---
 
 ## 4. Heebo preload and font loading
@@ -1201,7 +1242,7 @@ useEffect(() => {
 
 - [ ] Page declares correct `revalidate` + tags (section 2.1)
 - [ ] Private routes set `private, no-store`
-- [ ] Images use binding `sizes` + quality; one `priority` LCP image
+- [ ] Images use binding `sizes` + quality; one `priority` LCP image with `fetchPriority="high"`; first row eager, rest lazy; a blur from `lib/images/blur.ts` and the file's real `width`/`height` (section 3.4)
 - [ ] Heebo weights 400+700 only; `preload: true`; no Google CSS
 - [ ] No `select('*')` on new queries; indexes exist for filters / sorts
 - [ ] First-load JS within route budget
@@ -1226,3 +1267,4 @@ useEffect(() => {
 | Date | Change |
 |---|---|
 | 2026-07-30 | Initial binding performance architecture on `arch/performance` |
+| 2026-10-07 | STEP 35: blur manifest for static files (3.4), positional loading hints, real-ratio reservations |

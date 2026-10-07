@@ -73,7 +73,34 @@ function CartPlusIcon() {
   )
 }
 
-export default function CategoryProductCard({ product }: { product: CategoryProduct }) {
+// The first-row count the pages pass as `eager`/`priority` lives in
+// `./above-fold.ts`: a value exported from this `'use client'` module is a
+// client-reference proxy on the server, not a number. See that file.
+
+export default function CategoryProductCard({
+  product,
+  priority = false,
+  eager = false,
+  blurDataURL,
+  dimensions,
+}: {
+  product: CategoryProduct
+  /** The grid's first card: eager, preloaded, `fetchpriority="high"`. See ./above-fold.ts. */
+  priority?: boolean
+  /** The rest of the first row: eager, no preload, default fetch priority. */
+  eager?: boolean
+  /** Tiny WebP data URL for the thumb, from the server caller via `src/lib/images/blur.ts`. */
+  blurDataURL?: string
+  /**
+   * The file's real pixel size, same source. The thumb slot is a fixed-height
+   * line box (`.category-card__thumb`), so the box never moves, but the
+   * `<img>` inside it is vertically centred and sized by its attributes until
+   * the bytes land: a 186x186 reservation for a 600x417 file is a square that
+   * collapses to a landscape on load, and the image's own top edge moves. With
+   * the real ratio it is drawn once.
+   */
+  dimensions?: { w: number; h: number }
+}) {
   const thumb =
     Array.isArray(product.images) && typeof product.images[0] === 'string'
       ? (product.images[0] as string)
@@ -153,10 +180,17 @@ export default function CategoryProductCard({ product }: { product: CategoryProd
                 <Image
                   src={thumb}
                   alt={product.name_he}
-                  width={186}
-                  height={186}
+                  width={dimensions?.w ?? 186}
+                  height={dimensions?.h ?? 186}
                   sizes={THUMB_SIZES}
-                  loading="lazy"
+                  // next/image refuses `priority` together with `loading`, so
+                  // the lazy/eager choice is made only for the non-priority
+                  // cards. `priority` alone gives eager + a head preload; the
+                  // fetch priority is passed through, not added (Next 16).
+                  {...(priority
+                    ? { priority: true, fetchPriority: 'high' as const }
+                    : { loading: eager ? ('eager' as const) : ('lazy' as const) })}
+                  {...(blurDataURL ? { placeholder: 'blur' as const, blurDataURL } : {})}
                 />
               ) : null}
             </span>

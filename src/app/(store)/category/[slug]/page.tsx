@@ -8,6 +8,7 @@ import CategoryProductCard, {
   type CategoryProduct,
 } from '@/components/category/CategoryProductCard'
 import Pagination from '@/components/category/Pagination'
+import { ABOVE_FOLD_CARD_COUNT } from '@/components/category/above-fold'
 import CityTags from '@/components/geo/CityTags'
 import {
   CATEGORY_PAGE_SIZE,
@@ -28,6 +29,7 @@ import {
 import { type SortValue, isDefaultSort, parseSort } from '@/lib/category-tokens'
 import { parseMinDiscount } from '@/lib/discount-percent'
 import { type Coordinates, parseNear, sortByDistance } from '@/lib/geo/distance'
+import { blurEntryFor, firstImageOf } from '@/lib/images/blur'
 import { buildBreadcrumbJsonLd, buildItemListJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
 import { publicPageMetadata } from '@/lib/seo/page-metadata'
 import { notFound } from 'next/navigation'
@@ -239,11 +241,23 @@ async function ResultGrid({
         />
       )}
       <ul className="category-products">
-        {ordered.map((product) => (
-          <li key={product.id} className="category-products__item">
-            <CategoryProductCard product={product as CategoryProduct} />
-          </li>
-        ))}
+        {ordered.map((product, index) => {
+          // Server-side: the blur string and the real pixel size come from the
+          // committed manifest, one lookup per card, and the first row's
+          // loading hints come from its position. See ABOVE_FOLD_CARD_COUNT.
+          const asset = blurEntryFor(firstImageOf(product.images))
+          return (
+            <li key={product.id} className="category-products__item">
+              <CategoryProductCard
+                product={product as CategoryProduct}
+                priority={index === 0}
+                eager={index < ABOVE_FOLD_CARD_COUNT}
+                blurDataURL={asset?.blur}
+                dimensions={asset ? { w: asset.w, h: asset.h } : undefined}
+              />
+            </li>
+          )
+        })}
       </ul>
       <Pagination
         pathname={pathname}

@@ -102,9 +102,25 @@ function categoryHref(slug: string): string {
 export default function ProductDealCard({
   product,
   priority = false,
+  blurDataURL,
+  dimensions,
 }: {
   product: Product
   priority?: boolean
+  /**
+   * The tiny WebP data URL for `thumb`, looked up by the SERVER caller in
+   * `src/lib/images/blur.ts` (this is a client component and must not read
+   * the manifest). Absent: the slot stays the wrapper's background until the
+   * bytes land, which is what every card did until 2026-10-07.
+   */
+  blurDataURL?: string
+  /**
+   * The file's real pixel size, same source. The `<img>` width/height pair is
+   * the pre-load reservation: with the real ratio the box the browser draws
+   * before the bytes arrive is the box it draws after, and nothing jumps.
+   * Absent: 400x245, live's card ratio, which is right for most of the deals.
+   */
+  dimensions?: { w: number; h: number }
 }) {
   const thumb =
     Array.isArray(product.images) && typeof product.images[0] === 'string'
@@ -171,10 +187,13 @@ export default function ProductDealCard({
             <Image
               src={thumb}
               alt={product.name_he}
-              width={400}
-              height={245}
+              width={dimensions?.w ?? 400}
+              height={dimensions?.h ?? 245}
               sizes={DEAL_IMAGE_SIZES}
               quality={50}
+              // `placeholder` without a `blurDataURL` is a build error in
+              // next/image, so the pair goes on together or not at all.
+              {...(blurDataURL ? { placeholder: 'blur' as const, blurDataURL } : {})}
               // `priority` alone gives eager loading and a head preload; Next
               // 16 does not add the fetch priority itself (get-img-props passes
               // it through), and without it Chrome queues the request behind

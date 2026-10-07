@@ -1,4 +1,5 @@
 import ProductCard from '@/components/ProductCard'
+import { blurForProductImages } from '@/lib/images/blur'
 import { loadRelatedProducts } from '@/lib/related-products'
 
 interface Props {
@@ -23,7 +24,11 @@ export default async function RelatedProducts({ categoryId, excludeId }: Props) 
       <h2 className="pdp-related__title">מומלצים</h2>
       <div className="pdp-related__grid">
         {products.map((product) => (
-          <ProductCard key={product.id} product={product} />
+          <ProductCard
+            key={product.id}
+            product={product}
+            blurDataURL={blurForProductImages(product.images)}
+          />
         ))}
       </div>
     </section>

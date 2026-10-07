@@ -4,6 +4,7 @@ import { orFail } from '@/lib/catalogue-read'
 import { type CouponOffer, buildCouponOffer } from '@/lib/commerce/coupon-offer'
 import { resolveStorefrontProductType } from '@/lib/commerce/product-type'
 import { buildRecurringOffer } from '@/lib/commerce/recurring'
+import { blurDataUrlFor } from '@/lib/images/blur'
 import { log } from '@/lib/observability/log'
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
@@ -249,7 +250,18 @@ async function loadSupplierPublicContact(supplierId: string | null) {
   return data
 }
 
-/** Blur placeholders and Hebrew alt text for pipeline-uploaded images. */
+/**
+ * Blur placeholders and Hebrew alt text for the gallery.
+ *
+ * TWO SOURCES, PIPELINE FIRST. `media_assets` is the upload pipeline's own
+ * record and carries the Hebrew alt as well as the blur; it wins whenever a
+ * row exists. Counted on production 2026-10-07: it held zero rows, and 43 of
+ * the 46 active products take their photos from `public/images/products`,
+ * so this function returned `{}` for every live product and the gallery had
+ * never painted a placeholder. The committed manifest (`lib/images/blur.ts`)
+ * fills the gap for those files; a URL in neither source gets no entry, and
+ * the gallery falls back to the product name for alt and no blur.
+ */
 async function loadGalleryAssets(
   images: string[],
 ): Promise<Record<string, { alt: string | null; blurDataURL: string | null }>> {
@@ -262,9 +274,17 @@ async function loadGalleryAssets(
     'product_detail.gallery_assets_failed',
     { image_count: images.length },
   )
-  return Object.fromEntries(
+  const fromPipeline = Object.fromEntries(
     (data ?? []).map((a) => [a.url, { alt: a.alt_he, blurDataURL: a.blur_data_url }]),
   )
+  const fromManifest = Object.fromEntries(
+    images.flatMap((url) => {
+      if (fromPipeline[url]?.blurDataURL) return []
+      const blur = blurDataUrlFor(url)
+      return blur ? [[url, { alt: fromPipeline[url]?.alt ?? null, blurDataURL: blur }]] : []
+    }),
+  )
+  return { ...fromPipeline, ...fromManifest }
 }
 
 /**

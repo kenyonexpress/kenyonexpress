@@ -232,7 +232,13 @@ function DealsProductCard({ product }: { product: Product }) {
   )
 }
 
-function DefaultProductCard({ product }: { product: Product }) {
+function DefaultProductCard({
+  product,
+  blurDataURL,
+}: {
+  product: Product
+  blurDataURL?: string
+}) {
   const thumb =
     Array.isArray(product.images) && typeof product.images[0] === 'string'
       ? (product.images[0] as string)
@@ -305,6 +311,7 @@ function DefaultProductCard({ product }: { product: Product }) {
                  */
                 sizes="(max-width: 639px) calc(50vw - 47px), (max-width: 1023px) calc(33.33vw - 44px), 204px"
                 className="object-cover"
+                {...(blurDataURL ? { placeholder: 'blur' as const, blurDataURL } : {})}
               />
             ) : (
               <span className="text-5xl">📦</span>
@@ -354,12 +361,19 @@ function DefaultProductCard({ product }: { product: Product }) {
 export default function ProductCard({
   product,
   variant = 'default',
+  blurDataURL,
 }: {
   product: Product
   variant?: 'default' | 'deals'
+  /**
+   * Tiny WebP data URL for the thumb, looked up by the server caller through
+   * `src/lib/images/blur.ts`. Default variant only: the deals variant's image
+   * is a fixed-height line box that paints the wrapper's grey until load.
+   */
+  blurDataURL?: string
 }) {
   if (variant === 'deals') {
     return <DealsProductCard product={product} />
   }
-  return <DefaultProductCard product={product} />
+  return <DefaultProductCard product={product} blurDataURL={blurDataURL} />
 }

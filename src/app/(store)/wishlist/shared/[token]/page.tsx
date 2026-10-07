@@ -2,6 +2,8 @@ import CategoryGridSkeleton from '@/components/category/CategoryGridSkeleton'
 import CategoryProductCard, {
   type CategoryProduct,
 } from '@/components/category/CategoryProductCard'
+import { ABOVE_FOLD_CARD_COUNT } from '@/components/category/above-fold'
+import { blurEntryFor, firstImageOf } from '@/lib/images/blur'
 import { isShareToken } from '@/lib/wishlist/share-token'
 import { type SharedWishlistItem, getSharedWishlist } from '@/server/queries/wishlist'
 import type { Metadata } from 'next'
@@ -87,11 +89,21 @@ async function SharedList({ params }: Props) {
   const cards = items.filter((item) => item.slug).map(toCard)
   return (
     <ul className="category-grid grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-      {cards.map((product) => (
-        <li key={product.id}>
-          <CategoryProductCard product={product} />
-        </li>
-      ))}
+      {cards.map((product, index) => {
+        // Same contract as the category page: see ABOVE_FOLD_CARD_COUNT.
+        const asset = blurEntryFor(firstImageOf(product.images))
+        return (
+          <li key={product.id}>
+            <CategoryProductCard
+              product={product}
+              priority={index === 0}
+              eager={index < ABOVE_FOLD_CARD_COUNT}
+              blurDataURL={asset?.blur}
+              dimensions={asset ? { w: asset.w, h: asset.h } : undefined}
+            />
+          </li>
+        )
+      })}
     </ul>
   )
 }

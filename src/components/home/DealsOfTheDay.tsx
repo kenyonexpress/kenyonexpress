@@ -1,4 +1,5 @@
 import ProductDealCard from '@/components/ProductDealCard'
+import { blurEntryFor, firstImageOf } from '@/lib/images/blur'
 import { KE_LIVE_DEALS } from '@/lib/ke-live-deals-data'
 
 /**
@@ -30,13 +31,23 @@ export default async function DealsOfTheDay() {
       className="mx-auto w-full max-w-deals px-deals-pad pt-deals-top pb-deals-footer-gap md:px-deals-pad-md xl:px-0"
     >
       <div className="jet-listing-grid-deals bg-white">
-        {products.map((product, index) => (
-          <div key={product.id} className="jet-listing-grid-deals__item">
-            {/* The first card's image is the phone LCP element; see the
-                `priority` note on ProductDealCard for the measurement. */}
-            <ProductDealCard product={product} priority={index === 0} />
-          </div>
-        ))}
+        {products.map((product, index) => {
+          // Server-side lookup, one string per card: the card is a client
+          // component and the manifest never enters a client bundle.
+          const asset = blurEntryFor(firstImageOf(product.images))
+          return (
+            <div key={product.id} className="jet-listing-grid-deals__item">
+              {/* The first card's image is the phone LCP element; see the
+                  `priority` note on ProductDealCard for the measurement. */}
+              <ProductDealCard
+                product={product}
+                priority={index === 0}
+                blurDataURL={asset?.blur}
+                dimensions={asset ? { w: asset.w, h: asset.h } : undefined}
+              />
+            </div>
+          )
+        })}
       </div>
     </section>
   )

@@ -291,3 +291,101 @@ pnpm lint        clean
 pnpm build       clean on the third run (first: Supabase timeout at export, a network class this file already records)
 gate:route-js    29 storefront routes within budget
 ```
+
+## STEP 35, 2026-10-07: images, measured before and after on the served HTML
+
+Everything below is read off `curl` of a clean `pnpm build && pnpm start` on
+3335 (markup: preload links, `fetchPriority`, `loading`, blur style,
+width/height) or off `node scripts/_image-fold-probe.mjs --raw-images` (layout shift
+and the LCP entry from the browser's own PerformanceObserver, consent granted,
+4 s after `load`). `--raw-images` exists because the local optimizer route does
+not: `images.loader` is `'custom'` (STEP 22) and `next-server.js:198` skips
+`/_next/image` for any loader but the default, so every optimized image on a
+local `pnpm start` is a 404 and nothing above the fold ever loads. Production
+answers 200 (Vercel serves the route itself). Image timings therefore belong to
+a Vercel URL; what is pinned here is the markup and the layout.
+
+### What production had (counted, not assumed)
+
+| Fact | Measured |
+| --- | --- |
+| `media_assets` rows (the only blur source until now) | 0 |
+| active products with an image | 43 of 46 |
+| of those, first image under `public/images/products/` | 43 |
+| cards with a blur placeholder, any page | 0 |
+| category/products/search grid: `priority` images | 0, every card `loading="lazy"` |
+| product gallery: `fetchpriority` on the main photo | none (`priority` alone; Next 16 passes the attribute through and never adds it) |
+| home: first deal card | already `priority` + `fetchpriority="high"` (30.09) |
+| hero raster | none; every `image_url` is null by content decision |
+
+### What changed
+
+- **Blur manifest.** `pnpm images:blur` encodes one 10px WebP per raster under
+  `public/images/{products,categories,hero}` into `src/lib/images/blur-manifest.json`
+  (89 entries, 20.6 KB, 142 bytes per data URL on average, 199 max, ceiling
+  400 asserted). `pnpm lint` runs `--check` (file set against keys, no
+  decoding). `src/lib/images/blur.ts` is the only reader and is `server-only`;
+  a server component looks up one string per image and hands it down as a
+  prop. The product gallery keeps `media_assets` as its first source and falls
+  back to the manifest; both are read in `product-detail.ts`.
+- **Positional loading hints from the server caller.** One `priority` image per
+  page: first deal card on `/`, first grid card on `/category`, `/products`,
+  `/search`, `/s/[id]`, shared wishlist, first gallery photo on `/product`, each
+  with `fetchPriority="high"`. `ABOVE_FOLD_CARD_COUNT` (4) grid cards are
+  `loading="eager"`; the rest stay lazy.
+- **Real-ratio reservations.** The manifest's width/height go on the deal and
+  category card `<img>` instead of 400x245 / 186x186, so the box the browser
+  draws before the bytes is the box it draws after.
+
+### Served HTML, after
+
+| Page | preload `as=image` | `fetchPriority="high"` | `loading="eager"` | `loading="lazy"` | blur style | product imgs |
+| --- | --- | --- | --- | --- | --- | --- |
+| `/` | 2 | 1 | 0 | 60 | 32 | 36 |
+| `/category/beauty-health` | 5 | 1 | 3 | 11 | 13 | 13 |
+| `/product/[slug]` | 2 | 1 | 0 | 9 | 8 | 8 |
+| `/products` | 5 | 1 | 3 | 22 | 24 | 24 |
+
+The 2 preloads on every page are the header logo and the page's `priority`
+image. The 3 extra on the grid pages are React 19's own: Fizz preloads every
+non-lazy `<img>` in the shell, so `eager` on the first row buys the row a
+preload at default priority while the first card's stays `high`. Blur count on
+`/` is 32 of 36 product images: the 32 deal cards; the four without are the
+hot-coupon thumbs (`fill` in a fixed 128px box, below the fold, out of scope).
+One deal card (`ke-live-deal-31`) has no file and keeps the 400x245 default.
+
+### Layout shift and LCP element, `--raw-images`
+
+| Page | width | CLS | shifts | LCP element | LCP t |
+| --- | --- | --- | --- | --- | --- |
+| `/` | 412 | 0 | none | first deal `img.p_con__image` | 192 ms |
+| `/category/beauty-health` | 412 | 0 | none | first card `img` | 76 ms |
+| `/product/[slug]` | 412 | 0 | none | gallery `img.object-contain` | 68 ms |
+| `/` | 1440 | 0.0002 | header `a.group` on hydration | first deal card's blur SVG (same box, so the photo never out-sizes it) | 140 ms |
+| `/category/beauty-health` | 1440 | 0.0001 | one 0.0001 | first card `img` | 116 ms |
+| `/product/[slug]` | 1440 | 0 | none | gallery `img.object-contain` | 128 ms |
+
+No shift is attributed to an image at any width. The two non-zero totals are
+the header's hydration and are a hundredth of the 0.1 budget.
+
+### The bug the first build shipped, and the test that now catches it
+
+The first build had `eager` on no card at all while the component test was
+green: `ABOVE_FOLD_CARD_COUNT` was exported from `CategoryProductCard.tsx`
+(`'use client'`), and a server component importing a value from a client
+module receives a client-reference proxy, so `index < proxy` is `false` for
+every card with no error anywhere. The constant now lives in
+`src/components/category/above-fold.ts` (no directive) and
+`above-fold.test.ts` reads both files' source to keep it there. The served-HTML
+count above is the measurement that found it; the route-JS gate is unchanged
+(29 routes within budget) because the manifest stays on the server.
+
+### Gates
+
+```
+pnpm test        672 files, 8057 passed, 12 skipped
+pnpm type-check  clean
+pnpm lint        clean, incl. blur-manifest --check (89 entries match disk)
+pnpm build       clean, twice (second after the above-fold fix)
+gate:route-js    29 storefront routes within budget
+```

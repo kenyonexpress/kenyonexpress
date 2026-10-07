@@ -6,6 +6,7 @@ import CategoryProductCard, {
   type CategoryProduct,
 } from '@/components/category/CategoryProductCard'
 import Pagination from '@/components/category/Pagination'
+import { ABOVE_FOLD_CARD_COUNT } from '@/components/category/above-fold'
 import {
   type ProductTypeFilter,
   SHOP_PAGE_SIZE,
@@ -14,6 +15,7 @@ import {
   parseProductType,
 } from '@/lib/category-page'
 import { type SortValue, parseSort } from '@/lib/category-tokens'
+import { blurEntryFor, firstImageOf } from '@/lib/images/blur'
 import { publicPageMetadata } from '@/lib/seo/page-metadata'
 import { Suspense } from 'react'
 import '@/styles/category-page.css'
@@ -154,11 +156,21 @@ async function ResultGrid({
   return (
     <>
       <ul className="category-products">
-        {items.map((product) => (
-          <li key={product.id} className="category-products__item">
-            <CategoryProductCard product={product as CategoryProduct} />
-          </li>
-        ))}
+        {items.map((product, index) => {
+          // Same contract as the category page: see ABOVE_FOLD_CARD_COUNT.
+          const asset = blurEntryFor(firstImageOf(product.images))
+          return (
+            <li key={product.id} className="category-products__item">
+              <CategoryProductCard
+                product={product as CategoryProduct}
+                priority={index === 0}
+                eager={index < ABOVE_FOLD_CARD_COUNT}
+                blurDataURL={asset?.blur}
+                dimensions={asset ? { w: asset.w, h: asset.h } : undefined}
+              />
+            </li>
+          )
+        })}
       </ul>
       <Pagination
         pathname="/products"

@@ -4,11 +4,13 @@ import CategoryGridSkeleton from '@/components/category/CategoryGridSkeleton'
 import CategoryProductCard, {
   type CategoryProduct,
 } from '@/components/category/CategoryProductCard'
+import { ABOVE_FOLD_CARD_COUNT } from '@/components/category/above-fold'
 import SaveSearch from '@/components/search/SaveSearch'
 import SearchEmptyState from '@/components/search/SearchEmptyState'
 import SearchFacetNav from '@/components/search/SearchFacetNav'
 import SiteSearch from '@/components/search/SiteSearch'
 import { getAllCategories, parseProductType } from '@/lib/category-page'
+import { blurEntryFor, firstImageOf } from '@/lib/images/blur'
 import { hasActiveFacets, toFacetSearchParams } from '@/lib/search/facet-links'
 import { parseFacetedParams } from '@/lib/search/faceted'
 import { type FacetHit, facetedSearchCached } from '@/lib/search/faceted-server'
@@ -138,11 +140,21 @@ async function ResultGrid({
 
   return (
     <ul className="category-products">
-      {results.map((hit) => (
-        <li key={hit.id} className="category-products__item">
-          <CategoryProductCard product={toCard(hit)} />
-        </li>
-      ))}
+      {results.map((hit, index) => {
+        // Same contract as the category page: see ABOVE_FOLD_CARD_COUNT.
+        const asset = blurEntryFor(firstImageOf(hit.images))
+        return (
+          <li key={hit.id} className="category-products__item">
+            <CategoryProductCard
+              product={toCard(hit)}
+              priority={index === 0}
+              eager={index < ABOVE_FOLD_CARD_COUNT}
+              blurDataURL={asset?.blur}
+              dimensions={asset ? { w: asset.w, h: asset.h } : undefined}
+            />
+          </li>
+        )
+      })}
     </ul>
   )
 }

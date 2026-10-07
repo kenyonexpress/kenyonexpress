@@ -217,6 +217,10 @@ export default function ProductGallery({
             alt={activeAsset?.alt ?? name}
             fill
             priority={active === 0}
+            // `priority` gives eager + the head preload; Next 16 passes the
+            // fetch priority through and does not add it, and without it the
+            // request queues behind the script pile (same as the deal card).
+            fetchPriority={active === 0 ? 'high' : undefined}
             sizes="(max-width: 768px) 100vw, 40vw"
             className="object-contain"
             draggable={false}

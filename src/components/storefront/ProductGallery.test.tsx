@@ -175,3 +175,25 @@ describe('ProductGallery', () => {
     expect(document.querySelector('.pdp-gallery__frame--empty')).not.toBeNull()
   })
 })
+
+/**
+ * THE MAIN PHOTO IS THE PRODUCT PAGE'S LCP IMAGE and carries both halves of
+ * the hint: `priority` (eager + head preload, stripped by the mock above) and
+ * `fetchpriority="high"`, which Next 16 only passes through. Thumbnails and
+ * any photo after the first stay at the default priority.
+ */
+describe('ProductGallery fetch priority', () => {
+  it('marks the first main photo high priority and nothing else', () => {
+    const { container } = render(<ProductGallery images={['/a.webp', '/b.webp']} name="מוצר" />)
+    const main = container.querySelector('.pdp-gallery__zoom img')
+    expect(main?.getAttribute('fetchpriority')).toBe('high')
+    for (const thumb of container.querySelectorAll('.pdp-gallery__thumb img')) {
+      expect(thumb.getAttribute('fetchpriority')).toBeNull()
+    }
+    // Move to the second photo: it is not the first paint and gets no hint.
+    fireEvent.click(screen.getByRole('button', { name: 'תמונה 2' }))
+    const second = container.querySelector('.pdp-gallery__zoom img')
+    expect(second?.getAttribute('src')).toBe('/b.webp')
+    expect(second?.getAttribute('fetchpriority')).toBeNull()
+  })
+})

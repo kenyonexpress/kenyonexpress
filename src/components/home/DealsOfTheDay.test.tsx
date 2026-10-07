@@ -44,3 +44,27 @@ describe('DealsOfTheDay image loading hints', () => {
     }
   })
 })
+
+/**
+ * EVERY CARD WITH A FILE IN THE MANIFEST PAINTS A BLUR AND RESERVES ITS REAL
+ * RATIO. The lookup is the server component's job (the card is a client
+ * island and the manifest must not enter a client bundle), so this renders
+ * the grid, not the card: it is the wiring that was missing, not the prop.
+ * 31 of the 32 live deal thumbs are in `public/images/products`; the 32nd
+ * (`ke-live-deal-31`) was never captured and has no file, so it is the one
+ * card that may render without a placeholder.
+ */
+describe('DealsOfTheDay blur placeholders', () => {
+  it('passes a blur placeholder and the real dimensions from the manifest', async () => {
+    const html = renderToStaticMarkup(await DealsOfTheDay())
+    const imgs = html.match(/<img[^>]*class="p_con__image"[^>]*>/g) ?? []
+    const withBlur = imgs.filter((img) =>
+      /background-image:url\(&quot;data:image\/svg\+xml/.test(img),
+    )
+    expect(withBlur.length).toBeGreaterThanOrEqual(imgs.length - 1)
+    // The reservation is the file's own size, not the 400x245 default: a
+    // 600x600 thumb declared as 400x245 is a box that changes shape on load.
+    const defaults = imgs.filter((img) => / width="400"/.test(img) && / height="245"/.test(img))
+    expect(defaults.length).toBeLessThanOrEqual(1)
+  })
+})
