@@ -1,9 +1,9 @@
-RESUME FROM: M13-c115
+RESUME FROM: M14-c115
 
 # KenyonExpress — Project State
 
-Last item: **M12-c115 DONE** (2026-10-07): robots.txt verified production-safe. Production serves 200 `text/plain` with 16 disallow rules; 0 of 94 sitemap URLs are blocked; every credential-URL path (`/redeem/`, `/coupon/`, `/gift/`, `/order/`, `/wishlist/s/`) and `/debug/` is disallowed. The long-uncommitted `src/app/robots*.ts` edits (M12-c113 work, already live from `origin/audit/final-audit`) are committed in this item. Branch `feat/products-sort-infinite-scroll`.
-Previous: M11-c115 DONE (2026-10-07), M10-c115 BLOCKED (2026-10-07), M09-c115 DONE (2026-10-07), M08-c115 DONE (2026-10-07), M07-c115 DONE (2026-10-07), M06-c115 DONE (2026-10-07), M05-c115 DONE (2026-10-07), M04-c115 DONE (2026-10-07), M03-c115 BLOCKED (2026-10-07), M02-c115 BLOCKED (2026-10-07), M01-c115 BLOCKED (2026-10-07), M11-c113 DONE (2026-10-06).
+Last item: **M13-c115 BLOCKED** (2026-10-07): `/api/health` returns 200 with a real database probe, but `/api/ready` returns 503 because Meilisearch is configured in production and does not answer (3 of 3 probes). Fixing it needs either a running Meilisearch or removing `MEILISEARCH_*` from the Vercel env, both operator actions. No code change. Branch `feat/products-sort-infinite-scroll`.
+Previous: M12-c115 DONE (2026-10-07), M11-c115 DONE (2026-10-07), M10-c115 BLOCKED (2026-10-07), M09-c115 DONE (2026-10-07), M08-c115 DONE (2026-10-07), M07-c115 DONE (2026-10-07), M06-c115 DONE (2026-10-07), M05-c115 DONE (2026-10-07), M04-c115 DONE (2026-10-07), M03-c115 BLOCKED (2026-10-07), M02-c115 BLOCKED (2026-10-07), M01-c115 BLOCKED (2026-10-07), M11-c113 DONE (2026-10-06).
 History before this item lives in `docs/STATE-ARCHIVE.md` (21,138 lines moved there in this commit).
 
 ## Queue status (cycle c113)
@@ -28,6 +28,16 @@ The runner's `final-done.txt` lists M01–M10 of c113 as finished. This branch's
 | M10-c115 | Verify migrations/pending/ applied or file blocker | **BLOCKED**: 22 files confirmed not applied, 6 live but unrecorded (see below) |
 | M11-c115 | Verify sitemap.xml fresh and reachable | **DONE**: 5/5 section files 200, 94/94 URLs 200 on www (see below) |
 | M12-c115 | Verify robots.txt production-safe | **DONE**: 0/94 sitemap URLs blocked, credential paths disallowed, robots edits committed (see below) |
+| M13-c115 | Verify /api/health and /api/ready return 200 with real deps | **BLOCKED**: health 200, ready 503 on `meilisearch: down` (see below) |
+
+## M13-c115: /api/health and /api/ready, probed 2026-10-07 against production
+
+- `GET https://www.kenyonexpress.co.il/api/health` returned **200** `application/json`, body `{"ok":true,"database":"ok","latency_ms":188}`. That is a real admin-client HEAD count on `categories`, with `cache-control: no-store`. 3 of 3 probes returned 200.
+- `GET https://www.kenyonexpress.co.il/api/ready` returned **503**, body `{"ok":false,"checks":{"database":"ok","redis":"ok","meilisearch":"down","r2":"not_configured","cardcom":"ok"}}`. 3 of 3 probes returned the same result.
+- Cause: `checkSearch` in `src/lib/health/checks.ts` only reports `down` when both `MEILISEARCH_HOST` and `MEILISEARCH_API_KEY` are set, and `GET <host>/health` fails or takes longer than 4 s. So production has Meilisearch configured, but nothing answers at that host. `r2: not_configured` does not cause the 503 because it is not counted as `down`.
+- Decision: no code change. Changing the readiness check to ignore a dependency that is configured but down would hide a real outage, so the 503 is correct. There are two fixes, and both belong to the operator: run or restore the Meilisearch instance, or remove `MEILISEARCH_HOST`/`MEILISEARCH_API_KEY` from Vercel so search uses the Postgres fallback and the check becomes `not_configured`. The agent is not allowed to change Vercel env vars.
+- Unit tests: `src/app/api/health` and `src/lib/health` have 3 files and 23 tests, and all pass. Production runs `origin/main`, not this branch (blocker 4), but the route code is the same contract.
+- Gates in this run: `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6473 passed, 12 skipped), `pnpm build` 0 on the first attempt. This is not a UI change, so compare.mjs was not needed (and it would refuse anyway, see blocker 0). `logs/` is untracked and not part of this commit.
 
 ## M12-c115: robots.txt, measured 2026-10-07 against production
 
@@ -185,6 +195,7 @@ Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=home 
 0. **The parity gate has no reference (M01-c115).** `compare.mjs` exits 5 at every width because `kenyonexpress.co.il` serves our build and `refs/ke_live_singlefile.html` does not exist. No UI item can show it is under 11% until a working reference is restored. Re-confirmed for `/product` in M02-c115 and `/category` in M03-c115 (see `docs/PARITY-REFERENCE.md`).
 1. **Apex vs www host mismatch (known since SECTIONS 21, still open).** Vercel serves `www` and redirects the apex with a 308. The site declares the apex as canonical: every sitemap `<loc>`, the robots `Sitemap:` line, `og:url` and canonicals all use `https://kenyonexpress.co.il` (from `NEXT_PUBLIC_APP_URL`, with the `layout.tsx` default). So all 94 sitemap URLs cost one 308 hop before they reach a 200. Fixing it means either setting `NEXT_PUBLIC_APP_URL=https://www.kenyonexpress.co.il` in Vercel or making the apex the primary domain in Vercel. Both are Vercel env or domain changes, which the agent is not allowed to make.
 2. Scheduled jobs (cron) do not run until migration 162 is applied. See below.
+6. **`/api/ready` is 503 in production (M13-c115).** `meilisearch: down`: `MEILISEARCH_HOST` and `MEILISEARCH_API_KEY` are set, but the host does not answer `/health`. `/api/health` is 200.
 5. **Pending migrations are not applied (M10-c115).** 22 numbered files are confirmed absent from production, and 6 (`189`, `190`, `191`, `194`, `197` and `201`) are live but not recorded as applied. Only Ofir applies migrations, and the bookkeeping for the 6 needs a `schema_migrations` read, which needs the Supabase MCP or a DB URL.
 3. The live catalogue has template rows and duplicates: 25 findings pinned in `supabase/catalogue-known-issues.json`. These are decisions for the operator.
 4. `main` diverged: local `main` is 193 commits ahead of `origin/main` and 110 behind (L9), and Vercel tracks `main`. Production is not built from this branch.
@@ -195,5 +206,6 @@ Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=home 
 - Choose one canonical host and set it in Vercel: either `NEXT_PUBLIC_APP_URL` = www, or make the apex primary (blocker 1). Then resubmit the sitemap in Search Console.
 - Apply `migrations/pending/` following `APPLY-ORDER.md`. As of M10-c115, 22 files are confirmed not live, including 162 cron, 228 `job_runs` and most of 202–227 (the list is in the M10-c115 section). Do not apply `200`.
 - Confirm that `189`, `190`, `191`, `194`, `197` and `201` are in `supabase_migrations.schema_migrations`. If they are, move them to `migrations/applied/` with README rows. Their objects are already live (M10-c115). Also re-authorise the Supabase MCP so agents can read `schema_migrations`.
+- Fix Meilisearch for `/api/ready` (M13-c115). Either bring the configured instance back up, or remove `MEILISEARCH_HOST` and `MEILISEARCH_API_KEY` from Vercel production so search falls back to Postgres. Then re-probe `/api/ready` and expect 200.
 - Reconcile local `main` with `origin/main` before the next deploy.
 - Review the catalogue findings in `supabase/catalogue-known-issues.json`.
