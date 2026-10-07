@@ -2,6 +2,13 @@
 
 Everything below was STATE.md up to commit 02a45128f (2026-10-06), moved here by M11-c113 to keep STATE.md under 300 lines.
 
+## M15-c116: console errors on / and /product, probed 2026-10-07 in the foreground
+
+- Method: the same as M15-c115. Playwright Chromium (`@playwright/test` from the repo, probe script kept outside the repo). For each page and viewport (380x800, 1440x900) it loads with `waitUntil: load`, scrolls twice and waits 7 s, and records console errors and warnings, `pageerror`, `requestfailed` and every response of 400 or above. The sample product is `/product/מוצר-לדוגמא`.
+- **Production** (`https://www.kenyonexpress.co.il`, still `audit/final-audit@1e84df0`, blocker 4): all 4 runs return 200 with **0 console errors, 0 page errors, 0 failed requests and 0 responses of 400 or above**. Each run has one warning: CSS chunk `3fe0w0vs6-xwd.css` was preloaded but not used within a few seconds. That is a Next chunk-preload heuristic, not an error.
+- **Local HEAD `244ca835a`** (`pnpm start -p 3516` on a clean build made in this run, with the uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` edits): all 4 runs return 200 with 0 `pageerror`. Each run has 5 console errors, all from the environment, the same as M15-c115: the 404s on `/_vercel/insights/script.js` and `/_vercel/speed-insights/script.js` with their strict-MIME refusals (off Vercel), and the wishlist prefetch `ERR_SSL_PROTOCOL_ERROR` on `https://localhost` (HSTS and `upgrade-insecure-requests` on http localhost). On the product page an aborted self-request (`ERR_ABORTED`, no console message) also appears; it is a cancelled RSC fetch. There is no `/api/cart` 500 this time, and the build had 0 `supabase.timeout`.
+- No code change. Gates: `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6474 passed, 12 skipped), `pnpm build` 0 on attempt 1. Not a UI change, so compare.mjs does not apply (blocker 0).
+
 ## M08-c116: Lighthouse mobile on / and /product, run 2026-10-07 in the foreground
 
 Setup: the same as M08-c115. Lighthouse 13.4.1 from the repo (`pnpm exec lighthouse <url> --form-factor=mobile --chrome-flags="--headless=new --no-sandbox" --output=json`) with default `simulate` throttling. The target was `pnpm start -p 3521` on a clean production build made in this run, from HEAD `c20e54637` plus the uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` edits. The sample product is `/product/מוצר-לדוגמא` (200 locally). There were 3 runs per page, and the server was warmed with one request per page first. Product run 1 crashed the first time with a Chrome `Protocol error (Page.enable): Session closed`, which is a harness error and produced no report, so it was re-run. The table shows the re-run.
