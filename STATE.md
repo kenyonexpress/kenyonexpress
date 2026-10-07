@@ -1,9 +1,9 @@
-RESUME FROM: M06-c115
+RESUME FROM: M07-c115
 
 # KenyonExpress — Project State
 
-Last item: **M05-c115 DONE** (2026-10-07): `pnpm test` exits 0, so there was no test drift to fix. Branch `feat/products-sort-infinite-scroll`.
-Previous: M04-c115 DONE (2026-10-07), M03-c115 BLOCKED (2026-10-07), M02-c115 BLOCKED (2026-10-07), M01-c115 BLOCKED (2026-10-07), M11-c113 DONE (2026-10-06).
+Last item: **M06-c115 DONE** (2026-10-07): `pnpm build` exits 0 on the fourth attempt. The first three failed on Supabase timeouts during prerender, which is the network and not code drift, so there was nothing to fix. Branch `feat/products-sort-infinite-scroll`.
+Previous: M05-c115 DONE (2026-10-07), M04-c115 DONE (2026-10-07), M03-c115 BLOCKED (2026-10-07), M02-c115 BLOCKED (2026-10-07), M01-c115 BLOCKED (2026-10-07), M11-c113 DONE (2026-10-06).
 History before this item lives in `docs/STATE-ARCHIVE.md` (21,138 lines moved there in this commit).
 
 ## Queue status (cycle c113)
@@ -21,6 +21,16 @@ The runner's `final-done.txt` lists M01–M10 of c113 as finished. This branch's
 | M03-c115 | Re-measure compare.mjs on /category | **BLOCKED**: gate refuses, no reference (see below) |
 | M04-c115 | pnpm type-check, fix drift | **DONE**: exit 0, no drift, no code change (see below) |
 | M05-c115 | pnpm test, fix drift | **DONE**: exit 0, no drift, no code change (see below) |
+| M06-c115 | pnpm build, fix drift | **DONE**: exit 0 on attempt 4, no drift, no code change (see below) |
+
+## M06-c115: pnpm build, run 2026-10-07
+
+- `pnpm build` exited **1** on attempts 1–3. All three failures were upstream Supabase slowness during static generation, not code: attempt 1 `catalogue.category_slugs_failed` (`SupabaseTimeoutError` >10 s, plus one `fetch failed`) at `/category/[slug]`. Attempt 2 had 42 `supabase.timeout` events, then "Filling a cache during prerender timed out" in `loadProductBySlug` for `/product/צימר-מאסטר-copy-copy`. Attempt 3 had 14 timeouts and the same `/category/[slug]` failure.
+- A direct curl to the Supabase REST endpoint between attempts answered in 0.07–0.3 s. Attempt 4 exited **0** with zero `supabase.timeout` events: compiled in 4.1 s, 311/311 static pages in 14.1 s.
+- Decision: there was no drift to fix and no code changed. The build fails whenever Supabase is slow at build time, because prerender reads the live DB with a 10 s timeout. This was already seen in M03-c115. It is recorded here and not patched, because loosening the timeout or the fail-closed catalogue reads would hide real outages.
+- Other gates in the same run: `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6473 passed, 12 skipped).
+- The uncommitted `src/app/robots*.ts` edits from M12-c113 work and the untracked `logs/` were in the tree during the run. They are not part of this commit.
+- Not a UI change, so compare.mjs was not needed (it would refuse anyway, see blocker 0).
 
 ## M05-c115: pnpm test, run 2026-10-07
 
