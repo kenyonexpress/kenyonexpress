@@ -1,9 +1,9 @@
-RESUME FROM: M12-c115
+RESUME FROM: M13-c115
 
 # KenyonExpress — Project State
 
-Last item: **M11-c115 DONE** (2026-10-07): sitemap.xml re-verified against production. The index and all 5 section files return 200 `application/xml`, and all 94 `<loc>` URLs reach 200 on `www` after one 308 from the apex. No code change. Branch `feat/products-sort-infinite-scroll`.
-Previous: M10-c115 BLOCKED (2026-10-07), M09-c115 DONE (2026-10-07), M08-c115 DONE (2026-10-07), M07-c115 DONE (2026-10-07), M06-c115 DONE (2026-10-07), M05-c115 DONE (2026-10-07), M04-c115 DONE (2026-10-07), M03-c115 BLOCKED (2026-10-07), M02-c115 BLOCKED (2026-10-07), M01-c115 BLOCKED (2026-10-07), M11-c113 DONE (2026-10-06).
+Last item: **M12-c115 DONE** (2026-10-07): robots.txt verified production-safe. Production serves 200 `text/plain` with 16 disallow rules; 0 of 94 sitemap URLs are blocked; every credential-URL path (`/redeem/`, `/coupon/`, `/gift/`, `/order/`, `/wishlist/s/`) and `/debug/` is disallowed. The long-uncommitted `src/app/robots*.ts` edits (M12-c113 work, already live from `origin/audit/final-audit`) are committed in this item. Branch `feat/products-sort-infinite-scroll`.
+Previous: M11-c115 DONE (2026-10-07), M10-c115 BLOCKED (2026-10-07), M09-c115 DONE (2026-10-07), M08-c115 DONE (2026-10-07), M07-c115 DONE (2026-10-07), M06-c115 DONE (2026-10-07), M05-c115 DONE (2026-10-07), M04-c115 DONE (2026-10-07), M03-c115 BLOCKED (2026-10-07), M02-c115 BLOCKED (2026-10-07), M01-c115 BLOCKED (2026-10-07), M11-c113 DONE (2026-10-06).
 History before this item lives in `docs/STATE-ARCHIVE.md` (21,138 lines moved there in this commit).
 
 ## Queue status (cycle c113)
@@ -14,7 +14,7 @@ The runner's `final-done.txt` lists M01–M10 of c113 as finished. This branch's
 |---|---|---|
 | M01–M10-c113 | compare / type-check / test / build / TODO / Lighthouse / deps / migrations | runner-reported done, no commit on this branch |
 | M11-c113 | Verify sitemap.xml fresh and reachable | **DONE**, see below |
-| M12-c113 | Verify robots.txt production-safe | next |
+| M12-c113 | Verify robots.txt production-safe | superseded by M12-c115 |
 | M13–M18-c113 | health, Sentry, console, JSON-LD, RTL, STATE trim | pending |
 | M01-c115 | Re-measure compare.mjs 380/768/1440 on / | **BLOCKED**: gate refuses, no reference (see below) |
 | M02-c115 | Re-measure compare.mjs on /product | **BLOCKED**: gate refuses, no reference (see below) |
@@ -27,6 +27,16 @@ The runner's `final-done.txt` lists M01–M10 of c113 as finished. This branch's
 | M09-c115 | Remove unused deps and dead exports | **DONE**: 9 deps removed, 14 dead components deleted (see below) |
 | M10-c115 | Verify migrations/pending/ applied or file blocker | **BLOCKED**: 22 files confirmed not applied, 6 live but unrecorded (see below) |
 | M11-c115 | Verify sitemap.xml fresh and reachable | **DONE**: 5/5 section files 200, 94/94 URLs 200 on www (see below) |
+| M12-c115 | Verify robots.txt production-safe | **DONE**: 0/94 sitemap URLs blocked, credential paths disallowed, robots edits committed (see below) |
+
+## M12-c115: robots.txt, measured 2026-10-07 against production
+
+- `https://www.kenyonexpress.co.il/robots.txt` returns 200 `text/plain; charset=utf-8`. The apex returns 308 to `www` (open blocker 1). Content: `User-Agent: *`, `Allow: /`, 16 `Disallow:` lines (`/redeem/ /coupon/ /gift/ /order/ /wishlist/s/ /account/ /supplier/ /scan /admin/ /checkout /cart /auth/ /api/ /reset-password /forgot-password /debug/`), `Host:` and `Sitemap:` on the apex.
+- Not over-blocking: all 94 `<loc>` URLs from the 5 sitemap section files were matched against the 16 prefixes and **0 are blocked**. Public supplier storefronts live at `/s/[id]` and `/suppliers`, not `/supplier/`, so the `/supplier/` rule hides only the supplier dashboard and login. There is no site-wide `noindex`: the home page has no robots meta and no `X-Robots-Tag` header.
+- Not under-blocking: every page whose URL is the credential is disallowed and also sends its own noindex (probed live: `/gift/x` 200 noindex, `/order/x/tracking` 200 noindex,nofollow, `/redeem/x` 200 noindex,nofollow, `/coupon/x` 307). `/debug/sentry` answers 200 in production with noindex and is disallowed. `/dev/emails` is not in the list but returns 404 in production (`NODE_ENV` gate), so it needs no rule.
+- `/wishlist/s/` has no route on this branch; the rule is harmless and kept so the file matches production.
+- Code: the `src/app/robots.ts` and `robots.test.ts` edits that sat uncommitted since M12-c113 (the same rules as `4d3702025` and `8fce77c76` on `origin/audit/final-audit`, which is what production runs) are committed here, so this branch no longer drifts from the live file. 2 tests added, 8/8 robots tests pass.
+- Gates in this run: `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6473 passed, 12 skipped), `pnpm build` 0 on the first attempt. Not a UI change, so compare.mjs was not needed (it would refuse anyway, see blocker 0). `logs/` is untracked and not part of this commit.
 
 ## M11-c115: sitemap.xml, measured 2026-10-07 05:37 UTC against production
 
