@@ -448,6 +448,14 @@ Setup: the same as M08-c115. Lighthouse 13.4.1 from the repo (`pnpm exec lightho
 - `robots.txt` still has `Sitemap: https://kenyonexpress.co.il/sitemap.xml`. The apex-vs-www hop is open blocker 1 and needs a Vercel change, which the agent may not make.
 - No code change. Gates in this run: `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6473 passed, 12 skipped), `pnpm build` 0 on attempt 3. Attempts 1 and 2 failed on prerender with 71 and 84 `supabase.timeout` events, the same network flake as M06-c115. The uncommitted `src/app/robots*.ts` edits (M12-c113) and `logs/` are not part of this commit.
 
+## M10-c119: is migrations/pending/ applied? Read-only re-probe, 2026-10-08
+
+- **Method.** Same as M10-c118. No `migrations/` commit since `2e9b8eb78`. The Supabase MCP still needs re-authorisation and there is no DB URL, so `schema_migrations` could not be read. A temporary script outside the repo made one read-only `GET /rest/v1/` (OpenAPI) with the service key from `.env.local`. It checked every `CREATE TABLE`, `CREATE FUNCTION` and `ADD COLUMN` in each numbered file against the spec. Trigger-only functions such as `set_updated_at` are never REST-visible, so they were ignored. One anon `GET /rest/v1/reviews?select=id,rating&status=eq.approved&limit=1` checked `231`. The first attempt hit a connect timeout (blocker 7) and the retry succeeded. No key printed, nothing written.
+- **Live but still in `pending/` (6), unchanged:** `189`, `190`, `191`, `194`, `197`, `201`.
+- **Not applied, unchanged:** `184`, `202`–`205`, `207`, `210`–`213`, `215`–`217`, `219`, `221`–`223`, `225`, `226`, `228`; `218` (`enforce_profile_privilege_columns` absent); `227` partial (2 of 5 objects live, both predate it). `231` not applied: anon `reviews` returns 401. `188` alters existing functions only (unverified).
+- **No REST-visible effect (11), unchanged:** `162`, `192`, `196`, `206`, `208`, `209`, `214`, `220`, `224`, `229`, `230`. `162` is known not applied (blocker 2).
+- BLOCKED: only Ofir applies migrations and records the 6. No code change. Gates: type-check 0, lint 0, test 0 (6474 passed, 12 skipped), build 0 on attempt 1.
+
 ## M10-c118: is migrations/pending/ applied? Read-only re-probe, 2026-10-08
 
 - **Method.** Same as M10-c117. No `migrations/` commit since `2e9b8eb78`. The Supabase MCP still needs re-authorisation and there is no DB URL, so `schema_migrations` could not be read. One read-only `GET /rest/v1/` (OpenAPI) with the service key from `.env.local`, then each numbered file's tables, added columns and functions were checked against it. One anon `GET /rest/v1/reviews?select=id,rating&status=eq.approved&limit=1` checked `231`. No key printed, nothing written.
