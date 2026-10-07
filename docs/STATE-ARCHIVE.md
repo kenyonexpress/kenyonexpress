@@ -2,6 +2,20 @@
 
 Everything below was STATE.md up to commit 02a45128f (2026-10-06), moved here by M11-c113 to keep STATE.md under 300 lines.
 
+## M02-c117: compare.mjs on /product at 380, 768, 1440, run 2026-10-07 in the foreground
+
+Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=product --width=<w>` (server: `PORT=3311 pnpm start` on the existing build, HEAD `0e3d131e7` with the two uncommitted UI edits in the tree)
+
+| Width | Exit | Diff | Output |
+|---|---|---|---|
+| 380 | 5 | none | REFUSING: `https://kenyonexpress.co.il/product/מוצר-לדוגמא/` is this project's own build (24 `/_next/` refs, no wp-content) |
+| 768 | 5 | none | REFUSING: same reason (37 `/_next/` refs, Next runtime) |
+| 1440 | 5 | none | REFUSING: same reason (37 `/_next/` refs, Next runtime) |
+
+- No diff numbers, unchanged from M02-c115 and M02-c116. `refs/ke_live_singlefile.html` is still absent. The gate wrote six REFUSED rows to `docs/UI-PARITY-REPORT.md` (the sweep was run twice because the first pass did not capture the exit codes). They are committed with this item. The last real product number is still 10.96% (older archive).
+- Gates on the working tree: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1.
+- Decision: BLOCKED on open blocker 0. No code change.
+
 ## M01-c117: compare.mjs on / at 380, 768, 1440, run 2026-10-07 in the foreground
 
 Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=home --width=<w>` (server: `PORT=3311 pnpm start` on the existing build, HEAD `e9cab16c4` with the two uncommitted UI edits in the tree)
