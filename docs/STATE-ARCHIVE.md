@@ -2,6 +2,15 @@
 
 Everything below was STATE.md up to commit 02a45128f (2026-10-06), moved here by M11-c113 to keep STATE.md under 300 lines.
 
+## M14-c119: Sentry release vs HEAD, re-probed 2026-10-07 20:25 UTC (local clock) against production
+
+- Method: same as M14-c118. Fetched `https://www.kenyonexpress.co.il/?cb=<epoch>` (200, `x-vercel-cache: HIT`, `x-vercel-id sin1::fra1::…`), downloaded all 21 `/_next/static/*.js` chunks and searched for the Sentry init and 40-char SHAs.
+- Result: the inlined init is `NEXT_PUBLIC_SENTRY_RELEASE??"1e84df0e5457c9c80a46f7cb2155ac204ebc15ef"`, the only SHA in the bundle (2 occurrences). After `git fetch`, `origin/audit/final-audit` is still `1e84df0e5`, `origin/main` moved from `7b7e01494` to `3969d3e25`, and HEAD is `1a72557ca` (`feat/products-sort-infinite-scroll`, in sync with its upstream).
+- Vercel MCP `list_deployments target=production limit=5` (read-only): the two newest READY production deployments belong to a second project, `kenyonexpress-prod`, built from `main` (`3969d3e25` sharp bump #51, and `1bf6bbe2c` #50). The next three belong to project `kenyonexpress`, built from `audit/final-audit` (`1e84df0e5`, `6ae2b05de`, `86137f52a`). The `www` bundle matches `kenyonexpress@1e84df0e5`, so the `www` domain is still on the old project.
+- The Sentry MCP still needs authorisation, so the server-side release list was not read.
+- Verdict: **mismatch.** Neither production project is built from HEAD. The fix is for Ofir to choose the production branch and project and attach `www` to it. Those are operator actions (blocker 4, manual item). No code change.
+- Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (25 Supabase timeout or fetch-failed lines, all recovered). Not a UI change; compare.mjs does not apply. `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` are still uncommitted and not part of this commit.
+
 ## M03-c119: compare.mjs on /category at 380, 768, 1440, run 2026-10-08 in the foreground
 
 Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=category --width=<w>` (server: `PORT=3311 pnpm start` on a fresh build, HEAD `f07c9ea9b` with the two uncommitted UI edits in the tree, `/` 200)
