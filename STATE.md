@@ -1,9 +1,9 @@
-RESUME FROM: M11-c115
+RESUME FROM: M12-c115
 
 # KenyonExpress — Project State
 
-Last item: **M10-c115 BLOCKED** (2026-10-07): 22 of the 40 numbered files in `migrations/pending/` are confirmed not applied in production (21 by probe, plus 162), and 6 more are live but still sit in `pending/` with no record that they were applied. The agent may not apply them. Branch `feat/products-sort-infinite-scroll`.
-Previous: M09-c115 DONE (2026-10-07), M08-c115 DONE (2026-10-07), M07-c115 DONE (2026-10-07), M06-c115 DONE (2026-10-07), M05-c115 DONE (2026-10-07), M04-c115 DONE (2026-10-07), M03-c115 BLOCKED (2026-10-07), M02-c115 BLOCKED (2026-10-07), M01-c115 BLOCKED (2026-10-07), M11-c113 DONE (2026-10-06).
+Last item: **M11-c115 DONE** (2026-10-07): sitemap.xml re-verified against production. The index and all 5 section files return 200 `application/xml`, and all 94 `<loc>` URLs reach 200 on `www` after one 308 from the apex. No code change. Branch `feat/products-sort-infinite-scroll`.
+Previous: M10-c115 BLOCKED (2026-10-07), M09-c115 DONE (2026-10-07), M08-c115 DONE (2026-10-07), M07-c115 DONE (2026-10-07), M06-c115 DONE (2026-10-07), M05-c115 DONE (2026-10-07), M04-c115 DONE (2026-10-07), M03-c115 BLOCKED (2026-10-07), M02-c115 BLOCKED (2026-10-07), M01-c115 BLOCKED (2026-10-07), M11-c113 DONE (2026-10-06).
 History before this item lives in `docs/STATE-ARCHIVE.md` (21,138 lines moved there in this commit).
 
 ## Queue status (cycle c113)
@@ -26,6 +26,16 @@ The runner's `final-done.txt` lists M01–M10 of c113 as finished. This branch's
 | M08-c115 | Lighthouse mobile on / and /product sample, log scores | **DONE**: perf 82 / 84 median, a11y 100, BP 96, SEO 100 (see below) |
 | M09-c115 | Remove unused deps and dead exports | **DONE**: 9 deps removed, 14 dead components deleted (see below) |
 | M10-c115 | Verify migrations/pending/ applied or file blocker | **BLOCKED**: 22 files confirmed not applied, 6 live but unrecorded (see below) |
+| M11-c115 | Verify sitemap.xml fresh and reachable | **DONE**: 5/5 section files 200, 94/94 URLs 200 on www (see below) |
+
+## M11-c115: sitemap.xml, measured 2026-10-07 05:37 UTC against production
+
+- `https://www.kenyonexpress.co.il/sitemap.xml` returns 200 `application/xml; charset=utf-8`, `cache-control: public, max-age=0`. It is a `<sitemapindex>` that lists 5 section files.
+- Every section file returns 200 `application/xml`: content 15 URLs, categories 12, products 44, regions 17, suppliers 6, for 94 URLs in total, no duplicates. Same counts as M11-c113.
+- Freshness: newest lastmod is content 2026-10-05, categories 2026-09-08, products 2026-09-08, suppliers 2026-08-31, regions none (on purpose). Unchanged from M11-c113. Each lastmod is the row's real `updated_at` and the routes are dynamic, so the sitemap is current; old dates mean rows have not changed.
+- Reachability: all 94 `<loc>` URLs return 308 on the apex and **200** on `www`. 4 URLs first came back `000` because of client-side 60 s curl timeouts; this machine's link was very slow during the run (vercel.com itself downloaded at about 4 KB/s), and all 4 returned 200 on retry with a 200 s limit (TTFB 9 to 19 s).
+- `robots.txt` still has `Sitemap: https://kenyonexpress.co.il/sitemap.xml`. The apex-vs-www hop is open blocker 1 and needs a Vercel change, which the agent may not make.
+- No code change. Gates in this run: `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6473 passed, 12 skipped), `pnpm build` 0 on attempt 3. Attempts 1 and 2 failed on prerender with 71 and 84 `supabase.timeout` events, the same network flake as M06-c115. The uncommitted `src/app/robots*.ts` edits (M12-c113) and `logs/` are not part of this commit.
 
 ## M10-c115: is migrations/pending/ applied? Read-only probe, 2026-10-07
 
