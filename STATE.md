@@ -1,10 +1,10 @@
-RESUME FROM: M15-c117
+RESUME FROM: M16-c117
 
 # KenyonExpress — Project State
 
-Last item: **M14-c117 BLOCKED** (2026-10-07): Sentry release re-probed against production at 14:31 UTC. The live client bundle still inlines release `1e84df0e5` (`origin/audit/final-audit`); HEAD is `cbe88c536` (`feat/products-sort-infinite-scroll`, in sync with upstream). Same as M14-c115 and M14-c116. No code change: the fix is deploying the chosen branch, an operator action (blocker 4). Next ID: M15-c117.
-M14-c117 gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `supabase.timeout`, 0 `db.query_failed`). Not a UI change, so compare.mjs does not apply.
-Previous: M13-c117 BLOCKED, M12-c117 DONE, M11-c117 DONE, M10-c117 BLOCKED, M09-c117 DONE, M08-c117 DONE, M07-c117 DONE, M06-c117 DONE, M05-c117 DONE, M04-c117 DONE, M03-c117 BLOCKED, M02-c117 BLOCKED, M01-c117 BLOCKED, M18-c116 DONE, M17-c116 BLOCKED, M16-c116 DONE, M15-c116 DONE, M14-c116 BLOCKED, M13-c116 BLOCKED, M12-c116 DONE, M11-c116 DONE, M10-c116 BLOCKED, M09-c116 DONE, M08-c116 DONE, M07-c116 DONE, M06-c116 DONE, M05-c116 DONE, M04-c116 DONE, M03-c116 BLOCKED, M02-c116 BLOCKED, M01-c116 BLOCKED, M18-c115 DONE, M16-c115 DONE, M15-c115 DONE, M14-c115 BLOCKED, M13-c115 BLOCKED, M12-c115 DONE, M11-c115 DONE, M10-c115 BLOCKED, M09-c115 DONE, M08-c115 DONE, M07-c115 DONE, M06-c115 DONE, M05-c115 DONE, M04-c115 DONE, M03-c115 BLOCKED, M02-c115 BLOCKED, M01-c115 BLOCKED (all 2026-10-07), M11-c113 DONE (2026-10-06).
+Last item: **M15-c117 DONE** (2026-10-07): console errors re-probed on `/` and `/product/מוצר-לדוגמא` at 380 and 1440. Production (still `audit/final-audit@1e84df0`) has 0 console errors, 0 page errors, 0 failed requests and 0 responses of 400 or above on all 4 runs. A local network drop broke the first product-1440 run; all 3 re-runs were clean. Local HEAD `2e6d2e45b` has only the 5 known environment errors per run (Vercel insights 404s off Vercel, wishlist HSTS on localhost) and 0 page errors. No code change. Next ID: M16-c117.
+M15-c117 gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `supabase.timeout`, 0 `db.query_failed`). Not a UI change, so compare.mjs does not apply.
+Previous: M14-c117 BLOCKED, M13-c117 BLOCKED, M12-c117 DONE, M11-c117 DONE, M10-c117 BLOCKED, M09-c117 DONE, M08-c117 DONE, M07-c117 DONE, M06-c117 DONE, M05-c117 DONE, M04-c117 DONE, M03-c117 BLOCKED, M02-c117 BLOCKED, M01-c117 BLOCKED, M18-c116 DONE, M17-c116 BLOCKED, M16-c116 DONE, M15-c116 DONE, M14-c116 BLOCKED, M13-c116 BLOCKED, M12-c116 DONE, M11-c116 DONE, M10-c116 BLOCKED, M09-c116 DONE, M08-c116 DONE, M07-c116 DONE, M06-c116 DONE, M05-c116 DONE, M04-c116 DONE, M03-c116 BLOCKED, M02-c116 BLOCKED, M01-c116 BLOCKED, M18-c115 DONE, M16-c115 DONE, M15-c115 DONE, M14-c115 BLOCKED, M13-c115 BLOCKED, M12-c115 DONE, M11-c115 DONE, M10-c115 BLOCKED, M09-c115 DONE, M08-c115 DONE, M07-c115 DONE, M06-c115 DONE, M05-c115 DONE, M04-c115 DONE, M03-c115 BLOCKED, M02-c115 BLOCKED, M01-c115 BLOCKED (all 2026-10-07), M11-c113 DONE (2026-10-06).
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
 
 ## Queue status (cycle c113)
@@ -67,6 +67,7 @@ The runner's `final-done.txt` lists M01–M10 of c113 as finished. This branch's
 | M12-c117 | Verify robots.txt production-safe | **DONE**: live file matches source, 0/94 sitemap URLs blocked, credential paths disallowed + noindex, unchanged from M12-c116 (see archive) |
 | M13-c117 | Verify /api/health and /api/ready return 200 with real deps | **BLOCKED**: health 200, ready 503 on `meilisearch: down`, unchanged from M13-c116 (see archive) |
 | M14-c117 | Verify Sentry release matches HEAD commit | **BLOCKED**: prod release still `1e84df0` (audit/final-audit), HEAD `cbe88c5`, unchanged from M14-c116 (see archive) |
+| M15-c117 | Verify no console errors on / and /product sample | **DONE**: prod 0 errors on both pages at 380 and 1440, unchanged from M15-c116; local errors are env-only (see archive) |
 
 ## Open blockers
 
