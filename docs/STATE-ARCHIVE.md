@@ -125,6 +125,14 @@ Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=home 
 - **Local HEAD `2e6d2e45b`** (`pnpm start -p 3517` on a clean build made in this run, with the uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` edits): all 4 runs return 200 with 0 `pageerror`. Each run has the same 5 environment-only console errors as M15-c115 and M15-c116: the 404s on `/_vercel/insights/script.js` and `/_vercel/speed-insights/script.js` with their strict-MIME refusals (off Vercel), and the wishlist prefetch `ERR_SSL_PROTOCOL_ERROR` on `https://localhost` (HSTS and `upgrade-insecure-requests` on http localhost). Product at 1440 also has the cancelled RSC self-request (`ERR_ABORTED`, no console message). There is no `/api/cart` 500.
 - No code change. Gates: `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6474 passed, 12 skipped), `pnpm build` 0 on attempt 1 (0 `supabase.timeout`, 0 `db.query_failed`). Not a UI change, so compare.mjs does not apply (blocker 0).
 
+## M09-c119: unused deps and dead exports, run 2026-10-08
+
+- **Scope.** `git diff c80d8fec0 HEAD -- src scripts package.json pnpm-lock.yaml tests e2e` is empty: nothing in source has changed since M09-c118, only state and backlog commits.
+- **Deps.** All 62 `dependencies` and `devDependencies` names were searched with `git grep -F` over the tracked tree, excluding Markdown, `docs/`, the lockfile and `package.json`. The only names with no importer are the M09-c115 deliberate keeps: `@mdx-js/loader`, `@mdx-js/react`, `@types/mdx`, `@types/qrcode`, `@types/react-dom` and `@types/web-push`. **0 removed.**
+- **Components.** `node scripts/final-audit.mjs`: 0 stale entries in the dead-component ledger (of 9) and 0 new dead components.
+- **Dead runtime exports.** 1809 exported const and function names under `src/` were checked. A name counts as dead when `git grep -w` finds it only once across `src`, tests, e2e and scripts. 39 are dead, the same 39 kept in M09-c117 and M09-c118 (Cardcom, unwired server actions, `__reset*Warning` seams, money helpers, documented entry points). **0 deleted.**
+- Gates: `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6474 passed, 12 skipped), `pnpm build` 0 on attempt 1 (43 `supabase.timeout` absorbed, 3 `db.query_failed` logged, blocker 7). Not a UI change, so compare.mjs was not run (it would refuse anyway, blocker 0). The uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` edits and `logs/` are not part of this commit.
+
 ## M09-c118: unused deps and dead exports, run 2026-10-08
 
 - **Scope.** `git diff c0fd95a27 HEAD -- src scripts package.json` is empty: nothing in source has changed since M09-c117, only state commits.
@@ -21945,3 +21953,8 @@ Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=categ
 - `node scripts/final-audit.mjs`: `ok 0 work markers (of 2)`.
 - Change: a re-scan note in `docs/BACKLOG.md`. No code change.
 - Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1.
+
+## M08-c119 status lines moved from STATE.md (M09-c119)
+
+Last item: **M08-c119 DONE** (2026-10-08): Lighthouse 13.4.1 mobile, 3 runs each on `/` and `/product/מוצר-לדוגמא` against `pnpm start -p 3522` on a clean build of HEAD `fa77d774a` plus the uncommitted UI edits. **Median Performance: home 79, product 84** (M08-c118: 78 / 84). Accessibility 100, Best Practices 96, SEO 100 on all 6 runs. Home run 2 (65) is a TBT outlier (530 ms against 60–140 ms). BP 96 is the same 5 local-only console errors. Largest saving is still `unused-javascript` (~600 ms). No code change.
+M08-c119 gates (working tree, uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` UI edits left unstaged): build 0 on attempt 5 (attempts 1 and 3 failed on Supabase timeouts at `/coupons/[id]` prerender, attempts 2 and 4 on `next/font` failing to fetch Heebo from Google Fonts; blocker 7), type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped). Not a UI change, so compare.mjs does not apply (blocked anyway, blocker 0).
