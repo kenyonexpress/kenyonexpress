@@ -2,6 +2,15 @@
 
 Everything below was STATE.md up to commit 02a45128f (2026-10-06), moved here by M11-c113 to keep STATE.md under 300 lines.
 
+## M17-c117: RTL on / and /product sample, re-probed 2026-10-07 in the foreground
+
+- Method: the same as M17-c116. Playwright Chromium from the repo, probe kept outside the repo. Pages: `/` and the same 6 sitemap products (`barbecue`, `bar-drink`, `תזונה-הוליסטית-טבעית-וצמחי-מרפא`, `ארוחה-בשרית-זוגית`, `מזקקת-ויסקי`, `עיסוי-מפנק-לגבר-45-דקות-רק-ב108`) at 380, 768 and 1440, 21 runs per target. Checks: `<html lang dir>`, body direction, horizontal overflow, visible Hebrew text with computed `direction: ltr`, visible Hebrew text with `text-align: left`, visible `[dir="ltr"]` roots, and the `::placeholder` style of every visible `input[dir="ltr"]`.
+- **Production** (`https://www.kenyonexpress.co.il`, still `audit/final-audit@1e84df0`): 21/21 runs 200, `lang=he`, `dir=rtl`, body `rtl`, overflow 0, 0 Hebrew in LTR, 0 left-aligned Hebrew. One run (`תזונה-...` at 768) timed out on the first pass and was re-run alone: 200 and clean. Visible `[dir=ltr]` roots: the footer newsletter input and the WhatsApp number link `972524635550`, both intentional.
+- **The leak is unchanged:** at 1440 on all 7 pages the footer newsletter placeholder `הזן כתובת אימייל` computes `direction: ltr`, `text-align: start`, so it sits flush left in an RTL footer. The form is hidden at 380 and 768.
+- **Local build** (`pnpm start -p 3517` on this run's build, HEAD `4b37b6f47` plus the uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` edits): 21/21 runs 200, the same clean results. The placeholder `הזן כתובת Email` computes `text-align: right` with the uncommitted fix. `p.pdp-summary__meta[dir=ltr]` is still empty on the sampled products, so nothing leaks (latent, as noted in M17-c116).
+- **Why BLOCKED:** the fix is a UI change. `LOCAL_BASE=http://localhost:3517 node scripts/compare.mjs --page=<home|product> --width=<380|768|1440>`, run in the foreground: 6/6 exit 5, REFUSED, the live side is our own build (blocker 0). The 6 REFUSED rows appended to `docs/UI-PARITY-REPORT.md` are committed with this item. `SiteFooter.tsx` and `HeroSlider.tsx` stay uncommitted and untouched.
+- Gates (working tree): type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `supabase.timeout`, 0 `db.query_failed`).
+
 ## M16-c117: JSON-LD Product and BreadcrumbList re-verified 2026-10-07 in the foreground
 
 - Code: `git log 154b6c0d8..HEAD` has no commits on `src/app/(store)/product/`, `src/lib/seo/` or the sitemap. The page still always renders both `application/ld+json` scripts (`page.tsx:248`, `:256`).
