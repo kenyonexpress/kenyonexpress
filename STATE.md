@@ -1,11 +1,11 @@
-RESUME FROM: M08-c116
+RESUME FROM: M09-c116
 
 # KenyonExpress — Project State
 
-Last item: **M07-c116 DONE** (2026-10-07): TODO/FIXME re-scan on branch `feat/products-sort-infinite-scroll`. It found the same two markers as M07-c115 (`src/lib/payments/cardcom.ts:254` and `:319`, both older than 7 days and already filed as B1/#41 and B2/#42 in `docs/BACKLOG.md`). There are no new markers and nothing to resolve. `final-audit.mjs` reports 0 untracked markers (of 2). The only change is a re-scan note in `docs/BACKLOG.md`.
-Decision: the item was already done by M07-c115, so it was verified and recorded, not redone. Line 1 moves to `RESUME FROM: M08-c116`. The uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` edits and `logs/` are still left alone.
-M07-c116 gates (working tree incl. those two edits): `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6474 passed, 12 skipped), `pnpm build` 0 on attempt 1. The build had 11 `db.query_failed` lines, all real `TypeError: fetch failed` to Supabase (the known network flake), not prerender aborts. Not a UI change, so compare.mjs does not apply (blocked anyway, blocker 0).
-Previous: M06-c116 DONE, M05-c116 DONE, M04-c116 DONE, M03-c116 BLOCKED, M02-c116 BLOCKED, M01-c116 BLOCKED, M18-c115 DONE, M16-c115 DONE, M15-c115 DONE, M14-c115 BLOCKED, M13-c115 BLOCKED, M12-c115 DONE, M11-c115 DONE, M10-c115 BLOCKED, M09-c115 DONE, M08-c115 DONE, M07-c115 DONE, M06-c115 DONE, M05-c115 DONE, M04-c115 DONE, M03-c115 BLOCKED, M02-c115 BLOCKED, M01-c115 BLOCKED (all 2026-10-07), M11-c113 DONE (2026-10-06).
+Last item: **M08-c116 DONE** (2026-10-07): Lighthouse mobile on `/` and `/product/מוצר-לדוגמא`, 3 runs each, on a fresh local production build of HEAD `c20e54637` (plus the two uncommitted UI edits). **Median Performance: home 82, product 84**, the same as M08-c115. Accessibility 100, Best Practices 96 (local-only console errors) and SEO 100 on all 6 runs. The full table is in the archive.
+Decision: c116 re-measures, so the scores were re-taken and not copied from M08-c115. No code change. Line 1 moves to `RESUME FROM: M09-c116`. The uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` edits and `logs/` are still left alone.
+M08-c116 gates (working tree incl. those two edits): `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6474 passed, 12 skipped), `pnpm build` 0 on attempt 1. Not a UI change, so compare.mjs does not apply (blocked anyway, blocker 0).
+Previous: M07-c116 DONE, M06-c116 DONE, M05-c116 DONE, M04-c116 DONE, M03-c116 BLOCKED, M02-c116 BLOCKED, M01-c116 BLOCKED, M18-c115 DONE, M16-c115 DONE, M15-c115 DONE, M14-c115 BLOCKED, M13-c115 BLOCKED, M12-c115 DONE, M11-c115 DONE, M10-c115 BLOCKED, M09-c115 DONE, M08-c115 DONE, M07-c115 DONE, M06-c115 DONE, M05-c115 DONE, M04-c115 DONE, M03-c115 BLOCKED, M02-c115 BLOCKED, M01-c115 BLOCKED (all 2026-10-07), M11-c113 DONE (2026-10-06).
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
 M18-c115 gates: `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6473 passed, 12 skipped), `pnpm build` 0 on attempt 1. These ran on the working tree, which still had the two uncommitted UI edits. Not a UI change, so compare.mjs does not apply (it is blocked anyway, blocker 0).
 
@@ -44,6 +44,7 @@ The runner's `final-done.txt` lists M01–M10 of c113 as finished. This branch's
 | M05-c116 | pnpm test, fix drift | **DONE**: exit 0, 6473 passed, no drift, no code change (see archive) |
 | M06-c116 | pnpm build, fix drift | **DONE**: exit 0 on attempt 4; fixed 254 false `db.query_failed` logs from the prerender abort (see archive) |
 | M07-c116 | TODO/FIXME older than 7 days: resolve or file in docs/BACKLOG.md | **DONE**: re-scan found only the 2 filed Cardcom markers (B1, B2), nothing new |
+| M08-c116 | Lighthouse mobile on / and /product sample, log scores | **DONE**: median perf 82 / 84, a11y 100, BP 96, SEO 100 (see archive) |
 
 ## Open blockers
 
