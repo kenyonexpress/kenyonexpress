@@ -88,6 +88,17 @@ const SERVICE_ROLE_CALLERS: Record<string, string[]> = {
   //
   // CLASSIFIED 2026-09-10, with the migration.
   fn_next_invoice_number: ['src/server/payments/invoices.ts'],
+  // `255_slow_statements_rpc.sql` revokes PUBLIC/anon/authenticated and grants
+  // service_role in the statement set that creates the function. The single
+  // caller is `reportSlowStatements`, reached only from the nightly
+  // `/api/cron/slow-statements` route, which builds its client with
+  // `createAdminClient()` - service_role. The revoke is load-bearing in the
+  // other direction too: the function is SECURITY DEFINER over
+  // pg_stat_statements, and a session caller would get every statement text
+  // the database has executed, for every role.
+  //
+  // CLASSIFIED 2026-10-07, with the migration (STEP 28).
+  fn_slow_statements: ['src/lib/observability/slow-statements.ts'],
 }
 
 // Both migration directories. 143-145 were applied through MCP on 2026-09-03

@@ -456,6 +456,15 @@ describe('the pending migration inventory', () => {
       // grant. README carries the row; measured absent on production the
       // same day through the management API, not yet dry-run.
       '254_profiles_phone_verified_at.sql',
+      // 255 is PENDING (2026-10-07, STEP 28 logging): `fn_slow_statements`,
+      // a service-role-only SECURITY DEFINER read of pg_stat_statements at a
+      // mean-time floor (300ms), sampled nightly by /api/cron/slow-statements
+      // into the structured log. Written because log_min_duration_statement
+      // is superuser-context and Supabase's postgres cannot SET it (measured).
+      // README carries the row; REHEARSED on production the same day inside
+      // BEGIN/ROLLBACK through the management API: 14 rows, grants right,
+      // nothing persisted.
+      '255_slow_statements_rpc.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

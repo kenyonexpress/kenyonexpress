@@ -11,10 +11,13 @@
  *     like the Sentry "Error rate spike" rule; 5 in 10 minutes means shoppers
  *     are hitting it right now, not that one cron hiccuped.
  *   - "slow queries": `db.query_slow`, which query-log-fetch.ts emits when a
- *     PostgREST/GoTrue round trip crosses SUPABASE_SLOW_QUERY_MS (1500ms
- *     default). One cold query after a deploy is expected and must not page;
- *     12 in 15 minutes is Supabase (or our SQL) degrading, which is the thing
- *     worth a person before it becomes the 5xx monitor's problem.
+ *     PostgREST/GoTrue round trip crosses SUPABASE_SLOW_QUERY_MS (300ms
+ *     default since STEP 28, was 1500). One cold query after a deploy is
+ *     expected and must not page; 12 in 15 minutes is Supabase (or our SQL)
+ *     degrading, which is the thing worth a person before it becomes the 5xx
+ *     monitor's problem. The nightly `db.slow_statement` rows (pg_stat_statements
+ *     through /api/cron/slow-statements) are deliberately NOT a monitor: they
+ *     are a cumulative report, not a rate, and the errors dashboard charts them.
  *
  * WHERE ALERTS GO. One notifier per monitor, so the message can say which rule
  * fired without depending on Axiom's webhook template variables. Channel:

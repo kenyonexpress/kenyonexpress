@@ -63,14 +63,21 @@ export function supabaseTarget(input: RequestInfo | URL): string | null {
 }
 
 /**
- * Read per call, like supabaseTimeoutMs and for the same reason. 1500ms is
- * several times a healthy query from a Vercel region to Supabase and well
- * under the 10s timeout, so the warn fires while there is still something to
- * fix rather than an incident to explain.
+ * Read per call, like supabaseTimeoutMs and for the same reason.
+ *
+ * 300ms (STEP 28, down from 1500). A healthy PostgREST round trip from fra1
+ * to the Supabase region is tens of milliseconds, so 300 is still several
+ * times normal and far under the 10s deadline; 1500 only ever caught queries
+ * that were already a visible stall on the page. The same number is the
+ * DB-side sampling threshold: `fn_slow_statements` (migration 255) reads
+ * pg_stat_statements with it, through lib/observability/slow-statements.ts,
+ * so ONE env var moves both the per-request warn and the nightly report.
  */
+export const DEFAULT_SLOW_QUERY_MS = 300
+
 export function slowQueryMs(env: NodeJS.ProcessEnv = process.env): number {
   const parsed = Number(env.SUPABASE_SLOW_QUERY_MS)
-  return Number.isInteger(parsed) && parsed > 0 ? parsed : 1_500
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : DEFAULT_SLOW_QUERY_MS
 }
 
 /**

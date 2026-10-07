@@ -78,6 +78,21 @@ export const RATE_LIMIT_POLICIES = {
     windowSeconds: 900,
     reason: 'the same guesses spread across accounts from one address',
   },
+  'mfa-unenrol': {
+    limit: 10,
+    windowSeconds: 3600,
+    reason:
+      'factor removal, per user; each attempt re-verifies a code, so it is a guessing surface too',
+  },
+  // -- Signup step 2 (STEP 18): the phone OTP inside first-time registration,
+  // same ceilings as the login OTP above and for the same two reasons.
+  'signup-otp': { limit: 5, windowSeconds: 3600, reason: 'signup OTP SMS costs money, per IP' },
+  'signup-otp-number': {
+    limit: 5,
+    windowSeconds: 3600,
+    reason: 'signup OTP SMS to one number: the same lockout vector as phone-otp-number',
+  },
+  'signup-verify': { limit: 20, windowSeconds: 3600, reason: 'signup OTP code guessing, per IP' },
   'passkey-login': {
     limit: 30,
     windowSeconds: 3600,

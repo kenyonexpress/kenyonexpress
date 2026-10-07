@@ -95,9 +95,14 @@ describe('the client components every route mounts', () => {
     expect(offenders, 'static imports that put a deferred package on every first load').toEqual([])
   })
 
-  it('SentryUserSync loads the Supabase client with a dynamic import', () => {
+  it('SentryUserSync never loads the Supabase browser client, and defers its one call', () => {
+    // Until 2026-10-01 this lazy-loaded the browser client to read the session
+    // cookie. The cookie is HttpOnly since STEP 18, so the id now comes from
+    // the `currentUserId` server action; the 62.8 KB gzipped bundle must not
+    // come back on any route, statically or dynamically.
     const source = mounted.get('src/components/observability/SentryUserSync.tsx') ?? ''
-    expect(source).toContain("import('@/lib/supabase/client')")
+    expect(source).not.toContain('@/lib/supabase/client')
+    expect(source).toContain('currentUserId')
     expect(source).toContain('requestIdleCallback')
   })
 })

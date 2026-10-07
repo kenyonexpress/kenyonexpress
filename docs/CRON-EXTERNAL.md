@@ -164,6 +164,7 @@ deliberate and harmless: both are sweeps with a wide window, not appointments.
 | 18 | 03:00 daily | `0 3 * * *` | `https://kenyonexpress.vercel.app/api/cron/daily-deals` |
 | 19 | every 6 h at :30 | `30 */6 * * *` | `https://kenyonexpress.vercel.app/api/cron/email-retry` |
 | 20 | 23:45 daily | `45 23 * * *` | `https://kenyonexpress.vercel.app/api/cron/cashback-settlement` |
+| 21 | 02:30 daily | `30 2 * * *` | `https://kenyonexpress.vercel.app/api/cron/slow-statements` |
 
 Those are the schedules `vercel.json` carried, kept exactly, so nothing about
 timing changes with the scheduler.
@@ -235,6 +236,16 @@ timing changes with the scheduler.
   thrown", and posts what is missing under the same idempotency keys. An
   older order that earned a bonus is `deferred` (logged with its rank) and
   not replayed, because `fn_cashback_order_bonus` ranks by today's count.
+- **`slow-statements`** is the database's own slow-query log, sampled
+  nightly (STEP 28): `fn_slow_statements` (migration 255) reads
+  pg_stat_statements at `SUPABASE_SLOW_QUERY_MS` (300ms, the same floor the
+  per-request `db.query_slow` warn uses) and each row becomes one
+  `db.slow_statement` line in the structured stream, so Postgres's
+  measurement and the application's land in the same Axiom dataset under
+  the same 30-day retention. `log_min_duration_statement` was measured and
+  ruled out: Supabase's `postgres` cannot SET it. Answers 200 `skipped`
+  until 255 is applied; 500 only on a real read failure. Shares the 02:30
+  slot with `subscriptions`; the runner calls them in sequence.
 
 
 ## Setting it up from this repository, in two settings

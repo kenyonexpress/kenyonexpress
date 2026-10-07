@@ -72,16 +72,12 @@ const INVENTORY: Record<string, number> = {
   'src/app/api/cron/wishlist-digest/route.ts': 1,
   'src/app/api/supplier/vouchers/redeem/route.ts': 2,
   'src/app/auth/callback/route.ts': 1,
-  // The bell panel: a failed read paints an empty panel and a zero badge,
-  // which beats an account header that crashes over a notifications hiccup.
-  'src/components/account/NotificationBell.tsx': 1,
   'src/components/home/FeaturedProducts.tsx': 1,
   'src/lib/admin/rbac.ts': 1,
   'src/lib/search/indexer.ts': 1,
   'src/proxy.ts': 1,
   'src/server/actions/admin/affiliates.ts': 1,
   'src/server/actions/admin/approvals.ts': 2,
-  'src/server/actions/admin/orders.ts': 1,
   'src/server/actions/admin/payments.ts': 2,
   'src/server/actions/admin/products.ts': 1,
   'src/server/actions/admin/users.ts': 1,
@@ -92,12 +88,19 @@ const INVENTORY: Record<string, number> = {
   'src/server/actions/orders.ts': 1,
   'src/server/actions/payments/refund.ts': 6,
   'src/server/domain/vouchers/issue.ts': 1,
+  // Fulfilment notifications (STEP 16/17): the order/customer reads feed an
+  // email and a WhatsApp enqueue; a failed read is logged and the outcome is
+  // reported as `skipped`, never as a delivered notification.
+  'src/server/orders/cancel-pending-order.ts': 1,
+  'src/server/orders/delivered-notification.ts': 2,
+  'src/server/orders/shipped-notification.ts': 2,
   'src/server/payments/finalize.ts': 6,
   // The buyer-profile read on issuance: a discarded failure leaves the email
   // null and the issuer THROWS on that with its own sentence, so the failure
   // is never rendered as absence, only renamed to the thing that matters.
   'src/server/payments/gift-card-issue.ts': 1,
   'src/server/payments/gift-vouchers.ts': 1,
+  'src/server/queries/fulfillment-board.ts': 1,
   'src/server/payments/invoices.ts': 10,
   'src/server/payments/voucher-email.ts': 3,
   'src/server/queries/subscriptions.ts': 1,

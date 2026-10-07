@@ -1,5 +1,32 @@
 # `migrations/pending/`
 
+## 2026-10-07: 255 PENDING (`fn_slow_statements`, STEP 28)
+
+`255_slow_statements_rpc.sql` creates one service-role-only function,
+`fn_slow_statements(p_threshold_ms integer default 300, p_limit integer
+default 20)`: the top-level statements in pg_stat_statements whose mean
+execution time is at or above the floor, most total time first, with the
+executing role, call count, mean / max / total milliseconds, rows per call
+and the normalized query text (constants already `$n`, cut to 300 chars).
+SECURITY DEFINER owned by `postgres` because the view is pg_read_all_stats
+only; EXECUTE revoked from PUBLIC, anon and authenticated and granted to
+service_role, whose single caller (`src/lib/observability/slow-statements.ts`,
+from `/api/cron/slow-statements` nightly at 02:30) is listed in
+`revoked-functions-have-no-callers.test.ts`. Why this and not
+`log_min_duration_statement = 300ms`: measured on production 2026-10-07,
+`postgres` is not a superuser and `has_parameter_privilege(...,'SET')` is
+false on a superuser-context parameter, so no migration can set it. Until
+applied the route gets PGRST202, logs `db.slow_statements_unavailable` at
+info and answers 200 `skipped`. Idempotent (CREATE OR REPLACE, REVOKE/GRANT);
+closing DO block raises if the function is absent or the grants are wrong.
+Rollback in the file header. **Rehearsed on production inside
+BEGIN/ROLLBACK through the management API the same day:** compiled, returned
+14 rows at 300ms (top: PostgREST's own `SELECT name FROM pg_timezone_names`
+schema-cache reload, 571ms mean over 566 calls, then dashboard introspection
+as `supabase_read_only_user`; no application query in the top six),
+service_role had EXECUTE, authenticated and anon did not, and
+`to_regprocedure` was NULL after the rollback.
+
 ## 2026-10-01: 254 PENDING (`profiles.phone_verified_at`, STEP 18)
 
 `254_profiles_phone_verified_at.sql` adds one nullable `timestamptz` column

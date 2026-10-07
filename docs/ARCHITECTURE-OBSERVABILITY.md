@@ -785,3 +785,93 @@ supabase/migrations/088_audit_events_money.sql
 1. Adopt `@sentry/nextjs` full SDK vs keep narrow `@sentry/node` money-only?
 2. Dual-write `audit_log` + `audit_events` or migrate admin UI to `audit_events` for money rows?
 3. Ntfy public topic vs access token (prefer token in production)?
+
+---
+
+## 12. The log leg as built (STEP 28, 2026-10-07)
+
+Sections 1 and 10 above are the design of 2026-08; this is what runs, so a
+reader does not go looking for `logger.ts` or pino. There is no pino: the
+edge proxy has no `process.stdout`, and `console` is the one sink both
+runtimes share and the one Vercel's drain reads.
+
+### 12.1 Structured JSON
+
+`src/lib/observability/log.ts` writes one JSON object per line:
+`ts, level, event, request_id, route, method, ...fields`. `event` is the one
+required field and is a dotted name a drain can count (`voucher.redeem_failed`,
+`db.query_slow`), never a sentence. Every field passes through `scrub.ts`
+`redact()` before it is written, the same list Sentry uses, so the logger
+cannot drift from what Sentry redacts. `log-coverage.test.ts` fails on any
+raw `console.*` in `src/` outside the sink and the client error boundary,
+and on any `src/app/api` route handler not wrapped in `withRequestLog`.
+
+### 12.2 Request-id correlation
+
+`src/proxy.ts` reads `x-request-id` off the inbound request when it is well
+formed (`request-id.ts`: 128 chars, `[A-Za-z0-9._:-]`) and mints a UUID
+otherwise, forwards it on the request and echoes it on the response. Route
+handlers bind it with `withRequestLog` and Server Functions with
+`withActionContext`, both through one `AsyncLocalStorage` installed by
+`request-store.ts` (handle on `globalThis`, so the server and edge bundles
+share it; `enterWith` is deliberately not exposed, see `request-context.ts`
+for the measurement). The id rides every Supabase call as a header
+(`request-id-fetch.ts`), where migration 169's audit trigger reads it into
+`audit_log.request_id`, so an audit row and the application lines for the
+same request share one id.
+
+### 12.3 Axiom, and 30-day retention
+
+`axiom.ts` ships every structured line (already redacted) to
+`AXIOM_DATASET` over one REST call, fire-and-forget, inert without
+`AXIOM_TOKEN` + `AXIOM_DATASET`. `scripts/axiom/setup.mjs` is the Axiom side
+as code: the dataset with `retentionDays: 30, useRetentionPeriod: true`
+(re-read after the PUT and warned about if the plan ignored it), the four
+dashboards under `scripts/axiom/dashboards/`, and the two monitors in
+`monitors.mjs` (5xx spike, sustained `db.query_slow`). Revenue facts and
+deploy marks have their own datasets so the log retention does not apply to
+them. Run `node scripts/axiom/setup.mjs` once per workspace; `--dry` prints
+the payloads. As of this step no `AXIOM_TOKEN` exists locally or in any
+Vercel project, so the leg is console-only in production until Ofir creates
+one; the code enforces the 30 days the moment it does.
+
+### 12.4 Slow queries at 300ms, measured twice
+
+Two measurements, one knob (`SUPABASE_SLOW_QUERY_MS`, default 300):
+
+| Where | What is timed | Event | When |
+|---|---|---|---|
+| `src/lib/supabase/query-log-fetch.ts` | the whole round trip the caller waited for (network, PostgREST, timeout layer), per request, with its request id | `db.query_slow` warn (5xx: `db.query_failed` error; fast: `db.query` debug) | every call, every client factory |
+| `fn_slow_statements` (migration 255, pending) via `/api/cron/slow-statements` | Postgres's own execution time per normalized statement and role, from pg_stat_statements | one `db.slow_statement` warn per row, `db.slow_statements_sampled` summary | nightly 02:30 |
+
+The second exists because the first cannot see a trigger body, a pg_cron
+job or PostgREST's schema-cache reload, and because `log_min_duration_statement`
+is not available: measured on production, Supabase's `postgres` is not a
+superuser and holds no SET grant on that superuser-context parameter. The
+first production rehearsal of 255 found 14 statements over 300ms and none of
+them were application queries (the top was PostgREST's
+`SELECT name FROM pg_timezone_names`, 571ms mean), which is the kind of thing
+the nightly line is for. The sample is cumulative, so it is nightly and not on
+the five-minute health tick, and it is charted on the errors dashboard rather
+than alerted on.
+
+### 12.5 Related paths, as they exist
+
+```
+src/lib/observability/log.ts                 the sink
+src/lib/observability/axiom.ts               the Axiom leg
+src/lib/observability/scrub.ts               redaction, shared with Sentry
+src/lib/observability/request-id.ts          header name, validation, minting
+src/lib/observability/request-context.ts     the universal read handle
+src/lib/observability/request-store.ts       the AsyncLocalStorage (server-only)
+src/lib/observability/with-request-log.ts    route handler boundary
+src/lib/observability/action-context.ts      Server Function boundary
+src/lib/observability/slow-statements.ts     nightly pg_stat_statements sample
+src/lib/supabase/query-log-fetch.ts          per-call timing, db.query_slow
+src/lib/supabase/request-id-fetch.ts         id forwarded to PostgREST
+src/app/api/cron/slow-statements/route.ts
+migrations/pending/255_slow_statements_rpc.sql
+scripts/axiom/setup.mjs                      dataset + 30-day retention + dashboards + monitors
+scripts/axiom/monitors.mjs
+src/proxy.ts                                 mints and echoes x-request-id
+```

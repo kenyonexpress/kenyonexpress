@@ -138,6 +138,7 @@ touches that path and the failure is in the runtime log:
 | `SENTRY_DSN` | Error reporting is inert. |
 | `SENTRY_AUTH_TOKEN` | Source-map upload is skipped; the build still succeeds. |
 | `AXIOM_TOKEN` / `AXIOM_DATASET` | The Axiom log leg is inert. |
+| `SUPABASE_SLOW_QUERY_MS` | Defaults to 300. One knob for two measurements: the per-request `db.query_slow` warn in `query-log-fetch.ts` and the mean-time floor the nightly `/api/cron/slow-statements` report samples pg_stat_statements with (STEP 28). |
 | `RESEND_API_KEY` | Email sending is inert and reports `skipped`, which the abandoned-cart job relies on so it does not burn its one-per-cart allowance. |
 | `TWILIO_*` | WhatsApp is inert. |
 | `MEILISEARCH_*` | The search backend and its drain are inert. |

@@ -45,6 +45,12 @@ const PUBLIC_ACTIONS = new Map<string, string>([
   ['auth.ts:sendPhoneOtp', 'sign-in entry point, rate limited per IP and per number'],
   ['auth.ts:verifyPhoneOtp', 'sign-in entry point, rate limited per IP'],
   ['auth.ts:verifyEmailOtp', 'sign-in entry point, rate limited per IP and per address'],
+  // Signup step 2 (STEP 18): the phone OTP inside first-time registration.
+  // Both are reached before a session exists; the user id comes from the
+  // challenge cookie the first send left, never from the caller, and both
+  // are rate limited per IP (and the send per number) in their own bodies.
+  ['signup-phone.ts:resendSignupPhoneOtp', 'registration step, rate limited per IP and per number'],
+  ['signup-phone.ts:verifySignupPhone', 'registration step, rate limited per IP'],
   ['auth.ts:signOut', "acts on the caller's own session, no arguments"],
   ['auth.ts:signOutAll', "acts on the caller's own session, no arguments"],
   ['auth.ts:sendPasswordReset', 'reset must work when locked out'],

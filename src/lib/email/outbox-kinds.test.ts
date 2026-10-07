@@ -212,6 +212,17 @@ describe('the outbox kinds three lists have to agree on', () => {
         // the empty string is not in the set, so a hypothetical miss is reported
         // rather than silently skipped.
         const kind = match[1] ?? ''
+        // `fn_enqueue_whatsapp` takes a `p_kind` too, against whatsapp_outbox's
+        // own constraint (173, widened by 252), which this file does not
+        // model. The nearest enqueue call before the literal decides which
+        // table the kind is for.
+        const before = source.slice(Math.max(0, (match.index ?? 0) - 400), match.index)
+        const lastEnqueue = Math.max(
+          before.lastIndexOf('fn_enqueue_whatsapp'),
+          before.lastIndexOf('fn_enqueue_notification'),
+        )
+        if (lastEnqueue >= 0 && before.slice(lastEnqueue).startsWith('fn_enqueue_whatsapp'))
+          continue
         if (!accepted.has(kind)) offenders.push(`${file}: p_kind '${kind}'`)
       }
       // The direct-insert form, narrowed to files that name the table so a

@@ -46,6 +46,10 @@
 | `mfa-enrol` | 10 | 1 h | TOTP factor creation, per user; one authenticator, not a pile of abandoned factors |
 | `mfa-verify` | 10 | 15 min | six digits are brute forceable; per-user bound is what actually protects the account |
 | `mfa-verify-ip` | 30 | 15 min | the same guesses spread across accounts from one address |
+| `mfa-unenrol` | 10 | 1 h | factor removal, per user; each attempt re-verifies a code, so it is a guessing surface too |
+| `signup-otp` | 5 | 1 h | signup OTP SMS costs money, per IP |
+| `signup-otp-number` | 5 | 1 h | signup OTP SMS to one number: the same lockout vector as phone-otp-number |
+| `signup-verify` | 20 | 1 h | signup OTP code guessing, per IP |
 | `passkey-login` | 30 | 1 h | challenge issuance, per IP; cheap but each one sets a cookie |
 | `passkey-login-finish` | 20 | 1 h | assertion verification plus admin calls; one per real login |
 | `push-subscribe` | 30 | 1 h | service-role upserts to push_subscriptions; a browser re-posts one per page load at most |

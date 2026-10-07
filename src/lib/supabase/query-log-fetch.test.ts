@@ -40,13 +40,15 @@ describe('supabaseTarget', () => {
 })
 
 describe('slowQueryMs', () => {
-  it('defaults to 1500 and accepts only a positive integer override', () => {
-    expect(slowQueryMs(NO_ENV)).toBe(1500)
+  it('defaults to 300 and accepts only a positive integer override', () => {
+    // 300 is the STEP 28 number; it is also what fn_slow_statements samples
+    // pg_stat_statements with, so a change here is a change on both sides.
+    expect(slowQueryMs(NO_ENV)).toBe(300)
     expect(slowQueryMs({ SUPABASE_SLOW_QUERY_MS: '400' } as unknown as NodeJS.ProcessEnv)).toBe(400)
     expect(slowQueryMs({ SUPABASE_SLOW_QUERY_MS: 'soon' } as unknown as NodeJS.ProcessEnv)).toBe(
-      1500,
+      300,
     )
-    expect(slowQueryMs({ SUPABASE_SLOW_QUERY_MS: '-1' } as unknown as NodeJS.ProcessEnv)).toBe(1500)
+    expect(slowQueryMs({ SUPABASE_SLOW_QUERY_MS: '-1' } as unknown as NodeJS.ProcessEnv)).toBe(300)
   })
 })
 
