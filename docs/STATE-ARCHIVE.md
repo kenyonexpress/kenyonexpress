@@ -2,6 +2,21 @@
 
 Everything below was STATE.md up to commit 02a45128f (2026-10-06), moved here by M11-c113 to keep STATE.md under 300 lines.
 
+## M03-c118: compare.mjs on /category at 380, 768, 1440, run 2026-10-07 in the foreground
+
+Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=category --width=<w>` (server: `PORT=3311 pnpm start` on the existing build, HEAD `8816a2853` with the two uncommitted UI edits in the tree, `/` 200)
+
+| Width | Exit | Diff | Output |
+|---|---|---|---|
+| 380 | 5 | none | REFUSING: `https://kenyonexpress.co.il/product-category/hot-deals/` is this project's own build (38 `/_next/` refs, Next runtime, no wp-content) |
+| 768 | 5 | none | REFUSING: same reason |
+| 1440 | 5 | none | REFUSING: same reason |
+
+- No diff numbers, unchanged from M03-c117. `refs/ke_live_singlefile.html` is still absent. The gate appended four REFUSED rows to `docs/UI-PARITY-REPORT.md` (the fourth is a second 380 run to capture the refusal reason), committed with this item.
+- Gates on the working tree: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `supabase.timeout`).
+- Moved from STATE.md (verbatim): `Last item: **M02-c118 BLOCKED** (2026-10-07): compare.mjs on `/product` exits 5 (REFUSED, no diff number) at 380, 768 and 1440. `https://kenyonexpress.co.il/product/מוצר-לדוגמא/` is our own build (360 `/_next/` refs, 0 wp-content) and `refs/ke_live_singlefile.html` is still absent. Unchanged from M02-c117; open blocker 0. No code change. Detail in `docs/STATE-ARCHIVE.md`.` and `M02-c118 gates (working tree, uncommitted UI edits unstaged): type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 5 (attempts 1–4 hit Supabase 10s prerender timeouts).`
+- Decision: BLOCKED on open blocker 0. No code change.
+
 ## M01-c118: compare.mjs on / at 380, 768, 1440, run 2026-10-07 in the foreground
 
 Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=home --width=<w>` (server: `PORT=3311 pnpm start` on the existing build, HEAD `593a81f3a` with the two uncommitted UI edits in the tree)
