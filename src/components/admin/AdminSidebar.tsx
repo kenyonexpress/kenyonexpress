@@ -26,6 +26,7 @@ import {
   ShoppingCart,
   Store,
   Tag,
+  Undo2,
   Users,
 } from 'lucide-react'
 import Link from 'next/link'
@@ -60,6 +61,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/admin/coupons/lookup', label: 'איתור שובר', icon: ScanLine, section: 'catalog' },
   { href: '/admin/approvals', label: 'תור אישורים', icon: BadgeCheck, section: 'catalog' },
   { href: '/admin/orders', label: 'הזמנות', icon: ShoppingCart, section: 'orders' },
+  { href: '/admin/orders/returns', label: 'בקשות החזרה', icon: Undo2, section: 'orders' },
   { href: '/admin/users', label: 'משתמשים', icon: Users, section: 'users' },
   {
     href: '/admin/suppliers',

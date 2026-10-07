@@ -8,12 +8,14 @@ import { buildOrderUpdateText, waChatLink } from '@/lib/whatsapp'
 import { adminOverridableTargets } from '@/server/domain/orders/order-transitions'
 import { describeRefundBlockers } from '@/server/domain/orders/refund'
 import { readOrderFeedbackForAdmin } from '@/server/queries/order-feedback'
+import { getOpenReturnForOrder } from '@/server/queries/returns'
 import { listOrderShipments } from '@/server/shipping/read'
 import { AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import OrderAdminActions from './OrderAdminActions'
 import OrderStatusClient from './OrderStatusClient'
+import ReturnRequestAdmin from './ReturnRequestAdmin'
 import ShipmentClient from './ShipmentClient'
 
 export const metadata = { title: 'פרטי הזמנה' }
@@ -134,6 +136,9 @@ export default async function OrderDetailPage({ params }: Props) {
   // the RBAC gate above: the table has no staff policy on purpose, so this
   // page is the only place staff ever see the text.
   const feedback = await readOrderFeedbackForAdmin(admin, order.id)
+
+  // The customer's open return request, if any (STEP 44).
+  const returnRequest = await getOpenReturnForOrder(order.id)
 
   // Carrier labels (STEP 43), service role behind the same gate. `available`
   // is false until 258 is applied; the order select is `*`, so the shopper's
@@ -287,6 +292,8 @@ export default async function OrderDetailPage({ params }: Props) {
           </p>
         </section>
       )}
+
+      {returnRequest && <ReturnRequestAdmin request={returnRequest} />}
 
       <OrderAdminActions
         orderId={order.id}

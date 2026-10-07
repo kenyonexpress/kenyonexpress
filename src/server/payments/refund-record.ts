@@ -85,6 +85,8 @@ export interface RefundRecord {
   reasonHe: string
   requestedBy?: string | null
   decidedBy?: string | null
+  /** Where the money goes. Defaults to the card; `wallet` is store credit (148). */
+  destination?: RefundDestination
   at: Date
 }
 
@@ -93,6 +95,7 @@ type RefundRow = {
   payment_id: string
   state: RefundState
   ground: RefundGround
+  destination: RefundDestination
   requested_agorot: number
   granted_agorot: number | null
   cancellation_fee_agorot: number
@@ -109,15 +112,44 @@ type RefundRowPatch = Partial<Pick<RefundRow, 'state' | 'granted_agorot' | 'comp
 
 type PgError = { message: string; code?: string }
 
+/** `public.refund_destination` (148). */
+export type RefundDestination = 'original_method' | 'wallet'
+
+type RefundClaimPatch = {
+  state: 'executing'
+  ground: RefundGround
+  payment_id: string | null
+  granted_agorot: number
+  cancellation_fee_agorot: number
+  cancel_only: boolean
+  decided_by: string | null
+  decided_at: string
+}
+
 /** Minimal structural client shape; `src/types/database.ts` predates 131. */
 export type RefundRecordAdmin = {
   from: (table: 'refunds') => {
     insert: (row: RefundRow) => Promise<{ error: PgError | null }>
-    update: (patch: RefundRowPatch) => {
+    update: (patch: RefundRowPatch | RefundClaimPatch) => {
       eq: (
         column: 'order_id',
         value: string,
-      ) => { eq: (column: 'state', value: RefundState) => Promise<{ error: PgError | null }> }
+      ) => {
+        eq: (column: 'state', value: RefundState) => Promise<{ error: PgError | null }>
+        in: (
+          column: 'state',
+          values: readonly RefundState[],
+        ) => {
+          eq: (
+            column: 'destination',
+            value: RefundDestination,
+          ) => {
+            select: (
+              columns: 'id',
+            ) => Promise<{ data: { id: string }[] | null; error: PgError | null }>
+          }
+        }
+      }
     }
   }
 }
@@ -156,6 +188,7 @@ export async function recordRefund(
       payment_id: record.paymentId,
       state: record.state,
       ground: record.ground,
+      destination: record.destination ?? 'original_method',
       requested_agorot: record.requestedAgorot,
       granted_agorot: record.grantedAgorot,
       cancellation_fee_agorot: record.cancellationFeeAgorot,
@@ -187,6 +220,78 @@ export async function recordRefund(
   } catch (err) {
     log.error('refund.record_threw', { order_id: record.orderId, err })
     return { error: String(err), inFlight: false }
+  }
+}
+
+export interface ClaimRefundInput {
+  orderId: string
+  destination: RefundDestination
+  /** The ORIGINAL charge; null for an order with no card payment. */
+  paymentId: string | null
+  /** The admin's adjudication; overrides the customer's default ground. */
+  ground: RefundGround
+  grantedAgorot: number
+  cancellationFeeAgorot: number
+  cancelOnly: boolean
+  decidedBy: string | null
+  at: Date
+}
+
+export type ClaimRefundResult =
+  | { claimed: true; refundId: string }
+  | { claimed: false; error: string | null }
+
+/**
+ * Take over the customer's own notice (STEP 44).
+ *
+ * `submitReturnRequest` writes the row in `requested`. When an admin then
+ * approves it, `recordRefund` above loses to `refunds_one_open_per_order`
+ * (the request IS the open row), and the right move is not a second row but
+ * this one: a compare-and-set from `requested` / `approved` to `executing`
+ * on the same row, so the lock, the 14-day clock and the RMA all stay on
+ * the notice the customer was given.
+ *
+ * It is a CAS, not a read-then-write: the UPDATE's WHERE names the states it
+ * may leave, so two admins approving at once produce one `executing` row and
+ * one empty result. `destination` is in the WHERE too: a wallet request must
+ * not be claimed by the card path, which would credit a card the customer
+ * asked not to be credited.
+ *
+ * The ground is the admin's. 131's `refunds_no_fee_when_our_fault` would
+ * refuse a fee on a row whose ground is `defect`, so when the admin decides
+ * the fee applies, the ground must say so on the same UPDATE.
+ */
+export async function claimOpenRefund(
+  admin: RefundRecordAdmin,
+  input: ClaimRefundInput,
+): Promise<ClaimRefundResult> {
+  try {
+    const { data, error } = await admin
+      .from('refunds')
+      .update({
+        state: 'executing',
+        ground: input.ground,
+        payment_id: input.paymentId,
+        granted_agorot: input.grantedAgorot,
+        cancellation_fee_agorot: input.cancellationFeeAgorot,
+        cancel_only: input.cancelOnly,
+        decided_by: input.decidedBy,
+        decided_at: input.at.toISOString(),
+      })
+      .eq('order_id', input.orderId)
+      .in('state', ['requested', 'approved'])
+      .eq('destination', input.destination)
+      .select('id')
+    if (error) {
+      log.error('refund.claim_failed', { order_id: input.orderId, reason: error.message })
+      return { claimed: false, error: error.message }
+    }
+    const row = data?.[0]
+    if (!row) return { claimed: false, error: null }
+    return { claimed: true, refundId: row.id }
+  } catch (err) {
+    log.error('refund.claim_threw', { order_id: input.orderId, err })
+    return { claimed: false, error: String(err) }
   }
 }
 

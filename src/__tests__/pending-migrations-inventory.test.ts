@@ -487,6 +487,7 @@ describe('the pending migration inventory', () => {
       // measured absent on production the same day through the management
       // API and rehearsed inside BEGIN/ROLLBACK.
       '258_shipments_and_order_carrier.sql',
+      '259_returns_rma_reason_code.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

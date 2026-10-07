@@ -1004,3 +1004,71 @@
   padding: 0;
   list-style: none;
 }
+
+/* Returns (STEP 44): the four-step status timeline */
+.account-return {
+  display: grid;
+  gap: 8px;
+}
+
+.account-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 0;
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+  counter-reset: step;
+}
+
+.account-steps__step {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding-inline-end: 22px;
+  font-size: 13px;
+  color: var(--account-muted);
+}
+
+.account-steps__step::before {
+  counter-increment: step;
+  content: counter(step);
+  display: inline-grid;
+  place-items: center;
+  inline-size: 22px;
+  block-size: 22px;
+  border-radius: 50%;
+  border: 1px solid var(--account-line);
+  background: #fff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.account-steps__step[data-done="true"] {
+  color: var(--account-ink);
+}
+
+.account-steps__step[data-done="true"]::before {
+  background: var(--account-yellow);
+  border-color: var(--account-yellow);
+}
+
+.account-steps__step[aria-current="step"] {
+  font-weight: 700;
+}
+
+.account-steps__step:not(:last-child)::after {
+  content: "";
+  inline-size: 14px;
+  block-size: 1px;
+  background: var(--account-line);
+  margin-inline-start: 4px;
+}
+
+.account-return[data-state="rejected"] .account-steps__step[aria-current="step"]::before,
+.account-return[data-state="failed"] .account-steps__step[aria-current="step"]::before {
+  background: #fdeaee;
+  border-color: var(--account-red);
+  color: var(--account-red);
+}

@@ -21,6 +21,10 @@ import { describe, expect, it } from 'vitest'
 
 const DIRECT_WRITERS = [
   { file: 'src/server/actions/payments/refund.ts', kind: 'human' },
+  { file: 'src/server/actions/payments/refund-wallet.ts', kind: 'human' },
+  { file: 'src/server/actions/returns-admin.ts', kind: 'human' },
+  // The customer's own notice: the signed-in owner is the actor.
+  { file: 'src/server/actions/returns.ts', kind: 'self' },
   { file: 'src/server/payments/finalize.ts', kind: 'machine' },
   { file: 'src/app/api/payments/cardcom/webhook/route.ts', kind: 'machine' },
   // The deletion proof row: the account owner erasing their own account is

@@ -87,6 +87,14 @@ const INVENTORY: Record<string, number> = {
   'src/server/actions/newsletter.ts': 2,
   'src/server/actions/orders.ts': 1,
   'src/server/actions/payments/refund.ts': 6,
+  // STEP 44 (returns). Mirrors refund.ts: every discard is after the lock or
+  // the ledger move, where a thrown read would turn a credit that happened
+  // into an error an operator retries; the pre-lock reads treat null as the
+  // refusal they report. returns.ts / queries: the charge-id read (nullable
+  // by 131) and the requester profile join, both informational.
+  'src/server/actions/payments/refund-wallet.ts': 8,
+  'src/server/actions/returns-admin.ts': 1,
+  'src/server/actions/returns.ts': 1,
   'src/server/domain/vouchers/issue.ts': 1,
   // Fulfilment notifications (STEP 16/17): the order/customer reads feed an
   // email and a WhatsApp enqueue; a failed read is logged and the outcome is
@@ -100,6 +108,7 @@ const INVENTORY: Record<string, number> = {
   // is never rendered as absence, only renamed to the thing that matters.
   'src/server/payments/gift-card-issue.ts': 1,
   'src/server/payments/gift-vouchers.ts': 1,
+  'src/server/queries/returns.ts': 1,
   'src/server/queries/fulfillment-board.ts': 1,
   'src/server/payments/invoices.ts': 10,
   'src/server/payments/voucher-email.ts': 3,

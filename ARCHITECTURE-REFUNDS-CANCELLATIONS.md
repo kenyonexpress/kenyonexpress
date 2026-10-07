@@ -634,3 +634,69 @@ Each order carries a cancellation control (§1.4). Pressing it:
 
 A rejection with no readable reason is not a rejection that was communicated,
 which is why `reason_he` is Hebrew text and not an error code.
+
+---
+
+## 7. The customer-facing return (STEP 44, 2026-10-08)
+
+Section 1.4 asked for an online cancellation control that records the notice
+before anyone reviews it. Section 5's table has held the notice since 131 and,
+measured on 2026-10-08, nothing had ever written its `requested` state: both
+production rows were opened by an admin in `executing`. STEP 44 is the writer.
+
+### 7.1 Surfaces
+
+| Route | Who | What |
+|---|---|---|
+| `/account/return` | customer | every request with its status timeline; paid orders a request can be opened on |
+| `/account/return/[orderId]` | customer | the form (reason code, destination, note) inside the window; the status otherwise |
+| `/account/orders/[id]` | customer | the same status block, or the link to the form |
+| `/admin/orders/returns` | admin | the queue, oldest notice first (the 14-day clock runs on it) |
+| `/admin/orders/[id]` | admin | the open request with approve / reject in place |
+
+### 7.2 The row
+
+The request is a `refunds` row in `requested`: `requested_agorot` is the paid
+total, the fee is `0` until decided, `granted_agorot` is null, `destination` is
+the customer's choice, `ground` is the default the reason code maps to, and the
+RMA is derived from the row (`src/lib/returns/policy.ts`, `rmaNumber`; stored
+by 259 once applied). The customer never writes the table: `submitReturnRequest`
+proves ownership through `getOrderDetail`, applies `evaluateReturnEligibility`,
+and inserts on the service role. A second request while one is open loses to
+`refunds_one_open_per_order`, the same lock the admin path races on.
+
+| Reason code | Ground | Fee |
+|---|---|---|
+| `changed_mind`, `other` | `distance_sale_14d` | 5% capped at ₪100, card only |
+| `defective`, `not_as_described`, `wrong_item` | `defect` | none |
+| `not_received` | `service_not_provided` | none |
+| `duplicate_charge` | `duplicate_charge` | none |
+
+A wallet destination never carries a fee (148's CHECK). A redeemed or expired
+coupon offers the wallet only (section 2.2).
+
+### 7.3 The window
+
+`evaluateReturnEligibility` runs the clock of section 3.1: 14 days from the
+later of `paid_at` and the latest `delivered_at`; a physical line not yet
+delivered reads as *open*. The same function serves the page and the action,
+so what is offered and what is accepted are one decision.
+
+### 7.4 The decision
+
+`decideReturnRequest` moves no money. `reject` is a CAS to `rejected` with the
+admin's note, then a mail. `approve` hands the row to the path its destination
+names:
+
+- **card**: `refundOrder`, which now finds the open row, and instead of
+  refusing takes it over (`claimOpenRefund`: a CAS from `requested`/`approved`
+  to `executing` on the same row and destination, with the admin's ground, so
+  131's fee constraint and the customer's RMA both hold), then asks Cardcom.
+- **wallet**: `refundToWallet`, the first caller of `planWalletCredit`. It
+  claims the row the same way, moves `fn_wallet_transfer` from
+  `platform:revenue` to the customer on `refund:<order>:wallet`, settles the
+  row `completed`, and then either moves the order's states like a card refund
+  (nothing consumed) or moves nothing (goodwill on a redeemed coupon).
+
+The `requested` row is the mutex in both cases, and both fail closed before the
+money and best-effort after it, as section 4 requires.

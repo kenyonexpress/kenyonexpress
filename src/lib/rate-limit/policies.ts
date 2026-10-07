@@ -191,6 +191,13 @@ export const RATE_LIMIT_POLICIES = {
   // Private order feedback (247) is once per order by UNIQUE; the limit bounds
   // a burst across orders, and mails the shop inbox once per accepted row.
   'order-feedback': { limit: 10, windowSeconds: 3600, reason: 'feedback mail burst, per user' },
+  // A return request (STEP 44) is once per order by the open-row lock; the
+  // limit bounds a burst across orders and the two mails each accepted row sends.
+  'return-request': {
+    limit: 5,
+    windowSeconds: 3600,
+    reason: 'return request mail burst, per user',
+  },
 
   // -- Vouchers and the supplier till. Keyed on the supplier user, never on IP:
   // a shop floor is one NAT address and would share one bucket.

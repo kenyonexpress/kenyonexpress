@@ -1,5 +1,31 @@
 # `migrations/pending/`
 
+## 2026-10-08: 259 PENDING (returns: RMA number + customer reason code, STEP 44)
+
+`259_returns_rma_reason_code.sql` adds two nullable columns to `public.refunds`
+(131): `rma_number text` (UNIQUE, `RMA-YYMMDD-XXXXXXXX`: request day in
+Asia/Jerusalem and the first 8 hex digits of `id`, derived by a BEFORE INSERT
+trigger and backfilled for existing rows with the same expression) and
+`reason_code text` (CHECKed to the seven codes in
+`src/lib/returns/policy.ts`: what the customer said, distinct from the
+statutory `ground`). Plus a partial index on `(state, requested_at)` for the
+admin queue. No policy change: the customer never writes `refunds` directly
+(`src/server/actions/returns.ts` runs on the service role after ownership
+and window checks) and 131's owner SELECT already serves the account page.
+**Measured on production before writing (2026-10-08):** `refunds` has 20
+columns, 2 rows, `refunds_one_open_per_order`, the owner/staff SELECT
+policies and the `refunds_due_by_is_derived` trigger; no RMA or reason-code
+column anywhere. **The code runs without this file:** the action inserts
+with `reason_code` and on 42703 / PGRST204 retries without it (the code is
+then the first line of `reason_he`); reads use `select *` and
+`rmaNumber(id, requested_at)` computes the identical string the trigger
+would store, so the number the customer is shown does not change on apply.
+**Rehearsed on production inside BEGIN/ROLLBACK through the management API
+the same day:** the whole file ran (HTTP 201, the closing assertion passed,
+i.e. both pre-existing rows received an RMA) and a follow-up read confirmed
+neither column exists afterwards. Rollback in the file header. Awaits the
+same explicit approval as every file here.
+
 ## 2026-10-08: 258 PENDING (shipments table + order carrier choice, STEP 43)
 
 `258_shipments_and_order_carrier.sql` adds two nullable columns to `orders`

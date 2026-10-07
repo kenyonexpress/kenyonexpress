@@ -656,3 +656,48 @@ describe('refundOrder: restocking consumed stock', () => {
     expect(result).toMatchObject({ ok: true, replay: false })
   })
 })
+
+/**
+ * STEP 44. The customer's own notice is written in `requested` by
+ * `submitReturnRequest`. An admin refund on that order loses the insert to
+ * the partial UNIQUE, and the right move is to take the notice over, not to
+ * refuse: the row flips to `executing` on a CAS and the provider is asked
+ * once. A wallet request is never claimed by the card path.
+ */
+describe('refundOrder: approving the customer’s requested row (STEP 44)', () => {
+  it('claims the requested card row and carries on to the provider', async () => {
+    seedHappyPath()
+    queue('refunds.insert', { data: null, error: { code: '23505', message: 'duplicate key' } })
+    queue('refunds.update', { data: [{ id: 'ref-1' }], error: null })
+    const result = await refundOrder({ orderId: 'order-1', reason: 'אישור בקשת לקוח' })
+    expect(result).toMatchObject({ ok: true, replay: false })
+    expect(refundByTransactionId).toHaveBeenCalledTimes(1)
+
+    const claim = calls.find((c) => c.table === 'refunds' && c.op === 'update')
+    expect(claim?.payload).toMatchObject({
+      state: 'executing',
+      ground: 'distance_sale_14d',
+      payment_id: 'pay-1',
+      cancel_only: false,
+    })
+    const chain = claim?.chain.map(([method, args]) => [method, ...args])
+    expect(chain).toEqual(
+      expect.arrayContaining([
+        ['eq', 'order_id', 'order-1'],
+        ['in', 'state', ['requested', 'approved']],
+        ['eq', 'destination', 'original_method'],
+      ]),
+    )
+    // No second row was opened: the notice IS the lock.
+    expect(calls.filter((c) => c.table === 'refunds' && c.op === 'insert')).toHaveLength(1)
+  })
+
+  it('still refuses when the open row cannot be claimed (executing, or a wallet request)', async () => {
+    seedHappyPath()
+    queue('refunds.insert', { data: null, error: { code: '23505', message: 'duplicate key' } })
+    queue('refunds.update', { data: [], error: null })
+    const result = await refundOrder({ orderId: 'order-1', reason: 'test' })
+    expect(result).toMatchObject({ ok: false, code: 'MANUAL_RESOLUTION' })
+    expect(refundByTransactionId).not.toHaveBeenCalled()
+  })
+})

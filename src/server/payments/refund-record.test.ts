@@ -1,5 +1,6 @@
 import {
   type RefundRecordAdmin,
+  claimOpenRefund,
   groundFor,
   recordRefund,
   settleRefundRecord,
@@ -204,5 +205,95 @@ describe('a record that cannot be written never throws', () => {
     const result = await recordRefund(admin, base)
     expect(result.error).toContain('connection refused')
     expect(result.inFlight).toBe(false)
+  })
+})
+
+/** STEP 44: taking over the customer's `requested` row instead of opening a second one. */
+describe('claimOpenRefund', () => {
+  function claimStub(result: { data: { id: string }[] | null; error: { message: string } | null }) {
+    const chain: unknown[][] = []
+    let payload: unknown
+    const select = vi.fn((columns: string) => {
+      chain.push(['select', columns])
+      return Promise.resolve(result)
+    })
+    const update = vi.fn((patch: unknown) => {
+      payload = patch
+      return {
+        eq: (c1: string, v1: unknown) => {
+          chain.push(['eq', c1, v1])
+          return {
+            in: (c2: string, v2: unknown) => {
+              chain.push(['in', c2, v2])
+              return {
+                eq: (c3: string, v3: unknown) => {
+                  chain.push(['eq', c3, v3])
+                  return { select }
+                },
+              }
+            },
+          }
+        },
+      }
+    })
+    const admin = { from: vi.fn(() => ({ update })) } as unknown as RefundRecordAdmin
+    return { admin, chain, payload: () => payload }
+  }
+
+  const input = {
+    orderId: 'ord-1',
+    destination: 'original_method' as const,
+    paymentId: 'pay-1',
+    ground: 'distance_sale_14d' as const,
+    grantedAgorot: 9_500,
+    cancellationFeeAgorot: 500,
+    cancelOnly: false,
+    decidedBy: 'admin-1',
+    at: AT,
+  }
+
+  it('is a compare-and-set from requested/approved on the same order and destination', async () => {
+    const { admin, chain, payload } = claimStub({ data: [{ id: 'ref-1' }], error: null })
+    await expect(claimOpenRefund(admin, input)).resolves.toEqual({
+      claimed: true,
+      refundId: 'ref-1',
+    })
+    expect(payload()).toEqual({
+      state: 'executing',
+      ground: 'distance_sale_14d',
+      payment_id: 'pay-1',
+      granted_agorot: 9_500,
+      cancellation_fee_agorot: 500,
+      cancel_only: false,
+      decided_by: 'admin-1',
+      decided_at: AT.toISOString(),
+    })
+    expect(chain).toEqual([
+      ['eq', 'order_id', 'ord-1'],
+      ['in', 'state', ['requested', 'approved']],
+      ['eq', 'destination', 'original_method'],
+      ['select', 'id'],
+    ])
+  })
+
+  it('reports not claimed, without an error, when no row was in a claimable state', async () => {
+    const { admin } = claimStub({ data: [], error: null })
+    await expect(claimOpenRefund(admin, input)).resolves.toEqual({ claimed: false, error: null })
+  })
+
+  it('reports the database error when the update fails', async () => {
+    const { admin } = claimStub({ data: null, error: { message: 'check violation' } })
+    await expect(claimOpenRefund(admin, input)).resolves.toEqual({
+      claimed: false,
+      error: 'check violation',
+    })
+  })
+
+  it('records the destination on a fresh row and defaults it to the card', async () => {
+    const { admin, insert } = stub()
+    await recordRefund(admin, { ...base, destination: 'wallet' })
+    expect(insert.mock.lastCall?.[0]).toMatchObject({ destination: 'wallet' })
+    await recordRefund(admin, base)
+    expect(insert.mock.lastCall?.[0]).toMatchObject({ destination: 'original_method' })
   })
 })

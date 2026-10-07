@@ -1,5 +1,6 @@
 import OrderFeedbackForm from '@/components/account/OrderFeedbackForm'
 import ReorderButton from '@/components/account/ReorderButton'
+import ReturnStatus from '@/components/account/ReturnStatus'
 import ShipmentTracker from '@/components/account/ShipmentTracker'
 import { formatDate, formatIls, orderStatusLabel, orderStatusTone } from '@/lib/account/format'
 import { summarizeShipping } from '@/lib/orders/shipping-summary'
@@ -9,6 +10,7 @@ import { COUPON_TONE_CHIP, couponStatusView } from '@/lib/vouchers/coupon-view'
 import { getMyOrderFeedback } from '@/server/queries/order-feedback'
 import { getOrderDetail } from '@/server/queries/orders'
 import { getReorderOffer } from '@/server/queries/reorder'
+import { getMyReturnForOrder } from '@/server/queries/returns'
 import { getMyShipmentsForOrder, shipmentsFromLines } from '@/server/queries/shipments'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -35,6 +37,8 @@ export default async function OrderDetailPage({ params }: Props) {
   // The tracking widget (STEP 43): the shipments rows when 258 is applied and
   // the customer has any, otherwise the same shape built from the lines.
   const tracked = order.paidAt ? await getMyShipmentsForOrder(order.id) : null
+  // The return request, if any (STEP 44). Owner-scoped by RLS on the user client.
+  const returnRequest = order.paidAt ? await getMyReturnForOrder(order.id) : null
   const shipments =
     tracked?.available && tracked.shipments.length > 0
       ? tracked.shipments
@@ -113,6 +117,29 @@ export default async function OrderDetailPage({ params }: Props) {
       </section>
 
       <ShipmentTracker shipments={shipments} />
+
+      {order.paidAt && (
+        <section className="account-card">
+          <h2 className="account-card__title">החזרות וביטולים</h2>
+          {returnRequest ? (
+            <ReturnStatus request={returnRequest} />
+          ) : (
+            <div className="account-row">
+              <div className="account-row__main">
+                <p className="account-row__meta">
+                  ביטול עסקה בתוך 14 יום מהרכישה או מקבלת המוצר, המאוחר מביניהם. ההחזר לכרטיס או
+                  כזיכוי לארנק.
+                </p>
+              </div>
+              <div className="account-row__actions">
+                <Link className="account-btn" href={`/account/return/${order.id}`}>
+                  בקשת החזרה או ביטול
+                </Link>
+              </div>
+            </div>
+          )}
+        </section>
+      )}
 
       <section className="account-card">
         <h2 className="account-card__title">פריטים</h2>

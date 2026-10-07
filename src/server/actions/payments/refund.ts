@@ -32,6 +32,7 @@ import { enqueueRefundCreditNote, issueQueuedInvoice } from '@/server/payments/i
 import { recordPaymentEvent } from '@/server/payments/payment-events'
 import {
   type RefundRecordAdmin,
+  claimOpenRefund,
   groundFor,
   recordRefund,
   settleRefundRecord,
@@ -261,7 +262,25 @@ async function runRefundOrder(input: RefundInput): Promise<RefundOutcome> {
     decidedBy: session.userId,
     at: now,
   })
-  if (opened.inFlight) {
+  // The customer's own notice (STEP 44). If the open row is a `requested` /
+  // `approved` card request, this admin click is its approval: take the row
+  // over in `executing` (a CAS on the same row, so the lock, the 14-day clock
+  // and the RMA stay on the notice the customer holds) and carry on to the
+  // provider. Anything else that is open is the case below.
+  const claimed = opened.inFlight
+    ? await claimOpenRefund(refundRecordAdmin, {
+        orderId: order.id,
+        destination: 'original_method',
+        paymentId,
+        ground: groundFor({ isDefectClaim: input.isDefectClaim }),
+        grantedAgorot: plan.refundAmountAgorot,
+        cancellationFeeAgorot: plan.cancellationFeeAgorot,
+        cancelOnly: plan.cancelOnly,
+        decidedBy: session.userId,
+        at: now,
+      })
+    : null
+  if (opened.inFlight && !claimed?.claimed) {
     // A refund for this order is already open. Either another admin is mid
     // click, or an earlier attempt died between this insert and its settle,
     // in which case Cardcom may or may not have credited the card and the
@@ -274,7 +293,7 @@ async function runRefundOrder(input: RefundInput): Promise<RefundOutcome> {
       code: 'MANUAL_RESOLUTION',
     }
   }
-  if (opened.error) {
+  if (opened.error && !opened.inFlight) {
     return {
       ok: false,
       error: `לא ניתן לרשום את הזיכוי לפני ביצועו: ${opened.error}`,

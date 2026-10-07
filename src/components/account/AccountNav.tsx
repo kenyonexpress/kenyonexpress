@@ -9,6 +9,7 @@ const ITEMS = [
   { href: '/account', label: 'סקירה' },
   { href: '/account/details', label: 'הפרטים שלי' },
   { href: '/account/orders', label: 'ההזמנות שלי' },
+  { href: '/account/return', label: 'החזרות וביטולים' },
   { href: '/account/coupons', label: 'הקופונים שלי' },
   { href: '/wishlist', label: 'רשימת המשאלות' },
   { href: '/account/saved-searches', label: 'חיפושים שמורים' },
