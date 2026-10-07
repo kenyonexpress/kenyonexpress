@@ -2,6 +2,13 @@
 
 Everything below was STATE.md up to commit 02a45128f (2026-10-06), moved here by M11-c113 to keep STATE.md under 300 lines.
 
+## M15-c119: console errors on / and /product, probed 2026-10-08 in the foreground
+
+- Method: the same as M15-c118. Playwright Chromium (`@playwright/test` from the repo, probe script kept outside the repo in `/tmp`). For each page and viewport (380x800, 1440x900) it loads with `waitUntil: load`, scrolls twice and waits 7 s, and records console errors and warnings, `pageerror`, `requestfailed` and every response of 400 or above. The sample product is `/product/מוצר-לדוגמא`. The first production run hit the 60 s navigation timeout because `www` took 9 to 18 s to the first byte (`curl`). The rerun used a 120 s timeout with up to 3 attempts, and every run passed on attempt 1.
+- **Production** (`https://www.kenyonexpress.co.il`, still `audit/final-audit@1e84df0`, blocker 4): all 4 runs (`/` and product, 380 and 1440) return 200 with **0 console errors, 0 page errors, 0 failed requests and 0 responses of 400 or above**. The only warning is the same CSS chunk `3fe0w0vs6-xwd.css` preload-not-used heuristic, which is not an error.
+- **Local HEAD `8a2d30c34`** (`pnpm start -p 3519` on a clean build made in this run, with the uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` edits): all 4 runs return 200 with 0 `pageerror`. Each run has the same 5 environment-only console errors as M15-c118: the 404s on `/_vercel/insights/script.js` and `/_vercel/speed-insights/script.js` with their strict-MIME refusals (off Vercel), and the wishlist prefetch `ERR_SSL_PROTOCOL_ERROR` on `https://localhost` (HSTS and `upgrade-insecure-requests` on http localhost). There is no `/api/cart` 500 and no new error.
+- No code change. Gates: `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6474 passed, 12 skipped), `pnpm build` 0 on attempt 1 (30 Supabase timeout lines, 2 `fetch failed` and 2 `db.query_failed`, all recovered). This is not a UI change, so compare.mjs does not apply (blocker 0).
+
 ## M14-c119: Sentry release vs HEAD, re-probed 2026-10-07 20:25 UTC (local clock) against production
 
 - Method: same as M14-c118. Fetched `https://www.kenyonexpress.co.il/?cb=<epoch>` (200, `x-vercel-cache: HIT`, `x-vercel-id sin1::fra1::…`), downloaded all 21 `/_next/static/*.js` chunks and searched for the Sentry init and 40-char SHAs.
