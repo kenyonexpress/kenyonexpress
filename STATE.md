@@ -1,9 +1,9 @@
-RESUME FROM: M04-c115
+RESUME FROM: M05-c115
 
 # KenyonExpress — Project State
 
-Last item: **M03-c115 BLOCKED** (2026-10-07): compare.mjs `--page=category` refuses at 380, 768 and 1440 for the same reason as M01/M02-c115: the live category URL is our own build, so there is no reference. Branch `feat/products-sort-infinite-scroll`.
-Previous: M02-c115 BLOCKED (2026-10-07), M01-c115 BLOCKED (2026-10-07), M11-c113 DONE (2026-10-06).
+Last item: **M04-c115 DONE** (2026-10-07): `pnpm type-check` exits 0, so there was no type drift to fix. Branch `feat/products-sort-infinite-scroll`.
+Previous: M03-c115 BLOCKED (2026-10-07), M02-c115 BLOCKED (2026-10-07), M01-c115 BLOCKED (2026-10-07), M11-c113 DONE (2026-10-06).
 History before this item lives in `docs/STATE-ARCHIVE.md` (21,138 lines moved there in this commit).
 
 ## Queue status (cycle c113)
@@ -19,6 +19,14 @@ The runner's `final-done.txt` lists M01–M10 of c113 as finished. This branch's
 | M01-c115 | Re-measure compare.mjs 380/768/1440 on / | **BLOCKED**: gate refuses, no reference (see below) |
 | M02-c115 | Re-measure compare.mjs on /product | **BLOCKED**: gate refuses, no reference (see below) |
 | M03-c115 | Re-measure compare.mjs on /category | **BLOCKED**: gate refuses, no reference (see below) |
+| M04-c115 | pnpm type-check, fix drift | **DONE**: exit 0, no drift, no code change (see below) |
+
+## M04-c115: pnpm type-check, run 2026-10-07
+
+- `pnpm type-check` (`tsc --noEmit`) exits **0** with no errors, so there was no drift to fix and no code changed.
+- Other gates in the same run: `pnpm lint` 0, `pnpm test` 0 (519 files, 6473 passed, 12 skipped), `pnpm build` 0 on the first attempt (no `SupabaseTimeoutError` this time).
+- The working tree still has the uncommitted `src/app/robots*.ts` edits from M12-c113 work. The gates ran with them in place, and they are not part of this commit.
+- Not a UI change, so compare.mjs was not needed for this item (and it would refuse anyway, see blocker 0).
 
 ## M03-c115: compare.mjs on /category at 380, 768, 1440, run 2026-10-07 in the foreground
 
