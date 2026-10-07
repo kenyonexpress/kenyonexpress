@@ -21392,3 +21392,15 @@ Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=categ
 - Fix: the wrapper now skips an error whose `digest` is `HANGING_PROMISE_REJECTION`, matched the way Next's internal `isHangingPromiseRejectionError` does, because that helper is not a public export. The error is still rethrown untouched. New test in `query-log-fetch.test.ts` (10/10 pass).
 - After the fix: 0 `HANGING_PROMISE_REJECTION` lines in every build. Attempts 2 and 3 exited 1 on prerender `SupabaseTimeoutError` (`/product/מוצר-לדוגמא` with 34 `supabase.timeout` events, then `/product/טיפול-פנים-copy` with 114), which is the M06-c115 network flake. **Attempt 4 exit 0**: 44 `supabase.timeout` events were absorbed, and the only `db.query_failed` lines left were 2 real `fetch failed` errors.
 - Gates on the working tree (which still has the uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` edits that this item did not touch): type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 4. Not a UI change, so compare.mjs does not apply (it is blocked anyway, blocker 0).
+
+## M06-c116: pnpm build, run 2026-10-07 (moved from STATE.md by M07-c116)
+
+- `pnpm build` exited 0 on attempt 4. Drift fixed: `query-log-fetch.ts` logged Next's prerender abort (`HANGING_PROMISE_REJECTION`) as `db.query_failed`, which put 254 false ERROR lines in the build. It now matches the abort by digest and drops only the log line; the error is still rethrown. Attempts 2 and 3 failed on the known Supabase timeout flake.
+- Gates: `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6474 passed, 12 skipped), `pnpm build` 0 on attempt 4.
+
+## M07-c116: TODO/FIXME re-scan, run 2026-10-07
+
+- Scan: same rule as M07-c115 (`git grep -P '(^|\s)(TODO|FIXME|HACK|XXX)($|[\s:(])'` excluding `docs/`, `refs/`, Markdown, JSON, HTML, phone placeholders and the audit scanner's own tests). The only real markers are `src/lib/payments/cardcom.ts:254` and `:319`, both already filed as B1 (#41) and B2 (#42). No new markers.
+- `node scripts/final-audit.mjs`: `ok 0 work markers (of 2)`.
+- Change: a re-scan note in `docs/BACKLOG.md`. No code change.
+- Gates: type-check 0, lint 0, test 0 (6474 passed, 12 skipped), build 0 on attempt 1. 11 `db.query_failed` lines in the build were real `fetch failed` errors to Supabase, not prerender aborts.

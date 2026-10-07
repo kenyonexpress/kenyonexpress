@@ -11,6 +11,10 @@ are not markers).
 
 Three real markers, all older than 7 days.
 
+Re-scanned 2026-10-07 (M07-c116) with the same rule: only the two Cardcom
+markers remain, both already filed as B1 and B2. No new marker since M07-c115,
+and `node scripts/final-audit.mjs` reports 0 untracked work markers (of 2).
+
 | Where | Since | Outcome |
 |---|---|---|
 | `scripts/screenshot-all.mjs:42` | 2026-07-23 | **Resolved** in M07-c115. The overrides it asked for already exist (env vars and positional args), so the marker became a plain note. |
