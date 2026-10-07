@@ -51,6 +51,13 @@ Setup: the same as M08-c115. Lighthouse 13.4.1 from the repo (`pnpm exec lightho
 - Verdict: **mismatch.** The wiring is correct, because the release follows the deployed commit. HEAD is just not deployed. The fix is to deploy this branch (or merge it into whichever branch Vercel's production tracks), and that is an operator action. No code change.
 - Gates in this run: `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6473 passed, 12 skipped), `pnpm build` 0 on the first attempt (0 `supabase.timeout`). This is not a UI change, so compare.mjs was not needed (and it refuses anyway, see blocker 0). `logs/` is untracked and not part of this commit.
 
+## M13-c116: /api/health and /api/ready, re-probed 2026-10-07 12:01 UTC against production
+
+- `GET https://www.kenyonexpress.co.il/api/health`: **200** `application/json`, 3 of 3, body `{"ok":true,"database":"ok","latency_ms":…}` (111, 131, 168 ms).
+- `GET https://www.kenyonexpress.co.il/api/ready`: **503** `application/json`, 3 of 3, body `{"ok":false,"checks":{"database":"ok","redis":"ok","meilisearch":"down","r2":"not_configured","cardcom":"ok"}}`.
+- Same result as M13-c115. Database, Redis and Cardcom are real and healthy; Meilisearch is configured in production but does not answer. No code change: suppressing the check would hide a real outage. Operator fix is unchanged (blocker 6, manual item).
+- Unit tests `src/app/api/health` and `src/lib/health`: 3 files, 23/23 pass. Gates: see STATE.md.
+
 ## M13-c115: /api/health and /api/ready, probed 2026-10-07 against production
 
 - `GET https://www.kenyonexpress.co.il/api/health` returned **200** `application/json`, body `{"ok":true,"database":"ok","latency_ms":188}`. That is a real admin-client HEAD count on `categories`, with `cache-control: no-store`. 3 of 3 probes returned 200.

@@ -1,11 +1,11 @@
-RESUME FROM: M13-c116
+RESUME FROM: M14-c116
 
 # KenyonExpress — Project State
 
-Last item: **M12-c116 DONE** (2026-10-07): production robots.txt re-verified at 11:57 UTC. `www/robots.txt` is 200 `text/plain`, byte-for-byte the rules in `src/app/robots.ts` (16 `Disallow:` prefixes, `Allow: /`); apex 308 to www (blocker 1). 0 of 94 sitemap URLs are blocked; credential-URL pages are disallowed and also send noindex live. No site-wide noindex. Detail in the archive.
-Decision: no code change, M12-c115's committed rules are what production serves; the uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` edits and `logs/` are still left alone.
-M12-c116 gates (working tree incl. those two edits): `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6474 passed, 12 skipped; robots 8/8), `pnpm build` 0 on attempt 1. Not a UI change, so compare.mjs does not apply (blocked anyway, blocker 0).
-Previous: M11-c116 DONE, M10-c116 BLOCKED, M09-c116 DONE, M08-c116 DONE, M07-c116 DONE, M06-c116 DONE, M05-c116 DONE, M04-c116 DONE, M03-c116 BLOCKED, M02-c116 BLOCKED, M01-c116 BLOCKED, M18-c115 DONE, M16-c115 DONE, M15-c115 DONE, M14-c115 BLOCKED, M13-c115 BLOCKED, M12-c115 DONE, M11-c115 DONE, M10-c115 BLOCKED, M09-c115 DONE, M08-c115 DONE, M07-c115 DONE, M06-c115 DONE, M05-c115 DONE, M04-c115 DONE, M03-c115 BLOCKED, M02-c115 BLOCKED, M01-c115 BLOCKED (all 2026-10-07), M11-c113 DONE (2026-10-06).
+Last item: **M13-c116 BLOCKED** (2026-10-07): production re-probed at 12:01 UTC, 3 of 3 each. `/api/health` **200** (`database: ok`, latency 111–168 ms). `/api/ready` **503**, `{"database":"ok","redis":"ok","meilisearch":"down","r2":"not_configured","cardcom":"ok"}`. Unchanged from M13-c115 (blocker 6). Detail in the archive.
+Decision: no code change; the 503 correctly reports a configured-but-unreachable Meilisearch. Fix is an operator action (restore the instance or remove its Vercel env vars), which the agent may not do. The uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` edits and `logs/` are still left alone.
+M13-c116 gates (working tree incl. those two edits): `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6474 passed, 12 skipped; health 3 files 23/23), `pnpm build` 0 on attempt 1. Not a UI change, so compare.mjs does not apply (blocked anyway, blocker 0).
+Previous: M12-c116 DONE, M11-c116 DONE, M10-c116 BLOCKED, M09-c116 DONE, M08-c116 DONE, M07-c116 DONE, M06-c116 DONE, M05-c116 DONE, M04-c116 DONE, M03-c116 BLOCKED, M02-c116 BLOCKED, M01-c116 BLOCKED, M18-c115 DONE, M16-c115 DONE, M15-c115 DONE, M14-c115 BLOCKED, M13-c115 BLOCKED, M12-c115 DONE, M11-c115 DONE, M10-c115 BLOCKED, M09-c115 DONE, M08-c115 DONE, M07-c115 DONE, M06-c115 DONE, M05-c115 DONE, M04-c115 DONE, M03-c115 BLOCKED, M02-c115 BLOCKED, M01-c115 BLOCKED (all 2026-10-07), M11-c113 DONE (2026-10-06).
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
 M18-c115 gates: `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6473 passed, 12 skipped), `pnpm build` 0 on attempt 1. These ran on the working tree, which still had the two uncommitted UI edits. Not a UI change, so compare.mjs does not apply (it is blocked anyway, blocker 0).
 
@@ -49,13 +49,14 @@ The runner's `final-done.txt` lists M01–M10 of c113 as finished. This branch's
 | M10-c116 | Verify migrations/pending/ applied or file blocker | **BLOCKED**: re-probe unchanged, 6 live but unrecorded, 22 not applied; needs Ofir (see archive) |
 | M11-c116 | Verify sitemap.xml fresh and reachable | **DONE**: 5/5 section files 200, 94/94 URLs 200 on www, lastmods unchanged (see archive) |
 | M12-c116 | Verify robots.txt production-safe | **DONE**: live file matches source, 0/94 sitemap URLs blocked, credential paths disallowed + noindex (see archive) |
+| M13-c116 | Verify /api/health and /api/ready return 200 with real deps | **BLOCKED**: health 200, ready 503 on `meilisearch: down`, unchanged from M13-c115 (see archive) |
 
 ## Open blockers
 
 0. **The parity gate has no reference (M01-c115).** `compare.mjs` exits 5 at every width because `kenyonexpress.co.il` serves our build and `refs/ke_live_singlefile.html` does not exist. No UI item can show it is under 11% until a working reference is restored. Re-confirmed for `/product` in M02-c115 and M02-c116 and `/category` in M03-c115 and M03-c116 (see `docs/PARITY-REFERENCE.md`).
 1. **Apex vs www host mismatch (known since SECTIONS 21, still open).** Vercel serves `www` and redirects the apex with a 308. The site declares the apex as canonical: every sitemap `<loc>`, the robots `Sitemap:` line, `og:url` and canonicals all use `https://kenyonexpress.co.il` (from `NEXT_PUBLIC_APP_URL`, with the `layout.tsx` default). So all 94 sitemap URLs cost one 308 hop before they reach a 200. Fixing it means either setting `NEXT_PUBLIC_APP_URL=https://www.kenyonexpress.co.il` in Vercel or making the apex the primary domain in Vercel. Both are Vercel env or domain changes, which the agent is not allowed to make.
 2. Scheduled jobs (cron) do not run until migration 162 is applied. See the M10-c115 section in the archive.
-6. **`/api/ready` is 503 in production (M13-c115).** `meilisearch: down`: `MEILISEARCH_HOST` and `MEILISEARCH_API_KEY` are set, but the host does not answer `/health`. `/api/health` is 200.
+6. **`/api/ready` is 503 in production (M13-c115).** `meilisearch: down`: `MEILISEARCH_HOST` and `MEILISEARCH_API_KEY` are set, but the host does not answer `/health`. `/api/health` is 200. Re-confirmed unchanged in M13-c116.
 5. **Pending migrations are not applied (M10-c115, re-confirmed M10-c116).** 22 numbered files are confirmed absent from production, and 6 (`189`, `190`, `191`, `194`, `197` and `201`) are live but not recorded as applied. Only Ofir applies migrations, and the bookkeeping for the 6 needs a `schema_migrations` read, which needs the Supabase MCP or a DB URL.
 3. The live catalogue has template rows and duplicates: 25 findings pinned in `supabase/catalogue-known-issues.json`. These are decisions for the operator.
 4. `main` diverged: local `main` is 193 commits ahead of `origin/main` and 110 behind (L9). Production is not built from this branch: as of M14-c115 the live client bundle's Sentry release is `1e84df0e5`, the tip of `origin/audit/final-audit`, not `origin/main`, so the Sentry release does not match HEAD `b29fcbf1f`.
