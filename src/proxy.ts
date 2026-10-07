@@ -7,6 +7,7 @@ import { REQUEST_ID_HEADER, resolveRequestId } from '@/lib/observability/request
 import { edgeClientAddress, edgeShieldPolicyFor } from '@/lib/rate-limit/edge-shield'
 import { graduatedRateLimit } from '@/lib/rate-limit/graduated'
 import { tooManyRequests } from '@/lib/rate-limit/headers'
+import { routeTierFor, routeTierIdentity, routeTierRateLimit } from '@/lib/rate-limit/route-tiers'
 import { REFERRAL_QUERY_PARAM, normalizeReferralCode } from '@/lib/referrals/code'
 import { REFERRAL_COOKIE, referralCookieOptions } from '@/lib/referrals/cookie'
 import { isPaymentFramePath } from '@/lib/security/frame-policy'
@@ -152,6 +153,35 @@ export async function proxy(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser()
+
+  // The per-route token bucket (STEP 29, lib/rate-limit/route-tiers.ts),
+  // keyed on the address AND the user: auth submissions, the pay press and
+  // the query routes, each at its own rate with a burst of one minute's
+  // worth. After the session refresh because the user id is half the key and
+  // the refresh is what produces it; before route protection so a refused
+  // request does no page work. The rotated session cookie travels on the
+  // 429, so a refused shopper is not also signed out. Upstash only, like the
+  // shield above: unconfigured or down, the decision is open and logged.
+  const routeTierName = routeTierFor(request.method, pathname)
+  if (routeTierName) {
+    const identity = routeTierIdentity(edgeClientAddress(request.headers), user?.id ?? null)
+    if (identity) {
+      const verdict = await routeTierRateLimit(routeTierName, identity)
+      if (!verdict.allowed) {
+        const refused = tooManyRequests(verdict.decision, {
+          error: 'יותר מדי בקשות. נסו שוב בעוד כמה שניות.',
+          tier: verdict.tier,
+          retry_after_seconds: verdict.retryAfterSeconds,
+        })
+        // Header copy, not a cookie write: the attributes were set by
+        // @supabase/ssr in setAll above and travel with the header as-is.
+        for (const value of supabaseResponse.headers.getSetCookie()) {
+          refused.headers.append('set-cookie', value)
+        }
+        return withRequestId(refused, requestId)
+      }
+    }
+  }
 
   // Route protection.
   //

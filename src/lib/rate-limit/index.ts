@@ -26,4 +26,16 @@ export {
   postgresKey,
   redisKey,
 } from './policies'
+export {
+  type RouteTier,
+  type RouteTierDecision,
+  type RouteTierName,
+  ROUTE_TIERS,
+  routeTier,
+  routeTierFor,
+  routeTierIdentity,
+  routeTierKey,
+  routeTierRateLimit,
+} from './route-tiers'
+export { type BucketShape, type BucketState, evaluateBucket } from './token-bucket'
 export { isUpstashConfigured } from './upstash'
