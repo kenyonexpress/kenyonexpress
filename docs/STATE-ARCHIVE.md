@@ -51,6 +51,14 @@ Setup: the same as M08-c115. Lighthouse 13.4.1 from the repo (`pnpm exec lightho
 - Verdict: **mismatch.** The wiring is correct, because the release follows the deployed commit. HEAD is just not deployed. The fix is to deploy this branch (or merge it into whichever branch Vercel's production tracks), and that is an operator action. No code change.
 - Gates in this run: `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6473 passed, 12 skipped), `pnpm build` 0 on the first attempt (0 `supabase.timeout`). This is not a UI change, so compare.mjs was not needed (and it refuses anyway, see blocker 0). `logs/` is untracked and not part of this commit.
 
+## M14-c116: Sentry release vs HEAD, re-probed 2026-10-07 11:57 UTC against production
+
+- Method: same as M14-c115. Fetched `https://www.kenyonexpress.co.il/` twice (plain and `?cb=` cache-busted; both `x-vercel-cache: HIT`, `x-vercel-id sin1::fra1::…`), downloaded all 21 `/_next/static/*.js` chunks and searched for the Sentry init and 40-char SHAs.
+- Result: the inlined init is `NEXT_PUBLIC_SENTRY_RELEASE??"1e84df0e5457c9c80a46f7cb2155ac204ebc15ef"`, the only SHA in the bundle (2 occurrences, both loads). After `git fetch`, `origin/audit/final-audit` is still `1e84df0e5`, `origin/main` is still `7b7e01494`, and HEAD is `bf55da262` (`feat/products-sort-infinite-scroll`, in sync with its upstream).
+- Vercel MCP: 3 projects found (`kenyonexpress`, `kenyonexpress-prod`, `kenyonexpress-web`, team `team_TUMTPVDP…`). `list_deployments` with `target=production,state=READY` and with `sha=1e84df0…` both came back empty, so server-side confirmation is not available through this connector. The Sentry MCP needs authorisation, so it was not used. Server and edge release are not verified directly; per the M14-c115 wiring they follow the same `VERCEL_GIT_COMMIT_SHA`.
+- Verdict: **mismatch, unchanged.** The fix is to deploy this branch (or the branch Ofir chooses) to production, which is an operator action. No code change.
+- Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1. Not a UI change; compare.mjs does not apply.
+
 ## M13-c116: /api/health and /api/ready, re-probed 2026-10-07 12:01 UTC against production
 
 - `GET https://www.kenyonexpress.co.il/api/health`: **200** `application/json`, 3 of 3, body `{"ok":true,"database":"ok","latency_ms":…}` (111, 131, 168 ms).
