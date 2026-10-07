@@ -1,11 +1,10 @@
-RESUME FROM: M17-c116
+RESUME FROM: M18-c116
 
 # KenyonExpress — Project State
 
-Last item: **M16-c116 DONE** (2026-10-07): every product page has JSON-LD `Product` and `BreadcrumbList`. Production `https://www.kenyonexpress.co.il`: **44/44** sitemap product URLs have exactly one of each, 43 pass every field check. Local HEAD `9123fb25d` (`pnpm start` on this run's build): **46/46**, 43 pass every check. The only gap is a missing `image` on image-less rows (`מזקקת-ויסקי`, plus `e2e-test-physical` and `e2e-test-coupon` on HEAD), unchanged from M16-c115. Detail in the archive.
-Decision: no code change. `src/app/(store)/product/[slug]/page.tsx` and `src/lib/seo/` have no commits since M16-c115, and the image gaps are catalogue data (manual items). The uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` edits and `logs/` are still left alone.
-M16-c116 gates (working tree incl. those two edits): `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6474 passed, 12 skipped), `pnpm build` 0 on attempt 1 (29 `supabase.timeout` absorbed, 0 `db.query_failed`). Not a UI change, so compare.mjs does not apply (blocked anyway, blocker 0).
-Previous: M15-c116 DONE, M14-c116 BLOCKED, M13-c116 BLOCKED, M12-c116 DONE, M11-c116 DONE, M10-c116 BLOCKED, M09-c116 DONE, M08-c116 DONE, M07-c116 DONE, M06-c116 DONE, M05-c116 DONE, M04-c116 DONE, M03-c116 BLOCKED, M02-c116 BLOCKED, M01-c116 BLOCKED, M18-c115 DONE, M16-c115 DONE, M15-c115 DONE, M14-c115 BLOCKED, M13-c115 BLOCKED, M12-c115 DONE, M11-c115 DONE, M10-c115 BLOCKED, M09-c115 DONE, M08-c115 DONE, M07-c115 DONE, M06-c115 DONE, M05-c115 DONE, M04-c115 DONE, M03-c115 BLOCKED, M02-c115 BLOCKED, M01-c115 BLOCKED (all 2026-10-07), M11-c113 DONE (2026-10-06).
+Last item: **M17-c116 BLOCKED** (2026-10-07): RTL on `/` and 6 sample `/product` pages at 380/768/1440. Production `https://www.kenyonexpress.co.il` and the local build: `lang=he dir=rtl` and overflow 0 in all 21 runs each, 0 Hebrew text in LTR, 0 left-aligned Hebrew. **One LTR leak:** the footer newsletter email field is `dir="ltr"` with a Hebrew placeholder, which renders flush left at 1440 on every page in production and on committed HEAD. On HEAD the bidi order is also flipped (`Email` first). The uncommitted `SiteFooter.tsx` edit fixes it (verified locally: right-aligned, correct order), but it is a UI change and compare.mjs exits 5 (REFUSED) at 380/768/1440 for home and product, so it cannot be committed (blocker 0). Detail in the archive.
+M17-c116 gates (working tree): `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6474 passed, 12 skipped), `pnpm build` 0 on attempt 2 (attempt 1 failed on a `supabase.timeout` while prerendering `/about`).
+Previous: M16-c116 DONE, M15-c116 DONE, M14-c116 BLOCKED, M13-c116 BLOCKED, M12-c116 DONE, M11-c116 DONE, M10-c116 BLOCKED, M09-c116 DONE, M08-c116 DONE, M07-c116 DONE, M06-c116 DONE, M05-c116 DONE, M04-c116 DONE, M03-c116 BLOCKED, M02-c116 BLOCKED, M01-c116 BLOCKED, M18-c115 DONE, M16-c115 DONE, M15-c115 DONE, M14-c115 BLOCKED, M13-c115 BLOCKED, M12-c115 DONE, M11-c115 DONE, M10-c115 BLOCKED, M09-c115 DONE, M08-c115 DONE, M07-c115 DONE, M06-c115 DONE, M05-c115 DONE, M04-c115 DONE, M03-c115 BLOCKED, M02-c115 BLOCKED, M01-c115 BLOCKED (all 2026-10-07), M11-c113 DONE (2026-10-06).
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
 M18-c115 gates: `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6473 passed, 12 skipped), `pnpm build` 0 on attempt 1. These ran on the working tree, which still had the two uncommitted UI edits. Not a UI change, so compare.mjs does not apply (it is blocked anyway, blocker 0).
 
@@ -35,7 +34,7 @@ The runner's `final-done.txt` lists M01–M10 of c113 as finished. This branch's
 | M14-c115 | Verify Sentry release matches HEAD commit | **BLOCKED**: prod release `1e84df0` (audit/final-audit), HEAD `b29fcbf` (see archive) |
 | M15-c115 | Verify no console errors on / and /product sample | **DONE**: prod 0 errors on both pages at 380 and 1440; local errors come only from the environment (see archive) |
 | M16-c115 | Verify all product pages have JSON-LD Product and BreadcrumbList | **DONE**: 44/44 prod, 46/46 HEAD, both nodes valid; 3 image-less rows have no `image` (see archive) |
-| M17-c115 | RTL | pending, no record on this branch |
+| M17-c115 | RTL | superseded by M17-c116 |
 | M18-c115 | Trim STATE.md under 300 lines, archive rest | **DONE**: per-item sections moved to `docs/STATE-ARCHIVE.md` |
 | M01-c116 | Re-measure compare.mjs 380/768/1440 on / | **BLOCKED**: exit 5 at all three widths, gate refuses, no reference (see archive) |
 | M02-c116 | Re-measure compare.mjs on /product | **BLOCKED**: exit 5 at 380/768/1440, gate refuses, no reference (see archive) |
@@ -53,10 +52,11 @@ The runner's `final-done.txt` lists M01–M10 of c113 as finished. This branch's
 | M14-c116 | Verify Sentry release matches HEAD commit | **BLOCKED**: prod release still `1e84df0` (audit/final-audit), HEAD `bf55da2`, unchanged from M14-c115 (see archive) |
 | M15-c116 | Verify no console errors on / and /product sample | **DONE**: prod 0 errors on both pages at 380 and 1440, unchanged from M15-c115; local errors are env-only (see archive) |
 | M16-c116 | Verify all product pages have JSON-LD Product and BreadcrumbList | **DONE**: 44/44 prod, 46/46 HEAD, both nodes valid; same 3 image-less rows lack `image`, unchanged from M16-c115 (see archive) |
+| M17-c116 | Verify RTL on / and /product sample, no LTR leaks | **BLOCKED**: one leak, the footer newsletter placeholder is flush left in an LTR field; the uncommitted fix cannot pass compare.mjs (exit 5, blocker 0) (see archive) |
 
 ## Open blockers
 
-0. **The parity gate has no reference (M01-c115).** `compare.mjs` exits 5 at every width because `kenyonexpress.co.il` serves our build and `refs/ke_live_singlefile.html` does not exist. No UI item can show it is under 11% until a working reference is restored. Re-confirmed for `/product` in M02-c115 and M02-c116 and `/category` in M03-c115 and M03-c116 (see `docs/PARITY-REFERENCE.md`).
+0. **The parity gate has no reference (M01-c115).** `compare.mjs` exits 5 at every width because `kenyonexpress.co.il` serves our build and `refs/ke_live_singlefile.html` does not exist. No UI item can show it is under 11% until a working reference is restored. Re-confirmed for `/product` in M02-c115 and M02-c116 and `/category` in M03-c115 and M03-c116 (see `docs/PARITY-REFERENCE.md`). It also blocks committing the footer newsletter placeholder RTL fix (M17-c116).
 1. **Apex vs www host mismatch (known since SECTIONS 21, still open).** Vercel serves `www` and redirects the apex with a 308. The site declares the apex as canonical: every sitemap `<loc>`, the robots `Sitemap:` line, `og:url` and canonicals all use `https://kenyonexpress.co.il` (from `NEXT_PUBLIC_APP_URL`, with the `layout.tsx` default). So all 94 sitemap URLs cost one 308 hop before they reach a 200. Fixing it means either setting `NEXT_PUBLIC_APP_URL=https://www.kenyonexpress.co.il` in Vercel or making the apex the primary domain in Vercel. Both are Vercel env or domain changes, which the agent is not allowed to make.
 2. Scheduled jobs (cron) do not run until migration 162 is applied. See the M10-c115 section in the archive.
 6. **`/api/ready` is 503 in production (M13-c115).** `meilisearch: down`: `MEILISEARCH_HOST` and `MEILISEARCH_API_KEY` are set, but the host does not answer `/health`. `/api/health` is 200. Re-confirmed unchanged in M13-c116.
@@ -65,6 +65,8 @@ The runner's `final-done.txt` lists M01–M10 of c113 as finished. This branch's
 4. `main` diverged: local `main` is 193 commits ahead of `origin/main` and 110 behind (L9). Production is not built from this branch: as of M14-c115 the live client bundle's Sentry release is `1e84df0e5`, the tip of `origin/audit/final-audit`, not `origin/main`, so the Sentry release does not match HEAD `b29fcbf1f`. Re-confirmed in M14-c116 against HEAD `bf55da262`.
 
 ## Manual items for Ofir
+
+- Decide on the uncommitted `SiteFooter.tsx` edit. It fixes the one RTL leak M17-c116 found: the footer email placeholder renders flush left and, on HEAD, in flipped order. The agent cannot commit it while compare.mjs has no reference. Commit it yourself, or restore the reference first.
 
 - Provide a usable parity reference: either restore `refs/ke_live_singlefile.html` (a self-contained SingleFile save of the old WooCommerce home) or a host that still serves the old site. Until then compare.mjs cannot produce a number (M01-c115, re-confirmed M01-c116, M02-c116 and M03-c116).
 - Choose one canonical host and set it in Vercel: either `NEXT_PUBLIC_APP_URL` = www, or make the apex primary (blocker 1). Then resubmit the sitemap in Search Console.
