@@ -1,9 +1,9 @@
-RESUME FROM: M07-c115
+RESUME FROM: M08-c115
 
 # KenyonExpress — Project State
 
-Last item: **M06-c115 DONE** (2026-10-07): `pnpm build` exits 0 on the fourth attempt. The first three failed on Supabase timeouts during prerender, which is the network and not code drift, so there was nothing to fix. Branch `feat/products-sort-infinite-scroll`.
-Previous: M05-c115 DONE (2026-10-07), M04-c115 DONE (2026-10-07), M03-c115 BLOCKED (2026-10-07), M02-c115 BLOCKED (2026-10-07), M01-c115 BLOCKED (2026-10-07), M11-c113 DONE (2026-10-06).
+Last item: **M07-c115 DONE** (2026-10-07): TODO/FIXME scan. 3 real markers, all older than 7 days. 1 resolved in code, 2 (Cardcom, #41/#42) filed in the new `docs/BACKLOG.md`. Branch `feat/products-sort-infinite-scroll`.
+Previous: M06-c115 DONE (2026-10-07), M05-c115 DONE (2026-10-07), M04-c115 DONE (2026-10-07), M03-c115 BLOCKED (2026-10-07), M02-c115 BLOCKED (2026-10-07), M01-c115 BLOCKED (2026-10-07), M11-c113 DONE (2026-10-06).
 History before this item lives in `docs/STATE-ARCHIVE.md` (21,138 lines moved there in this commit).
 
 ## Queue status (cycle c113)
@@ -22,6 +22,17 @@ The runner's `final-done.txt` lists M01–M10 of c113 as finished. This branch's
 | M04-c115 | pnpm type-check, fix drift | **DONE**: exit 0, no drift, no code change (see below) |
 | M05-c115 | pnpm test, fix drift | **DONE**: exit 0, no drift, no code change (see below) |
 | M06-c115 | pnpm build, fix drift | **DONE**: exit 0 on attempt 4, no drift, no code change (see below) |
+| M07-c115 | TODO/FIXME older than 7 days: resolve or file in docs/BACKLOG.md | **DONE**: 1 resolved, 2 filed (see below) |
+
+## M07-c115: TODO/FIXME scan, run 2026-10-07
+
+- Scan: `git grep -P '(^|\s)(TODO|FIXME|HACK|XXX)($|[\s:(])'` over the tracked tree, excluding `docs/`, `refs/`, Markdown, JSON, HTML and the audit scanner's own fixtures. This found 3 real markers. The other hits were phone placeholders (`05X-XXX-XXXX`) and a test's `'TODO'` string, which are not markers. Ages come from `git blame`, and all 3 are older than 7 days.
+- `scripts/screenshot-all.mjs:42` (2026-07-23) was **resolved**. The env and argv overrides it asked for already exist, so the TODO became a plain note. Comment only, no behaviour change.
+- `src/lib/payments/cardcom.ts:254` (refund, #41) and `:319` (documents, #42) were **filed** as B1 and B2 in the new `docs/BACKLOG.md`. Both need production Cardcom keys and live-terminal verification, and payment provider work is out of scope. They stay in code with their issue refs.
+- `docs/BACKLOG.md` is listed in `docs/INDEX.md` (Operations, now 28) and the README count is now 262. `pnpm lint:docs` OK.
+- `node scripts/final-audit.mjs` reports 0 untracked work markers (of 2 total).
+- Gates: `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6473 passed, 12 skipped), `pnpm build` 0 on the first attempt. The uncommitted `src/app/robots*.ts` edits (M12-c113) and `logs/` are not part of this commit.
+- Not a UI change, so compare.mjs was not needed (it would refuse anyway, see blocker 0).
 
 ## M06-c115: pnpm build, run 2026-10-07
 
