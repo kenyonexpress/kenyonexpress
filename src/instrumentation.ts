@@ -81,10 +81,10 @@ export const onRequestError: Instrumentation.onRequestError = async (error, requ
   const rawPath = request.path ?? ''
 
   // A voucher token lives in the PATH of /redeem/<token>, where a key-based
-  // scrubber cannot see it. Redacted before it reaches an event (SEC-SCRUB).
-  const path = rawPath
-    .replace(/\/redeem\/[^/?#]+/, '/redeem/[redacted]')
-    .replace(/([?&])(token|code|secret)=[^&]*/gi, '$1$2=[redacted]')
+  // scrubber cannot see it. Redacted before it reaches an event (SEC-SCRUB),
+  // with the same rule every runtime's beforeSend applies.
+  const { redactUrl } = await import('@/lib/observability/sentry-scrub')
+  const path = redactUrl(rawPath)
 
   const digest = (error as { digest?: string }).digest
 

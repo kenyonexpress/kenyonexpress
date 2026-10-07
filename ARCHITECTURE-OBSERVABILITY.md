@@ -225,6 +225,20 @@ Plus two infrastructure conditions that reach the same channel because they
 disable the five above: the webhook journal insert failing (503 path), and a
 Cardcom callback that parses but matches no accepted secret.
 
+### 4.3.1 Sentry's own alerts, relayed (STEP 27, 2026-10-07)
+
+`/api/alerts/sentry` turns a Sentry webhook into the same `sendAlert` push.
+Sentry's native channel is email, which MONITORING.md measured as unread, so
+the two provisioned metric alerts (error rate spike, RLS denial spike, both
+now scoped to `environment: production`) were alerting nobody. The relay keeps
+the channel narrow by construction (`src/lib/alerts/sentry.ts`): metric alerts
+are relayed (critical urgent, warning high, resolved quiet), an issue alert is
+relayed only when the event is from production and only as often as the rule's
+own frequency allows, and issue lifecycle and installation payloads are
+acknowledged and dropped. The route is closed without `SENTRY_WEBHOOK_SECRET`
+and verifies the HMAC signature in constant time. docs/SENTRY-SETUP.md has the
+wiring.
+
 ### 4.4 What is deliberately NOT alerted
 
 Catalogue render errors, 404s, validation failures, rate limits, search index

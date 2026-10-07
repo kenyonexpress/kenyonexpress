@@ -207,3 +207,113 @@ in question.
 3. **`beforeSend`** → all three configs drop headers, cookies and redact URLs.
    A voucher token lives in the path of `/redeem/<token>`, so that redaction is
    load-bearing (SEC-SCRUB) and must survive any edit to those files.
+
+## STEP 27 (07.10.2026): one scrubber, one environment, the upload target, the phone
+
+Measured before writing. The three runtime configs each carried their own
+`beforeSend`, and they had drifted: the server redacted `extra` and the payment
+context, the edge did not; the browser redacted query secrets, the edge did
+not; none touched breadcrumbs, `request.data` or the exception message, so a
+thrown `` new Error(`user ${email} not found`) `` shipped the email from every
+runtime and a fetch breadcrumb recorded `/api/...?token=...` verbatim. The
+environment tag was `SENTRY_ENVIRONMENT ?? NODE_ENV`, which calls a laptop
+running `pnpm start` "production". And the upload target in `next.config.ts`
+was bare env reads, which on Vercel (token present, slugs absent) meant "No org
+provided. Will not upload source maps." on every deploy since 21.08.
+
+### Scrubbing: `src/lib/observability/sentry-scrub.ts`
+
+One `scrubSentryEvent`, edge and browser safe, handed to `beforeSend` in all
+three configs. `src/__tests__/sentry-build-config.test.ts` fails if any config
+grows a scrub of its own again. What it removes:
+
+| Field | Rule |
+|---|---|
+| `request.headers`, `request.cookies` | emptied wholesale (Supabase session, Cardcom secret) |
+| `request.url`, `request.query_string`, breadcrumb URLs | `/redeem/<token>` and `?token=`, `?code=`, `?secret=`, `?access_token=`, `?refresh_token=`, `?api_key=` redacted |
+| `request.data`, `extra`, every `contexts.*`, breadcrumb `data` | key-pattern redaction from `scrub.ts` (token, secret, password, key, card, cvv, jwt, cookie, authorization) |
+| `user` | the Supabase uuid and nothing else |
+| exception message, `message`, breadcrumb messages | emails masked to `[email]`, Israeli phone numbers to `[phone]` |
+
+Not removed, deliberately: order, payment and voucher ids, product slugs, the
+user uuid. Israeli national ids are nine digits like an order number and are
+not pattern-masked; no code path interpolates one into an error.
+
+`onRequestError` in `src/instrumentation.ts` uses the same `redactUrl` for the
+request path.
+
+### Environment: `src/lib/observability/sentry-environment.ts`
+
+`VERCEL_ENV` wins (`production` / `preview` / `development`), then
+`SENTRY_ENVIRONMENT`, then `local`. Never `NODE_ENV`. The browser passes
+`NEXT_PUBLIC_VERCEL_ENV` and `NEXT_PUBLIC_SENTRY_ENVIRONMENT` literally, because
+only a literal `process.env.NEXT_PUBLIC_*` read is inlined. A laptop with the
+DSN in `.env.local` now reports `local` and no alert rule counts it.
+
+### Source maps and release
+
+`next.config.ts` defaults `org: 'kenyonexpress'`, `project: 'kenyonexpress-web'`,
+`sentryUrl: 'https://de.sentry.io'`, files the maps under
+`release: { name: SENTRY_RELEASE ?? VERCEL_GIT_COMMIT_SHA }` (the exact
+expression the server and edge runtimes report) and turns an upload failure
+into a build warning through `errorHandler`. The 06.10 build log showed the
+Production `SENTRY_AUTH_TOKEN` itself answering 401 to `releases new` and
+`sourcemaps upload`; that needs a new token from Ofir (org token, scopes
+`project:releases` + `org:read`), not code, and the deploy no longer depends on
+it.
+
+### Grouping on the money path
+
+`capturePaymentError` sets `fingerprint: ['{{ default }}', 'payments', stage]`
+and `capturePaymentAlarm` sets `['payments', stage, message]`. The shared
+Supabase helpers gave two stages one stack trace and therefore one issue;
+resolving it silenced both. `sentry-grouping.test.ts` pins the split. Both
+accept `userId` and set the user to the id alone.
+
+### Alerts to the phone: `/api/alerts/sentry`
+
+Sentry notifies by email, and email is the channel MONITORING.md measured as
+unread. The relay turns a Sentry webhook into the same `sendAlert` push the
+money path uses (ntfy, plus Telegram when configured). Decisions are in
+`src/lib/alerts/sentry.ts`, unit tested:
+
+| Payload | Relayed |
+|---|---|
+| `metric_alert` critical / warning / resolved | yes: urgent / high / quiet |
+| `event_alert` (an issue alert rule firing) | only when the event's environment is `production` |
+| `issue` lifecycle (created, resolved, ...) | no: an issue carries no environment, and laptops share the project |
+| `installation` | no: handshake, 200 so Sentry does not retry |
+
+Authentication: `sentry-hook-signature` (hex HMAC-SHA256 of the raw body with
+`SENTRY_WEBHOOK_SECRET`, what an internal integration sends), else the secret
+in `?secret=` or `x-sentry-webhook-secret` (the legacy WebHooks plugin signs
+nothing). Unset secret closes the route with 401.
+
+Wiring, two halves:
+
+1. **Issue alerts, automated.** `scripts/sentry-alert-rules.mjs` with
+   `SENTRY_WEBHOOK_URL=https://kenyonexpress.co.il/api/alerts/sentry?secret=<SENTRY_WEBHOOK_SECRET>`
+   enables the project's WebHooks plugin, points it at the relay, and upserts
+   the issue rule "New production issue" (first seen or regression, environment
+   production, at most once per 30 minutes per issue). Both metric rules are
+   now scoped to `environment: production` as well. CI runs the script from
+   `main`; add the variable to the repo's secrets and it applies on the next
+   push.
+2. **Metric alerts, once in the UI.** Metric alert actions cannot target the
+   plugin through the API. Settings → Developer Settings → Internal
+   Integrations → New: webhook URL `https://kenyonexpress.co.il/api/alerts/sentry`,
+   "Alert Rule Action" on, copy the Client Secret into `SENTRY_WEBHOOK_SECRET`
+   on Vercel. Then on each metric alert add the action "Send a notification via
+   <integration>". Until that exists they email, as before.
+
+Verify with a curl against the deployed relay (the secret in the URL form):
+
+```bash
+curl -s -X POST "https://kenyonexpress.co.il/api/alerts/sentry?secret=$SENTRY_WEBHOOK_SECRET" \
+  -H 'content-type: application/json' \
+  -d '{"project":"kenyonexpress-web","level":"error","message":"relay check","url":"https://kenyonexpress.sentry.io/","triggering_rules":["manual"],"event":{"tags":[["environment","production"]]}}'
+# {"ok":true,"kind":"event_alert","relayed":true,"delivered":true}  and the phone buzzes once
+```
+
+New variables: `SENTRY_WEBHOOK_SECRET` (Vercel, Production), `SENTRY_WEBHOOK_URL`
+(GitHub secret for the rules script only).

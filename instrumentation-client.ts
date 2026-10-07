@@ -1,4 +1,5 @@
-import { scrubEventUser } from '@/lib/observability/sentry-user'
+import { sentryEnvironment } from '@/lib/observability/sentry-environment'
+import { scrubSentryEvent } from '@/lib/observability/sentry-scrub'
 import * as Sentry from '@sentry/nextjs'
 
 /**
@@ -11,7 +12,17 @@ import * as Sentry from '@sentry/nextjs'
  */
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
-  environment: process.env.NEXT_PUBLIC_SENTRY_ENVIRONMENT ?? process.env.NODE_ENV,
+
+  // The NEXT_PUBLIC_ pair, because only a literal `process.env.NEXT_PUBLIC_*`
+  // read is inlined into the client bundle; `VERCEL_ENV` itself reads as
+  // undefined here. Vercel exposes NEXT_PUBLIC_VERCEL_ENV when system
+  // variables are enabled (the default). Same precedence as the server: the
+  // platform wins, the hand-set variable is the fallback, a laptop is `local`.
+  environment: sentryEnvironment({
+    VERCEL_ENV: process.env.NEXT_PUBLIC_VERCEL_ENV,
+    SENTRY_ENVIRONMENT: process.env.NEXT_PUBLIC_SENTRY_ENVIRONMENT,
+  }),
+
   // NEXT_PUBLIC_SENTRY_RELEASE first, then the SHA Vercel exposes to the
   // browser. The fallback is what makes the uploaded source maps usable on a
   // Vercel deploy without a hand-set variable: the maps are attached to the
@@ -27,32 +38,30 @@ Sentry.init({
 
   // Session replay is off. It records the DOM, and this DOM contains addresses,
   // order contents and a voucher QR; shipping that to a third party is a
-  // privacy decision nobody has taken.
+  // privacy decision nobody has taken. (PostHog's replay is separate, consent
+  // gated and bug-triggered: lib/analytics/replay-trigger.ts.)
   replaysSessionSampleRate: 0,
   replaysOnErrorSampleRate: 0,
 
   sendDefaultPii: false,
 
-  beforeSend(event) {
-    // SentryUserSync sets { id } and nothing else, but this is the guarantee
-    // rather than the convention: whatever reaches setUser, only the id ships.
-    event.user = scrubEventUser(event.user)
-    // Same rule as the server: a voucher token lives in the path.
-    if (event.request?.url) {
-      event.request.url = event.request.url
-        .replace(/\/redeem\/[^/?#]+/, '/redeem/[redacted]')
-        .replace(/([?&])(token|code|secret)=[^&]*/gi, '$1$2=[redacted]')
-    }
-    return event
-  },
+  // The same scrubber as the server and the edge. In the browser the parts
+  // that earn their keep are the user (SentryUserSync sets { id } and nothing
+  // else, but this is the guarantee rather than the convention), the voucher
+  // token in the /redeem path, and the breadcrumbs: a fetch breadcrumb records
+  // the request URL verbatim, and a console breadcrumb records whatever was
+  // logged. See lib/observability/sentry-scrub.ts.
+  beforeSend: scrubSentryEvent,
 
   // Noise that is never actionable: a browser extension throwing inside our
   // page, and the two ResizeObserver messages every Chrome build emits.
+  // lib/analytics/replay-trigger.ts keeps the same list for the replay gate.
   ignoreErrors: [
     'ResizeObserver loop limit exceeded',
     'ResizeObserver loop completed with undelivered notifications',
     /^chrome-extension:\/\//,
     /^moz-extension:\/\//,
+    /^safari-extension:\/\//,
   ],
 })
 

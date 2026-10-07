@@ -1,4 +1,5 @@
-import { scrubEventUser } from '@/lib/observability/sentry-user'
+import { sentryEnvironment } from '@/lib/observability/sentry-environment'
+import { scrubSentryEvent } from '@/lib/observability/sentry-scrub'
 import * as Sentry from '@sentry/nextjs'
 
 /**
@@ -6,24 +7,23 @@ import * as Sentry from '@sentry/nextjs'
  * every route guard do too: a throw in the proxy takes down every request,
  * and without this it would be invisible.
  *
- * Deliberately minimal. The edge runtime has no Node APIs, so the shared
- * scrubber (which is plain JS and safe) is imported but nothing else is.
+ * Deliberately minimal. The edge runtime has no Node APIs, so the two shared
+ * modules it loads (the scrubber and the environment resolver) are plain
+ * string work with no Node import; nothing else is pulled in.
  */
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
-  environment: process.env.SENTRY_ENVIRONMENT ?? process.env.NODE_ENV,
+  // See sentry.server.config.ts and lib/observability/sentry-environment.ts.
+  environment: sentryEnvironment({
+    VERCEL_ENV: process.env.VERCEL_ENV,
+    SENTRY_ENVIRONMENT: process.env.SENTRY_ENVIRONMENT,
+  }),
   release: process.env.SENTRY_RELEASE ?? process.env.VERCEL_GIT_COMMIT_SHA,
   // Matches the Node runtime. See sentry.server.config.ts for why 0.1.
   tracesSampleRate: 0.1,
   sendDefaultPii: false,
-  beforeSend(event) {
-    if (event.request?.headers) event.request.headers = {}
-    if (event.request?.cookies) event.request.cookies = {}
-    // The id and nothing else, however a call site set the user (R41).
-    event.user = scrubEventUser(event.user)
-    if (event.request?.url) {
-      event.request.url = event.request.url.replace(/\/redeem\/[^/?#]+/, '/redeem/[redacted]')
-    }
-    return event
-  },
+  // The same scrubber as the server and the browser. The edge used to carry
+  // its own shorter copy, which redacted neither the query string nor
+  // `extra`; that drift is the reason the scrub is one module now.
+  beforeSend: scrubSentryEvent,
 })

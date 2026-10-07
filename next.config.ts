@@ -321,9 +321,43 @@ const nextConfig: NextConfig = {
 const withMDX = createMDX({})
 
 export default withSentryConfig(withMDX(withNextIntl(nextConfig)), {
-  org: process.env.SENTRY_ORG,
-  project: process.env.SENTRY_PROJECT,
+  // THE SLUGS ARE IN THE CODE BECAUSE THE UPLOAD NEVER RAN WITHOUT THEM.
+  //
+  // Measured on the production build of 2026-10-05 (`vercel inspect --logs`):
+  // "No org provided. Will not upload source maps." Vercel Production holds
+  // SENTRY_AUTH_TOKEN and both DSNs but neither SENTRY_ORG nor SENTRY_PROJECT,
+  // so every deploy since the project was wired shipped an auth token to a
+  // plugin with nowhere to send the maps, and every production stack trace
+  // stayed minified. Neither slug is a secret (both are in the dashboard URL
+  // and in docs/SENTRY-SETUP.md), so they default here and the variables stay
+  // as overrides for a fork pointed at its own project.
+  org: process.env.SENTRY_ORG ?? 'kenyonexpress',
+  project: process.env.SENTRY_PROJECT ?? 'kenyonexpress-web',
+  // EU org. Against the default `https://sentry.io` the org does not resolve
+  // and the upload 404s in a way that reads like a bad token (SENTRY-SETUP.md).
+  sentryUrl: process.env.SENTRY_URL ?? 'https://de.sentry.io',
   authToken: process.env.SENTRY_AUTH_TOKEN,
+
+  // THE RELEASE THE MAPS ARE FILED UNDER IS THE RELEASE THE RUNTIMES REPORT.
+  //
+  // Stated as the same expression sentry.server.config.ts and
+  // sentry.edge.config.ts use, rather than left to the plugin's own git
+  // detection: on Vercel both resolve to the commit sha, but a CI build sets
+  // SENTRY_RELEASE to `github.sha` and the plugin, left to itself, would read
+  // the checkout's HEAD, which on a pull_request event is the merge commit
+  // and not the sha the runtime reports. Maps filed under a release no event
+  // names are never applied. `undefined` (a laptop) hands the plugin its own
+  // detection back, which is the previous behaviour.
+  release: { name: process.env.SENTRY_RELEASE ?? process.env.VERCEL_GIT_COMMIT_SHA },
+
+  // A failed upload is a warning, never a failed deploy. Without this the
+  // plugin throws and a revoked token or a Sentry outage takes the shop down
+  // with it; the same posture every other observability leg here takes.
+  // Measured 2026-10-06: the Production token answers 401 to `releases new`
+  // and `sourcemaps upload`, and the deploy still has to go out.
+  errorHandler(error) {
+    console.warn(`[sentry] source-map upload skipped: ${error.message}`)
+  },
 
   // Absent auth token means no upload attempt at all, so a local build and a
   // fork's CI both work with no credential rather than failing at the last step.

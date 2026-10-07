@@ -1,5 +1,5 @@
-import { redact } from '@/lib/observability/scrub'
-import { scrubEventUser } from '@/lib/observability/sentry-user'
+import { sentryEnvironment } from '@/lib/observability/sentry-environment'
+import { scrubSentryEvent } from '@/lib/observability/sentry-scrub'
 import * as Sentry from '@sentry/nextjs'
 
 /**
@@ -10,11 +10,21 @@ import * as Sentry from '@sentry/nextjs'
  */
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
-  environment: process.env.SENTRY_ENVIRONMENT ?? process.env.NODE_ENV,
+
+  // The platform's word first, the hand-set variable second, `local` when
+  // neither. NOT `NODE_ENV`, which calls a laptop running `pnpm start`
+  // "production" and files its errors beside the shop's.
+  // See lib/observability/sentry-environment.ts.
+  environment: sentryEnvironment({
+    VERCEL_ENV: process.env.VERCEL_ENV,
+    SENTRY_ENVIRONMENT: process.env.SENTRY_ENVIRONMENT,
+  }),
 
   // Tied to the deployed commit so a stack trace can be read against the exact
   // source it came from. Vercel injects VERCEL_GIT_COMMIT_SHA; the local
   // fallback keeps a self-hosted build from reporting no release at all.
+  // next.config.ts uploads the source maps under the SAME expression, which
+  // is what makes them apply.
   release: process.env.SENTRY_RELEASE ?? process.env.VERCEL_GIT_COMMIT_SHA,
 
   // 10% of server requests carry a full trace.
@@ -40,30 +50,11 @@ Sentry.init({
   // needs through capturePaymentError's tagged context.
   sendDefaultPii: false,
 
-  beforeSend(event) {
-    // The single scrubber (R39). Headers and cookies carry the Supabase session
-    // and the Cardcom shared secret, so they are dropped wholesale rather than
-    // filtered key by key.
-    if (event.request?.headers) event.request.headers = {}
-    if (event.request?.cookies) event.request.cookies = {}
-    if (event.request?.url) event.request.url = redactUrl(event.request.url)
-    // The id and nothing else, however a call site set the user (R41).
-    event.user = scrubEventUser(event.user)
-    if (event.extra) event.extra = redact(event.extra) as Record<string, unknown>
-    if (event.contexts?.payment) {
-      event.contexts.payment = redact(event.contexts.payment) as Record<string, unknown>
-    }
-    return event
-  },
+  // The single scrubber (R39, SEC-SCRUB), shared with the edge and the
+  // browser so the three runtimes cannot drift apart again. Headers and
+  // cookies dropped wholesale, the voucher token in /redeem/<token> and any
+  // credential in a query redacted, every context and breadcrumb scrubbed by
+  // key, emails and phone numbers masked in free text, and the user reduced
+  // to the id. See lib/observability/sentry-scrub.ts.
+  beforeSend: scrubSentryEvent,
 })
-
-/**
- * A voucher token lives in the PATH of /redeem/<token>, where the key-based
- * scrubber cannot see it. An error thrown on that route would otherwise put a
- * live coupon into Sentry's retained event, which is SEC-SCRUB.
- */
-function redactUrl(url: string): string {
-  return url
-    .replace(/\/redeem\/[^/?#]+/, '/redeem/[redacted]')
-    .replace(/([?&])(token|code|secret)=[^&]*/gi, '$1$2=[redacted]')
-}

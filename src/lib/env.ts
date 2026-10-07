@@ -103,6 +103,14 @@ const schema = z
      * would let anyone page the operator at will.
      */
     UPTIMEROBOT_WEBHOOK_SECRET: z.string().min(20).optional().or(z.literal('')),
+    /**
+     * Gate for /api/alerts/sentry, the relay that turns a Sentry alert into a
+     * push on the phone. The Client Secret of the Sentry internal integration
+     * that posts here: it signs every payload (HMAC-SHA256 of the body in
+     * `sentry-hook-signature`), and the route verifies before it pages.
+     * Unset closes the route (401) for the same reason as UptimeRobot's.
+     */
+    SENTRY_WEBHOOK_SECRET: z.string().min(20).optional().or(z.literal('')),
 
     /**
      * Guards /api/webhooks/images/purge. Unset closes the route (401), so a

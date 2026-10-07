@@ -46,6 +46,12 @@ const SECRET_AUTHENTICATED: { path: string; guard: RegExp; reason: string }[] = 
     reason: 'UptimeRobot posts with a shared secret, compared in constant time',
   },
   {
+    path: 'src/app/api/alerts/sentry/route.ts',
+    guard: /secretEquals\(/,
+    reason:
+      'Sentry signs each payload with the integration secret (HMAC-SHA256), verified in constant time',
+  },
+  {
     path: 'src/app/api/payments/cardcom/webhook/route.ts',
     guard: /verifyLowProfile\(/,
     reason: 'the payload is never trusted; the outcome is re-fetched from Cardcom',

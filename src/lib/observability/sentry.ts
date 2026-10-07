@@ -38,6 +38,12 @@ export type PaymentErrorContext = {
   orderId?: string | null
   paymentId?: string | null
   voucherId?: string | null
+  /**
+   * The caller's uuid, when it is known. `id` only, never an email or an IP:
+   * every runtime sets `sendDefaultPii: false` and the shared scrubber
+   * (sentry-scrub.ts) reduces whatever reaches `setUser` to the id anyway.
+   */
+  userId?: string | null
   /** Anything else worth seeing. Redacted before it leaves the process. */
   detail?: Record<string, unknown>
 }
@@ -54,6 +60,19 @@ export function capturePaymentError(error: unknown, context: PaymentErrorContext
       scope.setTag('area', 'payments')
       scope.setTag('stage', context.stage)
       if (context.orderId) scope.setTag('order_id', context.orderId)
+      if (context.userId) scope.setUser({ id: context.userId })
+      // GROUPED BY STAGE AS WELL AS BY STACK, and the stage is the half that
+      // was missing. Sentry groups an exception by its stack trace, and the
+      // money path funnels through shared helpers, so a throw inside the
+      // Supabase client reached from `cardcom_webhook_finalize` and the same
+      // throw reached from `checkout_begin` arrive with the same trace and
+      // become ONE issue. Resolving it silences both, and an alert on it says
+      // nothing about which half of the money path is broken.
+      //
+      // `{{ default }}` keeps Sentry's own grouping inside a stage, so two
+      // genuinely different failures at the same stage stay apart. This only
+      // ever splits; it never merges two things that were separate.
+      scope.setFingerprint(['{{ default }}', 'payments', context.stage])
       scope.setContext('payment', {
         stage: context.stage,
         order_id: context.orderId ?? null,
@@ -107,6 +126,13 @@ export async function capturePaymentAlarm(
       scope.setTag('area', 'payments')
       scope.setTag('stage', context.stage)
       if (context.orderId) scope.setTag('order_id', context.orderId)
+      if (context.userId) scope.setUser({ id: context.userId })
+      // (stage, message), stated rather than inherited. Every call site passes
+      // a CONSTANT message with the variable parts in `detail`, and Sentry's
+      // default grouping for captureMessage is the message, so the groups are
+      // already right today. What it guards is two different stages emitting
+      // the same sentence, which would merge into one issue and one alert.
+      scope.setFingerprint(['payments', context.stage, message])
       scope.setContext('payment', {
         stage: context.stage,
         order_id: context.orderId ?? null,
