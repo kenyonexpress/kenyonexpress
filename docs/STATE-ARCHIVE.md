@@ -21359,3 +21359,16 @@ Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=produ
 
 - No diff numbers, unchanged from M02-c115. `refs/ke_live_singlefile.html` is still absent. The last real product number stays 10.96% (older archive). The gate appended four REFUSED rows to `docs/UI-PARITY-REPORT.md` (380 was run twice to read the full refusal reason). They are committed with this item.
 - No code change. Gates: `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6473 passed, 12 skipped), `pnpm build` 0.
+
+## M03-c116: compare.mjs on /category at 380, 768, 1440, run 2026-10-07 in the foreground
+
+Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=category --width=<w>` (server: `PORT=3311 pnpm start` on the existing build, `/` 200)
+
+| Width | Exit | Diff | Output |
+|---|---|---|---|
+| 380 | 5 | none | REFUSING: `https://kenyonexpress.co.il/product-category/hot-deals/` is this project's own build (38 `/_next/` refs, Next runtime, no wp-content) |
+| 768 | 5 | none | REFUSING: same reason (37 `/_next/` refs) |
+| 1440 | 5 | none | REFUSING: same reason (37 `/_next/` refs) |
+
+- No diff numbers, unchanged from M03-c115. `refs/ke_live_singlefile.html` is still absent. The gate appended three REFUSED rows to `docs/UI-PARITY-REPORT.md`. They are committed with this item.
+- No code change. Gates: `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6473 passed, 12 skipped), `pnpm build` 0.
