@@ -87,7 +87,7 @@ sequenceDiagram
     B->>CC: הלקוח מזין כרטיס
 
     Note over CC,WH: 6. שני ערוצים, לא אחד
-    CC-->>WH: POST IndicatorUrl?s=SECRET   (הערוץ הסמכותי)
+    CC-->>WH: GET IndicatorUrl?s=SECRET&terminalnumber&lowprofilecode&Operation   (הערוץ הסמכותי)
     CC-->>B: redirect ל-/checkout/frame-return  (ערוץ ה-UX בלבד)
 
     WH->>DB: INSERT payment_webhook_events (dedup)
@@ -297,14 +297,14 @@ Cardcom **אינו חותם** קולבקים. אין HMAC ואין header לאמ
 ### 6.2 סדר הפעולות, ולמה כל אחת בדיוק שם
 
 ```
-1. קריאת גוף גולמי + פענוח JSON סובלני
+1. GET (query string, הצורה של ה-IndicatorUrl הישן, נמדד 08.10) או POST (form-urlencoded / JSON): `parseCardcomCallback` מאחד לאובייקט אחד, בלי `s`
 2. INSERT payment_webhook_events   <-- ראשון. לפני כל החלטה.
 3. אם 23505 (unique) -> replay -> 200 no-op
 4. אם INSERT נכשל מסיבה אחרת -> 503   <-- לא 200
 5. אם הסוד לא תואם -> 200 + alarm (אם נפרס)
 6. SELECT payments לפי cardcom_low_profile_id
 7. אם אין payment -> alarm + 200
-8. אם Cardcom אומר כישלון -> payments.failed -> 200
+8. אם Cardcom אומר כישלון -> payments.failed -> 200. אם ה-indicator לא נושא verdict בכלל (הצורה הרגילה שלו) -> ממשיכים ל-9, וכישלון שם הוא דחייה רגילה בלי alarm
 9. GetLpResult                        <-- האמת היחידה
 10. השוואת סכום: verified == expected ?
 11. UPDATE payment_webhook_events: verified_against_api = true

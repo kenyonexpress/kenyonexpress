@@ -1,4 +1,9 @@
-import { cardcomWebhookPayloadSchema, isCardcomSuccess } from '@/lib/contracts/webhooks'
+import {
+  cardcomCallbackVerdict,
+  cardcomWebhookPayloadSchema,
+  isCardcomSuccess,
+  parseCardcomCallback,
+} from '@/lib/contracts/webhooks'
 import { log } from '@/lib/observability/log'
 import { capturePaymentAlarm } from '@/lib/observability/sentry'
 import { withRequestLog } from '@/lib/observability/with-request-log'
@@ -33,16 +38,26 @@ const UNIQUE_VIOLATION = '23505'
 /**
  * Cardcom webhook (IndicatorUrl). Cardcom does NOT sign its callbacks — there is
  * no HMAC or signature header to verify. Authenticity therefore rests on two
- * things, never on the POST body:
+ * things, never on the request body:
  * 1. An unguessable shared secret carried in the callback URL (`?s=`), which we
  *    set when creating the Low Profile page.
  * 2. Mandatory server-to-server re-verification via GetLpResult — the re-fetched
  *    result is the ONLY trusted source of amount / status / token.
  * Plus: log every event first, dedup on (provider, external_event_id), replays
  * are 200 no-ops.
+ *
+ * GET AND POST, BOTH. The legacy IndicatorUrl is called with a GET whose
+ * parameters are on the query string (`terminalnumber`, `lowprofilecode`,
+ * `Operation`), measured on 08.10.2026 against Cardcom's own article and two
+ * public integrations. This file exported only `POST` and read the body as
+ * JSON, so a real indicator was a 405 from the framework before this function
+ * ran: never journalled, never verified, and Cardcom's retries (about seven)
+ * exhausted against the same 405. The return page was the only thing closing
+ * orders. One handler serves both methods; `parseCardcomCallback` decides
+ * where the fields are.
  */
-async function handlePOST(request: NextRequest): Promise<NextResponse> {
-  const rawBody = await request.text()
+async function handleCallback(request: NextRequest): Promise<NextResponse> {
+  const rawBody = request.method === 'GET' ? '' : await request.text()
   const env = loadCardcomEnv()
   const admin = createAdminClient()
 
@@ -51,17 +66,12 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
     acceptedWebhookSecrets(env),
   )
 
-  let payloadJson: Json
-  try {
-    payloadJson = JSON.parse(rawBody) as Json
-  } catch {
-    payloadJson = { raw: rawBody }
-  }
+  const payloadJson = parseCardcomCallback(rawBody, request.nextUrl.searchParams) as Json
 
   const parsed = cardcomWebhookPayloadSchema.safeParse(payloadJson)
   const externalEventId = parsed.success
     ? `${parsed.data.lowprofilecode}:${parsed.data.InternalDealNumber ?? 'na'}`
-    : `unparsed:${rawBody.slice(0, 64)}`
+    : `unparsed:${(rawBody || request.nextUrl.search).slice(0, 64)}`
 
   // 1. Persist first (dedup on replay)
   const { error: eventError } = await admin.from('payment_webhook_events').insert({
@@ -137,6 +147,9 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ ok: true })
   }
   const payload = parsed.data
+  // What the callback CLAIMS. `unknown` is the legacy indicator's normal shape
+  // (no verdict field at all); it is not an error and it is not success.
+  const verdict = cardcomCallbackVerdict(payload)
 
   // The callback is authenticated, parsed and journalled. Everything after this
   // point is our own finding rather than the provider's statement.
@@ -146,7 +159,7 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
     externalEventId,
     lowProfileId: payload.lowprofilecode,
     transactionId: payload.InternalDealNumber ? String(payload.InternalDealNumber) : null,
-    detail: { succeeded_at_provider: isCardcomSuccess(payload) },
+    detail: { succeeded_at_provider: isCardcomSuccess(payload), callback_verdict: verdict },
   })
 
   // 2. Locate our payment by the hosted-page id.
@@ -228,12 +241,14 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ ok: true, unknown_payment: true })
   }
 
-  if (!isCardcomSuccess(payload)) {
+  if (verdict === 'failure') {
     await admin
       .from('payments')
       .update({
         status: 'failed',
-        failure_code: String(payload.ResponseCode),
+        failure_code: String(
+          payload.ResponseCode ?? payload.DealResponse ?? payload.OperationResponse,
+        ),
         failed_at: new Date().toISOString(),
       })
       .eq('id', payment.id)
@@ -245,7 +260,11 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
       orderId: payment.order_id,
       paymentId: payment.id,
       lowProfileId: payload.lowprofilecode,
-      detail: { response_code: payload.ResponseCode },
+      detail: {
+        response_code: payload.ResponseCode ?? null,
+        operation_response: payload.OperationResponse ?? null,
+        deal_response: payload.DealResponse ?? null,
+      },
     })
     return NextResponse.json({ ok: true })
   }
@@ -298,6 +317,31 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
     lowProfileId: payload.lowprofilecode,
   })
   const verified = await provider.verifyLowProfile(payload.lowprofilecode)
+  if ((!verified.success || verified.amountAgorot === null) && verdict === 'unknown') {
+    // The indicator claimed nothing and the terminal says the deal did not go
+    // through: an ordinary decline, learned one hop later than a callback that
+    // carries its own verdict. Same bookkeeping as the `failure` branch above,
+    // and no alarm, because nobody has disagreed with anybody.
+    await admin
+      .from('payments')
+      .update({
+        status: 'failed',
+        failure_code: 'verify_not_charged',
+        failed_at: new Date().toISOString(),
+      })
+      .eq('id', payment.id)
+      .in('status', ['initiated', 'redirected'])
+    await recordPaymentEvent({
+      eventType: 'callback_provider_failure',
+      stage: 'cardcom_webhook_verify',
+      externalEventId,
+      orderId: payment.order_id,
+      paymentId: payment.id,
+      lowProfileId: payload.lowprofilecode,
+      detail: { source: 'verify', verified_success: verified.success },
+    })
+    return NextResponse.json({ ok: true, verified: false })
+  }
   if (!verified.success || verified.amountAgorot === null) {
     // Cardcom said the deal succeeded and the re-verify disagrees. Someone is
     // wrong about whether the customer was charged, and it is not resolvable
@@ -459,4 +503,6 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
   return NextResponse.json({ ok: true })
 }
 
-export const POST = withRequestLog('/api/payments/cardcom/webhook', handlePOST)
+export const POST = withRequestLog('/api/payments/cardcom/webhook', handleCallback)
+/** The legacy indicator: same handler, parameters on the query string. */
+export const GET = withRequestLog('/api/payments/cardcom/webhook', handleCallback)

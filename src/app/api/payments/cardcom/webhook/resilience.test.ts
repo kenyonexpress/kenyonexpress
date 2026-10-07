@@ -23,6 +23,7 @@ type Arrival =
   | 'journal_failed'
   | 'unknown_payment'
   | 'provider_says_failed'
+  | 'indicator_not_charged'
   | 'verify_disagrees'
   | 'amount_mismatch'
   | 'success'
@@ -63,7 +64,12 @@ const DECISIONS: Record<Arrival, Decision> = {
   // An ordinary decline. Nothing is wrong.
   provider_says_failed: { status: 200, alarms: false, cardcomRetries: false },
 
-  // The callback claims success and GetLpResult disagrees. Someone is wrong
+  // The legacy GET indicator carries no verdict at all; GetLpResult is the
+  // first to say the card was declined. Nobody has been contradicted, so this
+  // is the ordinary decline above, learned one hop later.
+  indicator_not_charged: { status: 200, alarms: false, cardcomRetries: false },
+
+  // The callback CLAIMS success and GetLpResult disagrees. Someone is wrong
   // about whether a customer was charged and it is not resolvable here.
   verify_disagrees: { status: 200, alarms: true, cardcomRetries: false },
 
@@ -114,7 +120,12 @@ describe('what wakes a person', () => {
   it('does not alarm on the ordinary paths', () => {
     // An alert that fires on a duplicate callback and on every declined card is
     // an alert nobody reads within a day, which costs the five above.
-    for (const arrival of ['duplicate', 'success', 'provider_says_failed'] as const) {
+    for (const arrival of [
+      'duplicate',
+      'success',
+      'provider_says_failed',
+      'indicator_not_charged',
+    ] as const) {
       expect(DECISIONS[arrival].alarms, arrival).toBe(false)
     }
   })

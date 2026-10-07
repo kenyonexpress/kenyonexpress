@@ -159,6 +159,11 @@ AllowMultipleRefunds boolean  ברירת מחדל false — הגנה מפני ז
 
 - מגדירים `WebHookUrl` ב-`LowProfile/Create`. Cardcom שולחת POST server-to-server
   עם תוצאת העסקה בסיום התשלום (מבנה זהה ל-`GetLpResult`).
+  **נמדד 08.10.2026 על הממשק הישן שבאמת רץ:** ה-`IndicatorUrl` של
+  `LowProfile.aspx` נקרא ב-**GET**, עם `terminalnumber`, `lowprofilecode`
+  ו-`Operation` ב-query string, **בלי שדה verdict**; את התוצאה שולפים
+  ב-`GetLpResult`. ‏Cardcom מנסה שוב כ-7 פעמים על תשובה שאינה 200. הנתיב
+  `src/app/api/payments/cardcom/webhook/route.ts` מייצא `GET` ו-`POST`.
 - חובה HTTPS ציבורי (localhost לא עובד — ngrok לפיתוח).
 - **אין חתימת HMAC על ה-webhook.** לכן הכלל: ה-webhook הוא טריגר בלבד —
   את האמת שולפים תמיד ב-`GetLpResult` (או `GetTransactionInfoById`) מהשרת. ראה סעיף 5.

@@ -30,7 +30,12 @@ import {
 import type { SettlementState } from '@/server/domain/orders/state-machine'
 import { enqueueRefundCreditNote, issueQueuedInvoice } from '@/server/payments/invoices'
 import { recordPaymentEvent } from '@/server/payments/payment-events'
-import { type RefundRecordAdmin, groundFor, recordRefund } from '@/server/payments/refund-record'
+import {
+  type RefundRecordAdmin,
+  groundFor,
+  recordRefund,
+  settleRefundRecord,
+} from '@/server/payments/refund-record'
 import {
   type SettlementEventRow,
   recordSettlementEvents,
@@ -64,7 +69,9 @@ type ProductType = 'physical' | 'coupon'
 /**
  * Admin-initiated refund. Orchestration only — the money/state decision lives in
  * the pure `planOrderRefund`; the Cardcom call goes through the provider mock in
- * tests. Idempotent: a second call finds the order already `refunded` and no-ops.
+ * tests. Idempotent: a second call finds the order already `refunded` and no-ops,
+ * and a CONCURRENT second call loses the `refunds` lock (see refund-record.ts)
+ * before it can reach the provider.
  *
  * @param input.partialAmountIls optional partial refund (no cancellation fee)
  * @param input.isDefectClaim    defect/non-conformity => zero cancellation fee
@@ -225,6 +232,56 @@ async function runRefundOrder(input: RefundInput): Promise<RefundOutcome> {
     return { ok: false, error: 'סכום הזיכוי הוא אפס', code: 'STATE_INVALID' }
   }
 
+  // THE LOCK, BEFORE THE MONEY. The statutory row is written in `executing`
+  // here, ahead of the provider call, and production's
+  // `refunds_one_open_per_order` (UNIQUE on order_id WHERE state is open) is
+  // what makes it a mutex: two admins on the same button, or one double-click
+  // that outran the `orders.status` read above, race on this insert and the
+  // loser never reaches Cardcom. Until now the only key was
+  // `payments.idempotency_key = refund:<id>`, written AFTER the credit, which
+  // stopped the second bookkeeping row and not the second credit.
+  //
+  // Fails closed, unlike every write after the provider call: nothing has
+  // moved yet, so refusing costs a retry and proceeding without a record is
+  // the thing the table exists to prevent. `requested_agorot` is the charge
+  // being cancelled, not the sum handed back; the fee cap in 131 is computed
+  // against that figure and the planner computes the fee the same way.
+  const refundRecordAdmin = admin as unknown as RefundRecordAdmin
+  const opened = await recordRefund(refundRecordAdmin, {
+    orderId: order.id,
+    paymentId,
+    state: 'executing',
+    ground: groundFor({ isDefectClaim: input.isDefectClaim }),
+    requestedAgorot: cardChargedAgorot,
+    grantedAgorot: plan.refundAmountAgorot,
+    cancellationFeeAgorot: plan.cancellationFeeAgorot,
+    cancelOnly: plan.cancelOnly,
+    reasonHe: input.reason,
+    requestedBy: session.userId,
+    decidedBy: session.userId,
+    at: now,
+  })
+  if (opened.inFlight) {
+    // A refund for this order is already open. Either another admin is mid
+    // click, or an earlier attempt died between this insert and its settle,
+    // in which case Cardcom may or may not have credited the card and the
+    // only safe next step is a person checking the terminal. Both read the
+    // same here and both want the same answer: not a second provider call.
+    return {
+      ok: false,
+      error:
+        'זיכוי להזמנה זו כבר פתוח (בתהליך או ממתין להחלטה). יש לבדוק את מצב הזיכוי הקודם מול Cardcom לפני ניסיון נוסף.',
+      code: 'MANUAL_RESOLUTION',
+    }
+  }
+  if (opened.error) {
+    return {
+      ok: false,
+      error: `לא ניתן לרשום את הזיכוי לפני ביצועו: ${opened.error}`,
+      code: 'INTERNAL',
+    }
+  }
+
   // Cardcom refund (money moves back to the card). Refunding through any
   // terminal other than the one that took the money would either be rejected or
   // debit the wrong account, so the id is read off the original charge.
@@ -271,6 +328,11 @@ async function runRefundOrder(input: RefundInput): Promise<RefundOutcome> {
       actorRole: 'admin',
       detail: { failure_code: refund.failureCode ?? null, cancel_only: plan.cancelOnly },
     })
+    // Release the lock as `failed`, so the admin can try again once the
+    // decline is understood. Best effort: a settle that fails leaves the row
+    // `executing`, which blocks the retry with the MANUAL_RESOLUTION message
+    // above rather than allowing an unrecorded second attempt.
+    await settleRefundRecord(refundRecordAdmin, { orderId: order.id, state: 'failed', at: now })
     return {
       ok: false,
       error: refund.failureMessage ?? 'הזיכוי נדחה על ידי Cardcom',
@@ -331,33 +393,19 @@ async function runRefundOrder(input: RefundInput): Promise<RefundOutcome> {
       .select('id')
       .maybeSingle()
 
-    // THE STATUTORY RECORD, which this function has never written.
-    //
-    // `public.refunds` has been live since 131 with a state machine, a ground
-    // classification, a fee cap and a trigger forcing `refund_due_by` to
-    // `requested_at + 14 days`, and it held zero rows because nothing wrote it.
-    // What was recorded instead was `audit_log.metadata`, which is a log line
-    // rather than the record the Consumer Protection Law is about, and which
-    // cannot answer "which refunds are past their deadline".
+    // THE STATUTORY RECORD, closed. The row was opened in `executing` before
+    // the provider call (it is the lock); this moves it to `completed` with
+    // the money that actually went back and the completion time, which is
+    // what "which refunds are past their 14-day deadline" reads.
     //
     // Best effort, deliberately, for the same reason the credit note below is
     // queued rather than called: the card is already credited by the time this
-    // line runs, and a failed insert must not turn a successful refund into an
+    // line runs, and a failed update must not turn a successful refund into an
     // error an operator retries -- the retry would attempt a second credit.
-    await recordRefund(admin as unknown as RefundRecordAdmin, {
+    await settleRefundRecord(refundRecordAdmin, {
       orderId: order.id,
-      paymentId,
       state: 'completed',
-      ground: groundFor({ isDefectClaim: input.isDefectClaim }),
-      // The charge being cancelled, not the sum handed back. The fee cap in 131
-      // is computed against this figure and the planner computes the fee the
-      // same way, so passing the post-fee amount would make a legal fee look
-      // like it broke the cap.
-      requestedAgorot: cardChargedAgorot,
       grantedAgorot: plan.refundAmountAgorot,
-      cancellationFeeAgorot: plan.cancellationFeeAgorot,
-      cancelOnly: plan.cancelOnly,
-      reasonHe: input.reason,
       at: now,
     })
 

@@ -1,7 +1,19 @@
 /**
  * Generic server-side idempotency (module 3/9). Server-only.
  *
- * Backed by the `idempotency_keys` table (migration 052): UNIQUE (scope, key),
+ * ⚠️ NOT WIRED, AND NOT WIRABLE YET. Measured against production on
+ * 08.10.2026: `to_regclass('public.idempotency_keys')` is NULL. The table in
+ * `supabase/migrations/060_idempotency_keys.sql` belongs to the file chain
+ * that does not describe the hosted database (`docs/SCHEMA-REALITY-CHECK.md`),
+ * and no module under `src/` imports this one. Calling `claim` in production
+ * today raises 42P01 on the first request. The keys the money path actually
+ * relies on are elsewhere and live: `payments.idempotency_key` (UNIQUE),
+ * `payment_webhook_events (provider, external_event_id)`,
+ * `settlement_events.idempotency_key`, and `refunds_one_open_per_order`.
+ * `idempotency.test.ts` pins the "no importer" fact so the first consumer has
+ * to bring the migration with it.
+ *
+ * Backed by the `idempotency_keys` table (migration 060 in the file chain): UNIQUE (scope, key),
  * a `response_hash` for replay comparison, and `expires_at` for cleanup. This
  * complements the dedicated keys already on payments / ledger / wallet /
  * webhook events; use it for server operations that need replay safety but do

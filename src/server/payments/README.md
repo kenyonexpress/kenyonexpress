@@ -39,5 +39,8 @@
 ## Cardcom
 
 ‏API ישן (`/Interface/*.aspx`). ‏webhooks לא חתומים: האימות הוא secret ב-URL +
-‏GetLpResult חובה מהשרת. פירוט: זכרון הפרויקט `cardcom-legacy-api-truth` ו-
+‏GetLpResult חובה מהשרת. ה-`IndicatorUrl` הישן נקרא ב-**GET** עם הפרמטרים
+ב-query string ובלי verdict (נמדד 08.10.2026); הנתיב מקבל GET ו-POST.
+זיכוי: שורת `refunds` במצב `executing` נכתבת **לפני** הקריאה ל-Cardcom והיא
+המנעול (`refunds_one_open_per_order`); ‏`idempotency_keys` לא קיימת בפרודקשן. פירוט: זכרון הפרויקט `cardcom-legacy-api-truth` ו-
 `docs/CARDCOM-ARCHITECTURE.md`.

@@ -116,6 +116,11 @@ It is snapshotted into `order_items` at purchase.
   2. Mandatory server-to-server re-verification via `GetLpResult`. The re-fetched
      result is the ONLY trusted source of amount, status and token, and the
      amount must equal the stored payment row or the order does not close.
+- **The legacy IndicatorUrl is a GET** (`terminalnumber`, `lowprofilecode`,
+  `Operation` on the query string, no verdict field; measured 08.10.2026). The
+  route exports `GET` and `POST` on one handler; `parseCardcomCallback` in
+  `src/lib/contracts/webhooks.ts` reads query, form-urlencoded and JSON. Do not
+  require `ResponseCode`: a callback with no verdict goes to `GetLpResult`.
 - Journal every webhook event to `payment_webhook_events` BEFORE acting on it,
   deduped on `(provider, external_event_id)`. `processed_at` stays null until
   the order actually closes -- that null is what puts a charged-but-unfinalized

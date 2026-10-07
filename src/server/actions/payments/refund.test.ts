@@ -509,6 +509,113 @@ describe('refundOrder: refusals', () => {
   })
 })
 
+/**
+ * The lock. `refunds_one_open_per_order` (UNIQUE on order_id WHERE state IN
+ * requested/approved/executing, measured on production 08.10.2026) is the only
+ * server-side mutex the refund path has: `idempotency_keys` does not exist in
+ * production, and `payments.idempotency_key` is written AFTER the credit, so
+ * it stopped the second bookkeeping row and not the second credit.
+ */
+describe('refundOrder: the refunds row is the lock, taken before the money moves', () => {
+  const refundsInserts = () => calls.filter((c) => c.table === 'refunds' && c.op === 'insert')
+  const refundsUpdates = () =>
+    calls
+      .filter((c) => c.table === 'refunds' && c.op === 'update')
+      .map((c) => c.payload as Record<string, unknown>)
+
+  it('opens the statutory row as executing BEFORE asking the provider', async () => {
+    seedHappyPath()
+    let rowsOpenWhenProviderAsked = -1
+    refundByTransactionId.mockImplementation(async () => {
+      rowsOpenWhenProviderAsked = refundsInserts().length
+      return {
+        success: true,
+        refundTransactionId: 'refund-tx-1',
+        refundedAgorot: 9_500,
+        failureCode: null,
+        failureMessage: null,
+        raw: {},
+      }
+    })
+    const result = await refundOrder({ orderId: 'order-1', reason: 'test' })
+    expect(result.ok).toBe(true)
+    expect(rowsOpenWhenProviderAsked).toBe(1)
+    const opened = refundsInserts()[0]?.payload as Record<string, unknown>
+    expect(opened).toMatchObject({
+      order_id: 'order-1',
+      payment_id: 'pay-1',
+      state: 'executing',
+      requested_agorot: 10_000,
+      granted_agorot: 9_500,
+      cancellation_fee_agorot: 500,
+      requested_by: 'admin-1',
+      decided_by: 'admin-1',
+    })
+    expect(opened.completed_at).toBeNull()
+  })
+
+  it('settles the row to completed, keyed on the one executing row, after the credit', async () => {
+    seedHappyPath()
+    await refundOrder({ orderId: 'order-1', reason: 'test' })
+    const completed = refundsUpdates().find((u) => u.state === 'completed')
+    expect(completed).toMatchObject({ state: 'completed', granted_agorot: 9_500 })
+    expect(typeof completed?.completed_at).toBe('string')
+    const update = calls.find((c) => c.table === 'refunds' && c.op === 'update')
+    expect(update?.chain).toEqual([
+      ['eq', ['order_id', 'order-1']],
+      ['eq', ['state', 'executing']],
+    ])
+  })
+
+  it('refuses a second refund while one is open, without reaching the provider', async () => {
+    // The race this exists for: two admins on the same button, or one
+    // double-click that outran the `orders.status` read. The loser gets 23505
+    // from the partial unique index and Cardcom is never asked twice.
+    seedHappyPath()
+    queue('refunds.insert', { data: null, error: { code: '23505', message: 'duplicate key' } })
+    const result = await refundOrder({ orderId: 'order-1', reason: 'test' })
+    expect(result).toMatchObject({ ok: false, code: 'MANUAL_RESOLUTION' })
+    expect(result.ok === false && result.error).toContain('כבר פתוח')
+    expect(refundByTransactionId).not.toHaveBeenCalled()
+    expect(find('payments', 'insert')).toBeUndefined()
+  })
+
+  it('fails closed when the row cannot be written, because nothing has moved yet', async () => {
+    seedHappyPath()
+    queue('refunds.insert', {
+      data: null,
+      error: { code: '23514', message: 'violates check constraint' },
+    })
+    const result = await refundOrder({ orderId: 'order-1', reason: 'test' })
+    expect(result).toMatchObject({ ok: false, code: 'INTERNAL' })
+    expect(refundByTransactionId).not.toHaveBeenCalled()
+  })
+
+  it('releases the lock as failed when the provider declines, so a retry is possible', async () => {
+    seedHappyPath()
+    refundByTransactionId.mockResolvedValue({
+      success: false,
+      refundTransactionId: null,
+      refundedAgorot: 0,
+      failureCode: '55',
+      failureMessage: 'declined',
+      raw: {},
+    })
+    const result = await refundOrder({ orderId: 'order-1', reason: 'test' })
+    expect(result).toMatchObject({ ok: false, code: 'PROVIDER_ERROR' })
+    expect(refundsUpdates()).toEqual([
+      { state: 'failed', granted_agorot: null, completed_at: null },
+    ])
+  })
+
+  it('still answers ok when the settle after the credit fails: the money already moved', async () => {
+    seedHappyPath()
+    queue('refunds.update', { data: null, error: { message: 'connection reset' } })
+    const result = await refundOrder({ orderId: 'order-1', reason: 'test' })
+    expect(result).toMatchObject({ ok: true, replay: false })
+  })
+})
+
 describe('refundOrder: restocking consumed stock', () => {
   it('calls restock_order_stock once the order really flipped to refunded', async () => {
     // The `restock_consumed` effect order-transitions.ts declares for every

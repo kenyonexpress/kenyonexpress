@@ -347,7 +347,7 @@ sequenceDiagram
     A-->>C: mount payment iframe
 
     C->>CC: enters card details
-    CC->>W: POST /api/payments/cardcom/webhook?s=<secret>
+    CC->>W: GET /api/payments/cardcom/webhook?s=<secret>&terminalnumber=..&lowprofilecode=..&Operation=..
 
     Note over W: Cardcom does NOT sign callbacks.<br/>Body is NEVER trusted for money.
     W->>W: constant-time compare ?s= against<br/>current AND retiring secret, no short circuit
@@ -369,11 +369,21 @@ sequenceDiagram
 
 ### Why the webhook is shaped like this
 
-1. **The POST body is a notification, never data.** Cardcom's legacy
+1. **The callback is a notification, never data.** Cardcom's legacy
    `/Interface/*.aspx` API does not sign its callbacks: there is no HMAC header
    to verify. Authenticity rests on an unguessable secret in the callback URL
    plus a mandatory server-to-server `GetLpResult` re-fetch. **The re-fetched
    result is the only trusted source of amount, status and token.**
+   **The legacy IndicatorUrl is a GET** with `terminalnumber`, `lowprofilecode`
+   and `Operation` on the query string and no verdict field (measured
+   08.10.2026 against Cardcom's article and two public integrations; a
+   terminal configured to POST sends form-urlencoded, and the mock sends
+   JSON). The route exports `GET` and `POST` on one handler and
+   `parseCardcomCallback` reads all three shapes. A callback with no verdict
+   goes to `GetLpResult`; a verify that says "not charged" is then an ordinary
+   decline, not an alarm. Until 08.10 the route exported `POST` only and read
+   JSON, so a real indicator was a framework 405 and the return page was the
+   only thing closing orders.
 2. **Both secrets are always compared, with no short circuit.** Returning on the
    first match would let response time reveal which secret was presented, which
    defeats the constant-time comparison it sits inside.

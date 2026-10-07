@@ -16,12 +16,30 @@ import { log } from '@/lib/observability/log'
  * law is about. Nothing could answer "which refunds are past their deadline",
  * because there was no row to ask.
  *
- * WHY BEST EFFORT, LIKE THE CREDIT NOTE AND THE AUDIT ROW BESIDE IT. By the
- * time this is called the card has already been credited. A failure to write
- * the record must not turn a refund that SUCCEEDED into an error an operator
- * retries, because the retry would attempt a second credit. So it logs loudly
- * and returns, exactly as `enqueueRefundCreditNote` and the audit insert in the
- * same function already do.
+ * SINCE 08.10.2026 THE ROW IS ALSO THE LOCK. Production carries
+ * `refunds_one_open_per_order`, a UNIQUE index on `order_id` WHERE state IN
+ * (`requested`, `approved`, `executing`). `refundOrder` writes the row in
+ * `executing` BEFORE it asks Cardcom to move money, so two admins clicking the
+ * same button, or one admin double-clicking, race on that index rather than on
+ * the terminal: the loser gets `23505` and never reaches the provider. Before
+ * this the only idempotency key was on the `payments` row written AFTER the
+ * provider call, which blocked the second bookkeeping entry and not the second
+ * credit. Measured, 08.10: `idempotency_keys` (the generic claim table in
+ * `lib/idempotency.ts`) does not exist in production, so this index is the
+ * only server-side mutex the refund path has.
+ *
+ * `settleRefundRecord` then closes the row as `completed` or `failed`, keyed
+ * on (`order_id`, `executing`) because the index guarantees there is exactly
+ * one such row.
+ *
+ * WHY THE SETTLE IS BEST EFFORT, LIKE THE CREDIT NOTE AND THE AUDIT ROW BESIDE
+ * IT. By the time it is called the card has already been credited. A failure
+ * to write the record must not turn a refund that SUCCEEDED into an error an
+ * operator retries, because the retry would attempt a second credit. So it
+ * logs loudly and returns, exactly as `enqueueRefundCreditNote` and the audit
+ * insert in the same function already do. The OPEN is the opposite: it fails
+ * closed, because nothing has moved yet and a refund with no record is the
+ * thing this table exists to prevent.
  */
 
 /** `public.refund_state`, as production declares it. */
@@ -76,7 +94,7 @@ type RefundRow = {
   state: RefundState
   ground: RefundGround
   requested_agorot: number
-  granted_agorot: number
+  granted_agorot: number | null
   cancellation_fee_agorot: number
   cancel_only: boolean
   reason_he: string
@@ -87,25 +105,51 @@ type RefundRow = {
   completed_at: string | null
 }
 
+type RefundRowPatch = Partial<Pick<RefundRow, 'state' | 'granted_agorot' | 'completed_at'>>
+
+type PgError = { message: string; code?: string }
+
 /** Minimal structural client shape; `src/types/database.ts` predates 131. */
 export type RefundRecordAdmin = {
   from: (table: 'refunds') => {
-    insert: (row: RefundRow) => Promise<{ error: { message: string } | null }>
+    insert: (row: RefundRow) => Promise<{ error: PgError | null }>
+    update: (patch: RefundRowPatch) => {
+      eq: (
+        column: 'order_id',
+        value: string,
+      ) => { eq: (column: 'state', value: RefundState) => Promise<{ error: PgError | null }> }
+    }
   }
 }
 
+/** Postgres unique_violation: another open refund already holds this order. */
+const UNIQUE_VIOLATION = '23505'
+
+/** States that count as "decided": an admin chose, whether or not money has moved yet. */
+const DECIDED_STATES: ReadonlySet<RefundState> = new Set(['executing', 'completed'])
+
+export type RecordRefundResult = {
+  error: string | null
+  /**
+   * True when the insert lost to `refunds_one_open_per_order`: a refund for
+   * this order is already `requested`, `approved` or `executing`. The caller
+   * must not reach the provider on this answer.
+   */
+  inFlight: boolean
+}
+
 /**
- * An admin-initiated refund is decided and executed in the same call, so the
- * row is written already closed: requested, decided and completed all carry the
- * same instant. A customer-initiated request would write `requested` here and
- * move through the machine later; nothing does that yet.
+ * Write the notice. For an admin refund the state is `executing`, written
+ * before the provider is asked, and the row is the lock described above.
+ * `requested` is for a customer-initiated request; nothing writes that yet.
  */
 export async function recordRefund(
   admin: RefundRecordAdmin,
   record: RefundRecord,
-): Promise<{ error: string | null }> {
+): Promise<RecordRefundResult> {
   const at = record.at.toISOString()
   const closed = record.state === 'completed'
+  const decided = DECIDED_STATES.has(record.state)
   try {
     const { error } = await admin.from('refunds').insert({
       order_id: record.orderId,
@@ -120,20 +164,74 @@ export async function recordRefund(
       requested_by: record.requestedBy ?? null,
       decided_by: record.decidedBy ?? null,
       requested_at: at,
-      decided_at: closed ? at : null,
+      decided_at: decided ? at : null,
       completed_at: closed ? at : null,
     })
     if (error) {
-      log.error('refund.record_not_written', {
-        order_id: record.orderId,
-        payment_id: record.paymentId,
+      const inFlight = error.code === UNIQUE_VIOLATION
+      if (inFlight) {
+        log.warn('refund.record_already_open', {
+          order_id: record.orderId,
+          payment_id: record.paymentId,
+        })
+      } else {
+        log.error('refund.record_not_written', {
+          order_id: record.orderId,
+          payment_id: record.paymentId,
+          reason: error.message,
+        })
+      }
+      return { error: error.message, inFlight }
+    }
+    return { error: null, inFlight: false }
+  } catch (err) {
+    log.error('refund.record_threw', { order_id: record.orderId, err })
+    return { error: String(err), inFlight: false }
+  }
+}
+
+export type SettleRefundInput =
+  | { orderId: string; state: 'completed'; grantedAgorot: number; at: Date }
+  | { orderId: string; state: 'failed'; at: Date }
+
+/**
+ * Close the `executing` row once the provider has answered.
+ *
+ * `completed` carries the money that went back and the completion time, both
+ * of which `refunds_completed_has_money` requires. `failed` clears the granted
+ * amount: nothing went back. Keyed on (`order_id`, `executing`) rather than an
+ * id, because the partial unique index guarantees exactly one such row and the
+ * insert above did not need to read anything back to know it won.
+ */
+export async function settleRefundRecord(
+  admin: RefundRecordAdmin,
+  input: SettleRefundInput,
+): Promise<{ error: string | null }> {
+  const patch: RefundRowPatch =
+    input.state === 'completed'
+      ? {
+          state: 'completed',
+          granted_agorot: input.grantedAgorot,
+          completed_at: input.at.toISOString(),
+        }
+      : { state: 'failed', granted_agorot: null, completed_at: null }
+  try {
+    const { error } = await admin
+      .from('refunds')
+      .update(patch)
+      .eq('order_id', input.orderId)
+      .eq('state', 'executing')
+    if (error) {
+      log.error('refund.record_not_settled', {
+        order_id: input.orderId,
+        state: input.state,
         reason: error.message,
       })
       return { error: error.message }
     }
     return { error: null }
   } catch (err) {
-    log.error('refund.record_threw', { order_id: record.orderId, err })
+    log.error('refund.record_settle_threw', { order_id: input.orderId, err })
     return { error: String(err) }
   }
 }

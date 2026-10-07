@@ -1,5 +1,38 @@
+import { readFileSync, readdirSync, statSync } from 'node:fs'
+import { join, relative } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { canonicalJson, hashResponse, makeIdempotencyKey } from './idempotency'
+
+/**
+ * `idempotency_keys` does not exist in production (measured 08.10.2026, see
+ * the module header). A production module importing this file would raise
+ * 42P01 on its first `claim`, in the middle of whatever money path chose it.
+ * The first consumer must bring the migration, and this test is what makes
+ * that a decision rather than an accident.
+ */
+describe('nothing in production code imports this module while its table is absent', () => {
+  function sourceFiles(dir: string, out: string[] = []): string[] {
+    for (const name of readdirSync(dir)) {
+      const full = join(dir, name)
+      if (statSync(full).isDirectory()) {
+        sourceFiles(full, out)
+      } else if (/\.tsx?$/.test(name) && !/\.test\.tsx?$/.test(name)) {
+        out.push(full)
+      }
+    }
+    return out
+  }
+
+  it('has no importer under src/ outside its own tests', () => {
+    const root = join(process.cwd(), 'src')
+    const importers = sourceFiles(root).filter((file) => {
+      if (file.endsWith(join('lib', 'idempotency.ts'))) return false
+      const text = readFileSync(file, 'utf8')
+      return /from ['"]@\/lib\/idempotency['"]|from ['"]\.{1,2}\/(lib\/)?idempotency['"]/.test(text)
+    })
+    expect(importers.map((f) => relative(process.cwd(), f))).toEqual([])
+  })
+})
 
 describe('makeIdempotencyKey', () => {
   it('joins scope and parts with colons deterministically', () => {

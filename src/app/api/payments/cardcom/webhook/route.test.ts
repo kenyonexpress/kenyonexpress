@@ -72,7 +72,7 @@ vi.mock('@/server/payments/finalize', () => ({
   finalizeOrder: (...args: unknown[]) => finalizeOrder(...args),
 }))
 
-import { POST } from './route'
+import { GET, POST } from './route'
 
 const SECRET = 'the-current-secret'
 const PREVIOUS = 'the-previous-secret'
@@ -88,10 +88,38 @@ function callbackBody(overrides: Record<string, unknown> = {}): string {
   })
 }
 
-function request(secret: string | null, body: string): NextRequest {
+function request(secret: string | null, body: string, contentType?: string): NextRequest {
   const url = new URL('https://kenyonexpress.co.il/api/payments/cardcom/webhook')
   if (secret !== null) url.searchParams.set('s', secret)
-  return new NextRequest(url, { method: 'POST', body })
+  return new NextRequest(url, {
+    method: 'POST',
+    body,
+    headers: contentType ? { 'content-type': contentType } : undefined,
+  })
+}
+
+/**
+ * The legacy indicator as Cardcom really sends it: a GET, parameters on the
+ * query string appended to OUR IndicatorUrl (which already carries `?s=`), and
+ * no verdict field. Measured 08.10.2026 against Cardcom's own article and two
+ * public integrations.
+ */
+function indicatorRequest(
+  secret: string | null,
+  params: Record<string, string> = {
+    terminalnumber: '1000',
+    lowprofilecode: LOW_PROFILE,
+    Operation: '1',
+  },
+): NextRequest {
+  const url = new URL('https://kenyonexpress.co.il/api/payments/cardcom/webhook')
+  if (secret !== null) url.searchParams.set('s', secret)
+  for (const [key, value] of Object.entries(params)) url.searchParams.set(key, value)
+  return new NextRequest(url, { method: 'GET' })
+}
+
+function journalInsert(): Record<string, unknown> {
+  return calls.find((c) => c.table === 'payment_webhook_events')?.payload as Record<string, unknown>
 }
 
 /** Everything after the event insert, for a callback that should finalize. */
@@ -131,6 +159,115 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.unstubAllEnvs()
+})
+
+/**
+ * The route exported only POST and parsed the body as JSON. A real indicator
+ * is a GET with query parameters, so the framework answered 405 before this
+ * handler ran: nothing journalled, nothing verified, Cardcom's retries spent
+ * against the same 405, and the return page was the only thing closing orders.
+ */
+describe('the legacy GET indicator', () => {
+  it('is accepted, journalled, verified against the terminal and finalized', async () => {
+    seedHappyPath()
+    const response = await GET(indicatorRequest(SECRET))
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual({ ok: true })
+    expect(journalInsert()).toMatchObject({
+      provider: 'cardcom',
+      signature_valid: true,
+      external_event_id: `${LOW_PROFILE}:na`,
+      payload: { terminalnumber: '1000', lowprofilecode: LOW_PROFILE, Operation: '1' },
+    })
+    expect(verifyLowProfile).toHaveBeenCalledWith(LOW_PROFILE)
+    expect(finalizeOrder).toHaveBeenCalled()
+  })
+
+  it('never journals our own secret as part of the payload', async () => {
+    seedHappyPath()
+    await GET(indicatorRequest(SECRET))
+    expect(journalInsert().payload).not.toHaveProperty('s')
+  })
+
+  it('reads a verify that says "not charged" as an ordinary decline, with no alarm', async () => {
+    // The indicator carried no verdict, so nothing has been contradicted; the
+    // terminal is simply the first to say the card was declined.
+    seedHappyPath()
+    verifyLowProfile.mockResolvedValue({ success: false, amountAgorot: null })
+    const response = await GET(indicatorRequest(SECRET))
+    expect(await response.json()).toEqual({ ok: true, verified: false })
+    expect(finalizeOrder).not.toHaveBeenCalled()
+    expect(capturePaymentAlarm).not.toHaveBeenCalled()
+    const failed = calls.find((c) => c.table === 'payments' && c.op === 'update')
+      ?.payload as Record<string, unknown>
+    expect(failed).toMatchObject({ status: 'failed', failure_code: 'verify_not_charged' })
+  })
+
+  it('still alarms on a verify that contradicts a callback which CLAIMED success', async () => {
+    // The negative control for the test above: the no-alarm path is for an
+    // indicator with no verdict, not for every failed verify.
+    seedHappyPath()
+    verifyLowProfile.mockResolvedValue({ success: false, amountAgorot: null })
+    await GET(
+      indicatorRequest(SECRET, {
+        lowprofilecode: LOW_PROFILE,
+        terminalnumber: '1000',
+        ResponseCode: '0',
+      }),
+    )
+    expect(capturePaymentAlarm).toHaveBeenCalled()
+  })
+
+  it('does not ask the terminal when the indicator itself reports a declined deal', async () => {
+    seedHappyPath()
+    await GET(
+      indicatorRequest(SECRET, {
+        lowprofilecode: LOW_PROFILE,
+        terminalnumber: '1000',
+        OperationResponse: '0',
+        DealResponse: '33',
+      }),
+    )
+    expect(verifyLowProfile).not.toHaveBeenCalled()
+    const failed = calls.find((c) => c.table === 'payments' && c.op === 'update')
+      ?.payload as Record<string, unknown>
+    expect(failed).toMatchObject({ status: 'failed', failure_code: '33' })
+  })
+
+  it('refuses and alarms on a GET that parses as Cardcom but carries no accepted secret', async () => {
+    await GET(indicatorRequest('wrong'))
+    expect(finalizeOrder).not.toHaveBeenCalled()
+    expect(verifyLowProfile).not.toHaveBeenCalled()
+    expect(journalInsert().signature_valid).toBe(false)
+    expect(capturePaymentAlarm).toHaveBeenCalledWith(
+      expect.stringContaining('no accepted secret matched'),
+      expect.objectContaining({ stage: 'cardcom_webhook_secret' }),
+    )
+  })
+
+  it('stays quiet for a GET scanner with no low profile code', async () => {
+    const response = await GET(indicatorRequest('wrong', { hello: 'world' }))
+    expect(response.status).toBe(200)
+    expect(capturePaymentAlarm).not.toHaveBeenCalled()
+  })
+})
+
+describe('a form-encoded POST', () => {
+  it('is read like the JSON body the tests otherwise send', async () => {
+    // asm3 parses the indicator body with parse_qs; a terminal configured to
+    // POST sends `application/x-www-form-urlencoded`, never JSON.
+    seedHappyPath()
+    const response = await POST(
+      request(
+        SECRET,
+        `terminalnumber=1000&lowprofilecode=${LOW_PROFILE}&ResponseCode=0&InternalDealNumber=77`,
+        'application/x-www-form-urlencoded',
+      ),
+    )
+    expect(await response.json()).toEqual({ ok: true })
+    expect(journalInsert().external_event_id).toBe(`${LOW_PROFILE}:77`)
+    expect(finalizeOrder).toHaveBeenCalled()
+  })
 })
 
 describe('secret rotation', () => {
