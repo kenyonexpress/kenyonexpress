@@ -168,6 +168,19 @@ Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=produ
 - Decision: this blocker is the same as open blocker 0. The other parity items in this cycle will refuse the same way until Ofir provides a reference.
 - No code change. Gates in this run are listed in the commit message.
 
+## M01-c116: compare.mjs on / at 380, 768, 1440, run 2026-10-07 in the foreground
+
+Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=home --width=<w>` (server: `PORT=3311 pnpm start` on the existing build)
+
+| Width | Exit | Diff | Output |
+|---|---|---|---|
+| 380 | 5 | none | REFUSING: `https://kenyonexpress.co.il/` is this project's own build (35 `/_next/` refs, Next runtime, no wp-content) |
+| 768 | 5 | none | REFUSING: same reason (34 `/_next/` refs) |
+| 1440 | 5 | none | REFUSING: same reason (34 `/_next/` refs) |
+
+- No diff numbers. Unchanged from M01-c115 except that 1440 now gives the same refusal reason instead of "styles never confirmed". `refs/ke_live_singlefile.html` is still absent. Last real number stays home 10.92 at 1440 (older archive).
+- No code change. Gates: `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6473 passed, 12 skipped), `pnpm build` 0.
+
 ## M01-c115: compare.mjs on / at 380, 768, 1440, run 2026-10-07 in the foreground
 
 Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=home --width=<w>`
