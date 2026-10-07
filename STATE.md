@@ -1,9 +1,9 @@
-RESUME FROM: M02-c115
+RESUME FROM: M03-c115
 
 # KenyonExpress — Project State
 
-Last item: **M01-c115 BLOCKED** (2026-10-07): compare.mjs refuses at 380, 768 and 1440 because the live host is our own build, so there is no reference to diff against. Branch `feat/products-sort-infinite-scroll`.
-Previous: M11-c113 DONE (2026-10-06).
+Last item: **M02-c115 BLOCKED** (2026-10-07): compare.mjs `--page=product` refuses at 380, 768 and 1440 for the same reason as M01-c115: the live product URL is our own build, so there is no reference. Branch `feat/products-sort-infinite-scroll`.
+Previous: M01-c115 BLOCKED (2026-10-07), M11-c113 DONE (2026-10-06).
 History before this item lives in `docs/STATE-ARCHIVE.md` (21,138 lines moved there in this commit).
 
 ## Queue status (cycle c113)
@@ -17,6 +17,21 @@ The runner's `final-done.txt` lists M01–M10 of c113 as finished. This branch's
 | M12-c113 | Verify robots.txt production-safe | next |
 | M13–M18-c113 | health, Sentry, console, JSON-LD, RTL, STATE trim | pending |
 | M01-c115 | Re-measure compare.mjs 380/768/1440 on / | **BLOCKED**: gate refuses, no reference (see below) |
+| M02-c115 | Re-measure compare.mjs on /product | **BLOCKED**: gate refuses, no reference (see below) |
+
+## M02-c115: compare.mjs on /product at 380, 768, 1440, run 2026-10-07 in the foreground
+
+Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=product --width=<w>` (local `pnpm start -p 3311` on the existing build, HTTP 200).
+
+| Width | Exit | Diff | Output |
+|---|---|---|---|
+| 380 | 5 | none | REFUSING: `https://kenyonexpress.co.il/product/מוצר-לדוגמא/` is this project's own build (39 `/_next/` refs, Next runtime, no wp-content) |
+| 768 | 5 | none | REFUSING: same reason (22 `/_next/` refs) |
+| 1440 | 5 | none | REFUSING: same reason (37 `/_next/` refs, Next runtime) |
+
+- **There are no diff numbers.** The guard refuses to score our build against itself, so this is BLOCKED and not a pass. The gate logged the three REFUSED rows in `docs/UI-PARITY-REPORT.md` itself, and they are committed with this item. The last real product number is 10.96% (see archive).
+- Decision: this blocker is the same as open blocker 0. The other parity items in this cycle will refuse the same way until Ofir provides a reference.
+- No code change. Gates in this run are listed in the commit message.
 
 ## M01-c115: compare.mjs on / at 380, 768, 1440, run 2026-10-07 in the foreground
 
@@ -44,7 +59,7 @@ Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=home 
 
 ## Open blockers
 
-0. **The parity gate has no reference (M01-c115).** `compare.mjs` exits 5 at every width because `kenyonexpress.co.il` serves our build and `refs/ke_live_singlefile.html` does not exist. No UI item can show it is under 11% until a working reference is restored (see `docs/PARITY-REFERENCE.md`).
+0. **The parity gate has no reference (M01-c115).** `compare.mjs` exits 5 at every width because `kenyonexpress.co.il` serves our build and `refs/ke_live_singlefile.html` does not exist. No UI item can show it is under 11% until a working reference is restored. Re-confirmed for `/product` in M02-c115 (see `docs/PARITY-REFERENCE.md`).
 1. **Apex vs www host mismatch (known since SECTIONS 21, still open).** Vercel serves `www` and redirects the apex with a 308. The site declares the apex as canonical: every sitemap `<loc>`, the robots `Sitemap:` line, `og:url` and canonicals all use `https://kenyonexpress.co.il` (from `NEXT_PUBLIC_APP_URL`, with the `layout.tsx` default). So all 94 sitemap URLs cost one 308 hop before they reach a 200. Fixing it means either setting `NEXT_PUBLIC_APP_URL=https://www.kenyonexpress.co.il` in Vercel or making the apex the primary domain in Vercel. Both are Vercel env or domain changes, which the agent is not allowed to make.
 2. Scheduled jobs (cron) do not run until migration 162 is applied. See below.
 3. The live catalogue has template rows and duplicates: 25 findings pinned in `supabase/catalogue-known-issues.json`. These are decisions for the operator.
