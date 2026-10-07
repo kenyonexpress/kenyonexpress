@@ -1,0 +1,122 @@
+Already up to date
+Done in 218ms using pnpm v11.1.2
+$ next build
+▲ Next.js 16.3.3 (Turbopack)
+- Environments: .env.local
+✓ Running next.config.ts took 614ms
+- Cache Components enabled
+- Experiments (use with caution):
+  · optimizePackageImports
+  · serverActions
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 6.1s
+  Running next.config.js provided runAfterProductionCompile ...
+✓ Completed runAfterProductionCompile in 2.2s
+  Running TypeScript ...
+  Finished TypeScript in 5.4s ...
+  Collecting page data using 7 workers ...
+(node:44202) ExperimentalWarning: The supports Web Crypto API method is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:44202) ExperimentalWarning: The ML-DSA-44 Web Crypto API algorithm is an experimental feature and might change at any time
+{"ts":"2026-10-07T07:18:31.258Z","level":"error","event":"supabase.timeout","request_id":null,"timeoutMs":10000,"url":"https://ixvwfbuvfxxsjiywhbbb.supabase.co/rest/v1/coupon_deals"}
+{"ts":"2026-10-07T07:18:31.267Z","level":"error","event":"supabase.timeout","request_id":null,"timeoutMs":10000,"url":"https://ixvwfbuvfxxsjiywhbbb.supabase.co/rest/v1/categories"}
+{"ts":"2026-10-07T07:18:31.313Z","level":"error","event":"supabase.timeout","request_id":null,"timeoutMs":10000,"url":"https://ixvwfbuvfxxsjiywhbbb.supabase.co/rest/v1/suppliers"}
+{"ts":"2026-10-07T07:18:31.323Z","level":"error","event":"supabase.timeout","request_id":null,"timeoutMs":10000,"url":"https://ixvwfbuvfxxsjiywhbbb.supabase.co/rest/v1/products"}
+{"ts":"2026-10-07T07:18:31.379Z","level":"error","event":"supabase.timeout","request_id":null,"timeoutMs":10000,"url":"https://ixvwfbuvfxxsjiywhbbb.supabase.co/rest/v1/products"}
+{"ts":"2026-10-07T07:18:42.272Z","level":"error","event":"supabase.timeout","request_id":null,"timeoutMs":10000,"url":"https://ixvwfbuvfxxsjiywhbbb.supabase.co/rest/v1/coupon_deals"}
+{"ts":"2026-10-07T07:18:42.274Z","level":"error","event":"supabase.timeout","request_id":null,"timeoutMs":10000,"url":"https://ixvwfbuvfxxsjiywhbbb.supabase.co/rest/v1/categories"}
+{"ts":"2026-10-07T07:18:42.336Z","level":"error","event":"supabase.timeout","request_id":null,"timeoutMs":10000,"url":"https://ixvwfbuvfxxsjiywhbbb.supabase.co/rest/v1/suppliers"}
+{"ts":"2026-10-07T07:18:42.340Z","level":"error","event":"supabase.timeout","request_id":null,"timeoutMs":10000,"url":"https://ixvwfbuvfxxsjiywhbbb.supabase.co/rest/v1/products"}
+{"ts":"2026-10-07T07:18:42.392Z","level":"error","event":"supabase.timeout","request_id":null,"timeoutMs":10000,"url":"https://ixvwfbuvfxxsjiywhbbb.supabase.co/rest/v1/products"}
+{"ts":"2026-10-07T07:18:54.279Z","level":"error","event":"supabase.timeout","request_id":null,"timeoutMs":10000,"url":"https://ixvwfbuvfxxsjiywhbbb.supabase.co/rest/v1/coupon_deals"}
+{"ts":"2026-10-07T07:18:54.282Z","level":"error","event":"supabase.timeout","request_id":null,"timeoutMs":10000,"url":"https://ixvwfbuvfxxsjiywhbbb.supabase.co/rest/v1/categories"}
+{"ts":"2026-10-07T07:18:54.344Z","level":"error","event":"supabase.timeout","request_id":null,"timeoutMs":10000,"url":"https://ixvwfbuvfxxsjiywhbbb.supabase.co/rest/v1/suppliers"}
+{"ts":"2026-10-07T07:18:54.347Z","level":"error","event":"supabase.timeout","request_id":null,"timeoutMs":10000,"url":"https://ixvwfbuvfxxsjiywhbbb.supabase.co/rest/v1/products"}
+{"ts":"2026-10-07T07:18:54.399Z","level":"error","event":"supabase.timeout","request_id":null,"timeoutMs":10000,"url":"https://ixvwfbuvfxxsjiywhbbb.supabase.co/rest/v1/products"}
+{"ts":"2026-10-07T07:19:08.293Z","level":"error","event":"supabase.timeout","request_id":null,"timeoutMs":10000,"url":"https://ixvwfbuvfxxsjiywhbbb.supabase.co/rest/v1/coupon_deals"}
+{"ts":"2026-10-07T07:19:08.297Z","level":"error","event":"coupon_deal.active_ids_failed","request_id":null,"error":{"message":"SupabaseTimeoutError: Supabase request exceeded 10000ms","details":"SupabaseTimeoutError: Supabase request exceeded 10000ms\n    at /Users/ofir/kenyonexpress-autopilot/.next/server/chunks/ssr/src_lib_02hz88u._.js:2:2434\n    at async /Users/ofir/kenyonexpress-autopilot/.next/server/chunks/ssr/src_lib_02hz88u._.js:2:3166\n    at async /Users/ofir/kenyonexpress-autopilot/.next/server/chunks/ssr/src_lib_02hz88u._.js:2:3836\n    at async /Users/ofir/kenyonexpress-autopilot/.next/server/chunks/ssr/src_lib_02hz88u._.js:2:11418\n    at async k (/Users/ofir/kenyonexpress-autopilot/.next/server/chunks/ssr/_20do81k._.js:2:2031)","hint":"","code":""}}
+{"ts":"2026-10-07T07:19:08.295Z","level":"error","event":"supabase.timeout","request_id":null,"timeoutMs":10000,"url":"https://ixvwfbuvfxxsjiywhbbb.supabase.co/rest/v1/categories"}
+{"ts":"2026-10-07T07:19:08.299Z","level":"error","event":"catalogue.category_slugs_failed","request_id":null,"error":{"message":"SupabaseTimeoutError: Supabase request exceeded 10000ms","details":"SupabaseTimeoutError: Supabase request exceeded 10000ms\n    at /Users/ofir/kenyonexpress-autopilot/.next/server/chunks/ssr/src_lib_02hz88u._.js:2:2434\n    at async /Users/ofir/kenyonexpress-autopilot/.next/server/chunks/ssr/src_lib_02hz88u._.js:2:3166\n    at async /Users/ofir/kenyonexpress-autopilot/.next/server/chunks/ssr/src_lib_02hz88u._.js:2:3836\n    at async /Users/ofir/kenyonexpress-autopilot/.next/server/chunks/ssr/src_lib_02hz88u._.js:2:11418\n    at async q (/Users/ofir/kenyonexpress-autopilot/.next/server/chunks/ssr/src_lib_category-page_ts_1yg58gq._.js:2:1482)","hint":"","code":""}}
+⨯ Error: coupon_deal.active_ids_failed: SupabaseTimeoutError: Supabase request exceeded 10000ms
+    at c (src/lib/catalogue-read.ts:56:9)
+    at k (src/lib/coupon-deals.ts:68:16)
+  54 |   if (error.code === 'PGRST116' || error.code === 'PGRST103') return data
+  55 |   log.error(event, { ...context, error })
+> 56 |   throw new Error(`${event}: ${error.message ?? 'catalogue read failed'}`)
+     |         ^
+  57 | }
+  58 |
+  59 | /** Same contract as `orFail`, for the reads that also carry `count`. */ {
+  digest: '2551888498'
+}
+⨯ Error: catalogue.category_slugs_failed: SupabaseTimeoutError: Supabase request exceeded 10000ms
+    at c (src/lib/catalogue-read.ts:56:9)
+    at q (src/lib/category-page.ts:164:16)
+  54 |   if (error.code === 'PGRST116' || error.code === 'PGRST103') return data
+  55 |   log.error(event, { ...context, error })
+> 56 |   throw new Error(`${event}: ${error.message ?? 'catalogue read failed'}`)
+     |         ^
+  57 | }
+  58 |
+  59 | /** Same contract as `orFail`, for the reads that also carry `count`. */ {
+  digest: '303941321'
+}
+[Error: An error occurred in the Server Components render. The specific message is omitted in production builds to avoid leaking sensitive details. A digest property is included on this error instance which may provide additional details about the nature of the error.] {
+  digest: '2551888498'
+}
+Turbopack build encountered 2 warnings:
+./src/lib/images/watermark.ts:33:21
+Warning: The file pattern ('/ROOT/' <dynamic> | '/ROOT' <dynamic>) matches 10256 files in [project]/
+  [90m31 |[0m   [36mif[0m (cached && cachedFor === file) [36mreturn[0m cached
+  [90m32 |[0m   cachedFor = file
+[33m[1m>[0m [90m33 |[0m   cached = readFile(resolve(process.cwd(), file))
+  [90m   |[0m                     [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m34 |[0m     .then((image) => ({ image, opacity: parseOpacity(env.[33mIMAGE_WATERMARK_OPACITY[0m) }))
+  [90m35 |[0m     .[36mcatch[0m((error: unknown) => {
+  [90m36 |[0m       log.warn([32m'images.watermark.unreadable'[0m, {
+
+Overly broad patterns can lead to build performance issues and over bundling.
+
+Import trace:
+  Server Component:
+    ./src/lib/images/watermark.ts
+    ./src/server/actions/admin/images.ts
+
+
+./src/lib/images/watermark.ts:33:21
+Warning: Dynamic filesystem access causes tracing of the whole project
+  [90m31 |[0m   [36mif[0m (cached && cachedFor === file) [36mreturn[0m cached
+  [90m32 |[0m   cachedFor = file
+[33m[1m>[0m [90m33 |[0m   cached = readFile(resolve(process.cwd(), file))
+  [90m   |[0m                     [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m34 |[0m     .then((image) => ({ image, opacity: parseOpacity(env.[33mIMAGE_WATERMARK_OPACITY[0m) }))
+  [90m35 |[0m     .[36mcatch[0m((error: unknown) => {
+  [90m36 |[0m       log.warn([32m'images.watermark.unreadable'[0m, {
+
+Static analysis determined that this filesystem access causes the whole project to be traced and included in the output.
+This is usually unintentional and leads to all source files (including the public folder) to be deployed as part of the server code.
+This can slow down deployments or lead to failures when size limits are exceeded.
+To resolve this, you can
+- make sure the path is statically scoped to some subfolder, for example path.join(process.cwd(), 'data', bar), or
+- only use them in development, or
+- opt out by adding an ignore comment to the highlighted call: path.resolve(/*turbopackIgnore: true*/ ...), or
+- remove them.
+
+Import trace:
+  Server Component:
+    ./src/lib/images/watermark.ts
+    ./src/server/actions/admin/images.ts
+
+
+[Error: An error occurred in the Server Components render. The specific message is omitted in production builds to avoid leaking sensitive details. A digest property is included on this error instance which may provide additional details about the nature of the error.] {
+  digest: '303941321'
+}
+
+> Build error occurred
+Error: Failed to collect page data for /coupons/[id]
+    at ignore-listed frames {
+  type: 'Error'
+}
+[ELIFECYCLE] Command failed with exit code 1.
+build exit 1

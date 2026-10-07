@@ -1,0 +1,147 @@
+Already up to date
+Done in 224ms using pnpm v11.1.2
+$ biome check . && node scripts/tokens-gate.mjs && node scripts/copy-gate.mjs && node scripts/asset-gate.mjs
+./scripts/posthog/insights.mjs format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+    159 159 │         ],
+    160 160 │       ),
+    161     │ - ····cohort('KE·cashback·gold',·'Lifetime·cashback·tier·gold·(src/lib/analytics/cashback-tier.ts).',·[
+    162     │ - ······personFilter(P.cashbackTier,·'exact',·'gold'),
+    163     │ - ····]),
+        161 │ + ····cohort(
+        162 │ + ······'KE·cashback·gold',
+        163 │ + ······'Lifetime·cashback·tier·gold·(src/lib/analytics/cashback-tier.ts).',
+        164 │ + ······[personFilter(P.cashbackTier,·'exact',·'gold')],
+        165 │ + ····),
+    164 166 │       cohort('KE replayed sessions', 'People with at least one recorded buggy session.', [
+    165 167 │         {
+  
+
+./scripts/posthog/provision.mjs format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+     24  24 │   
+     25  25 │   import { readFileSync } from 'node:fs'
+     26     │ - import·{·buildCohorts,·buildFunnelInsight,·buildRetentionInsights,·planUpserts·}·from·'./insights.mjs'
+         26 │ + import·{
+         27 │ + ··buildCohorts,
+         28 │ + ··buildFunnelInsight,
+         29 │ + ··buildRetentionInsights,
+         30 │ + ··planUpserts,
+         31 │ + }·from·'./insights.mjs'
+     27  32 │   
+     28  33 │   const args = new Set(process.argv.slice(2))
+  
+
+./src/components/analytics/PostHogReplay.test.tsx format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+      8   8 │     REPLAY_OPTIN_VALUE,
+      9   9 │   } from '@/lib/analytics/replay-optin'
+     10     │ - import·{
+     11     │ - ··BUGGY_SESSION_STORAGE_KEY,
+     12     │ - ··markSessionBuggy,
+     13     │ - }·from·'@/lib/analytics/replay-trigger'
+         10 │ + import·{·BUGGY_SESSION_STORAGE_KEY,·markSessionBuggy·}·from·'@/lib/analytics/replay-trigger'
+     14  11 │   import { render, waitFor } from '@testing-library/react'
+     15  12 │   import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+  
+
+./src/components/analytics/PostHogReplay.tsx:144:3 lint/correctness/useExhaustiveDependencies ━━━━━━━━━━
+
+  ! This hook does not specify all of its dependencies: startOnce
+  
+    142 │   }, [allowed])
+    143 │ 
+  > 144 │   useEffect(() => {
+        │   ^^^^^^^^^
+    145 │     const parked = parkedClient()
+    146 │     if (!allowed) {
+  
+  i This dependency is not specified in the hook dependency list.
+  
+    185 │             // error during this very page load is the common case).
+    186 │             const pending = bugReasonRef.current ?? readBuggySession()
+  > 187 │             if (pending) startOnce(client as unknown as ParkedClient, pending)
+        │                          ^^^^^^^^^
+    188 │           },
+    189 │         })
+  
+
+./src/components/analytics/PostHogReplay.tsx:201:3 lint/correctness/useExhaustiveDependencies ━━━━━━━━━━
+
+  ! This hook does not specify all of its dependencies: startOnce
+  
+    200 │   // The signal arrived with the SDK already parked: start now.
+  > 201 │   useEffect(() => {
+        │   ^^^^^^^^^
+    202 │     if (!allowed || !bugReason) return
+    203 │     const client = parkedClient()
+  
+  i This dependency is not specified in the hook dependency list.
+  
+    202 │     if (!allowed || !bugReason) return
+    203 │     const client = parkedClient()
+  > 204 │     if (client) startOnce(client, bugReason)
+        │                 ^^^^^^^^^
+    205 │   }, [allowed, bugReason])
+    206 │ 
+  
+
+./src/components/analytics/PostHogReplay.tsx format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+     75  75 │    * flagged session off tape.
+     76  76 │    */
+     77     │ - const·START_OVERRIDES·=·{·sampling:·true,·linked_flag:·true,·url_trigger:·true,·event_trigger:·true·}
+         77 │ + const·START_OVERRIDES·=·{
+         78 │ + ··sampling:·true,
+         79 │ + ··linked_flag:·true,
+         80 │ + ··url_trigger:·true,
+         81 │ + ··event_trigger:·true,
+         82 │ + }
+     78  83 │   
+     79  84 │   function startRecording(client: ParkedClient, reason: BugSignalReason): void {
+  
+
+./src/lib/analytics/consent-dnt.test.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+     58  58 │   })
+     59  59 │   
+     60     │ - 
+     61  60 │   /** jsdom defines no navigator.doNotTrack at all, so it is defined rather than spied on. */
+     62  61 │   function setDoNotTrack(value: string | null | (() => string | null)): void {
+  
+
+./src/lib/analytics/replay-trigger.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+     50  50 │   const IGNORED_SOURCES = [/^chrome-extension:\/\//, /^moz-extension:\/\//, /^safari-extension:\/\//]
+     51  51 │   
+     52     │ - export·function·isIgnorableError(message:·string·|·null·|·undefined,·source?:·string·|·null):·boolean·{
+         52 │ + export·function·isIgnorableError(
+         53 │ + ··message:·string·|·null·|·undefined,
+         54 │ + ··source?:·string·|·null,
+         55 │ + ):·boolean·{
+     53  56 │     if (message && IGNORED_MESSAGES.some((noise) => message.includes(noise))) return true
+     54  57 │     if (source && IGNORED_SOURCES.some((pattern) => pattern.test(source))) return true
+  
+
+Checked 1927 files in 620ms. No fixes applied.
+Found 6 errors.
+Found 2 warnings.
+check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Some errors were emitted while running checks.
+  
+
+[ELIFECYCLE] Command failed with exit code 1.
+lint exit 1
