@@ -21372,3 +21372,9 @@ Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=categ
 
 - No diff numbers, unchanged from M03-c115. `refs/ke_live_singlefile.html` is still absent. The gate appended three REFUSED rows to `docs/UI-PARITY-REPORT.md`. They are committed with this item.
 - No code change. Gates: `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6473 passed, 12 skipped), `pnpm build` 0.
+
+## M04-c116 — pnpm type-check, fix drift (DONE, 2026-10-07)
+
+- `pnpm type-check` (`tsc --noEmit`) exit 0 on `feat/products-sort-infinite-scroll`. No type errors, so nothing to fix and no code change.
+- Gates on the working tree (which still has the uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` edits that this item did not touch): type-check 0, lint 0, test 0 (519 files, 6473 passed, 12 skipped), build 0.
+- Not a UI change, so compare.mjs does not apply (it is blocked anyway, blocker 0).
