@@ -1,10 +1,10 @@
-RESUME FROM: M01-c117
+RESUME FROM: M02-c117
 
 # KenyonExpress — Project State
 
-Last item: **M18-c116 DONE** (2026-10-07): STATE.md was already 80 lines (under 300) at the start of the item, so no trim was needed. The two status lines for M17-c116 and the M18-c115 gates line were moved to `docs/STATE-ARCHIVE.md`. The c116 queue ends at M18, so the next ID is M01-c117 (decided from the c115 → c116 pattern).
-M18-c116 gates (working tree, with the two uncommitted UI edits still unstaged): `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6474 passed, 12 skipped), `pnpm build` 0 on attempt 1. Docs-only change, so compare.mjs does not apply (it is blocked anyway, blocker 0).
-Previous: M17-c116 BLOCKED, M16-c116 DONE, M15-c116 DONE, M14-c116 BLOCKED, M13-c116 BLOCKED, M12-c116 DONE, M11-c116 DONE, M10-c116 BLOCKED, M09-c116 DONE, M08-c116 DONE, M07-c116 DONE, M06-c116 DONE, M05-c116 DONE, M04-c116 DONE, M03-c116 BLOCKED, M02-c116 BLOCKED, M01-c116 BLOCKED, M18-c115 DONE, M16-c115 DONE, M15-c115 DONE, M14-c115 BLOCKED, M13-c115 BLOCKED, M12-c115 DONE, M11-c115 DONE, M10-c115 BLOCKED, M09-c115 DONE, M08-c115 DONE, M07-c115 DONE, M06-c115 DONE, M05-c115 DONE, M04-c115 DONE, M03-c115 BLOCKED, M02-c115 BLOCKED, M01-c115 BLOCKED (all 2026-10-07), M11-c113 DONE (2026-10-06).
+Last item: **M01-c117 BLOCKED** (2026-10-07): compare.mjs on / exits 5 at 380, 768 and 1440 with REFUSING (kenyonexpress.co.il is our own build) and gives no diff numbers. `refs/ke_live_singlefile.html` is still absent. Same as open blocker 0. Next ID: M02-c117.
+M01-c117 gates (working tree, the two uncommitted UI edits still unstaged): see the commit message. Docs-only change.
+Previous: M18-c116 DONE, M17-c116 BLOCKED, M16-c116 DONE, M15-c116 DONE, M14-c116 BLOCKED, M13-c116 BLOCKED, M12-c116 DONE, M11-c116 DONE, M10-c116 BLOCKED, M09-c116 DONE, M08-c116 DONE, M07-c116 DONE, M06-c116 DONE, M05-c116 DONE, M04-c116 DONE, M03-c116 BLOCKED, M02-c116 BLOCKED, M01-c116 BLOCKED, M18-c115 DONE, M16-c115 DONE, M15-c115 DONE, M14-c115 BLOCKED, M13-c115 BLOCKED, M12-c115 DONE, M11-c115 DONE, M10-c115 BLOCKED, M09-c115 DONE, M08-c115 DONE, M07-c115 DONE, M06-c115 DONE, M05-c115 DONE, M04-c115 DONE, M03-c115 BLOCKED, M02-c115 BLOCKED, M01-c115 BLOCKED (all 2026-10-07), M11-c113 DONE (2026-10-06).
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
 
 ## Queue status (cycle c113)
@@ -53,6 +53,7 @@ The runner's `final-done.txt` lists M01–M10 of c113 as finished. This branch's
 | M16-c116 | Verify all product pages have JSON-LD Product and BreadcrumbList | **DONE**: 44/44 prod, 46/46 HEAD, both nodes valid; same 3 image-less rows lack `image`, unchanged from M16-c115 (see archive) |
 | M17-c116 | Verify RTL on / and /product sample, no LTR leaks | **BLOCKED**: one leak, the footer newsletter placeholder is flush left in an LTR field; the uncommitted fix cannot pass compare.mjs (exit 5, blocker 0) (see archive) |
 | M18-c116 | Trim STATE.md under 300 lines, archive rest | **DONE**: already 80 lines at start, no trim needed; 3 stale status lines moved to `docs/STATE-ARCHIVE.md` |
+| M01-c117 | Re-measure compare.mjs 380/768/1440 on / | **BLOCKED**: exit 5 at all three widths, gate refuses, no reference (see archive) |
 
 ## Open blockers
 
@@ -68,7 +69,7 @@ The runner's `final-done.txt` lists M01–M10 of c113 as finished. This branch's
 
 - Decide on the uncommitted `SiteFooter.tsx` edit. It fixes the one RTL leak M17-c116 found: the footer email placeholder renders flush left and, on HEAD, in flipped order. The agent cannot commit it while compare.mjs has no reference. Commit it yourself, or restore the reference first.
 
-- Provide a usable parity reference: either restore `refs/ke_live_singlefile.html` (a self-contained SingleFile save of the old WooCommerce home) or a host that still serves the old site. Until then compare.mjs cannot produce a number (M01-c115, re-confirmed M01-c116, M02-c116 and M03-c116).
+- Provide a usable parity reference: either restore `refs/ke_live_singlefile.html` (a self-contained SingleFile save of the old WooCommerce home) or a host that still serves the old site. Until then compare.mjs cannot produce a number (M01-c115, re-confirmed M01-c116, M01-c117, M02-c116 and M03-c116).
 - Choose one canonical host and set it in Vercel: either `NEXT_PUBLIC_APP_URL` = www, or make the apex primary (blocker 1). Then resubmit the sitemap in Search Console.
 - Apply `migrations/pending/` following `APPLY-ORDER.md`. As of M10-c115, 22 files are confirmed not live, including 162 cron, 228 `job_runs` and most of 202–227 (the list is in the M10-c115 section of the archive). Do not apply `200`.
 - Confirm that `189`, `190`, `191`, `194`, `197` and `201` are in `supabase_migrations.schema_migrations`. If they are, move them to `migrations/applied/` with README rows. Their objects are already live (M10-c115). Also re-authorise the Supabase MCP so agents can read `schema_migrations`.
