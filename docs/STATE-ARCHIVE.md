@@ -62,6 +62,20 @@ Setup: the same as M08-c116. Lighthouse 13.4.1 from the repo (`pnpm exec lightho
 - Best Practices 96 is `errors-in-console` only. All the errors are local, the same set as M08-c116: `/_vercel/insights/script.js` and `/_vercel/speed-insights/script.js` return 404 off Vercel and are then refused on MIME type, and one request fails with `ERR_SSL_PROTOCOL_ERROR` (the wishlist prefetch upgraded to https by HSTS and `upgrade-insecure-requests` on http localhost). None of these is a production finding.
 - No code change. Gates in this run: `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6474 passed, 12 skipped), `pnpm build` 0 on attempt 1 (4 `supabase.timeout` events, all absorbed, 0 `db.query_failed`). This is not a UI change, so compare.mjs does not apply (it is blocked anyway, see blocker 0). `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` are still uncommitted and not part of this commit.
 
+## M02-c118: compare.mjs on /product at 380, 768, 1440, run 2026-10-07 in the foreground
+
+Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=product --width=<w>` (server: `PORT=3311 pnpm start` on the existing build, HEAD `39314fbe8` with the two uncommitted UI edits in the tree)
+
+| Width | Exit | Diff | Output |
+|---|---|---|---|
+| 380 | 5 | none | REFUSING: `https://kenyonexpress.co.il/product/מוצר-לדוגמא/` is not the reference (our build: 360 `/_next/` refs, 0 wp-content) |
+| 768 | 5 | none | REFUSING: same reason |
+| 1440 | 5 | none | REFUSING: same reason |
+
+- No diff numbers, unchanged from M02-c115, M02-c116 and M02-c117. `refs/ke_live_singlefile.html` is still absent. The gate wrote four REFUSED rows to `docs/UI-PARITY-REPORT.md` (one extra 380 run to capture the REFUSING line); they are committed with this item. The last real product number is still 10.96% (older archive).
+- Gates on the working tree: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 5. Attempts 1–4 failed on Supabase `SupabaseTimeoutError` (10000 ms) during prerender/page-data collection while the REST endpoint itself answered in under 1 s; transient, no code change.
+- Decision: BLOCKED on open blocker 0. No code change.
+
 ## M02-c117: compare.mjs on /product at 380, 768, 1440, run 2026-10-07 in the foreground
 
 Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=product --width=<w>` (server: `PORT=3311 pnpm start` on the existing build, HEAD `0e3d131e7` with the two uncommitted UI edits in the tree)
