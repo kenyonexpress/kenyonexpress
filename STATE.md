@@ -1,10 +1,10 @@
-RESUME FROM: M04-c119
+RESUME FROM: M05-c119
 
 # KenyonExpress — Project State
 
-Last item: **M03-c119 BLOCKED** (2026-10-08): compare.mjs on `/category` exits 5 (REFUSED, no diff number) at 380, 768 and 1440. `https://kenyonexpress.co.il/product-category/hot-deals/` is our own build (38 `/_next/` refs, Next runtime, 0 wp-content) and `refs/ke_live_singlefile.html` is still absent. Run in the foreground against `PORT=3311 pnpm start`, HEAD `f07c9ea9b`. Unchanged from M03-c118; open blocker 0. No code change.
-M03-c119 gates (working tree, uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` UI edits left unstaged): type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (15 Supabase timeout log lines, all recovered; 0 `db.query_failed`). compare.mjs exit 5 x4 (blocker 0).
-Previous: M02-c119 BLOCKED, M01-c119 BLOCKED, M18-c118 DONE, M17-c118 BLOCKED, M16-c118 DONE, M15-c118 DONE, M14-c118 BLOCKED, M13-c118 BLOCKED, M12-c118 DONE, M11-c118 DONE, M10-c118 BLOCKED, M09-c118 DONE, M08-c118 DONE, M07-c118 DONE, M06-c118 DONE, M05-c118 BLOCKED, M04-c118 DONE, M03-c118 BLOCKED, M02-c118 BLOCKED, M01-c118 BLOCKED, M18-c117 DONE, M17-c117 BLOCKED, M16-c117 DONE, M15-c117 DONE, M14-c117 BLOCKED, M13-c117 BLOCKED, M12-c117 DONE, M11-c117 DONE, M10-c117 BLOCKED, M09-c117 DONE, M08-c117 DONE, M07-c117 DONE, M06-c117 DONE, M05-c117 DONE, M04-c117 DONE, M03-c117 BLOCKED, M02-c117 BLOCKED, M01-c117 BLOCKED, M18-c116 DONE, M17-c116 BLOCKED, M16-c116 DONE, M15-c116 DONE, M14-c116 BLOCKED, M13-c116 BLOCKED, M12-c116 DONE, M11-c116 DONE, M10-c116 BLOCKED, M09-c116 DONE, M08-c116 DONE, M07-c116 DONE, M06-c116 DONE, M05-c116 DONE, M04-c116 DONE, M03-c116 BLOCKED, M02-c116 BLOCKED, M01-c116 BLOCKED, M18-c115 DONE, M16-c115 DONE, M15-c115 DONE, M14-c115 BLOCKED, M13-c115 BLOCKED, M12-c115 DONE, M11-c115 DONE, M10-c115 BLOCKED, M09-c115 DONE, M08-c115 DONE, M07-c115 DONE, M06-c115 DONE, M05-c115 DONE, M04-c115 DONE, M03-c115 BLOCKED, M02-c115 BLOCKED, M01-c115 BLOCKED (all 2026-10-07), M11-c113 DONE (2026-10-06).
+Last item: **M04-c119 DONE** (2026-10-08): `pnpm type-check` (`tsc --noEmit`) exit 0 at HEAD `3a18e5ee6`, no drift, no code change. Unchanged from M04-c118.
+M04-c119 gates (working tree, uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` UI edits left unstaged): type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (50 log lines matching `timeout`, all recovered; 0 `db.query_failed`). No compare.mjs run: not a UI item, no UI change committed.
+Previous: M03-c119 BLOCKED, M02-c119 BLOCKED, M01-c119 BLOCKED, M18-c118 DONE, M17-c118 BLOCKED, M16-c118 DONE, M15-c118 DONE, M14-c118 BLOCKED, M13-c118 BLOCKED, M12-c118 DONE, M11-c118 DONE, M10-c118 BLOCKED, M09-c118 DONE, M08-c118 DONE, M07-c118 DONE, M06-c118 DONE, M05-c118 BLOCKED, M04-c118 DONE, M03-c118 BLOCKED, M02-c118 BLOCKED, M01-c118 BLOCKED, M18-c117 DONE, M17-c117 BLOCKED, M16-c117 DONE, M15-c117 DONE, M14-c117 BLOCKED, M13-c117 BLOCKED, M12-c117 DONE, M11-c117 DONE, M10-c117 BLOCKED, M09-c117 DONE, M08-c117 DONE, M07-c117 DONE, M06-c117 DONE, M05-c117 DONE, M04-c117 DONE, M03-c117 BLOCKED, M02-c117 BLOCKED, M01-c117 BLOCKED, M18-c116 DONE, M17-c116 BLOCKED, M16-c116 DONE, M15-c116 DONE, M14-c116 BLOCKED, M13-c116 BLOCKED, M12-c116 DONE, M11-c116 DONE, M10-c116 BLOCKED, M09-c116 DONE, M08-c116 DONE, M07-c116 DONE, M06-c116 DONE, M05-c116 DONE, M04-c116 DONE, M03-c116 BLOCKED, M02-c116 BLOCKED, M01-c116 BLOCKED, M18-c115 DONE, M16-c115 DONE, M15-c115 DONE, M14-c115 BLOCKED, M13-c115 BLOCKED, M12-c115 DONE, M11-c115 DONE, M10-c115 BLOCKED, M09-c115 DONE, M08-c115 DONE, M07-c115 DONE, M06-c115 DONE, M05-c115 DONE, M04-c115 DONE, M03-c115 BLOCKED, M02-c115 BLOCKED, M01-c115 BLOCKED (all 2026-10-07), M11-c113 DONE (2026-10-06).
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
 
 ## Queue status (cycle c113)
@@ -92,6 +92,7 @@ The runner's `final-done.txt` lists M01–M10 of c113 as finished. This branch's
 | M01-c119 | Re-measure compare.mjs 380/768/1440 on / | **BLOCKED**: exit 5 at all three widths, gate refuses, no reference (see archive) |
 | M02-c119 | Re-measure compare.mjs on /product | **BLOCKED**: exit 5 at 380/768/1440, gate refuses, no reference (see archive) |
 | M03-c119 | Re-measure compare.mjs on /category | **BLOCKED**: exit 5 at 380/768/1440, gate refuses, no reference (see archive) |
+| M04-c119 | pnpm type-check, fix drift | **DONE**: exit 0, no drift, no code change |
 
 ## Open blockers
 
