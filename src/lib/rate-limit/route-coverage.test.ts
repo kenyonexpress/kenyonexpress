@@ -82,6 +82,11 @@ const SECRET_AUTHENTICATED: { path: string; guard: RegExp; reason: string }[] = 
     reason: 'shared webhook secret, compared in constant time',
   },
   {
+    path: 'src/app/api/revalidate/route.ts',
+    guard: /bearerMatches\(/,
+    reason: 'REVALIDATE_SECRET as bearer; on-demand storefront cache purge, no public caller',
+  },
+  {
     path: 'src/app/api/webhooks/images/purge/route.ts',
     guard: /secretEquals\(/,
     reason: 'shared purge secret or HMAC of the body, compared in constant time',

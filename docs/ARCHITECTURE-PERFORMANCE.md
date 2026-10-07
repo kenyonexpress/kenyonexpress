@@ -125,86 +125,78 @@ Wire in CI:
 
 ### 2.1 Route matrix (binding)
 
-| Page | Route | Mode | `revalidate` (safety) | Cache tags | CDN Cache-Control |
+Implemented in STEP 36 (07.10.2026). Under `cacheComponents` there is no
+`export const revalidate`; the window is the `cacheLife` of the `use cache`
+reads a page is built from, and Next derives the CDN header from the
+shortest one: `s-maxage={revalidate}, stale-while-revalidate={expire -
+revalidate}`. The values live in `src/lib/cache/tags.ts` (`CacheLife`) and
+the tags next to them (`CacheTags`). `stale` is 300 everywhere and `expire`
+a day: a `stale` under 300 drops the read out of the route's app shell and
+an `expire` under 300 makes it a dynamic hole (cacheLife reference,
+"Prerendering behavior"), so neither is a tuning knob here.
+
+| Page | Route | Mode | `revalidate` | Cache tags (every read also carries `catalogue`) | CDN Cache-Control (derived) |
 |---|---|---|---|---|---|
-| Home | `/` | **ISR** | **120s** | `home`, `catalog` | `public, s-maxage=120, stale-while-revalidate=600` |
-| Category | `/category/[slug]` | **ISR** | **300s** | `category:{id}`, `catalog` | `public, s-maxage=300, stale-while-revalidate=900` |
-| Product | `/product/[slug]` | **ISR** | **120s** | `product:{id}`, `catalog` | `public, s-maxage=120, stale-while-revalidate=600` |
-| Products index | `/products` | **ISR** | **180s** | `catalog` | `public, s-maxage=180, stale-while-revalidate=600` |
-| Sitemap | `/sitemap.xml` | **ISR** | **3600s** | `sitemap` | `public, s-maxage=3600` |
-| Search | `/search` | Dynamic (short CDN) | n/a | none on HTML | `public, s-maxage=30, stale-while-revalidate=60` + `noindex` |
-| Cart | `/cart` | Dynamic private | n/a | n/a | `private, no-store` |
-| Checkout / account / redeem | `/checkout*`, `/account/**`, `/redeem/[token]` | Dynamic private | n/a | n/a | `private, no-store` |
-| Admin / supplier | `/admin/**`, `/supplier/**` | Dynamic private | n/a | n/a | `private, no-store` |
+| Home | `/` | **ISR** | **120s** `CacheLife.home` | `home` | `s-maxage=120, stale-while-revalidate=86280` |
+| Category | `/category/[slug]` | **ISR** | **300s** `CacheLife.list` | `category:{id}`, `product-list` | `s-maxage=300, stale-while-revalidate=86100` |
+| Product | `/product/[slug]` | **ISR** | **120s** `CacheLife.product` | `product:{id}` (+ `category:{id}` on the strips) | `s-maxage=120, stale-while-revalidate=86280` |
+| Products index | `/products` | **ISR** | **180s** `CacheLife.productsIndex` | `product-list` | `s-maxage=180, stale-while-revalidate=86220` |
+| Supplier storefront | `/s/[id]` | **ISR** | **300s** `CacheLife.list` | `supplier:{id}`, `product-list` | `s-maxage=300, …` |
+| Sitemap / feeds | `/sitemap.xml`, `/feed.xml`, `/merchant.xml` | **ISR** | **3600s** `CacheLife.sitemap` | `sitemap` / `feed` | sitemap derived; feeds set `CacheControl.feed` themselves |
+| Search | `/search`, `/api/search/*` | Dynamic (short CDN) | n/a | none on HTML | `CacheControl.search`: `public, max-age=0, s-maxage=30, stale-while-revalidate=60` |
+| Cart | `/cart`, `/api/cart` | Dynamic private | n/a | n/a | `private, no-cache, no-store, max-age=0, must-revalidate` (Next, on any cookie read); `CacheControl.private` on the handler |
+| Checkout / account / wallet / redeem | `/checkout*`, `/account/**`, `/wallet`, `/redeem/[token]` | Dynamic private | n/a | n/a | same |
+| Admin / supplier | `/admin/**`, `/supplier/**`, `/api/supplier/*` | Dynamic private | n/a | n/a | same; route handlers that set nothing get `private, no-store` from `withRequestLog` |
 
 Why these numbers:
 
-- **Home 120s**: featured deals rotate; on-demand tag clears on publish. Short window catches `valid_until` expiry without waiting for admin action.
+- **Home 120s**: featured deals rotate; the `home` tag clears on publish. Short window catches `valid_until` expiry without waiting for admin action.
 - **Category 300s**: listing churn is slower than PDP price edits. Pagination shells are identical across users.
 - **Product 120s**: price / stock / gallery edits are common; tag `product:{id}` is the real path.
-- Time-based revalidate alone is **not** enough for money-facing display after admin publish. Always call `revalidateTag`.
+- Time-based revalidate alone is **not** enough for money-facing display after admin publish. Server Actions call `updateTag(CATALOGUE_TAG)` (blocking, read-your-own-writes); everything else goes through `revalidateTag(tag, 'max')` (stale-while-revalidate), see 2.2.
 
-### 2.2 Shared cache helpers
+### 2.2 Shared cache helpers (as built)
 
 ```ts
 // src/lib/cache/tags.ts
 export const CacheTags = {
+  catalogue: CATALOGUE_TAG,          // the umbrella every read carries; what admin actions expire
   home: 'home',
-  catalog: 'catalog',
   sitemap: 'sitemap',
-  category: (id: string) => `category:${id}` as const,
+  feed: 'feed',
+  productList: 'product-list',
   product: (id: string) => `product:${id}` as const,
+  category: (id: string) => `category:${id}` as const,
   supplier: (id: string) => `supplier:${id}` as const,
 } as const
 
-export const RevalidateSeconds = {
-  home: 120,
-  category: 300,
-  product: 120,
-  productsIndex: 180,
-  sitemap: 3600,
+export const CacheLife = {                 // inline profiles: named ones are untyped before `next build`
+  home:          { stale: 300, revalidate: 120,  expire: 86400 },
+  product:       { stale: 300, revalidate: 120,  expire: 86400 },
+  list:          { stale: 300, revalidate: 300,  expire: 86400 },
+  productsIndex: { stale: 300, revalidate: 180,  expire: 86400 },
+  sitemap:       { stale: 300, revalidate: 3600, expire: 86400 },
 } as const
+
+// The pure mapping a database change -> tags it stales. A stock-only UPDATE
+// returns [`product:${id}`] alone; INSERT/DELETE return the full set.
+export function cacheTagsForChange(change: DbChangeLike): string[]
 ```
 
 ```ts
-// src/lib/cache/revalidate-catalog.ts
-'use server'
-
-import { revalidatePath, revalidateTag } from 'next/cache'
-import { CacheTags } from '@/lib/cache/tags'
-
-export async function revalidateAfterProductPublish(input: {
-  productId: string
-  slug: string
-  categoryIds: string[]
-  featuredOnHome: boolean
-}) {
-  revalidateTag(CacheTags.product(input.productId))
-  revalidateTag(CacheTags.catalog)
-  revalidateTag(CacheTags.sitemap)
-  revalidatePath(`/product/${input.slug}`)
-
-  for (const categoryId of input.categoryIds) {
-    revalidateTag(CacheTags.category(categoryId))
-  }
-
-  if (input.featuredOnHome) {
-    revalidateTag(CacheTags.home)
-    revalidatePath('/')
-  }
-}
-
-export async function revalidateAfterCategoryMutation(input: {
-  categoryId: string
-  slug: string
-}) {
-  revalidateTag(CacheTags.category(input.categoryId))
-  revalidateTag(CacheTags.catalog)
-  revalidateTag(CacheTags.sitemap)
-  revalidatePath(`/category/${input.slug}`)
-  revalidatePath('/products')
-}
+// src/lib/cache/revalidate.ts (route-handler side; Server Actions keep updateTag)
+export function revalidateCacheTags(tags: readonly string[]): string[]   // revalidateTag(tag, 'max') each
+export function revalidateCachePaths(paths: readonly string[]): string[] // allow-listed storefront paths only
 ```
+
+Two invalidation paths, deliberately different:
+
+| Caller | Call | Semantics | Why |
+|---|---|---|---|
+| Server Action (admin save, approve, bulk) | `updateTag(CATALOGUE_TAG)` | blocking: next request waits for fresh data | the admin who saved opens the storefront to check; a stale copy reads as "the save failed" |
+| `/api/webhooks/products` (Supabase DB webhook), `/api/revalidate`, `/api/cron/daily-deals` | `revalidateTag(tag, 'max')` | stale-while-revalidate: next visitor gets the stale copy, refill in background | nobody is waiting; a cold render on every sale would empty the cache when the shop is busy |
+
+`updateTag` is not callable from a route handler (Next throws), so the split is enforced, not a convention.
 
 ### 2.3 Home (`/`): ISR 120s
 
@@ -1116,44 +1108,52 @@ Browser → Vercel Edge (HTML / RSC payload) → Origin (Next server) → Supaba
 | Fonts (next/font) | Immutable hashed URLs | 1y |
 | Static `/_next/static` | Edge | immutable |
 
-### 7.2 Recommended Cache-Control helpers
+### 7.2 Cache-Control helpers (as built)
+
+Pages do NOT set a header. Under `cacheComponents` Next derives it from the
+page's `cacheLife` (section 2.1), and a static header on a page would fight
+that. Route handlers get nothing from Next and set their own, from one
+module:
 
 ```ts
 // src/lib/cache/http.ts
 export function publicIsr(sMaxAge: number, swr: number) {
-  return `public, s-maxage=${sMaxAge}, stale-while-revalidate=${swr}`
+  return `public, max-age=0, s-maxage=${sMaxAge}, stale-while-revalidate=${swr}`
 }
 
 export const CacheControl = {
-  home: publicIsr(120, 600),
-  category: publicIsr(300, 900),
-  product: publicIsr(120, 600),
-  productsIndex: publicIsr(180, 600),
-  sitemap: publicIsr(3600, 86400),
-  search: 'public, s-maxage=30, stale-while-revalidate=60',
-  private: 'private, no-store',
+  search: publicIsr(30, 60),              // /api/search, /api/search/facets
+  feed: publicIsr(3600, 86400),           // /feed.xml, /merchant.xml
+  postalCode: 'public, max-age=3600, s-maxage=86400',
+  private: 'private, no-store',           // cart, wallet pass, suggest, anything per caller
 } as const
 ```
 
-Apply via route `headers()` when needed:
-
-```ts
-// src/app/(store)/page.tsx
-import type { Metadata } from 'next'
-import { CacheControl } from '@/lib/cache/http'
-
-export async function headers() {
-  return {
-    'Cache-Control': CacheControl.home,
-  }
-}
-```
+`max-age=0` on every public policy is deliberate: the edge can be
+revalidated, a browser cannot. The ledger in
+`src/__tests__/public-route-cache-control.test.ts` names every public GET
+handler and fails on an unlisted one. Since STEP 36 `withRequestLog` also
+sets `private, no-store` on any handler response that declared nothing, so
+a forgotten header is per-caller rather than browser-heuristic.
 
 ### 7.3 On-demand purge
 
-Admin mutations call `revalidateTag` / `revalidatePath` (section 2.2). That is the Vercel Data Cache + path purge path for App Router ISR.
+Three doors, all ending in Next's tag store (section 2.2):
 
-Do not invent a custom CDN purge API unless R2 HTML is involved (it is not; HTML is Vercel).
+1. **Admin Server Actions**: `updateTag(CATALOGUE_TAG)`, blocking, read-your-own-writes.
+2. **Supabase Database Webhook** on `products` / `categories` →
+   `/api/webhooks/products`: `cacheTagsForChange(payload)` →
+   `revalidateTag(tag, 'max')` per tag, before the search-index enqueue. This
+   is what makes SQL, the till app, CSV imports and the post-sale stock
+   decrement visible on the next request. Echoes `revalidated: string[]`.
+3. **`/api/revalidate`** (`REVALIDATE_SECRET` bearer): `{ tags, paths }` with
+   known tags and allow-listed storefront paths only; unknown targets are a
+   400 naming them, never a partial purge.
+
+Do not invent a custom CDN purge API unless R2 HTML is involved (it is not;
+HTML is Vercel). Note the Next docs caveat: `revalidateTag` clears the Next
+cache; a CDN copy lives until its `s-maxage`, which is why the windows in
+2.1 are minutes, not hours.
 
 ### 7.4 Cookie fragmentation
 
@@ -1228,13 +1228,15 @@ useEffect(() => {
 
 ## 10. Invalidation map (admin → cache)
 
-| Admin event | Tags | Paths |
+| Event | Through | Tags staled |
 |---|---|---|
-| Publish / unpublish product | `product:{id}`, `catalog`, `sitemap`, `home` if featured | `/product/{slug}`, `/`, category paths |
-| Edit price / images | `product:{id}`, `catalog` | `/product/{slug}` |
-| Category rename / product move | `category:{id}`, `catalog`, `sitemap` | `/category/{slug}` |
-| Home hero edit | `home` | `/` |
-| Bulk import | `catalog`, `home`, `sitemap` | `/`, `/products` |
+| Any admin Server Action write (save, approve, archive, recategorise, bulk) | `updateTag(CATALOGUE_TAG)` | `catalogue` (every read carries it) |
+| Product INSERT / DELETE (webhook) | `cacheTagsForChange` | `product:{id}`, `catalogue`, `product-list`, `home`, `feed`, `category:{id}`, `supplier:{id}`, `sitemap` |
+| Product UPDATE, any listed column (price, images, name, category) | same | as above; both categories on a move; `sitemap` only when slug / status / deleted_at / published_at changed |
+| Product UPDATE, stock-only (`stock_quantity`, `stock_initial`, thresholds, `updated_at`) | same | `product:{id}` alone |
+| Category INSERT / DELETE / UPDATE | same | `category:{id}`, `catalogue`, `product-list`, `home`, parents on a re-parent, `sitemap` on a URL-shaping change |
+| Flash deal applied (`/api/cron/daily-deals`) | `revalidateTag(CATALOGUE_TAG, 'max')` + warm | `catalogue` |
+| Anything else (CMS row, deploy, operator) | `POST /api/revalidate` | the tags / paths named in the body |
 
 ---
 
@@ -1268,3 +1270,4 @@ useEffect(() => {
 |---|---|
 | 2026-07-30 | Initial binding performance architecture on `arch/performance` |
 | 2026-10-07 | STEP 35: blur manifest for static files (3.4), positional loading hints, real-ratio reservations |
+| 2026-10-07 | STEP 36: per-entity cache tags and route-matrix lifetimes (2.1, 2.2), DB-webhook and `/api/revalidate` on-demand purge (7.3), invalidation map rewritten to what runs (10) |

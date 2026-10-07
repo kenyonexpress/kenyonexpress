@@ -1,7 +1,10 @@
+import { CacheControl } from '@/lib/cache/http'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { getOrderInvoice } from '@/server/payments/invoices'
 import { NextResponse } from 'next/server'
+
+const PRIVATE = { 'cache-control': CacheControl.private } as const
 
 /**
  * The customer's tax document, behind their own session.
@@ -34,6 +37,7 @@ export async function GET(
         `/login?next=${encodeURIComponent(`/account/orders/${id}`)}`,
         process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il',
       ),
+      { headers: PRIVATE },
     )
   }
 
@@ -45,14 +49,16 @@ export async function GET(
     .eq('user_id', user.id)
     .is('deleted_at', null)
     .maybeSingle()
-  if (!order) return new NextResponse('לא נמצא', { status: 404 })
+  if (!order) return new NextResponse('לא נמצא', { status: 404, headers: PRIVATE })
 
   const invoice = await getOrderInvoice(admin, id)
   if (!invoice?.documentUrl) {
     // Issued-but-no-URL and not-yet-issued are the same thing to a reader: come
     // back later. 404 rather than 500, because nothing is broken.
-    return new NextResponse('החשבונית עדיין לא הונפקה', { status: 404 })
+    return new NextResponse('החשבונית עדיין לא הונפקה', { status: 404, headers: PRIVATE })
   }
 
-  return NextResponse.redirect(invoice.documentUrl)
+  // The redirect target is a signed, per-customer document URL. A 307 with
+  // no Cache-Control is one a browser may replay from history after logout.
+  return NextResponse.redirect(invoice.documentUrl, { headers: PRIVATE })
 }

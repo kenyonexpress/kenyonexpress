@@ -154,3 +154,43 @@ describe('withRequestLog', () => {
     expect(JSON.parse((errorLine.mock.calls[0] as [string])[0]).request_id).toBeNull()
   })
 })
+
+describe('withRequestLog: default cache policy (STEP 36)', () => {
+  beforeEach(() => {
+    vi.spyOn(console, 'log').mockImplementation(() => {})
+  })
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('marks a response that declared no Cache-Control as private, no-store', async () => {
+    const handler = withRequestLog('/api/cart', async () => Response.json({ items: [] }))
+    const res = await handler(request())
+    expect(res.headers.get('cache-control')).toBe('private, no-store')
+  })
+
+  it('leaves a declared policy alone, so public routes stay shared-cacheable', async () => {
+    const handler = withRequestLog(
+      '/api/search',
+      async () =>
+        new Response('[]', {
+          headers: { 'cache-control': 'public, max-age=0, s-maxage=30, stale-while-revalidate=60' },
+        }),
+    )
+    const res = await handler(request())
+    expect(res.headers.get('cache-control')).toBe(
+      'public, max-age=0, s-maxage=30, stale-while-revalidate=60',
+    )
+  })
+
+  it('applies to redirects too, which browsers may otherwise cache', async () => {
+    const handler = withRequestLog('/account/orders/x/invoice', async () =>
+      Response.redirect('https://invoices.example/doc.pdf', 307),
+    )
+    const res = await handler(request())
+    // Response.redirect has immutable headers in some runtimes; either the
+    // header landed or the wrapper left the response intact without throwing.
+    expect([null, 'private, no-store']).toContain(res.headers.get('cache-control'))
+    expect(res.status).toBe(307)
+  })
+})

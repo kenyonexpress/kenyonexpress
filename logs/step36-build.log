@@ -1,0 +1,85 @@
+Already up to date
+Done in 197ms using pnpm v11.1.2
+$ next build && node scripts/security/csp-shell-gate.mjs
+▲ Next.js 16.3.3 (Turbopack)
+- Environments: .env.local
+✓ Running next.config.ts took 514ms
+- Cache Components enabled
+- Experiments (use with caution):
+  · optimizePackageImports
+  · serverActions
+
+  Creating an optimized production build ...
+Turbopack build encountered 3 warnings:
+[next]/internal/font/google/heebo_1dbb6b70.module.css
+Warning: Error while requesting resource
+There was an issue establishing a connection while requesting https://fonts.googleapis.com/css2?family=Heebo:wght@100..900&display=swap
+
+Import trace:
+  Server Component:
+    [next]/internal/font/google/heebo_1dbb6b70.module.css
+    [next]/internal/font/google/heebo_1dbb6b70.js
+    ./src/app/layout.tsx
+
+
+./src/lib/images/watermark.ts:33:21
+Warning: The file pattern ('/ROOT/' <dynamic> | '/ROOT' <dynamic>) matches 10494 files in [project]/
+  [90m31 |[0m   [36mif[0m (cached && cachedFor === file) [36mreturn[0m cached
+  [90m32 |[0m   cachedFor = file
+[33m[1m>[0m [90m33 |[0m   cached = readFile(resolve(process.cwd(), file))
+  [90m   |[0m                     [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m34 |[0m     .then((image) => ({ image, opacity: parseOpacity(env.[33mIMAGE_WATERMARK_OPACITY[0m) }))
+  [90m35 |[0m     .[36mcatch[0m((error: unknown) => {
+  [90m36 |[0m       log.warn([32m'images.watermark.unreadable'[0m, {
+
+Overly broad patterns can lead to build performance issues and over bundling.
+
+Import trace:
+  Server Component:
+    ./src/lib/images/watermark.ts
+    ./src/server/actions/admin/images.ts
+
+
+./src/lib/images/watermark.ts:33:21
+Warning: Dynamic filesystem access causes tracing of the whole project
+  [90m31 |[0m   [36mif[0m (cached && cachedFor === file) [36mreturn[0m cached
+  [90m32 |[0m   cachedFor = file
+[33m[1m>[0m [90m33 |[0m   cached = readFile(resolve(process.cwd(), file))
+  [90m   |[0m                     [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m34 |[0m     .then((image) => ({ image, opacity: parseOpacity(env.[33mIMAGE_WATERMARK_OPACITY[0m) }))
+  [90m35 |[0m     .[36mcatch[0m((error: unknown) => {
+  [90m36 |[0m       log.warn([32m'images.watermark.unreadable'[0m, {
+
+Static analysis determined that this filesystem access causes the whole project to be traced and included in the output.
+This is usually unintentional and leads to all source files (including the public folder) to be deployed as part of the server code.
+This can slow down deployments or lead to failures when size limits are exceeded.
+To resolve this, you can
+- make sure the path is statically scoped to some subfolder, for example path.join(process.cwd(), 'data', bar), or
+- only use them in development, or
+- opt out by adding an ignore comment to the highlighted call: path.resolve(/*turbopackIgnore: true*/ ...), or
+- remove them.
+
+Import trace:
+  Server Component:
+    ./src/lib/images/watermark.ts
+    ./src/server/actions/admin/images.ts
+
+
+
+> Build error occurred
+Error: Turbopack build failed with 1 error:
+[next]/internal/font/google/heebo_1dbb6b70.module.css
+Error: next/font: error:
+Failed to fetch Heebo from Google Fonts.
+If you are offline or behind a proxy, self-host the font with next/font/local, or set HTTP_PROXY/HTTPS_PROXY so Next.js can reach fonts.googleapis.com.
+
+Import trace:
+  Server Component:
+    [next]/internal/font/google/heebo_1dbb6b70.module.css
+    [next]/internal/font/google/heebo_1dbb6b70.js
+    ./src/app/layout.tsx
+
+
+    at ignore-listed frames
+[ELIFECYCLE] Command failed with exit code 1.
+exit=1

@@ -23,6 +23,9 @@ vi.mock('@/lib/search/qstash', () => ({
 vi.mock('@/lib/search/indexer', () => ({
   runSearchIndexJob: (...args: unknown[]) => runJobMock(...args),
 }))
+// STEP 36: the webhook also stales storefront cache tags; `revalidateTag`
+// throws outside a Next work store, so it is a recorder here.
+vi.mock('next/cache', () => ({ revalidateTag: vi.fn(), revalidatePath: vi.fn() }))
 
 const { POST: webhookPost } = await import('@/app/api/webhooks/products/route')
 const { POST: workerPost } = await import('@/app/api/search/index-job/route')

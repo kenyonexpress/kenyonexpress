@@ -1,3 +1,4 @@
+import { CacheLife, CacheTags } from '@/lib/cache/tags'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { orFail } from '@/lib/catalogue-read'
 import { createCatalogueReadClient } from '@/lib/supabase/read-replica'
@@ -30,8 +31,9 @@ import { cacheLife, cacheTag } from 'next/cache'
  */
 export async function getCouponDeal(id: string) {
   'use cache'
-  cacheLife('hours')
-  cacheTag(CATALOGUE_TAG)
+  cacheLife(CacheLife.product)
+  // Rendered on `/` (HotCoupons) and on the coupon's own page.
+  cacheTag(CATALOGUE_TAG, CacheTags.home)
   const supabase = createCatalogueReadClient()
   return orFail(
     await supabase
@@ -62,8 +64,8 @@ export async function getCouponDeal(id: string) {
  */
 export async function getActiveCouponDealIds(): Promise<string[]> {
   'use cache'
-  cacheLife('hours')
-  cacheTag(CATALOGUE_TAG)
+  cacheLife(CacheLife.home)
+  cacheTag(CATALOGUE_TAG, CacheTags.home)
   const supabase = createCatalogueReadClient()
   const data = orFail(
     await supabase.from('coupon_deals').select('id').eq('status', 'active').is('deleted_at', null),

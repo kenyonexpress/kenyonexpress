@@ -1,3 +1,4 @@
+import { CacheLife, CacheTags } from '@/lib/cache/tags'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { orFail } from '@/lib/catalogue-read'
 import { createCatalogueReadClient } from '@/lib/supabase/read-replica'
@@ -25,18 +26,21 @@ export type ProductSeoRow = {
  */
 export async function getProductSeoBySlug(slug: string): Promise<ProductSeoRow | null> {
   'use cache'
-  cacheLife('hours')
+  cacheLife(CacheLife.product)
   cacheTag(CATALOGUE_TAG)
   const supabase = createCatalogueReadClient()
-  return orFail(
+  const row = orFail(
     await supabase
       .from('products')
       .select(
-        'name_he, description_he, short_description_he, seo_title, seo_description, images, status, deleted_at',
+        'id, name_he, description_he, short_description_he, seo_title, seo_description, images, status, deleted_at',
       )
       .eq('slug', slug)
       .maybeSingle(),
     'product_seo.read_failed',
     { slug },
   )
+  // Per-product handle, keyed by id like the webhook that stales it.
+  if (row) cacheTag(CacheTags.product(row.id))
+  return row
 }

@@ -40,5 +40,19 @@
  * uncached anon read) and the checkout re-reads it again, so a stale card can
  * mislead about availability and can never oversell. It is also not a Server
  * Action, so it could not call `updateTag` even if this were wrong.
+ *
+ * STEP 36 (07.10.2026) ADDED A SECOND, NARROWER HANDLE WITHOUT CHANGING THE
+ * ABOVE. Every read still carries this tag, and every admin write still
+ * expires it. In addition each read carries the per-entity tags from
+ * `lib/cache/tags.ts` (`product:<id>`, `category:<id>`, `supplier:<id>`,
+ * `home`, `product-list`, `sitemap`, `feed`), and the Supabase Database
+ * Webhook on `products` / `categories` (`/api/webhooks/products`) maps each
+ * change to exactly the tags it stales and submits them with
+ * `revalidateTag(tag, 'max')`, stale-while-revalidate. That is what closes
+ * the stock paragraph above: a sale now refreshes ONE product page in the
+ * background instead of either emptying the catalogue or waiting an hour.
+ * `/api/revalidate` is the same mechanism for callers with no row to point
+ * at. The lifetimes moved from `hours` to the route matrix in
+ * ARCHITECTURE-PERFORMANCE.md §2.1 (`CacheLife` in the same module).
  */
 export const CATALOGUE_TAG = 'catalogue'

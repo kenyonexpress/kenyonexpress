@@ -1,3 +1,4 @@
+import { CacheControl } from '@/lib/cache/http'
 import type { NextRequest } from 'next/server'
 import { log } from './log'
 import { runWithRequestContext } from './request-context'
@@ -43,6 +44,18 @@ export function withRequestLog<Args extends unknown[]>(
         // immutable headers, and a logger must not be able to break a route.
         try {
           response.headers.set(REQUEST_ID_HEADER, requestId)
+          // STEP 36: a route handler that said nothing about caching is
+          // per-caller. Pages get `private, no-cache, no-store` from Next the
+          // moment they read a cookie; route handlers get NOTHING unless they
+          // set it, and Vercel's "do not cache an unset header" is a CDN
+          // default, not a browser one. A cart, a wallet pass, a supplier
+          // lookup that forgot the header must never be the one a back
+          // button replays after logout. Only set when absent: every public
+          // route declares its own policy (lib/cache/http.ts, and the ledger
+          // in __tests__/public-route-cache-control.test.ts).
+          if (!response.headers.has('cache-control')) {
+            response.headers.set('cache-control', CacheControl.private)
+          }
         } catch {
           // Immutable headers. The id is still on every log line.
         }

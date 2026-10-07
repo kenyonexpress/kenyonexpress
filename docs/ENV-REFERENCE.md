@@ -116,7 +116,7 @@ SUPABASE_SERVICE_ROLE_KEY   SUPABASE_SECRET_KEY   SUPABASE_DB_URL   DATABASE_URL
 CARDCOM_API_NAME            CARDCOM_API_PASSWORD  CARDCOM_WEBHOOK_SECRET
 CARDCOM_WEBHOOK_SECRET_PREVIOUS
 VOUCHER_QR_SECRET           VOUCHER_QR_SECRET_PREVIOUS
-CRON_SECRET                 SEARCH_WEBHOOK_SECRET
+CRON_SECRET                 SEARCH_WEBHOOK_SECRET REVALIDATE_SECRET
 RESEND_API_KEY              CONSENT_IP_SALT
 UPSTASH_REDIS_REST_TOKEN    QSTASH_TOKEN
 QSTASH_CURRENT_SIGNING_KEY  QSTASH_NEXT_SIGNING_KEY
@@ -231,7 +231,8 @@ logged, and the build completes.
 | `MEILISEARCH_HOST`, `MEILISEARCH_API_KEY`, `MEILISEARCH_INDEX` | optional | `/search` falls back to a Postgres `ILIKE`. **That works and is slower**, with no typo tolerance, no synonyms and no facets — and nothing in the UI says so. |
 | `QSTASH_TOKEN` | optional | Index jobs run inline instead of being queued. |
 | `QSTASH_CURRENT_SIGNING_KEY`, `QSTASH_NEXT_SIGNING_KEY` | optional | Verify QStash callbacks. |
-| `SEARCH_WEBHOOK_SECRET` | optional | Guards `/api/webhooks/products`. |
+| `SEARCH_WEBHOOK_SECRET` | optional | Guards `/api/webhooks/products`. Since STEP 36 that delivery also stales the storefront cache tags of the changed row (`lib/cache/tags.ts`); without the webhook, a write that bypasses the admin panel is visible only when the route's `cacheLife` window passes (120s to 300s). |
+| `REVALIDATE_SECRET` | optional | Bearer for `/api/revalidate`, the on-demand purge of known cache tags and public storefront paths. Closed when unset. Minimum 20 characters; not interchangeable with `CRON_SECRET`. |
 
 ### 3.8 Rate limiting
 

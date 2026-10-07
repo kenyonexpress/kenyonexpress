@@ -1,4 +1,5 @@
 import type { SortValue } from '@/components/category/CategoryControlBar'
+import { CacheLife, CacheTags } from '@/lib/cache/tags'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { orFail, orFailWithCount } from '@/lib/catalogue-read'
 import { meetsMinDiscount } from '@/lib/discount-percent'
@@ -25,16 +26,22 @@ import { cache } from 'react'
  * optional: a write that does not call `updateTag(CATALOGUE_TAG)` is invisible
  * on the storefront for an hour, silently.
  *
- * `cacheLife(CATEGORY_CACHE_LIFE)` on the category reads: 300s stale, 300s
+ * `cacheLife(CacheLife.list)` on the category reads: 300s stale, 300s
  * revalidate, 1 day expire, which is the archive's ISR window - the
  * prerendered shell and every cached read under it are re-fetched at most
- * every five minutes. An inline profile and not a named one in next.config:
- * a custom name is only typed once `next build` has regenerated
+ * every five minutes, and a page past its window is served stale from the
+ * edge while the origin recomputes it. The /products reads carry
+ * `CacheLife.productsIndex` (180s). Inline profiles and not named ones in
+ * next.config: a custom name is only typed once `next build` has regenerated
  * `.next/types/cache-life.d.ts`, so `pnpm type-check` on a fresh checkout
- * would reject the name that the build accepts. `cacheLife('hours')` stays on
- * the /products reads, which have no such contract. The expire is the part
+ * would reject the name that the build accepts. The expire is the part
  * worth having on both: if Supabase is unreachable, the last good catalogue
  * keeps being served instead of an empty grid.
+ *
+ * STEP 36: every read also carries `CacheTags.productList` and, where the
+ * category is known, `CacheTags.category(id)`, so the database webhook can
+ * stale one category's grid without emptying the whole catalogue
+ * (lib/cache/tags.ts).
  *
  * The two calls are repeated in each function rather than factored into a
  * helper. `cacheLife` and `cacheTag` are directives about the scope they are
@@ -55,7 +62,7 @@ export const CATEGORY_PAGE_SIZE = 24
  * The category archive's cache profile, in seconds. See the header note.
  * `category-page.test.ts` pins the 300s window the goal asked for.
  */
-export const CATEGORY_CACHE_LIFE = { stale: 300, revalidate: 300, expire: 86400 } as const
+export const CATEGORY_CACHE_LIFE = CacheLife.list
 
 /**
  * Both unwrappers live in `src/lib/catalogue-read.ts`, not here.
@@ -140,8 +147,8 @@ export function categoryMetaDescription(nameHe: string): string {
 
 export async function getCategoryBySlug(slug: string): Promise<CategoryRow | null> {
   'use cache'
-  cacheLife(CATEGORY_CACHE_LIFE)
-  cacheTag(CATALOGUE_TAG)
+  cacheLife(CacheLife.list)
+  cacheTag(CATALOGUE_TAG, CacheTags.productList)
   const supabase = createCatalogueReadClient()
   const data = orFail(
     await supabase
@@ -153,13 +160,14 @@ export async function getCategoryBySlug(slug: string): Promise<CategoryRow | nul
     'catalogue.category_by_slug_failed',
     { slug },
   )
+  if (data) cacheTag(CacheTags.category(data.id))
   return data
 }
 
 export async function getAllCategorySlugs(): Promise<string[]> {
   'use cache'
-  cacheLife(CATEGORY_CACHE_LIFE)
-  cacheTag(CATALOGUE_TAG)
+  cacheLife(CacheLife.list)
+  cacheTag(CATALOGUE_TAG, CacheTags.productList)
   const supabase = createCatalogueReadClient()
   const data = orFail(
     await orderedByMenu(supabase.from('categories').select('slug').eq('is_active', true)),
@@ -172,8 +180,8 @@ export async function getCategoryParent(
   parentId: string,
 ): Promise<{ slug: string; name_he: string } | null> {
   'use cache'
-  cacheLife(CATEGORY_CACHE_LIFE)
-  cacheTag(CATALOGUE_TAG)
+  cacheLife(CacheLife.list)
+  cacheTag(CATALOGUE_TAG, CacheTags.productList, CacheTags.category(parentId))
   const supabase = createCatalogueReadClient()
   const data = orFail(
     await supabase.from('categories').select('slug, name_he').eq('id', parentId).single(),
@@ -187,8 +195,8 @@ export async function getCategoryChildren(
   categoryId: string,
 ): Promise<{ id: string; slug: string; name_he: string }[]> {
   'use cache'
-  cacheLife(CATEGORY_CACHE_LIFE)
-  cacheTag(CATALOGUE_TAG)
+  cacheLife(CacheLife.list)
+  cacheTag(CATALOGUE_TAG, CacheTags.productList, CacheTags.category(categoryId))
   const supabase = createCatalogueReadClient()
   const data = orFail(
     await orderedByMenu(
@@ -470,8 +478,8 @@ export async function getCategoryBrands(opts: {
   collection?: CollectionRule
 }): Promise<string[]> {
   'use cache'
-  cacheLife(CATEGORY_CACHE_LIFE)
-  cacheTag(CATALOGUE_TAG)
+  cacheLife(CacheLife.list)
+  cacheTag(CATALOGUE_TAG, CacheTags.productList, CacheTags.category(opts.categoryId))
   const { categoryId, collection } = opts
   const supabase = createCatalogueReadClient()
   const membership = membershipFilter(
@@ -513,8 +521,8 @@ export async function getCategoryProducts(opts: {
   collection?: CollectionRule
 }): Promise<{ items: CategoryProductRow[]; total: number }> {
   'use cache'
-  cacheLife(CATEGORY_CACHE_LIFE)
-  cacheTag(CATALOGUE_TAG)
+  cacheLife(CacheLife.list)
+  cacheTag(CATALOGUE_TAG, CacheTags.productList, CacheTags.category(opts.categoryId))
   const {
     categoryId,
     category,
@@ -632,8 +640,8 @@ export async function getCategoryProducts(opts: {
 
 export async function getAllCategories(): Promise<{ slug: string; name_he: string }[]> {
   'use cache'
-  cacheLife(CATEGORY_CACHE_LIFE)
-  cacheTag(CATALOGUE_TAG)
+  cacheLife(CacheLife.list)
+  cacheTag(CATALOGUE_TAG, CacheTags.productList)
   const supabase = createCatalogueReadClient()
   const data = orFail(
     await orderedByMenu(supabase.from('categories').select('slug, name_he').eq('is_active', true)),
@@ -657,8 +665,8 @@ export async function getShopProducts(opts: {
   productType?: ProductTypeFilter
 }): Promise<{ items: CategoryProductRow[]; total: number }> {
   'use cache'
-  cacheLife('hours')
-  cacheTag(CATALOGUE_TAG)
+  cacheLife(CacheLife.productsIndex)
+  cacheTag(CATALOGUE_TAG, CacheTags.productList)
   const { sort, page, priceMin, priceMax, productType } = opts
   const supabase = createCatalogueReadClient()
   const from = (page - 1) * SHOP_PAGE_SIZE

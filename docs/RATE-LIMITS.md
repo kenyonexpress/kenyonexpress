@@ -145,6 +145,7 @@
 | --- | --- |
 | ‏`api/cron/*` | ‏`CRON_SECRET` ב-Bearer; אין קורא ציבורי |
 | ‏`api/webhooks/products`, ‏`api/search/index-job`, ‏`api/search/index-dlq` | ‏HMAC-SHA256 או סוד משותף בהשוואת זמן קבוע |
+| ‏`api/revalidate` | ‏`REVALIDATE_SECRET` ב-Bearer; סגור כשהמשתנה לא מוגדר; אין קורא ציבורי |
 | ‏`api/webhooks/whatsapp` | חתימת ‏Twilio (HMAC-SHA1 על ה-URL והפרמטרים) |
 | ‏`api/payments/cardcom/webhook` | אימות מול ‏Cardcom; אינו נקודת קצה ציבורית מבחינת אמון |
 | ‏actions של אדמין (26 קבצים) | מאחורי `requireAdminSession`/`requireRole`. ראו ‏5 |

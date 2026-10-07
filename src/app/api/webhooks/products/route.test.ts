@@ -28,6 +28,11 @@ const PRODUCT_ID = '0f2b6a9e-7c1d-4e5a-9b3c-2d8e1f4a6c7b'
 
 const ran: Array<{ op: string; productId: string; reason: string }> = []
 
+// STEP 36: the route also stales the storefront cache. `revalidateTag` throws
+// outside a Next work store, so it is recorded here and asserted below.
+const revalidateTag = vi.fn()
+vi.mock('next/cache', () => ({ revalidateTag, revalidatePath: vi.fn() }))
+
 vi.mock('@/lib/search/indexer', () => ({
   runSearchIndexJob: async (job: { op: string; productId: string; reason: string }) => {
     ran.push({ op: job.op, productId: job.productId, reason: job.reason })
@@ -85,6 +90,7 @@ function postSigned(rawBody: string, secret = SECRET): NextRequest {
 
 beforeEach(() => {
   ran.length = 0
+  revalidateTag.mockReset()
   vi.stubEnv('SEARCH_WEBHOOK_SECRET', SECRET)
   vi.stubEnv('QSTASH_TOKEN', '')
   vi.stubEnv('NEXT_PUBLIC_APP_URL', 'http://localhost:3000')
@@ -182,14 +188,17 @@ describe('POST /api/webhooks/products: payload contract', () => {
       postShared(change({ type: 'UPDATE', table: 'orders', record: { id: PRODUCT_ID } })),
     )
     expect(res.status).toBe(200)
-    await expect(res.json()).resolves.toEqual({ ok: true, queued: false })
+    await expect(res.json()).resolves.toEqual({ ok: true, queued: false, revalidated: [] })
     expect(ran).toEqual([])
+    expect(revalidateTag).not.toHaveBeenCalled()
   })
 
   it('acknowledges a products row with no usable id without queueing anything', async () => {
     const res = await POST(postShared(change({ type: 'INSERT', record: { id: 'not-a-uuid' } })))
     expect(res.status).toBe(200)
-    await expect(res.json()).resolves.toEqual({ ok: true, queued: false })
+    // The id is not a uuid, so the indexer skips it, but it IS a products
+    // row and the cache tags are keyed by whatever the id column holds.
+    await expect(res.json()).resolves.toMatchObject({ ok: true, queued: false })
     expect(ran).toEqual([])
   })
 
@@ -204,7 +213,11 @@ describe('POST /api/webhooks/products: inline transport (no QStash configured)',
     const res = await POST(postShared(change({ type: 'INSERT', record: activeRow() })))
 
     expect(res.status).toBe(200)
-    await expect(res.json()).resolves.toEqual({ ok: true, queued: true, transport: 'inline' })
+    await expect(res.json()).resolves.toMatchObject({
+      ok: true,
+      queued: true,
+      transport: 'inline',
+    })
     expect(ran).toEqual([{ op: 'upsert', productId: PRODUCT_ID, reason: 'insert:active' }])
   })
 
@@ -267,6 +280,63 @@ describe('POST /api/webhooks/products: inline transport (no QStash configured)',
   })
 })
 
+describe('POST /api/webhooks/products: storefront cache (STEP 36)', () => {
+  it('an INSERT stales the product, the umbrella, the lists, home and the sitemap, with the SWR profile', async () => {
+    const res = await POST(postShared(change({ type: 'INSERT', record: activeRow() })))
+
+    const body = (await res.json()) as { revalidated: string[] }
+    expect(body.revalidated).toEqual([
+      `product:${PRODUCT_ID}`,
+      'catalogue',
+      'product-list',
+      'home',
+      'feed',
+      'sitemap',
+    ])
+    expect(revalidateTag).toHaveBeenCalledTimes(body.revalidated.length)
+    for (const call of revalidateTag.mock.calls) expect(call[1]).toBe('max')
+  })
+
+  it('a stock-only UPDATE stales the one product and leaves every list alone', async () => {
+    const res = await POST(
+      postShared(
+        change({
+          type: 'UPDATE',
+          record: activeRow({ stock_quantity: 9 }),
+          old_record: activeRow({ stock_quantity: 10 }),
+        }),
+      ),
+    )
+
+    await expect(res.json()).resolves.toMatchObject({ revalidated: [`product:${PRODUCT_ID}`] })
+    expect(revalidateTag).toHaveBeenCalledOnce()
+    expect(revalidateTag).toHaveBeenCalledWith(`product:${PRODUCT_ID}`, 'max')
+  })
+
+  it('stales the cache before the enqueue, so a transport failure still refreshes the shop', async () => {
+    vi.doMock('@/lib/search/indexer', () => ({
+      runSearchIndexJob: async () => {
+        throw new Error('meilisearch is down')
+      },
+    }))
+    vi.resetModules()
+    const { POST: freshPOST } = await import('./route')
+
+    const res = await freshPOST(postShared(change({ type: 'INSERT', record: activeRow() })))
+
+    expect(res.status).toBe(500)
+    expect(revalidateTag).toHaveBeenCalledWith('catalogue', 'max')
+
+    vi.doUnmock('@/lib/search/indexer')
+    vi.resetModules()
+  })
+
+  it('stales nothing for a table the storefront does not cache', async () => {
+    await POST(postShared(change({ type: 'UPDATE', table: 'orders', record: { id: PRODUCT_ID } })))
+    expect(revalidateTag).not.toHaveBeenCalled()
+  })
+})
+
 describe('POST /api/webhooks/products: QStash transport', () => {
   const publishes: Array<{ url: string; headers: Record<string, string>; body: unknown }> = []
 
@@ -293,7 +363,11 @@ describe('POST /api/webhooks/products: QStash transport', () => {
     const res = await POST(postShared(change({ type: 'INSERT', record: activeRow() })))
 
     expect(res.status).toBe(200)
-    await expect(res.json()).resolves.toEqual({ ok: true, queued: true, transport: 'qstash' })
+    await expect(res.json()).resolves.toMatchObject({
+      ok: true,
+      queued: true,
+      transport: 'qstash',
+    })
     // Nothing ran in-process: the worker route is what QStash will call.
     expect(ran).toEqual([])
 

@@ -12,10 +12,10 @@ describe('sitemap catalogue client', () => {
     expect(src).not.toContain('createAdminClient')
   })
 
-  it('invalidates with the catalogue tag', () => {
-    expect(src).toContain('cacheTag(CATALOGUE_TAG)')
+  it('invalidates with the catalogue tag and its own sitemap tag, on the sitemap profile', () => {
+    expect(src).toContain('cacheTag(CATALOGUE_TAG, CacheTags.sitemap)')
     expect(src).toContain("'use cache'")
-    expect(src).toContain("cacheLife('hours')")
+    expect(src).toContain('cacheLife(CacheLife.sitemap)')
   })
 })
 

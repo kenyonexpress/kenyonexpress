@@ -1,5 +1,6 @@
 import type { Coupon } from '@/components/CouponCard'
 import { CATEGORY_TILE_IMAGES } from '@/lib/assets'
+import { CacheLife, CacheTags } from '@/lib/cache/tags'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { orderedByMenu } from '@/lib/category-page'
 import { log } from '@/lib/observability/log'
@@ -26,7 +27,9 @@ import {
  * CACHED, on the cookie-free catalogue client, for the reason `coupon-deals.ts`
  * and `category-page.ts` give: the home page is prerendered, and under
  * `cacheComponents` an uncached read outside a Suspense boundary fails the
- * build. A `'use cache'` read is computed at build time and refreshed hourly,
+ * build. A `'use cache'` read is computed at build time and refreshed every
+ * two minutes under traffic (`CacheLife.home`, lib/cache/tags.ts; staled at
+ * once by the database webhook through `CacheTags.home`),
  * so the sections are in the static shell and nothing streams in under the
  * visitor. `cacheLife` and `cacheTag` are written out in each function rather
  * than behind a helper, deliberately - see the note in `category-page.ts`.
@@ -40,8 +43,8 @@ import {
 
 export async function getHomeCategoryTiles(): Promise<CategoryTile[]> {
   'use cache'
-  cacheLife('hours')
-  cacheTag(CATALOGUE_TAG)
+  cacheLife(CacheLife.home)
+  cacheTag(CATALOGUE_TAG, CacheTags.home)
   try {
     const supabase = createCatalogueReadClient()
     const { data, error } = await orderedByMenu(
@@ -75,8 +78,8 @@ type DealRow = Omit<DealOfTheDayCandidate, 'category'> & {
 
 export async function getDealOfTheDay(): Promise<DealOfTheDay | null> {
   'use cache'
-  cacheLife('hours')
-  cacheTag(CATALOGUE_TAG)
+  cacheLife(CacheLife.home)
+  cacheTag(CATALOGUE_TAG, CacheTags.home)
   try {
     const supabase = createCatalogueReadClient()
     // The whole active catalogue, ranked in code: `rankDeals` is the one
@@ -109,8 +112,8 @@ export async function getDealOfTheDay(): Promise<DealOfTheDay | null> {
 
 export async function getHotCouponDeals(): Promise<Coupon[]> {
   'use cache'
-  cacheLife('hours')
-  cacheTag(CATALOGUE_TAG)
+  cacheLife(CacheLife.home)
+  cacheTag(CATALOGUE_TAG, CacheTags.home)
   try {
     const supabase = createCatalogueReadClient()
     const { data, error } = await supabase
@@ -146,8 +149,8 @@ export async function getHotCouponDeals(): Promise<Coupon[]> {
  */
 export async function getHomePopularSearches(): Promise<PopularSearchChip[]> {
   'use cache'
-  cacheLife('hours')
-  cacheTag(POPULAR_SEARCHES_TAG)
+  cacheLife(CacheLife.home)
+  cacheTag(POPULAR_SEARCHES_TAG, CacheTags.home)
   try {
     const supabase = createCatalogueReadClient()
     const { data, error } = await supabase

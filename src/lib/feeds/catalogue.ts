@@ -1,3 +1,4 @@
+import { CacheLife, CacheTags } from '@/lib/cache/tags'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { orFail } from '@/lib/catalogue-read'
 import { type CouponOffer, buildCouponOffer } from '@/lib/commerce/coupon-offer'
@@ -154,8 +155,8 @@ function toFeedProduct(row: Row, now: Date): FeedProduct | null {
  */
 export async function getFeedProducts(limit = 200): Promise<FeedProduct[]> {
   'use cache'
-  cacheLife('hours')
-  cacheTag(CATALOGUE_TAG)
+  cacheLife(CacheLife.sitemap)
+  cacheTag(CATALOGUE_TAG, CacheTags.feed)
 
   const supabase = createCatalogueReadClient()
   const data = orFail(

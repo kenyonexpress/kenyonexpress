@@ -79,11 +79,15 @@ describe('catalogue cache invalidation', () => {
     for (const file of ['src/lib/category-page.ts', 'src/lib/product-seo.ts']) {
       const src = code(file)
       const cachedScopes = src.match(/'use cache'/g) ?? []
-      const tagged = src.match(/cacheTag\(CATALOGUE_TAG\)/g) ?? []
-      // Either the built-in hours profile or the archive's inline 300s
-      // profile (CATEGORY_CACHE_LIFE in category-page.ts). What is checked is
-      // that every cached scope names one.
-      const lifed = src.match(/cacheLife\('hours'\)|cacheLife\(CATEGORY_CACHE_LIFE\)/g) ?? []
+      // The umbrella first, alone or followed by the per-entity tags STEP 36
+      // added (`cacheTag(CATALOGUE_TAG, CacheTags.productList, ...)`). A
+      // second `cacheTag(CacheTags.category(id))` call after the row loads is
+      // not counted here: it is extra, and the umbrella is what the admin
+      // actions expire.
+      const tagged = src.match(/cacheTag\(CATALOGUE_TAG[,)]/g) ?? []
+      // One of the route-matrix profiles in lib/cache/tags.ts. What is checked
+      // is that every cached scope names one.
+      const lifed = src.match(/cacheLife\(CacheLife\.\w+\)/g) ?? []
 
       expect(cachedScopes.length, `${file}: no cached reads`).toBeGreaterThan(0)
       expect(tagged.length, `${file}: a use cache read carries no cacheTag`).toBe(

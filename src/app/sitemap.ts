@@ -1,5 +1,6 @@
 import { sortedPosts } from '@/content/blog'
 import { LEGAL_PAGE_SLUGS, getLegalPage } from '@/content/legal'
+import { CacheLife, CacheTags } from '@/lib/cache/tags'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { orFail } from '@/lib/catalogue-read'
 import { newestTimestamp } from '@/lib/seo/lastmod'
@@ -43,8 +44,8 @@ import { cacheLife, cacheTag } from 'next/cache'
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   'use cache'
-  cacheLife('hours')
-  cacheTag(CATALOGUE_TAG)
+  cacheLife(CacheLife.sitemap)
+  cacheTag(CATALOGUE_TAG, CacheTags.sitemap)
 
   const base = siteUrl()
   const now = new Date()

@@ -82,6 +82,13 @@ const schema = z
     VOUCHER_QR_SECRET: z.string().optional(),
     CRON_SECRET: z.string().optional(),
     /**
+     * Bearer for `/api/revalidate`, the on-demand storefront cache purge
+     * (STEP 36). OPTIONAL EVERYWHERE and closed when unset: `bearerMatches`
+     * compares against "" and never matches. Deliberately NOT derived from
+     * CRON_SECRET, which already sits in an external scheduler.
+     */
+    REVALIDATE_SECRET: z.string().min(20).optional().or(z.literal('')),
+    /**
      * Signs the wishlist-alert unsubscribe links. OPTIONAL EVERYWHERE:
      * `lib/wishlist/unsubscribe-token.ts` derives a key from CRON_SECRET when
      * this is absent, so production (where CRON_SECRET is required) always

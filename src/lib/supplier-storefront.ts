@@ -1,3 +1,4 @@
+import { CacheLife, CacheTags } from '@/lib/cache/tags'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { orFail, orFailWithCount } from '@/lib/catalogue-read'
 import { createCatalogueReadClient } from '@/lib/supabase/read-replica'
@@ -51,8 +52,8 @@ export type SupplierStorefrontProduct = {
 
 export async function loadSupplierStorefront(id: string): Promise<SupplierStorefront | null> {
   'use cache'
-  cacheLife('hours')
-  cacheTag(CATALOGUE_TAG)
+  cacheLife(CacheLife.list)
+  cacheTag(CATALOGUE_TAG, CacheTags.supplier(id))
   if (!isSupplierId(id)) return null
 
   const supabase = createCatalogueReadClient()
@@ -81,8 +82,8 @@ export async function loadSupplierStorefrontProducts(
   page: number,
 ): Promise<{ items: SupplierStorefrontProduct[]; total: number }> {
   'use cache'
-  cacheLife('hours')
-  cacheTag(CATALOGUE_TAG)
+  cacheLife(CacheLife.list)
+  cacheTag(CATALOGUE_TAG, CacheTags.productList, CacheTags.supplier(supplierId))
   if (!isSupplierId(supplierId)) return { items: [], total: 0 }
 
   const safePage = Number.isFinite(page) && page >= 1 ? Math.floor(page) : 1
@@ -114,8 +115,8 @@ export async function loadSupplierStorefrontProducts(
 
 export async function listSupplierIdsForPrerender(): Promise<string[]> {
   'use cache'
-  cacheLife('hours')
-  cacheTag(CATALOGUE_TAG)
+  cacheLife(CacheLife.sitemap)
+  cacheTag(CATALOGUE_TAG, CacheTags.sitemap)
   const supabase = createCatalogueReadClient()
   const rows = orFail(
     await supabase

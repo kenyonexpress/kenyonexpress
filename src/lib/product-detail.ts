@@ -1,4 +1,5 @@
 import type { RatingSummary } from '@/components/storefront/RatingStars'
+import { CacheLife, CacheTags } from '@/lib/cache/tags'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { orFail } from '@/lib/catalogue-read'
 import { type CouponOffer, buildCouponOffer } from '@/lib/commerce/coupon-offer'
@@ -52,7 +53,7 @@ export type ProductDetail = NonNullable<Awaited<ReturnType<typeof loadProductByS
 
 export async function loadProductBySlug(slug: string) {
   'use cache'
-  cacheLife('hours')
+  cacheLife(CacheLife.product)
   cacheTag(CATALOGUE_TAG)
 
   const supabase = createCatalogueReadClient()
@@ -78,6 +79,10 @@ export async function loadProductBySlug(slug: string) {
   )
 
   if (!product) return null
+  // The per-product handle (lib/cache/tags.ts). Written after the row is
+  // known because the key is the id, and the webhook that stales it
+  // carries the id, not the slug. The umbrella above still covers the miss.
+  cacheTag(CacheTags.product(product.id))
 
   const images = Array.isArray(product.images)
     ? (product.images as unknown[]).filter((u): u is string => typeof u === 'string')
@@ -299,8 +304,8 @@ async function loadGalleryAssets(
  */
 export async function listProductSlugsForPrerender(limit = 200): Promise<string[]> {
   'use cache'
-  cacheLife('hours')
-  cacheTag(CATALOGUE_TAG)
+  cacheLife(CacheLife.sitemap)
+  cacheTag(CATALOGUE_TAG, CacheTags.sitemap)
 
   const data = orFail(
     await createCatalogueReadClient()
@@ -327,8 +332,8 @@ export async function listProductSlugsForPrerender(limit = 200): Promise<string[
  */
 export async function listCouponSlugsForPrerender(limit = 200): Promise<string[]> {
   'use cache'
-  cacheLife('hours')
-  cacheTag(CATALOGUE_TAG)
+  cacheLife(CacheLife.sitemap)
+  cacheTag(CATALOGUE_TAG, CacheTags.sitemap)
 
   const data = orFail(
     await createCatalogueReadClient()

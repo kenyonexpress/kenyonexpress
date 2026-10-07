@@ -1,3 +1,4 @@
+import { CacheLife, CacheTags } from '@/lib/cache/tags'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { orFail } from '@/lib/catalogue-read'
 import {
@@ -104,8 +105,11 @@ export async function loadSimilarCoupons(
   excludeId: string,
 ): Promise<SimilarCoupon[]> {
   'use cache'
-  cacheLife('hours')
-  cacheTag(CATALOGUE_TAG)
+  cacheLife(CacheLife.product)
+  // The strip belongs to the product it hangs under and to the category it
+  // is drawn from: a sale on a sibling refreshes it through the category.
+  cacheTag(CATALOGUE_TAG, CacheTags.product(excludeId))
+  if (categoryId) cacheTag(CacheTags.category(categoryId))
 
   const supabase = createCatalogueReadClient()
 

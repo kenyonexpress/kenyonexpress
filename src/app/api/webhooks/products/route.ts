@@ -1,4 +1,6 @@
 import { createHmac, timingSafeEqual } from 'node:crypto'
+import { revalidateCacheTags } from '@/lib/cache/revalidate'
+import { cacheTagsForChange } from '@/lib/cache/tags'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { runSearchIndexJob } from '@/lib/search/indexer'
@@ -21,6 +23,17 @@ import { type NextRequest, NextResponse } from 'next/server'
  *    Supabase dashboard webhooks can only attach static headers (the same
  *    trust model as the Cardcom `?s=` secret).
  * Either way the payload is only a notification; the worker re-reads the row.
+ *
+ * STEP 36: the same notification is also the storefront's on-demand
+ * revalidation. Before enqueueing, the change is mapped to the cache tags it
+ * stales (`cacheTagsForChange`, lib/cache/tags.ts) and each is submitted with
+ * `revalidateTag(tag, 'max')`: stale-while-revalidate, never blocking. This is
+ * what makes a write that bypassed the admin actions (SQL, the till app, the
+ * stock decrement after a sale) visible on the storefront within the request
+ * that follows it, instead of within the hour. A stock-only UPDATE stales
+ * exactly one product tag, which is the behaviour the contract in
+ * catalogue-cache.ts wanted and could not have with a single tag. The list
+ * is echoed in the response body so the Supabase webhook log shows it.
  */
 
 function constantTimeEqual(a: string, b: string): boolean {
@@ -61,15 +74,28 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ ok: false, error: 'unrecognized payload' }, { status: 400 })
   }
 
+  // Cache first, index second: the tag submission is synchronous and cannot
+  // fail on transport, so a QStash outage below never leaves the storefront
+  // serving a price the database no longer holds.
+  const revalidated = revalidateCacheTags(cacheTagsForChange(parsed.data))
+  if (revalidated.length > 0) {
+    log.info('cache.revalidated', { source: 'db-webhook', tags: revalidated })
+  }
+
   const job = jobForChange(parsed.data, new Date())
   if (!job) {
     // Not a products change we index — acknowledged, nothing queued.
-    return NextResponse.json({ ok: true, queued: false })
+    return NextResponse.json({ ok: true, queued: false, revalidated })
   }
 
   try {
     const outcome = await enqueueSearchIndexJob(job, runSearchIndexJob)
-    return NextResponse.json({ ok: true, queued: true, transport: outcome.transport })
+    return NextResponse.json({
+      ok: true,
+      queued: true,
+      transport: outcome.transport,
+      revalidated,
+    })
   } catch (error) {
     // Non-2xx so Supabase's webhook retry (and our monitoring) sees the miss.
     log.error('search.webhook_enqueue_failed', { err: error })
