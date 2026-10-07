@@ -112,6 +112,15 @@ describe('createQueryLogFetch', () => {
     expect(logged).toHaveLength(0)
   })
 
+  it("stays silent on Next's prerender abort, which is not a database failure", async () => {
+    const abort = Object.assign(new Error('During prerendering, fetch() rejects'), {
+      digest: 'HANGING_PROMISE_REJECTION',
+    })
+    const wrapped = createQueryLogFetch((() => Promise.reject(abort)) as typeof fetch, NO_ENV)
+    await expect(wrapped(REST)).rejects.toBe(abort)
+    expect(logged).toHaveLength(0)
+  })
+
   it('passes unrecognized urls through without logging', async () => {
     const wrapped = createQueryLogFetch(baseReturning(500), NO_ENV)
     await wrapped('https://x.supabase.co/storage/v1/object/img.png')

@@ -32,7 +32,11 @@ import { SupabaseTimeoutError } from '@/lib/supabase/timeout-fetch'
  * - a throw:          `db.query_failed` at ERROR, then rethrown untouched.
  *   Except SupabaseTimeoutError, which timeout-fetch already logged as
  *   `supabase.timeout`; logging it twice under two names would make the
- *   dashboards double-count the incident.
+ *   dashboards double-count the incident. And except Next's prerender
+ *   abort (digest HANGING_PROMISE_REJECTION): when a prerender finishes,
+ *   Next rejects every fetch still in flight on purpose. The database never
+ *   failed, and logging those as errors put ~250 false `db.query_failed`
+ *   lines into every `pnpm build` (M06-c116).
  *
  * The URL's query string appears in no event, ever: a PostgREST filter like
  * ?email=eq.someone@x.com is PII, the target is not (SEC-SCRUB, and the same
@@ -71,6 +75,19 @@ export function supabaseTarget(input: RequestInfo | URL): string | null {
 export function slowQueryMs(env: NodeJS.ProcessEnv = process.env): number {
   const parsed = Number(env.SUPABASE_SLOW_QUERY_MS)
   return Number.isInteger(parsed) && parsed > 0 ? parsed : 1_500
+}
+
+/**
+ * Next's own "this prerender is over" rejection, matched by digest the way
+ * Next's internal isHangingPromiseRejectionError does (that helper is not a
+ * public export).
+ */
+function isPrerenderAbort(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    (error as { digest?: unknown }).digest === 'HANGING_PROMISE_REJECTION'
+  )
 }
 
 /**
@@ -114,7 +131,7 @@ export function createQueryLogFetch(
       return response
     } catch (error) {
       // supabase.timeout already logged this one with the same duration.
-      if (!(error instanceof SupabaseTimeoutError)) {
+      if (!(error instanceof SupabaseTimeoutError) && !isPrerenderAbort(error)) {
         log.error('db.query_failed', {
           target,
           method,
