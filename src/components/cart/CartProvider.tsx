@@ -15,6 +15,9 @@ import { useStore } from 'zustand'
 function showFeedback(feedback: CartFeedback): void {
   if (feedback.kind === 'error') {
     toast.error(feedback.message)
+  } else if (feedback.kind === 'queued') {
+    // Neither a success nor a failure: the write is kept and will land later.
+    toast.info(feedback.message)
   } else {
     toast.success(feedback.message)
   }

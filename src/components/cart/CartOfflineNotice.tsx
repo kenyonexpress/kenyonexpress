@@ -12,11 +12,27 @@ import { WifiOff } from 'lucide-react'
  * stock, and does not say "offline": the request can fail with the network
  * up, and the sentence is true either way.
  */
-export function CartOfflineNotice({ className }: { className: string }) {
+export function CartOfflineNotice({
+  className,
+  queuedLines = 0,
+}: {
+  className: string
+  /**
+   * Lines with a write the server has not received yet (`queuedLines` in the
+   * store). When non-zero the sentence names THAT instead: the shopper did
+   * something, and what they need to know is that it is kept, not that the
+   * prices are old.
+   */
+  queuedLines?: number
+}) {
   return (
-    <output className={className} data-cart-offline="">
+    <output className={className} data-cart-offline="" data-cart-queued={queuedLines || undefined}>
       <WifiOff size={16} aria-hidden="true" />
-      <span>העגלה מוצגת מהמכשיר. המחירים והמלאי יתעדכנו כשהחיבור יחזור.</span>
+      <span>
+        {queuedLines > 0
+          ? 'שינויים בעגלה נשמרו במכשיר ויסונכרנו כשהחיבור יחזור. עד אז אי אפשר להמשיך לתשלום.'
+          : 'העגלה מוצגת מהמכשיר. המחירים והמלאי יתעדכנו כשהחיבור יחזור.'}
+      </span>
     </output>
   )
 }

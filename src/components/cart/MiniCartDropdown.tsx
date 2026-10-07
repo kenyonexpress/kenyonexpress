@@ -108,7 +108,7 @@ function MiniCartLine({ item, onNavigate }: { item: CartViewItem; onNavigate: ()
 }
 
 export default function MiniCartDropdown() {
-  const { cart, drawerOpen, closeDrawer, isPending, fallbackActive } = useCart()
+  const { cart, drawerOpen, closeDrawer, isPending, fallbackActive, queuedLines } = useCart()
   const isAuthenticated = useCartAuth()
   const panelRef = useRef<HTMLDialogElement | null>(null)
   const pathname = usePathname()
@@ -204,7 +204,9 @@ export default function MiniCartDropdown() {
         </div>
       ) : (
         <>
-          {fallbackActive && <CartOfflineNotice className="mini-cart__offline" />}
+          {(fallbackActive || queuedLines > 0) && (
+            <CartOfflineNotice className="mini-cart__offline" queuedLines={queuedLines} />
+          )}
           <ul className="mini-cart__list">
             {cart.items.map((item) => (
               <MiniCartLine
@@ -236,7 +238,9 @@ export default function MiniCartDropdown() {
                   the refusal just moves to the pay button. */}
               <CartCheckoutButton
                 isAuthenticated={isAuthenticated}
-                disabled={cart.items.some((item) => !item.available) || fallbackActive}
+                disabled={
+                  cart.items.some((item) => !item.available) || fallbackActive || queuedLines > 0
+                }
                 className="mini-cart__checkout"
                 onNavigate={closeDrawer}
               />

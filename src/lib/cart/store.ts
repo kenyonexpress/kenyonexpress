@@ -1,4 +1,12 @@
 import { writeCartFallback } from '@/lib/cart/local-fallback'
+import {
+  type CartSyncRejected,
+  type QueuedCartLine,
+  cartLineKey,
+  isNetworkFailure,
+  queueCartLine,
+  requestBackgroundCartSync,
+} from '@/lib/cart/sync-queue'
 import type { CartView } from '@/lib/cart/types'
 import { type ShippingMethodId, resolveShippingMethod } from '@/lib/shipping/methods'
 import {
@@ -105,6 +113,8 @@ export type CartFeedback =
   | { kind: 'added'; message: string }
   | { kind: 'removed'; message: string }
   | { kind: 'error'; message: string }
+  /** The write could not reach the server and was kept for replay (`lib/cart/sync-queue.ts`). */
+  | { kind: 'queued'; message: string }
 
 export interface CartStoreState {
   /** Optimistic view rendered by the UI. */
@@ -209,6 +219,21 @@ export interface CartStoreState {
    * answered" signal `CartBootstrap` reads, and a snapshot is neither.
    */
   restoreFallback: (cart: CartView) => void
+  /**
+   * How many lines hold a write the server has not received, kept in
+   * `lib/cart/sync-queue.ts` for replay. While non-zero every checkout button
+   * refuses: the cart on screen and the cart the server would charge for are
+   * not the same cart. Never persisted; the queue itself is, in IndexedDB,
+   * and `seedQueued` reads it back after a reload.
+   */
+  queuedLines: number
+  /** The quantity each queued line should end at, by `cartLineKey`. */
+  queuedQuantities: Record<string, number>
+  seedQueued: (lines: QueuedCartLine[]) => void
+  /** A replay landed: the server's cart replaces everything, queued or not. */
+  applySync: (cart: CartView, rejected: CartSyncRejected[]) => void
+  /** A replay was refused outright (a 4xx). The queue is gone; say so. */
+  syncRefused: () => void
 }
 
 export type CartStoreApi = ReturnType<typeof createCartStore>
@@ -299,6 +324,66 @@ export function createCartStore(
       onFeedback({ kind: 'error', message: 'הפעולה נכשלה, נסו שוב' })
     }
 
+    /**
+     * The quantity a line should END at once this intent lands, which is what
+     * the queue stores (never a delta; see sync-queue.ts). For an add that is
+     * the line's last known quantity plus the press, and "last known" is the
+     * queued one when there is one: two offline presses of "add" on the same
+     * product are two, not one twice.
+     */
+    const targetQuantity = (
+      action: Extract<CartOptimisticAction, { type: 'add' | 'setQty' | 'remove' }>,
+      rollback: CartView,
+    ): number => {
+      if (action.type === 'remove') return 0
+      if (action.type === 'setQty') return action.quantity
+      const key = cartLineKey(action.productId, action.variantId)
+      const queued = get().queuedQuantities[key]
+      const known =
+        queued ??
+        rollback.items.find((i) => cartLineKey(i.product_id, i.variant_id) === key)?.quantity ??
+        0
+      return Math.min(99, known + action.quantity)
+    }
+
+    /**
+     * A thrown line write that was the NETWORK failing, kept for replay instead
+     * of rolled back. Resolves to whether it was kept: `false` hands the
+     * failure to `crashed` unchanged, so a server that threw, a storage that
+     * refused or an action that is not a line write all still roll back and
+     * still say so. The optimistic view stays on screen on purpose: it is
+     * what the shopper asked for and what the replay will ask the server for.
+     */
+    const deferred = async (
+      error: unknown,
+      action: Extract<CartOptimisticAction, { type: 'add' | 'setQty' | 'remove' }>,
+      rollback: CartView,
+    ): Promise<boolean> => {
+      if (!isNetworkFailure(error)) return false
+      const quantity = targetQuantity(action, rollback)
+      const kept = await queueCartLine(action.productId, action.variantId, quantity)
+      if (!kept) return false
+      const key = cartLineKey(action.productId, action.variantId)
+      set((state) => {
+        const pendingOps = Math.max(0, state.pendingOps - 1)
+        const queuedQuantities = { ...state.queuedQuantities, [key]: quantity }
+        return {
+          pendingOps,
+          isPending: pendingOps > 0,
+          queuedQuantities,
+          queuedLines: Object.keys(queuedQuantities).length,
+        }
+      })
+      onFeedback({
+        kind: 'queued',
+        message: 'אין חיבור כרגע. השינוי בעגלה נשמר ויסונכרן כשהחיבור יחזור',
+      })
+      // Fire-and-forget: a browser without Background Sync answers false and
+      // CartBootstrap replays from the page on `online` instead.
+      void requestBackgroundCartSync()
+      return true
+    }
+
     return {
       cart: initialCart,
       serverCart: initialCart,
@@ -309,6 +394,8 @@ export function createCartStore(
       // nothing to add. The layouts pass `EMPTY_CART`; the tests pass a cart.
       serverConfirmed: initialCart.item_count > 0,
       fallbackActive: false,
+      queuedLines: 0,
+      queuedQuantities: {},
       pendingOps: 0,
       isPending: false,
       drawerOpen: false,
@@ -332,7 +419,10 @@ export function createCartStore(
           settle(null, rollback)
           onFeedback({ kind: 'error', message: result.error })
           return false
-        } catch {
+        } catch (error) {
+          if (await deferred(error, { type: 'add', productId, variantId, quantity }, rollback)) {
+            return true
+          }
           crashed(rollback)
           return false
         }
@@ -348,7 +438,10 @@ export function createCartStore(
             settle(null, rollback)
             onFeedback({ kind: 'error', message: result.error })
           }
-        } catch {
+        } catch (error) {
+          if (await deferred(error, { type: 'setQty', productId, variantId, quantity }, rollback)) {
+            return
+          }
           crashed(rollback)
         }
       },
@@ -364,7 +457,8 @@ export function createCartStore(
             settle(null, rollback)
             onFeedback({ kind: 'error', message: result.error })
           }
-        } catch {
+        } catch (error) {
+          if (await deferred(error, { type: 'remove', productId, variantId }, rollback)) return
           crashed(rollback)
         }
       },
@@ -449,6 +543,36 @@ export function createCartStore(
         const state = get()
         if (state.serverConfirmed || state.pendingOps > 0) return
         set({ cart, mirrorCount: cart.item_count, fallbackActive: true })
+      },
+      seedQueued: (lines) => {
+        const queuedQuantities: Record<string, number> = {}
+        for (const line of lines) queuedQuantities[line.key] = line.quantity
+        set({ queuedQuantities, queuedLines: lines.length })
+      },
+      applySync: (cart, rejected) => {
+        writeCartFallback(cart)
+        set({
+          cart,
+          serverCart: cart,
+          mirrorCount: cart.item_count,
+          serverConfirmed: true,
+          fallbackActive: false,
+          queuedQuantities: {},
+          queuedLines: 0,
+        })
+        if (rejected.length > 0) {
+          onFeedback({
+            kind: 'error',
+            message:
+              rejected.length === 1
+                ? 'פריט אחד מהעגלה לא נשמר: אזל מהמלאי או אינו זמין'
+                : `${rejected.length} פריטים מהעגלה לא נשמרו: אזלו מהמלאי או אינם זמינים`,
+          })
+        }
+      },
+      syncRefused: () => {
+        set({ queuedQuantities: {}, queuedLines: 0 })
+        onFeedback({ kind: 'error', message: 'לא הצלחנו לסנכרן את העגלה. בדקו אותה שוב' })
       },
       setAuthenticated: (isAuthenticated) => set({ isAuthenticated }),
     }

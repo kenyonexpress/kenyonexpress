@@ -22,7 +22,7 @@ import Link from 'next/link'
  * whole route in the static shell.
  */
 export default function CartPageView() {
-  const { cart, clear, removeUnavailable, isPending, fallbackActive } = useCart()
+  const { cart, clear, removeUnavailable, isPending, fallbackActive, queuedLines } = useCart()
   const isAuthenticated = useCartAuth()
 
   const unavailableCount = cart.items.filter((item) => !item.available).length
@@ -56,7 +56,9 @@ export default function CartPageView() {
         ) : (
           <div className="cart-page__grid">
             <section aria-label="פריטים בעגלה">
-              {fallbackActive && <CartOfflineNotice className="cart-page__offline" />}
+              {(fallbackActive || queuedLines > 0) && (
+                <CartOfflineNotice className="cart-page__offline" queuedLines={queuedLines} />
+              )}
               {/* The checkout button below is disabled while any line is
                 unavailable, and until now the only way past it was to find each
                 offending line and remove it by hand, one round trip each. With
@@ -112,7 +114,7 @@ export default function CartPageView() {
                   shopper into a checkout that will fail to load. */}
                 <CartCheckoutButton
                   isAuthenticated={isAuthenticated}
-                  disabled={hasUnavailable || isEmpty || fallbackActive}
+                  disabled={hasUnavailable || isEmpty || fallbackActive || queuedLines > 0}
                 />
               </div>
               <p className="cart-sidebar__note mt-3 px-gutter">

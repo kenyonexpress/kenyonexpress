@@ -82,7 +82,7 @@ function DrawerLineItem({ item }: { item: CartViewItem }) {
 }
 
 export default function CartDrawer() {
-  const { cart, drawerOpen, closeDrawer, isPending, fallbackActive } = useCart()
+  const { cart, drawerOpen, closeDrawer, isPending, fallbackActive, queuedLines } = useCart()
   const isAuthenticated = useCartAuth()
 
   /**
@@ -226,7 +226,9 @@ export default function CartDrawer() {
         </header>
 
         <div className={`cart-drawer__body ${isPending ? 'opacity-70' : ''}`}>
-          {fallbackActive && <CartOfflineNotice className="cart-drawer__offline" />}
+          {(fallbackActive || queuedLines > 0) && (
+            <CartOfflineNotice className="cart-drawer__offline" queuedLines={queuedLines} />
+          )}
           {cart.items.length === 0 ? (
             <div className="cart-drawer__empty">
               <ShoppingCart size={40} className="text-icon-empty" aria-hidden="true" />
@@ -269,7 +271,9 @@ export default function CartDrawer() {
                 is the route out: that page names the lines and removes them. */}
             <CartCheckoutButton
               isAuthenticated={isAuthenticated}
-              disabled={cart.items.some((item) => !item.available) || fallbackActive}
+              disabled={
+                cart.items.some((item) => !item.available) || fallbackActive || queuedLines > 0
+              }
               className="cart-drawer__checkout"
               onNavigate={closeDrawer}
             />

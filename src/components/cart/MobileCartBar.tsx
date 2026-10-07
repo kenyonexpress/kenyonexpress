@@ -46,7 +46,7 @@ export function isMobileCartBarRoute(pathname: string | null): boolean {
  * above it would look like two carts.
  */
 export default function MobileCartBar() {
-  const { cart, drawerOpen, openDrawer, fallbackActive } = useCart()
+  const { cart, drawerOpen, openDrawer, fallbackActive, queuedLines } = useCart()
   const itemCount = useStore(useCartStoreApi(), displayItemCount)
   const isAuthenticated = useCartAuth()
   const pathname = usePathname()
@@ -61,7 +61,7 @@ export default function MobileCartBar() {
 
   if (!visible) return null
 
-  const blocked = cart.items.some((item) => !item.available) || fallbackActive
+  const blocked = cart.items.some((item) => !item.available) || fallbackActive || queuedLines > 0
   const label = `${itemCount} ${itemCount === 1 ? 'פריט' : 'פריטים'} בעגלה, ${shekelsRounded(cart.subtotal)}, פתח את העגלה`
 
   return (

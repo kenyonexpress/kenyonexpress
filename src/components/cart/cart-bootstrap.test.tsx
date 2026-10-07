@@ -1,7 +1,8 @@
 import { type CartView, type CartViewItem, EMPTY_CART } from '@/lib/cart/types'
 import { agorot } from '@/lib/money'
 import { act, render } from '@testing-library/react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { installFakeIndexedDB, uninstallFakeIndexedDB } from '../../../test/fake-indexeddb'
 
 /**
  * A FAILED BOOTSTRAP USED TO LEAVE A BADGE THAT SAID "3" OVER AN EMPTY CART.
@@ -27,6 +28,7 @@ vi.mock('@/server/actions/cart', () => ({
 
 import { writeCartFallback } from '@/lib/cart/local-fallback'
 import type { CartStoreApi } from '@/lib/cart/store'
+import { queueCartLine, readCartSyncQueue } from '@/lib/cart/sync-queue'
 import CartBootstrap from './CartBootstrap'
 import { CartProvider, useCartStoreApi } from './CartProvider'
 
@@ -169,5 +171,146 @@ describe('CartBootstrap when /api/cart fails', () => {
       window.dispatchEvent(new Event('online'))
     })
     expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+})
+
+/**
+ * THE PAGE HALF OF THE OFFLINE REPLAY. Where the browser has no Background
+ * Sync (jsdom here, every WebKit browser in the field) this component posts
+ * the queue itself, on mount and on `online`; where the worker does it, the
+ * result arrives as a `message` and lands through the same store call.
+ */
+describe('CartBootstrap replays the offline cart queue', () => {
+  const P1 = '11111111-1111-4111-8111-111111111111'
+  const synced = cartOf([{ ...LINE, product_id: P1, quantity: 2 }], 'cart-synced')
+
+  /** Answers by URL, so the bootstrap read and the replay can be scripted apart. */
+  function network(answers: Record<string, () => Promise<unknown>>) {
+    fetchMock.mockImplementation(async (url: string) => {
+      const answer = answers[url]
+      if (!answer) throw new Error(`unexpected fetch ${url}`)
+      return answer()
+    })
+  }
+  const ok = (body: unknown) => async () => ({ ok: true, json: async () => body })
+  const serverCart = { cart: cartOf([LINE]), isAuthenticated: false }
+
+  beforeEach(() => {
+    installFakeIndexedDB()
+  })
+  afterEach(() => {
+    uninstallFakeIndexedDB()
+    vi.unstubAllGlobals()
+  })
+
+  it('seeds the checkout guard from the queue, replays it, and takes the replayed cart', async () => {
+    await queueCartLine(P1, null, 2)
+    network({
+      '/api/cart': ok(serverCart),
+      '/api/cart/sync': ok({ ok: true, cart: synced, rejected: [] }),
+    })
+
+    const store = mount()
+    await flush()
+    await flush()
+
+    const state = store.getState()
+    expect(state.queuedLines).toBe(0)
+    expect(state.cart.id).toBe('cart-synced')
+    expect(state.serverConfirmed).toBe(true)
+    expect(await readCartSyncQueue()).toEqual([])
+    const urls = fetchMock.mock.calls.map(([url]) => url)
+    expect(urls).toContain('/api/cart/sync')
+  })
+
+  it('never lets the bootstrap read paint over a queue that is still waiting', async () => {
+    await queueCartLine(P1, null, 2)
+    network({
+      '/api/cart': ok(serverCart),
+      '/api/cart/sync': async () => {
+        throw new TypeError('Failed to fetch')
+      },
+    })
+
+    const store = mount()
+    await flush()
+    await flush()
+
+    const state = store.getState()
+    expect(state.queuedLines).toBe(1)
+    // The server's cart was fetched and deliberately not applied: it does not
+    // hold the queued line, and the replay's answer will.
+    expect(state.serverCart.id).toBeNull()
+    expect(await readCartSyncQueue()).toHaveLength(1)
+  })
+
+  it('replays again on online', async () => {
+    await queueCartLine(P1, null, 2)
+    let syncUp = false
+    network({
+      '/api/cart': ok(serverCart),
+      '/api/cart/sync': async () => {
+        if (!syncUp) throw new TypeError('Failed to fetch')
+        return { ok: true, json: async () => ({ ok: true, cart: synced, rejected: [] }) }
+      },
+    })
+    const store = mount()
+    await flush()
+    expect(store.getState().queuedLines).toBe(1)
+
+    syncUp = true
+    await act(async () => {
+      window.dispatchEvent(new Event('online'))
+    })
+    await flush()
+
+    expect(store.getState().queuedLines).toBe(0)
+    expect(store.getState().cart.id).toBe('cart-synced')
+  })
+
+  it("takes the worker's synced cart from a message", async () => {
+    const worker = new EventTarget()
+    vi.stubGlobal('navigator', { onLine: true, serviceWorker: worker })
+    network({ '/api/cart': ok(serverCart) })
+    const store = mount()
+    await flush()
+
+    await act(async () => {
+      worker.dispatchEvent(
+        new MessageEvent('message', {
+          data: { type: 'ke:cart-synced', cart: synced, rejected: [] },
+        }),
+      )
+    })
+
+    expect(store.getState().cart.id).toBe('cart-synced')
+    expect(store.getState().queuedLines).toBe(0)
+  })
+
+  it("clears the guard and re-reads the cart on the worker's failure message", async () => {
+    const worker = new EventTarget()
+    vi.stubGlobal('navigator', { onLine: true, serviceWorker: worker })
+    await queueCartLine(P1, null, 2)
+    network({
+      '/api/cart': ok(serverCart),
+      '/api/cart/sync': async () => ({ ok: false, status: 403, json: async () => ({}) }),
+    })
+    const store = mount()
+    await flush()
+    await flush()
+    expect(store.getState().queuedLines).toBe(0)
+
+    store
+      .getState()
+      .seedQueued([{ key: `${P1}|`, product_id: P1, variant_id: null, quantity: 2, at: 1 }])
+    const reads = fetchMock.mock.calls.filter(([url]) => url === '/api/cart').length
+    await act(async () => {
+      worker.dispatchEvent(
+        new MessageEvent('message', { data: { type: 'ke:cart-sync-failed', status: 403 } }),
+      )
+    })
+
+    expect(store.getState().queuedLines).toBe(0)
+    expect(fetchMock.mock.calls.filter(([url]) => url === '/api/cart').length).toBe(reads + 1)
   })
 })

@@ -2,6 +2,14 @@
 
 import { useCartStoreApi } from '@/components/cart/CartProvider'
 import { readCartFallback } from '@/lib/cart/local-fallback'
+import {
+  CART_SYNCED_MESSAGE,
+  CART_SYNC_FAILED_MESSAGE,
+  type CartSyncRejected,
+  flushCartSyncQueue,
+  readCartSyncQueue,
+  requestBackgroundCartSync,
+} from '@/lib/cart/sync-queue'
 import type { CartView } from '@/lib/cart/types'
 import { useEffect } from 'react'
 
@@ -32,6 +40,18 @@ import { useEffect } from 'react'
  * as "say the prices are as of the last connection". The next successful
  * answer, here on `online` or from any settled mutation, overwrites it: the
  * server wins on hydrate, which is the rule the fallback exists inside of.
+ *
+ * AND THE WRITES MADE WHILE OFFLINE ARE REPLAYED FROM HERE TOO.
+ *
+ * `lib/cart/sync-queue.ts` keeps the line quantities a shopper set with no
+ * network. This component is the page half of the replay: on mount it reads
+ * the queue back into the store (so the checkout guard survives a reload),
+ * and on mount and on every `online` it asks the browser for a Background
+ * Sync through the worker, falling back to posting the queue itself where
+ * the browser has none (every WebKit browser, so every iPhone). The worker's
+ * answer arrives as a `message` on `navigator.serviceWorker` and lands
+ * through the same `applySync` the page path uses. A bootstrap read never
+ * paints over a pending queue: the sync reply is the fresher cart.
  */
 export default function CartBootstrap() {
   const store = useCartStoreApi()
@@ -67,23 +87,74 @@ export default function CartBootstrap() {
       // fresher read than this one, so both cases are skipped. A restored
       // fallback is NOT skipped: `restoreFallback` leaves `serverCart` alone
       // precisely so this check still sees a server that has not answered.
-      if (state.pendingOps > 0 || state.serverCart.id !== null) return
+      // A queued line is skipped too: the replay's reply holds those lines,
+      // this read does not, and painting it would remove them from the screen
+      // for the second between the two.
+      if (state.pendingOps > 0 || state.serverCart.id !== null || state.queuedLines > 0) return
       state.setCart(payload.cart)
     }
 
-    void load()
+    /**
+     * Gets the queue replayed, by whichever side can. The worker where the
+     * browser grants Background Sync (registering while online fires the
+     * `sync` event at once), the page otherwise. Never both: a replay is
+     * idempotent but it still spends the shopper's write budget.
+     */
+    const replay = async () => {
+      if (await requestBackgroundCartSync()) return
+      const outcome = await flushCartSyncQueue()
+      if (controller.signal.aborted) return
+      if (outcome.kind === 'synced') {
+        store.getState().applySync(outcome.result.cart, outcome.result.rejected)
+      } else if (outcome.kind === 'refused') {
+        store.getState().syncRefused()
+        void load()
+      }
+    }
 
-    // Coming back online is the retry. Only while the server has not answered:
-    // once it has, the store is current and a mutation refreshes it anyway.
-    const onOnline = () => {
-      if (store.getState().serverConfirmed) return
+    const start = async () => {
+      const queued = await readCartSyncQueue()
+      if (controller.signal.aborted) return
+      if (queued.length > 0) {
+        store.getState().seedQueued(queued)
+        void replay()
+      }
       void load()
     }
+
+    void start()
+
+    // Coming back online is the retry: the queue first, then the bootstrap
+    // read, and the latter only while the server has not answered.
+    const onOnline = () => {
+      void replay().then(() => {
+        if (store.getState().serverConfirmed) return
+        void load()
+      })
+    }
     window.addEventListener('online', onOnline)
+
+    // The worker's replay reports here.
+    const onMessage = (event: MessageEvent) => {
+      const data = event.data as
+        | { type: typeof CART_SYNCED_MESSAGE; cart: CartView; rejected?: CartSyncRejected[] }
+        | { type: typeof CART_SYNC_FAILED_MESSAGE; status: number }
+        | null
+      if (!data || typeof data !== 'object') return
+      if (data.type === CART_SYNCED_MESSAGE && data.cart) {
+        store.getState().applySync(data.cart, data.rejected ?? [])
+      } else if (data.type === CART_SYNC_FAILED_MESSAGE) {
+        store.getState().syncRefused()
+        void load()
+      }
+    }
+    const worker = typeof navigator !== 'undefined' ? navigator.serviceWorker : undefined
+    worker?.addEventListener('message', onMessage)
 
     return () => {
       controller.abort()
       window.removeEventListener('online', onOnline)
+      worker?.removeEventListener('message', onMessage)
     }
   }, [store])
 

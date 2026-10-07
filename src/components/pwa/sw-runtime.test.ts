@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { FakeIndexedDB } from '../../../test/fake-indexeddb'
 
 /**
  * public/sw.js, EXECUTED.
@@ -45,6 +46,9 @@ class FakeResponse {
   }
   async text() {
     return this.body
+  }
+  async json() {
+    return JSON.parse(this.body)
   }
 }
 
@@ -120,6 +124,7 @@ type Handler = (event: unknown) => void
 
 let handlers: Record<string, Handler[]>
 let caches: FakeCacheStorage
+let indexedDB: FakeIndexedDB
 let network: (r: FakeRequest) => Promise<FakeResponse> | FakeResponse
 let fetchSpy: ReturnType<typeof vi.fn>
 let self: {
@@ -137,6 +142,7 @@ let self: {
 function boot() {
   handlers = {}
   caches = new FakeCacheStorage()
+  indexedDB = new FakeIndexedDB()
   network = () => new FakeResponse('ok')
   // async, so a scripted failure is a rejection and never a synchronous throw:
   // real fetch never throws before returning its promise.
@@ -156,12 +162,13 @@ function boot() {
   }
   // The worker's free identifiers, bound as parameters so nothing leaks to
   // the real globals and nothing real leaks in.
-  new Function('self', 'caches', 'fetch', 'Response', 'URL', source)(
+  new Function('self', 'caches', 'fetch', 'Response', 'URL', 'indexedDB', source)(
     self,
     caches,
     fetchSpy,
     FakeResponse,
     URL,
+    indexedDB,
   )
 }
 
@@ -459,5 +466,114 @@ describe('push', () => {
     }
     await Promise.all(pending)
     expect(self.clients.openWindow).toHaveBeenCalledWith('/account/wallet')
+  })
+})
+
+describe('cart background sync', () => {
+  const DB = 'ke-cart-sync'
+  const STORE = 'lines'
+  const P1 = '11111111-1111-4111-8111-111111111111'
+
+  /** Seeds the queue the way lib/cart/sync-queue.ts writes it. */
+  async function seed(lines: { product_id: string; quantity: number; at: number }[]) {
+    const open = indexedDB.open(DB, 1)
+    open.onupgradeneeded = () => open.result.createObjectStore(STORE, { keyPath: 'key' })
+    const db = await new Promise<typeof open.result>((resolve) => {
+      open.onsuccess = () => resolve(open.result)
+    })
+    for (const line of lines) {
+      const put = db
+        .transaction(STORE, 'readwrite')
+        .objectStore(STORE)
+        .put({ key: `${line.product_id}|`, variant_id: null, ...line })
+      await new Promise((resolve) => {
+        put.onsuccess = () => resolve(undefined)
+      })
+    }
+  }
+
+  /** Dispatches the `sync` event and resolves the way the browser would: rejected when the worker rethrows. */
+  function sync(tag = 'ke-cart-sync') {
+    const pending: Promise<unknown>[] = []
+    for (const h of handlers.sync ?? [])
+      h({ tag, waitUntil: (p: Promise<unknown>) => pending.push(p) })
+    return Promise.all(pending)
+  }
+
+  let postMessage: ReturnType<typeof vi.fn>
+
+  beforeEach(() => {
+    postMessage = vi.fn()
+    self.clients.matchAll = vi.fn(() => Promise.resolve([{ postMessage }]))
+  })
+
+  it('ignores a sync it does not own', async () => {
+    await seed([{ product_id: P1, quantity: 2, at: 1 }])
+    await sync('something-else')
+    expect(fetchSpy).not.toHaveBeenCalled()
+  })
+
+  it('does nothing with an empty queue', async () => {
+    await sync()
+    expect(fetchSpy).not.toHaveBeenCalled()
+    expect(postMessage).not.toHaveBeenCalled()
+  })
+
+  it('posts the queue with the cookies, clears it on 200 and tells every page the cart', async () => {
+    await seed([{ product_id: P1, quantity: 2, at: 1 }])
+    const cart = { id: 'c1', items: [], item_count: 2 }
+    network = () => new FakeResponse(JSON.stringify({ ok: true, cart, rejected: [] }))
+
+    await sync()
+
+    const [request, init] = fetchSpy.mock.calls[0] as unknown as [string, RequestInit]
+    expect(request).toBe('/api/cart/sync')
+    expect(init.method).toBe('POST')
+    expect(init.credentials).toBe('same-origin')
+    expect(JSON.parse(init.body as string)).toEqual({
+      lines: [{ product_id: P1, variant_id: null, quantity: 2 }],
+    })
+    expect(indexedDB.rows(DB, STORE)).toEqual([])
+    expect(postMessage).toHaveBeenCalledWith({ type: 'ke:cart-synced', cart, rejected: [] })
+    // The reply is per-shopper and is never put in any cache.
+    expect(caches.urls()).toEqual([])
+  })
+
+  it('rethrows on a 5xx so the browser retries, and keeps the queue', async () => {
+    await seed([{ product_id: P1, quantity: 2, at: 1 }])
+    network = () => new FakeResponse('down', { status: 503 })
+    await expect(sync()).rejects.toThrow('cart sync 503')
+    expect(indexedDB.rows(DB, STORE)).toHaveLength(1)
+    expect(postMessage).not.toHaveBeenCalled()
+  })
+
+  it('rethrows on a network failure, and keeps the queue', async () => {
+    await seed([{ product_id: P1, quantity: 2, at: 1 }])
+    network = () => {
+      throw new TypeError('Failed to fetch')
+    }
+    await expect(sync()).rejects.toThrow()
+    expect(indexedDB.rows(DB, STORE)).toHaveLength(1)
+  })
+
+  it('drops the queue on a 4xx and tells the page, without retrying', async () => {
+    await seed([{ product_id: P1, quantity: 2, at: 1 }])
+    network = () => new FakeResponse('{"ok":false}', { status: 403 })
+    await expect(sync()).resolves.toBeDefined()
+    expect(indexedDB.rows(DB, STORE)).toEqual([])
+    expect(postMessage).toHaveBeenCalledWith({ type: 'ke:cart-sync-failed', status: 403 })
+  })
+
+  it('keeps an entry the page rewrote while the replay was in flight', async () => {
+    await seed([{ product_id: P1, quantity: 2, at: 1 }])
+    network = async () => {
+      // The shopper pressed again mid-request: a newer write to the same line.
+      await seed([{ product_id: P1, quantity: 5, at: 9 }])
+      return new FakeResponse(JSON.stringify({ ok: true, cart: { id: 'c1' }, rejected: [] }))
+    }
+    await sync()
+    expect(indexedDB.rows(DB, STORE)).toEqual([
+      expect.objectContaining({ product_id: P1, quantity: 5, at: 9 }),
+    ])
   })
 })

@@ -54,12 +54,22 @@
  * carrying an absolute URL falls back to '/', so a compromised push channel
  * cannot steer an installed app to another origin.
  *
+ * BACKGROUND SYNC FOR THE CART. A line quantity the shopper set with no
+ * network is queued by the page in IndexedDB (`lib/cart/sync-queue.ts`) and
+ * replayed here on the `sync` event, through the same POST the page would
+ * make itself on `online` where the browser has no Background Sync (every
+ * WebKit browser). The worker never reads /api/cart and never caches the
+ * reply: it posts the queue, clears what the server took, and tells every
+ * open page the cart it got back. A 5xx or a network error is rethrown so
+ * the browser retries with its own backoff; a 4xx drops the queue, because a
+ * server that refused once on the merits will refuse again tomorrow.
+ *
  * The version string is the kill switch. Bump it and every old cache is
  * deleted on activate; combined with skipWaiting + clients.claim, a broken
  * worker can be replaced on the next load rather than on the next tab close.
  */
 
-const VERSION = 'ke-v4'
+const VERSION = 'ke-v5'
 const STATIC_CACHE = `${VERSION}-static`
 const PAGES_CACHE = `${VERSION}-pages`
 const IMAGES_CACHE = `${VERSION}-images`
@@ -119,6 +129,120 @@ self.addEventListener('activate', (event) => {
 /** A message channel so a future deploy can force an update without a reload. */
 self.addEventListener('message', (event) => {
   if (event.data === 'SKIP_WAITING') self.skipWaiting()
+})
+
+// ---------------------------------------------------------------------------
+// Cart background sync. The names are a copy of lib/cart/sync-queue.ts, which
+// this file cannot import; sync-queue.test.ts pins the two together.
+// ---------------------------------------------------------------------------
+
+const CART_SYNC_DB = 'ke-cart-sync'
+const CART_SYNC_STORE = 'lines'
+const CART_SYNC_TAG = 'ke-cart-sync'
+const CART_SYNC_ENDPOINT = '/api/cart/sync'
+const CART_SYNCED_MESSAGE = 'ke:cart-synced'
+const CART_SYNC_FAILED_MESSAGE = 'ke:cart-sync-failed'
+const CART_SYNC_MAX_LINES = 50
+
+function openCartSyncDb() {
+  return new Promise((resolve) => {
+    let request
+    try {
+      request = indexedDB.open(CART_SYNC_DB, 1)
+    } catch {
+      resolve(null)
+      return
+    }
+    request.onupgradeneeded = () => {
+      const db = request.result
+      if (!db.objectStoreNames.contains(CART_SYNC_STORE)) {
+        db.createObjectStore(CART_SYNC_STORE, { keyPath: 'key' })
+      }
+    }
+    request.onsuccess = () => resolve(request.result)
+    request.onerror = () => resolve(null)
+    request.onblocked = () => resolve(null)
+  })
+}
+
+function awaitIdb(request) {
+  return new Promise((resolve, reject) => {
+    request.onsuccess = () => resolve(request.result)
+    request.onerror = () => reject(request.error || new Error('indexeddb'))
+  })
+}
+
+async function readCartQueue(db) {
+  const rows = await awaitIdb(
+    db.transaction(CART_SYNC_STORE, 'readonly').objectStore(CART_SYNC_STORE).getAll(),
+  )
+  return rows.sort((a, b) => a.at - b.at)
+}
+
+/** Deletes a sent entry only when nothing newer replaced it meanwhile. */
+async function clearCartQueue(db, sent) {
+  const store = db.transaction(CART_SYNC_STORE, 'readwrite').objectStore(CART_SYNC_STORE)
+  for (const line of sent) {
+    const current = await awaitIdb(store.get(line.key))
+    if (current && current.at <= line.at) await awaitIdb(store.delete(line.key))
+  }
+}
+
+async function dropCartQueue(db) {
+  await awaitIdb(db.transaction(CART_SYNC_STORE, 'readwrite').objectStore(CART_SYNC_STORE).clear())
+}
+
+async function broadcast(message) {
+  const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true })
+  for (const client of clients) client.postMessage(message)
+}
+
+async function flushCartQueue() {
+  const db = await openCartSyncDb()
+  if (!db) return
+  try {
+    const lines = await readCartQueue(db)
+    if (lines.length === 0) return
+    const sent = lines.slice(0, CART_SYNC_MAX_LINES)
+
+    const response = await fetch(CART_SYNC_ENDPOINT, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      // The shopper's own cookies: the guest session or the auth session.
+      credentials: 'same-origin',
+      cache: 'no-store',
+      body: JSON.stringify({
+        lines: sent.map((line) => ({
+          product_id: line.product_id,
+          variant_id: line.variant_id,
+          quantity: line.quantity,
+        })),
+      }),
+    })
+
+    if (response.ok) {
+      const result = await response.json()
+      await clearCartQueue(db, sent)
+      await broadcast({ type: CART_SYNCED_MESSAGE, cart: result.cart, rejected: result.rejected })
+      return
+    }
+
+    if (response.status >= 500) {
+      // Rethrown out of waitUntil: the browser keeps the sync registration and
+      // retries with backoff. The queue is untouched.
+      throw new Error(`cart sync ${response.status}`)
+    }
+
+    await dropCartQueue(db)
+    await broadcast({ type: CART_SYNC_FAILED_MESSAGE, status: response.status })
+  } finally {
+    db.close()
+  }
+}
+
+self.addEventListener('sync', (event) => {
+  if (event.tag !== CART_SYNC_TAG) return
+  event.waitUntil(flushCartQueue())
 })
 
 function isImmutableAsset(url) {

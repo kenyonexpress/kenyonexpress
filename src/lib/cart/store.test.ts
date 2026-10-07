@@ -1,6 +1,7 @@
 import { type CartView, type CartViewItem, EMPTY_CART } from '@/lib/cart/types'
 import { agorot } from '@/lib/money'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { installFakeIndexedDB, uninstallFakeIndexedDB } from '../../../test/fake-indexeddb'
 
 /**
  * The cart store is where a shopper's optimistic view and the server's answer
@@ -620,5 +621,131 @@ describe('cart store', () => {
     a.getState().openDrawer()
     expect(b.getState().drawerOpen).toBe(false)
     expect(b.getState().cart.items).toHaveLength(0)
+  })
+})
+
+/**
+ * THE OFFLINE PATH. A thrown action that was the NETWORK failing is kept for
+ * replay (`lib/cart/sync-queue.ts`) instead of rolled back: the optimistic
+ * view stays, the shopper is told the change is saved, and every checkout
+ * button reads `queuedLines` as "refuse". A thrown action that was anything
+ * else still rolls back, which is the test two blocks up and the reason the
+ * distinction is made on the error and not on the fact of a throw.
+ */
+describe('writes made with no network are queued, not rolled back', () => {
+  const offline = new TypeError('Failed to fetch')
+  const DB = 'ke-cart-sync'
+  const STORE = 'lines'
+  let idb: ReturnType<typeof installFakeIndexedDB>
+
+  beforeEach(() => {
+    idb = installFakeIndexedDB()
+  })
+  afterEach(() => {
+    uninstallFakeIndexedDB()
+  })
+
+  it('keeps the optimistic count, queues the line and says it is saved', async () => {
+    addToCart.mockRejectedValue(offline)
+    const feedback = vi.fn()
+    const store = createCartStore(EMPTY_CART, feedback)
+
+    expect(await store.getState().addToCart('p1', null, 2)).toBe(true)
+
+    const state = store.getState()
+    expect(state.cart.item_count).toBe(2)
+    expect(state.isPending).toBe(false)
+    expect(state.queuedLines).toBe(1)
+    expect(state.queuedQuantities).toEqual({ 'p1|': 2 })
+    expect(idb.rows(DB, STORE)).toEqual([
+      expect.objectContaining({ product_id: 'p1', variant_id: null, quantity: 2 }),
+    ])
+    expect(feedback).toHaveBeenCalledWith(expect.objectContaining({ kind: 'queued' }))
+    expect(feedback).not.toHaveBeenCalledWith(expect.objectContaining({ kind: 'error' }))
+  })
+
+  it('queues the quantity the line should END at: the confirmed line plus the press', async () => {
+    addToCart.mockRejectedValue(offline)
+    const store = createCartStore(cart([item({ quantity: 2 })]))
+    await store.getState().addToCart('p1', null, 3)
+    expect(idb.rows(DB, STORE)).toEqual([expect.objectContaining({ quantity: 5 })])
+  })
+
+  it('accumulates two offline presses on the same line instead of replaying the first twice', async () => {
+    addToCart.mockRejectedValue(offline)
+    const store = createCartStore(EMPTY_CART)
+    await store.getState().addToCart('p1', null, 1)
+    await store.getState().addToCart('p1', null, 1)
+    expect(store.getState().queuedLines).toBe(1)
+    expect(idb.rows(DB, STORE)).toEqual([expect.objectContaining({ quantity: 2 })])
+    expect(store.getState().cart.item_count).toBe(2)
+  })
+
+  it('queues a quantity change and a removal as absolute quantities', async () => {
+    updateCartItem.mockRejectedValue(offline)
+    removeFromCart.mockRejectedValue(offline)
+    const store = createCartStore(cart([item({ product_id: 'p1' }), item({ product_id: 'p2' })]))
+
+    await store.getState().updateQuantity('p1', null, 7)
+    await store.getState().removeItem('p2', null)
+
+    expect(store.getState().queuedQuantities).toEqual({ 'p1|': 7, 'p2|': 0 })
+    expect(store.getState().cart.items.map((i) => [i.product_id, i.quantity])).toEqual([['p1', 7]])
+  })
+
+  it('still rolls back when the throw was not the network', async () => {
+    addToCart.mockRejectedValue(new Error('boom'))
+    const store = createCartStore(EMPTY_CART)
+    expect(await store.getState().addToCart('p1', null, 1)).toBe(false)
+    expect(store.getState().cart.item_count).toBe(0)
+    expect(store.getState().queuedLines).toBe(0)
+    expect(idb.rows(DB, STORE)).toEqual([])
+  })
+
+  it('still rolls back when the queue cannot be written (no storage)', async () => {
+    uninstallFakeIndexedDB()
+    addToCart.mockRejectedValue(offline)
+    const feedback = vi.fn()
+    const store = createCartStore(EMPTY_CART, feedback)
+    expect(await store.getState().addToCart('p1', null, 1)).toBe(false)
+    expect(store.getState().cart.item_count).toBe(0)
+    expect(feedback).toHaveBeenCalledWith({ kind: 'error', message: 'הפעולה נכשלה, נסו שוב' })
+  })
+
+  it('a replay that landed replaces the cart and clears the queue; a refused line is named', async () => {
+    addToCart.mockRejectedValue(offline)
+    const feedback = vi.fn()
+    const store = createCartStore(EMPTY_CART, feedback)
+    await store.getState().addToCart('p1', null, 1)
+
+    const confirmed = cart([item({ product_id: 'p1', quantity: 1 })])
+    store.getState().applySync(confirmed, [{ product_id: 'p2', variant_id: null, error: 'אזל' }])
+
+    const state = store.getState()
+    expect(state.cart).toEqual(confirmed)
+    expect(state.serverCart).toEqual(confirmed)
+    expect(state.serverConfirmed).toBe(true)
+    expect(state.fallbackActive).toBe(false)
+    expect(state.queuedLines).toBe(0)
+    expect(state.queuedQuantities).toEqual({})
+    expect(readCartFallback()).toEqual(confirmed)
+    expect(feedback).toHaveBeenLastCalledWith({
+      kind: 'error',
+      message: 'פריט אחד מהעגלה לא נשמר: אזל מהמלאי או אינו זמין',
+    })
+  })
+
+  it('a refused replay clears the guard and says so', () => {
+    const feedback = vi.fn()
+    const store = createCartStore(EMPTY_CART, feedback)
+    store
+      .getState()
+      .seedQueued([{ key: 'p1|', product_id: 'p1', variant_id: null, quantity: 1, at: 1 }])
+    expect(store.getState().queuedLines).toBe(1)
+
+    store.getState().syncRefused()
+
+    expect(store.getState().queuedLines).toBe(0)
+    expect(feedback).toHaveBeenCalledWith(expect.objectContaining({ kind: 'error' }))
   })
 })
