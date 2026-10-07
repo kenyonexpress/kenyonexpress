@@ -1,0 +1,51 @@
+Already up to date
+Done in 195ms using pnpm v11.1.2
+$ next start
+▲ Next.js 16.3.3
+- Local:         http://localhost:3317
+- Network:       http://100.84.130.122:3317
+✓ Ready in 144ms
+✓ Running next.config.ts took 487ms
+{"ts":"2026-10-07T13:55:08.143Z","level":"warn","event":"env.checks_skipped","request_id":null,"detail":"ALLOW_INCOMPLETE_ENV=true. Correct for a local `next start`; wrong anywhere a customer can reach."}
+{"ts":"2026-10-07T13:55:09.565Z","level":"info","event":"env.probe_ok","request_id":null,"checked":2}
+{"ts":"2026-10-07T13:55:27.185Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"v_homepage_sections_live","status":200,"duration_ms":412,"threshold_ms":300}
+{"ts":"2026-10-07T13:58:19.141Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"v_banners_live","status":200,"duration_ms":1222,"threshold_ms":300}
+{"ts":"2026-10-07T13:58:19.143Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"v_homepage_sections_live","status":200,"duration_ms":1220,"threshold_ms":300}
+{"ts":"2026-10-07T13:58:19.257Z","level":"warn","event":"db.query_slow","request_id":"c9f4c533-20e5-48a8-b7a1-2b28662e53d4","route":"action","method":"GET","target":"carts","status":200,"duration_ms":925,"threshold_ms":300}
+{"ts":"2026-10-07T13:58:22.714Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"products","status":200,"duration_ms":952,"threshold_ms":300}
+{"ts":"2026-10-07T13:58:22.716Z","level":"warn","event":"db.query_slow","request_id":null,"method":"POST","target":"rpc:available_stock","status":200,"duration_ms":954,"threshold_ms":300}
+{"ts":"2026-10-07T13:58:24.054Z","level":"warn","event":"db.query_slow","request_id":"4b0d399d-7fa2-431e-a46a-ddb0700953f2","route":"action","method":"GET","target":"carts","status":200,"duration_ms":2109,"threshold_ms":300}
+(node:16428) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+(Use `node --trace-warnings ...` to show where the warning was created)
+{"ts":"2026-10-07T13:58:29.366Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"categories","status":200,"duration_ms":4063,"threshold_ms":300}
+{"ts":"2026-10-07T13:58:29.368Z","level":"warn","event":"db.query_slow","request_id":"772aaefc-b06e-4336-adac-702d11098719","route":"/api/a","method":"POST","target":"rpc:check_rate_limit","status":200,"duration_ms":4126,"threshold_ms":300}
+{"ts":"2026-10-07T13:58:29.453Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"products","status":200,"duration_ms":4150,"threshold_ms":300}
+{"ts":"2026-10-07T13:58:31.519Z","level":"error","event":"db.query_failed","request_id":"b383d154-d135-45b7-90cd-5db551d22ce3","route":"action","method":"GET","target":"carts","duration_ms":6081,"err":{"name":"TypeError","message":"fetch failed","stack":"TypeError: fetch failed"}}
+{"ts":"2026-10-07T13:58:31.520Z","level":"warn","event":"db.query_slow","request_id":"772aaefc-b06e-4336-adac-702d11098719","route":"/api/a","method":"POST","target":"rpc:fn_ingest_analytics_events","status":200,"duration_ms":2147,"threshold_ms":300}
+{"ts":"2026-10-07T13:58:31.522Z","level":"warn","event":"db.query_slow","request_id":"a32ed035-9b0e-4ed0-ba08-6702f5627253","route":"/api/a","method":"POST","target":"rpc:check_rate_limit","status":200,"duration_ms":9819,"threshold_ms":300}
+{"ts":"2026-10-07T13:58:33.923Z","level":"warn","event":"db.query_slow","request_id":"b383d154-d135-45b7-90cd-5db551d22ce3","route":"action","method":"GET","target":"carts","status":200,"duration_ms":1403,"threshold_ms":300}
+{"ts":"2026-10-07T13:58:33.929Z","level":"warn","event":"db.query_slow","request_id":"a32ed035-9b0e-4ed0-ba08-6702f5627253","route":"/api/a","method":"POST","target":"rpc:fn_ingest_analytics_events","status":200,"duration_ms":2405,"threshold_ms":300}
+(node:16428) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-07T13:58:35.310Z","level":"error","event":"supabase.timeout","request_id":null,"timeoutMs":10000,"url":"https://ixvwfbuvfxxsjiywhbbb.supabase.co/rest/v1/categories"}
+{"ts":"2026-10-07T13:58:39.464Z","level":"error","event":"supabase.timeout","request_id":null,"timeoutMs":10000,"url":"https://ixvwfbuvfxxsjiywhbbb.supabase.co/rest/v1/products"}
+{"ts":"2026-10-07T13:58:45.450Z","level":"error","event":"supabase.timeout","request_id":"2accb631-6543-4810-aadc-9060b9a1b9a9","route":"/api/a","method":"POST","timeoutMs":10000,"url":"https://ixvwfbuvfxxsjiywhbbb.supabase.co/rest/v1/rpc/check_rate_limit"}
+{"ts":"2026-10-07T13:58:45.454Z","level":"error","event":"rate_limit.check_failed","request_id":"2accb631-6543-4810-aadc-9060b9a1b9a9","route":"/api/a","method":"POST","key":"[redacted]","reason":"SupabaseTimeoutError: Supabase request exceeded 10000ms"}
+{"ts":"2026-10-07T13:58:45.454Z","level":"error","event":"rate_limit.open","request_id":"2accb631-6543-4810-aadc-9060b9a1b9a9","route":"/api/a","method":"POST","key":"[redacted]","limit":120,"windowSeconds":60}
+{"ts":"2026-10-07T13:58:46.317Z","level":"error","event":"supabase.timeout","request_id":null,"timeoutMs":10000,"url":"https://ixvwfbuvfxxsjiywhbbb.supabase.co/rest/v1/categories"}
+{"ts":"2026-10-07T13:58:47.720Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"products","status":200,"duration_ms":7252,"threshold_ms":300}
+{"ts":"2026-10-07T13:58:51.187Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"categories","status":200,"duration_ms":2868,"threshold_ms":300}
+{"ts":"2026-10-07T13:58:55.468Z","level":"error","event":"supabase.timeout","request_id":"2accb631-6543-4810-aadc-9060b9a1b9a9","route":"/api/a","method":"POST","timeoutMs":10000,"url":"https://ixvwfbuvfxxsjiywhbbb.supabase.co/rest/v1/rpc/fn_ingest_analytics_events"}
+{"ts":"2026-10-07T13:58:55.469Z","level":"error","event":"analytics.ingest_failed","request_id":"2accb631-6543-4810-aadc-9060b9a1b9a9","route":"/api/a","method":"POST","reason":"SupabaseTimeoutError: Supabase request exceeded 10000ms"}
+{"ts":"2026-10-07T13:58:57.119Z","level":"warn","event":"db.query_slow","request_id":"dcb2f8a5-2765-4f2d-8cef-4291f82402ad","route":"/api/a","method":"POST","target":"rpc:check_rate_limit","status":200,"duration_ms":4188,"threshold_ms":300}
+{"ts":"2026-10-07T13:58:59.368Z","level":"warn","event":"db.query_slow","request_id":"f518c8eb-4ffd-4b12-9940-3c755eefc57d","route":"action","method":"GET","target":"carts","status":200,"duration_ms":6368,"threshold_ms":300}
+{"ts":"2026-10-07T13:59:00.571Z","level":"error","event":"supabase.timeout","request_id":"9623f270-dad2-4747-b6e6-431317f5e6f5","route":"action","method":"cart.get","timeoutMs":10000,"url":"https://ixvwfbuvfxxsjiywhbbb.supabase.co/rest/v1/carts"}
+{"ts":"2026-10-07T13:59:02.494Z","level":"warn","event":"db.query_slow","request_id":"23010cdc-8cbd-4c3d-a4e9-542cca407705","route":"/api/a","method":"POST","target":"rpc:check_rate_limit","status":200,"duration_ms":3081,"threshold_ms":300}
+{"ts":"2026-10-07T13:59:03.109Z","level":"error","event":"supabase.timeout","request_id":"337db013-66d9-4e45-8f48-c1eec9ffc76f","route":"action","method":"cart.get","timeoutMs":10000,"url":"https://ixvwfbuvfxxsjiywhbbb.supabase.co/rest/v1/carts"}
+{"ts":"2026-10-07T13:59:07.124Z","level":"error","event":"supabase.timeout","request_id":"dcb2f8a5-2765-4f2d-8cef-4291f82402ad","route":"/api/a","method":"POST","timeoutMs":10000,"url":"https://ixvwfbuvfxxsjiywhbbb.supabase.co/rest/v1/rpc/fn_ingest_analytics_events"}
+{"ts":"2026-10-07T13:59:07.125Z","level":"error","event":"analytics.ingest_failed","request_id":"dcb2f8a5-2765-4f2d-8cef-4291f82402ad","route":"/api/a","method":"POST","reason":"SupabaseTimeoutError: Supabase request exceeded 10000ms"}
+{"ts":"2026-10-07T13:59:09.466Z","level":"error","event":"supabase.timeout","request_id":"005db8e9-d0c0-4a0c-9330-5763405d4e6d","route":"action","method":"cart.get","timeoutMs":10000,"url":"https://ixvwfbuvfxxsjiywhbbb.supabase.co/rest/v1/carts"}
+{"ts":"2026-10-07T13:59:11.577Z","level":"error","event":"supabase.timeout","request_id":"9623f270-dad2-4747-b6e6-431317f5e6f5","route":"action","method":"cart.get","timeoutMs":10000,"url":"https://ixvwfbuvfxxsjiywhbbb.supabase.co/rest/v1/carts"}
+{"ts":"2026-10-07T13:59:13.418Z","level":"warn","event":"db.query_slow","request_id":"005db8e9-d0c0-4a0c-9330-5763405d4e6d","route":"action","method":"GET","target":"carts","status":200,"duration_ms":2950,"threshold_ms":300}
+{"ts":"2026-10-07T13:59:14.113Z","level":"error","event":"supabase.timeout","request_id":"337db013-66d9-4e45-8f48-c1eec9ffc76f","route":"action","method":"cart.get","timeoutMs":10000,"url":"https://ixvwfbuvfxxsjiywhbbb.supabase.co/rest/v1/carts"}
+{"ts":"2026-10-07T13:59:16.647Z","level":"warn","event":"db.query_slow","request_id":"337db013-66d9-4e45-8f48-c1eec9ffc76f","route":"action","method":"GET","target":"carts","status":200,"duration_ms":530,"threshold_ms":300}
+[ELIFECYCLE] Command failed with exit code 130.

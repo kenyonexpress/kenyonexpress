@@ -1,0 +1,25 @@
+Already up to date
+Done in 203ms using pnpm v11.1.2
+$ next start
+▲ Next.js 16.3.3
+- Local:         http://localhost:3317
+- Network:       http://100.84.130.122:3317
+✓ Ready in 138ms
+✓ Running next.config.ts took 413ms
+{"ts":"2026-10-07T14:31:39.188Z","level":"warn","event":"env.checks_skipped","request_id":null,"detail":"ALLOW_INCOMPLETE_ENV=true. Correct for a local `next start`; wrong anywhere a customer can reach."}
+{"ts":"2026-10-07T14:31:42.339Z","level":"info","event":"env.probe_ok","request_id":null,"checked":2}
+{"ts":"2026-10-07T14:31:42.360Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"v_homepage_sections_live","status":200,"duration_ms":504,"threshold_ms":300}
+{"ts":"2026-10-07T14:31:42.362Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"v_banners_live","status":200,"duration_ms":508,"threshold_ms":300}
+{"ts":"2026-10-07T14:31:43.993Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"v_homepage_sections_live","status":200,"duration_ms":919,"threshold_ms":300}
+{"ts":"2026-10-07T14:31:44.306Z","level":"warn","event":"db.query_slow","request_id":"8005b102-d084-4b6b-944e-4fa71e2f8b63","route":"action","method":"GET","target":"carts","status":200,"duration_ms":940,"threshold_ms":300}
+{"ts":"2026-10-07T14:31:50.639Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"products","status":200,"duration_ms":2219,"threshold_ms":300}
+{"ts":"2026-10-07T14:31:58.068Z","level":"error","event":"supabase.timeout","request_id":"fe620b00-3253-4df3-a151-54129678db7c","route":"/api/a","method":"POST","timeoutMs":10000,"url":"https://ixvwfbuvfxxsjiywhbbb.supabase.co/rest/v1/rpc/check_rate_limit"}
+{"ts":"2026-10-07T14:31:58.070Z","level":"error","event":"rate_limit.check_failed","request_id":"fe620b00-3253-4df3-a151-54129678db7c","route":"/api/a","method":"POST","key":"[redacted]","reason":"SupabaseTimeoutError: Supabase request exceeded 10000ms"}
+{"ts":"2026-10-07T14:31:58.071Z","level":"error","event":"rate_limit.open","request_id":"fe620b00-3253-4df3-a151-54129678db7c","route":"/api/a","method":"POST","key":"[redacted]","limit":120,"windowSeconds":60}
+{"ts":"2026-10-07T14:31:58.422Z","level":"error","event":"supabase.timeout","request_id":null,"timeoutMs":10000,"url":"https://ixvwfbuvfxxsjiywhbbb.supabase.co/rest/v1/rpc/available_stock"}
+{"ts":"2026-10-07T14:31:58.423Z","level":"warn","event":"stock.available_read_failed","request_id":null,"productId":"d3f961f4-d95c-4cae-bc8f-2a32618dff18","reason":"SupabaseTimeoutError: Supabase request exceeded 10000ms"}
+{"ts":"2026-10-07T14:31:58.561Z","level":"error","event":"supabase.timeout","request_id":"9283d3f8-73f9-4933-9125-b56e6074770b","route":"action","method":"cart.get","timeoutMs":10000,"url":"https://ixvwfbuvfxxsjiywhbbb.supabase.co/rest/v1/carts"}
+{"ts":"2026-10-07T14:32:06.668Z","level":"error","event":"db.query_failed","request_id":"26fd8a96-70f1-4b79-a13c-24572019a95e","route":"/api/a","method":"POST","target":"rpc:check_rate_limit","duration_ms":3,"err":{"name":"TypeError","message":"fetch failed","stack":"TypeError: fetch failed"}}
+{"ts":"2026-10-07T14:32:06.668Z","level":"error","event":"rate_limit.check_failed","request_id":"26fd8a96-70f1-4b79-a13c-24572019a95e","route":"/api/a","method":"POST","key":"[redacted]","reason":"TypeError: fetch failed"}
+{"ts":"2026-10-07T14:32:06.668Z","level":"error","event":"rate_limit.open","request_id":"26fd8a96-70f1-4b79-a13c-24572019a95e","route":"/api/a","method":"POST","key":"[redacted]","limit":120,"windowSeconds":60}
+[ELIFECYCLE] Command failed with exit code 130.

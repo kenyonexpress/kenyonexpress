@@ -1,0 +1,68 @@
+Already up to date
+Done in 475ms using pnpm v11.1.2
+$ next start
+▲ Next.js 16.3.3
+- Local:         http://localhost:3317
+- Network:       http://100.84.130.122:3317
+✓ Ready in 169ms
+✓ Running next.config.ts took 797ms
+{"ts":"2026-10-07T14:26:12.857Z","level":"warn","event":"env.checks_skipped","request_id":null,"detail":"ALLOW_INCOMPLETE_ENV=true. Correct for a local `next start`; wrong anywhere a customer can reach."}
+{"ts":"2026-10-07T14:26:23.056Z","level":"info","event":"env.probe_ok","request_id":null,"checked":2}
+{"ts":"2026-10-07T14:26:23.511Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"v_homepage_sections_live","status":200,"duration_ms":1364,"threshold_ms":300}
+{"ts":"2026-10-07T14:26:26.759Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"v_banners_live","status":200,"duration_ms":4613,"threshold_ms":300}
+{"ts":"2026-10-07T14:26:29.388Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"v_banners_live","status":200,"duration_ms":4393,"threshold_ms":300}
+{"ts":"2026-10-07T14:26:34.997Z","level":"error","event":"supabase.timeout","request_id":null,"timeoutMs":10000,"url":"https://ixvwfbuvfxxsjiywhbbb.supabase.co/rest/v1/v_homepage_sections_live"}
+{"ts":"2026-10-07T14:26:35.447Z","level":"error","event":"supabase.timeout","request_id":"3d32f213-4229-48bd-8c49-f3f51c312f47","route":"action","method":"cart.get","timeoutMs":10000,"url":"https://ixvwfbuvfxxsjiywhbbb.supabase.co/rest/v1/carts"}
+{"ts":"2026-10-07T14:26:40.170Z","level":"warn","event":"db.query_slow","request_id":"3d32f213-4229-48bd-8c49-f3f51c312f47","route":"action","method":"GET","target":"carts","status":200,"duration_ms":3723,"threshold_ms":300}
+{"ts":"2026-10-07T14:26:43.943Z","level":"warn","event":"db.query_slow","request_id":"8c8ba76a-8d4c-43f3-998b-31550b9231d4","route":"/api/a","method":"POST","target":"rpc:check_rate_limit","status":200,"duration_ms":8637,"threshold_ms":300}
+{"ts":"2026-10-07T14:26:46.001Z","level":"error","event":"supabase.timeout","request_id":null,"timeoutMs":10000,"url":"https://ixvwfbuvfxxsjiywhbbb.supabase.co/rest/v1/v_homepage_sections_live"}
+{"ts":"2026-10-07T14:26:48.356Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"v_homepage_sections_live","status":200,"duration_ms":351,"threshold_ms":300}
+{"ts":"2026-10-07T14:26:53.489Z","level":"warn","event":"db.query_slow","request_id":"8c8ba76a-8d4c-43f3-998b-31550b9231d4","route":"/api/a","method":"POST","target":"rpc:fn_ingest_analytics_events","status":200,"duration_ms":9541,"threshold_ms":300}
+{"ts":"2026-10-07T14:26:56.972Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"products","status":200,"duration_ms":4434,"threshold_ms":300}
+{"ts":"2026-10-07T14:26:57.524Z","level":"warn","event":"db.query_slow","request_id":null,"method":"POST","target":"rpc:available_stock","status":200,"duration_ms":4987,"threshold_ms":300}
+{"ts":"2026-10-07T14:27:01.959Z","level":"warn","event":"db.query_slow","request_id":"3cd74255-029b-4096-911f-fb4eecc52697","route":"action","method":"GET","target":"carts","status":200,"duration_ms":9115,"threshold_ms":300}
+{"ts":"2026-10-07T14:27:02.744Z","level":"warn","event":"db.query_slow","request_id":"8a74e616-4f31-4bc4-b0c7-bf71650cbfa7","route":"/api/a","method":"POST","target":"rpc:check_rate_limit","status":200,"duration_ms":1149,"threshold_ms":300}
+{"ts":"2026-10-07T14:27:03.140Z","level":"warn","event":"db.query_slow","request_id":"8a74e616-4f31-4bc4-b0c7-bf71650cbfa7","route":"/api/a","method":"POST","target":"rpc:fn_ingest_analytics_events","status":200,"duration_ms":391,"threshold_ms":300}
+{"ts":"2026-10-07T14:27:03.470Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"categories","status":200,"duration_ms":1772,"threshold_ms":300}
+{"ts":"2026-10-07T14:27:04.343Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"products","status":200,"duration_ms":2643,"threshold_ms":300}
+Failed to proxy https://o4511944582496256.ingest.de.sentry.io/api/4511946778607696/envelope/?o=4511944582496256&p=4511946778607696&r=de&hsts=0 Error: Client network socket disconnected before secure TLS connection was established
+    at ignore-listed frames {
+  code: 'ECONNRESET',
+  path: null,
+  host: 'o4511944582496256.ingest.de.sentry.io',
+  port: 443,
+  localAddress: undefined
+}
+Error: Client network socket disconnected before secure TLS connection was established
+    at ignore-listed frames {
+  code: 'ECONNRESET',
+  path: null,
+  host: 'o4511944582496256.ingest.de.sentry.io',
+  port: 443,
+  localAddress: undefined
+}
+{"ts":"2026-10-07T14:27:06.070Z","level":"warn","event":"db.query_slow","request_id":"68a38149-173c-4cba-854d-2df713584200","route":"action","method":"GET","target":"carts","status":200,"duration_ms":4113,"threshold_ms":300}
+{"ts":"2026-10-07T14:27:09.815Z","level":"warn","event":"db.query_slow","request_id":"79b82a3f-5128-4135-9ccd-055d1ff0937c","route":"/api/a","method":"POST","target":"rpc:check_rate_limit","status":200,"duration_ms":1149,"threshold_ms":300}
+{"ts":"2026-10-07T14:27:11.840Z","level":"warn","event":"db.query_slow","request_id":"f61ae230-20d6-4edb-a75e-93bc5633bba7","route":"action","method":"GET","target":"carts","status":200,"duration_ms":2869,"threshold_ms":300}
+(node:41428) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+(Use `node --trace-warnings ...` to show where the warning was created)
+{"ts":"2026-10-07T14:27:13.837Z","level":"warn","event":"db.query_slow","request_id":"aad86158-9419-4506-84fb-ecedccd4cdee","route":"/api/a","method":"POST","target":"rpc:check_rate_limit","status":200,"duration_ms":920,"threshold_ms":300}
+Failed to proxy https://o4511944582496256.ingest.de.sentry.io/api/4511946778607696/envelope/?o=4511944582496256&p=4511946778607696&r=de&hsts=0 Error: socket hang up
+    at ignore-listed frames {
+  code: 'ECONNRESET'
+}
+Error: socket hang up
+    at ignore-listed frames {
+  code: 'ECONNRESET'
+}
+{"ts":"2026-10-07T14:27:13.909Z","level":"warn","event":"db.query_slow","request_id":"b080ba87-05cd-476d-8888-e060d8650507","route":"action","method":"GET","target":"carts","status":200,"duration_ms":845,"threshold_ms":300}
+{"ts":"2026-10-07T14:27:15.649Z","level":"warn","event":"db.query_slow","request_id":"00dc42b8-b8d0-464d-bb29-9c8839f042e8","route":"/api/a","method":"POST","target":"rpc:check_rate_limit","status":200,"duration_ms":1555,"threshold_ms":300}
+(node:41428) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-07T14:27:16.564Z","level":"warn","event":"db.query_slow","request_id":"c2156838-28f9-427d-86b5-71f4b26c177b","route":"action","method":"GET","target":"carts","status":200,"duration_ms":2915,"threshold_ms":300}
+{"ts":"2026-10-07T14:27:17.288Z","level":"warn","event":"db.query_slow","request_id":"aad86158-9419-4506-84fb-ecedccd4cdee","route":"/api/a","method":"POST","target":"rpc:fn_ingest_analytics_events","status":200,"duration_ms":3449,"threshold_ms":300}
+{"ts":"2026-10-07T14:27:19.850Z","level":"error","event":"supabase.timeout","request_id":"79b82a3f-5128-4135-9ccd-055d1ff0937c","route":"/api/a","method":"POST","timeoutMs":10000,"url":"https://ixvwfbuvfxxsjiywhbbb.supabase.co/rest/v1/rpc/fn_ingest_analytics_events"}
+{"ts":"2026-10-07T14:27:19.851Z","level":"error","event":"analytics.ingest_failed","request_id":"79b82a3f-5128-4135-9ccd-055d1ff0937c","route":"/api/a","method":"POST","reason":"SupabaseTimeoutError: Supabase request exceeded 10000ms"}
+{"ts":"2026-10-07T14:27:20.880Z","level":"warn","event":"db.query_slow","request_id":"236b5b16-454a-4a31-a6bb-4e435bb7f500","route":"/api/a","method":"POST","target":"rpc:check_rate_limit","status":200,"duration_ms":2666,"threshold_ms":300}
+{"ts":"2026-10-07T14:27:21.288Z","level":"warn","event":"db.query_slow","request_id":"9cbc550d-4a2d-425b-aed1-bc620369a996","route":"action","method":"GET","target":"carts","status":200,"duration_ms":6809,"threshold_ms":300}
+{"ts":"2026-10-07T14:27:24.361Z","level":"warn","event":"db.query_slow","request_id":"00dc42b8-b8d0-464d-bb29-9c8839f042e8","route":"/api/a","method":"POST","target":"rpc:fn_ingest_analytics_events","status":200,"duration_ms":8703,"threshold_ms":300}
+[ELIFECYCLE] Command failed with exit code 130.

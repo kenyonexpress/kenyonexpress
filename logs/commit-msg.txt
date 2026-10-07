@@ -1,0 +1,40 @@
+[autopilot] perf(bundle): defer Sentry, zod, sonner and the Supabase browser client off every first load, gate per-route JS in CI, drop 5 dead UI primitives and 11 unused packages (STEP 34)
+
+Measured first (node scripts/route-js-report.mjs, gzipped, polyfill excluded):
+home first-load 288 KB (211 shared root + 77 route), product 360 KB. Four
+packages accounted for the removable part and each is now a dynamic import:
+
+- @sentry/nextjs (~79 KB gz, in the shared root before hydration on every
+  route): lib/observability/sentry-browser.ts loads it on idle or on the first
+  error, buffers and replays early errors, and imports a named-export subset
+  (sentry-browser-sdk.ts) because a namespace import() kept replay and
+  feedback alive (549 KB raw vs 201 KB). Options stay in
+  instrumentation-client.ts; tracing stays at 0.1.
+- zod (14.5 KB gz via the tracker): schemas moved to lib/analytics/
+  events-schema.ts (server only) with a compile-time equality check against
+  the hand-written types; the ke_attr parser is written by hand and pinned by
+  attribution.test.ts.
+- sonner (11.8 KB gz, toast import in CartProvider): lib/ui/toast.ts imports
+  it on the first notify(); DeferredToaster for the (main) and (account)
+  layouts.
+- @supabase/supabase-js (63.6 KB gz on /product and /account/*): import()
+  inside the effect in use-product-live.ts and NotificationBell.tsx.
+
+After: shared root 132.0, home 189.9, product 198.4, category 191.8, cart
+190.4, checkout 197.2 KB gz. The remaining 132 KB root is React DOM and the
+Next 16 router; under 150 on the home route would mean deferring the cart
+chrome, a visible UX change left as a decision (docs/PERF-ARCHITECTURE-REPORT.md).
+
+Tooling: route-js-report.mjs gains budgets and --gate (pnpm gate:route-js, run
+in CI right after pnpm build), excludes the noModule polyfill and reports it
+separately; route-js-browser.mjs measures a running server in headless
+Chromium; first-load-client-graph.test.ts refuses each static import coming
+back. Removed ui/button, dropdown-menu, form, label, select (all listed unused
+in COMPONENT-INVENTORY) and react-hook-form, @hookform/resolvers,
+@radix-ui/react-{select,dropdown-menu,label,slot,toast},
+class-variance-authority and the three @dnd-kit packages.
+
+pnpm test 8032 passed, type-check, lint and build clean; 29 storefront routes
+within budget.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>

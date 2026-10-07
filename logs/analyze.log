@@ -1,0 +1,6 @@
+Already up to date
+Done in 213ms using pnpm v11.1.2
+✓ Running next.config.ts took 394ms
+  Analyzing a production build...
+✓ Analyze completed in 26.6s. Results written to /Users/ofir/kenyonexpress-autopilot/.next/diagnostics/analyze.
+To explore the analyze results interactively, run `next experimental-analyze` without `--output`.

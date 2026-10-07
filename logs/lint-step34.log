@@ -1,0 +1,106 @@
+Already up to date
+Done in 327ms using pnpm v11.1.2
+$ biome check . && node scripts/tokens-gate.mjs && node scripts/copy-gate.mjs && node scripts/asset-gate.mjs
+./logs/ke-browser-js.mjs:13:3 lint/style/useSingleVarDeclarator  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Declare variables separately
+  
+    11 │   const resp = await page.goto(base + route, { waitUntil: 'load' });
+    12 │   await page.waitForTimeout(2500);
+  > 13 │   const raw = scripts.reduce((s, x) => s + x.raw, 0), wire = scripts.reduce((s, x) => s + Math.max(0, x.wire), 0);
+       │   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    14 │   const first = scripts.filter(x => x.u.startsWith('/_next/static/chunks/'));
+    15 │   console.log(`${route.padEnd(24)} ${resp.status()}  scripts=${scripts.length}  raw=${(raw/1024).toFixed(1)}KB  wire=${(wire/1024).toFixed(1)}KB  enc=${[...new Set(scripts.map(s=>s.enc))].join('/')}`);
+  
+  i Unsafe fix: Break out into multiple declarations
+  
+    11 11 │     const resp = await page.goto(base + route, { waitUntil: 'load' });
+    12 12 │     await page.waitForTimeout(2500);
+    13    │ - ··const·raw·=·scripts.reduce((s,·x)·=>·s·+·x.raw,·0),·wire·=·scripts.reduce((s,·x)·=>·s·+·Math.max(0,·x.wire),·0);
+       13 │ + ··const·raw·=·scripts.reduce((s,·x)·=>·s·+·x.raw,·0);
+       14 │ + ··const·wire·=·scripts.reduce((s,·x)·=>·s·+·Math.max(0,·x.wire),·0);
+    14 15 │     const first = scripts.filter(x => x.u.startsWith('/_next/static/chunks/'));
+    15 16 │     console.log(`${route.padEnd(24)} ${resp.status()}  scripts=${scripts.length}  raw=${(raw/1024).toFixed(1)}KB  wire=${(wire/1024).toFixed(1)}KB  enc=${[...new Set(scripts.map(s=>s.enc))].join('/')}`);
+  
+
+./logs/ke-browser-js.mjs format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+     1    │ - import·{·chromium·}·from·'@playwright/test';
+     2    │ - const·base·=·process.env.BASE·??·'http://localhost:3317';
+     3    │ - const·routes·=·(process.env.ROUTES·??·'/,/product/barbecue,/category/electronics,/cart,/checkout').split(',');
+     4    │ - const·browser·=·await·chromium.launch();
+     5    │ - const·ctx·=·await·browser.newContext({·viewport:·{·width:·390,·height:·844·}·});
+     6    │ - await·ctx.addCookies([{·name:·'ke_consent',·value:·'granted.2',·url:·base·}]);
+        1 │ + import·{·chromium·}·from·'@playwright/test'
+        2 │ + const·base·=·process.env.BASE·??·'http://localhost:3317'
+        3 │ + const·routes·=·(
+        4 │ + ··process.env.ROUTES·??·'/,/product/barbecue,/category/electronics,/cart,/checkout'
+        5 │ + ).split(',')
+        6 │ + const·browser·=·await·chromium.launch()
+        7 │ + const·ctx·=·await·browser.newContext({·viewport:·{·width:·390,·height:·844·}·})
+        8 │ + await·ctx.addCookies([{·name:·'ke_consent',·value:·'granted.2',·url:·base·}])
+     7  9 │   for (const route of routes) {
+     8    │ - ··const·page·=·await·ctx.newPage();
+     9    │ - ··const·scripts·=·[];
+    10    │ - ··page.on('response',·async·(r)·=>·{·const·u·=·r.url();·if·(r.request().resourceType()·===·'script'·||·u.includes('/_next/static/chunks/'))·{·try·{·const·b·=·await·r.body();·const·sizes·=·await·r.request().sizes().catch(()·=>·null);·scripts.push({·u:·u.replace(base,·''),·raw:·b.length,·wire:·sizes?.responseBodySize·??·-1,·enc:·r.headers()['content-encoding']·??·''·});·}·catch·{}·}·});
+    11    │ - ··const·resp·=·await·page.goto(base·+·route,·{·waitUntil:·'load'·});
+    12    │ - ··await·page.waitForTimeout(2500);
+    13    │ - ··const·raw·=·scripts.reduce((s,·x)·=>·s·+·x.raw,·0),·wire·=·scripts.reduce((s,·x)·=>·s·+·Math.max(0,·x.wire),·0);
+    14    │ - ··const·first·=·scripts.filter(x·=>·x.u.startsWith('/_next/static/chunks/'));
+    15    │ - ··console.log(`${route.padEnd(24)}·${resp.status()}··scripts=${scripts.length}··raw=${(raw/1024).toFixed(1)}KB··wire=${(wire/1024).toFixed(1)}KB··enc=${[...new·Set(scripts.map(s=>s.enc))].join('/')}`);
+    16    │ - ··if·(process.env.VERBOSE)·for·(const·s·of·first.sort((a,b)=>b.raw-a.raw))·console.log('···',·String(s.raw).padStart(7),·String(s.wire).padStart(7),·s.u.split('/').pop());
+    17    │ - ··await·page.close();
+       10 │ + ··const·page·=·await·ctx.newPage()
+       11 │ + ··const·scripts·=·[]
+       12 │ + ··page.on('response',·async·(r)·=>·{
+       13 │ + ····const·u·=·r.url()
+       14 │ + ····if·(r.request().resourceType()·===·'script'·||·u.includes('/_next/static/chunks/'))·{
+       15 │ + ······try·{
+       16 │ + ········const·b·=·await·r.body()
+       17 │ + ········const·sizes·=·await·r
+       18 │ + ··········.request()
+       19 │ + ··········.sizes()
+       20 │ + ··········.catch(()·=>·null)
+       21 │ + ········scripts.push({
+       22 │ + ··········u:·u.replace(base,·''),
+       23 │ + ··········raw:·b.length,
+       24 │ + ··········wire:·sizes?.responseBodySize·??·-1,
+       25 │ + ··········enc:·r.headers()['content-encoding']·??·'',
+       26 │ + ········})
+       27 │ + ······}·catch·{}
+       28 │ + ····}
+       29 │ + ··})
+       30 │ + ··const·resp·=·await·page.goto(base·+·route,·{·waitUntil:·'load'·})
+       31 │ + ··await·page.waitForTimeout(2500)
+       32 │ + ··const·raw·=·scripts.reduce((s,·x)·=>·s·+·x.raw,·0),
+       33 │ + ····wire·=·scripts.reduce((s,·x)·=>·s·+·Math.max(0,·x.wire),·0)
+       34 │ + ··const·first·=·scripts.filter((x)·=>·x.u.startsWith('/_next/static/chunks/'))
+       35 │ + ··console.log(
+       36 │ + ····`${route.padEnd(24)}·${resp.status()}··scripts=${scripts.length}··raw=${(raw·/·1024).toFixed(1)}KB··wire=${(wire·/·1024).toFixed(1)}KB··enc=${[...new·Set(scripts.map((s)·=>·s.enc))].join('/')}`,
+       37 │ + ··)
+       38 │ + ··if·(process.env.VERBOSE)
+       39 │ + ····for·(const·s·of·first.sort((a,·b)·=>·b.raw·-·a.raw))
+       40 │ + ······console.log(
+       41 │ + ········'···',
+       42 │ + ········String(s.raw).padStart(7),
+       43 │ + ········String(s.wire).padStart(7),
+       44 │ + ········s.u.split('/').pop(),
+       45 │ + ······)
+       46 │ + ··await·page.close()
+    18 47 │   }
+    19    │ - await·browser.close();
+       48 │ + await·browser.close()
+    20 49 │   
+  
+
+Checked 1965 files in 2s. No fixes applied.
+Found 2 errors.
+check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Some errors were emitted while running checks.
+  
+
+[ELIFECYCLE] Command failed with exit code 1.
+exit=1
