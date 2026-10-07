@@ -21535,3 +21535,16 @@ Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=categ
 - `node scripts/final-audit.mjs`: `ok 0 work markers (of 2)`.
 - Change: a re-scan note in `docs/BACKLOG.md`. No code change.
 - Gates: type-check 0, lint 0, test 0 (6474 passed, 12 skipped), build 0 on attempt 1. 11 `db.query_failed` lines in the build were real `fetch failed` errors to Supabase, not prerender aborts.
+
+## M03-c117: compare.mjs on /category at 380, 768, 1440, run 2026-10-07 in the foreground
+
+Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=category --width=<w>` (server: `PORT=3311 pnpm start` on the existing build, `/` 200)
+
+| Width | Exit | Diff | Output |
+|---|---|---|---|
+| 380 | 5 | none | REFUSING: `https://kenyonexpress.co.il/product-category/hot-deals/` is this project's own build (38 `/_next/` refs, Next runtime, no wp-content) |
+| 768 | 5 | none | REFUSING: same reason |
+| 1440 | 5 | none | REFUSING: same reason |
+
+- No diff numbers, unchanged from M03-c116. `refs/ke_live_singlefile.html` is still absent. The gate appended four REFUSED rows to `docs/UI-PARITY-REPORT.md` (the fourth is a second 380 run to capture the refusal reason). They are committed with this item.
+- No code change. Gates: `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6474 passed, 12 skipped), `pnpm build` 0.
