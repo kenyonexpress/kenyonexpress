@@ -35,7 +35,16 @@ function setConsent(value: string | null): void {
 
 afterEach(() => {
   setConsent(null)
+  setDoNotTrack(null)
 })
+
+/** jsdom defines no navigator.doNotTrack at all, so it is defined rather than spied on. */
+function setDoNotTrack(value: string | null | (() => string | null)): void {
+  Object.defineProperty(navigator, 'doNotTrack', {
+    configurable: true,
+    get: typeof value === 'function' ? value : () => value,
+  })
+}
 
 describe('before consent', () => {
   it('renders no script at all', () => {
@@ -46,6 +55,13 @@ describe('before consent', () => {
 
   it('renders nothing after an explicit refusal', () => {
     setConsent(`denied.${CONSENT_WORDING_VERSION}`)
+    const { container } = render(<ThirdPartyTags config={CONFIG} />)
+    expect(container.querySelectorAll('script')).toHaveLength(0)
+  })
+
+  it('renders nothing when the browser signals Do Not Track, even after Accept', () => {
+    setConsent(`granted.${CONSENT_WORDING_VERSION}`)
+    setDoNotTrack('1')
     const { container } = render(<ThirdPartyTags config={CONFIG} />)
     expect(container.querySelectorAll('script')).toHaveLength(0)
   })

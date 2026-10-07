@@ -1,5 +1,6 @@
 'use client'
 
+import { markSessionBuggy } from '@/lib/analytics/replay-trigger'
 import * as Sentry from '@sentry/nextjs'
 import Link from 'next/link'
 import { useEffect } from 'react'
@@ -56,6 +57,11 @@ export default function AppError({
     // this stays a bare console line. It is also what still works when the
     // DSN is unset and every Sentry call above is inert.
     console.error('app error boundary:', error.digest ?? '', error)
+
+    // A boundary rendering is the clearest "this session is buggy" there is,
+    // and like the Sentry call above it is the ONLY signal: the boundary
+    // caught the error, so the recorder's window listeners never saw it.
+    markSessionBuggy('error_boundary')
   }, [error])
 
   return (

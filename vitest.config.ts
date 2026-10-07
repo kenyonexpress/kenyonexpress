@@ -60,6 +60,7 @@ export default defineConfig({
       'scripts/axiom/**/*.test.mjs',
       'scripts/uptimerobot/**/*.test.mjs',
       'scripts/deploy/**/*.test.mjs',
+      'scripts/posthog/**/*.test.mjs',
       'scripts/seo/**/*.test.mjs',
     ],
     exclude: ['node_modules', '.next', 'e2e'],

@@ -10,7 +10,7 @@ import {
   serializeAttribution,
   utmForEvent,
 } from '@/lib/analytics/attribution'
-import { CONSENT_COOKIE, isTrackingAllowed } from '@/lib/analytics/consent'
+import { CONSENT_COOKIE, isBehavioralTrackingAllowed } from '@/lib/analytics/consent'
 import {
   type ClientEvent,
   type ClientEventName,
@@ -55,9 +55,13 @@ class Tracker {
   private timer: ReturnType<typeof setInterval> | null = null
   private listenersBound = false
 
-  /** Consent is re-read on every event: revoking must take effect immediately. */
+  /**
+   * Consent is re-read on every event: revoking must take effect immediately.
+   * The browser's Do Not Track / GPC signal rides the same check and wins
+   * over a granted cookie (lib/analytics/consent.ts).
+   */
   private get allowed(): boolean {
-    return isTrackingAllowed(readCookie(CONSENT_COOKIE))
+    return isBehavioralTrackingAllowed(readCookie(CONSENT_COOKIE))
   }
 
   private session(): AnalyticsSession | null {

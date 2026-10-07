@@ -52,6 +52,10 @@ Companions: legal, analytics-KPI, notifications V2, account-area.
 
 - Funnel כסף (`begin_checkout`, `purchase`) בשרת: לא תלוי cookie marketing.
 - Client page views: מכבדים opt-out.
+- ‏Do Not Track / Global Privacy Control (07.10): אות מהדפדפן גובר על "אישור" בבאנר
+  בכיוון המחמיר בלבד. כל מסלול התנהגותי בדפדפן (‏first-party, ‏PostHog, ‏GA4, ‏Meta,
+  הקלטה) עובר דרך ‏`isBehavioralTrackingAllowed`; בשרת ‏`Sec-GPC`/‏`DNT` מפיל רק את
+  ה-fan-out ל-PostHog. פירוט ב-`docs/ANALYTICS-EVENTS.md` §8.4.
 
 ---
 
@@ -60,3 +64,4 @@ Companions: legal, analytics-KPI, notifications V2, account-area.
 | Date | Change |
 |---|---|
 | 2026-07-31 | Cookie consent architecture (`arch/docs-queue`) |
+| 2026-10-07 | DNT/GPC honoured as a one-way opt-out; replay only for buggy sessions (STEP 26) |

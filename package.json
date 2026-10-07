@@ -35,6 +35,8 @@
     "sentry:verify:ci": "node scripts/sentry-verify.mjs --ci --dry",
     "sentry:alerts": "node scripts/sentry-alert-rules.mjs",
     "sentry:alerts:dry": "node scripts/sentry-alert-rules.mjs --dry",
+    "posthog:provision": "node scripts/posthog/provision.mjs",
+    "posthog:provision:dry": "node scripts/posthog/provision.mjs --dry",
     "telegram:verify": "node scripts/telegram-verify.mjs",
     "deploy:smoke": "node scripts/deploy/smoke.mjs",
     "deploy:promote": "node scripts/deploy/promote.mjs",

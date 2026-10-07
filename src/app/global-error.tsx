@@ -1,5 +1,6 @@
 'use client'
 
+import { markSessionBuggy } from '@/lib/analytics/replay-trigger'
 import * as Sentry from '@sentry/nextjs'
 import { useEffect } from 'react'
 
@@ -23,6 +24,10 @@ export default function GlobalError({
 }) {
   useEffect(() => {
     Sentry.captureException(error)
+    // The root layout is gone and the recorder with it, so this cannot start a
+    // recording now; the flag survives in sessionStorage and the next page
+    // the shopper reaches in this tab records from its first paint.
+    markSessionBuggy('global_error_boundary')
   }, [error])
 
   return (

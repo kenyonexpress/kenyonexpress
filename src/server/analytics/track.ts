@@ -2,12 +2,14 @@ import { log } from '@/lib/observability/log'
 import 'server-only'
 
 import { ATTRIBUTION_COOKIE, type Attribution, parseAttribution } from '@/lib/analytics/attribution'
+import { doNotTrackFromHeaders } from '@/lib/analytics/consent'
 import type { ServerEventName } from '@/lib/analytics/events'
 import { GUEST_SESSION_COOKIE, parseGuestSessionToken } from '@/lib/cart/guest-session'
 import { POSTHOG_ID_COOKIE, isPostHogEnabled, trackEvent } from '@/lib/observability/posthog'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { syncCashbackTierPersonProperty } from '@/server/analytics/cashback-tier'
-import { cookies } from 'next/headers'
+import { syncRetentionPersonProperties } from '@/server/analytics/retention-cohorts'
+import { cookies, headers } from 'next/headers'
 
 // Server-side analytics writes. Three rules hold everywhere in this file:
 //   1. Nothing here is gated on cookie consent. These are records of a
@@ -100,7 +102,18 @@ export async function trackServerEvent(input: ServerEventInput): Promise<void> {
       anonymousId,
       userId: input.userId,
     })
-    if (isPostHogEnabled()) {
+    // DO NOT TRACK STOPS THE THIRD-PARTY HALF, NOT THE RECORD.
+    //
+    // Rule 1 above still holds: the first-party insert below is a business
+    // record and goes through whatever the browser signalled. The PostHog
+    // fan-out is the one write here that profiles a person at a third party,
+    // so a `Sec-GPC: 1` or `DNT: 1` on the request drops it, the same way the
+    // browser half drops its events (lib/analytics/consent.ts). A till or a
+    // Cardcom callback carries no such header and is unaffected. Read inside
+    // the try: `headers()` throws outside a request scope, and that must cost
+    // the fan-out, never the record.
+    const optedOut = await requestDoNotTrack()
+    if (isPostHogEnabled() && !optedOut) {
       trackEvent(input.eventName, postHogProps(input), { distinctId })
     }
 
@@ -202,11 +215,26 @@ export async function trackServerEvent(input: ServerEventInput): Promise<void> {
     // person's cashback_tier is refreshed here, AFTER the funnel event went
     // out and the first-party write settled. Best effort inside its own
     // module; a failure costs a stale cohort label, nothing else.
-    if (input.userId) {
+    if (input.userId && !optedOut) {
       await syncCashbackTierPersonProperty(input.userId, distinctId)
+      // Retention properties change only when a purchase lands, so the extra
+      // query runs for that one event and not for every money moment.
+      if (input.eventName === 'purchase') {
+        await syncRetentionPersonProperties(input.userId, distinctId)
+      }
     }
   } catch (error) {
     log.error('analytics.track_failed', { eventName: input.eventName, err: error })
+  }
+}
+
+/** The request's opt-out signal; false when there is no request to read. */
+async function requestDoNotTrack(): Promise<boolean> {
+  try {
+    const requestHeaders = await headers()
+    return doNotTrackFromHeaders((name) => requestHeaders.get(name))
+  } catch {
+    return false
   }
 }
 

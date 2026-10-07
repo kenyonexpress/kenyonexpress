@@ -118,3 +118,54 @@ guest→user לטבלאות הראשוניות, ושם השאלה נענית כ�
 ‏`voucher_redeemed` נשלח עם ‏`userId` של **חבר הצוות בקופה**, לא של הלקוח
 שהשובר שלו נשרף. זו החלטת מודל ולא באג, והיא משפיעה על כל משפך שמנסה לעקוב
 אחרי לקוח יחיד מרכישה למימוש. תועד ולא שונה.
+
+## ‏8. ‏PostHog: משפך, שימור, הקלטה ו-Do Not Track (‏STEP 26, ‏07.10)
+
+**נמדד לפני כתיבה.** מסלול ה-capture ל-PostHog (‏fetch בלי ‏SDK, ‏`lib/observability/posthog.ts`),
+חמשת אירועי המשפך, ‏`cashback_tier` כמאפיין אדם, ועוגיית ‏opt-in להקלטה מאזור החשבון, כולם
+כבר היו. מה שחסר: אף בדיקת ‏DNT/GPC בשום מקום, הקלטה שרצה על כל הביקור של מי שאישר,
+ומשפך ו-cohorts שהתקיימו כהערות בקוד בלבד ולא כאובייקטים ב-PostHog.
+
+### ‏8.1 המשפך
+
+‏`$pageview → view_item → add_to_cart → begin_checkout → purchase`, כמו
+‏`PURCHASE_FUNNEL` ב-`lib/analytics/posthog-funnel.ts`. ‏`scripts/posthog/insights.mjs` בונה
+את ה-payload של ה-insight (‏`FunnelsQuery`, צעדים מסודרים, חלון ‏14 יום), ו-`insights.test.mjs`
+נועל את רשימת הצעדים לרשימה שהאפליקציה שולחת: שינוי שם של אירוע נופל ב-CI ולא בדשבורד.
+
+```bash
+pnpm posthog:provision:dry   # מדפיס את כל ה-payloads, לא נוגע בכלום
+pnpm posthog:provision       # upsert לפי שם; דורש POSTHOG_PERSONAL_API_KEY + POSTHOG_PROJECT_ID
+```
+
+בלי המפתח האישי הסקריפט מדפיס שורה ויוצא ‏0, כמו ‏`sentry:alerts`. ‏`POSTHOG_API_HOST` הוא
+ה-host של ה-API (‏`us.posthog.com`), לא של ה-ingestion (‏`us.i.posthog.com`).
+
+### ‏8.2 ‏cohorts של שימור
+
+אחרי כל ‏`purchase` בשרת, ‏`server/analytics/retention-cohorts.ts` קורא את ‏`orders.paid_at`
+של המשתמש (אותה עמודה שעליה בנוי ה-grid באדמין) וכותב ‏`$set` עם ארבעה מאפייני אדם:
+‏`purchase_count`, ‏`first_purchase_at`, ‏`last_purchase_at`, ‏`acquisition_month`
+(‏YYYY-MM בשעון ישראל). מי שלא קנה מקבל כלום, לא אפס. על זה הסקריפט מקים שישה ‏cohorts
+(‏first-time, ‏repeat ‏2+, ‏loyal ‏4+, ‏lapsed ‏90 יום, ‏cashback gold, ‏replayed sessions) ושני
+‏insights של ‏retention: ‏`purchase` חודשי ו-`$pageview` שבועי, שניהם ‏first-time.
+
+### ‏8.3 הקלטה רק של ביקורים עם תקלה
+
+שלושה שערים, כולם חובה: הסכמה בבאנר, ‏opt-in מאזור החשבון, **ואות תקלה**. ה-SDK נטען אחרי
+שני הראשונים אבל עם ‏`disable_session_recording: true`; ההקלטה מתחילה רק כש-
+‏`lib/analytics/replay-trigger.ts` מסמן את הטאב: ‏`error` לא תפוס, ‏`unhandledrejection`, או
+‏error boundary (‏`app/error.tsx`, ‏`app/global-error.tsx` קוראים ל-`markSessionBuggy`). הסימון
+יושב ב-sessionStorage ולכן ניסיון חוזר אחרי התקלה מוקלט גם הוא. רגע ההתחלה נשלח כאירוע
+‏`replay_started` עם ‏`reason`, דרך ה-SDK כדי שיישא ‏`$session_id`. הרעש ש-Sentry מתעלם ממנו
+(‏ResizeObserver, תוספי דפדפן) לא מדליק הקלטה. מה שאבד בכוונה: השניות שלפני התקלה
+הראשונה; ‏buffering דורש ‏trigger מרוחק בהגדרות הפרויקט, ונעדר-בשקט הוא הכשל שלא רצינו.
+
+### ‏8.4 ‏Do Not Track ו-Global Privacy Control
+
+‏`isDoNotTrackSignalled` ב-`lib/analytics/consent.ts` קורא ‏`navigator.doNotTrack` (ושני
+הכתיבים הישנים) ו-`navigator.globalPrivacyControl`. האות פועל בכיוון אחד בלבד: הוא הופך
+"מאושר" ל"נדחה" ולעולם לא להפך. ‏`isBehavioralTrackingAllowed` הוא השער היחיד של הדפדפן,
+וקוראים לו ‏tracker.ts (‏first-party), ‏commerce-client.ts (‏PostHog), ‏ThirdPartyTags
+(‏GA4/Meta) ו-PostHogReplay. בשרת, ‏`Sec-GPC: 1` או ‏`DNT: 1` על הבקשה מפיל את ה-fan-out
+ל-PostHog בלבד; הרשומה ב-`analytics_events` נכתבת בכל מקרה, כי היא רשומה עסקית.

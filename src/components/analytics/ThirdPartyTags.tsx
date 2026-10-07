@@ -1,6 +1,6 @@
 'use client'
 
-import { CONSENT_COOKIE, isTrackingAllowed } from '@/lib/analytics/consent'
+import { CONSENT_COOKIE, isBehavioralTrackingAllowed } from '@/lib/analytics/consent'
 import {
   type ThirdPartyAnalyticsConfig,
   hasAnyThirdParty,
@@ -48,7 +48,9 @@ export default function ThirdPartyTags({ config }: { config: ThirdPartyAnalytics
   const valid = validatedConfig(config)
 
   useEffect(() => {
-    const check = () => setAllowed(isTrackingAllowed(readCookie(CONSENT_COOKIE)))
+    // Consent AND no Do Not Track / GPC signal: a browser that opted out
+    // gets no vendor script even after an Accept click (lib/analytics/consent.ts).
+    const check = () => setAllowed(isBehavioralTrackingAllowed(readCookie(CONSENT_COOKIE)))
     check()
     window.addEventListener(CONSENT_GRANTED_EVENT, check)
     return () => window.removeEventListener(CONSENT_GRANTED_EVENT, check)

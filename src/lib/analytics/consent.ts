@@ -85,3 +85,81 @@ export const CONSENT_DECIDED_VALUE = 'decided'
  * a banner never shown at all.
  */
 export const CONSENT_PREPAINT_SCRIPT = `(function(){try{var m=document.cookie.match(/(?:^|; )${CONSENT_COOKIE}=([^;]*)/);if(!m)return;var p=decodeURIComponent(m[1]).split(".");var v=Number(p[1]);if((p[0]==="granted"||p[0]==="denied")&&Number.isInteger(v)&&v>=${CONSENT_WORDING_VERSION})document.documentElement.setAttribute("${CONSENT_DECIDED_ATTRIBUTE}","${CONSENT_DECIDED_VALUE}")}catch(e){}})()`
+
+/**
+ * DO NOT TRACK AND GLOBAL PRIVACY CONTROL, HONOURED AS A HARD STOP.
+ *
+ * Two browser signals say "do not profile me" before any banner is seen:
+ * the legacy `DNT: 1` (navigator.doNotTrack, plus the two vendor spellings
+ * old browsers shipped) and Global Privacy Control (navigator.globalPrivacyControl,
+ * the `Sec-GPC: 1` header), which US state law treats as a binding opt-out.
+ *
+ * Either one overrides the banner in the stricter direction only: a visitor
+ * whose browser sends the signal is treated as DENIED for every behavioral
+ * pipeline (first-party events, PostHog, GA4, Meta, replay) even if they click
+ * Accept, because a click given on top of a standing opt-out is the weaker
+ * evidence of the two. The signal never flips a refusal to consent.
+ *
+ * Business records stay unaffected, exactly as they do for a declined banner:
+ * an order is a transaction the visitor initiated, not telemetry. What the
+ * server DOES drop under the signal is its PostHog fan-out of those records,
+ * since that is the one server write that profiles a person at a third party.
+ *
+ * The browser-side check reads live on every call rather than once at load,
+ * matching how consent is re-read: flipping the setting mid-visit takes
+ * effect on the next event.
+ */
+
+/** The shape read off `navigator`/`window`, kept structural so tests can hand in a literal. */
+export type DoNotTrackSource = {
+  doNotTrack?: string | null
+  globalPrivacyControl?: boolean
+  msDoNotTrack?: string | null
+}
+
+export function isDoNotTrackSignalled(
+  navigatorLike: DoNotTrackSource | null | undefined,
+  windowLike: { doNotTrack?: string | null } | null | undefined,
+): boolean {
+  if (navigatorLike?.globalPrivacyControl === true) return true
+  const values = [navigatorLike?.doNotTrack, windowLike?.doNotTrack, navigatorLike?.msDoNotTrack]
+  return values.some((value) => value === '1' || value === 'yes')
+}
+
+/**
+ * The browser's current signal. False wherever there is no browser, and false
+ * (never a throw) when a locked-down environment refuses the read.
+ */
+export function browserDoNotTrack(): boolean {
+  if (typeof window === 'undefined' || typeof navigator === 'undefined') return false
+  try {
+    return isDoNotTrackSignalled(
+      navigator as unknown as DoNotTrackSource,
+      window as unknown as { doNotTrack?: string | null },
+    )
+  } catch {
+    return false
+  }
+}
+
+/**
+ * The same signal as a request header, for the server's third-party fan-out.
+ * `Sec-GPC` is the only value browsers send unprompted today; `DNT` is kept
+ * because the browsers that still send it are the ones most likely to belong
+ * to a visitor who set it on purpose.
+ */
+export function doNotTrackFromHeaders(get: (name: string) => string | null | undefined): boolean {
+  const gpc = get('sec-gpc')?.trim()
+  if (gpc === '1') return true
+  const dnt = get('dnt')?.trim()
+  return dnt === '1'
+}
+
+/**
+ * The one answer browser code should ask for: banner consent AND no standing
+ * opt-out signal. Takes the raw cookie so it stays pure for the callers that
+ * already read the cookie their own way.
+ */
+export function isBehavioralTrackingAllowed(consentRaw: string | undefined | null): boolean {
+  return isTrackingAllowed(consentRaw) && !browserDoNotTrack()
+}

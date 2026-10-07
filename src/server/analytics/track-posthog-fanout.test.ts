@@ -24,8 +24,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
  */
 
 const cookieGet = vi.fn()
+const headerGet = vi.fn<(name: string) => string | null>(() => null)
 vi.mock('next/headers', () => ({
   cookies: async () => ({ get: cookieGet }),
+  headers: async () => ({ get: headerGet }),
 }))
 
 const trackEvent = vi.fn()
@@ -68,6 +70,7 @@ function cookies(jar: Record<string, string>): void {
 
 beforeEach(() => {
   cookieGet.mockReset()
+  headerGet.mockReset().mockReturnValue(null)
   trackEvent.mockReset()
   logError.mockReset()
   rpc.mockClear()
@@ -103,6 +106,29 @@ describe('the four money events reach PostHog', () => {
     })
     expect(trackEvent.mock.calls[0]?.[0]).toBe('voucher_redeemed')
     expect(trackEvent.mock.calls[0]?.[1]).toMatchObject({ code: 'PRBE00000A' })
+  })
+})
+
+describe('Do Not Track on the request', () => {
+  it('keeps the first-party record and drops only the PostHog fan-out under Sec-GPC: 1', async () => {
+    headerGet.mockImplementation((name) => (name === 'sec-gpc' ? '1' : null))
+    cookies({ ke_ph_id: 'ph-abc' })
+    await trackServerEvent({ eventName: 'purchase', userId: 'user-1', props: { order_id: 'o' } })
+    expect(trackEvent).not.toHaveBeenCalled()
+    expect(rpc).toHaveBeenCalledTimes(1)
+  })
+
+  it('treats DNT: 1 the same way', async () => {
+    headerGet.mockImplementation((name) => (name === 'dnt' ? '1' : null))
+    await trackServerEvent({ eventName: 'purchase', userId: 'user-1', props: {} })
+    expect(trackEvent).not.toHaveBeenCalled()
+    expect(rpc).toHaveBeenCalledTimes(1)
+  })
+
+  it('sends when the header is absent or zero', async () => {
+    headerGet.mockImplementation((name) => (name === 'dnt' ? '0' : null))
+    await trackServerEvent({ eventName: 'purchase', userId: 'user-1', props: {} })
+    expect(trackEvent).toHaveBeenCalledTimes(1)
   })
 })
 

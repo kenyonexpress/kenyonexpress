@@ -53,7 +53,16 @@ beforeEach(() => {
 
 afterEach(() => {
   clearConsent()
+  setDoNotTrack(null)
 })
+
+/** jsdom defines no navigator.doNotTrack at all, so it is defined rather than spied on. */
+function setDoNotTrack(value: string | null | (() => string | null)): void {
+  Object.defineProperty(navigator, 'doNotTrack', {
+    configurable: true,
+    get: typeof value === 'function' ? value : () => value,
+  })
+}
 
 describe('trackCommerce -> PostHog', () => {
   it('sends nothing when the visitor has not answered the banner', () => {
@@ -63,6 +72,13 @@ describe('trackCommerce -> PostHog', () => {
 
   it('sends nothing when the visitor declined', () => {
     denyConsent()
+    trackCommerce('purchase', INPUT)
+    expect(trackEvent).not.toHaveBeenCalled()
+  })
+
+  it('sends nothing when the browser signals Do Not Track, even after Accept', () => {
+    grantConsent()
+    setDoNotTrack('1')
     trackCommerce('purchase', INPUT)
     expect(trackEvent).not.toHaveBeenCalled()
   })

@@ -1,7 +1,7 @@
 'use client'
 
 import { CHECKOUT_VARIANT_PROPERTY, cachedCheckoutVariant } from '@/lib/analytics/checkout-variant'
-import { CONSENT_COOKIE, isTrackingAllowed } from '@/lib/analytics/consent'
+import { CONSENT_COOKIE, isBehavioralTrackingAllowed } from '@/lib/analytics/consent'
 import {
   type CommerceEventInput,
   type GaEventName,
@@ -71,7 +71,9 @@ function fbq(): Fbq | null {
 }
 
 /**
- * The banner's decision, read from the cookie it writes. Denied unless granted.
+ * The banner's decision, read from the cookie it writes, AND the browser's
+ * Do Not Track / Global Privacy Control signal (lib/analytics/consent.ts):
+ * denied unless granted, and denied regardless when the browser opted out.
  * Exported because every OTHER client-side PostHog call site (the pageview in
  * AnalyticsProvider, the referral landing, the replay recorder) needs exactly
  * this gate, and a second implementation is a second place to get it wrong.
@@ -79,7 +81,7 @@ function fbq(): Fbq | null {
 export function trackingAllowed(): boolean {
   if (typeof document === 'undefined') return false
   const match = document.cookie.match(new RegExp(`(?:^|; )${CONSENT_COOKIE}=([^;]*)`))
-  return isTrackingAllowed(match ? decodeURIComponent(match[1] ?? '') : null)
+  return isBehavioralTrackingAllowed(match ? decodeURIComponent(match[1] ?? '') : null)
 }
 
 /**

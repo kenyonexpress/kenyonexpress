@@ -7,6 +7,7 @@ import {
   REPLAY_OPTIN_COOKIE,
   REPLAY_OPTIN_VALUE,
 } from '@/lib/analytics/replay-optin'
+import { BUGGY_SESSION_STORAGE_KEY, markSessionBuggy } from '@/lib/analytics/replay-trigger'
 import { render, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -19,6 +20,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
  */
 
 const init = vi.hoisted(() => vi.fn())
+const startSessionRecording = vi.hoisted(() => vi.fn())
+const capture = vi.hoisted(() => vi.fn())
 
 vi.mock('posthog-js', () => ({
   default: {
@@ -26,7 +29,7 @@ vi.mock('posthog-js', () => ({
       init(...args)
       // The component parks the client from the `loaded` callback; hand it one.
       const options = args[1] as { loaded?: (client: unknown) => void }
-      options.loaded?.({ capture: vi.fn() })
+      options.loaded?.({ capture, startSessionRecording })
     },
   },
 }))
@@ -60,15 +63,28 @@ function clearCookies(): void {
 
 beforeEach(() => {
   init.mockReset()
+  startSessionRecording.mockReset()
+  capture.mockReset()
   isPostHogEnabled.mockReset().mockReturnValue(true)
   clearCookies()
+  window.sessionStorage.removeItem(BUGGY_SESSION_STORAGE_KEY)
   parkedWindow.__ke_posthog = undefined
 })
 
 afterEach(() => {
   clearCookies()
+  window.sessionStorage.removeItem(BUGGY_SESSION_STORAGE_KEY)
   parkedWindow.__ke_posthog = undefined
+  setDoNotTrack(null)
 })
+
+/** jsdom defines no navigator.doNotTrack at all, so it is defined rather than spied on. */
+function setDoNotTrack(value: string | null | (() => string | null)): void {
+  Object.defineProperty(navigator, 'doNotTrack', {
+    configurable: true,
+    get: typeof value === 'function' ? value : () => value,
+  })
+}
 
 async function settle(): Promise<void> {
   // The SDK arrives through a dynamic import; give the promise chain a tick.
@@ -111,7 +127,9 @@ describe('PostHogReplay', () => {
       capture_pageview: false,
       capture_pageleave: false,
       capture_exceptions: false,
-      disable_session_recording: false,
+      // Mounted idle: recording starts from a bug signal, never at mount.
+      disable_session_recording: true,
+      respect_dnt: true,
       session_recording: { maskAllInputs: true },
       bootstrap: { distinctID: 'stable-browser-id' },
     })
@@ -166,5 +184,88 @@ describe('PostHogReplay', () => {
     render(<PostHogReplay />)
     await settle()
     expect(init).not.toHaveBeenCalled()
+  })
+
+  it('downloads nothing when the browser signals Do Not Track, fully opted in', async () => {
+    grantConsent()
+    optInToReplay()
+    setDoNotTrack('1')
+    render(<PostHogReplay />)
+    await settle()
+    expect(init).not.toHaveBeenCalled()
+  })
+})
+
+describe('buggy sessions only', () => {
+  it('records nothing for an ordinary session, however opted in', async () => {
+    grantConsent()
+    optInToReplay()
+    render(<PostHogReplay />)
+    await waitFor(() => expect(parkedWindow.__ke_posthog).toBeDefined())
+    await settle()
+    expect(startSessionRecording).not.toHaveBeenCalled()
+    expect(capture).not.toHaveBeenCalled()
+  })
+
+  it('starts recording on an uncaught error and says why, once', async () => {
+    grantConsent()
+    optInToReplay()
+    render(<PostHogReplay />)
+    await waitFor(() => expect(parkedWindow.__ke_posthog).toBeDefined())
+
+    window.dispatchEvent(new ErrorEvent('error', { message: 'boom', filename: '/app.js' }))
+    await waitFor(() => expect(startSessionRecording).toHaveBeenCalledTimes(1))
+    // Every remote control is overridden: the local signal is the decision.
+    expect(startSessionRecording).toHaveBeenCalledWith({
+      sampling: true,
+      linked_flag: true,
+      url_trigger: true,
+      event_trigger: true,
+    })
+    expect(capture).toHaveBeenCalledWith(
+      'replay_started',
+      expect.objectContaining({ reason: 'uncaught_error' }),
+    )
+
+    // A second error in the same session does not restart or re-announce.
+    window.dispatchEvent(new ErrorEvent('error', { message: 'again' }))
+    await settle()
+    expect(startSessionRecording).toHaveBeenCalledTimes(1)
+    expect(capture).toHaveBeenCalledTimes(1)
+  })
+
+  it('starts on an error boundary signal raised before the SDK arrived', async () => {
+    grantConsent()
+    optInToReplay()
+    render(<PostHogReplay />)
+    // The boundary fires in the same tick as the page breaking, typically
+    // before the dynamic import has resolved.
+    markSessionBuggy('error_boundary')
+    await waitFor(() => expect(startSessionRecording).toHaveBeenCalledTimes(1))
+    expect(capture).toHaveBeenCalledWith(
+      'replay_started',
+      expect.objectContaining({ reason: 'error_boundary' }),
+    )
+  })
+
+  it('keeps recording a tab already flagged on an earlier page', async () => {
+    window.sessionStorage.setItem(BUGGY_SESSION_STORAGE_KEY, 'global_error_boundary')
+    grantConsent()
+    optInToReplay()
+    render(<PostHogReplay />)
+    await waitFor(() => expect(startSessionRecording).toHaveBeenCalledTimes(1))
+    expect(capture).toHaveBeenCalledWith(
+      'replay_started',
+      expect.objectContaining({ reason: 'global_error_boundary' }),
+    )
+  })
+
+  it('does not even listen for errors before both consent gates pass', async () => {
+    grantConsent() // No replay opt-in.
+    render(<PostHogReplay />)
+    await settle()
+    window.dispatchEvent(new ErrorEvent('error', { message: 'boom' }))
+    await settle()
+    expect(window.sessionStorage.getItem(BUGGY_SESSION_STORAGE_KEY)).toBeNull()
   })
 })

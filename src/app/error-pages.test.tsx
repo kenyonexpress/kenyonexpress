@@ -25,12 +25,14 @@ const { withScope, captureException, setTag } = vi.hoisted(() => {
 
 vi.mock('@sentry/nextjs', () => ({ withScope, captureException }))
 
+import { BUGGY_SESSION_STORAGE_KEY } from '@/lib/analytics/replay-trigger'
 import AppError from './error'
 import GlobalError from './global-error'
 import NotFound, { metadata } from './not-found'
 
 afterEach(() => {
   vi.clearAllMocks()
+  window.sessionStorage.removeItem(BUGGY_SESSION_STORAGE_KEY)
 })
 
 describe('not-found.tsx', () => {
@@ -61,6 +63,9 @@ describe('error.tsx', () => {
     expect(setTag).toHaveBeenCalledWith('digest', 'abc123')
     // The bare console line stays: it is what still works when the DSN is unset.
     expect(consoleError).toHaveBeenCalled()
+    // And the session is flagged for replay: a boundary is the one error the
+    // recorder's window listeners never see.
+    expect(window.sessionStorage.getItem(BUGGY_SESSION_STORAGE_KEY)).toBe('error_boundary')
   })
 
   it('offers retry in place before the homepage, and shows the digest for support', () => {

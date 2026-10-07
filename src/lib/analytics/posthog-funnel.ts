@@ -54,7 +54,25 @@ export const PURCHASE_FUNNEL: readonly PurchaseFunnelStep[] = [
  * every event they ever sent. Values must come from the matching module so the
  * cohort filter and the writer cannot drift.
  */
-export const COHORT_PERSON_PROPERTIES = ['cashback_tier'] as const
+export const COHORT_PERSON_PROPERTIES = [
+  'cashback_tier',
+  // Retention segmentation, written after every purchase
+  // (lib/analytics/retention-cohorts.ts): the count and the dates a
+  // "repeat", "loyal" or "lapsed" cohort filters on, and the acquisition month
+  // that a retention insight can break down by.
+  'purchase_count',
+  'first_purchase_at',
+  'last_purchase_at',
+  'acquisition_month',
+] as const
+
+/**
+ * The event the recorder sends the moment a session starts being recorded,
+ * with `reason` (lib/analytics/replay-trigger.ts) on it. "Sessions with a
+ * replay" in PostHog is a filter on this name; it is sent only through the
+ * SDK so it always carries `$session_id`.
+ */
+export const REPLAY_STARTED_EVENT = 'replay_started'
 
 // A function rather than an import, to keep this module dependency-free (it
 // is documentation-as-code and must never pull browser or server code into a
