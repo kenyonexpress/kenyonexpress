@@ -50,6 +50,13 @@ Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=home 
 - Verdict: unchanged from M16-c116. No code change; the image gap and the e2e rows are already manual items for Ofir.
 - Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `supabase.timeout`, 0 `db.query_failed`). Not a UI change; compare.mjs does not apply. `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` are still uncommitted and not part of this commit.
 
+## M15-c118: console errors on / and /product, probed 2026-10-08 in the foreground
+
+- Method: the same as M15-c117. Playwright Chromium (`@playwright/test` from the repo, probe script kept outside the repo in `/tmp`). For each page and viewport (380x800, 1440x900) it loads with `waitUntil: load`, scrolls twice and waits 7 s, and records console errors and warnings, `pageerror`, `requestfailed` and every response of 400 or above. The sample product is `/product/מוצר-לדוגמא`.
+- **Production** (`https://www.kenyonexpress.co.il`, still `audit/final-audit@1e84df0`, blocker 4): all 4 runs (`/` and product, 380 and 1440) return 200 with **0 console errors, 0 page errors, 0 failed requests and 0 responses of 400 or above**, on the first pass. The only warning is the same CSS chunk `3fe0w0vs6-xwd.css` preload-not-used heuristic, which is not an error.
+- **Local HEAD `343f06079`** (`pnpm start -p 3518` on a clean build made in this run, with the uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` edits): all 4 runs return 200 with 0 `pageerror`. Each run has the same 5 environment-only console errors as M15-c117: the 404s on `/_vercel/insights/script.js` and `/_vercel/speed-insights/script.js` with their strict-MIME refusals (off Vercel), and the wishlist prefetch `ERR_SSL_PROTOCOL_ERROR` on `https://localhost` (HSTS and `upgrade-insecure-requests` on http localhost). Product at 1440 also has the cancelled RSC self-request (`ERR_ABORTED`, no console message). There is no `/api/cart` 500.
+- No code change. Gates: `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6474 passed, 12 skipped), `pnpm build` 0 on attempt 1 (0 `supabase.timeout`, 0 `db.query_failed`). Not a UI change, so compare.mjs does not apply (blocker 0).
+
 ## M15-c117: console errors on / and /product, probed 2026-10-07 in the foreground
 
 - Method: the same as M15-c116. Playwright Chromium (`@playwright/test` from the repo, probe script kept outside the repo). For each page and viewport (380x800, 1440x900) it loads with `waitUntil: load`, scrolls twice and waits 7 s, and records console errors and warnings, `pageerror`, `requestfailed` and every response of 400 or above. The sample product is `/product/מוצר-לדוגמא`.
