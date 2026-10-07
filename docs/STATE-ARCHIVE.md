@@ -350,6 +350,14 @@ Setup: the same as M08-c115. Lighthouse 13.4.1 from the repo (`pnpm exec lightho
 - Verdict: **mismatch, unchanged.** The fix is to deploy the branch Ofir chooses to production, which is an operator action (blocker 4, manual item). No code change.
 - Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1. Not a UI change; compare.mjs does not apply. `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` are still uncommitted and not part of this commit.
 
+## M13-c119: /api/health and /api/ready, re-probed 2026-10-07 20:20 UTC against production
+
+- `GET https://www.kenyonexpress.co.il/api/health`: **200** `application/json`, 3 of 3, body `{"ok":true,"database":"ok","latency_ms":…}` (229, 113, 128 ms).
+- `GET https://www.kenyonexpress.co.il/api/ready`: **503** `application/json`, `cache-control: no-store`, 3 of 3, body `{"ok":false,"checks":{"database":"ok","redis":"ok","meilisearch":"down","r2":"not_configured","cardcom":"ok"}}`. Apex returns 308 to `www` (blocker 1).
+- Same as M13-c115 through M13-c118. Meilisearch is configured in production and does not answer. No code change: suppressing the check would hide a real outage. Operator fix unchanged (blocker 6, manual item).
+- Unit tests `src/app/api/health` and `src/lib/health`: 3 files, 23/23 pass.
+- Gates: `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6474 passed, 12 skipped), `pnpm build` 0 on attempt 1 (0 Supabase timeout or fetch-failed lines). `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` are still uncommitted and not part of this commit.
+
 ## M13-c118: /api/health and /api/ready, re-probed 2026-10-08 18:15 UTC against production
 
 - `GET https://www.kenyonexpress.co.il/api/health`: **200** `application/json`, 3 of 3, body `{"ok":true,"database":"ok","latency_ms":…}` (178, 105, 89 ms).
