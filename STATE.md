@@ -1,10 +1,10 @@
-RESUME FROM: M01-c118
+RESUME FROM: M02-c118
 
 # KenyonExpress — Project State
 
-Last item: **M18-c117 DONE** (2026-10-07): STATE.md was already 98 lines (under 300) at the start, so no trim was needed. The two M17-c117 status lines were moved to `docs/STATE-ARCHIVE.md`. The c117 queue ends at M18, so the next ID is M01-c118 (same c116 → c117 pattern).
-M18-c117 gates (working tree, uncommitted UI edits unstaged): type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1. Docs-only, compare.mjs does not apply.
-Previous: M17-c117 BLOCKED, M16-c117 DONE, M15-c117 DONE, M14-c117 BLOCKED, M13-c117 BLOCKED, M12-c117 DONE, M11-c117 DONE, M10-c117 BLOCKED, M09-c117 DONE, M08-c117 DONE, M07-c117 DONE, M06-c117 DONE, M05-c117 DONE, M04-c117 DONE, M03-c117 BLOCKED, M02-c117 BLOCKED, M01-c117 BLOCKED, M18-c116 DONE, M17-c116 BLOCKED, M16-c116 DONE, M15-c116 DONE, M14-c116 BLOCKED, M13-c116 BLOCKED, M12-c116 DONE, M11-c116 DONE, M10-c116 BLOCKED, M09-c116 DONE, M08-c116 DONE, M07-c116 DONE, M06-c116 DONE, M05-c116 DONE, M04-c116 DONE, M03-c116 BLOCKED, M02-c116 BLOCKED, M01-c116 BLOCKED, M18-c115 DONE, M16-c115 DONE, M15-c115 DONE, M14-c115 BLOCKED, M13-c115 BLOCKED, M12-c115 DONE, M11-c115 DONE, M10-c115 BLOCKED, M09-c115 DONE, M08-c115 DONE, M07-c115 DONE, M06-c115 DONE, M05-c115 DONE, M04-c115 DONE, M03-c115 BLOCKED, M02-c115 BLOCKED, M01-c115 BLOCKED (all 2026-10-07), M11-c113 DONE (2026-10-06).
+Last item: **M01-c118 BLOCKED** (2026-10-07): compare.mjs on `/` exits 5 (REFUSED, no diff number) at 380, 768 and 1440. `https://kenyonexpress.co.il/` is our own build (35 `/_next/` refs) and `refs/ke_live_singlefile.html` is still absent. Unchanged from M01-c117; open blocker 0. No code change. Detail in `docs/STATE-ARCHIVE.md`.
+M01-c118 gates (working tree, uncommitted UI edits unstaged): type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1.
+Previous: M18-c117 DONE, M17-c117 BLOCKED, M16-c117 DONE, M15-c117 DONE, M14-c117 BLOCKED, M13-c117 BLOCKED, M12-c117 DONE, M11-c117 DONE, M10-c117 BLOCKED, M09-c117 DONE, M08-c117 DONE, M07-c117 DONE, M06-c117 DONE, M05-c117 DONE, M04-c117 DONE, M03-c117 BLOCKED, M02-c117 BLOCKED, M01-c117 BLOCKED, M18-c116 DONE, M17-c116 BLOCKED, M16-c116 DONE, M15-c116 DONE, M14-c116 BLOCKED, M13-c116 BLOCKED, M12-c116 DONE, M11-c116 DONE, M10-c116 BLOCKED, M09-c116 DONE, M08-c116 DONE, M07-c116 DONE, M06-c116 DONE, M05-c116 DONE, M04-c116 DONE, M03-c116 BLOCKED, M02-c116 BLOCKED, M01-c116 BLOCKED, M18-c115 DONE, M16-c115 DONE, M15-c115 DONE, M14-c115 BLOCKED, M13-c115 BLOCKED, M12-c115 DONE, M11-c115 DONE, M10-c115 BLOCKED, M09-c115 DONE, M08-c115 DONE, M07-c115 DONE, M06-c115 DONE, M05-c115 DONE, M04-c115 DONE, M03-c115 BLOCKED, M02-c115 BLOCKED, M01-c115 BLOCKED (all 2026-10-07), M11-c113 DONE (2026-10-06).
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
 
 ## Queue status (cycle c113)
@@ -71,6 +71,7 @@ The runner's `final-done.txt` lists M01–M10 of c113 as finished. This branch's
 | M16-c117 | Verify all product pages have JSON-LD Product and BreadcrumbList | **DONE**: 44/44 prod, 46/46 HEAD, both nodes valid; same 3 image-less rows lack `image`, unchanged from M16-c116 (see archive) |
 | M17-c117 | Verify RTL on / and /product sample, no LTR leaks | **BLOCKED**: 42/42 runs RTL-clean except the same footer newsletter placeholder, flush left; uncommitted fix still cannot pass compare.mjs (exit 5 x6, blocker 0) (see archive) |
 | M18-c117 | Trim STATE.md under 300 lines, archive rest | **DONE**: already 98 lines at start, no trim needed; 2 M17-c117 status lines moved to `docs/STATE-ARCHIVE.md` |
+| M01-c118 | Re-measure compare.mjs 380/768/1440 on / | **BLOCKED**: exit 5 at all three widths, gate refuses, no reference (see archive) |
 
 ## Open blockers
 
@@ -87,7 +88,7 @@ The runner's `final-done.txt` lists M01–M10 of c113 as finished. This branch's
 - Apply `migrations/pending/231_reviews_anon_select.sql` after 189 and 222 (M06-c117). Production `anon` cannot read `reviews` (42501), so guests see no ratings once reviews exist. Check: the anon key on `/rest/v1/reviews?select=id,rating&status=eq.approved&limit=1` returns 200.
 - Decide on the uncommitted `SiteFooter.tsx` edit. It fixes the one RTL leak M17-c116 found (still live in M17-c117): the footer email placeholder renders flush left and, on HEAD, in flipped order. The agent cannot commit it while compare.mjs has no reference. Commit it yourself, or restore the reference first.
 
-- Provide a usable parity reference: either restore `refs/ke_live_singlefile.html` (a self-contained SingleFile save of the old WooCommerce home) or a host that still serves the old site. Until then compare.mjs cannot produce a number (M01-c115, re-confirmed M01-c116, M01-c117, M02-c116, M02-c117, M03-c116 and M03-c117).
+- Provide a usable parity reference: either restore `refs/ke_live_singlefile.html` (a self-contained SingleFile save of the old WooCommerce home) or a host that still serves the old site. Until then compare.mjs cannot produce a number (M01-c115, re-confirmed M01-c116, M01-c117, M01-c118, M02-c116, M02-c117, M03-c116 and M03-c117).
 - Choose one canonical host and set it in Vercel: either `NEXT_PUBLIC_APP_URL` = www, or make the apex primary (blocker 1). Then resubmit the sitemap in Search Console.
 - Apply `migrations/pending/` following `APPLY-ORDER.md`. As of M10-c115, 22 files are confirmed not live, including 162 cron, 228 `job_runs` and most of 202–227 (the list is in the M10-c115 section of the archive). Do not apply `200`.
 - Confirm that `189`, `190`, `191`, `194`, `197` and `201` are in `supabase_migrations.schema_migrations`. If they are, move them to `migrations/applied/` with README rows. Their objects are already live (M10-c115). Also re-authorise the Supabase MCP so agents can read `schema_migrations`.

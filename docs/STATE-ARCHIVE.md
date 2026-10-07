@@ -2,6 +2,21 @@
 
 Everything below was STATE.md up to commit 02a45128f (2026-10-06), moved here by M11-c113 to keep STATE.md under 300 lines.
 
+## M01-c118: compare.mjs on / at 380, 768, 1440, run 2026-10-07 in the foreground
+
+Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=home --width=<w>` (server: `PORT=3311 pnpm start` on the existing build, HEAD `593a81f3a` with the two uncommitted UI edits in the tree)
+
+| Width | Exit | Diff | Output |
+|---|---|---|---|
+| 380 | 5 | none | REFUSING: `https://kenyonexpress.co.il/` is this project's own build (35 `/_next/` refs, Next runtime, no wp-content) |
+| 768 | 5 | none | REFUSING: same reason |
+| 1440 | 5 | none | REFUSING: same reason |
+
+- No diff numbers, unchanged from M01-c117. `refs/ke_live_singlefile.html` is still absent. The gate wrote four REFUSED rows to `docs/UI-PARITY-REPORT.md` (one extra 380 run to capture the refusal reason), committed with this item. The last real home number is still 10.92 at 1440 (older archive).
+- Gates on the working tree: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1.
+- Moved from STATE.md (verbatim): `Last item: **M18-c117 DONE** (2026-10-07): STATE.md was already 98 lines (under 300) at the start, so no trim was needed. The two M17-c117 status lines were moved to docs/STATE-ARCHIVE.md. The c117 queue ends at M18, so the next ID is M01-c118 (same c116 → c117 pattern).` and `M18-c117 gates (working tree, uncommitted UI edits unstaged): type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1. Docs-only, compare.mjs does not apply.`
+- Decision: BLOCKED on open blocker 0. No code change.
+
 ## M17-c117: RTL on / and /product sample, re-probed 2026-10-07 in the foreground
 
 - Method: the same as M17-c116. Playwright Chromium from the repo, probe kept outside the repo. Pages: `/` and the same 6 sitemap products (`barbecue`, `bar-drink`, `תזונה-הוליסטית-טבעית-וצמחי-מרפא`, `ארוחה-בשרית-זוגית`, `מזקקת-ויסקי`, `עיסוי-מפנק-לגבר-45-דקות-רק-ב108`) at 380, 768 and 1440, 21 runs per target. Checks: `<html lang dir>`, body direction, horizontal overflow, visible Hebrew text with computed `direction: ltr`, visible Hebrew text with `text-align: left`, visible `[dir="ltr"]` roots, and the `::placeholder` style of every visible `input[dir="ltr"]`.
