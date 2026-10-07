@@ -8,6 +8,11 @@ import {
   serializeConsent,
 } from '@/lib/analytics/consent'
 import { withActionContext } from '@/lib/observability/action-context'
+import {
+  REQUEST_PATH_HEADER,
+  returnPathFromReferer,
+  safeReturnPath,
+} from '@/lib/security/request-path'
 import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 
@@ -36,17 +41,17 @@ async function runDecideConsent(formData: FormData): Promise<void> {
     secure: process.env.NODE_ENV === 'production',
   })
 
-  const referer = (await headers()).get('referer')
-  let path = '/'
-  if (referer) {
-    try {
-      const url = new URL(referer)
-      path = `${url.pathname}${url.search}`
-    } catch {
-      path = '/'
-    }
-  }
-  redirect(path)
+  // Back to the page the banner was on. The path comes from a header the
+  // proxy sets on every request (lib/security/request-path.ts), because
+  // `Referrer-Policy: strict-origin` trims the Referer this action used to
+  // read down to the origin. The Referer is kept as the fallback for a
+  // request that did not pass through the proxy, which in practice is a
+  // test; both go through the same open-redirect check.
+  const requestHeaders = await headers()
+  const fromProxy = requestHeaders.get(REQUEST_PATH_HEADER)
+  redirect(
+    fromProxy ? safeReturnPath(fromProxy) : returnPathFromReferer(requestHeaders.get('referer')),
+  )
 }
 
 export async function decideConsent(formData: FormData): Promise<void> {

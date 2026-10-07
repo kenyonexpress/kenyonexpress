@@ -43,7 +43,20 @@ function readCookie(name: string): string | null {
   return match?.[1] ? decodeURIComponent(match[1]) : null
 }
 
-export default function ThirdPartyTags({ config }: { config: ThirdPartyAnalyticsConfig }) {
+export default function ThirdPartyTags({
+  config,
+  nonce,
+}: {
+  config: ThirdPartyAnalyticsConfig
+  /**
+   * The request's CSP nonce (`components/security/PerRequestScripts.tsx`).
+   * The two inline bootstraps below are scripts next/script writes into the
+   * document at runtime, and the policy carries no 'unsafe-inline': without
+   * the nonce on them they are blocked, silently, after the visitor agreed.
+   * The vendor hosts themselves are admitted by `vendorSources`.
+   */
+  nonce?: string
+}) {
   const [allowed, setAllowed] = useState(false)
   const valid = validatedConfig(config)
 
@@ -70,8 +83,9 @@ export default function ThirdPartyTags({ config }: { config: ThirdPartyAnalytics
             // script is meant to measure.
             strategy="afterInteractive"
             src={`https://www.googletagmanager.com/gtag/js?id=${valid.ga4MeasurementId}`}
+            nonce={nonce}
           />
-          <Script id="ga4-init" strategy="afterInteractive">
+          <Script id="ga4-init" strategy="afterInteractive" nonce={nonce}>
             {[
               'window.dataLayer=window.dataLayer||[];',
               'function gtag(){dataLayer.push(arguments);}',
@@ -88,7 +102,7 @@ export default function ThirdPartyTags({ config }: { config: ThirdPartyAnalytics
       )}
 
       {valid.metaPixelId && (
-        <Script id="meta-pixel" strategy="afterInteractive">
+        <Script id="meta-pixel" strategy="afterInteractive" nonce={nonce}>
           {[
             '!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?',
             'n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;',

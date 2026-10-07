@@ -4,12 +4,14 @@ import type { NextConfig } from 'next'
 import createNextIntlPlugin from 'next-intl/plugin'
 import { REMOTE_IMAGE_PATTERNS } from './src/lib/images/remote-hosts'
 import {
+  ASSET_CONTENT_SECURITY_POLICY,
+  ASSET_HEADER_SOURCE,
   CAMERA_PATHS,
   PAYMENT_FRAME_PATHS,
-  contentSecurityPolicyFor,
+  PROXY_SKIPPED_PATHS,
+  cspReportUriFromEnv,
   permissionsPolicyFor,
   reportingEndpointsHeader,
-  sentrySecurityEndpoint,
 } from './src/lib/security/frame-policy'
 
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts')
@@ -27,50 +29,53 @@ const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts')
  * which is Turbopack-only. That is what `pnpm analyze` now calls.
  */
 
-// Security headers applied to every route. See INFRA-AUDIT.md section 2.
+// Security headers applied to every route. See INFRA-AUDIT.md section 2 and
+// src/lib/security/frame-policy.ts, where every value below is decided.
 //
-// CSP note: a per-request nonce + strict-dynamic cannot live in a static config
-// header; it requires generating a nonce in src/proxy.ts. Until that lands, script
-// and style fall back to 'unsafe-inline'. next/font self-hosts Heebo, so no Google
-// Fonts origin is needed. Allowed externals: Supabase (data/realtime/images),
-// Unsplash (images), Cardcom (the iframe the payment page renders in).
+// THE CONTENT-SECURITY-POLICY IS NOT HERE, EXCEPT FOR ASSETS. A static header
+// cannot carry a per-request nonce, so the document policy is minted in
+// src/proxy.ts on every request (STEP 30). This file emits a policy on exactly
+// the paths the proxy's matcher skips (_next/static, _next/image, the favicon,
+// image files), and on nothing else: Next appends the headers of every entry
+// whose source matches, two Content-Security-Policy headers are BOTH enforced,
+// and the stricter would silently undo the nonce. ASSET_HEADER_SOURCE and the
+// default entry's lookahead are built from the same PROXY_SKIPPED_PATHS string
+// the proxy's matcher is a literal copy of; frame-policy.test.ts pins the copy.
 //
-// The policy itself lives in src/lib/security/frame-policy.ts because ONE of its
-// directives depends on the path: the two routes a Cardcom payment returns
-// through have to be framable by this origin, and everything else must not be.
-// A static header cannot see the path, so it emits the strict default here and
-// src/proxy.ts overwrites both framing headers on those two routes. Overwrites,
-// not adds: two Content-Security-Policy headers are both enforced and the
-// strictest wins, which would undo the exception without saying so.
-// CSP violation reports go to Sentry when a DSN is configured at build time.
-// The header is static, so the DSN has to be present when `next build` runs;
-// Vercel injects the project's environment there, a laptop usually has none,
-// and in that case the policy simply carries no reporting directive.
-// `sentrySecurityEndpoint` in frame-policy.ts derives the endpoint from the
-// DSN and explains why a nonce is not the answer here.
-const CSP_REPORT_URI = sentrySecurityEndpoint(
-  process.env.NEXT_PUBLIC_SENTRY_DSN || process.env.SENTRY_DSN,
-  process.env.SENTRY_ENVIRONMENT ||
-    process.env.NEXT_PUBLIC_SENTRY_ENVIRONMENT ||
-    process.env.VERCEL_ENV,
-)
-const REPORTING_ENDPOINTS = reportingEndpointsHeader(CSP_REPORT_URI)
+// The rest is path-dependent in two places and static everywhere else: the
+// Cardcom return stub is framable by this origin (X-Frame-Options SAMEORIGIN),
+// and the QR scanners may open the camera (Permissions-Policy). Those two
+// exceptions are the reason the entries below are split the way they are.
+//
+// `Reporting-Endpoints` names the Sentry security endpoint the proxy's policy
+// reports to. It is read from env at build time here and at runtime on the
+// edge; `cspReportUriFromEnv` is the one reader, so the two cannot disagree.
+const REPORTING_ENDPOINTS = reportingEndpointsHeader(cspReportUriFromEnv(process.env))
 
-const headersWithPolicy = (
-  csp: string,
+const securityHeaders = (
   frameOptions: 'DENY' | 'SAMEORIGIN',
   permissions: string,
+  contentSecurityPolicy?: string,
 ) => [
-  { key: 'Content-Security-Policy', value: csp },
+  ...(contentSecurityPolicy
+    ? [{ key: 'Content-Security-Policy', value: contentSecurityPolicy }]
+    : []),
   ...(REPORTING_ENDPOINTS ? [{ key: 'Reporting-Endpoints', value: REPORTING_ENDPOINTS }] : []),
+  // Two years, subdomains, preload-list eligible. Changing this is a
+  // registrar-level decision, not a config edit: a preloaded domain cannot
+  // be served over plain HTTP again within the lifetime of the entry.
   { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
   // Moves in step with frame-ancestors. Browsers that honour both enforce both,
   // so a DENY left behind on a framable path blocks the frame anyway.
   { key: 'X-Frame-Options', value: frameOptions },
   { key: 'X-Content-Type-Options', value: 'nosniff' },
-  { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-  // Path-dependent for the same reason as the CSP: camera=() on the scanner
-  // route is a scanner that cannot see (frame-policy.ts, CAMERA_PATHS).
+  // Origin only, on every navigation and fetch this site makes, including
+  // same-origin ones. The one reader of a same-origin path, the consent
+  // action, was moved to a request header the proxy sets
+  // (lib/security/request-path.ts) so that this could be `strict-origin`.
+  { key: 'Referrer-Policy', value: 'strict-origin' },
+  // Path-dependent for the same reason as X-Frame-Options: camera=() on a
+  // scanner route is a scanner that cannot see (frame-policy.ts, CAMERA_PATHS).
   { key: 'Permissions-Policy', value: permissions },
 ]
 
@@ -88,51 +93,39 @@ const nextConfig: NextConfig = {
    */
   pageExtensions: ['ts', 'tsx', 'mdx'],
   async headers() {
-    // Two NON-OVERLAPPING sources, which is the whole trick. Next appends the
+    // NON-OVERLAPPING sources, which is the whole trick. Next appends the
     // headers of every entry whose source matches, so two entries that both
-    // matched /checkout/frame-return would emit two Content-Security-Policy
-    // headers; browsers enforce the intersection, the stricter frame-ancestors
-    // would win, and the exception would be undone with nothing to see in the
-    // response. The negative lookahead makes the default entry skip exactly the
-    // paths the second one claims.
-    //
-    // This is also why the relaxation is not done in src/proxy.ts: headers from
-    // this config are applied after middleware and overwrite what it set.
+    // matched /checkout/frame-return would emit two X-Frame-Options headers,
+    // and two that both matched a .svg would emit two Content-Security-Policy
+    // headers, of which browsers enforce the intersection. The negative
+    // lookahead makes the default entry skip exactly the paths the others
+    // claim: the framable stub, the scanner routes, and the assets.
     const framable = PAYMENT_FRAME_PATHS.map((path) => path.replace(/^\//, '')).join('|')
     // Anchored so `scan` does not swallow a future /scanner-esque route.
     const cameraSources = CAMERA_PATHS.map((path) => `${path.replace(/^\//, '')}(?:$|/)`).join('|')
     return [
       {
-        source: `/((?!${framable}|${cameraSources}).*)`,
-        headers: headersWithPolicy(
-          contentSecurityPolicyFor('/', { reportUri: CSP_REPORT_URI }),
-          'DENY',
-          permissionsPolicyFor('/'),
-        ),
+        source: `/((?!${PROXY_SKIPPED_PATHS}|${framable}|${cameraSources}).*)`,
+        headers: securityHeaders('DENY', permissionsPolicyFor('/')),
+      },
+      {
+        // The paths src/proxy.ts never sees, so the one place a policy for
+        // them can come from. script-src 'none': nothing here is a document,
+        // except an SVG opened as one.
+        source: ASSET_HEADER_SOURCE,
+        headers: securityHeaders('DENY', permissionsPolicyFor('/'), ASSET_CONTENT_SECURITY_POLICY),
       },
       ...PAYMENT_FRAME_PATHS.map((path) => ({
         source: `${path}/:path*`,
-        headers: headersWithPolicy(
-          contentSecurityPolicyFor(path, { reportUri: CSP_REPORT_URI }),
-          'SAMEORIGIN',
-          permissionsPolicyFor(path),
-        ),
+        headers: securityHeaders('SAMEORIGIN', permissionsPolicyFor(path)),
       })),
       ...CAMERA_PATHS.map((path) => ({
         source: `${path}{/:path}?`,
-        headers: headersWithPolicy(
-          contentSecurityPolicyFor(path, { reportUri: CSP_REPORT_URI }),
-          'DENY',
-          permissionsPolicyFor(path),
-        ),
+        headers: securityHeaders('DENY', permissionsPolicyFor(path)),
       })),
       ...PAYMENT_FRAME_PATHS.map((path) => ({
         source: path,
-        headers: headersWithPolicy(
-          contentSecurityPolicyFor(path, { reportUri: CSP_REPORT_URI }),
-          'SAMEORIGIN',
-          permissionsPolicyFor(path),
-        ),
+        headers: securityHeaders('SAMEORIGIN', permissionsPolicyFor(path)),
       })),
     ]
   },
@@ -305,8 +298,8 @@ const nextConfig: NextConfig = {
  * Sentry wraps LAST, outside next-intl.
  *
  * withSentryConfig only adds webpack/turbopack plugins and a source-map upload
- * step; it does not touch `headers()`, so the CSP work above (and in
- * src/lib/security/frame-policy.ts) is unaffected. The order still matters:
+ * step; it does not touch `headers()`, so the security headers above (and
+ * the policy in src/lib/security/frame-policy.ts) are unaffected. The order still matters:
  * wrapping the other way round would hand Sentry a config next-intl had not
  * finished building.
  */

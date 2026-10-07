@@ -10,7 +10,15 @@ import { tooManyRequests } from '@/lib/rate-limit/headers'
 import { routeTierFor, routeTierIdentity, routeTierRateLimit } from '@/lib/rate-limit/route-tiers'
 import { REFERRAL_QUERY_PARAM, normalizeReferralCode } from '@/lib/referrals/code'
 import { REFERRAL_COOKIE, referralCookieOptions } from '@/lib/referrals/cookie'
-import { isPaymentFramePath } from '@/lib/security/frame-policy'
+import {
+  NONCE_HEADER,
+  contentSecurityPolicyFor,
+  createNonce,
+  cspReportUriFromEnv,
+  isPaymentFramePath,
+  vendorSources,
+} from '@/lib/security/frame-policy'
+import { REQUEST_PATH_HEADER } from '@/lib/security/request-path'
 import { CROSS_SITE_REJECTION, isCrossSiteApiMutation } from '@/lib/security/same-origin'
 import { lookupRedirect } from '@/lib/seo/redirects'
 import { requireAnonKey } from '@/lib/supabase/anon-key'
@@ -22,19 +30,46 @@ import { type NextRequest, NextResponse } from 'next/server'
 // The exported function must be named `proxy` (not `middleware`).
 
 /**
- * Continue routing, with the correlation id attached in both directions.
+ * What one request carries through this file: its correlation id, and the
+ * Content-Security-Policy minted for it (STEP 30), nonce included.
+ */
+type RequestContext = {
+  requestId: string
+  nonce: string
+  csp: string
+}
+
+/**
+ * Continue routing, with the correlation id attached in both directions and
+ * the request's policy attached on the way in.
  *
  * The header set is read back off the request by `withRequestLog`, which is how
  * a route handler four hops downstream logs the same id. `request.headers` is
  * re-read on every call rather than captured once, because `request.cookies.set`
  * below rewrites the cookie header in place and a snapshot taken before the
  * Supabase session refresh would forward the pre-refresh cookies upstream.
+ *
+ * THE POLICY GOES ON THE REQUEST, NOT ONLY THE RESPONSE. Next reads the nonce
+ * off the REQUEST's `Content-Security-Policy` header while rendering and
+ * stamps it on every script it writes (flight data, `$RC`, next/script); the
+ * response header is what the browser enforces. Set only on the response, the
+ * markup carries no nonce and the policy blocks the page's own hydration. The
+ * same nonce is also exposed as `x-nonce` for the one component that passes
+ * it to a vendor tag (`components/security/PerRequestScripts.tsx`).
+ *
+ * The page path travels as well (`lib/security/request-path.ts`): the consent
+ * action reads it to send the visitor back where they were, because
+ * `Referrer-Policy: strict-origin` has trimmed the Referer it used to read.
+ * All three are SET, so a client cannot smuggle its own value through.
  */
-function forward(request: NextRequest, requestId: string): NextResponse {
+function forward(request: NextRequest, context: RequestContext): NextResponse {
   const headers = new Headers(request.headers)
-  headers.set(REQUEST_ID_HEADER, requestId)
+  headers.set(REQUEST_ID_HEADER, context.requestId)
+  headers.set('content-security-policy', context.csp)
+  headers.set(NONCE_HEADER, context.nonce)
+  headers.set(REQUEST_PATH_HEADER, `${request.nextUrl.pathname}${request.nextUrl.search}`)
   const response = NextResponse.next({ request: { headers } })
-  response.headers.set(REQUEST_ID_HEADER, requestId)
+  response.headers.set(REQUEST_ID_HEADER, context.requestId)
   return response
 }
 
@@ -43,6 +78,12 @@ function withRequestId<T extends Response>(response: T, requestId: string): T {
   response.headers.set(REQUEST_ID_HEADER, requestId)
   return response
 }
+
+// Read once per isolate, not per request: the DSN and the vendor ids do not
+// change while the edge function is warm, and `vendorSources` is a handful
+// of string checks that would otherwise run on every hit.
+const CSP_REPORT_URI = cspReportUriFromEnv(process.env)
+const CSP_VENDORS = vendorSources(process.env)
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -55,6 +96,36 @@ export async function proxy(request: NextRequest) {
   // below depends on.
   const requestId = resolveRequestId(request.headers)
 
+  // The Content-Security-Policy of this response, with a nonce that exists
+  // for this request only (STEP 30). Built here because it is the one thing
+  // a static `next.config.ts` header cannot carry; `next.config.ts` emits
+  // the asset policy on the paths this proxy's matcher skips, and nothing
+  // else, so no response carries two policies (both would be enforced and
+  // the stricter would silently win). The path decides `frame-ancestors`:
+  // the Cardcom return stub may be framed by this origin, nothing else may.
+  const nonce = createNonce()
+  const context: RequestContext = {
+    requestId,
+    nonce,
+    csp: contentSecurityPolicyFor(pathname, {
+      nonce,
+      reportUri: CSP_REPORT_URI,
+      vendors: CSP_VENDORS,
+    }),
+  }
+
+  const response = await route(request, context)
+  // Every response this file produces, including its own redirects, 403s and
+  // 429s: a policy on a redirect is inert, and one missing from an HTML error
+  // body is a page with no policy at all.
+  response.headers.set('Content-Security-Policy', context.csp)
+  return response
+}
+
+async function route(request: NextRequest, context: RequestContext): Promise<Response> {
+  const { pathname } = request.nextUrl
+  const { requestId } = context
+
   // The Sentry tunnel. First, before the redirect lookup and before the session
   // refresh: it carries no session, it is posted to by the browser SDK on a page
   // that may already be broken, and it is never a legacy WordPress path.
@@ -64,7 +135,7 @@ export async function proxy(request: NextRequest) {
   // stopped describing it: every error report was paying for a token refresh.
   // Neither branch was wrong on its own, which is how the two of them produced
   // it.
-  if (pathname.startsWith('/monitoring')) return forward(request, requestId)
+  if (pathname.startsWith('/monitoring')) return forward(request, context)
 
   // The CSRF gate for route handlers. A state-changing call to /api/* that a
   // browser says came from another site is refused here, before the session
@@ -130,7 +201,7 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  let supabaseResponse = forward(request, requestId)
+  let supabaseResponse = forward(request, context)
 
   const supabase = createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, requireAnonKey(), {
     // The rotated refresh token is written back through `setAll` below with
@@ -142,7 +213,7 @@ export async function proxy(request: NextRequest) {
       },
       setAll(cookiesToSet) {
         for (const { name, value } of cookiesToSet) request.cookies.set(name, value)
-        supabaseResponse = forward(request, requestId)
+        supabaseResponse = forward(request, context)
         for (const { name, value, options } of cookiesToSet)
           supabaseResponse.cookies.set(name, value, options)
       },

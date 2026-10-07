@@ -5,7 +5,7 @@
   "packageManager": "pnpm@11.1.2",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build && node scripts/security/csp-shell-gate.mjs",
     "start": "next start",
     "lint": "biome check . && node scripts/tokens-gate.mjs && node scripts/copy-gate.mjs && node scripts/asset-gate.mjs",
     "lint:tokens": "node scripts/tokens-gate.mjs",

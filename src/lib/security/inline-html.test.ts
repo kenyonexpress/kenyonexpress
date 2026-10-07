@@ -7,12 +7,15 @@ import { describe, expect, it } from 'vitest'
 /**
  * Every `dangerouslySetInnerHTML` in the app, and what may feed it.
  *
- * The CSP still allows inline scripts (frame-policy.ts explains why a nonce
- * cannot land while the storefront is served from the static cache), so the
- * XSS control on this site is React's escaping plus a short list of places
- * that opt out of it. This test is that list. A new opt-out either goes
- * through one of the two producers below, which are each tested for what
- * they escape, or it fails here and has to be argued for.
+ * The CSP allows inline script by per-request nonce or by the hash of two
+ * constants and nothing else (frame-policy.ts, STEP 30), so an injected
+ * `<script>` no longer runs. What `dangerouslySetInnerHTML` can still do is
+ * write MARKUP: a data block, an attribute, a form. So the XSS control is
+ * React's escaping plus a short list of places that opt out of it, and this
+ * test is that list. A new opt-out either goes through one of the two
+ * producers below, which are each tested for what they escape, or it fails
+ * here and has to be argued for. An opt-out that writes a `<script>` must
+ * also be a constant, registered by hash in shell-script-hashes.mjs.
  *
  *   jsonLdScript     JSON-LD for search engines. `<` is written as `\\u003c`
  *                    so a product name containing `</script>` cannot close

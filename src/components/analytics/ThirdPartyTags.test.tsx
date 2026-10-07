@@ -14,12 +14,17 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
  * promise to behave".
  */
 vi.mock('next/script', () => ({
-  default: ({ src, children, id }: { src?: string; children?: string; id?: string }) =>
+  default: ({
+    src,
+    children,
+    id,
+    nonce,
+  }: { src?: string; children?: string; id?: string; nonce?: string }) =>
     src ? (
-      <script data-testid={id} src={src} />
+      <script data-testid={id} src={src} nonce={nonce} />
     ) : (
       // biome-ignore lint/security/noDangerouslySetInnerHtml: the stub has to reproduce what next/script does with inline children, which is what the assertions read.
-      <script data-testid={id} dangerouslySetInnerHTML={{ __html: children ?? '' }} />
+      <script data-testid={id} nonce={nonce} dangerouslySetInnerHTML={{ __html: children ?? '' }} />
     ),
 }))
 
@@ -84,6 +89,17 @@ describe('after consent', () => {
     const html = container.innerHTML
     expect(html).toContain('googletagmanager.com/gtag/js?id=G-ABC1234567')
     expect(html).toContain("fbq('init','123456789012')")
+  })
+
+  it('puts the request nonce on every tag it writes, inline bootstraps included', () => {
+    // The policy carries no 'unsafe-inline' (frame-policy.ts, STEP 30). The
+    // GA init and the Pixel loader are inline scripts next/script writes at
+    // runtime; without the nonce they are blocked after the visitor agreed.
+    setConsent(`granted.${CONSENT_WORDING_VERSION}`)
+    const { container } = render(<ThirdPartyTags config={CONFIG} nonce="n0nce+/=" />)
+    const scripts = Array.from(container.querySelectorAll('script'))
+    expect(scripts.length).toBeGreaterThanOrEqual(3)
+    for (const script of scripts) expect(script.getAttribute('nonce')).toBe('n0nce+/=')
   })
 
   it('states consent explicitly rather than relying on a Google default', () => {

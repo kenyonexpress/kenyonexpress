@@ -1,12 +1,11 @@
 import AnalyticsProvider from '@/components/analytics/AnalyticsProvider'
 import ConsentBanner from '@/components/analytics/ConsentBanner'
 import PostHogReplay from '@/components/analytics/PostHogReplay'
-import ThirdPartyTags from '@/components/analytics/ThirdPartyTags'
 import SentryUserSync from '@/components/observability/SentryUserSync'
 import InstallPrompt from '@/components/pwa/InstallPrompt'
 import ServiceWorkerRegistrar from '@/components/pwa/ServiceWorkerRegistrar'
+import PerRequestScripts from '@/components/security/PerRequestScripts'
 import { CONSENT_PREPAINT_SCRIPT } from '@/lib/analytics/consent'
-import { readThirdPartyConfig, validatedConfig } from '@/lib/analytics/third-party'
 import { SITE } from '@/styles/tokens'
 import { Analytics as VercelAnalytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
@@ -128,8 +127,11 @@ export default function RootLayout({
           at the end of the body, or a visitor who already decided sees it flash;
           a plain inline script is the only form with that ordering guarantee.
           `beforeInteractive` is about running before Next's own modules, which
-          is a different and later moment. Allowed by CSP: script-src carries
-          'unsafe-inline' (src/lib/security/frame-policy.ts).
+          is a different and later moment. It sits in the static shell, so it
+          cannot carry the request nonce; the CSP allows it BY HASH
+          (src/lib/security/shell-script-hashes.mjs), which is why its text
+          must stay a constant: a byte of request data in it is a blocked
+          script and a banner that flashes.
         */}
         {/* biome-ignore lint/security/noDangerouslySetInnerHtml: fixed string built from two module constants, no input reaches it */}
         <script dangerouslySetInnerHTML={{ __html: CONSENT_PREPAINT_SCRIPT }} />
@@ -185,11 +187,15 @@ export default function RootLayout({
           own recommended pattern and why the stricter version is the one that
           can be checked in a network log.
 
-          The config is read on the SERVER and passed down, so a misconfigured
-          id disables the tag rather than loading a Tag Manager container that
-          reports nothing.
+          Behind a Suspense boundary because the wrapper reads the request
+          (the CSP nonce the vendor bootstraps need), and that read is also
+          what keeps every page on the resume path under the nonce policy.
+          `components/security/PerRequestScripts.tsx` explains both; do not
+          hoist it out of the boundary or replace it with the tags directly.
         */}
-        <ThirdPartyTags config={validatedConfig(readThirdPartyConfig())} />
+        <Suspense fallback={null}>
+          <PerRequestScripts />
+        </Suspense>
         {/*
           Session replay for support debugging. Same consent gate as the tags
           above; without NEXT_PUBLIC_POSTHOG_KEY or before Accept it downloads
