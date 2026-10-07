@@ -1,9 +1,9 @@
-RESUME FROM: M08-c115
+RESUME FROM: M09-c115
 
 # KenyonExpress — Project State
 
-Last item: **M07-c115 DONE** (2026-10-07): TODO/FIXME scan. 3 real markers, all older than 7 days. 1 resolved in code, 2 (Cardcom, #41/#42) filed in the new `docs/BACKLOG.md`. Branch `feat/products-sort-infinite-scroll`.
-Previous: M06-c115 DONE (2026-10-07), M05-c115 DONE (2026-10-07), M04-c115 DONE (2026-10-07), M03-c115 BLOCKED (2026-10-07), M02-c115 BLOCKED (2026-10-07), M01-c115 BLOCKED (2026-10-07), M11-c113 DONE (2026-10-06).
+Last item: **M08-c115 DONE** (2026-10-07): Lighthouse mobile on / and /product/מוצר-לדוגמא, 3 runs each against a local production build. Median Performance 82 (home) and 84 (product). Accessibility 100, Best Practices 96 and SEO 100 on both. No code change. Branch `feat/products-sort-infinite-scroll`.
+Previous: M07-c115 DONE (2026-10-07), M06-c115 DONE (2026-10-07), M05-c115 DONE (2026-10-07), M04-c115 DONE (2026-10-07), M03-c115 BLOCKED (2026-10-07), M02-c115 BLOCKED (2026-10-07), M01-c115 BLOCKED (2026-10-07), M11-c113 DONE (2026-10-06).
 History before this item lives in `docs/STATE-ARCHIVE.md` (21,138 lines moved there in this commit).
 
 ## Queue status (cycle c113)
@@ -23,6 +23,27 @@ The runner's `final-done.txt` lists M01–M10 of c113 as finished. This branch's
 | M05-c115 | pnpm test, fix drift | **DONE**: exit 0, no drift, no code change (see below) |
 | M06-c115 | pnpm build, fix drift | **DONE**: exit 0 on attempt 4, no drift, no code change (see below) |
 | M07-c115 | TODO/FIXME older than 7 days: resolve or file in docs/BACKLOG.md | **DONE**: 1 resolved, 2 filed (see below) |
+| M08-c115 | Lighthouse mobile on / and /product sample, log scores | **DONE**: perf 82 / 84 median, a11y 100, BP 96, SEO 100 (see below) |
+
+## M08-c115: Lighthouse mobile on / and /product, run 2026-10-07 in the foreground
+
+Setup: Lighthouse 13.4.1 from the repo (`pnpm exec lighthouse <url> --form-factor=mobile --chrome-flags="--headless=new --no-sandbox" --output=json`), with default `simulate` throttling (modelled mid-tier phone, 4G, 4x CPU). The target was `pnpm start -p 3488` on a clean production build made in this run. The sample product is `/product/מוצר-לדוגמא`, which returns 200 locally. `airpods-pro-2` and `demo-coupon-1`, the sweep's old samples, now return 404. There were 3 runs per page.
+
+| Page | Run | Perf | A11y | BP | SEO | FCP | LCP (sim) | TBT | CLS | SI | Observed LCP |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| / | 1 | 59 | 100 | 96 | 100 | 1.4 s | 4.9 s | 1,070 ms | 0.002 | 2.0 s | 1027 ms |
+| / | 2 | 82 | 100 | 96 | 100 | 1.8 s | 4.6 s | 30 ms | 0.002 | 1.8 s | 127 ms |
+| / | 3 | 88 | 100 | 96 | 100 | 1.8 s | 3.8 s | 30 ms | 0.002 | 1.8 s | 102 ms |
+| /product/מוצר-לדוגמא | 1 | 83 | 100 | 96 | 100 | 1.8 s | 4.4 s | 100 ms | 0.001 | 1.8 s | 237 ms |
+| /product/מוצר-לדוגמא | 2 | 84 | 100 | 96 | 100 | 1.8 s | 4.3 s | 40 ms | 0.001 | 1.8 s | 184 ms |
+| /product/מוצר-לדוגמא | 3 | 84 | 100 | 96 | 100 | 1.8 s | 4.3 s | 30 ms | 0.001 | 1.8 s | 86 ms |
+
+- **Median: home Performance 82, product Performance 84.** Accessibility 100, Best Practices 96 and SEO 100 on every run. Home run 1 was the first request after `next start` (a cold server, TBT 1,070 ms), so it is an outlier.
+- How to read these: the simulated LCP (3.8–4.9 s) is a Lantern model. In the same reports the observed LCP is 86–237 ms on warm runs. As `docs/PERFORMANCE-BUDGET.md` says, a localhost score is a relative signal and not a field score.
+- Perf still costs: `unused-javascript` (about 450 ms on home and 600 ms on product), plus the image-delivery, LCP-discovery, network-dependency-tree and render-blocking insights. These are recorded here and not acted on, because this item only measures.
+- Best Practices 96 comes from `errors-in-console` only, and every error is local: `/_vercel/insights/script.js` and `/_vercel/speed-insights/script.js` return 404 outside Vercel, and the wishlist link prefetch fails with `ERR_SSL_PROTOCOL_ERROR` on an `https://localhost:3488/login?next=/account/wishlist` redirect. None of this is a production finding.
+- No code change. Gates in this run: `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 on the second run (519 files, 6473 passed, 12 skipped). The first test run exited 1 only because 5 vitest workers timed out at startup while the load average was 44, and all the files that did run passed. `pnpm build` 0 on attempt 2. Attempt 1 failed with 66 `supabase.timeout` events at `/category/vacation`, the same network flake as M06-c115. The uncommitted `src/app/robots*.ts` edits (M12-c113) and `logs/` are not part of this commit.
+- Not a UI change, so compare.mjs was not needed (it would refuse anyway, see blocker 0).
 
 ## M07-c115: TODO/FIXME scan, run 2026-10-07
 
