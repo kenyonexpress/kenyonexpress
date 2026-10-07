@@ -1,11 +1,11 @@
-RESUME FROM: M16-c116
+RESUME FROM: M17-c116
 
 # KenyonExpress — Project State
 
-Last item: **M15-c116 DONE** (2026-10-07): production `https://www.kenyonexpress.co.il` has **0 console errors, 0 page errors, 0 failed requests and 0 responses of 400 or above** on `/` and `/product/מוצר-לדוגמא` at 380 and 1440. Local HEAD `244ca835a` has 0 page errors, and its console errors come only from the environment, the same as M15-c115. Detail in the archive.
-Decision: no code change. Production is clean and nothing local points at code. The uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` edits and `logs/` are still left alone.
-M15-c116 gates (working tree incl. those two edits): `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6474 passed, 12 skipped), `pnpm build` 0 on attempt 1 (0 `supabase.timeout`, 0 `db.query_failed`). Not a UI change, so compare.mjs does not apply (blocked anyway, blocker 0).
-Previous: M14-c116 BLOCKED, M13-c116 BLOCKED, M12-c116 DONE, M11-c116 DONE, M10-c116 BLOCKED, M09-c116 DONE, M08-c116 DONE, M07-c116 DONE, M06-c116 DONE, M05-c116 DONE, M04-c116 DONE, M03-c116 BLOCKED, M02-c116 BLOCKED, M01-c116 BLOCKED, M18-c115 DONE, M16-c115 DONE, M15-c115 DONE, M14-c115 BLOCKED, M13-c115 BLOCKED, M12-c115 DONE, M11-c115 DONE, M10-c115 BLOCKED, M09-c115 DONE, M08-c115 DONE, M07-c115 DONE, M06-c115 DONE, M05-c115 DONE, M04-c115 DONE, M03-c115 BLOCKED, M02-c115 BLOCKED, M01-c115 BLOCKED (all 2026-10-07), M11-c113 DONE (2026-10-06).
+Last item: **M16-c116 DONE** (2026-10-07): every product page has JSON-LD `Product` and `BreadcrumbList`. Production `https://www.kenyonexpress.co.il`: **44/44** sitemap product URLs have exactly one of each, 43 pass every field check. Local HEAD `9123fb25d` (`pnpm start` on this run's build): **46/46**, 43 pass every check. The only gap is a missing `image` on image-less rows (`מזקקת-ויסקי`, plus `e2e-test-physical` and `e2e-test-coupon` on HEAD), unchanged from M16-c115. Detail in the archive.
+Decision: no code change. `src/app/(store)/product/[slug]/page.tsx` and `src/lib/seo/` have no commits since M16-c115, and the image gaps are catalogue data (manual items). The uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` edits and `logs/` are still left alone.
+M16-c116 gates (working tree incl. those two edits): `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6474 passed, 12 skipped), `pnpm build` 0 on attempt 1 (29 `supabase.timeout` absorbed, 0 `db.query_failed`). Not a UI change, so compare.mjs does not apply (blocked anyway, blocker 0).
+Previous: M15-c116 DONE, M14-c116 BLOCKED, M13-c116 BLOCKED, M12-c116 DONE, M11-c116 DONE, M10-c116 BLOCKED, M09-c116 DONE, M08-c116 DONE, M07-c116 DONE, M06-c116 DONE, M05-c116 DONE, M04-c116 DONE, M03-c116 BLOCKED, M02-c116 BLOCKED, M01-c116 BLOCKED, M18-c115 DONE, M16-c115 DONE, M15-c115 DONE, M14-c115 BLOCKED, M13-c115 BLOCKED, M12-c115 DONE, M11-c115 DONE, M10-c115 BLOCKED, M09-c115 DONE, M08-c115 DONE, M07-c115 DONE, M06-c115 DONE, M05-c115 DONE, M04-c115 DONE, M03-c115 BLOCKED, M02-c115 BLOCKED, M01-c115 BLOCKED (all 2026-10-07), M11-c113 DONE (2026-10-06).
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
 M18-c115 gates: `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6473 passed, 12 skipped), `pnpm build` 0 on attempt 1. These ran on the working tree, which still had the two uncommitted UI edits. Not a UI change, so compare.mjs does not apply (it is blocked anyway, blocker 0).
 
@@ -52,6 +52,7 @@ The runner's `final-done.txt` lists M01–M10 of c113 as finished. This branch's
 | M13-c116 | Verify /api/health and /api/ready return 200 with real deps | **BLOCKED**: health 200, ready 503 on `meilisearch: down`, unchanged from M13-c115 (see archive) |
 | M14-c116 | Verify Sentry release matches HEAD commit | **BLOCKED**: prod release still `1e84df0` (audit/final-audit), HEAD `bf55da2`, unchanged from M14-c115 (see archive) |
 | M15-c116 | Verify no console errors on / and /product sample | **DONE**: prod 0 errors on both pages at 380 and 1440, unchanged from M15-c115; local errors are env-only (see archive) |
+| M16-c116 | Verify all product pages have JSON-LD Product and BreadcrumbList | **DONE**: 44/44 prod, 46/46 HEAD, both nodes valid; same 3 image-less rows lack `image`, unchanged from M16-c115 (see archive) |
 
 ## Open blockers
 

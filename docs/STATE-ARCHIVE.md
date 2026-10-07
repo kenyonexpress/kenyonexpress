@@ -58,6 +58,15 @@ Setup: the same as M08-c115. Lighthouse 13.4.1 from the repo (`pnpm exec lightho
 - Verdict: **mismatch.** The wiring is correct, because the release follows the deployed commit. HEAD is just not deployed. The fix is to deploy this branch (or merge it into whichever branch Vercel's production tracks), and that is an operator action. No code change.
 - Gates in this run: `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6473 passed, 12 skipped), `pnpm build` 0 on the first attempt (0 `supabase.timeout`). This is not a UI change, so compare.mjs was not needed (and it refuses anyway, see blocker 0). `logs/` is untracked and not part of this commit.
 
+## M16-c116: JSON-LD Product and BreadcrumbList re-verified 2026-10-07 in the foreground
+
+- Code: no commits touch `src/app/(store)/product/[slug]/page.tsx` or `src/lib/seo/` since M16-c115 (`45398c439..HEAD`). The page still always renders both `application/ld+json` scripts (`page.tsx:248`, `:256`).
+- Method: same checks as M16-c115, Node probe kept outside the repo. It reads `/sitemap/products.xml`, fetches every `/product/` URL and requires status 200, exactly one `Product` and one `BreadcrumbList`, no parse error, `name`, `image`, offers with price and `priceCurrency`, at least 2 crumbs with positions 1..n, names on all, `item` on every non-last crumb, and last crumb name equal to `Product.name`.
+- **Production** (`https://www.kenyonexpress.co.il`): 44 URLs, **44/44 have both nodes**, 43 pass every check. `/product/מזקקת-ויסקי` has no `image`.
+- **Local HEAD** `9123fb25d` (`pnpm start -p 3517` on this run's build): 46 URLs, **46/46 have both nodes**, 43 pass every check. No `image` on `מזקקת-ויסקי`, `e2e-test-physical` and `e2e-test-coupon`.
+- Verdict: unchanged from M16-c115. No code change; the image gaps and the e2e rows are already manual items for Ofir.
+- Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1. Not a UI change; compare.mjs does not apply.
+
 ## M14-c116: Sentry release vs HEAD, re-probed 2026-10-07 11:57 UTC against production
 
 - Method: same as M14-c115. Fetched `https://www.kenyonexpress.co.il/` twice (plain and `?cb=` cache-busted; both `x-vercel-cache: HIT`, `x-vercel-id sin1::fra1::…`), downloaded all 21 `/_next/static/*.js` chunks and searched for the Sentry init and 40-char SHAs.
