@@ -1,7 +1,12 @@
 import { APP_PATHS, universalLink } from '@/lib/app/deep-links'
 
 /**
- * Push copy, in Hebrew, for the five kinds the app sends.
+ * Push copy, in Hebrew, for the six kinds the app sends.
+ *
+ * TAGS. Every template that knows the object it is about stamps `data.tag`
+ * with it, and the service worker collapses notifications that share a tag
+ * into one. The two order kinds share `order:<id>` on purpose: "delivered"
+ * replaces "shipped" on the lock screen instead of stacking under it.
  *
  * A KIND WITHOUT A TEMPLATE HERE GETS NO PUSH, AND THAT IS THE GATE. The outbox
  * carries every notification the system owes, including supplier sale alerts
@@ -90,6 +95,7 @@ function couponPurchased(payload: Record<string, unknown>, siteUrl: string): Pus
         : 'הקופון שלך מוכן ומחכה באפליקציה.'
 
   const voucherId = text(first, 'id')
+  const orderId = text(payload, 'order_id')
   return {
     title: count > 1 ? 'הקופונים שלך מוכנים' : 'הקופון שלך מוכן',
     body,
@@ -97,9 +103,15 @@ function couponPurchased(payload: Record<string, unknown>, siteUrl: string): Pus
       kind: 'voucher_issued',
       path: count === 1 && voucherId ? APP_PATHS.coupon(voucherId) : APP_PATHS.coupons,
       url: universalLink(siteUrl, '/account/coupons'),
-      order_id: text(payload, 'order_id'),
+      order_id: orderId,
+      ...tag('voucher-issued', orderId),
     },
   }
+}
+
+/** `{ tag: 'prefix:id' }` when the id is known, nothing otherwise. */
+function tag(prefix: string, id: string | null): { tag?: string } {
+  return id ? { tag: `${prefix}:${id}` } : {}
 }
 
 function couponExpiring(payload: Record<string, unknown>, siteUrl: string): PushContent | null {
@@ -108,6 +120,7 @@ function couponExpiring(payload: Record<string, unknown>, siteUrl: string): Push
   const productName = text(payload, 'product_name')
   const supplier = text(payload, 'supplier_name')
   const where = supplier ? ` ב${supplier}` : ''
+  const voucherId = text(payload, 'voucher_id')
 
   return {
     title: days <= 1 ? 'הקופון שלך פג מחר' : `הקופון שלך פג ${daysInHebrew(days)}`,
@@ -116,12 +129,10 @@ function couponExpiring(payload: Record<string, unknown>, siteUrl: string): Push
       : `יש לך קופון${where} שעדיין לא מומש.`,
     data: {
       kind: 'voucher_expiring',
-      path: (() => {
-        const voucherId = text(payload, 'voucher_id')
-        return voucherId ? APP_PATHS.coupon(voucherId) : APP_PATHS.coupons
-      })(),
+      path: voucherId ? APP_PATHS.coupon(voucherId) : APP_PATHS.coupons,
       url: universalLink(siteUrl, '/account/coupons'),
-      voucher_id: text(payload, 'voucher_id'),
+      voucher_id: voucherId,
+      ...tag('voucher-expiring', voucherId),
     },
   }
 }
@@ -130,6 +141,7 @@ function cashbackCredited(payload: Record<string, unknown>, siteUrl: string): Pu
   const amount = integer(payload, 'amount_agorot')
   if (amount === null || amount <= 0) return null
 
+  const orderId = text(payload, 'order_id')
   return {
     title: `נכנס לך קאשבק של ${shekelsCompact(amount)}`,
     body: 'הסכום נמצא בארנק שלך ואפשר להשתמש בו בקנייה הבאה.',
@@ -138,7 +150,8 @@ function cashbackCredited(payload: Record<string, unknown>, siteUrl: string): Pu
       path: APP_PATHS.wallet,
       url: universalLink(siteUrl, '/account/wallet'),
       amount_agorot: amount,
-      order_id: text(payload, 'order_id'),
+      order_id: orderId,
+      ...tag('cashback', orderId),
     },
   }
 }
@@ -157,6 +170,7 @@ function cashbackCredited(payload: Record<string, unknown>, siteUrl: string): Pu
 function orderShipped(payload: Record<string, unknown>, siteUrl: string): PushContent | null {
   const orderRef = text(payload, 'order_ref')
   const carrier = text(payload, 'carrier')
+  const orderId = text(payload, 'order_id')
 
   return {
     title: 'ההזמנה שלך יצאה לדרך',
@@ -165,13 +179,47 @@ function orderShipped(payload: Record<string, unknown>, siteUrl: string): PushCo
       : 'המשלוח יצא. פרטי המעקב מחכים בעמוד ההזמנה.',
     data: {
       kind: 'order_shipped',
-      path: (() => {
-        const orderId = text(payload, 'order_id')
-        return orderId ? APP_PATHS.order(orderId) : APP_PATHS.home
-      })(),
-      url: universalLink(siteUrl, '/account/orders'),
-      order_id: text(payload, 'order_id'),
+      path: orderId ? APP_PATHS.order(orderId) : APP_PATHS.home,
+      url: universalLink(siteUrl, orderId ? `/account/orders/${orderId}` : '/account/orders'),
+      order_id: orderId,
       order_ref: orderRef,
+      ...tag('order', orderId),
+    },
+  }
+}
+
+/**
+ * Every parcel of the order was marked delivered.
+ *
+ * The second half of the order-status pair. It shares the `order:<id>` tag
+ * with `order_shipped`, so on a lock screen that still shows "יצאה לדרך" this
+ * one replaces it rather than stacking a contradiction under it. The item
+ * count is spelled with the Hebrew dual for the same reason `daysInHebrew`
+ * exists: "2 פריטים" is not how anyone says it.
+ */
+function orderDelivered(payload: Record<string, unknown>, siteUrl: string): PushContent | null {
+  const orderId = text(payload, 'order_id')
+  const items = integer(payload, 'item_count')
+
+  const what =
+    items === null || items <= 0
+      ? 'ההזמנה'
+      : items === 1
+        ? 'הפריט שהזמנת'
+        : items === 2
+          ? 'שני הפריטים שהזמנת'
+          : `${items} הפריטים שהזמנת`
+
+  return {
+    title: 'ההזמנה שלך נמסרה',
+    body: `${what} אצלך. אם משהו לא תקין, אפשר לפנות אלינו מעמוד ההזמנה.`,
+    data: {
+      kind: 'order_delivered',
+      path: orderId ? APP_PATHS.order(orderId) : APP_PATHS.home,
+      url: universalLink(siteUrl, orderId ? `/account/orders/${orderId}` : '/account/orders'),
+      order_id: orderId,
+      order_ref: text(payload, 'order_ref'),
+      ...tag('order', orderId),
     },
   }
 }
@@ -198,6 +246,7 @@ function priceDrop(payload: Record<string, unknown>, siteUrl: string): PushConte
   if (was === null || now === null || now >= was || now < 0) return null
 
   const slug = text(payload, 'product_slug')
+  const productId = text(payload, 'product_id')
   return {
     title: productName ? `${productName} בזול יותר` : 'מוצר שאהבת בזול יותר',
     body: `המחיר ירד מ-${shekelsCompact(was)} ל-${shekelsCompact(now)}.`,
@@ -205,8 +254,9 @@ function priceDrop(payload: Record<string, unknown>, siteUrl: string): PushConte
       kind: 'price_drop',
       path: APP_PATHS.home,
       url: universalLink(siteUrl, slug ? `/product/${slug}` : '/products'),
-      product_id: text(payload, 'product_id'),
+      product_id: productId,
       now_agorot: now,
+      ...tag('price-drop', productId),
     },
   }
 }
@@ -229,6 +279,8 @@ export function buildPushContent(
       return cashbackCredited(payload, siteUrl)
     case 'order_shipped':
       return orderShipped(payload, siteUrl)
+    case 'order_delivered':
+      return orderDelivered(payload, siteUrl)
     case 'price_drop':
       return priceDrop(payload, siteUrl)
     default:
@@ -242,5 +294,6 @@ export const PUSHABLE_KINDS = [
   'voucher_expiring',
   'cashback_credited',
   'order_shipped',
+  'order_delivered',
   'price_drop',
 ] as const

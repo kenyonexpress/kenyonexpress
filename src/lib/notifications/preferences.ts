@@ -66,6 +66,12 @@ export const OPTIONAL_KINDS = [
   'voucher_expiring',
   'voucher_redeemed',
   'cashback_credited',
+  /**
+   * A saved product got cheaper. Not transactional: the customer asked for it
+   * by building the wishlist, and may stop asking here. The browser push itself
+   * is a separate, explicit opt-in (`PushOptIn`); this switch narrows it.
+   */
+  'price_drop',
   'welcome',
 ] as const
 
@@ -143,6 +149,7 @@ export const KIND_LABEL_HE: Record<OptionalKind, string> = {
   voucher_expiring: 'שובר עומד לפוג',
   voucher_redeemed: 'שובר מומש',
   cashback_credited: 'זיכוי לארנק',
+  price_drop: 'ירידת מחיר במוצר שמור',
   welcome: 'ברוכים הבאים',
 }
 

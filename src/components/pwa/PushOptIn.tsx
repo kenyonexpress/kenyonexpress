@@ -1,5 +1,6 @@
 'use client'
 
+import { QUIET_HOURS_COPY_HE } from '@/lib/push/quiet-hours'
 import { urlBase64ToUint8Array, vapidPublicKey } from '@/lib/push/vapid'
 import { removePushSubscription, savePushSubscription } from '@/server/actions/push'
 import { useEffect, useState } from 'react'
@@ -29,8 +30,8 @@ const COPY: Record<Exclude<Status, 'busy'>, string> = {
     'הדפדפן הזה לא תומך בהתראות, או שהאפליקציה עוד לא נטענה במלואה. נסו מהמסך הראשי אחרי התקנת האפליקציה.',
   denied:
     'ההתראות חסומות בהגדרות הדפדפן לאתר הזה. כדי להפעיל אותן, אפשרו התראות בהגדרות האתר בדפדפן ורעננו את העמוד.',
-  off: 'קבלו עדכון כשההזמנה יוצאת לדרך, כשקופון ממתין לכם וכשנכנס קאשבק לארנק.',
-  on: 'התראות פעילות בדפדפן הזה. אפשר לכבות בכל רגע, בלי לאבד שום דבר בחשבון.',
+  off: `קבלו עדכון כשההזמנה יוצאת לדרך ונמסרת, כשמחיר של מוצר ששמרתם יורד וכשנכנס קאשבק לארנק. ${QUIET_HOURS_COPY_HE}`,
+  on: `התראות פעילות בדפדפן הזה. ${QUIET_HOURS_COPY_HE} אפשר לכבות בכל רגע, בלי לאבד שום דבר בחשבון.`,
 }
 
 export default function PushOptIn() {

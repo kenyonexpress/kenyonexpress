@@ -76,18 +76,37 @@ export function toPushPayload(content: PushContent): {
   url: string
   tag?: string
 } {
-  const url = content.data.url
   const tag = content.data.tag
 
   return {
     title: content.title,
     body: content.body,
-    // The worker falls back to '/' for anything that is not a same-origin
-    // path, so sending an absolute URL is not dangerous - it is just a click
-    // that lands on the home page instead of the order. Normalised here so the
-    // intent is visible at the sending end too.
-    url: typeof url === 'string' && url.startsWith('/') && !url.startsWith('//') ? url : '/',
+    url: clickPath(content.data.url),
     ...(typeof tag === 'string' && tag !== '' ? { tag } : {}),
+  }
+}
+
+/**
+ * The same-origin path a click opens.
+ *
+ * MEASURED 2026-10-07: every template writes `data.url` as an ABSOLUTE link
+ * (`universalLink(siteUrl, '/account/wallet')`), because the Expo leg needs a
+ * universal link the OS can route into the app. This function used to accept
+ * only a bare path, so every web push click fell back to '/' and landed on the
+ * home page instead of the wallet, the order or the product. Reduced to its
+ * path here: the worker only ever navigates within its own origin, so the host
+ * is discarded whatever it was, and a payload pointing at another origin
+ * becomes a same-origin path of the same name, which is harmless.
+ */
+export function clickPath(url: unknown): string {
+  if (typeof url !== 'string' || url === '') return '/'
+  if (url.startsWith('/') && !url.startsWith('//')) return url
+  try {
+    const parsed = new URL(url)
+    if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return '/'
+    return `${parsed.pathname}${parsed.search}${parsed.hash}`
+  } catch {
+    return '/'
   }
 }
 

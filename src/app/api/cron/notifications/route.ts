@@ -18,9 +18,14 @@ import { type NextRequest, NextResponse } from 'next/server'
  * not strand a push that had not been attempted yet, and a phone that is
  * unreachable must never cause a second copy of the email.
  *
- * Only three kinds ever produce a push, and `lib/push/templates.ts` is the gate
- * that decides. A kind with no push template settles as `push_status = 'none'`
+ * Only the kinds in `lib/push/templates.ts` ever produce a push, and that file
+ * is the gate. A kind with no push template settles as `push_status = 'none'`
  * on the first look and is never reconsidered.
+ *
+ * QUIET HOURS. Between 22:00 and 08:00 Israel time the push leg is held, not
+ * sent: `pushOutboxRow` answers `deferred` with the release instant, and this
+ * route writes it into `push_next_attempt_at` without counting an attempt. The
+ * email leg is untouched; mail at 03:00 wakes nobody. `lib/push/quiet-hours.ts`.
  *
  * The queue is filled in-transaction by the triggers in 095: the customer's
  * order confirmation, one sale alert per supplier, and the coupon-scanned
@@ -114,6 +119,7 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
   let pushSkipped = 0
   let pushFailed = 0
   let pushDead = 0
+  let pushDeferred = 0
   let whatsapped = 0
   let whatsappFailed = 0
 
@@ -209,6 +215,24 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
       continue
     }
 
+    if (push.outcome === 'deferred') {
+      // Night in Israel. The row stays pending and is picked up by the first
+      // run after 08:00; `push_attempts` is NOT incremented, because the five
+      // attempts are for transport failures and a quiet night is not one.
+      // `push_error` carries the reason so an operator reading the row at
+      // 03:00 sees "held", not "stuck".
+      pushDeferred++
+      await admin
+        .from('notification_outbox')
+        .update({
+          push_status: 'pending',
+          push_next_attempt_at: push.until,
+          push_error: `deferred: ${push.reason}`.slice(0, 500),
+        })
+        .eq('id', row.id)
+      continue
+    }
+
     if (push.outcome === 'sent') {
       pushed++
       await admin
@@ -252,6 +276,7 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
     pushSkipped,
     pushFailed,
     pushDead,
+    pushDeferred,
     whatsapped,
     whatsappFailed,
   })

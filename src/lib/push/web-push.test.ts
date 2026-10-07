@@ -37,6 +37,23 @@ describe('the payload the service worker will actually parse', () => {
     }
   })
 
+  it('reduces the absolute link every template writes to its path', () => {
+    // MEASURED 2026-10-07: templates write `universalLink(site, '/account/wallet')`
+    // for the Expo leg, and this used to send '/' for all of them, so every
+    // web push click opened the home page. The host is discarded, whatever it
+    // is; the worker never leaves its own origin.
+    expect(
+      toPushPayload({ ...CONTENT, data: { url: 'https://kenyonexpress.co.il/account/wallet' } })
+        .url,
+    ).toBe('/account/wallet')
+    expect(
+      toPushPayload({ ...CONTENT, data: { url: 'https://kenyonexpress.co.il/product/x?a=1' } }).url,
+    ).toBe('/product/x?a=1')
+    expect(toPushPayload({ ...CONTENT, data: { url: 'https://evil.example/account' } }).url).toBe(
+      '/account',
+    )
+  })
+
   it('passes a tag through, so re-sends collapse instead of stacking', () => {
     const payload = toPushPayload({ ...CONTENT, data: { url: '/', tag: 'voucher:7' } })
     expect(payload.tag).toBe('voucher:7')

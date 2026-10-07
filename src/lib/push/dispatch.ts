@@ -1,6 +1,7 @@
 import { loadPreferenceRows } from '@/lib/notifications/preference-store'
 import { type PreferenceRow, mayNotify } from '@/lib/notifications/preferences'
 import { type ExpoPushMessage, isExpoPushToken, sendExpoPush } from '@/lib/push/expo'
+import { deferForQuietHours } from '@/lib/push/quiet-hours'
 import { type PushContent, buildPushContent } from '@/lib/push/templates'
 import { type WebPushLegResult, sendWebPushLeg } from '@/lib/push/web-leg'
 import type { SupabaseClient } from '@supabase/supabase-js'
@@ -22,6 +23,9 @@ import type { SupabaseClient } from '@supabase/supabase-js'
  *               later does not find a queue whose retries are already spent.
  *   'sent'    - Expo accepted it.
  *   'retry'   - a transport failure. Counted, backed off, dead after five.
+ *   'deferred'- it is night in Israel. Held until 08:00, NOT counted: the
+ *               five attempts exist for transport failures and a quiet night
+ *               is not one. `lib/push/quiet-hours.ts` decides.
  *
  * TWO TRANSPORTS, ONE OUTCOME. `push_tokens` holds Expo tokens for the React
  * Native app; `push_subscriptions` holds Web Push subscriptions for browsers.
@@ -42,6 +46,7 @@ export type PushLegResult =
   | { outcome: 'skipped'; reason: string }
   | { outcome: 'sent'; recipients: number }
   | { outcome: 'retry'; reason: string }
+  | { outcome: 'deferred'; until: string; reason: string }
 
 export type PushTargetRow = { expo_token: string; platform: string; locale: string }
 
@@ -187,6 +192,8 @@ export async function pushOutboxRow(
    * own.
    */
   preferenceRows?: readonly PreferenceRow[],
+  /** The clock, for the quiet-hours rule. A parameter so the rule is testable. */
+  now: Date = new Date(),
 ): Promise<PushLegResult> {
   const content = buildPushContent(row.kind, row.payload ?? {}, siteUrl)
   if (!content) return { outcome: 'none' }
@@ -202,6 +209,20 @@ export async function pushOutboxRow(
   const preferences = preferenceRows ?? (await loadPreferenceRows(admin, row.user_id))
   if (!mayNotify(row.kind, 'push', preferences)) {
     return { outcome: 'skipped', reason: 'switched off by the customer' }
+  }
+
+  // QUIET HOURS, after the preference and before either transport. After, so
+  // a kind the customer switched off settles tonight instead of being held
+  // until morning and skipped then; before, so a held push costs no network
+  // call. The release instant goes back to the drain, which writes it into
+  // `push_next_attempt_at` without touching the attempt counter.
+  const release = deferForQuietHours(row.kind, now)
+  if (release) {
+    return {
+      outcome: 'deferred',
+      until: release.toISOString(),
+      reason: 'quiet hours 22:00-08:00 Asia/Jerusalem',
+    }
   }
 
   const [expo, web] = await Promise.all([

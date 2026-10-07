@@ -39,6 +39,7 @@ describe('buildPushContent gating', () => {
       'voucher_expiring',
       'cashback_credited',
       'order_shipped',
+      'order_delivered',
       'price_drop',
     ])
     for (const kind of PUSHABLE_KINDS) {
@@ -131,5 +132,63 @@ describe('cashback_credited', () => {
     const content = buildPushContent('cashback_credited', { amount_agorot: 100 }, SITE)
     expect(content?.data.path).toBe('/wallet')
     expect(content?.data.url).toBe('https://kenyonexpress.co.il/account/wallet')
+  })
+})
+
+describe('order_delivered', () => {
+  it('says the order arrived and links to that order', () => {
+    const content = buildPushContent(
+      'order_delivered',
+      { order_id: 'o-77', order_ref: 'O-77', item_count: 3 },
+      SITE,
+    )
+    expect(content?.title).toBe('ההזמנה שלך נמסרה')
+    expect(content?.body).toContain('3 הפריטים שהזמנת')
+    expect(content?.data.path).toBe('/orders/o-77')
+    expect(content?.data.url).toBe('https://kenyonexpress.co.il/account/orders/o-77')
+  })
+
+  it('uses the dual and the singular, like a person would', () => {
+    expect(buildPushContent('order_delivered', { item_count: 1 }, SITE)?.body).toContain(
+      'הפריט שהזמנת אצלך',
+    )
+    expect(buildPushContent('order_delivered', { item_count: 2 }, SITE)?.body).toContain(
+      'שני הפריטים שהזמנת אצלך',
+    )
+  })
+
+  it('still sends with no item count rather than inventing one', () => {
+    const content = buildPushContent('order_delivered', {}, SITE)
+    expect(content?.body).toContain('ההזמנה אצלך')
+    expect(content?.data.path).toBe('/')
+  })
+
+  it('shares a tag with order_shipped so delivered replaces shipped on the lock screen', () => {
+    const shipped = buildPushContent('order_shipped', { order_id: 'o-77' }, SITE)
+    const delivered = buildPushContent('order_delivered', { order_id: 'o-77' }, SITE)
+    expect(shipped?.data.tag).toBe('order:o-77')
+    expect(delivered?.data.tag).toBe('order:o-77')
+  })
+})
+
+describe('tags', () => {
+  it('stamps one per object so re-sends collapse instead of stacking', () => {
+    expect(
+      buildPushContent('price_drop', { saved_agorot: 100, now_agorot: 50, product_id: 'p1' }, SITE)
+        ?.data.tag,
+    ).toBe('price-drop:p1')
+    expect(
+      buildPushContent('cashback_credited', { amount_agorot: 100, order_id: 'o1' }, SITE)?.data.tag,
+    ).toBe('cashback:o1')
+    expect(
+      buildPushContent('voucher_expiring', { days_remaining: 3, voucher_id: 'v1' }, SITE)?.data.tag,
+    ).toBe('voucher-expiring:v1')
+  })
+
+  it('omits the tag when the object is unknown, rather than sending one that collapses everything', () => {
+    expect(buildPushContent('order_shipped', {}, SITE)?.data).not.toHaveProperty('tag')
+    expect(
+      buildPushContent('cashback_credited', { amount_agorot: 100 }, SITE)?.data,
+    ).not.toHaveProperty('tag')
   })
 })

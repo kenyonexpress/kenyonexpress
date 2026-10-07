@@ -75,6 +75,10 @@ const ROW = {
   recipient_email: 'a@b.test',
 }
 
+/** 12:00 and 23:00 Israel time on a winter day (UTC+2). */
+const NOON = new Date('2026-01-15T10:00:00Z')
+const NIGHT = new Date('2026-01-15T21:00:00Z')
+
 afterEach(() => {
   vi.unstubAllEnvs()
   vi.restoreAllMocks()
@@ -142,7 +146,13 @@ describe('the preference the account page has always been writing', () => {
     vi.stubEnv('PUSH_ENABLED', 'true')
     vi.stubGlobal('fetch', fetchReturning([{ status: 'ok', id: 'r1' }]))
 
-    const result = await pushOutboxRow(fakeAdmin(state), { ...ROW, kind: 'order_shipped' }, SITE)
+    const result = await pushOutboxRow(
+      fakeAdmin(state),
+      { ...ROW, kind: 'order_shipped' },
+      SITE,
+      undefined,
+      NOON,
+    )
     expect(result).toMatchObject({ outcome: 'sent' })
   })
 
@@ -161,6 +171,96 @@ describe('the preference the account page has always been writing', () => {
 
     const result = await pushOutboxRow(fakeAdmin(state), ROW, SITE)
     expect(result).toMatchObject({ outcome: 'sent' })
+  })
+})
+
+describe('quiet hours', () => {
+  const device = { expo_token: 'ExponentPushToken[a]', platform: 'ios', locale: 'he' }
+
+  it('holds a night-time push until 08:00 without touching a transport', async () => {
+    vi.stubEnv('PUSH_ENABLED', 'true')
+    const fetchImpl = fetchReturning([{ status: 'ok', id: 'r1' }])
+    vi.stubGlobal('fetch', fetchImpl)
+    const state: FakeState = { targets: [device], rpcError: null, disabled: [] }
+    const rpc = vi.fn()
+    const admin = { ...fakeAdmin(state), rpc } as unknown as SupabaseClient
+
+    const result = await pushOutboxRow(
+      admin,
+      { ...ROW, kind: 'order_shipped', payload: { order_id: 'o1' } },
+      SITE,
+      undefined,
+      NIGHT,
+    )
+
+    expect(result).toEqual({
+      outcome: 'deferred',
+      until: '2026-01-16T06:00:00.000Z',
+      reason: 'quiet hours 22:00-08:00 Asia/Jerusalem',
+    })
+    // Neither the Expo target lookup nor the push service was called: a held
+    // push costs no network.
+    expect(rpc).not.toHaveBeenCalled()
+    expect(fetchImpl).not.toHaveBeenCalled()
+  })
+
+  it('sends the same push at noon', async () => {
+    vi.stubEnv('PUSH_ENABLED', 'true')
+    vi.stubGlobal('fetch', fetchReturning([{ status: 'ok', id: 'r1' }]))
+    const state: FakeState = { targets: [device], rpcError: null, disabled: [] }
+
+    const result = await pushOutboxRow(
+      fakeAdmin(state),
+      { ...ROW, kind: 'order_shipped', payload: { order_id: 'o1' } },
+      SITE,
+      undefined,
+      NOON,
+    )
+    expect(result).toMatchObject({ outcome: 'sent' })
+  })
+
+  it('lets the coupon the customer just bought through at night', async () => {
+    // They are awake and holding the phone; holding the receipt for what they
+    // just did would read as a failed purchase.
+    vi.stubEnv('PUSH_ENABLED', 'true')
+    vi.stubGlobal('fetch', fetchReturning([{ status: 'ok', id: 'r1' }]))
+    const state: FakeState = { targets: [device], rpcError: null, disabled: [] }
+
+    const result = await pushOutboxRow(fakeAdmin(state), ROW, SITE, undefined, NIGHT)
+    expect(result).toMatchObject({ outcome: 'sent' })
+  })
+
+  it('settles a switched-off kind tonight instead of holding it until morning', async () => {
+    // The preference is read first. Otherwise the row would sit pending all
+    // night and be skipped at 08:00, which is the same answer a day late.
+    const state: FakeState = {
+      targets: [device],
+      rpcError: null,
+      disabled: [],
+      preferences: [{ kind: 'order_shipped', channel: 'push', enabled: false }],
+    }
+    const result = await pushOutboxRow(
+      fakeAdmin(state),
+      { ...ROW, kind: 'order_shipped' },
+      SITE,
+      undefined,
+      NIGHT,
+    )
+    expect(result).toEqual({ outcome: 'skipped', reason: 'switched off by the customer' })
+  })
+
+  it('settles a kind with no template as none even at night', async () => {
+    // `none` is permanent and must not become a deferral that is re-examined
+    // every morning forever.
+    const state: FakeState = { targets: [], rpcError: null, disabled: [] }
+    const result = await pushOutboxRow(
+      fakeAdmin(state),
+      { ...ROW, kind: 'supplier_sale' },
+      SITE,
+      undefined,
+      NIGHT,
+    )
+    expect(result).toEqual({ outcome: 'none' })
   })
 })
 

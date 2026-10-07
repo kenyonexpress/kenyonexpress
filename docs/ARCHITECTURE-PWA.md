@@ -984,6 +984,23 @@ Wire from notifications worker after email channel (same `notification_log` fano
 | PWA-3 | Web Push opt-in + `push_subscriptions` + SW handlers |
 | PWA-4 | Retire WP OneSignal; Expo tokens on RN |
 
+### 7.8 What ships today (measured 2026-10-07, STEP 24)
+
+PWA-3 is live on the branch. The pieces, and where each decision lives:
+
+| Piece | File | Rule |
+|---|---|---|
+| Opt-in | `src/components/pwa/PushOptIn.tsx` | The permission prompt is asked only off a button press on the notifications page. A browser subscription is the per-user opt-in; nothing pushes to an account without one. |
+| Storage | `src/server/actions/push.ts`, `push_subscriptions` (179, applied) | Service role only, conflict on `endpoint`: on a shared device the latest signed-in account owns the browser. |
+| Kinds | `src/lib/push/templates.ts` | Six kinds and no others: `voucher_issued`, `voucher_expiring`, `cashback_credited`, `order_shipped`, `order_delivered`, `price_drop`. A kind with no template settles `push_status = 'none'` forever. No marketing; `price_drop` is the only non-transactional kind and it fires only for a product the customer put on their own wishlist. |
+| Per-kind switches | `src/lib/notifications/preferences.ts` | Optional kinds (including `price_drop`) may be switched off per channel on the account page; `voucher_issued` may not, because it is the thing bought. Read by the drain before any transport is called. |
+| Quiet hours | `src/lib/push/quiet-hours.ts` | 22:00 to 08:00 Asia/Jerusalem, DST from `Intl`. A push in the window is held, not dropped: the drain writes the release instant to `push_next_attempt_at` and does not count an attempt. `voucher_issued` is exempt (the customer just paid and is holding the phone). Email is not subject to it. |
+| Sender | `src/lib/push/web-push.ts`, `web-leg.ts` | `web-push` for RFC 8291/8292. 404/410 deletes the row; 429/5xx retries on the outbox backoff; other 4xx settles as rejected. `data.url` is reduced to its same-origin path for the worker (every template writes an absolute universal link for the Expo leg). |
+| Collapse | `templates.ts` `tag()` | One tag per object: `order:<id>` is shared by shipped and delivered so the later one replaces the earlier on the lock screen. |
+| Worker | `public/sw.js` | Shows nothing for a payload without a string `title`; click target confined to a same-origin path. |
+
+Nothing here needed a migration: `notification_preferences` has no CHECK on `kind` by design (198), and the deferral uses the `push_next_attempt_at` column 114 added.
+
 ---
 
 ## 8. Security / headers interaction
