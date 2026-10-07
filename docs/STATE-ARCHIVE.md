@@ -140,6 +140,14 @@ Setup: the same as M08-c115. Lighthouse 13.4.1 from the repo (`pnpm exec lightho
 - Verdict: **mismatch, unchanged.** The fix is to deploy this branch (or the branch Ofir chooses) to production, which is an operator action. No code change.
 - Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1. Not a UI change; compare.mjs does not apply.
 
+## M14-c117: Sentry release vs HEAD, re-probed 2026-10-07 14:31 UTC against production
+
+- Method: same as M14-c116. Fetched `https://www.kenyonexpress.co.il/?cb=<epoch>` (200, `x-vercel-cache: HIT`, `x-vercel-id sin1::fra1::…`), downloaded all 21 `/_next/static/*.js` chunks and searched for the Sentry init and 40-char SHAs.
+- Result: the inlined init is `NEXT_PUBLIC_SENTRY_RELEASE??"1e84df0e5457c9c80a46f7cb2155ac204ebc15ef"`, the only SHA in the bundle (2 occurrences). After `git fetch`, `origin/audit/final-audit` is still `1e84df0e5`, `origin/main` is still `7b7e01494`, and HEAD is `cbe88c536` (`feat/products-sort-infinite-scroll`, in sync with its upstream).
+- The Sentry MCP still needs authorisation, so the server-side release list was not read. Per M14-c116 the Vercel connector returned no production deployments, so it was not re-queried.
+- Verdict: **mismatch, unchanged.** The fix is to deploy the branch Ofir chooses to production, which is an operator action (blocker 4, manual item). No code change.
+- Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1. Not a UI change; compare.mjs does not apply. `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` are still uncommitted and not part of this commit.
+
 ## M13-c117: /api/health and /api/ready, re-probed 2026-10-07 14:17 UTC against production
 
 - `GET https://www.kenyonexpress.co.il/api/health`: **200** `application/json`, 3 of 3, body `{"ok":true,"database":"ok","latency_ms":138}`.

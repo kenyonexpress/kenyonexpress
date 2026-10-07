@@ -1,10 +1,10 @@
-RESUME FROM: M14-c117
+RESUME FROM: M15-c117
 
 # KenyonExpress — Project State
 
-Last item: **M13-c117 BLOCKED** (2026-10-07): /api/health and /api/ready re-probed against production at 14:17 UTC. health 200 3 of 3 (`database: ok`). ready 503 3 of 3: `meilisearch: down`; database, redis and cardcom ok, r2 not_configured. Same as M13-c115 and M13-c116. No code change: hiding a configured-but-down dependency would mask a real outage. Fix is the operator's (blocker 6). Next ID: M14-c117.
-M13-c117 gates: type-check 0, lint 0, test 0 on attempt 2 (attempt 1: all 511 files that ran passed, but 8 workers timed out on start under load; those 8 pass alone, and the full rerun had 519 files, 6474 passed, 12 skipped), build 0 on attempt 2 (attempt 1 failed prerendering `/coupons/[id]` on `supabase.timeout`). Health unit tests 23/23. No UI change, so compare.mjs does not apply (blocked anyway, blocker 0).
-Previous: M12-c117 DONE, M11-c117 DONE, M10-c117 BLOCKED, M09-c117 DONE, M08-c117 DONE, M07-c117 DONE, M06-c117 DONE, M05-c117 DONE, M04-c117 DONE, M03-c117 BLOCKED, M02-c117 BLOCKED, M01-c117 BLOCKED, M18-c116 DONE, M17-c116 BLOCKED, M16-c116 DONE, M15-c116 DONE, M14-c116 BLOCKED, M13-c116 BLOCKED, M12-c116 DONE, M11-c116 DONE, M10-c116 BLOCKED, M09-c116 DONE, M08-c116 DONE, M07-c116 DONE, M06-c116 DONE, M05-c116 DONE, M04-c116 DONE, M03-c116 BLOCKED, M02-c116 BLOCKED, M01-c116 BLOCKED, M18-c115 DONE, M16-c115 DONE, M15-c115 DONE, M14-c115 BLOCKED, M13-c115 BLOCKED, M12-c115 DONE, M11-c115 DONE, M10-c115 BLOCKED, M09-c115 DONE, M08-c115 DONE, M07-c115 DONE, M06-c115 DONE, M05-c115 DONE, M04-c115 DONE, M03-c115 BLOCKED, M02-c115 BLOCKED, M01-c115 BLOCKED (all 2026-10-07), M11-c113 DONE (2026-10-06).
+Last item: **M14-c117 BLOCKED** (2026-10-07): Sentry release re-probed against production at 14:31 UTC. The live client bundle still inlines release `1e84df0e5` (`origin/audit/final-audit`); HEAD is `cbe88c536` (`feat/products-sort-infinite-scroll`, in sync with upstream). Same as M14-c115 and M14-c116. No code change: the fix is deploying the chosen branch, an operator action (blocker 4). Next ID: M15-c117.
+M14-c117 gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `supabase.timeout`, 0 `db.query_failed`). Not a UI change, so compare.mjs does not apply.
+Previous: M13-c117 BLOCKED, M12-c117 DONE, M11-c117 DONE, M10-c117 BLOCKED, M09-c117 DONE, M08-c117 DONE, M07-c117 DONE, M06-c117 DONE, M05-c117 DONE, M04-c117 DONE, M03-c117 BLOCKED, M02-c117 BLOCKED, M01-c117 BLOCKED, M18-c116 DONE, M17-c116 BLOCKED, M16-c116 DONE, M15-c116 DONE, M14-c116 BLOCKED, M13-c116 BLOCKED, M12-c116 DONE, M11-c116 DONE, M10-c116 BLOCKED, M09-c116 DONE, M08-c116 DONE, M07-c116 DONE, M06-c116 DONE, M05-c116 DONE, M04-c116 DONE, M03-c116 BLOCKED, M02-c116 BLOCKED, M01-c116 BLOCKED, M18-c115 DONE, M16-c115 DONE, M15-c115 DONE, M14-c115 BLOCKED, M13-c115 BLOCKED, M12-c115 DONE, M11-c115 DONE, M10-c115 BLOCKED, M09-c115 DONE, M08-c115 DONE, M07-c115 DONE, M06-c115 DONE, M05-c115 DONE, M04-c115 DONE, M03-c115 BLOCKED, M02-c115 BLOCKED, M01-c115 BLOCKED (all 2026-10-07), M11-c113 DONE (2026-10-06).
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
 
 ## Queue status (cycle c113)
@@ -66,6 +66,7 @@ The runner's `final-done.txt` lists M01–M10 of c113 as finished. This branch's
 | M11-c117 | Verify sitemap.xml fresh and reachable | **DONE**: 5/5 section files 200, 94/94 URLs 200 on www, lastmods unchanged (see archive) |
 | M12-c117 | Verify robots.txt production-safe | **DONE**: live file matches source, 0/94 sitemap URLs blocked, credential paths disallowed + noindex, unchanged from M12-c116 (see archive) |
 | M13-c117 | Verify /api/health and /api/ready return 200 with real deps | **BLOCKED**: health 200, ready 503 on `meilisearch: down`, unchanged from M13-c116 (see archive) |
+| M14-c117 | Verify Sentry release matches HEAD commit | **BLOCKED**: prod release still `1e84df0` (audit/final-audit), HEAD `cbe88c5`, unchanged from M14-c116 (see archive) |
 
 ## Open blockers
 
@@ -75,7 +76,7 @@ The runner's `final-done.txt` lists M01–M10 of c113 as finished. This branch's
 6. **`/api/ready` is 503 in production (M13-c115).** `meilisearch: down`: `MEILISEARCH_HOST` and `MEILISEARCH_API_KEY` are set, but the host does not answer `/health`. `/api/health` is 200. Re-confirmed unchanged in M13-c116 and M13-c117.
 5. **Pending migrations are not applied (M10-c115, re-confirmed M10-c116 and M10-c117).** 22 numbered files are confirmed absent from production, plus `231` (written in M06-c117), and 6 (`189`, `190`, `191`, `194`, `197` and `201`) are live but not recorded as applied. Only Ofir applies migrations, and the bookkeeping for the 6 needs a `schema_migrations` read, which needs the Supabase MCP or a DB URL.
 3. The live catalogue has template rows and duplicates: 25 findings pinned in `supabase/catalogue-known-issues.json`. These are decisions for the operator.
-4. `main` diverged: local `main` is 193 commits ahead of `origin/main` and 110 behind (L9). Production is not built from this branch: as of M14-c115 the live client bundle's Sentry release is `1e84df0e5`, the tip of `origin/audit/final-audit`, not `origin/main`, so the Sentry release does not match HEAD `b29fcbf1f`. Re-confirmed in M14-c116 against HEAD `bf55da262`.
+4. `main` diverged: local `main` is 193 commits ahead of `origin/main` and 110 behind (L9). Production is not built from this branch: as of M14-c115 the live client bundle's Sentry release is `1e84df0e5`, the tip of `origin/audit/final-audit`, not `origin/main`, so the Sentry release does not match HEAD `b29fcbf1f`. Re-confirmed in M14-c116 against HEAD `bf55da262` and in M14-c117 against HEAD `cbe88c536`.
 
 ## Manual items for Ofir
 
