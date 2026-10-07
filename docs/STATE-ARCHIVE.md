@@ -21728,3 +21728,15 @@ Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=categ
   - Each attempt logged between 10 and 197 `supabase.timeout` events.
   - A bare `curl` to the Supabase REST root took 10.52s, then 1.64s, then 1.27s.
 - Decision: this is the known Supabase network flake (M06-c115, M06-c116), not code drift. Nothing to fix in code. Because the build gate is red, this commit records the state only: STATE.md and this archive section. Retry the build when Supabase reachability is stable.
+
+
+## M06-c118 — pnpm build, fix drift (2026-10-08) — DONE
+
+- Superseded STATE.md header lines (M05-c118):
+  - Last item: **M05-c118 BLOCKED** (2026-10-07): `pnpm test` exits 0 with no drift (519 files, 6474 passed, 12 skipped), so no code changed. The item is blocked because the `pnpm build` gate failed on all 9 attempts. Each failure was a Supabase `SupabaseTimeoutError` (10000ms) or a `fetch failed` during prerender, on a different route each time. That is network flake, not code drift.
+  - M05-c118 gates (working tree, uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` UI edits left unstaged): type-check 0, lint 0, test 0, build 1 on attempts 1–9. This commit changes STATE.md and the archive only.
+- `pnpm build` exits 0 on attempt 1. All 311 static pages were generated.
+- Prerender logged 4 `db.query_failed` / `fetch failed` events at about 7.3s (`coupon_deals`, `products`, `categories`, `suppliers`) and 1 `db.query_slow` (`categories`, 1504ms). The data layer recovered and the build did not fail.
+- `supabase.rls_denied` 401 / `reviews.read_failed` 42501 on product pages: the known issue, fixed by pending `231_reviews_anon_select.sql` (not applied).
+- Other gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped).
+- Decision: no drift, no code change. The uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` edits are left unstaged (parity gate blocker 0).
