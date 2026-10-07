@@ -101,6 +101,13 @@ export const HERO_ANIMATION_MEDIA = '(min-width: 1024px)'
 /** WCAG 2.2 / Lighthouse minimum tap target. */
 const TAP_MIN = 24
 /**
+ * STEP 33: vertically there is no neighbour, so the button grows to the full
+ * 44px thumb target (`--spacing-touch-min`) on that axis. Sideways the cap at
+ * half the gap still applies; see dotInsetInline. The growth is handed back
+ * as negative margin, so the dot row does not move.
+ */
+const TAP_BLOCK = 44
+/**
  * The `gap-4` between the dots, in px. The inline insets below read it.
  *
  * 16 AND NOT LIVE'S 15 (STEP 32, 2026-10-07). Live's rs-bullets packs 8px
@@ -151,9 +158,9 @@ const dotInsetInline = (visible: number) => Math.min(dotInset(visible), DOT_GAP 
 export const dotButtonWidth = (visible: number) => visible + 2 * dotInsetInline(visible)
 export const dotHitBox = (visible: number) => ({
   width: dotButtonWidth(visible),
-  height: dotButtonSize(DOT_HEIGHT),
+  height: TAP_BLOCK,
   marginInline: -dotInsetInline(visible),
-  marginBlock: -dotInset(DOT_HEIGHT),
+  marginBlock: -(TAP_BLOCK - DOT_HEIGHT) / 2,
 })
 export const HERO_DOT_GEOMETRY = {
   gap: DOT_GAP,

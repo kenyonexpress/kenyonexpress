@@ -227,12 +227,17 @@ export default function ProductDealCard({
               priceAgorot={Math.round(Number(product.kenyon_price ?? 0) * 100)}
               disabled={outOfStock}
               variant="icon"
-              className="flex h-full w-full items-center justify-center"
+              className="tap-area flex h-full w-full items-center justify-center"
             >
               <CartPlusIcon />
             </AddToCartButton>
           ) : (
-            <Link href={`/product/${product.slug}`} aria-label="צפה במוצר" prefetch={false}>
+            <Link
+              href={`/product/${product.slug}`}
+              aria-label="צפה במוצר"
+              prefetch={false}
+              className="tap-area"
+            >
               <CartPlusIcon />
             </Link>
           )}

@@ -89,7 +89,7 @@ export default function WishlistButton({
         data-saved={saved ? 'true' : 'false'}
         className={
           className ??
-          'absolute start-2 top-2 z-10 grid h-9 w-9 place-items-center rounded-full border border-gray-200 bg-white/95 text-icon opacity-0 shadow-sm transition-opacity hover:border-price focus-visible:opacity-100 disabled:opacity-50 group-hover:opacity-100 data-[saved=true]:text-price data-[saved=true]:opacity-100 [@media(hover:none)]:opacity-100'
+          'tap-area absolute start-2 top-2 z-10 grid h-9 w-9 place-items-center rounded-full border border-gray-200 bg-white/95 text-icon opacity-0 shadow-sm transition-opacity hover:border-price focus-visible:opacity-100 disabled:opacity-50 group-hover:opacity-100 data-[saved=true]:text-price data-[saved=true]:opacity-100 [@media(hover:none)]:opacity-100'
         }
       >
         <Heart
@@ -113,7 +113,7 @@ export default function WishlistButton({
         className={
           className ??
           (variant === 'inline'
-            ? 'inline-flex items-center gap-1.5 text-sm font-semibold text-heading transition-colors hover:text-price disabled:opacity-50'
+            ? 'tap-area tap-area--36 inline-flex items-center gap-1.5 text-sm font-semibold text-heading transition-colors hover:text-price disabled:opacity-50'
             : 'inline-flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-xl transition-colors hover:border-price disabled:opacity-50')
         }
       >

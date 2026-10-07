@@ -39,6 +39,9 @@ const BANNER_STYLE = {
   // variable is already resolved at first paint.
   background: 'var(--color-surface)',
   padding: '1rem',
+  // STEP 33: the home indicator sits inside the viewport once viewport-fit is
+  // cover; the buttons must clear it. 0px on every desktop browser.
+  paddingBottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))',
   borderTop: '1px solid var(--color-overlay-hairline)',
   boxShadow: 'var(--shadow-consent-banner)',
   fontFamily: 'Arial, Helvetica, sans-serif',

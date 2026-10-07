@@ -62,7 +62,7 @@ export default function ShareButton({ title, text, className }: Props) {
       aria-live="polite"
       className={
         className ??
-        'inline-flex items-center gap-2 text-sm font-semibold text-heading transition-colors hover:text-price'
+        'tap-area tap-area--36 inline-flex items-center gap-2 text-sm font-semibold text-heading transition-colors hover:text-price'
       }
     >
       <Icon size={18} aria-hidden="true" />

@@ -111,6 +111,18 @@ export const metadata: Metadata = {
  */
 export const viewport: Viewport = {
   themeColor: SITE.brand.primary,
+  /**
+   * STEP 33. `viewportFit: 'cover'` is what makes `env(safe-area-inset-*)`
+   * non-zero on a notched phone; without it the insets are 0 everywhere and
+   * the padding the mobile cart bar already asked for was never applied.
+   * The page now extends under the notch and the home indicator, and every
+   * edge-anchored fixed element adds the inset back (src/styles/responsive.css
+   * lists them). width/initialScale are Next's own defaults, written out so
+   * the meta the gate reads is the whole contract and not half of it.
+   */
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
 }
 
 export default function RootLayout({

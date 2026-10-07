@@ -60,7 +60,10 @@ export default function SiteHeader() {
     <>
       <TopBar />
 
-      <header dir="rtl" className="sticky top-0 z-40 w-full border-b border-border bg-white">
+      <header
+        dir="rtl"
+        className="safe-pt sticky top-0 z-40 w-full border-b border-border bg-white"
+      >
         {/*
           h-header-handheld (49) below xl, h-header-masthead (109) from xl up:
           live's 50 and 110 less their 1px border. `xl` and not `lg` because
@@ -79,7 +82,7 @@ export default function SiteHeader() {
               Both halves of MobileDrawer are xl:hidden internally. */}
           <MobileDrawer />
 
-          <Link href="/" aria-label="קניון אקספרס, לדף הבית" className="shrink-0">
+          <Link href="/" aria-label="קניון אקספרס, לדף הבית" className="tap-area shrink-0">
             <SmartImage
               src={LOGO}
               alt="קניון EXPRESS"

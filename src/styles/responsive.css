@@ -1,0 +1,153 @@
+/* ============================================================================
+   RESPONSIVE CONTRACT -- STEP 33, 2026-10-07
+   ============================================================================
+
+   Mobile-first. The four widths the responsive gate (e2e/responsive.spec.ts)
+   measures are 375 / 768 / 1024 / 1440: 375 is the narrowest phone the shop
+   is designed for (rtl-mobile.spec.ts separately guards a 320 floor), 768 is
+   Tailwind `md` and the tablet reference, 1024 is Tailwind `lg`, and 1440 is
+   `--breakpoint-desktop`, the reference viewport the parity gate scores at.
+   No new breakpoint token is declared here: every stop already has a name in
+   tokens.css or in Tailwind's default scale, and a second spelling of the
+   same number is what the tokens gate exists to prevent.
+
+   Three things live in this file and nowhere else:
+     1. the safe-area insets (notch, home indicator) and every fixed element
+        that has to respect them;
+     2. `.tap-area`, the hit box that grows to 44px without moving a pixel of
+        paint, so the parity gate (which measures paint) and the touch gate
+        (which measures hit area) can both be green;
+     3. the `(pointer: coarse)` block: form controls measured off the live
+        desktop template at 34-41px tall, raised to 44 on touch screens only.
+        The parity gate runs a desktop Chromium with a fine pointer, so none
+        of these rules are in the frame it measures.
+*/
+
+/* --- 1. Safe area ----------------------------------------------------------
+
+   `env(safe-area-inset-*)` is 0 everywhere until the viewport meta carries
+   `viewport-fit=cover` (src/app/layout.tsx, `viewport.viewportFit`). Before
+   STEP 33 the mobile cart bar already asked for the bottom inset and never
+   received it, because the meta did not opt in. With the opt-in the page
+   extends under the notch and the home indicator, so every edge-anchored
+   fixed element has to add the inset back:
+
+     - body gets the left/right insets as padding, for landscape phones where
+       the notch sits beside the content;
+     - the sticky header gets the top inset (standalone PWA: the status bar);
+     - the consent banner, the install prompt, the WhatsApp float and the
+       mobile cart bar add the bottom inset to their offset
+       (ConsentBanner.tsx, InstallPrompt.tsx, below, mini-cart.css);
+     - the full-height drawers (menu, cart) and the payment frame pad their
+       top and bottom.
+
+   On a desktop browser every variable is 0px and nothing moves. */
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+}
+
+body {
+  padding-left: var(--safe-left);
+  padding-right: var(--safe-right);
+}
+
+/* Plain classes, not @utility: they must win over the Tailwind utilities on
+   the same element (`fixed inset-y-0`, `sticky top-0`) and an unlayered rule
+   does, whatever the order. */
+.safe-pt {
+  padding-top: var(--safe-top);
+}
+
+.safe-pb {
+  padding-bottom: var(--safe-bottom);
+}
+
+/* The float is `fixed bottom-5 end-5` (1.25rem each) in WhatsAppFloat.tsx.
+   end = left on this RTL document, so the inline inset is the LEFT one. The
+   lifted position while the mobile cart bar shows is in mini-cart.css and
+   adds the same inset. */
+.whatsapp-float {
+  bottom: calc(1.25rem + var(--safe-bottom));
+  inset-inline-end: calc(1.25rem + var(--safe-left));
+}
+
+/* --- 2. Tap area -------------------------------------------------------------
+
+   A HIT BOX LARGER THAN THE PAINT, WITHOUT MOVING A PIXEL.
+
+   Measured at 375px with a coarse pointer on the production build
+   (the probe now in e2e/touch-targets.spec.ts, 2026-10-07): the header logo link painted 100x26,
+   the cart trigger 60x30, the top bar's sign-in link 78x37, the home grid's
+   add-to-cart circles 40x40, the catalogue card's wishlist 36x36 and its
+   add-to-cart 37x34, the product page's wishlist/share row 20px tall and the
+   related cards' add-to-cart 74x28. Every one of those sizes is a live
+   measurement the parity gate scores, so padding is not an option: a
+   pseudo-element grows the hit area and nothing else, because a hit on a
+   pseudo-element targets its originating element.
+
+   `--tap-size` is the floor the box grows to, 44px by default
+   (`--spacing-touch-min`). The `min(0px, ...)` keeps a control that is
+   already larger than the floor exactly as it is, on each axis separately.
+   Rows of small controls stacked closer than 44px cannot each take 44
+   without the later sibling's box covering the earlier one's text (the
+   product page's share row pitches 36px), so `.tap-area--36` exists for
+   those; it is still above the 24px AA floor.
+
+   `@layer components` so a `position` UTILITY on the same element (the
+   overlay wishlist is `absolute`) keeps winning; the pseudo-element needs a
+   positioned host, not a relative one. A host with `overflow: hidden`
+   (line-clamp) clips the pseudo-element: those links use `py-1 -my-1`
+   instead, which is the same growth done with padding. */
+@layer components {
+  .tap-area {
+    position: relative;
+  }
+
+  .tap-area::after {
+    content: "";
+    position: absolute;
+    inset-block: min(0px, calc((100% - var(--tap-size, var(--spacing-touch-min))) / 2));
+    inset-inline: min(0px, calc((100% - var(--tap-size, var(--spacing-touch-min))) / 2));
+  }
+
+  .tap-area--36 {
+    --tap-size: 36px;
+  }
+}
+
+/* --- 3. Coarse pointer ----------------------------------------------------------
+
+   Form controls and list rows measured under 44px at 375 that cannot take a
+   pseudo-element (a replaced <input>/<select> has no ::after) or that sit in
+   a stacked list where a transparent hit box would overlap the next row. On a
+   touch screen their painted box grows to the floor; with a mouse they keep
+   the live template's height. `min-height` beats the `height` the catalogue
+   sheet sets on the select, so no rule there has to change. */
+@media (pointer: coarse) {
+  .pdp-buy__qty,
+  .category-control-bar__select,
+  .ke-newsletter__input,
+  .ke-newsletter__button,
+  .category-sidebar__summary,
+  .search-facets__option,
+  .legal-toc__link {
+    min-height: var(--spacing-touch-min);
+  }
+
+  .search-facets__option,
+  .category-sidebar__summary {
+    align-items: center;
+  }
+
+  .category-sidebar__summary {
+    display: flex;
+  }
+
+  .legal-toc__link {
+    display: inline-flex;
+    align-items: center;
+  }
+}

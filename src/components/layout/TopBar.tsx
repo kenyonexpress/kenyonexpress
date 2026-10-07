@@ -87,7 +87,7 @@ function InfoItem({ Icon, label, href }: InfoItemProps) {
   return href ? (
     <Link
       href={href}
-      className="flex h-topbar-row items-center gap-1.5 transition-opacity hover:opacity-70"
+      className="tap-area flex h-topbar-row items-center gap-1.5 transition-opacity hover:opacity-70"
     >
       {body}
     </Link>

@@ -618,7 +618,9 @@
   align-items: center;
   justify-content: center;
   gap: 12px;
-  padding: 24px 16px;
+  /* STEP 33: the frame covers the whole viewport, notch included. */
+  padding: calc(24px + env(safe-area-inset-top, 0px)) calc(16px + env(safe-area-inset-right, 0px))
+    calc(24px + env(safe-area-inset-bottom, 0px)) calc(16px + env(safe-area-inset-left, 0px));
   background: rgba(51, 62, 72, 0.72);
 }
 

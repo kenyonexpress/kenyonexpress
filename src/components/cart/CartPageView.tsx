@@ -38,7 +38,7 @@ export default function CartPageView() {
           made it visible again; the styling notes live's geometry in
           cart-page.css. */}
         <nav className="cart-page__breadcrumb" aria-label="פירורי לחם">
-          <Link href="/" className="inline-block py-1">
+          <Link href="/" className="tap-area inline-block py-1">
             עמוד הבית
           </Link>
           <span aria-hidden="true">›</span>

@@ -36,7 +36,7 @@ export default function WhatsAppShareButton({
       onClick={handleClick}
       className={
         className ??
-        'inline-flex items-center gap-2 text-sm font-semibold text-whatsapp-ink hover:text-whatsapp-ink-hover transition-colors'
+        'tap-area tap-area--36 inline-flex items-center gap-2 text-sm font-semibold text-whatsapp-ink hover:text-whatsapp-ink-hover transition-colors'
       }
     >
       <WhatsAppIcon size={18} />

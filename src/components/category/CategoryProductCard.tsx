@@ -133,7 +133,7 @@ export default function CategoryProductCard({ product }: { product: CategoryProd
           <WishlistButton
             productId={product.id}
             variant="overlay"
-            className="absolute bottom-2 end-2 z-10 grid h-9 w-9 place-items-center rounded-full border border-gray-200 bg-white/95 text-icon opacity-0 shadow-sm transition-opacity hover:border-price focus-visible:opacity-100 disabled:opacity-50 group-hover:opacity-100 data-[saved=true]:text-price data-[saved=true]:opacity-100 [@media(hover:none)]:opacity-100"
+            className="tap-area absolute bottom-2 end-2 z-10 grid h-9 w-9 place-items-center rounded-full border border-gray-200 bg-white/95 text-icon opacity-0 shadow-sm transition-opacity hover:border-price focus-visible:opacity-100 disabled:opacity-50 group-hover:opacity-100 data-[saved=true]:text-price data-[saved=true]:opacity-100 [@media(hover:none)]:opacity-100"
           />
           <Link href={`/product/${product.slug}`} className="category-card__link">
             <h2 className="category-card__title">{product.name_he}</h2>
@@ -174,7 +174,7 @@ export default function CategoryProductCard({ product }: { product: CategoryProd
             productName={product.name_he}
             priceAgorot={Math.round(Number(product.kenyon_price ?? 0) * 100)}
             variant="icon"
-            className="category-card__atc"
+            className="tap-area category-card__atc"
           >
             <CartPlusIcon />
           </AddToCartButton>

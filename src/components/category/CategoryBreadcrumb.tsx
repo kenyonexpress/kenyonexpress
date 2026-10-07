@@ -29,7 +29,7 @@ export default function CategoryBreadcrumb({ items }: Props) {
           {item.href ? (
             // py-1 lifts the 19px text row to the 24px WCAG 2.5.8 floor
             // without moving the visible baseline (inline-block, no margin).
-            <Link href={item.href} className="inline-block py-1">
+            <Link href={item.href} className="tap-area inline-block py-1">
               {item.label}
             </Link>
           ) : (

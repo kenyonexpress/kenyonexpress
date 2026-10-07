@@ -7,6 +7,10 @@
    `src/styles/tokens.ts`. */
 @import "../styles/tokens.css";
 
+/* Safe-area insets, the 44px tap area and the coarse-pointer floors. STEP 33;
+   the file explains why each lives there and not in a component. */
+@import "../styles/responsive.css";
+
 body {
   background-color: var(--color-background);
   color: var(--color-foreground);

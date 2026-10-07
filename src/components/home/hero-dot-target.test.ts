@@ -57,8 +57,11 @@ describe('hero dot tap targets', () => {
   it('still grows the hit area well past the 8px dot', () => {
     const box = dotHitBox(idle)
     expect(box.width).toBeGreaterThan(idle)
-    // Vertically there is no neighbour to collide with, so the full tap
-    // minimum stands and must not be traded away with the horizontal cap.
-    expect(box.height).toBe(24)
+    // Vertically there is no neighbour to collide with, so the full 44px
+    // thumb target stands (STEP 33) and must not be traded away with the
+    // horizontal cap. The growth is returned as negative margin: the row
+    // keeps its measured position.
+    expect(box.height).toBe(44)
+    expect(box.marginBlock).toBe(-(44 - 8) / 2)
   })
 })

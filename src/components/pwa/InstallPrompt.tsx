@@ -151,7 +151,9 @@ export default function InstallPrompt() {
       // constant offset this one lands ON TOP of the consent banner whenever a
       // visitor has not answered it yet -- covering the two buttons they have
       // to press before anything else on the site works.
-      style={{ insetBlockEnd: 'calc(0.75rem + var(--reserve-consent))' }}
+      style={{
+        insetBlockEnd: 'calc(0.75rem + var(--reserve-consent) + env(safe-area-inset-bottom, 0px))',
+      }}
       className="fixed inset-x-3 z-40 flex items-center gap-3 rounded-2xl border border-gray-200 bg-white p-3 shadow-lg sm:inset-x-auto sm:end-4 sm:max-w-sm"
     >
       <img src="/icons/icon-192.png" alt="" width={40} height={40} className="rounded-xl" />

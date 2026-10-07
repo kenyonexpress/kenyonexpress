@@ -45,7 +45,8 @@
   max-height: 100%;
   margin: 0;
   margin-inline-start: auto;
-  padding: 0;
+  /* STEP 33: full-height sheet under a notch and a home indicator. */
+  padding: env(safe-area-inset-top, 0px) 0 env(safe-area-inset-bottom, 0px);
   border: none;
   background: #fff;
   display: flex;
@@ -718,7 +719,7 @@
   }
 
   body.mobile-cart-bar-visible .whatsapp-float {
-    bottom: calc(4.25rem + 1.25rem);
+    bottom: calc(4.25rem + 1.25rem + env(safe-area-inset-bottom, 0px));
   }
 
   /* The scroll lock belongs to the SHEET, so it lives at the sheet's width.

@@ -193,7 +193,7 @@ export default function MobileDrawer() {
         dir="rtl"
         // RTL: the drawer slides in from the right, so it is anchored right and
         // translated +100% when closed.
-        className={`fixed inset-y-0 right-0 z-50 w-drawer-mobile overflow-y-auto bg-drawer outline-none transition-transform duration-300 motion-reduce:transition-none md:w-drawer-tablet xl:hidden ${
+        className={`safe-pt safe-pb fixed inset-y-0 right-0 z-50 w-drawer-mobile overflow-y-auto bg-drawer outline-none transition-transform duration-300 motion-reduce:transition-none md:w-drawer-tablet xl:hidden ${
           open ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
