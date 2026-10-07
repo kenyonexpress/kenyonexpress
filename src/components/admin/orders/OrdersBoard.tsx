@@ -3,6 +3,7 @@
 import StatusBadge, { orderStatusBadge } from '@/components/admin/StatusBadge'
 import { type Agorot, agorot } from '@/lib/money'
 import { shekels } from '@/lib/money-format'
+import { CARRIER_IDS, CARRIER_REGISTRY } from '@/lib/shipping/carrier-registry'
 import {
   type BulkOutcome,
   cancelOrders,
@@ -491,8 +492,16 @@ function MovePanel({
               onChange={(e) => setCarrier(e.target.value)}
               placeholder="למשל: חבילה פלוס"
               maxLength={120}
+              list="board-carrier-options"
               className="mt-1 block w-full max-w-sm rounded-lg border border-gray-300 px-3 py-2 text-sm"
             />
+            {/* The API carriers as suggestions (STEP 43): a name from this list
+                is what the customer's tracking link and the label path resolve. */}
+            <datalist id="board-carrier-options">
+              {CARRIER_IDS.map((id) => (
+                <option key={id} value={CARRIER_REGISTRY[id].legacyCarrierText} />
+              ))}
+            </datalist>
           </label>
           <ul className="divide-y divide-gray-100">
             {orders.map((order) => (

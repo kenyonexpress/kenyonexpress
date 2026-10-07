@@ -171,6 +171,7 @@ file or a prior document.
 | [ARCHITECTURE-ACCOUNT.md](ARCHITECTURE-ACCOUNT.md) · [ACCOUNT-AREA](ARCHITECTURE-ACCOUNT-AREA.md) · [PERSONAL-AREA](ARCHITECTURE-PERSONAL-AREA.md) | ⚠️ | The account area. |
 | [ARCHITECTURE-ADMIN.md](ARCHITECTURE-ADMIN.md) · [ADMIN-DASHBOARD](ARCHITECTURE-ADMIN-DASHBOARD.md) · [ADMIN-ANALYTICS](ARCHITECTURE-ADMIN-ANALYTICS.md) | ⚠️ | Admin. |
 | [ARCHITECTURE-SUPPLIER-PORTAL.md](ARCHITECTURE-SUPPLIER-PORTAL.md) | ⚠️ | Supplier portal design; see `SUPPLIER-PAGE.md`. |
+| [SHIPPING.md](SHIPPING.md) | ✅ | Carriers (Israel Post, Chita, Yamit): zone policy, quotes, labels, tracking, the mock default, pending 258. |
 
 ## Growth, content, legal
 

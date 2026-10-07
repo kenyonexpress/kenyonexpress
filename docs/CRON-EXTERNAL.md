@@ -168,6 +168,7 @@ deliberate and harmless: both are sweeps with a wide window, not appointments.
 | 22 | 03:00 daily | `0 3 * * *` | `https://kenyonexpress.vercel.app/api/cron/sitemap-regen` |
 | 23 | 02:30 daily | `30 2 * * *` | `https://kenyonexpress.vercel.app/api/cron/analytics-rollup` |
 | 24 | every 6 h at :30 | `30 */6 * * *` | `https://kenyonexpress.vercel.app/api/cron/log-cleanup` |
+| 25 | hourly | `0 * * * *` | `https://kenyonexpress.vercel.app/api/cron/shipments-track` |
 
 Those are the schedules `vercel.json` carried, kept exactly, so nothing about
 timing changes with the scheduler.
@@ -272,6 +273,13 @@ timing changes with the scheduler.
   audit log ages through `retention`, and the payment journals are the
   money record. Both sweeps run even if the first fails, and a red response
   names the one that did.
+- **`shipments-track`** (STEP 43) asks each carrier about every non-final
+  row of `shipments` (pending 258), merges the tracking events, and when the
+  carrier says delivered moves the covered lines through the same `deliver`
+  transition the admin buttons use, which folds the order and sends the
+  delivery mail. Without 258 it answers `skipped: table_missing` with a 200.
+  Under the default mock provider the journey is fixed (label, first scan at
+  2 h, out for delivery at 30 h, delivered at 36 h). Moves no money.
 
 ### Measured 2026-10-08, before STEP 37
 

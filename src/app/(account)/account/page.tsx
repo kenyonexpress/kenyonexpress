@@ -41,6 +41,11 @@ export default async function AccountOverviewPage() {
   ])
 
   const lastOrder = orders[0] ?? null
+  // Parcels on the way (STEP 43): the fold every order already carries, so
+  // the tile, the list chip and the order page agree.
+  const inTransit = orders.filter(
+    (o) => o.shipping.kind === 'shipped' || o.shipping.kind === 'partial',
+  )
   // Counted through the shared presenter, so this tile, the list and the counter
   // agree. The condition here used to accept a status of `active`, which is not
   // in the voucher_status enum at all: it was left over from coupon_codes and
@@ -119,6 +124,24 @@ export default async function AccountOverviewPage() {
           <p style={{ marginTop: 12 }}>
             <Link className="account-btn" href="/account/cashback">
               למעקב הקאשבק
+            </Link>
+          </p>
+        </section>
+
+        <section className="account-card" data-tile="shipments">
+          <h2 className="account-card__title">משלוחים בדרך</h2>
+          <p className="account-row__title">{inTransit.length}</p>
+          <p className="account-row__meta">
+            {inTransit.length > 0
+              ? 'חבילות שנשלחו וטרם נמסרו. המעקב המלא בדף ההזמנה.'
+              : 'אין כרגע חבילות בדרך אליך.'}
+          </p>
+          <p style={{ marginTop: 12 }}>
+            <Link
+              className="account-btn"
+              href={inTransit[0] ? `/account/orders/${inTransit[0].id}` : '/account/orders'}
+            >
+              {inTransit[0] ? 'למעקב המשלוח' : 'לכל ההזמנות'}
             </Link>
           </p>
         </section>

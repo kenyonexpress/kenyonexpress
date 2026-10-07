@@ -7,34 +7,125 @@
   "outputDirectory": ".next",
   "regions": ["fra1"],
   "crons": [
-    { "path": "/api/cron/notifications", "schedule": "*/5 * * * *" },
-    { "path": "/api/cron/health", "schedule": "*/5 * * * *" },
-    { "path": "/api/cron/invoices", "schedule": "*/10 * * * *" },
-    { "path": "/api/cron/stock", "schedule": "*/10 * * * *" },
-    { "path": "/api/cron/stranded-payments", "schedule": "*/10 * * * *" },
-    { "path": "/api/cron/webhook-dlq", "schedule": "*/10 * * * *" },
-    { "path": "/api/cron/job-dlq", "schedule": "*/10 * * * *" },
-    { "path": "/api/cron/abandoned-cart", "schedule": "0 * * * *" },
-    { "path": "/api/cron/subscriptions", "schedule": "30 2 * * *" },
-    { "path": "/api/cron/reap-carts", "schedule": "40 3 * * *" },
-    { "path": "/api/cron/reconcile", "schedule": "0 4 * * *" },
-    { "path": "/api/cron/expire-vouchers", "schedule": "15 23 * * *" },
-    { "path": "/api/cron/expire-cashback", "schedule": "15 23 * * *" },
-    { "path": "/api/cron/whatsapp", "schedule": "*/5 * * * *" },
-    { "path": "/api/cron/search-outbox", "schedule": "*/10 * * * *" },
-    { "path": "/api/cron/search-reindex", "schedule": "0 * * * *" },
-    { "path": "/api/cron/retention", "schedule": "0 5 1 * *" },
-    { "path": "/api/cron/weekly-digest", "schedule": "0 4 * * 5" },
-    { "path": "/api/cron/expire-coupons", "schedule": "15 23 * * *" },
-    { "path": "/api/cron/backup", "schedule": "20 2 * * *" },
-    { "path": "/api/cron/wishlist-alerts", "schedule": "45 4 * * *" },
-    { "path": "/api/cron/wishlist-digest", "schedule": "0 5 * * 5" },
-    { "path": "/api/cron/daily-deals", "schedule": "0 3 * * *" },
-    { "path": "/api/cron/email-retry", "schedule": "30 */6 * * *" },
-    { "path": "/api/cron/cashback-settlement", "schedule": "45 23 * * *" },
-    { "path": "/api/cron/slow-statements", "schedule": "30 2 * * *" },
-    { "path": "/api/cron/sitemap-regen", "schedule": "0 3 * * *" },
-    { "path": "/api/cron/analytics-rollup", "schedule": "30 2 * * *" },
-    { "path": "/api/cron/log-cleanup", "schedule": "30 */6 * * *" }
+    {
+      "path": "/api/cron/notifications",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/cron/health",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/cron/invoices",
+      "schedule": "*/10 * * * *"
+    },
+    {
+      "path": "/api/cron/stock",
+      "schedule": "*/10 * * * *"
+    },
+    {
+      "path": "/api/cron/stranded-payments",
+      "schedule": "*/10 * * * *"
+    },
+    {
+      "path": "/api/cron/webhook-dlq",
+      "schedule": "*/10 * * * *"
+    },
+    {
+      "path": "/api/cron/job-dlq",
+      "schedule": "*/10 * * * *"
+    },
+    {
+      "path": "/api/cron/abandoned-cart",
+      "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/cron/subscriptions",
+      "schedule": "30 2 * * *"
+    },
+    {
+      "path": "/api/cron/reap-carts",
+      "schedule": "40 3 * * *"
+    },
+    {
+      "path": "/api/cron/reconcile",
+      "schedule": "0 4 * * *"
+    },
+    {
+      "path": "/api/cron/expire-vouchers",
+      "schedule": "15 23 * * *"
+    },
+    {
+      "path": "/api/cron/expire-cashback",
+      "schedule": "15 23 * * *"
+    },
+    {
+      "path": "/api/cron/whatsapp",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/cron/search-outbox",
+      "schedule": "*/10 * * * *"
+    },
+    {
+      "path": "/api/cron/search-reindex",
+      "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/cron/retention",
+      "schedule": "0 5 1 * *"
+    },
+    {
+      "path": "/api/cron/weekly-digest",
+      "schedule": "0 4 * * 5"
+    },
+    {
+      "path": "/api/cron/expire-coupons",
+      "schedule": "15 23 * * *"
+    },
+    {
+      "path": "/api/cron/backup",
+      "schedule": "20 2 * * *"
+    },
+    {
+      "path": "/api/cron/wishlist-alerts",
+      "schedule": "45 4 * * *"
+    },
+    {
+      "path": "/api/cron/wishlist-digest",
+      "schedule": "0 5 * * 5"
+    },
+    {
+      "path": "/api/cron/daily-deals",
+      "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/cron/email-retry",
+      "schedule": "30 */6 * * *"
+    },
+    {
+      "path": "/api/cron/cashback-settlement",
+      "schedule": "45 23 * * *"
+    },
+    {
+      "path": "/api/cron/slow-statements",
+      "schedule": "30 2 * * *"
+    },
+    {
+      "path": "/api/cron/sitemap-regen",
+      "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/cron/analytics-rollup",
+      "schedule": "30 2 * * *"
+    },
+    {
+      "path": "/api/cron/log-cleanup",
+      "schedule": "30 */6 * * *"
+    },
+    {
+      "path": "/api/cron/shipments-track",
+      "schedule": "0 * * * *"
+    }
   ]
 }

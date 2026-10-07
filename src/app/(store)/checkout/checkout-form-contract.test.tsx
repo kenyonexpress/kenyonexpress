@@ -19,6 +19,9 @@ vi.mock('@/lib/analytics/tracker', () => ({ track: vi.fn() }))
 vi.mock('@/lib/analytics/commerce-client', () => ({ trackCommerce: vi.fn() }))
 vi.mock('@/server/actions/auth', () => ({ signInWithGoogle: vi.fn() }))
 vi.mock('@/server/actions/payments/checkout', () => ({ submitCheckout: vi.fn() }))
+vi.mock('@/server/actions/shipping', () => ({
+  getShippingQuotes: vi.fn(async () => ({ options: [], degraded: false, zone: null })),
+}))
 
 import type { CartView } from '@/lib/cart/types'
 import { agorot } from '@/lib/money'

@@ -1,5 +1,32 @@
 # `migrations/pending/`
 
+## 2026-10-08: 258 PENDING (shipments table + order carrier choice, STEP 43)
+
+`258_shipments_and_order_carrier.sql` adds two nullable columns to `orders`
+(`shipping_carrier` CHECKed to the three API carriers in
+`src/lib/shipping/carrier-registry.ts`, `shipping_service` for the service
+code) and creates `public.shipments`: one row per carrier label with the
+carrier id, service, `provider_kind` (`mock`/`http`), status, tracking
+number, archived label URL/key, `carrier_cost_agorot` (what the courier bills
+the platform, never shown to the shopper), `shopper_agorot` (what the shopper
+paid for shipping, 0 under every `shipping_zones` row today), weight, pieces,
+the covered `order_item_ids`, a jsonb event history the poller merges, and
+poll/delivery stamps. One policy: the customer SELECTs rows of orders they
+own; anon has nothing; every write is the service role. Unique on
+`(carrier_id, tracking_number)`, partial index on the non-final rows for
+`/api/cron/shipments-track`. **Measured on production before writing
+(2026-10-08):** no table named like ship/carrier/parcel except
+`shipping_zones` (197, five free rows), `order_items` has
+`carrier`/`tracking_number`/`shipped_at`, 12 physical lines and 0 tracked,
+`orders` has no shipping column. **The code runs without this file:**
+`src/server/shipping/shipments.ts` writes `order_items` first and treats
+42P01/PGRST205 on the `shipments` insert as "258 not applied yet"; checkout
+writes `orders.shipping_carrier` in its own UPDATE and treats 42703 the same
+way, with the choice also written to `orders.notes`. **Rehearsed on production
+inside BEGIN/ROLLBACK through the management API the same day:** see the
+STATE.md entry for STEP 43. Rollback in the file header. Awaits the same
+explicit approval as every file here.
+
 ## 2026-10-08: 257 PENDING (invoice email delivery record, STEP 42)
 
 `257_invoices_email_delivery.sql` adds `invoices.emailed_at timestamptz` and

@@ -8,6 +8,7 @@ import { buildOrderUpdateText, waChatLink } from '@/lib/whatsapp'
 import { adminOverridableTargets } from '@/server/domain/orders/order-transitions'
 import { describeRefundBlockers } from '@/server/domain/orders/refund'
 import { readOrderFeedbackForAdmin } from '@/server/queries/order-feedback'
+import { listOrderShipments } from '@/server/shipping/read'
 import { AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -133,6 +134,16 @@ export default async function OrderDetailPage({ params }: Props) {
   // the RBAC gate above: the table has no staff policy on purpose, so this
   // page is the only place staff ever see the text.
   const feedback = await readOrderFeedbackForAdmin(admin, order.id)
+
+  // Carrier labels (STEP 43), service role behind the same gate. `available`
+  // is false until 258 is applied; the order select is `*`, so the shopper's
+  // pick arrives as an untyped key once the same migration adds the column.
+  const shipmentsRead = await listOrderShipments(admin, order.id)
+  const orderExtras = order as unknown as Record<string, unknown>
+  const preferredCarrier =
+    typeof orderExtras.shipping_carrier === 'string' ? orderExtras.shipping_carrier : null
+  const preferredService =
+    typeof orderExtras.shipping_service === 'string' ? orderExtras.shipping_service : null
 
   const blockers = describeRefundBlockers({
     lines: items.map((i) => ({
@@ -285,6 +296,11 @@ export default async function OrderDetailPage({ params }: Props) {
 
       {physicalLines.length > 0 ? (
         <ShipmentClient
+          orderId={order.id}
+          shipments={shipmentsRead.shipments}
+          shipmentsAvailable={shipmentsRead.available}
+          preferredCarrier={preferredCarrier}
+          preferredService={preferredService}
           lines={physicalLines.map((item) => ({
             id: item.id,
             productName: `${item.supplier_name ?? 'שורה'} × ${item.quantity}`,

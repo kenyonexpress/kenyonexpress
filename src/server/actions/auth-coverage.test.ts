@@ -45,6 +45,10 @@ const PUBLIC_ACTIONS = new Map<string, string>([
   ['auth.ts:sendPhoneOtp', 'sign-in entry point, rate limited per IP and per number'],
   ['auth.ts:verifyPhoneOtp', 'sign-in entry point, rate limited per IP'],
   ['auth.ts:verifyEmailOtp', 'sign-in entry point, rate limited per IP and per address'],
+  // Checkout carrier quotes (STEP 43): a guest reaches the checkout before
+  // signing in, and the quote reads only the server-built cart; the browser
+  // sends a city and a postal code. Rate limited per IP in its own body.
+  ['shipping.ts:getShippingQuotes', 'checkout carrier quotes for guests too, rate limited per IP'],
   // Signup step 2 (STEP 18): the phone OTP inside first-time registration.
   // Both are reached before a session exists; the user id comes from the
   // challenge cookie the first send left, never from the caller, and both

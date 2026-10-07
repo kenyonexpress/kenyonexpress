@@ -2,38 +2,155 @@
   "$comment": "The single source of truth for the twenty-nine scheduled jobs. docs/CRON-EXTERNAL.md, .github/workflows/cron.yml, vercel.json and src/app/api/cron/ are all checked against this file by src/__tests__/cron-schedule-inventory.test.ts, so a schedule cannot be changed in one place and stay stale in the others.",
   "defaultBaseUrl": "https://kenyonexpress.vercel.app",
   "jobs": [
-    { "name": "notifications", "path": "/api/cron/notifications", "cron": "*/5 * * * *" },
-    { "name": "health", "path": "/api/cron/health", "cron": "*/5 * * * *" },
-    { "name": "invoices", "path": "/api/cron/invoices", "cron": "*/10 * * * *" },
-    { "name": "stock", "path": "/api/cron/stock", "cron": "*/10 * * * *" },
-    { "name": "stranded-payments", "path": "/api/cron/stranded-payments", "cron": "*/10 * * * *" },
-    { "name": "webhook-dlq", "path": "/api/cron/webhook-dlq", "cron": "*/10 * * * *" },
-    { "name": "job-dlq", "path": "/api/cron/job-dlq", "cron": "*/10 * * * *" },
-    { "name": "abandoned-cart", "path": "/api/cron/abandoned-cart", "cron": "0 * * * *" },
-    { "name": "subscriptions", "path": "/api/cron/subscriptions", "cron": "30 2 * * *" },
-    { "name": "reap-carts", "path": "/api/cron/reap-carts", "cron": "40 3 * * *" },
-    { "name": "reconcile", "path": "/api/cron/reconcile", "cron": "0 4 * * *" },
-    { "name": "expire-vouchers", "path": "/api/cron/expire-vouchers", "cron": "15 23 * * *" },
-    { "name": "expire-cashback", "path": "/api/cron/expire-cashback", "cron": "15 23 * * *" },
-    { "name": "whatsapp", "path": "/api/cron/whatsapp", "cron": "*/5 * * * *" },
-    { "name": "search-outbox", "path": "/api/cron/search-outbox", "cron": "*/10 * * * *" },
-    { "name": "search-reindex", "path": "/api/cron/search-reindex", "cron": "0 * * * *" },
-    { "name": "retention", "path": "/api/cron/retention", "cron": "0 5 1 * *" },
-    { "name": "weekly-digest", "path": "/api/cron/weekly-digest", "cron": "0 4 * * 5" },
-    { "name": "expire-coupons", "path": "/api/cron/expire-coupons", "cron": "15 23 * * *" },
-    { "name": "backup", "path": "/api/cron/backup", "cron": "20 2 * * *" },
-    { "name": "wishlist-alerts", "path": "/api/cron/wishlist-alerts", "cron": "45 4 * * *" },
-    { "name": "wishlist-digest", "path": "/api/cron/wishlist-digest", "cron": "0 5 * * 5" },
-    { "name": "daily-deals", "path": "/api/cron/daily-deals", "cron": "0 3 * * *" },
-    { "name": "email-retry", "path": "/api/cron/email-retry", "cron": "30 */6 * * *" },
+    {
+      "name": "notifications",
+      "path": "/api/cron/notifications",
+      "cron": "*/5 * * * *"
+    },
+    {
+      "name": "health",
+      "path": "/api/cron/health",
+      "cron": "*/5 * * * *"
+    },
+    {
+      "name": "invoices",
+      "path": "/api/cron/invoices",
+      "cron": "*/10 * * * *"
+    },
+    {
+      "name": "stock",
+      "path": "/api/cron/stock",
+      "cron": "*/10 * * * *"
+    },
+    {
+      "name": "stranded-payments",
+      "path": "/api/cron/stranded-payments",
+      "cron": "*/10 * * * *"
+    },
+    {
+      "name": "webhook-dlq",
+      "path": "/api/cron/webhook-dlq",
+      "cron": "*/10 * * * *"
+    },
+    {
+      "name": "job-dlq",
+      "path": "/api/cron/job-dlq",
+      "cron": "*/10 * * * *"
+    },
+    {
+      "name": "abandoned-cart",
+      "path": "/api/cron/abandoned-cart",
+      "cron": "0 * * * *"
+    },
+    {
+      "name": "subscriptions",
+      "path": "/api/cron/subscriptions",
+      "cron": "30 2 * * *"
+    },
+    {
+      "name": "reap-carts",
+      "path": "/api/cron/reap-carts",
+      "cron": "40 3 * * *"
+    },
+    {
+      "name": "reconcile",
+      "path": "/api/cron/reconcile",
+      "cron": "0 4 * * *"
+    },
+    {
+      "name": "expire-vouchers",
+      "path": "/api/cron/expire-vouchers",
+      "cron": "15 23 * * *"
+    },
+    {
+      "name": "expire-cashback",
+      "path": "/api/cron/expire-cashback",
+      "cron": "15 23 * * *"
+    },
+    {
+      "name": "whatsapp",
+      "path": "/api/cron/whatsapp",
+      "cron": "*/5 * * * *"
+    },
+    {
+      "name": "search-outbox",
+      "path": "/api/cron/search-outbox",
+      "cron": "*/10 * * * *"
+    },
+    {
+      "name": "search-reindex",
+      "path": "/api/cron/search-reindex",
+      "cron": "0 * * * *"
+    },
+    {
+      "name": "retention",
+      "path": "/api/cron/retention",
+      "cron": "0 5 1 * *"
+    },
+    {
+      "name": "weekly-digest",
+      "path": "/api/cron/weekly-digest",
+      "cron": "0 4 * * 5"
+    },
+    {
+      "name": "expire-coupons",
+      "path": "/api/cron/expire-coupons",
+      "cron": "15 23 * * *"
+    },
+    {
+      "name": "backup",
+      "path": "/api/cron/backup",
+      "cron": "20 2 * * *"
+    },
+    {
+      "name": "wishlist-alerts",
+      "path": "/api/cron/wishlist-alerts",
+      "cron": "45 4 * * *"
+    },
+    {
+      "name": "wishlist-digest",
+      "path": "/api/cron/wishlist-digest",
+      "cron": "0 5 * * 5"
+    },
+    {
+      "name": "daily-deals",
+      "path": "/api/cron/daily-deals",
+      "cron": "0 3 * * *"
+    },
+    {
+      "name": "email-retry",
+      "path": "/api/cron/email-retry",
+      "cron": "30 */6 * * *"
+    },
     {
       "name": "cashback-settlement",
       "path": "/api/cron/cashback-settlement",
       "cron": "45 23 * * *"
     },
-    { "name": "slow-statements", "path": "/api/cron/slow-statements", "cron": "30 2 * * *" },
-    { "name": "sitemap-regen", "path": "/api/cron/sitemap-regen", "cron": "0 3 * * *" },
-    { "name": "analytics-rollup", "path": "/api/cron/analytics-rollup", "cron": "30 2 * * *" },
-    { "name": "log-cleanup", "path": "/api/cron/log-cleanup", "cron": "30 */6 * * *" }
+    {
+      "name": "slow-statements",
+      "path": "/api/cron/slow-statements",
+      "cron": "30 2 * * *"
+    },
+    {
+      "name": "sitemap-regen",
+      "path": "/api/cron/sitemap-regen",
+      "cron": "0 3 * * *"
+    },
+    {
+      "name": "analytics-rollup",
+      "path": "/api/cron/analytics-rollup",
+      "cron": "30 2 * * *"
+    },
+    {
+      "name": "log-cleanup",
+      "path": "/api/cron/log-cleanup",
+      "cron": "30 */6 * * *"
+    },
+    {
+      "name": "shipments-track",
+      "path": "/api/cron/shipments-track",
+      "cron": "0 * * * *"
+    }
   ]
 }

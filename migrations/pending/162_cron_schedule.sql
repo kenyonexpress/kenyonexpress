@@ -107,7 +107,8 @@ begin
       ('ke-slow-statements',     '30 2 * * *',   '/api/cron/slow-statements'),
       ('ke-sitemap-regen',       '0 3 * * *',    '/api/cron/sitemap-regen'),
       ('ke-analytics-rollup',    '30 2 * * *',   '/api/cron/analytics-rollup'),
-      ('ke-log-cleanup',         '30 */6 * * *', '/api/cron/log-cleanup')
+      ('ke-log-cleanup',         '30 */6 * * *', '/api/cron/log-cleanup'),
+      ('ke-shipments-track',     '0 * * * *',    '/api/cron/shipments-track')
     ) as t(jobname, schedule, path)
   loop
     -- GET, not POST: every src/app/api/cron/*/route.ts exports GET only.

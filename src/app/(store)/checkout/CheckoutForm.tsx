@@ -1,5 +1,6 @@
 'use client'
 
+import CarrierPicker from '@/components/checkout/CarrierPicker'
 import CityAutocomplete from '@/components/checkout/CityAutocomplete'
 import DeliverySlotPicker from '@/components/checkout/DeliverySlotPicker'
 import { trackCommerce } from '@/lib/analytics/commerce-client'
@@ -920,6 +921,18 @@ export default function CheckoutForm({
                   slots={deliverySlots}
                   estimate={deliveryEstimate}
                 />
+              </div>
+            )}
+
+            {/*
+              The carrier (STEP 43), quoted on the server from the cart for the
+              typed or saved city. Optional, like the slot: no pick means the
+              admin chooses at label time. Only for a supplier delivery, for
+              the same reason as the slot.
+            */}
+            {isSupplierDelivery && (
+              <div className="checkout-fields-row checkout-fields-row--single">
+                <CarrierPicker city={cityName} zip={address.zip || null} />
               </div>
             )}
           </section>

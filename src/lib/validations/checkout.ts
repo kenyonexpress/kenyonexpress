@@ -175,6 +175,18 @@ export const orderExtrasSchema = z.object({
     .max(40, 'מועד המסירה שנבחר אינו תקין')
     .optional()
     .or(z.literal('').transform(() => undefined)),
+  /**
+   * The carrier the shopper picked, `<carrier>:<service>` from the quote
+   * radio (STEP 43). Shape here, registry membership in the action. Optional:
+   * no pick means the admin chooses at label time.
+   */
+  shipping_option: z
+    .string()
+    .trim()
+    .max(60, 'אופן המשלוח שנבחר אינו תקין')
+    .regex(/^[a-z_]+:[a-z_]+$/, 'אופן המשלוח שנבחר אינו תקין')
+    .optional()
+    .or(z.literal('').transform(() => undefined)),
 })
 
 export const beginCheckoutInputSchema = checkoutPaymentSchema

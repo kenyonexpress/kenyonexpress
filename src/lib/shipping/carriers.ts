@@ -67,6 +67,11 @@ const CARRIERS: CarrierEntry[] = [
     url: () => 'https://chita.co.il/tracking',
   },
   {
+    label: 'ימית שליחויות',
+    aliases: ['yamit', 'ימית', 'ימית שליחויות', 'ydm', 'yamit delivery'],
+    url: () => 'https://yamit-dm.co.il/tracking',
+  },
+  {
     label: 'תמנון שליחויות',
     aliases: ['tamnun', 'תמנון'],
     url: () => 'https://tamnun.co.il/tracking/',

@@ -1,5 +1,6 @@
 import OrderFeedbackForm from '@/components/account/OrderFeedbackForm'
 import ReorderButton from '@/components/account/ReorderButton'
+import ShipmentTracker from '@/components/account/ShipmentTracker'
 import { formatDate, formatIls, orderStatusLabel, orderStatusTone } from '@/lib/account/format'
 import { summarizeShipping } from '@/lib/orders/shipping-summary'
 import { readPaymentProviderGate } from '@/lib/payments/provider-gate'
@@ -8,6 +9,7 @@ import { COUPON_TONE_CHIP, couponStatusView } from '@/lib/vouchers/coupon-view'
 import { getMyOrderFeedback } from '@/server/queries/order-feedback'
 import { getOrderDetail } from '@/server/queries/orders'
 import { getReorderOffer } from '@/server/queries/reorder'
+import { getMyShipmentsForOrder, shipmentsFromLines } from '@/server/queries/shipments'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
@@ -30,6 +32,13 @@ export default async function OrderDetailPage({ params }: Props) {
     : [null, { available: false, feedback: null }]
   const paymentGate = readPaymentProviderGate()
   const shipping = summarizeShipping(order.lines)
+  // The tracking widget (STEP 43): the shipments rows when 258 is applied and
+  // the customer has any, otherwise the same shape built from the lines.
+  const tracked = order.paidAt ? await getMyShipmentsForOrder(order.id) : null
+  const shipments =
+    tracked?.available && tracked.shipments.length > 0
+      ? tracked.shipments
+      : shipmentsFromLines(order.id, order.lines)
 
   return (
     <>
@@ -102,6 +111,8 @@ export default async function OrderDetailPage({ params }: Props) {
           </div>
         )}
       </section>
+
+      <ShipmentTracker shipments={shipments} />
 
       <section className="account-card">
         <h2 className="account-card__title">פריטים</h2>

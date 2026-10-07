@@ -478,6 +478,15 @@ describe('the pending migration inventory', () => {
       // no error, schema unchanged. README carries the row.
       '256_finalize_money_twins_backfill.sql',
       '257_invoices_email_delivery.sql',
+      // 258 is PENDING (2026-10-08, STEP 43 shipping carriers): `shipments`
+      // (one row per carrier label: tracking, archived label, courier cost in
+      // agorot as a platform expense, jsonb event history, poll stamps; owner
+      // SELECT only, service-role writes) and two nullable `orders` columns
+      // for the shopper's carrier/service choice. The code tolerates
+      // 42P01/PGRST205 and 42703 until applied. README carries the row;
+      // measured absent on production the same day through the management
+      // API and rehearsed inside BEGIN/ROLLBACK.
+      '258_shipments_and_order_carrier.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

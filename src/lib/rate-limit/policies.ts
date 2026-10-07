@@ -244,6 +244,11 @@ export const RATE_LIMIT_POLICIES = {
   // -- Mobile app surfaces (`apps/mobile` is a second caller of these routes).
   'app-session': { limit: 30, windowSeconds: 600, reason: 'app session exchange, per IP' },
   'push-register': { limit: 60, windowSeconds: 3600, reason: 'push token registration' },
+  'shipping-quote': {
+    limit: 60,
+    windowSeconds: 3600,
+    reason: 'checkout carrier quotes fan out to courier APIs, per IP',
+  },
 } as const satisfies Record<string, RateLimitPolicy>
 
 export type RateLimitPolicyName = keyof typeof RATE_LIMIT_POLICIES

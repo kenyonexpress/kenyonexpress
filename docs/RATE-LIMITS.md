@@ -95,6 +95,7 @@
 | `data-export` | 5 | 1 h | the export reads a dozen tables per call; a loop here is a cheap DB load |
 | `app-session` | 30 | 10 min | app session exchange, per IP |
 | `push-register` | 60 | 1 h | push token registration |
+| `shipping-quote` | 60 | 1 h | checkout carrier quotes fan out to courier APIs, per IP |
 
 **המזהה (`identifier`) הוא חלק מהמפתח ולא מהטבלה.** ‏IP במסלולים
 האנונימיים, מזהה משתמש במסלולים המזוהים, ובשלוש שורות ערך שהקורא מספק

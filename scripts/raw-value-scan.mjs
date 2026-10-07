@@ -75,6 +75,9 @@ export const COLOUR_ALLOWLIST = new Set([
   // takes rgb() components and a tax document's ink does not rebrand with the
   // site theme.
   'src/lib/invoices/pdf.ts',
+  // The A6 shipping label (STEP 43): the same pdf-lib ink as the invoice,
+  // printed on paper, never a site colour.
+  'src/lib/shipping/label-pdf.ts',
   // The order receipt is the same kind of print artefact as the invoice.
   'src/lib/orders/receipt-pdf.ts',
   'src/components/shared/GoogleLogo.tsx',

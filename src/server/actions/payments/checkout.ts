@@ -48,6 +48,7 @@ import {
 import { isThreeDSChallengeRequired } from '@/lib/payments/threeds'
 import { isCardTokenExpired } from '@/lib/payments/token-expiry'
 import { DEFAULT_SHIPPING_METHOD_ID } from '@/lib/shipping/methods'
+import { resolveShippingChoice, shippingCarrierNoteLine } from '@/lib/shipping/quote'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { readWalletAccountAgorot } from '@/lib/supabase/optional-columns'
 import { createClient } from '@/lib/supabase/server'
@@ -353,10 +354,12 @@ async function chargeSavedToken(args: {
 function composeOrderNotes(
   orderNotes: string | undefined,
   slotLabel: string | null,
+  carrierLine: string | null = null,
 ): string | null {
   const lines: string[] = []
   if (orderNotes) lines.push(orderNotes)
   if (slotLabel) lines.push(deliverySlotNoteLine(slotLabel))
+  if (carrierLine) lines.push(carrierLine)
   return lines.length > 0 ? lines.join('\n') : null
 }
 
@@ -410,6 +413,11 @@ async function runBeginCheckout(
     return { ok: false, error: deliverySlot.message, code: 'VALIDATION' }
   }
   const input = parsed.data
+  // The carrier pick, resolved against the registry (STEP 43). Unknown is
+  // "no preference"; the admin picks at label time. Only meaningful when
+  // something is delivered by a carrier, which is checked below once the
+  // cart is built.
+  const shippingChoice = resolveShippingChoice(input.shipping_option)
 
   // 1. Server-built cart + gate
   const cart = await getCart()
@@ -808,7 +816,13 @@ async function runBeginCheckout(
       // notes reached only `user_addresses.notes_for_courier`, and only when
       // a NEW address was being saved; a returning customer's note was
       // dropped on the floor.
-      notes: composeOrderNotes(input.order_notes, deliverySlot?.ok ? deliverySlot.label : null),
+      notes: composeOrderNotes(
+        input.order_notes,
+        deliverySlot?.ok ? deliverySlot.label : null,
+        shippingChoice && cart.shipping?.method === 'supplier_delivery'
+          ? shippingCarrierNoteLine(shippingChoice)
+          : null,
+      ),
     })
     .select('id')
     .single()
@@ -858,6 +872,28 @@ async function runBeginCheckout(
         order_id: order.id,
         shipping_method: cart.shipping.method,
         err: shippingError.message,
+      })
+    }
+  }
+
+  // The carrier choice as structured columns (STEP 43), under the same rule:
+  // its own statement, never a key in the INSERT. `orders.shipping_carrier`
+  // and `shipping_service` come with migrations/pending/258 and do not exist
+  // in production yet, so this UPDATE fails there with 42703; the pick is
+  // already in `notes` (above), which is what the supplier reads.
+  if (shippingChoice && cart.shipping?.method === 'supplier_delivery') {
+    const { error: carrierError } = await admin
+      .from('orders')
+      .update({
+        shipping_carrier: shippingChoice.carrierId,
+        shipping_service: shippingChoice.serviceCode,
+      } as never)
+      .eq('id', order.id)
+    if (carrierError) {
+      log.warn('checkout.shipping_carrier_not_recorded', {
+        order_id: order.id,
+        shipping_carrier: `${shippingChoice.carrierId}:${shippingChoice.serviceCode}`,
+        err: carrierError.message,
       })
     }
   }
@@ -1381,6 +1417,7 @@ async function runSubmitCheckout(
     // undefined at the schema, so an untouched field is an absent one.
     order_notes: text('order_notes'),
     delivery_slot: text('delivery_slot'),
+    shipping_option: text('shipping_option'),
     // Only forwarded when the shopper actually ticked "this is a gift"; an
     // empty string would fail zod's email check and reject the whole checkout.
     ...(text('gift') === 'on' && text('gift_recipient_email')

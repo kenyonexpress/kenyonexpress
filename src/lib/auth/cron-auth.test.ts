@@ -151,6 +151,7 @@ describe('scheduled routes authenticate', () => {
       'src/app/api/cron/retention/route.ts',
       'src/app/api/cron/search-outbox/route.ts',
       'src/app/api/cron/search-reindex/route.ts',
+      'src/app/api/cron/shipments-track/route.ts',
       'src/app/api/cron/sitemap-regen/route.ts',
       'src/app/api/cron/slow-statements/route.ts',
       'src/app/api/cron/stock/route.ts',

@@ -63,6 +63,10 @@ describe('one module owns voucher QR rendering', () => {
       // token. It owns its encoding for the same reason this file owns the
       // voucher's; the invariant here stays about voucher rendering.
       .filter((file) => !file.endsWith(join('coupons', 'qr-pdf.ts')))
+      // lib/shipping/label-pdf.ts is a THIRD domain (STEP 43): the carrier's
+      // tracking number on a printed parcel label, scanned by a courier, never
+      // a voucher token and never a redeem URL.
+      .filter((file) => !file.endsWith(join('shipping', 'label-pdf.ts')))
       .filter((file) => /QRCode\.toDataURL|from 'qrcode'/.test(readFileSync(file, 'utf8')))
       .map((file) => relative(process.cwd(), file))
 

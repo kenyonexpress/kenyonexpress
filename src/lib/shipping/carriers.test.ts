@@ -15,6 +15,7 @@ describe('resolveCarrier', () => {
       expect(resolveCarrier(spelled, 'X1')?.label).toBe('דואר ישראל')
     }
     expect(resolveCarrier("צ'יטה", 'X1')?.label).toBe("צ'יטה שליחויות")
+    expect(resolveCarrier('YDM', 'X1')?.label).toBe('ימית שליחויות')
   })
 
   it('links local couriers to their tracking page without embedding the number', () => {

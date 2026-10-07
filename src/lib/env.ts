@@ -177,6 +177,32 @@ const schema = z
      */
     ADMIN_IP_ALLOWLIST: z.string().optional().or(z.literal('')),
 
+    /**
+     * The carrier adapters (STEP 43, lib/shipping/env.ts). ALL OPTIONAL and
+     * the mock is the default: a carrier is called only when BOTH its base
+     * URL and key are set, and no environment sets them on 2026-10-08 because
+     * no courier account exists yet. Half a pair degrades to the mock, which
+     * quotes, labels (our own A6 PDF) and tracks on a fixed journey. The
+     * explicit flag pins the mock even with credentials present.
+     */
+    SHIPPING_CARRIERS_USE_MOCK: z.enum(['true', 'false']).optional().or(z.literal('')),
+    SHIPPING_CARRIER_TIMEOUT_MS: z.string().optional().or(z.literal('')),
+    ISRAEL_POST_API_BASE_URL: z.string().url().optional().or(z.literal('')),
+    ISRAEL_POST_API_KEY: z.string().min(8).optional().or(z.literal('')),
+    ISRAEL_POST_ACCOUNT_ID: z.string().optional().or(z.literal('')),
+    CHITA_API_BASE_URL: z.string().url().optional().or(z.literal('')),
+    CHITA_API_KEY: z.string().min(8).optional().or(z.literal('')),
+    CHITA_ACCOUNT_ID: z.string().optional().or(z.literal('')),
+    YAMIT_API_BASE_URL: z.string().url().optional().or(z.literal('')),
+    YAMIT_API_KEY: z.string().min(8).optional().or(z.literal('')),
+    YAMIT_ACCOUNT_ID: z.string().optional().or(z.literal('')),
+    /**
+     * Printed as the sender on a platform-rendered shipping label. Optional:
+     * the invoice issuer name/address (INVOICE_ISSUER_*) is the fallback, and
+     * "KenyonExpress" with no address the fallback to that.
+     */
+    SHIPPING_SENDER_PHONE: z.string().optional().or(z.literal('')),
+
     /** See the superRefine below. Only ever "true" on a developer's machine. */
     ALLOW_INCOMPLETE_ENV: z.string().optional(),
   })
