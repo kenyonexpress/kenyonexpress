@@ -21659,3 +21659,13 @@ Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=categ
 - `node scripts/final-audit.mjs`: `ok 0 work markers (of 2)`.
 - Change: a re-scan note in `docs/BACKLOG.md`. No code change.
 - Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1.
+
+## M18-c117 — Trim STATE.md under 300 lines (DONE, 2026-10-07)
+
+- STATE.md was 98 lines at the start (under 300), so no trim was needed. Following the M18-c116 precedent, the M17-c117 status lines were moved here:
+
+> Last item: **M17-c117 BLOCKED** (2026-10-07): RTL re-verified on `/` and 6 sample `/product` pages at 380/768/1440. Production (still `audit/final-audit@1e84df0`) and the local build: 21/21 runs each have `lang=he dir=rtl`, body `rtl`, overflow 0, 0 Hebrew text in LTR, 0 left-aligned Hebrew. **The one LTR leak is unchanged from M17-c116:** the footer newsletter `input[dir=ltr]` has a Hebrew placeholder that computes `text-align: start` (flush left) at 1440 on every page in production and on committed HEAD. The uncommitted `SiteFooter.tsx` fix makes it `text-align: right` locally, but compare.mjs exits 5 (REFUSED) at 380/768/1440 for home and product, so the fix cannot be committed (blocker 0). Next ID: M18-c117.
+>
+> M17-c117 gates (working tree): type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `supabase.timeout`, 0 `db.query_failed`). compare.mjs: 6/6 runs exit 5 REFUSED (rows appended to `docs/UI-PARITY-REPORT.md`).
+
+- Gates (working tree, with the uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` edits left unstaged): type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (15 `supabase.timeout` and 26 `db.query_failed` log lines from Supabase reachability during prerender, non-fatal). Docs-only change, so compare.mjs does not apply (blocked anyway, blocker 0).

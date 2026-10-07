@@ -1,10 +1,10 @@
-RESUME FROM: M18-c117
+RESUME FROM: M01-c118
 
 # KenyonExpress — Project State
 
-Last item: **M17-c117 BLOCKED** (2026-10-07): RTL re-verified on `/` and 6 sample `/product` pages at 380/768/1440. Production (still `audit/final-audit@1e84df0`) and the local build: 21/21 runs each have `lang=he dir=rtl`, body `rtl`, overflow 0, 0 Hebrew text in LTR, 0 left-aligned Hebrew. **The one LTR leak is unchanged from M17-c116:** the footer newsletter `input[dir=ltr]` has a Hebrew placeholder that computes `text-align: start` (flush left) at 1440 on every page in production and on committed HEAD. The uncommitted `SiteFooter.tsx` fix makes it `text-align: right` locally, but compare.mjs exits 5 (REFUSED) at 380/768/1440 for home and product, so the fix cannot be committed (blocker 0). Next ID: M18-c117.
-M17-c117 gates (working tree): type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `supabase.timeout`, 0 `db.query_failed`). compare.mjs: 6/6 runs exit 5 REFUSED (rows appended to `docs/UI-PARITY-REPORT.md`).
-Previous: M16-c117 DONE, M15-c117 DONE, M14-c117 BLOCKED, M13-c117 BLOCKED, M12-c117 DONE, M11-c117 DONE, M10-c117 BLOCKED, M09-c117 DONE, M08-c117 DONE, M07-c117 DONE, M06-c117 DONE, M05-c117 DONE, M04-c117 DONE, M03-c117 BLOCKED, M02-c117 BLOCKED, M01-c117 BLOCKED, M18-c116 DONE, M17-c116 BLOCKED, M16-c116 DONE, M15-c116 DONE, M14-c116 BLOCKED, M13-c116 BLOCKED, M12-c116 DONE, M11-c116 DONE, M10-c116 BLOCKED, M09-c116 DONE, M08-c116 DONE, M07-c116 DONE, M06-c116 DONE, M05-c116 DONE, M04-c116 DONE, M03-c116 BLOCKED, M02-c116 BLOCKED, M01-c116 BLOCKED, M18-c115 DONE, M16-c115 DONE, M15-c115 DONE, M14-c115 BLOCKED, M13-c115 BLOCKED, M12-c115 DONE, M11-c115 DONE, M10-c115 BLOCKED, M09-c115 DONE, M08-c115 DONE, M07-c115 DONE, M06-c115 DONE, M05-c115 DONE, M04-c115 DONE, M03-c115 BLOCKED, M02-c115 BLOCKED, M01-c115 BLOCKED (all 2026-10-07), M11-c113 DONE (2026-10-06).
+Last item: **M18-c117 DONE** (2026-10-07): STATE.md was already 98 lines (under 300) at the start, so no trim was needed. The two M17-c117 status lines were moved to `docs/STATE-ARCHIVE.md`. The c117 queue ends at M18, so the next ID is M01-c118 (same c116 → c117 pattern).
+M18-c117 gates (working tree, uncommitted UI edits unstaged): type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1. Docs-only, compare.mjs does not apply.
+Previous: M17-c117 BLOCKED, M16-c117 DONE, M15-c117 DONE, M14-c117 BLOCKED, M13-c117 BLOCKED, M12-c117 DONE, M11-c117 DONE, M10-c117 BLOCKED, M09-c117 DONE, M08-c117 DONE, M07-c117 DONE, M06-c117 DONE, M05-c117 DONE, M04-c117 DONE, M03-c117 BLOCKED, M02-c117 BLOCKED, M01-c117 BLOCKED, M18-c116 DONE, M17-c116 BLOCKED, M16-c116 DONE, M15-c116 DONE, M14-c116 BLOCKED, M13-c116 BLOCKED, M12-c116 DONE, M11-c116 DONE, M10-c116 BLOCKED, M09-c116 DONE, M08-c116 DONE, M07-c116 DONE, M06-c116 DONE, M05-c116 DONE, M04-c116 DONE, M03-c116 BLOCKED, M02-c116 BLOCKED, M01-c116 BLOCKED, M18-c115 DONE, M16-c115 DONE, M15-c115 DONE, M14-c115 BLOCKED, M13-c115 BLOCKED, M12-c115 DONE, M11-c115 DONE, M10-c115 BLOCKED, M09-c115 DONE, M08-c115 DONE, M07-c115 DONE, M06-c115 DONE, M05-c115 DONE, M04-c115 DONE, M03-c115 BLOCKED, M02-c115 BLOCKED, M01-c115 BLOCKED (all 2026-10-07), M11-c113 DONE (2026-10-06).
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
 
 ## Queue status (cycle c113)
@@ -70,6 +70,7 @@ The runner's `final-done.txt` lists M01–M10 of c113 as finished. This branch's
 | M15-c117 | Verify no console errors on / and /product sample | **DONE**: prod 0 errors on both pages at 380 and 1440, unchanged from M15-c116; local errors are env-only (see archive) |
 | M16-c117 | Verify all product pages have JSON-LD Product and BreadcrumbList | **DONE**: 44/44 prod, 46/46 HEAD, both nodes valid; same 3 image-less rows lack `image`, unchanged from M16-c116 (see archive) |
 | M17-c117 | Verify RTL on / and /product sample, no LTR leaks | **BLOCKED**: 42/42 runs RTL-clean except the same footer newsletter placeholder, flush left; uncommitted fix still cannot pass compare.mjs (exit 5 x6, blocker 0) (see archive) |
+| M18-c117 | Trim STATE.md under 300 lines, archive rest | **DONE**: already 98 lines at start, no trim needed; 2 M17-c117 status lines moved to `docs/STATE-ARCHIVE.md` |
 
 ## Open blockers
 
