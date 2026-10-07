@@ -69,6 +69,15 @@ Setup: the same as M08-c115. Lighthouse 13.4.1 from the repo (`pnpm exec lightho
 - Code: the `src/app/robots.ts` and `robots.test.ts` edits that sat uncommitted since M12-c113 (the same rules as `4d3702025` and `8fce77c76` on `origin/audit/final-audit`, which is what production runs) are committed here, so this branch no longer drifts from the live file. 2 tests added, 8/8 robots tests pass.
 - Gates in this run: `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6473 passed, 12 skipped), `pnpm build` 0 on the first attempt. Not a UI change, so compare.mjs was not needed (it would refuse anyway, see blocker 0). `logs/` is untracked and not part of this commit.
 
+## M11-c116: sitemap.xml, measured 2026-10-07 11:47 UTC against production
+
+- `https://www.kenyonexpress.co.il/sitemap.xml` returns 200 `application/xml; charset=utf-8`, `cache-control: public, max-age=0`, `x-vercel-cache: MISS`. It is a `<sitemapindex>` of 5 section files; the apex `sitemap.xml` returns 308 to `www`.
+- Every section file returns 200 `application/xml`: content 15 URLs, categories 12, products 44, regions 17, suppliers 6, for 94 URLs, 0 duplicates. Same counts as M11-c115.
+- Freshness: newest lastmod content 2026-10-05, categories 2026-09-08, products 2026-09-08, suppliers 2026-08-31, regions none (on purpose). Unchanged from M11-c115; lastmods are the rows' real `updated_at` and the routes are dynamic, so the sitemap is current.
+- Reachability: all 94 `<loc>` URLs, rewritten to `www`, return **200** (8 parallel curls, 90 s limit, no retries needed). A sample of 3 apex URLs return 308, as in blocker 1.
+- `robots.txt` still says `Sitemap: https://kenyonexpress.co.il/sitemap.xml` (apex, blocker 1). The live products sitemap lists 0 `e2e-test` slugs; production is built from `audit/final-audit` (blocker 4), so the HEAD-sitemap note in the manual items still stands.
+- No code change. Gates: see the commit message.
+
 ## M11-c115: sitemap.xml, measured 2026-10-07 05:37 UTC against production
 
 - `https://www.kenyonexpress.co.il/sitemap.xml` returns 200 `application/xml; charset=utf-8`, `cache-control: public, max-age=0`. It is a `<sitemapindex>` that lists 5 section files.

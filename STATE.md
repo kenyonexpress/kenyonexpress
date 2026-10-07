@@ -1,11 +1,11 @@
-RESUME FROM: M11-c116
+RESUME FROM: M12-c116
 
 # KenyonExpress — Project State
 
-Last item: **M10-c116 BLOCKED** (2026-10-07): `migrations/pending/` re-probed read-only against production's PostgREST schema. Nothing changed since M10-c115: the same 6 files (`189`, `190`, `191`, `194`, `197`, `201`) are live but unrecorded, `184`, `202`–`205`, `207`, `210`–`213`, `215`–`219`, `221`–`223`, `225`, `226`, `228` are absent, and `227` is partial (`extend_voucher_expiry` missing). The Supabase MCP still needs re-authorisation, so `schema_migrations` could not be read. Blocked on Ofir applying migrations (blocker 5). Detail in the archive.
-Decision: no file moved to `applied/` and nothing applied; the uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` edits and `logs/` are still left alone.
-M10-c116 gates (working tree incl. those two edits): `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6474 passed, 12 skipped), `pnpm build` 0 on attempt 2 (attempt 1 exit 1 during prerender with Supabase read warnings, 208 `supabase.timeout` events on attempt 2). Not a UI change, so compare.mjs does not apply (blocked anyway, blocker 0).
-Previous: M09-c116 DONE, M08-c116 DONE, M07-c116 DONE, M06-c116 DONE, M05-c116 DONE, M04-c116 DONE, M03-c116 BLOCKED, M02-c116 BLOCKED, M01-c116 BLOCKED, M18-c115 DONE, M16-c115 DONE, M15-c115 DONE, M14-c115 BLOCKED, M13-c115 BLOCKED, M12-c115 DONE, M11-c115 DONE, M10-c115 BLOCKED, M09-c115 DONE, M08-c115 DONE, M07-c115 DONE, M06-c115 DONE, M05-c115 DONE, M04-c115 DONE, M03-c115 BLOCKED, M02-c115 BLOCKED, M01-c115 BLOCKED (all 2026-10-07), M11-c113 DONE (2026-10-06).
+Last item: **M11-c116 DONE** (2026-10-07): production sitemap re-verified at 11:47 UTC. `www/sitemap.xml` is 200 `application/xml`, a `<sitemapindex>` of 5 section files, each 200; 94 URLs (content 15, categories 12, products 44, regions 17, suppliers 6), 0 duplicates, all 94 return **200** on `www` and 308 on the apex (blocker 1, unchanged). Newest lastmod per section is unchanged from M11-c115 (content 2026-10-05, categories and products 2026-09-08, suppliers 2026-08-31, regions none on purpose). The live products sitemap lists 0 `e2e-test` slugs. Detail in the archive.
+Decision: no code change; the uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` edits and `logs/` are still left alone.
+M11-c116 gates (working tree incl. those two edits): `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6474 passed, 12 skipped), `pnpm build` 0 on attempt 2 (attempt 1 exit 1 prerendering `/product/צימר-שוויץ-בצפון` with 40 `supabase.timeout` events, the known network flake; 54 on attempt 2). Not a UI change, so compare.mjs does not apply (blocked anyway, blocker 0).
+Previous: M10-c116 BLOCKED, M09-c116 DONE, M08-c116 DONE, M07-c116 DONE, M06-c116 DONE, M05-c116 DONE, M04-c116 DONE, M03-c116 BLOCKED, M02-c116 BLOCKED, M01-c116 BLOCKED, M18-c115 DONE, M16-c115 DONE, M15-c115 DONE, M14-c115 BLOCKED, M13-c115 BLOCKED, M12-c115 DONE, M11-c115 DONE, M10-c115 BLOCKED, M09-c115 DONE, M08-c115 DONE, M07-c115 DONE, M06-c115 DONE, M05-c115 DONE, M04-c115 DONE, M03-c115 BLOCKED, M02-c115 BLOCKED, M01-c115 BLOCKED (all 2026-10-07), M11-c113 DONE (2026-10-06).
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
 M18-c115 gates: `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6473 passed, 12 skipped), `pnpm build` 0 on attempt 1. These ran on the working tree, which still had the two uncommitted UI edits. Not a UI change, so compare.mjs does not apply (it is blocked anyway, blocker 0).
 
@@ -47,6 +47,7 @@ The runner's `final-done.txt` lists M01–M10 of c113 as finished. This branch's
 | M08-c116 | Lighthouse mobile on / and /product sample, log scores | **DONE**: median perf 82 / 84, a11y 100, BP 96, SEO 100 (see archive) |
 | M09-c116 | Remove unused deps and dead exports | **DONE**: 0 deps to drop; 4 dead modules and 9 dead exports deleted (see archive) |
 | M10-c116 | Verify migrations/pending/ applied or file blocker | **BLOCKED**: re-probe unchanged, 6 live but unrecorded, 22 not applied; needs Ofir (see archive) |
+| M11-c116 | Verify sitemap.xml fresh and reachable | **DONE**: 5/5 section files 200, 94/94 URLs 200 on www, lastmods unchanged (see archive) |
 
 ## Open blockers
 
