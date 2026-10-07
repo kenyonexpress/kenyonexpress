@@ -1,10 +1,10 @@
-RESUME FROM: M07-c117
+RESUME FROM: M08-c117
 
 # KenyonExpress — Project State
 
-Last item: **M06-c117 DONE** (2026-10-07): `pnpm build` exits 0 on attempt 1 (and again on the re-run after the fix). Drift found: 182 `supabase.rls_denied` ERROR lines on `reviews` (401, code 42501). Production `anon` has no SELECT grant on `reviews` although the `reviews_public_read_approved` policy exists, so every guest review/rating read fails. Fix written as `migrations/pending/231_reviews_anon_select.sql` (column-level grant on public columns only), not applied; the 182 lines stay until Ofir applies it. Next ID: M07-c117.
-M06-c117 gates (working tree, the two uncommitted UI edits still unstaged): type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0. Not a UI change, so compare.mjs does not apply (and is blocked anyway, blocker 0).
-Previous: M05-c117 DONE, M04-c117 DONE, M03-c117 BLOCKED, M02-c117 BLOCKED, M01-c117 BLOCKED, M18-c116 DONE, M17-c116 BLOCKED, M16-c116 DONE, M15-c116 DONE, M14-c116 BLOCKED, M13-c116 BLOCKED, M12-c116 DONE, M11-c116 DONE, M10-c116 BLOCKED, M09-c116 DONE, M08-c116 DONE, M07-c116 DONE, M06-c116 DONE, M05-c116 DONE, M04-c116 DONE, M03-c116 BLOCKED, M02-c116 BLOCKED, M01-c116 BLOCKED, M18-c115 DONE, M16-c115 DONE, M15-c115 DONE, M14-c115 BLOCKED, M13-c115 BLOCKED, M12-c115 DONE, M11-c115 DONE, M10-c115 BLOCKED, M09-c115 DONE, M08-c115 DONE, M07-c115 DONE, M06-c115 DONE, M05-c115 DONE, M04-c115 DONE, M03-c115 BLOCKED, M02-c115 BLOCKED, M01-c115 BLOCKED (all 2026-10-07), M11-c113 DONE (2026-10-06).
+Last item: **M07-c117 DONE** (2026-10-07): TODO/FIXME re-scan with the M07-c115 rule, working tree included. Only the two Cardcom markers remain (`cardcom.ts:254`, `:319`), both already filed as B1 (#41) and B2 (#42) in `docs/BACKLOG.md`; nothing new to resolve or file. `node scripts/final-audit.mjs`: 0 untracked work markers (of 2). Next ID: M08-c117.
+M07-c117 gates (working tree, the two uncommitted UI edits still unstaged): type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0. Not a UI change, so compare.mjs does not apply (and is blocked anyway, blocker 0).
+Previous: M06-c117 DONE, M05-c117 DONE, M04-c117 DONE, M03-c117 BLOCKED, M02-c117 BLOCKED, M01-c117 BLOCKED, M18-c116 DONE, M17-c116 BLOCKED, M16-c116 DONE, M15-c116 DONE, M14-c116 BLOCKED, M13-c116 BLOCKED, M12-c116 DONE, M11-c116 DONE, M10-c116 BLOCKED, M09-c116 DONE, M08-c116 DONE, M07-c116 DONE, M06-c116 DONE, M05-c116 DONE, M04-c116 DONE, M03-c116 BLOCKED, M02-c116 BLOCKED, M01-c116 BLOCKED, M18-c115 DONE, M16-c115 DONE, M15-c115 DONE, M14-c115 BLOCKED, M13-c115 BLOCKED, M12-c115 DONE, M11-c115 DONE, M10-c115 BLOCKED, M09-c115 DONE, M08-c115 DONE, M07-c115 DONE, M06-c115 DONE, M05-c115 DONE, M04-c115 DONE, M03-c115 BLOCKED, M02-c115 BLOCKED, M01-c115 BLOCKED (all 2026-10-07), M11-c113 DONE (2026-10-06).
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
 
 ## Queue status (cycle c113)
@@ -59,6 +59,7 @@ The runner's `final-done.txt` lists M01–M10 of c113 as finished. This branch's
 | M04-c117 | pnpm type-check, fix drift | **DONE**: exit 0, no drift, no code change |
 | M05-c117 | pnpm test, fix drift | **DONE**: exit 0, 6474 passed, 12 skipped, no drift, no code change |
 | M06-c117 | pnpm build, fix drift | **DONE**: exit 0; anon 42501 on `reviews` found, fix written as pending 231 (see archive) |
+| M07-c117 | TODO/FIXME older than 7 days: resolve or file in docs/BACKLOG.md | **DONE**: re-scan found only the 2 filed Cardcom markers (B1, B2), nothing new |
 
 ## Open blockers
 

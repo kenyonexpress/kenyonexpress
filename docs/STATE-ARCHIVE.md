@@ -21556,3 +21556,10 @@ Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=categ
 - Fix: `migrations/pending/231_reviews_anon_select.sql`, not applied. It grants column-level SELECT to `anon` on `id, product_id, rating, title, body, status, created_at, supplier_reply, supplier_replied_at, helpful_count` (only the columns that exist). It does not grant `user_id`, `order_item_id` or `reviewed_*`, and it raises if `anon` can read `user_id` or `order_item_id`. Apply it after 189 and 222. It is listed in `migrations/pending/README.md` and `APPLY-ORDER.md` and in the inventory test.
 - No app code changed. The build still logs the 182 lines until the file is applied.
 - Gates (working tree, with the uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` edits left untouched and unstaged): type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0. Not a UI change, so compare.mjs does not apply.
+
+## M07-c117: TODO/FIXME re-scan, run 2026-10-07
+
+- Scan: `git grep -E '(^|[[:space:]])(TODO|FIXME|HACK|XXX)($|[[:space:]:(])'` excluding `docs/`, `refs/` and Markdown, plus the two uncommitted files (`HeroSlider.tsx`, `SiteFooter.tsx`, no markers). Real markers: `src/lib/payments/cardcom.ts:254` and `:319`, already filed as B1 (#41) and B2 (#42). The other hits are the scanner's own doc comment and test fixtures in `scripts/final-audit*.mjs`. No new markers, nothing to resolve.
+- `node scripts/final-audit.mjs`: `ok 0 work markers (of 2)`.
+- Change: a re-scan note in `docs/BACKLOG.md`. No code change.
+- Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1.
