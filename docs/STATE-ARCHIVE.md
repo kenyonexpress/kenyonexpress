@@ -21378,3 +21378,9 @@ Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=categ
 - `pnpm type-check` (`tsc --noEmit`) exit 0 on `feat/products-sort-infinite-scroll`. No type errors, so nothing to fix and no code change.
 - Gates on the working tree (which still has the uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` edits that this item did not touch): type-check 0, lint 0, test 0 (519 files, 6473 passed, 12 skipped), build 0.
 - Not a UI change, so compare.mjs does not apply (it is blocked anyway, blocker 0).
+
+## M05-c116 — pnpm test, fix drift (DONE, 2026-10-07)
+
+- `pnpm test` exit 0 on `feat/products-sort-infinite-scroll`: 519 of 519 files passed, 6473 tests passed, 12 skipped, 126.56s. No failures, so there is no drift to fix and no code change. The jsdom messages `Not implemented: navigation (except hash changes)` are stderr noise from anchor clicks in tests, not failures.
+- Gates on the working tree (which still has the uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` edits that this item did not touch): type-check 0, lint 0, test 0, build 0.
+- Not a UI change, so compare.mjs does not apply (it is blocked anyway, blocker 0).

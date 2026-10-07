@@ -1,11 +1,11 @@
-RESUME FROM: M05-c116
+RESUME FROM: M06-c116
 
 # KenyonExpress — Project State
 
-Last item: **M04-c116 DONE** (2026-10-07): `pnpm type-check` (`tsc --noEmit`) exit 0 on branch `feat/products-sort-infinite-scroll`, no type errors, so no drift to fix and no code change.
-Decision: recorded as DONE with no code change, same as M04-c115. Line 1 moves to `RESUME FROM: M05-c116`. The uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` edits are not part of this item and were left alone.
-M04-c116 gates (working tree incl. those two edits): `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6473 passed, 12 skipped), `pnpm build` 0. Not a UI change, so compare.mjs does not apply (blocked anyway, blocker 0).
-Previous: M03-c116 BLOCKED, M02-c116 BLOCKED, M01-c116 BLOCKED, M18-c115 DONE, M16-c115 DONE, M15-c115 DONE, M14-c115 BLOCKED, M13-c115 BLOCKED, M12-c115 DONE, M11-c115 DONE, M10-c115 BLOCKED, M09-c115 DONE, M08-c115 DONE, M07-c115 DONE, M06-c115 DONE, M05-c115 DONE, M04-c115 DONE, M03-c115 BLOCKED, M02-c115 BLOCKED, M01-c115 BLOCKED (all 2026-10-07), M11-c113 DONE (2026-10-06).
+Last item: **M05-c116 DONE** (2026-10-07): `pnpm test` exit 0 on branch `feat/products-sort-infinite-scroll`, 519/519 files, 6473 passed, 12 skipped. No failing test, so no drift to fix and no code change.
+Decision: recorded as DONE with no code change, same as M05-c115. Line 1 moves to `RESUME FROM: M06-c116`. The uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` edits are not part of this item and were left alone.
+M05-c116 gates (working tree incl. those two edits): `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6473 passed, 12 skipped), `pnpm build` 0. Not a UI change, so compare.mjs does not apply (blocked anyway, blocker 0).
+Previous: M04-c116 DONE, M03-c116 BLOCKED, M02-c116 BLOCKED, M01-c116 BLOCKED, M18-c115 DONE, M16-c115 DONE, M15-c115 DONE, M14-c115 BLOCKED, M13-c115 BLOCKED, M12-c115 DONE, M11-c115 DONE, M10-c115 BLOCKED, M09-c115 DONE, M08-c115 DONE, M07-c115 DONE, M06-c115 DONE, M05-c115 DONE, M04-c115 DONE, M03-c115 BLOCKED, M02-c115 BLOCKED, M01-c115 BLOCKED (all 2026-10-07), M11-c113 DONE (2026-10-06).
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
 M18-c115 gates: `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6473 passed, 12 skipped), `pnpm build` 0 on attempt 1. These ran on the working tree, which still had the two uncommitted UI edits. Not a UI change, so compare.mjs does not apply (it is blocked anyway, blocker 0).
 
@@ -41,6 +41,7 @@ The runner's `final-done.txt` lists M01–M10 of c113 as finished. This branch's
 | M02-c116 | Re-measure compare.mjs on /product | **BLOCKED**: exit 5 at 380/768/1440, gate refuses, no reference (see archive) |
 | M03-c116 | Re-measure compare.mjs on /category | **BLOCKED**: exit 5 at 380/768/1440, gate refuses, no reference (see archive) |
 | M04-c116 | pnpm type-check, fix drift | **DONE**: exit 0, no drift, no code change (see archive) |
+| M05-c116 | pnpm test, fix drift | **DONE**: exit 0, 6473 passed, no drift, no code change (see archive) |
 
 ## Open blockers
 
