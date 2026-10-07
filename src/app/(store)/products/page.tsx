@@ -2,22 +2,22 @@ import CategoryBreadcrumb, { defaultHomeCrumb } from '@/components/category/Cate
 import CategoryControlBar from '@/components/category/CategoryControlBar'
 import CategoryFilterSidebar from '@/components/category/CategoryFilterSidebar'
 import CategoryGridSkeleton from '@/components/category/CategoryGridSkeleton'
-import CategoryProductCard, {
-  type CategoryProduct,
-} from '@/components/category/CategoryProductCard'
+import type { CategoryProduct } from '@/components/category/CategoryProductCard'
 import Pagination from '@/components/category/Pagination'
+import ShopProductGrid from '@/components/products/ShopProductGrid'
 import {
   type ProductTypeFilter,
-  SHOP_PAGE_SIZE,
   getAllCategories,
   getShopProductsCached,
   parseProductType,
 } from '@/lib/category-page'
 import { type SortValue, parseSort } from '@/lib/category-tokens'
+import { PRODUCTS_PAGE_LIMIT } from '@/lib/products/list-query'
 import { Suspense } from 'react'
 import '@/styles/category-page.css'
 
-/* Live equivalent: kenyonexpress.co.il/shop/ - h1 "חנות", 24 per page */
+/* Live /shop/ is 24 per page. This archive uses PRODUCTS_PAGE_LIMIT (20)
+   so the first paint and GET /api/products are the same window. */
 const PAGE_TITLE = 'חנות'
 
 export const metadata = {
@@ -49,16 +49,17 @@ function resultCountText(total: number, from: number, to: number): string {
 type QueryArgs = {
   sort: SortValue
   page: number
+  pageSize: number
   priceMin?: number
   priceMax?: number
   productType?: ProductTypeFilter
 }
 
-function pageWindow(total: number, page: number) {
-  const totalPages = Math.max(1, Math.ceil(total / SHOP_PAGE_SIZE))
+function pageWindow(total: number, page: number, pageSize: number) {
+  const totalPages = Math.max(1, Math.ceil(total / pageSize))
   const currentPage = Math.min(page, totalPages)
-  const from = (currentPage - 1) * SHOP_PAGE_SIZE + 1
-  const to = Math.min(currentPage * SHOP_PAGE_SIZE, total)
+  const from = (currentPage - 1) * pageSize + 1
+  const to = Math.min(currentPage * pageSize, total)
   return { totalPages, currentPage, from, to }
 }
 
@@ -79,6 +80,7 @@ async function shopArgs(searchParams: Props['searchParams']) {
   const args: QueryArgs = {
     sort,
     page: parsePage(sp.page),
+    pageSize: PRODUCTS_PAGE_LIMIT,
     priceMin: parsePrice(sp.min),
     priceMax: parsePrice(sp.max),
     productType: parseProductType(sp.type),
@@ -116,7 +118,7 @@ async function shopPageOrLast(args: QueryArgs) {
   const head = await getShopProductsCached({ ...args, page: 1 })
   if (head.total === 0) return first
 
-  const lastPage = Math.max(1, Math.ceil(head.total / SHOP_PAGE_SIZE))
+  const lastPage = Math.max(1, Math.ceil(head.total / args.pageSize))
   return lastPage === 1 ? head : getShopProductsCached({ ...args, page: lastPage })
 }
 
@@ -124,7 +126,7 @@ async function shopPageOrLast(args: QueryArgs) {
 async function ResultCount({ args }: { args: QueryArgs }) {
   const { total } = await shopPageOrLast(args)
   if (total === 0) return null
-  const { from, to } = pageWindow(total, args.page)
+  const { from, to } = pageWindow(total, args.page, args.pageSize)
   return <p className="category-page__count">{resultCountText(total, from, to)}</p>
 }
 
@@ -145,17 +147,23 @@ async function ResultGrid({
     )
   }
 
-  const { totalPages, currentPage, from, to } = pageWindow(total, args.page)
+  const { totalPages, currentPage, from, to } = pageWindow(total, args.page, args.pageSize)
 
   return (
     <>
-      <ul className="category-products">
-        {items.map((product) => (
-          <li key={product.id} className="category-products__item">
-            <CategoryProductCard product={product as CategoryProduct} />
-          </li>
-        ))}
-      </ul>
+      <ShopProductGrid
+        key={`${args.sort}:${currentPage}:${args.priceMin ?? ''}:${args.priceMax ?? ''}:${args.productType ?? ''}`}
+        initialProducts={items as CategoryProduct[]}
+        hasMore={currentPage * args.pageSize < total}
+        totalCount={total}
+        page={currentPage}
+        query={{
+          sort: args.sort,
+          min: args.priceMin,
+          max: args.priceMax,
+          type: args.productType,
+        }}
+      />
       <Pagination
         pathname="/products"
         params={linkParams}
@@ -239,7 +247,7 @@ export default function ProductsPage({ searchParams }: Props) {
 
         <div className="category-page__body">
           <div className="category-page__main">
-            <Suspense fallback={<CategoryGridSkeleton count={SHOP_PAGE_SIZE} />}>
+            <Suspense fallback={<CategoryGridSkeleton count={6} />}>
               <ShopGrid searchParams={searchParams} />
             </Suspense>
           </div>

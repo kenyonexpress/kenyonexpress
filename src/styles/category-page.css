@@ -363,6 +363,13 @@
   overflow: hidden;
 }
 
+/* The scroll loader asks for six cards and means six. The shell placeholder
+   above stays clipped to two rows so a phone does not reserve five. */
+.category-products.category-products--unclipped {
+  max-height: none;
+  overflow: visible;
+}
+
 /* Product grid - measured: display flex, wrap, no gap, 234px fixed cards */
 .category-products {
   display: flex;
