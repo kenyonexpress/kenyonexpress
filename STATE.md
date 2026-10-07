@@ -1,9 +1,9 @@
-RESUME FROM: M15-c115
+RESUME FROM: M16-c115
 
 # KenyonExpress — Project State
 
-Last item: **M14-c115 BLOCKED** (2026-10-07): the production Sentry release is `1e84df0e5457c9c80a46f7cb2155ac204ebc15ef` (tip of `origin/audit/final-audit`), not HEAD `b29fcbf1f`. The release wiring is correct (release = the deployed commit SHA), but this branch is not what Vercel serves. Making them match needs a deploy of this branch, which is an operator action. No code change. Branch `feat/products-sort-infinite-scroll`.
-Previous: M13-c115 BLOCKED (2026-10-07), M12-c115 DONE (2026-10-07), M11-c115 DONE (2026-10-07), M10-c115 BLOCKED (2026-10-07), M09-c115 DONE (2026-10-07), M08-c115 DONE (2026-10-07), M07-c115 DONE (2026-10-07), M06-c115 DONE (2026-10-07), M05-c115 DONE (2026-10-07), M04-c115 DONE (2026-10-07), M03-c115 BLOCKED (2026-10-07), M02-c115 BLOCKED (2026-10-07), M01-c115 BLOCKED (2026-10-07), M11-c113 DONE (2026-10-06).
+Last item: **M15-c115 DONE** (2026-10-07): production `/` and `/product/מוצר-לדוגמא` log **0 console errors** at 380 and 1440 (Playwright, real Chromium). A local `next start` of HEAD shows only errors that come from the environment: the Vercel analytics scripts return 404 off Vercel, the HSTS/`upgrade-insecure-requests` upgrade fails on http localhost, and one Supabase-timeout 500 on `/api/cart` did not come back on the rerun. No code change. Branch `feat/products-sort-infinite-scroll`.
+Previous: M14-c115 BLOCKED (2026-10-07), M13-c115 BLOCKED (2026-10-07), M12-c115 DONE (2026-10-07), M11-c115 DONE (2026-10-07), M10-c115 BLOCKED (2026-10-07), M09-c115 DONE (2026-10-07), M08-c115 DONE (2026-10-07), M07-c115 DONE (2026-10-07), M06-c115 DONE (2026-10-07), M05-c115 DONE (2026-10-07), M04-c115 DONE (2026-10-07), M03-c115 BLOCKED (2026-10-07), M02-c115 BLOCKED (2026-10-07), M01-c115 BLOCKED (2026-10-07), M11-c113 DONE (2026-10-06).
 History before this item lives in `docs/STATE-ARCHIVE.md` (21,138 lines moved there in this commit).
 
 ## Queue status (cycle c113)
@@ -30,6 +30,17 @@ The runner's `final-done.txt` lists M01–M10 of c113 as finished. This branch's
 | M12-c115 | Verify robots.txt production-safe | **DONE**: 0/94 sitemap URLs blocked, credential paths disallowed, robots edits committed (see below) |
 | M13-c115 | Verify /api/health and /api/ready return 200 with real deps | **BLOCKED**: health 200, ready 503 on `meilisearch: down` (see below) |
 | M14-c115 | Verify Sentry release matches HEAD commit | **BLOCKED**: prod release `1e84df0` (audit/final-audit), HEAD `b29fcbf` (see below) |
+| M15-c115 | Verify no console errors on / and /product sample | **DONE**: prod 0 errors on both pages at 380 and 1440; local errors come only from the environment (see below) |
+
+## M15-c115: console errors on / and /product, probed 2026-10-07 in the foreground
+
+- Method: Playwright Chromium (`@playwright/test` from the repo, probe script kept outside the repo). For each page and viewport (380x800, 1440x900) it loads the page with `waitUntil: load`, scrolls twice and waits 7 s. It records `console` error and warning messages, `pageerror`, `requestfailed` and every response with status 400 or above. The sample product is `/product/מוצר-לדוגמא`, the same one as M08-c115.
+- **Production** (`https://www.kenyonexpress.co.il`, which serves `audit/final-audit@1e84df0`, blocker 4): `/` at 380 and 1440, and the product at 380 and 1440, all return 200 with **0 console errors, 0 page errors, 0 failed requests and 0 responses of 400 or above**. The only message is one warning on the product page at 1440: a CSS chunk was `link preload`ed but not used within a few seconds. It is a Next/Turbopack chunk-preload heuristic, not an error.
+- **Local HEAD** (`pnpm start -p 3515` on a clean build made in this run): both pages return 200 and there are no `pageerror` events (no uncaught JS exceptions). Every console error comes from the environment, the same as the M08-c115 Best Practices finding:
+  - `/_vercel/insights/script.js` and `/_vercel/speed-insights/script.js` return 404 off Vercel, followed by a strict-MIME refusal.
+  - The wishlist link prefetch fails with `ERR_SSL_PROTOCOL_ERROR` on `https://localhost:3515/login?next=/account/wishlist`. The server's redirect is relative (`location: /login?...`). The browser upgrades it to https because of the site's own `Strict-Transport-Security` and CSP `upgrade-insecure-requests`, which are correct in production and only fail on http localhost.
+  - On the first run, `/api/cart` returned 500 once (product at 1440). The server log shows `cart.row_read_failed: SupabaseTimeoutError` after more than 10 s, during a run of `supabase.timeout` events, which is the network flake from M06-c115. A rerun of the product page at both widths had no `/api/cart` error.
+- No code change: production is clean, and nothing local points at code. Gates in this run: `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6473 passed, 12 skipped), `pnpm build` 0 on the first attempt (229 `supabase.timeout` events, all absorbed). Not a UI change, so compare.mjs was not needed (it would refuse anyway, see blocker 0). `logs/` is untracked and not part of this commit.
 
 ## M14-c115: Sentry release vs HEAD, probed 2026-10-07 against production
 
