@@ -43,6 +43,17 @@ describe('hero dot tap targets', () => {
     expect(overlap).toBeLessThanOrEqual(0)
   })
 
+  it('hosts a WCAG 2.2 target (2.5.8, 24x24) on every dot, idle and current', () => {
+    // STEP 32: axe `target-size` failed the idle dots at 1440 while the gap
+    // was live's 15px (8 + 15 = 23 centre to centre). The gap is now 16 so
+    // the capped button reaches 24 exactly and stays tangent to its neighbour.
+    for (const visible of [idle, current]) {
+      const box = dotHitBox(visible)
+      expect(box.width).toBeGreaterThanOrEqual(24)
+      expect(box.height).toBeGreaterThanOrEqual(24)
+    }
+  })
+
   it('still grows the hit area well past the 8px dot', () => {
     const box = dotHitBox(idle)
     expect(box.width).toBeGreaterThan(idle)

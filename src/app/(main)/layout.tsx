@@ -1,6 +1,7 @@
 import LeftSidebar from '@/components/LeftSidebar'
 import RightSidebar from '@/components/RightSidebar'
 import SiteFooter from '@/components/SiteFooter'
+import SkipLink from '@/components/a11y/SkipLink'
 import CartBootstrap from '@/components/cart/CartBootstrap'
 import CartDrawer from '@/components/cart/CartDrawer'
 import { CartProvider } from '@/components/cart/CartProvider'
@@ -16,6 +17,13 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     <CartProvider>
       <CartBootstrap />
       <div className="min-h-screen flex flex-col">
+        {/*
+          STEP 32 (2026-10-07): this group (coupons, newsletter, wishlist
+          alerts) had the same masthead as the storefront and no way past it.
+          `StoreShell` and the legal layout carry the link; this one did not.
+          The target carries tabIndex={-1} for the reason SkipLink.tsx gives.
+        */}
+        <SkipLink />
         <Header />
         <div className="flex-1 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 py-4">
@@ -43,7 +51,13 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
               <div className="hidden lg:block">
                 <RightSidebar />
               </div>
-              <main className="order-first min-w-0 space-y-4 lg:order-none">{children}</main>
+              <main
+                id="main-content"
+                tabIndex={-1}
+                className="order-first min-w-0 space-y-4 outline-none lg:order-none"
+              >
+                {children}
+              </main>
               <div className="hidden lg:block">
                 <LeftSidebar />
               </div>

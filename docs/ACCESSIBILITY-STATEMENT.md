@@ -12,7 +12,7 @@ This document exists so that the measurements behind it, and the gaps between
 what it claims and what is verified, are written down somewhere a developer will
 find them.
 
-Last measured **2026-08-19**. Reviewed against the code **2026-09-01**.
+Last measured **2026-10-07** (STEP 32, WCAG 2.2 tags). Reviewed against the code **2026-10-07**.
 
 ---
 
@@ -224,6 +224,37 @@ checkout.
 
 Unit-level gates: `src/lib/a11y/contrast.ts` with `contrast.test.ts`,
 `brand-contrast.test.ts` and `image-alt.test.ts`.
+
+### C.1.1 WCAG 2.2 (STEP 32, 2026-10-07)
+
+The axe tag set gained `wcag22a` and `wcag22aa`, which adds `target-size`
+(2.5.8). Measured on the built site at 1440 and 390 before any change, 15
+routes each:
+
+| Finding | Where | Criterion | Fix |
+| --- | --- | --- | --- |
+| `target-size` serious x3 | hero slider idle dots at 1440 (8px dots, live's 15px gap = 23px centre to centre) | 2.5.8 | gap 16px; every dot button 24x24 and tangent (`HeroSlider.tsx`) |
+| `color-contrast` serious x1 | `/suppliers`, `text-heading/60` on white, 3.44:1 | 1.4.3 | `text-heading/75`, 5.18:1, in four files |
+| Tab leaves the open category drawer | 390, 13th Tab lands on the logo under the scrim | 2.4.3 / 4.1.2 (`aria-modal` was a lie) | Tab wrap inside the panel (`MobileDrawer.tsx`) |
+| Closed drawer's close button is a Tab stop, 44x44 off-screen | 390, `/` and `/products` | 2.4.3 / 2.4.7 | `inert` while closed |
+| Focused add-to-cart buttons hit-test to the consent banner | 1440, `/`, three stops | 2.4.11 Focus Not Obscured | `scroll-padding-bottom` = the banner reserve on `html` |
+| No skip link on the (main), account, admin and supplier layouts | first Tab on `/coupons` was the top-bar login link | 2.4.1 | `SkipLink` + `main#main-content` in all four |
+| Two `main` landmarks | six storefront pages and three (main) pages nested a `<main>` in the layout's | 1.3.1 | page-level `<main>` demoted to `<div>` |
+| Two bare `complementary` landmarks | `/coupons` | 1.3.1 / 2.4.1 | `aria-label` on both sidebars |
+| `region "Notifications alt+T"` | every page, sonner's default, English on a `lang="he"` document | 3.1.2 | `containerAriaLabel="התראות"` |
+
+Criteria with no axe rule are asserted directly in `e2e/a11y.spec.ts`: a full
+Tab walk per route (ring painted, on screen, not under fixed chrome), the
+drawer trap, the skip link on four layouts, the aria snapshot named in Hebrew
+with one `main`, 3.2.6 (the WhatsApp float in the same box on six pages) and
+3.3.8 (no CAPTCHA, `current-password`, paste allowed). Source-level:
+`src/lib/a11y/aria-label-hebrew.test.ts` refuses a non-Hebrew `aria-label`.
+
+Not automated, by nature: 3.3.7 Redundant Entry (checkout prefills the
+profile; needs a signed-in walk) and the VoiceOver pass itself. The script for
+the latter is `docs/ARCHITECTURE-ACCESSIBILITY.md` §5; the aria snapshot the
+suite asserts is the same tree VoiceOver reads, so a green run means every
+control has a Hebrew name, and a human run checks the voice and the order.
 
 ## C.2 The finding that justifies the current scope
 

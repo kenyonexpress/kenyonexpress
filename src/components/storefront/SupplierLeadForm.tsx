@@ -173,7 +173,7 @@ export default function SupplierLeadForm() {
         {pending ? 'שולח...' : 'שליחת פרטים'}
       </button>
 
-      <p className="text-xs text-heading/60">הפרטים משמשים ליצירת קשר בנוגע להצטרפות בלבד.</p>
+      <p className="text-xs text-heading/75">הפרטים משמשים ליצירת קשר בנוגע להצטרפות בלבד.</p>
     </form>
   )
 }

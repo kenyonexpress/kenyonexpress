@@ -86,6 +86,55 @@ export default function MobileDrawer() {
     if (open) panelRef.current?.focus()
   }, [open])
 
+  // KEEP TAB INSIDE THE PANEL WHILE IT IS OPEN (STEP 32, 2026-10-07).
+  //
+  // The panel is `aria-modal="true"`, which tells a screen reader that
+  // nothing outside it is reachable. The keyboard did not agree: focus moved
+  // in on open, but the next Tab past the last category walked straight out
+  // into the page behind the scrim, whose scroll is locked and which the
+  // scrim visually covers. Measured on the built site at 390px: the 13th Tab
+  // from the open drawer (close button, then twelve categories) landed on the
+  // masthead logo link UNDER the scrim, and the next ones on the search,
+  // wishlist and cart controls there. Axe reports nothing for this, because
+  // it only reads the attribute.
+  //
+  // Same wrap as CartDrawer: first <-> last in both directions, and focus
+  // that is already outside the panel (anything that stole it while the
+  // drawer was open) is pulled back in instead of being allowed to wander.
+  // The scrim button sits outside the panel on purpose: it is a pointer
+  // affordance, and the keyboard has Escape and the X for the same job.
+  useEffect(() => {
+    if (!open) return
+    const panel = panelRef.current
+    if (!panel) return
+    const focusables = () =>
+      [
+        ...panel.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])',
+        ),
+      ].filter((el) => el.getClientRects().length > 0)
+    const onTab = (event: KeyboardEvent) => {
+      if (event.key !== 'Tab') return
+      const items = focusables()
+      if (items.length === 0) return
+      const first = items[0] as HTMLElement
+      const last = items[items.length - 1] as HTMLElement
+      const active = document.activeElement
+      if (!panel.contains(active)) {
+        event.preventDefault()
+        ;(event.shiftKey ? last : first).focus()
+      } else if (event.shiftKey && (active === first || active === panel)) {
+        event.preventDefault()
+        last.focus()
+      } else if (!event.shiftKey && active === last) {
+        event.preventDefault()
+        first.focus()
+      }
+    }
+    document.addEventListener('keydown', onTab)
+    return () => document.removeEventListener('keydown', onTab)
+  }, [open])
+
   return (
     <>
       <button
@@ -132,6 +181,15 @@ export default function MobileDrawer() {
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
+        // CLOSED MEANS GONE FROM THE TAB ORDER TOO (STEP 32). The panel is
+        // kept mounted and translated off-screen so it can slide in, but a
+        // translated element is still focusable: measured at 390 on the built
+        // home page, Tab reached the drawer's close button while the drawer
+        // was closed, at 44x44 entirely outside the viewport, with the twelve
+        // category links behind it. `inert` takes the subtree out of focus,
+        // hit testing and the accessibility tree while leaving `display`
+        // alone, so the transition still runs.
+        inert={!open}
         dir="rtl"
         // RTL: the drawer slides in from the right, so it is anchored right and
         // translated +100% when closed.

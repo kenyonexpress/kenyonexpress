@@ -100,8 +100,21 @@ export const HERO_ANIMATION_MEDIA = '(min-width: 1024px)'
 
 /** WCAG 2.2 / Lighthouse minimum tap target. */
 const TAP_MIN = 24
-/** The `gap-2` between the dots, in px. The inline insets below read it. */
-const DOT_GAP = 8
+/**
+ * The `gap-4` between the dots, in px. The inline insets below read it.
+ *
+ * 16 AND NOT LIVE'S 15 (STEP 32, 2026-10-07). Live's rs-bullets packs 8px
+ * dots at 15px, and 8 + 15 = 23px centre to centre is one pixel short of the
+ * 24px a WCAG 2.2 target needs: axe `target-size` (serious) failed the idle
+ * dots for slides 2, 3 and 4 on the built home page at 1440. The cap below
+ * stops each button at half the gap, so with 16 every button is exactly 24
+ * wide, tangent to its neighbour and never overlapping it. The price is one
+ * extra pixel per gap, three at most across the strip, on a 200px box that
+ * the parity gate measures as a band. At the phone widths the row used to be
+ * `gap-2` with a `min-w-6` floor that overlapped neighbours by 8px, which is
+ * the wrong-slide tap this file already describes; one gap at every width.
+ */
+const DOT_GAP = 16
 
 const dotWidth = (isCurrent: boolean) => (isCurrent ? DOT_WIDTH_CURRENT : DOT_WIDTH_IDLE)
 /** The button never shrinks below the tap minimum, and never below the dot. */
@@ -795,7 +808,7 @@ export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
           // it is flex-start too); justify-end here was the RTL mirror and put
           // the row ~78px left of live's. On phones the mobile hero keeps the
           // old centered-bottom row.
-          className="absolute z-20 flex items-center max-lg:bottom-6 max-lg:left-1/2 max-lg:-translate-x-1/2 max-lg:gap-2 lg:top-[252px] lg:left-[61px] lg:w-[200px] lg:justify-start lg:gap-[15px]"
+          className="absolute z-20 flex items-center gap-4 max-lg:bottom-6 max-lg:left-1/2 max-lg:-translate-x-1/2 lg:top-[252px] lg:left-[61px] lg:w-[200px] lg:justify-start"
         >
           {slides.map((s, i) => {
             const isCurrent = i === active
@@ -816,7 +829,7 @@ export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
                   ...dotHitBox(dotWidth(isCurrent)),
                   background: 'transparent',
                 }}
-                className="flex shrink-0 items-center justify-center border-0 p-0 max-lg:min-w-6"
+                className="flex shrink-0 items-center justify-center border-0 p-0"
               >
                 <span
                   aria-hidden="true"

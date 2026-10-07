@@ -26,9 +26,9 @@ export default function WishlistUnsubscribePage(props: {
   return (
     <Suspense
       fallback={
-        <main dir="rtl" className="mx-auto max-w-md p-8 text-center">
+        <div dir="rtl" className="mx-auto max-w-md p-8 text-center">
           <h1 className="text-2xl font-bold">הפסקת התראות</h1>
-        </main>
+        </div>
       }
     >
       <WishlistUnsubscribeBody {...props} />
@@ -43,7 +43,7 @@ async function WishlistUnsubscribeBody({
   const result = await applyWishlistUnsubscribe(token)
 
   return (
-    <main dir="rtl" className="mx-auto max-w-md p-8 text-center">
+    <div dir="rtl" className="mx-auto max-w-md p-8 text-center">
       <h1 className="text-2xl font-bold">הפסקת התראות</h1>
       <p className="mt-3 text-gray-600">
         {result.ok
@@ -60,6 +60,6 @@ async function WishlistUnsubscribeBody({
           חזרה לחנות
         </Link>
       </p>
-    </main>
+    </div>
   )
 }

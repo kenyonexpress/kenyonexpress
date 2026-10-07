@@ -13,6 +13,12 @@ const Toaster = ({ ...props }: ToasterProps) => {
     <Sonner
       theme={theme as ToasterProps['theme']}
       className="toaster group"
+      // STEP 32: sonner's default region name is "Notifications alt+T", in
+      // English, and it was the one landmark on every page a Hebrew screen
+      // reader read in the wrong language (measured in the aria snapshot of
+      // /, /products, /cart, /login, /coupons and /contact). The hotkey still
+      // works; only the name changes.
+      containerAriaLabel="התראות"
       icons={{
         success: <CircleCheck className="h-4 w-4" />,
         info: <Info className="h-4 w-4" />,

@@ -152,6 +152,22 @@ body {
   padding-bottom: calc(var(--reserve-consent) + var(--reserve-pwa));
 }
 
+/* FOCUS NOT OBSCURED (WCAG 2.2, 2.4.11). STEP 32, 2026-10-07.
+
+   The padding above keeps the END of the page out from under the two fixed
+   strips, but a control in the middle of the page is scrolled into view by
+   the browser on focus with no knowledge of them: Chrome scrolls the minimum,
+   which puts the focused control at the bottom edge of the viewport, exactly
+   where the banner is painted. Measured on the built home page at 1440 with
+   the consent banner open: Tab reached three add-to-cart buttons whose centre
+   point hit-tested to the banner's <summary>, not to the button. Scroll
+   padding is the browser's own mechanism for this: focus- and anchor-driven
+   scrolling treats the padded strip as outside the viewport, so the control
+   lands above the banner. It is zero when both strips are gone. */
+html {
+  scroll-padding-bottom: calc(var(--reserve-consent) + var(--reserve-pwa));
+}
+
 /* Turbopack caches this file's compiled output by CONTENT hash, not mtime.
    A dev server started before a @theme colour was added keeps serving CSS
    without that colour's utilities, and `touch` does not clear it: on
@@ -303,97 +319,6 @@ body:has([data-home]) .topbar-greeting {
   animation still fires its `animationend`, so components that advance state on
   that event keep working instead of silently stalling. The hero slider is one
   of them.
-*/
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-}
-
-/* ============================================================================
-   FOCUS APPEARANCE AND REDUCED MOTION — STEP D14, 2026-09-03
-   ============================================================================ */
-
-/*
-  THERE WAS NO GLOBAL FOCUS RING. Exactly one rule in the project styled
-  `:focus-visible` (`.account-field__input`), so every other control fell back
-  to the browser default -- which disappears against this site's dark headings
-  and entirely on the dark footer.
-
-  WHY THE RING IS TWO COLOURS. The brief asks for a 3px yellow ring, and the
-  brand yellow cannot carry it alone: #fed700 on white measures 1.41:1 where
-  WCAG 2.4.11 Focus Appearance wants 3:1 against what it sits on, and tokens.css
-  already records that yellow is not a foreground colour here. The yellow ring
-  is therefore delineated by a dark edge outside it: yellow reads on dark
-  surfaces, the dark edge reads on light ones, and no third brand colour is
-  invented.
-
-  Layered as outline + box-shadow because `outline` cannot be two colours:
-    0-2px   dark   (shadow, through the outline offset)
-    2-5px   yellow (the outline)
-    5-6px   dark   (the shadow's outer edge)
-*/
-:focus-visible {
-  outline: 3px solid var(--color-brand-primary);
-  outline-offset: 2px;
-  box-shadow: 0 0 0 6px var(--color-heading);
-  border-radius: 2px;
-}
-
-/*
-  REDUCED MOTION. Only category-page.css honoured it, so the hero rotation,
-  every hover transition and the drawer's 300ms slide ran regardless of the
-  setting. WCAG 2.3.3.
-
-  Near-zero durations rather than `none`: a zero-length animation still fires
-  `animationend`, so components that advance state on that event keep working
-  instead of stalling silently. The hero slider is one of them.
-*/
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-}
-
-/* ============================================================================
-   FOCUS APPEARANCE AND REDUCED MOTION — STEP D14, 2026-09-03
-   ============================================================================ */
-
-/*
-  THERE WAS NO GLOBAL FOCUS RING. Exactly one rule in the project styled
-  `:focus-visible` (`.account-field__input`); every other control fell back to
-  the browser default, which disappears against the dark footer.
-
-  WHY TWO COLOURS. The brief asks for a 3px yellow ring, and the brand yellow
-  cannot carry it alone: #fed700 on white is 1.41:1 where WCAG 2.4.11 wants
-  3:1, and tokens.css already records that yellow is not a foreground colour.
-  The yellow ring gets a dark edge outside it: yellow reads on dark surfaces,
-  the dark edge on light ones. outline + box-shadow because `outline` cannot
-  be two colours: 0-2px dark, 2-5px yellow, 5-6px dark.
-*/
-:focus-visible {
-  outline: 3px solid var(--color-brand-primary);
-  outline-offset: 2px;
-  box-shadow: 0 0 0 6px var(--color-heading);
-  border-radius: 2px;
-}
-
-/*
-  REDUCED MOTION. Only category-page.css honoured it; the hero rotation, hover
-  transitions and the drawer slide ran regardless. WCAG 2.3.3. Near-zero
-  durations rather than `none`: a zero-length animation still fires
-  `animationend`, so components that advance state on it (the hero slider)
-  keep working instead of stalling.
 */
 @media (prefers-reduced-motion: reduce) {
   *,

@@ -25,7 +25,9 @@ export const accessibilityDoc: LegalDoc = {
   title: 'הצהרת נגישות',
   description:
     'הצהרת הנגישות של קניון אקספרס לפי ת"י 5568 ברמה AA: מה הונגש באתר, מה נבדק בפועל, מגבלות ידועות ודרכי פנייה בנושאי נגישות.',
-  updatedAt: '2026-08-19',
+  // STEP 32 (2026-10-07): re-measured with the WCAG 2.2 tag set; nine
+  // findings and their fixes are in docs/ACCESSIBILITY-STATEMENT.md §C.1.1.
+  updatedAt: '2026-10-07',
   reviewNotice:
     'ההצהרה מתארת את מצב האתר כפי שנמדד בפועל. מינוי רכז נגישות ופרסום פרטיו המלאים טעונים אישור בעל האתר, ובדיקת נגישות חיצונית על ידי מורשה נגישות שירות טרם בוצעה.',
   intro: [

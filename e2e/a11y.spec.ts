@@ -28,7 +28,17 @@ import {
  * already.
  */
 
-const WCAG_AA = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']
+/**
+ * WCAG 2.2 since STEP 32 (2026-10-07). The two new tags add axe's
+ * `target-size` rule (2.5.8, 24x24 CSS px or 24px spacing). Measured on the
+ * built site before widening the set: one violation, the hero slider's idle
+ * dots at 1440 (8px dots at live's 15px gap are 23px centre to centre), and
+ * nothing else on any of the routes below at either viewport. The dot gap is
+ * 16 now; see HeroSlider.tsx. 2.4.11 (focus not obscured), 2.4.3/2.1.2 (the
+ * drawer) and 3.2.6/3.3.8 have no axe rule and are asserted directly further
+ * down in this file.
+ */
+const WCAG_AA = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22a', 'wcag22aa']
 
 async function scan(page: Page) {
   await settleToasts(page)
@@ -634,4 +644,264 @@ test('the search combobox says which suggestion is selected', async ({ page, vie
   await page.waitForURL(/\/product\//)
   const heading = (await page.locator('h1').first().textContent()) ?? ''
   expect(announced, `announced "${announced}" and opened "${heading}"`).toContain(heading.trim())
+})
+
+/* ==========================================================================
+   STEP 32 (2026-10-07): WCAG 2.2 AA, the criteria axe has no rule for.
+   ========================================================================== */
+
+/**
+ * A FULL TAB WALK, THREE ASSERTIONS PER STOP.
+ *
+ *   2.4.7  Focus Visible:       the stop paints a ring (outline or shadow).
+ *   2.4.11 Focus Not Obscured:  the stop's centre hit-tests to itself, not to
+ *                               a fixed strip painted over it.
+ *   2.4.3  Focus Order:         the stop is inside the viewport at all -- an
+ *                               off-screen stop is a hidden control that is
+ *                               still in the order.
+ *
+ * All three were measured as real before this test existed:
+ *   - three add-to-cart buttons on the home page at 1440 hit-tested to the
+ *     consent banner's <summary> (the browser scrolls the focused control to
+ *     the bottom edge, where the fixed banner is) -> `scroll-padding-bottom`;
+ *   - the closed category drawer's close button was reached by Tab at 390,
+ *     44x44 and entirely outside the viewport -> `inert` while closed.
+ * The walk marks each stop in the DOM and ends when a stop repeats, so the
+ * end condition is identity and not a name two products could share.
+ */
+async function walkFocus(page: Page) {
+  const problems: string[] = []
+  let stops = 0
+  for (let i = 0; i < 400; i++) {
+    await page.keyboard.press('Tab')
+    const stop = await page.evaluate(() => {
+      const el = document.activeElement as HTMLElement | null
+      if (!el || el === document.body) return { done: true as const }
+      if (el.dataset.a11yWalked) return { done: true as const }
+      el.dataset.a11yWalked = '1'
+      const s = getComputedStyle(el)
+      const r = el.getBoundingClientRect()
+      const label = `${el.tagName.toLowerCase()} "${(el.getAttribute('aria-label') ?? el.textContent ?? '').trim().slice(0, 30)}"`
+      const ring =
+        !el.matches(':focus-visible') ||
+        (s.outlineStyle !== 'none' && Number.parseFloat(s.outlineWidth) > 0) ||
+        s.boxShadow !== 'none'
+      const offscreen =
+        r.bottom <= 0 || r.top >= innerHeight || r.right <= 0 || r.left >= innerWidth
+      const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2)
+      const obscured = Boolean(top && !el.contains(top) && !top.contains(el))
+      return {
+        done: false as const,
+        label,
+        ring,
+        offscreen,
+        obscuredBy: obscured
+          ? `${top?.tagName.toLowerCase()}.${String(top?.className).slice(0, 40)}`
+          : null,
+      }
+    })
+    if (stop.done) break
+    stops++
+    if (!stop.ring) problems.push(`no visible focus ring: ${stop.label}`)
+    if (stop.offscreen) problems.push(`focus landed outside the viewport: ${stop.label}`)
+    if (stop.obscuredBy) problems.push(`focus hidden under ${stop.obscuredBy}: ${stop.label}`)
+  }
+  return { stops, problems }
+}
+
+for (const path of ['/', '/products', '/cart', '/coupons', '/login']) {
+  test(`every Tab stop on ${path} is visible, on screen and not under fixed chrome`, async ({
+    page,
+  }) => {
+    await page.goto(path)
+    await page.waitForLoadState('domcontentloaded')
+    const { stops, problems } = await walkFocus(page)
+    expect(stops, 'the walk found nothing to focus; the page did not render').toBeGreaterThan(3)
+    expect(problems).toEqual([])
+  })
+}
+
+/**
+ * THE CATEGORY DRAWER IS A REAL MODAL TO THE KEYBOARD, NOT ONLY TO ARIA.
+ *
+ * `aria-modal="true"` is a promise to the screen reader that nothing outside
+ * the dialog is reachable. Measured at 390 on the built site before the fix:
+ * the 13th Tab from the open drawer (close, then twelve categories) landed on
+ * the masthead logo under the scrim. Axe passed the page, because it only
+ * reads the attribute.
+ */
+test('the category drawer keeps Tab inside, is inert when closed, and Escape returns to the trigger', async ({
+  page,
+  viewport,
+}) => {
+  test.skip((viewport?.width ?? 0) >= 1280, 'the drawer and its hamburger exist below xl only')
+
+  await page.goto('/')
+  await page.waitForLoadState('domcontentloaded')
+
+  const dialog = page.locator('[role="dialog"][aria-modal="true"]').first()
+  await expect(dialog, 'closed drawer must be inert').toHaveAttribute('inert', '')
+
+  const trigger = page.getByRole('button', { name: 'תפריט קטגוריות' })
+  await trigger.click()
+  await expect(dialog).not.toHaveAttribute('inert', '')
+  await expect(dialog).toBeVisible()
+
+  // Twice around the loop, in both directions: the close button plus the
+  // categories is ~13 stops, so 30 Tabs guarantee at least two wraps.
+  for (let i = 0; i < 30; i++) {
+    await page.keyboard.press('Tab')
+    const inside = await page.evaluate(() =>
+      Boolean(document.activeElement?.closest('[role="dialog"][aria-modal="true"]')),
+    )
+    expect(inside, `Tab #${i + 1} left the open drawer`).toBe(true)
+  }
+  for (let i = 0; i < 15; i++) {
+    await page.keyboard.press('Shift+Tab')
+    const inside = await page.evaluate(() =>
+      Boolean(document.activeElement?.closest('[role="dialog"][aria-modal="true"]')),
+    )
+    expect(inside, `Shift+Tab #${i + 1} left the open drawer`).toBe(true)
+  }
+
+  await page.keyboard.press('Escape')
+  await expect(trigger).toBeFocused()
+  await expect(trigger).toHaveAttribute('aria-expanded', 'false')
+  await expect(dialog).toHaveAttribute('inert', '')
+})
+
+/**
+ * 2.4.1 BYPASS BLOCKS ON EVERY LAYOUT THAT HAS BLOCKS TO BYPASS.
+ *
+ * The storefront and the legal layout had the link; the (main) group
+ * (coupons, newsletter, wishlist alerts) rendered the same masthead with no
+ * way past it, and the account, admin and supplier layouts had none either.
+ * Measured before the fix: first Tab on /coupons was "התחברות" in the top bar.
+ *
+ * `/login` is deliberately absent: the auth layout is a logo and a form with
+ * nothing to skip, and a skip link there would be the first of two stops.
+ */
+for (const path of ['/', '/products', '/coupons', '/legal/privacy']) {
+  test(`the first Tab on ${path} is a skip link that lands focus in <main>`, async ({ page }) => {
+    await page.goto(path)
+    await page.waitForLoadState('domcontentloaded')
+
+    await page.keyboard.press('Tab')
+    const link = page.locator(':focus')
+    await expect(link).toHaveAttribute('href', '#main-content')
+    await expect(link).toHaveText('דילוג לתוכן הראשי')
+    // Visible while focused, not only present: `sr-only` alone would keep
+    // the 1x1 clip and the sighted keyboard user would see nothing move.
+    const box = await link.boundingBox()
+    expect(box?.width ?? 0, 'the skip link did not grow out of its clip on focus').toBeGreaterThan(
+      40,
+    )
+
+    await page.keyboard.press('Enter')
+    await expect(page.locator('main#main-content')).toBeFocused()
+    // One main landmark, not two: six storefront pages and three (main) pages
+    // nested a second <main> inside the layout's, and the landmark list read
+    // "main, main".
+    await expect(page.locator('main')).toHaveCount(1)
+  })
+}
+
+/**
+ * WHAT A SCREEN READER HEARS, IN THE LANGUAGE THE DOCUMENT DECLARES.
+ *
+ * The aria snapshot is the accessibility tree Playwright builds from the same
+ * data VoiceOver reads: role and accessible name per node. Every control
+ * must have a name, and the name must be Hebrew, because `lang="he"` makes
+ * the Hebrew voice read it. The exemptions are what a Hebrew page legitimately
+ * says in Latin or digits: the brand, a phone number, an e-mail, a page
+ * number, a price.
+ *
+ * Measured before the fix: 0 unnamed controls on seven route/viewport pairs,
+ * and one English landmark on every page -- sonner's "Notifications alt+T"
+ * region, which now reads "התראות". Landmarks of the same role must be told
+ * apart by name: /coupons had two bare `complementary` sidebars.
+ */
+const LATIN_OK = [/^KenyonExpress$/, /^[\d\s\-+.,:/%₪()]+$/, /^[\w.+-]+@[\w-]+\.[\w.]+$/]
+
+test.describe('the accessibility tree is named in Hebrew', () => {
+  for (const path of ['/', '/products', '/cart', '/login', '/coupons', '/contact']) {
+    test(`every control and landmark on ${path}`, async ({ page }) => {
+      await page.goto(path)
+      await page.waitForLoadState('domcontentloaded')
+      const snapshot = await page.locator('body').ariaSnapshot()
+      const lines = snapshot.split('\n').map((l) => l.trim())
+
+      const controls = lines.filter((l) =>
+        /^- (button|link|textbox|combobox|checkbox|radio|searchbox|switch|tab|menuitem|spinbutton|slider)\b/.test(
+          l,
+        ),
+      )
+      expect(controls.length, 'no controls in the tree; the page did not render').toBeGreaterThan(3)
+
+      const unnamed = controls.filter((l) => !/"/.test(l))
+      expect(unnamed, 'a control with no accessible name').toEqual([])
+
+      const foreign = controls
+        .map((l) => l.match(/"([^"]*)"/)?.[1] ?? '')
+        .filter((name) => !/\p{Script=Hebrew}/u.test(name) && !LATIN_OK.some((re) => re.test(name)))
+      expect(foreign, 'a control named in a language the Hebrew voice cannot read').toEqual([])
+
+      // Landmarks: one main, and every navigation / complementary / region
+      // carries a Hebrew name so the landmark list distinguishes them.
+      const mains = lines.filter((l) => /^- main\b/.test(l))
+      expect(mains, 'exactly one main landmark').toHaveLength(1)
+      const named = lines.filter((l) => /^- (navigation|complementary|region)\b/.test(l))
+      const nameless = named.filter((l) => !/"/.test(l))
+      expect(nameless, 'a landmark with no name').toEqual([])
+      const foreignLandmark = named.filter(
+        (l) => !/\p{Script=Hebrew}/u.test(l.match(/"([^"]*)"/)?.[1] ?? ''),
+      )
+      expect(foreignLandmark, 'a landmark named in English').toEqual([])
+    })
+  }
+})
+
+/**
+ * 3.2.6 CONSISTENT HELP. The WhatsApp contact is the help mechanism, and 3.2.6
+ * asks that it sit in the same relative place on every page that has it. It
+ * is a fixed float, so "same place" is the same viewport box, measured.
+ */
+test('the WhatsApp help float is in the same place on every storefront page', async ({ page }) => {
+  const boxes: Array<{ path: string; box: string }> = []
+  for (const path of ['/', '/products', '/cart', '/contact', '/coupons', '/suppliers']) {
+    await page.goto(path)
+    await page.waitForLoadState('domcontentloaded')
+    const float = page.locator('.whatsapp-float')
+    await expect(float, `${path} has no help float`).toHaveCount(1)
+    const b = await float.boundingBox()
+    boxes.push({
+      path,
+      box: `${Math.round(b?.x ?? 0)},${Math.round(b?.y ?? 0)} ${Math.round(b?.width ?? 0)}x${Math.round(b?.height ?? 0)}`,
+    })
+  }
+  const distinct = new Set(boxes.map((b) => b.box))
+  expect(distinct.size, JSON.stringify(boxes)).toBe(1)
+})
+
+/**
+ * 3.3.8 ACCESSIBLE AUTHENTICATION (MINIMUM). No cognitive function test on the
+ * way in: no CAPTCHA, a password field the browser may fill and the shopper
+ * may paste into, and a one-time code field the OS can hand over.
+ */
+test('login asks for nothing a password manager or a pasted code cannot supply', async ({
+  page,
+}) => {
+  await page.goto('/login')
+  await page.waitForLoadState('domcontentloaded')
+  await expect(
+    page.locator('iframe[src*="captcha"], iframe[src*="turnstile"], [data-sitekey]'),
+  ).toHaveCount(0)
+  const password = page.locator('input[type="password"]').first()
+  await expect(password).toHaveAttribute('autocomplete', 'current-password')
+  expect(await password.getAttribute('onpaste'), 'paste must not be blocked').toBeNull()
+  const pasteAllowed = await password.evaluate((el) => {
+    const ev = new ClipboardEvent('paste', { cancelable: true, bubbles: true })
+    return el.dispatchEvent(ev)
+  })
+  expect(pasteAllowed).toBe(true)
 })

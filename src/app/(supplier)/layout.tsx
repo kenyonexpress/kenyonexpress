@@ -1,3 +1,4 @@
+import SkipLink from '@/components/a11y/SkipLink'
 import SupplierNav from '@/components/supplier/SupplierNav'
 import { requireSupplierMember } from '@/lib/supplier/rbac'
 import { ROLE_LABEL_HE } from '@/lib/supplier/roles'
@@ -26,6 +27,8 @@ async function SupplierFrame({ children }: { children: React.ReactNode }) {
 
   return (
     <>
+      {/* STEP 32: the portal header and nav repeat on every supplier route. */}
+      <SkipLink />
       <header className="sticky top-0 z-20 border-b border-gray-200 bg-white">
         <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-3">
           <div className="flex min-w-0 items-center gap-2">
@@ -47,7 +50,9 @@ async function SupplierFrame({ children }: { children: React.ReactNode }) {
         </div>
         <SupplierNav memberRole={session.memberRole} />
       </header>
-      <main className="mx-auto max-w-2xl px-4 py-6">{children}</main>
+      <main id="main-content" tabIndex={-1} className="mx-auto max-w-2xl px-4 py-6 outline-none">
+        {children}
+      </main>
     </>
   )
 }

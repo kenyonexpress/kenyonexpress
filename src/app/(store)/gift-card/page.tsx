@@ -24,7 +24,7 @@ export const metadata: Metadata = publicPageMetadata({
  */
 export default function GiftCardPage() {
   return (
-    <main className="mx-auto w-full max-w-page px-4 py-10">
+    <div className="mx-auto w-full max-w-page px-4 py-10">
       <nav aria-label="נתיב ניווט" className="mb-6 text-sm text-heading/80">
         <Link href="/" className="hover:text-heading">
           בית
@@ -46,7 +46,7 @@ export default function GiftCardPage() {
       <Suspense fallback={<p className="text-sm text-heading/75">רגע, בודקים את החשבון…</p>}>
         <RedeemSection />
       </Suspense>
-    </main>
+    </div>
   )
 }
 

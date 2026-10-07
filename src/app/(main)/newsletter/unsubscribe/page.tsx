@@ -18,9 +18,9 @@ export default function UnsubscribePage(props: { searchParams: Promise<{ token?:
   return (
     <Suspense
       fallback={
-        <main dir="rtl" className="mx-auto max-w-md p-8 text-center">
+        <div dir="rtl" className="mx-auto max-w-md p-8 text-center">
           <h1 className="text-2xl font-bold">הוסרת מרשימת הדיוור</h1>
-        </main>
+        </div>
       }
     >
       <UnsubscribePageBody {...props} />
@@ -35,7 +35,7 @@ async function UnsubscribePageBody({
   const result = await unsubscribeByToken(token ?? '')
 
   return (
-    <main dir="rtl" className="mx-auto max-w-md p-8 text-center">
+    <div dir="rtl" className="mx-auto max-w-md p-8 text-center">
       <h1 className="text-2xl font-bold">הוסרת מרשימת הדיוור</h1>
       <p className="mt-3 text-gray-600">
         {result.ok ? 'לא יישלחו אליך יותר מיילים שיווקיים.' : result.error}
@@ -43,6 +43,6 @@ async function UnsubscribePageBody({
       <a href="/" className="mt-6 inline-block underline">
         חזרה לחנות
       </a>
-    </main>
+    </div>
   )
 }

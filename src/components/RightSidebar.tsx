@@ -17,7 +17,12 @@ const categories = [
 
 export default function RightSidebar() {
   return (
-    <aside className="border border-gray-200 rounded-xl overflow-hidden bg-white">
+    <aside
+      // STEP 32: two unnamed `complementary` landmarks on every (main) page;
+      // a screen reader's landmark list read "complementary, complementary".
+      aria-label="קטגוריות"
+      className="border border-gray-200 rounded-xl overflow-hidden bg-white"
+    >
       {/* Solid yellow top block */}
       <div className="px-4 py-4 text-center bg-brand-secondary">
         <p className="font-extrabold text-gray-900 text-sm tracking-tight">קניון EXPRESS</p>

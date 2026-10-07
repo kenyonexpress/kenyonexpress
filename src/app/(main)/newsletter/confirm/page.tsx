@@ -12,9 +12,9 @@ export default function ConfirmPage(props: { searchParams: Promise<{ token?: str
   return (
     <Suspense
       fallback={
-        <main dir="rtl" className="mx-auto max-w-md p-8 text-center">
+        <div dir="rtl" className="mx-auto max-w-md p-8 text-center">
           <h1 className="text-2xl font-bold">מאשרים את ההרשמה...</h1>
-        </main>
+        </div>
       }
     >
       <ConfirmPageBody {...props} />
@@ -27,12 +27,12 @@ async function ConfirmPageBody({ searchParams }: { searchParams: Promise<{ token
   const result = await confirmNewsletter(token ?? '')
 
   return (
-    <main dir="rtl" className="mx-auto max-w-md p-8 text-center">
+    <div dir="rtl" className="mx-auto max-w-md p-8 text-center">
       <h1 className="text-2xl font-bold">{result.ok ? 'ההרשמה אושרה' : 'לא הצלחנו לאשר'}</h1>
       <p className="mt-3 text-gray-600">{result.message ?? result.error}</p>
       <a href="/" className="mt-6 inline-block underline">
         חזרה לחנות
       </a>
-    </main>
+    </div>
   )
 }

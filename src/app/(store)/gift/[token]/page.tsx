@@ -30,13 +30,13 @@ type Props = { params: Promise<{ token: string }> }
  */
 export default function GiftClaimPage(props: Props) {
   return (
-    <main className="mx-auto w-full max-w-page px-4 py-12">
+    <div className="mx-auto w-full max-w-page px-4 py-12">
       <div className="mx-auto max-w-xl rounded-2xl border border-heading/15 bg-white p-6 text-center shadow-sm">
         <Suspense fallback={<p className="text-sm text-heading/75">רגע, טוענים את המתנה…</p>}>
           <GiftContent {...props} />
         </Suspense>
       </div>
-    </main>
+    </div>
   )
 }
 

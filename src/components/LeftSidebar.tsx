@@ -38,7 +38,7 @@ const banners = [
 
 export default function LeftSidebar() {
   return (
-    <aside className="space-y-3">
+    <aside aria-label="מבצעים מומלצים" className="space-y-3">
       {banners.map((b) => (
         <div
           key={b.id}

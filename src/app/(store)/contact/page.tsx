@@ -19,7 +19,7 @@ export default function ContactPage() {
   const waDisplay = formatIsraeliPhoneDisplay(storeWhatsAppNumber())
 
   return (
-    <main className="mx-auto w-full max-w-page px-4 py-10">
+    <div className="mx-auto w-full max-w-page px-4 py-10">
       <nav aria-label="נתיב ניווט" className="mb-6 text-sm text-heading/80">
         <Link href="/" className="hover:text-heading">
           בית
@@ -64,6 +64,6 @@ export default function ContactPage() {
       </header>
 
       <ContactForm />
-    </main>
+    </div>
   )
 }
