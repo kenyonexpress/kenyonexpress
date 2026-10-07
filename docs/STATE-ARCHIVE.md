@@ -2,6 +2,15 @@
 
 Everything below was STATE.md up to commit 02a45128f (2026-10-06), moved here by M11-c113 to keep STATE.md under 300 lines.
 
+## M16-c119: JSON-LD Product and BreadcrumbList re-verified 2026-10-08 in the foreground
+
+- Code: `git diff 9444bbcf1 HEAD -- src scripts package.json` is empty. The page still always renders both `application/ld+json` scripts (`page.tsx:248`, `:256`).
+- Method: same checks as M16-c118, Node probe kept outside the repo in `/tmp/m16c119`. It fetches through `curl` with a 180 s timeout and up to 3 attempts, because `www` responses stalled mid-transfer for several minutes in this run. It reads `/sitemap/products.xml`, fetches every `/product/` URL and requires status 200, exactly one `Product` and one `BreadcrumbList`, no parse error, `name`, `image`, offers with price and `priceCurrency`, at least 2 crumbs with positions 1..n, names on all, `item` on every non-last crumb, and last crumb name equal to `Product.name`.
+- **Production** (`https://www.kenyonexpress.co.il`): 44 URLs, **44/44 have both nodes**, 43 pass every check. `/product/מזקקת-ויסקי` has no `image`.
+- **Local HEAD** `bd69dfe54` (`pnpm start -p 3519` on this run's build): 46 URLs, **46/46 have both nodes**, 43 pass every check. No `image` on `מזקקת-ויסקי`, `e2e-test-physical` and `e2e-test-coupon`.
+- Verdict: unchanged from M16-c118. No code change; the image gap and the e2e rows are already manual items for Ofir.
+- Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 3. Attempt 1 failed exporting `/coupons/[id]` (119 `supabase.timeout`, 2 `db.query_failed`) and attempt 2 failed exporting `/product/אוזניות-איירפודס-3` (67 `supabase.timeout`), both during the slow network window; attempt 3 had 1 `supabase.timeout`, 0 `db.query_failed`. Not a UI change; compare.mjs does not apply. `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` are still uncommitted and not part of this commit.
+
 ## M15-c119: console errors on / and /product, probed 2026-10-08 in the foreground
 
 - Method: the same as M15-c118. Playwright Chromium (`@playwright/test` from the repo, probe script kept outside the repo in `/tmp`). For each page and viewport (380x800, 1440x900) it loads with `waitUntil: load`, scrolls twice and waits 7 s, and records console errors and warnings, `pageerror`, `requestfailed` and every response of 400 or above. The sample product is `/product/מוצר-לדוגמא`. The first production run hit the 60 s navigation timeout because `www` took 9 to 18 s to the first byte (`curl`). The rerun used a 120 s timeout with up to 3 attempts, and every run passed on attempt 1.
