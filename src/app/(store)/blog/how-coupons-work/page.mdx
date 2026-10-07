@@ -1,19 +1,17 @@
+import { publicPageMetadata } from '@/lib/seo/page-metadata'
 import BlogPostHeader from '@/components/storefront/BlogPostHeader'
 import { findPost } from '@/content/blog'
 
 export const post = findPost('how-coupons-work')
 
-export const metadata = {
+export const metadata = publicPageMetadata({
   title: post.title,
   description: post.description,
-  alternates: { canonical: '/blog/how-coupons-work' },
-  openGraph: {
-    type: 'article',
-    title: post.title,
-    description: post.description,
-    publishedTime: post.publishedAt,
-  },
-}
+  path: '/blog/how-coupons-work',
+  type: 'article',
+  publishedTime: post.publishedAt,
+  modifiedTime: post.updatedAt,
+})
 
 <BlogPostHeader slug="how-coupons-work" />
 

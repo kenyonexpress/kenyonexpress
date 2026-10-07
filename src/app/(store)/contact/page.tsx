@@ -1,13 +1,14 @@
 import ContactForm from '@/components/storefront/ContactForm'
+import { publicPageMetadata } from '@/lib/seo/page-metadata'
 import { formatIsraeliPhoneDisplay, storeWhatsAppLink, storeWhatsAppNumber } from '@/lib/whatsapp'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
-export const metadata: Metadata = {
+export const metadata: Metadata = publicPageMetadata({
   title: 'צור קשר',
   description: 'צרו קשר עם קניון אקספרס: שאלות, הצעות והערות על קופונים, הזמנות ומשלוחים.',
-  alternates: { canonical: '/contact' },
-}
+  path: '/contact',
+})
 
 /**
  * Minimal contact page. Real inbox routing is CONTACT_TO (default

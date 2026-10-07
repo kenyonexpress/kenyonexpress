@@ -1,13 +1,14 @@
 import SupplierLeadForm from '@/components/storefront/SupplierLeadForm'
+import { publicPageMetadata } from '@/lib/seo/page-metadata'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
-export const metadata: Metadata = {
+export const metadata: Metadata = publicPageMetadata({
   title: 'הצטרפו כספקים',
   description:
     'בית עסק שרוצה למכור קופונים ומוצרים בקניון אקספרס: איך זה עובד, מה נדרש, ואיך משאירים פרטים.',
-  alternates: { canonical: '/suppliers' },
-}
+  path: '/suppliers',
+})
 
 /**
  * The join-us page.

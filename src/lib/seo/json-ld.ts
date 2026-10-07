@@ -306,3 +306,84 @@ export function buildSiteJsonLd(siteUrl: string): JsonLdNode[] {
 export function jsonLdScript(node: JsonLdNode | JsonLdNode[] | Record<string, unknown>): string {
   return JSON.stringify(node).replace(/</g, '\\u003c')
 }
+
+export interface FaqEntryLike {
+  question: string
+  answer: string
+}
+
+/**
+ * `FAQPage`, from the same array the page renders.
+ *
+ * Moved here from `/faq` so the validator in `json-ld-validate.mjs` sees the
+ * node a test can build, not one that only exists inside a server component.
+ */
+export function buildFaqJsonLd(entries: readonly FaqEntryLike[]): JsonLdNode {
+  return {
+    '@context': SCHEMA,
+    '@type': 'FAQPage',
+    mainEntity: entries.map((entry) => ({
+      '@type': 'Question',
+      name: entry.question,
+      acceptedAnswer: { '@type': 'Answer', text: entry.answer },
+    })),
+  }
+}
+
+export interface BlogPostLike {
+  slug: string
+  title: string
+  description: string
+  /** ISO date. */
+  publishedAt: string
+  updatedAt?: string
+}
+
+const PUBLISHER_NAME = 'KenyonExpress'
+
+/**
+ * `BlogPosting` for one post. The publisher is the site; the author is the
+ * site too, because the posts are house-written and unsigned, and an Article
+ * with no author at all is a warning in Google's parser.
+ */
+export function buildBlogPostingJsonLd(post: BlogPostLike, siteUrl: string): JsonLdNode {
+  const site = trimSite(siteUrl)
+  const url = `${site}/blog/${encodeURIComponent(post.slug)}`
+  return {
+    '@context': SCHEMA,
+    '@type': 'BlogPosting',
+    headline: post.title,
+    description: post.description,
+    datePublished: post.publishedAt,
+    dateModified: post.updatedAt ?? post.publishedAt,
+    url,
+    inLanguage: 'he-IL',
+    author: { '@type': 'Organization', name: PUBLISHER_NAME, url: site },
+    publisher: {
+      '@type': 'Organization',
+      name: PUBLISHER_NAME,
+      url: site,
+      logo: { '@type': 'ImageObject', url: `${site}/logo.png` },
+    },
+    mainEntityOfPage: { '@type': 'WebPage', '@id': url },
+  }
+}
+
+/** `Blog` for the index: the posts in the order the page lists them. */
+export function buildBlogJsonLd(posts: readonly BlogPostLike[], siteUrl: string): JsonLdNode {
+  const site = trimSite(siteUrl)
+  return {
+    '@context': SCHEMA,
+    '@type': 'Blog',
+    name: 'הבלוג של קניון אקספרס',
+    url: `${site}/blog`,
+    inLanguage: 'he-IL',
+    publisher: { '@type': 'Organization', name: PUBLISHER_NAME, url: site },
+    blogPost: posts.map((post) => {
+      // The index entry is the same node minus `@context`: one top-level
+      // context is the whole document's, and a nested one is a parser warning.
+      const { '@context': _context, ...node } = buildBlogPostingJsonLd(post, site)
+      return node
+    }),
+  }
+}

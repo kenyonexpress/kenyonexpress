@@ -70,6 +70,11 @@ export const metadata: Metadata = {
   },
   alternates: {
     canonical: '/',
+    // hreflang for a single-language site (docs/ARCHITECTURE-SEO.md §5.1):
+    // `he-IL` names the market and `x-default` says there is no other. A page
+    // that sets `alternates` of its own replaces this block wholesale, which
+    // is why every indexable page goes through `publicPageMetadata` instead.
+    languages: { 'he-IL': '/', 'x-default': '/' },
     // How a reader finds the feed at all. `robots.txt` advertises the sitemap
     // and has no field for a feed, and nothing on the page links to one, so
     // without this tag `/feed.xml` exists and is undiscoverable. Deliberately

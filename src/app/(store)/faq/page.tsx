@@ -1,14 +1,15 @@
 import { FAQ_UPDATED_AT, faqEntries } from '@/content/legal/faq'
-import { jsonLdScript } from '@/lib/seo/json-ld'
+import { buildFaqJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
+import { publicPageMetadata } from '@/lib/seo/page-metadata'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
-export const metadata: Metadata = {
+export const metadata: Metadata = publicPageMetadata({
   title: 'שאלות נפוצות',
   description:
     'שאלות נפוצות על קניון אקספרס: איך עובד קופון, מה משלמים בבית העסק, תוקף, ביטולים, החזרים, ארנק וחשבוניות.',
-  alternates: { canonical: '/faq' },
-}
+  path: '/faq',
+})
 
 /**
  * The FAQ, plus the `FAQPage` structured data for it.
@@ -20,15 +21,7 @@ export const metadata: Metadata = {
  * visible page, so the duplication would be a risk in both directions.
  */
 export default function FaqPage() {
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: faqEntries.map((entry) => ({
-      '@type': 'Question',
-      name: entry.question,
-      acceptedAnswer: { '@type': 'Answer', text: entry.answer },
-    })),
-  }
+  const jsonLd = buildFaqJsonLd(faqEntries)
 
   const updated = new Date(FAQ_UPDATED_AT).toLocaleDateString('he-IL', {
     day: 'numeric',

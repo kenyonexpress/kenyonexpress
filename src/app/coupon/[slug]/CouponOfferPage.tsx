@@ -11,6 +11,7 @@ import StockScarcity from '@/components/storefront/StockScarcity'
 import { productLocation } from '@/lib/geo/distance'
 import type { ProductDetail } from '@/lib/product-detail'
 import { buildBreadcrumbJsonLd, buildProductJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
+import { publicPageMetadata } from '@/lib/seo/page-metadata'
 import { siteUrl } from '@/lib/site-url'
 import { buildSupplierContact } from '@/lib/supplier-contact'
 import { buildRedemptionInquiryText } from '@/lib/whatsapp'
@@ -70,18 +71,11 @@ export function couponOfferMetadata(slug: string, data: SeoRow): Metadata {
     data.description_he?.trim() ||
     `${name} בקניון אקספרס. משלמים חלק באתר, מציגים שובר בבית העסק ומשלמים שם את היתרה.`
   const productPath = `/product/${encodeURIComponent(slug)}`
+  // The card, canonical and hreflang all name the product page: this route is
+  // the same offer under a second address, and it stays out of the index.
   return {
-    title,
-    description,
+    ...publicPageMetadata({ title, description, path: productPath }),
     robots: { index: false, follow: true },
-    alternates: { canonical: productPath },
-    openGraph: {
-      title,
-      description,
-      url: `/coupon/${encodeURIComponent(slug)}`,
-      type: 'website',
-      locale: 'he_IL',
-    },
   }
 }
 

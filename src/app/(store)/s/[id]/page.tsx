@@ -1,6 +1,7 @@
 import CategoryGridSkeleton from '@/components/category/CategoryGridSkeleton'
 import CategoryProductCard from '@/components/category/CategoryProductCard'
 import Pagination from '@/components/category/Pagination'
+import { publicPageMetadata } from '@/lib/seo/page-metadata'
 import {
   SUPPLIER_PAGE_SIZE,
   isSupplierId,
@@ -45,12 +46,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const city = supplier.city ? ` ב${supplier.city}` : ''
   const description = `${supplier.name}${city} בקניון אקספרס. קופונים, מבצעים ומוצרים.`
   const path = `/s/${id}`
-  return {
-    title,
-    description,
-    alternates: { canonical: path },
-    openGraph: { title, description, url: path, locale: 'he_IL', type: 'website' },
-  }
+  return publicPageMetadata({ title, description, path })
 }
 
 export default async function SupplierStorefrontPage({ params, searchParams }: Props) {

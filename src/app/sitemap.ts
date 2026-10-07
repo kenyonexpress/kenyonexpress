@@ -3,6 +3,7 @@ import { LEGAL_PAGE_SLUGS, getLegalPage } from '@/content/legal'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { orFail } from '@/lib/catalogue-read'
 import { newestTimestamp } from '@/lib/seo/lastmod'
+import { sitemapLanguages } from '@/lib/seo/page-metadata'
 import { siteUrl } from '@/lib/site-url'
 import { createCatalogueReadClient } from '@/lib/supabase/read-replica'
 import type { MetadataRoute } from 'next'
@@ -169,5 +170,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })),
   ]
 
-  return [...staticEntries, ...categoryEntries, ...productEntries, ...supplierEntries]
+  // Every URL carries its own hreflang pair (`he-IL` and `x-default`, both the
+  // URL itself), the sitemap half of what `publicPageMetadata` puts in <head>.
+  // Google reads either; stating both means the two cannot disagree.
+  return [...staticEntries, ...categoryEntries, ...productEntries, ...supplierEntries].map(
+    (entry) => ({ ...entry, alternates: sitemapLanguages(entry.url) }),
+  )
 }

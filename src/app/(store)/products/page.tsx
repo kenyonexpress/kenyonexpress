@@ -14,16 +14,20 @@ import {
   parseProductType,
 } from '@/lib/category-page'
 import { type SortValue, parseSort } from '@/lib/category-tokens'
+import { publicPageMetadata } from '@/lib/seo/page-metadata'
 import { Suspense } from 'react'
 import '@/styles/category-page.css'
 
 /* Live equivalent: kenyonexpress.co.il/shop/ - h1 "חנות", 24 per page */
 const PAGE_TITLE = 'חנות'
 
-export const metadata = {
+// Canonical on the bare path: sort, page, price and type are query strings on
+// the same archive, and without it each filtered view competes as its own page.
+export const metadata = publicPageMetadata({
   title: PAGE_TITLE,
   description: 'כל המוצרים, הדילים והקופונים של קניון Express במקום אחד.',
-}
+  path: '/products',
+})
 
 type Props = {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>

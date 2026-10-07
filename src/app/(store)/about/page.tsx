@@ -1,13 +1,14 @@
 import { ABOUT_UPDATED_AT, aboutIntro, aboutSections } from '@/content/about'
+import { publicPageMetadata } from '@/lib/seo/page-metadata'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
-export const metadata: Metadata = {
+export const metadata: Metadata = publicPageMetadata({
   title: 'אודות',
   description:
     'מי אנחנו וכיצד עובדת רכישת קופון בקניון אקספרס: תשלום מקדים, שובר עם QR, יתרה בבית העסק, תוקף וזיכוי אוטומטי בפקיעה.',
-  alternates: { canonical: '/about' },
-}
+  path: '/about',
+})
 
 /**
  * The about page.

@@ -1,5 +1,6 @@
 import { getActiveCouponDealIds, getCouponDeal } from '@/lib/coupon-deals'
 import { shekelsFromIls } from '@/lib/money-format'
+import { publicPageMetadata } from '@/lib/seo/page-metadata'
 import { MapPin, Tag } from 'lucide-react'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
@@ -13,7 +14,15 @@ export async function generateMetadata({ params }: Props) {
   // The same cached read the body makes, so the title and the page cannot
   // describe different rows and the two do not cost two round trips.
   const deal = await getCouponDeal(id)
-  return { title: deal ? `${deal.title_he} — ${deal.business_name}` : 'קופון' }
+  // An unknown id 404s below; say noindex here too so a crawler that reads
+  // only the head never files the empty shell as a page.
+  if (!deal) return { title: 'קופון', robots: { index: false, follow: true } }
+  const where = deal.location_he ? ` ב${deal.location_he}` : ''
+  return publicPageMetadata({
+    title: `${deal.title_he} — ${deal.business_name}`,
+    description: `${deal.title_he} מ${deal.business_name}${where}. קופון בקניון אקספרס.`,
+    path: `/coupons/${id}`,
+  })
 }
 
 export async function generateStaticParams() {

@@ -8,15 +8,16 @@ import HomeNewsletter from '@/components/home/HomeNewsletter'
 import HotCoupons from '@/components/home/HotCoupons'
 import PopularSearches from '@/components/home/PopularSearches'
 import { buildSiteJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
+import { publicPageMetadata } from '@/lib/seo/page-metadata'
 import { Suspense } from 'react'
 // home-handheld.css is imported by the root layout (see the note there): as a
 // page-level import it was a 125-byte stylesheet costing a full round trip.
 
-export const metadata = {
+export const metadata = publicPageMetadata({
   title: 'קניון EXPRESS — מסדרים לך בילוי',
   description: 'קופונים, דילים ומוצרים במחיר הכי טוב. בפריסה ארצית.',
-  alternates: { canonical: '/' },
-}
+  path: '/',
+})
 
 /**
  * refs/ke_live_singlefile.html section order: hero → categories → features →

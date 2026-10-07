@@ -1,6 +1,7 @@
 import { cityBySlug } from '@/lib/geo/cities'
 import { REGIONS, findRegion } from '@/lib/regions'
 import { buildBreadcrumbJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
+import { publicPageMetadata } from '@/lib/seo/page-metadata'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -47,11 +48,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // An unknown slug renders notFound() below, which emits noindex on its own.
   if (!region) return {}
 
-  return {
+  return publicPageMetadata({
     title: `דילים ב${region.name}`,
     description: `קופונים ומבצעים מבתי עסק ב${region.name}. כל שובר נסרק פעם אחת, והתוקף מוצג לפני הרכישה.`,
-    alternates: { canonical: `/city/${encodeURIComponent(region.slug)}` },
-  }
+    path: `/city/${encodeURIComponent(region.slug)}`,
+  })
 }
 
 export default async function CityPage({ params }: Props) {

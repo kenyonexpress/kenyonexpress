@@ -1,3 +1,4 @@
+import { publicPageMetadata } from '@/lib/seo/page-metadata'
 import type { Metadata } from 'next'
 import LegalArticle from '../../(legal)/_components/LegalArticle'
 import LegalContactBlock from '../../(legal)/_components/LegalContactBlock'
@@ -21,11 +22,11 @@ import { getLegalDoc } from '../../(legal)/_content'
  */
 const doc = getLegalDoc('returns')
 
-export const metadata: Metadata = {
+export const metadata: Metadata = publicPageMetadata({
   title: doc.title,
   description: doc.description,
-  alternates: { canonical: '/refund_returns' },
-}
+  path: '/refund_returns',
+})
 
 export default function Page() {
   return (

@@ -64,10 +64,12 @@ describe('content pages carry the SEO fields a crawler needs', () => {
   for (const [name, path] of WITH_METADATA) {
     it(`${name} declares a canonical URL`, () => {
       // Without it, a page reachable at both /about and /about/ is two pages to
-      // a crawler and neither ranks.
+      // a crawler and neither ranks. Since STEP 25 the canonical (and the
+      // hreflang pair, both cards) come from `publicPageMetadata({ path })`;
+      // `public-page-metadata.test.ts` holds the full list of pages on it.
       const text = source(...path)
-      expect(text).toContain('alternates:')
-      expect(text).toContain('canonical:')
+      expect(text).toContain('publicPageMetadata(')
+      expect(text).toMatch(/path:\s*'\//)
     })
 
     it(`${name} declares a description`, () => {

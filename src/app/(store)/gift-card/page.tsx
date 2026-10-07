@@ -1,14 +1,15 @@
 import GiftCardRedeemForm from '@/components/storefront/GiftCardRedeemForm'
+import { publicPageMetadata } from '@/lib/seo/page-metadata'
 import { createClient } from '@/lib/supabase/server'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Suspense } from 'react'
 
-export const metadata: Metadata = {
+export const metadata: Metadata = publicPageMetadata({
   title: 'מימוש גיפט קארד',
   description: 'בדיקת יתרה ומימוש גיפט קארד של קניון אקספרס: הקוד נטען לארנק ומשמש בכל רכישה.',
-  alternates: { canonical: '/gift-card' },
-}
+  path: '/gift-card',
+})
 
 /**
  * The landing page of the code printed in the gift card email.

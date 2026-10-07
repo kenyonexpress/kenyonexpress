@@ -1,5 +1,5 @@
 import { findPost } from '@/content/blog'
-import { jsonLdScript } from '@/lib/seo/json-ld'
+import { buildBlogPostingJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
 import { siteUrl } from '@/lib/site-url'
 import Link from 'next/link'
 
@@ -23,18 +23,7 @@ export default function BlogPostHeader({ slug }: { slug: string }) {
   if (!post) return null
 
   const base = siteUrl()
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'BlogPosting',
-    headline: post.title,
-    description: post.description,
-    datePublished: post.publishedAt,
-    dateModified: post.updatedAt ?? post.publishedAt,
-    url: `${base}/blog/${post.slug}`,
-    inLanguage: 'he-IL',
-    publisher: { '@type': 'Organization', name: 'KenyonExpress', url: base },
-    mainEntityOfPage: { '@type': 'WebPage', '@id': `${base}/blog/${post.slug}` },
-  }
+  const jsonLd = buildBlogPostingJsonLd(post, base)
 
   const published = new Date(post.publishedAt).toLocaleDateString('he-IL', {
     day: 'numeric',

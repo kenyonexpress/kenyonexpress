@@ -29,6 +29,7 @@ import { type SortValue, isDefaultSort, parseSort } from '@/lib/category-tokens'
 import { parseMinDiscount } from '@/lib/discount-percent'
 import { type Coordinates, parseNear, sortByDistance } from '@/lib/geo/distance'
 import { buildBreadcrumbJsonLd, buildItemListJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
+import { publicPageMetadata } from '@/lib/seo/page-metadata'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import '@/styles/category-page.css'
@@ -97,20 +98,13 @@ export async function generateMetadata({ params }: Props) {
   // the page already shows, rather than invented marketing copy.
   const description = category.description_he?.trim() || categoryMetaDescription(category.name_he)
 
-  return {
+  // The same category is reachable with sort, page, price and city query
+  // strings, and without a canonical each of those competes as its own page.
+  return publicPageMetadata({
     title: category.name_he,
     description,
-    // The same category is reachable with sort, page, price and city query
-    // strings, and without a canonical each of those competes as its own page.
-    alternates: { canonical: `/category/${encodeURIComponent(category.slug)}` },
-    openGraph: {
-      title: category.name_he,
-      description,
-      url: `/category/${encodeURIComponent(category.slug)}`,
-      type: 'website',
-      locale: 'he_IL',
-    },
-  }
+    path: `/category/${encodeURIComponent(category.slug)}`,
+  })
 }
 
 /**

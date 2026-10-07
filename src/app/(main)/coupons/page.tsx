@@ -1,10 +1,15 @@
 import CouponCard, { type Coupon } from '@/components/CouponCard'
 import { CouponsGridSkeleton } from '@/components/CouponCardSkeleton'
 import { orFail } from '@/lib/catalogue-read'
+import { publicPageMetadata } from '@/lib/seo/page-metadata'
 import { createClient } from '@/lib/supabase/server'
 import { Suspense } from 'react'
 
-export const metadata = { title: 'קופונים' }
+export const metadata = publicPageMetadata({
+  title: 'קופונים',
+  description: 'כל הקופונים הפעילים של קניון אקספרס: דילים מבתי עסק בפריסה ארצית.',
+  path: '/coupons',
+})
 
 /**
  * The heading is the same for everyone, so it is the shell and the grid streams

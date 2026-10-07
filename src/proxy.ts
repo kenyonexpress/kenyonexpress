@@ -200,7 +200,11 @@ export async function proxy(request: NextRequest) {
     // shares the prefix and is public. See lib/vouchers/coupon-path.ts.
     couponPathNeedsSession(pathname) ||
     (pathname.startsWith('/checkout/') && !isPaymentFramePath(pathname)) ||
-    (pathname.startsWith('/supplier') && !supplierPublic)
+    // `/supplier` and `/supplier/...` only. A bare prefix test also matched
+    // `/suppliers`, the PUBLIC join-us page the sitemap lists at priority 0.7,
+    // and sent every crawler and every would-be supplier to the login form.
+    // Found by scripts/seo/audit.mjs (STEP 25): HTTP 307 -> /login?next=%2Fsuppliers.
+    ((pathname === '/supplier' || pathname.startsWith('/supplier/')) && !supplierPublic)
 
   if (needsAuth && !user) {
     return withRequestId(NextResponse.redirect(loginRedirectUrl(request.nextUrl)), requestId)

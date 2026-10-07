@@ -1,14 +1,15 @@
 import { sortedPosts } from '@/content/blog'
-import { jsonLdScript } from '@/lib/seo/json-ld'
+import { buildBlogJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
+import { publicPageMetadata } from '@/lib/seo/page-metadata'
 import { siteUrl } from '@/lib/site-url'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
-export const metadata: Metadata = {
+export const metadata: Metadata = publicPageMetadata({
   title: 'הבלוג',
   description: 'מדריכים והסברים על קופונים, מימוש בבתי עסק, תוקף, ביטולים והזמנות.',
-  alternates: { canonical: '/blog' },
-}
+  path: '/blog',
+})
 
 function hebrewDate(iso: string): string {
   return new Date(iso).toLocaleDateString('he-IL', {
@@ -29,20 +30,7 @@ export default function BlogIndexPage() {
   const posts = sortedPosts()
   const base = siteUrl()
 
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'Blog',
-    name: 'הבלוג של קניון אקספרס',
-    url: `${base}/blog`,
-    blogPost: posts.map((post) => ({
-      '@type': 'BlogPosting',
-      headline: post.title,
-      description: post.description,
-      datePublished: post.publishedAt,
-      dateModified: post.updatedAt ?? post.publishedAt,
-      url: `${base}/blog/${post.slug}`,
-    })),
-  }
+  const jsonLd = buildBlogJsonLd(posts, base)
 
   return (
     <>

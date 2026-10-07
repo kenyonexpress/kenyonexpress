@@ -746,6 +746,47 @@ export default async function OgImage({ params }: { params: { slug: string } }) 
 תמונת OG דינמית (סעיף 1.2). אין צורך בכרטיס נפרד; Twitter נופל חזרה ל-OG כשחסר,
 אבל ההצהרה המפורשת מבטיחה כותרת ותיאור נכונים.
 
+### 5.4 מימוש (STEP 25, 07.10.2026): helper אחד, ולידטור אחד, audit אחד
+
+**‏`src/lib/seo/page-metadata.ts`.** ‏`publicPageMetadata({ title, description, path, type?, image? })`
+מחזיר את כל ה-`Metadata` של עמוד אינדקסבילי: ‏canonical על ה-pathname בלבד (בלי
+query ובלי fragment), ‏hreflang ‏`he-IL` + ‏`x-default` שמצביעים על ה-canonical,
+‏Open Graph עם ‏`siteName` ו-`locale` חוזרים (‏Next ממזג ‏metadata לפי מפתח עליון,
+כך ש-`openGraph` של עמוד מחליף את זה של ה-layout כולו, וזה איך ‏`/category` ו-`/s`
+איבדו את שם האתר), ו-Twitter card ‏`summary_large_image`. **בלי ‏`images`** אלא אם
+נמסרה תמונה מפורשת: ‏`opengraph-image.tsx` של השורש ושל ‏`/product/[slug]` ממלאים
+‏`og:image`/`twitter:image` דרך קונבנציית הקובץ, ו-`openGraph.images` ב-metadata
+נמדד מחליף אותם בשקט בתמונת קטלוג ‏600x600.
+
+‏19 עמודים ציבוריים עברו ל-helper (‏`src/app/public-page-metadata.test.ts` אוכף
+שכל עמוד ברשימה קורא לו ולא כותב ‏canonical/openGraph ביד, ושכל עמוד לא-אינדקסבילי
+מצהיר ‏`robots.index: false`). ‏`sitemap.ts` מצרף לכל ‏URL ‏`alternates.languages`
+עם אותו זוג, כך ש-`<xhtml:link hreflang>` ב-sitemap ו-`<link hreflang>` ב-head
+לא יכולים לסתור זה את זה.
+
+**‏`src/lib/seo/json-ld-validate.mjs`.** ולידטור טהור לפי הדרישות של ‏Google
+ל-rich results (לא לפי כל ‏schema.org): ‏Product (אחד מ-offers/aggregateRating/review;
+‏Offer עם ‏price דורש ‏priceCurrency ‏ISO 4217; ‏availability כ-URL של ‏schema.org;
+‏highPrice לא מתחת ל-price; דירוג מעל אפס ביקורות = שגיאה), ‏BreadcrumbList ו-ItemList
+(‏positions עוקבים, ‏URL אבסולוטי, ‏numberOfItems תואם), ‏Organization, ‏WebSite
+(‏SearchAction: ה-placeholder ב-`urlTemplate` חייב להיות זה ש-`query-input` מצהיר),
+‏FAQPage, ‏Article/BlogPosting (‏headline, ‏datePublished ‏ISO, ‏dateModified לא לפני),
+‏Blog. בדיקות כלליות לכל node: ‏`@context`, ‏`@type` בכל רמה, אין ‏undefined/ריק/NaN,
+‏URL-ים אבסולוטיים, תאריכים ‏ISO. ‏`.mjs` עם ‏JSDoc כדי שגם ‏vitest וגם הסקריפט למטה
+יקראו את אותם כללים. ‏`json-ld-validate.test.ts` מריץ כל builder ב-`json-ld.ts`
+דרכו; ה-FAQ, ה-Blog ו-BlogPosting שהיו ‏inline בעמודים עברו ל-builders
+(‏`buildFaqJsonLd`, ‏`buildBlogJsonLd`, ‏`buildBlogPostingJsonLd`, האחרון עם ‏author
+ו-publisher.logo כדי שהכרטיס לא ייצא באזהרה).
+
+**‏`scripts/seo/audit.mjs`** (‏`pnpm seo:audit`, ‏`LOCAL_BASE`/`--base`). קורא
+‏build רץ כמו crawler (‏UA של ‏Googlebot, כדי ש-Next יגיש metadata ב-head ולא
+ב-streaming): ‏`/robots.txt` (שורת ‏Sitemap, ה-prefixes הפרטיים ב-Disallow),
+‏`/sitemap.xml` (‏loc באותו origin, ‏hreflang בכל ‏URL, שום נתיב ש-robots חוסם,
+‏lastmod תאריך), ואז העמודים הסטטיים + נציג אחד מכל משפחה דינמית שנלקח מה-sitemap
+עצמו: ‏canonical יחיד ואבסולוטי, ‏hreflang שווה ל-canonical, ‏og:* מלא עם
+‏`og:url` = ‏canonical, ‏twitter:*, ‏`lang="he" dir="rtl"`, וכל בלוק ‏JSON-LD
+עובר את הולידטור. ‏exit 1 על שגיאה, דוח ‏JSON ב-`test-results/seo-audit.json`.
+
 ---
 
 ## 6. שימור URL במעבר מ-WordPress (מפת 301)

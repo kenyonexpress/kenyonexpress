@@ -16,6 +16,7 @@ import { productLocation } from '@/lib/geo/distance'
 import { listProductSlugsForPrerender, loadProductBySlug } from '@/lib/product-detail'
 import { getProductSeoBySlug } from '@/lib/product-seo'
 import { buildBreadcrumbJsonLd, buildProductJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
+import { publicPageMetadata } from '@/lib/seo/page-metadata'
 import { readWhatsAppEnabled } from '@/lib/supplier-contact'
 import '@/styles/product-page.css'
 import Link from 'next/link'
@@ -68,18 +69,7 @@ export async function generateMetadata({ params }: Props) {
   // The generated card is also the better image: the product photo is a 600x600
   // square, which WhatsApp crops to a thumbnail beside the link, and it shows no
   // price — which is the only reason anyone forwards a deal.
-  return {
-    title,
-    description,
-    alternates: { canonical: path },
-    openGraph: {
-      title,
-      description,
-      url: path,
-      type: 'website',
-      locale: 'he_IL',
-    },
-  }
+  return publicPageMetadata({ title, description, path, ownCard: true })
 }
 
 /**
