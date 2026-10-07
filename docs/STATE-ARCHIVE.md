@@ -21713,3 +21713,18 @@ Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=categ
 > M17-c117 gates (working tree): type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `supabase.timeout`, 0 `db.query_failed`). compare.mjs: 6/6 runs exit 5 REFUSED (rows appended to `docs/UI-PARITY-REPORT.md`).
 
 - Gates (working tree, with the uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` edits left unstaged): type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (15 `supabase.timeout` and 26 `db.query_failed` log lines from Supabase reachability during prerender, non-fatal). Docs-only change, so compare.mjs does not apply (blocked anyway, blocker 0).
+
+## M05-c118: pnpm test, fix drift (BLOCKED, 2026-10-07)
+
+- `pnpm test`: exit 0, 519 files passed, 6474 tests passed, 12 skipped. The same counts as M05-c117. No drift, so no code changed.
+- Other gates on the working tree (the uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` edits were left unstaged): type-check 0, lint 0.
+- `pnpm build`: exit 1 on all 9 attempts. Every failure was a prerender read against live Supabase:
+  - 1: `/product/e2e-test-physical`, 197 `supabase.timeout`.
+  - 2–4: `/coupons/[id]` (`coupon_deal.active_ids_failed`).
+  - 5: `coupon_deal.read_failed`.
+  - 6 and 9: `content_pages.read_failed`.
+  - 7: `product_detail.read_failed`.
+  - 8: `product_seo.read_failed`, `fetch failed`.
+  - Each attempt logged between 10 and 197 `supabase.timeout` events.
+  - A bare `curl` to the Supabase REST root took 10.52s, then 1.64s, then 1.27s.
+- Decision: this is the known Supabase network flake (M06-c115, M06-c116), not code drift. Nothing to fix in code. Because the build gate is red, this commit records the state only: STATE.md and this archive section. Retry the build when Supabase reachability is stable.
