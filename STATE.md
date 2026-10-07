@@ -1,10 +1,10 @@
-RESUME FROM: M05-c117
+RESUME FROM: M06-c117
 
 # KenyonExpress — Project State
 
-Last item: **M04-c117 DONE** (2026-10-07): `pnpm type-check` (`tsc --noEmit`) exits 0 with no errors, so there is no drift to fix and no code change. Next ID: M05-c117.
-M04-c117 gates (working tree, the two uncommitted UI edits still unstaged): type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 3 (attempts 1 and 2 hit the known flaky "Failed to collect page data for /category/[slug]", same as M06-c115/M06-c116). Docs-only change.
-Previous: M03-c117 BLOCKED, M02-c117 BLOCKED, M01-c117 BLOCKED, M18-c116 DONE, M17-c116 BLOCKED, M16-c116 DONE, M15-c116 DONE, M14-c116 BLOCKED, M13-c116 BLOCKED, M12-c116 DONE, M11-c116 DONE, M10-c116 BLOCKED, M09-c116 DONE, M08-c116 DONE, M07-c116 DONE, M06-c116 DONE, M05-c116 DONE, M04-c116 DONE, M03-c116 BLOCKED, M02-c116 BLOCKED, M01-c116 BLOCKED, M18-c115 DONE, M16-c115 DONE, M15-c115 DONE, M14-c115 BLOCKED, M13-c115 BLOCKED, M12-c115 DONE, M11-c115 DONE, M10-c115 BLOCKED, M09-c115 DONE, M08-c115 DONE, M07-c115 DONE, M06-c115 DONE, M05-c115 DONE, M04-c115 DONE, M03-c115 BLOCKED, M02-c115 BLOCKED, M01-c115 BLOCKED (all 2026-10-07), M11-c113 DONE (2026-10-06).
+Last item: **M05-c117 DONE** (2026-10-07): `pnpm test` (vitest) exits 0: 519 files passed, 6474 tests passed, 12 skipped, 0 failed. The jsdom "Not implemented: navigation" stderr lines are known noise, not failures. No drift to fix and no code change. Next ID: M06-c117.
+M05-c117 gates (working tree, the two uncommitted UI edits still unstaged): type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1. Docs-only change.
+Previous: M04-c117 DONE, M03-c117 BLOCKED, M02-c117 BLOCKED, M01-c117 BLOCKED, M18-c116 DONE, M17-c116 BLOCKED, M16-c116 DONE, M15-c116 DONE, M14-c116 BLOCKED, M13-c116 BLOCKED, M12-c116 DONE, M11-c116 DONE, M10-c116 BLOCKED, M09-c116 DONE, M08-c116 DONE, M07-c116 DONE, M06-c116 DONE, M05-c116 DONE, M04-c116 DONE, M03-c116 BLOCKED, M02-c116 BLOCKED, M01-c116 BLOCKED, M18-c115 DONE, M16-c115 DONE, M15-c115 DONE, M14-c115 BLOCKED, M13-c115 BLOCKED, M12-c115 DONE, M11-c115 DONE, M10-c115 BLOCKED, M09-c115 DONE, M08-c115 DONE, M07-c115 DONE, M06-c115 DONE, M05-c115 DONE, M04-c115 DONE, M03-c115 BLOCKED, M02-c115 BLOCKED, M01-c115 BLOCKED (all 2026-10-07), M11-c113 DONE (2026-10-06).
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
 
 ## Queue status (cycle c113)
@@ -57,6 +57,7 @@ The runner's `final-done.txt` lists M01–M10 of c113 as finished. This branch's
 | M02-c117 | Re-measure compare.mjs on /product | **BLOCKED**: exit 5 at 380/768/1440, gate refuses, no reference (see archive) |
 | M03-c117 | Re-measure compare.mjs on /category | **BLOCKED**: exit 5 at 380/768/1440, gate refuses, no reference (see archive) |
 | M04-c117 | pnpm type-check, fix drift | **DONE**: exit 0, no drift, no code change |
+| M05-c117 | pnpm test, fix drift | **DONE**: exit 0, 6474 passed, 12 skipped, no drift, no code change |
 
 ## Open blockers
 
