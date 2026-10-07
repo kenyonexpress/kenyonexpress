@@ -1,10 +1,10 @@
-RESUME FROM: M10-c117
+RESUME FROM: M11-c117
 
 # KenyonExpress — Project State
 
-Last item: **M09-c117 DONE** (2026-10-07): unused deps and dead exports re-scanned. **0 deps removed** (the only deps with no importer are the deliberate keeps: the MDX peers and `@types/*`). **Deleted 1 dead module and 2 dead exports**: `src/lib/search.ts` (a client `/api/search` wrapper that nothing imports, and the no-search rule forbids it), `isVoucherRedeemable` (`server/queries/vouchers.ts`) and `knownIssueDetail` (`lib/payments/settlement-known-issues.ts`). Next ID: M10-c117.
-M09-c117 gates (working tree, the two uncommitted UI edits still unstaged): type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1. Nothing deleted was mounted on a route, so this is not a UI change and compare.mjs does not apply (it is blocked anyway, blocker 0).
-Previous: M08-c117 DONE, M07-c117 DONE, M06-c117 DONE, M05-c117 DONE, M04-c117 DONE, M03-c117 BLOCKED, M02-c117 BLOCKED, M01-c117 BLOCKED, M18-c116 DONE, M17-c116 BLOCKED, M16-c116 DONE, M15-c116 DONE, M14-c116 BLOCKED, M13-c116 BLOCKED, M12-c116 DONE, M11-c116 DONE, M10-c116 BLOCKED, M09-c116 DONE, M08-c116 DONE, M07-c116 DONE, M06-c116 DONE, M05-c116 DONE, M04-c116 DONE, M03-c116 BLOCKED, M02-c116 BLOCKED, M01-c116 BLOCKED, M18-c115 DONE, M16-c115 DONE, M15-c115 DONE, M14-c115 BLOCKED, M13-c115 BLOCKED, M12-c115 DONE, M11-c115 DONE, M10-c115 BLOCKED, M09-c115 DONE, M08-c115 DONE, M07-c115 DONE, M06-c115 DONE, M05-c115 DONE, M04-c115 DONE, M03-c115 BLOCKED, M02-c115 BLOCKED, M01-c115 BLOCKED (all 2026-10-07), M11-c113 DONE (2026-10-06).
+Last item: **M10-c117 BLOCKED** (2026-10-07): pending migrations re-probed read-only over REST, unchanged from M10-c116. 6 files live but unrecorded (`189`, `190`, `191`, `194`, `197`, `201`), 22 not applied, and the new `231` is not applied either (anon `GET /rest/v1/reviews` is still 401). Only Ofir applies migrations and the `schema_migrations` read needs the Supabase MCP, which still needs re-authorisation. Next ID: M11-c117.
+M10-c117 gates: type-check 0, lint 0 (after rewording one deleted-path reference M09-c117 left in `docs/STATE-ARCHIVE.md`), test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1. No UI change, so compare.mjs does not apply (blocked anyway, blocker 0).
+Previous: M09-c117 DONE, M08-c117 DONE, M07-c117 DONE, M06-c117 DONE, M05-c117 DONE, M04-c117 DONE, M03-c117 BLOCKED, M02-c117 BLOCKED, M01-c117 BLOCKED, M18-c116 DONE, M17-c116 BLOCKED, M16-c116 DONE, M15-c116 DONE, M14-c116 BLOCKED, M13-c116 BLOCKED, M12-c116 DONE, M11-c116 DONE, M10-c116 BLOCKED, M09-c116 DONE, M08-c116 DONE, M07-c116 DONE, M06-c116 DONE, M05-c116 DONE, M04-c116 DONE, M03-c116 BLOCKED, M02-c116 BLOCKED, M01-c116 BLOCKED, M18-c115 DONE, M16-c115 DONE, M15-c115 DONE, M14-c115 BLOCKED, M13-c115 BLOCKED, M12-c115 DONE, M11-c115 DONE, M10-c115 BLOCKED, M09-c115 DONE, M08-c115 DONE, M07-c115 DONE, M06-c115 DONE, M05-c115 DONE, M04-c115 DONE, M03-c115 BLOCKED, M02-c115 BLOCKED, M01-c115 BLOCKED (all 2026-10-07), M11-c113 DONE (2026-10-06).
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
 
 ## Queue status (cycle c113)
@@ -62,6 +62,7 @@ The runner's `final-done.txt` lists M01–M10 of c113 as finished. This branch's
 | M07-c117 | TODO/FIXME older than 7 days: resolve or file in docs/BACKLOG.md | **DONE**: re-scan found only the 2 filed Cardcom markers (B1, B2), nothing new |
 | M08-c117 | Lighthouse mobile on / and /product sample, log scores | **DONE**: median perf 80 / 84, a11y 100, BP 96, SEO 100; home run 1 cold outlier 59 (see archive) |
 | M09-c117 | Remove unused deps and dead exports | **DONE**: 0 deps to drop; `lib/search.ts` and 2 dead exports deleted (see archive) |
+| M10-c117 | Verify migrations/pending/ applied or file blocker | **BLOCKED**: re-probe unchanged, 6 live but unrecorded, 22 not applied, new 231 not applied (anon reviews 401); needs Ofir (see archive) |
 
 ## Open blockers
 
@@ -69,7 +70,7 @@ The runner's `final-done.txt` lists M01–M10 of c113 as finished. This branch's
 1. **Apex vs www host mismatch (known since SECTIONS 21, still open).** Vercel serves `www` and redirects the apex with a 308. The site declares the apex as canonical: every sitemap `<loc>`, the robots `Sitemap:` line, `og:url` and canonicals all use `https://kenyonexpress.co.il` (from `NEXT_PUBLIC_APP_URL`, with the `layout.tsx` default). So all 94 sitemap URLs cost one 308 hop before they reach a 200. Fixing it means either setting `NEXT_PUBLIC_APP_URL=https://www.kenyonexpress.co.il` in Vercel or making the apex the primary domain in Vercel. Both are Vercel env or domain changes, which the agent is not allowed to make.
 2. Scheduled jobs (cron) do not run until migration 162 is applied. See the M10-c115 section in the archive.
 6. **`/api/ready` is 503 in production (M13-c115).** `meilisearch: down`: `MEILISEARCH_HOST` and `MEILISEARCH_API_KEY` are set, but the host does not answer `/health`. `/api/health` is 200. Re-confirmed unchanged in M13-c116.
-5. **Pending migrations are not applied (M10-c115, re-confirmed M10-c116).** 22 numbered files are confirmed absent from production, and 6 (`189`, `190`, `191`, `194`, `197` and `201`) are live but not recorded as applied. Only Ofir applies migrations, and the bookkeeping for the 6 needs a `schema_migrations` read, which needs the Supabase MCP or a DB URL.
+5. **Pending migrations are not applied (M10-c115, re-confirmed M10-c116 and M10-c117).** 22 numbered files are confirmed absent from production, plus `231` (written in M06-c117), and 6 (`189`, `190`, `191`, `194`, `197` and `201`) are live but not recorded as applied. Only Ofir applies migrations, and the bookkeeping for the 6 needs a `schema_migrations` read, which needs the Supabase MCP or a DB URL.
 3. The live catalogue has template rows and duplicates: 25 findings pinned in `supabase/catalogue-known-issues.json`. These are decisions for the operator.
 4. `main` diverged: local `main` is 193 commits ahead of `origin/main` and 110 behind (L9). Production is not built from this branch: as of M14-c115 the live client bundle's Sentry release is `1e84df0e5`, the tip of `origin/audit/final-audit`, not `origin/main`, so the Sentry release does not match HEAD `b29fcbf1f`. Re-confirmed in M14-c116 against HEAD `bf55da262`.
 
