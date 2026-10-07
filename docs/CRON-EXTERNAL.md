@@ -165,6 +165,9 @@ deliberate and harmless: both are sweeps with a wide window, not appointments.
 | 19 | every 6 h at :30 | `30 */6 * * *` | `https://kenyonexpress.vercel.app/api/cron/email-retry` |
 | 20 | 23:45 daily | `45 23 * * *` | `https://kenyonexpress.vercel.app/api/cron/cashback-settlement` |
 | 21 | 02:30 daily | `30 2 * * *` | `https://kenyonexpress.vercel.app/api/cron/slow-statements` |
+| 22 | 03:00 daily | `0 3 * * *` | `https://kenyonexpress.vercel.app/api/cron/sitemap-regen` |
+| 23 | 02:30 daily | `30 2 * * *` | `https://kenyonexpress.vercel.app/api/cron/analytics-rollup` |
+| 24 | every 6 h at :30 | `30 */6 * * *` | `https://kenyonexpress.vercel.app/api/cron/log-cleanup` |
 
 Those are the schedules `vercel.json` carried, kept exactly, so nothing about
 timing changes with the scheduler.
@@ -246,6 +249,43 @@ timing changes with the scheduler.
   ruled out: Supabase's `postgres` cannot SET it. Answers 200 `skipped`
   until 255 is applied; 500 only on a real read failure. Shares the 02:30
   slot with `subscriptions`; the runner calls them in sequence.
+- **`sitemap-regen`** (STEP 37) stales the `sitemap` and `feed` cache tags
+  (`/sitemap.xml`, `/feed.xml`, `/merchant.xml`) and then fetches the sitemap
+  on the origin it was called through, so the warm copy is in place before a
+  crawler asks. It runs on the 03:00 slot right after `daily-deals`, whose
+  applied flash deals change the prices the feeds carry. Red (500) on a
+  non-200 sitemap or one with zero `<loc>` entries: an empty sitemap served
+  with a 200 is a deindexing request, and that is the failure it exists to
+  notice.
+- **`analytics-rollup`** (STEP 37) is the backstop for the database's own
+  nightly rebuild of the four `report_*` tables (pg_cron job
+  `report_tables_nightly`, 01:30 UTC, `refresh_report_tables()`). It reads
+  the newest `refreshed_at` first and answers `skipped` when the rollup is
+  under six hours old, so on a normal night it rebuilds nothing; when
+  pg_cron missed its slot it calls the same service-role function, which is
+  the only way that miss becomes a log line. Shares the 02:30 slot.
+- **`log-cleanup`** (STEP 37) runs `cleanup_rate_limits()` and
+  `cleanup_user_rate_limits()`, the two database sweeps that trim the per-IP
+  and per-user limiter tables to their live windows. Measured 2026-10-08,
+  nothing had ever called either one. It deletes from no other table: the
+  notification outbox carries the dedupe keys that stop a second send, the
+  audit log ages through `retention`, and the payment journals are the
+  money record. Both sweeps run even if the first fails, and a red response
+  names the one that did.
+
+### Measured 2026-10-08, before STEP 37
+
+`gh run list --workflow=cron.yml` shows every scheduled run red. The log of
+run 37657745751 (`0 * * * *`) reads `abandoned-cart -> 401` and
+`search-reindex -> 404`: the 401 is the GitHub `CRON_SECRET` differing from
+the value the deployment has, the 404 is a route the deployment does not
+ship. `scripts/deployed-cron-probe.mjs` against
+`https://kenyonexpress.vercel.app` found 11 of the 26 routes then on `main`
+missing from the deployment (`job-dlq`, `expire-cashback`, `search-outbox`,
+`search-reindex`, `expire-coupons`, `backup`, `daily-deals`, `email-retry`,
+`cashback-settlement`, `slow-statements`, and `wishlist-digest` with no
+response). Both fixes are outside this repository: a production deploy of
+the branch that carries the routes, and the same secret in both places.
 
 
 ## Setting it up from this repository, in two settings

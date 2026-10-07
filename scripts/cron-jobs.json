@@ -1,5 +1,5 @@
 {
-  "$comment": "The single source of truth for the twenty-six scheduled jobs. docs/CRON-EXTERNAL.md, .github/workflows/cron.yml, vercel.json and src/app/api/cron/ are all checked against this file by src/__tests__/cron-schedule-inventory.test.ts, so a schedule cannot be changed in one place and stay stale in the others.",
+  "$comment": "The single source of truth for the twenty-nine scheduled jobs. docs/CRON-EXTERNAL.md, .github/workflows/cron.yml, vercel.json and src/app/api/cron/ are all checked against this file by src/__tests__/cron-schedule-inventory.test.ts, so a schedule cannot be changed in one place and stay stale in the others.",
   "defaultBaseUrl": "https://kenyonexpress.vercel.app",
   "jobs": [
     { "name": "notifications", "path": "/api/cron/notifications", "cron": "*/5 * * * *" },
@@ -31,6 +31,9 @@
       "path": "/api/cron/cashback-settlement",
       "cron": "45 23 * * *"
     },
-    { "name": "slow-statements", "path": "/api/cron/slow-statements", "cron": "30 2 * * *" }
+    { "name": "slow-statements", "path": "/api/cron/slow-statements", "cron": "30 2 * * *" },
+    { "name": "sitemap-regen", "path": "/api/cron/sitemap-regen", "cron": "0 3 * * *" },
+    { "name": "analytics-rollup", "path": "/api/cron/analytics-rollup", "cron": "30 2 * * *" },
+    { "name": "log-cleanup", "path": "/api/cron/log-cleanup", "cron": "30 */6 * * *" }
   ]
 }

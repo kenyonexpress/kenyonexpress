@@ -133,6 +133,7 @@ describe('scheduled routes authenticate', () => {
     // list is the record of what runs on a schedule with admin credentials.
     expect(cronRouteFiles()).toEqual([
       'src/app/api/cron/abandoned-cart/route.ts',
+      'src/app/api/cron/analytics-rollup/route.ts',
       'src/app/api/cron/backup/route.ts',
       'src/app/api/cron/cashback-settlement/route.ts',
       'src/app/api/cron/daily-deals/route.ts',
@@ -143,12 +144,14 @@ describe('scheduled routes authenticate', () => {
       'src/app/api/cron/health/route.ts',
       'src/app/api/cron/invoices/route.ts',
       'src/app/api/cron/job-dlq/route.ts',
+      'src/app/api/cron/log-cleanup/route.ts',
       'src/app/api/cron/notifications/route.ts',
       'src/app/api/cron/reap-carts/route.ts',
       'src/app/api/cron/reconcile/route.ts',
       'src/app/api/cron/retention/route.ts',
       'src/app/api/cron/search-outbox/route.ts',
       'src/app/api/cron/search-reindex/route.ts',
+      'src/app/api/cron/sitemap-regen/route.ts',
       'src/app/api/cron/slow-statements/route.ts',
       'src/app/api/cron/stock/route.ts',
       'src/app/api/cron/stranded-payments/route.ts',

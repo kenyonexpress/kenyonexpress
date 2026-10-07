@@ -96,6 +96,9 @@ with no default and no fallback. A missing secret means every one answers 401.
 | `/api/cron/reap-carts` | `fn_reap_expired_carts()` | |
 | `/api/cron/stock` | Releases expired reservations | |
 | `/api/cron/health` | Seven dependency checks; the only thing that pages a human | |
+| `/api/cron/sitemap-regen` | Stales the `sitemap` and `feed` tags, warms `/sitemap.xml` on its own origin; 500 on an empty sitemap (STEP 37) | |
+| `/api/cron/analytics-rollup` | Backstop for pg_cron's `refresh_report_tables()`; skips when the rollup is under six hours old (STEP 37) | |
+| `/api/cron/log-cleanup` | `cleanup_rate_limits()` + `cleanup_user_rate_limits()`, nothing else (STEP 37) | |
 
 > **No scheduler is running.** These were deliberately removed from
 > `vercel.json`: Hobby allows two daily jobs, this needs ten, four at
