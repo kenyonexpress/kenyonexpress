@@ -21740,3 +21740,16 @@ Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=categ
 - `supabase.rls_denied` 401 / `reviews.read_failed` 42501 on product pages: the known issue, fixed by pending `231_reviews_anon_select.sql` (not applied).
 - Other gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped).
 - Decision: no drift, no code change. The uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` edits are left unstaged (parity gate blocker 0).
+
+## M06-c118: pnpm build, fix drift (DONE, 2026-10-08), status lines moved from STATE.md
+
+> Last item: **M06-c118 DONE** (2026-10-08): `pnpm build` exits 0 on the first attempt, so there is no drift to fix and no code changed. Prerender logged 4 recoverable `fetch failed` reads (coupon_deals, products, categories, suppliers, about 7.3s each). The data layer handled them and the build finished. The `reviews` 42501 (401) is the known pending-231 issue. Blocker 7 is cleared for now.
+>
+> M06-c118 gates (working tree, uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` UI edits left unstaged): type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0. This commit changes STATE.md and the archive only.
+
+## M07-c118: TODO/FIXME re-scan (DONE, 2026-10-08)
+
+- Scan: `git grep -nE '(^|[[:space:]])(TODO|FIXME|HACK|XXX)($|[[:space:]:(])'` excluding `docs/`, `refs/` and Markdown, plus the two uncommitted files (`HeroSlider.tsx`, `SiteFooter.tsx`, no markers). Real markers: `src/lib/payments/cardcom.ts:254` (blame 2026-07-24) and `:319` (blame 2026-08-07), already filed as B1 (#41) and B2 (#42). The other hits are the scanner's own doc comment and its test fixtures in `scripts/final-audit*.mjs`. No new markers, nothing to resolve.
+- `node scripts/final-audit.mjs`: `ok 0 work markers (of 2)`.
+- Change: a re-scan note in `docs/BACKLOG.md`. No code change.
+- Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1.

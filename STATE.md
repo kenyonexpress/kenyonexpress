@@ -1,10 +1,10 @@
-RESUME FROM: M07-c118
+RESUME FROM: M08-c118
 
 # KenyonExpress — Project State
 
-Last item: **M06-c118 DONE** (2026-10-08): `pnpm build` exits 0 on the first attempt, so there is no drift to fix and no code changed. Prerender logged 4 recoverable `fetch failed` reads (coupon_deals, products, categories, suppliers, about 7.3s each). The data layer handled them and the build finished. The `reviews` 42501 (401) is the known pending-231 issue. Blocker 7 is cleared for now.
-M06-c118 gates (working tree, uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` UI edits left unstaged): type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0. This commit changes STATE.md and the archive only.
-Previous: M05-c118 BLOCKED, M04-c118 DONE, M03-c118 BLOCKED, M02-c118 BLOCKED, M01-c118 BLOCKED, M18-c117 DONE, M17-c117 BLOCKED, M16-c117 DONE, M15-c117 DONE, M14-c117 BLOCKED, M13-c117 BLOCKED, M12-c117 DONE, M11-c117 DONE, M10-c117 BLOCKED, M09-c117 DONE, M08-c117 DONE, M07-c117 DONE, M06-c117 DONE, M05-c117 DONE, M04-c117 DONE, M03-c117 BLOCKED, M02-c117 BLOCKED, M01-c117 BLOCKED, M18-c116 DONE, M17-c116 BLOCKED, M16-c116 DONE, M15-c116 DONE, M14-c116 BLOCKED, M13-c116 BLOCKED, M12-c116 DONE, M11-c116 DONE, M10-c116 BLOCKED, M09-c116 DONE, M08-c116 DONE, M07-c116 DONE, M06-c116 DONE, M05-c116 DONE, M04-c116 DONE, M03-c116 BLOCKED, M02-c116 BLOCKED, M01-c116 BLOCKED, M18-c115 DONE, M16-c115 DONE, M15-c115 DONE, M14-c115 BLOCKED, M13-c115 BLOCKED, M12-c115 DONE, M11-c115 DONE, M10-c115 BLOCKED, M09-c115 DONE, M08-c115 DONE, M07-c115 DONE, M06-c115 DONE, M05-c115 DONE, M04-c115 DONE, M03-c115 BLOCKED, M02-c115 BLOCKED, M01-c115 BLOCKED (all 2026-10-07), M11-c113 DONE (2026-10-06).
+Last item: **M07-c118 DONE** (2026-10-08): TODO/FIXME re-scan with the same rule as M07-c115, including the two uncommitted working-tree files. Unchanged: only the two Cardcom markers remain (`cardcom.ts:254`, 2026-07-24, and `cardcom.ts:319`, 2026-08-07), both older than 7 days and already filed as B1 (#41) and B2 (#42), which need live Cardcom terminal credentials. Nothing new to resolve or file. `node scripts/final-audit.mjs`: 0 untracked work markers (of 2). The change is a re-scan note in `docs/BACKLOG.md`.
+M07-c118 gates (working tree, uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` UI edits left unstaged): type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1. Docs-only change, so compare.mjs does not apply (blocked anyway, blocker 0).
+Previous: M06-c118 DONE, M05-c118 BLOCKED, M04-c118 DONE, M03-c118 BLOCKED, M02-c118 BLOCKED, M01-c118 BLOCKED, M18-c117 DONE, M17-c117 BLOCKED, M16-c117 DONE, M15-c117 DONE, M14-c117 BLOCKED, M13-c117 BLOCKED, M12-c117 DONE, M11-c117 DONE, M10-c117 BLOCKED, M09-c117 DONE, M08-c117 DONE, M07-c117 DONE, M06-c117 DONE, M05-c117 DONE, M04-c117 DONE, M03-c117 BLOCKED, M02-c117 BLOCKED, M01-c117 BLOCKED, M18-c116 DONE, M17-c116 BLOCKED, M16-c116 DONE, M15-c116 DONE, M14-c116 BLOCKED, M13-c116 BLOCKED, M12-c116 DONE, M11-c116 DONE, M10-c116 BLOCKED, M09-c116 DONE, M08-c116 DONE, M07-c116 DONE, M06-c116 DONE, M05-c116 DONE, M04-c116 DONE, M03-c116 BLOCKED, M02-c116 BLOCKED, M01-c116 BLOCKED, M18-c115 DONE, M16-c115 DONE, M15-c115 DONE, M14-c115 BLOCKED, M13-c115 BLOCKED, M12-c115 DONE, M11-c115 DONE, M10-c115 BLOCKED, M09-c115 DONE, M08-c115 DONE, M07-c115 DONE, M06-c115 DONE, M05-c115 DONE, M04-c115 DONE, M03-c115 BLOCKED, M02-c115 BLOCKED, M01-c115 BLOCKED (all 2026-10-07), M11-c113 DONE (2026-10-06).
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
 
 ## Queue status (cycle c113)
@@ -77,6 +77,7 @@ The runner's `final-done.txt` lists M01–M10 of c113 as finished. This branch's
 | M04-c118 | pnpm type-check, fix drift | **DONE**: exit 0, no drift, no code change |
 | M05-c118 | pnpm test, fix drift | **BLOCKED**: test exit 0, 6474 passed, no drift; build gate failed on all 9 attempts with Supabase timeouts during prerender (see archive) |
 | M06-c118 | pnpm build, fix drift | **DONE**: exit 0 on attempt 1, no drift, no code change; 4 recoverable `fetch failed` reads logged (see archive) |
+| M07-c118 | TODO/FIXME older than 7 days: resolve or file in docs/BACKLOG.md | **DONE**: re-scan found only the 2 filed Cardcom markers (B1, B2), nothing new |
 
 ## Open blockers
 
