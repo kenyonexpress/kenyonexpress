@@ -1,5 +1,30 @@
 # `migrations/pending/`
 
+## 2026-10-08: 256 PENDING (`finalize` money twins add-if-missing + backfill, STEP 40)
+
+`256_finalize_money_twins_backfill.sql` is the idempotent companion to 224
+for the two post-059 names `src/server/payments/finalize.ts` reads after the
+card has been charged: `orders.cashback_applied_agorot` and
+`order_items.unit_price_agorot`. Per column, guarded on
+`information_schema`: absent with the ils source present, add 224's
+GENERATED twin (`round(<ils> * 100)::bigint STORED`, populated for every
+row by the ALTER itself); absent with no source, add `bigint NOT NULL
+DEFAULT 0`; present and writable, `SET DEFAULT 0` if it has none and
+`UPDATE ... = 0 WHERE ... IS NULL`; present and generated, nothing (428C9
+otherwise). A closing DO block raises if either name is still missing, if
+any row is NULL, or if a twin disagrees with its ils source. **Measured on
+production 2026-10-08 before writing:** both columns already exist as 224's
+generated twins, 0 NULLs and 0 mismatches on 46 orders and 46 order_items,
+so every branch is skipped and the file is a no-op there. **Rehearsed on
+production inside BEGIN/ROLLBACK through the management API the same day:**
+no error, `is_generated`, `column_default` and the column comments unchanged
+afterwards. The code side of the same step is
+`src/lib/commerce/hosted-columns.ts` (the measured schema, 273 columns) and
+`src/server/payments/finalize-schema-contract.test.ts`, which reads
+finalize.ts as text and fails on any column production lacks or any write
+to a generated column. Rollback in the file header. Awaits the same explicit
+approval as every file here.
+
 ## 2026-10-07: 255 PENDING (`fn_slow_statements`, STEP 28)
 
 `255_slow_statements_rpc.sql` creates one service-role-only function,

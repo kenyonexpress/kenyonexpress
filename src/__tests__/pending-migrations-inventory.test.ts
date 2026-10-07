@@ -466,6 +466,17 @@ describe('the pending migration inventory', () => {
       // BEGIN/ROLLBACK through the management API: 14 rows, grants right,
       // nothing persisted.
       '255_slow_statements_rpc.sql',
+      // 256 is PENDING (2026-10-08, STEP 40 finalize landmine): the two
+      // post-059 names finalize.ts reads after the card is charged
+      // (`orders.cashback_applied_agorot`, `order_items.unit_price_agorot`),
+      // added if absent (224's generated twin where the ils source exists,
+      // `bigint NOT NULL DEFAULT 0` otherwise), DEFAULT 0 + NULL backfill on a
+      // writable post-059 column, nothing on a generated one, then a verify
+      // block. Measured on production the same day: both columns are 224's
+      // generated twins with 0 NULLs and 0 mismatches, so every branch is
+      // skipped; REHEARSED inside BEGIN/ROLLBACK through the management API,
+      // no error, schema unchanged. README carries the row.
+      '256_finalize_money_twins_backfill.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

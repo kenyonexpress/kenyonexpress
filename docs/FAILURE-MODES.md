@@ -176,7 +176,10 @@ hard-coded in `src/lib/commerce/hosted-columns.ts` and
 `src/server/payments/finalize-schema-contract.test.ts` reads `finalize.ts` as
 text on every `pnpm test` and fails on a column production lacks, on a WRITE
 to a generated twin (428C9), on an insert that omits a NOT NULL column, and on
-an RPC argument no overload has. No migration was needed. The remaining
+an RPC argument no overload has. `migrations/pending/256_finalize_money_twins_backfill.sql`
+is the idempotent add-if-missing + DEFAULT 0 backfill for any database the
+code might meet; on production every branch is skipped (rehearsed in
+BEGIN/ROLLBACK, three branches exercised, schema unchanged). The remaining
 exposure is the probe: `buildOrderMoneyRow('agorot')` would write the
 generated twin, so the test also pins that `orders.total_agorot` and
 `order_items.platform_bp` are still absent.
