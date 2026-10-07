@@ -57,6 +57,26 @@ Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=home 
 - **Local HEAD `2e6d2e45b`** (`pnpm start -p 3517` on a clean build made in this run, with the uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` edits): all 4 runs return 200 with 0 `pageerror`. Each run has the same 5 environment-only console errors as M15-c115 and M15-c116: the 404s on `/_vercel/insights/script.js` and `/_vercel/speed-insights/script.js` with their strict-MIME refusals (off Vercel), and the wishlist prefetch `ERR_SSL_PROTOCOL_ERROR` on `https://localhost` (HSTS and `upgrade-insecure-requests` on http localhost). Product at 1440 also has the cancelled RSC self-request (`ERR_ABORTED`, no console message). There is no `/api/cart` 500.
 - No code change. Gates: `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6474 passed, 12 skipped), `pnpm build` 0 on attempt 1 (0 `supabase.timeout`, 0 `db.query_failed`). Not a UI change, so compare.mjs does not apply (blocker 0).
 
+## M08-c118: Lighthouse mobile on / and /product, run 2026-10-08 in the foreground
+
+Setup: the same as M08-c117. Lighthouse 13.4.1 from the repo (`pnpm exec lighthouse <url> --form-factor=mobile --chrome-flags="--headless=new --no-sandbox" --output=json`) with default `simulate` throttling. The target was `pnpm start -p 3522` on a clean production build made in this run, from HEAD `e5cb2e269` plus the uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` edits. The sample product is `/product/מוצר-לדוגמא` (200 locally). There were 3 runs per page, after one warm-up curl per page (both 200 in about 0.3 s). All 6 runs exited 0.
+
+| Page | Run | Perf | A11y | BP | SEO | FCP | LCP (sim) | TBT | CLS | SI | Observed LCP |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| / | 1 | 78 | 100 | 96 | 100 | 1.4 s | 5.9 s | 40 ms | 0 | 1.4 s | 361 ms |
+| / | 2 | 81 | 100 | 96 | 100 | 1.8 s | 4.8 s | 50 ms | 0.003 | 1.8 s | 224 ms |
+| / | 3 | 60 | 100 | 96 | 100 | 1.8 s | 5.1 s | 900 ms | 0.003 | 1.8 s | 371 ms |
+| /product/מוצר-לדוגמא | 1 | 84 | 100 | 96 | 100 | 1.8 s | 4.4 s | 30 ms | 0.001 | 1.8 s | 121 ms |
+| /product/מוצר-לדוגמא | 2 | 83 | 100 | 96 | 100 | 1.8 s | 4.5 s | 30 ms | 0.001 | 1.8 s | 133 ms |
+| /product/מוצר-לדוגמא | 3 | 84 | 100 | 96 | 100 | 1.8 s | 4.3 s | 30 ms | 0.001 | 1.8 s | 123 ms |
+
+- **Median: home Performance 78, product Performance 84** (M08-c117: 80 / 84, M08-c116: 82 / 84). Accessibility 100, Best Practices 96 and SEO 100 on every run.
+- Home run 3 (60) is a TBT outlier: 900 ms against 40–50 ms on runs 1 and 2, with an observed LCP in the same range (371 ms). This time the spike landed on run 3 and not run 1, so it is main-thread noise on this machine, the same pattern as the 59 in M08-c115 and M08-c117. Runs 1 and 2 (78, 81) are within 2–4 points of M08-c117 runs 2 and 3 (82, 80). Home run 1 simulated LCP 5.9 s with FCP 1.4 s is Lantern variance. No regression signal.
+- The simulated LCP (4.3–5.9 s) is the Lantern model. The observed LCP is 121–371 ms. As `docs/PERFORMANCE-BUDGET.md` says, a localhost score is a relative signal and not a field score.
+- The largest LCP saving is still `unused-javascript`, about 600 ms on most runs (750 ms product run 1, 1020 ms home run 1). Recorded and not acted on, because this item only measures.
+- Best Practices 96 is `errors-in-console` only, the same 5 local errors on every run: `/_vercel/insights/script.js` and `/_vercel/speed-insights/script.js` 404 off Vercel and are then refused on MIME type, and one `ERR_SSL_PROTOCOL_ERROR` (the wishlist prefetch upgraded to https by HSTS and `upgrade-insecure-requests` on http localhost). None is a production finding.
+- No code change. Gates in this run: `pnpm build` 0 on attempt 1 (3 `supabase.timeout` events, all absorbed, 0 `db.query_failed`), `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6474 passed, 12 skipped). Not a UI change, so compare.mjs does not apply (it is blocked anyway, see blocker 0). `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` are still uncommitted and not part of this commit.
+
 ## M08-c117: Lighthouse mobile on / and /product, run 2026-10-07 in the foreground
 
 Setup: the same as M08-c116. Lighthouse 13.4.1 from the repo (`pnpm exec lighthouse <url> --form-factor=mobile --chrome-flags="--headless=new --no-sandbox" --output=json`) with default `simulate` throttling. The target was `pnpm start -p 3522` on a clean production build made in this run, from HEAD `528ca1304` plus the uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` edits. The sample product is `/product/מוצר-לדוגמא` (200 locally). There were 3 runs per page, after one warm-up curl per page. All 6 runs exited 0.
