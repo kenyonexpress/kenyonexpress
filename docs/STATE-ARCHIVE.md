@@ -2,6 +2,26 @@
 
 Everything below was STATE.md up to commit 02a45128f (2026-10-06), moved here by M11-c113 to keep STATE.md under 300 lines.
 
+## M08-c117: Lighthouse mobile on / and /product, run 2026-10-07 in the foreground
+
+Setup: the same as M08-c116. Lighthouse 13.4.1 from the repo (`pnpm exec lighthouse <url> --form-factor=mobile --chrome-flags="--headless=new --no-sandbox" --output=json`) with default `simulate` throttling. The target was `pnpm start -p 3522` on a clean production build made in this run, from HEAD `528ca1304` plus the uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` edits. The sample product is `/product/מוצר-לדוגמא` (200 locally). There were 3 runs per page, after one warm-up curl per page. All 6 runs exited 0.
+
+| Page | Run | Perf | A11y | BP | SEO | FCP | LCP (sim) | TBT | CLS | SI | Observed LCP |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| / | 1 | 59 | 100 | 96 | 100 | 1.9 s | 5.8 s | 760 ms | 0 | 2.8 s | 1553 ms |
+| / | 2 | 82 | 100 | 96 | 100 | 1.8 s | 4.8 s | 50 ms | 0.003 | 1.8 s | 193 ms |
+| / | 3 | 80 | 100 | 96 | 100 | 1.8 s | 5.1 s | 40 ms | 0 | 1.8 s | 231 ms |
+| /product/מוצר-לדוגמא | 1 | 84 | 100 | 96 | 100 | 1.8 s | 4.4 s | 30 ms | 0.001 | 1.8 s | 157 ms |
+| /product/מוצר-לדוגמא | 2 | 84 | 100 | 96 | 100 | 1.8 s | 4.3 s | 30 ms | 0.001 | 1.8 s | 138 ms |
+| /product/מוצר-לדוגמא | 3 | 83 | 100 | 96 | 100 | 1.8 s | 4.6 s | 30 ms | 0.001 | 1.8 s | 185 ms |
+
+- **Median: home Performance 80, product Performance 84** (M08-c116: 82 / 84). Accessibility 100, Best Practices 96 and SEO 100 on every run.
+- Home run 1 (59) is a cold-render outlier: TBT 760 ms and observed LCP 1553 ms, against 40–50 ms and 193–231 ms on runs 2 and 3. A single curl did not fully warm the server. M08-c115 had the same pattern (59–88). Runs 2 and 3 (82, 80) match M08-c116 (81–82), so there is no regression signal.
+- The simulated LCP (4.3–5.8 s) is the Lantern model. The observed LCP is 138–1553 ms. As `docs/PERFORMANCE-BUDGET.md` says, a localhost score is a relative signal and not a field score.
+- The largest LCP saving is still `unused-javascript`, at about 600–750 ms on both pages, unchanged from M08-c116. It is recorded and not acted on, because this item only measures.
+- Best Practices 96 is `errors-in-console` only. All the errors are local, the same set as M08-c116: `/_vercel/insights/script.js` and `/_vercel/speed-insights/script.js` return 404 off Vercel and are then refused on MIME type, and one request fails with `ERR_SSL_PROTOCOL_ERROR` (the wishlist prefetch upgraded to https by HSTS and `upgrade-insecure-requests` on http localhost). None of these is a production finding.
+- No code change. Gates in this run: `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6474 passed, 12 skipped), `pnpm build` 0 on attempt 1 (4 `supabase.timeout` events, all absorbed, 0 `db.query_failed`). This is not a UI change, so compare.mjs does not apply (it is blocked anyway, see blocker 0). `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` are still uncommitted and not part of this commit.
+
 ## M02-c117: compare.mjs on /product at 380, 768, 1440, run 2026-10-07 in the foreground
 
 Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=product --width=<w>` (server: `PORT=3311 pnpm start` on the existing build, HEAD `0e3d131e7` with the two uncommitted UI edits in the tree)

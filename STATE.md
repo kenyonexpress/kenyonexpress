@@ -1,10 +1,10 @@
-RESUME FROM: M08-c117
+RESUME FROM: M09-c117
 
 # KenyonExpress — Project State
 
-Last item: **M07-c117 DONE** (2026-10-07): TODO/FIXME re-scan with the M07-c115 rule, working tree included. Only the two Cardcom markers remain (`cardcom.ts:254`, `:319`), both already filed as B1 (#41) and B2 (#42) in `docs/BACKLOG.md`; nothing new to resolve or file. `node scripts/final-audit.mjs`: 0 untracked work markers (of 2). Next ID: M08-c117.
-M07-c117 gates (working tree, the two uncommitted UI edits still unstaged): type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0. Not a UI change, so compare.mjs does not apply (and is blocked anyway, blocker 0).
-Previous: M06-c117 DONE, M05-c117 DONE, M04-c117 DONE, M03-c117 BLOCKED, M02-c117 BLOCKED, M01-c117 BLOCKED, M18-c116 DONE, M17-c116 BLOCKED, M16-c116 DONE, M15-c116 DONE, M14-c116 BLOCKED, M13-c116 BLOCKED, M12-c116 DONE, M11-c116 DONE, M10-c116 BLOCKED, M09-c116 DONE, M08-c116 DONE, M07-c116 DONE, M06-c116 DONE, M05-c116 DONE, M04-c116 DONE, M03-c116 BLOCKED, M02-c116 BLOCKED, M01-c116 BLOCKED, M18-c115 DONE, M16-c115 DONE, M15-c115 DONE, M14-c115 BLOCKED, M13-c115 BLOCKED, M12-c115 DONE, M11-c115 DONE, M10-c115 BLOCKED, M09-c115 DONE, M08-c115 DONE, M07-c115 DONE, M06-c115 DONE, M05-c115 DONE, M04-c115 DONE, M03-c115 BLOCKED, M02-c115 BLOCKED, M01-c115 BLOCKED (all 2026-10-07), M11-c113 DONE (2026-10-06).
+Last item: **M08-c117 DONE** (2026-10-07): Lighthouse mobile, 3 runs per page on a local production build of HEAD `528ca1304` (`pnpm start -p 3522`). **Median Performance: home 80, product 84** (M08-c116: 82 / 84). Accessibility 100, Best Practices 96 and SEO 100 on every run. Home run 1 (59) was a cold-render outlier; runs 2 and 3 (82, 80) match c116. BP 96 is local console errors only. No code change. Next ID: M09-c117.
+M08-c117 gates (working tree, the two uncommitted UI edits still unstaged): type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0. Not a UI change, so compare.mjs does not apply (and is blocked anyway, blocker 0).
+Previous: M07-c117 DONE, M06-c117 DONE, M05-c117 DONE, M04-c117 DONE, M03-c117 BLOCKED, M02-c117 BLOCKED, M01-c117 BLOCKED, M18-c116 DONE, M17-c116 BLOCKED, M16-c116 DONE, M15-c116 DONE, M14-c116 BLOCKED, M13-c116 BLOCKED, M12-c116 DONE, M11-c116 DONE, M10-c116 BLOCKED, M09-c116 DONE, M08-c116 DONE, M07-c116 DONE, M06-c116 DONE, M05-c116 DONE, M04-c116 DONE, M03-c116 BLOCKED, M02-c116 BLOCKED, M01-c116 BLOCKED, M18-c115 DONE, M16-c115 DONE, M15-c115 DONE, M14-c115 BLOCKED, M13-c115 BLOCKED, M12-c115 DONE, M11-c115 DONE, M10-c115 BLOCKED, M09-c115 DONE, M08-c115 DONE, M07-c115 DONE, M06-c115 DONE, M05-c115 DONE, M04-c115 DONE, M03-c115 BLOCKED, M02-c115 BLOCKED, M01-c115 BLOCKED (all 2026-10-07), M11-c113 DONE (2026-10-06).
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
 
 ## Queue status (cycle c113)
@@ -60,6 +60,7 @@ The runner's `final-done.txt` lists M01–M10 of c113 as finished. This branch's
 | M05-c117 | pnpm test, fix drift | **DONE**: exit 0, 6474 passed, 12 skipped, no drift, no code change |
 | M06-c117 | pnpm build, fix drift | **DONE**: exit 0; anon 42501 on `reviews` found, fix written as pending 231 (see archive) |
 | M07-c117 | TODO/FIXME older than 7 days: resolve or file in docs/BACKLOG.md | **DONE**: re-scan found only the 2 filed Cardcom markers (B1, B2), nothing new |
+| M08-c117 | Lighthouse mobile on / and /product sample, log scores | **DONE**: median perf 80 / 84, a11y 100, BP 96, SEO 100; home run 1 cold outlier 59 (see archive) |
 
 ## Open blockers
 
