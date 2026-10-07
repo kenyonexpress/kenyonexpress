@@ -1,0 +1,35 @@
+[autopilot] payments(finalize): schema contract test against the measured hosted schema, 224 twins confirmed live, no migration needed (STEP 40)
+
+Audit of the two names the goal called a launch landmine, measured against
+production information_schema on 2026-10-08:
+
+- orders.cashback_applied_agorot and order_items.unit_price_agorot EXIST,
+  as 224 left them: GENERATED ALWAYS AS (round(<ils> * 100))::bigint STORED.
+  0 NULLs and 0 mismatches against their ils sources on 46 orders and
+  46 order items. Nothing to add and nothing to backfill, so no migration.
+- Every column finalize.ts selects, filters on, inserts or updates across
+  its 11 tables, and every argument of its 5 RPC calls, exists in
+  production. The generation probes (orders.total_agorot,
+  order_items.platform_bp) are still absent, so the write path keeps
+  writing the ils sources and never touches a generated twin.
+
+What changed:
+
+- src/lib/commerce/hosted-columns.ts: the 273 production columns of those
+  11 tables (generated / required flags) and the identity arguments of the
+  5 functions, hard-coded with the refresh queries in the header.
+- src/server/payments/finalize-schema-contract.test.ts: reads finalize.ts
+  as text and fails on a column production lacks, on a WRITE to a
+  GENERATED column (428C9), on an insert that omits a NOT NULL column, and
+  on an RPC argument no overload has. Mutation-checked: a bogus select
+  column and a bogus insert key both fail it.
+- src/lib/commerce/order-money-columns.test.ts: the 2026-07-31 column
+  lists now derive from the fixture, plus two tests that the ils rows
+  never write the generated twins.
+- src/types/database.ts: the two 224 columns added exactly as
+  supabase gen types renders them (Row / Insert / Update). A full regen is
+  a 2,702-line diff and a separate goal.
+- docs/FAILURE-MODES.md 2.2 and the risk table: closed 2026-10-08.
+- STATE.md: STEP 40 entry and the next pointer.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>

@@ -1,0 +1,28 @@
+[autopilot] migrations(256): finalize money twins add-if-missing + DEFAULT 0 backfill, rehearsed on production in three branches, not applied (STEP 40)
+
+The goal asked for the missing-column migration and the backfill as
+artifacts. Both names finalize.ts reads after the card is charged already
+exist in production as 224's generated twins, so the file is an idempotent
+companion to 224 that is a measured no-op there and does the right thing on
+any other lineage:
+
+- absent + ils source present: add the GENERATED twin as 224 does
+  (populated for every row by the ALTER itself)
+- absent + no source: add bigint NOT NULL DEFAULT 0
+- present + writable: SET DEFAULT 0 if none, UPDATE NULLs to 0
+- present + generated: nothing (428C9 otherwise)
+- closing DO block: raise if a name is missing, any row is NULL, or a twin
+  disagrees with its ils source
+
+Rehearsed on production inside BEGIN/ROLLBACK through the management API,
+three times: as-is (every branch skipped, verify passed on 46 + 46 rows),
+with both twins dropped inside the transaction (re-added GENERATED, 0
+NULLs), and with the twins replaced by plain nullable columns and the ils
+sources dropped (DEFAULT 0 set, every NULL backfilled). After each
+ROLLBACK is_generated, column_default and the 224 comments were unchanged.
+
+Registered in migrations/pending/README.md and the inventory test; the
+migration linter reports nothing on 256. Not applied: that waits for the
+explicit approval every file in pending/ waits for.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
