@@ -17,6 +17,19 @@ Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=categ
 - Moved from STATE.md (verbatim): `Last item: **M02-c118 BLOCKED** (2026-10-07): compare.mjs on `/product` exits 5 (REFUSED, no diff number) at 380, 768 and 1440. `https://kenyonexpress.co.il/product/מוצר-לדוגמא/` is our own build (360 `/_next/` refs, 0 wp-content) and `refs/ke_live_singlefile.html` is still absent. Unchanged from M02-c117; open blocker 0. No code change. Detail in `docs/STATE-ARCHIVE.md`.` and `M02-c118 gates (working tree, uncommitted UI edits unstaged): type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 5 (attempts 1–4 hit Supabase 10s prerender timeouts).`
 - Decision: BLOCKED on open blocker 0. No code change.
 
+## M01-c119: compare.mjs on / at 380, 768, 1440, run 2026-10-08 in the foreground
+
+Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=home --width=<w>` (server: `PORT=3311 pnpm start` on the existing build, HEAD `71b5c4852` with the two uncommitted UI edits in the tree)
+
+| Width | Exit | Diff | Output |
+|---|---|---|---|
+| 380 | 5 | none | REFUSING: `https://kenyonexpress.co.il/` is this project's own build (35 `/_next/` refs, Next runtime, no wp-content) |
+| 768 | 5 | none | REFUSING: same reason |
+| 1440 | 5 | none | REFUSING: same reason |
+
+- No diff numbers, unchanged from M01-c118. `refs/ke_live_singlefile.html` is still absent. The gate wrote four REFUSED rows to `docs/UI-PARITY-REPORT.md` (one extra 380 run to capture the refusal reason), committed with this item. The last real home number is still 10.92 at 1440 (older archive).
+- Moved from STATE.md (verbatim): `Last item: **M18-c118 DONE** (2026-10-08): STATE.md was 117 lines at the start (under 300), so no trim was needed. Following the M18-c116 and M18-c117 precedent, the 2 M17-c118 status lines were moved to `docs/STATE-ARCHIVE.md`. Resume line, queue table, open blockers and manual items are kept.` and `M18-c118 gates (working tree, uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` UI edits left unstaged): type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (9 recoverable `supabase.timeout`, 0 `db.query_failed`). Docs-only change, compare.mjs does not apply (blocker 0).`
+
 ## M01-c118: compare.mjs on / at 380, 768, 1440, run 2026-10-07 in the foreground
 
 Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=home --width=<w>` (server: `PORT=3311 pnpm start` on the existing build, HEAD `593a81f3a` with the two uncommitted UI edits in the tree)
