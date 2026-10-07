@@ -1,9 +1,9 @@
-RESUME FROM: M05-c115
+RESUME FROM: M06-c115
 
 # KenyonExpress — Project State
 
-Last item: **M04-c115 DONE** (2026-10-07): `pnpm type-check` exits 0, so there was no type drift to fix. Branch `feat/products-sort-infinite-scroll`.
-Previous: M03-c115 BLOCKED (2026-10-07), M02-c115 BLOCKED (2026-10-07), M01-c115 BLOCKED (2026-10-07), M11-c113 DONE (2026-10-06).
+Last item: **M05-c115 DONE** (2026-10-07): `pnpm test` exits 0, so there was no test drift to fix. Branch `feat/products-sort-infinite-scroll`.
+Previous: M04-c115 DONE (2026-10-07), M03-c115 BLOCKED (2026-10-07), M02-c115 BLOCKED (2026-10-07), M01-c115 BLOCKED (2026-10-07), M11-c113 DONE (2026-10-06).
 History before this item lives in `docs/STATE-ARCHIVE.md` (21,138 lines moved there in this commit).
 
 ## Queue status (cycle c113)
@@ -20,6 +20,15 @@ The runner's `final-done.txt` lists M01–M10 of c113 as finished. This branch's
 | M02-c115 | Re-measure compare.mjs on /product | **BLOCKED**: gate refuses, no reference (see below) |
 | M03-c115 | Re-measure compare.mjs on /category | **BLOCKED**: gate refuses, no reference (see below) |
 | M04-c115 | pnpm type-check, fix drift | **DONE**: exit 0, no drift, no code change (see below) |
+| M05-c115 | pnpm test, fix drift | **DONE**: exit 0, no drift, no code change (see below) |
+
+## M05-c115: pnpm test, run 2026-10-07
+
+- `pnpm test` (vitest) exits **0**: 519 files passed, 6473 tests passed, 12 skipped, 0 failed (86 s). There was no drift to fix and no code changed.
+- The `Error: Not implemented: navigation (except hash changes)` lines in the output are jsdom stderr from link-click tests. They are not failures.
+- Other gates in the same run: `pnpm type-check` 0, `pnpm lint` 0, `pnpm build` 0 on the first attempt.
+- The uncommitted `src/app/robots*.ts` edits from M12-c113 work were in the tree during the run. They are not part of this commit.
+- Not a UI change, so compare.mjs was not needed (it would refuse anyway, see blocker 0).
 
 ## M04-c115: pnpm type-check, run 2026-10-07
 
