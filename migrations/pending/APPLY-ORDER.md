@@ -1,5 +1,10 @@
 # Apply order
 
+## 2026-10-08 (STEP 56): 263 filed; any time, no dependencies
+
+263 only flips `is_active` on two `seo_redirects` rows. It depends on
+nothing pending and nothing pending depends on it; apply whenever.
+
 ## 2026-10-08 (STEP 47): 261 filed; apply 253 before 261
 
 261 reads the live `notification_outbox_kind_check`, keeps every name it

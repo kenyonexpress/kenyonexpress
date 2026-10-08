@@ -3,13 +3,13 @@
   "$why": "public.seo_redirects is empty in production, so every retired URL 404s. This is the map that fills it, corrected against what production actually serves.",
   "$how": "scripts/build-legacy-redirects.mjs reads data/legacy/url-inventory.json (the frozen 2026-08-11 crawl), measures the live catalogue through the anon key, reads the static route tree off src/app, and drops every row whose source is live or whose target is not.",
   "$generated_by": "scripts/build-legacy-redirects.mjs",
-  "$measured_at": "2026-10-08T08:30:28.256Z",
+  "$measured_at": "2026-10-08T09:16:01.347Z",
   "$counts": {
     "inventory": 87,
-    "redirects": 33,
+    "redirects": 32,
     "redirect_301": 20,
-    "redirect_410": 13,
-    "excluded": 54
+    "redirect_410": 12,
+    "excluded": 55
   },
   "$targets": {
     "$predicate": {
@@ -194,6 +194,7 @@
       "/checkout/failed",
       "/checkout/frame-return",
       "/checkout/return",
+      "/compare",
       "/contact",
       "/cookies",
       "/coupons",
@@ -242,9 +243,9 @@
     "$what": "Every URL the retired WordPress site served, and what this site does with it.",
     "$why": "A cutover loses traffic through the one bucket that raises nothing: a URL Google has indexed, with no page behind it and no redirect row pointing anywhere.",
     "legacy_urls": 87,
-    "served_unchanged": 52,
+    "served_unchanged": 53,
     "redirected_301": 20,
-    "gone_410": 13,
+    "gone_410": 12,
     "lost_404": 2,
     "lost": [
       "/product/restaurants-meat-2",
@@ -260,14 +261,6 @@
       "rule": "page_gone_410",
       "entity": "page",
       "wp_id": 8990
-    },
-    {
-      "source": "/compare",
-      "target": "",
-      "status": 410,
-      "rule": "page_gone_410",
-      "entity": "page",
-      "wp_id": 2917
     },
     {
       "source": "/coupon-scanner",
@@ -563,6 +556,11 @@
       "source": "/checkout",
       "reason": "same_path_live",
       "note": "unchanged URL, served today (static route)"
+    },
+    {
+      "source": "/compare",
+      "reason": "source_is_live",
+      "note": "serves 200 today (static route); a row here would take it down"
     },
     {
       "source": "/contact",

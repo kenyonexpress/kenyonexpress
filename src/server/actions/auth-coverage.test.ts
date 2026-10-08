@@ -55,6 +55,10 @@ const PUBLIC_ACTIONS = new Map<string, string>([
   // are rate limited per IP (and the send per number) in their own bodies.
   ['signup-phone.ts:resendSignupPhoneOtp', 'registration step, rate limited per IP and per number'],
   ['signup-phone.ts:verifySignupPhone', 'registration step, rate limited per IP'],
+  // Compare (STEP 56): the list of ids lives in the browser, no account is
+  // involved, and the read is the public catalogue (RLS on `products`) for
+  // at most four ids, re-cleaned in the body; cheaper than one page view.
+  ['compare.ts:getCompareView', 'public catalogue read of up to four ids, no per-user data'],
   ['auth.ts:signOut', "acts on the caller's own session, no arguments"],
   ['auth.ts:signOutAll', "acts on the caller's own session, no arguments"],
   ['auth.ts:sendPasswordReset', 'reset must work when locked out'],

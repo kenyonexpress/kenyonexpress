@@ -51,6 +51,7 @@ const NOINDEX_PAGES = [
   '(store)/wallet/page.tsx',
   '(store)/wishlist/page.tsx',
   '(store)/wishlist/shared/[token]/page.tsx',
+  '(store)/compare/page.tsx',
   '(store)/gift/[token]/page.tsx',
   '(store)/checkout/app-return/page.tsx',
   '(store)/checkout/frame-return/page.tsx',

@@ -6,6 +6,8 @@ import DealsOfTheDay from './DealsOfTheDay'
 vi.mock('@/components/cart/AddToCartButton', () => ({ default: () => null }))
 // Same for the wishlist heart (STEP 12): a client island on useRouter().
 vi.mock('@/components/product/WishlistButton', () => ({ default: () => null }))
+// And the compare control beside it (STEP 56), a client island on useRouter() too.
+vi.mock('@/components/compare/CompareButton', () => ({ default: () => null }))
 
 /**
  * THE PHONE'S LCP IMAGE IS EAGER AND HIGH PRIORITY, AND ONLY THAT ONE.

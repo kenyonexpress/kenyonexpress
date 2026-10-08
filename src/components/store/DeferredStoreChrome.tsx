@@ -22,12 +22,18 @@ const Toaster = dynamic(() => import('@/components/ui/sonner').then((m) => m.Toa
 const MobileCartBar = dynamic(() => import('@/components/cart/MobileCartBar'), {
   ssr: false,
 })
+// The compare tray (STEP 56) paints only once the browser list has been
+// read, which is after hydration by design, so it defers for free too.
+const CompareBar = dynamic(() => import('@/components/compare/CompareBar'), {
+  ssr: false,
+})
 
 export default function DeferredStoreChrome() {
   return (
     <>
       <CartDrawer />
       <MobileCartBar />
+      <CompareBar />
       <Toaster position="top-center" dir="rtl" richColors closeButton />
     </>
   )

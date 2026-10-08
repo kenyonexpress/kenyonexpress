@@ -508,6 +508,10 @@ describe('the pending migration inventory', () => {
       // STEP 55: campaign landing pages. `landing_pages` + `v_landing_pages_live`;
       // measured absent on production 2026-10-08. README carries the row.
       '262_landing_pages.sql',
+      // STEP 56: deactivate the 192 rows that 410 `/compare` and `/wishlist`,
+      // both live routes now; measured active on production 2026-10-08.
+      // README carries the row.
+      '263_seo_redirects_release_compare.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

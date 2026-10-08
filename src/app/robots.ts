@@ -29,6 +29,7 @@ export default function robots(): MetadataRoute.Robots {
           '/coupon/', // a customer's own voucher, code and QR on screen
           '/account/',
           '/wallet', // the account wallet's short door (STEP 13)
+          '/compare', // the shopper's own compare table, empty for a crawler (STEP 56)
           '/supplier/',
           '/scan',
           '/voucher/', // the merchant validation page: a voucher's balance, by id or code

@@ -1,6 +1,7 @@
 'use client'
 
 import AddToCartButton from '@/components/cart/AddToCartButton'
+import CompareButton from '@/components/compare/CompareButton'
 import WishlistButton from '@/components/product/WishlistButton'
 import { discountPercent } from '@/lib/discount-percent'
 import { cityByName } from '@/lib/geo/cities'
@@ -161,6 +162,12 @@ export default function CategoryProductCard({
             productId={product.id}
             variant="overlay"
             className="tap-area absolute bottom-2 end-2 z-10 grid h-9 w-9 place-items-center rounded-full border border-gray-200 bg-white/95 text-icon opacity-0 shadow-sm transition-opacity hover:border-price focus-visible:opacity-100 disabled:opacity-50 group-hover:opacity-100 data-[saved=true]:text-price data-[saved=true]:opacity-100 [@media(hover:none)]:opacity-100"
+          />
+          {/* Under the heart, same corner, same hover rule (STEP 56). */}
+          <CompareButton
+            productId={product.id}
+            variant="overlay"
+            className="tap-area absolute bottom-12 end-2 z-10 grid h-9 w-9 place-items-center rounded-full border border-gray-200 bg-white/95 text-icon opacity-0 shadow-sm transition-opacity hover:border-price focus-visible:opacity-100 group-hover:opacity-100 data-[compared=true]:border-price data-[compared=true]:text-price data-[compared=true]:opacity-100 [@media(hover:none)]:opacity-100"
           />
           <Link href={`/product/${product.slug}`} className="category-card__link">
             <h2 className="category-card__title">{product.name_he}</h2>

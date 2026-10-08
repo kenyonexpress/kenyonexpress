@@ -7,6 +7,7 @@ import { ABOVE_FOLD_CARD_COUNT } from './above-fold'
 // cart provider and the wishlist heart wants useRouter().
 vi.mock('@/components/cart/AddToCartButton', () => ({ default: () => null }))
 vi.mock('@/components/product/WishlistButton', () => ({ default: () => null }))
+vi.mock('@/components/compare/CompareButton', () => ({ default: () => null }))
 
 const product = (n: number): CategoryProduct => ({
   id: `p${n}`,

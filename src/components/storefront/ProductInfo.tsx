@@ -1,6 +1,7 @@
 'use client'
 
 import { useCart } from '@/components/cart/CartProvider'
+import CompareButton from '@/components/compare/CompareButton'
 import CityTag from '@/components/geo/CityTag'
 import WishlistButton from '@/components/product/WishlistButton'
 import FacebookShareButton from '@/components/shared/FacebookShareButton'
@@ -456,6 +457,7 @@ export default function ProductInfo({
             beside it quotes at ₪80. See lib/share/message.ts. */}
         <span className="inline-flex flex-wrap items-center gap-4">
           <WishlistButton productId={productId} variant="inline" />
+          <CompareButton productId={productId} variant="inline" />
           <WhatsAppShareButton
             productId={productId}
             message={buildShareMessage({ name, priceIls: price, offer: couponOffer })}

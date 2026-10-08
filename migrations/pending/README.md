@@ -1,5 +1,18 @@
 # `migrations/pending/`
 
+## 2026-10-08: 263 PENDING (release `/compare` and `/wishlist` from the legacy 410 rows, STEP 56)
+
+`263_seo_redirects_release_compare.sql` sets `is_active = false` on the two
+`seo_redirects` rows 192 seeded as 410 for `/compare` and `/wishlist`. Both
+are live routes now (STEP 56 and STEP 12) and the proxy answers a 410 row
+before routing, so in production both pages are dead until this runs.
+Measured on production 2026-10-08: both rows active. Deactivates rather
+than deletes, so the row stays as the record of what the old site served
+and rollback is one UPDATE (in the header). Idempotent, with a self-check
+that raises if an active 410 remains on either path. No dependency on any
+other pending file. After applying, allow the proxy's five-minute map
+cache to expire (or redeploy) and confirm `/compare` answers 200.
+
 ## 2026-10-08: 262 PENDING (campaign landing pages: `/lp/[slug]` from a CMS row, A/B variants, STEP 55)
 
 `262_landing_pages.sql` adds `public.landing_pages` (slug UNIQUE with the

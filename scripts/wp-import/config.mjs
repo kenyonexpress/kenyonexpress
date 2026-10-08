@@ -186,7 +186,9 @@ export const ROUTES = {
  *
  * `gone: true` means an explicit 410. It is for features the new store does not
  * have and is not going to grow back (Dokan vendor dashboards, the YITH
- * compare/wishlist plugins, a dead PayPlus error page). 410 rather than a 301 to
+ * plugin paths, a dead PayPlus error page). `/compare` left this list when
+ * the store grew its own compare page (STEP 56); `/wishlist` is a live route
+ * too and its row is retired by the same migration (263). 410 rather than a 301 to
  * the homepage, because redirecting a missing feature to the front page is a
  * soft 404: Google keeps the old URL indexed and the customer lands somewhere
  * that does not answer their question.
@@ -213,7 +215,6 @@ export const PAGE_REDIRECTS = {
   '/affiliate-area': { gone: true },
   '/dashboard': { gone: true },
   '/store-listing': { gone: true },
-  '/compare': { gone: true },
   '/yith-compare': { gone: true },
   '/recently-viewed': { gone: true },
   '/wishlist': { gone: true },
