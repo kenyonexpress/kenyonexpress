@@ -22543,3 +22543,10 @@ Setup: the same as M08-c120. Lighthouse 13.4.1 from the repo (`pnpm exec lightho
 | M16-c118 | Verify all product pages have JSON-LD Product and BreadcrumbList | **DONE**: 44/44 prod, 46/46 HEAD, both nodes valid; same 3 image-less rows lack `image`, unchanged from M16-c117 (see archive) |
 | M17-c118 | Verify RTL on / and /product sample, no LTR leaks | **BLOCKED**: 42/42 runs RTL-clean except the same footer newsletter placeholder, flush left in prod; uncommitted fix clean locally but compare.mjs refuses (exit 5 x6, blocker 0) (see archive) |
 | M18-c118 | Trim STATE.md under 300 lines, archive rest | **DONE**: already 117 lines at start, no trim needed; 2 M17-c118 status lines moved to `docs/STATE-ARCHIVE.md` |
+
+## M04-c122: pnpm type-check, 2026-10-08
+
+- `pnpm type-check` (`tsc --noEmit`) exit 0 on HEAD `7b2437555` plus the uncommitted `HeroSlider.tsx` and `SiteFooter.tsx`. No drift, no code change.
+- Gates: lint 0 (i18n, locale-format, input-dir, docs-index and docs-path gates clean). Test run 1 exit 1: 506/506 files and 6280 tests passed, but 13 unhandled forks-worker timeouts (load average 55 to 101 from other processes) kept 13 files from running. Test run 2, after the load fell, exit 0: 519 files, 6474 passed, 12 skipped. Build 0 on attempt 1 (14 recovered `supabase.timeout`, 0 `db.query_failed`).
+- Not a UI change, so compare.mjs does not apply.
+- Moved from STATE.md (verbatim): Last item: **M03-c122 BLOCKED** (2026-10-08): compare.mjs on `/category` exits 5 at 380, 768 and 1440 with no diff number. The gate refuses because `https://kenyonexpress.co.il/product-category/hot-deals/` is this project's own build (38/37/37 `/_next/` refs, Next runtime, no wp-content) and `refs/ke_live_singlefile.html` is still absent. Run in the foreground, HEAD `0404276c6`. See blocker 0 and the M03-c122 section in the archive.
