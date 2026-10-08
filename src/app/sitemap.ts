@@ -1,5 +1,12 @@
 import { LEGAL_DOCS } from '@/app/(legal)/_content'
-import { sortedPosts } from '@/content/blog'
+import {
+  type BlogPost,
+  categoriesInUse,
+  postsInCategory,
+  postsWithTag,
+  sortedPosts,
+  tagsInUse,
+} from '@/content/blog'
 import { CacheLife, CacheTags } from '@/lib/cache/tags'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { orFail } from '@/lib/catalogue-read'
@@ -42,6 +49,12 @@ import { cacheLife, cacheTag } from 'next/cache'
  * `new Date()` is legal inside a cached scope; outside one, under this flag, it
  * is an error - see src/components/CopyrightYear.tsx.
  */
+
+function newestPostDate(posts: readonly BlogPost[]): Date {
+  const newest = sortedPosts(posts)[0]
+  return new Date(newest ? (newest.updatedAt ?? newest.publishedAt) : 0)
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   'use cache'
   cacheLife(CacheLife.sitemap)
@@ -159,6 +172,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(post.updatedAt ?? post.publishedAt),
       changeFrequency: 'monthly' as const,
       priority: 0.5,
+    })),
+    // The category and tag pages (STEP 54), only the ones with a post behind
+    // them: the same `categoriesInUse` / `tagsInUse` the index links, so the
+    // sitemap cannot list a page the site 404s. Each is dated by its newest
+    // post, which is the one thing on it that changes.
+    ...categoriesInUse().map((category) => ({
+      url: `${base}/blog/category/${category.slug}`,
+      lastModified: newestPostDate(postsInCategory(category.slug)),
+      changeFrequency: 'weekly' as const,
+      priority: 0.4,
+    })),
+    ...tagsInUse().map((tag) => ({
+      url: `${base}/blog/tag/${tag.slug}`,
+      lastModified: newestPostDate(postsWithTag(tag.slug)),
+      changeFrequency: 'weekly' as const,
+      priority: 0.3,
     })),
     // The legal pages DO carry a date, because they have one: `updatedAt` is a
     // field of the document, so unlike `/contact` there is a real signal to

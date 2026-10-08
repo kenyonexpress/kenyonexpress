@@ -1,4 +1,11 @@
-import { findPost } from '@/content/blog'
+import {
+  findAuthor,
+  findCategory,
+  findPost,
+  findTag,
+  formatPostDate,
+  jsonLdPost,
+} from '@/content/blog'
 import { buildBlogPostingJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
 import { siteUrl } from '@/lib/site-url'
 import Link from 'next/link'
@@ -17,19 +24,21 @@ import Link from 'next/link'
  * body still reaches the reader; what is lost is the header and the JSON-LD,
  * which is a smaller failure than a 500 on a published URL. `blog.test.ts`
  * catches the mismatch before it ships.
+ *
+ * THE BYLINE (STEP 54) names the author from the registry and links to the
+ * only profile the site has, `/about`. The same author goes into the JSON-LD
+ * as a `Person`, so the byline a reader sees and the author Google reads are
+ * one field.
  */
 export default function BlogPostHeader({ slug }: { slug: string }) {
   const post = findPost(slug)
   if (!post) return null
 
   const base = siteUrl()
-  const jsonLd = buildBlogPostingJsonLd(post, base)
-
-  const published = new Date(post.publishedAt).toLocaleDateString('he-IL', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  })
+  const author = findAuthor(post.author)
+  const category = findCategory(post.category)
+  const tags = post.tags.map(findTag).filter((tag) => tag !== null)
+  const jsonLd = buildBlogPostingJsonLd(jsonLdPost(post), base)
 
   return (
     <>
@@ -49,6 +58,16 @@ export default function BlogPostHeader({ slug }: { slug: string }) {
         <Link href="/blog" className="hover:text-heading">
           הבלוג
         </Link>
+        {category ? (
+          <>
+            <span aria-hidden="true" className="mx-2">
+              /
+            </span>
+            <Link href={`/blog/category/${category.slug}`} className="hover:text-heading">
+              {category.name}
+            </Link>
+          </>
+        ) : null}
         <span aria-hidden="true" className="mx-2">
           /
         </span>
@@ -56,9 +75,39 @@ export default function BlogPostHeader({ slug }: { slug: string }) {
       </nav>
 
       <h1 className="text-3xl font-bold text-heading">{post.title}</h1>
-      <p className="mt-2 text-sm text-heading/75">
-        {published} · {post.readingMinutes} דקות קריאה
+      <p className="mt-2 text-sm text-heading/75" data-testid="blog-byline">
+        {author ? (
+          <>
+            מאת{' '}
+            <Link href={author.url} className="font-semibold text-heading hover:underline">
+              {author.name}
+            </Link>
+            {' · '}
+          </>
+        ) : null}
+        <time dateTime={post.publishedAt}>{formatPostDate(post.publishedAt)}</time>
+        {post.updatedAt ? (
+          <>
+            {' · '}עודכן <time dateTime={post.updatedAt}>{formatPostDate(post.updatedAt)}</time>
+          </>
+        ) : null}
+        {' · '}
+        {post.readingMinutes} דקות קריאה
       </p>
+      {tags.length > 0 ? (
+        <ul className="mt-3 flex flex-wrap gap-2" aria-label="תגיות">
+          {tags.map((tag) => (
+            <li key={tag.slug}>
+              <Link
+                href={`/blog/tag/${tag.slug}`}
+                className="inline-block rounded-full bg-heading/5 px-2.5 py-0.5 text-xs font-semibold text-heading hover:bg-heading/10"
+              >
+                {tag.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      ) : null}
     </>
   )
 }

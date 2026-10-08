@@ -1,5 +1,6 @@
 import { publicPageMetadata } from '@/lib/seo/page-metadata'
 import BlogPostHeader from '@/components/storefront/BlogPostHeader'
+import BlogPostFooter from '@/components/storefront/BlogPostFooter'
 import { findPost } from '@/content/blog'
 
 export const post = findPost('how-coupons-work')
@@ -75,3 +76,5 @@ export const metadata = publicPageMetadata({
 ---
 
 נשארה שאלה? יש [עמוד שאלות נפוצות](/faq) מפורט, ואפשר גם [לכתוב לנו](/contact).
+
+<BlogPostFooter slug="how-coupons-work" />

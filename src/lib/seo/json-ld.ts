@@ -329,18 +329,37 @@ export interface BlogPostLike {
   /** ISO date. */
   publishedAt: string
   updatedAt?: string
+  /**
+   * The byline (STEP 54). Site-relative `url` is made absolute here. Named
+   * `byline` and not `author` because the registry's `author` is an id, and a
+   * `BlogPost` passed here by mistake must not type-check as carrying one.
+   */
+  byline?: { name: string; url: string }
+  /** The category name, as printed. */
+  articleSection?: string
+  /** The tag labels, as printed. */
+  keywords?: readonly string[]
 }
 
 const PUBLISHER_NAME = 'KenyonExpress'
 
 /**
- * `BlogPosting` for one post. The publisher is the site; the author is the
- * site too, because the posts are house-written and unsigned, and an Article
- * with no author at all is a warning in Google's parser.
+ * `BlogPosting` for one post. The publisher is the site. The author is the
+ * `Person` in the byline when the post names one (every post does since
+ * STEP 54), and the site itself otherwise: an Article with no author at all
+ * is a warning in Google's parser, and a post whose registry entry lacks an
+ * author is still a post.
  */
 export function buildBlogPostingJsonLd(post: BlogPostLike, siteUrl: string): JsonLdNode {
   const site = trimSite(siteUrl)
   const url = `${site}/blog/${encodeURIComponent(post.slug)}`
+  const author = post.byline
+    ? {
+        '@type': 'Person',
+        name: post.byline.name,
+        url: post.byline.url.startsWith('http') ? post.byline.url : `${site}${post.byline.url}`,
+      }
+    : { '@type': 'Organization', name: PUBLISHER_NAME, url: site }
   return {
     '@context': SCHEMA,
     '@type': 'BlogPosting',
@@ -350,7 +369,9 @@ export function buildBlogPostingJsonLd(post: BlogPostLike, siteUrl: string): Jso
     dateModified: post.updatedAt ?? post.publishedAt,
     url,
     inLanguage: 'he-IL',
-    author: { '@type': 'Organization', name: PUBLISHER_NAME, url: site },
+    author,
+    ...(post.articleSection ? { articleSection: post.articleSection } : {}),
+    ...(post.keywords && post.keywords.length > 0 ? { keywords: post.keywords.join(', ') } : {}),
     publisher: {
       '@type': 'Organization',
       name: PUBLISHER_NAME,
@@ -361,14 +382,24 @@ export function buildBlogPostingJsonLd(post: BlogPostLike, siteUrl: string): Jso
   }
 }
 
-/** `Blog` for the index: the posts in the order the page lists them. */
-export function buildBlogJsonLd(posts: readonly BlogPostLike[], siteUrl: string): JsonLdNode {
+/**
+ * `Blog` for the index: the posts in the order the page lists them.
+ *
+ * A category or tag page passes its own `name` and `path` so its node names
+ * the page it is on and not `/blog`; the posts inside are still the same
+ * `BlogPosting` nodes, built by the same function as the article's own.
+ */
+export function buildBlogJsonLd(
+  posts: readonly BlogPostLike[],
+  siteUrl: string,
+  options: { name?: string; path?: string } = {},
+): JsonLdNode {
   const site = trimSite(siteUrl)
   return {
     '@context': SCHEMA,
     '@type': 'Blog',
-    name: 'הבלוג של קניון אקספרס',
-    url: `${site}/blog`,
+    name: options.name ?? 'הבלוג של קניון אקספרס',
+    url: `${site}${options.path ?? '/blog'}`,
     inLanguage: 'he-IL',
     publisher: { '@type': 'Organization', name: PUBLISHER_NAME, url: site },
     blogPost: posts.map((post) => {

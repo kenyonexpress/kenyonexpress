@@ -80,7 +80,12 @@ export const metadata: Metadata = {
     // NOT the Merchant feed: that one is pulled by a URL configured inside
     // Merchant Center and has no business being offered to browsers.
     types: {
-      'application/rss+xml': [{ url: '/feed.xml', title: 'קניון אקספרס — דילים חדשים' }],
+      'application/rss+xml': [
+        { url: '/feed.xml', title: 'קניון אקספרס — דילים חדשים' },
+        // The blog's own feed (STEP 54): posts, not deals, for a reader who
+        // wants the guides and not fifty coupons a week.
+        { url: '/blog/feed.xml', title: 'הבלוג של קניון אקספרס' },
+      ],
     },
   },
   // A field and not the app/manifest.ts file convention: the file convention
