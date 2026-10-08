@@ -22328,3 +22328,9 @@ The runner's `final-done.txt` lists M01–M10 of c113 as finished. This branch's
 | M17-c117 | Verify RTL on / and /product sample, no LTR leaks | **BLOCKED**: 42/42 runs RTL-clean except the same footer newsletter placeholder, flush left; uncommitted fix still cannot pass compare.mjs (exit 5 x6, blocker 0) (see archive) |
 | M18-c117 | Trim STATE.md under 300 lines, archive rest | **DONE**: already 98 lines at start, no trim needed; 2 M17-c117 status lines moved to `docs/STATE-ARCHIVE.md` |
 - Gates: `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6474 passed, 12 skipped), `pnpm build` 0 on attempt 1 (21 recovered `supabase.timeout`). No code change, not a UI change, so compare.mjs does not apply. `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` are still uncommitted and not part of this commit.
+
+## M04-c121 pnpm type-check, fix drift (2026-10-08)
+
+- `pnpm type-check` (`tsc --noEmit`) exit 0 at HEAD `3e45e980c` on branch `feat/products-sort-infinite-scroll`, working tree including the uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` edits. No type errors, no drift, no code change.
+- Gates: `pnpm lint` 0, `pnpm test` 0 (519 files, 6474 passed, 12 skipped), `pnpm build` 0 on attempt 1 (8 recovered `supabase.timeout`). Not a UI change, so compare.mjs does not apply (it still refuses, blocker 0). `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` are still uncommitted and not part of this commit.
+- Moved from STATE.md (verbatim): Last item: **M03-c121 BLOCKED** (2026-10-08): compare.mjs on `/category` exits 5 at 380, 768 and 1440 with no diff number. The gate refuses because `https://kenyonexpress.co.il/product-category/hot-deals/` is this project's own build (38/37/37 `/_next/` refs, Next runtime, no wp-content) and `refs/ke_live_singlefile.html` is still absent. Run in the foreground, HEAD `96c3a2f6f`. See blocker 0 and the M03-c121 section in the archive.
