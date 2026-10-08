@@ -1,7 +1,8 @@
 -- 250_referral_program_seed.sql
 --
--- Turns the referral programme on at the terms STEP 13 names: ₪20 of
--- cashback to the referrer for every successful referral (STEP 13, 01.10).
+-- Turns the referral programme on at the terms STEP 13 and STEP 46 name:
+-- ₪20 of cashback to the referrer for every successful referral (STEP 13,
+-- 01.10) and ₪10 to the referred friend on the same order (STEP 46, 08.10).
 --
 -- MEASURED BEFORE WRITING. `referral_program_settings` (098, applied) holds
 -- ZERO rows on production (measured 2026-08-31, restated in
@@ -14,10 +15,15 @@
 -- WHAT THE ROW SAYS AND WHY EACH NUMBER.
 --   referrer_bonus_agorot   2000   ₪20, the figure the step names, integer
 --                                  agorot like every other money column.
---   referred_bonus_agorot   0      The step names one reward, the referrer's.
---                                  A second one is not invented here; the
---                                  referrals page hides the friend's clause
---                                  when this is zero instead of printing ₪0.
+--   referred_bonus_agorot   1000   ₪10 to the friend on the same qualifying
+--                                  order (STEP 46, "bonus cashback both
+--                                  sides"; STEP 13 named the referrer's side
+--                                  only and this file seeded 0 until 08.10).
+--                                  Equal to the wallet's minimum redemption,
+--                                  so the friend's first bonus is spendable
+--                                  on its own. Mirrored for display by
+--                                  src/lib/referrals/terms.ts and pinned by
+--                                  terms.test.ts.
 --   min_order_agorot        5000   NOT NULL with no default, so it has to be
 --                                  chosen. ₪50: the friend's first order must
 --                                  bring in more cash than the bonus costs,
@@ -33,7 +39,10 @@
 --                                  guard, and a matched device, card or IP
 --                                  lands in /admin/referrals as `flagged`
 --                                  rather than paying. Only clean
---                                  completions pay without a human.
+--                                  completions pay without a human, through
+--                                  fn_pay_referral called from
+--                                  src/server/referrals/complete.ts (STEP 46;
+--                                  before it nothing made that call).
 --   is_active               true   The programme is on.
 --
 -- ON CONFLICT DO NOTHING, NOT UPSERT. If someone has already entered terms,
@@ -41,7 +50,7 @@
 -- the failure 098's comment exists to prevent. The self-check below reports
 -- what the row actually says either way.
 --
--- THE BONUS IS CASHBACK AND EXPIRES LIKE CASHBACK. `fn_complete_referral`
+-- THE BONUS IS CASHBACK AND EXPIRES LIKE CASHBACK. `fn_pay_referral`
 -- (098) pays with `fn_wallet_transfer` FROM `platform:cashback_reserve`
 -- under reason `referral_bonus`. `fn_cashback_expire` (215, applied) sweeps
 -- every credit whose debit side is that reserve, keyed on the account and
@@ -79,7 +88,7 @@ INSERT INTO public.referral_program_settings
   (id, referrer_bonus_agorot, referred_bonus_agorot, min_order_agorot,
    require_manual_approval, is_active)
 VALUES
-  (true, 2000, 0, 5000, false, true)
+  (true, 2000, 1000, 5000, false, true)
 ON CONFLICT (id) DO NOTHING;
 
 -- Self-check: exactly one row, the programme is on, and the referrer's

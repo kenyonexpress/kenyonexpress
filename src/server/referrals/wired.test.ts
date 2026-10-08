@@ -78,6 +78,44 @@ describe('the completion', () => {
   })
 })
 
+describe('the payout', () => {
+  // Measured 2026-10-08: `fn_complete_referral` decides and answers
+  // `ready_to_pay`; `fn_pay_referral` is what credits the wallets, and until
+  // STEP 46 its only caller was the admin approve button. A clean referral
+  // therefore sat `pending` forever. This is the assertion that the automatic
+  // path exists.
+  it('is made from the completion, not only from the admin approve button', () => {
+    expect(code('src/server/referrals/complete.ts')).toContain("'fn_pay_referral'")
+    expect(code('src/server/actions/admin/referrals.ts')).toContain("'fn_pay_referral'")
+  })
+
+  it('is retried on the answer 260 gives a row that already qualified', () => {
+    expect(code('src/server/referrals/complete.ts')).toContain("'qualified_unpaid'")
+    const migration = readFileSync(
+      join(root, 'migrations/pending/260_referral_qualified_guard_and_first_time_claim.sql'),
+      'utf8',
+    )
+    expect(migration).toContain("'qualified_unpaid'")
+    expect(migration).toContain("'existing_customer'")
+    expect(migration).toContain('referral_code_used')
+  })
+})
+
+describe('the share', () => {
+  it('offers WhatsApp from the share card, through the one share-link builder', () => {
+    const card = code('src/components/account/ReferralShareCard.tsx')
+    expect(card).toContain('waShareLink(')
+    expect(card).toContain('referralShareText(')
+    expect(card).toContain("track('whatsapp_click'")
+  })
+
+  it('hands the card the friend bonus from the live terms, never a literal', () => {
+    const page = code('src/app/(account)/account/referrals/page.tsx')
+    expect(page).toContain('friendBonusLabel={program.referredBonus > 0 ? referredBonus : null}')
+    expect(code('src/lib/referrals/share.ts')).not.toMatch(/₪\s*\d/)
+  })
+})
+
 describe('the customer can get to it', () => {
   it('is linked from the account nav, not only routable', () => {
     expect(code('src/components/account/AccountNav.tsx')).toContain("href: '/account/referrals'")

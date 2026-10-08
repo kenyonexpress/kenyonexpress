@@ -189,3 +189,119 @@ describe('completeReferralForOrder', () => {
     expect(logInfo).toHaveBeenCalled()
   })
 })
+
+/**
+ * THE PAYOUT. Measured 2026-10-08: 098's `fn_complete_referral` answers
+ * `ready_to_pay` on a clean first order and moves no money; `fn_pay_referral`
+ * is the function that credits both wallets, and before STEP 46 the only
+ * caller it had was the admin approve button. These tests are the second call.
+ */
+describe('completeReferralForOrder pays a clean completion', () => {
+  const REFERRAL = '33333333-3333-4333-8333-333333333333'
+
+  function rpcByName(answers: Record<string, unknown>) {
+    rpc.mockImplementation((name: string) =>
+      Promise.resolve({ data: answers[name] ?? { ok: false, reason: 'unexpected' }, error: null }),
+    )
+  }
+
+  it('calls fn_pay_referral with the referral id when the decision is ready_to_pay', async () => {
+    preO59()
+    selectResult.mockReturnValue({ data: { total_ils: 200 }, error: null })
+    rpcByName({
+      fn_complete_referral: { ok: true, reason: 'ready_to_pay', referral_id: REFERRAL },
+      fn_pay_referral: { ok: true, reason: 'paid' },
+    })
+
+    await completeReferralForOrder(client() as never, { orderId: ORDER, userId: USER })
+
+    const names = rpc.mock.calls.map((c) => c[0])
+    expect(names).toEqual(['fn_complete_referral', 'fn_pay_referral'])
+    expect(rpc.mock.calls[1]?.[1]).toEqual({ p_referral_id: REFERRAL })
+    expect(logWarn).not.toHaveBeenCalled()
+  })
+
+  it('retries the payout on qualified_unpaid, the answer 260 gives a row whose first order already qualified', async () => {
+    preO59()
+    selectResult.mockReturnValue({ data: { total_ils: 200 }, error: null })
+    rpcByName({
+      fn_complete_referral: { ok: true, reason: 'qualified_unpaid', referral_id: REFERRAL },
+      fn_pay_referral: { ok: true, reason: 'paid' },
+    })
+
+    await completeReferralForOrder(client() as never, { orderId: ORDER, userId: USER })
+
+    expect(rpc.mock.calls.map((c) => c[0])).toEqual(['fn_complete_referral', 'fn_pay_referral'])
+  })
+
+  it.each(['held_for_review', 'already_resolved'])('moves no money on %s', async (reason) => {
+    preO59()
+    selectResult.mockReturnValue({ data: { total_ils: 200 }, error: null })
+    rpcByName({ fn_complete_referral: { ok: true, reason, referral_id: REFERRAL } })
+
+    await completeReferralForOrder(client() as never, { orderId: ORDER, userId: USER })
+
+    expect(rpc.mock.calls.map((c) => c[0])).toEqual(['fn_complete_referral'])
+  })
+
+  it.each(['below_minimum', 'window_expired', 'no_referral', 'program_inactive'])(
+    'moves no money on a refused decision (%s)',
+    async (reason) => {
+      preO59()
+      selectResult.mockReturnValue({ data: { total_ils: 200 }, error: null })
+      rpcByName({ fn_complete_referral: { ok: false, reason } })
+
+      await completeReferralForOrder(client() as never, { orderId: ORDER, userId: USER })
+
+      expect(rpc.mock.calls.map((c) => c[0])).toEqual(['fn_complete_referral'])
+    },
+  )
+
+  it('does not pay when ready_to_pay arrives without a referral id', async () => {
+    // Nothing to key the idempotent transfer on, so nothing is sent.
+    preO59()
+    selectResult.mockReturnValue({ data: { total_ils: 200 }, error: null })
+    rpcByName({ fn_complete_referral: { ok: true, reason: 'ready_to_pay' } })
+
+    await completeReferralForOrder(client() as never, { orderId: ORDER, userId: USER })
+
+    expect(rpc.mock.calls.map((c) => c[0])).toEqual(['fn_complete_referral'])
+  })
+
+  it('warns and resolves when the payout fails, because the card is already charged', async () => {
+    preO59()
+    selectResult.mockReturnValue({ data: { total_ils: 200 }, error: null })
+    rpc.mockImplementation((name: string) =>
+      name === 'fn_pay_referral'
+        ? Promise.resolve({ data: null, error: { message: 'no_reserve_account' } })
+        : Promise.resolve({
+            data: { ok: true, reason: 'ready_to_pay', referral_id: REFERRAL },
+            error: null,
+          }),
+    )
+
+    await expect(
+      completeReferralForOrder(client() as never, { orderId: ORDER, userId: USER }),
+    ).resolves.toBeUndefined()
+    expect(logWarn).toHaveBeenCalledWith(
+      'referrals.pay_failed',
+      expect.objectContaining({ referralId: REFERRAL }),
+    )
+  })
+
+  it('warns when the payout function answers ok:false', async () => {
+    preO59()
+    selectResult.mockReturnValue({ data: { total_ils: 200 }, error: null })
+    rpcByName({
+      fn_complete_referral: { ok: true, reason: 'ready_to_pay', referral_id: REFERRAL },
+      fn_pay_referral: { ok: false, reason: 'no_referrer_wallet' },
+    })
+
+    await completeReferralForOrder(client() as never, { orderId: ORDER, userId: USER })
+
+    expect(logWarn).toHaveBeenCalledWith(
+      'referrals.pay_result',
+      expect.objectContaining({ ok: false, reason: 'no_referrer_wallet' }),
+    )
+  })
+})

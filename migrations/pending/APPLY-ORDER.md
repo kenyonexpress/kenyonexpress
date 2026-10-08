@@ -1,5 +1,20 @@
 # Apply order
 
+## 2026-10-08 (STEP 46): 260 filed, 250 amended; apply 250 then 260, in that order
+
+260 replaces two function bodies from 098 (applied) and touches no table;
+250 is the settings row the programme needs to be on at all. Order: **250,
+then 260**. Neither depends on the other technically (260's preflight needs
+098 only), but applying 260 first would leave the programme off with a guard
+nobody can reach, and applying 250 alone turns the programme on at ₪20 / ₪10
+with the automatic payout already live from code. Rehearsed 260 on
+production inside BEGIN/ROLLBACK on 2026-10-08 (201, self-check passed, body
+unchanged after). After applying, confirm with
+`select position('qualified_unpaid' in pg_get_functiondef('public.fn_complete_referral(uuid,uuid,integer,text)'::regprocedure))`
+(must be > 0) and
+`select referrer_bonus_agorot, referred_bonus_agorot, is_active from referral_program_settings`
+(2000, 1000, true).
+
 ## 2026-10-07 (STEP 39): 148, 149, 169 x2, 170, 171, 172 x2 RE-VERIFIED LIVE OBJECT BY OBJECT; 162 NOT APPLIED
 
 The goal named seven numbers to "apply one at a time with an approval log and a

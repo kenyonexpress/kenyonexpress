@@ -650,6 +650,44 @@
   display: flex;
   gap: 8px;
   margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.referral-share__whatsapp {
+  background: var(--color-whatsapp);
+  border-color: var(--color-whatsapp);
+  color: #fff;
+}
+
+.referral-share__whatsapp:hover {
+  background: var(--color-whatsapp);
+  filter: brightness(0.95);
+}
+
+.referral-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0 0 16px;
+}
+
+.referral-stats > div {
+  padding: 10px 12px;
+  border: 1px solid var(--account-line);
+  border-radius: 4px;
+  background: #fafafa;
+}
+
+.referral-stats dt {
+  font-size: 12px;
+  color: var(--account-muted);
+}
+
+.referral-stats dd {
+  margin: 2px 0 0;
+  font-size: 18px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
 .referral-share__link-row {

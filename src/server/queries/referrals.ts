@@ -35,6 +35,14 @@ export interface ReferralRow {
   /** The deadline `fn_complete_referral` enforces, null when the row predates it. */
   qualifyBy: string | null
   /**
+   * True once a qualifying first order has been recorded on the row. With
+   * `status === 'pending'` that means "the friend bought, the payout is
+   * owed": the state between `fn_complete_referral` and `fn_pay_referral`,
+   * which is a different sentence to the customer than "waiting for the
+   * first purchase".
+   */
+  qualified: boolean
+  /**
    * The bonus actually snapshotted onto the row, in integer agorot, or null
    * while it is still pending. Null is not zero: it means "the amount has not
    * been fixed yet", and the page reads the live programme terms for that case
@@ -64,13 +72,14 @@ function readBonus(value: unknown): Agorot | null {
   return Number.isFinite(n) ? agorot(Math.round(n)) : null
 }
 
-/** The columns 098 adds. `database.ts` was generated before it and names none of them. */
+/** The columns this screen reads, as PostgREST returns them. */
 interface ReferralDbRow {
   id: string
   status: string
   created_at: string
   completed_at: string | null
   qualify_by: string | null
+  referred_first_order_id: string | null
   referrer_user_id: string
   referred_user_id: string
   referrer_bonus_agorot: number | null
@@ -136,7 +145,7 @@ export async function getMyReferrals(): Promise<{
   const { data, error } = await supabase
     .from('referrals')
     .select(
-      'id, status, created_at, completed_at, qualify_by, referrer_user_id, referred_user_id, referrer_bonus_agorot, referred_bonus_agorot' as never,
+      'id, status, created_at, completed_at, qualify_by, referred_first_order_id, referrer_user_id, referred_user_id, referrer_bonus_agorot, referred_bonus_agorot' as never,
     )
     .or(`referrer_user_id.eq.${user.id},referred_user_id.eq.${user.id}`)
     .order('created_at', { ascending: false })
@@ -163,6 +172,7 @@ export async function getMyReferrals(): Promise<{
       createdAt: row.created_at,
       completedAt: row.completed_at,
       qualifyBy: row.qualify_by,
+      qualified: row.referred_first_order_id !== null && row.referred_first_order_id !== undefined,
     }
     if (row.referrer_user_id === user.id) {
       asReferrer.push({ ...common, bonusAgorot: readBonus(row.referrer_bonus_agorot) })

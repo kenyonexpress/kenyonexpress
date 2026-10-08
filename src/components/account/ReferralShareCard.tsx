@@ -1,12 +1,17 @@
 'use client'
 
+import WhatsAppIcon from '@/components/shared/WhatsAppIcon'
+import { track } from '@/lib/analytics/tracker'
+import { referralShareText } from '@/lib/referrals/share'
+import { waShareLink } from '@/lib/whatsapp'
 import { ensureMyReferralCode } from '@/server/actions/referrals'
-import { useState, useTransition } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 import { toast } from 'sonner'
 
 /**
  * The half of the referrals page that a customer acts on: their code, the link
- * built from it, and the button that mints one when they have none.
+ * built from it, the three ways to send it, and the button that mints a code
+ * when they have none.
  *
  * MINTING IS A BUTTON AND NOT A PAGE LOAD
  *
@@ -23,22 +28,65 @@ import { toast } from 'sonner'
  * worse than no copy button, so the URL sits in a readonly field that can
  * always be selected by hand, and the button is the shortcut rather than the
  * only route.
+ *
+ * WHATSAPP IS THE FIRST BUTTON, NOT A FALLBACK
+ *
+ * This is an Israeli shop and the message a referrer actually sends is a
+ * WhatsApp message. The share link for that channel carries `utm_source=
+ * whatsapp` so a landing from it is tellable apart from a pasted link, and the
+ * tap is reported as `whatsapp_click` like every other WhatsApp exit on the
+ * site. The native share sheet is offered only where the browser has one
+ * (`navigator.share`, decided after mount so the server and the first client
+ * render agree), and the copy button is always there.
  */
 export default function ReferralShareCard({
   initialCode,
   shareOrigin,
-  shareParam,
+  friendBonusLabel,
+  minOrderLabel,
 }: {
   initialCode: string | null
   /** Absolute origin the link is built on, resolved on the server. */
   shareOrigin: string
-  shareParam: string
+  /** The friend's bonus, formatted by the page from the live terms, or null when zero. */
+  friendBonusLabel: string | null
+  /** The minimum qualifying order, formatted by the page from the live terms. */
+  minOrderLabel: string
 }) {
   const [code, setCode] = useState(initialCode)
   const [pending, start] = useTransition()
   const [error, setError] = useState<string | null>(null)
+  const [canShare, setCanShare] = useState(false)
 
-  const shareUrl = code ? `${shareOrigin}/?${shareParam}=${code}` : null
+  useEffect(() => {
+    setCanShare(typeof navigator !== 'undefined' && typeof navigator.share === 'function')
+  }, [])
+
+  const share = code
+    ? {
+        whatsapp: referralShareText({
+          code,
+          origin: shareOrigin,
+          channel: 'whatsapp',
+          friendBonusLabel,
+          minOrderLabel,
+        }),
+        native: referralShareText({
+          code,
+          origin: shareOrigin,
+          channel: 'share',
+          friendBonusLabel,
+          minOrderLabel,
+        }),
+        copy: referralShareText({
+          code,
+          origin: shareOrigin,
+          channel: 'copy',
+          friendBonusLabel,
+          minOrderLabel,
+        }),
+      }
+    : null
 
   const copy = async (value: string, what: string) => {
     try {
@@ -48,6 +96,27 @@ export default function ReferralShareCard({
       // Not a silent failure and not a thrown one. The text is on screen and
       // selectable, so the honest message is the one that says so.
       toast.error('ההעתקה נחסמה בדפדפן. אפשר לסמן את הטקסט ולהעתיק ידנית.')
+    }
+  }
+
+  const openWhatsApp = () => {
+    if (!share) return
+    // Before the window opens: the exit to a chat is the moment this page
+    // loses the shopper, so the event must not wait for a return.
+    track('whatsapp_click', { context: 'referral' })
+    window.open(waShareLink(share.whatsapp.text), '_blank', 'noopener,noreferrer')
+  }
+
+  const nativeShare = async () => {
+    if (!share) return
+    try {
+      await navigator.share({
+        title: 'חבר מביא חבר בקניון Express',
+        text: share.native.text,
+        url: share.native.url,
+      })
+    } catch {
+      // A dismissed sheet is not an error to report.
     }
   }
 
@@ -83,11 +152,30 @@ export default function ReferralShareCard({
       {/* dir="ltr" on the code itself: it is eight Latin characters and digits,
           and inside an RTL paragraph a browser would otherwise reorder a code
           that ends in a digit. The container stays RTL. */}
-      <p className="referral-share__code" dir="ltr">
+      <p className="referral-share__code" dir="ltr" data-testid="referral-code">
         {code}
       </p>
 
       <div className="referral-share__actions">
+        <button
+          type="button"
+          className="account-btn account-btn--primary referral-share__whatsapp"
+          onClick={openWhatsApp}
+          data-testid="referral-share-whatsapp"
+        >
+          <WhatsAppIcon size={18} />
+          שיתוף בוואטסאפ
+        </button>
+        {canShare && (
+          <button
+            type="button"
+            className="account-btn"
+            onClick={nativeShare}
+            data-testid="referral-share-native"
+          >
+            שיתוף...
+          </button>
+        )}
         <button type="button" className="account-btn" onClick={() => code && copy(code, 'הקוד')}>
           העתקת הקוד
         </button>
@@ -102,13 +190,13 @@ export default function ReferralShareCard({
           className="referral-share__link"
           dir="ltr"
           readOnly
-          value={shareUrl ?? ''}
+          value={share?.copy.url ?? ''}
           onFocus={(event) => event.currentTarget.select()}
         />
         <button
           type="button"
           className="account-btn account-btn--primary"
-          onClick={() => shareUrl && copy(shareUrl, 'הקישור')}
+          onClick={() => share && copy(share.copy.url, 'הקישור')}
         >
           העתקת הקישור
         </button>

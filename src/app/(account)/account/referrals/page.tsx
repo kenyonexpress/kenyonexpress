@@ -1,7 +1,7 @@
 import ReferralShareCard from '@/components/account/ReferralShareCard'
 import { formatDate, formatIls } from '@/lib/account/format'
 import { CASHBACK_LIFETIME_MONTHS } from '@/lib/cashback/expiry'
-import { REFERRAL_QUERY_PARAM } from '@/lib/referrals/code'
+import { agorot } from '@/lib/money'
 import { siteUrl } from '@/lib/site-url'
 import type { ReferralRow, ReferralStatus } from '@/server/queries/referrals'
 import { getMyReferralSummary } from '@/server/queries/referrals'
@@ -26,6 +26,18 @@ const STATUS_LABELS: Record<ReferralStatus, string> = {
   rejected: 'לא אושר',
 }
 
+/**
+ * `pending` with a first order on the row: the friend bought, the bonus is
+ * snapshotted, and only the wallet credit is outstanding. Telling that customer
+ * "waiting for the first purchase" next to a fixed sum is a contradiction on
+ * the screen, so it gets its own sentence.
+ */
+const QUALIFIED_LABEL = 'הרכישה בוצעה, הבונוס בדרך לארנק'
+
+function statusLabel(row: ReferralRow): string {
+  return row.status === 'pending' && row.qualified ? QUALIFIED_LABEL : STATUS_LABELS[row.status]
+}
+
 const STATUS_TONE: Record<ReferralStatus, string> = {
   pending: 'warn',
   flagged: 'warn',
@@ -48,9 +60,9 @@ function ReferralListRow({
         <p className="account-row__title">הצטרפות מתאריך {formatDate(row.createdAt)}</p>
         <p className="account-row__meta">
           <span className={`referral-status referral-status--${STATUS_TONE[row.status]}`}>
-            {STATUS_LABELS[row.status]}
+            {statusLabel(row)}
           </span>
-          {row.status === 'pending' && row.qualifyBy && (
+          {row.status === 'pending' && !row.qualified && row.qualifyBy && (
             <span> יש זמן לרכישה עד {formatDate(row.qualifyBy)}</span>
           )}
         </p>
@@ -76,6 +88,8 @@ export default async function ReferralsPage() {
   const referrerBonus = program ? formatIls(program.referrerBonus) : null
   const referredBonus = program ? formatIls(program.referredBonus) : null
   const completed = summary.asReferrer.filter((r) => r.status === 'completed')
+  const bought = summary.asReferrer.filter((r) => r.status === 'completed' || r.qualified)
+  const earnedAgorot = agorot(completed.reduce((sum, r) => sum + (r.bonusAgorot ?? 0), 0))
 
   return (
     <>
@@ -113,8 +127,9 @@ export default async function ReferralsPage() {
               </li>
               <li>
                 {/* The friend's clause only when the friend gets something.
-                    250 seeds the referred side at zero, and "your friend gets
-                    ₪0.00" is not a sentence to put in front of anyone. */}
+                    250 seeds the referred side at ₪10 since STEP 46; a row a
+                    person entered at zero must not print "your friend gets
+                    ₪0.00" in front of anyone. */}
                 {program.referredBonus > 0
                   ? `אתם מקבלים ${referrerBonus} קאשבק לארנק, והחבר מקבל ${referredBonus}.`
                   : `אתם מקבלים ${referrerBonus} קאשבק לארנק.`}
@@ -132,7 +147,8 @@ export default async function ReferralsPage() {
             <ReferralShareCard
               initialCode={summary.code}
               shareOrigin={siteUrl()}
-              shareParam={REFERRAL_QUERY_PARAM}
+              friendBonusLabel={program.referredBonus > 0 ? referredBonus : null}
+              minOrderLabel={formatIls(program.minOrder)}
             />
           </section>
         </>
@@ -154,6 +170,26 @@ export default async function ReferralsPage() {
             <span className="referral-count"> ({completed.length} זוכו)</span>
           )}
         </h2>
+
+        {/* The referrer's own funnel: how many joined, how many bought, what
+            was credited. Three counts from rows RLS already handed over; no
+            extra read and nothing about who the friends are. */}
+        {summary.asReferrer.length > 0 && (
+          <dl className="referral-stats" data-testid="referral-stats">
+            <div>
+              <dt>הצטרפו</dt>
+              <dd>{summary.asReferrer.length}</dd>
+            </div>
+            <div>
+              <dt>קנו</dt>
+              <dd>{bought.length}</dd>
+            </div>
+            <div>
+              <dt>זוכה לארנק</dt>
+              <dd>{formatIls(earnedAgorot)}</dd>
+            </div>
+          </dl>
+        )}
 
         {summary.asReferrer.length === 0 ? (
           <p className="account-empty">עדיין לא הצטרף אף אחד דרך הקוד שלכם.</p>

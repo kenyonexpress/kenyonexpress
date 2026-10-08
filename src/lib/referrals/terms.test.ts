@@ -3,7 +3,7 @@ import { join } from 'node:path'
 import { CASHBACK_CREDIT_REASONS } from '@/lib/cashback/tracker'
 import { WALLET_REASON_LABELS } from '@/server/queries/account'
 import { describe, expect, it } from 'vitest'
-import { REFERRAL_CASHBACK_AGOROT, REFERRAL_WALLET_REASON } from './terms'
+import { REFERRAL_CASHBACK_AGOROT, REFERRAL_WALLET_REASON, REFERRED_CASHBACK_AGOROT } from './terms'
 
 /**
  * Three files have to agree for "₪20 of cashback per referral, expiring after
@@ -38,11 +38,18 @@ describe('the referral reward', () => {
     expect(values, 'the seed tuple was not found').not.toBeNull()
     const [, referrer, referred, minOrder, manual, active] = values as RegExpMatchArray
     expect(Number(referrer)).toBe(REFERRAL_CASHBACK_AGOROT)
-    expect(Number(referred)).toBe(0)
-    // A friend's first order has to bring in more cash than the bonus costs.
-    expect(Number(minOrder)).toBeGreaterThan(REFERRAL_CASHBACK_AGOROT)
+    expect(Number(referred)).toBe(REFERRED_CASHBACK_AGOROT)
+    // A friend's first order has to bring in more cash than BOTH bonuses cost.
+    expect(Number(minOrder)).toBeGreaterThan(REFERRAL_CASHBACK_AGOROT + REFERRED_CASHBACK_AGOROT)
     expect(manual).toBe('false')
     expect(active).toBe('true')
+  })
+
+  it('pays the friend a spendable amount: at least the wallet redemption floor', async () => {
+    const { MIN_WALLET_REDEMPTION_ILS } = await import('@/lib/cashback/redemption')
+    expect(REFERRED_CASHBACK_AGOROT).toBeGreaterThan(0)
+    expect(Number.isSafeInteger(REFERRED_CASHBACK_AGOROT)).toBe(true)
+    expect(REFERRED_CASHBACK_AGOROT).toBeGreaterThanOrEqual(MIN_WALLET_REDEMPTION_ILS * 100)
   })
 
   it('does not overwrite terms a person already entered', () => {

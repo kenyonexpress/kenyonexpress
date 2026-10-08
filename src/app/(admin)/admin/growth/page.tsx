@@ -33,7 +33,7 @@ export default async function GrowthDashboard() {
   await requireSection('discounts', 'read')
   const admin = createAdminClient()
 
-  const [campaigns, referrals, newsletter, recovery] = await Promise.all([
+  const [campaigns, referrals, newsletter, recovery, funnelRows] = await Promise.all([
     admin
       .from('v_discount_campaign_performance' as never)
       .select('*')
@@ -50,7 +50,33 @@ export default async function GrowthDashboard() {
       .from('v_abandoned_cart_recovery' as never)
       .select('*')
       .limit(8),
+    // The conversion funnel: every live referral row, three columns, counted
+    // here. `v_referral_stats` reports money and decisions; it does not say
+    // how many of the friends who signed up ever bought, which is the number
+    // that tells whether the programme converts or only collects signups.
+    admin
+      .from('referrals')
+      .select('status, referred_first_order_id' as never)
+      .is('deleted_at', null)
+      .limit(5000),
   ])
+
+  const funnel = (
+    (funnelRows.data ?? []) as unknown as {
+      status: string
+      referred_first_order_id: string | null
+    }[]
+  ).reduce(
+    (acc, row) => {
+      acc.signedUp += 1
+      if (row.referred_first_order_id || row.status === 'completed') acc.bought += 1
+      if (row.status === 'completed') acc.paid += 1
+      return acc
+    },
+    { signedUp: 0, bought: 0, paid: 0 },
+  )
+  const conversion =
+    funnel.signedUp > 0 ? Math.round((funnel.bought / funnel.signedUp) * 100) : null
 
   type Campaign = {
     id: string
@@ -143,6 +169,20 @@ export default async function GrowthDashboard() {
             label="מוחזק בתור"
             value={ils(r?.held_agorot ?? 0)}
             hint="כסף שממתין לאדם. מספר שגדל פירושו תור שלא עובדים עליו"
+          />
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4" data-testid="referral-funnel">
+          <Tile label="נרשמו דרך קישור" value={num(funnel.signedUp)} hint="הצטרפות עם קוד הפניה" />
+          <Tile
+            label="ביצעו רכישה ראשונה"
+            value={num(funnel.bought)}
+            hint="הזמנה ששולמה ועברה את סף המינימום"
+          />
+          <Tile label="מהן זוכו" value={num(funnel.paid)} hint="שני הארנקים קיבלו קאשבק" />
+          <Tile
+            label="המרה"
+            value={pct(conversion)}
+            hint="רכישה ראשונה מתוך הצטרפות. קליקים על הקישור נמדדים ב-PostHog לפי utm_campaign=referral_program"
           />
         </div>
         <p className="text-gray-600 text-sm">

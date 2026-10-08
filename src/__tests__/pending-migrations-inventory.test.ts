@@ -488,6 +488,13 @@ describe('the pending migration inventory', () => {
       // API and rehearsed inside BEGIN/ROLLBACK.
       '258_shipments_and_order_carrier.sql',
       '259_returns_rma_reason_code.sql',
+      // 260 is PENDING (2026-10-08, STEP 46): two 098 function bodies
+      // replaced. fn_complete_referral answers qualified_unpaid on a row whose
+      // first order already qualified (payout retried, decision not re-run);
+      // fn_claim_referral refuses an account with a paid order
+      // (existing_customer); the qualifying order is stamped with
+      // referral_code_used. Rehearsed on production inside BEGIN/ROLLBACK.
+      '260_referral_qualified_guard_and_first_time_claim.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

@@ -65,4 +65,22 @@ describe('referralShareUrl', () => {
       'https://kenyonexpress.co.il/?ref=AB12CD34',
     )
   })
+
+  it('names the channel in the UTM triple docs/ARCHITECTURE-GROWTH-SEO.md fixes', () => {
+    const url = new URL(referralShareUrl('AB12CD34', 'https://kenyonexpress.co.il', 'whatsapp'))
+    expect(url.searchParams.get('ref')).toBe('AB12CD34')
+    expect(url.searchParams.get('utm_source')).toBe('whatsapp')
+    expect(url.searchParams.get('utm_medium')).toBe('referral')
+    expect(url.searchParams.get('utm_campaign')).toBe('referral_program')
+  })
+
+  it('keeps ?ref= first, so a truncated paste still carries the code', () => {
+    expect(referralShareUrl('AB12CD34', 'https://kenyonexpress.co.il', 'copy')).toMatch(
+      /^https:\/\/kenyonexpress\.co\.il\/\?ref=AB12CD34&/,
+    )
+  })
+
+  it('adds no UTM without a channel, so the bare link stays what it was', () => {
+    expect(referralShareUrl('AB12CD34', 'https://kenyonexpress.co.il')).not.toContain('utm_')
+  })
 })

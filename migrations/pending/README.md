@@ -1,5 +1,42 @@
 # `migrations/pending/`
 
+## 2026-10-08: 260 PENDING (referral: qualified row retried for payout, first-time claim, order stamped, STEP 46)
+
+`260_referral_qualified_guard_and_first_time_claim.sql` replaces the bodies of
+`fn_claim_referral` and `fn_complete_referral` (098, applied) with three
+insertions and no schema change. (1) `fn_complete_referral` answers
+`qualified_unpaid` + `referral_id` on a `pending` row whose
+`referred_first_order_id` is already set, instead of re-running the decision
+on the customer's next order (which re-snapshotted the bonus, overwrote the
+first order and, past `qualify_by`, REJECTED a referral that had qualified in
+the window). (2) `fn_claim_referral` answers `existing_customer` when the
+referred account has any order with `paid_at` set: the programme rewards a
+new customer, and 098's claim ran on every sign-in with no such check.
+(3) the qualifying order is stamped with `orders.referral_code_used` (010,
+never written before). Grants restated: service_role only; the closing DO
+raises if a client role can execute either function or a body lacks its
+branch. **The payout itself is a code change, not this file:** measured
+2026-10-08, 098's clean path answered `ready_to_pay` and moved no money, and
+`fn_pay_referral` had one caller, the admin approve button, so "only clean
+completions pay without a human" (250) was never true;
+`src/server/referrals/complete.ts` now calls `fn_pay_referral` on
+`ready_to_pay` and on 260's `qualified_unpaid`, and works against the live
+098 bodies today. **Measured on production before writing (2026-10-08):**
+all three functions present as 098 wrote them, `referrals` 0 rows, 0 minted
+codes, `referral_program_settings` empty (250 pending), `orders.user_id`,
+`paid_at`, `referral_code_used` present. **Rehearsed on production inside
+BEGIN/ROLLBACK through the management API the same day:** HTTP 201, the
+self-check passed, and `pg_get_functiondef` afterwards shows the live body
+without `qualified_unpaid`. Rollback in the file header (re-run 098 §5 and
+§7). Awaits the same explicit approval as every file here.
+
+**250 amended the same day, before apply:** `referred_bonus_agorot` 0 → 1000
+(₪10 to the friend on the same qualifying order, STEP 46 "bonus cashback both
+sides"; equal to the wallet's ₪10 redemption floor so the friend's first
+bonus is spendable on its own). `src/lib/referrals/terms.ts` mirrors it as
+`REFERRED_CASHBACK_AGOROT` and `terms.test.ts` pins the seed tuple, the
+floor and the minimum order (₪50 > ₪20 + ₪10). Still `ON CONFLICT DO NOTHING`.
+
 ## 2026-10-08: 259 PENDING (returns: RMA number + customer reason code, STEP 44)
 
 `259_returns_rma_reason_code.sql` adds two nullable columns to `public.refunds`
