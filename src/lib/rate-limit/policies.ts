@@ -257,6 +257,15 @@ export const RATE_LIMIT_POLICIES = {
     windowSeconds: 3600,
     reason: 'checkout carrier quotes fan out to courier APIs, per IP',
   },
+
+  // -- Recommendations (STEP 57). Unauthenticated and per visitor; every call
+  // can be one HogQL query against PostHog plus the cached co-occurrence
+  // tables, so the ceiling bounds what a stranger can make the vendor do.
+  recommendations: {
+    limit: 60,
+    windowSeconds: 600,
+    reason: 'personalised home row, one PostHog query per call, per IP',
+  },
 } as const satisfies Record<string, RateLimitPolicy>
 
 export type RateLimitPolicyName = keyof typeof RATE_LIMIT_POLICIES

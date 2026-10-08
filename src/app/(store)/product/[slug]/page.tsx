@@ -4,7 +4,7 @@ import { CouponTerms } from '@/components/storefront/CouponPricing'
 import CouponQrExpiry from '@/components/storefront/CouponQrExpiry'
 import ProductGallery from '@/components/storefront/ProductGallery'
 import ProductInfo from '@/components/storefront/ProductInfo'
-import RelatedProducts from '@/components/storefront/RelatedProducts'
+import ProductRecommendations from '@/components/storefront/ProductRecommendations'
 import ShippingInfo from '@/components/storefront/ShippingInfo'
 import StockScarcity from '@/components/storefront/StockScarcity'
 import SupplierInfo from '@/components/storefront/SupplierInfo'
@@ -347,8 +347,20 @@ export default async function ProductPage({ params }: Props) {
           <Reviews productId={product.id} />
         </Suspense>
 
-        {/* Related products */}
-        <RelatedProducts categoryId={product.category_id} excludeId={product.id} />
+        {/* Recommendation strips (STEP 57): bought together, viewed together,
+            similar price, with the old same-category "מומלצים" as the fallback
+            when the behavioural rows lack support. Agorot are the integer the
+            price band compares on; the shekel column is rounded once, here,
+            exactly as the ViewTracker above does for the vendor payload. */}
+        <ProductRecommendations
+          productId={product.id}
+          categoryId={product.category_id}
+          priceAgorot={
+            product.kenyon_price === null || product.kenyon_price === undefined
+              ? null
+              : Math.round(Number(product.kenyon_price) * 100)
+          }
+        />
       </div>
     </div>
   )

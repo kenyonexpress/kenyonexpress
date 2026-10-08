@@ -107,6 +107,22 @@ describe('trackCommerce -> PostHog', () => {
     })
   })
 
+  it('names the product on a single-item event and names nothing on a basket', () => {
+    grantConsent()
+    const [first] = INPUT.items
+    trackCommerce('view_item', { items: [first!], valueAgorot: first!.priceAgorot })
+    expect(trackEvent).toHaveBeenLastCalledWith(
+      'view_item',
+      expect.objectContaining({ item_id: first!.id, item_count: 1 }),
+    )
+    // Two items: no single product to name, and summarising would be a lie.
+    trackCommerce('begin_checkout', INPUT)
+    expect(trackEvent).toHaveBeenLastCalledWith(
+      'begin_checkout',
+      expect.not.objectContaining({ item_id: expect.anything() }),
+    )
+  })
+
   it('carries a null transaction id rather than omitting the key', () => {
     grantConsent()
     trackCommerce('add_to_cart', { ...INPUT, transactionId: undefined })

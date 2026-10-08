@@ -1,9 +1,10 @@
 'use client'
 
-import { trackCommerce } from '@/lib/analytics/commerce-client'
+import { trackCommerce, trackingAllowed } from '@/lib/analytics/commerce-client'
 import type { CommerceItem } from '@/lib/analytics/ecommerce'
 import type { ClientEventName } from '@/lib/analytics/events'
 import { track } from '@/lib/analytics/tracker'
+import { recordRecentView } from '@/lib/recommendations/recent-views'
 import { useEffect } from 'react'
 
 /**
@@ -45,6 +46,10 @@ export default function ViewTracker({
     // A no-op without consent: `trackCommerce` finds neither vendor global,
     // because `ThirdPartyTags` has not mounted them.
     trackCommerce('view_item', { items: [item], valueAgorot: item.priceAgorot })
+    // The browser's own copy of the same `view_item`, for the personalised
+    // home row (lib/recommendations/recent-views.ts). Behind the SAME gate the
+    // PostHog capture is behind: a visitor who declined tracking gets neither.
+    if (trackingAllowed()) recordRecentView(item.id)
   }, [commerceKey])
 
   return null

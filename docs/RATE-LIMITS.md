@@ -98,6 +98,7 @@
 | `app-session` | 30 | 10 min | app session exchange, per IP |
 | `push-register` | 60 | 1 h | push token registration |
 | `shipping-quote` | 60 | 1 h | checkout carrier quotes fan out to courier APIs, per IP |
+| `recommendations` | 60 | 10 min | personalised home row, one PostHog query per call, per IP |
 
 **המזהה (`identifier`) הוא חלק מהמפתח ולא מהטבלה.** ‏IP במסלולים
 האנונימיים, מזהה משתמש במסלולים המזוהים, ובשלוש שורות ערך שהקורא מספק

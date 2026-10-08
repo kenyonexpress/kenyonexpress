@@ -36,8 +36,10 @@ export const PURCHASE_FUNNEL: readonly PurchaseFunnelStep[] = [
   { event: '$pageview', origin: 'client', breakdowns: ['route'] },
   // GA taxonomy from here down to begin_checkout: trackCommerce fans the same
   // built event out to GA4, Meta and PostHog, so PostHog shares GA4's names.
-  { event: 'view_item', origin: 'client', breakdowns: ['value', 'item_count'] },
-  { event: 'add_to_cart', origin: 'client', breakdowns: ['value', 'item_count'] },
+  // `item_id` on both: the product, present whenever the event names one
+  // (lib/recommendations reads it back for the co-view table).
+  { event: 'view_item', origin: 'client', breakdowns: ['value', 'item_count', 'item_id'] },
+  { event: 'add_to_cart', origin: 'client', breakdowns: ['value', 'item_count', 'item_id'] },
   {
     event: 'begin_checkout',
     origin: 'both',

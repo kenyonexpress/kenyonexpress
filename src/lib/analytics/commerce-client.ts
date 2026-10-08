@@ -101,6 +101,12 @@ function postHogProperties(input: CommerceEventInput): Record<string, string | n
     transaction_id: input.transactionId ?? null,
     coupon: input.coupon ?? null,
   }
+  // The product id, on single-item events only (view_item, add_to_cart): it
+  // is what `lib/recommendations` reads back out of PostHog to build "viewed
+  // together" and the personalised home row. A multi-item event has no one
+  // product to name, and summarising a basket into one id would be a lie.
+  const only = input.items.length === 1 ? input.items[0] : undefined
+  if (only) properties.item_id = only.id
   // Stamped from the session cache only, synchronously: an event must never
   // wait on a flag fetch, and an event that fires before the checkout page
   // resolved the flag honestly carries nothing. PostHog's experiment analysis

@@ -44,6 +44,8 @@ const LEDGER: Record<string, Policy> = {
   'src/app/api/alerts/uptimerobot/route.ts': 'private',
   'src/app/api/cart/route.ts': 'private',
   'src/app/api/health/route.ts': 'private',
+  // Per-visitor by construction (STEP 57): shaped by the ke_ph_id cookie.
+  'src/app/api/recommendations/for-you/route.ts': 'private',
   'src/app/api/ready/route.ts': 'private',
   'src/app/api/search/facets/route.ts': 'public',
   'src/app/api/search/quick-links/route.ts': 'private',

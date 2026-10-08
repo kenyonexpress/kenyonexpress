@@ -83,6 +83,7 @@ describe('the homepage sections live actually has', () => {
       '<BenefitBar',
       '<DealsOfTheDay',
       '<DealOfTheDay',
+      '<ForYouRow',
       '<CategoryGrid',
       '<PopularSearches',
       '<HotCoupons',

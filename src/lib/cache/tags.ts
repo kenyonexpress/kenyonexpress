@@ -83,6 +83,18 @@ export const CacheLife = {
   productsIndex: { stale: 300, revalidate: 180, expire: 86400 },
   /** `/sitemap.xml`, `/feed.xml`, `/merchant.xml`: crawled, never browsed. */
   sitemap: { stale: 300, revalidate: 3600, expire: 86400 },
+  /**
+   * The co-occurrence tables behind the recommendation strips
+   * (lib/recommendations/sources.ts): one PostHog query and one `order_items`
+   * scan each, over a 90-day window, so an hour's staleness changes nothing a
+   * shopper can see and saves a round trip per product page.
+   */
+  recommendations: { stale: 3600, revalidate: 3600, expire: 86400 },
+  /**
+   * One visitor's own history for the personalised home row: short, because it
+   * is keyed per visitor and should follow what they just looked at.
+   */
+  personal: { stale: 300, revalidate: 300, expire: 900 },
 } as const satisfies Record<string, { stale: number; revalidate: number; expire: number }>
 
 const ENTITY_TAG = /^(product|category|supplier|landing):[A-Za-z0-9][A-Za-z0-9_-]{0,200}$/

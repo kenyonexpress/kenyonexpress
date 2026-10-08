@@ -12,8 +12,10 @@ import { CART_COUPON_COOKIE, CART_EXPIRY_DAYS } from '@/lib/cart/coupon-cookie'
 import { GUEST_SESSION_COOKIE, GUEST_SESSION_MAX_AGE } from '@/lib/cart/guest-session-cookie'
 import { CART_FALLBACK_KEY } from '@/lib/cart/local-fallback'
 import { CART_SHIPPING_COOKIE } from '@/lib/cart/shipping-cookie'
+import { COMPARE_STORAGE_KEY } from '@/lib/compare/limit'
 import { LANDING_BUCKET_COOKIE, LANDING_BUCKET_MAX_AGE_SECONDS } from '@/lib/landing/variant'
 import { POSTHOG_ID_COOKIE } from '@/lib/observability/posthog'
+import { RECENT_VIEWS_KEY } from '@/lib/recommendations/recent-views'
 import { REFERRAL_COOKIE, REFERRAL_COOKIE_MAX_AGE } from '@/lib/referrals/cookie'
 import type { LegalDoc } from './types'
 
@@ -160,6 +162,18 @@ const storageRows: string[][] = [
     'localStorage',
     NECESSARY,
     'היישוב שבחרתם להערכת זמן המשלוח בעגלה, כדי שלא תישאלו שוב. אינו נשלח לשרת.',
+  ],
+  [
+    COMPARE_STORAGE_KEY,
+    'localStorage',
+    NECESSARY,
+    'עד ארבעה מוצרים שבחרתם להשוואה, כדי שהרשימה תישמר בין עמודים. אינה נשלחת לשרת.',
+  ],
+  [
+    RECENT_VIEWS_KEY,
+    'localStorage',
+    ANALYTICS,
+    'מזהי המוצרים האחרונים שצפיתם בהם, לשורת "מותאם לך" בדף הבית. נכתב רק לאחר הסכמה למדידת שימוש, ונשלח לשרת רק כדי לבחור את המוצרים המוצגים.',
   ],
   [
     SESSION_STORAGE_KEY,

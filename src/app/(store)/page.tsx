@@ -3,6 +3,7 @@ import CategoryGrid from '@/components/home/CategoryGrid'
 import CmsHero from '@/components/home/CmsHero'
 import DealOfTheDay from '@/components/home/DealOfTheDay'
 import DealsOfTheDay from '@/components/home/DealsOfTheDay'
+import ForYouRow from '@/components/home/ForYouRow'
 import HeroSection from '@/components/home/HeroSection'
 import HomeNewsletter from '@/components/home/HomeNewsletter'
 import HotCoupons from '@/components/home/HotCoupons'
@@ -131,6 +132,14 @@ export default function HomePage() {
         `live-home-sections.test.ts` pins this order.
       */}
       <DealOfTheDay />
+      {/*
+        THE PERSONALISED ROW IS A CLIENT ISLAND THAT MOUNTS EMPTY. It reserves
+        nothing and asks `/api/recommendations/for-you` only for a visitor who
+        consented and has a view history, so the static shell, the gate's
+        window and every visitor without history are byte-identical to before.
+        See ForYouRow.tsx for why it is not a server component.
+      */}
+      <ForYouRow />
       <CategoryGrid />
       <PopularSearches />
       <HotCoupons />
