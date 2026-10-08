@@ -2,6 +2,16 @@
 
 Everything below was STATE.md up to commit 02a45128f (2026-10-06), moved here by M11-c113 to keep STATE.md under 300 lines.
 
+## M16-c121: JSON-LD Product and BreadcrumbList re-verified 2026-10-08 in the foreground
+
+- Code: `git diff bd69dfe54 HEAD -- src scripts package.json` is empty, so the product page still renders both `application/ld+json` scripts.
+- Method: same checks as M16-c120, the same Node probe copied outside the repo to `/tmp/m16c121`. It reads `/sitemap/products.xml`, fetches every `/product/` URL through `curl` (180 s timeout, up to 3 attempts) and requires status 200, exactly one `Product` and one `BreadcrumbList`, no parse error, `name`, `image`, offers with price and `priceCurrency`, at least 2 crumbs with positions 1..n, names on all, `item` on every non-last crumb, and last crumb name equal to `Product.name`.
+- **Production** (`https://www.kenyonexpress.co.il`): 44 URLs, **44/44 have both nodes**, 43 pass every check. `/product/מזקקת-ויסקי` has no `image`.
+- **Local HEAD** `ff49d393a` (`pnpm start -p 3521` on this run's build): 46 URLs, **46/46 have both nodes**, 43 pass every check. No `image` on `מזקקת-ויסקי`, `e2e-test-physical` and `e2e-test-coupon`.
+- Verdict: unchanged from M16-c120. No code change; the image gap and the e2e rows are already manual items for Ofir.
+- Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 Supabase timeout or fetch-failed lines). Not a UI change, so compare.mjs does not apply (blocker 0). `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` are still uncommitted and not part of this commit.
+- Moved from STATE.md (verbatim): Last item: **M15-c121 DONE** (2026-10-08): 0 console errors on `/` and `/product/מוצר-לדוגמא` in production at 380 and 1440 (probed 11:47 UTC, all 4 runs 200 on attempt 1, 0 page errors, 0 responses of 400 or above; the only warning is the CSS preload-not-used heuristic; 6 `_next/image` `ERR_ABORTED` on `/` at 1440 are cancelled lazy loads, not console errors). Local HEAD `8efab4903` has 0 page errors and only the same 5 environment-only console errors as M15-c120 (Vercel insights 404s off Vercel, wishlist prefetch `ERR_SSL_PROTOCOL_ERROR` on https localhost). No code change. Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 2 (attempt 1 failed on a Supabase timeout at `/category/e2e-test-category`, blocker 7; 42 and 10 timeout or fetch-failed lines). Not a UI change, so compare.mjs does not apply. See the M15-c121 section in the archive.
+
 ## M03-c121: compare.mjs on /category at 380, 768, 1440, run 2026-10-08 in the foreground
 
 Command: `node scripts/compare.mjs --page=category --width=<w>`, HEAD `96c3a2f6f` with the two uncommitted UI edits in the tree. The gate refuses on the live side before it needs a local server. Run twice in the foreground (the first pass lost the exit code in the shell pipe; the second captured it).
