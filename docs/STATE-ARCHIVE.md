@@ -22755,3 +22755,10 @@ Setup: the same as M08-c121. Lighthouse 13.4.1 from the repo (`pnpm exec lightho
 | M16-c119 | Verify all product pages have JSON-LD Product and BreadcrumbList | **DONE**: 44/44 prod, 46/46 HEAD, both nodes valid; same 3 image-less rows lack `image`, unchanged from M16-c118 (see archive) |
 | M17-c119 | Verify RTL on / and /product sample, no LTR leaks | **BLOCKED**: 42/42 runs RTL-clean except the same footer newsletter placeholder, flush left in prod; uncommitted fix clean locally but compare.mjs refuses (exit 5 x6, blocker 0) (see archive) |
 | M18-c119 | Trim STATE.md under 300 lines, archive rest | **DONE**: already 135 lines at start, no trim needed; 2 M17-c119 status lines moved to `docs/STATE-ARCHIVE.md` |
+
+## M04-c123 pnpm type-check, fix drift (2026-10-09)
+
+- `pnpm type-check` (`tsc --noEmit`) exit 0 at HEAD `86f328f62` on branch `feat/products-sort-infinite-scroll`, run in the foreground, working tree including the uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` edits. Load averages at start 93.36 / 115.99 / 91.47. No drift, no code change.
+- Gates: `pnpm lint` 0 (locale-format, input-dir, docs-index and docs-path gates clean). `pnpm test` 0 on the first run: 519 files, 6474 passed, 12 skipped, 319.68 s; the jsdom navigation stack in stderr is the known noise. `pnpm build` 0 on attempt 1 (1-minute load 61.7): 1 recovered timeout or fetch-failed line, 0 `db.query_failed`.
+- Not a UI change, so compare.mjs does not apply (it still refuses, blocker 0). `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted and are not part of this commit.
+- Moved from STATE.md (verbatim): Last item: **M03-c123 BLOCKED** (2026-10-09): compare.mjs on `/category` exits 5 at 380, 768 and 1440 with no diff number. The gate refuses because `https://kenyonexpress.co.il/product-category/hot-deals/` is this project's own build (38/37/37 `/_next/` refs, Next runtime, no wp-content) and `refs/ke_live_singlefile.html` is still absent. Run in the foreground, HEAD `76b8c6ce5`. See blocker 0 and the M03-c123 section in the archive.
