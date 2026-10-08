@@ -1,5 +1,15 @@
 # Apply order
 
+## 2026-10-09 (STEP 67): 269 filed; any time, no dependencies
+
+269 creates one table, `health_incidents`, and depends only on
+`public.has_role(text)`, which is live. It can be applied before or after
+268 and before or after any other pending file. Nothing reads it until it
+exists: the cron reports `incidents.skipped = 'schema_absent'` and
+`/admin/health` shows "המיגרציה ממתינה" in the log panel. The sign it took
+is the next cron run writing `incidents: { opened: [], resolved: [] }`
+without `skipped`, and the panel turning into an empty table.
+
 ## 2026-10-09 (STEP 65): 268 filed; any time, no dependencies
 
 268 creates one table, `category_guides`, and depends only on

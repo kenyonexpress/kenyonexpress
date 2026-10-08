@@ -1,5 +1,33 @@
 # `migrations/pending/`
 
+## 2026-10-09: 269 PENDING (health incident log: one row per dependency outage seen by the cron, STEP 67)
+
+`269_health_incidents.sql` adds `public.health_incidents`: `dependency`
+(the stable check name from `src/lib/health/checks.ts`, CHECKed to
+`^[a-z][a-z0-9_]{1,39}$`), `detail` (the Hebrew line the check returned when
+the row opened), `started_at`, `resolved_at` (NULL while still down, CHECKed
+`>= started_at`), `resolved_detail`. A partial unique index on
+`(dependency) WHERE resolved_at IS NULL` holds ONE open incident per
+dependency, so a retried cron cannot open two rows for one outage (the
+second insert is a unique_violation the writer ignores). No function, no
+trigger. RLS: SELECT for `authenticated` behind `has_role('admin')`,
+nothing for anon (which service is down is an inventory), no client write
+at all: the five-minute `/api/cron/health` is the ONLY writer, on the
+service role (`src/lib/health/incidents.ts`, `reconcileIncidents`), opening
+a row on the first run that sees a dependency `down` and closing it on the
+first run that sees anything else (`not_configured` closes it with
+"הוסר מההגדרות"). `/admin/health` (which `/admin/status` now redirects to)
+reads the newest fifty on the service role behind
+`requireSection('dashboard')`, above the live per-service cards. Self-check
+inside a rolled-back block: a second open row for one dependency refused, a
+malformed name refused, `resolved_at` before `started_at` refused, and a
+new open row allowed once the first is closed. Until applied the cron logs
+`health_incidents.schema_absent` once and reports `skipped:
+'schema_absent'` in its JSON, and the page shows an empty log that says the
+migration is pending rather than "no incidents". No pre-existing object is
+touched; rollback is one DROP TABLE. No dependency on any other pending
+file.
+
 ## 2026-10-09: 268 PENDING (category buyer guides: ~300 Hebrew words per category, admin-edited, STEP 65)
 
 `268_category_guides.sql` adds `public.category_guides`: one row per

@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 const from = vi.fn()
 const rpc = vi.fn()
@@ -188,5 +188,105 @@ describe('buildHealthAlert', () => {
     expect(alert).toContain('search')
     expect(alert).not.toContain('cardcom')
     expect(alert).toContain('2')
+  })
+})
+
+/**
+ * STEP 67: Resend and Twilio are probed, not just read. Before this a
+ * revoked key was green until a customer noticed. Both probes are reads of
+ * our own account: no message is sent, nothing is billed.
+ */
+describe('email (Resend) probe', () => {
+  const ENV = { RESEND_API_KEY: 're_test' } as unknown as NodeJS.ProcessEnv
+
+  afterEach(() => vi.unstubAllGlobals())
+
+  it('is ok when the account answers', async () => {
+    scriptDatabase(true)
+    vi.stubGlobal('fetch', () => Promise.resolve(Response.json({ data: [] })))
+    const email = byName(await runHealthChecks(ENV), 'email')
+    expect(email.status).toBe('ok')
+    expect(email.latencyMs).not.toBeNull()
+  })
+
+  it('is down with a named cause when the key is refused', async () => {
+    scriptDatabase(true)
+    vi.stubGlobal('fetch', () => Promise.resolve(new Response('', { status: 401 })))
+    const email = byName(await runHealthChecks(ENV), 'email')
+    expect(email.status).toBe('down')
+    expect(email.detail).toContain('נדחה')
+  })
+
+  it('is down when Resend does not answer', async () => {
+    scriptDatabase(true)
+    vi.stubGlobal('fetch', () => Promise.reject(new Error('ETIMEDOUT')))
+    expect(byName(await runHealthChecks(ENV), 'email').status).toBe('down')
+  })
+})
+
+describe('twilio probe', () => {
+  const CREDS = { TWILIO_ACCOUNT_SID: 'ACxyz', TWILIO_AUTH_TOKEN: 'tok' }
+
+  afterEach(() => vi.unstubAllGlobals())
+
+  it('is not_configured without credentials, as one row, never ok', async () => {
+    scriptDatabase(true)
+    const report = await runHealthChecks(EMPTY_ENV)
+    expect(byName(report, 'twilio').status).toBe('not_configured')
+    expect(report.dependencies.filter((d) => /whatsapp|sms/i.test(d.name))).toEqual([])
+  })
+
+  it('reads the account record with basic auth and names the wired channels', async () => {
+    scriptDatabase(true)
+    const seen: { url: string; auth: string | null }[] = []
+    vi.stubGlobal('fetch', (url: string, init?: RequestInit) => {
+      const headers = (init?.headers ?? {}) as Record<string, string>
+      seen.push({ url, auth: headers.Authorization ?? null })
+      return Promise.resolve(Response.json({ status: 'active' }))
+    })
+    const twilio = byName(
+      await runHealthChecks({
+        ...CREDS,
+        TWILIO_WHATSAPP_FROM: 'whatsapp:+14155238886',
+      } as unknown as NodeJS.ProcessEnv),
+      'twilio',
+    )
+    expect(twilio.status).toBe('ok')
+    expect(twilio.detail).toContain('WhatsApp מוגדר, SMS כבוי')
+    const call = seen.find((c) => c.url.includes('api.twilio.com'))
+    expect(call?.url).toBe('https://api.twilio.com/2010-04-01/Accounts/ACxyz.json')
+    expect(call?.auth).toBe(`Basic ${Buffer.from('ACxyz:tok').toString('base64')}`)
+  })
+
+  it('counts SMS as wired only behind the SMS_ENABLED flag', async () => {
+    scriptDatabase(true)
+    vi.stubGlobal('fetch', () => Promise.resolve(Response.json({ status: 'active' })))
+    const withoutFlag = byName(
+      await runHealthChecks({ ...CREDS, TWILIO_SMS_FROM: '+1' } as unknown as NodeJS.ProcessEnv),
+      'twilio',
+    )
+    expect(withoutFlag.detail).toContain('אף ערוץ לא מוגדר')
+    const withFlag = byName(
+      await runHealthChecks({
+        ...CREDS,
+        TWILIO_SMS_FROM: '+1',
+        SMS_ENABLED: 'true',
+      } as unknown as NodeJS.ProcessEnv),
+      'twilio',
+    )
+    expect(withFlag.detail).toContain('SMS מוגדר')
+  })
+
+  it('is down when the credentials are refused or the account is not active', async () => {
+    scriptDatabase(true)
+    vi.stubGlobal('fetch', () => Promise.resolve(new Response('', { status: 401 })))
+    const refused = byName(await runHealthChecks(CREDS as unknown as NodeJS.ProcessEnv), 'twilio')
+    expect(refused.status).toBe('down')
+    expect(refused.detail).toContain('נדחו')
+
+    vi.stubGlobal('fetch', () => Promise.resolve(Response.json({ status: 'suspended' })))
+    const suspended = byName(await runHealthChecks(CREDS as unknown as NodeJS.ProcessEnv), 'twilio')
+    expect(suspended.status).toBe('down')
+    expect(suspended.detail).toContain('אינו פעיל')
   })
 })

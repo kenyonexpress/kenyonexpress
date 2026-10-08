@@ -526,6 +526,12 @@ describe('the pending migration inventory', () => {
       // category, markdown-lite body; rehearsed on production inside
       // BEGIN/ROLLBACK 2026-10-09. Not applied; README carries the row.
       '268_category_guides.sql',
+      // STEP 67: health incident log. `health_incidents`, one row per
+      // dependency outage seen by /api/cron/health, one open row per
+      // dependency (partial unique index); rehearsed on production inside
+      // BEGIN/ROLLBACK 2026-10-09 (table, RLS on, one policy, self-check
+      // passed, to_regclass NULL after). Not applied; README carries the row.
+      '269_health_incidents.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

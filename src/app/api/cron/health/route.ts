@@ -1,4 +1,5 @@
 import { buildHealthAlert, runHealthChecks } from '@/lib/health/checks'
+import { type ReconcileResult, reconcileIncidents } from '@/lib/health/incidents'
 import { sendAlert } from '@/lib/observability/alert'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
@@ -58,8 +59,15 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
   // field in the response, not a 500 on the probe.
   let searchOutbox: DrainResult | { error: string } = { claimed: 0, done: 0, failed: 0 }
   let searchDrift: SearchDrift = { status: 'skipped', reason: 'not attempted' }
+  // The incident log (STEP 67): this run is the one writer, so an outage has
+  // one row from the first run that saw it to the first run that did not.
+  // `reconcileIncidents` never throws and reports a skipped table in its
+  // result; the admin client itself can (no service key), which the catch
+  // below turns into a field like the floor sweep.
+  let incidents: ReconcileResult = { opened: [], resolved: [], skipped: 'error' }
   try {
     const admin = createAdminClient()
+    incidents = await reconcileIncidents(admin, report)
     searchOutbox = await drainSearchOutbox(admin)
     searchDrift = await checkSearchDrift(admin)
     if (searchDrift.status === 'drift') {
@@ -90,7 +98,7 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
   }
 
   return NextResponse.json(
-    { ...report, searchOutbox, searchDrift },
+    { ...report, incidents, searchOutbox, searchDrift },
     {
       status: report.ok ? 200 : 503,
       headers: { 'cache-control': 'no-store' },

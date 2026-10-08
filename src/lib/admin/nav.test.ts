@@ -18,6 +18,8 @@ describe('canAccessAdminSection', () => {
     expect(canAccessAdminSection('content_uploader', '/admin/settings')).toBe(false)
     // Ratings are customer words about orders, not catalogue copy (STEP 45).
     expect(canAccessAdminSection('content_uploader', '/admin/reviews')).toBe(false)
+    // Site health (STEP 67) is operational, not catalogue copy.
+    expect(canAccessAdminSection('content_uploader', '/admin/health')).toBe(false)
   })
 
   it('gives admin and super_admin access to everything', () => {
@@ -47,6 +49,7 @@ describe('visibleAdminHrefs', () => {
     expect(visibleAdminHrefs('admin')).toContain('/admin/users')
     expect(visibleAdminHrefs('admin')).toContain('/admin/settings')
     expect(visibleAdminHrefs('admin')).toContain('/admin/reviews')
+    expect(visibleAdminHrefs('admin')).toContain('/admin/health')
     expect(visibleAdminHrefs('support')).not.toContain('/admin/settings')
     expect(visibleAdminHrefs('admin').length).toBeGreaterThan(1)
   })

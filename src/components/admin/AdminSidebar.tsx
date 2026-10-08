@@ -17,6 +17,7 @@ import {
   Flag,
   FlaskConical,
   Gift,
+  HeartPulse,
   LayoutDashboard,
   Megaphone,
   Package,
@@ -133,6 +134,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/admin/queues', label: 'תורים תקועים', icon: AlertTriangle, section: 'analytics' },
   { href: '/admin/feature-flags', label: 'דגלי מערכת', icon: Flag, section: 'analytics' },
   { href: '/admin/audit-log', label: 'לוג פעילות', icon: ClipboardList, section: 'audit-log' },
+  { href: '/admin/health', label: 'בריאות המערכת', icon: HeartPulse, section: 'dashboard' },
   { href: '/admin/settings', label: 'הגדרות חנות', icon: Settings, section: 'settings' },
 ]
 

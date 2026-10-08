@@ -214,15 +214,120 @@ function checkCardcom(env: NodeJS.ProcessEnv): DependencyReport {
   }
 }
 
-/** Email delivery. Without it the outbox drains into nothing. */
-function checkEmail(env: NodeJS.ProcessEnv): DependencyReport {
-  const configured = Boolean(env.RESEND_API_KEY)
+/**
+ * Email delivery. Without it the outbox drains into nothing.
+ *
+ * Probed, not just read (STEP 67): `GET /domains` on Resend is a read of our
+ * own account, sends nothing, costs nothing, and is the one call that tells a
+ * revoked key from a working one. Before this the row said "Resend מוגדר" for
+ * any non-empty string, which is the green-for-unconfigured failure the header
+ * forbids wearing a different hat: a key somebody rotated away reads as green
+ * until the first customer does not get their voucher. 401 / 403 is `down`
+ * with a detail that says the key was refused, so the fix is named.
+ */
+async function checkEmail(env: NodeJS.ProcessEnv): Promise<DependencyReport> {
+  const key = env.RESEND_API_KEY
+  if (!key) {
+    return {
+      name: 'email',
+      status: 'not_configured',
+      latencyMs: null,
+      detail: 'אין מפתח Resend; אף מייל לא יישלח',
+    }
+  }
+  const { value, ms } = await timed(async () => {
+    const response = await fetch('https://api.resend.com/domains', {
+      headers: { Authorization: `Bearer ${key}` },
+      signal: AbortSignal.timeout(4000),
+      cache: 'no-store',
+    })
+    if (response.ok) return 'ok' as const
+    return response.status === 401 || response.status === 403
+      ? ('refused' as const)
+      : ('down' as const)
+  })
+  const status: DependencyStatus = value === 'ok' ? 'ok' : 'down'
   return {
     name: 'email',
-    status: configured ? 'ok' : 'not_configured',
-    latencyMs: null,
-    detail: configured ? 'Resend מוגדר' : 'אין מפתח Resend; אף מייל לא יישלח',
+    status,
+    latencyMs: ms,
+    detail:
+      value === 'ok'
+        ? 'Resend עונה'
+        : value === 'refused'
+          ? 'מפתח Resend נדחה; אף מייל לא יישלח עד שיוחלף'
+          : 'Resend מוגדר אך אינו עונה',
   }
+}
+
+/**
+ * Twilio, the one account behind WhatsApp (`lib/whatsapp/twilio.ts`) and SMS
+ * (`lib/sms/twilio.ts`) (STEP 67).
+ *
+ * The probe is `GET /Accounts/{sid}.json`: the account's own record, read with
+ * the account's own credentials. It sends no message, opens no session and is
+ * not billed. A 401 means the token was rotated; a `suspended` account answers
+ * 200 and is reported as down by its status field, because Twilio keeps
+ * answering the API for a suspended account while refusing every send.
+ *
+ * ONE row, not two, for the same reason the limiter is one row: there is one
+ * credential, and a WhatsApp row beside an SMS row could show one green and
+ * one red when the only fact is that the shared account answered. Which
+ * channels that account is wired to is in the detail, read from the same
+ * variables the senders read, so the row says "answers, WhatsApp only" rather
+ * than inventing an SMS sender nobody registered.
+ */
+async function checkTwilio(env: NodeJS.ProcessEnv): Promise<DependencyReport> {
+  const accountSid = env.TWILIO_ACCOUNT_SID
+  const authToken = env.TWILIO_AUTH_TOKEN
+  if (!accountSid || !authToken) {
+    return {
+      name: 'twilio',
+      status: 'not_configured',
+      latencyMs: null,
+      detail: 'Twilio לא מוגדר; אין WhatsApp ואין SMS',
+    }
+  }
+  const { value, ms } = await timed(async () => {
+    const response = await fetch(
+      `https://api.twilio.com/2010-04-01/Accounts/${encodeURIComponent(accountSid)}.json`,
+      {
+        headers: {
+          Authorization: `Basic ${Buffer.from(`${accountSid}:${authToken}`).toString('base64')}`,
+        },
+        signal: AbortSignal.timeout(4000),
+        cache: 'no-store',
+      },
+    )
+    if (response.status === 401 || response.status === 403) return 'refused' as const
+    if (!response.ok) return 'down' as const
+    const body = (await response.json().catch(() => null)) as { status?: unknown } | null
+    return body?.status === 'active' ? ('ok' as const) : ('suspended' as const)
+  })
+  const status: DependencyStatus = value === 'ok' ? 'ok' : 'down'
+  return {
+    name: 'twilio',
+    status,
+    latencyMs: ms,
+    detail:
+      value === 'ok'
+        ? `Twilio עונה; ${twilioChannels(env)}`
+        : value === 'refused'
+          ? 'אישורי Twilio נדחו; אף הודעה לא תישלח עד שיוחלפו'
+          : value === 'suspended'
+            ? 'חשבון Twilio אינו פעיל; שליחה תידחה'
+            : 'Twilio מוגדר אך אינו עונה',
+  }
+}
+
+/** Which senders the shared account is wired to, read from the senders' own variables. */
+function twilioChannels(env: NodeJS.ProcessEnv): string {
+  const whatsapp = Boolean(env.TWILIO_WHATSAPP_FROM)
+  const sms = env.SMS_ENABLED === 'true' && Boolean(env.TWILIO_SMS_FROM)
+  if (whatsapp && sms) return 'WhatsApp ו-SMS מוגדרים'
+  if (whatsapp) return 'WhatsApp מוגדר, SMS כבוי'
+  if (sms) return 'SMS מוגדר, WhatsApp ללא שולח'
+  return 'אף ערוץ לא מוגדר לשליחה'
 }
 
 /** Object storage for the image pipeline and the invoice PDFs. */
@@ -337,7 +442,8 @@ export async function runHealthChecks(
     checkSearch(env),
     checkAsyncOffload(env),
     Promise.resolve(checkCardcom(env)),
-    Promise.resolve(checkEmail(env)),
+    checkEmail(env),
+    checkTwilio(env),
     Promise.resolve(checkStorage(env)),
     Promise.resolve(checkScheduler(env)),
   ])

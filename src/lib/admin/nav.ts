@@ -23,6 +23,9 @@ export const ADMIN_SECTIONS = [
   { href: '/admin/gift-cards', staffAllowed: false },
   { href: '/admin/users', staffAllowed: false },
   { href: '/admin/audit-log', staffAllowed: false },
+  // Site health (STEP 67): which dependency is down and the incident log.
+  // Operational, not catalogue copy, so the content role does not see it.
+  { href: '/admin/health', staffAllowed: false },
   { href: '/admin/settings', staffAllowed: false },
 ] as const
 
