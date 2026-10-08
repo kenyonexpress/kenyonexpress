@@ -12,6 +12,7 @@ import {
   loadSupplierStorefrontProductsCached,
 } from '@/lib/supplier-storefront'
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import '@/styles/category-page.css'
@@ -61,7 +62,11 @@ export default async function SupplierStorefrontPage({ params, searchParams }: P
   return (
     <div className="category-page mx-auto max-w-6xl px-4 py-8">
       <header className="mb-6 space-y-2">
-        <p className="text-sm text-black/50">ספק</p>
+        <p className="text-sm text-black/50">
+          <Link href="/merchants" className="hover:underline">
+            בתי העסק
+          </Link>
+        </p>
         <h1 className="text-2xl font-bold text-heading">{supplier.name}</h1>
         {supplier.city ? <p className="text-sm text-black/60">{supplier.city}</p> : null}
         {supplier.address ? <p className="text-sm text-black/60">{supplier.address}</p> : null}

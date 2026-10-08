@@ -163,6 +163,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Higher than the other content pages because it is the page a business
     // lands on, and a business is worth more than a session.
     { url: `${base}/suppliers`, changeFrequency: 'monthly', priority: 0.7 },
+    // STEP 63: the directory counts live products per supplier, so it changes
+    // when the catalogue does, same signal as the two listing pages above.
+    {
+      url: `${base}/merchants`,
+      lastModified: catalogueTouched,
+      changeFrequency: 'weekly',
+      priority: 0.6,
+    },
     { url: `${base}/blog`, changeFrequency: 'weekly', priority: 0.6 },
     // Each post carries a real `publishedAt`, so unlike `/contact` there IS a
     // date worth publishing. Driven off the same registry the index renders, so

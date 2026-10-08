@@ -79,6 +79,11 @@ export default function SuppliersPage() {
           קניון אקספרס מוכרת קופונים של בתי עסק ישראליים. הלקוח משלם כאן מקדמה, מגיע אליכם עם שובר
           שנסרק במקום, ואת היתרה משלם אצלכם. אנחנו מביאים את הלקוח, אתם נותנים את השירות.
         </p>
+        <p className="mt-3 text-base leading-relaxed text-heading/80">
+          <Link href="/merchants" className="underline hover:text-heading">
+            בתי העסק שכבר מוכרים אצלנו
+          </Link>
+        </p>
       </header>
 
       <section className="mb-12 max-w-3xl">

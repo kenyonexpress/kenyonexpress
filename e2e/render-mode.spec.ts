@@ -55,6 +55,7 @@ const ROUTES = [
   '/faq',
   '/help',
   '/accessibility',
+  '/merchants',
 ]
 
 /** Header names Next uses for the two shapes. */

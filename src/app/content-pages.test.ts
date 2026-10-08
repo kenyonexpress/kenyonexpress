@@ -39,6 +39,7 @@ const PAGES: [name: string, path: string[]][] = [
   ['contact', ['contact', 'page.tsx']],
   ['about', ['about', 'page.tsx']],
   ['suppliers', ['suppliers', 'page.tsx']],
+  ['merchants', ['merchants', 'page.tsx']],
   ['blog layout', ['blog', 'layout.tsx']],
 ]
 
@@ -60,6 +61,7 @@ describe('content pages carry the SEO fields a crawler needs', () => {
   const WITH_METADATA: [string, string[]][] = [
     ['about', ['about', 'page.tsx']],
     ['suppliers', ['suppliers', 'page.tsx']],
+    ['merchants', ['merchants', 'page.tsx']],
     ['blog index', ['blog', 'page.tsx']],
   ]
 

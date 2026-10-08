@@ -39,6 +39,7 @@ const INDEXABLE_PAGES = [
   '(store)/privacy-policy/page.tsx',
   '(store)/product/[slug]/page.tsx',
   '(store)/refund_returns/page.tsx',
+  '(store)/merchants/page.tsx',
   '(store)/s/[id]/page.tsx',
   '(store)/shipping/page.tsx',
   '(store)/suppliers/page.tsx',
