@@ -3,6 +3,7 @@ import ReorderButton from '@/components/account/ReorderButton'
 import ReturnStatus from '@/components/account/ReturnStatus'
 import ShipmentTracker from '@/components/account/ShipmentTracker'
 import { formatDate, formatIls, orderStatusLabel, orderStatusTone } from '@/lib/account/format'
+import { helpUrlForOrder, orderShortId } from '@/lib/help/order-links'
 import { summarizeShipping } from '@/lib/orders/shipping-summary'
 import { readPaymentProviderGate } from '@/lib/payments/provider-gate'
 import { resolveCarrier } from '@/lib/shipping/carriers'
@@ -281,6 +282,19 @@ export default async function OrderDetailPage({ params }: Props) {
           />
         </section>
       )}
+
+      <section className="account-card" data-section="order-help">
+        <h2 className="account-card__title">צריכים עזרה עם ההזמנה?</h2>
+        <p className="account-row__meta">
+          מרכז העזרה כבר יודע על איזו הזמנה מדובר: תשובות לפי נושא, טופס פנייה ממולא ותמיכה
+          בוואטסאפ.
+        </p>
+        <p>
+          <Link className="account-btn" href={helpUrlForOrder(order.id)}>
+            לעזרה עם הזמנה {orderShortId(order.id)}
+          </Link>
+        </p>
+      </section>
 
       <p>
         <Link className="account-btn" href="/account/orders">

@@ -29,3 +29,19 @@ export function contactEmail(env: Partial<NodeJS.ProcessEnv> = process.env): str
   const configured = env.CONTACT_TO?.trim()
   return configured && configured.length > 0 ? configured : DEFAULT_CONTACT_EMAIL
 }
+
+/**
+ * Where a help-centre request (`/help`, STEP 50) is mailed.
+ *
+ * `SUPPORT_TO` is the owner's own inbox. It is a separate variable from
+ * `CONTACT_TO` because the two addresses have different readers: `CONTACT_TO`
+ * is printed in four legal documents and is the address a data-subject request
+ * is sent to, so it is the company's published address, while a help request
+ * carries an order reference and wants the person who can open that order.
+ * Unset, it falls through to `contactEmail`, so a deployment that set only the
+ * published address still receives every request and nothing is dropped.
+ */
+export function supportEmail(env: Partial<NodeJS.ProcessEnv> = process.env): string {
+  const configured = env.SUPPORT_TO?.trim()
+  return configured && configured.length > 0 ? configured : contactEmail(env)
+}

@@ -52,6 +52,7 @@ export const STATIC_PATHS = Object.freeze([
   '/coupons',
   '/about',
   '/faq',
+  '/help',
   '/blog',
   '/blog/how-coupons-work',
   '/contact',

@@ -35,6 +35,7 @@ const BODY_MEASURE = 'max-w-3xl'
 
 const PAGES: [name: string, path: string[]][] = [
   ['faq', ['faq', 'page.tsx']],
+  ['help', ['help', 'page.tsx']],
   ['about', ['about', 'page.tsx']],
   ['suppliers', ['suppliers', 'page.tsx']],
   ['blog layout', ['blog', 'layout.tsx']],

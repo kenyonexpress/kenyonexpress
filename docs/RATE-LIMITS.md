@@ -88,6 +88,7 @@
 | `search-facets` | 60 | 5 min | faceted search, filters + counts |
 | `analytics` | 120 | 1 min | beacon endpoint, per IP |
 | `contact` | 5 | 1 h | contact form mail |
+| `help` | 5 | 1 h | help-centre request mail |
 | `supplier-lead` | 5 | 1 h | supplier lead mail |
 | `newsletter` | 5 | 1 h | newsletter subscription mail |
 | `admin-voucher-lookup` | 60 | 1 h | admin voucher code lookup, per staff user |

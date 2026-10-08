@@ -1,6 +1,7 @@
 import ReturnRequestForm from '@/components/account/ReturnRequestForm'
 import ReturnStatus from '@/components/account/ReturnStatus'
 import { formatDate, formatIls } from '@/lib/account/format'
+import { helpUrlForOrder } from '@/lib/help/order-links'
 import { evaluateReturnEligibility } from '@/lib/returns/policy'
 import { getOrderDetail } from '@/server/queries/orders'
 import { OPEN_RETURN_STATES, getMyReturnForOrder } from '@/server/queries/returns'
@@ -85,7 +86,7 @@ export default async function ReturnOrderPage({ params }: Props) {
           <>
             <p className="account-empty">{eligibility.message}</p>
             <p>
-              <Link className="account-btn" href="/contact">
+              <Link className="account-btn" href={helpUrlForOrder(order.id, 'refunds')}>
                 פנייה לשירות הלקוחות
               </Link>
             </p>

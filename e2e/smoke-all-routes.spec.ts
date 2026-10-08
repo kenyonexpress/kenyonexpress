@@ -22,6 +22,7 @@ const PUBLIC_ROUTES = [
   '/contact',
   '/coupons',
   '/faq',
+  '/help',
   '/privacy-policy',
   '/products',
   '/refund_returns',

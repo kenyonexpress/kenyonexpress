@@ -1,0 +1,37 @@
+[autopilot] help(STEP 50): /help help centre with FAQ shelves, support form to SUPPORT_TO, WhatsApp button, order deep links
+
+/help is a new static page in (store): a WhatsApp support button and the
+contact address above the fold, topic chips, the FAQ grouped into five
+shelves, and a request form with a topic select and an order reference.
+
+The FAQ is the same array /faq renders; every FaqEntry gained a `topic`
+field, and groupFaqByTopic drops an empty shelf (`other` exists only in
+the form). FAQPage structured data stays on /faq alone, so the same
+questions are not marked up on two URLs.
+
+Order-specific help: ?order=<id>&topic= is read in the browser under
+Suspense (HelpContext), so the page stays prerendered. A valid id renders
+a card naming the order the way the site does, with deep links to the
+order page, receipt, return request and a WhatsApp chat pre-filled with
+the order number, and pre-fills the form. The account order page gained
+a "need help with this order?" card linking to helpUrlForOrder, and the
+return page links to /help?order=&topic=refunds instead of /contact.
+Unknown topics and malformed ids are dropped, never echoed.
+
+Mail routing: submitHelpRequest sends to supportEmail(), a new
+SUPPORT_TO (the owner's inbox, documented in .env.example) that falls
+through to CONTACT_TO and then the published info@ address, reply-to the
+customer, honeypot, 5/hour per IP under the new `help:` policy. An order
+reference that is not an id is refused before anything is mailed.
+
+Registries: /help added to the smoke and render-mode specs, the SEO audit
+static paths, the sitemap, the content-frame test, the auth-coverage
+public-form allowlist, the rate-limit table and docs/RATE-LIMITS.md.
+data/legacy/redirect-map.json regenerated (only /help in static_routes and
+the timestamp changed; 33 redirects unchanged; 192 under applied got a
+timestamp only and was not re-applied).
+
+No migration, no Vercel change. SUPPORT_TO must be set in production for
+requests to reach the owner rather than info@.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>

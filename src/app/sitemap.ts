@@ -145,6 +145,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // is both true and better than a date that is wrong every time.
     { url: `${base}/contact`, changeFrequency: 'monthly', priority: 0.5 },
     { url: `${base}/faq`, changeFrequency: 'monthly', priority: 0.5 },
+    { url: `${base}/help`, changeFrequency: 'monthly', priority: 0.5 },
     { url: `${base}/about`, changeFrequency: 'monthly', priority: 0.5 },
     // Higher than the other content pages because it is the page a business
     // lands on, and a business is worth more than a session.

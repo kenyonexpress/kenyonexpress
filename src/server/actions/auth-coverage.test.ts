@@ -72,6 +72,7 @@ const PUBLIC_ACTIONS = new Map<string, string>([
   ['cart.ts:clearGuestSessionCookie', "deletes the caller's own cookie"],
   // Public forms. All four are rate limited per IP in their own bodies.
   ['contact.ts:submitContactForm', 'public form, rate limited'],
+  ['help.ts:submitHelpRequest', 'public form, rate limited'],
   ['supplier-lead.ts:submitSupplierLead', 'public form, rate limited'],
   ['consent.ts:decideConsent', 'cookie-banner decision, records no personal data'],
   // Token-bearing links, where the unguessable token is the authorisation.
