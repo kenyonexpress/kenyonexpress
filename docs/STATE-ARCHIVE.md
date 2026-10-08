@@ -2,6 +2,21 @@
 
 Everything below was STATE.md up to commit 02a45128f (2026-10-06), moved here by M11-c113 to keep STATE.md under 300 lines.
 
+## M02-c122: compare.mjs on /product at 380, 768, 1440, run 2026-10-08 in the foreground
+
+Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=product --width=<w>` (server: `PORT=3311 pnpm start` on a fresh build of HEAD `b0f797a38` with the two uncommitted UI edits in the tree)
+
+| Width | Exit | Diff | Output |
+|---|---|---|---|
+| 380 | 5 | none | REFUSING: `https://kenyonexpress.co.il/product/מוצר-לדוגמא/` is this project's own build (39 `/_next/` refs, Next runtime, no wp-content) |
+| 768 | 5 | none | REFUSING: same reason |
+| 1440 | 5 | none | REFUSING: same reason |
+
+- No diff numbers, unchanged from M02-c121. `refs/ke_live_singlefile.html` is still absent. The gate wrote four REFUSED rows to `docs/UI-PARITY-REPORT.md` (380 twice: a second 380 run captured the refusal reason), committed with this item. The last real product number is still 10.96% (older archive).
+- Gates on the working tree: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (7 recovered `supabase.timeout`, 0 `db.query_failed`).
+- Moved from STATE.md (verbatim): `Last item: **M01-c122 BLOCKED** (2026-10-08): compare.mjs on / exits 5 at 380, 768 and 1440 with no diff number. The gate refuses because `https://kenyonexpress.co.il/` is this project's own build (34–35 `/_next/` refs, Next runtime, no wp-content) and `refs/ke_live_singlefile.html` is still absent. Run in the foreground against `PORT=3311 pnpm start`, HEAD `aee3bcdce`. See blocker 0 and the M01-c122 section in the archive.`
+- Decision: BLOCKED on open blocker 0. No code change. `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
+
 ## M17-c121: RTL on / and /product sample, re-probed 2026-10-08 in the foreground
 
 - Method: the same as M17-c120 (probe copied to `/tmp/m17c121b/rtl.mjs`, outside the repo, 120 s `page.goto` timeout; failed runs retried with `rtl-only.mjs`). Playwright Chromium from the repo. Pages: `/` and the same 6 sitemap products (`barbecue`, `bar-drink`, `תזונה-הוליסטית-טבעית-וצמחי-מרפא`, `ארוחה-בשרית-זוגית`, `מזקקת-ויסקי`, `עיסוי-מפנק-לגבר-45-דקות-רק-ב108`) at 380, 768 and 1440, 21 runs per target. Checks: `<html lang dir>`, body direction, horizontal overflow, visible Hebrew text with computed `direction: ltr`, visible Hebrew text with `text-align: left`, visible `[dir="ltr"]` roots, and the `::placeholder` style of every visible `input[dir="ltr"]`. An earlier, interrupted attempt of this item left partial logs in `/tmp/m17c121`; they were not used.
