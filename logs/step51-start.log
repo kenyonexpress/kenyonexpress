@@ -1,0 +1,15 @@
+Already up to date
+Done in 612ms using pnpm v11.1.2
+$ next start
+▲ Next.js 16.3.3
+- Local:         http://localhost:3351
+- Network:       http://100.84.130.122:3351
+✓ Ready in 288ms
+✓ Running next.config.ts took 780ms
+{"ts":"2026-10-08T06:03:32.547Z","level":"warn","event":"env.checks_skipped","request_id":null,"detail":"ALLOW_INCOMPLETE_ENV=true. Correct for a local `next start`; wrong anywhere a customer can reach."}
+{"ts":"2026-10-08T06:03:36.486Z","level":"info","event":"env.probe_ok","request_id":null,"checked":2}
+{"ts":"2026-10-08T06:03:37.335Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"v_homepage_sections_live","status":200,"duration_ms":444,"threshold_ms":300}
+{"ts":"2026-10-08T06:03:37.654Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"v_banners_live","status":200,"duration_ms":768,"threshold_ms":300}
+{"ts":"2026-10-08T06:03:38.993Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"v_banners_live","status":200,"duration_ms":646,"threshold_ms":300}
+{"ts":"2026-10-08T06:03:39.811Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"v_homepage_sections_live","status":200,"duration_ms":1463,"threshold_ms":300}
+[ELIFECYCLE] Command failed with exit code 143.
