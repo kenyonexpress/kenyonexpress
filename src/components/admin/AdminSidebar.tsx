@@ -20,6 +20,7 @@ import {
   LayoutDashboard,
   Megaphone,
   Package,
+  PanelTop,
   Plus,
   ScanLine,
   Search,
@@ -72,6 +73,15 @@ const NAV_ITEMS: NavItem[] = [
     icon: Megaphone,
     section: 'catalog',
     quickAdd: '/admin/landing-pages/new',
+  },
+  // Category landing banners (STEP 62): a hero at the top of /category/[slug],
+  // scheduled and counted. Catalogue copy, so the catalog section.
+  {
+    href: '/admin/category-banners',
+    label: 'באנרים לקטגוריות',
+    icon: PanelTop,
+    section: 'catalog',
+    quickAdd: '/admin/category-banners/new',
   },
   // Product bundles (STEP 60): a fixed saving funded from the commission, so
   // the discounts permission and not the catalogue one.

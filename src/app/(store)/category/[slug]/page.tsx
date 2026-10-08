@@ -4,6 +4,7 @@ import CategoryControlBar from '@/components/category/CategoryControlBar'
 import CategoryEmptyState from '@/components/category/CategoryEmptyState'
 import CategoryFilterSidebar from '@/components/category/CategoryFilterSidebar'
 import CategoryGridSkeleton from '@/components/category/CategoryGridSkeleton'
+import CategoryHeroBanner from '@/components/category/CategoryHeroBanner'
 import CategoryProductCard, {
   type CategoryProduct,
 } from '@/components/category/CategoryProductCard'
@@ -440,6 +441,15 @@ async function CategoryPageBody({
       <ViewTracker event="view_category" props={{ category_id: category.id }} />
       <div className="category-page__inner">
         <CategoryBreadcrumb items={crumbs} />
+
+        {/* The scheduled hero (STEP 62). Null when the category has no live
+            banner, which is every category today and keeps the page's
+            geometry exactly what the parity gate measured. The read is the
+            anon client under the category's cache tag; the choice among the
+            cached rows is made with this request's clock. */}
+        <Suspense fallback={null}>
+          <CategoryHeroBanner categoryId={category.id} />
+        </Suspense>
 
         <header className="category-page__header">
           <h1 className="category-page__title">{category.name_he}</h1>

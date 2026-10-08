@@ -154,6 +154,8 @@
       "/admin/cashback",
       "/admin/categories",
       "/admin/categories/new",
+      "/admin/category-banners",
+      "/admin/category-banners/new",
       "/admin/coupons",
       "/admin/coupons/codes",
       "/admin/coupons/lookup",

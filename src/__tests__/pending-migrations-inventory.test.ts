@@ -518,6 +518,10 @@ describe('the pending migration inventory', () => {
       // functions, and a replaced body for `available_stock` (117) that also
       // counts live unbound flash holds. Not applied; README carries the row.
       '266_flash_sales.sql',
+      // STEP 62: category landing banners. `category_banners` +
+      // `category_banner_stats` and one service-role counter function. Not
+      // applied; README carries the row.
+      '267_category_banners.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

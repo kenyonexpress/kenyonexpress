@@ -151,6 +151,13 @@ export const RATE_LIMIT_POLICIES = {
     windowSeconds: 60,
     reason: 'waiting-room poll of a flash sale, per IP',
   },
+  // A category banner fires one impression per page view and one click per
+  // tap; sixty a minute is generous for a person and a low ceiling for a loop.
+  'banner-event': {
+    limit: 60,
+    windowSeconds: 60,
+    reason: 'category banner impression or click counter, per IP',
+  },
   begin_checkout: { limit: 10, windowSeconds: 60, reason: 'Cardcom low-profile creation' },
   // One-click reorder: each attempt is a cart rebuild plus a token charge,
   // and a shopper never needs five of those a minute. Tighter than

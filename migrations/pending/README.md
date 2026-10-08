@@ -1,5 +1,44 @@
 # `migrations/pending/`
 
+## 2026-10-08: 267 PENDING (category landing banners: scheduled hero per category, click counters, STEP 62)
+
+`267_category_banners.sql` adds `public.category_banners` (`category_id`
+CASCADE, `title_he` 2..120, `subtitle_he` <= 240, `image_url`, `image_alt_he`
+2..200, `cta_label_he` + `cta_href` both-or-neither with `cta_href` CHECKed
+to an internal path (`^/`, not `//`), `theme` in light/dark, an OPEN window
+(`starts_at` null = from save, `ends_at` null = until switched off, CHECK
+start < end when both), `priority` -1000..1000, `is_active`, `set_updated_at`
+trigger, a partial index on active rows per category) and
+`public.category_banner_stats` (PK `(banner_id, day)`, `impressions`,
+`clicks`, CHECK >= 0). One function, `record_category_banner_event(uuid,
+text)`: SECURITY DEFINER, pinned search_path, upserts today's UTC row for an
+ACTIVE banner and answers false for an unknown kind or banner; granted to the
+SERVICE ROLE ONLY and revoked from PUBLIC/anon/authenticated, because an
+anon-callable counter is inflatable by anyone with the project URL. The
+caller is `POST /api/category-banners/[id]/events`, rate limited
+`banner-event` 60/min per IP, always 204. A counter is an aggregate with no
+visitor identifier, so it needs no consent and no analytics-registry name
+(the ingest whitelist is an APPLIED migration this step does not reopen).
+RLS: public SELECT on `is_active` banners, staff write through
+`has_role('admin')`, and ZERO policies on the stats (RLS on, nobody but the
+service role reads). Client grants per 144. The storefront
+(`src/lib/category-banners/read.ts`) reads the category's active rows on the
+anon key, cached under the category tag, and picks the live one with the
+REQUEST clock, so a banner scheduled for 09:00 shows on the first request
+after 09:00. Admin composition is the service role from
+`src/server/actions/admin/category-banners.ts` behind
+`requireSection('catalog', 'write')` with an audit row. Self-check inside a
+rolled-back block: two impressions and a click land on one row; an unknown
+kind and a switched-off banner are refused; a CTA label without a path and
+an external CTA are refused by the CHECKs (skipped with a NOTICE when the
+database has no category). Until applied every reader treats 42P01 /
+PGRST205 / 42883 as "no banner": the category page renders exactly as
+before, the admin list says so, and the route answers 204 without writing.
+No pre-existing object is touched; rollback is one DROP FUNCTION and two
+DROP TABLEs, in the file header. No dependency on any other pending file.
+NOT rehearsed on production (no MCP session in this run); the SQL was
+checked by eye against 266's shapes only.
+
 ## 2026-10-08: 266 PENDING (flash sales: window, allocation, hold, waiting room, STEP 61)
 
 `266_flash_sales.sql` adds `public.flash_sales` (`product_id`, `name_he`,
