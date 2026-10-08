@@ -2,6 +2,21 @@
 
 Everything below was STATE.md up to commit 02a45128f (2026-10-06), moved here by M11-c113 to keep STATE.md under 300 lines.
 
+## M03-c121: compare.mjs on /category at 380, 768, 1440, run 2026-10-08 in the foreground
+
+Command: `node scripts/compare.mjs --page=category --width=<w>`, HEAD `96c3a2f6f` with the two uncommitted UI edits in the tree. The gate refuses on the live side before it needs a local server. Run twice in the foreground (the first pass lost the exit code in the shell pipe; the second captured it).
+
+| Width | Exit | Diff | Output |
+|---|---|---|---|
+| 380 | 5 | none | REFUSING: `https://kenyonexpress.co.il/product-category/hot-deals/` is not the reference (our build: 38 `/_next/` refs, Next runtime, 0 wp-content) |
+| 768 | 5 | none | REFUSING: same reason (37 `/_next/` refs) |
+| 1440 | 5 | none | REFUSING: same reason (37 `/_next/` refs) |
+
+- No diff numbers, unchanged from M03-c115 through M03-c120. `refs/ke_live_singlefile.html` is still absent. The gate wrote six REFUSED rows (two passes) to `docs/UI-PARITY-REPORT.md`, committed with this item.
+- Gates on the working tree: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (31 recovered `supabase.timeout`).
+- Moved from STATE.md (verbatim): `Last item: **M02-c121 BLOCKED** (2026-10-08): compare.mjs on `/product` exits 5 at 380, 768 and 1440 with no diff number. The gate refuses because `https://kenyonexpress.co.il/product/מוצר-לדוגמא/` is this project's own build (39 `/_next/` refs, Next runtime, no wp-content) and `refs/ke_live_singlefile.html` is still absent. Run in the foreground against `PORT=3311 pnpm start`, HEAD `dae9f65c1`. See blocker 0 and the M02-c121 section in the archive.`
+- Decision: BLOCKED on open blocker 0. No code change. `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
+
 ## M02-c121: compare.mjs on /product at 380, 768, 1440, run 2026-10-08 in the foreground
 
 Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=product --width=<w>` (server: `PORT=3311 pnpm start` on a fresh build of HEAD `dae9f65c1` with the two uncommitted UI edits in the tree)
