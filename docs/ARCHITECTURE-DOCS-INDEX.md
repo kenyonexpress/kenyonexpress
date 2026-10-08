@@ -40,6 +40,7 @@ contradict (checklists, reports of past runs, content plans).
 |---|---|
 | `ARCHITECTURE-OVERVIEW.md` | **The master document.** |
 | `LAUNCH-RUNBOOK.md` | The binding launch sequence. Supersedes `DEPLOY.md`. |
+| `runbooks/README.md` | Per-component incident runbooks: rollback steps, on-call (Ofir), escalation ladder. One file per component, same eight sections in each. |
 | `CRON-EXTERNAL.md` | The ten scheduled jobs and why none of them runs yet. |
 | `AUTH-MODEL.md` | Roles, sessions, route guards. |
 | `DB-SECURITY-MODEL.md` | Live grant and RLS map, re-measured 2026-09-01. |

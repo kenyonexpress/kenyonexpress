@@ -109,6 +109,7 @@ file or a prior document.
 | Document | Status | What it is |
 |---|---|---|
 | [RUNBOOK.md](RUNBOOK.md) | ✅ | Alerts, on-call steps, rollback, common failures. |
+| [runbooks/README.md](runbooks/README.md) | ✅ | **Per-component incident runbooks** (12 files, 2026-10-09): rollback steps, on-call contact (Ofir), escalation ladder. Shape held by `src/__tests__/incident-runbooks-inventory.test.ts`. |
 | [INCIDENT-PLAYBOOKS.md](INCIDENT-PLAYBOOKS.md) | ✅ | Six named incidents with steps. |
 | [FAILURE-MODES.md](FAILURE-MODES.md) | ✅ | **Every way this can fail, ranked by likelihood × impact.** Five entries are at certainty, not probability. |
 | [QUERY-COOKBOOK.md](QUERY-COOKBOOK.md) | ✅ | Twenty SQL queries an operator needs, each one executed against production before being written down. |
