@@ -1,18 +1,27 @@
 'use client'
 
+import CategoryGuideFields from '@/components/admin/CategoryGuideFields'
 import ImageUploader from '@/components/admin/ImageUploader'
+import type { AdminCategoryGuide } from '@/lib/category-guides/admin-read'
 import { type CategoryFormState, upsertCategory } from '@/server/actions/admin/categories'
 import type { Category } from '@/types/database'
+import Link from 'next/link'
 import { useActionState, useState } from 'react'
 
 interface Props {
   category?: Category
   parentOptions: Pick<Category, 'id' | 'name_he'>[]
+  /**
+   * The buyer guide (STEP 65), loaded by the page for the category being
+   * edited. Absent when the list page's dialog picked a category
+   * client-side, in which case the form points at the full edit page.
+   */
+  guide?: AdminCategoryGuide
 }
 
 const INITIAL_STATE: CategoryFormState = null
 
-export default function CategoryForm({ category, parentOptions }: Props) {
+export default function CategoryForm({ category, parentOptions, guide }: Props) {
   const [state, action, pending] = useActionState(upsertCategory, INITIAL_STATE)
   const [iconUrl, setIconUrl] = useState<string[]>(category?.icon_url ? [category.icon_url] : [])
 
@@ -150,6 +159,23 @@ export default function CategoryForm({ category, parentOptions }: Props) {
           altSubject={category?.name_he ?? null}
         />
       </div>
+
+      {/* Buyer guide (STEP 65) */}
+      {guide ? (
+        <CategoryGuideFields
+          key={category?.id ?? 'new'}
+          guide={guide}
+          categoryName={category?.name_he ?? null}
+        />
+      ) : category ? (
+        <p className="text-xs text-gray-500 border-t border-gray-200 pt-4">
+          מדריך הקנייה של הקטגוריה נערך{' '}
+          <Link href={`/admin/categories/${category.id}`} className="underline">
+            בעמוד העריכה המלא
+          </Link>
+          .
+        </p>
+      ) : null}
 
       <div className="flex items-center gap-3 pt-2">
         <button

@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import type { AdminCategoryGuide } from '@/lib/category-guides/admin-read'
 import { softDeleteCategory } from '@/server/actions/admin/categories'
 import type { Category } from '@/types/database'
 import { Plus } from 'lucide-react'
@@ -32,6 +33,8 @@ interface Props {
   parentOptions: Pick<Category, 'id' | 'name_he'>[]
   editingCategory?: Category
   showNewForm?: boolean
+  /** The buyer guide for `editingCategory` (STEP 65); the dialog shows it for that category only. */
+  editingGuide?: AdminCategoryGuide
 }
 
 export default function CategoriesTable({
@@ -40,6 +43,7 @@ export default function CategoriesTable({
   parentOptions,
   editingCategory,
   showNewForm,
+  editingGuide,
 }: Props) {
   const [dialogOpen, setDialogOpen] = useState(Boolean(showNewForm || editingCategory))
   const [activeCategory, setActiveCategory] = useState<Category | undefined>(editingCategory)
@@ -144,7 +148,15 @@ export default function CategoriesTable({
               טופס יצירה או עריכה של קטגוריה
             </DialogDescription>
           </DialogHeader>
-          <CategoryForm category={activeCategory} parentOptions={parentOptions} />
+          <CategoryForm
+            category={activeCategory}
+            parentOptions={parentOptions}
+            guide={
+              activeCategory && editingCategory && activeCategory.id === editingCategory.id
+                ? editingGuide
+                : undefined
+            }
+          />
         </DialogContent>
       </Dialog>
 

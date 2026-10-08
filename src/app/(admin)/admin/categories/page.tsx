@@ -1,6 +1,7 @@
 import CategoriesTable, { type CategoryRow } from '@/components/admin/CategoriesTable'
 import { categoryListParamsSchema } from '@/lib/admin/page-params'
 import { requireSection } from '@/lib/admin/rbac'
+import { getAdminCategoryGuide } from '@/lib/category-guides/admin-read'
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 
@@ -37,6 +38,11 @@ export default async function AdminCategoriesPage({ searchParams }: Props) {
     editingCategory = active.find((c) => c.id === edit)
     if (!editingCategory) notFound()
   }
+  // The buyer guide (STEP 65) for the category the URL names; the dialog
+  // opened client-side for any other category links to the full editor.
+  const editingGuide = editingCategory
+    ? await getAdminCategoryGuide({ id: editingCategory.id, slug: editingCategory.slug })
+    : undefined
 
   const rows: CategoryRow[] = active.map((c) => ({
     id: c.id,
@@ -55,6 +61,7 @@ export default async function AdminCategoriesPage({ searchParams }: Props) {
       categories={active}
       parentOptions={parentOptions}
       editingCategory={editingCategory}
+      editingGuide={editingGuide}
       showNewForm={Boolean(isNew)}
     />
   )

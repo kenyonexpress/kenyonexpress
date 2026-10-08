@@ -522,6 +522,10 @@ describe('the pending migration inventory', () => {
       // `category_banner_stats` and one service-role counter function. Not
       // applied; README carries the row.
       '267_category_banners.sql',
+      // STEP 65: category buyer guides. `category_guides`, one row per
+      // category, markdown-lite body; rehearsed on production inside
+      // BEGIN/ROLLBACK 2026-10-09. Not applied; README carries the row.
+      '268_category_guides.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

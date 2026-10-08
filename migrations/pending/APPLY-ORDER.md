@@ -1,5 +1,17 @@
 # Apply order
 
+## 2026-10-09 (STEP 65): 268 filed; any time, no dependencies
+
+268 creates one table, `category_guides`, and depends only on
+`categories`, `set_updated_at()` and `has_role(text)`, all live (measured
+again the same day). Nothing pending depends on it. Rehearsed on production
+inside BEGIN/ROLLBACK on 2026-10-09 (self-check passed, `to_regclass`
+NULL after). Applying it changes nothing a shopper sees: every category
+keeps rendering its authored guide until an editor saves a row. After
+applying, confirm with `select to_regclass('public.category_guides')` (one
+row) and open any category in `/admin/categories/<id>`: the amber
+"migration 268 pending" line is gone and a save of the guide persists.
+
 ## 2026-10-08 (STEP 59): 264 filed; any time, no dependencies
 
 264 installs one trigger on `products` and depends only on 193 and the

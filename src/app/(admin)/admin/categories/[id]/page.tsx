@@ -1,5 +1,6 @@
 import CategoryForm from '@/components/admin/CategoryForm'
 import { requireSection } from '@/lib/admin/rbac'
+import { getAdminCategoryGuide } from '@/lib/category-guides/admin-read'
 import { excludeDeleted } from '@/lib/soft-delete'
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
@@ -25,10 +26,14 @@ export default async function EditCategoryPage({ params }: Props) {
 
   if (!category) notFound()
 
+  // The buyer guide (STEP 65): the row, else the authored text, on the
+  // service role behind the gate above.
+  const guide = await getAdminCategoryGuide({ id: category.id, slug: category.slug })
+
   return (
     <div className="space-y-4 max-w-2xl">
       <h1 className="text-xl font-bold text-gray-900">עריכת קטגוריה</h1>
-      <CategoryForm category={category} parentOptions={categories ?? []} />
+      <CategoryForm category={category} parentOptions={categories ?? []} guide={guide} />
     </div>
   )
 }

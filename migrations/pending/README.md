@@ -1,5 +1,38 @@
 # `migrations/pending/`
 
+## 2026-10-09: 268 PENDING (category buyer guides: ~300 Hebrew words per category, admin-edited, STEP 65)
+
+`268_category_guides.sql` adds `public.category_guides`: one row per
+category (`category_id` is the PRIMARY KEY, CASCADE on the category),
+`title_he` (null = the default "מדריך קנייה: <name>", else 2..120),
+`body_md` (markdown-lite, 1..20000 after trim, blank refused), `is_published`
+(default true), `updated_by`, `set_updated_at` trigger. No function. RLS:
+public SELECT on EVERY row (a draft is catalogue copy, not a secret, and the
+storefront applies `is_published` itself because an unpublished row must
+hide the authored fallback too, which a filtering policy could not say),
+staff write through `has_role('admin')`, client grants per 144. The
+storefront (`src/lib/category-guides/read.ts`) reads the row on the anon
+key under the category's tag and resolves it over the AUTHORED guide for
+the slug (`src/lib/category-guides/authored.ts`, twelve guides for the
+twelve active categories read from production the same day, 272..300 words
+each, scanned by `authored.test.ts` for the unmeasured-claim patterns the
+about page refuses). The page renders the guide at the FOOT of
+`/category/[slug]`, below the grid and the filters where the parity gate
+measures nothing, and a category with no `description_he` (eleven of
+twelve) takes the guide's first sentence as its meta description. Admin
+composition rides on the category form (`CategoryGuideFields`, live word
+count against 300) and the same `upsertCategory` action on the service
+role with an audit row; a blank body deletes the row. Self-check inside a
+rolled-back block: one guide per category (unique_violation on a second),
+a blank body refused, `updated_at` moved by the trigger. REHEARSED ON
+PRODUCTION inside BEGIN/ROLLBACK on 2026-10-09 through the management API:
+self-check passed, `to_regclass` NULL after. Until applied every reader
+treats 42P01 / PGRST205 as "no row": the storefront shows the authored
+guide, the editor says the table is pending, and a save of the unchanged
+authored text is quiet while an edit returns a Hebrew hint with the
+category itself already saved. No pre-existing object is touched; rollback
+is one DROP TABLE. No dependency on any other pending file.
+
 ## 2026-10-08: 267 PENDING (category landing banners: scheduled hero per category, click counters, STEP 62)
 
 `267_category_banners.sql` adds `public.category_banners` (`category_id`

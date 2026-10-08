@@ -60,6 +60,8 @@ function fakeClient(name: string) {
       select: (...args: unknown[]) => builder(name, table, 'select', args[0]),
       update: (payload: unknown) => builder(name, table, 'update', payload),
       insert: (payload: unknown) => builder(name, table, 'insert', payload),
+      upsert: (payload: unknown, opts?: unknown) =>
+        builder(name, table, 'upsert', { payload, opts }),
       delete: () => builder(name, table, 'delete'),
     }),
     auth: { getUser: async () => ({ data: { user: { id: USER } }, error: null }) },
@@ -67,6 +69,7 @@ function fakeClient(name: string) {
 }
 
 const requestClient = fakeClient('request')
+const adminClient = fakeClient('admin')
 
 const requireAdminSession = vi.fn()
 const writeAuditLog = vi.fn()
@@ -74,6 +77,7 @@ const revalidatePath = vi.fn()
 const updateTag = vi.fn()
 
 vi.mock('@/lib/supabase/server', () => ({ createClient: async () => requestClient }))
+vi.mock('@/lib/supabase/admin', () => ({ createAdminClient: () => adminClient }))
 vi.mock('@/lib/admin/rbac', () => ({ requireAdminSession: () => requireAdminSession() }))
 vi.mock('@/lib/admin/audit', () => ({ writeAuditLog: (e: unknown) => writeAuditLog(e) }))
 vi.mock('@/lib/observability/action-context', () => ({
@@ -296,5 +300,95 @@ describe('updateCategorySortOrder', () => {
     calls.length = 0
     expect(await updateCategorySortOrder(CAT, 1)).toEqual({ error: 'אין הרשאה' })
     expect(calls).toHaveLength(0)
+  })
+})
+
+/**
+ * The buyer guide (STEP 65) rides on the same form. Pinned: without the
+ * field nothing touches category_guides (the older cases above prove it by
+ * counting calls); with it, the row is upserted on the SERVICE ROLE keyed on
+ * the category with the actor stamped; a blank body deletes the row; the
+ * absent table is quiet when the text is the authored one and a Hebrew hint
+ * otherwise, with the category itself already saved.
+ */
+describe('upsertCategory: buyer guide', () => {
+  const guideForm = (body: string, extra: Record<string, string> = {}) =>
+    form({
+      ...validForm,
+      id: CAT,
+      guide_body_md: body,
+      guide_title_he: 'מדריך',
+      guide_published: 'true',
+      ...extra,
+    })
+
+  it('upserts the guide row on the admin client after the category update', async () => {
+    const result = await upsertCategory(null, guideForm('## כותרת\n\nגוף המדריך'))
+    expect(result).toEqual({ success: 'קטגוריה עודכנה' })
+
+    const upsert = calls.find((c) => c.table === 'admin:category_guides' && c.op === 'upsert')
+    expect(upsert?.payload).toEqual({
+      payload: {
+        category_id: CAT,
+        title_he: 'מדריך',
+        body_md: '## כותרת\n\nגוף המדריך',
+        is_published: true,
+        updated_by: ADMIN,
+      },
+      opts: { onConflict: 'category_id' },
+    })
+    // The category update came first, on the request client.
+    const order = calls.map((c) => `${c.table}.${c.op}`)
+    expect(order.indexOf('request:categories.update')).toBeLessThan(
+      order.indexOf('admin:category_guides.upsert'),
+    )
+    expect(writeAuditLog).toHaveBeenCalledWith(
+      expect.objectContaining({ entityType: 'category_guides', entityId: CAT, action: 'updated' }),
+    )
+    expect(updateTag).toHaveBeenCalledWith(`category:${CAT}`)
+  })
+
+  it('deletes the row for a blank body and stores an unpublished one as such', async () => {
+    expect(await upsertCategory(null, guideForm('   '))).toEqual({ success: 'קטגוריה עודכנה' })
+    const del = calls.find((c) => c.table === 'admin:category_guides' && c.op === 'delete')
+    expect(del?.chain).toContainEqual(['eq', ['category_id', CAT]])
+    expect(calls.some((c) => c.op === 'upsert')).toBe(false)
+
+    calls.length = 0
+    await upsertCategory(null, guideForm('גוף', { guide_published: '' }))
+    const upsert = calls.find((c) => c.op === 'upsert')
+    expect(upsert?.payload).toMatchObject({ payload: { is_published: false, title_he: 'מדריך' } })
+  })
+
+  it('refuses an over-long title before any write', async () => {
+    const result = await upsertCategory(null, guideForm('גוף', { guide_title_he: 'א'.repeat(121) }))
+    expect(result).toEqual({ error: 'כותרת המדריך ארוכה מדי' })
+    expect(calls).toHaveLength(0)
+  })
+
+  it('on the absent table: quiet for the unchanged authored text, a hint for an edit', async () => {
+    const { authoredGuideFor } = await import('@/lib/category-guides/authored')
+    const authored = authoredGuideFor('electronics')
+    expect(authored).not.toBeNull()
+    override('admin:category_guides.upsert', {
+      data: null,
+      error: { code: 'PGRST205', message: 'Could not find the table' },
+    })
+
+    const same = await upsertCategory(
+      null,
+      guideForm(authored!.body_md, { guide_title_he: authored!.title_he ?? '' }),
+    )
+    expect(same).toEqual({ success: 'קטגוריה עודכנה' })
+
+    const edited = await upsertCategory(null, guideForm(`${authored!.body_md}\n\nעוד שורה`))
+    expect(edited).toEqual({
+      error:
+        'הקטגוריה נשמרה, אבל מדריך הקנייה לא נשמר: טבלת מדריכי הקנייה עוד לא הוחלה (מיגרציה 268).',
+    })
+    // The category row was still updated both times.
+    expect(calls.filter((c) => c.table === 'request:categories' && c.op === 'update')).toHaveLength(
+      2,
+    )
   })
 })

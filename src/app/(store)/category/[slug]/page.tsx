@@ -1,5 +1,6 @@
 import ViewTracker from '@/components/analytics/ViewTracker'
 import CategoryBreadcrumb, { defaultHomeCrumb } from '@/components/category/CategoryBreadcrumb'
+import CategoryBuyerGuide from '@/components/category/CategoryBuyerGuide'
 import CategoryControlBar from '@/components/category/CategoryControlBar'
 import CategoryEmptyState from '@/components/category/CategoryEmptyState'
 import CategoryFilterSidebar from '@/components/category/CategoryFilterSidebar'
@@ -11,6 +12,8 @@ import CategoryProductCard, {
 import Pagination from '@/components/category/Pagination'
 import { ABOVE_FOLD_CARD_COUNT } from '@/components/category/above-fold'
 import CityTags from '@/components/geo/CityTags'
+import { guideExcerpt } from '@/lib/category-guides/markdown'
+import { getCategoryGuide } from '@/lib/category-guides/read'
 import {
   CATEGORY_PAGE_SIZE,
   type CollectionRule,
@@ -100,7 +103,17 @@ export async function generateMetadata({ params }: Props) {
   // scored it 92 against 100 for every page that has one. Same fallback shape
   // as the PDP in lib/product-seo.ts: a short Hebrew line built from the name
   // the page already shows, rather than invented marketing copy.
-  const description = category.description_he?.trim() || categoryMetaDescription(category.name_he)
+  //
+  // STEP 65: between the row's own description and the generic line sits the
+  // buyer guide's opening sentence. Eleven of the twelve live categories have
+  // no description_he, and a description that says what the guide says is a
+  // description a searcher can act on. Same cached anon read the section at
+  // the foot of the page makes, so it costs no second round trip.
+  const guide = category.description_he?.trim() ? null : await getCategoryGuide(category)
+  const description =
+    category.description_he?.trim() ||
+    (guide ? guideExcerpt(guide.body_md) : null) ||
+    categoryMetaDescription(category.name_he)
 
   // The same category is reachable with sort, page, price and city query
   // strings, and without a canonical each of those competes as its own page.
@@ -499,6 +512,17 @@ async function CategoryPageBody({
             minDiscount={minDiscount}
           />
         </div>
+
+        {/* The buyer guide (STEP 65): a few hundred indexable words on how to
+            choose in this category, under the grid and the filters where it
+            costs the parity gate nothing. The row on the anon key under the
+            category's tag, else the authored text for the slug, else
+            nothing. */}
+        <Suspense fallback={null}>
+          <CategoryBuyerGuide
+            category={{ id: category.id, slug: category.slug, name_he: category.name_he }}
+          />
+        </Suspense>
       </div>
     </div>
   )
