@@ -98,6 +98,21 @@ Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=produ
 - Moved from STATE.md (verbatim): `Last item: **M01-c120 BLOCKED** (2026-10-08): compare.mjs on / exits 5 at 380, 768 and 1440 with no diff number. The gate refuses because `https://kenyonexpress.co.il/` is this project's own build (35 `/_next/` refs, Next runtime, no wp-content) and `refs/ke_live_singlefile.html` is still absent. Run in the foreground against `PORT=3311 pnpm start`, HEAD `903d09184`. See blocker 0.` and `M01-c120 gates (working tree, uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` UI edits left unstaged): type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `supabase.timeout`, 0 `db.query_failed`). compare.mjs exit 5 x4 (blocker 0).`
 - Decision: BLOCKED on open blocker 0 (and the build gate on blocker 7). No code change.
 
+## M01-c122: compare.mjs on / at 380, 768, 1440, run 2026-10-08 in the foreground
+
+Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=home --width=<w>` (server: `PORT=3311 pnpm start` on a fresh build of HEAD `aee3bcdce` with the two uncommitted UI edits in the tree)
+
+| Width | Exit | Diff | Output |
+|---|---|---|---|
+| 380 | 5 | none | REFUSING: `https://kenyonexpress.co.il/` is this project's own build (35 `/_next/` refs, Next runtime, no wp-content) |
+| 768 | 5 | none | REFUSING: same reason (34 `/_next/` refs) |
+| 1440 | 5 | none | REFUSING: same reason (34 `/_next/` refs) |
+
+- No diff numbers, unchanged from M01-c121. `refs/ke_live_singlefile.html` is still absent. The gate wrote three REFUSED rows to `docs/UI-PARITY-REPORT.md`, committed with this item. The last real home number is still 10.92 at 1440 (older archive).
+- Gates on the working tree: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (21 recoverable `supabase.timeout`, 8 `db.query_failed` lines).
+- Moved from STATE.md (verbatim): `Last item: **M18-c121 DONE** (2026-10-08): STATE.md was 112 lines at start, already under 300. Moved to `docs/STATE-ARCHIVE.md` verbatim: the M17-c121 status line and the 18 c118 queue rows. Gates: see the M18-c121 row.`
+- Decision: BLOCKED on open blocker 0. No code change. `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
+
 ## M01-c121: compare.mjs on / at 380, 768, 1440, run 2026-10-08 in the foreground
 
 Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=home --width=<w>` (server: `PORT=3311 pnpm start` on a fresh build of HEAD `3aebfa1b2` with the two uncommitted UI edits in the tree)
