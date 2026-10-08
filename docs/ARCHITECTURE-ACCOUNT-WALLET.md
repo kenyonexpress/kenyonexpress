@@ -173,6 +173,7 @@ cashback_rules (
 | שימוש בארנק בתשלום | ארנק המשתמש | `platform:revenue` | `order_spend` | `order:<id>:spend` | כן |
 | החזר על ביטול הזמנה | `platform:revenue` | ארנק המשתמש | `order_refund` | `order:<id>:refund` | לא, מתוכנן |
 | זיכוי ידני של אדמין | `platform:adjustments` | ארנק המשתמש | `admin_credit` | `adj:<uuid>` | לא, מתוכנן |
+| טעינת גיפט קארד (STEP 48) | `platform:revenue` | ארנק המשתמש | `gift_card_redeem` | `gift_card:<id>:redeem` | כן, `redeem_gift_card` (234), מהעמוד `/gift-card` ומשדה הקוד בקופה |
 
 פקיעת קופון בלי מימוש מזכה גם היא את הארנק, אבל השורה הזאת נכתבת בדומיין
 השוברים (`ke-voucher`) ולא כאן. סעיף 8.
@@ -192,6 +193,7 @@ cashback_rules (
 | `/account/orders/[id]` | פירוט שורות, כתובת, תשלום |
 | `/account/coupons` | קופונים שנרכשו: קוד, QR, תוקף, סטטוס |
 | `/account/wallet` | יתרה + פנקס תנועות מתוך `v_wallet_ledger` |
+| `/account/gift-cards` | גיפט קארד (STEP 48, מיגרציה 234): כרטיסים שנרכשו ושהתקבלו, 4 תווים אחרונים, סכום, מצב (פעיל / נטען לארנק / פג / בוטל), תוקף. קריאה ב-session עם מדיניות `gift_cards_select_own`. הקוד עצמו לעולם לא מוצג |
 | `/account/addresses` | CRUD כתובות, סימון ברירת מחדל |
 | `/account/tokens` | כרטיסים שמורים: 4 ספרות אחרונות, מותג, תוקף, מחיקה |
 

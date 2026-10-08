@@ -272,6 +272,13 @@ export interface PublishGateInput {
   recurringAmountAgorot?: number | null | undefined
   billingInterval?: string | null | undefined
   supplier: SupplierIdentity | null | undefined
+  /**
+   * A gift card (234) is the platform's own stored-value instrument: no
+   * supplier is named, none takes a share, and the whole charge is platform
+   * revenue. The supplier gate therefore does not apply, and the split must
+   * read 100 to the platform.
+   */
+  isGiftCard?: boolean
 }
 
 export type PublishGateResult =
@@ -343,13 +350,28 @@ export function assertPublishable(input: PublishGateInput): PublishGateResult {
     }
   }
 
-  blockers.push(...missingSupplierDetails(input.supplier))
+  if (input.isGiftCard) {
+    // The platform is the issuer (234): nothing to split and nobody to name.
+    // A supplier attached by mistake would route the face value into a
+    // supplier payout at finalize, so it is refused rather than ignored.
+    if (input.supplier && present(input.supplier.id)) {
+      blockers.push({ field: 'supplier_id', message: 'לגיפט קארד אין ספק: הפלטפורמה מנפיקה אותו' })
+    }
+    if (split.ok && split.pair.platformPercent !== SPLIT_TOTAL) {
+      blockers.push({
+        field: 'platform_percent',
+        message: 'גיפט קארד הוא מוצר של הפלטפורמה: אחוז הפלטפורמה חייב להיות 100',
+      })
+    }
+  } else {
+    blockers.push(...missingSupplierDetails(input.supplier))
 
-  if (input.supplier && present(input.supplier.id) && input.supplier.status !== 'active') {
-    blockers.push({
-      field: 'supplier_status',
-      message: 'הספק אינו פעיל ולכן המוצר לא יכול להתפרסם',
-    })
+    if (input.supplier && present(input.supplier.id) && input.supplier.status !== 'active') {
+      blockers.push({
+        field: 'supplier_status',
+        message: 'הספק אינו פעיל ולכן המוצר לא יכול להתפרסם',
+      })
+    }
   }
 
   if (blockers.length > 0) return { ok: false, blockers }

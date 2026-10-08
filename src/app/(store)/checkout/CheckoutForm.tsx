@@ -1,6 +1,7 @@
 'use client'
 
 import CarrierPicker from '@/components/checkout/CarrierPicker'
+import CheckoutGiftCardField from '@/components/checkout/CheckoutGiftCardField'
 import CityAutocomplete from '@/components/checkout/CityAutocomplete'
 import DeliverySlotPicker from '@/components/checkout/DeliverySlotPicker'
 import { trackCommerce } from '@/lib/analytics/commerce-client'
@@ -22,7 +23,7 @@ import {
 } from '@/lib/checkout/steps'
 import { clampWalletIls } from '@/lib/checkout/wallet-input'
 import { cityByName } from '@/lib/geo/cities'
-import { type Agorot, parseIls, sumAgorot } from '@/lib/money'
+import { type Agorot, agorot, parseIls, sumAgorot } from '@/lib/money'
 import { shekels } from '@/lib/money-format'
 import { PAYMENT_GATE_CLOSED_MESSAGE } from '@/lib/payments/provider-gate'
 import { estimateDelivery } from '@/lib/shipping/estimate'
@@ -271,11 +272,27 @@ export default function CheckoutForm({
   // agorot here so the cap below compares like with like. Comparing the raw
   // shekel balance against the agorot subtotal would have offered a wallet
   // ceiling a hundred times the cart.
-  const walletBalanceAgorot: Agorot = parseIls(walletBalance.toFixed(2))
+  //
+  // STEP 48: the balance is STATE, seeded from the prop, because a gift card
+  // redeemed on this page (CheckoutGiftCardField) credits the wallet without
+  // a navigation. The server re-reads the real balance at beginCheckout, so
+  // this number only decides what the box offers, never what is charged.
+  const [walletBalanceAgorot, setWalletBalanceAgorot] = useState<Agorot>(() =>
+    parseIls(walletBalance.toFixed(2)),
+  )
+  // The wallet box is uncontrolled (clamped on blur). After a gift card
+  // lands, the field is remounted through `key` with the new ceiling as its
+  // default, so the credit is applied to this order without a second step.
+  const [walletPrefillIls, setWalletPrefillIls] = useState(0)
   // STEP 13: min(balance, on-site charge), or 0 when that sits under the ₪10
   // floor. Zero means the box is replaced by a sentence, not offered and
   // then refused.
   const walletMaxIls = redeemableCeilingAgorot(walletBalanceAgorot, cart.subtotal) / 100
+  const onGiftCardCredited = (creditedAgorot: number) => {
+    const next = agorot(walletBalanceAgorot + Math.max(0, Math.trunc(creditedAgorot)))
+    setWalletBalanceAgorot(next)
+    setWalletPrefillIls(redeemableCeilingAgorot(next, cart.subtotal) / 100)
+  }
 
   const [firstName, ...restName] = (address.full_name ?? '').split(' ')
   const prefill = {
@@ -551,19 +568,29 @@ export default function CheckoutForm({
             </fieldset>
           )}
 
-          {walletBalance > 0 && walletMaxIls <= 0 && (
+          {/* STEP 48: a gift card code typed here is loaded into the wallet
+              and the wallet box below is re-seeded with it, so the card pays
+              for this order. Not a nested form: it posts through the server
+              action directly. */}
+          <CheckoutGiftCardField
+            isAuthenticated={isAuthenticated}
+            onCredited={onGiftCardCredited}
+          />
+
+          {walletBalanceAgorot > 0 && walletMaxIls <= 0 && (
             <p className="checkout-wallet-note" data-testid="wallet-floor-note">
               מימוש קאשבק מהארנק אפשרי מסכום של ₪{MIN_WALLET_REDEMPTION_ILS} ומעלה (יתרה זמינה:{' '}
               {shekels(walletBalanceAgorot)})
             </p>
           )}
-          {walletBalance > 0 && walletMaxIls > 0 && (
+          {walletBalanceAgorot > 0 && walletMaxIls > 0 && (
             <div className="checkout-wallet">
               <label htmlFor="co-wallet">
                 שימוש ביתרת ארנק (זמין: {shekels(walletBalanceAgorot)}, מינימום ₪
                 {MIN_WALLET_REDEMPTION_ILS})
               </label>
               <input
+                key={walletPrefillIls}
                 id="co-wallet"
                 name="apply_wallet_ils"
                 type="number"
@@ -571,7 +598,7 @@ export default function CheckoutForm({
                 min={MIN_WALLET_REDEMPTION_ILS}
                 max={walletMaxIls}
                 step="0.01"
-                defaultValue={0}
+                defaultValue={walletPrefillIls}
                 /*
                   The three attributes above enforce nothing: this form is
                   `noValidate`, which is what lets it run its own gate and

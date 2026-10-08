@@ -15,6 +15,7 @@ import {
   FileText,
   Flag,
   FlaskConical,
+  Gift,
   LayoutDashboard,
   Package,
   Plus,
@@ -78,6 +79,8 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/admin/payments', label: 'תשלומים', icon: CreditCard, section: 'payments' },
   { href: '/admin/payouts', label: 'תשלומים לספקים', icon: Banknote, section: 'payments' },
   { href: '/admin/cashback', label: 'יומן קאשבק', icon: Coins, section: 'payments' },
+  // Stored value the platform owes (STEP 48): issued cards and their state.
+  { href: '/admin/gift-cards', label: 'גיפט קארד', icon: Gift, section: 'payments' },
   { href: '/admin/fraud', label: 'בקרת הונאות', icon: ShieldAlert, section: 'payments' },
   // Reads settlement_events, which is the journal that actually exists here.
   // Separate from תשלומים לספקים above, which reads payout_statements (081,

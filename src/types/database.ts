@@ -2431,6 +2431,7 @@ export type Database = {
           images: Json
           is_coupon_enabled: boolean
           is_featured: boolean
+          is_gift_card: boolean
           kenyon_price: number | null
           kenyon_price_agorot: number | null
           latitude: number | null
@@ -2515,6 +2516,7 @@ export type Database = {
           images?: Json
           is_coupon_enabled?: boolean
           is_featured?: boolean
+          is_gift_card?: boolean
           kenyon_price?: number | null
           kenyon_price_agorot?: number | null
           latitude?: number | null
@@ -2599,6 +2601,7 @@ export type Database = {
           images?: Json
           is_coupon_enabled?: boolean
           is_featured?: boolean
+          is_gift_card?: boolean
           kenyon_price?: number | null
           kenyon_price_agorot?: number | null
           latitude?: number | null

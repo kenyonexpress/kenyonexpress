@@ -59,6 +59,7 @@ async function runUpsertProduct(
     sku: formData.get('sku') || null,
     stock_quantity: formData.get('stock_quantity') || null,
     is_featured: formData.get('is_featured') === 'true',
+    is_gift_card: formData.get('is_gift_card') === 'true',
     status: formData.get('status'),
     short_description_he: formData.get('short_description_he') || null,
     brand: formData.get('brand') || null,
@@ -299,6 +300,7 @@ async function runUpsertProduct(
             status: supplier.status,
           }
         : { id: fields.supplier_id },
+      isGiftCard: fields.is_gift_card,
     })
     // Every failing reason at once. An admin filling in a product should not
     // have to submit six times to discover six missing fields (section 3.4).

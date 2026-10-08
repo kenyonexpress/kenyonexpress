@@ -19,6 +19,10 @@ vi.mock('@/lib/analytics/tracker', () => ({ track: vi.fn() }))
 vi.mock('@/lib/analytics/commerce-client', () => ({ trackCommerce: vi.fn() }))
 vi.mock('@/server/actions/auth', () => ({ signInWithGoogle: vi.fn() }))
 vi.mock('@/server/actions/payments/checkout', () => ({ submitCheckout: vi.fn() }))
+const redeemGiftCard = vi.fn()
+vi.mock('@/server/actions/gift-cards', () => ({
+  redeemGiftCard: (...args: unknown[]) => redeemGiftCard(...args),
+}))
 vi.mock('@/server/actions/shipping', () => ({
   getShippingQuotes: vi.fn(async () => ({ options: [], degraded: false, zone: null })),
 }))
@@ -282,5 +286,71 @@ describe('the checkout confirm step', () => {
     // shopper reaches it, and an accessibility query rightly refuses to see it.
     const { container } = renderCheckout()
     expect(container.querySelector('.checkout-pay-btn')?.textContent).toBe('שליחת הזמנה')
+  })
+})
+
+/**
+ * STEP 48: a gift card redeemed on the checkout pays for the order through
+ * the wallet box, with no navigation and no second stored-value path.
+ */
+describe('the checkout gift card field', () => {
+  const codeField = (container: HTMLElement) =>
+    container.querySelector<HTMLInputElement>('[data-testid="checkout-gift-card"] input')
+  const walletField = (container: HTMLElement) =>
+    container.querySelector<HTMLInputElement>('[name="apply_wallet_ils"]')
+
+  it('offers the field to a signed-in shopper and a login hint to a guest', () => {
+    const signedIn = renderCheckout()
+    expect(codeField(signedIn.container)).toBeTruthy()
+    // The code must not ride along on the checkout submit.
+    expect(codeField(signedIn.container)?.name).toBe('')
+    signedIn.unmount()
+
+    const guest = renderCheckout({ isAuthenticated: false })
+    expect(codeField(guest.container)).toBeNull()
+    expect(guest.container.querySelector('[data-testid="gift-card-login-hint"]')).toBeTruthy()
+  })
+
+  it('keeps the button inert until the code is well formed, then redeems and seeds the wallet box', async () => {
+    redeemGiftCard.mockResolvedValue({ ok: true, creditedAgorot: 5000 })
+    const { container } = renderCheckout({ walletBalance: 0 })
+    expect(walletField(container)).toBeNull()
+
+    const field = codeField(container)
+    const button = container.querySelector<HTMLButtonElement>('[data-testid="gift-card-redeem"]')
+    if (!field || !button) throw new Error('gift card field missing')
+
+    fireEvent.change(field, { target: { value: 'abcd' } })
+    expect(button.disabled).toBe(true)
+    expect(redeemGiftCard).not.toHaveBeenCalled()
+
+    fireEvent.change(field, { target: { value: 'abcd-efgh-jkmn-pqrs' } })
+    expect(button.disabled).toBe(false)
+    fireEvent.click(button)
+
+    await screen.findByTestId('gift-card-credited')
+    expect(redeemGiftCard).toHaveBeenCalledTimes(1)
+    const posted = redeemGiftCard.mock.calls[0]?.[1] as FormData
+    expect(posted.get('code')).toBe('abcd-efgh-jkmn-pqrs')
+
+    // ₪50 landed; the on-site charge is ₪40, so the box offers and prefills 40.
+    const wallet = walletField(container)
+    expect(wallet?.max).toBe('40')
+    expect(wallet?.value).toBe('40')
+    expect(container.querySelector('label[for="co-wallet"]')?.textContent).toContain('50.00')
+  })
+
+  it('shows the refusal sentence and leaves the wallet box alone', async () => {
+    redeemGiftCard.mockResolvedValue({ ok: false, error: 'הגיפט קארד כבר מומש.' })
+    const { container } = renderCheckout({ walletBalance: 0 })
+    const field = codeField(container)
+    const button = container.querySelector<HTMLButtonElement>('[data-testid="gift-card-redeem"]')
+    if (!field || !button) throw new Error('gift card field missing')
+
+    fireEvent.change(field, { target: { value: 'abcd-efgh-jkmn-pqrs' } })
+    fireEvent.click(button)
+
+    expect((await screen.findByRole('alert')).textContent).toBe('הגיפט קארד כבר מומש.')
+    expect(walletField(container)).toBeNull()
   })
 })

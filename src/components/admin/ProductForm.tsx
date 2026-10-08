@@ -877,6 +877,30 @@ export default function ProductForm({
             מוצר מומלץ
           </label>
         </div>
+        {/* STEP 48: a digital gift card (234). Sold like any product; on payment
+            finalize mints one personal code per unit and mails it. The publish
+            gate waives the supplier and requires platform_percent 100. */}
+        {!isRecurring && (
+          <div className="flex items-start gap-3">
+            <input
+              id="is_gift_card"
+              name="is_gift_card"
+              type="checkbox"
+              value="true"
+              defaultChecked={product?.is_gift_card ?? false}
+              className="mt-1 w-4 h-4 rounded border-gray-300 text-brand focus:ring-brand"
+            />
+            <div>
+              <label htmlFor="is_gift_card" className="text-sm font-medium text-gray-700">
+                גיפט קארד דיגיטלי
+              </label>
+              <p className="text-xs text-gray-500 mt-0.5">
+                בתשלום מונפק קוד אישי לכל יחידה ונשלח במייל לנמען או לקונה. בלי ספק, אחוז פלטפורמה
+                100, תוקף 5 שנים מההנפקה (הרצפה בחוק).
+              </p>
+            </div>
+          </div>
+        )}
         {/* A subscription is not also sellable as a one-off coupon: the two
             settle differently and the checkout would have to pick one. */}
         {!isRecurring && (

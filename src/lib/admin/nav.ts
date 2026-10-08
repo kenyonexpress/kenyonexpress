@@ -16,6 +16,8 @@ export const ADMIN_SECTIONS = [
   // Private ratings (STEP 45): order feedback and product reviews, owner-only.
   { href: '/admin/reviews', staffAllowed: false },
   { href: '/admin/cashback', staffAllowed: false },
+  // Gift cards (STEP 48) are stored value the platform owes: money, not copy.
+  { href: '/admin/gift-cards', staffAllowed: false },
   { href: '/admin/users', staffAllowed: false },
   { href: '/admin/audit-log', staffAllowed: false },
   { href: '/admin/settings', staffAllowed: false },

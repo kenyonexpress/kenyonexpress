@@ -87,6 +87,9 @@ export const WALLET_REASON_LABELS: Record<string, string> = {
   order_refund: 'החזר על ביטול',
   admin_credit: 'זיכוי ידני',
   coupon_expired: 'קרדיט על קופון שפג',
+  // Written by redeem_gift_card (234), not by finalize, so the source scrape
+  // in account-labels.test.ts does not see it; the gift card suite does.
+  gift_card_redeem: 'טעינת גיפט קארד',
 }
 
 export function walletReasonLabel(reason: string): string {

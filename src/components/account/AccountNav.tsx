@@ -16,6 +16,7 @@ const ITEMS = [
   { href: '/wishlist', label: 'רשימת המשאלות' },
   { href: '/account/saved-searches', label: 'חיפושים שמורים' },
   { href: '/account/wallet', label: 'הארנק שלי' },
+  { href: '/account/gift-cards', label: 'הגיפט קארד שלי' },
   { href: '/account/cashback', label: 'הקאשבק שלי' },
   { href: '/account/loyalty', label: 'מועדון הלקוחות' },
   { href: '/account/referrals', label: 'חבר מביא חבר' },

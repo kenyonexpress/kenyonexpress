@@ -72,6 +72,9 @@ export default async function AccountOverviewPage() {
         <p style={{ marginTop: 12 }}>
           <Link className="account-btn" href="/account/wallet">
             לתנועות הארנק
+          </Link>{' '}
+          <Link className="account-btn" href="/account/gift-cards">
+            הגיפט קארד שלי
           </Link>
         </p>
       </div>

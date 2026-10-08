@@ -234,6 +234,40 @@ describe('assertPublishable', () => {
     expect(result.blockers.map((b) => b.field)).toContain('coupon_price_ils')
   })
 
+  // STEP 48: a gift card is the platform's own instrument (234). It needs no
+  // supplier and must not have one, and the split is the whole charge.
+  it('publishes a gift card with no supplier and the whole split to the platform', () => {
+    const result = assertPublishable({
+      type: 'physical',
+      priceIls: 200,
+      platformPercent: 100,
+      supplierSplitPercent: 0,
+      discountPercent: 0,
+      couponPriceIls: null,
+      couponExpiryDays: null,
+      supplier: null,
+      isGiftCard: true,
+    })
+    expect(result).toEqual({ ok: true, pair: { platformPercent: 100, supplierSplitPercent: 0 } })
+  })
+
+  it('blocks a gift card that names a supplier or splits the charge', () => {
+    const result = assertPublishable({
+      type: 'physical',
+      priceIls: 200,
+      platformPercent: 70,
+      supplierSplitPercent: 30,
+      discountPercent: 0,
+      couponPriceIls: null,
+      couponExpiryDays: null,
+      supplier: completeSupplier,
+      isGiftCard: true,
+    })
+    expect(result.ok).toBe(false)
+    if (result.ok) return
+    expect(result.blockers.map((b) => b.field)).toEqual(['supplier_id', 'platform_percent'])
+  })
+
   it('blocks a coupon priced above the sticker price', () => {
     const result = assertPublishable({ ...couponBase, couponPriceIls: 150 })
     expect(result.ok).toBe(false)

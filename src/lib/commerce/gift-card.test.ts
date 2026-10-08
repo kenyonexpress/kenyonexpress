@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { GIFT_CARD_VALIDITY_YEARS, giftCardExpiryFromIssue, judgeGiftCard } from './gift-card'
+import {
+  GIFT_CARD_REQUESTED_VALIDITY_MONTHS,
+  GIFT_CARD_VALIDITY_MONTHS,
+  GIFT_CARD_VALIDITY_YEARS,
+  giftCardExpiryFromIssue,
+  judgeGiftCard,
+} from './gift-card'
 
 const NOW = new Date('2026-09-10T12:00:00Z')
 
@@ -62,6 +68,16 @@ describe('giftCardExpiryFromIssue', () => {
     expect(GIFT_CARD_VALIDITY_YEARS).toBe(5)
     const out = giftCardExpiryFromIssue(new Date('2026-09-10T12:00:00Z'))
     expect(out.toISOString()).toBe('2031-09-10T12:00:00.000Z')
+  })
+
+  it('never stamps less than the 24 months STEP 48 asked for, because the statute floors it higher', () => {
+    expect(GIFT_CARD_REQUESTED_VALIDITY_MONTHS).toBe(24)
+    expect(GIFT_CARD_VALIDITY_MONTHS).toBe(60)
+    expect(GIFT_CARD_VALIDITY_MONTHS).toBeGreaterThanOrEqual(GIFT_CARD_REQUESTED_VALIDITY_MONTHS)
+    const issued = new Date('2026-10-08T09:00:00Z')
+    const requested = new Date(issued.getTime())
+    requested.setMonth(requested.getMonth() + GIFT_CARD_REQUESTED_VALIDITY_MONTHS)
+    expect(giftCardExpiryFromIssue(issued).getTime()).toBeGreaterThanOrEqual(requested.getTime())
   })
 
   it('a leap-day purchase errs long, never short', () => {

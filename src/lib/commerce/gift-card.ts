@@ -18,8 +18,17 @@ import { type Agorot, agorot } from '@/lib/commerce/money'
 /**
  * Israeli consumer-protection floor for stored-value certificates (חוק הגנת
  * הצרכן, תיקון 51): five years from issuance.
+ *
+ * STEP 48 (08.10.2026) asked for 24 months. The statute floors a gift
+ * certificate at five years, and a shorter validity would be void against
+ * the consumer, so the longer figure stands and the request is recorded
+ * here rather than applied. `GIFT_CARD_REQUESTED_VALIDITY_MONTHS` keeps the
+ * number asked for, and the test proves the stamped validity never falls
+ * below it.
  */
 export const GIFT_CARD_VALIDITY_YEARS = 5
+export const GIFT_CARD_VALIDITY_MONTHS = GIFT_CARD_VALIDITY_YEARS * 12
+export const GIFT_CARD_REQUESTED_VALIDITY_MONTHS = 24
 
 export type GiftCardState = 'active' | 'redeemed' | 'expired' | 'cancelled'
 
