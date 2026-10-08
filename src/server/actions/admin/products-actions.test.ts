@@ -87,6 +87,19 @@ vi.mock('@/lib/supabase/server', () => ({ createClient: async () => requestClien
 vi.mock('@/lib/supabase/admin', () => ({ createAdminClient: () => adminClient }))
 vi.mock('@/lib/admin/rbac', () => ({ requireStaffSession: () => requireStaffSession() }))
 vi.mock('@/lib/admin/audit', () => ({ writeAuditLog: (e: unknown) => writeAuditLog(e) }))
+const notifyProductWaitlist = vi.fn()
+vi.mock('@/lib/stock/waitlist-notify', async () => {
+  const actual = await vi.importActual<typeof import('@/lib/stock/waitlist-notify')>(
+    '@/lib/stock/waitlist-notify',
+  )
+  return {
+    ...actual,
+    notifyProductWaitlist: (...args: unknown[]) => notifyProductWaitlist(...args),
+  }
+})
+vi.mock('@/lib/observability/log', () => ({
+  log: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
+}))
 vi.mock('@/lib/observability/action-context', () => ({
   withActionContext: (_name: string, fn: () => unknown) => fn(),
 }))
@@ -160,6 +173,14 @@ beforeEach(() => {
   revalidatePath.mockReset()
   updateTag.mockReset()
   redirect.mockReset()
+  notifyProductWaitlist.mockReset().mockResolvedValue({
+    ok: true,
+    waiting: 0,
+    queued: 0,
+    deduped: 0,
+    failed: 0,
+    stamped: 0,
+  })
   requireStaffSession.mockReset()
   requireStaffSession.mockResolvedValue({ userId: ADMIN, role: 'admin' })
   queue('request:products.insert', { data: { id: PRODUCT }, error: null })
@@ -731,5 +752,75 @@ describe('deleteVariant', () => {
     expect(await deleteVariant(V1)).toEqual({ error: 'x' })
     requireStaffSession.mockRejectedValue(new Error('no'))
     expect(await deleteVariant(V1)).toEqual({ error: 'אין הרשאה' })
+  })
+})
+
+describe('restock hook (STEP 58)', () => {
+  const soldOut = { id: PRODUCT, slug: 'old', name_he: 'ישן', status: 'active', stock_quantity: 0 }
+
+  it('queues the waitlist when an edit takes a sold-out product back on sale', async () => {
+    queue('request:products.select', { data: soldOut, error: null })
+    queue('request:products.update', { data: { id: PRODUCT }, error: null })
+    override('admin:suppliers.select', { data: completeSupplier, error: null })
+    await upsertProduct(
+      null,
+      form({ ...physicalForm, id: PRODUCT, status: 'active', stock_quantity: '5' }),
+    )
+    expect(redirect).toHaveBeenCalledWith('/admin/products')
+    expect(notifyProductWaitlist).toHaveBeenCalledTimes(1)
+    expect(notifyProductWaitlist.mock.calls[0]?.[1]).toBe(PRODUCT)
+  })
+
+  it('does not queue when the product stays sold out, was never sold out, or is new', async () => {
+    queue('request:products.select', { data: soldOut, error: null })
+    queue('request:products.update', { data: { id: PRODUCT }, error: null })
+    override('admin:suppliers.select', { data: completeSupplier, error: null })
+    await upsertProduct(
+      null,
+      form({ ...physicalForm, id: PRODUCT, status: 'active', stock_quantity: '0' }),
+    )
+    expect(notifyProductWaitlist).not.toHaveBeenCalled()
+
+    override('request:products.select', { data: { ...soldOut, stock_quantity: 4 }, error: null })
+    queue('request:products.update', { data: { id: PRODUCT }, error: null })
+    await upsertProduct(
+      null,
+      form({ ...physicalForm, id: PRODUCT, status: 'active', stock_quantity: '9' }),
+    )
+    expect(notifyProductWaitlist).not.toHaveBeenCalled()
+
+    await upsertProduct(null, form({ ...physicalForm, status: 'active', stock_quantity: '9' }))
+    expect(notifyProductWaitlist).not.toHaveBeenCalled()
+  })
+
+  it('survives a failing batch: the save still redirects', async () => {
+    notifyProductWaitlist.mockRejectedValue(new Error('outbox down'))
+    queue('request:products.select', { data: soldOut, error: null })
+    queue('request:products.update', { data: { id: PRODUCT }, error: null })
+    override('admin:suppliers.select', { data: completeSupplier, error: null })
+    await upsertProduct(
+      null,
+      form({ ...physicalForm, id: PRODUCT, status: 'active', stock_quantity: '5' }),
+    )
+    expect(redirect).toHaveBeenCalledWith('/admin/products')
+  })
+
+  it('bulk activation queues only the ids that were off sale with stock to sell', async () => {
+    queue('request:products.select', {
+      data: [
+        { id: P1, status: 'paused', stock_quantity: 3 },
+        { id: P2, status: 'paused', stock_quantity: 0 },
+      ],
+      error: null,
+    })
+    expect(await bulkUpdateProductStatus([P1, P2], 'active')).toEqual({})
+    expect(notifyProductWaitlist).toHaveBeenCalledTimes(1)
+    expect(notifyProductWaitlist.mock.calls[0]?.[1]).toBe(P1)
+  })
+
+  it('bulk pause reads nothing and queues nothing', async () => {
+    expect(await bulkUpdateProductStatus([P1, P2], 'paused')).toEqual({})
+    expect(calls.filter((c) => c.table === 'request:products' && c.op === 'select')).toHaveLength(0)
+    expect(notifyProductWaitlist).not.toHaveBeenCalled()
   })
 })

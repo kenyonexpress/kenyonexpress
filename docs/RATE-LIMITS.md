@@ -91,6 +91,7 @@
 | `help` | 5 | 1 h | help-centre request mail |
 | `supplier-lead` | 5 | 1 h | supplier lead mail |
 | `newsletter` | 5 | 1 h | newsletter subscription mail |
+| `stock-alert` | 5 | 1 h | back-in-stock request, one mail later |
 | `admin-voucher-lookup` | 60 | 1 h | admin voucher code lookup, per staff user |
 | `admin-voucher-redeem` | 30 | 1 h | admin manual voucher burn, per staff user |
 | `account-delete` | 3 | 1 h | destructive cascade over a dozen tables; a person needs exactly one |

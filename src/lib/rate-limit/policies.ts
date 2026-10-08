@@ -221,6 +221,7 @@ export const RATE_LIMIT_POLICIES = {
   help: { limit: 5, windowSeconds: 3600, reason: 'help-centre request mail' },
   'supplier-lead': { limit: 5, windowSeconds: 3600, reason: 'supplier lead mail' },
   newsletter: { limit: 5, windowSeconds: 3600, reason: 'newsletter subscription mail' },
+  'stock-alert': { limit: 5, windowSeconds: 3600, reason: 'back-in-stock request, one mail later' },
 
   // -- Admin voucher tools. Keyed on the staff user; generous because a busy
   // support shift is legitimate traffic, bounded because both reach the

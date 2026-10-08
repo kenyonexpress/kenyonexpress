@@ -8,6 +8,7 @@ import FacebookShareButton from '@/components/shared/FacebookShareButton'
 import ShareButton from '@/components/shared/ShareButton'
 import WhatsAppShareButton from '@/components/shared/WhatsAppShareButton'
 import CouponPricing from '@/components/storefront/CouponPricing'
+import StockAlertForm from '@/components/storefront/StockAlertForm'
 import { productQuantityCeiling } from '@/lib/cart/format'
 import { cashbackPreview } from '@/lib/cashback/preview'
 import type { CouponOffer } from '@/lib/commerce/coupon-offer'
@@ -444,6 +445,14 @@ export default function ProductInfo({
       >
         {outOfStock ? 'אזל מהמלאי' : 'קנה עכשיו'}
       </button>
+
+      {/* "Tell me when it is back" (STEP 58). Only under a sold-out buy row,
+          and not for a withdrawn product: a product off sale is not coming
+          back to a shelf. Follows the selected variant, so a request made
+          with "M" chosen is honoured when M returns, not when S does. */}
+      {outOfStock && !withdrawn ? (
+        <StockAlertForm productId={productId} variantId={selected} />
+      ) : null}
 
       <div className="pdp-summary__tags">
         <span>

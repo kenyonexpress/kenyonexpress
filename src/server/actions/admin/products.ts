@@ -14,6 +14,8 @@ import { recurringSchemaError } from '@/lib/commerce/recurring-schema-error'
 import { whatsappSchemaError } from '@/lib/commerce/whatsapp-schema-error'
 import { IMAGE_HOST_ERROR, isAllowedImageUrl } from '@/lib/images/remote-hosts'
 import { withActionContext } from '@/lib/observability/action-context'
+import { log } from '@/lib/observability/log'
+import { crossedIntoStock, notifyProductWaitlist } from '@/lib/stock/waitlist-notify'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import type { PostgrestError } from '@supabase/supabase-js'
@@ -23,8 +25,11 @@ import { z } from 'zod'
 
 export type ProductFormState = { error: string } | { success: string } | null
 
+// `stock_quantity` is here for the restock hook below (STEP 58), not the audit:
+// the hook needs the level BEFORE the write to know whether this save is the
+// one that brings a sold-out product back.
 const PRODUCT_AUDIT_SELECT =
-  'id, slug, name_he, status, kenyon_price, platform_percent, supplier_split_percent, discount_percent, category_id, supplier_id'
+  'id, slug, name_he, status, stock_quantity, kenyon_price, platform_percent, supplier_split_percent, discount_percent, category_id, supplier_id'
 
 async function runUpsertProduct(
   _: ProductFormState,
@@ -456,6 +461,28 @@ async function runUpsertProduct(
       },
     },
   })
+
+  // RESTOCK HOOK (STEP 58). If this save took the product from sold out to on
+  // sale, everyone on its waitlist is queued now rather than at the daily
+  // cron's 04:45. Best effort and logged: the save has already succeeded, and
+  // the cron is the backstop for anything this misses. A new product has no
+  // "before" and so is never a restock.
+  if (id && productId && before) {
+    const statusAfter = hidePricing ? (before.status ?? null) : submittedStatus
+    const after = { stock_quantity: fields.stock_quantity ?? null, status: statusAfter }
+    if (crossedIntoStock(before, after)) {
+      try {
+        const batch = await notifyProductWaitlist(createAdminClient(), productId)
+        log.info('admin.product.restock_waitlist', { productId, ...batch })
+      } catch (err) {
+        log.warn('admin.product.restock_waitlist_failed', {
+          productId,
+          reason: err instanceof Error ? err.message : String(err),
+        })
+      }
+    }
+  }
+
   redirect('/admin/products')
 }
 
@@ -506,6 +533,24 @@ async function runBulkUpdateProductStatus(
   }
 
   const supabase = await createClient()
+
+  // RESTOCK HOOK (STEP 58), the "before" half. Only a move TO active can bring
+  // a product back on sale, so the read happens only then; a product that
+  // already was active, or has no stock, is not a restock.
+  let restockCandidates: { id: string; status: string | null; stock_quantity: number | null }[] = []
+  if (status === 'active') {
+    const { data, error: readError } = await supabase
+      .from('products')
+      .select('id, status, stock_quantity')
+      .in('id', ids)
+    // A failed read means no restock batch from this call, not a failed save:
+    // the daily cron is the backstop. Logged so it is not silent.
+    if (readError) log.warn('admin.product.restock_read_failed', { reason: readError.message })
+    restockCandidates = (data ?? []).filter((row) =>
+      crossedIntoStock(row, { stock_quantity: row.stock_quantity, status: 'active' }),
+    )
+  }
+
   const { error } = await supabase.from('products').update({ status }).in('id', ids)
   if (error) return { error: error.message }
 
@@ -519,6 +564,21 @@ async function runBulkUpdateProductStatus(
 
   revalidatePath('/admin/products')
   updateTag(CATALOGUE_TAG)
+
+  if (restockCandidates.length > 0) {
+    const admin = createAdminClient()
+    for (const row of restockCandidates) {
+      try {
+        const batch = await notifyProductWaitlist(admin, row.id)
+        log.info('admin.product.restock_waitlist', { productId: row.id, ...batch })
+      } catch (err) {
+        log.warn('admin.product.restock_waitlist_failed', {
+          productId: row.id,
+          reason: err instanceof Error ? err.message : String(err),
+        })
+      }
+    }
+  }
   return {}
 }
 

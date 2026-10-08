@@ -35,6 +35,7 @@ vi.mock('@/server/actions/reviews', () => ({
     return { ok: true, saved: mock.saved }
   },
 }))
+vi.mock('@/server/actions/stock-alerts', () => ({ joinStockWaitlist: vi.fn() }))
 vi.mock('@/lib/supabase/client', () => ({
   createClient: () => {
     const channel = {
@@ -119,12 +120,18 @@ describe('the summary column on its live topic', () => {
 
   it('an emptied shelf disables the buy row and says so, with no reload', async () => {
     render(<ProductInfo {...BASE} />)
+    // In stock: no "tell me when it is back" form, so the parity captures
+    // of an in-stock product never carry it.
+    expect(screen.queryByTestId('stock-alert-form')).toBeNull()
     await deliver({ ...EVENT, stock_quantity: 0, available: 0 })
     expect(buy()).toBeDisabled()
     expect(buy()).toHaveTextContent('אזל מהמלאי')
     expect(stockLine()).toHaveTextContent('אזל מהמלאי')
     expect(stockLine().getAttribute('data-live')).toBe('true')
     expect(screen.getByLabelText('כמות')).toBeDisabled()
+    // Sold out: the waitlist form appears under the buy row, for this product.
+    const form = screen.getByTestId('stock-alert-form')
+    expect(form.querySelector('input[name="productId"]')).toHaveValue(ID)
   })
 
   it('a live hold lowers the quantity ceiling to what is actually free', async () => {

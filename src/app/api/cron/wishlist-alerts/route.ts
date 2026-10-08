@@ -2,6 +2,7 @@ import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { jerusalemDayKey, snapshotPrices } from '@/lib/pricing/price-snapshot'
 import { bearerMatches } from '@/lib/security/constant-time'
+import { type WaitlistRow, waitlistOutboxRow } from '@/lib/stock/waitlist-notify'
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
   backInStockDedupeKey,
@@ -9,7 +10,6 @@ import {
   isInStock,
   previousObservedPrice,
   priceDropDedupeKey,
-  waitlistDedupeKey,
 } from '@/lib/wishlist/alerts'
 import { createUnsubscribeToken } from '@/lib/wishlist/unsubscribe-token'
 import { type NextRequest, NextResponse } from 'next/server'
@@ -287,39 +287,54 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
   }
 
   // ---- 4. the waitlist, which needs no prefs and no account ---------------
+  // The backstop. Since STEP 58 the admin editor queues a product's waitlist
+  // the moment it is restocked (`lib/stock/waitlist-notify.ts`, same row
+  // shape, same dedupe key), so what is left here is whatever restocked
+  // through a path the editor does not see: a refund, an import, a SQL fix.
   const notifiedWaitlistIds: string[] = []
   {
     const { data, error } = await admin
       .from('stock_waitlist' as never)
-      .select('id, product_id, email, user_id')
+      .select('id, product_id, variant_id, email, user_id')
       .is('notified_at', null)
     if (error && !TABLE_MISSING.has(error.code ?? '')) {
       log.warn('wishlist_alerts.waitlist_read_failed', { reason: error.message })
     }
-    for (const row of (data ?? []) as unknown as {
-      id: string
-      product_id: string
-      email: string
-      user_id: string | null
-    }[]) {
+    const waitlistRows = (data ?? []) as unknown as WaitlistRow[]
+    // A request for a specific variant is honoured only when THAT variant is
+    // sellable, the same rule the editor path applies.
+    const variantIds = [
+      ...new Set(waitlistRows.map((r) => r.variant_id).filter((v): v is string => !!v)),
+    ]
+    const sellableVariants = new Set<string>()
+    if (variantIds.length > 0) {
+      const { data: variantData, error: variantError } = await admin
+        .from('product_variants')
+        .select('id, stock_quantity, is_active, deleted_at')
+        .in('id', variantIds)
+      // A failed read leaves variant requests unserved today, not mailed blind.
+      if (variantError) {
+        log.warn('wishlist_alerts.variants_read_failed', { reason: variantError.message })
+      }
+      for (const v of (variantData ?? []) as unknown as {
+        id: string
+        stock_quantity: number | null
+        is_active: boolean | null
+        deleted_at: string | null
+      }[]) {
+        if (v.deleted_at === null && v.is_active !== false) {
+          if (v.stock_quantity === null || v.stock_quantity > 0) sellableVariants.add(v.id)
+        }
+      }
+    }
+    for (const row of waitlistRows) {
       const product = productById.get(row.product_id)
       if (!product || !isInStock(product.stock_quantity, product.status)) continue
+      if (row.variant_id && !sellableVariants.has(row.variant_id)) continue
       notifiedWaitlistIds.push(row.id)
-      inserts.push({
-        kind: 'back_in_stock',
-        recipient_email: row.email,
-        user_id: row.user_id,
-        dedupe_key: waitlistDedupeKey(row.id),
-        payload: {
-          product_id: row.product_id,
-          product_name: product.name_he,
-          slug: product.slug,
-          price_agorot: product.kenyon_price_agorot,
-          // A one-shot mail the person explicitly asked for carries no
-          // unsubscribe: `notified_at` below IS the "never again".
-          unsubscribe_url: null,
-        },
-      })
+      // A one-shot mail the person explicitly asked for carries no
+      // unsubscribe: `notified_at` below IS the "never again".
+      inserts.push(waitlistOutboxRow(row, product))
     }
   }
 

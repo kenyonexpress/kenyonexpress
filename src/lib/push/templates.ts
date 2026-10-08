@@ -262,6 +262,42 @@ function priceDrop(payload: Record<string, unknown>, siteUrl: string): PushConte
 }
 
 /**
+ * A product the customer asked to hear about is back (STEP 58).
+ *
+ * Passes the header's test the same way `price_drop` does, and more
+ * narrowly: the row exists only because this person pressed "tell me when it
+ * is back" on this product, or saved it. It is the answer to a question they
+ * asked, and like the price drop it must never widen into "similar products
+ * are in stock".
+ *
+ * IT REFUSES TO SEND WITHOUT A NAME. "משהו חזר למלאי" is a tap that leads
+ * nowhere the customer can recognise. The price is optional and only ever
+ * copied from the integer column, never computed here.
+ */
+function backInStock(payload: Record<string, unknown>, siteUrl: string): PushContent | null {
+  const productName = text(payload, 'product_name')
+  if (!productName) return null
+
+  const price = integer(payload, 'price_agorot')
+  const slug = text(payload, 'slug')
+  const productId = text(payload, 'product_id')
+  return {
+    title: `${productName} חזר למלאי`,
+    body:
+      price !== null && price > 0
+        ? `המחיר עכשיו ${shekelsCompact(price)}. הכמות מוגבלת.`
+        : 'הכמות מוגבלת, כדאי להזדרז.',
+    data: {
+      kind: 'back_in_stock',
+      path: APP_PATHS.home,
+      url: universalLink(siteUrl, slug ? `/product/${slug}` : '/products'),
+      product_id: productId,
+      ...tag('back-in-stock', productId),
+    },
+  }
+}
+
+/**
  * Returns `null` for every kind that owes no push. The caller must treat that
  * as a settled state, not as a failure to retry.
  */
@@ -283,6 +319,8 @@ export function buildPushContent(
       return orderDelivered(payload, siteUrl)
     case 'price_drop':
       return priceDrop(payload, siteUrl)
+    case 'back_in_stock':
+      return backInStock(payload, siteUrl)
     default:
       return null
   }
@@ -296,4 +334,5 @@ export const PUSHABLE_KINDS = [
   'order_shipped',
   'order_delivered',
   'price_drop',
+  'back_in_stock',
 ] as const

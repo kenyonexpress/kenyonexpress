@@ -34,6 +34,7 @@ vi.mock('@/server/actions/reviews', () => ({
   getWishlistSaved: async () => false,
   toggleWishlist: async () => ({ ok: true, saved: true }),
 }))
+vi.mock('@/server/actions/stock-alerts', () => ({ joinStockWaitlist: vi.fn() }))
 vi.mock('@/lib/supabase/client', () => ({
   createClient: () => {
     throw new Error('no socket in this suite')

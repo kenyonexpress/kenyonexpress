@@ -30,7 +30,7 @@ describe('buildPushContent gating', () => {
     expect(buildPushContent('anything_new', {}, SITE)).toBeNull()
   })
 
-  it('lists exactly the five kinds that may reach a lock screen', () => {
+  it('lists exactly the seven kinds that may reach a lock screen', () => {
     // A deliberate diff. The outbox carries every notification the system owes,
     // including supplier and admin alerts, and this list is the gate that keeps
     // them off a customer's phone.
@@ -41,6 +41,7 @@ describe('buildPushContent gating', () => {
       'order_shipped',
       'order_delivered',
       'price_drop',
+      'back_in_stock',
     ])
     for (const kind of PUSHABLE_KINDS) {
       expect(buildPushContent(kind, {}, SITE)).not.toBeUndefined()
@@ -168,6 +169,27 @@ describe('order_delivered', () => {
     const delivered = buildPushContent('order_delivered', { order_id: 'o-77' }, SITE)
     expect(shipped?.data.tag).toBe('order:o-77')
     expect(delivered?.data.tag).toBe('order:o-77')
+  })
+})
+
+describe('back_in_stock', () => {
+  it('names the product, quotes the integer price and deep-links to it', () => {
+    const content = buildPushContent(
+      'back_in_stock',
+      { product_name: 'תיק גב', slug: 'backpack', product_id: 'p9', price_agorot: 15000 },
+      SITE,
+    )
+    expect(content?.title).toBe('תיק גב חזר למלאי')
+    expect(content?.body).toBe('המחיר עכשיו ₪150. הכמות מוגבלת.')
+    expect(content?.data.url).toBe(`${SITE}/product/backpack`)
+    expect(content?.data.tag).toBe('back-in-stock:p9')
+  })
+
+  it('refuses a payload with no product name, and copes without a price', () => {
+    expect(buildPushContent('back_in_stock', { price_agorot: 100 }, SITE)).toBeNull()
+    const noPrice = buildPushContent('back_in_stock', { product_name: 'תיק' }, SITE)
+    expect(noPrice?.body).toBe('הכמות מוגבלת, כדאי להזדרז.')
+    expect(noPrice?.data.url).toBe(`${SITE}/products`)
   })
 })
 

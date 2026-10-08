@@ -442,6 +442,81 @@
   cursor: not-allowed;
 }
 
+/* "Tell me when it is back" (STEP 58). Rendered only under a sold-out buy
+   row, so it never appears in the parity gate's in-stock captures. Same pill
+   geometry as the buy-now button so the column does not jump. */
+.pdp-waitlist {
+  margin-top: 12px;
+}
+
+.pdp-waitlist__label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--pdp-ink);
+}
+
+.pdp-waitlist__row {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.pdp-waitlist__email {
+  min-width: 0;
+  flex: 1;
+  height: var(--pdp-buy-h);
+  padding: 0 14px;
+  border: 1px solid var(--pdp-rule);
+  border-radius: 999px;
+  font-size: 14px;
+  color: var(--pdp-ink);
+  background: var(--pdp-surface);
+}
+
+.pdp-waitlist__email:focus {
+  outline: 2px solid var(--pdp-buy);
+  outline-offset: 1px;
+}
+
+.pdp-waitlist__submit {
+  flex: 0 0 auto;
+  height: var(--pdp-buy-h);
+  padding: 0 18px;
+  border-radius: 999px;
+  font-weight: 700;
+  color: var(--pdp-surface);
+  background-color: var(--pdp-buy);
+  transition: background-color 0.15s;
+}
+
+.pdp-waitlist__submit:hover:not(:disabled) {
+  background-color: var(--pdp-buy-hover);
+}
+
+.pdp-waitlist__submit:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.pdp-waitlist__note {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--pdp-ink);
+}
+
+.pdp-waitlist__done {
+  display: block;
+  margin-top: 12px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--pdp-ink);
+  background: var(--pdp-brand);
+}
+
 .pdp-summary__tags {
   display: flex;
   align-items: center;

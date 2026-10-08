@@ -72,6 +72,11 @@ export const OPTIONAL_KINDS = [
    * is a separate, explicit opt-in (`PushOptIn`); this switch narrows it.
    */
   'price_drop',
+  /**
+   * A saved or waited-on product is back (STEP 58). Same test as `price_drop`:
+   * the customer asked for this product by name, and may stop asking here.
+   */
+  'back_in_stock',
   'welcome',
   /** The loyalty tier rose (STEP 47). A perk notice, not the product and not money. */
   'loyalty_tier_upgraded',
@@ -152,6 +157,7 @@ export const KIND_LABEL_HE: Record<OptionalKind, string> = {
   voucher_redeemed: 'שובר מומש',
   cashback_credited: 'זיכוי לארנק',
   price_drop: 'ירידת מחיר במוצר שמור',
+  back_in_stock: 'מוצר שביקשת חזר למלאי',
   welcome: 'ברוכים הבאים',
   loyalty_tier_upgraded: 'עלייה בדרגת מועדון הלקוחות',
 }
