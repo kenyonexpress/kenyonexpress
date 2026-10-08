@@ -2,6 +2,21 @@
 
 Everything below was STATE.md up to commit 02a45128f (2026-10-06), moved here by M11-c113 to keep STATE.md under 300 lines.
 
+## M03-c123: compare.mjs on /category at 380, 768, 1440, run 2026-10-09 in the foreground
+
+Command: `node scripts/compare.mjs --page=category --width=<w>`, HEAD `76b8c6ce5` with the two uncommitted UI edits in the tree. The gate refuses on the live side before it needs a local server.
+
+| Width | Exit | Diff | Output |
+|---|---|---|---|
+| 380 | 5 | none | REFUSING: `https://kenyonexpress.co.il/product-category/hot-deals/` is this project's own build (38 `/_next/` refs, Next runtime, no wp-content) |
+| 768 | 5 | none | REFUSING: same reason (37 `/_next/` refs) |
+| 1440 | 5 | none | REFUSING: same reason (37 `/_next/` refs) |
+
+- No diff numbers, unchanged from M03-c122. `refs/ke_live_singlefile.html` is still absent. The gate wrote three REFUSED rows to `docs/UI-PARITY-REPORT.md`, committed with this item.
+- Gates on the working tree: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (7 recovered timeout or fetch-failed lines, 0 `db.query_failed`).
+- Moved from STATE.md (verbatim): Last item: **M02-c123 BLOCKED** (2026-10-09): compare.mjs on `/product` exits 5 at 380, 768 and 1440 with no diff number. The gate refuses because `https://kenyonexpress.co.il/product/מוצר-לדוגמא/` is this project's own build (36–39 `/_next/` refs, Next runtime, no wp-content) and `refs/ke_live_singlefile.html` is still absent. Run in the foreground against `PORT=3311 pnpm start`, HEAD `8b4a870f6`. See blocker 0 and the M02-c123 section in the archive.
+- Decision: BLOCKED on open blocker 0. No code change. `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
+
 ## M02-c123: compare.mjs on /product at 380, 768, 1440, run 2026-10-09 in the foreground
 
 Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=product --width=<w>` (server: `PORT=3311 pnpm start` on the existing build of HEAD `8b4a870f6` with the two uncommitted UI edits in the tree; only docs changed since that build)
