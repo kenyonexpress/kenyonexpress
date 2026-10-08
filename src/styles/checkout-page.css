@@ -390,6 +390,14 @@
   font-size: 12px;
 }
 
+/* A saving (bundle or code): the cart sidebar's green, so the same number
+   reads the same way on both pages. */
+.checkout-review__row--discount th,
+.checkout-review__row--discount td {
+  color: #328614;
+  font-weight: 700;
+}
+
 /* Payment block: live separates it from the table with a 3px rule. */
 .checkout-payment {
   border-top: 3px solid #ddd;

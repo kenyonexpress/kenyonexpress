@@ -758,13 +758,22 @@ async function runBeginCheckout(
     stack: discountStack,
   } = await resolveCheckoutDiscountAgorot()
 
+  // Bundle savings (STEP 60) ride the same discount into the settlement. The
+  // cart above was built this instant from a fresh read of `product_bundles`,
+  // so `cart.bundle_discount` is the saving as the rules stand NOW, already
+  // capped per bundle at the goods and overall at the commission by the
+  // pricer; the engine caps the sum once more against the final split. The
+  // coupon claims below spend only the code's share; a bundle has no counter
+  // to spend, and its record is the per-bundle rows written after the claims.
+  const bundleDiscountAgorot = agorot(Math.max(0, Math.trunc(cart.bundle_discount ?? 0)))
+
   let settlement: ReturnType<typeof calculateSettlement>
   try {
     settlement = calculateSettlement({
       idempotencyKey: input.client_ref,
       lines: settlementLines,
       walletApplied: walletAppliedAgorot,
-      discountApplied: agorot(discountAgorot),
+      discountApplied: agorot(discountAgorot + bundleDiscountAgorot),
     })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'settlement failed'
@@ -1120,6 +1129,34 @@ async function runBeginCheckout(
         error: CLAIM_REFUSAL_HE[refusal.detail] ?? 'קוד ההנחה כבר אינו תקף',
         code: 'COUPON_INVALID',
       }
+    }
+  }
+
+  // 4d. The bundle breakdown (STEP 60). The order's discount column already
+  // carries the money; these rows say which bundle and how many sets, with
+  // the name copied so a bundle deleted next month still explains this
+  // order. Never fails the checkout: before 265 the table is absent (42P01)
+  // and the saving was still honoured by the column above. Logged at warn
+  // so the gap is visible, not silent.
+  const bundleRows = (cart.bundles ?? [])
+    .filter((applied) => applied.discount > 0)
+    .map((applied) => ({
+      order_id: order.id,
+      bundle_id: applied.id,
+      bundle_name_he: applied.name_he,
+      times: applied.times,
+      discount_agorot: applied.discount,
+    }))
+  if (bundleRows.length > 0) {
+    const { error: bundleRecordError } = await admin
+      .from('order_bundle_discounts' as never)
+      .insert(bundleRows as never)
+    if (bundleRecordError) {
+      log.warn('checkout.bundle_record_failed', {
+        orderId: order.id,
+        code: bundleRecordError.code,
+        reason: bundleRecordError.message,
+      })
     }
   }
 

@@ -1,5 +1,6 @@
 'use server'
 
+import { loadBundlesForProducts } from '@/lib/bundles/load'
 import { type CouponRecord, evaluateCoupon, normalizeCouponCode } from '@/lib/cart/coupon'
 import {
   CART_COUPON_COOKIE,
@@ -291,11 +292,16 @@ async function readShippingMethod(): Promise<ShippingMethod> {
 }
 
 async function resolveCartView(cartId: string | null, items: CartStorageItem[]): Promise<CartView> {
-  const [{ products, variants }, shipping] = await Promise.all([
+  // The bundle rules ride the same round trip as the products (STEP 60):
+  // one anon read of every active bundle naming a product in the cart,
+  // empty before 265 is applied, and the pricer takes the saving from
+  // there. Nothing about bundles is stored on the cart row or in a cookie.
+  const [{ products, variants }, shipping, bundles] = await Promise.all([
     loadCartProductData(items),
     readShippingMethod(),
+    loadBundlesForProducts(items.map((item) => item.product_id)),
   ])
-  const priced = buildCartView(cartId, items, products, variants, null, shipping)
+  const priced = buildCartView(cartId, items, products, variants, null, shipping, bundles)
   // Nothing to discount, so neither code table is worth two round trips. This
   // covers the empty cart and, since the pricer stopped blanking them, the cart
   // whose every line is unpriceable: both charge zero, and every discount path
@@ -305,7 +311,9 @@ async function resolveCartView(cartId: string | null, items: CartStorageItem[]):
   // minimum and to cap itself, and that total is only known after the lines are
   // priced. The second pass costs no query.
   const coupon = await resolveAppliedCoupon(priced)
-  return coupon ? buildCartView(cartId, items, products, variants, coupon, shipping) : priced
+  return coupon
+    ? buildCartView(cartId, items, products, variants, coupon, shipping, bundles)
+    : priced
 }
 
 type CartRow = { id: string; items: unknown }

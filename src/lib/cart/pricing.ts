@@ -1,3 +1,4 @@
+import { type BundleDefinition, evaluateBundles } from '@/lib/bundles/evaluate'
 import {
   type CartShipping,
   type CartStorageItem,
@@ -211,6 +212,16 @@ export function buildCartView(
    * reports `shipping: null` and the selector never renders.
    */
   shippingMethod: ShippingMethod = resolveShippingMethod(DEFAULT_SHIPPING_METHOD_ID),
+  /**
+   * The active bundle rules whose members this cart might hold (STEP 60),
+   * already read by the caller. Evaluated here, after the lines are priced,
+   * because the per-bundle cap needs each line's on-site charge and the
+   * commission ceiling needs the engine's platform fee. Empty is the default
+   * and the ordinary state, and prices exactly as before.
+   */
+  bundles: BundleDefinition[] = [],
+  /** The clock the bundle windows are judged by; injectable for tests. */
+  now: Date = new Date(),
 ): CartView {
   if (storageItems.length === 0) {
     return { ...EMPTY_CART, id: cartId }
@@ -387,8 +398,46 @@ export function buildCartView(
   // capped, a large code on a small cart would show one number and bill
   // another, which is the disagreement this repo keeps paying for.
   const payableAgorot = commission.customerPaysNow
+
+  // Bundles first (STEP 60), from the lines the engine actually priced: a
+  // line it refused (unpriced, delisted) is not in `commission.lines` and so
+  // cannot complete a set. The settlement caps the WHOLE discount at the
+  // commission, so the same ceiling is applied here, on the bundle share
+  // first and then on whatever room the coupon has left, so the two numbers
+  // the shopper reads add up to exactly what the card is reduced by.
+  const bundleEvaluation = evaluateBundles(
+    bundles,
+    commission.lines.map((engineLine) => {
+      const [product_id] = engineLine.id.split('::')
+      return {
+        product_id: product_id ?? engineLine.id,
+        quantity: engineLine.quantity,
+        customer_pays_now: engineLine.customerPaysNow,
+      }
+    }),
+    now,
+  )
+  const discountCeiling = Math.max(0, Math.min(payableAgorot, commission.platformFee))
+  let bundleRoom = discountCeiling
+  const appliedBundles = bundleEvaluation.applied.flatMap((applied) => {
+    const discount = agorot(Math.max(0, Math.min(applied.discount, bundleRoom)))
+    if (discount <= 0) return []
+    bundleRoom -= discount
+    return [{ ...applied, discount }]
+  })
+  const bundleDiscountAgorot = agorot(
+    appliedBundles.reduce((sum, applied) => sum + applied.discount, 0),
+  )
+
+  // The coupon is capped at the payable total as it always was; when a bundle
+  // took part of the commission, the coupon also yields to what is left of
+  // it, so the pair never exceeds what settlement.ts will honour.
+  const couponCeiling =
+    bundleDiscountAgorot > 0
+      ? Math.max(0, Math.min(payableAgorot, discountCeiling) - bundleDiscountAgorot)
+      : payableAgorot
   const discountAgorot = agorot(
-    coupon ? Math.max(0, Math.min(coupon.discountAgorot, payableAgorot)) : 0,
+    coupon ? Math.max(0, Math.min(coupon.discountAgorot, couponCeiling)) : 0,
   )
 
   // A coupon is redeemed at the business, so a cart of coupons alone ships
@@ -419,9 +468,13 @@ export function buildCartView(
           }
         : null,
     discount: discountAgorot,
+    bundles: appliedBundles,
+    bundle_discount: bundleDiscountAgorot,
     shipping,
     // The engine's own total, not a re-sum of the lines: one calculation.
     cashback: commission.cashbackAmount,
-    total: agorot(payableAgorot - discountAgorot + (shipping?.cost ?? 0)),
+    total: agorot(
+      Math.max(0, payableAgorot - discountAgorot - bundleDiscountAgorot) + (shipping?.cost ?? 0),
+    ),
   }
 }

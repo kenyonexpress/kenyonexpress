@@ -131,6 +131,36 @@ describe('the checkout order review', () => {
     expect(container.textContent).not.toContain('יתרה לתשלום בעסק')
     expect(container.textContent).not.toContain('יתרה בעסק:')
   })
+
+  it('lists a completed bundle as a named saving and totals the charge after it (STEP 60)', () => {
+    const cart = {
+      ...cartOf([FULLY_PREPAID_COUPON], 0, 15000),
+      bundles: [{ id: 'b1', name_he: 'סט ארוחה', times: 2, discount: agorot(3000) }],
+      bundle_discount: agorot(3000),
+      total: agorot(12000),
+    } as CartView
+    const { container } = render(
+      <CheckoutForm
+        cart={cart}
+        clientRef="00000000-0000-4000-8000-000000000000"
+        needsAddress={false}
+        address={EMPTY_ADDRESS}
+        walletBalance={0}
+        savedCards={[]}
+        isAuthenticated
+      />,
+    )
+    const row = screen.getByTestId('checkout-bundle-row')
+    expect(row.textContent).toContain('חיסכון חבילה: סט ארוחה ×2')
+    expect(row.textContent).toMatch(/-.*30\.00.*₪/)
+    const total = container.querySelector('.checkout-review__row--total td')
+    expect(total?.textContent).toMatch(/120\.00/)
+  })
+
+  it('shows no saving row when no set is complete', () => {
+    renderCheckout()
+    expect(screen.queryByTestId('checkout-bundle-row')).toBeNull()
+  })
 })
 
 describe('the checkout wallet box', () => {

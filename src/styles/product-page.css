@@ -656,6 +656,90 @@
   margin-top: 24px;
 }
 
+/* "Buy together and save" (STEP 60): one bordered card per bundle, the
+   members as a two-column list, the arithmetic in one line, the add-all
+   button in the buy row's colour. Rendered only when the product is in a
+   bundle, so it costs the parity gate nothing on every other page. */
+.pdp-bundle {
+  margin-top: 24px;
+}
+
+.pdp-bundle__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 16px;
+}
+
+.pdp-bundle__card {
+  border: 1px solid var(--pdp-line);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.pdp-bundle__name {
+  margin: 0 0 4px;
+  font-size: var(--pdp-body-size);
+  font-weight: 700;
+  color: var(--pdp-ink);
+}
+
+.pdp-bundle__desc {
+  margin: 0 0 8px;
+  color: var(--pdp-muted);
+  font-size: 13px;
+}
+
+.pdp-bundle__members {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.pdp-bundle__member {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+}
+
+.pdp-bundle__member-name {
+  color: var(--pdp-ink);
+}
+
+.pdp-bundle__math {
+  margin: 0 0 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  font-size: 14px;
+}
+
+.pdp-bundle__saving {
+  color: var(--color-sale-badge);
+}
+
+.pdp-bundle__add {
+  display: inline-block;
+  min-height: 44px;
+  padding: 10px 20px;
+  border: 0;
+  border-radius: 4px;
+  background: var(--pdp-brand);
+  color: var(--pdp-ink);
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.pdp-bundle__add:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
 /* City tag: the product page and the home card. The catalogue card keeps its
    own `.category-card__city`, which also carries a distance and is sized for
    that card's tag row.

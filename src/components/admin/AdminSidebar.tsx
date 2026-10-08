@@ -8,6 +8,7 @@ import {
   BadgeCheck,
   Banknote,
   BarChart3,
+  Boxes,
   ClipboardList,
   Coins,
   CreditCard,
@@ -70,6 +71,15 @@ const NAV_ITEMS: NavItem[] = [
     icon: Megaphone,
     section: 'catalog',
     quickAdd: '/admin/landing-pages/new',
+  },
+  // Product bundles (STEP 60): a fixed saving funded from the commission, so
+  // the discounts permission and not the catalogue one.
+  {
+    href: '/admin/bundles',
+    label: 'חבילות מוצרים',
+    icon: Boxes,
+    section: 'discounts',
+    quickAdd: '/admin/bundles/new',
   },
   { href: '/admin/orders', label: 'הזמנות', icon: ShoppingCart, section: 'orders' },
   { href: '/admin/orders/returns', label: 'בקשות החזרה', icon: Undo2, section: 'orders' },

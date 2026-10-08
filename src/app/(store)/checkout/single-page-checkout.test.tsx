@@ -68,6 +68,8 @@ function cart(shipping: CartView['shipping']): CartView {
     balance_due_at_business: agorot(0),
     coupon: null,
     discount: agorot(0),
+    bundles: [],
+    bundle_discount: agorot(0),
     shipping,
     cashback: agorot(0),
     total: agorot(250000),

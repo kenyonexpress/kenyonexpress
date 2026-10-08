@@ -1,5 +1,29 @@
 # `migrations/pending/`
 
+## 2026-10-08: 265 PENDING (product bundles with a fixed saving, STEP 60)
+
+`265_product_bundles.sql` adds `public.product_bundles` (`name_he`,
+`description_he`, `discount_agorot` CHECK > 0, `is_active`,
+`starts_at`/`expires_at` with the window CHECK, `set_updated_at` trigger),
+`public.product_bundle_items` (PK `(bundle_id, product_id)`, `quantity`
+1..99, CASCADE from both parents, index on `product_id`) and
+`public.order_bundle_discounts` (per-bundle breakdown of what a paid order
+saved: `bundle_id` SET NULL on delete, `bundle_name_he` copied, `times`,
+`discount_agorot`). A bundle is a pricing rule, not a product: the cart
+keeps the component lines and `src/lib/bundles/evaluate.ts` takes the
+amount off the on-site charge once per complete set, capped at the
+commission like every discount (`settlement.ts`). RLS: public SELECT on
+`is_active` rows and their items only; staff write through `has_role('admin')`,
+and in practice every write is the service role from
+`src/server/actions/admin/bundles.ts` behind `requireSection('discounts',
+'write')` with an audit row; `order_bundle_discounts` is owner SELECT, no
+client DML. Client grants per 144 (SELECT only, plus DML to `authenticated`
+on the two bundle tables so the staff policy can act). Self-check inserts a
+bundle with one item and proves the zero-discount CHECK, inside a rolled-back
+block. Until applied every reader treats 42P01 as "no bundles" and the admin
+list says so. Rollback is three DROPs, in the file header. No dependency on
+any other pending file.
+
 ## 2026-10-08: 264 PENDING (price_history row on every product price change, STEP 59)
 
 `264_price_change_trigger.sql` adds `fn_products_price_change_history` and an

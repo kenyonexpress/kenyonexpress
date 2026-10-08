@@ -149,6 +149,8 @@
       "/admin/analytics",
       "/admin/approvals",
       "/admin/audit-log",
+      "/admin/bundles",
+      "/admin/bundles/new",
       "/admin/cashback",
       "/admin/categories",
       "/admin/categories/new",

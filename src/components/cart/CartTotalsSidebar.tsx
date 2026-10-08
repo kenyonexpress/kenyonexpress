@@ -35,6 +35,23 @@ export default function CartTotalsSidebar({ cart }: { cart: CartView }) {
           </div>
         )}
 
+        {/* One row per completed bundle (STEP 60), named so the shopper can
+            tell which set earned it. The amount is the server's, after the
+            caps, and it is what the checkout will take off the card. */}
+        {(cart.bundles ?? []).map((bundle) => (
+          <div
+            key={bundle.id}
+            className="cart-sidebar__row cart-sidebar__row--discount"
+            data-testid="cart-bundle-row"
+          >
+            <dt>
+              חיסכון חבילה: {bundle.name_he}
+              {bundle.times > 1 ? ` ×${bundle.times}` : ''}
+            </dt>
+            <dd className="tabular-nums">-{shekels(bundle.discount)}</dd>
+          </div>
+        ))}
+
         {cart.coupon && (
           <div className="cart-sidebar__row cart-sidebar__row--discount">
             <dt>הנחה ({cart.coupon.code})</dt>

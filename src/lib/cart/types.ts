@@ -1,3 +1,4 @@
+import type { AppliedBundle } from '@/lib/bundles/evaluate'
 import { type Agorot, agorot } from '@/lib/money'
 import type { ShippingMethodId } from '@/lib/shipping/methods'
 
@@ -173,6 +174,15 @@ export type CartView = {
   /** Agorot off the on-site charge. Zero without a valid coupon. */
   discount: Agorot
   /**
+   * Every bundle the cart completes (STEP 60), in application order, with the
+   * saving each one earned after the caps. Empty is the ordinary state. Only
+   * ever produced by the server from a fresh read of `product_bundles`; the
+   * browser holds nothing about bundles at all.
+   */
+  bundles: AppliedBundle[]
+  /** The sum of `bundles[].discount`, in agorot. Zero without a complete set. */
+  bundle_discount: Agorot
+  /**
    * Null when nothing in the cart needs shipping: a coupon is redeemed at the
    * business and a selector on a coupon-only cart asks a question with no
    * answer. Present whenever at least one line is physical.
@@ -185,8 +195,8 @@ export type CartView = {
    */
   cashback: Agorot
   /**
-   * What the card is actually charged: subtotal - discount + shipping cost,
-   * never below zero.
+   * What the card is actually charged: subtotal - discount - bundle_discount
+   * + shipping cost, never below zero.
    */
   total: Agorot
 }
@@ -203,10 +213,14 @@ export const EMPTY_CART: CartView = {
   balance_due_at_business: ZERO,
   coupon: null,
   discount: ZERO,
+  bundles: [],
+  bundle_discount: ZERO,
   shipping: null,
   cashback: ZERO,
   total: ZERO,
 }
+
+export type { AppliedBundle }
 
 export type CartActionResult =
   | { ok: true; cart: CartView }

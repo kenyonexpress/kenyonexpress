@@ -1086,9 +1086,32 @@ export default function CheckoutForm({
                     <td>{shekels(balanceAtBusiness)}</td>
                   </tr>
                 )}
+                {/* Bundle savings (STEP 60), one row per completed set, then
+                    the code. Both are the server's capped numbers, the same
+                    ones the charge below is reduced by, so the column adds
+                    up to the total under it. */}
+                {(cart.bundles ?? []).map((bundle) => (
+                  <tr
+                    key={bundle.id}
+                    className="checkout-review__row checkout-review__row--discount"
+                    data-testid="checkout-bundle-row"
+                  >
+                    <th scope="row">
+                      חיסכון חבילה: {bundle.name_he}
+                      {bundle.times > 1 ? ` ×${bundle.times}` : ''}
+                    </th>
+                    <td>-{shekels(bundle.discount)}</td>
+                  </tr>
+                ))}
+                {cart.coupon && cart.discount > 0 && (
+                  <tr className="checkout-review__row checkout-review__row--discount">
+                    <th scope="row">הנחה ({cart.coupon.code})</th>
+                    <td>-{shekels(cart.discount)}</td>
+                  </tr>
+                )}
                 <tr className="checkout-review__row checkout-review__row--total">
                   <th scope="row">סה&quot;כ</th>
-                  <td>{shekels(cart.subtotal)}</td>
+                  <td>{shekels(cart.total)}</td>
                 </tr>
               </tfoot>
             </table>

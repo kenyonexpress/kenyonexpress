@@ -513,6 +513,7 @@ describe('the pending migration inventory', () => {
       // README carries the row.
       '263_seo_redirects_release_compare.sql',
       '264_price_change_trigger.sql',
+      '265_product_bundles.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])
