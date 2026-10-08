@@ -12,6 +12,7 @@ import { CART_COUPON_COOKIE, CART_EXPIRY_DAYS } from '@/lib/cart/coupon-cookie'
 import { GUEST_SESSION_COOKIE, GUEST_SESSION_MAX_AGE } from '@/lib/cart/guest-session-cookie'
 import { CART_FALLBACK_KEY } from '@/lib/cart/local-fallback'
 import { CART_SHIPPING_COOKIE } from '@/lib/cart/shipping-cookie'
+import { LANDING_BUCKET_COOKIE, LANDING_BUCKET_MAX_AGE_SECONDS } from '@/lib/landing/variant'
 import { POSTHOG_ID_COOKIE } from '@/lib/observability/posthog'
 import { REFERRAL_COOKIE, REFERRAL_COOKIE_MAX_AGE } from '@/lib/referrals/cookie'
 import type { LegalDoc } from './types'
@@ -108,6 +109,12 @@ const cookieRows: string[][] = [
     ANALYTICS,
     `${ATTRIBUTION_WINDOW_DAYS} ימים`,
     'פרמטרי הקמפיין (utm) שדרכם הגעתם לאתר, בביקור הראשון ובאחרון, למדידת ערוצי שיווק.',
+  ],
+  [
+    LANDING_BUCKET_COOKIE,
+    ANALYTICS,
+    `${LANDING_BUCKET_MAX_AGE_SECONDS / 86400} ימים, בדפי /lp בלבד`,
+    'מספר אקראי שקובע איזו גרסה של דף נחיתה תראו כשמשווים בין גרסאות, כדי שתראו את אותה גרסה בכל ביקור. נכתב רק אחרי הסכמה למדידה, אינו מזהה אתכם ואינו משפיע על המחיר.',
   ],
   [
     POSTHOG_ID_COOKIE,

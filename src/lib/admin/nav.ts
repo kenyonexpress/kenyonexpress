@@ -10,6 +10,9 @@ export const ADMIN_SECTIONS = [
   { href: '/admin/products', staffAllowed: true },
   { href: '/admin/categories', staffAllowed: true },
   { href: '/admin/coupons', staffAllowed: true },
+  // Campaign landing pages (STEP 55) are copy: blocks, variants and links.
+  // No price, no money moves, so the content role may author them.
+  { href: '/admin/landing-pages', staffAllowed: true },
   { href: '/admin/suppliers', staffAllowed: false },
   { href: '/admin/vendors', staffAllowed: false },
   { href: '/admin/orders', staffAllowed: false },

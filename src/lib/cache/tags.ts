@@ -62,6 +62,10 @@ export const CacheTags = {
   category: (id: string) => `category:${id}` as const,
   /** One supplier's storefront: the header card and its grid. */
   supplier: (id: string) => `supplier:${id}` as const,
+  /** Every campaign landing page (`/lp/[slug]`, STEP 55). Expired by every admin save. */
+  landing: 'landing',
+  /** One landing page's own read, by slug. */
+  landingPage: (slug: string) => `landing:${slug}` as const,
 } as const
 
 /**
@@ -81,7 +85,7 @@ export const CacheLife = {
   sitemap: { stale: 300, revalidate: 3600, expire: 86400 },
 } as const satisfies Record<string, { stale: number; revalidate: number; expire: number }>
 
-const ENTITY_TAG = /^(product|category|supplier):[A-Za-z0-9][A-Za-z0-9_-]{0,200}$/
+const ENTITY_TAG = /^(product|category|supplier|landing):[A-Za-z0-9][A-Za-z0-9_-]{0,200}$/
 
 /**
  * True for a tag this module could have produced. `/api/revalidate` accepts
@@ -96,7 +100,8 @@ export function isKnownCacheTag(tag: string): boolean {
     tag === CacheTags.home ||
     tag === CacheTags.sitemap ||
     tag === CacheTags.feed ||
-    tag === CacheTags.productList
+    tag === CacheTags.productList ||
+    tag === CacheTags.landing
   ) {
     return true
   }

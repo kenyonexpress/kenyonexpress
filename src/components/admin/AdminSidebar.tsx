@@ -17,6 +17,7 @@ import {
   FlaskConical,
   Gift,
   LayoutDashboard,
+  Megaphone,
   Package,
   Plus,
   ScanLine,
@@ -62,6 +63,14 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/admin/coupons', label: 'קופונים ודילים', icon: FileText, section: 'catalog' },
   { href: '/admin/coupons/lookup', label: 'איתור שובר', icon: ScanLine, section: 'catalog' },
   { href: '/admin/approvals', label: 'תור אישורים', icon: BadgeCheck, section: 'catalog' },
+  // Campaign landing pages (STEP 55): `/lp/[slug]`, blocks and A/B arms.
+  {
+    href: '/admin/landing-pages',
+    label: 'דפי נחיתה',
+    icon: Megaphone,
+    section: 'catalog',
+    quickAdd: '/admin/landing-pages/new',
+  },
   { href: '/admin/orders', label: 'הזמנות', icon: ShoppingCart, section: 'orders' },
   { href: '/admin/orders/returns', label: 'בקשות החזרה', icon: Undo2, section: 'orders' },
   { href: '/admin/reviews', label: 'דירוגים (פנימי)', icon: Star, section: 'orders' },

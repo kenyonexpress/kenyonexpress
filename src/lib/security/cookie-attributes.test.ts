@@ -39,7 +39,12 @@ const COOKIE_WRITE = /\b(?:cookieStore|jar|cookies|[A-Za-z]+\.cookies)\.set\(/g
  * The option builders that already carry the attributes, each pinned by its
  * own unit test. A write that passes one of these is covered by that test.
  */
-const OPTION_BUILDERS = ['guestSessionCookieOptions(', 'referralCookieOptions(']
+const OPTION_BUILDERS = [
+  'guestSessionCookieOptions(',
+  'referralCookieOptions(',
+  // The landing A/B bucket (STEP 55), pinned by bucket-cookie.test.ts.
+  'landingBucketCookieOptions(',
+]
 
 /**
  * Cookies a script must be able to read, by design, and why. Anything not

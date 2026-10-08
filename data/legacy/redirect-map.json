@@ -3,7 +3,7 @@
   "$why": "public.seo_redirects is empty in production, so every retired URL 404s. This is the map that fills it, corrected against what production actually serves.",
   "$how": "scripts/build-legacy-redirects.mjs reads data/legacy/url-inventory.json (the frozen 2026-08-11 crawl), measures the live catalogue through the anon key, reads the static route tree off src/app, and drops every row whose source is live or whose target is not.",
   "$generated_by": "scripts/build-legacy-redirects.mjs",
-  "$measured_at": "2026-10-08T06:02:01.735Z",
+  "$measured_at": "2026-10-08T08:30:28.256Z",
   "$counts": {
     "inventory": 87,
     "redirects": 33,
@@ -159,10 +159,13 @@
       "/admin/dashboard",
       "/admin/discounts",
       "/admin/discounts/new",
+      "/admin/experiments",
       "/admin/feature-flags",
       "/admin/fraud",
       "/admin/gift-cards",
       "/admin/growth",
+      "/admin/landing-pages",
+      "/admin/landing-pages/new",
       "/admin/orders",
       "/admin/orders/returns",
       "/admin/payments",
@@ -247,7 +250,7 @@
       "/product/restaurants-meat-2",
       "/product/restaurants-meat-3"
     ],
-    "new_since_migration": 120
+    "new_since_migration": 123
   },
   "redirects": [
     {

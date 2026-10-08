@@ -1,5 +1,26 @@
 # `migrations/pending/`
 
+## 2026-10-08: 262 PENDING (campaign landing pages: `/lp/[slug]` from a CMS row, A/B variants, STEP 55)
+
+`262_landing_pages.sql` adds `public.landing_pages` (slug UNIQUE with the
+route's CHECK, `title_he`, `description_he`, `hypothesis_he`, `status`
+draft/published/archived, `starts_at`/`ends_at`, `indexable` default
+false, `campaign`, `blocks` jsonb array, `variants` jsonb array,
+`set_updated_at` trigger) and the scheduled view `v_landing_pages_live`
+(`security_invoker`, published rows inside their window against the
+database's `now()`, the 127 pattern). RLS: public SELECT on
+`status = 'published'` only, so drafts cannot be enumerated through the
+anon key; admin write through `has_role('admin')`, and in practice every
+write is the service role from `src/server/actions/admin/landing-pages.ts`
+behind `requireSection('catalog', 'write')` with an audit row. The element
+shape of `blocks` and `variants` is the application schema
+(`src/lib/landing/schema.ts`), validated on write and on read; the
+database holds only `jsonb_typeof = 'array'`. Measured on production
+2026-10-08 before writing: table and view absent, `set_updated_at()` and
+`has_role(text)` present. No seed and no backfill: until applied,
+`/lp/<slug>` serves the authored fallback in `src/lib/landing/authored.ts`
+and the admin list says so. Rollback is two DROPs, in the file header.
+
 ## 2026-10-08: 261 PENDING (loyalty tiers: remembered tier, tier-only codes, upgrade mail, STEP 47)
 
 `261_loyalty_tiers.sql` adds (1) `public.loyalty_tiers`: one row per

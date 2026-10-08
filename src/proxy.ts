@@ -1,8 +1,17 @@
 import { adminAllowlistDecision, isAdminPerimeterPath } from '@/lib/admin/ip-allowlist'
 import { isPanelRole } from '@/lib/admin/roles'
+import { CONSENT_COOKIE, doNotTrackFromHeaders, isTrackingAllowed } from '@/lib/analytics/consent'
 import { loginRedirectUrl } from '@/lib/auth/login-redirect'
 import { sessionCookieOptions } from '@/lib/auth/session-cookie'
 import { GUEST_SESSION_COOKIE, guestSessionCookieOptions } from '@/lib/cart/guest-session-cookie'
+import { landingBucketCookieOptions } from '@/lib/landing/bucket-cookie'
+import { landingSlugFromPath } from '@/lib/landing/slug'
+import {
+  LANDING_BUCKET_COOKIE,
+  LANDING_BUCKET_HEADER,
+  parseBucket,
+  randomBucket,
+} from '@/lib/landing/variant'
 import { REQUEST_ID_HEADER, resolveRequestId } from '@/lib/observability/request-id'
 import { edgeClientAddress, edgeShieldPolicyFor } from '@/lib/rate-limit/edge-shield'
 import { graduatedRateLimit } from '@/lib/rate-limit/graduated'
@@ -37,6 +46,8 @@ type RequestContext = {
   requestId: string
   nonce: string
   csp: string
+  /** A landing A/B bucket minted on this request (STEP 55), forwarded as a header. */
+  landingBucket?: string
 }
 
 /**
@@ -68,6 +79,10 @@ function forward(request: NextRequest, context: RequestContext): NextResponse {
   headers.set('content-security-policy', context.csp)
   headers.set(NONCE_HEADER, context.nonce)
   headers.set(REQUEST_PATH_HEADER, `${request.nextUrl.pathname}${request.nextUrl.search}`)
+  // Deleted, then set only when this proxy minted one: a client cannot pick
+  // its own landing arm by sending the header.
+  headers.delete(LANDING_BUCKET_HEADER)
+  if (context.landingBucket) headers.set(LANDING_BUCKET_HEADER, context.landingBucket)
   const response = NextResponse.next({ request: { headers } })
   response.headers.set(REQUEST_ID_HEADER, context.requestId)
   return response
@@ -198,6 +213,28 @@ async function route(request: NextRequest, context: RequestContext): Promise<Res
       // would produce duplicate URLs for one page.
       url.search = ''
       return withRequestId(NextResponse.redirect(url, 301), requestId)
+    }
+  }
+
+  // The landing page A/B bucket (STEP 55, lib/landing/variant.ts): a random
+  // number in [0, 10000) that the page maps to a variant through the row's
+  // own weights. Minted once, on a GET of `/lp/<slug>` without one, and ONLY
+  // when the banner's analytics category is granted and no Do-Not-Track
+  // signal is present: a visitor without consent has no bucket and sees
+  // control, the same population rule feature-flags.ts applies to the
+  // checkout test.
+  //
+  // Decided BEFORE the first `forward`, so the page rendering this very
+  // request receives the value as a request header; otherwise the first
+  // view would be control and the second the bucketed arm, which is the
+  // mixed exposure the report flags. The cookie goes on the response below,
+  // after the session refresh, so a re-forward cannot drop it.
+  if (request.method === 'GET' && landingSlugFromPath(pathname) !== null) {
+    const consent = request.cookies.get(CONSENT_COOKIE)?.value
+    const allowed =
+      isTrackingAllowed(consent) && !doNotTrackFromHeaders((name) => request.headers.get(name))
+    if (allowed && parseBucket(request.cookies.get(LANDING_BUCKET_COOKIE)?.value) === null) {
+      context.landingBucket = String(randomBucket())
     }
   }
 
@@ -388,6 +425,18 @@ async function route(request: NextRequest, context: RequestContext): Promise<Res
         referralCookieOptions(request.headers.get('x-forwarded-proto') ?? request.nextUrl.protocol),
       )
     }
+  }
+
+  // The landing bucket minted above, written down for the next visit. See
+  // the block before the first `forward` for the rules.
+  if (context.landingBucket) {
+    supabaseResponse.cookies.set(
+      LANDING_BUCKET_COOKIE,
+      context.landingBucket,
+      landingBucketCookieOptions(
+        request.headers.get('x-forwarded-proto') ?? request.nextUrl.protocol,
+      ),
+    )
   }
 
   // Generate a guest session ID for unauthenticated users (cart tracking).

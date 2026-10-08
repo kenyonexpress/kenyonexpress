@@ -20,8 +20,6 @@ export function generateStaticParams() {
   return tagsInUse().map((tag) => ({ slug: tag.slug }))
 }
 
-export const dynamicParams = false
-
 function tagDescription(label: string): string {
   return `כל הפוסטים בבלוג של קניון אקספרס בנושא ${label}: מדריכים והסברים על איך הדברים כאן עובדים.`
 }

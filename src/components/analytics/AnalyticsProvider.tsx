@@ -3,6 +3,7 @@
 import { trackingAllowed } from '@/lib/analytics/commerce-client'
 import { WEB_VITAL_METRICS, type WebVitalMetric } from '@/lib/analytics/events'
 import { getTracker, track } from '@/lib/analytics/tracker'
+import { landingPageViewProps } from '@/lib/landing/exposure'
 import { isPostHogEnabled, trackEvent } from '@/lib/observability/posthog'
 import { REFERRAL_QUERY_PARAM, normalizeReferralCode } from '@/lib/referrals/code'
 import { usePathname } from 'next/navigation'
@@ -17,6 +18,9 @@ const ROUTE_TEMPLATES: Array<[RegExp, string]> = [
   [/^\/category\/[^/]+$/, '/category/[slug]'],
   [/^\/checkout\/[^/]+$/, '/checkout/[step]'],
   [/^\/account\/[^/]+$/, '/account/[section]'],
+  // Campaign landing pages (STEP 55): one row for the route, the slug and
+  // the variant travel as properties (lib/landing/exposure.ts).
+  [/^\/lp\/[^/]+$/, '/lp/[slug]'],
 ]
 
 export function routeTemplate(pathname: string): string {
@@ -81,12 +85,17 @@ export default function AnalyticsProvider() {
     tracker.captureAttribution(window.location.search)
     // route alongside the envelope's raw path: the template is what groups
     // usefully in reports, the path is what you need to debug one visit.
-    track('page_view', { route: routeTemplate(pathname) })
+    // On `/lp/<slug>` the view also carries the rendered variant, which is
+    // the exposure event of a landing experiment (lib/landing/exposure.ts):
+    // the page's layout effect set it before this passive effect ran.
+    const landing = landingPageViewProps(pathname)
+    track('page_view', { route: routeTemplate(pathname), ...landing })
 
     if (isPostHogEnabled() && trackingAllowed()) {
       trackEvent('$pageview', {
         $current_url: window.location.href,
         route: routeTemplate(pathname),
+        ...landing,
       })
     }
 

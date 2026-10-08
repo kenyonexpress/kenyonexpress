@@ -54,6 +54,8 @@ const LEDGER: Record<string, Policy> = {
   // per-caller by construction; NextResponse.redirect carries no
   // Cache-Control and Vercel does not cache a header-less 3xx.
   'src/app/c/[code]/route.ts': 'redirect',
+  // The blog's RSS (STEP 54): the same shared feed policy as the catalogue feed.
+  'src/app/(store)/blog/feed.xml/route.ts': 'public',
   'src/app/feed.xml/route.ts': 'public',
   'src/app/images/r2/[...key]/route.ts': 'image',
   // The two web app manifests (STEP 14): static JSON, one per start URL.

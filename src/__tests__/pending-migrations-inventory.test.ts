@@ -505,6 +505,9 @@ describe('the pending migration inventory', () => {
       // top buyer went bronze->silver at 148000 agorot, one bell row, one
       // outbox row, the second call upgraded nothing. README carries the row.
       '261_loyalty_tiers.sql',
+      // STEP 55: campaign landing pages. `landing_pages` + `v_landing_pages_live`;
+      // measured absent on production 2026-10-08. README carries the row.
+      '262_landing_pages.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

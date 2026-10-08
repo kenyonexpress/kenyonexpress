@@ -152,10 +152,11 @@ describe.each(READERS)('$name', ({ run, empty }) => {
  * /category/, and no /s/ URL may ever be produced by a FAILED read.
  */
 describe('sitemap', () => {
+  // Top-level catalogue paths only: `/blog/category/<slug>` (STEP 54) is a
+  // content page from the blog registry, not a catalogue read, and a
+  // substring match on `/category/` counted it as one.
   const catalogueUrls = (entries: Array<{ url: string }>) =>
-    entries.filter(
-      (e) => e.url.includes('/product/') || e.url.includes('/category/') || e.url.includes('/s/'),
-    )
+    entries.filter((e) => /^\/(product|category|s)\//.test(new URL(e.url).pathname))
 
   it('throws and logs when the catalogue read fails', async () => {
     readResult.error = { code: '08006', message: 'connection failure' }

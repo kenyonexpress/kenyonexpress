@@ -39,6 +39,7 @@ describe('visibleAdminHrefs', () => {
       '/admin/products',
       '/admin/categories',
       '/admin/coupons',
+      '/admin/landing-pages',
     ])
   })
 

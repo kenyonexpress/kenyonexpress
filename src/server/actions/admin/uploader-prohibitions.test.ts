@@ -27,6 +27,9 @@ const ADMIN_ACTIONS = join(process.cwd(), 'src/server/actions/admin')
 const UPLOADER_WRITABLE = new Set([
   'categories.ts',
   'images.ts',
+  // Campaign landing pages (STEP 55): blocks, arms and internal links.
+  // Copy, like a product description; no price and no money moves.
+  'landing-pages.ts',
   'products.ts',
   'reviews.ts',
   'upload.ts',

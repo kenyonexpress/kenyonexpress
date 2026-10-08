@@ -2,6 +2,7 @@ import FacebookShareButton from '@/components/shared/FacebookShareButton'
 import ShareButton from '@/components/shared/ShareButton'
 import WhatsAppShareButton from '@/components/shared/WhatsAppShareButton'
 import { findAuthor, findPost, formatPostDate, relatedPosts } from '@/content/blog'
+import { buildShareMessage } from '@/lib/share/message'
 import Link from 'next/link'
 
 /**
@@ -12,8 +13,10 @@ import Link from 'next/link'
  * that is where Israeli readers forward things, and the device share sheet
  * for everything else. All three read the URL at click time, so a post opened
  * with campaign parameters shares the page the reader is on. The WhatsApp
- * message is the title and nothing else: the URL is appended by the button
- * on its own line, and a message that also carried it would send it twice.
+ * message comes from `buildShareMessage` with no price (the one builder every
+ * share surface must use, share-buttons.test.tsx): the lead line and the
+ * title, nothing else. The URL is appended by the button on its own line,
+ * and a message that also carried it would send it twice.
  *
  * THE AUTHOR CARD repeats the byline with the one-line bio from the registry,
  * which is the same text `/about` prints for this person.
@@ -37,7 +40,10 @@ export default function BlogPostFooter({ slug }: { slug: string }) {
           שיתוף הפוסט
         </h2>
         <div className="mt-3 flex flex-wrap items-center gap-4">
-          <WhatsAppShareButton message={post.title} appendCurrentUrl />
+          <WhatsAppShareButton
+            message={buildShareMessage({ name: post.title, priceIls: null, offer: null })}
+            appendCurrentUrl
+          />
           <FacebookShareButton />
           <ShareButton title={post.title} text={post.description} />
         </div>
