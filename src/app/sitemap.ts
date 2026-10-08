@@ -10,6 +10,7 @@ import {
 import { CacheLife, CacheTags } from '@/lib/cache/tags'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { orFail } from '@/lib/catalogue-read'
+import { allCityPageSlugs, cityPageHref } from '@/lib/city-page'
 import { newestTimestamp } from '@/lib/seo/lastmod'
 import { sitemapLanguages } from '@/lib/seo/page-metadata'
 import { siteUrl } from '@/lib/site-url'
@@ -172,6 +173,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.6,
     },
     { url: `${base}/blog`, changeFrequency: 'weekly', priority: 0.6 },
+    // STEP 64: the thirteen city pages and live's seventeen region pages. Each
+    // aggregates live products, so it changes when the catalogue does, same
+    // signal as `/merchants`. Hebrew region slugs are percent-encoded by the
+    // same helper the links use, so the sitemap cannot name a URL the page
+    // does not answer.
+    ...allCityPageSlugs().map((slug) => ({
+      url: `${base}${cityPageHref(slug)}`,
+      lastModified: catalogueTouched,
+      changeFrequency: 'weekly' as const,
+      priority: 0.5,
+    })),
     // Each post carries a real `publishedAt`, so unlike `/contact` there IS a
     // date worth publishing. Driven off the same registry the index renders, so
     // a post cannot be listed in one and missing from the other.

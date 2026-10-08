@@ -56,6 +56,8 @@ const ROUTES = [
   '/help',
   '/accessibility',
   '/merchants',
+  // STEP 64: a prerendered city page; the grid reads `?page=` under Suspense.
+  '/city/tel-aviv',
 ]
 
 /** Header names Next uses for the two shapes. */

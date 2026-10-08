@@ -260,13 +260,17 @@ export default function ProductInfo({
 
       {/* Where the deal is, directly under the title, so it is answered before
           the price rather than at the bottom of the page next to the supplier
-          block. It links into the city-filtered catalogue: a customer who cares
-          which city this is in is the customer who wants the others in it.
-          `knownCity` is null for free text the city table does not recognise,
-          and the whole line disappears rather than printing it raw. */}
+          block. It links to the city's landing page (STEP 64): a customer who
+          cares which city this is in is the customer who wants the others in
+          it, and the page that aggregates them is the one worth the link.
+          The href is built inline because this is a client component and
+          `lib/city-page` reads the catalogue; the slug is ASCII, so it needs
+          no encoding. `knownCity` is null for free text the city table does
+          not recognise, and the whole line disappears rather than printing it
+          raw. */}
       {knownCity && (
         <p className="pdp-summary__city">
-          <CityTag city={knownCity.name} href={`/products?city=${knownCity.slug}`} />
+          <CityTag city={knownCity.name} href={`/city/${knownCity.slug}`} />
         </p>
       )}
 

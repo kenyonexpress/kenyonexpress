@@ -1,3 +1,4 @@
+import { cityByName } from '@/lib/geo/cities'
 import {
   type MerchantDirectoryEntry,
   couponCountLabel,
@@ -173,7 +174,7 @@ function MerchantCard({ merchant, eager }: { merchant: MerchantDirectoryEntry; e
         {merchant.city ? (
           <p className="mt-2 flex items-center gap-1 text-sm text-heading/70">
             <MapPin size={14} aria-hidden="true" />
-            <span>{merchant.city}</span>
+            <MerchantCity city={merchant.city} />
           </p>
         ) : null}
 
@@ -183,5 +184,21 @@ function MerchantCard({ merchant, eager }: { merchant: MerchantDirectoryEntry; e
         </p>
       </div>
     </article>
+  )
+}
+
+/**
+ * The city line. A city the geo table knows links to its landing page
+ * (STEP 64), where every deal in that city is aggregated; free text it does
+ * not recognise is printed as typed, because the supplier wrote it and a
+ * wrong link is worse than no link.
+ */
+function MerchantCity({ city }: { city: string }) {
+  const known = cityByName(city)
+  if (!known) return <span>{city}</span>
+  return (
+    <Link href={`/city/${known.slug}`} className="hover:underline">
+      {known.name}
+    </Link>
   )
 }
