@@ -1,75 +1,17 @@
-RESUME FROM: M18-c120
+RESUME FROM: M01-c121
 
 # KenyonExpress — Project State
 
-Last item: **M17-c120 BLOCKED** (2026-10-08): RTL re-probed in the foreground on `/` and the same 6 sitemap products at 380, 768 and 1440. Production (`www`, still `audit/final-audit@1e84df0`): 21/21 runs covered across two passes (the network dropped mid-pass, `ERR_NAME_NOT_RESOLVED` and `ERR_INTERNET_DISCONNECTED`), all `lang=he dir=rtl`, overflow 0, 0 Hebrew in LTR, 0 left-aligned Hebrew. The only leak is unchanged: the footer newsletter placeholder `הזן כתובת אימייל` computes `direction: ltr`, `text-align: start` (flush left) at 1440 on all 7 pages. Local (fresh `pnpm start -p 3520` on this run's build, HEAD `1f74ce7ce` plus the uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` fix): 21/21 clean, placeholder `text-align: right`. The fix is a UI change and compare.mjs refuses: 6/6 exit 5 (home and product at 380/768/1440, blocker 0). The fix stays uncommitted. Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 2 (attempt 1 failed prerendering `/product/ארוחת-בוקר-זוגית-בקפה-קפה`, 31 `supabase.timeout`, 15 `db.query_failed`; attempt 2 had 33 recovered timeouts, 0 `db.query_failed`).
-Previous: M16-c120 DONE, M15-c120 DONE, M14-c120 BLOCKED, M13-c120 BLOCKED, M12-c120 DONE, M11-c120 DONE, M10-c120 BLOCKED, M09-c120 DONE, M08-c120 DONE, M07-c120 BLOCKED, M06-c120 DONE, M05-c120 DONE, M04-c120 DONE, M03-c120 BLOCKED, M02-c120 BLOCKED, M01-c120 BLOCKED, M18-c119 DONE, M17-c119 BLOCKED, M16-c119 DONE, M15-c119 DONE, M14-c119 BLOCKED, M13-c119 BLOCKED, M12-c119 DONE, M11-c119 DONE, M10-c119 BLOCKED, M09-c119 DONE, M08-c119 DONE, M07-c119 DONE, M06-c119 DONE, M05-c119 DONE, M04-c119 DONE, M03-c119 BLOCKED, M02-c119 BLOCKED, M01-c119 BLOCKED, M18-c118 DONE, M17-c118 BLOCKED, M16-c118 DONE, M15-c118 DONE, M14-c118 BLOCKED, M13-c118 BLOCKED, M12-c118 DONE, M11-c118 DONE, M10-c118 BLOCKED, M09-c118 DONE, M08-c118 DONE, M07-c118 DONE, M06-c118 DONE, M05-c118 BLOCKED, M04-c118 DONE, M03-c118 BLOCKED, M02-c118 BLOCKED, M01-c118 BLOCKED, M18-c117 DONE, M17-c117 BLOCKED, M16-c117 DONE, M15-c117 DONE, M14-c117 BLOCKED, M13-c117 BLOCKED, M12-c117 DONE, M11-c117 DONE, M10-c117 BLOCKED, M09-c117 DONE, M08-c117 DONE, M07-c117 DONE, M06-c117 DONE, M05-c117 DONE, M04-c117 DONE, M03-c117 BLOCKED, M02-c117 BLOCKED, M01-c117 BLOCKED, M18-c116 DONE, M17-c116 BLOCKED, M16-c116 DONE, M15-c116 DONE, M14-c116 BLOCKED, M13-c116 BLOCKED, M12-c116 DONE, M11-c116 DONE, M10-c116 BLOCKED, M09-c116 DONE, M08-c116 DONE, M07-c116 DONE, M06-c116 DONE, M05-c116 DONE, M04-c116 DONE, M03-c116 BLOCKED, M02-c116 BLOCKED, M01-c116 BLOCKED, M18-c115 DONE, M16-c115 DONE, M15-c115 DONE, M14-c115 BLOCKED, M13-c115 BLOCKED, M12-c115 DONE, M11-c115 DONE, M10-c115 BLOCKED, M09-c115 DONE, M08-c115 DONE, M07-c115 DONE, M06-c115 DONE, M05-c115 DONE, M04-c115 DONE, M03-c115 BLOCKED, M02-c115 BLOCKED, M01-c115 BLOCKED (all 2026-10-07), M11-c113 DONE (2026-10-06).
+Last item: **M18-c120 DONE** (2026-10-08): STATE.md was 152 lines at start, already under 300. Moved to `docs/STATE-ARCHIVE.md` verbatim: the M17-c120 status line, the c113 runner note and the 58 queue rows for cycles c113, c115, c116 and c117. Rows for c118 to c120, open blockers and manual items stay. Gates: see the M18-c120 section in the archive.
+Previous: M17-c120 BLOCKED, M16-c120 DONE, M15-c120 DONE, M14-c120 BLOCKED, M13-c120 BLOCKED, M12-c120 DONE, M11-c120 DONE, M10-c120 BLOCKED, M09-c120 DONE, M08-c120 DONE, M07-c120 BLOCKED, M06-c120 DONE, M05-c120 DONE, M04-c120 DONE, M03-c120 BLOCKED, M02-c120 BLOCKED, M01-c120 BLOCKED, M18-c119 DONE, M17-c119 BLOCKED, M16-c119 DONE, M15-c119 DONE, M14-c119 BLOCKED, M13-c119 BLOCKED, M12-c119 DONE, M11-c119 DONE, M10-c119 BLOCKED, M09-c119 DONE, M08-c119 DONE, M07-c119 DONE, M06-c119 DONE, M05-c119 DONE, M04-c119 DONE, M03-c119 BLOCKED, M02-c119 BLOCKED, M01-c119 BLOCKED, M18-c118 DONE, M17-c118 BLOCKED, M16-c118 DONE, M15-c118 DONE, M14-c118 BLOCKED, M13-c118 BLOCKED, M12-c118 DONE, M11-c118 DONE, M10-c118 BLOCKED, M09-c118 DONE, M08-c118 DONE, M07-c118 DONE, M06-c118 DONE, M05-c118 BLOCKED, M04-c118 DONE, M03-c118 BLOCKED, M02-c118 BLOCKED, M01-c118 BLOCKED, M18-c117 DONE, M17-c117 BLOCKED, M16-c117 DONE, M15-c117 DONE, M14-c117 BLOCKED, M13-c117 BLOCKED, M12-c117 DONE, M11-c117 DONE, M10-c117 BLOCKED, M09-c117 DONE, M08-c117 DONE, M07-c117 DONE, M06-c117 DONE, M05-c117 DONE, M04-c117 DONE, M03-c117 BLOCKED, M02-c117 BLOCKED, M01-c117 BLOCKED, M18-c116 DONE, M17-c116 BLOCKED, M16-c116 DONE, M15-c116 DONE, M14-c116 BLOCKED, M13-c116 BLOCKED, M12-c116 DONE, M11-c116 DONE, M10-c116 BLOCKED, M09-c116 DONE, M08-c116 DONE, M07-c116 DONE, M06-c116 DONE, M05-c116 DONE, M04-c116 DONE, M03-c116 BLOCKED, M02-c116 BLOCKED, M01-c116 BLOCKED, M18-c115 DONE, M16-c115 DONE, M15-c115 DONE, M14-c115 BLOCKED, M13-c115 BLOCKED, M12-c115 DONE, M11-c115 DONE, M10-c115 BLOCKED, M09-c115 DONE, M08-c115 DONE, M07-c115 DONE, M06-c115 DONE, M05-c115 DONE, M04-c115 DONE, M03-c115 BLOCKED, M02-c115 BLOCKED, M01-c115 BLOCKED (all 2026-10-07), M11-c113 DONE (2026-10-06).
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
 
-## Queue status (cycle c113)
+## Queue status (cycles c118 to c120)
 
-The runner's `final-done.txt` lists M01–M10 of c113 as finished. This branch's git log has no commits for them, so they are recorded here as runner-reported and not re-verified.
+Rows for c113 and c115 to c117 are in `docs/STATE-ARCHIVE.md` (M18-c120).
 
 | ID | Item | Status |
 |---|---|---|
-| M01–M10-c113 | compare / type-check / test / build / TODO / Lighthouse / deps / migrations | runner-reported done, no commit on this branch |
-| M11-c113 | Verify sitemap.xml fresh and reachable | **DONE**, see archive |
-| M12-c113 | Verify robots.txt production-safe | superseded by M12-c115 |
-| M13–M18-c113 | health, Sentry, console, JSON-LD, RTL, STATE trim | pending |
-| M01-c115 | Re-measure compare.mjs 380/768/1440 on / | **BLOCKED**: gate refuses, no reference (see archive) |
-| M02-c115 | Re-measure compare.mjs on /product | **BLOCKED**: gate refuses, no reference (see archive) |
-| M03-c115 | Re-measure compare.mjs on /category | **BLOCKED**: gate refuses, no reference (see archive) |
-| M04-c115 | pnpm type-check, fix drift | **DONE**: exit 0, no drift, no code change (see archive) |
-| M05-c115 | pnpm test, fix drift | **DONE**: exit 0, no drift, no code change (see archive) |
-| M06-c115 | pnpm build, fix drift | **DONE**: exit 0 on attempt 4, no drift, no code change (see archive) |
-| M07-c115 | TODO/FIXME older than 7 days: resolve or file in docs/BACKLOG.md | **DONE**: 1 resolved, 2 filed (see archive) |
-| M08-c115 | Lighthouse mobile on / and /product sample, log scores | **DONE**: perf 82 / 84 median, a11y 100, BP 96, SEO 100 (see archive) |
-| M09-c115 | Remove unused deps and dead exports | **DONE**: 9 deps removed, 14 dead components deleted (see archive) |
-| M10-c115 | Verify migrations/pending/ applied or file blocker | **BLOCKED**: 22 files confirmed not applied, 6 live but unrecorded (see archive) |
-| M11-c115 | Verify sitemap.xml fresh and reachable | **DONE**: 5/5 section files 200, 94/94 URLs 200 on www (see archive) |
-| M12-c115 | Verify robots.txt production-safe | **DONE**: 0/94 sitemap URLs blocked, credential paths disallowed, robots edits committed (see archive) |
-| M13-c115 | Verify /api/health and /api/ready return 200 with real deps | **BLOCKED**: health 200, ready 503 on `meilisearch: down` (see archive) |
-| M14-c115 | Verify Sentry release matches HEAD commit | **BLOCKED**: prod release `1e84df0` (audit/final-audit), HEAD `b29fcbf` (see archive) |
-| M15-c115 | Verify no console errors on / and /product sample | **DONE**: prod 0 errors on both pages at 380 and 1440; local errors come only from the environment (see archive) |
-| M16-c115 | Verify all product pages have JSON-LD Product and BreadcrumbList | **DONE**: 44/44 prod, 46/46 HEAD, both nodes valid; 3 image-less rows have no `image` (see archive) |
-| M17-c115 | RTL | superseded by M17-c116 |
-| M18-c115 | Trim STATE.md under 300 lines, archive rest | **DONE**: per-item sections moved to `docs/STATE-ARCHIVE.md` |
-| M01-c116 | Re-measure compare.mjs 380/768/1440 on / | **BLOCKED**: exit 5 at all three widths, gate refuses, no reference (see archive) |
-| M02-c116 | Re-measure compare.mjs on /product | **BLOCKED**: exit 5 at 380/768/1440, gate refuses, no reference (see archive) |
-| M03-c116 | Re-measure compare.mjs on /category | **BLOCKED**: exit 5 at 380/768/1440, gate refuses, no reference (see archive) |
-| M04-c116 | pnpm type-check, fix drift | **DONE**: exit 0, no drift, no code change (see archive) |
-| M05-c116 | pnpm test, fix drift | **DONE**: exit 0, 6473 passed, no drift, no code change (see archive) |
-| M06-c116 | pnpm build, fix drift | **DONE**: exit 0 on attempt 4; fixed 254 false `db.query_failed` logs from the prerender abort (see archive) |
-| M07-c116 | TODO/FIXME older than 7 days: resolve or file in docs/BACKLOG.md | **DONE**: re-scan found only the 2 filed Cardcom markers (B1, B2), nothing new |
-| M08-c116 | Lighthouse mobile on / and /product sample, log scores | **DONE**: median perf 82 / 84, a11y 100, BP 96, SEO 100 (see archive) |
-| M09-c116 | Remove unused deps and dead exports | **DONE**: 0 deps to drop; 4 dead modules and 9 dead exports deleted (see archive) |
-| M10-c116 | Verify migrations/pending/ applied or file blocker | **BLOCKED**: re-probe unchanged, 6 live but unrecorded, 22 not applied; needs Ofir (see archive) |
-| M11-c116 | Verify sitemap.xml fresh and reachable | **DONE**: 5/5 section files 200, 94/94 URLs 200 on www, lastmods unchanged (see archive) |
-| M12-c116 | Verify robots.txt production-safe | **DONE**: live file matches source, 0/94 sitemap URLs blocked, credential paths disallowed + noindex (see archive) |
-| M13-c116 | Verify /api/health and /api/ready return 200 with real deps | **BLOCKED**: health 200, ready 503 on `meilisearch: down`, unchanged from M13-c115 (see archive) |
-| M14-c116 | Verify Sentry release matches HEAD commit | **BLOCKED**: prod release still `1e84df0` (audit/final-audit), HEAD `bf55da2`, unchanged from M14-c115 (see archive) |
-| M15-c116 | Verify no console errors on / and /product sample | **DONE**: prod 0 errors on both pages at 380 and 1440, unchanged from M15-c115; local errors are env-only (see archive) |
-| M16-c116 | Verify all product pages have JSON-LD Product and BreadcrumbList | **DONE**: 44/44 prod, 46/46 HEAD, both nodes valid; same 3 image-less rows lack `image`, unchanged from M16-c115 (see archive) |
-| M17-c116 | Verify RTL on / and /product sample, no LTR leaks | **BLOCKED**: one leak, the footer newsletter placeholder is flush left in an LTR field; the uncommitted fix cannot pass compare.mjs (exit 5, blocker 0) (see archive) |
-| M18-c116 | Trim STATE.md under 300 lines, archive rest | **DONE**: already 80 lines at start, no trim needed; 3 stale status lines moved to `docs/STATE-ARCHIVE.md` |
-| M01-c117 | Re-measure compare.mjs 380/768/1440 on / | **BLOCKED**: exit 5 at all three widths, gate refuses, no reference (see archive) |
-| M02-c117 | Re-measure compare.mjs on /product | **BLOCKED**: exit 5 at 380/768/1440, gate refuses, no reference (see archive) |
-| M03-c117 | Re-measure compare.mjs on /category | **BLOCKED**: exit 5 at 380/768/1440, gate refuses, no reference (see archive) |
-| M04-c117 | pnpm type-check, fix drift | **DONE**: exit 0, no drift, no code change |
-| M05-c117 | pnpm test, fix drift | **DONE**: exit 0, 6474 passed, 12 skipped, no drift, no code change |
-| M06-c117 | pnpm build, fix drift | **DONE**: exit 0; anon 42501 on `reviews` found, fix written as pending 231 (see archive) |
-| M07-c117 | TODO/FIXME older than 7 days: resolve or file in docs/BACKLOG.md | **DONE**: re-scan found only the 2 filed Cardcom markers (B1, B2), nothing new |
-| M08-c117 | Lighthouse mobile on / and /product sample, log scores | **DONE**: median perf 80 / 84, a11y 100, BP 96, SEO 100; home run 1 cold outlier 59 (see archive) |
-| M09-c117 | Remove unused deps and dead exports | **DONE**: 0 deps to drop; `lib/search.ts` and 2 dead exports deleted (see archive) |
-| M10-c117 | Verify migrations/pending/ applied or file blocker | **BLOCKED**: re-probe unchanged, 6 live but unrecorded, 22 not applied, new 231 not applied (anon reviews 401); needs Ofir (see archive) |
-| M11-c117 | Verify sitemap.xml fresh and reachable | **DONE**: 5/5 section files 200, 94/94 URLs 200 on www, lastmods unchanged (see archive) |
-| M12-c117 | Verify robots.txt production-safe | **DONE**: live file matches source, 0/94 sitemap URLs blocked, credential paths disallowed + noindex, unchanged from M12-c116 (see archive) |
-| M13-c117 | Verify /api/health and /api/ready return 200 with real deps | **BLOCKED**: health 200, ready 503 on `meilisearch: down`, unchanged from M13-c116 (see archive) |
-| M14-c117 | Verify Sentry release matches HEAD commit | **BLOCKED**: prod release still `1e84df0` (audit/final-audit), HEAD `cbe88c5`, unchanged from M14-c116 (see archive) |
-| M15-c117 | Verify no console errors on / and /product sample | **DONE**: prod 0 errors on both pages at 380 and 1440, unchanged from M15-c116; local errors are env-only (see archive) |
-| M16-c117 | Verify all product pages have JSON-LD Product and BreadcrumbList | **DONE**: 44/44 prod, 46/46 HEAD, both nodes valid; same 3 image-less rows lack `image`, unchanged from M16-c116 (see archive) |
-| M17-c117 | Verify RTL on / and /product sample, no LTR leaks | **BLOCKED**: 42/42 runs RTL-clean except the same footer newsletter placeholder, flush left; uncommitted fix still cannot pass compare.mjs (exit 5 x6, blocker 0) (see archive) |
-| M18-c117 | Trim STATE.md under 300 lines, archive rest | **DONE**: already 98 lines at start, no trim needed; 2 M17-c117 status lines moved to `docs/STATE-ARCHIVE.md` |
 | M01-c118 | Re-measure compare.mjs 380/768/1440 on / | **BLOCKED**: exit 5 at all three widths, gate refuses, no reference (see archive) |
 | M02-c118 | Re-measure compare.mjs on /product | **BLOCKED**: exit 5 at 380/768/1440, gate refuses, no reference (see archive) |
 | M03-c118 | Re-measure compare.mjs on /category | **BLOCKED**: exit 5 at 380/768/1440, gate refuses, no reference (see archive) |
@@ -123,6 +65,7 @@ The runner's `final-done.txt` lists M01–M10 of c113 as finished. This branch's
 | M14-c120 | Verify Sentry release matches HEAD commit | **BLOCKED**: `www` release still `1e84df0` (audit/final-audit), HEAD `b299e57`; `origin/main` still `3969d3e`, unchanged from M14-c119 (see archive) |
 | M15-c120 | Verify no console errors on / and /product sample | **DONE**: prod 0 errors on both pages at 380 and 1440, unchanged from M15-c119; local errors are env-only (see archive) |
 | M17-c120 | Verify RTL on / and /product sample, no LTR leaks | **BLOCKED**: 42/42 runs RTL-clean except the same footer newsletter placeholder, flush left in prod; uncommitted fix clean locally but compare.mjs refuses (exit 5 x6, blocker 0) (see archive) |
+| M18-c120 | Trim STATE.md under 300 lines, archive rest | **DONE**: already 152 lines at start; M17-c120 status line and 58 c113–c117 queue rows moved to `docs/STATE-ARCHIVE.md` |
 
 ## Open blockers
 
