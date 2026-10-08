@@ -16,6 +16,7 @@ import {
 } from '@/lib/category-page'
 import { type SortValue, parseSort } from '@/lib/category-tokens'
 import { blurEntryFor, firstImageOf } from '@/lib/images/blur'
+import { attachPriceHistory } from '@/lib/pricing/price-history-read'
 import { publicPageMetadata } from '@/lib/seo/page-metadata'
 import { Suspense } from 'react'
 import '@/styles/category-page.css'
@@ -141,9 +142,9 @@ async function ResultGrid({
   args: QueryArgs
   linkParams: Record<string, string | undefined>
 }) {
-  const { items, total } = await shopPageOrLast(args)
+  const { items: page, total } = await shopPageOrLast(args)
 
-  if (items.length === 0) {
+  if (page.length === 0) {
     return (
       <div className="category-page__empty">
         <p>לא נמצאו מוצרים התואמים את הבחירה שלך.</p>
@@ -151,6 +152,8 @@ async function ResultGrid({
     )
   }
 
+  // The history marks (STEP 59): one cached read for the grid.
+  const items = await attachPriceHistory(page)
   const { totalPages, currentPage, from, to } = pageWindow(total, args.page)
 
   return (

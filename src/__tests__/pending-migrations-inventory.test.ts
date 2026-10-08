@@ -512,6 +512,7 @@ describe('the pending migration inventory', () => {
       // both live routes now; measured active on production 2026-10-08.
       // README carries the row.
       '263_seo_redirects_release_compare.sql',
+      '264_price_change_trigger.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

@@ -2,6 +2,11 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Client islands inside ProductCard need providers the strip does not.
+// The history marks (STEP 59) are a cached read of their own; the strips are
+// what this file proves, so the products come back as they went in.
+vi.mock('@/lib/pricing/price-history-read', () => ({
+  attachPriceHistory: async (products: unknown[]) => products,
+}))
 vi.mock('@/components/cart/AddToCartButton', () => ({ default: () => null }))
 vi.mock('@/components/product/WishlistButton', () => ({ default: () => null }))
 vi.mock('@/components/compare/CompareButton', () => ({ default: () => null }))

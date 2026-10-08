@@ -16,6 +16,7 @@ import { isImplausibleDiscount } from '@/lib/commerce/implausible-discount'
 import { type RecurringOffer, describeRecurringPrice } from '@/lib/commerce/recurring'
 import { cityByName } from '@/lib/geo/cities'
 import { shekelsFromIls as sharedShekelsFromIls, shekels } from '@/lib/money-format'
+import { type HistorySummary, priceSignal } from '@/lib/pricing/price-history'
 import { useProductLive } from '@/lib/product-live/use-product-live'
 import { buildShareMessage } from '@/lib/share/message'
 import { Check, ShoppingCart } from 'lucide-react'
@@ -74,6 +75,12 @@ interface Props {
    */
   recurringOffer?: RecurringOffer | null
   /**
+   * The product's cached `price_history` summary (STEP 59), compared here
+   * against the price actually rendered (the live one, once it arrives), so
+   * the "lowest ever" and "dropped" marks follow the number beside them.
+   */
+  priceHistory?: HistorySummary | null
+  /**
    * `products.cashback_percent` (or `cashback_bp` / 100 after 059), as a
    * percent. Read inside the product cache from whichever column exists, the
    * way the cart reads it. Zero or absent means the line is not rendered.
@@ -117,6 +124,7 @@ export default function ProductInfo({
   couponOffer,
   recurringOffer = null,
   cashbackPercent = null,
+  priceHistory = null,
 }: Props) {
   const { addToCart, isPending } = useCart()
 
@@ -179,6 +187,8 @@ export default function ProductInfo({
 
   const hasDiscount = oldPrice != null && oldPrice > price
   const discountPct = hasDiscount ? Math.round((1 - price / oldPrice) * 100) : 0
+  // Agorot once, the same rounding the page uses for the vendor payload.
+  const historySignal = priceSignal(priceHistory, Math.round(price * 100))
   // Not `stock ?? 99`. The schema stops a cart line at 99 whatever the shelf
   // holds, and /product/demo-coupon-1 rendered `max="100"` against it -
   // measured on a built server. `CART_LINE_MAX_QUANTITY` exists precisely so
@@ -348,6 +358,22 @@ export default function ProductInfo({
               </>
             )}
           </p>
+          {/* The history marks (STEP 59). "Lowest ever" outranks "dropped":
+              a product at its all-time low has, by definition, also just
+              dropped or held, and two badges on one price is a shout. */}
+          {historySignal?.allTimeLow ? (
+            <p
+              className="pdp-summary__signal"
+              data-signal="all-time-low"
+              data-testid="pdp-price-signal"
+            >
+              המחיר הנמוך ביותר אי פעם
+            </p>
+          ) : historySignal?.drop ? (
+            <p className="pdp-summary__signal" data-signal="drop" data-testid="pdp-price-signal">
+              ירד ב-{historySignal.drop.percent}% לעומת המחיר הקודם
+            </p>
+          ) : null}
         </>
       )}
 

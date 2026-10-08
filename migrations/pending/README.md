@@ -1,5 +1,21 @@
 # `migrations/pending/`
 
+## 2026-10-08: 264 PENDING (price_history row on every product price change, STEP 59)
+
+`264_price_change_trigger.sql` adds `fn_products_price_change_history` and an
+`AFTER UPDATE OF kenyon_price, full_price` trigger on `products` that appends
+the new price to `price_history` (193) as `source = 'change'`, reading the
+generated agorot twins. SECURITY DEFINER because 193 grants INSERT on the
+table to no client role, so a trigger running as the admin's session would
+fail the edit; EXECUTE revoked from PUBLIC, `search_path = ''`. Never fails
+the UPDATE: the unique index is absorbed by `ON CONFLICT DO NOTHING` and any
+other error is a WARNING. Until it is applied, the product editor and the
+bulk price tool write the same row from the server
+(`src/lib/pricing/price-change.ts`); after it, those writes hit the unique
+index and no-op. Self-check moves one product's price by an agora and back
+inside a rolled-back block. Depends on 193 (applied) and the generated twins
+(applied). No dependency on any other pending file.
+
 ## 2026-10-08: 263 PENDING (release `/compare` and `/wishlist` from the legacy 410 rows, STEP 56)
 
 `263_seo_redirects_release_compare.sql` sets `is_active = false` on the two

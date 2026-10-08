@@ -528,6 +528,26 @@
   line-height: 2;
 }
 
+/* The price-history mark (STEP 59): the opposite corner from the sale badge,
+   same type and radius; green for "lowest ever", the sale red for "dropped". */
+.category-card__signal {
+  position: absolute;
+  inset-inline-end: 0;
+  bottom: 0;
+  z-index: 2;
+  background-color: var(--cat-badge);
+  color: var(--cat-surface);
+  font-size: var(--cat-eyebrow-size);
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: 4px;
+  line-height: 2;
+}
+
+.category-card__signal[data-signal="drop"] {
+  background-color: var(--cat-sale);
+}
+
 /* Footer: measured .price-add-to-cart = 186x36 with 7px below it. Price sits
    at the inline start, the round add-to-cart at the inline end. */
 .category-card__footer {

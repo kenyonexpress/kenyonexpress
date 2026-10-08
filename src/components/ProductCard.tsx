@@ -4,6 +4,7 @@ import AddToCartButton from '@/components/cart/AddToCartButton'
 import CompareButton from '@/components/compare/CompareButton'
 import WishlistButton from '@/components/product/WishlistButton'
 import { shekelsFromIlsRounded } from '@/lib/money-format'
+import { type HistorySummary, priceSignal } from '@/lib/pricing/price-history'
 import Image from 'next/image'
 import Link from 'next/link'
 // product-card-deals.css is imported by the root layout. See the note there.
@@ -17,6 +18,33 @@ export type Product = {
   stock_quantity: number | null
   full_price?: number | null
   category?: { name_he: string; slug: string } | null
+  /** Cached `price_history` summary (STEP 59), attached by `attachPriceHistory`; absent on grids that do not carry it. */
+  priceHistory?: HistorySummary | null
+}
+
+/**
+ * The price-history mark on a tile (STEP 59): "lowest ever" or "dropped N%",
+ * never both, from the same rule the product page applies. Renders nothing
+ * without a summary, so the home page, which attaches none, is untouched.
+ */
+function PriceSignalBadge({ product, price }: { product: Product; price: number }) {
+  const signal = priceSignal(product.priceHistory, Math.round(price * 100))
+  if (!signal) return null
+  if (signal.allTimeLow) {
+    return (
+      <span className="p_con__signal" data-signal="all-time-low">
+        המחיר הנמוך ביותר
+      </span>
+    )
+  }
+  if (signal.drop) {
+    return (
+      <span className="p_con__signal" data-signal="drop">
+        ירד ב-{signal.drop.percent}%
+      </span>
+    )
+  }
+  return null
 }
 
 /**
@@ -187,6 +215,7 @@ function DealsProductCard({ product }: { product: Product }) {
             <span className="discount_per">-{discountPct}%</span>
           </div>
         )}
+        <PriceSignalBadge product={product} price={price} />
 
         {outOfStock && (
           <div className="absolute inset-0 flex items-center justify-center bg-white/70">
@@ -326,6 +355,7 @@ function DefaultProductCard({
               </div>
             )}
           </Link>
+          <PriceSignalBadge product={product} price={price} />
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-2">

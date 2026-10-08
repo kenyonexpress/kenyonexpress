@@ -7,6 +7,7 @@ import { discountPercent } from '@/lib/discount-percent'
 import { cityByName } from '@/lib/geo/cities'
 import { formatDistance } from '@/lib/geo/distance'
 import { shekelsFromIlsRounded } from '@/lib/money-format'
+import { type HistorySummary, priceSignal } from '@/lib/pricing/price-history'
 import { MapPin } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -52,6 +53,8 @@ export type CategoryProduct = {
   supplier?: { city?: string | null } | null
   /** Set by sortByDistance when the customer asked for "near me". */
   distanceKm?: number | null
+  /** Cached `price_history` summary (STEP 59), attached by `attachPriceHistory`. */
+  priceHistory?: HistorySummary | null
 }
 
 function formatPrice(value: number): string {
@@ -113,6 +116,8 @@ export default function CategoryProductCard({
   const pct = hasDiscount && old != null && price != null ? discountPercent(price, old) : 0
   const outOfStock = product.stock_quantity === 0
   const canAdd = price != null && !outOfStock
+  // The history mark (STEP 59), from the same rule as the product page.
+  const signal = price == null ? null : priceSignal(product.priceHistory, Math.round(price * 100))
 
   const categoryTags = product.categories ?? []
   const cityLabel = cityByName(product.supplier?.city)?.name ?? null
@@ -177,6 +182,15 @@ export default function CategoryProductCard({
                   -<span className="percentage">{pct}%</span>
                 </span>
               )}
+              {signal?.allTimeLow ? (
+                <span className="category-card__signal" data-signal="all-time-low">
+                  המחיר הנמוך ביותר
+                </span>
+              ) : signal?.drop ? (
+                <span className="category-card__signal" data-signal="drop">
+                  ירד ב-{signal.drop.percent}%
+                </span>
+              ) : null}
               {thumb ? (
                 // width/height stay the 186 square the raw <img> declared: they are
                 // the pre-load reservation, and the CSS is width:auto/height:auto

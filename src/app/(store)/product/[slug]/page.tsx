@@ -2,6 +2,7 @@ import ViewTracker from '@/components/analytics/ViewTracker'
 import Reviews from '@/components/product/Reviews'
 import { CouponTerms } from '@/components/storefront/CouponPricing'
 import CouponQrExpiry from '@/components/storefront/CouponQrExpiry'
+import PriceHistory from '@/components/storefront/PriceHistory'
 import ProductGallery from '@/components/storefront/ProductGallery'
 import ProductInfo from '@/components/storefront/ProductInfo'
 import ProductRecommendations from '@/components/storefront/ProductRecommendations'
@@ -13,6 +14,7 @@ import {
   storefrontProductTypeLabel,
 } from '@/lib/commerce/product-type'
 import { productLocation } from '@/lib/geo/distance'
+import { loadPriceSummaries } from '@/lib/pricing/price-history-read'
 import { listProductSlugsForPrerender, loadProductBySlug } from '@/lib/product-detail'
 import { getProductSeoBySlug } from '@/lib/product-seo'
 import { buildBreadcrumbJsonLd, buildProductJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
@@ -135,6 +137,15 @@ export default async function ProductPage({ params }: Props) {
     product.full_price != null && Number(product.full_price) > basePrice
       ? Number(product.full_price)
       : null
+  // Agorot once, the same rounding the ViewTracker below applies: the shekel
+  // column is still numeric and this is the one conversion on the page.
+  const priceAgorot =
+    product.kenyon_price === null || product.kenyon_price === undefined
+      ? null
+      : Math.round(Number(product.kenyon_price) * 100)
+  // The cached history summary (STEP 59): one read, shared by the badge next
+  // to the price and nothing else; the chart band reads its own view.
+  const priceHistory = (await loadPriceSummaries([product.id]))[product.id] ?? null
 
   // One resolution, asked for rather than derived. `isCoupon` and the sentence
   // under the supplier's phone number used to answer this question separately,
@@ -283,6 +294,7 @@ export default async function ProductPage({ params }: Props) {
             couponOffer={couponOffer}
             recurringOffer={recurringOffer}
             cashbackPercent={cashbackPercent}
+            priceHistory={priceHistory}
           />
         </div>
 
@@ -339,6 +351,13 @@ export default async function ProductPage({ params }: Props) {
           />
         </div>
 
+        {/* Price history (STEP 59): verdict line and the ninety-day step chart,
+            from the append-only record 193 keeps. Renders nothing below two
+            observed sale days. Below the details band at every width, under
+            what the parity gate scores. A coupon's price is the voucher's
+            face value and moves the same way, so the band is not type-gated. */}
+        <PriceHistory productId={product.id} currentAgorot={priceAgorot} />
+
         {/* Review submission only -- no review is displayed to visitors (the
             business model routes them to admin moderation instead). The
             per-session "can I review" gate streams via Suspense, the
@@ -355,11 +374,7 @@ export default async function ProductPage({ params }: Props) {
         <ProductRecommendations
           productId={product.id}
           categoryId={product.category_id}
-          priceAgorot={
-            product.kenyon_price === null || product.kenyon_price === undefined
-              ? null
-              : Math.round(Number(product.kenyon_price) * 100)
-          }
+          priceAgorot={priceAgorot}
         />
       </div>
     </div>

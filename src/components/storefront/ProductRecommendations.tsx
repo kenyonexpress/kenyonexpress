@@ -1,6 +1,7 @@
 import type { Product } from '@/components/ProductCard'
 import ProductCard from '@/components/ProductCard'
 import { blurForProductImages } from '@/lib/images/blur'
+import { attachPriceHistory } from '@/lib/pricing/price-history-read'
 import { loadProductStrips } from '@/lib/recommendations/product-strips'
 import { stripOrNothing } from '@/lib/recommendations/rules'
 import { loadRelatedProducts } from '@/lib/related-products'
@@ -70,9 +71,16 @@ export default async function ProductRecommendations({
 
   if (rows.length === 0) return null
 
+  // The history marks on the tiles (STEP 59): one cached read per row, the
+  // products back with their summary attached. The cards render nothing
+  // without one, so a failed read is a strip without badges, not no strip.
+  const marked = await Promise.all(
+    rows.map(async (row) => ({ ...row, products: await attachPriceHistory(row.products) })),
+  )
+
   return (
     <>
-      {rows.map((row) => (
+      {marked.map((row) => (
         <section
           key={row.key}
           className="pdp-related"

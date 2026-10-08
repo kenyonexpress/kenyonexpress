@@ -885,3 +885,107 @@
   color: var(--pdp-ink);
   text-decoration: underline;
 }
+
+/* ---------------------------------------------------------------- STEP 59
+   Price history: the mark beside the price, and the band under the details.
+   Every colour is a --pdp-* token already on this page; the "low" green is
+   the global sale-badge token the category grid paints its badge with. */
+.pdp-summary__signal {
+  display: inline-block;
+  margin: 4px 0 0;
+  padding: 0 10px;
+  border-radius: 4px;
+  font-size: var(--pdp-meta-size);
+  line-height: 2;
+  font-weight: 700;
+  color: var(--pdp-surface);
+  background-color: var(--color-sale-badge);
+}
+
+.pdp-summary__signal[data-signal="drop"] {
+  background-color: var(--pdp-sale);
+}
+
+.pdp-price-history {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--pdp-line);
+}
+
+.pdp-price-history__verdict {
+  margin: 0 0 12px;
+  font-size: var(--pdp-body-size);
+  line-height: var(--pdp-body-line);
+  font-weight: 700;
+  color: var(--pdp-ink);
+}
+
+.pdp-price-history__verdict[data-signal="all-time-low"] {
+  color: var(--color-sale-badge);
+}
+
+.pdp-price-history__verdict[data-signal="drop"] {
+  color: var(--pdp-sale);
+}
+
+.pdp-price-history__figure {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0 12px;
+  margin: 0;
+  max-width: 640px;
+}
+
+.pdp-price-history__scale {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-size: var(--pdp-meta-size);
+  line-height: var(--pdp-meta-line);
+  color: var(--pdp-muted);
+  white-space: nowrap;
+  padding-bottom: var(--pdp-meta-line);
+}
+
+.pdp-price-history__plot {
+  position: relative;
+  min-width: 0;
+}
+
+.pdp-price-history__svg {
+  display: block;
+  width: 100%;
+  height: 120px;
+  color: var(--pdp-action);
+  border-bottom: 1px solid var(--pdp-rule);
+}
+
+.pdp-price-history__marker {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
+  border-radius: 50%;
+  background-color: var(--pdp-action);
+  border: 2px solid var(--pdp-surface);
+}
+
+.pdp-price-history__marker[data-at-low="true"] {
+  background-color: var(--color-sale-badge);
+}
+
+.pdp-price-history__axis {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--pdp-meta-size);
+  line-height: var(--pdp-meta-line);
+  color: var(--pdp-muted);
+}
+
+.pdp-price-history__caption {
+  grid-column: 1 / -1;
+  margin-top: 8px;
+  font-size: var(--pdp-meta-size);
+  line-height: var(--pdp-meta-line);
+  color: var(--pdp-muted);
+}

@@ -30,6 +30,7 @@ import { type SortValue, isDefaultSort, parseSort } from '@/lib/category-tokens'
 import { parseMinDiscount } from '@/lib/discount-percent'
 import { type Coordinates, parseNear, sortByDistance } from '@/lib/geo/distance'
 import { blurEntryFor, firstImageOf } from '@/lib/images/blur'
+import { attachPriceHistory } from '@/lib/pricing/price-history-read'
 import { buildBreadcrumbJsonLd, buildItemListJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
 import { publicPageMetadata } from '@/lib/seo/page-metadata'
 import { notFound } from 'next/navigation'
@@ -202,7 +203,10 @@ async function ResultGrid({
   pathname: string
   linkParams: Record<string, string | undefined>
 }) {
-  const { items, total } = await categoryPageOrLast(args)
+  const { items: page, total } = await categoryPageOrLast(args)
+  // The history marks (STEP 59): one cached read for the grid, attached
+  // before the distance sort so the order below is the order rendered.
+  const items = await attachPriceHistory(page)
 
   // Nearest first, applied after the cached read. `sortByDistance` returns the
   // list unchanged when there is no origin, so the default page is untouched.

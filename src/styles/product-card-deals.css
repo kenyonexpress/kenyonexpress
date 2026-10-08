@@ -156,6 +156,27 @@
   border-radius: 4px;
 }
 
+/* The price-history mark (STEP 59): opposite corner from the discount
+   badge, same radius and padding, green for "lowest ever", the deal badge red
+   for "dropped". Only on tiles that carry a summary; the home page does not. */
+.p_con__signal {
+  position: absolute;
+  inset-inline-start: 0;
+  bottom: 0;
+  z-index: 2;
+  padding: 2px 10px;
+  border-radius: 4px;
+  font-size: 0.857em;
+  line-height: 2em;
+  font-weight: 700;
+  color: var(--color-surface);
+  background-color: var(--color-sale-badge);
+}
+
+.p_con__signal[data-signal="drop"] {
+  background-color: var(--color-deal-badge);
+}
+
 .discount_per {
   direction: ltr;
   color: var(--color-surface);

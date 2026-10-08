@@ -1,5 +1,16 @@
 # Apply order
 
+## 2026-10-08 (STEP 59): 264 filed; any time, no dependencies
+
+264 installs one trigger on `products` and depends only on 193 and the
+agorot twins, both live. Nothing pending depends on it. The application
+already writes the same row from the editor and the bulk tool, so applying
+it changes nothing a shopper sees; it closes the CSV-import and SQL paths.
+After applying, confirm with
+`select tgname from pg_trigger where tgname = 'products_price_change_history'`
+(one row) and, after any admin price edit,
+`select source, count(*) from price_history where observed_on = current_date group by 1`.
+
 ## 2026-10-08 (STEP 56): 263 filed; any time, no dependencies
 
 263 only flips `is_active` on two `seo_redirects` rows. It depends on

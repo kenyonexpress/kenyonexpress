@@ -15,6 +15,7 @@ import { whatsappSchemaError } from '@/lib/commerce/whatsapp-schema-error'
 import { IMAGE_HOST_ERROR, isAllowedImageUrl } from '@/lib/images/remote-hosts'
 import { withActionContext } from '@/lib/observability/action-context'
 import { log } from '@/lib/observability/log'
+import { priceChanged, recordPriceChange } from '@/lib/pricing/price-change'
 import { crossedIntoStock, notifyProductWaitlist } from '@/lib/stock/waitlist-notify'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
@@ -27,9 +28,10 @@ export type ProductFormState = { error: string } | { success: string } | null
 
 // `stock_quantity` is here for the restock hook below (STEP 58), not the audit:
 // the hook needs the level BEFORE the write to know whether this save is the
-// one that brings a sold-out product back.
+// one that brings a sold-out product back. `full_price` is here for the price
+// history hook (STEP 59), which compares both prices before and after.
 const PRODUCT_AUDIT_SELECT =
-  'id, slug, name_he, status, stock_quantity, kenyon_price, platform_percent, supplier_split_percent, discount_percent, category_id, supplier_id'
+  'id, slug, name_he, status, stock_quantity, kenyon_price, full_price, platform_percent, supplier_split_percent, discount_percent, category_id, supplier_id'
 
 async function runUpsertProduct(
   _: ProductFormState,
@@ -483,6 +485,24 @@ async function runUpsertProduct(
     }
   }
 
+  // PRICE HISTORY HOOK (STEP 59). A save that moved either price leaves a
+  // `source = 'change'` observation in `price_history` today, so the chart,
+  // the drop badge and the reference check see the change the hour it
+  // happened rather than at the next morning's snapshot. A new product gets
+  // its first observation here for the same reason. Content uploaders cannot
+  // price, so they never reach this. Best effort: `recordPriceChange` logs
+  // and never throws, and the daily snapshot is the backstop.
+  if (!hidePricing && productId) {
+    const after = { kenyon_price, full_price: _fullPrice }
+    if (!before || priceChanged(before, after)) {
+      await recordPriceChange(createAdminClient(), {
+        productId,
+        ...after,
+        status: submittedStatus ?? before?.status ?? null,
+      })
+    }
+  }
+
   redirect('/admin/products')
 }
 
@@ -663,12 +683,15 @@ async function runBulkAdjustPrices(
   const supabase = await createClient()
   const { data: products, error: loadError } = await supabase
     .from('products')
-    .select('id, name_he, kenyon_price, full_price')
+    .select('id, name_he, kenyon_price, full_price, status')
     .in('id', ids)
   if (loadError) return { error: loadError.message }
 
   let updated = 0
   const skipped: string[] = []
+  // Every price this tool moves is an observation (STEP 59); see the hook in
+  // runUpsertProduct. One service-role client for the whole batch.
+  const history = createAdminClient()
 
   for (const p of products ?? []) {
     if (parsed.data.mode === 'percent') {
@@ -691,6 +714,12 @@ async function runBulkAdjustPrices(
       const { error } = await supabase.from('products').update(patch).eq('id', p.id)
       if (error) return { error: error.message, updated }
       updated += 1
+      await recordPriceChange(history, {
+        productId: p.id,
+        kenyon_price: patch.kenyon_price,
+        full_price: patch.full_price ?? p.full_price,
+        status: p.status,
+      })
     } else {
       const nextAgorot = catalogueIlsToAgorot(parsed.data.value)
       if (nextAgorot == null) return { error: 'ערך מחיר לא תקין' }
@@ -706,6 +735,12 @@ async function runBulkAdjustPrices(
         .eq('id', p.id)
       if (error) return { error: error.message, updated }
       updated += 1
+      await recordPriceChange(history, {
+        productId: p.id,
+        kenyon_price: next,
+        full_price: p.full_price,
+        status: p.status,
+      })
     }
   }
 

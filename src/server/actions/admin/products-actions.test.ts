@@ -824,3 +824,161 @@ describe('restock hook (STEP 58)', () => {
     expect(notifyProductWaitlist).not.toHaveBeenCalled()
   })
 })
+
+describe('price history hook (STEP 59)', () => {
+  const priced = {
+    id: PRODUCT,
+    slug: 'old',
+    name_he: 'ישן',
+    status: 'active',
+    stock_quantity: 3,
+    kenyon_price: 100,
+    full_price: 150,
+  }
+
+  function historyInserts(): Call[] {
+    return calls.filter((c) => c.table === 'admin:price_history' && c.op === 'insert')
+  }
+
+  it('writes a change row through the service role when an edit moves the price', async () => {
+    queue('request:products.select', { data: priced, error: null })
+    queue('request:products.update', { data: { id: PRODUCT }, error: null })
+    override('admin:suppliers.select', { data: completeSupplier, error: null })
+    await upsertProduct(
+      null,
+      form({
+        ...physicalForm,
+        id: PRODUCT,
+        status: 'active',
+        kenyon_price: '90',
+        full_price: '150',
+      }),
+    )
+    expect(redirect).toHaveBeenCalledWith('/admin/products')
+    const [row] = historyInserts()
+    expect(row?.payload).toMatchObject({
+      product_id: PRODUCT,
+      price_agorot: 9000,
+      reference_agorot: 15000,
+      status: 'active',
+      source: 'change',
+    })
+    expect((row?.payload as { observed_on: string }).observed_on).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+  })
+
+  it('writes a row when only the struck-through price moves, and none when nothing moved', async () => {
+    queue('request:products.select', { data: priced, error: null })
+    queue('request:products.update', { data: { id: PRODUCT }, error: null })
+    override('admin:suppliers.select', { data: completeSupplier, error: null })
+    await upsertProduct(
+      null,
+      form({
+        ...physicalForm,
+        id: PRODUCT,
+        status: 'active',
+        kenyon_price: '100',
+        full_price: '160',
+      }),
+    )
+    expect(historyInserts()).toHaveLength(1)
+    expect(historyInserts()[0]?.payload).toMatchObject({
+      price_agorot: 10000,
+      reference_agorot: 16000,
+    })
+
+    calls.length = 0
+    override('request:products.select', { data: priced, error: null })
+    queue('request:products.update', { data: { id: PRODUCT }, error: null })
+    await upsertProduct(
+      null,
+      form({
+        ...physicalForm,
+        id: PRODUCT,
+        status: 'active',
+        kenyon_price: '100.00',
+        full_price: '150',
+      }),
+    )
+    expect(historyInserts()).toHaveLength(0)
+  })
+
+  it('gives a new product its first observation', async () => {
+    override('admin:suppliers.select', { data: completeSupplier, error: null })
+    await upsertProduct(null, form({ ...physicalForm, status: 'active' }))
+    expect(historyInserts()[0]?.payload).toMatchObject({
+      product_id: PRODUCT,
+      price_agorot: 10000,
+      status: 'active',
+      source: 'change',
+    })
+  })
+
+  it('a content_uploader cannot price, so no observation is written', async () => {
+    requireStaffSession.mockResolvedValue({ userId: USER, role: 'content_uploader' })
+    await upsertProduct(null, form({ ...physicalForm, status: 'active' }))
+    expect(historyInserts()).toHaveLength(0)
+  })
+
+  it('survives a refused write: the save still redirects', async () => {
+    queue('request:products.select', { data: priced, error: null })
+    queue('request:products.update', { data: { id: PRODUCT }, error: null })
+    override('admin:suppliers.select', { data: completeSupplier, error: null })
+    override('admin:price_history.insert', { data: null, error: { code: '42501', message: 'no' } })
+    await upsertProduct(
+      null,
+      form({
+        ...physicalForm,
+        id: PRODUCT,
+        status: 'active',
+        kenyon_price: '90',
+        full_price: '150',
+      }),
+    )
+    expect(redirect).toHaveBeenCalledWith('/admin/products')
+  })
+
+  it('bulk price changes observe every row they moved, in agorot', async () => {
+    queue('request:products.select', {
+      data: [
+        { id: P1, name_he: 'א', kenyon_price: 100, full_price: 150, status: 'active' },
+        { id: P2, name_he: 'ב', kenyon_price: 50, full_price: null, status: 'paused' },
+      ],
+      error: null,
+    })
+    expect(await bulkAdjustPrices([P1, P2], { mode: 'percent', value: -10 })).toEqual({
+      updated: 2,
+      skipped: [],
+    })
+    expect(historyInserts().map((c) => c.payload)).toEqual([
+      expect.objectContaining({
+        product_id: P1,
+        price_agorot: 9000,
+        reference_agorot: 13500,
+        status: 'active',
+        source: 'change',
+      }),
+      expect.objectContaining({
+        product_id: P2,
+        price_agorot: 4500,
+        reference_agorot: null,
+        status: 'paused',
+        source: 'change',
+      }),
+    ])
+
+    calls.length = 0
+    override('request:products.select', {
+      data: [{ id: P1, name_he: 'א', kenyon_price: 100, full_price: 150, status: 'active' }],
+      error: null,
+    })
+    expect(await bulkAdjustPrices([P1], { mode: 'set', value: 80 })).toEqual({
+      updated: 1,
+      skipped: [],
+    })
+    expect(historyInserts()[0]?.payload).toMatchObject({
+      product_id: P1,
+      price_agorot: 8000,
+      reference_agorot: 15000,
+    })
+  })
+})

@@ -301,3 +301,34 @@ describe('the cashback line under the price', () => {
     expect(line()).toBeNull()
   })
 })
+
+describe('price history mark (STEP 59)', () => {
+  it('renders nothing without a summary', () => {
+    render(<ProductInfo {...BASE} />)
+    expect(screen.queryByTestId('pdp-price-signal')).toBeNull()
+  })
+
+  it('calls the rendered price the lowest ever when it is at the earlier floor', () => {
+    render(
+      <ProductInfo
+        {...BASE}
+        priceHistory={{ previousAgorot: 20000, lowestBeforeTodayAgorot: 15000, observedDays: 8 }}
+      />,
+    )
+    const mark = screen.getByTestId('pdp-price-signal')
+    expect(mark).toHaveAttribute('data-signal', 'all-time-low')
+    expect(mark).toHaveTextContent('המחיר הנמוך ביותר אי פעם')
+  })
+
+  it('reports a drop against the previous day when the floor is lower still', () => {
+    render(
+      <ProductInfo
+        {...BASE}
+        priceHistory={{ previousAgorot: 20000, lowestBeforeTodayAgorot: 14000, observedDays: 8 }}
+      />,
+    )
+    const mark = screen.getByTestId('pdp-price-signal')
+    expect(mark).toHaveAttribute('data-signal', 'drop')
+    expect(mark).toHaveTextContent('ירד ב-25% לעומת המחיר הקודם')
+  })
+})
