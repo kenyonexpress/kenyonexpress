@@ -1,6 +1,8 @@
-import { readdirSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { PROCESSORS, pendingAgreements } from '@/lib/privacy/processors'
+import { CARRIER_IDS, CARRIER_REGISTRY } from '@/lib/shipping/carrier-registry'
+import { SHIPPING_METHODS } from '@/lib/shipping/methods'
 import { describe, expect, it } from 'vitest'
 import { LEGAL_DOCS } from './_content'
 import type { LegalDoc } from './_content/types'
@@ -19,9 +21,13 @@ import type { LegalDoc } from './_content/types'
  *  - a table row shorter than its header, which in the cancellation-window
  *    table renders a rule under the wrong column;
  *  - the four product facts the terms may not contradict, and the one word
- *    they may not contain.
+ *    they may not contain;
+ *  - a version stamp that disagrees with its own history, or a history that
+ *    runs backwards (STEP 51);
+ *  - a cookie the code sets and the cookie policy does not list (STEP 51).
  */
 const LEGAL_DIR = join(process.cwd(), 'src', 'app', '(legal)', 'legal')
+const STORE_DIR = join(process.cwd(), 'src', 'app', '(store)')
 
 function doc(slug: LegalDoc['slug']): LegalDoc {
   const found = LEGAL_DOCS.find((candidate) => candidate.slug === slug)
@@ -30,17 +36,49 @@ function doc(slug: LegalDoc['slug']): LegalDoc {
 }
 
 describe('every legal document is reachable', () => {
-  it('has one page directory per document, and no orphan directory', () => {
+  it.each(LEGAL_DOCS.map((d) => [d.slug, d] as const))(
+    '%s is served at its own path by a page that renders it',
+    (slug, document) => {
+      // The path is a field, not a derivation, so the thing to check is that a
+      // page exists AT that path and that it renders THIS document. A path
+      // typo here would otherwise be a footer link to a 404.
+      expect(document.path).toMatch(/^\/[a-z_-]+$/)
+      const page = join(STORE_DIR, document.path.slice(1), 'page.tsx')
+      expect(existsSync(page), `${document.path} has no page under (store)`).toBe(true)
+      expect(readFileSync(page, 'utf8')).toContain(`getLegalDoc('${slug}')`)
+    },
+  )
+
+  it('keeps every /legal/* directory a redirect onto a document that exists', () => {
+    // The old route group directories are 308 stubs onto the canonical paths.
+    // A directory there with no document behind it is an orphan; a document
+    // is NOT required to have one (shipping and cookies never lived there).
     const directories = readdirSync(LEGAL_DIR, { withFileTypes: true })
       .filter((entry) => entry.isDirectory())
       .map((entry) => entry.name)
-      .sort()
-
-    expect(directories).toEqual(LEGAL_DOCS.map((d) => d.slug).sort())
+    const slugs = new Set(LEGAL_DOCS.map((d) => d.slug))
+    for (const directory of directories) {
+      expect(slugs.has(directory as LegalDoc['slug']), `orphan /legal/${directory}`).toBe(true)
+      expect(readFileSync(join(LEGAL_DIR, directory, 'page.tsx'), 'utf8')).toContain(
+        'permanentRedirect(',
+      )
+    }
   })
 
-  it('lists the four documents the launch checklist names', () => {
-    expect(LEGAL_DOCS.map((d) => d.slug)).toEqual(['terms', 'privacy', 'returns', 'accessibility'])
+  it('lists the six documents the launch checklist names, in reading order', () => {
+    expect(LEGAL_DOCS.map((d) => d.slug)).toEqual([
+      'terms',
+      'privacy',
+      'cookies',
+      'returns',
+      'shipping',
+      'accessibility',
+    ])
+  })
+
+  it('gives every document a distinct path', () => {
+    const paths = LEGAL_DOCS.map((d) => d.path)
+    expect(new Set(paths).size).toBe(paths.length)
   })
 })
 
@@ -55,6 +93,41 @@ describe.each(LEGAL_DOCS.map((d) => [d.slug, d] as const))('%s', (_slug, documen
   it('has an update date that is a real ISO day', () => {
     expect(document.updatedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/)
     expect(Number.isNaN(new Date(document.updatedAt).getTime())).toBe(false)
+  })
+
+  it('carries a version and an effective date that match the last history entry', () => {
+    // The stamp at the top and the table at the bottom are read from the same
+    // fields, and this is what keeps them the same fact. A bumped `version`
+    // with no history row is the drift this catches.
+    expect(document.version).toMatch(/^\d+\.\d+$/)
+    expect(document.effectiveAt).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+    const current = document.history.at(-1)
+    expect(current).toBeDefined()
+    expect(current?.version).toBe(document.version)
+    expect(current?.effectiveAt).toBe(document.effectiveAt)
+  })
+
+  it('keeps the history ascending, with no repeated version', () => {
+    const versions = document.history.map((entry) => entry.version)
+    expect(new Set(versions).size).toBe(versions.length)
+    document.history.forEach((next, index) => {
+      expect(next.summary.length, next.version).toBeGreaterThan(20)
+      const previous = index > 0 ? document.history[index - 1] : undefined
+      if (!previous) return
+      expect(
+        next.effectiveAt >= previous.effectiveAt,
+        `${next.version} predates ${previous.version}`,
+      ).toBe(true)
+    })
+  })
+
+  it('was not updated before it first existed', () => {
+    // `updatedAt` moves on a typo fix; `effectiveAt` moves on a new version.
+    // The one order that cannot hold is a text last touched before its first
+    // version took effect.
+    const first = document.history[0]
+    expect(first).toBeDefined()
+    expect(document.updatedAt >= (first?.effectiveAt ?? '')).toBe(true)
   })
 
   it('says out loud that counsel has not approved it yet', () => {
@@ -228,5 +301,126 @@ describe('the accessibility statement names its standard and its gaps', () => {
 
   it('says no external audit has been done, while that is true', () => {
     expect(accessibility).toContain('מורשה נגישות שירות')
+  })
+})
+
+/**
+ * STEP 51: the shipping policy restates registries, and the cookie policy is
+ * an inventory. Both are checkable against the code they describe.
+ */
+describe('the shipping policy states what the registries say', () => {
+  const shipping = textOf(doc('shipping'))
+
+  it('says coupons are delivered by email, not shipped', () => {
+    expect(shipping).toContain('אינם נשלחים בדואר')
+    expect(shipping).toContain('QR')
+  })
+
+  it('names every shipping method by its registry label and description', () => {
+    for (const method of SHIPPING_METHODS) {
+      expect(shipping).toContain(method.label)
+      expect(shipping).toContain(method.description)
+    }
+  })
+
+  it('says shipping is free, because every zone is seeded free', () => {
+    expect(shipping).toContain('ללא תשלום')
+  })
+
+  it('names every carrier service the platform can quote', () => {
+    for (const id of CARRIER_IDS) {
+      const carrier = CARRIER_REGISTRY[id]
+      expect(shipping).toContain(carrier.label)
+      for (const service of carrier.services) {
+        expect(shipping, `${carrier.label}: ${service.label}`).toContain(service.label)
+      }
+    }
+  })
+
+  it('never promises a delivery faster than the method text does', () => {
+    // The method description is "3-7 ימי עסקים"; the bands narrow it, and the
+    // page says 7 is the outer edge. A "עד 10 ימי עסקים" here would be a
+    // policy promising less than the checkout does.
+    expect(shipping).toContain('לא יעלה על 7 ימי עסקים')
+  })
+
+  it('counts business days the way the terms do', () => {
+    expect(shipping).toContain('ראשון עד חמישי')
+  })
+
+  it('sends cancellation and refund questions to the returns policy', () => {
+    expect(shipping).toContain('מדיניות הביטולים וההחזרות')
+  })
+})
+
+/**
+ * Every `ke_` key the code declares, found by scanning the source rather than
+ * listed here, so a new cookie fails this test until the policy names it.
+ */
+function declaredBrowserKeys(): string[] {
+  const roots = ['src/lib', 'src/components', 'src/server', 'src/app'].map((dir) =>
+    join(process.cwd(), dir),
+  )
+  const found = new Set<string>()
+  const visit = (dir: string): void => {
+    for (const entry of readdirSync(dir)) {
+      const full = join(dir, entry)
+      if (statSync(full).isDirectory()) {
+        visit(full)
+        continue
+      }
+      if (!/\.(ts|tsx)$/.test(entry) || /\.test\.|\.spec\./.test(entry)) continue
+      // Only the legal content itself is excluded: it is the thing under test.
+      if (full.includes(join('(legal)', '_content'))) continue
+      const text = readFileSync(full, 'utf8')
+      for (const match of text.matchAll(/'(ke_[a-z0-9_]+)'/g)) {
+        if (match[1]) found.add(match[1])
+      }
+    }
+  }
+  for (const root of roots) if (existsSync(root)) visit(root)
+  return [...found].sort()
+}
+
+describe('the cookie policy is a complete inventory', () => {
+  const cookies = textOf(doc('cookies'))
+
+  it('found the keys it is checking against', () => {
+    // A guard on the guard: the scan passing trivially because it stopped
+    // finding files is the failure a scanner has.
+    const keys = declaredBrowserKeys()
+    expect(keys).toContain('ke_session_id')
+    expect(keys).toContain('ke_consent')
+    expect(keys.length).toBeGreaterThan(10)
+  })
+
+  it.each(declaredBrowserKeys())('names %s', (key) => {
+    expect(cookies).toContain(key)
+  })
+
+  it('names the three categories the consent code has', () => {
+    expect(cookies).toContain('הכרחי')
+    expect(cookies).toContain('מדידת שימוש באתר')
+    expect(cookies).toContain('מדידת פרסום')
+  })
+
+  it('says where the decision can be changed, and that DNT is a refusal', () => {
+    expect(cookies).toContain('פרטיות ונתונים')
+    expect(cookies).toContain('Do Not Track')
+    expect(cookies).toContain('Global Privacy Control')
+  })
+
+  it('names the vendors that only load after consent', () => {
+    for (const vendor of ['PostHog', 'Google Analytics', 'Meta Pixel', 'Cardcom']) {
+      expect(cookies).toContain(vendor)
+    }
+  })
+
+  it('is what the privacy policy defers to', () => {
+    expect(textOf(doc('privacy'))).toContain('מדיניות העוגיות')
+  })
+
+  it('is what the terms defer to for delivery', () => {
+    expect(textOf(doc('terms'))).toContain('מדיניות המשלוחים')
   })
 })

@@ -10,8 +10,12 @@ import { describe, expect, it } from 'vitest'
  * results already point at:
  *
  *   /cancellation-policy -> /refund_returns
+ *   /returns             -> /refund_returns
  *   /terms               -> /terms-and-conditions
  *   /privacy             -> /privacy-policy
+ *
+ * `/shipping` and `/cookies` (STEP 51) are pages, not aliases: they have no
+ * WordPress ancestor, so the short path is the only path.
  *
  * A second PAGE for the same policy is the failure this avoids. Two routes
  * rendering one cancellation policy drift, and then the site states two
@@ -25,6 +29,7 @@ const config = readFileSync(resolve(process.cwd(), 'next.config.ts'), 'utf8')
 
 const ALIASES: ReadonlyArray<[string, string]> = [
   ['/cancellation-policy', '/refund_returns'],
+  ['/returns', '/refund_returns'],
   ['/terms', '/terms-and-conditions'],
   ['/privacy', '/privacy-policy'],
 ]

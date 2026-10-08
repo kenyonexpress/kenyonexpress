@@ -31,8 +31,10 @@ import { describe, expect, it } from 'vitest'
 
 const CANONICAL = [
   'src/app/(store)/accessibility/page.tsx',
+  'src/app/(store)/cookies/page.tsx',
   'src/app/(store)/privacy-policy/page.tsx',
   'src/app/(store)/refund_returns/page.tsx',
+  'src/app/(store)/shipping/page.tsx',
   'src/app/(store)/terms-and-conditions/page.tsx',
 ]
 
@@ -66,7 +68,9 @@ function legalPages(): string[] {
   return (
     walk(resolve(cwd, 'src/app'))
       .map((file) => relative(cwd, file).split('\\').join('/'))
-      .filter((file) => /terms|privacy|accessib|refund_returns|legal\//.test(file))
+      .filter((file) =>
+        /terms|privacy|accessib|refund_returns|legal\/|\(store\)\/(shipping|cookies)\//.test(file),
+      )
       .filter((file) => !file.includes('/checkout/'))
       // /account/privacy is the GDPR self-service screen (export + deletion),
       // a settings page that LINKS to the documents; it does not render one.
@@ -135,6 +139,8 @@ describe('the legal document inventory', () => {
       ['privacy-policy', 'privacy'],
       ['refund_returns', 'returns'],
       ['accessibility', 'accessibility'],
+      ['shipping', 'shipping'],
+      ['cookies', 'cookies'],
     ] as const) {
       const page = readFileSync(resolve(process.cwd(), `src/app/(store)/${path}/page.tsx`), 'utf8')
       expect(page, `/${path} does not render the promoted document`).toContain(

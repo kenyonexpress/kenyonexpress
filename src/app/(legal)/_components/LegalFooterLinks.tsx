@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { LEGAL_DOCS } from '../_content'
 
 /**
- * The four legal pages, as one link list.
+ * The legal pages, as one link list.
  *
  * One component rather than a copied `<ul>` per page, because the failure mode
  * of a copied list is a legal page that does not link to the policy it defers
@@ -10,7 +10,10 @@ import { LEGAL_DOCS } from '../_content'
  * privacy question to the privacy policy; if one of those links is missing on
  * one page, the deferral goes nowhere.
  *
- * It reads `LEGAL_DOCS`, so a fifth document appears here by existing.
+ * It reads `LEGAL_DOCS`, so a new document appears here by existing, and it
+ * links each document's own `path`: the terms live at `/terms-and-conditions`
+ * and the cancellation policy at `/refund_returns`, and a link built from the
+ * slug would send every reader through a 308 to get there.
  *
  * `current` drops the page's own link from the list and marks it, which is what
  * keeps it useful as a site-wide footer block too: rendered inside
@@ -36,7 +39,7 @@ export default function LegalFooterLinks({
                 </span>
               ) : (
                 <Link
-                  href={`/legal/${doc.slug}`}
+                  href={doc.path}
                   title={doc.description}
                   className="text-heading/80 underline underline-offset-4 hover:text-heading"
                 >

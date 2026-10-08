@@ -28,14 +28,49 @@ export interface LegalSection {
   blocks: LegalBlock[]
 }
 
+/**
+ * One published version of a document.
+ *
+ * A legal page is quoted back later: "the terms in force when I bought". The
+ * date a wording was PUBLISHED and the date it TOOK EFFECT are two different
+ * facts, and a dispute turns on the second. Each entry carries both and a
+ * one-line summary of what changed, so the page itself is the changelog and
+ * nobody reconstructs it from git.
+ */
+export interface LegalVersion {
+  /** `major.minor`. A new obligation on the reader is a major; wording is a minor. */
+  version: string
+  /** ISO date this version became binding. */
+  effectiveAt: string
+  /** What changed, in one sentence a customer can read. */
+  summary: string
+}
+
+export type LegalSlug = 'terms' | 'privacy' | 'cookies' | 'returns' | 'shipping' | 'accessibility'
+
 export interface LegalDoc {
-  /** Path segment under `/legal`. */
-  slug: 'terms' | 'privacy' | 'returns' | 'accessibility'
+  /** Stable identifier; also the key `getLegalDoc` is called with. */
+  slug: LegalSlug
+  /**
+   * The public URL the document is served at. NOT derived from the slug: the
+   * terms live at `/terms-and-conditions` and the cancellation policy at
+   * `/refund_returns`, because those are the WordPress paths receipts print
+   * and search engines hold, and `next.config.ts` 308s the short English
+   * names onto them. One field here, read by the footer, the sitemap and the
+   * page metadata, so the three cannot disagree about where a policy lives.
+   */
+  path: string
   title: string
   /** Sentence for `<meta name="description">` and for the footer link title. */
   description: string
   /** ISO date, shown to the reader. A wording change is a new date. */
   updatedAt: string
+  /** The version currently in force. Equals the last entry of `history`. */
+  version: string
+  /** ISO date the current version became binding. Equals the last entry of `history`. */
+  effectiveAt: string
+  /** Every published version, oldest first. The last entry is the current one. */
+  history: LegalVersion[]
   /** Opening paragraphs, before the numbered sections and the contents list. */
   intro: string[]
   sections: LegalSection[]

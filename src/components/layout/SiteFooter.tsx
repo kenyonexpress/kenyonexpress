@@ -47,6 +47,12 @@ const SERVICE_LINKS: { label: string; href: string; built?: false }[] = [
   { label: 'תקנון', href: '/terms-and-conditions' },
   { label: 'מדיניות פרטיות', href: '/privacy-policy' },
   { label: 'ביטולים והחזרות', href: '/refund_returns' },
+  // STEP 51: the two policies the four above defer to. The privacy policy
+  // hands the full cookie inventory to /cookies and the terms hand delivery to
+  // /shipping; a deferral with no footer link is a policy found only by
+  // reading another policy.
+  { label: 'משלוחים ואספקה', href: '/shipping' },
+  { label: 'מדיניות עוגיות', href: '/cookies' },
   { label: 'הצהרת נגישות', href: '/accessibility' },
 ]
 

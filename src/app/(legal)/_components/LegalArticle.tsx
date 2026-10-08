@@ -129,6 +129,113 @@ function Blocks({ blocks, sectionNumber }: { blocks: LegalBlock[]; sectionNumber
   )
 }
 
+/**
+ * A fixed Hebrew date for a legal page.
+ *
+ * `he-IL` and `Asia/Jerusalem` are pinned rather than inherited from the
+ * runtime: the page is prerendered once, on a server whose locale and zone are
+ * whatever the host set, and a date string that moved by a day between the
+ * build machine and the reader's browser is a hydration mismatch on the one
+ * line of the page a dispute turns on (lib/i18n/format.ts records the class).
+ * An ISO day has no time, so it is parsed as UTC midnight and formatted in the
+ * site's zone, which is the same calendar day.
+ */
+function hebrewDate(isoDay: string): string {
+  return new Date(`${isoDay}T00:00:00Z`).toLocaleDateString('he-IL', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  })
+}
+
+/**
+ * Version, effective date and last-updated, ABOVE the fold and set off from
+ * the body.
+ *
+ * The three are different facts, and a reader quoting the page needs all of
+ * them: the version is what a receipt or a support macro names, the effective
+ * date is when it started binding, and the updated date is when the text last
+ * changed at all (a typo fix moves it; a new obligation moves the version).
+ * `<dl>` because they are name/value pairs, and `<time dateTime>` because the
+ * machine-readable ISO day is what a crawler and a screen reader get.
+ */
+function VersionStamp({ doc }: { doc: LegalDoc }) {
+  return (
+    <dl
+      aria-label="גרסה ותוקף"
+      className="mt-4 grid grid-cols-1 gap-x-8 gap-y-2 rounded-xl border-2 border-heading/20 bg-heading/5 px-5 py-4 text-sm sm:grid-cols-3"
+    >
+      <div>
+        <dt className="text-heading/70">גרסה</dt>
+        <dd className="text-base font-bold text-heading tabular-nums">{doc.version}</dd>
+      </div>
+      <div>
+        <dt className="text-heading/70">בתוקף מיום</dt>
+        <dd className="text-base font-bold text-heading">
+          <time dateTime={doc.effectiveAt}>{hebrewDate(doc.effectiveAt)}</time>
+        </dd>
+      </div>
+      <div>
+        <dt className="text-heading/70">עודכן לאחרונה</dt>
+        <dd className="text-base font-bold text-heading">
+          <time dateTime={doc.updatedAt}>{hebrewDate(doc.updatedAt)}</time>
+        </dd>
+      </div>
+    </dl>
+  )
+}
+
+/**
+ * Every published version, oldest first, after the clauses.
+ *
+ * Rendered from `doc.history` rather than written as a clause so the current
+ * version in the stamp and the last row here are the same object, and the
+ * test can hold that they agree. A customer who bought under 1.0 can see here
+ * what 1.1 changed, without a diff tool.
+ */
+function VersionHistory({ doc }: { doc: LegalDoc }) {
+  return (
+    <section
+      id="version-history"
+      aria-labelledby="legal-history"
+      className="mt-10 scroll-mt-28 space-y-4 text-base leading-relaxed text-heading/90"
+    >
+      <h2 id="legal-history" className="text-xl font-bold text-heading">
+        היסטוריית גרסאות
+      </h2>
+      <table className="w-full border-collapse text-start text-sm">
+        <thead>
+          <tr>
+            {['גרסה', 'בתוקף מיום', 'מה השתנה'].map((cell) => (
+              <th
+                key={cell}
+                scope="col"
+                className="border border-heading/15 bg-heading/5 px-3 py-2 text-start font-semibold text-heading"
+              >
+                {cell}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {doc.history.map((entry) => (
+            <tr key={entry.version}>
+              <td className="border border-heading/15 px-3 py-2 align-top font-semibold text-heading tabular-nums">
+                {entry.version}
+              </td>
+              <td className="border border-heading/15 px-3 py-2 align-top whitespace-nowrap">
+                <time dateTime={entry.effectiveAt}>{hebrewDate(entry.effectiveAt)}</time>
+              </td>
+              <td className="border border-heading/15 px-3 py-2 align-top">{entry.summary}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </section>
+  )
+}
+
 export default function LegalArticle({
   doc,
   children,
@@ -137,12 +244,6 @@ export default function LegalArticle({
   /** Rendered after the last section: the contact block each page supplies. */
   children?: React.ReactNode
 }) {
-  const updated = new Date(doc.updatedAt).toLocaleDateString('he-IL', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  })
-
   return (
     <div className="mx-auto w-full max-w-page px-4 py-10">
       <nav aria-label="נתיב ניווט" className="mb-6 text-sm text-heading/80">
@@ -157,9 +258,7 @@ export default function LegalArticle({
 
       <header className="mb-8 max-w-3xl">
         <h1 className="text-3xl font-bold text-heading">{doc.title}</h1>
-        <p className="mt-2 text-sm text-heading/75">
-          עודכן לאחרונה: <time dateTime={doc.updatedAt}>{updated}</time>
-        </p>
+        <VersionStamp doc={doc} />
       </header>
 
       {doc.reviewNotice && (
@@ -212,6 +311,10 @@ export default function LegalArticle({
           </section>
         ))}
       </article>
+
+      <div className="max-w-3xl">
+        <VersionHistory doc={doc} />
+      </div>
 
       <div className="max-w-3xl">{children}</div>
 

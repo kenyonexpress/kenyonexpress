@@ -1,5 +1,5 @@
+import { LEGAL_DOCS } from '@/app/(legal)/_content'
 import { sortedPosts } from '@/content/blog'
-import { LEGAL_PAGE_SLUGS, getLegalPage } from '@/content/legal'
 import { CacheLife, CacheTags } from '@/lib/cache/tags'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { orFail } from '@/lib/catalogue-read'
@@ -162,11 +162,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })),
     // The legal pages DO carry a date, because they have one: `updatedAt` is a
     // field of the document, so unlike `/contact` there is a real signal to
-    // publish. They are also the four addresses the old site already has
-    // indexed, which is why they are listed rather than left to be found.
-    ...LEGAL_PAGE_SLUGS.map((slug) => ({
-      url: `${base}/${slug}`,
-      lastModified: new Date(getLegalPage(slug).updatedAt),
+    // publish. Four of them are the addresses the old site already has
+    // indexed, which is why they are listed rather than left to be found; the
+    // registry is the served set (`(legal)/_content`), read by each document's
+    // own `path`, so a document cannot be served and missing from here.
+    ...LEGAL_DOCS.map((doc) => ({
+      url: `${base}${doc.path}`,
+      lastModified: new Date(doc.updatedAt),
       changeFrequency: 'yearly' as const,
       priority: 0.3,
     })),

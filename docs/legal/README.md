@@ -3,18 +3,42 @@
 מסמך תפעולי: מה נבנה, איפה זה יושב, למה בכתובות האלה, ומה נשאר לעשות
 לפני פרסום מסחרי. המפרט המחייב הוא `docs/ARCHITECTURE-LEGAL-PAGES.md`.
 
-עודכן: 19.08.2026
+עודכן: 08.10.2026 (STEP 51)
 
 ---
 
 ## 1. מה קיים
 
-| מסמך | קובץ תוכן | עמוד | כתובת |
+שישה מסמכים, כולם מוגשים מתחת ל-`src/app/(store)` בכתובת שכתובה בשדה
+`path` של המסמך עצמו. ארבעת הראשונים שומרים את כתובות WordPress שמודפסות
+על קבלות ומאונדקסות; `/shipping` ו-`/cookies` חדשים ואין להם כתובת ישנה.
+`/terms`, `/privacy` ו-`/returns` הם הפניות 308 ב-`next.config.ts`;
+`/legal/*` הם stubs של 308 על ארבעת הישנים בלבד.
+
+| מסמך | קובץ תוכן | כתובת | גרסה נוכחית |
 |---|---|---|---|
-| תקנון האתר ותנאי שימוש | `_content/terms.ts` | `legal/terms/page.tsx` | `/legal/terms` |
-| מדיניות פרטיות (תיקון 13) | `_content/privacy.ts` | `legal/privacy/page.tsx` | `/legal/privacy` |
-| מדיניות ביטולים והחזרות | `_content/returns.ts` | `legal/returns/page.tsx` | `/legal/returns` |
-| הצהרת נגישות (ת"י 5568 AA) | `_content/accessibility.ts` | `legal/accessibility/page.tsx` | `/legal/accessibility` |
+| תקנון האתר ותנאי שימוש | `_content/terms.ts` | `/terms-and-conditions` (גם `/terms`) | 1.1 מ-08.10.2026 |
+| מדיניות פרטיות (תיקון 13) | `_content/privacy.ts` | `/privacy-policy` (גם `/privacy`) | 2.1 מ-08.10.2026 |
+| מדיניות עוגיות | `_content/cookies.ts` | `/cookies` | 1.0 מ-08.10.2026 |
+| מדיניות ביטולים והחזרות | `_content/returns.ts` | `/refund_returns` (גם `/returns`, `/cancellation-policy`) | 1.0 מ-31.08.2026 |
+| מדיניות משלוחים ואספקה | `_content/shipping.ts` | `/shipping` | 1.0 מ-08.10.2026 |
+| הצהרת נגישות (ת"י 5568 AA) | `_content/accessibility.ts` | `/accessibility` | 1.1 מ-07.10.2026 |
+
+### גרסאות ותוקף (STEP 51)
+
+כל מסמך נושא `version`, `effectiveAt` ו-`history`. הרנדרר מציג בראש העמוד
+חותמת בולטת של גרסה, "בתוקף מיום" ו"עודכן לאחרונה", ובתחתיתו טבלת
+היסטוריית גרסאות שנבנית מאותו מערך. הבדיקה מחזיקה שהרשומה האחרונה
+ב-`history` שווה ל-`version`/`effectiveAt`, שההיסטוריה עולה ושאין גרסה
+כפולה. שינוי נוסח = רשומה חדשה ב-`history` ועדכון של שלושת השדות.
+
+### מה נגזר מהקוד ולא נכתב ביד
+
+- `shipping.ts`: שיטות המשלוח מ-`lib/shipping/methods.ts`, שירותי
+  חברות השילוח מ-`lib/shipping/carrier-registry.ts`, ורצועות זמני האספקה
+  מ-`lib/shipping/estimate.ts`.
+- `cookies.ts`: כל שם עוגייה מיובא מהקבוע שמציב אותה. הבדיקה סורקת את
+  כל `'ke_*'` ב-`src/` ונכשלת על עוגייה שהקוד מציב והמדיניות לא מונה.
 
 רכיבים משותפים:
 

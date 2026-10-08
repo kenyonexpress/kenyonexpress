@@ -144,6 +144,7 @@ const nextConfig: NextConfig = {
       // The English spellings the goal and the docs use, for the same reason.
       { source: '/terms', destination: '/terms-and-conditions', permanent: true },
       { source: '/privacy', destination: '/privacy-policy', permanent: true },
+      { source: '/returns', destination: '/refund_returns', permanent: true },
     ]
   },
   turbopack: {
