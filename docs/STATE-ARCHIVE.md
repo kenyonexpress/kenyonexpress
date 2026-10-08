@@ -22354,3 +22354,38 @@ The runner's `final-done.txt` lists M01–M10 of c113 as finished. This branch's
 - Change: a re-scan note in `docs/BACKLOG.md`. No code change.
 - Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (30 `supabase.timeout`, 18 `db.query_failed`, 18 `fetch failed`, 84 `db.query_slow`, all recovered). Not a UI change, so compare.mjs does not apply (blocker 0). `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
 - Moved from STATE.md (verbatim): `Last item: **M06-c121 DONE** (2026-10-08): `pnpm build` exit 0 on attempt 1 at HEAD `36ce2928d` plus the uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` edits: 0 `supabase.timeout`, 0 `db.query_failed`, 0 `fetch failed`, 4 `db.query_slow` warnings, and the known `reviews` 42501 (401) from pending 231. No drift, no code change. Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped). Not a UI change, so compare.mjs does not apply (it still refuses, blocker 0). See the M06-c121 section in the archive.`
+
+## M08-c121: Lighthouse mobile on / and /product, run 2026-10-08 in the foreground
+
+Setup: the same as M08-c120. Lighthouse 13.4.1 from the repo (`pnpm exec lighthouse <url> --form-factor=mobile --chrome-flags="--headless=new --no-sandbox" --output=json`) with default `simulate` throttling. The target was `pnpm start -p 3523` on a clean production build made in this run, from HEAD `333653b37` plus the uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` edits. The sample product is `/product/מוצר-לדוגמא` (200 locally). One warm-up curl per page came first (home 200 in 0.82 s, product 200 in 0.32 s). Runs 1–6 per page were interleaved. A `next build` in `~/kenyonexpress-autopilot` (another repo, not this one) started at 16:33 during runs 5–6 and pushed load averages to 71.97 / 109.65 / 80.75. Runs 7–9 per page were added after that build ended and the 1-minute load fell under 8 (3.98 to 11.36 during runs 7–9). Port 3519 (an older `next start`) and an orphaned headless Chrome from 7 h earlier were already running. Neither belonged to this run, and both were left alone.
+
+| Page | Run | Perf | A11y | BP | SEO | FCP | LCP (sim) | TBT | CLS | SI | Observed LCP | benchmarkIndex |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| / | 1 | 56 | 100 | 96 | 100 | 1.7 s | 5.1 s | 1,260 ms | 0.006 | 2.6 s | 1260 ms | 526 |
+| / | 2 | 81 | 100 | 96 | 100 | 1.4 s | 3.1 s | 480 ms | 0.003 | 1.4 s | 394 ms | 1184 |
+| / | 3 | 55 | 100 | 96 | 100 | 1.9 s | 4.1 s | 4,690 ms | 0.003 | 3.2 s | 1065 ms | 1062 |
+| / | 4 | 50 | 100 | 96 | 100 | 1.9 s | 5.8 s | 1,660 ms | 0 | 2.8 s | 1274 ms | 269.5 |
+| / | 5 | 45 | 100 | 96 | 100 | 1.4 s | 8.5 s | 8,240 ms | 0 | 2.1 s | 650 ms | 1071 |
+| / | 6 | 59 | 100 | 96 | 100 | 1.4 s | 4.1 s | 1,770 ms | 0 | 2.9 s | 1774 ms | 1349 |
+| / | 7 | 80 | 100 | 96 | 100 | 1.8 s | 4.8 s | 40 ms | 0.003 | 3.5 s | 1798 ms | 3148 |
+| / | 8 | 72 | 100 | 96 | 100 | 1.9 s | 5.1 s | 340 ms | 0.003 | 1.9 s | 552 ms | 1493.5 |
+| / | 9 | 79 | 100 | 96 | 100 | 1.8 s | 5.4 s | 30 ms | 0 | 1.8 s | 208 ms | 3770 |
+| /product/מוצר-לדוגמא | 1 | 74 | 100 | 96 | 100 | 1.8 s | 5.2 s | 260 ms | 0.001 | 3.5 s | 1341 ms | 943 |
+| /product/מוצר-לדוגמא | 2 | 80 | 100 | 96 | 100 | 1.8 s | 4.6 s | 160 ms | 0.001 | 1.8 s | 330 ms | 1034.5 |
+| /product/מוצר-לדוגמא | 3 | 56 | 100 | 96 | 100 | 1.8 s | 3.8 s | 6,100 ms | 0 | 3.7 s | 1414 ms | 1241 |
+| /product/מוצר-לדוגמא | 4 | NO_FCP | – | – | – | – | – | – | – | – | – | – |
+| /product/מוצר-לדוגמא | 5 | 78 | 100 | 96 | 100 | 1.8 s | 4.5 s | 260 ms | 0.001 | 1.8 s | 499 ms | 1260 |
+| /product/מוצר-לדוגמא | 6 | 41 | 100 | 96 | 100 | 1.9 s | 5.6 s | 1,740 ms | 0 | 13.5 s | 8664 ms | 134.5 |
+| /product/מוצר-לדוגמא | 7 | 54 | 100 | 96 | 100 | 1.8 s | 4.6 s | 2,030 ms | 0.001 | 3.2 s | 1469 ms | 1005 |
+| /product/מוצר-לדוגמא | 8 | 88 | 100 | n/a | 100 | 1.7 s | 3.6 s | 140 ms | 0.001 | 1.7 s | 404 ms | 1354 |
+| /product/מוצר-לדוגמא | 9 | 84 | 100 | 96 | 100 | 1.8 s | 4.3 s | 50 ms | 0.001 | 1.8 s | 94 ms | 3879 |
+
+- **Median Performance over all valid runs: home 59 (9 runs), product 76 (8 runs).** **On the settled host (runs 7–9): home 79, product 84**, the same as M08-c119 (79 / 84) and close to M08-c118 (78 / 84). M08-c120 was 59 / 80 on a loaded host. Accessibility 100 and SEO 100 on all 17 scored runs. Best Practices 96 on 16 runs.
+- Product run 4 exited 1 with `NO_FCP` ("The page did not paint any content") during peak host load. Product run 8 has a null Best Practices score because Lighthouse's `charset` gatherer failed (`Network.getResponseBody: No data found for resource`). Both are tool errors and are excluded from the affected medians.
+- The spread is TBT again: 30 ms to 8,240 ms across the same build. The low-perf runs line up with low or erratic `benchmarkIndex` (134.5 to 1349) and with the autopilot build. Runs 7–9 had `benchmarkIndex` up to 3879 and TBT of 30 to 340 ms, with one exception: product run 7 had 2,030 ms. No source changed between M08-c120 (`2178f914d`) and HEAD `333653b37`: `git diff --stat 2178f914d HEAD -- src packages next.config.* package.json pnpm-lock.yaml` is empty. **Decision:** the settled-host median 79 / 84 is the comparable number. The loaded-host runs are host noise, not a regression.
+- The simulated LCP (3.1–8.5 s) is the Lantern model. The observed LCP was 94–1798 ms, plus 8664 ms on the loaded product run 6. A localhost score is a relative signal, not a field score (`docs/PERFORMANCE-BUDGET.md`).
+- The largest LCP saving is still `unused-javascript`: 600 ms on most runs, 300–750 ms overall, and 0 on home run 2. It is recorded and not acted on, because this item only measures.
+- Best Practices 96 is `errors-in-console` only. Every run has the same 5 local errors: `/_vercel/insights/script.js` and `/_vercel/speed-insights/script.js` return 404 off Vercel and are then refused on MIME type, plus one `ERR_SSL_PROTOCOL_ERROR` (an HSTS upgrade of `/login?next=/account/wishlist` on http localhost). Home run 8 also logged one `/api/cart` 500, which lines up with a `db.query_failed` `fetch failed` on `carts` in the server log at 09:39:28Z (blocker 7, network). None of these is a production finding.
+- Build: exit 0 on attempt 1 with 26 recovered `supabase.timeout`. The server log has 73 `supabase.timeout` and several `fetch failed` reads on `v_banners_live`, `v_homepage_sections_live`, `products` and `carts` (blocker 7).
+- No code change. Gates in this run: `pnpm build` 0 (attempt 1), `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6474 passed, 12 skipped). Not a UI change, so compare.mjs does not apply (it is blocked anyway, see blocker 0). `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` are still uncommitted and are not part of this commit.
+- Moved from STATE.md (verbatim): `Last item: **M07-c121 DONE** (2026-10-08): TODO/FIXME re-scan at HEAD `ff5fa1341` is unchanged: only `cardcom.ts:254` (2026-07-24) and `cardcom.ts:319` (2026-08-07) match, both already filed as B1 (#41) and B2 (#42); the uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` have no markers; `node scripts/final-audit.mjs` reports 0 untracked work markers (of 2). Nothing to resolve; re-scan note added to `docs/BACKLOG.md`. Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (30 recoverable `supabase.timeout`). Not a UI change, so compare.mjs does not apply (it still refuses, blocker 0). See the M07-c121 section in the archive.`
