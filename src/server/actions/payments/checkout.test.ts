@@ -806,3 +806,116 @@ describe('reconcileOrderReturn: the return page after the card was charged', () 
     expect(result).toMatchObject({ status: 'pending', reason: 'payment read failed' })
   })
 })
+
+/**
+ * Flash-sale holds at the checkout (STEP 61). A line the cart priced from a
+ * hold is bound to the order BEFORE the stock reservation, and a hold that
+ * lapsed in between fails the checkout closed with its own code instead of
+ * charging the flash price; a cart with no flash line never calls the RPC.
+ */
+describe('beginCheckout: flash-sale holds', () => {
+  const FLASH_SALE = '77777777-7777-4777-8777-777777777777'
+
+  function cartWithFlashLine() {
+    const cart = cartWithOnePhysicalLine()
+    cart.items[0] = {
+      ...cart.items[0],
+      unit_price: agorot(3000),
+      flash_sale_id: FLASH_SALE,
+    } as never
+    return cart
+  }
+
+  function queueThroughOrderItems(): void {
+    queue('user_addresses.select', { data: { id: ADDRESS_ID, user_id: USER_ID }, error: null })
+    queue('payments.select', { data: null, error: null })
+    queue('products.select', { data: [PRODUCT_ROW], error: null })
+    queue('suppliers.select', { data: [{ id: SUPPLIER_ID, name: 'בית עסק' }], error: null })
+    queue('orders.insert', { data: { id: ORDER_ID }, error: null })
+    queue('order_items.insert', { data: null, error: null })
+  }
+
+  it('never calls the bind RPC for a cart with no flash line', async () => {
+    queueThroughReservation()
+    provider.createLowProfile.mockResolvedValue({ ok: false, error: 'stop here' })
+    await beginCheckout(input())
+    expect(calls.some((c) => c.table === 'rpc:bind_flash_sale_claims')).toBe(false)
+  })
+
+  it('binds the hold to the order before reserving stock, with the reservation TTL', async () => {
+    getCart.mockResolvedValue(cartWithFlashLine())
+    queueThroughOrderItems()
+    queue('rpc:bind_flash_sale_claims.rpc', {
+      data: [
+        { flash_sale_id: FLASH_SALE, product_id: PRODUCT_ID, price_agorot: 3000, quantity: 1 },
+      ],
+      error: null,
+    })
+    queue('rpc:reserve_order_stock.rpc', { data: [], error: null })
+    provider.createLowProfile.mockResolvedValue({ ok: false, error: 'stop here' })
+
+    await beginCheckout(input())
+
+    const bind = calls.findIndex((c) => c.table === 'rpc:bind_flash_sale_claims')
+    const reserve = calls.findIndex((c) => c.table === 'rpc:reserve_order_stock')
+    expect(bind).toBeGreaterThan(-1)
+    expect(reserve).toBeGreaterThan(bind)
+    expect(calls[bind]?.payload).toEqual({ p_order: ORDER_ID, p_user: USER_ID, p_ttl_minutes: 15 })
+  })
+
+  it('fails closed with its own code when the hold lapsed, cancels the order and reserves nothing', async () => {
+    getCart.mockResolvedValue(cartWithFlashLine())
+    queueThroughOrderItems()
+    queue('rpc:bind_flash_sale_claims.rpc', { data: [], error: null })
+
+    const result = await beginCheckout(input())
+
+    expect(result).toMatchObject({ ok: false, code: 'FLASH_HOLD_LAPSED' })
+    expect(calls.some((c) => c.table === 'rpc:reserve_order_stock')).toBe(false)
+    expect(calls.some((c) => c.table === 'rpc:unbind_flash_sale_claims')).toBe(true)
+    const cancel = calls.find((c) => c.table === 'orders' && c.op === 'update')
+    expect(cancel?.payload).toEqual({ status: 'cancelled' })
+  })
+
+  it('refuses a hold that covers fewer units than the line asks for', async () => {
+    const cart = cartWithFlashLine()
+    cart.items[0] = { ...cart.items[0], quantity: 2 } as never
+    getCart.mockResolvedValue(cart)
+    queueThroughOrderItems()
+    queue('rpc:bind_flash_sale_claims.rpc', {
+      data: [
+        { flash_sale_id: FLASH_SALE, product_id: PRODUCT_ID, price_agorot: 3000, quantity: 1 },
+      ],
+      error: null,
+    })
+    const result = await beginCheckout(input())
+    expect(result).toMatchObject({ ok: false, code: 'FLASH_HOLD_LAPSED' })
+  })
+
+  it('fails closed, not open, when the bind RPC itself dies', async () => {
+    getCart.mockResolvedValue(cartWithFlashLine())
+    queueThroughOrderItems()
+    queue('rpc:bind_flash_sale_claims.rpc', READ_FAILED)
+    const result = await beginCheckout(input())
+    expect(result).toMatchObject({ ok: false, code: 'INTERNAL' })
+    expect(calls.some((c) => c.table === 'rpc:reserve_order_stock')).toBe(false)
+  })
+
+  it('hands the hold back when the stock reservation falls short after the bind', async () => {
+    getCart.mockResolvedValue(cartWithFlashLine())
+    queueThroughOrderItems()
+    queue('rpc:bind_flash_sale_claims.rpc', {
+      data: [
+        { flash_sale_id: FLASH_SALE, product_id: PRODUCT_ID, price_agorot: 3000, quantity: 1 },
+      ],
+      error: null,
+    })
+    queue('rpc:reserve_order_stock.rpc', {
+      data: [{ product_id: PRODUCT_ID, requested: 1, available: 0 }],
+      error: null,
+    })
+    const result = await beginCheckout(input())
+    expect(result).toMatchObject({ ok: false, code: 'INSUFFICIENT_STOCK' })
+    expect(calls.some((c) => c.table === 'rpc:unbind_flash_sale_claims')).toBe(true)
+  })
+})

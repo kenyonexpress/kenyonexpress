@@ -43,6 +43,8 @@ type Policy = 'public' | 'private' | 'redirect' | 'image'
 const LEDGER: Record<string, Policy> = {
   'src/app/api/alerts/uptimerobot/route.ts': 'private',
   'src/app/api/cart/route.ts': 'private',
+  // The waiting room's poll (STEP 61): the caller's own claim, from the session.
+  'src/app/api/flash-sales/[id]/status/route.ts': 'private',
   'src/app/api/health/route.ts': 'private',
   // Per-visitor by construction (STEP 57): shaped by the ke_ph_id cookie.
   'src/app/api/recommendations/for-you/route.ts': 'private',

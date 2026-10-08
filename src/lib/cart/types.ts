@@ -90,6 +90,14 @@ export type CartViewItem = {
    * has not finished configuring, which is not the shopper's problem at all.
    */
   unavailable_reason: UnavailableReason | null
+  /**
+   * The flash sale whose hold priced this line (STEP 61), or null for the
+   * ordinary line. Set only when the signed-in shopper holds a live unit of
+   * this product and the line fits inside the hold; the unit price is then the
+   * sale's price and the cart says so. Optional because every fixture and
+   * every reader before this step built lines without it.
+   */
+  flash_sale_id?: string | null
 }
 
 /**

@@ -32,6 +32,7 @@ import {
   Tag,
   Undo2,
   Users,
+  Zap,
 } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -80,6 +81,15 @@ const NAV_ITEMS: NavItem[] = [
     icon: Boxes,
     section: 'discounts',
     quickAdd: '/admin/bundles/new',
+  },
+  // Flash sales (STEP 61): a product below its price for a window, with a
+  // unit allocation and a waiting room. A price cut, so the discounts section.
+  {
+    href: '/admin/flash-sales',
+    label: 'מבצעי בזק',
+    icon: Zap,
+    section: 'discounts',
+    quickAdd: '/admin/flash-sales/new',
   },
   { href: '/admin/orders', label: 'הזמנות', icon: ShoppingCart, section: 'orders' },
   { href: '/admin/orders/returns', label: 'בקשות החזרה', icon: Undo2, section: 'orders' },

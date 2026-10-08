@@ -21,6 +21,7 @@ import {
   voucherFallbackColumnProbe,
 } from '@/server/domain/vouchers/fallback-code'
 import { type VoucherIssueClient, issueVoucher } from '@/server/domain/vouchers/issue'
+import { consumeFlashSaleClaimsForOrder } from '@/server/flash-sales/consume'
 import { refreshLoyaltyTierForOrder } from '@/server/loyalty/refresh'
 import {
   issueGiftCardsForItem,
@@ -711,6 +712,14 @@ export async function finalizeOrder(input: {
         reason: discountError.message,
       })
     }
+
+    // The flash-sale holds the checkout bound to this order become sales
+    // (STEP 61): one statement, idempotent through the claim's status, and
+    // consuming a hold the sweep had already lapsed too, because the customer
+    // paid the flash price and the allocation must say so. Same class as the
+    // two lines above: logged, never failing the finalize. Before 266 is
+    // applied the function is absent and that absence is the logged no-op.
+    await consumeFlashSaleClaimsForOrder(admin, { orderId: order.id })
 
     // The authoritative purchase event, sent from the server at the moment the
     // order actually became paid.

@@ -57,6 +57,16 @@ type VariantRow = {
   deleted_at: string | null
 }
 
+/** A live flash-sale hold as the pricer needs it (STEP 61); `lib/flash-sales/read.ts` builds them. */
+export type FlashHoldLike = {
+  flash_sale_id: string
+  product_id: string
+  /** Integer agorot, straight off the sale row. */
+  price_agorot: number
+  /** Units the hold covers; a line asking for more is priced at the catalogue. */
+  quantity: number
+}
+
 // CONTRADICTIONS C1: platform_percent has no default anywhere. A product without
 // it cannot be priced, so the cart marks the line unavailable instead of inventing
 // a percent. cashback_percent is a genuine opt-in perk, so absent means zero.
@@ -117,13 +127,22 @@ function unavailableReason(
    * column a second time here is how the guard and the charge drift apart.
    */
   unitPrice: Agorot,
+  /**
+   * True when the price came from a flash-sale hold (STEP 61). A flash price
+   * is a deliberate deep cut an admin typed against this product, so the
+   * implausible-discount guard, which exists to catch a mistyped column, does
+   * not apply to it.
+   */
+  flash = false,
 ): UnavailableReason | null {
   if (product.status !== 'active' || product.deleted_at) return 'delisted'
   // Before `unpriced` and before the stock reasons, because this line HAS a
   // price and the money engine would happily charge it. See the ordering note
   // on `UnavailableReason` and the measured threshold in
   // `lib/commerce/implausible-discount.ts`.
-  if (isImplausibleDiscountAgorot(unitPrice, compareAtAgorot(product))) return 'price_error'
+  if (!flash && isImplausibleDiscountAgorot(unitPrice, compareAtAgorot(product))) {
+    return 'price_error'
+  }
   if (!priceable) return 'unpriced'
 
   const stock = stockCeiling(product, variant)
@@ -222,6 +241,14 @@ export function buildCartView(
   bundles: BundleDefinition[] = [],
   /** The clock the bundle windows are judged by; injectable for tests. */
   now: Date = new Date(),
+  /**
+   * The signed-in shopper's live flash-sale holds (STEP 61), already read by
+   * the caller through their own session. A line whose product has a hold,
+   * names no variant, and asks for no more than the hold's quantity is priced
+   * at the sale's integer price instead of the catalogue's. Empty is the
+   * default and the ordinary state, and prices exactly as before.
+   */
+  flashHolds: FlashHoldLike[] = [],
 ): CartView {
   if (storageItems.length === 0) {
     return { ...EMPTY_CART, id: cartId }
@@ -229,6 +256,7 @@ export function buildCartView(
 
   const productMap = new Map(products.map((p) => [p.id, p]))
   const variantMap = new Map(variants.map((v) => [v.id, v]))
+  const holdByProduct = new Map(flashHolds.map((hold) => [hold.product_id, hold]))
 
   const commissionLines: {
     id: string
@@ -252,7 +280,22 @@ export function buildCartView(
     // `numeric` column and arrives as a JS number; it is converted to agorot
     // here, once, and every downstream value is integer arithmetic on the
     // result. Nothing below ever divides by 100 to get back.
-    const unitPrice = ilsToAgorot(resolveUnitPrice(product, variant).toFixed(2))
+    //
+    // A flash-sale hold (STEP 61) is the one other source of a unit price,
+    // and it is ALREADY integer agorot: the admin typed shekels once, the
+    // action converted once, and the row carries the integer. Product-level
+    // and whole-line only: a variant's modifier has no defined relation to a
+    // flash price, and a line asking for more than the hold covers is priced
+    // at the catalogue for all of it rather than split into two lines.
+    const hold = item.variant_id ? undefined : holdByProduct.get(item.product_id)
+    const flash =
+      hold !== undefined &&
+      item.quantity <= hold.quantity &&
+      Number.isSafeInteger(hold.price_agorot) &&
+      hold.price_agorot > 0
+    const unitPrice = flash
+      ? agorot(hold.price_agorot)
+      : ilsToAgorot(resolveUnitPrice(product, variant).toFixed(2))
     const lineTotal = multiplyAgorot(unitPrice, item.quantity)
     const type = productType(product)
     const lineKey = `${item.product_id}::${item.variant_id ?? 'null'}`
@@ -294,7 +337,7 @@ export function buildCartView(
       percent != null &&
       (type !== 'coupon' || couponPriceUnit != null) &&
       (type !== 'physical' || unitPrice > 0)
-    const reason = unavailableReason(product, variant, item.quantity, priceable, unitPrice)
+    const reason = unavailableReason(product, variant, item.quantity, priceable, unitPrice, flash)
     if (priceable) {
       commissionLines.push({
         id: lineKey,
@@ -336,6 +379,7 @@ export function buildCartView(
       // necessarily `percent` above: that one is what the product says now.
       platform_percent_snapshot: item.platform_percent_snapshot ?? null,
       coupon_price_unit: couponPriceUnit,
+      flash_sale_id: flash ? hold.flash_sale_id : null,
     })
   }
 

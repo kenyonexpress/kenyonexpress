@@ -83,6 +83,27 @@ const ORDER_EXPIRY_MINUTES = 30
 const STOCK_RESERVATION_MINUTES = 15
 
 /**
+ * A checkout that failed AFTER binding flash-sale holds to the order (STEP 61)
+ * hands the holds back to the shopper, who keeps the minutes the bind added.
+ * Nothing to do when the cart had no flash line; never fails the caller,
+ * which is already returning a refusal.
+ */
+async function unbindFlashHolds(
+  admin: ReturnType<typeof createAdminClient>,
+  orderId: string,
+  flashLineCount: number,
+): Promise<void> {
+  if (flashLineCount === 0) return
+  const { error } = await admin.rpc(
+    'unbind_flash_sale_claims' as never,
+    {
+      p_order: orderId,
+    } as never,
+  )
+  if (error) log.warn('checkout.flash_unbind_failed', { orderId, reason: error.message })
+}
+
+/**
  * Every refusal claim_order_discount and redeem_coupon_qr can answer, in the
  * shopper's language. A reason this map does not know falls back to the
  * generic line rather than leaking the English token.
@@ -1035,6 +1056,50 @@ async function runBeginCheckout(
   // A shortfall cancels the order rather than leaving it pending: a pending
   // order the shopper cannot pay for would sit there until the reaper, and the
   // shopper's next attempt would build a second one.
+  // 4a'. BIND THE FLASH-SALE HOLDS FIRST (STEP 61), for the lines the cart
+  // priced from one. The cart charged the flash price because the shopper
+  // HELD a unit when the cart was built; this is where that hold is checked
+  // against the database one more time and tied to this order, so a hold
+  // that lapsed between the cart page and this call cannot be charged at a
+  // price it no longer earns. Before the stock reservation on purpose:
+  // `available_stock` subtracts UNBOUND holds, and a shopper's own hold must
+  // not be counted against their own order (266 header). Binding also extends
+  // the hold to the reservation's TTL, so it cannot lapse mid-payment.
+  const flashLines = cart.items.filter((item) => item.flash_sale_id)
+  if (flashLines.length > 0) {
+    const { data: bound, error: bindError } = await admin.rpc(
+      'bind_flash_sale_claims' as never,
+      {
+        p_order: order.id,
+        p_user: user.id,
+        p_ttl_minutes: STOCK_RESERVATION_MINUTES,
+      } as never,
+    )
+    if (bindError) {
+      log.error('checkout.flash_bind_failed', { orderId: order.id, reason: bindError.message })
+      await admin.from('orders').update({ status: 'cancelled' }).eq('id', order.id)
+      return { ok: false, error: 'לא הצלחנו לאמת את מבצע הבזק, נסו שוב', code: 'INTERNAL' }
+    }
+    const boundRows = (bound ?? []) as unknown as { product_id: string; quantity: number }[]
+    const uncovered = flashLines.find((line) => {
+      const claim = boundRows.find((row) => row.product_id === line.product_id)
+      return !claim || Number(claim.quantity) < line.quantity
+    })
+    if (uncovered) {
+      // The price the cart showed is no longer earned. Closing the order and
+      // letting the cart re-price is honest; charging the flash price to a
+      // shopper whose hold lapsed is a sale the allocation never allowed.
+      await admin.from('orders').update({ status: 'cancelled' }).eq('id', order.id)
+      await admin.rpc('unbind_flash_sale_claims' as never, { p_order: order.id } as never)
+      log.warn('checkout.flash_hold_lapsed', { orderId: order.id, productId: uncovered.product_id })
+      return {
+        ok: false,
+        error: 'ההחזקה במבצע הבזק פקעה. העגלה תתעדכן למחיר הרגיל.',
+        code: 'FLASH_HOLD_LAPSED',
+      }
+    }
+  }
+
   const { data: shortfalls, error: reserveError } = await admin.rpc('reserve_order_stock', {
     p_order_id: order.id,
     p_ttl_minutes: STOCK_RESERVATION_MINUTES,
@@ -1045,6 +1110,7 @@ async function runBeginCheckout(
     // reservation system that does nothing on the day it matters.
     log.error('checkout.reserve_failed', { orderId: order.id, reason: reserveError.message })
     await admin.from('orders').update({ status: 'cancelled' }).eq('id', order.id)
+    await unbindFlashHolds(admin, order.id, flashLines.length)
     return { ok: false, error: 'לא הצלחנו לשריין את המלאי, נסו שוב', code: 'INTERNAL' }
   }
 
@@ -1054,6 +1120,7 @@ async function runBeginCheckout(
     // returns before inserting when any line is short - so there is nothing to
     // release here, only an order to close.
     await admin.from('orders').update({ status: 'cancelled' }).eq('id', order.id)
+    await unbindFlashHolds(admin, order.id, flashLines.length)
     const soldOut = shortfallRows.some((row) => row.available <= 0)
     return {
       ok: false,
@@ -1117,6 +1184,7 @@ async function runBeginCheckout(
           reason: releaseError.message,
         })
       }
+      await unbindFlashHolds(admin, order.id, flashLines.length)
       if (refusal.kind === 'error') {
         // Fail closed, like the reservation: a claim system that fails open is
         // a claim system that does nothing on the day it matters.

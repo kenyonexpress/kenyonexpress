@@ -138,6 +138,19 @@ export const RATE_LIMIT_POLICIES = {
     windowSeconds: 3600,
     reason: 'gift card redemption attempts, per user',
   },
+  // Flash sales (STEP 61). The claim is keyed on the user: the budget is the
+  // shopper's own, and a full sale invites repeated taps. The status poll is
+  // per IP because a guest polls too; the waiting room asks every 8 seconds.
+  'flash-claim': {
+    limit: 30,
+    windowSeconds: 3600,
+    reason: 'flash-sale hold or queue attempts, per user',
+  },
+  'flash-status': {
+    limit: 120,
+    windowSeconds: 60,
+    reason: 'waiting-room poll of a flash sale, per IP',
+  },
   begin_checkout: { limit: 10, windowSeconds: 60, reason: 'Cardcom low-profile creation' },
   // One-click reorder: each attempt is a cart rebuild plus a token charge,
   // and a shopper never needs five of those a minute. Tighter than

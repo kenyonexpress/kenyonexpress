@@ -1,4 +1,5 @@
 import { adminAlertDedupeKey, adminAlertRecipient } from '@/lib/email/admin-alerts'
+import { isMissingFlashSchema } from '@/lib/flash-sales/rules'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { bearerMatches } from '@/lib/security/constant-time'
@@ -74,6 +75,19 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
     log.error('stock.release_expired_discounts_failed', { reason: discountReleaseError.message })
   }
 
+  // 1c. SWEEP THE FLASH SALES (STEP 61): lapse the holds that ran out and
+  // promote the waiting rooms in order. Like 1, this is the backstop and not
+  // the mechanism: every claim and every waiting-room poll sweeps its own
+  // sale, so a shopper is handed a lapsed unit within one poll interval, and
+  // this run only catches a sale nobody is watching. Before 266 is applied
+  // the function is absent and that absence is a logged no-op.
+  const { data: flashPromoted, error: flashSweepError } = await admin.rpc(
+    'sweep_flash_sales' as never,
+  )
+  if (flashSweepError && !isMissingFlashSchema(flashSweepError)) {
+    log.error('stock.flash_sweep_failed', { reason: flashSweepError.message })
+  }
+
   const { data: rows, error: lowError } = await admin
     .from('v_low_stock')
     .select('id, name_he, slug, stock_quantity, available, low_stock_threshold, supplier_name')
@@ -129,6 +143,7 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
     ok: true,
     released: released ?? 0,
     discounts_freed: discountsFreed ?? 0,
+    flash_promoted: Number(flashPromoted ?? 0),
     low: lowRows.length,
     alerted,
   })

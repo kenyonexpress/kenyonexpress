@@ -82,6 +82,7 @@ describe('the homepage sections live actually has', () => {
       '<CmsHero',
       '<BenefitBar',
       '<DealsOfTheDay',
+      '<FlashSaleBanner',
       '<DealOfTheDay',
       '<ForYouRow',
       '<CategoryGrid',

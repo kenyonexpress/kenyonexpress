@@ -3,6 +3,7 @@ import Reviews from '@/components/product/Reviews'
 import BundleOffer from '@/components/storefront/BundleOffer'
 import { CouponTerms } from '@/components/storefront/CouponPricing'
 import CouponQrExpiry from '@/components/storefront/CouponQrExpiry'
+import FlashSaleNotice from '@/components/storefront/FlashSaleNotice'
 import PriceHistory from '@/components/storefront/PriceHistory'
 import ProductGallery from '@/components/storefront/ProductGallery'
 import ProductInfo from '@/components/storefront/ProductInfo'
@@ -303,6 +304,11 @@ export default async function ProductPage({ params }: Props) {
             one add-all button. Cached with the page under the product tag and
             empty for most products, in which case nothing renders. */}
         <BundleOffer productId={product.id} />
+
+        {/* A flash sale on this product (STEP 61): the flash price, the clock
+            and the way in. Cached with the page under the catalogue tag and
+            null for almost every product, in which case nothing renders. */}
+        <FlashSaleNotice productId={product.id} />
 
         {/* Coupon-only: how and by when the voucher may be redeemed. The QR
             block hands the deal to a phone and says what the two deadlines

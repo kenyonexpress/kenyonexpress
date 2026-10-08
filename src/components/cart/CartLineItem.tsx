@@ -148,6 +148,13 @@ export default function CartLineItem({ item }: { item: CartViewItem }) {
         <div className="cart-line__unit">
           <span>מחיר:</span>
           <span>{shekels(item.unit_price)}</span>
+          {/* The line is priced from a flash-sale hold (STEP 61); the
+              shopper should see why this price is not the catalogue's. */}
+          {item.flash_sale_id && (
+            <span className="rounded bg-brand px-2 py-0.5 text-xs font-bold text-heading">
+              מחיר בזק
+            </span>
+          )}
         </div>
 
         {/* DOM order is side order in this RTL flex row. Live's cart row reads

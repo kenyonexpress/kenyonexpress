@@ -1,5 +1,53 @@
 # `migrations/pending/`
 
+## 2026-10-08: 266 PENDING (flash sales: window, allocation, hold, waiting room, STEP 61)
+
+`266_flash_sales.sql` adds `public.flash_sales` (`product_id`, `name_he`,
+`price_agorot` CHECK > 0, `reference_agorot` CHECK > price or NULL,
+`allocation` 1..100000, `max_per_claim` 1..10, `hold_minutes` 1..60,
+`starts_at` < `ends_at`, `is_active`, `set_updated_at` trigger) and
+`public.flash_sale_claims` (UNIQUE `(flash_sale_id, user_id)`, `quantity`
+1..10, `status` in held/queued/consumed/released/expired, `queue_position`,
+`expires_at`, `order_id` SET NULL). A flash sale is NOT a price change on the
+product: only a shopper who HOLDS a unit is charged the flash price, and the
+cart prices the line from the claim (`src/lib/cart/pricing.ts`). Eight
+definer functions, service-role only except `flash_sale_remaining` (one
+integer, granted to the client roles): `flash_sale_taken`,
+`sweep_flash_sale` (lapse expired unbound holds, promote the queue in strict
+FIFO while each claim fits allocation AND `available_stock`),
+`sweep_flash_sales` (the stock cron's round), `claim_flash_sale` (locks the
+sale, sweeps, answers held / queued / consumed / not_started / ended /
+inactive / not_found / bad_quantity, idempotent per shopper),
+`leave_flash_sale`, and the checkout's three: `bind_flash_sale_claims`
+(ties the shopper's live holds for the order's products to the order and
+extends them to the reservation TTL; called BEFORE `reserve_order_stock`),
+`unbind_flash_sale_claims` (a refused checkout hands the hold back) and
+`consume_flash_sale_claims` (finalize; consumes an `expired` bound hold too,
+because the customer paid). **The one pre-existing object it changes is the
+body of `available_stock` (117)**: it now also subtracts live UNBOUND flash
+holds, so a held unit cannot be sold at full price out from under its
+holder; same signature and grants, so no caller in `src/` or `apps/mobile`
+changes. RLS: public SELECT on `is_active` sales, owner SELECT on claims, no
+client DML on claims at all; staff write on sales through
+`has_role('admin')`, in practice the service role from
+`src/server/actions/admin/flash-sales.ts` behind
+`requireSection('discounts', 'write')` with an audit row. Client grants per
+144. Self-check inside a rolled-back block: a one-unit sale, the first user
+holds, the second queues with 0 ahead, the hold is lapsed by hand and the
+sweep promotes the second; the reference CHECK refuses a "was" price below
+the flash price (skipped with a NOTICE when the database has no product or
+no user to rehearse with). Until applied every reader treats 42P01 / PGRST205
+/ 42883 as "no flash sale": the banner, the product notice and `/flash/[id]`
+render nothing or 404, the admin list says so, and the cron and finalize log
+nothing. **Rehearsed on production 2026-10-08 inside BEGIN/ROLLBACK** through
+the management API (`--http1.1`): the first run failed to parse `position`
+as a RETURNS TABLE column (42601), the column is `queue_position` since;
+the second run created both tables and all nine functions, patched
+`available_stock`, ran the self-check, and a probe exception rolled it all
+back (`to_regclass` null for both tables, 0 functions, old body afterwards).
+Rollback is nine DROPs plus the 117 body of `available_stock`, in the file
+header. No dependency on any other pending file.
+
 ## 2026-10-08: 265 PENDING (product bundles with a fixed saving, STEP 60)
 
 `265_product_bundles.sql` adds `public.product_bundles` (`name_he`,

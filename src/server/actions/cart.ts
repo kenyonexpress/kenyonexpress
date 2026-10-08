@@ -27,6 +27,7 @@ import { parsePercentSnapshot } from '@/lib/cart/snapshot'
 import type { CartActionResult, CartStorageItem, CartView } from '@/lib/cart/types'
 import { isImplausibleDiscount } from '@/lib/commerce/implausible-discount'
 import { isValidUnitCode } from '@/lib/coupons/unit-codes'
+import { loadFlashHoldsForUser } from '@/lib/flash-sales/holds'
 import { growthClient } from '@/lib/growth/client'
 import { evaluateDiscount } from '@/lib/growth/discount'
 import { MAX_STACKED_CODES, evaluateDiscountStack } from '@/lib/growth/stacking'
@@ -291,17 +292,41 @@ async function readShippingMethod(): Promise<ShippingMethod> {
   return resolveShippingMethod(cookieStore.get(CART_SHIPPING_COOKIE)?.value)
 }
 
-async function resolveCartView(cartId: string | null, items: CartStorageItem[]): Promise<CartView> {
+async function resolveCartView(
+  cartId: string | null,
+  items: CartStorageItem[],
+  /**
+   * The signed-in shopper, or null for a guest. Only the flash-sale holds
+   * (STEP 61) depend on it: a hold is the shopper's own row under RLS, and a
+   * guest has none because the claim requires an account.
+   */
+  userId: string | null = null,
+): Promise<CartView> {
   // The bundle rules ride the same round trip as the products (STEP 60):
   // one anon read of every active bundle naming a product in the cart,
   // empty before 265 is applied, and the pricer takes the saving from
   // there. Nothing about bundles is stored on the cart row or in a cookie.
-  const [{ products, variants }, shipping, bundles] = await Promise.all([
+  // The shopper's live flash-sale holds (STEP 61) ride it too, through their
+  // own session, and are empty before 266 is applied or for a guest.
+  const productIds = items.map((item) => item.product_id)
+  const [{ products, variants }, shipping, bundles, flashHolds] = await Promise.all([
     loadCartProductData(items),
     readShippingMethod(),
-    loadBundlesForProducts(items.map((item) => item.product_id)),
+    loadBundlesForProducts(productIds),
+    loadFlashHoldsForUser(userId, productIds),
   ])
-  const priced = buildCartView(cartId, items, products, variants, null, shipping, bundles)
+  const now = new Date()
+  const priced = buildCartView(
+    cartId,
+    items,
+    products,
+    variants,
+    null,
+    shipping,
+    bundles,
+    now,
+    flashHolds,
+  )
   // Nothing to discount, so neither code table is worth two round trips. This
   // covers the empty cart and, since the pricer stopped blanking them, the cart
   // whose every line is unpriceable: both charge zero, and every discount path
@@ -312,7 +337,7 @@ async function resolveCartView(cartId: string | null, items: CartStorageItem[]):
   // priced. The second pass costs no query.
   const coupon = await resolveAppliedCoupon(priced)
   return coupon
-    ? buildCartView(cartId, items, products, variants, coupon, shipping, bundles)
+    ? buildCartView(cartId, items, products, variants, coupon, shipping, bundles, now, flashHolds)
     : priced
 }
 
@@ -547,9 +572,9 @@ function fail(error: string, code: string): CartActionResult {
 }
 
 async function runGetCart(): Promise<CartView> {
-  const { row } = await getCartRow({ cached: true })
+  const { row, userId } = await getCartRow({ cached: true })
   const items = parseItems(row?.items)
-  return resolveCartView(row?.id ?? null, items)
+  return resolveCartView(row?.id ?? null, items, userId)
 }
 
 async function runAddToCart(
@@ -613,7 +638,7 @@ async function runAddToCart(
       ]
 
   const saved = await saveCartItems(nextItems, isGuest, userId, row?.id ?? null)
-  const cart = await resolveCartView(saved.id, parseItems(saved.items))
+  const cart = await resolveCartView(saved.id, parseItems(saved.items), userId)
   revalidateCartPaths()
   return { ok: true, cart }
 }
@@ -658,7 +683,7 @@ async function runUpdateCartItem(
   }
 
   const saved = await saveCartItems(items, isGuest, userId, row.id)
-  const cart = await resolveCartView(saved.id, parseItems(saved.items))
+  const cart = await resolveCartView(saved.id, parseItems(saved.items), userId)
   revalidateCartPaths()
   return { ok: true, cart }
 }
@@ -689,12 +714,12 @@ async function runRemoveFromCart(
  */
 async function runRemoveUnavailableItems(): Promise<CartActionResult> {
   const { row, isGuest, userId } = await getCartRow()
-  if (!row) return { ok: true, cart: await resolveCartView(null, []) }
+  if (!row) return { ok: true, cart: await resolveCartView(null, [], userId) }
 
   const items = parseItems(row.items)
-  if (items.length === 0) return { ok: true, cart: await resolveCartView(row.id, items) }
+  if (items.length === 0) return { ok: true, cart: await resolveCartView(row.id, items, userId) }
 
-  const priced = await resolveCartView(row.id, items)
+  const priced = await resolveCartView(row.id, items, userId)
   const unavailable = new Set(priced.items.filter((i) => !i.available).map((i) => itemKey(i)))
   // A line the pricer dropped entirely -- a product row that no longer exists,
   // which `buildCartView` skips with `continue` rather than rendering -- never
@@ -710,14 +735,14 @@ async function runRemoveUnavailableItems(): Promise<CartActionResult> {
   if (!allowed) return fail('יותר מדי פעולות — נסו שוב מאוחר יותר', 'RATE_LIMITED')
 
   const saved = await saveCartItems(kept, isGuest, userId, row.id)
-  const cart = await resolveCartView(saved.id, parseItems(saved.items))
+  const cart = await resolveCartView(saved.id, parseItems(saved.items), userId)
   revalidateCartPaths()
   return { ok: true, cart }
 }
 
 async function runClearCart(): Promise<CartActionResult> {
   const { row, isGuest, userId } = await getCartRow()
-  if (!row) return { ok: true, cart: await resolveCartView(null, []) }
+  if (!row) return { ok: true, cart: await resolveCartView(null, [], userId) }
 
   const allowed = await checkCartWriteRateLimit(userId)
   if (!allowed) return fail('יותר מדי פעולות — נסו שוב מאוחר יותר', 'RATE_LIMITED')

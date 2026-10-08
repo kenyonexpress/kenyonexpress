@@ -163,6 +163,8 @@
       "/admin/discounts/new",
       "/admin/experiments",
       "/admin/feature-flags",
+      "/admin/flash-sales",
+      "/admin/flash-sales/new",
       "/admin/fraud",
       "/admin/gift-cards",
       "/admin/growth",

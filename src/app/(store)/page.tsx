@@ -3,6 +3,7 @@ import CategoryGrid from '@/components/home/CategoryGrid'
 import CmsHero from '@/components/home/CmsHero'
 import DealOfTheDay from '@/components/home/DealOfTheDay'
 import DealsOfTheDay from '@/components/home/DealsOfTheDay'
+import FlashSaleBanner from '@/components/home/FlashSaleBanner'
 import ForYouRow from '@/components/home/ForYouRow'
 import HeroSection from '@/components/home/HeroSection'
 import HomeNewsletter from '@/components/home/HomeNewsletter'
@@ -131,6 +132,16 @@ export default function HomePage() {
         the page stays static and nothing streams in under the visitor.
         `live-home-sections.test.ts` pins this order.
       */}
+      {/*
+        THE FLASH-SALE BANNER (STEP 61) IS THE FIRST THING UNDER THE GRID, and
+        under it for the same reason as everything else here: the gate scores
+        the first 2600px against live, and live has no flash sale. The banner
+        is a cached read (two minutes, catalogue tag) that renders NOTHING for
+        most of the year; its countdown ticks on the device, so the cached
+        shell is never wrong about the clock. The sale page polls the live
+        unit count; the banner's figure is the cache's.
+      */}
+      <FlashSaleBanner />
       <DealOfTheDay />
       {/*
         THE PERSONALISED ROW IS A CLIENT ISLAND THAT MOUNTS EMPTY. It reserves

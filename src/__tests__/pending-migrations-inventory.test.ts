@@ -514,6 +514,10 @@ describe('the pending migration inventory', () => {
       '263_seo_redirects_release_compare.sql',
       '264_price_change_trigger.sql',
       '265_product_bundles.sql',
+      // STEP 61: flash sales. `flash_sales` + `flash_sale_claims`, eight definer
+      // functions, and a replaced body for `available_stock` (117) that also
+      // counts live unbound flash holds. Not applied; README carries the row.
+      '266_flash_sales.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

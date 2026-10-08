@@ -269,6 +269,9 @@ export type CheckoutActionErrorCode =
   | 'VALIDATION'
   | 'NOT_FOUND'
   | 'INSUFFICIENT_STOCK'
+  // A flash-sale hold lapsed between the cart page and the checkout (STEP 61);
+  // the cart re-prices the line at the catalogue and the shopper may retry.
+  | 'FLASH_HOLD_LAPSED'
   | 'INSUFFICIENT_WALLET'
   | 'WALLET_MIN_REDEMPTION'
   | 'COUPON_INVALID'

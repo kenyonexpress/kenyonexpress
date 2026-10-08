@@ -92,6 +92,8 @@
 | `supplier-lead` | 5 | 1 h | supplier lead mail |
 | `newsletter` | 5 | 1 h | newsletter subscription mail |
 | `stock-alert` | 5 | 1 h | back-in-stock request, one mail later |
+| `flash-claim` | 30 | 1 h | flash-sale hold or queue attempts, per user |
+| `flash-status` | 120 | 1 min | waiting-room poll of a flash sale, per IP |
 | `admin-voucher-lookup` | 60 | 1 h | admin voucher code lookup, per staff user |
 | `admin-voucher-redeem` | 30 | 1 h | admin manual voucher burn, per staff user |
 | `account-delete` | 3 | 1 h | destructive cascade over a dozen tables; a person needs exactly one |
