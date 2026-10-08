@@ -379,3 +379,51 @@ export function buildBlogJsonLd(posts: readonly BlogPostLike[], siteUrl: string)
     }),
   }
 }
+
+export interface ContactJsonLdInput {
+  siteUrl: string
+  email: string
+  /** International digits (972...) or null when no number is configured. */
+  phoneIntl: string | null
+  /** `OpeningHoursSpecification` nodes, from `lib/support-hours`. */
+  hoursAvailable: readonly Record<string, unknown>[]
+}
+
+/**
+ * `ContactPage` plus the `Organization` with a customer-service
+ * `ContactPoint` for `/contact` (STEP 52).
+ *
+ * The phone is written E.164 (`+972...`) because that is the form the
+ * knowledge panel dials; the page prints the local form for the reader, and
+ * both come from the same `lib/whatsapp` number so they cannot disagree. The
+ * hours are the same table the page prints, through `lib/support-hours`.
+ */
+export function buildContactJsonLd(input: ContactJsonLdInput): JsonLdNode[] {
+  const site = trimSite(input.siteUrl)
+  const contactPoint: Record<string, unknown> = {
+    '@type': 'ContactPoint',
+    contactType: 'customer service',
+    email: input.email,
+    availableLanguage: ['he'],
+    areaServed: 'IL',
+  }
+  if (input.phoneIntl) contactPoint.telephone = `+${input.phoneIntl}`
+  if (input.hoursAvailable.length > 0) contactPoint.hoursAvailable = [...input.hoursAvailable]
+  return [
+    {
+      '@context': SCHEMA,
+      '@type': 'ContactPage',
+      name: 'צור קשר',
+      url: `${site}/contact`,
+      inLanguage: 'he-IL',
+    },
+    {
+      '@context': SCHEMA,
+      '@type': 'Organization',
+      name: 'KenyonExpress',
+      url: site,
+      logo: `${site}/logo.png`,
+      contactPoint: [contactPoint],
+    },
+  ]
+}
