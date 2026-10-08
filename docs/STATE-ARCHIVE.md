@@ -2,6 +2,14 @@
 
 Everything below was STATE.md up to commit 02a45128f (2026-10-06), moved here by M11-c113 to keep STATE.md under 300 lines.
 
+## M15-c120: console errors on / and /product, probed 2026-10-08 in the foreground
+
+- Method: same as M15-c119. Playwright Chromium (`@playwright/test` from the repo, probe script outside the repo in `/tmp/m15c120`). For each page and viewport (380x800, 1440x900): `waitUntil: load` with a 120 s timeout and up to 3 attempts, two scrolls, a 7 s wait, recording console errors and warnings, `pageerror`, `requestfailed` and every response of 400 or above. Sample product: `/product/מוצר-לדוגמא`.
+- **Production** (`https://www.kenyonexpress.co.il`, still `audit/final-audit@1e84df0`, blocker 4), 06:05 UTC: all 4 runs 200 on attempt 1 with **0 console errors, 0 page errors, 0 failed requests and 0 responses of 400 or above**. The only warning (3 of 4 runs) is the CSS chunk `3fe0w0vs6-xwd.css` preload-not-used heuristic, not an error.
+- **Local HEAD `ee04dcaa6`** (`pnpm start -p 3520` on a clean build made in this run, with the uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` edits in the tree): all 4 runs 200 with 0 `pageerror`. Each run has the same 5 environment-only console errors as M15-c119: 404s on `/_vercel/insights/script.js` and `/_vercel/speed-insights/script.js` with their strict-MIME refusals (off Vercel), and the wishlist prefetch `ERR_SSL_PROTOCOL_ERROR` on `https://localhost` (HSTS and `upgrade-insecure-requests` on http localhost). The last run also logged an `ERR_ABORTED` on the product URL itself, a prefetch cancelled when the context closed; it is not a console error. No `/api/cart` 500, nothing new.
+- No code change. Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (49 Supabase timeout or fetch-failed lines, all recovered). Not a UI change, so compare.mjs does not apply (blocker 0).
+- Moved from STATE.md (verbatim): Last item: **M14-c120 BLOCKED** (2026-10-08): Sentry release on `www` is still `1e84df0e5` (`origin/audit/final-audit`), not HEAD `b299e5798`. Probed at 05:50 UTC: home 200 (`x-vercel-cache: HIT`), 21 `/_next/static` chunks, the inlined init is `NEXT_PUBLIC_SENTRY_RELEASE??"1e84df0e5457c9c80a46f7cb2155ac204ebc15ef"`, the only 40-char SHA in the bundle (2 occurrences). `origin/main` is still `3969d3e25`. Unchanged from M14-c119 (blocker 4, manual item). No code change. Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (9 recoverable Supabase timeout or fetch-failed lines). Not a UI change, so compare.mjs does not apply. Uncommitted `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` left out.
+
 ## M02-c120: compare.mjs on /product at 380, 768, 1440, run 2026-10-08 in the foreground
 
 Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=product --width=<w>` (HEAD `db95e4b71` with the two uncommitted UI edits in the tree)
