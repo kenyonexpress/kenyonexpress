@@ -767,7 +767,6 @@ Setup: the same as M08-c115. Lighthouse 13.4.1 from the repo (`pnpm exec lightho
 - **Not applied, unchanged:** `184` (`orders_invoice_numbers` and `orders_ensure_partitions` absent), `202` 0/4, `203` 0/8, `204` 0/4, `205` 0/5, `207` 0/5, `210` 0/2, `211` 0/1, `212` 0/5, `213` 0/6, `215` 0/1, `216` 0/2, `217` 0/2, `219` 0/2, `221` 0/2, `222` 0/2, `223` 0/1, `225` 0/1, `226` 0/3, `228` 0/3. `227` is partial: 2 of 4 objects are live and both predate it, while `extend_voucher_expiry` and `supplier_expiry_metrics` are absent. `231` is not applied because anon `reviews` returns 401. `188` changes an existing function only, so it is unverified. `218` adds trigger functions only, so it cannot be judged over REST.
 - **No REST-visible effect (11), unchanged:** `162`, `192`, `196`, `206`, `208`, `209`, `214`, `220`, `224`, `229`, `230`. `162` is known not applied (blocker 2).
 - BLOCKED: only Ofir applies migrations and records the 6. No code change. The gates are in the commit message.
-- Re-verified 2026-10-09 (the 2026-10-08 run left this uncommitted): the same read-only OpenAPI probe and anon `reviews` 401 gave the same result. Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (31 recovered `supabase.timeout`). The uncommitted `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` are not part of this commit.
 
 ## M10-c120: is migrations/pending/ applied? Read-only re-probe, 2026-10-08
 
