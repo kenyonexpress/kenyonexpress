@@ -40,6 +40,7 @@ import { createGuestCartClient, createPublicClient } from '@/lib/supabase/anon'
 import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
 import { addToCartSchema, updateCartItemSchema } from '@/lib/validations/cart'
+import { currentLoyaltyTier } from '@/server/queries/loyalty'
 import { revalidatePath } from 'next/cache'
 import { cookies } from 'next/headers'
 
@@ -149,6 +150,9 @@ async function evaluateCampaignCode(
       // more than the platform earns on it.
       commissionAgorot: view.platform_fee,
       giftCardInCart: await cartHasGiftCard(view),
+      // Tier-only deals (STEP 47): the shopper's live tier, null for a
+      // guest. Read from their own paid orders, never from the cookie.
+      loyaltyTier: await currentLoyaltyTier(),
     },
     new Date(),
   )
@@ -183,6 +187,7 @@ async function resolveCampaignStack(codes: string[], view: CartView) {
       payableAgorot: view.subtotal,
       commissionAgorot: view.platform_fee,
       giftCardInCart: await cartHasGiftCard(view),
+      loyaltyTier: await currentLoyaltyTier(),
     },
     new Date(),
   )

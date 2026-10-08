@@ -495,6 +495,16 @@ describe('the pending migration inventory', () => {
       // (existing_customer); the qualifying order is stamped with
       // referral_code_used. Rehearsed on production inside BEGIN/ROLLBACK.
       '260_referral_qualified_guard_and_first_time_claim.sql',
+      // 261 is PENDING (2026-10-08, STEP 47 loyalty tiers): `loyalty_tiers`
+      // (the tier each customer was last told about; owner SELECT, service
+      // writes), `discount_campaigns.min_loyalty_tier` (tier-only codes),
+      // `fn_refresh_loyalty_tier(uuid)` (365-day spend, upsert, bell row +
+      // `loyalty_tier_upgraded` outbox row on a rise), and the outbox kind
+      // CHECK widened by READING the live list and appending one name.
+      // Rehearsed on production inside BEGIN/ROLLBACK the same day: the
+      // top buyer went bronze->silver at 148000 agorot, one bell row, one
+      // outbox row, the second call upgraded nothing. README carries the row.
+      '261_loyalty_tiers.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

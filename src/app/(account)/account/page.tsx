@@ -1,3 +1,4 @@
+import LoyaltyBadge from '@/components/account/LoyaltyBadge'
 import { formatIls, orderStatusLabel, orderStatusTone } from '@/lib/account/format'
 import { formatDate } from '@/lib/account/format'
 import {
@@ -9,9 +10,11 @@ import {
   summarizePaymentMethods,
   summarizePreferences,
 } from '@/lib/account/overview'
+import { TIER_LABEL_HE } from '@/lib/loyalty/tiers'
 import { isCouponPresentable } from '@/lib/vouchers/coupon-view'
 import { getMyAddresses, getMyPaymentTokens, getWalletSummary } from '@/server/queries/account'
 import { getCashbackTracker } from '@/server/queries/cashback'
+import { getMyLoyalty } from '@/server/queries/loyalty'
 import { loadPreferences } from '@/server/queries/notifications'
 import { getMyOrders } from '@/server/queries/orders'
 import { getCustomerVouchers } from '@/server/queries/vouchers'
@@ -30,15 +33,17 @@ export const metadata = { title: 'האזור האישי' }
  * selects the Cardcom token (src/lib/account/saved-cards.test.ts).
  */
 export default async function AccountOverviewPage() {
-  const [wallet, orders, coupons, cashback, addresses, tokens, preferenceRows] = await Promise.all([
-    getWalletSummary(),
-    getMyOrders(),
-    getCustomerVouchers(),
-    getCashbackTracker(),
-    getMyAddresses(),
-    getMyPaymentTokens(),
-    loadPreferences(),
-  ])
+  const [wallet, orders, coupons, cashback, addresses, tokens, preferenceRows, loyalty] =
+    await Promise.all([
+      getWalletSummary(),
+      getMyOrders(),
+      getCustomerVouchers(),
+      getCashbackTracker(),
+      getMyAddresses(),
+      getMyPaymentTokens(),
+      loadPreferences(),
+      getMyLoyalty(),
+    ])
 
   const lastOrder = orders[0] ?? null
   // Parcels on the way (STEP 43): the fold every order already carries, so
@@ -112,6 +117,25 @@ export default async function AccountOverviewPage() {
             </Link>
           </p>
         </section>
+
+        {loyalty && (
+          <section className="account-card">
+            <h2 className="account-card__title">מועדון הלקוחות</h2>
+            <p className="account-row__title">
+              <LoyaltyBadge tier={loyalty.tier} />
+            </p>
+            <p className="account-row__meta">
+              {loyalty.progress.next
+                ? `עוד ${formatIls(loyalty.progress.remainingAgorot)} לדרגת ${TIER_LABEL_HE[loyalty.progress.next]}`
+                : 'הדרגה הגבוהה ביותר'}
+            </p>
+            <p style={{ marginTop: 12 }}>
+              <Link className="account-btn" href="/account/loyalty">
+                לדרגה ולהטבות
+              </Link>
+            </p>
+          </section>
+        )}
 
         <section className="account-card">
           <h2 className="account-card__title">הקאשבק שלי</h2>

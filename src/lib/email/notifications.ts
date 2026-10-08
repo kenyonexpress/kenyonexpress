@@ -92,6 +92,13 @@ export type NotificationKind =
    * code lives only in this payload, the table holds its hash.
    */
   | 'gift_card_issued'
+  /**
+   * The customer's loyalty tier rose (STEP 47). Enqueued by
+   * `fn_refresh_loyalty_tier` (pending 261) after the paid order that
+   * crossed the threshold, deduped per user, tier and day. Never sent for
+   * a tier that fell.
+   */
+  | 'loyalty_tier_upgraded'
 
 function escapeHtml(value: string): string {
   return value
@@ -1173,6 +1180,61 @@ export function buildGiftCardIssuedEmail(
   return { subject, html, text }
 }
 
+const LOYALTY_LABEL_HE: Record<string, string> = { bronze: 'ברונזה', silver: 'כסף', gold: 'זהב' }
+
+/**
+ * The tier went up. Written by the database after the paid order that
+ * crossed the threshold, so the figure here is the spend it decided on;
+ * the page the button opens recomputes it live and may already read higher.
+ *
+ * Says what the tier is worth in one sentence and sends the customer to the
+ * loyalty page for the rest. No code is printed here: tier-only deals are
+ * read from the page under the session, never mailed, so a forwarded mail
+ * hands nobody a code.
+ */
+export function buildLoyaltyTierUpgradedEmail(
+  payload: Record<string, unknown>,
+  siteUrl: string,
+): BuiltNotification | null {
+  const tier = asText(payload.tier)
+  if (!tier || !(tier in LOYALTY_LABEL_HE)) return null
+  const label = LOYALTY_LABEL_HE[tier] ?? tier
+  const name = asText(payload.full_name)
+  const spendAgorot = Math.round(asNumber(payload.spend_12m_agorot))
+  const spend = spendAgorot > 0 ? formatAgorot(spendAgorot) : null
+
+  const url = `${trimSite(siteUrl)}/account/loyalty`
+  const subject = `עלית לדרגת ${label} במועדון הלקוחות`
+  const perk =
+    tier === 'gold'
+      ? 'קודי הנחה שמורים לחברי זהב בלבד מחכים לך.'
+      : 'קודי הנחה שמורים לחברי כסף וזהב מחכים לך.'
+
+  const text = [
+    name ? `שלום ${name},` : 'שלום,',
+    '',
+    `הרכישות שלך בשנה האחרונה${spend ? ` (${spend})` : ''} העלו אותך לדרגת ${label}.`,
+    perk,
+    'הדרגה נמדדת לפי הרכישות ב-12 החודשים האחרונים.',
+    '',
+    'הדרגה וההטבות שלך:',
+    ltrText(url),
+  ].join('\n')
+
+  const html = shell(
+    `<div dir="rtl" class="ke-card" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
+        <div style="font-size:18px;font-weight:700;color:${INK}">${escapeHtml(subject)}</div>
+        <div style="font-size:15px;color:${INK};margin-top:10px">${name ? `שלום ${escapeHtml(name)}, ` : ''}הרכישות שלך בשנה האחרונה${spend ? ` (${escapeHtml(spend)})` : ''} העלו אותך לדרגת <strong>${escapeHtml(label)}</strong>. ${perk}</div>
+        <div style="font-size:13px;color:${MUTED};margin-top:8px">הדרגה נמדדת לפי הרכישות ב-12 החודשים האחרונים.</div>
+        <a href="${escapeHtml(url)}" class="ke-btn" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">לדרגה ולהטבות שלי</a>
+      </div>`,
+    'קיבלת את המייל הזה כי הדרגה שלך במועדון הלקוחות של KenyonExpress עלתה.',
+    subject,
+  )
+
+  return { subject, html, text }
+}
+
 /** Dispatch by queued kind. Unknown kinds return null so the drain can park them. */
 export function buildNotification(
   kind: string,
@@ -1214,6 +1276,8 @@ export function buildNotification(
       return buildBackInStockEmail(payload, siteUrl)
     case 'gift_card_issued':
       return buildGiftCardIssuedEmail(payload, siteUrl)
+    case 'loyalty_tier_upgraded':
+      return buildLoyaltyTierUpgradedEmail(payload, siteUrl)
     default:
       return null
   }

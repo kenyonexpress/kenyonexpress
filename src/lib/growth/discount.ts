@@ -22,6 +22,8 @@
 //    discountable; reducing the second would hand the shopper money out of the
 //    supplier's register. The caller passes only the on-site payable amount.
 
+import { type LoyaltyTier, meetsTier, tierRequiredMessage } from '@/lib/loyalty/tiers'
+
 export type DiscountCampaign = {
   id: string
   code: string
@@ -38,6 +40,12 @@ export type DiscountCampaign = {
   used_count: number
   allow_stacking: boolean
   is_active: boolean
+  /**
+   * A tier-only deal (STEP 47, pending 261): the lowest loyalty tier the
+   * code is open to, or null/absent for everyone. Optional because the
+   * column arrives with 261 and `select('*')` simply omits it before then.
+   */
+  min_loyalty_tier?: LoyaltyTier | null
 }
 
 export type DiscountFailure =
@@ -51,6 +59,7 @@ export type DiscountFailure =
   | 'no-commission'
   | 'stacking-not-allowed'
   | 'gift-card-in-cart'
+  | 'tier-required'
 
 export type DiscountEvaluation =
   | {
@@ -77,6 +86,8 @@ const MESSAGES: Record<DiscountFailure, string> = {
   'no-commission': 'לא ניתן להחיל את הקוד על העגלה הזו',
   'stacking-not-allowed': 'לא ניתן לצרף את הקוד הזה לקוד אחר',
   'gift-card-in-cart': 'לא ניתן להחיל קוד הנחה על גיפט קארד',
+  // Overridden per campaign by `tierRequiredMessage`, which names the tier.
+  'tier-required': 'הקוד הזה שמור לחברי מועדון הלקוחות',
 }
 
 /**
@@ -105,10 +116,15 @@ export type DiscountCartFacts = {
    * cart is discountable, whatever the code.
    */
   giftCardInCart?: boolean
+  /**
+   * The shopper's live loyalty tier (`currentLoyaltyTier`), null for a
+   * guest. Only consulted when the campaign carries `min_loyalty_tier`.
+   */
+  loyaltyTier?: LoyaltyTier | null
 }
 
-function fail(reason: DiscountFailure): DiscountEvaluation {
-  return { ok: false, reason, message: MESSAGES[reason] }
+function fail(reason: DiscountFailure, message: string = MESSAGES[reason]): DiscountEvaluation {
+  return { ok: false, reason, message }
 }
 
 /**
@@ -155,6 +171,16 @@ export function evaluateDiscount(
   // shopper reaches the payment page rather than after.
   if (campaign.max_uses !== null && campaign.used_count >= campaign.max_uses) {
     return fail('exhausted')
+  }
+
+  // A tier-only deal. Before the amount, so a shopper below the tier is told
+  // which tier the code needs and not quoted a number the cart will refuse.
+  // `meetsTier(null, x)` is false: a guest is a member at no tier, and a
+  // code that is a loyalty perk is not open to someone who has not signed
+  // in, whatever their history would say if they did.
+  const minTier = campaign.min_loyalty_tier ?? null
+  if (minTier !== null && !meetsTier(cart.loyaltyTier ?? null, minTier)) {
+    return fail('tier-required', tierRequiredMessage(minTier))
   }
 
   // Stacking is off unless the campaign opts in, per the goal. Checked before

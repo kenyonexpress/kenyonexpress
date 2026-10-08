@@ -1,5 +1,6 @@
 'use client'
 
+import type { LoyaltyTier } from '@/lib/loyalty/tiers'
 import { type DiscountActionState, saveDiscountCampaign } from '@/server/actions/admin/discounts'
 import { useActionState, useState } from 'react'
 
@@ -19,6 +20,12 @@ type Initial = {
   max_uses_per_user?: number
   allow_stacking?: boolean
   is_active?: boolean
+  /**
+   * Tier-only deal (STEP 47): silver or gold, null/absent for everyone. Typed
+   * as the engine's tier so the edit page can pass its row straight through;
+   * bronze never reaches the database (CHECK) and the select has no option for it.
+   */
+  min_loyalty_tier?: LoyaltyTier | null
 }
 
 const EMPTY: DiscountActionState = { ok: false }
@@ -294,6 +301,24 @@ export default function DiscountCampaignForm({ initial = {} }: { initial?: Initi
               className={INPUT}
               dir="ltr"
             />
+          </Field>
+          <Field
+            id="min_loyalty_tier"
+            label="דרגת מועדון מינימלית"
+            hint="קוד שמור לחברי מועדון: העגלה מסרבת לקוד מתחת לדרגה. ברונזה היא הבסיס ולכן אינה אפשרות."
+            errors={err.min_loyalty_tier}
+          >
+            <select
+              id="min_loyalty_tier"
+              name="min_loyalty_tier"
+              defaultValue={initial.min_loyalty_tier ?? ''}
+              aria-describedby={describedBy('min_loyalty_tier', true)}
+              className={INPUT}
+            >
+              <option value="">פתוח לכולם</option>
+              <option value="silver">חברי כסף ומעלה</option>
+              <option value="gold">חברי זהב בלבד</option>
+            </select>
           </Field>
         </div>
       </fieldset>

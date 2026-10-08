@@ -65,6 +65,10 @@ export const PURGED_ROWS: ReadonlyArray<{ table: string; column: string }> = [
   { table: 'notification_outbox', column: 'user_id' },
   { table: 'user_rate_limits', column: 'user_id' },
   { table: 'supplier_members', column: 'user_id' },
+  // STEP 47: the remembered loyalty tier (pending 261). Cascades from
+  // auth.users anyway; listed so the plan says so and so a tolerant delete
+  // (42P01 before 261) is a recorded step, not a surprise.
+  { table: 'loyalty_tiers', column: 'user_id' },
 ]
 
 /**

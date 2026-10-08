@@ -210,6 +210,12 @@ vi.mock('@/lib/utils/rate-limit', () => ({
   checkRateLimit: (...a: unknown[]) => checkRateLimit(...a),
   getClientIp: async () => IP,
 }))
+// The shopper's loyalty tier (STEP 47), read from their own paid orders in
+// production; here a knob, null meaning guest or bronze-with-nothing.
+let loyaltyTier: 'bronze' | 'silver' | 'gold' | null = null
+vi.mock('@/server/queries/loyalty', () => ({
+  currentLoyaltyTier: async () => loyaltyTier,
+}))
 vi.mock('@/lib/observability/action-context', () => ({
   withActionContext: (_name: string, fn: () => unknown) => fn(),
 }))
@@ -439,6 +445,31 @@ describe('getCart', () => {
       expect(cart.total).toBe(18000)
       expect(byUnitCode).not.toHaveBeenCalled()
       expect(find('public:coupons', 'select')).toEqual([])
+    })
+
+    it('refuses a tier-only campaign below its tier and falls through to the legacy table', async () => {
+      jar.set(CART_COUPON_COOKIE, 'GOLD20')
+      loyaltyTier = 'silver'
+      byCode.mockResolvedValue({
+        data: campaign('GOLD20', { percent_bp: 2000, min_loyalty_tier: 'gold' } as never),
+        error: null,
+      })
+      const cart = await getCart()
+      expect(cart.coupon).toBeNull()
+      expect(cart.total).toBe(20000)
+      loyaltyTier = null
+    })
+
+    it('prices a tier-only campaign for a shopper at the tier', async () => {
+      jar.set(CART_COUPON_COOKIE, 'GOLD20')
+      loyaltyTier = 'gold'
+      byCode.mockResolvedValue({
+        data: campaign('GOLD20', { percent_bp: 2000, min_loyalty_tier: 'gold' } as never),
+        error: null,
+      })
+      const cart = await getCart()
+      expect(cart.coupon).toEqual({ code: 'GOLD20', label: '20%- הנחה', discount: 2000 })
+      loyaltyTier = null
     })
 
     it('resolves a printed unit code to its campaign and keeps the unit code as the identity', async () => {

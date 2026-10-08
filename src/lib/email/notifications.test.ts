@@ -1,4 +1,5 @@
 import {
+  buildLoyaltyTierUpgradedEmail,
   buildNotification,
   buildOrderDeliveredEmail,
   buildOrderPaidEmail,
@@ -610,5 +611,57 @@ describe('buildOrderDeliveredEmail (STEP 16)', () => {
     const mail = buildOrderDeliveredEmail({ ...payload, total_agorot: 81_700 }, SITE)
     expect(mail.text).not.toContain('₪')
     expect(mail.html).not.toContain('₪')
+  })
+})
+
+describe('buildLoyaltyTierUpgradedEmail (STEP 47)', () => {
+  const payload = {
+    tier: 'silver',
+    previous_tier: 'bronze',
+    spend_12m_agorot: 148_000,
+    full_name: 'דנה',
+  }
+
+  it('dispatches through buildNotification under the loyalty_tier_upgraded kind', () => {
+    expect(buildNotification('loyalty_tier_upgraded', payload, SITE)?.subject).toContain('כסף')
+  })
+
+  it('names the tier in Hebrew, greets by name, shows the spend as shekels', () => {
+    const mail = buildLoyaltyTierUpgradedEmail(payload, SITE)
+    expect(mail?.subject).toBe('עלית לדרגת כסף במועדון הלקוחות')
+    expect(mail?.text).toContain('שלום דנה,')
+    expect(mail?.text).toContain('1,480.00')
+    expect(mail?.text).toContain('12 החודשים האחרונים')
+    expect(mail?.html).toContain('<strong>כסף</strong>')
+  })
+
+  it('tells gold about gold-only codes and silver about silver-and-up codes', () => {
+    expect(buildLoyaltyTierUpgradedEmail({ ...payload, tier: 'gold' }, SITE)?.text).toContain(
+      'חברי זהב בלבד',
+    )
+    expect(buildLoyaltyTierUpgradedEmail(payload, SITE)?.text).toContain('חברי כסף וזהב')
+  })
+
+  it('links the loyalty page on the configured origin without a double slash', () => {
+    const mail = buildLoyaltyTierUpgradedEmail(payload, 'https://kenyonexpress.co.il/')
+    expect(mail?.html).toContain('href="https://kenyonexpress.co.il/account/loyalty"')
+    expect(mail?.html).not.toContain('.co.il//')
+  })
+
+  it('refuses a payload with no tier or an unknown tier, so the drain parks it', () => {
+    expect(buildLoyaltyTierUpgradedEmail({}, SITE)).toBeNull()
+    expect(buildLoyaltyTierUpgradedEmail({ tier: 'platinum' }, SITE)).toBeNull()
+  })
+
+  it('copes with no name and no spend', () => {
+    const mail = buildLoyaltyTierUpgradedEmail({ tier: 'gold' }, SITE)
+    expect(mail?.text).toContain('שלום,')
+    expect(mail?.text).not.toContain('(')
+  })
+
+  it('never prints a discount code: the deals are read on the page, under the session', () => {
+    const mail = buildLoyaltyTierUpgradedEmail({ ...payload, code: 'GOLD50' }, SITE)
+    expect(mail?.html).not.toContain('GOLD50')
+    expect(mail?.text).not.toContain('GOLD50')
   })
 })

@@ -88,6 +88,11 @@ const PENDING_KINDS: readonly { kind: string; migration: string }[] = [
   // server/orders/delivered-notification.ts from both writers of
   // item_status = 'delivered'.
   { kind: 'order_delivered', migration: '253_notification_outbox_order_delivered.sql' },
+  // STEP 47: the loyalty upgrade, enqueued by fn_refresh_loyalty_tier inside
+  // 261 itself (no TypeScript enqueuer), so the p_kind scan below never sees
+  // it; it is listed so the renderer is held to it and so the day 261 lands
+  // it is moved up with the rest.
+  { kind: 'loyalty_tier_upgraded', migration: '261_loyalty_tiers.sql' },
 ]
 
 // Re-measured 2026-09-09, when 183 restated the constraint. The live list had
@@ -134,6 +139,9 @@ const PAYLOAD: Record<string, unknown> = {
   old_agorot: 40000,
   new_agorot: 29900,
   price_agorot: 29900,
+  tier: 'silver',
+  previous_tier: 'bronze',
+  spend_12m_agorot: 148000,
 }
 
 const SITE = 'https://kenyonexpress.co.il'

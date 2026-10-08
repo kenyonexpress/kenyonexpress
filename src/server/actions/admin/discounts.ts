@@ -19,6 +19,9 @@ import { z } from 'zod'
 
 const AMOUNT_HINT = 'סכומים נשמרים באגורות'
 
+/** Postgres: undefined_column, what a database without 261 answers for the tier. */
+const UNDEFINED_COLUMN = '42703'
+
 const schema = z
   .object({
     id: z.string().uuid().optional(),
@@ -49,6 +52,9 @@ const schema = z
 
     allow_stacking: z.coerce.boolean().default(false),
     is_active: z.coerce.boolean().default(true),
+    // Tier-only deal (STEP 47): the lowest loyalty tier the code is open to.
+    // Bronze is the floor and never a minimum, so it is not an option.
+    min_loyalty_tier: z.enum(['silver', 'gold']).nullable().optional(),
   })
   // The DB has the same CHECK. Validating here too means the admin sees a field
   // error instead of a constraint violation, and the constraint stays as the
@@ -107,6 +113,10 @@ async function runSaveDiscountCampaign(
     max_uses: raw.max_uses === '' ? null : raw.max_uses,
     starts_at: raw.starts_at === '' ? null : raw.starts_at,
     expires_at: raw.expires_at === '' ? null : raw.expires_at,
+    min_loyalty_tier:
+      raw.min_loyalty_tier === '' || raw.min_loyalty_tier === undefined
+        ? null
+        : raw.min_loyalty_tier,
   })
 
   if (!parsed.success) {
@@ -139,18 +149,43 @@ async function runSaveDiscountCampaign(
 
   const admin = createAdminClient()
 
+  // The tier column arrives with pending 261. It is named in the write only
+  // when it carries something: a chosen tier, or null on an EDIT so that
+  // clearing the field really clears the column. A new campaign with no tier
+  // does not name it at all, so saving keeps working before 261 exactly as
+  // it did. If the column is missing (42703) and the admin chose a tier, the
+  // save fails with the migration named rather than silently saving an open
+  // code that was meant to be gated; a null on edit is retried without the
+  // key, because there is no tier to clear on a database that has none.
+  const tierPatch: { min_loyalty_tier?: 'silver' | 'gold' | null } = v.min_loyalty_tier
+    ? { min_loyalty_tier: v.min_loyalty_tier }
+    : v.id
+      ? { min_loyalty_tier: null }
+      : {}
+
   // used_count is deliberately absent from both branches. It belongs to
   // claim_order_discount, which holds a row lock while it moves; an admin form
   // writing it would be the read-then-write race the ledger exists to prevent,
   // reintroduced from a different direction.
   let campaignId = v.id ?? null
-  let error: PostgrestError | null
-  if (v.id) {
-    ;({ error } = await admin.from('discount_campaigns').update(row).eq('id', v.id))
-  } else {
-    const inserted = await admin.from('discount_campaigns').insert(row).select('id').single()
-    error = inserted.error
+  const write = async (payload: typeof row & typeof tierPatch) => {
+    if (v.id) {
+      const { error } = await admin.from('discount_campaigns').update(payload).eq('id', v.id)
+      return error
+    }
+    const inserted = await admin.from('discount_campaigns').insert(payload).select('id').single()
     campaignId = inserted.data?.id ?? null
+    return inserted.error
+  }
+  let error: PostgrestError | null = await write({ ...row, ...tierPatch })
+  if (error?.code === UNDEFINED_COLUMN && 'min_loyalty_tier' in tierPatch) {
+    if (v.min_loyalty_tier) {
+      return {
+        ok: false,
+        error: 'דרגת מועדון לקוד דורשת את מיגרציה 261 (העמודה min_loyalty_tier עדיין לא קיימת)',
+      }
+    }
+    error = await write(row)
   }
 
   if (error) {
@@ -176,6 +211,7 @@ async function runSaveDiscountCampaign(
       max_uses_per_user: row.max_uses_per_user,
       allow_stacking: row.allow_stacking,
       is_active: row.is_active,
+      min_loyalty_tier: v.min_loyalty_tier ?? null,
     },
   })
 

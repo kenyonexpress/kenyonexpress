@@ -1110,3 +1110,167 @@
   border-color: var(--account-red);
   color: var(--account-red);
 }
+
+/* Loyalty tiers (STEP 47). Tones from the account palette only: bronze is the
+   quiet floor, silver is outlined, gold is the brand yellow. */
+.account-nav__tier {
+  margin: 6px 0 0;
+}
+
+.loyalty-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--account-line);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 18px;
+  color: var(--account-muted);
+  background: transparent;
+  white-space: nowrap;
+}
+
+.loyalty-badge--silver {
+  border-color: var(--account-muted);
+  color: var(--account-ink);
+}
+
+.loyalty-badge--gold {
+  border-color: var(--account-yellow);
+  background: var(--account-yellow);
+  color: var(--account-ink);
+}
+
+.loyalty-badge--lg {
+  padding: 6px 16px;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.loyalty-hero {
+  border: 1px solid var(--account-line);
+  border-radius: 4px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.loyalty-hero--gold {
+  border-color: var(--account-yellow);
+}
+
+.loyalty-hero__spend {
+  font-size: 15px;
+  margin: 14px 0 0;
+}
+
+.loyalty-hero__since {
+  font-size: 13px;
+  color: var(--account-muted);
+  margin: 4px 0 0;
+}
+
+.loyalty-progress {
+  margin-top: 16px;
+}
+
+.loyalty-progress__bar {
+  display: block;
+  width: 100%;
+  height: 10px;
+  border: 0;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--account-line);
+  accent-color: var(--account-yellow);
+}
+
+.loyalty-progress__bar::-webkit-progress-bar {
+  background: var(--account-line);
+  border-radius: 999px;
+}
+
+.loyalty-progress__bar::-webkit-progress-value {
+  background: var(--account-yellow);
+  border-radius: 999px;
+}
+
+.loyalty-progress__bar::-moz-progress-bar {
+  background: var(--account-yellow);
+  border-radius: 999px;
+}
+
+.loyalty-progress__label {
+  font-size: 14px;
+  margin: 8px 0 0;
+  color: var(--account-muted);
+}
+
+.loyalty-deals {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.loyalty-deal__code {
+  display: inline-block;
+  padding: 4px 10px;
+  border: 1px dashed var(--account-muted);
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  direction: ltr;
+  unicode-bidi: isolate;
+  color: var(--account-ink);
+}
+
+.loyalty-deal--locked .account-row__title {
+  color: var(--account-muted);
+}
+
+.loyalty-deals__hint {
+  font-size: 13px;
+  color: var(--account-muted);
+  margin: 12px 0 0;
+}
+
+.loyalty-ladder {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.loyalty-ladder__rung {
+  border: 1px solid var(--account-line);
+  border-radius: 4px;
+  padding: 14px 16px;
+  opacity: 0.7;
+}
+
+.loyalty-ladder__rung.is-reached {
+  opacity: 1;
+}
+
+.loyalty-ladder__rung.is-current {
+  border-color: var(--account-yellow);
+}
+
+.loyalty-ladder__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.loyalty-ladder__threshold {
+  font-size: 13px;
+  color: var(--account-muted);
+}
+
+.loyalty-ladder__perks {
+  margin: 10px 0 0;
+  padding-inline-start: 18px;
+  font-size: 14px;
+}

@@ -73,6 +73,8 @@ export const OPTIONAL_KINDS = [
    */
   'price_drop',
   'welcome',
+  /** The loyalty tier rose (STEP 47). A perk notice, not the product and not money. */
+  'loyalty_tier_upgraded',
 ] as const
 
 export type RequiredKind = (typeof REQUIRED_KINDS)[number]
@@ -151,6 +153,7 @@ export const KIND_LABEL_HE: Record<OptionalKind, string> = {
   cashback_credited: 'זיכוי לארנק',
   price_drop: 'ירידת מחיר במוצר שמור',
   welcome: 'ברוכים הבאים',
+  loyalty_tier_upgraded: 'עלייה בדרגת מועדון הלקוחות',
 }
 
 export const CHANNEL_LABEL_HE: Record<Channel, string> = {

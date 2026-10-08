@@ -4,6 +4,7 @@ import {
   type DiscountFailure,
   evaluateDiscount,
 } from '@/lib/growth/discount'
+import type { LoyaltyTier } from '@/lib/loyalty/tiers'
 
 /**
  * Stacking: what a SET of campaign codes is worth against one cart.
@@ -65,6 +66,8 @@ export interface StackCartFacts {
   commissionAgorot: number
   /** True when the cart holds a gift card; nothing is discountable then. */
   giftCardInCart?: boolean
+  /** The shopper's live loyalty tier, null for a guest; the tier-only gate reads it. */
+  loyaltyTier?: LoyaltyTier | null
 }
 
 const STACK_FULL_MESSAGE = 'ניתן לשלב עד שלושה קודים בהזמנה אחת'
@@ -118,6 +121,7 @@ export function evaluateDiscountStack(
         // engine's own single-flag check must not re-refuse a legal stack.
         hasOtherDiscount: false,
         giftCardInCart: cart.giftCardInCart,
+        loyaltyTier: cart.loyaltyTier,
       },
       now,
     )

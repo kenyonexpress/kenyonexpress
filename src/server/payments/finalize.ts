@@ -21,6 +21,7 @@ import {
   voucherFallbackColumnProbe,
 } from '@/server/domain/vouchers/fallback-code'
 import { type VoucherIssueClient, issueVoucher } from '@/server/domain/vouchers/issue'
+import { refreshLoyaltyTierForOrder } from '@/server/loyalty/refresh'
 import {
   issueGiftCardsForItem,
   readGiftCardProductIds,
@@ -663,6 +664,14 @@ export async function finalizeOrder(input: {
       userId: order.user_id,
       cardToken: input.token?.token ?? null,
     })
+
+    // The loyalty tier (STEP 47). After the referral for the same reason the
+    // referral is after the cashback: a counter that follows a payment, with
+    // the weakest claim on the order's success. The 261 refresh function
+    // owns the whole rule and announces an upgrade itself; until it is
+    // applied the call is a logged no-op. Never fails the finalize: the
+    // card is already charged.
+    await refreshLoyaltyTierForOrder(admin, { orderId: order.id, userId: order.user_id })
 
     // The stock the checkout held becomes a sale, once, in one statement.
     //

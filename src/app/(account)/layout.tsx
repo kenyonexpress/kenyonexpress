@@ -10,6 +10,7 @@ import WhatsAppFloat from '@/components/shared/WhatsAppFloat'
 import DeferredToaster from '@/components/ui/DeferredToaster'
 import { createClient } from '@/lib/supabase/server'
 import { getAccountProfile, getWalletSummary } from '@/server/queries/account'
+import { getMyLoyalty } from '@/server/queries/loyalty'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
@@ -44,13 +45,18 @@ async function AccountSideNav() {
     redirect(`/login?next=${encodeURIComponent('/account')}`)
   }
 
-  const [profile, wallet] = await Promise.all([getAccountProfile(), getWalletSummary()])
+  const [profile, wallet, loyalty] = await Promise.all([
+    getAccountProfile(),
+    getWalletSummary(),
+    getMyLoyalty(),
+  ])
 
   return (
     <AccountNav
       fullName={profile?.fullName ?? null}
       email={profile?.email ?? user.email ?? ''}
       walletBalanceAgorot={wallet.balanceAgorot}
+      loyaltyTier={loyalty?.tier ?? null}
     />
   )
 }

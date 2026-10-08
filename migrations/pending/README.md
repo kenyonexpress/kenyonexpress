@@ -1,5 +1,47 @@
 # `migrations/pending/`
 
+## 2026-10-08: 261 PENDING (loyalty tiers: remembered tier, tier-only codes, upgrade mail, STEP 47)
+
+`261_loyalty_tiers.sql` adds (1) `public.loyalty_tiers`: one row per
+customer with the tier they were LAST TOLD ABOUT, the trailing-365-day
+spend it was computed from and `tier_since`; RLS on, owner SELECT only,
+every write is the function below on the service role. The application
+does not read the tier from here to decide anything: the window rolls
+daily, so the badge, the account page and the cart compute the tier live
+from the customer's own paid orders (`src/lib/loyalty/tiers.ts`:
+bronze from ₪0, silver from ₪1,000, gold from ₪3,000; `paid_at` set,
+not cancelled or refunded, on-site total in agorot). (2)
+`discount_campaigns.min_loyalty_tier` (NULL / silver / gold, CHECK): a
+tier-only code the cart refuses below that tier; `evaluateDiscount`
+(src/lib/growth/discount.ts) applies the gate from the shopper's live
+tier, and NULL keeps every existing code open, so nothing changes on
+apply. (3) `fn_refresh_loyalty_tier(uuid)`, service role only, called by
+the payment finalize after every paid order
+(`src/server/loyalty/refresh.ts`): sums the window with the same two
+thresholds (tiers.test.ts reads this file and fails on drift), upserts
+the row, and when the tier ROSE writes the bell row itself (231's CASE
+is pinned to an exact list and stays untouched) and enqueues
+`loyalty_tier_upgraded` through `fn_enqueue_notification` under
+`loyalty:<user>:<tier>:<date>`. A tier that fell is recorded quietly.
+(4) `notification_outbox_kind_check` widened with `loyalty_tier_upgraded`
+by READING the live constraint and appending one name, rebuilt in the
+`ARRAY['a','b']::text[]` spelling so 253's self-check and the hand
+measurement keep working. **Measured on production before writing
+(2026-10-08):** table, column and function absent; `orders.user_id`,
+`paid_at`, `status`, `total_ils_agorot` and `deleted_at` present;
+constraint at the seventeen 09-10 names; 28 paid orders in the window
+across two buyers, the larger at ₪1,480 (silver on apply, nobody gold).
+**Rehearsed on production inside BEGIN/ROLLBACK through the management API
+the same day:** first run of the refresh for that buyer answered
+`bronze -> silver, upgraded`, wrote one bell row ("עלית לדרגת כסף") and
+one outbox row under the dedupe key; the second run answered `upgraded:
+false`; the constraint read back with eighteen quoted names; everything
+absent after the ROLLBACK. Until applied the code is a logged no-op
+(PGRST202 at the refresh, PGRST205 at the row read, 42703 at the deals
+read and at an admin save that chose a tier, which fails with the
+migration named). Rollback in the file header. Awaits the same explicit
+approval as every file here.
+
 ## 2026-10-08: 260 PENDING (referral: qualified row retried for payout, first-time claim, order stamped, STEP 46)
 
 `260_referral_qualified_guard_and_first_time_claim.sql` replaces the bodies of

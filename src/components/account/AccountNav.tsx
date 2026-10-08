@@ -1,6 +1,8 @@
 'use client'
 
+import LoyaltyBadge from '@/components/account/LoyaltyBadge'
 import { formatIls } from '@/lib/account/format'
+import type { LoyaltyTier } from '@/lib/loyalty/tiers'
 import type { Agorot } from '@/lib/money'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -15,6 +17,7 @@ const ITEMS = [
   { href: '/account/saved-searches', label: 'חיפושים שמורים' },
   { href: '/account/wallet', label: 'הארנק שלי' },
   { href: '/account/cashback', label: 'הקאשבק שלי' },
+  { href: '/account/loyalty', label: 'מועדון הלקוחות' },
   { href: '/account/referrals', label: 'חבר מביא חבר' },
   { href: '/account/subscriptions', label: 'המנויים שלי' },
   { href: '/account/addresses', label: 'כתובות' },
@@ -32,10 +35,13 @@ export default function AccountNav({
   fullName,
   email,
   walletBalanceAgorot,
+  loyaltyTier = null,
 }: {
   fullName: string | null
   email: string
   walletBalanceAgorot: Agorot
+  /** STEP 47: the live tier, shown as a chip under the name; null for none. */
+  loyaltyTier?: LoyaltyTier | null
 }) {
   const pathname = usePathname()
 
@@ -44,6 +50,11 @@ export default function AccountNav({
       <div className="account-nav__head">
         <p className="account-nav__name">{fullName || 'שלום'}</p>
         <p className="account-nav__email">{email}</p>
+        {loyaltyTier && (
+          <p className="account-nav__tier">
+            <LoyaltyBadge tier={loyaltyTier} />
+          </p>
+        )}
       </div>
       <ul className="account-nav__list">
         {ITEMS.map((item) => {

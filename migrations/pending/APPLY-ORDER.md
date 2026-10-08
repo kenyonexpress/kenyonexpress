@@ -1,5 +1,22 @@
 # Apply order
 
+## 2026-10-08 (STEP 47): 261 filed; apply 253 before 261
+
+261 reads the live `notification_outbox_kind_check`, keeps every name it
+finds and appends `loyalty_tier_upgraded`, so it is correct whether 253
+(`order_delivered`) has been applied before it or not. The reverse order
+is not: 253 RESTATES eighteen names and would drop 261's. Order: **253,
+then 261** (any time after; nothing else depends on either). Rehearsed on
+production inside BEGIN/ROLLBACK on 2026-10-08 (self-check passed, the
+refresh upgraded the top buyer bronze -> silver once and not twice,
+nothing persisted). After applying, confirm with
+`select tier, spend_12m_agorot from loyalty_tiers` (empty until the next
+paid order, or run `select fn_refresh_loyalty_tier(user_id) from (select
+distinct user_id from orders where paid_at is not null) u` once to seed
+every buyer, which mails each one whose tier is above bronze), then move
+`loyalty_tier_upgraded` from PENDING_KINDS to CHECK_ACCEPTS in
+`src/lib/email/outbox-kinds.test.ts`.
+
 ## 2026-10-08 (STEP 46): 260 filed, 250 amended; apply 250 then 260, in that order
 
 260 replaces two function bodies from 098 (applied) and touches no table;

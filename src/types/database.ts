@@ -934,6 +934,7 @@ export type Database = {
           max_discount_agorot: number | null
           max_uses: number | null
           max_uses_per_user: number
+          min_loyalty_tier: string | null
           min_order_agorot: number
           name: string
           percent_bp: number | null
@@ -956,6 +957,7 @@ export type Database = {
           max_discount_agorot?: number | null
           max_uses?: number | null
           max_uses_per_user?: number
+          min_loyalty_tier?: string | null
           min_order_agorot?: number
           name: string
           percent_bp?: number | null
@@ -978,6 +980,7 @@ export type Database = {
           max_discount_agorot?: number | null
           max_uses?: number | null
           max_uses_per_user?: number
+          min_loyalty_tier?: string | null
           min_order_agorot?: number
           name?: string
           percent_bp?: number | null
@@ -1361,6 +1364,33 @@ export type Database = {
           updated_at?: string
           url?: string
           width?: number | null
+        }
+        Relationships: []
+      }
+      loyalty_tiers: {
+        Row: {
+          computed_at: string
+          spend_12m_agorot: number
+          tier: string
+          tier_since: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          computed_at?: string
+          spend_12m_agorot?: number
+          tier?: string
+          tier_since?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          computed_at?: string
+          spend_12m_agorot?: number
+          tier?: string
+          tier_since?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -5442,6 +5472,7 @@ export type Database = {
         Args: { p_reason?: string; p_token: string }
         Returns: Json
       }
+      fn_refresh_loyalty_tier: { Args: { p_user_id: string }; Returns: Json }
       fn_wallet_cashback_amount: {
         Args: {
           p_category_ids?: string[]
