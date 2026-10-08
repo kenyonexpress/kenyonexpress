@@ -22063,3 +22063,17 @@ M08-c119 gates (working tree, uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` 
 > Last item: **M17-c119 BLOCKED** (2026-10-08): RTL re-probed in the foreground on `/` and the same 6 sitemap products at 380, 768 and 1440. Production (`www`, still `audit/final-audit@1e84df0`): 21/21 runs 200 (on a second pass with a 120 s timeout; the first pass timed out 21/21 during a network outage on this machine), `lang=he dir=rtl`, overflow 0, 0 Hebrew in LTR, 0 left-aligned Hebrew; the only leak is unchanged, the footer newsletter placeholder `הזן כתובת אימייל` computes `direction: ltr`, `text-align: start` (flush left) at 1440 on all 7 pages. Local (`pnpm start -p 3519`, HEAD `f87cda297` plus the uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` fix): 21/21 clean, placeholder `text-align: right`. The fix is a UI change and compare.mjs refuses: 6/6 exit 5 (home and product at 380/768/1440, blocker 0). The fix stays uncommitted.
 >
 > M17-c119 gates (working tree): type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (2 recoverable `supabase.timeout` lines, 1 `db.query_failed`).
+
+## M03-c120: compare.mjs on /category at 380, 768, 1440, run 2026-10-08 in the foreground
+
+Command: `node scripts/compare.mjs --page=category --width=<w>`, HEAD `7c00a93cb` with the two uncommitted UI edits in the tree. The gate refuses on the live side before it needs a local server.
+
+| Width | Exit | Diff | Output |
+|---|---|---|---|
+| 380 | 5 | none | REFUSING: `https://kenyonexpress.co.il/product-category/hot-deals/` is not the reference (our build: 30 `/_next/` refs, Next runtime, 0 wp-content) |
+| 768 | 5 | none | REFUSING: same reason (30 `/_next/` refs) |
+| 1440 | 5 | none | REFUSING: same reason (37 `/_next/` refs) |
+
+- No diff numbers, unchanged from M03-c115 through M03-c119. `refs/ke_live_singlefile.html` is still absent. The gate wrote three REFUSED rows to `docs/UI-PARITY-REPORT.md`, committed with this item.
+- Gates on the working tree: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped). Build 1 on all 3 attempts: attempt 1 `catalogue.supplier_ids_failed` (4 `supabase.timeout` on `suppliers`), attempt 2 prerender `/product/barbecue-2` (28 timeouts), attempt 3 prerender `/product/טיול-מאורגן-לדובאי` and `/product/חיתולי-האגיס` (86 timeouts). Blocker 7, no code change indicated.
+- Moved from STATE.md (verbatim): `Last item: **M02-c120 BLOCKED** (2026-10-08): compare.mjs on `/product` exits 5 (REFUSED, no diff number) at 380, 768 and 1440. `https://kenyonexpress.co.il/product/מוצר-לדוגמא/` is our own build (30 `/_next/` refs, Next runtime, 0 wp-content) and `refs/ke_live_singlefile.html` is still absent. Run in the foreground, HEAD `db95e4b71`. Unchanged from M02-c119; open blocker 0. No code change.` and `M02-c120 gates (working tree, uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` UI edits left unstaged): type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 1 on all 6 attempts (Supabase timeouts at `/category/[slug]`, `/product/e2e-test-physical`, `/product/6253` and `/coupons/[id]`; blocker 7), so `pnpm start` could not serve a local side. compare.mjs exit 5 x3 (blocker 0); the gate refuses on the live side before it needs the local one.`
