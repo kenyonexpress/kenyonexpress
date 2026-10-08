@@ -427,3 +427,56 @@ export function buildContactJsonLd(input: ContactJsonLdInput): JsonLdNode[] {
     },
   ]
 }
+
+export interface AboutJsonLdInput {
+  siteUrl: string
+  email: string
+  /** International digits (972...) or null when no number is configured. */
+  phoneIntl: string | null
+  /** The people `content/about` names, in order. */
+  team: readonly { name: string; role: string }[]
+}
+
+/**
+ * `AboutPage` plus the `Organization` with its founder and a customer-service
+ * `ContactPoint` for `/about` (STEP 53).
+ *
+ * The founder is the first team entry from `content/about`, so the page and
+ * the knowledge panel name the same person; the contact point repeats the
+ * `/contact` shape with the same email and number, so the two pages cannot
+ * describe two different businesses. No `foundingDate`: none is recorded.
+ */
+export function buildAboutJsonLd(input: AboutJsonLdInput): JsonLdNode[] {
+  const site = trimSite(input.siteUrl)
+  const contactPoint: Record<string, unknown> = {
+    '@type': 'ContactPoint',
+    contactType: 'customer service',
+    email: input.email,
+    availableLanguage: ['he'],
+    areaServed: 'IL',
+  }
+  if (input.phoneIntl) contactPoint.telephone = `+${input.phoneIntl}`
+  const organization: JsonLdNode = {
+    '@context': SCHEMA,
+    '@type': 'Organization',
+    name: 'KenyonExpress',
+    url: site,
+    logo: `${site}/logo.png`,
+    contactPoint: [contactPoint],
+  }
+  const founder = input.team[0]
+  if (founder) {
+    organization.founder = { '@type': 'Person', name: founder.name, jobTitle: founder.role }
+  }
+  return [
+    {
+      '@context': SCHEMA,
+      '@type': 'AboutPage',
+      name: 'אודות קניון אקספרס',
+      url: `${site}/about`,
+      inLanguage: 'he-IL',
+      about: { '@type': 'Organization', name: 'KenyonExpress', url: site },
+    },
+    organization,
+  ]
+}
