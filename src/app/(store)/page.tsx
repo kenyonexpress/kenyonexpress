@@ -1,4 +1,5 @@
 import BenefitBar from '@/components/home/BenefitBar'
+import BenefitBarExperiment from '@/components/home/BenefitBarExperiment'
 import CategoryGrid from '@/components/home/CategoryGrid'
 import CmsHero from '@/components/home/CmsHero'
 import DealOfTheDay from '@/components/home/DealOfTheDay'
@@ -120,7 +121,12 @@ export default function HomePage() {
 
         The hero's own copy is now `hidden md:block`, which is live's rule.
       */}
-      <BenefitBar />
+      {/* STEP 66: the `no_benefit_bar` arm of the home_hero experiment
+          unmounts the strip in the browser; the server, control and the
+          parity gate render it exactly as before. */}
+      <BenefitBarExperiment>
+        <BenefitBar />
+      </BenefitBarExperiment>
       <DealsOfTheDay />
       {/*
         EVERYTHING FROM HERE DOWN IS BELOW THE GATE'S WINDOW, AND THAT IS WHY

@@ -2,7 +2,9 @@
 
 import { trackingAllowed } from '@/lib/analytics/commerce-client'
 import { WEB_VITAL_METRICS, type WebVitalMetric } from '@/lib/analytics/events'
+import { decidedVariants, whenVariantsDecided } from '@/lib/analytics/feature-flags'
 import { getTracker, track } from '@/lib/analytics/tracker'
+import { featureFlagProperties } from '@/lib/analytics/variant-cache'
 import { landingPageViewProps } from '@/lib/landing/exposure'
 import { isPostHogEnabled, trackEvent } from '@/lib/observability/posthog'
 import { REFERRAL_QUERY_PARAM, normalizeReferralCode } from '@/lib/referrals/code'
@@ -92,11 +94,22 @@ export default function AnalyticsProvider() {
     track('page_view', { route: routeTemplate(pathname), ...landing })
 
     if (isPostHogEnabled() && trackingAllowed()) {
-      trackEvent('$pageview', {
-        $current_url: window.location.href,
-        route: routeTemplate(pathname),
-        ...landing,
-      })
+      // The PostHog copy carries `$feature/<flag>` for every experiment this
+      // browser is in, the same way the first-party row does, and waits for
+      // the session's first decision the same way (lib/analytics/tracker.ts):
+      // without it PostHog's experiment results would see the home page's
+      // exposure view with no variant on it.
+      const href = window.location.href
+      const send = () =>
+        trackEvent('$pageview', {
+          $current_url: href,
+          route: routeTemplate(pathname),
+          ...featureFlagProperties(decidedVariants()),
+          ...landing,
+        })
+      const wait = whenVariantsDecided()
+      if (wait) void wait.then(send)
+      else send()
     }
 
     reportReferralLanding(window.location.search)

@@ -1,6 +1,5 @@
 'use client'
 
-import { CHECKOUT_VARIANT_PROPERTY, cachedCheckoutVariant } from '@/lib/analytics/checkout-variant'
 import { CONSENT_COOKIE, isBehavioralTrackingAllowed } from '@/lib/analytics/consent'
 import {
   type CommerceEventInput,
@@ -10,6 +9,8 @@ import {
   metaEventFor,
   toCurrencyAmount,
 } from '@/lib/analytics/ecommerce'
+import { decidedVariants } from '@/lib/analytics/feature-flags'
+import { featureFlagProperties } from '@/lib/analytics/variant-cache'
 import { isPostHogEnabled, trackEvent } from '@/lib/observability/posthog'
 
 /**
@@ -108,11 +109,11 @@ function postHogProperties(input: CommerceEventInput): Record<string, string | n
   const only = input.items.length === 1 ? input.items[0] : undefined
   if (only) properties.item_id = only.id
   // Stamped from the session cache only, synchronously: an event must never
-  // wait on a flag fetch, and an event that fires before the checkout page
-  // resolved the flag honestly carries nothing. PostHog's experiment analysis
-  // reads the `$feature/<flag>` name natively.
-  const variant = cachedCheckoutVariant()
-  if (variant !== null) properties[CHECKOUT_VARIANT_PROPERTY] = variant
+  // wait on a flag fetch, and an event that fires before the page resolved
+  // the flags honestly carries nothing. Every flag this browser is in, not
+  // only the checkout one: PostHog's experiment analysis reads the
+  // `$feature/<flag>` name natively for each.
+  Object.assign(properties, featureFlagProperties(decidedVariants()))
   return properties
 }
 

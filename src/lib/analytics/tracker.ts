@@ -17,8 +17,10 @@ import {
   MAX_BATCH_SIZE,
   hasRequiredProps,
 } from '@/lib/analytics/events'
+import { decidedVariants, whenVariantsDecided } from '@/lib/analytics/feature-flags'
 import { EventQueue, FLUSH_INTERVAL_MS, type SendResult } from '@/lib/analytics/queue'
 import { type AnalyticsSession, touchSession } from '@/lib/analytics/session'
+import { featureFlagProperties } from '@/lib/analytics/variant-cache'
 
 export const INGEST_PATH = '/api/a'
 
@@ -133,6 +135,35 @@ class Tracker {
       props,
     }
 
+    // EXPERIMENT STAMPING. Every row carries `$feature/<flag>` for each flag
+    // this browser is in (lib/analytics/variant-cache.ts), which is how the
+    // admin experiments report joins an exposure to a variant and how
+    // PostHog's own experiment analysis reads first-party-mirrored rows.
+    // Stamped UNDER the caller's props: an emitter that names a property
+    // itself (the landing page_view) wins.
+    //
+    // The first page of a consented session has no decision yet, and the
+    // page_view and view_product of that page are exactly the exposure rows
+    // the report counts. So when a decision is possible but pending, the
+    // enqueue (not the timestamp) waits for it, at most ~2s. Once decided,
+    // or when no decision can happen (no consent, no key), the event goes
+    // out synchronously as before, so pagehide's drain still sees it.
+    const wait = whenVariantsDecided()
+    if (wait) {
+      void wait.then(() => this.enqueue(this.stamped(event)))
+      return
+    }
+    this.enqueue(this.stamped(event))
+  }
+
+  private stamped(event: ClientEvent): ClientEvent {
+    const flags = featureFlagProperties(decidedVariants())
+    return Object.keys(flags).length === 0
+      ? event
+      : { ...event, props: { ...flags, ...event.props } }
+  }
+
+  private enqueue(event: ClientEvent): void {
     if (this.queue.push(event)) void this.queue.flush()
   }
 

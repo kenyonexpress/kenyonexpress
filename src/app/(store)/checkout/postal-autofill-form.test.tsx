@@ -5,6 +5,7 @@ vi.mock('@/lib/analytics/tracker', () => ({ track: vi.fn() }))
 vi.mock('@/lib/analytics/commerce-client', () => ({ trackCommerce: vi.fn() }))
 vi.mock('@/lib/analytics/feature-flags', () => ({
   getCheckoutVariant: vi.fn(async () => 'control'),
+  getVariant: vi.fn(async (experiment: { control: string }) => experiment.control),
 }))
 vi.mock('@/server/actions/auth', () => ({ signInWithGoogle: vi.fn() }))
 vi.mock('@/server/actions/payments/checkout', () => ({ submitCheckout: vi.fn() }))

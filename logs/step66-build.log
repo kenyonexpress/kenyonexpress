@@ -1,0 +1,61 @@
+Already up to date
+Done in 669ms using pnpm v11.1.2
+$ next build && node scripts/security/csp-shell-gate.mjs
+▲ Next.js 16.3.3 (Turbopack)
+- Environments: .env.local
+✓ Running next.config.ts took 1811ms
+- Cache Components enabled
+- Experiments (use with caution):
+  · optimizePackageImports
+  · serverActions
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 37.0s
+  Running next.config.js provided runAfterProductionCompile ...
+✓ Completed runAfterProductionCompile in 1835ms
+  Running TypeScript ...
+Turbopack build encountered 2 warnings:
+./src/lib/images/watermark.ts:33:21
+Warning: The file pattern ('/ROOT/' <dynamic> | '/ROOT' <dynamic>) matches 11574 files in [project]/
+  [90m31 |[0m   [36mif[0m (cached && cachedFor === file) [36mreturn[0m cached
+  [90m32 |[0m   cachedFor = file
+[33m[1m>[0m [90m33 |[0m   cached = readFile(resolve(process.cwd(), file))
+  [90m   |[0m                     [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m34 |[0m     .then((image) => ({ image, opacity: parseOpacity(env.[33mIMAGE_WATERMARK_OPACITY[0m) }))
+  [90m35 |[0m     .[36mcatch[0m((error: unknown) => {
+  [90m36 |[0m       log.warn([32m'images.watermark.unreadable'[0m, {
+
+Overly broad patterns can lead to build performance issues and over bundling.
+
+Import trace:
+  Server Component:
+    ./src/lib/images/watermark.ts
+    ./src/server/actions/admin/images.ts
+
+
+./src/lib/images/watermark.ts:33:21
+Warning: Dynamic filesystem access causes tracing of the whole project
+  [90m31 |[0m   [36mif[0m (cached && cachedFor === file) [36mreturn[0m cached
+  [90m32 |[0m   cachedFor = file
+[33m[1m>[0m [90m33 |[0m   cached = readFile(resolve(process.cwd(), file))
+  [90m   |[0m                     [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m34 |[0m     .then((image) => ({ image, opacity: parseOpacity(env.[33mIMAGE_WATERMARK_OPACITY[0m) }))
+  [90m35 |[0m     .[36mcatch[0m((error: unknown) => {
+  [90m36 |[0m       log.warn([32m'images.watermark.unreadable'[0m, {
+
+Static analysis determined that this filesystem access causes the whole project to be traced and included in the output.
+This is usually unintentional and leads to all source files (including the public folder) to be deployed as part of the server code.
+This can slow down deployments or lead to failures when size limits are exceeded.
+To resolve this, you can
+- make sure the path is statically scoped to some subfolder, for example path.join(process.cwd(), 'data', bar), or
+- only use them in development, or
+- opt out by adding an ignore comment to the highlighted call: path.resolve(/*turbopackIgnore: true*/ ...), or
+- remove them.
+
+Import trace:
+  Server Component:
+    ./src/lib/images/watermark.ts
+    ./src/server/actions/admin/images.ts
+
+
+[ELIFECYCLE] Command failed.

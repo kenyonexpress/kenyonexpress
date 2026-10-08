@@ -2,6 +2,8 @@
 
 import BrandPlaceholder from '@/components/ui/BrandPlaceholder'
 import SmartImage from '@/components/ui/SmartImage'
+import { HOME_HERO_EXPERIMENT } from '@/lib/analytics/experiments'
+import { useExperimentVariant } from '@/lib/analytics/use-experiment-variant'
 import { ELECTRO_HERO } from '@/lib/electro-hero-tokens'
 import { HERO_SLIDER_BG_CLASS } from '@/lib/hero-singlefile-data'
 import { getImageProps } from 'next/image'
@@ -700,6 +702,11 @@ export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
   const [active, setActive] = useState(0)
   const [paused, setPaused] = useState(false)
   const [engaged, setEngaged] = useState(false)
+  // STEP 66: the `static_hero` arm never auto-advances, even after the
+  // visitor engaged; the dots and the pause still work. Control at first
+  // paint on both sides of hydration, see use-experiment-variant.ts.
+  const heroVariant = useExperimentVariant(HOME_HERO_EXPERIMENT)
+  const autoplayAllowed = heroVariant !== 'static_hero'
 
   const goTo = useCallback(
     (index: number) => {
@@ -757,10 +764,10 @@ export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
   }, [engaged])
 
   useEffect(() => {
-    if (!engaged || slides.length <= 1 || paused) return
+    if (!engaged || !autoplayAllowed || slides.length <= 1 || paused) return
     const t = setInterval(() => goTo(active + 1), AUTOPLAY_MS)
     return () => clearInterval(t)
-  }, [engaged, active, goTo, paused, slides.length])
+  }, [engaged, autoplayAllowed, active, goTo, paused, slides.length])
 
   if (slides.length === 0) return null
 
@@ -774,6 +781,7 @@ export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
     <div
       dir="rtl"
       data-hero-slider=""
+      data-home-hero-variant={heroVariant === 'control' ? undefined : heroVariant}
       className={`${HERO_SLIDER_BG_CLASS} relative h-full min-h-0 w-full min-w-0 flex-1 overflow-hidden border-x border-border-alt font-sans`}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}

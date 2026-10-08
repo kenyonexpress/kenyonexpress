@@ -169,3 +169,43 @@ pnpm posthog:provision       # upsert לפי שם; דורש POSTHOG_PERSONAL_API
 וקוראים לו ‏tracker.ts (‏first-party), ‏commerce-client.ts (‏PostHog), ‏ThirdPartyTags
 (‏GA4/Meta) ו-PostHogReplay. בשרת, ‏`Sec-GPC: 1` או ‏`DNT: 1` על הבקשה מפיל את ה-fan-out
 ל-PostHog בלבד; הרשומה ב-`analytics_events` נכתבת בכל מקרה, כי היא רשומה עסקית.
+
+## ‏9. ניסויי ‏A/B: דגלי ‏PostHog, חותמת ‏`$feature/<flag>` ודוח מובהקות (‏STEP 66, ‏09.10)
+
+**ארבעה ניסויים רשומים ב-`lib/analytics/experiments.ts`**, וכל אחד הוא דגל ‏multivariate
+ב-PostHog שמפתחות הגרסאות שלו הם בדיוק רשימת ה-`variants`, עם ‏`control` ראשון:
+
+| דגל | גרסאות | חשיפה | מטרה |
+|---|---|---|---|
+| ‏`checkout_variant` | ‏`control`, ‏`express_summary` | ‏`checkout_step` | ‏`purchase` |
+| ‏`home_hero` | ‏`control`, ‏`static_hero`, ‏`no_benefit_bar` | ‏`page_view` עם ‏`route = /` | ‏`purchase` |
+| ‏`cta_copy` | ‏`control`, ‏`invite` | ‏`view_product` | ‏`purchase` |
+| ‏`checkout_button_color` | ‏`control`, ‏`green` | ‏`checkout_step` | ‏`purchase` |
+
+**החלטה אחת לביקור.** הדף הראשון של ביקור עם הסכמה שואל את ‏`/decide` של ‏PostHog פעם
+אחת (‏`lib/analytics/feature-flags.ts`, בלי ‏SDK, ‏timeout של שתי שניות), והתשובה לכל
+הדגלים נשמרת כמפה אחת ב-sessionStorage תחת ‏`ke_ph_variants` (‏`lib/analytics/variant-cache.ts`).
+‏`null` פירושו שעוד לא הוחלט; ‏`{}` פירושו ש-PostHog ענה והדפדפן הזה לא באף ניסוי. כשל
+(רשת, ‏5xx, ערך מחוץ לרשימה, דגל בוליאני) נשמר כ-`{}` ולא כ-`control`: ניסיון חוזר בדף הבא
+היה יכול להחליף גרסה באמצע קנייה, ו-`control` על מי ש-PostHog לא הקצה היה מרפד את זרוע
+הבקרה בתנועה לא אקראית. בלי הסכמה אין קריאה כלל, והדף מרונדר בבקרה.
+
+**בקרה קודם, ואז החלפה אחת.** ‏`useExperimentVariant(experiment)` מתחיל מבקרה בשרת ובלקוח
+כאחד ומחליף פעם אחת ב-effect, אחרי ההידרציה; קריאה של המטמון ב-initialiser הייתה שגיאת
+הידרציה שלא מוחלת. לכן ה-HTML של השרת, הבקרה ושער ההשוואה זהים ביט-לביט למה שהיה
+לפני הניסוי. הגרסה מגיעה למסך כמאפיין על האלמנט (‏`data-checkout-variant`,
+‏`data-home-hero-variant`, ‏`data-cta-variant`, ‏`data-pay-color`), שנעדר בבקרה.
+
+**החותמת.** ה-tracker (‏`lib/analytics/tracker.ts`) מוסיף לכל שורת ‏first-party
+‏`$feature/<flag>` לכל דגל שהביקור נמצא בו, **מתחת** למאפייני הקורא; ‏`commerce-client` ו-
+‏`AnalyticsProvider` עושים זאת לעותק של ‏PostHog, שקורא את השם הזה בניתוח הניסויים שלו.
+כשהחלטה אפשרית אך עדיין תלויה, האירוע הראשון של הביקור (ה-`page_view` וה-`view_product`
+שהם בדיוק שורות החשיפה) ממתין לה עד שתי שניות לפני שהוא נכנס לתור; חותמת הזמן לא זזה.
+
+**הדוח** ב-`/admin/experiments` (‏`server/analytics/experiments.ts` → ‏`experiment-events.ts` →
+‏`experiment-stats.ts`): חשיפה היא הזהות הראשונה שרונדרה גרסה (עוגיית אורח, אחרת משתמש
+שקושר לאורח, אחרת משתמש, אחרת סשן), המרה היא ‏`purchase` של אותה זהות, ‏Wilson ‏95% לכל זרוע,
+‏z-test דו-צדדי של שתי פרופורציות מול הבקרה, ‏p ו-lift, ואין פסק דין מתחת ל-100 חשיפות
+בזרוע. ניסוי שהחשיפה שלו היא ‏`page_view` נושא ‏`exposureFilter` ברישום, והטוען מצמצם איתו
+את שורות החשיפה (‏`props->>route = '/'`) כדי לא לקרוא את כל ה-page_view של החודש.
+

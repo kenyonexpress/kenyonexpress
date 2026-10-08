@@ -1,9 +1,21 @@
 /**
  * The checkout experiment's flag key, variants, and cached decision. Pure and
- * dependency-free on purpose: commerce-client stamps the cached variant onto
- * outgoing events and feature-flags.ts fetches fresh decisions, and if either
- * imported the other the pair would be a cycle. Both import this instead.
+ * dependency-free beyond variant-cache.ts on purpose: commerce-client stamps
+ * the cached variant onto outgoing events and feature-flags.ts fetches fresh
+ * decisions, and if either imported the other the pair would be a cycle.
+ * Both import this instead.
+ *
+ * Since STEP 66 the decision itself lives in the shared session map
+ * (`variant-cache.ts`) beside every other experiment's; this module keeps
+ * the typed view of ONE flag and the server-readable cookie mirror.
  */
+
+import {
+  type VariantMap,
+  featureProperty,
+  readVariantCache,
+  writeVariantCache,
+} from '@/lib/analytics/variant-cache'
 
 /** The flag key exactly as configured in PostHog's feature flags UI. */
 export const CHECKOUT_VARIANT_FLAG = 'checkout_variant'
@@ -21,15 +33,7 @@ export type CheckoutVariant = (typeof CHECKOUT_VARIANTS)[number]
  * carrying `$feature/<flag>` counts toward that flag's exposure, with no
  * manual insight configuration.
  */
-export const CHECKOUT_VARIANT_PROPERTY = `$feature/${CHECKOUT_VARIANT_FLAG}`
-
-/**
- * sessionStorage, not localStorage: a variant must be sticky within one
- * shopping session so the checkout does not repaint mid-journey, but a NEW
- * session should re-ask PostHog, otherwise a rollout percentage change never
- * reaches returning browsers.
- */
-export const CHECKOUT_VARIANT_CACHE_KEY = 'ke_ph_checkout_variant'
+export const CHECKOUT_VARIANT_PROPERTY = featureProperty(CHECKOUT_VARIANT_FLAG)
 
 /**
  * The same decision, mirrored where the SERVER can read it. sessionStorage
@@ -52,26 +56,33 @@ export function resolveCheckoutVariant(raw: unknown): CheckoutVariant {
  * first fetch resolves. Callers that stamp events use this: an event fired
  * before the decision exists carries nothing, which is honest, rather than a
  * guessed control that would misfile the shopper if the fetch lands express.
+ *
+ * A decided session that the flag is simply not in reads as control: the
+ * page renders control, and the stamping (which reads the map directly)
+ * carries no checkout property, which is also honest.
  */
 export function cachedCheckoutVariant(): CheckoutVariant | null {
-  if (typeof window === 'undefined') return null
-  try {
-    const raw = window.sessionStorage.getItem(CHECKOUT_VARIANT_CACHE_KEY)
-    if (raw === null) return null
-    return resolveCheckoutVariant(raw)
-  } catch {
-    return null
-  }
+  const map = readVariantCache()
+  if (map === null) return null
+  return resolveCheckoutVariant(map[CHECKOUT_VARIANT_FLAG])
 }
 
-/** Best effort: storage blocked means every page asks PostHog again. */
+/**
+ * Writes the checkout decision into the shared session map (merging with
+ * whatever other flags were decided) and mirrors it to the cookie. Kept for
+ * the one caller that decides this flag alone; feature-flags.ts writes the
+ * whole map in one go and calls `mirrorCheckoutVariantCookie` itself.
+ */
 export function cacheCheckoutVariant(variant: CheckoutVariant): void {
   if (typeof window === 'undefined') return
-  try {
-    window.sessionStorage.setItem(CHECKOUT_VARIANT_CACHE_KEY, variant)
-  } catch {
-    // See above.
-  }
+  const current: VariantMap = readVariantCache() ?? {}
+  writeVariantCache({ ...current, [CHECKOUT_VARIANT_FLAG]: variant })
+  mirrorCheckoutVariantCookie(variant)
+}
+
+/** Best effort: storage blocked means the server sees no variant and reports null. */
+export function mirrorCheckoutVariantCookie(variant: CheckoutVariant): void {
+  if (typeof document === 'undefined') return
   try {
     const secure = window.location.protocol === 'https:' ? '; Secure' : ''
     document.cookie = `${CHECKOUT_VARIANT_COOKIE}=${variant}; Path=/; SameSite=Lax${secure}`

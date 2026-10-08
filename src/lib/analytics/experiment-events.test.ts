@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { type AnalyticsEventRow, assignExperiment } from './experiment-events'
-import { EXPERIMENTS } from './experiments'
+import { EXPERIMENTS, HOME_HERO_EXPERIMENT } from './experiments'
 
 const experiment = EXPERIMENTS[0]
 if (!experiment) throw new Error('registry is empty')
@@ -124,5 +124,34 @@ describe('assignExperiment', () => {
       experiment,
     )
     expect(result.counts[0]?.exposures).toBe(1)
+  })
+
+  it('assigns the homepage experiment from stamped page_view rows and joins the purchase', () => {
+    const PROP_HOME = HOME_HERO_EXPERIMENT.property
+    const result = assignExperiment(
+      [
+        row({
+          event_name: 'page_view',
+          anonymous_id: 'g1',
+          props: { route: '/', [PROP_HOME]: 'static_hero' },
+        }),
+        row({
+          event_name: 'page_view',
+          anonymous_id: 'g2',
+          props: { route: '/', [PROP_HOME]: 'control' },
+        }),
+        // A page_view with no stamp: fired before the session decided.
+        row({ event_name: 'page_view', anonymous_id: 'g3', props: { route: '/' } }),
+        row({ event_name: 'purchase', anonymous_id: 'g1', user_id: 'u1', session_id: 'server:1' }),
+        row({ event_name: 'purchase', anonymous_id: 'g3', user_id: 'u3', session_id: 'server:3' }),
+      ],
+      HOME_HERO_EXPERIMENT,
+    )
+    expect(result.counts).toEqual([
+      { variant: 'control', exposures: 1, conversions: 0 },
+      { variant: 'static_hero', exposures: 1, conversions: 1 },
+      { variant: 'no_benefit_bar', exposures: 0, conversions: 0 },
+    ])
+    expect(result.unexposedConversions).toBe(1)
   })
 })

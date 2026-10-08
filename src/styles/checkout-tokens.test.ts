@@ -43,6 +43,29 @@ describe('checkout brand tokens', () => {
   })
 })
 
+describe('checkout_button_color experiment (STEP 66)', () => {
+  it('paints the green arm from the success token, white text, and touches nothing else', () => {
+    // Biome formats CSS attribute selectors with double quotes.
+    const rule = RULES.match(/\.checkout-pay-btn\[data-pay-color="green"\]\s*\{([^}]*)\}/)
+    expect(rule).not.toBeNull()
+    const body = rule?.[1] ?? ''
+    expect(body).toMatch(/background:\s*var\(--success-text\)/)
+    expect(body).toMatch(/color:\s*#fff/)
+    // Colour only: a geometry change here would move the parity gate's band.
+    expect(body).not.toMatch(/height|padding|border-radius|font-size|width/)
+    expect(RULES).toMatch(/\.checkout-pay-btn\[data-pay-color="green"\]:hover:not\(:disabled\)/)
+  })
+
+  it('is attribute-driven from the form, absent in control', () => {
+    const form = readFileSync(
+      join(process.cwd(), 'src/app/(store)/checkout/CheckoutForm.tsx'),
+      'utf8',
+    )
+    expect(form).toContain("data-pay-color={payColor === 'control' ? undefined : payColor}")
+    expect(form).toContain('useExperimentVariant(CHECKOUT_BUTTON_COLOR_EXPERIMENT)')
+  })
+})
+
 describe('checkout geometry', () => {
   it('takes the container from the shared token rather than a private width', () => {
     // The page carried a hardcoded 1170 while every other route was on the

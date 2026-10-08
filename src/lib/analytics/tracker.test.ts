@@ -3,6 +3,7 @@ import { CONSENT_COOKIE } from '@/lib/analytics/consent'
 import { MAX_BATCH_SIZE } from '@/lib/analytics/events'
 import { FLUSH_INTERVAL_MS } from '@/lib/analytics/queue'
 import { SESSION_STORAGE_KEY } from '@/lib/analytics/session'
+import { VARIANT_CACHE_KEY } from '@/lib/analytics/variant-cache'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 /**
@@ -47,6 +48,7 @@ beforeEach(() => {
   setCookie(CONSENT_COOKIE, 'granted.2')
   clearCookie(ATTRIBUTION_COOKIE)
   window.localStorage.clear()
+  window.sessionStorage.clear()
   vi.useFakeTimers()
 })
 
@@ -317,5 +319,53 @@ describe('shouldSampleWebVitals', () => {
     const { getTracker } = await fresh()
     expect(getTracker().shouldSampleWebVitals()).toBe(true)
     expect(getTracker()).toBe(getTracker())
+  })
+})
+
+describe('experiment stamping', () => {
+  it('carries $feature/<flag> for every flag the session is in, under the caller props', async () => {
+    window.sessionStorage.setItem(
+      VARIANT_CACHE_KEY,
+      JSON.stringify({ home_hero: 'static_hero', cta_copy: 'invite' }),
+    )
+    const fetchMock = fetchAnswering(200)
+    vi.stubGlobal('fetch', fetchMock)
+    const { getTracker, track } = await fresh()
+
+    track('page_view', { route: '/' })
+    track('view_product', { product_id: 'p1', '$feature/cta_copy': 'from-the-emitter' })
+    getTracker().flush()
+    await vi.advanceTimersByTimeAsync(0)
+
+    const [pageView, viewProduct] = sentEvents(fetchMock)
+    expect(pageView?.props).toEqual({
+      '$feature/home_hero': 'static_hero',
+      '$feature/cta_copy': 'invite',
+      route: '/',
+    })
+    // An emitter that names the property itself wins over the stamp.
+    expect(viewProduct?.props).toMatchObject({
+      '$feature/home_hero': 'static_hero',
+      '$feature/cta_copy': 'from-the-emitter',
+      product_id: 'p1',
+    })
+  })
+
+  it('stamps nothing before a decision and nothing for a session in no experiment', async () => {
+    const fetchMock = fetchAnswering(200)
+    vi.stubGlobal('fetch', fetchMock)
+    const { getTracker, track } = await fresh()
+
+    track('page_view', { route: '/' })
+    window.sessionStorage.setItem(VARIANT_CACHE_KEY, JSON.stringify({}))
+    track('page_view', { route: '/cart' })
+    getTracker().flush()
+    await vi.advanceTimersByTimeAsync(0)
+
+    const events = sentEvents(fetchMock)
+    expect(events).toHaveLength(2)
+    for (const event of events) {
+      expect(Object.keys(event.props as Record<string, unknown>)).toEqual(['route'])
+    }
   })
 })

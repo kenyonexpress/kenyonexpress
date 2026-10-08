@@ -502,6 +502,23 @@
   cursor: not-allowed;
 }
 
+/*
+ * STEP 66: the `green` arm of the checkout_button_color experiment
+ * (lib/analytics/experiments.ts). Colour only: the geometry, radius and
+ * label above are untouched, so the parity gate's checkout band is unmoved.
+ * The green is the brand's success token (globals.css, 4.71:1 on white),
+ * with white text at 19px/700, which is large text under WCAG.
+ */
+.checkout-pay-btn[data-pay-color="green"] {
+  background: var(--success-text);
+  border-color: var(--success-text);
+  color: #fff;
+}
+
+.checkout-pay-btn[data-pay-color="green"]:hover:not(:disabled) {
+  background: hsl(140, 100%, 21%);
+}
+
 .checkout-cards {
   margin-top: 14px;
   padding: 0;

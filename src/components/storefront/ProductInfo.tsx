@@ -9,6 +9,9 @@ import ShareButton from '@/components/shared/ShareButton'
 import WhatsAppShareButton from '@/components/shared/WhatsAppShareButton'
 import CouponPricing from '@/components/storefront/CouponPricing'
 import StockAlertForm from '@/components/storefront/StockAlertForm'
+import { ctaCopy } from '@/lib/analytics/cta-copy'
+import { CTA_COPY_EXPERIMENT } from '@/lib/analytics/experiments'
+import { useExperimentVariant } from '@/lib/analytics/use-experiment-variant'
 import { productQuantityCeiling } from '@/lib/cart/format'
 import { cashbackPreview } from '@/lib/cashback/preview'
 import type { CouponOffer } from '@/lib/commerce/coupon-offer'
@@ -242,6 +245,12 @@ export default function ProductInfo({
   const cashback =
     withdrawn || priceImplausible ? null : cashbackPreview(cashbackPercent, cashbackBasisIls)
 
+  // STEP 66: the `cta_copy` experiment changes these three strings and
+  // nothing else (lib/analytics/cta-copy.ts). Control is the live wording,
+  // rendered on the server and at first paint.
+  const ctaVariant = useExperimentVariant(CTA_COPY_EXPERIMENT)
+  const cta = ctaCopy(ctaVariant)
+
   const buyLabel = outOfStock
     ? 'אזל מהמלאי'
     : withdrawn || couponUnsellable || priceUnsellable
@@ -249,11 +258,15 @@ export default function ProductInfo({
       : recurringOffer
         ? 'הצטרף למנוי'
         : isCoupon
-          ? 'קנה עכשיו'
-          : 'הוסף לסל'
+          ? cta.buyCoupon
+          : cta.addToCart
 
   return (
-    <div data-pdp="summary" className="pdp-summary">
+    <div
+      data-pdp="summary"
+      data-cta-variant={ctaVariant === 'control' ? undefined : ctaVariant}
+      className="pdp-summary"
+    >
       {categoryName && <p className="pdp-summary__eyebrow">{categoryName}</p>}
 
       <h1 className="pdp-summary__title">{name}</h1>
@@ -473,7 +486,7 @@ export default function ProductInfo({
         disabled={blocked}
         className="pdp-buy__now"
       >
-        {outOfStock ? 'אזל מהמלאי' : 'קנה עכשיו'}
+        {outOfStock ? 'אזל מהמלאי' : cta.buyNow}
       </button>
 
       {/* "Tell me when it is back" (STEP 58). Only under a sold-out buy row,

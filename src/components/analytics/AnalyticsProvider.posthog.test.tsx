@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import { CONSENT_COOKIE, CONSENT_WORDING_VERSION } from '@/lib/analytics/consent'
-import { render } from '@testing-library/react'
+import { act, render } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 /**
@@ -24,6 +24,15 @@ const pathname = vi.hoisted(() => ({ value: '/' }))
 vi.mock('@/lib/observability/posthog', () => ({
   trackEvent: (...args: unknown[]) => trackEvent(...args),
   isPostHogEnabled: () => isPostHogEnabled(),
+}))
+
+const decision = vi.hoisted(() => ({
+  map: null as Record<string, string> | null,
+  wait: null as Promise<unknown> | null,
+}))
+vi.mock('@/lib/analytics/feature-flags', () => ({
+  decidedVariants: () => decision.map,
+  whenVariantsDecided: () => decision.wait,
 }))
 
 vi.mock('@/lib/analytics/tracker', () => ({
@@ -66,6 +75,8 @@ beforeEach(() => {
   isPostHogEnabled.mockReset().mockReturnValue(true)
   track.mockReset()
   captureAttribution.mockReset()
+  decision.map = null
+  decision.wait = null
   window.sessionStorage.clear()
   clearConsent()
   visit('/')
@@ -107,6 +118,43 @@ describe('AnalyticsProvider -> PostHog $pageview', () => {
     render(<AnalyticsProvider />)
 
     expect(trackEvent).not.toHaveBeenCalled()
+  })
+
+  it('stamps $feature/<flag> for every experiment the session is in', () => {
+    grantConsent()
+    decision.map = { home_hero: 'static_hero', cta_copy: 'invite' }
+
+    render(<AnalyticsProvider />)
+
+    const pageviews = trackEvent.mock.calls.filter(([name]) => name === '$pageview')
+    expect(pageviews).toHaveLength(1)
+    expect(pageviews[0]?.[1]).toMatchObject({
+      route: '/',
+      '$feature/home_hero': 'static_hero',
+      '$feature/cta_copy': 'invite',
+    })
+  })
+
+  it('waits for a pending decision so the homepage exposure carries its variant', async () => {
+    grantConsent()
+    let settle: () => void = () => {}
+    decision.wait = new Promise<void>((resolve) => {
+      settle = () => {
+        decision.map = { home_hero: 'no_benefit_bar' }
+        resolve()
+      }
+    })
+
+    render(<AnalyticsProvider />)
+    expect(trackEvent.mock.calls.filter(([name]) => name === '$pageview')).toHaveLength(0)
+
+    settle()
+    await act(async () => {
+      await decision.wait
+    })
+    const pageviews = trackEvent.mock.calls.filter(([name]) => name === '$pageview')
+    expect(pageviews).toHaveLength(1)
+    expect(pageviews[0]?.[1]).toMatchObject({ '$feature/home_hero': 'no_benefit_bar' })
   })
 })
 

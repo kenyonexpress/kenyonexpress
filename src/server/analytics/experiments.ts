@@ -4,7 +4,7 @@ import {
   assignExperiment,
 } from '@/lib/analytics/experiment-events'
 import { type VariantStat, experimentStats } from '@/lib/analytics/experiment-stats'
-import type { ExperimentDefinition } from '@/lib/analytics/experiments'
+import type { ExperimentDefinition, ExposureFilter } from '@/lib/analytics/experiments'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sanitizeOrTerm } from '@/lib/utils/search-escape'
 
@@ -35,13 +35,14 @@ export type ExperimentReport =
     }
   | { ok: false; reason: string }
 
-export type ExposureFilter = { prop: string; value: string }
-
 export async function loadExperimentReport(
   experiment: ExperimentDefinition,
   options: { days?: number; exposureFilter?: ExposureFilter } = {},
 ): Promise<ExperimentReport> {
   const days = options.days ?? 30
+  // A registered experiment may carry its own narrowing (the homepage one
+  // does: its exposure is the `/` page_view); an explicit option wins.
+  const exposureFilter = options.exposureFilter ?? experiment.exposureFilter
   const since = new Date(Date.now() - days * 86_400_000).toISOString()
   const admin = createAdminClient()
   const names = [...experiment.exposureEvents, experiment.goalEvent]
@@ -52,14 +53,14 @@ export async function loadExperimentReport(
     .in('event_name', names)
     .gte('occurred_at', since)
 
-  if (options.exposureFilter) {
+  if (exposureFilter) {
     // A goal row, or an exposure row carrying the property. PostgREST's
     // `or` takes the JSON arrow path directly. Every interpolated term is
     // sanitised: inside an .or() expression `, ( ) " \` are syntax, and the
     // slug comes from a database row an editor typed.
     const goal = sanitizeOrTerm(experiment.goalEvent)
-    const prop = sanitizeOrTerm(options.exposureFilter.prop)
-    const value = sanitizeOrTerm(options.exposureFilter.value)
+    const prop = sanitizeOrTerm(exposureFilter.prop)
+    const value = sanitizeOrTerm(exposureFilter.value)
     query = query.or(`event_name.eq.${goal},props->>${prop}.eq.${value}`)
   }
 

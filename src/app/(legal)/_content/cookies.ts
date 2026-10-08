@@ -1,12 +1,10 @@
 import { ATTRIBUTION_COOKIE, ATTRIBUTION_WINDOW_DAYS } from '@/lib/analytics/attribution'
-import {
-  CHECKOUT_VARIANT_CACHE_KEY,
-  CHECKOUT_VARIANT_COOKIE,
-} from '@/lib/analytics/checkout-variant'
+import { CHECKOUT_VARIANT_COOKIE } from '@/lib/analytics/checkout-variant'
 import { CONSENT_COOKIE, CONSENT_MAX_AGE_SECONDS } from '@/lib/analytics/consent'
 import { REPLAY_OPTIN_COOKIE, REPLAY_OPTIN_MAX_AGE_SECONDS } from '@/lib/analytics/replay-optin'
 import { BUGGY_SESSION_STORAGE_KEY } from '@/lib/analytics/replay-trigger'
 import { SESSION_STORAGE_KEY } from '@/lib/analytics/session'
+import { VARIANT_CACHE_KEY } from '@/lib/analytics/variant-cache'
 import { SIGNUP_UID_COOKIE, SIGNUP_UID_MAX_AGE } from '@/lib/auth/signup-phone'
 import { CART_COUPON_COOKIE, CART_EXPIRY_DAYS } from '@/lib/cart/coupon-cookie'
 import { GUEST_SESSION_COOKIE, GUEST_SESSION_MAX_AGE } from '@/lib/cart/guest-session-cookie'
@@ -188,10 +186,10 @@ const storageRows: string[][] = [
     'המזהה האנונימי של כלי המדידה, קבוע לדפדפן זה. אינו מכיל פרטים מזהים.',
   ],
   [
-    CHECKOUT_VARIANT_CACHE_KEY,
+    VARIANT_CACHE_KEY,
     'sessionStorage',
     ANALYTICS,
-    'גרסת מסך התשלום שהוקצתה לביקור זה, כדי שלא תתחלף באמצע הקנייה. נמחק בסגירת הלשונית.',
+    'גרסאות הממשק שהוקצו לביקור זה בניסויי A/B (מסך התשלום, דף הבית, נוסח הכפתורים, צבע כפתור התשלום), כדי שלא יתחלפו באמצע הקנייה. נמחק בסגירת הלשונית.',
   ],
   [
     BUGGY_SESSION_STORAGE_KEY,

@@ -80,8 +80,18 @@ function isEscrowFlowEnabled() {
 
 ---
 
-## 5. Revision
+## 5. דגלי ניסוי ב-PostHog (‏STEP 66, ‏09.10)
+
+דגלי ה-A/B הם מערכת נפרדת מהמתגים למעלה: הם לא מכבים כלום, הם בוחרים גרסה של ממשק
+לביקור, וכל כשל שלהם הוא בקרה. הרישום היחיד הוא ‏`src/lib/analytics/experiments.ts`
+(ארבעה דגלים: ‏`checkout_variant`, ‏`home_hero`, ‏`cta_copy`, ‏`checkout_button_color`), והחוזה
+המלא, כולל החותמת ‏`$feature/<flag>` והדוח ב-`/admin/experiments`, ב-`docs/ANALYTICS-EVENTS.md`
+סעיף ‏9. הפעלה היא יצירת דגל ‏multivariate ב-PostHog עם מפתחות הגרסאות של הרישום;
+דגל חסר, כבוי או עם מפתח לא מוכר מרנדר בקרה ולא חותם דבר.
+
+## 6. Revision
 
 | Date | Change |
 |---|---|
 | 2026-07-31 | Feature flags + kill switches (`arch/docs-queue`) |
+| 2026-10-09 | סעיף 5: דגלי ניסוי ‏PostHog (‏STEP 66) |

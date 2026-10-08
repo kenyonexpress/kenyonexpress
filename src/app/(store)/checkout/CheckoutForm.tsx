@@ -5,8 +5,10 @@ import CheckoutGiftCardField from '@/components/checkout/CheckoutGiftCardField'
 import CityAutocomplete from '@/components/checkout/CityAutocomplete'
 import DeliverySlotPicker from '@/components/checkout/DeliverySlotPicker'
 import { trackCommerce } from '@/lib/analytics/commerce-client'
+import { CHECKOUT_BUTTON_COLOR_EXPERIMENT } from '@/lib/analytics/experiments'
 import { getCheckoutVariant } from '@/lib/analytics/feature-flags'
 import { track } from '@/lib/analytics/tracker'
+import { useExperimentVariant } from '@/lib/analytics/use-experiment-variant'
 import type { CartView } from '@/lib/cart/types'
 import { MIN_WALLET_REDEMPTION_ILS, redeemableCeilingAgorot } from '@/lib/cashback/redemption'
 import type { DeliverySlot } from '@/lib/checkout/delivery-slots'
@@ -154,6 +156,9 @@ export default function CheckoutForm({
    * A no-op without consent: `trackCommerce` finds neither vendor global.
    */
   const checkoutVariant = useCheckoutVariant()
+  // STEP 66: the pay button's colour arm. An attribute the stylesheet reads
+  // (checkout-page.css), absent in control so the measured markup is unchanged.
+  const payColor = useExperimentVariant(CHECKOUT_BUTTON_COLOR_EXPERIMENT)
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: the cart is a fresh object each render; keying on its identity would refire the event on every keystroke.
   useEffect(() => {
@@ -1149,6 +1154,7 @@ export default function CheckoutForm({
               <button
                 type="submit"
                 className="checkout-pay-btn"
+                data-pay-color={payColor === 'control' ? undefined : payColor}
                 disabled={busy || !paymentGateOpen}
                 aria-describedby={paymentGateOpen ? undefined : 'co-gate-note'}
               >
