@@ -41,6 +41,8 @@ const mock = vi.hoisted(() => {
     channelNames: [] as string[],
     subscribed: 0,
     loadCalls: 0,
+    exclusion: { hide: [] as string[], only: null as string[] | null },
+    muted: [] as string[],
   }
   return state
 })
@@ -51,7 +53,12 @@ vi.mock('@/server/actions/session', () => ({
 vi.mock('@/server/actions/bell', () => ({
   loadBell: async () => {
     mock.loadCalls += 1
-    return { rows: mock.rows, unread: mock.unreadCount }
+    return {
+      rows: mock.rows,
+      unread: mock.unreadCount,
+      exclusion: mock.exclusion,
+      muted: mock.muted,
+    }
   },
 }))
 vi.mock('@/server/actions/notifications', () => ({
@@ -121,6 +128,8 @@ beforeEach(() => {
   mock.channelNames = []
   mock.subscribed = 0
   mock.loadCalls = 0
+  mock.exclusion = { hide: [], only: null }
+  mock.muted = []
 })
 
 describe('NotificationBell', () => {
@@ -213,5 +222,58 @@ describe('NotificationBell', () => {
     fireEvent.click(screen.getByRole('button', { name: 'התראות' }))
     fireEvent.click(screen.getByRole('button', { name: 'התראות' }))
     expect(mock.markReadCalls).toEqual([null])
+  })
+
+  // STEP 49: shelves and mutes, applied by the reader.
+
+  it('drops a realtime INSERT for a muted shelf and leaves the badge alone', async () => {
+    mock.exclusion = { hide: ['price_drop', 'back_in_stock'], only: null }
+    mock.muted = ['deals']
+    render(<NotificationBell />)
+    await flush()
+    act(() => {
+      mock.handlers.INSERT?.({
+        new: row({ id: 'n-5', kind: 'price_drop', title_he: 'ירד' }),
+        old: {},
+      })
+    })
+    expect(screen.getByRole('button', { name: 'התראות' })).toBeInTheDocument()
+    act(() => {
+      mock.handlers.INSERT?.({
+        new: row({ id: 'n-6', kind: 'order_paid', title_he: 'שולם' }),
+        old: {},
+      })
+    })
+    expect(screen.getByRole('button', { name: 'התראות, 1 שלא נקראו' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'התראות, 1 שלא נקראו' }))
+    expect(screen.getByText('שולם')).toBeInTheDocument()
+    expect(screen.queryByText('ירד')).toBeNull()
+    // The muted shelf gets no chip; the others do.
+    expect(screen.queryByRole('button', { name: 'מבצעים' })).toBeNull()
+    expect(screen.getByRole('button', { name: 'הזמנות' })).toBeInTheDocument()
+  })
+
+  it('cuts the panel by shelf chip and links the footer to that shelf', async () => {
+    mock.rows = [
+      row({ id: 'n-1', kind: 'cashback_credited', title_he: 'קאשבק' }),
+      row({ id: 'n-2', kind: 'order_shipped', title_he: 'נשלח', read_at: '2026-09-01T00:00:00Z' }),
+    ]
+    render(<NotificationBell />)
+    await flush()
+    fireEvent.click(screen.getByRole('button', { name: 'התראות' }))
+    expect(screen.getByRole('link', { name: 'לכל ההתראות' })).toHaveAttribute(
+      'href',
+      '/account/notifications',
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'הזמנות' }))
+    expect(screen.getByText('נשלח')).toBeInTheDocument()
+    expect(screen.queryByText('קאשבק')).toBeNull()
+    expect(screen.getByRole('button', { name: 'הזמנות' })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('link', { name: 'לכל ההתראות' })).toHaveAttribute(
+      'href',
+      '/account/notifications?category=orders',
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'מערכת' }))
+    expect(screen.getByText('אין התראות במערכת.')).toBeInTheDocument()
   })
 })

@@ -69,8 +69,12 @@ describe('the overview', () => {
 describe('the notification switches', () => {
   it('are rendered by the notifications page, from rows read under RLS', () => {
     const page = code(NOTIFICATIONS)
-    expect(page).toContain('<PreferenceSwitches rows={rows} />')
-    expect(page).toContain('loadPreferences()')
+    // STEP 49: the center loads the preference rows once (through
+    // `loadPreferences()` inside `loadNotificationCenter`, still under RLS on
+    // the session client) and the page hands them to the matrix.
+    expect(page).toContain('<PreferenceSwitches rows={center.preferences} />')
+    expect(page).toContain('loadNotificationCenter(')
+    expect(page).not.toMatch(/createAdminClient|service_role/)
   })
 })
 

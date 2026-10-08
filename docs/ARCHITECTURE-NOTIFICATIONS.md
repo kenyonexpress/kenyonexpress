@@ -430,6 +430,22 @@ src/lib/notifications/qstash.ts                           # יעד (חוזה כ�
 
 ---
 
+## 10א. מרכז ההתראות באתר (STEP 49, 2026-10-08)
+
+**מה קיים.** `public.notifications` (198, מוחל) נכתב רק על ידי הטריגר `outbox_bell_fanout` (231, מוחל) ועל ידי `fn_refresh_loyalty_tier` (261, pending). נמדד בפרודקשן ב-08.10: 59 שורות, כולן לא נקראו, שישה `kind` שונים, אפס שורות העדפה. הפעמון ישב באזור האישי ומנה; עמוד `/account/notifications` הציג הגדרות בלבד.
+
+**ארבעה מדפים, מיפוי ב-TypeScript ולא עמודה.** `src/lib/notifications/categories.ts` ממפה כל `kind` למדף: `orders` (תשלום, משלוח, מסירה, החזר, קופון שהונפק/ניתן/מומש/פג), `deals` (ירידת מחיר, חזרה למלאי), `account` (ברוכים הבאים, קאשבק, דרגת מועדון), ו-`system` כברירת מחדל ל-kind שאיש לא שייך. הטסט קורא את זרועות ה-CASE של 231 מהדיסק ומוודא שכל kind שהפעמון יכול לשאת יושב על מדף בשם, כך ש-`system` מושג רק על ידי kind שהקובץ מעולם לא שמע עליו. עמודת `category` הייתה דורשת שינוי בשני הכותבים, מיגרציה שלא אושרה, ו-backfill; המיפוי עובד על השורות שבפרודקשן היום.
+
+**השתקה פר קטגוריה היא שורת העדפה, לא טבלה.** `notification_preferences` (198) ממופתחת `(user_id, kind, channel)`, `kind` הוא טקסט ללא CHECK (נמדד: ה-CHECK היחיד הוא על `channel`), ו-`in_app` כבר בערוצים. השתקה = `kind = 'category:<name>', channel = 'in_app', enabled = false`. הקידומת לא יכולה להתנגש עם kind של ה-outbox כי ה-CHECK שלו מעולם לא קיבל נקודתיים. אין מיגרציה חדשה; RLS של 198 (own-row) כבר תוחמת.
+
+**ההשתקה מוחלת בקריאה, בשלושה מקומות שחייבים להסכים.** הטריגר ממשיך לכתוב כל שורה; `kindExclusion(rows)` מחשב מה להסתיר (מדפים מושתקים + מתגי `in_app` פר-kind מהמטריצה, שעד עכשיו אף קורא לא כיבד), ו-`applyKindExclusion` ב-`kind-filter.ts` הופך את זה ל-`not in` או, כש-`system` מושתק, ל-allow-list של `in`. אותו predicate נכנס ל-(1) שורות הפעמון וספירת ה-HEAD של ה-badge (`server/actions/bell.ts`), (2) חלון המרכז (`loadNotificationCenter`), ו-(3) ה-handler של ה-INSERT בזמן אמת, שמקבל את אותו `exclusion` עם ה-snapshot ומפיל אירוע של מדף מושתק לפני שהוא מזיז את ה-UI. השתקה מסתירה ואינה מוחקת; ביטולה מחזיר את ההיסטוריה. היא נוגעת רק במשטח שבאתר: מייל, push ו-WhatsApp נשארים עם המתגים שלהם, ו-kinds חובה (`preferences.ts`) לעולם לא מכובים שם.
+
+**המרכז.** `/account/notifications?category=<shelf>`: לשוניות כקישורים עם מונה לא-נקראו פר מדף (מדף מושתק מסומן "מושתק" ולא ריק), "סמן הכל כנקרא" שתחום ללשונית (`markAllNotificationsRead(category|null)`, אותו predicate של `applyCategoryFilter` שהשרת חותך בו את הלשונית), לחיצה על שורה מסמנת אותה (`markNotificationRead(id)`), וכרטיס ארבעה מתגים "להציג בפעמון" (`setCategoryMute`). קריאה אחת של חלון 500 שורות; המונים והרשימה נגזרים מאותן שורות ולכן אינם יכולים לא להסכים. בפעמון: שבבי מדף לחיתוך 15 השורות בצד הלקוח (מדף מושתק בלי שבב), וקישור תחתון למרכז עם המדף הנבחר. פתיחת הפעמון עדיין מסמנת הכל כנקרא, כפי שהיה, אבל "הכל" הוא מה שהלקוח רואה: הכתיבה הגורפת (`markNotificationRead(null)` ו-`markAllNotificationsRead(null)`) מצמצמת לפי אותו `kindExclusion`, כך ששורות שמדף מושתק אסף נשארות לא-נקראות וחוזרות כך כשההשתקה מתבטלת.
+
+**קבצים.** `src/lib/notifications/{categories,kind-filter}.ts`, `src/server/actions/{bell,notifications}.ts`, `src/server/queries/notifications.ts`, `src/components/notifications/{NotificationCenter,CategoryMuteSwitches}.tsx`, `src/components/account/NotificationBell.tsx`, `src/app/(account)/account/notifications/page.tsx`, `src/styles/account.css`. טסטים לצד כל אחד.
+
+---
+
 ## 11. Revision
 
 | Date | Change |
@@ -439,3 +455,4 @@ src/lib/notifications/qstash.ts                           # יעד (חוזה כ�
 | 2026-07-31 | V2 events / WhatsApp / unsubscribe (ראה גם `ARCHITECTURE-NOTIFICATIONS-V2.md`) |
 | 2026-08-02 | איחוד מחייב ב-`ARCHITECTURE-NOTIFICATIONS.md`: Resend API, Edge+triggers, QStash retry, RTL, זרימת QR לקופון; מודל Escrow 2026-07-27 בנוסח הסכומים |
 | 2026-08-02 | יישום על `feat/notifications`: 096 voucher_issued, drain+QStash+DLQ, Edge twin, RTL `lang=he` |
+| 2026-10-08 | STEP 49: מרכז התראות באתר, ארבעה מדפים, סמן-הכל-כנקרא, השתקה פר מדף כשורת העדפה (סעיף 10א) |

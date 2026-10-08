@@ -83,13 +83,21 @@ export function toMyGiftCard(row: GiftCardRow, userId: string, now: Date): MyGif
   }
 }
 
-/** Null without a session; an empty list when the table is not installed. */
-export async function getMyGiftCards(now: Date = new Date()): Promise<MyGiftCard[] | null> {
+/**
+ * Null without a session; an empty list when the table is not installed.
+ *
+ * The clock is read AFTER the session cookie, not as a parameter default:
+ * `cacheComponents` prerenders the account page, and a `new Date()` reached
+ * before the first dynamic access (the cookie read inside `createClient`) is
+ * refused at build time. Tests still pin the instant by passing it.
+ */
+export async function getMyGiftCards(now?: Date): Promise<MyGiftCard[] | null> {
   const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) return null
+  const at = now ?? new Date()
 
   const { data, error } = await supabase
     .from('gift_cards' as never)
@@ -106,5 +114,5 @@ export async function getMyGiftCards(now: Date = new Date()): Promise<MyGiftCard
     return []
   }
 
-  return ((data ?? []) as unknown as GiftCardRow[]).map((row) => toMyGiftCard(row, user.id, now))
+  return ((data ?? []) as unknown as GiftCardRow[]).map((row) => toMyGiftCard(row, user.id, at))
 }

@@ -1,6 +1,15 @@
 'use client'
 
 import { BELL_PANEL_SIZE, type BellRow } from '@/lib/notifications/bell'
+import {
+  CATEGORIES,
+  CATEGORY_LABEL_HE,
+  type Category,
+  type KindExclusion,
+  NO_EXCLUSION,
+  categoryOf,
+  isKindVisible,
+} from '@/lib/notifications/categories'
 import type { createClient } from '@/lib/supabase/client'
 import { loadBell } from '@/server/actions/bell'
 import { markNotificationRead } from '@/server/actions/notifications'
@@ -67,6 +76,12 @@ export default function NotificationBell() {
   const [unread, setUnread] = useState(0)
   const [open, setOpen] = useState(false)
   const [ready, setReady] = useState(false)
+  // What the customer has muted (STEP 49), as the server computed it. Held
+  // in a ref as well as state because the realtime handler below closes over
+  // the mount-time value and must see the one that arrived with the snapshot.
+  const exclusionRef = useRef<KindExclusion>(NO_EXCLUSION)
+  const [muted, setMuted] = useState<Category[]>([])
+  const [shelf, setShelf] = useState<Category | null>(null)
   const rootRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -84,6 +99,8 @@ export default function NotificationBell() {
       if (!snapshot || cancelled) return
       setRows(snapshot.rows)
       setUnread(snapshot.unread)
+      exclusionRef.current = snapshot.exclusion ?? NO_EXCLUSION
+      setMuted(snapshot.muted ?? [])
       setReady(true)
 
       // Lazily: the account layout mounts this bell on every account page,
@@ -105,6 +122,9 @@ export default function NotificationBell() {
           },
           (payload) => {
             const row = payload.new as BellRow
+            // The trigger writes rows for muted shelves too; the mute is the
+            // reader's, and this handler is a reader (see server/actions/bell.ts).
+            if (!isKindVisible(row.kind, exclusionRef.current)) return
             setRows((prev) => [row, ...prev.filter((r) => r.id !== row.id)].slice(0, PANEL_SIZE))
             if (!row.read_at) setUnread((n) => n + 1)
           },
@@ -168,6 +188,8 @@ export default function NotificationBell() {
 
   if (!ready) return null
 
+  const visibleRows = shelf ? rows.filter((r) => categoryOf(r.kind) === shelf) : rows
+
   return (
     <div ref={rootRef} className="account-bell">
       <button
@@ -187,13 +209,39 @@ export default function NotificationBell() {
 
       {open && (
         <section className="account-bell__panel" aria-label="התראות אחרונות">
-          {rows.length === 0 ? (
+          {/* Shelf chips (STEP 49): a client-side cut of the panel's rows.
+              Muted shelves are not offered; their rows never arrive. */}
+          <fieldset className="account-bell__chips">
+            <legend className="sr-only">סינון לפי קטגוריה</legend>
+            <button
+              type="button"
+              className={`account-bell__chip${shelf === null ? ' is-active' : ''}`}
+              aria-pressed={shelf === null}
+              onClick={() => setShelf(null)}
+            >
+              הכל
+            </button>
+            {CATEGORIES.filter((c) => !muted.includes(c)).map((c) => (
+              <button
+                key={c}
+                type="button"
+                className={`account-bell__chip${shelf === c ? ' is-active' : ''}`}
+                aria-pressed={shelf === c}
+                onClick={() => setShelf(c)}
+              >
+                {CATEGORY_LABEL_HE[c]}
+              </button>
+            ))}
+          </fieldset>
+          {visibleRows.length === 0 ? (
             <p className="account-bell__empty">
-              אין התראות עדיין. עדכונים על הזמנות, קופונים וקאשבק יופיעו כאן.
+              {shelf
+                ? `אין התראות ב${CATEGORY_LABEL_HE[shelf]}.`
+                : 'אין התראות עדיין. עדכונים על הזמנות, קופונים וקאשבק יופיעו כאן.'}
             </p>
           ) : (
             <ul className="account-bell__list">
-              {rows.map((row) => (
+              {visibleRows.map((row) => (
                 <li key={row.id}>
                   <Link
                     href={row.href ?? '/account'}
@@ -208,6 +256,13 @@ export default function NotificationBell() {
               ))}
             </ul>
           )}
+          <Link
+            href={shelf ? `/account/notifications?category=${shelf}` : '/account/notifications'}
+            className="account-bell__footer"
+            onClick={() => setOpen(false)}
+          >
+            לכל ההתראות
+          </Link>
         </section>
       )}
     </div>
