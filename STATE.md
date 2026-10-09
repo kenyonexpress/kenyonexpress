@@ -1,7 +1,8 @@
-RESUME FROM: M12-c134 (M11-c134 DONE: sitemap fresh and reachable)
+RESUME FROM: M13-c134 (M12-c134 DONE: robots.txt production-safe)
 
 # KenyonExpress — Project State
-Last item: **M11-c134 DONE** (2026-10-09): sitemap.xml fresh and reachable on `www.kenyonexpress.co.il` at HEAD `066664b8a`: index 200, 5/5 section files 200 (94 URLs), 94/94 URLs 200 on www, newest lastmod 2026-10-05, unchanged from M11-c133. `<loc>` still uses the apex (308 to www, blocker 1; Vercel env not touched). Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`). compare.mjs n/a. `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
+Last item: **M12-c134 DONE** (2026-10-09): robots.txt production-safe at HEAD `2c4fbe6bd`: live `www` file 200, 16 Disallow rules identical to `src/app/robots.ts` (credential paths `/redeem/`, `/coupon/`, `/gift/`, `/order/`, `/wishlist/s/`, `/account/`, `/supplier/`, `/admin/`, `/api/`, `/auth/`, `/debug/` all disallowed), `src/app/sitemap-robots-agree.test.ts` green (sitemap URLs not blocked). `Host`/`Sitemap` still use the apex (blocker 1). Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`). Not a UI change, compare.mjs n/a. `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
+Previous: **M11-c134 DONE** (2026-10-09): sitemap.xml fresh and reachable on `www.kenyonexpress.co.il` at HEAD `066664b8a`: index 200, 5/5 section files 200 (94 URLs), 94/94 URLs 200 on www, newest lastmod 2026-10-05, unchanged from M11-c133. `<loc>` still uses the apex (308 to www, blocker 1; Vercel env not touched). Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`). compare.mjs n/a. `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
 Previous: **M10-c134 BLOCKED**: pending migrations unchanged, needs Ofir (blocker 5).
 Previous: **M09-c134 DONE**: no unused deps, no new dead exports.
 
@@ -56,6 +57,7 @@ Rows for c122 (M18-c131), c121 (M18-c130), c113 and c115 to c117 are in `docs/ST
 | M08-c134 | Lighthouse mobile on / and /product sample, log scores | **DONE**: perf median 82 / 84 (3 runs each: 79, 82, 82 / 84, 84, 84), perf-only script; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M10-c134 | Verify migrations/pending/ applied or file blocker | **BLOCKED**: re-probe unchanged from M10-c133, anon reviews 401, 231 not applied, 6 live but unrecorded, 22 not applied; needs Ofir (blocker 5); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M11-c134 | Verify sitemap.xml fresh and reachable | **DONE**: index 200, 5/5 section files 200, 94/94 URLs 200 on www, newest lastmod 2026-10-05, unchanged from M11-c133; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
+| M12-c134 | Verify robots.txt production-safe | **DONE**: live www file 200 matches source (16 Disallow, credential paths blocked), sitemap/robots agreement test green, unchanged from M12-c133; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 
 ## Open blockers
 
