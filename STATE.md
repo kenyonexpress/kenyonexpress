@@ -62,6 +62,7 @@ Rows for c121 (M18-c130), c113 and c115 to c117 are in `docs/STATE-ARCHIVE.md` (
 | M17-c130 | Verify RTL on / and /product sample, no LTR leaks | **BLOCKED**: 6/6 prod runs RTL-clean except the same footer newsletter placeholder, flush left; uncommitted fix cannot be committed, compare.mjs refuses (exit 5 x6, blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M18-c130 | Trim STATE.md under 300 lines, archive rest | **DONE**: already 107 lines at start; 18 c121 queue rows moved to `docs/STATE-ARCHIVE.md`; `HeroSlider.tsx` and `SiteFooter.tsx` stay uncommitted; gates type-check 0, lint 0, test 0, build 0 on attempt 1 |
 | M01-c131 | Re-measure compare.mjs 380/768/1440 on / | **BLOCKED**: gate refuses at all three widths, no reference, no number to diff; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
+| M02-c131 | Re-measure compare.mjs on /product | **BLOCKED**: exit 5 at 380/768/1440, gate refuses, no reference, no number to diff; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 
 ## Open blockers
 

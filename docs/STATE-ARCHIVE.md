@@ -22962,3 +22962,16 @@ Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=categ
 | M16-c121 | Verify all product pages have JSON-LD Product and BreadcrumbList | **DONE**: 44/44 prod, 46/46 HEAD, both nodes valid; same 3 image-less rows lack `image`, unchanged from M16-c120; build 0 on attempt 1 (see archive) |
 | M17-c121 | Verify RTL on / and /product sample, no LTR leaks | **BLOCKED**: 42/42 runs RTL-clean except the same footer newsletter placeholder, flush left in prod; uncommitted fix clean locally but compare.mjs refuses (exit 5 x6, blocker 0); build 0 on attempt 1 (see archive) |
 | M18-c121 | Trim STATE.md under 300 lines, archive rest | **DONE**: already 112 lines at start; M17-c121 status line and 18 c118 queue rows moved to `docs/STATE-ARCHIVE.md`; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (52 recovered `supabase.timeout`, 0 `db.query_failed`); `HeroSlider.tsx` and `SiteFooter.tsx` stay uncommitted |
+
+## M02-c131: compare.mjs on /product at 380, 768, 1440, run 2026-10-09 in the foreground
+
+Command: `LOCAL_BASE=http://localhost:3312 node scripts/compare.mjs --page=product --width=<w>` against `PORT=3312 pnpm start` on a fresh build of HEAD `a0fa1c2a1`.
+
+| Width | Exit | Diff |
+|---|---|---|
+| 380 | 5 | none, REFUSING: no parity reference |
+| 768 | 5 | none, same |
+| 1440 | 5 | none, same |
+
+- Unchanged from M02-c130; `refs/ke_live_singlefile.html` still absent (blocker 0). Gate appended REFUSED rows to `docs/UI-PARITY-REPORT.md`.
+- Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 timeout or fetch-failed lines).
