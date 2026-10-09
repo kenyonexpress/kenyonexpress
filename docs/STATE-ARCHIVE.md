@@ -22993,3 +22993,9 @@ Command: `LOCAL_BASE=http://localhost:3312 node scripts/compare.mjs --page=categ
 
 - Superseded STATE.md "Last item" text for M07-c131:
   > Last item: **M07-c131 DONE** (2026-10-09): TODO/FIXME re-scan at HEAD `6159cee88`, only `cardcom.ts:254` and `cardcom.ts:319` match (B1, B2, already filed), nothing new; `final-audit.mjs` 0 untracked work markers (of 2). Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1. `HeroSlider.tsx` and `SiteFooter.tsx` stay uncommitted.
+
+## M09-c131: unused deps and dead exports, run 2026-10-09
+
+- Same method as M09-c123; source unchanged since M09-c130. 0 deps removed, 0 exports deleted.
+- Superseded STATE.md "Last item" text for M08-c131:
+  > Last item: **M08-c131 DONE** (2026-10-09): Lighthouse mobile (default simulate, performance category only via `scripts/_lh-runs.mjs`) on `/` and `/product/מוצר-לדוגמא` against `pnpm start -p 3531` on a clean build of HEAD `15aa166af` plus the uncommitted `HeroSlider.tsx`/`SiteFooter.tsx` edits, 3 interleaved runs per page. **Perf: home 78, 80, 77 (median 78); product 83, 84, 82 (median 83).** TBT 30–40 ms, CLS 0–0.003 / 0.001, LCP (sim) 5.2–5.9 s / 4.4–4.7 s. A11y, BP and SEO not measured this run (perf-only script; last measured 100 / 96 / 100 in M08-c130). Host load 3.6–10. Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 timeout or fetch-failed lines, 0 `db.query_failed`). Not a UI change, compare.mjs n/a.
