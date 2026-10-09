@@ -1,4 +1,4 @@
-RESUME FROM: M13-c131
+RESUME FROM: M14-c131
 
 # KenyonExpress — Project State
 
@@ -73,6 +73,7 @@ Rows for c121 (M18-c130), c113 and c115 to c117 are in `docs/STATE-ARCHIVE.md` (
 | M10-c131 | Verify migrations/pending/ applied or file blocker | **BLOCKED**: re-probe unchanged from M10-c130, 6 live but unrecorded, 22 not applied, 227 partial, 231 not applied (anon reviews 401); needs Ofir; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 timeout or fetch-failed lines) |
 | M11-c131 | Verify sitemap.xml fresh and reachable | **BLOCKED**: `www` and apex do not resolve (curl 6, no A record at 8.8.8.8), 0/5 section files and 0/94 URLs reachable; needs Ofir to check domain and DNS; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M12-c131 | Verify robots.txt production-safe | **DONE**: live www file 200 matches source, 0/94 sitemap URLs blocked, credential paths disallowed, unchanged from M12-c130; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
+| M13-c131 | Verify /api/health and /api/ready return 200 with real deps | **BLOCKED**: health 200 (`database ok`, 292 ms), ready 503 on `meilisearch: down` (database, redis, cardcom ok, r2 not_configured), unchanged from M13-c130; operator-side fix (blocker 6); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 
 ## Open blockers
 

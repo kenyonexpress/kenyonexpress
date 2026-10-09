@@ -23004,3 +23004,9 @@ Command: `LOCAL_BASE=http://localhost:3312 node scripts/compare.mjs --page=categ
 
 - Live `www.kenyonexpress.co.il` 200, content identical to `src/app/robots.ts` (16 `Disallow:` prefixes, `Host:`, `Sitemap:`). 94 unique sitemap URLs from 5 section files, 0 blocked. M11-c131 used `kenyonexpress.com` (no DNS); `.co.il` resolves.
 - Moved from STATE.md header (verbatim): Previous: **M10-c131 BLOCKED** (2026-10-09): pending migrations re-probed read-only (one service-key OpenAPI GET plus one anon reviews read, temp script deleted, no key printed), unchanged from M10-c130: 6 live but unrecorded (189, 190, 191, 194, 197, 201), 22 not applied, 227 partial, 231 not applied (anon reviews 401). No `migrations/` commit since afeedf709; Supabase MCP unauthorised and no DB URL, so schema_migrations is unreadable. Only Ofir applies. Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1. Not a UI change, compare.mjs n/a.
+
+## M13-c131: /api/health and /api/ready, re-probed 2026-10-09 against production
+
+- `www.kenyonexpress.co.il/api/health` 200 `{"ok":true,"database":"ok","latency_ms":292}`. `/api/ready` 503 `{"ok":false,"checks":{"database":"ok","redis":"ok","meilisearch":"down","r2":"not_configured","cardcom":"ok"}}`.
+- Same as M13-c115 through M13-c130. No code change: suppressing the meilisearch check would hide a real outage. Operator fix unchanged (blocker 6, manual item). Not a UI change, compare.mjs n/a.
+- Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1.
