@@ -22878,3 +22878,17 @@ c120 queue rows (verbatim):
 | M15-c120 | Verify no console errors on / and /product sample | **DONE**: prod 0 errors on both pages at 380 and 1440, unchanged from M15-c119; local errors are env-only (see archive) |
 | M17-c120 | Verify RTL on / and /product sample, no LTR leaks | **BLOCKED**: 42/42 runs RTL-clean except the same footer newsletter placeholder, flush left in prod; uncommitted fix clean locally but compare.mjs refuses (exit 5 x6, blocker 0) (see archive) |
 | M18-c120 | Trim STATE.md under 300 lines, archive rest | **DONE**: already 152 lines at start; M17-c120 status line and 58 c113–c117 queue rows moved to `docs/STATE-ARCHIVE.md` |
+
+## M01-c130: compare.mjs on / at 380, 768, 1440, run 2026-10-09 in the foreground
+
+Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=home --width=<w>` against `PORT=3311 pnpm start` on a fresh build of HEAD `208d8fcd1`.
+
+| Width | Exit | Diff |
+|---|---|---|
+| 380 | 5 | none, REFUSING: kenyonexpress.co.il is not the reference |
+| 768 | 5 | none, same |
+| 1440 | 5 | none, same |
+
+- Unchanged from M01-c123; `refs/ke_live_singlefile.html` still absent (blocker 0). Gate wrote 3 REFUSED rows to `docs/UI-PARITY-REPORT.md`.
+- Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `supabase.timeout`).
+- Moved from STATE.md (verbatim): Last item: **M13-c123 BLOCKED** (2026-10-09): `/api/health` and `/api/ready` re-probed against production at 02:21 UTC, unchanged from M13-c122. `www/api/health` **200** 3 of 3 (`{"ok":true,"database":"ok"}`, 115–175 ms DB latency). `www/api/ready` **503** 3 of 3, `cache-control: no-store`, checks database ok, redis ok, cardcom ok, r2 not_configured, **meilisearch down** (blocker 6). Apex 308 to `www` (blocker 1). No code change: the fix is operator-side (manual item). Health unit tests 3 files, 23/23 pass. Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 timeout or fetch-failed lines). Not a UI change, so compare.mjs does not apply. See the M13-c123 section in the archive.
