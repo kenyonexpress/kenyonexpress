@@ -22938,3 +22938,7 @@ Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=categ
 - Moved from STATE.md (verbatim): Last item: **M11-c130 DONE** (2026-10-09): sitemap.xml re-verified on production. The `www` index returns 200 with 5 section files, all 200 (94 unique URLs, 0 `e2e-test` slugs), newest lastmod 2026-10-05, unchanged. All 94 `<loc>` URLs rewritten to `www` return 200 on the first pass. The apex still 308s (blocker 1). No code change. Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1. Not a UI change, compare.mjs n/a.
 
 - Moved from STATE.md (verbatim, M15-c130): Previous: **M13-c130 BLOCKED** (2026-10-09): `/api/health` 200 (`database: ok`, 253 ms), `/api/ready` 503 on `meilisearch: down` (database, redis, cardcom ok; r2 not_configured), unchanged from M13-c123. Needs Ofir (Meilisearch host or env, blocker 6). No code change. Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 timeout lines). Not a UI change, compare.mjs n/a.
+
+## M17-c130 (2026-10-09) — moved from STATE.md header
+- Replaced header lines "Last item: M16-c130 DONE" (JSON-LD 44/44 on prod, 43 pass, `מזקקת-ויסקי` no image, code unchanged since M16-c122) and "Previous: M15-c130 DONE" (0 console errors on / and /product in prod at 380 and 1440). Both rows remain in the STATE.md queue table.
+- Probe: /tmp/m17c130/probe.mjs; compare logs /tmp/m17c130/cmp-*.log (all exit 5).
