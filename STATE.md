@@ -1,7 +1,8 @@
-RESUME FROM: M11-c134 (M10-c134 BLOCKED: pending migrations unchanged, needs Ofir)
+RESUME FROM: M12-c134 (M11-c134 DONE: sitemap fresh and reachable)
 
 # KenyonExpress — Project State
-Last item: **M10-c134 BLOCKED** (2026-10-09): pending migrations re-probed at HEAD `a0bc2161c`, unchanged from M10-c133. No `migrations/` change since `afeedf709` (231); 45 files in `migrations/pending/`; anon `GET /rest/v1/reviews?select=id,rating&status=eq.approved&limit=1` still 401, so `231` is not applied; 6 live but unrecorded, 22 not applied, 227 partial (blocker 5). Only Ofir applies migrations and the Supabase MCP is not authorised. No secret printed, nothing written to the DB. Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`). Not a UI change, compare.mjs n/a. `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
+Last item: **M11-c134 DONE** (2026-10-09): sitemap.xml fresh and reachable on `www.kenyonexpress.co.il` at HEAD `066664b8a`: index 200, 5/5 section files 200 (94 URLs), 94/94 URLs 200 on www, newest lastmod 2026-10-05, unchanged from M11-c133. `<loc>` still uses the apex (308 to www, blocker 1; Vercel env not touched). Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`). compare.mjs n/a. `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
+Previous: **M10-c134 BLOCKED**: pending migrations unchanged, needs Ofir (blocker 5).
 Previous: **M09-c134 DONE**: no unused deps, no new dead exports.
 
 Previous: **M07-c134 DONE** (2026-10-09): TODO/FIXME re-scan at HEAD `02b38a2f1`: only `cardcom.ts:254` and `cardcom.ts:319` match (B1, B2 in `docs/BACKLOG.md`), nothing new, `final-audit.mjs` 0 untracked markers (of 2). Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`). compare.mjs n/a. `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
@@ -54,6 +55,7 @@ Rows for c122 (M18-c131), c121 (M18-c130), c113 and c115 to c117 are in `docs/ST
 | M07-c134 | TODO/FIXME older than 7 days: resolve or file in docs/BACKLOG.md | **DONE**: only the 2 filed Cardcom markers (B1, B2), nothing new; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M08-c134 | Lighthouse mobile on / and /product sample, log scores | **DONE**: perf median 82 / 84 (3 runs each: 79, 82, 82 / 84, 84, 84), perf-only script; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M10-c134 | Verify migrations/pending/ applied or file blocker | **BLOCKED**: re-probe unchanged from M10-c133, anon reviews 401, 231 not applied, 6 live but unrecorded, 22 not applied; needs Ofir (blocker 5); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
+| M11-c134 | Verify sitemap.xml fresh and reachable | **DONE**: index 200, 5/5 section files 200, 94/94 URLs 200 on www, newest lastmod 2026-10-05, unchanged from M11-c133; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 
 ## Open blockers
 
