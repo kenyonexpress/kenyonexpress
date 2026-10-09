@@ -1,8 +1,9 @@
-RESUME FROM: M09-c133
+RESUME FROM: M10-c133
 
 # KenyonExpress — Project State
 
-Last item: **M08-c133 DONE** (2026-10-09): Lighthouse mobile (default simulate, performance only via `scripts/_lh-runs.mjs`) on `/` and `/product/מוצר-לדוגמא` against `pnpm start -p 3533` on a clean build of HEAD `c2ef58066` plus the uncommitted `HeroSlider.tsx`/`SiteFooter.tsx` edits, 3 runs per page. **Perf: home 83, 83, 81 (median 83); product 83, 83, 83 (median 83).** TBT 50-80 ms / 50 ms, CLS 0.003 / 0.001, LCP (sim) 4.6-5.0 s / 4.4 s. A11y, BP, SEO not measured (perf-only script). Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`). Not a UI change, compare.mjs n/a.
+Last item: **M09-c133 DONE** (2026-10-09): no commit touching `src`, `package.json` or `pnpm-lock.yaml` since M09-c132 (`5beb7d229`), so the dep and dead-export audit is unchanged: 0 deps to drop, 0 dead components, same 39 kept exports, nothing deleted. Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`). Not a UI change, compare.mjs n/a. `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
+Previous: **M08-c133 DONE** (2026-10-09): Lighthouse mobile (default simulate, performance only via `scripts/_lh-runs.mjs`) on `/` and `/product/מוצר-לדוגמא` against `pnpm start -p 3533` on a clean build of HEAD `c2ef58066` plus the uncommitted `HeroSlider.tsx`/`SiteFooter.tsx` edits, 3 runs per page. **Perf: home 83, 83, 81 (median 83); product 83, 83, 83 (median 83).** TBT 50-80 ms / 50 ms, CLS 0.003 / 0.001, LCP (sim) 4.6-5.0 s / 4.4 s. A11y, BP, SEO not measured (perf-only script). Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`). Not a UI change, compare.mjs n/a.
 Previous: **M07-c133 DONE** (2026-10-09): TODO/FIXME re-scan at HEAD `56b49584b`, only `cardcom.ts:254` and `:319` remain (B1, B2 in docs/BACKLOG.md), nothing new; `final-audit.mjs` 0 untracked markers (of 2). Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`). Not a UI change, compare.mjs n/a. `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
 Previous: **M06-c133 DONE** (2026-10-09): `pnpm build` exit 0 on attempt 1 (0 `db.query_failed`), no drift, no code change. Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped). Not a UI change, compare.mjs n/a. `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
 Previous: **M05-c133 DONE** (2026-10-09): `pnpm test` exit 0 (519 files, 6474 passed, 12 skipped), no drift, no code change. Gates: type-check 0, lint 0, build 0 on attempt 1 (0 `db.query_failed`). Not a UI change, compare.mjs n/a. `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
@@ -97,6 +98,7 @@ Rows for c122 (M18-c131), c121 (M18-c130), c113 and c115 to c117 are in `docs/ST
 | M18-c132 | Trim STATE.md under 300 lines, archive rest | **DONE**: already 123 lines at start; 12 c123 queue rows moved to `docs/STATE-ARCHIVE.md`; `HeroSlider.tsx` and `SiteFooter.tsx` stay uncommitted |
 | M09-c132 | Remove unused deps and dead exports | **DONE**: no source change since M09-c131; 0 deps to drop, 0 dead components, same 39 kept exports, nothing deleted; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M08-c133 | Lighthouse mobile on / and /product sample, log scores | **DONE**: perf median 83 / 83 (3 runs each: 83, 83, 81 / 83, 83, 83), perf-only script; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
+| M09-c133 | Remove unused deps and dead exports | **DONE**: no source change since M09-c132; 0 deps to drop, 0 dead components, same 39 kept exports, nothing deleted; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 
 ## Open blockers
 
