@@ -22942,3 +22942,23 @@ Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=categ
 ## M17-c130 (2026-10-09) — moved from STATE.md header
 - Replaced header lines "Last item: M16-c130 DONE" (JSON-LD 44/44 on prod, 43 pass, `מזקקת-ויסקי` no image, code unchanged since M16-c122) and "Previous: M15-c130 DONE" (0 console errors on / and /product in prod at 380 and 1440). Both rows remain in the STATE.md queue table.
 - Probe: /tmp/m17c130/probe.mjs; compare logs /tmp/m17c130/cmp-*.log (all exit 5).
+
+## M18-c130 (2026-10-09) — c121 queue rows moved from STATE.md
+| M01-c121 | Re-measure compare.mjs 380/768/1440 on / | **BLOCKED**: exit 5 at all three widths, gate refuses, no reference (see archive) |
+| M02-c121 | Re-measure compare.mjs on /product | **BLOCKED**: exit 5 at 380/768/1440, gate refuses, no reference; build 0 on attempt 2 (see archive) |
+| M03-c121 | Re-measure compare.mjs on /category | **BLOCKED**: exit 5 at 380/768/1440, gate refuses, no reference; build 0 on attempt 1 (see archive) |
+| M04-c121 | pnpm type-check, fix drift | **DONE**: exit 0, no drift, no code change; build 0 on attempt 1 |
+| M05-c121 | pnpm test, fix drift | **DONE**: exit 0, 6474 passed, 12 skipped, no drift, no code change; build 0 on attempt 1 |
+| M06-c121 | pnpm build, fix drift | **DONE**: exit 0 on attempt 1, 0 timeouts, no drift, no code change |
+| M07-c121 | TODO/FIXME older than 7 days: resolve or file in docs/BACKLOG.md | **DONE**: re-scan found only the 2 filed Cardcom markers (B1, B2), nothing new; build 0 on attempt 1 |
+| M08-c121 | Lighthouse mobile on / and /product sample, log scores | **DONE**: settled-host median perf 79 / 84 (runs 7–9), all-run median 59 / 76 while another repo built; a11y 100, BP 96, SEO 100; build 0 on attempt 1 (see archive) |
+| M09-c121 | Remove unused deps and dead exports | **DONE**: no source change since M09-c120; 0 deps to drop, 0 dead components, same 39 kept exports, nothing deleted; build 0 on attempt 2 (see archive) |
+| M10-c121 | Verify migrations/pending/ applied or file blocker | **BLOCKED**: re-probe unchanged from M10-c120, 6 live but unrecorded, 22 not applied, 231 not applied (anon reviews 401); needs Ofir; build 0 on attempt 1 (see archive) |
+| M11-c121 | Verify sitemap.xml fresh and reachable | **DONE**: 5/5 section files 200, 94/94 URLs 200 on www (42 after retry), lastmods unchanged; build 0 on attempt 2 (see archive) |
+| M12-c121 | Verify robots.txt production-safe | **DONE**: live file matches source, 0/94 sitemap URLs blocked, credential paths disallowed + noindex, unchanged from M12-c120; build 0 on attempt 1 (see archive) |
+| M13-c121 | Verify /api/health and /api/ready return 200 with real deps | **BLOCKED**: health 200, ready 503 on `meilisearch: down`, unchanged from M13-c120; build 0 on attempt 1 (see archive) |
+| M14-c121 | Verify Sentry release matches HEAD commit | **BLOCKED**: `www` release still `1e84df0` (audit/final-audit), HEAD `81f5011`; `origin/main` still `3969d3e`, unchanged from M14-c120; build 0 on attempt 1 (see archive) |
+| M15-c121 | Verify no console errors on / and /product sample | **DONE**: prod 0 errors on both pages at 380 and 1440, unchanged from M15-c120; local errors are env-only; build 0 on attempt 2 (see archive) |
+| M16-c121 | Verify all product pages have JSON-LD Product and BreadcrumbList | **DONE**: 44/44 prod, 46/46 HEAD, both nodes valid; same 3 image-less rows lack `image`, unchanged from M16-c120; build 0 on attempt 1 (see archive) |
+| M17-c121 | Verify RTL on / and /product sample, no LTR leaks | **BLOCKED**: 42/42 runs RTL-clean except the same footer newsletter placeholder, flush left in prod; uncommitted fix clean locally but compare.mjs refuses (exit 5 x6, blocker 0); build 0 on attempt 1 (see archive) |
+| M18-c121 | Trim STATE.md under 300 lines, archive rest | **DONE**: already 112 lines at start; M17-c121 status line and 18 c118 queue rows moved to `docs/STATE-ARCHIVE.md`; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (52 recovered `supabase.timeout`, 0 `db.query_failed`); `HeroSlider.tsx` and `SiteFooter.tsx` stay uncommitted |
