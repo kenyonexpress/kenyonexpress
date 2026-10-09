@@ -1,7 +1,9 @@
-RESUME FROM: M04-c134 (M03-c134 BLOCKED: compare.mjs has no reference, blocker 0)
+RESUME FROM: M05-c134 (M04-c134 DONE: type-check clean, no drift)
 
 # KenyonExpress — Project State
-Last item: **M03-c134 BLOCKED** (2026-10-09): `compare.mjs --page=category --width=380`, `768`, `1440` run in the foreground: all REFUSE (reference is our own build, 37 to 38 `/_next/` assets, blocker 0, `docs/PARITY-REFERENCE.md`); no number to diff. Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`). `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
+Last item: **M04-c134 DONE** (2026-10-09): `pnpm type-check` exit 0, no drift, no code change. Gates lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`). `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
+
+Previous: **M03-c134 BLOCKED**: compare.mjs refuses at 380/768/1440 (blocker 0).
 
 Previous: **M02-c134 BLOCKED** (2026-10-09): `compare.mjs` run in the foreground at 380, 768 and 1440 on /product: exit 5 at all three (reference is our own build, blocker 0, `docs/PARITY-REFERENCE.md`); no number to diff. Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1. `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
 
@@ -38,6 +40,7 @@ Rows for c122 (M18-c131), c121 (M18-c130), c113 and c115 to c117 are in `docs/ST
 | M01-c134 | Re-measure compare.mjs 380/768/1440 on / | **BLOCKED**: gate exits 5 at all three widths, no reference, no number to diff; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M02-c134 | Re-measure compare.mjs on /product sample | **BLOCKED**: gate exits 5 at 380/768/1440, no reference, no number to diff; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M03-c134 | Re-measure compare.mjs on /category sample | **BLOCKED**: gate refuses at 380/768/1440, no reference, no number to diff; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
+| M04-c134 | pnpm type-check, fix drift | **DONE**: exit 0, no drift, no code change; gates lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 
 ## Open blockers
 
