@@ -95,6 +95,11 @@ unchanged. Only `cardcom.ts:254` (blame 2026-07-24) and `cardcom.ts:319` (blame
 terminal credentials. `node scripts/final-audit.mjs` reports 0 untracked work
 markers (of 2).
 
+Re-scanned 2026-10-10 (M07-c136) with the same rule at HEAD `6ea38f29e`:
+unchanged. Only `cardcom.ts:254` and `cardcom.ts:319` match, both filed as B1
+and B2; they still need live Cardcom terminal credentials. `node
+scripts/final-audit.mjs` reports 0 untracked work markers (of 2).
+
 ## Open items
 
 ### B1. Confirm the Cardcom legacy refund endpoint and field names (#41)
