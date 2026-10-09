@@ -1,8 +1,9 @@
-RESUME FROM: M06-c132
+RESUME FROM: M07-c132
 
 # KenyonExpress — Project State
 
-Last item: **M05-c132 DONE** (2026-10-09): `pnpm test` exit 0 (519 files, 6474 passed, 12 skipped), no drift, no code change. Gates: type-check 0, lint 0, build 0 on attempt 1 (22 recovered timeout or fetch-failed lines, 0 `db.query_failed`). Not a UI change, compare.mjs n/a. `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
+Last item: **M06-c132 DONE** (2026-10-09): `pnpm build` exit 0 on attempt 1 (6 recovered timeout or fetch-failed lines, 0 `db.query_failed`), no drift, no code change. Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped). Not a UI change, compare.mjs n/a. `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
+Previous: **M05-c132 DONE** (2026-10-09): `pnpm test` exit 0 (519 files, 6474 passed, 12 skipped), no drift, no code change. Gates: type-check 0, lint 0, build 0 on attempt 1 (22 recovered timeout or fetch-failed lines, 0 `db.query_failed`). Not a UI change, compare.mjs n/a. `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
 Previous: **M04-c132 DONE** (2026-10-09): `pnpm type-check` exit 0, no drift, no code change. Gates: lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 timeout lines). Not a UI change, compare.mjs n/a. `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
 Previous: **M03-c132 BLOCKED** (2026-10-09): `compare.mjs --page=category` run in the foreground at 380, 768 and 1440 against `PORT=3312 pnpm start`, HEAD `0dc47169e`: gate refuses at all three, no diff number (`kenyonexpress.co.il` is our own deployment, see docs/PARITY-REFERENCE.md; blocker 0). Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1. `HeroSlider.tsx` and `SiteFooter.tsx` stay uncommitted.
 Previous: **M02-c132 BLOCKED** (2026-10-09): `compare.mjs --page=product` run in the foreground at 380, 768 and 1440 against `PORT=3312 pnpm start`, HEAD `4dd880a57`: gate refuses at all three, no diff number (`kenyonexpress.co.il` is our own deployment, see docs/PARITY-REFERENCE.md; blocker 0). Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1. `HeroSlider.tsx` and `SiteFooter.tsx` stay uncommitted.
