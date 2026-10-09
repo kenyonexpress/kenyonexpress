@@ -89,6 +89,12 @@ reports 0 untracked work markers (of 2).
 | `src/lib/payments/cardcom.ts:254` | 2026-07-24 | **Filed below** (B1, GitHub #41). |
 | `src/lib/payments/cardcom.ts:319` | 2026-08-07 | **Filed below** (B2, GitHub #42). |
 
+Re-scanned 2026-10-10 (M07-c135) with the same rule at HEAD `506daba1c`:
+unchanged. Only `cardcom.ts:254` (blame 2026-07-24) and `cardcom.ts:319` (blame
+2026-08-07) match, both filed as B1 and B2; they still need live Cardcom
+terminal credentials. `node scripts/final-audit.mjs` reports 0 untracked work
+markers (of 2).
+
 ## Open items
 
 ### B1. Confirm the Cardcom legacy refund endpoint and field names (#41)

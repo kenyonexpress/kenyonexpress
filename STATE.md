@@ -1,5 +1,6 @@
-RESUME FROM: M07-c135 (M06-c135 DONE: pnpm build clean, no drift)
-Last item: **M06-c135 DONE** (2026-10-10): `pnpm build` exit 0 on attempt 1 at HEAD `299c249e9`, 0 `db.query_failed`, 1 recovered timeout or fetch-failed line, no drift, no code change. Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped). compare.mjs n/a. `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
+RESUME FROM: M08-c135 (M07-c135 DONE: TODO/FIXME re-scan, only the 2 filed Cardcom markers)
+Last item: **M07-c135 DONE** (2026-10-10): TODO/FIXME re-scan at HEAD `506daba1c`: only `cardcom.ts:254` and `cardcom.ts:319` match (B1, B2 in `docs/BACKLOG.md`, blame 2026-07-24 and 2026-08-07), nothing new, `final-audit.mjs` 0 untracked markers (of 2). Gates type-check 0, lint 0, test 0, build 0 on attempt 1. compare.mjs n/a. `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
+Previous: **M06-c135 DONE** (2026-10-10): `pnpm build` exit 0 on attempt 1 at HEAD `299c249e9`, 0 `db.query_failed`, no drift, no code change. Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped).
 Previous: **M05-c135 DONE** (2026-10-10): `pnpm test` exit 0 at HEAD `a15955637`, 519 files, 6474 passed, 12 skipped, no drift, no code change. Gates type-check 0, lint 0, build 0 on attempt 1 (0 `db.query_failed`). compare.mjs n/a. `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
 Previous: **M04-c135 DONE** (2026-10-10): `pnpm type-check` exit 0 at HEAD `bf0b3cc57`, no drift, no code change. Gates lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`). compare.mjs n/a. `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
 Previous: **M03-c135 BLOCKED** (2026-10-10): `compare.mjs --page=category --width=380`, `768`, `1440` run in the foreground on /product-category/hot-deals/, all refuse (kenyonexpress.co.il serves our own build, 37-38 `/_next/` refs, no wp-content; blocker 0, `docs/PARITY-REFERENCE.md`); no number to diff, nothing to record against the 11% limit. Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`). `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
@@ -77,6 +78,7 @@ Rows for c122 (M18-c131), c121 (M18-c130), c113 and c115 to c117 are in `docs/ST
 | M18-c134 | Trim STATE.md under 300 lines, archive rest | **DONE**: STATE.md was 96 lines at start (under 300), nothing to move; archive already current from M18-c133; gates type-check, lint, test, build see commit |
 | M01-c135 | Re-measure compare.mjs 380/768/1440 on / | **BLOCKED**: gate refuses at all three widths, no reference; gates all 0 |
 | M02-c135 | Re-measure compare.mjs on /product sample | **BLOCKED**: gate refuses at 380/768/1440, no reference, no number to diff; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
+| M07-c135 | TODO/FIXME older than 7 days: resolve or file in docs/BACKLOG.md | **DONE**: only the 2 filed Cardcom markers (B1, B2), nothing new; gates see commit |
 
 ## Open blockers
 
