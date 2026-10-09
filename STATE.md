@@ -1,6 +1,7 @@
-RESUME FROM: M15-c134 (M14-c134 BLOCKED: Sentry release 1e84df0e5 is not HEAD 9a1d192cc, blocker 4)
+RESUME FROM: M16-c134 (M15-c134 DONE: no console errors on / and /product in production)
 
-Last item: **M14-c134 BLOCKED** (2026-10-09): `www` home 200 (`x-vercel-cache: HIT`), 21 chunks, inlined `NEXT_PUBLIC_SENTRY_RELEASE??"1e84df0e5457c9c80a46f7cb2155ac204ebc15ef"` (the only 40-char SHA), HEAD `9a1d192cc`, `origin/main` `0478f196d`; unchanged from M14-c133, needs Ofir (blocker 4). Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`). compare.mjs n/a. `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
+Last item: **M15-c134 DONE** (2026-10-09): production `https://www.kenyonexpress.co.il`, Playwright Chromium at 380 and 1440 on `/` and `/product/מוצר-לדוגמא` at HEAD `406c94754`: 4/4 runs status 200, 0 console errors, 0 `pageerror`, 0 failed requests, 0 responses of 400 or above (load, two scrolls, 7 s wait; probe in `/tmp/m15c134/probe.mjs`). Unchanged from M15-c133. Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`). compare.mjs n/a. `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
+Previous: **M14-c134 BLOCKED** (2026-10-09): `www` home 200 (`x-vercel-cache: HIT`), 21 chunks, inlined `NEXT_PUBLIC_SENTRY_RELEASE??"1e84df0e5457c9c80a46f7cb2155ac204ebc15ef"` (the only 40-char SHA), HEAD `9a1d192cc`, `origin/main` `0478f196d`; unchanged from M14-c133, needs Ofir (blocker 4). Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`). compare.mjs n/a. `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
 Previous: **M13-c134 BLOCKED**: /api/ready 503 on meilisearch down (blocker 6).
 # KenyonExpress — Project State
 Last item: **M13-c134 BLOCKED** (2026-10-09): `www` `/api/health` 200 (`database: ok`), `/api/ready` 503 with `meilisearch: down` (database, redis, cardcom ok, r2 not_configured), unchanged from M13-c133; needs Ofir (blocker 6). No code change. compare.mjs n/a. `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
@@ -62,6 +63,7 @@ Rows for c122 (M18-c131), c121 (M18-c130), c113 and c115 to c117 are in `docs/ST
 | M11-c134 | Verify sitemap.xml fresh and reachable | **DONE**: index 200, 5/5 section files 200, 94/94 URLs 200 on www, newest lastmod 2026-10-05, unchanged from M11-c133; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M12-c134 | Verify robots.txt production-safe | **DONE**: live www file 200 matches source (16 Disallow, credential paths blocked), sitemap/robots agreement test green, unchanged from M12-c133; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M13-c134 | Verify /api/health and /api/ready return 200 with real deps | **BLOCKED**: health 200, ready 503 on `meilisearch: down`, unchanged from M13-c133; blocker 6; gates type-check 0, lint 0, test 0, build 0 on attempt 1 |
+| M15-c134 | Verify no console errors on / and /product sample | **DONE**: prod 0 console/page errors, 0 failed requests on both pages at 380 and 1440, unchanged from M15-c133; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 
 ## Open blockers
 
