@@ -1,7 +1,9 @@
-RESUME FROM: M07-c134 (M06-c134 DONE: pnpm build clean, no drift)
+RESUME FROM: M08-c134 (M07-c134 DONE: only the 2 filed Cardcom markers remain)
 
 # KenyonExpress — Project State
-Last item: **M06-c134 DONE** (2026-10-09): `pnpm build` exit 0 on attempt 1, 0 `db.query_failed`, 0 timeout or fetch-failed lines, no drift, no code change. Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped). `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
+Last item: **M07-c134 DONE** (2026-10-09): TODO/FIXME re-scan at HEAD `02b38a2f1`: only `cardcom.ts:254` and `cardcom.ts:319` match (B1, B2 in `docs/BACKLOG.md`), nothing new, `final-audit.mjs` 0 untracked markers (of 2). Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`). compare.mjs n/a. `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
+
+Previous: **M06-c134 DONE** (2026-10-09): `pnpm build` exit 0 on attempt 1, 0 `db.query_failed`, 0 timeout or fetch-failed lines, no drift, no code change. Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped). `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
 
 Previous: **M05-c134 DONE**: pnpm test clean, no drift.
 
@@ -45,6 +47,7 @@ Rows for c122 (M18-c131), c121 (M18-c130), c113 and c115 to c117 are in `docs/ST
 | M02-c134 | Re-measure compare.mjs on /product sample | **BLOCKED**: gate exits 5 at 380/768/1440, no reference, no number to diff; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M03-c134 | Re-measure compare.mjs on /category sample | **BLOCKED**: gate refuses at 380/768/1440, no reference, no number to diff; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M04-c134 | pnpm type-check, fix drift | **DONE**: exit 0, no drift, no code change; gates lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
+| M07-c134 | TODO/FIXME older than 7 days: resolve or file in docs/BACKLOG.md | **DONE**: only the 2 filed Cardcom markers (B1, B2), nothing new; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 
 ## Open blockers
 
