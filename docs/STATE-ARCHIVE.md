@@ -22892,3 +22892,17 @@ Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=home 
 - Unchanged from M01-c123; `refs/ke_live_singlefile.html` still absent (blocker 0). Gate wrote 3 REFUSED rows to `docs/UI-PARITY-REPORT.md`.
 - Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `supabase.timeout`).
 - Moved from STATE.md (verbatim): Last item: **M13-c123 BLOCKED** (2026-10-09): `/api/health` and `/api/ready` re-probed against production at 02:21 UTC, unchanged from M13-c122. `www/api/health` **200** 3 of 3 (`{"ok":true,"database":"ok"}`, 115–175 ms DB latency). `www/api/ready` **503** 3 of 3, `cache-control: no-store`, checks database ok, redis ok, cardcom ok, r2 not_configured, **meilisearch down** (blocker 6). Apex 308 to `www` (blocker 1). No code change: the fix is operator-side (manual item). Health unit tests 3 files, 23/23 pass. Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 timeout or fetch-failed lines). Not a UI change, so compare.mjs does not apply. See the M13-c123 section in the archive.
+
+## M02-c130: compare.mjs on /product at 380, 768, 1440, run 2026-10-09 in the foreground
+
+Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=product --width=<w>` against `PORT=3311 pnpm start` on a fresh build of HEAD `719a2ee87`.
+
+| Width | Exit | Diff |
+|---|---|---|
+| 380 | 5 | none, REFUSING: kenyonexpress.co.il is not the reference |
+| 768 | 5 | none, same |
+| 1440 | 5 | none, same |
+
+- Unchanged from M02-c123; `refs/ke_live_singlefile.html` still absent (blocker 0). Gate wrote 3 REFUSED rows to `docs/UI-PARITY-REPORT.md`. Exit code 5 confirmed directly at 380; 768 and 1440 show the same refusal text.
+- Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `supabase.timeout`).
+- Moved from STATE.md (verbatim): Last item: **M01-c130 BLOCKED** (2026-10-09): `compare.mjs --page=home` exits 5 at 380, 768 and 1440 with no diff number; the gate refuses because `kenyonexpress.co.il` is our own build and `refs/ke_live_singlefile.html` is absent (blocker 0). Run in the foreground against `PORT=3311 pnpm start`, HEAD `208d8fcd1`. Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1. See the M01-c130 section in the archive.
