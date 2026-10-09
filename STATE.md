@@ -1,7 +1,9 @@
-RESUME FROM: M02-c134
+RESUME FROM: M03-c134
 
 # KenyonExpress — Project State
-Last item: **M01-c134 BLOCKED** (2026-10-09): `compare.mjs 380 / `, `768 /`, `1440 /` all exit 5 (reference is our own build, see blocker 0 and `docs/PARITY-REFERENCE.md`); no number to diff, nothing to record against the 11% limit. Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`). `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
+Last item: **M02-c134 BLOCKED** (2026-10-09): `compare.mjs` run in the foreground at 380, 768 and 1440 on /product: exit 5 at all three (reference is our own build, blocker 0, `docs/PARITY-REFERENCE.md`); no number to diff. Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1. `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
+
+Previous: **M01-c134 BLOCKED** (2026-10-09): `compare.mjs 380 / `, `768 /`, `1440 /` all exit 5 (reference is our own build, see blocker 0 and `docs/PARITY-REFERENCE.md`); no number to diff, nothing to record against the 11% limit. Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`). `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
 
 Previous: **M18-c133 DONE** (2026-10-09): STATE.md was 143 lines (under 300) but about 50 KB; now 57 lines. c130 to c132 queue rows and the older Previous narratives moved to `docs/STATE-ARCHIVE.md` (section "Archived by M18-c133"). No code change, compare.mjs n/a. `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
 
@@ -32,6 +34,7 @@ Rows for c122 (M18-c131), c121 (M18-c130), c113 and c115 to c117 are in `docs/ST
 | M16-c133 | Verify all product pages have JSON-LD Product and BreadcrumbList | **DONE**: 44/44 prod have both nodes, 43 pass, `מזקקת-ויסקי` lacks `image`; code unchanged since M16-c132; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 |
 | M18-c133 | Trim STATE.md under 300 lines, archive rest | **DONE**: STATE.md was 143 lines at start (under 300, but ~50 KB); c130 to c132 queue rows and the M16-c131..M01-c133 Previous narratives moved to `docs/STATE-ARCHIVE.md`; no code change |
 | M01-c134 | Re-measure compare.mjs 380/768/1440 on / | **BLOCKED**: gate exits 5 at all three widths, no reference, no number to diff; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
+| M02-c134 | Re-measure compare.mjs on /product sample | **BLOCKED**: gate exits 5 at 380/768/1440, no reference, no number to diff; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 
 ## Open blockers
 
