@@ -9,6 +9,7 @@ import {
 import { baseListParamsSchema, listRange } from '@/lib/admin/list-params'
 import { needsAttention, reconcile, summarize } from '@/lib/admin/payment-reconciliation'
 import { requireSection } from '@/lib/admin/rbac'
+import { shekelsFromIlsRounded } from '@/lib/money-format'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import type { EscrowHold, Payment, PaymentWebhookEvent, SplitExecution } from '@/types/database'
@@ -32,7 +33,7 @@ const paramsSchema = baseListParamsSchema.extend({
   tab: z.enum(['reconcile', 'payments', 'webhooks', 'escrow', 'splits']).catch('reconcile'),
 })
 
-const agorot = (value: number) => `₪${(value / 100).toLocaleString('he-IL')}`
+const agorot = (value: number) => shekelsFromIlsRounded(value / 100)
 
 const PAYMENT_STATUS_COLORS: Record<string, string> = {
   succeeded: 'bg-green-100 text-green-700',
@@ -135,13 +136,12 @@ export default async function AdminPaymentsPage(props: {
         id: 'amount',
         header: 'סכום',
         sortKey: 'amount_ils',
-        cell: (p) => `₪${p.amount_ils.toLocaleString('he-IL')}`,
+        cell: (p) => shekelsFromIlsRounded(p.amount_ils),
       },
       {
         id: 'wallet',
         header: 'ארנק',
-        cell: (p) =>
-          p.wallet_applied_ils ? `₪${p.wallet_applied_ils.toLocaleString('he-IL')}` : '',
+        cell: (p) => (p.wallet_applied_ils ? shekelsFromIlsRounded(p.wallet_applied_ils) : ''),
       },
       {
         id: 'cardcom',

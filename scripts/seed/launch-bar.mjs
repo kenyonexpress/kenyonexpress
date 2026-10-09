@@ -57,6 +57,27 @@ export const OPEN_TAXONOMIES = CANONICAL_CATEGORIES.filter((c) => c.kind === 'ta
  * step the auditor does not have. `launch-bar.test.ts` imports both and
  * asserts they are the same list, so the copy cannot drift.
  */
+
+/**
+ * `reverse-withdrawal-payment` WAS IN THIS LIST AND WAS NEVER A PRODUCT.
+ *
+ * Removed 2026-09-04. It is Dokan bookkeeping -- the record of a reversed
+ * payout -- and the WordPress importer has known that all along:
+ * `scripts/wp-import/config.mjs` carries it in `excludeProductSlugs`, and
+ * `scripts/wp-dry-run.mjs` says so in prose.
+ *
+ * This list and `KE_LIVE_DEALS` both mirrored the live DOM verbatim, so both
+ * carried a row the importer was already excluding.
+ *
+ * The count is 32 again, and the 32nd is NOT the ledger row. Dropping to 31
+ * left a 4-column grid one cell short and reflowed every row below the rail:
+ * `--page=home` at 1440 measured 7.08% before and 14.48% after, against an 11%
+ * gate, with the damage confined entirely to bands below y1400. The slot at
+ * live's index 6 now holds `טיפול-פנים-עמוק`, a real product in live's own
+ * catalogue, so the grid keeps live's shape without carrying live's artifact.
+ * `KE_LIVE_DEALS` carries the same substitution and `launch-bar.test.ts`
+ * asserts the two lists slug for slug, so they cannot drift apart.
+ */
 export const GRID_SLUGS = [
   'עוזרת-אישית-שירותי-משרד',
   'תספורת-לגבר-ילד-או-סידור-זקן-בפתח-תקווה',
@@ -64,7 +85,7 @@ export const GRID_SLUGS = [
   'טיפול-פנים-copy',
   'קופון-טסט',
   'מוצר-לדוגמא',
-  'reverse-withdrawal-payment',
+  'טיפול-פנים-עמוק',
   'צימר-מאסטר-copy-copy',
   'צימר-מאסטר-copy',
   'חופשה-חלומית-באחוזת-דניאל',

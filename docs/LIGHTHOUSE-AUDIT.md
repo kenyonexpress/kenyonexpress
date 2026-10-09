@@ -1,5 +1,16 @@
 # ‏Lighthouse, נגישות ו-RTL על כל דף ציבורי. ‏19.08.2026
 
+
+> <!-- v1-final-historical:2026-09-01 -->
+> 🕯️ **Historical snapshot. Not current guidance.**
+>
+> This is a Lighthouse run, true on the date it carries. It is kept as a record of what
+> was measured and decided then, and it is **not** maintained against
+> production. Numbers, table names and statuses in it may since have changed.
+>
+> For the current state see `docs/ARCHITECTURE-OVERVIEW.md`, and
+> `docs/INDEX.md` for which document is authoritative on a given subject.
+
 ‏MISSION-FINAL שלב 8. שלוש הביקורות רצות על **כל המסלולים הציבוריים**, לא על
 מדגם, וזו הנקודה: בסריקת הנגישות של אותו בוקר עשרה מתוך שלושה עשר הדפים
 שהיו **מחוץ** לשער נכשלו, וכל השישה שהיו בתוכו היו נקיים. אותה צורה חזרה כאן

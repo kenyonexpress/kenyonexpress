@@ -25,7 +25,7 @@ import type { LegalDocument } from '@/content/legal/types'
  */
 export const accessibilityStatement: LegalDocument = {
   title: 'הצהרת נגישות',
-  updatedAt: '2026-08-07',
+  updatedAt: '2026-09-02',
   description:
     'הצהרת הנגישות של קניון אקספרס: רמת ההנגשה, מה נבדק ותוקן, מגבלות ידועות ודרכי פנייה בנושאי נגישות.',
   reviewNotice:

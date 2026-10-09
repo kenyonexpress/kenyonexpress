@@ -1,10 +1,15 @@
 import { loginRedirectUrl } from '@/lib/auth/login-redirect'
 import { GUEST_SESSION_COOKIE, guestSessionCookieOptions } from '@/lib/cart/guest-session-cookie'
 import { REQUEST_ID_HEADER, resolveRequestId } from '@/lib/observability/request-id'
+import { edgeClientAddress, edgeShieldPolicyFor } from '@/lib/rate-limit/edge-shield'
+import { graduatedRateLimit } from '@/lib/rate-limit/graduated'
+import { tooManyRequests } from '@/lib/rate-limit/headers'
 import { REFERRAL_QUERY_PARAM, normalizeReferralCode } from '@/lib/referrals/code'
 import { REFERRAL_COOKIE, referralCookieOptions } from '@/lib/referrals/cookie'
 import { isPaymentFramePath } from '@/lib/security/frame-policy'
+import { CROSS_SITE_REJECTION, isCrossSiteApiMutation } from '@/lib/security/same-origin'
 import { lookupRedirect } from '@/lib/seo/redirects'
+import { requireAnonKey } from '@/lib/supabase/anon-key'
 import { createServerClient } from '@supabase/ssr'
 import { type NextRequest, NextResponse } from 'next/server'
 
@@ -56,6 +61,41 @@ export async function proxy(request: NextRequest) {
   // it.
   if (pathname.startsWith('/monitoring')) return forward(request, requestId)
 
+  // The CSRF gate for route handlers. A state-changing call to /api/* that a
+  // browser says came from another site is refused here, before the session
+  // refresh below has spent a token round trip on it. Server Actions are not
+  // affected (Next checks their Origin itself), and server-to-server callers
+  // (Cardcom, QStash, the till app, the uptime monitor) send no browser
+  // headers and pass. The decision itself lives in lib/security/same-origin.
+  if (isCrossSiteApiMutation(request)) {
+    return withRequestId(NextResponse.json(CROSS_SITE_REJECTION, { status: 403 }), requestId)
+  }
+
+  // The graduated shield over /api/*, keyed on the client address, before the
+  // session refresh below so a refused request costs no Supabase round trip.
+  // Three windows per address and a cooldown that doubles per refusal
+  // (lib/rate-limit/graduated.ts); machine callers that prove themselves with
+  // a secret are routed around it (lib/rate-limit/edge-shield.ts). Upstash
+  // only: unconfigured or down, the decision is open and the per-route table
+  // underneath keeps holding.
+  const shieldPolicy = edgeShieldPolicyFor(pathname)
+  if (shieldPolicy) {
+    const address = edgeClientAddress(request.headers)
+    if (address) {
+      const decision = await graduatedRateLimit(shieldPolicy, address)
+      if (!decision.allowed) {
+        return withRequestId(
+          tooManyRequests(decision.tier, {
+            error: 'יותר מדי בקשות. נסו שוב בעוד כמה דקות.',
+            refused_by: decision.refusedBy,
+            retry_after_seconds: decision.retryAfterSeconds,
+          }),
+          requestId,
+        )
+      }
+    }
+  }
+
   // Legacy WordPress URLs, resolved BEFORE the session refresh below.
   //
   // The order is the point. `supabase.auth.getUser()` is a network round trip
@@ -87,23 +127,19 @@ export async function proxy(request: NextRequest) {
 
   let supabaseResponse = forward(request, requestId)
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
-        setAll(cookiesToSet) {
-          for (const { name, value } of cookiesToSet) request.cookies.set(name, value)
-          supabaseResponse = forward(request, requestId)
-          for (const { name, value, options } of cookiesToSet)
-            supabaseResponse.cookies.set(name, value, options)
-        },
+  const supabase = createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, requireAnonKey(), {
+    cookies: {
+      getAll() {
+        return request.cookies.getAll()
+      },
+      setAll(cookiesToSet) {
+        for (const { name, value } of cookiesToSet) request.cookies.set(name, value)
+        supabaseResponse = forward(request, requestId)
+        for (const { name, value, options } of cookiesToSet)
+          supabaseResponse.cookies.set(name, value, options)
       },
     },
-  )
+  })
 
   // Refresh the Supabase session — do not remove, required for cookie rotation.
   const {
@@ -157,13 +193,15 @@ export async function proxy(request: NextRequest) {
       .eq('id', user.id)
       .single()
     // Admin panel is open to panel roles: admin, super_admin,
-    // content_uploader, and support (049). Optimistic check only; every page
+    // content_uploader, support (049) and read_only (181, the observer tier —
+    // support's SELECT surface, no writes). Optimistic check only; every page
     // re-gates per section and every server action re-checks its own guard.
     const isPanel =
       profile?.role === 'admin' ||
       profile?.role === 'super_admin' ||
       profile?.role === 'content_uploader' ||
-      profile?.role === 'support'
+      profile?.role === 'support' ||
+      profile?.role === 'read_only'
     if (!isPanel) {
       return withRequestId(NextResponse.redirect(new URL('/', request.url)), requestId)
     }

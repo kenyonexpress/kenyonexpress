@@ -5,6 +5,7 @@ import { resolve } from 'node:path'
 // Per-100px band report + overall for the first 2600px. No new deps:
 // decodes PNGs in headless chromium via canvas.
 import { chromium } from '@playwright/test'
+import { appendParityRow } from './parity-log.mjs'
 
 if (!process.env.PLAYWRIGHT_BROWSERS_PATH) {
   const cache = resolve(homedir(), 'Library/Caches/ms-playwright')
@@ -84,6 +85,16 @@ console.log(
 )
 console.log(`compared: ${report.W}x${report.H}`)
 console.log(`OVERALL first ${report.H}px: ${report.overallPct}%`)
+
+// Recorded BEFORE anything else happens with the number, so there is no path
+// that measures parity and forgets to write it down. docs/UI-PARITY-REPORT.md
+// was empty while three measurements sat in a commit message; see parity-log.mjs.
+appendParityRow({
+  page: process.env.COMPARE_PAGE ?? 'unknown',
+  width: Number(process.env.COMPARE_WIDTH ?? report.W),
+  pct: report.overallPct,
+  notes: process.env.COMPARE_NOTES ?? '',
+})
 
 /**
  * A band percentage only means something when the two pages are the same page.

@@ -1,5 +1,7 @@
 import ViewTracker from '@/components/analytics/ViewTracker'
+import Reviews from '@/components/product/Reviews'
 import { CouponTerms } from '@/components/storefront/CouponPricing'
+import CouponQrExpiry from '@/components/storefront/CouponQrExpiry'
 import ProductGallery from '@/components/storefront/ProductGallery'
 import ProductInfo from '@/components/storefront/ProductInfo'
 import RelatedProducts from '@/components/storefront/RelatedProducts'
@@ -123,7 +125,16 @@ export default async function ProductPage({ params }: Props) {
   const detail = await loadProductBySlug(slug)
   if (!detail) notFound()
 
-  const { product, images, supplier, variants, galleryAssets, couponOffer } = detail
+  const {
+    product,
+    images,
+    supplier,
+    variants,
+    galleryAssets,
+    couponOffer,
+    recurringOffer,
+    rating,
+  } = detail
 
   const category = Array.isArray(product.categories)
     ? null
@@ -157,6 +168,10 @@ export default async function ProductPage({ params }: Props) {
   // disagreed with. `couponOffer` is the object the commission engine bills
   // from, so the advertised price and the charged price cannot diverge.
   const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il'
+  // `rating` is the same two numbers the star row paints (235's
+  // product_rating_summary over APPROVED rows), or null. Review content stays
+  // out of the page (232), and json-ld.ts refuses a zero-count rating, so the
+  // claim search engines read is exactly the one the visitor sees.
   const productLd = buildProductJsonLd({
     name: product.name_he,
     description: product.description_he ?? null,
@@ -170,6 +185,7 @@ export default async function ProductPage({ params }: Props) {
     fullPriceIls: isCoupon ? null : oldPrice,
     couponOffer,
     stockQuantity: product.stock_quantity ?? null,
+    rating,
   })
   const breadcrumbLd = buildBreadcrumbJsonLd(
     [
@@ -237,7 +253,13 @@ export default async function ProductPage({ params }: Props) {
             border plus 32px of padding we used to draw round them offset every
             row inside by the width of the chrome. */}
         <div data-pdp="columns" className="pdp__columns">
-          <ProductGallery images={images} name={product.name_he} assets={galleryAssets} />
+          <ProductGallery
+            images={images}
+            name={product.name_he}
+            assets={galleryAssets}
+            price={basePrice}
+            oldPrice={oldPrice}
+          />
           <ProductInfo
             productId={product.id}
             name={product.name_he}
@@ -269,12 +291,20 @@ export default async function ProductPage({ params }: Props) {
             variants={variants ?? []}
             isCoupon={isCoupon}
             couponOffer={couponOffer}
+            recurringOffer={recurringOffer}
+            rating={rating}
           />
         </div>
 
-        {/* Coupon-only: how and by when the voucher may be redeemed. */}
+        {/* Coupon-only: how and by when the voucher may be redeemed. The QR
+            block hands the deal to a phone and says what the two deadlines
+            mean; the terms block under it prints them. */}
         {couponOffer && (
           <div className="pdp-coupon">
+            <CouponQrExpiry
+              offer={couponOffer}
+              productUrl={`${siteUrl.replace(/\/+$/, '')}/product/${encodeURIComponent(product.slug)}`}
+            />
             <CouponTerms
               offer={couponOffer}
               terms={product.coupon_terms_he}
@@ -317,6 +347,14 @@ export default async function ProductPage({ params }: Props) {
             whatsappEnabled={readWhatsAppEnabled(product)}
           />
         </div>
+
+        {/* Review submission only -- no review is displayed to visitors (the
+            business model routes them to admin moderation instead). The
+            per-session "can I review" gate streams via Suspense, the
+            StockScarcity pattern. */}
+        <Suspense fallback={null}>
+          <Reviews productId={product.id} />
+        </Suspense>
 
         {/* Related products */}
         <RelatedProducts categoryId={product.category_id} excludeId={product.id} />

@@ -124,7 +124,7 @@ export default function SupplierOnboarding({ supplierId, summary, members, candi
         )}
 
         <div className="flex flex-wrap items-end gap-2">
-          <div className="flex-1 min-w-[200px]">
+          <div className="flex-1 min-w-50">
             <label htmlFor="member-user" className="block text-xs font-medium text-gray-700 mb-1">
               משתמש
             </label>

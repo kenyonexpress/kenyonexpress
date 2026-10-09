@@ -1,7 +1,7 @@
 import type { Product } from '@/components/ProductCard'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { orFail } from '@/lib/catalogue-read'
-import { createPublicClient } from '@/lib/supabase/anon'
+import { createCatalogueReadClient } from '@/lib/supabase/read-replica'
 import { cacheLife, cacheTag } from 'next/cache'
 
 /**
@@ -61,7 +61,7 @@ export async function loadRelatedProducts(
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
 
-  const supabase = createPublicClient()
+  const supabase = createCatalogueReadClient()
   const byId = new Map<string, Product>()
 
   if (categoryId) {

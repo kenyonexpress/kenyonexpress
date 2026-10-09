@@ -51,6 +51,10 @@ describe('web app manifest', () => {
 
     expect(m.lang).toBe('he')
     expect(m.dir).toBe('rtl')
+    // The launcher label, in the language of every other string the shopper
+    // sees. A Latin name under the icon reads as somebody else's app.
+    expect(m.name).toBe('קניון אקספרס')
+    expect(m.short_name).toBe('קניון אקספרס')
   })
 
   it('starts at a bare URL, so the cached document is the one that is served', () => {
@@ -82,9 +86,37 @@ describe('service worker safety rails', () => {
   })
 
   it('serves navigations network-first, never cache-first', () => {
-    // The whole document strategy in one assertion: fetch, and only fall back
-    // to the cache in the catch.
-    expect(sw).toMatch(/request\.mode === 'navigate'[\s\S]*?fetch\(request\)\.catch/)
+    // The whole document strategy in one assertion: fetch first, and cached
+    // copies (browse page, then offline shell) only inside the catch.
+    expect(sw).toMatch(/request\.mode === 'navigate'[\s\S]*?fetch\(request\)[\s\S]*?\.catch/)
+    expect(sw).not.toMatch(/request\.mode === 'navigate'[\s\S]*?caches\.match\(request\)\.then/)
+  })
+
+  it('bounds the browse-page cache, so it cannot grow without limit', () => {
+    // The eviction in putBrowsePage is only real if a limit exists and the
+    // trim actually runs against it.
+    expect(sw).toMatch(/const PAGES_LIMIT = \d+/)
+    expect(sw).toMatch(/const IMAGES_LIMIT = \d+/)
+    expect(sw).toMatch(/keys\.length - limit/)
+    expect(sw).toMatch(/putBounded\(PAGES_CACHE, request, response\.clone\(\), PAGES_LIMIT\)/)
+    expect(sw).toMatch(/cacheFirstBounded\(IMAGES_CACHE, request, IMAGES_LIMIT\)/)
+  })
+
+  it('only caches bare browse URLs: a query string is a filter permutation', () => {
+    expect(sw).toContain("if (url.search !== '') return false")
+  })
+
+  it('shows nothing for a push without a titled JSON payload', () => {
+    // An empty notification teaches people to revoke the permission; a
+    // malformed payload must be dropped, not rendered.
+    expect(sw).toMatch(/'push'[\s\S]*?if \(!event\.data\) return/)
+    expect(sw).toMatch(/typeof payload\.title !== 'string'/)
+  })
+
+  it('confines the notification click target to a same-origin path', () => {
+    // `//evil.example` parses as protocol-relative, so startsWith('/') alone
+    // is not the check.
+    expect(sw).toContain("payload.url.startsWith('/') && !payload.url.startsWith('//')")
   })
 
   it('deletes caches from previous versions on activate', () => {

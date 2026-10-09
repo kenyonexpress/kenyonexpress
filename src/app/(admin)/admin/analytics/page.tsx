@@ -9,8 +9,13 @@ import {
   splitByProductType,
   takeRateByPlatformPercent,
   topProducts,
+  topSuppliers,
   totalsOf,
 } from '@/lib/analytics/aggregate'
+import {
+  shekelsFromIls as sharedShekelsFromIls,
+  shekelsFromIlsRounded as sharedShekelsFromIlsRounded,
+} from '@/lib/money-format'
 import { loadFunnel, loadSalesLines } from '@/server/analytics/queries'
 import { Coins, Receipt, ShoppingCart, TrendingUp } from 'lucide-react'
 import Link from 'next/link'
@@ -45,11 +50,11 @@ const TYPE_LABELS: Record<string, string> = {
  * this stays as it is and merely stops sharing a name with its own opposite.
  */
 function shekelsFromIls(value: number): string {
-  return `₪${value.toLocaleString('he-IL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+  return sharedShekelsFromIls(value)
 }
 
 function shortShekels(value: number): string {
-  return `₪${Math.round(value).toLocaleString('he-IL')}`
+  return sharedShekelsFromIlsRounded(value)
 }
 
 function integer(value: number): string {
@@ -90,6 +95,7 @@ export default async function AnalyticsPage({
   const buckets = bucketSales(lines, period.value)
   const totals = totalsOf(buckets)
   const products = topProducts(lines, 10)
+  const suppliers = topSuppliers(lines, 10)
   const typeSplit = splitByProductType(lines)
   const takeRates = takeRateByPlatformPercent(lines)
 
@@ -229,6 +235,57 @@ export default async function AnalyticsPage({
                     <td className="py-2 font-medium text-heading">{shekelsFromIls(row.gmvIls)}</td>
                     <td className="py-2 text-black/70">{shekelsFromIls(row.chargedOnSiteIls)}</td>
                     <td className="py-2 text-black/70">{row.gmvSharePct}%</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section className="rounded-xl border border-gray-200 bg-white p-5">
+          <h2 className="text-sm font-bold text-heading">עשרת הספקים המובילים</h2>
+          <p className="mt-1 text-xs text-black/50">
+            לפי GMV בטווח הנבחר; אותן שורות מכירה של שאר העמוד.
+          </p>
+          <div className="mt-4 overflow-x-auto">
+            <table className="w-full text-start text-sm">
+              <thead>
+                <tr className="border-b border-gray-200 text-xs text-black/50">
+                  <th scope="col" className="py-2 text-start font-medium">
+                    ספק
+                  </th>
+                  <th scope="col" className="py-2 text-start font-medium">
+                    פריטים
+                  </th>
+                  <th scope="col" className="py-2 text-start font-medium">
+                    GMV
+                  </th>
+                  <th scope="col" className="py-2 text-start font-medium">
+                    עמלה
+                  </th>
+                  <th scope="col" className="py-2 text-start font-medium">
+                    לספק
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {suppliers.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="py-3 text-black/50">
+                      אין מכירות בטווח הזה.
+                    </td>
+                  </tr>
+                )}
+                {suppliers.map((row) => (
+                  <tr
+                    key={row.supplierId ?? row.supplierName}
+                    className="border-b border-gray-100 last:border-0"
+                  >
+                    <td className="py-2 text-black/70">{row.supplierName}</td>
+                    <td className="py-2 text-black/70">{integer(row.items)}</td>
+                    <td className="py-2 font-medium text-heading">{shekelsFromIls(row.gmvIls)}</td>
+                    <td className="py-2 text-black/70">{shekelsFromIls(row.platformRevenueIls)}</td>
+                    <td className="py-2 text-black/70">{shekelsFromIls(row.supplierDueIls)}</td>
                   </tr>
                 ))}
               </tbody>

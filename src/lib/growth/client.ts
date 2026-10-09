@@ -44,6 +44,36 @@ export type DiscountCampaignPerformance = {
   last_redeemed_at: string | null
 }
 
+export type CouponQrBatchRow = {
+  id: string
+  campaign_id: string
+  label: string
+  quantity: number
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type CouponQrCodeRow = {
+  id: string
+  batch_id: string
+  campaign_id: string
+  code: string
+  redeemed_at: string | null
+  redeemed_order_id: string | null
+  expires_at: string | null
+  expired_at: string | null
+  created_at: string
+}
+
+/** What redeem_coupon_qr (217) answers. reason is present on every refusal. */
+export type CouponQrRedeemResult = {
+  ok: boolean
+  reason?: string
+  campaign_id?: string
+  amount_agorot?: number
+}
+
 type Result<T> = Promise<{ data: T | null; error: { message: string; code?: string } | null }>
 
 /** Only the calls this feature makes. Anything else goes through the real client. */
@@ -52,6 +82,35 @@ type GrowthClient = {
     list(): Result<DiscountCampaignPerformance[]>
     byId(id: string): Result<DiscountCampaignRow>
     byCode(code: string): Result<DiscountCampaignRow>
+    byUnitCode(code: string): Result<DiscountCampaignRow>
+  }
+  qrBatches(): {
+    listForCampaign(campaignId: string): Result<CouponQrBatchRow[]>
+    byId(id: string): Result<CouponQrBatchRow & { campaign: { code: string; name: string } }>
+    insert(row: {
+      campaign_id: string
+      label: string
+      quantity: number
+      created_by: string | null
+    }): Result<CouponQrBatchRow>
+    insertCodes(
+      rows: { batch_id: string; campaign_id: string; code: string; expires_at: string | null }[],
+    ): Result<null>
+    codesForBatch(batchId: string): Result<Pick<CouponQrCodeRow, 'code'>[]>
+    /** Every code of the campaign, the four columns the batch inventory needs. */
+    codesInventory(
+      campaignId: string,
+    ): Result<Pick<CouponQrCodeRow, 'batch_id' | 'expires_at' | 'expired_at' | 'redeemed_at'>[]>
+    existingCodes(codes: string[]): Result<Pick<CouponQrCodeRow, 'code'>[]>
+  }
+  qrRedemption(): {
+    redeem(input: {
+      code: string
+      orderId: string
+      userId: string | null
+      amountAgorot: number
+    }): Result<CouponQrRedeemResult>
+    expireDue(): Result<number>
   }
 }
 
@@ -80,6 +139,87 @@ export function growthClient(): GrowthClient {
           .eq('code', code)
           .is('deleted_at', null)
           .maybeSingle(),
+      // A printed 8-digit unit code (182) resolving to its campaign. Spent
+      // codes miss here on purpose: redeemed_at is the per-unit single-use
+      // gate, and a filter is how it gates. The campaign's own validity
+      // (window, active, limits) is judged by the caller's evaluateDiscount,
+      // same as a typed campaign code.
+      byUnitCode: async (code: string) => {
+        // Spent, swept and per-code-expired units all miss. The or() restates
+        // what redeem_coupon_qr checks under its lock; here it only keeps the
+        // cart from pricing a discount the claim would refuse at the charge.
+        const { data, error } = await db
+          .from('coupon_qr_codes')
+          .select('redeemed_at, campaign:discount_campaigns(*)')
+          .eq('code', code)
+          .is('redeemed_at', null)
+          .is('expired_at', null)
+          .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
+          .maybeSingle()
+        if (error || !data) return { data: null, error }
+        const campaign = (data.campaign ?? null) as DiscountCampaignRow | null
+        return { data: campaign && campaign.deleted_at === null ? campaign : null, error: null }
+      },
+    }),
+    qrBatches: () => ({
+      listForCampaign: (campaignId: string) =>
+        db
+          .from('coupon_qr_batches')
+          .select('*')
+          .eq('campaign_id', campaignId)
+          .order('created_at', { ascending: false }),
+      byId: (id: string) =>
+        db
+          .from('coupon_qr_batches')
+          .select('*, campaign:discount_campaigns(code, name)')
+          .eq('id', id)
+          .maybeSingle(),
+      insert: (row: {
+        campaign_id: string
+        label: string
+        quantity: number
+        created_by: string | null
+      }) => db.from('coupon_qr_batches').insert(row).select('*').single(),
+      // One .insert(rows) call on purpose: a single statement is atomic, so a
+      // failed batch leaves zero codes rather than some.
+      insertCodes: (
+        rows: { batch_id: string; campaign_id: string; code: string; expires_at: string | null }[],
+      ) => db.from('coupon_qr_codes').insert(rows),
+      codesInventory: (campaignId: string) =>
+        db
+          .from('coupon_qr_codes')
+          .select('batch_id, expires_at, expired_at, redeemed_at')
+          .eq('campaign_id', campaignId),
+      codesForBatch: (batchId: string) =>
+        db
+          .from('coupon_qr_codes')
+          .select('code')
+          .eq('batch_id', batchId)
+          .order('code', { ascending: true }),
+      existingCodes: (codes: string[]) =>
+        db.from('coupon_qr_codes').select('code').in('code', codes),
+    }),
+    // Both RPCs are 217 and service_role only; this module already holds the
+    // admin client, so the grant and the caller line up by construction.
+    qrRedemption: () => ({
+      redeem: async (input: {
+        code: string
+        orderId: string
+        userId: string | null
+        amountAgorot: number
+      }) => {
+        const { data, error } = await db.rpc('redeem_coupon_qr', {
+          p_code: input.code,
+          p_order_id: input.orderId,
+          p_user_id: input.userId,
+          p_amount_agorot: input.amountAgorot,
+        })
+        return { data: (data ?? null) as CouponQrRedeemResult | null, error }
+      },
+      expireDue: async () => {
+        const { data, error } = await db.rpc('expire_coupon_qr_codes')
+        return { data: (data ?? null) as number | null, error }
+      },
     }),
   }
 }

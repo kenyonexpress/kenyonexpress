@@ -8,6 +8,7 @@ import {
   splitByProductType,
   takeRateByPlatformPercent,
   topProducts,
+  topSuppliers,
   totalsOf,
 } from '@/lib/analytics/aggregate'
 import { describe, expect, it } from 'vitest'
@@ -18,6 +19,8 @@ function line(overrides: Partial<SaleLine> = {}): SaleLine {
     orderId: 'order-1',
     productId: 'product-1',
     productName: 'מוצר',
+    supplierId: 'supplier-1',
+    supplierName: 'ספק',
     productType: 'physical',
     platformPercent: 10,
     gmvIls: 100,
@@ -315,5 +318,47 @@ describe('totalsOf', () => {
 
     expect(totals.orders).toBe(0)
     expect(totals.aovIls).toBe(0)
+  })
+})
+
+describe('topSuppliers', () => {
+  it('folds by supplier, sorts by GMV, labels the deleted', () => {
+    const rows = topSuppliers([
+      line({
+        supplierId: 'a',
+        supplierName: 'אלף',
+        gmvIls: 100,
+        platformFeeIls: 10,
+        supplierDueIls: 90,
+      }),
+      line({
+        supplierId: 'a',
+        supplierName: 'אלף',
+        gmvIls: 50,
+        platformFeeIls: 5,
+        supplierDueIls: 45,
+      }),
+      line({
+        supplierId: 'b',
+        supplierName: 'בית',
+        gmvIls: 200,
+        platformFeeIls: 20,
+        supplierDueIls: 0,
+      }),
+      line({
+        supplierId: null,
+        supplierName: null,
+        gmvIls: 1,
+        platformFeeIls: 0,
+        supplierDueIls: 0,
+      }),
+    ])
+    expect(rows.map((r) => r.supplierName)).toEqual(['בית', 'אלף', 'ספק שנמחק'])
+    expect(rows[1]).toMatchObject({
+      items: 2,
+      gmvIls: 150,
+      platformRevenueIls: 15,
+      supplierDueIls: 135,
+    })
   })
 })

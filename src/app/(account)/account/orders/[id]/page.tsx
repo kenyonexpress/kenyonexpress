@@ -1,4 +1,5 @@
 import { formatDate, formatIls, orderStatusLabel, orderStatusTone } from '@/lib/account/format'
+import { resolveCarrier } from '@/lib/shipping/carriers'
 import { COUPON_TONE_CHIP, couponStatusView } from '@/lib/vouchers/coupon-view'
 import { getOrderDetail } from '@/server/queries/orders'
 import Link from 'next/link'
@@ -48,6 +49,20 @@ export default async function OrderDetailPage({ params }: Props) {
             <strong>{formatIls(order.totalAgorot)}</strong>
           </div>
         </div>
+        {order.paidAt && (
+          <div className="account-row">
+            <div className="account-row__main">
+              <p className="account-row__meta">אישור הזמנה להדפסה</p>
+            </div>
+            <div className="account-row__actions">
+              {/* Rendered per request behind the session; there is no stored
+                  file to leak. Not the tax document: that row is below. */}
+              <a className="account-btn" href={`/account/orders/${order.id}/receipt`}>
+                הורדת אישור הזמנה (PDF)
+              </a>
+            </div>
+          </div>
+        )}
         {order.invoice && (
           <div className="account-row">
             <div className="account-row__main">
@@ -85,6 +100,41 @@ export default async function OrderDetailPage({ params }: Props) {
                   ? ` · ${formatIls(line.balanceDueAgorot)} לתשלום בבית העסק`
                   : ''}
               </p>
+              {line.productType === 'physical' &&
+                (() => {
+                  // The shipping line: status, carrier and tracking, all from
+                  // order_items. resolveCarrier only links couriers it knows,
+                  // so an unrecognised carrier renders as text and never as a
+                  // link to the wrong site.
+                  const shipping = resolveCarrier(line.carrier, line.trackingNumber)
+                  const status =
+                    line.itemStatus === 'delivered'
+                      ? `נמסר${line.deliveredAt ? ` ב-${formatDate(line.deliveredAt)}` : ''}`
+                      : line.itemStatus === 'shipped'
+                        ? `נשלח${line.shippedAt ? ` ב-${formatDate(line.shippedAt)}` : ''}`
+                        : null
+                  if (!status && !shipping && !line.trackingNumber) return null
+                  return (
+                    <p className="account-row__meta">
+                      {status}
+                      {shipping ? `${status ? ' · ' : ''}${shipping.label}` : ''}
+                      {line.trackingNumber && (
+                        <>
+                          {' · מספר מעקב: '}
+                          <span dir="ltr">{line.trackingNumber}</span>
+                        </>
+                      )}
+                      {shipping?.url && (
+                        <>
+                          {' · '}
+                          <a href={shipping.url} target="_blank" rel="noopener noreferrer">
+                            למעקב אצל חברת המשלוחים
+                          </a>
+                        </>
+                      )}
+                    </p>
+                  )
+                })()}
               {line.supplier && (
                 <p className="account-row__meta">
                   {line.supplier.name}

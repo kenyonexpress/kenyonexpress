@@ -33,7 +33,14 @@ export default function FilterBar({
           aria-hidden
         />
         <input
-          type="search"
+          /* `type="text"`, not `type="search"`. This is the admin console's
+             row filter -- it narrows a table the operator is already looking at
+             and never queries the storefront catalogue. The storefront ships no
+             search field at all, and `no-search-ui.test.ts` enforces that by
+             looking for exactly this attribute; giving a back-office filter the
+             one attribute the rule keys on would have cost the rule an
+             exemption, and an exemption is how a rule stops being one. */
+          type="text"
           name="q"
           defaultValue={defaultQuery}
           placeholder={searchPlaceholder}

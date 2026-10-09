@@ -1,5 +1,18 @@
 # ARCHITECTURE-ADMIN-DASHBOARD.md
 
+<!-- v1-final-banner:2026-09-01 -->
+> ⚠️ **Partly stale 2026-09-01. Enums and money: `docs/ARCHITECTURE-OVERVIEW.md` §2.2, §3.**
+>
+> Two corrections against production:
+>
+> 1. **`order_status` has seven values, not six.** The live enum is
+>    `pending, paid, partially_fulfilled, fulfilled, cancelled, refunded,
+>    platform_settled`. A `z.enum` or a switch built from the six-value list
+>    below throws `22P02` on a `platform_settled` row.
+> 2. **`supplier_payouts` does not exist.** The payout tiles have no table.
+>
+> Escrow states are dead enum values, not a queue to display.
+
 KenyonExpress admin dashboard architecture (platform control center).
 
 Status: BINDING for `arch/admin-supplier` (2026-07-28)
@@ -104,7 +117,10 @@ Route: `/admin/orders`, `/admin/orders/[id]`.
 Sources: `orders`, `order_items`, `payments`, `vouchers`.
 Filters: status, date range, supplier_id (via items), q (order id / email), product type, payment stuck.
 
-`order_status` (007): `'pending' | 'paid' | 'partially_fulfilled' | 'fulfilled' | 'cancelled' | 'refunded'`.
+`order_status` (live in production 2026-09-01, **seven** values): `'pending' | 'paid' |
+'partially_fulfilled' | 'fulfilled' | 'cancelled' | 'refunded' | 'platform_settled'`.
+The six-value list this document used to carry predates `platform_settled`; a
+`z.enum` or a switch built from it throws `22P02` on a settled row.
 
 `order_item_status` (007): `'pending' | 'issued' | 'shipped' | 'delivered' | 'cancelled' | 'refunded'`.
 

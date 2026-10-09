@@ -1,4 +1,5 @@
 import { type Agorot, agorot } from '@/lib/money'
+import type { ShippingMethodId } from '@/lib/shipping/methods'
 
 export type CartStorageItem = {
   product_id: string
@@ -88,8 +89,20 @@ export type CartViewItem = {
  * whatever its commission column says, and `unpriced` outranks the stock
  * reasons because a line the money engine refuses to price has no meaningful
  * quantity to be short of.
+ *
+ * `price_error` sits second because it is a statement about the price itself:
+ * the line has a price, the money engine would happily charge it, and that is
+ * the problem. It has to be decided before `unpriced` -- which means "no usable
+ * price" -- and before the stock reasons, because a shopper told to lower their
+ * quantity would reasonably conclude that buying one is fine. See
+ * `lib/commerce/implausible-discount.ts` for the measured threshold.
  */
-export type UnavailableReason = 'delisted' | 'unpriced' | 'out_of_stock' | 'insufficient_stock'
+export type UnavailableReason =
+  | 'delisted'
+  | 'price_error'
+  | 'unpriced'
+  | 'out_of_stock'
+  | 'insufficient_stock'
 
 /**
  * The hard ceiling on one cart line, matching `max(99)` in
@@ -114,6 +127,27 @@ export type AppliedCoupon = {
   label: string
   /** Integer agorot, like every other money field on this view. */
   discount: Agorot
+  /**
+   * Per-code breakdown when several campaign codes stack, in application
+   * order. Absent for a single code. Checkout claims each entry against its
+   * own campaign row, so the amounts here are what claim_order_discount is
+   * asked to hold, and their sum is `discount`.
+   */
+  stack?: { code: string; discountAgorot: number }[]
+}
+
+/**
+ * The shipping method the shopper has picked, as the cart renders it.
+ *
+ * Only ever produced by the server from the registry in
+ * `lib/shipping/methods.ts`. The browser holds the method id in a cookie and
+ * nothing else; the label and the cost are re-resolved on every render.
+ */
+export type CartShipping = {
+  method: ShippingMethodId
+  label: string
+  /** Integer agorot added to the on-site charge. Zero for every method today. */
+  cost: Agorot
 }
 
 export type CartView = {
@@ -129,7 +163,16 @@ export type CartView = {
   coupon: AppliedCoupon | null
   /** Agorot off the on-site charge. Zero without a valid coupon. */
   discount: Agorot
-  /** What the card is actually charged: subtotal - discount, never below zero. */
+  /**
+   * Null when nothing in the cart needs shipping: a coupon is redeemed at the
+   * business and a selector on a coupon-only cart asks a question with no
+   * answer. Present whenever at least one line is physical.
+   */
+  shipping: CartShipping | null
+  /**
+   * What the card is actually charged: subtotal - discount + shipping cost,
+   * never below zero.
+   */
   total: Agorot
 }
 
@@ -145,6 +188,7 @@ export const EMPTY_CART: CartView = {
   balance_due_at_business: ZERO,
   coupon: null,
   discount: ZERO,
+  shipping: null,
   total: ZERO,
 }
 

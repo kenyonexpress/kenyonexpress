@@ -10,11 +10,16 @@ const ITEMS = [
   { href: '/account/details', label: 'הפרטים שלי' },
   { href: '/account/orders', label: 'ההזמנות שלי' },
   { href: '/account/coupons', label: 'הקופונים שלי' },
+  { href: '/account/wishlist', label: 'רשימת המשאלות' },
   { href: '/account/wallet', label: 'הארנק שלי' },
+  { href: '/account/cashback', label: 'הקאשבק שלי' },
   { href: '/account/referrals', label: 'חבר מביא חבר' },
   { href: '/account/subscriptions', label: 'המנויים שלי' },
   { href: '/account/addresses', label: 'כתובות' },
   { href: '/account/tokens', label: 'אמצעי תשלום' },
+  { href: '/account/notifications', label: 'התראות' },
+  { href: '/account/security', label: 'אבטחה וכניסה' },
+  { href: '/account/privacy', label: 'פרטיות ונתונים' },
 ] as const
 
 // This file carried its OWN copy of `formatIls`, a second

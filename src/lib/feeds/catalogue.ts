@@ -2,13 +2,13 @@ import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { orFail } from '@/lib/catalogue-read'
 import { type CouponOffer, buildCouponOffer } from '@/lib/commerce/coupon-offer'
 import { isAllowedImageUrl } from '@/lib/images/remote-hosts'
-import { createPublicClient } from '@/lib/supabase/anon'
+import { createCatalogueReadClient } from '@/lib/supabase/read-replica'
 import { cacheLife, cacheTag } from 'next/cache'
 
 /**
  * The one catalogue read both feeds are built from.
  *
- * Same client, same cache profile and same tag as `sitemap.ts`: `createPublicClient`
+ * Same client, same cache profile and same tag as `sitemap.ts`: `createCatalogueReadClient`
  * (anon, because the service-role key fails silently on this machine and once
  * collapsed the sitemap to three URLs), `use cache` + `cacheLife('hours')`, and
  * `CATALOGUE_TAG` so an admin save refreshes the feeds along with everything
@@ -157,7 +157,7 @@ export async function getFeedProducts(limit = 200): Promise<FeedProduct[]> {
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
 
-  const supabase = createPublicClient()
+  const supabase = createCatalogueReadClient()
   const data = orFail(
     await supabase
       .from('products')

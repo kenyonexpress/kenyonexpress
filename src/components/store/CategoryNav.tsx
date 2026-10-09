@@ -1,10 +1,11 @@
+import { UNDER_99_LABEL } from '@/lib/ke-live-hero-data'
 import Link from 'next/link'
 
 // Top horizontal departments menu (matches the live electro "תפריט קטגוריות עליון").
 // Canonical slugs per KE_LIVE_SPEC.md.
 const CATEGORIES = [
   { label: 'דילים חמים 🔥', slug: 'hot-deals', strong: true },
-  { label: 'עד ₪99', slug: 'under-99' },
+  { label: UNDER_99_LABEL, slug: 'under-99' },
   { label: 'החדשים', slug: 'new' },
   { label: 'מסעדות ובתי קפה', slug: 'restaurants-cafes' },
   { label: 'יופי בריאות וטיפוח', slug: 'beauty-health' },

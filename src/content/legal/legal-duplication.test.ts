@@ -63,11 +63,16 @@ function walk(dir: string): string[] {
 /** Every page that renders a legal document, found rather than listed. */
 function legalPages(): string[] {
   const cwd = process.cwd()
-  return walk(resolve(cwd, 'src/app'))
-    .map((file) => relative(cwd, file).split('\\').join('/'))
-    .filter((file) => /terms|privacy|accessib|refund_returns|legal\//.test(file))
-    .filter((file) => !file.includes('/checkout/'))
-    .sort()
+  return (
+    walk(resolve(cwd, 'src/app'))
+      .map((file) => relative(cwd, file).split('\\').join('/'))
+      .filter((file) => /terms|privacy|accessib|refund_returns|legal\//.test(file))
+      .filter((file) => !file.includes('/checkout/'))
+      // /account/privacy is the GDPR self-service screen (export + deletion),
+      // a settings page that LINKS to the documents; it does not render one.
+      .filter((file) => !file.includes('/account/'))
+      .sort()
+  )
 }
 
 describe('the legal document inventory', () => {

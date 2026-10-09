@@ -1,0 +1,71 @@
+{
+  "name": "KenyonExpress - Errors",
+  "description": "Everything that went wrong, by event name: error-level lines, HTTP 5xx, RLS denials, and database trouble (slow queries, failures, timeouts).",
+  "owner": "X-AXIOM-EVERYONE",
+  "datasets": ["{{dataset}}"],
+  "refreshTime": 300,
+  "schemaVersion": 2,
+  "timeWindowStart": "qr-now-24h",
+  "timeWindowEnd": "qr-now",
+  "charts": [
+    {
+      "id": "error-lines",
+      "name": "Error lines (24h)",
+      "type": "Statistic",
+      "query": {
+        "apl": "['{{dataset}}'] | where level == 'error' | summarize errors = count()"
+      },
+      "colorScheme": "Red"
+    },
+    {
+      "id": "http-5xx",
+      "name": "HTTP 5xx / failed requests",
+      "type": "Statistic",
+      "query": {
+        "apl": "['{{dataset}}'] | where event == 'request.failed' or (event == 'request.completed' and status >= 500) | summarize failed = count()"
+      },
+      "colorScheme": "Orange"
+    },
+    {
+      "id": "rls-denials",
+      "name": "RLS denials",
+      "type": "Statistic",
+      "query": {
+        "apl": "['{{dataset}}'] | where event == 'supabase.rls_denied' | summarize denials = count()"
+      },
+      "colorScheme": "Purple"
+    },
+    {
+      "id": "errors-by-event",
+      "name": "Errors over time, by event",
+      "type": "TimeSeries",
+      "query": {
+        "apl": "['{{dataset}}'] | where level == 'error' | summarize count() by bin_auto(_time), event"
+      }
+    },
+    {
+      "id": "db-trouble",
+      "name": "Database trouble (slow, failed, timed out, denied)",
+      "type": "TimeSeries",
+      "query": {
+        "apl": "['{{dataset}}'] | where event in ('db.query_failed', 'db.query_slow', 'supabase.timeout', 'supabase.rls_denied') | summarize count() by bin_auto(_time), event"
+      }
+    },
+    {
+      "id": "top-warn-error-events",
+      "name": "Warn and error events by volume",
+      "type": "Table",
+      "query": {
+        "apl": "['{{dataset}}'] | where level in ('warn', 'error') | summarize occurrences = count() by event, level | sort by occurrences desc | limit 25"
+      }
+    }
+  ],
+  "layout": [
+    { "i": "error-lines", "x": 0, "y": 0, "w": 4, "h": 3 },
+    { "i": "http-5xx", "x": 4, "y": 0, "w": 4, "h": 3 },
+    { "i": "rls-denials", "x": 8, "y": 0, "w": 4, "h": 3 },
+    { "i": "errors-by-event", "x": 0, "y": 3, "w": 6, "h": 4 },
+    { "i": "db-trouble", "x": 6, "y": 3, "w": 6, "h": 4 },
+    { "i": "top-warn-error-events", "x": 0, "y": 7, "w": 12, "h": 5 }
+  ]
+}

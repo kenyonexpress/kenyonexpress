@@ -222,6 +222,7 @@ export type CheckoutActionErrorCode =
   | 'NOT_FOUND'
   | 'INSUFFICIENT_STOCK'
   | 'INSUFFICIENT_WALLET'
+  | 'COUPON_INVALID'
   | 'CONSENT_REQUIRED'
   | 'ADDRESS_REQUIRED'
   | 'EXPIRED'
@@ -229,6 +230,7 @@ export type CheckoutActionErrorCode =
   | 'PAYMENT_PROVIDER_ERROR'
   | 'PAYMENT_DECLINED'
   | 'RATE_LIMITED'
+  | 'REVIEW_REQUIRED'
   | 'CHECKOUT_DISABLED'
   | 'INTERNAL'
 

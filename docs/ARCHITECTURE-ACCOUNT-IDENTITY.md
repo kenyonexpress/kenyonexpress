@@ -1,5 +1,19 @@
 # ארכיטקטורת חשבון לקוח וזהות (Account & Identity)
 
+
+> <!-- v1-final-banner:2026-09-01 -->
+> ⚠️ **This document names tables that do not exist in production.**
+>
+> | Named here | In production |
+> |---|---|
+> | `coupon_redemptions` | `voucher_redemptions` |
+> | `notifications_outbox` | `notification_outbox` |
+> | `security_events` | nothing; `audit_log` + `payment_events` |
+>
+> The design below may still be sound; the schema it assumes was not built, or
+> was built under another name. Verify against `docs/DATA-MODEL.md` before
+> writing a query, and see `docs/SCHEMA-REALITY-CHECK.md` for the full mapping.
+
 מסמך תכנון. מיגרציה נלווית (טיוטה, לא הוחלה):
 `supabase/migrations/029_accounts.sql`
 

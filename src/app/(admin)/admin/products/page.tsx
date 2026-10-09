@@ -1,8 +1,10 @@
 import ProductsTable, { type ProductRow } from '@/components/admin/ProductsTable'
 import { productListParamsSchema } from '@/lib/admin/page-params'
+import { canSeeMoney } from '@/lib/admin/permissions'
 import { requireSection } from '@/lib/admin/rbac'
 import { createClient } from '@/lib/supabase/server'
-import { Plus } from 'lucide-react'
+import { likeContains } from '@/lib/utils/search-escape'
+import { FileUp, Plus } from 'lucide-react'
 import Link from 'next/link'
 
 export const metadata = { title: 'מוצרים' }
@@ -20,6 +22,9 @@ const STATUS_FILTERS = [
 const adminBtn =
   'inline-flex items-center gap-2 rounded-lg border border-black/10 bg-brand px-4 py-2 text-sm font-semibold text-brand-dark transition-colors hover:bg-brand-primary-hover'
 
+const adminBtnGhost =
+  'inline-flex items-center gap-2 rounded-lg border border-black/10 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50'
+
 interface Props {
   searchParams: Promise<Record<string, string | string[] | undefined>>
 }
@@ -29,7 +34,7 @@ export default async function AdminProductsPage({ searchParams }: Props) {
   // Without this the catalog list was the one admin screen a support user could
   // open, while every sibling under /admin/products/* refused them. `read`, not
   // `write`: content_uploader lists and edits, support gets neither.
-  await requireSection('catalog', 'read')
+  const session = await requireSection('catalog', 'read')
 
   const raw = await searchParams
   const parsed = productListParamsSchema.safeParse({
@@ -48,7 +53,7 @@ export default async function AdminProductsPage({ searchParams }: Props) {
   let query = supabase
     .from('products')
     .select(
-      'id, name_he, slug, status, kenyon_price, type, is_featured, platform_percent, coupon_price_ils, created_at, categories!products_category_id_fkey(name_he)',
+      'id, name_he, slug, status, kenyon_price, full_price, type, is_featured, platform_percent, coupon_price_ils, created_at, categories!products_category_id_fkey(name_he)',
       { count: 'exact' },
     )
     .is('deleted_at', null)
@@ -56,7 +61,7 @@ export default async function AdminProductsPage({ searchParams }: Props) {
     .range(from, to)
 
   if (status) query = query.eq('status', status)
-  if (q) query = query.ilike('name_he', `%${q}%`)
+  if (q) query = query.ilike('name_he', likeContains(q))
 
   const [{ data: products, count }, { data: categories }] = await Promise.all([
     query,
@@ -71,6 +76,7 @@ export default async function AdminProductsPage({ searchParams }: Props) {
       slug: p.slug,
       status: p.status,
       kenyon_price: p.kenyon_price,
+      full_price: p.full_price,
       type: p.type,
       is_featured: p.is_featured,
       category_name: category?.name_he ?? null,
@@ -86,10 +92,16 @@ export default async function AdminProductsPage({ searchParams }: Props) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold text-ink">מוצרים</h1>
-        <Link href="/admin/products/new" className={adminBtn}>
-          <Plus size={15} />
-          מוצר חדש
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link href="/admin/products/import" className={adminBtnGhost}>
+            <FileUp size={15} />
+            ייבוא מקובץ
+          </Link>
+          <Link href="/admin/products/new" className={adminBtn}>
+            <Plus size={15} />
+            מוצר חדש
+          </Link>
+        </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
@@ -130,7 +142,11 @@ export default async function AdminProductsPage({ searchParams }: Props) {
         </form>
       </div>
 
-      <ProductsTable products={rows} categories={categories ?? []} />
+      <ProductsTable
+        products={rows}
+        categories={categories ?? []}
+        hidePricing={!canSeeMoney(session.role)}
+      />
 
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-2">

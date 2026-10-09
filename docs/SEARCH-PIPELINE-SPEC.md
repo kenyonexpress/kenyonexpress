@@ -1,9 +1,94 @@
 # Search pipeline
 
 **This document was written from the code, not from a plan.** Every value below
-was read out of `src/lib/search/` on 2026-09-01. Where the implementation
-differs from what the briefs have repeatedly asked for, the difference is named
-rather than smoothed over.
+was read out of `src/lib/search/` on 2026-09-01, and every database fact was
+verified against production (`ixvwfbuvfxxsjiywhbbb`) through MCP on the same
+day. Where the implementation differs from what the briefs have repeatedly asked
+for, the difference is named rather than smoothed over.
+
+Companion documents: `docs/ARCHITECTURE-OVERVIEW.md` §6,
+`docs/RUNBOOK.md` §6 (what to do when the index goes stale).
+
+## The two write paths
+
+There are two, and both are deliberate. The webhook is the fast path. The
+outbox, applied to production as **migration 132**, is the durable floor under
+it, for the case where the webhook never arrives:
+
+```
+products row change
+   |
+   +-(fast path)  Supabase DB webhook -> /api/webhooks/products -> QStash
+   |                                  -> /api/search/index-job (worker)
+   |
+   +-(floor)      AFTER trigger enqueue_search_index()
+                     -> search_index_outbox row, in the SAME transaction
+                     -> claim_search_index_jobs(limit) drains it
+```
+
+Two details that are easy to get wrong and are deliberate:
+
+- **`product_id` is not a foreign key.** A DELETE of the product must leave the
+  "remove this document" instruction behind. `ON DELETE CASCADE` would delete
+  exactly the row that carries the work.
+- **The trigger converts a soft delete or a fall out of `active` into a
+  `delete` job** rather than an `upsert`. The worker re-reads the row and would
+  convert it anyway, so this is an optimisation and not a correctness rule, but
+  it saves the round trip on the common case.
+
+The table is empty in production today (0 rows), which is what an idle outbox
+looks like, not evidence that it is unwired.
+
+### The drain, and why it is safe to run many workers
+
+```sql
+claim_search_index_jobs(p_limit integer default 50)
+  returns setof search_index_outbox
+  language sql  SECURITY DEFINER  set search_path to ''
+```
+
+One statement, and the shape is the whole point:
+
+```sql
+UPDATE search_index_outbox o
+   SET claimed_at = now(), attempts = o.attempts + 1
+ WHERE o.id IN (
+   SELECT id FROM search_index_outbox
+    WHERE done_at IS NULL AND COALESCE(next_try_at, enqueued_at) <= now()
+    ORDER BY COALESCE(next_try_at, enqueued_at)
+    LIMIT p_limit FOR UPDATE SKIP LOCKED
+ )
+RETURNING o.*;
+```
+
+`FOR UPDATE SKIP LOCKED` means concurrent workers step over each other's claimed
+rows instead of blocking or double-processing. `attempts`, `next_try_at` and
+`last_error` carry the retry state on the row itself, so a restarted worker
+resumes rather than replaying.
+
+`claim_search_index_jobs` is granted to `service_role` only.
+
+### The trigger, and its one surprising grant
+
+```sql
+enqueue_search_index()  -- AFTER trigger on products
+  SECURITY DEFINER  set search_path to ''
+
+  TG_OP = 'DELETE'                          -> op = 'delete'
+  NEW.deleted_at IS NOT NULL
+    OR NEW.status <> 'active'               -> op = 'delete'
+  otherwise                                 -> op = 'upsert'
+```
+
+Note that `enqueue_search_index` is **one of the six functions `anon` holds an
+EXECUTE grant on** in production. It is a trigger function: it takes no
+arguments and returns `trigger`, so calling it over PostgREST achieves nothing.
+The grant is Postgres's default public grant on a function, not an intentional
+exposure. It is listed here because a grants audit will surface it and should
+not treat it as a finding. See `docs/DB-SECURITY-MODEL.md`.
+
+`search_index_dlq` carries RLS with a `RESTRICTIVE` deny-all policy for `anon`
+and `authenticated`, so dead letters are server-only.
 
 ## Engine, and the fallback that is not optional
 
@@ -83,9 +168,24 @@ ask for that filename; it does not exist and the code does not read one.
 
 ## Indexing
 
+**The webhook payload is a change notification and never data.** The worker
+re-reads the product row from Postgres before touching the index, which is the
+same discipline the Cardcom callback applies to payments. Out-of-order and
+duplicate deliveries therefore converge on the truth instead of fighting, and a
+spoofed payload can at worst schedule a no-op. The job itself is tiny on
+purpose, `{ op, productId, reason, enqueuedAt }` (`pipeline-contracts.ts`);
+everything else is re-read at run time.
+
+Every QStash delivery carries an `Upstash-Signature` JWS signed with one of two
+rotating HMAC keys (`QSTASH_CURRENT_SIGNING_KEY`, `QSTASH_NEXT_SIGNING_KEY`),
+verified by `verifyQstashSignature`. When `QSTASH_TOKEN` is unset, `enqueue`
+degrades to inline execution, so the pipeline works end to end in dev and in
+preview without Upstash.
+
 `src/lib/search/indexer.ts` speaks the Meilisearch REST API directly and returns
 `'skipped: meilisearch not configured'` when the environment is absent, so an
 unconfigured deployment degrades quietly instead of throwing on every write.
+Deletes are idempotent: a 404 on DELETE is treated as success.
 
 `src/lib/search/qstash.ts` carries the retry contract. Its own comment describes
 exponential backoff followed by a POST to `/api/search/index-dlq`, and

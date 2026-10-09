@@ -1,5 +1,15 @@
 # ARCHITECTURE-PAYMENT-RECONCILIATION.md
 
+<!-- v1-final-banner:2026-09-01 -->
+> ⚠️ **Partly stale 2026-09-01. See `docs/ARCHITECTURE-OVERVIEW.md` §3 and §7.3.**
+>
+> Reconciliation runs from `/api/cron/reconcile`, which **nothing currently
+> calls**: there is no scheduler wired up. It is one of the three money-path jobs
+> in that state. See `docs/CRON-EXTERNAL.md`.
+>
+> There is no escrow leg to reconcile. The payment journal is `payment_events`
+> (append-only, 38 event types), added in migration 130.
+
 ארכיטקטורת **התאמת תשלומים** (Cardcom ↔ ledger ↔ orders).
 
 Status: BINDING · worktree

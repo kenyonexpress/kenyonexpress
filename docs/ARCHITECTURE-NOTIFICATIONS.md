@@ -1,5 +1,17 @@
 # ARCHITECTURE: Notifications
 
+
+> <!-- v1-final-banner:2026-09-01 -->
+> ⚠️ **This document names tables that do not exist in production.**
+>
+> | Named here | In production |
+> |---|---|
+> | `notification_delivery_events` | `notification_outbox` |
+>
+> The design below may still be sound; the schema it assumes was not built, or
+> was built under another name. Verify against `docs/DATA-MODEL.md` before
+> writing a query, and see `docs/SCHEMA-REALITY-CHECK.md` for the full mapping.
+
 ארכיטקטורת התראות טרנזקציוניות של KenyonExpress.
 
 Status: **BINDING** · Updated: 2026-08-02  

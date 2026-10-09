@@ -10,9 +10,21 @@
 
 **‏53** טבלאות ב-`public`, כולן עם RLS מופעל, כולן `rls_forced = false` (הבעלים ו-`service_role` עוקפים).
 
-**‏45** טבלאות עם policy אחד לפחות. **‏8** טבלאות עם אפס policies = deny-all מכוון (סעיף 6).
+**‏52** טבלאות עם policy מתירני (PERMISSIVE) אחד לפחות. **‏9** טבלאות server-only (סעיף ‏6), ובהן שתי צורות שונות של deny-all שכדאי להבחין ביניהן:
 
-**‏59** פונקציות SECURITY DEFINER: **‏3** חשופות ל-anon (וגם ל-authenticated), **‏12** חשופות ל-authenticated בסך הכל, השאר service_role בלבד וטריגרים.
+| צורה | טבלאות | ‏מה ה-advisor אומר |
+|---|---|---|
+| אפס policies בכלל (**‏4**) | `payment_webhook_events`, `rate_limits`, `search_index_outbox`, `user_rate_limits` | ‏`rls_enabled_no_policy`, ‏INFO |
+| ‏policy יחיד `RESTRICTIVE` עם `USING (false)` (**‏5**) | `legacy_percent_archive_112`, `referral_signals`, `search_index_dlq`, `settlement_events`, `stock_reservations` | לא מסומן: יש policy |
+
+‏**המספר ‏8 שהופיע כאן קודם קדם לשתי מיגרציות.** ‏122 הוסיפה את
+‏`deny_all_client_roles` לחמש הטבלאות בשורה השנייה, כך שהן כבר לא "אפס
+policies", ו-132 הוסיפה את `search_index_outbox` שאין לה policy כלל.
+‏9 = 4 + 5, וכל התשע חסומות לחלוטין ל-anon ול-authenticated.
+
+**‏61** פונקציות SECURITY DEFINER מתוך **‏69** בסך הכל (נמדד 01.09): **‏4** מהן חשופות ל-anon (וגם ל-authenticated), **‏13** חשופות ל-authenticated, השאר service_role בלבד וטריגרים. **כל ‏61 מצמידות `search_path`, אפס לא מוצמדות.**
+
+‏**‏6 הרשאות EXECUTE ל-anon בסך הכל**, לא ‏4: מעבר לארבע ה-SECURITY DEFINER יש ‏`payment_events_append_only` ו-`refunds_force_due_by`, שתיהן פונקציות טריגר שנושאות את ה-grant הציבורי שברירת המחדל של Postgres נותנת. הן מחזירות `trigger` ולא מקבלות ארגומנטים, ולכן קריאה להן דרך PostgREST לא משיגה דבר. ‏audit שסופר grants ולא משטח-תקיפה יראה ‏6 וצריך לדעת שלוש מהן אינרטיות.
 
 Advisors security אחרי 127: **‏23** ממצאים, כולם מכוונים ומתועדים — 8 `rls_enabled_no_policy` (INFO, deny-all מכוון), 3 `anon_security_definer` (WARN, סעיף 5.1), 12 `authenticated_security_definer` (WARN, סעיפים 5.1+5.2). לפני 127 היו 25; שני הממצאים שנעלמו הם בדיוק `check_rate_limit` בשתי הרשימות.
 
@@ -135,7 +147,19 @@ policy יחיד ומאוחד לכל צירוף טבלה/פעולה, בשם `<tab
 
 `legacy_percent_archive_112`, `payment_webhook_events`, `rate_limits`, `referral_signals`, `search_index_dlq`, `settlement_events`, `stock_reservations`, `user_rate_limits`. פירוט בסעיף 6.
 
-## 5. 59 פונקציות SECURITY DEFINER — מי מורשה להריץ (סופי, אחרי 125 ו-127)
+## 5. ‏61 פונקציות SECURITY DEFINER — מי מורשה להריץ (סופי, אחרי 125 ו-127)
+
+> ‏**נמדד מחדש 01.09.2026:** ‏`public` מחזיקה **69 פונקציות**, מתוכן **61**
+> ‏`SECURITY DEFINER`. ‏61 הוא מספר ה-overloads; שמות שונים יש **60**, כי
+> ‏`fn_enqueue_notification` קיימת בשתי חתימות. הספירה 59 שהופיעה כאן קודם
+> קדמה לגל 130-146.
+>
+> ‏**כל 61 מצמידות `search_path`. אפס לא מוצמדות** — מחלקת חטיפת ה-search_path
+> סגורה לגמרי.
+>
+> ‏**מיפוי המספרים, כי הם התחלפו.** ‏125 ו-127 כאן הם שמות ההחלה בפרודקשן;
+> בקבצים תחת `migrations/pending/` אותן מיגרציות נקראות **143** ו-**145**.
+> הטבלה המלאה: `docs/ARCHITECTURE-OVERVIEW.md` סעיף 8.1.
 
 ### 5.1 חשופות ל-anon + authenticated (3, ולא 4)
 
@@ -143,6 +167,15 @@ policy יחיד ומאוחד לכל צירוף טבלה/פעולה, בשם `<tab
 |---|---|
 | `is_admin()` | עזר policy, false ל-anon |
 | `is_supplier_member(uuid)` | עזר policy, false ל-anon |
+
+> ‏**‏EXECUTE של ‏anon על שני העזרים הוא ‏by design, לא חוב.** ‏18 ‏policies
+> ברולים ‏public/anon (בין השאר ‏product_images, ‏coupon_deals, ‏suppliers,
+> ‏seo_redirects, ‏cashback_rules, ‏categories, ‏wallet_*, ‏split_executions,
+> ‏escrow_holds, ‏payments, ‏carts, ‏notification_outbox) קוראות להן בתוך
+> ‏USING/WITH CHECK, ו-quals רצים כזהות הקורא — ‏revoke היה מפיל כל ‏SELECT
+> אנונימי בקטלוג ל-42501. מיגרציה ‏165 שניסתה בדיוק את זה בוטלה ב-04.09
+> (‏CLOSEOUT §13) ויושבת ב-`migrations/cancelled/` עם הסיבה בראשה. רשת
+> הרגרסיה: `src/db/__tests__/anon-catalog.test.ts`.
 | `fn_record_recent_search(text)` | רישום חיפוש אחרון. מקבלת את לקוח הסשן של הקורא, קוראת `auth.uid()`, ולא כותבת כלום בלי סשן |
 
 ‏**‏`check_rate_limit(text, int, int)` הוסרה מהרשימה הזו ב-01.09 על ידי מיגרציה 127.** היא הייתה `SECURITY DEFINER` עם `anon=X | authenticated=X`, והגוף שלה מכניס את `p_key` כמו שהוא ומעלה את המונה **לפני** ההשוואה ל-`p_max_attempts`. כלומר קורא אנונימי בחר גם את המפתח וגם את הסף: חמש קריאות עם `phone-otp-number:<קורבן>` נעלו מספר ידוע משעה של התחברות ב-OTP, וכל קריאה הייתה כתיבה בלתי מוגבלת של שורות שהתוקף בוחר ל-`rate_limits`.

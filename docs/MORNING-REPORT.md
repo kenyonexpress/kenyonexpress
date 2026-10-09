@@ -1,5 +1,16 @@
 # דוח בוקר
 
+
+> <!-- v1-final-historical:2026-09-01 -->
+> 🕯️ **Historical snapshot. Not current guidance.**
+>
+> This is a daily status report, true on the date it carries. It is kept as a record of what
+> was measured and decided then, and it is **not** maintained against
+> production. Numbers, table names and statuses in it may since have changed.
+>
+> For the current state see `docs/ARCHITECTURE-OVERVIEW.md`, and
+> `docs/INDEX.md` for which document is authoritative on a given subject.
+
 <!-- stale-banner:2026-09-01 -->
 > ⛔ **‏מיושן החל מ-01.09.2026. המסמך המחייב הוא `docs/OWNER-CHECKLIST.md`.**
 >
@@ -36,7 +47,8 @@
    ובתדירות יומית**, ולכן ‏Hobby אינו מספיק כאן, נקודה. אין כאן שיקול דעת.
 6. **סיווג הקופון מול 14ח (עו"ד):** 5 שנים לתו קנייה מול 4 חודשים + ארנק. זמנית: 4 חודשים + C6.
 7. **דמי ביטול ב-soft-launch:** לגבות 5%/100 או אפס. זמנית: אפס, והעמוד חייב להגיד את זה.
-8. **מע"מ 17% ב-ledger מול 18% בחשבוניות.** חשבונית ראשונה תהיה שגויה עד תיקון קוד.
+8. ~~**מע"מ 17% ב-ledger מול 18% בחשבוניות.**~~ ‏**נסגר.** ‏`VAT_RATE_BP = 1800`
+   ו-`DEFAULT_VAT_PERCENT` נגזר ממנו, כך ששני המקורות מסכימים על ‏18%.
 9. **ח.פ, כתובת, רכז נגישות, חתימת עו"ד** על תקנון/פרטיות/ביטולים.
 10. **11 ספקים בלי כתובת ובלי לוגו.** אי אפשר לממש קופון, ואי אפשר לשמור מוצר פעיל באדמין.
 

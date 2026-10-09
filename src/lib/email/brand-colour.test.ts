@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { OFF_PAGE } from '@/styles/tokens'
 import { describe, expect, it } from 'vitest'
 
 /**
@@ -22,11 +23,19 @@ function read(path: string): string {
   return readFileSync(resolve(process.cwd(), path), 'utf8')
 }
 
-/** `--color-brand-primary: #fed700;` out of the stylesheet the site renders from. */
+/**
+ * `--color-brand-primary: #fed700;` out of the stylesheet the site renders from.
+ *
+ * The `@theme` block moved from `src/app/globals.css` to
+ * `src/styles/tokens.css` on 2026-09-03. Both are read, newest location first,
+ * so this keeps working wherever the declaration lives.
+ */
 function siteBrandColour(): string {
-  const css = read('src/app/globals.css')
+  const css = [read('src/styles/tokens.css'), read('src/app/globals.css')].join('\n')
   const match = css.match(/--color-brand-primary:\s*(#[0-9a-fA-F]{6})/)
-  if (!match?.[1]) throw new Error('globals.css no longer declares --color-brand-primary')
+  if (!match?.[1]) {
+    throw new Error('neither tokens.css nor globals.css declares --color-brand-primary')
+  }
   return match[1].toLowerCase()
 }
 
@@ -39,14 +48,25 @@ describe('the emails carry the site brand', () => {
     expect(brand).toMatch(/^#[0-9a-f]{6}$/)
   })
 
-  it.each(EMAIL_BUILDERS)('%s declares BRAND as that colour', (file) => {
+  it('OFF_PAGE.brand is the colour the stylesheet declares', () => {
+    // The builders no longer own the value at all: they destructure it out of
+    // OFF_PAGE. This is the assertion that used to read a `const BRAND` literal
+    // out of each of them, moved one hop up to the single place it now lives.
+    expect(OFF_PAGE.brand.toLowerCase()).toBe(brand)
+  })
+
+  it.each(EMAIL_BUILDERS)('%s takes its colours from OFF_PAGE, not a literal', (file) => {
+    // WHAT THIS CATCHES. Re-introducing `const BRAND = '#...'` in a builder --
+    // which is exactly the shape the drift took the first time -- puts the
+    // value back somewhere a rebrand will miss. The rule is now structural:
+    // the module imports the palette, and it names no hex outside its prose.
     const source = read(file)
-    const match = source.match(/const BRAND = '(#[0-9a-fA-F]{6})'/)
-    expect(match?.[1], `${file} does not declare a BRAND constant`).toBeDefined()
-    expect(
-      match?.[1]?.toLowerCase(),
-      `${file} uses a different yellow from the site. globals.css says ${brand}.`,
-    ).toBe(brand)
+    expect(source, `${file} must import OFF_PAGE`).toContain(
+      "import { OFF_PAGE } from '@/styles/tokens'",
+    )
+    const code = source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '')
+    const literals = code.match(/#[0-9a-fA-F]{3,8}\b/g) ?? []
+    expect(literals, `${file} carries a raw hex outside its comments`).toEqual([])
   })
 
   it.each(EMAIL_BUILDERS)('%s hardcodes no OTHER brand-like yellow', (file) => {
@@ -56,9 +76,7 @@ describe('the emails carry the site brand', () => {
     // Comments are stripped first, the same way route-guards.test.ts does it.
     // The doc comment on BRAND names the wrong yellow it replaced, which is
     // worth keeping in prose and is not a colour anything renders.
-    const source = read(file)
-      .replace(/\/\*[\s\S]*?\*\//g, '')
-      .replace(/const BRAND = '#[0-9a-fA-F]{6}'/, '')
+    const source = read(file).replace(/\/\*[\s\S]*?\*\//g, '')
     const yellows = source.match(/#f[0-9a-fA-F]{5}/gi) ?? []
     expect(
       yellows.filter(

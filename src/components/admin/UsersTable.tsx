@@ -3,7 +3,7 @@
 import UserRoleClient from '@/app/(admin)/admin/users/UserRoleClient'
 import DataTable, { type DataTableColumn } from '@/components/admin/DataTable'
 import { ROLE_LABELS } from '@/lib/admin/roles'
-import type { UserRole } from '@/types/database'
+import type { UserRole } from '@/lib/admin/roles'
 
 export type UserRow = {
   id: string
@@ -11,6 +11,8 @@ export type UserRow = {
   full_name: string | null
   role: UserRole
   created_at: string
+  /** profiles.banned_at IS NOT NULL (237). False while the migration is unapplied. */
+  banned?: boolean
 }
 
 const ROLE_BADGE: Record<UserRole, string> = {
@@ -18,6 +20,7 @@ const ROLE_BADGE: Record<UserRole, string> = {
   vendor: 'bg-blue-100 text-blue-800',
   content_uploader: 'bg-purple-100 text-purple-800',
   support: 'bg-teal-100 text-teal-800',
+  read_only: 'bg-gray-100 text-gray-700',
   admin: 'bg-brand-primary text-black',
   super_admin: 'bg-red-100 text-red-800',
 }
@@ -55,10 +58,17 @@ export default function UsersTable({ users, callerRole, callerId, canEdit = true
       sortable: true,
       accessor: (u) => u.role,
       cell: (u) => (
-        <span
-          className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${ROLE_BADGE[u.role] ?? 'bg-black/5 text-black/60'}`}
-        >
-          {ROLE_LABELS[u.role] ?? u.role}
+        <span className="inline-flex items-center gap-1.5">
+          <span
+            className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${ROLE_BADGE[u.role] ?? 'bg-black/5 text-black/60'}`}
+          >
+            {ROLE_LABELS[u.role] ?? u.role}
+          </span>
+          {u.banned && (
+            <span className="inline-flex rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800">
+              חסום
+            </span>
+          )}
         </span>
       ),
     },

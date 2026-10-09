@@ -1,5 +1,6 @@
+import { requireAnonKey } from '@/lib/supabase/anon-key'
+import { rlsReportFetch } from '@/lib/supabase/rls-report-fetch'
 import { createClient as createServerClient } from '@/lib/supabase/server'
-import { timeoutFetch } from '@/lib/supabase/timeout-fetch'
 import { createClient } from '@supabase/supabase-js'
 import type { User } from '@supabase/supabase-js'
 
@@ -44,14 +45,10 @@ export async function authenticateRequest(request: Request): Promise<RequestIden
   const token = bearerToken(request.headers.get('authorization'))
   if (!token) return null
 
-  const anon = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      auth: { persistSession: false, autoRefreshToken: false },
-      global: { fetch: timeoutFetch },
-    },
-  )
+  const anon = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, requireAnonKey(), {
+    auth: { persistSession: false, autoRefreshToken: false },
+    global: { fetch: rlsReportFetch },
+  })
   const {
     data: { user },
   } = await anon.auth.getUser(token)
@@ -86,14 +83,10 @@ export async function identityScopedClient(request: Request) {
   const token = bearerToken(request.headers.get('authorization')) as string
   return {
     identity,
-    client: createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        auth: { persistSession: false, autoRefreshToken: false },
-        global: { headers: { Authorization: `Bearer ${token}` }, fetch: timeoutFetch },
-      },
-    ),
+    client: createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, requireAnonKey(), {
+      auth: { persistSession: false, autoRefreshToken: false },
+      global: { headers: { Authorization: `Bearer ${token}` }, fetch: rlsReportFetch },
+    }),
   }
 }
 

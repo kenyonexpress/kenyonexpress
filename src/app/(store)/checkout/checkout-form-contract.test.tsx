@@ -102,8 +102,10 @@ function renderCheckout(overrides: Partial<Parameters<typeof CheckoutForm>[0]> =
 describe('the checkout order review', () => {
   it('splits a coupon line into what is paid here and what is paid there', () => {
     renderCheckout()
-    expect(screen.getByText(/תשלום באתר: ₪40\.00/)).toBeTruthy()
-    expect(screen.getByText(/יתרה בעסק: ₪110\.00/)).toBeTruthy()
+    // The price is digits-then-sign inside an LTR isolate now, so the regex
+    // matches the number and the glyph in render order. See money-format.ts.
+    expect(screen.getByText(/תשלום באתר: .*40\.00.*₪/)).toBeTruthy()
+    expect(screen.getByText(/יתרה בעסק: .*110\.00.*₪/)).toBeTruthy()
     expect(screen.getByText('יתרה לתשלום בעסק (בקופון)')).toBeTruthy()
   })
 
@@ -187,6 +189,54 @@ describe('the checkout confirm step', () => {
       savedCards: [{ id: 'tok-1', last4: '4242', brand: 'visa', isDefault: true }],
     })
     expect(container.querySelector('[name="save_card"]')).toBeNull()
+  })
+
+  it('renders the saved-card picker so the token can actually be submitted', () => {
+    // The picker used to be gated on `step !== 'confirm'` INSIDE a wrapper
+    // hidden unless `step === 'confirm'` - two mutually exclusive conditions,
+    // so no `token_id` input ever reached the DOM in a submittable state and
+    // every returning customer was sent to the hosted page. The radios must
+    // exist in the DOM (the wrapper's `hidden` handles visibility) or the
+    // form posts no `token_id` at all.
+    const { container } = renderCheckout({
+      savedCards: [{ id: 'tok-1', last4: '4242', brand: 'visa', isDefault: true }],
+    })
+    const radios = container.querySelectorAll<HTMLInputElement>('[name="token_id"]')
+    expect(radios).toHaveLength(2)
+    expect(radios[0]?.value).toBe('tok-1')
+    expect(radios[0]?.checked).toBe(true)
+    expect(radios[1]?.value).toBe('new')
+    expect(radios[1]?.checked).toBe(false)
+  })
+
+  it('defaults to the default card, not merely the first', () => {
+    const { container } = renderCheckout({
+      savedCards: [
+        { id: 'tok-1', last4: '1111', brand: 'visa', isDefault: false },
+        { id: 'tok-2', last4: '2222', brand: 'mastercard', isDefault: true },
+      ],
+    })
+    const checked = container.querySelector<HTMLInputElement>('[name="token_id"]:checked')
+    expect(checked?.value).toBe('tok-2')
+  })
+
+  it('offers to save the card again once the shopper picks "another card"', () => {
+    // Choosing the hosted page back means a fresh card, which CAN be
+    // tokenized, so the checkbox has to come back with it.
+    const { container } = renderCheckout({
+      savedCards: [{ id: 'tok-1', last4: '4242', brand: 'visa', isDefault: true }],
+    })
+    const newCard = container.querySelector<HTMLInputElement>('[name="token_id"][value="new"]')
+    if (!newCard) throw new Error('new-card radio missing')
+    fireEvent.click(newCard)
+    expect(container.querySelector<HTMLInputElement>('[name="save_card"]')?.checked).toBe(true)
+  })
+
+  it('keeps the wallet input in the DOM on every step', () => {
+    // Same defect class as the picker: `hidden` on the wrapper is the
+    // visibility mechanism, and an input that is not rendered cannot submit.
+    const { container } = renderCheckout({ walletBalance: 40 })
+    expect(container.querySelector('[name="apply_wallet_ils"]')).toBeTruthy()
   })
 
   it('carries the client_ref it was handed, once', () => {

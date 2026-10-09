@@ -117,6 +117,18 @@ describe('CardcomProvider.createLowProfile', () => {
     expect(sentFields().Operation).toBe('ChargeAndCreateToken')
   })
 
+  it('sends no 3DS field unless configured, so the terminal keeps its own setting', async () => {
+    respondJson({ ResponseCode: 0, LowProfileCode: 'lp-1', Url: 'https://pay.example/lp-1' })
+    await provider().createLowProfile(lowProfileInput)
+    expect('ThreeDSecureState' in sentFields()).toBe(false)
+
+    fetchMock.mockClear()
+    vi.stubEnv('CARDCOM_3DS_STATE', 'auto')
+    respondJson({ ResponseCode: 0, LowProfileCode: 'lp-2', Url: 'https://pay.example/lp-2' })
+    await provider().createLowProfile(lowProfileInput)
+    expect(sentFields().ThreeDSecureState).toBe('Auto')
+  })
+
   it('truncates a long description rather than letting the terminal reject the call', async () => {
     respondJson({ ResponseCode: 0, LowProfileCode: 'lp-1', Url: 'https://pay.example/lp-1' })
 

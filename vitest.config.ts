@@ -37,7 +37,11 @@ export default defineConfig({
       'src/**/*.test.ts',
       'src/**/*.test.tsx',
       'scripts/wp-import/**/*.test.mjs',
+      'scripts/media-ingest/**/*.test.mjs',
       'scripts/seed/**/*.test.ts',
+      'scripts/dr/**/*.test.mjs',
+      'scripts/axiom/**/*.test.mjs',
+      'scripts/uptimerobot/**/*.test.mjs',
     ],
     exclude: ['node_modules', '.next', 'e2e'],
     coverage: {

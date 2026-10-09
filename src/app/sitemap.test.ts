@@ -6,7 +6,9 @@ const src = readFileSync(resolve(__dirname, 'sitemap.ts'), 'utf8')
 
 describe('sitemap catalogue client', () => {
   it('reads with the anon client, not the service-role admin client', () => {
-    expect(src).toContain('createPublicClient')
+    // Either anon client is fine: `createCatalogueReadClient` is the same
+    // cookie-free anon client bound to the read replica when one is configured.
+    expect(src).toMatch(/createPublicClient\(\)|createCatalogueReadClient\(\)/)
     expect(src).not.toContain('createAdminClient')
   })
 

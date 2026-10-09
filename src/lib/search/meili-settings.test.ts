@@ -1,11 +1,18 @@
 import { describe, expect, it } from 'vitest'
 import {
+  BRANDS_INDEX_SETTINGS,
+  CATEGORIES_INDEX_SETTINGS,
   FILTERABLE_ATTRIBUTES,
+  HEBREW_ATTRIBUTE_PATTERNS,
   INDEX_SETTINGS,
+  LOCALIZED_ATTRIBUTES,
   RANKING_RULES,
   SEARCHABLE_ATTRIBUTES,
   SORTABLE_ATTRIBUTES,
   TYPO_TOLERANCE,
+  brandDocumentId,
+  toBrandDocuments,
+  toCategoryDocuments,
   toProductDocument,
 } from './meili-settings'
 
@@ -187,5 +194,162 @@ describe('index settings carry the Hebrew synonyms', () => {
   it('ships a symmetric map rather than nothing', () => {
     expect(at(INDEX_SETTINGS.synonyms, 'מסעדה')).toContain('מסעדות')
     expect(at(INDEX_SETTINGS.synonyms, 'מסעדות')).toContain('מסעדה')
+  })
+})
+
+describe('Hebrew tokenizer locales (localizedAttributes)', () => {
+  it('pins every *_he content field to heb', () => {
+    for (const attribute of ['name_he', 'short_description_he', 'description_he']) {
+      expect(HEBREW_ATTRIBUTE_PATTERNS).toContain(attribute)
+    }
+    expect(LOCALIZED_ATTRIBUTES[0]?.locales).toEqual(['heb'])
+  })
+
+  it('leaves the Latin and identifier fields to detection', () => {
+    // A wrong pin is worse than a guess: name_en, brand and sku hold Latin or
+    // mixed content, and slug/barcode are identifiers.
+    for (const attribute of ['name_en', 'brand', 'sku', 'slug', 'barcode']) {
+      expect(HEBREW_ATTRIBUTE_PATTERNS).not.toContain(attribute)
+    }
+  })
+
+  it('ships inside the applied settings, not beside them', () => {
+    expect(INDEX_SETTINGS.localizedAttributes).toBe(LOCALIZED_ATTRIBUTES)
+  })
+})
+
+describe('brand facet on the products index', () => {
+  it('is filterable, so the results page can narrow by brand', () => {
+    expect(FILTERABLE_ATTRIBUTES).toContain('brand')
+  })
+})
+
+describe('brands index settings', () => {
+  it('keeps the Hebrew typo budget of the products index', () => {
+    expect(BRANDS_INDEX_SETTINGS.typoTolerance.minWordSizeForTypos).toEqual(
+      TYPO_TOLERANCE.minWordSizeForTypos,
+    )
+  })
+
+  it('breaks ties by brand size, where products break by stock', () => {
+    const rules = BRANDS_INDEX_SETTINGS.rankingRules
+    expect(rules.indexOf('product_count:desc')).toBeLessThan(rules.indexOf('proximity'))
+  })
+
+  it('pins the brand name to the Hebrew tokenizer', () => {
+    expect(BRANDS_INDEX_SETTINGS.localizedAttributes).toEqual([
+      { attributePatterns: ['name'], locales: ['heb'] },
+    ])
+  })
+})
+
+describe('toBrandDocuments', () => {
+  const rows = [
+    { brand: 'LG', type: 'physical', category_slug: 'electronics' },
+    { brand: ' lg ', type: 'coupon', category_slug: 'deals' },
+    { brand: 'מסעדת השף', type: 'coupon', category_slug: 'restaurants' },
+    { brand: null, type: 'physical', category_slug: 'electronics' },
+    { brand: '', type: 'physical', category_slug: null },
+  ]
+
+  it('groups case- and whitespace-insensitively, keeps the first spelling', () => {
+    const docs = toBrandDocuments(rows)
+    expect(docs).toHaveLength(2)
+    const lg = docs.find((d) => d.name === 'LG')
+    expect(lg).toMatchObject({ product_count: 2, coupon_count: 1 })
+    expect(lg?.categories).toEqual(['deals', 'electronics'])
+  })
+
+  it('does not invent an "unbranded" bucket', () => {
+    // Most of the catalogue has no brand; a null brand is no brand, not a brand.
+    expect(toBrandDocuments([{ brand: null }, { brand: '  ' }])).toEqual([])
+  })
+
+  it('orders by product count, biggest brand first', () => {
+    const docs = toBrandDocuments(rows)
+    expect(docs[0]?.name).toBe('LG')
+  })
+
+  it('counts coupons with the resolved type, agreeing with the products facet', () => {
+    const docs = toBrandDocuments([{ brand: 'X', type: 'coupon' }])
+    expect(docs[0]?.coupon_count).toBe(1)
+  })
+
+  it('produces ids Meilisearch accepts, even for Hebrew names', () => {
+    // Document ids allow only [A-Za-z0-9_-]; brand names here are Hebrew.
+    for (const document of toBrandDocuments(rows)) {
+      expect(document.id).toMatch(/^[A-Za-z0-9_-]+$/)
+    }
+    expect(brandDocumentId('מסעדת השף')).toMatch(/^[A-Za-z0-9_-]+$/)
+  })
+
+  it('gives one id to the two spellings of one brand', () => {
+    const docs = toBrandDocuments(rows)
+    const lg = docs.find((d) => d.name === 'LG')
+    expect(lg?.id).toBe(brandDocumentId('lg'))
+  })
+})
+
+describe('the categories index', () => {
+  it('keeps the Hebrew typo budget and the heb locale pin', () => {
+    // Category names are Hebrew and short (ספא, בגדים); the products index's
+    // reasoning applies unchanged.
+    expect(CATEGORIES_INDEX_SETTINGS.typoTolerance.minWordSizeForTypos).toEqual(
+      TYPO_TOLERANCE.minWordSizeForTypos,
+    )
+    expect(CATEGORIES_INDEX_SETTINGS.localizedAttributes).toEqual([
+      { attributePatterns: ['name_he', 'description_he'], locales: ['heb'] },
+    ])
+  })
+
+  it('ranks the fuller category above the emptier one at equal relevance', () => {
+    const rules = CATEGORIES_INDEX_SETTINGS.rankingRules
+    expect(rules.indexOf('product_count:desc')).toBeGreaterThan(rules.indexOf('typo'))
+    expect(rules.indexOf('product_count:desc')).toBeLessThan(rules.indexOf('proximity'))
+  })
+
+  it('can filter subcategories and join back by slug', () => {
+    expect(CATEGORIES_INDEX_SETTINGS.filterableAttributes).toContain('parent_id')
+    expect(CATEGORIES_INDEX_SETTINGS.filterableAttributes).toContain('slug')
+  })
+})
+
+describe('toCategoryDocuments', () => {
+  const categories = [
+    { id: 'c1', slug: 'spa', name_he: 'ספא', sort_order: 2 },
+    { id: 'c2', slug: 'food', name_he: 'מסעדות', sort_order: 1 },
+    { id: 'c3', slug: 'old', name_he: 'ישן', is_active: false },
+    { id: 'c4', slug: 'gone', name_he: 'נמחק', deleted_at: '2026-01-01T00:00:00Z' },
+  ]
+  const products = [
+    { category_id: 'c1', type: 'physical' },
+    { category_id: 'c1', type: 'coupon' },
+    { category_id: 'c2', type: 'coupon' },
+    { category_id: null, type: 'physical' },
+    { category_id: 'c3', type: 'physical' },
+  ]
+
+  it('counts products and coupons per category', () => {
+    const docs = toCategoryDocuments(categories, products)
+    const spa = docs.find((d) => d.slug === 'spa')
+    expect(spa).toMatchObject({ product_count: 2, coupon_count: 1 })
+  })
+
+  it('drops inactive and soft-deleted categories even if the reader let them through', () => {
+    // The index is public output; the predicate holds wherever the rows came from.
+    const slugs = toCategoryDocuments(categories, products).map((d) => d.slug)
+    expect(slugs).not.toContain('old')
+    expect(slugs).not.toContain('gone')
+  })
+
+  it('keeps an empty category: navigation exists before products do', () => {
+    const docs = toCategoryDocuments([{ id: 'c9', slug: 'new', name_he: 'חדש' }], [])
+    expect(docs).toHaveLength(1)
+    expect(docs[0]).toMatchObject({ product_count: 0, coupon_count: 0, sort_order: 0 })
+  })
+
+  it('orders by sort_order, the way the storefront menu does', () => {
+    const docs = toCategoryDocuments(categories, products)
+    expect(docs.map((d) => d.slug)).toEqual(['food', 'spa'])
   })
 })

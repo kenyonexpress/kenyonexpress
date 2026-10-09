@@ -1,5 +1,6 @@
 import StatusBadge from '@/components/admin/StatusBadge'
 import { requireAdminSession } from '@/lib/admin/rbac'
+import { shekelsFromIlsRounded } from '@/lib/money-format'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import ApprovalActionsClient from './ApprovalActionsClient'
@@ -79,7 +80,7 @@ export default async function ApprovalsQueuePage() {
                   <td className="px-5 py-3 text-gray-600">{TYPE_LABELS[p.type] ?? p.type}</td>
                   <td className="px-5 py-3 text-gray-600">{supplier?.name ?? 'ללא'}</td>
                   <td className="px-5 py-3 text-gray-700">
-                    ₪{(p.kenyon_price ?? 0).toLocaleString('he-IL')}
+                    {shekelsFromIlsRounded(p.kenyon_price ?? 0)}
                   </td>
                   <td className="px-5 py-3 text-gray-600">
                     {creator?.full_name ?? creator?.email ?? 'לא ידוע'}

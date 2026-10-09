@@ -1,5 +1,23 @@
 # Database schema: `public`
 
+<!-- v1-final-banner:2026-09-01 -->
+> ⚠️ **Snapshot, partly stale 2026-09-01. Live shape: `docs/ARCHITECTURE-OVERVIEW.md` §2.**
+>
+> Production today: **61 base tables, 12 views, 133 RLS policies, 53 non-internal
+> triggers**, RLS enabled on every base table. Tables added after this snapshot
+> and missing below: `payment_events`, `refunds`, `search_index_outbox`,
+> `supplier_branches`, `subscriptions`, `subscription_charges`,
+> `homepage_sections`, `banners`.
+>
+> `escrow_holds` is listed here as live. It is vestigial: 2 legacy rows, no
+> writer. There is no `supplier_payouts` table.
+>
+> 78 columns are named `*_agorot`. 26 of them are `GENERATED ALWAYS AS
+> (round(<numeric> * 100))::bigint STORED`; the rest are ordinary integers.
+> Twenty of the 26 carry a non-negative CHECK. Six do not, on purpose: the five
+> wallet columns and `product_variants.price_modifier_agorot` must be able to go
+> negative.
+
 Generated from live Supabase project `ixvwfbuvfxxsjiywhbbb` on 2026-07-23 by read-only introspection of information_schema and pg_catalog.
 
 Tables documented: 28. All tables in schema public have row level security (RLS) enabled.

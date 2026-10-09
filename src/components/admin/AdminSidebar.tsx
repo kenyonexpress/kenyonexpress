@@ -1,22 +1,28 @@
 'use client'
 
 import { type AdminSection, canReadSection } from '@/lib/admin/permissions'
+import type { UserRole } from '@/lib/admin/roles'
 import { cn } from '@/lib/utils'
-import type { UserRole } from '@/types/database'
 import {
   AlertTriangle,
   BadgeCheck,
   Banknote,
   BarChart3,
   ClipboardList,
+  Coins,
   CreditCard,
   FileSpreadsheet,
   FileText,
+  Flag,
+  FlaskConical,
   LayoutDashboard,
   Package,
   Plus,
+  ScanLine,
   Search,
+  Settings,
   Share2,
+  ShieldAlert,
   ShoppingCart,
   Store,
   Tag,
@@ -51,6 +57,7 @@ const NAV_ITEMS: NavItem[] = [
   },
   { href: '/admin/categories', label: 'קטגוריות', icon: Tag, section: 'catalog' },
   { href: '/admin/coupons', label: 'קופונים ודילים', icon: FileText, section: 'catalog' },
+  { href: '/admin/coupons/lookup', label: 'איתור שובר', icon: ScanLine, section: 'catalog' },
   { href: '/admin/approvals', label: 'תור אישורים', icon: BadgeCheck, section: 'catalog' },
   { href: '/admin/orders', label: 'הזמנות', icon: ShoppingCart, section: 'orders' },
   { href: '/admin/users', label: 'משתמשים', icon: Users, section: 'users' },
@@ -66,15 +73,21 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/admin/vendors', label: 'ספקים (מערכת ישנה)', icon: Store, section: 'suppliers' },
   { href: '/admin/payments', label: 'תשלומים', icon: CreditCard, section: 'payments' },
   { href: '/admin/payouts', label: 'תשלומים לספקים', icon: Banknote, section: 'payments' },
+  { href: '/admin/cashback', label: 'יומן קאשבק', icon: Coins, section: 'payments' },
+  { href: '/admin/fraud', label: 'בקרת הונאות', icon: ShieldAlert, section: 'payments' },
   // Reads settlement_events, which is the journal that actually exists here.
   // Separate from תשלומים לספקים above, which reads payout_statements (081,
   // never applied to this database).
   { href: '/admin/reports', label: 'דוחות כספיים', icon: FileSpreadsheet, section: 'payments' },
   { href: '/admin/affiliates', label: 'שותפים והפניות', icon: Share2, section: 'affiliates' },
   { href: '/admin/analytics', label: 'אנליטיקה', icon: BarChart3, section: 'analytics' },
+  { href: '/admin/analytics/cohorts', label: 'קוהורטות הכנסה', icon: Users, section: 'analytics' },
+  { href: '/admin/experiments', label: 'ניסויי A/B', icon: FlaskConical, section: 'analytics' },
   { href: '/admin/search', label: 'חיפוש', icon: Search, section: 'analytics' },
   { href: '/admin/queues', label: 'תורים תקועים', icon: AlertTriangle, section: 'analytics' },
+  { href: '/admin/feature-flags', label: 'דגלי מערכת', icon: Flag, section: 'analytics' },
   { href: '/admin/audit-log', label: 'לוג פעילות', icon: ClipboardList, section: 'audit-log' },
+  { href: '/admin/settings', label: 'הגדרות חנות', icon: Settings, section: 'settings' },
 ]
 
 export default function AdminSidebar({ role }: { role: UserRole }) {

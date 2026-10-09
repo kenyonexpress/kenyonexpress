@@ -21,16 +21,16 @@ describe('buildOrderPaidEmail', () => {
   it('states the reference and the total the customer actually paid', () => {
     const mail = buildOrderPaidEmail(payload, SITE)
     expect(mail.subject).toContain('79F488AA')
-    expect(mail.text).toContain('₪817.00')
-    expect(mail.html).toContain('₪817.00')
+    expect(mail.text).toContain('⁦817.00 ₪⁩')
+    expect(mail.html).toContain('⁦817.00 ₪⁩')
   })
 
   it('reads the amount as agorot and never divides it a second time', () => {
-    // 81700 agorot is ₪817.00. A builder that treated the payload as shekels
-    // would say ₪81,700.00, which is the failure this asserts against.
+    // 81700 agorot is ⁦817.00 ₪⁩. A builder that treated the payload as shekels
+    // would say ⁦81,700.00 ₪⁩, which is the failure this asserts against.
     const mail = buildOrderPaidEmail(payload, SITE)
     expect(mail.text).not.toContain('81,700')
-    expect(mail.text).not.toContain('₪8.17')
+    expect(mail.text).not.toContain('⁦8.17 ₪⁩')
   })
 
   it('greets by name when there is one and stays polite when there is not', () => {
@@ -52,7 +52,7 @@ describe('buildOrderPaidEmail', () => {
   it('survives a payload with nothing in it rather than throwing at send time', () => {
     const mail = buildOrderPaidEmail({}, SITE)
     expect(mail.subject).toBeTruthy()
-    expect(mail.text).toContain('₪0.00')
+    expect(mail.text).toContain('⁦0.00 ₪⁩')
   })
 })
 
@@ -79,7 +79,7 @@ describe('buildSupplierSaleEmail', () => {
   // Calling this one a payout in a message to a business starts a dispute.
   it('calls the amount the order value and never a payout', () => {
     const mail = buildSupplierSaleEmail(payload, SITE)
-    expect(mail.text).toContain('סכום ההזמנה אצלכם: ₪360.00')
+    expect(mail.text).toContain('סכום ההזמנה אצלכם: ⁦360.00 ₪⁩')
     expect(mail.text).not.toContain('תשלום לספק')
     expect(mail.text).not.toContain('עמלה')
   })
@@ -121,7 +121,7 @@ describe('buildVoucherRedeemedEmail', () => {
     const mail = buildVoucherRedeemedEmail(payload, SITE)
     expect(mail.subject).toContain('ארוחה בשרית')
     expect(mail.text).toContain('טעמים גורמה')
-    expect(mail.text).toContain('₪180.00')
+    expect(mail.text).toContain('⁦180.00 ₪⁩')
   })
 
   it('groups the code the way the counter reads it aloud', () => {
@@ -171,8 +171,8 @@ describe('buildVoucherIssuedEmail', () => {
 
   it('states both amounts in the locked coupon money order', () => {
     const mail = buildVoucherIssuedEmail(payload, SITE)
-    expect(mail.text).toContain('שולם באתר: ₪220.00')
-    expect(mail.text).toContain('לתשלום בבית העסק: ₪180.00')
+    expect(mail.text).toContain('שולם באתר: ⁦220.00 ₪⁩')
+    expect(mail.text).toContain('לתשלום בבית העסק: ⁦180.00 ₪⁩')
     expect(mail.html).toContain('/coupon/57002c6d-f917-4adc-804e-65e6c4bde594')
   })
 
@@ -337,5 +337,200 @@ describe('the welcome mail, which is (21) closing', () => {
     const built = buildNotification('welcome', {}, SITE)
     expect(built?.text).toContain('/account/coupons')
     expect(built?.html).toContain('/account/coupons')
+  })
+})
+
+describe('buildOrderShippedEmail', () => {
+  const payload = {
+    order_id: '79f488aa-549a-40dd-af80-eb66d886668f',
+    order_ref: '79F488AA',
+    customer_name: 'דנה',
+    item_count: 2,
+    fulfilled_at: '2026-09-08T10:00:00.000Z',
+  }
+
+  it('dispatches through buildNotification under the order_shipped kind', () => {
+    expect(buildNotification('order_shipped', payload, SITE)).not.toBeNull()
+  })
+
+  it('states the reference and links the orders page', () => {
+    const mail = buildNotification('order_shipped', payload, SITE)
+    expect(mail?.subject).toContain('79F488AA')
+    expect(mail?.text).toContain('79F488AA')
+    expect(mail?.html).toContain('https://kenyonexpress.co.il/account/orders')
+    expect(mail?.text).toContain('https://kenyonexpress.co.il/account/orders')
+  })
+
+  it('greets by name when there is one and stays polite when there is not', () => {
+    expect(buildNotification('order_shipped', payload, SITE)?.text).toContain('שלום דנה')
+    expect(
+      buildNotification('order_shipped', { ...payload, customer_name: null }, SITE)?.text,
+    ).toContain('שלום,')
+  })
+
+  it('promises no delivery date', () => {
+    // Fulfilment means the goods left; arrival is the courier's business, and
+    // a named day generates a support ticket on that day. Same rule as the
+    // refund mail about the card issuer.
+    const mail = buildNotification('order_shipped', payload, SITE)
+    for (const forbidden of ['יגיע ב', 'תאריך אספקה', 'ימי עסקים']) {
+      expect(mail?.text).not.toContain(forbidden)
+    }
+  })
+
+  it('survives an empty payload rather than throwing at send time', () => {
+    const mail = buildNotification('order_shipped', {}, SITE)
+    expect(mail?.subject).toBeTruthy()
+    expect(mail?.text).toContain('שלום,')
+  })
+
+  it('never renders Invalid Date for a broken timestamp', () => {
+    const mail = buildNotification('order_shipped', { ...payload, fulfilled_at: 'garbage' }, SITE)
+    expect(mail?.text).not.toContain('Invalid Date')
+    expect(mail?.html).not.toContain('Invalid Date')
+  })
+
+  it('lists every tracking number the trigger collected, bidi-isolated', () => {
+    // 196 made tg_orders_notify_shipped carry `shipments`; a multi-supplier
+    // order is several parcels with several numbers, one line each.
+    const mail = buildNotification(
+      'order_shipped',
+      {
+        ...payload,
+        shipments: [
+          { carrier: 'דואר ישראל', tracking_number: 'RR123456789IL' },
+          { carrier: 'UPS', tracking_number: '1Z999AA10123456784' },
+        ],
+      },
+      SITE,
+    )
+    // Plain text gets LRI…PDI isolates so the LTR number sits right in RTL prose.
+    expect(mail?.text).toContain('מספר מעקב אצל דואר ישראל: ⁦RR123456789IL⁩')
+    expect(mail?.text).toContain('מספר מעקב אצל UPS: ⁦1Z999AA10123456784⁩')
+    expect(mail?.html).toContain('RR123456789IL')
+    expect(mail?.html).toContain('1Z999AA10123456784')
+    // HTML gets dir="ltr" plus the style, for clients that strip either one.
+    expect(mail?.html).toContain(
+      '<strong dir="ltr" style="direction:ltr;unicode-bidi:isolate">1Z999AA10123456784</strong>',
+    )
+  })
+
+  it('links each recognised carrier to its tracking page, in both bodies', () => {
+    const mail = buildNotification(
+      'order_shipped',
+      {
+        ...payload,
+        shipments: [
+          { carrier: 'israel post', tracking_number: 'RR123456789IL' },
+          { carrier: 'שליח של הספק', tracking_number: 'X-77' },
+        ],
+      },
+      SITE,
+    )
+    // Recognised: the raw alias becomes the canonical Hebrew label, and both
+    // bodies carry the deep link with the number embedded.
+    expect(mail?.text).toContain('מספר מעקב אצל דואר ישראל')
+    expect(mail?.text).toContain('https://israelpost.co.il/itemtrace/?itemcode=RR123456789IL')
+    expect(mail?.html).toContain(
+      'href="https://israelpost.co.il/itemtrace/?itemcode=RR123456789IL"',
+    )
+    // Unrecognised: label passes through untouched and no link is invented.
+    expect(mail?.text).toContain('מספר מעקב אצל שליח של הספק')
+    expect(mail?.text).not.toContain('למעקב אצל שליח של הספק')
+    expect(mail?.html).not.toContain('href="https://x-77')
+  })
+
+  it('omits the carrier clause when the line has only a number', () => {
+    const mail = buildNotification(
+      'order_shipped',
+      { ...payload, shipments: [{ carrier: null, tracking_number: 'RR123456789IL' }] },
+      SITE,
+    )
+    expect(mail?.text).toContain('מספר מעקב: ⁦RR123456789IL⁩')
+    expect(mail?.text).not.toContain('אצל')
+  })
+
+  it('says nothing about tracking when the array is missing, null or junk', () => {
+    // jsonb_agg over zero rows is NULL, not []; and an entry without a number
+    // carries nothing worth a line. All of these must read like the pre-196 mail.
+    for (const shipments of [undefined, null, [], 'garbage', [{ carrier: 'UPS' }], [42]]) {
+      const mail = buildNotification('order_shipped', { ...payload, shipments }, SITE)
+      expect(mail?.text).not.toContain('מספר מעקב')
+      expect(mail?.html).not.toContain('מספר מעקב')
+    }
+  })
+})
+
+describe('the price-drop mail', () => {
+  const payload = {
+    product_name: 'שעון חכם',
+    slug: 'smart-watch',
+    old_agorot: 40000,
+    new_agorot: 29900,
+    unsubscribe_url: 'https://kenyonexpress.co.il/wishlist-alerts/unsubscribe?token=abc',
+  }
+
+  it('states both prices in shekels and links the product page', () => {
+    const mail = buildNotification('price_drop', payload, SITE)
+    expect(mail?.subject).toContain('שעון חכם')
+    expect(mail?.html).toContain('400.00')
+    expect(mail?.html).toContain('299.00')
+    expect(mail?.html).toContain(`${SITE}/product/smart-watch`)
+  })
+
+  it('carries the signed unsubscribe link when the cron provided one', () => {
+    const mail = buildNotification('price_drop', payload, SITE)
+    expect(mail?.html).toContain('/wishlist-alerts/unsubscribe?token=abc')
+    expect(mail?.text).toContain('/wishlist-alerts/unsubscribe?token=abc')
+  })
+
+  it('omits the unsubscribe footer rather than rendering a dead link', () => {
+    const { unsubscribe_url: _dropped, ...bare } = payload
+    const mail = buildNotification('price_drop', bare, SITE)
+    expect(mail?.html).not.toContain('unsubscribe')
+  })
+
+  it('renders nothing for a price that did not actually drop', () => {
+    expect(
+      buildNotification('price_drop', { ...payload, old_agorot: 29900, new_agorot: 29900 }, SITE),
+    ).toBeNull()
+    expect(
+      buildNotification('price_drop', { ...payload, old_agorot: 100, new_agorot: 200 }, SITE),
+    ).toBeNull()
+  })
+})
+
+describe('the back-in-stock mail', () => {
+  const payload = {
+    product_name: 'אוזניות',
+    slug: 'headphones',
+    price_agorot: 12900,
+    unsubscribe_url: 'https://kenyonexpress.co.il/wishlist-alerts/unsubscribe?token=xyz',
+  }
+
+  it('names the product, its current price and the product page', () => {
+    const mail = buildNotification('back_in_stock', payload, SITE)
+    expect(mail?.subject).toContain('אוזניות')
+    expect(mail?.html).toContain('129.00')
+    expect(mail?.html).toContain(`${SITE}/product/headphones`)
+  })
+
+  it('survives a guest waitlist payload with no price and no unsubscribe', () => {
+    const mail = buildNotification('back_in_stock', { product_name: 'אוזניות' }, SITE)
+    expect(mail).not.toBeNull()
+    expect(mail?.html).not.toContain('unsubscribe')
+  })
+
+  it('renders nothing without a product to name', () => {
+    expect(buildNotification('back_in_stock', {}, SITE)).toBeNull()
+  })
+
+  it('escapes a product name coming out of the database', () => {
+    const mail = buildNotification(
+      'back_in_stock',
+      { product_name: '<img src=x onerror=alert(1)>' },
+      SITE,
+    )
+    expect(mail?.html).not.toContain('<img')
   })
 })

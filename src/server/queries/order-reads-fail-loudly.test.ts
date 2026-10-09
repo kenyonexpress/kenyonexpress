@@ -88,6 +88,8 @@ vi.mock('@/lib/supabase/server', () => ({
 vi.mock('@/lib/commerce/order-money-columns', () => ({
   moneyColumnProbe: () => async () => true,
   resolveOrderGeneration: async () => 'agorot',
+  resolveOrderItemGeneration: async () => 'agorot',
+  orderItemPriceSelect: () => 'unit_price_agorot, total_price_agorot',
   orderMoneySelect: () => 'total_agorot',
   readOrderMoney: (_g: unknown, row: Record<string, unknown> | null | undefined) => ({
     subtotalAgorot: Number(row?.subtotal_agorot ?? 0),

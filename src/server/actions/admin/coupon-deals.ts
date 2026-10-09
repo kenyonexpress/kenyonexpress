@@ -1,5 +1,6 @@
 'use server'
 
+import { writeAuditLog } from '@/lib/admin/audit'
 import { requireAdminSession } from '@/lib/admin/rbac'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { IMAGE_HOST_ERROR, isAllowedImageUrl } from '@/lib/images/remote-hosts'
@@ -43,8 +44,9 @@ async function runUpsertCouponDeal(
   _: CouponDealFormState,
   formData: FormData,
 ): Promise<CouponDealFormState> {
+  let session: Awaited<ReturnType<typeof requireAdminSession>>
   try {
-    await requireAdminSession()
+    session = await requireAdminSession()
   } catch {
     return { error: 'אין הרשאה' }
   }
@@ -95,11 +97,29 @@ async function runUpsertCouponDeal(
   if (id) {
     const { error } = await supabase.from('coupon_deals').update(fields).eq('id', id)
     if (error) return { error: error.message }
+    await writeAuditLog({
+      actorId: session.userId,
+      actorRole: session.role,
+      action: 'updated',
+      entityType: 'coupon_deals',
+      entityId: id,
+      changes: { ...fields },
+    })
   } else {
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('coupon_deals')
       .insert({ ...fields, created_by: user!.id })
+      .select('id')
+      .single()
     if (error) return { error: error.message }
+    await writeAuditLog({
+      actorId: session.userId,
+      actorRole: session.role,
+      action: 'created',
+      entityType: 'coupon_deals',
+      entityId: data.id,
+      changes: { ...fields },
+    })
   }
 
   // The storefront's read of this row is `use cache` (lib/coupon-deals.ts), so
@@ -108,12 +128,24 @@ async function runUpsertCouponDeal(
   // is spelled out in full in catalogue-cache.ts.
   updateTag(CATALOGUE_TAG)
   revalidatePath('/admin/coupons')
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: id ? 'updated' : 'created',
+    entityType: 'coupon_deals',
+    entityId: id,
+    changes: {
+      old: null,
+      new: { id: id ?? null, title_he: fields.title_he, status: fields.status },
+    },
+  })
   redirect('/admin/coupons')
 }
 
 async function runSoftDeleteCouponDeal(id: string): Promise<{ error?: string }> {
+  let session: Awaited<ReturnType<typeof requireAdminSession>>
   try {
-    await requireAdminSession()
+    session = await requireAdminSession()
   } catch {
     return { error: 'אין הרשאה' }
   }
@@ -124,6 +156,15 @@ async function runSoftDeleteCouponDeal(id: string): Promise<{ error?: string }> 
     .update({ deleted_at: new Date().toISOString(), status: 'archived' })
     .eq('id', id)
   if (error) return { error: error.message }
+
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: 'deleted',
+    entityType: 'coupon_deals',
+    entityId: id,
+    changes: { status: 'archived' },
+  })
 
   // Same contract as the save above, and it matters more here: an archived deal
   // that stays readable on the storefront is a coupon still being advertised.

@@ -66,6 +66,9 @@ const adminClient = {
     update: (payload: unknown) => builder(table, 'update', payload),
     upsert: (payload: unknown) => builder(table, 'upsert', payload),
   }),
+  // RPCs are recorded under `rpc:<name>` so a test can assert the exact call
+  // (restock_order_stock is the one that moves stock back on a refund).
+  rpc: (fn: string, args: unknown) => builder(`rpc:${fn}`, 'rpc', args),
 }
 
 const requireAdminSession = vi.fn()
@@ -132,7 +135,7 @@ function seedHappyPath(overrides: { succeededAt?: string | null; items?: unknown
 beforeEach(() => {
   calls.length = 0
   queues.clear()
-  requireAdminSession.mockReset().mockResolvedValue(undefined)
+  requireAdminSession.mockReset().mockResolvedValue({ userId: 'admin-1', role: 'admin' })
   capturePaymentError.mockReset()
   refundByTransactionId.mockReset().mockResolvedValue({
     success: true,
@@ -289,6 +292,22 @@ describe('refundOrder: supplier debits', () => {
     })
   })
 
+  it('names the admin who refunded in the audit row, not "an admin, unknown which"', async () => {
+    // requireAdminSession() knows exactly who this is; the row used to write
+    // actor_id: null anyway (BUSINESS-RULES §10, fixed marathon step 11). A
+    // money reversal whose log names nobody is a statement, not evidence.
+    seedHappyPath()
+    await refundOrder({ orderId: 'order-1', reason: 'test' })
+
+    const audit = find('audit_log', 'insert')?.payload as Record<string, unknown>
+    expect(audit).toMatchObject({
+      actor_id: 'admin-1',
+      actor_role: 'admin',
+      action: 'status_change',
+      entity_type: 'order',
+    })
+  })
+
   it('selects the supplier columns the debit is computed from', async () => {
     // Without these two in the select, every debit silently computes to zero
     // and the supplier keeps a share the customer has been given back.
@@ -297,6 +316,91 @@ describe('refundOrder: supplier debits', () => {
     const select = find('order_items', 'select')?.payload as string
     expect(select).toContain('supplier_id')
     expect(select).toContain('supplier_immediate_agorot')
+  })
+})
+
+describe('refundOrder: the payment journal', () => {
+  const journalRows = () =>
+    calls
+      .filter((c) => c.table === 'payment_events' && c.op === 'insert')
+      .map((c) => c.payload as Record<string, unknown>)
+
+  it('journals refund_requested before the provider is asked, and refund_succeeded after', async () => {
+    // 130 reserved these enum values and nothing wrote them: a refund was
+    // visible in settlement_events and audit_log but absent from the journal,
+    // so payment_events showed a charge with no exit.
+    seedHappyPath()
+    await refundOrder({ orderId: 'order-1', reason: 'test' })
+    const types = journalRows().map((r) => r.event_type)
+    expect(types).toContain('refund_requested')
+    expect(types).toContain('refund_succeeded')
+    const succeeded = journalRows().find((r) => r.event_type === 'refund_succeeded')
+    expect(succeeded).toMatchObject({
+      order_id: 'order-1',
+      payment_id: 'pay-1',
+      transaction_id: 'refund-tx-1',
+      amount_agorot: 9_500,
+    })
+  })
+
+  it('journals the cancellation fee when one was charged', async () => {
+    // ₪100 charge, 5% fee: the fee row carries the fee, not the refund.
+    seedHappyPath()
+    await refundOrder({ orderId: 'order-1', reason: 'test' })
+    const fee = journalRows().find((r) => r.event_type === 'cancellation_fee_applied')
+    expect(fee).toMatchObject({ order_id: 'order-1', amount_agorot: 500 })
+  })
+
+  it('journals no fee row on a same-day cancellation, which has none', async () => {
+    const now = new Date('2026-08-06T15:00:00Z')
+    seedHappyPath({ succeededAt: '2026-08-06T09:00:00Z' })
+    await refundOrder({ orderId: 'order-1', reason: 'test', now })
+    const types = journalRows().map((r) => r.event_type)
+    expect(types).not.toContain('cancellation_fee_applied')
+    expect(types).toContain('refund_succeeded')
+  })
+
+  it('journals refund_failed when the provider declines, and nothing as succeeded', async () => {
+    seedHappyPath()
+    refundByTransactionId.mockResolvedValue({
+      success: false,
+      refundTransactionId: null,
+      refundedAgorot: 0,
+      failureCode: '55',
+      failureMessage: 'declined',
+      raw: {},
+    })
+    await refundOrder({ orderId: 'order-1', reason: 'test' })
+    const types = journalRows().map((r) => r.event_type)
+    expect(types).toContain('refund_requested')
+    expect(types).toContain('refund_failed')
+    expect(types).not.toContain('refund_succeeded')
+  })
+
+  it('still journals refund_succeeded when the books fail after the credit', async () => {
+    // The row is written OUTSIDE the persistence try on purpose: when the
+    // bookkeeping diverges from the money, the journal must side with the money.
+    seedHappyPath()
+    const boom = new Error('constraint violation')
+    const original = adminClient.from
+    adminClient.from = ((table: string) => {
+      if (table === 'payments') {
+        return {
+          ...original(table),
+          insert: () => {
+            throw boom
+          },
+        }
+      }
+      return original(table)
+    }) as typeof adminClient.from
+    try {
+      const result = await refundOrder({ orderId: 'order-1', reason: 'test' })
+      expect(result).toMatchObject({ ok: false, code: 'INTERNAL' })
+      expect(journalRows().map((r) => r.event_type)).toContain('refund_succeeded')
+    } finally {
+      adminClient.from = original
+    }
   })
 })
 
@@ -402,5 +506,46 @@ describe('refundOrder: refusals', () => {
     const result = await refundOrder({ orderId: 'order-1', reason: 'test' })
     expect(result).toMatchObject({ ok: false, code: 'FORBIDDEN' })
     expect(calls).toHaveLength(0)
+  })
+})
+
+describe('refundOrder: restocking consumed stock', () => {
+  it('calls restock_order_stock once the order really flipped to refunded', async () => {
+    // The `restock_consumed` effect order-transitions.ts declares for every
+    // `-> refunded` edge: the payment CONSUMED the reservation and decremented
+    // the shelf, so the refund must increment it back (migration 223).
+    seedHappyPath()
+    queue('orders.update', { data: { id: 'order-1' }, error: null })
+
+    const result = await refundOrder({ orderId: 'order-1', reason: 'test' })
+    expect(result.ok).toBe(true)
+
+    const restock = find('rpc:restock_order_stock', 'rpc')
+    expect(restock).toBeDefined()
+    expect(restock?.payload).toEqual({ p_order_id: 'order-1' })
+  })
+
+  it('skips the restock when the status CAS lost to a concurrent writer', async () => {
+    // `.eq('status','paid')` matched nothing: some other process already moved
+    // the order, and whoever moved it owns the stock consequence. Restocking
+    // here anyway would be a second writer acting on a state it never saw.
+    seedHappyPath()
+    queue('orders.update', { data: null, error: null })
+
+    const result = await refundOrder({ orderId: 'order-1', reason: 'test' })
+    expect(result.ok).toBe(true)
+    expect(find('rpc:restock_order_stock', 'rpc')).toBeUndefined()
+  })
+
+  it('does not fail the refund when the restock RPC errors - the money already moved', async () => {
+    seedHappyPath()
+    queue('orders.update', { data: { id: 'order-1' }, error: null })
+    queue('rpc:restock_order_stock.rpc', {
+      data: null,
+      error: { message: 'function does not exist' },
+    })
+
+    const result = await refundOrder({ orderId: 'order-1', reason: 'test' })
+    expect(result).toMatchObject({ ok: true, replay: false })
   })
 })

@@ -1,6 +1,16 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 
-export const metadata = { title: 'אין חיבור' }
+/**
+ * `noindex`: this document is reachable at /offline while online, and a
+ * crawler that finds it would index a page whose only content is "no
+ * connection". It is not in the sitemap either, but robots directives are the
+ * layer that survives a stray link.
+ */
+export const metadata: Metadata = {
+  title: 'אין חיבור',
+  robots: { index: false, follow: false },
+}
 
 /**
  * The document public/sw.js serves when a navigation fails with no network.

@@ -23,14 +23,14 @@ const BASE = { name: 'ארוחה זוגית', supplierName: 'מסעדת הים',
 describe('the price on the card', () => {
   it('is what the site charges, not the sticker price', () => {
     const card = buildOgCard({ ...BASE, offer: SELLABLE })
-    expect(card.price).toBe('₪80')
-    expect(card.wasPrice).toBe('₪200')
+    expect(card.price).toBe('80 ₪')
+    expect(card.wasPrice).toBe('200 ₪')
   })
 
   it('labels it, so 80 is never read as the total', () => {
     const card = buildOgCard({ ...BASE, offer: SELLABLE })
     expect(card.priceLabel).toBe('שולם באתר')
-    expect(card.balance).toBe('+ ₪120 בבית העסק')
+    expect(card.balance).toBe('+ 120 ₪ בבית העסק')
   })
 
   it('drops the balance line when nothing is due at the counter', () => {
@@ -54,7 +54,7 @@ describe('the price on the card', () => {
 
   it('quotes the plain price for a product that is not a coupon', () => {
     const card = buildOgCard({ ...BASE, offer: null })
-    expect(card.price).toBe('₪200')
+    expect(card.price).toBe('200 ₪')
     expect(card.priceLabel).toBeNull()
   })
 

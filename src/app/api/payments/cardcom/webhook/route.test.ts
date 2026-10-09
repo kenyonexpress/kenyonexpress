@@ -293,6 +293,59 @@ describe('re-verification is what is trusted, never the body', () => {
 })
 
 /**
+ * A credit is not a charge, and this route is a charge handler.
+ *
+ * A refund-shaped event carries a fresh deal number, so it passes the dedup
+ * insert; GetLpResult on the same Low Profile id answers with the ORIGINAL
+ * charge, whose amount matches the payment row; and finalizeOrder reports the
+ * order already paid. Before the gate, the route then stamped `processed_at`:
+ * a refund recorded as a successfully handled charge, with no alarm.
+ */
+describe('a success-shaped callback that is actually a credit', () => {
+  it('refuses on a negative callback amount, alarms, and never verifies', async () => {
+    seedHappyPath()
+    const response = await POST(request(SECRET, callbackBody({ Amount: -40 })))
+    expect(await response.json()).toEqual({ ok: true, refund_shaped: true })
+    expect(verifyLowProfile).not.toHaveBeenCalled()
+    expect(finalizeOrder).not.toHaveBeenCalled()
+    expect(capturePaymentAlarm).toHaveBeenCalledWith(
+      expect.stringContaining('looks like a refund'),
+      expect.objectContaining({ stage: 'cardcom_webhook_refund_shape' }),
+    )
+  })
+
+  it('refuses when our own payment row already says refunded', async () => {
+    // The dashboard-refund case: the money went back out of band, and a late
+    // or duplicate success callback must not re-enter the charge path.
+    queue(
+      'payments.select',
+      { data: null, error: { code: '42703' } },
+      {
+        data: {
+          id: 'pay-1',
+          order_id: 'order-1',
+          status: 'refunded',
+          amount_ils: 100,
+          cardcom_account_id: null,
+        },
+        error: null,
+      },
+    )
+    const response = await POST(request(SECRET, callbackBody()))
+    expect(await response.json()).toEqual({ ok: true, refund_shaped: true })
+    expect(verifyLowProfile).not.toHaveBeenCalled()
+    expect(finalizeOrder).not.toHaveBeenCalled()
+    expect(capturePaymentAlarm).toHaveBeenCalled()
+  })
+
+  it('answers 200, because a retry cannot make a credit placeable here', async () => {
+    seedHappyPath()
+    const response = await POST(request(SECRET, callbackBody({ Amount: -40 })))
+    expect(response.status).toBe(200)
+  })
+})
+
+/**
  * A READ THAT FAILED IS NOT A PAYMENT WE DO NOT HAVE.
  *
  * The `payments` lookup discarded its error, so a failed read produced the same

@@ -1,0 +1,95 @@
+# G13: the nightly health loop, 02:00 UTC. GitHub's schedule is best effort, so
+# 02:00 means "some time after 02:00"; the three runs to date fired at 06:39,
+# 06:47 and 06:43 UTC.
+#
+# It IS on main now and it IS firing. The header used to say this file "does
+# nothing until it is merged there" (scheduled-workflows-only-fire-from-main,
+# project memory). That was true when it was written and stopped being true
+# without anyone editing the line -- a stale caveat is worse than none, because
+# it explains away a red run as "not really running yet".
+name: Nightly health
+on:
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+  issues: write
+concurrency:
+  group: nightly-health
+  cancel-in-progress: false
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Health gates
+        # THE BUILD GATE HAD NO ENVIRONMENT, SO IT COULD ONLY EVER FAIL.
+        #
+        # `pnpm build` is one of the five gates in scripts/nightly-health.sh,
+        # and `next build` collects page data under NODE_ENV=production. With
+        # no Supabase values it throws while collecting /coupons/[id]:
+        #
+        #   Missing NEXT_PUBLIC_SUPABASE_URL / SUPABASE_ANON_KEY
+        #     at src/lib/supabase/anon.ts:33 <- src/lib/coupon-deals.ts:67
+        #   Failed to collect page data for /coupons/[id]
+        #
+        # ci.yml's Build job hit this identical error and fixed it; the comment
+        # block on its `env:` is the full reasoning and is not repeated here.
+        # The short version: these are repository VARIABLES, not secrets,
+        # because all three are public by construction. The two NEXT_PUBLIC_*
+        # values are inlined into the client bundle and already served to every
+        # visitor, and CI_BUILD_SUPABASE_DEMO_SECRET_KEY is the demo key every
+        # `supabase start` prints -- it belongs to no project and grants nothing
+        # on the hosted one. src/lib/supabase/admin-key.ts recognises its
+        # `supabase-demo` issuer and returns `demo-key` rather than `missing`,
+        # and only `missing` throws, so the build completes exactly as a local
+        # `pnpm build` does.
+        #
+        # Deliberately NOT `secrets.CI_SUPABASE_*`: the E2E job skips itself
+        # while that secret is empty, and its first step is `pnpm seed:test`,
+        # which WRITES fixture rows to whatever database the secret names. The
+        # only database reachable from here is production.
+        #
+        # What this does not buy: the nightly never prerenders an admin-backed
+        # page against real data. It compiles, type-checks and prerenders
+        # everything reachable without admin, which is what a build gate is for.
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.PUBLIC_SUPABASE_ANON_KEY }}
+          SUPABASE_SECRET_KEY: ${{ vars.CI_BUILD_SUPABASE_DEMO_SECRET_KEY }}
+          ALLOW_INCOMPLETE_ENV: 'true'
+          NEXT_PUBLIC_APP_URL: http://localhost:3000
+        run: bash scripts/nightly-health.sh
+      - name: Open an issue on failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # THE LABEL HAS TO EXIST FIRST, AND IT DID NOT.
+          #
+          # `gh issue create --label auto` does not degrade to an unlabelled
+          # issue when the label is missing: it prints "could not add label:
+          # 'auto' not found" and creates NOTHING. The `|| true` below then
+          # swallowed the exit code, so the step went green while opening no
+          # issue at all. This gate failed on 2026-09-06, 09-07 and 09-08 and
+          # the repository has zero issues to show for it -- the only surviving
+          # signal was the ntfy line under it.
+          #
+          # production-smoke.yml already learned this (see the comment at its
+          # label block); nightly-health never got the same treatment.
+          gh label create auto --repo "$GITHUB_REPOSITORY" \
+            --description "Opened automatically by a workflow" \
+            --color ededed 2>/dev/null || true
+          gh issue create --repo "$GITHUB_REPOSITORY" \
+            --title "nightly-health failed $(date -u +%F)" \
+            --label auto \
+            --body "Run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" || true
+          curl -s -m 10 -d "nightly-health FAILED (CI)" "https://ntfy.sh/${{ vars.CRON_NTFY_TOPIC || 'kenyon-ofir-limit' }}" > /dev/null || true

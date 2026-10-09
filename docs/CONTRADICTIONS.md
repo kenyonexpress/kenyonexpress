@@ -1,5 +1,18 @@
 # CONTRADICTIONS - הכרעות עסקיות סופיות
 
+<!-- v1-final-banner:2026-09-01 -->
+> ✅ **Resolved and superseded 2026-09-01 by `docs/ARCHITECTURE-OVERVIEW.md`.**
+>
+> This is the record of how the 2026-07-24 decision was reached. It is kept for
+> the reasoning, not as a description of the system. The decision it reached is
+> in force: absolute coupon price, mandatory per-product `platform_percent`, no
+> escrow, no payout ledger.
+>
+> One thing it could not know: `escrow_held` and `escrow_released` were never
+> removed from the `settlement_status` enum, because you do not drop an enum
+> value from a production database over a rule change. They are unreachable from
+> the type system instead.
+
 סטטוס: **RESOLVED** (עודכן 2026-07-27, הכרעת Ofir).
 המסמך הזה גובר על כל נוסח סותר בכל מסמך אחר בפרויקט. כל מספר "ברירת מחדל"
 שנשאר במסמך ישן ולא מופיע כאן הוא שריד ואינו מחייב.

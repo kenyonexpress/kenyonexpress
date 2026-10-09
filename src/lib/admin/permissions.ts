@@ -1,5 +1,4 @@
-import { isAdminRole } from '@/lib/admin/roles'
-import type { UserRole } from '@/types/database'
+import { type UserRole, isAdminRole } from '@/lib/admin/roles'
 
 // Pure RBAC decisions for the admin panel. No IO here: everything is
 // unit-testable. Matrix source: ARCHITECTURE-ADMIN.md section 3.2, which is
@@ -9,6 +8,7 @@ import type { UserRole } from '@/types/database'
 //   admin / super_admin : full access
 //   content_uploader    : catalog only (products, categories, coupons, approvals)
 //   support             : operational reads (orders, users, affiliates), no money
+//   read_only           : observer tier (181): reads every section, writes nothing
 
 export type AdminSection =
   | 'dashboard'
@@ -21,6 +21,7 @@ export type AdminSection =
   | 'audit-log'
   | 'suppliers'
   | 'discounts'
+  | 'settings'
 
 export type SectionAccess = 'none' | 'read' | 'write'
 
@@ -37,6 +38,9 @@ const CONTENT_UPLOADER_ACCESS: Record<AdminSection, SectionAccess> = {
   // A campaign spends the platform's commission. That is money, and money is
   // not part of the catalog role, however much a discount code looks like content.
   discounts: 'none',
+  // Store-wide knobs (checkout switch, contact details, order minimums) are
+  // operations, not catalogue copy.
+  settings: 'none',
 }
 
 const SUPPORT_ACCESS: Record<AdminSection, SectionAccess> = {
@@ -52,6 +56,9 @@ const SUPPORT_ACCESS: Record<AdminSection, SectionAccess> = {
   // Support answers "why did my code not work", so it must see the campaign.
   // It may not create or edit one: that is spending.
   discounts: 'read',
+  // Support answers "what is the minimum order" and "is checkout down"; it
+  // does not flip either. Reads only.
+  settings: 'read',
 }
 
 export function sectionAccess(
@@ -61,6 +68,9 @@ export function sectionAccess(
   if (isAdminRole(role)) return 'write'
   if (role === 'content_uploader') return CONTENT_UPLOADER_ACCESS[section]
   if (role === 'support') return SUPPORT_ACCESS[section]
+  // The observer tier: every section readable, none writable. A matrix of
+  // constant 'read' would only invite drift when sections are added.
+  if (role === 'read_only') return 'read'
   return 'none'
 }
 
@@ -72,21 +82,30 @@ export function canWriteSection(role: UserRole | null | undefined, section: Admi
   return sectionAccess(role, section) === 'write'
 }
 
-// Money numbers (revenue, payments amounts) are admin-tier only; support sees
-// the dashboard without them (V2 rule 2.2.1).
+// Money numbers (revenue, payments amounts) are admin-tier only; support and
+// read_only see the dashboard without them (V2 rule 2.2.1).
 export function canSeeMoney(role: UserRole | null | undefined): boolean {
   return isAdminRole(role)
 }
 
 // Which roles may this caller assign to other users?
-// super_admin: everything. admin: up to content_uploader/support, never
-// admin+ (enforced again inside the server action and by DB trigger 035).
+// super_admin: everything. admin: up to content_uploader/support/read_only,
+// never admin+ (enforced again inside the server action and by the DB trigger
+// hardened in 181).
 export function assignableRoles(callerRole: UserRole | null | undefined): UserRole[] {
   if (callerRole === 'super_admin') {
-    return ['customer', 'vendor', 'content_uploader', 'support', 'admin', 'super_admin']
+    return [
+      'customer',
+      'vendor',
+      'content_uploader',
+      'support',
+      'read_only',
+      'admin',
+      'super_admin',
+    ]
   }
   if (callerRole === 'admin') {
-    return ['customer', 'vendor', 'content_uploader', 'support']
+    return ['customer', 'vendor', 'content_uploader', 'support', 'read_only']
   }
   return []
 }

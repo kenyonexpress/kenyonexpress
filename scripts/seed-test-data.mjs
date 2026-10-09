@@ -70,13 +70,19 @@ const CUSTOMER_EMAIL = env.E2E_CUSTOMER_EMAIL ?? 'e2e-customer@test.kenyonexpres
 const CUSTOMER_PASSWORD = env.E2E_CUSTOMER_PASSWORD ?? 'E2eCustomer!pass1'
 const SUPPLIER_EMAIL = env.E2E_SUPPLIER_EMAIL ?? 'e2e-supplier@test.kenyonexpress.local'
 const SUPPLIER_PASSWORD = env.E2E_SUPPLIER_PASSWORD ?? 'E2eSupplier!pass1'
+// The admin fixture exists for the cancel-and-refund E2E journey. 'admin'
+// (not super_admin): the refund action requires exactly the admin section
+// grant, and the test should prove the WEAKEST role that may refund can.
+const ADMIN_EMAIL = env.E2E_ADMIN_EMAIL ?? 'e2e-admin@test.kenyonexpress.local'
+const ADMIN_PASSWORD = env.E2E_ADMIN_PASSWORD ?? 'E2eAdmin!pass1'
 
 const SUPPLIER = {
   id: IDS.supplier,
   name: 'ספק בדיקות אוטומטיות',
   contact_email: 'e2e@test.kenyonexpress.local',
   contact_phone: '03-0000000',
-  commission_percent: 10,
+  // No commission_percent here: production `suppliers` has no such column
+  // (commission lives per product). PGRST204 on seed, measured 2026-09-10.
   status: 'active',
   notes: 'פיקסצ׳ר לבדיקות E2E. אין למחוק ידנית — נוצר ע״י scripts/seed-test-data.mjs',
 }
@@ -104,10 +110,17 @@ const COUPON_PRODUCT = {
   status: 'active',
   price_ils: 400,
   coupon_price_ils: 40,
+  // The app's cart/checkout path reads the production-lineage columns
+  // kenyon_price (on-site charge) and full_price (face value), not the
+  // price_ils pair; without them add-to-cart throws RangeError. Measured
+  // 2026-09-10 against src/server/actions/cart.ts.
+  full_price: 400,
+  kenyon_price: 40,
   is_coupon_enabled: true,
   platform_percent: 10,
   cashback_percent: 5,
   commission_percent: 10,
+  commission_type: 'coupon_absolute',
   coupon_expiry_days: 90,
   stock_quantity: 1000,
   requires_shipping: false,
@@ -126,10 +139,14 @@ const PHYSICAL_PRODUCT = {
   type: 'physical',
   status: 'active',
   price_ils: 100,
+  // Same production-lineage pair as the coupon fixture above.
+  full_price: 100,
+  kenyon_price: 100,
   is_coupon_enabled: false,
   platform_percent: 10,
   cashback_percent: 5,
   commission_percent: 10,
+  commission_type: 'physical_percent',
   stock_quantity: 1000,
   requires_shipping: true,
   is_featured: false,
@@ -161,7 +178,7 @@ async function findUserByEmail(email) {
   return data.users.find((u) => u.email?.toLowerCase() === email.toLowerCase()) ?? null
 }
 
-async function ensureAuthUser({ email, password, fullName }) {
+async function ensureAuthUser({ email, password, fullName, role = 'customer' }) {
   const existing = await findUserByEmail(email)
   if (existing) {
     const { error } = await admin.auth.admin.updateUserById(existing.id, {
@@ -172,10 +189,7 @@ async function ensureAuthUser({ email, password, fullName }) {
     if (error) throw new Error(`updateUser ${email}: ${error.message}`)
     await admin
       .from('profiles')
-      .upsert(
-        { id: existing.id, email, full_name: fullName, role: 'customer' },
-        { onConflict: 'id' },
-      )
+      .upsert({ id: existing.id, email, full_name: fullName, role }, { onConflict: 'id' })
     console.log(`  ok   auth user ${email} (updated)`)
     return existing.id
   }
@@ -189,10 +203,7 @@ async function ensureAuthUser({ email, password, fullName }) {
   if (error || !data.user) throw new Error(`createUser ${email}: ${error?.message ?? 'no user'}`)
   await admin
     .from('profiles')
-    .upsert(
-      { id: data.user.id, email, full_name: fullName, role: 'customer' },
-      { onConflict: 'id' },
-    )
+    .upsert({ id: data.user.id, email, full_name: fullName, role }, { onConflict: 'id' })
   console.log(`  ok   auth user ${email} (created)`)
   return data.user.id
 }
@@ -241,6 +252,7 @@ async function main() {
       await report('products', IDS.physicalProduct, 'physical product'),
       await reportUser(CUSTOMER_EMAIL, 'customer user'),
       await reportUser(SUPPLIER_EMAIL, 'supplier user'),
+      await reportUser(ADMIN_EMAIL, 'admin user'),
     ]
     process.exit(results.every(Boolean) ? 0 : 1)
   }
@@ -250,6 +262,7 @@ async function main() {
     await remove('supplier_members', IDS.member, 'supplier membership')
     await deleteAuthUser(CUSTOMER_EMAIL, 'customer user')
     await deleteAuthUser(SUPPLIER_EMAIL, 'supplier user')
+    await deleteAuthUser(ADMIN_EMAIL, 'admin user')
     await remove('products', IDS.couponProduct, 'coupon product')
     await remove('products', IDS.physicalProduct, 'physical product')
     await remove('categories', IDS.category, 'category')
@@ -274,9 +287,16 @@ async function main() {
     fullName: 'ספק בדיקות E2E',
   })
   await ensureSupplierMember(supplierUserId)
+  await ensureAuthUser({
+    email: ADMIN_EMAIL,
+    password: ADMIN_PASSWORD,
+    fullName: 'אדמין בדיקות E2E',
+    role: 'admin',
+  })
   console.log('seed-test-data: done')
   console.log(`  customer: ${CUSTOMER_EMAIL}`)
   console.log(`  supplier: ${SUPPLIER_EMAIL}`)
+  console.log(`  admin:    ${ADMIN_EMAIL}`)
 }
 
 main().catch((error) => {

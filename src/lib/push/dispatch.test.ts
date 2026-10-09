@@ -8,11 +8,22 @@ type FakeState = {
   targets: Array<{ expo_token: string; platform: string; locale: string }>
   rpcError: string | null
   disabled: string[]
+  /** `notification_preferences` rows, the setting nothing used to read. */
+  preferences?: Array<{ kind: string; channel: string; enabled: boolean }>
+  /** `push_subscriptions` rows; empty means no browser has subscribed. */
+  subscriptions?: Array<Record<string, unknown>>
+  /** Ids passed to the dead-subscription delete. */
+  deletedSubscriptions?: string[]
 }
 
 /**
- * The narrow slice of the client this module touches: one rpc and one update.
- * A full mock of postgrest would test the mock, not the dispatch.
+ * The narrow slice of the client this module touches: one rpc, one update, and
+ * since [45] two table reads. A full mock of postgrest would test the mock, not
+ * the dispatch.
+ *
+ * `push_subscriptions` defaults to EMPTY rather than absent, so every test that
+ * predates the web leg still exercises the Expo path alone -- which is what
+ * those tests are about.
  */
 function fakeAdmin(state: FakeState): SupabaseClient {
   return {
@@ -20,7 +31,25 @@ function fakeAdmin(state: FakeState): SupabaseClient {
       state.rpcError
         ? { data: null, error: { message: state.rpcError } }
         : { data: state.targets, error: null },
-    from: () => ({
+    from: (table: string) => ({
+      select: (_columns: string) => ({
+        eq: async (_column: string, _value: string) => {
+          if (table === 'notification_preferences') {
+            return { data: state.preferences ?? [], error: null }
+          }
+          if (table === 'push_subscriptions') {
+            return { data: state.subscriptions ?? [], error: null }
+          }
+          return { data: [], error: null }
+        },
+      }),
+      insert: async (_values: Record<string, unknown>) => ({ error: null }),
+      delete: () => ({
+        in: async (_column: string, values: string[]) => {
+          state.deletedSubscriptions?.push(...values)
+          return { error: null }
+        },
+      }),
       update: (_values: Record<string, unknown>) => ({
         in: async (_column: string, values: string[]) => {
           state.disabled.push(...values)
@@ -68,6 +97,73 @@ describe('toPushMessages', () => {
   })
 })
 
+describe('the preference the account page has always been writing', () => {
+  /**
+   * MEASURED 2026-09-09: nothing read `notification_preferences`. A customer
+   * could switch a kind off in every channel, see it saved, and keep receiving
+   * it. `preferences.ts` names that exact failure in its own header as the
+   * reason operator kinds are refused rather than silently defaulted, and the
+   * senders were doing it anyway.
+   */
+  it('does not send a kind the customer switched off', async () => {
+    const state: FakeState = {
+      targets: [{ expo_token: 'ExponentPushToken[a]', platform: 'ios', locale: 'he' }],
+      rpcError: null,
+      disabled: [],
+      preferences: [{ kind: 'order_shipped', channel: 'push', enabled: false }],
+    }
+    const result = await pushOutboxRow(fakeAdmin(state), { ...ROW, kind: 'order_shipped' }, SITE)
+
+    expect(result).toEqual({ outcome: 'skipped', reason: 'switched off by the customer' })
+  })
+
+  it('skips rather than settling, so switching it back on works', async () => {
+    // `none` means the KIND never owes a push and settles the row for good.
+    // Using it here would make the switch one-way.
+    const state: FakeState = {
+      targets: [],
+      rpcError: null,
+      disabled: [],
+      preferences: [{ kind: 'order_shipped', channel: 'push', enabled: false }],
+    }
+    const result = await pushOutboxRow(fakeAdmin(state), { ...ROW, kind: 'order_shipped' }, SITE)
+    expect(result.outcome).not.toBe('none')
+  })
+
+  it('ignores a switch for a different channel', async () => {
+    // Turning email off must not turn push off. One row per (kind, channel) is
+    // the whole reason the table has a channel column.
+    const state: FakeState = {
+      targets: [{ expo_token: 'ExponentPushToken[a]', platform: 'ios', locale: 'he' }],
+      rpcError: null,
+      disabled: [],
+      preferences: [{ kind: 'order_shipped', channel: 'email', enabled: false }],
+    }
+    vi.stubEnv('PUSH_ENABLED', 'true')
+    vi.stubGlobal('fetch', fetchReturning([{ status: 'ok', id: 'r1' }]))
+
+    const result = await pushOutboxRow(fakeAdmin(state), { ...ROW, kind: 'order_shipped' }, SITE)
+    expect(result).toMatchObject({ outcome: 'sent' })
+  })
+
+  it('cannot be switched off for a kind that is the thing bought', async () => {
+    // `voucher_issued` is REQUIRED: it is the coupon itself. A stray row saying
+    // otherwise -- from a bug, a migration or somebody with SQL access -- must
+    // not stop it.
+    const state: FakeState = {
+      targets: [{ expo_token: 'ExponentPushToken[a]', platform: 'ios', locale: 'he' }],
+      rpcError: null,
+      disabled: [],
+      preferences: [{ kind: 'voucher_issued', channel: 'push', enabled: false }],
+    }
+    vi.stubEnv('PUSH_ENABLED', 'true')
+    vi.stubGlobal('fetch', fetchReturning([{ status: 'ok', id: 'r1' }]))
+
+    const result = await pushOutboxRow(fakeAdmin(state), ROW, SITE)
+    expect(result).toMatchObject({ outcome: 'sent' })
+  })
+})
+
 describe('pushOutboxRow', () => {
   it('settles a kind with no push template as none, without reading tokens', async () => {
     const state: FakeState = { targets: [], rpcError: null, disabled: [] }
@@ -84,7 +180,10 @@ describe('pushOutboxRow', () => {
     vi.stubEnv('PUSH_ENABLED', 'true')
     const state: FakeState = { targets: [], rpcError: null, disabled: [] }
     const result = await pushOutboxRow(fakeAdmin(state), ROW, SITE)
-    expect(result).toEqual({ outcome: 'skipped', reason: 'no registered device' })
+    expect(result.outcome).toBe('skipped')
+    // Composite since [45]: the reason names BOTH transports, so "nothing was
+    // sent" can be told apart from "one of the two had nothing to send to".
+    expect(result).toMatchObject({ reason: expect.stringContaining('no registered device') })
   })
 
   it('skips when push is switched off', async () => {
@@ -95,7 +194,8 @@ describe('pushOutboxRow', () => {
       disabled: [],
     }
     const result = await pushOutboxRow(fakeAdmin(state), ROW, SITE)
-    expect(result).toEqual({ outcome: 'skipped', reason: 'push disabled' })
+    expect(result.outcome).toBe('skipped')
+    expect(result).toMatchObject({ reason: expect.stringContaining('push disabled') })
   })
 
   it('drops a malformed token before it can poison the whole chunk', async () => {
@@ -162,7 +262,8 @@ describe('pushOutboxRow', () => {
     const result = await pushOutboxRow(fakeAdmin(state), ROW, SITE)
     // There is nothing left to retry against; four more attempts would each
     // send to the same dead token.
-    expect(result).toEqual({ outcome: 'skipped', reason: 'every device unregistered' })
+    expect(result.outcome).toBe('skipped')
+    expect(result).toMatchObject({ reason: expect.stringContaining('every device unregistered') })
   })
 
   it('retries a transient ticket error', async () => {
@@ -180,7 +281,7 @@ describe('pushOutboxRow', () => {
     )
 
     const result = await pushOutboxRow(fakeAdmin(state), ROW, SITE)
-    expect(result).toEqual({ outcome: 'retry', reason: 'slow down' })
+    expect(result).toEqual({ outcome: 'retry', reason: 'expo: slow down' })
     expect(state.disabled).toEqual([])
   })
 
@@ -188,6 +289,9 @@ describe('pushOutboxRow', () => {
     vi.stubEnv('PUSH_ENABLED', 'true')
     const state: FakeState = { targets: [], rpcError: 'permission denied', disabled: [] }
     const result = await pushOutboxRow(fakeAdmin(state), ROW, SITE)
-    expect(result).toEqual({ outcome: 'skipped', reason: 'no registered device' })
+    expect(result.outcome).toBe('skipped')
+    // Composite since [45]: the reason names BOTH transports, so "nothing was
+    // sent" can be told apart from "one of the two had nothing to send to".
+    expect(result).toMatchObject({ reason: expect.stringContaining('no registered device') })
   })
 })

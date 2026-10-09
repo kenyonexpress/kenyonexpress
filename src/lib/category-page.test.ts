@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  CATEGORY_PAGE_SIZE,
   categoryMetaDescription,
   collectionFilter,
   collectionRule,
@@ -192,5 +193,16 @@ describe('categoryMetaDescription', () => {
   it('still returns a sentence when the name is blank, never an empty tag', () => {
     expect(categoryMetaDescription('   ').length).toBeGreaterThan(20)
     expect(categoryMetaDescription('   ')).not.toContain('  בקניון')
+  })
+})
+
+/**
+ * Eight cards a page is the listing contract (goal of 2026-09-16). The grid,
+ * the skeleton, the result-count wording and the last-page arithmetic all
+ * read this constant, so the number is pinned here rather than in four places.
+ */
+describe('CATEGORY_PAGE_SIZE', () => {
+  it('is eight', () => {
+    expect(CATEGORY_PAGE_SIZE).toBe(8)
   })
 })

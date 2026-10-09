@@ -106,6 +106,15 @@ vi.mock('@/server/payments/gift-vouchers', () => ({
   readGiftIntent: () => null,
   sendOrderGifts: async () => undefined,
 }))
+// The fake above answers ANY products.select with the coupon product, filters
+// included, which would make the is_gift_card read claim every line. Gift-card
+// issuance has its own suite (gift-card-issue.test.ts); here it stays out of
+// the way so the voucher reads under test keep their fixtures.
+vi.mock('@/server/payments/gift-card-issue', () => ({
+  readGiftCardProductIds: async () => new Set(),
+  readGiftCardRecipient: async () => ({ email: null, name: null, message: null, buyerUserId: '' }),
+  issueGiftCardsForItem: async () => undefined,
+}))
 vi.mock('@/lib/analytics/server-events', () => ({ sendServerPurchase: async () => undefined }))
 vi.mock('@/lib/payments/payment-money-columns', () => ({
   resolvePaymentMoneySchema: async () => ({
@@ -116,6 +125,15 @@ vi.mock('@/lib/payments/payment-money-columns', () => ({
 vi.mock('@/lib/commerce/order-money-columns', () => ({
   moneyColumnProbe: () => async () => true,
   resolveVoucherRateColumn: async () => 'platform_percent',
+  // The generation-resolved reads (D25 marathon step 1): the mocks pin the
+  // post-059 'agorot' answer so the select strings under test keep the exact
+  // column names these fixtures were written against. The cashback pair is
+  // generation-free since 224.
+  resolveOrderItemGeneration: async () => 'agorot',
+  orderCashbackSelect: () => 'cashback_applied_agorot',
+  orderItemPriceSelect: () => 'unit_price_agorot, total_price_agorot',
+  readOrderCashbackAgorot: (row: Record<string, unknown> | null) =>
+    Math.round(Number(row?.cashback_applied_agorot ?? 0)),
 }))
 
 const capturePaymentError = vi.fn()

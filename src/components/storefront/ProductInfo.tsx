@@ -2,12 +2,19 @@
 
 import { useCart } from '@/components/cart/CartProvider'
 import CityTag from '@/components/geo/CityTag'
+import WishlistButton from '@/components/product/WishlistButton'
 import FacebookShareButton from '@/components/shared/FacebookShareButton'
+import ShareButton from '@/components/shared/ShareButton'
 import WhatsAppShareButton from '@/components/shared/WhatsAppShareButton'
 import CouponPricing from '@/components/storefront/CouponPricing'
+import RatingStars, { type RatingSummary } from '@/components/storefront/RatingStars'
 import { productQuantityCeiling } from '@/lib/cart/format'
 import type { CouponOffer } from '@/lib/commerce/coupon-offer'
+import { isImplausibleDiscount } from '@/lib/commerce/implausible-discount'
+import { type RecurringOffer, describeRecurringPrice } from '@/lib/commerce/recurring'
 import { cityByName } from '@/lib/geo/cities'
+import { shekelsFromIls as sharedShekelsFromIls } from '@/lib/money-format'
+import { useProductLive } from '@/lib/product-live/use-product-live'
 import { buildShareMessage } from '@/lib/share/message'
 import { Check, ShoppingCart } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -59,6 +66,17 @@ interface Props {
    * bills; deriving it here from a percent is what caused the two to disagree.
    */
   couponOffer: CouponOffer | null
+  /**
+   * Present only for recurring products. Built server-side from the billing
+   * columns, so the page quotes exactly what the renewal worker will charge.
+   */
+  recurringOffer?: RecurringOffer | null
+  /**
+   * Average and count over APPROVED reviews, read through
+   * `product_rating_summary` (235). Null until the function exists or the
+   * first review is approved; the slot then carries the identifiers instead.
+   */
+  rating?: RatingSummary | null
 }
 
 /**
@@ -66,7 +84,7 @@ interface Props {
  * Agorot are still shown when a price actually has them.
  */
 function shekelsFromIls(value: number): string {
-  return `₪${value.toLocaleString('he-IL', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`
+  return sharedShekelsFromIls(value)
 }
 
 /**
@@ -85,7 +103,7 @@ export default function ProductInfo({
   name,
   nameEn,
   basePrice,
-  oldPrice,
+  oldPrice: cachedOldPrice,
   baseStock,
   scarcitySlot = null,
   sku,
@@ -95,8 +113,24 @@ export default function ProductInfo({
   variants,
   isCoupon,
   couponOffer,
+  recurringOffer = null,
+  rating = null,
 }: Props) {
   const { addToCart, isPending } = useCart()
+
+  // The cached values, corrected by the product's own broadcast topic (235)
+  // while the page is open. Until the first message arrives this IS the
+  // cache, so nothing below can tell the two apart -- which is the point:
+  // one price, one shelf level, whichever is freshest.
+  const live = useProductLive(productId, {
+    stock: baseStock,
+    price: basePrice,
+    oldPrice: cachedOldPrice,
+  })
+  const oldPrice = live.oldPrice
+  // Withdrawn since the page was cached: inactive or soft-deleted. The cart
+  // would refuse the line anyway; the button must not offer it.
+  const withdrawn = !live.onSale
 
   // Resolved once here rather than inside CityTag, because the href needs the
   // slug and the tag needs the canonical name, and resolving twice invites the
@@ -110,7 +144,8 @@ export default function ProductInfo({
   const [added, setAdded] = useState(false)
 
   const variant = variants.find((v) => v.id === selected) ?? null
-  const price = variant != null ? (variant.price ?? basePrice + variant.price_modifier) : basePrice
+  const price =
+    variant != null ? (variant.price ?? live.price + variant.price_modifier) : live.price
   // The CACHED level, deliberately. This component renders inside the product
   // page's hour-long cache, and reading live availability here would make the
   // whole page uncacheable - `next build` refuses it outright under
@@ -120,7 +155,7 @@ export default function ProductInfo({
   // Suspense-wrapped. That split is also the right one on its own terms: the
   // price and the buy button should paint immediately, and "only 3 left" is
   // the one line worth waiting a beat for.
-  const stock = variant?.stock_quantity ?? baseStock
+  const stock = variant?.stock_quantity ?? live.stock
   const outOfStock = stock === 0
   const effectiveSku = variant?.sku ?? sku
   const needsVariant = variants.length > 0 && !selected
@@ -132,6 +167,13 @@ export default function ProductInfo({
   // marks such a line unpriced and beginCheckout refuses it, so offering the
   // purchase here only moves the refusal to the worst possible moment.
   const priceUnsellable = !isCoupon && !(price > 0)
+  // A price that is an implausible fraction of its own compare-at is a data
+  // error rather than an offer, and the cart and `beginCheckout` both refuse
+  // such a line. Same argument as the two gates above: the button must not
+  // offer a purchase the server has already decided to reject. The badge below
+  // divides the same two numbers, so without this the page paints "-100%" over
+  // a live buy button.
+  const priceImplausible = isImplausibleDiscount(price, oldPrice)
 
   const hasDiscount = oldPrice != null && oldPrice > price
   const discountPct = hasDiscount ? Math.round((1 - price / oldPrice) * 100) : 0
@@ -140,7 +182,14 @@ export default function ProductInfo({
   // measured on a built server. `CART_LINE_MAX_QUANTITY` exists precisely so
   // this number and the one that rejects the write cannot drift.
   const maxQty = productQuantityCeiling(stock)
-  const blocked = outOfStock || needsVariant || couponUnsellable || priceUnsellable || isPending
+  const blocked =
+    withdrawn ||
+    outOfStock ||
+    needsVariant ||
+    couponUnsellable ||
+    priceUnsellable ||
+    priceImplausible ||
+    isPending
 
   const handleAddToCart = async () => {
     if (blocked) return
@@ -168,11 +217,13 @@ export default function ProductInfo({
 
   const buyLabel = outOfStock
     ? 'אזל מהמלאי'
-    : couponUnsellable || priceUnsellable
+    : withdrawn || couponUnsellable || priceUnsellable
       ? 'לא זמין לרכישה'
-      : isCoupon
-        ? 'קנה עכשיו'
-        : 'הוסף לסל'
+      : recurringOffer
+        ? 'הצטרף למנוי'
+        : isCoupon
+          ? 'קנה עכשיו'
+          : 'הוסף לסל'
 
   return (
     <div data-pdp="summary" className="pdp-summary">
@@ -192,7 +243,11 @@ export default function ProductInfo({
         </p>
       )}
 
+      {/* Live's rating slot. Stars only once a review has been approved
+          (`rating` is null otherwise); the identifiers keep the line's height
+          either way, which is what the rhythm below depends on. */}
       <p className="pdp-summary__meta" dir={effectiveSku ? 'rtl' : 'ltr'}>
+        <RatingStars rating={rating} />
         {effectiveSku ? (
           <>
             מק"ט: <span dir="ltr">{effectiveSku}</span>
@@ -204,12 +259,18 @@ export default function ProductInfo({
 
       <hr className="pdp-summary__rule" />
 
-      <p className="pdp-summary__stock">
+      <p className="pdp-summary__stock" data-live={live.live ? 'true' : undefined}>
         <span
-          className={`pdp-summary__dot${outOfStock ? '' : ' pdp-summary__dot--in'}`}
+          className={`pdp-summary__dot${outOfStock || withdrawn ? '' : ' pdp-summary__dot--in'}`}
           aria-hidden="true"
         />
-        {outOfStock ? (isCoupon ? 'הדיל נסגר' : 'אזל מהמלאי') : 'במלאי, מוכן למשלוח'}
+        {withdrawn
+          ? 'המוצר אינו זמין עוד'
+          : outOfStock
+            ? isCoupon
+              ? 'הדיל נסגר'
+              : 'אזל מהמלאי'
+            : 'במלאי, מוכן למשלוח'}
       </p>
 
       {/*
@@ -226,9 +287,26 @@ export default function ProductInfo({
       */}
       {!outOfStock && scarcitySlot}
 
+      {/* A subscription is priced per cycle; quoting the one-off price here
+          would promise the wrong number. The renewal terms sit next to the
+          amount because clicking the CTA both charges the first cycle and
+          saves the card -- the server forces tokenisation -- and that must be
+          said BEFORE the click, not discovered on a statement. */}
+      {recurringOffer && (
+        <div className="pdp-summary__recurring" data-pdp="recurring">
+          <p className="text-2xl font-bold text-heading" dir="rtl">
+            {describeRecurringPrice(recurringOffer)}
+          </p>
+          <p className="mt-1 text-sm text-gray-600">
+            החיוב מתחדש אוטומטית בכרטיס שנשמר בקנייה. ביטול בכל עת מאזור האישי, בתוקף עד סוף התקופה
+            ששולמה.
+          </p>
+        </div>
+      )}
+
       {/* A coupon is priced by its own absolute model, so it gets the whole
           pricing block. Everything else shows the ordinary sale price. */}
-      {couponOffer ? (
+      {recurringOffer ? null : couponOffer ? (
         <div className="pdp-coupon">
           <CouponPricing offer={couponOffer} />
         </div>
@@ -273,7 +351,7 @@ export default function ProductInfo({
                   // is the same drift `productQuantityCeiling` exists to stop,
                   // one state update further along.
                   setQty((current) =>
-                    Math.min(current, productQuantityCeiling(v.stock_quantity ?? baseStock)),
+                    Math.min(current, productQuantityCeiling(v.stock_quantity ?? live.stock)),
                   )
                 }}
                 disabled={v.stock_quantity === 0}
@@ -347,12 +425,18 @@ export default function ProductInfo({
             coupon, `price` is the sticker price of the goods at the business,
             and this line used to send a friend "₪200" for a deal the page
             beside it quotes at ₪80. See lib/share/message.ts. */}
-        <span className="inline-flex items-center gap-4">
+        <span className="inline-flex flex-wrap items-center gap-4">
+          <WishlistButton productId={productId} variant="inline" />
           <WhatsAppShareButton
+            productId={productId}
             message={buildShareMessage({ name, priceIls: price, offer: couponOffer })}
             appendCurrentUrl
           />
           <FacebookShareButton />
+          <ShareButton
+            title={name}
+            text={buildShareMessage({ name, priceIls: price, offer: couponOffer })}
+          />
         </span>
       </div>
     </div>

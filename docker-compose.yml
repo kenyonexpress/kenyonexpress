@@ -1,0 +1,35 @@
+# Local search engine for stage 2 of the search contract
+# (ARCHITECTURE-SEARCH-DISCOVERY.md section 0): the app keeps serving
+# Postgres search until MEILISEARCH_HOST + MEILISEARCH_API_KEY appear, so
+# bringing this container up is an environment change, not a code change.
+#
+# Terminal:
+#   docker compose up -d meilisearch
+#   MEILISEARCH_HOST=http://127.0.0.1:7700 \
+#   MEILISEARCH_API_KEY=${MEILI_MASTER_KEY:-kenyon-dev-master-key-change-me} \
+#     node scripts/setup-meilisearch.mjs
+#
+# The master key doubles as the API key in dev. In production Meilisearch
+# refuses to boot without a key of at least 16 bytes, and search should use a
+# scoped search key, never the master key.
+services:
+  meilisearch:
+    image: getmeili/meilisearch:v1.12
+    container_name: kenyonexpress-meilisearch
+    ports:
+      - '7700:7700'
+    environment:
+      MEILI_ENV: development
+      MEILI_MASTER_KEY: ${MEILI_MASTER_KEY:-kenyon-dev-master-key-change-me}
+      MEILI_NO_ANALYTICS: 'true'
+    volumes:
+      - meili_data:/meili_data
+    healthcheck:
+      test: ['CMD', 'wget', '--no-verbose', '--spider', 'http://localhost:7700/health']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  meili_data:

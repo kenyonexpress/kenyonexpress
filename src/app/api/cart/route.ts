@@ -1,3 +1,4 @@
+import { CacheControl } from '@/lib/cache/http'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { createClient } from '@/lib/supabase/server'
 import { getCart } from '@/server/actions/cart'
@@ -26,7 +27,7 @@ async function handleGET() {
 
   return NextResponse.json(
     { cart, isAuthenticated: auth.user !== null },
-    { headers: { 'cache-control': 'no-store' } },
+    { headers: { 'cache-control': CacheControl.private } },
   )
 }
 

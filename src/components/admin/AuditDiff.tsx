@@ -58,7 +58,7 @@ export default function AuditDiffCell({ changes }: { changes: unknown }) {
           <tbody>
             {diff.changes.map((change) => (
               <tr key={change.field} className="border-t border-black/5 align-top">
-                <td className="p-1 font-mono text-[11px]" dir="ltr">
+                <td className="p-1 font-mono text-micro" dir="ltr">
                   {change.field}
                   <span className="ms-1 text-black/40">{KIND_LABEL[change.kind]}</span>
                 </td>
@@ -74,7 +74,7 @@ export default function AuditDiffCell({ changes }: { changes: unknown }) {
         {diff.suppressed > 0 && (
           // Named, not hidden: a reader who counts the fields and gets a
           // different number should be able to see why.
-          <p className="mt-1 text-[11px] text-black/35">
+          <p className="mt-1 text-micro text-black/35">
             {SHAPE_LABEL[diff.shape]} · {diff.suppressed} שדות תחזוקה הודחקו
           </p>
         )}

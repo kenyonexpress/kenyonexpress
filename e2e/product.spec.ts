@@ -6,7 +6,14 @@ test.describe('product page', () => {
     await openFirstProduct(page)
 
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
-    await expect(page.getByText(/₪/).first()).toBeVisible()
+    // SCOPED TO THE PRODUCT'S OWN PRICE, not the first ₪ in the document.
+    // `getByText(/₪/).first()` matched whatever came first in DOM ORDER, and
+    // D21 moved the off-canvas drawer ahead of the main content in the header
+    // markup -- so it started resolving to the drawer's hidden "עד ₪99"
+    // category link and failing on a page whose price was painted correctly.
+    // The assertion wanted the price; now it names it.
+    await expect(page.locator('.pdp-summary__price')).toBeVisible()
+    await expect(page.locator('.pdp-summary__price')).toContainText('₪')
     await expect(page.getByRole('navigation', { name: 'נתיב ניווט' })).toBeVisible()
     // .first(): related-products cards carry their own add-to-cart buttons
     await expect(
@@ -17,6 +24,42 @@ test.describe('product page', () => {
   test('offers WhatsApp share', async ({ page }) => {
     await openFirstProduct(page)
     await expect(page.getByRole('button', { name: 'שתפו בוואטסאפ' })).toBeVisible()
+  })
+
+  test('offers the wishlist heart and a share-or-copy button beside the channels', async ({
+    page,
+  }) => {
+    await openFirstProduct(page)
+    await expect(
+      page.getByRole('button', { name: /הוסף לרשימת המשאלות|הסר מרשימת המשאלות/ }).first(),
+    ).toBeVisible()
+    // Chromium on a desktop has no navigator.share, so the button offers a
+    // copy; on a device with a share sheet it offers that instead.
+    await expect(page.getByRole('button', { name: /העתקת קישור|^שיתוף$/ })).toBeVisible()
+  })
+
+  test('the gallery frame takes the keyboard and zooms in place', async ({ page }) => {
+    await openFirstProduct(page)
+    const frame = page.getByRole('region', { name: /תמונות המוצר/ })
+    test.skip((await frame.count()) === 0, 'product has no images')
+
+    await frame.focus()
+    await page.keyboard.press('Enter')
+    await expect(frame).toHaveAttribute('data-zoomed', 'true')
+    // The frame's own box does not grow: the zoom is clipped inside it.
+    const before = await frame.boundingBox()
+    await page.keyboard.press('Escape')
+    await expect(frame).not.toHaveAttribute('data-zoomed', 'true')
+    const after = await frame.boundingBox()
+    expect(before?.width).toBe(after?.width)
+    expect(before?.height).toBe(after?.height)
+
+    const thumbs = page.getByRole('button', { name: /^תמונה \d+$/ })
+    if ((await thumbs.count()) > 1) {
+      await frame.focus()
+      await page.keyboard.press('ArrowLeft')
+      await expect(thumbs.nth(1)).toHaveAttribute('aria-current', 'true')
+    }
   })
 
   test('renders right-to-left with a Hebrew document title', async ({ page }) => {

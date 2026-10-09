@@ -16,6 +16,14 @@ import {
   buildOrderItemSnapshot,
   completeSplitPair,
 } from '@/lib/commerce/product-money'
+import { isValidUnitCode } from '@/lib/coupons/unit-codes'
+import { couponStackingViolations } from '@/lib/fraud/coupon-stacking'
+import { enqueueFraudReview, hasBlockingFraudFlag } from '@/lib/fraud/review-queue'
+import {
+  checkCheckoutVelocity,
+  normalizeVelocityEmail,
+  normalizeVelocityPhone,
+} from '@/lib/fraud/velocity'
 import { withActionContext } from '@/lib/observability/action-context'
 import { log } from '@/lib/observability/log'
 import { capturePaymentError } from '@/lib/observability/sentry'
@@ -31,11 +39,13 @@ import {
   readAmountAgorot,
   resolvePaymentMoneySchema,
 } from '@/lib/payments/payment-money-columns'
+import { isThreeDSChallengeRequired } from '@/lib/payments/threeds'
 import { isCardTokenExpired } from '@/lib/payments/token-expiry'
+import { DEFAULT_SHIPPING_METHOD_ID } from '@/lib/shipping/methods'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { readWalletAccountAgorot } from '@/lib/supabase/optional-columns'
 import { createClient } from '@/lib/supabase/server'
-import { checkRateLimit } from '@/lib/utils/rate-limit'
+import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
 import {
   type BeginCheckoutOutput,
   type CheckoutActionResult,
@@ -49,6 +59,7 @@ import {
 } from '@/server/analytics/track'
 import { type SettlementLineInput, calculateSettlement } from '@/server/domain/orders/settlement'
 import { finalizeOrder } from '@/server/payments/finalize'
+import { recordPaymentEvent } from '@/server/payments/payment-events'
 import { redirect } from 'next/navigation'
 
 const ORDER_EXPIRY_MINUTES = 30
@@ -63,6 +74,42 @@ const ORDER_EXPIRY_MINUTES = 30
  * itself within one browse.
  */
 const STOCK_RESERVATION_MINUTES = 15
+
+/**
+ * Every refusal claim_order_discount and redeem_coupon_qr can answer, in the
+ * shopper's language. A reason this map does not know falls back to the
+ * generic line rather than leaking the English token.
+ */
+const CLAIM_REFUSAL_HE: Record<string, string> = {
+  inactive: 'קוד ההנחה אינו פעיל',
+  not_started: 'קוד ההנחה עדיין לא נכנס לתוקף',
+  expired: 'תוקף קוד ההנחה פג',
+  exhausted: 'קוד ההנחה מוצה',
+  per_user_exhausted: 'כבר ניצלת את קוד ההנחה הזה',
+  per_user_limit: 'כבר ניצלת את קוד ההנחה הזה',
+  redeemed: 'קוד ההנחה כבר מומש',
+  campaign_gone: 'קוד ההנחה כבר אינו קיים',
+  unknown: 'קוד ההנחה לא נמצא',
+  no_discount: 'אין סכום שעליו ניתן להחיל את הקוד',
+}
+
+/**
+ * One shape for both claim RPCs. claim_order_discount answers a text refusal
+ * or NULL for success; redeem_coupon_qr answers jsonb `{ ok, reason? }`. An
+ * rpc-level error is its own kind so the caller can fail closed with a retry
+ * message instead of blaming the code the shopper typed.
+ */
+function claimRefusal(result: {
+  data: unknown
+  error: { message: string } | null
+}): { kind: 'refused' | 'error'; detail: string } | null {
+  if (result.error) return { kind: 'error', detail: result.error.message }
+  if (result.data === null || result.data === undefined) return null
+  if (typeof result.data === 'string') return { kind: 'refused', detail: result.data }
+  const verdict = result.data as { ok?: boolean; reason?: string }
+  if (verdict.ok) return null
+  return { kind: 'refused', detail: verdict.reason ?? 'unknown' }
+}
 
 type SettlementProductRow = {
   id: string
@@ -122,6 +169,14 @@ function supplierIdentityOf(
  * A decline leaves the order `pending` on purpose rather than cancelling it:
  * the customer is still on the checkout page and the ordinary next move is to
  * try another card, which reuses this same order.
+ *
+ * One decline is not like the others: an issuer that answers "come back with a
+ * 3DS challenge" has not refused the card, it has refused the CHANNEL, and no
+ * server-to-server call can satisfy it because there is no browser here to
+ * show the challenge in. That outcome is returned as its own variant so the
+ * caller can fall back to the hosted page, where Cardcom runs the challenge
+ * itself; surfacing it as a decline would tell the shopper their valid card
+ * was refused.
  */
 async function chargeSavedToken(args: {
   admin: ReturnType<typeof createAdminClient>
@@ -132,7 +187,7 @@ async function chargeSavedToken(args: {
   walletAppliedAgorot: ReturnType<typeof agorot>
   idempotencyKey: string
   now: Date
-}): Promise<CheckoutActionResult<BeginCheckoutOutput>> {
+}): Promise<CheckoutActionResult<BeginCheckoutOutput> | { ok: false; threeDSChallenge: true }> {
   const { admin, tokenId, userId, orderId, amountAgorot, walletAppliedAgorot, now } = args
 
   const { data: token, error: tokenError } = await admin
@@ -179,12 +234,28 @@ async function chargeSavedToken(args: {
       ),
       idempotency_key: args.idempotencyKey,
       cardcom_account_id: token.cardcom_account_id,
+      // The FK that ties the charge to the card it rode on. 026 created it and
+      // nothing ever wrote it, so "which saved card was this?" could only be
+      // answered by joining through Cardcom's own token string.
+      token_id: token.id,
     })
     .select('id')
     .single()
   if (paymentError || !payment) {
     return { ok: false, error: `יצירת תשלום נכשלה: ${paymentError?.message}`, code: 'INTERNAL' }
   }
+
+  // The journal entry the reserved vocabulary was waiting for: this is the one
+  // charge path with no webhook and no Low Profile trail, so without these
+  // rows a token charge is invisible in payment_events by construction.
+  await recordPaymentEvent({
+    eventType: 'token_charge_requested',
+    stage: 'checkout_token_charge',
+    orderId,
+    paymentId: payment.id,
+    amountAgorot,
+    detail: { token_id: token.id },
+  })
 
   let charged: Awaited<ReturnType<PaymentProvider['chargeWithToken']>>
   try {
@@ -221,12 +292,40 @@ async function chargeSavedToken(args: {
         failed_at: now.toISOString(),
       })
       .eq('id', payment.id)
+    const challenge = isThreeDSChallengeRequired({
+      failureCode: charged.failureCode,
+      failureMessage: charged.failureMessage,
+    })
+    await recordPaymentEvent({
+      eventType: 'token_charge_declined',
+      stage: 'checkout_token_charge',
+      orderId,
+      paymentId: payment.id,
+      amountAgorot,
+      detail: {
+        failure_code: charged.failureCode,
+        failure_message: charged.failureMessage,
+        threeds_challenge_required: challenge,
+      },
+    })
+    if (challenge) {
+      return { ok: false, threeDSChallenge: true }
+    }
     return {
       ok: false,
       error: charged.failureMessage ?? 'החיוב נדחה',
       code: 'PAYMENT_PROVIDER_ERROR',
     }
   }
+
+  await recordPaymentEvent({
+    eventType: 'token_charge_succeeded',
+    stage: 'checkout_token_charge',
+    orderId,
+    paymentId: payment.id,
+    amountAgorot,
+    transactionId: charged.transactionId,
+  })
 
   const finalized = await finalizeOrder({
     orderId,
@@ -292,10 +391,31 @@ async function runBeginCheckout(
 
   const admin = createAdminClient()
 
+  // A customer with an uncleared chargeback (or a manual block) on file does
+  // not get to start another charge. The read fails open like the rate
+  // limiter: the fraud rail must never be the reason a sale dies.
+  if (await hasBlockingFraudFlag(admin, user.id)) {
+    await enqueueFraudReview(admin, {
+      userId: user.id,
+      kind: 'chargeback-blocked',
+      details: { client_ref: input.client_ref },
+    })
+    return {
+      ok: false,
+      error: 'לא ניתן להשלים את התשלום. פנו לשירות הלקוחות',
+      code: 'REVIEW_REQUIRED',
+    }
+  }
+
+  // The delivery phone, for the velocity check below. Read off the address the
+  // shopper picked because that is the number the courier calls: the identity
+  // a reshipping run keeps while it rotates cards and accounts.
+  let addressPhone: string | null = null
+
   if (input.address_id) {
     const { data: address, error: addressReadError } = await admin
       .from('user_addresses')
-      .select('id, user_id')
+      .select('id, user_id, phone')
       .eq('id', input.address_id)
       .maybeSingle()
     // Separated from the ownership check below for the same reason as the card
@@ -311,6 +431,7 @@ async function runBeginCheckout(
     if (!address || address.user_id !== user.id) {
       return { ok: false, error: 'כתובת לא תקינה', code: 'ADDRESS_REQUIRED' }
     }
+    addressPhone = address.phone ?? null
   }
 
   // 2. Idempotent replay by client_ref
@@ -325,10 +446,17 @@ async function runBeginCheckout(
   // the payment could not be created. So this fails closed: retrying is safe
   // precisely because the key is stable.
   const idempotencyKey = `lp:${input.client_ref}`
+  // A 3DS fallback creates a SECOND payment for the same client_ref under this
+  // key (the first one, the declined token charge, holds `lp:`). The replay
+  // lookup reads both and takes the newest row, so a shopper who refreshes
+  // mid-challenge gets the hosted page back rather than "duplicate request".
+  const threeDSIdempotencyKey = `lp3ds:${input.client_ref}`
   const { data: existingPayment, error: existingPaymentError } = await admin
     .from('payments')
     .select('id, order_id, status, raw_response')
-    .eq('idempotency_key', idempotencyKey)
+    .in('idempotency_key', [idempotencyKey, threeDSIdempotencyKey])
+    .order('created_at', { ascending: false })
+    .limit(1)
     .maybeSingle()
   if (existingPaymentError) {
     log.error('checkout.replay_read_failed', {
@@ -359,14 +487,42 @@ async function runBeginCheckout(
     return { ok: false, error: 'בקשת תשלום כפולה', code: 'IDEMPOTENT_REPLAY' }
   }
 
+  // Order velocity, per identity dimension (IP, email, delivery phone). AFTER
+  // the replay short-circuit on purpose: a declined card retried against the
+  // same client_ref answers from the lookup above and spends nothing here, so
+  // only genuinely new order attempts count. Exceeding a bucket blocks the
+  // attempt and puts the customer in the fraud review queue once.
+  const clientIp = await getClientIp()
+  const velocity = await checkCheckoutVelocity({
+    ip: clientIp === 'unknown' ? null : clientIp,
+    email: normalizeVelocityEmail(user.email),
+    phone: normalizeVelocityPhone(addressPhone ?? user.phone),
+  })
+  if (!velocity.ok) {
+    await enqueueFraudReview(admin, {
+      userId: user.id,
+      kind: 'velocity',
+      details: { dimension: velocity.dimension, client_ref: input.client_ref },
+    })
+    return {
+      ok: false,
+      error: 'יותר מדי הזמנות בזמן קצר, נסו שוב מאוחר יותר',
+      code: 'RATE_LIMITED',
+    }
+  }
+
   // 3. Settlement snapshot from product rows (never from the client)
   const productIds = [...new Set(cart.items.map((i) => i.product_id))]
+  // Soft-deleted products drop out of the map here, so the line-loop below
+  // rejects them: a deleted product must not be sellable, and the service role
+  // does not get that from RLS.
   const { data: productRows, error: productRowsError } = await admin
     .from('products')
     .select(
       'id, type, is_coupon_enabled, supplier_id, platform_percent, supplier_split_percent, discount_percent, coupon_price_ils, cashback_percent',
     )
     .in('id', productIds)
+    .is('deleted_at', null)
   // Fails closed either way - an empty map makes the loop below reject the
   // first line - but on the wrong grounds: "מוצר בעגלה אינו קיים עוד" is a
   // sentence about the catalogue, and a shopper who reads it clears the cart
@@ -378,6 +534,22 @@ async function runBeginCheckout(
   const productMap = new Map<string, SettlementProductRow>(
     (productRows ?? []).map((p) => [p.id, p as unknown as SettlementProductRow]),
   )
+
+  // A SUBSCRIPTION IS BOUGHT ALONE. The first cycle's charge doubles as the
+  // card tokenisation (ChargeAndCreateToken), and the renewal worker will
+  // charge that token for exactly the subscription amount. A physical or
+  // coupon line in the same order would fold into the same first charge, and
+  // there is no honest way to split one token charge into "the part that
+  // renews" and "the part that was a one-off". Refused rather than untangled.
+  const cartTypes = cart.items.map((i) => productMap.get(i.product_id)?.type ?? 'unknown')
+  const hasRecurring = cartTypes.includes('recurring')
+  if (hasRecurring && cart.items.length > 1) {
+    return {
+      ok: false,
+      error: 'מנוי נרכש בהזמנה נפרדת. סיימו קודם את רכישת המנוי או הסירו אותו מהעגלה',
+      code: 'VALIDATION',
+    }
+  }
 
   // Supplier identity for the snapshot. Loaded in one round trip keyed by the
   // supplier ids the cart's products point at.
@@ -517,13 +689,16 @@ async function runBeginCheckout(
   // code's minimum. Whatever this returns is what the card is reduced by, and
   // the engine caps it again against the commission.
   //
-  // The code itself is not stored on the order: `orders` has no column for it,
-  // and adding one would put an unapplied migration on the charging path, which
-  // is the trap GO-LIVE already carries once for commission_type. The
-  // consequence is recorded rather than hidden: nothing increments
-  // `coupons.used_count`, so `max_uses` is enforced as a read of a counter no
-  // part of this flow advances. See STATE, "what the coupon code does not do".
-  const { discountAgorot } = await resolveCheckoutDiscountAgorot()
+  // This read is still only a QUOTE. The authoritative answer is the claim at
+  // step 4c below, which holds the code's row FOR UPDATE and advances
+  // `used_count` (claim_order_discount, 194/227) so `max_uses` is finally a
+  // counter the purchase path moves. The code itself is still not stored on
+  // the order - the redemption row, keyed on the order id, is the record.
+  const {
+    code: discountCode,
+    discountAgorot,
+    stack: discountStack,
+  } = await resolveCheckoutDiscountAgorot()
 
   let settlement: ReturnType<typeof calculateSettlement>
   try {
@@ -600,6 +775,51 @@ async function runBeginCheckout(
     if (giftError) {
       log.warn('checkout.gift_not_recorded', { order_id: order.id, err: giftError.message })
     }
+  }
+
+  // The shipping method, under the same rule as the gift above: its own
+  // statement, never a key in the orders INSERT. `orders.shipping_method` is
+  // added by migrations/pending/236_orders_shipping_method.sql and does not
+  // exist in production yet, so this UPDATE fails there with 42703 and the
+  // order goes through as a supplier delivery, which is what every order was
+  // before the selector existed. Only a NON-default pick is written: the
+  // default is what a null column already means, and writing it would log a
+  // warning on every checkout until 236 is applied.
+  //
+  // Read off the server-built cart, not off the input: the cart resolved the
+  // shopper's cookie against the registry, so the value here is an id the
+  // registry knows and never a string the browser sent.
+  if (cart.shipping && cart.shipping.method !== DEFAULT_SHIPPING_METHOD_ID) {
+    const { error: shippingError } = await admin
+      .from('orders')
+      .update({ shipping_method: cart.shipping.method } as never)
+      .eq('id', order.id)
+    if (shippingError) {
+      log.warn('checkout.shipping_method_not_recorded', {
+        order_id: order.id,
+        shipping_method: cart.shipping.method,
+        err: shippingError.message,
+      })
+    }
+  }
+
+  // Coupon stacking that the settlement clamps permit but a reviewer should
+  // see: an order minting more cashback than the card pays, or a code applied
+  // to an order the card never sees. Detection only, the order proceeds; see
+  // src/lib/fraud/coupon-stacking.ts for why blocking here would be wrong.
+  const stackingViolations = couponStackingViolations({
+    discountAgorot: settlement.discountApplied,
+    walletAppliedAgorot: settlement.walletApplied,
+    cardChargeAgorot: settlement.cardCharge,
+    cashbackAgorot: settlement.cashbackAmount,
+  })
+  if (stackingViolations.length > 0) {
+    await enqueueFraudReview(admin, {
+      userId: user.id,
+      orderId: order.id,
+      kind: 'coupon-stacking',
+      details: { violations: stackingViolations },
+    })
   }
 
   const itemGeneration = await resolveOrderItemGeneration(
@@ -714,6 +934,76 @@ async function runBeginCheckout(
     }
   }
 
+  // 4c. CLAIM THE DISCOUNT, same breath as the stock and for the same reason.
+  //
+  // The evaluation above priced the code; this is what SPENDS it. Under the
+  // code's row lock, claim_order_discount re-checks every limit and advances
+  // `used_count` once per order, so two shoppers racing the last use of a
+  // max_uses=1 code get one 'ok' and one 'exhausted' - before either card is
+  // charged. A printed QR unit goes through redeem_coupon_qr, which burns the
+  // unit's redeemed_at in the same transaction as the campaign ledger row.
+  //
+  // The claim is a HOLD, like the reservation above it: an order that never
+  // pays crosses expires_at and release_expired_order_discounts (the stock
+  // cron) hands the use back. Failing the checkout on refusal is the point -
+  // charging first and discovering 'exhausted' at finalize would be money out
+  // the door.
+  // A stacked discount claims each campaign for its own share, in application
+  // order; `discount_redemptions` is unique per (campaign, order), so the rows
+  // coexist and every by-order operation (release sweep, consume, refund)
+  // already iterates them. A refusal mid-stack unwinds exactly like a single
+  // refusal: the order is cancelled, and the claims taken before it lapse with
+  // the cancelled order at the sweep, the same way a paid-nothing order's
+  // single claim always has.
+  const discountClaims =
+    discountStack && discountStack.length > 1
+      ? discountStack.filter((entry) => entry.discountAgorot > 0)
+      : discountCode && discountAgorot > 0
+        ? [{ code: discountCode, discountAgorot }]
+        : []
+  for (const entry of discountClaims) {
+    const claim = isValidUnitCode(entry.code)
+      ? await admin.rpc('redeem_coupon_qr', {
+          p_code: entry.code,
+          p_order_id: order.id,
+          p_user_id: user.id,
+          p_amount_agorot: entry.discountAgorot,
+        })
+      : await admin.rpc('claim_order_discount', {
+          p_code: entry.code,
+          p_order_id: order.id,
+          p_user_id: user.id,
+          p_amount_agorot: entry.discountAgorot,
+        })
+    const refusal = claimRefusal(claim)
+    if (refusal !== null) {
+      // Same unwind as a stock shortfall: the order is closed and the stock it
+      // held goes back on the shelf now rather than at reservation expiry.
+      await admin.from('orders').update({ status: 'cancelled' }).eq('id', order.id)
+      const { error: releaseError } = await admin.rpc('release_order_stock', {
+        p_order_id: order.id,
+      })
+      if (releaseError) {
+        log.warn('checkout.claim_refused_stock_release_failed', {
+          orderId: order.id,
+          reason: releaseError.message,
+        })
+      }
+      if (refusal.kind === 'error') {
+        // Fail closed, like the reservation: a claim system that fails open is
+        // a claim system that does nothing on the day it matters.
+        log.error('checkout.discount_claim_failed', { orderId: order.id, reason: refusal.detail })
+        return { ok: false, error: 'לא הצלחנו לאמת את קוד ההנחה, נסו שוב', code: 'INTERNAL' }
+      }
+      log.warn('checkout.discount_claim_refused', { orderId: order.id, reason: refusal.detail })
+      return {
+        ok: false,
+        error: CLAIM_REFUSAL_HE[refusal.detail] ?? 'קוד ההנחה כבר אינו תקף',
+        code: 'COUPON_INVALID',
+      }
+    }
+  }
+
   // Analytics: the order now exists, so this is the real "checkout started"
   // moment. All three calls swallow their own errors; none can fail a checkout.
   await stampOrderAttribution(order.id)
@@ -747,8 +1037,16 @@ async function runBeginCheckout(
   // `token_id` has been in the input schema since checkout was written and was
   // never read, so a customer with a saved card was still sent through the full
   // redirect every time.
+  //
+  // The one outcome that does not return is the 3DS challenge: the issuer will
+  // take this charge only from a surface that can show its challenge, and the
+  // only such surface here is Cardcom's hosted page. Fall through to it, under
+  // a distinct idempotency key (the declined token payment holds `lp:` and the
+  // column is UNIQUE), and mint a fresh token while the shopper is there so the
+  // next 1-click charge is made with a card that has passed the challenge.
+  let threeDSFallback = false
   if (input.token_id) {
-    return await chargeSavedToken({
+    const charged = await chargeSavedToken({
       admin,
       tokenId: input.token_id,
       userId: user.id,
@@ -758,6 +1056,10 @@ async function runBeginCheckout(
       idempotencyKey,
       now,
     })
+    if (!('threeDSChallenge' in charged)) {
+      return charged
+    }
+    threeDSFallback = true
   }
 
   // 6. Payment row + hosted page.
@@ -800,7 +1102,7 @@ async function runBeginCheckout(
       kind: 'charge',
       status: 'initiated',
       currency: 'ILS',
-      idempotency_key: idempotencyKey,
+      idempotency_key: threeDSFallback ? threeDSIdempotencyKey : idempotencyKey,
       cardcom_account_id: account.id,
       ...paymentMoneyWrite(money, {
         amountAgorot: settlement.cardCharge,
@@ -820,7 +1122,11 @@ async function runBeginCheckout(
       orderId: order.id,
       orderNumber: order.id.slice(0, 8).toUpperCase(),
       amountAgorot: settlement.cardCharge,
-      saveToken: input.save_card,
+      // After a 3DS fallback the token is re-minted regardless of the checkbox:
+      // the saved card that sent us here demands a challenge on every
+      // server-to-server charge, and only a token created through the hosted
+      // page's challenge can replace it.
+      saveToken: threeDSFallback ? true : input.save_card,
       // Both return into the framable stub, never straight into a page that
       // needs a session: Cardcom's navigation into our iframe is cross-site and
       // the Lax session cookie is withheld on it. The stub moves the top window

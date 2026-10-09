@@ -1,5 +1,17 @@
 # QA Checklist - בדיקה ידנית מלאה
 
+
+> <!-- v1-final-banner:2026-09-01 -->
+> ⚠️ **This document names tables that do not exist in production.**
+>
+> | Named here | In production |
+> |---|---|
+> | `cashback_applied_agorot` | `cashback_applied_ils` |
+>
+> The design below may still be sound; the schema it assumes was not built, or
+> was built under another name. Verify against `docs/DATA-MODEL.md` before
+> writing a query, and see `docs/SCHEMA-REALITY-CHECK.md` for the full mapping.
+
 רשימת בדיקה ידנית לכל דפי האתר, מסודרת לפי עדיפות. נבנתה מסקירת קוד בלבד (read-only).
 לכל דף: מה אמור לעבוד, איך בודקים, ו-edge cases.
 

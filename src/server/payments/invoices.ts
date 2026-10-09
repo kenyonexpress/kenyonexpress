@@ -1,3 +1,4 @@
+import { orderCashbackSelect, readOrderCashbackAgorot } from '@/lib/commerce/order-money-columns'
 import { adminAlertDedupeKey, adminAlertRecipient } from '@/lib/email/admin-alerts'
 import {
   type InvoiceDocument,
@@ -9,6 +10,7 @@ import {
   resolveVatPercent,
   splitVatInclusive,
 } from '@/lib/invoices/document'
+import { formatInvoiceNumber, invoiceSeries, resolveInvoiceIssuer } from '@/lib/invoices/issuer'
 import { log } from '@/lib/observability/log'
 import { getPaymentProvider } from '@/lib/payments'
 import { readAmountAgorot, resolvePaymentMoneySchema } from '@/lib/payments/payment-money-columns'
@@ -178,26 +180,24 @@ async function loadOrderContext(
   const chargedAgorot = readAmountAgorot(money, payment) ?? 0
   if (chargedAgorot <= 0) return { skip: 'nothing_charged' }
 
+  // No probe since 224: `cashback_applied_agorot` exists on both schema
+  // generations (writable post-059, a GENERATED agorot twin of
+  // `cashback_applied_ils` on the hosted pre-059 project), so the one name is
+  // safe to select and always answers in integer agorot.
   const { data: orderRow } = await admin
     .from('orders')
-    .select('id, user_id, cashback_applied_ils, cashback_applied_agorot')
+    .select(`id, user_id, ${orderCashbackSelect()}`)
     .eq('id', orderId)
     .maybeSingle()
-  const order = orderRow as unknown as {
-    id: string
-    user_id: string
-    cashback_applied_ils?: number | string | null
-    cashback_applied_agorot?: number | null
-  } | null
+  const order = orderRow as unknown as
+    | (Record<string, unknown> & {
+        id: string
+        user_id: string
+      })
+    | null
   if (!order) return { skip: 'order_not_found' }
 
-  // Both spellings are selected together rather than probed: this select is
-  // tolerant because PostgREST returns the columns it has, and the wallet
-  // amount is the one number here that is not worth a round trip to resolve.
-  const walletAppliedAgorot =
-    order.cashback_applied_agorot != null
-      ? Math.round(Number(order.cashback_applied_agorot))
-      : Math.round(Number(order.cashback_applied_ils ?? 0) * 100)
+  const walletAppliedAgorot = readOrderCashbackAgorot(order)
 
   const { data: itemRows } = await admin
     .from('order_items')
@@ -215,6 +215,8 @@ async function loadOrderContext(
   const productIds = [...new Set(items.map((i) => i.product_id).filter((v): v is string => !!v))]
   const names = new Map<string, string>()
   if (productIds.length > 0) {
+    // No deleted_at filter, on purpose: this names lines on a tax document for
+    // an order that already happened. See src/lib/soft-delete.ts.
     const { data: products } = await admin
       .from('products')
       .select('id, name_he')
@@ -560,6 +562,131 @@ async function mirrorPdf(documentUrl: string, key: string): Promise<string | nul
   }
 }
 
+export interface InvoiceNumberAllocation {
+  series: string
+  internalNumber: number
+  /** The printed form, e.g. `KE-INV-000042`. */
+  formatted: string
+}
+
+/**
+ * The platform's own sequential number for this document, from
+ * `fn_next_invoice_number` (228): one counter per `<terminal>:<type>` series,
+ * bumped atomically, so each terminal numbers its own books.
+ *
+ * Best effort BY POLICY, not by accident: on a database without 228 the RPC
+ * does not exist, and a document that Cardcom has already numbered must still
+ * be recorded as issued. A null here costs the supplementary PDF its own
+ * number, never the document. The allocated number is written to the row
+ * immediately, in its own UPDATE, so the issued-status write later cannot be
+ * broken by the two columns not existing yet.
+ */
+async function allocateInvoiceNumber(
+  admin: AdminClient,
+  row: InvoiceRow,
+  cardcomAccountId: string | null,
+): Promise<InvoiceNumberAllocation | null> {
+  const series = invoiceSeries(cardcomAccountId, row.document_type)
+  try {
+    const { data, error } = await admin.rpc('fn_next_invoice_number', { p_series: series })
+    if (error) {
+      log.warn('invoices.sequence_unavailable', { invoiceId: row.id, reason: error.message })
+      return null
+    }
+    const internalNumber = typeof data === 'number' ? data : Number(data)
+    if (!Number.isSafeInteger(internalNumber) || internalNumber < 1) {
+      log.warn('invoices.sequence_returned_nonsense', { invoiceId: row.id, series })
+      return null
+    }
+
+    const { error: writeError } = await admin
+      .from('invoices')
+      .update({ series, internal_number: internalNumber } as never)
+      .eq('id', row.id)
+    if (writeError) {
+      // 42703 here means 228's columns are missing while its function exists,
+      // which should not happen but must not fail the document if it does.
+      log.warn('invoices.internal_number_write_failed', {
+        invoiceId: row.id,
+        reason: writeError.message,
+      })
+    }
+
+    return {
+      series,
+      internalNumber,
+      formatted: formatInvoiceNumber(cardcomAccountId, row.document_type, internalNumber),
+    }
+  } catch (error) {
+    log.warn('invoices.sequence_threw', {
+      invoiceId: row.id,
+      reason: error instanceof Error ? error.message : 'unknown',
+    })
+    return null
+  }
+}
+
+/**
+ * Renders the platform's own Hebrew PDF and uploads it to R2, for the case
+ * where the provider issued a number but no fetchable PDF (or the mirror of
+ * its PDF failed). Best effort for the same reason `mirrorPdf` is: the
+ * document's number is the fact that matters, and a missing supplementary PDF
+ * is logged, not fatal. Returns the public URL, or null.
+ */
+async function storeRenderedPdf(
+  document: InvoiceDocument,
+  row: InvoiceRow,
+  cardcomAccountId: string | null,
+  allocation: InvoiceNumberAllocation | null,
+  providerDocumentNumber: string,
+  issuedAt: Date,
+): Promise<string | null> {
+  try {
+    // Dynamic imports for the reason `mirrorPdf` documents about `server-only`.
+    const { createR2PresignedPutUrl, isR2Configured, r2PublicUrl } = await import(
+      '@/lib/storage/r2'
+    )
+    // Nowhere to store it means nothing to render.
+    if (!isR2Configured()) return null
+
+    const { renderInvoicePdf } = await import('@/lib/invoices/pdf')
+    const bytes = await renderInvoicePdf({
+      documentType: document.documentType,
+      documentNumber: allocation?.formatted ?? providerDocumentNumber,
+      providerDocumentNumber,
+      issuedAt,
+      issuer: resolveInvoiceIssuer(cardcomAccountId),
+      customer: document.customer,
+      lines: document.lines,
+      totalAgorot: document.totalAgorot,
+      netAgorot: document.netAgorot,
+      vatAgorot: document.vatAgorot,
+      vatPercent: document.vatPercent,
+      reference: document.reference,
+    })
+
+    const safeNumber = (allocation?.formatted ?? providerDocumentNumber).replace(/[^\w.-]/g, '_')
+    const key = `invoices/${row.order_id}/${safeNumber}.pdf`
+    const { uploadUrl, publicUrl } = await createR2PresignedPutUrl(key)
+    const put = await fetch(uploadUrl, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/pdf' },
+      body: bytes as unknown as BodyInit,
+    })
+    if (!put.ok) {
+      log.warn('invoices.own_pdf_upload_failed', { key, status: put.status })
+      return null
+    }
+    return publicUrl || r2PublicUrl(key)
+  } catch (error) {
+    log.warn('invoices.own_pdf_threw', {
+      invoiceId: row.id,
+      reason: error instanceof Error ? error.message : 'unknown',
+    })
+    return null
+  }
+}
+
 export type IssueOutcome =
   | { ok: true; documentNumber: string; documentUrl: string | null }
   | { ok: false; reason: string; dead: boolean; skipped?: false }
@@ -724,6 +851,11 @@ export async function issueInvoice(
     return fail(result.failureMessage ?? `provider rejected (${result.failureCode ?? 'unknown'})`)
   }
 
+  // The platform's own sequential number, allocated only once the provider
+  // has actually issued: a failed attempt must not burn a number, because a
+  // gap that corresponds to no document is the thing an auditor asks about.
+  const allocation = await allocateInvoiceNumber(admin, row, cardcomAccountId)
+
   const mirrored = result.documentUrl
     ? await mirrorPdf(
         result.documentUrl,
@@ -731,13 +863,26 @@ export async function issueInvoice(
       )
     : null
 
+  // No fetchable provider PDF in R2 means the customer's link would depend on
+  // the provider staying up, or would 404 outright. Render our own.
+  const ownPdf = mirrored
+    ? null
+    : await storeRenderedPdf(
+        document,
+        row,
+        cardcomAccountId,
+        allocation,
+        result.documentNumber,
+        now,
+      )
+
   await admin
     .from('invoices')
     .update({
       status: 'issued',
       attempts,
       document_number: result.documentNumber,
-      document_url: mirrored ?? result.documentUrl,
+      document_url: mirrored ?? ownPdf ?? result.documentUrl,
       issued_at: now.toISOString(),
       provider_response: result.raw as never,
       last_error: null,
@@ -757,13 +902,15 @@ export async function issueInvoice(
     invoiceId: row.id,
     orderId: row.order_id,
     documentNumber: result.documentNumber,
+    internalNumber: allocation?.formatted ?? null,
     mirrored: mirrored != null,
+    ownPdf: ownPdf != null,
   })
 
   return {
     ok: true,
     documentNumber: result.documentNumber,
-    documentUrl: mirrored ?? result.documentUrl,
+    documentUrl: mirrored ?? ownPdf ?? result.documentUrl,
   }
 }
 

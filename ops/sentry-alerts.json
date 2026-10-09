@@ -1,0 +1,58 @@
+{
+  "$comment": "Alerts-as-record for org kenyonexpress / project kenyonexpress-web (region de.sentry.io). The MCP surface exposes find/get for alert rules but no create/update, and no SENTRY_AUTH_TOKEN exists in any environment here, so rules beyond the two 'live' entries below are DESIRED state to be created in the Sentry UI. When one is created, move it to live with its id.",
+  "live": [
+    {
+      "kind": "issue",
+      "id": "773883",
+      "name": "Send a notification for high priority issues",
+      "created": "2026-08-21",
+      "note": "Sentry default; last triggered 2026-08-31."
+    },
+    {
+      "kind": "uptime",
+      "id": "2159284",
+      "name": "API Health",
+      "url": "https://kenyonexpress.vercel.app/api/health",
+      "intervalSeconds": 60,
+      "timeoutMs": 10000,
+      "downtimeThreshold": 3,
+      "recoveryThreshold": 2,
+      "environment": "production",
+      "created": "2026-09-02",
+      "createdVia": "Sentry MCP, this repo's ops work",
+      "webUrl": "https://kenyonexpress.sentry.io/monitors/2159284/"
+    }
+  ],
+  "desired": [
+    {
+      "kind": "metric",
+      "name": "Error rate above 5% for 15m",
+      "aggregate": "failure_rate()",
+      "threshold": 0.05,
+      "window": "15m",
+      "why": "the tripwire for a bad deploy"
+    },
+    {
+      "kind": "issue",
+      "name": "INVALID_TRANSITION in payments",
+      "filter": "message contains INVALID_TRANSITION",
+      "frequency": "any occurrence",
+      "why": "the payment state machine refusing means money and state disagree"
+    },
+    {
+      "kind": "issue",
+      "name": "Webhook BAD_SIGNATURE 3 in 10m",
+      "filter": "event.message contains BAD_SIGNATURE",
+      "frequency": "3 in 10m",
+      "why": "one is a typo, three is someone probing the Cardcom callback"
+    },
+    {
+      "kind": "issue",
+      "name": "Cron route failures",
+      "filter": "transaction starts with /api/cron/",
+      "frequency": "any occurrence",
+      "why": "the scheduler is best-effort; a failing handler must not be silent (ntfy covers the pager path already via lib/observability/alert.ts)"
+    }
+  ],
+  "notes": "The pager path that needs no Sentry at all is src/lib/observability/alert.ts -> ntfy.sh/kenyon-ofir-limit: no handshake, no dependency that can break the alert about the thing that broke. Sentry rules are the queryable layer on top, not the only wire."
+}

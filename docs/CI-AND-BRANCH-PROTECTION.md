@@ -3,6 +3,40 @@
 Applied 21.08.2026. What is enforced, what is deliberately not, and the two
 things here that were dangerous rather than merely missing.
 
+<!-- v1-final-banner:2026-09-01 -->
+> ⚠️ **The branch situation described below has moved. Measured 2026-09-01
+> against the GitHub API.**
+>
+> This document says `main` is 301 commits behind `phase5/homepage` and that
+> nothing merges into `main`. Both halves are now wrong, and not in the
+> direction you would guess: **the two branches have diverged again.**
+>
+> | | |
+> |---|---|
+> | Commits on `phase5/homepage` not on `main` | **348** |
+> | Commits on `main` not on `phase5/homepage` | **39** |
+> | Both had commits on | **2026-09-01** |
+>
+> `main` is the default branch, is protected, and is the push target under the
+> project rules. `phase5/homepage` still exists and is still being worked on.
+>
+> **Two consequences the rest of this document does not cover.**
+>
+> 1. **Dependabot's `target-branch: phase5/homepage` is still in place.** The
+>    file below says in capitals that it must be deleted the day phase5 merges
+>    to main. It has not been deleted, so every dependency PR opens against a
+>    branch that is not the release line. Six are open there now, and they
+>    cannot land on `main` as they stand. The failure mode the file warns about
+>    — Dependabot stopping silently — has not happened, because the branch still
+>    exists; the quieter one has, which is bot PRs accumulating where nobody
+>    merges them.
+> 2. **Eleven pull requests are open against `main`**, the oldest from
+>    2026-08-02. One of them, **#16 `feat(cron): מתזמן GitHub Actions לעשרת
+>    ה-jobs`, is the fix for the largest operational gap in the system** and has
+>    been open since 2026-08-31. See `docs/FAILURE-MODES.md` §2.1.
+>
+> Neither is a code change this documentation branch may make.
+
 ## The finding that mattered most
 
 **The Build job had never been able to pass.** It read `secrets.CI_SUPABASE_*`

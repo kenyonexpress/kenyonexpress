@@ -132,7 +132,7 @@ export function buildOrderMoneyRow(
 export function orderMoneySelect(generation: MoneySchemaGeneration): string {
   return generation === 'agorot'
     ? 'subtotal_agorot, total_agorot, customer_pays_now_agorot, cashback_applied_agorot'
-    : 'subtotal_ils_agorot, total_ils_agorot, cashback_applied_ils'
+    : 'subtotal_ils_agorot, total_ils_agorot, cashback_applied_agorot'
 }
 
 export interface OrderMoneyRead {
@@ -140,11 +140,6 @@ export interface OrderMoneyRead {
   /** What the customer actually paid on the site. */
   totalAgorot: number
   walletAppliedAgorot: number
-}
-
-function fromIls(value: unknown): number {
-  const parsed = Number(value)
-  return Number.isFinite(parsed) ? Math.round(parsed * 100) : 0
 }
 
 function fromAgorot(value: unknown): number {
@@ -176,21 +171,62 @@ export function readOrderMoney(
     }
   }
   // `subtotal_ils_agorot` and `total_ils_agorot` are GENERATED ALWAYS AS
-  // `round(<col> * 100)::bigint` STORED, applied 2026-09-01. Reading them means
-  // the multiply happens once, in Postgres, against the numeric source. The
-  // `fromIls` path below did the same multiply in JavaScript on a value that
-  // had already crossed a JSON boundary as a string, which is the arithmetic
-  // this module exists to keep out of the callers.
+  // `round(<col> * 100)::bigint` STORED, applied 2026-09-01, and 224 gave
+  // `cashback_applied_ils` the same treatment under the post-059 name
+  // `cashback_applied_agorot`. Reading the twins means the multiply happens
+  // once, in Postgres, against the numeric source, instead of in JavaScript on
+  // a value that had already crossed a JSON boundary as a string - which is
+  // the arithmetic this module exists to keep out of the callers.
   //
-  // `cashback_applied_ils` has NO generated twin, so it still converts here.
-  // Four columns are in that position and none of them got one:
-  //   orders.cashback_applied_ils   orders.discount_ils
+  // Three columns still have NO generated twin; none of them is read here:
+  //   orders.discount_ils
   //   order_items.supplier_payout_ils   order_items.cashback_earned_ils
   return {
     subtotalAgorot: fromAgorot(row.subtotal_ils_agorot),
     totalAgorot: fromAgorot(row.total_ils_agorot),
-    walletAppliedAgorot: fromIls(row.cashback_applied_ils),
+    walletAppliedAgorot: fromAgorot(row.cashback_applied_agorot),
   }
+}
+
+/**
+ * The order cashback/wallet column, as a select fragment.
+ *
+ * Generation-free since 224: post-059 the number lives in
+ * `cashback_applied_agorot` (integer agorot, writable), and 224 added the same
+ * name to the hosted pre-059 schema as a GENERATED twin of
+ * `cashback_applied_ils` (`round(<ils> * 100)::bigint` STORED). Both
+ * generations now answer this name in integer agorot, so no probe and no
+ * per-generation conversion - which also removes the round-trip finalize paid
+ * before reading an order it was about to mark paid.
+ */
+export function orderCashbackSelect(): string {
+  return 'cashback_applied_agorot'
+}
+
+/** Normalises the cashback/wallet spend to integer agorot. */
+export function readOrderCashbackAgorot(row: Record<string, unknown> | null | undefined): number {
+  if (!row) return 0
+  return fromAgorot(row.cashback_applied_agorot)
+}
+
+/**
+ * The line price columns for this generation, as PostgREST select fragments
+ * that ALIAS the pre-059 names back to the post-059 ones.
+ *
+ * This is unit-safe in a way the cashback column above needed 224 to become:
+ * the pre-059 twins are GENERATED ALWAYS AS `round(<ils> * 100)::bigint`
+ * STORED, so both generations answer in integer agorot and a caller typed
+ * against `unit_price_agorot` keeps working untouched. 224 added
+ * `unit_price_agorot` itself to the hosted project as such a twin, so only
+ * `total_price_agorot` still needs the alias; selecting IT bare on the hosted
+ * project is still 42703 and fails the WHOLE select -- which is how finalize
+ * could abort for a card that had already been charged (PAYMENT-FLOW, known
+ * defect).
+ */
+export function orderItemPriceSelect(generation: MoneySchemaGeneration): string {
+  return generation === 'agorot'
+    ? 'unit_price_agorot, total_price_agorot'
+    : 'unit_price_agorot, total_price_agorot:total_price_ils_agorot'
 }
 
 // ---------------------------------------------------------------------------
@@ -232,10 +268,42 @@ export interface OrderItemMoney {
  * legacy 046/047 shape, the escrow model is abolished, and writing 0 says that
  * plainly rather than leaving NULL to be read as unknown.
  */
+/**
+ * The JS half of draft migration 167 (BUSINESS-RULES §10): the line must
+ * conserve -- `face = paid_on_site + balance_due` -- and every amount must be
+ * a non-negative integer. This is the single chokepoint every order_items
+ * money write passes through, so refusing here refuses everywhere, including
+ * on a hosted project where 167 has not been applied yet. A thrown line is an
+ * order that is NOT created, which is strictly better than a row whose money
+ * does not add up.
+ */
+function assertOrderItemMoneyInvariants(money: OrderItemMoney): void {
+  const amounts: [string, number][] = [
+    ['unitPriceAgorot', money.unitPriceAgorot],
+    ['faceValueAgorot', money.faceValueAgorot],
+    ['paidOnSiteAgorot', money.paidOnSiteAgorot],
+    ['commissionAgorot', money.commissionAgorot],
+    ['supplierDueAgorot', money.supplierDueAgorot],
+    ['balanceDueAgorot', money.balanceDueAgorot],
+    ['cashbackAgorot', money.cashbackAgorot],
+  ]
+  for (const [name, value] of amounts) {
+    if (!Number.isSafeInteger(value) || value < 0) {
+      throw new RangeError(`order item money: ${name} must be a non-negative integer, got ${value}`)
+    }
+  }
+  if (money.faceValueAgorot !== money.paidOnSiteAgorot + money.balanceDueAgorot) {
+    throw new RangeError(
+      `order item money does not conserve: face ${money.faceValueAgorot} != paid_on_site ${money.paidOnSiteAgorot} + balance_due ${money.balanceDueAgorot}`,
+    )
+  }
+}
+
 export function buildOrderItemMoneyRow(
   generation: MoneySchemaGeneration,
   money: OrderItemMoney,
 ): Record<string, number> {
+  assertOrderItemMoneyInvariants(money)
   if (generation === 'agorot') {
     return {
       unit_price_agorot: money.unitPriceAgorot,

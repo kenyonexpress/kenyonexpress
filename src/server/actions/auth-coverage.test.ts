@@ -44,10 +44,18 @@ const PUBLIC_ACTIONS = new Map<string, string>([
   ['auth.ts:sendMagicLink', 'sign-in entry point'],
   ['auth.ts:sendPhoneOtp', 'sign-in entry point, rate limited per IP and per number'],
   ['auth.ts:verifyPhoneOtp', 'sign-in entry point, rate limited per IP'],
+  ['auth.ts:verifyEmailOtp', 'sign-in entry point, rate limited per IP and per address'],
   ['auth.ts:signOut', "acts on the caller's own session, no arguments"],
   ['auth.ts:signOutAll', "acts on the caller's own session, no arguments"],
   ['auth.ts:sendPasswordReset', 'reset must work when locked out'],
   ['auth.ts:updatePassword', 'runs against the recovery session Supabase issued'],
+  // Passkey login begin is a sign-in entry point like the two OTP actions
+  // above: it only issues a challenge, rate limited per IP. finishPasskeyLogin
+  // is deliberately NOT listed: the walker already sees a guard on its path,
+  // and what actually authenticates it is verifyAuthenticationResponse over a
+  // registered credential. The registration/management actions in the same
+  // file all require a session.
+  ['passkeys.ts:beginPasskeyLogin', 'sign-in entry point, rate limited per IP'],
   // The guest cart is open by business-model decision: browsing and adding to
   // cart never require an account.
   ['cart.ts:mergeGuestCart', 'internal helper, see STATE.md 20.08 finding 1'],
@@ -60,6 +68,9 @@ const PUBLIC_ACTIONS = new Map<string, string>([
   ['newsletter.ts:confirmNewsletter', 'token in the confirmation link is the authorisation'],
   ['newsletter.ts:unsubscribeByToken', 'unsubscribe must work from an email client'],
   ['gifts.ts:loadGiftPreview', 'claim token is the authorisation'],
+  // The recipient of a printed gift card usually has no account yet; the
+  // 78-bit bearer code is the authorisation, rate limited per IP in the body.
+  ['gift-cards.ts:checkGiftCardBalance', 'bearer code is the authorisation, rate limited'],
 ])
 
 function filesUnder(dir: string): string[] {

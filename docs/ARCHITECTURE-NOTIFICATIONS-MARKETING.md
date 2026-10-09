@@ -1,5 +1,20 @@
 # ארכיטקטורת התראות, הודעות ואוטומציית שיווק (Notifications, Messaging & Marketing)
 
+
+> <!-- v1-final-banner:2026-09-01 -->
+> ⚠️ **This document names tables that do not exist in production.**
+>
+> | Named here | In production |
+> |---|---|
+> | `consent_events` | nothing; never built |
+> | `notification_delivery_events` | `notification_outbox` |
+> | `notification_events` | `notification_outbox` |
+> | `notifications_outbox` | `notification_outbox` |
+>
+> The design below may still be sound; the schema it assumes was not built, or
+> was built under another name. Verify against `docs/DATA-MODEL.md` before
+> writing a query, and see `docs/SCHEMA-REALITY-CHECK.md` for the full mapping.
+
 מסמך תכנון. מיגרציה נלווית (טיוטה, **לא הוחלה**):
 `supabase/migrations/031_notifications.sql`
 

@@ -99,6 +99,50 @@ export const phoneVerifySchema = z.object({
 export type PhoneOtpInput = z.infer<typeof phoneOtpSchema>
 export type PhoneVerifyInput = z.infer<typeof phoneVerifySchema>
 
+/**
+ * The six-digit code from the login mail, typed instead of clicking the link.
+ * The address is carried forward from the send step the way `phoneVerifySchema`
+ * carries the number: a second input would let the two drift.
+ */
+export const emailOtpVerifySchema = z.object({
+  email: z
+    .string()
+    .min(1, 'אימייל נדרש')
+    .email('כתובת אימייל לא תקינה')
+    .transform((s) => s.toLowerCase().trim()),
+  token: z
+    .string()
+    .trim()
+    .regex(/^\d{4,10}$/, 'הקוד מורכב מספרות בלבד'),
+})
+
+/**
+ * A signed-in customer changing their own password. The current password is
+ * what re-authenticates the change: a session left open on a shared device
+ * must not be enough to lock the owner out. Same strength rule as signup and
+ * recovery, so one password policy exists in the system.
+ */
+export const changePasswordSchema = z
+  .object({
+    current_password: z.string().min(1, 'יש להזין את הסיסמה הנוכחית'),
+    password: z
+      .string()
+      .min(8, 'הסיסמה חייבת להכיל לפחות 8 תווים')
+      .regex(/\d/, 'הסיסמה חייבת להכיל לפחות ספרה אחת'),
+    confirm_password: z.string().min(1, 'אישור סיסמה נדרש'),
+  })
+  .refine((data) => data.password === data.confirm_password, {
+    message: 'הסיסמאות אינן תואמות',
+    path: ['confirm_password'],
+  })
+  .refine((data) => data.password !== data.current_password, {
+    message: 'הסיסמה החדשה זהה לנוכחית',
+    path: ['password'],
+  })
+
+export type EmailOtpVerifyInput = z.infer<typeof emailOtpVerifySchema>
+export type ChangePasswordInput = z.infer<typeof changePasswordSchema>
+
 export type MagicLinkInput = z.infer<typeof magicLinkSchema>
 export type PasswordResetInput = z.infer<typeof passwordResetSchema>
 export type NewPasswordInput = z.infer<typeof newPasswordSchema>

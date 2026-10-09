@@ -53,9 +53,9 @@ describe('buildVoucherEmail', () => {
   // only says what they already paid sets up an argument at a till.
   it('states what is still owed at the business, not only what was paid', () => {
     const email = buildVoucherEmail({ ...BASE, vouchers: [line()] })
-    expect(email.html).toContain('₪180.00')
-    expect(email.html).toContain('₪20.00')
-    expect(email.text).toContain('לתשלום בבית העסק: ₪180.00')
+    expect(email.html).toContain('⁦180.00 ₪⁩')
+    expect(email.html).toContain('⁦20.00 ₪⁩')
+    expect(email.text).toContain('לתשלום בבית העסק: ⁦180.00 ₪⁩')
   })
 
   it('links to the coupon page for the QR', () => {

@@ -1,0 +1,117 @@
+{
+  "name": "KenyonExpress - Revenue cohorts",
+  "description": "Ledger-sourced revenue facts (revenue.purchase, revenue.refund) shipped by src/server/analytics/revenue-facts.ts. Amounts are integer agorot; divide by 100 for shekels. Cohort is the Asia/Jerusalem month of the customer's first paid order.",
+  "owner": "X-AXIOM-EVERYONE",
+  "datasets": ["{{revenue_dataset}}"],
+  "refreshTime": 300,
+  "schemaVersion": 2,
+  "timeWindowStart": "qr-now-30d",
+  "timeWindowEnd": "qr-now",
+  "charts": [
+    {
+      "id": "net-revenue",
+      "name": "Net revenue (agorot)",
+      "type": "Statistic",
+      "query": {
+        "apl": "['{{revenue_dataset}}'] | where event startswith 'revenue.' | summarize net_agorot = sum(signed_amount_agorot)"
+      },
+      "colorScheme": "Green"
+    },
+    {
+      "id": "purchases",
+      "name": "Purchases",
+      "type": "Statistic",
+      "query": {
+        "apl": "['{{revenue_dataset}}'] | where event == 'revenue.purchase' | summarize purchases = dcount(order_id)"
+      },
+      "colorScheme": "Blue"
+    },
+    {
+      "id": "refunds",
+      "name": "Refunded (agorot)",
+      "type": "Statistic",
+      "query": {
+        "apl": "['{{revenue_dataset}}'] | where event == 'revenue.refund' | summarize refunded_agorot = sum(amount_agorot)"
+      },
+      "colorScheme": "Red"
+    },
+    {
+      "id": "new-vs-returning",
+      "name": "First orders vs repeat orders",
+      "type": "Statistic",
+      "query": {
+        "apl": "['{{revenue_dataset}}'] | where event == 'revenue.purchase' | summarize first_orders = countif(is_first_order == true), repeat_orders = countif(is_first_order == false)"
+      },
+      "colorScheme": "Purple"
+    },
+    {
+      "id": "revenue-over-time",
+      "name": "Net revenue over time (agorot)",
+      "type": "TimeSeries",
+      "query": {
+        "apl": "['{{revenue_dataset}}'] | where event startswith 'revenue.' | summarize sum(signed_amount_agorot) by bin_auto(_time), kind"
+      }
+    },
+    {
+      "id": "revenue-by-cohort",
+      "name": "Revenue by acquisition cohort (agorot)",
+      "type": "Table",
+      "query": {
+        "apl": "['{{revenue_dataset}}'] | where event startswith 'revenue.' | summarize customers = dcount(customer_key), orders = dcount(order_id), net_agorot = sum(signed_amount_agorot) by cohort_month | sort by cohort_month desc | limit 24"
+      }
+    },
+    {
+      "id": "cohort-retention-grid",
+      "name": "Cohort x months since first order (net agorot)",
+      "type": "Table",
+      "query": {
+        "apl": "['{{revenue_dataset}}'] | where event startswith 'revenue.' and isnotnull(months_since_first_order) | summarize active_customers = dcount(customer_key), net_agorot = sum(signed_amount_agorot) by cohort_month, months_since_first_order | sort by cohort_month desc, months_since_first_order asc | limit 200"
+      }
+    },
+    {
+      "id": "revenue-by-cashback-tier",
+      "name": "Net revenue by cashback tier (agorot)",
+      "type": "TimeSeries",
+      "query": {
+        "apl": "['{{revenue_dataset}}'] | where event startswith 'revenue.' | summarize sum(signed_amount_agorot) by bin_auto(_time), cashback_tier"
+      }
+    },
+    {
+      "id": "revenue-by-checkout-variant",
+      "name": "Purchases by checkout variant",
+      "type": "Table",
+      "query": {
+        "apl": "['{{revenue_dataset}}'] | where event == 'revenue.purchase' | summarize purchases = dcount(order_id), gross_agorot = sum(amount_agorot) by checkout_variant | sort by purchases desc"
+      }
+    },
+    {
+      "id": "revenue-by-source",
+      "name": "Net revenue by UTM source / campaign (agorot)",
+      "type": "Table",
+      "query": {
+        "apl": "['{{revenue_dataset}}'] | where event startswith 'revenue.' | summarize orders = dcount(order_id), net_agorot = sum(signed_amount_agorot) by utm_source, utm_medium, utm_campaign | sort by net_agorot desc | limit 20"
+      }
+    },
+    {
+      "id": "revenue-by-product-types",
+      "name": "Gross purchases by product mix (agorot)",
+      "type": "Table",
+      "query": {
+        "apl": "['{{revenue_dataset}}'] | where event == 'revenue.purchase' | summarize purchases = dcount(order_id), gross_agorot = sum(amount_agorot) by product_types | sort by gross_agorot desc"
+      }
+    }
+  ],
+  "layout": [
+    { "i": "net-revenue", "x": 0, "y": 0, "w": 3, "h": 3 },
+    { "i": "purchases", "x": 3, "y": 0, "w": 3, "h": 3 },
+    { "i": "refunds", "x": 6, "y": 0, "w": 3, "h": 3 },
+    { "i": "new-vs-returning", "x": 9, "y": 0, "w": 3, "h": 3 },
+    { "i": "revenue-over-time", "x": 0, "y": 3, "w": 6, "h": 4 },
+    { "i": "revenue-by-cashback-tier", "x": 6, "y": 3, "w": 6, "h": 4 },
+    { "i": "revenue-by-cohort", "x": 0, "y": 7, "w": 6, "h": 5 },
+    { "i": "cohort-retention-grid", "x": 6, "y": 7, "w": 6, "h": 5 },
+    { "i": "revenue-by-checkout-variant", "x": 0, "y": 12, "w": 4, "h": 4 },
+    { "i": "revenue-by-source", "x": 4, "y": 12, "w": 4, "h": 4 },
+    { "i": "revenue-by-product-types", "x": 8, "y": 12, "w": 4, "h": 4 }
+  ]
+}

@@ -3,7 +3,8 @@ import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { orFail, orFailWithCount } from '@/lib/catalogue-read'
 import { cityBySlug } from '@/lib/geo/cities'
 import { filterByCity } from '@/lib/geo/distance'
-import { createPublicClient } from '@/lib/supabase/anon'
+import { repairPriceOrder } from '@/lib/money-format'
+import { createCatalogueReadClient } from '@/lib/supabase/read-replica'
 import { cacheLife, cacheTag } from 'next/cache'
 import { cache } from 'react'
 
@@ -15,7 +16,7 @@ import { cache } from 'react'
  * catalogue answer could ever be cached (a cached scope cannot touch request
  * APIs), and the rows returned depended on who was asking - an admin's session
  * could see rows a shopper could not, from the same function.
- * `createPublicClient()` is always exactly `anon`, which is both cacheable and
+ * `createCatalogueReadClient()` is always exactly `anon`, which is both cacheable and
  * the same catalogue for everybody. It is the client the cart already reads the
  * catalogue with, proven against the hosted project.
  *
@@ -33,7 +34,12 @@ import { cache } from 'react'
  * cache` function here that silently has neither.
  */
 
-export const CATEGORY_PAGE_SIZE = 12
+/**
+ * Eight cards a page. Two rows of four at 1440, four rows of two at 380; the
+ * grid, the skeleton, the result-count wording and the page-window arithmetic
+ * all read this one constant, and `category-page.test.ts` pins the number.
+ */
+export const CATEGORY_PAGE_SIZE = 8
 
 /**
  * Both unwrappers live in `src/lib/catalogue-read.ts`, not here.
@@ -120,7 +126,7 @@ export async function getCategoryBySlug(slug: string): Promise<CategoryRow | nul
   'use cache'
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
-  const supabase = createPublicClient()
+  const supabase = createCatalogueReadClient()
   const data = orFail(
     await supabase
       .from('categories')
@@ -138,7 +144,7 @@ export async function getAllCategorySlugs(): Promise<string[]> {
   'use cache'
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
-  const supabase = createPublicClient()
+  const supabase = createCatalogueReadClient()
   const data = orFail(
     await orderedByMenu(supabase.from('categories').select('slug').eq('is_active', true)),
     'catalogue.category_slugs_failed',
@@ -152,7 +158,7 @@ export async function getCategoryParent(
   'use cache'
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
-  const supabase = createPublicClient()
+  const supabase = createCatalogueReadClient()
   const data = orFail(
     await supabase.from('categories').select('slug, name_he').eq('id', parentId).single(),
     'catalogue.category_parent_failed',
@@ -167,7 +173,7 @@ export async function getCategoryChildren(
   'use cache'
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
-  const supabase = createPublicClient()
+  const supabase = createCatalogueReadClient()
   const data = orFail(
     await orderedByMenu(
       supabase
@@ -327,7 +333,7 @@ export function collectionFilter(
  * every request.
  */
 async function newestProductIds(
-  supabase: ReturnType<typeof createPublicClient>,
+  supabase: ReturnType<typeof createCatalogueReadClient>,
   limit: number,
 ): Promise<string[]> {
   const data = orFail(
@@ -362,7 +368,7 @@ export async function getCategoryProducts(opts: {
   cacheTag(CATALOGUE_TAG)
   const { categoryId, category, sort, page, priceMin, priceMax, productType, city, collection } =
     opts
-  const supabase = createPublicClient()
+  const supabase = createCatalogueReadClient()
   const from = (page - 1) * CATEGORY_PAGE_SIZE
 
   let query = supabase
@@ -413,9 +419,25 @@ export async function getCategoryProducts(opts: {
       query = query.order('created_at', { ascending: false })
       break
     default:
-      // menu_order / popularity / rating: live default archive order matches
-      // Hebrew-alphabetical name order; there is no menu_order column here.
-      query = query.order('name_he', { ascending: true })
+      /*
+       * menu_order / popularity / rating.
+       *
+       * Live's archive order is Hebrew-alphabetical by name, WITH FEATURED
+       * PRODUCTS PINNED ABOVE IT. Verified 2026-09-03 against
+       * refs/ke_live_products.html: after de-duplicating the markup the shop's
+       * 24 slots read `אייפון 13` first and then `! צימר מאסטר`, `אבחון`,
+       * `אוזניות`, `אייפון 13` again, `ארוחה בשרית` ... -- alphabetical from
+       * slot two on, with one product appearing out of order at the top AND
+       * again in its own alphabetical place. That is a pin, not a sort.
+       *
+       * Ordering by name alone put those pinned rows in the middle, which is
+       * most of why compare.mjs refused this page: 21 of 24 products existed on
+       * both sides but only 15 sat in the same slot. There is still no
+       * menu_order column; `is_featured` is the pin this schema has.
+       */
+      query = query
+        .order('is_featured', { ascending: false, nullsFirst: false })
+        .order('name_he', { ascending: true })
   }
 
   const { data, count } = orFailWithCount(
@@ -452,12 +474,16 @@ export async function getAllCategories(): Promise<{ slug: string; name_he: strin
   'use cache'
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
-  const supabase = createPublicClient()
+  const supabase = createCatalogueReadClient()
   const data = orFail(
     await orderedByMenu(supabase.from('categories').select('slug, name_he').eq('is_active', true)),
     'catalogue.all_categories_failed',
   )
-  return data ?? []
+  // `עד ₪99` is a live category name, and sign-first renders the glyph to the
+  // left of the digits in RTL. The row itself is fixed by pending migration
+  // 171; this repairs it on the way out so the page is right before that is
+  // approved, and so a name typed into the admin form later gets it too.
+  return (data ?? []).map((row) => ({ ...row, name_he: repairPriceOrder(row.name_he) }))
 }
 
 export const SHOP_PAGE_SIZE = 24
@@ -474,7 +500,7 @@ export async function getShopProducts(opts: {
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
   const { sort, page, priceMin, priceMax, productType } = opts
-  const supabase = createPublicClient()
+  const supabase = createCatalogueReadClient()
   const from = (page - 1) * SHOP_PAGE_SIZE
 
   let query = supabase

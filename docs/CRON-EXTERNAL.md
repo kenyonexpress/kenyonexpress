@@ -1,5 +1,14 @@
 # Scheduled jobs, run from outside Vercel
 
+> **STATUS 2026-09-02: THE ACTIONS SCHEDULER IS LIVE.** `CRON_SECRET` and
+> `CRON_SCHEDULER_ENABLED=true` are set on the repository
+> (`scripts/set-github-secrets.sh`, run against a Vercel production env pull),
+> and a dispatched `health` run completed green against production. All ten
+> schedules now fire from `.github/workflows/cron.yml` on main. cron-job.org is
+> therefore OPTIONAL, not required; if it is ever set up, flip
+> `CRON_SCHEDULER_ENABLED` off first -- two schedulers call every job twice.
+> `scripts/setup-cron-jobs.mjs` remains ready for that day.
+
 Ten jobs. All ten are `GET`, all ten authenticate with the same header, and all
 ten are wired to be run by a scheduler that is not Vercel.
 
@@ -10,7 +19,19 @@ Neither is running yet: `gh secret list` on `kenyonexpress/kenyonexpress`
 returns nothing, so `CRON_SECRET` is not set in Actions, and no variable enables
 the workflow. **Until one of them is switched on, none of the ten runs at all.**
 
-## Why they left `vercel.json`
+## Why they left `vercel.json` — and why the key is back
+
+> **UPDATE 2026-09-10: the `crons` key was restored to `vercel.json`**, by an
+> explicit goal that named it, declaring all eighteen jobs. Everything below
+> about the Hobby allowance is still true: the declaration takes effect only
+> on a deploy from this repo on a plan that covers eighteen jobs (Pro), and on
+> Hobby the platform still registers what the plan covers and silently skips
+> the rest. What changed since the removal is that the key can no longer lie
+> quietly: `src/__tests__/cron-schedule-inventory.test.ts` now requires it to
+> be byte-identical to `scripts/cron-jobs.json`, and the Actions workflow —
+> which remains the live scheduler — is the thing that actually fires. The day
+> Vercel crons take over for real, flip `CRON_SCHEDULER_ENABLED` off first;
+> two schedulers call every job twice.
 
 Vercel's cron allowance is a plan feature, not a code one. On Hobby it is two
 jobs at daily granularity; this project needs ten, and four of them at five or
@@ -83,11 +104,22 @@ file is in a repository.
 3  https://kenyonexpress.vercel.app/api/cron/invoices            GET  */10 * * * *  Authorization: Bearer <CRON_SECRET>
 4  https://kenyonexpress.vercel.app/api/cron/stock               GET  */10 * * * *  Authorization: Bearer <CRON_SECRET>
 5  https://kenyonexpress.vercel.app/api/cron/stranded-payments   GET  */10 * * * *  Authorization: Bearer <CRON_SECRET>
+5b https://kenyonexpress.vercel.app/api/cron/webhook-dlq         GET  */10 * * * *  Authorization: Bearer <CRON_SECRET>
+5e https://kenyonexpress.vercel.app/api/cron/job-dlq             GET  */10 * * * *  Authorization: Bearer <CRON_SECRET>
+5c https://kenyonexpress.vercel.app/api/cron/search-outbox       GET  */10 * * * *  Authorization: Bearer <CRON_SECRET>
+5d https://kenyonexpress.vercel.app/api/cron/search-reindex      GET  0 * * * *     Authorization: Bearer <CRON_SECRET>
 6  https://kenyonexpress.vercel.app/api/cron/abandoned-cart      GET  0 * * * *     Authorization: Bearer <CRON_SECRET>
 7  https://kenyonexpress.vercel.app/api/cron/subscriptions       GET  30 2 * * *    Authorization: Bearer <CRON_SECRET>
 8  https://kenyonexpress.vercel.app/api/cron/reap-carts          GET  40 3 * * *    Authorization: Bearer <CRON_SECRET>
 9  https://kenyonexpress.vercel.app/api/cron/reconcile           GET  0 4 * * *     Authorization: Bearer <CRON_SECRET>
 10 https://kenyonexpress.vercel.app/api/cron/expire-vouchers     GET  15 23 * * *   Authorization: Bearer <CRON_SECRET>
+10b https://kenyonexpress.vercel.app/api/cron/expire-cashback    GET  15 23 * * *   Authorization: Bearer <CRON_SECRET>
+10c https://kenyonexpress.vercel.app/api/cron/expire-coupons     GET  15 23 * * *   Authorization: Bearer <CRON_SECRET>
+11 https://kenyonexpress.vercel.app/api/cron/retention           GET  0 5 1 * *     Authorization: Bearer <CRON_SECRET>
+12 https://kenyonexpress.vercel.app/api/cron/weekly-digest       GET  0 4 * * 5     Authorization: Bearer <CRON_SECRET>
+13 https://kenyonexpress.vercel.app/api/cron/backup              GET  20 2 * * *    Authorization: Bearer <CRON_SECRET>
+14 https://kenyonexpress.vercel.app/api/cron/wishlist-alerts     GET  45 4 * * *    Authorization: Bearer <CRON_SECRET>
+15 https://kenyonexpress.vercel.app/api/cron/wishlist-digest     GET  0 5 * * 5     Authorization: Bearer <CRON_SECRET>
 ```
 
 Verified against the code at HEAD, not from memory: all ten handlers export
@@ -101,7 +133,7 @@ Base URL is `https://kenyonexpress.vercel.app`, the Vercel production origin.
 It is deliberately NOT the apex domain: `kenyonexpress.co.il` still points at
 the old WordPress install, so a job pointed there today would be calling
 WordPress and getting a 404 that looks like a broken route. **After the DNS
-cutover, change all ten to `https://kenyonexpress.co.il/...`** (the Vercel URL
+cutover, change all eleven to `https://kenyonexpress.co.il/...`** (the Vercel URL
 keeps working, but the apex is the canonical origin and is what the redirects,
 the sitemap and the cookies are scoped to). Times are UTC, which
 is what every scheduler means by default; Israel is UTC+2 in winter and UTC+3
@@ -120,12 +152,27 @@ deliberate and harmless: both are sweeps with a wide window, not appointments.
 | 8 | 03:40 daily | `40 3 * * *` | `https://kenyonexpress.vercel.app/api/cron/reap-carts` |
 | 9 | 04:00 daily | `0 4 * * *` | `https://kenyonexpress.vercel.app/api/cron/reconcile` |
 | 10 | 23:15 daily | `15 23 * * *` | `https://kenyonexpress.vercel.app/api/cron/expire-vouchers` |
+| 11 | every 5 min | `*/5 * * * *` | `https://kenyonexpress.vercel.app/api/cron/whatsapp` |
+| 12 | every 10 min | `*/10 * * * *` | `https://kenyonexpress.vercel.app/api/cron/webhook-dlq` |
+| 12b | every 10 min | `*/10 * * * *` | `https://kenyonexpress.vercel.app/api/cron/job-dlq` |
+| 13 | every 10 min | `*/10 * * * *` | `https://kenyonexpress.vercel.app/api/cron/search-outbox` |
+| 13b | hourly | `0 * * * *` | `https://kenyonexpress.vercel.app/api/cron/search-reindex` |
+| 14 | 23:15 daily | `15 23 * * *` | `https://kenyonexpress.vercel.app/api/cron/expire-coupons` |
+| 15 | 02:20 daily | `20 2 * * *` | `https://kenyonexpress.vercel.app/api/cron/backup` |
+| 16 | 04:45 daily | `45 4 * * *` | `https://kenyonexpress.vercel.app/api/cron/wishlist-alerts` |
+| 17 | Friday 05:00 | `0 5 * * 5` | `https://kenyonexpress.vercel.app/api/cron/wishlist-digest` |
+| 18 | 03:00 daily | `0 3 * * *` | `https://kenyonexpress.vercel.app/api/cron/daily-deals` |
+| 19 | every 6 h at :30 | `30 */6 * * *` | `https://kenyonexpress.vercel.app/api/cron/email-retry` |
+| 20 | 23:45 daily | `45 23 * * *` | `https://kenyonexpress.vercel.app/api/cron/cashback-settlement` |
 
 Those are the schedules `vercel.json` carried, kept exactly, so nothing about
 timing changes with the scheduler.
 
 ### What each one does, in the order it matters if you are triaging
 
+- **`whatsapp`** drains `whatsapp_outbox` (migration 173) through Twilio: the
+  order-status messages for phones that opted in. Until 173 is applied and the
+  TWILIO_* credentials exist, every run is a cheap no-op.
 - **`notifications`** drains `notification_outbox` and retries what failed. This
   is the only path by which a customer receives their voucher, an order
   confirmation, or a supplier a sale alert. If exactly one job is running, make
@@ -135,6 +182,14 @@ timing changes with the scheduler.
 - **`stranded-payments`** finds payments that were verified but whose order
   never finalised. That state is the worst one in the system and this is what
   notices it.
+- **`job-dlq`** replays the job queue's dead letters (`job_dlq`, migration 242):
+  every `dead` row is re-published through QStash (or run inline when QStash
+  is not configured) and stamped `replayed`; a job already replayed three
+  times is stamped `exhausted` and logged at error level for a person.
+- **`webhook-dlq`** replays the webhook dead-letter queue: events that were
+  charged and verified against Cardcom and whose finalize failed. Same state
+  `stranded-payments` cares about, caught from the other side: that one finds
+  payments still `redirected`, this one finds journal rows left un-stamped.
 - **`reconcile`** matches the day's payments against orders.
 - **`health`** runs the internal checks and raises the alert. It is what tells
   you the other nine stopped.
@@ -143,6 +198,44 @@ timing changes with the scheduler.
 - **`subscriptions`** bills the recurring plans.
 - **`reap-carts`** deletes expired guest carts.
 - **`expire-vouchers`** marks vouchers past their date as expired.
+- **`expire-coupons`** stamps printed QR coupon codes (migration 182/217) whose
+  own date passed or whose campaign ended. No money moves; redemption re-checks
+  expiry under its own lock, this only keeps batch inventory truthful.
+- **`backup`** writes the nightly logical backup: the business tables that
+  cannot be reconstructed from anywhere else (orders, the money legs, vouchers,
+  wallets, catalogue), as one JSON object per UTC day in the private
+  `db-backups` Storage bucket. All-or-nothing — a failed table read uploads
+  nothing and answers 500 — and idempotent per day. It supplements Supabase's
+  own physical backups; it does not replace them.
+- **`search-outbox`** drains `search_index_outbox` (migration 132): the durable
+  record that a product write owes the Meilisearch index an update, written by
+  the trigger in the same transaction as the write. The webhook -> QStash path
+  is the fast lane; this sweep is the floor under it. While `MEILISEARCH_HOST`
+  is unset the sweep leaves the queue untouched on purpose, so the backlog
+  survives until stage 2 turns search on.
+- **`search-reindex`** is the hourly full sync: every active product is
+  upserted into the Meilisearch indexes from Postgres and every document the
+  catalogue no longer lists is deleted. The webhook and the outbox move one
+  change at a time and both depend on the trigger; a bulk import, a restored
+  backup or a re-created index bypasses the trigger, and this is the only
+  path that repairs those. Inert while `MEILISEARCH_HOST` is unset.
+- **`daily-deals`** is the daily deal scrape, from our own catalogue now
+  that the live WordPress host serves this build: applies due flash deals
+  (`scheduled_price_changes`, 201) and writes their `price_history` rows
+  with `source = 'change'`, takes the day's price observation for every
+  product (idempotent with the one `wishlist-alerts` takes at 04:45), and
+  journals the ranked deal set under `daily_deals.set`. It does not touch
+  the home page grid, which the comparison gate pins to the reference.
+- **`email-retry`** puts `dead` outbox rows back to `pending` when their
+  `last_error` was the provider's (5xx, 429, network) and the row is under
+  three days old, with two attempts left and `last_error` kept. Rows dead
+  for a permanent reason (no template, 4xx) stay for the operator.
+- **`cashback-settlement`** re-reads every paid order of the last thirty
+  days against the two cashback legs finalize posts "logged, never
+  thrown", and posts what is missing under the same idempotency keys. An
+  older order that earned a bonus is `deferred` (logged with its rank) and
+  not replayed, because `fn_cashback_order_bonus` ranks by today's count.
+
 
 ## Setting it up from this repository, in two settings
 

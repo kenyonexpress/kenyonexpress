@@ -3,6 +3,7 @@ import type { StorefrontProductType } from '@/lib/commerce/product-type'
 import { type SupplierContactRow, buildSupplierContact } from '@/lib/supplier-contact'
 import { buildSupplierInquiryText } from '@/lib/whatsapp'
 import { MapPin, Navigation, Phone } from 'lucide-react'
+import Link from 'next/link'
 
 export type SupplierSummary = ({ id: string; name: string } & SupplierContactRow) | null
 
@@ -95,10 +96,12 @@ export default function SupplierInfo({
 
       {hasAnyVisible ? (
         <ul className="pdp-details__list space-y-1.5">
-          {contact.name && (
+          {contact.name && supplier && (
             <li>
               <span className="pdp-details__label">ספק: </span>
-              <span className="font-medium">{contact.name}</span>
+              <Link href={`/s/${supplier.id}`} className="font-medium text-link hover:underline">
+                {contact.name}
+              </Link>
             </li>
           )}
 

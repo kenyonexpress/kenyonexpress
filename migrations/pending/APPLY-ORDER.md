@@ -1,15 +1,263 @@
 # Apply order
 
+## 2026-09-17 (PERFORMANCE goal): 240 AND 241 WRITTEN, BOTH DRY-RUN ON PRODUCTION, NEITHER APPLIED
+
+Both files ran in full inside a `DO` block that ends in `RAISE EXCEPTION`,
+the established rolled-back pattern, through `execute_sql` on production.
+Neither is applied; both wait for the batch approval like 162/184/211.
+
+**240** (`perf_fk_indexes_and_cart_uniqueness`), probe output verbatim:
+`indexes_before=0 indexes_after=10 missing=none duplicate_accounts=0
+second_cart_probe=unique_violation as expected`. The last probe inserted a
+second cart row for an existing account inside the transaction and got the
+23505 the partial unique index exists to raise. Re-read after the rollback:
+`pg_indexes` still shows none of the ten names.
+
+**241** (`rls_initplan_policies`): all six policies dropped and recreated in
+the block; `pg_policies` re-read inside it showed `count=6`, the RESTRICTIVE
+one still RESTRICTIVE, and every qual in the InitPlan form
+(`( SELECT auth.uid() AS uid)`, `( SELECT current_user_role() ...)`). The
+first version of the file's own verification regex flagged the CORRECT form
+as per-row, because pg_policies deparses the subquery with a space after the
+parenthesis; the check was rewritten as "mentions the call and does not
+mention `select <call>`" and proven against both the live per-row quals
+(all six flagged) and the two expected forms (neither flagged) before the
+rollback was confirmed: production still carries the per-row quals.
+
+Application side: `runMergeGuestCart` now treats a 23505 from the account
+INSERT as "retry at next login" (commit on `autopilot`), so 240 can land
+without a code deploy racing it.
+
+## 2026-09-16 (L1 LANDMINES): FULL QUEUE DRY-RUN — 162, 184, 211 PROVEN; 184 CORRECTED TWICE
+
+Supabase MCP `create_branch` was refused twice by the connector, so per the
+established pattern every check ran as a full-body dry-run inside a rolled
+back transaction on production via `execute_sql` — strictly stronger than a
+branch, since it runs against the real schema.
+
+**The ten applied files** (217, 223, 224, 226, 227, 228, 231, 232, 233, 234)
+were re-verified in `supabase_migrations.schema_migrations`: all ten present,
+versions strictly ascending in numeric order (20260909134818 →
+20260910032757). They applied cleanly in order; nothing to re-run.
+
+**211** dry-run clean: constraint widened, `category` column + backfill +
+partial index, `fn_wa_orders_for_phone` created, callable
+(`probe_call_ok=0` rows for an unknown phone, no error), grants
+service_role-only. Rolled back.
+
+**162** dry-run clean: throwaway vault rows (`cron_secret`, `app_url`)
+seeded inside the transaction so the guard passes, then the DO block
+scheduled all 12 `ke-*` jobs (`ke_jobs_scheduled=12`). Rolled back;
+`cron.job` still holds only `report_tables_nightly`. The real apply stays
+blocked on real vault seeding, as recorded below (2026-09-04).
+
+**184 was stale again, exactly as preflight_184 predicts, and had two new
+landmines only execution could find:**
+
+1. Preflight block (2): **nineteen** inbound FKs, not seventeen —
+   `coupon_redemptions` (227, CASCADE) and `gift_cards` (234, SET NULL)
+   landed after the 09-09 correction. Both added to the referencing-table
+   array.
+2. First dry-run failed at the 3.9 backfill: `settlement_events_no_rewrite`
+   raises P0001 on ANY update (append-only table), so the twin-column
+   backfill could never run. Fixed: the backfill UPDATE is wrapped in
+   `DISABLE TRIGGER USER` / `ENABLE TRIGGER USER` per referencing table,
+   which also keeps the 169 audit triggers from fabricating one audit row
+   per backfilled row (same reasoning that delays `audit_orders` to 3.7b).
+3. Second dry-run failed at 3.10: **nine RLS policies on other tables**
+   (payments, invoices, order_items, escrow_holds, split_executions,
+   user_addresses, payment_events, refunds, reviews) reference `orders` by
+   OID in their quals, so they blocked the legacy drop with 2BP01 — and
+   CASCADE would have silently deleted them. Fixed: new 3.1b captures their
+   deparsed definitions before the rename (text still says `orders`), drops
+   them, and 3.9b recreates them so the text rebinds to the new parent.
+
+Third dry-run completed end to end, probes inside the transaction:
+`is_partitioned=1`, `partition_count=15`, `rows_after=8` (matches before),
+`invoice_registry_rows=1`, `inbound_fks=19`, `orders_triggers=8` (6 original
++ invoice sync + truncate block), `settlement_triggers_reenabled=3`,
+cross-table policy dependencies on the new parent present, cron row created.
+All rolled back. 184 still requires its maintenance window and a fresh
+preflight run at apply time — nothing here changes that.
+
+## 2026-09-10 (wishlist alerts goal): 233 APPLIED
+
+**233** wishlist_alerts (`wishlist_alerts_233`, version 20260910025004):
+additive only, two new tables. `wishlist_alert_prefs` (owner-managed
+toggles, RLS owner-only on all three verbs, no DELETE policy or grant) and
+`wishlist_stock_state` (server-only, the 195 RESTRICTIVE deny-all shape).
+Full body dry-run first in a rolled-back transaction with functional
+probes: column defaults true/true/false, the unsubscribe-shaped upsert
+cleared exactly the named flags and left the rest, `SET LOCAL ROLE
+authenticated` saw zero prefs rows and got 42501 writing the state table,
+3+1 policies, grants as declared. The identical body then went through
+`apply_migration`; post-apply measurement in one SELECT: both tables,
+RLS on both, 3+1 policies, `auth_prefs_select=true`,
+`auth_prefs_delete=false`, `anon_prefs_select=false`,
+`auth_state_select=false`, one trigger each, 0 rows each. Does not restate
+`set_updated_at` (the 183 lesson): creates it only if missing, and the
+live body already exists. Applied under the 2026-09-10 wishlist-alerts
+/goal, which names Supabase MCP as the migration route (the 217 protocol).
+
+## 2026-09-10 (fraud abuse goal): 226 APPLIED
+
+**226** fraud_controls (`fraud_controls_226`): additive only, two new
+server-only tables (`fraud_flags`, `fraud_review_queue`) with RLS on, zero
+policies and the client grants revoked, plus four indexes and the
+`updated_at` trigger. Full body dry-run first in a rolled-back DO block
+(dedupe index refused a duplicate pending row and freed the slot on resolve,
+CHECKs refused unknown kinds, the blocking-flag read returned the probe row,
+`authenticated` had no SELECT, RLS on), ending in a deliberate RAISE; the
+identical body then went through `apply_migration`. Post-apply measurement in
+one SELECT: 2 tables, 4 indexes, `rls_on=true`, `auth_flags_select=false`,
+`anon_queue_select=false`, `service_insert=true`, trigger present, 0 rows.
+Does not restate `set_updated_at` (the 183 lesson): creates it only if
+missing, and the live body already exists. Numbered 226 because 225 is taken
+by another branch's pending file. Applied under the 2026-09-10 fraud-abuse
+/goal, which names Supabase MCP as the migration route (the 217 protocol).
+
+## 2026-09-09 (supplier sync goal): 223 APPLIED
+
+**223** restock_on_refund (`restock_on_refund_223`): full body dry-run first
+in a rolled-back transaction over real rows (a real order with no
+reservations, a real tracked product at level 10, a real untracked product):
+a consumed hold of 2 restocked to 12 and returned 1, the replay returned 0
+and left 12, the untracked product's reservation was stamped with no level
+change, and the probe ended in a deliberate RAISE so everything rolled back —
+verified afterwards that neither the function nor the column existed. The
+identical body then went through `apply_migration`. Post-apply measurement:
+EXECUTE on `restock_order_stock` is postgres+service_role only,
+`restocked_at` exists with 0 rows stamped. Numbered 223 because 218-222 are
+taken by `audit/final-audit`'s pending files. Applied under the 2026-09-09
+dropshipping supplier-sync /goal, which names Supabase MCP as the migration
+route (the 217 protocol).
+
+## 2026-09-09 (coupon QR goal): 217 APPLIED
+
+**217** coupon_qr_redemption (`coupon_qr_redemption_217`): full body dry-run
+first in a rolled-back transaction, with a seven-step functional probe over
+real inserts (three probe orders, one probe campaign with `max_uses 1`, three
+probe codes): first redeem ok, same-order replay idempotent, second order
+refused `redeemed` (the FOR UPDATE single-use gate), a campaign-cap refusal
+left the unit row untouched (`exhausted`, `redeemed_at` still NULL), a
+per-code `expires_at` in the past refused `expired`, the sweep stamped exactly
+that code, and neither `anon` nor `authenticated` can EXECUTE either function.
+The probe ended in a deliberate RAISE so everything rolled back; the identical
+body then went through `apply_migration`. Post-apply measurement: both
+columns, both functions, grants service_role only, partial index present,
+`coupon_qr_codes` held 0 rows so nothing live changed behaviour. Applied under
+the 2026-09-09 coupon QR /goal, which names Supabase MCP as the migration
+route.
+
+## 2026-09-09 (RBAC goal): 212 APPLIED; 181 and 210 found already live
+
+**212** rbac_truncate_and_search_path (version `20260909115250`): full body
+dry-run in a rolled-back transaction first, probes inside the same transaction
+showed 0 client TRUNCATE grants and 0 unpinned target functions; identical
+result measured after the real apply. Applied under the 2026-09-09 RBAC /goal,
+which names Supabase MCP as the migration route.
+
+Also recorded, not applied now: **181** was already applied 2026-09-08 as two
+parts (`read_only_enum_181a` `20260908203538`, `admin_rbac_hardening_181b`
+`20260908203558`) — the apply predates this goal and was previously unlogged;
+every effect verified live (enum value, `is_support()` body, guard ladder,
+trigger, MFA policy). **210** applied 2026-09-09 as `media_ingest_queue_210`
+(`20260909093018`). Both now sit in README's APPLIED table.
+
+## 2026-09-09: 192 through 201 APPLIED, ten files, each dry-run first
+
+Applied one at a time via MCP `apply_migration`, on Ofir's explicit
+instruction (the `/goal` of 2026-09-09 named exactly this range). Before each
+apply, the full file body ran through `execute_sql` inside a transaction that
+was ROLLED BACK, with functional probes where the file has behaviour to prove:
+
+- **192** seed_seo_redirects: 33 active redirects after seed, table was empty.
+- **193** price_history: 80 backfill observations seeded (every non-deleted
+  product with a price), append-only triggers in place, public SELECT only.
+- **194** discount_claim_caps: `claim_order_discount` / `release_order_discount`
+  probed against a real order id (empty code NULL, unknown code NULL,
+  release 0), client EXECUTE revoked.
+- **195** stock_waitlist: joined twice with case/whitespace variants of one
+  email, exactly one lowercased row resulted; unknown-product refusal in place.
+- **196** shipped notification: live `tg_orders_notify_shipped` read with
+  `pg_get_functiondef` first — guard, dedupe key and firing condition matched
+  the file's baseline byte for byte; the replaced trigger was FIRED on a real
+  paid order in the rolled-back probe and the payload carried
+  `shipments[0].tracking_number`. Zero outbox residue after.
+- **197** shipping_zones seeded free-everywhere (5 zones, all 0 agorot),
+  pickup_points deliberately empty. The `set_updated_at` restatement differs
+  from the live body only in `:=` vs `=` and whitespace — same language,
+  attributes and semantics, so the replace is a no-op in behaviour.
+- **198** in_app notifications: `read_at` proven the ONLY updatable column for
+  authenticated; `notifications` added to `supabase_realtime` + REPLICA
+  IDENTITY FULL.
+- **199** review replies: table-wide UPDATE on `reviews` revoked BEFORE the
+  policy wakes it; post-check shows exactly 3 grantable columns
+  (supplier_reply, supplier_replied_at, supplier_replied_by).
+- **200** wishlist alert kinds: the live-drift guard passed (live constraint
+  carried exactly the 14 known names), now 16 kinds.
+- **201** scheduled_price_changes: one-pending-per-moment index probed
+  (duplicate refused, cancelled row frees the slot), deny-all RLS.
+
+Security advisors after: no new findings — every WARN pre-dates these files.
+The `set_updated_at` mutable-search_path WARN is pre-existing and unchanged.
+
+**Not applied and out of this batch's scope:** 162 (vault seeding), 184
+(maintenance window), 188–191, 202–205.
+
 **Nothing here is applied by an agent.** Each file goes to production through
 MCP `apply_migration`, one at a time, after Ofir approves it. `db push` is
 forbidden by project rule.
+
+## 2026-09-04 (audit): ONE PENDING FILE — 162, BLOCKED ON VAULT
+
+The 2026-09-04 audit ran every preflight against production and found 166,
+167 and 168 **already applied and recorded** in
+`supabase_migrations.schema_migrations` (`20260903232445`, `20260903232455`,
+`20260903232504`), live definitions matching the files. They moved with their
+preflights to `migrations/applied/`, rows added to the APPLIED IN PRODUCTION
+table in `README.md`, SHA-256 lines in `migrations/applied/CHECKSUMS.sha256`.
+
+| File | State | Preflight |
+| --- | --- | --- |
+| `162_cron_schedule.sql` | **approved by Ofir (CLOSEOUT §7)**, blocked on vault seeding: the vault holds neither `cron_secret` nor `app_url` (re-measured 2026-09-04 via preflight blocks 3+4: `vault.decrypted_secrets` returns zero of the two names), and seeding them needs the Vercel env (§8a), which this machine cannot reach (no `vercel` CLI, no link, no token — and since 04.09 the Vercel project itself is gone, STATE.md blocker 0). Blocks 1+2 pass: pg_cron 1.6.4 + pg_net 0.20.0 installed, `cron.job` empty. Exact commands under "## חסמים לאופיר" in STATE.md. | `preflight_162.sql` |
+| `166_voucher_transition_guard.sql` | **APPLIED** as `voucher_transition_guard_166` (`20260903232445`); verified 2026-09-04, moved to `migrations/applied/`. | with it in `applied/` |
+| `167_order_items_money_constraints.sql` | **APPLIED** as `order_items_money_constraints_167` (`20260903232455`); verified 2026-09-04, moved to `migrations/applied/`. | with it in `applied/` |
+| `168_wallet_ledger_client_readonly.sql` | **APPLIED** as `wallet_ledger_client_readonly_168` (`20260903232504`); verified 2026-09-04, moved to `migrations/applied/`. | with it in `applied/` |
+
+`165_revoke_anon_helpers.sql` was **CANCELLED on 2026-09-04 (CLOSEOUT §13)**
+and moved to `migrations/cancelled/` with its preflight. Eighteen RLS policies
+on public/anon-readable tables call the two helpers inside USING/WITH CHECK;
+RLS quals run as the caller, so the revoke would have turned every anonymous
+catalogue SELECT into 42501. anon EXECUTE on `is_admin()` /
+`is_supplier_member(uuid)` is by design: both return false for a caller with
+no uid. Regression net: `src/db/__tests__/anon-catalog.test.ts`.
+
+`164` stays unused; §8c named the revoke file 165 and the number is kept
+stable. The section below is unchanged history.
+
+## 2026-09-03: THERE IS NOTHING LEFT TO APPLY (history)
+
+`migrations/pending/` holds no `.sql` file. The last three went to production on
+2026-09-03 -- `160_fk_indexes.sql`, `161_enable_pg_cron_pg_net.sql` and
+`163_orders_indexes.sql` -- and all three are recorded in `migrations/applied/`
+with the row that describes them in `README.md`.
+
+`162` is deliberately unused and reserved for the pg_cron schedule that `161`
+makes possible: twelve cron routes exist under `src/app/api/cron/` and, measured
+on 2026-09-03, `select count(*) from cron.job` returns 0 and `vercel.json`
+declares no crons at all. Nothing calls them.
+
+**The table below is history.** Every row in it has been applied. It is kept
+because a reader asking "was this applied, and what did it do" needs the row to
+still exist. A new migration starts at **164**.
 
 Twelve files in this directory are **already in production** and are not listed
 below. See the "APPLIED IN PRODUCTION" table in `README.md`, which carries the
 version string and the query that proved each one. Running any of them again is
 at best a no-op and at worst an error.
 
-## The eleven that remain, in order
+## The twelve that remain, in order
 
 Order matters only where a **depends on** column is filled. Everything else is
 independent and may be applied in any sequence, or not at all.
@@ -27,6 +275,14 @@ independent and may be applied in any sequence, or not at all.
 | 12 | `140_money_agorot_catalog.sql` | `_agorot` columns on products, variants, coupons | — | `drop column <col>_agorot` |
 | 13 | `141_money_agorot_growth.sql` | `_agorot` columns on affiliates, referrals | — | `drop column <col>_agorot` |
 | 14 | `147_money_agorot_remaining_twins.sql` | the last four money columns with no generated twin | — | `drop column <col>_agorot` |
+| 15 | `148_orders_monthly_partitioning.sql` | monthly range partitioning of `orders`, composite FKs on 16 tables | `137` | in file header |
+| 16 | `149_soft_delete_user_facing_remainder.sql` | `deleted_at` + RLS filter on categories, product_images, reviews, wishlists | — | in file header |
+| 17 | `173_whatsapp_flow.sql` | WhatsApp consent + outbox + inbound log + support tickets, order-status trigger | — | in file header |
+| 18 | `177_cashback_ledger.sql` | append-only cashback ledger, first-purchase 10% / every-fifth 5% bonus fn, admin adjustment fn (174-176 are taken by files on `closeout/v1-final`, hence the gap) | `046` (applied) | in file header |
+| — | `178_webauthn_credentials.sql` | **already applied 2026-09-08** (MCP, `webauthn_credentials_178`, version `20260908210126`; verified against production 2026-09-09: table, RLS and both policies match the file): passkey (WebAuthn) credentials table, select/delete-own RLS, service-role-only writes | — | in file header |
+| 20 | `179_push_subscriptions.sql` | web push subscriptions table, select/delete-own RLS, service-role-only writes | — | in file header |
+| — | `169_audit_full_coverage.sql` | **already applied 2026-09-04** (MCP, `audit_full_coverage_169`): audit_log before/after/request_id + triggers on all financial/user tables | — | in file header |
+| — | `170_reporting_tables.sql` | **already applied 2026-09-04** (MCP, `reporting_tables_170`): 4 reporting tables + nightly pg_cron rebuild + 5 admin-only RPCs | — | in file header |
 
 ## The money set, 138 through 141
 
@@ -76,5 +332,6 @@ cannot drop one.
 
 The table above keeps its original numbering column even though rows were
 removed as migrations were applied, so a row's number is a stable reference in
-conversation rather than a position. What is authoritative is the file list: ten
-files, and the APPLIED table in `README.md` holds the other twelve.
+conversation rather than a position. What is authoritative is the file list, and as of
+2026-09-03 that list is empty: every migration this directory ever described now
+lives in `migrations/applied/`.

@@ -1,6 +1,7 @@
 import { buildCartView } from '@/lib/cart/pricing'
 import type { CartStorageItem, CartView, CartViewItem } from '@/lib/cart/types'
 import { agorot } from '@/lib/money'
+import { DEFAULT_SHIPPING_METHOD_ID, resolveShippingMethod } from '@/lib/shipping/methods'
 import { describe, expect, it } from 'vitest'
 
 /**
@@ -82,6 +83,7 @@ function allMoney(cart: CartView): number[] {
     cart.discount,
     cart.total,
     ...(cart.coupon ? [cart.coupon.discount] : []),
+    ...(cart.shipping ? [cart.shipping.cost] : []),
     ...cart.items.flatMap(lineFields),
   ]
 }
@@ -389,6 +391,95 @@ describe('buildCartView: discounts', () => {
 
     expect(cart.discount).toBe(10_000)
     expect(cart.total).toBe(0)
+  })
+})
+
+describe('buildCartView: shipping', () => {
+  it('gives a physical cart the default method when the caller names none', () => {
+    const cart = buildCartView('cart-1', [stored()], [product()], [])
+
+    expect(cart.shipping).toEqual({
+      method: DEFAULT_SHIPPING_METHOD_ID,
+      label: 'משלוח עד הבית',
+      cost: 0,
+    })
+  })
+
+  it('carries the resolved method through, label and rate from the registry', () => {
+    const cart = buildCartView(
+      'cart-1',
+      [stored()],
+      [product()],
+      [],
+      null,
+      resolveShippingMethod('pickup'),
+    )
+
+    expect(cart.shipping?.method).toBe('pickup')
+    expect(cart.shipping?.label).toBe('איסוף עצמי מהספק')
+    expect(cart.shipping?.cost).toBe(0)
+  })
+
+  it('asks a coupon-only cart nothing about shipping', () => {
+    const cart = buildCartView(
+      'cart-1',
+      [stored()],
+      [product({ type: 'coupon', is_coupon_enabled: true, coupon_price_ils: 20 })],
+      [],
+      null,
+      resolveShippingMethod('pickup'),
+    )
+
+    expect(cart.shipping).toBeNull()
+  })
+
+  it('needs one physical line among the coupons to need shipping', () => {
+    const cart = buildCartView(
+      'cart-1',
+      [stored(), stored({ product_id: 'c1' })],
+      [
+        product(),
+        product({
+          id: 'c1',
+          slug: 'c1',
+          type: 'coupon',
+          is_coupon_enabled: true,
+          coupon_price_ils: 20,
+        }),
+      ],
+      [],
+    )
+
+    expect(cart.shipping).not.toBeNull()
+  })
+
+  it('leaves the empty cart with no shipping block', () => {
+    expect(buildCartView('cart-1', [], [], []).shipping).toBeNull()
+  })
+
+  it('adds the rate to the total and to nothing else', () => {
+    const method = { ...resolveShippingMethod('pickup'), costAgorot: agorot(1_500) }
+    const cart = buildCartView('cart-1', [stored()], [product()], [], null, method)
+
+    expect(cart.subtotal).toBe(10_000)
+    expect(cart.shipping?.cost).toBe(1_500)
+    expect(cart.total).toBe(11_500)
+    expect(cart.platform_fee + cart.supplier_due).toBe(cart.subtotal)
+  })
+
+  it('applies the rate after the discount, so a capped code cannot eat the shipping', () => {
+    const method = { ...resolveShippingMethod('pickup'), costAgorot: agorot(1_500) }
+    const cart = buildCartView(
+      'cart-1',
+      [stored()],
+      [product()],
+      [],
+      { code: 'HUGE', label: 'הנחה גדולה', discountAgorot: 999_999 },
+      method,
+    )
+
+    expect(cart.discount).toBe(10_000)
+    expect(cart.total).toBe(1_500)
   })
 })
 

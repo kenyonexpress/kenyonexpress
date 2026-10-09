@@ -1,5 +1,17 @@
 # ARCHITECTURE-LEGAL.md
 
+
+> <!-- v1-final-banner:2026-09-01 -->
+> ⚠️ **This document names tables that do not exist in production.**
+>
+> | Named here | In production |
+> |---|---|
+> | `consent_events` | nothing; never built |
+>
+> The design below may still be sound; the schema it assumes was not built, or
+> was built under another name. Verify against `docs/DATA-MODEL.md` before
+> writing a query, and see `docs/SCHEMA-REALITY-CHECK.md` for the full mapping.
+
 KenyonExpress **דפים משפטיים** (תקנון, פרטיות, ביטולים, נגישות, cookies).
 
 Status: BINDING for routes + CMS shape · `arch/legal` (2026-07-30)

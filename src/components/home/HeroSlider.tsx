@@ -1,8 +1,9 @@
 'use client'
 
+import BrandPlaceholder from '@/components/ui/BrandPlaceholder'
 import SmartImage from '@/components/ui/SmartImage'
 import { ELECTRO_HERO } from '@/lib/electro-hero-tokens'
-import { HERO_SLIDER_BG } from '@/lib/hero-singlefile-data'
+import { HERO_SLIDER_BG_CLASS } from '@/lib/hero-singlefile-data'
 import { getImageProps } from 'next/image'
 import { useCallback, useEffect, useState } from 'react'
 
@@ -48,7 +49,7 @@ export type HeroSlide = {
 const T = ELECTRO_HERO.typography
 const SLIDE = ELECTRO_HERO.slider
 const DOT_ACTIVE = 'var(--color-brand-primary)'
-const DOT_INACTIVE = 'rgba(125, 125, 125, 0.5)'
+const DOT_INACTIVE = 'var(--color-slider-dot-idle)'
 
 // Live slider geometry: an 8px round dot, 30x8 rounded bar for the current one.
 const DOT_HEIGHT = 8
@@ -58,8 +59,13 @@ const DOT_WIDTH_IDLE = 8
  * Animated WebP files under /public. A file extension cannot tell an animated
  * WebP from a still one, so the ones we ship animated are listed explicitly.
  */
-export const ANIMATED_WEBP_SOURCES = new Set([
-  '/images/hero/slider/ios13-iphone-11pro-airpods-pro-setup-animation-steps.webp',
+export const ANIMATED_WEBP_SOURCES = new Set<string>([
+  // Empty since 2026-09-04. Its one entry was Electro's iPhone-and-AirPods
+  // animation, deleted with the rest of the template's photography. The
+  // mechanism stays because the lesson does: an animated source is
+  // `unoptimized`, so it ships its full authored weight to every viewport, and
+  // that one 777KB file was the whole distance between this page and a 90+
+  // mobile Lighthouse score.
 ])
 
 /**
@@ -80,8 +86,9 @@ export const ANIMATED_WEBP_SOURCES = new Set([
  * A source with no entry here keeps the old behaviour exactly.
  */
 export const HERO_STILL_FRAMES: Record<string, string> = {
-  '/images/hero/slider/ios13-iphone-11pro-airpods-pro-setup-animation-steps.webp':
-    '/images/hero/slider/ios13-iphone-11pro-airpods-pro-setup-animation-still.webp',
+  // Empty since 2026-09-04, with ANIMATED_WEBP_SOURCES above and for the same
+  // reason. A source with no entry here keeps the ordinary behaviour, so an
+  // empty map costs nothing and the mechanism is ready for a real photograph.
 }
 
 /**
@@ -154,21 +161,24 @@ const AUTOPLAY_MS = 5000
  */
 const RS = {
   /** headline 1: rs-layer .tp-caption headline */
-  h1: 'text-[43px] font-light lg:text-[58px]',
+  // 51 at lg, remeasured off refs 2026-09-02 (live "Open Sans" 51px; 58 was the electro demo)
+  h1: 'text-hero-line1 font-light lg:text-hero-line1-lg',
   h1Leading: 'leading-[43px] lg:leading-[58px]',
   /** headline 2: the lighter second line, always 5px shy of h1 */
-  h2: 'text-[38px] font-light lg:text-[51px]',
+  // 45 at lg, remeasured off refs 2026-09-02 (58/51 were the electro demo's sizes)
+  h2: 'text-hero-line2 font-light lg:text-hero-line2-lg',
   h2Leading: 'leading-[38px] lg:leading-[51px]',
   /** tagline strip under the headlines */
-  tagline: 'text-[11px] font-bold leading-[11px] lg:text-[19px] lg:leading-[19px]',
+  tagline: 'text-micro font-bold leading-[11px] lg:text-hero-tagline-lg lg:leading-[19px]',
   /** "standard" caption line (product slide only) */
-  standard: 'text-[11px] font-bold leading-[15px] lg:text-[15px]',
+  standard: 'text-micro font-bold leading-[15px] lg:text-body-lg',
   /** small promo line above the big price */
-  promoSmall: 'text-[12px] leading-[13px] lg:text-[13px]',
-  promoSmallWelcome: 'text-[12px] font-normal leading-[15px] lg:text-[15px]',
+  promoSmall: 'text-tiny leading-[13px] lg:text-small',
+  promoSmallWelcome: 'text-tiny font-normal leading-[15px] lg:text-body-lg',
   /** the big promo price */
-  promoLarge: 'text-[35px] font-bold leading-[35px] lg:text-[50px] lg:leading-[50px]',
-  promoLargeWelcome: 'text-[35px] font-bold leading-[40px] lg:text-[45px] lg:leading-[50px]',
+  promoLarge: 'text-hero-promo font-bold leading-[35px] lg:text-hero-promo-lg lg:leading-[50px]',
+  promoLargeWelcome:
+    'text-hero-promo font-bold leading-[40px] lg:text-hero-promo-welcome-lg lg:leading-[50px]',
   /** copy column: 31px gutter from the slide edge */
   /**
    * `hero-copy-column` and `hero-headline` are hooks for the handheld override
@@ -179,7 +189,10 @@ const RS = {
   copyColumn:
     'hero-copy-column pointer-events-none absolute end-0 top-0 z-10 max-w-[50%] pe-[31px] text-end',
   /** headline box reserves its live height so shorter titles do not reflow */
-  headBox: 'm-0 min-h-[86px] lg:min-h-[118px]',
+  // 110 at lg: live's tagline top is 157 and the headline paddingTop is 47
+  // (refs), so the reserved headline box is exactly 157-47 = 110. The old 118
+  // plus the tagline's mt-4 pushed everything below the headline ~25px down.
+  headBox: 'm-0 min-h-[86px] lg:min-h-[110px]',
   /** headline 2 rides -1px tighter than headline 1 on every variant */
   h2Tracking: '-1px',
   /** app slide: headline starts 52px down, badge is a fixed 46x286 box */
@@ -218,8 +231,8 @@ const RS = {
  * wrap comes back at any size the column cannot hold.
  */
 const WELCOME_HEAD = {
-  line1: 'text-[43px] leading-[43px] lg:text-[51px] lg:leading-[51px]',
-  line2: 'text-[38px] leading-[38px] lg:text-[45px] lg:leading-[45px]',
+  line1: 'text-hero-line1 leading-[43px] lg:text-hero-line1-lg lg:leading-[51px]',
+  line2: 'text-hero-line2 leading-[38px] lg:text-hero-line2-lg lg:leading-[45px]',
 } as const
 
 /**
@@ -416,8 +429,6 @@ function SlideImage({
   slide: HeroSlide
   priority: boolean
 }) {
-  if (!slide.image_url) return null
-
   const layout = slide.imageLayout ?? {
     offsetTop: ELECTRO_HERO.slider.image.offsetTop,
     widthPercent: ELECTRO_HERO.slider.image.widthPercent,
@@ -443,11 +454,23 @@ function SlideImage({
         }}
       >
         <div className="relative h-full w-full" style={{ minHeight: layout.minHeight }}>
-          <HeroSlideImage src={slide.image_url} priority={false} />
+          {slide.image_url ? (
+            <HeroSlideImage src={slide.image_url} priority={false} />
+          ) : (
+            <BrandPlaceholder
+              className="absolute inset-0"
+              markWidth={220}
+              slot="תמונת הבאנר הראשי"
+            />
+          )}
         </div>
       </div>
       <div className="absolute end-0 bottom-0 h-[42%] w-full overflow-hidden lg:hidden">
-        <HeroSlideImage src={slide.image_url} priority={priority} />
+        {slide.image_url ? (
+          <HeroSlideImage src={slide.image_url} priority={priority} />
+        ) : (
+          <BrandPlaceholder className="absolute inset-0" markWidth={120} slot="תמונת הבאנר הראשי" />
+        )}
       </div>
     </>
   )
@@ -529,7 +552,7 @@ function ProductSlideCopy({ slide }: { slide: HeroSlide }) {
       )}
 
       {tagline && (
-        <p style={{ color: T.tagline.color }} className={`mt-3 lg:mt-4 ${RS.tagline}`}>
+        <p style={{ color: T.tagline.color }} className={`mt-3 lg:mt-0 ${RS.tagline}`}>
           {tagline}
         </p>
       )}
@@ -548,7 +571,7 @@ function ProductSlideCopy({ slide }: { slide: HeroSlide }) {
         <p
           dir="ltr"
           style={{ color: T.priceLabel.color }}
-          className={`mt-2 text-start lg:mt-3 ${RS.promoSmall}`}
+          className={`mt-2 text-start lg:mt-[27px] ${RS.promoSmall}`}
         >
           {slide.promo_small}
         </p>
@@ -713,8 +736,7 @@ export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
     <div
       dir="rtl"
       data-hero-slider=""
-      style={{ backgroundColor: HERO_SLIDER_BG }}
-      className="relative h-full min-h-0 w-full min-w-0 flex-1 overflow-hidden border-x border-gray-200 font-sans"
+      className={`${HERO_SLIDER_BG_CLASS} relative h-full min-h-0 w-full min-w-0 flex-1 overflow-hidden border-x border-border-alt font-sans`}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocus={() => setPaused(true)}
@@ -746,7 +768,16 @@ export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
       {slides.length > 1 && (
         <div
           aria-label="ניווט שקופיות"
-          className="absolute bottom-6 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2"
+          // Live (refs, 1440): rs-bullets is a 200x8 box at x397 y400 -- 61px
+          // from the slider's left edge, 252px from its top, bullets packed to
+          // its right end with 15px gaps. Centered-at-bottom was ours, not
+          // live's. Physical left/top because the measurements are physical.
+          // Packing to the right end of the box in this dir="rtl" container is
+          // justify-START (live's own CSS sets no justify-content at all, so
+          // it is flex-start too); justify-end here was the RTL mirror and put
+          // the row ~78px left of live's. On phones the mobile hero keeps the
+          // old centered-bottom row.
+          className="absolute z-20 flex items-center max-lg:bottom-6 max-lg:left-1/2 max-lg:-translate-x-1/2 max-lg:gap-2 lg:top-[252px] lg:left-[61px] lg:w-[200px] lg:justify-start lg:gap-[15px]"
         >
           {slides.map((s, i) => {
             const isCurrent = i === active
@@ -767,7 +798,7 @@ export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
                   ...dotHitBox(dotWidth(isCurrent)),
                   background: 'transparent',
                 }}
-                className="flex shrink-0 items-center justify-center border-0 p-0"
+                className="flex shrink-0 items-center justify-center border-0 p-0 max-lg:min-w-6"
               >
                 <span
                   aria-hidden="true"

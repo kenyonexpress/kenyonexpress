@@ -26,7 +26,15 @@ export default function CategoryBreadcrumb({ items }: Props) {
               </svg>
             </span>
           )}
-          {item.href ? <Link href={item.href}>{item.label}</Link> : <span>{item.label}</span>}
+          {item.href ? (
+            // py-1 lifts the 19px text row to the 24px WCAG 2.5.8 floor
+            // without moving the visible baseline (inline-block, no margin).
+            <Link href={item.href} className="inline-block py-1">
+              {item.label}
+            </Link>
+          ) : (
+            <span>{item.label}</span>
+          )}
         </span>
       ))}
     </nav>

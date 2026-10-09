@@ -41,6 +41,8 @@ const CRON_ROOT = 'src/app/api/cron'
 const ALSO_MACHINE_DRIVEN = [
   'src/app/api/search/index-job/route.ts',
   'src/app/api/search/index-dlq/route.ts',
+  'src/app/api/jobs/run/route.ts',
+  'src/app/api/jobs/dlq/route.ts',
 ]
 
 /**
@@ -131,15 +133,30 @@ describe('scheduled routes authenticate', () => {
     // list is the record of what runs on a schedule with admin credentials.
     expect(cronRouteFiles()).toEqual([
       'src/app/api/cron/abandoned-cart/route.ts',
+      'src/app/api/cron/backup/route.ts',
+      'src/app/api/cron/cashback-settlement/route.ts',
+      'src/app/api/cron/daily-deals/route.ts',
+      'src/app/api/cron/email-retry/route.ts',
+      'src/app/api/cron/expire-cashback/route.ts',
+      'src/app/api/cron/expire-coupons/route.ts',
       'src/app/api/cron/expire-vouchers/route.ts',
       'src/app/api/cron/health/route.ts',
       'src/app/api/cron/invoices/route.ts',
+      'src/app/api/cron/job-dlq/route.ts',
       'src/app/api/cron/notifications/route.ts',
       'src/app/api/cron/reap-carts/route.ts',
       'src/app/api/cron/reconcile/route.ts',
+      'src/app/api/cron/retention/route.ts',
+      'src/app/api/cron/search-outbox/route.ts',
+      'src/app/api/cron/search-reindex/route.ts',
       'src/app/api/cron/stock/route.ts',
       'src/app/api/cron/stranded-payments/route.ts',
       'src/app/api/cron/subscriptions/route.ts',
+      'src/app/api/cron/webhook-dlq/route.ts',
+      'src/app/api/cron/weekly-digest/route.ts',
+      'src/app/api/cron/whatsapp/route.ts',
+      'src/app/api/cron/wishlist-alerts/route.ts',
+      'src/app/api/cron/wishlist-digest/route.ts',
     ])
   })
 })

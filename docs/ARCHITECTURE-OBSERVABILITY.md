@@ -1,5 +1,17 @@
 # ARCHITECTURE-OBSERVABILITY.md
 
+
+> <!-- v1-final-banner:2026-09-01 -->
+> ⚠️ **This document names tables that do not exist in production.**
+>
+> | Named here | In production |
+> |---|---|
+> | `audit_events` | `audit_log` |
+>
+> The design below may still be sound; the schema it assumes was not built, or
+> was built under another name. Verify against `docs/DATA-MODEL.md` before
+> writing a query, and see `docs/SCHEMA-REALITY-CHECK.md` for the full mapping.
+
 KenyonExpress **observability** architecture (binding logs, errors, money audit, alerts, dashboards).
 
 Status: BINDING · worktree `/Users/ofir/kenyonexpress-web/ke-arch-observability` · branch `arch/observability` (2026-07-30)

@@ -37,11 +37,16 @@ export default function NotFound() {
         >
           לכל המוצרים
         </Link>
+        {/* Was a "חיפוש באתר" link to /search. The standing project rule is
+            that there is no search UI anywhere, and after the D3 sweep took the
+            field out of the header this 404 was the last entry point to it left
+            in the storefront. The categories page is the honest destination for
+            "I could not find the thing I wanted". */}
         <Link
-          href="/search"
-          className="rounded-xl border border-gray-300 px-6 py-3 text-sm font-bold text-gray-700 transition-colors hover:bg-gray-50"
+          href="/products?view=categories"
+          className="rounded-xl border border-border px-6 py-3 text-sm font-bold text-heading transition-colors hover:bg-surface-hover"
         >
-          חיפוש באתר
+          עיון בקטגוריות
         </Link>
         <Link
           href="/"

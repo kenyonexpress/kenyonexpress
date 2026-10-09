@@ -3,6 +3,7 @@
 import DataTable, { type DataTableColumn } from '@/components/admin/DataTable'
 import DeleteButton from '@/components/admin/DeleteButton'
 import StatusBadge, { productStatusBadge } from '@/components/admin/StatusBadge'
+import { shekelsFromIls, shekelsFromIlsRounded } from '@/lib/money-format'
 import { softDeleteCouponDeal } from '@/server/actions/admin/coupon-deals'
 import Link from 'next/link'
 
@@ -48,7 +49,7 @@ export default function CouponsTable({ deals }: Props) {
       header: 'מחיר מקורי',
       sortable: true,
       accessor: (d) => d.original_price,
-      cell: (d) => <span>₪{d.original_price}</span>,
+      cell: (d) => <span>{shekelsFromIlsRounded(d.original_price)}</span>,
     },
     {
       id: 'platform',
@@ -60,7 +61,7 @@ export default function CouponsTable({ deals }: Props) {
       accessor: (d) => d.platform_price ?? -1,
       cell: (d) =>
         d.platform_price != null ? (
-          <span className="font-semibold">₪{d.platform_price.toFixed(2)}</span>
+          <span className="font-semibold">{shekelsFromIls(d.platform_price)}</span>
         ) : (
           <span className="text-xs text-gray-400">לא הוגדר</span>
         ),

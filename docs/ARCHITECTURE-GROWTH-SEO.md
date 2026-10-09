@@ -1,5 +1,17 @@
 # ארכיטקטורת צמיחה, שימור SEO ושיווק מחזור חיים (Growth & SEO)
 
+
+> <!-- v1-final-banner:2026-09-01 -->
+> ⚠️ **This document names tables that do not exist in production.**
+>
+> | Named here | In production |
+> |---|---|
+> | `consent_events` | nothing; never built |
+>
+> The design below may still be sound; the schema it assumes was not built, or
+> was built under another name. Verify against `docs/DATA-MODEL.md` before
+> writing a query, and see `docs/SCHEMA-REALITY-CHECK.md` for the full mapping.
+
 מסמך הכרעות. תאריך: 2026-07-17. ענף: `phase5/homepage`.
 
 > **שכבת ריצה 2026-07-20:** מכניקת SEO בזמן ריצה (proxy 301, sitemap/robots,
@@ -318,8 +330,9 @@ old_path,decision,new_path,status_code,rule,gsc_clicks_12m,notes
    ‏rollback. זה כשל תפעולי, לא תנודת דירוג.
 
 ביום 30: דוח סיכום (קליקים מול baseline, עמודים באינדקס, רשימת
-queries שאבדו) נשמר ב-`docs/growth/baseline/day30-report.md`, ומחליטים
-על סבב שיפורי תוכן לפי הפערים.
+queries שאבדו) ייכתב אל `docs/growth/baseline/day30-report.md`, ומחליטים
+על סבב שיפורי תוכן לפי הפערים. **הנתיב הזה טרם נוצר** — הוא היעד המתוכנן,
+לא מסמך קיים, והמדידה שהוא אמור לסכם לא החלה.
 
 ---
 

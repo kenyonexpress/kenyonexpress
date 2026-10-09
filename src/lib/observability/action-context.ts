@@ -1,6 +1,8 @@
+import * as Sentry from '@sentry/nextjs'
 import { headers } from 'next/headers'
 import { runWithRequestContext } from './request-context'
 import { resolveRequestId } from './request-id'
+import { userIdFromCookieHeader } from './sentry-user'
 
 /**
  * A Server Function's request id, bound around its body.
@@ -43,10 +45,27 @@ import { resolveRequestId } from './request-id'
  */
 export async function withActionContext<T>(action: string, fn: () => Promise<T>): Promise<T> {
   let requestId: string
+  let cookieHeader: string | null
   try {
-    requestId = resolveRequestId(await headers())
+    const h = await headers()
+    requestId = resolveRequestId(h)
+    cookieHeader = h.get('cookie')
   } catch {
     return fn()
   }
+
+  // The Sentry user for every event this request produces, decoded from the
+  // auth cookie already in hand - no Supabase round trip, and only the UUID
+  // (see sentry-user.ts; beforeSend enforces the id-only rule regardless).
+  // Isolation-scoped, so parallel requests cannot label each other's errors.
+  // Wrapped because tagging is never allowed to become the action's failure,
+  // and because with no DSN there may be no client behind setUser at all.
+  try {
+    const userId = userIdFromCookieHeader(cookieHeader)
+    if (userId) Sentry.setUser({ id: userId })
+  } catch {
+    // Observability is best effort by definition.
+  }
+
   return runWithRequestContext({ requestId, route: 'action', method: action }, fn)
 }

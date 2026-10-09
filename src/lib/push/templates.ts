@@ -1,7 +1,7 @@
 import { APP_PATHS, universalLink } from '@/lib/app/deep-links'
 
 /**
- * Push copy, in Hebrew, for the three transactional kinds the app sends.
+ * Push copy, in Hebrew, for the five kinds the app sends.
  *
  * A KIND WITHOUT A TEMPLATE HERE GETS NO PUSH, AND THAT IS THE GATE. The outbox
  * carries every notification the system owes, including supplier sale alerts
@@ -10,10 +10,13 @@ import { APP_PATHS, universalLink } from '@/lib/app/deep-links'
  * permanently, so adding a kind to the outbox can never accidentally start
  * pushing it.
  *
- * NO MARKETING. Each of the three is the direct consequence of an act by the
- * customer: a coupon they bought, a coupon they hold running out, money credited
- * to their wallet. Anything promotional is under the 30א consent regime and
- * needs a consent column this table does not have.
+ * NO MARKETING. Each one is the direct consequence of an act by the customer:
+ * a coupon they bought, a coupon they hold running out, money credited to their
+ * wallet, a parcel they are waiting for, and a price drop on a product THEY put
+ * on their wishlist. `price_drop` is the only one that is not transactional and
+ * it passes on that test alone -- it may never be widened into "products you
+ * might like", which is the 30א consent regime and needs a column this table
+ * does not have.
  *
  * LENGTH. iOS shows roughly 40 characters of title and two lines of body on the
  * lock screen; Android is similar. The copy is written to survive that cut, so
@@ -141,6 +144,74 @@ function cashbackCredited(payload: Record<string, unknown>, siteUrl: string): Pu
 }
 
 /**
+ * The parcel is moving.
+ *
+ * THE TRACKING NUMBER IS NOT IN THE BODY, and that is deliberate. It is a long
+ * LTR string in an RTL sentence, which is the exact shape this project has
+ * already been bitten by: a bare number inside Hebrew text renders with its
+ * digits in a plausible but wrong order, and a wrong tracking number is worse
+ * than none because the customer will type it into a courier's site and be told
+ * it does not exist. The carrier is named, the number is one tap away on the
+ * order page where it is isolated properly.
+ */
+function orderShipped(payload: Record<string, unknown>, siteUrl: string): PushContent | null {
+  const orderRef = text(payload, 'order_ref')
+  const carrier = text(payload, 'carrier')
+
+  return {
+    title: 'ההזמנה שלך יצאה לדרך',
+    body: carrier
+      ? `המשלוח נמסר ל${carrier}. פרטי המעקב מחכים בעמוד ההזמנה.`
+      : 'המשלוח יצא. פרטי המעקב מחכים בעמוד ההזמנה.',
+    data: {
+      kind: 'order_shipped',
+      path: (() => {
+        const orderId = text(payload, 'order_id')
+        return orderId ? APP_PATHS.order(orderId) : APP_PATHS.home
+      })(),
+      url: universalLink(siteUrl, '/account/orders'),
+      order_id: text(payload, 'order_id'),
+      order_ref: orderRef,
+    },
+  }
+}
+
+/**
+ * A saved product got cheaper.
+ *
+ * THE ONLY NON-TRANSACTIONAL PUSH ON THE LIST, AND IT IS STILL NOT MARKETING.
+ * The header above says each kind is the direct consequence of an act by the
+ * customer. This one qualifies on that test and only on it: the customer put
+ * this specific product on their wishlist and asked to hear about it. Nothing
+ * here may ever be widened into "products you might like", which is the 30א
+ * consent regime and needs a column this table does not have.
+ *
+ * IT REFUSES TO SEND WITHOUT BOTH PRICES. "המחיר ירד" with no number is an
+ * advert; with both numbers it is the fact the customer asked for. It also
+ * refuses a rise, because a wishlist alert that fires on a price INCREASE is
+ * the worst possible use of a permission somebody granted.
+ */
+function priceDrop(payload: Record<string, unknown>, siteUrl: string): PushContent | null {
+  const was = integer(payload, 'saved_agorot')
+  const now = integer(payload, 'now_agorot')
+  const productName = text(payload, 'product_name')
+  if (was === null || now === null || now >= was || now < 0) return null
+
+  const slug = text(payload, 'product_slug')
+  return {
+    title: productName ? `${productName} בזול יותר` : 'מוצר שאהבת בזול יותר',
+    body: `המחיר ירד מ-${shekelsCompact(was)} ל-${shekelsCompact(now)}.`,
+    data: {
+      kind: 'price_drop',
+      path: APP_PATHS.home,
+      url: universalLink(siteUrl, slug ? `/product/${slug}` : '/products'),
+      product_id: text(payload, 'product_id'),
+      now_agorot: now,
+    },
+  }
+}
+
+/**
  * Returns `null` for every kind that owes no push. The caller must treat that
  * as a settled state, not as a failure to retry.
  */
@@ -156,10 +227,20 @@ export function buildPushContent(
       return couponExpiring(payload, siteUrl)
     case 'cashback_credited':
       return cashbackCredited(payload, siteUrl)
+    case 'order_shipped':
+      return orderShipped(payload, siteUrl)
+    case 'price_drop':
+      return priceDrop(payload, siteUrl)
     default:
       return null
   }
 }
 
 /** The kinds that can ever produce a push. Exported so tests can assert the set. */
-export const PUSHABLE_KINDS = ['voucher_issued', 'voucher_expiring', 'cashback_credited'] as const
+export const PUSHABLE_KINDS = [
+  'voucher_issued',
+  'voucher_expiring',
+  'cashback_credited',
+  'order_shipped',
+  'price_drop',
+] as const

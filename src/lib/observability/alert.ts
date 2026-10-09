@@ -12,6 +12,8 @@
  * Sentry, alert narrowly here, and only for money.
  */
 
+import { sendTelegram, telegramConfig } from './telegram'
+
 // No `server-only` import, deliberately. This module makes one outbound fetch
 // and reads two env vars; the marker would buy nothing and would put the
 // alerting path beyond the reach of a unit test, which is the one part of an
@@ -26,18 +28,41 @@ export type AlertArgs = {
   message: string
   priority?: AlertPriority
   tags?: string[]
+  /** An ntfy topic other than NTFY_TOPIC. The health cron uses HEALTH_NTFY_TOPIC. */
+  topic?: string
 }
 
 /**
  * Never throws and never rejects. Every caller is already on a failure branch,
  * and an error thrown while reporting an error becomes the error the customer
  * sees.
+ *
+ * TWO CHANNELS, ONE CALL. ntfy is always attempted. Telegram is attempted as
+ * well when `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` are set (see
+ * telegram.ts for why a private channel exists next to the public topic). They
+ * run concurrently and independently: `true` means at least one accepted the
+ * message, and a failure on either side never delays or cancels the other.
  */
 export async function sendAlert(args: AlertArgs): Promise<boolean> {
   if (process.env.ALERTS_ENABLED === 'false') return false
 
+  const [ntfy, telegram] = await Promise.all([
+    sendNtfy(args),
+    telegramConfig()
+      ? sendTelegram({
+          // Title first, on its own line: Telegram has no title field and the
+          // English title is what makes the Hebrew body scannable in a chat.
+          text: `${args.title}\n${args.message}`,
+          silent: args.priority === 'default',
+        })
+      : Promise.resolve(false),
+  ])
+  return ntfy || telegram
+}
+
+async function sendNtfy(args: AlertArgs): Promise<boolean> {
   try {
-    const res = await fetch(`${BASE}/${TOPIC}`, {
+    const res = await fetch(`${BASE}/${args.topic ?? TOPIC}`, {
       method: 'POST',
       headers: {
         // ntfy reads these as ASCII; a Hebrew title would arrive mangled, so

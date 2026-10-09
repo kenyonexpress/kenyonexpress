@@ -5,6 +5,7 @@ import TablePagination from '@/components/admin/TablePagination'
 import { ORDER_STATUS_LABELS } from '@/lib/admin/labels'
 import { baseListParamsSchema, listRange } from '@/lib/admin/list-params'
 import { requireSection } from '@/lib/admin/rbac'
+import { shekelsFromIlsRounded } from '@/lib/money-format'
 import { createClient } from '@/lib/supabase/server'
 import { sanitizeOrTerm } from '@/lib/utils/search-escape'
 import type { OrderStatus } from '@/types/database'
@@ -152,7 +153,7 @@ export default async function AdminOrdersPage(props: {
       id: 'total',
       header: 'סכום',
       sortKey: 'total_ils',
-      cell: (order) => `₪${order.total_ils.toLocaleString('he-IL')}`,
+      cell: (order) => shekelsFromIlsRounded(order.total_ils),
     },
     {
       id: 'status',

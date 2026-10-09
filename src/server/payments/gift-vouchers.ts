@@ -105,6 +105,8 @@ export async function sendOrderGifts(
     ]
     const names = new Map<string, string>()
     if (productIds.length > 0) {
+      // No deleted_at filter, on purpose: the voucher email names a product the
+      // customer already paid for. See src/lib/soft-delete.ts.
       const { data: products } = await admin
         .from('products')
         .select('id, name_he')

@@ -62,7 +62,7 @@ export default function PhoneOtpForm({ next }: { next?: string }) {
           placeholder="050-1234567"
           value={phone}
           onChange={(event) => setPhone(event.target.value)}
-          className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-right placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
+          className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-start placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
         />
         {getError(sendState) && (
           <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">

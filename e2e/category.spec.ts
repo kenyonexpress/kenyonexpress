@@ -308,3 +308,65 @@ test.describe('catalogue on a phone', () => {
     })
   }
 })
+
+/**
+ * The listing contract of 2026-09-16: eight cards a page, and the one typing
+ * field on the site, scoped to the archive it sits on.
+ */
+test.describe('category listing: page size and autocomplete', () => {
+  test('never renders more than eight cards on a page, and page 2 links when there are more', async ({
+    page,
+  }) => {
+    const slug = await firstCategorySlug(page)
+    test.skip(!slug, 'catalog exposes no category links')
+
+    await page.goto(`/category/${slug}`)
+    await expect(page.locator(SETTLED_COUNT).first()).toBeVisible({ timeout: 15_000 })
+
+    const cards = page.locator('.category-products__item')
+    const count = await cards.count()
+    expect(count).toBeLessThanOrEqual(8)
+
+    const countText = (await page.locator(SETTLED_COUNT).first().textContent()) ?? ''
+    const total = Number(/מתוך\s+(\d+)/.exec(countText)?.[1] ?? '0')
+    if (total > 8) {
+      expect(count).toBe(8)
+      await expect(page.getByRole('link', { name: 'העמוד הבא' })).toHaveAttribute(
+        'href',
+        new RegExp(`/category/${slug}\\?page=2$`),
+      )
+    }
+  })
+
+  test('the sidebar combobox asks the suggest route with this category as scope', async ({
+    page,
+  }) => {
+    const slug = await firstCategorySlug(page)
+    test.skip(!slug, 'catalog exposes no category links')
+
+    await page.goto(`/category/${slug}`)
+    await page.locator('.category-sidebar__summary').click()
+
+    const box = page.getByRole('combobox')
+    await expect(box).toBeVisible()
+    await expect(box).toHaveAttribute('type', 'text')
+
+    const request = page.waitForRequest(
+      (r) => r.url().includes('/api/search/suggest') && r.url().includes(`category=${slug}`),
+    )
+    await box.fill('אב')
+    const seen = await request
+    expect(new URL(seen.url()).searchParams.get('q')).toBe('אב')
+  })
+
+  test('the shell still carries no search field', async ({ page }) => {
+    const slug = await firstCategorySlug(page)
+    test.skip(!slug, 'catalog exposes no category links')
+
+    await page.goto(`/category/${slug}`)
+    await expect(
+      page.locator('header input, nav input, footer input:not([type="email"])'),
+    ).toHaveCount(0)
+    await expect(page.locator('input[type="search"], [role="search"]')).toHaveCount(0)
+  })
+})

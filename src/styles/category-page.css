@@ -14,6 +14,8 @@
   --cat-line: #dddddd;
   --cat-switcher: #495057;
   --cat-surface: #ffffff;
+  --cat-surface-hover: #f5f5f5;
+  --cat-thumb: #f7f7f7;
   --cat-brand: #fed700;
   --cat-brand-hover: #fedd26;
 
@@ -73,11 +75,27 @@
 }
 
 /* Breadcrumb: measured padding 25.004px top / 22.4px bottom, 14px #333e48 */
+/* THE PADDING BELOW IS A DESKTOP MEASUREMENT AND WAS BEING SERVED TO PHONES.
+   25 + 24 + 22.4 is live's breadcrumb at 1440. At 380 live's is 42px total, and
+   ours measured 79 -- a 37px difference that pushed the h1, the result count,
+   the control bar and every card below them down by the same amount. Measured
+   on 2026-09-03, live vs ours before this rule:
+
+     h1     y180 vs y239      count  y220 vs y283
+     bar    y258 vs y321      card1  y310 vs y371
+
+   Every height already matched; only the offset did not, and this was it. */
 .category-breadcrumb {
-  padding: var(--cat-title-size) 0 var(--cat-crumb-pad-bot);
+  padding: 9px 0;
   font-size: 14px;
   line-height: var(--cat-body-line);
   color: var(--cat-ink);
+}
+
+@media (min-width: 768px) {
+  .category-breadcrumb {
+    padding: var(--cat-title-size) 0 var(--cat-crumb-pad-bot);
+  }
 }
 
 .category-breadcrumb a {
@@ -97,12 +115,26 @@
 
 /* Header row: h1 on inline-start (right), result count on inline-end (left).
    Measured: h1 25.004px / 500 / 40.0064px line-height, margin-bottom 14px. */
+/* LIVE STACKS THE COUNT UNDER THE TITLE ON A PHONE, and this was side by side.
+   Measured at 380 on 2026-09-03: live paints "דילים חמים" on its own line with
+   "מציגים את כל 2 התוצאות" beneath it; ours put both on one row, which reads as
+   a different header shape in every band below it. Stacked below 768 only --
+   the desktop row is what the 1440 comparison already scores at 6.2%. */
 .category-page__header {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
   margin-bottom: 14px;
+}
+
+@media (min-width: 768px) {
+  .category-page__header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
 }
 
 .category-page__title {
@@ -174,6 +206,33 @@
   font-size: 14px;
   padding: var(--cat-select-pad-y) 12px;
   cursor: pointer;
+}
+
+/* THE PHONE GETS LIVE'S "Filters" CONTROL, WHICH THIS BAR DID NOT HAVE.
+   Live's control bar at 380 carries "Filters" with a sliders glyph on the
+   inline-start and the sort pill on the inline-end; the view switcher is
+   desktop-only on both sides. Ours left that slot empty, so the sort pill drifted
+   across a bar that live keeps balanced.
+
+   It is an anchor, not a dialog: the filter sidebar is real, it is on this page,
+   and category-page.css already explains why it sits AFTER the grid. Sending the
+   thumb to it costs no JavaScript and cannot desynchronise from the panel it
+   names. */
+.category-control-bar__filters {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--spacing-touch-min, 44px);
+  padding: 0 4px;
+  color: var(--cat-ink);
+  font-size: 14px;
+  text-decoration: none;
+}
+
+@media (min-width: 768px) {
+  .category-control-bar__filters {
+    display: none;
+  }
 }
 
 /* View switcher: measured 116x39 on the inline-start side, hidden on mobile */
@@ -652,6 +711,116 @@
   background: var(--cat-brand-hover);
 }
 
+/* Category-scoped autocomplete: the one typing field on the site, sidebar only */
+.category-autocomplete {
+  position: relative;
+}
+
+.category-autocomplete__field {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--cat-line);
+  border-radius: 4px;
+  background: var(--cat-surface);
+  height: var(--cat-select-h);
+}
+
+.category-autocomplete__field:focus-within {
+  border-color: var(--cat-brand);
+}
+
+.category-autocomplete__input {
+  flex: 1 1 auto;
+  width: 0;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  padding: 0 12px;
+  font-size: 14px;
+  color: var(--cat-ink);
+}
+
+.category-autocomplete__input:focus {
+  outline: none;
+}
+
+.category-autocomplete__submit {
+  flex: 0 0 auto;
+  width: 40px;
+  border: 0;
+  background: var(--cat-brand);
+  color: var(--cat-ink);
+  cursor: pointer;
+}
+
+.category-autocomplete__submit:hover {
+  background: var(--cat-brand-hover);
+}
+
+.category-autocomplete__list {
+  position: absolute;
+  inset-inline: 0;
+  top: 100%;
+  z-index: 20;
+  margin: 4px 0 0;
+  padding: 4px 0;
+  list-style: none;
+  border: 1px solid var(--cat-line);
+  border-radius: 4px;
+  background: var(--cat-surface);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.category-autocomplete__list[hidden] {
+  display: none;
+}
+
+.category-autocomplete__option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--cat-ink);
+}
+
+.category-autocomplete__option.is-active {
+  background: var(--cat-surface-hover);
+  color: var(--cat-link);
+}
+
+.category-autocomplete__thumb {
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  background: var(--cat-thumb);
+  border-radius: 3px;
+}
+
+.category-autocomplete__name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.category-autocomplete__price {
+  flex: 0 0 auto;
+  font-weight: 700;
+  color: var(--cat-ink);
+}
+
+.category-autocomplete__empty {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--cat-muted);
+}
+
 /* Pagination - Electro yellow (var(--cat-brand) measured site-wide accent) */
 .category-pagination {
   display: flex;
@@ -833,4 +1002,102 @@
      the customer happens to be standing. */
   color: var(--cat-muted);
   opacity: 0.75;
+}
+
+/* Faceted navigation on the results page (components/search/SearchFacetNav).
+   Links and counts only; styled to sit as one visual system with the
+   listing sidebar below it, at the same ink, size and rhythm. */
+.search-facets {
+  width: 100%;
+  padding-top: 24px;
+  margin-top: 24px;
+  border-top: 1px solid var(--cat-line);
+  box-sizing: border-box;
+}
+
+.search-facets__active {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  color: var(--cat-muted);
+}
+
+.search-facets__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.search-facets__chip,
+.search-facets__clear {
+  display: inline-block;
+  padding: 4px 10px;
+  border: 1px solid var(--cat-line);
+  border-radius: 999px;
+  font-size: 13px;
+  color: var(--cat-ink);
+  text-decoration: none;
+}
+
+.search-facets__chip:hover,
+.search-facets__clear:hover {
+  color: var(--cat-link);
+  border-color: var(--cat-link);
+}
+
+.search-facets__clear {
+  border-style: dashed;
+}
+
+.search-facets__sections {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 24px;
+  align-items: start;
+}
+
+.search-facets__title {
+  margin: 0 0 10px;
+  font-size: 16.002px;
+  font-weight: 700;
+  color: var(--cat-ink);
+}
+
+.search-facets__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.search-facets__list li {
+  padding-block: 3px;
+}
+
+.search-facets__option {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--cat-ink);
+  text-decoration: none;
+}
+
+.search-facets__option:hover {
+  color: var(--cat-link);
+}
+
+.search-facets__option.is-current {
+  color: var(--cat-link);
+  font-weight: 700;
+}
+
+.search-facets__count {
+  color: var(--cat-muted);
+  font-variant-numeric: tabular-nums;
 }

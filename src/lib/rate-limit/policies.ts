@@ -52,6 +52,48 @@ export const RATE_LIMIT_POLICIES = {
     reason: 'OTP SMS to one number: the measured lockout vector',
   },
   'phone-verify': { limit: 20, windowSeconds: 3600, reason: 'OTP code guessing' },
+  'email-verify': { limit: 20, windowSeconds: 3600, reason: 'mail OTP code guessing, per IP' },
+  'email-verify-address': {
+    limit: 20,
+    windowSeconds: 3600,
+    reason: 'mail OTP code guessing, per address, so proxies cannot buy one account more tries',
+  },
+  'passkey-register': {
+    limit: 10,
+    windowSeconds: 3600,
+    reason: 'WebAuthn enrolment ceremonies; a real person adds one key, not eleven',
+  },
+  'mfa-enrol': {
+    limit: 10,
+    windowSeconds: 3600,
+    reason: 'TOTP factor creation, per user; one authenticator, not a pile of abandoned factors',
+  },
+  'mfa-verify': {
+    limit: 10,
+    windowSeconds: 900,
+    reason: 'six digits are brute forceable; per-user bound is what actually protects the account',
+  },
+  'mfa-verify-ip': {
+    limit: 30,
+    windowSeconds: 900,
+    reason: 'the same guesses spread across accounts from one address',
+  },
+  'passkey-login': {
+    limit: 30,
+    windowSeconds: 3600,
+    reason: 'challenge issuance, per IP; cheap but each one sets a cookie',
+  },
+  'passkey-login-finish': {
+    limit: 20,
+    windowSeconds: 3600,
+    reason: 'assertion verification plus admin calls; one per real login',
+  },
+  'push-subscribe': {
+    limit: 30,
+    windowSeconds: 3600,
+    reason:
+      'service-role upserts to push_subscriptions; a browser re-posts one per page load at most',
+  },
   reset: { limit: 5, windowSeconds: 3600, reason: 'reset mail, per IP' },
   'reset-address': {
     limit: 5,
@@ -59,17 +101,67 @@ export const RATE_LIMIT_POLICIES = {
     reason: 'reset mail to one address from rotating IPs',
   },
   'update-password': { limit: 10, windowSeconds: 3600, reason: 'session-bound password change' },
+  'change-password': {
+    limit: 10,
+    windowSeconds: 3600,
+    reason: 'current-password re-proof from inside the account, keyed on the user id',
+  },
 
   // -- Commerce. Higher, because a real shopper trips these by shopping.
   cart_write: { limit: 120, windowSeconds: 3600, reason: 'cart mutation, user or IP' },
   coupon: { limit: 10, windowSeconds: 3600, reason: 'coupon code guessing' },
+  // Higher than `coupon` because the Luhn check in the route rejects malformed
+  // codes before the counter is spent, so only well-formed probes count; a
+  // genuine shopper scans one flyer.
+  coupon_qr_apply: { limit: 30, windowSeconds: 3600, reason: 'printed QR landing, per IP' },
+  // The shape gate answers malformed strings free of charge, so only
+  // well-formed 16-character probes spend the counter; the code space is ~78
+  // bits, so the limit is UX headroom, not the security boundary.
+  gift_card_check: { limit: 20, windowSeconds: 3600, reason: 'gift card balance by code, per IP' },
+  gift_card_redeem: {
+    limit: 10,
+    windowSeconds: 3600,
+    reason: 'gift card redemption attempts, per user',
+  },
   begin_checkout: { limit: 10, windowSeconds: 60, reason: 'Cardcom low-profile creation' },
+  // One lookup per address field blur, against a third party that has no
+  // interest in being our proxy. A shopper correcting a street twice spends
+  // two; a scraper walking a city's streets through us spends the window.
+  'postal-lookup': {
+    limit: 30,
+    windowSeconds: 600,
+    reason: 'postal-code lookups relayed to Israel Post, per IP',
+  },
+
+  // -- Order velocity, one bucket per identity dimension (src/lib/fraud).
+  // `begin_checkout` above bounds a retry loop; these bound a fraud run, which
+  // rotates cards and accounts but keeps the address it ships to and the phone
+  // the courier calls. Spent after the idempotent-replay short-circuit, so a
+  // declined card retried against the same order costs nothing here. Exceeding
+  // one also enqueues a fraud review item for a human.
+  'checkout-velocity-ip': {
+    limit: 30,
+    windowSeconds: 86400,
+    reason: 'new orders from one address in a day; carding rotates cards, not addresses',
+  },
+  'checkout-velocity-email': {
+    limit: 15,
+    windowSeconds: 86400,
+    reason: 'new orders on one email in a day; a stolen-card run batches on one login',
+  },
+  'checkout-velocity-phone': {
+    limit: 15,
+    windowSeconds: 86400,
+    reason: 'new orders naming one delivery phone in a day, across accounts',
+  },
 
   // Added when this layer was rebased onto main: `referral-code` landed on main
   // after the table was first written, and the static audit below is what
   // caught it. Keyed on the user, not the IP, because the action can only touch
   // that user's own row - the limit bounds a held-down button, not an attacker.
   'referral-code': { limit: 10, windowSeconds: 3600, reason: 'referral code mint, per user' },
+  'review-submit': { limit: 5, windowSeconds: 3600, reason: 'review spam, per user' },
+  'wishlist-toggle': { limit: 60, windowSeconds: 3600, reason: 'held-down heart, per user' },
 
   // -- Vouchers and the supplier till. Keyed on the supplier user, never on IP:
   // a shop floor is one NAT address and would share one bucket.
@@ -82,12 +174,40 @@ export const RATE_LIMIT_POLICIES = {
   // -- Read paths. Large, because they are cheap and a human browsing hits them.
   search: { limit: 120, windowSeconds: 300, reason: 'search queries hit Meilisearch' },
   'search-suggest': { limit: 300, windowSeconds: 300, reason: 'typeahead fires per keystroke' },
+  'search-facets': { limit: 60, windowSeconds: 300, reason: 'faceted search, filters + counts' },
   analytics: { limit: 120, windowSeconds: 60, reason: 'beacon endpoint, per IP' },
 
   // -- Public write forms. Five an hour, because these reach a human inbox.
   contact: { limit: 5, windowSeconds: 3600, reason: 'contact form mail' },
   'supplier-lead': { limit: 5, windowSeconds: 3600, reason: 'supplier lead mail' },
   newsletter: { limit: 5, windowSeconds: 3600, reason: 'newsletter subscription mail' },
+
+  // -- Admin voucher tools. Keyed on the staff user; generous because a busy
+  // support shift is legitimate traffic, bounded because both reach the
+  // voucher tables with admin credentials.
+  'admin-voucher-lookup': {
+    limit: 60,
+    windowSeconds: 3600,
+    reason: 'admin voucher code lookup, per staff user',
+  },
+  'admin-voucher-redeem': {
+    limit: 30,
+    windowSeconds: 3600,
+    reason: 'admin manual voucher burn, per staff user',
+  },
+
+  // -- Privacy self-service. Keyed on the user: both act only on the caller's
+  // own account, so the limit bounds retries and stolen-session abuse.
+  'account-delete': {
+    limit: 3,
+    windowSeconds: 3600,
+    reason: 'destructive cascade over a dozen tables; a person needs exactly one',
+  },
+  'data-export': {
+    limit: 5,
+    windowSeconds: 3600,
+    reason: 'the export reads a dozen tables per call; a loop here is a cheap DB load',
+  },
 
   // -- Mobile app surfaces (`apps/mobile` is a second caller of these routes).
   'app-session': { limit: 30, windowSeconds: 600, reason: 'app session exchange, per IP' },

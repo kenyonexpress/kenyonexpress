@@ -1,0 +1,1054 @@
+{
+  "$what": "Every URL the old site served, with the mapping rule the pipeline chose for it.",
+  "$source": "wp_import/normalized/url_inventory.json",
+  "$crawled_at": "2026-08-11T13:09:23.214Z",
+  "$site": "https://kenyonexpress.co.il (WordPress + WooCommerce, retired)",
+  "$frozen": "Evidence of what the old site served. Never edit to fix a downstream problem; corrections belong in the consumer, with the reason recorded.",
+  "$count": 87,
+  "rows": [
+    {
+      "old_path": "/product/%d7%a9%d7%a2%d7%95%d7%9f-%d7%90%d7%a4%d7%9c-%d7%97%d7%9b%d7%9d-apple-watch-series-7",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "product",
+      "entity_wp_id": 6166,
+      "mapped_new_path": "/product/שעון-אפל-חכם-apple-watch-series-7",
+      "direct_match": true,
+      "gone_410": false,
+      "mapping_rule": "product_slug"
+    },
+    {
+      "old_path": "/product/%d7%97%d7%91%d7%99%d7%9c%d7%95%d7%aa-%d7%a2%d7%99%d7%a1%d7%95%d7%99-%d7%96%d7%95%d7%92%d7%99%d7%95%d7%aa-%d7%91%d7%a1%d7%95%d7%95%d7%99%d7%98%d7%94-%d7%a1%d7%a4%d7%90-%d7%91%d7%95%d7%98%d7%99%d7%a7",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "product",
+      "entity_wp_id": 6171,
+      "mapped_new_path": "/product/חבילות-עיסוי-זוגיות-בסוויטה-ספא-בוטיק",
+      "direct_match": true,
+      "gone_410": false,
+      "mapping_rule": "product_slug"
+    },
+    {
+      "old_path": "/product/%d7%90%d7%a8%d7%95%d7%97%d7%94-%d7%96%d7%95%d7%92%d7%99%d7%aa-%d7%a2%d7%9d-%d7%a4%d7%9c%d7%98%d7%aa-%d7%a7%d7%99%d7%9c%d7%95-%d7%91%d7%a9%d7%a8%d7%99-%d7%a4%d7%a8%d7%99%d7%9e%d7%99%d7%95%d7%9d-%d7%95",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "product",
+      "entity_wp_id": 6173,
+      "mapped_new_path": "/product/ארוחה-זוגית-עם-פלטת-קילו-בשרי-פרימיום-ו",
+      "direct_match": true,
+      "gone_410": false,
+      "mapping_rule": "product_slug"
+    },
+    {
+      "old_path": "/product/%d7%90%d7%a8%d7%95%d7%97%d7%aa-%d7%a9%d7%a3-%d7%91%d7%9e%d7%a1%d7%a2%d7%93%d7%aa-%d7%90%d7%95%d7%9c%d7%98%d7%a8%d7%94",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "product",
+      "entity_wp_id": 6175,
+      "mapped_new_path": "/product/ארוחת-שף-במסעדת-אולטרה",
+      "direct_match": true,
+      "gone_410": false,
+      "mapping_rule": "product_slug"
+    },
+    {
+      "old_path": "/product/%d7%97%d7%99%d7%aa%d7%95%d7%9c%d7%99-%d7%94%d7%90%d7%92%d7%99%d7%a1",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "product",
+      "entity_wp_id": 6181,
+      "mapped_new_path": "/product/חיתולי-האגיס",
+      "direct_match": true,
+      "gone_410": false,
+      "mapping_rule": "product_slug"
+    },
+    {
+      "old_path": "/product/%d7%97%d7%91%d7%99%d7%9c%d7%aa-%d7%92%d7%9c%d7%99%d7%93%d7%94",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "product",
+      "entity_wp_id": 6228,
+      "mapped_new_path": "/product/חבילת-גלידה",
+      "direct_match": true,
+      "gone_410": false,
+      "mapping_rule": "product_slug"
+    },
+    {
+      "old_path": "/product/%d7%9e%d7%96%d7%a7%d7%a7%d7%aa-%d7%95%d7%99%d7%a1%d7%a7%d7%99",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "product",
+      "entity_wp_id": 6230,
+      "mapped_new_path": "/product/מזקקת-ויסקי",
+      "direct_match": true,
+      "gone_410": false,
+      "mapping_rule": "product_slug"
+    },
+    {
+      "old_path": "/product/%d7%98%d7%99%d7%95%d7%9c-%d7%9e%d7%90%d7%95%d7%a8%d7%92%d7%9f-%d7%9c%d7%93%d7%95%d7%91%d7%90%d7%99",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "product",
+      "entity_wp_id": 6235,
+      "mapped_new_path": "/product/טיול-מאורגן-לדובאי",
+      "direct_match": true,
+      "gone_410": false,
+      "mapping_rule": "product_slug"
+    },
+    {
+      "old_path": "/product/%d7%97%d7%91%d7%99%d7%9c%d7%aa-%d7%a7%d7%95%d7%a7%d7%98%d7%99%d7%99%d7%9c%d7%99%d7%9d",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "product",
+      "entity_wp_id": 6248,
+      "mapped_new_path": "/product/חבילת-קוקטיילים",
+      "direct_match": true,
+      "gone_410": false,
+      "mapping_rule": "product_slug"
+    },
+    {
+      "old_path": "/product/6253",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "product",
+      "entity_wp_id": 6253,
+      "mapped_new_path": "/product/6253",
+      "direct_match": true,
+      "gone_410": false,
+      "mapping_rule": "product_slug"
+    },
+    {
+      "old_path": "/product/%d7%98%d7%99%d7%a4%d7%95%d7%9c-%d7%a4%d7%a0%d7%99%d7%9d-%d7%a2%d7%9e%d7%95%d7%a7",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "product",
+      "entity_wp_id": 6297,
+      "mapped_new_path": "/product/טיפול-פנים-עמוק",
+      "direct_match": true,
+      "gone_410": false,
+      "mapping_rule": "product_slug"
+    },
+    {
+      "old_path": "/product/%d7%90%d7%a8%d7%95%d7%97%d7%94-%d7%91%d7%a9%d7%a8%d7%99%d7%aa-%d7%96%d7%95%d7%92%d7%99%d7%aa",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "product",
+      "entity_wp_id": 6299,
+      "mapped_new_path": "/product/ארוחה-בשרית-זוגית",
+      "direct_match": true,
+      "gone_410": false,
+      "mapping_rule": "product_slug"
+    },
+    {
+      "old_path": "/product/%d7%97%d7%99%d7%aa%d7%95%d7%9c%d7%99-%d7%a4%d7%9e%d7%a4%d7%a8%d7%a1",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "product",
+      "entity_wp_id": 6300,
+      "mapped_new_path": "/product/חיתולי-פמפרס",
+      "direct_match": true,
+      "gone_410": false,
+      "mapping_rule": "product_slug"
+    },
+    {
+      "old_path": "/product/%d7%90%d7%a8%d7%95%d7%97%d7%aa-%d7%91%d7%95%d7%a7%d7%a8-%d7%96%d7%95%d7%92%d7%99%d7%aa-%d7%91%d7%a7%d7%a4%d7%94-%d7%a7%d7%a4%d7%94",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "product",
+      "entity_wp_id": 6301,
+      "mapped_new_path": "/product/ארוחת-בוקר-זוגית-בקפה-קפה",
+      "direct_match": true,
+      "gone_410": false,
+      "mapping_rule": "product_slug"
+    },
+    {
+      "old_path": "/product/%d7%90%d7%95%d7%96%d7%a0%d7%99%d7%95%d7%aa-%d7%90%d7%99%d7%99%d7%a8%d7%a4%d7%95%d7%93%d7%a1-3",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "product",
+      "entity_wp_id": 6302,
+      "mapped_new_path": "/product/אוזניות-איירפודס-3",
+      "direct_match": true,
+      "gone_410": false,
+      "mapping_rule": "product_slug"
+    },
+    {
+      "old_path": "/product/%d7%9e%d7%9c%d7%95%d7%9f-4-%d7%9b%d7%95%d7%9b%d7%91%d7%99%d7%9d-%d7%a4%d7%9c%d7%95%d7%a1-%d7%90%d7%a8%d7%95%d7%97%d7%aa-%d7%91%d7%95%d7%a7%d7%a8",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "product",
+      "entity_wp_id": 6306,
+      "mapped_new_path": "/product/מלון-4-כוכבים-פלוס-ארוחת-בוקר",
+      "direct_match": true,
+      "gone_410": false,
+      "mapping_rule": "product_slug"
+    },
+    {
+      "old_path": "/product/samsung-galaxy-s22-128gb-samsung-galaxy-s22-128gb-5g",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "product",
+      "entity_wp_id": 6312,
+      "mapped_new_path": "/product/samsung-galaxy-s22-128gb-samsung-galaxy-s22-128gb-5g",
+      "direct_match": true,
+      "gone_410": false,
+      "mapping_rule": "product_slug"
+    },
+    {
+      "old_path": "/product/%d7%90%d7%99%d7%99%d7%a4%d7%95%d7%9f-13",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "product",
+      "entity_wp_id": 6315,
+      "mapped_new_path": "/product/אייפון-13",
+      "direct_match": true,
+      "gone_410": false,
+      "mapping_rule": "product_slug"
+    },
+    {
+      "old_path": "/product/%d7%9e%d7%9c%d7%95%d7%9f-5-%d7%9b%d7%95%d7%9b%d7%91%d7%99%d7%9d-%d7%91%d7%98%d7%91%d7%a8%d7%99%d7%94",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "product",
+      "entity_wp_id": 6334,
+      "mapped_new_path": "/product/מלון-5-כוכבים-בטבריה",
+      "direct_match": true,
+      "gone_410": false,
+      "mapping_rule": "product_slug"
+    },
+    {
+      "old_path": "/product/barbecue",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "product",
+      "entity_wp_id": 6462,
+      "mapped_new_path": "/product/barbecue",
+      "direct_match": true,
+      "gone_410": false,
+      "mapping_rule": "product_slug"
+    },
+    {
+      "old_path": "/product/barbecue-2",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "product",
+      "entity_wp_id": 6554,
+      "mapped_new_path": "/product/barbecue-2",
+      "direct_match": true,
+      "gone_410": false,
+      "mapping_rule": "product_slug"
+    },
+    {
+      "old_path": "/product/pampers-premium-care-diaper-pants-medium",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "product",
+      "entity_wp_id": 6561,
+      "mapped_new_path": "/product/pampers-premium-care-diaper-pants-medium",
+      "direct_match": true,
+      "gone_410": false,
+      "mapping_rule": "product_slug"
+    },
+    {
+      "old_path": "/product/travelling-to-the-island-of-maldives",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "product",
+      "entity_wp_id": 6565,
+      "mapped_new_path": "/product/travelling-to-the-island-of-maldives",
+      "direct_match": true,
+      "gone_410": false,
+      "mapping_rule": "product_slug"
+    },
+    {
+      "old_path": "/product/island-of-maldives",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "product",
+      "entity_wp_id": 6566,
+      "mapped_new_path": "/product/island-of-maldives",
+      "direct_match": true,
+      "gone_410": false,
+      "mapping_rule": "product_slug"
+    },
+    {
+      "old_path": "/product/bar-drink",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "product",
+      "entity_wp_id": 6591,
+      "mapped_new_path": "/product/bar-drink",
+      "direct_match": true,
+      "gone_410": false,
+      "mapping_rule": "product_slug"
+    },
+    {
+      "old_path": "/product/restaurants-meat-2",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "product",
+      "entity_wp_id": 6599,
+      "mapped_new_path": "/product/restaurants-meat-2",
+      "direct_match": true,
+      "gone_410": false,
+      "mapping_rule": "product_slug"
+    },
+    {
+      "old_path": "/product/restaurants-meat-3",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "product",
+      "entity_wp_id": 6604,
+      "mapped_new_path": "/product/restaurants-meat-3",
+      "direct_match": true,
+      "gone_410": false,
+      "mapping_rule": "product_slug"
+    },
+    {
+      "old_path": "/product/%D7%97%D7%99%D7%AA%D7%95%D7%9C%D7%99-%D7%A4%D7%9E%D7%A4%D7%A8%D7%A1-%D7%94%D7%A2%D7%AA%D7%A7",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "product",
+      "entity_wp_id": 6810,
+      "mapped_new_path": "/product/חיתולי-פמפרס-העתק",
+      "direct_match": true,
+      "gone_410": false,
+      "mapping_rule": "product_slug"
+    },
+    {
+      "old_path": "/product/%d7%a2%d7%99%d7%a1%d7%95%d7%99-%d7%9e%d7%a4%d7%a0%d7%a7",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "product",
+      "entity_wp_id": 7377,
+      "mapped_new_path": "/product/עיסוי-מפנק",
+      "direct_match": true,
+      "gone_410": false,
+      "mapping_rule": "product_slug"
+    },
+    {
+      "old_path": "/product/%d7%a7%d7%95%d7%a1%d7%9e%d7%98%d7%99%d7%a7%d7%90%d7%99%d7%aa",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "product",
+      "entity_wp_id": 7388,
+      "mapped_new_path": "/product/קוסמטיקאית",
+      "direct_match": true,
+      "gone_410": false,
+      "mapping_rule": "product_slug"
+    },
+    {
+      "old_path": "/product/7388",
+      "sources": [
+        "wp_old_slug"
+      ],
+      "entity": "product",
+      "entity_wp_id": 7388,
+      "mapped_new_path": "/product/קוסמטיקאית",
+      "direct_match": false,
+      "gone_410": false,
+      "mapping_rule": "wp_old_slug"
+    },
+    {
+      "old_path": "/product/%d7%a6%d7%99%d7%9e%d7%a8-%d7%9e%d7%90%d7%a1%d7%98%d7%a8",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "product",
+      "entity_wp_id": 7389,
+      "mapped_new_path": "/product/צימר-מאסטר",
+      "direct_match": true,
+      "gone_410": false,
+      "mapping_rule": "product_slug"
+    },
+    {
+      "old_path": "/product/%d7%a2%d7%99%d7%a1%d7%95%d7%99-%d7%9e%d7%a9%d7%95%d7%9c%d7%91-%d7%9e%d7%a4%d7%a0%d7%a7-%d7%9c%d7%92%d7%91%d7%a8-%d7%a8%d7%a7-108%e2%82%aa",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "product",
+      "entity_wp_id": 8420,
+      "mapped_new_path": "/product/עיסוי-משולב-מפנק-לגבר-רק-108",
+      "direct_match": false,
+      "gone_410": false,
+      "mapping_rule": "product_slug"
+    },
+    {
+      "old_path": "/product/%d7%a2%d7%99%d7%a1%d7%95%d7%99-%d7%9e%d7%a4%d7%a0%d7%a7-%d7%9c%d7%92%d7%91%d7%a8-45-%d7%93%d7%a7%d7%95%d7%aa-%d7%a8%d7%a7-%d7%91108%e2%82%aa",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "product",
+      "entity_wp_id": 8425,
+      "mapped_new_path": "/product/עיסוי-מפנק-לגבר-45-דקות-רק-ב108",
+      "direct_match": false,
+      "gone_410": false,
+      "mapping_rule": "product_slug"
+    },
+    {
+      "old_path": "/product/%d7%a2%d7%99%d7%a1%d7%95%d7%99-%d7%9e%d7%90%d7%a1%d7%98%d7%a8",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "product",
+      "entity_wp_id": 8431,
+      "mapped_new_path": "/product/עיסוי-מאסטר",
+      "direct_match": true,
+      "gone_410": false,
+      "mapping_rule": "product_slug"
+    },
+    {
+      "old_path": "/product/%d7%90%d7%91%d7%97%d7%95%d7%9f-%d7%95%d7%90%d7%91%d7%97%d7%95%d7%9f%d7%98%d7%99%d7%a4%d7%95%d7%9c-%d7%a8%d7%a4%d7%a1%d7%95%d7%9c%d7%95%d7%92%d7%99",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "product",
+      "entity_wp_id": 8432,
+      "mapped_new_path": "/product/אבחון-ואבחוןטיפול-רפסולוגי",
+      "direct_match": true,
+      "gone_410": false,
+      "mapping_rule": "product_slug"
+    },
+    {
+      "old_path": "/product/%d7%aa%d7%96%d7%95%d7%a0%d7%94-%d7%94%d7%95%d7%9c%d7%99%d7%a1%d7%98%d7%99%d7%aa-%d7%98%d7%91%d7%a2%d7%99%d7%aa-%d7%95%d7%a6%d7%9e%d7%97%d7%99-%d7%9e%d7%a8%d7%a4%d7%90",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "product",
+      "entity_wp_id": 8435,
+      "mapped_new_path": "/product/תזונה-הוליסטית-טבעית-וצמחי-מרפא",
+      "direct_match": true,
+      "gone_410": false,
+      "mapping_rule": "product_slug"
+    },
+    {
+      "old_path": "/product/%d7%97%d7%95%d7%a4%d7%a9%d7%94-%d7%97%d7%9c%d7%95%d7%9e%d7%99%d7%aa-%d7%91%d7%90%d7%97%d7%95%d7%96%d7%aa-%d7%93%d7%a0%d7%99%d7%90%d7%9c",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "product",
+      "entity_wp_id": 8451,
+      "mapped_new_path": "/product/חופשה-חלומית-באחוזת-דניאל",
+      "direct_match": true,
+      "gone_410": false,
+      "mapping_rule": "product_slug"
+    },
+    {
+      "old_path": "/product/%d7%a6%d7%99%d7%9e%d7%a8-%d7%9e%d7%90%d7%a1%d7%98%d7%a8-copy",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "product",
+      "entity_wp_id": 8452,
+      "mapped_new_path": "/product/צימר-מאסטר-copy",
+      "direct_match": true,
+      "gone_410": false,
+      "mapping_rule": "product_slug"
+    },
+    {
+      "old_path": "/product/%d7%a6%d7%99%d7%9e%d7%a8-%d7%9e%d7%90%d7%a1%d7%98%d7%a8-copy-copy",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "product",
+      "entity_wp_id": 8480,
+      "mapped_new_path": "/product/צימר-מאסטר-copy-copy",
+      "direct_match": true,
+      "gone_410": false,
+      "mapping_rule": "product_slug"
+    },
+    {
+      "old_path": "/product/%d7%9e%d7%95%d7%a6%d7%a8-%d7%9c%d7%93%d7%95%d7%92%d7%9e%d7%90",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "product",
+      "entity_wp_id": 8812,
+      "mapped_new_path": "/product/מוצר-לדוגמא",
+      "direct_match": true,
+      "gone_410": false,
+      "mapping_rule": "product_slug"
+    },
+    {
+      "old_path": "/product/%d7%a7%d7%95%d7%a4%d7%95%d7%9f-%d7%98%d7%a1%d7%98",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "product",
+      "entity_wp_id": 8836,
+      "mapped_new_path": "/product/קופון-טסט",
+      "direct_match": true,
+      "gone_410": false,
+      "mapping_rule": "product_slug"
+    },
+    {
+      "old_path": "/product/%d7%98%d7%99%d7%a4%d7%95%d7%9c-%d7%a4%d7%a0%d7%99%d7%9d-copy",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "product",
+      "entity_wp_id": 8893,
+      "mapped_new_path": "/product/טיפול-פנים-copy",
+      "direct_match": true,
+      "gone_410": false,
+      "mapping_rule": "product_slug"
+    },
+    {
+      "old_path": "/product/%d7%a6%d7%99%d7%9e%d7%a8-%d7%a9%d7%95%d7%95%d7%99%d7%a5-%d7%91%d7%a6%d7%a4%d7%95%d7%9f",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "product",
+      "entity_wp_id": 8898,
+      "mapped_new_path": "/product/צימר-שוויץ-בצפון",
+      "direct_match": true,
+      "gone_410": false,
+      "mapping_rule": "product_slug"
+    },
+    {
+      "old_path": "/product/%d7%aa%d7%a1%d7%a4%d7%95%d7%a8%d7%aa-%d7%9c%d7%92%d7%91%d7%a8-%d7%99%d7%9c%d7%93-%d7%90%d7%95-%d7%a1%d7%99%d7%93%d7%95%d7%a8-%d7%96%d7%a7%d7%9f-%d7%91%d7%a4%d7%aa%d7%97-%d7%aa%d7%a7%d7%95%d7%95%d7%94",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "product",
+      "entity_wp_id": 9122,
+      "mapped_new_path": "/product/תספורת-לגבר-ילד-או-סידור-זקן-בפתח-תקווה",
+      "direct_match": true,
+      "gone_410": false,
+      "mapping_rule": "product_slug"
+    },
+    {
+      "old_path": "/product/%d7%a2%d7%95%d7%96%d7%a8%d7%aa-%d7%90%d7%99%d7%a9%d7%99%d7%aa-%d7%a9%d7%99%d7%a8%d7%95%d7%aa%d7%99-%d7%9e%d7%a9%d7%a8%d7%93",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "product",
+      "entity_wp_id": 9132,
+      "mapped_new_path": "/product/עוזרת-אישית-שירותי-משרד",
+      "direct_match": true,
+      "gone_410": false,
+      "mapping_rule": "product_slug"
+    },
+    {
+      "old_path": "/product/product-template",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "product",
+      "entity_wp_id": 6503,
+      "mapped_new_path": null,
+      "direct_match": false,
+      "gone_410": true,
+      "mapping_rule": "excluded_status:private"
+    },
+    {
+      "old_path": "/product/%d7%97%d7%95%d7%a4%d7%a9%d7%94-%d7%97%d7%9c%d7%95%d7%9e%d7%99%d7%aa-%d7%91%d7%90%d7%97%d7%95%d7%96%d7%aa-%d7%93%d7%a0%d7%99%d7%90%d7%9c-3-%d7%9c%d7%99%d7%9c%d7%95%d7%aa-copy",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "product",
+      "entity_wp_id": 8481,
+      "mapped_new_path": null,
+      "direct_match": false,
+      "gone_410": true,
+      "mapping_rule": "excluded_status:private"
+    },
+    {
+      "old_path": "/product/reverse-withdrawal-payment",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "product",
+      "entity_wp_id": 8548,
+      "mapped_new_path": null,
+      "direct_match": false,
+      "gone_410": true,
+      "mapping_rule": "excluded_plugin_product"
+    },
+    {
+      "old_path": "/product-category/uncategorized",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "category",
+      "entity_wp_id": 15,
+      "mapped_new_path": "/category/uncategorized",
+      "direct_match": false,
+      "gone_410": false,
+      "mapping_rule": "category_slug"
+    },
+    {
+      "old_path": "/product-category/%d7%9e%d7%a1%d7%a2%d7%93%d7%95%d7%aa-%d7%95%d7%91%d7%aa%d7%99-%d7%a7%d7%a4%d7%94",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "category",
+      "entity_wp_id": 270,
+      "mapped_new_path": "/category/מסעדות-ובתי-קפה",
+      "direct_match": false,
+      "gone_410": false,
+      "mapping_rule": "category_slug"
+    },
+    {
+      "old_path": "/product-category/%d7%99%d7%95%d7%a4%d7%99-%d7%91%d7%a8%d7%99%d7%90%d7%95%d7%aa-%d7%95%d7%98%d7%99%d7%a4%d7%95%d7%97",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "category",
+      "entity_wp_id": 271,
+      "mapped_new_path": "/category/יופי-בריאות-וטיפוח",
+      "direct_match": false,
+      "gone_410": false,
+      "mapping_rule": "category_slug"
+    },
+    {
+      "old_path": "/product-category/%d7%98%d7%9c%d7%a4%d7%95%d7%a0%d7%99%d7%9d-%d7%9e%d7%97%d7%a9%d7%91%d7%99%d7%9d-%d7%95%d7%90%d7%91%d7%99%d7%96%d7%a8%d7%99%d7%9d",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "category",
+      "entity_wp_id": 272,
+      "mapped_new_path": "/category/טלפונים-מחשבים-ואביזרים",
+      "direct_match": false,
+      "gone_410": false,
+      "mapping_rule": "category_slug"
+    },
+    {
+      "old_path": "/product-category/%d7%aa%d7%99%d7%a0%d7%95%d7%a7%d7%95%d7%aa-%d7%95%d7%99%d7%9c%d7%93%d7%99%d7%9d",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "category",
+      "entity_wp_id": 273,
+      "mapped_new_path": "/category/תינוקות-וילדים",
+      "direct_match": false,
+      "gone_410": false,
+      "mapping_rule": "category_slug"
+    },
+    {
+      "old_path": "/product-category/%d7%a6%d7%99%d7%9e%d7%a8%d7%99%d7%9d-%d7%9e%d7%9c%d7%95%d7%a0%d7%95%d7%aa-%d7%95%d7%a0%d7%95%d7%a4%d7%a9",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "category",
+      "entity_wp_id": 274,
+      "mapped_new_path": "/category/צימרים-מלונות-ונופש",
+      "direct_match": false,
+      "gone_410": false,
+      "mapping_rule": "category_slug"
+    },
+    {
+      "old_path": "/product-category/%d7%a6%d7%99%d7%95%d7%93-%d7%95%d7%9e%d7%96%d7%95%d7%9f-%d7%9c%d7%91%d7%a2%d7%9c%d7%99-%d7%97%d7%99%d7%99%d7%9d",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "category",
+      "entity_wp_id": 275,
+      "mapped_new_path": "/category/ציוד-ומזון-לבעלי-חיים",
+      "direct_match": false,
+      "gone_410": false,
+      "mapping_rule": "category_slug"
+    },
+    {
+      "old_path": "/product-category/%d7%91%d7%a2%d7%9c%d7%99-%d7%9e%d7%a7%d7%a6%d7%95%d7%a2",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "category",
+      "entity_wp_id": 276,
+      "mapped_new_path": "/category/בעלי-מקצוע",
+      "direct_match": false,
+      "gone_410": false,
+      "mapping_rule": "category_slug"
+    },
+    {
+      "old_path": "/product-category/%d7%a7%d7%95%d7%a8%d7%a1%d7%99%d7%9d-express",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "category",
+      "entity_wp_id": 277,
+      "mapped_new_path": "/category/קורסים-express",
+      "direct_match": false,
+      "gone_410": false,
+      "mapping_rule": "category_slug"
+    },
+    {
+      "old_path": "/product-category/hot-deals",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "category",
+      "entity_wp_id": 310,
+      "mapped_new_path": "/category/hot-deals",
+      "direct_match": false,
+      "gone_410": false,
+      "mapping_rule": "category_slug"
+    },
+    {
+      "old_path": "/product-category/%d7%a2%d7%93-99",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "category",
+      "entity_wp_id": 311,
+      "mapped_new_path": "/category/עד-99",
+      "direct_match": false,
+      "gone_410": false,
+      "mapping_rule": "category_slug"
+    },
+    {
+      "old_path": "/privacy-policy",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "page",
+      "entity_wp_id": 3,
+      "mapped_new_path": null,
+      "direct_match": false,
+      "gone_410": false,
+      "mapping_rule": "page_unmapped"
+    },
+    {
+      "old_path": "/refund_returns",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "page",
+      "entity_wp_id": 12,
+      "mapped_new_path": null,
+      "direct_match": false,
+      "gone_410": false,
+      "mapping_rule": "page_unmapped"
+    },
+    {
+      "old_path": "/blog",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "page",
+      "entity_wp_id": 307,
+      "mapped_new_path": null,
+      "direct_match": false,
+      "gone_410": true,
+      "mapping_rule": "page_gone_410"
+    },
+    {
+      "old_path": "/recently-viewed",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "page",
+      "entity_wp_id": 2174,
+      "mapped_new_path": null,
+      "direct_match": false,
+      "gone_410": true,
+      "mapping_rule": "page_gone_410"
+    },
+    {
+      "old_path": "/track-your-order",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "page",
+      "entity_wp_id": 2181,
+      "mapped_new_path": "/account/orders",
+      "direct_match": false,
+      "gone_410": false,
+      "mapping_rule": "page_redirect"
+    },
+    {
+      "old_path": "/terms-and-conditions",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "page",
+      "entity_wp_id": 2183,
+      "mapped_new_path": null,
+      "direct_match": false,
+      "gone_410": false,
+      "mapping_rule": "page_unmapped"
+    },
+    {
+      "old_path": "/about",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "page",
+      "entity_wp_id": 2494,
+      "mapped_new_path": null,
+      "direct_match": false,
+      "gone_410": false,
+      "mapping_rule": "page_unmapped"
+    },
+    {
+      "old_path": "/contact",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "page",
+      "entity_wp_id": 2508,
+      "mapped_new_path": null,
+      "direct_match": false,
+      "gone_410": false,
+      "mapping_rule": "page_unmapped"
+    },
+    {
+      "old_path": "/store-directory",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "page",
+      "entity_wp_id": 2844,
+      "mapped_new_path": "/products",
+      "direct_match": false,
+      "gone_410": false,
+      "mapping_rule": "page_redirect"
+    },
+    {
+      "old_path": "/compare",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "page",
+      "entity_wp_id": 2917,
+      "mapped_new_path": null,
+      "direct_match": false,
+      "gone_410": true,
+      "mapping_rule": "page_gone_410"
+    },
+    {
+      "old_path": "/cart",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "page",
+      "entity_wp_id": 3134,
+      "mapped_new_path": "/cart",
+      "direct_match": true,
+      "gone_410": false,
+      "mapping_rule": "page_redirect"
+    },
+    {
+      "old_path": "/checkout",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "page",
+      "entity_wp_id": 3135,
+      "mapped_new_path": "/checkout",
+      "direct_match": true,
+      "gone_410": false,
+      "mapping_rule": "page_redirect"
+    },
+    {
+      "old_path": "/shop",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "page",
+      "entity_wp_id": 3853,
+      "mapped_new_path": "/products",
+      "direct_match": false,
+      "gone_410": false,
+      "mapping_rule": "page_redirect"
+    },
+    {
+      "old_path": "/my-account",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "page",
+      "entity_wp_id": 3854,
+      "mapped_new_path": "/account",
+      "direct_match": false,
+      "gone_410": false,
+      "mapping_rule": "page_redirect"
+    },
+    {
+      "old_path": "/wishlist",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "page",
+      "entity_wp_id": 3855,
+      "mapped_new_path": null,
+      "direct_match": false,
+      "gone_410": true,
+      "mapping_rule": "page_gone_410"
+    },
+    {
+      "old_path": "/%d7%a7%d7%a0%d7%99%d7%95%d7%9f-%d7%90%d7%a7%d7%a1%d7%a4%d7%a8%d7%a1-%d7%93%d7%a3-%d7%94%d7%91%d7%99%d7%aa-%d7%9e%d7%a1%d7%93%d7%a8%d7%99%d7%9d-%d7%9c%d7%9a-%d7%91%d7%99%d7%9c%d7%95%d7%99",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "page",
+      "entity_wp_id": 4878,
+      "mapped_new_path": "/",
+      "direct_match": false,
+      "gone_410": false,
+      "mapping_rule": "page_redirect"
+    },
+    {
+      "old_path": "/",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "page",
+      "entity_wp_id": 5202,
+      "mapped_new_path": "/",
+      "direct_match": true,
+      "gone_410": false,
+      "mapping_rule": "page_redirect"
+    },
+    {
+      "old_path": "/dashboard",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "page",
+      "entity_wp_id": 5865,
+      "mapped_new_path": null,
+      "direct_match": false,
+      "gone_410": true,
+      "mapping_rule": "page_gone_410"
+    },
+    {
+      "old_path": "/store-listing",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "page",
+      "entity_wp_id": 5866,
+      "mapped_new_path": null,
+      "direct_match": false,
+      "gone_410": true,
+      "mapping_rule": "page_gone_410"
+    },
+    {
+      "old_path": "/my-orders",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "page",
+      "entity_wp_id": 5867,
+      "mapped_new_path": "/account/orders",
+      "direct_match": false,
+      "gone_410": false,
+      "mapping_rule": "page_redirect"
+    },
+    {
+      "old_path": "/%d7%93%d7%a3-%d7%91%d7%99%d7%aa-%d7%98%d7%a1%d7%98",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "page",
+      "entity_wp_id": 6655,
+      "mapped_new_path": "/",
+      "direct_match": false,
+      "gone_410": false,
+      "mapping_rule": "page_redirect"
+    },
+    {
+      "old_path": "/error-payment-payplus",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "page",
+      "entity_wp_id": 7659,
+      "mapped_new_path": null,
+      "direct_match": false,
+      "gone_410": true,
+      "mapping_rule": "page_gone_410"
+    },
+    {
+      "old_path": "/coupon-scanner",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "page",
+      "entity_wp_id": 8842,
+      "mapped_new_path": "/scan",
+      "direct_match": false,
+      "gone_410": false,
+      "mapping_rule": "page_redirect"
+    },
+    {
+      "old_path": "/wishlist-archive",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "page",
+      "entity_wp_id": 8965,
+      "mapped_new_path": null,
+      "direct_match": false,
+      "gone_410": true,
+      "mapping_rule": "page_gone_410"
+    },
+    {
+      "old_path": "/my-wishlist",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "page",
+      "entity_wp_id": 8966,
+      "mapped_new_path": null,
+      "direct_match": false,
+      "gone_410": true,
+      "mapping_rule": "page_gone_410"
+    },
+    {
+      "old_path": "/affiliate-area",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "page",
+      "entity_wp_id": 8990,
+      "mapped_new_path": null,
+      "direct_match": false,
+      "gone_410": true,
+      "mapping_rule": "page_gone_410"
+    },
+    {
+      "old_path": "/yith-compare",
+      "sources": [
+        "crawl"
+      ],
+      "entity": "page",
+      "entity_wp_id": 9246,
+      "mapped_new_path": null,
+      "direct_match": false,
+      "gone_410": true,
+      "mapping_rule": "page_gone_410"
+    }
+  ]
+}

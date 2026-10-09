@@ -63,7 +63,8 @@ export default async function DiscountsPage() {
       {campaigns.some((c) => c.counter_drift) && (
         <p className="rounded-lg bg-amber-50 p-4 text-sm text-amber-900">
           לקמפיין אחד או יותר מונה השימושים אינו תואם את יומן המימושים. פירוש הדבר שמישהו כתב ל-
-          <code>used_count</code> מחוץ ל-<code>fn_claim_discount</code>, והמגבלות אינן נאכפות כרגע.
+          <code>used_count</code> מחוץ ל-<code>claim_order_discount</code>, והמגבלות אינן נאכפות
+          כרגע.
         </p>
       )}
 

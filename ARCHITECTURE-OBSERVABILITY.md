@@ -239,6 +239,21 @@ marker would buy nothing and would put the alerting path beyond the reach of a
 unit test. **The alerting path is the one part of an incident response that has
 to be known to work before the incident.**
 
+### 4.6 Telegram, next to ntfy (2026-09-17)
+
+`src/lib/observability/telegram.ts`. ntfy is a public topic: whoever guesses
+the name reads every alert and can post to it. That was acceptable for a
+channel carrying identifiers only; it is not acceptable as the ONLY channel
+once an external monitor feeds it. A bot posting to one private chat is the
+access control ntfy never had.
+
+`sendAlert` posts to both, concurrently, and returns `true` when either
+accepted. `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID`; inert unless both are
+set. Plain text, no `parse_mode`, because an alert body carries unescaped
+error text and a message refused for formatting is a message that never
+arrived. Same 4 s timeout, same never-throws rule. `pnpm telegram:verify`
+proves the path with a real message.
+
 ---
 
 ## 5. Health checks
@@ -267,6 +282,20 @@ a health check can be honest in both places.
 
 `buildHealthAlert` decides whether the report is worth a push, so the health
 cron does not become a sixth alert that fires every five minutes.
+
+### 5.2 The check that cannot see itself down
+
+`/api/cron/health` runs on the deployment it checks. Vercel down, DNS wrong,
+certificate lapsed: the cron does not run, so it does not page. Only a poller
+outside the deployment can report that the deployment is unreachable.
+
+That is UptimeRobot on `/api/health`, with a webhook alert contact pointing at
+`/api/alerts/uptimerobot`. The route is gated by a constant-time compare on
+`UPTIMEROBOT_WEBHOOK_SECRET` (closed when unset), parses UptimeRobot's
+`*placeholder*` fields from GET query, JSON or form body, and hands the
+result to `sendAlert`. Down pages urgently, up closes quietly, TLS expiry is
+high. `scripts/uptimerobot/setup.mjs` creates or updates the monitor and the
+contact idempotently; the decisions are in `plan.mjs`, unit tested.
 
 ---
 

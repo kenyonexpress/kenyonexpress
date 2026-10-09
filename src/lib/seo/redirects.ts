@@ -1,3 +1,4 @@
+import { requireAnonKey } from '@/lib/supabase/anon-key'
 import { createClient } from '@supabase/supabase-js'
 import { normalizePath } from './normalize-path'
 
@@ -55,11 +56,9 @@ let inflight: Promise<Map<string, RedirectHit>> | null = null
  * developer's machine. Through anon it loads.
  */
 function client() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { auth: { persistSession: false } },
-  )
+  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, requireAnonKey(), {
+    auth: { persistSession: false },
+  })
 }
 
 async function load(): Promise<Map<string, RedirectHit>> {

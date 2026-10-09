@@ -23,7 +23,7 @@ export default function ContactForm() {
       noValidate
     >
       {/* Honeypot: hidden from sighted users and most AT; bots still fill it. */}
-      <div aria-hidden="true" className="absolute -start-[9999px] h-0 w-0 overflow-hidden">
+      <div aria-hidden="true" className="honeypot-offscreen">
         <label htmlFor={`${baseId}-company`}>חברה</label>
         <input
           id={`${baseId}-company`}

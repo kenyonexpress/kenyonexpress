@@ -66,6 +66,9 @@ export const FILTERABLE_ATTRIBUTES = [
   'city',
   'tags',
   'supplier_id',
+  // A brand facet on the results page, and the join key back from the brands
+  // index: a brand document's `name` is exactly this attribute's value.
+  'brand',
   'kenyon_price',
   'in_stock',
   // Enables `_geoRadius(lat, lng, metres)`. Filtering by distance and sorting
@@ -104,6 +107,34 @@ export const RANKING_RULES = [
  */
 export const STOP_WORDS = ['של', 'עם', 'את', 'או', 'גם', 'זה', 'הוא', 'היא'] as const
 
+/**
+ * Tokenizer locale hints (Meilisearch >= 1.10, `localizedAttributes`).
+ *
+ * Charabia detects scripts per token, but detection is a guess on short
+ * fields: a two-word product name gives it almost nothing to vote on.
+ * Declaring the Hebrew-content attributes as `heb` pins segmentation and
+ * normalisation to the Hebrew tokenizer instead of the guess.
+ *
+ * `name_en`, `brand`, `sku` and `slug` are deliberately absent: their content
+ * is Latin or mixed, and a wrong pin is worse than detection.
+ *
+ * On a Meilisearch older than 1.10 the settings PATCH would reject the key,
+ * so the setup script applies it separately and degrades to a warning.
+ */
+export const HEBREW_LOCALES = ['heb'] as const
+export const HEBREW_ATTRIBUTE_PATTERNS = [
+  'name_he',
+  'short_description_he',
+  'description_he',
+  'category_name_he',
+  'city',
+  'tags',
+  'supplier_name',
+] as const
+export const LOCALIZED_ATTRIBUTES = [
+  { attributePatterns: [...HEBREW_ATTRIBUTE_PATTERNS], locales: [...HEBREW_LOCALES] },
+]
+
 export const INDEX_SETTINGS = {
   searchableAttributes: [...SEARCHABLE_ATTRIBUTES],
   // Hebrew has no stemmer in Meilisearch, so plurals and attached prefixes are
@@ -119,6 +150,240 @@ export const INDEX_SETTINGS = {
     minWordSizeForTypos: { ...TYPO_TOLERANCE.minWordSizeForTypos },
     disableOnAttributes: [...TYPO_TOLERANCE.disableOnAttributes],
   },
+  localizedAttributes: LOCALIZED_ATTRIBUTES,
+}
+
+// ---------------------------------------------------------------------------
+// The brands index.
+//
+// There is no brands table: `products.brand` is free text, so the index is
+// derived, one document per distinct brand, rebuilt by
+// scripts/setup-meilisearch.mjs from the same product read that fills the
+// products index. It serves brand autocomplete and the brand landing facet;
+// coupons stay inside the products index as the `type` facet, per
+// ARCHITECTURE-SEARCH-DISCOVERY.md section 8 ("a coupon is a product").
+// ---------------------------------------------------------------------------
+
+export const BRANDS_INDEX = process.env.MEILISEARCH_BRANDS_INDEX ?? 'brands'
+
+export interface BrandDocument {
+  /**
+   * base64url of the brand name. Meilisearch accepts only [A-Za-z0-9_-] in a
+   * document id, and brand names here are Hebrew; base64url is the smallest
+   * stable, reversible encoding that fits the alphabet.
+   */
+  id: string
+  name: string
+  /** How many active products carry the brand, coupons included. */
+  product_count: number
+  /** How many of those are coupons, so a brand chip can say "3 קופונים". */
+  coupon_count: number
+  /** Distinct category slugs the brand appears in, for a category facet. */
+  categories: string[]
+}
+
+/**
+ * Same Hebrew typo budget as the products index, and the same reasoning:
+ * brand names written without vowels are short. Nothing is exempted, because
+ * a brand document has no identifier-like searchable field.
+ */
+export const BRANDS_INDEX_SETTINGS = {
+  searchableAttributes: ['name'],
+  filterableAttributes: ['categories'],
+  sortableAttributes: ['product_count'],
+  // `product_count:desc` where the products index puts `in_stock:desc`: with
+  // one searchable word per document, the bigger brand is the better tiebreak.
+  rankingRules: [
+    'words',
+    'typo',
+    'product_count:desc',
+    'proximity',
+    'attribute',
+    'sort',
+    'exactness',
+  ],
+  stopWords: [] as string[],
+  typoTolerance: {
+    enabled: true,
+    minWordSizeForTypos: { ...TYPO_TOLERANCE.minWordSizeForTypos },
+    disableOnAttributes: [] as string[],
+  },
+  localizedAttributes: [{ attributePatterns: ['name'], locales: [...HEBREW_LOCALES] }],
+}
+
+export function brandDocumentId(name: string): string {
+  return Buffer.from(name, 'utf8').toString('base64url')
+}
+
+type BrandSource = {
+  brand?: string | null
+  type?: string | null
+  category_slug?: string | null
+}
+
+/**
+ * Aggregates product rows into brand documents.
+ *
+ * Grouping is case- and whitespace-insensitive so "LG" and " lg " are one
+ * brand, but the displayed name keeps the first spelling seen: the shopper
+ * should read what the catalogue writes, not a normalisation of it.
+ * Rows with an empty brand simply do not contribute; most of the catalogue
+ * has no brand, and an "unbranded" bucket is not a brand.
+ */
+export function toBrandDocuments(rows: BrandSource[]): BrandDocument[] {
+  const byKey = new Map<string, BrandDocument>()
+  const categories = new Map<string, Set<string>>()
+
+  for (const row of rows) {
+    const name = typeof row.brand === 'string' ? row.brand.trim() : ''
+    if (!name) continue
+    const key = name.toLowerCase().replace(/\s+/g, ' ')
+
+    let doc = byKey.get(key)
+    if (!doc) {
+      doc = {
+        id: brandDocumentId(key),
+        name,
+        product_count: 0,
+        coupon_count: 0,
+        categories: [],
+      }
+      byKey.set(key, doc)
+      categories.set(key, new Set())
+    }
+
+    doc.product_count += 1
+    // `type` is the already-resolved document type (toProductDocument folded
+    // `is_coupon_enabled` in), so this agrees with the products facet.
+    if (row.type === 'coupon') doc.coupon_count += 1
+    if (row.category_slug) categories.get(key)?.add(row.category_slug)
+  }
+
+  for (const [key, doc] of byKey) {
+    doc.categories = [...(categories.get(key) ?? [])].sort()
+  }
+
+  return [...byKey.values()].sort((a, b) => b.product_count - a.product_count)
+}
+
+// ---------------------------------------------------------------------------
+// The categories index.
+//
+// Unlike brands, categories ARE a table, so the documents map rows rather than
+// aggregate free text. The index exists for category autocomplete and the
+// category chips on the search page; the products index keeps carrying
+// `category_slug` / `category_name_he` as facets, and this index's documents
+// join back through exactly those values. Rebuilt by
+// scripts/setup-meilisearch.mjs from the same run that fills products, so the
+// counts can never describe a different catalogue than the one indexed.
+// ---------------------------------------------------------------------------
+
+export const CATEGORIES_INDEX = process.env.MEILISEARCH_CATEGORIES_INDEX ?? 'categories'
+
+export interface CategoryDocument {
+  /** categories.id. A uuid fits Meilisearch's [A-Za-z0-9_-] id alphabet as-is. */
+  id: string
+  slug: string
+  name_he: string
+  name_en: string | null
+  description_he: string | null
+  /** For a "subcategories of X" facet; null for a root category. */
+  parent_id: string | null
+  image_url: string | null
+  sort_order: number
+  /** Active products in the category, coupons included. */
+  product_count: number
+  /** How many of those are coupons, so a chip can say "12 קופונים". */
+  coupon_count: number
+}
+
+/**
+ * Same Hebrew typo budget and locale pin as the products index, same
+ * reasoning. `slug` is not searchable, so nothing needs a typo exemption.
+ * `product_count:desc` sits where products put `in_stock:desc`: between two
+ * categories matching the query, the fuller one is the better suggestion.
+ */
+export const CATEGORIES_INDEX_SETTINGS = {
+  searchableAttributes: ['name_he', 'name_en', 'description_he'],
+  filterableAttributes: ['parent_id', 'slug'],
+  sortableAttributes: ['product_count', 'sort_order'],
+  rankingRules: [
+    'words',
+    'typo',
+    'product_count:desc',
+    'proximity',
+    'attribute',
+    'sort',
+    'exactness',
+  ],
+  stopWords: [...STOP_WORDS],
+  typoTolerance: {
+    enabled: true,
+    minWordSizeForTypos: { ...TYPO_TOLERANCE.minWordSizeForTypos },
+    disableOnAttributes: [] as string[],
+  },
+  localizedAttributes: [
+    { attributePatterns: ['name_he', 'description_he'], locales: [...HEBREW_LOCALES] },
+  ],
+}
+
+type CategoryRow = {
+  id: string
+  slug: string
+  name_he: string
+  name_en?: string | null
+  description_he?: string | null
+  parent_id?: string | null
+  image_url?: string | null
+  sort_order?: number | null
+  is_active?: boolean | null
+  deleted_at?: string | null
+}
+
+type CategoryProductSource = {
+  category_id?: string | null
+  type?: string | null
+}
+
+/**
+ * Maps category rows plus the already-mapped product documents into category
+ * documents.
+ *
+ * Inactive and soft-deleted categories are dropped here, defensively, even
+ * when the reader already filtered: an index is public output, and the
+ * predicate must hold wherever the rows came from. Empty categories stay in —
+ * they exist for navigation — but `product_count:desc` ranks them last among
+ * equals.
+ */
+export function toCategoryDocuments(
+  categories: CategoryRow[],
+  products: CategoryProductSource[],
+): CategoryDocument[] {
+  const productCount = new Map<string, number>()
+  const couponCount = new Map<string, number>()
+  for (const product of products) {
+    if (!product.category_id) continue
+    productCount.set(product.category_id, (productCount.get(product.category_id) ?? 0) + 1)
+    if (product.type === 'coupon') {
+      couponCount.set(product.category_id, (couponCount.get(product.category_id) ?? 0) + 1)
+    }
+  }
+
+  return categories
+    .filter((row) => row.is_active !== false && row.deleted_at == null)
+    .map((row) => ({
+      id: row.id,
+      slug: row.slug,
+      name_he: row.name_he,
+      name_en: row.name_en ?? null,
+      description_he: row.description_he ?? null,
+      parent_id: row.parent_id ?? null,
+      image_url: row.image_url ?? null,
+      sort_order: row.sort_order ?? 0,
+      product_count: productCount.get(row.id) ?? 0,
+      coupon_count: couponCount.get(row.id) ?? 0,
+    }))
+    .sort((a, b) => a.sort_order - b.sort_order || a.name_he.localeCompare(b.name_he, 'he'))
 }
 
 /** The row shape pushed into the index. */

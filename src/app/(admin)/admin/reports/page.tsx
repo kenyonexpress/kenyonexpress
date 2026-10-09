@@ -2,7 +2,7 @@ import StatsCard from '@/components/admin/StatsCard'
 import SalesChart, { type SalesPoint } from '@/components/admin/reports/SalesChart'
 import { requireSection } from '@/lib/admin/rbac'
 import { agorot, agorotToIls } from '@/lib/commerce/money'
-import { shekels } from '@/lib/money-format'
+import { shekels, shekelsFromIlsRounded } from '@/lib/money-format'
 import {
   type PeriodTotals,
   type ReportRange,
@@ -43,7 +43,7 @@ const GRANULARITIES = [
 ] as const
 
 function shortShekels(agorotValue: number): string {
-  return `₪${Math.round(agorotToIls(agorot(agorotValue))).toLocaleString('he-IL')}`
+  return shekelsFromIlsRounded(agorotToIls(agorot(agorotValue)))
 }
 
 const dayLabel = new Intl.DateTimeFormat('he-IL', { day: 'numeric', month: 'numeric' })

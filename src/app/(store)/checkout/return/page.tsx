@@ -224,6 +224,14 @@ async function CheckoutReturnBody({ searchParams }: Props) {
           <p className="checkout-wallet-note">נוסף לארנק שלך: {shekels(cashbackAmount)} קאשבק</p>
         )}
 
+        {/* A plain anchor, not a Link: the target is a PDF, and the route
+            re-checks the session and the owner before rendering it. */}
+        <p style={{ marginTop: 16, fontSize: 14 }}>
+          <a href={`/account/orders/${order.id}/receipt`} style={{ fontWeight: 600 }}>
+            הורדת אישור הזמנה (PDF)
+          </a>
+        </p>
+
         {(() => {
           const storePhone = storeWhatsAppNumber()
           if (!storePhone) return null

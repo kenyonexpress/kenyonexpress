@@ -10,7 +10,6 @@ function rawCreate(overrides: Record<string, unknown> = {}) {
     business_name: 'עסק לדוגמה',
     business_id: '123456789',
     contact_email: 'vendor@example.com',
-    commission_rate: '90',
     status: 'pending',
     ...overrides,
   }
@@ -31,7 +30,6 @@ describe('parseVendorForm', () => {
     if (result.ok) {
       expect(result.data.profile_id).toBe(UUID_A)
       expect(result.data.business_name).toBe('עסק לדוגמה')
-      expect(result.data.commission_rate).toBe(90)
     }
   })
 

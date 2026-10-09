@@ -1,5 +1,16 @@
 # שאלות פתוחות לבעלים
 
+
+> <!-- v1-final-historical:2026-09-01 -->
+> 🕯️ **Historical snapshot. Not current guidance.**
+>
+> This is a list of open questions, true on the date it carries. It is kept as a record of what
+> was measured and decided then, and it is **not** maintained against
+> production. Numbers, table names and statuses in it may since have changed.
+>
+> For the current state see `docs/ARCHITECTURE-OVERVIEW.md`, and
+> `docs/INDEX.md` for which document is authoritative on a given subject.
+
 תאריך: 2026-08-19.
 ענף: `ke-arch`.
 היקף: docs בלבד. אין כאן הכרעה שמחליפה את
@@ -196,13 +207,27 @@ VCL2 דורש Production Branch מאושר.
 
 **החלטה זמנית.** הקוד יכול לחשב. המדיניות המומלצת ליום עלייה: אפס דמי ביטול, מתועד בתקנון.
 
-### Q8. מע"מ 17% מול 18%
+### Q8. מע"מ 17% מול 18% — ‏**נסגר 01.09.2026**
 
-**הקשר.** סתירה חיה בקוד ובמסמכים, לא רק בהיסטוריה.
+> ✅ **אין יותר שאלה.** ‏`VAT_RATE_BP = 1800` ב-`src/lib/money.ts` הוא ההגדרה
+> **היחידה** בכל האפליקציה, ומודול החשבוניות נגזר ממנה במקום להחזיק עותק שני
+> של המספר. השיעור עלה מ-17% ל-18% ב-01.01.2025, ולכן מודול החשבוניות היה הצד
+> המדויק.
+>
+> ‏**ההיקף האמיתי של הבאג, כדי שלא ייקרא לתוכו תיקון שלא נדרש:** ל-`extractVat`
+> לא היה אף קורא באפליקציה, רק טסטים, ולכן ה-1700 המיושן מעולם לא נרשם מול
+> מכירה אמיתית. כל מסמך שהונפק בפועל עבר במסלול החשבוניות ב-18%. מה שנסגר כאן
+> הוא הקורא **הבא**, שהיה לוקח את המודול הקנוני כמקור אמת.
+>
+> ‏המע"מ נחלץ מסכום ברוטו כולל-מע"מ, וחצי ה-מע"מ מחושב **בחיסור**, ולכן
+> ‏`net + vat === gross` במדויק בלי דליפת עיגול. הפלטפורמה רושמת מע"מ רק על
+> העמלה שלה. ראה `docs/ARCHITECTURE-OVERVIEW.md` סעיף 3.1.
+
+**הקשר ההיסטורי, כפי שנמדד לפני הסגירה.**
 
 | מקום | שיעור |
 |---|---|
-| `src/lib/money.ts` `VAT_RATE_BP` | 1700 (17%) |
+| `src/lib/money.ts` `VAT_RATE_BP` | ~~1700 (17%)~~ ← **‏היום: 1800 (18%)** |
 | `src/lib/ledger.ts` ברירת מחדל | 1700 |
 | `LEDGER-DESIGN.md`, `COMPLETE-SYSTEM-ARCHITECTURE.md` | 17% |
 | `src/lib/invoices/document.ts` `DEFAULT_VAT_PERCENT` | 18% |

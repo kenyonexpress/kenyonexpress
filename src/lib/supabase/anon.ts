@@ -1,4 +1,5 @@
-import { timeoutFetch } from '@/lib/supabase/timeout-fetch'
+import { getAnonKey } from '@/lib/supabase/anon-key'
+import { rlsReportFetch } from '@/lib/supabase/rls-report-fetch'
 import { createClient } from '@supabase/supabase-js'
 
 // Server-side clients that carry NO elevated key.
@@ -27,9 +28,11 @@ import { createClient } from '@supabase/supabase-js'
 
 function anonEnv(): { url: string; key: string } {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  const key = getAnonKey()
   if (!url || !key) {
-    throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY')
+    throw new Error(
+      'Missing NEXT_PUBLIC_SUPABASE_URL / SUPABASE_ANON_KEY (or NEXT_PUBLIC_SUPABASE_ANON_KEY)',
+    )
   }
   return { url, key }
 }
@@ -53,7 +56,7 @@ export function createPublicClient() {
   const { url, key } = anonEnv()
   return createClient(url, key, {
     auth: { persistSession: false, autoRefreshToken: false },
-    global: { fetch: timeoutFetch },
+    global: { fetch: rlsReportFetch },
   })
 }
 
@@ -78,6 +81,6 @@ export function createGuestCartClient(sessionId: string) {
   const { url, key } = anonEnv()
   return createClient(url, key, {
     auth: { persistSession: false, autoRefreshToken: false },
-    global: { headers: { Cookie: `session_id=${sessionId}` }, fetch: timeoutFetch },
+    global: { headers: { Cookie: `session_id=${sessionId}` }, fetch: rlsReportFetch },
   })
 }

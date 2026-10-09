@@ -1,9 +1,21 @@
 // Server-side product search. Uses Meilisearch when MEILISEARCH_HOST is set
-// (ARCHITECTURE section 10 stage 3), otherwise falls back to Postgres ILIKE via
-// the Supabase client (stage 1). Both paths return the ProductCard shape.
+// (ARCHITECTURE section 10 stage 3), otherwise Postgres full-text search via
+// the `search_products` RPC (migration 171: GIN over a `simple`+unaccent
+// tsvector, prefix-matched, ts_rank-ordered), and only on a database without
+// that migration the original unindexed ILIKE (stage 1). All paths return the
+// ProductCard shape.
 
 import 'server-only'
 import type { Product } from '@/components/ProductCard'
+import { log } from '@/lib/observability/log'
+import { escapeMeiliFilterValue } from '@/lib/search/faceted'
+import { localesParam } from '@/lib/search/query-locale'
+import {
+  type PendingSearchProductRow,
+  type SearchProductsArgs,
+  callSearchProductsRpc,
+  pendingSearchRpc,
+} from '@/lib/supabase/pending-search'
 import { createClient } from '@/lib/supabase/server'
 import { sanitizeOrTerm } from '@/lib/utils/search-escape'
 import { cache } from 'react'
@@ -11,7 +23,7 @@ import { cache } from 'react'
 export type SearchOutcome = {
   results: Product[]
   total: number
-  engine: 'meilisearch' | 'database'
+  engine: 'meilisearch' | 'database-fts' | 'database'
 }
 
 const sanitize = sanitizeOrTerm
@@ -35,10 +47,17 @@ async function searchMeili(
   q: string,
   limit: number,
   productType?: 'coupon' | 'physical',
+  categorySlug?: string,
 ): Promise<SearchOutcome | null> {
   try {
     const host = (process.env.MEILISEARCH_HOST as string).replace(/\/$/, '')
     const index = process.env.MEILISEARCH_INDEX ?? 'products'
+    // Both are filterable attributes (lib/search/meili-settings.ts) and both
+    // go through the same quoting the faceted route uses, so a slug can only
+    // ever be a value in the expression, never a second clause.
+    const filter: string[] = []
+    if (productType) filter.push(`type = ${productType}`)
+    if (categorySlug) filter.push(`category_slug = ${escapeMeiliFilterValue(categorySlug)}`)
     const res = await fetch(`${host}/indexes/${index}/search`, {
       method: 'POST',
       headers: {
@@ -50,7 +69,10 @@ async function searchMeili(
       body: JSON.stringify({
         q,
         limit,
-        ...(productType ? { filter: `type = ${productType}` } : {}),
+        ...(filter.length ? { filter } : {}),
+        // Pins the query tokenizer to the script(s) actually typed, the same
+        // way the index settings pin the document side (query-locale.ts).
+        ...localesParam(q),
       }),
       // Search is request-time; do not cache across queries.
       cache: 'no-store',
@@ -115,20 +137,86 @@ function queryWords(q: string): string[] {
  * engine: no stemming, no ranking, no typo tolerance. Meilisearch is stage 3
  * and takes over above.
  */
+/** Maps a search_products row onto the ProductCard shape every path returns. */
+function ftsRowToProduct(row: PendingSearchProductRow): Product {
+  return {
+    id: row.id,
+    slug: row.slug,
+    name_he: row.name_he,
+    kenyon_price: row.kenyon_price,
+    full_price: row.full_price,
+    images: row.images ?? [],
+    stock_quantity: row.stock_quantity,
+    category:
+      row.category_name_he && row.category_slug
+        ? { name_he: row.category_name_he, slug: row.category_slug }
+        : null,
+  }
+}
+
+/**
+ * Stage 2: the `search_products` RPC. SECURITY INVOKER, so the request client
+ * is the right client - RLS already scopes anon to active, non-deleted
+ * products and the function can never widen that.
+ *
+ * Returns null in exactly one case: the function does not exist (a database
+ * without migration 171), which is "use ILIKE", not an error. A real failure
+ * is logged and surfaces as an empty result, the same degradation every other
+ * search failure here takes.
+ *
+ * `total` is the row count rather than an exact overflow count: FTS results
+ * are ranked, capped at `limit`, and the RPC keeps one round-trip. On this
+ * catalog (80 products) the cap is rarely reached; if a paginated search page
+ * ever needs the true total, add a count to the RPC rather than a second
+ * query here.
+ */
+async function searchFts(
+  q: string,
+  limit: number,
+  productType?: 'coupon' | 'physical',
+  categorySlug?: string,
+): Promise<SearchOutcome | null> {
+  const supabase = await createClient()
+  const args: SearchProductsArgs = { q, max_results: limit }
+  if (productType) args.product_type = productType
+  if (categorySlug) args.category = categorySlug
+
+  const outcome = await callSearchProductsRpc(() =>
+    supabase.rpc(pendingSearchRpc('search_products'), args as never),
+  )
+
+  if (!outcome.ok) {
+    if (outcome.missing) return null
+    log.error('search.fts_failed', { reason: outcome.message })
+    return { results: [], total: 0, engine: 'database-fts' }
+  }
+
+  const results = outcome.rows.map(ftsRowToProduct)
+  return { results, total: results.length, engine: 'database-fts' }
+}
+
 async function searchDb(
   q: string,
   limit: number,
   productType?: 'coupon' | 'physical',
+  categorySlug?: string,
 ): Promise<SearchOutcome> {
   const supabase = await createClient()
+  // `!inner` only when a category is asked for: the plain (left) embed keeps
+  // uncategorised products in an unscoped search, while the scoped one has to
+  // drop rows whose category is not the one named, and a left embed cannot.
+  const embed = categorySlug
+    ? 'categories!products_category_id_fkey!inner(name_he, slug)'
+    : 'categories!products_category_id_fkey(name_he, slug)'
   let query = supabase
     .from('products')
-    .select(
-      'id, slug, name_he, kenyon_price, full_price, images, stock_quantity, categories!products_category_id_fkey(name_he, slug)',
-      { count: 'exact' },
-    )
+    .select(`id, slug, name_he, kenyon_price, full_price, images, stock_quantity, ${embed}`, {
+      count: 'exact',
+    })
     .eq('status', 'active')
     .is('deleted_at', null)
+
+  if (categorySlug) query = query.eq('categories.slug', categorySlug)
 
   for (const word of queryWords(q)) {
     query = query.or(`name_he.ilike.%${word}%,description_he.ilike.%${word}%`)
@@ -156,10 +244,18 @@ async function searchDb(
   return { results, total: count ?? results.length, engine: 'database' }
 }
 
+/**
+ * `categorySlug` scopes the search to one archive. The listing page's
+ * autocomplete passes it so that typing inside /category/spa cannot suggest a
+ * refrigerator; every engine applies it in the query (a Meilisearch filter,
+ * the RPC's `category` argument, an inner-join equality on the ILIKE path), so
+ * the count is the count of the scoped result and not of a filtered page.
+ */
 export async function searchProductsServer(
   query: string,
   limit = 48,
   productType?: 'coupon' | 'physical',
+  categorySlug?: string,
 ): Promise<SearchOutcome> {
   const q = sanitize(query)
   if (q.length < 2) return { results: [], total: 0, engine: 'database' }
@@ -169,10 +265,14 @@ export async function searchProductsServer(
   // request 400s, searchMeili returns null, and the database path takes over —
   // which is correct behaviour, not a silent unfiltered result set.
   if (meiliConfigured()) {
-    const meili = await searchMeili(q, limit, productType)
+    const meili = await searchMeili(q, limit, productType, categorySlug)
     if (meili) return meili
   }
-  return searchDb(q, limit, productType)
+  // Postgres FTS (migration 171). Null means the RPC does not exist on this
+  // database, so the stage-1 ILIKE below still carries local/preview setups.
+  const fts = await searchFts(q, limit, productType, categorySlug)
+  if (fts) return fts
+  return searchDb(q, limit, productType, categorySlug)
 }
 
 /**

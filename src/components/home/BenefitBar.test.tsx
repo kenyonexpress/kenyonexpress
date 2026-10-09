@@ -29,8 +29,11 @@ describe('BenefitBar', () => {
   it('keeps the live order', () => {
     // Five items in five equal fifths: one out of place moves every label
     // after it into the wrong cell, and the band stays exactly as wide, so a
-    // pixel diff cannot see it. "קניה חכמה" used to sit second and is last.
-    const order = ['לכל חלקי', 'שירות', 'מחירים', 'מותגי יוקרה', 'קניה']
+    // pixel diff cannot see it. Re-measured 2026-09-02 off
+    // refs/ke_live_computed.json: the live icon order right-to-left is
+    // transport, customers, support, payment, tag -- "קניה חכמה" is SECOND
+    // today. An earlier capture had it last; the reference moved.
+    const order = ['לכל חלקי', 'קניה', 'שירות', 'מחירים', 'מותגי יוקרה']
     const positions = order.map((t) => text.indexOf(t))
 
     expect(positions.every((p) => p >= 0)).toBe(true)

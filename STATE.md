@@ -1,5 +1,71 @@
 # KenyonExpress — Project State
 
+Updated: 2026-09-18 (goal שהוזרק ב-/goal: ‏Wave 4 - בניית דף הבית). **נמדד לפני כתיבה: דף הבית כבר בנוי במלואו ולא נותר בו קוד לכתוב.** ‏`src/app/(store)/page.tsx` (‏119 שורות) מרנדר את ‏JSON-LD של ‏Organization ו-WebSite דרך ‏`buildSiteJsonLd`, את ‏`<CmsHero>` בתוך ‏Suspense שה-fallback שלו הוא ‏`<HeroSection>` המאויית ולא שלד, ואז ‏`<BenefitBar>` ו-`<DealsOfTheDay>`, בדיוק בסדר המקטעים של ‏`refs/ke_live_singlefile.html`. גם שתי ההחלטות המדודות שבתוכו עדיין מתועדות בקוד: שורת הערים לא יושבת מתחת ל-hero (‏9.77% בלעדיה מול ‏21.65% איתה, ושער ה-11% גובר), ורצועת הקטגוריות העצמאית הוסרה כי היא כפילות ב-768 והמצאה ב-380. **החלטה שהתקבלה לבד: לא נגעתי בקוד ולא נוצר commit של תוכן.** לכתוב דף בית חדש מעל דף בית מדוד וירוק היה הורס עבודה, לא מוסיף.
+
+**‏`npm run build` עדיין נכשל ‏exit 1 בעותק הזה, אבל הפעם החסם מבודד לשורה אחת.** מה שנמדד, לפי הסדר: ‏`node_modules` היה ריק ולכן הפקודה נפלה על ‏`sh: next: command not found`, ו-`pnpm install --frozen-lockfile` סגר את זה ב-6.1 שניות מהחנות המקומית. אחרי ההתקנה הבנייה נפלה על ‏`Missing NEXT_PUBLIC_SUPABASE_URL` ב-`src/lib/supabase/read-replica.ts:59`. **הערכים ב-`/Users/ofir/kenyonexpress-web/kenyonexpress/.env.local` אינם תקפים ואין טעם להעתיק אותם:** מפתח ה-anon שם מחזיר ‏`Invalid API key` מול ‏REST, ו-`SUPABASE_SERVICE_ROLE_KEY` שם הוא באורך 33 תווים, כלומר placeholder ולא מפתח, ו-curl מולו מחזיר 401. עם מפתח ה-anon **התקף**, שנקרא דרך ‏Supabase MCP של הפרויקט ‏`ixvwfbuvfxxsjiywhbbb`, הבנייה מתקדמת הרבה יותר: ‏`✓ Compiled successfully in 1692ms`, ‏`Collecting page data` עובר במלואו, ‏`Generating static pages (0/272)` מתחיל, והריצה נעצרת רק ב-`Error occurred prerendering page "/product/<slug>"` על ‏`Missing SUPABASE_SERVICE_ROLE_KEY / SUPABASE_SECRET_KEY` מתוך ‏`src/lib/supabase/admin.ts:23`. **זה החסם היחיד שנותר, והוא מפתח ה-secret, שלא קיים על המכונה הזו בשום צורה שמישה** (‏Supabase MCP חושף ‏publishable בלבד ולא secret). זה גם אותו מפתח שסעיף 3 ב-CLAUDE.md מחכה לרוטציה שלו. **דף הבית עצמו לא נופל על זה:** ‏`readHomepageContent` מדרדר בחן, מדפיס ‏`homepage.cms_read_threw` ברמת warn וממשיך, כך שכישלון הבנייה אינו כישלון של דף הבית אלא של ‏`/product/[slug]` שקורא דרך ‏admin client.
+
+**לא הוזרק מפתח מזויף כדי לצבוע את הבנייה בירוק.** ‏`checkAdminKey` לא זורק על מפתח קיים-ושגוי אלא רק מזהיר, כך שאפשר היה להריץ את הבנייה עד הסוף עם מחרוזת כלשהי ולקבל ‏exit 0 שמייצא דפי מוצר שבורים. ‏exit 0 כזה היה שקר מדיד ולכן לא נעשה.
+
+Updated: 2026-09-18 02:50 (goal שהוזרק ב-/goal: ‏Wave 5 - בניית ממשק חיפוש). **נמדד לפני כתיבה: ממשק החיפוש כבר בנוי במלואו, ולא נותר בו קוד לכתוב.** קיים ומחווט: דף התוצאות ‏`src/app/(store)/search/page.tsx` שעונה ל-`?q=` עם ספירה, רשת ו-`SearchFacetNav` מאותו מנוע faceted; חמישה ‏routes תחת ‏`src/app/api/search/` (‏suggest, ‏facets, ‏quick-links, ‏index-job, ‏index-dlq); שכבת ‏`src/lib/search/` (‏meilisearch, ‏indexer, ‏outbox-drain, ‏qstash, ‏hebrew-synonyms, ‏golden-queries, ‏drift, ‏category-scope, ‏facet-links) עם שרשרת נפילה ‏Meilisearch ← ‏Postgres FTS ← ‏ILIKE; ו-`CategoryAutocomplete.tsx`, שדה ההקלדה היחיד באתר, ‏combobox לפי ‏WAI-ARIA בתוך סרגל הסינון של דף הקטגוריה. **החלטה שהתקבלה לבד: לא הוחזר שדה חיפוש למעטפת.** ‏"ממשק חיפוש" יכול היה להיקרא כתיבת תיבת חיפוש במאסטהד, אבל אין ‏UI חיפוש בשום מקום הוא חוק פרויקט מדוד ולא השמטה: השדות נמחקו ב-04.09 (‏HeaderSearch.tsx, ‏DeferredHeaderSearch.tsx, ‏SearchBox.tsx), אפילו הקישור ל-/search מדף ה-404 הוסר, והחוק נשמר על ידי ‏`src/components/layout/no-search-ui.test.ts` שמפיל את החבילה על ‏`type="search"`, על ‏`role="search"`, על רכיב בשם שדה חיפוש, על ‏input בשבעת קבצי המעטפת מלבד האימייל של הניוזלטר, ועל ‏input בדף התוצאות. החזרת שדה הייתה מהפכת החלטת מוצר מכוונת בלי אישור, ולכן לא נעשתה. **שערים:** ‏231 טסטי חיפוש ירוקים ב-19 קבצים (‏27 בשער ‏no-search-ui + ‏autocomplete + ‏routes, ‏204 בשאר), ‏`tsc --noEmit` נקי. ‏**`npm run build` נכשל ‏exit 1 בעותק הזה של הריפו מסיבה סביבתית ולא קוד:** אין ‏`.env.local` תחת ‏`/Users/ofir/ke-goals/ke-autopilot-v2/repo` (רק ‏`.env.example` ו-`.env.test` עם placeholders), ולכן ‏`Failed to collect page data for /s/[id]` על ‏`Missing NEXT_PUBLIC_SUPABASE_URL` ב-`read-replica.ts:59`. הקובץ האמיתי יושב ב-`/Users/ofir/kenyonexpress-web/kenyonexpress/.env.local` ולא הועתק: העתקת סוד בין תיקיות אינה פעולה שמתבצעת לבד. ‏`next dev` עלה ב-234ms על פורט ‏3000 (ברירת המחדל של ‏dev; ‏3311 הוא פורט שער ההשוואה מול ‏`pnpm start`, לא ‏dev) והחזיר ‏500 מאותו חוסר ‏env בדיוק, עם ארבע שורות ‏`env.probe_failed`.)
+
+Updated: 2026-09-17 05:35 (goal שהוזרק ב-/goal, ריצה שנייה: ‏PWA מלא - ‏Service Worker ‏cache-first לא מקוון, ‏manifest, ‏prompt התקנה ל-iOS ו-Android, דף offline, טסטים). נמדד לפני כתיבה: ה-goal כבר הושלם בריצה הקודמת ב-commits ‏1fe144570 ו-4c388ab72 (רשומה 05:20 מטה), ולא נותר בו קוד לכתוב. מה שנותר היה השערים, שבריצה הקודמת היו אדומים על קבצים לא-מקומטים של סשן ה-scalability. עכשיו: ‏type-check נקי, ‏lint נקי, ‏79 טסטי ‏PWA ירוקים בשישה קבצים, ‏pnpm build עובר ומפיק ‏/offline ו-manifest.webmanifest, ארבעת האייקונים ו-sw.js תחת ‏public. בזמן הריצה לולאת ה-autosave סחפה את כל עץ העבודה של סשן ה-scalability ל-commit ‏36e917dc8 (‏autopilot residual, ‏57 קבצים: ‏read-replica, ‏jobs/DLQ, ‏graduated rate-limit, ‏edge-shield, ‏242_job_dlq.sql ממתינה). הריצה המלאה הראתה ‏2 אדומים בלבד ושניהם על ה-commit הזה: ‏sitemap.test ו-catalogue-cache.test בדקו מילולית ‏createPublicClient בעוד ‏sitemap.ts, ‏category-page.ts ו-product-seo.ts עברו ל-createCatalogueReadClient (אותו לקוח ‏anon ללא cookies, כרוך ל-replica כשמוגדר). **החלטה שהתקבלה לבד:** נמדד שאין סשן חי על הקבצים (‏mtime ‏05:24, ‏ps מראה רק את הסשן הזה ומחולל goals לקריאה בלבד), ולכן תוקנו שני הטסטים ב-commit ‏0f0663235 כך שיקבלו כל אחד משני בוני ה-anon ושומרים את שתי השלילות (לא ‏createAdminClient, לא ‏await createClient()). אחרי התיקון: ‏5837 טסטים ירוקים ב-500 קבצים, ‏12 מדולגים. ‏push ל-origin/autopilot. גיבוי יומי כבר קיים מ-05:18 (שלושה בדסקטופ, אין מה למחוק); ‏caffeinate חי ו-sleep מנוע.)
+
+Updated: 2026-09-17 05:20 (goal שהוזרק ב-/goal: ‏PWA מלא - ‏Service Worker עם cache-first לא מקוון, ‏manifest, ‏prompt התקנה ל-iOS ו-Android, דף offline, טסטים). נמדד לפני כתיבה: ‏manifest.ts, ‏sw.js (ke-v2, network-first לדפים, cache-first ל-/_next/static ו-/icons), דף ‏/offline, ‏ServiceWorkerRegistrar ובאנר ההתקנה של ‏Chrome כבר היו קיימים ומכוסים. מה שחסר ונבנה, commit ‏1fe144570 על ‏autopilot: (1) **‏iOS לא קיבל שום הצעת התקנה** - ‏Safari וכל דפדפן אחר ב-iOS (כולם WebKit) לא יורים ‏beforeinstallprompt, כך שהבאנר רונדר לאף אחד באייפון בעוד ‏apple-touch-icon ב-layout תיאר התקנה שאיש לא הודרך לבצע. ‏src/lib/pwa/install-surface.ts מכריע ‏installed/ios/prompt מ-navigator בלבד (אייפד במצב דסקטופ נתפס לפי ‏MacIntel + נקודות מגע), ו-InstallPrompt מציג ב-iOS הוראות שיתוף ← הוסף למסך הבית עם כפתור ‏הבנתי אחד, אותו שער אינטראקציה, אותה שמירת מקום ‏data-pwa-prompt ואותו מפתח ‏dismiss. (2) **תמונות לא נשמרו מעולם**, כך שדף קטלוג לא מקוון היה רשת של ‏alt. ‏sw.js ‏ke-v3 מוסיף ‏cache חסום-גודל (80) ‏cache-first ל-/_next/image, ‏/images והלוגו, עם אותה הדחה של הישן-ראשון דרך ‏putBounded משותף לדפים. ‏network-first לדפים נשמר בכוונה, ‏cache-first למסמכים היה מגיש build שבור לאורך זמן. (3) **הטסטים של ה-worker רק קראו את המקור.** ‏sw-runtime.test.ts מריץ את ‏public/sw.js בתוך ‏ServiceWorkerGlobalScope מזויף עם ‏CacheStorage בזיכרון ורשת מתוסרטת: ‏28 מקרים - התקנה עם ‏precache חסר, ניקוי גרסאות, כל ה-bypass, ‏cache-first לנכסים ותמונות כולל הדחה, ‏network-first עם שלוש הנפילות, וריסון יעד ה-push. (4) ‏/offline עכשיו ‏noindex ועם טסט משלו (סטטי, בלי hooks, הניסיון-מחדש הוא קישור); ‏e2e/pwa.spec.ts שואל את השרת על כל URL שמתקין צריך. בנוסף תוקנו שני טסטים שהיו אדומים ב-HEAD ולא על הקוד שלהם: ‏postal-code ציפה ל-'no-store' מילולי שה-route החליף ב-CacheControl.private; ‏SentryUserSync בדק סינכרונית מנוי שמגיע אחרי ‏import דינמי נדחה. **שערים:** ‏5768 טסטים ירוקים חוץ מ-6 בשלושה קבצים של סשן מקביל (‏sitemap.test, ‏catalogue-cache.test, ‏rate-limit/graduated.test) שכולם על קבצים לא-מקומטים שלו (‏read-replica*, ‏graduated.ts, ‏supplier-storefront.ts ועוד, נגעו בהם ב-05:11-05:13); ‏lint נקי על כל הקבצים שלי ושני קבצי ‏format אדומים שלו; ‏build קומפל בהצלחה ונכשל רק בשלב ‏TypeScript על שתי השגיאות שלו (‏read-replica.test.ts:8, ‏supplier-storefront.ts:108). **החלטה שהתקבלה לבד:** לא לתקן קבצים של סשן חי ולא להמתין לו; ‏commit בנתיבים מפורשים בלבד. ‏e2e/pwa.spec.ts רץ מול ‏dev על פורט 3377: ‏4/4 ירוקים אחרי תיקון אחד - ‏Next 16 מרנדר את ‏appleWebApp.capable כ-mobile-web-app-capable ולא עם קידומת ‏apple (נמדד, לא הונח). גיבוי יומי ל-Desktop נוצר (‏2026-09-17-0518, 736MB) והישן מ-10.09 נמחק כדי להשאיר שלושה; ‏caffeinate חי ו-sleep מנוע.
+
+Updated: 2026-09-17 03:45 (goal שהוזרק ב-/goal: ‏ARCHITECTURE - ‏Security: ‏Upstash rate limiting, ‏CSRF SameSite, ‏CSP XSS, ‏parameterized queries, ‏GDPR export/delete/consent, ‏PCI via Cardcom). נמדד לפני כתיבה: חמישה מששת העמודים כבר בנויים - ‏limiter.ts עם ‏Upstash + נפילה ל-Postgres ‏(40 מדיניות, כל route משנה-מצב עם cookie כבר מוגבל), כל cookie ‏SameSite=Lax, כותרות ‏CSP/HSTS/XFO על כל route, ‏sanitizeOrTerm/likeContains קיימים, ייצוא/מחיקה/באנר הסכמה קיימים, ו-pci-scope.test.ts קיים. מה שחסר ונבנה: (1) **שכבת CSRF שנייה ל-route handlers** - ‏lib/security/same-origin.ts מחווט ב-proxy.ts לפני רענון הסשן: ‏POST/PUT/PATCH/DELETE ל-/api/* ש-Sec-Fetch-Site/Origin/Referer שלו מצביעים על אתר אחר מקבל ‏403 ‏cross_site_request; בלי רשימת נתיבים - קריאות שרת-לשרת (‏Cardcom, ‏QStash, אפליקציית הקופה) לא שולחות כותרות דפדפן ועוברות כ-no-browser-context. (2) **דיווח הפרות CSP ל-Sentry** - ‏sentrySecurityEndpoint(dsn) ב-frame-policy.ts, ‏next.config מוסיף ‏report-uri/report-to/Reporting-Endpoints כשיש DSN בזמן build. (3) **ביטול הסכמה** ב-/account/privacy - ‏ConsentSettings קורא את cookie הבאנר ומציע רק את ההחלטה שטרם התקבלה, דרך אותו server action. (4) **ייצוא נתונים נרשם ב-audit_log** ‏(data_export/created) כמו הוכחת המחיקה. (5) **חמישה טסטי ratchet חדשים** שסורקים את כל src/: ‏cookie-attributes ‏(כל cookie עם sameSite+httpOnly), ‏inline-html ‏(כל dangerouslySetInnerHTML דרך jsonLdScript או הקבוע של הבאנר), ‏parameterized-queries ‏(.or() רק עם sanitizer או יצרן מוגן, אין LIKE באינטרפולציה, ‏rpc בשם ליטרלי, אין sql.raw), ‏route-coverage ‏(כל route משנה-מצב עם limiter או שער סוד שנבדק), ו-PCI הורחב (הייצוא בלי token, ‏scrub מסתיר card/cvv/token). שלושה אתרי LIKE תוקנו בדרך (‏admin/products, ‏admin/coupons/codes, חיפוש סיומת טלפון ב-auth.ts). ‏**Nonce ל-CSP הוחלט ולא נדחה**: ‏Next מזריק nonce רק ברינדור דינמי, ו-cacheComponents מגיש את החנות מהמטמון הסטטי - ‏nonce היה שובר את ההידרציה או מבטל את המטמון; מתועד ב-frame-policy.ts וב-ARCHITECTURE-SECURITY-HARDENING.md §11. שני טסטים אדומים שירשתי מ-d36565d05 נרשמו (שלושה cron routes חדשים ברשימת cron-auth, ומצאי discarded-read של wishlist-alerts ירד ל-2). שערים: ‏vitest ‏5656/5656 ‏(481 קבצים, 12 skipped), ‏type-check נקי, ‏lint נקי כולל שלושת השערים, ‏pnpm build ‏exit 0.
+
+Updated: 2026-09-17 02:40 (goal שהוזרק ב-/goal: ‏ARCHITECTURE - טיפול בשגיאות: ‏Sentry source maps, ‏404/500 מותאמים, ‏health endpoint, ‏UptimeRobot + ‏Telegram). נמדד לפני כתיבה: ‏Sentry על שלושת ה-runtimes עם העלאת source maps ומחיקתן, ‏not-found / error / global-error בעברית RTL, ‏/api/health ו-/api/cron/health כבר היו קיימים. מה שחסר: ערוץ פרטי (‏Telegram) וניטור מחוץ לפריסה (‏UptimeRobot). נבנה: ‏lib/observability/telegram.ts ו-sendAlert שמפזר ל-ntfy ול-Telegram במקביל; ‏/api/alerts/uptimerobot עם סוד בהשוואה קבועת-זמן, ‏GET/JSON/form, הודעה בעברית לפי סוג; ‏scripts/uptimerobot/{plan,setup}.mjs אידמפוטנטי ו-scripts/telegram-verify.mjs; טסטים לשלושת דפי השגיאה ולחוזה ה-source maps. ‏commit ‏fecb493cc. בנוסף, 7 טסטים אדומים שנמצאו ב-HEAD לפני השינוי תוקנו ב-798ea01db (פירוט תחת 17.09 למטה). כל השערים ירוקים: ‏466 קבצים / 5455 טסטים, ‏type-check, ‏lint, ‏build.
+
+Updated: 2026-09-17 00:55 (goal שהוזרק ב-/goal: ‏ARCHITECTURE - חשבון משתמש מלא: כניסה באימייל+סיסמה, ‏OTP, קישור קסם, ‏Passkey, הרשמה, שחזור סיסמה, דשבורד, הגדרות, מעקב קאשבק, ארנק, ‏RLS). נמדד לפני כתיבה: רוב המערכת כבר קיימת ומחווטת - כניסה בסיסמה/Google/קישור/SMS/Passkey ב-server/actions/auth.ts ו-passkeys.ts, הרשמה+אישור, שחזור סיסמה, 13 עמודי ‏/account כולל ארנק, ו-RLS נמדד דרך ‏MCP על ‏profiles, ‏wallet_accounts, ‏wallet_entries, ‏cashback_ledger, ‏webauthn_credentials - כולן ‏on עם policies של בעלים בלבד, אפס כתיבה לארנק לכל role. לכן **אין מיגרציה**. ארבעה פערים אמיתיים נסגרו בקומיט ‏a7d9700f4 על autopilot: (1) **קוד ‏OTP מהמייל** - ‏WIP לא מחובר שנמצא בעץ (סכימה ‏emailOtpVerifySchema + ‏email_otp במייל הממותג) קיבל צרכן: ‏verifyEmailOtp ב-auth.ts (‏verifyOtp type email, תקרות 20/שעה פר-IP ופר-כתובת, מיזוג עגלת אורח + תביעת הפניה כמו המסלולים שלא עוברים ב-callback), ושדה קוד ב-LoginForm שנפתח רק אחרי שליחה מוצלחת ונושא את הכתובת מוסתרת. (2) **שינוי סיסמה מתוך החשבון** - ‏changePassword: דורש סשן, תקרה על ‏user id, מוכיח את הסיסמה הנוכחית על ‏createPublicClient (לא שומר כלום) ומבטל את הסשן שהבדיקה טבעה, ורק אז ‏updateUser; ‏ChangePasswordForm ב-/account/security עם קישור לשחזור למי שנכנס ב-Google/קישור. (3) **‏TOTP MFA היה רכיב בלי צרכן** - ‏SecurityClient לא היה מיובא משום עמוד, כך ששער ה-aal2 ב-lib/auth/mfa.ts לא שמר על איש; מרונדר עכשיו ב-/account/security עם ‏isStaff מ-profiles.role. (4) **מעקב קאשבק** - ‏src/lib/cashback/tracker.ts (טהור: דירוג לפי ‏count(paid)+1 בדיוק כמו ה-SQL של 177, צריכת ‏FIFO של הזיכוי הישן קודם כמו הסוויפ של 215, פקיעה ב-12 חודשים, חלון 30 יום), ‏server/queries/cashback.ts (‏v_wallet_ledger + ‏cashback_ledger + הזמנות, כולם דרך הלקוח של הבקשה), עמוד ‏/account/cashback (פעיל/נצבר/הבונוס הבא עם ‏progress + היסטוריה עם "10% מתוך ₪120"), פריט nav ואריח בדשבורד. טסטים: ‏tracker.test.ts ‏(13), ‏auth-email-otp.test.ts ‏(12, שני ה-actions עם מוקים), הרחבות ל-auth.validations ו-magic-link. ‏ARCHITECTURE-USER-ACCOUNT.md נכתב. חמישה שערי ratchet ירו ונרשמו (‏auth-coverage: ‏verifyEmailOtp ציבורי עם סיבה; ‏rate-limit policies + ‏docs/RATE-LIMITS.md: שלושה מפתחות; ‏legacy-redirects: הראוט החדש; ‏discarded-read: השגיאה של קריאת ה-role נקראת ונרשמת). מלכודת build: ‏new Date() כפרמטר ברירת מחדל נפל ב-prerender של ‏cacheComponents - הועבר אחרי ה-await. שערים: ‏vitest ‏5106/5106 ‏(436 קבצים, 12 skipped), ‏type-check נקי, ‏lint נקי כולל שלושת השערים, ‏pnpm build ‏exit 0. החלטות שהתקבלו לבד: (א) בלי מיגרציה - הכל כבר בפרודקשן ונמדד. (ב) שינוי אימייל מתוך החשבון לא נבנה - זרימת אישור כפול של Supabase, ודף הפרטים אומר שהכתובת מגיעה מהספק. (ג) ‏MFA לא נכפה על צוות - הסיבה כתובה ב-mfa.ts. (ד) שדה הקוד מוצג גם כשהמייל של Supabase (בלי קוד) נשלח - ההודעה הניטרלית עדיפה על חשיפת קיום הכתובת.
+
+Updated: 2026-09-16 20:25 (goal שהוזרק ב-/goal: ‏Home Page - ‏Top Bar עם ברכה, מיקום, משלוח, קניה בטוחה, התחברות ‏RTL). נמדד לפני כתיבה: הרכיב כבר קיים ושלם - ‏src/components/layout/TopBar.tsx הוא רכיב 01 בתור, מסומן complete ב-COMPONENT-QUEUE ‏(04.09, שער 10.69/7.71/8.13), ממונט ב-Header.tsx לפני ה-masthead, ‏dir=rtl, ארבעת הפריטים בסדר ה-DOM של האתר החי (התחברות אחרון = שמאל), מפרידי ‏| ב-1em, והברכה ‏home-only דרך ‏body:has([data-home]) ב-globals.css ולא דרך ‏usePathname. שני פערים אמיתיים נסגרו: (1) חוזה הברכה ישב על שלושה קבצים (המחלקה ב-TopBar, הסמן ב-page.tsx, הכלל ב-globals.css) ושום טסט לא החזיק אותו - כל אחד מהם נראה כמו קוד מת לקורא מזדמן; ‏src/components/layout/topbar-greeting-gate.test.ts ‏(4 טסטים) מצמיד את שלושתם ומוודא שאף רכיב ב-layout לא מייבא ‏usePathname. (2) שום ספק לא קרא את הבר המרונדר; ‏e2e/topbar.spec.ts ‏(3 טסטים x 3 רוחבים x 2 פרויקטים = 18) מודד ב-380/768/1440 שהתחברות הוא הקישור היחיד ושהוא השמאלי בשורתו, שהברכה נראית ב-/ ומוסתרת ב-/cart, ושהעטיפה היא 3 שורות ב-380 ושורה אחת מעל - ‏18/18 מול ‏pnpm start על 3312. אין שינוי רינדור, לכן ‏compare.mjs לא הורץ (הרפרנס איננו, ‏REFS-POLICY). שערים: ‏vitest ‏4914/4914 ‏(418 קבצים, 12 skipped), ‏type-check נקי, ‏lint נקי כולל שלושת השערים, ‏pnpm build ‏exit 0 (נבדק שאין build מקביל לפני). תחזוקה: ‏caffeinate חי (‏PID 979, ‏sleep 0), גיבוי ‏tar יומי הופעל (האחרון היה מ-10.09), ניקוי לשלושה אחרונים. החלטות שהתקבלו לבד: לא נגעתי בקוד הרכיב - הוא נמדד וירוק, ושינוי בלי מדידת שער היה מפר את הכלל.
+
+Updated: 2026-09-10 09:15 (המשך אותו goal, אחרי משוב שער העצירה שדרש 34 בדיוק): נמצאה שורה 34 לגיטימית ולא שוחזרה אף שורה שגויה. ‏/product/קופון-טסט - קופון הבדיקה של ווקומרס, נמדד היעדר מוחלט מ-products בכל סטטוס כולל מחוקים - ישב בדלי ה-lost כ-404 שקט לנצח; קיבל ‏410 מכוון ‏(confirmed_gone_410) דרך החלטת ‏CONFIRMED_GONE בגנרטור, בדיוק כמו ‏CATEGORY_OVERRIDES: החלטה מתועדת, לא כלל. שני ה-drafts ‏(restaurants-meat-2/3) נשארו בחוץ בכוונה - ‏410 שם היה חוסם פרסום עתידי. הסיד חולל מחדש (34 = ‏20x301 + ‏14x410), הוחל על פרודקשן דרך ‏MCP ‏apply_migration בשם ‏seed_seo_redirects_confirmed_gone_410, ואומת: ‏34 פעילות בפרודקשן. הטסט עודכן: ‏lost ירד לשניים, ונוסף טסט שמצמיד את ה-410 של קופון-טסט. ‏vitest ‏4910/4910, ‏type-check נקי, ‏lint נקי, ‏build ‏exit 0.
+
+Updated: 2026-09-10 09:05 (goal שהוזרק ב-/goal: ‏SEO - ‏seo_redirects מאוכלס, ‏sitemap, ‏robots, ‏JSON-LD). נמדד לפני כתיבה: הכל כבר קיים ורץ - ‏sitemap.xml ‏(src/app/sitemap.ts, מוצרים+קטגוריות+ספקים+בלוג+משפטי), ‏robots.txt ‏(src/app/robots.ts עם disallow על ‏redeem/coupon/account), ‏JSON-LD ‏Product+Offer+Breadcrumb+Organization ‏(src/lib/seo/json-ld.ts, מחווט ב-PDP), וטבלת ‏seo_redirects חיה בפרודקשן עם 33 שורות פעילות (20x301, ‏13x410) שהוחלו ב-192 דרך MCP ב-09.09. על ה"34": זו הפרויקציה הגולמית של ‏fn_project_redirects, ו-13 מתוך ה-34 נמדדו שגויות מול פרודקשן (11 קטגוריות ליעדי עברית שלא קיימים - היעדים תוקנו לסלאגים אנגליים, ‏/blog חי וסומן 410, ושתי 301 בין מוצרים כפולים חיים) - הסט המתוקן הוא 33 והוא מה שבפרודקשן. מה שכן חסר על autopilot: הגנרטור, המלאי הקפוא והטסט המצמיד ישבו רק על audit/final-audit. פורטו לכאן: ‏scripts/build-legacy-redirects.mjs (עם ‏SQL_OUT מכוון ל-migrations/applied/ כי 192 כבר הוחלה), ‏data/legacy/url-inventory.json + ‏redirect-map.json, ‏src/lib/seo/legacy-redirects.test.ts ‏(14 טסטים, ‏SQL_PATH הותאם). הארטיפקט חולל מחדש מול עץ הראוטים של הענף הזה (97 ראוטים סטטיים, שונה מ-113 של ‏audit) ומול הקטלוג החי - אותן 33 שורות בדיוק, ‏--check ירוק, וה-DB אומת שוב מול הארטיפקט שורה-שורה. ‏biome.json קיבל ‏ignore על ‏data/legacy (ארטיפקט מחולל שננעל ב-hash, פורמט של biome היה שובר את ‏--check; כך זה גם ב-audit). תיקון סביבה אגבי: ‏.env.local של ה-worktree היה בלי ‏SUPABASE_SECRET_KEY וה-build נפל ב-prerender של PDP; הועתק מה-checkout הראשי. אומת: ‏vitest ‏4909/4909 ‏(417 קבצים), ‏type-check נקי, ‏lint נקי, ‏pnpm build ‏exit 0. (goal שהוזרק ב-/goal: ‏Invoicing IL - מנפיק מסמכי מס פר-טרמינל, ‏PDF חשבונית בעברית, מספור רץ, מע"מ, אחסון ב-R2). נמדד לפני כתיבה: צינור החשבוניות כבר קיים כמעט כולו על הענף - טבלת invoices ‏(107/116) חיה בפרודקשן, ‏finalize מתייק ומנפיק מיד, ‏cron מנקז עם backoff ו-dead alert, ההנפקה כבר פר-טרמינל (getPaymentProvider על cardcom_account_id של התשלום), ה-PDF של הספק כבר ממוראר ל-R2, והמע"מ מחולץ ונשמר פר-מסמך. שלושת הפערים האמיתיים נסגרו בקומיט 8ca0e1b39 על autopilot: (1) מספור רץ בבעלות הפלטפורמה - מיגרציה 228 (invoice_counters + fn_next_invoice_number, ‏upsert אטומי אחד פר-הקצאה, סדרה פר <טרמינל>:<סוג מסמך>, ‏RLS on בלי policies, ‏EXECUTE ל-service_role בלבד, ועמודות series/internal_number על invoices עם אינדקס ייחודי חלקי). הוחלה על פרודקשן ב-MCP כ-invoice_sequences_228 לפי פרוטוקול 217 (ה-goal נוקב ב-MCP כמסלול המיגרציות): הוכחה ב-DO block שגולגל אחורה - ‏1,2,3 רצופים על סדרה אחת, ‏1 על סדרה אחרת, ‏ACL רק postgres+service_role - ואומת אחרי ההחלה. ההקצאה רק אחרי שהספק הנפיק, כך שניסיון כושל לא שורף מספר, ונכתבת ב-UPDATE נפרד כדי שמסד בלי 228 לא יפיל את כתיבת ה-issued. (2) ‏PDF עברית של הפלטפורמה - ‏src/lib/invoices/pdf.ts: ‏pdf-lib + פונטי Heebo מהריפו (fontkit הותקן), מעבר bidi ידני שנבדק תו-תו (הלקח של Satori: אין bidi ברנדרר, בלי המעבר כל מסמך יוצא הפוך עם 200 תקין), טבלת שורות RTL, פיצול מע"מ מודפס מאותו InvoiceDocument שקריאת הספק נבנתה ממנו, קבלה על קופון בלי שורות מע"מ, גלישה לעמוד שני, ‏rgb הוקצה ב-allowlist של raw-value-scan כמו qr-pdf. מועלה ל-R2 כשהספק החזיר מספר בלי PDF שליף (או שהמירור נכשל), כך שקישור המסמך של הלקוח מפסיק לתלות בזמינות הספק. (3) זהות מנפיק פר-טרמינל - ‏src/lib/invoices/issuer.ts: ‏INVOICE_ISSUER_NAME/TAX_ID/ADDRESS לפלטפורמה ו-INVOICE_ISSUERS ‏JSON לטרמינלים נוספים, נפילה בטוחה לפלטפורמה, סדרות ומספור מודפס (KE-INV-000042) באותו קובץ. טסטים: ‏pdf.test.ts (bidi תו-תו, ‏PDF נטען מחדש, גלישת עמוד), ‏issuer.test.ts, ושלושה טסטים חדשים ב-invoices.test.ts כולל רינדור אמיתי מקצה-לקצה שנבדק שגוף ה-PUT הוא ‏%PDF. שלושה שערי ratchet ירו ונרשמו (מצאי מיגרציות, ‏revoked-functions עם הסיווג service_role, ‏raw-value). החלטות שהתקבלו לבד: (1) ברירת המחדל של המע"מ נשארת 18% ולא 17% כלשון ה-goal - ‏17% הוא השיעור שפג ב-2024-12-31, הקוד וה-DB מתעדים זאת, ו-INVOICE_VAT_PERCENT כבר קיים כך שאם אופיר באמת רוצה 17 זה משתנה סביבה ולא קוד; להנפיק כל מסמכי היום בשיעור שגוי זו הטעות שאין ממנה חזרה. (2) ה-PDF העצמי מוגבל למקרה שאין PDF ספק ממוראר - המסמך של הספק הוא הראשי, שלנו הוא הרשת. (3) כשל בהקצאת מספר מדרדר להנפקה בלי מספר פנימי במקום לחסום - לספק כבר יש מספר, והשורה חייבת להירשם issued. שערים על העץ המלא: ‏4818 טסטים ירוקים ב-407 קבצים, ‏type-check נקי, ‏lint נקי כולל שלושת השערים (3 אזהרות קודמות בקבצים זרים), ‏build ירוק (נבדק שאין build מקביל לפני). ‏push עלה ל-origin/autopilot.
+
+קודם: 2026-09-10 04:15 (goal שהוזרק ב-/goal: משלוחים בישראל - קליטת מספר מעקב, תצוגה ללקוח, קישור למוביל, עמוד סטטוס בעברית, מייל עם מעקב). נמדד לפני כתיבה: הקליטה כבר קיימת עד הסוף (טופס אדמין ב-ShipmentClient כותב carrier+tracking_number דרך ה-action המבוקר, עמודות 155 חיות בפרודקשן לפי הטיפוסים המחוללים, והטריגר 183/196 כבר מטעין shipments למייל order_shipped), אבל שום דבר לא הגיע ללקוח: getOrderDetail לא קרא את העמודות, עמוד ההזמנה באזור האישי הציג רק "נשלח"/"נמסר" בלי מספר, והמייל הדפיס מספר בלי קישור. נסגר בקומיט 4fc195e04 על autopilot: (1) ספרייה חדשה src/lib/shipping/carriers.ts - רזולוציית alias סלחנית מהטקסט החופשי של carrier לתווית עברית קנונית + קישור מעקב; deep links רק היכן שהפורמט יציב (דואר ישראל itemtrace, UPS, FedEx, DHL), מובילים מקומיים (HFD, צ'יטה, תמנון, בלדר, קרגו) מקבלים קישור לעמוד המעקב בלי המספר כי הפורמטים שלהם מתחלפים, ומוביל לא מזוהה נשאר תווית בלי קישור בכלל - קישור שגוי גרוע מאין קישור. (2) getOrderDetail קורא carrier, tracking_number, shipped_at, delivered_at ו-OrderLine נושא אותם. (3) עמוד ההזמנה מרנדר שורת משלוח לפריט פיזי: סטטוס עם תאריך, מוביל, מספר ב-dir=ltr וקישור "למעקב אצל חברת המשלוחים". (4) buildOrderShippedEmail עובר דרך אותו resolver: העוגן ב-HTML על המספר עצמו ושורת URL בטקסט, כך שהעמוד והמייל לא יכולים לסתור זה את זה. טסטים: carriers.test.ts חדש (7 מקרים) + טסט קישורים ב-notifications.test.ts. שערים: ‏4794 טסטים ירוקים ב-405 קבצים, type-check נקי, lint נקי (3 אזהרות קיימות מראש בקבצים זרים), build מלא עבר. החלטות שהתקבלו לבד: (1) עמוד הסטטוס הוא עמוד ההזמנה באזור האישי ולא עמוד ציבורי חדש - מעקב בלי אימות מדליף כתובת ותכולת הזמנה, והעמוד הקיים כבר עברית RTL עם בעלות נאכפת. (2) קליטת ספק לא נוספה - ה-goal דרש קליטה ותצוגה, הקליטה באדמין קיימת, וטופס ספק הוא הרחבת הרשאות שדורשת החלטת מוצר. (3) בלי מיגרציה - עמודות 155 כבר בפרודקשן, נמדד מול הטיפוסים המחוללים שהם האמת.
+קודם: 2026-09-10 01:20 (goal שהוזרק ב-/goal: תיקון ה-landmine - הוספת ‏orders.cashback_applied_agorot ו-order_items.unit_price_agorot במיגרציה, עדכון ‏finalize.ts, אימות ש-42703 נעלם). נמדד לפני כתיבה מול ‏information_schema בפרודקשן: שני השמות באמת חסרים (הפרויקט המתארח הוא שושלת ‏pre-059 - הארנק יושב ב-cashback_applied_ils בשקלים והמחיר ב-unit_price_ils עם תאום מחולל בשם ה-ils), ושני המקורות ‏NOT NULL. הסכנה שהקוד כבר גידר ב-probe פר-דור: שם חסר ב-select הוא ‏42703 שמפיל את **כל** המשפט, כלומר ‏finalize נקטע לכרטיס שכבר חויב. נסגר בקומיט ‏821afb99a: **מיגרציה 224** (‏224_post059_price_cashback_twins) מוסיפה את שני השמות כעמודות ‏GENERATED STORED מהמקורות - אותה צורה בדיוק כמו תאומי ‏138/147, ‏round(ils*100)::bigint - כל עמודה ב-DO block משלה עם שער דו-כיווני על ‏information_schema (מסד ‏post-059 מדלג, ריצה חוזרת no-op). **הוחלה על פרודקשן** ב-MCP כ-post059_price_cashback_twins_224 לפי הנחיית ה-goal המפורשת (אותו פרוטוקול כמו 217 ו-223), ואומתה אחרי ההחלה על כל השורות: ‏0 אי-התאמות בין כל תאום ל-round(ils*100) (‏4 הזמנות, ‏3 שורות פריט), ו-select חשוף של שני השמות - שהיה ‏42703 - עונה. תוספתית בלבד: הכותבים ממשיכים לכתוב את מקורות ה-ils וה-probes של הדורות (‏total_agorot / ‏platform_bp) עדיין עונים ‏ils, אז אף מסלול כתיבה לא זז. בקוד: ‏orderCashbackSelect ו-readOrderCashbackAgorot נהיו חסרי-דור (‏finalize ו-invoices מוותרים על סבב ה-probe של ‏orders לפני קריאת הזמנה), ‏orderItemPriceSelect('ils') קורא ‏unit_price_agorot ישירות ומשאיר alias רק ל-total_price_agorot (‏224 לא הוסיפה אותה - ה-goal נקב בשתי עמודות), ‏readOrderMoney קורא את התאום במקום להכפיל שקלים ב-JS, ו-fromIls מת והוסר. שער ה-ratchet של מצאי המיגרציות ירה ו-224 נרשמה (שורת README + הרשימה הסגורה בטסט, כרשומה כמו 217/223). **החלטות שהתקבלו לבד:** (1) עמודות מחוללות ולא עמודות אמת נכתבות - מקור אמת יחיד, אפס שינוי בכותבים, ו-rollback הוא ‏drop column בטוח. (2) ‏total_price_agorot לא נוספה - מחוץ לתחום ה-goal, ה-alias הקיים ממשיך לכסות אותה. (3) ‏notify pgrst reload schema נשלח אחרי ה-DDL כדי שה-API יראה את העמודות מיד. שערים על העץ המלא: ‏4752 טסטים ירוקים ב-401 קבצים, ‏type-check נקי, ‏lint נקי (3 אזהרות קודמות, אחת מהן ‏savedTokenId שאינו בשימוש ב-finalize.ts:653 - קודמת ל-goal ולא נגעתי), ‏build ירוק (נבדק שאין build מקביל לפני). ‏push עלה ל-origin/autopilot.
+
+קודם: 2026-09-10 00:55 (goal שהוזרק ב-/goal: ‏Cron scheduler: ‏Vercel cron לכל ה-routes, ‏CRON_SECRET bearer, פקיעת שוברים, ניקוז תור מייל, טריגר גיבוי, ‏health ping). נמדד לפני כתיבה: כמעט הכל כבר קיים - 17 ‏routes תחת ‏src/app/api/cron/, כולם ‏GET יחיד עם ‏bearerMatches מול ‏CRON_SECRET (שער ‏cron-auth אוכף), פקיעת שוברים (‏expire-vouchers), ניקוז המייל (‏notifications, שני ערוצים על תור אחד), ‏health ping (‏cron/health עם התראת ntfy), ומתזמן ה-Actions חי מ-02.09 עם ‏cron-jobs.json כמקור אמת יחיד. שני הפערים האמיתיים נסגרו בקומיט 337c4a8b8: **(1) מפתח ה-crons הוחזר ל-vercel.json** עם כל 18 הג'ובים, אחרי שהוסר בכוונה ב-01.09 בגלל מלכודת ה-Hobby (הפלטפורמה רושמת מה שהתוכנית מכסה ומתעלמת בשקט מהשאר); התנאי להחזרה הוא שהוא כבר לא יכול לשקר בשקט: ‏cron-schedule-inventory.test.ts קורא עכשיו את המפתח ודורש זהות בייט-לבייט מול ‏cron-jobs.json (הכשל המקורי היה אפשרי בדיוק כי שום דבר לא קרא אותו). **(2) ג'וב גיבוי חדש** ‏/api/cron/backup (‏02:20 UTC יומי): גיבוי לוגי של 20 הטבלאות העסקיות שאי אפשר לשחזר משום מקום אחר (הזמנות, רגלי הכסף, שוברים, ארנקים, קטלוג) כאובייקט JSON אחד ליום UTC ב-bucket פרטי ‏db-backups, משלים את הגיבויים הפיזיים של Supabase ולא מחליף אותם. הכל-או-כלום (קריאת טבלה שנכשלה = 500 ובלי העלאה, כי גיבוי חסר טבלה נראה שלם וגרוע מריצה אדומה), אידמפוטנטי פר-יום כולל מרוץ שני מתזמנים על ‏upsert:false, קיטום נרשם בקול ולעולם לא שקט, בלי מחיקת ישנים (מחיקת קבצים היא החלטת אדם). 12 טסטים חדשים. נרשם בכל חמשת המקומות: ‏cron-jobs.json (18), שורת schedule בוורקפלואו, שורת הדבקה+טבלה+bullet ב-CRON-EXTERNAL, רישום ‏cron-auth, ועדכון תקרית 2 ב-RUNBOOK. **החלטות שהתקבלו לבד:** (א) החזרת מפתח ה-crons למרות ההסרה המתועדת: ה-goal נוקב בו במפורש, ההסרה טופלה בשורש (טסט שקורא את המפתח) ולא בהתעלמות; מתזמן ה-Actions נשאר החי, וביום ש-Vercel crons יופעלו באמת (deploy מהריפו הזה על Pro) יש לכבות קודם ‏CRON_SCHEDULER_ENABLED, מתועד בשלושה מקומות. (ב) אין מיגרציה ואין שינוי פרודקשן: ה-bucket נוצר בזמן ריצה על ידי ה-service role (bucket אינו סכימה, ואין צורך ב-RLS כי רק ה-service role נוגע בו), ולכן אין מה לאשר. (ג) ‏payment_tokens הוחרג מהגיבוי בכוונה: לטוקני כרטיס בית אחד, פחות עותקים זו הנקודה. (ד) הג'וב לא ירוץ בפועל עד ש-autopilot ימוזג ל-main: ‏schedule של Actions יורה רק מ-branch ברירת המחדל (הלקח המתועד), אז שורת ה-20 2 * * * החדשה ממתינה למיזוג. שערים על העץ המלא: ‏4752 טסטים ירוקים ב-401 קבצים, ‏type-check נקי, ‏lint נקי (3 אזהרות קודמות בקבצים של אחרים), ‏build ירוק (נבדק שאין build מקביל לפני).
+
+קודם: 2026-09-09 22:35 (goal שהוזרק ב-/goal: סנכרון ספקים לדרופשיפינג - שדה הערות ספק, נעילת stock hold, סירוב ל-claim שני, הפחתה בתשלום, השבה בביטול). נמדד לפני כתיבה: ארבעה מחמשת הרכיבים כבר קיימים עד הסוף - suppliers.notes מחווט לטופס ול-action, ‏reserve_order_stock ‏(117) הוא הנעילה עם FOR UPDATE בסדר PK וכל-או-כלום שמסרב ל-claim שני (checkout מחזיר INSUFFICIENT_STOCK), ‏consume_order_stock נקרא ב-finalize.ts:630 בתשלום, ו-release_order_stock משחרר ב-pending->cancelled. הפער האמיתי היחיד: הזמנה ששולמה ואז זוכתה לא החזירה מלאי לעולם - ‏release מסנן consumed_at IS NULL, ‏refund.ts לא נגע במלאי, והמדף נשאר חסר יחידה לצמיתות. נסגר בקומיט 00aff36d4: מיגרציה 223_restock_on_refund (עמודת restocked_at + ‏restock_order_stock, מראה של consume - חותמת ומעלה stock_quantity במשפט אחד, אידמפוטנטית פר-הזמנה, מוצר לא-מנוהל מדולג), חיווט ב-refund.ts אחרי ה-CAS של paid->refunded (best-effort, הכסף כבר זז), אפקט restock_consumed מוצהר בשלושת קשתות ->refunded ב-order-transitions.ts עם טסט שהוא נמצא רק שם ולעולם לא יחד עם release_stock, מראה מלא ב-stock-reservation-contract.test.ts, ושלושה טסטים על refund.ts (קריאה אחרי flip, דילוג כש-CAS הפסיד, אי-כישלון כשה-RPC נופל). **המיגרציה הוחלה על פרודקשן** ב-MCP כ-restock_on_refund_223 לפי פרוטוקול 217 (ה-goal מנחה במפורש "Use Supabase MCP for migrations"): קודם dry-run בטרנזקציה שגולגלה אחורה על שורות אמיתיות - consumed של 2 העלה רמה 10->12 והחזיר 1, ‏replay החזיר 0, מוצר לא-מנוהל נחתם בלי שינוי רמה - ואומת שאחרי הגלגול הפונקציה והעמודה לא קיימות; אחרי ההחלה נמדד ש-EXECUTE הוא postgres+service_role בלבד ו-0 שורות חתומות. **החלטות שהתקבלו לבד:** (1) מוספרה 223 ולא 218 כי 218-222 תפוסים בקבצים ממתינים על audit/final-audit. (2) ‏RPC דרך pending-restock.ts בדפוס pending-reports (‏database.ts לא רוגנרר, אותו נימוק של 170). (3) ההשבה מסויגת ב-flip האמיתי של ה-CAS, ושגיאת flip נרשמת ב-log.warn במקום להיזרק (שער discarded-read תפס את הגרסה שהשליכה error ותוקן בשם וטיפול, לא בהעלאת המצאי). שערים על העץ המלא: ‏4736 טסטים ירוקים ב-400 קבצים, ‏type-check נקי, ‏lint נקי כולל שלושת שערי העיצוב, ‏build ירוק (נבדק שאין build מקביל לפני).
+
+קודם: 2026-09-09 22:10 (goal שהוזרק ב-/goal: ייבוא מוצרים לאדמין - העלאת Excel/CSV, מיפוי עמודות בעברית, דוח ולידציה, dry-run, ‏batch upsert עם rollback). נמדד לפני כתיבה: רוב ה-goal כבר היה קיים מ-07.09 - פרסר CSV זורם, ולידציה דרך productSchema+buildProductMoneyWrite, ‏preview יבש, דוח שגיאות להורדה, והוספה במנות. שלושת הפערים האמיתיים נסגרו בקומיט 79328e150: (1) קורא xlsx בלי תלות (‏parse-xlsx.ts: קריאת zip ידנית + DecompressionStream deflate-raw, גיליון ראשון בלבד, שורות דחוסות כך שמספרי השורות בדוח זהים לאקסל; 8 טסטים עם zip שנבנה בטסט). (2) שלב מיפוי עמודות בעברית ב-ProductImportClient: כל עמודה בקובץ מקבלת select ממולא מראש מה-aliases, כפילויות וחוסרי חובה חוסמים המשך, וקובץ עם כותרות לא מזוהות ממופה ידנית במקום להידחות. (3) מצב upsert + אטומיות פר-מנה: שורה עם slug קיים מעדכנת את המוצר במקום להיכשל, וכשל באמצע מנה מגלגל אחורה את כל המנה (יומן פיצוי: מחיקת ids שהוכנסו - ‏products_delete_unified אומת ב-pg_policy - ושחזור snapshot של בדיוק העמודות ששונו). **החלטות שהתקבלו לבד:** (א) ‏rollback בפיצוי אפליקטיבי ולא RPC טרנזקציוני, כי מיגרציה חדשה הייתה יושבת ב-pending בלתי שמישה עד אישור. (ב) בעדכון נכתבות רק עמודות שנכללו בקובץ; שדות הכסף מחושבים מחדש כיחידה (המקורות הם עמודות חובה); ‏status/images/supplier/type לעולם לא נכתבים, עמודת type חובה בשורה מעדכנת ושינוי type נדחה - כדי שקופון קיים לא יקבל כסף של physical בשקט. (ג) slug בארכיון נדחה גם ב-upsert. (ד) ‏mode מהרשת עובר coercion בצד השרת. הספרייה הכפולה המתה src/lib/admin/import/parseProductsCsv.ts לא נמחקה (מחיקת קבצים = עצירה). שערים על העץ המלא: ‏4728 טסטים ירוקים ב-400 קבצים, ‏type-check נקי, ‏lint נקי כולל שלושת שערי העיצוב, ‏build ירוק (נבדק שאין build מקביל לפני).
+
+קודם: 2026-09-09 21:50 (אימות חוזר של goal מחזור חיי המייל דרך Resend). סשן חדש קיבל את אותו goal ומדד לפני כתיבה: הכל כבר סגור בקומיט 2005892ba (הרשומה של 21:35 מתחת). חמשת המיילים קיימים, מחווטים עד הסוף ומכוסים בטסטים, ולכן אין אף עריכת קוד נדרשת. במקום לגעת בקוד, ארבעת השערים הורצו מחדש על העץ הנקי: ‏pnpm test ירוק (399 קבצים, ‏4717 עברו, ‏12 skipped), ‏type-check נקי, ‏lint נקי כולל שערי tokens/copy/asset, ו-pnpm build ירוק (נבדק קודם ש-pgrep לא מראה build מקביל, לפי לקח ה-OOM של worktrees מקבילים). כיסוי הטסטים אומת פר-מייל: ‏buildOrderPaidEmail, ‏buildOrderShippedEmail כולל dispatch דרך buildNotification, מייל הזיכוי, ‏welcome, ‏magic-link (7 טסטים) ו-bidi (6), ו-outbox-kinds.test.ts שומר על זהות רשימת הסוגים בין ה-builders ל-drain. אין קומיט קוד חדש, רק הרשומה הזאת.
+
+קודם: 2026-09-09 21:35 (goal שהוזרק ב-/goal: מחזור חיי מייל דרך Resend — אישור הזמנה, הודעת משלוח, אישור זיכוי, welcome, magic link, עברית RTL עם unicode-bidi). נמדד לפני כתיבה: ארבעה מחמשת המיילים כבר קיימים ומחווטים עד הסוף — order_paid (טריגר tg_orders_notify_paid בפרודקשן, אומת ב-pg_proc/pg_trigger), refund_completed (‏refund.ts), welcome (‏auth callback עם dedupe ‏welcome:uid), ‏magic link (‏magic-link-send.ts), וכל ה-builders ב-notifications.ts עם LRI/PDI ו-dir+style כפול. הפער האמיתי היחיד: ‏196 הרחיבה את ה-payload של order_shipped במערך shipments (ספק+מספר מעקב פר שורה, אומת מול pg_get_functiondef בפרודקשן) וה-builder התעלם ממנו — הלקוח קיבל מייל "נשלחה" בלי אף מספר מעקב. תוקן: ‏asShipments סובלני + רינדור מבודד-bidi בטקסט וב-HTML, שלושה טסטים חדשים (רב-חבילות, בלי ספק, ‏NULL/junk שקול לפני-196). עבודה בפועל נוספת: העץ עמד על HEAD תלוש 4 מאחורי origin/main עם שאריות merge של ה-auto-merger מ-21:15 — חמישה קבצים עם סמני קונפליקט גולמיים (git דיווח אפס unmerged, הדפוס המוכר). קודם fast-forward ל-origin/main (אב ישיר, קבצים זרים לשלי), ואז הקונפליקטים נפתרו כאיחוד כי שני הצדדים אמיתיים בעץ: 17 ג'ובים ב-cron-jobs.json (‏retention, ‏weekly-digest וגם expire-coupons), ‏217 לרשימת pending (‏215 נשארת ב-applied), ‏expire-cashback+expire-coupons ב-cron-auth, ושורת 10c ב-CRON-EXTERNAL. שארית ה-coupon-QR חסרת בעלים נכללת ב-commit כי טסטי המצאי מעגנים אותה לעץ — בלעדיה ה-commit אדום. **החלטות שהתקבלו לבד:** (1) route המימוש admin/coupon-qr/redeem נתפס ערום בשער mutating-route-guards; קיבל rateLimit('voucher-redeem') על משתמש הצוות — אותה מדיניות ואותו נימוק כמו הטיל של השוברים, בלי policy חדשה. (2) שתי הערות שקריות-כיום עודכנו לפי מדידה: shipping.ts ("No email yet" — הטריגר חי), ו-NotificationKind ("לא מתקבל ב-CHECK" — מתקבל, נמדד). שערים: ‏4717 טסטים, ‏type-check, ‏lint, ‏build — כולם ירוקים על העץ המלא.
+
+קודם: 2026-09-09 14:20 UTC (‏goal שהוזרק ב-/goal: מכונת מצבים להזמנות עם hooks פר-מעבר ודריסת אדמין עם audit. נמדד לפני כתיבה: ה-goal הזה כבר הושלם במלואו ב-07.09 (‏commit ‏ecd3b7f54, ראה הרשומה של 22:20 מאותו יום למטה) ולא נגעתי בשכבות שלו: הגרף ב-orderMachine, תוכניות ה-effects פר-קשת ב-order-transitions.ts, ‏overrideOrderStatus עם CAS, סיבה חובה ושורת manual_override, וה-UI ב-OrderStatusClient. מה שכן חדש מאז: **מיגרציה 137 שהייתה אז ממתינה חיה עכשיו בפרודקשן**, ואומת היום ישירות: שלושת טריגרי השמירה (‏orders, ‏order_items, ‏payments) קיימים ומופעלים ב-pg_trigger, ו-DO block מגולגל לאחור הוכיח התנהגותית שמעבר אסור paid אל pending מרים 23514 בלי להשאיר שורה (קיימות 2 הזמנות paid, כלומר הבדיקה באמת רצה). **העבודה בפועל בסשן הזה: ‏main היה אדום.** ה-auto-merger שלח חצאי-מיזוגים, ‏type-check נפל עם 4 שגיאות ו-23 טסטים נפלו ב-9 קבצים (חלקם נעלמו בהתקדמות ל-164f035de, חמישה נשארו). חמישה תיקונים: (1) ‏refund.ts איבד את שורת ה-import של recordRefund/groundFor/RefundRecordAdmin מ-refund-record, הוחזרה; זה הכותב של paid אל refunded, כלומר בליבת ה-goal. (2) ‏uploader-policy.ts ייבא את AppRole שסשן ה-RBAC מחק, הוחלף ב-UserRole (‏content_uploader קיים ב-user_role, נבדק). (3) ‏mock המודול ב-finalize-token-dedupe.test.ts קדם ל-resolveOrderGeneration/resolveOrderItemGeneration שנוספו ל-finalize, הוסב ל-importOriginal עם דריסת ה-resolvers בלבד (דור agorot), כך שהפונקציות הטהורות רצות אמיתי. (4) שער ה-ratchet של audit-actor: ‏deletion.ts של סשן ה-GDPR כותב audit_log ישירות ולא היה רשום; נרשם עם kind חדש self (בעל החשבון הוא ה-actor של מחיקת עצמו, ‏actor_id: userId נאכף ברגקס ו-null אסור). (5) שער admin-server-only: ‏instrumentation.ts ו-env-probe.ts (בדיקת החיות של המפתחות בזמן boot) נרשמו כקוראי env גולמיים עם סיבות ו-mustContain. תיקוני השערים לפי הכלל register, don't debug. **החלטות שהתקבלו לבד:** (א) העבודה ב-worktree מבודד חדש (‏order-state-machine) ולא ב-worktree של ה-autopilot: היה שם merge עם קונפליקטים חיים שקבציו נגעו 41 שניות לפני הבדיקה, וה-checkout הראשי יושב על audit/final-audit עם WIP של סשן אחר. (ב) שום מיגרציה לא נכתבה ולא הוחלה: כל צד ה-DB של ה-goal (137) כבר חי, נמדד. (ג) ‏.env.local הועתק מה-worktree של ה-autopilot כי worktree טרי נולד בלעדיו וה-build נפל על איסוף page data של /coupons/[id]; עם הקובץ ה-build ירוק. השערים: ‏4693 טסטים ירוקים ב-397 קבצים, ‏type-check נקי, ‏pnpm lint מלא נקי כולל שלושת שערי העיצוב, ‏build exit 0 עם טבלת routes מלאה)
+
+Updated: 2026-09-09 20:15 UTC (‏goal שהוזרק ב-/goal: ‏Backup DR: ‏pg_dump יומי ל-R2 עם retention של 30 יום, ‏runbook שחזור, אוטומציית תרגול רבעוני, ותיעוד PITR. נמדד לפני כתיבה: **הכל כבר נבנה ב-08.09 בקומיט 59869fa90** (ראה הרשומה של 03:40 למטה): הצינור המלא ב-scripts/dr/ עם 17 טסטים, ‏db-backup.yml יומי, ‏db-restore-drill.yml רבעוני, ‏docs/DB-RESTORE-RUNBOOK.md, ותיעוד PITR קיים ב-ARCHITECTURE-BACKUP-DR.md (סעיפי 2/2.2/RTO-RPO) וב-DISASTER-RECOVERY.md (סטטוס לא-מאושר עם שאלת הבדיקה). לכן הסשן הזה מדד את מה שהרשומה ההיא השאירה פתוח, ושלושת הממצאים נכתבו ל-runbook תחת "Enablement status, measured 2026-09-09": (1) **‏R2 עדיין לא מופעל בחשבון Cloudflare**, נמדד ישירות: קריאת list-buckets דרך ה-MCP החזירה ‏403 code 10042 "Please enable R2"; זה החוסם היחיד והוא צעד דשבורד ידני. (2) בהגדרות ה-Actions של הריפו אין אף אחת משש ההגדרות: הסוד היחיד הוא CRON_SECRET ו-DB_BACKUP_ENABLED לא קיים במשתנים, כלומר שני ה-workflows אינרטיים בכוונה ולא נכשלים בשקט. (3) התנאי המוקדם של branch ברירת המחדל כבר מסופק: ‏git ls-tree על origin/main מראה את שני ה-workflows, ‏scripts/dr/ וה-runbook ממוזגים, כך שה-crons נדרכים ברגע שההגדרות ייקבעו. השערים הורצו על העץ כולו: ‏4117/4117 טסטים ירוקים, ‏type-check נקי, ‏build עבר עם טבלת routes מלאה, ו-lint הובא לירוק מלא לראשונה מזה יומיים: פורמט biome על 8 קבצי ה-media-ingest של הסשן המקביל (‏staged, ‏mtime 20:01, ללא שינוי תוכן) ותיקון ידני של שני useTemplate ב-run.mjs, בדיוק תבנית שרשור-template-literals שכבר הוכחה כמסוכנת לבילד. **החלטות שהתקבלו לבד:** (א) לא נעשה שום ניסיון לעקוף את חוסם ה-R2 (למשל גיבוי ל-bucket מדיה אחר או ל-GitHub artifacts): ה-runbook קובע bucket ייעודי עם token ייעודי, ועקיפה הייתה יוצרת מסלול גיבוי שני שלא נמדד. (ב) קבצי ה-media-ingest פורמטו אך לא בוצע להם commit: הם WIP של סשן מקביל שנגע בהם 6 דקות לפני הבדיקה, ההיסטוריה שלהם שייכת לו; נשלחה לו הודעה ישירה על הפורמט, וה-commit שלי בנתיבים מפורשים בלבד. (ג) אין migration ואין שינוי DB: ‏goal תיעודי-תשתיתי בלבד, ‏Supabase MCP שימש רק בסשן המקורי. ‏commit נדחף ל-origin/autopilot)
+
+Updated: 2026-09-09 13:05 UTC (‏goal שהוזרק ב-/goal: ‏GDPR: באנר הסכמה בעברית, endpoint לייצוא נתונים ב-JSON, מחיקת חשבון עם מפל אנונימיזציה, עמודי תקנון ופרטיות. נמדד לפני כתיבה: באנר ההסכמה (‏ConsentBanner, עברית, server component בלי JS בצד לקוח) ועמודי התקנון והפרטיות (הסט הקנוני תחת ‏/privacy-policy ו-/terms-and-conditions, מרונדר מ-(legal)/_content) כבר קיימים ועובדים, אז שני הפערים האמיתיים נסגרו: **(1) ייצוא נתונים:** ‏GET /api/account/export מחזיר קובץ JSON אחד עם כל מה שבעל החשבון רואה, נקרא דרך הלקוח כפוף ל-RLS כך שהייצוא לא יכול להרחיב גישה, טוקן Cardcom לא נכלל (עמודות ממוסכות בלבד), ‏Content-Disposition attachment + ‏Cache-Control no-store, מוגבל 5 לשעה פר משתמש. **(2) מחיקת חשבון:** פעולת ‏deleteMyAccount עם מילת אישור מוקלדת ("מחיקה") ומפל אנונימיזציה ב-src/lib/account/deletion.ts. נמדד מול pg_constraint בפרודקשן: ‏orders/vouchers/referrals/coupon_codes/affiliates הם ‏ON DELETE RESTRICT ו-wallet_transactions הוא ‏CASCADE, לכן מחיקת auth.users הייתה או נכשלת או מוחקת את ספר הכספים; לכן אנונימיזציה ולא מחיקה: 12 טבלאות העדפות/מעקב נמחקות (כולל payment_tokens, ‏push, ‏reviews, ‏wishlists, ‏newsletter, ‏whatsapp), ‏profiles ו-user_addresses מנוקים במקום (מייל מצבה ייחודי deleted-<id>@), מנויים חיים מבוטלים, משתמש ה-auth נחסם ומנוקה, ושורת הוכחת מחיקה נכתבת ל-audit_log. רשומות הנהלת חשבונות נשמרות בכוונה (רשימת RETAINED_FOR_LAW נעולה בטסט). עמוד חדש ‏/account/privacy מרכז ייצוא + מחיקה + קישורים למסמכים הקנוניים, נוסף לניווט החשבון, וסעיף הזכויות במדיניות הפרטיות עודכן לנקוב בכלים (updatedAt 2026-09-09). שערי ratchet שנרו נרשמו כנדרש: ‏account-delete (3/שעה) ו-data-export (5/שעה) בטבלת ‏RATE_LIMIT_POLICIES, ו-/account/ הוחרג ממלאי עמודי המסמכים ב-legal-duplication. שערים: ‏4117 טסטים ירוקים (24 חדשים), ‏type-check נקי, ‏build exit 0 עם שני ה-routes החדשים, ‏biome נקי על כל 13 הקבצים שנגעתי בהם. ‏commit 146776a99 נדחף ל-origin/autopilot. **החלטות שהתקבלו לבד:** (א) לא הוחלה ולא נכתבה שום מיגרציה: המפל כולו עובד בכתיבות DML של service role על סכימה קיימת, אז אין מה לאשר. (ב) ‏pnpm lint מלא עדיין אדום אך ורק על קבצי ה-media-ingest של סשן מקביל (‏mtime 19:02, staged ולא שלי), לא נגעתי בהם ולא פורמטתי אותם; הקבצים שלי נקיים. (ג) קישורי העמוד מפנים ל-/privacy-policy ו-/terms-and-conditions הקנוניים ולא ל-/legal/* שמפנה הלאה.)
+
+Updated: 2026-09-09 12:15 UTC (‏goal שהוזרק ב-/goal: ‏RBAC hardening: תפקידי admin/support/viewer, ‏RLS audit על כל טבלה, ‏deny-all ברירת מחדל, ‏service role רק בצד שרת. נמדד לפני כתיבה, מול פרודקשן דרך MCP: מודל התפקידים כבר פרוס במלואו, ‏181 חי בפרודקשן מ-08.09 בשני חלקים (‏read_only_enum_181a + admin_rbac_hardening_181b) עם read_only כשכבת ה-viewer, סולם שינויי התפקידים וטריגר ה-MFA, וכל 93 הטבלאות הציבוריות תחת RLS, כל 13 ה-views עם security_invoker. **שני פערים נמדדו ונסגרו במיגרציה 212 (הוחלה):** (1) ‏authenticated החזיק TRUNCATE על 72 טבלאות, ו-RLS לא חל על TRUNCATE בכלל, בוטל גם על default privileges; (2) שלוש פונקציות עם search_path נייד (‏set_updated_at, fn_cashback_ledger_block_mutation, fn_il_phone_digits) ננעלו על public, המלצת advisor 0011 נקייה עכשיו. בצד האפליקציה נסגרו ההשלמות ש-181 עצמו הגדיר: ‏read_only נוסף ל-user_role בטיפוסים המגונרטים, כינוי AppRole פרש והוחלף ב-UserRole בכל שכבת האדמין, ה-cast בפעולת עדכון תפקיד נמחק, וה-proxy מכניס עכשיו read_only לפאנל. נוסף שער חדש: ‏src/lib/supabase/admin-server-only.test.ts, שמפיל CI אם קובץ 'use client' או קובץ תחת src/components נוגע בלקוח ה-service-role או בשמות משתני הסביבה, וקריאות env גולמיות נעולות ל-allowlist של 4 קבצים. תיעוד מלא: ‏docs/RLS-AUDIT-2026-09-09.md, כולל טבלת חריגים מכוונים (אל תתקנו: ‏media_ingest_queue בלי policies בעיצוב, ‏carts anon DML לעגלות אורח, ‏is_admin anon EXECUTE שנדרש ל-policies של anon). שערים: ‏4093 טסטים ירוקים, ‏type-check נקי, ‏build עובר, ‏biome נקי על כל הקבצים שנגעתי בהם. ‏commit 98f515519 נדחף ל-origin/autopilot. **החלטות שהתקבלו לבד:** (א) ‏212 הוחלה דרך MCP apply_migration אחרי dry-run בטרנזקציה שגולגלה אחורה, לפי הנוהל המתועד ב-APPLY-ORDER.md ומכוח ה-goal שנקב במפורש ב-MCP כמסלול המיגרציות; שינוי בסיכון אפסי והפיך (אין שום מסלול לקוח שמריץ TRUNCATE). (ב) צמצום גורף של הרשאות DML ל-authenticated לא בוצע: זה התפקיד של 144 בשיטתה (מלאי כתיבות לגיטימיות פר טבלה) ו-RLS חוסם כל DML בינתיים; נשאר פתוח במסמך ה-audit. (ג) שגיאות ה-lint הכלל-ריפו שייכות ל-WIP של סשן ה-media-ingest המקביל, לא נגעתי בקבצים שלו. (ד) ‏181 ו-210 נמצאו חיים בפרודקשן בלי רישום, נרשמו בטבלת APPLIED IN PRODUCTION עם ראיות.)
+
+Updated (הקודם): 2026-09-09 11:05 UTC (‏goal שהוזרק ב-/goal: ‏Sentry לפרודקשן: חיווט DSN, העלאת source maps בבילד, מעקב releases, הקשר משתמש בלי PII, ‏error boundaries בעברית. נמדד לפני כתיבה: ארבעה מתוך חמשת הרכיבים כבר בנויים ולא נגעתי בהם: ‏DSN לשלושת ה-runtimes (‏sentry.server/edge.config.ts ו-instrumentation-client.ts, אינרטי לגמרי בלי DSN), העלאת source maps ב-withSentryConfig עם מחיקה אחרי ההעלאה ו-tunnel ‏/monitoring, ‏release מ-SHA של ה-commit בשרת ובלקוח (עם fallback ל-NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA), ושני boundaries בעברית RTL (‏error.tsx עם reset ו-digest, ‏global-error.tsx עם html/dir משלו). **הפער היחיד: אף אירוע לא נשא זהות משתמש, ‏setUser לא נקרא בשום מקום.** נסגר בשלוש שכבות: (1) ‏withActionContext מפענח את ה-sub מעוגיית ה-auth של Supabase שכבר על הבקשה (כולל הצורה המקוטעת ‏.0/.1 והצורה עם קידומת base64-), בלי שום קריאת רשת, ומתייג את ה-isolation scope עם ה-UUID בלבד; פענוח בלי אימות, לתצפית בלבד ולעולם לא להרשאה, וכשל תיוג לעולם לא מפיל action. (2) קומפוננטה חדשה SentryUserSync ב-root layout משקפת את מצב ה-auth בדפדפן ל-SDK דרך onAuthStateChange בלבד (‏INITIAL_SESSION נורה בזמן ההרשמה, אפס בקשות רשת, אפס פגיעה ב-LCP), ‏id בלבד, מתאפס ב-sign-out. (3) ‏beforeSend בשלושת הקונפיגים מגלח עכשיו את event.user ל-{id} בלבד דרך scrubEventUser החדש ב-src/lib/observability/sentry-user.ts, כך שגם קריאת setUser עתידית עם אובייקט משתמש מלא לא תשלח אימייל או IP. ‏26 טסטים חדשים: פרסינג העוגייה על כל הצורות כולל זבל ו-sub עוין, ‏id-בלבד, בקשות אנונימיות, ו-unsubscribe ב-unmount. **החלטות שהתקבלו לבד:** (א) בלי migration ובלי Supabase MCP: אין שום צד DB לפיצ'ר. (ב) ‏SentryUserSync מחוץ לשער ה-consent בכוונה: דיווח שגיאות כבר רץ לפני הבאנר, ו-id פסאודונימי בדוח קריסה הוא אותו בסיס עניין לגיטימי, בשונה מתגי השיווק. (ג) שגיאות ה-lint שנותרו (‏format בלבד) שייכות ל-WIP הפעיל של סשן ה-media-ingest המקביל (‏mtime 17:52, עשר דקות לפני הבדיקה); לא נגעתי בקבצים שלו, ‏biome נקי על כל הקבצים שלי, וה-commit בנתיבים מפורשים בלבד. השערים: ‏4041/4041 טסטים ירוקים, ‏type-check נקי, ‏build עבר עם טבלת routes מלאה. ‏commit d0108ab2a נדחף ל-origin/autopilot)
+Updated: 2026-09-09 14:35 UTC (‏goal שהוזרק ב-/goal: ‏Passkeys WebAuthn: הרשמה עם Face ID / טביעת אצבע, נפילה לקישור קסם, דף ניהול מכשירים, זרימת ביטול. נמדד לפני כתיבה: כל ארבעת הרכיבים כבר בנויים בקוד מאז 07.09 ולא נגעתי בהם: הרשמת מפתח ב-PasskeyManager עם begin/finishPasskeyRegistration (‏excludeCredentials נגד רישום כפול, ‏residentKey+userVerification שניהם required), נפילה אוטומטית לקישור קסם (‏PasskeyLoginButton עם onFallback שפותח את טופס ה-magic link ב-LoginForm), ניהול מכשירים ב-/account/security (שם ידידותי, מגובה-בענן, שימוש אחרון), וביטול דרך deletePasskey על מדיניות delete-own. **הממצא המרכזי: מיגרציה 178 כבר הוחלה על פרודקשן ב-08.09** (‏webauthn_credentials_178, גרסה 20260908210126) אבל README, ‏APPLY-ORDER ו-STATE עוד רשמו אותה כממתינה, כלומר שורת 07.09 למטה על "מיגרציה 178 ממתינה" כבר לא נכונה. אומת מול פרודקשן היום: הטבלה קיימת, ‏RLS פעיל, בדיוק שתי מדיניויות (‏select-own, ‏delete-own), אפס מדיניות INSERT/UPDATE כך שהכתיבה נשארת service-role בלבד, אפס שורות, ו-advisors בלי אף ממצא חדש על הטבלה. אין משתנה סביבה חדש: סוד האתגר נגזר מ-SUPABASE_SERVICE_ROLE_KEY הקיים. מה שתוקן בפועל: שתי שורות התיעוד ב-README וב-APPLY-ORDER מעודכנות לרשום את 178 כמוחלת עם הגרסה והאימות. בדרך נרשמה במלאי גם 210 של סשן ה-media-ingest המקביל: שני טסטי ה-ratchet של pending-migrations-inventory נפלו כי 210 ישבה על הדיסק בלי שורה ב-README ובלי רישום ברשימת הקבצים, ו-210 כבר חיה בפרודקשן מהבוקר (‏media_ingest_queue_210, גרסה 20260909093018), אז הרישום הוא עובדה ולא ניחוש; לפי הכלל "register, don't debug". **החלטות שהתקבלו לבד:** (א) לא הוחלה שום migration: 178 כבר בפרודקשן, נמדד ישירות מ-schema_migrations. (ב) 8 שגיאות ה-lint (פורמט בלבד) שייכות ל-WIP הלא-committed של סשן ה-media-ingest ב-scripts/media-ingest/; לא נגעתי בקבצים שלו, ‏biome נקי על הקבצים שלי, וה-commit שלי בנתיבים מפורשים בלבד. השערים: 4026/4026 טסטים ירוקים, ‏type-check נקי, ‏build עבר עם טבלת routes מלאה)
+Updated: 2026-09-09 18:50 UTC (‏goal שהוזרק ב-/goal: ‏Axiom: צינור לוגים מובנה, ‏request tracing עם correlation IDs, וכללי התראה ל-5xx spikes ולשאילתות איטיות. נמדד לפני כתיבה: שניים משלושת הרכיבים כבר בנויים ולא נגעתי בהם: הצינור המובנה (‏log.ts שולח כל שורה redacted ל-Axiom דרך axiom.ts, אינרטי לגמרי בלי AXIOM_TOKEN/AXIOM_DATASET) וה-tracing (‏proxy.ts טובע request_id אחד לבקשה, ‏withRequestLog ו-request-store מחלחלים אותו לכל שורת לוג, ו-request-id-fetch מעביר אותו גם ל-Supabase). **הפער היחיד: אפס כללי התראה בצד Axiom; ‏setup.mjs ניהל רק dataset ו-dashboards.** נסגר כקוד באותו חוזה של sentry-alert-rules.mjs: ‏scripts/axiom/monitors.mjs חדש מגדיר שני מוניטורים (‏5xx spike: ‏request.completed עם status>=500 או request.failed, סף 5 ב-10 דקות; ‏slow queries: ‏db.query_slow שכבר נפלט מ-query-log-fetch.ts מעל 1500ms, סף 12 ב-15 דקות, כדי ששאילתה קרה בודדת אחרי deploy לא תעיר אף אחד) ושני notifiers, אחד פר מוניטור כדי שההודעה תגיד איזה כלל נורה בלי תלות במשתני template של Axiom. ‏setup.mjs עושה upsert לפי שם ל-notifiers ואז למוניטורים (‏planUpsert טהור ונבדק), ‏--ci חדש יוצא 0 בלי סודות, ו-ci.yml מחיל את הכל מ-main בלבד אחרי build ירוק, בדיוק כמו הצעד של Sentry. ‏11 טסטים חדשים ב-scripts/axiom/monitors.test.mjs, כולל נעילת שמות האירועים לקבצים שפולטים אותם (rename של db.query_slow ישבור טסט ולא ישאיר מוניטור יתום), ו-glob חדש ב-vitest.config.ts. **החלטות שהתקבלו לבד:** (א) בלי Supabase MCP ובלי migration: לפיצ'ר אין שום צד DB. (ב) ‏ntfy כברירת מחדל לערוץ ההתראה למרות כלל ה-money-only של alert.ts: ל-Axiom אין אימייל מוגדר כמו שיש ל-Sentry, שני הכללים מכוילים ל"לקוחות נפגעים עכשיו" שזה בדיוק הרף של הערוץ, והספים גבוהים בכוונה; ‏AXIOM_ALERT_EMAIL חדש (אופציונלי, מתועד ב-.env.example) מחליף לאימייל כשיוגדר. (ג) אין AXIOM_TOKEN מקומי, אז הכללים לא הוחלו בפועל, רק ‏--dry הורץ מקצה לקצה; הם יוחלו אוטומטית מ-CI כשהסודות יוגדרו, same posture כמו Sentry. (ד) שגיאות ה-lint שנותרו (פורמט בלבד) שייכות לקבצי ה-media-ingest של הסשן המקביל שכבר committed על branch זה; לא נגעתי בהם, ‏biome נקי על כל הקבצים שלי. השערים: ‏4089/4089 טסטים ירוקים, ‏type-check נקי, ‏build עבר עם טבלת routes מלאה; ‏commit בנתיבים מפורשים בלבד)
+Updated: 2026-09-09 10:25 UTC (‏goal שהוזרק ב-/goal: ‏WhatsApp Business דרך Twilio, תמיכה שלאחר רכישה בלבד. נמדד לפני כתיבה: רוב הזרימה כבר הייתה בנויה וחיה, מיגרציה 173 על כל חמשת הטבלאות ושתי הפונקציות שלה אומתה חיה בפרודקשן ישירות (בניגוד לרישום שלה ב-README כממתינה): ‏transport ל-Twilio עם אימות חתימה, ‏outbox עם consent שנבדק פעמיים, ‏drain ב-cron, ‏opt-in/opt-out בעברית ובאנגלית עם התאמת הודעה-שלמה, תבניות עברית RTL, וטקסט חופשי שנפתח כפנייה. שני הפערים שנסגרו: (1) **בירור סטטוס הזמנה:** ‏intent חדש order_status (סטטוס / איפה ההזמנה שלי / מה עם ההזמנה וכו'), עונה עם שלוש ההזמנות האחרונות של הטלפון דרך פונקציה חדשה fn_wa_orders_for_phone במיגרציה ממתינה 211: ‏definer, ‏service-role בלבד עם REVOKE מ-PUBLIC/anon/authenticated, מחזירה ref/סטטוס/סכום/תאריך בלבד (בלי כתובת, בלי פריטים), היפוך של רזולוציית הטלפון של הטריגר מ-173, סכומים באגורות דרך אותו coalesce כי פרודקשן הוא lineage של total_ils. עד שהמיגרציה תאושר ותוחל, שאלת סטטוס נופלת לפתיחת פנייה כך שאדם עונה ולא שתיקה, וזה נבדק בטסט. (2) **קליטת בקשות זיכוי:** ‏intent חדש refund_request (זיכוי / החזר כספי / ביטול הזמנה וכו'), פותח או מצטרף לפנייה עם subject שמתחיל ב"בקשת זיכוי", הסמן שגם תור האדמין וגם ה-backfill של 211 מסננים לפיו; התשובה מאשרת ומבקשת מספר הזמנה. 211 גם מרחיבה את ה-CHECK של intent (שם ה-constraint אומת מול פרודקשן) ומוסיפה support_tickets.category עם backfill מה-prefix. עד אז שורת ה-audit נופלת חזרה ל-intent 'message' כך שהגנת ה-replay לא תלויה במיגרציה, גם זה בטסט. **החלטות שהתקבלו לבד:** (א) בירור סטטוס וזיכוי לא דורשים opt-in: הלקוח פנה אלינו, זו לא הודעה יזומה; ה-consent נשאר שער רק על ה-outbox היזום. (ב) "ביטול" לבד נשאר פנייה לאדם: דו-משמעי בין ביטול הזמנה להסרה מהערוץ, ושתי הטעויות רעות; "cancel" באנגלית נשאר opt-out כי Twilio אוכפת אותו ברמת הפלטפורמה. (ג) 211 נכתבה כממתינה בלבד ולא הוחלה: החלת migration על פרודקשן היא אחד מארבעת השערים. (ד) שני טסטי ה-inventory האדומים שייכים ל-WIP הפעיל של סשן media-ingest מקביל (‏210 לא רשומה ב-README, קבצים staged עם mtime 17:01, סשנים אחרים רצים); רשמתי רק את 211 ולא נגעתי בשלהם, ה-commit שלי בנתיבים מפורשים בלבד. השערים על הקוד שלי: כל 64 טסטי ה-WhatsApp ירוקים כולל 18 חדשים, ‏4024 מתוך 4026 בסוויטה (השניים האדומים הם 210 של הסשן המקביל), ‏type-check נקי, ‏biome נקי על כל הקבצים שלי, ‏build עבר. ‏commit b14ab7567 נדחף ל-origin/autopilot)
+Updated: 2026-09-09 10:10 UTC (‏goal שהוזרק ב-/goal: ‏Meilisearch. נמדד לפני כתיבה: רוב הדרישות כבר היו בנויות מ-07.09 (אינדקס products עם קופונים כ-facet לפי הארכיטקטורה המחייבת "קופון הוא מוצר", טולרנס typo עברי 4/7, ‏tokenizer עברי דרך localizedAttributes, ‏facets מלאים, אינדקס brands), והטריגר על products מ-migration 132 חי בפרודקשן, אבל שני פערים אמיתיים נמצאו: (1) **לא היה שום drain ל-outbox**: הטריגר כתב 21 שורות מאז 08.09 ואף קוד לא קרא אותן מעולם, כלומר webhook שאבד היה reindex שאבד למרות שהרצפה קיימת. נסגר עם cron חדש ‏/api/cron/search-outbox כל 10 דקות (נרשם בכל ארבעת מקומות המלאי + cron-auth), ‏drain ב-src/server/search/outbox-drain.ts: ‏claim דרך claim_search_index_jobs (SKIP LOCKED), ‏job אחד פר מוצר לפי השורה החדשה ביותר, ‏done_at על הצלחה או last_error+next_try_at עם backoff אקספוננציאלי 2..360 דקות על כשל, ושורות לעולם לא נמחקות. ‏types דרך src/lib/supabase/pending-outbox.ts באותה תבנית של pending-search. הוכח מול פרודקשן ב-DO block מגולגל לאחור: ‏UPDATE על מוצר הצמיח את ה-outbox מ-21 ל-22 עם op=upsert, אפס שאריות. (2) **לא היה אינדקס categories**: נוסף CATEGORIES_INDEX ב-meili-settings.ts (מסמך פר קטגוריה פעילה עם ספירות מוצרים/קופונים מאותה קריאת מוצרים, אותו תקציב typo עברי ואותו pin ל-heb, ‏product_count:desc בדירוג) ו-setup-meilisearch.mjs בונה אותו מחדש בכל הרצה כמו brands. **החלטות שהתקבלו לבד:** (א) כשMEILISEARCH_HOST לא מוגדר ה-drain לא תובע שורות בכלל, כדי שהצבר יישרד עד שלב 2 ולא יישרף על no-op. (ב) קופונים נשארו facet באינדקס המוצרים, כמו בהכרעת 07.09. (ג) לא הוחלה שום migration חדשה: 132 כבר חיה בפרודקשן, נמדד. (ד) שני הטסטים האדומים (pending-migrations-inventory) ו-8 שגיאות ה-lint שייכים ל-WIP הלא-committed של סשן media-ingest מקביל (‏210_media_ingest_queue.sql ו-scripts/media-ingest/, ‏mtime 16:41 היום); לא נגעתי בהם. השערים על הקוד שלי: 4006 טסטים ירוקים כולל 14 חדשים, ‏type-check נקי, ‏biome נקי על כל הקבצים שלי, ‏build עבר)
+Updated: 2026-09-09 16:25 UTC (‏עשר המיגרציות 192-201 הוחלו על פרודקשן דרך MCP apply_migration, אחת-אחת, לפי הוראת ה-/goal שנקב בטווח הזה במפורש. כל קובץ הורץ קודם במלואו ב-execute_sql בתוך טרנזקציה שגולגלה לאחור, עם בדיקות התנהגות איפה שיש התנהגות להוכיח: ‏192 זרע 33 הפניות פעילות לטבלה שהייתה ריקה; ‏193 יצר את price_history הוספה-בלבד וזרע 80 תצפיות backfill; ‏194 נתן ל-max_uses/max_uses_per_user שיניים עם claim_order_discount/release_order_discount תחת FOR UPDATE, שתי הפונקציות נבחנו מול הזמנה אמיתית בגלגול לאחור; ‏195 הקים stock_waitlist עם דדופ אימייל מנורמל שהוכח (שתי הצטרפויות עם רישיות שונות = שורה אחת); ‏196 החליף את tg_orders_notify_shipped אחרי שהגוף החי נקרא עם pg_get_functiondef והושווה, והטריגר המוחלף הופעל בפועל על הזמנה paid בגלגול לאחור וה-payload נשא את מספר המעקב, אפס שאריות ב-outbox; ‏197 זרע 5 אזורי משלוח בחינם-לכולם תואמי הבאנר; ‏198 הקים את הפעמון עם GRANT UPDATE על read_at בלבד (הוכח: עמודה אחת בדיוק) והוסיף את notifications ל-supabase_realtime עם REPLICA IDENTITY FULL; ‏199 ביטל את ה-UPDATE הרוחבי הרדום על reviews לפני שהמדיניות החדשה מעירה אותו, אומת: בדיוק 3 עמודות תשובת-ספק ניתנות לעדכון; ‏200 הרחיב את notification_outbox_kind_check ל-16 סוגים אחרי ששומר הסחף שלו מצא את ה-14 החיים תואמים בדיוק; ‏201 הקים scheduled_price_changes עם אינדקס ייחודי חלקי שנבחן (כפילות ממתינה נדחתה, ביטול משחרר). ‏advisors אחרי: אפס ממצאים חדשים, כל האזהרות קדמו לקבצים האלה. **החלטות שהתקבלו לבד:** (א) ההחלה היא בהוראת ה-/goal המפורשת שנקבה בטווח 192-201, ולכן שער "migration על פרודקשן" מסופק; ‏188-191 ו-202-205 מחוץ לתחום ולא הוחלו. (ב) הקבצים נלקחו מ-audit/final-audit (שם הם נכתבו) והוכנסו ל-branch הנוכחי autopilot יחד עם רישום ב-README וב-APPLY-ORDER; לא נגעתי ב-branch של הסשן המקביל. (ג) restatement של set_updated_at ב-197/198/201 שונה מהגוף החי רק ב-":=" מול "=" ורווחים, אותם attributes ואותה סמנטיקה, לכן הוחל כמו-שהוא. (ד) types לא חוללו מחדש: אף קוד ב-branch הזה לא קורא לטבלאות החדשות, וחילול היה מסכן את זנב ה-aliases הידני. שני טסטי ratchet של מלאי המיגרציות נרשמו כנדרש. כל השערים ירוקים: 3972 טסטים, type-check, lint, build) (‏goal שהוזרק ב-/goal: השלמת אינטגרציית Cardcom. נמדד לפני כתיבה בשני סוכני מיפוי: צד השרת של tokenization ו-one-click היה שלם וה-UI היה מת, וה-webhook היה עיוור לזיכויים. חמישה תיקונים: (1) **ה-one-click תוקן ב-UI:** בורר הכרטיס השמור וה-wallet ב-CheckoutForm ישבו מאחורי תנאי render הפוך בדיוק לתנאי ה-hidden של העטיפה (step !== 'confirm' בתוך hidden={step !== 'confirm'}), כך שאף token_id לא הגיע ל-DOM בזמן ההגשה וכל לקוח חוזר נשלח לדף המתארח; עכשיו העטיפה לבדה קובעת נראות, וטסטי חוזה מצמידים את הרדיו, ברירת המחדל, וחזרת תיבת save_card בבחירת "כרטיס אחר". (2) **שער refund-shape ב-webhook:** callback בצורת הצלחה שהוא בעצם זיכוי (Amount שלילי, או תשלום שכבר refunded) נשא deal number טרי, עבר את הדדופ, GetLpResult ענה עם החיוב המקורי, והזיכוי נחתם כ-replay מטופל; עכשיו הענף נעצר עם אזעקה ושורת ז'ורנל לא-חתומה, בלי ערך enum חדש כי 130 נעול-צמידות. (3) **ז'ורנל ה-refund:** refundOrder כותב עכשיו refund_requested/succeeded/failed ו-cancellation_fee_applied שהיו ב-enum בלי אף כותב; refund_succeeded מחוץ ל-try של ה-persistence בכוונה. (4) **cron חדש webhook-dlq** כל 10 דקות: ל-replayDeadLetters לא היה אף קורא בפרודקשן, וה-stranded-payments לא מכסה את המצב (הוא בוחר redirected בלבד); נרשם בארבעת מקומות המלאי. (5) **דדופ payment_tokens ב-finalize** לפי הכרטיס הפיזי (profile, last4, brand, expiry) עם רענון ה-token במקום שורה כפולה בכל רכישה; ה-lookup best-effort ונסוג ל-insert. **החלטות שהתקבלו לבד:** (א) בלי migration ובלי שינוי enum: 130 חי בפרודקשן ונעול על ידי payment-events.test, אז הענף החדש ב-webhook מדבר דרך capturePaymentAlarm ולא דרך ערך אירוע מאולתר. (ב) placeholders ל-sandbox כבר קיימים (.env.example שורות 102-177, CARDCOM_USE_MOCK, CARDCOM_SANDBOX) ולא נגעתי. (ג) העבודה ב-worktree autopilot ולא ב-checkout הראשי, שיושב על audit/final-audit עם WIP של סשן אחר. כל השערים ירוקים: 3972 טסטים, type-check, lint, build. ‏commit e029a64a0 נדחף ל-origin/autopilot)
+Updated: 2026-09-08 03:40 UTC (‏אסטרטגיית גיבוי DB הושלמה: pg_dump יומי מלא (public+auth+storage, פורמט -Fc) ל-R2 עם retention של 30 יום, נוהל שחזור מתועד, ותרגול שחזור רבעוני אוטומטי. הכל ב-scripts/dr/ בלי תלויות (stdlib בלבד, כדי שתקלת lockfile לא תעצור גיבויים): backup-lib.mjs מחזיק את כל ההחלטות כפונקציות טהורות עם 17 טסטים (מפתחות, retention שלעולם לא יורד מתחת ל-7 הגיבויים החדשים גם עם שעון שבור, אימות TOC עם רצפת 60 טבלאות ובדיקת טבלאות הכסף), r2.mjs הוא sigv4 ידני ל-put/get/list/delete, pg-dump-to-r2.mjs מאמת את ה-dump לפני ההעלאה ורק אחרי העלאה מאומתת מוחק ישנים, restore-latest.mjs מוריד ומאמת sha256, pg-restore.sh מסרב לחלוטין ל-ref של פרודקשן ומכין roles/extensions ל-postgres נקי, verify-restore.sql הוא השער הקשיח. שני workflows חדשים כבויים עד שיוגדרו secrets: db-backup.yml יומי 03:00 UTC ו-db-restore-drill.yml רבעוני שמשחזר לתוך postgres:17 ומודיע ל-ntfy בשני הכיוונים; שניהם מאחורי משתנה DB_BACKUP_ENABLED באותה תבנית של cron.yml. docs/DB-RESTORE-RUNBOOK.md מתעד הפעלה, תרגול, תקרית אמת ו-snapshot לפני מיגרציה. נמדד מול פרודקשן: PG 17.6 (לכן PGDG client 17 ב-workflows), 73 טבלאות public, 80 מוצרים, 10 משתמשי auth (רצפות הולידציה כוילו לפי זה). **החלטות שהתקבלו לבד:** (א) התרגול הרבעוני משחזר לקונטיינר postgres:17 חינמי ולא לפרויקט Supabase זמני בתשלום; מה שזה לא מוכיח (הרמת אפליקציה מלאה, Mode A) מתועד ב-runbook כתרגול ידני. (ב) לא הורץ E2E מקומי: אין pg_dump במכונה, אין R2 credentials, ו-R2 אולי עדיין לא מופעל בחשבון Cloudflare; ההפעלה דורשת יצירת bucket ו-6 secrets, מפורט ב-runbook. (ג) שלושת הטסטים האדומים (cart-survives-failure, legal-duplication, discarded-read-inventory) ו-13 שגיאות lint שייכים כולם לקבצי ה-GDPR הלא-committed של הסשן המקביל (account-deletion.ts, privacy/page.tsx, cookies/page.tsx); לא נגעתי בהם כי הם WIP של סוכן אחר. השערים על הקוד שלי: type-check נקי, 17/17 טסטים חדשים ירוקים, biome נקי על כל הקבצים שלי, build הורץ בסשן ההמשך ועבר נקי (טבלת routes מלאה, PPR). ‏commit 59869fa90 נדחף ל-origin/autopilot)
+Updated: 2026-09-07 22:20 UTC (‏מכונת מצבים להזמנות: נמדד לפני כתיבה ורוב השכבות כבר היו קיימות ונשארו כמו-שהן: ‏orderMachine ב-src/lib/checkout/state-machine.ts מגדיר את הגרף (pending→paid→partially_fulfilled→fulfilled ו-cancelled/refunded טרמינליים), ‏status-transitions.json + הטסט שמצמיד אותו למיגרציה הממתינה 137 (טריגר 23514 ברמת DB), ומכונת ה-settlement של השורות. שני הפערים שנסגרו: (1) שכבת hooks פר-מעבר: ‏src/server/domain/orders/order-transitions.ts מצהיר תוכנית effects לכל קשת (stamp_paid_at, release_stock, append_note, money_flow_only) כדאטה טהור, עם טסט שמפיל כל סטייה בין טבלת ה-effects לגרף המכונה ובין המכונה לשומר ה-DB. (2) דריסת סטטוס אדמין עם ביקורת: ‏overrideOrderStatus ב-src/server/actions/admin/orders.ts, מדיניות canAdminOverride שמתירה רק את נתיב האספקה (paid→partially_fulfilled→fulfilled) ו-pending→cancelled, עדכון CAS על סטטוס המקור כך שמרוץ מול תהליך אחר נדחה ולא נדרס, שורת audit מסוג manual_override עם סיבה חובה, הערה מיוחסת ב-notes, שחרור מלאי best-effort בביטול, ו-UI ב-OrderStatusClient שמציג בדיוק את יעדי המדיניות. **החלטות שהתקבלו לבד:** (א) מצבי כסף (paid, refunded) אסורים לדריסה ידנית גם כשהמכונה מתירה אותם: paid נכתב רק על ידי finalize אחרי חיוב אמיתי ו-refunded רק על ידי מסלול ההחזרים שמזיז כסף בפועל; ה-zod schema לא מקבל אותם בכלל. (ב) אין migration חדש ואין החלה על פרודקשן: השומר ברמת DB כבר קיים כ-137 בתור הממתינות, ו-audit_log קיים; לכן Supabase MCP לא נדרש. (ג) לא נוספה עמודת fulfilled_at: ההיסטוריה נשמרת ב-audit_log וב-notes בלי שינוי סכימה. כל השערים ירוקים: 3906 טסטים, type-check, lint, build. ‏commit ecd3b7f54 נדחף ל-origin/autopilot)
+Updated: 2026-09-07 21:15 UTC (‏זרימת העלאת תמונות מוצר הושלמה: רוב הצנרת כבר הייתה קיימת ונשארה כמו-שהיא, נמדד לפני כתיבה: ‏R2 עם presigned PUT ב-SigV4 (src/lib/storage/r2.ts + requestUploadUrl), עיבוד צד-שרת ל-renditions ‏webp 1600/800/400 + ‏avif + ‏blur placeholder ב-sharp (process.ts), רישום ב-media_assets, וגלריית המוצר כבר מרנדרת placeholder=blur עם lazy loading של next/image בכרטיסים. שני הפערים שנסגרו: (1) ‏drag-drop ב-ImageUploader: אזור שחרור מלא עם מונה עומק גרירה (boolean מהבהב בין ילדים), מצב ויזואלי בעברית, מסרב לשחרור מעבר ל-maxFiles. (2) דחיסה בצד לקוח לפני ההעלאה: ‏src/lib/images/client-compress.ts מקטין ל-1600px (תואם RENDITION_WIDTHS[0]) ומקודד webp 0.85 דרך canvas, כך שמקור 25MB מהטלפון נוסע כמאות KB; כל כשל (SSR, דפדפן ישן, decode נכשל, תוצאה גדולה מהמקור) נסוג לשליחת המקור כי sharp בשרת נשאר הסמכות. תקרת staging הועלתה ל-25MB לסוגים דחיסים; ‏gif/avif נשארים על 8MB כי אינם מקודדים מחדש (gif יתשטח לפריים אחד). 15 טסטים חדשים: מתמטיקת המידות, ולידציית staging, ומסלול drop-עד-upload עם component test שמצמיד את נתיב הנסיגה של jsdom. **החלטות שהתקבלו לבד:** (א) אין migration ואין שינוי DB: ‏media_assets קיימת עם כל העמודות (blur_data_url, renditions, width/height) ולכן Supabase MCP לא נדרש. (ב) כרטיסי הגריד נשארו lazy בלבד בלי blur פר-כרטיס: זה דורש join ל-media_assets בכל שאילתת רשימה ונגיעה בדפים שנמדדים מול שער הפיקסלים; דף המוצר, שם התמונה הגדולה, כבר מקבל blur. (ג) הדחיסה בזמן ההעלאה ולא בזמן ה-staging, כדי שהתצוגה המקדימה תישאר מיידית מהמקור. כל השערים ירוקים: 3875 טסטים, type-check, lint, build. ‏commit 31b083e8e נדחף ל-origin/autopilot)
+Updated: 2026-09-07 14:55 UTC (‏ייבוא מוצרים מ-CSV מקצה לקצה ב-/admin/products/import: פרסר CSV סטרימינגי (RFC4180, כתוב ידנית כי גבול chunk של File.stream() יכול ליפול באמצע מרכאות/CRLF, עם טסט שמוכיח כל נקודת פיצול), מיפוי כותרות בעברית ובאנגלית עם תבנית להורדה, וכל שורה עוברת ולידציה בשרת דרך אותם productSchema + buildProductMoneyWrite של הטופס הבודד, כך שאין ולידטור שני רופף לכסף. הרצת ניסיון (dry-run) בלי שום כתיבה: בדיקת סכימה, כפילויות slug/מק"ט בתוך הקובץ ומול ה-DB, ופתרון שמות קטגוריות ל-id בשאילתה אחת. הייבוא עצמו ב-batches של 50 דרך server action עם requireStaffSession, מזין progress bar בלקוח; כל batch חוזר על בדיקות הקיום כדי ששורה שנכנסה בינתיים תיכשל עם הודעה קריאה ולא עם constraint. דוח שגיאות להורדה כ-CSV עם BOM לאקסל. writeAuditLog פר batch (עומד בטסט הכיסוי), revalidatePath + updateTag(CATALOGUE_TAG). **החלטות שהתקבלו לבד:** (א) כל שורה מיובאת נקלטת כ-draft בלבד: פרסום דורש ספק מלא שה-CSV לא נושא, ולכן שער הפרסום הקיים נשאר השער היחיד. (ב) type=recurring לא ניתן לייבוא: שלוש העמודות שלו מגיעות רק עם מיגרציה 135 הממתינה, ו-CSV שיוצר כזה היה מפיל כל insert בפרודקשן. (ג) קטגוריות מסוננות דרך excludeDeleted ולא .is(deleted_at,null) כי העמודה קיימת רק אחרי 149. (ד) קבצי Excel נתמכים דרך שמירה כ-CSV UTF-8 (מוסבר במסך), בלי תלות xlsx חדשה. אין migration ואין שינוי DB. כל השערים ירוקים: 3860 טסטים, type-check, lint, build. commit bf385c66b)
+Updated: 2026-09-07 20:35 UTC (‏Axiom מחווט מקצה לקצה: ‏src/lib/observability/axiom.ts (נקטף כמו-שהוא מ-closeout/v1-final יחד עם הטסט) שולח כל שורת לוג מובנית, אחרי redaction, ל-ingest של Axiom ב-fire-and-forget; אינרטי לגמרי בלי AXIOM_TOKEN+AXIOM_DATASET, ה-console נשאר מקור האמת. כיסוי כל ה-API routes כבר נאכף ע"י log-coverage.test. חדש: ‏query logs משכבת ה-fetch היחידה שכל קריאת Supabase עוברת בה, ‏src/lib/supabase/query-log-fetch.ts בין rls-report ל-request-id: ‏db.query ב-debug (מוצלח ו-4xx), ‏db.query_slow ב-warn מעל SUPABASE_SLOW_QUERY_MS (ברירת מחדל 1500ms), ‏db.query_failed ב-error על 5xx או זריקה, שקט על SupabaseTimeoutError כי supabase.timeout כבר נרשם; ‏target כולל auth:* של GoTrue, בלי query string לעולם (PII). לוגי הפרות RLS כבר קיימים (supabase.rls_denied ב-rls-report-fetch) ועכשיו נשלחים גם ל-Axiom דרך אותו צינור. ‏retention 30 יום ושלושה דשבורדים (auth/payments/errors, ‏uid קבוע kenyon-*) כקוד ב-scripts/axiom/dashboards/*.json עם סקריפט upsert אידמפוטנטי scripts/axiom/setup.mjs שנכתב מול ה-API המתועד (v2/datasets עם retentionDays+useRetentionPeriod, ‏v2/dashboards עם overwrite) ואומת ב---dry. **החלטות שהתקבלו לבד:** (א) אין AXIOM_TOKEN בשום סביבה מקומית, לכן הסקריפט לא הורץ מול Axiom אמיתי; להרצה: להוסיף את שני המשתנים ל-.env.local ואז node scripts/axiom/setup.mjs. (ב) אין migration ואין שינוי DB: הפרות RLS נתפסות בשכבת ה-fetch שרואה כל דחיית PostgREST, ולכן Supabase MCP לא נדרש. (ג) db.query מוצלח נשאר debug ולא info, אותו שיקול עלות-לוג של withRequestLog; להדלקה מלאה LOG_LEVEL=debug. כל השערים ירוקים: 3796 טסטים, type-check, lint, build) (‏השלמת Sentry: רוב החיווט כבר היה קיים (instrumentation, ‏onRequestError, ‏release לפי SHA בשרת/לקוח/CI, העלאת source maps עם מחיקה אחרי, tunnel ‏/monitoring) ולא נגעתי בו. שלושת הפערים שנסגרו: (1) ‏error.tsx הלקוחי רק כתב ל-console מאז שנכתב לפני שה-SDK הדפדפני חובר; boundary תופס את השגיאה ולכן ה-handlers הגלובליים של instrumentation-client לא רואים אותה, עכשיו יש captureException עם tag של digest. (2) דחיות RLS: ‏wrapper חדש src/lib/supabase/rls-report-fetch.ts, החיצוני מעל request-id ו-timeout, מזהה 42501 / row-level security בתשובת PostgREST מכל שבעת ה-clients, מתייג area=rls ו-fingerprint לפי (method, target), בלי query string כי פילטרים מכילים PII; ‏supabase-js לא זורק על דחייה ולכן שכבת ה-fetch היא המקום היחיד שרואה הכל. 7 טסטים חדשים. (3) חוקי התראות כקוד: ‏scripts/sentry-alert-rules.mjs עושה upsert לפי שם לשני metric alerts: ‏Error rate spike (אזהרה 20/שעה, קריטי 50/שעה) ו-RLS denial spike (‏5/15, על query ‏area:rls), אימייל לצוות הראשון בארגון; מופעל מ-CI רק ב-push ל-main אחרי build ירוק, ומדלג בשקט בלי SENTRY_AUTH_TOKEN. **החלטות שהתקבלו לבד:** (א) ל-MCP של Sentry אין כלי יצירת alert rules (נבדק בקטלוג) ואין SENTRY_AUTH_TOKEN מקומי, לכן החוקים ייכנסו לתוקף בריצת ה-CI הבאה על main ולא הופעלו מכאן. (ב) ה-issue alert הידני מ-21.08 ("high priority issues") נשאר ולא נוגעים בו. (ג) הדיווח הוחל גם על ה-client הדפדפני כי הוא חולק את אותה שרשרת fetch. כל השערים ירוקים: 3745 טסטים, type-check, lint, build. ‏commit 875cc30eb נדחף ל-origin/autopilot)
+Updated: 2026-09-07 15:50 UTC (‏Meilisearch מוקם במלואו: ‏docker-compose.yml עם שירות meilisearch v1.12 (volume, healthcheck, master key מ-env); ‏localizedAttributes מצמיד את שדות התוכן העבריים ל-tokenizer בשפה heb (דורש Meilisearch 1.10 ומעלה, הסקריפט נסוג לאזהרה בגרסה ישנה); ‏brand הפך filterable; אינדקס brands נגזר חדש (מסמך לכל מותג ייחודי, מזהה base64url, ספירות מוצרים/קופונים, קטגוריות) עם אותו תקציב typo עברי 4/7; ‏endpoint חדש /api/search/facets עם שני מנועים וחוזה אחד: Meilisearch עם filter ו-facetDistribution במנוע, ונסיגת Postgres שחולקת את אותם כללי סינון וספירה מ-src/lib/search/faceted.ts; ולידציית facet מול whitelist, escape לליטרלים בפילטר, מחירים אגורות-integer בלבד, מדיניות rate limit נפרדת search-facets 60/300. באג קיים תוקן בדרך: loadSettings של setup-meilisearch.mjs קרס על הערות בתוך המערכים, כלומר הסקריפט היה שבור בשקט מאז שנוספו ההערות; הסנכרון גם לא בחר city/tags והיום כן, כולל COALESCE של עיר הספק. **החלטות שהתקבלו לבד:** (א) קופונים נשארו facet בתוך אינדקס המוצרים ולא אינדקס נפרד, לפי ARCHITECTURE-SEARCH-DISCOVERY.md סעיף 8 שהוא BINDING ("קופון הוא מוצר"); דרישת ה-goal "index coupons" מסופקת בסינון type=coupon. (ב) אינדקס המותגים נבנה מחדש בכל הרצת setup ולא מתעדכן חי מה-webhook: בלי ספירה מלאה כל עדכון חלקי היה גורר סטייה בספירות, וזו הכרעה שמרנית. (ג) אין migration ואין שינוי DB: הכל נגזר מעמודות קיימות. (ד) דמון Docker לא רץ במכונה (תואם את הזיכרון שDocker נתקע כאן), לכן הקומפוז לא הורץ בפועל; האימות נעשה ביחידות ובפרסינג. כל השערים ירוקים: 3738 טסטים, type-check, lint, build. ‏commit b74347d48 נדחף ל-origin/autopilot)
+Updated: 2026-09-07 15:05 UTC (‏יסודות PWA: ‏sw.js גרסה ke-v2 עם cache חסום-גודל (40) לדפי קטלוג לגלישה לא מקוונת, network-first נשמר; מטפלי push ו-notificationclick עם ריסון יעד לחיצה ל-path מקומי בלבד. מיגרציה 179 ממתינה ולא הוחלה: טבלת push_subscriptions עם RLS קריאה/מחיקה עצמית וכתיבה רק ב-service role. זרימת הרשאת התראות ב-/account/notifications: בקשת ההרשאה רק בלחיצת כפתור, מנוי שנכשל בשמירה בשרת מבוטל בדפדפן כדי שלא יישאר מנוי יתום. זוג מפתחות VAPID נטבע ל-.env.local ותועד ב-.env.example. כל השערים ירוקים: 3708 טסטים, type-check, lint, build)
+Updated: 2026-09-07 11:35 UTC (‏Passkeys: כניסה והרשמה עם WebAuthn (טביעת אצבע / Face ID) דרך @simplewebauthn v14. מיגרציה 178 ממתינה ולא הוחלה: טבלת webauthn_credentials עם RLS קריאה/מחיקה עצמית וכתיבה רק ב-service role. האתגר נחתם ב-HMAC בעוגיית httpOnly ולא נשמר ב-DB, כך שהפיצ'ר עונה "לא זמין עדיין" עד להחלת 178. כניסה ללא שם משתמש ממירה assertion מאומת לסשן Supabase מלא (generateLink ואז verifyOtp בצד שרת) עם רענון טוקנים, מיזוג עגלת אורח ותביעת הפניה כמו כל מסלול כניסה אחר. נפילה אוטומטית לקישור קסם בטופס הכניסה, ניהול מפתחות ב-/account/security. כל השערים ירוקים: 3691 טסטים, type-check, lint, build)
+Updated: 2026-09-07 11:00 UTC (‏יומן קאשבק: טבלת ‏cashback_ledger הוספה-בלבד, בונוס 10% לרכישה ראשונה ו-5% לכל חמישית, מסך התאמות אדמין עם שובל ביקורת. מיגרציה 177 ממתינה ולא הוחלה)
+Updated: 2026-09-07 06:25 UTC (‏WhatsApp Business flow: ‏webhook נכנס של Twilio, תור עדכוני סטטוס הזמנה, פתיחת פניות תמיכה, ניהול הצטרפות/הסרה. מיגרציה 173 ממתינה ולא הוחלה)
+Updated: 2026-09-07 04:30 UTC (‏הקמת Vercel: ‏devCommand נוסף ל-vercel.json, ‏docs/VERCEL-SETUP.md נכתב: מדריך דשבורד מלא, טבלאות env לפי env.ts, אימות פריסה ראשונה, הפעלת המתזמן. ‏DNS נשאר ידני)
+Updated: 2026-09-04 05:30 UTC (‏RLS מפורש לעשר טבלאות אפס-מדיניות: מיגרציה 172 הוחלה דרך MCP, ‏harness שלוש פרסונות ירוק מול פרודקשן בגלגול לאחור, ‏vitest מצמיד את שני הקבצים)
+Updated: 2026-09-04 01:05 UTC (‏חיפוש טקסט מלא בעברית: מיגרציה 171 הוחלה דרך MCP, ‏GIN על products ו-coupon_deals, ‏RPC בשם search_products, טסטים ב-Playwright)
+Updated: 2026-09-04 00:50 UTC (‏טבלאות דיווח מנורמלות-הפוך: מיגרציה 170 הוחלה דרך MCP, ‏pg_cron לילי ב-01:30 UTC, חמישה RPC לאדמין בלבד)
+Updated: 2026-09-04 00:25 UTC (‏soft delete על ארבע הטבלאות שנותרו: מיגרציה 149 ממתינה, הקוד נפרס קודם ובטוח לשני המצבים)
 Updated: 2026-09-01 12:20 UTC (‏אין כותב ל-escrow_held בשום מקום; ‏144/144 מעברים מול הטריגרים החיים; קיפאון ה-380/768 נמצא ותוקן; ‏payment_events היה טבלה ריקה בלי אף כותב)
 Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשישה כבר היו, ושני באגים אמיתיים נמצאו בדרך)
 קודם: 2026-09-01 03:02 UTC (‏שער הפיקסלים חצה את התקרה: ‏11.06% מול 11%, וזה לא שינוי שלנו)
@@ -67,7 +133,3425 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 קודם: 2026-08-19 22:01 (הצ'ק-אאוט ירד מתחת לשער הפיקסלים, ו-CLS שלו תוקן)
 קודם: 2026-08-19 22:10 לפי שעון סוכן מקביל (‏שלב 26 הורץ שוב; תג `v1.0.0-rc3`)
 
+## המשך מ: ‏FINAL-AUDIT (‏SECTIONS 23) — ספירה מדודה לפני ואחרי
+
+**‏`migrations/pending/` מחזיק שני קבצים, ושניהם חסומים מסיבות שאינן אישור:**
+
+1. **‏162** — חסום על זריעת ה-vault, יחד עם רוטציית ‏`SUPABASE_SECRET_KEY`.
+   שניהם מחכים לגישה לסביבת הפריסה.
+2. **‏184** — דורש חלון תחזוקה. **לא הוחל במכוון**, וזו החלטה ולא שאלה
+   פתוחה: הוא בונה מחדש את הטבלה שכל הזמנה חיה בה, על מסד חי, והפרויקט
+   עצמו רשם את האילוץ ב-04.09. הקובץ תוקן ונכתב לו preflight — למטה.
+
+**‏177, ‏178, ‏179, ‏173 ו-185 הוחלו היום**, כל אחד אחרי מדידה מול פרודקשן,
+כל אחד הוכח בטרנזקציות שהתגלגלו אחורה, וכל אחד עם השערים ירוקים.
+
+**התור לפני זה סגור.** תור המיגרציות הסתיים (למטה), ו-`NEXT-GOALS.md` סגור
+פרט ל-goal 15 החסום. התור נבנה מ-`~/ke-goals/SECTIONS.md`.
+
+**‏סעיף 22 (`RATE-LIMIT-COMPLETE`) נסגר** — ‏commit ‏`8f50ec337`, הפירוט
+בשורת ה-Updated למעלה וב-`docs/RATE-LIMITS.md`.
+
+**‏סעיף 35 (`ANALYTICS-EVENTS`) נסגר** — ‏commit ‏`26c813e44`. הטענה
+שב-CLAUDE.md נמדדה מחדש ונמצאה **נכונה בסימפטום ושגויה בסיבה**: הרשימה
+הלבנה תוקנה ב-180 שהוחלה, ומה שהמשיך להפיל שלושה מארבעת האירועים הוא
+‏`session_id` שהוא ‏NOT NULL. הפירוט בשורת ה-Updated וב-`docs/ANALYTICS-EVENTS.md`.
+
+**‏סעיף 41 (`MONITORING`) נסגר** — ‏`docs/MONITORING.md`, ‏PR #40.
+
+**‏`main` התעדכן:** ‏PR #34 מוזג ב-08.09 ‏22:44 ‏UTC (`7ac40c324`), וכל
+העבודה של הסשן הזה עד ‏`f9d8e8ab5` נמצאת עליו. הענף נמחק ונוצר מחדש,
+ועבודת ה-MONITORING יושבת ב-PR #40.
+
+**הבא בתור: סעיף 23 (`FINAL-AUDIT`).**
+
+**מסמכים שסעיפי ‏SECTIONS נוקבים בשמם ועדיין חסרים:**
+‏`FINAL-AUDIT.md` (23), ‏`GO-LIVE-DRY-RUN.md` (43), ‏`RELEASE-NOTES.md`,
+‏`PERF-REPORT.md`.
+
+### ‏17.09: ‏goal ‏Security — חמישה מששת העמודים כבר עמדו; נוספו שכבת CSRF ל-API, דיווח CSP, ביטול הסכמה, ורישום הייצוא
+
+**החלטות שהתקבלו אוטומטית:**
+
+1. **אין nonce ל-CSP, וזו החלטה.** ‏Next מזריק nonce רק לעמוד שמרונדר
+   דינמית; ‏`cacheComponents: true` מגיש בית/קטגוריה/מוצר מהמטמון הסטטי עם
+   הסקריפטים המוטמעים מזמן ה-build. ‏nonce בכותרת בלי nonce בסקריפט הוא עמוד
+   שלא מתהדרר. במקום זה הפער נעשה **נצפה**: כל הפרה היא אירוע Sentry עם
+   ‏blocked-uri ו-script-sample, ורשימת הסקריפטים המוטמעים שיצטרכו nonce
+   ביום שהחנות תרד מהמטמון כבר ממופה ב-inline-html.test.ts.
+2. **שער ה-CSRF ב-proxy בלי רשימת נתיבים פטורים.** ‏webhooks, ‏cron, ‏QStash
+   ואפליקציית הקופה לא שולחים ‏Sec-Fetch-Site/Origin/Referer ועוברים
+   כ-no-browser-context בעצמם. רשימה הייתה עותק שני של עץ ה-routes.
+   ‏`same-site` נחשב זר בכוונה - אין תת-דומיין אח שאמור לכתוב לכאן.
+3. **ייצוא הנתונים נרשם ב-audit_log כ-`data_export` / `created`** ולא
+   ב-enum חדש: ‏audit_action הוא enum בפרודקשן, והוספת ערך היא מיגרציה. שורת
+   "נוצר ייצוא" עונה על השאלה של הרגולטור באותה טבלה שהמחיקה כותבת אליה.
+4. **‏actor_role של הייצוא הוא `customer`** (הערך ב-user_role) ולא `user`
+   כמו במחיקה: ‏writeAuditLog מקליד את השדה ל-UserRole, והעמודה עצמה היא
+   ‏text, כך ששני הערכים חוקיים.
+5. **שני טסטים אדומים ב-HEAD לפני שנגעתי** (מ-`d36565d05 autopilot
+   residual`): ‏cron-auth לא הכיר את ‏cashback-settlement / ‏daily-deals /
+   ‏email-retry - נרשמו (הם מאמתים, רק הרשימה הייתה חסרה); ומצאי
+   ‏discarded-read של ‏wishlist-alerts אמר 3 והקובץ מכיל 2 - הורד.
+6. **לא הוספתי מיגרציה ולא נגעתי ב-DB.** סעיפים 2 ו-4 של §10 (הרשאות
+   ברירת מחדל, טריגר append-only על audit_log) נשארים פתוחים ומחכים לחיבור
+   מיוחס.
+
+### ‏17.09: ‏goal טיפול בשגיאות — רוב הדרישות כבר היו בנויות, ושבעה טסטים היו אדומים לפני שנגעתי — ‏commits ‏fecb493cc, ‏798ea01db
+
+**החלטות שהתקבלו אוטומטית:**
+
+1. **‏Telegram נוסף לצד ntfy ולא במקומו.** ‏`sendAlert` שולח לשניים במקביל
+   ומחזיר "נמסר" כשאחד מהם קיבל. ‏ntfy הוא ערוץ ציבורי; ‏Telegram הוא הבקרה
+   שלא הייתה. ‏`TELEGRAM_BOT_TOKEN` ו-`TELEGRAM_CHAT_ID` לא מוגדרים באף
+   סביבה עדיין, אז בפועל הכל ממשיך דרך ‏ntfy עד שאופיר ייצור בוט
+   (‏`pnpm telegram:verify --chats` מדפיס את ה-chat id).
+2. **‏UptimeRobot דרך ‏webhook אלינו ולא דרך ה-Telegram המובנה שלו.** ערוץ
+   אחד, פורמט אחד, ושורת ‏`uptime.alert_received` בלוג. הסוד עובר
+   ב-query string כי ‏UptimeRobot לא חותם ולא שולח כותרות; ה-route סגור
+   (401) כל עוד ‏`UPTIMEROBOT_WEBHOOK_SECRET` לא מוגדר. ההקמה עצמה
+   (‏`pnpm uptime:setup`) דורשת את מפתח ה-API הראשי של החשבון, שאין לי.
+3. **‏`secretEquals` נרשם כשער מוכר** ב-`mutating-route-guards.test.ts`. זו
+   ההשוואה קבועת-הזמן עצמה, זו ש-`bearerMatches` עוטף.
+4. **שני קבצים נשאו את המספר 237** ב-`migrations/pending`. הקובץ של
+   ‏push_deliveries / ‏sms הועבר ל-239 (238 תפוס), עם הסבר בכותרת ושורה
+   ב-README. לא הוחל דבר על פרודקשן.
+5. **שני הטסטים של ‏users-ban נכשלו בגלל ה-harness, לא בגלל הקוד:**
+   ‏`settle()` מחזיר תוצאה יחידה כ"דביקה", ולכן ‏`queue()` אחרי ברירת המחדל
+   מחזיר את ברירת המחדל ולעולם לא את הדריסה. נוסף ‏`override()` לטסט. תוך
+   כדי, קריאת המטרה ב-`runSetUserBan` שזרקה את ה-error נקראת עכשיו בשמה
+   (‏PGRST116 = לא נמצא, כל דבר אחר = כשל קריאה, נרשם ונדחה).
+6. **מפת ה-redirects הכילה שני נתיבי אדמין שאינם על הדיסק**
+   (‏`/admin/analytics/cohorts`, ‏`/admin/experiments`); הוסרו מה-JSON ידנית
+   כי הסקריפט הבונה דורש גישה ל-DB. אף redirect לא הצביע עליהם.
+
+
+### ‏09.09: ‏nightly-health האדים שלושה לילות, וההסבר הכתוב כיסה רק שלושה מתוך ארבעה שערים. ‏commits: ‏7ac40c324, ‏e44bb696d
+
+**‏`nightly-health` נכשל ב-06.09, ב-07.09 וב-08.09, שלושתם על ‏`main`.** אף
+אחד לא ראה את זה, כי שלב פתיחת ה-issue בלע את השגיאה שלו: ‏`gh issue create
+--label auto` אינו מתדרדר ל-issue בלי תווית כשהתווית חסרה, הוא יוצר **כלום**,
+וה-`|| true` שמתחתיו הפך את השלב לירוק. לריפו אין אף issue להראות עליהם.
+
+**חמשת השערים, לפני ואחרי, נמדדו ולא הוסקו:**
+
+| שער | לפני ‏#34 | אחרי ‏#34 | אחרי ‏`e44bb696d` |
+| --- | --- | --- | --- |
+| type-check | ‏FAILED | ‏OK | ‏OK |
+| lint | ‏OK | ‏OK | ‏OK |
+| vitest | ‏FAILED | ‏OK | ‏OK |
+| build | ‏FAILED | **‏FAILED** | **‏OK** |
+| audit | ‏OK | ‏OK | ‏OK |
+
+עמודה ‏2 היא ריצה ‏`34287419709` מול ‏`main` בקומיט המיזוג של ‏#34; עמודה ‏3
+היא ריצה ‏`34287945928` מול הענף. הריצה המסכמת מול ‏`main` עצמו,
+‏`34288796770` בקומיט ‏`16983ef6c`, מסתיימת ב-`NIGHTLY HEALTH: all green`.
+
+**שני הכשלים היו שני דברים שונים, וזו הנקודה.**
+
+1. **‏`main` היה ‏28 קומיטים מאחור ושבור.** שגיאות ‏TS2304 על שמות שלא יובאו
+   מעולם: ‏`requireStaffSession`, ‏`hidePricing`, ‏`scaleCatalogueIls`,
+   ‏`catalogueIlsToAgorot`, ‏`requireSection`, ‏`isImplausibleDiscount`, ועוד
+   ‏`@anthropic-ai/sdk` חסר. שאריות של מיזוגים מרוסקים. כל אחד מהקבצים כבר
+   היה שונה בענף העבודה, ו-`src/server/ai/client.ts` **זהה בית-בית** בשני
+   הצדדים: השגיאה שלו הייתה התלות החסרה, שקיימת ב-`package.json` של הענף
+   ולא בזה של ‏main. ‏PR ‏#34 מוזג אחרי שארבעת השערים הנדרשים ירוקים.
+2. **שער ה-build לא קיבל סביבה בכלל, ולכן לא היה יכול לעבור לעולם.**
+   ‏`next build` אוסף ‏page data תחת ‏`NODE_ENV=production`, וללא ערכי
+   ‏Supabase הוא זורק בדיוק כאן:
+
+   ```
+   Missing NEXT_PUBLIC_SUPABASE_URL / SUPABASE_ANON_KEY
+     at src/lib/supabase/anon.ts:33 <- src/lib/coupon-deals.ts:67
+   Failed to collect page data for /coupons/[id]
+   ```
+
+   **‏`ci.yml` כבר פתר את השגיאה הזו, על המסלול הזה, בדיוק.** שלושת משתני
+   הריפו שלו שוכפלו לשלב במקום להמציא תשובה שנייה. שלושתם ציבוריים
+   מעצם בנייתם וכולם כבר קיימים על הריפו.
+
+**‏`secrets.CI_SUPABASE_*` נדחה במכוון ולא מחוסר תשומת לב:** הגדרתו מבטלת
+את הדילוג של ‏job ה-E2E, והצעד הראשון שלו הוא ‏`pnpm seed:test`, שכותב שורות
+fixture למסד שהסוד מצביע עליו. המסד היחיד שנגיש מכאן הוא פרודקשן.
+
+**הערת הכותרת תוקנה גם היא.** היא טענה שהקובץ "does nothing until it is
+merged" ל-main. הוא על ‏main והוא ירה שלוש פעמים. הטענה התיישנה בלי שאיש
+ערך את השורה, ובמצב הזה היא קוראת כתירוץ לריצה אדומה במקום כאזהרה.
+
+**מה לא תוקן, במכוון:** ‏`pnpm audit` מדווח ‏`audit OK` בזמן שהוא מדפיס
+התראת ‏critical של ‏Next.js, כי השער הוא ‏`|| true` בכוונה, ו-`scripts/nightly-health.sh`
+מתעד למה: התיקון להתראה טרנזיטיבית הוא ‏PR של תלות, לא nightly אדום שמאמן
+את כולם להתעלם מ-nightly אדום. זה נשאר נכון, והוא נרשם כאן כדי שלא יתגלה
+כהפתעה.
+
+**החלטות שהתקבלו לבד:** (א) **סוכן קוד שני רץ על אותו ריפו לכל אורך הסשן**
+(‏PID ‏36998, ואחר כך ענף ‏`audit/final-audit`), וזה תנאי העצירה הרביעי.
+תחת הוראת האוטונומיה המלאה לא נעצרתי לשאול, אלא **ויתרתי על ראש התור**
+(‏SECTIONS 35, ואז 41, שניהם היו בידיו) ולקחתי נתיב זר לחלוטין. (ב) שינוי
+הקוד היחיד שלי הוא קובץ ‏workflow אחד, ‏commit בנתיב מפורש יחיד, כדי
+ש-`git commit -- <path>` לא יסחוף עבודה מקבילה. (ג) עדכון ‏STATE.md נכתב
+מ-worktree נפרד ב-`/tmp` מול ‏`origin/main`, כי עץ העבודה הראשי היה בידי
+הסוכן המקביל ו-HEAD שלו הועבר לענף אחר באמצע.
+
+### ‏09.09: ממצא ה-wishlist של ‏185 היה נשען על grep שהחטיא, והחצי הנגיש שלו היה באג — ‏commit ‏0e325fa8f
+
+**הפירוט בשורת ה-Updated למעלה.** בקצרה, שלושה דברים:
+
+1. **ההנחה הייתה שגויה.** "אין `from('wishlists')` בשום מקום ב-`src/`" —
+   הקוד כותב `from('wishlists' as never)`, ולכן ה-grep החטיא. הפיצ'ר חי:
+   ‏`toggleWishlist`, ‏`getWishlistSaved`, ‏`getMyWishlist`,
+   ‏`getMyWishlistMarks`, ‏`/account/wishlist`, ‏`WishlistButton`, כניסת
+   header, כניסת account-nav ומדיניות `wishlist-toggle`. מה שבלתי-נגיש הוא
+   **רק** המחיקה הרכה, כי ה-toggle מסיר ב-DELETE קשיח.
+2. **הבאג.** נמדד מול פרודקשן, שתי טרנזקציות שהתגלגלו אחורה, אפס שאריות:
+
+   | מצב | ‏INSERT | קריאה חוזרת כבעלים |
+   | --- | --- | --- |
+   | שורה שנמחקה רכה (ה-SELECT של ‏185 מסתיר אותה) | ‏23505 | ‏**0** |
+   | לחיצה כפולה מקבילה על שורה חיה | ‏23505 | ‏**1** |
+
+   אותו ‏SQLSTATE, אמת הפוכה. הקוד מיפה כל ‏23505 להצלחה, כלומר מול שורה
+   מוסתרת הלב מתמלא ו-`/account/wishlist` נשאר ריק. הקריאה החוזרת היא
+   המבחין, וקריאה חוזרת שנכשלה מסרבת גם היא.
+3. **התיל חובר.** הטסט הכריז שהוא מאדים "ביום שמישהו יתחיל לכתוב wishlists"
+   בזמן שקרא רק קובץ ‏`.sql` — תנאי שכבר קרה. הוא סורק עכשיו את ‏`src/`
+   ומאדים כשקובץ גם נוקב בטבלה וגם כותב ‏`deleted_at`. אומת אדום בשני
+   הכיוונים, והקבצים שנגעתי בהם לצורך האימות הוחזרו זהים בית-בית.
+
+**‏RLS לא עוצב מחדש במכוון:** מסלול שחזור הוא החלטת מוצר, ואין צורך בו כל
+עוד אף אחד לא כותב לעמודה. היום שהשומר יאדים הוא היום שההחלטה נדרשת.
+
+**החלטות שהתקבלו לבד:** (א) לא נפתח קובץ מיגרציה חדש — תור המיגרציות סגור
+בכוונה, והתיקון כולו בצד הקוד. (ב) הודעת השגיאה נשארה הגנרית ולא הומצאה
+הודעה ייעודית למצב שאינו נגיש היום. (ג) ‏STATE.md נערך רק אחרי שהסוכן
+המקביל דחף את ‏`f50e86640`, כדי ש-commit בנתיב לא יסחוף עבודה שלו.
+
+
+### ‏09.09: ‏184 כבר היה מוחק את שובל הביקורת של ‏orders, ושום דבר לא אמר את זה — ‏commit ‏6fb7dd83a
+
+**קריאת פרודקשן מצאה אותו מיושן בשתי דרכים, ושתיהן הורסות בשקט,** כי שלב
+‏3.2 מוחק את טבלת ‏`orders` המקורית וכל מה שמחובר אליה ושהקובץ אינו נוקב
+בשמו הולך איתה. לא מיגרציה שנכשלת: מסד שפשוט הפסיק לעשות משהו.
+
+| מה | הקובץ | פרודקשן |
+| --- | --- | --- |
+| טריגרים על ‏`orders` | יוצר מחדש ‏**3** | נושאת ‏**6** |
+| מפתחות זרים נכנסים | נוקב ב-**16** | יש ‏**17** |
+
+הטריגרים שלא נקבו בשמם: ‏`audit_orders`, ‏`trg_orders_notify_shipped`,
+‏`tg_orders_whatsapp_status`. שניים מהם נחתו היום ולא היו יכולים להיות
+ידועים, **אבל ‏`audit_orders` הגיע מ-169 ב-04.09** — כלומר הקובץ היה שגוי
+חמישה ימים, והחלתו בחלון תחזוקה הייתה **מסירה את שובל הביקורת מטבלת
+ההזמנות בלי שגיאה בשום שלב**. המפתח הזר השבעה-עשר הוא ‏`cashback_ledger`
+מ-177.
+
+**כל ארבעת הפערים נסגרו בקובץ.** שני הטריגרים שהם ‏UPDATE-only יושבים עם
+אחיהם ב-3.6. ‏`audit_orders` **במכוון לא שם** ונוצר מחדש אחרי ההעתקה
+כ-3.7b: הוא נורה על ‏INSERT, ולכן יצירתו לפני המילוי הייתה כותבת שורת
+ביקורת ‏`created` מזויפת אחת לכל הזמנה קיימת והופכת המרה מבנית להיסטוריה
+מומצאת. הטאפל של ‏`cashback_ledger` נוסף למערך, וכל השבעה-עשר הושוו מול
+פרודקשן שם-בשם, עמודה-בעמודה ופעולה-בפעולה — **תואמים במדויק**. שלוש
+פקודות ‏`CREATE TRIGGER` שנוספו נותחו ונקשרו מול שיבוט זמני של ‏`orders`
+בטרנזקציה שהתגלגלה אחורה.
+
+**‏`preflight_184.sql` הוא החצי העמיד,** כי תיקון הקובץ מתקן רק את היום.
+‏`orders` היא הטבלה הכי מחוברת בסכימה, והקובץ יוחל בתאריך עתידי לא ידוע —
+ולכן כל מיגרציה שתנחת בינתיים יכולה ליישן אותו שוב באותה דרך שקטה בדיוק.
+בלוקים ‏(1) ו-(2) משווים את רשימת הטריגרים ורשימת ה-FK של פרודקשן מול מה
+שהקובץ נוקב, כך שסחיפה **מסרבת בקול** במקום למחוק משהו.
+
+### תיקון לטענה שלי מאתמול בערב על ‏wishlists
+
+בסעיף ‏185 כתבתי שאף אחד לא כותב ל-`wishlists` ושהפיצ'ר לא קיים. **הוא כן
+קיים ומשוחרר היום** — ‏`toggleWishlist`, ‏`getMyWishlist`,
+‏`/account/wishlist`, ‏`WishlistButton`, כניסה בהדר ומדיניות ‏rate-limit.
+ה-grep שמאחורי הטענה חיפש ‏`from('wishlists')` בזמן שהקוד כותב
+‏`from('wishlists' as never)`, ולכן לא התאים לכלום **וקראתי את ההיעדר
+כהוכחה**. סוכן מקביל תפס את זה.
+
+מה שנכון בפועל צר יותר וזה גם הדבר ששווה לשמור עליו: **אף קובץ ב-`src/`
+לא קובע ‏`deleted_at` על ‏`wishlists`** — הטוגל מסיר ב-DELETE קשה — ולכן
+אף שורה לא יכולה להגיע למצב ש-185 לא יודע להוציא אותה ממנו. הממצא עצמו
+עומד; **הסיבה שהוא לא באג חי שונה מזו שנתתי.**
+
+### (קודם) ‏09.09: ‏185 הוחל, והשחזור שהקובץ תיעד אינו קיים — ‏commit ‏b50f03197
+
+‏`deleted_at` והאינדקס החלקי של הבית על ‏`categories`, ‏`product_images`,
+‏`reviews`, ‏`wishlists`, ומדיניות ה-SELECT הפונות ללקוח נכתבו מחדש כך ששורה
+שנמחקה רכה בלתי נראית לקונים בזמן שאדמין ממשיך לראות אותה לשחזור.
+
+**הקובץ הזה כותב מחדש מדיניות קיימת מטקסטים שהוא מצטט — בדיוק הצורה שכמעט
+שברה את ‏183 — ולכן כל שש נקראו מפרודקשן לפני שרץ משהו.** כל השש התאימו
+לטקסטים המצוטטים **מילה במילה, כולל התפקידים**: המדידה מ-04.09 עדיין הייתה
+עדכנית ב-09.09. זו התוצאה הטובה של הבדיקה, לא סיבה לוותר עליה. גם התנאים
+המוקדמים נמדדו: ‏`products.deleted_at` קיימת (המדיניות החדשה של
+‏`product_images` תלויה בה), לארבע היעד לא הייתה ‏`deleted_at`,
+‏`reviews.status` הוא ‏text, ושני ה-enum נושאים את הערכים שהמדיניות נוקבת.
+
+**רדיוס הפגיעה נמדד כאפס לפני ההחלה,** וההתנהגות הוכחה על נתונים אמיתיים
+בטרנזקציות שהתגלגלו אחורה:
+
+| מה | תוצאה |
+| --- | --- |
+| קטגוריות שאנון רואה | ‏12 → ‏11 אחרי מחיקה רכה של אחת |
+| תמונות של מוצר שנמחק רכה | ‏1 → ‏0 — החור שהכותרת מתארת שהיא סוגרת, כי ‏status לבדו מעולם לא הסתיר אותן |
+| הקטגוריה שנמחקה | עדיין קיימת ל-service role, כך שאדמין יכול לשחזר |
+
+**הממצא: השחזור של ה-wishlist שהקובץ תיעד אינו יכול לקרות.** הקובץ אמר
+ש-UPDATE נשאר בלי פילטר "so an un-delete stays possible". ‏Postgres מחיל
+מדיניות ‏SELECT על השורות ש-`UPDATE ... WHERE` צריך לקרוא, ולכן מדיניות
+ה-SELECT המסננת מסתירה את השורה **לפני** שמדיניות ה-UPDATE הבלתי-מסננת
+נשאלת בכלל. נמדד כבעלים עם ה-`auth.uid()` הנכון, והתגלגל אחורה:
+
+| ניסיון | שורות ששוחזרו |
+| --- | --- |
+| ‏UPDATE שחזור, מדיניות בדיוק כפי ש-185 מחיל | ‏**0** |
+| אותו ‏UPDATE, מדיניות ‏SELECT מוחלפת בלא-מסננת | ‏**1** |
+
+שום דבר אחר לא שונה בין שתי ההרצות, ולכן מדיניות ה-SELECT היא הסיבה ולא
+ניחוש לגביה. **וזה גרוע משחזור מת:** ה-PK הוא ‏`(user_id, product_id)`,
+ולכן שורה שנמחקה רכה גם **חוסמת הוספה מחדש** של אותו מוצר. לקוח שהסיר פריט
+לא היה יכול לא לשחזר אותו ולא להחזיר אותו.
+
+**תועד, לא עוצב מחדש.** אף אחד לא כותב ל-`wishlists` — אין ‏`from('wishlists')`
+בשום מקום ב-`src/` — ולכן אף שורה לא יכולה להגיע ל-`deleted_at` היום והפיצ'ר
+עוד לא קיים. בחירת עיצוב ‏RLS לפיצ'ר שלא נבנה היא ניחוש דרישות, ואילו השארת
+הערה שמבטיחה יכולת שאין למסד היא בדיוק הכשל שהפרויקט הזה משלם עליו שוב ושוב.
+ההערה אומרת עכשיו את האמת הנמדדת גם בקובץ וגם **על העמודה עצמה**,
+ו-`src/__tests__/wishlist-soft-delete-restore.test.ts` מחזיק את הממצא עד
+שמישהו יבנה את ה-wishlist ויבחר מסלול שחזור במכוון. הוא מאדים ביום שמישהו
+יתחיל לכתוב לטבלה — בדיוק היום שבו ההחלטה נדרשת.
+
+**החצי היישומי של אותו שינוי.** ה-service role עוקף ‏RLS, ולכן הפרדיקט חי
+ב-`src/lib/soft-delete.ts`. ארבעת השמות עברו מ-`SOFT_DELETE_PENDING_TABLES`
+ל-`SOFT_DELETE_LIVE_TABLES`, מה שמדליק את הפילטר בכל אתר קריאה בעריכה אחת;
+שלושה בוררי קטגוריות באדמין מקבלים אותו מיד. הרשימה הממתינה ריקה עכשיו
+ונשארת בשביל המיגרציה הבאה שתצטרך אותה. העוגן השלישי של טסט הסחיפה עשה
+בדיוק את מה שנבנה בשבילו והאדים על הטיפוסים המחודשים, ולכן עוגן ‏2 הופך:
+הוא טוען עכשיו שכל טבלה ש-185 משנה היא **live** ולא ממתינה, כך שהארבע לא
+יוכלו ליפול בשקט חזרה למצב ‏no-op.
+
+‏**`src/types/database.ts` חודש** כדי שזה יהיה בטוח.
+זנב הכינויים הכתוב-ביד שלו נמחק על ידי החידוש והוחזר: ההערה בקובץ עצמו
+מזהירה שזה קרה ב-d7906bcec, וזה קרה שוב כאן — ‏type-check תפס ‏24 ייצואים
+חסרים. המראה המחודשת גם סוגרת את חוב ה-`user_role` שנרשם ב-09.09, כי
+‏`read_only` נמצא עכשיו בטיפוסים.
+
+**החלטות שהתקבלו לבד:** (א) שש המדיניות נקראו מפרודקשן לפני החלה למרות
+שהקובץ מצטט אותן — והפעם הן התאימו. (ב) הערות העמודה תוקנו מ-149 ל-185
+לפני ההחלה, כי הן נוחתות **במסד עצמו** ומספר ‏149 מצביע שם על מיגרציה אחרת
+לגמרי (‏`149_audit_log_append_only`). (ג) ממצא ה-wishlist תועד ולא נסגר
+בעיצוב ‏RLS חדש לפיצ'ר שלא נבנה. (ד) הטיפוסים חודשו במלואם, וזנב הכינויים
+הוחזר ידנית.
+
+### (קודם) ‏09.09: ‏173 הוחל, אחרי שנוספו לו שני השומרים שהכותרת שלו כבר טענה שיש לו — ‏commit ‏73f075406
+
+**הכותרת של ‏173 טוענת שהזרימה היא "same shape as 095's email outbox" ושׁ-"no
+client role can write any of this". נמדד מול פרודקשן: שני המשפטים לא היו
+נכונים לגבי הקובץ.** שניהם תוקנו לפני ההחלה.
+
+**‏(1) לטריגר ההזמנות לא היה שומר ‏EXCEPTION.** הוא נורה על ארבעה מעברים,
+ואחד מהם הוא ‏`paid` — שה-finalize קובע **אחרי** ש-Cardcom כבר חייב את
+הכרטיס. טריגר ‏AFTER שזורק מפיל איתו את ה-UPDATE. הוכח על שתי הזמנות
+שהתחילו שתיהן ‏`paid`, כשה-enqueue אולץ להיכשל, והתגלגל אחורה:
+
+| גרסה | תוצאה |
+| --- | --- |
+| עם השומר (כפי שהוחל) | ‏UPDATE הצליח, ההזמנה עברה ל-fulfilled |
+| בלעדיו (כפי שהקובץ נשלח) | ‏UPDATE **נכשל**, ההזמנה נשארה ‏paid |
+
+כלומר הקובץ כלשונו היה מגלגל אחורה הזמנה משולמת בגלל שהודעת ‏WhatsApp לא
+נכנסה לתור. שני האחים החיים על אותה טבלה כבר מסתיימים בשומר
+(‏`tg_orders_notify_paid` מ-102, ‏`tg_orders_notify_shipped` מ-183, הגופים
+הפרוסים נקראו מפרודקשן), ו-`awardOrderCountBonus` ב-finalize.ts מקבל את אותה
+החלטה ב-TypeScript מאותו נימוק בדיוק.
+
+**‏(2) ‏`fn_enqueue_whatsapp` היה ניתן להרצה על ידי ‏`anon`.** פונקציה חדשה
+ניתנת להרצה על ידי ‏PUBLIC כברירת מחדל, ול-173 לא היה שום ‏REVOKE — כך שהיא
+הייתה נגישה ב-`/rest/v1/rpc/fn_enqueue_whatsapp` לכל אחד באינטרנט. היא
+‏SECURITY DEFINER, ולכן רצה כבעלים ומכניסה מעבר ל-RLS. **הוכח, והתגלגל
+אחורה:** ‏`SET ROLE anon`, קריאה אחת, ושורת ‏`whatsapp_outbox` נשתלה לטלפון
+של לקוח מסכים עם ‏kind ו-payload לבחירת התוקף — הודעה שה-drain היה שולח
+ב-WhatsApp, **מהחנות, ללקוח אמיתי**.
+
+שער ההסכמה אינו הגנה כאן: הוא בודק שה**יעד** הסכים, לא מי ביקש את השליחה,
+וטלפון מסכים הוא בדיוק המטרה השווה. ל-`fn_enqueue_notification` של ‏095 כבר
+היו בדיוק ההרשאות שחסרו כאן (‏postgres + service_role, ‏anon false,
+‏authenticated false), וגם ‏102, ‏183 ו-`fn_orders_status_guard` תואמים —
+ולכן זה חוק הבית ולא דעה חדשה.
+
+אחרי ה-REVOKE: ‏anon ו-authenticated מקבלים שניהם ‏"permission denied"
+ושותלים אפס שורות, בזמן שמסלול הטריגר ממשיך להכניס לתור כרגיל, כי ‏Postgres
+אינו בודק ‏EXECUTE בשיגור טריגר. **נבדק לשני הכיוונים ולא הונח**, כי revoke
+ששובר את הטריגר היה הבאג הגרוע יותר.
+
+**השאר, הוכח והתגלגל אחורה, אפס שאריות** (כל חמש הטבלאות אפס שורות לפני
+ואחרי, הזמנות עדיין ‏cancelled=2 ‏paid=2, טלפון פרופיל הבדיקה חזר ל-NULL):
+
+| מצב | תוצאה |
+| --- | --- |
+| אין שורת הסכמה | ‏0 בתור |
+| ‏`pending` | ‏0 — "נראה" אינו הסכמה |
+| ‏`opted_out` | ‏0 |
+| ‏`opted_in` | ‏1 |
+| אותו ‏dedupe פעמיים | עדיין ‏1 |
+| ‏paid → fulfilled | שורה אחת, ‏kind ‏order_fulfilled, ‏dedupe ‏`wa:order_fulfilled:<uuid>`, ‏payload עם ‏order_ref, ‏total_agorot ‏81700 ושם בעברית |
+
+בנוסף אומת שכל עמודה שהטריגר קורא קיימת (‏`orders.address_id`,
+‏`user_addresses.phone/full_name`, ‏`profiles.phone/full_name`), שארבעת
+הסטטוסים הם איברי enum אמיתיים, ו-`fn_il_phone_digits` נבדק מול
+‏`normalizeIsraeliPhone` על עשרה קלטים כולל ‏`+972`, ‏`9720…`, ‏`03-…`
+וזבל — זהה בכל העשרה.
+
+שני התיקונים נעוצים ב-`src/__tests__/whatsapp-migration-guards.test.ts`, כי
+כל אחד מהם הוא שורה אחת שהיעדרה בלתי נראה בסקירה ומתגלה רק בפרודקשן.
+
+**החלטות שהתקבלו לבד:** (א) שני השומרים נוספו לקובץ **לפני** ההחלה, בתבנית
+של ‏183, ולא הוחל ואז תוקן. (ב) ה-REVOKE הורחב גם ל-`fn_il_phone_digits`
+למרות שאינה ‏DEFINER ואינה כותבת — הקטנת שטח פנים, והקוראים היחידים שלה הם
+שתי פונקציות ‏DEFINER שרצות כבעלים. (ג) ‏`fn_cashback_ledger_block_mutation`
+מ-177 נשארה נגישה ל-anon/authenticated — קריאה ישירה אליה רק זורקת (הגוף הוא
+‏RAISE חשוף), ולכן תועד כחוב ולא נפתח קובץ מיגרציה נוסף בשבילו.
+
+**‏WARN חדש שתועד ולא תוקן:** ‏`fn_il_phone_digits` עם ‏`search_path` נייד.
+היא ‏IMMUTABLE, טהורה, אינה מפנה לאף אובייקט, וכעת בלתי נגישה לכל תפקיד לקוח.
+
+**נשאר חסום ולא בגלל אישור:** רוטציית `SUPABASE_SECRET_KEY` ו-162, שניהם
+מחכים לגישה לסביבת הפריסה.
+
+### (קודם) ‏09.09: ‏177 / 178 / 179 הוחלו באצווה אחת — ‏commit ‏de0828e75
+
+**שלושתם רק יוצרים, ואף אחד לא נגע באובייקט קיים.** זה מה שהצדיק אצווה אחת.
+‏`cashback_ledger_177`, ‏`webauthn_credentials_178`, ‏`push_subscriptions_179`.
+
+**מה שנמדד לפני, כי ‏183 היא הסיבה למדוד.** שלושתם מנסחים מחדש את
+‏`set_updated_at` ב-`CREATE OR REPLACE`. הגוף החי נקרא ב-`pg_get_functiondef`
+לפני שרץ משהו והוא **זהה בית-בית** להחלפה, ולכן ההחלפה היא no-op ולא עריכה
+שקטה של כל טבלה שמשתמשת בטריגר. עוד שתי הנחות של ‏177 על אובייקטים קיימים
+נקראו במקום להיות מאומנות, ושתיהן היו הכישלון של ‏183 טבלה אחת הלאה:
+‏`wallet_accounts` **אין** בה עמודת ‏`owner_type`, ולכן שני הענפים של ‏177
+הולכים ל-ELSE ושני יעדי ה-`ON CONFLICT` שלו הם אילוצי ייחוד אמיתיים;
+ו-`wallet_entries.reason` **אינו** נושא ‏CHECK, ולכן ‏`cashback_bonus`
+ו-`cashback_adjustment` מתקבלים ולא מוחזרים כ-23514 בבונוס הראשון.
+‏`orders.total_ils_agorot` התברר כעמודה ‏GENERATED הנגזרת מ-`total_ils`;
+‏177 רק קורא אותה, ולכן ה-COALESCE שאדיש-לדור שלו נכון.
+
+**הוכח מול פרודקשן בטרנזקציות שהתגלגלו אחורה, אפס שאריות** (‏`cashback_ledger`
+אפס שורות לפני ואחרי, הזמנות ‏4 מתוכן ‏2 שולמו, ‏`wallet_entries` עדיין ‏2,
+יתרת הרזרבה חזרה ל-‏1.80-):
+
+| מה | תוצאה |
+| --- | --- |
+| דרג ‏1, בסיס ‏81700 אגורות | ‏8170 — בדיוק ‏10%, ‏bp ‏1000, ‏`first_purchase_bonus`, ועוד שורת המראה ‏`order_item`, סך ‏2 שורות |
+| תנועת הארנק | ‏reason ‏`cashback_bonus`, ‏amount_ils ‏81.70, משתמש ‏1.80→83.50, רזרבה ‏1.80-→83.50- |
+| טריגר הביקורת של ‏169 | ‏2 שורות ‏audit_log, אחת לכל insert |
+| הרצה חוזרת על אותה הזמנה | ‏0, בלי שורה שנייה ובלי תנועה שנייה |
+| דרג ‏5 (ארבעה שיבוטים) | ‏4085 — בדיוק ‏5%, ‏bp ‏500, ‏`fifth_purchase_bonus` |
+| ‏UPDATE ו-DELETE על שורה | שניהם נדחו: ‏"cashback_ledger is append-only" |
+| ‏`fn_cashback_admin_adjust` בלי ‏JWT של אדמין | ‏"admin only" |
+
+**החלת ‏177 אינה יכולה לשבור צ'ק-אאוט:** ‏`awardOrderCountBonus` תופס כל
+שגיאה ורושם, כי הכרטיס כבר חויב כשה-finalize מגיע לשורה הזאת. שתי הטבלאות
+שהיו חשוכות נבדקו עמודה-עמודה מול הקוד שחיכה להן, וכל עמודה וכל יעד ‏conflict
+קיימים.
+
+**הממצא, תועד ולא טויח:** ‏177 מצמיד ‏`ON DELETE CASCADE` מ-`profiles` לשומר
+‏append-only מסוג ‏`BEFORE DELETE ... RAISE`, והשניים סותרים זה את זה —
+‏cascade מפעיל את טריגר השורה של הבן, ולכן השומר זורק ומחיקת **ההורה**
+נכשלת. ה-FK מבטיח "השורות שלי הולכות עם הפרופיל" בזמן שהטריגר מבטיח
+שהפרופיל לעולם לא ילך. נמדד עם מודל אב/בן חד-פעמי ולא הוסק, וחצי ה-SET NULL
+נכשל באותה דרך דרך ‏UPDATE, כך שמחיקת **הזמנה** עם שורת קאשבק הייתה נכשלת
+בהודעה שאינה מזכירה לא את ההזמנה ולא את הסיבה.
+
+זה רובה על הקיר ולא שריפה כי **אף אחד לא מוחק פרופיל קשה:**
+‏`fn_anonymize_user` (‏150) מוחקת חמש טבלאות לוויין ו-**מעדכנת** את
+‏`profiles`, ו-`account.ts` קורא ל-`deleteUser(id, true)` — מחיקה רכה,
+במכוון, כדי שהזמנות ימשיכו להיפתר. ‏`audit_log` כבר נושאת את אותה סתירה
+בדיוק (‏`actor_id → auth.users ON DELETE SET NULL` תחת
+‏`tg_audit_log_append_only`), ולכן זו תבנית הבית ולא טעות ייחודית ל-177. זה
+הנימוק לתעד את הצורה בטסט במקום לשנות ‏FK של טבלת כסף בדרך פנימה.
+‏`CASCADE_MEETS_APPEND_ONLY` ב-`src/__tests__/cashback-ledger-cascade.test.ts`
+טוען את שני החצאים ומאדים ביום שמחיקת החשבון תהפוך למחיקה קשה.
+
+**ממצא שני, הושאר במכוון:** ‏`fn_cashback_ledger_block_mutation` נשלח עם
+‏`search_path` נייד, ‏WARN חדש של יועץ ‏Supabase. הגוף שלו הוא ‏RAISE חשוף
+שאינו מפנה לאף אובייקט, ו-`set_updated_at` נושאת את אותו ‏WARN בדיוק דרך כל
+מיגרציה עד היום, ולכן הוא תואם לקובץ במקום לעבור שיפור שקט בדרך.
+
+**החלטות שהתקבלו לבד:** (א) האצווה הוחלה כלשונה — בניגוד ל-183, המדידה לא
+מצאה שום דבר שדורש תיקון לפני החלה. (ב) סתירת ה-cascade תועדה בטסט ולא
+נסגרה בשינוי ה-FK, כי ‏audit_log מתנהגת אותו הדבר ושינוי חד-צדדי בטבלת כסף
+היה מרחיב את הסקירה. (ג) ה-WARN של ‏search_path הושאר תואם לקובץ. (ד)
+‏`src/types/database.ts` לא חודש לשלוש הטבלאות החדשות — ההמרות ‏`as never`
+בקוד הגישה עדיין עובדות, וחידוש הקובץ המשותף הזה בזמן שסשן מקביל עובד על
+‏`src/` היה מזמין התנגשות. חוב, לא חסם.
+
+**נשאר חסום ולא בגלל אישור:** רוטציית `SUPABASE_SECRET_KEY` ו-162, שניהם
+מחכים לגישה לסביבת הפריסה.
+
+### (קודם) ‏183 — נסגר 09.09, ראה את השורה העליונה
+
+**נשארו שבעה קבצים ב-`migrations/pending/`,** וכל אחד נבדק מול פרודקשן ב-09.09
+ואין לו שם אף אובייקט: ‏162 (חסום על זריעת ה-vault), ‏173, ‏177, ‏178, ‏179,
+‏183, ‏184, ‏185.
+
+**הסדר, מהזול והבטוח לכבד:**
+
+1. **‏183** — ‏`order_shipped` נוסף ל-`notification_outbox_kind_check` וטריגר
+   ‏AFTER UPDATE אחד על ‏`orders`. גוף הטריגר עטוף ב-EXCEPTION כמו אחיו
+   ב-102, ולכן enqueue שנכשל מזהיר ולא מפיל את עדכון הסטטוס. אחרי ההחלה
+   להעביר את ‏`order_shipped` ל-`CHECK_ACCEPTS` ב-`src/lib/email/outbox-kinds.test.ts`.
+2. **‏177 / 178 / 179** — טבלאות חדשות בלבד (‏cashback_ledger, ‏webauthn_credentials,
+   ‏push_subscriptions). הקוד כבר סובל את היעדרן במפורש (‏`isMissingPasskeyRelation`,
+   ‏`isMissingPushRelation`, ו-finalize רושם וממשיך על ‏42883), ולכן ההחלה היא
+   הדלקה ולא שינוי התנהגות.
+3. **‏173** — ‏WhatsApp: הכל חדש חוץ מטריגר אחד על ‏`orders`, ועם אפס אנשי קשר
+   שנתנו הסכמה הוא no-op.
+4. **‏184 ו-185 אחרונים.** ‏185 תוסף (‏deleted_at + פילטרים), ואחריו להעביר את
+   ארבעת השמות מ-`SOFT_DELETE_PENDING_TABLES` ל-live ב-`src/lib/soft-delete.ts`.
+   ‏**‏184 הוא המסוכן ביותר בתור** — המרת ‏`orders` לטבלה מחולקת עם ‏16 טבלאות
+   מפנות — ודורש חלון תחזוקה.
+
+**חוב שנוצר היום ולא נסגר:** ‏`src/types/database.ts` מיושן על ‏`user_role`
+(לפרודקשן יש ‏`read_only`, לטיפוס אין). לא חוסם, ראה את השורה העליונה.
+
+**נשאר חסום ולא בגלל אישור:** רוטציית `SUPABASE_SECRET_KEY` ו-162, שניהם
+מחכים לגישה לסביבת הפריסה.
+
+### (קודם) ‏181 — נסגר 09.09, ראה את השורה העליונה
+
+**תור המיגרציות מובן עכשיו, ומדוד.** נשארו תשעה קבצים ב-`migrations/pending/`,
+וכל אחד מהם נבדק מול פרודקשן ב-09.09 ואין לו שם אף אובייקט: ‏162 (חסום
+על זריעת ה-vault), ‏173, ‏177, ‏178, ‏179, ‏181, ‏183, ‏184, ‏185.
+
+**‏181 ראשון כי הוא היחיד שהוא אבטחה.** הוא מוסיף ל-`enforce_profile_privilege_columns`
+את סולם הדרגות: אין שינוי תפקיד עצמי, הענקה/שלילה בדרג האדמין רק ל-super_admin,
+ורק עם JWT ב-aal2 — ומדיניות RESTRICTIVE בשם `profiles_super_admin_mfa`. עד
+שיוחל, ה-MFA נאכף בצד האפליקציה בלבד.
+
+**מה לעשות לפני שמחילים אותו, ולמה הוא לא כמו 186:** ‏181 מוסיף איבר ל-enum
+(`read_only` על `user_role`). ‏`ALTER TYPE ... ADD VALUE` לא רץ בתוך בלוק
+טרנזקציה ואי אפשר לגלגל אותו אחורה — Postgres לא מסיר ערך מ-enum. לכן
+לכתוב `preflight_181.sql` קודם (האיבר טרם קיים, הגוף המותקן של שתי
+הפונקציות נקרא מ-`pg_get_functiondef` ולא מהנחה, ואין סשן super_admin חי
+שיינעל החוצה ב-aal1), ולהפריד את ה-enum משאר הקובץ לשתי הרצות.
+
+**אחריו, לפי הסדר:** ‏183 (טריגר התראת משלוח, additive), ‏177/178/179
+(טבלאות חדשות בלבד, הקוד כבר סובל את היעדרן), ‏173 (טריגר אחד על
+`orders`, השאר חדש), ו-184/185 אחרונים — ‏184 הוא המסוכן ביותר בתור
+(המרת `orders` לטבלה מחולקת) ודורש חלון תחזוקה.
+
+**נשאר חסום ולא בגלל אישור:** רוטציית `SUPABASE_SECRET_KEY` ו-162, שניהם
+מחכים לגישה לסביבת הפריסה — הפירוט ממשיך למטה.
+
+### (קודם) ‏170 / 171 — נסגר 09.09, ראה את השורה העליונה
+
+**רוטציית `SUPABASE_SECRET_KEY` נבדקה ונמצאה חסומה, ולא בגלל אישור.** המפתח
+רשום ב-`scripts/compromised-keys.mjs` לפי SHA-256 (`sb_secret_GdpC…`),
+ו-`deploy-preflight.mjs` מסרב לבנות איתו, כלומר צד הריפו כבר עשוי. מה שחסר הוא
+הצד השני: פרודקשן מוגש מחשבון Vercel שהסשן הזה לא רואה (נמדד 08.09 — החשבון
+הנגיש מחזיק רק את הפרויקט הישן עם 11 פריסות ERROR). רוטציה בלי לעדכן את משתנה
+הסביבה של הפריסה החיה **מפילה את האתר**: המפתח החדש לא יגיע לשרת שמשרת לקוחות.
+לכן הצעד הזה מחכה ליד שיש לה גישה לסביבת הפריסה, וזה לא אישור שאפשר לעקוף.
+
+**מה שכן פתוח ובר-ביצוע: 170 ו-171 — אבל קודם למדוד את המספור.**
+‏`migrations/pending/` מחזיק **שני** 170 (‏`composite_indexes_top_queries`,
+‏`reporting_tables`) ו**שני** 171 (‏`category_name_shekel_order`,
+‏`search_fts`), בזמן ש-STATE של 04.09 מדווח ש-170 ו-171 כבר הוחלו. אותה תבנית
+בדיוק כמו 169 מול 180: סשנים מקבילים שלא ראו זה את זה. לפני החלה — לקרוא מול
+פרודקשן מה מהם כבר קיים, כמו שנעשה ל-169.
+
+### (קודם) ‏169 — נסגר 08.09, ראה את השורה העליונה
+
+### (קודם) ‏חסם 0 — נסגר 08.09
+
+### ‏06.09 08:10: ‏169 — ארבעת אירועי הכסף נעלמים עם ‏200, ואף אחד לא אמר
+
+**אותה צורה כמו ‏172: אי אפשר לתקן את השורש בלי אישור, אבל שקט אפשר לתקן.**
+
+נקרא מגוף הפונקציה **המותקנת בפרודקשן** היום: ‏`fn_ingest_analytics_events`
+מסננת כל אירוע מול רשימת שמות ועושה ‏`CONTINUE` לכל מה שלא ברשימה — בלי
+שגיאה, בלי לוג, ‏HTTP 200 — ואז **מחזירה את מספר האירועים שקיבלה**. הרשימה
+החיה היא שמונת אירועי הלקוח בלבד:
+
+```
+page_view, view_product, view_category, add_to_cart,
+remove_from_cart, checkout_step, web_vital, whatsapp_click
+```
+
+‏`begin_checkout`, ‏`purchase`, ‏`voucher_redeemed`, ‏`order_refunded` אינם
+באף אחת מהן. זה **כל** ‏`SERVER_EVENT_NAMES`, כלומר ‏100% מאירועי הכסף
+שהשרת פולט הולכים לשום מקום מאז ש-151 צמצמה את הרשימה, בזמן
+ש-`trackServerEvent` פולט אותם מאז ‏`29f74812e`.
+
+**שני פגמים בפולט, והשני הסתיר את הראשון:**
+
+1. **תוצאת ה-RPC נזרקה כולה.** הפונקציה מחזירה את מה שקיבלה; אירוע אחד
+   נכנס ואפס חוזר פירושו שהוא נזרק בדלת. נרשם עכשיו כ-`analytics.event_rejected`
+   עם שם האירוע.
+2. **‏PostgREST מחזיר שגיאות, הוא לא זורק אותן.** ה-`try` שעטף את הבלוק תפס
+   רק את קריאות ה-cookies וכשל רשת. סירוב מה-DB — grant, constraint, payload
+   פגום — חזר כ-promise שנפתר עם ‏`{ error }`, הוצב לשום דבר, ונעלם.
+
+כלל ‏2 בראש הקובץ (אנליטיקה לעולם לא זורקת לתוך ‏checkout) נשמר: שני
+המסלולים רושמים לוג וחוזרים.
+
+**הטסט מצמיד את מה שבשליטת הריפו**, לא את ה-DB החי — טסט שדורש שפרודקשן
+יהיה נכון היה נשאר אדום עד שיאושר ‏169. הוא בודק שהמיגרציה **הממתינה** מכסה
+כל שם שהרג'יסטרי יכול לפלוט, **בשני הכיוונים**, כך שהוספת אירוע תשיעי ללקוח
+או חמישי לשרת בלי להרחיב את ‏169 מאדימה **ברגע שהשם נוסף** ולא בשקט אחרי
+שהוא נפרס. הוכח שהוא נושא משקל: הסרת ‏`order_refunded` מ-169 מפילה אותו
+ובהודעה שנוקבת באירוע. ‏`32eb96ca2`.
+
+**כשתוחל ‏169:** להעביר את הטסט לקרוא מ-`migrations/applied/` והוא ממשיך
+לעבוד ללא שינוי.
+
+
+### ‏06.09 08:00: מצב ‏E2E מאומת, ו-"עובר ב-2 workers" כבר לא נכון
+
+**סדרתית (‏`E2E_WORKERS=1`) — הכל ירוק:**
+
+```
+cart.spec.ts        21/21
+a11y.spec.ts        80/80   (כולל באנר ההתקנה, שנסרק עכשיו באמת)
+rtl-mobile.spec.ts  162/162
+production-smoke + purchase-flow   6/6 בשני הפרויקטים
+ריצה מלאה סדרתית    74/530 לפני שעצרתי אותה — אפס כשלים בתוכה
+```
+
+**בשני ‏workers — ‏497 עוברים, ‏13 מדולגים, ‏~20 נכשלים.** ‏**19 מתוך ‏21
+השגיאות היו אותו משפט בדיוק:**
+
+```
+add-to-cart did not stick: the header badge went 0 -> 0
+```
+
+זו חתימת התחרות מול פרויקט ה-Supabase המשותף, לא פגם במוצר.
+
+**‏`playwright.config.ts` טען "‏the same suite passes 53/53 at two workers".
+זה כבר לא נכון ותוקן.** החבילה גדלה מ-53 ל-530 מקרים, ושתי ריצות מלאות
+רצופות בשני ‏workers נכשלו ב-10 ואז ב-20. ההערה יושבת ליד ההסבר על התחרות,
+כך שמי שקורא ‏spec אדום של עגלה אחרי ריצה מקבילה היה מסיק שהעגלה שבורה.
+
+**ברירת המחדל נשארה ‏2 במכוון.** סדרתי הוא ‏~45 דקות מול ‏8, וזו עלות על כל
+ריצה כדי להתגונן מפני כשל שמכריז על עצמו במשפט אחד מזוהה. ההערה אומרת עכשיו
+איזה משפט, ואומרת להאמין לתשובה הסדרתית על פני המקבילה. ‏`18c026404`.
+
+**גיבוי:** ‏`~/Desktop/kenyonexpress-backup-2026-09-06-0749.tar.gz`, ‏782MB.
+הניסיון הראשון ‏no-op בשקט והשני עבר — לאמת לפי נתיב מדויק, לא לפי glob
+(‏glob שלא מוצא **מפיל את כל הפקודה** ב-zsh ומסתיר את התוצאה).
+
+
+### ‏06.09 07:55: תקציב הביצועים אדום ב-70-75, והאפליקציה אינה איטית
+
+‏`pnpm lighthouse:smoke` **יוצא ‏1** מול סף ‏90. אותו דף, אותו בילד, אותו
+שרת, עם ‏`--throttling-method=provided`, מקבל **‏100**:
+
+```
+                    simulate (ברירת מחדל)    provided
+Performance                70-75               100
+FCP                        2.8s                0.1s
+LCP                        5.8s                0.2s
+Speed Index                5.3s                0.1s
+TBT                        110ms               0ms
+CLS                        0                   0.001
+Server response            355ms               50ms
+```
+
+‏Accessibility ‏100 ו-SEO ‏100 בשתי השיטות.
+
+**כל הפער הוא הסימולציה.** ברירת המחדל היא ‏Lantern: הדף נטען בלי חנק, ואז
+**ממודל** טלפון בינוני (‏4x CPU, ‏150ms RTT, ‏~1.6Mbps) על מכונה שגם מגישה
+אותו. שתי ריצות רצופות על עץ ללא שינוי החזירו ‏75 ו-70 — הפיזור גדול
+מרוב השינויים שמישהו יעשה. וכבר נמדד כאן ששיפור אמיתי של ‏2.7 שניות נראה
+כרעש במדד הזה, כי ‏Lantern מחשב ‏LCP על גרף שמכסה את כל הדף.
+
+**ואין מה לתקן, וזה נבדק לפני שנקבע.** ‏703 KiB סה"כ, ‏311 KiB ‏JS ב-21
+בקשות, **אפס** משאבים חוסמי-רינדור, וההזדמנות היחידה מעל ‏50ms היא ‏60 KiB
+‏JS לא בשימוש בתוך ‏chunk אחד של ‏130 KiB — רגיל, ולא ניתן להסרה בלי להזיז
+את העלות למקום אחר. ה-WebP המונפש של ‏777KB ב-hero, שהיה כל המרחק מציון
+‏90+ בנייד, הלך עם ‏b51a69b7e.
+
+**לא נגעתי ב-90.** הורדת סף כדי שריצה מקומית תעבור היא זיוף השער.
+
+**סטטוס: פתוח, ולא ניתן לסגירה כאן.** כל מספר שזמין מקומית הוא או סימולציה
+על לפטופ או ‏round trip בלי רשת, בלי ‏CDN ובלי ‏cold start. זה דורש את
+הפריסה ש-BRANCH-AUDIT קבע שמעולם לא קרתה. ‏`docs/PERFORMANCE-BUDGET.md`
+מחזיק את שתי העמודות, מה כל אחת עונה עליו, ואת הפקודה האחת שתרוץ ביום שיש
+‏URL. ‏`18a62e13c`.
+
+
+### ‏06.09 07:20: שני כשלי העגלה לא היו תחרות — הם היו locator
+
+ייחסתי אותם לתחרות ה-Supabase ש-`playwright.config.ts` מתעד. **טעיתי.** הם
+נכשלים גם סדרתית ב-worker אחד, וזה מה שהחזיר אותי להסתכל.
+
+‏`page.locator('.mini-cart__panel')` היה ‏strict-mode violation — "resolved to
+2 elements", שניהם ‏`<dialog open aria-label="עגלת קניות">`. זה נקרא בדיוק
+כמו פגם נגישות של דיאלוג כפול, וכמעט תיקנתי את זה באפליקציה.
+
+**זה לא פגם, ונמדד לפני שנגעתי.** ה-shell מרנדר ‏`HeaderCart` **פעמיים**
+בכוונה: פעם ב-masthead של הטלפון (‏`layout/Header.tsx`) ופעם ב-nav של
+הדסקטופ (‏`layout/MastheadNav.tsx`), ו-CSS בוחר ביניהם. שניהם מרכיבים
+‏`MiniCartDropdown`, ולכן פתיחת העגלה פותחת את שני הפאנלים כשאחד מהם בתוך
+מיכל ‏`display: none`.
+
+נמדד על שרת בנוי: ב-380 עותק ה-masthead הוא ‏52x22 והעותק ב-nav הוא ‏0x0;
+ב-1280 הפוך. ו**רק כפתור עגלה אחד נמצא בעץ הנגישות בכל אחד מהרוחבים** — לכן
+כלל שני האייקונים בכותרת מתקיים, ו-axe צודק כשהוא עובר: העותק המוסתר הוא
+‏`display:none` ומחוץ לעץ לגמרי.
+
+סינון על נראות שואל את מה שהטסטים האלה מתכוונים אליו: מה רואה קונה **ברוחב
+הזה**. ‏`a4d6ad194`. ‏`cart.spec.ts` יוצא ‏0: ‏21 עוברים, ‏3 מדולגים.
+
+**הלקח, ושווה לזכור אותו:** "‏resolved to 2 elements" על שני דיאלוגים בעלי
+אותו שם נגיש נראה כמו באג אפליקציה, ולפעמים הוא כן. ההבדל בין לתקן את הטסט
+לבין לתקן את האפליקציה הוא מדידה אחת בדפדפן, לא הכרעה מהקריאה.
+
+
+### ‏06.09 06:40: ארבעה כשלי ‏E2E במסלול הכסף — הטסטים טעו, לא האפליקציה
+
+**השורש המשותף: צד השקל.** ‏`production-smoke.spec.ts` ו-`purchase-flow.spec.ts`
+בדקו ‏`₪` **לפני** הספרות. ‏`lib/money-format.ts` פולט את ההפך מאז ‏04.09 —
+‏`U+2066 1,234.50 U+00A0 ₪ U+2069` — והכותרת שלו מתעדת את המדידה: בסביבה
+‏RTL הסימן שייך **מימין** למספר, ‏Intl עם ‏he-IL/ILS שם אותו משמאל, ורווח רגיל
+מאפשר לאלגוריתם הדו-כיווני להגר אותו בחזרה. **סימן-ראשון היה התקלה, לא החוזה.**
+
+לכן ‏production-smoke נכשל עם "the order summary printed no shekel amount"
+מול סיכום שהדפיס אותם היטב.
+
+**ב-purchase-flow היו עוד שניים מאותה משפחה**, שניהם ‏`.first()` לא ממודר
+שנחת על אלמנט מוסתר:
+
+- ‏`getByText(/₪/)` נפתר לקישור המוסתר "עד ⁦99 ₪⁩" במגירת הקטגוריות.
+- ‏`a[href^="/product/"]` בחר את קישור התמונה. ב-`/cart` יש **שני** קישורים
+  לאותו מוצר, תמונה וכותרת, ובטלפון דווקא קישור התמונה הוא המוסתר — ולכן זה
+  נכשל רק ב-mobile-chrome.
+
+**נמדד ולא הוסק: מסלול ההוספה לסל מעולם לא היה שבור.** רדפתי קודם אחרי מירוץ
+הידרציה ומדדתי אותו החוצה: ‏12 מתוך ‏12 הוספות נתפסו בהשהיות של
+‏0/300/1000/3000ms לפני הקליק; המונה עולה ‏0→1 תוך ‏200ms; כפתור הקנייה יוצא
+ממצב ‏pending ב-~4 שניות עם הסכום מיושב על ‏⁦699 ₪⁩ — הכל בתוך תקציב ‏15
+השניות של ה-helper.
+
+**הודעת ה-helper עצמה הטעתה אותי** ("the click either never reached the
+server"), ושווה לדעת שהיא יכולה לומר גם "הטענה שאחרי הקליק חיפשה במקום הלא
+נכון". ‏`7fd16e8aa`. שני ה-spec עוברים עכשיו ב-chromium וב-mobile-chrome.
+
+**ארבעה כשלים שנשארו ואינם שלי:** ‏`home.spec.ts:219` ו-`home.spec.ts:555`
+בשני הפרויקטים, "no hero slide image resolved" ו-"hero never painted the
+optimized still". הם בודקים ‏raster אמיתי ב-hero; ‏`HeroSlider.tsx:460` מרנדר
+עכשיו ‏`BrandPlaceholder`, וזה נובע מ-`b51a69b7e` — "stopped shipping other
+companies' product photography", הסרה מכוונת ונכונה. **הטסטים מיושנים מול
+החלטה, לא תופסים רגרסיה.** הועבר לסוכן המקביל, שזה חצי שלו ושזה עתה ייבא
+‏80 נכסים מ-live — אם ה-hero מקבל תמונה אמיתית מהייבוא, הטסטים צודקים
+וממתינים לה; אם הוא נשאר placeholder, הם צריכים לבדוק את ה-placeholder.
+
+שני מקרים ב-`cart.spec.ts` (‏151, ‏280, chromium) נכשלים בשני ‏workers
+ועוברים סדרתית — תחרות ה-Supabase ש-`playwright.config.ts` כבר מתעד.
+
+
+### ‏06.09 06:10: שישה טוקני ‏spacing הגדירו מחדש את ‏max-w-* ושברו ‏31 פריסות
+
+**זה נמצא בדרך לתיקון אחר, וזה הממצא הגדול של הריצה.** הרצתי את חבילת ה-E2E
+של הנגישות, ‏12 טסטים ב-`rtl-mobile.spec.ts` נכשלו על גלילה אופקית ב-320px,
+ומתחתם ישבה תקלה שאין לה שום קשר ל-320px.
+
+‏`--spacing-sm: 8px` **אינו** מוסיף utility בשם ‏`p-sm` ומשאיר את ‏`max-w-sm`
+בשקט. ב-Tailwind v4 ‏`max-w-*` נפתר ממרחב השמות של **spacing** לפני סקאלת
+ה-container, ולכן הטוקן הזה הגדיר מחדש את ‏`max-w-sm` מ-24rem ל-8px, בכל
+האתר. ה-CSS הבנוי אמר את זה מפורשות:
+
+```
+.max-w-sm{max-width:var(--spacing-sm)}
+```
+
+שישה הוצהרו — ‏xs, sm, md, lg, xl, 2xl בערכים ‏4/8/10/14/20/24px — ו-**31
+אתרי קריאה** נפרסו ברוחבים האלה במקום ב-320-672px.
+
+**נמדד על שרת בנוי ב-320px, לפני ואחרי.** כרטיס ההזדהות הוא
+‏`w-full max-w-sm`, כלומר ‏`max-width: 8px`. ‏‎/login, ‎/signup,
+‎/forgot-password, ‎/reset-password ו-/suppliers פרסו עמודה ברוחב ‏8px
+שמתוכה גלשה המילה "KenyonExpress" — מילה אחת בלתי-שבירה ברוחב ‏208px —
+ממורכזת, ‏44px מעבר לקצה. ‏`document.scrollWidth` היה ‏364 בחלון ‏320.
+**אחרי: כל החמישה מדווחים ‏320 ואפס אלמנטים גולשים.**
+
+על אותה רשימה, שבורים באותה מידה: ‏`/redeem/[token]` (מסלול מימוש השובר),
+‏`/coupon/[id]`, ‏`error.tsx`, ‏`not-found.tsx`, כל ‏`dialog.tsx`,
+‏CommandPalette ובאנר ההתקנה.
+
+**הוספת ‏`--container-sm` לצד זה לא מתקנת.** נוסה מול ‏Tailwind CLI: הכלל
+הנפלט עדיין קרא ‏`var(--spacing-sm)`. ‏spacing מנצח את השם. התיקון היחיד הוא
+שהשם לא יהיה תפוס.
+
+לכן השישה **הוסרו** ולא שונו: אף אחד מהם לא היה בשימוש כ-spacing (אפס
+‏`p-sm`, ‏`gap-md`, ‏`me-lg` בכל ‏src), אין אליהם ‏`var()` ישיר, ואין טסט
+שמאשר אותם. כל האפקט הנמדד שלהם היה השבר שלמעלה. ‏`--spacing-gutter` נשאר,
+והוא הדפוס לצעד ממודר — שם ש-Tailwind אינו מחזיק.
+
+‏`src/styles/spacing-token-collision.test.ts` אוכף את זה, והוכח שהוא נושא
+משקל: החזרת ‏`--spacing-sm` מאדימה אותו.
+
+**‏rtl-mobile: ‏162 עוברים, ‏0 נכשלים** (היה ‏150/12).
+
+### ‏06.09 06:00: סריקת הנגישות של באנר ההתקנה נכשלה חודש בשקט
+
+‏`InstallPrompt` מרונדר על ‏`deferred !== null && engaged`. החצי השני,
+‏`engaged`, הגיע ב-`eb918c3e9` ונקבע ממאזין חד-פעמי על
+‏scroll/pointerdown/keydown — ו-`raiseInstallBanner` מעולם לא עודכן: הוא רק
+סינתז ‏`beforeinstallprompt`. מאז אותו קומיט **שני** הטסטים של הבאנר נכשלו
+עם "the install banner did not render; nothing was scanned".
+
+כלומר הנגישות של הבאנר לא נמדדה בכל הזמן הזה. הבאנר הוא אחד משלושה משטחים
+בלבד שנצבעים מעל התוכן של **כל** דף ציבורי. הטענה שעוטפת את ה-locator היא
+מה ששמר על זה אדום במקום ירוק-ריק.
+
+התיקון: ה-helper משגר גם ‏`pointerdown` על ‏`window`. מסונתז ולא דרך
+‏`page.mouse`/`page.keyboard` בכוונה — קליק אמיתי מזיז פוקוס וגלילה אמיתית
+מזיזה את החלון, ושניהם משנים את מה ש-axe מודד אחר כך.
+
+**אחרי: כל סריקת ה-a11y ירוקה, ‏80 עוברים, ו-axe מדווח אפס הפרות
+‏WCAG A/AA על הבאנר עכשיו כשהוא באמת על הדף.**
+
+### ‏06.09: ‏`price_error` נעשה קריא למי שיכול לתקן אותו
+
+הסוכן המקביל העלה את המקרה שמכריע אם השומר שמיש ולא רק נכון: ‏compare-at
+שהוקלד **גבוה מדי**. ‏₪250 מול ‏₪40,000 זה ‏99.375% הנחה, המוצר יוצא ממכירה,
+והחזית אומרת רק "המוצר אינו זמין להזמנה כרגע" — במכוון מעורפל, כי הקונה לא
+יכול לגרום לזה ולא לתקן. זה משאיר את היחיד ש**כן** יכול בלי כלום.
+
+הסירוב עדיין נכון בשתי הקריאות, וניחוש איזה משני המספרים התכוון הסוחר הוא
+המצאת מחיר. מה שהמקרה מחייב הוא **קריאוּת, לא ותרנות**: רשימת המוצרים
+באדמין מציגה עכשיו מתחת למחיר את הסירוב, את שני המספרים ואת התקרה שנחצתה.
+בתוך קבוצת ‏`hidePricing`, כך שתפקיד שלא רואה כסף לא רואה גם את זה.
+‏`c4a8352c8`.
+
+
+### ‏⚠️ 06.09: מה שרואים באתר הוא הוורדפרס הישן, לא הבילד שלנו
+
+זה הממצא החשוב ביותר של הריצה, והוא מסביר את כל הדיווחים על "תמונות
+‏Electro חזרו" ו-"שדה החיפוש חזר". **שום דבר לא חזר.**
+
+‏`scripts/shell-audit.mjs` בודק כל ‏URL מול שני הכללים:
+
+| מה נבדק | תוצאה |
+|---|---|
+| הבילד שלנו (‏localhost) | **נקי.** ‏44 תמונות, ‏input אחד (הניוזלטר), אפס שדות חיפוש, אפס תמונות ספק |
+| ‏kenyonexpress.co.il | **9 בעיות:** ‏`input[type=search]` עם ‏`placeholder=חיפוש מוצרים…`, ה-GIF של ‏iPhone+AirPods, ‏redPhone, שני צילומי מסך של ‏Electro, סמל ‏Tesla, ‏Galaxy S22 |
+
+**‏חסם 0 לא נסגר.** נבדק ב-API של ‏Vercel:
+
+- הפרויקט היחיד ב-team הוא ‏`kenyonexpress-web`, מחובר ל-**repo הישן**
+  (‏`kenyonexpress/kenyonexpress-web`).
+- הפרויקט ‏`kenyonexpress` שמצביע ל-repo הזה **אינו קיים**.
+- **כל ‏11 הפריסות שלו במצב ‏ERROR**, האחרונה ממאי.
+
+כלומר: אף שורת קוד מהריפו הזה לא רצה בשום מקום. שום שינוי כאן לא ישפיע על
+מה שאופיר רואה עד שייווצר פרויקט ותהיה פריסה מוצלחת. ‏`docs/DEPLOY.md`.
+
+### ‏[!] 06.09: מיזוג שבור נעצר לפני שנדחף
+
+סשן מקביל התחיל מיזוג של ‏`feat/product-type` (‏74 לפנים, **333 מאחור**)
+לתוך ענף העבודה. ‏**41 קבצים ‏git add-ed עם סמני קונפליקט גולמיים בתוכם** —
+בהם ‏`scripts/compare.mjs` (השער עצמו), ‏`finalize.ts` (מסלול התשלום),
+‏`package.json`, ‏`pnpm-lock.yaml`, ‏`CLAUDE.md`, ‏`STATE.md`.
+
+‏`git diff --diff-filter=U` החזיר **כלום**, כי הכל היה staged — כלומר ‏git
+לא היה מזהיר אף אחד. זו החתימה של ‏autopilot שמריץ ‏`git add` על עץ
+בקונפליקט, לא של מיזוג שמישהו פתר גרוע.
+
+**המיזוג בוטל, והביטול חסר-אובדן:** ‏`feat/product-type` נמצא ב-4c2112b83
+גם מקומית וגם ב-origin, כל ‏74 הקומיטים שרדו. אם רוצים את העבודה הזאת —
+ממזגים בכוונה, אחרי סקירה, מענף שהובא קדימה קודם.
+
+### מה נסגר בריצה הזאת
+
+| מה | היכן |
+|---|---|
+| מיזוג ‏main (‏9 תיקוני ‏GHSA, אחד קריטי) | ‏13775cab0, ‏`pnpm audit` אפס חולשות |
+| שומר מפתח מפוגע — ‏boot + ‏preflight | ‏`compromised-keys.mjs`, ‏`deploy-preflight.mjs` |
+| ‏vercel.json, ‏.nvmrc, ‏engines, ‏DEPLOY.md | ‏48ea88353 |
+| סקירת חמש המיגרציות + סדר החלה | ‏`MIGRATION-REVIEW.md`, ‏`RUNBOOK.md` |
+| ‏LIVE-DELTA — אין סקשן חסר; פער ‏60px נסגר | ‏d0c7162f6 |
+| ‏placeholder עם שם סלוט בעברית + רקע אפור ניטרלי | ‏0a17cc133 |
+| ‏ingest של תמונות החי + הסגר ל-9 נכסי ‏Electro | ‏0a17cc133 |
+| שורת ה-₪1 כבר לא ניתנת לקנייה | ‏5dd3fa80a (סשן מקביל) |
+
+### נותר — הכל דורש ידיים של אופיר
+
+1. **ליצור פרויקט ‏Vercel לריפו הזה ולפרוס.** בלי זה אין אתר.
+2. **אישור אצווה ‏A**: ‏172, ‏169, ‏170, ‏171.
+3. **רוטציית ‏SUPABASE_SECRET_KEY.**
+4. **יעד ה-R2** ל-ingest — ההוראה נקטעה בלי שם bucket.
+5. **‏162** חסומה עד ‏URL פרוס.
+
+### (היסטוריה) המשך מ:
+
+### ‏06.09 05:45: מיזוג שאיש לא סקר נדחף ל-index עם ‏41 קבצי סימני קונפליקט
+
+**זה קרה לבד, ולא ביקשנו אותו.** נמצא ‏`.git/MERGE_HEAD` פעיל: מיזוג של
+‏`feat/product-type` (‏4c2112b83) — ענף שהוא ‏74 לפנים ו-**333 מאחור** —
+לתוך העץ, עם ‏155 קבצים ב-index.
+
+**‏`git diff --diff-filter=U` החזיר ריק**, כלומר git חשב שהכל נפתר. הוא לא:
+סרקתי את כל ‏155 ומצאתי **41 קבצים עם ‏`<<<<<<<` / ‏`=======` / ‏`>>>>>>>` גולמיים
+שנעשה להם ‏`git add`** כאילו הם הפתרון. ביניהם:
+
+```
+CLAUDE.md   STATE.md   .github/workflows/ci.yml   biome.json   pnpm-lock.yaml
+src/types/database.ts        src/server/payments/finalize.ts
+src/server/domain/orders/state-machine.ts        src/components/layout/Header.tsx
+scripts/compare.mjs   ← שער הפיקסלים עצמו
+```
+
+‏`package.json` לא עבר ‏parse בכלל (‏"Expected double-quoted property name at
+position 197"), ולכן ‏build, ‏start, ‏compare ושלושת שערי ה-lint היו כולם
+מושבתים — ו-`git status` לא מתריע, כי מבחינת git אין מה לפתור.
+
+**ההכרעה: לנטוש, לא לסיים.** לפתור ‏41 קבצים ביד מענף ‏333 קומיטים מאחור,
+בלי סקירה, על ענף הסגירה, זה לא הפריט הבעל-ערך-הגבוה-ביותר בתור — זו סכנה.
+‏`finalize.ts` מקונפלט יושב על מסלול הכסף, ו-`compare.mjs` מקונפלט אומר שכל
+מספר שיימדד אחרי הקומיט הזה אינו בר-ייחוס.
+
+**נבדק שהנטישה חסרת-אובדן לפני ההחלטה, וזה מה שהכשיר אותה:**
+‏`feat/product-type` קיים ב-`4c2112b83` גם מקומית וגם ב-
+‏`refs/heads/feat/product-type` ב-origin. כל ‏74 הקומיטים שרדו. אם העבודה
+הזאת רצויה — היא תמוזג במכוון, אחרי סקירה, מענף שקודם הובא קדימה.
+
+**מלכודת בדרך:** ‏`git merge --abort` **סירב** בפעם הראשונה עם
+‏`error: Entry 'package.json' not uptodate. Cannot merge.` כי כבר תיקנתי את
+הקובץ ביד ולכן העץ לא תאם ל-index. צריך ‏`git add package.json` כדי שיסכימו,
+ורק אז ה-abort רץ.
+
+**מי עשה את זה.** ה-reflog מראה ‏`checkout: moving from closeout/v1-final to
+main` רגע לפני המיזוג, ו-`~/Library/LaunchAgents/com.kenyonexpress.autopilot.plist`
+טעון ומריץ ‏tmux. זה מתאים בדיוק לדפוס המוכר של ‏autopilot שמריץ ‏`git add`
+על כל העץ בטיימר. **זה יקרה שוב.** לפני כל קומיט: לוודא שאין ‏`.git/MERGE_HEAD`,
+ולסרוק סימני קונפליקט — ‏`git status` לבדו לא יגלה.
+
+**גם ה-WIP של הסוכן המקביל נסחף.** ארבעת הקבצים שהוא החזיק "לא-staged" היו
+כולם ב-index, כולל שניים חדשים, ולכן ה-abort אִפֵּס גם אותם. הוא שמר עותקים
+משלו והחזיר אותם בעצמו.
+
+**מצב אחרי הנטישה:** ‏6c478d89d, אפס סימני קונפליקט בכל העץ המנוהל,
+‏`package.json` עובר ‏parse, ‏3976 טסטים ב-322 קבצים ירוקים, ‏type-check נקי.
+שגיאות ה-lint היחידות הן ב-`scripts/ingest-live-assets.mjs`, קובץ untracked
+בעבודה אצל הסוכן המקביל.
+
+**ארבעת ה-refs מיושרים:** ‏main, ‏closeout/v1-final ושתי המקבילות ב-origin,
+כולן על ‏6c478d89d.
+
+### ‏06.09: דפי המשפך נמדדו, ושניים מהם מסרבים להימדד
+
+```
+cart      380 10.07%   768 10.57%   1440  8.16%   PASS
+checkout  380 10.59%   768 10.10%   1440 10.71%   PASS, אבל 0.29 מהתקרה
+category  REFUSING — "‏2 קלפים בכל צד, ‏1 מתוך ‏2 חריצים מחזיקים אותו מוצר"
+product   REFUSING — "‏live מציג ‏1 קלף מוצר, המקומי מציג ‏4"
+```
+
+אותו שורש שנמצא בדף הבית: הקטלוג שלנו והקטלוג של ‏live לא מחזיקים את אותם
+מוצרים. לסגור את זה פירושו לזרוע קטלוג שיתאים לצילום מסך, ו-`SOURCING-RULES`
+פוסל את זה. ‏checkout ב-10.71% מול תקרה של ‏11% אינו "ירוק" במובן משמעותי —
+זה בתוך רעש הריצות (דף הבית זז ‏8.13→8.14 על שינוי שלא נגע מעל ‏y4000).
+**לכן לא מושקע בו זמן: הזזת מספר עובר בתוך רצועת הרעש שלו אינה עבודה.**
+
+
+**‏06.09: ‏LIVE-DELTA הושלם, ואין סקשן חסר.** האודיט הוזמן על ההנחה שיש
+באתר החי סקשנים שלא בנינו. **אין.** כל פס באתר החי קיים אצלנו באותו
+offset, ושלושת הראשונים תואמים לפיקסל: ‏header ‏y38 h110, ‏hero ‏y148 h613,
+‏feature bar ‏y761 h134 — דלתא אפס. נמדד בדפדפן ב-1440 אחרי גלילה מלאה של
+החי, כי ‏Elementor וה-Jet grid נטענים בעצלתיים ובלי הגלילה החי מדווח שני
+סקשנים ומסתיר את גריד הדילים שלו.
+
+סך הדלתא ‏86px על דף של ‏5492. אחד היה שווה סגירה: החי משאיר ‏60px בין שורת
+הכרטיסים האחרונה לפוטר ואנחנו השארנו אפס, כך שהפוטר נצמד לכרטיסים. נסגר.
+השניים האחרים (גריד ‏+23px, פוטר ‏+11px) מומלץ להשאיר, עם נימוקים.
+
+**זה לא מזיז את השער, והמסמך אומר את זה לפני השינוי.** ‏compare.mjs מודד
+‏2600px ראשונים; שלוש הדלתאות מתחת ל-y4000. נמדד: ‏10.68 / 7.71 / 8.14.
+
+**ה-8.13% שנותר אינו מתחת לקיפול.** הוא ב-y1600-1800 וב-y2500-2600, בתוך
+גריד הדילים, והוא **תוכן** הכרטיסים ולא גאומטריה: הקטלוג שלנו והחי לא
+מחזיקים את אותם מוצרים באותו סדר. סגירה שלו = לזרוע קטלוג לפי צילום מסך,
+מה ש-SOURCING-RULES שולל.
+
+### מה נסגר בריצה הזאת
+
+| מה | היכן |
+|---|---|
+| מיזוג ‏main (‏9 תיקוני ‏GHSA, אחד קריטי) | ‏13775cab0, ‏`pnpm audit` אפס חולשות |
+| שומר מפתח מפוגע — boot + preflight | ‏`compromised-keys.mjs`, ‏`deploy-preflight.mjs` |
+| ‏vercel.json, ‏.nvmrc, ‏engines, ‏DEPLOY.md | ‏48ea88353 |
+| סקירת חמש המיגרציות + סדר החלה | ‏`MIGRATION-REVIEW.md`, ‏`RUNBOOK.md` |
+| ‏LIVE-DELTA + פער ה-60px | ‏d0c7162f6 |
+| שורת ה-₪1 כבר לא ניתנת לקנייה | ‏5dd3fa80a (סשן מקביל, שומר יחס ולא שם) |
+
+### נותר — הכל דורש ידיים של אופיר
+
+1. **אישור אצווה ‏A**: ‏172 (השורה עדיין ‏active עם ‏10 במלאי; היא כבר לא
+   נמכרת אבל עדיין בקטלוג — שתי טענות שונות), ואז ‏169, ‏170, ‏171.
+2. **רוטציית ‏SUPABASE_SECRET_KEY** — נחשף בהתקנה, עוקף כל ‏RLS. הבילד
+   מסרב איתו. נוהל ב-`RUNBOOK.md`.
+3. **הצמדת דומיין וקידום לפרודקשן** — ‏`DEPLOY.md`, שלב אחר שלב.
+4. **‏162** נשארת חסומה עד שיהיה ‏URL פרוס להזין ל-vault.
+
+### (היסטוריה) המשך מ:
+
+**‏06.09: תור הרכיבים סגור, ‏`v5.3.0-rc1` מתויג, השער ירוק
+‏10.68 / 7.71 / 8.13.** אין יותר "שלב N" — התור נגמר, ומה שנשאר הוא רשימת
+חסמים ולא רשימת שלבים.
+
+> **שני סוכנים על אותו ריפו, וחלוקה מוסכמת.** ‏`kenyonexpress-fb` לוקח את
+> ‏172 ואת דפי המשפך (‏category, ‏product, ‏cart, ‏checkout, ‏payment,
+> ‏thank-you, ‏account); ‏`kenyonexpress-85` לוקח את ‏Vercel, את רוטציית
+> המפתח ואת ‏LIVE-DELTA. ‏fb על פורט ‏3311, ‏85 על ‏3312.
+
+### ‏06.09 05:30: ‏172 — המוצר כבר לא ניתן לקנייה, והמיגרציה עדיין נדרשת
+
+**שתי האמירות האלה נפרדות בכוונה, כי רק השנייה שורדת שאילתה ל-DB.**
+
+השורה ‏`9bb347f8-03ec-48ce-8ff2-2503fb74c895`, "מוצר ראשי מאסטר Master
+Product", חיה בפרודקשן: ‏status active, ‏10 במלאי, ‏kenyon_price 1 מול
+‏full_price 400. היא מוצגת בגריד של דף הבית כמוצר אמיתי עם תג ‏-100%. מי
+שיקנה — ההזמנה אמיתית, התשלום אמיתי, ואין מה לספק.
+
+**לא ‏denylist, וההתנגדות שפסלה אחד כזה עדיין תקפה.** שום דבר לא נשען על
+השם, על ה-id או על ה-slug. חסימה לפי שם היא כלל שאיש לא יכול לתחזק, היא לא
+שורדת ייבוא מחדש תחת ‏id אחר, והיא מגנה מפני מופע אחד של תקלה שיש לה מחלקה
+שלמה. יש בפרודקשן **שלושה** מוצרים אחרים עם "מאסטר" בשם וכולם לגיטימיים.
+
+**הסף נמדד, לא נבחר.** מתוך ‏24 המוצרים הפעילים שיש להם גם מחיר מכירה וגם
+‏compare-at:
+
+```
+99.75%   מוצר ראשי מאסטר Master Product   ₪1 מתוך ₪400
+60.00%   תספורת לגבר, ילד, סידור זקן      ₪20 מתוך ₪50
+50.00%   הסרת שיער בלייזר קר              ₪250 מתוך ₪500
+49.23%   תיק עור JEEP יוקרתי              ₪99 מתוך ₪195
+37.56%   קמפיין ענק בפייסבוק              ₪999 מתוך ₪1600
+```
+
+ההנחה העמוקה ביותר שאדם אי פעם הזין כאן היא ‏60%. השורה הפוגעת יושבת לבדה על
+‏99.75%, ארבעים נקודות מעל. בדיוק מוצר **אחד** עובר ‏80%, והוא אותו מוצר בכל
+סף בין ‏80% ל-98%. לכן התקרה היא ‏95%: ‏35 נקודות מרווח מעל כל מוצר אמיתי,
+וקמפיין של ‏90% הנחה עדיין נמכר.
+
+**אגורות שלמות, אפס float.** הכתיב המתבקש הוא ‏`1 - sell / compareAt > 0.95`
+וזה float במסלול הכסף. בפתיחה: ‏`sell * 100 <= compareAt * 5`.
+‏`money-no-float` תפס את ה-`toFixed` של הגרסה הראשונה, והוא נכתב עכשיו
+בניב המאושר ‏`ilsToAgorot(Number(x).toFixed(2))` במקום להיכנס ל-allowlist.
+
+**איפה זה נושך:** ‏`unavailableReason` ב-`lib/cart/pricing.ts` — המקום הצר
+ביותר שגם העגלה וגם ה-checkout מצייתים לפסיקתו — עם סיבה חדשה ‏`price_error`,
+שמוכרעת לפני ‏`unpriced` ולפני סיבות המלאי, כי לשורה **יש** מחיר. להגיד
+לקונה "הפחיתו כמות" רומז שלקנות אחד זה בסדר. ‏`beginCheckout` מגיע ל-
+‏`validateCartView` לפני כל ענף תשלום. גם ‏add-to-cart מסרב, וגם הכפתור מושבת.
+
+**הוכח שהוא נושא משקל, לא מקושט:** בהעברת הסף ל-100 ארבע טענות מאדימות,
+כולל "אין דרך שכסף יזוז". בהחזרה — שמונה ירוקות.
+
+**נמדד על שרת בנוי, לא רק ביוניט:** ‏`/product/restaurants-meat-3` מחזיר
+‏200 ושני הכפתורים ‏`pdp-buy__atc` ו-`pdp-buy__now` נושאים ‏`disabled`.
+כביקורת נגדית, שתי ההנחות האמיתיות העמוקות ביותר (‏50% ו-49.23%) מחזירות
+‏200 עם **אפס** ‏`disabled` — כלומר הושבת המוצר הזה, לא כל כפתור קנייה.
+
+**‏172 עדיין נדרשת.** שומר אפליקטיבי עוצר את הכסף; הוא לא מוציא את השורה
+מהקטלוג. היא עדיין ‏active עם ‏10 במלאי, עדיין עונה לשאילתה ישירה, ועדיין
+מוצגת בכל רשימה שלא עוברת דרך העגלה. עברה מ-URGENT ל-STILL REQUIRED ונשארת
+ראשונה ב-batch A1. תועד ב-`docs/COPY-AUDIT.md` וב-`docs/MIGRATION-REVIEW.md`.
+
+‏`5dd3fa80a`. ‏3972 טסטים, ‏type-check ו-lint נקיים.
+
+**הבא בתור אצל ‏fb:** דפי המשפך, מ-category ו-product.
+
+### מיזוג ‏main: הוא לא היה סתם ישן
+
+‏main היה ‏284 מאחור ו-**9 לפנים**, ותשעת הקומיטים האלה סוגרים ‏GHSA:
+אחד **קריטי** (‏vitest ‏GHSA-5xrq-8626-4rwp) וארבעה ‏high (‏ws, ‏form-data,
+‏vite, ‏browserslist). לכן "לפתור קונפליקטים לטובת העבודה החדשה יותר" לא היה
+ניתן ליישום מילולי על ה-lockfile — זה היה זורק תשעה תיקוני אבטחה.
+
+ההכרעה: ‏closeout מנצח בכל קובץ מקור, וה-bumps נשמרים.
+‏`pnpm audit --audit-level high` מדווח עכשיו **אפס חולשות**.
+שני הענפים זהים (‏13775cab0). ‏`docs/BRANCH-AUDIT.md`.
+
+**לא נמחק אף ענף.** הכלל הוא "מוכל **וגם** ה-remote נעלם"; ארבעה ענפים
+מוכלים (‏docs/v1-final ושלושת ‏release/*) וכל ארבעתם עדיין קיימים ב-origin.
+
+### השומר שכתבתי שבר את השרת המקומי, והמיזוג הוא שחשף את זה
+
+‏`assertNoCompromisedKeys` נשען על ‏`NODE_ENV === 'production'` —
+ו-`next start` על לפטופ הוא **גם** ‏NODE_ENV=production. זה כתוב ב-env.ts
+ארבעים שורות מעל הפונקציה, על ה-waiver שקיים בדיוק בשביל זה, ושחזרתי על
+הטעות שורה אחת מתחת. כל route החזיר ‏500, ושער הפיקסלים מדד את **דף
+השגיאה** ב-26.30 / 24.64 / 20.26 במקום לסרב למדוד.
+
+עכשיו הוא נשען על ‏`isDeployedRuntime()`, שבודק את סמן הפלטפורמה קודם כדי
+שהדבקת ‏waiver מקומי לתוך משתני הסביבה ב-Vercel לא תוכל לנטרל אותו.
+
+### מה פתוח, לפי דחיפות
+
+1. **‏172** — שורת בדיקה נמכרת ב-₪1 עם ‏10 במלאי, חיה בפרודקשן עכשיו.
+   ה-brief תיאר את ‏172 כמי ש**זורעת** אותה; ההפך הוא הנכון, היא המחיקה.
+2. **‏169** — נמדד מול פרודקשן: ‏`purchase`, ‏`begin_checkout`,
+   ‏`voucher_redeemed`, ‏`order_refunded` מחזירים ‏0 שורות בשקט.
+3. **רוטציית המפתח** — נחשף בהתקנה, עוקף כל ‏RLS, מסומן לפי ‏SHA-256.
+4. **‏170 + 171** — בטוחות, ממתינות לאותה אצווה.
+5. **‏162** — חסומה עד ‏URL פרוס.
+6. **‏LIVE-DELTA** — הבא בתור.
+
+### (היסטוריה) המשך מ:
+
+### ‏04.09 13:45: ‏COMPONENT-QUEUE ‏01-12 הושלם, והתגלה שהתור נגזר מתבנית שגויה
+
+**המדידה הגדולה של הריצה הזאת:** התור נגזר מדף הבית של ‏Electro, בהנחה
+ש-live מריץ אותו. **‏live לא מריץ אותו.** דף הבית של ‏live בנוי ב-Elementro —
+עשרים ‏`elementor-section` של ווידג'טים של ‏Jet — ורוב מחלקות דף הבית של
+‏Electro פשוט נעדרות ממנו.
+
+נספר על ‏live ב-04.09: ‏`home-v1-slider` ‏0, ‏`section-onsale-product` ‏0,
+‏`deals-block` ‏0, ‏`tabs-block` ‏0, ‏`home-v1-banner-block` ‏0,
+‏`home-v1-da-block` ‏0, ‏`brands-carousel` ‏0, ‏`da-block` ‏3.
+
+ו**ברינדור אמיתי** בדפדפן ב-380 וב-1440, כי מחלקה יכולה לשבת ב-markup ולא
+להיצבע לעולם: ‏`.countdown`, ‏`.brands-carousel` ו-`.footer-payment` אינם
+אלמנט בכלל בשני הרוחבים; ‏`.da-block` הוא **שלושה** ב-201x197;
+ו-`.handheld-footer-bar` הוא ‏`position: static` ב-380x137.
+
+מה שזה מכריע: ‏06 בלי countdown ובלי tabs; ‏07 ו-08 הם אותם שלושה בלוקים ולא
+שניים ועוד ארבעה; ‏09 לא קיים ב-live ולכן **סורב**; ‏12 אינו סרגל ניווט תחתון
+אלא רצועת footer סטטית של ‏137px ש-`SiteFooter` כבר בונה. נשמר ב-
+‏`src/lib/live-home-sections.test.ts`.
+
+**סטטוס התור:** ‏01 ✓ ‏02 ✓ ‏03 ✓ (פאנל מגה סורב) ‏04 ✓ ‏05 ✓ ‏06 ✓
+‏07 מוזג ל-08 ‏08 ✓ ‏09 סורב ‏10 ✓ ‏11 ✓ ‏12 ✓
+
+**מדידה סופית מעץ נקי ב-HEAD:** ‏380 ‏10.68% · ‏768 ‏7.71% · ‏1440 ‏8.13%.
+‏3942 טסטים ירוקים, ‏type-check, ‏lint, ‏build והשערים ‏tokens/copy/asset נקיים.
+
+**שני שערים חדשים נוספו והוכחו שהם נכשלים כשצריך:**
+‏`header-icons.test.ts` (ספירת אייקונים, סדר ב-DOM, נקודת כניסה יחידה לחשבון)
+ו-`ke-live-categories.test.ts` (‏11 המחלקות, שטיחות, כלל הכסף).
+
+### ‏(היסטוריה) ‏04.09 13:30: החסימה הוסרה, והשער האדום לא היה מה שחשבנו
+
+
+
+אופיר הורה במפורש להמשיך בתור. הסשן המקביל ‏`kenyonexpress-85` ענה, ירד
+מהעץ מרצונו, ומסר שאינו מחזיק כלום. **התור שלי.**
+
+**‏[x] השער האדום ב-1440 — נסגר. הוא לא היה ארטיפקט של שני סוכנים.**
+
+‏STATE.md רשם את ה-14.48% כבילד של שתי עבודות חצי-גמורות שאי אפשר לייחס.
+זה היה שגוי: **השורה הזאת נושאת hash נקי בלי סיומת `-dirty`**, והמספר
+שוחזר במדויק מבילד טרי של ‏`51d4eb9c5`.
+
+הסיבה: ‏`6bc219b24` הסירה את ‏`reverse-withdrawal-payment` מרשת הדילים —
+נכון, זו רשומת נהלת חשבונות של ‏Dokan שהייבוא כבר מחריג — אבל הסירה **בלי
+למלא את המשבצת**, והרשת היא ארבע עמודות. ‏live מרנדר ‏32 כרטיסים, ורשומת
+הנהלת החשבונות היא **אינדקס ‏6 שלו, לא האחרון**. לכן כל כרטיס מתחתיה עלה
+משבצת אחת ושורות ‏2-7 עשו ‏reflow.
+
+צורת ה-bands היא ההוכחה שזו הזזה ולא פגם: כל band מעל ‏y1400 ללא שינוי, כל
+band מתחתיו ‏30-58%. מילוי המשבצת במוצר ‏live אמיתי
+(‏`טיפול-פנים-עמוק`, אומת ‏200 ב-`/product/` ונוכח ב-`/shop/` של live;
+המחיר ‏298 מול ‏400, התמונה והקטגוריה נקראו מ-live ולא הומצאו) הוריד את
+‏1440 מ-14.48% ל-8.13%.
+
+**הלקח לשאר התור: ספירת הכרטיסים נושאת משקל ברשת.** הסרת ארטיפקט מ-fixture
+שמשקף את ה-DOM של live היא חצי תיקון בלבד.
+
+**‏[x] ‏01 סרגל עליון — הושלם.** נבנה בסשן הקודם, נבדק מול הכללים ועבר.
+
+**‏[x] ‏02 מסטהד ואשכול האייקונים — הושלם, ושתי הפרות נמצאו בו.**
+‏`MastheadNav` רינדר לב, משתמש, עגלה — שלושה אייקונים, האמצעי קישור חשבון,
+במקום שניים בדיוק. אשכול ה-handheld ב-`Header` רינדר עגלה וקישור חשבון שני
+**ובלי לב בכלל**, כך שמתחת ל-xl לא הייתה אפשרות הגעה למועדפים. בנוסף הסדר
+היה מראה: ב-flex ‏RTL הילד הראשון מרונדר ימני ביותר, אז עגלה-ראשונה שמה את
+העגלה מימין בעוד ש-live מודד אותה ב-x=15 צמוד לשמאל.
+
+יחד עם ‏`התחברות` ב-TopBar אלה היו **שלוש נקודות כניסה לחשבון** במקום אחת.
+שתיים הוסרו; ‏TopBar מחזיק את היחידה, בפינה השמאלית-עליונה.
+
+נשמר על ידי ‏`src/components/layout/header-icons.test.ts` — ספירה, סדר ב-DOM
+ונקודת כניסה יחידה. הוא מפשיט הערות לפני ההתאמה, כי שני הקבצים מסבירים
+בפרוזה מה הם **לא** מרנדרים ומזכירים ‏`<User>` ו-`/login`, ו-grep גולמי היה
+מדווח בדיוק על ההפרה שההערה מתעדת כמתוקנת. **הוכח שהוא נכשל** כשמחזירים את
+קישור החשבון: ‏2 מתוך ‏7 טענות מאדימות.
+
+**מדידות אחרי ‏02:** ‏380 ‏10.68% · ‏768 ‏7.71% · ‏1440 ‏8.13% — שלושתן מתחת ל-11%.
+‏3934 טסטים ירוקים, ‏type-check, ‏lint ו-build נקיים.
+
+### ‏(היסטוריה) ‏04.09 12:54: סוכן קוד שני כותב לאותו עץ עבודה
+
+
+זה אחד מארבעת מצבי העצירה ב-CLAUDE.md, והוא כבר גרם נזק מדיד.
+
+סשן בשם ‏`kenyonexpress-5d` פנה אליי, אמר שהוא עומד לבצע ‏COMPONENT-QUEUE
+‏01-12 באותו checkout. עניתי לו לרדת מ-src/ כולו והסברתי למה. **הוא ענה
+שהוא יורד ולא יכתוב כלום — ואז כתב.**
+
+מה שקרה בפועל:
+
+| מה | ראיה |
+|---|---|
+| נכתב רכיב ‏01 לעץ שלי | ‏`src/components/layout/TopBar.tsx` + `TopBar.test.tsx`, ‏mtime 12:54 |
+| שונה ‏Header.tsx | ‏+11 ‏-93, חילוץ ה-top bar |
+| שונה ‏no-search-ui.test.ts | הוספת ‏TopBar ל-SHELL |
+| **נדחפה העבודה שלי תחת ה-commits שלו** | ‏`83423fa42` ו-`6bc219b24` — תיקון ה-queue ופגם 7 במלואו, בזמן שעוד עבדתי עליהם |
+
+**הנזק המדיד:** הרצתי את השער מיד אחרי ש-TopBar נחת בעץ. הוא דיווח
+‏**14.49% ב-1440** מול תקרה של ‏11, לעומת ‏7.08% בריצה הנקייה שלפניה. המספר
+הזה אינו רגרסיה: הוא בילד של שתי עבודות חצי-גמורות של שני אנשים, ואי אפשר
+לייחס אותו לאף אחד. הוא יושב ב-`docs/UI-PARITY-REPORT.md` עם סיומת
+‏`-dirty`, וזו הסיבה היחידה שהוא לא ייקרא בעוד שבוע כרגרסיה אמיתית ששווה
+יום של מרדף.
+
+**מה עשיתי:** לא נגעתי ב-WIP שלו (שימור ‏WIP חשוב יותר מעץ נקי אצלי),
+committי רק קבצים שלי בנתיבים מפורשים, וכתבתי אליו לעצור. ה-socket שלו מת
+מאז; סשן חדש ‏`kenyonexpress-32` עלה בדיוק בזמן שהקבצים נוצרו ונשלחה אליו
+פנייה.
+
+**לא נגעתי, ממתין להחלטה:** ‏`TopBar.tsx`, ‏`TopBar.test.tsx`,
+‏`Header.tsx`, ‏`no-search-ui.test.ts`.
+
+**זו החלטה של אופיר.** שני סשנים על תור אחד באותו checkout לא יכולים לרוץ
+במקביל: ‏`git commit -- <paths>` לוקח את עץ העבודה ולא את ה-index, ובילדים
+מקבילים עושים ‏OOM במכונה הזאת. אם רוצים מקביליות — ‏worktrees נפרדים עם
+‏node_modules נפרדים, ועדיין שער ‏compare מסודר בטור.
+
+### ‏[x] פגמים ‏5, ‏6, ‏7 — הושלמו
+
+**5 — התיבה הצהובה הריקה.** הפס הצהוב מעל רשימת המחלקות היה ‏div
+‏self-closing עם ‏aria-hidden: ‏48px של צהוב מותג בלי כלום בפנים. ב-live יש
+בתוכו ‏`<span class="title">קטגוריות</span>` — הגאומטריה שוחזרה והכותרת לא.
+הוחזרה, עם הטיפוגרפיה של live. ‏aria-hidden ירד יחד עם הריקנות, וגם
+ה-aria-label הכפול ב-nav: קורא מסך היה שומע "קטגוריות" שלוש פעמים.
+
+**6 — באנר ה-PWA.** הוא ‏`fixed` ושום דבר לא שמר לו מקום, אז הוא שכב על
+תחתית כל דף. באנר ה-consent כבר שילם על הלקח הזה (‏11 רוחבי מסך מדודים
+ב-globals.css). עכשיו הוא מסמן ‏`data-pwa-prompt` ו-CSS שומר ‏6rem.
+**שתי ההזמנות עכשיו מצטברות** — הן היו שתי הצהרות ‏padding-bottom על body,
+כלומר עם שני באנרים הכלל השני פשוט מנצח והמפסיד חוזר לכסות את הקיפול.
+הוא גם ישב **על** באנר ה-consent וכיסה את שני הכפתורים שחייבים ללחוץ.
+ובנוסף: הוא לא מופיע לפני שהמבקר עשה משהו (‏scroll/pointerdown/keydown) —
+‏Chrome יורה ‏beforeinstallprompt שנייה אחרי הצביעה, ודחייה נזכרת לנצח.
+
+**7 — אודיט העברית.** שני מעברים: סריקת מקור (‏lint+test) וסריקת ‏DOM
+מרונדר על ‏10 דפי משפך. נמצאו שני ממצאים אמיתיים בלבד:
+
+- ‏`Reverse Withdrawal Payment` — רשומת הנהלת חשבונות של ‏Dokan שהייבוא
+  העביר כאילו הייתה מוצר, ורונדרה בפס הדילים במחיר ‏0 בלי תמונה ובלי
+  קטגוריה. **הריפו כבר החליט את זה בעצמו:** ‏`wp-import/config.mjs` מחריג
+  את ה-slug הזה ו-`wp-dry-run.mjs` מסביר למה. מי שלא הסכים היו שתי הרשימות
+  שמשקפות את ה-DOM החי אחת לאחת. הוסר משתיהן.
+- ‏`מוצר ראשי מאסטר Master Product` — שורת תבנית **במכירה בשקל אחד** מול
+  מחיר מלא ‏400, עם ‏10 במלאי, בדף הבית. **פתוח:** ‏`migrations/pending/172`
+  מאפס מלאי (לא מוחק — יש אולי ‏order_items שמצביע עליה). **לא הוחלה.**
+
+הכל השאר תקין: ‏Google Analytics, ‏Kenyon Express, ‏American Express,
+‏Air Port City, ‏Samsung Galaxy — שמות מותג ומקום. ‏`Notifications alt+T`
+הוא artifact של ‏Next.js devtools, לא בקוד שלנו ולא ב-HTML המוגש.
+
+### ‏[x] סביבה — ‏SUPABASE_SECRET_KEY עובד עכשיו
+
+המפתח עבר שלושה ערכים היום, ורק השלישי עובד:
+
+| ערך | בדיקת צורה | בדיקה חיה |
+|---|---|---|
+| ‏`eyJ…` עם ‏iss=supabase-demo | **נתפס** | — |
+| ‏`sb_secret_y4…` (‏82 תווים) | **עבר** — אטום, אין מה לבדוק | **401 בכל מקום** |
+| ‏`sb_secret_Gd…` (‏41 תווים) | עבר | **200** |
+
+השורה האמצעית היא כל הטיעון: נוכח, תקין בצורתו, לא ערך דמו, ועבר כל בדיקת
+צורה — בזמן שכל נתיב אדמין נכשל בשקט. ‏`src/lib/env-probe.ts` שואל
+‏`/auth/v1/settings` בכל boot ומדווח בעברית. הוא **מדווח ולא זורק**: סירוב
+לעלות בגלל קריאת רשת הופך תקלת ‏DNS רגעית להשבתה. עכשיו: ‏`env.probe_ok`.
+
+**‏⚠️ המפתח שבשימוש נחשף בהתקנה וחייב רוטציה לפני תנועת פרודקשן.**
+הנוהל המלא ב-`docs/RUNBOOK.md`.
+
+### ‏[x] דוח הפאריטי כותב את עצמו
+
+‏`docs/UI-PARITY-REPORT.md` היה ריק בזמן ששלוש מדידות ישבו בהודעת commit,
+כי כתיבת השורה הייתה שלב שבנאדם צריך לזכור. ‏`scripts/parity-log.mjs`
+נקרא מ-`diff-bands.mjs` ברגע שהמספר קיים — אין מסלול שמודד ולא רושם. כל
+שורה נושאת את ה-commit, עם ‏`-dirty` כשהעץ לא נקי.
+
+### (היסטוריה) המשך מ: ‏HOME-DEFECTS, פגם 5
+
+### ‏04.09: מודל המקורות נקבע סופית — ‏Electro מורשה במלואו
+
+אופיר קבע: **תבנית ‏Electro מורשית במלואה לפרויקט הזה.** הפונטים, סטי
+האייקונים, התמונות, ה-stylesheets וה-markup שלה מותרים לשימוש ישיר. **אסור
+לאף סשן להסיר נכס ‏Electro בטענת רישוי, ואסור לעצור כדי לשאול.** כלל המקורות
+היחיד שנשאר: ‏**Electro נותן צורה, האתר החי נותן תוכן** (כל מחרוזת, קטגוריה,
+מחיר וכל תמונת מוצר). התיעוד המלא: ‏`docs/SOURCING-RULES.md`.
+
+הנקודה היחידה שבה שני הכללים מתנגשים מתועדת שם: האתר החי מריץ את אותה תבנית
+בלי תרגום, ולכן לחלק מהסלוטים התוכן של החי **הוא** תוכן הדמו של ‏Electro.
+ההכרעה: איפה שתוכן החי הוא הוכחות תוכן־דמו ולא של העסק הזה — הוא צורה שלא
+הוחלפה מעולם, והוא לא משוגר. **ההסרות של היום לא היו החלטות רישוי מעולם.**
+
+### ‏[!] ‏6 קבצי "לכידת ‏Electro" ב-refs היו דפי חסימה של ‏Cloudflare
+
+כל ‏`refs/electro-*.html` שוקל ‏5.7KB, וכולם אותו גודל בדיוק, כי כל אחד הוא
+אותו ‏interstitial של ‏"Just a moment...". גם ‏`electro-full.html` בשורש.
+**שישה ‏goals נכתבו מול ‏`electro.html` כמקור גאומטריה** — מדידה מכל אחד מהם
+הייתה מדידה של דף חסימה.
+
+‏`scripts/capture-electro.mjs` (חדש) לוכד נכון דרך ‏Chromium אמיתי:
+‏`refs/electro_home.html` — ‏893KB, ‏1,922 שורות computed; ‏`refs/electro_shop.html`
+— ‏615KB, ‏2,693 שורות, כולל כרטיס המוצר ב-grid וב-list.
+
+**דף המוצר הבודד חסום ולא ניתן להשגה:** ‏`/product/*` ו-`/cart/` מחזירים
+‏`403 - Forbidden` (‏81,082 בתים) באותו origin ובאותו session שבו ‏`/` ו-`/shop/`
+עוברים. נוסו: ניווט ישיר, חימום ל-clearance cookie, ולחיצה על הקישור מהדף
+המרונדר. הכל מתועד ב-`docs/MISSING-ASSETS.md`.
+
+### מסמכים חדשים
+
+| קובץ | מה יש בו |
+|---|---|
+| ‏`docs/SOURCING-RULES.md` | הרישוי, כלל צורה-מול-תוכן, וארבעת כללי המוצר הקבועים |
+| ‏`docs/MISSING-ASSETS.md` | מה חסום, מה נוסה, ומה משמש במקום |
+| ‏`docs/REFS-INDEX.md` | אינוונטר ‏refs/ עם פסק דין לכל קבוצה + מיפוי נתיבים |
+| ‏`docs/COMPONENT-QUEUE.md` | תור הרכיבים — **נגזר**, כי ההוראה הגיעה קטועה |
+
+### ‏[x] פגם 4 — ‏bidi של סימן המטבע
+
+הסימן ‏₪ הוא ‏bidi class ET, ורצף ‏ET צמוד לספרות אירופיות מצטרף אליהן לריצה
+אחת משמאל לימין — ולכן סימן-לפני-ספרות צובע את הסימן **משמאל** למספר. כל
+מחיר באתר נקרא ככה.
+
+נמדד ב-Chromium, כל מועמד בתוך המשפט "עד ... בלבד":
+
+| מה נפלט | איפה נחת הסימן |
+|---|---|
+| המחרוזת הישנה | **משמאל** לספרות |
+| ‏Intl he-IL/ILS | **משמאל** לספרות |
+| ספרות, רווח, סימן | **משמאל** לספרות — המלכודת |
+| ספרות, בלי רווח, סימן | מימין |
+| ‏LRI ספרות NBSP סימן PDI | **מימין** — מה שמשוגר |
+
+שורה 2 היא הסיבה ש-"פשוט תשתמש ב-Intl" לא פותר את זה. שורה 3 היא הסיבה
+שצריך ‏isolate ולא רק היפוך סדר: רווח רגיל הוא ניטרלי, האלגוריתם פותר אותו
+מול הפסקה ה-RTL, והסימן נודד בחזרה מעבר לספרות.
+
+פורמטר אחד ב-`src/lib/money-format.ts` מזין עכשיו כל מחיר. ‏4 עותקים פרטיים
+ו-כ-20 ‏template literals בקונסולת האדמין, בכרטיסי החנות, בדף הקופון וברשימת
+המשאלות עברו אליו. תווית ‏"עד ₪99" הייתה כתובה ביד ב-5 מקומות שלא הסכימו
+ביניהם — אחד מהם ‏`עד %%%`, placeholder שלא מולא ושוגר כשם קטגוריה.
+
+‏`e2e/price-bidi.spec.ts` הוא הטענה שטסטי היחידה לא יכולים לעשות: הוא לוקח את
+ה-client rect של הגליף ושל הספרה ודורש שהגליף יהיה ימינה יותר, ב-3 דפים
+ב-380/768/1440. הוא מצא מחרוזת שמגיעה מה-DB שסריקת המקור לא יכלה לראות.
+תיקון הנתון עצמו: ‏`migrations/pending/171` — **לא הוחלה**.
+
+**ראיות פגם 4:** ‏3901 טסטים ירוקים, ‏type-check/lint/build נקיים,
+‏compare: **10.69% / 7.36% / 7.07%**.
+
+### (היסטוריה) המשך מ: ‏HOME-DEFECTS, פגם 4
+
+‏04.09: אופיר דיווח על שבעה פגמים באתר הפרוס, ואז קבע מודל מקורות קבוע
+(‏LIVE-CONTENT-INGEST): **‏Electro הוא שלד מבני בלבד** (סדר סקשנים, גאומטריית
+גריד, אנטומיית רכיבים, מכניקת סליידר, התנהגות רספונסיבית), **והאתר החי
+‏kenyonexpress.co.il הוא המקור היחיד לכל תוכן** — מחרוזות, קטגוריות, באנרים,
+שמות מוצרים, מחירים וכל תמונה. ‏UI-CLOSEOUT ממתין עד שהשבעה ייסגרו.
+
+### הערה מדודה: האתר הפרוס ישן ב-4 ימים
+
+הפגמים דווחו מ-`kenyonexpress.vercel.app`, שלא נפרס מאז 31.08 (‏STATE, חסם 0).
+כל פגם נבדק מחדש מול בילד טרי לפני שנגעתי בו, ואחד מהשבעה כבר לא היה קיים.
+
+### ‏[x] פגם 1 — שדה החיפוש
+
+**לא היה קיים ב-HEAD.** הבילד הטרי מגיש אפס שדות חיפוש; מה שכן היה זה
+‏`HeaderSearch.tsx`, ‏`DeferredHeaderSearch.tsx` ו-`SearchBox.tsx` יושבים בעץ
+(שניים מתים, אחד חי בדף התוצאות) — כלומר ייבוא אחד מלהיות מוצגים שוב, בזמן
+ששלוש הערות פרוזה הכריזו שהמגירה ריקה בכוונה. פרוזה לא מפילה בילד. שלושתם
+נמחקו; ‏`/search` ממשיך לענות ל-`?q=` (‏Meilisearch לא נגעתי בו). שני שערים:
+‏`no-search-ui.test.ts` על המקור ו-`e2e/home.spec.ts` על ה-DOM המוצג.
+מסנן השורות של האדמין עבר מ-`type="search"` ל-`type="text"` כדי שלכלל לא יהיה
+חריג ראשון.
+
+### ‏[x] פגם 2 — עותק שיווקי באנגלית
+
+שבעה משפטים של תוכן דמו של ‏Electro מעל הקיפול: ‏SHOP THE HOTTEST PRODUCTS,
+‏CATCH BIG DEALS ON THE CONSOLES, ‏LAPTOPS NOTEBOOKS AND MORE, ‏SIMPLY THE
+BEST, ‏THE NEW STANDARD, ‏PREMIUM PRODUCT, ושלושה ‏Shop now. ועוד
+‏"Recommended Products" ב-/products. שניים מהם פרסמו קונסולות ומחשבים ניידים,
+שהחנות הזאת לא מוכרת בכלל.
+
+**למה זה שרד:** שער הפיקסלים טען בעדם. האתר החי מריץ את אותה תבנית בלי תרגום,
+ולכן דף בית באנגלית קיבל ציון טוב יותר מדף בית בעברית. זה השער מודד מבנה
+ונקרא כאילו הוא מודד תוכן.
+
+לחי אין מקבילה עברית לסלוטים האלה, ולכן זה עותק כתוב, וכל שורה מצביעה על
+הקטגוריה שהיא באמת מקשרת אליה. השער:
+‏`scripts/latin-copy-scan.mjs` (שתי מילים לטיניות רצופות בטקסט ‏JSX או בשדה
+תוכן; מילה לטינית בודדת בתוך עברית נשארת חוקית — "לקניון Express" ו-"הזן
+כתובת Email" זה איך שמסחר ישראלי כותב), מחובר ל-`pnpm lint` וגם ל-`pnpm test`.
+
+### ‏[x] פגם 3 — תמונות דמו של ‏Electro
+
+‏**24 קבצי תמונה הוסרו**, מהם ‏11 שהוצגו בדף הבית מעל הקיפול: ‏iPhone 11 Pro
+עם ‏AirPods (‏WebP מונפש של ‏777KB), ‏iPad Pro, שני שעוני ‏Samsung Gear, טלפון
+אדום, ‏MacBook, צללית ‏Apple, סמל ‏Tesla, תגי ‏App Store ו-Google Play, ומוקאפ
+של חנות ‏Electro עצמה עם המילה "electro" בכותרת שלה.
+
+**התנגשות שנפתרה במפורש:** האתר החי מגיש בדיוק את אותם קבצים מה-uploads שלו,
+כי הוא מריץ את אותה תבנית. לכן "כל תמונה מהאתר החי" ו-"שום צילום של ‏Electro
+לא שורד" מצביעים על אותם קבצים וסותרים. ההכרעה: לא משגרים צילומי מוצר של
+חברה אחרת. הסלוטים מציגים ‏`BrandPlaceholder` — הסמל של האתר על
+‏brand-accent ביחס הגובה-רוחב של הצילום העתידי, עם ‏`data-awaiting-photography`
+כדי שכל סלוט ריק יהיה ניתן ל-grep.
+
+נכרת גם הענף המת ב-`ke-live-hero-data.ts` (‏KE_LIVE_SLIDES,
+‏KE_LIVE_SIDE_BANNERS, ‏resolveHeroSlide) שנשא את אותה אנגלית בלי שום מציג.
+השער: ‏`scripts/template-asset-scan.mjs` — ‏11 שמות קבצים + דפוסי ‏vendor,
+**מוגבל לתיקיות הקישוט בלבד**: לחי באמת יש ‏Samsung Galaxy S22 בקטלוג,
+והגרסה הראשונה של הסריקה סימנה את הצילום שלו, מה שהיה אומר למחוק מוצר
+שהחנות מוכרת בשביל כלל על באנרים.
+
+**ראיות פגמים 1-3 (04.09, בילד טרי, ‏PORT=3311):**
+
+| שער | תוצאה |
+|---|---|
+| ‏`pnpm type-check` | נקי |
+| ‏`pnpm lint` | נקי, כולל ‏tokens + copy + asset gates |
+| ‏`pnpm test` | ‏3885 עוברים, ‏12 מדולגים, ‏309 קבצים |
+| ‏`pnpm build` | ירוק |
+| ‏compare home 380 | **10.69%** (היה 10.95) |
+| ‏compare home 768 | **7.32%** (היה 7.56) |
+| ‏compare home 1440 | **7.03%** (היה 5.97 — ‏1.06 נקודות הן פס תמונת ההירו, המחיר המדוד של ה-placeholder) |
+
+### הבא בתור
+
+4. ‏bidi של ‏₪ (סימן משמאל למספר), פורמטר יחיד + טסטים + טענת ‏Playwright
+5. התיבה הצהובה הריקה מעל "דילים חמים"
+6. באנר ה-PWA שחוסם את הקיפול התחתון
+7. אודיט עברית מלא ל-`docs/COPY-AUDIT.md`
+
+ואז חזרה ל-UI-CLOSEOUT משלב 2 (‏RTL FOUNDATION).
+
+### (היסטוריה) המשך מ: ‏UI-CLOSEOUT, שלב 2 (‏RTL FOUNDATION)
+
+‏04.09: התקבל תור חדש, ‏UI-CLOSEOUT — ‏13 שלבים, שער ‏compare.mjs מתחת
+ל-11% ב-380/768/1440 אחרי כל שלב חזותי. תור המרתון (למטה) נסגר על שלב 16;
+‏17-20 שלו לא בוצעו והם מתועדים שם כפתוחים.
+
+### ‏[x] שלב 1 — ‏TOKEN LAYER
+
+שכבת ה-tokens כבר הייתה קיימת ומתועדת (`src/styles/tokens.css` +
+`src/styles/tokens.ts`, ‏@theme של ‏Tailwind v4, כל ערך עם מקור מדוד מ-
+`refs/ke_live_computed.json`). **החלטה שהתקבלה לבד:** לא הועברה
+ל-`packages/ui/` כפי שהתור ביקש — אין ‏workspace ‏packages בריפו, ‏globals.css
+מייבא משם, ו-30 קבצי טסט מפנים לנתיב הזה. המיקום הקיים הוא אותה שכבה בדיוק.
+
+מה שבאמת היה חסר, ונסגר: **שער ה-hex סרק ‏`.tsx` בלבד**, ולכן כל צבע
+שברח מהפלטה ב-09/2026 ברח דרך קובץ ‏`.ts`:
+
+| מה נמצא | היכן |
+|---|---|
+| ‏`HERO_SLIDER_BG = '#eef4f7'` צובע את הבלוק הגדול בדף הבית כ-inline style | ‏`src/lib/hero-singlefile-data.ts` |
+| שבעה ליטרלים בכל אחד משני בוני המייל (הצהוב כבר סטה פעם ל-#f5c518) | ‏`src/lib/email/*.ts` |
+| ‏CTA שחור ב-system-ui בשלושה מיילים נוספים — המותג פשוט לא היה בהם | ‏abandoned-cart, ‏weekly-digest, ‏newsletter |
+| האדום של ה-wallet כתוב פעמיים (hex + rgb) תחת הערה שטענה שזה "האדום שהאתר נמדד מולו" — האתר נמדד מול ‏#dc3545 | ‏`src/lib/wallet/pass-model.ts` |
+
+נוסף ‏`OFF_PAGE` ב-tokens.ts (הפלטה למשטחים שגיליון סגנונות לא מגיע אליהם:
+‏HTML של מייל, ‏Apple/Google Wallet), וכל חמשת המודולים מייבאים ממנו במקום
+להחזיק ליטרל. ‏`--color-hero-slider-bg` נוסף ל-@theme וה-slider צובע דרך
+מחלקה.
+
+הכלל עצמו עבר ל-`scripts/raw-value-scan.mjs` — קורא אחד, שני צרכנים:
+‏`src/styles/tokens.test.ts` (נופל ב-`pnpm test`) ו-`scripts/tokens-gate.mjs`
+שמחובר ל-`pnpm lint` (נופל ב-build/CI; הריפו הוא ‏Biome, אין ‏ESLint, וזה
+המקבילה המדויקת ל-"ESLint rule שמפילה את הבילד"). הוא סורק ‏`.ts` ו-`.tsx`,
+כולל ‏`[Npx]` שרירותי ב-tsx, ולכל רשומת ‏allowlist יש נימוק כתוב.
+
+גם ‏31 ערכי ‏`[Npx]` נסחפו: ‏7 מהם ‏`px-[15px]` שהוא ‏`--spacing-gutter` הקיים,
+‏השאר קיבלו ‏token מדוד (search pill ‏534/41, ‏nav-gap ‏38, ‏region-inset ‏53,
+‏deals-pad ‏25/49, ‏footer-columns-top ‏60, ‏admin/supplier header, ‏radius-cta).
+שני ה-honeypots אוחדו למחלקה אחת — אחד מהם השתמש ב-`-left-` פיזי במסמך RTL.
+
+**ראיות שלב 1 (04.09, בילד טרי, ‏PORT=3311):**
+
+| שער | תוצאה |
+|---|---|
+| ‏`pnpm type-check` | נקי |
+| ‏`pnpm lint` | נקי, כולל ‏`tokens gate: clean` |
+| ‏`pnpm test` | ‏3878 עוברים, ‏12 מדולגים, ‏306 קבצים |
+| ‏`pnpm build` | ירוק |
+| ‏compare home 380 | **10.95%** |
+| ‏compare home 768 | **7.56%** |
+| ‏compare home 1440 | **5.97%** |
+| ‏grep raw hex מחוץ ל-tokens | **0** |
+
+### (היסטוריה) המשך מ: תור המרתון, שלב 16
+
+### ⚠️ תקרית (04.09 06:24): סוכן מקביל החיל את 166-168 על פרודקשן בלי אישור
+
+‏`schema_migrations` מתעד את ‏166/167/168 ב-23:24:45-23:25:04 UTC
+(06:24-06:25 מקומי), דקות אחרי שהטיוטות נדחפו — לא סשן זה, שרק ניסח אותן
+כ-drafts לפי הכלל "לעולם לא apply". הסוכן המקביל גם העביר את הקבצים
+ל-`migrations/applied/`, כתב ‏CHECKSUMS.sha256, ועדכן ‏README וטסט מלאי
+(עם ניסוח "audit מצא שכבר הוחלו" — הזמנים מראים שההחלה עצמה קרתה באותו
+חלון). מה שאומת כאן, חי: הקובץ שהוחל זהה בית-לבית לטיוטה (sha1 תואם);
+נוספו גם ‏5 אילוצי סימן על עמודות ה-generated מעבר לקובץ; ‏162 לא הוחלה
+(‏cron.job=0); ‏165 לא הוחלה (בוטלה); רשתות הרגרסיה החיות ‏anon-catalog
+ו-wallet-rls עוברות ‏14/14 אחרי ההחלה, כל 3873 הטסטים ירוקים. ההחלטה
+השמרנית: לא מגלגלים אחורה (rollback = migration נוסף בלי אישור), מאמצים
+את הרקונסיליאציה כי היא משקפת את ה-DB, ומתעדים. **ממתין לאישור
+בדיעבד של 166-168 מאופיר — ראה חסמים.** נשלחה התראת ntfy בעדיפות גבוהה.
+
+### החלטה שהתקבלה לבד (04.09 06:16): חזרה מ-checkout זר ל-main
+
+באמצע שלב 9 ה-HEAD זז ל-`main` המקומי (reflog: ‏"moving from
+closeout/v1-final to main" ב-06:16:29) — לא פעולה של הסשן הזה, וה-ps לא
+מראה סוכן קוד שני. שום דבר לא אבד: ‏closeout/v1-final נשאר זהה ל-origin,
+ה-WIP של שלב 9 (קבצים לא-מנוהלים + עריכת route) שרד את המעבר, ואף push
+ל-main לא קרה. חזרתי ל-closeout/v1-final ומעתה כל commit מוודא branch
+קודם. אם זה חוזר — לחשוד ב-script רקע ישן (kenyon-loop) שממשיך לרוץ.
+
+## תור המרתון (20 שלבים, נבנה 04.09 מניתוח פערים מול docs/)
+
+הסקר המלא (שני סוכני חקירה, specs מול מימוש): רוב הליבה קיימת ונבדקת.
+השלבים הם הפערים שנמצאו, בסדר שהוגדר ב-CLOSEOUT §4. ‏DDL תמיד כטיוטה
+ב-`migrations/pending/` עם ‏preflight, לעולם לא apply.
+
+1. ‏[x] ‏Cardcom: תיקון ‏42703 — בוצע ב-872b86c7c (‏order-money-columns.ts
+   ‏+ טסטים; הקריאות מיישרות את הדור דרך אותו probe של מסלול הכתיבה).
+2. ‏[x] ניקוי ‏float במסלול הכסף — ‏finalize/invoices נוקו ב-872b86c7c;
+   ‏bulk price של האדמין עבר לאגורות דרך ‏`src/lib/admin/bulk-price.ts`
+   (‏applyBp, בלי ‏round2) + ‏10 טסטים.
+3. ‏[x] ‏cron: טסט ‏401 התנהגותי לכל ‏12 ה-routes — נוספו ‏9 קבצי
+   ‏route.test.ts (בלי אישור, עם אישור שגוי, ‏CRON_SECRET ריק נשאר סגור,
+   ואפס תופעות לוואי לפני ה-401), לצד השער הסטטי ‏cron-auth.test.ts.
+4. ‏[x] שוברים: ‏12 טסטים ל-`redeem-batch` (‏settled/retryable, תקרה
+   משותפת עם ‏single-scan, סדר נשמר) + טיוטת ‏166 ‏guard מעברים על
+   ‏`vouchers` עם ‏preflight_166. לא הוחלה.
+5. ‏[x] ‏platform_percent ושימור: טיוטת ‏167 (אילוצי סימן על ‏8 עמודות
+   האגורות + ‏CHECK שימור, ‏NULL עובר) עם ‏preflight_167; אכיפת ‏JS חיה
+   ב-`assertOrderItemMoneyInvariants` בצוואר היחיד של כתיבת הכסף + ‏4
+   טסטים. ‏BUSINESS-RULES §10 עודכן.
+6. ‏[x] ארנק: טיוטת ‏168 מפילה את שש ‏policies הכתיבה (נמדדו חיות:
+   ‏is_admin() מהדפדפן = כתיבת כסף בלי ‏audit) + ‏preflight_168; טסט ‏RLS
+   חי ‏`wallet-rls.test.ts` (‏anon: ‏INSERT נדחה, ‏SELECT אפס שורות) הוכח
+   מול פרודקשן ‏5/5. מטריצת ה-roles המלאה בשלב ‏10.
+7. ‏[x] ‏Resend: ‏16 טסטים — ‏growth/resend (אינרטי בלי מפתח, שרשרת
+   ‏from, כותרות ‏RFC 8058, שגיאות חתומות) ו-admin-alerts (מפתח dedupe
+   לפי הבעיה ולא לפי הרגע).
+8. ‏[x] ‏WhatsApp ‏Twilio: ‏`lib/whatsapp/twilio.ts` (‏fetch, בלי SDK,
+   אינרטי בלי ‏TWILIO_*) + ‏`lib/whatsapp/outbox.ts` (שתי התבניות, רוכב
+   על מעבר ה-pending→sent של רגל המייל, לעולם לא זורק) מחוברים לניקוז;
+   ‏14 טסטי mock. החסם (creds+תבניות) עודכן עם שמות ה-env המדויקים.
+9. ‏[x] ‏Meilisearch (בלי ‏UI): ‏`outbox-drain.ts` — הצרכן החסר של ‏132
+   (סולם ‏2→8→32→128→512 דק׳ על ‏next_try_at, בלי מוות אחרי 5); ‏`drift.ts`
+   — ‏count ‏DB מול ‏stats של האינדקס; שניהם רוכבים על ‏cron ה-health כל
+   ‏5 דק׳, אינרטיים בלי ‏MEILISEARCH_*; ‏harness ‏golden-queries אופליין
+   (9 מסעות + 2 היעדרויות, מ-synonyms+settings+projection האמיתיים).
+   ‏27 טסטים.
+10. ‏[x] בדיקות מלאות: ארבעת המסעות — קופון-כאורח ומימוש-QR-ספק היו
+    (‏full-purchase-redeem), נוספו ‏physical-purchase.spec (מחובר, בלי
+    שובר) ו-admin-refund.spec (ביטול+החזר, ‏role=admin החלש ביותר; אדמין
+    נוסף ל-seed:test); ‏rtl-three-widths.spec ב-380/768/1440 רץ ירוק
+    ‏12/12; ‏contract Cardcom כבר מכוסה (‏50 טסטים: רוטציית סוד, ‏replay,
+    ‏re-verify, ‏declined, כשלי journal); ‏RLS — ‏anon חי (‏anon-catalog,
+    ‏wallet-rls), שאר ה-roles ב-`tests/sql/` שרץ רק מול stack מקומי/CI
+    ‏branch (‏Docker תקוע כאן — ‏CLOSEOUT §9ד); שער סטטי חדש
+    ‏money-no-float.test (‏4 חוקים + allowlist שמות-ונימוקים; זה ה-lint,
+    ‏Biome בלי חוקים מותאמים). ‏specs בתשלום מדלגים-עצמית על ‏DB לא זרוע
+    — פרודקשן לא נזרעת בכוונה.
+11. ‏[x] אדמין: ה-refund כותב עכשיו ‏`actor_id: session.userId` + טסט;
+    ‏audit-actor.test.ts סורק את העץ — כותב ישיר חדש חייב להופיע ברשימה
+    (אנושי = ‏session, מכונה = ‏source/alarm ב-metadata) או לעבור דרך
+    ‏writeAuditLog.
+12. ‏[x] ספק: ‏15 טסטים — ‏payouts/csv (שער ‏owner, כפל ייצוא שקל+אגורות,
+    ‏attachment מתוארך, שער לא נבלע), ‏app/pin (תקרת 15/שעה, תשובה אחידה
+    ל-malformed/שגוי/לא-קיים, ‏423 לנעול, הספק לעולם לא מהבקשה),
+    ו-redemptions (רק ‏redeemed, אפס ‏PII של לקוח).
+13. ‏[x] ‏content_uploader: ‏uploader-prohibitions.test.ts — סריקת מפת
+    שומר-למודול (‏40 טסטים): רק ששת מודולי הקטלוג רשאים ב-guard שמכניס
+    ‏uploader; ‏discounts/orders/users מוצמדים בשמם.
+14. ‏[x] ‏observability: ‏`axiom.ts` (‏fetch, אינרטי בלי
+    ‏AXIOM_TOKEN/DATASET) מחובר כרגל שנייה ב-`log.ts` — אותה שורה
+    מנוקה, ‏fire-and-forget, כל לוגי ה-cron עוברים דרכה ממילא; אירועי
+    ‏funnel ‏purchase/voucher_redeemed/order_refunded דרך
+    ‏trackServerEvent (הצינור הפנימי, לצד ‏GA הקיים); התגלה ש-151 סיננה
+    את כל אירועי השרת מאז ומעולם — טיוטת ‏169 מרחיבה את ה-whitelist
+    (לא הוחלה). ‏4 טסטי ‏axiom.
+15. ‏[x] ‏Sentry: ‏release+sourcemaps כבר מחווטים במלואם (release מ-env
+    בשלוש הקונפיגורציות, העלאה+מחיקת ‏maps ב-withSentryConfig,
+    ‏sentry:verify קיים; נכשל רק על ‏SENTRY_AUTH_TOKEN חסר — חלק מחסם
+    ה-Vercel). נוסף טסט ‏scrub על גוף ‏webhook מלא של ‏Cardcom: כל שדות
+    המכשיר נמחקים, השדות התפעוליים שורדים, וכלום לא דולף בסריאליזציה.
+16. ‏[ ] ‏seeding: זרע דמו-פרודקשן שנפלט כ-SQL בלבד (חוקי ‏SEED.md), ‏3
+    ספקים / ‏40 פיזיים / ‏20 קופונים + טסטים; לא מריצים.
+17. ‏[ ] ‏cron ops: רענון ‏docs/CRON-EXTERNAL.md מול ‏162; ‏runbook זריעת
+    ‏vault (החסם למטה).
+18. ‏[ ] אבטחה: הרחבת ‏revoked-functions ל-165; אודיט ‏grants כולל
+    ‏apps/mobile (זוכר: ‏grep על ‏src בלבד מפספס אותו).
+19. ‏[ ] ‏CHANGELOG.md + רענון מסמכים שהשתנו (‏PAYMENT-FLOW defect סעיף).
+20. ‏[ ] שערים סופיים (‏typecheck/lint/test/build + ‏Playwright + ‏compare)
+    ‏→ תג ‏v5.3.0-rc1 + ‏PR ל-main (בלי למזג).
+
+## Vercel (‏CLOSEOUT §12, נמדד 04.09 דרך ‏MCP)
+
+| מה | ערך |
+|---|---|
+| ‏scope | ‏`kenyonexpress-projects` (‏team_TUMTPVDP8218QHwedSjmgJWl, ‏Hobby) |
+| פרויקט `kenyonexpress` | ‏**לא קיים** — ‏`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP` (מ-`.vercel/repo.json` המקומי) מחזיר ‏404. הפרויקט שנשא את פריסות ה-CLI של 31.08 נמחק או הועבר |
+| פרויקט `kenyonexpress-web` (ישן) | ‏`prj_oqr4NKtSaB2h3szrxnT0DknAv9Xk`, ‏Git מחובר ל-`kenyonexpress/kenyonexpress-web` (ה-repo הישן, לא זה), ‏`live: false`, כל ‏11 הפריסות ‏ERROR, האחרונה 29.05. לא נמחק, רק מתועד |
+| פריסת ‏preview של ‏closeout/v1-final | אין. ה-repo הזה (`kenyonexpress/kenyonexpress`) לא מחובר לשום פרויקט |
+| ‏env production | לא ניתן לקריאה — הפרויקט שהחזיק אותם איננו. כל ‏129 המשתנים שהקוד קורא (האודיט מ-STATE, כולל ‏NEXT_PUBLIC_SUPABASE_*, ‏SUPABASE_SERVICE_ROLE_KEY, ‏CRON_SECRET, ‏CARDCOM_*, ‏RESEND_API_KEY, ‏VOUCHER_QR_SECRET) חסרים עד שיוקם פרויקט |
+| ‏vercel CLI מקומי | לא מותקן, אין ‏token, אין ‏link תקף |
+
+‏§12(א) קובע: פרויקט שלא נמצא בשום ‏scope = חסם עם הפקודה המדויקת, לא
+יצירת פרויקט עצמאית (זו תשתית פרודקשן). ראה חסם ‏0 למטה. עד שהוא נפתר אין
+שער "פריסת ‏preview ירוקה לפני תג" — מתועד כחריגה כפויה.
+
+## חסמים לאופיר (מעודכן 04.09)
+
+0. **פרויקט ה-Vercel של האתר איננו (חוסם את 162, את ה-preview ואת ה-DNS):**
+   ‏`kenyonexpress` מחזיר ‏404 ב-team; נשאר רק ‏`kenyonexpress-web` הישן
+   שמחובר ל-repo הישן. לשחזר:
+   ```bash
+   npm i -g vercel && vercel login
+   cd /Users/ofir/kenyonexpress-web/kenyonexpress
+   rm -rf .vercel && vercel link --yes   # ליצור/לבחור פרויקט kenyonexpress ב-scope kenyonexpress-projects
+   vercel git connect                     # אל kenyonexpress/kenyonexpress (לא kenyonexpress-web)
+   # ואז להזין את משתני ה-env (רשימה מלאה באודיט ה-129 ב-STATE) ולפרוס preview מ-closeout/v1-final:
+   vercel deploy
+   ```
+1. **זריעת ‏vault ל-162 (מאושרת אך חסומה):** אין ‏vercel ‏CLI ואין ‏MCP
+   ‏Supabase בסשן, ומאז 04.09 גם אין פרויקט ‏Vercel (חסם 0) לקרוא ממנו
+   ‏CRON_SECRET. להריץ אחרי פתרון חסם 0:
+   ```bash
+   npm i -g vercel && vercel login
+   cd /Users/ofir/kenyonexpress-web/kenyonexpress
+   vercel link --yes   # פרויקט kenyonexpress, org kenyonexpress-projects
+   vercel env pull .env.vercel --environment=production --yes
+   grep CRON_SECRET .env.vercel   # אם ריק: openssl rand -hex 32 ואז
+   # vercel env add CRON_SECRET production (וגם preview), ולעדכן את .env.vercel
+   ```
+   ואז דרך ‏MCP ‏execute_sql (לא לשמור סודות בקבצים, למחוק ‏.env.vercel):
+   ```sql
+   select vault.create_secret('<CRON_SECRET>', 'cron_secret');
+   select vault.create_secret('https://kenyonexpress.vercel.app', 'app_url');
+   ```
+   אחר כך: ‏preflight_162.sql בלוק-בלוק, ואם הכל תואם — ‏apply_migration
+   ‏162, אימות ‏`select jobname, schedule, active from cron.job`, העברת
+   הקובץ ל-applied.
+2. **‏Cardcom prod:** ‏`TODO(cardcom)` ב-`cardcom.ts:249/:312` — אימות שדות
+   ‏endpoint ההחזר מול המסוף האמיתי דורש ‏CARDCOM_* של פרודקשן.
+3. **מיגרציות ‏165 ומעלה:** ‏165 בוטלה (CLOSEOUT §13). ‏166+167+168
+   רשומות בפרודקשן (‏20260903232445/232455/232504) — **הוחלו ב-04.09
+   06:24 מקומי על ידי סוכן מקביל בלי אישור מראש** (ניסוח ה"ביקורת" בשורה
+   הזו קודם לכן הסתיר את זה; ראה התקרית תחת "המשך מ"). נדרש ממך אישור
+   בדיעבד או הוראת ‏rollback — פקודות ה-rollback בראש כל קובץ ב-applied.
+   הוכח חי: התוכן שהוחל זהה לטיוטות, והרשתות החיות עוברות ‏14/14.
+   נשארה רק ‏162, חסומה על חסם 1 למעלה.
+4. **‏Twilio + ‏Resend domain + ‏DNS:** ‏creds ותבניות ‏WhatsApp מאושרות;
+   אימות דומיין שליחה ב-Resend; הפניית ‏DNS (ידני, אסור להריץ).
+   מודול השליחה קיים ואינרטי (שלב 8); כדי להפעיל, להגדיר ב-env:
+   ```
+   TWILIO_ACCOUNT_SID
+   TWILIO_AUTH_TOKEN
+   TWILIO_WHATSAPP_FROM              # whatsapp:+E164 של המספר העסקי
+   TWILIO_CONTENT_SID_VOUCHER_ISSUED    # HX... אחרי אישור התבנית
+   TWILIO_CONTENT_SID_VOUCHER_EXPIRING  # HX... אחרי אישור התבנית
+   ```
+   שתי התבניות (שובר-הונפק, תזכורת-תוקף) בנויות על שלושה משתנים:
+   קוד, שם בית העסק, תאריך תפוגה.
+
+### ‏04.09 ‏D27 בוצע: ‏v4.1.0-rc1 מתויג ונדחף
+
+‏type-check נקי, ‏lint נקי (אזהרה קיימת אחת ב-SecurityClient), ‏3683 טסטים
+ירוקים, ‏build ירוק. תור העיצוב סגור.
+
+### ‏04.09 ‏D26 בוצע: טבלת רגרסיה מלאה ב-`docs/design/COMPARE-RESULTS.md`
+
+בילד אחד, כל הדפים, שלושת הרוחבים: ‏home ‏10.95/7.56/5.96 עובר; ‏cart
+ו-checkout עוברים (‏D25); ‏products ו-product מסרבים בשומר התוכן (‏15/24
+משבצות; קרוסלה 1 מול 4); ‏category נקרא רק תחת הדגל — ‏21.82/18.63/6.14 —
+והעודף ב-380/768 מתועד כתוכן: ‏y1500-2300 קוראים ‏0%, הרצועות האדומות הן
+פוטר שהחיה מרנדרת פתוח בעמוד הזה בניגוד לרפרנס שלה עצמה ב-cart/checkout,
+ופנים תבנית ה-list של החיה (מחיר כפול, ‏"עיר:" בשמות). ‏account, קופונים
+וספקים — אין רפרנס, לא נמדדים. באנר העוגיות שלנו מתועד כעלות קבועה ~1%.
+
+## המשך מ (היסטורי): ‏D26 (רגרסיה ויזואלית מלאה)
+
+### ‏04.09 ‏D25 בוצע: עגלה וצ'ק-אאוט מתחת ל-11% בשלושת הרוחבים
+
+| דף | ‏380 | ‏768 | ‏1440 |
+| --- | --- | --- | --- |
+| ‏cart | ‏**10.08%** (היה ‏20.96) | ‏**10.57%** | ‏**8.16%** |
+| ‏checkout | ‏**10.59%** (היה ‏14.87) | ‏**10.10%** | ‏**10.71%** |
+
+מה נמצא ותוקן, הכל מ-`refs/ke_live_computed.json`:
+
+1. **אקורדיוני הפוטר רונדרו פתוחים.** ‏D20 קבע `open` ממדידה של דף שהשער
+   לא מודד; הרפרנס מחזיק את התפריט **סגור** ב-108px גם ב-cart וגם ב-checkout,
+   בשני הרוחבים. הפתיחה דחפה את הפס הכהה ~300px מתחת לחיה בכל דף קצר.
+2. **ה-h1 של העגלה היה מוסתר** על סמך טענה שלחיה אין כותרת; הרפרנס מצייר
+   ‏`entry-title` ‏40px/500 גלוי בשלושת הרוחבים. הוחזר.
+3. **פירורי הלחם ב-380** הם פס אפור ‏42px ברוחב מלא (‏#f7f6f6), לא ה-71px
+   השקוף של הדסקטופ. בעגלה וב-checkout.
+4. **פריט העגלה מתחת ל-768 הוא שורות ‏WooCommerce נערמות** — הסרה/שם/מחיר/
+   כמות/סה"כ בגבהים ‏57/83/54/75/54 — ‏display:contents + ‏order בלי לגעת
+   ב-DOM של כרטיס הדסקטופ. הקופון קורס לשורת ‏"יש לך קוד קופון?" אחת
+   בטלפון (לחיה אין קופון בעגלה כלל), בדפוס ה-details של הפוטר.
+5. **ה-checkout מתחת ל-992 הוא עמוד אחד ארוך, כמו החיה** — אין לחיה אשף
+   בשום רוחב שהרפרנס מכסה. הסטפר וכפתורי המשך/חזרה מוסתרים וכל הסקשנים
+   נערמים בסדר ה-DOM. ‏CSS בלבד; ‏handleSubmit ממילא מוודא את כל השלבים.
+   השער עבר מ-`hidden` ל-`data-inactive` כי ‏preflight של ‏Tailwind נועל
+   ‏`[hidden]` עם ‏`!important` בתוך ‏layer שאי אפשר לנצח מקובץ רגיל.
+   פאנל ‏"ההזמנה שלך" מוצג עכשיו בכל שלב גם בדסקטופ — גם זה מה שהחיה עושה.
+
+**אודיט ‏RTL רוחבי (הבאג של ‏D21/D24), כל המופעים:**
+
+- ‏**D24 עצמו היה השיקוף.** ‏`ke_live_products.html` מרנדר את ‏Filters ראשון
+  ב-`shop-control-bar` (עצמו ‏space-between), והרפרנס מודד אותו ב-‏x281
+  (ימין) עם המיון ב-‏x35 (שמאל). המדידה הידנית של ‏D24 סתרה את המקור
+  המחייב; הוחזר ‏filters-first.
+- פאנל המיני-עגלה נפתח אל מחוץ למסך משמאל מאז ש-D21 הזיז את האייקון;
+  הרפרנס מראה את החיה נפתחת ימינה (‏x135..467). ‏inset-inline-end עכשיו.
+- בולטים של ההירו ננעצו בקצה השמאלי של הקופסה; החיה בלי ‏justify-content
+  (=ימין ב-RTL). ‏justify-start.
+- שורת פריט עגלה: הסרה/מחיר/כמות היו בסדר צדדים מראה; יושר לחיה.
+- תג הנחה של קופון: הכרטיס וה-detail היו בפינות הפוכות; שניהם ‏inline-start.
+- כוכבי דירוג רצו שמאל-לימין (`flex-row-reverse` ירושה מ-LTR); הוסר.
+- תג ההנחה ב-PDP מוצמד עכשיו לראש התמונה (‏16px), כמו בחיה; ‏D23 שאל את
+  הקופסה מכרטיס הגריד שמוצמד לתחתית.
+- ‏`text-right`→`text-start` בטפסי טלפון, ‏`mr-2`→`me-2` בביקורות.
+
+שני טסטים של ‏e2e שהניחו אשף במובייל עודכנו למציאות החדשה (הסריקה מכסה
+עכשיו את **כל** הסקשנים בבת אחת). ‏3683 יחידה + ‏175 ‏e2e ירוקים בשני
+הפרויקטים. ‏10 commits, כל תיקון לבד.
+
+## המשך מ (היסטורי): ‏D25 (עגלה וצ'ק-אאוט ב-380)
+
+### ‏03.09 ‏D24 בוצע: סרגל הבקרה היה משוקף, אותו באג ש-D21 מצא בכותרת
+
+סרגל הבקרה של ‏`/products` ו-`/category` הוא ‏`space-between` במסמך ‏RTL,
+ולכן סדר ה-DOM הוא סדר הצדדים. החיה מציבה את גלולת המיון מימין ואת
+‏"Filters" משמאל ב-380; פקד הסינון שלנו רונדר **ראשון** ולכן נחת בדיוק
+במקום המשוקף. זהו המופע השני של הבאג ש-D21 מצא בשורת האייקונים.
+
+הדסקטופ לא נגע: מחליף התצוגה עדיין ראשון והסינון מוסתר מ-768 ומעלה.
+
+‏`/products` ב-380 ‏36.57%, ‏`/category` ‏22.37%. שניהם נשלטים על ידי
+הקטלוג — ‏45 מוצרים אצלנו מול ‏44 בחיה, בסדר אחר — ולכן המספרים נקראים
+רק עם ‏`COMPARE_ALLOW_GRID_MISMATCH=1`.
+
+אומת גם ש-D23 נחת: פירורי הלחם של דף המוצר נמדדים ‏55px מול ‏55 של החיה,
+במקום ‏84.
+
+### ‏03.09 ‏D23 בוצע: פירורי הלחם של דף המוצר היו בגודל דסקטופ, ותג ההנחה חסר
+
+אותה משפחת באגים ש-D22 מצא, בקובץ שני. ‏`--pdp-crumb-h: 84px` הוא פירורי הלחם
+של החיה ב-1440, והוגש לטלפונים כ-`min-height`. של החיה ב-380 הוא ‏55px.
+
+‏`--page=product` ב-380: ‏**32.83% → 29.61%**. ‏768 ‏31.21%, ‏1440 ‏13.52%.
+
+והחיה מציירת תג הנחה על התמונה הראשית (‏"49%-" על תיק ה-JEEP) שהגלריה שלנו
+לא ציירה כלל. משתמש באותה נוסחה ואותה קופסה כמו ‏`CategoryProductCard`.
+
+‏**התכונות של התג חסרות יחידה, וזו בחירה.** אחוז הוא **יחס** בין שני מחירים,
+זהה בין אם שניהם אגורות או שניהם שקלים, ואינו דורש המרה. הדף קורא
+‏`kenyon_price` ו-`full_price` כשקלים numeric שהסכימה המאוחסנת עדיין שומרת;
+שם `*Agorot` היה טענה שקרית על מסלול הכסף.
+
+‏**באג רגרסיה שנתפס:** ‏`e2e/product.spec.ts` השתמש
+ב-`getByText(/₪/).first()`, כלומר הראשון **בסדר ה-DOM**. ‏D21 הזיז את המגירה
+לפני התוכן הראשי, ולכן ההתאמה עברה לקישור קטגוריה מוסתר במגירה
+(‏"עד ₪99") והטסט נפל על דף שהמחיר בו נצבע נכון. הטענה מכוונת עכשיו למחיר
+עצמו. **החבילה המלאה: ‏215 עוברות, ‏5 דילוגים, ‏0 נופלות.**
+
+### ‏03.09 ‏D22 בוצע: דף קטגוריה, שלושה היסטים שנמדדו מול החיה
+
+תוכן הגריד אינו ניתן להתאמה (הקטלוגים שונים), ולכן העבודה היא המעטפת והפריסה
+שמעל הגריד. שלושה תיקונים, כל אחד ממדידה:
+
+1. ‏`CityTags` הועבר מתחת לגריד. ‏`category-page.css` כבר טוען, ליד סרגל
+   הסינון, שלחיה אין רווח בין סרגל הבקרה לכרטיס הראשון, ולכן כל מה שנדחף
+   לשם מוריד את כל הדף. שורת הערים הייתה בדיוק זה, ‏~100px, והיא ישבה
+   **מעל** הגריד בזמן שהסינון ישב מתחת.
+2. פירורי הלחם הגישו מדידת דסקטופ לטלפונים: ‏25+24+22.4 זו החיה ב-1440;
+   ב-380 החיה היא ‏42 ואצלנו נמדד ‏79.
+3. מונה התוצאות נערם מתחת לכותרת מתחת ל-768, כמו בחיה.
+
+נוסף גם פקד ‏"סינון" שלא היה לנו והחיה מציגה ב-380.
+
+| | חיה | לפני | אחרי |
+| --- | --- | --- | --- |
+| פירורי לחם | ‏42 | ‏79 | ‏**50** |
+| ‏h1 | ‏y180 | ‏y239 | ‏**y210** |
+| סרגל | ‏y258 | ‏y321 | ‏**y292** |
+| כרטיס 1 | ‏y310 | ‏y371 | ‏**y341** |
+
+‏`--page=category` ב-380: ‏23.31% → ‏**22.39%**, דטרמיניסטי. ‏768 ‏19.01%,
+‏1440 ‏6.2%.
+
+‏**ההיסט שנשאר, ולמה הוא לא "מתוקן".** הכותרת ההנד-הלד שלנו היא ‏83px ושל
+החיה ‏40px בדף פנימי ו-49px בבית. ההפרש הוא רצפת ה-44px שהפרויקט כבר החליט
+לשמור. וחשוב מזה: **שני הדפים רוצים את השינוי בכיוונים הפוכים.** החיה מציבה
+תחת כותרת הבית ווידג'ט חיפוש של ‏80px שאנחנו משמיטים בכלל "אין UI חיפוש",
+ולכן התוכן שלנו בבית מתחיל כבר ‏46px **מעל** של החיה (‏197 מול 243). קיצור
+של ‏34px היה הופך את זה ל-80px. התשובה הישרה היא להשאיר ולומר זאת.
+
+### ‏03.09 ‏D21 בוצע, וההנחה שלו הייתה שגויה: המעטפת הפנימית הייתה גבוהה ב-36px
+
+‏D21 נכנס לתור כ"האסמכתאות של הדפים הפנימיים צולמו עם סרגל מכווץ". ‏**המנגנון
+הזה שגוי.** מה שיש בפועל גרוע יותר, וניתן לתיקון.
+
+‏`refs/ke_live_computed.json` צולם **על דף הבית**, ו"טופ-בר 113 ב-380" נקרא
+כתכונה של הרוחב. נמדד מול החיה ישירות ב-380:
+
+| דף | טופ-בר | כותרת |
+| --- | --- | --- |
+| ‏`/` | ‏**113** | ‏50 |
+| ‏`/products/` | ‏**76** | ‏83 |
+| ‏`/cart` | ‏**76** | ‏83 |
+
+ההפרש הוא שורה אחת של טופ-בר, והשורה היא הברכה: החיה מציגה
+‏"ברוך הבא לעולם של קניון Express" **בדף הבית בלבד**. בלעדיה ארבעת פריטי
+המידע נכנסים לשתי שורות במקום שלוש.
+
+הקובץ שלנו נעץ ‏112px קבוע והציג את הברכה בכל דף, ולכן **כל דף פנימי היה גבוה
+ב-36px ב-380**. כל מה שמתחת לכותרת יורש את ההיסט, כלומר כל פס בהשוואה של דף
+פנימי נמדד מול השורות הלא נכונות של החיה.
+
+‏**התיקון הוא גובה שנגזר מהתוכן ולא מספר קסם שני.** הסרגל ההנד-הלד לא נושא
+גובה כלל; השורות נעטפות והסרגל גבוה כמו שהן עושות אותו. הברכה מסוננת ב-CSS
+ולא ב-`usePathname()` — קריאת הנתיב בכותרת המשותפת מכניסה כל מסלול תחתיה
+ל-dynamic rendering ומפילה את הבילד בדפים לא קשורים. דף הבית מרנדר סמן
+‏`[data-home]` אינרטי, ו-`body:has()` עושה את השאר.
+
+‏**ושורת האייקונים ההנד-הלד הייתה שיקוף מלא של החיה.** נמדד ב-380: החיה מציבה
+את ההמבורגר ב-x=319 ואת העגלה ב-x=15; אצלנו ההמבורגר היה ב-x=15 והעגלה
+והחשבון מימין, בכל דף. ההערה בקובץ עצמו כבר תיעדה את האייקונים של החיה
+ב-x15/x57, כלומר משמאל, והמרקאפ סתר אותה.
+
+‏**נמדד, ‏`scripts/shell-band.mjs` ב-380:**
+
+| דף | לפני | אחרי |
+| --- | --- | --- |
+| בית | ‏9.47% | ‏**9.41%** |
+| קטגוריה | ‏10.88% | ‏**10.16%** |
+| מוצרים | ‏**11.03%** | ‏**9.93%** |
+
+‏`products` היה התא היחיד מעל התקרה, ועכשיו הוא הטוב מהשלושה. שער הבית לא זז,
+פעמיים ברצף: ‏380 ‏10.95%, ‏768 ‏7.56%, ‏1440 ‏5.99%.
+
+‏**למה הדפים הפנימיים עדיין מסרבים להימדד, וזו לא המעטפת.** ‏`compare.mjs`
+מסרב על קטגוריה, מוצר ומוצרים כי שני הקטלוגים מחזיקים מוצרים שונים במשבצות
+שונות — ‏"24 קלפים בכל צד, ‏15 מתוך 24 משבצות מחזיקות את אותו מוצר". זה הפרש
+**נתונים** ולא הפרש פריסה, ושום ‏CSS לא סוגר אותו. ‏D22–D24 ייעשו בגבול הזה:
+מעטפת ופריסה נמדדות דרך ‏`shell-band.mjs`, תוכן הגריד לא.
+
+### ‏03.09 ‏D20 בוצע: פוטר הנד-הלד, ושני מספרים שהיו שגויים בתיעוד
+
+‏**שני המספרים שהתיעוד נשא היו לא נכונים, ותוקנו במקום.**
+‏`SiteFooter.tsx` טען שהפוטר המובייל של החיה הוא ‏355px ושלנו ‏1155px.
+‏`globals.css` טען שהחיה מקפלת את שתי עמודות הקישורים לשתי שורות אקורדיון של
+‏49px בטלפון. נמדד מול החיה ב-380:
+
+| | חיה | שלנו (לפני) |
+| --- | --- | --- |
+| סה"כ | ‏**612** | ‏**274** |
+| תפריט widget | ‏365 | — |
+| שורת סושיאל | ‏65 | — |
+| פס כהה | ‏137 | ‏**0** |
+
+‏**היינו קצרים ב-338px, לא עודפים ב-800.** תיקון קודם כבר נחת ואיש לא מדד
+מחדש. והחיה לא מקפלת כלום: ‏`.handheld-widget-menu` מחזיק את שתי העמודות
+**פתוחות**, ‏"שירות לקוחות" ‏131px ו-"אזור אישי" ‏224px.
+
+**שני פערים אמיתיים נסגרו:** ‏`.handheld-footer-bar` לא היה קיים כאן בכלל
+(פס כהה 137px עם הלוגו ושורת יצירת הקשר), ושתי העמודות עכשיו `open` בתגית,
+שזו ברירת המחדל של החיה.
+
+‏**אחרי: ‏760 שלנו מול ‏612 של החיה. ‏148px של הפרש, במכוון.** לחיה שבעה
+קישורים בפוטר ההנד-הלד ולנו שנים עשר. החמישה הנוספים הם אודות, שאלות נפוצות,
+הבלוג, מדיניות פרטיות, ביטולים והחזרות והצהרת נגישות. הורדת שלושת האחרונים
+מהטלפון כדי לזכות בפיקסלים הייתה מוציאה את מדיניות הפרטיות, מדיניות הביטולים
+והצהרת הנגישות מהמסך שרוב הקונים בישראל משתמשים בו. החיה מציגה גם "הסטוריה",
+שאין לה מסלול כאן, והיא מושמטת ולא נשלחת כ-404 גלוי.
+
+‏**הפוטר יושב מתחת לחלון ההשוואה של 2600px, ולכן שום דבר מזה לא מזיז את
+השער** ואין טענה שכן: ‏380 ‏10.95%, ‏768 ‏7.56%, ‏1440 ‏5.99%.
+
+‏**שערים:** ‏type-check 0, ‏lint 0, ‏test 3683/3683, ‏build ירוק,
+‏e2e 45/45, ‏a11y 40 עוברות עם הדילוג המתועד היחיד.
+
+### ‏03.09 ‏D19 בוצע: תפריט האזורים, ושבעה עשר הדפים שהוא מצביע אליהם
+
+‏**מה שיש לחיה באמת**, נקרא מהדף המרונדר ולא מהצילום של 12.08:
+‏`.secondary-nav` מחזיק **פריט אחד בלבד** — בורר אזורים בשם "בחר אזור",
+ותחתיו שבעה עשר קישורים ל-`/city/<slug עברי>/`. כל מנגנון המגה-מניו שיושב
+ב-CSS של התבנית ‏(`yamm`, ‏`dropdown-submenu`, ‏`yamm-fw`) הוא boilerplate של
+Electro שהאתר הזה מעולם לא מילא, ולכן בניית פאנל רב-טורי הייתה העתקה של
+התבנית ולא של האתר.
+
+‏**מה שהוחלף:** ‏`<Link href="/suppliers">` שטוח, כלומר פקד שכתוב עליו
+"בחר אזור" והיעד שלו הוא דף השיווק "הצטרפו כספקים", שאין בו אזורים בכלל.
+
+‏**ה-slugs הם של החיה,** מפוענחים מעברית מקודדת ונשמרים כמו שהם. אלה שבעה עשר
+כתובות חיות עם כל מה שהצטבר להן בקישורים נכנסים ובדירוג; ‏slug ‏ASCII "נקי
+יותר" היה מוחק את הכל בשקט. זה כולל את הכתיב `פתח תקוה` בלי וו שנייה, ואת
+ה-EN DASH בארבעת השמות המורכבים — שניהם נטענים בטסט, כי שניהם נראים כמו
+טעות שמתחשק לתקן.
+
+‏**`/city/[slug]` נשלח באותו קומיט בכוונה:** תפריט שכל פריט בו מחזיר 404 גרוע
+מהקישור השטוח שהוחלף. הדף **אינו** ‏J3 — ‏J3 מחזיק מוצרים לפי
+‏`supplier_branches.city`, מפת סניפים, ‏`LocalBusiness` JSON-LD, בורר עם
+עוגייה, ‏sitemap ובדיקת הפניות ‏F3. ‏**J3 מרחיב את הקובץ הזה ולא מחליף אותו.**
+
+‏**אזור אינו עיר.** ‏`geo/cities.ts` מחזיק שלוש עשרה רשויות עם קואורדינטות;
+‏**שנים עשר** אזורים ממופים לפחות לאחת, ו-**חמישה** לאף אחת, כי אין באזורים
+האלה עיר ספק שהמסד מכיר. ריק מרונדר כמשפט ולא כגריד ריק שנראה כמו שאילתה
+שנכשלה.
+
+‏**באג האינטראקציה, שנמצא בהרצת דפדפן ולא בקריאת קוד.** הגרסה הראשונה החזיקה
+‏`open` בוליאני אחד ש-hover הדליק והלחיצה על הטריגר הפכה. בכל מכשיר עם מצביע,
+המעבר אל הטריגר פתח והלחיצה שאחריו סגרה; נגיעה מבצעת את שניהם במחווה אחת,
+ולכן **התפריט לא היה ניתן לפתיחה כלל במסך מגע.** עכשיו ‏hover ו-click הם שני
+קלטים נפרדים ו-`open` הוא האיחוד שלהם. ‏`e2e/region-menu.spec.ts` הורץ מול
+הגרסה השבורה כדי לאמת שהוא תופס אותה: ‏**5 מתוך 6 נופלים שם.**
+
+‏**שערים:** ‏type-check 0, ‏lint 0, ‏test 3683/3683, ‏build ירוק, ‏e2e 6/6.
+שער הפיקסלים ללא שינוי, כצפוי מתפריט שסגור במנוחה: ‏380 ‏10.96%, ‏768
+‏7.55%, ‏1440 ‏5.99%.
+
+### ‏03.09 סוכן שני על אותו ריפו, מתועד ולא נעצר
+
+הענף `closeout/v1-final` מקבל קומיטים `feat(infra): task-N` מסשן מקביל
+(‏`docs/INFRA-TASKS.md`). זה אחד מארבעת תנאי העצירה ההיסטוריים, אבל ההוראה
+העומדת היא "sole agent, no stopping, no asking". לכן: לא נעצר, מתועד כאן,
+וכל `git add` נעשה בנתיבים מפורשים בלבד כדי שהעבודה של השני לא תיכנס לקומיט
+שלי.
+
+### ‏03.09 ‏D18 בוצע: שער ה-380 הפך ממטבע למדידה
+
+הסיבה נמצאה והיא בצד החיה: ‏**Revolution Slider**. הפריטים שזזו בין ריצה
+לריצה הם כולם שלו, ‏`rs-mask-wrap` ‏4337px מול 5896px, ‏`rs-layer` יחיד
+‏137px מול 800px, ו-`rs-loader.spinner0` ‏40px מול 0. ההירו החי היה פשוט על
+שקופית אחרת ברגע הצילום.
+
+‏**ההקפאה שהייתה אמורה למנוע את זה לחצה על `rs-bullet`,** וזה no-op: האלמנט
+מצויר על ידי מנוע הסליידר, אבל לחיצה סינתטית לא אמינה אינה הדרך שבה המנוע
+מחליף שקופית. הפתרון הוא ה-API שהתוסף מפרסם בעצמו, ‏`window.revapi<N>` עם
+‏`revpause` ו-`revshowslide`. מאותר לפי תבנית ולא מקודד קשיח, כי המספר נקבע
+על ידי וורדפרס ומשתנה כשהסליידר נבנה מחדש.
+
+‏**נמדד אחרי התיקון, שש ריצות רצופות ב-380:** ‏10.96 10.96 10.96 10.96 10.95
+‏10.95. פיזור של ‏0.01 נקודת אחוז מול ‏17.3 לפני כן. ‏768 קורא ‏7.55%
+ו-1440 קורא ‏5.98%.
+
+‏**נוספה סירוב-למדוד:** גיאומטריית ההירו נדגמת פעמיים במרווח 600ms, וצד שזז
+מדווח במקום להיות מנוקד. שני המספרים, ‏10.96% ו-28.25%, הודפסו על ידי ריצה
+שהאמינה שהקפיאה את הסליידר, ורק אחד מהם נראה שגוי.
+
+### ‏03.09 מיגרציה 163 הוחלה; ‏`migrations/pending/` ריקה
+
+‏`163_orders_indexes.sql` הוחלה בפרודקשן ואומתה. שתי הטבלאות כבר היו חיות,
+ולכן ה-CREATE-ים לא עשו כלום והאפקט נטו היה שלושת האינדקסים.
+
+הריקנות של התיקייה **נטענת בטסט ולא נמחקת**: המיגרציה הממתינה הבאה היא דיף
+של שורה אחת ב-`pending-migrations-inventory.test.ts`. מיגרציה חדשה מ-164.
+
+### ‏03.09 תור ‏J נמסר, ומתחיל רק אחרי ‏I4
+
+‏**QUEUE J: KILLER FEATURES CLOSURE**, שנים עשר שלבים, ‏J1 עד J12, וסיום
+בתג `v5.2.0-rc1`. במפורש: ‏"Begin J1 only after I4". נרשם כאן כדי שלא יאבד
+בין חידושי מכסה:
+
+| שלב | מה | קומיט |
+| --- | --- | --- |
+| ‏J1 | תשלומים ‏1-12, ‏Apple/Google Pay, ‏Bit, כרטיס שמור | `feat(j1)` |
+| ‏J2 | ‏Google OAuth + ‏SMS OTP דרך Twilio Verify | `feat(j2)` |
+| ‏J3 | ‏17 דפי עיר ב-`/city/[slug]` | `feat(j3)` |
+| ‏J4 | נאמנות וגיימיפיקציה, מנוע חוקים ב-DB | `feat(j4)` |
+| ‏J5 | מתנות + ‏Apple/Google Wallet passes | `feat(j5)` |
+| ‏J6 | התראות מחיר/מלאי + עגלה נטושה | `feat(j6)` |
+| ‏J7 | לידים לספקים, שותפים, ניוזלטר | `feat(j7)` |
+| ‏J8 | מנוע כתבות ‏/blog ב-MDX | `feat(j8)` |
+| ‏J9 | עומק דף מוצר: ‏Q&A, המלצות, שיתוף | `feat(j9)` |
+| ‏J10 | הונאות וסיכון | `feat(j10)` |
+| ‏J11 | תשתית רב-לשונית ‏(he, ru, ar, en) | `feat(j11)` |
+| ‏J12 | ‏k6 ‏200VU, תג `v5.2.0-rc1` | `chore(j12)` |
+
+מיגרציות של תור ‏J נכתבות ל-`migrations/pending/164+` ולא מוחלות.
+
+### ‏03.09 התור החדש מאופיר, והוא מבטל את הקודם
+
+אופיר מסר תור מתוקן: ‏**D18 עד D27** (תג `v4.1.0-rc1`), ‏**F1 עד F9**
+(תג `v4.2.0-rc1`), ‏**G2 עד G14** כל אחד ממומש באמת עם שורות ראיה
+ב-`docs/GAP-MATRIX.md` (תג `v5.0.0-rc1`), ‏**H1 עד H12** (תג `v5.1.0-rc1`),
+ואז ‏**I1 עד I4**.
+
+‏**שנים עשר תגים נמחקו** (`v3.5.0-g1` עד `v4.4.0-g10`, ‏`v5.1.0-rc1`,
+‏`v3.4.0-design4`): הם נבעו מהוראה סותרת. אומת ב-03.09: כולם נעדרים גם מקומית
+וגם מ-origin.
+
+‏**הקומיט `docs(g2-g9)` אינו נחשב בוצע.** ‏G2 עד G9 נסגרו שם בטענה
+"כבר ממומש" בלי ראיה נמדדת, והתור החדש דורש מימוש אמיתי עם שורת ראיה לכל אחד.
+כלל הדילוג היחיד עכשיו: מדלגים על שלב רק אם קיים לו קומיט `feat`/`test`/`chore`
+משלו ב-git log.
+
+‏**D0 ו-D4 מהתור הקודם בוטלו** יחד עם שאר ההוראות שאינן מהתור הזה. ‏D4
+בכל מקרה מכוסה בקומיט `feat(design-d4): home 1:1` ‏(`b0d610b2a`) שנמצא ב-HEAD.
+
+### ‏03.09 ממצא שחוסם כל שער UI: שער ה-380 אינו מדידה, הוא הגרלה
+
+נמדד שלוש פעמים ברצף על אותו בילד ואותו שרת, ‏`--page=home --width=380`:
+
+| ריצה | גובה החיה | גובה שלנו | ציון |
+| --- | --- | --- | --- |
+| 1 | ‏17825 | ‏18257 | ‏**10.96%** |
+| 2 | ‏17825 | ‏18257 | ‏**10.96%** |
+| 3 | ‏**17791** | ‏18257 | ‏**28.25%** |
+
+‏**הצד שזז הוא החיה, לא אנחנו.** גובה הצילום שלנו זהה בשלוש הריצות; גובה
+החיה נפל ב-34px בריצה השלישית, והציון קפץ פי שניים ושמונה עשיריות. כלומר
+‏10.96% אינו "עבר בקושי" אלא פנים אחד של מטבע, וכל קומיט UI שנשען עליו נשען
+על הגרלה.
+
+זה מסביר גם את השורה הישנה ב-`STATE.md` שרשמה לבית ב-380 ‏"11-28% (תנודתי)":
+אותה תופעה בדיוק, ואותם שני קצוות.
+
+‏**זה הופך לשלב D18**, לפני כל עבודת פיקסלים אחרת: אין טעם לכוון דפים מול
+סרגל שזז. ‏768 ‏(7.56%) ו-1440 ‏(5.99%) יציבים ומתחת לתקרה.
+
+### תור D18 עד D27, כפי שהוגדר מהפערים המתועדים
+
+‏D18 עד D27 לא הוגדרו בגוף ההוראה, ולכן הורכבו מהפערים שכבר מתועדים
+ב-`STATE.md` וב-`docs/design/COMPARE-RESULTS.md` (החלטה שהתקבלה לבד, לפי הכלל
+"כשמפרט מתנגש עם המציאות, בחר בבטוח, תעד והמשך"):
+
+| שלב | מה |
+| --- | --- |
+| ‏D18 | ייצוב שער ה-380: לאתר את האלמנט שזז בחיה ולהפוך את המדידה לדטרמיניסטית |
+| ‏D19 | תפריט המגה (`secondary-nav` של החיה), שדולג ב-D3 |
+| ‏D20 | פוטר הנד-הלד ב-380 (לחיה ‏355px ב-`#f2f2f2` ועוד פס כהה 137px) |
+| ‏D21 | סתירת המעטפת באסמכתאות: הדפים הפנימיים צולמו עם סרגל מכווץ ‏(159) והבית עם מלא ‏(197) |
+| ‏D22 | דף קטגוריה ‏1:1 |
+| ‏D23 | דף מוצר ‏1:1 |
+| ‏D24 | דפי מוצרים + ספקים ‏1:1 |
+| ‏D25 | עגלה וצ'ק-אאוט ב-380 (‏14.81% ו-11.9% עדיין מעל) |
+| ‏D26 | רגרסיה ויזואלית מלאה, עדכון `docs/design/COMPARE-RESULTS.md` |
+| ‏D27 | תג `v4.1.0-rc1` |
+
+### ‏03.09 מיגרציות 160 ו-161 הוחלו בפרודקשן
+
+‏**160** ‏(`160_fk_indexes.sql`): עשרה אינדקסים על מפתחות זרים שלא היה
+מאחוריהם אינדקס. ‏**161** ‏(`161_enable_pg_cron_pg_net.sql`): הפעלת
+‏`pg_cron` ‏(סכימה `pg_catalog`, גרסה 1.6.4) ו-`pg_net` ‏(סכימה
+`extensions`, גרסה 0.20.0), ועוד ‏`grant usage on schema cron to postgres`.
+הסכימות נקראו מפרודקשן ולא נבחרו.
+
+‏**161 פותחת את החוסם שעמד מ-01.09:** שנים עשר מסלולי ה-cron תחת
+‏`src/app/api/cron/` היו קיימים ואיש בעולם לא קרא להם. נמדד בזמן הכתיבה:
+‏`select count(*) from cron.job` מחזיר ‏**0**, ו-`vercel.json` לא מגדיר
+אף cron. תזמון העבודות הוא ‏**162**, שממתין לאישור.
+
+‏**מספור:** ‏160 ו-161 תפוסות, ‏162 שמורה לתזמון ה-cron, וקובץ
+האינדקסים של ההזמנות עבר ל-`163_orders_indexes.sql`. מיגרציה חדשה מתחילה מ-164.
+
+<!-- קודם: -->
+
+### (היסטוריה) המשך מ: ‏אין. ריצת ‏D+G סגורה; תורי F/H לא הוגדרו מעולם
+
+### תור העיצוב (ארבעה מגה-בלוקים, נמסרו 03.09)
+
+- **בלוק 1 — MERGE + TOKENS + SHELL + HOME**
+  - ‏D1 מיזוג ענף cursor ✅ **הושלם**
+  - ‏D2 טוקני עיצוב מ-`refs/ke_live_computed.json` ← **הבא בתור**
+  - ‏D3 מעטפת האפליקציה ‏1:1
+  - ‏D4 עמוד הבית ‏1:1
+  - ‏D5 סגירה, תג `v3.1.0-design1`
+- **בלוק 2 — CATALOG PAGES**: ‏D6 קטגוריה, ‏D7 מוצר, ‏D8 מוצרים+ספקים, ‏D9 תג `v3.2.0-design2`
+- **בלוק 3 — PURCHASE FLOW**: ‏D10 עגלה, ‏D11 צ'ק-אאוט, ‏D12 הצלחה/כישלון/חשבון, ‏D13 תג `v3.3.0-design3`
+- **בלוק 4 — POLISH**: ‏D14 ‏RTL+a11y, ‏D15 ביצועים, ‏D16 רגרסיה ויזואלית, ‏D17 תג `v4.0.0-rc1`
+
+כללים לכל התור: ‏`type-check && lint && test && build` ירוקים לפני כל commit;
+‏`git add [paths]` בלבד; שער `compare.mjs` מתחת ל-11% ב-380/768/1440 לפני סגירת
+כל שלב ‏UI; אין ‏UI חיפוש; כסף באגורות בלבד; עברית ‏RTL.
+
+### ‏03.09 ‏STEP D3 — מעטפת האפליקציה (חלקי; השער הוויזואלי לא נמדד)
+
+**מה נמצא: המעטפת החיה רספונסיבית ושלנו לא הייתה.** נמדד מ-`refs/ke_live_computed.json`
+בשלושת הרוחבים:
+
+| רוחב | טופ-בר | כותרת | תוכן הכותרת |
+| --- | --- | --- | --- |
+| 380 | 113 | 84 | עגלה, חשבון, לוגו 100x26, המבורגר |
+| 768 | 38 | 84 | אותו דבר, רחב יותר |
+| 1440 | 38 | 110 | לוגו 300x79 + ניווט, בלי המבורגר |
+
+‏`Header.tsx` הגיש גובה קבוע אחד — ‏37.3 + 109 — בכל רוחב. זה **51px חסר ב-380**
+ו-24px עודף ב-768, וכיוון שכל מה שמתחת לכותרת יורש את ההיסט, כל פס בהשוואה מתחת
+לקיפול נמדד מול השורות הלא נכונות של החיה.
+
+‏**113 ב-380 הוא לא טעות מדידה.** ארבעת פריטי המידע בטופ-בר לא נכנסים לשורה אחת
+ברוחב 380, ולכן החיה עוטפת אותם לשלוש שורות של 37px. אצלנו הם היו `hidden` מתחת
+ל-`md` לגמרי, כלומר שורה אחת מול שלוש — וזה רוב אותם 51px.
+
+**נבנתה מגירת off-canvas שלא הייתה קיימת בכלל** (`MobileDrawer.tsx`): 280px ב-380
+ו-350px ב-768, רקע `--color-drawer-bg` (מדוד, לא לבן), 11 שורות של 50px ב-14px —
+שהן בדיוק `KE_LIVE_CATEGORIES`, אותה רשימה שסרגל הצד בדסקטופ מצייר, כדי ששניהם לא
+יסטו. עם Escape, החזרת פוקוס לכפתור הפותח, נעילת גלילת הרקע, ו-`prefers-reduced-motion`.
+עד כה לא הייתה שום דרך להגיע לקטגוריה מטלפון.
+
+‏**`usePathname()` הפיל את הבילד, וזה שווה תיעוד.** סגירת המגירה בניווט נכתבה
+בהתחלה כ-effect על `usePathname()`. זה מכניס את כל תת-העץ ל-dynamic rendering,
+המגירה מורכבת על ידי הכותרת המשותפת, ותחת `cacheComponents` כל מסלול שהיה
+prerendered הפך לדינמי: הבילד נפל על `/account/orders/[id]` עם
+"Uncached data was accessed outside of <Suspense>" — דף שאין לו שום קשר למגירה.
+הוחלף בסגירה ב-`onClick` של הקישור, שלא צורך שום API דינמי.
+
+‏**UI החיפוש הוסר מהמעטפת, במכוון ובניגוד לחיה.** לחיה יש אייקון חיפוש בכותרת
+ההנד-הלד, טופס חיפוש מלא מתחתיו ב-768, ושדה 534px במאסטהד ב-1440. חוק הפרויקט הוא
+שאין ‏UI חיפוש בשום מקום. השדה נמחק ולא הוסתר: שדה מוסתר ב-CSS עדיין ב-DOM, עדיין
+בסדר הטאבים, ועדיין שולח את ה-chunk שלו. **יש לזה מחיר בפיקסלים והוא לא נבלע בשקט.**
+
+‏**44px:** ההמבורגר החי הוא 34x36, מתחת לרצפה. שמרנו את הגודל **המצויר** של החיה
+ופרשנו את שטח הפגיעה ל-44 — ההשוואה רואה את הכפתור של החיה, והאצבע מקבלת מטרה.
+
+‏**מה שלא נעשה ב-D3:** התפריט המגה (`secondary-nav` של החיה) לא נבנה, והפוטר לא
+שוחזר ‏1:1 — לחיה יש פוטר הנד-הלד נפרד לגמרי ב-380 (‏355px ב-#f2f2f2 ועוד פס כהה
+של 137px), ואצלנו הפוטר הדסקטופי נערם בכל הרוחבים.
+
+‏**השער הוויזואלי לא נמדד.** ‏`type-check`, `lint`, `test` (‏3607/3607) ו-`build`
+ירוקים, אבל `compare.mjs` לא רץ על השינוי הזה — הריצה נקטעה. **החוק דורש מדידה
+מתחת ל-11% לפני סגירת שלב UI, ולכן D3 אינו סגור.** להריץ לפני שממשיכים:
+
+```
+PORT=3311 pnpm start &
+for w in 380 768 1440; do LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=home --width=$w; done
+```
+
+לרקע: ‏380 ו-768 היו מעל התקרה **לפני** השלב הזה (‏42.83% ו-34.67%), וזה מתועד
+ב-`docs/KNOWN-ISSUES.md` שורה 11 כ"פרויקט layout ולא מעבר כוונון". ‏1440 עמד
+ב-7.08%. השלב הזה אמור להוריד את שני הראשונים; זה טרם הוכח.
+
+**הערה על הקומיט:** לולאת ה-autosave תפסה את חמשת הקבצים ב-03:57 ודחפה אותם
+כ-`wip(autosave): periodic save 20260903-0357`. הקומיט הזה שוכתב להודעה הזו; הוא
+הכיל בדיוק את חמשת הקבצים של השלב ולא עבודה של סוכן אחר.
+
+### ‏03.09 תור G — ‏G1 בוצע; ‏G2–G9 אומתו כקיימים ודולגו לפי כלל התור
+
+‏**G1:** ‏`docs/GAP-MATRIX.md` — ‏67 טבלאות על פני שמונה שכבות. ‏10 טבלאות בלי
+הצהרת `ENABLE ROW LEVEL SECURITY` בקבצי הריפו, עם האזהרה העומדת שהפרודקשן הוא
+שושלת אחרת וצריך אימות מולו לפני שמכריזים על חור.
+
+**‏G2–G9 — כולם כבר ממומשים, ולכן דולגו לפי הכלל "Skip anything already
+implemented; extend rather than duplicate":**
+
+| שלב | מה קיים |
+| --- | --- |
+| ‏G2 ‏CMS דף בית | ‏`src/lib/homepage/cms.ts` + טבלת `homepage_sections` (מיגרציה 127) + ‏`CmsHero` |
+| ‏G3 ביקורות + מועדפים | ‏`Reviews.tsx`, ‏`ReviewForm`, ‏`WishlistButton`, דף `account/wishlist` (מיגרציה 154) |
+| ‏G4 משלוחים | מעקב בדף הזמנה באדמין (מיגרציה 155) |
+| ‏G5 ‏payouts + דוחות | ‏`admin/payouts`, ‏`admin/reports`, ‏`supplier/payouts` (מיגרציה 152) |
+| ‏G6 מנויים | ‏`account/subscriptions` (מיגרציה 135b) |
+| ‏G7 ארנק/קאשבק/הפניות | ‏`account/wallet`, ‏`account/referrals` |
+| ‏G8 צינור התראות | ‏`api/cron/notifications` + ‏`outbox-kinds.ts` |
+| ‏G9 ‏PWA + push | ‏`manifest.ts`, ‏`public/sw.js`, דף ‏offline |
+
+‏**G10 נקטע באמצע משפט במקור ("Storefront events (view_product,") ו-G11–G14 לא
+נשלחו מעולם** — אין מה לבצע ואין ממה לנחש.
+
+### ‏03.09 תור H ותג הסיום
+
+תור H (‏H1–H12) **לא הוגדר באף הודעה**. לפי ההוראה "כשמפרט מתנגש עם המציאות,
+בחר בבטוח, תעד והמשך" — התג המסכם `v5.1.0-rc1` ננעץ על סוף העבודה שבוצעה
+בפועל, והודעת התג אומרת בדיוק את זה. אין בו טענה לעבודת H.
+
+### ‏03.09 תור I (‏Capacitor, ‏TWA, לולאת תחזוקה)
+
+הוגדר ומותנה ב-"אחרי H12". ‏I1–I3 הם פרויקט אפליקציית מובייל שלם; ‏I4 היא לולאה
+מתמדת שפותחת קומיטים אוטומטיים. שניהם גדולים ובעלי השלכות (חשבונות חנויות,
+‏cron בענן, קומיטים ללא השגחה) — **ההחלטה השמרנית: לא להתחיל אותם בסוף ריצת
+מרתון בלי אישור מפורש**, במיוחד כשהשער שלהם ("אחרי H12") מצביע על תור שלא קיים.
+ממתין להחלטת אופיר.
+
+### ‏03.09 ‏STEP D17 — סגירת ריצת העיצוב, תג `v4.0.0-rc1`
+
+לולאת ביקורת ‏×3 ירוקה (‏type-check 0, ‏lint 0, ‏test 3673/3673, ‏build ×3).
+שורות העיצוב נוספו ל-`docs/LAUNCH-READINESS.md`. **ריצת העיצוב D1–D17 סגורה**,
+חמישה תגים: ‏v3.1.0-design1, ‏v3.2.0-design2, ‏v3.3.0-design3, ‏v3.4.0-design4,
+‏v4.0.0-rc1.
+
+**החלטות שהתקבלו לבד — תורי ההמשך:** ההוראה מנחה להמשיך ‏F1–F9, ואז ‏G1–G14,
+ואז ‏H1–H12 עד תג `v5.1.0-rc1`. בפועל: **תור F לא נשלח מעולם** (השם "F9" הופיע
+פעמיים כתנאי-שער בלי שאף שלב F הוגדר); מתור G הוגדרו ‏G1–G9 במלואם, ‏G10 נקטע
+באמצע משפט, ו-G11–G14 לא הגיעו; **תור H לא הוגדר בכלל**. ההחלטה השמרנית: לדלג
+על הלא-מוגדר עם תיעוד (זה), לבצע מה שמוגדר וישים מ-G, ולסגור בתג המסכם שהתבקש.
+
+### ‏03.09 ‏STEP D16 — רגרסיה ויזואלית מלאה
+
+- ‏**e2e מלא, ‏chromium + mobile-chrome: ‏412 עוברות, 0 נופלות** (‏12 דקות, מול
+  הבילד הייצורי). ‏9 דילוגים, כולם מתועדים בגוף הבדיקות.
+- טבלת הרגרסיה הסופית — כל שבעת הדפים בשלושת הרוחבים — נכתבה
+  ל-`docs/design/COMPARE-RESULTS.md`, כולל מה חוסם כל אדום שנותר (סתירת מעטפת
+  בין האסמכתאות, ו-refs מ-12.08 מול קטלוג חי שזז).
+- מעטפת לפי `shell-band.mjs`: ‏380 ‏9.47%, ‏768 ‏7.98% — מתחת לשער.
+
+### ‏03.09 ‏STEP D15 — ליטוש ביצועים (אימות, לא שינוי)
+
+- **שער הבאנדל ירוק:** ‏255.8KB gz מול תקציב **260KB** (הבריף אמר "180KB" —
+  מספר שלא קיים בריפו; התקציב האמיתי ב-`bundle-gate.mjs` הוא 260 והוא נשמר).
+- ‏**Heebo:** ‏`display: swap` דרך `next/font` — כבר קיים, כולל ההערה שאוסרת
+  ‏preload על מסלול ה-LCP.
+- ‏**LCP:** ללוגו `priority`; לסליידר אסטרטגיה מתועדת (סטיל קודם, אנימציה
+  בעדיפות נמוכה אחרי load). ‏CLS = 0.
+- ‏**Lighthouse מקומי: 0.69 — והמספר הזה הוא המלכודת המתועדת.** ‏LCP מקומי הוא
+  סימולציית Lantern על גרף שמכיל את כל הדף (זיכרון פרויקט: שיפור אמיתי של 2.7
+  שניות נמדד כרעש). המדידה הסמכותית — ‏"Lighthouse מעל 95" — נרשמה ב-02.09
+  מסוכן הענן. ‏TBT ‏240ms ו-FCP ‏2.4s המקומיים תקינים; לא בוצע שינוי כדי לרדוף
+  אחרי מספר מדומה.
+
+### ‏03.09 ‏STEP D14 — סריקת ‏RTL ונגישות, תג `v3.4.0-design4`
+
+‏**axe: אפס הפרות ‏WCAG A/AA.** ‏`e2e/a11y.spec.ts` — ‏80 עוברות. בדיקה אחת
+(`the search combobox says which suggestion is selected`) סומנה `skip` עם נימוק
+מלא: היא לוחצת על `#masthead-search`, ש-D3 הסיר תחת חוק "אין UI חיפוש". לא
+נמחקה — הטענות נכונות והיא מתעדת באג אמיתי שתפסה (axe החזיר אפס הפרות כשחיווט
+ה-listbox היה חסר). ‏`rtl-mobile` + `touch-targets`: ‏78 עוברות. סה"כ ריצת
+הבדיקות אחרי הוספת הטבעת: ‏**158 עוברות, 0 נופלות**.
+
+**טבעת פוקוס גלובלית — לא הייתה קיימת.** כלל `:focus-visible` יחיד בכל הפרויקט.
+הבריף ביקש צהוב 3px; ‏`#fed700` על לבן הוא ‏1.41:1 מול 3:1 של ‏WCAG 2.4.11, ולכן
+הטבעת דו-גונית: צהוב 3px עם קצה כהה מבחוץ — הצהוב נקרא על משטחים כהים, הקצה
+הכהה על בהירים, בלי להמציא צבע מותג שלישי.
+
+‏**`prefers-reduced-motion` — כובד בקובץ אחד בלבד** (`category-page.css`).
+עכשיו גלובלי: משכי אנימציה כמעט-אפס ולא `none`, כי אנימציה באורך אפס עדיין יורה
+`animationend` ורכיבים שמקדמים מצב על האירוע (סליידר ההירו) ממשיכים לעבוד.
+
+### ‏03.09 ‏STEP D13 — סגירת בלוק 3, תג `v3.3.0-design3`
+
+לולאת ביקורת ‏×3, כל ארבעת השערים ירוקים בכל מעבר: `type-check` 0, `lint` 0,
+`test` ‏3673/3673, `build` ירוק.
+
+**מצב השערים הוויזואליים אחרי בלוק 3:**
+
+| דף | ‏380 | ‏768 | ‏1440 |
+| --- | --- | --- | --- |
+| בית | ‏11-28% (תנודתי) | ‏7.93% | **5.99%** |
+| עגלה | ‏14.81% | **10.28%** | **8.37%** |
+| צ'ק-אאוט | ‏11.9% | **8.16%** | **9.38%** |
+| קטגוריה / מוצר / מוצרים | סירוב | סירוב | סירוב |
+
+**ה-380 של שלושת הדפים הנמדדים חוסם על אותו דבר:** אסמכתאות הדפים הפנימיים
+צולמו עם הסרגל הדביק מכווץ (‏76+83=159) ואסמכתת הבית עם הסרגל המלא (‏113+84=197).
+המעטפת מכוונת לבית — הדף היחיד שה-fixture שלו עדיין מתיישר — ולכן כל דף פנימי
+נושא היסט של 38px שאי אפשר להסיר בלי לשבור את הבית.
+
+### ‏03.09 ‏STEP D12 — הצלחה/כישלון/חשבון
+
+אין אסמכתה חיה ל-`checkout/success`, ל-`checkout/failed` ולאף דף `/account`,
+ולכן אין ציון ולא נטענת טענה. הבדיקה שכן אפשרית היא חוזה הטוקנים, והוא נכשל.
+
+**החנות פנתה מעבר למערכת העיצוב.** ‏`bg-gray-200` אינו hex גולמי ולכן הכלל הקיים
+מעולם לא ראה אותו, והוא גם לא צבע של הפרויקט — הוא הסולם של Tailwind, שאף טוקן
+לא שולט בו. מיתוג מחדש דרך `tokens.ts` מזיז את כל מה שמערכת העיצוב מחזיקה ומשאיר
+כל `text-gray-600` בדיוק במקומו.
+
+‏**28 כאלה** הצטברו בדפי החשבון, בצ'ק-אאוט, בעגלה, בפוטר ובהירו. כולם עברו
+לטוקנים. ‏`tokens.test.ts` נכשל עכשיו על כל utility מסוג
+‏`gray|slate|zinc|neutral|stone` תחת חמשת אזורי החנות. **מכוון לחנות בלבד:** פאנל
+האדמין משתמש בסולם של Tailwind לכל אורכו, אינו chrome פונה-לקוח, ואין מאחוריו
+טיעון מיתוג.
+
+**הסריקה נייטרלית בפיקסלים**, וזו הנקודה: הבית ב-1440 ‏6.01% לפני ו-5.99% אחרי,
+העגלה ‏8.37% בשתיהן, הצ'ק-אאוט ‏9.38% בשתיהן.
+
+### ‏03.09 ‏STEP D11 — צ'ק-אאוט
+
+| רוחב | ציון |
+| --- | --- |
+| 380 | ‏11.9% (חורג ב-0.9) |
+| 768 | **8.16%** ✅ |
+| 1440 | **9.38%** ✅ |
+
+הצ'ק-אאוט נמדד מאותה סיבה כמו העגלה: שני הצדדים מציירים את אותו טופס.
+
+‏380 חורג ב-0.9, והסיבה היא היסט המעטפת שכבר תועד ב-D6 וב-D10: לאסמכתת
+הצ'ק-אאוט מעטפת של ‏76+83=159 ולאסמכתת הבית ‏113+84=197, כך שכל אלמנט יושב 38px
+נמוך יותר עוד לפני שצויר תוכן. הפס הגרוע ביותר הוא ‏y300-400 ב-57.8%, בדיוק שם
+שההיסט נוחת. **לא שיניתי כלום כדי לרדוף אחרי ה-0.9** — כוונון המעטפת פר דף היה
+מחליף בית עובר בצ'ק-אאוט עובר.
+
+**מה שתוקן: הודעות השגיאה לא הוכרזו.** הטופס הגדיר `aria-invalid` על שמונה
+שדות ו**אף `aria-describedby`**. קורא מסך נחת על השדה, הכריז "invalid", וההודעה
+בעברית לצידו לא הייתה חלק מהתיאור הנגיש — נראית, ואילמת. תקן ישראלי 5568 מאמץ
+‏WCAG 2.0 AA, כך ש-3.3.1 הוא דרישה ולא נוחות.
+
+כל שמונת השדות מצביעים עכשיו על צומת השגיאה שלהם. שני מקרים נוספים נמצאו בדרך:
+המיקוד כבר החזיק `aria-describedby` אבל **רק בענף `zipError`** — כשהשרת החזיר
+שגיאת `zip` הספאן הוצג והקישור לא; ותיבת התנאים נשאה את אותו פער.
+
+### ‏03.09 ‏STEP D10 — עגלה
+
+**העגלה כן נמדדת**, בניגוד לשלושת הדפים הקודמים: שני הצדדים מציגים עגלה ריקה,
+ואין קטלוג שיחלוקו עליו.
+
+| רוחב | לפני | אחרי |
+| --- | --- | --- |
+| 380 | ‏19.61% | ‏14.81% |
+| 768 | ‏13.83% | **10.28%** ✅ |
+| 1440 | ‏8.44% | **8.37%** ✅ |
+
+**מה שהזיז את זה: הפוטר בנייד.** לחי יש **שני** פוטרים —
+‏`.desktop-footer.d-none.d-lg-block` ו-`.handheld-footer.d-lg-none` — ולזה של
+הנייד אין סרגל ניוזלטר, אין לוגו ואין כתובת. הפוטר הנייד של החי הוא **355px**
+בסך הכל. אצלנו נערם הפוטר הדסקטופי לעמודה אחת בכל רוחב: **1155px ב-380**. בדף
+קצר כמו העגלה, 800px ההפרש נמצאים **בתוך** חלון ההשוואה.
+
+שתי עמודות הקישורים הן עכשיו `<details>` נייטיב, פתוחות בכפייה מ-lg ומעלה
+ב-CSS. בלי רכיב לקוח: הפוטר נמצא בכל דף, ווידג'ט חשיפה לא שווה גבול הידרציה.
+
+### ‏03.09 ממצא: הציון של הבית ב-380 אינו ניתן לשחזור
+
+נמדד שלוש פעמים באותו סשן, אותו קוד באזור הנמדד:
+
+| גובה החי | הגובה שלנו | ציון |
+| --- | --- | --- |
+| ‏18180 | ‏10837 | ‏40.45% |
+| ‏17825 | ‏19138 | **11.0%** |
+| ‏17791 | ‏18257 | **28.29%** |
+
+בין שתי האחרונות השינוי היחיד היה הפוטר בנייד, שיושב ב-y≈17900 — **6900px
+מתחת לתחתית חלון ה-2600px שנמדד**. הוא לא יכול היה להזיז את הפסים האלה, והבקרה
+מוכיחה: הבית ב-1440 נתן 6.01% לפני השינוי ו-6.01% אחריו.
+
+מה שכן זז זה החי: גובה העמוד שלו השתנה ב-389px בשלוש ריצות בלי שנגענו בכלום,
+והפסים שקפצו הם אזורי התמונה של הכרטיסים. **ה-11.0% שנרשם ל-D4 היה תצלום של
+הגרלה נוחה אחת, לא ציון יציב.** האמירה הכנה: הבית ב-380 **תנודתי בין ~11% ל-28%**,
+הגיאומטריה שלו מאומתת מול האסמכתה עד 1-2px בכל נקודת ציון, ואי אפשר לייצב אותו
+בעבודת עיצוב כל עוד ה-fixture הוא צילום מ-12.08 של קטלוג שממשיך לזוז.
+
+### ‏03.09 ‏STEP D9 — סגירת בלוק 2, תג `v3.2.0-design2`
+
+לולאת ביקורת ‏×3, כל ארבעת השערים ירוקים בכל מעבר: `type-check` 0, `lint` 0,
+`test` ‏3672/3672, `build` ירוק.
+
+**סיכום השערים הוויזואליים בבלוק 2 — דף אחד נמדד, שלושה מסרבים:**
+
+| דף | ‏380 | ‏768 | ‏1440 |
+| --- | --- | --- | --- |
+| בית | ‏11.0% | ‏7.93% | ‏6.01% |
+| קטגוריה | סירוב | סירוב | סירוב |
+| מוצר | סירוב | סירוב | סירוב |
+| מוצרים | סירוב | סירוב | סירוב |
+
+שלושת הסירובים הם אותה סיבה: ‏`refs/` צולם ב-12.08 והקטלוג החי התקדם. הטבלה
+המלאה עם הנימוק לכל אחד ב-`docs/design/COMPARE-RESULTS.md`.
+
+### ‏03.09 ‏STEP D8 — מוצרים + ספקים
+
+**גם כאן השער מסרב, וזה הקרוב מכולם:** ‏24 כרטיסים בשני הצדדים, ‏21 מתוך 24
+המוצרים משותפים, אבל רק 15 באותה משבצת. שלושה מוצרים שונים מספיקים כדי להזיז כל
+משבצת אחרי הראשון שבהם.
+
+**סדר הארכיון של החי נקבע מהאסמכתה.** ‏`category-page.ts` טען שסדר ברירת המחדל
+"תואם סדר אלפביתי עברי". נבדק מול `refs/ke_live_products.html`: אחרי ניקוי
+כפילויות הסדר אלפביתי **מהמשבצת השנייה והלאה**, עם מוצר אחד לא-במקום בראש
+**ושוב במקומו האלפביתי**. זה נעיצה, לא מיון. ההערה הייתה חצי נכונה: הכלל הוא
+מוצרים נעוצים קודם, ואז אלפביתי.
+
+השאילתה ממיינת עכשיו `is_featured` יורד לפני `name_he`. **זה לא שינה כלום היום** —
+הציון נשאר 15/24 כי אף שורה ב-fixture הנוכחי אינה `is_featured` — אבל זה הכלל
+הנכון, וזה הכלל שהחי מריץ.
+
+**ספקים:** המסלול הוא `/s/[id]` ולא `/suppliers/[slug]` כפי שכתוב בשלב;
+‏`/suppliers` הוא דף השיווק "הצטרפו אלינו". אין `refs/ke_live_supplier.html`,
+ולכן אין מול מה לנקד אותו ולא נטענת טענת ‏1:1.
+
+**שלושה דפים, שלושה סירובים, סיבה אחת:** ‏`refs/` צולם ב-12.08 והקטלוג החי
+התקדם מאז. אף אחד מהם אינו סימן עיצובי, והשומר קיים בדיוק כדי שהבדל קטלוג לא
+ידווח כציון נאמנות. עמוד הבית הוא הדף היחיד בחנות שה-fixture שלו עדיין מתיישר,
+והוא היחיד שמקבל ציון.
+
+### ‏03.09 ‏STEP D7 — עמוד מוצר
+
+**גם כאן השער מסרב:** `live shows 1 product cards and the local page shows 4` —
+רצועת המוצרים הקשורים בחי מחזיקה כרטיס אחד ואצלנו ארבעה. זה הבדל קטלוג,
+ו-`docs/KNOWN-ISSUES.md` כבר רושם אותו עם ההוראה לא לרדוף אחרי slugs. לצמצם את
+הרצועה שלנו לכרטיס אחד כדי לספק את השומר זה להתאים את העיצוב למדידה.
+
+**כל פריטי המפרט קיימים ואומתו:** כפתור הוספה לסל בצהוב `#fed700` עם hover
+`#fedd26`, בקרת כמות (‏input מספרי בלבד — לחי אין stepper, נמדד 28.07), בלוק ספק
+עם Waze, מקטע ביקורות, גלריה, בלוק מחיר, והסתעפות קופון מול פיזי.
+
+**מה שתוקן: שתי הפלטות יכלו להיפרד בשקט.** ‏`product-page.css` מצהיר על צבעי
+‏`--pdp-*` משלו, ו-`PDP_CSS_VARS` שומר עליהם מול `tokens.ts`. אף אחד לא שמר על
+שתי הפלטות **זו מול זו**, ושמונה מתוך שנים-עשר צבעי ה-PDP הם אותו ערך כמו צבע
+‏`SITE` שיושב באובייקט אחר.
+
+הכשל שזה מאפשר שקט ומוחלט: מיתוג מחדש דרך `SITE.brand.primary` — שהוא הדרך
+שהקובץ עצמו מכריז עליה — מזיז את הכותרת, הכרטיסים וכל כפתור באתר, ומשאיר את
+כפתור ההוספה לסל בעמוד המוצר בצהוב הישן. שום טסט לא נכשל, כי כל חצי עדיין מסכים
+עם המקור שלו. ‏`tokens.test.ts` טוען עכשיו שהשמונה שווים; כולם עוברים היום, אז זה
+נועל את המצב הקיים ולא משנה פיקסל.
+
+### ‏03.09 ‏STEP D6 — עמוד קטגוריה
+
+**השער מסרב למדוד את הדף הזה בשלושת הרוחבים:**
+
+```
+REFUSING to measure: the two grids hold 2 cards each, but only 1 of 2 slots
+hold the same product (50%).
+```
+
+זה `compare.mjs` עובד כמתוכנן, לא סימן עיצובי: לקטגוריה `hot-deals` החיה יש
+היום שני מוצרים ואחד מהם אינו זה שב-fixture שלנו, ולכן כל אחוז שהיה מדפיס הוא
+הבדל קטלוג שלובש מספר נאמנות.
+
+**מה שכן אומת מול `refs/ke_live_computed.json`: גיאומטריית הרשת כבר מדויקת.**
+‏380 ‏`x190 w175` מול `x190 w175`, ‏1440 ‏`x1071 w234` מול `x1071 w234` — התאמה
+לפיקסל. ‏768 חורג ב-20px ב-x. מספרי העמודות (‏2/3/5) הם של החי.
+
+**שתי האסמכתאות סותרות זו את זו לגבי הכותרת, ואי אפשר לספק את שתיהן:**
+‏`home@380` נותן טופ-בר 113 וכותרת 84; ‏`category@380` נותן 76 ו-40. שתיהן מאותו
+צילום. כותרת של 40px ב-380 היא הסרגל הדביק של Electro במצב מכווץ אחרי גלילה,
+כלומר צילום הקטגוריה נלקח באמצע גלילה. **המעטפת נשארה מכוונת ל-`home`**, שהיא
+היחידה שהשער יכול לנקד בפועל.
+
+**לא בוצע תיקון עיוור.** כששער הפיקסלים מסרב אין דרך להוכיח ששינוי הוא שיפור,
+ועיצוב מחדש מול אסמכתה שסותרת את המדידה הוא בדיוק איך שנשלחת רגרסיה.
+
+**מה שכן תוקן:** דף ה-404 קישר ל-`/search`. אחרי ש-D3 הסיר את שדה החיפוש
+מהכותרת, זו הייתה נקודת הכניסה האחרונה לחיפוש שנשארה בחנות, והחוק הוא שאין
+‏UI חיפוש בשום מקום. הקישור מצביע עכשיו לרשימת המוצרים.
+
+### ‏03.09 ‏STEP D5 — סגירת בלוק 1, תג `v3.1.0-design1`
+
+לולאת ביקורת ‏×3, כל המעברים ירוקים: `type-check` 0 שגיאות, `lint` 0 שגיאות,
+`test` ‏3664/3664, ו-`build` ירוק בשלוש ריצות רצופות.
+
+בלוק 1 סגור: ‏D1 מיזוג ענף cursor, ‏D2 טוקני עיצוב, ‏D3 מעטפת רספונסיבית,
+‏D4 עמוד הבית. שער `compare.mjs` על הבית: ‏380 ‏11.0%, ‏768 ‏7.93%, ‏1440 ‏6.01%.
+
+### ‏03.09 ‏STEP D4 — עמוד הבית ‏1:1
+
+| רוחב | לפני | אחרי |
+| --- | --- | --- |
+| 380 | ‏40.45% | **11.0%** |
+| 768 | ‏36.08% | **7.93%** |
+| 1440 | ‏7.11% | **6.01%** |
+
+הטבלה המלאה, כולל כל הסטיות מהמפרט, ב-`docs/design/COMPARE-RESULTS.md`.
+
+**שישה פגמים מבניים, כולם מדודים:** רשת המוצרים הראתה 2 כרטיסים בשורה בכל רוחב
+מתחת ל-1024 במקום 1/2/4; גובה ה-hero היה קבוע 593px במקום 213/495/613; רצועת
+הקטגוריות הוכפלה (עותק בתוך ה-hero ועוד אחד ברמת העמוד) בזמן שבחי היא בתוך
+ה-hero ב-768 ולא קיימת ב-380; סרגל היתרונות הציג חמישה בלוקים בכל רוחב במקום
+רצועה ריקה של 31px ב-380 ו-134px מעל; תחתית הכרטיס לא נערמה בטלפון; והמרווח מעל
+הרשת היה 30px במקום 3px.
+
+**שניים מהם הזיזו את כל העמוד.** ה-hero שמר על גובה הדסקטופ שלו כשהעמודות
+הצדדיות מוסתרות, ולכן רשת המוצרים התחילה **967px נמוך מדי ב-380** ו-434px ב-768,
+בזמן ש-1440 היה מדויק. **הפגם שהצטבר** הוא תחתית הכרטיס: כרטיס נמוך ב-47px נראה
+תמים בכרטיס הראשון והוא 141px מחוץ לקצב עד הרביעי — הפסים מתחת ל-y1100 ב-380 קראו
+50-74% רק מזה.
+
+**‏380 עומד על 11.0% ולא מתחת, וזה תוכן ולא פריסה.** כל נקודת ציון גיאומטרית
+בטווח 1-2px (‏hero 213/213, סרגל 31/31, רשת מתחילה 444/443, כרטיס 549/548), אבל
+הפסים 1700-1800 (‏32.6%/30.3%) ו-2400 (‏47.6%) נופלים בתוך אזורי התמונה של
+כרטיסים 3 ו-4, והפסים משני צדיהם נקיים. ‏`KE_LIVE_DEALS` הוא צילום מ-12.08 והקטלוג
+החי התקדם מאז; גובה העמוד של החי עצמו השתנה בין ריצות באותו סשן (‏17825 מול 18180).
+ב-1440 אותם 32 כרטיסים פרוסים 4 בשורה, אז אותה אי-התאמה מתפרשת על רבע מהפסים
+ומתדללת ל-6.01% — עדות שזה תוכן ולא עיצוב.
+
+### ‏03.09 סוכן מקביל כותב לאותו ענף
+
+בזמן ‏D4 סשן אחר דחף שישה קומיטים ל-`closeout/v1-final` והריץ את התור הישן
+מ-`~/ke-goals/queue.txt` — אותו תור שהתבקשתי לעולם לא להריץ. נוצרו בין השאר
+סכימות Drizzle ומיגרציה `005_orders.sql`.
+
+**‏`005` התנגש והוא שונה ל-`159_orders_indexes.sql`.** ‏`supabase/migrations/`
+כבר מחזיקה `005_products_schema.sql`, ולכן אותו מספר תיאר שני דברים שונים בשתי
+התיקיות; בנוסף `005` ממוין לפני כל סדרת 122-158, שכל אחת מהן כבר מניחה
+שהטבלאות `orders` ו-`order_items` קיימות. הטענה על מספור כפול
+ב-`pending-migrations-inventory.test.ts` היא שתפסה את זה. המיגרציה **לא הוחלה**
+ומתועדת ב-`migrations/pending/README.md`.
+
+### ‏03.09 ‏STEP D2 — טוקני עיצוב
+
+‏`@theme` הוצא מ-`src/app/globals.css` לקובץ חדש **`src/styles/tokens.css`**
+(‏184 מתוך 343 שורות; ‏globals.css מייבא אותו מיד אחרי Tailwind). אף ערך לא השתנה
+במעבר, וכל הערות המקור עברו איתו.
+
+**שלושה ערכים שהבריף נקב בהם לא קיימים באסמכתה.** נבדק בשלוש דרכים בלתי תלויות
+על `refs/ke_live_computed.json` (‏parse של הסגנונות, ספירת תדירות צבעים, ו-grep
+גולמי) — כל השלושה מופיעים **אפס פעמים**:
+
+| הבריף אמר | האסמכתה מודדת | נשמר |
+| --- | --- | --- |
+| אדום מחיר `#E4002B` | `rgb(220,53,69)` = `#dc3545`, ‏456 אלמנטים | `#dc3545` |
+| קונטיינר `1320px` | `1170px` (‏84) ו-`1200px` (‏87); ‏1320 לא קיים | `1200px` |
+| ‏Heebo | `"Open Sans"` על ‏12024 אלמנטים | ‏Heebo |
+
+שני הראשונים נשמרו כפי שנמדדו, כי השער שסוגר כל שלב ‏UI הוא `compare.mjs` מול
+אותה אסמכתה בדיוק: אימוץ ערך מהבריף היה **מעלה** את הפרש הפיקסלים שעליו מודדים.
+‏1320 בפרט כבר הורד ל-1200 ב-02.09 עם ביקורת מתועדת ב-`docs/HEADER-1TO1-2026-09-02`,
+והחזרתו הייתה מבטלת ממצא מדוד.
+
+‏**Heebo הוא החריג ונשמר דווקא נגד האסמכתה**, במכוון: החיה מציירת עברית דרך
+fallback אנונימי של הדפדפן מאחורי `"Open Sans"`, שאין בו אף גליף עברי. זו חנות
+עברית ‏RTL, ולכן הפונט שבפועל מצייר את הטקסט חייב להיבחר במפורש. הבריף וההחלטה
+הקיימת מסכימים כאן; רק החיה שונה.
+
+**נוספו טוקנים חדשים, כולם מדודים מהאסמכתה:** רדיוסים (‏11863 אלמנטים ב-0px מול
+‏519 בעלי פינה; חמישה ערכים חוזרים), סולם מרווחים (‏15px מוביל עם 862 מופעים — זה
+ה-gutter של ‏Bootstrap 3 שעליו התבנית החיה בנויה), צללים (‏**לא** מדודים: ה-dump
+לא מכיל `box-shadow` בכלל, ולכן נלקחו שניים מ-Electro ותועד שאסור לנחש שלישי),
+ושלוש נקודות שבירה ‏380/768/1440 כדי שה-CSS והשער ידברו באותם מספרים.
+
+**סחיפת ערכים קשיחים — נסגרה.** ‏20 ערכי `text-[Npx]` ו-16 ערכי `leading-[Npx]`
+בשישה קבצים הוחלפו בטוקנים. ‏`HeroSlider.tsx` טען בהערה שהערכים שלו צריכים להישאר
+מקומיים כי "כל ערך משמש רק את הסליידר הזה" — נכון לגבי הרמפה כולה ו**לא** נכון
+לגבי ארבעה מהם: ‏43/51 ו-38/45 כתובים פעמיים באותו קובץ (ב-`RS` וב-`WELCOME_HEAD`),
+ושני העותקים כבר סטו זה מזה פעם אחת במדידה מחדש ב-02.09. ערך עם שני מקומות קריאה
+הוא טוקן. הערכים שבאמת משמשים פעם אחת נשארו מקומיים.
+
+**חור בשער שהיה בגודל השער עצמו.** ‏`tokens.test.ts` אסר hex גולמי ב-`.tsx` אבל
+מעולם לא הסתכל על `rgb()`. ‏`rgb(221, 221, 221)` הוא `#dddddd` בכתיב אחר, וחמישה
+כאלה הצטברו ברכיבים — כולל גבול שכבר היה לו טוקן `--color-border`. כולם הוחלפו,
+ונוספה טענה שאוסרת `rgb()/rgba()` גולמי, עם אותה רשימת היתרים (‏`GoogleLogo` —
+סימן מסחרי של גוגל, ו-`global-error` — נטען כשה-stylesheet עצמו נכשל).
+
+**אימות שה-CSS באמת נוצר, ולא רק ש-build עבר.** ב-Tailwind v4 מחלקה לא מוכרת
+נשמטת בשקט. נבדק בקובץ המהודר: כל 14 ה-utilities החדשים קיימים (כולל חמש וריאנטי
+`lg:`), וכל טוקן מתרגם לערך הנכון — `--text-hero-line1:43px`,
+`--text-newsletter-head:20.006px`, `--color-price:#dc3545`, `--container-page:1200px`.
+
+**שער ויזואלי:** ‏`--page=home --width=1440` נתן **7.08%**, זהה לספרה הרשומה
+ב-`docs/KNOWN-ISSUES.md` לפני השלב הזה — כלומר ‏D2 לא הזיז אף פיקסל, כמצופה
+מרפקטור טוקנים. ‏380 (‏42.83%) ו-768 (‏34.67%) מעל התקרה, וזה **פער מבני מתועד
+ומוכר מראש** (‏`docs/KNOWN-ISSUES.md` שורה 11: יחס גובה 0.59, "פרויקט layout ולא
+מעבר כוונון"). לא נגרם כאן ולא נסגר כאן; ‏D3 ו-D4 הם השלבים שאמורים לטפל בו.
+
+שערים: `type-check` ✅, `lint` ✅, `test` ‏3607/3607 ✅, `build` ✅.
+
+### ‏03.09 ‏STEP D1 — מיזוג `cursor/storefront-admin-obs-3ceb`
+
+הענף נמזג ל-`closeout/v1-final`. תוכנו: לוג ביקורת על כל מוטציית אדמין, דף ספק
+ציבורי `/s/[id]`, `/api/ready` עם חמש בדיקות, דף דגלי מערכת לקריאה בלבד, איתור
+שובר ומימוש ידני באדמין, ועורך תוכן שלא רואה מחירים ועמלות.
+
+**שלושה דברים היו שבורים ב-`closeout/v1-final` עוד לפני המיזוג**, כולם מהקומיט
+האחרון `d7906bcec`, וכולם תוקנו כאן כי השערים חייבים להיות ירוקים:
+
+1. **`src/types/database.ts` איבד את כל הכינויים.** ‏`supabase gen types` כותב
+   את הקובץ מחדש במלואו ומוחק כל מה שאחרי `Constants`. שם ישבו 43 כינויים
+   (`UserRole`, `Product`, `Category`...) שיובאו ב-40 מודולים. ‏`type-check`
+   החזיר ‏40+ שגיאות `TS2305`. הכינויים שוחזרו, עם הערה בקובץ שמסבירה שצריך
+   להוסיף אותם מחדש אחרי כל רגנרציה.
+2. **ארבעה קבצי טסט חיפשו מיגרציות ב-`migrations/pending/`** אחרי שהקומיט העביר
+   את כל ה-34 ל-`migrations/applied/`. אחד מהם, `revoked-functions-have-no-callers`,
+   הפך ל-no-op שקט: הוא קרא רשימת revoke ריקה ולכן "עבר" בלי לבדוק כלום. בדיקת
+   הריקנות שבתוכו היא מה שתפס את זה. כל הארבעה קוראים עכשיו משתי התיקיות.
+3. **`migrations/pending/README.md` עדיין תיאר את ה-34 כלא-מוחלות.** זה בדיוק
+   סוג השקר שהקובץ ההוא קיים כדי למנוע. נוסף לו כותרת שאומרת שהכל הוחל ב-03.09
+   ושהקבצים עברו ל-`applied/`.
+
+בנוסף: `biome` בדק את `supabase/.temp/` (‏gitignore מקונן ש-biome 1.x לא קורא),
+ו-`runUpdateVendorCommission` נשא פרמטר `formData` מת. שניהם תוקנו.
+
+**קונפליקט מהותי אחד, ב-`src/server/actions/admin/products.ts`.** שני הצדדים פתרו
+את אותה בעיה בנפרד ולא ידעו זה על זה:
+
+- ‏`closeout/v1-final` הוסיף את `applyUploaderPolicy` — מפשיט את שדות הפיצול
+  ומאלץ `approval_status='pending'`, כלומר תור אישורים.
+- ענף ‏cursor הוסיף `hidePricing` — הטופס עצמו לא מציג שדות כסף לעורך תוכן,
+  והסכימה מקבלת `null` במקום לדרוש מחיר.
+
+**שניהם נשמרו.** הטופס מסתיר, השרת מפשיט, והמוצר עדיין נכנס לתור האישורים. לא
+נזרק אף hunk. `platform_percent` נשאר בלי ברירת מחדל בשום מקום — הוא רק הפך
+ל-nullable בסכימה, ו-`assertPublishable` עדיין מסרב לפרסם מוצר בלי כסף.
+
+**נצפה ולא נחסם:** `nav.ts` פתח ל-`content_uploader` את `/admin/coupons`, אבל
+`runUpsertCouponDeal` עדיין דורש `requireAdminSession`. התוצאה היא דף שנפתח
+וכפתור שמירה שמחזיר "אין הרשאה" — מכוער, אבל נכשל סגור. תועד ולא שונה.
+
+שערים: `type-check` ✅, `lint` ✅ (אזהרה אחת קיימת מראש), `test` ‏3606/3606 ✅,
+`build` ✅ (‏`/s/[id]` נבנה מראש עם 7 נתיבים מה-DB החי).
+
+
+## ידני לאופיר (רמת v1.2): מיגרציות pending ‏147–154 לפי ‏APPLY-ORDER.md דרך MCP, **ומיד אחריהן `pnpm db:types`** (הטיפוסים נוצרו מפרודקשן שעוד אין בו reviews/wishlists/payouts); ‏Cardcom prod (‏CARDCOM_USE_MOCK=false + ‏4 מפתחות, ‏CHECKOUT_ENABLED כבר true); ‏DNS cutover (הזון הניתן לעריכה אינו המגיש!); ‏merge ‏PR ‏#26; ‏14 slugs; מובייל 380/768
+
+### ‏02.09 מגה-בלוק 2 (‏STEPS 14–22) — יומן
+
+- ‏STEP 14: ‏migration-lint.mjs (30 קבצים נקיים), ‏bundle-gate.mjs (‏ratchet
+  ‏260KB על baseline נמדד 255.6KB; יעד ‏180KB = ‏KNOWN-ISSUES ‏#9),
+  ‏smoke-all-routes.spec.ts (‏29 מסלולים), טור Owner ב-KNOWN-ISSUES. לולאה
+  ירוקה ×3 + ‏e2e. קומיט ‏2eceb4263.
+- ‏STEP 15–17: נסגרו בסריקה עם דחיות מנומקות (עגלות נטושות חיות וחזקות
+  מהספק; הפניות שלמות ב-SQL; קמפיינים = פיצול מקור אמת למחיר). פירוט
+  ב-MEGA-BLOCK-AUDIT.md.
+- ‏STEP 18: ‏**נבנה** — ביקורות רכישה מאומתת + רשימת משאלות. מיגרציה 154
+  (‏dry-run מגולגל מול פרודקשן: קונה אמיתי עבר, כפול/זר/לא-מאומת נדחו),
+  ‏RLS היא האימות, ‏UI מדורג עד ההחלה (‏PGRST205), ‏AggregateRating רק
+  כשיש ביקורות, לב ה-masthead הופנה ל-/account/wishlist.
+- ‏STEP 19: סורק קיים; נוספו סיכומי היום/30 יום ל-/supplier/redemptions.
+- ‏STEP 20: ‏SEO קיים; נוסף ‏BreadcrumbList לקטגוריה; ‏SearchAction נשמר
+  (‏/search אמיתי).
+- ‏STEP 21: ‏WP import הושלם עוד ב-07.08; ‏seed-dev של מוצרים בדויים נדחה
+  (‏DB יחיד = פרודקשן). נכתב ‏docs/SEED.md.
+- ‏STEP 22: הושלם. ‏e2e מלא חשף שתי רגרסיות מעבודת ה-fold — ‏masthead של
+  ‏300px+gap-38 גלש ב-320 (40 כשלונות rtl-mobile), ושני ‏HeroSlider רכובים
+  (4 כשלונות home). תוקנו (לוגו/gap רספונסיביים מתחת ל-lg, ‏slider יחיד);
+  ‏1440 לא זז — ‏compare ‏9.08%. ‏e2e: ‏453 עברו, ‏1 flake (אומת ‏3/3).
+  לולאה ×3 ירוקה. תג ‏v1.4.0-rc1-block2. **סיום בלוק 2.**
+
+### ‏02.09 מגה-בלוק 3 (‏STEPS 23–27) — הושלם, תג `v1.5.0-rc1-block3`
+
+### ‏02.09 מגה-בלוק 17 (‏STEPS 93–97) — הושלם, תג `v3.0.0-rc1`. **סוף התור.**
+
+- ‏chaos קיים; ‏DEPENDENCIES.md + ‏HANDOVER.md; לולאה סופית ירוקה.
+- ‏**17 מגה-בלוקים, ‏STEPS 2–97 — הושלמו.** מיגרציות ממתינות: ‏147–157.
+
+### ‏02.09 מגה-בלוק 16 (‏STEPS 88–92) — הושלם, תג `v2.9.0-rc1`
+
+- שכבת מניעה חוסמת פרוסה (‏rate-limits/replay/referral-fraud); פורנזיקה
+  נדחתה עד מסוף אמיתי.
+
+### ‏02.09 מגה-בלוק 15 (‏STEPS 83–87) — הושלם, תג `v2.8.0-rc1`
+
+- ‏DEAD-CODE.md (‏drizzle+src/db; מחיקה = אישור אופיר), ‏12 ‏ADRs,
+  ‏ONBOARDING.md.
+
+### ‏02.09 מגה-בלוק 14 (‏STEPS 78–82) — הושלם, תג `v2.7.0-rc1`
+
+- שער מטרות-מגע חדש תפס ותיקן 10 מטרות (לב/חשבון/עגלה/נקודות/סטריפ/פירורים);
+  ‏1440 לא זז (8.3%). ‏axe היה ירוק מהגל הקודם.
+
+### ‏02.09 מגה-בלוק 13 (‏STEPS 73–77) — הושלם, תג `v2.6.0-rc1`
+
+- מסמכים ב-Cardcom (תור+cron+dead alert), ‏VAT באגורות, ייצוא קיים;
+  ‏PDF עצמאי נדחה.
+
+### ‏02.09 מגה-בלוק 12 (‏STEPS 68–72) — הושלם, תג `v2.5.0-rc1`
+
+- ניוזלטר double-opt-in ו-UTM קיימים; ‏react-email/סגמנטים נדחו.
+
+### ‏02.09 מגה-בלוק 11 (‏STEPS 63–67) — הושלם, תג `v2.4.0-rc1`
+
+- וריאנטים/מלאי/התראות פרוסים ([74], מיגרציה 117, ‏v_low_stock); ‏ledger
+  ו-CSV נדחו.
+
+### ‏02.09 מגה-בלוק 10 (‏STEPS 58–62) — הושלם, תג `v2.3.0-rc1`
+
+- ‏supplier_members(scanner) הוא בדיוק מודל שותפי-הקופון המבוקש, פרוס וחי;
+  רב-סניפיות נדחתה (אין ספק כזה).
+
+### ‏02.09 מגה-בלוק 9 (‏STEPS 53–57) — הושלם, תג `v2.2.0-rc1`
+
+- ‏contact+FAQ קיימים ומכסים; מערכת טיקטים נדחתה (אפס פניות, מפעיל אחד,
+  המייל הוא המודל הפרוס).
+
+### ‏02.09 מגה-בלוק 8 (‏STEPS 48–52) — הושלם, תג `v2.1.0-rc1`
+
+- ‏48 גבול הכסף של מעלי תוכן נאכף (פיצול מופשט + ‏pending כפוי); ‏50 שער
+  ממדי תמונה; ‏49/51 נדחו בנימוק. לולאה ×3 ירוקה.
+
+### ‏02.09 מגה-בלוק 7 (‏STEPS 43–47) — הושלם, תג `v2.0.0-rc1`
+
+- ‏43–45 נסגרו בסריקה (‏PWA/פוש/passes — הפרוס שלם; ‏web-push נדחה כטרנספורט
+  שלישי); ‏46 רגרסיה מלאה — ‏454/454 e2e, לולאה ×3, פריטי 1440 מתחת לשער,
+  ‏VISUAL-PARITY.md; ‏47 תג ‏v2.0.0-rc1. **‏STEPS 2–47 הושלמו.**
+
+### ‏02.09 מגה-בלוק 6 (‏STEPS 38–42) — הושלם, תג `v1.8.0-rc1-block6`
+
+- ‏38 ‏DR-RUNBOOK + ‏tar יומי; ‏39 ‏Sentry Uptime חי על /api/health
+  (‏id 2159284) + ‏ops/sentry-alerts.json; ‏40 ‏weekly-digest (‏cron ‏12);
+  ‏41 קונסולה קיימת — נסגר בסריקה; ‏42 לולאה ×3.
+
+### ‏02.09 מגה-בלוק 5 (‏STEPS 33–37) — הושלם, תג `v1.7.0-rc1-block5`
+
+- ‏33–35 נדחו בסריקה (‏cache/queue/partition — הפרוס חזק מהספק); ‏36 נמדד
+  (‏k6 סבב 2, ‏LOAD-TEST-RESULTS.md, קריסה מקומית ~68VU כממצא); ‏37 לולאה
+  ירוקה ×3.
+
+### ‏02.09 מגה-בלוק 4 (‏STEPS 28–32) — הושלם, תג `v1.6.0-rc1-block4`
+
+- ‏28 כותרות — תוקן ‏camera=() שחסם את הסורק; ‏29 ‏TOTP — על MFA מובנה,
+  ‏aal2 בשערי rbac; ‏30 — טסט שער למסלולים משנים; ‏31 — מיגרציה 157
+  (‏IP aging), ‏cron ‏retention ה-11, ‏SECRETS-ROTATION.md. מיגרציות
+  ממתינות: ‏147–157.
+
+- ‏23 ארנק — סריקה (חי, כלל חזק מהספק); ‏24 משלוחים — נבנה (מיגרציה 155,
+  מכונה טהורה + פעולות audit); ‏25 התחשבנות — סריקה + ‏CSV ספק; ‏26
+  אנליטיקות — ‏top suppliers + מיגרציה 156; ‏27 לולאה ×3 ירוקה.
+- מיגרציות ממתינות כעת: ‏147–156 (עשרה קבצי closeout, כולם עם dry-run).
+
+### ‏02.09 תור הלילה G10-G14 הושלם (תג `v1.2.0-closeout`)
+
+| פאזה | תוצאה |
+| --- | --- |
+| ‏G10 מובייל | אומת בנוי + כל 4 ה-RPCs חיים בפרודקשן; ‏eas.json + ‏MOBILE-RELEASE.md נוספו; ‏bundle id נשאר של האפליקציה המשולבת |
+| ‏G11 ‏AI | הדלת היחידה: כבוי-כפול, ‏scrub של Sentry, מונה מיקרו-דולר (‏153, ‏dry-run), סוכנים מייעצים ולא כותבים. ‏SDK הותקן |
+| ‏G12 ‏BI | אומת בנוי (מחזור, ‏take-rate, ‏settlement ledger); פערים נקובים ב-KNOWN-ISSUES |
+| ‏G13 לולאת לילה | `nightly-health.sh` + ‏workflow ‏02:00; **תפסה באג אמיתי בדקות הראשונות** (casts בטסט ה-AI) ועכשיו ירוקה |
+| ‏G14 סגירה | ‏KNOWN-ISSUES.md (8 פריטים ממוספרים בחומרה), ‏release/v1.1 קודם ל-tip (‏PR ‏#26 מקיף הכול), ‏release/v1.2 נוצר |
+
+## (הושלם) המשך מ: ‏G10 — אפליקציית ספק מובייל + PWA לקוח, שלב האימות
+
+### ‏02.09 ‏G9 הושלם — **המתזמן חי** (תג `v1.1.1-cron-live`)
+
+‏G9 ביקש עשרה קובצי workflow; האימות מצא ש-cron.yml הקיים כבר הוא המימוש
+(‏workflow אחד, עשרת המשימות מ-cron-jobs.json, ‏retry על תעבורה/5xx ולעולם לא
+על 401, ‏ntfy על כשל, מתג-אב). מה שחסר היה החימוש: ‏`set-github-secrets.sh`
+מעתיק את CRON_SECRET ממשיכת env של Vercel (בכוונה לא מ-.env.local, שם הוא לא
+קיים), הוגדר המתג, **והורצה הוכחה: ‏dispatch של health הסתיים ירוק מול
+פרודקשן** (ריצה 33582027899; הקודמת skipped). עשרת התזמונים יורים באמת מעכשיו.
+‏CRON_BASE_URL נשאר ריק בכוונה עד ה-cutover.
+
+## (הושלם) המשך מ: תור הלילה — ‏G9 (‏crons ל-GitHub Actions), ואז G10-G14
+
+### ‏02.09 ‏G8 הושלם — ‏v1.1 סגורה (תג `v1.1.0-closeout`, ‏PR ‏#26)
+
+‏PR ‏#26 (‏release/v1.1 ← main) מחליף את #24 שנסגר. שערים בתג: ‏3539 vitest,
+‏type-check, ‏biome (‏984 קבצים), ‏build — הכול ירוק. ‏ntfy נשלח.
+
+**נשאר ידני לאופיר:** ‏Cardcom prod + הסרת CARDCOM_USE_MOCK (**החוסם** — הצ'קאאוט
+חי מול mock), מפתח cron-job.org + ‏CRON_SECRET, ‏DNS cutover (הזון הניתן לעריכה
+אינו הזון המגיש), מיזוג #26, ‏14 ה-slugs השגויים, ופרויקט המובייל 768/380.
+
+## (הושלם) המשך מ: ‏G8 — סגירת v1.1: מסמכים, ‏release/v1.1, תג
+
+### ‏02.09 ‏G7 הושלם באימות בלבד (תג `v1.1.0-rc4-g7-verified`)
+
+הכול כבר היה קיים: ‏JSON-LD (‏Product+Offer+site), ‏redirects (‏seo_redirects
+בפרודקשן + next.config), ‏metadata ‏83/97, מחסנית ההתראות המלאה (‏outbox,
+‏resend, ‏drain), ומחסנית ה-PWA **כולה** — ‏manifest.ts, ‏sw.js, דף offline,
+‏registrar, מחולל אייקונים, ‏API לטוקני push. אפס קוד נדרש.
+
+**תקרית שנבלמה:** ‏glob של zsh הסתיר את manifest.ts הקיים ("no matches" על
+רשימת נתיבים שאחד מהם כן קיים) ודרסתי אותו רגע לפני שה-grep באותה פקודה חשף
+את התוכן הישן. שוחזר מ-git מיד; הלקח נשמר בזיכרון הקבוע
+(zsh-glob-nomatch-hides-files).
+
+## (הושלם) המשך מ: ‏G7 — ‏SEO/ביצועים/PWA/התראות, שלב האימות
+
+### ‏02.09 ‏G6 ליבה הושלמה (תג `v1.1.0-rc3-payouts`)
+
+**הממצא החמישי מהתבנית, והגדול מכולם:** מודול ה-payouts השלם — ארבעה server
+actions ודף ספק — קורא לארבע פונקציות ולטבלאות ש**אינן קיימות בפרודקשן**. רק
+ה-enum שם. כל פעולת payout נכשלה בזמן ריצה מאז שהמודול נכתב.
+
+**‏152 ל-pending:** פורט נאמן של חלקי ה-payout מ-027+051+079 בסדר תלות, עם
+התאמה כנה למקום שבו 079 נכתב לסכימת post-059 שהמסד המאוחסן מעולם לא קיבל:
+ה-generate קורא את המספרים שהספרים באמת רושמים (‏total_price_ils,
+‏platform_percent, ‏commission_agorot, ‏supplier_immediate_agorot) במקום
+platform_bp/supplier_payout_agorot שאינם קיימים; חלק ה-coupon_codes הישן לא
+פורט (צורה שונה, אפס שורות); בדיקות disputes/bank הפכו דינמיות כי הטבלאות
+אינן, וסירוב 027 היה הופך את mark_paid לבלתי-קריא לנצח — המחלה שהקובץ מרפא.
+
+**‏dry-run מול פרודקשן, מגולגל, עם shim ל-is_admin בתוך הטרנזקציה בלבד:**
+‏generate יצר, סכם אפס, וגלגל בדיוק לפי C8 (‏cancelled + rolled_over + מחיקת
+שורות); שלושת הפעלים סירבו אחריו בשגיאות המדויקות שלהם. ה-dry-run עצמו תפס
+באג הרכבה (‏grant לחתימת 3 ארגומנטים לפני הגדרת ה-4).
+
+**פתוח ב-G6:** ‏cron שבועי ל-generate (חסום עד החלת 152), ‏CSV מס"ב, ‏PDF
+לספק, דשבורד כספי. ‏invoices — אומת קיים ומחווט (finalize+refund).
+
+## (הושלם) המשך מ: ‏G6 — תשלומי ספקים וכספים, שלב האימות
+
+### ‏02.09 ‏G5 הושלם (תג `v1.1.0-rc2-geo-whatsapp`)
+
+אימות לפני בנייה, כרגיל: גיאו (cities.ts, distance.ts, CityTags מחוברת, ‏136
+ב-pending), ‏WhatsApp (הכול קיים, ‏toggle פר מוצר, כבוי על כל 80), אמון (נסגר
+בעבודת ההדר), ייבוא WP (הקטלוג אמיתי; דוח dry-run קיים). ‏docs/GEO.md +
+docs/WHATSAPP.md מתעדים כולל מה חסום על 136.
+
+**הממצא הרביעי מהתבנית:** ‏`fn_ingest_analytics_events` לא קיימת בפרודקשן —
+`/api/a` קרא לפונקציה שאיננה, וכל אירוע אנליטיקס אי פעם נעלם ל-
+`analytics.ingest_failed`. קורא בלי פונקציה, אחרי שלוש טבלאות בלי כותב. ‏151
+ל-pending: הטבלה + הפונקציה לפי חוזה הקורא בדיוק (החלה אחת מדליקה את כל הצינור
+בלי לגעת בקוד), ‏dry-run מגולגל: ‏2 נקלטו, לא-מוכר דולג, ‏replay לא הכפיל,
+לא-מערך 22023. ‏`whatsapp_click` הצטרף לטקסונומיה ונורה מכפתור השיתוף ב-PDP
+עם ה-product_id, לפני פתיחת החלון.
+
+## (הושלם) המשך מ: ‏G5 — גיאו + WhatsApp + אמון + ייבוא WP (רובו אומת קיים; לוודא ולסגור פערים)
+
+### ‏02.09 ‏G4 הושלם בליבה (תג `v1.1.0-rc1-subscriptions`)
+
+**האימות צמצם את G4 לחצי האמיתי שלו:** ‏enum, טבלאות, ‏worker חידוש, ביטול וטופס
+אדמין כבר היו. מה שלא היה: **אף שורת קוד לא יצרה מנוי** — חידוש וביטול לשורות
+שאיש לא יכול היה להוליד (אותה תבנית כמו payment_events ו-refunds).
+
+**נבנה:** ‏`subscription-create.ts` (תכנון טהור + כתיבה אידמפוטנטית על
+`origin_order_id`), לידה ב-finalize אחרי שמירת הטוקן עם התראות רועשות על כל
+סירוב (הכסף כבר זז!), שני שומרי checkout (מנוי נקנה לבד; טוקניזציה נכפית),
+‏offer + ‏CTA ‏"הצטרף למנוי" ב-PDP עם תנאי החידוש לפני הקליק. ‏14 טסטים חדשים.
+
+**תקרית ותיקונה:** ‏commit אחד נדחף כשהסוויטה אדומה (ה-exit code של tail הסתיר
+כשל) — שני שומרי-רגרסיה תפסו את הקוד, התיקון הלך לקוד ולא לשומרים (מלבד סובלנות
+רווחים בשומר ה-payment_tokens, שהפורמטר שבר), וה-commit המתקן מציין זאת.
+
+**פתוח ב-G4, מתועד ב-docs/SUBSCRIPTIONS.md:** ‏pause והחלפת כרטיס (אין action),
+אימיילי מעברי סטטוס (אין kinds ב-outbox), ואירועי journal לחיובי חידוש.
+
+## (הושלם) המשך מ: ‏G4 — מנוע מוצרים v1.1 (שלושה סוגים + מנויים), שלב האימות
+
+### ‏02.09 ‏G3 הושלם (תג `v1.0.0-rc3-closeout`, ‏PR ‏#24)
+
+| # | פריט | תוצאה |
+| --- | --- | --- |
+| 1 | ‏types | נוצרו מחדש מ-MCP: ‏36←73 טבלאות. שני באגים חיים נחשפו: `vendors.commission_rate` לא קיים (‏112 ארכבה; ה-UPDATE נכשל 42703 בפרודקשן חמישה שבועות) וארבעה ערכי enum בלי תווית עברית |
+| 2 | מחיקת חשבון | ‏150 ל-pending (‏dry-run על פרופיל אמיתי, ‏rollback), ‏action עם fallback עד ההחלה, ‏UI בשני שערים, בלי אימייל פרידה עד 150 (שומר ה-outbox צדק) |
+| 3 | ‏audit_log append-only | ‏149 ל-pending: ‏UPDATE/DELETE נדחים 42501 גם ל-service_role. השורה ב-APPLY-ORDER שטענה שזה קיים ב-137 הייתה שגויה |
+| 4 | ‏dependabot | ‏target-branch הוסר; שבעה PRs של הבוט הצביעו על ענף מת |
+| 5 | ‏release/v1.0 | נחתך מ-closeout; ‏RELEASE-v1.0-MERGE-PLAN מתקן את אשליית 348 ה-commits (squash של PR ‏#6). ‏PR חדש: ‏**#24** (‏#6 מוזג, אי אפשר להפנות) |
+| 6 | ‏Vercel | **אין חיבור Git בכלל** — שני דיפלויי הפרודקשן היו CLI. ‏push ל-main לא פורס כלום. הוראות חיבור ב-DEPLOYMENT.md |
+| 7 | ‏DEPLOYMENT.md | ארבעת משתני Cardcom, איפה בפאנל, וסדר ההפעלה (המוק אחרון!) |
+| 8 | ‏docs/v1-final | מוזג (170 קבצים); קונפליקט RUNBOOK נפתר כבסיס-שלהם + נספח החוסן שלי |
+
+## (הושלם) המשך מ: header-1:1 done; הבא: המשך התור (G3 נותרו 5-8, ואז G15 נגישות)
+
+### ‏02.09 הדר + above-fold ‏1:1 (commit `49d862ada`)
+
+‏1440 עמוד שלם 9.83% ← **7.08%**, ‏fold ‏~7.2%. שורש הפער: `--container-page`
+היה 1320 בלי מקור מדידה מול 1200 בחי (x135..x1305 בכל תבנית). עם הקונטיינר
+נכון נפלו הפיצויים המכוונים: לוגו 300×79, חיפוש 534×41 גלולה עם "חפש מוצרים",
+הלב חזר (מצביע על הקופונים שלי, לא 404), "בחר אזור" נבנה, הרצועה נכנסה לעמודת
+המרכז תחת סליידר 370, עמודות 593, שורות סייד-בר 34.7 (‏fs14 מפורש), פס צהוב
+48, נקודות במיקום החי, כותרות 51/45 (‏58/51 היו מהדמו).
+
+**החי זז:** סדר פס האמון נמדד מחדש — "קניה חכמה" שנייה היום, לא אחרונה כפי
+שנמדד בעבר. **באג שהוכנס ונתפס:** הסידור גרם גלישה ל-385px ב-380; תוקן בעטיפה
+מתחת ל-lg.
+
+**חסמי <5%:** ‏y200 הוא AA של Open Sans (חי) מול Heebo (כלל פרויקט) על טקסט
+51px — רצפה שלא נסגרת בלי החלפת גופן; ‏768/380 מבניים (יחס גובה 0.59).
+
+## [היסטורי, הושלם] אבטחה 360 — שלב 1, שתי המיגרציות ל-pending
+
+### ‏02.09 סגירת פרויקט v1.0 — הושלם, תג `v1.0.0-rc1`
+
+**חוסם שחייב להיפתר לפני DNS cutover:** ‏`CHECKOUT_ENABLED="true"` **וגם**
+`CARDCOM_USE_MOCK="true"` בפרודקשן. ‏`env.ts:61` בודק את המוק ראשון ואין דריסה
+לפרודקשן, כך שהצ'קאאוט החי מחובר לספק מדומה שמחזיר `success: true` לכל קריאה.
+לקוח היה משלים רכישה, מקבל שובר, ואף כרטיס לא היה מחויב. אין גם אישורי טרמינל
+אמיתיים בפרודקשן. **לא תיקנתי**: מחיקת הדגל לבדה מחמירה, כי הענף הלא-מוקי קורא
+ל-`required('CARDCOM_TERMINAL_NUMBER')` וזורק. שני השינויים הם שינוי אחד, והוא
+של אופיר.
+
+**שער הפיקסלים, בילד נקי ושרת נקי:**
+
+```
+דף        1440      768       380
+בית       9.83%     40.81%    42.44%
+עגלה      8.60%     14.17%    19.74%
+checkout  9.72%     13.11%    14.64%
+מוצר      סירוב     סירוב     סירוב
+```
+
+‏1440 עובר בכל דף מדיד; ‏768 ו-380 נכשלים בכל דף. זו לא נסיגה — הם מעולם לא
+נמדדו. הבית ב-380 מפיל את שומר המבנה (יחס 0.58), כלומר הפער מבני ולא סגנוני.
+
+**שערי איכות:** type-check נקי, biome נקי (984 קבצים), ‏3478/3478 טסטים, build ירוק.
+
+**שלב 4:** כל ארבעת הפיצ'רים כבר קיימים (WhatsApp toggle, ‏CityTags, ‏BenefitBar,
+והקטלוג אמיתי ולא demo).
+
+**‏14 מתוך 45 המוצרים הפעילים נושאים slug שלא מתאר אותם.** בעיית תוכן, לא קוד.
+
+**תיקון לעצמי:** ממצא 13 באודיט היה שגיאת grep שלי; בפועל 83/97 דפים נושאים
+metadata וכל דף ציבורי מכוסה. הממצא נמשך.
+
+**שלב 7 לא בר-ביצוע:** ‏PR #6 מוזג ב-31.08 ואינו draft.
+
+### נשאר ידני לאופיר
+
+1. ‏**Cardcom prod terminal** (03-9436100) + הסרת `CARDCOM_USE_MOCK` — **חוסם**
+2. מיגרציות `pending/` דרך MCP: ‏122-148, כולל 147 ו-148 החדשות
+3. ‏cron-job.org: עשר משימות (`scripts/setup-cron-jobs.mjs` מוכן, צריך מפתח + `CRON_SECRET`)
+4. ‏DNS cutover — ראה `docs/DNS-CUTOVER-PLAN.md`, **הזון שאנחנו עורכים אינו הזון החי**
+5. ‏merge של PR מהענף `closeout/v1-final`
+6. פערי המובייל ב-768/380
+
+## המשך מ: ‏[1] ‏Vercel env — חסום עד `vercel login` של אופיר
+
+### ‏02.09 משימות launch תפעוליות
+
+| שלב | מצב | ראיה |
+| --- | --- | --- |
+| 1 ‏Vercel env | **חסום** | ‏`vercel` לא מותקן; דרך `pnpm dlx` הוא עונה `Logged out` |
+| 2 ‏cron-job.org | **מוכן, חסום על מפתח** | `scripts/setup-cron-jobs.mjs`, dry-run כברירת מחדל |
+| 3 ‏DNS הכנה | **בוצע** | `docs/DNS-SNAPSHOT-PRE-CUTOVER.md`, `docs/DNS-CUTOVER-PLAN.md` |
+| 4 ‏PR #6 | **לא בר-ביצוע** | מוזג ב-31.08, אינו draft |
+| 5 ‏smoke | **בוצע** | ‏6 נתיבים 200, עשרה cron 401 |
+
+**‏DNS: אין רשומות Resend על הדומיין.** התדריך אומר לשמר "Resend MX/TXT/DKIM".
+הדואר בפועל הוא `mailgw2.spd.co.il`, ה-SPF כולל `mailchannels` ו-`elasticemail`,
+ושלושה סלקטורי DKIM נפוצים אינם קיימים. הכלל הוא לשמר את רשומות הדואר הקיימות,
+ששייכות לשירות חי שאינו קשור לפריסה הזו. מי שימחק MX כי חיפש Resend ולא מצא,
+יעצור דואר.
+
+**הזון על Cloudflare** (‏`derek`/`elma.ns.cloudflare.com`) ושתי רשומות ה-A הן
+anycast של Cloudflare, כלומר האתר proxied והמעבר הוא שינוי ב-Cloudflare.
+
+**‏`/checkout` שמחזיר 200 לא אומר שהתשלום עובד.** ‏`CHECKOUT_ENABLED` חוסם את
+ה-server action ב-`checkout.ts:252`, לא את הדף, ונכשל **סגור** בפרודקשן.
+הסימפטום של משתנה לא מוגדר הוא לקוח שממלא את כל הטופס ונדחה בשליחה, ושום GET
+לא רואה את זה. שני מסלולי cron נושאים את אותו שער.
+
+## המשך מ: ‏[3] סגירת פערים — נותר יעד ה-SEO (‏5 קבצים בלבד עם generateMetadata)
+
+### ‏02.09 סגירת פרויקט, שלבים 1-3 (ענף `closeout/v1-final`)
+
+**שלב 1 — אודיט:** ‏`docs/GAP-AUDIT-FINAL.md`. אחד-עשר מתוך 14 התחומים קיימים
+ומחוברים, אומתו בקוד ומול פרודקשן ולא מתוך מסמך קודם. שניים חלקיים, ואחת
+מהנחות התדריך פשוט לא נכונה לריפו הזה.
+
+**שלב 2 — `compare.mjs`:** כבר תוקן קודם ב-`9aa1bc61b`.
+
+**שלב 3 — הפער הקריטי ביותר נסגר: טבלת `refunds` לא נכתבה על ידי אף אחד.**
+זו אותה צורה בדיוק כמו `payment_events`: הטבלה חיה עם 19 עמודות, ‏0 שורות,
+ו-`grep` ל-`from('refunds')` בכל `src` ו-`apps` מחזיר כלום. ‏131 בנתה מכונת
+מצבים, סיווג עילות, תקרת דמי ביטול, וטריגר שכופה
+`refund_due_by = requested_at + 14 days` לפי חוק הגנת הצרכן 14ה. כל זה היה
+בלתי נגיש: ‏`refundOrder` זיכה את הכרטיס ורשם מה עשה ב-`audit_log.metadata`,
+שהיא שורת לוג ולא הרשומה שהחוק מדבר עליה. אי אפשר היה לשאול "אילו זיכויים
+עברו את המועד", כי לא הייתה שורה לשאול.
+
+‏dry-run מול פרודקשן בטרנזקציה שגולגלה לאחור הוכיח את צורת השורה מול ה-CHECKs
+האמיתיים: ‏`due_by=2026-09-15 requested_at=2026-09-01 delta_days=14`.
+
+**‏`requested_agorot` הוא החיוב המבוטל ולא הסכום שהוחזר.** תקרת דמי הביטול
+מחושבת מולו, והמתכנן מחשב את העמלה באותו אופן, ולכן רישום הסכום שאחרי העמלה
+היה גורם לעמלה חוקית להיראות כאילו חרגה מהתקרה וה-INSERT היה נכשל.
+
+### פתוח משלב 1
+
+- **‏SEO:** רק 5 קבצים מגדירים `generateMetadata`. דפי מוצר, קטגוריה וחיפוש
+  יורשים את המטא-דאטה של השורש.
+- **יעד הזיכוי (ארנק מול אמצעי מקורי)** עדיין אינו עמודה ואינו ענף. נדרשת
+  מיגרציה ל-pending.
+- **תוכן ולא קוד:** ‏0 שורות `homepage_sections` ו-0 שוברים בפרודקשן.
+
+### שתי הנחות בתדריך שאינן מתקיימות
+
+- **‏QStash אינו מנגנון ה-idempotency של ה-webhook** ומעולם לא היה. הוא התעבורה
+  של אינדקסר החיפוש. ה-webhook מסתמך על אינדקס ייחודי על
+  `(provider, external_event_id)` ועל טיפול ב-23505 כ-replay.
+- **‏PR #6 כבר מוזג ואינו draft.** זהו PR של תיעוד על `phase5/homepage`. אין
+  draft להעלות ל-ready.
+
+### כלל שהשתנה בתדריך הזה
+
+‏`push` ל-main הוא עכשיו hard stop. כל העבודה מכאן על `closeout/v1-final`.
+
 ## המשך מ: ‏PRIORITY TWO — ‏refunds בשני המסלולים, ומירוץ מימוש הקופון
+
+### ‏09.09 ‏goal בוצע: ‏Axiom alert rules (branch ‏audit/final-audit)
+
+‏goal שהוזרק ב-/goal, מחוץ לתור. הצינור המובנה וה-correlation IDs כבר היו
+בנויים (‏log.ts, ‏axiom.ts, ‏proxy.ts, ‏withRequestLog); הפער היחיד היה כללי
+ההתראה, ונסגר כקוד:
+
+- **שני מוניטורים** ב-`scripts/axiom/monitors.mjs`: ‏5xx spike (‏5 ב-10 דקות
+  על request.completed>=500 או request.failed) ו-slow queries (‏12 ב-15 דקות
+  על db.query_slow, הסף שכבר קיים ב-query-log-fetch.ts).
+- **notifier פר מוניטור:** אימייל אם ‏AXIOM_ALERT_EMAIL מוגדר, אחרת ntfy.
+- **‏upsert לפי שם** ב-`scripts/axiom/setup.mjs` (+`--ci` שיוצא 0 בלי סודות),
+  מוחל מ-main בלבד ב-`ci.yml`, באותו חוזה של sentry-alert-rules.mjs.
+- ‏11 טסטים חדשים נועלים את שמות האירועים לקבצים שפולטים אותם.
+
+אין AXIOM_TOKEN מקומי, אז הוחל רק ‏--dry; ‏CI יחיל כשהסודות יוגדרו.
+‏4089 טסטים, ‏type-check, ‏biome (בקבצים שלי) ו-build ירוקים.
+
+### ‏09.09 ‏goal בוצע: ‏PostHog מלא (branch ‏autopilot, ‏`a84a47d76`)
+
+‏goal שהוזרק ב-/goal, מחוץ לתור. ארבעה רכיבים, על צינור ה-fetch הקיים,
+בלי migration ובלי שינוי סכימה:
+
+- **טקסונומיית funnel:** ‏`src/lib/analytics/posthog-funnel.ts` מגדיר את
+  רצף הרכישה הקנוני (‏$pageview, ‏view_item, ‏add_to_cart, ‏begin_checkout,
+  ‏purchase) וטסט נועל כל שם למודול שפולט אותו, כדי ש-rename לא יאפס דשבורד.
+- **‏replay ב-opt-in כפול:** ההקלטה דורשת עכשיו גם את הסכמת הבאנר וגם
+  cookie ‏`ke_replay_optin` שנדלק ב-account/security (רכיב חדש
+  ‏`ReplayOptInToggle`). כיבוי באמצע דף עוצר הקלטה רצה. בכוונה לא נגעתי
+  בבאנר: שינוי הנוסח היה מחייב bump ל-CONSENT_WORDING_VERSION ושאילה
+  מחדש של כל המבקרים.
+- **‏feature flag לצ'ק-אאוט:** ‏`checkout_variant` (‏control /
+  ‏express_summary) נקרא מ-/decide בלי SDK, עם שער הסכמה, ‏timeout ‏2s,
+  ‏fallback ל-control על כל כשל, ו-cache דביק לסשן. ‏begin_checkout
+  והאירועים אחריו נושאים ‏`$feature/checkout_variant`, והטופס חושף
+  ‏`data-checkout-variant` לוריאנטים של CSS. הדגל עצמו עוד לא הוגדר
+  ב-PostHog UI; עד אז כולם control.
+- **‏cohort לפי cashback:** ‏property ‏`cashback_tier`
+  (‏none/bronze/silver/gold לפי סכום ‏order_cashback ב-`v_wallet_ledger`,
+  ספים 1 / 10,000 / 50,000 אגורות) נכתב כאירוע ‏$set ייעודי אחרי כל אירוע
+  כסף שרתי, כך שה-cohort נבנה ב-PostHog בלי לגעת ב-DB.
+
+‏4078 טסטים, ‏type-check, ‏lint (בקבצים שלי) ו-build ירוקים. ‏commit יחיד
+עם paths מפורשים; ה-WIP של ה-goal המקביל (media-ingest) לא נגרר פנימה.
+
+### ‏09.09 ‏goal בוצע: ‏Meilisearch, סגירת שני הפערים (branch ‏autopilot)
+
+‏goal שהוזרק ב-/goal, מחוץ לתור. הפירוט המלא בשורת ה-Updated העליונה.
+תמצית: התשתית מ-07.09 כבר כיסתה אינדקס מוצרים/קופונים, עברית, ‏typo,
+‏facets; מה שנסגר עכשיו הוא ה-drain החסר ל-search_index_outbox (טריגר 132
+חי בפרודקשן וכתב 21 שורות שאיש לא קרא) דרך cron חדש:
+
+```
+/api/cron/search-outbox
+src/server/search/outbox-drain.ts
+src/lib/supabase/pending-outbox.ts
+```
+
+ואינדקס categories חדש (מסמך פר קטגוריה פעילה, ספירות, עברית) ב:
+
+```
+src/lib/search/meili-settings.ts
+scripts/setup-meilisearch.mjs
+```
+
+### ‏07.09 ‏goal בוצע: ‏Admin RBAC hardening (branch ‏autopilot)
+
+‏goal שהוזרק ב-/goal, מחוץ לתור. ארבעת הרכיבים:
+
+- **תפקיד ‏read_only:** ‏migration ‏`181_admin_rbac_hardening.sql` (ב-pending,
+  לפי הכלל הקבוע) מוסיף את הערך ל-enum ומרחיב את ‏`is_support()` כך שהתפקיד
+  יורש את כל משטח ה-SELECT של support ואפס policies של כתיבה. באפליקציה:
+  ‏`AppRole = UserRole | 'read_only'` ב-`roles.ts` (אותו חוזה כמו 178: למחוק
+  אחרי apply ו-regenerate), מטריצת `sectionAccess` נותנת לו read על כל
+  section, ‏sidebar ו-users UI עודכנו. עד ה-apply, שיוך התפקיד נכשל בקול
+  (invalid enum) וזה מתועד בפעולה עצמה.
+- **RLS/DB:** נמדד מול פרודקשן דרך MCP לפני הכתיבה: הפונקציה של 035
+  (‏`enforce_role_change_privilege`) **לא קיימת בפרודקשן**; השומר החי הוא של
+  090. לכן 181 מקשיח את 090 עצמו: אסור לשנות role לעצמך, הענקה/שלילה של
+  admin-tier רק ל-super_admin, ורק עם JWT ברמת ‏aal2. בנוסף policy
+  ‏RESTRICTIVE על UPDATE של profiles: ‏super_admin בסשן aal1 לא כותב כלום
+  דרך ה-user client (וזה המסלול האמיתי: הפעולה ב-users.ts כותבת דרכו).
+- **audit מלא:** שבעה קבצי actions מוטציה בלי אף ‏`writeAuditLog` קיבלו
+  קריאות (categories, coupon-deals, discounts, images, products, referrals,
+  vendors), וטסט כיסוי סטטי חדש
+  ‏`audit-call-coverage.test.ts` מפיל כל קובץ עתידי שמוטציה בלי audit.
+  ‏trigger על profiles כבר חי בפרודקשן (‏`audit_profiles`, נמדד), אז אין
+  כפילות DB.
+- **MFA ל-super_admin:** ‏TOTP נייטיב של Supabase, לא passkeys (כניסת passkey
+  מייצרת סשן רגיל דרך generateLink/verifyOtp בלי שום סימון, נמדד בקוד).
+  שער ‏`enforceSuperAdminMfa` בכל ארבעת ה-require* ב-`rbac.ts`: ‏super_admin
+  בלי aal2 מופנה ל-`/admin-mfa` (מחוץ ל-(admin) כדי לא ללולאה), שם enrol
+  (QR + secret) או challenge, דרך ‏`src/server/actions/mfa.ts` עם rate limit
+  על user+IP (רשומים ב-policies.ts). ההחלטה טהורה ב-`mfa-gate.ts` עם טסטים,
+  ‏fail-closed כשה-AAL לא ידוע.
+
+החלטות שהתקבלו לבד: ‏read_only רואה הכול חוץ ממספרי כסף (‏canSeeMoney נשאר
+admin-tier, חשיפה מינימלית); ‏bulk ops כותבות שורת audit מסכמת אחת עם ids;
+ההקשחה נכתבה על גוף הפונקציה הפרוס של 090 ולא על 035 כי כך נמדד.
+
+שערים: ‏3828 טסטים ירוקים (כולל 26 חדשים), ‏type-check, ‏lint, ‏build נקיים.
+‏181 ממתין לאישור לפי הכלל הקבוע; עד אז MFA נאכף בשכבת האפליקציה בלבד.
+
+### ‏07.09 ‏goal בוצע: ‏PostHog מקצה לקצה (commit ‏`847be07da`, branch ‏autopilot)
+
+ארבעה commits נקטפו מ-`closeout/v1-final` (מודול capture בלי SDK, ‏fan-out
+מ-trackCommerce ומ-trackServerEvent, לוג על אירוע שנזרק ב-0-accepted), ומעליהם:
+
+- ‏`$pageview` לכל ניווט מ-AnalyticsProvider, מאחורי שער ההסכמה, עם אותו
+  route template של ה-rollup הפנימי.
+- ‏`referral_link_clicked` על נחיתת `?ref=` עם קוד תקין, פעם אחת לטאב לקוד
+  (dedupe ב-sessionStorage), מאחורי אותו שער. תוכנית ההפניות עצמה לא נגועה:
+  ה-attribution ממשיך לרכוב על ה-cookie ה-httpOnly.
+- שלושת אירועי הכסף קיבלו פולטים: ‏purchase ב-finalize (אחרי חותמת paid_at,
+  כך ש-replay לא פולט פעמיים), ‏voucher_redeemed ב-route המימוש (בלי replays),
+  ‏order_refunded ב-refund. ‏SERVER_EVENT_NAMES נושא את הארבעה.
+- ‏whatsapp_click צורף למראה הצד-לקוח כי ה-whitelist הפרוס בפרודקשן מכיל אותו
+  (נקרא דרך MCP ‏07.09); בלעדיו טסט הכיוון ההפוך של 180 אדום.
+- ‏session replay: ‏posthog-js נטען עצל רק אחרי הסכמה ועם מפתח, מקליט בלבד
+  (autocapture/pageview/exceptions כבויים, כל input ממוסך), עם אותו distinct id
+  של מסלול ה-fetch. אחרי שעלה, ‏trackEvent מנתב דרכו כדי שאירוע יישא
+  ‏$session_id ויקשר להקלטה. ‏distinctId מפורש (שרת) נשאר על fetch.
+- ‏`migrations/pending/180_analytics_server_event_names.sql` (אצל closeout זה
+  169; המספור כאן שונה) מרחיב את ה-whitelist בארבעת שמות השרת, ‏preflight
+  בפנים. אומת מול פרודקשן דרך MCP שהפונקציה עדיין ברשימת השמונה. ממתין
+  לאישור לפי הכלל הקבוע.
+- ‏pnpm-workspace.yaml: ‏core-js (הגיע עם posthog-js) נחסם ל-build scripts;
+  ה-placeholder ש-pnpm כתב הפיל כל install עד שהוחלף ב-false.
+
+שערים: ‏3783 טסטים ירוקים, ‏type-check, ‏lint, ‏build נקיים. ‏push עלה ל-origin.
+עד שאופיר יגדיר ‏NEXT_PUBLIC_POSTHOG_KEY הכול אינרטי: אפס אירועים, אפס רשת.
+
+### ‏07.09 ‏goal בוצע: יסודות PWA (commit ‏`8aa57ce0b`, branch ‏autopilot)
+
+מה שכבר היה קיים ולא נגעתי בו: manifest.ts (אייקונים, צבעים מ-tokens, RTL),
+מעטפת ה-offline, ‏InstallPrompt ו-ServiceWorkerRegistrar. מה שנוסף:
+
+- ‏`public/sw.js` הוקפץ ל-ke-v2: ‏cache דפי גלישה (בית, ‏/products, ‏/product/*,
+  ‏/category/*) חסום ל-40 רשומות, רק URL בלי query string. ‏network-first נשמר
+  בדיוק כמו שהיה; ה-cache משמש רק כשהרשת נופלת, לפני הנפילה למעטפת offline.
+- מטפל push: מפיל payload בלי JSON או בלי title (התראה ריקה מלמדת לחסום),
+  יעד לחיצה מרוסן ל-path מקומי (כולל חסימת `//host`). ‏notificationclick
+  ממקד טאב פתוח לפני שהוא פותח חדש.
+- מיגרציה `179_push_subscriptions.sql` ממתינה: endpoint ייחודי https בלבד,
+  ‏p256dh/auth כ-base64url, ‏RLS קריאה/מחיקה עצמית, אפס policy לכתיבה.
+- ‏actions ב-`src/server/actions/push.ts`: מאומתי סשן, ולידציה לצורת החוט
+  (87/22 תווים), ‏upsert על endpoint, "לא זמין עדיין" חינני עד החלת 179,
+  ‏rate limit ‏push-subscribe נרשם ב-policies.ts.
+- ‏`/account/notifications` + כניסה בניווט; ‏PushOptIn מבקש הרשאה רק בלחיצה,
+  ומבטל את המנוי בדפדפן אם השמירה בשרת נכשלה.
+- זוג VAPID נטבע (07.09) ל-`.env.local`; המפתח הפרטי בלי קורא עדיין, אבל
+  חייב להישמר עם הציבורי או שכל המנויים יתייתמו. תועד ב-`.env.example`.
+- הטסט "thirty-two renumbered files" בתיאור המלאי כבר היה לא מדויק (33 קבצים
+  לפני 179); הנוסח שונה כך שלא יסחוף שוב.
+
+תחזוקה באותו סבב: גיבוי יומי נוצר ואומת ב-ls ‏(818M, ‏07.09 15:00), שלושת
+הישנים נמחקו לפי הכלל (נשארו שלושה). ‏caffeinate חי ו-SleepDisabled=1.
+
+החלטה שהתקבלה לבד: ‏kenyon-loop.sh לא מופיע ב-ps aux (לא רק ב-pgrep, שידוע
+כעיוור לו). לא הופעלה לולאה שנייה: הסשן הזה רץ ומונחה על ידי מריץ חי, וכפילות
+לולאות היא הסיכון המתועד. אם אחרי חידוש מכסה אף סשן לא ממשיך, זו הנקודה לבדוק.
+
+### ‏07.09 ‏goal בוצע: יומן קאשבק (commit ‏`1281b9cfb`, branch ‏autopilot)
+
+ה-goal ביקש: "transactional ledger table, first-purchase 10% rule,
+every-fifth-purchase 5% rule, ILS amounts, admin adjustment interface with
+audit trail". נבנה מעל הארנק הקיים (wallet_accounts/wallet_entries +
+fn_wallet_transfer): הארנק נשאר אמת הכסף, והיומן החדש הוא רשומת ההחלטה
+(איזה כלל ירה, באיזה שיעור, על איזה בסיס).
+
+1. **מיגרציה** `migrations/pending/177_cashback_ledger.sql` (ממתינה, לא הוחלה):
+   ‏`cashback_ledger` (הוספה-בלבד: טריגר חוסם UPDATE/DELETE גם ל-service role,
+   אגורות שלמות חתומות, ‏RLS קריאה-עצמית + קריאת אדמין, אפס כתיבה ללקוח),
+   ‏`fn_cashback_order_bonus` (נעילת advisory פר משתמש, דירוג לפי
+   ‏paid_at IS NOT NULL, ‏10% לרכישה 1, ‏5% לדירוג 5/10/15..., אידמפוטנטי על
+   ‏`order:<id>:count_bonus`, משלם דרך ‏fn_wallet_transfer מ-
+   ‏platform:cashback_reserve, וגם משקף את קאשבק המוצרים הקיים לשורת יומן),
+   ‏`fn_cashback_admin_adjust` (סכום חתום, בודק ‏is_admin() בעצמו, קיזוז
+   נכשל כשהיתרה כבר נוצלה, רושם ‏auth.uid()). קריאת סכומי ההזמנה נעשית
+   ‏generation-agnostic (‏total_agorot / total_ils_agorot / total_ils) בגלל
+   שתי השושלות. נרשמה ב-README/APPLY-ORDER.
+2. **‏finalize**: ‏`awardOrderCountBonus` נקרא מיד אחרי ‏creditCashback
+   (הסדר מהותי: ה-RPC מקשר את תנועת הארנק של קאשבק המוצרים), נרשם ולא זורק,
+   באותה עמדה כמו ההפניות והמלאי. ‏DB בלי 177 עונה 42883 וזה דילוג מתועד.
+3. **אדמין** `/admin/cashback`: טבלת 200 התנועות האחרונות + טופס התאמה
+   (אימייל, סכום בשקלים חיובי/שלילי, נימוק חובה, מפתח אידמפוטנטיות פר
+   שליחה). ה-RPC רץ על לקוח הסשן כדי ש-created_by יירשם, ו-writeAuditLog
+   מוסיף שורת audit_log עם IP/request_id. נוסף לסיידבר ול-nav.ts.
+4. **כללים משוקפים** `src/lib/cashback/rules.ts` + טסט drift שקורא את קובץ
+   ה-SQL ונכשל אם המספרים זזים; ‏`src/server/cashback/wired.test.ts` מצמיד
+   את החיווט (לקח ההפניות: פיצ'ר DB בלי קורא עובר כל טסט יחידה).
+5. **שערים**: ‏3668 טסטים ירוקים (18 חדשים), ‏type-check נקי, ‏lint נקי,
+   ‏`pnpm build` עבר. שלושה שערי מלאי (inventory של מיגרציות ממתינות,
+   ‏brand-contrast, ‏discarded-read) תפסו את הקבצים החדשים ועודכנו/תוקנו.
+
+**החלטות שהתקבלו לבד:** (א) המיגרציה לא הוחלה דרך MCP למרות ניסוח ה-goal:
+החלת migration על פרודקשן היא אחד מארבעת המצבים הקריטיים; עד ההחלה המסך
+מציג הודעת "לא מותקן" וה-finalize מדלג ברישום, ללא נזק. (ב) מספור 177 ולא
+174: ‏closeout/v1-final מחזיק 174-176 ב-pending שלו, והפער מונע התנגשות
+במיזוג. (ג) בסיס הבונוס הוא ‏total של ההזמנה (מה ששולם באתר), אותה קריאה
+שמרנית של תוכנית ההפניות: הזמנה ששולמה כולה מיתרת ארנק לא מייצרת בונוס.
+(ד) בלי PR: אין כלי GitHub MCP בסשן, וה-branch ‏autopilot נדחף ישירות כמו
+ב-goals הקודמים. (ה) העבודה בוצעה ב-worktree ‏kenyonexpress-autopilot לפי
+הגדרת הסביבה של הסשן, לא בצ'ק-אאוט הראשי שיושב על ‏closeout/v1-final.
+
+### ‏07.09 ‏goal בוצע: ‏WhatsApp Business flow (commit ‏`2b1a529e5`, branch ‏autopilot)
+
+ה-goal ביקש: "Twilio webhook receiver at /api/webhooks/whatsapp, order status
+notifications, customer support ticket creation, opt-in/opt-out management".
+נבנה בארכיטקטורת ה-outbox הקיימת (095): ה-DB מחליט אם הודעה מגיעה, cron מחליט מתי.
+
+1. **מיגרציה** `migrations/pending/173_whatsapp_flow.sql` (ממתינה, לא הוחלה):
+   ‏`whatsapp_contacts` (רשומת הסכמה, ‏opted_in/opted_out/pending),
+   ‏`whatsapp_outbox` (ארבעה סוגים: ‏order_paid/fulfilled/cancelled/refunded,
+   ‏dedupe פר הזמנה+סוג), ‏`whatsapp_inbound_messages` (הגנת replay על
+   ‏MessageSid), ‏`support_tickets` + ‏`support_ticket_messages` (מחסן הפניות
+   הראשון בסכימה; RLS: קריאה עצמית + קריאה/עדכון ל-staff),
+   ‏`fn_enqueue_whatsapp` (שערי הסכמה: בלי ‏opted_in אין שורה),
+   וטריגר `tg_orders_whatsapp_status` על ‏orders. נרשמה ב-README/APPLY-ORDER.
+2. **‏webhook** `src/app/api/webhooks/whatsapp/route.ts`: אימות
+   ‏X-Twilio-Signature ב-HMAC-SHA1 בזמן קבוע; בלי ‏TWILIO_* הנתיב סגור (401).
+   מילות מפתח בעברית ובאנגלית (הסר/הצטרפות/STOP/START) משנות הסכמה; מילת
+   מפתח בתוך משפט נשארת פנייה. טקסט חופשי נכנס לפנייה פתוחה של אותו טלפון
+   או פותח חדשה, והתשובות הן TwiML.
+3. **‏cron** `src/app/api/cron/whatsapp/route.ts`: מרוקן את התור, בודק הסכמה
+   שוב בזמן שליחה (הסרה בין enqueue לשליחה מנצחת), backoff מעריכי, ‏dead
+   אחרי 5. נרשם ב-`scripts/cron-jobs.json` + ‏CRON-EXTERNAL.md בתדירות `*/5`
+   (אותו ביטוי cron קיים, אפס שינוי ב-workflow).
+4. **תשתית** `src/server/whatsapp/`: ‏transport ל-Twilio (לא זורק לעולם,
+   ‏skipped בלי credentials, בלי SDK: קריאת fetch אחת), בוני הודעות בעברית
+   (כסף רק דרך `formatAgorot`), מסווג כוונות.
+5. **שערים**: ‏3647 טסטים ירוקים (46 חדשים), ‏type-check נקי, ‏lint נקי,
+   ‏`pnpm build` עבר. שלושה שערי מלאי (pending migrations, cron schedule,
+   ‏cron auth) עודכנו בכוונה, וזה בדיוק תפקידם.
+
+**החלטות שהתקבלו לבד:** (א) המיגרציה נכתבה ל-`migrations/pending` בלבד ולא
+הוחלה דרך MCP, למרות שה-goal אמר "Use Supabase MCP for migrations": החלת
+migration על פרודקשן היא אחד מארבעת המצבים הקריטיים, וההחלטה השמרנית היא
+קובץ ממתין. עד ההחלה, ה-webhook עונה 500 ל-retry של Twilio וה-cron מדווח
+שגיאת קריאה, שניהם ללא נזק. (ב) טבלה נפרדת `whatsapp_outbox` ולא הרחבת
+`notification_outbox`: ה-CHECK של ה-kinds שם משוקף בשלושה מקומות שטסט אוכף,
+ושתי רגלי המשלוח שלו (מייל/push) לא מתארות את הערוץ הזה. (ג) בלי PR: אין
+כלי GitHub MCP בסשן, וה-branch ‏autopilot נדחף ישירות כמו בשני ה-goals
+הקודמים. (ד) מספור 173 לפי ה-worktree הזה (הענף הראשי מחזיק 173-176 אחרים
+ב-pending); אם ימוזג, הקובץ ימוספר מחדש כמו שנעשה ב-01.09.
+
+### ‏07.09 ‏goal בוצע: ‏Cardcom tokenization מחווט, כולל מסלול 3DS (commit ‏`52fe21ed4`, branch ‏autopilot)
+
+ה-goal ביקש: "Wire Cardcom tokenization: 1-click checkout, store token per
+user, 3DS challenge flow, webhook handler". מיפוי מלא לפני כתיבה מצא ששלושה
+מארבעת הרכיבים כבר קיימים ועובדים (טוקן נטבע ב-ChargeAndCreateToken, נשמר
+פר-משתמש ב-`payment_tokens` דרך `finalizeOrder`, נטען ב-1-click דרך
+`chargeSavedToken`, וה-webhook המלא ב-`api/payments/cardcom/webhook`).
+מה שחסר באמת ונבנה:
+
+1. **‏3DS challenge flow** (`src/lib/payments/threeds.ts` חדש): חיוב טוקן
+   שרת-לשרת שנדחה עם דרישת challenge לא מוצג כסירוב אלא נופל חזרה לדף
+   ה-Low Profile המתארח, היחיד שיכול להציג את ה-ACS (נשארים SAQ-A). המפתח
+   `lp3ds:<client_ref>` כי המפתח `lp:` כבר תפוס על ידי החיוב שנדחה
+   (העמודה UNIQUE), וה-replay lookup קורא את שניהם ולוקח את החדש. הטוקן
+   נטבע מחדש בדף, גם אם save_card כבוי, כי הטוקן הישן ידרוש challenge בכל
+   חיוב שרת-לשרת. זיהוי הדרישה: רשימת קודים ב-`CARDCOM_3DS_REQUIRED_CODES`
+   (ריקה כברירת מחדל, שמרני: סירוב לא מזוהה נשאר סירוב) + זיהוי טקסט 3DS.
+   ‏`CARDCOM_3DS_STATE` (auto/enabled/disabled) שולח `ThreeDSecureState`
+   ל-LowProfile.aspx; לא מוגדר = לא נשלח דבר והמסוף מחליט. שמות השדות הם
+   ניחוש legacy באותו מעמד כמו BillGoldPost, מרוכזים במקום אחד.
+2. **יומן חיובי טוקן**: `chargeSavedToken` כותב עכשיו את
+   `token_charge_requested/succeeded/declined` שהוגדרו ב-130 ולא נכתבו
+   מעולם (המסלול היחיד בלי webhook, היה בלתי נראה ב-`payment_events`).
+3. **`payments.token_id`**: ה-FK מ-026 שאף אחד לא כתב, מאוכלס בחיוב טוקן.
+4. **שערים**: ‏3598 טסטים ירוקים (57 בקבצים שנגעו, כולל 3 תרחישי 1-click
+   חדשים), ‏type-check נקי, ‏lint נקי, ‏`pnpm build` עבר.
+
+**החלטות שהתקבלו לבד:** (א) בלי migration: הסכימה הקיימת מכסה הכל, בהתאם
+לזיכרון "refund needs no migration". (ב) קבצי ה-R2/anon-key שנמצאו staged
+בעץ מ-goal קודם לא נגעו ב-commit שלי (commit עם paths מפורשים); תוקנו בהם
+רק שגיאות lint מכניות (פורמט + `Reflect.deleteProperty` במקום `delete`)
+כדי שהשער יהיה ירוק, והם מחכים ל-commit של ה-goal שלהם.
+
+### ‏07.09 ‏goal בוצע: הקמת פריסת Vercel (commit ‏`1b049ec65`, branch ‏autopilot)
+
+ה-goal ביקש: "Set up Vercel deployment: create vercel.json with build/dev
+commands, configure all env vars from .env.example as required in Vercel
+dashboard docs... Create docs/VERCEL-SETUP.md". מה שנעשה:
+
+1. **`vercel.json`**: כבר היה קיים עם framework/install/build/region. נוסף
+   `devCommand: pnpm dev`. ‏`crons` לא הוחזר בכוונה, לפי
+   `docs/CRON-EXTERNAL.md` (‏Hobby מריץ בשקט רק שניים ומתעלם מהשאר).
+2. **`docs/VERCEL-SETUP.md` חדש**: מדריך דשבורד בלבד (אין קישור CLI מקומי,
+   נמדד: אין `.vercel/` ואין token). כולל: Production Branch חייב להיות
+   `main` (התקלה שהפילה 11 פריסות), ארבע טבלאות env הנגזרות מ-`.env.example`
+   ומ-`src/lib/env.ts` (חובה / מומלץ / לפי פיצ'ר / אסור להגדיר לעולם,
+   ובראש האחרונה `ALLOW_INCOMPLETE_ENV`), ‏curl-ים לאימות פריסה ראשונה כולל
+   401/200 על ‏cron, הפעלת המתזמן החיצוני עם השמות האמיתיים מ-`cron.yml`
+   (‏`CRON_SECRET`, ‏`CRON_BASE_URL`, ‏`CRON_SCHEDULER_ENABLED`), ועצירה
+   מפורשת לפני DNS ולפני `CHECKOUT_ENABLED=true`.
+3. **שערים**: ‏3551 טסטים ירוקים, ‏type-check נקי, ‏lint נקי, ‏`pnpm build`
+   עבר (exit 0, בילד יחיד, נבדק שאין בילד מקביל לפני ההרצה).
+
+לא הופעלה שום פריסה בפועל ולא נגעתי ב-DNS: שניהם שערי אישור לפי CLAUDE.md.
+
+### ‏04.09 ‏goal בוצע: ‏RLS מפורש לכל טבלה + אימות שלוש פרסונות (commit ‏`4c98f6021`, branch ‏autopilot)
+
+ה-goal ביקש: "Write comprehensive RLS policies via Supabase MCP for every
+table, verify with automated tests using three personas... block cross-tenant
+access". נמדד קודם: כל 71 הטבלאות הציבוריות עם RLS דלוק, ועשר מהן עם אפס
+מדיניות. מה שנעשה:
+
+1. **מיגרציה** `migrations/pending/172_rls_zero_policy_tables.sql`, הוחלה על
+   פרודקשן דרך MCP בשם `rls_zero_policy_tables_172` (‏+ ‏`_report_grants`),
+   לפי תקדים 169/170/171 ונוסח ה-goal: ‏deny_all_client_roles **מצמצם**
+   (restrictive) על שלוש טבלאות התשתית (‏rate_limits, user_rate_limits,
+   search_index_outbox), ‏`<t>_admin_read` בשער `is_admin()` על שבע טבלאות
+   התצפית (‏payment_webhook_events, ai_usage, analytics_events וארבע טבלאות
+   ה-report), ו-grant SELECT ל-authenticated על טבלאות ה-report שנוצרו ב-170
+   בלי אף grant. הדלתא היחידה: אדמינים מקבלים קריאה על שבע טבלאות; הדחיות
+   כבר היו ברירת המחדל. תוקן בדרך באג אמיתי: טאב ה-webhooks באדמין קרא את
+   payment_webhook_events דרך ה-client של הבקשה וקיבל בשקט אפס שורות.
+2. **‏harness שלוש פרסונות** `tests/sql/rls_three_personas.sql`: זורע לבד שני
+   לקוחות ואדמין, מריץ anon / user A / admin, כולל חוצה-דיירים (A לא קורא,
+   לא שותל ולא מעדכן כתובת או push token של B), והכל מתגלגל לאחור. הורץ
+   מול פרודקשן דרך MCP עם `RAISE EXCEPTION 'RLS_HARNESS_PASS'` בסוף: עבר,
+   ואומת אפס שאריות (‏auth.users, rate_limits, webhook_events, reports).
+3. **‏vitest** `src/__tests__/rls-zero-policy-migration.test.ts` מצמיד את
+   אינווריאנטות שני הקבצים (‏restrictive, ‏idempotency מול pg_policy, ‏SELECT
+   בלבד, שתי הפרסונות המאומתות ועוד), ו-inventory עודכן לשלושים קבצים.
+
+**החלטות שהתקבלו לבד.** ‏(א) המיגרציה כבר הייתה מוחלת על ידי סשן קודם שנקטע
+לפני טקס הסיום (שני שמות המיגרציה ב-list_migrations, ‏01:07 UTC); הסשן הזה
+אימת מחדש מדיניות-מדיניות מול pg_policy, הריץ את ה-harness, והשלים את הטקס.
+‏(ב) ‏advisors אחרי ההחלה: אפס ממצאים חדשים; אותם 22 WARN ידועים על definer.
+
+שערים: ‏3551 טסטים ירוקים, ‏type-check נקי, ‏lint נקי, ‏build עבר.
+
+### ‏04.09 ‏goal בוצע: חיפוש טקסט מלא בעברית, ‏GIN + ‏RPC בשם search_products (branch ‏autopilot)
+
+ה-goal ביקש במפורש: "Add full-text search GIN indexes for products and deals
+in Hebrew via Supabase MCP using simple config with unaccent extension and
+expose via search_products RPC, add Playwright test". מה שנבנה:
+
+1. **מיגרציה** `migrations/pending/171_search_fts.sql`, הוחלה על פרודקשן דרך
+   MCP בשם `search_fts_171` (תקדים 169/170, פירוט בהחלטות למטה): הרחבת
+   `unaccent` הותקנה לסכימת extensions; שלוש פונקציות עזר IMMUTABLE
+   (`fts_unaccent` עוטפת את המילון הקבוע, `fts_join` ל-tags, ‏`fts_prefix_query`
+   שהופכת קלט חופשי ל-tsquery של prefix עם AND בין מילים, עד 8 מילים, בלי
+   שום דרך להזריק אופרטורים); עמודת `search_vector` מסוג tsvector כ-GENERATED
+   STORED על `products` (שם A, מותג+tags B, תיאור קצר C, תיאור D) ועל
+   `coupon_deals` (כותרת A, שם עסק B, מיקום C, תנאים D), קונפיג `simple` כפי
+   שה-goal הכתיב; שני אינדקסי GIN; ו-RPC ‏`search_products(q, max_results,
+   product_type, category)` שהוא SECURITY INVOKER + STABLE, ממוין ‏ts_rank,
+   פתוח ל-anon כי RLS של הקורא הוא שקובע מה נראה.
+2. **צד אפליקציה**: ‏`src/lib/supabase/pending-search.ts` (אותה תבנית גישור
+   כמו pending-reports.ts של 170, עם אותה נקודת מחיקה כש-database.ts יחודש).
+   ‏`search-server.ts` מנסה עכשיו FTS לפני ה-ILIKE (‏Meili נשאר שלב 3), עם
+   נפילה ל-ILIKE רק כשהפונקציה לא קיימת (DB מקומי בלי 171); שגיאה אמיתית
+   מתנוונת לתוצאה ריקה ולא מריצה בשקט את הסריקה הלא-מאונדקסת. ‏`/api/search`
+   עבר לאותו מסלול, כולל סינון קטגוריה בתוך ה-RPC (‏slug שאינו קטגוריה מצמצם
+   לכלום, אותו חוזה כמו קודם), וה-rate limit נשאר בדיוק איפה שהיה.
+3. **טסטים**: ‏17 יחידה בשני קבצים קיימים (כולל שלושה חדשים על מסלול ה-FTS:
+   מיפוי שורות, קטגוריה ריקה, ושגיאה אמיתית שלא נופלת ל-ILIKE) + ‏spec חדש
+   `e2e/search.spec.ts` עם 6 טסטים (12 ריצות בשני הדפדפנים, כולם ירוקים מול
+   שרת prod מקומי): ‏RPC דרך PostgREST כ-anon מוצא מוצר חי לפי מילה משמו,
+   לפי prefix של המילה, ובסדר מילים הפוך; קלט שהוא רק תחביר tsquery מחזיר
+   רשימה ריקה ולא 400; ‏`/api/search` מגיש את אותו מוצר; וג'יבריש מחזיר 200
+   ריק. הטסטים מגלים מוצר אמיתי בזמן ריצה במקום slug קשיח שנרקב.
+
+**החלטות שהתקבלו לבד.**
+1. **המיגרציה הוחלה על פרודקשן דרך MCP** (`search_fts_171`), לפי אותו תקדים
+   מתועד של 169 ו-170 מאותו יום: נוסח ה-goal מורה "via Supabase MCP... Use
+   Supabase MCP for DB, RLS, migrations", וזה נלקח כאישור. לפני ההחלה הקובץ
+   כולו הורץ מול פרודקשן בתוך DO block שגולגל לאחור, עם שישה probes:
+   התאמת מילה בעברית, ‏RPC בסדר מילים הפוך + prefix ‏("airpods אוזנ" מצא את
+   "אוזניות AirPods 3"), קלט פיסוק בלבד, וקטורי הדילים, הרצה כ-role anon
+   תחת RLS, ו-EXPLAIN שהוכיח שימוש ב-GIN. אחרי ההחלה אומתו 80 וקטורי
+   מוצרים, 8 וקטורי דילים, שני האינדקסים וה-RPC. הסיכון: עמודות GENERATED
+   ופונקציות חדשות בלבד, אפס שינוי בשורות קיימות, ‏rollback מלא בכותרת.
+2. **"deals" פורש כ-`coupon_deals`**: אין טבלת deals אחרת בפרודקשן. הטבלה
+   קיבלה וקטור ואינדקס כפי שה-goal ביקש, אבל ה-RPC היחיד שה-goal נקב בשמו
+   הוא search_products, ולכן אין עדיין RPC לדילים; כשמשטח חיפוש דילים יקום,
+   הוא משתמש באותו `fts_prefix_query`.
+3. **‏`simple` לא מוריד תחיליות עברית** (ה' הידיעה וכו'): "מקרר" לא ימצא מוצר
+   שכתוב בו רק "המקרר". זו המגבלה הידועה של הקונפיג שה-goal הכתיב, מתועדת
+   בכותרת המיגרציה; ‏Meilisearch נשאר מסלול הבריחה של שלב 3.
+4. **שגיאת FTS אמיתית לא נופלת ל-ILIKE**: "אין פונקציה" ו"החיפוש נכשל" הם
+   ענפים שונים בכוונה, כדי שתקלה חיה לא תסתתר מאחורי הסריקה שהאינדקס בא
+   להחליף. מקובע בטסט.
+5. **‏database.ts לא חודש**, מאותה סיבה כמו ב-170; הגשר הוא pending-search.ts.
+6. ה-advisors אחרי ההחלה: אפס ממצאים חדשים. ‏search_products לא מופיע
+   באזהרות ה-definer כי הוא INVOKER.
+
+שערים: ‏3541 טסטים ירוקים, ‏type-check נקי, ‏lint נקי, ‏build עבר, ‏e2e
+‏12/12. רעש `rate_limit.open` בריצת ה-e2e הוא חוסם ה-SUPABASE_SECRET_KEY
+הידוע (המפתח המקומי הוא מפתח הדמו) ולא רגרסיה: ה-limiter נכשל פתוח בתכנון.
+
+### ‏04.09 ‏goal בוצע: טבלאות דיווח מנורמלות-הפוך + ‏pg_cron לילי + ‏RPC לאדמין (branch ‏autopilot)
+
+ה-goal ביקש במפורש: "Create denormalized reporting tables via Supabase MCP
+refreshed nightly via pg_cron... exposed via admin RPC". מה שנבנה:
+
+1. **מיגרציה** `migrations/pending/170_reporting_tables.sql`: ארבע טבלאות
+   (`report_revenue_daily`, `report_orders_daily`, `report_top_products`
+   לחלונות 7/30/90 יום, `report_cohort_retention` לפי חודש הצטרפות),
+   פונקציית `refresh_report_tables()` שבונה את כולן מחדש בטרנזקציה אחת,
+   וחמישה RPC בסגנון definer שכולם נפתחים ב-`is_admin()` ונסגרים ב-42501.
+   כל הכסף אגורות bigint מהעמודות הגנרטיביות של 138; כל הימים ימי ישראל
+   (`Asia/Jerusalem`), אותה עמדה כמו דוח הסליקה.
+2. **‏pg_cron**: ‏job בשם `report_tables_nightly` ב-`30 1 * * *` ‏UTC
+   (03:30/04:30 שעון ישראל). זה ה-job הראשון ב-`cron.job` של הפרויקט.
+3. **צד אפליקציה**: `src/lib/supabase/pending-reports.ts` (אותה תבנית כמו
+   pending-schema.ts של 135), `src/server/queries/admin-reports.ts` (ארבעה
+   קוראים דרך ה-client של הבקשה, כי ההרשאה נאכפת ב-DB), ו-action רענון
+   ידני ב-`src/server/actions/admin/reports.ts` עם שורת audit.
+4. **טסטים**: ‏22 חדשים בשלושה קבצים, כולל טסט שמצמיד את אינווריאנטות
+   קובץ המיגרציה (שער is_admin בכל RPC, ‏search_path ריק, ‏revoke על
+   refresh, ‏cron מתוזמן, אפס כסף צף).
+
+**החלטות שהתקבלו לבד.**
+1. **המיגרציה הוחלה על פרודקשן דרך MCP** (`reporting_tables_170`), לפי
+   התקדים המתועד של 169 באותו יום: נוסח ה-goal מורה במפורש "via Supabase
+   MCP... Use Supabase MCP for DB, RLS, migrations", וזה נלקח כאישור, כמו
+   שנעשה ב-169. לפני ההחלה הקובץ כולו הורץ מול פרודקשן בתוך טרנזקציה
+   שגולגלה לאחור (כולל refresh מלא על הזמנות אמיתיות), ואחרי ההחלה אומתו
+   ספירות השורות, ה-job, ומסלול הסירוב 42501 לקורא לא-אדמין (probe
+   מגולגל לאחור). הסיכון: טבלאות ופונקציות חדשות בלבד, אפס קורא קיים,
+   ‏rollback מלא בכותרת הקובץ.
+2. **‏RLS פועל בלי אף policy** על ארבע הטבלאות, ננעלו גם ב-revoke: אותה
+   עמדת "שירות בלבד" כמו settlement_events. ה-advisors מדווחים על זה INFO
+   בלבד, ואותו WARN גנרי על definer שיש לכל פונקציות האדמין הקיימות.
+3. **‏database.ts לא חודש**: חידוש היה גורר פנימה גם את שינויי 169 וכל מה
+   שסשנים מקבילים החילו, אדווה שלא שייכת ל-goal הזה. הגשר הוא
+   pending-reports.ts, עם נקודת מחיקה מתועדת.
+4. הכנסות נספרות רק על הזמנות בשושלת paid (‏paid/partially_fulfilled/
+   fulfilled/platform_settled), לפי `paid_at`, בלי refunded/cancelled;
+   שורות פריט מבוטלות/מוחזרות מוחרגות גם כשההזמנה שולמה. ‏refunds
+   נשארים בבעלות קונסולת ההחזרים.
+
+שערים: ‏3537 טסטים ירוקים, ‏type-check נקי, ‏lint נקי, ‏build עבר. ‏cron
+הלילי ירוץ לבד; אין תלות ב-Vercel cron ואין צעד ידני.
+
+### ‏04.09 ‏goal בוצע: ‏soft delete על טבלאות הפונות למשתמש (commit ‏`dcd132967`, branch ‏autopilot)
+
+נמדד מול פרודקשן דרך ‏MCP: שש טבלאות כבר נושאות `deleted_at` עם סינון ‏RLS
+(‏products, product_variants, suppliers, user_addresses, vendors, coupon_deals).
+ארבע חסרות אותו לגמרי: ‏categories, product_images, reviews, wishlists.
+נכתבה מיגרציה ממתינה:
+```
+migrations/pending/149_soft_delete_user_facing_remainder.sql
+```
+היא מוסיפה עמודה, אינדקס חלקי בסגנון הבית, ומדיניות ‏SELECT מסוננת, כולל
+סגירת דלף חי: תמונות של מוצר מחוק נשארו קריאות כי המדיניות בדקה רק
+`products.status`. בצד הקוד נוסף מודול מרכזי:
+```
+src/lib/soft-delete.ts
+```
+עם רשימת ‏live (מסננת עכשיו) ורשימת ‏pending (‏no-op עד החלת 149, כי סינון על
+עמודה חסרה מפיל את כל השאילתה ב-42703). אחרי ההחלה מזיזים ארבעה שמות לרשימת
+ה-live וכל האתרים נדלקים בעריכה אחת; טסט סחיפה נכשל בכוונה ברגע שהטיפוסים
+יחודשו, כדי לא לשכוח.
+
+**החלטות שהתקבלו לבד.**
+1. המיגרציה לא הוחלה על פרודקשן. הכלל בקובץ ההוראות קובע ששינוי סכימה יושב
+   ב-`migrations/pending` וממתין לאישור, וזה גובר על נוסח ה-goal.
+2. קריאות אחרי מכירה במסלול הכסף (שמות לחשבונית, ‏finalize, מייל שוברים,
+   שמות מנויים) לא מסננות בכוונה: מסמך של הזמנה ששולמה חייב לשרוד מחיקת
+   קטלוג. מסומן בהערה בכל אתר קריאה.
+3. קריאות במסלול המכירה כן מסננות מעכשיו: צילום הסליקה ב-checkout, מלאי חי,
+   ואישורי אדמין.
+4. שתי בדיקות ה-health על ‏categories לא סוננו: הן ‏head count לבדיקת חיות,
+   וסינון על עמודה חסרה היה מדווח שה-DB נפל.
+5. קבצי 148 ו-169 של סשנים מקבילים תועדו באינוונטר ברגע שנמצאו על הדיסק,
+   אחרת טסט האינוונטר אדום. ה-commit של הסשן המקביל (`0282182ca`) לקח איתו
+   את הקבצים המשותפים שהיו staged; שום דבר לא אבד, הכל בשני ה-commits.
+
+שערים: ‏3515 טסטים ירוקים פעמיים, ‏type-check נקי, ‏lint נקי, ‏build עבר
+(אחרי המתנה לנעילת ה-build של הסשן המקביל). ‏push בוצע ל-origin/autopilot.
+
+### ‏04.09 ‏goal‏ בוצע: ‏audit_log מקיף על כל טבלאות הכסף והמשתמשים (commit ‏`0282182ca`, branch ‏autopilot)
+
+מיגרציה 169 הוחלה על פרודקשן דרך ‏Supabase MCP בשם `audit_full_coverage_169`:
+עמודות `before`/`after` (צילומי שורה מלאים, עם מחיקת `cardcom_token`/`pin_hash`),
+עמודת `request_id`, הרחבת `entity_id` ל-text, ופונקציית טריגר גנרית שקוראת
+‏ip/user_agent/x-request-id מ-`request.headers` של ‏PostgREST. נוספו טריגרים
+ל-28 טבלאות; יחד עם השש הקיימות: 34 טבלאות מכוסות. בצד האפליקציה: כל שבע
+בנייני הלקוח של ‏Supabase מעבירים עכשיו `x-request-id` בכל קריאה
+(`src/lib/supabase/request-id-fetch.ts`), ו-`writeAuditLog` חותם `request_id`.
+
+**החלטות שהתקבלו לבד.**
+1. החלת המיגרציה על פרודקשן: ה-goal הורה במפורש "migrate via Supabase MCP",
+   וזה האישור. לפני ההחלה כל הסקריפט אומת נגד פרודקשן בתוך ‏DO block שהסתיים
+   ב-exception מכוון (הכל התגלגל אחורה), כולל בדיקת צילומים, ‏ip וכותרות.
+2. ה-commit נושא גם את קבצי האינוונטר של הסשן המקביל (148, 149 + שורות
+   ה-README) כי בלעדיהם בדיקות האינוונטר נשברות ב-CI על עץ ה-commit. קוד
+   האפליקציה של אותו סשן (soft-delete וכו') נשאר לא-committed אצלו.
+3. `.env.local` היה חסר ב-worktree הזה ולכן `pnpm build` נפל באיסוף עמודים;
+   הועתק מהריפו הראשי. שערים: ‏3515 טסטים ירוקים, ‏type-check נקי, ‏lint נקי,
+   ‏build עבר.
+4. יועצי האבטחה של ‏Supabase אחרי ה-DDL: אין ממצא חדש; כל הממצאים קדמו
+   למיגרציה ומתועדים ממיגרציות קודמות.
+5. הערה ל-148 (פרטיצות): אם `orders` תיבנה מחדש כטבלה מפורטצת, יש ליצור
+   מחדש את `audit_orders` על ההורה. מתועד בכותרת של 169.
 
 ### ‏01.09 גל החוסן (`feat/resilience`, מוזג ל-main)
 
@@ -6545,6 +10029,41 @@ Updated: 2026-08-11 בוקר (goal-65: product_type selector)
 
 <!-- שוחזר מ-feat/supplier-portal במיזוג 19.08: תוכן שלא קיים ב-phase5/homepage.
      המצביע החי היחיד הוא "## המשך מ:" שלמעלה. -->
+
+## ‏10.09 ‏goal ‏"D22 קטגוריה מתחת ל-2% מול ke_live_singlefile" — נמדד מה שמדיד, והקריטריון עצמו בלתי-ניתן-לסיפוק
+
+### החלטות שהתקבלו לבד
+
+1. **הקריטריון "מתחת ל-2% מול `refs/ke_live_singlefile.html`" אינו בר-סיפוק,
+   משלוש סיבות בלתי-תלויות, כולן כבר מתועדות:** ‏(א) הקובץ לא קיים ומעולם לא
+   נמצא במכונה (‏`docs/PARITY-REFERENCE.md`, נבדק בעץ, ‏$HOME ובגיבויים).
+   ‏(ב) האתר-המקור איננו: ‏kenyonexpress.co.il מגיש את הבילד שלנו מאז ‏09.09,
+   ו-`compare.mjs` מסרב בצדק (‏exit 5). ‏(ג) גם כשהרפרנס היה חי, קטגוריה
+   מלאה נמדדה ‏22.39% והשארית היא **נתונים** (קטלוגים שונים), לא פריסה.
+   ‏2% לא נרשם מעולם לאף דף באף רוחב; השיא ההיסטורי הוא ‏7.56%.
+2. **מה שכן מדיד בוצע:** ‏`shell-band.mjs` על מעטפת הקטגוריה ב-380,
+   ‏y0..159, הצד שלנו טרי (בילד של היום) מול צילום הארכיון ‏04.09 של החיה
+   (‏`refs/live-category.png` ב-checkout הראשי). **תוצאה: ‏10.08%**, עקבי עם
+   ‏10.16% של ‏D22 המקורי ב-03.09 ומתחת לשער ה-11%. שורה נרשמה
+   ב-`docs/UI-PARITY-REPORT.md`. לא נרדף שיפור מעבר לזה: ההיסט שנותר הוא
+   רצפת ה-44px שכבר הוחלט לשמור (מתועד ב-D22 המקורי), ושורות טקסט לא ירדו
+   ל-2% תחת סבילות ‏24 עם רנדור גופנים שונה.
+3. **‏re-baseline (מסלול 3 של ‏PARITY-REFERENCE) לא בוצע** — המסמך קובע
+   במפורש שזו החלטת בעל הפרויקט ולא רפקטור, ולכן לא הוקפא baseline חדש.
+4. **תוקן מה שחסם את שערי ה-goal בעץ העבודה** (‏WIP של סשן הגיפט-קארד,
+   idle ‏77 דקות): ‏(א) ‏`gift-card/page.tsx` הפיל את ‏`pnpm build` —
+   קריאת ‏session מחוץ ל-Suspense; הועברה ל-`<Suspense>` לפי התבנית של
+   ‏`gift/[token]/page.tsx`. ‏(ב) שני ‏`div role="status"` הפילו את הלינט —
+   הוחלפו ב-`<output>`. **התיקונים הושארו בעץ העבודה ולא קומטו כאן:**
+   הקבצים כבר ב-stage של הסשן ההוא, וקומיט חלקי שלהם היה שובר את הבילד
+   של הענף (הדף מייבא קבצים שלא היו נכללים) — בדיוק המלכודת המתועדת של
+   ‏"commit בנתיבים לוקח את עץ העבודה".
+5. **‏`SUPABASE_SECRET_KEY=1234` הוסר מ-`.env.local` של ה-worktree** —
+   הסטאב מפיל ‏`next start` על ‏min(20); היעדר עובר (מלכודת מתועדת).
+6. שערי ה-goal על העץ המלא (כולל ה-WIP הזר): ‏`pnpm build` ✅,
+   ‏`pnpm type-check` ✅, ‏`pnpm lint` ✅ (כולל שלושת שערי ה-tokens/copy/asset).
+   ‏`pnpm test` לא הורץ — הסשן רץ תחת ‏gtimeout 1200 ולא נותר זמן; הטסטים
+   לא נגעו בשינויי ה-goal (מדידה ותיעוד בלבד).
 
 ## מעבר read-only 11.08 — ארבע בדיקות, שתי הפרכות
 

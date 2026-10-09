@@ -1,3 +1,4 @@
+import { shekelsFromIls } from '@/lib/money-format'
 import { MapPin, Tag } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -66,7 +67,11 @@ export default function CouponCard({ coupon }: { coupon: Coupon }) {
           <div // White on brand yellow is 1.41:1. This badge carries the discount
             // percentage, so an unreadable one loses the single number the card
             // exists to advertise.
-            className="absolute top-2 end-2 bg-brand text-heading text-xs font-bold px-2 py-1 rounded-lg"
+            // start-2, the inline-start corner (the right in RTL): the corner
+            // the measured .category-card__badge uses for grid cards, and the
+            // corner the coupon DETAIL page pins the same badge to. This card
+            // had it on the opposite corner from its own detail page.
+            className="absolute top-2 start-2 bg-brand text-heading text-xs font-bold px-2 py-1 rounded-lg"
           >
             {discountPct}% הנחה
           </div>
@@ -86,8 +91,8 @@ export default function CouponCard({ coupon }: { coupon: Coupon }) {
         <div className="pt-1 flex items-baseline gap-2">
           {platformPrice != null ? (
             <>
-              <span className="text-lg font-bold text-price">₪{platformPrice.toFixed(2)}</span>
-              <span className="text-xs text-gray-500 line-through">₪{original.toFixed(2)}</span>
+              <span className="text-lg font-bold text-price">{shekelsFromIls(platformPrice)}</span>
+              <span className="text-xs text-gray-500 line-through">{shekelsFromIls(original)}</span>
             </>
           ) : (
             <span className="text-sm text-gray-500">המחיר יעודכן בקרוב</span>
@@ -95,7 +100,7 @@ export default function CouponCard({ coupon }: { coupon: Coupon }) {
         </div>
         {platformPrice != null && (
           <p className="text-micro text-gray-500">
-            ₪{platformPrice.toFixed(2)} באתר, היתרה בבית העסק
+            {shekelsFromIls(platformPrice)} באתר, היתרה בבית העסק
           </p>
         )}
       </div>

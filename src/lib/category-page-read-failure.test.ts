@@ -25,7 +25,7 @@ vi.mock('next/cache', () => ({ cacheLife: vi.fn(), cacheTag: vi.fn() }))
 
 const readResult = { data: null as unknown, count: null as number | null, error: null as unknown }
 
-vi.mock('@/lib/supabase/anon', () => {
+vi.mock('@/lib/supabase/read-replica', () => {
   // A thenable query builder: every chained method returns `this`, and awaiting
   // it resolves to whatever `readResult` currently holds.
   const builder: Record<string, unknown> = {}
@@ -50,7 +50,7 @@ vi.mock('@/lib/supabase/anon', () => {
   // cannot reproduce the call sites under test.
   // biome-ignore lint/suspicious/noThenProperty: see above
   builder.then = (resolve: (v: unknown) => unknown) => resolve({ ...readResult })
-  return { createPublicClient: () => builder }
+  return { createCatalogueReadClient: () => builder }
 })
 
 const logError = vi.fn()

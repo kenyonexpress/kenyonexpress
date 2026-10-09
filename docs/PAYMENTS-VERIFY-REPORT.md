@@ -1,5 +1,12 @@
 # ‏(12) PAYMENTS VERIFY — דוח אימות
 
+<!-- v1-final-banner:2026-09-01 -->
+> 📅 **Historical verification run. Current system: `docs/ARCHITECTURE-OVERVIEW.md` (2026-09-01).**
+>
+> The escrow assertions checked in this report describe the model abandoned on
+> 2026-07-24. Nothing writes an escrow row today, and `escrow_holds` holds 2
+> legacy rows with no writer.
+
 Status: **הושלם** · ענף `feat/payments-verify` · ‏2026-08-19
 היקף: אימות מסלול הכסף מול כללי העסקים המחייבים, ותיקון מה שנמצא סותר.
 

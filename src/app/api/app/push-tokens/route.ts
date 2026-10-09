@@ -1,9 +1,9 @@
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { isExpoPushToken } from '@/lib/push/expo'
+import { rateLimit, rateLimitHeaders } from '@/lib/rate-limit'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { authenticateRequest } from '@/lib/supabase/bearer'
-import { checkRateLimit } from '@/lib/utils/rate-limit'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 
@@ -40,8 +40,13 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
 
   // A phone re-registers on every cold start; 60 an hour is far above that and
   // far below anything worth using to churn rows.
-  const allowed = await checkRateLimit(`push-register:${identity.user.id}`, 60, 3600)
-  if (!allowed) return NextResponse.json({ ok: false, error: 'rate_limited' }, { status: 429 })
+  const decision = await rateLimit('push-register', identity.user.id)
+  if (!decision.allowed) {
+    return NextResponse.json(
+      { ok: false, error: 'rate_limited' },
+      { status: 429, headers: rateLimitHeaders(decision) },
+    )
+  }
 
   const parsed = registerSchema.safeParse(await request.json().catch(() => null))
   if (!parsed.success) {

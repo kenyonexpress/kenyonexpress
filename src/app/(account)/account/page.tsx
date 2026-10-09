@@ -2,6 +2,7 @@ import { formatIls, orderStatusLabel, orderStatusTone } from '@/lib/account/form
 import { formatDate } from '@/lib/account/format'
 import { isCouponPresentable } from '@/lib/vouchers/coupon-view'
 import { getWalletSummary } from '@/server/queries/account'
+import { getCashbackTracker } from '@/server/queries/cashback'
 import { getMyOrders } from '@/server/queries/orders'
 import { getCustomerVouchers } from '@/server/queries/vouchers'
 import Link from 'next/link'
@@ -9,10 +10,11 @@ import Link from 'next/link'
 export const metadata = { title: 'האזור האישי' }
 
 export default async function AccountOverviewPage() {
-  const [wallet, orders, coupons] = await Promise.all([
+  const [wallet, orders, coupons, cashback] = await Promise.all([
     getWalletSummary(),
     getMyOrders(),
     getCustomerVouchers(),
+    getCashbackTracker(),
   ])
 
   const lastOrder = orders[0] ?? null
@@ -71,6 +73,21 @@ export default async function AccountOverviewPage() {
           <p style={{ marginTop: 12 }}>
             <Link className="account-btn" href="/account/coupons">
               לכל הקופונים
+            </Link>
+          </p>
+        </section>
+
+        <section className="account-card">
+          <h2 className="account-card__title">הקאשבק שלי</h2>
+          <p className="account-row__title">{formatIls(cashback.overview.liveAgorot)}</p>
+          <p className="account-row__meta">
+            {cashback.next.purchasesAway === 1
+              ? `ההזמנה הבאה מזכה ב-${Math.round(cashback.next.rateBp / 100)}% קאשבק`
+              : `עוד ${cashback.next.purchasesAway} הזמנות לבונוס של ${Math.round(cashback.next.rateBp / 100)}%`}
+          </p>
+          <p style={{ marginTop: 12 }}>
+            <Link className="account-btn" href="/account/cashback">
+              למעקב הקאשבק
             </Link>
           </p>
         </section>

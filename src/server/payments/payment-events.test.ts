@@ -12,6 +12,9 @@ vi.mock('@/lib/observability/log', () => ({
 }))
 
 const MIGRATION_CANDIDATES = [
+  // Applied through MCP on 2026-09-03 and moved out of `pending/`; the file is
+  // still the only written description of the guards, so the search follows it.
+  'migrations/applied/130_payment_events.sql',
   'migrations/pending/130_payment_events.sql',
   'supabase/migrations/130_payment_events.sql',
 ]

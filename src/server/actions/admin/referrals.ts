@@ -1,5 +1,6 @@
 'use server'
 
+import { writeAuditLog } from '@/lib/admin/audit'
 import { requireSection } from '@/lib/admin/rbac'
 import { withActionContext } from '@/lib/observability/action-context'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -31,7 +32,24 @@ async function runApproveReferral(id: string): Promise<ReferralActionState> {
   const result = data as { ok?: boolean; reason?: string } | null
   if (result && result.ok === false) return { ok: false, error: `אישור נדחה: ${result.reason}` }
 
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: 'status_change',
+    entityType: 'referrals',
+    entityId: id,
+    changes: { status: 'paid' },
+  })
+
   revalidatePath('/admin/referrals')
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: 'status_change',
+    entityType: 'referrals',
+    entityId: id,
+    changes: { old: { status: 'pending' }, new: { status: 'approved' } },
+  })
   return { ok: true }
 }
 
@@ -53,7 +71,25 @@ async function runRejectReferral(id: string, reason: string): Promise<ReferralAc
   const result = data as { ok?: boolean; reason?: string } | null
   if (result && result.ok === false) return { ok: false, error: `דחייה נכשלה: ${result.reason}` }
 
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: 'status_change',
+    entityType: 'referrals',
+    entityId: id,
+    changes: { status: 'rejected' },
+    metadata: { reason: reason.trim() },
+  })
+
   revalidatePath('/admin/referrals')
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: 'status_change',
+    entityType: 'referrals',
+    entityId: id,
+    changes: { old: { status: 'pending' }, new: { status: 'rejected', reason: reason.trim() } },
+  })
   return { ok: true }
 }
 

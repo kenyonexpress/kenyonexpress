@@ -61,3 +61,22 @@ export async function voucherQrDataUrl(
     return null
   }
 }
+
+/**
+ * A QR for a plain URL that is NOT a voucher: the product page's "open this
+ * deal on your phone" square. It lives here and not beside its caller because
+ * this file is the one place the encoder may be called from (see the
+ * one-owner test), and the rule is worth more than the locality. Nothing
+ * here touches the redeem origin or the KEV1 token; the caller supplies the
+ * whole URL and gets back a data URL, or null when the encoder refuses.
+ */
+export async function urlQrDataUrl(
+  url: string,
+  options: { width?: number } = {},
+): Promise<string | null> {
+  try {
+    return await QRCode.toDataURL(url, { margin: 1, width: options.width ?? 192 })
+  } catch {
+    return null
+  }
+}

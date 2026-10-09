@@ -15,6 +15,7 @@ describe('canAccessAdminSection', () => {
     expect(canAccessAdminSection('content_uploader', '/admin/users')).toBe(false)
     expect(canAccessAdminSection('content_uploader', '/admin/suppliers')).toBe(false)
     expect(canAccessAdminSection('content_uploader', '/admin/orders/xyz')).toBe(false)
+    expect(canAccessAdminSection('content_uploader', '/admin/settings')).toBe(false)
   })
 
   it('gives admin and super_admin access to everything', () => {
@@ -31,12 +32,18 @@ describe('canAccessAdminSection', () => {
 })
 
 describe('visibleAdminHrefs', () => {
-  it('shows content_uploader only the products section', () => {
-    expect(visibleAdminHrefs('content_uploader')).toEqual(['/admin/products'])
+  it('shows content_uploader catalog sections', () => {
+    expect(visibleAdminHrefs('content_uploader')).toEqual([
+      '/admin/products',
+      '/admin/categories',
+      '/admin/coupons',
+    ])
   })
 
   it('shows admins all sections', () => {
     expect(visibleAdminHrefs('admin')).toContain('/admin/users')
+    expect(visibleAdminHrefs('admin')).toContain('/admin/settings')
+    expect(visibleAdminHrefs('support')).not.toContain('/admin/settings')
     expect(visibleAdminHrefs('admin').length).toBeGreaterThan(1)
   })
 })

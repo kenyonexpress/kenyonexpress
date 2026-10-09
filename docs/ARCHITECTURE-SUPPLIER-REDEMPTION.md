@@ -1,5 +1,13 @@
 # ארכיטקטורת פורטל ספקים ומימוש קופונים
 
+<!-- v1-final-banner:2026-09-01 -->
+> ⚠️ **Partly stale 2026-09-01. See `docs/ARCHITECTURE-OVERVIEW.md` §4.**
+>
+> The redemption flow here is correct. Its references to `supplier_payouts` are
+> not: that table does not exist in production. Nothing is paid out to a supplier
+> on a coupon redemption, because the supplier already collected the balance in
+> cash at the counter.
+
 מסמך תכנון מלא. מיגרציה נלווית (טיוטה, לא הוחלה):
 `supabase/migrations/027_suppliers.sql`
 

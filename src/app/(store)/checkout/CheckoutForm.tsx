@@ -1,10 +1,12 @@
 'use client'
 
 import { trackCommerce } from '@/lib/analytics/commerce-client'
+import { getCheckoutVariant } from '@/lib/analytics/feature-flags'
 import { track } from '@/lib/analytics/tracker'
 import type { CartView } from '@/lib/cart/types'
 import { sectionsFromElectro } from '@/lib/checkout/electro-content'
 import { checkOptionalIsraeliPostalCode } from '@/lib/checkout/israeli-postal-code'
+import { cityFromPostalCode, postalCodeMatchesCity } from '@/lib/checkout/postal-autofill'
 import {
   CHECKOUT_STEPS,
   type CheckoutStep,
@@ -23,6 +25,7 @@ import { shekels } from '@/lib/money-format'
 import { type AuthState, signInWithGoogle } from '@/server/actions/auth'
 import { type CheckoutFormState, submitCheckout } from '@/server/actions/payments/checkout'
 import { useActionState, useEffect, useRef, useState } from 'react'
+import { useCheckoutVariant } from './useCheckoutVariant'
 
 export type CheckoutAddressPrefill = {
   id: string | null
@@ -112,22 +115,31 @@ export default function CheckoutForm({
    *
    * A no-op without consent: `trackCommerce` finds neither vendor global.
    */
+  const checkoutVariant = useCheckoutVariant()
+
   // biome-ignore lint/correctness/useExhaustiveDependencies: the cart is a fresh object each render; keying on its identity would refire the event on every keystroke.
   useEffect(() => {
-    trackCommerce('begin_checkout', {
-      // `CartView` is agorot end to end, so nothing is converted here. The
-      // only division on this path is `toCurrencyAmount`, at the vendor
-      // boundary.
-      items: cart.items.map((item) => ({
-        id: item.product_id,
-        name: item.name_he,
-        priceAgorot: item.unit_price,
-        quantity: item.quantity,
-      })),
-      // `total`, not `subtotal`: the amount the card is actually charged, after
-      // a discount code. Reporting the pre-discount figure makes every funnel
-      // report overstate the value of reaching checkout.
-      valueAgorot: cart.total,
+    // The flag decision first, so this begin_checkout (the funnel's entry
+    // event for the experiment) carries $feature/checkout_variant. The
+    // promise settles in at most ~2s and only delays the EVENT, never the
+    // page; a fired-then-flagged ordering would leave the experiment's
+    // exposure event without its entry step.
+    void getCheckoutVariant().then(() => {
+      trackCommerce('begin_checkout', {
+        // `CartView` is agorot end to end, so nothing is converted here. The
+        // only division on this path is `toCurrencyAmount`, at the vendor
+        // boundary.
+        items: cart.items.map((item) => ({
+          id: item.product_id,
+          name: item.name_he,
+          priceAgorot: item.unit_price,
+          quantity: item.quantity,
+        })),
+        // `total`, not `subtotal`: the amount the card is actually charged,
+        // after a discount code. Reporting the pre-discount figure makes every
+        // funnel report overstate the value of reaching checkout.
+        valueAgorot: cart.total,
+      })
     })
   }, [])
 
@@ -224,6 +236,19 @@ export default function CheckoutForm({
   }
 
   const errorFor = (field: string): string | undefined => stepErrors[field]
+  /**
+   * The id of a field's error node, and undefined when it has no error.
+   *
+   * `aria-invalid` alone says "this is wrong" and never says WHAT is wrong: a
+   * screen reader lands on the input, announces "invalid", and the Hebrew
+   * message sitting next to it is not part of the accessible description. The
+   * fields carried `aria-invalid` and no `aria-describedby`, so every checkout
+   * error was visible and unannounced. Israeli standard 5568 adopts WCAG 2.0
+   * AA, which makes 3.3.1 Error Identification a legal requirement here, not a
+   * nicety.
+   */
+  const errorIdFor = (field: string): string | undefined =>
+    stepErrors[field] ? `co-err-${field.replaceAll('_', '-')}` : undefined
 
   /** Derived from the committed Electro capture, not hardcoded here. */
   const confirmSections = sectionsFromElectro()
@@ -289,6 +314,83 @@ export default function CheckoutForm({
     const check = checkOptionalIsraeliPostalCode(value)
     setZipError(check && !check.ok ? check.message : null)
     return !check || check.ok
+  }
+
+  /**
+   * Postal-code autofill, both ways, and never over a typed value.
+   *
+   * `zipHint` is advice, not an error: it names the field that was filled in
+   * for the shopper, or the region a typed code belongs to when that is not
+   * the typed city. Neither blocks the step; `zipError` alone does that.
+   */
+  const [zipHint, setZipHint] = useState<string | null>(null)
+  const lookupRef = useRef<AbortController | null>(null)
+
+  const fieldByName = (name: string): HTMLInputElement | null => {
+    const field = formRef.current?.elements.namedItem(name)
+    return field instanceof HTMLInputElement ? field : null
+  }
+
+  /** Code -> city, on leaving the zip field. Fills an empty city, hints on a mismatch. */
+  const handleZipBlur = (value: string) => {
+    if (!validateZip(value)) {
+      setZipHint(null)
+      return
+    }
+    const region = cityFromPostalCode(value)
+    const city = fieldByName('city')
+    if (!region || !city) {
+      setZipHint(null)
+      return
+    }
+    if (city.value.trim() === '') {
+      city.value = region
+      setZipHint(`העיר הושלמה לפי המיקוד: ${region}. אפשר לערוך.`)
+      return
+    }
+    setZipHint(
+      postalCodeMatchesCity(value, city.value)
+        ? null
+        : `המיקוד שהוזן שייך לאזור ${region}. כדאי לבדוק.`,
+    )
+  }
+
+  /**
+   * City + street + house -> code, on leaving any of the three. Asks the
+   * server only when the zip is still empty, and drops a stale answer if the
+   * shopper moved on to another address before it arrived. Every failure is
+   * silence: the field is optional, and a lookup that did not work must not
+   * read as a checkout that did not.
+   */
+  const suggestZip = () => {
+    const zip = fieldByName('zip')
+    if (!zip || zip.value.trim() !== '') return
+    const city = fieldByName('city')?.value.trim() ?? ''
+    const street = fieldByName('street')?.value.trim() ?? ''
+    const house = fieldByName('street_number')?.value.trim() ?? ''
+    if (!city || !street || !house) return
+
+    lookupRef.current?.abort()
+    const controller = new AbortController()
+    lookupRef.current = controller
+    const params = new URLSearchParams({ city, street, house })
+    fetch(`/api/checkout/postal-code?${params.toString()}`, { signal: controller.signal })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((payload: { zip?: string | null } | null) => {
+        if (controller.signal.aborted) return
+        const suggested = payload?.zip
+        if (typeof suggested !== 'string' || !suggested) return
+        // Re-read at arrival time, not at request time: the shopper may have
+        // typed the code themselves while the lookup was in flight.
+        const target = fieldByName('zip')
+        if (!target || target.value.trim() !== '') return
+        target.value = suggested
+        validateZip(suggested)
+        setZipHint('המיקוד הושלם אוטומטית לפי הכתובת. אפשר לערוך.')
+      })
+      .catch(() => {
+        // Aborted, offline, or a non-JSON answer. Nothing to fill.
+      })
   }
 
   // The single gate that makes this a guest checkout: the form is filled, and
@@ -407,6 +509,7 @@ export default function CheckoutForm({
         ref={formRef}
         className="checkout-page__grid"
         data-step={step}
+        data-checkout-variant={checkoutVariant}
         noValidate
       >
         <input type="hidden" name="client_ref" value={clientRef} />
@@ -415,7 +518,7 @@ export default function CheckoutForm({
         {address.id && <input type="hidden" name="address_id" value={address.id} />}
 
         <div className="checkout-col-main">
-          <div className="checkout-step" hidden={step !== 'details'}>
+          <div className="checkout-step" data-inactive={step !== 'details' ? '' : undefined}>
             <section className="checkout-section" aria-label="פרטים אישיים">
               <h2 className="checkout-section__title">
                 <span>פרטים אישיים</span>
@@ -436,9 +539,10 @@ export default function CheckoutForm({
                         defaultValue={prefill.first_name}
                         autoComplete="given-name"
                         aria-invalid={errorFor('first_name') ? 'true' : undefined}
+                        aria-describedby={errorIdFor('first_name')}
                       />
                       {errorFor('first_name') && (
-                        <span className="checkout-field__error" role="alert">
+                        <span id="co-err-first-name" className="checkout-field__error" role="alert">
                           {errorFor('first_name')}
                         </span>
                       )}
@@ -453,9 +557,10 @@ export default function CheckoutForm({
                         defaultValue={prefill.last_name}
                         autoComplete="family-name"
                         aria-invalid={errorFor('last_name') ? 'true' : undefined}
+                        aria-describedby={errorIdFor('last_name')}
                       />
                       {errorFor('last_name') && (
-                        <span className="checkout-field__error" role="alert">
+                        <span id="co-err-last-name" className="checkout-field__error" role="alert">
                           {errorFor('last_name')}
                         </span>
                       )}
@@ -484,9 +589,10 @@ export default function CheckoutForm({
                         */
                         dir="ltr"
                         aria-invalid={errorFor('phone') ? 'true' : undefined}
+                        aria-describedby={errorIdFor('phone')}
                       />
                       {errorFor('phone') && (
-                        <span className="checkout-field__error" role="alert">
+                        <span id="co-err-phone" className="checkout-field__error" role="alert">
                           {errorFor('phone')}
                         </span>
                       )}
@@ -507,9 +613,10 @@ export default function CheckoutForm({
                         autoComplete="email"
                         dir="ltr"
                         aria-invalid={errorFor('email') ? 'true' : undefined}
+                        aria-describedby={errorIdFor('email')}
                       />
                       {errorFor('email') && (
-                        <span className="checkout-field__error" role="alert">
+                        <span id="co-err-email" className="checkout-field__error" role="alert">
                           {errorFor('email')}
                         </span>
                       )}
@@ -521,7 +628,7 @@ export default function CheckoutForm({
             </section>
           </div>
 
-          <div className="checkout-step" hidden={step !== 'address'}>
+          <div className="checkout-step" data-inactive={step !== 'address' ? '' : undefined}>
             <section className="checkout-section" aria-label="כתובת למשלוח">
               <h2 className="checkout-section__title">
                 <span>כתובת למשלוח</span>
@@ -543,10 +650,12 @@ export default function CheckoutForm({
                         name="city"
                         defaultValue={prefill.city}
                         autoComplete="address-level2"
+                        onBlur={suggestZip}
                         aria-invalid={errorFor('city') ? 'true' : undefined}
+                        aria-describedby={errorIdFor('city')}
                       />
                       {errorFor('city') && (
-                        <span className="checkout-field__error" role="alert">
+                        <span id="co-err-city" className="checkout-field__error" role="alert">
                           {errorFor('city')}
                         </span>
                       )}
@@ -563,10 +672,12 @@ export default function CheckoutForm({
                         name="street"
                         defaultValue={prefill.street}
                         autoComplete="address-line1"
+                        onBlur={suggestZip}
                         aria-invalid={errorFor('street') ? 'true' : undefined}
+                        aria-describedby={errorIdFor('street')}
                       />
                       {errorFor('street') && (
-                        <span className="checkout-field__error" role="alert">
+                        <span id="co-err-street" className="checkout-field__error" role="alert">
                           {errorFor('street')}
                         </span>
                       )}
@@ -579,10 +690,16 @@ export default function CheckoutForm({
                         id="co-number"
                         name="street_number"
                         defaultValue={prefill.street_number}
+                        onBlur={suggestZip}
                         aria-invalid={errorFor('street_number') ? 'true' : undefined}
+                        aria-describedby={errorIdFor('street_number')}
                       />
                       {errorFor('street_number') && (
-                        <span className="checkout-field__error" role="alert">
+                        <span
+                          id="co-err-street-number"
+                          className="checkout-field__error"
+                          role="alert"
+                        >
                           {errorFor('street_number')}
                         </span>
                       )}
@@ -615,12 +732,25 @@ export default function CheckoutForm({
                         inputMode="numeric"
                         autoComplete="postal-code"
                         aria-invalid={zipError || errorFor('zip') ? 'true' : undefined}
-                        aria-describedby={zipError ? 'co-zip-error' : undefined}
-                        onBlur={(event) => validateZip(event.currentTarget.value)}
+                        aria-describedby={
+                          zipError || errorFor('zip')
+                            ? 'co-zip-error'
+                            : zipHint
+                              ? 'co-zip-hint'
+                              : undefined
+                        }
+                        onBlur={(event) => handleZipBlur(event.currentTarget.value)}
+                        onChange={() => setZipHint(null)}
                       />
                       {(zipError || errorFor('zip')) && (
                         <span className="checkout-field__error" id="co-zip-error" role="alert">
                           {zipError ?? errorFor('zip')}
+                        </span>
+                      )}
+                      {/* Advice, announced politely: it never blocks the step. */}
+                      {!zipError && !errorFor('zip') && zipHint && (
+                        <span className="checkout-field__hint" id="co-zip-hint" aria-live="polite">
+                          {zipHint}
                         </span>
                       )}
                     </div>
@@ -719,13 +849,20 @@ export default function CheckoutForm({
           )}
         </div>
 
-        <aside className="checkout-step" hidden={step !== 'review' && step !== 'confirm'}>
+        {/* Visible on EVERY step, not just review/confirm. Live's checkout
+            keeps the "ההזמנה שלך" panel on screen beside the billing form the
+            whole way through (refs/live-checkout capture: panel x~120..470 at
+            1440 while the form is filled), and hiding it until review left our
+            second grid column empty on the step the compare gate actually
+            shoots. The step-scoped blocks inside it keep their own hidden
+            flags, so nothing interactive appears early. */}
+        <aside className="checkout-step">
           <section className="checkout-review" aria-label="ההזמנה שלך">
             <h2 className="checkout-section__title">
               <span>ההזמנה שלך</span>
             </h2>
 
-            <div className="checkout-step" hidden={step === 'confirm'}>
+            <div className="checkout-step" data-inactive={step === 'confirm' ? '' : undefined}>
               <table className="checkout-review__table">
                 <thead>
                   <tr>
@@ -771,7 +908,7 @@ export default function CheckoutForm({
             </div>
 
             <div className="checkout-payment">
-              <div className="checkout-step" hidden={step !== 'confirm'}>
+              <div className="checkout-step" data-inactive={step !== 'confirm' ? '' : undefined}>
                 {/*
                 Sourced from refs/electro-checkout-text.json, captured with a
                 real browser against Electro's own checkout. Electro has no
@@ -791,7 +928,16 @@ export default function CheckoutForm({
                 </div>
                 <p className="checkout-payment__note">תשלום מאובטח באשראי, באמצעות Cardcom.</p>
 
-                {step !== 'confirm' && savedCards.length > 0 && (
+                {/*
+                  Rendered on EVERY step, not gated on `step`: the wrapper above
+                  already hides the whole block until the confirm step, and the
+                  radios must exist in the DOM at the moment the form submits or
+                  `submitCheckout` reads an empty `token_id` and every returning
+                  customer is walked through the hosted page. The old condition
+                  here was `step !== 'confirm'`, the exact inverse of the
+                  wrapper's, so the picker could never be used.
+                */}
+                {savedCards.length > 0 && (
                   <fieldset className="checkout-cards">
                     <legend className="checkout-cards__legend">אמצעי תשלום</legend>
                     {savedCards.map((card) => (
@@ -821,7 +967,7 @@ export default function CheckoutForm({
                   </fieldset>
                 )}
 
-                {step !== 'confirm' && walletBalance > 0 && (
+                {walletBalance > 0 && (
                   <div className="checkout-wallet">
                     <label htmlFor="co-wallet">
                       שימוש ביתרת ארנק (זמין: {shekels(walletBalanceAgorot)})
@@ -866,6 +1012,7 @@ export default function CheckoutForm({
                     type="checkbox"
                     name="accept_terms"
                     aria-invalid={errorFor('accept_terms') ? 'true' : undefined}
+                    aria-describedby={errorIdFor('accept_terms')}
                   />
                   <span>
                     קראתי ואני מסכים לאתר תנאי שימוש{' '}
@@ -873,7 +1020,7 @@ export default function CheckoutForm({
                   </span>
                 </label>
                 {errorFor('accept_terms') && (
-                  <span className="checkout-field__error" role="alert">
+                  <span id="co-err-accept-terms" className="checkout-field__error" role="alert">
                     {errorFor('accept_terms')}
                   </span>
                 )}

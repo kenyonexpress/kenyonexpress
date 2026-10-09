@@ -2,8 +2,8 @@
 
 import { assignableRoles } from '@/lib/admin/permissions'
 import { ROLE_LABELS } from '@/lib/admin/roles'
+import type { UserRole } from '@/lib/admin/roles'
 import { type UserActionState, updateUserRole } from '@/server/actions/admin/users'
-import type { UserRole } from '@/types/database'
 import { useActionState } from 'react'
 
 interface Props {

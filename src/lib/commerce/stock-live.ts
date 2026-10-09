@@ -53,6 +53,7 @@ export async function readLiveStock(
         .from('products')
         .select('stock_initial, low_stock_threshold')
         .eq('id', productId)
+        .is('deleted_at', null)
         .maybeSingle(),
     ])
 

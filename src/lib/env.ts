@@ -1,3 +1,5 @@
+import { compromisedKeyMessage, scanEnvironmentForCompromisedKeys } from '@/lib/compromised-keys'
+import { isDeployedRuntime } from '@/lib/deployed-runtime'
 import { log } from '@/lib/observability/log'
 import { z } from 'zod'
 
@@ -17,8 +19,25 @@ const schema = z
 
     NEXT_PUBLIC_SUPABASE_URL: z.string().url().optional(),
     NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(20).optional(),
+    /**
+     * Server-side override for the anon key, read first by
+     * `lib/supabase/anon-key.ts`. Exists for rotation: an env change moves the
+     * server to a new key without waiting for the rebuild that updates the
+     * inlined NEXT_PUBLIC_ value. Optional everywhere, because the NEXT_PUBLIC_
+     * variant above remains the required baseline: the browser bundle can only
+     * ever see that one.
+     */
+    SUPABASE_ANON_KEY: z.string().min(20).optional(),
     SUPABASE_SERVICE_ROLE_KEY: z.string().min(40).optional(),
     SUPABASE_SECRET_KEY: z.string().min(20).optional(),
+    /**
+     * The read replica's REST endpoint (Supabase's load-balanced
+     * `https://<ref>-all.supabase.co`). OPTIONAL EVERYWHERE and unset in every
+     * environment this repo can see: `lib/supabase/read-replica.ts` routes the
+     * catalogue's cookie-free reads there when present and to the primary when
+     * not, so provisioning a replica is an env change and no deploy.
+     */
+    SUPABASE_READ_REPLICA_URL: z.string().url().optional().or(z.literal('')),
 
     CARDCOM_TERMINAL_NUMBER: z.string().optional(),
     CARDCOM_API_NAME: z.string().optional(),
@@ -43,9 +62,56 @@ const schema = z
     /** Milliseconds. Defaults to 1000 in `lib/rate-limit/upstash.ts`. */
     UPSTASH_REDIS_REST_TIMEOUT_MS: z.string().optional(),
 
+    /**
+     * The Cloudflare async-offload Worker (infra/cloudflare/workers/async-offload).
+     * OPTIONAL EVERYWHERE and inert unless BOTH are set: `lib/workers/
+     * async-offload.ts` runs the caller's inline fallback otherwise. The
+     * secret is the Worker's TASK_SECRET; twenty characters is the floor the
+     * producer enforces before it will sign anything with it.
+     */
+    CF_ASYNC_WORKER_URL: z.string().url().optional().or(z.literal('')),
+    CF_ASYNC_WORKER_SECRET: z.string().min(20).optional().or(z.literal('')),
+
     VOUCHER_QR_SECRET: z.string().optional(),
     CRON_SECRET: z.string().optional(),
+    /**
+     * Signs the wishlist-alert unsubscribe links. OPTIONAL EVERYWHERE:
+     * `lib/wishlist/unsubscribe-token.ts` derives a key from CRON_SECRET when
+     * this is absent, so production (where CRON_SECRET is required) always
+     * signs, and setting this later only rotates the links, not the feature.
+     */
+    WISHLIST_UNSUB_SECRET: z.string().min(20).optional().or(z.literal('')),
     SENTRY_DSN: z.string().url().optional().or(z.literal('')),
+
+    /**
+     * The private phone channel next to the public ntfy topic. OPTIONAL
+     * EVERYWHERE and inert unless BOTH are set (lib/observability/telegram.ts):
+     * half a configuration degrades to ntfy alone rather than failing boot.
+     */
+    TELEGRAM_BOT_TOKEN: z.string().min(20).optional().or(z.literal('')),
+    TELEGRAM_CHAT_ID: z.string().optional().or(z.literal('')),
+    /**
+     * Gate for /api/alerts/uptimerobot. Unset means the route answers 401 to
+     * everything, which is closed rather than open: an unauthenticated relay
+     * would let anyone page the operator at will.
+     */
+    UPTIMEROBOT_WEBHOOK_SECRET: z.string().min(20).optional().or(z.literal('')),
+
+    /**
+     * The Axiom log leg. OPTIONAL EVERYWHERE and inert unless BOTH are set,
+     * same contract as Upstash above: half a configuration degrades to the
+     * console transport rather than failing anything. `lib/observability/
+     * axiom.ts` is the only reader; log.ts ships every structured line there
+     * when enabled. Retention and dashboards: scripts/axiom/setup.mjs.
+     */
+    AXIOM_TOKEN: z.string().min(10).optional().or(z.literal('')),
+    AXIOM_DATASET: z.string().optional().or(z.literal('')),
+    /**
+     * Where revenue facts (revenue.purchase / revenue.refund) land. Optional
+     * on top of the pair above: unset means the log dataset, so the cohort
+     * dashboard still has data on a half-configured environment.
+     */
+    AXIOM_REVENUE_DATASET: z.string().optional().or(z.literal('')),
 
     /** See the superRefine below. Only ever "true" on a developer's machine. */
     ALLOW_INCOMPLETE_ENV: z.string().optional(),
@@ -99,6 +165,41 @@ const schema = z
  * happened at build time: NEXT_PUBLIC_* is inlined into the client bundle.
  * Refusing to boot is the only response that helps.
  */
+/**
+ * A KNOWN-EXPOSED KEY MUST NOT SERVE PRODUCTION TRAFFIC.
+ *
+ * IT THROWS ON A DEPLOYMENT AND WARNS EVERYWHERE ELSE, and the signal it keys
+ * on is `isDeployedRuntime()`, not `NODE_ENV`.
+ *
+ * The first version keyed on `NODE_ENV === 'production'` and that was wrong for
+ * the reason documented forty lines above, which I then reproduced: **`next
+ * start` on a laptop is also NODE_ENV=production**. It is how the Playwright
+ * suite, the Lighthouse runs and the pixel gate are all measured. Throwing there
+ * took the local server down with `An error occurred while loading
+ * instrumentation hook`, every route answered 500, and the compare gate
+ * dutifully measured the error page at 26.3% / 24.64% / 20.26% instead of
+ * refusing to measure. Verified, not assumed.
+ *
+ * The discrimination itself lives in `lib/deployed-runtime.ts`, which checks
+ * the platform marker first so that pasting a local waiver into Vercel's
+ * environment cannot disarm this guard.
+ *
+ * The enforcement that actually prevents shipping is
+ * `scripts/deploy-preflight.mjs`, which runs before the build in `vercel.json`
+ * and refuses there -- earlier than boot, and before the key is ever in an
+ * artifact. This is the second line, not the first.
+ */
+function assertNoCompromisedKeys(onDeployment: boolean): void {
+  const findings = scanEnvironmentForCompromisedKeys()
+  if (findings.length === 0) return
+
+  for (const finding of findings) {
+    const message = compromisedKeyMessage(finding)
+    if (onDeployment) throw new Error(`refusing to boot: ${message}`)
+    log.warn('env.compromised_key', { variable: finding.variable, detail: message })
+  }
+}
+
 function assertNoPublicSecrets(): void {
   const LEAKY = /^NEXT_PUBLIC_.*(SECRET|PASSWORD|SERVICE_ROLE|PRIVATE_KEY|API_KEY)/i
   for (const key of Object.keys(process.env)) {
@@ -127,6 +228,9 @@ if (parsed.data.NODE_ENV === 'production' && parsed.data.ALLOW_INCOMPLETE_ENV ==
       'ALLOW_INCOMPLETE_ENV=true. Correct for a local `next start`; wrong anywhere a customer can reach.',
   })
 }
+
+// After parsing, so a malformed environment fails on its own terms first.
+assertNoCompromisedKeys(isDeployedRuntime())
 
 export const env = parsed.data
 export type Env = typeof env

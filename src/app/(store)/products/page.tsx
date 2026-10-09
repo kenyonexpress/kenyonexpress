@@ -204,9 +204,14 @@ export default function ProductsPage({ searchParams }: Props) {
 
         {/* Live /shop/ carries this section between the breadcrumb and the H1.
             Its carousel renders no items on live, so the section is the heading
-            rule alone. Without it every landmark below sits ~62px too high. */}
+            rule alone. Without it every landmark below sits ~62px too high.
+
+            Live prints the heading in English ("Recommended Products") because
+            it runs the Electro theme untranslated. The STRUCTURE is what live
+            sources here -- the section, its rule and its 62px -- and the string
+            is Hebrew, like every other string a customer reads. */}
         <div className="shop-carousel-head">
-          <h2 className="shop-carousel-head__title">Recommended Products</h2>
+          <h2 className="shop-carousel-head__title">מוצרים מומלצים</h2>
         </div>
 
         <header className="category-page__header">

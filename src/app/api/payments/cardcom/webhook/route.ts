@@ -250,6 +250,40 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ ok: true })
   }
 
+  // A success-shaped callback that is actually about money moving BACK must not
+  // enter the charge path. Without this gate it would: a credit notification
+  // carries a fresh InternalDealNumber, so it passes the dedup insert, and
+  // GetLpResult on the same Low Profile id answers with the ORIGINAL charge,
+  // whose amount matches the payment row. finalizeOrder then reports the order
+  // already paid, the route stamps `processed_at`, and a refund has been
+  // recorded as a successfully handled charge. Two concrete signals, either one
+  // decides: the callback's own Amount is negative (a credit), or our payment
+  // row already says `refunded` (the refund action ran, or someone credited the
+  // deal from the Cardcom dashboard).
+  //
+  // 200 and not 5xx: retrying cannot make a credit placeable by a charge
+  // handler. The event stays journalled with `processed_at` null and the alarm
+  // is the handoff to a human. No `payment_events` row of its own: the enum in
+  // migration 130 is live and parity-locked by payment-events.test.ts, so a
+  // dedicated event type needs an approved migration, not an improvised reuse
+  // of a value that means something else.
+  const creditShaped = typeof payload.Amount === 'number' && payload.Amount < 0
+  if (creditShaped || payment.status === 'refunded') {
+    await capturePaymentAlarm('cardcom callback looks like a refund, not a charge', {
+      stage: 'cardcom_webhook_refund_shape',
+      orderId: payment.order_id,
+      paymentId: payment.id,
+      detail: {
+        low_profile_id: payload.lowprofilecode,
+        deal_number: payload.InternalDealNumber ?? null,
+        callback_amount: payload.Amount ?? null,
+        payment_status: payment.status,
+        credit_shaped: creditShaped,
+      },
+    })
+    return NextResponse.json({ ok: true, refund_shaped: true })
+  }
+
   // 3. Server-to-server re-verify; trust only this response. The account comes
   //    from the stored payment, not from the callback: a Low Profile id only
   //    resolves on the terminal that created it, so asking any other one would

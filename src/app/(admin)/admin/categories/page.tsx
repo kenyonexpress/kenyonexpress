@@ -1,6 +1,6 @@
 import CategoriesTable, { type CategoryRow } from '@/components/admin/CategoriesTable'
 import { categoryListParamsSchema } from '@/lib/admin/page-params'
-import { requireAdminPage } from '@/lib/admin/rbac'
+import { requireSection } from '@/lib/admin/rbac'
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 
@@ -20,7 +20,7 @@ export default async function AdminCategoriesPage({ searchParams }: Props) {
   const params = parsed.success ? parsed.data : {}
   const { new: isNew, edit } = params
 
-  await requireAdminPage()
+  await requireSection('catalog', 'read')
   const supabase = await createClient()
   const { data: categories } = await supabase
     .from('categories')

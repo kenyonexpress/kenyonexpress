@@ -11,7 +11,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
  */
 
 const getUser = vi.fn()
-const checkRateLimit = vi.fn()
+const rateLimit = vi.fn()
 const verifyVoucherQrPayload = vi.fn()
 const getSupplierMemberships = vi.fn()
 const getVoucherForRedemption = vi.fn()
@@ -20,9 +20,22 @@ const recordRefusedScan = vi.fn()
 vi.mock('@/lib/supabase/server', () => ({
   createClient: async () => ({ auth: { getUser } }),
 }))
-vi.mock('@/lib/utils/rate-limit', () => ({
-  checkRateLimit: (...args: unknown[]) => checkRateLimit(...args),
+vi.mock('@/lib/rate-limit', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/rate-limit')>()),
+  rateLimit: (...args: unknown[]) => rateLimit(...args),
 }))
+/** What the limiter hands back; `rateLimitHeaders` is left REAL on purpose. */
+function decision(allowed: boolean) {
+  return {
+    allowed,
+    limit: 300,
+    windowSeconds: 3600,
+    remaining: allowed ? 299 : 0,
+    resetAtMs: Date.now() + 3600_000,
+    backend: 'upstash' as const,
+  }
+}
+
 vi.mock('@/server/domain/vouchers/qr', () => ({
   verifyVoucherQrPayload: (...args: unknown[]) => verifyVoucherQrPayload(...args),
 }))
@@ -70,7 +83,7 @@ function post(body: unknown): NextRequest {
 beforeEach(() => {
   vi.clearAllMocks()
   getUser.mockResolvedValue({ data: { user: { id: 'user-1' } } })
-  checkRateLimit.mockResolvedValue(true)
+  rateLimit.mockResolvedValue(decision(true))
   getSupplierMemberships.mockResolvedValue(['sup-1'])
   getVoucherForRedemption.mockResolvedValue(preview())
   verifyVoucherQrPayload.mockReturnValue({
@@ -126,7 +139,7 @@ describe('POST /api/supplier/vouchers/lookup', () => {
   })
 
   it('stops at the rate limit before touching the database', async () => {
-    checkRateLimit.mockResolvedValue(false)
+    rateLimit.mockResolvedValue(decision(false))
     const res = await POST(post({ code: 'ABCDEFGHJK' }))
     expect(res.status).toBe(429)
     expect(getVoucherForRedemption).not.toHaveBeenCalled()

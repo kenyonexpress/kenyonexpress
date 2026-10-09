@@ -395,7 +395,7 @@ test.describe('the checkout with a seeded cart', () => {
  * "המשך" button refuses a step whose fields do not validate.
  */
 test.describe('the checkout wizard, step by step', () => {
-  test('every step of the checkout has no WCAG A/AA violations', async ({ page }) => {
+  test('every step of the checkout has no WCAG A/AA violations', async ({ page, viewport }) => {
     await openPurchasableProduct(page)
     await addOpenProductToCart(page)
     await page.goto('/checkout')
@@ -403,6 +403,24 @@ test.describe('the checkout wizard, step by step', () => {
     expect(page.url(), 'checkout bounced to the cart; the seed did not stick').toContain(
       '/checkout',
     )
+
+    // Below 768 there is no wizard since D25: checkout-page.css stacks every
+    // step section into live's single long page and hides the continue
+    // buttons. One scan therefore covers ALL sections at once -- including
+    // the error state, raised through the same submit the shopper uses.
+    if ((viewport?.width ?? 1280) < 768) {
+      await page.locator('.checkout-pay-btn').click()
+      await expect(
+        page.locator('.checkout-field__error').first(),
+        'submitting the empty single-page checkout raised no error to scan',
+      ).toBeVisible()
+      const single = await scan(page)
+      expect(
+        single.violations.map((v) => v.id),
+        `single-page checkout with validation errors\n  ${describe(single)}`,
+      ).toEqual([])
+      return
+    }
 
     const next = page.locator('.checkout-nav__next').first()
     const advance = async (to: string) => {
@@ -544,8 +562,25 @@ test('the install banner has no WCAG A/AA violations', async ({ page }) => {
  * is the only thing that would have caught it.
  */
 test('the search combobox says which suggestion is selected', async ({ page, viewport }) => {
-  // `DeferredHeaderSearch` is `hidden ... md:flex`, so below 768px this widget
-  // is not on the page at all and there is nothing to assert.
+  /*
+   * SKIPPED SINCE 2026-09-03, AND NOT BECAUSE IT BROKE.
+   *
+   * STEP D3 removed the masthead search field. The standing project rule is
+   * that there is no search UI anywhere, and the field was deleted rather than
+   * hidden: a CSS-hidden input is still in the DOM, still in the tab order and
+   * still ships its client chunk. `#masthead-search` therefore does not exist
+   * on any page, and this test times out clicking it.
+   *
+   * Skipped rather than deleted on purpose. Everything below is the correct
+   * assertion for a combobox, and it documents a real bug it once caught: a
+   * full axe scan of the open popup reported ZERO violations while the listbox
+   * wiring was missing, because axe has no rule for it. If a search widget ever
+   * comes back, this is the test it has to pass, and the note above says why it
+   * went quiet.
+   */
+  test.skip(true, 'no search UI anywhere: the masthead field was removed in D3')
+  // Below 768 the widget was hidden even before D3, so there was nothing to
+  // assert there either.
   test.skip((viewport?.width ?? 0) < 768, 'the masthead search is hidden below md')
 
   await page.goto('/')

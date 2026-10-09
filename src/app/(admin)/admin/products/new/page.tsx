@@ -1,5 +1,7 @@
 import ProductForm, { type SupplierOption } from '@/components/admin/ProductForm'
+import { canSeeMoney } from '@/lib/admin/permissions'
 import { requireSection } from '@/lib/admin/rbac'
+import { excludeDeleted } from '@/lib/soft-delete'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 
@@ -8,13 +10,16 @@ export const metadata = { title: 'מוצר חדש' }
 export default async function NewProductPage() {
   // Layer 3 of the four-layer guard. Without it the panel layout alone lets a
   // support user (catalog access: none) open the catalog editor.
-  await requireSection('catalog', 'write')
+  const session = await requireSection('catalog', 'write')
 
   const supabase = await createClient()
   const admin = createAdminClient()
 
   const [{ data: categories }, { data: suppliers }] = await Promise.all([
-    supabase.from('categories').select('id, name_he').eq('is_active', true).order('name_he'),
+    excludeDeleted(
+      supabase.from('categories').select('id, name_he').eq('is_active', true),
+      'categories',
+    ).order('name_he'),
     admin
       .from('suppliers')
       .select('id, name, contact_phone, address, logo_url, status')
@@ -28,6 +33,7 @@ export default async function NewProductPage() {
       <ProductForm
         categories={categories ?? []}
         suppliers={(suppliers ?? []) as SupplierOption[]}
+        hidePricing={!canSeeMoney(session.role)}
       />
     </div>
   )

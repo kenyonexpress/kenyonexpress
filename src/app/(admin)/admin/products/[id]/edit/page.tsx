@@ -1,5 +1,7 @@
 import ProductForm, { type SupplierOption } from '@/components/admin/ProductForm'
+import { canSeeMoney } from '@/lib/admin/permissions'
 import { requireSection } from '@/lib/admin/rbac'
+import { excludeDeleted } from '@/lib/soft-delete'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
@@ -14,7 +16,7 @@ export default async function EditProductPage({ params }: Props) {
   const { id } = await params
   // Layer 3 of the four-layer guard: the panel layout gates entry, the section
   // matrix gates the section.
-  await requireSection('catalog', 'write')
+  const session = await requireSection('catalog', 'write')
 
   const supabase = await createClient()
   const admin = createAdminClient()
@@ -40,7 +42,10 @@ export default async function EditProductPage({ params }: Props) {
         .eq('id', id)
         .is('deleted_at', null)
         .single(),
-      supabase.from('categories').select('id, name_he').eq('is_active', true).order('name_he'),
+      excludeDeleted(
+        supabase.from('categories').select('id, name_he').eq('is_active', true),
+        'categories',
+      ).order('name_he'),
       supabase.from('product_variants').select('*').eq('product_id', id).is('deleted_at', null),
       admin
         .from('suppliers')
@@ -59,6 +64,7 @@ export default async function EditProductPage({ params }: Props) {
         variants={variants ?? []}
         categories={categories ?? []}
         suppliers={(suppliers ?? []) as SupplierOption[]}
+        hidePricing={!canSeeMoney(session.role)}
       />
     </div>
   )

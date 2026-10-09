@@ -6,7 +6,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { type NextRequest, NextResponse } from 'next/server'
 
 /**
- * Two stock chores, in this order and never merged.
+ * The hold-release chores and the low-stock alert, in this order.
  *
  * 1. RELEASE LAPSED HOLDS. This is bookkeeping, NOT the thing that frees the
  *    stock: an expired reservation stops counting against availability the
@@ -15,6 +15,14 @@ import { type NextRequest, NextResponse } from 'next/server'
  *    for a day must not be able to keep a product sold out. What this buys is a
  *    table that says `released_at` instead of one full of rows that look live
  *    and are not.
+ *
+ * 1b. RELEASE LAPSED DISCOUNT CLAIMS, the same chore for the other hold the
+ *    checkout takes. Unlike stock, a discount claim does NOT free itself: the
+ *    counters (`discount_campaigns.used_count`, `coupons.used_count`) stay
+ *    advanced until release_expired_order_discounts hands them back, so this
+ *    call IS the thing that frees the use for orders that died pending. It
+ *    also un-redeems QR units whose order never paid, so the printed flyer is
+ *    spendable again. 227.
  *
  * 2. ALERT ON LOW STOCK. Read from `v_low_stock`, which compares AVAILABLE
  *    against the per-product threshold rather than the raw level: a product
@@ -59,6 +67,13 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
     log.error('stock.release_expired_failed', { reason: releaseError.message })
   }
 
+  const { data: discountsFreed, error: discountReleaseError } = await admin.rpc(
+    'release_expired_order_discounts',
+  )
+  if (discountReleaseError) {
+    log.error('stock.release_expired_discounts_failed', { reason: discountReleaseError.message })
+  }
+
   const { data: rows, error: lowError } = await admin
     .from('v_low_stock')
     .select('id, name_he, slug, stock_quantity, available, low_stock_threshold, supplier_name')
@@ -70,7 +85,13 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
     // "nothing happened".
     log.error('stock.low_stock_read_failed', { reason: lowError.message })
     return NextResponse.json(
-      { ok: false, released: released ?? 0, alerted: 0, error: lowError.message },
+      {
+        ok: false,
+        released: released ?? 0,
+        discounts_freed: discountsFreed ?? 0,
+        alerted: 0,
+        error: lowError.message,
+      },
       { status: 500 },
     )
   }
@@ -104,7 +125,13 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
     else alerted++
   }
 
-  return NextResponse.json({ ok: true, released: released ?? 0, low: lowRows.length, alerted })
+  return NextResponse.json({
+    ok: true,
+    released: released ?? 0,
+    discounts_freed: discountsFreed ?? 0,
+    low: lowRows.length,
+    alerted,
+  })
 }
 
 export const GET = withRequestLog('/api/cron/stock', handleGET)

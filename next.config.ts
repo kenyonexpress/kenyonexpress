@@ -3,7 +3,14 @@ import { withSentryConfig } from '@sentry/nextjs'
 import type { NextConfig } from 'next'
 import createNextIntlPlugin from 'next-intl/plugin'
 import { REMOTE_IMAGE_PATTERNS } from './src/lib/images/remote-hosts'
-import { PAYMENT_FRAME_PATHS, contentSecurityPolicyFor } from './src/lib/security/frame-policy'
+import {
+  CAMERA_PATHS,
+  PAYMENT_FRAME_PATHS,
+  contentSecurityPolicyFor,
+  permissionsPolicyFor,
+  reportingEndpointsHeader,
+  sentrySecurityEndpoint,
+} from './src/lib/security/frame-policy'
 
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts')
 
@@ -35,15 +42,36 @@ const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts')
 // src/proxy.ts overwrites both framing headers on those two routes. Overwrites,
 // not adds: two Content-Security-Policy headers are both enforced and the
 // strictest wins, which would undo the exception without saying so.
-const headersWithPolicy = (csp: string, frameOptions: 'DENY' | 'SAMEORIGIN') => [
+// CSP violation reports go to Sentry when a DSN is configured at build time.
+// The header is static, so the DSN has to be present when `next build` runs;
+// Vercel injects the project's environment there, a laptop usually has none,
+// and in that case the policy simply carries no reporting directive.
+// `sentrySecurityEndpoint` in frame-policy.ts derives the endpoint from the
+// DSN and explains why a nonce is not the answer here.
+const CSP_REPORT_URI = sentrySecurityEndpoint(
+  process.env.NEXT_PUBLIC_SENTRY_DSN || process.env.SENTRY_DSN,
+  process.env.SENTRY_ENVIRONMENT ||
+    process.env.NEXT_PUBLIC_SENTRY_ENVIRONMENT ||
+    process.env.VERCEL_ENV,
+)
+const REPORTING_ENDPOINTS = reportingEndpointsHeader(CSP_REPORT_URI)
+
+const headersWithPolicy = (
+  csp: string,
+  frameOptions: 'DENY' | 'SAMEORIGIN',
+  permissions: string,
+) => [
   { key: 'Content-Security-Policy', value: csp },
+  ...(REPORTING_ENDPOINTS ? [{ key: 'Reporting-Endpoints', value: REPORTING_ENDPOINTS }] : []),
   { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
   // Moves in step with frame-ancestors. Browsers that honour both enforce both,
   // so a DENY left behind on a framable path blocks the frame anyway.
   { key: 'X-Frame-Options', value: frameOptions },
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-  { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(), payment=(self)' },
+  // Path-dependent for the same reason as the CSP: camera=() on the scanner
+  // route is a scanner that cannot see (frame-policy.ts, CAMERA_PATHS).
+  { key: 'Permissions-Policy', value: permissions },
 ]
 
 const nextConfig: NextConfig = {
@@ -71,18 +99,40 @@ const nextConfig: NextConfig = {
     // This is also why the relaxation is not done in src/proxy.ts: headers from
     // this config are applied after middleware and overwrite what it set.
     const framable = PAYMENT_FRAME_PATHS.map((path) => path.replace(/^\//, '')).join('|')
+    // Anchored so `scan` does not swallow a future /scanner-esque route.
+    const cameraSources = CAMERA_PATHS.map((path) => `${path.replace(/^\//, '')}(?:$|/)`).join('|')
     return [
       {
-        source: `/((?!${framable}).*)`,
-        headers: headersWithPolicy(contentSecurityPolicyFor('/'), 'DENY'),
+        source: `/((?!${framable}|${cameraSources}).*)`,
+        headers: headersWithPolicy(
+          contentSecurityPolicyFor('/', { reportUri: CSP_REPORT_URI }),
+          'DENY',
+          permissionsPolicyFor('/'),
+        ),
       },
       ...PAYMENT_FRAME_PATHS.map((path) => ({
         source: `${path}/:path*`,
-        headers: headersWithPolicy(contentSecurityPolicyFor(path), 'SAMEORIGIN'),
+        headers: headersWithPolicy(
+          contentSecurityPolicyFor(path, { reportUri: CSP_REPORT_URI }),
+          'SAMEORIGIN',
+          permissionsPolicyFor(path),
+        ),
+      })),
+      ...CAMERA_PATHS.map((path) => ({
+        source: `${path}{/:path}?`,
+        headers: headersWithPolicy(
+          contentSecurityPolicyFor(path, { reportUri: CSP_REPORT_URI }),
+          'DENY',
+          permissionsPolicyFor(path),
+        ),
       })),
       ...PAYMENT_FRAME_PATHS.map((path) => ({
         source: path,
-        headers: headersWithPolicy(contentSecurityPolicyFor(path), 'SAMEORIGIN'),
+        headers: headersWithPolicy(
+          contentSecurityPolicyFor(path, { reportUri: CSP_REPORT_URI }),
+          'SAMEORIGIN',
+          permissionsPolicyFor(path),
+        ),
       })),
     ]
   },
@@ -120,6 +170,27 @@ const nextConfig: NextConfig = {
     // 50/60 for below-fold deal thumbs ([33]); Lighthouse image-delivery wanted
     // denser compression on 157px paints that were still shipping q=75.
     qualities: [50, 60, 75, 90, 95],
+    /**
+     * AVIF first, WebP for the browsers that cannot decode it
+     * (ARCHITECTURE-PERFORMANCE-SEO.md 4.2). Next 16's default is WebP only.
+     * The order is the preference order when the Accept header allows both;
+     * an animated or SVG source is passed through unchanged regardless, so the
+     * catalogue's photos are the only things this touches. Both formats are
+     * cached separately by Vercel Image Optimization, which is storage, not
+     * transformations, and transformations are what the plan bills.
+     */
+    formats: ['image/avif', 'image/webp'],
+    /**
+     * 31 days at the edge for an optimized image (2678400 = 31 * 24 * 3600).
+     *
+     * Next 16 raised its own default from 60s to 4 hours, and 4 hours is still
+     * six re-optimizations a day per (source, width, quality, format) tuple
+     * that nobody asked for: a product photo here changes by changing its PATH
+     * (4.2 rule 5, and `media_assets` keys on the path), so the bytes behind a
+     * given URL never change and a long TTL forfeits nothing. It also caps the
+     * upstream reads Supabase Storage sees for the same photo.
+     */
+    minimumCacheTTL: 2678400,
     /**
      * Next's default, plus one rung at 288.
      *

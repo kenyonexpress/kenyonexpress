@@ -1,0 +1,38 @@
+-- 181a: the `read_only` member of `user_role`, on its own, ahead of 181b.
+--
+-- WHY THIS IS ITS OWN FILE. `ALTER TYPE ... ADD VALUE` adds a value that
+-- cannot be referenced by the SAME transaction that adds it. 181 was written
+-- as one file and dodged that with `role::text` comparisons everywhere, which
+-- works but leaves the whole migration one editing mistake away from a failure
+-- that only shows up against a real enum. Splitting is the pattern this repo
+-- already uses for exactly this hazard: production recorded 135 as
+-- `135a_product_type_recurring` (the enum) and `135b_recurring_subscriptions`
+-- (everything that uses it).
+--
+-- IRREVERSIBLE, AND THAT IS THE REASON FOR THE SPLIT. PostgreSQL cannot remove
+-- an enum value. Once this commits, `read_only` is permanent. It grants
+-- nothing on its own: it is referenced by no policy and no function until 181b
+-- teaches `is_support()` about it, so this file alone is inert and the pair can
+-- be stopped between the two halves without leaving a half-open door.
+--
+-- APPLIED 2026-09-09 via MCP as `read_only_enum_181a`, on its own, and read
+-- back: user_role is now the six values plus read_only. 181b went in after it
+-- had committed.
+--
+-- PREFLIGHT, run 2026-09-09 against production, all four blocks as 181
+-- predicted them:
+--   user_role = {customer,content_uploader,vendor,admin,super_admin,support}
+--     -- six values, `read_only` absent
+--   is_support() is the 053 body (three-name IN list)   -> true
+--   guard_090 = 1, guard_035 = 0, trigger attached = 1
+--   audit_profiles trigger present = 1
+
+ALTER TYPE public.user_role ADD VALUE IF NOT EXISTS 'read_only';
+
+-- Verify:
+--   select array_agg(enumlabel order by enumsortorder)
+--     from pg_enum e join pg_type t on t.oid = e.enumtypid
+--    where t.typname = 'user_role';
+--   -> the six above plus read_only
+--
+-- Rollback: none possible. See the header.

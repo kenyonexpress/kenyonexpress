@@ -27,15 +27,22 @@ export class MockCardcomProvider implements PaymentProvider {
   readonly name = 'mock' as const
   private deals = new Map<string, StoredDeal>()
   private failNextCharge = false
+  private challengeNextCharge = false
   private sequence = 0
 
   failNext(): void {
     this.failNextCharge = true
   }
 
+  /** The next token charge answers "come back with a 3DS challenge" instead of a decline. */
+  challengeNext(): void {
+    this.challengeNextCharge = true
+  }
+
   reset(): void {
     this.deals.clear()
     this.failNextCharge = false
+    this.challengeNextCharge = false
     this.sequence = 0
     this.documents.length = 0
   }
@@ -60,6 +67,16 @@ export class MockCardcomProvider implements PaymentProvider {
 
   async chargeWithToken(input: ChargeWithTokenInput): Promise<ChargeWithTokenResult> {
     this.sequence += 1
+    if (this.challengeNextCharge) {
+      this.challengeNextCharge = false
+      return {
+        success: false,
+        transactionId: null,
+        failureCode: 'THREEDS_CHALLENGE',
+        failureMessage: 'ThreeDSecure challenge required',
+        raw: { mock: true, threeDSecureChallenge: true },
+      }
+    }
     if (this.failNextCharge) {
       this.failNextCharge = false
       return {

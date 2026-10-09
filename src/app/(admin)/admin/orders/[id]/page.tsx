@@ -4,12 +4,14 @@ import { requireSection } from '@/lib/admin/rbac'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { buildOrderUpdateText, waChatLink } from '@/lib/whatsapp'
+import { adminOverridableTargets } from '@/server/domain/orders/order-transitions'
 import { describeRefundBlockers } from '@/server/domain/orders/refund'
 import { AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import OrderAdminActions from './OrderAdminActions'
 import OrderStatusClient from './OrderStatusClient'
+import ShipmentClient from './ShipmentClient'
 
 export const metadata = { title: 'פרטי הזמנה' }
 
@@ -50,6 +52,9 @@ interface OrderItemRow {
   supplier_name: string | null
   supplier_phone: string | null
   supplier_payout_ils: number | null
+  /** Ship in pending/155; undefined until it is applied (select * tolerates). */
+  carrier?: string | null
+  tracking_number?: string | null
 }
 
 interface VoucherRow {
@@ -242,7 +247,23 @@ export default async function OrderDetailPage({ params }: Props) {
         refundBlockers={blockers.map((b) => b.message)}
       />
 
-      <OrderStatusClient orderId={order.id} currentStatus={order.status} />
+      {physicalLines.length > 0 ? (
+        <ShipmentClient
+          lines={physicalLines.map((item) => ({
+            id: item.id,
+            productName: `${item.supplier_name ?? 'שורה'} × ${item.quantity}`,
+            itemStatus: item.item_status,
+            carrier: item.carrier ?? null,
+            trackingNumber: item.tracking_number ?? null,
+          }))}
+        />
+      ) : null}
+
+      <OrderStatusClient
+        orderId={order.id}
+        currentStatus={order.status}
+        overridableTargets={[...adminOverridableTargets(order.status)]}
+      />
     </div>
   )
 }

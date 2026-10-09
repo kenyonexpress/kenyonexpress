@@ -1,0 +1,71 @@
+{
+  "name": "KenyonExpress - Payments",
+  "description": "Money-path health: Cardcom transport and webhooks, checkout reads, payment_events writes, refunds, settlements and reconciliation. Every panel reads the structured log stream.",
+  "owner": "X-AXIOM-EVERYONE",
+  "datasets": ["{{dataset}}"],
+  "refreshTime": 300,
+  "schemaVersion": 2,
+  "timeWindowStart": "qr-now-24h",
+  "timeWindowEnd": "qr-now",
+  "charts": [
+    {
+      "id": "money-path-errors",
+      "name": "Money-path errors (24h)",
+      "type": "Statistic",
+      "query": {
+        "apl": "['{{dataset}}'] | where level == 'error' and (event startswith 'cardcom.' or event startswith 'payment' or event startswith 'checkout.' or event startswith 'refund.' or event startswith 'settlement.' or event startswith 'reconcile.') | summarize errors = count()"
+      },
+      "colorScheme": "Red"
+    },
+    {
+      "id": "webhook-unauthenticated",
+      "name": "Webhook unauthenticated",
+      "type": "Statistic",
+      "query": {
+        "apl": "['{{dataset}}'] | where event == 'cardcom.webhook_unauthenticated' | summarize rejected = count()"
+      },
+      "colorScheme": "Orange"
+    },
+    {
+      "id": "cardcom-retries",
+      "name": "Cardcom transport retries",
+      "type": "Statistic",
+      "query": {
+        "apl": "['{{dataset}}'] | where event == 'cardcom.transport_retry' | summarize retries = count()"
+      },
+      "colorScheme": "Yellow"
+    },
+    {
+      "id": "money-errors-over-time",
+      "name": "Money-path errors over time",
+      "type": "TimeSeries",
+      "query": {
+        "apl": "['{{dataset}}'] | where level == 'error' and (event startswith 'cardcom.' or event startswith 'payment' or event startswith 'checkout.' or event startswith 'refund.' or event startswith 'settlement.' or event startswith 'reconcile.') | summarize count() by bin_auto(_time), event"
+      }
+    },
+    {
+      "id": "payment-event-writes",
+      "name": "payment_events write problems",
+      "type": "TimeSeries",
+      "query": {
+        "apl": "['{{dataset}}'] | where event startswith 'payment_events.' | summarize count() by bin_auto(_time), event"
+      }
+    },
+    {
+      "id": "recent-money-errors",
+      "name": "Recent money-path errors",
+      "type": "Table",
+      "query": {
+        "apl": "['{{dataset}}'] | where level == 'error' and (event startswith 'cardcom.' or event startswith 'payment' or event startswith 'checkout.' or event startswith 'refund.' or event startswith 'settlement.' or event startswith 'reconcile.') | project _time, event, route, request_id | sort by _time desc | limit 50"
+      }
+    }
+  ],
+  "layout": [
+    { "i": "money-path-errors", "x": 0, "y": 0, "w": 4, "h": 3 },
+    { "i": "webhook-unauthenticated", "x": 4, "y": 0, "w": 4, "h": 3 },
+    { "i": "cardcom-retries", "x": 8, "y": 0, "w": 4, "h": 3 },
+    { "i": "money-errors-over-time", "x": 0, "y": 3, "w": 6, "h": 4 },
+    { "i": "payment-event-writes", "x": 6, "y": 3, "w": 6, "h": 4 },
+    { "i": "recent-money-errors", "x": 0, "y": 7, "w": 12, "h": 5 }
+  ]
+}
