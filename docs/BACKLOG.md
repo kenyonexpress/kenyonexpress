@@ -123,3 +123,8 @@ Re-scanned 2026-10-10 (M07-c137) with the same rule at HEAD `6a7609db8`, includi
   success needs `ResponseCode` 0 and a document number, otherwise the
   `invoices` row stays unissued with the reason on it.
 - Owner: Ofir, before go-live.
+
+Re-scanned 2026-10-10 (M07-c138) with the same rule at HEAD `8d53202d8`:
+unchanged. Only `cardcom.ts:254` and `cardcom.ts:319` match, both filed as B1
+and B2; they still need live Cardcom terminal credentials. `node
+scripts/final-audit.mjs` reports 0 untracked work markers (of 2).
