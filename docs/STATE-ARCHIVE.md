@@ -22776,3 +22776,37 @@ Setup: the same as M08-c121. Lighthouse 13.4.1 from the repo (`pnpm exec lightho
 - Observation, no change: 49 warn lines carry Next's prerender abort text ("During prerendering, fetch() rejects when the prerender is complete"): 43 `stock.available_read_failed` (`src/lib/commerce/stock-live.ts:61`), 4 `homepage.cms_read_failed` (`src/lib/homepage/cms.ts:219`) and 2 `referrals.settings_read_failed` (`src/server/referrals/program.ts:88`). supabase-js turns the rejected fetch into a PostgREST error that has only a `message`, so the `digest` that `isPrerenderAbort` in `query-log-fetch.ts` matches is gone. Filtering these lines would mean matching message text in three call sites. That would be brittle for warn-level noise that changes no output, so it is not drift and is left as is.
 - Gates: `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6474 passed, 12 skipped, 290 s). Not a UI change, so compare.mjs does not apply (it still refuses, blocker 0). `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
 - Moved from STATE.md (verbatim): Last item: **M05-c123 DONE** (2026-10-09): `pnpm test` (vitest) exit 0 on HEAD `0297d991d` plus the uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` edits: 519 files, 6474 passed, 12 skipped, 283 s, first run, no worker timeouts. No drift, no code change. Gates: type-check 0, lint 0, build 0 on attempt 2 (attempt 1 failed collecting `/category/[slug]` on 14 Supabase timeout or fetch-failed lines, blocker 7; attempt 2 had 0). Not a UI change, so compare.mjs does not apply (it still refuses, blocker 0). See the M05-c123 section in the archive.
+
+## M08-c123: Lighthouse mobile on / and /product, run 2026-10-09 in the foreground
+
+Setup: the same as M08-c122. Lighthouse 13.4.1 from the repo (`pnpm exec lighthouse <url> --form-factor=mobile --chrome-flags="--headless=new --no-sandbox" --output=json`) with default `simulate` throttling. The target was `pnpm start -p 3523` on a clean production build made in this run, from HEAD `c406d2609` plus the uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` edits. The sample product is `/product/מוצר-לדוגמא`. One warm-up curl per page came first (home 200 in 0.61 s, product 200 in 0.28 s). Runs were interleaved home/product. Runs 1–6 ran at 1-minute load 5.7 to 30.5; the top CPU users were ExpressVPN, `dasd`, `coreaudiod` and Cursor, not another build. Runs 7–9 ran at 1-minute load 9.6 to 28 but with stable `benchmarkIndex` and TBT under 300 ms.
+
+| Page | Run | Perf | A11y | BP | SEO | FCP | LCP (sim) | TBT | CLS | SI | Observed LCP | benchmarkIndex |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| / | 1 | 51 | 100 | 96 | 100 | 1.4 s | 5.1 s | 3,980 ms | 0.003 | 2.9 s | 1679 ms | 741 |
+| / | 2 | 47 | 100 | 96 | 100 | 2.4 s | 5.9 s | 1,240 ms | 0.003 | 5.2 s | 2976 ms | 490.5 |
+| / | 3 | 74 | 100 | 96 | 100 | 1.8 s | 5.1 s | 290 ms | 0.003 | 1.8 s | 406 ms | 938 |
+| / | 4 | 78 | 100 | 96 | 100 | 1.8 s | 5.0 s | 140 ms | 0 | 3.1 s | 1300 ms | 1102.5 |
+| / | 5 | 57 | 100 | 96 | 100 | 1.4 s | 5.2 s | 1,170 ms | 0 | 1.4 s | 614 ms | 974 |
+| / | 6 | 52 | 100 | 96 | 100 | 1.4 s | 5.4 s | 2,210 ms | 0.003 | 1.4 s | 591 ms | 1008 |
+| / | 7 | 78 | 100 | 96 | 100 | 1.8 s | 5.2 s | 50 ms | 0.003 | 3.7 s | 2243 ms | 1503.5 |
+| / | 8 | 78 | 100 | 96 | 100 | 1.8 s | 4.8 s | 200 ms | 0.003 | 1.8 s | 368 ms | 843.5 |
+| / | 9 | 92 | 100 | 96 | 100 | 1.8 s | 3.0 s | 150 ms | 0.003 | 1.8 s | 208 ms | 1314.5 |
+| /product/מוצר-לדוגמא | 1 | 70 | 100 | 96 | 100 | 1.9 s | 5.4 s | 330 ms | 0.001 | 3.7 s | 1467 ms | 1045 |
+| /product/מוצר-לדוגמא | 2 | 64 | 100 | 96 | 100 | 1.9 s | 5.0 s | 660 ms | 0.001 | 1.9 s | 455 ms | 1101.5 |
+| /product/מוצר-לדוגמא | 3 | 80 | 100 | 96 | 100 | 1.9 s | 4.6 s | 170 ms | 0.001 | 1.9 s | 431 ms | 1298.5 |
+| /product/מוצר-לדוגמא | 4 | 35 | 100 | 96 | 100 | 1.6 s | 7.9 s | 22,040 ms | 0 | 14.8 s | 6008 ms | 1142.5 |
+| /product/מוצר-לדוגמא | 5 | 88 | 100 | 96 | 100 | 1.8 s | 3.6 s | 130 ms | 0.001 | 1.8 s | 237 ms | 1287.5 |
+| /product/מוצר-לדוגמא | 6 | 53 | 100 | 96 | 100 | 1.9 s | 4.6 s | 4,580 ms | 0 | 1.9 s | 662 ms | 1299 |
+| /product/מוצר-לדוגמא | 7 | 88 | 100 | 96 | 100 | 1.8 s | 3.6 s | 120 ms | 0.001 | 1.8 s | 272 ms | 1267 |
+| /product/מוצר-לדוגמא | 8 | 78 | 100 | 96 | 100 | 1.8 s | 5.3 s | 140 ms | 0.001 | 2.7 s | 1357 ms | 1217 |
+| /product/מוצר-לדוגמא | 9 | 88 | 100 | 96 | 100 | 1.8 s | 3.0 s | 270 ms | 0.001 | 1.8 s | 318 ms | 1331.5 |
+
+- **Median Performance over all 9 runs: home 74, product 78.** **On the settled host (runs 7–9): home 78, product 88.** M08-c122 settled was 78 / 86, M08-c121 79 / 84. Accessibility 100, Best Practices 96 and SEO 100 on all 18 runs.
+- No source changed since M08-c122: `git diff --stat 762fad11c HEAD -- src packages next.config.* package.json pnpm-lock.yaml` is empty. **Decision:** the settled-host median 78 / 88 is the comparable number; the spread (home TBT 50 to 3,980 ms, product run 4 TBT 22,040 ms with SI 14.8 s) is host noise, not a regression. Runs 1–6 were kept in the table and not dropped.
+- The simulated LCP (3.0–7.9 s) is the Lantern model. A localhost score is a relative signal, not a field score (`docs/PERFORMANCE-BUDGET.md`).
+- The largest LCP saving is still `unused-javascript`: 600 ms on most runs, 0 to 1,300 ms overall. Recorded, not acted on, because this item only measures.
+- Best Practices 96 is `errors-in-console` only, the same 5 local errors on every run: `/_vercel/insights/script.js` and `/_vercel/speed-insights/script.js` 404 off Vercel and are refused on MIME type, plus one `ERR_SSL_PROTOCOL_ERROR` (HSTS upgrade on http localhost). None is a production finding.
+- Build: `logs/m08-c123-build-1.log` (07:49, an earlier interrupted run of this item that left no STATE entry) failed collecting page data for `/coupons/[id]`. Attempt 2 in this run: exit 0 in 57 s with 0 timeout or fetch-failed lines. The server log has 18 `supabase.timeout` or `fetch failed` lines and 49 `db.query_slow` (blocker 7). An orphaned headless Chrome from the earlier attempt was left running; it was idle and not part of these runs.
+- No code change. Gates in this run: `pnpm build` 0, `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6474 passed, 12 skipped, 288 s). Not a UI change, so compare.mjs does not apply (it is blocked anyway, see blocker 0). `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted. M07-c123 has not run yet; this item was dispatched out of order, so RESUME FROM moves to M09-c123 per queue order.
+- Moved from STATE.md (verbatim): Last item: **M06-c123 DONE** (2026-10-09): `pnpm build` exit 0 on attempt 1 (99 s) at HEAD `10cfe9246` plus the uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` edits: 11 recovered `supabase.timeout`, 4 `db.query_failed` (all real `fetch failed`, 0 `HANGING_PROMISE_REJECTION`), 134 `db.query_slow`, and the known `reviews` 42501 from pending 231. 49 warn lines are Next's prerender abort reaching app loggers as a plain PostgREST message (43 `stock.available_read_failed`, 4 `homepage.cms_read_failed`, 2 `referrals.settings_read_failed`). They are warn-level noise, and the digest is lost, so filtering them would mean matching message text. Recorded, not changed. No drift, no code change. Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped, 290 s). Not a UI change, so compare.mjs does not apply (it still refuses, blocker 0). See the M06-c123 section in the archive.
