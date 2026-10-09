@@ -23016,3 +23016,6 @@ Command: `LOCAL_BASE=http://localhost:3312 node scripts/compare.mjs --page=categ
 - Method: Playwright Chromium, 380x800 and 1440x900, `waitUntil: load`, two scrolls, 7 s wait, recording console errors, `pageerror`, `requestfailed` and responses of 400 or above. Probe in `/tmp/m15c131/probe.mjs`, outside the repo.
 - Production `https://www.kenyonexpress.co.il`: 4/4 runs 200 on attempt 1, all counters 0. (`.com` does not resolve, see M11-c131.)
 - No code change. Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 timeout lines).
+
+## M17-c131 (2026-10-09)
+- Probe: /tmp/m17c131/probe.mjs; compare logs /tmp/m17c131/cmp-*.log (all exit 5). Same result as M17-c130.
