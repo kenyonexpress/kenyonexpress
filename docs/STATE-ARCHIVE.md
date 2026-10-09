@@ -22920,3 +22920,8 @@ Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=categ
 - Unchanged from M03-c123; `refs/ke_live_singlefile.html` still absent (blocker 0). Exit code was not captured by the shell this run (zsh PIPESTATUS); refusal text identical to prior exit-5 runs.
 - Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `supabase.timeout`).
 - Moved from STATE.md (verbatim): Last item: **M02-c130 BLOCKED** (2026-10-09): `compare.mjs --page=product` exits 5 at 380, 768 and 1440 with no diff number; the gate refuses because `kenyonexpress.co.il` is our own build and `refs/ke_live_singlefile.html` is absent (blocker 0). Run in the foreground against `PORT=3311 pnpm start`, HEAD `719a2ee87`. Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `supabase.timeout`). See the M02-c130 section in the archive.
+
+## Moved from STATE.md by M08-c130
+
+- Superseded STATE.md "Last item" text for M07-c130:
+  > Last item: **M07-c130 DONE** (2026-10-09): re-scan found only the 2 filed Cardcom markers (B1, B2), nothing new; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `supabase.timeout`, 0 `db.query_failed`). `HeroSlider.tsx` and `SiteFooter.tsx` stay uncommitted.
