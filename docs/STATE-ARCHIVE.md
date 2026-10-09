@@ -22925,3 +22925,9 @@ Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=categ
 
 - Superseded STATE.md "Last item" text for M07-c130:
   > Last item: **M07-c130 DONE** (2026-10-09): re-scan found only the 2 filed Cardcom markers (B1, B2), nothing new; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `supabase.timeout`, 0 `db.query_failed`). `HeroSlider.tsx` and `SiteFooter.tsx` stay uncommitted.
+
+## M09-c130: unused deps and dead exports, run 2026-10-09
+
+- Same method as M09-c123; source unchanged since then. 0 deps removed, 0 exports deleted.
+- Superseded STATE.md "Last item" text for M08-c130:
+  > Last item: **M08-c130 DONE** (2026-10-09): Lighthouse mobile (default simulate) on `/` and `/product/מוצר-לדוגמא` against `pnpm start -p 3530` on a clean build of HEAD `97720906b` plus the uncommitted `HeroSlider.tsx`/`SiteFooter.tsx` edits, 9 interleaved runs per page. **Median perf over 9 runs: home 81, product 83; settled (runs 7–9): 81 / 82.** Per-run range home 80–82, product 81–89, TBT 53–389 ms, CLS 0.003 / 0.001, LCP (sim) 4.8–5.2 s / 3.5–4.7 s. A11y 100, BP 96, SEO 100 on all 18 runs. Host was quiet (load 5–10), so no outlier runs. No source change since M08-c123 beyond the uncommitted hero/footer edits. Gates: build 0 on attempt 1 (0 timeout or fetch-failed lines, 0 `db.query_failed`), type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped). Not a UI change, compare.mjs n/a.
