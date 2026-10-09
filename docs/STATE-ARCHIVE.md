@@ -22975,3 +22975,16 @@ Command: `LOCAL_BASE=http://localhost:3312 node scripts/compare.mjs --page=produ
 
 - Unchanged from M02-c130; `refs/ke_live_singlefile.html` still absent (blocker 0). Gate appended REFUSED rows to `docs/UI-PARITY-REPORT.md`.
 - Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 timeout or fetch-failed lines).
+
+## M03-c131: compare.mjs on /category at 380, 768, 1440, run 2026-10-09 in the foreground
+
+Command: `LOCAL_BASE=http://localhost:3312 node scripts/compare.mjs --page=category --width=<w>` against `PORT=3312 pnpm start` on a fresh build.
+
+| Width | Exit | Diff |
+|---|---|---|
+| 380 | 5 | none, REFUSING: no parity reference |
+| 768 | 5 | none, same |
+| 1440 | 5 | none, same |
+
+- Unchanged from M03-c130; `refs/ke_live_singlefile.html` still absent and `kenyonexpress.co.il` serves our build (blocker 0). Gate appended REFUSED rows to `docs/UI-PARITY-REPORT.md`.
+- Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 timeout or fetch-failed lines).
