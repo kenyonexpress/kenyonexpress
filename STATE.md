@@ -1,8 +1,9 @@
-RESUME FROM: M05-c132
+RESUME FROM: M06-c132
 
 # KenyonExpress — Project State
 
-Last item: **M04-c132 DONE** (2026-10-09): `pnpm type-check` exit 0, no drift, no code change. Gates: lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 timeout lines). Not a UI change, compare.mjs n/a. `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
+Last item: **M05-c132 DONE** (2026-10-09): `pnpm test` exit 0 (519 files, 6474 passed, 12 skipped), no drift, no code change. Gates: type-check 0, lint 0, build 0 on attempt 1 (22 recovered timeout or fetch-failed lines, 0 `db.query_failed`). Not a UI change, compare.mjs n/a. `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
+Previous: **M04-c132 DONE** (2026-10-09): `pnpm type-check` exit 0, no drift, no code change. Gates: lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 timeout lines). Not a UI change, compare.mjs n/a. `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
 Previous: **M03-c132 BLOCKED** (2026-10-09): `compare.mjs --page=category` run in the foreground at 380, 768 and 1440 against `PORT=3312 pnpm start`, HEAD `0dc47169e`: gate refuses at all three, no diff number (`kenyonexpress.co.il` is our own deployment, see docs/PARITY-REFERENCE.md; blocker 0). Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1. `HeroSlider.tsx` and `SiteFooter.tsx` stay uncommitted.
 Previous: **M02-c132 BLOCKED** (2026-10-09): `compare.mjs --page=product` run in the foreground at 380, 768 and 1440 against `PORT=3312 pnpm start`, HEAD `4dd880a57`: gate refuses at all three, no diff number (`kenyonexpress.co.il` is our own deployment, see docs/PARITY-REFERENCE.md; blocker 0). Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1. `HeroSlider.tsx` and `SiteFooter.tsx` stay uncommitted.
 Previous: **M01-c132 BLOCKED** (2026-10-09): compare.mjs on `/` at 380, 768, 1440 refuses (exit 5 x3, blocker 0): `kenyonexpress.co.il` serves our own Next build, so there is no reference and no number to diff (see docs/PARITY-REFERENCE.md). Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1. No code change. Previous: **M18-c131 DONE** (2026-10-09): STATE.md was already 111 lines (under 300); 18 c122 queue rows moved to `docs/STATE-ARCHIVE.md`. Previous: **M17-c131 BLOCKED** (2026-10-09): production RTL re-probed on `/` and `/product/מוצר-לדוגמא` at 380, 768, 1440: 6/6 runs `lang=he dir=rtl`, overflow 0, 0 Hebrew text nodes with LTR direction or left alignment, status 200. One leak, unchanged: the footer newsletter placeholder (Hebrew) renders in an `dir=ltr` input, `text-align: start`, so flush left. The uncommitted `SiteFooter.tsx` fix cannot be committed because compare.mjs refuses (exit 5 x6, blocker 0). Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 timeout lines).
@@ -72,6 +73,7 @@ Rows for c122 (M18-c131), c121 (M18-c130), c113 and c115 to c117 are in `docs/ST
 | M01-c132 | Re-measure compare.mjs 380/768/1440 on / | **BLOCKED**: gate refuses at all three widths (exit 5), no reference, no number to diff; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M03-c132 | Re-measure compare.mjs on /category | **BLOCKED**: gate refuses at 380/768/1440, no reference, no number to diff; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M04-c132 | pnpm type-check, fix drift | **DONE**: exit 0, no drift, no code change; gates lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
+| M05-c132 | pnpm test, fix drift | **DONE**: exit 0, 519 files, 6474 passed, 12 skipped, no drift, no code change; gates type-check 0, lint 0, build 0 on attempt 1 |
 
 ## Open blockers
 
