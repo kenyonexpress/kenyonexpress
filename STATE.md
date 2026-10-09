@@ -1,7 +1,9 @@
-RESUME FROM: M01-c134
+RESUME FROM: M02-c134
 
 # KenyonExpress — Project State
-Last item: **M18-c133 DONE** (2026-10-09): STATE.md was 143 lines (under 300) but about 50 KB; now 57 lines. c130 to c132 queue rows and the older Previous narratives moved to `docs/STATE-ARCHIVE.md` (section "Archived by M18-c133"). No code change, compare.mjs n/a. `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
+Last item: **M01-c134 BLOCKED** (2026-10-09): `compare.mjs 380 / `, `768 /`, `1440 /` all exit 5 (reference is our own build, see blocker 0 and `docs/PARITY-REFERENCE.md`); no number to diff, nothing to record against the 11% limit. Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`). `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
+
+Previous: **M18-c133 DONE** (2026-10-09): STATE.md was 143 lines (under 300) but about 50 KB; now 57 lines. c130 to c132 queue rows and the older Previous narratives moved to `docs/STATE-ARCHIVE.md` (section "Archived by M18-c133"). No code change, compare.mjs n/a. `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
 
 Previous: **M17-c133 BLOCKED** (2026-10-09): production `www` RTL probe on `/` and `/product/מוצר-לדוגמא` at 380, 768, 1440 (`/tmp/m17c133/probe.mjs`): 6/6 runs status 200, `lang=he dir=rtl`, overflow 0, 0 Hebrew text nodes with LTR direction or left alignment. One leak, unchanged from M17-c132: footer newsletter placeholder (Hebrew) in a `dir=ltr` input, `text-align: start`, flush left. The uncommitted `SiteFooter.tsx` fix cannot be committed while compare.mjs has no reference (blocker 0). Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`). `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
 
@@ -29,6 +31,7 @@ Rows for c122 (M18-c131), c121 (M18-c130), c113 and c115 to c117 are in `docs/ST
 | M15-c133 | Verify no console errors on / and /product sample | **DONE**: prod 0 console/page errors, 0 failed requests on both pages at 380 and 1440, unchanged from M15-c132; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M16-c133 | Verify all product pages have JSON-LD Product and BreadcrumbList | **DONE**: 44/44 prod have both nodes, 43 pass, `מזקקת-ויסקי` lacks `image`; code unchanged since M16-c132; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 |
 | M18-c133 | Trim STATE.md under 300 lines, archive rest | **DONE**: STATE.md was 143 lines at start (under 300, but ~50 KB); c130 to c132 queue rows and the M16-c131..M01-c133 Previous narratives moved to `docs/STATE-ARCHIVE.md`; no code change |
+| M01-c134 | Re-measure compare.mjs 380/768/1440 on / | **BLOCKED**: gate exits 5 at all three widths, no reference, no number to diff; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 
 ## Open blockers
 
