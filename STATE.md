@@ -1,7 +1,9 @@
-RESUME FROM: M08-c134 (M07-c134 DONE: only the 2 filed Cardcom markers remain)
+RESUME FROM: M09-c134 (M08-c134 DONE: Lighthouse perf median 82 / 84)
 
 # KenyonExpress — Project State
-Last item: **M07-c134 DONE** (2026-10-09): TODO/FIXME re-scan at HEAD `02b38a2f1`: only `cardcom.ts:254` and `cardcom.ts:319` match (B1, B2 in `docs/BACKLOG.md`), nothing new, `final-audit.mjs` 0 untracked markers (of 2). Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`). compare.mjs n/a. `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
+Last item: **M08-c134 DONE** (2026-10-09): Lighthouse mobile (default simulate, performance only via `scripts/_lh-runs.mjs`) on `/` and `/product/מוצר-לדוגמא` against `pnpm start -p 3534` on a clean build of HEAD `4ea04d97e` plus the uncommitted `HeroSlider.tsx`/`SiteFooter.tsx` edits, 3 runs per page. **Perf: home 79, 82, 82 (median 82); product 84, 84, 84 (median 84).** TBT 40-70 ms / 50 ms, CLS 0.003 / 0.001, LCP (sim) 4.7-5.6 s / 4.4 s. A11y, BP, SEO not measured. Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`). Not a UI change, compare.mjs n/a.
+
+Previous: **M07-c134 DONE** (2026-10-09): TODO/FIXME re-scan at HEAD `02b38a2f1`: only `cardcom.ts:254` and `cardcom.ts:319` match (B1, B2 in `docs/BACKLOG.md`), nothing new, `final-audit.mjs` 0 untracked markers (of 2). Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`). compare.mjs n/a. `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
 
 Previous: **M06-c134 DONE** (2026-10-09): `pnpm build` exit 0 on attempt 1, 0 `db.query_failed`, 0 timeout or fetch-failed lines, no drift, no code change. Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped). `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
 
@@ -48,6 +50,7 @@ Rows for c122 (M18-c131), c121 (M18-c130), c113 and c115 to c117 are in `docs/ST
 | M03-c134 | Re-measure compare.mjs on /category sample | **BLOCKED**: gate refuses at 380/768/1440, no reference, no number to diff; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M04-c134 | pnpm type-check, fix drift | **DONE**: exit 0, no drift, no code change; gates lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M07-c134 | TODO/FIXME older than 7 days: resolve or file in docs/BACKLOG.md | **DONE**: only the 2 filed Cardcom markers (B1, B2), nothing new; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
+| M08-c134 | Lighthouse mobile on / and /product sample, log scores | **DONE**: perf median 82 / 84 (3 runs each: 79, 82, 82 / 84, 84, 84), perf-only script; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 
 ## Open blockers
 
