@@ -22855,3 +22855,26 @@ Setup: the same as M08-c122. Lighthouse 13.4.1 from the repo (`pnpm exec lightho
 - Unit tests `src/app/api/health`, `src/app/api/ready` and `src/lib/health`: 3 files, 23/23 pass.
 - Gates: `pnpm type-check` 0, `pnpm lint` 0, `pnpm test` 0 (519 files, 6474 passed, 12 skipped), `pnpm build` 0 on attempt 1 (0 Supabase timeout or fetch-failed lines, 0 `db.query_failed`). Not a UI change, so compare.mjs does not apply (blocker 0). `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` are still uncommitted and not part of this commit.
 - Moved from STATE.md (verbatim): Last item: **M12-c123 DONE** (2026-10-09): robots.txt re-verified against production at 02:09 UTC. `www` 200 `text/plain`, apex 308 (blocker 1). Live file matches `src/app/robots.ts`: same 16 `Disallow:` prefixes, `Host:` and `Sitemap:` on the apex. 0 of 94 sitemap URLs blocked; credential paths disallowed and noindex, unchanged from M12-c122. No code change. Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (12 recovered timeout or fetch-failed lines, 0 `db.query_failed`). See the M12-c123 section in the archive.
+
+## Moved from STATE.md by M18-c129
+
+c120 queue rows (verbatim):
+
+| M16-c120 | Verify all product pages have JSON-LD Product and BreadcrumbList | **DONE**: 44/44 prod, 46/46 HEAD, both nodes valid; same 3 image-less rows lack `image`, unchanged from M16-c119 (see archive) |
+| M01-c120 | Re-measure compare.mjs 380/768/1440 on / | **BLOCKED**: exit 5 at all three widths, gate refuses, no reference (see archive) |
+| M02-c120 | Re-measure compare.mjs on /product | **BLOCKED**: exit 5 at 380/768/1440, gate refuses, no reference; build gate also failed 6/6 on Supabase timeouts (see archive) |
+| M03-c120 | Re-measure compare.mjs on /category | **BLOCKED**: exit 5 at 380/768/1440, gate refuses, no reference; build gate also failed 3/3 on Supabase timeouts (see archive) |
+| M04-c120 | pnpm type-check, fix drift | **DONE**: exit 0, no drift, no code change; build 0 on attempt 1 |
+| M05-c120 | pnpm test, fix drift | **DONE**: exit 0, 6474 passed, 12 skipped, no drift, no code change; build 0 on attempt 1 |
+| M06-c120 | pnpm build, fix drift | **DONE**: exit 0 on attempt 1, 0 timeouts, no drift, no code change |
+| M07-c120 | TODO/FIXME older than 7 days: resolve or file in docs/BACKLOG.md | **BLOCKED**: re-scan found only the 2 filed Cardcom markers (B1, B2), nothing new; build gate failed 6/6 on Supabase timeouts (blocker 7) |
+| M08-c120 | Lighthouse mobile on / and /product sample, log scores | **DONE**: median perf 59 / 80, a11y 100, BP 96, SEO 100; TBT up on a loaded host (load 45/52, benchmarkIndex 182–2268), no source change since M08-c119; build needed 6 attempts (see archive) |
+| M09-c120 | Remove unused deps and dead exports | **DONE**: no source change since M09-c119; 0 deps to drop, 0 dead components, same 39 kept exports, nothing deleted (see archive) |
+| M10-c120 | Verify migrations/pending/ applied or file blocker | **BLOCKED**: re-probe unchanged from M10-c119, 6 live but unrecorded, 22 not applied, 231 not applied (anon reviews 401); needs Ofir (see archive) |
+| M11-c120 | Verify sitemap.xml fresh and reachable | **DONE**: 5/5 section files 200, 94/94 URLs 200 on www (1 after retry), lastmods unchanged (see archive) |
+| M12-c120 | Verify robots.txt production-safe | **DONE**: live file matches source, 0/94 sitemap URLs blocked, credential paths disallowed + noindex, unchanged from M12-c119 (see archive) |
+| M13-c120 | Verify /api/health and /api/ready return 200 with real deps | **BLOCKED**: health 200, ready 503 on `meilisearch: down`, unchanged from M13-c119 (see archive) |
+| M14-c120 | Verify Sentry release matches HEAD commit | **BLOCKED**: `www` release still `1e84df0` (audit/final-audit), HEAD `b299e57`; `origin/main` still `3969d3e`, unchanged from M14-c119 (see archive) |
+| M15-c120 | Verify no console errors on / and /product sample | **DONE**: prod 0 errors on both pages at 380 and 1440, unchanged from M15-c119; local errors are env-only (see archive) |
+| M17-c120 | Verify RTL on / and /product sample, no LTR leaks | **BLOCKED**: 42/42 runs RTL-clean except the same footer newsletter placeholder, flush left in prod; uncommitted fix clean locally but compare.mjs refuses (exit 5 x6, blocker 0) (see archive) |
+| M18-c120 | Trim STATE.md under 300 lines, archive rest | **DONE**: already 152 lines at start; M17-c120 status line and 58 c113–c117 queue rows moved to `docs/STATE-ARCHIVE.md` |

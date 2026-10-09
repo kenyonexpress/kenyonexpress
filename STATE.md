@@ -6,30 +6,12 @@ Last item: **M13-c123 BLOCKED** (2026-10-09): `/api/health` and `/api/ready` re-
 Previous: M12-c123 DONE, M11-c123 DONE, M10-c123 BLOCKED, M09-c123 DONE, M08-c123 DONE, M06-c123 DONE, M05-c123 DONE, M04-c123 DONE, M03-c123 BLOCKED, M02-c123 BLOCKED, M01-c123 BLOCKED, M18-c122 DONE, M17-c122 BLOCKED, M16-c122 DONE, M15-c122 DONE, M14-c122 BLOCKED, M13-c122 BLOCKED, M12-c122 DONE, M11-c122 DONE, M10-c122 BLOCKED, M09-c122 DONE, M08-c122 DONE, M07-c122 DONE, M06-c122 DONE, M05-c122 DONE, M04-c122 DONE, M03-c122 BLOCKED, M02-c122 BLOCKED, M01-c122 BLOCKED, M18-c121 DONE, M17-c121 BLOCKED, M16-c121 DONE, M15-c121 DONE, M14-c121 BLOCKED, M13-c121 BLOCKED, M12-c121 DONE, M11-c121 DONE, M10-c121 BLOCKED, M09-c121 DONE, M08-c121 DONE, M07-c121 DONE, M06-c121 DONE, M05-c121 DONE, M04-c121 DONE, M03-c121 BLOCKED, M02-c121 BLOCKED, M01-c121 BLOCKED, M18-c120 DONE, M17-c120 BLOCKED, M16-c120 DONE, M15-c120 DONE, M14-c120 BLOCKED, M13-c120 BLOCKED, M12-c120 DONE, M11-c120 DONE, M10-c120 BLOCKED, M09-c120 DONE, M08-c120 DONE, M07-c120 BLOCKED, M06-c120 DONE, M05-c120 DONE, M04-c120 DONE, M03-c120 BLOCKED, M02-c120 BLOCKED, M01-c120 BLOCKED, M18-c119 DONE, M17-c119 BLOCKED, M16-c119 DONE, M15-c119 DONE, M14-c119 BLOCKED, M13-c119 BLOCKED, M12-c119 DONE, M11-c119 DONE, M10-c119 BLOCKED, M09-c119 DONE, M08-c119 DONE, M07-c119 DONE, M06-c119 DONE, M05-c119 DONE, M04-c119 DONE, M03-c119 BLOCKED, M02-c119 BLOCKED, M01-c119 BLOCKED, M18-c118 DONE, M17-c118 BLOCKED, M16-c118 DONE, M15-c118 DONE, M14-c118 BLOCKED, M13-c118 BLOCKED, M12-c118 DONE, M11-c118 DONE, M10-c118 BLOCKED, M09-c118 DONE, M08-c118 DONE, M07-c118 DONE, M06-c118 DONE, M05-c118 BLOCKED, M04-c118 DONE, M03-c118 BLOCKED, M02-c118 BLOCKED, M01-c118 BLOCKED, M18-c117 DONE, M17-c117 BLOCKED, M16-c117 DONE, M15-c117 DONE, M14-c117 BLOCKED, M13-c117 BLOCKED, M12-c117 DONE, M11-c117 DONE, M10-c117 BLOCKED, M09-c117 DONE, M08-c117 DONE, M07-c117 DONE, M06-c117 DONE, M05-c117 DONE, M04-c117 DONE, M03-c117 BLOCKED, M02-c117 BLOCKED, M01-c117 BLOCKED, M18-c116 DONE, M17-c116 BLOCKED, M16-c116 DONE, M15-c116 DONE, M14-c116 BLOCKED, M13-c116 BLOCKED, M12-c116 DONE, M11-c116 DONE, M10-c116 BLOCKED, M09-c116 DONE, M08-c116 DONE, M07-c116 DONE, M06-c116 DONE, M05-c116 DONE, M04-c116 DONE, M03-c116 BLOCKED, M02-c116 BLOCKED, M01-c116 BLOCKED, M18-c115 DONE, M16-c115 DONE, M15-c115 DONE, M14-c115 BLOCKED, M13-c115 BLOCKED, M12-c115 DONE, M11-c115 DONE, M10-c115 BLOCKED, M09-c115 DONE, M08-c115 DONE, M07-c115 DONE, M06-c115 DONE, M05-c115 DONE, M04-c115 DONE, M03-c115 BLOCKED, M02-c115 BLOCKED, M01-c115 BLOCKED (all 2026-10-07), M11-c113 DONE (2026-10-06).
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
 
-## Queue status (cycles c120 to c123)
+## Queue status (cycles c121 to c123, M18-c129)
 
-Rows for c113 and c115 to c117 are in `docs/STATE-ARCHIVE.md` (M18-c120), c118 rows (M18-c121), c119 rows (M18-c122).
+Rows for c113 and c115 to c117 are in `docs/STATE-ARCHIVE.md` (M18-c120), c118 rows (M18-c121), c119 rows (M18-c122), c120 rows (M18-c129).
 
 | ID | Item | Status |
 |---|---|---|
-| M16-c120 | Verify all product pages have JSON-LD Product and BreadcrumbList | **DONE**: 44/44 prod, 46/46 HEAD, both nodes valid; same 3 image-less rows lack `image`, unchanged from M16-c119 (see archive) |
-| M01-c120 | Re-measure compare.mjs 380/768/1440 on / | **BLOCKED**: exit 5 at all three widths, gate refuses, no reference (see archive) |
-| M02-c120 | Re-measure compare.mjs on /product | **BLOCKED**: exit 5 at 380/768/1440, gate refuses, no reference; build gate also failed 6/6 on Supabase timeouts (see archive) |
-| M03-c120 | Re-measure compare.mjs on /category | **BLOCKED**: exit 5 at 380/768/1440, gate refuses, no reference; build gate also failed 3/3 on Supabase timeouts (see archive) |
-| M04-c120 | pnpm type-check, fix drift | **DONE**: exit 0, no drift, no code change; build 0 on attempt 1 |
-| M05-c120 | pnpm test, fix drift | **DONE**: exit 0, 6474 passed, 12 skipped, no drift, no code change; build 0 on attempt 1 |
-| M06-c120 | pnpm build, fix drift | **DONE**: exit 0 on attempt 1, 0 timeouts, no drift, no code change |
-| M07-c120 | TODO/FIXME older than 7 days: resolve or file in docs/BACKLOG.md | **BLOCKED**: re-scan found only the 2 filed Cardcom markers (B1, B2), nothing new; build gate failed 6/6 on Supabase timeouts (blocker 7) |
-| M08-c120 | Lighthouse mobile on / and /product sample, log scores | **DONE**: median perf 59 / 80, a11y 100, BP 96, SEO 100; TBT up on a loaded host (load 45/52, benchmarkIndex 182–2268), no source change since M08-c119; build needed 6 attempts (see archive) |
-| M09-c120 | Remove unused deps and dead exports | **DONE**: no source change since M09-c119; 0 deps to drop, 0 dead components, same 39 kept exports, nothing deleted (see archive) |
-| M10-c120 | Verify migrations/pending/ applied or file blocker | **BLOCKED**: re-probe unchanged from M10-c119, 6 live but unrecorded, 22 not applied, 231 not applied (anon reviews 401); needs Ofir (see archive) |
-| M11-c120 | Verify sitemap.xml fresh and reachable | **DONE**: 5/5 section files 200, 94/94 URLs 200 on www (1 after retry), lastmods unchanged (see archive) |
-| M12-c120 | Verify robots.txt production-safe | **DONE**: live file matches source, 0/94 sitemap URLs blocked, credential paths disallowed + noindex, unchanged from M12-c119 (see archive) |
-| M13-c120 | Verify /api/health and /api/ready return 200 with real deps | **BLOCKED**: health 200, ready 503 on `meilisearch: down`, unchanged from M13-c119 (see archive) |
-| M14-c120 | Verify Sentry release matches HEAD commit | **BLOCKED**: `www` release still `1e84df0` (audit/final-audit), HEAD `b299e57`; `origin/main` still `3969d3e`, unchanged from M14-c119 (see archive) |
-| M15-c120 | Verify no console errors on / and /product sample | **DONE**: prod 0 errors on both pages at 380 and 1440, unchanged from M15-c119; local errors are env-only (see archive) |
-| M17-c120 | Verify RTL on / and /product sample, no LTR leaks | **BLOCKED**: 42/42 runs RTL-clean except the same footer newsletter placeholder, flush left in prod; uncommitted fix clean locally but compare.mjs refuses (exit 5 x6, blocker 0) (see archive) |
-| M18-c120 | Trim STATE.md under 300 lines, archive rest | **DONE**: already 152 lines at start; M17-c120 status line and 58 c113–c117 queue rows moved to `docs/STATE-ARCHIVE.md` |
 | M01-c121 | Re-measure compare.mjs 380/768/1440 on / | **BLOCKED**: exit 5 at all three widths, gate refuses, no reference (see archive) |
 | M02-c121 | Re-measure compare.mjs on /product | **BLOCKED**: exit 5 at 380/768/1440, gate refuses, no reference; build 0 on attempt 2 (see archive) |
 | M03-c121 | Re-measure compare.mjs on /category | **BLOCKED**: exit 5 at 380/768/1440, gate refuses, no reference; build 0 on attempt 1 (see archive) |
@@ -78,6 +60,7 @@ Rows for c113 and c115 to c117 are in `docs/STATE-ARCHIVE.md` (M18-c120), c118 r
 | M11-c123 | Verify sitemap.xml fresh and reachable | **DONE**: 5/5 section files 200, 94/94 URLs 200 on www first pass, lastmods unchanged; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (see archive) |
 | M12-c123 | Verify robots.txt production-safe | **DONE**: live file matches source, 0/94 sitemap URLs blocked, credential paths disallowed + noindex, unchanged from M12-c122; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (see archive) |
 | M13-c123 | Verify /api/health and /api/ready return 200 with real deps | **BLOCKED**: health 200, ready 503 on `meilisearch: down`, unchanged from M13-c122; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (see archive) |
+| M18-c129 | Trim STATE.md under 300 lines, archive rest | **DONE**: already 107 lines at start; 18 c120 queue rows moved to `docs/STATE-ARCHIVE.md`; gates type-check 0, lint 0, test 0, build 0; `HeroSlider.tsx` and `SiteFooter.tsx` stay uncommitted |
 
 ## Open blockers
 
