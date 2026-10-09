@@ -1,7 +1,9 @@
-RESUME FROM: M06-c134 (M05-c134 DONE: pnpm test clean, no drift)
+RESUME FROM: M07-c134 (M06-c134 DONE: pnpm build clean, no drift)
 
 # KenyonExpress — Project State
-Last item: **M05-c134 DONE** (2026-10-09): `pnpm test` exit 0 (519 files, 6474 passed, 12 skipped), no drift, no code change. Gates type-check 0, lint 0, build 0 on attempt 1 (0 `db.query_failed`). `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
+Last item: **M06-c134 DONE** (2026-10-09): `pnpm build` exit 0 on attempt 1, 0 `db.query_failed`, 0 timeout or fetch-failed lines, no drift, no code change. Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped). `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
+
+Previous: **M05-c134 DONE**: pnpm test clean, no drift.
 
 Previous: **M04-c134 DONE**: type-check clean, no drift.
 
