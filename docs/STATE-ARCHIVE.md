@@ -23010,3 +23010,9 @@ Command: `LOCAL_BASE=http://localhost:3312 node scripts/compare.mjs --page=categ
 - `www.kenyonexpress.co.il/api/health` 200 `{"ok":true,"database":"ok","latency_ms":292}`. `/api/ready` 503 `{"ok":false,"checks":{"database":"ok","redis":"ok","meilisearch":"down","r2":"not_configured","cardcom":"ok"}}`.
 - Same as M13-c115 through M13-c130. No code change: suppressing the meilisearch check would hide a real outage. Operator fix unchanged (blocker 6, manual item). Not a UI change, compare.mjs n/a.
 - Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1.
+
+## M15-c131: console errors on / and /product, probed 2026-10-09 in the foreground
+
+- Method: Playwright Chromium, 380x800 and 1440x900, `waitUntil: load`, two scrolls, 7 s wait, recording console errors, `pageerror`, `requestfailed` and responses of 400 or above. Probe in `/tmp/m15c131/probe.mjs`, outside the repo.
+- Production `https://www.kenyonexpress.co.il`: 4/4 runs 200 on attempt 1, all counters 0. (`.com` does not resolve, see M11-c131.)
+- No code change. Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 timeout lines).
