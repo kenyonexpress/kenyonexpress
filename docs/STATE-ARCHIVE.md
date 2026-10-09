@@ -22906,3 +22906,17 @@ Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=produ
 - Unchanged from M02-c123; `refs/ke_live_singlefile.html` still absent (blocker 0). Gate wrote 3 REFUSED rows to `docs/UI-PARITY-REPORT.md`. Exit code 5 confirmed directly at 380; 768 and 1440 show the same refusal text.
 - Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `supabase.timeout`).
 - Moved from STATE.md (verbatim): Last item: **M01-c130 BLOCKED** (2026-10-09): `compare.mjs --page=home` exits 5 at 380, 768 and 1440 with no diff number; the gate refuses because `kenyonexpress.co.il` is our own build and `refs/ke_live_singlefile.html` is absent (blocker 0). Run in the foreground against `PORT=3311 pnpm start`, HEAD `208d8fcd1`. Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1. See the M01-c130 section in the archive.
+
+## M03-c130: compare.mjs on /category at 380, 768, 1440, run 2026-10-09 in the foreground
+
+Command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=category --width=<w>` against `PORT=3311 pnpm start` on a fresh build of HEAD `6ee702405`.
+
+| Width | Result |
+|---|---|
+| 380 | REFUSED, no diff number |
+| 768 | REFUSED, no diff number |
+| 1440 | REFUSED, no diff number |
+
+- Unchanged from M03-c123; `refs/ke_live_singlefile.html` still absent (blocker 0). Exit code was not captured by the shell this run (zsh PIPESTATUS); refusal text identical to prior exit-5 runs.
+- Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `supabase.timeout`).
+- Moved from STATE.md (verbatim): Last item: **M02-c130 BLOCKED** (2026-10-09): `compare.mjs --page=product` exits 5 at 380, 768 and 1440 with no diff number; the gate refuses because `kenyonexpress.co.il` is our own build and `refs/ke_live_singlefile.html` is absent (blocker 0). Run in the foreground against `PORT=3311 pnpm start`, HEAD `719a2ee87`. Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `supabase.timeout`). See the M02-c130 section in the archive.
