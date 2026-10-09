@@ -22988,3 +22988,8 @@ Command: `LOCAL_BASE=http://localhost:3312 node scripts/compare.mjs --page=categ
 
 - Unchanged from M03-c130; `refs/ke_live_singlefile.html` still absent and `kenyonexpress.co.il` serves our build (blocker 0). Gate appended REFUSED rows to `docs/UI-PARITY-REPORT.md`.
 - Gates: type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 timeout or fetch-failed lines).
+
+## Moved from STATE.md by M08-c131
+
+- Superseded STATE.md "Last item" text for M07-c131:
+  > Last item: **M07-c131 DONE** (2026-10-09): TODO/FIXME re-scan at HEAD `6159cee88`, only `cardcom.ts:254` and `cardcom.ts:319` match (B1, B2, already filed), nothing new; `final-audit.mjs` 0 untracked work markers (of 2). Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1. `HeroSlider.tsx` and `SiteFooter.tsx` stay uncommitted.
