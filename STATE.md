@@ -1,6 +1,6 @@
-RESUME FROM: M09-c159
-Last item: **M08-c159 DONE** (2026-10-11): Lighthouse mobile (default simulate, perf only, `scripts/_lh-runs.mjs`) on `pnpm start -p 3560` of a fresh build at HEAD `58f0bc4e8`, 3 runs per page. `/`: 79, 81, 81 (median 81; LCP 5.1 s, TBT 30-40 ms, CLS 0-0.003). `/product/מוצר-לדוגמא`: 83, 84, 84 (median 84; LCP 4.4-4.5 s, TBT 30-40 ms, CLS 0.001). Within noise of M08-c158 (79 / 84); no `src` change. Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`). `HeroSlider.tsx`, `SiteFooter.tsx` stay uncommitted.
-Previous: **M07-c159 DONE** (see queue table).
+RESUME FROM: M10-c159
+Last item: **M09-c159 DONE** (2026-10-11): already done in M09-c116, M09-c117 and M09-c150..c158, re-verified. `git diff 1ed4c5ef3 HEAD -- src package.json packages pnpm-lock.yaml` empty at HEAD `80b86f8c8` (last such change `c0fd95a27`), so the result stands: only no-importer deps are the deliberate keeps (`@mdx-js/*`, `@types/mdx`); 0 deps dropped, nothing deleted. Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`). compare.mjs n/a. `HeroSlider.tsx`, `SiteFooter.tsx` stay uncommitted.
+Previous: **M08-c159 DONE** (see queue table).
 # KenyonExpress — Project State
 
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
@@ -11,6 +11,7 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 
 | ID | Item | Status |
 |---|---|---|
+| M09-c159 | Unused deps and dead exports | **DONE**: no src/package change since M09-c158, no unused deps, no new dead exports, 0 deps dropped; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M08-c159 | Lighthouse mobile on / and /product sample, log scores | **DONE**: perf median 81 / 84 (3 runs each: 79, 81, 81 / 83, 84, 84), perf-only script; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M07-c159 | TODO/FIXME older than 7 days: resolve or file in docs/BACKLOG.md | **DONE**: re-scan found only the 2 filed Cardcom markers (B1, B2), nothing new; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M06-c159 | pnpm build, fix drift | **DONE**: exit 0 on attempt 1, 0 db.query_failed, no drift, no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped) |
