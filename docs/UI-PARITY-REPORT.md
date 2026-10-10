@@ -359,3 +359,7 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-10 22:15 | product | 380 | n/a | REFUSED | `4de225e66-dirty` | live side is our-build |
 | 2026-10-10 22:15 | product | 768 | n/a | REFUSED | `4de225e66-dirty` | live side is our-build |
 | 2026-10-10 22:15 | product | 1440 | n/a | REFUSED | `4de225e66-dirty` | live side is our-build |
+| 2026-10-10 22:22 | home | 1440 | n/a | REFUSED | `411307378-dirty` | live side is our-build |
+| 2026-10-10 22:25 | product | 380 | n/a | REFUSED | `9ccdf1416-dirty` | live side is our-build |
+| 2026-10-10 22:26 | product | 768 | n/a | REFUSED | `9ccdf1416-dirty` | live side is our-build |
+| 2026-10-10 22:26 | product | 1440 | n/a | REFUSED | `9ccdf1416-dirty` | live side is our-build |
