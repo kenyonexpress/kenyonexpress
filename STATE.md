@@ -1,6 +1,6 @@
-RESUME FROM: M15-c158
-Last item: **M14-c158 BLOCKED** (2026-10-11): live `www` client bundle Sentry release still `1e84df0e5457` (audit/final-audit), HEAD `09e271fbc`; unchanged, blocker 4, needs Ofir. gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1. `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
-Previous: **M13-c158 BLOCKED** (2026-10-11): /api/ready 503 meilisearch down (blocker 6).
+RESUME FROM: M16-c158
+Last item: **M15-c158 DONE** (2026-10-11): production `https://www.kenyonexpress.co.il`, Playwright Chromium at 380 and 1440 on `/` and `/product/מוצר-לדוגמא` at HEAD `9911a3b94`: 4/4 runs status 200, 0 console errors, 0 `pageerror`, 0 failed requests, 0 responses of 400 or above. Unchanged from M15-c157; no `src` change. gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`). compare.mjs n/a. `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
+Previous: **M14-c158 BLOCKED** (2026-10-11): live Sentry release `1e84df0e5` != HEAD (blocker 4).
 # KenyonExpress — Project State
 
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
@@ -11,6 +11,7 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 
 | ID | Item | Status |
 |---|---|---|
+| M15-c158 | Verify no console errors on / and /product sample | **DONE**: 4/4 prod runs (380, 1440) 0 console errors, 0 pageerror, 0 failed requests, 0 responses >= 400, unchanged from M15-c157; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M14-c158 | Verify Sentry release matches HEAD commit | **BLOCKED**: `www` release still `1e84df0` (audit/final-audit), HEAD `09e271fbc`; needs Ofir (blocker 4); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M13-c158 | Verify /api/health and /api/ready return 200 with real deps | **BLOCKED**: health 200, ready 503 `meilisearch: down` on www.kenyonexpress.co.il, unchanged (blocker 6); needs Ofir; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M12-c158 | Verify robots.txt production-safe | **DONE**: live www file 200 matches source (16 Disallow, credential paths blocked), robots.ts unchanged; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
