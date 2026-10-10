@@ -11,6 +11,11 @@ are not markers).
 
 Three real markers, all older than 7 days.
 
+Re-scanned 2026-10-10 (M07-c149) with the same rule at HEAD `486433ad9`: unchanged. Only
+`cardcom.ts:254` and `cardcom.ts:319` match, both filed as B1 and B2; they
+still need live Cardcom terminal credentials. `node scripts/final-audit.mjs`
+reports 0 untracked work markers (of 2).
+
 Re-scanned 2026-10-07 (M07-c116) with the same rule: only the two Cardcom
 markers remain, both already filed as B1 and B2. No new marker since M07-c115,
 and `node scripts/final-audit.mjs` reports 0 untracked work markers (of 2).
