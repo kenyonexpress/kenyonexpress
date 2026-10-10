@@ -1,6 +1,6 @@
-RESUME FROM: M17-c158
-Last item: **M16-c158 DONE** (2026-10-11): already done in M16-c137, re-verified. Production `www`, 44 URLs from `/sitemap/products.xml` at HEAD `ab6b3b9b8`: 44/44 have JSON-LD `Product` and `BreadcrumbList`, 43 pass every check, `מזקקת-ויסקי` has no `image` (unchanged). No `src` change. Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`). compare.mjs n/a. `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
-Previous: **M15-c158 DONE** (2026-10-11): 4/4 prod runs 0 console errors.
+RESUME FROM: M18-c158
+Last item: **M17-c158 BLOCKED** (2026-10-11): 6/6 prod runs (`/` and `/product/מוצר-לדוגמא` at 380, 768, 1440) `lang=he dir=rtl`, overflow 0, 0 Hebrew in LTR, 0 left-aligned Hebrew; the only leak is the same footer newsletter placeholder (`dir=ltr align=start`). Fix stays uncommitted in `SiteFooter.tsx`: compare.mjs refuses 6/6 (no reference, blocker 0). Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`).
+Previous: **M16-c158 DONE** (2026-10-11): 44/44 prod product pages have JSON-LD.
 # KenyonExpress — Project State
 
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
@@ -11,6 +11,7 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 
 | ID | Item | Status |
 |---|---|---|
+| M17-c158 | Verify RTL on / and /product sample, no LTR leaks | **BLOCKED**: 6/6 prod runs RTL-clean except the same footer newsletter placeholder, flush left; uncommitted fix cannot be committed, compare.mjs refuses 6/6 (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M16-c158 | Verify all product pages have JSON-LD Product and BreadcrumbList | **DONE**: 44/44 prod product pages have both, 43 pass every check, `מזקקת-ויסקי` lacks `image` (unchanged); no src change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M15-c158 | Verify no console errors on / and /product sample | **DONE**: 4/4 prod runs (380, 1440) 0 console errors, 0 pageerror, 0 failed requests, 0 responses >= 400, unchanged from M15-c157; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M14-c158 | Verify Sentry release matches HEAD commit | **BLOCKED**: `www` release still `1e84df0` (audit/final-audit), HEAD `09e271fbc`; needs Ofir (blocker 4); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
