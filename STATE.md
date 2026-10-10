@@ -1,5 +1,5 @@
-RESUME FROM: M12-c157
-Last item: **M11-c157 DONE** (2026-10-11): sitemap index 200, 5/5 section files 200, 94/94 URLs 200 on www, newest lastmod 2026-10-05, unchanged from M11-c141; no code change. Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`). `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
+RESUME FROM: M13-c157
+Last item: **M12-c157 DONE** (2026-10-11): live www robots.txt 200 matches `src/app/robots.ts` (16 Disallow, credential paths blocked, Sitemap line present), no code change. Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`). `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
 # KenyonExpress — Project State
 
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
@@ -58,6 +58,7 @@ Rows for c122 (M18-c131), c121 (M18-c130), c113 and c115 to c117 are in `docs/ST
 | M15-c133 | Verify no console errors on / and /product sample | **DONE**: prod 0 console/page errors, 0 failed requests on both pages at 380 and 1440, unchanged from M15-c132; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M16-c133 | Verify all product pages have JSON-LD Product and BreadcrumbList | **DONE**: 44/44 prod have both nodes, 43 pass, `מזקקת-ויסקי` lacks `image`; code unchanged since M16-c132; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 |
 | M02-c157 | Re-measure compare.mjs on /product sample | **BLOCKED**: gate refuses at 380/768/1440, no reference, no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
+| M12-c157 | Verify robots.txt production-safe | **DONE**: live www file 200 matches source (16 Disallow, credential paths blocked), robots.ts unchanged; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M11-c157 | Verify sitemap.xml fresh and reachable | **DONE**: index 200, 5/5 section files 200, 94/94 URLs 200 on www, newest lastmod 2026-10-05, unchanged from M11-c141; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M10-c157 | Verify migrations/pending/ applied or file blocker | **BLOCKED**: pending dir unchanged, 231 not applied, 22 absent, 6 live but unrecorded; needs Ofir (blocker 5); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M08-c157 | Lighthouse mobile on / and /product sample, log scores | **DONE**: perf median 80 / 83 (3 runs each: 82, 80, 79 / 84, 83, 77), perf-only script; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
