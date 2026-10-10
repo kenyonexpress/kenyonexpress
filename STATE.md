@@ -1,5 +1,5 @@
-RESUME FROM: M04-c158
-Last item: **M03-c158 BLOCKED** (2026-10-11): `compare.mjs --page=category` at 380, 768 and 1440 refuses at every width (live host serves our own build, 37 to 38 `/_next/` assets, no reference), so there is no number to diff (blocker 0). Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1, 0 db.query_failed. `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
+RESUME FROM: M05-c158
+Last item: **M04-c158 DONE** (2026-10-11): `pnpm type-check` exit 0, no drift, no code change. Gates lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1, 0 db.query_failed. `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
 # KenyonExpress — Project State
 
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
@@ -10,6 +10,7 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 
 | ID | Item | Status |
 |---|---|---|
+| M04-c158 | pnpm type-check, fix drift | **DONE**: exit 0, no drift, no code change; gates lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M03-c158 | Re-measure compare.mjs on /category sample | **BLOCKED**: gate refuses at 380/768/1440, no reference, no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M01-c158 | Re-measure compare.mjs 380 768 1440 on / and record diffs | **BLOCKED**: gate refuses at 380/768/1440, no reference, no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M02-c158 | Re-measure compare.mjs on /product sample | **BLOCKED**: gate refuses at 380/768/1440, no reference, no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
