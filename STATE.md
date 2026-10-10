@@ -1,4 +1,4 @@
-RESUME FROM: M03-c157
+RESUME FROM: M02-c157
 Last item: **M01-c157 BLOCKED** (2026-10-11): `compare.mjs --page=home` re-run in foreground at 380, 768 and 1440 on `/`: all three refuse (`kenyonexpress.co.il` serves our own build, 34-35 `/_next/` assets, no wp-content; no reference, blocker 0). No numbers, so no diffs to record vs the previous measurement. Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`). `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
 # KenyonExpress — Project State
 
