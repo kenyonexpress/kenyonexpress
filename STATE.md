@@ -1,6 +1,6 @@
-RESUME FROM: M07-c160
-Last item: **M06-c160 DONE** (2026-10-11): `pnpm build` exit 0 on attempt 1, 0 `db.query_failed`, 0 timeout lines, no drift, no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped). STATE.md was 95 lines, no archive move. `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
-Previous: **M05-c160 DONE**.
+RESUME FROM: M08-c160
+Last item: **M07-c160 DONE** (2026-10-11): re-scan found only the 2 filed Cardcom markers (B1, B2), nothing new; `final-audit.mjs` 0 untracked markers (of 2); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1. STATE.md 96 lines, no archive move. `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
+Previous: **M06-c160 DONE**.
 # KenyonExpress — Project State
 
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
@@ -11,6 +11,7 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 
 | ID | Item | Status |
 |---|---|---|
+| M07-c160 | TODO/FIXME older than 7 days: resolve or file in docs/BACKLOG.md | **DONE**: re-scan found only the 2 filed Cardcom markers (B1, B2), nothing new; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M06-c160 | pnpm build, fix drift | **DONE**: exit 0 on attempt 1, 0 db.query_failed, no drift, no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped) |
 | M05-c160 | pnpm test, fix drift | **DONE**: exit 0 (519 files, 6474 passed, 12 skipped), no drift, no code change; gates type-check 0, lint 0, build 0 on attempt 1 |
 | M04-c160 | pnpm type-check, fix drift | **DONE**: exit 0, no drift, no code change; gates lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
