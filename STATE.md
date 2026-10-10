@@ -1,5 +1,5 @@
-RESUME FROM: M14-c157
-Last item: **M13-c157 BLOCKED** (2026-10-11): `www` and apex did not resolve from this host (curl exit 6), so /api/health and /api/ready are unverifiable now; last known health 200, ready 503 on `meilisearch: down` (blocker 6). No code change. Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`). `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
+RESUME FROM: M15-c157
+Last item: **M14-c157 BLOCKED** (2026-10-11): `www` resolves (health 200); live client bundle Sentry release still `1e84df0e5457c9c80a46f7cb2155ac204ebc15ef` (audit/final-audit), HEAD `d6cd1b578`; needs Ofir (blocker 4). No code change. Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`). `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
 # KenyonExpress — Project State
 
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
@@ -57,6 +57,7 @@ Rows for c122 (M18-c131), c121 (M18-c130), c113 and c115 to c117 are in `docs/ST
 | M14-c133 | Verify Sentry release matches HEAD commit | **BLOCKED**: `www` release still `1e84df0` (audit/final-audit), HEAD `c0264e1`; needs Ofir (blocker 4); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M15-c133 | Verify no console errors on / and /product sample | **DONE**: prod 0 console/page errors, 0 failed requests on both pages at 380 and 1440, unchanged from M15-c132; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M16-c133 | Verify all product pages have JSON-LD Product and BreadcrumbList | **DONE**: 44/44 prod have both nodes, 43 pass, `מזקקת-ויסקי` lacks `image`; code unchanged since M16-c132; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 |
+| M14-c157 | Verify Sentry release matches HEAD commit | **BLOCKED**: `www` release still `1e84df0` (audit/final-audit), HEAD `d6cd1b578`; needs Ofir (blocker 4); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M02-c157 | Re-measure compare.mjs on /product sample | **BLOCKED**: gate refuses at 380/768/1440, no reference, no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M12-c157 | Verify robots.txt production-safe | **DONE**: live www file 200 matches source (16 Disallow, credential paths blocked), robots.ts unchanged; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M11-c157 | Verify sitemap.xml fresh and reachable | **DONE**: index 200, 5/5 section files 200, 94/94 URLs 200 on www, newest lastmod 2026-10-05, unchanged from M11-c141; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
