@@ -1,5 +1,5 @@
-RESUME FROM: M16-c157
-Last item: **M15-c157 DONE** (2026-10-11): 4/4 prod runs (`/` and `/product/מוצר-לדוגמא`, 380 and 1440) 200, 0 console errors, 0 pageerror, 0 failed requests, 0 responses >= 400, unchanged from M15-c156. No code change. Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`). `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
+RESUME FROM: M17-c157
+Last item: **M16-c157 DONE** (2026-10-11): already done in M16-c137, re-verified. Production `www`, 44 URLs from `/sitemap/products.xml` at HEAD `30c46009c`: 44/44 have JSON-LD `Product` and `BreadcrumbList`, 43 pass every check, `מזקקת-ויסקי` has no `image` (unchanged). No `src` change since `d4cd0179d`. Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`). compare.mjs n/a. `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
 # KenyonExpress — Project State
 
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
@@ -33,6 +33,7 @@ Rows for c122 (M18-c131), c121 (M18-c130), c113 and c115 to c117 are in `docs/ST
 | M14-c146 | Verify Sentry release matches HEAD commit | **BLOCKED**: `www` did not resolve from this host (DNS), release unverifiable; last known `1e84df0` vs HEAD `4b7f0ffeb`; blocker 4; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M14-c143 | Verify Sentry release matches HEAD commit | **BLOCKED**: `www` release still `1e84df0` (audit/final-audit), HEAD `0dc847e74`; needs Ofir (blocker 4); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M12-c142 | Verify robots.txt production-safe | **DONE**: live www file 200 matches source (16 Disallow, credential paths blocked), robots.ts unchanged; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
+| M16-c157 | Verify all product pages have JSON-LD Product and BreadcrumbList | **DONE**: 44/44 prod product pages have both, 43 pass every check, `מזקקת-ויסקי` lacks `image` (unchanged); no src change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M15-c157 | Verify no console errors on / and /product sample | **DONE**: 4/4 prod runs (380, 1440) 0 console errors, 0 pageerror, 0 failed requests, 0 responses >= 400, unchanged from M15-c156; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M15-c154 | Verify no console errors on / and /product sample | **DONE**: 4/4 prod runs (380, 1440) 0 console errors, 0 pageerror, 0 failed requests, 0 responses >= 400, unchanged from M15-c153; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M15-c152 | Verify no console errors on / and /product sample | **DONE**: 4/4 prod runs (380, 1440) 0 console errors, 0 pageerror, 0 failed requests, 0 responses >= 400, unchanged from M15-c151; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
