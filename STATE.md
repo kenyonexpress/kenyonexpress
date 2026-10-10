@@ -1,6 +1,6 @@
-RESUME FROM: M11-c159
-Last item: **M10-c159 BLOCKED** (2026-10-11): `migrations/pending/` unchanged since M10-c158 (`git diff 94c908e5d HEAD -- migrations` empty, 45 files), so the result stands: 231 not applied, 22 absent, 6 live but unrecorded (blocker 5). Supabase MCP is unauthorised in this session, so `schema_migrations` cannot be read and nothing can be verified or moved to `migrations/applied/`. Only Ofir applies. Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`). `HeroSlider.tsx`, `SiteFooter.tsx` stay uncommitted.
-Previous: **M09-c159 DONE** (see queue table).
+RESUME FROM: M12-c159
+Last item: **M11-c159 DONE** (2026-10-11): sitemap index 200, 5/5 section files 200, 94/94 URLs 200 on www, newest lastmod 2026-10-05, unchanged from M11-c158. Apex 308 hop stays blocker 1. Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`). `HeroSlider.tsx`, `SiteFooter.tsx` stay uncommitted.
+Previous: **M10-c159 BLOCKED** (see queue table).
 # KenyonExpress — Project State
 
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
@@ -11,6 +11,7 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 
 | ID | Item | Status |
 |---|---|---|
+| M11-c159 | Verify sitemap.xml fresh and reachable | **DONE**: index 200, 5/5 section files 200, 94/94 URLs 200 on www, newest lastmod 2026-10-05, unchanged from M11-c158; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M10-c159 | Verify migrations/pending/ applied or file blocker | **BLOCKED**: pending dir unchanged since M10-c158, 231 not applied, 22 absent, 6 live but unrecorded; needs Ofir (blocker 5); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M09-c159 | Unused deps and dead exports | **DONE**: no src/package change since M09-c158, no unused deps, no new dead exports, 0 deps dropped; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M08-c159 | Lighthouse mobile on / and /product sample, log scores | **DONE**: perf median 81 / 84 (3 runs each: 79, 81, 81 / 83, 84, 84), perf-only script; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
