@@ -1,5 +1,5 @@
-RESUME FROM: M03-c157
-Last item: **M02-c157 BLOCKED** (2026-10-11): `compare.mjs --page=product` re-run in foreground at 380, 768 and 1440: all three refuse (`kenyonexpress.co.il` serves our own build, 37-39 `/_next/` assets, no wp-content; no reference, blocker 0). No numbers, so no diff vs the previous measurement. Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`) at HEAD `1a984270e`. `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
+RESUME FROM: M04-c157
+Last item: **M03-c157 BLOCKED** (2026-10-11): `compare.mjs --page=category` re-run in foreground at 380, 768 and 1440: all three refuse (`kenyonexpress.co.il/product-category/hot-deals/` serves our own build, 37-38 `/_next/` assets, no wp-content; no reference, blocker 0). No numbers, so no diff vs the previous measurement. Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`) at HEAD `94827e842`. `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
 # KenyonExpress — Project State
 
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
@@ -58,6 +58,7 @@ Rows for c122 (M18-c131), c121 (M18-c130), c113 and c115 to c117 are in `docs/ST
 | M15-c133 | Verify no console errors on / and /product sample | **DONE**: prod 0 console/page errors, 0 failed requests on both pages at 380 and 1440, unchanged from M15-c132; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M16-c133 | Verify all product pages have JSON-LD Product and BreadcrumbList | **DONE**: 44/44 prod have both nodes, 43 pass, `מזקקת-ויסקי` lacks `image`; code unchanged since M16-c132; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 |
 | M02-c157 | Re-measure compare.mjs on /product sample | **BLOCKED**: gate refuses at 380/768/1440, no reference, no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
+| M03-c157 | Re-measure compare.mjs on /category sample | **BLOCKED**: gate refuses at 380/768/1440, no reference, no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M18-c133 | Trim STATE.md under 300 lines, archive rest | **DONE**: STATE.md was 143 lines at start (under 300, but ~50 KB); c130 to c132 queue rows and the M16-c131..M01-c133 Previous narratives moved to `docs/STATE-ARCHIVE.md`; no code change |
 | M01-c134 | Re-measure compare.mjs 380/768/1440 on / | **BLOCKED**: gate exits 5 at all three widths, no reference, no number to diff; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M02-c134 | Re-measure compare.mjs on /product sample | **BLOCKED**: gate exits 5 at 380/768/1440, no reference, no number to diff; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
