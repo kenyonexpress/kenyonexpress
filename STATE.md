@@ -1,5 +1,5 @@
-RESUME FROM: M09-c157
-Last item: **M08-c157 DONE** (2026-10-11): Lighthouse mobile (default simulate, perf only, `scripts/_lh-runs.mjs`) on `pnpm start -p 3557` of a fresh build at HEAD `3fcd04707`, 3 runs per page. `/`: 82, 80, 79 (median 80; LCP 4.8-5.5 s, TBT 30-40 ms, CLS 0-0.003). `/product/מוצר-לדוגמא`: 84, 83, 77 (median 83; LCP 4.4-4.7 s, TBT 30 ms, CLS 0.001). Unchanged from M08-c156 (81 / 78) within noise; no `src` change. Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`). compare.mjs n/a. `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
+RESUME FROM: M10-c157
+Last item: **M09-c157 DONE** (2026-10-11): `git diff d0ebefbd1 HEAD -- src package.json packages pnpm-lock.yaml` empty at HEAD `2d7f38d62`, so the M09-c150..c156 result stands: only no-importer deps are the deliberate keeps (`@mdx-js/*`, `@types/mdx`, used by `@next/mdx`); 0 deps dropped, nothing deleted. Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`). compare.mjs n/a. `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
 # KenyonExpress — Project State
 
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
