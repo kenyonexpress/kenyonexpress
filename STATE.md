@@ -1,5 +1,5 @@
-RESUME FROM: M13-c157
-Last item: **M12-c157 DONE** (2026-10-11): live www robots.txt 200 matches `src/app/robots.ts` (16 Disallow, credential paths blocked, Sitemap line present), no code change. Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`). `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
+RESUME FROM: M14-c157
+Last item: **M13-c157 BLOCKED** (2026-10-11): `www` and apex did not resolve from this host (curl exit 6), so /api/health and /api/ready are unverifiable now; last known health 200, ready 503 on `meilisearch: down` (blocker 6). No code change. Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`). `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
 # KenyonExpress — Project State
 
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
