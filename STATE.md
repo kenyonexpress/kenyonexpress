@@ -1,6 +1,6 @@
-RESUME FROM: M16-c159
-Last item: **M15-c159 DONE** (2026-10-11): 4/4 prod runs (380, 1440) on `/` and `/product/מוצר-לדוגמא` 200, 0 console errors, 0 pageerror, 0 failed requests, 0 responses >= 400, unchanged from M15-c158; no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`). `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
-Previous: **M14-c159 BLOCKED** (see queue table).
+RESUME FROM: M17-c159
+Last item: **M16-c159 DONE** (2026-10-11): 44/44 prod product pages (www, from sitemap products.xml) have JSON-LD Product and BreadcrumbList, 43 pass every check, `מזקקת-ויסקי` lacks `image` (unchanged from M16-c158); no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`). `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
+Previous: **M15-c159 DONE** (see queue table).
 # KenyonExpress — Project State
 
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
@@ -11,6 +11,7 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 
 | ID | Item | Status |
 |---|---|---|
+| M16-c159 | Verify all product pages have JSON-LD Product and BreadcrumbList | **DONE**: 44/44 prod product pages have both, 43 pass every check, `מזקקת-ויסקי` lacks `image` (unchanged); no src change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M15-c159 | Verify no console errors on / and /product sample | **DONE**: 4/4 prod runs (380, 1440) 0 console errors, 0 pageerror, 0 failed requests, 0 responses >= 400, unchanged from M15-c158; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M14-c159 | Verify Sentry release matches HEAD commit | **BLOCKED**: `www` release still `1e84df0` (audit/final-audit), HEAD `d19bc837a`; needs Ofir (blocker 4); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M13-c159 | Verify /api/health and /api/ready return 200 with real deps | **BLOCKED**: health 200, ready 503 `meilisearch: down` on www.kenyonexpress.co.il, unchanged (blocker 6); needs Ofir; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
