@@ -1,6 +1,6 @@
-RESUME FROM: M14-c158
-Last item: **M13-c158 BLOCKED** (2026-10-11): `www.kenyonexpress.co.il` `/api/health` 200 (`database: ok`), `/api/ready` 503 (`meilisearch: down`, redis ok, cardcom ok, r2 not_configured); unchanged, blocker 6, needs Ofir. gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1. `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
-Previous: **M12-c158 DONE** (2026-10-11): live robots.txt matches source.
+RESUME FROM: M15-c158
+Last item: **M14-c158 BLOCKED** (2026-10-11): live `www` client bundle Sentry release still `1e84df0e5457` (audit/final-audit), HEAD `09e271fbc`; unchanged, blocker 4, needs Ofir. gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1. `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
+Previous: **M13-c158 BLOCKED** (2026-10-11): /api/ready 503 meilisearch down (blocker 6).
 # KenyonExpress — Project State
 
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
@@ -11,6 +11,7 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 
 | ID | Item | Status |
 |---|---|---|
+| M14-c158 | Verify Sentry release matches HEAD commit | **BLOCKED**: `www` release still `1e84df0` (audit/final-audit), HEAD `09e271fbc`; needs Ofir (blocker 4); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M13-c158 | Verify /api/health and /api/ready return 200 with real deps | **BLOCKED**: health 200, ready 503 `meilisearch: down` on www.kenyonexpress.co.il, unchanged (blocker 6); needs Ofir; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M12-c158 | Verify robots.txt production-safe | **DONE**: live www file 200 matches source (16 Disallow, credential paths blocked), robots.ts unchanged; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M11-c158 | Verify sitemap.xml fresh and reachable | **DONE**: index 200, 5/5 section files 200, 94/94 URLs 200 on www, newest lastmod 2026-10-05, unchanged from M11-c157; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
