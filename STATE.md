@@ -1,5 +1,5 @@
-RESUME FROM: M05-c157
-Last item: **M04-c157 DONE** (2026-10-11): `pnpm type-check` exit 0, no drift, no code change; gates lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`) at HEAD `2b35feb1a`. `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
+RESUME FROM: M06-c157
+Last item: **M05-c157 DONE** (2026-10-11): `pnpm test` 519 files, 6474 passed, 12 skipped, no drift, no code change; gates type-check 0, lint 0, build 0 on attempt 1 (0 `db.query_failed`) at HEAD `41df26f04`. `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
 # KenyonExpress — Project State
 
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
