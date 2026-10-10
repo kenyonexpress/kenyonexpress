@@ -1,5 +1,5 @@
-RESUME FROM: M02-c158
-Last item: **M01-c158 BLOCKED** (2026-10-11): `compare.mjs --page=home` at 380, 768 and 1440 refuses at every width (live host serves our own build, 34 to 35 `/_next/` assets, no reference), so there is no number to diff (blocker 0). Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1. `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
+RESUME FROM: M03-c158
+Last item: **M02-c158 BLOCKED** (2026-10-11): `compare.mjs --page=product` at 380, 768 and 1440 refuses at every width (live host serves our own build, 37 to 39 `/_next/` assets, no reference), so there is no number to diff (blocker 0). Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1. `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
 # KenyonExpress — Project State
 
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
@@ -11,6 +11,7 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 | ID | Item | Status |
 |---|---|---|
 | M01-c158 | Re-measure compare.mjs 380 768 1440 on / and record diffs | **BLOCKED**: gate refuses at 380/768/1440, no reference, no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
+| M02-c158 | Re-measure compare.mjs on /product sample | **BLOCKED**: gate refuses at 380/768/1440, no reference, no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M17-c157 | Verify RTL on / and /product sample, no LTR leaks | **BLOCKED**: 6/6 prod runs RTL-clean except the same footer newsletter placeholder, flush left; uncommitted fix cannot be committed, compare.mjs refuses (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M16-c157 | Verify all product pages have JSON-LD Product and BreadcrumbList | **DONE**: 44/44 prod product pages have both, 43 pass every check, `מזקקת-ויסקי` lacks `image` (unchanged); no src change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M15-c157 | Verify no console errors on / and /product sample | **DONE**: 4/4 prod runs (380, 1440) 0 console errors, 0 pageerror, 0 failed requests, 0 responses >= 400, unchanged from M15-c156; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
