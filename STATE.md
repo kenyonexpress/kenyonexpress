@@ -1,6 +1,6 @@
-RESUME FROM: M09-c158
-Last item: **M08-c158 DONE** (2026-10-11): Lighthouse mobile (default simulate, perf only, `scripts/_lh-runs.mjs`) on `pnpm start -p 3558` of a fresh build at HEAD `9303cff93`, 3 runs per page. `/`: 78, 79, 79 (median 79; LCP 5.3-5.8 s, TBT 30-40 ms, CLS 0-0.003). `/product/מוצר-לדוגמא`: 84, 84, 84 (median 84; LCP 4.3-4.4 s, TBT 30 ms, CLS 0.001). Within noise of M08-c157 (80 / 83). No code change. Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`). compare.mjs n/a. `HeroSlider.tsx`, `SiteFooter.tsx` and `logs/` stay uncommitted.
-Previous: **M07-c158 DONE** (2026-10-11): TODO/FIXME re-scan found only the 2 filed Cardcom markers (B1, B2), no code change.
+RESUME FROM: M10-c158
+Last item: **M09-c158 DONE** (2026-10-11): already done in M09-c150..c157, re-verified. `git diff d0ebefbd1 HEAD -- src package.json packages pnpm-lock.yaml` empty at HEAD `085071d59`, so the result stands: only no-importer deps are the deliberate keeps (`@mdx-js/*`, `@types/mdx`) plus type/tooling companions; 0 deps dropped, nothing deleted. Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`). compare.mjs n/a. `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
+Previous: **M08-c158 DONE** (2026-10-11): Lighthouse mobile `/` median 79, `/product` median 84, no code change.
 # KenyonExpress — Project State
 
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
