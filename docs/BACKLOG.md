@@ -174,3 +174,8 @@ Re-scanned 2026-10-10 (M07-c148) with the same rule: unchanged. Only
 match, both filed as B1 and B2; they still need live Cardcom terminal
 credentials. `node scripts/final-audit.mjs` reports 0 untracked work markers
 (of 2).
+
+Re-scanned 2026-10-10 (M07-c153) with the same rule at HEAD `714326cd2`:
+unchanged. Only `cardcom.ts:254` and `cardcom.ts:319` match, both filed as B1
+and B2; they still need live Cardcom terminal credentials. `node
+scripts/final-audit.mjs` reports 0 untracked work markers (of 2).
