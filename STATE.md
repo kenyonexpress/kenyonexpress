@@ -1,6 +1,6 @@
-RESUME FROM: M09-c160
-Last item: **M08-c160 DONE** (2026-10-11): Lighthouse mobile (default simulate, perf only via `scripts/_lh-runs.mjs`) on `/` and `/product/מוצר-לדוגמא` against `pnpm start -p 3532`, 3 runs each. **Perf: home 79, 79, 82 (median 79); product 82, 84, 83 (median 83).** TBT 40 ms / 30 ms, CLS 0.003 / 0.001, LCP (sim) 5.0-5.8 s / 4.3-4.6 s. A11y, BP, SEO not measured. Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`). Not a UI change, compare.mjs n/a. `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
-Previous: **M07-c160 DONE**.
+RESUME FROM: M10-c160
+Last item: **M09-c160 DONE** (2026-10-11): no `src/`, `packages/` or `package.json` change since M09-c159 (`git diff 479e7e959 HEAD` empty), so the M09-c158/c159 findings stand: no unused deps, no new dead exports, 0 deps dropped. Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`). Not a UI change, compare.mjs n/a. `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
+Previous: **M08-c160 DONE**.
 # KenyonExpress — Project State
 
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
@@ -11,6 +11,7 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 
 | ID | Item | Status |
 |---|---|---|
+| M09-c160 | Unused deps and dead exports | **DONE**: no src/package change since M09-c159, no unused deps, no new dead exports, 0 deps dropped; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M08-c160 | Lighthouse mobile on / and /product sample, log scores | **DONE**: perf median 79 / 83 (3 runs each: 79, 79, 82 / 82, 84, 83), perf-only script; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M07-c160 | TODO/FIXME older than 7 days: resolve or file in docs/BACKLOG.md | **DONE**: re-scan found only the 2 filed Cardcom markers (B1, B2), nothing new; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M06-c160 | pnpm build, fix drift | **DONE**: exit 0 on attempt 1, 0 db.query_failed, no drift, no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped) |
