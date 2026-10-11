@@ -1,6 +1,6 @@
-RESUME FROM: M12-c161
-Last item: **M11-c161 DONE** (2026-10-11): sitemap index 200, 5/5 section files 200, 94/94 URLs 200 on www (apex locs mapped to www), newest lastmod 2026-10-05, no src/package change since M11-c160; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1. `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
-Previous: **M10-c161 BLOCKED** (blocker 5).
+RESUME FROM: M13-c161
+Last item: **M12-c161 DONE** (2026-10-11): live www robots.txt 200 matches source (16 Disallow, credential paths /redeem/ /coupon/ /gift/ /order/ /wishlist/s/ blocked), `robots.ts` unchanged; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1. `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
+Previous: **M11-c161 DONE**.
 # KenyonExpress — Project State
 
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
@@ -11,6 +11,7 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 
 | ID | Item | Status |
 |---|---|---|
+| M12-c161 | Verify robots.txt production-safe | **DONE**: live www file 200 matches source (16 Disallow, credential paths blocked), robots.ts unchanged; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M11-c161 | Verify sitemap.xml fresh and reachable | **DONE**: index 200, 5/5 section files 200, 94/94 URLs 200 on www, newest lastmod 2026-10-05, unchanged from M11-c160; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M10-c161 | Verify migrations/pending/ applied or file blocker | **BLOCKED**: pending dir unchanged since M10-c160, 231 not applied, 22 absent, 6 live but unrecorded; needs Ofir (blocker 5); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M09-c161 | Unused deps and dead exports | **DONE**: no src/package change since M09-c160, no unused deps beyond the 6 keeps, no new dead exports, 0 deps dropped; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
