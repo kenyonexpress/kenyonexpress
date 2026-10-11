@@ -1,5 +1,6 @@
-RESUME FROM: M14-c174
-Last item: **M13-c174 BLOCKED** (2026-10-11): www.kenyonexpress.co.il `/api/health` 200 (`database: ok`), `/api/ready` 503 (`database ok, redis ok, meilisearch down, r2 not_configured, cardcom ok`), unchanged (blocker 6); needs Ofir; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed); no code change.
+RESUME FROM: M15-c174
+Last item: **M14-c174 BLOCKED** (2026-10-11): `www` client bundle (21 chunks) Sentry release still `1e84df0e5457c9c80a46f7cb2155ac204ebc15ef` (audit/final-audit), HEAD `dc254698f`; needs Ofir (blocker 4); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed); no code change.
+Previous: **M13-c174 BLOCKED** (blocker 6).
 Previous: **M12-c174 DONE**.
 Previous: **M11-c174 DONE**, **M10-c174 BLOCKED** (blocker 5).
 Previous: **M08-c174 DONE** (perf median 81 / 81).
@@ -21,6 +22,7 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 
 | ID | Item | Status |
 |---|---|---|
+| M14-c174 | Verify Sentry release matches HEAD commit | **BLOCKED**: `www` client bundle release still `1e84df0e5457c9c80a46f7cb2155ac204ebc15ef` (audit/final-audit, 21 chunks scanned), HEAD `dc254698f`; needs Ofir (blocker 4); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M13-c174 | Verify /api/health and /api/ready return 200 with real deps | **BLOCKED**: health 200 (`database: ok`), ready 503 (`meilisearch down, r2 not_configured`) on www.kenyonexpress.co.il, unchanged (blocker 6); needs Ofir; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M12-c174 | Verify robots.txt production-safe | **DONE**: live www file 200 matches source (16 Disallow, credential paths blocked), robots.ts unchanged since `c558a6476`, no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M11-c174 | Verify sitemap.xml fresh and reachable | **DONE**: index 200, 5/5 section files 200, 94/94 URLs 200 on www, newest lastmod 2026-10-05, unchanged from M11-c173; no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
