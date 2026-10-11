@@ -1,6 +1,6 @@
-RESUME FROM: M11-c162
-Last item: **M10-c162 BLOCKED** (2026-10-11): `migrations/pending/` unchanged since M10-c161 (`git diff 603b34856 HEAD -- migrations` empty), so 231 not applied, 22 absent, 6 live but unrecorded; needs Ofir (blocker 5). Supabase MCP still unauthorised, so `schema_migrations` cannot be read. Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1. `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
-Previous: **M09-c162 DONE**.
+RESUME FROM: M12-c162
+Last item: **M11-c162 DONE** (2026-10-11): sitemap index 200, 5/5 section files 200, 94/94 URLs 200 on www, newest lastmod 2026-10-05, unchanged from M11-c161; no src change. gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1. `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
+Previous: **M10-c162 BLOCKED**.
 # KenyonExpress — Project State
 
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
@@ -11,6 +11,7 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 
 | ID | Item | Status |
 |---|---|---|
+| M11-c162 | Verify sitemap.xml fresh and reachable | **DONE**: index 200, 5/5 section files 200, 94/94 URLs 200 on www, newest lastmod 2026-10-05, unchanged from M11-c161; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M10-c162 | Verify migrations/pending/ applied or file blocker | **BLOCKED**: pending dir unchanged since M10-c161, 231 not applied, 22 absent, 6 live but unrecorded; needs Ofir (blocker 5); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M09-c162 | Unused deps and dead exports | **DONE**: no src/package change since M09-c161, no unused deps beyond the 6 keeps, no new dead exports, 0 deps dropped; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M08-c162 | Lighthouse mobile on / and /product sample, log scores | **DONE**: perf median 80 / 83 (3 runs each: 80, 81, 78 / 78, 84, 83); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
