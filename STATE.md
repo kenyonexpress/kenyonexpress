@@ -1,6 +1,6 @@
-RESUME FROM: M10-c173
-Last item: **M09-c173 DONE** (2026-10-11): unused deps and dead exports, empty diff vs `a5ef1b137` for src, packages, package.json, pnpm-lock.yaml, 0 deps dropped.
-Previous: **M08-c173 DONE** (2026-10-11): Lighthouse mobile perf median 80 / 83 (3 runs each: 81, 80, 79 / 76, 92, 83), local prod build (`pnpm start -p 3651`), `scripts/_lh-runs.mjs`, `/product/barbecue`; no code change.
+RESUME FROM: M11-c173
+Last item: **M10-c173 BLOCKED** (2026-10-11): migrations/pending/ unchanged (last touched `afeedf709`, empty diff vs `d59312c25`), 231 not applied, 22 absent, 6 live but unrecorded; needs Ofir (blocker 5).
+Previous: **M09-c173 DONE**, **M08-c173 DONE** (perf median 80 / 83), **M07-c173 DONE**, **M06-c173 DONE**, **M05-c173 DONE**,
 Previous: **M07-c173 DONE**, **M06-c173 DONE**, **M05-c173 DONE**,
 Previous: **M04-c173 DONE**, **M03-c173 BLOCKED**, **M02-c173 BLOCKED**, **M01-c173 BLOCKED**, **M18-c172 DONE**, **M17-c172 BLOCKED**, **M16-c172 DONE**, **M15-c172 DONE**, **M14-c172 BLOCKED**, **M13-c172 BLOCKED**, **M12-c172 DONE**, **M11-c172 DONE**, **M10-c172 BLOCKED**, **M09-c172 DONE**, **M08-c172 DONE**, **M07-c172 DONE**, **M06-c172 DONE**, **M05-c172 DONE**, **M04-c172 DONE**, **M03-c172 BLOCKED**, **M02-c172 BLOCKED**, **M01-c172 BLOCKED**, **M18-c171 DONE**, **M17-c171 BLOCKED**, **M16-c171 DONE**, **M15-c171 DONE**, **M14-c171 BLOCKED**, **M13-c171 BLOCKED**, **M12-c171 DONE**, **M11-c171 DONE**, **M10-c171 BLOCKED**, **M09-c171 DONE**, **M08-c171 DONE**, M07-c171 DONE, M06-c171 DONE, M05-c171 DONE, M04-c171 DONE, **M03-c171 BLOCKED**, **M02-c171 BLOCKED**, **M01-c171 BLOCKED**.
 
@@ -12,6 +12,7 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 
 | ID | Item | Status |
 |---|---|---|
+| M10-c173 | Verify migrations/pending/ applied or file blocker | **BLOCKED**: pending dir unchanged since M10-c172 (last touched `afeedf709`, empty diff vs `d59312c25`), 231 not applied, 22 absent, 6 live but unrecorded; needs Ofir (blocker 5); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M09-c173 | Unused deps and dead exports | **DONE**: empty diff vs `a5ef1b137` for src, packages, package.json, pnpm-lock.yaml (uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` add no exports or imports), no unused deps beyond the 6 keeps, no new dead exports, 0 deps dropped; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M08-c173 | Lighthouse mobile on / and /product sample, log scores | **DONE**: perf median 80 / 83 (3 runs each: 81, 80, 79 / 76, 92, 83), local prod build (`pnpm start -p 3651`), `scripts/_lh-runs.mjs`, `/product/barbecue`, LCP 4.8-5.7 s / 3.4-4.9 s, CLS 0.003 / 0.001, TBT 40 ms / 30 ms, no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M07-c173 | TODO/FIXME older than 7 days: resolve or file in docs/BACKLOG.md | **DONE**: re-scan found only the 2 filed Cardcom markers (B1, B2), nothing new; final-audit 0 untracked of 2; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
