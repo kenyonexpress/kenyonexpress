@@ -1,6 +1,6 @@
-RESUME FROM: M12-c169
-Last item: **M11-c169 DONE** (2026-10-11): sitemap index 200, 5/5 section files 200, 94/94 URLs 200 on www, newest lastmod 2026-10-05, unchanged from M11-c168; no src change since `2277c4eba`; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed).
-Previous: **M10-c169 BLOCKED** (pending migrations not applied, blocker 5).
+RESUME FROM: M13-c169
+Last item: **M12-c169 DONE** (2026-10-11): live www robots.txt 200, 16 Disallow, credential paths blocked, matches `src/app/robots.ts` (unchanged since `c558a6476`); no src change since `789f9e355`; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed).
+Previous: **M11-c169 DONE** (sitemap fresh, 94/94 URLs 200).
 
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
 
@@ -10,6 +10,7 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 
 | ID | Item | Status |
 |---|---|---|
+| M12-c169 | Verify robots.txt production-safe | **DONE**: live www file 200 matches source (16 Disallow, credential paths blocked), robots.ts unchanged since `c558a6476`; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M11-c169 | Verify sitemap.xml fresh and reachable | **DONE**: index 200, 5/5 section files 200, 94/94 URLs 200 on www, newest lastmod 2026-10-05, unchanged from M11-c168; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M10-c169 | Verify migrations/pending/ applied or file blocker | **BLOCKED**: pending dir unchanged since M10-c168 (last touched `afeedf709`, empty diff vs `65bf1e22a`), 231 not applied, 22 absent, 6 live but unrecorded; needs Ofir (blocker 5); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M09-c169 | Unused deps and dead exports | **DONE**: no src/package/packages change since M09-c168 (empty diff vs `a5ef1b137`), no unused deps beyond the 6 keeps, no new dead exports, 0 deps dropped; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
