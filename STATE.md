@@ -1,6 +1,6 @@
-RESUME FROM: M12-c174
-Last item: **M11-c174 DONE** (2026-10-11): sitemap index 200, 5/5 section files 200, 94/94 URLs 200 on www, newest lastmod 2026-10-05, unchanged from M11-c173. Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed). No code change.
-Previous: **M10-c174 BLOCKED** (blocker 5: pending migrations not applied, needs Ofir).
+RESUME FROM: M13-c174
+Last item: **M12-c174 DONE** (2026-10-11): live www robots.txt 200 matches source (16 Disallow, credential paths blocked), robots.ts unchanged since `c558a6476`; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed); no code change.
+Previous: **M11-c174 DONE**, **M10-c174 BLOCKED** (blocker 5).
 Previous: **M08-c174 DONE** (perf median 81 / 81).
 Previous: **M07-c174 DONE**, **M06-c174 DONE**, **M05-c174 DONE**, **M04-c174 DONE**.
 Previous: **M04-c174 DONE**, **M03-c174 BLOCKED** (2026-10-11): compare.mjs `--page=category` at 380, 768, 1440 run in foreground, all three REFUSED: `kenyonexpress.co.il/product-category/hot-deals/` is our own build (37-38 /_next/ refs, no wp-content), no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed). No code change.
@@ -20,6 +20,7 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 
 | ID | Item | Status |
 |---|---|---|
+| M12-c174 | Verify robots.txt production-safe | **DONE**: live www file 200 matches source (16 Disallow, credential paths blocked), robots.ts unchanged since `c558a6476`, no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M11-c174 | Verify sitemap.xml fresh and reachable | **DONE**: index 200, 5/5 section files 200, 94/94 URLs 200 on www, newest lastmod 2026-10-05, unchanged from M11-c173; no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M10-c174 | Verify migrations/pending/ applied or file blocker | **BLOCKED**: pending dir unchanged since M10-c173 (last touched `afeedf709`, empty diff vs `d59312c25`), 231 not applied, 22 absent, 6 live but unrecorded; needs Ofir (blocker 5); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M09-c174 | Unused deps and dead exports | **DONE**: empty diff vs `a5ef1b137` for src, packages, package.json, pnpm-lock.yaml (uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` add no exports or imports), no unused deps beyond the 6 keeps, no new dead exports, 0 deps dropped; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
