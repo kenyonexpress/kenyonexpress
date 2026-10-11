@@ -1,6 +1,6 @@
-RESUME FROM: M02-c170
-Last item: **M01-c170 BLOCKED** (2026-10-11): `compare.mjs --page=home` at 380, 768 and 1440 run in foreground, all three refuse (reference host is our own build, 34-35 /_next/ refs, no wp-content), no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed); `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted (blocker 0).
-Previous: **M18-c169 DONE** (STATE.md 268 lines, no archive needed).
+RESUME FROM: M03-c170
+Last item: **M02-c170 BLOCKED** (2026-10-11): `compare.mjs --page=product` at 380, 768 and 1440 run in foreground, all three refuse (reference host is our own build, 37-39 /_next/ refs, no wp-content), no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed); `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted (blocker 0).
+Previous: **M01-c170 BLOCKED** (same refusal on home).
 
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
 
@@ -10,6 +10,7 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 
 | ID | Item | Status |
 |---|---|---|
+| M02-c170 | Re-measure compare.mjs on /product sample | **BLOCKED**: gate refuses at 380/768/1440 (run in foreground), reference host is our own build (37-39 /_next/ refs, no wp-content), no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M01-c170 | Re-measure compare.mjs 380 768 1440 on / and record diffs | **BLOCKED**: gate refuses at 380/768/1440 (run in foreground), reference host is our own build (34-35 /_next/ refs, no wp-content), no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M18-c169 | Trim STATE.md under 300 lines, archive rest | **DONE**: STATE.md was 268 lines at start (under 300), no archive move needed; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed); `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted (blocker 0). |
 | M17-c169 | Verify RTL on / and /product sample, no LTR leaks | **BLOCKED**: 4/4 prod runs (/, `/product/barbecue` at 380 and 1440) dir=rtl lang=he, overflow 0, only LTR Hebrew text is the footer newsletter input (`dir=ltr`, Hebrew placeholder); `SiteFooter.tsx` fix uncommitted, compare.mjs refuses (own build, 34 /_next/ refs) (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
