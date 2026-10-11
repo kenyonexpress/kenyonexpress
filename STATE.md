@@ -1,6 +1,6 @@
-RESUME FROM: M04-c165
-Last item: **M03-c165 BLOCKED** (2026-10-11): `scripts/compare.mjs --page=category` at 380, 768, 1440 run in foreground refuses (reference host kenyonexpress.co.il is our own Vercel build, 37-38 /_next/ refs, no wp-content), no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1.
-Previous: **M02-c165 BLOCKED**.
+RESUME FROM: M05-c165
+Last item: **M04-c165 DONE** (2026-10-11): `pnpm type-check` exit 0, no drift, no code change; gates lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1.
+Previous: **M03-c165 BLOCKED**.
 
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
 
@@ -10,6 +10,7 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 
 | ID | Item | Status |
 |---|---|---|
+| M04-c165 | pnpm type-check, fix drift | **DONE**: exit 0, no drift, no code change; gates lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M03-c165 | Re-measure compare.mjs on /category sample | **BLOCKED**: gate refuses at 380/768/1440 (run in foreground), reference host is our own build, no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M02-c165 | Re-measure compare.mjs on /product sample | **BLOCKED**: gate refuses at 380/768/1440 (run in foreground), reference host is our own build, no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M01-c165 | Re-measure compare.mjs 380 768 1440 on / and record diffs | **BLOCKED**: gate refuses at 380/768/1440 (run in foreground), reference host is our own build (34 /_next/ refs, no wp-content), `refs/ke_live_singlefile.html` absent, no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
