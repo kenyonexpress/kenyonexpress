@@ -1,5 +1,6 @@
-RESUME FROM: M18-c173
-Last item: **M17-c173 BLOCKED** (2026-10-11): 4/4 prod runs (www.kenyonexpress.co.il `/` and `/product/barbecue` at 380 and 1440) dir=rtl lang=he, overflow 0, only LTR Hebrew text is the footer newsletter input (`dir=ltr`, Hebrew placeholder), unchanged from M17-c172; `SiteFooter.tsx` fix uncommitted because compare.mjs refuses at 380/768/1440 (blocker 0).
+RESUME FROM: M01-c174
+Last item: **M18-c173 DONE** (2026-10-11): STATE.md was 291 lines at start (under 300); 14 cycle c157 queue rows moved to `docs/STATE-ARCHIVE.md`, now 278 lines; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1. No UI change, compare.mjs not applicable.
+Previous: **M17-c173 BLOCKED** (2026-10-11): 4/4 prod runs (www.kenyonexpress.co.il `/` and `/product/barbecue` at 380 and 1440) dir=rtl lang=he, overflow 0, only LTR Hebrew text is the footer newsletter input (`dir=ltr`, Hebrew placeholder), unchanged from M17-c172; `SiteFooter.tsx` fix uncommitted because compare.mjs refuses at 380/768/1440 (blocker 0).
 Previous: **M16-c173 DONE**.
 Previous: **M15-c173 DONE**, **M14-c173 BLOCKED** (blocker 4), **M13-c173 BLOCKED** (blocker 6).
 Previous: **M12-c173 DONE** (2026-10-11): live www robots.txt 200 matches source (16 Disallow, credential paths blocked), robots.ts unchanged since `c558a6476`; no code change.
@@ -9,12 +10,13 @@ Previous: **M04-c173 DONE**, **M03-c173 BLOCKED**, **M02-c173 BLOCKED**, **M01-c
 
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
 
-## Queue status (cycles c157 to c172)
+## Queue status (cycles c158 to c173)
 
-Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c120 to M18-c131, and the M18-c157 section at the end). Only c157 rows stay below.
+Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c120 to M18-c131, and the M18-c157 section at the end). Only c158 and later rows stay below (c157 rows moved in M18-c173).
 
 | ID | Item | Status |
 |---|---|---|
+| M18-c173 | Trim STATE.md under 300 lines, archive rest | **DONE**: STATE.md was 291 lines at start (under 300); 14 c157 rows moved to `docs/STATE-ARCHIVE.md`, now 278 lines; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M17-c173 | Verify RTL on / and /product sample, no LTR leaks | **BLOCKED**: 4/4 prod runs (/, `/product/barbecue` at 380 and 1440) dir=rtl lang=he, overflow 0, only LTR Hebrew text is the footer newsletter input (`dir=ltr`, Hebrew placeholder), unchanged from M17-c172; `SiteFooter.tsx` fix uncommitted, compare.mjs refuses at 380/768/1440 (own build, foreground, no number) (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M16-c173 | Verify all product pages have JSON-LD Product and BreadcrumbList | **DONE**: 44/44 prod product pages have both, 43 pass every check (name, image, offers price+currency, breadcrumb items), `מזקקת-ויסקי` lacks `image` (unchanged from M16-c172); no src change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M15-c173 | Verify no console errors on / and /product sample | **DONE**: 4/4 prod runs (380, 1440) 0 console errors, 0 pageerror, 0 failed requests, 0 responses >= 400, unchanged from M15-c172; no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
@@ -248,20 +250,6 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 | M03-c158 | Re-measure compare.mjs on /category sample | **BLOCKED**: gate refuses at 380/768/1440, no reference, no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M01-c158 | Re-measure compare.mjs 380 768 1440 on / and record diffs | **BLOCKED**: gate refuses at 380/768/1440, no reference, no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M02-c158 | Re-measure compare.mjs on /product sample | **BLOCKED**: gate refuses at 380/768/1440, no reference, no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
-| M17-c157 | Verify RTL on / and /product sample, no LTR leaks | **BLOCKED**: 6/6 prod runs RTL-clean except the same footer newsletter placeholder, flush left; uncommitted fix cannot be committed, compare.mjs refuses (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
-| M16-c157 | Verify all product pages have JSON-LD Product and BreadcrumbList | **DONE**: 44/44 prod product pages have both, 43 pass every check, `מזקקת-ויסקי` lacks `image` (unchanged); no src change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
-| M15-c157 | Verify no console errors on / and /product sample | **DONE**: 4/4 prod runs (380, 1440) 0 console errors, 0 pageerror, 0 failed requests, 0 responses >= 400, unchanged from M15-c156; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
-| M14-c157 | Verify Sentry release matches HEAD commit | **BLOCKED**: `www` release still `1e84df0` (audit/final-audit), HEAD `d6cd1b578`; needs Ofir (blocker 4); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
-| M02-c157 | Re-measure compare.mjs on /product sample | **BLOCKED**: gate refuses at 380/768/1440, no reference, no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
-| M12-c157 | Verify robots.txt production-safe | **DONE**: live www file 200 matches source (16 Disallow, credential paths blocked), robots.ts unchanged; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
-| M11-c157 | Verify sitemap.xml fresh and reachable | **DONE**: index 200, 5/5 section files 200, 94/94 URLs 200 on www, newest lastmod 2026-10-05, unchanged from M11-c141; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
-| M10-c157 | Verify migrations/pending/ applied or file blocker | **BLOCKED**: pending dir unchanged, 231 not applied, 22 absent, 6 live but unrecorded; needs Ofir (blocker 5); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
-| M08-c157 | Lighthouse mobile on / and /product sample, log scores | **DONE**: perf median 80 / 83 (3 runs each: 82, 80, 79 / 84, 83, 77), perf-only script; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
-| M06-c157 | pnpm build, fix drift | **DONE**: exit 0 on attempt 1, 0 db.query_failed, no drift, no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped) |
-| M07-c157 | TODO/FIXME older than 7 days: resolve or file in docs/BACKLOG.md | **DONE**: re-scan found only the 2 filed Cardcom markers (B1, B2), nothing new; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
-| M04-c157 | pnpm type-check, fix drift | **DONE**: exit 0, no drift, no code change; gates lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
-| M03-c157 | Re-measure compare.mjs on /category sample | **BLOCKED**: gate refuses at 380/768/1440, no reference, no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
-| M18-c157 | Trim STATE.md under 300 lines, archive rest | **DONE**: STATE.md was 125 lines at start (under 300); 73 queue rows from cycles c129 to c156 moved to `docs/STATE-ARCHIVE.md`; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1; `HeroSlider.tsx` and `SiteFooter.tsx` stay uncommitted |
 
 ## Open blockers
 
