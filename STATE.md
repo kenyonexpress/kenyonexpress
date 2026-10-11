@@ -1,6 +1,6 @@
-RESUME FROM: M15-c171
-Last item: **M14-c171 BLOCKED** (2026-10-11): live `www` Sentry release `1e84df0e5` (audit/final-audit) != HEAD `db90b51df` (blocker 4); needs Ofir; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed).
-Previous: **M13-c171 BLOCKED**, **M12-c171 DONE**, **M11-c171 DONE**, **M10-c171 BLOCKED**, **M09-c171 DONE**, **M08-c171 DONE**, M07-c171 DONE, M06-c171 DONE, M05-c171 DONE, M04-c171 DONE, **M03-c171 BLOCKED**, **M02-c171 BLOCKED**, **M01-c171 BLOCKED**, **M18-c170 DONE**, **M17-c170 BLOCKED**, M16-c170 DONE, M15-c170 DONE, **M14-c170 BLOCKED**, **M13-c170 BLOCKED**, M12-c170 DONE, M11-c170 DONE, **M10-c170 BLOCKED**, M09-c170 DONE, M08-c170 DONE, M07-c170 DONE, M06-c170 DONE, M05-c170 DONE, M04-c170 DONE, **M03-c170 BLOCKED**, **M02-c170 BLOCKED**, **M01-c170 BLOCKED**.
+RESUME FROM: M16-c171
+Last item: **M15-c171 DONE** (2026-10-11): 4/4 prod runs (`/`, `/product/barbecue` at 380 and 1440) 0 console errors, 0 pageerror, 0 failed requests, 0 responses >= 400, unchanged from M15-c170; no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed).
+Previous: **M14-c171 BLOCKED**, **M13-c171 BLOCKED**, **M12-c171 DONE**, **M11-c171 DONE**, **M10-c171 BLOCKED**, **M09-c171 DONE**, **M08-c171 DONE**, M07-c171 DONE, M06-c171 DONE, M05-c171 DONE, M04-c171 DONE, **M03-c171 BLOCKED**, **M02-c171 BLOCKED**, **M01-c171 BLOCKED**, **M18-c170 DONE**, **M17-c170 BLOCKED**, M16-c170 DONE, M15-c170 DONE, **M14-c170 BLOCKED**, **M13-c170 BLOCKED**, M12-c170 DONE, M11-c170 DONE, **M10-c170 BLOCKED**, M09-c170 DONE, M08-c170 DONE, M07-c170 DONE, M06-c170 DONE, M05-c170 DONE, M04-c170 DONE, **M03-c170 BLOCKED**, **M02-c170 BLOCKED**, **M01-c170 BLOCKED**.
 
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
 
@@ -10,6 +10,7 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 
 | ID | Item | Status |
 |---|---|---|
+| M15-c171 | Verify no console errors on / and /product sample | **DONE**: 4/4 prod runs (380, 1440) 0 console errors, 0 pageerror, 0 failed requests, 0 responses >= 400, unchanged from M15-c170; no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M14-c171 | Verify Sentry release matches HEAD commit | **BLOCKED**: `www` client bundle release still `1e84df0e5457c9c80a46f7cb2155ac204ebc15ef` (audit/final-audit), HEAD `db90b51df`; needs Ofir (blocker 4); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M13-c171 | Verify /api/health and /api/ready return 200 with real deps | **BLOCKED**: health 200 (`database: ok`), ready 503 (`database ok, redis ok, meilisearch down, r2 not_configured, cardcom ok`) on www.kenyonexpress.co.il, unchanged (blocker 6); needs Ofir; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M12-c171 | Verify robots.txt production-safe | **DONE**: live www file 200 matches source (16 Disallow, credential paths blocked), robots.ts unchanged since `c558a6476`; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
