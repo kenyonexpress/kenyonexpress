@@ -1,16 +1,17 @@
-RESUME FROM: M01-c162
-Last item: **M18-c161 DONE** (2026-10-11): STATE.md was 125 lines at start (under 300), no archive move needed. Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`). `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
-Previous: **M17-c161 BLOCKED** (see queue table).
+RESUME FROM: M02-c162
+Last item: **M01-c162 BLOCKED** (2026-10-11): `compare.mjs --page=home` refuses at 380, 768 and 1440 (kenyonexpress.co.il serves our own build, `refs/ke_live_singlefile.html` missing; blocker 0), so no number to diff. STATE.md was 126 lines, no archive move. Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`). `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
+Previous: **M18-c161 DONE** (see queue table).
 # KenyonExpress — Project State
 
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
 
-## Queue status (cycles c157 to c161)
+## Queue status (cycles c157 to c162)
 
 Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c120 to M18-c131, and the M18-c157 section at the end). Only c157 rows stay below.
 
 | ID | Item | Status |
 |---|---|---|
+| M01-c162 | Re-measure compare.mjs 380 768 1440 on / and record diffs | **BLOCKED**: gate refuses at 380/768/1440, no reference, no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M18-c161 | Trim STATE.md under 300 lines, archive rest | **DONE**: STATE.md was 125 lines at start (under 300), no archive move needed; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1; `HeroSlider.tsx` and `SiteFooter.tsx` stay uncommitted |
 | M17-c161 | Verify RTL on / and /product sample, no LTR leaks | **BLOCKED**: 6/6 prod runs RTL-clean except the same footer newsletter placeholder, flush left; uncommitted fix cannot be committed, compare.mjs refuses (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M16-c161 | Verify all product pages have JSON-LD Product and BreadcrumbList | **DONE**: 44/44 prod product pages have both, 43 pass every check, `מזקקת-ויסקי` lacks `image` (unchanged from M16-c160); no src change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
