@@ -1,6 +1,6 @@
-RESUME FROM: M10-c169
-Last item: **M09-c169 DONE** (2026-10-11): no src/package/packages change since M09-c168 (empty diff vs `a5ef1b137`), no unused deps beyond the 6 keeps, no new dead exports, 0 deps dropped; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed).
-Previous: **M08-c169 DONE** (Lighthouse mobile median 82 / 82).
+RESUME FROM: M11-c169
+Last item: **M10-c169 BLOCKED** (2026-10-11): migrations/pending/ unchanged since M10-c168 (last touched `afeedf709`, empty diff vs `65bf1e22a`, 45 files), 231 not applied, 22 absent, 6 live but unrecorded; needs Ofir (blocker 5); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed).
+Previous: **M09-c169 DONE** (no unused deps, no new dead exports).
 
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
 
@@ -10,6 +10,7 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 
 | ID | Item | Status |
 |---|---|---|
+| M10-c169 | Verify migrations/pending/ applied or file blocker | **BLOCKED**: pending dir unchanged since M10-c168 (last touched `afeedf709`, empty diff vs `65bf1e22a`), 231 not applied, 22 absent, 6 live but unrecorded; needs Ofir (blocker 5); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M09-c169 | Unused deps and dead exports | **DONE**: no src/package/packages change since M09-c168 (empty diff vs `a5ef1b137`), no unused deps beyond the 6 keeps, no new dead exports, 0 deps dropped; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M08-c169 | Lighthouse mobile on / and /product sample, log scores | **DONE**: perf median 82 / 82 (3 runs each: 82, 83, 82 / 82, 86, 77), local prod build (`pnpm start -p 3591`), `scripts/_lh-runs.mjs`, `/product/barbecue`, LCP 4.2-4.8 s, CLS 0.003 / 0.001, TBT 30-40 ms, no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M07-c169 | TODO/FIXME older than 7 days: resolve or file in docs/BACKLOG.md | **DONE**: re-scan found only the 2 filed Cardcom markers (B1, B2), nothing new; final-audit 0 untracked of 2; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
