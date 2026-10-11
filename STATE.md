@@ -1,6 +1,6 @@
-RESUME FROM: M02-c163
-Last item: **M01-c163 BLOCKED** (2026-10-11): `compare.mjs --page=home` refuses at 380, 768 and 1440 (kenyonexpress.co.il serves our own build, no reference; blocker 0), so there is no number to diff. STATE.md was 144 lines (under 300), no archive move. Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1. `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
-Previous: **M18-c162 DONE**.
+RESUME FROM: M03-c163
+Last item: **M02-c163 BLOCKED** (2026-10-11): `compare.mjs --page=product` refuses at 380, 768 and 1440 (kenyonexpress.co.il serves our own build, no reference; blocker 0), so there is no number to diff. STATE.md 146 lines (under 300), no archive move. Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1. `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
+Previous: **M01-c163 BLOCKED**.
 # KenyonExpress — Project State
 
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
@@ -11,6 +11,7 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 
 | ID | Item | Status |
 |---|---|---|
+| M02-c163 | Re-measure compare.mjs on /product sample | **BLOCKED**: gate refuses at 380/768/1440, no reference, no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M01-c163 | Re-measure compare.mjs 380 768 1440 on / and record diffs | **BLOCKED**: gate refuses at 380/768/1440, no reference, no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M18-c162 | Trim STATE.md under 300 lines, archive rest | **DONE**: STATE.md was 143 lines at start (under 300), no archive move needed; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1; `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` stay uncommitted |
 | M17-c162 | Verify RTL on / and /product sample, no LTR leaks | **BLOCKED**: 6/6 prod runs (/, 2 products at 380 and 1440) html dir=rtl lang=he, no horizontal overflow, 0 Hebrew text in LTR boxes, except the same footer newsletter input (`dir=ltr`, Hebrew placeholder, flush left); uncommitted fix cannot be committed, compare.mjs refuses (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
