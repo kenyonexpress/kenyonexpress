@@ -1,6 +1,6 @@
-RESUME FROM: M11-c170
-Last item: **M10-c170 BLOCKED** (2026-10-11): pending dir unchanged since M10-c169 (last touched `afeedf709`, empty diff vs HEAD), 231 not applied, 22 absent, 6 live but unrecorded; needs Ofir (blocker 5); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed); `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted (blocker 0).
-Previous: **M09-c170 DONE**, M08-c170 DONE, M07-c170 DONE, M06-c170 DONE, M05-c170 DONE, M04-c170 DONE, M03-c170 BLOCKED, M02-c170 BLOCKED, M01-c170 BLOCKED.
+RESUME FROM: M12-c170
+Last item: **M11-c170 DONE** (2026-10-11): sitemap index 200, 5/5 section files 200, 94/94 URLs 200 on www, newest lastmod 2026-10-05, unchanged from M11-c169; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed); `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted (blocker 0).
+Previous: **M10-c170 BLOCKED**, M09-c170 DONE, M08-c170 DONE, M07-c170 DONE, M06-c170 DONE, M05-c170 DONE, M04-c170 DONE, M03-c170 BLOCKED, M02-c170 BLOCKED, M01-c170 BLOCKED.
 
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
 
@@ -10,6 +10,7 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 
 | ID | Item | Status |
 |---|---|---|
+| M11-c170 | Verify sitemap.xml fresh and reachable | **DONE**: index 200, 5/5 section files 200, 94/94 URLs 200 on www, newest lastmod 2026-10-05, unchanged from M11-c169; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M10-c170 | Verify migrations/pending/ applied or file blocker | **BLOCKED**: pending dir unchanged since M10-c169 (last touched `afeedf709`, empty diff vs HEAD), 231 not applied, 22 absent, 6 live but unrecorded; needs Ofir (blocker 5); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M09-c170 | Unused deps and dead exports | **DONE**: no src/package/packages change committed since M09-c169 (empty diff vs `a5ef1b137`; uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` add no exports or imports), no unused deps beyond the 6 keeps, no new dead exports, 0 deps dropped; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M08-c170 | Lighthouse mobile on / and /product sample, log scores | **DONE**: perf median 78 / 82 (3 runs each: 82, 77, 78 / 82, 81, 82), local prod build (`pnpm start -p 3611`), `scripts/_lh-runs.mjs`, `/product/barbecue`, LCP 4.6-5.9 s, CLS 0-0.003 / 0.001, TBT 30 ms, no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
