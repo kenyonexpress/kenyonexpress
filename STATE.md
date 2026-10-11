@@ -1,5 +1,6 @@
-RESUME FROM: M13-c173
-Last item: **M12-c173 DONE** (2026-10-11): live www robots.txt 200 matches source (16 Disallow, credential paths blocked), robots.ts unchanged since `c558a6476`; no code change.
+RESUME FROM: M14-c173
+Last item: **M13-c173 BLOCKED** (2026-10-11): health 200 (`database: ok`), ready 503 (`meilisearch down`, `r2 not_configured`) on www, unchanged (blocker 6).
+Previous: **M12-c173 DONE** (2026-10-11): live www robots.txt 200 matches source (16 Disallow, credential paths blocked), robots.ts unchanged since `c558a6476`; no code change.
 Previous: **M11-c173 DONE**, **M10-c173 BLOCKED** (blocker 5), **M09-c173 DONE**, **M08-c173 DONE** (perf median 80 / 83), **M07-c173 DONE**, **M06-c173 DONE**, **M05-c173 DONE**,
 Previous: **M07-c173 DONE**, **M06-c173 DONE**, **M05-c173 DONE**,
 Previous: **M04-c173 DONE**, **M03-c173 BLOCKED**, **M02-c173 BLOCKED**, **M01-c173 BLOCKED**, **M18-c172 DONE**, **M17-c172 BLOCKED**, **M16-c172 DONE**, **M15-c172 DONE**, **M14-c172 BLOCKED**, **M13-c172 BLOCKED**, **M12-c172 DONE**, **M11-c172 DONE**, **M10-c172 BLOCKED**, **M09-c172 DONE**, **M08-c172 DONE**, **M07-c172 DONE**, **M06-c172 DONE**, **M05-c172 DONE**, **M04-c172 DONE**, **M03-c172 BLOCKED**, **M02-c172 BLOCKED**, **M01-c172 BLOCKED**, **M18-c171 DONE**, **M17-c171 BLOCKED**, **M16-c171 DONE**, **M15-c171 DONE**, **M14-c171 BLOCKED**, **M13-c171 BLOCKED**, **M12-c171 DONE**, **M11-c171 DONE**, **M10-c171 BLOCKED**, **M09-c171 DONE**, **M08-c171 DONE**, M07-c171 DONE, M06-c171 DONE, M05-c171 DONE, M04-c171 DONE, **M03-c171 BLOCKED**, **M02-c171 BLOCKED**, **M01-c171 BLOCKED**.
@@ -12,6 +13,7 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 
 | ID | Item | Status |
 |---|---|---|
+| M13-c173 | Verify /api/health and /api/ready return 200 with real deps | **BLOCKED**: health 200 (`database: ok`), ready 503 (`database ok, redis ok, meilisearch down, r2 not_configured, cardcom ok`) on www.kenyonexpress.co.il, unchanged (blocker 6); needs Ofir; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M12-c173 | Verify robots.txt production-safe | **DONE**: live www file 200 matches source (16 Disallow, credential paths blocked), robots.ts unchanged since `c558a6476`, no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M11-c173 | Verify sitemap.xml fresh and reachable | **DONE**: index 200, 5/5 section files 200, 94/94 URLs 200 on www, newest lastmod 2026-10-05, unchanged from M11-c172; no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M10-c173 | Verify migrations/pending/ applied or file blocker | **BLOCKED**: pending dir unchanged since M10-c172 (last touched `afeedf709`, empty diff vs `d59312c25`), 231 not applied, 22 absent, 6 live but unrecorded; needs Ofir (blocker 5); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
