@@ -1,5 +1,5 @@
-RESUME FROM: M11-c167
-Last item: **M10-c167 BLOCKED** (2026-10-11): pending migrations unchanged, still not applied (blocker 5); needs Ofir.
+RESUME FROM: M12-c167
+Last item: **M11-c167 DONE** (2026-10-11): sitemap index 200, 5/5 section files 200, 94/94 URLs 200 on www, newest lastmod 2026-10-05, unchanged from M11-c166.
 Previous: **M09-c167 DONE** (2026-10-11): no src/package change since M09-c166, no unused deps beyond the 6 keeps, no new dead exports, 0 deps dropped; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed).
 
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
@@ -10,6 +10,7 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 
 | ID | Item | Status |
 |---|---|---|
+| M11-c167 | Verify sitemap.xml fresh and reachable | **DONE**: index 200, 5/5 section files 200, 94/94 URLs 200 on www, newest lastmod 2026-10-05, unchanged from M11-c166; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M10-c167 | Verify migrations/pending/ applied or file blocker | **BLOCKED**: pending dir unchanged since M10-c166 (last touched `afeedf709`), 231 not applied, 22 absent, 6 live but unrecorded; needs Ofir (blocker 5); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M09-c167 | Unused deps and dead exports | **DONE**: no src/package change since M09-c166, no unused deps beyond the 6 keeps, no new dead exports, 0 deps dropped; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M08-c167 | Lighthouse mobile on / and /product sample, log scores | **DONE**: perf median 79 / 82 (3 runs each: 77, 82, 79 / 82, 83, 76), local prod build (`pnpm start -p 3523`), perf-only, `/product/barbecue`, no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
