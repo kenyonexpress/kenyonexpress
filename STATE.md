@@ -1,6 +1,6 @@
-RESUME FROM: M02-c161
-Last item: **M01-c161 BLOCKED** (2026-10-11): `node scripts/compare.mjs 380 768 1440 /` run in the foreground refuses at every width: `kenyonexpress.co.il` serves our own build (34 `/_next/` assets, no wp-content), so there is no reference and no number to diff (blocker 0, `docs/PARITY-REFERENCE.md`). Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1. `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
-Previous: **M18-c160 DONE** (see queue table).
+RESUME FROM: M03-c161
+Last item: **M02-c161 BLOCKED** (2026-10-11): `node scripts/compare.mjs 380 768 1440 /product` run in the foreground refuses: `kenyonexpress.co.il` serves our own build (34 `/_next/` assets, no wp-content), so there is no reference and no number to diff (blocker 0, `docs/PARITY-REFERENCE.md`). Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1. `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
+Previous: **M01-c161 BLOCKED** (see queue table).
 # KenyonExpress — Project State
 
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
@@ -11,6 +11,7 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 
 | ID | Item | Status |
 |---|---|---|
+| M02-c161 | Re-measure compare.mjs on /product sample | **BLOCKED**: gate refuses at 380/768/1440, no reference, no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M01-c161 | Re-measure compare.mjs 380 768 1440 on / and record diffs | **BLOCKED**: gate refuses at 380/768/1440, no reference, no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M18-c160 | Trim STATE.md under 300 lines, archive rest | **DONE**: STATE.md was 107 lines at start (under 300), no archive move needed; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1; `HeroSlider.tsx` and `SiteFooter.tsx` stay uncommitted |
 | M17-c160 | Verify RTL on / and /product sample, no LTR leaks | **BLOCKED**: 6/6 prod runs RTL-clean except the same footer newsletter placeholder, flush left; uncommitted fix cannot be committed, compare.mjs refuses (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
