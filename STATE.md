@@ -1,5 +1,5 @@
 RESUME FROM: M18-c164
-Last item: **M17-c164 BLOCKED** (2026-10-11): 6/6 prod runs (/, `/product/barbecue`, `/product/איייפון-13` at 380 and 1440) html dir=rtl lang=he, no horizontal overflow, 0 Hebrew text in LTR boxes except the same footer newsletter input (`dir=ltr`, Hebrew placeholder, flush left); the uncommitted `SiteFooter.tsx` fix cannot be committed, compare.mjs refuses at 380/768/1440 (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1; `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
+Last item: **M17-c164 BLOCKED** (2026-10-11): 6/6 prod runs (/, `/product/barbecue`, `/product/אייפון-13` at 380 and 1440) html dir=rtl lang=he, no horizontal overflow, 0 Hebrew text in LTR boxes except the same footer newsletter input (`dir=ltr`, Hebrew placeholder, flush left); the uncommitted `SiteFooter.tsx` fix cannot be committed, compare.mjs refuses at 380/768/1440 (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1; `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
 Previous: **M16-c164 DONE**.
 
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
