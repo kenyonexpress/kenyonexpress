@@ -347,8 +347,17 @@
 .cart-sidebar {
   background: transparent;
   padding: 0 15px;
-  position: sticky;
-  top: 1rem;
+}
+
+/* The totals AND the checkout button live in this wrapper. Sticky used to sit
+   on the inner <aside> alone, so once the page scrolled the aside slid down
+   over the button that follows it and the coupon summary intercepted the
+   click. Stick the whole column, and only where it is a column. */
+@media (min-width: 992px) {
+  .cart-page__side {
+    position: sticky;
+    top: 1rem;
+  }
 }
 
 .cart-sidebar__title {

@@ -91,7 +91,7 @@ export default function CartPageView() {
             </button>
           </section>
 
-          <div>
+          <div className="cart-page__side">
             <CartTotalsSidebar cart={cart} />
             <div className="mt-4">
               <CartCheckoutButton
