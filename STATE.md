@@ -1,5 +1,6 @@
-RESUME FROM: M17-c174
-Last item: **M16-c174 DONE** (2026-10-11): 44/44 prod product pages (www.kenyonexpress.co.il, sitemap) have exactly one JSON-LD `Product` and one `BreadcrumbList`, 43 pass every check, `מזקקת-ויסקי` lacks `image` (unchanged); no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed).
+RESUME FROM: M18-c174
+Last item: **M17-c174 BLOCKED** (2026-10-11): 4/4 prod runs (www.kenyonexpress.co.il `/` and `/product/barbecue` at 380 and 1440) dir=rtl lang=he, overflow 0, only LTR Hebrew text is the footer newsletter input (`dir=ltr`, Hebrew placeholder), unchanged from M17-c173; `SiteFooter.tsx` fix uncommitted because compare.mjs has no reference (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed).
+Previous: **M16-c174 DONE** (2026-10-11): 44/44 prod product pages (www.kenyonexpress.co.il, sitemap) have exactly one JSON-LD `Product` and one `BreadcrumbList`, 43 pass every check, `מזקקת-ויסקי` lacks `image` (unchanged); no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed).
 Previous: **M15-c174 DONE**.
 Previous: **M14-c174 BLOCKED** (blocker 4), **M13-c174 BLOCKED** (blocker 6).
 Previous: **M12-c174 DONE**.
@@ -23,6 +24,7 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 
 | ID | Item | Status |
 |---|---|---|
+| M17-c174 | Verify RTL on / and /product sample, no LTR leaks | **BLOCKED**: 4/4 prod runs (/, `/product/barbecue` at 380 and 1440) dir=rtl lang=he, overflow 0, only LTR Hebrew text is the footer newsletter input (`dir=ltr`, Hebrew placeholder), unchanged from M17-c173; `SiteFooter.tsx` fix uncommitted, compare.mjs has no reference (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M16-c174 | Verify all product pages have JSON-LD Product and BreadcrumbList | **DONE**: 44/44 prod product pages have both, 43 pass every check (name, image, offers price+currency, breadcrumb items), `מזקקת-ויסקי` lacks `image` (unchanged from M16-c173); no src change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M15-c174 | Verify no console errors on / and /product sample | **DONE**: 4/4 prod runs (380, 1440) 0 console errors, 0 pageerror, 0 failed requests, 0 responses >= 400, unchanged from M15-c173; no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M14-c174 | Verify Sentry release matches HEAD commit | **BLOCKED**: `www` client bundle release still `1e84df0e5457c9c80a46f7cb2155ac204ebc15ef` (audit/final-audit, 21 chunks scanned), HEAD `dc254698f`; needs Ofir (blocker 4); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
