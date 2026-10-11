@@ -1,6 +1,6 @@
-RESUME FROM: M12-c166
-Last item: **M11-c166 DONE** (2026-10-11): sitemap index 200, 5/5 section files 200, 94/94 URLs 200 on www, newest lastmod 2026-10-05, unchanged from M11-c165; no src change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1.
-Previous: **M10-c166 BLOCKED** (pending migrations still not applied, blocker 5).
+RESUME FROM: M13-c166
+Last item: **M12-c166 DONE** (2026-10-11): live www robots.txt 200 matches source (16 Disallow, credential paths blocked), robots.ts unchanged; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1.
+Previous: **M11-c166 DONE** (sitemap 94/94 URLs 200).
 
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
 
@@ -10,6 +10,7 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 
 | ID | Item | Status |
 |---|---|---|
+| M12-c166 | Verify robots.txt production-safe | **DONE**: live www file 200 matches source (16 Disallow, credential paths blocked), robots.ts unchanged; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M11-c166 | Verify sitemap.xml fresh and reachable | **DONE**: index 200, 5/5 section files 200, 94/94 URLs 200 on www, newest lastmod 2026-10-05, unchanged from M11-c165; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M10-c166 | Verify migrations/pending/ applied or file blocker | **BLOCKED**: pending dir unchanged since M10-c165, 231 not applied, 22 absent, 6 live but unrecorded; needs Ofir (blocker 5); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M09-c166 | Unused deps and dead exports | **DONE**: no src/package change since M09-c165, no unused deps beyond the 6 keeps, no new dead exports, 0 deps dropped; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
