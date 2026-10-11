@@ -1,6 +1,6 @@
-RESUME FROM: M18-c167
-Last item: **M17-c167 BLOCKED** (2026-10-11): RTL clean on / and `/product/barbecue` at 380 and 1440 except the footer newsletter placeholder; fix stays uncommitted (blocker 0).
-Previous: **M16-c167 DONE** (2026-10-11): 44/44 prod product pages have JSON-LD Product and BreadcrumbList.
+RESUME FROM: M01-c168
+Last item: **M18-c167 DONE** (2026-10-11): STATE.md was 232 lines at start (under 300), no archive move needed; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed).
+Previous: **M17-c167 BLOCKED** (footer newsletter placeholder, blocker 0).
 
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
 
@@ -10,6 +10,7 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 
 | ID | Item | Status |
 |---|---|---|
+| M18-c167 | Trim STATE.md under 300 lines, archive rest | **DONE**: STATE.md was 232 lines at start (under 300), no archive move needed; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed); `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted (blocker 0). |
 | M17-c167 | Verify RTL on / and /product sample, no LTR leaks | **BLOCKED**: 4/4 prod runs (/, `/product/barbecue` at 380 and 1440) html dir=rtl lang=he, no horizontal overflow, 0 Hebrew text in LTR boxes except the same footer newsletter input (`dir=ltr`, Hebrew placeholder, flush left); uncommitted `SiteFooter.tsx` fix cannot be committed, compare.mjs refuses (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M16-c167 | Verify all product pages have JSON-LD Product and BreadcrumbList | **DONE**: 44/44 prod product pages have both, 43 pass every check, `מזקקת-ויסקי` lacks `image` (unchanged from M16-c166); no src change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M15-c167 | Verify no console errors on / and /product sample | **DONE**: 4/4 prod runs (380, 1440) 0 console errors, 0 pageerror, 0 failed requests, 0 responses >= 400, unchanged from M15-c166; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
