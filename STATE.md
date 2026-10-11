@@ -1,15 +1,16 @@
-RESUME FROM: M01-c165
-Last item: **M18-c164 DONE** (2026-10-11): STATE.md was 178 lines at start (under 300), no archive move needed; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1; `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted (blocker 0).
-Previous: **M17-c164 BLOCKED**.
+RESUME FROM: M02-c165
+Last item: **M01-c165 BLOCKED** (2026-10-11): `scripts/compare.mjs 380 768 1440 /` run in foreground refuses (reference host kenyonexpress.co.il is our own Vercel build, `refs/ke_live_singlefile.html` absent), no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1.
+Previous: **M18-c164 DONE**.
 
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
 
-## Queue status (cycles c157 to c164)
+## Queue status (cycles c157 to c165)
 
 Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c120 to M18-c131, and the M18-c157 section at the end). Only c157 rows stay below.
 
 | ID | Item | Status |
 |---|---|---|
+| M01-c165 | Re-measure compare.mjs 380 768 1440 on / and record diffs | **BLOCKED**: gate refuses at 380/768/1440 (run in foreground), reference host is our own build (34 /_next/ refs, no wp-content), `refs/ke_live_singlefile.html` absent, no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M18-c164 | Trim STATE.md under 300 lines, archive rest | **DONE**: STATE.md was 178 lines at start (under 300), no archive move needed; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1; `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted (blocker 0). |
 | M17-c164 | Verify RTL on / and /product sample, no LTR leaks | **BLOCKED**: 6/6 prod runs (/, 2 products at 380 and 1440) html dir=rtl lang=he, no horizontal overflow, 0 Hebrew text in LTR boxes, except the same footer newsletter input (`dir=ltr`, Hebrew placeholder, flush left); uncommitted fix cannot be committed, compare.mjs refuses (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M16-c164 | Verify all product pages have JSON-LD Product and BreadcrumbList | **DONE**: 44/44 prod product pages have both, 43 pass every check, `מזקקת-ויסקי` lacks `image` (unchanged from M16-c163); no src change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
