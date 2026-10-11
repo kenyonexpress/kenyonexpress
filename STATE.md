@@ -1,6 +1,6 @@
-RESUME FROM: M08-c161
-Last item: **M07-c161 DONE** (2026-10-11): TODO/FIXME re-scan at HEAD `56b016e75` found only the 2 filed Cardcom markers (B1, B2), nothing new. Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1. `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
-Previous: **M06-c161 DONE**.
+RESUME FROM: M09-c161
+Last item: **M08-c161 DONE** (2026-10-11): Lighthouse 13.4.1 mobile (simulate, perf-only) on `/` and `/product/מוצר-לדוגמא` against `pnpm start -p 3524` on a clean build of HEAD `12062ed0e`, 3 runs each: home 78, 83, 87 (median 83), product 84, 78, 90 (median 84), TBT about 30 ms. No src/package change since M08-c160. Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1. `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
+Previous: **M07-c161 DONE**.
 # KenyonExpress — Project State
 
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
@@ -11,6 +11,7 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 
 | ID | Item | Status |
 |---|---|---|
+| M08-c161 | Lighthouse mobile on / and /product sample, log scores | **DONE**: perf median 83 / 84 (3 runs each: 78, 83, 87 / 84, 78, 90), perf-only script; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M07-c161 | TODO/FIXME older than 7 days: resolve or file in docs/BACKLOG.md | **DONE**: re-scan found only the 2 filed Cardcom markers (B1, B2), nothing new; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M06-c161 | pnpm build, fix drift | **DONE**: exit 0 on attempt 1, 0 db.query_failed, no drift, no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped) |
 | M05-c161 | pnpm test, fix drift | **DONE**: exit 0 (519 files, 6474 passed, 12 skipped), no drift, no code change; gates type-check 0, lint 0, build 0 on attempt 1 |
