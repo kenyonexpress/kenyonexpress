@@ -1,5 +1,6 @@
-RESUME FROM: M10-c174
-Last item: **M09-c174 DONE** (2026-10-11): empty diff vs `a5ef1b137` for src, packages, package.json, pnpm-lock.yaml at HEAD `a1a3bc02d` (uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` add no exports or imports), no unused deps beyond the 6 keeps, no new dead exports, 0 deps dropped. Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed). No code change.
+RESUME FROM: M11-c174
+Last item: **M10-c174 BLOCKED** (2026-10-11): `migrations/pending/` unchanged (last touched `afeedf709`, empty diff vs `d59312c25`, 45 files), 231 not applied, 22 absent, 6 live but unrecorded; applying needs Ofir, `supabase db push` is forbidden (blocker 5). Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed). No code change.
+Previous: **M09-c174 DONE** (no unused deps, no new dead exports).
 Previous: **M08-c174 DONE** (perf median 81 / 81).
 Previous: **M07-c174 DONE**, **M06-c174 DONE**, **M05-c174 DONE**, **M04-c174 DONE**.
 Previous: **M04-c174 DONE**, **M03-c174 BLOCKED** (2026-10-11): compare.mjs `--page=category` at 380, 768, 1440 run in foreground, all three REFUSED: `kenyonexpress.co.il/product-category/hot-deals/` is our own build (37-38 /_next/ refs, no wp-content), no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed). No code change.
@@ -19,6 +20,7 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 
 | ID | Item | Status |
 |---|---|---|
+| M10-c174 | Verify migrations/pending/ applied or file blocker | **BLOCKED**: pending dir unchanged since M10-c173 (last touched `afeedf709`, empty diff vs `d59312c25`), 231 not applied, 22 absent, 6 live but unrecorded; needs Ofir (blocker 5); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M09-c174 | Unused deps and dead exports | **DONE**: empty diff vs `a5ef1b137` for src, packages, package.json, pnpm-lock.yaml (uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` add no exports or imports), no unused deps beyond the 6 keeps, no new dead exports, 0 deps dropped; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M08-c174 | Lighthouse mobile on / and /product sample, log scores | **DONE**: perf median 81 / 81 (3 runs each: 81, 81, 78 / 81, 82, 77), local prod build (`pnpm start -p 3661`), `scripts/_lh-runs.mjs`, `/product/barbecue`, LCP 4.8-5.9 s / 4.8-5.3 s, CLS 0.003 / 0.001, TBT 30-40 ms / 30 ms, no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M07-c174 | TODO/FIXME older than 7 days: resolve or file in docs/BACKLOG.md | **DONE**: re-scan found only the 2 filed Cardcom markers (B1, B2), nothing new; final-audit 0 untracked of 2; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
