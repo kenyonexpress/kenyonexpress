@@ -1,5 +1,5 @@
-RESUME FROM: M02-c174
-Last item: **M01-c174 BLOCKED** (2026-10-11): compare.mjs `--page=home` at 380, 768, 1440 run in foreground, all three REFUSED: `kenyonexpress.co.il/` is our own build (34-35 /_next/ refs, no wp-content), no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed). No code change.
+RESUME FROM: M03-c174
+Last item: **M02-c174 BLOCKED** (2026-10-11): compare.mjs `--page=product` at 380, 768, 1440 run in foreground, all three REFUSED: `kenyonexpress.co.il/product/מוצר-לדוגמא/` is our own build (37-39 /_next/ refs, no wp-content), no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed). No code change.
 Previous: **M18-c173 DONE** (2026-10-11): STATE.md trimmed to 278 lines, gates green. **M17-c173 BLOCKED** (2026-10-11): 4/4 prod runs (www.kenyonexpress.co.il `/` and `/product/barbecue` at 380 and 1440) dir=rtl lang=he, overflow 0, only LTR Hebrew text is the footer newsletter input (`dir=ltr`, Hebrew placeholder), unchanged from M17-c172; `SiteFooter.tsx` fix uncommitted because compare.mjs refuses at 380/768/1440 (blocker 0).
 Previous: **M16-c173 DONE**.
 Previous: **M15-c173 DONE**, **M14-c173 BLOCKED** (blocker 4), **M13-c173 BLOCKED** (blocker 6).
@@ -16,6 +16,7 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 
 | ID | Item | Status |
 |---|---|---|
+| M02-c174 | Re-measure compare.mjs on /product sample | **BLOCKED**: gate refuses at 380/768/1440 (run in foreground, `--page=product --width=N`), reference host is our own build (37-39 /_next/ refs, no wp-content), no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M01-c174 | Re-measure compare.mjs 380 768 1440 on / and record diffs | **BLOCKED**: gate refuses at 380/768/1440 (run in foreground, `--page=home --width=N`), reference host is our own build (34-35 /_next/ refs, no wp-content), no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M18-c173 | Trim STATE.md under 300 lines, archive rest | **DONE**: STATE.md was 291 lines at start (under 300); 14 c157 rows moved to `docs/STATE-ARCHIVE.md`, now 278 lines; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M17-c173 | Verify RTL on / and /product sample, no LTR leaks | **BLOCKED**: 4/4 prod runs (/, `/product/barbecue` at 380 and 1440) dir=rtl lang=he, overflow 0, only LTR Hebrew text is the footer newsletter input (`dir=ltr`, Hebrew placeholder), unchanged from M17-c172; `SiteFooter.tsx` fix uncommitted, compare.mjs refuses at 380/768/1440 (own build, foreground, no number) (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
