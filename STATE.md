@@ -1,6 +1,6 @@
-RESUME FROM: M09-c171
-Last item: **M08-c171 DONE** (2026-10-11): Lighthouse mobile perf median 81 / 83 (3 runs each: 81, 79, 82 / 83, 81, 83), local prod build (`pnpm start -p 3631`), `scripts/_lh-runs.mjs`, `/` and `/product/barbecue`, LCP 4.7-5.7 s, CLS 0 / 0.001, TBT 30-40 ms, no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed); `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
-Previous: M06-c171 DONE, M05-c171 DONE, M04-c171 DONE, **M03-c171 BLOCKED**, **M02-c171 BLOCKED**, **M01-c171 BLOCKED**, **M18-c170 DONE**, **M17-c170 BLOCKED**, M16-c170 DONE, M15-c170 DONE, **M14-c170 BLOCKED**, **M13-c170 BLOCKED**, M12-c170 DONE, M11-c170 DONE, **M10-c170 BLOCKED**, M09-c170 DONE, M08-c170 DONE, M07-c170 DONE, M06-c170 DONE, M05-c170 DONE, M04-c170 DONE, **M03-c170 BLOCKED**, **M02-c170 BLOCKED**, **M01-c170 BLOCKED**.
+RESUME FROM: M10-c171
+Last item: **M09-c171 DONE** (2026-10-11): no src/package/packages change committed since `a5ef1b137` (empty diff; uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` add no exports or imports), no unused deps beyond the 6 keeps, no new dead exports, 0 deps dropped; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed).
+Previous: **M08-c171 DONE**, M07-c171 DONE, M06-c171 DONE, M05-c171 DONE, M04-c171 DONE, **M03-c171 BLOCKED**, **M02-c171 BLOCKED**, **M01-c171 BLOCKED**, **M18-c170 DONE**, **M17-c170 BLOCKED**, M16-c170 DONE, M15-c170 DONE, **M14-c170 BLOCKED**, **M13-c170 BLOCKED**, M12-c170 DONE, M11-c170 DONE, **M10-c170 BLOCKED**, M09-c170 DONE, M08-c170 DONE, M07-c170 DONE, M06-c170 DONE, M05-c170 DONE, M04-c170 DONE, **M03-c170 BLOCKED**, **M02-c170 BLOCKED**, **M01-c170 BLOCKED**.
 
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
 
@@ -10,6 +10,7 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 
 | ID | Item | Status |
 |---|---|---|
+| M09-c171 | Unused deps and dead exports | **DONE**: no src/package/packages change committed since `a5ef1b137` (empty diff; uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` add no exports or imports), no unused deps beyond the 6 keeps, no new dead exports, 0 deps dropped; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M08-c171 | Lighthouse mobile on / and /product sample, log scores | **DONE**: perf median 81 / 83 (3 runs each: 81, 79, 82 / 83, 81, 83), local prod build (`pnpm start -p 3631`), `scripts/_lh-runs.mjs`, `/product/barbecue`, LCP 4.7-5.7 s, CLS 0 / 0.001, TBT 30-40 ms, no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M07-c171 | TODO/FIXME older than 7 days: resolve or file in docs/BACKLOG.md | **DONE**: re-scan found only the 2 filed Cardcom markers (B1, B2), nothing new; final-audit 0 untracked of 2; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M06-c171 | pnpm build, fix drift | **DONE**: exit 0 on attempt 1, 0 db.query_failed, no drift, no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped) |
