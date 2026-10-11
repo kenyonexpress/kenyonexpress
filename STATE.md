@@ -1,6 +1,6 @@
-RESUME FROM: M15-c160
-Last item: **M14-c160 BLOCKED** (2026-10-11): live `www` client bundle (21 chunks) still carries Sentry release `1e84df0e5` (audit/final-audit); HEAD is `c6ed4a406`, no match; unchanged (blocker 4, needs Ofir). No src change. Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1, 0 db.query_failed. Not a UI change, compare.mjs n/a. `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
-Previous: **M13-c160 BLOCKED**.
+RESUME FROM: M16-c160
+Last item: **M15-c160 DONE** (2026-10-11): 4/4 prod runs (380, 1440) on `/` and `/product/מוצר-לדוגמא` 200, 0 console errors, 0 pageerror, 0 failed requests, 0 responses >= 400, unchanged from M15-c159; no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 `db.query_failed`). `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
+Previous: **M14-c160 BLOCKED** (see queue table).
 # KenyonExpress — Project State
 
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
@@ -11,6 +11,7 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 
 | ID | Item | Status |
 |---|---|---|
+| M15-c160 | Verify no console errors on / and /product sample | **DONE**: 4/4 prod runs (380, 1440) 0 console errors, 0 pageerror, 0 failed requests, 0 responses >= 400, unchanged from M15-c159; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M14-c160 | Verify Sentry release matches HEAD commit | **BLOCKED**: `www` release still `1e84df0` (audit/final-audit), HEAD `c6ed4a406`; needs Ofir (blocker 4); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M13-c160 | Verify /api/health and /api/ready return 200 with real deps | **BLOCKED**: health 200, ready 503 `meilisearch: down` on www.kenyonexpress.co.il, unchanged (blocker 6); needs Ofir; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M12-c160 | Verify robots.txt production-safe | **DONE**: live www file 200 matches source (16 Disallow, credential paths blocked), robots.ts unchanged; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
