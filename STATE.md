@@ -1,6 +1,6 @@
-RESUME FROM: M16-c169
-Last item: **M15-c169 DONE** (2026-10-11): 4/4 prod runs (`/`, `/product/barbecue` at 380 and 1440) 0 console errors, 0 pageerror, 0 failed requests, 0 responses >= 400; HEAD `a7421684e`; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed).
-Previous: **M14-c169 BLOCKED** (live Sentry release != HEAD, blocker 4).
+RESUME FROM: M17-c169
+Last item: **M16-c169 DONE** (2026-10-11): 44/44 prod product pages have JSON-LD Product and BreadcrumbList, 43 pass every check, `מזקקת-ויסקי` lacks `image` (unchanged from M16-c168); no src change; HEAD `82a83eeb5`; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed).
+Previous: **M15-c169 DONE** (no console errors on / and /product).
 
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
 
@@ -10,6 +10,7 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 
 | ID | Item | Status |
 |---|---|---|
+| M16-c169 | Verify all product pages have JSON-LD Product and BreadcrumbList | **DONE**: 44/44 prod product pages have both, 43 pass every check, `מזקקת-ויסקי` lacks `image` (unchanged from M16-c168); no src change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M15-c169 | Verify no console errors on / and /product sample | **DONE**: 4/4 prod runs (380, 1440) 0 console errors, 0 pageerror, 0 failed requests, 0 responses >= 400, unchanged from M15-c168; no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M14-c169 | Verify Sentry release matches HEAD commit | **BLOCKED**: `www` client bundle release still `1e84df0e5457c9c80a46f7cb2155ac204ebc15ef` (audit/final-audit), HEAD `579047f7e`; needs Ofir (blocker 4); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M13-c169 | Verify /api/health and /api/ready return 200 with real deps | **BLOCKED**: health 200 (`database: ok`), ready 503 (`database ok, redis ok, meilisearch down, r2 not_configured, cardcom ok`) on www.kenyonexpress.co.il, unchanged (blocker 6); needs Ofir; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
