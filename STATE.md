@@ -1,6 +1,6 @@
-RESUME FROM: M15-c173
-Last item: **M14-c173 BLOCKED** (2026-10-11): `www` client bundle Sentry release still `1e84df0e5457c9c80a46f7cb2155ac204ebc15ef` (21 chunks), HEAD `05edaa0b6`; needs Ofir (blocker 4).
-Previous: **M13-c173 BLOCKED** (blocker 6).
+RESUME FROM: M16-c173
+Last item: **M15-c173 DONE** (2026-10-11): 4/4 prod runs (`/`, `/product/barbecue` at 380 and 1440) 0 console errors, 0 pageerror, 0 failed requests, 0 responses >= 400; no code change.
+Previous: **M14-c173 BLOCKED** (blocker 4), **M13-c173 BLOCKED** (blocker 6).
 Previous: **M12-c173 DONE** (2026-10-11): live www robots.txt 200 matches source (16 Disallow, credential paths blocked), robots.ts unchanged since `c558a6476`; no code change.
 Previous: **M11-c173 DONE**, **M10-c173 BLOCKED** (blocker 5), **M09-c173 DONE**, **M08-c173 DONE** (perf median 80 / 83), **M07-c173 DONE**, **M06-c173 DONE**, **M05-c173 DONE**,
 Previous: **M07-c173 DONE**, **M06-c173 DONE**, **M05-c173 DONE**,
@@ -14,6 +14,7 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 
 | ID | Item | Status |
 |---|---|---|
+| M15-c173 | Verify no console errors on / and /product sample | **DONE**: 4/4 prod runs (380, 1440) 0 console errors, 0 pageerror, 0 failed requests, 0 responses >= 400, unchanged from M15-c172; no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M14-c173 | Verify Sentry release matches HEAD commit | **BLOCKED**: `www` client bundle release still `1e84df0e5457c9c80a46f7cb2155ac204ebc15ef` (audit/final-audit, 21 chunks scanned), HEAD `05edaa0b6`; needs Ofir (blocker 4); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M13-c173 | Verify /api/health and /api/ready return 200 with real deps | **BLOCKED**: health 200 (`database: ok`), ready 503 (`database ok, redis ok, meilisearch down, r2 not_configured, cardcom ok`) on www.kenyonexpress.co.il, unchanged (blocker 6); needs Ofir; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M12-c173 | Verify robots.txt production-safe | **DONE**: live www file 200 matches source (16 Disallow, credential paths blocked), robots.ts unchanged since `c558a6476`, no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
