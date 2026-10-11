@@ -353,7 +353,8 @@
    on the inner <aside> alone, so once the page scrolled the aside slid down
    over the button that follows it and the coupon summary intercepted the
    click. Stick the whole column, and only where it is a column. */
-@media (min-width: 992px) {
+/* 62rem is the grid's 992px two-column breakpoint. */
+@media (min-width: 62rem) {
   .cart-page__side {
     position: sticky;
     top: 1rem;
