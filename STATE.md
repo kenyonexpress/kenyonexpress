@@ -1,6 +1,6 @@
-RESUME FROM: M09-c162
-Last item: **M08-c162 DONE** (2026-10-11): Lighthouse mobile (simulate, default mobile run via `scripts/_lh-runs.mjs`, performance category) on `/` and `/product/מוצר-לדוגמא` against `pnpm start -p 3562` on a clean build of HEAD `97bd5bb9d`, 3 runs each: home 80, 81, 78 (median 80), product 78, 84, 83 (median 83), TBT 30 to 40 ms, CLS under 0.01. No src/package change since M08-c161. Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1. `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
-Previous: **M07-c162 DONE**.
+RESUME FROM: M10-c162
+Last item: **M09-c162 DONE** (2026-10-11): no src/package.json/pnpm-lock change since M09-c161 (`git diff 0f15a122c HEAD -- src package.json pnpm-lock.yaml` empty), so no unused deps beyond the 6 keeps and no new dead exports; 0 deps dropped. Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1. `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
+Previous: **M08-c162 DONE**.
 # KenyonExpress — Project State
 
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
@@ -11,6 +11,7 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 
 | ID | Item | Status |
 |---|---|---|
+| M09-c162 | Unused deps and dead exports | **DONE**: no src/package change since M09-c161, no unused deps beyond the 6 keeps, no new dead exports, 0 deps dropped; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M08-c162 | Lighthouse mobile on / and /product sample, log scores | **DONE**: perf median 80 / 83 (3 runs each: 80, 81, 78 / 78, 84, 83); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M07-c162 | TODO/FIXME older than 7 days: resolve or file in docs/BACKLOG.md | **DONE**: re-scan found only the 2 filed Cardcom markers (B1, B2), nothing new; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M06-c162 | pnpm build, fix drift | **DONE**: exit 0 on attempt 1, 0 db.query_failed, no drift, no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped) |
