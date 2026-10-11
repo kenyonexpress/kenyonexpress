@@ -1,7 +1,7 @@
-RESUME FROM: M08-c164
+RESUME FROM: M09-c164
 Last item: **M07-c164 DONE** (2026-10-11): TODO/FIXME re-scan at HEAD `cb6ddb702` found only the 2 filed Cardcom markers (B1, B2), nothing new; gates type-check 0, lint 0, test 0, build 0; `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
-Previous: **M06-c164 DONE**.
-# KenyonExpress — Project State
+Last item: **M08-c164 DONE** (2026-10-11): Lighthouse mobile perf median 82 / 82 (3 runs each: 82, 78, 82 / 83, 82, 81; LCP 4.6-5.6 s, CLS 0.003 / 0.001, TBT 30-40 ms); gates type-check 0, lint 0, test 0, build 0; `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
+Previous: **M07-c164 DONE**.
 
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
 
@@ -11,6 +11,7 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 
 | ID | Item | Status |
 |---|---|---|
+| M08-c164 | Lighthouse mobile on / and /product sample, log scores | **DONE**: perf median 82 / 82 (3 runs each: 82, 78, 82 / 83, 82, 81), local prod build, `/product/barbecue`; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M07-c164 | TODO/FIXME older than 7 days: resolve or file in docs/BACKLOG.md | **DONE**: re-scan found only the 2 filed Cardcom markers (B1, B2), nothing new; gates type-check 0, lint 0, test 0, build 0 on attempt 1 |
 | M06-c164 | pnpm build, fix drift | **DONE**: exit 0 on attempt 1, 0 db.query_failed, no drift, no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped) |
 | M05-c164 | pnpm test, fix drift | **DONE**: exit 0 (519 files, 6474 passed, 12 skipped), no drift, no code change; gates type-check 0, lint 0, build 0 on attempt 1 |
