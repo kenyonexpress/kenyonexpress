@@ -1,6 +1,6 @@
-RESUME FROM: M15-c174
-Last item: **M14-c174 BLOCKED** (2026-10-11): `www` client bundle (21 chunks) Sentry release still `1e84df0e5457c9c80a46f7cb2155ac204ebc15ef` (audit/final-audit), HEAD `dc254698f`; needs Ofir (blocker 4); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed); no code change.
-Previous: **M13-c174 BLOCKED** (blocker 6).
+RESUME FROM: M16-c174
+Last item: **M15-c174 DONE** (2026-10-11): 4/4 prod runs (www.kenyonexpress.co.il `/` and `/product/barbecue` at 380 and 1440) 0 console errors, 0 pageerror, 0 failed requests, 0 responses >= 400; no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed).
+Previous: **M14-c174 BLOCKED** (blocker 4), **M13-c174 BLOCKED** (blocker 6).
 Previous: **M12-c174 DONE**.
 Previous: **M11-c174 DONE**, **M10-c174 BLOCKED** (blocker 5).
 Previous: **M08-c174 DONE** (perf median 81 / 81).
@@ -16,12 +16,13 @@ Previous: **M04-c173 DONE**, **M03-c173 BLOCKED**, **M02-c173 BLOCKED**, **M01-c
 
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
 
-## Queue status (cycles c158 to c173)
+## Queue status (cycles c159 to c174)
 
 Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c120 to M18-c131, and the M18-c157 section at the end). Only c158 and later rows stay below (c157 rows moved in M18-c173).
 
 | ID | Item | Status |
 |---|---|---|
+| M15-c174 | Verify no console errors on / and /product sample | **DONE**: 4/4 prod runs (380, 1440) 0 console errors, 0 pageerror, 0 failed requests, 0 responses >= 400, unchanged from M15-c173; no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M14-c174 | Verify Sentry release matches HEAD commit | **BLOCKED**: `www` client bundle release still `1e84df0e5457c9c80a46f7cb2155ac204ebc15ef` (audit/final-audit, 21 chunks scanned), HEAD `dc254698f`; needs Ofir (blocker 4); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M13-c174 | Verify /api/health and /api/ready return 200 with real deps | **BLOCKED**: health 200 (`database: ok`), ready 503 (`meilisearch down, r2 not_configured`) on www.kenyonexpress.co.il, unchanged (blocker 6); needs Ofir; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M12-c174 | Verify robots.txt production-safe | **DONE**: live www file 200 matches source (16 Disallow, credential paths blocked), robots.ts unchanged since `c558a6476`, no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
@@ -252,24 +253,6 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 | M03-c159 | Re-measure compare.mjs on /category sample | **BLOCKED**: gate refuses at 380/768/1440, no reference, no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M02-c159 | Re-measure compare.mjs on /product sample | **BLOCKED**: gate refuses at 380/768/1440, no reference, no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M01-c159 | Re-measure compare.mjs 380 768 1440 on / and record diffs | **BLOCKED**: gate refuses at 380/768/1440, no reference, no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
-| M18-c158 | Trim STATE.md under 300 lines, archive rest | **DONE**: STATE.md was 71 lines at start (under 300), no archive move needed; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1; `HeroSlider.tsx` and `SiteFooter.tsx` stay uncommitted |
-| M17-c158 | Verify RTL on / and /product sample, no LTR leaks | **BLOCKED**: 6/6 prod runs RTL-clean except the same footer newsletter placeholder, flush left; uncommitted fix cannot be committed, compare.mjs refuses 6/6 (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
-| M16-c158 | Verify all product pages have JSON-LD Product and BreadcrumbList | **DONE**: 44/44 prod product pages have both, 43 pass every check, `מזקקת-ויסקי` lacks `image` (unchanged); no src change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
-| M15-c158 | Verify no console errors on / and /product sample | **DONE**: 4/4 prod runs (380, 1440) 0 console errors, 0 pageerror, 0 failed requests, 0 responses >= 400, unchanged from M15-c157; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
-| M14-c158 | Verify Sentry release matches HEAD commit | **BLOCKED**: `www` release still `1e84df0` (audit/final-audit), HEAD `09e271fbc`; needs Ofir (blocker 4); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
-| M13-c158 | Verify /api/health and /api/ready return 200 with real deps | **BLOCKED**: health 200, ready 503 `meilisearch: down` on www.kenyonexpress.co.il, unchanged (blocker 6); needs Ofir; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
-| M12-c158 | Verify robots.txt production-safe | **DONE**: live www file 200 matches source (16 Disallow, credential paths blocked), robots.ts unchanged; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
-| M11-c158 | Verify sitemap.xml fresh and reachable | **DONE**: index 200, 5/5 section files 200, 94/94 URLs 200 on www, newest lastmod 2026-10-05, unchanged from M11-c157; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
-| M09-c158 | Unused deps and dead exports | **DONE**: no unused deps, no new dead exports, 0 deps dropped; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
-| M10-c158 | Verify migrations/pending/ applied or file blocker | **BLOCKED**: pending dir unchanged since M10-c157, 231 not applied, 22 absent, 6 live but unrecorded; needs Ofir (blocker 5); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
-| M08-c158 | Lighthouse mobile on / and /product sample, log scores | **DONE**: perf median 79 / 84 (3 runs each: 78, 79, 79 / 84, 84, 84), perf-only script; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
-| M07-c158 | TODO/FIXME older than 7 days: resolve or file in docs/BACKLOG.md | **DONE**: re-scan found only the 2 filed Cardcom markers (B1, B2), nothing new; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
-| M06-c158 | pnpm build, fix drift | **DONE**: exit 0 on attempt 1, 0 db.query_failed, no drift, no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped) |
-| M05-c158 | pnpm test, fix drift | **DONE**: exit 0 (519 files, 6474 passed, 12 skipped), no drift, no code change; gates type-check 0, lint 0, build 0 on attempt 1 |
-| M04-c158 | pnpm type-check, fix drift | **DONE**: exit 0, no drift, no code change; gates lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
-| M03-c158 | Re-measure compare.mjs on /category sample | **BLOCKED**: gate refuses at 380/768/1440, no reference, no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
-| M01-c158 | Re-measure compare.mjs 380 768 1440 on / and record diffs | **BLOCKED**: gate refuses at 380/768/1440, no reference, no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
-| M02-c158 | Re-measure compare.mjs on /product sample | **BLOCKED**: gate refuses at 380/768/1440, no reference, no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 
 ## Open blockers
 
