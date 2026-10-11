@@ -208,9 +208,14 @@ const RS = {
    * pay for the mistake with no signal.
    */
   badgeSizes: '286px',
-  /** welcome slide insets its two promo lines by different amounts */
-  promoSmallInset: 'ps-[11px]',
-  promoLargeInset: 'ps-[10px]',
+  /**
+   * welcome slide insets its two promo lines by different amounts, from the
+   * column's LEFT edge. These were ps- (padding-inline-start) while the
+   * paragraphs carried dir="ltr", where start is left. The paragraphs are RTL
+   * now (see the note above them), so the same left inset is padding-inline-END.
+   */
+  promoSmallInset: 'pe-[11px]',
+  promoLargeInset: 'pe-[10px]',
   /** rs-layer xo offsets: three distinct measured indents */
   indentSm: 'pe-[21px]',
   indentMd: 'pe-[47px]',
@@ -557,32 +562,32 @@ function ProductSlideCopy({ slide }: { slide: HeroSlide }) {
         </p>
       )}
 
+      {/*
+        THE PROMO LINES ARE HEBREW AND THE PARAGRAPH IS RTL. They carried
+        dir="ltr" from the Electro export, when they read "SIMPLY THE BEST" and
+        "$299", and the attribute survived the translation: a Hebrew paragraph
+        laid out left to right. Production fixed this in 9078252c8 (m17-c66) on
+        its own branch; M17-c115 found it still live here and ports it. The
+        measured geometry is the LEFT edge of the copy column, which in a
+        dir="rtl" tree is text-END, not text-start.
+      */}
       {slide.standard_line && (
-        <p
-          dir="ltr"
-          style={{ color: T.headline1.color }}
-          className={`mt-4 text-start lg:mt-5 ${RS.standard}`}
-        >
+        <p style={{ color: T.headline1.color }} className={`mt-4 text-end lg:mt-5 ${RS.standard}`}>
           {slide.standard_line}
         </p>
       )}
 
       {slide.promo_small && (
         <p
-          dir="ltr"
           style={{ color: T.priceLabel.color }}
-          className={`mt-2 text-start lg:mt-[27px] ${RS.promoSmall}`}
+          className={`mt-2 text-end lg:mt-[27px] ${RS.promoSmall}`}
         >
           {slide.promo_small}
         </p>
       )}
 
       {slide.promo_large && (
-        <p
-          dir="ltr"
-          style={{ color: T.price.color }}
-          className={`mt-0 text-start ${RS.promoLarge}`}
-        >
+        <p style={{ color: T.price.color }} className={`mt-0 text-end ${RS.promoLarge}`}>
           {slide.promo_large}
         </p>
       )}
@@ -621,20 +626,27 @@ function WelcomeSlideCopy({ slide }: { slide: HeroSlide }) {
           {slide.tagline}
         </p>
       )}
+      {/*
+        THE PROMO LINES ARE HEBREW AND THE PARAGRAPH IS RTL. They carried
+        dir="ltr" from the Electro export, when they read "SIMPLY THE BEST" and
+        "$299", and the attribute survived the translation: a Hebrew paragraph
+        laid out left to right. Production fixed this in 9078252c8 (m17-c66) on
+        its own branch; M17-c115 found it still live here and ports it. The
+        measured geometry is the LEFT edge of the copy column, which in a
+        dir="rtl" tree is text-END, not text-start.
+      */}
       {slide.promo_small && (
         <p
-          dir="ltr"
           style={{ color: T.headline1.color }}
-          className={`mt-3 text-start lg:mt-4 ${RS.promoSmallInset} ${RS.promoSmallWelcome}`}
+          className={`mt-3 text-end lg:mt-4 ${RS.promoSmallInset} ${RS.promoSmallWelcome}`}
         >
           {slide.promo_small}
         </p>
       )}
       {slide.promo_large && (
         <p
-          dir="ltr"
           style={{ color: T.price.color }}
-          className={`mt-0 text-start ${RS.promoLargeInset} ${RS.promoLargeWelcome}`}
+          className={`mt-0 text-end ${RS.promoLargeInset} ${RS.promoLargeWelcome}`}
         >
           {slide.promo_large}
         </p>
