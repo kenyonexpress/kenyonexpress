@@ -1,6 +1,6 @@
-RESUME FROM: M06-c168
-Last item: **M05-c168 DONE** (2026-10-11): test exit 0 (519 files, 6474 passed, 12 skipped), no drift, no code change.
-Previous: **M04-c168 DONE** (type-check exit 0, no drift).
+RESUME FROM: M07-c168
+Last item: **M06-c168 DONE** (2026-10-11): build exit 0 on attempt 1, 0 db.query_failed, no drift, no code change.
+Previous: **M05-c168 DONE** (test exit 0, no drift).
 
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
 
@@ -10,6 +10,7 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 
 | ID | Item | Status |
 |---|---|---|
+| M06-c168 | pnpm build, fix drift | **DONE**: exit 0 on attempt 1, 0 db.query_failed, no drift, no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped) |
 | M05-c168 | pnpm test, fix drift | **DONE**: exit 0 (519 files, 6474 passed, 12 skipped), no drift, no code change; gates type-check 0, lint 0, build 0 on attempt 1 (0 db.query_failed) |
 | M04-c168 | pnpm type-check, fix drift | **DONE**: exit 0, no drift, no code change; gates lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M03-c168 | Re-measure compare.mjs on /category sample | **BLOCKED**: gate refuses at 380/768/1440 (run in foreground), reference host is our own build (37-38 /_next/ refs, no wp-content), no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
