@@ -1,6 +1,6 @@
-RESUME FROM: M07-c168
-Last item: **M06-c168 DONE** (2026-10-11): build exit 0 on attempt 1, 0 db.query_failed, no drift, no code change.
-Previous: **M05-c168 DONE** (test exit 0, no drift).
+RESUME FROM: M08-c168
+Last item: **M07-c168 DONE** (2026-10-11): TODO/FIXME re-scan found only the 2 filed Cardcom markers (B1, B2), nothing new, no code change.
+Previous: **M06-c168 DONE** (build exit 0, no drift).
 
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
 
@@ -10,6 +10,7 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 
 | ID | Item | Status |
 |---|---|---|
+| M07-c168 | TODO/FIXME older than 7 days: resolve or file in docs/BACKLOG.md | **DONE**: re-scan found only the 2 filed Cardcom markers (B1, B2), nothing new; final-audit 0 untracked of 2; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M06-c168 | pnpm build, fix drift | **DONE**: exit 0 on attempt 1, 0 db.query_failed, no drift, no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped) |
 | M05-c168 | pnpm test, fix drift | **DONE**: exit 0 (519 files, 6474 passed, 12 skipped), no drift, no code change; gates type-check 0, lint 0, build 0 on attempt 1 (0 db.query_failed) |
 | M04-c168 | pnpm type-check, fix drift | **DONE**: exit 0, no drift, no code change; gates lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
