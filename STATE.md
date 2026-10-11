@@ -1,4 +1,5 @@
-RESUME FROM: M09-c177
+RESUME FROM: M10-c177
+Last item: **M09-c177 DONE** (2026-10-11): empty diff vs `a5ef1b137` for src, packages, package.json, pnpm-lock.yaml (uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` add no exports or imports), no unused deps beyond the 6 keeps, no new dead exports, 0 deps dropped, no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed). Uncommitted HeroSlider.tsx, SiteFooter.tsx, UI-PARITY-REPORT.md left untouched.
 Last item: **M08-c177 DONE** (2026-10-11): Lighthouse mobile perf median 82 / 82 (3 runs each: 83, 82, 80 / 82, 83, 82), local prod build (`pnpm start -p 3691`), `scripts/_lh-runs.mjs`, `/` and `/product/barbecue`, LCP 4.6-5.1 s / 4.7-4.9 s, CLS 0-0.003 / 0.001, TBT 30-40 ms / 30 ms, no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed). Uncommitted HeroSlider.tsx, SiteFooter.tsx, UI-PARITY-REPORT.md left untouched.
 Previous: **M07-c177 DONE** (2026-10-11): TODO/FIXME re-scan at HEAD 3e78fbda8, only `cardcom.ts:254` and `cardcom.ts:319` (both filed B1, B2 in docs/BACKLOG.md, need live Cardcom terminal credentials), nothing new; final-audit 0 untracked of 2; no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1. Uncommitted HeroSlider.tsx, SiteFooter.tsx, UI-PARITY-REPORT.md left untouched.
 Last item: **M06-c177 DONE** (2026-10-11): `pnpm build` exit 0 on attempt 1 (0 db.query_failed), no drift (HEAD c2ae4a93e), no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0. Uncommitted HeroSlider.tsx, SiteFooter.tsx, UI-PARITY-REPORT.md left untouched.
@@ -57,6 +58,7 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 
 | ID | Item | Status |
 |---|---|---|
+| M09-c177 | Unused deps and dead exports | **DONE**: empty diff vs `a5ef1b137`, no unused deps beyond the 6 keeps, no new dead exports, 0 deps dropped, no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M06-c177 | pnpm build, fix drift, commit | **DONE**: exit 0 on attempt 1 (0 db.query_failed), no drift, no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped) |
 | M05-c177 | pnpm test, fix drift, commit | **DONE**: exit 0 (519 files, 6474 passed, 12 skipped), no drift, no code change; gates type-check 0, lint 0, build 0 on attempt 1 (0 db.query_failed) |
 | M04-c177 | pnpm type-check, fix drift | **DONE**: exit 0, no drift, no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
