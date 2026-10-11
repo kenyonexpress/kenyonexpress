@@ -1,5 +1,6 @@
-RESUME FROM: M06-c176
-Last item: **M05-c176 DONE** (2026-10-11): `pnpm test` exit 0 (519 files, 6474 passed, 12 skipped), no drift, no code change; gates type-check 0, lint 0, build 0 on attempt 1 (0 db.query_failed). Uncommitted HeroSlider.tsx, SiteFooter.tsx, UI-PARITY-REPORT.md left untouched.
+RESUME FROM: M07-c176
+Last item: **M06-c176 DONE** (2026-10-11): pnpm build exit 0 on attempt 1, 0 db.query_failed, no drift, no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped). Uncommitted HeroSlider.tsx, SiteFooter.tsx, UI-PARITY-REPORT.md left untouched.
+Previous: **M05-c176 DONE** (2026-10-11): `pnpm test` exit 0 (519 files, 6474 passed, 12 skipped), no drift, no code change; gates type-check 0, lint 0, build 0 on attempt 1 (0 db.query_failed). Uncommitted HeroSlider.tsx, SiteFooter.tsx, UI-PARITY-REPORT.md left untouched.
 Previous: **M04-c176 DONE** (type-check exit 0, no drift).
 Previous: **M03-c176 BLOCKED** (2026-10-11): compare.mjs `--page=category` at 380, 768, 1440 run in foreground, all three REFUSED: `kenyonexpress.co.il/product-category/hot-deals/` is our own build (37-38 /_next/ refs, no wp-content), no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed). No code change. Uncommitted HeroSlider.tsx, SiteFooter.tsx, UI-PARITY-REPORT.md left untouched.
 Last item: **M02-c176 BLOCKED** (2026-10-11): compare.mjs `--page=product` at 380, 768, 1440 run in foreground, all three REFUSED: `kenyonexpress.co.il/product/...` is our own build (37-39 /_next/ refs, no wp-content), no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed). No code change. Uncommitted HeroSlider.tsx, SiteFooter.tsx, UI-PARITY-REPORT.md left untouched.
@@ -42,6 +43,7 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 
 | ID | Item | Status |
 |---|---|---|
+| M06-c176 | pnpm build, fix drift, commit | **DONE**: exit 0 on attempt 1, 0 db.query_failed, no drift, no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped) |
 | M05-c176 | pnpm test, fix drift, commit | **DONE**: exit 0 (519 files, 6474 passed, 12 skipped), no drift, no code change; gates type-check 0, lint 0, build 0 on attempt 1 (0 db.query_failed) |
 | M04-c176 | pnpm type-check, fix drift, commit | **DONE**: exit 0, no drift, no code change; gates lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M03-c176 | Re-measure compare.mjs on /category sample | **BLOCKED**: gate refuses at 380/768/1440 (run in foreground, `--page=category --width=N`), reference host is our own build (37-38 /_next/ refs, no wp-content), no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
