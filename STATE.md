@@ -1,6 +1,6 @@
-RESUME FROM: M11-c165
-Last item: **M10-c165 BLOCKED** (2026-10-11): pending dir unchanged since M10-c164 (`git diff 88d59fb73..HEAD -- migrations` empty, 45 entries), 231 not applied, 22 absent, 6 live but unrecorded; only Ofir applies (blocker 5); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1.
-Previous: **M09-c165 DONE**.
+RESUME FROM: M12-c165
+Last item: **M11-c165 DONE** (2026-10-11): sitemap index 200, 5/5 section files 200 (content 15, categories 12, products 44, regions 17, suppliers 6), 94/94 URLs 200 on www, newest lastmod 2026-10-05, unchanged from M11-c164; index and sections emit non-www `kenyonexpress.co.il` locs (checked via www rewrite); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1.
+Previous: **M10-c165 BLOCKED**.
 
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
 
@@ -10,6 +10,7 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 
 | ID | Item | Status |
 |---|---|---|
+| M11-c165 | Verify sitemap.xml fresh and reachable | **DONE**: index 200, 5/5 section files 200, 94/94 URLs 200 on www, newest lastmod 2026-10-05, unchanged from M11-c164; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M10-c165 | Verify migrations/pending/ applied or file blocker | **BLOCKED**: pending dir unchanged since M10-c164, 231 not applied, 22 absent, 6 live but unrecorded; needs Ofir (blocker 5); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M09-c165 | Unused deps and dead exports | **DONE**: no src/package change since M09-c164, no unused deps beyond the 6 keeps, no new dead exports, 0 deps dropped; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M08-c165 | Lighthouse mobile on / and /product sample, log scores | **DONE**: perf median 81 / 88 (3 runs each: 81, 79, 82 / 88, 82, 88), local prod build, `/product/barbecue`, no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
