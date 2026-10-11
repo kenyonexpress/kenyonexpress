@@ -1,6 +1,6 @@
-RESUME FROM: M09-c175
-Last item: **M08-c175 DONE** (2026-10-11): Lighthouse mobile perf median 80 / 82 (3 runs each: 77, 82, 80 / 82, 92, 82), local prod build (`pnpm start -p 3671`), `scripts/_lh-runs.mjs`, `/product/barbecue`, LCP 4.6-5.9 s / 3.3-4.8 s, CLS 0-0.003 / 0.001, TBT 30-50 ms / 30 ms, no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed). Uncommitted HeroSlider.tsx, SiteFooter.tsx, UI-PARITY-REPORT.md left untouched (blocker 0).
-Previous: **M07-c175 DONE** (TODO/FIXME re-scan, nothing new).
+RESUME FROM: M10-c175
+Last item: **M09-c175 DONE** (2026-10-11): empty diff vs `a5ef1b137` for src, packages, package.json, pnpm-lock.yaml (uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` add no exports or imports), no unused deps beyond the 6 keeps, no new dead exports, 0 deps dropped; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed). Uncommitted HeroSlider.tsx, SiteFooter.tsx, UI-PARITY-REPORT.md left untouched (blocker 0).
+Previous: **M08-c175 DONE** (2026-10-11): Lighthouse mobile perf median 80 / 82 (3 runs each: 77, 82, 80 / 82, 92, 82), local prod build (`pnpm start -p 3671`), `scripts/_lh-runs.mjs`, `/product/barbecue`, LCP 4.6-5.9 s / 3.3-4.8 s, CLS 0-0.003 / 0.001, TBT 30-50 ms / 30 ms, no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed). Uncommitted HeroSlider.tsx, SiteFooter.tsx, UI-PARITY-REPORT.md left untouched (blocker 0).
 Previous: **M06-c175 DONE** (2026-10-11): pnpm build exit 0 on attempt 1, 0 db.query_failed, no drift, no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped). Uncommitted HeroSlider.tsx, SiteFooter.tsx, UI-PARITY-REPORT.md left untouched (blocker 0).
 Previous: **M05-c175 DONE** (2026-10-11): pnpm test exit 0 (519 files, 6474 passed, 12 skipped), no drift, no code change; gates type-check 0, lint 0, build 0 on attempt 1 (0 db.query_failed). Uncommitted HeroSlider.tsx, SiteFooter.tsx, UI-PARITY-REPORT.md left untouched (no compare.mjs reference, blocker 0).
 Previous: **M04-c175 DONE** (type-check exit 0, no drift).
@@ -28,6 +28,7 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 
 | ID | Item | Status |
 |---|---|---|
+| M09-c175 | Unused deps and dead exports | **DONE**: empty diff vs `a5ef1b137` for src, packages, package.json, pnpm-lock.yaml, no unused deps beyond the 6 keeps, no new dead exports, 0 deps dropped; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M08-c175 | Lighthouse mobile on / and /product sample, log scores | **DONE**: perf median 80 / 82 (3 runs each: 77, 82, 80 / 82, 92, 82), local prod build (`pnpm start -p 3671`), `scripts/_lh-runs.mjs`, `/product/barbecue`, LCP 4.6-5.9 s / 3.3-4.8 s, CLS 0-0.003 / 0.001, TBT 30-50 ms / 30 ms, no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M07-c175 | TODO/FIXME older than 7 days: resolve or file in docs/BACKLOG.md | **DONE**: re-scan found only the 2 filed Cardcom markers (B1, B2), nothing new; final-audit 0 untracked of 2; no code change |
 | M06-c175 | pnpm build, fix drift, commit | **DONE**: exit 0 on attempt 1, 0 db.query_failed, no drift, no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped) |
