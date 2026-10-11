@@ -1,6 +1,6 @@
-RESUME FROM: M09-c168
-Last item: **M08-c168 DONE** (2026-10-11): Lighthouse mobile perf median 81 / 82 (`/`: 81, 78, 82; `/product/barbecue`: 82, 88, 82), local prod build, no code change.
-Previous: **M07-c168 DONE** (TODO/FIXME re-scan, nothing new).
+RESUME FROM: M10-c168
+Last item: **M09-c168 DONE** (2026-10-11): no src/package change since M09-c167, no unused deps beyond the 6 keeps, no new dead exports, 0 deps dropped.
+Previous: **M08-c168 DONE** (Lighthouse mobile perf median 81 / 82, no code change).
 
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
 
@@ -10,6 +10,7 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 
 | ID | Item | Status |
 |---|---|---|
+| M09-c168 | Unused deps and dead exports | **DONE**: no src/package change since M09-c167 (empty diff vs `5bc5dffa1`), no unused deps beyond the 6 keeps, no new dead exports, 0 deps dropped; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M08-c168 | Lighthouse mobile on / and /product sample, log scores | **DONE**: perf median 81 / 82 (3 runs each: 81, 78, 82 / 82, 88, 82), local prod build (`pnpm start -p 3568`), `scripts/_lh-runs.mjs`, `/product/barbecue`, no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M07-c168 | TODO/FIXME older than 7 days: resolve or file in docs/BACKLOG.md | **DONE**: re-scan found only the 2 filed Cardcom markers (B1, B2), nothing new; final-audit 0 untracked of 2; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M06-c168 | pnpm build, fix drift | **DONE**: exit 0 on attempt 1, 0 db.query_failed, no drift, no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped) |
