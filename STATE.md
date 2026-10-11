@@ -1,6 +1,6 @@
-RESUME FROM: M06-c162
-Last item: **M05-c162 DONE** (2026-10-11): `pnpm test` exit 0 (519 files, 6474 passed, 12 skipped), no drift, no code change. gates type-check 0, lint 0, build 0 on attempt 1 (0 `db.query_failed`). STATE.md 131 lines, no archive move. `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
-Previous: **M04-c162 DONE**.
+RESUME FROM: M07-c162
+Last item: **M06-c162 DONE** (2026-10-11): `pnpm build` exit 0 on attempt 1, 0 `db.query_failed`, no drift, no code change. gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped). STATE.md ~132 lines, no archive move. `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
+Previous: **M05-c162 DONE**.
 # KenyonExpress — Project State
 
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
@@ -11,6 +11,7 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 
 | ID | Item | Status |
 |---|---|---|
+| M06-c162 | pnpm build, fix drift | **DONE**: exit 0 on attempt 1, 0 db.query_failed, no drift, no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped) |
 | M05-c162 | pnpm test, fix drift | **DONE**: exit 0 (519 files, 6474 passed, 12 skipped), no drift, no code change; gates type-check 0, lint 0, build 0 on attempt 1 |
 | M04-c162 | pnpm type-check, fix drift | **DONE**: exit 0, no drift, no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
 | M03-c162 | Re-measure compare.mjs on /category sample | **BLOCKED**: gate refuses at 380/768/1440, no reference, no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 |
