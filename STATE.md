@@ -1,6 +1,6 @@
-RESUME FROM: M17-c168
-Last item: **M16-c168 DONE** (2026-10-11): 44/44 prod product pages (sitemap, `www`) have exactly one JSON-LD `Product` and one `BreadcrumbList`, 43 pass every check, `מזקקת-ויסקי` lacks `image`, unchanged from M16-c167.
-Previous: **M15-c168 DONE** (no console errors on / and /product sample).
+RESUME FROM: M18-c168
+Last item: **M17-c168 BLOCKED** (2026-10-11): RTL clean on prod / and /product/barbecue at 380 and 1440 except the footer newsletter input (blocker 0, uncommitted fix cannot be committed).
+Previous: **M16-c168 DONE** (2026-10-11): 44/44 prod product pages (sitemap, `www`) have exactly one JSON-LD `Product` and one `BreadcrumbList`, 43 pass every check, `מזקקת-ויסקי` lacks `image`, unchanged from M16-c167.
 
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
 
@@ -10,6 +10,7 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 
 | ID | Item | Status |
 |---|---|---|
+| M17-c168 | Verify RTL on / and /product sample, no LTR leaks | **BLOCKED**: 4/4 prod runs (/, `/product/barbecue` at 380 and 1440) html dir=rtl lang=he, no horizontal overflow, 0 Hebrew text in LTR boxes except the same footer newsletter input (`dir=ltr`, Hebrew placeholder, flush left); uncommitted `SiteFooter.tsx` fix cannot be committed, compare.mjs home 380 refuses again, reference is our own build (35 /_next/ refs) (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M16-c168 | Verify all product pages have JSON-LD Product and BreadcrumbList | **DONE**: 44/44 prod product pages have both, 43 pass every check, `מזקקת-ויסקי` lacks `image` (unchanged from M16-c167); no src change since `865b9ccd9`; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M15-c168 | Verify no console errors on / and /product sample | **DONE**: 4/4 prod runs (380, 1440) 0 console errors, 0 pageerror, 0 failed requests, 0 responses >= 400, unchanged from M15-c167; no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M14-c168 | Verify Sentry release matches HEAD commit | **BLOCKED**: `www` client bundle release still `1e84df0e5457c9c80a46f7cb2155ac204ebc15ef` (audit/final-audit), HEAD `19a6cf546`; needs Ofir (blocker 4); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
