@@ -1,5 +1,4 @@
 RESUME FROM: M09-c164
-Last item: **M07-c164 DONE** (2026-10-11): TODO/FIXME re-scan at HEAD `cb6ddb702` found only the 2 filed Cardcom markers (B1, B2), nothing new; gates type-check 0, lint 0, test 0, build 0; `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
 Last item: **M08-c164 DONE** (2026-10-11): Lighthouse mobile perf median 82 / 82 (3 runs each: 82, 78, 82 / 83, 82, 81; LCP 4.6-5.6 s, CLS 0.003 / 0.001, TBT 30-40 ms); gates type-check 0, lint 0, test 0, build 0; `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
 Previous: **M07-c164 DONE**.
 
