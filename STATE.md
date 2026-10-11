@@ -1,5 +1,6 @@
-RESUME FROM: M07-c176
-Last item: **M06-c176 DONE** (2026-10-11): pnpm build exit 0 on attempt 1, 0 db.query_failed, no drift, no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped). Uncommitted HeroSlider.tsx, SiteFooter.tsx, UI-PARITY-REPORT.md left untouched.
+RESUME FROM: M08-c176
+Last item: **M07-c176 DONE** (2026-10-11): TODO/FIXME re-scan at HEAD `6db88d307`, only the 2 filed Cardcom markers (B1, B2), nothing new; final-audit 0 untracked of 2; no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed). Uncommitted HeroSlider.tsx, SiteFooter.tsx, UI-PARITY-REPORT.md left untouched.
+Previous: **M06-c176 DONE** (2026-10-11): pnpm build exit 0 on attempt 1, 0 db.query_failed, no drift, no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped). Uncommitted HeroSlider.tsx, SiteFooter.tsx, UI-PARITY-REPORT.md left untouched.
 Previous: **M05-c176 DONE** (2026-10-11): `pnpm test` exit 0 (519 files, 6474 passed, 12 skipped), no drift, no code change; gates type-check 0, lint 0, build 0 on attempt 1 (0 db.query_failed). Uncommitted HeroSlider.tsx, SiteFooter.tsx, UI-PARITY-REPORT.md left untouched.
 Previous: **M04-c176 DONE** (type-check exit 0, no drift).
 Previous: **M03-c176 BLOCKED** (2026-10-11): compare.mjs `--page=category` at 380, 768, 1440 run in foreground, all three REFUSED: `kenyonexpress.co.il/product-category/hot-deals/` is our own build (37-38 /_next/ refs, no wp-content), no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed). No code change. Uncommitted HeroSlider.tsx, SiteFooter.tsx, UI-PARITY-REPORT.md left untouched.
@@ -43,6 +44,7 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 
 | ID | Item | Status |
 |---|---|---|
+| M07-c176 | TODO/FIXME older than 7 days: resolve or file in docs/BACKLOG.md | **DONE**: re-scan found only the 2 filed Cardcom markers (B1, B2), nothing new; final-audit 0 untracked of 2; no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M06-c176 | pnpm build, fix drift, commit | **DONE**: exit 0 on attempt 1, 0 db.query_failed, no drift, no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped) |
 | M05-c176 | pnpm test, fix drift, commit | **DONE**: exit 0 (519 files, 6474 passed, 12 skipped), no drift, no code change; gates type-check 0, lint 0, build 0 on attempt 1 (0 db.query_failed) |
 | M04-c176 | pnpm type-check, fix drift, commit | **DONE**: exit 0, no drift, no code change; gates lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
