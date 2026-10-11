@@ -1,6 +1,6 @@
-RESUME FROM: M05-c171
-Last item: **M04-c171 DONE** (2026-10-11): `pnpm type-check` exit 0, no drift, no code change; gates lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed); `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
-Previous: **M03-c171 BLOCKED**, **M02-c171 BLOCKED**, **M01-c171 BLOCKED**, **M18-c170 DONE**, **M17-c170 BLOCKED**, M16-c170 DONE, M15-c170 DONE, **M14-c170 BLOCKED**, **M13-c170 BLOCKED**, M12-c170 DONE, M11-c170 DONE, **M10-c170 BLOCKED**, M09-c170 DONE, M08-c170 DONE, M07-c170 DONE, M06-c170 DONE, M05-c170 DONE, M04-c170 DONE, **M03-c170 BLOCKED**, **M02-c170 BLOCKED**, **M01-c170 BLOCKED**.
+RESUME FROM: M06-c171
+Last item: **M05-c171 DONE** (2026-10-11): `pnpm test` exit 0 (519 files, 6474 passed, 12 skipped), no drift, no code change; gates type-check 0, lint 0, build 0 on attempt 1 (0 db.query_failed); `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted.
+Previous: M04-c171 DONE, **M03-c171 BLOCKED**, **M02-c171 BLOCKED**, **M01-c171 BLOCKED**, **M18-c170 DONE**, **M17-c170 BLOCKED**, M16-c170 DONE, M15-c170 DONE, **M14-c170 BLOCKED**, **M13-c170 BLOCKED**, M12-c170 DONE, M11-c170 DONE, **M10-c170 BLOCKED**, M09-c170 DONE, M08-c170 DONE, M07-c170 DONE, M06-c170 DONE, M05-c170 DONE, M04-c170 DONE, **M03-c170 BLOCKED**, **M02-c170 BLOCKED**, **M01-c170 BLOCKED**.
 
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
 
@@ -10,6 +10,7 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 
 | ID | Item | Status |
 |---|---|---|
+| M05-c171 | pnpm test, fix drift | **DONE**: exit 0 (519 files, 6474 passed, 12 skipped), no drift, no code change; gates type-check 0, lint 0, build 0 on attempt 1 (0 db.query_failed) |
 | M04-c171 | pnpm type-check, fix drift | **DONE**: exit 0, no drift, no code change; gates lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M03-c171 | Re-measure compare.mjs on /category sample | **BLOCKED**: gate refuses at 380/768/1440 (run in foreground), reference host is our own build (37-38 /_next/ refs, no wp-content), no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M02-c171 | Re-measure compare.mjs on /product sample | **BLOCKED**: gate refuses at 380/768/1440 (run in foreground), reference host is our own build (37-39 /_next/ refs, no wp-content), no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
