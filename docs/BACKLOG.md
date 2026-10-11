@@ -11,6 +11,12 @@ are not markers).
 
 Three real markers, all older than 7 days.
 
+Re-scanned 2026-10-11 (M07-c163) with the same rule at HEAD `3dd69c1b0`,
+including the uncommitted working-tree files: unchanged. Only
+`cardcom.ts:254` and `cardcom.ts:319` match, both filed as B1 and B2; they
+still need live Cardcom terminal credentials. `node scripts/final-audit.mjs`
+reports 0 untracked work markers (of 2).
+
 Re-scanned 2026-10-11 (M07-c162) with the same rule at HEAD `a4064b46b`,
 including the uncommitted working-tree files: unchanged. Only
 `cardcom.ts:254` and `cardcom.ts:319` match, both filed as B1 and B2; they
