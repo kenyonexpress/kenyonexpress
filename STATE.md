@@ -1,5 +1,6 @@
-RESUME FROM: M05-c175
-Last item: **M04-c175 DONE** (2026-10-11): pnpm type-check exit 0, no drift, no code change; gates lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed). Uncommitted HeroSlider.tsx, SiteFooter.tsx, UI-PARITY-REPORT.md left untouched (no compare.mjs reference, blocker 0).
+RESUME FROM: M06-c175
+Last item: **M05-c175 DONE** (2026-10-11): pnpm test exit 0 (519 files, 6474 passed, 12 skipped), no drift, no code change; gates type-check 0, lint 0, build 0 on attempt 1 (0 db.query_failed). Uncommitted HeroSlider.tsx, SiteFooter.tsx, UI-PARITY-REPORT.md left untouched (no compare.mjs reference, blocker 0).
+Previous: **M04-c175 DONE** (type-check exit 0, no drift).
 Previous: **M02-c175 BLOCKED** (blocker 0), same refusal on `--page=product`.
 Previous: **M01-c175 BLOCKED** (2026-10-11): compare.mjs `--page=home` at 380, 768, 1440 run in foreground, all three REFUSED: `kenyonexpress.co.il/` is our own build (34-35 /_next/ refs, no wp-content), no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed). No code change.
 Previous: **M18-c174 DONE** (2026-10-11): STATE.md trimmed from 286 to 156 lines (queue rows c159 to c165 and c173 "Previous:" lines moved to `docs/STATE-ARCHIVE.md`, M18-c174 section); no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0.
@@ -24,6 +25,7 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 
 | ID | Item | Status |
 |---|---|---|
+| M05-c175 | pnpm test, fix drift, commit | **DONE**: exit 0 (519 files, 6474 passed, 12 skipped), no drift, no code change; gates type-check 0, lint 0, build 0 on attempt 1 (0 db.query_failed) |
 | M04-c175 | pnpm type-check, fix drift, commit | **DONE**: exit 0, no drift, no code change; gates lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M03-c175 | Re-measure compare.mjs on /category sample | **BLOCKED**: gate refuses at 380/768/1440 (run in foreground, `--page=category --width=N`), reference host is our own build (37-38 /_next/ refs, no wp-content), no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M02-c175 | Re-measure compare.mjs on /product sample | **BLOCKED**: gate refuses at 380/768/1440 (run in foreground, `--page=product --width=N`), reference host is our own build (37-39 /_next/ refs, no wp-content), no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
