@@ -1,6 +1,6 @@
-RESUME FROM: M08-c174
-Last item: **M07-c174 DONE** (2026-10-11): TODO/FIXME re-scan at HEAD `2a43e4500`, only the 2 filed Cardcom markers (B1, B2), nothing new, `final-audit` 0 untracked of 2; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed).
-Previous: **M06-c174 DONE**, **M05-c174 DONE**, **M04-c174 DONE**.
+RESUME FROM: M09-c174
+Last item: **M08-c174 DONE** (2026-10-11): Lighthouse mobile on `/` and `/product/barbecue`, local prod build of HEAD `6aa87a332` (`pnpm start -p 3661`), `scripts/_lh-runs.mjs`, 3 runs each. **Perf median 81 / 81** (81, 81, 78 / 81, 82, 77), LCP 4.8-5.9 s / 4.8-5.3 s, CLS 0.003 / 0.001, TBT 30-40 ms / 30 ms. Gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed). No code change.
+Previous: **M07-c174 DONE**, **M06-c174 DONE**, **M05-c174 DONE**, **M04-c174 DONE**.
 Previous: **M04-c174 DONE**, **M03-c174 BLOCKED** (2026-10-11): compare.mjs `--page=category` at 380, 768, 1440 run in foreground, all three REFUSED: `kenyonexpress.co.il/product-category/hot-deals/` is our own build (37-38 /_next/ refs, no wp-content), no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed). No code change.
 Previous: **M02-c174 BLOCKED** (blocker 0), **M01-c174 BLOCKED** (blocker 0), **M18-c173 DONE** (2026-10-11): STATE.md trimmed to 278 lines, gates green. **M17-c173 BLOCKED** (2026-10-11): 4/4 prod runs (www.kenyonexpress.co.il `/` and `/product/barbecue` at 380 and 1440) dir=rtl lang=he, overflow 0, only LTR Hebrew text is the footer newsletter input (`dir=ltr`, Hebrew placeholder), unchanged from M17-c172; `SiteFooter.tsx` fix uncommitted because compare.mjs refuses at 380/768/1440 (blocker 0).
 Previous: **M16-c173 DONE**.
@@ -18,6 +18,7 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 
 | ID | Item | Status |
 |---|---|---|
+| M08-c174 | Lighthouse mobile on / and /product sample, log scores | **DONE**: perf median 81 / 81 (3 runs each: 81, 81, 78 / 81, 82, 77), local prod build (`pnpm start -p 3661`), `scripts/_lh-runs.mjs`, `/product/barbecue`, LCP 4.8-5.9 s / 4.8-5.3 s, CLS 0.003 / 0.001, TBT 30-40 ms / 30 ms, no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M07-c174 | TODO/FIXME older than 7 days: resolve or file in docs/BACKLOG.md | **DONE**: re-scan found only the 2 filed Cardcom markers (B1, B2), nothing new; final-audit 0 untracked of 2; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M06-c174 | pnpm build, fix drift | **DONE**: exit 0 on attempt 1, 0 db.query_failed, no drift, no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped) |
 | M05-c174 | pnpm test, fix drift | **DONE**: exit 0 (519 files, 6474 passed, 12 skipped), no drift, no code change; gates type-check 0, lint 0, build 0 on attempt 1 (0 db.query_failed) |
