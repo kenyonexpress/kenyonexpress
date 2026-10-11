@@ -11,6 +11,10 @@ are not markers).
 
 Three real markers, all older than 7 days.
 
+Re-scanned 2026-10-12 (M07-c178) at HEAD `2d1825c75`: unchanged, only B1 and B2
+match (`cardcom.ts:254`, `cardcom.ts:319`, still need live Cardcom terminal
+credentials); `final-audit.mjs` reports 0 untracked work markers (of 2).
+
 Re-scanned 2026-10-11 (M07-c177) at HEAD `3e78fbda8`: unchanged, only B1 and B2
 match; `final-audit.mjs` reports 0 untracked work markers (of 2).
 
