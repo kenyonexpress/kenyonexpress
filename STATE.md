@@ -1,5 +1,6 @@
-RESUME FROM: M06-c173
-Last item: **M05-c173 DONE** (2026-10-11): `pnpm test` exit 0 (519 files, 6474 passed, 12 skipped), no drift, no code change.
+RESUME FROM: M07-c173
+Last item: **M06-c173 DONE** (2026-10-11): `pnpm build` exit 0 on attempt 1, 0 db.query_failed, no drift, no code change.
+Previous: **M05-c173 DONE** (2026-10-11): `pnpm test` exit 0 (519 files, 6474 passed, 12 skipped), no drift, no code change.
 Previous: **M04-c173 DONE**, **M03-c173 BLOCKED**, **M02-c173 BLOCKED**, **M01-c173 BLOCKED**, **M18-c172 DONE**, **M17-c172 BLOCKED**, **M16-c172 DONE**, **M15-c172 DONE**, **M14-c172 BLOCKED**, **M13-c172 BLOCKED**, **M12-c172 DONE**, **M11-c172 DONE**, **M10-c172 BLOCKED**, **M09-c172 DONE**, **M08-c172 DONE**, **M07-c172 DONE**, **M06-c172 DONE**, **M05-c172 DONE**, **M04-c172 DONE**, **M03-c172 BLOCKED**, **M02-c172 BLOCKED**, **M01-c172 BLOCKED**, **M18-c171 DONE**, **M17-c171 BLOCKED**, **M16-c171 DONE**, **M15-c171 DONE**, **M14-c171 BLOCKED**, **M13-c171 BLOCKED**, **M12-c171 DONE**, **M11-c171 DONE**, **M10-c171 BLOCKED**, **M09-c171 DONE**, **M08-c171 DONE**, M07-c171 DONE, M06-c171 DONE, M05-c171 DONE, M04-c171 DONE, **M03-c171 BLOCKED**, **M02-c171 BLOCKED**, **M01-c171 BLOCKED**.
 
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
@@ -10,6 +11,7 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 
 | ID | Item | Status |
 |---|---|---|
+| M06-c173 | pnpm build, fix drift | **DONE**: exit 0 on attempt 1, 0 db.query_failed, no drift, no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped) |
 | M05-c173 | pnpm test, fix drift | **DONE**: exit 0 (519 files, 6474 passed, 12 skipped), no drift, no code change; gates type-check 0, lint 0, build 0 on attempt 1 (0 db.query_failed) |
 | M04-c173 | pnpm type-check, fix drift | **DONE**: exit 0, no drift, no code change; gates lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M03-c173 | Re-measure compare.mjs on /category sample | **BLOCKED**: gate refuses at 380/768/1440 (run in foreground, `--page=category --width=N`), reference host is our own build (37-38 /_next/ refs, no wp-content), no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
