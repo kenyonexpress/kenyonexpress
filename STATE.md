@@ -1,5 +1,5 @@
-RESUME FROM: M02-c168
-Last item: **M01-c168 BLOCKED** (2026-10-11): compare.mjs home refuses at 380/768/1440 (blocker 0), no number to diff.
+RESUME FROM: M03-c168
+Last item: **M02-c168 BLOCKED** (2026-10-11): compare.mjs product refuses at 380/768/1440 (blocker 0), no number to diff.
 Previous: **M17-c167 BLOCKED** (footer newsletter placeholder, blocker 0).
 
 Detail for every item lives in `docs/STATE-ARCHIVE.md`.
@@ -10,6 +10,7 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 
 | ID | Item | Status |
 |---|---|---|
+| M02-c168 | Re-measure compare.mjs on /product sample | **BLOCKED**: gate refuses at 380/768/1440 (run in foreground), reference host is our own build (37-39 /_next/ refs, no wp-content), no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M01-c168 | Re-measure compare.mjs 380 768 1440 on / and record diffs | **BLOCKED**: gate refuses at 380/768/1440 (run in foreground), reference host is our own build (34-35 /_next/ refs, no wp-content), no number to diff (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M18-c167 | Trim STATE.md under 300 lines, archive rest | **DONE**: STATE.md was 232 lines at start (under 300), no archive move needed; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed); `HeroSlider.tsx`, `SiteFooter.tsx`, `docs/UI-PARITY-REPORT.md` and `logs/` stay uncommitted (blocker 0). |
 | M17-c167 | Verify RTL on / and /product sample, no LTR leaks | **BLOCKED**: 4/4 prod runs (/, `/product/barbecue` at 380 and 1440) html dir=rtl lang=he, no horizontal overflow, 0 Hebrew text in LTR boxes except the same footer newsletter input (`dir=ltr`, Hebrew placeholder, flush left); uncommitted `SiteFooter.tsx` fix cannot be committed, compare.mjs refuses (blocker 0); gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
