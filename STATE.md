@@ -1,5 +1,5 @@
-RESUME FROM: M09-c176
-Last item: **M08-c176 DONE** (2026-10-11): Lighthouse mobile perf median 81 / 82 (3 runs each: 81, 81, 82 / 82, 81, 88), local prod build (`pnpm start -p 3681`), `scripts/_lh-runs.mjs`, `/product/barbecue`, LCP 4.8-5.0 s / 3.7-4.9 s, CLS 0.003 / 0.001, TBT 30-40 ms / 30 ms, no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed). Uncommitted HeroSlider.tsx, SiteFooter.tsx, UI-PARITY-REPORT.md left untouched.
+RESUME FROM: M10-c176
+Last item: **M09-c176 DONE** (2026-10-11): empty diff vs `a5ef1b137` for src, packages, package.json, pnpm-lock.yaml (uncommitted `HeroSlider.tsx` and `SiteFooter.tsx` add no exports or imports), no unused deps beyond the 6 keeps, no new dead exports, 0 deps dropped, no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed). Uncommitted HeroSlider.tsx, SiteFooter.tsx, UI-PARITY-REPORT.md left untouched.
 Previous: **M06-c176 DONE** (2026-10-11): pnpm build exit 0 on attempt 1, 0 db.query_failed, no drift, no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped). Uncommitted HeroSlider.tsx, SiteFooter.tsx, UI-PARITY-REPORT.md left untouched.
 Previous: **M05-c176 DONE** (2026-10-11): `pnpm test` exit 0 (519 files, 6474 passed, 12 skipped), no drift, no code change; gates type-check 0, lint 0, build 0 on attempt 1 (0 db.query_failed). Uncommitted HeroSlider.tsx, SiteFooter.tsx, UI-PARITY-REPORT.md left untouched.
 Previous: **M04-c176 DONE** (type-check exit 0, no drift).
@@ -44,6 +44,7 @@ Rows for cycles c113 to c156 are in `docs/STATE-ARCHIVE.md` (earlier trims M18-c
 
 | ID | Item | Status |
 |---|---|---|
+| M09-c176 | Unused deps and dead exports | **DONE**: empty diff vs `a5ef1b137`, no unused deps beyond the 6 keeps, no new dead exports, 0 deps dropped; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M08-c176 | Lighthouse mobile on / and /product sample, log scores | **DONE**: perf median 81 / 82 (3 runs each: 81, 81, 82 / 82, 81, 88), local prod build (`pnpm start -p 3681`), `scripts/_lh-runs.mjs`, `/product/barbecue`, LCP 4.8-5.0 s / 3.7-4.9 s, CLS 0.003 / 0.001, TBT 30-40 ms / 30 ms, no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M07-c176 | TODO/FIXME older than 7 days: resolve or file in docs/BACKLOG.md | **DONE**: re-scan found only the 2 filed Cardcom markers (B1, B2), nothing new; final-audit 0 untracked of 2; no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped), build 0 on attempt 1 (0 db.query_failed) |
 | M06-c176 | pnpm build, fix drift, commit | **DONE**: exit 0 on attempt 1, 0 db.query_failed, no drift, no code change; gates type-check 0, lint 0, test 0 (519 files, 6474 passed, 12 skipped) |
