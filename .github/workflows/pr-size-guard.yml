@@ -1,0 +1,23 @@
+name: pr-size-guard
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+jobs:
+  pr-size-guard:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR commit count
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: commits } = await github.rest.pulls.listCommits({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+              per_page: 100
+            });
+            const count = commits.length;
+            core.info(`PR has ${count} commits`);
+            if (count >= 50) {
+              core.setFailed(`PR has ${count} commits (>= 50). Split into smaller PRs or get admin override.`);
+            }
