@@ -17009,3 +17009,19 @@ Session 2026-07-23 (המשך) - יעד 1/20: אינטגרציית WhatsApp (קו
   עמוד מוצר ודף הבית מראה את הכפתור הצף ואת כפתור השיתוף.
 
 ## Previous Last Completed
+
+## Oct 12 2026 — 23:29 — Infrastructure Setup
+
+Verified from the session (measured):
+- ✅ pr-size-guard workflow created, PR #55 merged to main, check reports as `pr-size-guard`
+- ✅ Branch protection on main: required checks Diff-scoped lint gates, Typecheck (changed files), Unit tests + money coverage floors, Build, pr-size-guard; strict up-to-date; force pushes and deletions blocked; conversation resolution required; review count 0 (solo merges allowed); enforce_admins false. Previous rule saved as protection-before.json (session scratchpad)
+- ✅ Vercel Preview scope got NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY. Preview builds still fail on SUPABASE_SECRET_KEY (not copied, production service-role key). See docs/LAUNCH-STATUS.md
+
+Reported by Ofir, NOT verified from the session:
+- ⚠️ Meilisearch Cloud project created (Paris, host ms-6c5deda20015-55135.par.meilisearch.io). At check time `vercel env ls production` on kenyonexpress-prod showed NO MEILISEARCH_* variable, so either it sits in another Vercel project or was not saved. A production deploy was Ready 4 minutes before the check
+- ⚠️ localhost:3311 reported up. At check time nothing was listening on 3311 and /api/ready returned no response
+
+## Next: choose KEN
+- KEN-6: Meilisearch 503 error fix
+- KEN-7: Cardcom integration
+- KEN-8: Responsive parity (380px/768px/1440px)
