@@ -30,7 +30,7 @@ import { describe, expect, it } from 'vitest'
  */
 
 const sql = readFileSync(
-  resolve(process.cwd(), 'migrations/pending/232_reviews_admin_moderation_only.sql'),
+  resolve(process.cwd(), 'migrations/applied/232_reviews_admin_moderation_only.sql'),
   'utf8',
 )
 

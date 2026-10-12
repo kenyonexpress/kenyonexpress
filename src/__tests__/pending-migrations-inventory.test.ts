@@ -157,6 +157,16 @@ describe('the pending migration inventory', () => {
       '210_media_ingest_queue.sql',
       '212_rbac_truncate_and_search_path.sql',
       '215_cashback_expiry.sql',
+      '217_coupon_qr_redemption.sql',
+      '223_restock_on_refund.sql',
+      '224_post059_price_cashback_twins.sql',
+      '226_fraud_controls.sql',
+      '227_discount_claim_wiring.sql',
+      '228_invoice_sequences.sql',
+      '231_bell_fanout.sql',
+      '232_reviews_admin_moderation_only.sql',
+      '233_wishlist_alerts.sql',
+      '234_gift_cards.sql',
     ])
   })
 
@@ -344,16 +354,6 @@ describe('the pending migration inventory', () => {
       '162_cron_schedule.sql',
       '184_orders_monthly_partitioning.sql',
       '211_whatsapp_selfservice.sql',
-      '217_coupon_qr_redemption.sql',
-      '223_restock_on_refund.sql',
-      '224_post059_price_cashback_twins.sql',
-      '226_fraud_controls.sql',
-      '227_discount_claim_wiring.sql',
-      '228_invoice_sequences.sql',
-      '231_bell_fanout.sql',
-      '232_reviews_admin_moderation_only.sql',
-      '233_wishlist_alerts.sql',
-      '234_gift_cards.sql',
       // 235 is PENDING (2026-09-16): the product page's broadcast topic
       // (trigger + realtime.send, chosen payload, never raises) and the
       // approved-reviews rating summary. Dry-run rolled back on production;
