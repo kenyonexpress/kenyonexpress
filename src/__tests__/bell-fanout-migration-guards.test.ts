@@ -30,7 +30,7 @@ import { describe, expect, it } from 'vitest'
  *    same contract in src/lib/push/templates.ts.
  */
 
-const sql = readFileSync(resolve(process.cwd(), 'migrations/pending/231_bell_fanout.sql'), 'utf8')
+const sql = readFileSync(resolve(process.cwd(), 'migrations/applied/231_bell_fanout.sql'), 'utf8')
 
 /** Every kind the fanout CASE names, in file order. */
 function caseKinds(): string[] {
