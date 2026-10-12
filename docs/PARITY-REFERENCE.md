@@ -1,4 +1,113 @@
-# The parity gate has no reference
+# The parity reference is Electro v7, frozen
+
+**Decided 2026-10-13 (KEN-8), by the project owner.** Everything under
+"History" below is the record of how the gate lost its reference on 2026-09-09
+and is kept unchanged. It ends by saying the choice is the owner's call. This
+section is that call, and what was measured when it was made.
+
+## The decision
+
+The reference for the home page is the Electro template's `home-v7` demo,
+captured as PNG at the three gate widths:
+
+```
+$ node scripts/capture-electro-baseline.mjs
+electro_v7_380.png   380x8792  118 images (0 broken)
+electro_v7_768.png   768x5273  118 images (0 broken)
+electro_v7_1440.png  1440x4957 118 images (0 broken)
+```
+
+A bare run now uses it, so the command quoted in `CLAUDE.md` produces a number
+again instead of a `REFUSED` row:
+
+```
+$ LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=home --widths=380,768,1440
+```
+
+The defaults live in `scripts/parity-baseline.mjs`: home reads
+`refs/electro_v7_{width}.png`, product reads `refs/electro_product_{width}.png`,
+category and products read `refs/electro_shop_{width}.png`. `--baseline=` and
+`--live-png=` still override, and `--live=<url>` still navigates. **cart and
+checkout have no default and still refuse**: no capture of Electro's cart or
+checkout with a line in it exists.
+
+## Why Electro v7 and not the live site
+
+1. **The live site is this build.** `kenyonexpress.co.il` has served our Vercel
+   deployment since the cutover. A capture of it taken today scores our build
+   against itself, and a page compared with itself scores near zero. Nobody
+   investigates a pass.
+2. **The old site cannot be captured again.** The WooCommerce site is gone, the
+   saved HTML does not render, and the Wayback Machine lost 31 of 54 images.
+   All three are measured under History.
+3. **It matches the sourcing rule that already exists.** Electro gives shape,
+   the live site gave content (`docs/SOURCING-RULES.md`). The gate scores
+   shape: geometry, colour, type and spacing.
+4. **It can be regenerated.** `refs/ke_live_*.png` (2026-08-12) are the only
+   copies of a page that no longer exists, on one laptop, in an ignored
+   directory. The Electro demo is public, and one command re-creates the
+   baseline on a fresh checkout.
+
+## What the capture script does, and why it is not capture-electro.mjs
+
+`scripts/capture-electro.mjs` loads once at 1440 and resizes the same document
+down, and it never scrolls. For a file the gate scores against, each width in
+`capture-electro-baseline.mjs` is its own page load, scrolled end to end so
+lazy images are requested. Two defects were found by looking at the first
+captures, and both are fixed in the script:
+
+- **The hero caption was frozen before it arrived.** Zeroing animations reset
+  the slide text to its pre-entrance position. Carousels are paused, the slide
+  gets 2.5s to settle, and only then is the page frozen.
+- **The demo's own widgets were painted over content.** A Dark/Light switcher
+  and a back-to-top button float over the page. Fixed or sticky elements under
+  12000px² are hidden; the header is far larger and is untouched.
+
+Nothing is written unless all three widths clear the Cloudflare challenge and
+are over 2000px tall. `refs/electro_v7.json` records the URL, the time, the
+dimensions and a SHA-256 per file.
+
+**The PNGs are not committed**, per `docs/REFS-POLICY.md`. The consequence is
+real: the baseline is frozen on a machine, not in history. If the demo changes
+upstream, a re-capture changes the reference, and the hashes in the manifest
+are how that is noticed. The capture this decision was measured against:
+
+| file | size | sha256 |
+|---|---|---|
+| `electro_v7_380.png` | 380x8792 | `9128bda3ab1e94f1c4e6239a02d075e7a189dc7cb051edd1c512042d90605205` |
+| `electro_v7_768.png` | 768x5273 | `e60e70898eeb590ac3373a70719fcda5b4532d655adfab21463e8a82f37d6209` |
+| `electro_v7_1440.png` | 1440x4957 | `76548ba70126fea44e9d2268b2c9f690e4b1a818c0a4e425cddb4e3ae24ab6f6` |
+
+## First measurement, and what it does not show
+
+Fresh `pnpm build` on Next 16.3.8, `pnpm start` on 3311, 2026-10-13:
+
+| width | graded (both painted) | overall | reference blank | ours blank | our height / reference |
+|---|---|---|---|---|---|
+| 380 | **10.93%** PASS | 41.49% | 15.93% | 14.63% | 18377 / 8792 (**2.09x**) |
+| 768 | **10.61%** PASS | 39.53% | 17.38% | 11.54% | 9136 / 5273 (**1.73x**) |
+| 1440 | **7.81%** PASS | 28.93% | 13.04% | 8.08% | 5502 / 4957 (1.11x) |
+
+All three pass the 11% gate. **That pass is narrower than it reads**, for three
+reasons that are properties of the gate rather than of this change:
+
+1. **The graded number is "both painted", not the total.** Since 2026-09-22 the
+   gate grades only pixels where both pages paint and disagree. Against the old
+   site that excluded a missing photo. Against an English template with other
+   products, most of the difference is content, so most of the difference is
+   excluded: 29% to 41% of the compared pixels differ in total.
+2. **Only the first 2600px are compared.** Our page is 18377px tall at 380.
+3. **At 380 and 768 the two pages are not the same length.** The gate itself
+   prints `HEIGHT RATIO 2.09x -- the percentage above is NOT a pixel gate` and
+   still writes PASS. Our home is twice the template's height at phone width.
+
+380 passes with 0.07 points of room. The numbers answer "do the first screens
+share a structure". They do not show that the page matches the template, and
+the height ratio at 380 and 768 is the first thing to look at.
+
+---
+
+# History: the parity gate has no reference
 
 Measured 2026-09-09. Everything below was read off the network, the filesystem or a
 browser, not inferred.

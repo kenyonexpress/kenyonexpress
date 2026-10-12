@@ -83,3 +83,10 @@ the tree had uncommitted changes when it was measured.
 | 2026-09-16 13:47 | home | 380 | 47.84% | **FAIL** | `bfd12b3d6-dirty` | HOME-PAGE: handheld header 84->50, feature strip one nowrap row below lg, shot with consent decided; mine vs 09-04 archived live capture (ke-arch/refs) |
 | 2026-09-16 13:49 | home | 768 | 48.65% | **FAIL** | `bfd12b3d6-dirty` | HOME-PAGE: handheld header 84->50, feature strip one nowrap row below lg, shot with consent decided; mine vs 09-04 archived live capture (ke-arch/refs) |
 | 2026-09-16 13:50 | home | 1440 | 45.83% | **FAIL** | `bfd12b3d6-dirty` | HOME-PAGE: handheld header 84->50, feature strip one nowrap row below lg, shot with consent decided; mine vs 09-04 archived live capture (ke-arch/refs) |
+| 2026-10-12 17:48 | home | 380 | n/a | REFUSED | `d40042ed5-dirty` | live side is our-build |
+| 2026-10-12 17:52 | home | 380 | 10.35% | PASS | `e23a61480-dirty` | live side: frozen capture `refs/electro-home-v7_380.png`; overall 40.98% (reference blank 16.01%, ours blank 14.62%) |
+| 2026-10-12 17:54 | home | 768 | 10.58% | PASS | `e23a61480-dirty` | live side: frozen capture `refs/electro-home-v7_768.png`; overall 39.44% (reference blank 17.33%, ours blank 11.52%) |
+| 2026-10-12 17:55 | home | 1440 | 7.82% | PASS | `e23a61480-dirty` | live side: frozen capture `refs/electro-home-v7_1440.png`; overall 28.97% (reference blank 13.02%, ours blank 8.14%) |
+| 2026-10-12 18:12 | home | 380 | 10.93% | PASS | `e23a61480-dirty` | live side: frozen capture `refs/electro_v7_380.png`; overall 41.49% (reference blank 15.93%, ours blank 14.63%) |
+| 2026-10-12 18:13 | home | 768 | 10.61% | PASS | `e23a61480-dirty` | live side: frozen capture `refs/electro_v7_768.png`; overall 39.53% (reference blank 17.38%, ours blank 11.54%) |
+| 2026-10-12 18:15 | home | 1440 | 7.81% | PASS | `e23a61480-dirty` | live side: frozen capture `refs/electro_v7_1440.png`; overall 28.93% (reference blank 13.04%, ours blank 8.08%) |

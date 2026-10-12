@@ -1,0 +1,55 @@
+# KenyonExpress — Project State
+
+Updated: 2026-10-13 01:02 (Asia/Bangkok) | **🟢 Autonomous Opus loop active**
+
+## Current Position
+**המשך מ: שלב 2 (KEN-8 parity על product / category / cart / checkout)**
+
+## What's Running
+- Claude Code with Opus 5.5 on /goal (bypass permissions on)
+- Dev server: PM2 on port 3311 (OR pnpm start)
+- LaunchAgent com.kenyonexpress.autoloop every 6h
+- caffeinate active
+- ntfy monitoring to iPhone every 2h
+
+## Stop Criteria (iron rules)
+- NEVER apply migrations without human approval
+- NEVER push --force
+- Max 3 build retries per step
+- Quota exhausted: write resume point here, stop
+
+## Stage 1 Detail
+Verify refs/electro_v7_*.png are captured from electro.madrasthemes.com (NOT kenyonexpress.co.il live). If missing or wrong source: run scripts/capture-electro.mjs. Then compare.mjs on home/product/category at 380/768/1440. Target < 11% per width. Fix via Tailwind token diffs only. Commit per page.
+
+## Blockers (do NOT attempt autonomously)
+- Cardcom production credentials
+- Migration apply to production (audit only, no apply)
+- R2 configuration
+- Vercel Pro upgrade
+
+## Last Known Good
+- Server: localhost:3311 returns 200
+- Meilisearch: ok
+- Build: BUILD_ID valid (Oct 13 00:48)
+
+## Stage 1: סגור (13.10, ענף fix/ken-8-electro-v7-baseline)
+
+נמדד, לא הונח:
+- `refs/electro_v7_{380,768,1440}.png` צולמו מ-electro.madrasthemes.com/home-v7/ על ידי `scripts/capture-electro-baseline.mjs`. 118 תמונות, 0 שבורות, בכל רוחב. ה-hash-ים ב-`docs/PARITY-REFERENCE.md`.
+- `compare.mjs` בלי דגלים משתמש עכשיו ב-baseline הזה (`scripts/parity-baseline.mjs`). קודם כל ריצה סירבה ב-exit 5.
+- דף הבית, build טרי על Next 16.3.8: **10.93 / 10.61 / 7.81** ב-380 / 768 / 1440. עובר.
+- `pnpm test` 5913 עברו, `type-check` ו-`lint` נקיים. חמישה טסטים ב-`scripts/*.test.mjs` לא רצו בכלל עד היום (לא היו ב-include של vitest). נוספו, כולם ירוקים.
+
+מה שהמספר לא אומר:
+- המספר המדורג הוא "both painted". ההפרש הכולל הוא 41% / 40% / 29%.
+- ב-380 הדף שלנו גבוה פי 2.09 מהתבנית (18377 מול 8792), וב-768 פי 1.73. השער עצמו מדפיס "NOT a pixel gate" וכותב PASS.
+- 380 עובר עם מרווח של 0.07 נקודה.
+
+## החלטות שהתקבלו אוטומטית
+
+1. **ה-PNG לא נכנסו ל-git.** `docs/REFS-POLICY.md` אוסר baseline מחויב. הסקריפט מייצר אותם מחדש בפקודה אחת.
+2. **ל-cart ול-checkout אין ברירת מחדל.** אין צילום של Electro עם שורה בעגלה. הם ממשיכים לסרב עד שלב 2.
+3. **שלב 3 (מיגרציות) יהיה חזרה בלבד, BEGIN ו-ROLLBACK, בלי COMMIT.** הקובץ הזה ו-CLAUDE.md אוסרים החלה על פרודקשן בלי אישור, והם גוברים על נוסח ה-goal.
+4. **השרת שרץ על 3311 הוחלף.** הוא נבנה על Next 16.3.6 לפני ש-main עלה ל-16.3.8. נעצר לפי PID, נבנה מחדש והופעל.
+5. **CLAUDE.md לא נערך.** הוא עדיין מפנה ל-`refs/ke_live_singlefile.html`, קובץ שלא קיים. זו שורה של אופיר.
+
