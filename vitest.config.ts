@@ -36,6 +36,7 @@ export default defineConfig({
     include: [
       'src/**/*.test.ts',
       'src/**/*.test.tsx',
+      'scripts/*.test.mjs',
       'scripts/wp-import/**/*.test.mjs',
       'scripts/media-ingest/**/*.test.mjs',
       'scripts/seed/**/*.test.ts',

@@ -4,6 +4,7 @@ import { homedir } from 'node:os'
 import { resolve } from 'node:path'
 import { chromium } from '@playwright/test'
 import { REFERENCE, classifyReference, refusalMessage } from './live-reference.mjs'
+import { defaultBaselineFor, recaptureHint } from './parity-baseline.mjs'
 import { GATE_CEILING, appendParityRefusal } from './parity-log.mjs'
 
 // Usage: node scripts/compare.mjs [--page=home|product|category|products|search|cart|checkout]
@@ -164,9 +165,20 @@ if (WIDTHS.length > 1) {
 // makes `--widths` usable: the width guard further down refuses a capture whose
 // width is not the run's, so one hardcoded path across three widths means two
 // of the three children refuse and only the matching one produces a number.
+//
+// AND SINCE 13.10.2026 A BARE RUN HAS A REFERENCE. The default used to be the
+// live navigation, which refuses (exit 5) on every page, so the command quoted
+// in CLAUDE.md produced a REFUSED row and no number. The owner's decision in
+// KEN-8 is that the reference is the Electro template, frozen: a run that names
+// no reference gets the page's capture from scripts/parity-baseline.mjs. An
+// explicit `--live=<url>` still navigates, and an explicit `--baseline=` or
+// `--live-png=` still wins. cart and checkout have no default capture and keep
+// refusing until one is made.
 const LIVE_PNG =
-  (argOf('live-png', null) ?? argOf('baseline', null))?.replaceAll('{width}', String(VIEW.width)) ??
-  null
+  defaultBaselineFor(page, {
+    live: argOf('live', null),
+    livePng: argOf('live-png', null) ?? argOf('baseline', null),
+  })?.replaceAll('{width}', String(VIEW.width)) ?? null
 const LOCAL = process.env.LOCAL_BASE ?? 'http://localhost:3000'
 const LIVE_HOME = 'https://kenyonexpress.co.il/'
 const LIVE_PRODUCT = 'https://kenyonexpress.co.il/product/מוצר-לדוגמא/'
@@ -1187,6 +1199,9 @@ if (LIVE_PNG) {
   // instead, and both refuse rather than warn.
   if (!existsSync(LIVE_PNG)) {
     console.error(`REFUSING to measure: --live-png=${LIVE_PNG} does not exist.`)
+    const hint = recaptureHint(LIVE_PNG)
+    if (hint)
+      console.error(`refs/ is not tracked, so a fresh checkout has no capture. Make one: ${hint}`)
     appendParityRefusal({ page, width: VIEW.width, reason: 'frozen capture not found' })
     await b.close()
     process.exit(5)
