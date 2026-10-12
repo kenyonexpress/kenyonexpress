@@ -17018,7 +17018,7 @@ Verified from the session (measured):
 - ✅ Vercel Preview scope got NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY. Preview builds still fail on SUPABASE_SECRET_KEY (not copied, production service-role key). See docs/LAUNCH-STATUS.md
 
 Reported by Ofir, NOT verified from the session:
-- ⚠️ Meilisearch Cloud project created (Paris, host ms-6c5deda20015-55135.par.meilisearch.io). At check time `vercel env ls production` on kenyonexpress-prod showed NO MEILISEARCH_* variable, so either it sits in another Vercel project or was not saved. A production deploy was Ready 4 minutes before the check
+- ✅ Meilisearch Cloud project (Paris, host ms-6c5deda20015-55135.par.meilisearch.io). MEILISEARCH_HOST and MEILISEARCH_API_KEY are in the Vercel project named kenyonexpress (the one serving www.kenyonexpress.co.il), Production scope, set 26 days ago. They are NOT in kenyonexpress-prod, kenyonexpress-staging or kenyonexpress-web. Variable presence verified by vercel env ls. Live check: https://www.kenyonexpress.co.il/api/ready answers 503 with database ok, redis ok, cardcom ok, r2 not_configured and meilisearch DOWN, so the variables are set but the connection fails (KEN-6)
 - ⚠️ localhost:3311 reported up. At check time nothing was listening on 3311 and /api/ready returned no response
 
 ## Next: choose KEN
