@@ -497,9 +497,13 @@
 /* Recommendations: 25.004px/500 heading over a full-width hairline with a
    233px brand segment on the inline-start end, measured at y937-938. */
 .pdp-related {
-  /* Live opens the recommendations row on y940; the summary column above ends
-     well before that. Measured 2026-07-28. */
-  margin-top: -20px;
+  /* A positive gap, the same 40px the details band above opens with. This was
+     -20px, tuned on 2026-07-28 so the row opened on live's y940 while the
+     details band was shorter. Measured 2026-10-13 on three products at 380,
+     768 and 1440: the heading box started 20px above the bottom of the band
+     every time (1440: band bottom y925, heading top y905), and at 1440 it was
+     painted across the delivery note. */
+  margin-top: 40px;
 }
 
 .pdp-related__title {
