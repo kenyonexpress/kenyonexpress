@@ -11,8 +11,8 @@ live site unless it says so.
 | | Item | State |
 |---|---|---|
 | [x] | L1 Landmines verify | Closed 2026-10-14 |
-| [ ] | L9 Big-site gap audit | Next |
-| [ ] | L10 Build gaps | |
+| [x] | L9 Big-site gap audit | Closed 2026-10-14 |
+| [ ] | L10 Build gaps | Next |
 | [ ] | L11 Growth plumbing | |
 | [ ] | L12 Hardening | |
 | [ ] | L13 Phase 2 behind flags | |
@@ -109,3 +109,35 @@ Both are decisions, recorded with reasons, and neither changed any code.
 - The cashback rates in `src/lib/cashback/engine.ts` are constants (10% on the
   first purchase, 5% on every fifth). The queue forbids hardcoded percentages.
   `platform_percent` has none; these do, and they were left as found.
+
+---
+
+## L9. Big-site gap audit [x]
+
+`docs/BIG-SITE-GAP.md`: thirty features, each with a state, the files that
+prove it, what is missing, an effort estimate and how L10 closes it. Read-only,
+from code, on two lines because they differ (D-44).
+
+| | main (`c6911b8e1`) | prod (`audit/final-audit`, `1e84df0e5`) |
+|---|---|---|
+| EXISTS | 6 | 9 |
+| PARTIAL | 16 | 16 |
+| MISSING | 8 | 5 |
+
+Estimated work to bring every row on main to EXISTS: about 54 working days.
+
+What the audit turned up that the queue did not anticipate:
+
+1. **Nine features are further along in production than on main** (recently
+   viewed, wishlist, social proof, offline queue, supplier wizard, admin KPIs,
+   referral, loyalty tiers, breadcrumbs). L10 ports those instead of writing
+   them a second time.
+2. **A header search box and a mega-menu are each forbidden by something
+   already in the code**: a test that fails on any search input in the shell,
+   and a recorded decision against a mega panel. The queue asks for both.
+3. **Public reviews need a grant that was deliberately revoked**, so that row
+   can be finished in code and will still show nothing in production until a
+   pending migration is approved.
+
+Not checked: the live database, environment variables, whether any cron fires.
+No test output applies to this item; it changed no code.
