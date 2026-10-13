@@ -4,7 +4,7 @@ Updated: 2026-10-14 (Asia/Bangkok). Queue: FINAL-CLOSEOUT L1 to L16, issued 14.1
 
 ## Current Position
 
-**המשך מ: שלב L10 (BUILD GAPS), שורה 3 (sort) ב-`docs/BIG-SITE-GAP.md`. שורות 18 ו-29 (צד האדמין) סגורות**
+**המשך מ: שלב L10 (BUILD GAPS), שורה 3: בקרת מיון בדף החיפוש, ואז שורה 2 (facets). סגורות: 18, 29 (אדמין), מיון לפי הנחה**
 
 The checklist with evidence is `docs/FINAL-CLOSEOUT.md`. Decisions taken alone
 are `docs/DECISIONS.md` D-42 onward.
@@ -19,6 +19,12 @@ Closed so far, each with type-check, lint, test green (510 files, 5949 passed):
   reorders anything today.
 - Row 29, admin half: the admin product list searches name, SKU or slug
   (`src/lib/admin/product-search.ts`). The header half waits on note A.
+
+- Row 3, discount sort: `?sort=discount_desc` on category and `/products`,
+  derived from the two prices (`src/lib/catalogue/discount-sort.ts`). Verified
+  on a built server against live prices, first eight in the expected order.
+  511 files, 5955 tests, build exit 0. Rating and popularity sorts still fall
+  through: no column holds either.
 
 Open: 21 rows on main, about 52 working days by the matrix estimate. Order to
 take them: 3, 2, 4, 9, 10, 6, 8, 5, then the rows with migrations, then the
