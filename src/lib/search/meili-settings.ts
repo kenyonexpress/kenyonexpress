@@ -1,3 +1,4 @@
+import { discountBp } from '@/lib/catalogue/discount-sort'
 import { buildSynonyms } from '@/lib/search/hebrew-synonyms'
 
 /**
@@ -83,7 +84,7 @@ export const FILTERABLE_ATTRIBUTES = [
  * `{lat, lng}`; a document without it is simply never returned by a geo sort,
  * which is the correct behaviour for a product whose supplier has no coordinates.
  */
-export const SORTABLE_ATTRIBUTES = ['kenyon_price', 'created_at', '_geo'] as const
+export const SORTABLE_ATTRIBUTES = ['kenyon_price', 'created_at', 'discount_bp', '_geo'] as const
 
 /**
  * Ranking rules. The Meilisearch default, plus `in_stock:desc` ahead of
@@ -399,6 +400,13 @@ export interface ProductDocument {
   type: string
   kenyon_price: number | null
   full_price: number | null
+  /**
+   * The discount as basis points of the full price, 0 when there is none.
+   * Stored because Meilisearch can only sort on a stored field, and derived
+   * from the two prices for the reason `catalogue/discount-sort.ts` gives.
+   * A ranking key only: never charged, never displayed.
+   */
+  discount_bp: number
   images: unknown
   stock_quantity: number | null
   in_stock: boolean
@@ -515,6 +523,7 @@ export function toProductDocument(
     type: row.type === 'coupon' || row.is_coupon_enabled ? 'coupon' : (row.type ?? 'physical'),
     kenyon_price: row.kenyon_price ?? null,
     full_price: row.full_price ?? null,
+    discount_bp: discountBp(row.full_price, row.kenyon_price),
     images: row.images ?? [],
     stock_quantity: row.stock_quantity ?? null,
     in_stock: row.stock_quantity == null || row.stock_quantity > 0,

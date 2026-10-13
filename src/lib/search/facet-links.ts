@@ -98,6 +98,7 @@ export const SORT_LABELS: readonly { value: FacetedSort | null; label: string }[
   { value: 'newest', label: 'למיין לפי המעודכן ביותר' },
   { value: 'price_asc', label: 'למיין מהזול ליקר' },
   { value: 'price_desc', label: 'למיין מהיקר לזול' },
+  { value: 'discount_desc', label: 'למיין לפי גובה ההנחה' },
 ]
 
 /**

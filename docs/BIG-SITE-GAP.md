@@ -140,12 +140,16 @@ prices. Still missing: `popularity` and `rating` are offered and fall through
 to the default (no column holds either; rating waits on
 `migrations/pending/235_product_live_and_rating.sql`). Since 2026-10-14 the
 search page has a sort control (`src/components/search/SearchSortNav.tsx`):
-four links, relevance, newest and the two price orders, built by
+five links, relevance, newest, the two price orders and discount, built by
 `buildSortOptions` in `src/lib/search/facet-links.ts`, keeping the query and
 every facet. Links rather than a select, so the no-input rule holds. Verified
 on a built server: for a two-result query the cards follow the engine's order
-under `price_asc` and reverse under `price_desc`. The search engine has no
-discount order, so that one is on the listing pages only.
+under `price_asc` and reverse under `price_desc`, and the 90% product leads
+under `discount_desc`. The discount order is a stored `discount_bp` on the
+index document (`toProductDocument`), listed in `SORTABLE_ATTRIBUTES`. Local
+runs answer from the database fallback. On Meilisearch the order needs the
+settings re-applied and one full reindex; until then the engine refuses the
+sort and the request falls back to the database, which orders correctly.
 `src/components/category/CategorySort.tsx` is orphaned. prod: no discount sort
 and no search-page control, otherwise identical.
 
