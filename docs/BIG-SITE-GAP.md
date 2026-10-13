@@ -43,7 +43,7 @@ what main has.
 |---|---|---|---|---|---|---|
 | 1 | Instant search, typo tolerance, Hebrew synonyms | Amazon, Zap, Wolt | PARTIAL | PARTIAL | 2 | build. Blocked by a product rule, see note A |
 | 2 | Facets: price, city, category tree, discount, supplier | Amazon, Zap, Booking | PARTIAL | PARTIAL | 3 | finish |
-| 3 | Sort: relevance, price, discount, newest, rating | all | PARTIAL | PARTIAL | 1.5 | finish |
+| 3 | Sort: relevance, price, discount, newest, rating | all | PARTIAL | PARTIAL | 1 | discount closed 2026-10-14; rating needs pending 235 |
 | 4 | Infinite scroll, 24 per page, scroll restoration | TikTok Shop, Lazada, Wolt | MISSING | MISSING | 2 | build |
 | 5 | Recently viewed | Amazon, Booking | MISSING | PARTIAL | 1.5 | port, then add home rail. See note B |
 | 6 | Wishlist | Amazon, Lazada, Booking | PARTIAL | EXISTS | 1 | port hearts and provider |
@@ -131,10 +131,16 @@ pagination, so counts are approximate. prod: filter chips on category pages
 (`src/components/category/FilterChips.tsx`), none on search.
 
 **3. Sort.** main: `src/components/category/CategoryControlBar.tsx` writes
-`?sort=`. `price_asc`, `price_desc`, `newest` and `name` work; `popularity` and
-`rating` are offered and fall through to the default. Missing: discount
-descending, real rating and relevance sorts, any sort on the search page.
-`src/components/category/CategorySort.tsx` is orphaned. prod: identical.
+`?sort=`. `price_asc`, `price_desc`, `newest`, `name` and, since 2026-10-14,
+`discount_desc` work. The discount is derived from the two prices in
+`src/lib/catalogue/discount-sort.ts` because `products.discount_percent` is set
+on 1 of 46 active products; verified on a built server, the first eight
+products of `/products?sort=discount_desc` match the order computed from live
+prices. Still missing: `popularity` and `rating` are offered and fall through
+to the default (no column holds either; rating waits on
+`migrations/pending/235_product_live_and_rating.sql`), and the search page has
+no sort control. `src/components/category/CategorySort.tsx` is orphaned. prod:
+no discount sort, otherwise identical.
 
 **4. Infinite scroll.** Both lines: numbered `src/components/category/Pagination.tsx`
 with `?page=`. No `IntersectionObserver` in `src`. Category page size is 8 on

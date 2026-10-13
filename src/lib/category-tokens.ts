@@ -31,6 +31,7 @@ export const CATEGORY_TOKENS = {
     { value: 'date', label: 'למיין לפי המעודכן ביותר' },
     { value: 'price', label: 'למיין מהזול ליקר' },
     { value: 'price-desc', label: 'למיין מהיקר לזול' },
+    { value: 'discount', label: 'למיין לפי גובה ההנחה' },
   ] as const,
   grid: {
     cardWidth: 234,
@@ -61,6 +62,7 @@ export const SORT_TO_ORDERBY: Record<string, string> = {
   newest: 'date',
   price_asc: 'price',
   price_desc: 'price-desc',
+  discount_desc: 'discount',
   name: 'menu_order',
   menu_order: 'menu_order',
   popularity: 'popularity',
@@ -71,6 +73,7 @@ export const ORDERBY_TO_SORT: Record<string, string> = {
   date: 'newest',
   price: 'price_asc',
   'price-desc': 'price_desc',
+  discount: 'discount_desc',
   menu_order: 'menu_order',
   popularity: 'popularity',
   rating: 'rating',
@@ -80,6 +83,7 @@ export type SortValue =
   | 'newest'
   | 'price_asc'
   | 'price_desc'
+  | 'discount_desc'
   | 'name'
   | 'menu_order'
   | 'popularity'
@@ -89,6 +93,7 @@ const VALID_SORTS = new Set<string>([
   'newest',
   'price_asc',
   'price_desc',
+  'discount_desc',
   'name',
   'menu_order',
   'popularity',

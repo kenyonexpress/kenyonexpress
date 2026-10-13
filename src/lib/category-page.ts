@@ -1,6 +1,7 @@
 import type { SortValue } from '@/components/category/CategoryControlBar'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { orFail, orFailWithCount } from '@/lib/catalogue-read'
+import { DISCOUNT_SORT_CAP, sortByDiscountDesc } from '@/lib/catalogue/discount-sort'
 import { cityBySlug } from '@/lib/geo/cities'
 import { filterByCity } from '@/lib/geo/distance'
 import { repairPriceOrder } from '@/lib/money-format'
@@ -350,6 +351,33 @@ async function newestProductIds(
   return (data ?? []).map((row) => row.id)
 }
 
+/**
+ * The window a sort needs from the database.
+ *
+ * Every sort but one is an `.order()` and takes exactly its page. The discount
+ * sort has no column to order by (see `catalogue/discount-sort.ts`), so it
+ * reads a bounded set and `pageOf` orders and slices it.
+ */
+function paged<Q extends { range(from: number, to: number): Q }>(
+  query: Q,
+  sort: SortValue,
+  from: number,
+  pageSize: number,
+): Q {
+  return sort === 'discount_desc'
+    ? query.range(0, DISCOUNT_SORT_CAP - 1)
+    : query.range(from, from + pageSize - 1)
+}
+
+function pageOf<T extends { full_price?: number | null; kenyon_price?: number | null }>(
+  rows: T[],
+  sort: SortValue,
+  from: number,
+  pageSize: number,
+): T[] {
+  return sort === 'discount_desc' ? sortByDiscountDesc(rows).slice(from, from + pageSize) : rows
+}
+
 export async function getCategoryProducts(opts: {
   categoryId: string
   category: { name_he: string; slug: string }
@@ -418,6 +446,10 @@ export async function getCategoryProducts(opts: {
     case 'newest':
       query = query.order('created_at', { ascending: false })
       break
+    case 'discount_desc':
+      // Ordered in memory by `pageOf`; newest first is the tie-break it keeps.
+      query = query.order('created_at', { ascending: false })
+      break
     default:
       /*
        * menu_order / popularity / rating.
@@ -441,13 +473,12 @@ export async function getCategoryProducts(opts: {
   }
 
   const { data, count } = orFailWithCount(
-    await query.range(from, from + CATEGORY_PAGE_SIZE - 1),
+    await paged(query, sort, from, CATEGORY_PAGE_SIZE),
     'catalogue.category_products_failed',
     { category_id: opts.categoryId, page },
   )
-  const items = (data ?? []).map((row) =>
-    normalizeCategoryJoin(row as CategoryProductRow, category),
-  )
+  const pageRows = pageOf(data ?? [], sort, from, CATEGORY_PAGE_SIZE)
+  const items = pageRows.map((row) => normalizeCategoryJoin(row as CategoryProductRow, category))
 
   /**
    * The city filter runs HERE, on the page that was fetched, and not as a
@@ -532,16 +563,20 @@ export async function getShopProducts(opts: {
     case 'newest':
       query = query.order('created_at', { ascending: false })
       break
+    case 'discount_desc':
+      // Ordered in memory by `pageOf`; newest first is the tie-break it keeps.
+      query = query.order('created_at', { ascending: false })
+      break
     default:
       query = query.order('name_he', { ascending: true })
   }
 
   const { data, count } = orFailWithCount(
-    await query.range(from, from + SHOP_PAGE_SIZE - 1),
+    await paged(query, sort, from, SHOP_PAGE_SIZE),
     'catalogue.shop_products_failed',
     { page, sort },
   )
-  const items = (data ?? []).map((row) => {
+  const items = pageOf(data ?? [], sort, from, SHOP_PAGE_SIZE).map((row) => {
     const r = row as CategoryProductRow
     const joined = r.categories
     const primary = Array.isArray(joined) ? joined[0] : joined
