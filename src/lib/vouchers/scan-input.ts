@@ -90,3 +90,33 @@ export function buildRedeemUrl(baseUrl: string, token: string): string {
   const base = baseUrl.replace(/\/+$/, '')
   return `${base}/redeem/${encodeURIComponent(token)}`
 }
+
+/**
+ * The symbologies the till camera asks the browser to look for, in order of
+ * how often a voucher arrives in each.
+ *
+ * `qr_code` is what this site prints. The 1D formats are for a voucher code
+ * that reached the counter as a printed barcode from a supplier's own system:
+ * the decoded text is the same code a cashier would type, and it goes through
+ * `parseScanInput` like every other input.
+ */
+export const SCAN_FORMATS = ['qr_code', 'code_128', 'code_39', 'ean_13', 'itf'] as const
+
+/**
+ * The formats to construct a `BarcodeDetector` with.
+ *
+ * A detector constructed with a format the platform does not support THROWS,
+ * and support differs per device (Android Chrome has the 1D set, desktop Chrome
+ * on some platforms has QR only). So the wanted list is intersected with what
+ * `BarcodeDetector.getSupportedFormats()` reported.
+ *
+ * QR is always kept, even when the platform did not list it or the list could
+ * not be read: it is the format this screen exists for, and asking for it was
+ * the behaviour before this function, so the fallback is never worse than that.
+ */
+export function pickScanFormats(supported: readonly string[] | null | undefined): string[] {
+  if (!supported || supported.length === 0) return ['qr_code']
+  const available = new Set(supported)
+  const picked = SCAN_FORMATS.filter((format) => available.has(format))
+  return picked.includes('qr_code') ? [...picked] : ['qr_code', ...picked]
+}

@@ -64,13 +64,13 @@ what main has.
 | 21 | Gift cards | Amazon, Wolt | PARTIAL | PARTIAL | 2 | finish: QR, admin toggle, entry link |
 | 22 | Referral program | Wolt, Booking | PARTIAL | EXISTS | 1 | port automatic payout. Money path |
 | 23 | Loyalty tiers | Booking (Genius), Lazada | MISSING | PARTIAL | 3 | port, then perks |
-| 24 | Push notifications | all | EXISTS | EXISTS | 0.5 | wire the post-purchase prompt |
+| 24 | Push notifications | all | EXISTS | EXISTS | done | prompt wired 2026-10-14 |
 | 25 | Abandoned cart recovery | Amazon, Lazada | PARTIAL | PARTIAL | 2 | finish: second email, coupon code |
 | 26 | Product comparison, up to four | Zap, Amazon | MISSING | MISSING | 3 | build |
 | 27 | Mega-menu | Amazon, Zap, Lazada | MISSING | MISSING | 3 | build. Earlier decision against, see note A |
 | 28 | Breadcrumbs with BreadcrumbList JSON-LD | all | EXISTS | EXISTS | 0.5 | port ancestor trail |
 | 29 | SKU search, header and admin | Zap, Amazon | PARTIAL | PARTIAL | 0.5 | admin list closed 2026-10-14; header under note A |
-| 30 | Barcode scan on redemption | Groupon Merchant, Wolt | EXISTS | EXISTS | 0.5 | add 1D formats |
+| 30 | Barcode scan on redemption | Groupon Merchant, Wolt | EXISTS | EXISTS | done | 1D formats added 2026-10-14 |
 
 Total for main: about 54 working days. It is not a number that fits in one
 session, and the rows marked "Money path" should not be rushed to fit one.
@@ -253,8 +253,9 @@ property that says of itself it is not a loyalty programme. prod:
 
 **24. Push.** Both: VAPID web push (`src/lib/push/web-push.ts`,
 `src/components/pwa/PushOptIn.tsx`), Expo token registration in
-`apps/mobile/src/lib/push.ts`. main: `PostPurchasePushPrompt.tsx` has no
-consumer.
+`apps/mobile/src/lib/push.ts`. main, 2026-10-14: `PostPurchasePushPrompt.tsx`
+is rendered on the paid `checkout/return` page, as on prod. It is a link to
+the notifications page, not a permission dialog.
 
 **25. Abandoned cart.** main: hourly `src/app/api/cron/abandoned-cart/route.ts`,
 one email ever at three hours, newsletter subscribers only. Missing: second
@@ -276,6 +277,11 @@ name, SKU or slug through `src/lib/admin/product-search.ts`. Still missing on
 main: a header search box (note A), and SKU in the admin command palette,
 which searches orders only. prod: the admin list filters `name_he` only.
 
-**30. Barcode scan.** Both: native `BarcodeDetector` with `qr_code` over
-`getUserMedia`, manual entry as fallback (`src/app/(supplier)/scan/ScanClient.tsx`
-on main), `expo-camera` in the mobile app. QR only.
+**30. Barcode scan.** Both: native `BarcodeDetector` over `getUserMedia`,
+manual entry as fallback (`src/app/(supplier)/scan/ScanClient.tsx` on main),
+`expo-camera` in the mobile app. main, 2026-10-14: the detector asks for QR
+plus Code 128, Code 39, EAN-13 and ITF, intersected with what the device
+reports (`pickScanFormats` in `src/lib/vouchers/scan-input.ts`), because
+constructing a detector with an unsupported format throws. The picker is unit
+tested; no physical 1D barcode was scanned, and nothing this site prints is a
+1D barcode. prod: QR only.
