@@ -68,7 +68,7 @@ what main has.
 | 25 | Abandoned cart recovery | Amazon, Lazada | PARTIAL | PARTIAL | 2 | finish: second email, coupon code |
 | 26 | Product comparison, up to four | Zap, Amazon | MISSING | MISSING | 3 | build |
 | 27 | Mega-menu | Amazon, Zap, Lazada | MISSING | MISSING | 3 | build. Earlier decision against, see note A |
-| 28 | Breadcrumbs with BreadcrumbList JSON-LD | all | EXISTS | EXISTS | 0.5 | port ancestor trail |
+| 28 | Breadcrumbs with BreadcrumbList JSON-LD | all | EXISTS | EXISTS | done | product trail ported 2026-10-14 |
 | 29 | SKU search, header and admin | Zap, Amazon | PARTIAL | PARTIAL | 0.5 | admin list closed 2026-10-14; header under note A |
 | 30 | Barcode scan on redemption | Groupon Merchant, Wolt | EXISTS | EXISTS | done | 1D formats added 2026-10-14 |
 
@@ -268,8 +268,13 @@ migration.
 single-column city menu.
 
 **28. Breadcrumbs.** Both: `buildBreadcrumbJsonLd` in `src/lib/seo/json-ld.ts`
-on product, category and city pages, with visible trails. prod adds the full
-ancestor trail (`src/lib/category-tree.ts`).
+on product, category and city pages, with visible trails. main, 2026-10-14:
+`src/lib/category-tree.ts` and its tests are ported from prod, the product
+page builds its visible trail and its BreadcrumbList from the full ancestor
+chain, and the admin category write refuses a parent that would create a cycle
+or a tree deeper than three levels (`parentChoiceError`, server-side). Still
+one hop on main: the category page's own trail (`getCategoryParent`). No
+visible change today, because every production category is a root.
 
 **29. SKU search.** Both: `sku` is a searchable attribute with typo tolerance
 off, and `/search?q=` answers. main, 2026-10-14: the admin product list matches
