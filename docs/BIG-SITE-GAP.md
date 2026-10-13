@@ -69,7 +69,7 @@ what main has.
 | 26 | Product comparison, up to four | Zap, Amazon | MISSING | MISSING | 3 | build |
 | 27 | Mega-menu | Amazon, Zap, Lazada | MISSING | MISSING | 3 | build. Earlier decision against, see note A |
 | 28 | Breadcrumbs with BreadcrumbList JSON-LD | all | EXISTS | EXISTS | 0.5 | port ancestor trail |
-| 29 | SKU search, header and admin | Zap, Amazon | PARTIAL | PARTIAL | 1 | admin now; header under note A |
+| 29 | SKU search, header and admin | Zap, Amazon | PARTIAL | PARTIAL | 0.5 | admin list closed 2026-10-14; header under note A |
 | 30 | Barcode scan on redemption | Groupon Merchant, Wolt | EXISTS | EXISTS | 0.5 | add 1D formats |
 
 Total for main: about 54 working days. It is not a number that fits in one
@@ -265,9 +265,10 @@ on product, category and city pages, with visible trails. prod adds the full
 ancestor trail (`src/lib/category-tree.ts`).
 
 **29. SKU search.** Both: `sku` is a searchable attribute with typo tolerance
-off, and `/search?q=` answers. The admin product list filters `name_he` only
-(`src/app/(admin)/admin/products/page.tsx`), and the command palette searches
-orders only.
+off, and `/search?q=` answers. main, 2026-10-14: the admin product list matches
+name, SKU or slug through `src/lib/admin/product-search.ts`. Still missing on
+main: a header search box (note A), and SKU in the admin command palette,
+which searches orders only. prod: the admin list filters `name_he` only.
 
 **30. Barcode scan.** Both: native `BarcodeDetector` with `qr_code` over
 `getUserMedia`, manual entry as fallback (`src/app/(supplier)/scan/ScanClient.tsx`
