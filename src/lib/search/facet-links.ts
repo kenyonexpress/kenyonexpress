@@ -1,4 +1,4 @@
-import type { FacetDistribution, FacetedSearchParams } from '@/lib/search/faceted'
+import type { FacetDistribution, FacetedSearchParams, FacetedSort } from '@/lib/search/faceted'
 
 /**
  * Facet navigation as links, and nothing but links.
@@ -85,6 +85,67 @@ export function clearFacetsHref(current: URLSearchParams, pathname = '/search'):
   }
   const qs = next.toString()
   return qs ? `${pathname}?${qs}` : pathname
+}
+
+/**
+ * The sort control, as links for the same reason the facets are links. The
+ * first entry has no value: no `sort` parameter is the engine's own relevance
+ * order. Labels are the listing pages' wording (`category-tokens.ts`), so the
+ * same order reads the same on /search as on a category.
+ */
+export const SORT_LABELS: readonly { value: FacetedSort | null; label: string }[] = [
+  { value: null, label: 'סידור ברירת מחדל' },
+  { value: 'newest', label: 'למיין לפי המעודכן ביותר' },
+  { value: 'price_asc', label: 'למיין מהזול ליקר' },
+  { value: 'price_desc', label: 'למיין מהיקר לזול' },
+]
+
+/**
+ * The href for ordering the current result set by `sort`, or by relevance
+ * when `sort` is null. The query, the price bounds and every facet are kept;
+ * the offset is dropped, because page three of one order is not page three
+ * of another.
+ */
+export function sortHref(
+  current: URLSearchParams,
+  sort: FacetedSort | null,
+  pathname = '/search',
+): string {
+  const next = new URLSearchParams()
+  for (const key of CARRIED) {
+    if (key === 'sort') continue
+    const carried = current.get(key)
+    if (carried) next.set(key, carried)
+  }
+  for (const facet of Object.keys(FACET_PARAM) as FacetName[]) {
+    const kept = current.get(FACET_PARAM[facet])
+    if (kept) next.set(FACET_PARAM[facet], kept)
+  }
+  if (sort) next.set('sort', sort)
+  const qs = next.toString()
+  return qs ? `${pathname}?${qs}` : pathname
+}
+
+export type SortOption = {
+  value: FacetedSort | null
+  label: string
+  selected: boolean
+  href: string
+}
+
+/**
+ * One option per order. Relevance is the selected one when the URL names no
+ * sort; a sort the engine does not know selects nothing, since that URL is
+ * answered with an error and no order was applied.
+ */
+export function buildSortOptions(current: URLSearchParams, pathname = '/search'): SortOption[] {
+  const active = current.get('sort')
+  return SORT_LABELS.map(({ value, label }) => ({
+    value,
+    label,
+    selected: value === null ? !active : value === active,
+    href: sortHref(current, value, pathname),
+  }))
 }
 
 export type FacetOption = {

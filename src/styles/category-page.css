@@ -1055,6 +1055,18 @@
   border-style: dashed;
 }
 
+.search-facets__chip.is-current {
+  color: var(--cat-link);
+  border-color: var(--cat-link);
+  font-weight: 700;
+}
+
+/* The sort control's reserved line (components/search/SearchSortNav): the
+   same box with nothing to see, so the shell and the page are one height. */
+.search-sort--pending {
+  visibility: hidden;
+}
+
 .search-facets__sections {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));

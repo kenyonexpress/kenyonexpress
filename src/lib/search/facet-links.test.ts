@@ -3,9 +3,11 @@ import {
   MAX_OPTIONS_PER_FACET,
   activeFacetChips,
   buildFacetSections,
+  buildSortOptions,
   clearFacetsHref,
   facetHref,
   hasActiveFacets,
+  sortHref,
   toFacetSearchParams,
 } from './facet-links'
 import { parseFacetedParams } from './faceted'
@@ -50,6 +52,53 @@ describe('facetHref', () => {
     // A crafted URL must not become a crafted link on every facet.
     const href = facetHref(sp('q=x&utm_source=evil&redirect=//x'), 'type', 'coupon')
     expect(href).toBe('/search?q=x&type=coupon')
+  })
+})
+
+describe('sortHref', () => {
+  it('sets the sort and keeps the query, the price bounds and every facet', () => {
+    const href = sortHref(sp('q=spa&city=haifa&type=coupon&min=10&max=90'), 'price_asc')
+    const next = new URL(href, 'http://x').searchParams
+    expect(Object.fromEntries(next)).toEqual({
+      q: 'spa',
+      city: 'haifa',
+      type: 'coupon',
+      min: '10',
+      max: '90',
+      sort: 'price_asc',
+    })
+  })
+
+  it('replaces an existing sort and drops the offset and the limit', () => {
+    const href = sortHref(sp('q=spa&sort=newest&offset=96&limit=48'), 'price_desc')
+    expect(href).toBe('/search?q=spa&sort=price_desc')
+  })
+
+  it('removes the parameter for the relevance order', () => {
+    expect(sortHref(sp('q=spa&sort=newest&city=haifa'), null)).toBe('/search?q=spa&city=haifa')
+  })
+
+  it('produces only values the engine parser accepts', () => {
+    for (const option of buildSortOptions(sp('q=spa'))) {
+      const params = new URL(option.href, 'http://x').searchParams
+      expect(parseFacetedParams(params).ok).toBe(true)
+    }
+  })
+})
+
+describe('buildSortOptions', () => {
+  it('selects relevance when the URL names no sort', () => {
+    const options = buildSortOptions(sp('q=spa'))
+    expect(options.filter((o) => o.selected).map((o) => o.value)).toEqual([null])
+  })
+
+  it('selects exactly the sort in the URL', () => {
+    const options = buildSortOptions(sp('q=spa&sort=price_desc'))
+    expect(options.filter((o) => o.selected).map((o) => o.value)).toEqual(['price_desc'])
+  })
+
+  it('selects nothing for a sort the engine refuses', () => {
+    expect(buildSortOptions(sp('q=spa&sort=bogus')).some((o) => o.selected)).toBe(false)
   })
 })
 
