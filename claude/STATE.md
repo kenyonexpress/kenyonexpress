@@ -4,12 +4,24 @@ Updated: 2026-10-14 (Asia/Bangkok). Queue: FINAL-CLOSEOUT L1 to L16, issued 14.1
 
 ## Current Position
 
-**המשך מ: שלב L9 (BIG-SITE GAP AUDIT, `docs/BIG-SITE-GAP.md`)**
+**המשך מ: שלב L10 (BUILD GAPS), השורה הראשונה הפתוחה ב-`docs/BIG-SITE-GAP.md`**
 
 The checklist with evidence is `docs/FINAL-CLOSEOUT.md`. Decisions taken alone
 are `docs/DECISIONS.md` D-42 onward.
 
-## L1: closed (14.10, branch `l1/landmines-verify`)
+## L9: closed (14.10, branch `l9/big-site-gap`)
+
+`docs/BIG-SITE-GAP.md`, 30 rows, read-only from code on both lines.
+
+- main: 6 EXISTS, 16 PARTIAL, 8 MISSING. prod: 9 / 16 / 5.
+- About 54 working days to bring main to all EXISTS.
+- Nine rows are further along on prod; L10 ports those rather than rewriting.
+- Rows 1, 27 and half of 29 contradict `no-search-ui.test.ts` and the recorded
+  decision against a mega panel. The queue is newer, so L10 builds them and
+  rewrites the test with the reason in the same commit.
+- Public reviews need a pending grant migration (232 revoked anon SELECT).
+
+## L1: closed (14.10, merged as `c6911b8e1`, PR #64)
 
 Measured with the harness env stripped (`env -i`), `CARDCOM_USE_MOCK` unset:
 
