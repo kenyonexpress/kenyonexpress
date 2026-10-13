@@ -1,7 +1,7 @@
 'use client'
 
 import { formatAgorot, formatCouponCode, formatCouponDate } from '@/lib/vouchers/coupon-view'
-import { parseScanInput } from '@/lib/vouchers/scan-input'
+import { parseScanInput, pickScanFormats } from '@/lib/vouchers/scan-input'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 /**
@@ -64,7 +64,9 @@ type RedeemResponse = {
 type BarcodeDetectorLike = {
   detect(source: CanvasImageSource): Promise<Array<{ rawValue: string }>>
 }
-type BarcodeDetectorCtor = new (opts?: { formats?: string[] }) => BarcodeDetectorLike
+type BarcodeDetectorCtor = (new (opts?: { formats?: string[] }) => BarcodeDetectorLike) & {
+  getSupportedFormats?: () => Promise<string[]>
+}
 
 export default function ScanClient({ supplierName }: { supplierName: string }) {
   const [stage, setStage] = useState<Stage>('input')
@@ -150,7 +152,9 @@ export default function ScanClient({ supplierName }: { supplierName: string }) {
       })
       streamRef.current = stream
       setCameraOn(true)
-      const detector = new Detector({ formats: ['qr_code'] })
+      // Asked per device: constructing with an unsupported format throws.
+      const supported = await Detector.getSupportedFormats?.().catch(() => null)
+      const detector = new Detector({ formats: pickScanFormats(supported) })
       const video = videoRef.current
       if (!video) return
       video.srcObject = stream
