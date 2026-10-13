@@ -90,3 +90,9 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-12 18:12 | home | 380 | 10.93% | PASS | `e23a61480-dirty` | live side: frozen capture `refs/electro_v7_380.png`; overall 41.49% (reference blank 15.93%, ours blank 14.63%) |
 | 2026-10-12 18:13 | home | 768 | 10.61% | PASS | `e23a61480-dirty` | live side: frozen capture `refs/electro_v7_768.png`; overall 39.53% (reference blank 17.38%, ours blank 11.54%) |
 | 2026-10-12 18:15 | home | 1440 | 7.81% | PASS | `e23a61480-dirty` | live side: frozen capture `refs/electro_v7_1440.png`; overall 28.93% (reference blank 13.04%, ours blank 8.08%) |
+| 2026-10-12 18:20 | product | 380 | 5.22% | PASS | `6b1959924-dirty` | live side: frozen capture `refs/electro_product_380.png`; overall 33.61% (reference blank 20.98%, ours blank 7.41%) |
+| 2026-10-12 18:22 | product | 768 | 4.23% | PASS | `6b1959924-dirty` | live side: frozen capture `refs/electro_product_768.png`; overall 27.69% (reference blank 16.47%, ours blank 6.99%) |
+| 2026-10-12 18:24 | product | 1440 | 2.14% | PASS | `6b1959924-dirty` | live side: frozen capture `refs/electro_product_1440.png`; overall 17.29% (reference blank 9.3%, ours blank 5.85%) |
+| 2026-10-12 18:31 | product | 380 | 5.53% | PASS | `6b1959924-dirty` | live side: frozen capture `refs/electro_product_380.png`; overall 33.45% (reference blank 20.42%, ours blank 7.5%) |
+| 2026-10-12 18:33 | product | 768 | 3.98% | PASS | `6b1959924-dirty` | live side: frozen capture `refs/electro_product_768.png`; overall 27.48% (reference blank 16.63%, ours blank 6.87%) |
+| 2026-10-12 18:36 | product | 1440 | 2.11% | PASS | `6b1959924-dirty` | live side: frozen capture `refs/electro_product_1440.png`; overall 17.29% (reference blank 9.33%, ours blank 5.86%) |

@@ -1,55 +1,60 @@
 # KenyonExpress — Project State
 
-Updated: 2026-10-13 01:02 (Asia/Bangkok) | **🟢 Autonomous Opus loop active**
+Updated: 2026-10-14 (Asia/Bangkok). Queue: FINAL-CLOSEOUT L1 to L16, issued 14.10.
 
 ## Current Position
-**המשך מ: שלב 2 (KEN-8 parity על product / category / cart / checkout)**
 
-## What's Running
-- Claude Code with Opus 5.5 on /goal (bypass permissions on)
-- Dev server: PM2 on port 3311 (OR pnpm start)
-- LaunchAgent com.kenyonexpress.autoloop every 6h
-- caffeinate active
-- ntfy monitoring to iPhone every 2h
+**המשך מ: שלב L9 (BIG-SITE GAP AUDIT, `docs/BIG-SITE-GAP.md`)**
 
-## Stop Criteria (iron rules)
-- NEVER apply migrations without human approval
-- NEVER push --force
-- Max 3 build retries per step
-- Quota exhausted: write resume point here, stop
+The checklist with evidence is `docs/FINAL-CLOSEOUT.md`. Decisions taken alone
+are `docs/DECISIONS.md` D-42 onward.
 
-## Stage 1 Detail
-Verify refs/electro_v7_*.png are captured from electro.madrasthemes.com (NOT kenyonexpress.co.il live). If missing or wrong source: run scripts/capture-electro.mjs. Then compare.mjs on home/product/category at 380/768/1440. Target < 11% per width. Fix via Tailwind token diffs only. Commit per page.
+## L1: closed (14.10, branch `l1/landmines-verify`)
 
-## Blockers (do NOT attempt autonomously)
-- Cardcom production credentials
-- Migration apply to production (audit only, no apply)
-- R2 configuration
-- Vercel Pro upgrade
+Measured with the harness env stripped (`env -i`), `CARDCOM_USE_MOCK` unset:
 
-## Last Known Good
-- Server: localhost:3311 returns 200
-- Meilisearch: ok
-- Build: BUILD_ID valid (Oct 13 00:48)
+- `pnpm type-check` exit 0, `pnpm lint` exit 0, `pnpm build` exit 0.
+- `pnpm test`: 508 files, 5934 passed, 12 skipped. Before the new file: 507 / 5913.
+- `packages/money/tests/invariants.test.ts`: 21 tests, green.
+- Landmine fixed: required check `Diff-scoped lint gates` was red on PR #62
+  (`product-page.css 159 -> 162`, the gate counts px literals inside comments).
+  Local re-run over `origin/main...HEAD`: no new hardcoded values.
 
-## Stage 1: סגור (13.10, ענף fix/ken-8-electro-v7-baseline)
+Decisions (details in `docs/DECISIONS.md`):
 
-נמדד, לא הונח:
-- `refs/electro_v7_{380,768,1440}.png` צולמו מ-electro.madrasthemes.com/home-v7/ על ידי `scripts/capture-electro-baseline.mjs`. 118 תמונות, 0 שבורות, בכל רוחב. ה-hash-ים ב-`docs/PARITY-REFERENCE.md`.
-- `compare.mjs` בלי דגלים משתמש עכשיו ב-baseline הזה (`scripts/parity-baseline.mjs`). קודם כל ריצה סירבה ב-exit 5.
-- דף הבית, build טרי על Next 16.3.8: **10.93 / 10.61 / 7.81** ב-380 / 768 / 1440. עובר.
-- `pnpm test` 5913 עברו, `type-check` ו-`lint` נקיים. חמישה טסטים ב-`scripts/*.test.mjs` לא רצו בכלל עד היום (לא היו ב-include של vitest). נוספו, כולם ירוקים.
+- D-42: there is no `packages/money.ts`. The test imports `src/lib/money.ts`.
+- D-43: VAT stays extracted from a VAT-inclusive price. The queue's
+  `floor(subtotal * vat / 100)` on top would raise every total by 18%.
+- D-44: work lands on `main` through pull requests. `audit/final-audit` is not
+  touched and no migration is applied.
+- Commits carry the model that wrote them (Opus 5.5). The queue's trailer named
+  Opus 4.7 and another session's URL; neither describes this session.
 
-מה שהמספר לא אומר:
-- המספר המדורג הוא "both painted". ההפרש הכולל הוא 41% / 40% / 29%.
-- ב-380 הדף שלנו גבוה פי 2.09 מהתבנית (18377 מול 8792), וב-768 פי 1.73. השער עצמו מדפיס "NOT a pixel gate" וכותב PASS.
-- 380 עובר עם מרווח של 0.07 נקודה.
+## Still true from 13.10, and still open
 
-## החלטות שהתקבלו אוטומטית
+- **Production serves `audit/final-audit` (`1e84df0e5`), not `main`.** `main` is
+  1,242 commits behind it and 122 ahead; `src/` differs by 1,395 files. The two
+  lines carry colliding migration numbers (211, 235 to 242).
+- `claude/MANUAL.md` item 1 (which branch is the release line) has no answer.
+  The 14.10 queue says `main`, so `main` it is, per D-44. Features built on
+  `main` in L10 do not reach customers until that is resolved.
+- Production migration ledger: 162 rows, last `20260910085722`. Nothing applied
+  since 10.09. Nothing applied by this queue.
+- PR #63 (heading fix ported to the production branch) is a draft. Merging it
+  deploys to production.
 
-1. **ה-PNG לא נכנסו ל-git.** `docs/REFS-POLICY.md` אוסר baseline מחויב. הסקריפט מייצר אותם מחדש בפקודה אחת.
-2. **ל-cart ול-checkout אין ברירת מחדל.** אין צילום של Electro עם שורה בעגלה. הם ממשיכים לסרב עד שלב 2.
-3. **שלב 3 (מיגרציות) יהיה חזרה בלבד, BEGIN ו-ROLLBACK, בלי COMMIT.** הקובץ הזה ו-CLAUDE.md אוסרים החלה על פרודקשן בלי אישור, והם גוברים על נוסח ה-goal.
-4. **השרת שרץ על 3311 הוחלף.** הוא נבנה על Next 16.3.6 לפני ש-main עלה ל-16.3.8. נעצר לפי PID, נבנה מחדש והופעל.
-5. **CLAUDE.md לא נערך.** הוא עדיין מפנה ל-`refs/ke_live_singlefile.html`, קובץ שלא קיים. זו שורה של אופיר.
+## Rules in force
 
+- Never apply a migration, never push to `audit/final-audit`, never `git add -A`.
+- Run build, test, start and `git commit` under `env -i` (the shell injects
+  placeholder secrets and `CARDCOM_USE_MOCK=true`).
+- `main` is protected: PR plus five required checks (`Diff-scoped lint gates`,
+  `Typecheck (changed files)`, `Unit tests + money coverage floors`, `Build`,
+  `pr-size-guard`). A PR over 50 commits is refused.
+- The Cursor agent owns the `ke-arch` worktree. Not touched from here.
+
+## Local servers
+
+- 3311 and 3711 each have a `next start` listening. The L1 build rewrote
+  `.next` in this checkout, so a server started from it before 14.10 serves a
+  stale build. Restart by listener PID before measuring anything.

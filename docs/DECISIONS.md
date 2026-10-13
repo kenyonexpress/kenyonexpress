@@ -385,6 +385,51 @@ through MCP and their SQL was never committed, which is how production's ledger
 and `supabase/migrations/` became different lists. A migration number is not a
 unique key here: two migrations are numbered 126 and two 127.
 
+### D-42. The money invariants live in `packages/money/tests/`, and test `src/lib/money.ts` ✅
+
+2026-10-14, closeout L1. The queue names `packages/money.ts`. No such module
+exists and none was created: the canonical module is `src/lib/money.ts`, which
+CLAUDE.md makes mandatory for every money calculation. The invariants file is
+at the path the queue asked for and imports the real modules.
+
+**Why:** a second money module is exactly the split D-9 closed (17% in one
+file, 18% in another). A test file in a new directory costs one line in
+`vitest.config.ts`; a second implementation costs an audit.
+
+### D-43. VAT is extracted from a VAT-inclusive price, not added on top ✅
+
+2026-10-14, closeout L1. The queue describes
+`VAT = floor(subtotal * vat_percent / 100)` and
+`total = subtotal + VAT + shipping`. The code does neither and was not changed:
+`net = round_half_up(gross * 10000 / 11800)`, `vat = gross - net`, and the order
+total is `subtotal - discount + shipping` with the VAT inside it. The invariants
+test pins this.
+
+**Why:** every price on the site is the price the customer pays. Adding 18% at
+checkout would charge more than the displayed price, which Israeli consumer
+law does not allow for consumer sales, and it would change the amount of every
+live order. This is the production-safest reading.
+
+### D-44. Closeout work lands on `main` through pull requests; the production branch is not touched ⚠️
+
+2026-10-14. The L1 to L16 queue says to push to `main`. Production is served
+from `audit/final-audit`, which is 1,242 commits ahead of `main` and 122
+behind, with colliding migration numbers (`claude/STATE.md`, 13.10). That
+question was put to Ofir in `claude/MANUAL.md` item 1 and the queue arrived
+without an answer to it, so it is treated as "work on `main`" and nothing more.
+
+What follows from it:
+
+- Every L-item is a branch off `main` and a pull request. Nothing is pushed to
+  `audit/final-audit`, because a push there is a production deploy.
+- No migration is applied anywhere. New ones are files in `migrations/pending/`.
+- L9 audits both lines, so a feature that already exists on the production
+  branch is recorded as such instead of being rebuilt blind on `main`.
+
+**Why:** this is the only option of the three that changes nothing a customer
+can reach. It does not resolve the fork, and it makes it deeper with every
+feature built on `main`. That cost is real and is Ofir's to weigh.
+
 ---
 
 ## Superseded

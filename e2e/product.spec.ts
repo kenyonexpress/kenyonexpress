@@ -118,6 +118,35 @@ test.describe('product page', () => {
   })
 
   /**
+   * The recommendations heading starts below the details band.
+   *
+   * `.pdp-related` carried `margin-top: -20px`, tuned to a reference that no
+   * longer exists. Measured 2026-10-13 on three products: the heading box began
+   * 20px above the bottom of `.pdp-details` at 380, 768 and 1440, and at 1440
+   * it was painted across the delivery note. No pixel gate saw it, because the
+   * graded band skips pixels where the reference is blank.
+   */
+  for (const width of [380, 768, 1440]) {
+    test(`recommendations heading does not overlap the details band at ${width}`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height: 1000 })
+      await openFirstProduct(page)
+      const title = page.locator('.pdp-related__title')
+      // A product with no related rows renders no section, and then there is
+      // nothing to overlap.
+      test.skip((await title.count()) === 0, 'this product has no related products')
+
+      const edges = await page.evaluate(() => {
+        const details = document.querySelector('.pdp-details')?.getBoundingClientRect()
+        const heading = document.querySelector('.pdp-related__title')?.getBoundingClientRect()
+        return { detailsBottom: details?.bottom ?? 0, headingTop: heading?.top ?? 0 }
+      })
+      expect(edges.headingTop).toBeGreaterThanOrEqual(edges.detailsBottom)
+    })
+  }
+
+  /**
    * The related-products cards must not order more pixels than their box has.
    *
    * `sizes` on this card used to name the grid COLUMN (50vw / 33vw / 25vw) and

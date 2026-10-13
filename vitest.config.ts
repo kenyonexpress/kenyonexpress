@@ -43,6 +43,9 @@ export default defineConfig({
       'scripts/dr/**/*.test.mjs',
       'scripts/axiom/**/*.test.mjs',
       'scripts/uptimerobot/**/*.test.mjs',
+      // Cross-module money invariants (closeout L1). They import from src/ and
+      // live outside it so no single module's test file owns them.
+      'packages/**/*.test.ts',
     ],
     exclude: ['node_modules', '.next', 'e2e'],
     coverage: {
