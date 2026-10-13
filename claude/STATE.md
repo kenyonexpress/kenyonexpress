@@ -4,12 +4,27 @@ Updated: 2026-10-14 (Asia/Bangkok). Queue: FINAL-CLOSEOUT L1 to L16, issued 14.1
 
 ## Current Position
 
-**המשך מ: שלב L10 (BUILD GAPS), השורה הראשונה הפתוחה ב-`docs/BIG-SITE-GAP.md`**
+**המשך מ: שלב L10 (BUILD GAPS), שורה 3 (sort) ב-`docs/BIG-SITE-GAP.md`. שורות 18 ו-29 (צד האדמין) סגורות**
 
 The checklist with evidence is `docs/FINAL-CLOSEOUT.md`. Decisions taken alone
 are `docs/DECISIONS.md` D-42 onward.
 
-## L9: closed (14.10, branch `l9/big-site-gap`)
+## L10: in progress (14.10)
+
+Closed so far, each with type-check, lint, test green (510 files, 5949 passed):
+
+- Row 18, related products: ranked by shared tags, then a 30% price band, then
+  newest (`src/lib/related-ranking.ts`). Build exit 0 with this change. Live
+  check: `products.tags` is empty on all 46 active products, so only price
+  reorders anything today.
+- Row 29, admin half: the admin product list searches name, SKU or slug
+  (`src/lib/admin/product-search.ts`). The header half waits on note A.
+
+Open: 21 rows on main, about 52 working days by the matrix estimate. Order to
+take them: 3, 2, 4, 9, 10, 6, 8, 5, then the rows with migrations, then the
+money-path rows (19, 20, 22) last and one per pull request.
+
+## L9: closed (14.10, merged, PR #65)
 
 `docs/BIG-SITE-GAP.md`, 30 rows, read-only from code on both lines.
 

@@ -1,9 +1,9 @@
 import ProductsTable, { type ProductRow } from '@/components/admin/ProductsTable'
 import { productListParamsSchema } from '@/lib/admin/page-params'
 import { canSeeMoney } from '@/lib/admin/permissions'
+import { adminProductSearchFilter } from '@/lib/admin/product-search'
 import { requireSection } from '@/lib/admin/rbac'
 import { createClient } from '@/lib/supabase/server'
-import { likeContains } from '@/lib/utils/search-escape'
 import { FileUp, Plus } from 'lucide-react'
 import Link from 'next/link'
 
@@ -61,7 +61,8 @@ export default async function AdminProductsPage({ searchParams }: Props) {
     .range(from, to)
 
   if (status) query = query.eq('status', status)
-  if (q) query = query.ilike('name_he', likeContains(q))
+  const searchFilter = adminProductSearchFilter(q)
+  if (searchFilter) query = query.or(searchFilter)
 
   const [{ data: products, count }, { data: categories }] = await Promise.all([
     query,
@@ -130,7 +131,7 @@ export default async function AdminProductsPage({ searchParams }: Props) {
           <input
             name="q"
             defaultValue={q}
-            placeholder="חיפוש בשרת..."
+            placeholder="חיפוש לפי שם או מק״ט..."
             className="rounded-lg border border-black/10 bg-surface px-3 py-1.5 text-xs text-ink focus:outline-none focus:ring-2 focus:ring-brand-primary"
           />
           <button

@@ -22,8 +22,8 @@ production has it.
 
 | | main | prod |
 |---|---|---|
-| EXISTS | 6 | 9 |
-| PARTIAL | 16 | 16 |
+| EXISTS | 7 | 9 |
+| PARTIAL | 15 | 16 |
 | MISSING | 8 | 5 |
 
 Nine features are further along on prod than on main: recently viewed,
@@ -58,7 +58,7 @@ what main has.
 | 15 | Admin KPI dashboard | all (seller centres) | PARTIAL | EXISTS | 1.5 | port ops KPIs, add payout tile |
 | 16 | Product reviews | Amazon, Booking, Lazada | PARTIAL | PARTIAL | 3 | finish. See note C |
 | 17 | Q&A on product page | Amazon, Lazada | MISSING | MISSING | 3 | build |
-| 18 | Related products | all | PARTIAL | PARTIAL | 1 | finish: price band, shared tags |
+| 18 | Related products | all | EXISTS | PARTIAL | done | closed 2026-10-14 |
 | 19 | Bundle deals, N for X | Amazon, Lazada | MISSING | MISSING | 4 | build. Money path |
 | 20 | Flash sales | Lazada, TikTok Shop, Groupon | PARTIAL | PARTIAL | 4 | build. Money path |
 | 21 | Gift cards | Amazon, Wolt | PARTIAL | PARTIAL | 2 | finish: QR, admin toggle, entry link |
@@ -69,7 +69,7 @@ what main has.
 | 26 | Product comparison, up to four | Zap, Amazon | MISSING | MISSING | 3 | build |
 | 27 | Mega-menu | Amazon, Zap, Lazada | MISSING | MISSING | 3 | build. Earlier decision against, see note A |
 | 28 | Breadcrumbs with BreadcrumbList JSON-LD | all | EXISTS | EXISTS | 0.5 | port ancestor trail |
-| 29 | SKU search, header and admin | Zap, Amazon | PARTIAL | PARTIAL | 1 | admin now; header under note A |
+| 29 | SKU search, header and admin | Zap, Amazon | PARTIAL | PARTIAL | 0.5 | admin list closed 2026-10-14; header under note A |
 | 30 | Barcode scan on redemption | Groupon Merchant, Wolt | EXISTS | EXISTS | 0.5 | add 1D formats |
 
 Total for main: about 54 working days. It is not a number that fits in one
@@ -214,9 +214,12 @@ with no sidebar link. Missing: public list (note C), owner edit, star summary
 **17. Q&A.** Both: nothing stored. prod has a WhatsApp deep link
 (`src/components/contact/ProductQuestionLink.tsx`).
 
-**18. Related products.** Both: `src/lib/related-products.ts`, five newest in
-the same category, topped up site-wide. Missing: price band, shared tags, any
-ranking.
+**18. Related products.** main, closed 2026-10-14: `src/lib/related-products.ts`
+reads the 24 newest products in the category and `src/lib/related-ranking.ts`
+orders them by shared tags, then closeness within a 30% price band, then
+newest. Measured against production the same day: `products.tags` exists and
+is empty on all 46 active products, so only the price band changes the order
+until tags are entered. prod: five newest in the same category, no ranking.
 
 **19. Bundles.** Both: nothing.
 
@@ -262,9 +265,10 @@ on product, category and city pages, with visible trails. prod adds the full
 ancestor trail (`src/lib/category-tree.ts`).
 
 **29. SKU search.** Both: `sku` is a searchable attribute with typo tolerance
-off, and `/search?q=` answers. The admin product list filters `name_he` only
-(`src/app/(admin)/admin/products/page.tsx`), and the command palette searches
-orders only.
+off, and `/search?q=` answers. main, 2026-10-14: the admin product list matches
+name, SKU or slug through `src/lib/admin/product-search.ts`. Still missing on
+main: a header search box (note A), and SKU in the admin command palette,
+which searches orders only. prod: the admin list filters `name_he` only.
 
 **30. Barcode scan.** Both: native `BarcodeDetector` with `qr_code` over
 `getUserMedia`, manual entry as fallback (`src/app/(supplier)/scan/ScanClient.tsx`
