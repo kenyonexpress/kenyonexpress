@@ -8,6 +8,8 @@ import RelatedProducts from '@/components/storefront/RelatedProducts'
 import ShippingInfo from '@/components/storefront/ShippingInfo'
 import StockScarcity from '@/components/storefront/StockScarcity'
 import SupplierInfo from '@/components/storefront/SupplierInfo'
+import { getCategoryIndex } from '@/lib/category-page'
+import { categoryAncestors } from '@/lib/category-tree'
 import {
   resolveStorefrontProductType,
   storefrontProductTypeLabel,
@@ -187,10 +189,20 @@ export default async function ProductPage({ params }: Props) {
     stockQuantity: product.stock_quantity ?? null,
     rating,
   })
+  /*
+   * The full trail, root first. This built `בית > category > product`, one hop,
+   * so a product in a nested category dropped every level in between from both
+   * the visible breadcrumb and the BreadcrumbList. One cached read, and
+   * `categoryAncestors` returns [] for a root category, which is the old shape.
+   */
+  const categoryTrail = category
+    ? [...categoryAncestors(await getCategoryIndex(), category.id), category]
+    : []
+
   const breadcrumbLd = buildBreadcrumbJsonLd(
     [
       { name: 'בית', path: '/' },
-      ...(category ? [{ name: category.name_he, path: `/category/${category.slug}` }] : []),
+      ...categoryTrail.map((c) => ({ name: c.name_he, path: `/category/${c.slug}` })),
       { name: product.name_he, path: `/product/${product.slug}` },
     ],
     siteUrl,
@@ -238,12 +250,14 @@ export default async function ProductPage({ params }: Props) {
             the columns block below it on y250. */}
         <nav className="pdp-breadcrumb" aria-label="נתיב ניווט">
           <Link href="/">בית</Link>
-          {category && (
-            <>
+          {/* The same `categoryTrail` the BreadcrumbList above is built from,
+              so the two cannot disagree about how deep the catalogue is. */}
+          {categoryTrail.map((crumb) => (
+            <span key={crumb.slug}>
               <span className="pdp-breadcrumb__sep">/</span>
-              <Link href={`/category/${category.slug}`}>{category.name_he}</Link>
-            </>
-          )}
+              <Link href={`/category/${crumb.slug}`}>{crumb.name_he}</Link>
+            </span>
+          ))}
           <span className="pdp-breadcrumb__sep">/</span>
           <span>{product.name_he}</span>
         </nav>

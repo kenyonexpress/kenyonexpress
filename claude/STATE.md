@@ -4,7 +4,7 @@ Updated: 2026-10-14 (Asia/Bangkok). Queue: FINAL-CLOSEOUT L1 to L16, issued 14.1
 
 ## Current Position
 
-**המשך מ: שלב L10 (BUILD GAPS), שורה 3: בקרת מיון בדף החיפוש, ואז שורה 2 (facets). סגורות: 18, 24, 30, 29 (אדמין), מיון לפי הנחה**
+**המשך מ: שלב L10 (BUILD GAPS), שורה 3: בקרת מיון בדף החיפוש, ואז שורה 2 (facets). סגורות: 18, 24, 28, 30, 29 (אדמין), מיון לפי הנחה**
 
 The checklist with evidence is `docs/FINAL-CLOSEOUT.md`. Decisions taken alone
 are `docs/DECISIONS.md` D-42 onward.
@@ -29,6 +29,10 @@ Closed so far, each with type-check, lint, test green (510 files, 5949 passed):
 - Row 30: the till camera asks for QR plus four 1D formats the device
   supports. Unit tested only; no physical barcode was scanned.
   511 files, 5959 tests, build exit 0.
+- Row 28: `category-tree.ts` ported from prod. Product breadcrumb and JSON-LD
+  walk the full ancestor chain; the admin category action now refuses parent
+  cycles and depth over three, server-side. 512 files, 5996 tests, build 0.
+  The category page's own trail is still one hop.
 
 Open: 21 rows on main, about 52 working days by the matrix estimate. Order to
 take them: 3, 2, 4, 9, 10, 6, 8, 5, then the rows with migrations, then the
