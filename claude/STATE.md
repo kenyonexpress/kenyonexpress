@@ -4,7 +4,7 @@ Updated: 2026-10-14 (Asia/Bangkok). Queue: FINAL-CLOSEOUT L1 to L16, issued 14.1
 
 ## Current Position
 
-**המשך מ: שלב L10 (BUILD GAPS), שורה 3: בקרת מיון בדף החיפוש, ואז שורה 2 (facets). סגורות: 18, 24, 28, 30, 29 (אדמין), מיון לפי הנחה**
+**המשך מ: שלב L10 (BUILD GAPS), שורה 2 (facets: הנחה, ספק, עץ קטגוריות), ואז שורה 4. סגורות: 18, 24, 28, 30, 29 (אדמין), 3 (חוץ מדירוג ופופולריות, ממתינות ל-235)**
 
 The checklist with evidence is `docs/FINAL-CLOSEOUT.md`. Decisions taken alone
 are `docs/DECISIONS.md` D-42 onward.
@@ -33,6 +33,24 @@ Closed so far, each with type-check, lint, test green (510 files, 5949 passed):
   walk the full ancestor chain; the admin category action now refuses parent
   cycles and depth over three, server-side. 512 files, 5996 tests, build 0.
   The category page's own trail is still one hop.
+- Row 3, search page: a sort control of four links (relevance, newest, price
+  up, price down) in the results header (`SearchSortNav.tsx`). 512 files, 6003
+  tests, build 0. Built server, two-result query: cards follow the engine's
+  order and reverse between the two price sorts. Not measured: CLS of the new
+  header line (a hidden copy of the line holds its height in the shell).
+- Row 3, discount on search: `sort=discount_desc`, from a stored
+  `discount_bp` on the index document. 512 files, 6006 tests, build 0. Built
+  server, database engine, three queries: order correct, but the largest
+  result set was two products. Meilisearch itself was not exercised: it needs
+  the settings re-applied and a full reindex before it sorts on the new field
+  (until then it refuses and the database fallback answers).
+- Disk: the build died once with ENOSPC. 658 MB free after a clean rebuild.
+  Nothing outside this checkout's own `.next` was removed. 1.6 GB sits in
+  another session's temp directory (`3d900add...`), three desktop backups are
+  0.8 GB each. The next build may fail the same way.
+- 14.10: Ofir sent the Upstash console URL with no instruction. The code is
+  already wired to `UPSTASH_REDIS_REST_URL` / `_TOKEN`; neither is in
+  `.env.local`, Vercel not checked. Nothing was changed. Belongs to L12.
 
 Open: 21 rows on main, about 52 working days by the matrix estimate. Order to
 take them: 3, 2, 4, 9, 10, 6, 8, 5, then the rows with migrations, then the

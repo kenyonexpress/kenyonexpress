@@ -8,7 +8,7 @@ import {
   parseFacetedParams,
   sortDocs,
 } from './faceted'
-import type { ProductDocument } from './meili-settings'
+import { type ProductDocument, SORTABLE_ATTRIBUTES, toProductDocument } from './meili-settings'
 
 function params(query: string) {
   return new URLSearchParams(query)
@@ -27,6 +27,7 @@ function doc(overrides: Partial<ProductDocument>): ProductDocument {
     type: 'physical',
     kenyon_price: 1000,
     full_price: null,
+    discount_bp: 0,
     images: [],
     stock_quantity: null,
     in_stock: true,
@@ -190,5 +191,38 @@ describe('the Postgres fallback mirrors the engine', () => {
 
   it('leaves relevance order untouched when no sort is asked for', () => {
     expect(sortDocs(docs, undefined)).toBe(docs)
+  })
+})
+
+describe('discount order', () => {
+  const doc = (id: string, full: number | null, price: number | null) =>
+    toProductDocument({ id, slug: id, name_he: id, full_price: full, kenyon_price: price })
+
+  it('stores the discount on the document as basis points of the full price', () => {
+    expect(doc('a', 400, 100).discount_bp).toBe(7500)
+    expect(doc('b', 100, 100).discount_bp).toBe(0)
+    expect(doc('c', null, 100).discount_bp).toBe(0)
+  })
+
+  it('accepts the sort, and maps it to the stored field for the engine', () => {
+    const parsed = parseFacetedParams(new URLSearchParams('q=spa&sort=discount_desc'))
+    expect(parsed.ok && parsed.params.sort).toBe('discount_desc')
+    expect(buildMeiliSort('discount_desc')).toEqual(['discount_bp:desc'])
+    expect(SORTABLE_ATTRIBUTES).toContain('discount_bp')
+  })
+
+  it('orders the fallback biggest discount first and keeps relevance on a tie', () => {
+    const docs = [
+      doc('none', 100, 100),
+      doc('half', 200, 100),
+      doc('tie', 50, 50),
+      doc('most', 400, 40),
+    ]
+    expect(sortDocs(docs, 'discount_desc').map((d) => d.id)).toEqual([
+      'most',
+      'half',
+      'none',
+      'tie',
+    ])
   })
 })

@@ -5,6 +5,7 @@ import CategoryProductCard, {
   type CategoryProduct,
 } from '@/components/category/CategoryProductCard'
 import SearchFacetNav from '@/components/search/SearchFacetNav'
+import SearchSortNav from '@/components/search/SearchSortNav'
 import { getAllCategories, parseProductType } from '@/lib/category-page'
 import { hasActiveFacets, toFacetSearchParams } from '@/lib/search/facet-links'
 import { parseFacetedParams } from '@/lib/search/faceted'
@@ -210,6 +211,7 @@ function SearchPageFallback() {
           {/* The count's box too, so the shell is the same height as the page
               that replaces it. */}
           <div className="category-page__count category-page__count--pending" aria-hidden="true" />
+          <SearchSortNav current={new URLSearchParams()} pending />
         </header>
         <div className="category-page__body">
           <div className="category-page__main category-page__main--search">
@@ -266,6 +268,9 @@ async function SearchPageBody({ searchParams }: Props) {
               <ResultCount params={params} />
             </Suspense>
           )}
+          {/* From the URL alone, so outside the boundary. Without a query
+              there is nothing to order and the line is only held open. */}
+          <SearchSortNav current={params} pending={!canSearch} />
         </header>
 
         <div className="category-page__body">

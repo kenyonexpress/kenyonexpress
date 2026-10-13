@@ -24,7 +24,7 @@ export const FACET_ATTRIBUTES = [
 /** Mirrors resolveStorefrontProductType: the four types the storefront names. */
 const PRODUCT_TYPES = ['coupon', 'physical', 'service', 'recurring'] as const
 
-const SORTS = ['price_asc', 'price_desc', 'newest'] as const
+const SORTS = ['price_asc', 'price_desc', 'newest', 'discount_desc'] as const
 export type FacetedSort = (typeof SORTS)[number]
 
 export type FacetedSearchParams = {
@@ -162,6 +162,8 @@ export function buildMeiliSort(sort: FacetedSort | undefined): string[] | undefi
       return ['kenyon_price:desc']
     case 'newest':
       return ['created_at:desc']
+    case 'discount_desc':
+      return ['discount_bp:desc']
     default:
       return undefined
   }
@@ -237,6 +239,11 @@ export function sortDocs(
       break
     case 'newest':
       sorted.sort((a, b) => (b.created_at ?? '').localeCompare(a.created_at ?? ''))
+      break
+    case 'discount_desc':
+      // `?? 0`: a document indexed before the field existed has no discount
+      // to rank by. Array.prototype.sort is stable, so ties keep relevance.
+      sorted.sort((a, b) => (b.discount_bp ?? 0) - (a.discount_bp ?? 0))
       break
   }
   return sorted
