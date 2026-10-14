@@ -222,7 +222,8 @@ logged, and the build completes.
 | `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN` | optional, CI | Without the token the plugin **skips the upload silently**, which is what keeps a fork's CI green. |
 | `SENTRY_KEEP_SOURCEMAPS`, `SENTRY_DEBUG_ROUTES` | tooling | |
 | `LOG_LEVEL` | optional | Fallback `info`. Read **once at module load** — a per-call lookup on a path every request touches buys nothing. |
-| `ALERTS_ENABLED`, `NTFY_TOPIC`, `NTFY_BASE_URL`, `HEALTH_NTFY_TOPIC` | optional | Inert when unset; nothing is sent. |
+| `ALERTS_ENABLED`, `NTFY_TOPIC`, `NTFY_BASE_URL`, `HEALTH_NTFY_TOPIC`, `LIVE_CHECK_NTFY_TOPIC` | optional | Inert when unset; nothing is sent. `LIVE_CHECK_NTFY_TOPIC` redirects only `/api/cron/cardcom-live-check` (default `kenyon-ofir-limit`). |
+| `LAUNCH_READY_FLAG_PATH` | optional | Where `/api/cron/cardcom-live-check` touches its flag. Default `~/ke-goals/LAUNCH-READY.flag`; unwritable is reported, never thrown. |
 
 ### 3.7 Search
 

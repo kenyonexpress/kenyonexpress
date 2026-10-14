@@ -1,5 +1,5 @@
 {
-  "$comment": "The single source of truth for the twenty-nine scheduled jobs. docs/CRON-EXTERNAL.md, .github/workflows/cron.yml, vercel.json and src/app/api/cron/ are all checked against this file by src/__tests__/cron-schedule-inventory.test.ts, so a schedule cannot be changed in one place and stay stale in the others.",
+  "$comment": "The single source of truth for the thirty-one scheduled jobs. docs/CRON-EXTERNAL.md, .github/workflows/cron.yml, vercel.json and src/app/api/cron/ are all checked against this file by src/__tests__/cron-schedule-inventory.test.ts, so a schedule cannot be changed in one place and stay stale in the others.",
   "defaultBaseUrl": "https://kenyonexpress.vercel.app",
   "jobs": [
     {
@@ -151,6 +151,11 @@
       "name": "shipments-track",
       "path": "/api/cron/shipments-track",
       "cron": "0 * * * *"
+    },
+    {
+      "name": "cardcom-live-check",
+      "path": "/api/cron/cardcom-live-check",
+      "cron": "*/30 * * * *"
     }
   ]
 }

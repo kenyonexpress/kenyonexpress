@@ -19,7 +19,7 @@
 --      secret reaches the running functions only through a production deploy,
 --      which is one of the four stop conditions.
 --   2. It is superseded. The team is on Vercel Pro (measured: `billing.plan`
---      = pro), HEAD's `vercel.json` declares all 29 jobs, and the explicit goal
+--      = pro), HEAD's `vercel.json` declares all 31 jobs, and the explicit goal
 --      of 2026-09-10 (commit 337c4a8b8) chose Vercel crons as the scheduler,
 --      pinned byte-for-byte to scripts/cron-jobs.json by
 --      cron-schedule-inventory.test.ts. Vercel crons send the same bearer from
@@ -74,7 +74,7 @@ begin
     raise exception '162: vault secret app_url missing; seed it first (preflight_162 block 3)';
   end if;
 
-  -- The 29 jobs of scripts/cron-jobs.json, in manifest order. Generated,
+  -- The 31 jobs of scripts/cron-jobs.json, in manifest order. Generated,
   -- not typed: cron-schedule-inventory.test.ts fails if this block and the
   -- manifest disagree on a name, a schedule or a path.
   for job in
@@ -108,7 +108,8 @@ begin
       ('ke-sitemap-regen',       '0 3 * * *',    '/api/cron/sitemap-regen'),
       ('ke-analytics-rollup',    '30 2 * * *',   '/api/cron/analytics-rollup'),
       ('ke-log-cleanup',         '30 */6 * * *', '/api/cron/log-cleanup'),
-      ('ke-shipments-track',     '0 * * * *',    '/api/cron/shipments-track')
+      ('ke-shipments-track',     '0 * * * *',    '/api/cron/shipments-track'),
+      ('ke-cardcom-live-check',  '*/30 * * * *', '/api/cron/cardcom-live-check')
     ) as t(jobname, schedule, path)
   loop
     -- GET, not POST: every src/app/api/cron/*/route.ts exports GET only.

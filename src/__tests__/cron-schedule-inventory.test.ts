@@ -64,7 +64,7 @@ describe('the scheduled job inventory', () => {
     expect(sql).not.toContain('net.http_post(')
   })
 
-  it('names the thirty jobs and nothing else', () => {
+  it('names the thirty-one jobs and nothing else', () => {
     // A new cron route is a deliberate diff here. An undeclared one would be a
     // handler that exists, is reachable, and is never called by anything.
     expect(jobs.map((job) => job.name)).toEqual([
@@ -98,6 +98,7 @@ describe('the scheduled job inventory', () => {
       'analytics-rollup',
       'log-cleanup',
       'shipments-track',
+      'cardcom-live-check',
     ])
   })
 

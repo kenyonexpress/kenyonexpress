@@ -135,6 +135,7 @@ describe('scheduled routes authenticate', () => {
       'src/app/api/cron/abandoned-cart/route.ts',
       'src/app/api/cron/analytics-rollup/route.ts',
       'src/app/api/cron/backup/route.ts',
+      'src/app/api/cron/cardcom-live-check/route.ts',
       'src/app/api/cron/cashback-settlement/route.ts',
       'src/app/api/cron/daily-deals/route.ts',
       'src/app/api/cron/email-retry/route.ts',

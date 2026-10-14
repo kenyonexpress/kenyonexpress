@@ -1337,7 +1337,7 @@ service_role-only grants.
 
 ### `162_cron_schedule.sql` — PENDING, approved (CLOSEOUT §7), NOT APPLIED: preflight fails and Vercel crons supersede it (re-measured 2026-10-07, STEP 39)
 
-Schedules the twenty-nine jobs of `scripts/cron-jobs.json` through pg_cron +
+Schedules the thirty-one jobs of `scripts/cron-jobs.json` through pg_cron +
 pg_net (161 installed both), regenerated from the manifest on 07.10 (it named
 12 jobs and used `http_post` against GET-only routes) and pinned to it by
 `cron-schedule-inventory.test.ts`. Job commands read `cron_secret` and

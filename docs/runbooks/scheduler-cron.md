@@ -2,7 +2,7 @@
 
 | שדה | ערך |
 | --- | --- |
-| רכיב | ‏30 מסלולי ‏`/api/cron/*`, מופעלים מ-`.github/workflows/cron.yml` עם ‏bearer ‏`CRON_SECRET` |
+| רכיב | ‏31 מסלולי ‏`/api/cron/*`, מופעלים מ-`.github/workflows/cron.yml` עם ‏bearer ‏`CRON_SECRET` |
 | ספק | ‏GitHub Actions (best effort), והצהרת ‏`crons` ב-`vercel.json` כעותק זהה |
 | כרטיס ב-/admin/health | `scheduler` (‏`CRON_SECRET` מוגדר), וכל ‏run ב-`gh run list --workflow=cron.yml` |
 | כונן | אופיר |
@@ -52,6 +52,7 @@
 | `analytics-rollup` | `30 2 * * *` | `/api/cron/analytics-rollup` |
 | `log-cleanup` | `30 */6 * * *` | `/api/cron/log-cleanup` |
 | `shipments-track` | `0 * * * *` | `/api/cron/shipments-track` |
+| `cardcom-live-check` | `*/30 * * * *` | `/api/cron/cardcom-live-check` |
 
 ## 2. זיהוי
 

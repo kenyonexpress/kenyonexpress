@@ -56,6 +56,17 @@ Updated: 2026-10-15 04:12 (XF01 מעדכן ‏STATE.md אוטומטי: ‏`scrip
 5. **‏162 חסומה** עד שיהיה ‏URL פרוס להזין ל-vault.
 6. **ה-delta של ‏Elementor מול ‏Electro**: ‏`docs/LIVE-DELTA.md`.
 
+## החלטות שהתקבלו לבד (‏cardcom-live-check, 2026-10-15 04:25, ‏Fable 5.1, ‏worktree ‏`kenyonexpress-autopilot`)
+
+**מה נבנה.** ‏`/api/cron/cardcom-live-check` (‏GET, ‏bearer ‏`CRON_SECRET` ב-`bearerMatches`, ‏`withRequestLog`): קורא ‏`CARDCOM_USE_MOCK` ו-`CARDCOM_API_NAME` בזמן הבקשה דרך ‏`src/lib/payments/live-readiness.ts` (‏`assessLiveReadiness`, טהור). כש-`USE_MOCK` הוא בדיוק ‏`false` וה-API name קיים ואינו תואם ‏`/pending|test|placeholder/i`: ‏POST ל-ntfy ‏`kenyon-ofir-limit` עם הגוף שנדרש (‏`CARDCOM LIVE READY — flip CHECKOUT_ENABLED=true`, ‏priority ‏urgent, דרך ‏`sendAlert` כך שגם ‏Telegram מקבל אם מוגדר) ונגיעה ב-`~/ke-goals/LAUNCH-READY.flag`. ‏`*/30 * * * *` ב-`scripts/cron-jobs.json`, ‏`vercel.json`, ‏`.github/workflows/cron.yml`, ‏`docs/CRON-EXTERNAL.md`, ‏`docs/runbooks/scheduler-cron.md` (‏31 מסלולים) ו-`migrations/pending/162_cron_schedule.sql` (לא מוחל). נעוץ ב-`live-readiness.test.ts` (‏13) ו-`route.test.ts` (‏13); רשימות ‏`cron-schedule-inventory` ו-`cron-auth` עודכנו.
+
+1. **שקט אחרי ההיפוך.** המפרט תנאי רק על ‏USE_MOCK ו-API_NAME, אבל ‏push כל חצי שעה אחרי ש-`CHECKOUT_ENABLED=true` כבר הוגדר הוא רעש שמשתיק את הערוץ. כש-`CHECKOUT_ENABLED === 'true'` המסלול עונה ‏`status: live`, נוגע בדגל ולא שולח. לפני ההיפוך הוא שולח בכל ריצה (אין מצב מתמיד ב-Vercel לדדופ, וההודעה היא בדיוק התזכורת שנדרשה).
+2. **‏USE_MOCK לא מוגדר = לא מוכן.** ‏`loadCardcomEnv` מתייחס להיעדר כ-mock מחוץ לפרודקשן, ובפרודקשן היעדר הוא התקנה לא גמורה. רק המחרוזת ‏`false` נחשבת.
+3. **הדגל הוא ‏best effort.** ב-Vercel אין ‏`~/ke-goals`; כתיבה שנכשלת מדווחת ‏`flag: unwritable` ב-200 ולא ‏500. ‏`LAUNCH_READY_FLAG_PATH` עוקף את המיקום (מתועד ב-`ENV-REFERENCE`), ‏`LIVE_CHECK_NTFY_TOPIC` עוקף את הנושא (‏`||` ולא ‏`??`, כדי שמשתנה ריק לא ישלח ל-`ntfy.sh/`).
+4. **אין ‏DB ואין ‏MCP.** המסלול קורא שלושה משתנים ועונה; ‏Supabase MCP לא נדרש ולא היה מאומת בסשן הזה. לא נפתח ‏PR: ענף העבודה אינו ‏main.
+
+**שערים.** ‏vitest ‏892 קבצים / ‏10,256 ירוקים (‏12 ‏skipped); ‏type-check ו-lint נקיים; ‏build ירוק, ‏csp gate ‏278 shells, המסלול מופיע כ-ƒ. ה-`db.query_failed` על ‏`/coupon/[slug]` ב-prerender קיים גם בבנייה הקודמת ואינו קשור.
+
 ## החלטות שהתקבלו לבד (‏XF01, 2026-10-15T03:57:41+07:00)
 
 1. **הסיכום בן שלוש השורות נכנס תחת ‏`## Item log` אחרי הכותרת, לא כשורה 1.** ‏`final-rules.txt` של הלולאה דורש ששורה 1 תהיה בדיוק ‏`RESUME FROM: <id>`, ולכן "prepend" פירושו ראש הקובץ אחרי שורת ההמשך והכותרת. הכלי כותב גם את שורת ‏RESUME מתוך התור (‏`--next`).

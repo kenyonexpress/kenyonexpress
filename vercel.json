@@ -126,6 +126,10 @@
     {
       "path": "/api/cron/shipments-track",
       "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/cron/cardcom-live-check",
+      "schedule": "*/30 * * * *"
     }
   ]
 }

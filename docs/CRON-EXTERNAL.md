@@ -169,6 +169,7 @@ deliberate and harmless: both are sweeps with a wide window, not appointments.
 | 23 | 02:30 daily | `30 2 * * *` | `https://kenyonexpress.vercel.app/api/cron/analytics-rollup` |
 | 24 | every 6 h at :30 | `30 */6 * * *` | `https://kenyonexpress.vercel.app/api/cron/log-cleanup` |
 | 25 | hourly | `0 * * * *` | `https://kenyonexpress.vercel.app/api/cron/shipments-track` |
+| 26 | every 30 min | `*/30 * * * *` | `https://kenyonexpress.vercel.app/api/cron/cardcom-live-check` |
 
 Those are the schedules `vercel.json` carried, kept exactly, so nothing about
 timing changes with the scheduler.
@@ -198,6 +199,13 @@ timing changes with the scheduler.
 - **`reconcile`** matches the day's payments against orders.
 - **`health`** runs the internal checks and raises the alert. It is what tells
   you the other nine stopped.
+- **`cardcom-live-check`** reads `CARDCOM_USE_MOCK` and `CARDCOM_API_NAME` from
+  the running deployment every half hour. The moment mock is `false` and the
+  API name is not `pending` / `test` / `placeholder`, it pushes
+  `CARDCOM LIVE READY — flip CHECKOUT_ENABLED=true` to `kenyon-ofir-limit`
+  (`LIVE_CHECK_NTFY_TOPIC` overrides) and touches `~/ke-goals/LAUNCH-READY.flag`
+  for the local loop. Once `CHECKOUT_ENABLED=true` it answers `status: live`
+  and stops pushing. No database, no money.
 - **`stock`** releases reservations that were never consumed.
 - **`abandoned-cart`** queues the recovery nudge.
 - **`subscriptions`** bills the recurring plans.
