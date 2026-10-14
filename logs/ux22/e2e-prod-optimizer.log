@@ -1,0 +1,9 @@
+Already up to date
+Done in 191ms using pnpm v11.1.2
+Already up to date
+Done in 189ms using pnpm v11.1.2
+
+Running 1 test using 1 worker
+
+[1A[2K[1/1] [chromium] › e2e/category.spec.ts:265:7 › category archive › catalog thumbnails go through the image optimizer and decode
+[1A[2K  1 passed (8.5s)

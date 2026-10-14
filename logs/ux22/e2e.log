@@ -1,0 +1,77 @@
+Already up to date
+Done in 1.4s using pnpm v11.1.2
+Already up to date
+Done in 1.7s using pnpm v11.1.2
+
+Running 6 tests using 2 workers
+
+[1A[2K[1/6] [chromium] › e2e/catalog-infinite-scroll.spec.ts:32:7 › archive paging switch (UX22) › the next page is served as JSON with the archive cache policy
+[1A[2K[2/6] [chromium] › e2e/catalog-infinite-scroll.spec.ts:42:7 › archive paging switch (UX22) › continuous loading appends the next page inside the grid and survives a reload
+[1A[2K[3/6] [chromium] › e2e/catalog-infinite-scroll.spec.ts:95:7 › archive paging switch (UX22) › a one-page archive offers no switch
+[1A[2K[4/6] [mobile-chrome] › e2e/catalog-infinite-scroll.spec.ts:32:7 › archive paging switch (UX22) › the next page is served as JSON with the archive cache policy
+[1A[2K[5/6] [mobile-chrome] › e2e/catalog-infinite-scroll.spec.ts:42:7 › archive paging switch (UX22) › continuous loading appends the next page inside the grid and survives a reload
+[1A[2K  1) [chromium] › e2e/catalog-infinite-scroll.spec.ts:42:7 › archive paging switch (UX22) › continuous loading appends the next page inside the grid and survives a reload 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByRole('button', { name: 'טעינת עוד מוצרים' })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for getByRole('button', { name: 'טעינת עוד מוצרים' })[22m
+
+
+      61 |     await expect(pagination).toHaveCount(0)
+      62 |     const loadMore = page.getByRole('button', { name: 'טעינת עוד מוצרים' })
+    > 63 |     await expect(loadMore).toBeVisible()
+         |                            ^
+      64 |     expect(await page.evaluate((key) => window.localStorage.getItem(key), PAGING_KEY)).toBe(
+      65 |       'scroll',
+      66 |     )
+        at /Users/ofir/kenyonexpress-autopilot/e2e/catalog-infinite-scroll.spec.ts:63:28
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/catalog-infinite-scroll-ar-cd5fc--grid-and-survives-a-reload-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/catalog-infinite-scroll-ar-cd5fc--grid-and-survives-a-reload-chromium/error-context.md
+
+
+[1A[2K[6/6] [mobile-chrome] › e2e/catalog-infinite-scroll.spec.ts:95:7 › archive paging switch (UX22) › a one-page archive offers no switch
+[1A[2K  2) [mobile-chrome] › e2e/catalog-infinite-scroll.spec.ts:42:7 › archive paging switch (UX22) › continuous loading appends the next page inside the grid and survives a reload 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByRole('button', { name: 'טעינת עוד מוצרים' })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for getByRole('button', { name: 'טעינת עוד מוצרים' })[22m
+
+
+      61 |     await expect(pagination).toHaveCount(0)
+      62 |     const loadMore = page.getByRole('button', { name: 'טעינת עוד מוצרים' })
+    > 63 |     await expect(loadMore).toBeVisible()
+         |                            ^
+      64 |     expect(await page.evaluate((key) => window.localStorage.getItem(key), PAGING_KEY)).toBe(
+      65 |       'scroll',
+      66 |     )
+        at /Users/ofir/kenyonexpress-autopilot/e2e/catalog-infinite-scroll.spec.ts:63:28
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/catalog-infinite-scroll-ar-cd5fc--grid-and-survives-a-reload-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/catalog-infinite-scroll-ar-cd5fc--grid-and-survives-a-reload-mobile-chrome/error-context.md
+
+
+[1A[2K  2 failed
+    [chromium] › e2e/catalog-infinite-scroll.spec.ts:42:7 › archive paging switch (UX22) › continuous loading appends the next page inside the grid and survives a reload 
+    [mobile-chrome] › e2e/catalog-infinite-scroll.spec.ts:42:7 › archive paging switch (UX22) › continuous loading appends the next page inside the grid and survives a reload 
+  4 passed (15.7s)

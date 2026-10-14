@@ -43,6 +43,13 @@ export const CacheControl = {
    */
   search: publicIsr(30, 60),
   /**
+   * One archive page as JSON, for the grid's continuous mode (UX22). The
+   * readers behind it are cached for 300s (`CacheLife.list`), so a minute at
+   * the edge is inside the window the HTML page itself already serves; a
+   * price edit revalidates the tag and the next page is fresh within it.
+   */
+  catalogPage: publicIsr(60, 300),
+  /**
    * The product feeds (RSS, Google Merchant). Crawled, never browsed: an hour
    * at the edge with a day of stale serving means a feed fetch during a deploy
    * or a Supabase blip still gets yesterday's catalogue instead of a 500.

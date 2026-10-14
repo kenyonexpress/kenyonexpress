@@ -1,0 +1,10 @@
+Already up to date
+Done in 198ms using pnpm v11.1.2
+$ tsc --noEmit
+src/components/category/CatalogGrid.test.tsx(161,32): error TS2532: Object is possibly 'undefined'.
+src/components/category/CatalogGrid.test.tsx(168,12): error TS2532: Object is possibly 'undefined'.
+src/components/category/CatalogGrid.test.tsx(222,12): error TS18048: 'observer' is possibly 'undefined'.
+src/components/category/CatalogGrid.test.tsx(225,15): error TS18048: 'observer' is possibly 'undefined'.
+src/components/category/CatalogGrid.test.tsx(229,15): error TS18048: 'observer' is possibly 'undefined'.
+[ELIFECYCLE] Command failed with exit code 2.
+exit 2

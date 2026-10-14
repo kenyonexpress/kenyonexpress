@@ -1,0 +1,46 @@
+Already up to date
+Done in 189ms using pnpm v11.1.2
+Already up to date
+Done in 194ms using pnpm v11.1.2
+
+Running 4 tests using 2 workers
+
+[1A[2K[1/4] [chromium] › e2e/category.spec.ts:265:7 › category archive › catalog thumbnails go through the image optimizer and decode
+[1A[2K[2/4] [chromium] › e2e/category.spec.ts:396:7 › category listing: page size and autocomplete › the sidebar combobox asks the suggest route with this category as scope
+[1A[2K  1) [chromium] › e2e/category.spec.ts:265:7 › category archive › catalog thumbnails go through the image optimizer and decode 
+
+    Error: locator.scrollIntoViewIfNeeded: Element is not attached to the DOM
+    Call log:
+    [2m  - attempting scroll into view action[22m
+    [2m    2 × waiting for element to be stable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying scroll into view action[22m
+    [2m    - waiting 20ms[22m
+    [2m    - waiting for element to be stable[22m
+    [2m    - element is not visible[22m
+    [2m  - retrying scroll into view action[22m
+    [2m    - waiting 100ms[22m
+    [2m    - waiting for element to be stable[22m
+
+
+      273 |     // them. Bring the first one into view and wait for the bytes, or the decode
+      274 |     // half of this test measures the scroll position instead of the image.
+    > 275 |     await thumbs.first().scrollIntoViewIfNeeded()
+          |                          ^
+      276 |     await expect
+      277 |       .poll(() => thumbs.first().evaluate((el) => (el as HTMLImageElement).naturalWidth), {
+      278 |         message: 'first catalog thumbnail never decoded',
+        at /Users/ofir/kenyonexpress-autopilot/e2e/category.spec.ts:275:26
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/category-category-archive--7492f--image-optimizer-and-decode-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/category-category-archive--7492f--image-optimizer-and-decode-chromium/error-context.md
+
+
+[1A[2K[3/4] [mobile-chrome] › e2e/category.spec.ts:265:7 › category archive › catalog thumbnails go through the image optimizer and decode
+[1A[2K[4/4] [mobile-chrome] › e2e/category.spec.ts:396:7 › category listing: page size and autocomplete › the sidebar combobox asks the suggest route with this category as scope
+[1A[2K  1 failed
+    [chromium] › e2e/category.spec.ts:265:7 › category archive › catalog thumbnails go through the image optimizer and decode 
+  3 passed (17.0s)

@@ -1,4 +1,5 @@
 import ViewTracker from '@/components/analytics/ViewTracker'
+import CatalogGrid from '@/components/category/CatalogGrid'
 import { CatalogViewBody, CatalogViewProvider } from '@/components/category/CatalogViewProvider'
 import CategoryActiveFilters from '@/components/category/CategoryActiveFilters'
 import CategoryBreadcrumb, { defaultHomeCrumb } from '@/components/category/CategoryBreadcrumb'
@@ -14,6 +15,7 @@ import CategoryProductCard, {
 import Pagination from '@/components/category/Pagination'
 import { ABOVE_FOLD_CARD_COUNT } from '@/components/category/above-fold'
 import CityTags from '@/components/geo/CityTags'
+import { pageWindow, parsePage, parsePrice, resultCountText } from '@/lib/catalog-archive'
 import { activeFilterCount } from '@/lib/category-filters'
 import { guideExcerpt } from '@/lib/category-guides/markdown'
 import { getCategoryGuide } from '@/lib/category-guides/read'
@@ -55,24 +57,6 @@ type Props = {
  * hosts. Same fallback as the product page.
  */
 const SITE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il'
-
-function parsePage(raw: string | string[] | undefined): number {
-  const n = typeof raw === 'string' ? Number.parseInt(raw, 10) : 1
-  return Number.isFinite(n) && n >= 1 ? n : 1
-}
-
-function parsePrice(raw: string | string[] | undefined): number | undefined {
-  if (typeof raw !== 'string') return undefined
-  const n = Number.parseFloat(raw)
-  return Number.isFinite(n) && n >= 0 ? n : undefined
-}
-
-/* Live WooCommerce result-count wording */
-function resultCountText(total: number, from: number, to: number): string {
-  if (total === 1) return 'מציג תוצאה יחידה'
-  if (to - from + 1 >= total) return `מציגים את כל ⁦${total}⁩ התוצאות`
-  return `מציג ${from}–${to} מתוך ${total} תוצאות`
-}
 
 /**
  * Reads through `getCategoryBySlug`, NOT a fresh `createClient()`.
@@ -175,14 +159,6 @@ function cacheableArgs(args: QueryArgs) {
   return rest
 }
 
-function pageWindow(total: number, page: number) {
-  const totalPages = Math.max(1, Math.ceil(total / CATEGORY_PAGE_SIZE))
-  const currentPage = Math.min(page, totalPages)
-  const from = (currentPage - 1) * CATEGORY_PAGE_SIZE + 1
-  const to = Math.min(currentPage * CATEGORY_PAGE_SIZE, total)
-  return { totalPages, currentPage, from, to }
-}
-
 /**
  * A page past the end is not an empty filter. Same helper as /products, for the
  * same reason: PostgREST answers an out-of-range `range()` with no rows AND no
@@ -207,7 +183,7 @@ async function categoryPageOrLast(args: QueryArgs) {
 async function ResultCount({ args }: { args: QueryArgs }) {
   const { total } = await categoryPageOrLast(args)
   if (total === 0) return null
-  const { from, to } = pageWindow(total, args.page)
+  const { from, to } = pageWindow(total, args.page, CATEGORY_PAGE_SIZE)
   return <p className="category-page__count">{resultCountText(total, from, to)}</p>
 }
 
@@ -236,7 +212,7 @@ async function ResultGrid({
     return <CategoryEmptyState clearHref={pathname} hasFilters={hasFilters} />
   }
 
-  const { totalPages, currentPage, from, to } = pageWindow(total, args.page)
+  const { totalPages, currentPage, from, to } = pageWindow(total, args.page, CATEGORY_PAGE_SIZE)
 
   // The cards on this page as an ItemList, numbered from where the page starts
   // in the archive. Built from `ordered`, the same array the <ul> maps, so the
@@ -261,7 +237,27 @@ async function ResultGrid({
           dangerouslySetInnerHTML={{ __html: jsonLdScript(itemListLd) }}
         />
       )}
-      <ul className="category-products">
+      {/* The grid, the numbered pages and the bottom count live in CatalogGrid
+          (UX22): the server renders this page's cards as its children and the
+          pagination as a prop, and the client appends the next pages inside
+          the same <ul> when the shopper has chosen continuous loading. The
+          HTML is the numbered mode either way. */}
+      <CatalogGrid
+        page={currentPage}
+        totalPages={totalPages}
+        total={total}
+        pageSize={CATEGORY_PAGE_SIZE}
+        from={from}
+        to={to}
+        pagination={
+          <Pagination
+            pathname={pathname}
+            params={linkParams}
+            currentPage={currentPage}
+            totalPages={totalPages}
+          />
+        }
+      >
         {ordered.map((product, index) => {
           // Server-side: the blur string and the real pixel size come from the
           // committed manifest, one lookup per card, and the first row's
@@ -279,16 +275,7 @@ async function ResultGrid({
             </li>
           )
         })}
-      </ul>
-      <Pagination
-        pathname={pathname}
-        params={linkParams}
-        currentPage={currentPage}
-        totalPages={totalPages}
-      />
-      <p className="category-page__count category-page__count--bottom">
-        {resultCountText(total, from, to)}
-      </p>
+      </CatalogGrid>
     </>
   )
 }

@@ -242,6 +242,13 @@ export const RATE_LIMIT_POLICIES = {
   search: { limit: 120, windowSeconds: 300, reason: 'search queries hit Meilisearch' },
   'search-suggest': { limit: 300, windowSeconds: 300, reason: 'typeahead fires per keystroke' },
   'search-facets': { limit: 60, windowSeconds: 300, reason: 'faceted search, filters + counts' },
+  // The archive's next page for the grid's continuous mode (UX22): a shopper
+  // scrolling an archive is a few requests, a loop that runs away is not.
+  'catalog-page': {
+    limit: 120,
+    windowSeconds: 300,
+    reason: 'archive pages for continuous loading, per IP',
+  },
   analytics: { limit: 120, windowSeconds: 60, reason: 'beacon endpoint, per IP' },
 
   // -- Public write forms. Five an hour, because these reach a human inbox.

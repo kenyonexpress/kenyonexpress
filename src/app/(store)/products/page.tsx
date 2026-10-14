@@ -1,3 +1,4 @@
+import CatalogGrid from '@/components/category/CatalogGrid'
 import { CatalogViewBody, CatalogViewProvider } from '@/components/category/CatalogViewProvider'
 import CategoryActiveFilters from '@/components/category/CategoryActiveFilters'
 import CategoryBreadcrumb, { defaultHomeCrumb } from '@/components/category/CategoryBreadcrumb'
@@ -9,6 +10,7 @@ import CategoryProductCard, {
 } from '@/components/category/CategoryProductCard'
 import Pagination from '@/components/category/Pagination'
 import { ABOVE_FOLD_CARD_COUNT } from '@/components/category/above-fold'
+import { pageWindow, parsePage, parsePrice, resultCountText } from '@/lib/catalog-archive'
 import { activeFilterCount } from '@/lib/category-filters'
 import {
   type ProductTypeFilter,
@@ -39,37 +41,12 @@ type Props = {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
-function parsePage(raw: string | string[] | undefined): number {
-  const n = typeof raw === 'string' ? Number.parseInt(raw, 10) : 1
-  return Number.isFinite(n) && n >= 1 ? n : 1
-}
-
-function parsePrice(raw: string | string[] | undefined): number | undefined {
-  if (typeof raw !== 'string') return undefined
-  const n = Number.parseFloat(raw)
-  return Number.isFinite(n) && n >= 0 ? n : undefined
-}
-
-function resultCountText(total: number, from: number, to: number): string {
-  if (total === 1) return 'מציג תוצאה יחידה'
-  if (to - from + 1 >= total) return `מציגים את כל ⁦${total}⁩ התוצאות`
-  return `מציג ${from}–${to} מתוך ${total} תוצאות`
-}
-
 type QueryArgs = {
   sort: SortValue
   page: number
   priceMin?: number
   priceMax?: number
   productType?: ProductTypeFilter
-}
-
-function pageWindow(total: number, page: number) {
-  const totalPages = Math.max(1, Math.ceil(total / SHOP_PAGE_SIZE))
-  const currentPage = Math.min(page, totalPages)
-  const from = (currentPage - 1) * SHOP_PAGE_SIZE + 1
-  const to = Math.min(currentPage * SHOP_PAGE_SIZE, total)
-  return { totalPages, currentPage, from, to }
 }
 
 /**
@@ -134,7 +111,7 @@ async function shopPageOrLast(args: QueryArgs) {
 async function ResultCount({ args }: { args: QueryArgs }) {
   const { total } = await shopPageOrLast(args)
   if (total === 0) return null
-  const { from, to } = pageWindow(total, args.page)
+  const { from, to } = pageWindow(total, args.page, SHOP_PAGE_SIZE)
   return <p className="category-page__count">{resultCountText(total, from, to)}</p>
 }
 
@@ -157,11 +134,29 @@ async function ResultGrid({
 
   // The history marks (STEP 59): one cached read for the grid.
   const items = await attachPriceHistory(page)
-  const { totalPages, currentPage, from, to } = pageWindow(total, args.page)
+  const { totalPages, currentPage, from, to } = pageWindow(total, args.page, SHOP_PAGE_SIZE)
 
   return (
     <>
-      <ul className="category-products">
+      {/* See the same note on the category page: the server renders this
+          page's cards and the numbered pages, CatalogGrid (UX22) appends the
+          next pages inside the same <ul> in continuous mode. */}
+      <CatalogGrid
+        page={currentPage}
+        totalPages={totalPages}
+        total={total}
+        pageSize={SHOP_PAGE_SIZE}
+        from={from}
+        to={to}
+        pagination={
+          <Pagination
+            pathname="/products"
+            params={linkParams}
+            currentPage={currentPage}
+            totalPages={totalPages}
+          />
+        }
+      >
         {items.map((product, index) => {
           // Same contract as the category page: see ABOVE_FOLD_CARD_COUNT.
           const asset = blurEntryFor(firstImageOf(product.images))
@@ -177,16 +172,7 @@ async function ResultGrid({
             </li>
           )
         })}
-      </ul>
-      <Pagination
-        pathname="/products"
-        params={linkParams}
-        currentPage={currentPage}
-        totalPages={totalPages}
-      />
-      <p className="category-page__count category-page__count--bottom">
-        {resultCountText(total, from, to)}
-      </p>
+      </CatalogGrid>
     </>
   )
 }

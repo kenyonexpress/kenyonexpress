@@ -1,0 +1,57 @@
+Already up to date
+Done in 235ms using pnpm v11.1.2
+Already up to date
+Done in 239ms using pnpm v11.1.2
+
+Running 48 tests using 2 workers
+
+[1A[2K[1/48] [chromium] › e2e/layout-stability.spec.ts:79:7 › search stays under the CLS budget: no results, the collapse case
+[1A[2K[2/48] [chromium] › e2e/layout-stability.spec.ts:79:7 › search stays under the CLS budget: sixteen results, the growth case
+[1A[2K[3/48] [chromium] › e2e/layout-stability.spec.ts:117:7 › /coupons stays under the CLS budget
+[1A[2K[4/48] [chromium] › e2e/layout-stability.spec.ts:117:7 › / stays under the CLS budget
+[1A[2K[5/48] [chromium] › e2e/layout-stability.spec.ts:117:7 › /products stays under the CLS budget
+[1A[2K[6/48] [chromium] › e2e/layout-stability.spec.ts:117:7 › /category/hot-deals stays under the CLS budget
+[1A[2K[7/48] [chromium] › e2e/layout-stability.spec.ts:117:7 › /cart stays under the CLS budget
+[1A[2K[8/48] [chromium] › e2e/layout-stability.spec.ts:117:7 › /checkout stays under the CLS budget
+[1A[2K[9/48] [chromium] › e2e/layout-stability.spec.ts:117:7 › /suppliers stays under the CLS budget
+[1A[2K[10/48] [chromium] › e2e/layout-stability.spec.ts:117:7 › /supplier/login stays under the CLS budget
+[1A[2K[11/48] [chromium] › e2e/layout-stability.spec.ts:117:7 › /login stays under the CLS budget
+[1A[2K[12/48] [chromium] › e2e/layout-stability.spec.ts:117:7 › /signup stays under the CLS budget
+[1A[2K[13/48] [chromium] › e2e/layout-stability.spec.ts:117:7 › /contact stays under the CLS budget
+[1A[2K[14/48] [chromium] › e2e/layout-stability.spec.ts:117:7 › /legal/terms stays under the CLS budget
+[1A[2K[15/48] [chromium] › e2e/layout-stability.spec.ts:117:7 › /legal/privacy stays under the CLS budget
+[1A[2K[16/48] [chromium] › e2e/layout-stability.spec.ts:117:7 › /legal/returns stays under the CLS budget
+[1A[2K[17/48] [chromium] › e2e/layout-stability.spec.ts:117:7 › /legal/accessibility stays under the CLS budget
+[1A[2K[18/48] [chromium] › e2e/layout-stability.spec.ts:139:5 › the seeded checkout stays under the CLS budget
+[1A[2K[19/48] [chromium] › e2e/layout-stability.spec.ts:150:5 › a product page stays under the CLS budget
+[1A[2K[20/48] [chromium] › e2e/listing-controls.spec.ts:32:7 › listing controls (UX14) › the view switcher lays the grid out as rows and remembers it
+[1A[2K[21/48] [chromium] › e2e/listing-controls.spec.ts:69:7 › listing controls (UX14) › the sort select offers only orders the catalogue honours
+[1A[2K[22/48] [chromium] › e2e/listing-controls.spec.ts:79:7 › listing controls (UX14) › an active filter is a removable chip, and two of them get a clear-all link
+[1A[2K[23/48] [chromium] › e2e/listing-controls.spec.ts:100:7 › listing controls (UX14) › the price form refuses an inverted range on the page, without a request
+[1A[2K[24/48] [chromium] › e2e/listing-controls.spec.ts:120:7 › listing controls (UX14) › pagination is a list of labelled pages
+[1A[2K[25/48] [mobile-chrome] › e2e/layout-stability.spec.ts:79:7 › search stays under the CLS budget: no results, the collapse case
+[1A[2K[26/48] [mobile-chrome] › e2e/layout-stability.spec.ts:79:7 › search stays under the CLS budget: sixteen results, the growth case
+[1A[2K[27/48] [mobile-chrome] › e2e/layout-stability.spec.ts:117:7 › /coupons stays under the CLS budget
+[1A[2K[28/48] [mobile-chrome] › e2e/layout-stability.spec.ts:117:7 › / stays under the CLS budget
+[1A[2K[29/48] [mobile-chrome] › e2e/layout-stability.spec.ts:117:7 › /products stays under the CLS budget
+[1A[2K[30/48] [mobile-chrome] › e2e/layout-stability.spec.ts:117:7 › /category/hot-deals stays under the CLS budget
+[1A[2K[31/48] [mobile-chrome] › e2e/layout-stability.spec.ts:117:7 › /cart stays under the CLS budget
+[1A[2K[32/48] [mobile-chrome] › e2e/layout-stability.spec.ts:117:7 › /checkout stays under the CLS budget
+[1A[2K[33/48] [mobile-chrome] › e2e/layout-stability.spec.ts:117:7 › /suppliers stays under the CLS budget
+[1A[2K[34/48] [mobile-chrome] › e2e/layout-stability.spec.ts:117:7 › /supplier/login stays under the CLS budget
+[1A[2K[35/48] [mobile-chrome] › e2e/layout-stability.spec.ts:117:7 › /login stays under the CLS budget
+[1A[2K[36/48] [mobile-chrome] › e2e/layout-stability.spec.ts:117:7 › /signup stays under the CLS budget
+[1A[2K[37/48] [mobile-chrome] › e2e/layout-stability.spec.ts:117:7 › /contact stays under the CLS budget
+[1A[2K[38/48] [mobile-chrome] › e2e/layout-stability.spec.ts:117:7 › /legal/terms stays under the CLS budget
+[1A[2K[39/48] [mobile-chrome] › e2e/layout-stability.spec.ts:117:7 › /legal/privacy stays under the CLS budget
+[1A[2K[40/48] [mobile-chrome] › e2e/layout-stability.spec.ts:117:7 › /legal/returns stays under the CLS budget
+[1A[2K[41/48] [mobile-chrome] › e2e/layout-stability.spec.ts:117:7 › /legal/accessibility stays under the CLS budget
+[1A[2K[42/48] [mobile-chrome] › e2e/layout-stability.spec.ts:139:5 › the seeded checkout stays under the CLS budget
+[1A[2K[43/48] [mobile-chrome] › e2e/layout-stability.spec.ts:150:5 › a product page stays under the CLS budget
+[1A[2K[44/48] [mobile-chrome] › e2e/listing-controls.spec.ts:32:7 › listing controls (UX14) › the view switcher lays the grid out as rows and remembers it
+[1A[2K[45/48] [mobile-chrome] › e2e/listing-controls.spec.ts:69:7 › listing controls (UX14) › the sort select offers only orders the catalogue honours
+[1A[2K[46/48] [mobile-chrome] › e2e/listing-controls.spec.ts:79:7 › listing controls (UX14) › an active filter is a removable chip, and two of them get a clear-all link
+[1A[2K[47/48] [mobile-chrome] › e2e/listing-controls.spec.ts:100:7 › listing controls (UX14) › the price form refuses an inverted range on the page, without a request
+[1A[2K[48/48] [mobile-chrome] › e2e/listing-controls.spec.ts:120:7 › listing controls (UX14) › pagination is a list of labelled pages
+[1A[2K  1 skipped
+  47 passed (1.3m)

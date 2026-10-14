@@ -1,0 +1,488 @@
+{
+  "380": {
+    "category": {
+      "h1": "טיפוח בריאות ויופי",
+      "breadcrumb": {
+        "rect": {
+          "x": 15,
+          "y": 125.7,
+          "w": 350,
+          "h": 50
+        },
+        "crumbs": ["עמוד הבית", "עמוד הבית", "טיפוח בריאות ויופי", "טיפוח בריאות ויופי"],
+        "links": ["/"]
+      },
+      "hero": null,
+      "countTop": "מציגים את כל ⁦13⁩ התוצאות",
+      "countBottom": "מציגים את כל ⁦13⁩ התוצאות",
+      "cards": 13,
+      "columns": 2,
+      "grid": {
+        "x": 15,
+        "y": 307.3,
+        "w": 350,
+        "h": 2676.1
+      },
+      "firstCard": {
+        "x": 190,
+        "y": 307.3,
+        "w": 175,
+        "h": 411.4
+      },
+      "pagination": null,
+      "pagingSwitch": null,
+      "loadMore": null,
+      "live": [],
+      "belowFold": null,
+      "pageHeight": 5168,
+      "scrollWidth": 380,
+      "status": 200
+    },
+    "shop": {
+      "h1": "חנות",
+      "breadcrumb": {
+        "rect": {
+          "x": 15,
+          "y": 125.7,
+          "w": 350,
+          "h": 50
+        },
+        "crumbs": ["עמוד הבית", "עמוד הבית", "חנות", "חנות"],
+        "links": ["/"]
+      },
+      "hero": null,
+      "countTop": "מציג 1–24 מתוך 46 תוצאות",
+      "countBottom": "מציג 1–24 מתוך 46 תוצאות",
+      "cards": 24,
+      "columns": 2,
+      "grid": {
+        "x": 15,
+        "y": 369.2,
+        "w": 350,
+        "h": 4720.3
+      },
+      "firstCard": {
+        "x": 190,
+        "y": 369.2,
+        "w": 175,
+        "h": 393.4
+      },
+      "pagination": {
+        "rect": {
+          "x": 15,
+          "y": 5117.5,
+          "w": 350,
+          "h": 36
+        },
+        "visible": true,
+        "links": [
+          {
+            "text": "2",
+            "href": "/products?page=2",
+            "label": "עמוד 2"
+          },
+          {
+            "text": "",
+            "href": "/products?page=2",
+            "label": "העמוד הבא"
+          }
+        ],
+        "current": "1"
+      },
+      "pagingSwitch": null,
+      "loadMore": null,
+      "live": [],
+      "belowFold": true,
+      "pageHeight": 5725,
+      "scrollWidth": 380,
+      "status": 200
+    },
+    "shop-page2": {
+      "h1": "חנות",
+      "breadcrumb": {
+        "rect": {
+          "x": 15,
+          "y": 125.7,
+          "w": 350,
+          "h": 50
+        },
+        "crumbs": ["עמוד הבית", "עמוד הבית", "חנות", "חנות"],
+        "links": ["/"]
+      },
+      "hero": null,
+      "countTop": "מציג 25–46 מתוך 46 תוצאות",
+      "countBottom": "מציג 25–46 מתוך 46 תוצאות",
+      "cards": 22,
+      "columns": 2,
+      "grid": {
+        "x": 15,
+        "y": 369.2,
+        "w": 350,
+        "h": 4272.8
+      },
+      "firstCard": {
+        "x": 190,
+        "y": 369.2,
+        "w": 175,
+        "h": 393.4
+      },
+      "pagination": {
+        "rect": {
+          "x": 15,
+          "y": 4670,
+          "w": 350,
+          "h": 36
+        },
+        "visible": true,
+        "links": [
+          {
+            "text": "",
+            "href": "/products",
+            "label": "העמוד הקודם"
+          },
+          {
+            "text": "1",
+            "href": "/products",
+            "label": "עמוד 1"
+          }
+        ],
+        "current": "2"
+      },
+      "pagingSwitch": null,
+      "loadMore": null,
+      "live": [],
+      "belowFold": true,
+      "pageHeight": 5278,
+      "scrollWidth": 380,
+      "status": 200
+    },
+    "scrollProbe": null,
+    "errors": []
+  },
+  "768": {
+    "category": {
+      "h1": "טיפוח בריאות ויופי",
+      "breadcrumb": {
+        "rect": {
+          "x": 15,
+          "y": 88.3,
+          "w": 738,
+          "h": 79.4
+        },
+        "crumbs": ["עמוד הבית", "עמוד הבית", "טיפוח בריאות ויופי", "טיפוח בריאות ויופי"],
+        "links": ["/"]
+      },
+      "hero": null,
+      "countTop": "מציגים את כל ⁦13⁩ התוצאות",
+      "countBottom": "מציגים את כל ⁦13⁩ התוצאות",
+      "cards": 13,
+      "columns": 3,
+      "grid": {
+        "x": 15,
+        "y": 267.6,
+        "w": 738,
+        "h": 1858.8
+      },
+      "firstCard": {
+        "x": 519,
+        "y": 267.6,
+        "w": 234,
+        "h": 382.6
+      },
+      "pagination": null,
+      "pagingSwitch": null,
+      "loadMore": null,
+      "live": [],
+      "belowFold": null,
+      "pageHeight": 3737,
+      "scrollWidth": 768,
+      "status": 200
+    },
+    "shop": {
+      "h1": "חנות",
+      "breadcrumb": {
+        "rect": {
+          "x": 15,
+          "y": 88.3,
+          "w": 738,
+          "h": 79.4
+        },
+        "crumbs": ["עמוד הבית", "עמוד הבית", "חנות", "חנות"],
+        "links": ["/"]
+      },
+      "hero": null,
+      "countTop": "מציג 1–24 מתוך 46 תוצאות",
+      "countBottom": "מציג 1–24 מתוך 46 תוצאות",
+      "cards": 24,
+      "columns": 3,
+      "grid": {
+        "x": 15,
+        "y": 329.5,
+        "w": 738,
+        "h": 3006.5
+      },
+      "firstCard": {
+        "x": 519,
+        "y": 329.5,
+        "w": 234,
+        "h": 364.6
+      },
+      "pagination": {
+        "rect": {
+          "x": 15,
+          "y": 3364,
+          "w": 738,
+          "h": 36
+        },
+        "visible": true,
+        "links": [
+          {
+            "text": "2",
+            "href": "/products?page=2",
+            "label": "עמוד 2"
+          },
+          {
+            "text": "",
+            "href": "/products?page=2",
+            "label": "העמוד הבא"
+          }
+        ],
+        "current": "1"
+      },
+      "pagingSwitch": null,
+      "loadMore": null,
+      "live": [],
+      "belowFold": true,
+      "pageHeight": 3972,
+      "scrollWidth": 768,
+      "status": 200
+    },
+    "shop-page2": {
+      "h1": "חנות",
+      "breadcrumb": {
+        "rect": {
+          "x": 15,
+          "y": 88.3,
+          "w": 738,
+          "h": 79.4
+        },
+        "crumbs": ["עמוד הבית", "עמוד הבית", "חנות", "חנות"],
+        "links": ["/"]
+      },
+      "hero": null,
+      "countTop": "מציג 25–46 מתוך 46 תוצאות",
+      "countBottom": "מציג 25–46 מתוך 46 תוצאות",
+      "cards": 22,
+      "columns": 3,
+      "grid": {
+        "x": 15,
+        "y": 329.5,
+        "w": 738,
+        "h": 2970.5
+      },
+      "firstCard": {
+        "x": 519,
+        "y": 329.5,
+        "w": 234,
+        "h": 364.6
+      },
+      "pagination": {
+        "rect": {
+          "x": 15,
+          "y": 3328,
+          "w": 738,
+          "h": 36
+        },
+        "visible": true,
+        "links": [
+          {
+            "text": "",
+            "href": "/products",
+            "label": "העמוד הקודם"
+          },
+          {
+            "text": "1",
+            "href": "/products",
+            "label": "עמוד 1"
+          }
+        ],
+        "current": "2"
+      },
+      "pagingSwitch": null,
+      "loadMore": null,
+      "live": [],
+      "belowFold": true,
+      "pageHeight": 3936,
+      "scrollWidth": 768,
+      "status": 200
+    },
+    "scrollProbe": null,
+    "errors": []
+  },
+  "1440": {
+    "category": {
+      "h1": "טיפוח בריאות ויופי",
+      "breadcrumb": {
+        "rect": {
+          "x": 135,
+          "y": 148.3,
+          "w": 1170,
+          "h": 79.4
+        },
+        "crumbs": ["עמוד הבית", "עמוד הבית", "טיפוח בריאות ויופי", "טיפוח בריאות ויופי"],
+        "links": ["/"]
+      },
+      "hero": null,
+      "countTop": "מציגים את כל ⁦13⁩ התוצאות",
+      "countBottom": "מציגים את כל ⁦13⁩ התוצאות",
+      "cards": 13,
+      "columns": 5,
+      "grid": {
+        "x": 135,
+        "y": 327.6,
+        "w": 1170,
+        "h": 1111.7
+      },
+      "firstCard": {
+        "x": 1071,
+        "y": 327.6,
+        "w": 234,
+        "h": 382.6
+      },
+      "pagination": null,
+      "pagingSwitch": null,
+      "loadMore": null,
+      "live": [],
+      "belowFold": null,
+      "pageHeight": 3098,
+      "scrollWidth": 1440,
+      "status": 200
+    },
+    "shop": {
+      "h1": "חנות",
+      "breadcrumb": {
+        "rect": {
+          "x": 135,
+          "y": 148.3,
+          "w": 1170,
+          "h": 79.4
+        },
+        "crumbs": ["עמוד הבית", "עמוד הבית", "חנות", "חנות"],
+        "links": ["/"]
+      },
+      "hero": null,
+      "countTop": "מציג 1–24 מתוך 46 תוצאות",
+      "countBottom": "מציג 1–24 מתוך 46 תוצאות",
+      "cards": 24,
+      "columns": 5,
+      "grid": {
+        "x": 135,
+        "y": 389.5,
+        "w": 1170,
+        "h": 1894.8
+      },
+      "firstCard": {
+        "x": 1071,
+        "y": 389.5,
+        "w": 234,
+        "h": 364.6
+      },
+      "pagination": {
+        "rect": {
+          "x": 135,
+          "y": 2312.4,
+          "w": 1170,
+          "h": 36
+        },
+        "visible": true,
+        "links": [
+          {
+            "text": "2",
+            "href": "/products?page=2",
+            "label": "עמוד 2"
+          },
+          {
+            "text": "",
+            "href": "/products?page=2",
+            "label": "העמוד הבא"
+          }
+        ],
+        "current": "1"
+      },
+      "pagingSwitch": null,
+      "loadMore": null,
+      "live": [],
+      "belowFold": true,
+      "pageHeight": 3046,
+      "scrollWidth": 1440,
+      "status": 200
+    },
+    "shop-page2": {
+      "h1": "חנות",
+      "breadcrumb": {
+        "rect": {
+          "x": 135,
+          "y": 148.3,
+          "w": 1170,
+          "h": 79.4
+        },
+        "crumbs": ["עמוד הבית", "עמוד הבית", "חנות", "חנות"],
+        "links": ["/"]
+      },
+      "hero": null,
+      "countTop": "מציג 25–46 מתוך 46 תוצאות",
+      "countBottom": "מציג 25–46 מתוך 46 תוצאות",
+      "cards": 22,
+      "columns": 5,
+      "grid": {
+        "x": 135,
+        "y": 389.5,
+        "w": 1170,
+        "h": 1876.8
+      },
+      "firstCard": {
+        "x": 1071,
+        "y": 389.5,
+        "w": 234,
+        "h": 382.6
+      },
+      "pagination": {
+        "rect": {
+          "x": 135,
+          "y": 2294.4,
+          "w": 1170,
+          "h": 36
+        },
+        "visible": true,
+        "links": [
+          {
+            "text": "",
+            "href": "/products",
+            "label": "העמוד הקודם"
+          },
+          {
+            "text": "1",
+            "href": "/products",
+            "label": "עמוד 1"
+          }
+        ],
+        "current": "2"
+      },
+      "pagingSwitch": null,
+      "loadMore": null,
+      "live": [],
+      "belowFold": true,
+      "pageHeight": 3028,
+      "scrollWidth": 1440,
+      "status": 200
+    },
+    "scrollProbe": null,
+    "errors": []
+  },
+  "api": {
+    "status": 404,
+    "items": null,
+    "total": null,
+    "totalPages": null
+  }
+}

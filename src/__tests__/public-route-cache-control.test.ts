@@ -43,6 +43,9 @@ type Policy = 'public' | 'private' | 'redirect' | 'image'
 const LEDGER: Record<string, Policy> = {
   'src/app/api/alerts/uptimerobot/route.ts': 'private',
   'src/app/api/cart/route.ts': 'private',
+  // One archive page as JSON for the grid's continuous mode (UX22): the same
+  // anon catalogue read as the page, a minute at the edge.
+  'src/app/api/catalog/page/route.ts': 'public',
   // The waiting room's poll (STEP 61): the caller's own claim, from the session.
   'src/app/api/flash-sales/[id]/status/route.ts': 'private',
   'src/app/api/health/route.ts': 'private',
@@ -106,7 +109,7 @@ describe('public GET route handlers', () => {
       }
       if (policy === 'public') {
         // The constant, not a literal: a literal is how three copies drift.
-        expect(source).toMatch(/CacheControl\.(search|feed|postalCode)/)
+        expect(source).toMatch(/CacheControl\.(search|feed|postalCode|catalogPage)/)
         expect(source).not.toMatch(/['"]public,\s*(max-age|s-maxage)/)
         return
       }
@@ -121,6 +124,7 @@ describe('public GET route handlers', () => {
   it('the shared constants say what the ledger assumes', () => {
     expect(CacheControl.search.startsWith('public,')).toBe(true)
     expect(CacheControl.feed.startsWith('public,')).toBe(true)
+    expect(CacheControl.catalogPage.startsWith('public,')).toBe(true)
     expect(CacheControl.private).toBe('private, no-store')
     expect(IMMUTABLE_CACHE_CONTROL.startsWith('public,')).toBe(true)
     expect(MUTABLE_CACHE_CONTROL).toContain('s-maxage=2592000')

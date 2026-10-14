@@ -87,6 +87,7 @@
 | `search` | 120 | 5 min | search queries hit Meilisearch |
 | `search-suggest` | 300 | 5 min | typeahead fires per keystroke |
 | `search-facets` | 60 | 5 min | faceted search, filters + counts |
+| `catalog-page` | 120 | 5 min | archive pages for continuous loading, per IP |
 | `analytics` | 120 | 1 min | beacon endpoint, per IP |
 | `contact` | 5 | 1 h | contact form mail |
 | `help` | 5 | 1 h | help-centre request mail |

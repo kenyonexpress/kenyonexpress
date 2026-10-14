@@ -1,0 +1,37 @@
+Already up to date
+Done in 188ms using pnpm v11.1.2
+$ next start
+▲ Next.js 16.3.3
+- Local:         http://localhost:3363
+- Network:       http://100.84.130.122:3363
+✓ Ready in 110ms
+✓ Running next.config.ts took 427ms
+{"ts":"2026-10-14T15:38:01.132Z","level":"warn","event":"env.checks_skipped","request_id":null,"detail":"ALLOW_INCOMPLETE_ENV=true. Correct for a local `next start`; wrong anywhere a customer can reach."}
+{"ts":"2026-10-14T15:38:02.572Z","level":"info","event":"env.probe_ok","request_id":null,"checked":2}
+(node:57114) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+(Use `node --trace-warnings ...` to show where the warning was created)
+Unexpected root span type 'ResolveMetadata.generateMetadata'. Please report this Next.js issue https://github.com/vercel/next.js
+{"ts":"2026-10-14T15:38:05.075Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"categories","status":200,"duration_ms":400,"threshold_ms":300}
+{"ts":"2026-10-14T15:38:06.323Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"category_banners","status":404,"duration_ms":1358,"threshold_ms":300}
+{"ts":"2026-10-14T15:38:06.325Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"products","status":200,"duration_ms":1359,"threshold_ms":300}
+{"ts":"2026-10-14T15:38:06.327Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"category_guides","status":404,"duration_ms":1244,"threshold_ms":300}
+{"ts":"2026-10-14T15:38:06.329Z","level":"warn","event":"category_banners.schema_absent","request_id":null,"where":"category","hint":"migration 267 not applied"}
+{"ts":"2026-10-14T15:38:06.330Z","level":"warn","event":"category_guides.schema_absent","request_id":null,"hint":"migration 268 not applied"}
+(node:57114) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+(node:57114) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T15:38:49.925Z","level":"warn","event":"db.query_slow","request_id":"097dfc93-ac82-4bfc-91ff-5eb0fbb79fe1","route":"action","method":"GET","target":"carts","status":200,"duration_ms":1071,"threshold_ms":300}
+{"ts":"2026-10-14T15:38:49.928Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"products","status":206,"duration_ms":394,"threshold_ms":300}
+{"ts":"2026-10-14T15:38:50.707Z","level":"warn","event":"db.query_slow","request_id":"d211abae-7272-45e9-9e77-d44552f0dee6","route":"action","method":"GET","target":"carts","status":200,"duration_ms":1089,"threshold_ms":300}
+(node:57114) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T15:38:51.462Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"products","status":206,"duration_ms":419,"threshold_ms":300}
+{"ts":"2026-10-14T15:38:51.622Z","level":"warn","event":"db.query_slow","request_id":"6d1a7bef-9b3e-4719-b759-e56cb5216d65","route":"action","method":"GET","target":"carts","status":200,"duration_ms":512,"threshold_ms":300}
+(node:57114) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T15:38:53.746Z","level":"warn","event":"db.query_slow","request_id":"cc6d1294-da45-41de-8040-8d8ec53160a4","route":"action","method":"GET","target":"carts","status":200,"duration_ms":369,"threshold_ms":300}
+(node:57114) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T15:38:54.623Z","level":"warn","event":"db.query_slow","request_id":"b87518eb-3ded-4d7f-90d5-e4133c42838f","route":"action","method":"GET","target":"carts","status":200,"duration_ms":356,"threshold_ms":300}
+(node:57114) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T15:38:56.984Z","level":"warn","event":"db.query_slow","request_id":"e30c58e1-e8a2-46a9-9474-c6704d4ff415","route":"action","method":"GET","target":"carts","status":200,"duration_ms":317,"threshold_ms":300}
+(node:57114) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T15:38:59.416Z","level":"warn","event":"db.query_slow","request_id":"aa0d8480-81b1-4b20-882f-30d2c914706f","route":"action","method":"GET","target":"carts","status":200,"duration_ms":763,"threshold_ms":300}
+(node:57114) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+[ELIFECYCLE] Command failed with exit code 143.

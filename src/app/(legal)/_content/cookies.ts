@@ -10,6 +10,7 @@ import { CART_COUPON_COOKIE, CART_EXPIRY_DAYS } from '@/lib/cart/coupon-cookie'
 import { GUEST_SESSION_COOKIE, GUEST_SESSION_MAX_AGE } from '@/lib/cart/guest-session-cookie'
 import { CART_FALLBACK_KEY } from '@/lib/cart/local-fallback'
 import { CART_SHIPPING_COOKIE } from '@/lib/cart/shipping-cookie'
+import { CATALOG_PAGING_KEY, SCROLL_DEPTH_KEY_PREFIX } from '@/lib/catalog-paging'
 import { CATALOG_VIEW_KEY } from '@/lib/catalog-view'
 import { COMPARE_STORAGE_KEY } from '@/lib/compare/limit'
 import { LANDING_BUCKET_COOKIE, LANDING_BUCKET_MAX_AGE_SECONDS } from '@/lib/landing/variant'
@@ -167,6 +168,18 @@ const storageRows: string[][] = [
     'localStorage',
     NECESSARY,
     'תצוגת המוצרים שבחרתם בעמודי הקטגוריה והחנות (רשת או רשימה), כדי שתישמר בין עמודים. נשמר רק כשבחרתם רשימה, ואינו נשלח לשרת.',
+  ],
+  [
+    CATALOG_PAGING_KEY,
+    'localStorage',
+    NECESSARY,
+    'אופן הדפדוף שבחרתם בעמודי הקטגוריה והחנות (עמודים ממוספרים או גלילה רציפה), כדי שיישמר בין עמודים. נשמר רק כשבחרתם גלילה רציפה, ואינו נשלח לשרת.',
+  ],
+  [
+    `${SCROLL_DEPTH_KEY_PREFIX}<כתובת העמוד>`,
+    'sessionStorage',
+    NECESSARY,
+    'בגלילה רציפה: עד איזה עמוד הגעתם בארכיון, כדי שחזרה מעמוד מוצר תחזיר אתכם לאותו מקום. נמחק בסגירת הלשונית, ואינו נשלח לשרת.',
   ],
   [
     COMPARE_STORAGE_KEY,

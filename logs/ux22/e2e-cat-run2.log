@@ -1,0 +1,26 @@
+Already up to date
+Done in 188ms using pnpm v11.1.2
+Already up to date
+Done in 193ms using pnpm v11.1.2
+
+Running 18 tests using 2 workers
+
+[1A[2K[1/18] [chromium] › e2e/category.spec.ts:14:7 › category archive › renders the title, result count, breadcrumb and a product grid
+[1A[2K[2/18] [chromium] › e2e/category.spec.ts:30:7 › category archive › sorting by price rewrites the URL and keeps the archive rendered
+[1A[2K[3/18] [chromium] › e2e/category.spec.ts:46:7 › category archive › keeps the sort selection when the page reloads
+[1A[2K[4/18] [chromium] › e2e/category.spec.ts:54:7 › category archive › an unrecognised sort key falls back to the default order
+[1A[2K[5/18] [chromium] › e2e/category.spec.ts:76:7 › category archive › an unknown category slug 404s, is noindex, and shows the not-found page
+[1A[2K[6/18] [chromium] › e2e/category.spec.ts:96:7 › category archive › a real category still streams a prerendered shell
+[1A[2K[7/18] [chromium] › e2e/category.spec.ts:146:7 › category archive › an out-of-range page number clamps to the last page
+[1A[2K[8/18] [chromium] › e2e/category.spec.ts:166:7 › category archive › the shop archive clamps an out-of-range page the same way
+[1A[2K[9/18] [chromium] › e2e/category.spec.ts:187:7 › category archive › a discount filter leaves only cards whose badge meets it
+[1A[2K[10/18] [chromium] › e2e/category.spec.ts:215:7 › category archive › an unknown brand narrows to the empty state, not a blank page
+[1A[2K[11/18] [chromium] › e2e/category.spec.ts:227:7 › category archive › ?sort=relevance is accepted and reads as the default order
+[1A[2K[12/18] [chromium] › e2e/category.spec.ts:235:7 › category archive › a price filter narrows the archive without breaking it
+[1A[2K[13/18] [chromium] › e2e/category.spec.ts:265:7 › category archive › catalog thumbnails go through the image optimizer and decode
+[1A[2K[14/18] [chromium] › e2e/category.spec.ts:335:9 › catalogue on a phone › no thumb paints outside its card on /products
+[1A[2K[15/18] [chromium] › e2e/category.spec.ts:335:9 › catalogue on a phone › no thumb paints outside its card on /search?q=%D7%A6%D7%99%D7%9E%D7%A8
+[1A[2K[16/18] [chromium] › e2e/category.spec.ts:372:7 › category listing: page size and autocomplete › never renders more than 24 cards on a page, and page 2 links when there are more
+[1A[2K[17/18] [chromium] › e2e/category.spec.ts:396:7 › category listing: page size and autocomplete › the sidebar combobox asks the suggest route with this category as scope
+[1A[2K[18/18] [chromium] › e2e/category.spec.ts:419:7 › category listing: page size and autocomplete › the shell carries the site search and no other typed field
+[1A[2K  18 passed (1.9m)

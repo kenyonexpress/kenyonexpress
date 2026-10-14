@@ -1,0 +1,11 @@
+Already up to date
+Done in 184ms using pnpm v11.1.2
+$ tsc --noEmit
+src/components/category/CatalogGrid.tsx(103,45): error TS2532: Object is possibly 'undefined'.
+src/components/category/CatalogGrid.tsx(173,33): error TS2532: Object is possibly 'undefined'.
+src/lib/catalog-archive.ts(79,33): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/lib/catalog-archive.ts(83,24): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+[ELIFECYCLE] Command failed with exit code 2.
+exit 2

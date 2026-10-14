@@ -1,0 +1,232 @@
+Already up to date
+Done in 207ms using pnpm v11.1.2
+$ vitest run
+
+ RUN  v4.1.11 /Users/ofir/kenyonexpress-autopilot
+
+Error: Not implemented: navigation (except hash changes)
+    at module.exports (/Users/ofir/kenyonexpress-autopilot/node_modules/.pnpm/jsdom@25.0.1/node_modules/jsdom/lib/jsdom/browser/not-implemented.js:9:17)
+    at navigateFetch (/Users/ofir/kenyonexpress-autopilot/node_modules/.pnpm/jsdom@25.0.1/node_modules/jsdom/lib/jsdom/living/window/navigation.js:77:3)
+    at exports.navigate (/Users/ofir/kenyonexpress-autopilot/node_modules/.pnpm/jsdom@25.0.1/node_modules/jsdom/lib/jsdom/living/window/navigation.js:55:3)
+    at Timeout._onTimeout (/Users/ofir/kenyonexpress-autopilot/node_modules/.pnpm/jsdom@25.0.1/node_modules/jsdom/lib/jsdom/living/nodes/HTMLHyperlinkElementUtils-impl.js:81:7)
+    at listOnTimeout (node:internal/timers:605:17)
+    at processTimers (node:internal/timers:541:7) undefined
+Error: Not implemented: navigation (except hash changes)
+    at module.exports (/Users/ofir/kenyonexpress-autopilot/node_modules/.pnpm/jsdom@25.0.1/node_modules/jsdom/lib/jsdom/browser/not-implemented.js:9:17)
+    at navigateFetch (/Users/ofir/kenyonexpress-autopilot/node_modules/.pnpm/jsdom@25.0.1/node_modules/jsdom/lib/jsdom/living/window/navigation.js:77:3)
+    at exports.navigate (/Users/ofir/kenyonexpress-autopilot/node_modules/.pnpm/jsdom@25.0.1/node_modules/jsdom/lib/jsdom/living/window/navigation.js:55:3)
+    at Timeout._onTimeout (/Users/ofir/kenyonexpress-autopilot/node_modules/.pnpm/jsdom@25.0.1/node_modules/jsdom/lib/jsdom/living/nodes/HTMLHyperlinkElementUtils-impl.js:81:7)
+    at listOnTimeout (node:internal/timers:605:17)
+    at processTimers (node:internal/timers:541:7) undefined
+Error: Not implemented: navigation (except hash changes)
+    at module.exports (/Users/ofir/kenyonexpress-autopilot/node_modules/.pnpm/jsdom@25.0.1/node_modules/jsdom/lib/jsdom/browser/not-implemented.js:9:17)
+    at navigateFetch (/Users/ofir/kenyonexpress-autopilot/node_modules/.pnpm/jsdom@25.0.1/node_modules/jsdom/lib/jsdom/living/window/navigation.js:77:3)
+    at exports.navigate (/Users/ofir/kenyonexpress-autopilot/node_modules/.pnpm/jsdom@25.0.1/node_modules/jsdom/lib/jsdom/living/window/navigation.js:55:3)
+    at Timeout._onTimeout (/Users/ofir/kenyonexpress-autopilot/node_modules/.pnpm/jsdom@25.0.1/node_modules/jsdom/lib/jsdom/living/nodes/HTMLHyperlinkElementUtils-impl.js:81:7)
+    at listOnTimeout (node:internal/timers:605:17)
+    at processTimers (node:internal/timers:541:7) undefined
+ ❯ src/app/(legal)/legal-pages.test.ts (120 tests | 1 failed) 300ms
+     × names ke_catalog_paging_v1 54ms
+ ❯ src/__tests__/public-route-cache-control.test.ts (20 tests | 1 failed) 53ms
+     × are all in the ledger, and the ledger names nothing that is gone 25ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/__tests__/public-route-cache-control.test.ts > public GET route handlers > are all in the ledger, and the ledger names nothing that is gone
+AssertionError: expected [ …(19) ] to deeply equal [ …(18) ]
+
+- Expected
++ Received
+
+@@ -1,9 +1,10 @@
+  [
+    "src/app/(store)/blog/feed.xml/route.ts",
+    "src/app/api/alerts/uptimerobot/route.ts",
+    "src/app/api/cart/route.ts",
++   "src/app/api/catalog/page/route.ts",
+    "src/app/api/flash-sales/[id]/status/route.ts",
+    "src/app/api/health/route.ts",
+    "src/app/api/ready/route.ts",
+    "src/app/api/recommendations/for-you/route.ts",
+    "src/app/api/search/facets/route.ts",
+
+ ❯ src/__tests__/public-route-cache-control.test.ts:91:22
+     89| describe('public GET route handlers', () => {
+     90|   it('are all in the ledger, and the ledger names nothing that is gone…
+     91|     expect(handlers).toEqual(Object.keys(LEDGER).sort())
+       |                      ^
+     92|   })
+     93|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/app/(legal)/legal-pages.test.ts > the cookie policy is a complete inventory > names ke_catalog_paging_v1
+AssertionError: expected 'עמוד זה מפרט אילו עוגיות ופריטי אחסון…' to contain 'ke_catalog_paging_v1'
+
+- Expected
++ Received
+
+- ke_catalog_paging_v1
++ עמוד זה מפרט אילו עוגיות ופריטי אחסון בדפדפן מציב אתר קניון אקספרס, מי מציב אותם, לכמה זמן ולאיזו מטרה, ואיך אתם שולטים בהם. הוא משלים את סעיף העוגיות במדיניות הפרטיות ומהווה חלק בלתי נפרד ממנה.
++ העיקרון שמנחה אותנו פשוט: מה שנדרש כדי שהאתר יעבוד מוצב תמיד, וכל השאר מוצב רק אחרי שאמרתם כן, לכל סוג בנפרד.
++ מהן עוגיות ופריטי אחסון
++ עוגייה (cookie) היא קובץ טקסט קטן שאתר שומר בדפדפן שלכם, והדפדפן מחזיר אותו לאתר בכל בקשה. בנוסף לעוגיות, הדפדפן מאפשר לאתר לשמור מידע בשני מחסנים מקומיים: localStorage, שנשאר עד שנמחק, ו-sessionStorage, שנמחק בסגירת הלשונית. המידע בשני המחסנים אינו נשלח לשרת מעצמו, והאתר עושה בהם שימוש בעיקר כדי שהעגלה והעדפותיכם יוצגו מיד.
++ כל העוגיות ופריטי האחסון שהאתר עצמו מציב נושאים את הקידומת ke_, כדי שתוכלו לזהות אותם בקלות בכלי הדפדפן ולמחוק אותם אם תרצו.
++ שלושה סוגים, שתי שאלות
++ הכרחיות: נדרשות לתפעול האתר. בלעדיהן העגלה, ההתחברות, בחירת המשלוח והתשלום אינם יכולים לפעול. הן מוצבות תמיד, ואינן נשאלות בבאנר ההסכמה. אפשר לחסום אותן בהגדרות הדפדפן, אך אז חלקים מהאתר לא יעבדו.
++ מדידת שימוש באתר: כלי המדידה שלנו ו-PostHog, שמתעדים אילו עמודים נצפו, מה נוסף לעגלה ומה נרכש, תחת מזהה אנונימי, כדי שנבין מה עובד באתר ומה לא. מוצבות רק לאחר הסכמה לסוג זה.
++ מדידת פרסום: Google Analytics ו-Meta Pixel, שמודדים אילו קמפיינים הביאו רכישות ומאפשרים התאמת פרסום. הסקריפטים שלהם אינם נטענים כלל, ולא נשלחת אליהם כל בקשה, לפני הסכמה לסוג זה.
++ בבאנר ההסכמה אפשר לאשר את שני הסוגים, אחד מהם או אף אחד. ההחלטה נשמרת בעוגיית ke_consent יחד עם גרסת הנוסח שאושרה, ואם נוסח הבאנר ישתנה מהותית, תישאלו שוב ולא נסתמך על הסכמה שניתנה לנוסח אחר.
++ דפדפן ששולח אות "אל תעקוב" (Do Not Track) או Global Privacy Control מטופל כסירוב לשני הסוגים, גם אם לחצתם אישור בבאנר.
++ העוגיות שהאתר מציב
++ הטבלה מונה כל עוגייה שהאתר מציב בדפדפן שלכם. משך החיים הוא הזמן המרבי; עוגייה של עגלה או של ביקור מתחדשת בכל פעולה, ועוגייה של הרשמה נמחקת מיד עם סיומה.
++ שם
++ סוג
++ משך חיים
++ למה היא משמשת
++ ke_session_id
++ הכרחית
++ 30 ימים
++ מזהה אקראי של עגלת הקניות של מבקר שאינו מחובר לחשבון. אינו נגיש לסקריפטים בדפדפן.
++ ke_consent
++ הכרחית
++ 12 חודשים
++ ההחלטה שלכם בבאנר ההסכמה, לפי סוג, יחד עם גרסת הנוסח שאושרה. אם הנוסח משתנה מהותית, תישאלו שוב.
++ ke_cart_coupon
++ הכרחית
++ 30 ימים
++ קודי הקופון שהוזנו לעגלה, כדי שיישארו בה בין עמודים. המחיר מחושב מחדש בכל טעינה ואינו נשמר בעוגייה.
++ ke_cart_shipping
++ הכרחית
++ 30 ימים
++ שיטת המשלוח שבחרתם בעגלה. העוגייה מכילה את מזהה השיטה בלבד; המחיר נקרא מחדש בכל פעם.
++ ke_ref
++ הכרחית
++ 30 ימים
++ נוצרת רק אם הגעתם דרך קישור הפניה של חבר, ושומרת את קוד ההפניה כדי שההטבה תיזקף לשניכם. אינה נגישה לסקריפטים בדפדפן.
++ ke_signup_uid
++ הכרחית
++ 15 דקות
++ בזמן ההרשמה בלבד: מזהה החשבון החדש בין שליחת הטופס לבין לחיצה על "שלח קוד שוב". מוגבלת לעמוד ההרשמה.
++ עוגיות התחברות של Supabase (sb-…-auth-token)
++ הכרחית
++ כל עוד אתם מחוברים
++ שמירת מצב ההתחברות לחשבון בין עמודים ובין ביקורים. נמחקות ביציאה מהחשבון.
++ ke_attr
++ מדידת שימוש
++ 30 ימים
++ פרמטרי הקמפיין (utm) שדרכם הגעתם לאתר, בביקור הראשון ובאחרון, למדידת ערוצי שיווק.
++ ke_lpb
++ מדידת שימוש
++ 90 ימים, בדפי /lp בלבד
++ מספר אקראי שקובע איזו גרסה של דף נחיתה תראו כשמשווים בין גרסאות, כדי שתראו את אותה גרסה בכל ביקור. נכתב רק אחרי הסכמה למדידה, אינו מזהה אתכם ואינו משפיע על המחיר.
++ ke_ph_id
++ מדידת שימוש
++ 30 ימים
++ העתק של המזהה האנונימי של כלי המדידה, כדי שרכישה שהושלמה תשויך לאותו ביקור. אינו מזהה אתכם אישית.
++ ke_ckv
++ מדידת שימוש
++ עד סגירת הדפדפן
++ באיזו גרסה של מסך התשלום צפיתם, לצורך השוואה בין גרסאות. אינה משפיעה על המחיר.
++ ke_replay_optin
++ מדידת שימוש
++ 6 חודשים
++ הסכמה מפורשת, שניתנת רק מהאזור האישי, להקלטת הפעולות במסך לצורך טיפול בתקלה. כבויה כברירת מחדל.
++ פריטי אחסון בדפדפן
++ פריטים אלה נשמרים במחסן המקומי של הדפדפן ולא נשלחים לשרת מעצמם. אף אחד מהם אינו מכיל פרטי תשלום, ואף אחד מהם אינו קובע מחיר: כל מחיר מחושב מחדש בשרת בכל פעם.
++ מפתח
++ מחסן
++ סוג
++ למה הוא משמש
++ ke_cart_mirror_v1
++ localStorage
++ הכרחית
++ מספר הפריטים בעגלה, כדי שהמונה בראש העמוד יוצג מיד בטעינה. נדרס בתשובה הראשונה מהשרת.
++ ke_cart_fallback_v1
++ localStorage
++ הכרחית
++ תמונת מצב של העגלה להצגה כשאין חיבור. אינה משמשת לחיוב, ונמחקת לאחר 30 ימים.
++ ke_saved_for_later_v1
++ localStorage
++ הכרחית
++ הפריטים ששמרתם "לפעם אחרת" מהעגלה, עם המחיר כפי שהיה בעת השמירה. החזרה לעגלה מתמחרת מחדש.
++ ke_delivery_city_v1
++ localStorage
++ הכרחית
++ היישוב שבחרתם להערכת זמן המשלוח בעגלה, כדי שלא תישאלו שוב. אינו נשלח לשרת.
++ ke_catalog_view_v1
++ localStorage
++ הכרחית
++ תצוגת המוצרים שבחרתם בעמודי הקטגוריה והחנות (רשת או רשימה), כדי שתישמר בין עמודים. נשמר רק כשבחרתם רשימה, ואינו נשלח לשרת.
++ ke_compare_v1
++ localStorage
++ הכרחית
++ עד ארבעה מוצרים שבחרתם להשוואה, כדי שהרשימה תישמר בין עמודים. אינה נשלחת לשרת.
++ ke_recent_views
++ localStorage
++ מדידת שימוש
++ מזהי המוצרים האחרונים שצפיתם בהם, לשורת "מותאם לך" בדף הבית. נכתב רק לאחר הסכמה למדידת שימוש, ונשלח לשרת רק כדי לבחור את המוצרים המוצגים.
++ ke_a_session
++ אחסון דפדפן
++ מדידת שימוש
++ מזהה ביקור אקראי, שמתחדש לאחר 30 דקות ללא פעילות, לקיבוץ צפיות עמוד לביקור אחד.
++ ke_ph_distinct_id
++ localStorage
++ מדידת שימוש
++ המזהה האנונימי של כלי המדידה, קבוע לדפדפן זה. אינו מכיל פרטים מזהים.
++ ke_ph_variants
++ sessionStorage
++ מדידת שימוש
++ גרסאות הממשק שהוקצו לביקור זה בניסויי A/B (מסך התשלום, דף הבית, נוסח הכפתורים, צבע כפתור התשלום), כדי שלא יתחלפו באמצע הקנייה. נמחק בסגירת הלשונית.
++ ke_replay_buggy
++ sessionStorage
++ מדידת שימוש
++ סימון שבביקור זה אירעה שגיאה, כדי שהקלטת מסך, אם אישרתם אותה, תתחיל רק אז. נמחק בסגירת הלשונית.
++ כלים של צד שלישי
++ הכלים הבאים מציבים עוגיות משלהם, בהתאם למדיניות הפרטיות של כל אחד מהם. כלי מדידה ופרסום אינם נטענים לפני הסכמה לסוג המתאים, ולכן גם העוגיות שלהם אינן קיימות בדפדפן לפני כן. עמוד התשלום של חברת הסליקה נדרש לביצוע החיוב והוא בגדר הכרחי.
++ כלי
++ סוג
++ עוגיות אופייניות
++ למה הוא משמש
++ PostHog
++ מדידת שימוש
++ עוגיות ואחסון בקידומת ph_
++ ספירת עמודים, עגלה ורכישות תחת מזהה אנונימי, וניסויי ממשק. נטען רק לאחר הסכמה לסוג "מדידת שימוש באתר".
++ Google Analytics 4
++ מדידת פרסום
++ _ga, _ga_*
++ מדידת קמפיינים והמרות. אינו נטען כלל לפני הסכמה לסוג "מדידת פרסום".
++ Meta Pixel
++ מדידת פרסום
++ _fbp, _fbc
++ מדידת פרסום בפייסבוק ובאינסטגרם והתאמת מודעות. אינו נטען כלל לפני הסכמה לסוג "מדידת פרסום".
++ Cardcom
++ הכרחית
++ עוגיות של עמוד התשלום
++ עמוד התשלום המאובטח של חברת הסליקה, שאליו אתם מועברים בעת החיוב. פועל לפי מדיניות הפרטיות של Cardcom.
++ רשימת כל הספקים שמקבלים מידע, המידע שנמסר לכל אחד מהם ומצב הסכמי עיבוד המידע מולם מופיעה בסעיף "למי המידע נמסר" במדיניות הפרטיות.
++ איך משנים את ההחלטה
++ בבאנר ההסכמה, בביקור הראשון, או בכל עת לאחר מכן בעמוד "פרטיות ונתונים" באזור האישי, שם אפשר לאשר או לבטל כל סוג בנפרד. ביטול הסכמה מפסיק את הטעינה של הכלים מאותו רגע; מידע שנאסף לפני כן מטופל לפי מדיניות הפרטיות.
++ בהגדרות הדפדפן: כל דפדפן מאפשר לצפות בעוגיות ובאחסון של אתר, למחוק אותם ולחסום אותם. הוראות מפורטות נמצאות בעזרה של Chrome, Safari, Firefox ו-Edge. מחיקת העוגיות ההכרחיות תרוקן את העגלה ותנתק אתכם מהחשבון.
++ הקלטת מסך לצורך טיפול בתקלה כבויה כברירת מחדל, ומופעלת רק מתוך האזור האישי ורק אם אישרתם גם את סוג "מדידת שימוש באתר". אפשר לכבות אותה באותו מקום.
++ שינויים במדיניות
++ כאשר נוסיף עוגייה, נסיר אחת או נשנה את מטרתה, נעדכן את הטבלאות ואת מספר הגרסה ותאריך התוקף בראש העמוד, והשינוי יפורט בהיסטוריית הגרסאות בתחתיתו. שינוי מהותי בסוגי ההסכמה יוביל לכך שתישאלו שוב בבאנר, ולא נסתמך על הסכמה שניתנה לנוסח קודם.
+
+ ❯ src/app/(legal)/legal-pages.test.ts:398:21
+    396|
+    397|   it.each(declaredBrowserKeys())('names %s', (key) => {
+    398|     expect(cookies).toContain(key)
+       |                     ^
+    399|   })
+    400|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed | 867 passed (869)
+      Tests  2 failed | 10047 passed | 12 skipped (10061)
+   Start at  22:47:12
+   Duration  305.62s (transform 246.10s, setup 134.07s, import 509.75s, tests 84.59s, environment 918.51s)
+
+[ELIFECYCLE] Test failed. See above for more details.
+exit 1
