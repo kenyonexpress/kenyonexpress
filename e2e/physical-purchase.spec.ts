@@ -6,7 +6,13 @@ import {
   paidFlowEnabled,
   signInWithEmail,
 } from './auth-session'
-import { BUY_BUTTON, expectHebrewRtl, paymentGateClosed, walkCheckoutToPayment } from './helpers'
+import {
+  BUY_BUTTON,
+  emptyCart,
+  expectHebrewRtl,
+  paymentGateClosed,
+  walkCheckoutToPayment,
+} from './helpers'
 
 /**
  * A signed-in customer buys a PHYSICAL product (marathon step 10, journey b).
@@ -38,6 +44,7 @@ test.describe('logged-in physical purchase @checkout @money', () => {
     test.skip(await buy.isDisabled(), 'e2e-test-physical is out of stock')
 
     await signInWithEmail(page, E2E_CUSTOMER_EMAIL, E2E_CUSTOMER_PASSWORD)
+    await emptyCart(page)
     await page.goto(`/product/${E2E_PHYSICAL_SLUG}`)
 
     await buy.click()

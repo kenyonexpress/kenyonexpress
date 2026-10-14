@@ -7,7 +7,13 @@ import {
   signInAsAdmin,
   signInWithEmail,
 } from './auth-session'
-import { BUY_BUTTON, expectHebrewRtl, paymentGateClosed, walkCheckoutToPayment } from './helpers'
+import {
+  BUY_BUTTON,
+  emptyCart,
+  expectHebrewRtl,
+  paymentGateClosed,
+  walkCheckoutToPayment,
+} from './helpers'
 
 /**
  * Admin cancel-and-refund, end to end (marathon step 10, journey d):
@@ -44,6 +50,7 @@ test.describe('admin cancel and refund @money @admin', () => {
     test.skip(!buyable, 'e2e-test-coupon is not purchasable; run pnpm seed:test')
 
     await signInWithEmail(page, E2E_CUSTOMER_EMAIL, E2E_CUSTOMER_PASSWORD)
+    await emptyCart(page)
     await page.goto(`/product/${E2E_COUPON_SLUG}`)
 
     await buy.click()

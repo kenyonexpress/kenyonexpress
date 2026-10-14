@@ -38,6 +38,7 @@ import {
 import { selectAccountForSuppliers } from '@/lib/payments/accounts'
 import {
   paymentMoneyWrite,
+  paymentsHasTokenColumn,
   readAmountAgorot,
   resolvePaymentMoneySchema,
 } from '@/lib/payments/payment-money-columns'
@@ -261,8 +262,20 @@ async function chargeSavedToken(args: {
       cardcom_account_id: token.cardcom_account_id,
       // The FK that ties the charge to the card it rode on. 026 created it and
       // nothing ever wrote it, so "which saved card was this?" could only be
-      // answered by joining through Cardcom's own token string.
-      token_id: token.id,
+      // answered by joining through Cardcom's own token string. The hosted
+      // database is the pre-059 lineage and has NO such column: the insert
+      // answered "Could not find the 'token_id' column of 'payments' in the
+      // schema cache" and every token charge failed (measured 15.10.2026, the
+      // three money specs). Probed once per process, like the money columns.
+      ...((await paymentsHasTokenColumn((column) =>
+        admin
+          .from('payments')
+          .select(column)
+          .limit(0)
+          .then(({ error }) => ({ error })),
+      ))
+        ? { token_id: token.id }
+        : {}),
     })
     .select('id')
     .single()

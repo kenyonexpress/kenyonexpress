@@ -312,6 +312,23 @@ export async function paymentGateClosed(page: Page): Promise<boolean> {
 }
 
 /**
+ * Empties the signed-in customer's cart through the cart page's own "רוקן
+ * עגלה" button, if there is anything in it. The E2E customer's cart is never
+ * cleared by the suite and carried 27 lines from earlier runs by 15.10.2026,
+ * so the pay step refused with "אין מספיק במלאי לאחד הפריטים" before the
+ * spec's own line was even looked at (post-fix run 1 of XF04). Call it after
+ * sign-in and before the spec adds its product.
+ */
+export async function emptyCart(page: Page): Promise<void> {
+  await page.goto('/cart')
+  const clear = page.getByRole('button', { name: 'רוקן עגלה' })
+  if (await clear.isVisible().catch(() => false)) {
+    await clear.click()
+    await expect(clear).toBeHidden({ timeout: 15_000 })
+  }
+}
+
+/**
  * Walks the desktop checkout wizard from wherever it opens to the payment
  * step, filling the details and the address when their steps are current,
  * and ends with the terms checkbox visible. Below 768 (D25) every section

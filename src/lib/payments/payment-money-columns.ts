@@ -156,3 +156,32 @@ export function __resetPaymentMoneySchemaCache(): void {
   cached = null
   warned = false
 }
+
+let paymentsTokenColumnPresent: Promise<boolean> | null = null
+
+/**
+ * Whether `payments.token_id` exists on the database this process talks to.
+ * One probe per process; a failed probe is read as "absent" and logged once,
+ * so a token charge still writes its payment row and the FK is simply not
+ * recorded until the column lands.
+ */
+export function paymentsHasTokenColumn(
+  probe: (column: string) => PromiseLike<{ error: unknown }>,
+): Promise<boolean> {
+  if (!paymentsTokenColumnPresent) {
+    paymentsTokenColumnPresent = Promise.resolve(probe('token_id')).then(({ error }) => {
+      if (error) {
+        log.warn('payments.token_id_column_absent', {
+          message: (error as { message?: string } | null)?.message,
+        })
+      }
+      return !error
+    })
+  }
+  return paymentsTokenColumnPresent
+}
+
+/** Test seam: forget the probe result. */
+export function __resetPaymentsTokenColumnCache(): void {
+  paymentsTokenColumnPresent = null
+}

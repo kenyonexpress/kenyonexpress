@@ -116,7 +116,19 @@ What run 1 proved, and what was fixed on top of it in the same commit:
   enabled and the action answered the closed message; the server's
   environment was verified to carry the variable. All three now use the
   page's reader; `provider-gate.test.ts` refuses a server action that imports
-  the bare assess.
+  the bare assess. With the gate open the action reached the database and
+  answered `Could not find the 'token_id' column of 'payments' in the schema
+  cache`: the hosted database is the pre-059 lineage and has no such column,
+  so `paymentsHasTokenColumn()` (payment-money-columns.ts) probes it once per
+  process and the insert skips the FK when it is absent (pinned by two unit
+  cases). With that gone the pay step answered "אין מספיק במלאי לאחד
+  הפריטים": the E2E customer's cart carried 27 lines from earlier runs, so
+  `emptyCart()` in `e2e/helpers.ts` now empties it after sign-in in
+  physical-purchase and admin-refund (full-purchase-redeem is a guest cart
+  merged at pay and still inherits whatever the account holds). The last
+  attempt then saw no "נוסף לסל" confirmation after the buy press, the
+  signature of the 120-an-hour cart-write limiter after a day of runs; the
+  money path is therefore NOT yet proven green end to end on this build.
 - **error-page (4 cases):** `goto` resolved before the streamed not-found
   heading painted, so an unawaited `isVisible()` was always false and the
   crash heading timed out. The spec waits for either heading now; verified
@@ -145,9 +157,9 @@ What run 1 proved, and what was fixed on top of it in the same commit:
 - **Not fixed here, for the retry:** `category.spec.ts` catalogue thumbnails
   on mobile-chrome (element detached mid-scroll),
   `coupon-offer.spec.ts` (the `/coupon/<physical slug>` probe landed on the
-  not-found page in the browser while curl got the 307),
-  `wishlist-page.spec.ts` share button, and the E2E customer's cart, which
-  carries 27 lines from earlier runs and is never cleared.
+  not-found page in the browser while curl got the 307), the
+  `wishlist-page.spec.ts` share button, full-purchase-redeem's inherited cart,
+  and the cart-write limiter state on this machine.
 
 
 ## How the suite got there

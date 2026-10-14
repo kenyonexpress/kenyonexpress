@@ -142,6 +142,9 @@ vi.mock('@/lib/payments/payment-money-columns', () => ({
   resolvePaymentMoneySchema: async () => ({ amountColumn: 'amount_agorot' }),
   paymentMoneyWrite: () => ({ amount_agorot: 0 }),
   readAmountAgorot: () => agorot(0),
+  // The hosted database's payments.token_id is probed once per process; the
+  // contract tests below run as if the column exists, so the FK write is seen.
+  paymentsHasTokenColumn: async () => true,
 }))
 
 const getCart = vi.fn()

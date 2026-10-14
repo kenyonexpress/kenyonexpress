@@ -2,8 +2,10 @@ import {
   AGOROT_SCHEMA,
   ILS_SCHEMA,
   __resetPaymentMoneySchemaCache,
+  __resetPaymentsTokenColumnCache,
   paymentMoneySelect,
   paymentMoneyWrite,
+  paymentsHasTokenColumn,
   readAmountAgorot,
   resolvePaymentMoneySchema,
 } from '@/lib/payments/payment-money-columns'
@@ -133,5 +135,24 @@ describe('resolvePaymentMoneySchema', () => {
     const good = vi.fn().mockResolvedValue({ error: null })
     expect(await resolvePaymentMoneySchema(good)).toBe(AGOROT_SCHEMA)
     expect(good).toHaveBeenCalled()
+  })
+})
+
+describe('paymentsHasTokenColumn', () => {
+  beforeEach(() => __resetPaymentsTokenColumnCache())
+
+  it('reads a clean probe as present and probes once per process', async () => {
+    const probe = vi.fn(async () => ({ error: null }))
+    expect(await paymentsHasTokenColumn(probe)).toBe(true)
+    expect(await paymentsHasTokenColumn(probe)).toBe(true)
+    expect(probe).toHaveBeenCalledTimes(1)
+    expect(probe).toHaveBeenCalledWith('token_id')
+  })
+
+  it('reads the hosted database\'s "schema cache" error as absent', async () => {
+    const probe = vi.fn(async () => ({
+      error: { message: "Could not find the 'token_id' column of 'payments' in the schema cache" },
+    }))
+    expect(await paymentsHasTokenColumn(probe)).toBe(false)
   })
 })
