@@ -1,0 +1,22 @@
+Already up to date
+Done in 189ms using pnpm v11.1.2
+
+Running 16 tests using 2 workers
+
+[1A[2K[1/16] [chromium] › e2e/hero-grid.spec.ts:96:7 › the hero grid at 1440 › three columns on one 1170 row: 201 | 728 | 241, edge to edge
+[1A[2K[2/16] [chromium] › e2e/hero-grid.spec.ts:128:7 › the hero grid at 1440 › the promo column is three blocks of 197 with a hairline between, 20px of white under
+[1A[2K[3/16] [chromium] › e2e/hero-grid.spec.ts:166:7 › the hero grid at 1440 › copy is 17px light with a bold strong, right-aligned at the inset, as live's .da-text
+[1A[2K[4/16] [chromium] › e2e/hero-grid.spec.ts:199:7 › the hero grid at 1440 › the action row sits under the copy at 14px / 30px / 700 with an 18px disc to its left
+[1A[2K[5/16] [chromium] › e2e/hero-grid.spec.ts:239:7 › the hero grid at 1440 › each block hangs a 110px picture 16deg off its bottom-left corner, clipped and behind the copy
+[1A[2K[6/16] [chromium] › e2e/hero-grid.spec.ts:273:7 › the hero grid at 1440 › the promo links are the only links in the column and each names a category in Hebrew
+[1A[2K[7/16] [chromium] › e2e/hero-grid.spec.ts:292:9 › the promo column at 380 › is not displayed, and the hero row does not overflow the viewport
+[1A[2K[8/16] [chromium] › e2e/hero-grid.spec.ts:292:9 › the promo column at 768 › is not displayed, and the hero row does not overflow the viewport
+[1A[2K[9/16] [mobile-chrome] › e2e/hero-grid.spec.ts:96:7 › the hero grid at 1440 › three columns on one 1170 row: 201 | 728 | 241, edge to edge
+[1A[2K[10/16] [mobile-chrome] › e2e/hero-grid.spec.ts:128:7 › the hero grid at 1440 › the promo column is three blocks of 197 with a hairline between, 20px of white under
+[1A[2K[11/16] [mobile-chrome] › e2e/hero-grid.spec.ts:166:7 › the hero grid at 1440 › copy is 17px light with a bold strong, right-aligned at the inset, as live's .da-text
+[1A[2K[12/16] [mobile-chrome] › e2e/hero-grid.spec.ts:199:7 › the hero grid at 1440 › the action row sits under the copy at 14px / 30px / 700 with an 18px disc to its left
+[1A[2K[13/16] [mobile-chrome] › e2e/hero-grid.spec.ts:239:7 › the hero grid at 1440 › each block hangs a 110px picture 16deg off its bottom-left corner, clipped and behind the copy
+[1A[2K[14/16] [mobile-chrome] › e2e/hero-grid.spec.ts:273:7 › the hero grid at 1440 › the promo links are the only links in the column and each names a category in Hebrew
+[1A[2K[15/16] [mobile-chrome] › e2e/hero-grid.spec.ts:292:9 › the promo column at 380 › is not displayed, and the hero row does not overflow the viewport
+[1A[2K[16/16] [mobile-chrome] › e2e/hero-grid.spec.ts:292:9 › the promo column at 768 › is not displayed, and the hero row does not overflow the viewport
+[1A[2K  16 passed (7.6s)

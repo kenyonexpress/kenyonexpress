@@ -57,15 +57,51 @@ export const ELECTRO_HERO = {
     listPaddingBottom: 5,
   },
   sideBanners: {
-    /* 201 measured on live; see the note on categoryColumn.width above. */
+    /* 201 measured on live; see the note on categoryColumn.width above.
+       REMEASURED UX06 (14.10.2026) on refs/ke_live_1440.png: the column paints
+       x135..x335 and the slider's tint starts at x336. The component had its
+       own `BANNER_WIDTH = 200` beside this 201, which left the slider 729 wide
+       at x335 -- one pixel into the promo column at every row of the hero. */
     width: 201,
     // Live: three 197px da-blocks fill the 593px column (refs, 2026-09-02).
     blockHeight: 593,
+    /* `.builder-elementor .slider-das-block .da-block .da-inner{min-height:
+       197px}` and `.slider-das-block+.slider-das-block{border-top:1px solid
+       #e7e7e7}`: hairlines at y345 and y543, so the blocks are 197 + 198 +
+       198 = 593, and the 20px under them to the row's 613 stay white. The
+       column was `h-full` and split the 613 three ways (204.67 each). */
     itemHeight: 197,
     itemWidth: 168,
     offsetTop: 36,
-    shopButtonSize: 26,
+    /* `.da-inner.p-3` = 16px: the copy's right edge sits at x319/320 in blocks
+       2 and 3 (336 - 16), vertically centred (`.da-media{margin:auto}`). */
+    padding: 16,
+    /* `.vertical-menu-slider-category-with-das-inner .slider-das-block
+       .da-block .da-inner{font-size:17px}` + `.da-block .da-inner{line-height:
+       23px}` at xl; `.da-text{font-weight:200}`, `strong{font-weight:700}`.
+       Cap tops measured y214 / y238 in block 1, 24px apart. Was 11px/13px
+       with a 13px strong, which is Electro's handheld da-block, not this one. */
+    copySize: 17,
+    copyLineHeight: 23,
+    copyWeight: 200,
+    /* `.da-block .da-action{font-size:14px;line-height:30px;margin-top:0}` at
+       xl, 700, with `::after` 18x18 (`width:18px;height:18px`) yellow disc and
+       `margin-right:8px` between the text and the disc. Measured: disc
+       x227..x244 (18), text x254..x319 in block 2. Was 11px with a 26px disc. */
+    actionSize: 14,
+    actionLineHeight: 30,
+    actionGap: 8,
+    shopButtonSize: 18,
     shopButtonColor: '#fed700',
+    /* `.da-media-left{position:absolute;bottom:-30px;left:-10px;width:110px;
+       transform:rotate(16deg)}`: a 140x140 picture drawn 110 wide in the
+       block's bottom-left corner, clipped by the block's overflow:hidden. `left`
+       is physical on live (the RTL stylesheet does not flip it), which is
+       inline-end here. Was 80 wide, 20 below the edge. */
+    imageSize: 110,
+    imageOverhangBottom: 30,
+    imageOverhangEnd: 10,
+    imageRotateDeg: 16,
   },
   dots: {
     activeWidth: 30,

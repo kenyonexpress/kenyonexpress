@@ -4,8 +4,6 @@ import { ChevronLeft } from 'lucide-react'
 import Link from 'next/link'
 
 const SB = ELECTRO_HERO.sideBanners
-const BANNER_WIDTH = 200
-const BANNER_IMAGE_HEIGHT = 80
 
 type BannerLine = { text: string; bold?: boolean }[]
 
@@ -29,9 +27,9 @@ type PromoBanner = {
  * no Hebrew counterpart in `refs/` to copy: this is written copy, not measured
  * copy, and each line now matches the category it actually links to.
  *
- * The `bold` part of each line is the emphasis the template's design puts at
- * 13px against the 11px around it, kept because it is a layout fact and not a
- * language one.
+ * The `bold` part of each line is the `<strong>` Electro puts inside the light
+ * copy: same 17px, weight 700 against 200. It is a layout fact and not a
+ * language one, so it stays.
  */
 const PROMO_BANNERS: PromoBanner[] = [
   {
@@ -51,22 +49,30 @@ const PROMO_BANNERS: PromoBanner[] = [
   },
 ]
 
+/**
+ * Live's `.da-text`: 17px / 23px, weight 200, `<strong>` 700 at the same size
+ * (sideBanners.copy*). `text-transform: uppercase` went with the English:
+ * Hebrew has no letter case for it to act on, and `dir` is inherited.
+ *
+ * UX06 (14.10.2026): this rendered at 11px / 13px with a 13px strong, which is
+ * the handheld da-block's type and not the slider column's; the whole block of
+ * copy was 24px tall where live's two lines are 46.
+ */
 function BannerText({ lines }: { lines: BannerLine[] }) {
   return (
-    // dir and `uppercase` both went with the English. An RTL block inherits the
-    // document direction, and Hebrew has no letter case for `uppercase` to act
-    // on -- it was a no-op on the glyphs and a wrong signal to anything reading
-    // the markup.
-    <div className="da-text text-end font-normal text-heading">
+    <div
+      className="da-text text-start text-heading"
+      style={{
+        fontSize: SB.copySize,
+        lineHeight: `${SB.copyLineHeight}px`,
+        fontWeight: SB.copyWeight,
+      }}
+    >
       {lines.map((line, lineIdx) => (
-        <span
-          key={line.map((p) => p.text).join('|')}
-          className={lineIdx > 0 ? 'block' : undefined}
-          style={{ fontSize: 11, lineHeight: '13px' }}
-        >
+        <span key={line.map((p) => p.text).join('|')} className={lineIdx > 0 ? 'block' : undefined}>
           {line.map((part) =>
             part.bold ? (
-              <strong key={`${part.text}-b`} className="font-bold" style={{ fontSize: 13 }}>
+              <strong key={`${part.text}-b`} className="font-bold">
                 {part.text}
               </strong>
             ) : (
@@ -80,66 +86,116 @@ function BannerText({ lines }: { lines: BannerLine[] }) {
 }
 
 /**
- * The banner's call to action.
+ * The banner's call to action: live's `.da-action`, 14px / 30px / 700, a flex
+ * row whose `::after` is an 18px yellow disc with a chevron, 8px from
+ * the text (sideBanners.action*, shopButtonSize). The row starts at the inline
+ * start like the copy above it, so in this RTL column the text is right-aligned
+ * under the copy and the disc sits to its left.
+ *
+ * UX06: it was `self-end` inside an `items-end` column, i.e. pinned to the
+ * inline END -- the LEFT edge -- 70px away from the right-aligned copy it
+ * belongs to, at 11px with a 26px disc.
  *
  * `Shop now` in Hebrew, and the chevron mirrored with it: a forward arrow
- * points in the direction reading advances, which is leftward here. ChevronRight
- * beside Hebrew points back at the text it came from.
+ * points in the direction reading advances, which is leftward here. Live keeps
+ * Font Awesome's angle-right (its RTL sheet does not flip the glyph); that is
+ * the one place this column does not copy it, by the standing RTL rule.
  */
 function ShopNowButton() {
   return (
-    <span className="da-action mt-2 inline-flex items-center gap-2 self-end text-micro font-bold leading-none text-heading">
+    <span
+      className="da-action flex items-center self-start font-bold text-heading"
+      style={{ fontSize: SB.actionSize, lineHeight: `${SB.actionLineHeight}px`, gap: SB.actionGap }}
+    >
+      לרכישה
       <span
         aria-hidden="true"
-        style={{
-          width: SB.shopButtonSize,
-          height: SB.shopButtonSize,
-        }}
+        style={{ width: SB.shopButtonSize, height: SB.shopButtonSize }}
+        // Dark ink, not live's white: white on #fed700 is 1.41:1 and the
+        // brand-contrast gate (src/lib/a11y/brand-contrast.test.ts) refuses it
+        // anywhere in src/, decoration included. The disc, its size and its
+        // place are live's; the glyph colour is the site's standing rule.
         className="flex shrink-0 items-center justify-center rounded-full bg-brand-secondary text-brand-dark"
       >
-        <ChevronLeft className="h-3.5 w-3.5" strokeWidth={2.5} />
+        <ChevronLeft className="h-3 w-3" strokeWidth={3} />
       </span>
-      לרכישה
     </span>
   )
 }
 
+/**
+ * THE LEFT COLUMN OF THE HERO ROW AT lg AND UP: live's three
+ * `.slider-das-block` widgets, measured on refs/ke_live_1440.png (UX06,
+ * 14.10.2026, logs/ux06/before.json against the same capture):
+ *
+ *   column   x135..x335, 201 wide (sideBanners.width); the slider starts at
+ *            x336. Ours was 200, so the slider was 729 wide from x335.
+ *   blocks   197 / 198 / 198 = 593 (min-height 197 on `.da-inner`, a 1px
+ *            #e7e7e7 border-top on widgets 2 and 3), the 20px under them to
+ *            the row's 613 white. Ours was `h-full`, 204.67 x 3.
+ *   inner    16px padding, copy vertically centred, right edge at x320
+ *   copy     17px / 23px / 200, strong 700 (was 11 / 13, strong 13)
+ *   action   14px / 30px / 700, 18px disc 8px to its left, under the copy's
+ *            right edge (was 11px, 26px disc, pinned to the LEFT edge)
+ *   image    110px, rotated 16deg, 30 below and 10 past the bottom-left corner,
+ *            clipped by the block (was 80 wide, 20 below)
+ *   hover    none on live (`.da-media` has no :hover rule); the 40% brand tint
+ *            and the 105% zoom were ours and are gone
+ *
+ * Below lg the column is `hidden`: live's `elementor-hidden-phone` column is
+ * also `display:none` through 1199 via `.builder .slider-das-block`, and the
+ * 768 capture shows the strip's five tiles straight under the slider with
+ * nothing beside them.
+ *
+ * Each block is a wrapper (the hairline, as on live's widget) around the link
+ * (the `.da-inner` box with the min-height), so the hairline adds to the 197
+ * instead of being eaten by it: border-box min-height would have made the
+ * column 591.
+ */
 export default function HeroPromoBanners() {
   return (
     <div
       dir="rtl"
+      data-hero-promo=""
       style={{
-        width: BANNER_WIDTH,
-        minWidth: BANNER_WIDTH,
-        maxWidth: BANNER_WIDTH,
-        flex: `0 0 ${BANNER_WIDTH}px`,
+        width: SB.width,
+        minWidth: SB.width,
+        maxWidth: SB.width,
+        flex: `0 0 ${SB.width}px`,
       }}
-      className="slider-das-block hidden h-full shrink-0 flex-col bg-white font-sans lg:flex"
+      className="slider-das-block hidden shrink-0 flex-col self-start bg-white font-sans lg:flex"
     >
       {PROMO_BANNERS.map((banner, idx) => (
-        <Link
+        <div
           key={banner.id}
-          href={banner.href}
-          className={`group relative flex min-h-0 flex-1 items-stretch overflow-hidden px-3 py-4 transition-colors hover:bg-brand-accent/40 ${
-            idx < PROMO_BANNERS.length - 1 ? 'border-b border-border-alt' : ''
-          }`}
+          data-hero-promo-block={banner.id}
+          className={`da-block bg-white ${idx > 0 ? 'border-t border-border-alt' : ''}`}
         >
-          <div className="relative z-10 flex min-w-0 flex-1 flex-col items-end justify-center">
-            <BannerText lines={banner.lines} />
-            <ShopNowButton />
-          </div>
-
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -bottom-5 -end-2.5 z-0 w-20 rotate-[16deg]"
-            style={{ height: BANNER_IMAGE_HEIGHT }}
+          <Link
+            href={banner.href}
+            className="da-inner relative flex overflow-hidden bg-white"
+            style={{ minHeight: SB.itemHeight, padding: SB.padding }}
           >
-            <BrandPlaceholder
-              className="absolute inset-0 rounded-sm transition-transform duration-300 group-hover:scale-105"
-              markWidth={64}
-            />
-          </div>
-        </Link>
+            <div className="da-media-body relative z-10 flex min-w-0 flex-1 flex-col justify-center">
+              <BannerText lines={banner.lines} />
+              <ShopNowButton />
+            </div>
+
+            <div
+              aria-hidden="true"
+              className="da-media-left pointer-events-none absolute z-0"
+              style={{
+                width: SB.imageSize,
+                height: SB.imageSize,
+                bottom: -SB.imageOverhangBottom,
+                insetInlineEnd: -SB.imageOverhangEnd,
+                transform: `rotate(${SB.imageRotateDeg}deg)`,
+              }}
+            >
+              <BrandPlaceholder className="absolute inset-0 rounded-sm" markWidth={64} />
+            </div>
+          </Link>
+        </div>
       ))}
     </div>
   )

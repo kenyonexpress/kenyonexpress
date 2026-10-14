@@ -1,0 +1,406 @@
+{
+  "380": {
+    "section": {
+      "x": 0,
+      "y": 162.98,
+      "w": 380,
+      "h": 213
+    },
+    "aside": {
+      "x": 0,
+      "y": 0,
+      "w": 0,
+      "h": 0
+    },
+    "asideList": {
+      "x": 0,
+      "y": 0,
+      "w": 0,
+      "h": 0
+    },
+    "slider": {
+      "x": 15,
+      "y": 162.98,
+      "w": 350,
+      "h": 194
+    },
+    "promo": {
+      "x": 0,
+      "y": 0,
+      "w": 0,
+      "h": 0
+    },
+    "promoDisplay": "none"
+  },
+  "768": {
+    "section": {
+      "x": 0,
+      "y": 88.3,
+      "w": 768,
+      "h": 495
+    },
+    "aside": {
+      "x": 0,
+      "y": 0,
+      "w": 0,
+      "h": 0
+    },
+    "asideList": {
+      "x": 0,
+      "y": 0,
+      "w": 0,
+      "h": 0
+    },
+    "slider": {
+      "x": 39,
+      "y": 88.3,
+      "w": 728,
+      "h": 304
+    },
+    "promo": {
+      "x": 0,
+      "y": 0,
+      "w": 0,
+      "h": 0
+    },
+    "promoDisplay": "none"
+  },
+  "1440": {
+    "section": {
+      "x": 135,
+      "y": 148.3,
+      "w": 1170,
+      "h": 613
+    },
+    "aside": {
+      "x": 1064,
+      "y": 148.3,
+      "w": 241,
+      "h": 444
+    },
+    "asideList": {
+      "x": 1035,
+      "y": 196.3,
+      "w": 270,
+      "h": 396
+    },
+    "slider": {
+      "x": 336,
+      "y": 148.3,
+      "w": 728,
+      "h": 370
+    },
+    "promo": {
+      "x": 135,
+      "y": 148.3,
+      "w": 201,
+      "h": 593
+    },
+    "promoDisplay": "flex",
+    "blocks": [
+      {
+        "rect": {
+          "x": 135,
+          "y": 148.3,
+          "w": 201,
+          "h": 197
+        },
+        "border": {
+          "borderTopWidth": "0px",
+          "borderTopColor": "rgb(26, 26, 26)",
+          "borderBottomWidth": "0px",
+          "borderBottomColor": "rgb(26, 26, 26)",
+          "paddingTop": "16px",
+          "paddingRight": "16px",
+          "paddingBottom": "16px",
+          "paddingLeft": "16px",
+          "minHeight": "197px",
+          "overflow": "hidden"
+        },
+        "text": {
+          "rect": {
+            "x": 151,
+            "y": 208.8,
+            "w": 169,
+            "h": 46
+          },
+          "fontSize": "17px",
+          "fontWeight": "200",
+          "lineHeight": "23px",
+          "textTransform": "none",
+          "color": "rgb(51, 62, 72)",
+          "textAlign": "start"
+        },
+        "lines": [
+          {
+            "rect": {
+              "x": 194.75,
+              "y": 207.8,
+              "w": 125.25,
+              "h": 48
+            },
+            "fontSize": "17px",
+            "lineHeight": "23px",
+            "fontWeight": "200",
+            "strong": [
+              {
+                "rect": {
+                  "x": 219.98,
+                  "y": 207.8,
+                  "w": 49.47,
+                  "h": 25
+                },
+                "fontSize": "17px",
+                "fontWeight": "700"
+              }
+            ]
+          }
+        ],
+        "action": {
+          "rect": {
+            "x": 246.28,
+            "y": 254.8,
+            "w": 73.72,
+            "h": 30
+          },
+          "fontSize": "14px",
+          "fontWeight": "700",
+          "lineHeight": "30px",
+          "marginTop": "0px",
+          "circle": {
+            "rect": {
+              "x": 246.28,
+              "y": 260.8,
+              "w": 18,
+              "h": 18
+            },
+            "backgroundColor": "rgb(254, 215, 0)",
+            "width": "18px",
+            "height": "18px"
+          },
+          "textNode": "לרכישה"
+        },
+        "image": {
+          "rect": {
+            "x": 246.28,
+            "y": 260.8,
+            "w": 18,
+            "h": 18
+          },
+          "transform": "none",
+          "width": "18px",
+          "height": "18px",
+          "bottom": "auto",
+          "left": "auto",
+          "right": "auto"
+        }
+      },
+      {
+        "rect": {
+          "x": 135,
+          "y": 346.3,
+          "w": 201,
+          "h": 197
+        },
+        "border": {
+          "borderTopWidth": "0px",
+          "borderTopColor": "rgb(26, 26, 26)",
+          "borderBottomWidth": "0px",
+          "borderBottomColor": "rgb(26, 26, 26)",
+          "paddingTop": "16px",
+          "paddingRight": "16px",
+          "paddingBottom": "16px",
+          "paddingLeft": "16px",
+          "minHeight": "197px",
+          "overflow": "hidden"
+        },
+        "text": {
+          "rect": {
+            "x": 151,
+            "y": 406.8,
+            "w": 169,
+            "h": 46
+          },
+          "fontSize": "17px",
+          "fontWeight": "200",
+          "lineHeight": "23px",
+          "textTransform": "none",
+          "color": "rgb(51, 62, 72)",
+          "textAlign": "start"
+        },
+        "lines": [
+          {
+            "rect": {
+              "x": 215.03,
+              "y": 405.8,
+              "w": 104.97,
+              "h": 25
+            },
+            "fontSize": "17px",
+            "lineHeight": "23px",
+            "fontWeight": "200",
+            "strong": [
+              {
+                "rect": {
+                  "x": 215.03,
+                  "y": 405.8,
+                  "w": 48.56,
+                  "h": 25
+                },
+                "fontSize": "17px",
+                "fontWeight": "700"
+              }
+            ]
+          },
+          {
+            "rect": {
+              "x": 151,
+              "y": 429.8,
+              "w": 169,
+              "h": 23
+            },
+            "fontSize": "17px",
+            "lineHeight": "23px",
+            "fontWeight": "200",
+            "strong": []
+          }
+        ],
+        "action": {
+          "rect": {
+            "x": 246.28,
+            "y": 452.8,
+            "w": 73.72,
+            "h": 30
+          },
+          "fontSize": "14px",
+          "fontWeight": "700",
+          "lineHeight": "30px",
+          "marginTop": "0px",
+          "circle": {
+            "rect": {
+              "x": 246.28,
+              "y": 458.8,
+              "w": 18,
+              "h": 18
+            },
+            "backgroundColor": "rgb(254, 215, 0)",
+            "width": "18px",
+            "height": "18px"
+          },
+          "textNode": "לרכישה"
+        },
+        "image": {
+          "rect": {
+            "x": 246.28,
+            "y": 458.8,
+            "w": 18,
+            "h": 18
+          },
+          "transform": "none",
+          "width": "18px",
+          "height": "18px",
+          "bottom": "auto",
+          "left": "auto",
+          "right": "auto"
+        }
+      },
+      {
+        "rect": {
+          "x": 135,
+          "y": 544.3,
+          "w": 201,
+          "h": 197
+        },
+        "border": {
+          "borderTopWidth": "0px",
+          "borderTopColor": "rgb(26, 26, 26)",
+          "borderBottomWidth": "0px",
+          "borderBottomColor": "rgb(26, 26, 26)",
+          "paddingTop": "16px",
+          "paddingRight": "16px",
+          "paddingBottom": "16px",
+          "paddingLeft": "16px",
+          "minHeight": "197px",
+          "overflow": "hidden"
+        },
+        "text": {
+          "rect": {
+            "x": 151,
+            "y": 616.3,
+            "w": 169,
+            "h": 23
+          },
+          "fontSize": "17px",
+          "fontWeight": "200",
+          "lineHeight": "23px",
+          "textTransform": "none",
+          "color": "rgb(51, 62, 72)",
+          "textAlign": "start"
+        },
+        "lines": [
+          {
+            "rect": {
+              "x": 166.52,
+              "y": 615.3,
+              "w": 153.48,
+              "h": 25
+            },
+            "fontSize": "17px",
+            "lineHeight": "23px",
+            "fontWeight": "200",
+            "strong": [
+              {
+                "rect": {
+                  "x": 166.52,
+                  "y": 615.3,
+                  "w": 35.22,
+                  "h": 25
+                },
+                "fontSize": "17px",
+                "fontWeight": "700"
+              }
+            ]
+          }
+        ],
+        "action": {
+          "rect": {
+            "x": 246.28,
+            "y": 639.3,
+            "w": 73.72,
+            "h": 30
+          },
+          "fontSize": "14px",
+          "fontWeight": "700",
+          "lineHeight": "30px",
+          "marginTop": "0px",
+          "circle": {
+            "rect": {
+              "x": 246.28,
+              "y": 645.3,
+              "w": 18,
+              "h": 18
+            },
+            "backgroundColor": "rgb(254, 215, 0)",
+            "width": "18px",
+            "height": "18px"
+          },
+          "textNode": "לרכישה"
+        },
+        "image": {
+          "rect": {
+            "x": 246.28,
+            "y": 645.3,
+            "w": 18,
+            "h": 18
+          },
+          "transform": "none",
+          "width": "18px",
+          "height": "18px",
+          "bottom": "auto",
+          "left": "auto",
+          "right": "auto"
+        }
+      }
+    ]
+  }
+}
