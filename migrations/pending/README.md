@@ -1,5 +1,19 @@
 # `migrations/pending/`
 
+## 2026-10-14: 243 PENDING (club tier thresholds)
+
+`243_club_tiers.sql` adds `club_tiers`, four rows (member, silver, gold,
+platinum) holding the twelve-month paid spend in agorot from which each tier
+applies, seeded with the constants `src/lib/club/tiers.ts` already uses
+(0 / 100000 / 300000 / 1000000). It is the first half of the production
+branch's club-tier migration (its number there is 251), renumbered above 242; the half that adds
+`orders.club_tier` and `orders.club_spend_agorot` is left out because this
+line has no checkout code that writes them. Readable by `authenticated`,
+writable by the service role only, nothing for `anon`. Until applied,
+`src/lib/club/tiers-config.ts` answers PGRST205 with the compiled defaults
+and logs `club.tiers_table_missing` once, so `/account` shows the same tiers
+either way. Rollback is one DROP TABLE. Not yet dry-run on production.
+
 ## 2026-09-17: 242 PENDING (job queue dead letters)
 
 `242_job_dlq.sql` adds `job_dlq`, the dead-letter table for the general job
