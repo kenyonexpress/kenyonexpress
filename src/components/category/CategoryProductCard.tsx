@@ -2,6 +2,7 @@
 
 import AddToCartButton from '@/components/cart/AddToCartButton'
 import CardOfferDeadline from '@/components/category/CardOfferDeadline'
+import WishlistHeart from '@/components/wishlist/WishlistHeart'
 import { cityByName } from '@/lib/geo/cities'
 import { formatDistance } from '@/lib/geo/distance'
 import { shekelsFromIlsRounded } from '@/lib/money-format'
@@ -163,6 +164,14 @@ export default function CategoryProductCard({ product }: { product: CategoryProd
             ) : null}
           </span>
         </Link>
+        {/* Outside the link, so a press saves instead of navigating, and an
+            overlay, so it takes no space. The discount badge and the deadline
+            sit on the image's bottom edge; this is the header's top corner. */}
+        <WishlistHeart
+          productId={product.id}
+          productName={product.name_he}
+          className="category-card__heart"
+        />
       </div>
 
       {/* Measured live .product-loop-footer > .price-add-to-cart: the price is

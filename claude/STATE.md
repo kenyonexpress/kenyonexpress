@@ -4,7 +4,7 @@ Updated: 2026-10-14 (Asia/Bangkok). Queue: FINAL-CLOSEOUT L1 to L16, issued 14.1
 
 ## Current Position
 
-**המשך מ: שלב L10 (BUILD GAPS), שורה 6 (לבבות wishlist, פורט מפרוד), ואז 8. סגורות: 2, 4, 9, 18, 24, 28, 30, 29 (אדמין), 3 (חוץ מדירוג ופופולריות), 5 (פר-דפדפן), 10 (חוץ משעות שירות)**
+**המשך מ: שלב L10 (BUILD GAPS), שורה 8 (הוכחה חברתית, פורט מפרוד), ואז השורות עם מיגרציות. סגורות: 2, 4, 6, 9, 18, 24, 28, 30, 29 (אדמין), 3 (חוץ מדירוג ופופולריות), 5 (פר-דפדפן), 10 (חוץ משעות שירות)**
 
 The checklist with evidence is `docs/FINAL-CLOSEOUT.md`. Decisions taken alone
 are `docs/DECISIONS.md` D-42 onward.
@@ -75,6 +75,10 @@ Closed so far, each with type-check, lint, test green (510 files, 5949 passed):
   380 and 1440: present, no overflow. Product parity 4.30 / 4.18 / 2.06. The
   cart gate has no reference and gave no number. Support hours are not
   printed: none are recorded anywhere. Needs the real hours from Ofir.
+- Row 6, wishlist hearts: provider, heart and guest list ported from prod;
+  hearts on both card types. 522 files, 6096 tests, build 0. Chromium,
+  signed out, 380 and 1440: 24 hearts, save without navigating, survives a
+  reload. Signed-in path and merge: unit tests only.
 - 14.10: other autopilot sessions (STEP 69, 70) run in
   `/Users/ofir/kenyonexpress-autopilot` on another branch. This checkout
   showed no foreign edits, so work continued.

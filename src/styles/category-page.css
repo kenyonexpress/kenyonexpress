@@ -396,8 +396,20 @@
 }
 
 .category-card__header {
+  /* The containing block of the wishlist heart below. */
+  position: relative;
   display: flex;
   flex-direction: column;
+}
+
+/* The heart (components/wishlist/WishlistHeart) sits on the image's top
+   corner. The image is the last thing in the header and has a fixed height,
+   so the corner is measured up from the header's bottom edge. The discount
+   badge and the offer deadline hold the two bottom corners. */
+.category-card__heart {
+  top: auto;
+  bottom: calc(var(--cat-thumb-max) - 2.75rem);
+  inset-inline-start: 0;
 }
 
 /* Measured: 11.998px / 12.5979px, h 12.6, link #768b9e, margin-bottom 11.998px */

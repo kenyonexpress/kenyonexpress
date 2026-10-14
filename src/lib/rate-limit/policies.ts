@@ -162,6 +162,11 @@ export const RATE_LIMIT_POLICIES = {
   'referral-code': { limit: 10, windowSeconds: 3600, reason: 'referral code mint, per user' },
   'review-submit': { limit: 5, windowSeconds: 3600, reason: 'review spam, per user' },
   'wishlist-toggle': { limit: 60, windowSeconds: 3600, reason: 'held-down heart, per user' },
+  'wishlist-merge': {
+    limit: 10,
+    windowSeconds: 3600,
+    reason: 'guest list merge on sign-in, per user',
+  },
 
   // -- Vouchers and the supplier till. Keyed on the supplier user, never on IP:
   // a shop floor is one NAT address and would share one bucket.

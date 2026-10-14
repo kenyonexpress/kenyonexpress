@@ -22,8 +22,8 @@ production has it.
 
 | | main | prod |
 |---|---|---|
-| EXISTS | 10 | 9 |
-| PARTIAL | 14 | 16 |
+| EXISTS | 11 | 9 |
+| PARTIAL | 13 | 16 |
 | MISSING | 6 | 5 |
 
 Nine features are further along on prod than on main: recently viewed,
@@ -46,7 +46,7 @@ what main has.
 | 3 | Sort: relevance, price, discount, newest, rating | all | PARTIAL | PARTIAL | 1 | discount and search-page control closed 2026-10-14; rating needs pending 235 |
 | 4 | Infinite scroll, 24 per page, scroll restoration | TikTok Shop, Lazada, Wolt | EXISTS | MISSING | 0 | closed 2026-10-14 |
 | 5 | Recently viewed | Amazon, Booking | PARTIAL | PARTIAL | 0.5 | per-browser rail on product and home closed 2026-10-14; per-account history needs a table. See note B |
-| 6 | Wishlist | Amazon, Lazada, Booking | PARTIAL | EXISTS | 1 | port hearts and provider |
+| 6 | Wishlist | Amazon, Lazada, Booking | EXISTS | EXISTS | 0 | hearts on both card types closed 2026-10-14 |
 | 7 | Price-drop alerts | Zap, Amazon | EXISTS | PARTIAL | 0 | none on main |
 | 8 | Social proof | Groupon, Booking | MISSING | EXISTS | 1 | port, add a "today" window |
 | 9 | Urgency timers | Groupon, Booking, Lazada | EXISTS | PARTIAL | 0 | cards and issued voucher closed 2026-10-14, unit-tested only |
@@ -222,6 +222,26 @@ migration and waits for approval.
 heart on cards. prod: `src/components/wishlist/WishlistProvider.tsx`,
 `WishlistHeart.tsx` on `ProductCard`, move to cart, a share page. Missing on
 prod: heart on `CategoryProductCard`, the card listings actually use.
+
+Closed on main, 2026-10-14. Ported: `WishlistProvider`, `WishlistHeart` (card
+shape), the guest list in localStorage, and three actions in
+`src/server/actions/wishlist.ts` (own ids, remove, merge on sign-in). The
+heart is on `CategoryProductCard` and on `ProductCard`. One change from prod:
+the provider reads the session flag the cart store already holds instead of
+building a Supabase browser client, so store pages gain no request and no
+client library. Signed out, a press saves to the browser; on sign-in the list
+is merged into the account and the browser copy cleared only if the server
+confirmed.
+
+Verified in Chromium, built server, signed out, at 380 and 1440 on
+`/products`: 24 hearts on 24 cards, 44 by 44, on the image's top corner, not
+over the discount badge; a press saves without navigating, survives a reload,
+and a second press removes it. Not verified in a browser: the signed-in path
+and the merge (unit tests with mocked actions only). Not ported: move to
+cart, the share page, a header counter. A signed-out shopper has no page that
+lists what they saved until they sign in; the product page's own
+`WishlistButton` still keeps separate state and can disagree with a card
+heart until reload.
 
 **7. Price-drop alerts.** main: daily `src/app/api/cron/wishlist-alerts/route.ts`
 compares `price_history` for wishlisted products and enqueues `price_drop`;
