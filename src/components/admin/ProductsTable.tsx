@@ -8,6 +8,7 @@ import {
   isImplausibleDiscount,
 } from '@/lib/commerce/implausible-discount'
 import { shekelsFromIlsRounded } from '@/lib/money-format'
+import { notify } from '@/lib/ui/toast'
 import {
   type BulkPriceInput,
   bulkAdjustPrices,
@@ -19,7 +20,6 @@ import {
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { toast } from 'sonner'
 
 export type ProductRow = {
   id: string
@@ -80,10 +80,10 @@ export default function ProductsTable({ products, categories, hidePricing = fals
     try {
       const result = await fn()
       if (result && 'error' in result && result.error) {
-        toast.error(result.error)
+        notify('error', result.error)
         return
       }
-      toast.success(successMsg)
+      notify('success', successMsg)
       setSelected(new Set())
       router.refresh()
     } finally {
@@ -96,7 +96,7 @@ export default function ProductsTable({ products, categories, hidePricing = fals
   async function applyPrices() {
     const value = Number(priceValue)
     if (!priceValue || Number.isNaN(value)) {
-      toast.error('הזינו ערך מספרי')
+      notify('error', 'הזינו ערך מספרי')
       return
     }
     setBusy(true)
@@ -105,15 +105,16 @@ export default function ProductsTable({ products, categories, hidePricing = fals
         priceMode === 'percent' ? { mode: 'percent', value } : { mode: 'set', value }
       const result = await bulkAdjustPrices(ids, input)
       if (result.error) {
-        toast.error(result.error)
+        notify('error', result.error)
         return
       }
       if (result.skipped?.length) {
-        toast.warning(
+        notify(
+          'warning',
           `${result.updated} עודכנו; ${result.skipped.length} דולגו (מחיר מלא נמוך מהמחיר החדש): ${result.skipped.join(', ')}`,
         )
       } else {
-        toast.success(`מחירי ${result.updated} מוצרים עודכנו`)
+        notify('success', `מחירי ${result.updated} מוצרים עודכנו`)
       }
       setSelected(new Set())
       setPriceValue('')

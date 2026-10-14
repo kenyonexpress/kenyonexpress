@@ -1,0 +1,8 @@
+Already up to date
+Done in 222ms using pnpm v11.1.2
+
+Running 2 tests using 2 workers
+
+[1A[2K[1/2] [chromium] › e2e/toasts.spec.ts:135:7 › toasts › the admin panel paints its toasts
+[1A[2K[2/2] [mobile-chrome] › e2e/toasts.spec.ts:135:7 › toasts › the admin panel paints its toasts
+[1A[2K  2 skipped

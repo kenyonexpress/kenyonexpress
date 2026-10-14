@@ -3,10 +3,10 @@
 import { rehydrateCompareOnce, useCompareStore, useIsCompared } from '@/lib/compare/client-store'
 import { isCompareId } from '@/lib/compare/ids'
 import { COMPARE_LIMIT } from '@/lib/compare/limit'
+import { notify } from '@/lib/ui/toast'
 import { Scale } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
-import { toast } from 'sonner'
 
 /**
  * "השוו" on a product, everywhere a product appears, next to the heart.
@@ -53,13 +53,13 @@ export default function CompareButton({
     const result = toggle(productId)
     if (result.ok) {
       if (result.added) {
-        toast.success('נוסף להשוואה', {
+        notify('success', 'נוסף להשוואה', {
           action: { label: 'להשוואה', onClick: () => router.push('/compare') },
         })
       }
       return
     }
-    toast.error(`אפשר להשוות עד ${COMPARE_LIMIT} מוצרים`, {
+    notify('error', `אפשר להשוות עד ${COMPARE_LIMIT} מוצרים`, {
       description: 'הסירו מוצר מההשוואה כדי להוסיף אחר.',
       action: { label: 'להשוואה', onClick: () => router.push('/compare') },
     })

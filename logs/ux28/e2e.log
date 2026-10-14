@@ -1,0 +1,138 @@
+Already up to date
+Done in 277ms using pnpm v11.1.2
+
+Running 8 tests using 2 workers
+
+[1A[2K[1/8] [chromium] › e2e/toasts.spec.ts:97:7 › toasts › four identical compare presses are one toast, and the limit error outlives it
+[1A[2K[2/8] [chromium] › e2e/toasts.spec.ts:60:7 › toasts › an add-to-cart toast is light, named in Hebrew, closable on 44px and gone by itself
+[1A[2K  1) [chromium] › e2e/toasts.spec.ts:60:7 › toasts › an add-to-cart toast is light, named in Hebrew, closable on 44px and gone by itself 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 3[39m
+    [31m+ Received  + 3[39m
+
+    [2m  Array [[22m
+    [32m-   true,[39m
+    [32m-   true,[39m
+    [32m-   true,[39m
+    [31m+   false,[39m
+    [31m+   false,[39m
+    [31m+   false,[39m
+    [2m    true,[22m
+    [2m  ][22m
+
+      82 |     const painted = await close.boundingBox()
+      83 |     expect(painted?.width ?? 0).toBeLessThanOrEqual(24)
+    > 84 |     expect(await hitBoxReaches44(page, `${SUCCESS} [data-close-button]`)).toEqual([
+         |                                                                           ^
+      85 |       true,
+      86 |       true,
+      87 |       true,
+        at /Users/ofir/kenyonexpress-autopilot/e2e/toasts.spec.ts:84:75
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/toasts-toasts-an-add-to-ca-ffc18--on-44px-and-gone-by-itself-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/toasts-toasts-an-add-to-ca-ffc18--on-44px-and-gone-by-itself-chromium/error-context.md
+
+
+[1A[2K[3/8] [chromium] › e2e/toasts.spec.ts:127:7 › toasts › the admin panel has a toast region
+[1A[2K[4/8] [chromium] › e2e/toasts.spec.ts:138:7 › toasts under a dark OS › the site has no dark mode, so the toast stays light
+[1A[2K[5/8] [mobile-chrome] › e2e/toasts.spec.ts:60:7 › toasts › an add-to-cart toast is light, named in Hebrew, closable on 44px and gone by itself
+[1A[2K  2) [mobile-chrome] › e2e/toasts.spec.ts:60:7 › toasts › an add-to-cart toast is light, named in Hebrew, closable on 44px and gone by itself 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 2[39m
+    [31m+ Received  + 2[39m
+
+    [2m  Array [[22m
+    [2m    true,[22m
+    [32m-   true,[39m
+    [32m-   true,[39m
+    [31m+   false,[39m
+    [31m+   false,[39m
+    [2m    true,[22m
+    [2m  ][22m
+
+      82 |     const painted = await close.boundingBox()
+      83 |     expect(painted?.width ?? 0).toBeLessThanOrEqual(24)
+    > 84 |     expect(await hitBoxReaches44(page, `${SUCCESS} [data-close-button]`)).toEqual([
+         |                                                                           ^
+      85 |       true,
+      86 |       true,
+      87 |       true,
+        at /Users/ofir/kenyonexpress-autopilot/e2e/toasts.spec.ts:84:75
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/toasts-toasts-an-add-to-ca-ffc18--on-44px-and-gone-by-itself-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/toasts-toasts-an-add-to-ca-ffc18--on-44px-and-gone-by-itself-mobile-chrome/error-context.md
+
+
+[1A[2K[6/8] [mobile-chrome] › e2e/toasts.spec.ts:97:7 › toasts › four identical compare presses are one toast, and the limit error outlives it
+[1A[2K  3) [chromium] › e2e/toasts.spec.ts:127:7 › toasts › the admin panel has a toast region ───────────
+
+    TimeoutError: page.waitForURL: Timeout 20000ms exceeded.
+    =========================== logs ===========================
+    waiting for navigation until "load"
+    ============================================================
+
+       at auth-session.ts:66
+
+      64 |   await page.getByRole('button', { name: 'כניסה', exact: true }).click()
+      65 |   // Either the return path or a generic signed-in page; never stay on /login.
+    > 66 |   await page.waitForURL((url) => !url.pathname.startsWith('/login'), { timeout: 20_000 })
+         |              ^
+      67 | }
+      68 |
+      69 | /**
+        at signInWithEmail (/Users/ofir/kenyonexpress-autopilot/e2e/auth-session.ts:66:14)
+        at signInAsAdmin (/Users/ofir/kenyonexpress-autopilot/e2e/auth-session.ts:89:3)
+        at /Users/ofir/kenyonexpress-autopilot/e2e/toasts.spec.ts:128:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/toasts-toasts-the-admin-panel-has-a-toast-region-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/toasts-toasts-the-admin-panel-has-a-toast-region-chromium/error-context.md
+
+
+[1A[2K[7/8] [mobile-chrome] › e2e/toasts.spec.ts:127:7 › toasts › the admin panel has a toast region
+[1A[2K[8/8] [mobile-chrome] › e2e/toasts.spec.ts:138:7 › toasts under a dark OS › the site has no dark mode, so the toast stays light
+[1A[2K  4) [mobile-chrome] › e2e/toasts.spec.ts:127:7 › toasts › the admin panel has a toast region ──────
+
+    TimeoutError: page.waitForURL: Timeout 20000ms exceeded.
+    =========================== logs ===========================
+    waiting for navigation until "load"
+    ============================================================
+
+       at auth-session.ts:66
+
+      64 |   await page.getByRole('button', { name: 'כניסה', exact: true }).click()
+      65 |   // Either the return path or a generic signed-in page; never stay on /login.
+    > 66 |   await page.waitForURL((url) => !url.pathname.startsWith('/login'), { timeout: 20_000 })
+         |              ^
+      67 | }
+      68 |
+      69 | /**
+        at signInWithEmail (/Users/ofir/kenyonexpress-autopilot/e2e/auth-session.ts:66:14)
+        at signInAsAdmin (/Users/ofir/kenyonexpress-autopilot/e2e/auth-session.ts:89:3)
+        at /Users/ofir/kenyonexpress-autopilot/e2e/toasts.spec.ts:128:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/toasts-toasts-the-admin-panel-has-a-toast-region-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/toasts-toasts-the-admin-panel-has-a-toast-region-mobile-chrome/error-context.md
+
+
+[1A[2K  4 failed
+    [chromium] › e2e/toasts.spec.ts:60:7 › toasts › an add-to-cart toast is light, named in Hebrew, closable on 44px and gone by itself 
+    [chromium] › e2e/toasts.spec.ts:127:7 › toasts › the admin panel has a toast region ────────────
+    [mobile-chrome] › e2e/toasts.spec.ts:60:7 › toasts › an add-to-cart toast is light, named in Hebrew, closable on 44px and gone by itself 
+    [mobile-chrome] › e2e/toasts.spec.ts:127:7 › toasts › the admin panel has a toast region ───────
+  4 passed (51.2s)

@@ -1,0 +1,27 @@
+{
+  "base": "http://localhost:3364",
+  "tag": "after",
+  "widths": {
+    "380": {
+      "skipped": {
+        "url": "http://localhost:3364/admin-mfa?mode=enrol",
+        "h1": "KenyonExpress",
+        "text": "KenyonExpress\n\nקופונים, מבצעים ומוצרים\n\nאימות דו-שלבי\n\nחשבון מנהל מחייב אימות דו-שלבי לפני כניסה לפאנל הניהול.\n\nסרקו קוד QR באפליקציית אימות (Google Authenticator, 1Password וכדומה) והזינו את הקוד שהיא מציגה.\n\nהתחלת הגדרה"
+      }
+    },
+    "768": {
+      "skipped": {
+        "url": "http://localhost:3364/admin-mfa?mode=enrol",
+        "h1": "KenyonExpress",
+        "text": "KenyonExpress\n\nקופונים, מבצעים ומוצרים\n\nאימות דו-שלבי\n\nחשבון מנהל מחייב אימות דו-שלבי לפני כניסה לפאנל הניהול.\n\nסרקו קוד QR באפליקציית אימות (Google Authenticator, 1Password וכדומה) והזינו את הקוד שהיא מציגה.\n\nהתחלת הגדרה"
+      }
+    },
+    "1440": {
+      "skipped": {
+        "url": "http://localhost:3364/admin-mfa?mode=enrol",
+        "h1": "KenyonExpress",
+        "text": "KenyonExpress\n\nקופונים, מבצעים ומוצרים\n\nאימות דו-שלבי\n\nחשבון מנהל מחייב אימות דו-שלבי לפני כניסה לפאנל הניהול.\n\nסרקו קוד QR באפליקציית אימות (Google Authenticator, 1Password וכדומה) והזינו את הקוד שהיא מציגה.\n\nהתחלת הגדרה"
+      }
+    }
+  }
+}

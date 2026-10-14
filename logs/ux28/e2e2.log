@@ -1,0 +1,67 @@
+Already up to date
+Done in 193ms using pnpm v11.1.2
+
+Running 8 tests using 2 workers
+
+[1A[2K[1/8] [chromium] › e2e/toasts.spec.ts:60:7 › toasts › an add-to-cart toast is light, named in Hebrew, closable on 44px and gone by itself
+[1A[2K[2/8] [chromium] › e2e/toasts.spec.ts:100:7 › toasts › four identical compare presses are one toast, and the limit error outlives it
+[1A[2K[3/8] [chromium] › e2e/toasts.spec.ts:130:7 › toasts › the admin panel paints its toasts
+[1A[2K[4/8] [chromium] › e2e/toasts.spec.ts:151:7 › toasts under a dark OS › the site has no dark mode, so the toast stays light
+[1A[2K[5/8] [mobile-chrome] › e2e/toasts.spec.ts:60:7 › toasts › an add-to-cart toast is light, named in Hebrew, closable on 44px and gone by itself
+[1A[2K[6/8] [mobile-chrome] › e2e/toasts.spec.ts:100:7 › toasts › four identical compare presses are one toast, and the limit error outlives it
+[1A[2K[7/8] [mobile-chrome] › e2e/toasts.spec.ts:130:7 › toasts › the admin panel paints its toasts
+[1A[2K  1) [chromium] › e2e/toasts.spec.ts:130:7 › toasts › the admin panel paints its toasts ────────────
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    Error: locator.fill: Test timeout of 30000ms exceeded.
+    Call log:
+    [2m  - waiting for getByLabel('אימייל הלקוח')[22m
+
+
+      134 |     await signInAsAdmin(page, '/admin/cashback')
+      135 |     await expect(page).toHaveURL(/\/admin\/cashback/)
+    > 136 |     await page.getByLabel('אימייל הלקוח').fill('ux28-e2e@example.com')
+          |                                           ^
+      137 |     await page.getByLabel('סכום בשקלים (שלילי לקיזוז)').fill('0')
+      138 |     await page.getByLabel('נימוק (נרשם ביומן)').fill('בדיקת toast, סכום אפס נדחה לפני כל כתיבה')
+      139 |     await page.getByRole('button', { name: 'בצע התאמה' }).click()
+        at /Users/ofir/kenyonexpress-autopilot/e2e/toasts.spec.ts:136:43
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/toasts-toasts-the-admin-panel-paints-its-toasts-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/toasts-toasts-the-admin-panel-paints-its-toasts-chromium/error-context.md
+
+
+[1A[2K[8/8] [mobile-chrome] › e2e/toasts.spec.ts:151:7 › toasts under a dark OS › the site has no dark mode, so the toast stays light
+[1A[2K  2) [mobile-chrome] › e2e/toasts.spec.ts:130:7 › toasts › the admin panel paints its toasts ───────
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    Error: locator.fill: Test timeout of 30000ms exceeded.
+    Call log:
+    [2m  - waiting for getByLabel('אימייל הלקוח')[22m
+
+
+      134 |     await signInAsAdmin(page, '/admin/cashback')
+      135 |     await expect(page).toHaveURL(/\/admin\/cashback/)
+    > 136 |     await page.getByLabel('אימייל הלקוח').fill('ux28-e2e@example.com')
+          |                                           ^
+      137 |     await page.getByLabel('סכום בשקלים (שלילי לקיזוז)').fill('0')
+      138 |     await page.getByLabel('נימוק (נרשם ביומן)').fill('בדיקת toast, סכום אפס נדחה לפני כל כתיבה')
+      139 |     await page.getByRole('button', { name: 'בצע התאמה' }).click()
+        at /Users/ofir/kenyonexpress-autopilot/e2e/toasts.spec.ts:136:43
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/toasts-toasts-the-admin-panel-paints-its-toasts-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/toasts-toasts-the-admin-panel-paints-its-toasts-mobile-chrome/error-context.md
+
+
+[1A[2K  2 failed
+    [chromium] › e2e/toasts.spec.ts:130:7 › toasts › the admin panel paints its toasts ─────────────
+    [mobile-chrome] › e2e/toasts.spec.ts:130:7 › toasts › the admin panel paints its toasts ────────
+  6 passed (1.2m)

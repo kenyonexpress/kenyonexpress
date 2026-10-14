@@ -2,11 +2,11 @@
 
 import CategoryDialog from '@/components/admin/CategoryDialog'
 import StatusBadge from '@/components/admin/StatusBadge'
+import { notify } from '@/lib/ui/toast'
 import { softDeleteCategory, updateCategorySortOrder } from '@/server/actions/admin/categories'
 import type { Category } from '@/types/database'
 import { ChevronDown, ChevronRight, Edit2, Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
-import { toast } from 'sonner'
 
 interface CatWithChildren extends Category {
   children: CatWithChildren[]
@@ -50,8 +50,8 @@ function CategoryNode({ node, allFlat, depth, onEdit, onAddChild }: NodeProps) {
   async function handleDelete() {
     if (!confirm(`למחוק את "${node.name_he}"?`)) return
     const result = await softDeleteCategory(node.id)
-    if (result.error) toast.error(result.error)
-    else toast.success('קטגוריה נמחקה')
+    if (result.error) notify('error', result.error)
+    else notify('success', 'קטגוריה נמחקה')
   }
 
   async function handleMove(direction: 'up' | 'down') {

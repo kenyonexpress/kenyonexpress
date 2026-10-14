@@ -27,11 +27,7 @@ const setWishlistShare = vi.hoisted(() => vi.fn())
 const toggleWishlist = vi.hoisted(() => vi.fn())
 const addToCart = vi.hoisted(() => vi.fn())
 const track = vi.hoisted(() => vi.fn())
-const toast = vi.hoisted(() => ({
-  success: vi.fn(),
-  error: vi.fn(),
-  info: vi.fn(),
-}))
+const notify = vi.hoisted(() => vi.fn())
 
 vi.mock('@/server/actions/wishlist', () => ({
   getMyWishlistView: (...args: unknown[]) => getMyWishlistView(...args),
@@ -46,7 +42,7 @@ vi.mock('@/components/cart/CartProvider', () => ({
   useCart: () => ({ addToCart, isPending: false }),
 }))
 vi.mock('@/lib/analytics/tracker', () => ({ track }))
-vi.mock('sonner', () => ({ toast }))
+vi.mock('@/lib/ui/toast', () => ({ notify }))
 vi.mock('@/components/account/WishlistAlertPrefs', () => ({
   default: () => <div data-testid="alert-prefs" />,
 }))
@@ -115,9 +111,7 @@ beforeEach(() => {
   toggleWishlist.mockReset().mockResolvedValue({ ok: true, saved: true })
   addToCart.mockReset().mockResolvedValue(true)
   track.mockClear()
-  toast.success.mockClear()
-  toast.error.mockClear()
-  toast.info.mockClear()
+  notify.mockClear()
   useWishlistStore.getState().reset()
   Object.defineProperty(navigator, 'clipboard', {
     value: { writeText: vi.fn().mockResolvedValue(undefined) },
@@ -178,7 +172,7 @@ describe('the share button on the toolbar', () => {
     await act(async () => {
       fireEvent.click(share)
     })
-    expect(toast.info).toHaveBeenCalledWith('שיתוף הרשימה עוד לא פתוח. נסו שוב בקרוב.')
+    expect(notify).toHaveBeenCalledWith('info', 'שיתוף הרשימה עוד לא פתוח. נסו שוב בקרוב.')
     expect(setWishlistShare).not.toHaveBeenCalled()
     expect(screen.queryByRole('heading', { name: 'שיתוף הרשימה' })).toBeNull()
   })
@@ -199,7 +193,7 @@ describe('the share button on the toolbar', () => {
     expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
       `${window.location.origin}/wishlist/shared/${token}`,
     )
-    expect(toast.success).toHaveBeenCalledWith('הקישור הועתק')
+    expect(notify).toHaveBeenCalledWith('success', 'הקישור הועתק')
     // The lifted state reached the card: it now shows the link field.
     expect(screen.getByRole('button', { name: 'שיתוף הרשימה' })).toHaveAttribute(
       'data-share',
@@ -241,12 +235,13 @@ describe('remove, with undo', () => {
     )
     expect(screen.getByText('מוצר אחד שמור')).toBeInTheDocument()
     expect(screen.getByRole('status')).toHaveTextContent('מקרר הוסר מהרשימה')
-    expect(toast.success).toHaveBeenCalledWith(
+    expect(notify).toHaveBeenCalledWith(
+      'success',
       'מקרר הוסר מהרשימה',
       expect.objectContaining({ action: expect.objectContaining({ label: 'ביטול' }) }),
     )
 
-    const options = toast.success.mock.calls[0]?.[1] as { action: { onClick: () => void } }
+    const options = notify.mock.calls[0]?.[2] as { action: { onClick: () => void } }
     await act(async () => {
       options.action.onClick()
     })
@@ -270,7 +265,7 @@ describe('remove, with undo', () => {
     await act(async () => {
       endExit(card('מקרר'))
     })
-    await waitFor(() => expect(toast.error).toHaveBeenCalledWith('ההסרה נכשלה. נסה שוב.'))
+    await waitFor(() => expect(notify).toHaveBeenCalledWith('error', 'ההסרה נכשלה. נסה שוב.'))
     expect(card('מקרר')).not.toHaveAttribute('data-leaving')
     expect(screen.getByRole('button', { name: 'הסרת מקרר מהרשימה' })).toBeEnabled()
     expect(screen.getByText('מוצר אחד שמור')).toBeInTheDocument()
@@ -299,7 +294,8 @@ describe('move to cart', () => {
     await waitFor(() => expect(screen.queryByRole('button', { name: /מקרר/ })).toBeNull())
     expect(screen.getByRole('status')).toHaveTextContent('מקרר עבר לסל')
     // No undo on a move: the product is in the cart, not lost.
-    expect(toast.success).not.toHaveBeenCalled()
+    expect(notify).not.toHaveBeenCalledWith('success', expect.anything(), expect.anything())
+    expect(notify).not.toHaveBeenCalledWith('success', expect.anything())
   })
 
   it('a refused add keeps the product saved and reports nothing as a sale', async () => {
@@ -325,6 +321,6 @@ describe('move to cart', () => {
     await waitFor(() => expect(screen.getByText('2 מוצרים שמורים')).toBeInTheDocument())
     expect(screen.getByRole('button', { name: 'הסרת תנור מהרשימה' })).toBeInTheDocument()
     expect(screen.getByRole('status')).toHaveTextContent('מוצר אחד עבר לסל')
-    expect(toast.success).toHaveBeenCalledWith('מוצר אחד עבר לסל')
+    expect(notify).toHaveBeenCalledWith('success', 'מוצר אחד עבר לסל')
   })
 })

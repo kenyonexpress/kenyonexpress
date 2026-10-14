@@ -7,12 +7,12 @@ import { COMPARE_LIMIT } from '@/lib/compare/limit'
 import { EMPTY_CELL, buildCompareRows } from '@/lib/compare/rows'
 import type { CompareViewItem } from '@/lib/compare/view'
 import { shekelsFromIlsRounded } from '@/lib/money-format'
+import { notify } from '@/lib/ui/toast'
 import { getCompareView } from '@/server/actions/compare'
 import { Scale, ShoppingCart, X } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { toast } from 'sonner'
 
 /**
  * `/compare`: the products the shopper lined up, side by side.
@@ -235,7 +235,7 @@ function ProductHead({ item, onRemove }: { item: CompareViewItem; onRemove: () =
         track('add_to_cart', { product_id: item.productId, quantity: 1, variant_id: null })
       }
     } catch {
-      toast.error('ההוספה לסל נכשלה. נסו שוב.')
+      notify('error', 'ההוספה לסל נכשלה. נסו שוב.')
     } finally {
       setBusy(false)
     }

@@ -20,7 +20,7 @@ Judgements are based on the actual file contents (with `file:line` references wh
 | Card (+Header/Title/Content/Footer/Description) | src/components/ui/card.tsx | `React.HTMLAttributes<HTMLDivElement>` | admin/StatsCard | YES (`bg-card`, `text-card-foreground`) | YES |
 | Dialog (Radix wrappers) | src/components/ui/dialog.tsx | Radix Dialog primitives (`className`, children) | admin/CategoriesTable | YES (`bg-background`, `bg-accent`) | RISK: `right-4` close button (:47), `sm:text-left` (:57); `left-[50%]` is centering (safe) |
 | Input | src/components/ui/input.tsx | `React.ComponentProps<'input'>` | admin/DataTable | YES (`border-input`, `bg-background`) | YES |
-| Toaster | src/components/ui/sonner.tsx | `ToasterProps` (`ComponentProps<typeof Sonner>`) | app/(main)/layout, app/(store)/layout | YES (`group-[.toaster]:bg-background`) | YES |
+| Toaster | src/components/ui/sonner.tsx | `ToasterProps`, but every mount is a bare `<Toaster />` / `<DeferredToaster />`: the policy (light theme, top-center, rtl, richColors, closeButton named סגירת ההודעה, 3 visible, 44px close hit box) lives in the file (UX28). Raised only through `notify()` in src/lib/ui/toast.ts (lifetime by kind 4/5/6/8s, identity by message). | app/(store) via DeferredStoreChrome, app/(main)/layout, app/(account)/layout, app/(admin)/layout | YES (`group-[.toaster]:bg-background`) | YES |
 | Textarea | src/components/ui/textarea.tsx | `React.ComponentProps<'textarea'>` | unused | NO (`min-h-[80px]` :10) | YES |
 
 > **Removed in STEP 34 (2026-10-07):** `ui/button.tsx`, `ui/dropdown-menu.tsx`,

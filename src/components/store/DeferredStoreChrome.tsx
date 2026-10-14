@@ -37,7 +37,7 @@ export default function DeferredStoreChrome({ phoneEnabled = false }: { phoneEna
       <DeferredLoginDialog phoneEnabled={phoneEnabled} />
       <MobileCartBar />
       <CompareBar />
-      <Toaster position="top-center" dir="rtl" richColors closeButton />
+      <Toaster />
     </>
   )
 }

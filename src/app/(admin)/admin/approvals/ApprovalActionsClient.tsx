@@ -1,9 +1,9 @@
 'use client'
 
+import { notify } from '@/lib/ui/toast'
 import { approveProduct, rejectProduct } from '@/server/actions/admin/approvals'
 import { Check, X } from 'lucide-react'
 import { useState, useTransition } from 'react'
-import { toast } from 'sonner'
 
 interface Props {
   productId: string
@@ -18,21 +18,21 @@ export default function ApprovalActionsClient({ productId, productName }: Props)
   function handleApprove() {
     startTransition(async () => {
       const result = await approveProduct(productId)
-      if (result.error) toast.error(result.error)
-      else toast.success(`"${productName}" אושר`)
+      if (result.error) notify('error', result.error)
+      else notify('success', `"${productName}" אושר`)
     })
   }
 
   function handleReject() {
     if (reason.trim().length < 2) {
-      toast.error('נדרשת סיבת דחייה')
+      notify('error', 'נדרשת סיבת דחייה')
       return
     }
     startTransition(async () => {
       const result = await rejectProduct(productId, reason.trim())
-      if (result.error) toast.error(result.error)
+      if (result.error) notify('error', result.error)
       else {
-        toast.success(`"${productName}" נדחה`)
+        notify('success', `"${productName}" נדחה`)
         setRejecting(false)
         setReason('')
       }

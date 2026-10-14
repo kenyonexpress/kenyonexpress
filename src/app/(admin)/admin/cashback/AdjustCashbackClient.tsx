@@ -1,8 +1,8 @@
 'use client'
 
+import { notify } from '@/lib/ui/toast'
 import { adjustCashback } from '@/server/actions/admin/cashback'
 import { useState, useTransition } from 'react'
-import { toast } from 'sonner'
 
 /**
  * The adjustment form. One idempotency key per submission attempt, minted
@@ -20,10 +20,10 @@ export default function AdjustCashbackClient() {
     startTransition(async () => {
       const result = await adjustCashback({ email, amountIls, reason, idempotencyKey: key })
       if (result.error) {
-        toast.error(result.error)
+        notify('error', result.error)
         return
       }
-      toast.success(result.success ?? 'בוצע')
+      notify('success', result.success ?? 'בוצע')
       // A fresh key only after success: the next submission is a new intent.
       setKey(crypto.randomUUID())
       setEmail('')

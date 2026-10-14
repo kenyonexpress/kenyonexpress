@@ -3,10 +3,10 @@
 import WhatsAppIcon from '@/components/shared/WhatsAppIcon'
 import { track } from '@/lib/analytics/tracker'
 import { referralShareText } from '@/lib/referrals/share'
+import { notify } from '@/lib/ui/toast'
 import { waShareLink } from '@/lib/whatsapp'
 import { ensureMyReferralCode } from '@/server/actions/referrals'
 import { useEffect, useState, useTransition } from 'react'
-import { toast } from 'sonner'
 
 /**
  * The half of the referrals page that a customer acts on: their code, the link
@@ -91,11 +91,11 @@ export default function ReferralShareCard({
   const copy = async (value: string, what: string) => {
     try {
       await navigator.clipboard.writeText(value)
-      toast.success(`${what} הועתק`)
+      notify('success', `${what} הועתק`)
     } catch {
       // Not a silent failure and not a thrown one. The text is on screen and
       // selectable, so the honest message is the one that says so.
-      toast.error('ההעתקה נחסמה בדפדפן. אפשר לסמן את הטקסט ולהעתיק ידנית.')
+      notify('error', 'ההעתקה נחסמה בדפדפן. אפשר לסמן את הטקסט ולהעתיק ידנית.')
     }
   }
 

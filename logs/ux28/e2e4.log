@@ -1,0 +1,60 @@
+Already up to date
+Done in 960ms using pnpm v11.1.2
+
+Running 2 tests using 2 workers
+
+[1A[2K[1/2] [mobile-chrome] › e2e/toasts.spec.ts:135:7 › toasts › the admin panel paints its toasts
+[1A[2K[2/2] [chromium] › e2e/toasts.spec.ts:135:7 › toasts › the admin panel paints its toasts
+[1A[2K  1) [chromium] › e2e/toasts.spec.ts:135:7 › toasts › the admin panel paints its toasts ────────────
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    Error: locator.fill: Test timeout of 30000ms exceeded.
+    Call log:
+    [2m  - waiting for getByLabel('אימייל הלקוח')[22m
+
+
+      152 |     await completeAdminMfaIfAsked(page)
+      153 |     await expect(page).toHaveURL(/^[^?]*\/admin\/cashback/)
+    > 154 |     await page.getByLabel('אימייל הלקוח').fill('ux28-e2e@example.com')
+          |                                           ^
+      155 |     await page.getByLabel('סכום בשקלים (שלילי לקיזוז)').fill('0')
+      156 |     await page.getByLabel('נימוק (נרשם ביומן)').fill('בדיקת toast, סכום אפס נדחה לפני כל כתיבה')
+      157 |     await page.getByRole('button', { name: 'בצע התאמה' }).click()
+        at /Users/ofir/kenyonexpress-autopilot/e2e/toasts.spec.ts:154:43
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/toasts-toasts-the-admin-panel-paints-its-toasts-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/toasts-toasts-the-admin-panel-paints-its-toasts-chromium/error-context.md
+
+
+[1A[2K  2) [mobile-chrome] › e2e/toasts.spec.ts:135:7 › toasts › the admin panel paints its toasts ───────
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    Error: locator.fill: Test timeout of 30000ms exceeded.
+    Call log:
+    [2m  - waiting for getByLabel('אימייל הלקוח')[22m
+
+
+      152 |     await completeAdminMfaIfAsked(page)
+      153 |     await expect(page).toHaveURL(/^[^?]*\/admin\/cashback/)
+    > 154 |     await page.getByLabel('אימייל הלקוח').fill('ux28-e2e@example.com')
+          |                                           ^
+      155 |     await page.getByLabel('סכום בשקלים (שלילי לקיזוז)').fill('0')
+      156 |     await page.getByLabel('נימוק (נרשם ביומן)').fill('בדיקת toast, סכום אפס נדחה לפני כל כתיבה')
+      157 |     await page.getByRole('button', { name: 'בצע התאמה' }).click()
+        at /Users/ofir/kenyonexpress-autopilot/e2e/toasts.spec.ts:154:43
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/toasts-toasts-the-admin-panel-paints-its-toasts-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/toasts-toasts-the-admin-panel-paints-its-toasts-mobile-chrome/error-context.md
+
+
+[1A[2K  2 failed
+    [chromium] › e2e/toasts.spec.ts:135:7 › toasts › the admin panel paints its toasts ─────────────
+    [mobile-chrome] › e2e/toasts.spec.ts:135:7 › toasts › the admin panel paints its toasts ────────

@@ -6,6 +6,7 @@ import WishlistCard, { type WishlistCardOutcome } from '@/components/wishlist/Wi
 import WishlistShareAction from '@/components/wishlist/WishlistShareAction'
 import WishlistShareCard from '@/components/wishlist/WishlistShareCard'
 import { track } from '@/lib/analytics/tracker'
+import { notify } from '@/lib/ui/toast'
 import { loginHrefForWishlist, useWishlistStore } from '@/lib/wishlist/client-store'
 import {
   movableItems,
@@ -26,7 +27,6 @@ import {
 import { Heart, ShoppingCart } from 'lucide-react'
 import Link from 'next/link'
 import { type Dispatch, type SetStateAction, useEffect, useState } from 'react'
-import { toast } from 'sonner'
 
 /**
  * `/wishlist` and `/account/wishlist`, the page the heart points at. Client-
@@ -205,7 +205,7 @@ function SignedIn({
     const index = view.items.findIndex((i) => i.productId === item.productId)
     const result = await remove(item.productId)
     if (!result.ok) {
-      if (!result.signedOut) toast.error(result.error)
+      if (!result.signedOut) notify('error', result.error)
       return { ok: false }
     }
     editItems((current) => current.filter((i) => i.productId !== item.productId))
@@ -214,7 +214,7 @@ function SignedIn({
       return { ok: true }
     }
     setAnnouncement(removedAnnouncement(item.name))
-    toast.success(removedAnnouncement(item.name), {
+    notify('success', removedAnnouncement(item.name), {
       action: {
         label: 'ביטול',
         onClick: () => void restore(item, index),
@@ -227,7 +227,7 @@ function SignedIn({
   async function restore(item: WishlistViewItem, index: number) {
     const result = await toggle(item.productId)
     if (!result.ok) {
-      if (!result.signedOut) toast.error(result.error)
+      if (!result.signedOut) notify('error', result.error)
       return
     }
     if (!result.saved) return
@@ -249,7 +249,7 @@ function SignedIn({
       }
       if (moved > 0) {
         setAnnouncement(movedManyAnnouncement(moved))
-        toast.success(movedManyAnnouncement(moved))
+        notify('success', movedManyAnnouncement(moved))
       }
     } finally {
       setMovingAll(false)

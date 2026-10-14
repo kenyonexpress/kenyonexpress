@@ -1,6 +1,7 @@
 import SkipLink from '@/components/a11y/SkipLink'
 import AdminSidebar from '@/components/admin/AdminSidebar'
 import CommandPalette from '@/components/admin/CommandPalette'
+import DeferredToaster from '@/components/ui/DeferredToaster'
 import { adminLandingPath } from '@/lib/admin/nav'
 import { ROLE_LABELS, requirePanelSession } from '@/lib/admin/rbac'
 import { signOut } from '@/server/actions/auth'
@@ -95,6 +96,11 @@ export default function AdminGroupLayout({ children }: { children: React.ReactNo
       <Suspense fallback={<AdminFrameFallback />}>
         <AdminFrame>{children}</AdminFrame>
       </Suspense>
+      {/* UX28: the panel's screens raise toasts (approvals, payouts, cashback,
+          the products table, the category tree) and until this mount none of
+          them had anywhere to paint. Outside the frame's boundary on purpose:
+          a toast region must not wait on the session read. */}
+      <DeferredToaster />
     </div>
   )
 }

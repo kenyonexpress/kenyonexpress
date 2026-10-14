@@ -1,5 +1,6 @@
 'use client'
 
+import { notify } from '@/lib/ui/toast'
 import {
   LINK_COPIED,
   SHARE_TEXT,
@@ -13,7 +14,6 @@ import {
 } from '@/server/actions/wishlist'
 import { Share2 } from 'lucide-react'
 import { useState } from 'react'
-import { toast } from 'sonner'
 
 /**
  * The toolbar's "שיתוף הרשימה" (UX20): one press shares the link.
@@ -57,9 +57,9 @@ export default function WishlistShareAction({
     }
     try {
       await navigator.clipboard.writeText(url)
-      toast.success(LINK_COPIED)
+      notify('success', LINK_COPIED)
     } catch {
-      toast.info('הקישור מופיע בכרטיס "שיתוף הרשימה" למטה.')
+      notify('info', 'הקישור מופיע בכרטיס "שיתוף הרשימה" למטה.')
     }
   }
 
@@ -68,7 +68,7 @@ export default function WishlistShareAction({
     const origin = typeof window !== 'undefined' ? window.location.origin : ''
     let plan: ShareToolbarPlan = shareToolbarPlan(share, origin)
     if (plan.kind === 'unavailable') {
-      toast.info(plan.message)
+      notify('info', plan.message)
       return
     }
     setBusy(true)
@@ -76,13 +76,13 @@ export default function WishlistShareAction({
       if (plan.kind === 'enable') {
         const result = await setShare('enable')
         if (!result.ok) {
-          toast.error(result.error)
+          notify('error', result.error)
           return
         }
         onShareChange(result.share)
         plan = shareToolbarPlan(result.share, origin)
         if (plan.kind !== 'share') {
-          toast.error('הפעולה נכשלה. נסה שוב.')
+          notify('error', 'הפעולה נכשלה. נסה שוב.')
           return
         }
       }

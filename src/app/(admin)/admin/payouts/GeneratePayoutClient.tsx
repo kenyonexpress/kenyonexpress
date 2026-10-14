@@ -1,9 +1,9 @@
 'use client'
 
+import { notify } from '@/lib/ui/toast'
 import { generatePayoutStatement } from '@/server/actions/admin/payouts'
 import { Play } from 'lucide-react'
 import { useState, useTransition } from 'react'
-import { toast } from 'sonner'
 
 interface Props {
   suppliers: { id: string; name: string; min_payout_ils: string | number | null }[]
@@ -23,11 +23,11 @@ export default function GeneratePayoutClient({ suppliers, defaultStart, defaultE
   function handleRun() {
     startTransition(async () => {
       const result = await generatePayoutStatement({ supplierId, periodStart, periodEnd })
-      if (result.error) toast.error(result.error)
+      if (result.error) notify('error', result.error)
       // A rollover is a successful run with nothing to pay, and the action says
       // so in its message. Toasting it as an error would train the admin to
       // treat the minimum-payout rule as a failure.
-      else toast.success(result.success ?? 'הריצה הסתיימה')
+      else notify('success', result.success ?? 'הריצה הסתיימה')
     })
   }
 

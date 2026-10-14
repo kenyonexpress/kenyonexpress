@@ -1,6 +1,7 @@
 'use client'
 
 import { canApprove, canCancel, canMarkPaid, isHeld } from '@/lib/admin/payouts'
+import { notify } from '@/lib/ui/toast'
 import {
   approvePayoutStatement,
   cancelPayoutStatement,
@@ -8,7 +9,6 @@ import {
 } from '@/server/actions/admin/payouts'
 import { BadgeCheck, Ban, Banknote } from 'lucide-react'
 import { useState, useTransition } from 'react'
-import { toast } from 'sonner'
 
 interface Props {
   statementId: string
@@ -38,8 +38,8 @@ export default function PayoutActionsClient({
   function run(fn: () => Promise<{ error?: string; success?: string }>) {
     startTransition(async () => {
       const result = await fn()
-      if (result.error) toast.error(result.error)
-      else toast.success(result.success ?? 'בוצע')
+      if (result.error) notify('error', result.error)
+      else notify('success', result.success ?? 'בוצע')
     })
   }
 

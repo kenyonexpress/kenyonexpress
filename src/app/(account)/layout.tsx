@@ -161,7 +161,7 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
       </div>
       <CartDrawer />
       <WhatsAppFloat />
-      <DeferredToaster position="top-center" dir="rtl" richColors closeButton />
+      <DeferredToaster />
     </CartProvider>
   )
 }

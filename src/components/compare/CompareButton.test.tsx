@@ -4,14 +4,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import CompareButton from './CompareButton'
 
 const push = vi.fn()
-const toast = { success: vi.fn(), error: vi.fn() }
+const notify = vi.fn()
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }))
-vi.mock('sonner', () => ({
-  toast: {
-    success: (...a: unknown[]) => toast.success(...a),
-    error: (...a: unknown[]) => toast.error(...a),
-  },
-}))
+vi.mock('@/lib/ui/toast', () => ({ notify: (...a: unknown[]) => notify(...a) }))
 
 const A = '11111111-1111-4111-8111-111111111111'
 const B = '22222222-2222-4222-8222-222222222222'
@@ -23,8 +18,7 @@ beforeEach(() => {
   localStorage.clear()
   resetCompareHydrationForTests()
   push.mockReset()
-  toast.success.mockReset()
-  toast.error.mockReset()
+  notify.mockReset()
 })
 
 describe('CompareButton', () => {
@@ -45,7 +39,8 @@ describe('CompareButton', () => {
     fireEvent.click(button)
     expect(useCompareStore.getState().ids).toEqual([A])
     expect(onCardClick).not.toHaveBeenCalled()
-    expect(toast.success).toHaveBeenCalledTimes(1)
+    expect(notify).toHaveBeenCalledTimes(1)
+    expect(notify).toHaveBeenCalledWith('success', 'נוסף להשוואה', expect.anything())
     const pressed = screen.getByRole('button', { name: 'הסר מההשוואה' })
     expect(pressed).toHaveAttribute('aria-pressed', 'true')
     expect(pressed).toHaveAttribute('data-compared', 'true')
@@ -59,9 +54,9 @@ describe('CompareButton', () => {
     render(<CompareButton productId={E} />)
     fireEvent.click(screen.getByRole('button', { name: 'הוסף להשוואה' }))
     expect(useCompareStore.getState().ids).toEqual([A, B, C, D])
-    expect(toast.error).toHaveBeenCalledWith('אפשר להשוות עד 4 מוצרים', expect.anything())
+    expect(notify).toHaveBeenCalledWith('error', 'אפשר להשוות עד 4 מוצרים', expect.anything())
     // The toast's action is the way to the page where a column can be freed.
-    const opts = toast.error.mock.calls[0]?.[1] as { action: { onClick: () => void } }
+    const opts = notify.mock.calls[0]?.[2] as { action: { onClick: () => void } }
     opts.action.onClick()
     expect(push).toHaveBeenCalledWith('/compare')
   })

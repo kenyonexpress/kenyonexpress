@@ -49,6 +49,7 @@ Companions: SEO-PERFORMANCE, Go-Live, design-system.
 | Checkout | סדר טאב RTL הגיוני |
 | Coupon tabs | `role=tablist` או ניווט ברור |
 | Supplier scan | הודעות הצלחה/כישלון לא רק בצבע |
+| Toasts | אזור ‏`aria-live=polite` בשם "התראות"; כפתור סגירה "סגירת ההודעה" עם תיבת פגיעה ‏44px; אייקון לכל סוג ולא צבע בלבד; שגיאה חיה ‏8s (‏UX28, ‏DESIGN-SYSTEM §3.1) |
 
 ---
 

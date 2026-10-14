@@ -247,6 +247,34 @@ html [data-sonner-toaster][data-sonner-theme="light"] {
   --error-text: hsl(360, 100%, 43.5%);
 }
 
+/* THE TOAST'S CLOSE BUTTON IS A 20px GLYPH WITH A 44px HIT BOX (UX28).
+   Measured on the build of a1ee1c030 (logs/ux28/before.json): the painted
+   button is 20x20 and `elementFromPoint` 21px out from its centre hit the
+   toast, not the button, on all four sides, at every width. The glyph stays
+   20px because the toast is 54px tall and a 44px square at its corner would
+   cover the icon; the hit box is a pseudo-element, which is how the masthead
+   icons and the quantity stepper already reach 44 (UX03, UX15). Sonner sets
+   `position: absolute` on the button itself, so the box resolves against it.
+   `html .ke-toaster` is (0,2,1) against sonner's injected (0,2,0), the same
+   specificity argument as the colour override above. 13 and not 12: the
+   button carries a 1px border and `inset` resolves against the padding box,
+   so -12px measured 42x42 (logs/ux28/debug-hit.mjs: hit at 21px out on the
+   left and top, missed on the right and bottom). */
+html .ke-toaster [data-sonner-toast] [data-close-button]::after {
+  content: "";
+  position: absolute;
+  inset: -13px;
+}
+
+/* A toast is a reaction and not a show: under reduced motion it appears and
+   leaves without the 400ms slide. Sonner's own CSS carries the transition on
+   the toast at (0,2,0). */
+@media (prefers-reduced-motion: reduce) {
+  html .ke-toaster [data-sonner-toast] {
+    transition-duration: 0s;
+  }
+}
+
 /* THE TOP-BAR GREETING IS A HOME-PAGE ROW, AND THAT IS MEASURED.
    Live renders "ברוך הבא לעולם של קניון Express" on the home page only. With
    it, the four info items wrap onto three rows and the bar is 113px at 380;

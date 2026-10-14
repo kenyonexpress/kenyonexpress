@@ -72,7 +72,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
       {/* The login dialog (UX23), the same host the storefront chrome mounts. */}
       <DeferredLoginDialog phoneEnabled={phoneAuthEnabled()} />
       <WhatsAppFloat />
-      <DeferredToaster position="top-center" dir="rtl" richColors closeButton />
+      <DeferredToaster />
     </CartProvider>
   )
 }
