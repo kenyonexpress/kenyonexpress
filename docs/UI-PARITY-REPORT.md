@@ -162,3 +162,4 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-14 10:34 | product | 768 | 4.07% | PASS | `192fa0120-dirty` | live side: frozen capture `refs/electro_product_768.png`; overall 30.97% (reference blank 20.36%, ours blank 6.53%) |
 | 2026-10-14 10:36 | product | 1440 | 2.56% | PASS | `192fa0120-dirty` | live side: frozen capture `refs/electro_product_1440.png`; overall 23.41% (reference blank 15.39%, ours blank 5.45%) |
 | 2026-10-14 11:03 | cart | 380 | n/a | REFUSED | `41e42094d-dirty` | live side is our-build |
+| 2026-10-14 12:05 | checkout | 380 | n/a | REFUSED | `47ced0878-dirty` | live side is our-build |

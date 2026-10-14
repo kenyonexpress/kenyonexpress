@@ -230,3 +230,142 @@ export function classifyCheckoutFailure(code: string | null | undefined): Checko
   if (!code) return 'terminal'
   return RETRYABLE_CODES.has(code.trim().toUpperCase()) ? 'retryable' : 'terminal'
 }
+
+// ---------------------------------------------------------------------------
+// The flow: three steps over the four sections (UX17, 14.10.2026)
+// ---------------------------------------------------------------------------
+
+/**
+ * The checkout became a stepped flow again on 14.10.2026, this time at every
+ * width: personal details, then the address (with the delivery slot, the
+ * carrier and the notes), then payment (method, wallet, terms and the pay
+ * button). The order review stays beside the steps the whole way.
+ *
+ * The flow is a layer OVER the sections above, not a replacement: `details`
+ * and `address` are the sections of the same name, and `payment` is `review`
+ * plus `confirm`. Every rule still lives in the per-section validators, so a
+ * step's "continue" judges exactly what the one submit judges, and a saved
+ * address switches the same two sections off in both.
+ */
+export const CHECKOUT_FLOW_STEPS = ['details', 'address', 'payment'] as const
+
+export type CheckoutFlowStep = (typeof CHECKOUT_FLOW_STEPS)[number]
+
+export const FLOW_STEP_TITLES: Record<CheckoutFlowStep, string> = {
+  details: STEP_TITLES.details,
+  address: STEP_TITLES.address,
+  payment: 'תשלום',
+}
+
+const FLOW_SECTIONS: Record<CheckoutFlowStep, readonly CheckoutStep[]> = {
+  details: ['details'],
+  address: ['address'],
+  payment: ['review', 'confirm'],
+}
+
+/** The sections a flow step is made of, in page order. */
+export function sectionsOfFlowStep(step: CheckoutFlowStep): readonly CheckoutStep[] {
+  return FLOW_SECTIONS[step]
+}
+
+/**
+ * One step's errors, for its "continue" button. `skip` is the same list the
+ * single submit takes (the sections a saved address answers for), so a step
+ * whose every section is skipped is clear by definition.
+ */
+export function validateFlowStep(
+  step: CheckoutFlowStep,
+  values: StepValues,
+  skip: readonly CheckoutStep[] = [],
+): StepErrors {
+  const errors: StepErrors = {}
+  for (const section of FLOW_SECTIONS[step]) {
+    if (skip.includes(section)) continue
+    for (const [field, message] of Object.entries(validateStep(section, values))) {
+      if (!(field in errors)) errors[field] = message
+    }
+  }
+  return errors
+}
+
+export function flowStepIndex(step: CheckoutFlowStep): number {
+  return CHECKOUT_FLOW_STEPS.indexOf(step)
+}
+
+/** The step after `step`, or null on the last one. */
+export function nextFlowStep(step: CheckoutFlowStep): CheckoutFlowStep | null {
+  return CHECKOUT_FLOW_STEPS[flowStepIndex(step) + 1] ?? null
+}
+
+/** The step before `step`, or null on the first one. */
+export function previousFlowStep(step: CheckoutFlowStep): CheckoutFlowStep | null {
+  const index = flowStepIndex(step)
+  return index > 0 ? (CHECKOUT_FLOW_STEPS[index - 1] ?? null) : null
+}
+
+/**
+ * Where each field lives, so an error the single submit finds can send the
+ * shopper back to the step that owns it rather than to a red line behind a
+ * collapsed panel. A field the table does not know is treated as the last
+ * step's, which is where the submit button is and where the shopper already
+ * stands.
+ */
+const FIELD_FLOW_STEP: Record<string, CheckoutFlowStep> = {
+  first_name: 'details',
+  last_name: 'details',
+  phone: 'details',
+  email: 'details',
+  city: 'address',
+  street: 'address',
+  street_number: 'address',
+  apartment: 'address',
+  floor: 'address',
+  zip: 'address',
+  delivery_slot: 'address',
+  shipping_option: 'address',
+  order_notes: 'address',
+  gift_recipient_email: 'address',
+  accept_terms: 'payment',
+  token_id: 'payment',
+  apply_wallet_ils: 'payment',
+  save_card: 'payment',
+}
+
+export function flowStepForField(field: string): CheckoutFlowStep {
+  return FIELD_FLOW_STEP[field] ?? 'payment'
+}
+
+/**
+ * The earliest step that owns an error in `errors`, or null when there are
+ * none. Earliest in flow order, not in object order, so the shopper is taken
+ * to the first thing that is wrong on the page.
+ */
+export function firstFlowStepWithErrors(errors: StepErrors): CheckoutFlowStep | null {
+  const owned = new Set(Object.keys(errors).map(flowStepForField))
+  for (const step of CHECKOUT_FLOW_STEPS) {
+    if (owned.has(step)) return step
+  }
+  return null
+}
+
+/**
+ * The step the flow opens on.
+ *
+ * A saved address answers the details and the address, so a returning shopper
+ * opens on the address step: not on payment, because the delivery slot, the
+ * carrier and the notes live in the address step and are still theirs to set,
+ * and not on details, which would be a summary line with nothing to do. A
+ * guest opens on the first step.
+ */
+export function initialFlowStep(skip: readonly CheckoutStep[]): CheckoutFlowStep {
+  return skip.includes('details') ? 'address' : 'details'
+}
+
+export type FlowStepState = 'done' | 'current' | 'upcoming'
+
+export function flowStepState(step: CheckoutFlowStep, current: CheckoutFlowStep): FlowStepState {
+  const index = flowStepIndex(step)
+  const now = flowStepIndex(current)
+  if (index < now) return 'done'
+  return index === now ? 'current' : 'upcoming'
+}

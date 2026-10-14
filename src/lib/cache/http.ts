@@ -56,6 +56,12 @@ export const CacheControl = {
    */
   postalCode: 'public, max-age=3600, s-maxage=86400',
   /**
+   * Street suggestions (UX17). A city's street list changes when the registry
+   * publishes, which is seldom, and the query carries no one's identity, so
+   * the same hour in the browser and day at the edge as a postal code.
+   */
+  streets: 'public, max-age=3600, s-maxage=86400',
+  /**
    * Anything keyed by the caller: a cart, a session, a wallet pass, a
    * suggestion list that was tuned to one person. `private` keeps it out of
    * every shared cache and `no-store` keeps it out of the browser's, so a

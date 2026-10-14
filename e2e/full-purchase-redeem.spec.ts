@@ -32,9 +32,10 @@ import { addOpenProductToCart, expectHebrewRtl } from './helpers'
  * Skip with E2E_PAID_FLOW=0 when the shared DB cannot host fixtures.
  */
 
-/** Walk the stepped checkout form from wherever it starts to the confirm step.
- * A returning customer with a saved address starts past the steps they have
- * answered, so each leg is conditional on its fields being on screen. */
+/** Walk the three-step checkout (UX17) from wherever it starts to the payment
+ * step. A returning customer with a saved address starts on the address step
+ * with nothing to type, so each leg is conditional on its fields being on
+ * screen; the continue button is the same "המשך" on both typed steps. */
 async function walkCheckoutStepsToConfirm(page: import('@playwright/test').Page): Promise<void> {
   // Field ids rather than labels: the footer newsletter box also answers to
   // "כתובת אימייל", so labels are ambiguous the moment the footer renders.
@@ -52,7 +53,8 @@ async function walkCheckoutStepsToConfirm(page: import('@playwright/test').Page)
     await page.getByRole('button', { name: 'המשך', exact: true }).click()
   }
 
-  // Step 2: address (required even for coupon-only carts).
+  // Step 2: address (required even for coupon-only carts). A saved address
+  // shows the step with a summary line and the same continue button.
   if (
     await page
       .locator('#co-city')
@@ -62,13 +64,10 @@ async function walkCheckoutStepsToConfirm(page: import('@playwright/test').Page)
     await page.locator('#co-city').fill('תל אביב')
     await page.locator('#co-street').fill('הרצל')
     await page.locator('#co-number').fill('1')
-    await page.getByRole('button', { name: 'המשך', exact: true }).click()
   }
-
-  // Step 3: review asks nothing; move on to the confirm step.
-  const toConfirm = page.getByRole('button', { name: 'המשך לאישור' })
-  if (await toConfirm.isVisible().catch(() => false)) {
-    await toConfirm.click()
+  const toPayment = page.getByRole('button', { name: 'המשך', exact: true })
+  if (await toPayment.isVisible().catch(() => false)) {
+    await toPayment.click()
   }
 
   await expect(page.locator('input[name="accept_terms"]')).toBeVisible()

@@ -68,6 +68,7 @@
 | `begin_checkout` | 10 | 1 min | Cardcom low-profile creation |
 | `reorder` | 5 | 1 min | one-click reorder, per user |
 | `postal-lookup` | 30 | 10 min | postal-code lookups relayed to Israel Post, per IP |
+| `street-lookup` | 60 | 10 min | street suggestions relayed to the street registry, per IP |
 | `checkout-velocity-ip` | 30 | 24 h | new orders from one address in a day; carding rotates cards, not addresses |
 | `checkout-velocity-email` | 15 | 24 h | new orders on one email in a day; a stolen-card run batches on one login |
 | `checkout-velocity-phone` | 15 | 24 h | new orders naming one delivery phone in a day, across accounts |

@@ -4,6 +4,8 @@ import CarrierPicker from '@/components/checkout/CarrierPicker'
 import CheckoutGiftCardField from '@/components/checkout/CheckoutGiftCardField'
 import CityAutocomplete from '@/components/checkout/CityAutocomplete'
 import DeliverySlotPicker from '@/components/checkout/DeliverySlotPicker'
+import PaymentMethodSelector from '@/components/checkout/PaymentMethodSelector'
+import StreetAutocomplete from '@/components/checkout/StreetAutocomplete'
 import { trackCommerce } from '@/lib/analytics/commerce-client'
 import { CHECKOUT_BUTTON_COLOR_EXPERIMENT } from '@/lib/analytics/experiments'
 import { getCheckoutVariant } from '@/lib/analytics/feature-flags'
@@ -14,14 +16,27 @@ import { MIN_WALLET_REDEMPTION_ILS, redeemableCeilingAgorot } from '@/lib/cashba
 import type { DeliverySlot } from '@/lib/checkout/delivery-slots'
 import { sectionsFromElectro } from '@/lib/checkout/electro-content'
 import { checkOptionalIsraeliPostalCode } from '@/lib/checkout/israeli-postal-code'
+import {
+  defaultPaymentChoice,
+  isSavedCardChoice,
+  paymentMethodOptions,
+} from '@/lib/checkout/payment-methods'
 import { cityFromPostalCode, postalCodeMatchesCity } from '@/lib/checkout/postal-autofill'
 import {
+  CHECKOUT_FLOW_STEPS,
+  type CheckoutFlowStep,
   type CheckoutStep,
-  STEP_TITLES,
+  FLOW_STEP_TITLES,
   type StepErrors,
   type StepValues,
   classifyCheckoutFailure,
+  firstFlowStepWithErrors,
+  flowStepState,
+  initialFlowStep,
+  nextFlowStep,
+  previousFlowStep,
   validateAllSteps,
+  validateFlowStep,
 } from '@/lib/checkout/steps'
 import { clampWalletIls } from '@/lib/checkout/wallet-input'
 import { cityByName } from '@/lib/geo/cities'
@@ -95,15 +110,23 @@ function readResume(): Partial<Record<(typeof RESUME_FIELDS)[number], string>> {
 }
 
 /**
- * The checkout, on one page.
+ * The checkout, in three steps (UX17, 14.10.2026).
  *
- * It was a four-step wizard on desktop until 30.09.2026 and a single long
- * column below 992px, because live's WooCommerce checkout is one page at every
- * width and the pixel gate at 380 and 768 said so. Now it is one page at 1440
- * too: billing on the right, "ההזמנה שלך" on the left, one submit at the
- * bottom of the panel. The sections keep their names from
- * lib/checkout/steps.ts because the validation is still per section and a
- * saved address still switches two of them off at once.
+ * Personal details, then the address (with the delivery slot, the carrier and
+ * the notes), then payment (the method, a gift card, the wallet, the terms and
+ * the pay button), with the order review beside the steps the whole way. It
+ * was a four-step wizard on desktop until 30.09.2026 and one long page from
+ * then until today; the single page put the pay button three screens under
+ * the first field on a phone (measured 3065px down at 380, logs/ux17/
+ * before.json) and asked for everything at once before saying what was wrong.
+ *
+ * EVERY FIELD IS IN THE DOM THE WHOLE TIME. A step that is not current has
+ * its body `hidden`, not unmounted: the inputs stay uncontrolled (the
+ * postal-code autofill and the Google-resume effect write the DOM directly),
+ * a hidden input still posts, and the one submit at the end still judges the
+ * whole form in page order. "Continue" judges only its own step through the
+ * same per-section rules (lib/checkout/steps.ts), and an error the final
+ * submit finds opens the step that owns the field before focusing it.
  */
 export default function CheckoutForm({
   cart,
@@ -198,10 +221,12 @@ export default function CheckoutForm({
   const formRef = useRef<HTMLFormElement>(null)
   const googleFormRef = useRef<HTMLFormElement>(null)
 
-  const [paymentChoice, setPaymentChoice] = useState<string>(
-    savedCards.find((card) => card.isDefault)?.id ?? savedCards[0]?.id ?? 'new',
-  )
-  const usingSavedCard = paymentChoice !== 'new'
+  // The ticked payment method: a saved token's id, or 'new' for the hosted
+  // page. The options and the default come from one pure module so the
+  // selector, the server's reading of `token_id` and the tests agree.
+  const methodOptions = paymentMethodOptions(savedCards)
+  const [paymentChoice, setPaymentChoice] = useState<string>(() => defaultPaymentChoice(savedCards))
+  const usingSavedCard = isSavedCardChoice(paymentChoice)
   const [zipError, setZipError] = useState<string | null>(null)
   const [fieldErrors, setFieldErrors] = useState<StepErrors>({})
 
@@ -218,6 +243,24 @@ export default function CheckoutForm({
    * `if (needsAddress && !addressId)` and takes the email from the session.
    */
   const savedAddressAnswersFor: CheckoutStep[] = address.id ? ['details', 'address'] : []
+
+  /**
+   * The flow. `flowStep` is the open step; the ones before it are done and
+   * show a summary line, the ones after it show their heading only.
+   * `snapshot` is what the fields held when the shopper last left a step,
+   * which is what the summary lines are written from.
+   */
+  const [flowStep, setFlowStep] = useState<CheckoutFlowStep>(() =>
+    initialFlowStep(savedAddressAnswersFor),
+  )
+  const [snapshot, setSnapshot] = useState<StepValues>({})
+  const headingRefs = useRef<Partial<Record<CheckoutFlowStep, HTMLHeadingElement | null>>>({})
+  const stateOf = (step: CheckoutFlowStep) => flowStepState(step, flowStep)
+  /**
+   * A step a saved address answered has nothing to edit, so it cannot be
+   * reopened; it is a done marker in the rail and a summary under its title.
+   */
+  const canVisit = (step: CheckoutFlowStep) => !(address.id && step === 'details')
 
   /** Current values straight off the form, so the gate reads what is really there. */
   const readValues = (): StepValues => {
@@ -245,9 +288,9 @@ export default function CheckoutForm({
     fieldErrors[field] ? `co-err-${field.replaceAll('_', '-')}` : undefined
 
   /**
-   * Land the shopper on the first thing that is wrong. On a single page the
-   * error may be a screen above the button they pressed, and a red line they
-   * cannot see is the same as no line.
+   * Land the shopper on the first thing that is wrong. The step that owns it
+   * has been opened by the caller, so by the time the frame paints the field
+   * is visible; a red line behind a collapsed panel is the same as no line.
    */
   const focusFirstInvalid = () => {
     const form = formRef.current
@@ -258,6 +301,60 @@ export default function CheckoutForm({
       target.scrollIntoView?.({ block: 'center', behavior: 'smooth' })
       target.focus?.({ preventScroll: true })
     })
+  }
+
+  /** Move the reader to a step's title once it is on screen. */
+  const focusStep = (step: CheckoutFlowStep) => {
+    window.requestAnimationFrame(() => {
+      const heading = headingRefs.current[step]
+      if (!heading) return
+      heading.scrollIntoView?.({ block: 'start', behavior: 'smooth' })
+      heading.focus?.({ preventScroll: true })
+    })
+  }
+
+  /** Open a step the shopper has already passed. Nothing to judge on the way back. */
+  const goToStep = (step: CheckoutFlowStep) => {
+    if (!canVisit(step)) return
+    setSnapshot(readValues())
+    setFlowStep(step)
+    focusStep(step)
+  }
+
+  /**
+   * "Continue": this step's rules only, over what the fields really hold. A
+   * clear step is remembered for its summary line and the next one opens.
+   */
+  const advance = () => {
+    const values = readValues()
+    const errors = validateFlowStep(flowStep, values, savedAddressAnswersFor)
+    setFieldErrors(errors)
+    if (flowStep === 'address') setZipError(errors.zip ?? null)
+    if (Object.keys(errors).length > 0) {
+      focusFirstInvalid()
+      return
+    }
+    const next = nextFlowStep(flowStep)
+    if (!next) return
+    setSnapshot(values)
+    track('checkout_step', { step: next })
+    setFlowStep(next)
+    focusStep(next)
+  }
+
+  const back = () => {
+    const previous = previousFlowStep(flowStep)
+    if (previous) goToStep(previous)
+  }
+
+  /**
+   * Open the step that owns the first error the whole-form check found.
+   * Returns true when a step changed, so the caller knows the focus has to
+   * wait for the panel to show.
+   */
+  const openStepOf = (errors: StepErrors) => {
+    const target = firstFlowStepWithErrors(errors)
+    if (target && target !== flowStep) setFlowStep(target)
   }
 
   /** Derived from the committed Electro capture, not hardcoded here. */
@@ -315,11 +412,12 @@ export default function CheckoutForm({
   }
 
   /**
-   * The city as far as the delivery estimate is concerned. Starts from the
-   * prefill (a saved address has one), follows a picked suggestion, and is
-   * re-read from the field on blur so a typed city counts too. Only a city
-   * `cities.ts` knows produces an estimate; anything else leaves the slot
-   * picker on the registry's own 3-7 day band.
+   * The city as far as the delivery estimate and the street suggestions are
+   * concerned. Starts from the prefill (a saved address has one), follows a
+   * picked suggestion, and is re-read from the field on blur so a typed city
+   * counts too. Only a city `cities.ts` knows produces an estimate; anything
+   * else leaves the slot picker on the registry's own 3-7 day band. The
+   * street field asks the registry for any non-empty city.
    */
   const [cityName, setCityName] = useState(address.city)
   const isSupplierDelivery = cart.shipping?.method === 'supplier_delivery'
@@ -327,15 +425,19 @@ export default function CheckoutForm({
     ? estimateDelivery(cityByName(cityName)?.slug, 'supplier_delivery')
     : null
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: the opening step is decided once, at mount; the funnel wants where the shopper STARTED
   useEffect(() => {
     track('checkout_step', { step: 'identity' })
-    if (needsAddress) track('checkout_step', { step: 'address' })
-  }, [needsAddress])
+    if (flowStep === 'address') track('checkout_step', { step: 'address' })
+  }, [])
 
   // Refill after the Google round trip. Done in an effect against the live DOM
   // rather than through defaultValue, because the values are only readable on
   // the client and a defaultValue read during render would differ between the
-  // server and client passes.
+  // server and client passes. The shopper was on the pay button when they
+  // left, so the flow reopens on the first step that still has something
+  // wrong, which with a complete form is the payment step and its terms box.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: runs once, when the page says it is a resume
   useEffect(() => {
     if (!resuming) return
     const saved = readResume()
@@ -355,6 +457,10 @@ export default function CheckoutForm({
     }
     if (saved.city) setCityName(saved.city)
     window.sessionStorage.removeItem(RESUME_KEY)
+    const values = readValues()
+    const target = firstFlowStepWithErrors(validateAllSteps(values, savedAddressAnswersFor))
+    setSnapshot(values)
+    setFlowStep(target ?? 'payment')
   }, [resuming])
 
   const validateZip = (value: string): boolean => {
@@ -473,17 +579,19 @@ export default function CheckoutForm({
     const zip = (form.elements.namedItem('zip') as HTMLInputElement | null)?.value ?? ''
     if (!validateZip(zip)) {
       event.preventDefault()
+      openStepOf({ zip: 'invalid' })
       focusFirstInvalid()
       return
     }
 
     // Every section at once. There is one submit on this page and every field
-    // is in the DOM, so the whole form is judged in page order and the shopper
-    // is taken to the first thing that is wrong.
+    // is in the DOM, so the whole form is judged in page order, the step that
+    // owns the first wrong field is opened, and the shopper is taken to it.
     const errors = validateAllSteps(readValues(), savedAddressAnswersFor)
     setFieldErrors(errors)
     if (Object.keys(errors).length > 0) {
       event.preventDefault()
+      openStepOf(errors)
       focusFirstInvalid()
       return
     }
@@ -529,6 +637,30 @@ export default function CheckoutForm({
       : 'שליחת הזמנה'
 
   /**
+   * The summary a done step shows under its title, as separate parts so each
+   * reads as its own phrase. Written from the saved address when there is
+   * one, else from what the fields held when the shopper left the step.
+   */
+  const summaryParts = (step: CheckoutFlowStep): string[] => {
+    if (step === 'details') {
+      if (address.id) return [address.full_name, address.phone, address.email].filter(Boolean)
+      const name = [snapshot.first_name, snapshot.last_name].filter(Boolean).join(' ')
+      return [name, snapshot.phone ?? '', snapshot.email ?? ''].filter(Boolean)
+    }
+    if (step === 'address') {
+      if (address.id) return [`${address.street} ${address.street_number}, ${address.city}`]
+      const line = [snapshot.street, snapshot.street_number].filter(Boolean).join(' ')
+      const extras = [
+        snapshot.apartment ? `דירה ${snapshot.apartment}` : '',
+        snapshot.floor ? `קומה ${snapshot.floor}` : '',
+      ].filter(Boolean)
+      const main = [line, ...extras, snapshot.city ?? ''].filter(Boolean).join(', ')
+      return [main, snapshot.zip ? `מיקוד ${snapshot.zip}` : ''].filter(Boolean)
+    }
+    return []
+  }
+
+  /**
    * The three blocks Electro shows below its order review, in Electro's order
    * (see lib/checkout/electro-content.ts). Rendered by id so a refreshed
    * capture that reorders them reorders this panel without a code change.
@@ -537,41 +669,12 @@ export default function CheckoutForm({
     if (id === 'payment-note') {
       return (
         <div key={id}>
-          <div className="checkout-payment__method">
-            <input type="radio" checked readOnly id="co-pay-card" />
-            <label htmlFor="co-pay-card">תשלום בעזרת כרטיס אשראי</label>
-          </div>
+          <PaymentMethodSelector
+            options={methodOptions}
+            choice={paymentChoice}
+            onChange={setPaymentChoice}
+          />
           <p className="checkout-payment__note">תשלום מאובטח באשראי, באמצעות Cardcom.</p>
-
-          {savedCards.length > 0 && (
-            <fieldset className="checkout-cards">
-              <legend className="checkout-cards__legend">אמצעי תשלום</legend>
-              {savedCards.map((card) => (
-                <label className="checkout-cards__option" key={card.id}>
-                  <input
-                    type="radio"
-                    name="token_id"
-                    value={card.id}
-                    checked={paymentChoice === card.id}
-                    onChange={() => setPaymentChoice(card.id)}
-                  />
-                  <span>
-                    {card.brand ?? 'כרטיס'} המסתיים ב-{card.last4 ?? '****'}
-                  </span>
-                </label>
-              ))}
-              <label className="checkout-cards__option">
-                <input
-                  type="radio"
-                  name="token_id"
-                  value="new"
-                  checked={paymentChoice === 'new'}
-                  onChange={() => setPaymentChoice('new')}
-                />
-                <span>כרטיס אחר</span>
-              </label>
-            </fieldset>
-          )}
 
           {/* STEP 48: a gift card code typed here is loaded into the wallet
               and the wallet box below is re-seeded with it, so the card pays
@@ -668,6 +771,62 @@ export default function CheckoutForm({
     )
   }
 
+  /** A step's title row: the heading, and an edit control once the step is done. */
+  const renderStepHead = (step: CheckoutFlowStep) => {
+    const state = stateOf(step)
+    return (
+      <>
+        <div className="checkout-section__head">
+          <h2
+            className="checkout-section__title"
+            id={`co-step-${step}-title`}
+            tabIndex={-1}
+            ref={(node) => {
+              headingRefs.current[step] = node
+            }}
+          >
+            <span>{FLOW_STEP_TITLES[step]}</span>
+          </h2>
+          {state === 'done' && canVisit(step) && (
+            <button
+              type="button"
+              className="checkout-section__edit"
+              onClick={() => goToStep(step)}
+              aria-label={`ערוך ${FLOW_STEP_TITLES[step]}`}
+            >
+              ערוך
+            </button>
+          )}
+        </div>
+        {state === 'done' && summaryParts(step).length > 0 && (
+          <p className="checkout-step-summary" data-testid={`step-summary-${step}`}>
+            {summaryParts(step).map((part) => (
+              <span key={part} className="checkout-step-summary__part">
+                {part}
+              </span>
+            ))}
+          </p>
+        )}
+      </>
+    )
+  }
+
+  const renderNav = (step: CheckoutFlowStep) => {
+    const previous = previousFlowStep(step)
+    return (
+      <div className="checkout-nav">
+        {previous && canVisit(previous) && (
+          <button type="button" className="checkout-nav__back" onClick={back}>
+            חזרה
+          </button>
+        )}
+        <button type="button" className="checkout-nav__next" onClick={advance}>
+          המשך
+        </button>
+      </div>
+    )
+  }
+
   return (
     <>
       {!isAuthenticated && (
@@ -703,6 +862,7 @@ export default function CheckoutForm({
         className="checkout-page__grid"
         data-checkout-variant={checkoutVariant}
         data-payment-gate={paymentGateOpen ? 'open' : 'closed'}
+        data-flow-step={flowStep}
         noValidate
       >
         <input type="hidden" name="client_ref" value={clientRef} />
@@ -711,338 +871,459 @@ export default function CheckoutForm({
         {address.id && <input type="hidden" name="address_id" value={address.id} />}
 
         <div className="checkout-col-main">
-          <section className="checkout-section" aria-label={STEP_TITLES.details}>
-            <h2 className="checkout-section__title">
-              <span>{STEP_TITLES.details}</span>
-            </h2>
-
-            {address.id ? (
-              <p>{address.full_name}</p>
-            ) : (
-              <>
-                <div className="checkout-fields-row">
-                  <div className="checkout-field">
-                    <label htmlFor="co-first-name">
-                      שם פרטי <span className="checkout-field__required">*</span>
-                    </label>
-                    <input
-                      id="co-first-name"
-                      name="first_name"
-                      defaultValue={prefill.first_name}
-                      autoComplete="given-name"
-                      aria-invalid={errorFor('first_name') ? 'true' : undefined}
-                      aria-describedby={errorIdFor('first_name')}
-                    />
-                    {errorFor('first_name') && (
-                      <span id="co-err-first-name" className="checkout-field__error" role="alert">
-                        {errorFor('first_name')}
-                      </span>
-                    )}
-                  </div>
-                  <div className="checkout-field">
-                    <label htmlFor="co-last-name">
-                      שם משפחה <span className="checkout-field__required">*</span>
-                    </label>
-                    <input
-                      id="co-last-name"
-                      name="last_name"
-                      defaultValue={prefill.last_name}
-                      autoComplete="family-name"
-                      aria-invalid={errorFor('last_name') ? 'true' : undefined}
-                      aria-describedby={errorIdFor('last_name')}
-                    />
-                    {errorFor('last_name') && (
-                      <span id="co-err-last-name" className="checkout-field__error" role="alert">
-                        {errorFor('last_name')}
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                <div className="checkout-fields-row">
-                  <div className="checkout-field">
-                    <label htmlFor="co-phone">
-                      טלפון <span className="checkout-field__required">*</span>
-                    </label>
-                    <input
-                      id="co-phone"
-                      name="phone"
-                      defaultValue={prefill.phone}
-                      inputMode="tel"
-                      autoComplete="tel"
-                      placeholder="05XXXXXXXX"
-                      /*
-                        LTR, like the gift-recipient email a few fields down
-                        already is. A number and an address are Latin on a
-                        Hebrew page; the form around them stays RTL.
-                      */
-                      dir="ltr"
-                      aria-invalid={errorFor('phone') ? 'true' : undefined}
-                      aria-describedby={errorIdFor('phone')}
-                    />
-                    {errorFor('phone') && (
-                      <span id="co-err-phone" className="checkout-field__error" role="alert">
-                        {errorFor('phone')}
-                      </span>
-                    )}
-                  </div>
-                  <div className="checkout-field">
-                    <label htmlFor="co-email">
-                      כתובת אימייל <span className="checkout-field__required">*</span>
-                    </label>
-                    <input
-                      id="co-email"
-                      name="email"
-                      type="email"
-                      defaultValue={prefill.email}
-                      autoComplete="email"
-                      dir="ltr"
-                      aria-invalid={errorFor('email') ? 'true' : undefined}
-                      aria-describedby={errorIdFor('email')}
-                    />
-                    {errorFor('email') && (
-                      <span id="co-err-email" className="checkout-field__error" role="alert">
-                        {errorFor('email')}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </>
-            )}
-          </section>
-
-          <section className="checkout-section" aria-label={STEP_TITLES.address}>
-            <h2 className="checkout-section__title">
-              <span>{STEP_TITLES.address}</span>
-            </h2>
-
-            {address.id ? (
-              <p>
-                {address.street} {address.street_number}, {address.city}
-              </p>
-            ) : (
-              <>
-                <div className="checkout-fields-row checkout-fields-row--single">
-                  <div className="checkout-field">
-                    <label htmlFor="co-city">
-                      עיר <span className="checkout-field__required">*</span>
-                    </label>
-                    <CityAutocomplete
-                      id="co-city"
-                      defaultValue={prefill.city}
-                      invalid={Boolean(errorFor('city'))}
-                      describedBy={errorIdFor('city')}
-                      onBlur={handleCityBlur}
-                      onPick={(city) => handleCityPick(city.name)}
-                    />
-                    {errorFor('city') && (
-                      <span id="co-err-city" className="checkout-field__error" role="alert">
-                        {errorFor('city')}
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                <div className="checkout-fields-row">
-                  <div className="checkout-field">
-                    <label htmlFor="co-street">
-                      רחוב <span className="checkout-field__required">*</span>
-                    </label>
-                    <input
-                      id="co-street"
-                      name="street"
-                      defaultValue={prefill.street}
-                      autoComplete="address-line1"
-                      onBlur={suggestZip}
-                      aria-invalid={errorFor('street') ? 'true' : undefined}
-                      aria-describedby={errorIdFor('street')}
-                    />
-                    {errorFor('street') && (
-                      <span id="co-err-street" className="checkout-field__error" role="alert">
-                        {errorFor('street')}
-                      </span>
-                    )}
-                  </div>
-                  <div className="checkout-field">
-                    <label htmlFor="co-number">
-                      מספר בית <span className="checkout-field__required">*</span>
-                    </label>
-                    <input
-                      id="co-number"
-                      name="street_number"
-                      defaultValue={prefill.street_number}
-                      onBlur={suggestZip}
-                      aria-invalid={errorFor('street_number') ? 'true' : undefined}
-                      aria-describedby={errorIdFor('street_number')}
-                    />
-                    {errorFor('street_number') && (
-                      <span
-                        id="co-err-street-number"
-                        className="checkout-field__error"
-                        role="alert"
+          {/* The rail: where the shopper is, what is done (and can be
+              reopened), what is still to come. A list, because the order is
+              the point; `aria-current="step"` on the open one. */}
+          <nav className="checkout-steps" aria-label="שלבי התשלום">
+            <ol className="checkout-steps__list">
+              {CHECKOUT_FLOW_STEPS.map((step, index) => {
+                const state = stateOf(step)
+                const label = (
+                  <>
+                    <span className="checkout-steps__num" aria-hidden="true">
+                      {index + 1}
+                    </span>
+                    <span className="checkout-steps__text">{FLOW_STEP_TITLES[step]}</span>
+                  </>
+                )
+                return (
+                  <li
+                    key={step}
+                    className="checkout-steps__item"
+                    data-state={state}
+                    aria-current={state === 'current' ? 'step' : undefined}
+                  >
+                    {state === 'done' && canVisit(step) ? (
+                      <button
+                        type="button"
+                        className="checkout-steps__btn"
+                        onClick={() => goToStep(step)}
                       >
-                        {errorFor('street_number')}
-                      </span>
+                        {label}
+                      </button>
+                    ) : (
+                      <span className="checkout-steps__label">{label}</span>
                     )}
-                  </div>
-                </div>
+                  </li>
+                )
+              })}
+            </ol>
+          </nav>
 
-                <div className="checkout-fields-row">
-                  <div className="checkout-field">
-                    <label htmlFor="co-apartment">מספר דירה (אופציונלי)</label>
-                    <input
-                      id="co-apartment"
-                      name="apartment"
-                      defaultValue={prefill.apartment}
-                      autoComplete="address-line2"
-                    />
-                  </div>
-                  <div className="checkout-field">
-                    <label htmlFor="co-floor">קומה (אופציונלי)</label>
-                    <input id="co-floor" name="floor" defaultValue={prefill.floor} />
-                  </div>
-                </div>
+          <section
+            className="checkout-section"
+            aria-label={FLOW_STEP_TITLES.details}
+            data-step="details"
+            data-step-state={stateOf('details')}
+          >
+            {renderStepHead('details')}
 
-                <div className="checkout-fields-row">
-                  <div className="checkout-field">
-                    <label htmlFor="co-zip">מיקוד / תא דואר (אופציונלי)</label>
-                    <input
-                      id="co-zip"
-                      name="zip"
-                      defaultValue={prefill.zip}
-                      inputMode="numeric"
-                      autoComplete="postal-code"
-                      aria-invalid={zipError || errorFor('zip') ? 'true' : undefined}
-                      aria-describedby={
-                        zipError || errorFor('zip')
-                          ? 'co-zip-error'
-                          : zipHint
-                            ? 'co-zip-hint'
-                            : undefined
-                      }
-                      onBlur={(event) => handleZipBlur(event.currentTarget.value)}
-                      onChange={() => setZipHint(null)}
-                    />
-                    {(zipError || errorFor('zip')) && (
-                      <span className="checkout-field__error" id="co-zip-error" role="alert">
-                        {zipError ?? errorFor('zip')}
-                      </span>
-                    )}
-                    {/* Advice, announced politely: it never blocks the submit. */}
-                    {!zipError && !errorFor('zip') && zipHint && (
-                      <span className="checkout-field__hint" id="co-zip-hint" aria-live="polite">
-                        {zipHint}
-                      </span>
-                    )}
-                  </div>
-                  <div />
-                </div>
-              </>
-            )}
-
-            {/*
-              Only for a supplier delivery: a pickup happens when the shopper
-              and the supplier agree, and a coupon is redeemed at the counter.
-              Rendered for a saved address too, since the slot is about the
-              order and not about which address row it ships to.
-            */}
-            {isSupplierDelivery && deliverySlots.length > 0 && (
-              <div className="checkout-fields-row checkout-fields-row--single">
-                <DeliverySlotPicker
-                  id="co-delivery-slot"
-                  slots={deliverySlots}
-                  estimate={deliveryEstimate}
-                />
-              </div>
-            )}
-
-            {/*
-              The carrier (STEP 43), quoted on the server from the cart for the
-              typed or saved city. Optional, like the slot: no pick means the
-              admin chooses at label time. Only for a supplier delivery, for
-              the same reason as the slot.
-            */}
-            {isSupplierDelivery && (
-              <div className="checkout-fields-row checkout-fields-row--single">
-                <CarrierPicker city={cityName} zip={address.zip || null} />
-              </div>
-            )}
-          </section>
-
-          <section className="checkout-section" aria-label="מידע נוסף">
-            <h2 className="checkout-section__title">
-              <span>מידע נוסף</span>
-            </h2>
-            <div className="checkout-field">
-              <label htmlFor="co-notes">הערות להזמנה (אופציונלי)</label>
-              <textarea
-                id="co-notes"
-                name="order_notes"
-                maxLength={500}
-                placeholder="הערות על ההזמנה, לדוגמה, הערות מיוחדות למסירה."
-              />
-            </div>
-
-            {/*
-              Offered only when there is a coupon to give. A gift here is a
-              voucher that changes hands; a physical line ships to an address
-              and has nothing to transfer, so showing the fields for one would
-              promise something the order cannot do.
-            */}
-            {cart.items.some((item) => item.type === 'coupon') && (
-              <div className="checkout-field">
-                <label className="checkout-terms">
-                  <input
-                    type="checkbox"
-                    name="gift"
-                    checked={isGift}
-                    onChange={(e) => setIsGift(e.target.checked)}
-                  />
-                  <span>הקופון מיועד למישהו אחר (מתנה)</span>
-                </label>
-
-                {isGift && (
-                  <div className="checkout-gift">
+            <div className="checkout-section__body" hidden={stateOf('details') !== 'current'}>
+              {/* A saved address answers this step, so its body is never
+                  opened (canVisit) and the name is the summary line above. */}
+              {address.id ? null : (
+                <>
+                  <div className="checkout-fields-row">
                     <div className="checkout-field">
-                      <label htmlFor="co-gift-email">
-                        מייל המקבל <span className="checkout-field__required">*</span>
+                      <label htmlFor="co-first-name">
+                        שם פרטי <span className="checkout-field__required">*</span>
                       </label>
                       <input
-                        id="co-gift-email"
-                        name="gift_recipient_email"
-                        type="email"
-                        required={isGift}
+                        id="co-first-name"
+                        name="first_name"
+                        defaultValue={prefill.first_name}
+                        autoComplete="given-name"
+                        aria-invalid={errorFor('first_name') ? 'true' : undefined}
+                        aria-describedby={errorIdFor('first_name')}
+                      />
+                      {errorFor('first_name') && (
+                        <span id="co-err-first-name" className="checkout-field__error" role="alert">
+                          {errorFor('first_name')}
+                        </span>
+                      )}
+                    </div>
+                    <div className="checkout-field">
+                      <label htmlFor="co-last-name">
+                        שם משפחה <span className="checkout-field__required">*</span>
+                      </label>
+                      <input
+                        id="co-last-name"
+                        name="last_name"
+                        defaultValue={prefill.last_name}
+                        autoComplete="family-name"
+                        aria-invalid={errorFor('last_name') ? 'true' : undefined}
+                        aria-describedby={errorIdFor('last_name')}
+                      />
+                      {errorFor('last_name') && (
+                        <span id="co-err-last-name" className="checkout-field__error" role="alert">
+                          {errorFor('last_name')}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="checkout-fields-row">
+                    <div className="checkout-field">
+                      <label htmlFor="co-phone">
+                        טלפון <span className="checkout-field__required">*</span>
+                      </label>
+                      <input
+                        id="co-phone"
+                        name="phone"
+                        defaultValue={prefill.phone}
+                        inputMode="tel"
+                        autoComplete="tel"
+                        placeholder="05XXXXXXXX"
+                        /*
+                          LTR, like the gift-recipient email a few fields down
+                          already is. A number and an address are Latin on a
+                          Hebrew page; the form around them stays RTL.
+                        */
                         dir="ltr"
-                        placeholder="name@example.com"
+                        aria-invalid={errorFor('phone') ? 'true' : undefined}
+                        aria-describedby={errorIdFor('phone')}
+                      />
+                      {errorFor('phone') && (
+                        <span id="co-err-phone" className="checkout-field__error" role="alert">
+                          {errorFor('phone')}
+                        </span>
+                      )}
+                    </div>
+                    <div className="checkout-field">
+                      <label htmlFor="co-email">
+                        כתובת אימייל <span className="checkout-field__required">*</span>
+                      </label>
+                      <input
+                        id="co-email"
+                        name="email"
+                        type="email"
+                        defaultValue={prefill.email}
+                        autoComplete="email"
+                        dir="ltr"
+                        aria-invalid={errorFor('email') ? 'true' : undefined}
+                        aria-describedby={errorIdFor('email')}
+                      />
+                      {errorFor('email') && (
+                        <span id="co-err-email" className="checkout-field__error" role="alert">
+                          {errorFor('email')}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
+              {renderNav('details')}
+            </div>
+          </section>
+
+          <section
+            className="checkout-section"
+            aria-label={FLOW_STEP_TITLES.address}
+            data-step="address"
+            data-step-state={stateOf('address')}
+          >
+            {renderStepHead('address')}
+
+            <div className="checkout-section__body" hidden={stateOf('address') !== 'current'}>
+              {address.id ? (
+                // Rendered only while this step is open: once it is done the
+                // same line is the summary under the title, and a reader
+                // should meet the address once.
+                stateOf('address') === 'current' && (
+                  <p className="checkout-saved-address">
+                    {address.street} {address.street_number}, {address.city}
+                  </p>
+                )
+              ) : (
+                <>
+                  <div className="checkout-fields-row checkout-fields-row--single">
+                    <div className="checkout-field">
+                      <label htmlFor="co-city">
+                        עיר <span className="checkout-field__required">*</span>
+                      </label>
+                      <CityAutocomplete
+                        id="co-city"
+                        defaultValue={prefill.city}
+                        invalid={Boolean(errorFor('city'))}
+                        describedBy={errorIdFor('city')}
+                        onBlur={handleCityBlur}
+                        onPick={(city) => handleCityPick(city.name)}
+                      />
+                      {errorFor('city') && (
+                        <span id="co-err-city" className="checkout-field__error" role="alert">
+                          {errorFor('city')}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="checkout-fields-row">
+                    <div className="checkout-field">
+                      <label htmlFor="co-street">
+                        רחוב <span className="checkout-field__required">*</span>
+                      </label>
+                      {/* Suggestions from the street registry for the typed
+                          city (UX17); free text all the same. Leaving the
+                          field runs the postal-code lookup as before. */}
+                      <StreetAutocomplete
+                        id="co-street"
+                        city={cityName}
+                        defaultValue={prefill.street}
+                        invalid={Boolean(errorFor('street'))}
+                        describedBy={errorIdFor('street')}
+                        onBlur={suggestZip}
+                      />
+                      {errorFor('street') && (
+                        <span id="co-err-street" className="checkout-field__error" role="alert">
+                          {errorFor('street')}
+                        </span>
+                      )}
+                    </div>
+                    <div className="checkout-field">
+                      <label htmlFor="co-number">
+                        מספר בית <span className="checkout-field__required">*</span>
+                      </label>
+                      <input
+                        id="co-number"
+                        name="street_number"
+                        defaultValue={prefill.street_number}
+                        onBlur={suggestZip}
+                        aria-invalid={errorFor('street_number') ? 'true' : undefined}
+                        aria-describedby={errorIdFor('street_number')}
+                      />
+                      {errorFor('street_number') && (
+                        <span
+                          id="co-err-street-number"
+                          className="checkout-field__error"
+                          role="alert"
+                        >
+                          {errorFor('street_number')}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="checkout-fields-row">
+                    <div className="checkout-field">
+                      <label htmlFor="co-apartment">מספר דירה (אופציונלי)</label>
+                      <input
+                        id="co-apartment"
+                        name="apartment"
+                        defaultValue={prefill.apartment}
+                        autoComplete="address-line2"
                       />
                     </div>
                     <div className="checkout-field">
-                      <label htmlFor="co-gift-name">שם המקבל</label>
-                      <input id="co-gift-name" name="gift_recipient_name" maxLength={80} />
+                      <label htmlFor="co-floor">קומה (אופציונלי)</label>
+                      <input id="co-floor" name="floor" defaultValue={prefill.floor} />
                     </div>
+                  </div>
+
+                  <div className="checkout-fields-row">
                     <div className="checkout-field">
-                      <label htmlFor="co-gift-message">ברכה אישית</label>
-                      <textarea
-                        id="co-gift-message"
-                        name="gift_message"
-                        maxLength={500}
-                        placeholder="מזל טוב! בקיצור, תיהנו."
+                      <label htmlFor="co-zip">מיקוד / תא דואר (אופציונלי)</label>
+                      <input
+                        id="co-zip"
+                        name="zip"
+                        defaultValue={prefill.zip}
+                        inputMode="numeric"
+                        autoComplete="postal-code"
+                        aria-invalid={zipError || errorFor('zip') ? 'true' : undefined}
+                        aria-describedby={
+                          zipError || errorFor('zip')
+                            ? 'co-zip-error'
+                            : zipHint
+                              ? 'co-zip-hint'
+                              : undefined
+                        }
+                        onBlur={(event) => handleZipBlur(event.currentTarget.value)}
+                        onChange={() => setZipHint(null)}
                       />
+                      {(zipError || errorFor('zip')) && (
+                        <span className="checkout-field__error" id="co-zip-error" role="alert">
+                          {zipError ?? errorFor('zip')}
+                        </span>
+                      )}
+                      {/* Advice, announced politely: it never blocks the submit. */}
+                      {!zipError && !errorFor('zip') && zipHint && (
+                        <span className="checkout-field__hint" id="co-zip-hint" aria-live="polite">
+                          {zipHint}
+                        </span>
+                      )}
                     </div>
-                    <p className="checkout-privacy">
-                      אחרי התשלום יישלח למקבל מייל עם קישור אישי לקבלת הקופון. עד שהוא ייאסף הקופון
-                      נשאר בחשבון שלכם.
-                    </p>
+                    <div />
+                  </div>
+                </>
+              )}
+
+              {/*
+                Only for a supplier delivery: a pickup happens when the shopper
+                and the supplier agree, and a coupon is redeemed at the counter.
+                Rendered for a saved address too, since the slot is about the
+                order and not about which address row it ships to.
+              */}
+              {isSupplierDelivery && deliverySlots.length > 0 && (
+                <div className="checkout-fields-row checkout-fields-row--single">
+                  <DeliverySlotPicker
+                    id="co-delivery-slot"
+                    slots={deliverySlots}
+                    estimate={deliveryEstimate}
+                  />
+                </div>
+              )}
+
+              {/*
+                The carrier (STEP 43), quoted on the server from the cart for the
+                typed or saved city. Optional, like the slot: no pick means the
+                admin chooses at label time. Only for a supplier delivery, for
+                the same reason as the slot.
+              */}
+              {isSupplierDelivery && (
+                <div className="checkout-fields-row checkout-fields-row--single">
+                  <CarrierPicker city={cityName} zip={address.zip || null} />
+                </div>
+              )}
+
+              {/* "מידע נוסף": the notes and the gift, inside the address step
+                  so the flow ends on payment and nothing else. */}
+              <div className="checkout-subsection" aria-label="מידע נוסף">
+                <h3 className="checkout-subsection__title">מידע נוסף</h3>
+                <div className="checkout-field">
+                  <label htmlFor="co-notes">הערות להזמנה (אופציונלי)</label>
+                  <textarea
+                    id="co-notes"
+                    name="order_notes"
+                    maxLength={500}
+                    placeholder="הערות על ההזמנה, לדוגמה, הערות מיוחדות למסירה."
+                  />
+                </div>
+
+                {/*
+                  Offered only when there is a coupon to give. A gift here is a
+                  voucher that changes hands; a physical line ships to an address
+                  and has nothing to transfer, so showing the fields for one would
+                  promise something the order cannot do.
+                */}
+                {cart.items.some((item) => item.type === 'coupon') && (
+                  <div className="checkout-field">
+                    <label className="checkout-terms">
+                      <input
+                        type="checkbox"
+                        name="gift"
+                        checked={isGift}
+                        onChange={(e) => setIsGift(e.target.checked)}
+                      />
+                      <span>הקופון מיועד למישהו אחר (מתנה)</span>
+                    </label>
+
+                    {isGift && (
+                      <div className="checkout-gift">
+                        <div className="checkout-field">
+                          <label htmlFor="co-gift-email">
+                            מייל המקבל <span className="checkout-field__required">*</span>
+                          </label>
+                          <input
+                            id="co-gift-email"
+                            name="gift_recipient_email"
+                            type="email"
+                            required={isGift}
+                            dir="ltr"
+                            placeholder="name@example.com"
+                          />
+                        </div>
+                        <div className="checkout-field">
+                          <label htmlFor="co-gift-name">שם המקבל</label>
+                          <input id="co-gift-name" name="gift_recipient_name" maxLength={80} />
+                        </div>
+                        <div className="checkout-field">
+                          <label htmlFor="co-gift-message">ברכה אישית</label>
+                          <textarea
+                            id="co-gift-message"
+                            name="gift_message"
+                            maxLength={500}
+                            placeholder="מזל טוב! בקיצור, תיהנו."
+                          />
+                        </div>
+                        <p className="checkout-privacy">
+                          אחרי התשלום יישלח למקבל מייל עם קישור אישי לקבלת הקופון. עד שהוא ייאסף
+                          הקופון נשאר בחשבון שלכם.
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
-            )}
+              {renderNav('address')}
+            </div>
+          </section>
+
+          <section
+            className="checkout-section"
+            aria-label={FLOW_STEP_TITLES.payment}
+            data-step="payment"
+            data-step-state={stateOf('payment')}
+          >
+            {renderStepHead('payment')}
+
+            <div className="checkout-section__body" hidden={stateOf('payment') !== 'current'}>
+              <div className="checkout-payment">
+                {confirmSections.map((section) => renderConfirmSection(section.id))}
+
+                {formError && (
+                  <div className="checkout-error" role="alert">
+                    <span>{formError}</span>
+                    {/*
+                      Only offered when the code says another press could work.
+                      A retry on a disabled checkout or a missing address walks
+                      the shopper into the same refusal, which reads as the site
+                      being broken rather than as an answer.
+                    */}
+                    {failureKind === 'retryable' && (
+                      <button
+                        type="button"
+                        className="checkout-error__retry"
+                        onClick={() => formRef.current?.requestSubmit()}
+                        disabled={busy}
+                      >
+                        {busy ? 'שולח שוב...' : 'נסו שוב'}
+                      </button>
+                    )}
+                  </div>
+                )}
+                {authError && (
+                  <div className="checkout-error" role="alert">
+                    {authError}
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  className="checkout-pay-btn"
+                  data-pay-color={payColor === 'control' ? undefined : payColor}
+                  disabled={busy || !paymentGateOpen}
+                  aria-describedby={paymentGateOpen ? undefined : 'co-gate-note'}
+                >
+                  {payLabel}
+                </button>
+                {!paymentGateOpen && (
+                  <p id="co-gate-note" className="checkout-field__hint">
+                    {PAYMENT_GATE_CLOSED_MESSAGE}
+                  </p>
+                )}
+                <div className="checkout-nav checkout-nav--pay">
+                  <button type="button" className="checkout-nav__back" onClick={back}>
+                    חזרה
+                  </button>
+                </div>
+              </div>
+            </div>
           </section>
         </div>
 
-        {/* Beside the billing form the whole way, as live keeps its
-            "ההזמנה שלך" panel (refs/live-checkout capture: panel x~120..470
-            at 1440 while the form is filled). */}
+        {/* Beside the steps the whole way, as live keeps its "ההזמנה שלך"
+            panel (refs/live-checkout capture: panel x~120..470 at 1440 while
+            the form is filled). The payment block that used to sit under the
+            table is the third step now. */}
         <aside>
           <section className="checkout-review" aria-label="ההזמנה שלך">
             <h2 className="checkout-section__title">
@@ -1120,52 +1401,6 @@ export default function CheckoutForm({
                 </tr>
               </tfoot>
             </table>
-
-            <div className="checkout-payment">
-              {confirmSections.map((section) => renderConfirmSection(section.id))}
-
-              {formError && (
-                <div className="checkout-error" role="alert">
-                  <span>{formError}</span>
-                  {/*
-                    Only offered when the code says another press could work.
-                    A retry on a disabled checkout or a missing address walks
-                    the shopper into the same refusal, which reads as the site
-                    being broken rather than as an answer.
-                  */}
-                  {failureKind === 'retryable' && (
-                    <button
-                      type="button"
-                      className="checkout-error__retry"
-                      onClick={() => formRef.current?.requestSubmit()}
-                      disabled={busy}
-                    >
-                      {busy ? 'שולח שוב...' : 'נסו שוב'}
-                    </button>
-                  )}
-                </div>
-              )}
-              {authError && (
-                <div className="checkout-error" role="alert">
-                  {authError}
-                </div>
-              )}
-
-              <button
-                type="submit"
-                className="checkout-pay-btn"
-                data-pay-color={payColor === 'control' ? undefined : payColor}
-                disabled={busy || !paymentGateOpen}
-                aria-describedby={paymentGateOpen ? undefined : 'co-gate-note'}
-              >
-                {payLabel}
-              </button>
-              {!paymentGateOpen && (
-                <p id="co-gate-note" className="checkout-field__hint">
-                  {PAYMENT_GATE_CLOSED_MESSAGE}
-                </p>
-              )}
-            </div>
           </section>
         </aside>
       </form>

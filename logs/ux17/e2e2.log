@@ -1,0 +1,114 @@
+Already up to date
+Done in 192ms using pnpm v11.1.2
+
+Running 16 tests using 2 workers
+
+[1A[2K[1/16] [chromium] › e2e/checkout-steps.spec.ts:66:7 › checkout steps (UX17) › opens on the first step with a rail, and keeps the other steps closed
+[1A[2K[2/16] [chromium] › e2e/a11y.spec.ts:408:7 › the checkout wizard, step by step › every step of the checkout has no WCAG A/AA violations
+[1A[2K[3/16] [chromium] › e2e/checkout-steps.spec.ts:84:7 › checkout steps (UX17) › "continue" on an empty step marks its four fields and stays
+[1A[2K[4/16] [chromium] › e2e/checkout-steps.spec.ts:93:7 › checkout steps (UX17) › walks forward, keeps a summary of each done step, and can go back by the rail
+[1A[2K[5/16] [chromium] › e2e/checkout-steps.spec.ts:119:7 › checkout steps (UX17) › the street field is a combobox that asks the registry once typing pauses
+[1A[2K[6/16] [chromium] › e2e/checkout-steps.spec.ts:156:7 › checkout steps (UX17) › the payment step offers the method as a radio group with the pay button under it
+[1A[2K[7/16] [chromium] › e2e/checkout-steps.spec.ts:184:7 › checkout steps (UX17) › the one submit judges the whole form and opens the step that owns the first error
+[1A[2K[8/16] [chromium] › e2e/rtl-mobile.spec.ts:125:7 › no sideways scroll at 320px › the seeded single-page checkout fits 320px, every section at once
+[1A[2K[9/16] [mobile-chrome] › e2e/a11y.spec.ts:408:7 › the checkout wizard, step by step › every step of the checkout has no WCAG A/AA violations
+[1A[2K  1) [chromium] › e2e/rtl-mobile.spec.ts:125:7 › no sideways scroll at 320px › the seeded single-page checkout fits 320px, every section at once 
+
+    Error: the details step overflows a 320px viewport
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m321[39m
+    Received:    [31m323[39m
+
+      148 |     await page.fill('#co-email', 'qa@example.com')
+      149 |     await page.waitForTimeout(200)
+    > 150 |     expect(await widthNow(), 'the details step overflows a 320px viewport').toBeLessThanOrEqual(321)
+          |                                                                             ^
+      151 |     await page.getByRole('button', { name: 'המשך', exact: true }).click()
+      152 |
+      153 |     await expect(page.locator('#co-city')).toBeVisible()
+        at /Users/ofir/kenyonexpress-autopilot/e2e/rtl-mobile.spec.ts:150:77
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/rtl-mobile-no-sideways-scr-a004f-320px-every-section-at-once-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/rtl-mobile-no-sideways-scr-a004f-320px-every-section-at-once-chromium/error-context.md
+
+
+[1A[2K[10/16] [mobile-chrome] › e2e/checkout-steps.spec.ts:66:7 › checkout steps (UX17) › opens on the first step with a rail, and keeps the other steps closed
+[1A[2K[11/16] [mobile-chrome] › e2e/checkout-steps.spec.ts:84:7 › checkout steps (UX17) › "continue" on an empty step marks its four fields and stays
+[1A[2K[12/16] [mobile-chrome] › e2e/checkout-steps.spec.ts:93:7 › checkout steps (UX17) › walks forward, keeps a summary of each done step, and can go back by the rail
+[1A[2K[13/16] [mobile-chrome] › e2e/checkout-steps.spec.ts:119:7 › checkout steps (UX17) › the street field is a combobox that asks the registry once typing pauses
+[1A[2K[14/16] [mobile-chrome] › e2e/checkout-steps.spec.ts:156:7 › checkout steps (UX17) › the payment step offers the method as a radio group with the pay button under it
+[1A[2K[15/16] [mobile-chrome] › e2e/checkout-steps.spec.ts:184:7 › checkout steps (UX17) › the one submit judges the whole form and opens the step that owns the first error
+[1A[2K[16/16] [mobile-chrome] › e2e/rtl-mobile.spec.ts:125:7 › no sideways scroll at 320px › the seeded single-page checkout fits 320px, every section at once
+[1A[2K  2) [mobile-chrome] › e2e/rtl-mobile.spec.ts:125:7 › no sideways scroll at 320px › the seeded single-page checkout fits 320px, every section at once 
+
+    Error: the details step overflows a 320px viewport
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m321[39m
+    Received:    [31m323[39m
+
+      148 |     await page.fill('#co-email', 'qa@example.com')
+      149 |     await page.waitForTimeout(200)
+    > 150 |     expect(await widthNow(), 'the details step overflows a 320px viewport').toBeLessThanOrEqual(321)
+          |                                                                             ^
+      151 |     await page.getByRole('button', { name: 'המשך', exact: true }).click()
+      152 |
+      153 |     await expect(page.locator('#co-city')).toBeVisible()
+        at /Users/ofir/kenyonexpress-autopilot/e2e/rtl-mobile.spec.ts:150:77
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/rtl-mobile-no-sideways-scr-a004f-320px-every-section-at-once-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/rtl-mobile-no-sideways-scr-a004f-320px-every-section-at-once-mobile-chrome/error-context.md
+
+
+[1A[2K  3) [mobile-chrome] › e2e/checkout-steps.spec.ts:156:7 › checkout steps (UX17) › the payment step offers the method as a radio group with the pay button under it 
+
+    [31mTest timeout of 30000ms exceeded while running "beforeEach" hook.[39m
+
+      53 |
+      54 | test.describe('checkout steps (UX17)', () => {
+    > 55 |   test.beforeEach(async ({ page }) => {
+         |        ^
+      56 |     await preset(page)
+      57 |     await openPurchasableProduct(page)
+      58 |     await addOpenProductToCart(page)
+        at /Users/ofir/kenyonexpress-autopilot/e2e/checkout-steps.spec.ts:55:8
+
+    Error: locator.getAttribute: Test timeout of 30000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('a[href^="/product/"]').nth(24)[22m
+
+
+       at helpers.ts:60
+
+      58 |   const count = await links.count()
+      59 |   for (let i = 0; i < count; i += 1) {
+    > 60 |     const href = await links.nth(i).getAttribute('href')
+         |                                     ^
+      61 |     if (href && !hrefs.includes(href)) hrefs.push(href)
+      62 |   }
+      63 |
+        at openPurchasableProduct (/Users/ofir/kenyonexpress-autopilot/e2e/helpers.ts:60:37)
+        at /Users/ofir/kenyonexpress-autopilot/e2e/checkout-steps.spec.ts:57:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/checkout-steps-checkout-st-00a7d-ith-the-pay-button-under-it-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/checkout-steps-checkout-st-00a7d-ith-the-pay-button-under-it-mobile-chrome/error-context.md
+
+
+[1A[2K  3 failed
+    [chromium] › e2e/rtl-mobile.spec.ts:125:7 › no sideways scroll at 320px › the seeded single-page checkout fits 320px, every section at once 
+    [mobile-chrome] › e2e/checkout-steps.spec.ts:156:7 › checkout steps (UX17) › the payment step offers the method as a radio group with the pay button under it 
+    [mobile-chrome] › e2e/rtl-mobile.spec.ts:125:7 › no sideways scroll at 320px › the seeded single-page checkout fits 320px, every section at once 
+  2 skipped
+  11 passed (1.4m)

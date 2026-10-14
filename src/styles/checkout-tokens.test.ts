@@ -35,11 +35,26 @@ describe('checkout brand tokens', () => {
   })
 
   it('uses the same yellow for the retry control', () => {
-    // The step controls (.checkout-nav__next/back, .checkout-steps__btn) went
-    // with the stepper when the checkout became a single page (STEP 10);
-    // the retry button is the one secondary control left on the page.
     expect(RULES).toMatch(/\.checkout-error__retry\s*\{[^}]*background:\s*#fed700/)
     expect(RULES).toMatch(/\.checkout-error__retry:hover[^{]*\{[^}]*background:\s*#fedd26/)
+  })
+
+  it('paints the step controls from the brand tokens, not a second copy of the hex (UX17)', () => {
+    // The continue button came back with the three-step flow. It is written
+    // on the token layer so the ledger of raw values in this file does not
+    // grow; the token resolves to the same #fed700 / #fedd26 pair above.
+    expect(RULES).toMatch(
+      /\.checkout-nav__next\s*\{[^}]*background:\s*var\(--color-brand-primary\)/,
+    )
+    expect(RULES).toMatch(
+      /\.checkout-nav__next:hover\s*\{[^}]*background:\s*var\(--color-brand-primary-hover\)/,
+    )
+    expect(RULES).toMatch(
+      /\.checkout-steps__item\[data-state="current"\] \.checkout-steps__num\s*\{[^}]*background:\s*var\(--color-brand-primary\)/,
+    )
+    expect(RULES).toMatch(
+      /\.checkout-methods__option\[data-selected="true"\]\s*\{[^}]*border-color:\s*var\(--color-brand-primary\)/,
+    )
   })
 })
 
@@ -85,8 +100,8 @@ describe('checkout geometry', () => {
     }
   })
 
-  it('leaves no stepper rule behind', () => {
-    expect(RULES).not.toMatch(/\.checkout-nav__|\.checkout-steps__/)
+  it('leaves no rule of the old saved-card fieldset behind (the selector replaced it, UX17)', () => {
+    expect(RULES).not.toMatch(/\.checkout-cards/)
   })
 })
 

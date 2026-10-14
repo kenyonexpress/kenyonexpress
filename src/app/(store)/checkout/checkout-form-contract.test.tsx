@@ -380,7 +380,11 @@ describe('the checkout gift card field', () => {
     fireEvent.change(field, { target: { value: 'abcd-efgh-jkmn-pqrs' } })
     fireEvent.click(button)
 
-    expect((await screen.findByRole('alert')).textContent).toBe('הגיפט קארד כבר מומש.')
+    // The gift card field lives in the payment step, whose body is hidden
+    // until the shopper reaches it (UX17); the alert is in the DOM all the same.
+    expect((await screen.findByRole('alert', { hidden: true })).textContent).toBe(
+      'הגיפט קארד כבר מומש.',
+    )
     expect(walletField(container)).toBeNull()
   })
 })

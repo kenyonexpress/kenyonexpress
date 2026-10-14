@@ -1,0 +1,1869 @@
+Already up to date
+Done in 199ms using pnpm v11.1.2
+
+Running 96 tests using 2 workers
+
+[1A[2K[1/96] [chromium] › e2e/a11y.spec.ts:262:7 › the consent banner does not cover the page it sits on at 320px
+[1A[2K[2/96] [chromium] › e2e/a11y.spec.ts:240:5 › every control in the seeded checkout is reachable by keyboard
+[1A[2K[3/96] [chromium] › e2e/a11y.spec.ts:358:7 › the checkout with a seeded cart › cart and checkout have no WCAG A/AA violations
+[1A[2K[4/96] [chromium] › e2e/a11y.spec.ts:408:7 › the checkout wizard, step by step › every step of the checkout has no WCAG A/AA violations
+[1A[2K[5/96] [chromium] › e2e/checkout-steps.spec.ts:66:7 › checkout steps (UX17) › opens on the first step with a rail, and keeps the other steps closed
+[1A[2K  1) [chromium] › e2e/checkout-steps.spec.ts:66:7 › checkout steps (UX17) › opens on the first step with a rail, and keeps the other steps closed 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('.checkout-steps')
+    Expected: visible
+    Error: strict mode violation: locator('.checkout-steps') resolved to 2 elements:
+        1) <div class="checkout-steps">…</div> aka locator('div').filter({ hasText: /^1פרטים אישיים2כתובת למשלוח3תשלום$/ })
+        2) <nav class="checkout-steps" aria-label="שלבי התשלום">…</nav> aka getByLabel('שלבי התשלום')
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('.checkout-steps')[22m
+
+
+      67 |     page,
+      68 |   }) => {
+    > 69 |     await expect(page.locator('.checkout-steps')).toBeVisible()
+         |                                                   ^
+      70 |     await expect(current(page)).toContainText('פרטים אישיים')
+      71 |     await expect(page.locator('.checkout-steps__item')).toHaveCount(3)
+      72 |     await expect(page.locator('#co-first-name')).toBeVisible()
+        at /Users/ofir/kenyonexpress-autopilot/e2e/checkout-steps.spec.ts:69:51
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/checkout-steps-checkout-st-eaa70-eeps-the-other-steps-closed-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/checkout-steps-checkout-st-eaa70-eeps-the-other-steps-closed-chromium/error-context.md
+
+
+[1A[2K[6/96] [chromium] › e2e/checkout-steps.spec.ts:82:7 › checkout steps (UX17) › "continue" on an empty step marks its four fields and stays
+[1A[2K  2) [chromium] › e2e/a11y.spec.ts:408:7 › the checkout wizard, step by step › every step of the checkout has no WCAG A/AA violations 
+
+    Error: address step
+      color-contrast (serious) x2: Elements must meet minimum color contrast ratio thresholds
+        #co-delivery-slot-hint | .checkout-field__hint[aria-live="polite"]
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "color-contrast",[39m
+    [31m+ ][39m
+
+      456 |       address.violations.map((v) => v.id),
+      457 |       `address step\n  ${describe(address)}`,
+    > 458 |     ).toEqual([])
+          |       ^
+      459 |
+      460 |     await page.fill('#co-city', 'תל אביב')
+      461 |     await page.fill('#co-street', 'דיזנגוף')
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:458:7
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-the-checkout-wizard-s-3e805-has-no-WCAG-A-AA-violations-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-the-checkout-wizard-s-3e805-has-no-WCAG-A-AA-violations-chromium/error-context.md
+
+
+[1A[2K[7/96] [chromium] › e2e/checkout-steps.spec.ts:91:7 › checkout steps (UX17) › walks forward, keeps a summary of each done step, and can go back by the rail
+[1A[2K[8/96] [chromium] › e2e/checkout-steps.spec.ts:117:7 › checkout steps (UX17) › the street field is a combobox that asks the registry once typing pauses
+[1A[2K[9/96] [chromium] › e2e/checkout-steps.spec.ts:154:7 › checkout steps (UX17) › the payment step offers the method as a radio group with the pay button under it
+[1A[2K[10/96] [chromium] › e2e/checkout-steps.spec.ts:182:7 › checkout steps (UX17) › the one submit judges the whole form and opens the step that owns the first error
+[1A[2K[11/96] [chromium] › e2e/rtl-mobile.spec.ts:29:9 › RTL document shell › /checkout is lang=he dir=rtl
+[1A[2K[12/96] [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › / fits 320px
+[1A[2K  3) [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › / fits 320px ─────────
+
+    Error: / is 323px wide in a 320px viewport
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m321[39m
+    Received:    [31m323[39m
+
+      105 |         scrollWidth,
+      106 |         `${path} is ${scrollWidth}px wide in a 320px viewport`,
+    > 107 |       ).toBeLessThanOrEqual(321)
+          |         ^
+      108 |     })
+      109 |   }
+      110 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/rtl-mobile.spec.ts:107:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/rtl-mobile-no-sideways-scroll-at-320px-fits-320px-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/rtl-mobile-no-sideways-scroll-at-320px-fits-320px-chromium/error-context.md
+
+
+[1A[2K[13/96] [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /products fits 320px
+[1A[2K  4) [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /products fits 320px ─
+
+    Error: /products is 323px wide in a 320px viewport
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m321[39m
+    Received:    [31m323[39m
+
+      105 |         scrollWidth,
+      106 |         `${path} is ${scrollWidth}px wide in a 320px viewport`,
+    > 107 |       ).toBeLessThanOrEqual(321)
+          |         ^
+      108 |     })
+      109 |   }
+      110 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/rtl-mobile.spec.ts:107:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/rtl-mobile-no-sideways-scroll-at-320px-products-fits-320px-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/rtl-mobile-no-sideways-scroll-at-320px-products-fits-320px-chromium/error-context.md
+
+
+[1A[2K[14/96] [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /cart fits 320px
+[1A[2K  5) [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /cart fits 320px ─────
+
+    Error: /cart is 323px wide in a 320px viewport
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m321[39m
+    Received:    [31m323[39m
+
+      105 |         scrollWidth,
+      106 |         `${path} is ${scrollWidth}px wide in a 320px viewport`,
+    > 107 |       ).toBeLessThanOrEqual(321)
+          |         ^
+      108 |     })
+      109 |   }
+      110 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/rtl-mobile.spec.ts:107:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/rtl-mobile-no-sideways-scroll-at-320px-cart-fits-320px-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/rtl-mobile-no-sideways-scroll-at-320px-cart-fits-320px-chromium/error-context.md
+
+
+[1A[2K[15/96] [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /checkout fits 320px
+[1A[2K  6) [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /checkout fits 320px ─
+
+    Error: /checkout is 323px wide in a 320px viewport
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m321[39m
+    Received:    [31m323[39m
+
+      105 |         scrollWidth,
+      106 |         `${path} is ${scrollWidth}px wide in a 320px viewport`,
+    > 107 |       ).toBeLessThanOrEqual(321)
+          |         ^
+      108 |     })
+      109 |   }
+      110 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/rtl-mobile.spec.ts:107:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/rtl-mobile-no-sideways-scroll-at-320px-checkout-fits-320px-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/rtl-mobile-no-sideways-scroll-at-320px-checkout-fits-320px-chromium/error-context.md
+
+
+[1A[2K[16/96] [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /contact fits 320px
+[1A[2K  7) [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /contact fits 320px ──
+
+    Error: /contact is 323px wide in a 320px viewport
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m321[39m
+    Received:    [31m323[39m
+
+      105 |         scrollWidth,
+      106 |         `${path} is ${scrollWidth}px wide in a 320px viewport`,
+    > 107 |       ).toBeLessThanOrEqual(321)
+          |         ^
+      108 |     })
+      109 |   }
+      110 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/rtl-mobile.spec.ts:107:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/rtl-mobile-no-sideways-scroll-at-320px-contact-fits-320px-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/rtl-mobile-no-sideways-scroll-at-320px-contact-fits-320px-chromium/error-context.md
+
+
+[1A[2K[17/96] [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /coupons fits 320px
+[1A[2K  8) [chromium] › e2e/checkout-steps.spec.ts:182:7 › checkout steps (UX17) › the one submit judges the whole form and opens the step that owns the first error 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoContainText[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator: locator('.checkout-steps__item[aria-current="step"]')
+    Expected substring: [32m"[7mפרטים אישיי[27mם"[39m
+    Received string:    [31m"[7m3תשלו[27mם"[39m
+    Timeout: 5000ms
+
+    Call log:
+    [2m  - Expect "toContainText" with timeout 5000ms[22m
+    [2m  - waiting for locator('.checkout-steps__item[aria-current="step"]')[22m
+    [2m    14 × locator resolved to <li aria-current="step" data-state="current" class="checkout-steps__item">…</li>[22m
+    [2m       - unexpected value "3תשלום"[22m
+
+
+      199 |       ;(form as HTMLFormElement).requestSubmit()
+      200 |     })
+    > 201 |     await expect(current(page)).toContainText('פרטים אישיים')
+          |                                 ^
+      202 |     await expect(page.locator('#co-email')).toHaveAttribute('aria-invalid', 'true')
+      203 |     await expect(page.locator('#co-email')).toBeFocused()
+      204 |   })
+        at /Users/ofir/kenyonexpress-autopilot/e2e/checkout-steps.spec.ts:201:33
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/checkout-steps-checkout-st-506c1-p-that-owns-the-first-error-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/checkout-steps-checkout-st-506c1-p-that-owns-the-first-error-chromium/error-context.md
+
+
+[1A[2K[18/96] [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /suppliers fits 320px
+[1A[2K  9) [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /coupons fits 320px ──
+
+    Error: /coupons is 323px wide in a 320px viewport
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m321[39m
+    Received:    [31m323[39m
+
+      105 |         scrollWidth,
+      106 |         `${path} is ${scrollWidth}px wide in a 320px viewport`,
+    > 107 |       ).toBeLessThanOrEqual(321)
+          |         ^
+      108 |     })
+      109 |   }
+      110 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/rtl-mobile.spec.ts:107:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/rtl-mobile-no-sideways-scroll-at-320px-coupons-fits-320px-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/rtl-mobile-no-sideways-scroll-at-320px-coupons-fits-320px-chromium/error-context.md
+
+
+[1A[2K  10) [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /suppliers fits 320px 
+
+    Error: /suppliers is 323px wide in a 320px viewport
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m321[39m
+    Received:    [31m323[39m
+
+      105 |         scrollWidth,
+      106 |         `${path} is ${scrollWidth}px wide in a 320px viewport`,
+    > 107 |       ).toBeLessThanOrEqual(321)
+          |         ^
+      108 |     })
+      109 |   }
+      110 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/rtl-mobile.spec.ts:107:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/rtl-mobile-no-sideways-scroll-at-320px-suppliers-fits-320px-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/rtl-mobile-no-sideways-scroll-at-320px-suppliers-fits-320px-chromium/error-context.md
+
+
+[1A[2K[19/96] [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /login fits 320px
+[1A[2K[20/96] [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /supplier/login fits 320px
+[1A[2K[21/96] [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /signup fits 320px
+[1A[2K[22/96] [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /forgot-password fits 320px
+[1A[2K[23/96] [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /reset-password fits 320px
+[1A[2K[24/96] [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /category/hot-deals fits 320px
+[1A[2K[25/96] [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /category/baby-kids fits 320px
+[1A[2K  11) [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /category/hot-deals fits 320px 
+
+    Error: /category/hot-deals is 323px wide in a 320px viewport
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m321[39m
+    Received:    [31m323[39m
+
+      105 |         scrollWidth,
+      106 |         `${path} is ${scrollWidth}px wide in a 320px viewport`,
+    > 107 |       ).toBeLessThanOrEqual(321)
+          |         ^
+      108 |     })
+      109 |   }
+      110 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/rtl-mobile.spec.ts:107:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/rtl-mobile-no-sideways-scr-258ee-tegory-hot-deals-fits-320px-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/rtl-mobile-no-sideways-scr-258ee-tegory-hot-deals-fits-320px-chromium/error-context.md
+
+
+[1A[2K[26/96] [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /category/phones-computers fits 320px
+[1A[2K  12) [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /category/baby-kids fits 320px 
+
+    Error: /category/baby-kids is 323px wide in a 320px viewport
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m321[39m
+    Received:    [31m323[39m
+
+      105 |         scrollWidth,
+      106 |         `${path} is ${scrollWidth}px wide in a 320px viewport`,
+    > 107 |       ).toBeLessThanOrEqual(321)
+          |         ^
+      108 |     })
+      109 |   }
+      110 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/rtl-mobile.spec.ts:107:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/rtl-mobile-no-sideways-scr-1dcfa-tegory-baby-kids-fits-320px-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/rtl-mobile-no-sideways-scr-1dcfa-tegory-baby-kids-fits-320px-chromium/error-context.md
+
+
+[1A[2K[27/96] [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /search?q=%D7%9E%D7%95%D7%A6%D7%A8 fits 320px
+[1A[2K  13) [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /category/phones-computers fits 320px 
+
+    Error: /category/phones-computers is 323px wide in a 320px viewport
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m321[39m
+    Received:    [31m323[39m
+
+      105 |         scrollWidth,
+      106 |         `${path} is ${scrollWidth}px wide in a 320px viewport`,
+    > 107 |       ).toBeLessThanOrEqual(321)
+          |         ^
+      108 |     })
+      109 |   }
+      110 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/rtl-mobile.spec.ts:107:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/rtl-mobile-no-sideways-scr-81ea3-phones-computers-fits-320px-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/rtl-mobile-no-sideways-scr-81ea3-phones-computers-fits-320px-chromium/error-context.md
+
+
+[1A[2K[28/96] [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /legal/terms fits 320px
+[1A[2K  14) [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /legal/terms fits 320px 
+
+    Error: /legal/terms is 323px wide in a 320px viewport
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m321[39m
+    Received:    [31m323[39m
+
+      105 |         scrollWidth,
+      106 |         `${path} is ${scrollWidth}px wide in a 320px viewport`,
+    > 107 |       ).toBeLessThanOrEqual(321)
+          |         ^
+      108 |     })
+      109 |   }
+      110 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/rtl-mobile.spec.ts:107:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/rtl-mobile-no-sideways-scr-a6d5d-20px-legal-terms-fits-320px-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/rtl-mobile-no-sideways-scr-a6d5d-20px-legal-terms-fits-320px-chromium/error-context.md
+
+
+[1A[2K  15) [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /search?q=%D7%9E%D7%95%D7%A6%D7%A8 fits 320px 
+
+    Error: /search?q=%D7%9E%D7%95%D7%A6%D7%A8 is 323px wide in a 320px viewport
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m321[39m
+    Received:    [31m323[39m
+
+      105 |         scrollWidth,
+      106 |         `${path} is ${scrollWidth}px wide in a 320px viewport`,
+    > 107 |       ).toBeLessThanOrEqual(321)
+          |         ^
+      108 |     })
+      109 |   }
+      110 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/rtl-mobile.spec.ts:107:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/rtl-mobile-no-sideways-scr-70025-7-95-D7-A6-D7-A8-fits-320px-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/rtl-mobile-no-sideways-scr-70025-7-95-D7-A6-D7-A8-fits-320px-chromium/error-context.md
+
+
+[1A[2K[29/96] [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /legal/privacy fits 320px
+[1A[2K[30/96] [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /legal/returns fits 320px
+[1A[2K  16) [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /legal/privacy fits 320px 
+
+    Error: /legal/privacy is 323px wide in a 320px viewport
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m321[39m
+    Received:    [31m323[39m
+
+      105 |         scrollWidth,
+      106 |         `${path} is ${scrollWidth}px wide in a 320px viewport`,
+    > 107 |       ).toBeLessThanOrEqual(321)
+          |         ^
+      108 |     })
+      109 |   }
+      110 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/rtl-mobile.spec.ts:107:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/rtl-mobile-no-sideways-scr-d8845-px-legal-privacy-fits-320px-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/rtl-mobile-no-sideways-scr-d8845-px-legal-privacy-fits-320px-chromium/error-context.md
+
+
+[1A[2K  17) [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /legal/returns fits 320px 
+
+    Error: /legal/returns is 323px wide in a 320px viewport
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m321[39m
+    Received:    [31m323[39m
+
+      105 |         scrollWidth,
+      106 |         `${path} is ${scrollWidth}px wide in a 320px viewport`,
+    > 107 |       ).toBeLessThanOrEqual(321)
+          |         ^
+      108 |     })
+      109 |   }
+      110 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/rtl-mobile.spec.ts:107:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/rtl-mobile-no-sideways-scr-cc4a8-px-legal-returns-fits-320px-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/rtl-mobile-no-sideways-scr-cc4a8-px-legal-returns-fits-320px-chromium/error-context.md
+
+
+[1A[2K[31/96] [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /legal/accessibility fits 320px
+[1A[2K[32/96] [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /terms-and-conditions fits 320px
+[1A[2K  18) [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /legal/accessibility fits 320px 
+
+    Error: /legal/accessibility is 323px wide in a 320px viewport
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m321[39m
+    Received:    [31m323[39m
+
+      105 |         scrollWidth,
+      106 |         `${path} is ${scrollWidth}px wide in a 320px viewport`,
+    > 107 |       ).toBeLessThanOrEqual(321)
+          |         ^
+      108 |     })
+      109 |   }
+      110 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/rtl-mobile.spec.ts:107:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/rtl-mobile-no-sideways-scr-6641c-al-accessibility-fits-320px-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/rtl-mobile-no-sideways-scr-6641c-al-accessibility-fits-320px-chromium/error-context.md
+
+
+[1A[2K  19) [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /terms-and-conditions fits 320px 
+
+    Error: /terms-and-conditions is 323px wide in a 320px viewport
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m321[39m
+    Received:    [31m323[39m
+
+      105 |         scrollWidth,
+      106 |         `${path} is ${scrollWidth}px wide in a 320px viewport`,
+    > 107 |       ).toBeLessThanOrEqual(321)
+          |         ^
+      108 |     })
+      109 |   }
+      110 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/rtl-mobile.spec.ts:107:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/rtl-mobile-no-sideways-scr-6d799-s-and-conditions-fits-320px-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/rtl-mobile-no-sideways-scr-6d799-s-and-conditions-fits-320px-chromium/error-context.md
+
+
+[1A[2K[33/96] [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /privacy-policy fits 320px
+[1A[2K[34/96] [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /offline fits 320px
+[1A[2K  20) [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /privacy-policy fits 320px 
+
+    Error: /privacy-policy is 323px wide in a 320px viewport
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m321[39m
+    Received:    [31m323[39m
+
+      105 |         scrollWidth,
+      106 |         `${path} is ${scrollWidth}px wide in a 320px viewport`,
+    > 107 |       ).toBeLessThanOrEqual(321)
+          |         ^
+      108 |     })
+      109 |   }
+      110 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/rtl-mobile.spec.ts:107:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/rtl-mobile-no-sideways-scr-46461-x-privacy-policy-fits-320px-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/rtl-mobile-no-sideways-scr-46461-x-privacy-policy-fits-320px-chromium/error-context.md
+
+
+[1A[2K[35/96] [chromium] › e2e/rtl-mobile.spec.ts:125:7 › no sideways scroll at 320px › the seeded single-page checkout fits 320px, every section at once
+[1A[2K[36/96] [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /this-route-does-not-exist fits 320px
+[1A[2K[37/96] [chromium] › e2e/rtl-mobile.spec.ts:175:7 › no sideways scroll at 320px › the open cart panel fits 320px
+[1A[2K  21) [chromium] › e2e/rtl-mobile.spec.ts:175:7 › no sideways scroll at 320px › the open cart panel fits 320px 
+
+    Error: the open cart panel makes the document 323px wide in a 320px viewport
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m321[39m
+    Received:    [31m323[39m
+
+      188 |       scrollWidth,
+      189 |       `the open cart panel makes the document ${scrollWidth}px wide in a 320px viewport`,
+    > 190 |     ).toBeLessThanOrEqual(321)
+          |       ^
+      191 |   })
+      192 |
+      193 |   /**
+        at /Users/ofir/kenyonexpress-autopilot/e2e/rtl-mobile.spec.ts:190:7
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/rtl-mobile-no-sideways-scr-cafe9--open-cart-panel-fits-320px-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/rtl-mobile-no-sideways-scr-cafe9--open-cart-panel-fits-320px-chromium/error-context.md
+
+
+[1A[2K[38/96] [chromium] › e2e/rtl-mobile.spec.ts:199:7 › no sideways scroll at 320px › the install banner fits 320px
+[1A[2K  22) [chromium] › e2e/rtl-mobile.spec.ts:199:7 › no sideways scroll at 320px › the install banner fits 320px 
+
+    Error: the install banner makes the document 323px wide in a 320px viewport
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m321[39m
+    Received:    [31m323[39m
+
+      208 |       scrollWidth,
+      209 |       `the install banner makes the document ${scrollWidth}px wide in a 320px viewport`,
+    > 210 |     ).toBeLessThanOrEqual(321)
+          |       ^
+      211 |   })
+      212 |
+      213 |   test('a product page fits 320px', async ({ page }) => {
+        at /Users/ofir/kenyonexpress-autopilot/e2e/rtl-mobile.spec.ts:210:7
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/rtl-mobile-no-sideways-scr-859fd-e-install-banner-fits-320px-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/rtl-mobile-no-sideways-scr-859fd-e-install-banner-fits-320px-chromium/error-context.md
+
+
+[1A[2K  23) [chromium] › e2e/rtl-mobile.spec.ts:125:7 › no sideways scroll at 320px › the seeded single-page checkout fits 320px, every section at once 
+
+    Error: the details step overflows a 320px viewport
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m321[39m
+    Received:    [31m323[39m
+
+      148 |     await page.fill('#co-email', 'qa@example.com')
+      149 |     await page.waitForTimeout(200)
+    > 150 |     expect(await widthNow(), 'the details step overflows a 320px viewport').toBeLessThanOrEqual(321)
+          |                                                                             ^
+      151 |     await page.getByRole('button', { name: 'המשך', exact: true }).click()
+      152 |
+      153 |     await expect(page.locator('#co-city')).toBeVisible()
+        at /Users/ofir/kenyonexpress-autopilot/e2e/rtl-mobile.spec.ts:150:77
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/rtl-mobile-no-sideways-scr-a004f-320px-every-section-at-once-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/rtl-mobile-no-sideways-scr-a004f-320px-every-section-at-once-chromium/error-context.md
+
+
+[1A[2K[39/96] [chromium] › e2e/rtl-mobile.spec.ts:213:7 › no sideways scroll at 320px › a product page fits 320px
+[1A[2K[40/96] [chromium] › e2e/touch-targets.spec.ts:146:5 › the emulated phone reports a coarse pointer
+[1A[2K[41/96] [chromium] › e2e/touch-targets.spec.ts:155:7 › every control on / is thumb-sized
+[1A[2K  24) [chromium] › e2e/touch-targets.spec.ts:155:7 › every control on / is thumb-sized ─────────────
+
+    Error: sub-floor targets on /
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "a[התחברות] hit 72x41 (primary, 44)",[39m
+    [31m+ ][39m
+
+      157 |     await page.goto(route)
+      158 |     await page.waitForLoadState('networkidle')
+    > 159 |     expect(offenders(await measure(page)), `sub-floor targets on ${route}`).toEqual([])
+          |                                                                             ^
+      160 |   })
+      161 | }
+      162 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/touch-targets.spec.ts:159:77
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/touch-targets-every-control-on-is-thumb-sized-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/touch-targets-every-control-on-is-thumb-sized-chromium/error-context.md
+
+
+[1A[2K[42/96] [chromium] › e2e/touch-targets.spec.ts:155:7 › every control on /products is thumb-sized
+[1A[2K  25) [chromium] › e2e/rtl-mobile.spec.ts:213:7 › no sideways scroll at 320px › a product page fits 320px 
+
+    Error: /product/צימר-מאסטר is 323px wide in a 320px viewport
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m321[39m
+    Received:    [31m323[39m
+
+      218 |
+      219 |     const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth)
+    > 220 |     expect(scrollWidth, `${href} is ${scrollWidth}px wide in a 320px viewport`).toBeLessThanOrEqual(
+          |                                                                                 ^
+      221 |       321,
+      222 |     )
+      223 |   })
+        at /Users/ofir/kenyonexpress-autopilot/e2e/rtl-mobile.spec.ts:220:81
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/rtl-mobile-no-sideways-scr-4717f-x-a-product-page-fits-320px-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/rtl-mobile-no-sideways-scr-4717f-x-a-product-page-fits-320px-chromium/error-context.md
+
+
+[1A[2K[43/96] [chromium] › e2e/touch-targets.spec.ts:155:7 › every control on /category/hot-deals is thumb-sized
+[1A[2K  26) [chromium] › e2e/touch-targets.spec.ts:155:7 › every control on /products is thumb-sized ─────
+
+    Error: sub-floor targets on /products
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  -  1[39m
+    [31m+ Received  + 27[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "a[התחברות] hit 72x41 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+ ][39m
+
+      157 |     await page.goto(route)
+      158 |     await page.waitForLoadState('networkidle')
+    > 159 |     expect(offenders(await measure(page)), `sub-floor targets on ${route}`).toEqual([])
+          |                                                                             ^
+      160 |   })
+      161 | }
+      162 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/touch-targets.spec.ts:159:77
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/touch-targets-every-control-on-products-is-thumb-sized-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/touch-targets-every-control-on-products-is-thumb-sized-chromium/error-context.md
+
+
+[1A[2K[44/96] [chromium] › e2e/touch-targets.spec.ts:155:7 › every control on /cart is thumb-sized
+[1A[2K  27) [chromium] › e2e/touch-targets.spec.ts:155:7 › every control on /category/hot-deals is thumb-sized 
+
+    Error: sub-floor targets on /category/hot-deals
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 5[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "a[התחברות] hit 72x41 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+ ][39m
+
+      157 |     await page.goto(route)
+      158 |     await page.waitForLoadState('networkidle')
+    > 159 |     expect(offenders(await measure(page)), `sub-floor targets on ${route}`).toEqual([])
+          |                                                                             ^
+      160 |   })
+      161 | }
+      162 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/touch-targets.spec.ts:159:77
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/touch-targets-every-contro-7fccd-ry-hot-deals-is-thumb-sized-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/touch-targets-every-contro-7fccd-ry-hot-deals-is-thumb-sized-chromium/error-context.md
+
+
+[1A[2K[45/96] [chromium] › e2e/touch-targets.spec.ts:155:7 › every control on /login is thumb-sized
+[1A[2K  28) [chromium] › e2e/touch-targets.spec.ts:155:7 › every control on /cart is thumb-sized ─────────
+
+    Error: sub-floor targets on /cart
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "a[התחברות] hit 72x41 (primary, 44)",[39m
+    [31m+ ][39m
+
+      157 |     await page.goto(route)
+      158 |     await page.waitForLoadState('networkidle')
+    > 159 |     expect(offenders(await measure(page)), `sub-floor targets on ${route}`).toEqual([])
+          |                                                                             ^
+      160 |   })
+      161 | }
+      162 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/touch-targets.spec.ts:159:77
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/touch-targets-every-control-on-cart-is-thumb-sized-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/touch-targets-every-control-on-cart-is-thumb-sized-chromium/error-context.md
+
+
+[1A[2K  29) [chromium] › e2e/touch-targets.spec.ts:155:7 › every control on /login is thumb-sized ────────
+
+    Error: sub-floor targets on /login
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 4[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "a[שכחתם סיסמה?] hit 82x18 (24)",[39m
+    [31m+   "button[כניסה ללא סיסמה (קישור מאובטח ] hit 97x21 (24)",[39m
+    [31m+ ][39m
+
+      157 |     await page.goto(route)
+      158 |     await page.waitForLoadState('networkidle')
+    > 159 |     expect(offenders(await measure(page)), `sub-floor targets on ${route}`).toEqual([])
+          |                                                                             ^
+      160 |   })
+      161 | }
+      162 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/touch-targets.spec.ts:159:77
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/touch-targets-every-control-on-login-is-thumb-sized-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/touch-targets-every-control-on-login-is-thumb-sized-chromium/error-context.md
+
+
+[1A[2K[46/96] [chromium] › e2e/touch-targets.spec.ts:155:7 › every control on /legal/terms is thumb-sized
+[1A[2K[47/96] [chromium] › e2e/touch-targets.spec.ts:163:5 › every control on a product page is thumb-sized, buy row included
+[1A[2K  30) [chromium] › e2e/touch-targets.spec.ts:155:7 › every control on /legal/terms is thumb-sized ──
+
+    Error: sub-floor targets on /legal/terms
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "a[התחברות] hit 72x41 (primary, 44)",[39m
+    [31m+ ][39m
+
+      157 |     await page.goto(route)
+      158 |     await page.waitForLoadState('networkidle')
+    > 159 |     expect(offenders(await measure(page)), `sub-floor targets on ${route}`).toEqual([])
+          |                                                                             ^
+      160 |   })
+      161 | }
+      162 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/touch-targets.spec.ts:159:77
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/touch-targets-every-control-on-legal-terms-is-thumb-sized-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/touch-targets-every-control-on-legal-terms-is-thumb-sized-chromium/error-context.md
+
+
+[1A[2K[48/96] [chromium] › e2e/touch-targets.spec.ts:178:5 › the hero dots grow to 44px vertically and keep the pitch sideways
+[1A[2K  31) [chromium] › e2e/touch-targets.spec.ts:163:5 › every control on a product page is thumb-sized, buy row included 
+
+    Error: sub-floor targets on /product/צימר-מאסטר
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  -  1[39m
+    [31m+ Received  + 14[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "a[התחברות] hit 72x41 (primary, 44)",[39m
+    [31m+   "a[בית] hit 22x24 (24)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 62x36 (primary, 44)",[39m
+    [31m+   "button[הוסף להשוואה] hit 54x36 (primary, 44)",[39m
+    [31m+   "a[צימרים מלונות ונופש] hit 97x20 (24)",[39m
+    [31m+   "a[צימרים מלונות ונופש] hit 97x20 (24)",[39m
+    [31m+   "a[צימרים מלונות ונופש] hit 97x20 (24)",[39m
+    [31m+   "a[צימרים מלונות ונופש] hit 97x20 (24)",[39m
+    [31m+   "a[צימרים מלונות ונופש] hit 97x20 (24)",[39m
+    [31m+   "a[טלפונים ואלקטרוניקה] hit 97x21 (24)",[39m
+    [31m+   "a[טלפונים ואלקטרוניקה] hit 97x20 (24)",[39m
+    [31m+   "a[צימרים מלונות ונופש] hit 97x20 (24)",[39m
+    [31m+ ][39m
+
+      167 |   await page.waitForLoadState('networkidle')
+      168 |   const measured = await measure(page)
+    > 169 |   expect(offenders(measured), `sub-floor targets on ${href}`).toEqual([])
+          |                                                               ^
+      170 |   // The buy row must actually have been measured, or the assertion above is
+      171 |   // vacuous on an unsellable catalogue.
+      172 |   expect(
+        at /Users/ofir/kenyonexpress-autopilot/e2e/touch-targets.spec.ts:169:63
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/touch-targets-every-contro-5e973-humb-sized-buy-row-included-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/touch-targets-every-contro-5e973-humb-sized-buy-row-included-chromium/error-context.md
+
+
+[1A[2K[49/96] [mobile-chrome] › e2e/a11y.spec.ts:240:5 › every control in the seeded checkout is reachable by keyboard
+[1A[2K[50/96] [mobile-chrome] › e2e/a11y.spec.ts:262:7 › the consent banner does not cover the page it sits on at 320px
+[1A[2K[51/96] [mobile-chrome] › e2e/a11y.spec.ts:358:7 › the checkout with a seeded cart › cart and checkout have no WCAG A/AA violations
+[1A[2K[52/96] [mobile-chrome] › e2e/a11y.spec.ts:408:7 › the checkout wizard, step by step › every step of the checkout has no WCAG A/AA violations
+[1A[2K[53/96] [mobile-chrome] › e2e/checkout-steps.spec.ts:66:7 › checkout steps (UX17) › opens on the first step with a rail, and keeps the other steps closed
+[1A[2K[54/96] [mobile-chrome] › e2e/checkout-steps.spec.ts:82:7 › checkout steps (UX17) › "continue" on an empty step marks its four fields and stays
+[1A[2K  32) [mobile-chrome] › e2e/a11y.spec.ts:408:7 › the checkout wizard, step by step › every step of the checkout has no WCAG A/AA violations 
+
+    Error: address step
+      color-contrast (serious) x2: Elements must meet minimum color contrast ratio thresholds
+        #co-delivery-slot-hint | .checkout-field__hint[aria-live="polite"]
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "color-contrast",[39m
+    [31m+ ][39m
+
+      456 |       address.violations.map((v) => v.id),
+      457 |       `address step\n  ${describe(address)}`,
+    > 458 |     ).toEqual([])
+          |       ^
+      459 |
+      460 |     await page.fill('#co-city', 'תל אביב')
+      461 |     await page.fill('#co-street', 'דיזנגוף')
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:458:7
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-the-checkout-wizard-s-3e805-has-no-WCAG-A-AA-violations-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-the-checkout-wizard-s-3e805-has-no-WCAG-A-AA-violations-mobile-chrome/error-context.md
+
+
+[1A[2K[55/96] [mobile-chrome] › e2e/checkout-steps.spec.ts:91:7 › checkout steps (UX17) › walks forward, keeps a summary of each done step, and can go back by the rail
+[1A[2K[56/96] [mobile-chrome] › e2e/checkout-steps.spec.ts:117:7 › checkout steps (UX17) › the street field is a combobox that asks the registry once typing pauses
+[1A[2K[57/96] [mobile-chrome] › e2e/checkout-steps.spec.ts:154:7 › checkout steps (UX17) › the payment step offers the method as a radio group with the pay button under it
+[1A[2K[58/96] [mobile-chrome] › e2e/checkout-steps.spec.ts:182:7 › checkout steps (UX17) › the one submit judges the whole form and opens the step that owns the first error
+[1A[2K[59/96] [mobile-chrome] › e2e/rtl-mobile.spec.ts:29:9 › RTL document shell › /checkout is lang=he dir=rtl
+[1A[2K[60/96] [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › / fits 320px
+[1A[2K  33) [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › / fits 320px ───
+
+    Error: / is 323px wide in a 320px viewport
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m321[39m
+    Received:    [31m323[39m
+
+      105 |         scrollWidth,
+      106 |         `${path} is ${scrollWidth}px wide in a 320px viewport`,
+    > 107 |       ).toBeLessThanOrEqual(321)
+          |         ^
+      108 |     })
+      109 |   }
+      110 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/rtl-mobile.spec.ts:107:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/rtl-mobile-no-sideways-scroll-at-320px-fits-320px-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/rtl-mobile-no-sideways-scroll-at-320px-fits-320px-mobile-chrome/error-context.md
+
+
+[1A[2K[61/96] [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /products fits 320px
+[1A[2K  34) [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /products fits 320px 
+
+    Error: /products is 323px wide in a 320px viewport
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m321[39m
+    Received:    [31m323[39m
+
+      105 |         scrollWidth,
+      106 |         `${path} is ${scrollWidth}px wide in a 320px viewport`,
+    > 107 |       ).toBeLessThanOrEqual(321)
+          |         ^
+      108 |     })
+      109 |   }
+      110 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/rtl-mobile.spec.ts:107:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/rtl-mobile-no-sideways-scroll-at-320px-products-fits-320px-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/rtl-mobile-no-sideways-scroll-at-320px-products-fits-320px-mobile-chrome/error-context.md
+
+
+[1A[2K[62/96] [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /cart fits 320px
+[1A[2K  35) [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /cart fits 320px 
+
+    Error: /cart is 323px wide in a 320px viewport
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m321[39m
+    Received:    [31m323[39m
+
+      105 |         scrollWidth,
+      106 |         `${path} is ${scrollWidth}px wide in a 320px viewport`,
+    > 107 |       ).toBeLessThanOrEqual(321)
+          |         ^
+      108 |     })
+      109 |   }
+      110 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/rtl-mobile.spec.ts:107:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/rtl-mobile-no-sideways-scroll-at-320px-cart-fits-320px-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/rtl-mobile-no-sideways-scroll-at-320px-cart-fits-320px-mobile-chrome/error-context.md
+
+
+[1A[2K[63/96] [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /checkout fits 320px
+[1A[2K  36) [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /checkout fits 320px 
+
+    Error: /checkout is 323px wide in a 320px viewport
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m321[39m
+    Received:    [31m323[39m
+
+      105 |         scrollWidth,
+      106 |         `${path} is ${scrollWidth}px wide in a 320px viewport`,
+    > 107 |       ).toBeLessThanOrEqual(321)
+          |         ^
+      108 |     })
+      109 |   }
+      110 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/rtl-mobile.spec.ts:107:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/rtl-mobile-no-sideways-scroll-at-320px-checkout-fits-320px-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/rtl-mobile-no-sideways-scroll-at-320px-checkout-fits-320px-mobile-chrome/error-context.md
+
+
+[1A[2K[64/96] [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /contact fits 320px
+[1A[2K  37) [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /contact fits 320px 
+
+    Error: /contact is 323px wide in a 320px viewport
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m321[39m
+    Received:    [31m323[39m
+
+      105 |         scrollWidth,
+      106 |         `${path} is ${scrollWidth}px wide in a 320px viewport`,
+    > 107 |       ).toBeLessThanOrEqual(321)
+          |         ^
+      108 |     })
+      109 |   }
+      110 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/rtl-mobile.spec.ts:107:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/rtl-mobile-no-sideways-scroll-at-320px-contact-fits-320px-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/rtl-mobile-no-sideways-scroll-at-320px-contact-fits-320px-mobile-chrome/error-context.md
+
+
+[1A[2K[65/96] [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /coupons fits 320px
+[1A[2K  38) [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /coupons fits 320px 
+
+    Error: /coupons is 323px wide in a 320px viewport
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m321[39m
+    Received:    [31m323[39m
+
+      105 |         scrollWidth,
+      106 |         `${path} is ${scrollWidth}px wide in a 320px viewport`,
+    > 107 |       ).toBeLessThanOrEqual(321)
+          |         ^
+      108 |     })
+      109 |   }
+      110 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/rtl-mobile.spec.ts:107:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/rtl-mobile-no-sideways-scroll-at-320px-coupons-fits-320px-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/rtl-mobile-no-sideways-scroll-at-320px-coupons-fits-320px-mobile-chrome/error-context.md
+
+
+[1A[2K[66/96] [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /suppliers fits 320px
+[1A[2K  39) [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /suppliers fits 320px 
+
+    Error: /suppliers is 323px wide in a 320px viewport
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m321[39m
+    Received:    [31m323[39m
+
+      105 |         scrollWidth,
+      106 |         `${path} is ${scrollWidth}px wide in a 320px viewport`,
+    > 107 |       ).toBeLessThanOrEqual(321)
+          |         ^
+      108 |     })
+      109 |   }
+      110 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/rtl-mobile.spec.ts:107:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/rtl-mobile-no-sideways-scroll-at-320px-suppliers-fits-320px-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/rtl-mobile-no-sideways-scroll-at-320px-suppliers-fits-320px-mobile-chrome/error-context.md
+
+
+[1A[2K[67/96] [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /supplier/login fits 320px
+[1A[2K[68/96] [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /login fits 320px
+[1A[2K[69/96] [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /signup fits 320px
+[1A[2K[70/96] [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /forgot-password fits 320px
+[1A[2K  40) [mobile-chrome] › e2e/checkout-steps.spec.ts:182:7 › checkout steps (UX17) › the one submit judges the whole form and opens the step that owns the first error 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoContainText[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator: locator('.checkout-steps__item[aria-current="step"]')
+    Expected substring: [32m"[7mפרטים אישיי[27mם"[39m
+    Received string:    [31m"[7m3תשלו[27mם"[39m
+    Timeout: 5000ms
+
+    Call log:
+    [2m  - Expect "toContainText" with timeout 5000ms[22m
+    [2m  - waiting for locator('.checkout-steps__item[aria-current="step"]')[22m
+    [2m    14 × locator resolved to <li aria-current="step" data-state="current" class="checkout-steps__item">…</li>[22m
+    [2m       - unexpected value "3תשלום"[22m
+
+
+      199 |       ;(form as HTMLFormElement).requestSubmit()
+      200 |     })
+    > 201 |     await expect(current(page)).toContainText('פרטים אישיים')
+          |                                 ^
+      202 |     await expect(page.locator('#co-email')).toHaveAttribute('aria-invalid', 'true')
+      203 |     await expect(page.locator('#co-email')).toBeFocused()
+      204 |   })
+        at /Users/ofir/kenyonexpress-autopilot/e2e/checkout-steps.spec.ts:201:33
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/checkout-steps-checkout-st-506c1-p-that-owns-the-first-error-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/checkout-steps-checkout-st-506c1-p-that-owns-the-first-error-mobile-chrome/error-context.md
+
+
+[1A[2K[71/96] [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /reset-password fits 320px
+[1A[2K[72/96] [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /category/hot-deals fits 320px
+[1A[2K[73/96] [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /category/baby-kids fits 320px
+[1A[2K  41) [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /category/hot-deals fits 320px 
+
+    Error: /category/hot-deals is 323px wide in a 320px viewport
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m321[39m
+    Received:    [31m323[39m
+
+      105 |         scrollWidth,
+      106 |         `${path} is ${scrollWidth}px wide in a 320px viewport`,
+    > 107 |       ).toBeLessThanOrEqual(321)
+          |         ^
+      108 |     })
+      109 |   }
+      110 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/rtl-mobile.spec.ts:107:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/rtl-mobile-no-sideways-scr-258ee-tegory-hot-deals-fits-320px-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/rtl-mobile-no-sideways-scr-258ee-tegory-hot-deals-fits-320px-mobile-chrome/error-context.md
+
+
+[1A[2K[74/96] [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /category/phones-computers fits 320px
+[1A[2K  42) [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /category/baby-kids fits 320px 
+
+    Error: /category/baby-kids is 323px wide in a 320px viewport
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m321[39m
+    Received:    [31m323[39m
+
+      105 |         scrollWidth,
+      106 |         `${path} is ${scrollWidth}px wide in a 320px viewport`,
+    > 107 |       ).toBeLessThanOrEqual(321)
+          |         ^
+      108 |     })
+      109 |   }
+      110 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/rtl-mobile.spec.ts:107:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/rtl-mobile-no-sideways-scr-1dcfa-tegory-baby-kids-fits-320px-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/rtl-mobile-no-sideways-scr-1dcfa-tegory-baby-kids-fits-320px-mobile-chrome/error-context.md
+
+
+[1A[2K[75/96] [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /search?q=%D7%9E%D7%95%D7%A6%D7%A8 fits 320px
+[1A[2K  43) [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /category/phones-computers fits 320px 
+
+    Error: /category/phones-computers is 323px wide in a 320px viewport
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m321[39m
+    Received:    [31m323[39m
+
+      105 |         scrollWidth,
+      106 |         `${path} is ${scrollWidth}px wide in a 320px viewport`,
+    > 107 |       ).toBeLessThanOrEqual(321)
+          |         ^
+      108 |     })
+      109 |   }
+      110 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/rtl-mobile.spec.ts:107:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/rtl-mobile-no-sideways-scr-81ea3-phones-computers-fits-320px-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/rtl-mobile-no-sideways-scr-81ea3-phones-computers-fits-320px-mobile-chrome/error-context.md
+
+
+[1A[2K[76/96] [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /legal/terms fits 320px
+[1A[2K  44) [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /search?q=%D7%9E%D7%95%D7%A6%D7%A8 fits 320px 
+
+    Error: /search?q=%D7%9E%D7%95%D7%A6%D7%A8 is 323px wide in a 320px viewport
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m321[39m
+    Received:    [31m323[39m
+
+      105 |         scrollWidth,
+      106 |         `${path} is ${scrollWidth}px wide in a 320px viewport`,
+    > 107 |       ).toBeLessThanOrEqual(321)
+          |         ^
+      108 |     })
+      109 |   }
+      110 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/rtl-mobile.spec.ts:107:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/rtl-mobile-no-sideways-scr-70025-7-95-D7-A6-D7-A8-fits-320px-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/rtl-mobile-no-sideways-scr-70025-7-95-D7-A6-D7-A8-fits-320px-mobile-chrome/error-context.md
+
+
+[1A[2K  45) [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /legal/terms fits 320px 
+
+    Error: /legal/terms is 323px wide in a 320px viewport
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m321[39m
+    Received:    [31m323[39m
+
+      105 |         scrollWidth,
+      106 |         `${path} is ${scrollWidth}px wide in a 320px viewport`,
+    > 107 |       ).toBeLessThanOrEqual(321)
+          |         ^
+      108 |     })
+      109 |   }
+      110 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/rtl-mobile.spec.ts:107:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/rtl-mobile-no-sideways-scr-a6d5d-20px-legal-terms-fits-320px-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/rtl-mobile-no-sideways-scr-a6d5d-20px-legal-terms-fits-320px-mobile-chrome/error-context.md
+
+
+[1A[2K[77/96] [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /legal/privacy fits 320px
+[1A[2K[78/96] [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /legal/returns fits 320px
+[1A[2K  46) [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /legal/privacy fits 320px 
+
+    Error: /legal/privacy is 323px wide in a 320px viewport
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m321[39m
+    Received:    [31m323[39m
+
+      105 |         scrollWidth,
+      106 |         `${path} is ${scrollWidth}px wide in a 320px viewport`,
+    > 107 |       ).toBeLessThanOrEqual(321)
+          |         ^
+      108 |     })
+      109 |   }
+      110 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/rtl-mobile.spec.ts:107:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/rtl-mobile-no-sideways-scr-d8845-px-legal-privacy-fits-320px-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/rtl-mobile-no-sideways-scr-d8845-px-legal-privacy-fits-320px-mobile-chrome/error-context.md
+
+
+[1A[2K  47) [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /legal/returns fits 320px 
+
+    Error: /legal/returns is 323px wide in a 320px viewport
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m321[39m
+    Received:    [31m323[39m
+
+      105 |         scrollWidth,
+      106 |         `${path} is ${scrollWidth}px wide in a 320px viewport`,
+    > 107 |       ).toBeLessThanOrEqual(321)
+          |         ^
+      108 |     })
+      109 |   }
+      110 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/rtl-mobile.spec.ts:107:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/rtl-mobile-no-sideways-scr-cc4a8-px-legal-returns-fits-320px-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/rtl-mobile-no-sideways-scr-cc4a8-px-legal-returns-fits-320px-mobile-chrome/error-context.md
+
+
+[1A[2K[79/96] [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /terms-and-conditions fits 320px
+[1A[2K[80/96] [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /legal/accessibility fits 320px
+[1A[2K  48) [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /terms-and-conditions fits 320px 
+
+    Error: /terms-and-conditions is 323px wide in a 320px viewport
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m321[39m
+    Received:    [31m323[39m
+
+      105 |         scrollWidth,
+      106 |         `${path} is ${scrollWidth}px wide in a 320px viewport`,
+    > 107 |       ).toBeLessThanOrEqual(321)
+          |         ^
+      108 |     })
+      109 |   }
+      110 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/rtl-mobile.spec.ts:107:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/rtl-mobile-no-sideways-scr-6d799-s-and-conditions-fits-320px-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/rtl-mobile-no-sideways-scr-6d799-s-and-conditions-fits-320px-mobile-chrome/error-context.md
+
+
+[1A[2K  49) [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /legal/accessibility fits 320px 
+
+    Error: /legal/accessibility is 323px wide in a 320px viewport
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m321[39m
+    Received:    [31m323[39m
+
+      105 |         scrollWidth,
+      106 |         `${path} is ${scrollWidth}px wide in a 320px viewport`,
+    > 107 |       ).toBeLessThanOrEqual(321)
+          |         ^
+      108 |     })
+      109 |   }
+      110 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/rtl-mobile.spec.ts:107:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/rtl-mobile-no-sideways-scr-6641c-al-accessibility-fits-320px-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/rtl-mobile-no-sideways-scr-6641c-al-accessibility-fits-320px-mobile-chrome/error-context.md
+
+
+[1A[2K[81/96] [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /offline fits 320px
+[1A[2K[82/96] [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /privacy-policy fits 320px
+[1A[2K[83/96] [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /this-route-does-not-exist fits 320px
+[1A[2K  50) [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /privacy-policy fits 320px 
+
+    Error: /privacy-policy is 323px wide in a 320px viewport
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m321[39m
+    Received:    [31m323[39m
+
+      105 |         scrollWidth,
+      106 |         `${path} is ${scrollWidth}px wide in a 320px viewport`,
+    > 107 |       ).toBeLessThanOrEqual(321)
+          |         ^
+      108 |     })
+      109 |   }
+      110 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/rtl-mobile.spec.ts:107:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/rtl-mobile-no-sideways-scr-46461-x-privacy-policy-fits-320px-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/rtl-mobile-no-sideways-scr-46461-x-privacy-policy-fits-320px-mobile-chrome/error-context.md
+
+
+[1A[2K[84/96] [mobile-chrome] › e2e/rtl-mobile.spec.ts:125:7 › no sideways scroll at 320px › the seeded single-page checkout fits 320px, every section at once
+[1A[2K[85/96] [mobile-chrome] › e2e/rtl-mobile.spec.ts:175:7 › no sideways scroll at 320px › the open cart panel fits 320px
+[1A[2K  51) [mobile-chrome] › e2e/rtl-mobile.spec.ts:175:7 › no sideways scroll at 320px › the open cart panel fits 320px 
+
+    Error: the open cart panel makes the document 323px wide in a 320px viewport
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m321[39m
+    Received:    [31m323[39m
+
+      188 |       scrollWidth,
+      189 |       `the open cart panel makes the document ${scrollWidth}px wide in a 320px viewport`,
+    > 190 |     ).toBeLessThanOrEqual(321)
+          |       ^
+      191 |   })
+      192 |
+      193 |   /**
+        at /Users/ofir/kenyonexpress-autopilot/e2e/rtl-mobile.spec.ts:190:7
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/rtl-mobile-no-sideways-scr-cafe9--open-cart-panel-fits-320px-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/rtl-mobile-no-sideways-scr-cafe9--open-cart-panel-fits-320px-mobile-chrome/error-context.md
+
+
+[1A[2K[86/96] [mobile-chrome] › e2e/rtl-mobile.spec.ts:199:7 › no sideways scroll at 320px › the install banner fits 320px
+[1A[2K  52) [mobile-chrome] › e2e/rtl-mobile.spec.ts:125:7 › no sideways scroll at 320px › the seeded single-page checkout fits 320px, every section at once 
+
+    Error: the details step overflows a 320px viewport
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m321[39m
+    Received:    [31m323[39m
+
+      148 |     await page.fill('#co-email', 'qa@example.com')
+      149 |     await page.waitForTimeout(200)
+    > 150 |     expect(await widthNow(), 'the details step overflows a 320px viewport').toBeLessThanOrEqual(321)
+          |                                                                             ^
+      151 |     await page.getByRole('button', { name: 'המשך', exact: true }).click()
+      152 |
+      153 |     await expect(page.locator('#co-city')).toBeVisible()
+        at /Users/ofir/kenyonexpress-autopilot/e2e/rtl-mobile.spec.ts:150:77
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/rtl-mobile-no-sideways-scr-a004f-320px-every-section-at-once-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/rtl-mobile-no-sideways-scr-a004f-320px-every-section-at-once-mobile-chrome/error-context.md
+
+
+[1A[2K[87/96] [mobile-chrome] › e2e/rtl-mobile.spec.ts:213:7 › no sideways scroll at 320px › a product page fits 320px
+[1A[2K  53) [mobile-chrome] › e2e/rtl-mobile.spec.ts:199:7 › no sideways scroll at 320px › the install banner fits 320px 
+
+    Error: the install banner makes the document 323px wide in a 320px viewport
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m321[39m
+    Received:    [31m323[39m
+
+      208 |       scrollWidth,
+      209 |       `the install banner makes the document ${scrollWidth}px wide in a 320px viewport`,
+    > 210 |     ).toBeLessThanOrEqual(321)
+          |       ^
+      211 |   })
+      212 |
+      213 |   test('a product page fits 320px', async ({ page }) => {
+        at /Users/ofir/kenyonexpress-autopilot/e2e/rtl-mobile.spec.ts:210:7
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/rtl-mobile-no-sideways-scr-859fd-e-install-banner-fits-320px-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/rtl-mobile-no-sideways-scr-859fd-e-install-banner-fits-320px-mobile-chrome/error-context.md
+
+
+[1A[2K  54) [mobile-chrome] › e2e/rtl-mobile.spec.ts:213:7 › no sideways scroll at 320px › a product page fits 320px 
+
+    Error: /product/צימר-מאסטר is 323px wide in a 320px viewport
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m321[39m
+    Received:    [31m323[39m
+
+      218 |
+      219 |     const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth)
+    > 220 |     expect(scrollWidth, `${href} is ${scrollWidth}px wide in a 320px viewport`).toBeLessThanOrEqual(
+          |                                                                                 ^
+      221 |       321,
+      222 |     )
+      223 |   })
+        at /Users/ofir/kenyonexpress-autopilot/e2e/rtl-mobile.spec.ts:220:81
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/rtl-mobile-no-sideways-scr-4717f-x-a-product-page-fits-320px-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/rtl-mobile-no-sideways-scr-4717f-x-a-product-page-fits-320px-mobile-chrome/error-context.md
+
+
+[1A[2K[88/96] [mobile-chrome] › e2e/touch-targets.spec.ts:146:5 › the emulated phone reports a coarse pointer
+[1A[2K[89/96] [mobile-chrome] › e2e/touch-targets.spec.ts:155:7 › every control on / is thumb-sized
+[1A[2K[90/96] [mobile-chrome] › e2e/touch-targets.spec.ts:155:7 › every control on /products is thumb-sized
+[1A[2K  55) [mobile-chrome] › e2e/touch-targets.spec.ts:155:7 › every control on / is thumb-sized ────────
+
+    Error: sub-floor targets on /
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "a[התחברות] hit 72x41 (primary, 44)",[39m
+    [31m+ ][39m
+
+      157 |     await page.goto(route)
+      158 |     await page.waitForLoadState('networkidle')
+    > 159 |     expect(offenders(await measure(page)), `sub-floor targets on ${route}`).toEqual([])
+          |                                                                             ^
+      160 |   })
+      161 | }
+      162 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/touch-targets.spec.ts:159:77
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/touch-targets-every-control-on-is-thumb-sized-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/touch-targets-every-control-on-is-thumb-sized-mobile-chrome/error-context.md
+
+
+[1A[2K[91/96] [mobile-chrome] › e2e/touch-targets.spec.ts:155:7 › every control on /category/hot-deals is thumb-sized
+[1A[2K  56) [mobile-chrome] › e2e/touch-targets.spec.ts:155:7 › every control on /products is thumb-sized 
+
+    Error: sub-floor targets on /products
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  -  1[39m
+    [31m+ Received  + 27[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "a[התחברות] hit 72x41 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+ ][39m
+
+      157 |     await page.goto(route)
+      158 |     await page.waitForLoadState('networkidle')
+    > 159 |     expect(offenders(await measure(page)), `sub-floor targets on ${route}`).toEqual([])
+          |                                                                             ^
+      160 |   })
+      161 | }
+      162 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/touch-targets.spec.ts:159:77
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/touch-targets-every-control-on-products-is-thumb-sized-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/touch-targets-every-control-on-products-is-thumb-sized-mobile-chrome/error-context.md
+
+
+[1A[2K[92/96] [mobile-chrome] › e2e/touch-targets.spec.ts:155:7 › every control on /cart is thumb-sized
+[1A[2K  57) [mobile-chrome] › e2e/touch-targets.spec.ts:155:7 › every control on /cart is thumb-sized ────
+
+    Error: sub-floor targets on /cart
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "a[התחברות] hit 72x41 (primary, 44)",[39m
+    [31m+ ][39m
+
+      157 |     await page.goto(route)
+      158 |     await page.waitForLoadState('networkidle')
+    > 159 |     expect(offenders(await measure(page)), `sub-floor targets on ${route}`).toEqual([])
+          |                                                                             ^
+      160 |   })
+      161 | }
+      162 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/touch-targets.spec.ts:159:77
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/touch-targets-every-control-on-cart-is-thumb-sized-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/touch-targets-every-control-on-cart-is-thumb-sized-mobile-chrome/error-context.md
+
+
+[1A[2K[93/96] [mobile-chrome] › e2e/touch-targets.spec.ts:155:7 › every control on /login is thumb-sized
+[1A[2K  58) [mobile-chrome] › e2e/touch-targets.spec.ts:155:7 › every control on /category/hot-deals is thumb-sized 
+
+    Error: sub-floor targets on /category/hot-deals
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 5[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "a[התחברות] hit 72x41 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+ ][39m
+
+      157 |     await page.goto(route)
+      158 |     await page.waitForLoadState('networkidle')
+    > 159 |     expect(offenders(await measure(page)), `sub-floor targets on ${route}`).toEqual([])
+          |                                                                             ^
+      160 |   })
+      161 | }
+      162 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/touch-targets.spec.ts:159:77
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/touch-targets-every-contro-7fccd-ry-hot-deals-is-thumb-sized-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/touch-targets-every-contro-7fccd-ry-hot-deals-is-thumb-sized-mobile-chrome/error-context.md
+
+
+[1A[2K[94/96] [mobile-chrome] › e2e/touch-targets.spec.ts:155:7 › every control on /legal/terms is thumb-sized
+[1A[2K  59) [mobile-chrome] › e2e/touch-targets.spec.ts:155:7 › every control on /login is thumb-sized ───
+
+    Error: sub-floor targets on /login
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 4[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "a[שכחתם סיסמה?] hit 82x18 (24)",[39m
+    [31m+   "button[כניסה ללא סיסמה (קישור מאובטח ] hit 97x21 (24)",[39m
+    [31m+ ][39m
+
+      157 |     await page.goto(route)
+      158 |     await page.waitForLoadState('networkidle')
+    > 159 |     expect(offenders(await measure(page)), `sub-floor targets on ${route}`).toEqual([])
+          |                                                                             ^
+      160 |   })
+      161 | }
+      162 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/touch-targets.spec.ts:159:77
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/touch-targets-every-control-on-login-is-thumb-sized-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/touch-targets-every-control-on-login-is-thumb-sized-mobile-chrome/error-context.md
+
+
+[1A[2K[95/96] [mobile-chrome] › e2e/touch-targets.spec.ts:163:5 › every control on a product page is thumb-sized, buy row included
+[1A[2K  60) [mobile-chrome] › e2e/touch-targets.spec.ts:155:7 › every control on /legal/terms is thumb-sized 
+
+    Error: sub-floor targets on /legal/terms
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "a[התחברות] hit 72x41 (primary, 44)",[39m
+    [31m+ ][39m
+
+      157 |     await page.goto(route)
+      158 |     await page.waitForLoadState('networkidle')
+    > 159 |     expect(offenders(await measure(page)), `sub-floor targets on ${route}`).toEqual([])
+          |                                                                             ^
+      160 |   })
+      161 | }
+      162 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/touch-targets.spec.ts:159:77
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/touch-targets-every-control-on-legal-terms-is-thumb-sized-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/touch-targets-every-control-on-legal-terms-is-thumb-sized-mobile-chrome/error-context.md
+
+
+[1A[2K[96/96] [mobile-chrome] › e2e/touch-targets.spec.ts:178:5 › the hero dots grow to 44px vertically and keep the pitch sideways
+[1A[2K  61) [mobile-chrome] › e2e/touch-targets.spec.ts:163:5 › every control on a product page is thumb-sized, buy row included 
+
+    Error: sub-floor targets on /product/צימר-מאסטר
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  -  1[39m
+    [31m+ Received  + 14[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "a[התחברות] hit 72x41 (primary, 44)",[39m
+    [31m+   "a[בית] hit 22x24 (24)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 62x36 (primary, 44)",[39m
+    [31m+   "button[הוסף להשוואה] hit 54x36 (primary, 44)",[39m
+    [31m+   "a[צימרים מלונות ונופש] hit 97x20 (24)",[39m
+    [31m+   "a[צימרים מלונות ונופש] hit 97x20 (24)",[39m
+    [31m+   "a[צימרים מלונות ונופש] hit 97x20 (24)",[39m
+    [31m+   "a[צימרים מלונות ונופש] hit 97x20 (24)",[39m
+    [31m+   "a[צימרים מלונות ונופש] hit 97x21 (24)",[39m
+    [31m+   "a[טלפונים ואלקטרוניקה] hit 97x21 (24)",[39m
+    [31m+   "a[טלפונים ואלקטרוניקה] hit 97x20 (24)",[39m
+    [31m+   "a[צימרים מלונות ונופש] hit 97x20 (24)",[39m
+    [31m+ ][39m
+
+      167 |   await page.waitForLoadState('networkidle')
+      168 |   const measured = await measure(page)
+    > 169 |   expect(offenders(measured), `sub-floor targets on ${href}`).toEqual([])
+          |                                                               ^
+      170 |   // The buy row must actually have been measured, or the assertion above is
+      171 |   // vacuous on an unsellable catalogue.
+      172 |   expect(
+        at /Users/ofir/kenyonexpress-autopilot/e2e/touch-targets.spec.ts:169:63
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/touch-targets-every-contro-5e973-humb-sized-buy-row-included-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/touch-targets-every-contro-5e973-humb-sized-buy-row-included-mobile-chrome/error-context.md
+
+
+[1A[2K  61 failed
+    [chromium] › e2e/a11y.spec.ts:408:7 › the checkout wizard, step by step › every step of the checkout has no WCAG A/AA violations 
+    [chromium] › e2e/checkout-steps.spec.ts:66:7 › checkout steps (UX17) › opens on the first step with a rail, and keeps the other steps closed 
+    [chromium] › e2e/checkout-steps.spec.ts:182:7 › checkout steps (UX17) › the one submit judges the whole form and opens the step that owns the first error 
+    [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › / fits 320px ──────────
+    [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /products fits 320px ──
+    [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /cart fits 320px ──────
+    [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /checkout fits 320px ──
+    [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /contact fits 320px ───
+    [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /coupons fits 320px ───
+    [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /suppliers fits 320px ─
+    [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /category/hot-deals fits 320px 
+    [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /category/baby-kids fits 320px 
+    [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /category/phones-computers fits 320px 
+    [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /search?q=%D7%9E%D7%95%D7%A6%D7%A8 fits 320px 
+    [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /legal/terms fits 320px 
+    [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /legal/privacy fits 320px 
+    [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /legal/returns fits 320px 
+    [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /legal/accessibility fits 320px 
+    [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /terms-and-conditions fits 320px 
+    [chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /privacy-policy fits 320px 
+    [chromium] › e2e/rtl-mobile.spec.ts:125:7 › no sideways scroll at 320px › the seeded single-page checkout fits 320px, every section at once 
+    [chromium] › e2e/rtl-mobile.spec.ts:175:7 › no sideways scroll at 320px › the open cart panel fits 320px 
+    [chromium] › e2e/rtl-mobile.spec.ts:199:7 › no sideways scroll at 320px › the install banner fits 320px 
+    [chromium] › e2e/rtl-mobile.spec.ts:213:7 › no sideways scroll at 320px › a product page fits 320px 
+    [chromium] › e2e/touch-targets.spec.ts:155:7 › every control on / is thumb-sized ───────────────
+    [chromium] › e2e/touch-targets.spec.ts:155:7 › every control on /products is thumb-sized ───────
+    [chromium] › e2e/touch-targets.spec.ts:155:7 › every control on /category/hot-deals is thumb-sized 
+    [chromium] › e2e/touch-targets.spec.ts:155:7 › every control on /cart is thumb-sized ───────────
+    [chromium] › e2e/touch-targets.spec.ts:155:7 › every control on /login is thumb-sized ──────────
+    [chromium] › e2e/touch-targets.spec.ts:155:7 › every control on /legal/terms is thumb-sized ────
+    [chromium] › e2e/touch-targets.spec.ts:163:5 › every control on a product page is thumb-sized, buy row included 
+    [mobile-chrome] › e2e/a11y.spec.ts:408:7 › the checkout wizard, step by step › every step of the checkout has no WCAG A/AA violations 
+    [mobile-chrome] › e2e/checkout-steps.spec.ts:182:7 › checkout steps (UX17) › the one submit judges the whole form and opens the step that owns the first error 
+    [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › / fits 320px ─────
+    [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /products fits 320px 
+    [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /cart fits 320px ─
+    [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /checkout fits 320px 
+    [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /contact fits 320px 
+    [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /coupons fits 320px 
+    [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /suppliers fits 320px 
+    [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /category/hot-deals fits 320px 
+    [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /category/baby-kids fits 320px 
+    [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /category/phones-computers fits 320px 
+    [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /search?q=%D7%9E%D7%95%D7%A6%D7%A8 fits 320px 
+    [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /legal/terms fits 320px 
+    [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /legal/privacy fits 320px 
+    [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /legal/returns fits 320px 
+    [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /legal/accessibility fits 320px 
+    [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /terms-and-conditions fits 320px 
+    [mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /privacy-policy fits 320px 
+    [mobile-chrome] › e2e/rtl-mobile.spec.ts:125:7 › no sideways scroll at 320px › the seeded single-page checkout fits 320px, every section at once 
+    [mobile-chrome] › e2e/rtl-mobile.spec.ts:175:7 › no sideways scroll at 320px › the open cart panel fits 320px 
+    [mobile-chrome] › e2e/rtl-mobile.spec.ts:199:7 › no sideways scroll at 320px › the install banner fits 320px 
+    [mobile-chrome] › e2e/rtl-mobile.spec.ts:213:7 › no sideways scroll at 320px › a product page fits 320px 
+    [mobile-chrome] › e2e/touch-targets.spec.ts:155:7 › every control on / is thumb-sized ──────────
+    [mobile-chrome] › e2e/touch-targets.spec.ts:155:7 › every control on /products is thumb-sized ──
+    [mobile-chrome] › e2e/touch-targets.spec.ts:155:7 › every control on /category/hot-deals is thumb-sized 
+    [mobile-chrome] › e2e/touch-targets.spec.ts:155:7 › every control on /cart is thumb-sized ──────
+    [mobile-chrome] › e2e/touch-targets.spec.ts:155:7 › every control on /login is thumb-sized ─────
+    [mobile-chrome] › e2e/touch-targets.spec.ts:155:7 › every control on /legal/terms is thumb-sized 
+    [mobile-chrome] › e2e/touch-targets.spec.ts:163:5 › every control on a product page is thumb-sized, buy row included 
+  35 passed (2.6m)

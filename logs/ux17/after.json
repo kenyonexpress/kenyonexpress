@@ -1,0 +1,434 @@
+{
+  "380": {
+    "landed": "http://localhost:3355/checkout",
+    "stepRail": {
+      "rect": {
+        "x": 30,
+        "y": 471.7,
+        "w": 335,
+        "h": 44
+      },
+      "items": [
+        {
+          "text": "1פרטים אישיים",
+          "current": "step",
+          "state": "current"
+        },
+        {
+          "text": "2כתובת למשלוח",
+          "current": null,
+          "state": "upcoming"
+        },
+        {
+          "text": "3תשלום",
+          "current": null,
+          "state": "upcoming"
+        }
+      ]
+    },
+    "sections": [
+      {
+        "label": "פרטים אישיים",
+        "step": "details",
+        "state": "current",
+        "hidden": false,
+        "visible": true,
+        "rect": {
+          "x": 30,
+          "y": 549.7,
+          "w": 335,
+          "h": 337
+        },
+        "fieldsVisible": 4
+      },
+      {
+        "label": "כתובת למשלוח",
+        "step": "address",
+        "state": "upcoming",
+        "hidden": false,
+        "visible": true,
+        "rect": {
+          "x": 30,
+          "y": 926.7,
+          "w": 335,
+          "h": 53
+        },
+        "fieldsVisible": 0
+      },
+      {
+        "label": "תשלום",
+        "step": "payment",
+        "state": "upcoming",
+        "hidden": false,
+        "visible": true,
+        "rect": {
+          "x": 30,
+          "y": 1007.7,
+          "w": 335,
+          "h": 53
+        },
+        "fieldsVisible": 0
+      }
+    ],
+    "fields": {
+      "firstName": {
+        "visible": true,
+        "rect": {
+          "x": 212.5,
+          "y": 668.7,
+          "w": 152.5,
+          "h": 45
+        }
+      },
+      "city": {
+        "visible": false,
+        "role": "combobox"
+      },
+      "street": {
+        "visible": false,
+        "role": "combobox",
+        "autocomplete": "list",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      }
+    },
+    "payment": {
+      "methodRadios": [
+        {
+          "value": "new",
+          "checked": true,
+          "label": "כרטיס אשראיפרטי הכרטיס מוקלדים בדף התשלום המאובטח של Cardcom"
+        }
+      ],
+      "readOnlyMethod": null,
+      "selector": {
+        "x": 0,
+        "y": 0,
+        "w": 0,
+        "h": 0
+      },
+      "optionCount": 1
+    },
+    "payButton": {
+      "visible": false,
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "w": 0,
+        "h": 0
+      },
+      "text": "התשלום ייפתח בקרוב",
+      "inAside": false
+    },
+    "nav": {
+      "next": ["המשך"],
+      "back": []
+    },
+    "aside": {
+      "x": 15,
+      "y": 1122.7,
+      "w": 350,
+      "h": 374.5
+    },
+    "pageHeight": 1972,
+    "scrollWidth": 380,
+    "streetTyping": {
+      "expanded": "true",
+      "options": ["דיזנגוף", "דיזנגוף סנטר", "ככר דיזנגוף"],
+      "status": "3 רחובות מוצעים, בחרו עם החצים"
+    },
+    "errors": []
+  },
+  "768": {
+    "landed": "http://localhost:3355/checkout",
+    "stepRail": {
+      "rect": {
+        "x": 30,
+        "y": 417.7,
+        "w": 723,
+        "h": 44
+      },
+      "items": [
+        {
+          "text": "1פרטים אישיים",
+          "current": "step",
+          "state": "current"
+        },
+        {
+          "text": "2כתובת למשלוח",
+          "current": null,
+          "state": "upcoming"
+        },
+        {
+          "text": "3תשלום",
+          "current": null,
+          "state": "upcoming"
+        }
+      ]
+    },
+    "sections": [
+      {
+        "label": "פרטים אישיים",
+        "step": "details",
+        "state": "current",
+        "hidden": false,
+        "visible": true,
+        "rect": {
+          "x": 30,
+          "y": 495.7,
+          "w": 723,
+          "h": 337
+        },
+        "fieldsVisible": 4
+      },
+      {
+        "label": "כתובת למשלוח",
+        "step": "address",
+        "state": "upcoming",
+        "hidden": false,
+        "visible": true,
+        "rect": {
+          "x": 30,
+          "y": 872.7,
+          "w": 723,
+          "h": 53
+        },
+        "fieldsVisible": 0
+      },
+      {
+        "label": "תשלום",
+        "step": "payment",
+        "state": "upcoming",
+        "hidden": false,
+        "visible": true,
+        "rect": {
+          "x": 30,
+          "y": 953.7,
+          "w": 723,
+          "h": 53
+        },
+        "fieldsVisible": 0
+      }
+    ],
+    "fields": {
+      "firstName": {
+        "visible": true,
+        "rect": {
+          "x": 406.5,
+          "y": 614.7,
+          "w": 346.5,
+          "h": 45
+        }
+      },
+      "city": {
+        "visible": false,
+        "role": "combobox"
+      },
+      "street": {
+        "visible": false,
+        "role": "combobox",
+        "autocomplete": "list",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      }
+    },
+    "payment": {
+      "methodRadios": [
+        {
+          "value": "new",
+          "checked": true,
+          "label": "כרטיס אשראיפרטי הכרטיס מוקלדים בדף התשלום המאובטח של Cardcom"
+        }
+      ],
+      "readOnlyMethod": null,
+      "selector": {
+        "x": 0,
+        "y": 0,
+        "w": 0,
+        "h": 0
+      },
+      "optionCount": 1
+    },
+    "payButton": {
+      "visible": false,
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "w": 0,
+        "h": 0
+      },
+      "text": "התשלום ייפתח בקרוב",
+      "inAside": false
+    },
+    "nav": {
+      "next": ["המשך"],
+      "back": []
+    },
+    "aside": {
+      "x": 15,
+      "y": 1068.7,
+      "w": 738,
+      "h": 374.5
+    },
+    "pageHeight": 1918,
+    "scrollWidth": 768,
+    "streetTyping": {
+      "expanded": "true",
+      "options": ["דיזנגוף", "דיזנגוף סנטר", "ככר דיזנגוף"],
+      "status": "3 רחובות מוצעים, בחרו עם החצים"
+    },
+    "errors": []
+  },
+  "1440": {
+    "landed": "http://localhost:3355/checkout",
+    "stepRail": {
+      "rect": {
+        "x": 655,
+        "y": 477.7,
+        "w": 650,
+        "h": 44
+      },
+      "items": [
+        {
+          "text": "1פרטים אישיים",
+          "current": "step",
+          "state": "current"
+        },
+        {
+          "text": "2כתובת למשלוח",
+          "current": null,
+          "state": "upcoming"
+        },
+        {
+          "text": "3תשלום",
+          "current": null,
+          "state": "upcoming"
+        }
+      ]
+    },
+    "sections": [
+      {
+        "label": "פרטים אישיים",
+        "step": "details",
+        "state": "current",
+        "hidden": false,
+        "visible": true,
+        "rect": {
+          "x": 655,
+          "y": 555.7,
+          "w": 650,
+          "h": 337
+        },
+        "fieldsVisible": 4
+      },
+      {
+        "label": "כתובת למשלוח",
+        "step": "address",
+        "state": "upcoming",
+        "hidden": false,
+        "visible": true,
+        "rect": {
+          "x": 655,
+          "y": 932.7,
+          "w": 650,
+          "h": 53
+        },
+        "fieldsVisible": 0
+      },
+      {
+        "label": "תשלום",
+        "step": "payment",
+        "state": "upcoming",
+        "hidden": false,
+        "visible": true,
+        "rect": {
+          "x": 655,
+          "y": 1013.7,
+          "w": 650,
+          "h": 53
+        },
+        "fieldsVisible": 0
+      }
+    ],
+    "fields": {
+      "firstName": {
+        "visible": true,
+        "rect": {
+          "x": 995,
+          "y": 674.7,
+          "w": 310,
+          "h": 45
+        }
+      },
+      "city": {
+        "visible": false,
+        "role": "combobox"
+      },
+      "street": {
+        "visible": false,
+        "role": "combobox",
+        "autocomplete": "list",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      }
+    },
+    "payment": {
+      "methodRadios": [
+        {
+          "value": "new",
+          "checked": true,
+          "label": "כרטיס אשראיפרטי הכרטיס מוקלדים בדף התשלום המאובטח של Cardcom"
+        }
+      ],
+      "readOnlyMethod": null,
+      "selector": {
+        "x": 0,
+        "y": 0,
+        "w": 0,
+        "h": 0
+      },
+      "optionCount": 1
+    },
+    "payButton": {
+      "visible": false,
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "w": 0,
+        "h": 0
+      },
+      "text": "התשלום ייפתח בקרוב",
+      "inAside": false
+    },
+    "nav": {
+      "next": ["המשך"],
+      "back": []
+    },
+    "aside": {
+      "x": 140,
+      "y": 477.7,
+      "w": 466,
+      "h": 374.5
+    },
+    "pageHeight": 1696,
+    "scrollWidth": 1440,
+    "streetTyping": {
+      "expanded": "true",
+      "options": ["דיזנגוף", "דיזנגוף סנטר", "ככר דיזנגוף"],
+      "status": "3 רחובות מוצעים, בחרו עם החצים"
+    },
+    "errors": []
+  }
+}

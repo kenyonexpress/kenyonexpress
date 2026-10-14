@@ -293,11 +293,13 @@
 }
 
 /* The autofill note under the postal code: same size as an error, muted
-   rather than red, because it reports something done for the shopper. */
+   rather than red, because it reports something done for the shopper. The
+   muted token, not #777: at 12px that grey measured 4.48:1 on white and axe
+   failed the address step on the delivery-slot hint (UX17, e2e/a11y). */
 .checkout-field__hint {
   font-size: 12px;
   line-height: 18px;
-  color: #777;
+  color: var(--color-muted);
 }
 
 /* Skeleton boxes for the Suspense shell. Heights are the ones the real
@@ -519,31 +521,89 @@
   background: hsl(140, 100%, 21%);
 }
 
-.checkout-cards {
-  margin-top: 14px;
+/* The payment method selector (UX17): one card per method, the ticked one
+   outlined in the brand yellow. The radio itself stays visible and native,
+   on the start side, with the name and its one-line meaning beside it; the
+   brand marks (the footer's own) sit under the hosted-page card. Tokens and
+   rem throughout: this block is new and owes the hardcoded ledger nothing. */
+.checkout-methods {
+  margin: 0 0 1rem;
   padding: 0;
   border: 0;
+  display: grid;
+  gap: 0.625rem;
 }
 
-.checkout-cards__legend {
+.checkout-methods__legend {
   padding: 0;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--color-heading, #333e48);
+  margin-bottom: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-heading);
 }
 
-.checkout-cards__option {
+.checkout-methods__option {
+  border: thin solid var(--color-border);
+  border-radius: 0.625rem;
+  background: var(--color-surface);
+  padding: 0.75rem 1rem;
+  display: grid;
+  gap: 0.625rem;
+}
+
+.checkout-methods__option[data-selected="true"] {
+  border-color: var(--color-brand-primary);
+  box-shadow: inset 0 0 0 thin var(--color-brand-primary);
+}
+
+.checkout-methods__pick {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  cursor: pointer;
+  min-height: var(--spacing-touch-min);
+}
+
+.checkout-methods__pick input {
+  margin-top: 0.25rem;
+  accent-color: var(--color-heading);
+  flex: none;
+}
+
+.checkout-methods__text {
+  display: grid;
+  gap: 0.125rem;
+}
+
+.checkout-methods__label {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-top: 8px;
-  font-size: 14px;
-  color: var(--color-heading, #333e48);
-  cursor: pointer;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-heading);
 }
 
-.checkout-cards__option input {
-  accent-color: #0062bd;
+.checkout-methods__badge {
+  font-size: 0.6875rem;
+  font-weight: 400;
+  line-height: 1.125rem;
+  padding: 0 0.5rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-brand-primary);
+  color: var(--color-heading);
+}
+
+.checkout-methods__detail {
+  font-size: 0.75rem;
+  line-height: 1.125rem;
+  color: var(--color-muted);
+}
+
+.checkout-methods__marks {
+  justify-content: flex-start;
+  padding-inline-start: 1.625rem;
 }
 
 /* Success (return) page */
@@ -715,4 +775,291 @@
 .checkout-error__retry:disabled {
   opacity: 0.45;
   cursor: not-allowed;
+}
+
+/* ---------------------------------------------------------------------------
+ * The three-step flow (UX17). The rail above the steps, the title row with
+ * its edit control, the summary a done step keeps, and the continue / back
+ * controls under an open step. The steps keep the section geometry above;
+ * only what a step shows changes with its state. Tokens and rem throughout,
+ * like the selector: the measured px values above belong to the live page,
+ * and the flow is ours.
+ * ------------------------------------------------------------------------- */
+
+.checkout-steps {
+  margin-bottom: 2.125rem;
+}
+
+.checkout-steps__list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.checkout-steps__item {
+  min-width: 0;
+}
+
+.checkout-steps__btn,
+.checkout-steps__label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  min-height: var(--spacing-touch-min);
+  padding: 0.375rem 0.625rem;
+  border: 0;
+  border-bottom: 0.1875rem solid var(--color-border);
+  background: none;
+  font: inherit;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: var(--color-muted);
+  text-align: start;
+}
+
+.checkout-steps__btn {
+  cursor: pointer;
+}
+
+.checkout-steps__btn:hover .checkout-steps__text,
+.checkout-steps__btn:focus-visible .checkout-steps__text {
+  text-decoration: underline;
+}
+
+.checkout-steps__num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 1.625rem;
+  height: 1.625rem;
+  border-radius: var(--radius-round);
+  border: 0.125rem solid var(--color-border);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--color-muted);
+  background: var(--color-surface);
+}
+
+.checkout-steps__text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.checkout-steps__item[data-state="current"] .checkout-steps__label {
+  border-bottom-color: var(--color-brand-primary);
+  color: var(--color-heading);
+  font-weight: 700;
+}
+
+.checkout-steps__item[data-state="current"] .checkout-steps__num {
+  border-color: var(--color-brand-primary);
+  background: var(--color-brand-primary);
+  color: var(--color-heading);
+}
+
+.checkout-steps__item[data-state="done"] .checkout-steps__btn,
+.checkout-steps__item[data-state="done"] .checkout-steps__label {
+  border-bottom-color: var(--color-heading);
+  color: var(--color-heading);
+}
+
+.checkout-steps__item[data-state="done"] .checkout-steps__num {
+  border-color: var(--color-heading);
+  background: var(--color-heading);
+  color: var(--color-surface);
+}
+
+/* Below 768 the rail shows the numbers for every step and the name of the
+   open one only, so three Hebrew titles do not fight over 350px. */
+@media (max-width: 47.99rem) {
+  .checkout-steps__item:not([data-state="current"]) .checkout-steps__text {
+    position: absolute;
+    width: 0.0625rem;
+    height: 0.0625rem;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .checkout-steps__list {
+    grid-template-columns: auto auto auto;
+  }
+
+  .checkout-steps__item[data-state="current"] {
+    flex: 1;
+  }
+}
+
+/* The title row: the heading keeps its rule and yellow accent; the edit
+   control sits on the far side of the same line. */
+.checkout-section__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: thin solid var(--color-border);
+  margin-bottom: 2.125rem;
+}
+
+.checkout-section__head .checkout-section__title {
+  margin-bottom: 0;
+  border-bottom: 0;
+  flex: 1 1 auto;
+  outline: none;
+}
+
+.checkout-section__head .checkout-section__title > span {
+  margin-bottom: 0;
+}
+
+.checkout-section[data-step-state="upcoming"] .checkout-section__title {
+  color: var(--color-muted);
+}
+
+.checkout-section[data-step-state="upcoming"] .checkout-section__title > span {
+  border-bottom-color: transparent;
+}
+
+.checkout-section[data-step-state="done"] .checkout-section__head,
+.checkout-section[data-step-state="upcoming"] .checkout-section__head {
+  margin-bottom: 1rem;
+}
+
+.checkout-section__edit {
+  flex: none;
+  min-height: var(--spacing-touch-min);
+  padding: 0 0.25rem 0.625rem;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-link);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* What a done step keeps on screen: one line per part, muted. */
+.checkout-step-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5rem;
+  color: var(--color-muted);
+}
+
+.checkout-step-summary__part + .checkout-step-summary__part::before {
+  content: "·";
+  margin-inline-end: 0.75rem;
+  color: var(--color-border);
+}
+
+.checkout-section[data-step-state="done"],
+.checkout-section[data-step-state="upcoming"] {
+  margin-bottom: 1.75rem;
+}
+
+.checkout-saved-address {
+  margin: 0 0 1.5625rem;
+  font-size: 0.875rem;
+  line-height: 1.5rem;
+  color: var(--color-heading);
+}
+
+/* "מידע נוסף" inside the address step: a smaller title, no second rule. */
+.checkout-subsection {
+  margin-top: 0.5rem;
+}
+
+.checkout-subsection__title {
+  font-size: 1.0625rem;
+  line-height: 1.5rem;
+  font-weight: 700;
+  color: var(--color-heading);
+  margin: 0 0 1rem;
+}
+
+/* Continue and back. Continue is the pay button's shape at the touch floor
+   in the brand yellow; back is a text control beside it. On the payment
+   step only back remains, under the pay button. */
+.checkout-nav {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.checkout-nav__next {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 11.25rem;
+  min-height: var(--spacing-touch-min);
+  padding: 0.625rem 2rem;
+  background: var(--color-brand-primary);
+  color: var(--color-heading);
+  border: thin solid var(--color-brand-primary);
+  border-radius: var(--radius-pill);
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.checkout-nav__next:hover {
+  background: var(--color-brand-primary-hover);
+}
+
+.checkout-nav__back {
+  min-height: var(--spacing-touch-min);
+  padding: 0 0.25rem;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 0.875rem;
+  color: var(--color-heading);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.checkout-nav--pay {
+  justify-content: center;
+  margin-top: 0.75rem;
+}
+
+@media (max-width: 47.99rem) {
+  .checkout-nav__next {
+    width: 100%;
+  }
+
+  .checkout-nav {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .checkout-nav__back {
+    align-self: center;
+  }
+}
+
+/* The payment block lives in the third step now, not under the order table,
+   so it needs no rule above it there. */
+.checkout-col-main .checkout-payment {
+  border-top: 0;
+  padding-top: 0;
+}
+
+/* The combobox status line is for readers only. */
+.checkout-combobox__status:empty {
+  display: none;
 }

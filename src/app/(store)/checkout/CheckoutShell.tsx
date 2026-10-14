@@ -1,4 +1,4 @@
-import { STEP_TITLES } from '@/lib/checkout/steps'
+import { CHECKOUT_FLOW_STEPS, FLOW_STEP_TITLES } from '@/lib/checkout/steps'
 
 /**
  * The Suspense fallback for /checkout, at the height of what replaces it.
@@ -18,12 +18,12 @@ import { STEP_TITLES } from '@/lib/checkout/steps'
  * the reservation follows `checkout-page.css` at any viewport. Numbers written
  * into a skeleton are correct at exactly one width.
  *
- * SHAPED LIKE THE SINGLE PAGE. Since 30.09.2026 the checkout has no stepper
- * and shows every section at once, so the shell reserves the two sections a
- * guest always sees first: two rows of personal details and four rows of
- * address. The rest of the page (notes, the order panel) arrives with the
- * body below the fold on a phone and beside it on desktop, where its column
- * does not move the footer.
+ * SHAPED LIKE THE FLOW (UX17). Since 14.10.2026 the checkout opens on the
+ * first of three steps, so the shell reserves what a guest sees first: the
+ * step rail, the two rows of personal details with their continue control,
+ * and the collapsed titles of the two steps still to come. The order panel
+ * arrives with the body below the fold on a phone and beside it on desktop,
+ * where its column does not move the footer.
  *
  * THE GUEST NOTICE IS RESERVED, AND THAT IS A CHOICE ABOUT WHO IS HERE. It
  * renders only for a visitor with no session, and the shell cannot know which
@@ -39,10 +39,29 @@ export function CheckoutShell() {
 
       <div className="checkout-page__grid" aria-hidden="true">
         <div className="checkout-col-main">
-          <section className="checkout-section">
-            <h2 className="checkout-section__title">
-              <span>{STEP_TITLES.details}</span>
-            </h2>
+          <div className="checkout-steps">
+            <ol className="checkout-steps__list">
+              {CHECKOUT_FLOW_STEPS.map((step, index) => (
+                <li
+                  key={step}
+                  className="checkout-steps__item"
+                  data-state={index === 0 ? 'current' : 'upcoming'}
+                >
+                  <span className="checkout-steps__label">
+                    <span className="checkout-steps__num">{index + 1}</span>
+                    <span className="checkout-steps__text">{FLOW_STEP_TITLES[step]}</span>
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </div>
+
+          <section className="checkout-section" data-step-state="current">
+            <div className="checkout-section__head">
+              <h2 className="checkout-section__title">
+                <span>{FLOW_STEP_TITLES.details}</span>
+              </h2>
+            </div>
 
             {/* Divs rather than disabled inputs: a disabled control is still a
                 control in the document, and this is a grey box that happens
@@ -57,30 +76,20 @@ export function CheckoutShell() {
                 ))}
               </div>
             ))}
-          </section>
-
-          <section className="checkout-section">
-            <h2 className="checkout-section__title">
-              <span>{STEP_TITLES.address}</span>
-            </h2>
-
-            <div className="checkout-fields-row checkout-fields-row--single">
-              <div className="checkout-field">
-                <span className="checkout-skeleton__label" />
-                <span className="checkout-skeleton__input" />
-              </div>
+            <div className="checkout-nav">
+              <span className="checkout-nav__next" />
             </div>
-            {[0, 1, 2].map((row) => (
-              <div key={row} className="checkout-fields-row">
-                {[0, 1].map((cell) => (
-                  <div key={cell} className="checkout-field">
-                    <span className="checkout-skeleton__label" />
-                    <span className="checkout-skeleton__input" />
-                  </div>
-                ))}
-              </div>
-            ))}
           </section>
+
+          {(['address', 'payment'] as const).map((step) => (
+            <section key={step} className="checkout-section" data-step-state="upcoming">
+              <div className="checkout-section__head">
+                <h2 className="checkout-section__title">
+                  <span>{FLOW_STEP_TITLES[step]}</span>
+                </h2>
+              </div>
+            </section>
+          ))}
         </div>
       </div>
     </>

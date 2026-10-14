@@ -171,6 +171,14 @@ export const RATE_LIMIT_POLICIES = {
     windowSeconds: 600,
     reason: 'postal-code lookups relayed to Israel Post, per IP',
   },
+  // One lookup per pause in typing a street (UX17), against the public street
+  // registry. A shopper typing two addresses spends a handful; a scraper
+  // walking the registry through us spends the window in a minute.
+  'street-lookup': {
+    limit: 60,
+    windowSeconds: 600,
+    reason: 'street suggestions relayed to the street registry, per IP',
+  },
 
   // -- Order velocity, one bucket per identity dimension (src/lib/fraud).
   // `begin_checkout` above bounds a retry loop; these bound a fraud run, which

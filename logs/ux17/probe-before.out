@@ -1,0 +1,329 @@
+{
+  "380": {
+    "landed": "http://localhost:3354/checkout",
+    "stepRail": null,
+    "sections": [
+      {
+        "label": "פרטים אישיים",
+        "step": null,
+        "state": null,
+        "hidden": false,
+        "visible": true,
+        "rect": {
+          "x": 30,
+          "y": 471.7,
+          "w": 335,
+          "h": 265
+        },
+        "fieldsVisible": 4
+      },
+      {
+        "label": "כתובת למשלוח",
+        "step": null,
+        "state": null,
+        "hidden": false,
+        "visible": true,
+        "rect": {
+          "x": 30,
+          "y": 776.7,
+          "w": 335,
+          "h": 1294
+        },
+        "fieldsVisible": 14
+      },
+      {
+        "label": "מידע נוסף",
+        "step": null,
+        "state": null,
+        "hidden": false,
+        "visible": true,
+        "rect": {
+          "x": 30,
+          "y": 2110.7,
+          "w": 335,
+          "h": 238
+        },
+        "fieldsVisible": 1
+      }
+    ],
+    "fields": {
+      "firstName": {
+        "visible": true,
+        "rect": {
+          "x": 212.5,
+          "y": 589.7,
+          "w": 152.5,
+          "h": 45
+        }
+      },
+      "city": {
+        "visible": true,
+        "role": "combobox"
+      },
+      "street": {
+        "visible": true,
+        "role": null,
+        "autocomplete": null,
+        "rect": {
+          "x": 212.5,
+          "y": 996.7,
+          "w": 152.5,
+          "h": 45
+        }
+      }
+    },
+    "payment": {
+      "methodRadios": [],
+      "readOnlyMethod": "תשלום בעזרת כרטיס אשראי",
+      "selector": null,
+      "optionCount": 0
+    },
+    "payButton": {
+      "visible": true,
+      "rect": {
+        "x": 30,
+        "y": 3065.2,
+        "w": 320,
+        "h": 64
+      },
+      "text": "התשלום ייפתח בקרוב",
+      "inAside": true
+    },
+    "nav": {
+      "next": [],
+      "back": []
+    },
+    "aside": {
+      "x": 15,
+      "y": 2382.7,
+      "w": 350,
+      "h": 797.5
+    },
+    "pageHeight": 3655,
+    "scrollWidth": 380,
+    "streetTyping": {
+      "expanded": null,
+      "options": null,
+      "status": null
+    },
+    "errors": []
+  },
+  "768": {
+    "landed": "http://localhost:3354/checkout",
+    "stepRail": null,
+    "sections": [
+      {
+        "label": "פרטים אישיים",
+        "step": null,
+        "state": null,
+        "hidden": false,
+        "visible": true,
+        "rect": {
+          "x": 30,
+          "y": 417.7,
+          "w": 723,
+          "h": 265
+        },
+        "fieldsVisible": 4
+      },
+      {
+        "label": "כתובת למשלוח",
+        "step": null,
+        "state": null,
+        "hidden": false,
+        "visible": true,
+        "rect": {
+          "x": 30,
+          "y": 722.7,
+          "w": 723,
+          "h": 1228
+        },
+        "fieldsVisible": 14
+      },
+      {
+        "label": "מידע נוסף",
+        "step": null,
+        "state": null,
+        "hidden": false,
+        "visible": true,
+        "rect": {
+          "x": 30,
+          "y": 1990.7,
+          "w": 723,
+          "h": 238
+        },
+        "fieldsVisible": 1
+      }
+    ],
+    "fields": {
+      "firstName": {
+        "visible": true,
+        "rect": {
+          "x": 406.5,
+          "y": 535.7,
+          "w": 346.5,
+          "h": 45
+        }
+      },
+      "city": {
+        "visible": true,
+        "role": "combobox"
+      },
+      "street": {
+        "visible": true,
+        "role": null,
+        "autocomplete": null,
+        "rect": {
+          "x": 406.5,
+          "y": 942.7,
+          "w": 346.5,
+          "h": 45
+        }
+      }
+    },
+    "payment": {
+      "methodRadios": [],
+      "readOnlyMethod": "תשלום בעזרת כרטיס אשראי",
+      "selector": null,
+      "optionCount": 0
+    },
+    "payButton": {
+      "visible": true,
+      "rect": {
+        "x": 30,
+        "y": 2903.2,
+        "w": 708,
+        "h": 64
+      },
+      "text": "התשלום ייפתח בקרוב",
+      "inAside": true
+    },
+    "nav": {
+      "next": [],
+      "back": []
+    },
+    "aside": {
+      "x": 15,
+      "y": 2262.7,
+      "w": 738,
+      "h": 737.5
+    },
+    "pageHeight": 3475,
+    "scrollWidth": 768,
+    "streetTyping": {
+      "expanded": null,
+      "options": null,
+      "status": null
+    },
+    "errors": []
+  },
+  "1440": {
+    "landed": "http://localhost:3354/checkout",
+    "stepRail": null,
+    "sections": [
+      {
+        "label": "פרטים אישיים",
+        "step": null,
+        "state": null,
+        "hidden": false,
+        "visible": true,
+        "rect": {
+          "x": 655,
+          "y": 477.7,
+          "w": 650,
+          "h": 265
+        },
+        "fieldsVisible": 4
+      },
+      {
+        "label": "כתובת למשלוח",
+        "step": null,
+        "state": null,
+        "hidden": false,
+        "visible": true,
+        "rect": {
+          "x": 655,
+          "y": 782.7,
+          "w": 650,
+          "h": 1228
+        },
+        "fieldsVisible": 14
+      },
+      {
+        "label": "מידע נוסף",
+        "step": null,
+        "state": null,
+        "hidden": false,
+        "visible": true,
+        "rect": {
+          "x": 655,
+          "y": 2050.7,
+          "w": 650,
+          "h": 238
+        },
+        "fieldsVisible": 1
+      }
+    ],
+    "fields": {
+      "firstName": {
+        "visible": true,
+        "rect": {
+          "x": 995,
+          "y": 595.7,
+          "w": 310,
+          "h": 45
+        }
+      },
+      "city": {
+        "visible": true,
+        "role": "combobox"
+      },
+      "street": {
+        "visible": true,
+        "role": null,
+        "autocomplete": null,
+        "rect": {
+          "x": 995,
+          "y": 1002.7,
+          "w": 310,
+          "h": 45
+        }
+      }
+    },
+    "payment": {
+      "methodRadios": [],
+      "readOnlyMethod": "תשלום בעזרת כרטיס אשראי",
+      "selector": null,
+      "optionCount": 0
+    },
+    "payButton": {
+      "visible": true,
+      "rect": {
+        "x": 155,
+        "y": 1142.2,
+        "w": 436,
+        "h": 64
+      },
+      "text": "התשלום ייפתח בקרוב",
+      "inAside": true
+    },
+    "nav": {
+      "next": [],
+      "back": []
+    },
+    "aside": {
+      "x": 140,
+      "y": 477.7,
+      "w": 466,
+      "h": 779.5
+    },
+    "pageHeight": 2890,
+    "scrollWidth": 1440,
+    "streetTyping": {
+      "expanded": null,
+      "options": null,
+      "status": null
+    },
+    "errors": []
+  }
+}

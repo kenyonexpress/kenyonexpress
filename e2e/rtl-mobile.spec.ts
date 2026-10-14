@@ -131,28 +131,39 @@ test.describe('no sideways scroll at 320px', () => {
       '/checkout',
     )
 
-    // The mobile layout really is the single page: the stepper is gone and
-    // the fields of steps 1, 2 and 4 are all visible with nothing clicked.
-    await expect(page.locator('.checkout-steps')).toBeHidden()
+    // Three steps at every width since UX17 (14.10.2026): the rail is on
+    // screen, the first step is open, and the address and the pay button
+    // wait behind their steps.
+    await expect(page.locator('.checkout-steps')).toBeVisible()
     await expect(page.locator('#co-first-name')).toBeVisible()
-    await expect(page.locator('#co-city')).toBeVisible()
-    await expect(page.locator('.checkout-pay-btn')).toBeVisible()
+    await expect(page.locator('#co-city')).toBeHidden()
+    await expect(page.locator('.checkout-pay-btn')).toBeHidden()
 
     // Filled fields, because Hebrew text in the inputs is what widens an RTL
-    // form that only fits while empty.
+    // form that only fits while empty. Each step is measured once filled.
+    const widthNow = () => page.evaluate(() => document.documentElement.scrollWidth)
     await page.fill('#co-first-name', 'אופיר')
     await page.fill('#co-last-name', 'בדיקה')
     await page.fill('#co-phone', '0501234567')
     await page.fill('#co-email', 'qa@example.com')
+    await page.waitForTimeout(200)
+    expect(await widthNow(), 'the details step overflows a 320px viewport').toBeLessThanOrEqual(321)
+    await page.getByRole('button', { name: 'המשך', exact: true }).click()
+
+    await expect(page.locator('#co-city')).toBeVisible()
     await page.fill('#co-city', 'תל אביב')
     await page.fill('#co-street', 'דיזנגוף')
     await page.fill('#co-number', '10')
     await page.waitForTimeout(400)
+    expect(await widthNow(), 'the address step overflows a 320px viewport').toBeLessThanOrEqual(321)
+    await page.getByRole('button', { name: 'המשך', exact: true }).click()
 
-    const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth)
+    await expect(page.locator('.checkout-pay-btn')).toBeVisible()
+    await page.waitForTimeout(200)
+    const scrollWidth = await widthNow()
     expect(
       scrollWidth,
-      `the single-page checkout is ${scrollWidth}px wide in a 320px viewport`,
+      `the payment step is ${scrollWidth}px wide in a 320px viewport`,
     ).toBeLessThanOrEqual(321)
   })
 

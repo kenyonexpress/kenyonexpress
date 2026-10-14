@@ -16,11 +16,15 @@ describe('publicIsr', () => {
 })
 
 describe('CacheControl', () => {
-  it('keeps every public policy at max-age=0 except the postal-code lookup', () => {
+  // The two address lookups answer a question whose answer does not go stale
+  // the way a search result does, so they alone give the browser an hour.
+  const ADDRESS_LOOKUPS = new Set(['postalCode', 'streets'])
+
+  it('keeps every public policy at max-age=0 except the address lookups', () => {
     for (const [name, value] of Object.entries(CacheControl)) {
       const d = cacheControlDirectives(value)
       if (d.public !== true) continue
-      if (name === 'postalCode') {
+      if (ADDRESS_LOOKUPS.has(name)) {
         expect(d['max-age']).toBe('3600')
         continue
       }
@@ -33,7 +37,7 @@ describe('CacheControl', () => {
       const d = cacheControlDirectives(value)
       if (d.public !== true) continue
       expect(typeof d['s-maxage'], `${name} s-maxage`).toBe('string')
-      if (name !== 'postalCode') {
+      if (!ADDRESS_LOOKUPS.has(name)) {
         expect(typeof d['stale-while-revalidate'], `${name} swr`).toBe('string')
       }
     }

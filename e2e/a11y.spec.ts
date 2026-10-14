@@ -405,7 +405,7 @@ test.describe('the checkout with a seeded cart', () => {
  * "המשך" button refuses a step whose fields do not validate.
  */
 test.describe('the checkout wizard, step by step', () => {
-  test('every step of the checkout has no WCAG A/AA violations', async ({ page, viewport }) => {
+  test('every step of the checkout has no WCAG A/AA violations', async ({ page }) => {
     await openPurchasableProduct(page)
     await addOpenProductToCart(page)
     await page.goto('/checkout')
@@ -414,30 +414,16 @@ test.describe('the checkout wizard, step by step', () => {
       '/checkout',
     )
 
-    // Below 768 there is no wizard since D25: checkout-page.css stacks every
-    // step section into live's single long page and hides the continue
-    // buttons. One scan therefore covers ALL sections at once -- including
-    // the error state, raised through the same submit the shopper uses.
-    if ((viewport?.width ?? 1280) < 768) {
-      await page.locator('.checkout-pay-btn').click()
-      await expect(
-        page.locator('.checkout-field__error').first(),
-        'submitting the empty single-page checkout raised no error to scan',
-      ).toBeVisible()
-      const single = await scan(page)
-      expect(
-        single.violations.map((v) => v.id),
-        `single-page checkout with validation errors\n  ${describe(single)}`,
-      ).toEqual([])
-      return
-    }
-
-    const next = page.locator('.checkout-nav__next').first()
+    // Three steps at every width since UX17 (14.10.2026): details, address,
+    // payment. Each is scanned open, and the first one is scanned in the
+    // state every shopper who mistypes sees, which is also the one no scan
+    // of an empty form reaches.
+    const next = page.getByRole('button', { name: 'המשך', exact: true })
     const advance = async (to: string) => {
       await next.click()
       await expect(
         page.locator('.checkout-steps__item[aria-current="step"]'),
-        `the wizard would not advance to ${to}`,
+        `the flow would not advance to ${to}`,
       ).toContainText(to)
     }
 
@@ -474,15 +460,7 @@ test.describe('the checkout wizard, step by step', () => {
     await page.fill('#co-city', 'תל אביב')
     await page.fill('#co-street', 'דיזנגוף')
     await page.fill('#co-number', '10')
-    await advance('ביקורת הזמנה')
-
-    const review = await scan(page)
-    expect(
-      review.violations.map((v) => v.id),
-      `review step\n  ${describe(review)}`,
-    ).toEqual([])
-
-    await advance('אישור ותשלום')
+    await advance('תשלום')
 
     // Scanned but NOT submitted. The terms box is the last gate before the pay
     // button, and ticking it is what a shopper about to pay sees, so the state

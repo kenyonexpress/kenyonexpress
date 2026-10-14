@@ -1,0 +1,7 @@
+Already up to date
+Done in 189ms using pnpm v11.1.2
+
+Running 1 test using 1 worker
+
+[1A[2K[1/1] [mobile-chrome] › e2e/checkout-steps.spec.ts:156:7 › checkout steps (UX17) › the payment step offers the method as a radio group with the pay button under it
+[1A[2K  1 passed (10.3s)
