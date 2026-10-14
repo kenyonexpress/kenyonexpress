@@ -1,0 +1,183 @@
+
+=== width 380 ===
+  reference: frozen capture refs/electro_product_380.png (380x11181), no live navigation
+refs/.run-76249-mine.png written (http://localhost:3351/product/מוצר-לדוגמא)
+product: frozen capture, live grid not counted; the local page shows 8 product card(s).
+=== compare --page=product ===
+live: 380x11181  mine: 380x3571
+compared: 380x2600
+OVERALL first 2600px: 31.41%
+  of which: reference blank 19.16%  ours blank 6.92%  both painted 5.33%
+
+!! HEIGHT RATIO 0.32x — the percentage above is NOT a pixel gate.
+!! These are structurally different pages, not the same page styled differently.
+!! Most likely causes, in the order they have actually happened here:
+!!   1. a stale `next start` holding the port and serving an older build
+!!      (check: is the server older than .next/BUILD_ID?)
+!!   2. the local page failed to load its data and rendered a fallback
+!!      (check the server log for supabase.admin_key_invalid)
+!! Fix the server, then re-measure. Do not chase the bands.
+worst bands:
+  y  300-400   91.9%
+  y  400-500   91.7%
+  y  200-300   89.2%
+  y    0-100   62.2%
+  y 2200-2300  44.8%
+  y 1900-2000  43.8%
+  y 1200-1300  41.5%
+  y  900-1000  40.7%
+  y 1000-1100  40.4%
+  y  500-600   35.1%
+  y 1800-1900  31.1%
+  y 2500-2600  25.9%
+all bands:
+  y    0   62.2%  ###############################
+  y  100   24.1%  ############
+  y  200   89.2%  #############################################
+  y  300   91.9%  ##############################################
+  y  400   91.7%  ##############################################
+  y  500   35.1%  ##################
+  y  600   14.1%  #######
+  y  700   11.6%  ######
+  y  800   12.3%  ######
+  y  900   40.7%  ####################
+  y 1000   40.4%  ####################
+  y 1100    6.7%  ###
+  y 1200   41.5%  #####################
+  y 1300    6.8%  ###
+  y 1400    7.8%  ####
+  y 1500      3%  ##
+  y 1600     10%  #####
+  y 1700    7.9%  ####
+  y 1800   31.1%  ################
+  y 1900   43.8%  ######################
+  y 2000   16.6%  ########
+  y 2100   24.4%  ############
+  y 2200   44.8%  ######################
+  y 2300   20.3%  ##########
+  y 2400   12.8%  ######
+  y 2500   25.9%  #############
+
+=== width 768 ===
+  reference: frozen capture refs/electro_product_768.png (768x8408), no live navigation
+refs/.run-77748-mine.png written (http://localhost:3351/product/מוצר-לדוגמא)
+product: frozen capture, live grid not counted; the local page shows 8 product card(s).
+=== compare --page=product ===
+live: 768x8408  mine: 768x3439
+compared: 768x2600
+OVERALL first 2600px: 30.97%
+  of which: reference blank 20.36%  ours blank 6.53%  both painted 4.07%
+
+!! HEIGHT RATIO 0.41x — the percentage above is NOT a pixel gate.
+!! These are structurally different pages, not the same page styled differently.
+!! Most likely causes, in the order they have actually happened here:
+!!   1. a stale `next start` holding the port and serving an older build
+!!      (check: is the server older than .next/BUILD_ID?)
+!!   2. the local page failed to load its data and rendered a fallback
+!!      (check the server log for supabase.admin_key_invalid)
+!! Fix the server, then re-measure. Do not chase the bands.
+worst bands:
+  y 2400-2500  72.8%
+  y  500-600   69.3%
+  y  400-500   67.5%
+  y  300-400   64.8%
+  y  200-300   63.3%
+  y    0-100   59.5%
+  y 2300-2400  52%
+  y  600-700   41.9%
+  y 1900-2000  34.1%
+  y 1600-1700  33.7%
+  y 2000-2100  28.7%
+  y 1700-1800  26.6%
+all bands:
+  y    0   59.5%  ##############################
+  y  100   19.9%  ##########
+  y  200   63.3%  ################################
+  y  300   64.8%  ################################
+  y  400   67.5%  ##################################
+  y  500   69.3%  ###################################
+  y  600   41.9%  #####################
+  y  700   19.7%  ##########
+  y  800    5.7%  ###
+  y  900   11.4%  ######
+  y 1000     15%  ########
+  y 1100   16.2%  ########
+  y 1200    1.5%  #
+  y 1300    6.6%  ###
+  y 1400    6.9%  ###
+  y 1500   26.1%  #############
+  y 1600   33.7%  #################
+  y 1700   26.6%  #############
+  y 1800   18.9%  #########
+  y 1900   34.1%  #################
+  y 2000   28.7%  ##############
+  y 2100    6.4%  ###
+  y 2200   17.1%  #########
+  y 2300     52%  ##########################
+  y 2400   72.8%  ####################################
+  y 2500   19.4%  ##########
+
+=== width 1440 ===
+  reference: frozen capture refs/electro_product_1440.png (1440x7653), no live navigation
+refs/.run-79140-mine.png written (http://localhost:3351/product/מוצר-לדוגמא)
+product: frozen capture, live grid not counted; the local page shows 8 product card(s).
+=== compare --page=product ===
+live: 1440x7653  mine: 1440x2666
+compared: 1440x2600
+OVERALL first 2600px: 23.41%
+  of which: reference blank 15.39%  ours blank 5.45%  both painted 2.56%
+
+!! HEIGHT RATIO 0.35x — the percentage above is NOT a pixel gate.
+!! These are structurally different pages, not the same page styled differently.
+!! Most likely causes, in the order they have actually happened here:
+!!   1. a stale `next start` holding the port and serving an older build
+!!      (check: is the server older than .next/BUILD_ID?)
+!!   2. the local page failed to load its data and rendered a fallback
+!!      (check the server log for supabase.admin_key_invalid)
+!! Fix the server, then re-measure. Do not chase the bands.
+worst bands:
+  y 2100-2200  70.5%
+  y  600-700   60.2%
+  y  100-200   50.1%
+  y  500-600   47.4%
+  y 1800-1900  45.6%
+  y 1900-2000  44.3%
+  y  400-500   40.7%
+  y  300-400   39.4%
+  y 1400-1500  32.5%
+  y 1500-1600  27.7%
+  y  200-300   25%
+  y 1300-1400  24.5%
+all bands:
+  y    0   12.3%  ######
+  y  100   50.1%  #########################
+  y  200     25%  #############
+  y  300   39.4%  ####################
+  y  400   40.7%  ####################
+  y  500   47.4%  ########################
+  y  600   60.2%  ##############################
+  y  700   13.8%  #######
+  y  800    2.5%  #
+  y  900    2.1%  #
+  y 1000    4.3%  ##
+  y 1100    4.1%  ##
+  y 1200   10.3%  #####
+  y 1300   24.5%  ############
+  y 1400   32.5%  ################
+  y 1500   27.7%  ##############
+  y 1600    3.9%  ##
+  y 1700     17%  #########
+  y 1800   45.6%  #######################
+  y 1900   44.3%  ######################
+  y 2000    6.3%  ###
+  y 2100   70.5%  ###################################
+  y 2200    7.1%  ####
+  y 2300    3.1%  ##
+  y 2400    5.2%  ###
+  y 2500    8.8%  ####
+
+=== product parity, gate 11% ===
+   380    5.33%  PASS
+   768    4.07%  PASS
+  1440    2.56%  PASS
+exit=0

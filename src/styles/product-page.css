@@ -327,10 +327,16 @@
 
 .pdp-summary__variants {
   margin-top: 16px;
+  /* A fieldset (UX15), reset: the group's own border and inset are the
+     browser's, not live's. */
+  min-width: 0;
+  padding: 0;
+  border: 0;
 }
 
-.pdp-summary__variants > p {
+.pdp-summary__variants > legend {
   margin: 0 0 8px;
+  padding: 0;
   font-weight: 700;
 }
 
@@ -1072,4 +1078,280 @@
   font-size: var(--pdp-meta-size);
   line-height: var(--pdp-meta-line);
   color: var(--pdp-muted);
+}
+
+/* ---------------------------------------------------------------- UX15
+   The buy column and the gallery as controls, not only as a layout.
+   Every colour is a --pdp-* token declared on .pdp above; the touch floor
+   is the site-wide --spacing-touch-min; the sticky bar's height is
+   --spacing-pdp-sticky in tokens.css because four rules below read it. */
+
+/* Hover zoom. The cursor says what a click does: nothing, while a resting
+   mouse already magnifies; so it is a plain zoom-in at rest and zoom-out only
+   for a PINNED zoom (a tap or Enter), which a click or Escape ends. The
+   transform itself is inline, set by the component from the pointer. */
+.pdp-gallery__frame[data-zoomed="true"] {
+  cursor: zoom-in;
+}
+
+.pdp-gallery__frame[data-zoom-mode="pinned"] {
+  cursor: zoom-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pdp-gallery__zoom {
+    transition: none;
+  }
+}
+
+/* Thumbnails: one strip that scrolls sideways. The row is 64px tall for any
+   number of photos, where the wrapping row it replaces grew by a line per
+   six (per four on a phone). No scrollbar: the current thumbnail's yellow
+   border is the position indicator, and the strip follows it. */
+.pdp-gallery__thumbs {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  /* Room for the 2px border of the current thumbnail on the scroll edge. */
+  padding: 2px;
+  margin-inline: -2px;
+}
+
+.pdp-gallery__thumbs::-webkit-scrollbar {
+  display: none;
+}
+
+.pdp-gallery__thumb {
+  scroll-snap-align: start;
+}
+
+/* The variant picker: a labelled group of toggle buttons. Pressed takes the
+   summary's dark action ink; a sold-out variant stays in the row, dimmed,
+   with its mark. The price inside a button is the variant's own, shown only
+   when it differs from the one above the row. */
+.pdp-summary__variant-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pdp-summary__variant {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: var(--spacing-touch-min);
+  padding: 0 14px;
+  border: 1px solid var(--pdp-rule);
+  border-radius: 4px;
+  background-color: var(--pdp-surface);
+  color: var(--pdp-ink);
+  font-size: var(--pdp-body-size);
+  line-height: var(--pdp-body-line);
+  transition: border-color 0.15s, background-color 0.15s;
+}
+
+.pdp-summary__variant:hover:not(:disabled) {
+  border-color: var(--pdp-action);
+}
+
+.pdp-summary__variant[aria-pressed="true"] {
+  border-color: var(--pdp-action);
+  background-color: var(--pdp-action);
+  color: var(--pdp-surface);
+}
+
+.pdp-summary__variant:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+
+.pdp-summary__variant-price {
+  font-size: var(--pdp-meta-size);
+  opacity: 0.85;
+}
+
+.pdp-summary__variant-note {
+  font-size: var(--pdp-meta-size);
+  text-decoration: none;
+}
+
+.pdp-summary__variant-hint {
+  margin: 8px 0 0;
+  font-size: var(--pdp-meta-size);
+  line-height: var(--pdp-meta-line);
+  color: var(--pdp-muted);
+}
+
+/* The quantity stepper: live's 140x41 box, with the minus and plus inside
+   it and the field between them. The box keeps the geometry the gate
+   measures; the field loses its own border because the group draws it. */
+.pdp-buy__qty-group {
+  display: inline-flex;
+  align-items: stretch;
+  width: var(--pdp-qty-w);
+  max-width: 100%;
+  height: var(--pdp-qty-h);
+  /* A fieldset: its own margin, padding and min-width are reset so the box
+     is exactly the measured one. */
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  /* The hairline is painted, not laid out: a real border took 2px from the
+     three controls inside, and on a touch screen that left the buttons at
+     42 against the 44 floor the touch-target gate measures. */
+  border: 0;
+  box-shadow: inset 0 0 0 1px var(--pdp-line);
+  background-color: var(--pdp-surface);
+}
+
+.pdp-buy__qty-group .pdp-buy__qty {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: auto;
+  height: auto;
+  border: 0;
+}
+
+.pdp-buy__qty:focus-visible {
+  outline: 2px solid var(--pdp-action);
+  outline-offset: -2px;
+}
+
+.pdp-buy__step {
+  flex: none;
+  width: 40px;
+  height: auto;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.pdp-buy__step:hover:not(:disabled) {
+  background-color: color-mix(in srgb, var(--pdp-line) 35%, var(--pdp-surface));
+}
+
+.pdp-buy__step:disabled {
+  cursor: not-allowed;
+}
+
+/* The bar that follows the shopper. Fixed to the bottom edge, level with the
+   phone's cart bar (z 40) and under the drawer (z 50); the body class the
+   cart bar sets lifts this one above it, and the consent reservation lifts
+   both. Contained to the page column from the desktop width so it reads as
+   part of the product, not as chrome. */
+.pdp-sticky {
+  position: fixed;
+  inset-inline: 0;
+  bottom: calc(var(--reserve-consent, 0rem) + var(--reserve-pwa, 0rem));
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: var(--spacing-pdp-sticky);
+  padding: 8px 15px;
+  padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+  background-color: var(--pdp-surface);
+  border-top: 1px solid var(--pdp-line);
+  box-shadow: 0 -4px 16px color-mix(in srgb, var(--pdp-ink) 10%, transparent);
+  color: var(--pdp-ink);
+  font-size: var(--pdp-body-size);
+  line-height: var(--pdp-meta-line);
+}
+
+@media (min-width: 1200px) {
+  /* Centred by auto margins between the two inline insets, which needs no
+     transform and reads the same in either direction. */
+  .pdp-sticky {
+    width: var(--pdp-container);
+    margin-inline: auto;
+    border-inline: 1px solid var(--pdp-line);
+  }
+}
+
+.pdp-sticky__text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.pdp-sticky__name {
+  margin: 0;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pdp-sticky__meta {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  font-size: var(--pdp-meta-size);
+  color: var(--pdp-muted);
+}
+
+.pdp-sticky__price {
+  font-weight: 700;
+  color: var(--pdp-sale);
+}
+
+.pdp-sticky__atc {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: var(--spacing-touch-min);
+  padding: 0 20px;
+  border-radius: 999px;
+  font-weight: 700;
+  color: var(--pdp-ink);
+  background-color: var(--pdp-brand);
+  transition: background-color 0.15s;
+}
+
+.pdp-sticky__atc:hover:not(:disabled) {
+  background-color: var(--pdp-brand-hover);
+}
+
+.pdp-sticky__atc:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Room for the bar while it is up: the page end and the WhatsApp float both
+   move up by its height, the contract mobile-cart-bar-visible keeps. When
+   the phone's cart bar is up too, this one sits on top of it. */
+body.pdp-sticky-visible {
+  padding-bottom: calc(var(--reserve-consent) + var(--reserve-pwa) + var(--spacing-pdp-sticky));
+}
+
+body.pdp-sticky-visible .whatsapp-float {
+  bottom: calc(var(--spacing-pdp-sticky) + 20px + env(safe-area-inset-bottom, 0px));
+}
+
+@media (max-width: 767px) {
+  body.mobile-cart-bar-visible .pdp-sticky {
+    bottom: calc(
+      var(--reserve-consent, 0rem) +
+      var(--reserve-pwa, 0rem) +
+      4.25rem +
+      env(safe-area-inset-bottom, 0px)
+    );
+  }
+
+  body.pdp-sticky-visible.mobile-cart-bar-visible {
+    padding-bottom: calc(
+      var(--reserve-consent) +
+      var(--reserve-pwa) +
+      4.25rem +
+      var(--spacing-pdp-sticky)
+    );
+  }
+
+  body.pdp-sticky-visible.mobile-cart-bar-visible .whatsapp-float {
+    bottom: calc(4.25rem + var(--spacing-pdp-sticky) + 20px + env(safe-area-inset-bottom, 0px));
+  }
 }

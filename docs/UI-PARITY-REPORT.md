@@ -157,3 +157,7 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-14 08:59 | checkout | 380 | n/a | REFUSED | `efe44cf05-dirty` | live side is our-build |
 | 2026-10-14 10:02 | home | 380 | 2.22% | PASS | `e82d21e59-dirty` | live side: frozen capture `refs/ke_live_380.png`; overall 4.44% (reference blank 1.14%, ours blank 1.08%) |
 | 2026-10-14 10:04 | home | 768 | 1.24% | PASS | `e82d21e59-dirty` | live side: frozen capture `refs/ke_live_768.png`; overall 5.23% (reference blank 2.83%, ours blank 1.15%) |
+| 2026-10-14 10:31 | product | 380 | n/a | REFUSED | `192fa0120-dirty` | live side is our-build |
+| 2026-10-14 10:32 | product | 380 | 5.33% | PASS | `192fa0120-dirty` | live side: frozen capture `refs/electro_product_380.png`; overall 31.41% (reference blank 19.16%, ours blank 6.92%) |
+| 2026-10-14 10:34 | product | 768 | 4.07% | PASS | `192fa0120-dirty` | live side: frozen capture `refs/electro_product_768.png`; overall 30.97% (reference blank 20.36%, ours blank 6.53%) |
+| 2026-10-14 10:36 | product | 1440 | 2.56% | PASS | `192fa0120-dirty` | live side: frozen capture `refs/electro_product_1440.png`; overall 23.41% (reference blank 15.39%, ours blank 5.45%) |

@@ -147,3 +147,97 @@ describe('the product page variant picker', () => {
     expect(screen.getByRole('button', { name: /הוסף לסל/ })).not.toBeDisabled()
   })
 })
+
+/**
+ * UX15: the quantity box gained a minus and a plus, the field can be
+ * emptied and retyped, and the variant row is a labelled group whose
+ * buttons carry a pressed state and, where it differs, their own price.
+ */
+describe('the quantity stepper (UX15)', () => {
+  const minus = () => screen.getByRole('button', { name: 'הפחת כמות' })
+  const plus = () => screen.getByRole('button', { name: 'הוסף כמות' })
+
+  it('steps within 1 and the ceiling, and disables at the ends', () => {
+    render(<ProductInfo {...BASE} baseStock={3} variants={[]} />)
+    expect(qty().value).toBe('1')
+    expect(minus()).toBeDisabled()
+    fireEvent.click(plus())
+    fireEvent.click(plus())
+    expect(qty().value).toBe('3')
+    expect(plus()).toBeDisabled()
+    expect(minus()).not.toBeDisabled()
+    fireEvent.click(minus())
+    expect(qty().value).toBe('2')
+  })
+
+  it('sends the stepped quantity to the cart', async () => {
+    render(<ProductInfo {...BASE} variants={[]} />)
+    fireEvent.click(plus())
+    fireEvent.click(plus())
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /הוסף לסל/ }))
+    })
+    expect(addToCart).toHaveBeenCalledWith(BASE.productId, null, 3, BASE.name)
+  })
+
+  it('lets the field be emptied and retyped, and never adds a blank', async () => {
+    render(<ProductInfo {...BASE} variants={[]} />)
+    fireEvent.change(qty(), { target: { value: '' } })
+    expect(qty().value).toBe('')
+    fireEvent.change(qty(), { target: { value: '4' } })
+    expect(qty().value).toBe('4')
+    fireEvent.change(qty(), { target: { value: '' } })
+    fireEvent.blur(qty())
+    // Back to the last number it held, not to nothing and not to 1.
+    expect(qty().value).toBe('4')
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /הוסף לסל/ }))
+    })
+    expect(addToCart).toHaveBeenCalledWith(BASE.productId, null, 4, BASE.name)
+  })
+
+  it('is one labelled group, and both buttons are off while sold out', () => {
+    render(<ProductInfo {...BASE} baseStock={0} variants={[]} />)
+    expect(screen.getByRole('group', { name: 'בחירת כמות' })).toBeInTheDocument()
+    expect(minus()).toBeDisabled()
+    expect(plus()).toBeDisabled()
+    expect(qty()).toBeDisabled()
+  })
+})
+
+describe('the variant group (UX15)', () => {
+  it('is a labelled group whose label names the choice once made', () => {
+    render(<ProductInfo {...BASE} variants={[PLENTY, SCARCE]} />)
+    expect(screen.getByRole('group', { name: 'בחרו גרסה' })).toBeInTheDocument()
+    expect(screen.getByTestId('pdp-variant-hint')).toHaveTextContent('בחרו גרסה כדי להוסיף לסל')
+    expect(variant('שחור')).toHaveAttribute('aria-pressed', 'false')
+
+    fireEvent.click(variant('אדום'))
+    expect(screen.getByRole('group', { name: 'גרסה: אדום' })).toBeInTheDocument()
+    expect(variant('אדום')).toHaveAttribute('aria-pressed', 'true')
+    expect(variant('שחור')).toHaveAttribute('aria-pressed', 'false')
+    expect(screen.queryByTestId('pdp-variant-hint')).toBeNull()
+  })
+
+  it('shows a variant its own price only when it differs from the one above', () => {
+    render(
+      <ProductInfo {...BASE} variants={[PLENTY, { ...SCARCE, price: null, price_modifier: 20 }]} />,
+    )
+    // Same price as the base: the name alone.
+    expect(screen.getByRole('button', { name: 'שחור' })).toBeInTheDocument()
+    // 199 + 20: the button says so, and so does the price line once chosen.
+    const dearer = screen.getByRole('button', { name: /אדום/ })
+    expect(dearer).toHaveTextContent(/219/)
+    fireEvent.click(dearer)
+    expect(document.querySelector('.pdp-summary__price')?.textContent).toContain('219')
+  })
+
+  it('keeps a sold-out variant in the row, disabled and described as such', () => {
+    render(<ProductInfo {...BASE} variants={[PLENTY, SOLD_OUT]} />)
+    const gone = variant('כחול')
+    expect(gone).toBeDisabled()
+    expect(gone).toHaveAttribute('data-sold-out', 'true')
+    expect(gone).toHaveAttribute('aria-describedby', 'pdp-variant-soldout')
+    expect(document.getElementById('pdp-variant-soldout')?.textContent).toBe('אזל מהמלאי')
+  })
+})

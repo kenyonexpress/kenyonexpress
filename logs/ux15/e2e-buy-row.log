@@ -1,0 +1,18 @@
+Already up to date
+Done in 187ms using pnpm v11.1.2
+
+Running 10 tests using 2 workers
+
+[1A[2K[1/10] [chromium] › e2e/product-buy-row.spec.ts:52:7 › product buy row and gallery (UX15) › the quantity box keeps its 140px width and steps with the two buttons
+[1A[2K[2/10] [chromium] › e2e/product-buy-row.spec.ts:72:7 › product buy row and gallery (UX15) › the thumbnails are one sideways strip, not rows
+[1A[2K[3/10] [chromium] › e2e/product-buy-row.spec.ts:99:7 › product buy row and gallery (UX15) › a resting mouse magnifies the photo and leaving restores it
+[1A[2K[4/10] [chromium] › e2e/product-buy-row.spec.ts:131:7 › product buy row and gallery (UX15) › a buy bar follows once the row is above the viewport, and leaves when it is back
+[1A[2K[5/10] [chromium] › e2e/product-buy-row.spec.ts:168:7 › product buy row and gallery (UX15) › the bar adds exactly what the row would, and reports it
+[1A[2K[6/10] [mobile-chrome] › e2e/product-buy-row.spec.ts:52:7 › product buy row and gallery (UX15) › the quantity box keeps its 140px width and steps with the two buttons
+[1A[2K[7/10] [mobile-chrome] › e2e/product-buy-row.spec.ts:72:7 › product buy row and gallery (UX15) › the thumbnails are one sideways strip, not rows
+[1A[2K[8/10] [mobile-chrome] › e2e/product-buy-row.spec.ts:99:7 › product buy row and gallery (UX15) › a resting mouse magnifies the photo and leaving restores it
+[1A[2K[9/10] [mobile-chrome] › e2e/product-buy-row.spec.ts:131:7 › product buy row and gallery (UX15) › a buy bar follows once the row is above the viewport, and leaves when it is back
+[1A[2K[10/10] [mobile-chrome] › e2e/product-buy-row.spec.ts:168:7 › product buy row and gallery (UX15) › the bar adds exactly what the row would, and reports it
+[1A[2K  1 skipped
+  9 passed (31.7s)
+exit=0

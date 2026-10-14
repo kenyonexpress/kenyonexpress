@@ -1,0 +1,241 @@
+{
+  "380": {
+    "path": "/product/6253",
+    "atRest": {
+      "frame": {
+        "x": 15,
+        "y": 180.7,
+        "w": 350,
+        "h": 350
+      },
+      "frameCursor": "zoom-in",
+      "zoomedAttr": null,
+      "zoomTransform": "none",
+      "thumbs": {
+        "count": 3,
+        "display": "flex",
+        "flexWrap": "wrap",
+        "overflowX": "visible",
+        "scrollSnapType": "none",
+        "rect": {
+          "x": 15,
+          "y": 542.7,
+          "w": 350,
+          "h": 64
+        },
+        "current": 0
+      },
+      "qty": {
+        "tag": "input",
+        "type": "number",
+        "inputMode": null,
+        "min": "1",
+        "max": "99",
+        "rect": {
+          "x": 225,
+          "y": 1014.5,
+          "w": 140,
+          "h": 44
+        },
+        "group": null
+      },
+      "steppers": [],
+      "buyRow": {
+        "x": 15,
+        "y": 1010,
+        "w": 350,
+        "h": 53
+      },
+      "atc": {
+        "text": "הוסף לסל",
+        "rect": {
+          "x": 29,
+          "y": 1010,
+          "w": 192,
+          "h": 53
+        },
+        "disabled": false
+      },
+      "variants": null,
+      "stickyAtTop": null,
+      "statusRegion": false
+    },
+    "hover": null,
+    "scrolled": {
+      "scrollY": 1663,
+      "sticky": null,
+      "cartBar": null
+    },
+    "backAtTop": {
+      "sticky": false
+    }
+  },
+  "768": {
+    "path": "/product/6253",
+    "atRest": {
+      "frame": {
+        "x": 283,
+        "y": 172.3,
+        "w": 470,
+        "h": 470
+      },
+      "frameCursor": "zoom-in",
+      "zoomedAttr": null,
+      "zoomTransform": "none",
+      "thumbs": {
+        "count": 3,
+        "display": "flex",
+        "flexWrap": "wrap",
+        "overflowX": "visible",
+        "scrollSnapType": "none",
+        "rect": {
+          "x": 283,
+          "y": 654.3,
+          "w": 470,
+          "h": 64
+        },
+        "current": 0
+      },
+      "qty": {
+        "tag": "input",
+        "type": "number",
+        "inputMode": null,
+        "min": "1",
+        "max": "99",
+        "rect": {
+          "x": 128,
+          "y": 551.6,
+          "w": 140,
+          "h": 41
+        },
+        "group": null
+      },
+      "steppers": [],
+      "buyRow": {
+        "x": 15,
+        "y": 551.6,
+        "w": 253,
+        "h": 98
+      },
+      "atc": {
+        "text": "הוסף לסל",
+        "rect": {
+          "x": 76,
+          "y": 596.6,
+          "w": 192,
+          "h": 53
+        },
+        "disabled": false
+      },
+      "variants": null,
+      "stickyAtTop": null,
+      "statusRegion": false
+    },
+    "hover": {
+      "zoomedAttr": null,
+      "zoomMode": null,
+      "transform": null,
+      "origin": null,
+      "cursor": "zoom-in",
+      "afterClick": {
+        "zoomMode": null
+      },
+      "afterLeave": {
+        "zoomedAttr": "true",
+        "transform": "scale(2)"
+      }
+    },
+    "scrolled": {
+      "scrollY": 1250,
+      "sticky": null,
+      "cartBar": null
+    },
+    "backAtTop": {
+      "sticky": false
+    }
+  },
+  "1440": {
+    "path": "/product/6253",
+    "atRest": {
+      "frame": {
+        "x": 835,
+        "y": 232.3,
+        "w": 470,
+        "h": 470
+      },
+      "frameCursor": "zoom-in",
+      "zoomedAttr": null,
+      "zoomTransform": "none",
+      "thumbs": {
+        "count": 3,
+        "display": "flex",
+        "flexWrap": "wrap",
+        "overflowX": "visible",
+        "scrollSnapType": "none",
+        "rect": {
+          "x": 835,
+          "y": 714.3,
+          "w": 470,
+          "h": 64
+        },
+        "current": 0
+      },
+      "qty": {
+        "tag": "input",
+        "type": "number",
+        "inputMode": null,
+        "min": "1",
+        "max": "99",
+        "rect": {
+          "x": 680,
+          "y": 585.6,
+          "w": 140,
+          "h": 41
+        },
+        "group": null
+      },
+      "steppers": [],
+      "buyRow": {
+        "x": 135,
+        "y": 579.6,
+        "w": 685,
+        "h": 53
+      },
+      "atc": {
+        "text": "הוסף לסל",
+        "rect": {
+          "x": 484,
+          "y": 579.6,
+          "w": 192,
+          "h": 53
+        },
+        "disabled": false
+      },
+      "variants": null,
+      "stickyAtTop": null,
+      "statusRegion": false
+    },
+    "hover": {
+      "zoomedAttr": null,
+      "zoomMode": null,
+      "transform": null,
+      "origin": null,
+      "cursor": "zoom-in",
+      "afterClick": {
+        "zoomMode": null
+      },
+      "afterLeave": {
+        "zoomedAttr": "true",
+        "transform": "scale(2)"
+      }
+    },
+    "scrolled": {
+      "scrollY": 1233,
+      "sticky": null,
+      "cartBar": null
+    },
+    "backAtTop": {
+      "sticky": false
+    }
+  }
+}

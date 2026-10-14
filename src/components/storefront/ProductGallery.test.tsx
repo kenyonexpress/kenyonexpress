@@ -197,3 +197,110 @@ describe('ProductGallery fetch priority', () => {
     expect(second?.getAttribute('fetchpriority')).toBeNull()
   })
 })
+
+/**
+ * UX15: a MOUSE magnifies by resting on the photo and a click pins nothing;
+ * a finger keeps the tap toggle above. `pointerType` is what tells the two
+ * apart, so the suite dispatches it explicitly. React maps pointerleave onto
+ * pointerout, which is what testing-library fires here.
+ */
+describe('ProductGallery hover zoom', () => {
+  const box = () =>
+    vi.spyOn(frame(), 'getBoundingClientRect').mockReturnValue({
+      left: 100,
+      top: 100,
+      width: 400,
+      height: 400,
+      right: 500,
+      bottom: 500,
+      x: 100,
+      y: 100,
+      toJSON: () => ({}),
+    })
+
+  it('a resting mouse magnifies at the pointer and leaving restores', () => {
+    render(<ProductGallery images={IMAGES} name="תיק" />)
+    box()
+    fireEvent.pointerMove(frame(), { pointerType: 'mouse', clientX: 200, clientY: 400 })
+    expect(frame().getAttribute('data-zoomed')).toBe('true')
+    expect(frame().getAttribute('data-zoom-mode')).toBe('hover')
+    expect(zoomBox().style.transform).toBe(`scale(${ZOOM_SCALE})`)
+    expect(zoomBox().style.transformOrigin).toBe('25% 75%')
+
+    // The photo follows the pointer.
+    fireEvent.pointerMove(frame(), { pointerType: 'mouse', clientX: 400, clientY: 200 })
+    expect(zoomBox().style.transformOrigin).toBe('75% 25%')
+
+    fireEvent.pointerOut(frame(), { pointerType: 'mouse', relatedTarget: document.body })
+    expect(frame().getAttribute('data-zoomed')).toBeNull()
+    expect(frame().getAttribute('data-zoom-mode')).toBeNull()
+    expect(zoomBox().style.transform).toBe('')
+  })
+
+  it('a mouse click pins nothing, so the zoom ends with the pointer', () => {
+    render(<ProductGallery images={IMAGES} name="תיק" />)
+    box()
+    fireEvent.pointerMove(frame(), { pointerType: 'mouse', clientX: 200, clientY: 200 })
+    fireEvent.pointerDown(frame(), {
+      pointerType: 'mouse',
+      pointerId: 1,
+      clientX: 200,
+      clientY: 200,
+    })
+    fireEvent.pointerUp(frame(), { pointerType: 'mouse', pointerId: 1, clientX: 201, clientY: 200 })
+    expect(frame().getAttribute('data-zoom-mode')).toBe('hover')
+    fireEvent.pointerOut(frame(), { pointerType: 'mouse', relatedTarget: document.body })
+    expect(frame().getAttribute('data-zoomed')).toBeNull()
+  })
+
+  it('a finger still taps to pin, and the pin outlives the pointer', () => {
+    render(<ProductGallery images={IMAGES} name="תיק" />)
+    box()
+    fireEvent.pointerDown(frame(), {
+      pointerType: 'touch',
+      pointerId: 2,
+      clientX: 200,
+      clientY: 200,
+    })
+    fireEvent.pointerUp(frame(), { pointerType: 'touch', pointerId: 2, clientX: 200, clientY: 200 })
+    expect(frame().getAttribute('data-zoom-mode')).toBe('pinned')
+    fireEvent.pointerOut(frame(), { pointerType: 'touch', relatedTarget: document.body })
+    expect(frame().getAttribute('data-zoomed')).toBe('true')
+    // A finger moving over a pinned zoom pans it; a mouse would too.
+    fireEvent.pointerMove(frame(), { pointerType: 'touch', clientX: 400, clientY: 400 })
+    expect(zoomBox().style.transformOrigin).toBe('75% 75%')
+  })
+
+  it('the thumbnail strip scrolls sideways to keep the current one in view', () => {
+    render(<ProductGallery images={IMAGES} name="תיק" />)
+    const strip = document.querySelector('.pdp-gallery__thumbs') as HTMLDivElement
+    // jsdom lays nothing out: stage a 150px strip with the third thumbnail
+    // 60px past its right edge, which is where the strip would clip it.
+    vi.spyOn(strip, 'getBoundingClientRect').mockReturnValue({
+      left: 0,
+      right: 150,
+      top: 0,
+      bottom: 64,
+      width: 150,
+      height: 64,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    })
+    const third = strip.children[2] as HTMLElement
+    vi.spyOn(third, 'getBoundingClientRect').mockReturnValue({
+      left: 146,
+      right: 210,
+      top: 0,
+      bottom: 64,
+      width: 64,
+      height: 64,
+      x: 146,
+      y: 0,
+      toJSON: () => ({}),
+    })
+    strip.scrollLeft = 0
+    fireEvent.click(screen.getByRole('button', { name: 'תמונה 3' }))
+    expect(strip.scrollLeft).toBe(60)
+  })
+})

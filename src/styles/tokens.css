@@ -482,6 +482,10 @@
   --spacing-brand-tile-h: 80px;
   --spacing-brand-logo-w: 167px;
   --spacing-brand-logo-h: 50px;
+  /* The product page's sticky buy bar (UX15): one height, read by the bar,
+     by the body padding that keeps the footer out from under it and by the
+     WhatsApp float that moves up over it. */
+  --spacing-pdp-sticky: 64px;
 
   /* The store footer's column block, top padding from lg. */
   --spacing-footer-columns-top: 60px;

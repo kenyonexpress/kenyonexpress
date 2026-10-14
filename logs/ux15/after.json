@@ -1,0 +1,388 @@
+{
+  "380": {
+    "path": "/product/6253",
+    "atRest": {
+      "frame": {
+        "x": 15,
+        "y": 180.7,
+        "w": 350,
+        "h": 350
+      },
+      "frameCursor": "zoom-in",
+      "zoomedAttr": null,
+      "zoomTransform": "none",
+      "thumbs": {
+        "count": 3,
+        "display": "flex",
+        "flexWrap": "nowrap",
+        "overflowX": "auto",
+        "scrollSnapType": "x",
+        "rect": {
+          "x": 13,
+          "y": 542.7,
+          "w": 354,
+          "h": 68
+        },
+        "current": 0
+      },
+      "qty": {
+        "tag": "input",
+        "type": "number",
+        "inputMode": "numeric",
+        "min": "1",
+        "max": "99",
+        "rect": {
+          "x": 269,
+          "y": 1018.5,
+          "w": 52,
+          "h": 44
+        },
+        "group": {
+          "x": 225,
+          "y": 1018.5,
+          "w": 140,
+          "h": 44
+        }
+      },
+      "steppers": [
+        {
+          "label": "הפחת כמות",
+          "rect": {
+            "x": 321,
+            "y": 1018.5,
+            "w": 44,
+            "h": 44
+          },
+          "disabled": true
+        },
+        {
+          "label": "הוסף כמות",
+          "rect": {
+            "x": 225,
+            "y": 1018.5,
+            "w": 44,
+            "h": 44
+          },
+          "disabled": false
+        }
+      ],
+      "buyRow": {
+        "x": 15,
+        "y": 1014,
+        "w": 350,
+        "h": 53
+      },
+      "atc": {
+        "text": "הוסף לסל",
+        "rect": {
+          "x": 29,
+          "y": 1014,
+          "w": 192,
+          "h": 53
+        },
+        "disabled": false
+      },
+      "variants": null,
+      "stickyAtTop": null,
+      "statusRegion": true
+    },
+    "hover": null,
+    "scrolled": {
+      "scrollY": 1667,
+      "sticky": {
+        "rect": {
+          "x": 0,
+          "y": 548,
+          "w": 380,
+          "h": 64
+        },
+        "position": "fixed",
+        "bottom": "288px",
+        "zIndex": "40",
+        "text": "חבילת חופשה למאלדיבים - 2 טיסות⁦1,200.00 ₪⁩הוסף לסל",
+        "button": {
+          "text": "הוסף לסל",
+          "rect": {
+            "x": 15,
+            "y": 558.5,
+            "w": 124.6,
+            "h": 44
+          },
+          "disabled": false
+        },
+        "bodyClass": "min-h-full flex flex-col bg-background text-foreground pdp-sticky-visible",
+        "bodyPaddingBottom": "352px"
+      },
+      "cartBar": null
+    },
+    "backAtTop": {
+      "sticky": false
+    }
+  },
+  "768": {
+    "path": "/product/6253",
+    "atRest": {
+      "frame": {
+        "x": 283,
+        "y": 172.3,
+        "w": 470,
+        "h": 470
+      },
+      "frameCursor": "zoom-in",
+      "zoomedAttr": null,
+      "zoomTransform": "none",
+      "thumbs": {
+        "count": 3,
+        "display": "flex",
+        "flexWrap": "nowrap",
+        "overflowX": "auto",
+        "scrollSnapType": "x",
+        "rect": {
+          "x": 281,
+          "y": 654.3,
+          "w": 474,
+          "h": 68
+        },
+        "current": 0
+      },
+      "qty": {
+        "tag": "input",
+        "type": "number",
+        "inputMode": "numeric",
+        "min": "1",
+        "max": "99",
+        "rect": {
+          "x": 168,
+          "y": 551.6,
+          "w": 60,
+          "h": 41
+        },
+        "group": {
+          "x": 128,
+          "y": 551.6,
+          "w": 140,
+          "h": 41
+        }
+      },
+      "steppers": [
+        {
+          "label": "הפחת כמות",
+          "rect": {
+            "x": 228,
+            "y": 551.6,
+            "w": 40,
+            "h": 41
+          },
+          "disabled": true
+        },
+        {
+          "label": "הוסף כמות",
+          "rect": {
+            "x": 128,
+            "y": 551.6,
+            "w": 40,
+            "h": 41
+          },
+          "disabled": false
+        }
+      ],
+      "buyRow": {
+        "x": 15,
+        "y": 551.6,
+        "w": 253,
+        "h": 98
+      },
+      "atc": {
+        "text": "הוסף לסל",
+        "rect": {
+          "x": 76,
+          "y": 596.6,
+          "w": 192,
+          "h": 53
+        },
+        "disabled": false
+      },
+      "variants": null,
+      "stickyAtTop": null,
+      "statusRegion": true
+    },
+    "hover": {
+      "zoomedAttr": "true",
+      "zoomMode": "hover",
+      "transform": "scale(2)",
+      "origin": "25% 75%",
+      "cursor": "zoom-in",
+      "afterClick": {
+        "zoomMode": "hover"
+      },
+      "afterLeave": {
+        "zoomedAttr": null,
+        "transform": null
+      }
+    },
+    "scrolled": {
+      "scrollY": 1250,
+      "sticky": {
+        "rect": {
+          "x": 0,
+          "y": 668,
+          "w": 768,
+          "h": 64
+        },
+        "position": "fixed",
+        "bottom": "168px",
+        "zIndex": "40",
+        "text": "חבילת חופשה למאלדיבים - 2 טיסות⁦1,200.00 ₪⁩הוסף לסל",
+        "button": {
+          "text": "הוסף לסל",
+          "rect": {
+            "x": 15,
+            "y": 678.5,
+            "w": 124.6,
+            "h": 44
+          },
+          "disabled": false
+        },
+        "bodyClass": "min-h-full flex flex-col bg-background text-foreground pdp-sticky-visible",
+        "bodyPaddingBottom": "232px"
+      },
+      "cartBar": null
+    },
+    "backAtTop": {
+      "sticky": false
+    }
+  },
+  "1440": {
+    "path": "/product/6253",
+    "atRest": {
+      "frame": {
+        "x": 835,
+        "y": 232.3,
+        "w": 470,
+        "h": 470
+      },
+      "frameCursor": "zoom-in",
+      "zoomedAttr": null,
+      "zoomTransform": "none",
+      "thumbs": {
+        "count": 3,
+        "display": "flex",
+        "flexWrap": "nowrap",
+        "overflowX": "auto",
+        "scrollSnapType": "x",
+        "rect": {
+          "x": 833,
+          "y": 714.3,
+          "w": 474,
+          "h": 68
+        },
+        "current": 0
+      },
+      "qty": {
+        "tag": "input",
+        "type": "number",
+        "inputMode": "numeric",
+        "min": "1",
+        "max": "99",
+        "rect": {
+          "x": 720,
+          "y": 585.6,
+          "w": 60,
+          "h": 41
+        },
+        "group": {
+          "x": 680,
+          "y": 585.6,
+          "w": 140,
+          "h": 41
+        }
+      },
+      "steppers": [
+        {
+          "label": "הפחת כמות",
+          "rect": {
+            "x": 780,
+            "y": 585.6,
+            "w": 40,
+            "h": 41
+          },
+          "disabled": true
+        },
+        {
+          "label": "הוסף כמות",
+          "rect": {
+            "x": 680,
+            "y": 585.6,
+            "w": 40,
+            "h": 41
+          },
+          "disabled": false
+        }
+      ],
+      "buyRow": {
+        "x": 135,
+        "y": 579.6,
+        "w": 685,
+        "h": 53
+      },
+      "atc": {
+        "text": "הוסף לסל",
+        "rect": {
+          "x": 484,
+          "y": 579.6,
+          "w": 192,
+          "h": 53
+        },
+        "disabled": false
+      },
+      "variants": null,
+      "stickyAtTop": null,
+      "statusRegion": true
+    },
+    "hover": {
+      "zoomedAttr": "true",
+      "zoomMode": "hover",
+      "transform": "scale(2)",
+      "origin": "25% 75%",
+      "cursor": "zoom-in",
+      "afterClick": {
+        "zoomMode": "hover"
+      },
+      "afterLeave": {
+        "zoomedAttr": null,
+        "transform": null
+      }
+    },
+    "scrolled": {
+      "scrollY": 1233,
+      "sticky": {
+        "rect": {
+          "x": 135,
+          "y": 668,
+          "w": 1170,
+          "h": 64
+        },
+        "position": "fixed",
+        "bottom": "168px",
+        "zIndex": "40",
+        "text": "חבילת חופשה למאלדיבים - 2 טיסות⁦1,200.00 ₪⁩הוסף לסל",
+        "button": {
+          "text": "הוסף לסל",
+          "rect": {
+            "x": 151,
+            "y": 678.5,
+            "w": 124.6,
+            "h": 44
+          },
+          "disabled": false
+        },
+        "bodyClass": "min-h-full flex flex-col bg-background text-foreground pdp-sticky-visible",
+        "bodyPaddingBottom": "232px"
+      },
+      "cartBar": null
+    },
+    "backAtTop": {
+      "sticky": false
+    }
+  }
+}

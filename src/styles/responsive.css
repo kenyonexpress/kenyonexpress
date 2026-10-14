@@ -128,6 +128,7 @@ body {
    sheet sets on the select, so no rule there has to change. */
 @media (pointer: coarse) {
   .pdp-buy__qty,
+  .pdp-buy__qty-group,
   .category-control-bar__select,
   .ke-newsletter__input,
   .ke-newsletter__button,
@@ -140,6 +141,12 @@ body {
   .search-facets__option,
   .category-sidebar__summary {
     align-items: center;
+  }
+
+  /* The quantity stepper's two buttons (UX15) sit inside the 140px box and
+     are measured as primary controls; 40 wide is 4px under the floor. */
+  .pdp-buy__step {
+    min-width: var(--spacing-touch-min);
   }
 
   .category-sidebar__summary {

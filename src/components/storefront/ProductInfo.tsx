@@ -8,6 +8,7 @@ import FacebookShareButton from '@/components/shared/FacebookShareButton'
 import ShareButton from '@/components/shared/ShareButton'
 import WhatsAppShareButton from '@/components/shared/WhatsAppShareButton'
 import CouponPricing from '@/components/storefront/CouponPricing'
+import PdpStickyBar from '@/components/storefront/PdpStickyBar'
 import StockAlertForm from '@/components/storefront/StockAlertForm'
 import { ctaCopy } from '@/lib/analytics/cta-copy'
 import { CTA_COPY_EXPERIMENT } from '@/lib/analytics/experiments'
@@ -22,9 +23,10 @@ import { shekelsFromIls as sharedShekelsFromIls, shekels } from '@/lib/money-for
 import { type HistorySummary, priceSignal } from '@/lib/pricing/price-history'
 import { useProductLive } from '@/lib/product-live/use-product-live'
 import { buildShareMessage } from '@/lib/share/message'
-import { Check, ShoppingCart } from 'lucide-react'
+import { useScrolledPast } from '@/lib/ui/use-scrolled-past'
+import { Check, Minus, Plus, ShoppingCart } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { type ReactNode, useState } from 'react'
+import { type ReactNode, useRef, useState } from 'react'
 
 interface Variant {
   id: string
@@ -154,7 +156,16 @@ export default function ProductInfo({
     variants.length === 1 ? (variants[0]?.id ?? null) : null,
   )
   const [qty, setQty] = useState(1)
+  // The field's text while it is EMPTY. A controlled number input whose value
+  // is always the number could not be cleared: select-all, backspace, and the
+  // old number came straight back, so a shopper typing "3" over "1" got 13.
+  // Null means "show the number"; '' means "the shopper is mid-edit".
+  const [draft, setDraft] = useState<string | null>(null)
   const [added, setAdded] = useState(false)
+  // The buy row, watched by the sticky bar below (UX15): the bar exists only
+  // while this row is above the viewport.
+  const buyRowRef = useRef<HTMLDivElement>(null)
+  const buyRowPassed = useScrolledPast(buyRowRef)
 
   const variant = variants.find((v) => v.id === selected) ?? null
   const price =
@@ -407,58 +418,131 @@ export default function ProductInfo({
         </p>
       )}
 
+      {/* The variant picker (UX15): one labelled group of toggle buttons. The
+          label names the choice once made ("גרסה: אדום") so the selection is
+          read back next to the price it changed; a variant priced apart from
+          the base carries its own price in the button, a sold-out one stays
+          in the row, disabled and marked, rather than vanishing and leaving
+          the shopper to wonder whether the size exists at all. */}
       {variants.length > 0 && (
-        <div className="pdp-summary__variants">
-          <p>בחר גרסה</p>
-          <div className="flex flex-wrap gap-2">
-            {variants.map((v) => (
-              <button
-                type="button"
-                key={v.id}
-                onClick={() => {
-                  setSelected(v.id)
-                  // The ceiling belongs to the SELECTION, so switching selection
-                  // has to move the number under it. Picking a 50-in-stock
-                  // variant, typing 20, then switching to one with 3 left left
-                  // `20` sitting in an input whose `max` had just become 3 --
-                  // and the add went out at 20, for the server to refuse. That
-                  // is the same drift `productQuantityCeiling` exists to stop,
-                  // one state update further along.
-                  setQty((current) =>
-                    Math.min(current, productQuantityCeiling(v.stock_quantity ?? live.stock)),
-                  )
-                }}
-                disabled={v.stock_quantity === 0}
-                className={`px-4 py-2 rounded-lg text-sm border transition-colors ${
-                  selected === v.id
-                    ? 'bg-brand-dark text-white border-brand-dark'
-                    : 'bg-white text-gray-700 border-gray-300 hover:border-brand-dark'
-                } ${v.stock_quantity === 0 ? 'opacity-40 cursor-not-allowed' : ''}`}
-              >
-                {v.name_he}
-              </button>
-            ))}
+        <fieldset className="pdp-summary__variants" data-pdp="variants">
+          <legend id="pdp-variants-label">
+            {variant ? `גרסה: ${variant.name_he}` : 'בחרו גרסה'}
+          </legend>
+          <div className="pdp-summary__variant-list">
+            {variants.map((v) => {
+              const soldOut = v.stock_quantity === 0
+              const variantPrice = v.price ?? live.price + v.price_modifier
+              return (
+                <button
+                  type="button"
+                  key={v.id}
+                  onClick={() => {
+                    setSelected(v.id)
+                    setDraft(null)
+                    // The ceiling belongs to the SELECTION, so switching selection
+                    // has to move the number under it. Picking a 50-in-stock
+                    // variant, typing 20, then switching to one with 3 left left
+                    // `20` sitting in an input whose `max` had just become 3 --
+                    // and the add went out at 20, for the server to refuse. That
+                    // is the same drift `productQuantityCeiling` exists to stop,
+                    // one state update further along.
+                    setQty((current) =>
+                      Math.min(current, productQuantityCeiling(v.stock_quantity ?? live.stock)),
+                    )
+                  }}
+                  disabled={soldOut}
+                  aria-pressed={selected === v.id}
+                  aria-describedby={soldOut ? 'pdp-variant-soldout' : undefined}
+                  className="pdp-summary__variant"
+                  data-sold-out={soldOut ? 'true' : undefined}
+                >
+                  <span>{v.name_he}</span>
+                  {!soldOut && variantPrice !== live.price && (
+                    <span className="pdp-summary__variant-price">
+                      {shekelsFromIls(variantPrice)}
+                    </span>
+                  )}
+                  {soldOut && (
+                    <span className="pdp-summary__variant-note" aria-hidden="true">
+                      אזל
+                    </span>
+                  )}
+                </button>
+              )
+            })}
           </div>
-        </div>
+          {variants.some((v) => v.stock_quantity === 0) && (
+            <span id="pdp-variant-soldout" hidden>
+              אזל מהמלאי
+            </span>
+          )}
+          {needsVariant && (
+            <p className="pdp-summary__variant-hint" data-testid="pdp-variant-hint">
+              בחרו גרסה כדי להוסיף לסל
+            </p>
+          )}
+        </fieldset>
       )}
 
-      <div className="pdp-buy">
-        {/* Live has no +/- stepper: a single 140x41 number input with the
-            spinner suppressed. Measured 2026-07-28. */}
-        <input
-          type="number"
-          className="pdp-buy__qty"
-          value={qty}
-          min={1}
-          max={maxQty}
-          disabled={outOfStock}
-          aria-label="כמות"
-          onChange={(e) => {
-            const next = Number.parseInt(e.target.value, 10)
-            if (!Number.isFinite(next)) return
-            setQty(Math.min(Math.max(next, 1), maxQty))
-          }}
-        />
+      <div className="pdp-buy" ref={buyRowRef}>
+        {/* The quantity control (UX15): live's 140x41 box, kept to the pixel,
+            with a minus and a plus inside it and the number between them.
+            The bare number field it replaces had no way to change the count
+            without a keyboard, and on a phone the native spinner it hid is
+            the only stepper there is. The two buttons read the same ceiling
+            as the field's `max` and disable at the ends. */}
+        <fieldset className="pdp-buy__qty-group">
+          <legend className="sr-only">בחירת כמות</legend>
+          <button
+            type="button"
+            className="pdp-buy__step"
+            aria-label="הפחת כמות"
+            disabled={outOfStock || qty <= 1}
+            onClick={() => {
+              setDraft(null)
+              setQty((current) => Math.max(1, current - 1))
+            }}
+          >
+            <Minus size={16} aria-hidden="true" />
+          </button>
+          <input
+            type="number"
+            inputMode="numeric"
+            className="pdp-buy__qty"
+            value={draft ?? qty}
+            min={1}
+            max={maxQty}
+            disabled={outOfStock}
+            aria-label="כמות"
+            onChange={(e) => {
+              const raw = e.target.value
+              if (raw === '') {
+                setDraft('')
+                return
+              }
+              const next = Number.parseInt(raw, 10)
+              if (!Number.isFinite(next)) return
+              setDraft(null)
+              setQty(Math.min(Math.max(next, 1), maxQty))
+            }}
+            // An emptied field goes back to the number it held: the add
+            // button beside it never sends a blank.
+            onBlur={() => setDraft(null)}
+          />
+          <button
+            type="button"
+            className="pdp-buy__step"
+            aria-label="הוסף כמות"
+            disabled={outOfStock || qty >= maxQty}
+            onClick={() => {
+              setDraft(null)
+              setQty((current) => Math.min(maxQty, current + 1))
+            }}
+          >
+            <Plus size={16} aria-hidden="true" />
+          </button>
+        </fieldset>
 
         <button
           type="button"
@@ -478,6 +562,12 @@ export default function ProductInfo({
             </>
           )}
         </button>
+
+        {/* Announced, not only painted: the button's own text changing to
+            "נוסף לסל" for two seconds is visible and silent. */}
+        <output className="sr-only" aria-live="polite">
+          {added ? `${name} נוסף לסל` : ''}
+        </output>
       </div>
 
       <button
@@ -522,6 +612,30 @@ export default function ProductInfo({
           />
         </span>
       </div>
+
+      {/* The bar that follows the shopper (UX15): mounted only once the buy
+          row above has scrolled off the top, and only for a product the row
+          itself would sell. A sold-out or withdrawn product has nothing to
+          follow anyone with; a coupon's price is the voucher's, so the bar
+          quotes the offer's online charge where the pricing block does. */}
+      {buyRowPassed && !withdrawn && !outOfStock && !couponUnsellable && !priceUnsellable && (
+        <PdpStickyBar
+          name={name}
+          priceLabel={
+            recurringOffer
+              ? describeRecurringPrice(recurringOffer)
+              : couponOffer?.sellable
+                ? shekelsFromIls(couponOffer.paidOnlineIls)
+                : shekelsFromIls(price)
+          }
+          variantName={variant?.name_he ?? null}
+          qty={qty}
+          label={buyLabel}
+          disabled={blocked}
+          added={added}
+          onAdd={() => void handleAddToCart()}
+        />
+      )}
     </div>
   )
 }

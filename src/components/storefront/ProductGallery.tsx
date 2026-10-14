@@ -2,7 +2,14 @@
 
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import Image from 'next/image'
-import { type KeyboardEvent, type PointerEvent, useCallback, useRef, useState } from 'react'
+import {
+  type KeyboardEvent,
+  type PointerEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
 
 export interface GalleryAsset {
   alt: string | null
@@ -59,12 +66,21 @@ export const ZOOM_SCALE = 2
  * same index, so no path can show a thumbnail selected for a photo that is
  * not the one in the frame.
  *
- * ZOOM IS IN PLACE, NOT A LIGHTBOX. A tap (or click) magnifies the photo
- * inside its own 470px frame and the pointer pans it by moving the transform
- * origin; a second tap, an arrow, or Escape restores it. A modal would need
- * a focus trap, a scroll lock and its own close button, and would be the one
- * element on this page with no counterpart on live's template. Magnifying
- * inside the frame changes nothing about the layout the pixel gate measures.
+ * ZOOM IS IN PLACE, NOT A LIGHTBOX. A tap magnifies the photo inside its own
+ * 470px frame and the pointer pans it by moving the transform origin; a
+ * second tap, an arrow, or Escape restores it. A modal would need a focus
+ * trap, a scroll lock and its own close button, and would be the one element
+ * on this page with no counterpart on live's template. Magnifying inside the
+ * frame changes nothing about the layout the pixel gate measures.
+ *
+ * TWO ZOOMS, ONE TRANSFORM (UX15). A MOUSE magnifies the photo for as long as
+ * it rests over the frame and the photo follows it; moving off the frame
+ * restores it, and a click pins nothing, because a magnification that
+ * outlives the pointer is what every shopper who clicked to "see it bigger"
+ * then had to find a way out of. A FINGER (or a pen) has no hover, so a tap
+ * toggles the same magnification and a second tap ends it. The keyboard
+ * keeps Enter / Space / Escape. `pointerType` tells the two apart, which is
+ * more honest than a media query: a laptop with a touch screen has both.
  *
  * `priority` on the FIRST image only, and it is the LCP fix rather than a
  * tuning knob: measured against production on 2026-09-01 the mobile product
@@ -81,11 +97,33 @@ export default function ProductGallery({
   oldPrice = null,
 }: Props) {
   const [active, setActive] = useState(0)
+  // Pinned by a tap or the keyboard; survives the pointer leaving.
   const [zoomed, setZoomed] = useState(false)
+  // Held by a resting mouse; ends the moment it leaves the frame.
+  const [hovering, setHovering] = useState(false)
   const [origin, setOrigin] = useState({ x: 50, y: 50 })
   const gesture = useRef<{ id: number; x: number; y: number } | null>(null)
+  const thumbsRef = useRef<HTMLDivElement>(null)
 
   const count = images.length
+  const magnified = zoomed || hovering
+
+  // The thumbnail strip scrolls sideways rather than wrapping (UX15), so the
+  // current one can sit outside the strip's box after a swipe or an arrow
+  // key. Scroll the STRIP, never the page: `scrollIntoView` with a vertical
+  // option would also move the document when the strip is off screen, which
+  // is a jump under the shopper's finger. Horizontal only, and only as far
+  // as it takes to bring the thumbnail inside the box. Delta semantics are
+  // the same in RTL as in LTR, so the two comparisons need no direction.
+  useEffect(() => {
+    const strip = thumbsRef.current
+    const thumb = strip?.children[active] as HTMLElement | undefined
+    if (!strip || !thumb) return
+    const box = strip.getBoundingClientRect()
+    const rect = thumb.getBoundingClientRect()
+    if (rect.right > box.right) strip.scrollLeft += rect.right - box.right
+    else if (rect.left < box.left) strip.scrollLeft += rect.left - box.left
+  }, [active])
   const go = useCallback(
     (index: number) => {
       if (count === 0) return
@@ -131,7 +169,19 @@ export default function ProductGallery({
   }
 
   const onPointerMove = (e: PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType === 'mouse') {
+      // A resting mouse magnifies and the photo follows it. Set on move and
+      // not only on enter, because the frame can be scrolled under a still
+      // pointer, which enters it without an enter event in some engines.
+      if (!hovering) setHovering(true)
+      originFromPointer(e)
+      return
+    }
     if (zoomed) originFromPointer(e)
+  }
+
+  const onPointerLeave = (e: PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType === 'mouse') setHovering(false)
   }
 
   const onPointerUp = (e: PointerEvent<HTMLDivElement>) => {
@@ -148,6 +198,8 @@ export default function ProductGallery({
       if (Math.abs(dx) > Math.abs(dy)) go(dx < 0 ? active + 1 : active - 1)
       return
     }
+    // A mouse is already magnifying through hover; a click pins nothing.
+    if (e.pointerType === 'mouse') return
     // Anything shorter is a tap: toggle the zoom where the finger landed.
     originFromPointer(e)
     setZoomed((z) => !z)
@@ -181,7 +233,10 @@ export default function ProductGallery({
           contour the pixel comparison sees on every edge. */}
       <section
         className="pdp-gallery__frame"
-        data-zoomed={zoomed ? 'true' : undefined}
+        data-zoomed={magnified ? 'true' : undefined}
+        // Which zoom holds the photo: a pinned one outlives the pointer, a
+        // hover one does not. Read by the probe and the cursor rule only.
+        data-zoom-mode={zoomed ? 'pinned' : hovering ? 'hover' : undefined}
         aria-roledescription="גלריה"
         aria-label={`תמונות המוצר, תמונה ${active + 1} מתוך ${count}`}
         // The frame IS the keyboard target: arrows move, Enter zooms, Escape
@@ -191,6 +246,7 @@ export default function ProductGallery({
         tabIndex={0}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
+        onPointerLeave={onPointerLeave}
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerCancel}
         onKeyDown={onKeyDown}
@@ -204,7 +260,7 @@ export default function ProductGallery({
           className="pdp-gallery__zoom"
           data-testid="pdp-gallery-zoom"
           style={
-            zoomed
+            magnified
               ? {
                   transform: `scale(${ZOOM_SCALE})`,
                   transformOrigin: `${origin.x}% ${origin.y}%`,
@@ -261,9 +317,11 @@ export default function ProductGallery({
         )}
       </section>
 
-      {/* Thumbnails */}
+      {/* Thumbnails: one strip that scrolls sideways, the current one kept in
+          view by the effect above. A wrapping row put a sixth photo on a
+          second line and a 350px phone column on three. */}
       {count > 1 && (
-        <div className="pdp-gallery__thumbs">
+        <div className="pdp-gallery__thumbs" ref={thumbsRef}>
           {images.map((url, i) => (
             <button
               type="button"
