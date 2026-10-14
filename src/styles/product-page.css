@@ -255,6 +255,16 @@
   color: var(--color-price);
 }
 
+/* "N נרכשו השבוע" (components/storefront/BoughtThisWeek). A quiet line under
+   the stock one: it is a fact about other shoppers, not a state of this
+   product, so it does not take the stock line's weight or its colour. No
+   reserved height, for the reason given above. */
+.pdp-summary__proof {
+  margin-top: 0.25rem;
+  min-height: 0;
+  color: var(--pdp-muted);
+}
+
 .pdp-summary__dot {
   width: 8px;
   height: 8px;

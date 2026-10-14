@@ -22,9 +22,9 @@ production has it.
 
 | | main | prod |
 |---|---|---|
-| EXISTS | 11 | 9 |
+| EXISTS | 12 | 9 |
 | PARTIAL | 13 | 16 |
-| MISSING | 6 | 5 |
+| MISSING | 5 | 5 |
 
 Nine features are further along on prod than on main: recently viewed,
 wishlist, social proof, offline redemption queue, supplier wizard, admin KPIs,
@@ -48,7 +48,7 @@ what main has.
 | 5 | Recently viewed | Amazon, Booking | PARTIAL | PARTIAL | 0.5 | per-browser rail on product and home closed 2026-10-14; per-account history needs a table. See note B |
 | 6 | Wishlist | Amazon, Lazada, Booking | EXISTS | EXISTS | 0 | hearts on both card types closed 2026-10-14 |
 | 7 | Price-drop alerts | Zap, Amazon | EXISTS | PARTIAL | 0 | none on main |
-| 8 | Social proof | Groupon, Booking | MISSING | EXISTS | 1 | port, add a "today" window |
+| 8 | Social proof | Groupon, Booking | EXISTS | EXISTS | 0 | ported with a 24-hour window, closed 2026-10-14; nothing to show on live data yet |
 | 9 | Urgency timers | Groupon, Booking, Lazada | EXISTS | PARTIAL | 0 | cards and issued voucher closed 2026-10-14, unit-tested only |
 | 10 | Trust bar | Amazon, Booking | PARTIAL | PARTIAL | 0 | bar on product and cart closed 2026-10-14; support hours need the real hours from Ofir |
 | 11 | Saved cards (token only, no PAN) | Amazon, Wolt | EXISTS | EXISTS | 0 | none |
@@ -253,6 +253,18 @@ preferences, and no confirmed schedule.
 prod: `src/components/storefront/BoughtThisWeek.tsx` and
 `src/lib/commerce/bought-this-week.ts`, real paid order items over seven days,
 hidden below three.
+
+Closed on main, 2026-10-14. Ported: the rule (`social-proof.ts`), the two
+reads (`bought-this-week.ts`), the mock-charge test (`mock-transaction-id.ts`)
+and the streamed line on the product page. New here: a count over the
+trailing twenty-four hours from the same rows, printed instead of the week's
+when it clears the floor of three on its own. It says "in the last 24 hours",
+not "today", because that is the window that was counted. Verified: unit
+tests; six product pages answer 200 on a built server with no read error
+logged; the same two queries run read-only against live data return zero
+paid items in the trailing week, so the line is absent everywhere, which is
+what the rule requires. The line itself has therefore not been seen rendered
+with a real number.
 
 **9. Urgency timers.** main: `src/components/storefront/CouponExpiryCountdown.tsx`
 on coupon product pages. Missing: cards, and the issued voucher. prod has the
