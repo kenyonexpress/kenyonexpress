@@ -22,9 +22,9 @@ production has it.
 
 | | main | prod |
 |---|---|---|
-| EXISTS | 13 | 9 |
+| EXISTS | 14 | 9 |
 | PARTIAL | 12 | 16 |
-| MISSING | 5 | 5 |
+| MISSING | 4 | 5 |
 
 Nine features are further along on prod than on main: recently viewed,
 wishlist, social proof, offline redemption queue, supplier wizard, admin KPIs,
@@ -66,7 +66,7 @@ what main has.
 | 23 | Loyalty tiers | Booking (Genius), Lazada | MISSING | PARTIAL | 3 | port, then perks |
 | 24 | Push notifications | all | EXISTS | EXISTS | done | prompt wired 2026-10-14 |
 | 25 | Abandoned cart recovery | Amazon, Lazada | PARTIAL | PARTIAL | 2 | finish: second email, coupon code |
-| 26 | Product comparison, up to four | Zap, Amazon | MISSING | MISSING | 3 | build |
+| 26 | Product comparison, up to four | Zap, Amazon | EXISTS | MISSING | 0 | built 2026-10-14 at /products/compare |
 | 27 | Mega-menu | Amazon, Zap, Lazada | MISSING | MISSING | 3 | build. Earlier decision against, see note A |
 | 28 | Breadcrumbs with BreadcrumbList JSON-LD | all | EXISTS | EXISTS | done | product trail ported 2026-10-14 |
 | 29 | SKU search, header and admin | Zap, Amazon | PARTIAL | PARTIAL | 0.5 | admin list closed 2026-10-14; header under note A |
@@ -408,6 +408,25 @@ email, coupon code. prod: two reminders, the second needing a pending
 migration.
 
 **26. Comparison.** Both: nothing.
+
+Built on main, 2026-10-14. A scales toggle on each listing card picks up to
+four products into localStorage; a bar above the grid counts them and links to
+the table once there are two; `/products/compare` lays them out as a real
+table with a column per product: price, full price, saving in shekels and
+percent, category, availability, voucher life, description, add to cart and
+remove. The lowest price is marked only when it is the only lowest. Saving and
+discount are integer agorot and the same basis points the discount sort uses
+(`src/lib/compare/rows.ts`). The page is at `/products/compare` because
+`/compare` is an old WordPress URL that `data/legacy/redirect-map.json`
+answers 410; the local server confirms both (200 and 410).
+
+Verified in Chromium, built server, live data, 380 and 1440: 24 toggles, each
+44 by 44 on the image and clear of the heart; three picks give the bar and a
+three-column table with the lowest of 699 / 600 / 180 marked; the page does
+not scroll sideways (the table does, inside its box, at 380); removing a
+column leaves two and survives a reload. Not verified: add to cart from the
+table, Safari and Firefox. The toggle is on the listing card only, not on the
+product page or the home grid.
 
 **27. Mega-menu.** Both: `src/components/layout/MastheadNav.tsx` with a
 single-column city menu.

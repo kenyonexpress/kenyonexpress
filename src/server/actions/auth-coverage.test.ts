@@ -74,6 +74,12 @@ const PUBLIC_ACTIONS = new Map<string, string>([
   // Read-only and per-browser: the id list lives in the caller's own
   // localStorage and never identifies an account, so there is nothing here a
   // session check would protect.
+  // The same shape as the read below: ids from the caller's own browser,
+  // active products only, through the public client.
+  [
+    'compare.ts:getCompareProducts',
+    "public catalogue read, ids come from the caller's own localStorage",
+  ],
   [
     'recently-viewed.ts:getRecentlyViewedProducts',
     "public catalogue read, ids come from the caller's own localStorage",

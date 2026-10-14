@@ -3,6 +3,7 @@
 import CategoryProductCard, {
   type CategoryProduct,
 } from '@/components/category/CategoryProductCard'
+import CompareBar from '@/components/compare/CompareBar'
 import {
   type ListingSnapshot,
   mergeItems,
@@ -193,6 +194,8 @@ export default function InfiniteProductGrid({
 
   return (
     <>
+      {/* Nothing until a product is picked for comparison. */}
+      <CompareBar />
       <ul className="category-products">
         {initial.map((product) => (
           <li key={product.id} className="category-products__item">
