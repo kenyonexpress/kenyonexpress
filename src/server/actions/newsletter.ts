@@ -1,6 +1,7 @@
 'use server'
 
 import { createHash, randomBytes } from 'node:crypto'
+import { checkNewsletterEmail } from '@/lib/growth/newsletter-form'
 import { sendEmail, syncAudienceContact } from '@/lib/growth/resend'
 import { withActionContext } from '@/lib/observability/action-context'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -8,7 +9,6 @@ import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
 import { OFF_PAGE } from '@/styles/tokens'
 import { headers } from 'next/headers'
-import { z } from 'zod'
 
 /**
  * Newsletter signup, double opt-in.
@@ -29,11 +29,19 @@ import { z } from 'zod'
  */
 const CONSENT_WORDING_VERSION = 'newsletter-v1'
 
-const schema = z.object({
-  email: z.string().email('כתובת מייל לא תקינה').max(254),
-})
-
-export type NewsletterState = { ok: boolean; message?: string; error?: string }
+/**
+ * `field` names the control an error belongs to, so the form can mark it
+ * `aria-invalid`; a rate limit or a failed write has no field and is shown
+ * as a general failure the visitor may retry. The address check itself is
+ * `checkNewsletterEmail`, shared with the browser side (UX12) so both answer
+ * the same mistake with the same Hebrew sentence.
+ */
+export type NewsletterState = {
+  ok: boolean
+  message?: string
+  error?: string
+  field?: 'email'
+}
 
 /** IPs are hashed before storage: consent evidence needs equality, not the address. */
 function hashIp(ip: string): string {
@@ -48,11 +56,9 @@ async function runSubscribeToNewsletter(
   _prev: NewsletterState,
   formData: FormData,
 ): Promise<NewsletterState> {
-  const parsed = schema.safeParse({ email: formData.get('email') })
-  if (!parsed.success) {
-    return { ok: false, error: parsed.error.issues[0]?.message ?? 'כתובת מייל לא תקינה' }
-  }
-  const email = parsed.data.email.trim().toLowerCase()
+  const checked = checkNewsletterEmail(formData.get('email'))
+  if (!checked.ok) return { ok: false, error: checked.error, field: 'email' }
+  const email = checked.email
 
   const ip = await getClientIp()
   // Without a limit this endpoint mails anyone, repeatedly, on demand: it is a

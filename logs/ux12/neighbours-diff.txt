@@ -1,0 +1,13 @@
+# UX12 neighbour e2e vs UX11, titles normalised (line numbers dropped). '<' failed only in UX11, '>' failed only in UX12
+1a2
+> [chromium] › e2e/a11y.spec.ts › every Tab stop on / is visible, on screen and not under fixed chrome
+20d20
+< [chromium] › e2e/home-rtl.spec.ts › home page RTL › body and 20 anchors resolve to direction rtl
+33a34
+> [mobile-chrome] › e2e/a11y.spec.ts › coupons has no WCAG A/AA violations
+53d53
+< [mobile-chrome] › e2e/home-rtl.spec.ts › home page RTL › body and 20 anchors resolve to direction rtl
+54a55
+> [mobile-chrome] › e2e/home.spec.ts › homepage › consent banner is absent when script is off
+
+UX11 failing:       65  UX12 failing:       66  (UX12 run: 66 failed, 2 skipped, 120 passed)

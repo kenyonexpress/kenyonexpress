@@ -1,0 +1,700 @@
+{
+  "380": {
+    "present": true,
+    "which": "home card",
+    "url": "http://localhost:3346/",
+    "posts": ["http://localhost:3346/", "http://localhost:3346/", "http://localhost:3346/"],
+    "idle": {
+      "phase": "idle",
+      "form": {
+        "rect": {
+          "x": 42,
+          "y": 274.98,
+          "w": 296,
+          "h": 112
+        },
+        "className": "ke-newsletter",
+        "noValidate": false,
+        "dir": "rtl",
+        "state": null,
+        "ariaBusy": null
+      },
+      "input": {
+        "rect": {
+          "x": 134.02,
+          "y": 303.98,
+          "w": 203.98,
+          "h": 39
+        },
+        "dir": "ltr",
+        "required": true,
+        "ariaInvalid": null,
+        "ariaDescribedby": "_R_3anppf9b_-consent",
+        "describedText": [
+          "בלחיצה על הרשמה אני מאשר קבלת דיוור פרסומי. אפשר להסיר את ההרשמה בכל מייל."
+        ],
+        "placeholder": "you@example.com",
+        "value": "",
+        "focused": false,
+        "validity": false,
+        "validationMessage": "Please fill out this field.",
+        "borderColor": "rgb(221, 221, 221)",
+        "outline": null,
+        "boxShadow": null
+      },
+      "button": {
+        "rect": {
+          "x": 42,
+          "y": 303.98,
+          "w": 84.02,
+          "h": 39
+        },
+        "text": "הרשמה",
+        "disabled": false
+      },
+      "alert": null,
+      "status": null
+    },
+    "empty": {
+      "phase": "empty-submit",
+      "form": {
+        "rect": {
+          "x": 42,
+          "y": 274.98,
+          "w": 296,
+          "h": 112
+        },
+        "className": "ke-newsletter",
+        "noValidate": false,
+        "dir": "rtl",
+        "state": null,
+        "ariaBusy": null
+      },
+      "input": {
+        "rect": {
+          "x": 134.02,
+          "y": 303.98,
+          "w": 203.98,
+          "h": 39
+        },
+        "dir": "ltr",
+        "required": true,
+        "ariaInvalid": null,
+        "ariaDescribedby": "_R_3anppf9b_-consent",
+        "describedText": [
+          "בלחיצה על הרשמה אני מאשר קבלת דיוור פרסומי. אפשר להסיר את ההרשמה בכל מייל."
+        ],
+        "placeholder": "you@example.com",
+        "value": "",
+        "focused": true,
+        "validity": false,
+        "validationMessage": "Please fill out this field.",
+        "borderColor": "rgb(221, 221, 221)",
+        "outline": "3px rgb(254, 215, 0)",
+        "boxShadow": "rgb(51, 62, 72) 0px 0px 0px 6px"
+      },
+      "button": {
+        "rect": {
+          "x": 42,
+          "y": 303.98,
+          "w": 84.02,
+          "h": 39
+        },
+        "text": "הרשמה",
+        "disabled": false
+      },
+      "alert": null,
+      "status": null
+    },
+    "malformed": {
+      "phase": "malformed-submit",
+      "form": {
+        "rect": {
+          "x": 42,
+          "y": 274.98,
+          "w": 296,
+          "h": 138
+        },
+        "className": "ke-newsletter",
+        "noValidate": false,
+        "dir": "rtl",
+        "state": null,
+        "ariaBusy": null
+      },
+      "input": {
+        "rect": {
+          "x": 134.02,
+          "y": 303.98,
+          "w": 203.98,
+          "h": 39
+        },
+        "dir": "ltr",
+        "required": true,
+        "ariaInvalid": null,
+        "ariaDescribedby": "_R_3anppf9b_-consent _R_3anppf9b_-error",
+        "describedText": [
+          "בלחיצה על הרשמה אני מאשר קבלת דיוור פרסומי. אפשר להסיר את ההרשמה בכל מייל.",
+          "כתובת מייל לא תקינה"
+        ],
+        "placeholder": "you@example.com",
+        "value": "",
+        "focused": false,
+        "validity": false,
+        "validationMessage": "Please fill out this field.",
+        "borderColor": "rgb(221, 221, 221)",
+        "outline": null,
+        "boxShadow": null
+      },
+      "button": {
+        "rect": {
+          "x": 42,
+          "y": 303.98,
+          "w": 84.02,
+          "h": 39
+        },
+        "text": "הרשמה",
+        "disabled": false
+      },
+      "alert": {
+        "rect": {
+          "x": 42,
+          "y": 394.98,
+          "w": 296,
+          "h": 18
+        },
+        "text": "כתובת מייל לא תקינה",
+        "dir": "rtl",
+        "color": "rgb(185, 28, 28)",
+        "fontSize": "12px",
+        "kind": null
+      },
+      "status": null
+    },
+    "corrected": {
+      "phase": "corrected-typing",
+      "form": {
+        "rect": {
+          "x": 42,
+          "y": 274.98,
+          "w": 296,
+          "h": 138
+        },
+        "className": "ke-newsletter",
+        "noValidate": false,
+        "dir": "rtl",
+        "state": null,
+        "ariaBusy": null
+      },
+      "input": {
+        "rect": {
+          "x": 134.02,
+          "y": 303.98,
+          "w": 203.98,
+          "h": 39
+        },
+        "dir": "ltr",
+        "required": true,
+        "ariaInvalid": null,
+        "ariaDescribedby": "_R_3anppf9b_-consent _R_3anppf9b_-error",
+        "describedText": [
+          "בלחיצה על הרשמה אני מאשר קבלת דיוור פרסומי. אפשר להסיר את ההרשמה בכל מייל.",
+          "כתובת מייל לא תקינה"
+        ],
+        "placeholder": "you@example.com",
+        "value": "ofir@kenyonexpress.co.il",
+        "focused": true,
+        "validity": true,
+        "validationMessage": "",
+        "borderColor": "rgb(221, 221, 221)",
+        "outline": "3px rgb(254, 215, 0)",
+        "boxShadow": "rgb(51, 62, 72) 0px 0px 0px 6px"
+      },
+      "button": {
+        "rect": {
+          "x": 42,
+          "y": 303.98,
+          "w": 84.02,
+          "h": 39
+        },
+        "text": "הרשמה",
+        "disabled": false
+      },
+      "alert": {
+        "rect": {
+          "x": 42,
+          "y": 394.98,
+          "w": 296,
+          "h": 18
+        },
+        "text": "כתובת מייל לא תקינה",
+        "dir": "rtl",
+        "color": "rgb(185, 28, 28)",
+        "fontSize": "12px",
+        "kind": null
+      },
+      "status": null
+    }
+  },
+  "768": {
+    "present": true,
+    "which": "home card",
+    "url": "http://localhost:3346/",
+    "posts": ["http://localhost:3346/", "http://localhost:3346/", "http://localhost:3346/"],
+    "idle": {
+      "phase": "idle",
+      "form": {
+        "rect": {
+          "x": 286,
+          "y": 335.3,
+          "w": 416,
+          "h": 112
+        },
+        "className": "ke-newsletter",
+        "noValidate": false,
+        "dir": "rtl",
+        "state": null,
+        "ariaBusy": null
+      },
+      "input": {
+        "rect": {
+          "x": 378.02,
+          "y": 364.3,
+          "w": 323.98,
+          "h": 39
+        },
+        "dir": "ltr",
+        "required": true,
+        "ariaInvalid": null,
+        "ariaDescribedby": "_R_3anppf9b_-consent",
+        "describedText": [
+          "בלחיצה על הרשמה אני מאשר קבלת דיוור פרסומי. אפשר להסיר את ההרשמה בכל מייל."
+        ],
+        "placeholder": "you@example.com",
+        "value": "",
+        "focused": false,
+        "validity": false,
+        "validationMessage": "Please fill out this field.",
+        "borderColor": "rgb(221, 221, 221)",
+        "outline": null,
+        "boxShadow": null
+      },
+      "button": {
+        "rect": {
+          "x": 286,
+          "y": 364.3,
+          "w": 84.02,
+          "h": 39
+        },
+        "text": "הרשמה",
+        "disabled": false
+      },
+      "alert": null,
+      "status": null
+    },
+    "empty": {
+      "phase": "empty-submit",
+      "form": {
+        "rect": {
+          "x": 286,
+          "y": 335.3,
+          "w": 416,
+          "h": 112
+        },
+        "className": "ke-newsletter",
+        "noValidate": false,
+        "dir": "rtl",
+        "state": null,
+        "ariaBusy": null
+      },
+      "input": {
+        "rect": {
+          "x": 378.02,
+          "y": 364.3,
+          "w": 323.98,
+          "h": 39
+        },
+        "dir": "ltr",
+        "required": true,
+        "ariaInvalid": null,
+        "ariaDescribedby": "_R_3anppf9b_-consent",
+        "describedText": [
+          "בלחיצה על הרשמה אני מאשר קבלת דיוור פרסומי. אפשר להסיר את ההרשמה בכל מייל."
+        ],
+        "placeholder": "you@example.com",
+        "value": "",
+        "focused": true,
+        "validity": false,
+        "validationMessage": "Please fill out this field.",
+        "borderColor": "rgb(221, 221, 221)",
+        "outline": "3px rgb(254, 215, 0)",
+        "boxShadow": "rgb(51, 62, 72) 0px 0px 0px 6px"
+      },
+      "button": {
+        "rect": {
+          "x": 286,
+          "y": 364.3,
+          "w": 84.02,
+          "h": 39
+        },
+        "text": "הרשמה",
+        "disabled": false
+      },
+      "alert": null,
+      "status": null
+    },
+    "malformed": {
+      "phase": "malformed-submit",
+      "form": {
+        "rect": {
+          "x": 286,
+          "y": 335.3,
+          "w": 416,
+          "h": 138
+        },
+        "className": "ke-newsletter",
+        "noValidate": false,
+        "dir": "rtl",
+        "state": null,
+        "ariaBusy": null
+      },
+      "input": {
+        "rect": {
+          "x": 378.02,
+          "y": 364.3,
+          "w": 323.98,
+          "h": 39
+        },
+        "dir": "ltr",
+        "required": true,
+        "ariaInvalid": null,
+        "ariaDescribedby": "_R_3anppf9b_-consent _R_3anppf9b_-error",
+        "describedText": [
+          "בלחיצה על הרשמה אני מאשר קבלת דיוור פרסומי. אפשר להסיר את ההרשמה בכל מייל.",
+          "כתובת מייל לא תקינה"
+        ],
+        "placeholder": "you@example.com",
+        "value": "",
+        "focused": false,
+        "validity": false,
+        "validationMessage": "Please fill out this field.",
+        "borderColor": "rgb(221, 221, 221)",
+        "outline": null,
+        "boxShadow": null
+      },
+      "button": {
+        "rect": {
+          "x": 286,
+          "y": 364.3,
+          "w": 84.02,
+          "h": 39
+        },
+        "text": "הרשמה",
+        "disabled": false
+      },
+      "alert": {
+        "rect": {
+          "x": 286,
+          "y": 455.3,
+          "w": 416,
+          "h": 18
+        },
+        "text": "כתובת מייל לא תקינה",
+        "dir": "rtl",
+        "color": "rgb(185, 28, 28)",
+        "fontSize": "12px",
+        "kind": null
+      },
+      "status": null
+    },
+    "corrected": {
+      "phase": "corrected-typing",
+      "form": {
+        "rect": {
+          "x": 286,
+          "y": 335.3,
+          "w": 416,
+          "h": 138
+        },
+        "className": "ke-newsletter",
+        "noValidate": false,
+        "dir": "rtl",
+        "state": null,
+        "ariaBusy": null
+      },
+      "input": {
+        "rect": {
+          "x": 378.02,
+          "y": 364.3,
+          "w": 323.98,
+          "h": 39
+        },
+        "dir": "ltr",
+        "required": true,
+        "ariaInvalid": null,
+        "ariaDescribedby": "_R_3anppf9b_-consent _R_3anppf9b_-error",
+        "describedText": [
+          "בלחיצה על הרשמה אני מאשר קבלת דיוור פרסומי. אפשר להסיר את ההרשמה בכל מייל.",
+          "כתובת מייל לא תקינה"
+        ],
+        "placeholder": "you@example.com",
+        "value": "ofir@kenyonexpress.co.il",
+        "focused": true,
+        "validity": true,
+        "validationMessage": "",
+        "borderColor": "rgb(221, 221, 221)",
+        "outline": "3px rgb(254, 215, 0)",
+        "boxShadow": "rgb(51, 62, 72) 0px 0px 0px 6px"
+      },
+      "button": {
+        "rect": {
+          "x": 286,
+          "y": 364.3,
+          "w": 84.02,
+          "h": 39
+        },
+        "text": "הרשמה",
+        "disabled": false
+      },
+      "alert": {
+        "rect": {
+          "x": 286,
+          "y": 455.3,
+          "w": 416,
+          "h": 18
+        },
+        "text": "כתובת מייל לא תקינה",
+        "dir": "rtl",
+        "color": "rgb(185, 28, 28)",
+        "fontSize": "12px",
+        "kind": null
+      },
+      "status": null
+    }
+  },
+  "1440": {
+    "present": true,
+    "which": "footer pill",
+    "url": "http://localhost:3346/",
+    "posts": ["http://localhost:3346/", "http://localhost:3346/", "http://localhost:3346/"],
+    "idle": {
+      "phase": "idle",
+      "form": {
+        "rect": {
+          "x": 135,
+          "y": 400.8,
+          "w": 470,
+          "h": 41
+        },
+        "className": "flex h-newsletter-field w-full items-stretch overflow-hidden rounded-full bg-white",
+        "noValidate": false,
+        "dir": "rtl",
+        "state": null,
+        "ariaBusy": null
+      },
+      "input": {
+        "rect": {
+          "x": 230.34,
+          "y": 400.8,
+          "w": 374.66,
+          "h": 41
+        },
+        "dir": "ltr",
+        "required": true,
+        "ariaInvalid": null,
+        "ariaDescribedby": null,
+        "describedText": [],
+        "placeholder": "הזן כתובת Email",
+        "value": "",
+        "focused": false,
+        "validity": false,
+        "validationMessage": "Please fill out this field.",
+        "borderColor": "rgb(0, 0, 0)",
+        "outline": null,
+        "boxShadow": null
+      },
+      "button": {
+        "rect": {
+          "x": 135,
+          "y": 400.8,
+          "w": 95.34,
+          "h": 41
+        },
+        "text": "הירשם",
+        "disabled": false
+      },
+      "alert": null,
+      "status": null
+    },
+    "empty": {
+      "phase": "empty-submit",
+      "form": {
+        "rect": {
+          "x": 135,
+          "y": 400.8,
+          "w": 470,
+          "h": 41
+        },
+        "className": "flex h-newsletter-field w-full items-stretch overflow-hidden rounded-full bg-white",
+        "noValidate": false,
+        "dir": "rtl",
+        "state": null,
+        "ariaBusy": null
+      },
+      "input": {
+        "rect": {
+          "x": 230.34,
+          "y": 400.8,
+          "w": 374.66,
+          "h": 41
+        },
+        "dir": "ltr",
+        "required": true,
+        "ariaInvalid": null,
+        "ariaDescribedby": null,
+        "describedText": [],
+        "placeholder": "הזן כתובת Email",
+        "value": "",
+        "focused": true,
+        "validity": false,
+        "validationMessage": "Please fill out this field.",
+        "borderColor": "rgb(0, 0, 0)",
+        "outline": "3px rgb(254, 215, 0)",
+        "boxShadow": "rgb(51, 62, 72) 0px 0px 0px 6px"
+      },
+      "button": {
+        "rect": {
+          "x": 135,
+          "y": 400.8,
+          "w": 95.34,
+          "h": 41
+        },
+        "text": "הירשם",
+        "disabled": false
+      },
+      "alert": null,
+      "status": null
+    },
+    "malformed": {
+      "phase": "malformed-submit",
+      "form": {
+        "rect": {
+          "x": 135,
+          "y": 390.8,
+          "w": 470,
+          "h": 41
+        },
+        "className": "flex h-newsletter-field w-full items-stretch overflow-hidden rounded-full bg-white",
+        "noValidate": false,
+        "dir": "rtl",
+        "state": null,
+        "ariaBusy": null
+      },
+      "input": {
+        "rect": {
+          "x": 230.34,
+          "y": 390.8,
+          "w": 374.66,
+          "h": 41
+        },
+        "dir": "ltr",
+        "required": true,
+        "ariaInvalid": null,
+        "ariaDescribedby": "_R_8tpf9b_-error",
+        "describedText": ["כתובת מייל לא תקינה"],
+        "placeholder": "הזן כתובת Email",
+        "value": "",
+        "focused": false,
+        "validity": false,
+        "validationMessage": "Please fill out this field.",
+        "borderColor": "rgb(0, 0, 0)",
+        "outline": null,
+        "boxShadow": null
+      },
+      "button": {
+        "rect": {
+          "x": 135,
+          "y": 390.8,
+          "w": 95.34,
+          "h": 41
+        },
+        "text": "הירשם",
+        "disabled": false
+      },
+      "alert": {
+        "rect": {
+          "x": 135,
+          "y": 435.8,
+          "w": 470,
+          "h": 16
+        },
+        "text": "כתובת מייל לא תקינה",
+        "dir": "rtl",
+        "color": "rgb(51, 62, 72)",
+        "fontSize": "12px",
+        "kind": null
+      },
+      "status": null
+    },
+    "corrected": {
+      "phase": "corrected-typing",
+      "form": {
+        "rect": {
+          "x": 135,
+          "y": 390.8,
+          "w": 470,
+          "h": 41
+        },
+        "className": "flex h-newsletter-field w-full items-stretch overflow-hidden rounded-full bg-white",
+        "noValidate": false,
+        "dir": "rtl",
+        "state": null,
+        "ariaBusy": null
+      },
+      "input": {
+        "rect": {
+          "x": 230.34,
+          "y": 390.8,
+          "w": 374.66,
+          "h": 41
+        },
+        "dir": "ltr",
+        "required": true,
+        "ariaInvalid": null,
+        "ariaDescribedby": "_R_8tpf9b_-error",
+        "describedText": ["כתובת מייל לא תקינה"],
+        "placeholder": "הזן כתובת Email",
+        "value": "ofir@kenyonexpress.co.il",
+        "focused": true,
+        "validity": true,
+        "validationMessage": "",
+        "borderColor": "rgb(0, 0, 0)",
+        "outline": "3px rgb(254, 215, 0)",
+        "boxShadow": "rgb(51, 62, 72) 0px 0px 0px 6px"
+      },
+      "button": {
+        "rect": {
+          "x": 135,
+          "y": 390.8,
+          "w": 95.34,
+          "h": 41
+        },
+        "text": "הירשם",
+        "disabled": false
+      },
+      "alert": {
+        "rect": {
+          "x": 135,
+          "y": 435.8,
+          "w": 470,
+          "h": 16
+        },
+        "text": "כתובת מייל לא תקינה",
+        "dir": "rtl",
+        "color": "rgb(51, 62, 72)",
+        "fontSize": "12px",
+        "kind": null
+      },
+      "status": null
+    }
+  }
+}

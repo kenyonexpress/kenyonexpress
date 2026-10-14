@@ -1,0 +1,16 @@
+Already up to date
+Done in 193ms using pnpm v11.1.2
+
+Running 8 tests using 2 workers
+
+  ✓  2 [chromium] › e2e/newsletter-form.spec.ts:44:7 › newsletter form (UX12) › turns the browser bubble off and keeps the address field LTR inside an RTL form (530ms)
+  ✓  1 [chromium] › e2e/newsletter-form.spec.ts:58:7 › newsletter form (UX12) › answers an empty submit on the page, in Hebrew, with the field marked and focused (647ms)
+  ✓  4 [chromium] › e2e/newsletter-form.spec.ts:108:7 › newsletter form (UX12) › a blur on a half-typed address says what is missing; a blur on an empty field says nothing (1.3s)
+  ✓  3 [chromium] › e2e/newsletter-form.spec.ts:84:7 › newsletter form (UX12) › refuses the address the browser would have sent, without a request, and clears as the typing is fixed (1.5s)
+  ✓  5 [mobile-chrome] › e2e/newsletter-form.spec.ts:44:7 › newsletter form (UX12) › turns the browser bubble off and keeps the address field LTR inside an RTL form (1.5s)
+  ✓  6 [mobile-chrome] › e2e/newsletter-form.spec.ts:58:7 › newsletter form (UX12) › answers an empty submit on the page, in Hebrew, with the field marked and focused (1.6s)
+  ✓  8 [mobile-chrome] › e2e/newsletter-form.spec.ts:108:7 › newsletter form (UX12) › a blur on a half-typed address says what is missing; a blur on an empty field says nothing (1.5s)
+  ✓  7 [mobile-chrome] › e2e/newsletter-form.spec.ts:84:7 › newsletter form (UX12) › refuses the address the browser would have sent, without a request, and clears as the typing is fixed (1.7s)
+
+  8 passed (6.0s)
+exit 0

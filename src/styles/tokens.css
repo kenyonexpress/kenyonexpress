@@ -80,6 +80,7 @@
   --color-deal-sale: #c93636;
   --color-deal-badge: #ee0000; /* home card discount badge, white 12/700 on it */
   --color-success: #5cb85c; /* confirmation, in-stock */
+  --color-error: #c93636; /* inline form errors (UX12); the deal-sale red under a form name */
   /* BRAND YELLOW IS NOT A TEXT COLOUR, and this is the token that replaces it.
      `text-brand` is #fed700: 1.41:1 against white where AA wants 4.5, which axe
      reported as a serious violation on /login, /signup, /suppliers and /coupons

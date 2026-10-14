@@ -51,6 +51,14 @@ export const SITE = {
     /** The home card's discount badge, measured rgb(238,0,0) behind white 12/700. */
     dealBadge: '#ee0000',
     success: '#5cb85c',
+    /**
+     * Inline form errors (UX12): the newsletter field's red border, ring and
+     * sentence. The same red as `dealSale` on purpose, so the site carries
+     * one "something is wrong" red, and a separate name so a form error does
+     * not read as a price. 5.68:1 on white; `success` (#5cb85c) is 2.33:1 and
+     * is therefore never used as text, only as the check mark beside it.
+     */
+    error: '#c93636',
     link: '#0062bd',
     heading: '#333e48',
     /**
@@ -272,6 +280,7 @@ export const SITE_CSS_VARS: Record<string, string> = {
   '--color-deal-sale': SITE.functional.dealSale,
   '--color-deal-badge': SITE.functional.dealBadge,
   '--color-success': SITE.functional.success,
+  '--color-error': SITE.functional.error,
   '--color-link': SITE.functional.link,
   '--color-heading': SITE.functional.heading,
   '--color-heading-hover': SITE.functional.headingHover,

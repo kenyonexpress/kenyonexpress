@@ -170,9 +170,23 @@ describe('subscribeToNewsletter', () => {
   })
 
   it('rejects a malformed address and a rate-limited IP before any read', async () => {
+    // UX12: the server runs the same check as the browser and names the
+    // field, so a form can mark the control invalid; the words are the
+    // shared module's, not a zod default.
     expect(await subscribeToNewsletter({ ok: false }, form({ email: 'not-an-email' }))).toEqual({
       ok: false,
-      error: 'כתובת מייל לא תקינה',
+      error: 'כתובת המייל חייבת לכלול @',
+      field: 'email',
+    })
+    expect(await subscribeToNewsletter({ ok: false }, form({ email: 'ofir@kenyon' }))).toEqual({
+      ok: false,
+      error: 'כתובת המייל לא תקינה, למשל name@gmail.com',
+      field: 'email',
+    })
+    expect(await subscribeToNewsletter({ ok: false }, form({ email: '' }))).toEqual({
+      ok: false,
+      error: 'נא להזין כתובת מייל',
+      field: 'email',
     })
     checkRateLimit.mockResolvedValue(false)
     expect(await subscribeToNewsletter({ ok: false }, form({ email: 'a@b.co' }))).toEqual({

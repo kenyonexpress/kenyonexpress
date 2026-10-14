@@ -1,0 +1,66 @@
+  ✘    4 [chromium] › e2e/a11y.spec.ts:142:7 › contact has no WCAG A/AA violations
+  ✘   14 [chromium] › e2e/a11y.spec.ts:142:7 › legal terms has no WCAG A/AA violations
+  ✘   15 [chromium] › e2e/a11y.spec.ts:142:7 › legal privacy has no WCAG A/AA violations
+  ✘   16 [chromium] › e2e/a11y.spec.ts:142:7 › legal returns has no WCAG A/AA violations
+  ✘   17 [chromium] › e2e/a11y.spec.ts:142:7 › legal accessibility has no WCAG A/AA violations
+  ✘   18 [chromium] › e2e/a11y.spec.ts:142:7 › terms and conditions has no WCAG A/AA violations
+  ✘   19 [chromium] › e2e/a11y.spec.ts:142:7 › privacy policy has no WCAG A/AA violations
+  ✘   35 [chromium] › e2e/a11y.spec.ts:303:7 › product pages have no WCAG A/AA violations › the first product in the catalogue
+  ✘   36 [chromium] › e2e/a11y.spec.ts:315:7 › product pages have no WCAG A/AA violations › a coupon product, which renders the struck regular price
+  ✘   37 [chromium] › e2e/a11y.spec.ts:358:7 › the checkout with a seeded cart › cart and checkout have no WCAG A/AA violations
+  ✘   38 [chromium] › e2e/a11y.spec.ts:408:7 › the checkout wizard, step by step › every step of the checkout has no WCAG A/AA violations
+  ✘   39 [chromium] › e2e/a11y.spec.ts:514:5 › the cart panel that opens on add-to-cart has no WCAG A/AA violations
+  ✘   42 [chromium] › e2e/a11y.spec.ts:722:7 › every Tab stop on / is visible, on screen and not under fixed chrome
+  ✘   43 [chromium] › e2e/a11y.spec.ts:722:7 › every Tab stop on /products is visible, on screen and not under fixed chrome
+  ✘   44 [chromium] › e2e/a11y.spec.ts:722:7 › every Tab stop on /cart is visible, on screen and not under fixed chrome
+  ✘   45 [chromium] › e2e/a11y.spec.ts:722:7 › every Tab stop on /coupons is visible, on screen and not under fixed chrome
+  ✘   48 [chromium] › e2e/a11y.spec.ts:794:7 › the first Tab on /products is a skip link that lands focus in <main>
+  ✘   49 [chromium] › e2e/a11y.spec.ts:794:7 › the first Tab on / is a skip link that lands focus in <main>
+  ✘   50 [chromium] › e2e/a11y.spec.ts:794:7 › the first Tab on /coupons is a skip link that lands focus in <main>
+  ✘   51 [chromium] › e2e/a11y.spec.ts:794:7 › the first Tab on /legal/privacy is a skip link that lands focus in <main>
+  ✘   62 [chromium] › e2e/home-rtl.spec.ts:127:7 › home page RTL › every ltr node on the page is on the allow-list
+  ✘   64 [chromium] › e2e/home.spec.ts:38:7 › homepage › renders the header search combobox
+  ✘   69 [chromium] › e2e/home.spec.ts:189:7 › homepage › the image optimizer re-encodes per width instead of passing the source through
+  ✘   82 [chromium] › e2e/home.spec.ts:454:7 › homepage › the homepage costs one render-blocking stylesheet
+  ✘   83 [chromium] › e2e/home.spec.ts:481:7 › homepage › reaching the footer costs no 404s
+  ✘   87 [chromium] › e2e/touch-targets.spec.ts:155:7 › every control on / is thumb-sized
+  ✘   88 [chromium] › e2e/touch-targets.spec.ts:155:7 › every control on /products is thumb-sized
+  ✘   89 [chromium] › e2e/touch-targets.spec.ts:155:7 › every control on /category/hot-deals is thumb-sized
+  ✘   90 [chromium] › e2e/touch-targets.spec.ts:155:7 › every control on /cart is thumb-sized
+  ✘   91 [chromium] › e2e/touch-targets.spec.ts:155:7 › every control on /login is thumb-sized
+  ✘   92 [chromium] › e2e/touch-targets.spec.ts:155:7 › every control on /legal/terms is thumb-sized
+  ✘   93 [chromium] › e2e/touch-targets.spec.ts:163:5 › every control on a product page is thumb-sized, buy row included
+  ✘   98 [mobile-chrome] › e2e/a11y.spec.ts:142:7 › contact has no WCAG A/AA violations
+  ✘  100 [mobile-chrome] › e2e/a11y.spec.ts:142:7 › coupons has no WCAG A/AA violations
+  ✘  108 [mobile-chrome] › e2e/a11y.spec.ts:142:7 › legal terms has no WCAG A/AA violations
+  ✘  109 [mobile-chrome] › e2e/a11y.spec.ts:142:7 › legal privacy has no WCAG A/AA violations
+  ✘  110 [mobile-chrome] › e2e/a11y.spec.ts:142:7 › legal returns has no WCAG A/AA violations
+  ✘  111 [mobile-chrome] › e2e/a11y.spec.ts:142:7 › legal accessibility has no WCAG A/AA violations
+  ✘  112 [mobile-chrome] › e2e/a11y.spec.ts:142:7 › terms and conditions has no WCAG A/AA violations
+  ✘  113 [mobile-chrome] › e2e/a11y.spec.ts:142:7 › privacy policy has no WCAG A/AA violations
+  ✘  129 [mobile-chrome] › e2e/a11y.spec.ts:303:7 › product pages have no WCAG A/AA violations › the first product in the catalogue
+  ✘  130 [mobile-chrome] › e2e/a11y.spec.ts:315:7 › product pages have no WCAG A/AA violations › a coupon product, which renders the struck regular price
+  ✘  131 [mobile-chrome] › e2e/a11y.spec.ts:358:7 › the checkout with a seeded cart › cart and checkout have no WCAG A/AA violations
+  ✘  132 [mobile-chrome] › e2e/a11y.spec.ts:408:7 › the checkout wizard, step by step › every step of the checkout has no WCAG A/AA violations
+  ✘  133 [mobile-chrome] › e2e/a11y.spec.ts:514:5 › the cart panel that opens on add-to-cart has no WCAG A/AA violations
+  ✘  136 [mobile-chrome] › e2e/a11y.spec.ts:722:7 › every Tab stop on / is visible, on screen and not under fixed chrome
+  ✘  137 [mobile-chrome] › e2e/a11y.spec.ts:722:7 › every Tab stop on /products is visible, on screen and not under fixed chrome
+  ✘  138 [mobile-chrome] › e2e/a11y.spec.ts:722:7 › every Tab stop on /cart is visible, on screen and not under fixed chrome
+  ✘  139 [mobile-chrome] › e2e/a11y.spec.ts:722:7 › every Tab stop on /coupons is visible, on screen and not under fixed chrome
+  ✘  142 [mobile-chrome] › e2e/a11y.spec.ts:794:7 › the first Tab on / is a skip link that lands focus in <main>
+  ✘  143 [mobile-chrome] › e2e/a11y.spec.ts:794:7 › the first Tab on /products is a skip link that lands focus in <main>
+  ✘  144 [mobile-chrome] › e2e/a11y.spec.ts:794:7 › the first Tab on /coupons is a skip link that lands focus in <main>
+  ✘  145 [mobile-chrome] › e2e/a11y.spec.ts:794:7 › the first Tab on /legal/privacy is a skip link that lands focus in <main>
+  ✘  156 [mobile-chrome] › e2e/home-rtl.spec.ts:127:7 › home page RTL › every ltr node on the page is on the allow-list
+  ✘  158 [mobile-chrome] › e2e/home.spec.ts:38:7 › homepage › renders the header search combobox
+  ✘  163 [mobile-chrome] › e2e/home.spec.ts:189:7 › homepage › the image optimizer re-encodes per width instead of passing the source through
+  ✘  167 [mobile-chrome] › e2e/home.spec.ts:311:7 › homepage › consent banner is absent when script is off
+  ✘  176 [mobile-chrome] › e2e/home.spec.ts:454:7 › homepage › the homepage costs one render-blocking stylesheet
+  ✘  177 [mobile-chrome] › e2e/home.spec.ts:481:7 › homepage › reaching the footer costs no 404s
+  ✘  181 [mobile-chrome] › e2e/touch-targets.spec.ts:155:7 › every control on / is thumb-sized
+  ✘  182 [mobile-chrome] › e2e/touch-targets.spec.ts:155:7 › every control on /products is thumb-sized
+  ✘  183 [mobile-chrome] › e2e/touch-targets.spec.ts:155:7 › every control on /category/hot-deals is thumb-sized
+  ✘  184 [mobile-chrome] › e2e/touch-targets.spec.ts:155:7 › every control on /cart is thumb-sized
+  ✘  185 [mobile-chrome] › e2e/touch-targets.spec.ts:155:7 › every control on /login is thumb-sized
+  ✘  186 [mobile-chrome] › e2e/touch-targets.spec.ts:155:7 › every control on /legal/terms is thumb-sized
+  ✘  187 [mobile-chrome] › e2e/touch-targets.spec.ts:163:5 › every control on a product page is thumb-sized, buy row included

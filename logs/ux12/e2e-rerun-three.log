@@ -1,0 +1,97 @@
+Already up to date
+Done in 188ms using pnpm v11.1.2
+
+Running 6 tests using 2 workers
+
+  ✓  2 [chromium] › e2e/a11y.spec.ts:142:7 › coupons has no WCAG A/AA violations (1.2s)
+  ✘  1 [chromium] › e2e/a11y.spec.ts:722:7 › every Tab stop on / is visible, on screen and not under fixed chrome (1.4s)
+  ✓  3 [chromium] › e2e/home.spec.ts:311:7 › homepage › consent banner is absent when script is off (413ms)
+  ✓  4 [mobile-chrome] › e2e/a11y.spec.ts:142:7 › coupons has no WCAG A/AA violations (770ms)
+  ✘  5 [mobile-chrome] › e2e/a11y.spec.ts:722:7 › every Tab stop on / is visible, on screen and not under fixed chrome (899ms)
+  ✘  6 [mobile-chrome] › e2e/home.spec.ts:311:7 › homepage › consent banner is absent when script is off (30.1s)
+
+
+  1) [chromium] › e2e/a11y.spec.ts:722:7 › every Tab stop on / is visible, on screen and not under fixed chrome 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "focus hidden under section.: a \"דברו איתנו בוואטסאפ\"",[39m
+    [31m+ ][39m
+
+      727 |     const { stops, problems } = await walkFocus(page)
+      728 |     expect(stops, 'the walk found nothing to focus; the page did not render').toBeGreaterThan(3)
+    > 729 |     expect(problems).toEqual([])
+          |                      ^
+      730 |   })
+      731 | }
+      732 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:729:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-every-Tab-stop-on-is--1380c--and-not-under-fixed-chrome-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-every-Tab-stop-on-is--1380c--and-not-under-fixed-chrome-chromium/error-context.md
+
+  2) [mobile-chrome] › e2e/a11y.spec.ts:722:7 › every Tab stop on / is visible, on screen and not under fixed chrome 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "focus hidden under details.mt-2: a \"דברו איתנו בוואטסאפ\"",[39m
+    [31m+ ][39m
+
+      727 |     const { stops, problems } = await walkFocus(page)
+      728 |     expect(stops, 'the walk found nothing to focus; the page did not render').toBeGreaterThan(3)
+    > 729 |     expect(problems).toEqual([])
+          |                      ^
+      730 |   })
+      731 | }
+      732 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:729:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-every-Tab-stop-on-is--1380c--and-not-under-fixed-chrome-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-every-Tab-stop-on-is--1380c--and-not-under-fixed-chrome-mobile-chrome/error-context.md
+
+  3) [mobile-chrome] › e2e/home.spec.ts:311:7 › homepage › consent banner is absent when script is off 
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    Error: page.goto: Test ended.
+    Call log:
+    [2m  - navigating to "http://localhost:3346/", waiting until "load"[22m
+
+
+      312 |     const context = await browser.newContext({ baseURL, javaScriptEnabled: false })
+      313 |     const page = await context.newPage()
+    > 314 |     await page.goto('/')
+          |                ^
+      315 |
+      316 |     await expect(page.locator('[data-consent-banner]')).toBeAttached()
+      317 |     await expect(page.locator('[data-consent-banner]')).toBeHidden()
+        at /Users/ofir/kenyonexpress-autopilot/e2e/home.spec.ts:314:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/home-homepage-consent-banner-is-absent-when-script-is-off-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/home-homepage-consent-banner-is-absent-when-script-is-off-mobile-chrome/error-context.md
+
+  3 failed
+    [chromium] › e2e/a11y.spec.ts:722:7 › every Tab stop on / is visible, on screen and not under fixed chrome 
+    [mobile-chrome] › e2e/a11y.spec.ts:722:7 › every Tab stop on / is visible, on screen and not under fixed chrome 
+    [mobile-chrome] › e2e/home.spec.ts:311:7 › homepage › consent banner is absent when script is off 
+  3 passed (33.4s)
+exit 1
