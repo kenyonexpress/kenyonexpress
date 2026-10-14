@@ -31,6 +31,45 @@ describe('product-card-deals.css', () => {
     expect(block).toMatch(/min-height:\s*63px/)
   })
 
+  /**
+   * UX09 (14.10.2026): one grid, one row height. The section is a CSS grid
+   * with `grid-auto-rows: 1fr`, so every row takes the tallest card's height,
+   * and the column count is live's (1 / 2 from 768 / 4 from 1200, measured in
+   * the table above the item rule). A flex wrap would size each row alone.
+   */
+  it('is a one-column grid with equal auto rows, two columns from 768 and four from 1200', () => {
+    const base = rule('.jet-listing-grid-deals {')
+    expect(base).toMatch(/display:\s*grid/)
+    expect(base).toMatch(/grid-template-columns:\s*repeat\(1, minmax\(0, 1fr\)\)/)
+    expect(base).toMatch(/grid-auto-rows:\s*1fr/)
+    expect(base).not.toMatch(/flex/)
+
+    const at768 = css.indexOf('@media (min-width: 768px)')
+    const block768 = css.slice(at768, css.indexOf('@media', at768 + 1))
+    expect(block768).toMatch(/\.jet-listing-grid-deals \{[^}]*repeat\(2, minmax\(0, 1fr\)\)/)
+
+    const at1200 = css.indexOf('@media (min-width: 1200px)')
+    const block1200 = css.slice(at1200, css.indexOf('@media', at1200 + 1))
+    expect(block1200).toMatch(/\.jet-listing-grid-deals \{[^}]*repeat\(4, minmax\(0, 1fr\)\)/)
+
+    // No flex basis left on the item: the grid owns the column width now.
+    expect(rule('.jet-listing-grid-deals__item {')).not.toMatch(/flex|max-width/)
+  })
+
+  /**
+   * The two conditional slots hold their height without content: the
+   * department row (24px, the line box) and the photograph (245px, live's
+   * image height). Without these a card with no category was 40px short and
+   * one with no thumbnail 245px short, and the grid above would have given
+   * its whole row to the taller neighbours while the short card sat in a gap.
+   */
+  it('reserves the department row and the photograph slot', () => {
+    expect(rule('.p_con__category {')).toMatch(/min-height:\s*24px/)
+    expect(rule('.p_con__category {')).toMatch(/line-height:\s*24px/)
+    expect(rule('.p_con__image-wrap {')).toMatch(/min-height:\s*245px/)
+    expect(rule('.p_con__image {')).toMatch(/height:\s*245px/)
+  })
+
   it('stacks the phone footer at 18 over and 19 between', () => {
     expect(rule('.p_con__footer {')).toMatch(/gap:\s*19px/)
     expect(rule('.p_con__footer {')).toMatch(/margin-top:\s*18px/)

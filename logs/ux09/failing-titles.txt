@@ -1,0 +1,10 @@
+[chromium] › e2e/home-rtl.spec.ts › home page RTL › every ltr node on the page is on the allow-list
+[chromium] › e2e/home.spec.ts › homepage › reaching the footer costs no 404s ─────────────
+[chromium] › e2e/home.spec.ts › homepage › renders the header search combobox ─────────────
+[chromium] › e2e/home.spec.ts › homepage › the homepage costs one render-blocking stylesheet
+[chromium] › e2e/home.spec.ts › homepage › the image optimizer re-encodes per width instead of passing the source through
+[mobile-chrome] › e2e/home-rtl.spec.ts › home page RTL › every ltr node on the page is on the allow-list
+[mobile-chrome] › e2e/home.spec.ts › homepage › reaching the footer costs no 404s ────────
+[mobile-chrome] › e2e/home.spec.ts › homepage › renders the header search combobox ────────
+[mobile-chrome] › e2e/home.spec.ts › homepage › the homepage costs one render-blocking stylesheet
+[mobile-chrome] › e2e/home.spec.ts › homepage › the image optimizer re-encodes per width instead of passing the source through

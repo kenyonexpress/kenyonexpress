@@ -135,10 +135,16 @@ function DealsProductCard({ product }: { product: Product }) {
 
   return (
     <article className="p_con">
-      {product.category && (
+      {/* The department row is a reserved slot, not a conditional (UX09): a
+          card with no category rendered nothing here and came out 40px shorter
+          than its neighbours (24px row + the 16px column gap). The empty span
+          holds the row through `.p_con__category { min-height: 24px }`. */}
+      {product.category ? (
         <Link href={`/category/${product.category.slug}`} className="p_con__category">
           {product.category.name_he}
         </Link>
+      ) : (
+        <span className="p_con__category" aria-hidden="true" data-empty-slot="category" />
       )}
 
       <div className="p_con__title-wrap">

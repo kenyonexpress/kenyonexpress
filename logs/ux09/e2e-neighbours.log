@@ -1,0 +1,339 @@
+Already up to date
+Done in 191ms using pnpm v11.1.2
+
+Running 52 tests using 2 workers
+
+[1A[2K[1/52] [chromium] › e2e/home-rtl.spec.ts:80:7 › home page RTL › body and 20 anchors resolve to direction rtl
+[1A[2K[2/52] [chromium] › e2e/home-rtl.spec.ts:104:7 › home page RTL › the hero promo lines are Hebrew paragraphs laid out rtl
+[1A[2K[3/52] [chromium] › e2e/home-rtl.spec.ts:124:7 › home page RTL › every ltr node on the page is on the allow-list
+[1A[2K[4/52] [chromium] › e2e/home.spec.ts:11:7 › homepage › loads with RTL layout and the Hebrew locale
+[1A[2K[5/52] [chromium] › e2e/home.spec.ts:38:7 › homepage › renders the header search combobox
+[1A[2K  1) [chromium] › e2e/home-rtl.spec.ts:124:7 › home page RTL › every ltr node on the page is on the allow-list 
+
+    Error: ltr nodes outside the allow-list
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "div.hidden.min-w-0 > div.flex.min-w-0 > form[aria-label=\"חיפוש מוצרים באתר\"] > div.site-search__pill.flex > input#masthead-search",[39m
+    [31m+ ][39m
+
+      158 |     )
+      159 |
+    > 160 |     expect(offenders, 'ltr nodes outside the allow-list').toEqual([])
+          |                                                           ^
+      161 |   })
+      162 | })
+      163 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/home-rtl.spec.ts:160:59
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/home-rtl-home-page-RTL-eve-4bbfa-e-page-is-on-the-allow-list-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/home-rtl-home-page-RTL-eve-4bbfa-e-page-is-on-the-allow-list-chromium/error-context.md
+
+
+[1A[2K  2) [chromium] › e2e/home.spec.ts:38:7 › homepage › renders the header search combobox ────────────
+
+    Error: only the newsletter and the search field
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoContain[2m([22m[32mexpected[39m[2m) // indexOf[22m
+
+    Expected value: [32m"checkbox"[39m
+    Received array: [31m["email", "search"][39m
+
+      57 |     for (const input of await typed.all()) {
+      58 |       const type = await input.getAttribute('type')
+    > 59 |       expect(['email', 'search'], 'only the newsletter and the search field').toContain(type)
+         |                                                                               ^
+      60 |     }
+      61 |   })
+      62 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/home.spec.ts:59:79
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/home-homepage-renders-the-header-search-combobox-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/home-homepage-renders-the-header-search-combobox-chromium/error-context.md
+
+
+[1A[2K[6/52] [chromium] › e2e/home.spec.ts:63:7 › homepage › the header search suggests products and Enter opens the highlighted one
+[1A[2K[7/52] [chromium] › e2e/home.spec.ts:87:7 › homepage › renders product links with add-to-cart buttons
+[1A[2K[8/52] [chromium] › e2e/home.spec.ts:114:7 › homepage › deal card images occupy a box, not just load
+[1A[2K[9/52] [chromium] › e2e/home.spec.ts:153:7 › homepage › every deal card image is pinned to the same 245px height
+[1A[2K[10/52] [chromium] › e2e/home.spec.ts:189:7 › homepage › the image optimizer re-encodes per width instead of passing the source through
+[1A[2K  3) [chromium] › e2e/home.spec.ts:189:7 › homepage › the image optimizer re-encodes per width instead of passing the source through 
+
+    Error: optimizer returned 20215B at w=256 and 20215B at w=640 - identical bytes at different widths is exactly what a pass-through fallback looks like
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mnot[2m.[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: not [32m20215[39m
+
+      232 |       twoWidths[0],
+      233 |       `optimizer returned ${twoWidths[0]}B at w=256 and ${twoWidths[1]}B at w=640 - identical bytes at different widths is exactly what a pass-through fallback looks like`,
+    > 234 |     ).not.toBe(twoWidths[1])
+          |           ^
+      235 |     const [small, large] = twoWidths as [number, number]
+      236 |     expect(small, 'w=256 should be cheaper than w=640').toBeLessThan(large)
+      237 |     expect(optimizedBytes, 'optimizer returned nothing').toBeGreaterThan(0)
+        at /Users/ofir/kenyonexpress-autopilot/e2e/home.spec.ts:234:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/home-homepage-the-image-op-f2c28--passing-the-source-through-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/home-homepage-the-image-op-f2c28--passing-the-source-through-chromium/error-context.md
+
+
+[1A[2K[11/52] [chromium] › e2e/home.spec.ts:258:7 › homepage › the hero fetches no slider raster, because it has no photograph
+[1A[2K[12/52] [chromium] › e2e/home.spec.ts:287:7 › homepage › consent banner ships in the HTML, not built by React
+[1A[2K[13/52] [chromium] › e2e/home.spec.ts:294:7 › homepage › consent banner is visible to a visitor who has not decided
+[1A[2K[14/52] [chromium] › e2e/home.spec.ts:311:7 › homepage › consent banner is absent when script is off
+[1A[2K[15/52] [chromium] › e2e/home.spec.ts:339:7 › homepage › the pre-paint consent snippet survives the build byte for byte
+[1A[2K[16/52] [chromium] › e2e/home.spec.ts:347:7 › homepage › consent banner is hidden for a visitor who decided
+[1A[2K[17/52] [chromium] › e2e/home.spec.ts:373:7 › homepage › offers category navigation into the archives
+[1A[2K[18/52] [chromium] › e2e/home.spec.ts:378:7 › homepage › shows a cart control in the header before anything is added
+[1A[2K[19/52] [chromium] › e2e/home.spec.ts:383:7 › homepage › search results page finds products
+[1A[2K[20/52] [chromium] › e2e/home.spec.ts:389:7 › homepage › short query shows the minimum-characters hint
+[1A[2K[21/52] [chromium] › e2e/home.spec.ts:394:7 › homepage › a search term with SQL wildcards is treated as text, not a pattern
+[1A[2K[22/52] [chromium] › e2e/home.spec.ts:419:7 › homepage › every category link on the home page resolves
+[1A[2K[23/52] [chromium] › e2e/home.spec.ts:454:7 › homepage › the homepage costs one render-blocking stylesheet
+[1A[2K  4) [chromium] › e2e/home.spec.ts:454:7 › homepage › the homepage costs one render-blocking stylesheet 
+
+    Error: homepage stylesheets: /_next/static/chunks/2gikplvv0xfog.css, /_next/static/chunks/3hdndmjltmzos.css, /_next/static/chunks/2de9-2o841xw1.css
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoHaveLength[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected length: [32m1[39m
+    Received length: [31m3[39m
+    Received array:  [31m["/_next/static/chunks/2gikplvv0xfog.css", "/_next/static/chunks/3hdndmjltmzos.css", "/_next/static/chunks/2de9-2o841xw1.css"][39m
+
+      463 |     )
+      464 |
+    > 465 |     expect(sheets, `homepage stylesheets: ${sheets.join(', ')}`).toHaveLength(1)
+          |                                                                  ^
+      466 |   })
+      467 |
+      468 |   /**
+        at /Users/ofir/kenyonexpress-autopilot/e2e/home.spec.ts:465:66
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/home-homepage-the-homepage-9b3f9--render-blocking-stylesheet-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/home-homepage-the-homepage-9b3f9--render-blocking-stylesheet-chromium/error-context.md
+
+
+[1A[2K[24/52] [chromium] › e2e/home.spec.ts:481:7 › homepage › reaching the footer costs no 404s
+[1A[2K  5) [chromium] › e2e/home.spec.ts:481:7 › homepage › reaching the footer costs no 404s ────────────
+
+    Error: 410 /wishlist
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "410 /wishlist",[39m
+    [31m+ ][39m
+
+      497 |     await page.waitForTimeout(3000)
+      498 |
+    > 499 |     expect(failed, failed.join(', ')).toEqual([])
+          |                                       ^
+      500 |   })
+      501 |
+      502 |   /**
+        at /Users/ofir/kenyonexpress-autopilot/e2e/home.spec.ts:499:39
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/home-homepage-reaching-the-footer-costs-no-404s-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/home-homepage-reaching-the-footer-costs-no-404s-chromium/error-context.md
+
+
+[1A[2K[25/52] [chromium] › e2e/home.spec.ts:518:7 › homepage › the hero holds its first slide until the visitor interacts, then rotates
+[1A[2K[26/52] [chromium] › e2e/home.spec.ts:579:7 › homepage › the hero slot renders the branded placeholder, named, with no vendor raster
+[1A[2K[27/52] [mobile-chrome] › e2e/home-rtl.spec.ts:80:7 › home page RTL › body and 20 anchors resolve to direction rtl
+[1A[2K[28/52] [mobile-chrome] › e2e/home-rtl.spec.ts:104:7 › home page RTL › the hero promo lines are Hebrew paragraphs laid out rtl
+[1A[2K[29/52] [mobile-chrome] › e2e/home-rtl.spec.ts:124:7 › home page RTL › every ltr node on the page is on the allow-list
+[1A[2K  6) [mobile-chrome] › e2e/home-rtl.spec.ts:124:7 › home page RTL › every ltr node on the page is on the allow-list 
+
+    Error: ltr nodes outside the allow-list
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "div.hidden.min-w-0 > div.flex.min-w-0 > form[aria-label=\"חיפוש מוצרים באתר\"] > div.site-search__pill.flex > input#masthead-search",[39m
+    [31m+ ][39m
+
+      158 |     )
+      159 |
+    > 160 |     expect(offenders, 'ltr nodes outside the allow-list').toEqual([])
+          |                                                           ^
+      161 |   })
+      162 | })
+      163 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/home-rtl.spec.ts:160:59
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/home-rtl-home-page-RTL-eve-4bbfa-e-page-is-on-the-allow-list-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/home-rtl-home-page-RTL-eve-4bbfa-e-page-is-on-the-allow-list-mobile-chrome/error-context.md
+
+
+[1A[2K[30/52] [mobile-chrome] › e2e/home.spec.ts:11:7 › homepage › loads with RTL layout and the Hebrew locale
+[1A[2K[31/52] [mobile-chrome] › e2e/home.spec.ts:38:7 › homepage › renders the header search combobox
+[1A[2K  7) [mobile-chrome] › e2e/home.spec.ts:38:7 › homepage › renders the header search combobox ───────
+
+    Error: only the newsletter and the search field
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoContain[2m([22m[32mexpected[39m[2m) // indexOf[22m
+
+    Expected value: [32m"checkbox"[39m
+    Received array: [31m["email", "search"][39m
+
+      57 |     for (const input of await typed.all()) {
+      58 |       const type = await input.getAttribute('type')
+    > 59 |       expect(['email', 'search'], 'only the newsletter and the search field').toContain(type)
+         |                                                                               ^
+      60 |     }
+      61 |   })
+      62 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/home.spec.ts:59:79
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/home-homepage-renders-the-header-search-combobox-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/home-homepage-renders-the-header-search-combobox-mobile-chrome/error-context.md
+
+
+[1A[2K[32/52] [mobile-chrome] › e2e/home.spec.ts:63:7 › homepage › the header search suggests products and Enter opens the highlighted one
+[1A[2K[33/52] [mobile-chrome] › e2e/home.spec.ts:87:7 › homepage › renders product links with add-to-cart buttons
+[1A[2K[34/52] [mobile-chrome] › e2e/home.spec.ts:114:7 › homepage › deal card images occupy a box, not just load
+[1A[2K[35/52] [mobile-chrome] › e2e/home.spec.ts:153:7 › homepage › every deal card image is pinned to the same 245px height
+[1A[2K[36/52] [mobile-chrome] › e2e/home.spec.ts:189:7 › homepage › the image optimizer re-encodes per width instead of passing the source through
+[1A[2K  8) [mobile-chrome] › e2e/home.spec.ts:189:7 › homepage › the image optimizer re-encodes per width instead of passing the source through 
+
+    Error: optimizer returned 20215B at w=256 and 20215B at w=640 - identical bytes at different widths is exactly what a pass-through fallback looks like
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mnot[2m.[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: not [32m20215[39m
+
+      232 |       twoWidths[0],
+      233 |       `optimizer returned ${twoWidths[0]}B at w=256 and ${twoWidths[1]}B at w=640 - identical bytes at different widths is exactly what a pass-through fallback looks like`,
+    > 234 |     ).not.toBe(twoWidths[1])
+          |           ^
+      235 |     const [small, large] = twoWidths as [number, number]
+      236 |     expect(small, 'w=256 should be cheaper than w=640').toBeLessThan(large)
+      237 |     expect(optimizedBytes, 'optimizer returned nothing').toBeGreaterThan(0)
+        at /Users/ofir/kenyonexpress-autopilot/e2e/home.spec.ts:234:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/home-homepage-the-image-op-f2c28--passing-the-source-through-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/home-homepage-the-image-op-f2c28--passing-the-source-through-mobile-chrome/error-context.md
+
+
+[1A[2K[37/52] [mobile-chrome] › e2e/home.spec.ts:258:7 › homepage › the hero fetches no slider raster, because it has no photograph
+[1A[2K[38/52] [mobile-chrome] › e2e/home.spec.ts:287:7 › homepage › consent banner ships in the HTML, not built by React
+[1A[2K[39/52] [mobile-chrome] › e2e/home.spec.ts:294:7 › homepage › consent banner is visible to a visitor who has not decided
+[1A[2K[40/52] [mobile-chrome] › e2e/home.spec.ts:311:7 › homepage › consent banner is absent when script is off
+[1A[2K[41/52] [mobile-chrome] › e2e/home.spec.ts:339:7 › homepage › the pre-paint consent snippet survives the build byte for byte
+[1A[2K[42/52] [mobile-chrome] › e2e/home.spec.ts:347:7 › homepage › consent banner is hidden for a visitor who decided
+[1A[2K[43/52] [mobile-chrome] › e2e/home.spec.ts:373:7 › homepage › offers category navigation into the archives
+[1A[2K[44/52] [mobile-chrome] › e2e/home.spec.ts:378:7 › homepage › shows a cart control in the header before anything is added
+[1A[2K[45/52] [mobile-chrome] › e2e/home.spec.ts:383:7 › homepage › search results page finds products
+[1A[2K[46/52] [mobile-chrome] › e2e/home.spec.ts:389:7 › homepage › short query shows the minimum-characters hint
+[1A[2K[47/52] [mobile-chrome] › e2e/home.spec.ts:394:7 › homepage › a search term with SQL wildcards is treated as text, not a pattern
+[1A[2K[48/52] [mobile-chrome] › e2e/home.spec.ts:419:7 › homepage › every category link on the home page resolves
+[1A[2K[49/52] [mobile-chrome] › e2e/home.spec.ts:454:7 › homepage › the homepage costs one render-blocking stylesheet
+[1A[2K  9) [mobile-chrome] › e2e/home.spec.ts:454:7 › homepage › the homepage costs one render-blocking stylesheet 
+
+    Error: homepage stylesheets: /_next/static/chunks/2gikplvv0xfog.css, /_next/static/chunks/3hdndmjltmzos.css, /_next/static/chunks/2de9-2o841xw1.css
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoHaveLength[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected length: [32m1[39m
+    Received length: [31m3[39m
+    Received array:  [31m["/_next/static/chunks/2gikplvv0xfog.css", "/_next/static/chunks/3hdndmjltmzos.css", "/_next/static/chunks/2de9-2o841xw1.css"][39m
+
+      463 |     )
+      464 |
+    > 465 |     expect(sheets, `homepage stylesheets: ${sheets.join(', ')}`).toHaveLength(1)
+          |                                                                  ^
+      466 |   })
+      467 |
+      468 |   /**
+        at /Users/ofir/kenyonexpress-autopilot/e2e/home.spec.ts:465:66
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/home-homepage-the-homepage-9b3f9--render-blocking-stylesheet-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/home-homepage-the-homepage-9b3f9--render-blocking-stylesheet-mobile-chrome/error-context.md
+
+
+[1A[2K[50/52] [mobile-chrome] › e2e/home.spec.ts:481:7 › homepage › reaching the footer costs no 404s
+[1A[2K[51/52] [mobile-chrome] › e2e/home.spec.ts:518:7 › homepage › the hero holds its first slide until the visitor interacts, then rotates
+[1A[2K  10) [mobile-chrome] › e2e/home.spec.ts:481:7 › homepage › reaching the footer costs no 404s ──────
+
+    Error: 410 /wishlist
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "410 /wishlist",[39m
+    [31m+ ][39m
+
+      497 |     await page.waitForTimeout(3000)
+      498 |
+    > 499 |     expect(failed, failed.join(', ')).toEqual([])
+          |                                       ^
+      500 |   })
+      501 |
+      502 |   /**
+        at /Users/ofir/kenyonexpress-autopilot/e2e/home.spec.ts:499:39
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/home-homepage-reaching-the-footer-costs-no-404s-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/home-homepage-reaching-the-footer-costs-no-404s-mobile-chrome/error-context.md
+
+
+[1A[2K[52/52] [mobile-chrome] › e2e/home.spec.ts:579:7 › homepage › the hero slot renders the branded placeholder, named, with no vendor raster
+[1A[2K  10 failed
+    [chromium] › e2e/home-rtl.spec.ts:124:7 › home page RTL › every ltr node on the page is on the allow-list 
+    [chromium] › e2e/home.spec.ts:38:7 › homepage › renders the header search combobox ─────────────
+    [chromium] › e2e/home.spec.ts:189:7 › homepage › the image optimizer re-encodes per width instead of passing the source through 
+    [chromium] › e2e/home.spec.ts:454:7 › homepage › the homepage costs one render-blocking stylesheet 
+    [chromium] › e2e/home.spec.ts:481:7 › homepage › reaching the footer costs no 404s ─────────────
+    [mobile-chrome] › e2e/home-rtl.spec.ts:124:7 › home page RTL › every ltr node on the page is on the allow-list 
+    [mobile-chrome] › e2e/home.spec.ts:38:7 › homepage › renders the header search combobox ────────
+    [mobile-chrome] › e2e/home.spec.ts:189:7 › homepage › the image optimizer re-encodes per width instead of passing the source through 
+    [mobile-chrome] › e2e/home.spec.ts:454:7 › homepage › the homepage costs one render-blocking stylesheet 
+    [mobile-chrome] › e2e/home.spec.ts:481:7 › homepage › reaching the footer costs no 404s ────────
+  42 passed (49.5s)

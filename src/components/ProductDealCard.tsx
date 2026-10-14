@@ -137,10 +137,17 @@ export default function ProductDealCard({
 
   return (
     <article className="p_con">
-      {product.category && (
+      {/* The department row is a reserved slot, not a conditional (UX09): a
+          card with no category rendered nothing here and came out 40px shorter
+          than its neighbours (24px row + the 16px column gap). The empty span
+          holds the row through `.p_con__category { min-height: 24px }`; the
+          photograph's slot is held the same way by `.p_con__image-wrap`. */}
+      {product.category ? (
         <Link href={categoryHref(product.category.slug)} className="p_con__category">
           {product.category.name_he}
         </Link>
+      ) : (
+        <span className="p_con__category" aria-hidden="true" data-empty-slot="category" />
       )}
 
       {/*

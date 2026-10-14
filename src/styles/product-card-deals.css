@@ -1,9 +1,37 @@
 /* refs/ke_live_home.html — elementor-9175 / jet-listing-grid
    (was cited as ke_live_singlefile.html, a file retired in 62eb74956) */
 
+/*
+  A GRID WITH ONE ROW HEIGHT, NOT A FLEX WRAP WITH ONE PER ROW. UX09, measured
+  14.10.2026 (logs/ux09/before.json): every card came out the same height, but
+  only because every one of the 32 fixture cards carries a category, a
+  photograph and a price. The card renders the category link and the <img>
+  conditionally, so one row without a department was 40px shorter and one
+  without a photograph 245px shorter, and `flex-wrap` sizes each row on its
+  own, so the short card dragged its row and nothing else. A grid with
+  `grid-auto-rows: 1fr` gives every row the height of the tallest card in the
+  whole section, and the slot reservations below (`.p_con__category` 24px,
+  `.p_con__image-wrap` 245px) keep that height the measured one whatever the
+  data. Column count and pitch are unchanged: 1fr of 1150 is the 287.5px the
+  25% basis gave, and the item's own padding still spaces the rows.
+*/
 .jet-listing-grid-deals {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  grid-auto-rows: 1fr;
+  align-items: stretch;
+}
+
+@media (min-width: 768px) {
+  .jet-listing-grid-deals {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1200px) {
+  .jet-listing-grid-deals {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }
 
 /*
@@ -32,22 +60,7 @@
 .jet-listing-grid-deals__item {
   box-sizing: border-box;
   padding: 8px 0;
-  max-width: 100%;
-  flex: 0 0 100%;
-}
-
-@media (min-width: 768px) {
-  .jet-listing-grid-deals__item {
-    max-width: 50%;
-    flex: 0 0 50%;
-  }
-}
-
-@media (min-width: 1200px) {
-  .jet-listing-grid-deals__item {
-    max-width: 25%;
-    flex: 0 0 25%;
-  }
+  min-width: 0;
 }
 
 /* live: divider on the LEFT edge (inline-end in RTL) of every item except the
@@ -97,6 +110,11 @@
   font-size: 12px;
   font-weight: 400;
   line-height: 24px; /* live: category row is 24px tall */
+  /* The row is reserved even when the card has no department to print: the
+     card renders an empty `.p_con__category` then (UX09), and an empty flex
+     item is 0 tall without this. 24 is the line box above, so a printed label
+     and an empty slot are the same height. */
+  min-height: 24px;
   color: var(--color-muted-2);
 }
 
@@ -161,6 +179,11 @@
 .p_con__image-wrap {
   display: flex;
   overflow: hidden;
+  /* The photograph's slot is held open without a photograph (UX09): the wrap
+     takes its height from the in-flow <img> below (see the `fill` note in
+     ProductCard.tsx), and a card with no thumbnail had no <img> to measure
+     and lost the whole 245px. Same number as `.p_con__image`. */
+  min-height: 245px;
 }
 
 .p_con__image-link {

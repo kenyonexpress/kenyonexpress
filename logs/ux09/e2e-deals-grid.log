@@ -1,0 +1,18 @@
+Already up to date
+Done in 193ms using pnpm v11.1.2
+
+Running 12 tests using 2 workers
+
+[1A[2K[1/12] [chromium] › e2e/deals-grid.spec.ts:84:9 › the deals grid at 380 › 1 column, one height for every card
+[1A[2K[2/12] [chromium] › e2e/deals-grid.spec.ts:103:9 › the deals grid at 380 › a card with no department and no photograph is as tall as its row
+[1A[2K[3/12] [chromium] › e2e/deals-grid.spec.ts:103:9 › the deals grid at 768 › a card with no department and no photograph is as tall as its row
+[1A[2K[4/12] [chromium] › e2e/deals-grid.spec.ts:84:9 › the deals grid at 768 › 2 columns, one height for every card
+[1A[2K[5/12] [chromium] › e2e/deals-grid.spec.ts:84:9 › the deals grid at 1440 › 4 columns, one height for every card
+[1A[2K[6/12] [chromium] › e2e/deals-grid.spec.ts:103:9 › the deals grid at 1440 › a card with no department and no photograph is as tall as its row
+[1A[2K[7/12] [mobile-chrome] › e2e/deals-grid.spec.ts:84:9 › the deals grid at 380 › 1 column, one height for every card
+[1A[2K[8/12] [mobile-chrome] › e2e/deals-grid.spec.ts:103:9 › the deals grid at 380 › a card with no department and no photograph is as tall as its row
+[1A[2K[9/12] [mobile-chrome] › e2e/deals-grid.spec.ts:84:9 › the deals grid at 768 › 2 columns, one height for every card
+[1A[2K[10/12] [mobile-chrome] › e2e/deals-grid.spec.ts:103:9 › the deals grid at 768 › a card with no department and no photograph is as tall as its row
+[1A[2K[11/12] [mobile-chrome] › e2e/deals-grid.spec.ts:84:9 › the deals grid at 1440 › 4 columns, one height for every card
+[1A[2K[12/12] [mobile-chrome] › e2e/deals-grid.spec.ts:103:9 › the deals grid at 1440 › a card with no department and no photograph is as tall as its row
+[1A[2K  12 passed (5.7s)
