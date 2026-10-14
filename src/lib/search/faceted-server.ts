@@ -12,6 +12,7 @@ import {
   parseFacetedParams,
   sortDocs,
 } from '@/lib/search/faceted'
+import { meiliConfigured, meiliSearch } from '@/lib/search/meili-request'
 import {
   PRODUCTS_INDEX,
   type ProductDocument,
@@ -88,50 +89,37 @@ function docToHit(doc: ProductDocument): FacetHit {
   }
 }
 
-function meiliConfigured(): boolean {
-  return Boolean(process.env.MEILISEARCH_HOST && process.env.MEILISEARCH_API_KEY)
-}
-
 type MeiliFacetResponse = {
   hits: ProductDocument[]
   estimatedTotalHits?: number
   facetDistribution?: FacetDistribution
 }
 
-/** Null on any failure, so the database path takes over rather than a 500. */
+/**
+ * Null on any failure, so the database path takes over rather than a 500.
+ * The failure itself is no longer silent: `meiliSearch` logs the status and
+ * the engine's error code (UX21; see lib/search/meili-request.ts for what
+ * production was doing with a healthy host and no engine).
+ */
 async function searchMeiliFaceted(params: FacetedSearchParams): Promise<FacetsResponse | null> {
-  try {
-    const host = (process.env.MEILISEARCH_HOST as string).replace(/\/$/, '')
-    const sort = buildMeiliSort(params.sort)
-    const res = await fetch(`${host}/indexes/${PRODUCTS_INDEX}/search`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${process.env.MEILISEARCH_API_KEY}`,
-      },
-      body: JSON.stringify({
-        q: params.q,
-        limit: params.limit,
-        offset: params.offset,
-        filter: buildMeiliFilters(params),
-        facets: [...FACET_ATTRIBUTES],
-        ...(sort ? { sort } : {}),
-        ...localesParam(params.q),
-      }),
-      cache: 'no-store',
-    })
-    if (!res.ok) return null
-    const data = (await res.json()) as MeiliFacetResponse
-    const hits = data.hits ?? []
-    return {
-      query: params.q,
-      results: hits.map(docToHit),
-      total: data.estimatedTotalHits ?? hits.length,
-      facets: data.facetDistribution ?? {},
-      engine: 'meilisearch',
-    }
-  } catch {
-    return null
+  const sort = buildMeiliSort(params.sort)
+  const outcome = await meiliSearch<MeiliFacetResponse>(PRODUCTS_INDEX, {
+    q: params.q,
+    limit: params.limit,
+    offset: params.offset,
+    filter: buildMeiliFilters(params),
+    facets: [...FACET_ATTRIBUTES],
+    ...(sort ? { sort } : {}),
+    ...localesParam(params.q),
+  })
+  if (!outcome.ok) return null
+  const hits = outcome.data.hits ?? []
+  return {
+    query: params.q,
+    results: hits.map(docToHit),
+    total: outcome.data.estimatedTotalHits ?? hits.length,
+    facets: outcome.data.facetDistribution ?? {},
+    engine: 'meilisearch',
   }
 }
 

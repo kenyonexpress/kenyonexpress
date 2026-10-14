@@ -50,7 +50,7 @@ const VIEW_OPTIONS: { value: CatalogView; path: string }[] = [
  * `display:none` below 768: at 380 the bar holds the filters link and the
  * sort pill, and the grid is already two columns.
  */
-function ViewSwitcher() {
+export function ViewSwitcher() {
   const { view, setView } = useCatalogView()
   return (
     <fieldset className="category-view-switcher">

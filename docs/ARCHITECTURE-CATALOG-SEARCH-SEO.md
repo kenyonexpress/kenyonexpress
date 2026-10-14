@@ -309,6 +309,29 @@ products שכותב ל-outbox table + עדכון דחוף מה-server actions.
 כניסה יחידה, מחליפים את המימוש שלה בקריאת HTTP ל-Meilisearch מאחורי אותו
 API אפליקטיבי.
 
+### 2.9 מנוע שנופל בשקט: מה נמדד ומה נרשם (UX21, 14.10)
+
+נמדד מול פרודקשן (`kenyonexpress.vercel.app`): ‏`MEILISEARCH_HOST` ו-`MEILISEARCH_API_KEY`
+מוגדרים ב-Production, ‏`/api/ready` מדווח `meilisearch: ok` (המארח עונה ל-`/health`),
+ובכל זאת `/api/search/facets?q=ספא` עונה `"engine":"database"` ו-`/api/search/suggest`
+עונה `database-fts`. כל בקשת חיפוש למנוע נכשלה, והנסיגה ל-Postgres שירתה את החנות
+בלי שום שורת לוג, כי שלושת הקוראים עטפו את ה-fetch ב-`if (!res.ok) return null`
+ו-`catch { return null }`.
+
+מאז UX21 כל בקשת חיפוש יוצאת דרך `src/lib/search/meili-request.ts`:
+
+- כישלון נרשם כ-`search.meili_unavailable` עם הסטטוס וקוד השגיאה שהמנוע מחזיר
+  (`index_not_found`, `invalid_api_key`, `invalid_search_locales`...). הנסיגה ל-Postgres
+  נשארת; רק השקט הלך.
+- שרת ישן מ-1.10 שדוחה את `locales` ב-400 מקבל ניסיון שני בלי השדה,
+  עם `search.meili_locales_unsupported`, כך שפער גרסה עולה את רמז הטוקנייזר ולא את המנוע.
+- בדיקת המוכנות (`lib/health/checks.ts`) מריצה אחרי ה-ping חיפוש אמיתי של מסמך אחד
+  על אינדקס המוצרים; `ok` פירושו שחיפוש חוזר, ומארח חי שאינו מחפש הוא `down` עם
+  הקוד בפירוט.
+
+הסיבה בפרודקשן לא נראית מבחוץ בלי המפתח; אחרי הפריסה הבאה קוראים אותה משורת
+הלוג או מ-`/api/health`.
+
 ---
 
 ## 3. SEO

@@ -183,6 +183,18 @@ export default function SiteSearch({ id, variant, initialQuery = '', autoFocus, 
   const sequence = useRef(0)
   const controller = useRef<AbortController | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  /**
+   * Whether the shopper has typed into THIS field. The results page seeds the
+   * field with the query, and seeding is not typing: before UX21 the suggest
+   * effect ran on the seed as well, so every results page load asked the
+   * suggest route for the query it was already answering and then OPENED the
+   * listbox over the page with nobody in the field (logs/ux21/after-1440-
+   * results.png, first build: six suggestions covering the control bar, the
+   * filters row and the first card, and an E2E click on a chip under them
+   * "intercepted by" a suggestion). Nothing is asked and nothing opens until
+   * a keystroke.
+   */
+  const typed = useRef(false)
 
   const query = value.trim()
   const listId = `${id}-suggestions`
@@ -215,6 +227,8 @@ export default function SiteSearch({ id, variant, initialQuery = '', autoFocus, 
       setAnswered(false)
       return
     }
+    // The seeded query is the page's own: see `typed`.
+    if (!typed.current) return
     setAnswered(false)
 
     const seq = ++sequence.current
@@ -366,7 +380,10 @@ export default function SiteSearch({ id, variant, initialQuery = '', autoFocus, 
           role="combobox"
           name="q"
           value={value}
-          onChange={(e) => setValue(e.target.value)}
+          onChange={(e) => {
+            typed.current = true
+            setValue(e.target.value)
+          }}
           onKeyDown={onKeyDown}
           onFocus={() => {
             loadQuick()

@@ -1,17 +1,26 @@
 import { type CategoryLink, buildEmptyStateSuggestions } from '@/lib/search/empty-state'
+import type { EmptyStateVerification } from '@/lib/search/empty-state-server'
 import { getPopularSearches } from '@/lib/search/popular'
 import Link from 'next/link'
 
 /**
  * The results page when the engine found nothing, or the query was too short.
  *
- * A dead end with three doors (lib/search/empty-state.ts decides which):
- * a relaxed query, the operator's promoted terms, and the categories. The
- * first two sentences are kept word for word from the plain empty state that
- * preceded this: e2e/home.spec.ts reads them.
+ * A dead end with doors (lib/search/empty-state.ts decides the promoted
+ * terms and the categories; lib/search/empty-state-server.ts asks the engine
+ * about the other two). The first two sentences are kept word for word from
+ * the plain empty state that preceded this: e2e/home.spec.ts reads them.
+ *
+ * UX21, measured before (logs/ux21/before.json): a search narrowed by a
+ * facet to nothing said "נסו להסיר סינון" and offered no link that did it,
+ * while the chip that would was 800px further down under the grid's empty
+ * box; and "אולי התכוונתם ל" was printed unverified, so it could lead to a
+ * second empty page. Now a narrowed-empty search leads with one action,
+ * "הצגת כל N התוצאות ללא סינון", when the bare query has results, says so
+ * when it has none, and the relaxed query is offered only with its count.
  *
  * Server component: the promoted terms are one anon read, and the categories
- * are the list the page already loaded for its sidebar.
+ * are the list the page already loaded.
  */
 type Props = {
   query: string
@@ -21,6 +30,8 @@ type Props = {
   tooShort?: boolean
   minQuery: number
   categories: CategoryLink[]
+  /** The engine's answers about widening and relaxing; absent when too short. */
+  verification?: EmptyStateVerification
 }
 
 export default async function SearchEmptyState({
@@ -29,6 +40,7 @@ export default async function SearchEmptyState({
   tooShort = false,
   minQuery,
   categories,
+  verification,
 }: Props) {
   const popular = await getPopularSearches()
   const suggestions = buildEmptyStateSuggestions({
@@ -36,6 +48,8 @@ export default async function SearchEmptyState({
     popular,
     categories,
   })
+  const unfiltered = narrowed ? (verification?.unfiltered ?? null) : null
+  const relaxed = verification?.relaxed ?? null
 
   return (
     <div className="category-page__empty search-empty" data-testid="search-empty-state">
@@ -44,20 +58,33 @@ export default async function SearchEmptyState({
       ) : (
         <>
           <p>לא נמצאו מוצרים עבור "{query}".</p>
-          <p>{narrowed ? 'נסו להסיר סינון או מילת חיפוש אחרת.' : 'נסו מילת חיפוש אחרת.'}</p>
+          {narrowed && unfiltered && unfiltered.total === 0 ? (
+            <p>גם ללא הסינון אין תוצאות לחיפוש הזה. נסו מילת חיפוש אחרת.</p>
+          ) : (
+            <p>{narrowed ? 'נסו להסיר סינון או מילת חיפוש אחרת.' : 'נסו מילת חיפוש אחרת.'}</p>
+          )}
         </>
       )}
 
-      {suggestions.relaxed ? (
+      {unfiltered && unfiltered.total > 0 ? (
+        <p className="search-empty__widen">
+          <Link href={unfiltered.href} className="search-empty__action" data-widen>
+            הצגת כל {'⁦'}
+            {unfiltered.total}
+            {'⁩'} התוצאות ללא סינון
+          </Link>
+        </p>
+      ) : null}
+
+      {relaxed ? (
         <p className="search-empty__relaxed">
           אולי התכוונתם ל
-          <Link
-            href={`/search?q=${encodeURIComponent(suggestions.relaxed)}`}
-            className="search-empty__link"
-          >
-            ״{suggestions.relaxed}״
+          <Link href={relaxed.href} className="search-empty__link">
+            ״{relaxed.query}״
           </Link>
-          ?
+          ? ({'⁦'}
+          {relaxed.total}
+          {'⁩'} מוצרים)
         </p>
       ) : null}
 

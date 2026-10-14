@@ -224,6 +224,77 @@ describe('email (Resend) probe', () => {
   })
 })
 
+/**
+ * UX21: `/health` alone was a false green. On 14.10 production's host
+ * answered it with a 200 while every search request failed and the
+ * storefront ran on the Postgres fallback (lib/search/meili-request.ts). The
+ * check now runs one `limit: 1` search against the products index after the
+ * ping, so `ok` means a search returns.
+ */
+describe('search (Meilisearch) probe', () => {
+  const ENV = {
+    MEILISEARCH_HOST: 'https://meili.test/',
+    MEILISEARCH_API_KEY: 'k',
+  } as unknown as NodeJS.ProcessEnv
+
+  afterEach(() => vi.unstubAllGlobals())
+
+  function host(answers: (url: string, init?: RequestInit) => Response | Promise<Response>) {
+    vi.stubGlobal('fetch', (url: string, init?: RequestInit) => Promise.resolve(answers(url, init)))
+  }
+
+  it('is ok only after a real search on the products index returns', async () => {
+    scriptDatabase(true)
+    const seen: string[] = []
+    host((url, init) => {
+      seen.push(`${init?.method ?? 'GET'} ${url}`)
+      return Response.json(url.endsWith('/health') ? { status: 'available' } : { hits: [] })
+    })
+    const search = byName(await runHealthChecks(ENV), 'search')
+    expect(search.status).toBe('ok')
+    expect(seen).toEqual([
+      'GET https://meili.test/health',
+      'POST https://meili.test/indexes/products/search',
+    ])
+  })
+
+  it('is down with the engine error code when the host is up but the search fails', async () => {
+    scriptDatabase(true)
+    host((url) =>
+      url.endsWith('/health')
+        ? Response.json({ status: 'available' })
+        : Response.json(
+            { code: 'index_not_found', message: 'Index `products` not found.' },
+            {
+              status: 404,
+            },
+          ),
+    )
+    const search = byName(await runHealthChecks(ENV), 'search')
+    expect(search.status).toBe('down')
+    expect(search.detail).toContain('index_not_found')
+    expect(search.detail).toContain('/health')
+  })
+
+  it('names the status when the failure carries no code', async () => {
+    scriptDatabase(true)
+    host((url) =>
+      url.endsWith('/health')
+        ? Response.json({ status: 'available' })
+        : new Response('', { status: 403 }),
+    )
+    expect(byName(await runHealthChecks(ENV), 'search').detail).toContain('http_403')
+  })
+
+  it('is down when the host does not answer the ping', async () => {
+    scriptDatabase(true)
+    host(() => new Response('', { status: 503 }))
+    const search = byName(await runHealthChecks(ENV), 'search')
+    expect(search.status).toBe('down')
+    expect(search.detail).toContain('אינו עונה')
+  })
+})
+
 describe('twilio probe', () => {
   const CREDS = { TWILIO_ACCOUNT_SID: 'ACxyz', TWILIO_AUTH_TOKEN: 'tok' }
 

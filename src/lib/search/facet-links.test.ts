@@ -126,7 +126,8 @@ describe('toFacetSearchParams', () => {
     expect(params.get('q')).toBe('ספא')
     expect(params.get('type')).toBe('coupon')
     expect(params.get('city')).toBe('חיפה')
-    expect(params.get('limit')).toBe('48')
+    // One results page (UX21): the engine window is the page size, not 48.
+    expect(params.get('limit')).toBe('24')
   })
 
   it('maps the listing sidebar price names onto the facet names as whole shekels', () => {

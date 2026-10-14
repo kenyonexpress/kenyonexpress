@@ -1,4 +1,5 @@
 import type { FacetDistribution, FacetedSearchParams } from '@/lib/search/faceted'
+import { SEARCH_PAGE_SIZE, parseSearchPage, searchOffset } from '@/lib/search/paging'
 
 /**
  * Facet navigation as links, and nothing but links.
@@ -193,7 +194,10 @@ export function toFacetSearchParams(
   const max = wholeShekels(first(sp.price_max) ?? first(sp.max))
   if (min !== undefined) params.set('price_min', min)
   if (max !== undefined) params.set('price_max', max)
-  params.set('limit', '48')
+  // One page of the results page (UX21): `?page=N` is the engine's offset.
+  params.set('limit', String(SEARCH_PAGE_SIZE))
+  const offset = searchOffset(parseSearchPage(sp.page))
+  if (offset > 0) params.set('offset', String(offset))
   return params
 }
 

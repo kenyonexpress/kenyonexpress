@@ -9,6 +9,7 @@ import 'server-only'
 import type { Product } from '@/components/ProductCard'
 import { log } from '@/lib/observability/log'
 import { escapeMeiliFilterValue } from '@/lib/search/faceted'
+import { meiliConfigured, meiliSearch } from '@/lib/search/meili-request'
 import { localesParam } from '@/lib/search/query-locale'
 import {
   type PendingSearchProductRow,
@@ -28,10 +29,6 @@ export type SearchOutcome = {
 
 const sanitize = sanitizeOrTerm
 
-function meiliConfigured(): boolean {
-  return Boolean(process.env.MEILISEARCH_HOST && process.env.MEILISEARCH_API_KEY)
-}
-
 type MeiliHit = {
   id: string
   slug: string
@@ -49,49 +46,40 @@ async function searchMeili(
   productType?: 'coupon' | 'physical',
   categorySlug?: string,
 ): Promise<SearchOutcome | null> {
-  try {
-    const host = (process.env.MEILISEARCH_HOST as string).replace(/\/$/, '')
-    const index = process.env.MEILISEARCH_INDEX ?? 'products'
-    // Both are filterable attributes (lib/search/meili-settings.ts) and both
-    // go through the same quoting the faceted route uses, so a slug can only
-    // ever be a value in the expression, never a second clause.
-    const filter: string[] = []
-    if (productType) filter.push(`type = ${productType}`)
-    if (categorySlug) filter.push(`category_slug = ${escapeMeiliFilterValue(categorySlug)}`)
-    const res = await fetch(`${host}/indexes/${index}/search`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${process.env.MEILISEARCH_API_KEY}`,
-      },
-      // `type` is a filterable attribute (see lib/search/meili-settings.ts), so
-      // the facet is applied in the engine and estimatedTotalHits stays truthful.
-      body: JSON.stringify({
-        q,
-        limit,
-        ...(filter.length ? { filter } : {}),
-        // Pins the query tokenizer to the script(s) actually typed, the same
-        // way the index settings pin the document side (query-locale.ts).
-        ...localesParam(q),
-      }),
-      // Search is request-time; do not cache across queries.
-      cache: 'no-store',
-    })
-    if (!res.ok) return null
-    const data = (await res.json()) as { hits: MeiliHit[]; estimatedTotalHits?: number }
-    const results: Product[] = (data.hits ?? []).map((h) => ({
-      id: h.id,
-      slug: h.slug,
-      name_he: h.name_he,
-      kenyon_price: h.kenyon_price,
-      full_price: h.full_price,
-      images: h.images ?? [],
-      stock_quantity: h.stock_quantity,
-      category: h.category ?? null,
-    }))
-    return { results, total: data.estimatedTotalHits ?? results.length, engine: 'meilisearch' }
-  } catch {
-    return null
+  const index = process.env.MEILISEARCH_INDEX ?? 'products'
+  // Both are filterable attributes (lib/search/meili-settings.ts) and both
+  // go through the same quoting the faceted route uses, so a slug can only
+  // ever be a value in the expression, never a second clause.
+  const filter: string[] = []
+  if (productType) filter.push(`type = ${productType}`)
+  if (categorySlug) filter.push(`category_slug = ${escapeMeiliFilterValue(categorySlug)}`)
+  // `type` is a filterable attribute (see lib/search/meili-settings.ts), so
+  // the facet is applied in the engine and estimatedTotalHits stays truthful.
+  // A failure is logged by `meiliSearch` (UX21) and answered with null, so the
+  // database path takes over as it always did.
+  const outcome = await meiliSearch<{ hits: MeiliHit[]; estimatedTotalHits?: number }>(index, {
+    q,
+    limit,
+    ...(filter.length ? { filter } : {}),
+    // Pins the query tokenizer to the script(s) actually typed, the same
+    // way the index settings pin the document side (query-locale.ts).
+    ...localesParam(q),
+  })
+  if (!outcome.ok) return null
+  const results: Product[] = (outcome.data.hits ?? []).map((h) => ({
+    id: h.id,
+    slug: h.slug,
+    name_he: h.name_he,
+    kenyon_price: h.kenyon_price,
+    full_price: h.full_price,
+    images: h.images ?? [],
+    stock_quantity: h.stock_quantity,
+    category: h.category ?? null,
+  }))
+  return {
+    results,
+    total: outcome.data.estimatedTotalHits ?? results.length,
+    engine: 'meilisearch',
   }
 }
 

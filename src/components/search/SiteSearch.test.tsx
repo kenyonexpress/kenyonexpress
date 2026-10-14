@@ -246,7 +246,15 @@ describe('SiteSearch', () => {
     const input = setup({ initialQuery: 'צימר', variant: 'page', id: 'page-search' })
     expect(input.value).toBe('צימר')
     // Seeding is not typing: the results page already shows these results.
+    // (This line used to assert ONE fetch, which was the defect it described:
+    // every results page asked the suggest route for its own query and opened
+    // the listbox over the page. UX21.)
     vi.advanceTimersByTime(SUGGEST_DEBOUNCE_MS * 2)
+    expect(byPath('/api/search/suggest')).toHaveLength(0)
+    expect(input).toHaveAttribute('aria-expanded', 'false')
+
+    fireEvent.change(input, { target: { value: 'צימר ז' } })
+    vi.advanceTimersByTime(SUGGEST_DEBOUNCE_MS)
     expect(byPath('/api/search/suggest')).toHaveLength(1)
   })
 })

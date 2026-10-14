@@ -19,7 +19,7 @@ export const MAX_SAVED_QUERY = 120
 export const MAX_SAVED_HREF = 600
 
 /** Paging never belongs in a saved search: page three of today is not a search. */
-const DROPPED = new Set(['limit', 'offset'])
+const DROPPED = new Set(['limit', 'offset', 'page'])
 
 /**
  * The URL the row stores: the search page's own parameters, sorted so two

@@ -1,4 +1,5 @@
 import { command, upstashConfig } from '@/lib/rate-limit/upstash'
+import { PRODUCTS_INDEX } from '@/lib/search/meili-settings'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { readReplicaUrl } from '@/lib/supabase/read-replica'
 import { offloadConfig } from '@/lib/workers/async-offload'
@@ -184,20 +185,48 @@ async function checkSearch(env: NodeJS.ProcessEnv): Promise<DependencyReport> {
       detail: 'Meilisearch לא מוגדר; החיפוש עובר דרך Postgres',
     }
   }
+  // TWO PROBES, NOT ONE (UX21). On 14.10 production answered `/health` with a
+  // 200 and this check said `ok`, while every search request to the same host
+  // failed and the storefront fell back to Postgres (lib/search/meili-request.ts
+  // has the measurement). A liveness ping proves the process is up; it says
+  // nothing about the index this storefront reads, the key it reads it with, or
+  // the search parameters this version accepts. So after `/health` the check
+  // runs the smallest real search (`limit: 1`, no query) against the products
+  // index, through the same request path the storefront uses, and `ok` means
+  // "a search returns". A host that is up but cannot search is `down`, with the
+  // engine's own error code in the detail, because that is the state the
+  // shopper is in.
   const { value, ms } = await timed(async () => {
-    const response = await fetch(`${host.replace(/\/$/, '')}/health`, {
+    const base = host.replace(/\/$/, '')
+    const response = await fetch(`${base}/health`, {
       headers: { Authorization: `Bearer ${key}` },
       signal: AbortSignal.timeout(4000),
       cache: 'no-store',
     })
-    return response.ok ? 'ok' : 'down'
+    if (!response.ok) return 'unreachable'
+    const probe = await fetch(`${base}/indexes/${PRODUCTS_INDEX}/search`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
+      body: JSON.stringify({ q: '', limit: 1 }),
+      signal: AbortSignal.timeout(4000),
+      cache: 'no-store',
+    })
+    if (probe.ok) return 'ok'
+    const body = (await probe.json().catch(() => null)) as { code?: string } | null
+    return `search_failed:${body?.code ?? `http_${probe.status}`}`
   })
   const status: DependencyStatus = value === 'ok' ? 'ok' : 'down'
+  const detail =
+    value === 'ok'
+      ? 'Meilisearch'
+      : value === null || value === 'unreachable'
+        ? 'Meilisearch מוגדר אך אינו עונה'
+        : `Meilisearch עונה ל-/health אבל החיפוש באינדקס ${PRODUCTS_INDEX} נכשל (${value.slice('search_failed:'.length)})`
   return {
     name: 'search',
     status,
     latencyMs: ms,
-    detail: status === 'ok' ? 'Meilisearch' : 'Meilisearch מוגדר אך אינו עונה',
+    detail,
   }
 }
 

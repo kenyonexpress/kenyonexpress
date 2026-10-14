@@ -1216,6 +1216,116 @@
 }
 
 /* ---------------------------------------------------------------------------
+   UX21: the results page's controls in the first screen. The bar reuses
+   `.category-control-bar` (measured off live's shop bar), the chips reuse
+   `.category-active-filters`, and the filters are ONE closed <details> row
+   under them whose height does not depend on the engine: the facet links
+   stream in inside it, so the row is the same height before and after they
+   arrive, and the shell reserves the same row (`--pending`). Colours and the
+   44px are the tokens; the radius and paddings follow the bar above.
+   --------------------------------------------------------------------------- */
+.search-filters {
+  margin: 12px 0 16px;
+  border: 1px solid var(--cat-line);
+  border-radius: 9px;
+  background: var(--cat-surface);
+  box-sizing: border-box;
+}
+
+.search-filters--pending {
+  min-height: calc(var(--spacing-touch-min) + 2px);
+}
+
+.search-filters__summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--spacing-touch-min);
+  padding: 0 16px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--cat-ink);
+  list-style: none;
+}
+
+.search-filters__summary::-webkit-details-marker {
+  display: none;
+}
+
+.search-filters__summary::after {
+  content: "▾";
+  margin-inline-start: auto;
+  color: var(--cat-muted);
+}
+
+.search-filters[open] .search-filters__summary::after {
+  content: "▴";
+}
+
+.search-filters__count {
+  color: var(--cat-muted);
+  font-weight: 400;
+}
+
+.search-filters__body {
+  padding: 0 16px 16px;
+  border-top: 1px solid var(--cat-line);
+}
+
+/* Inside the disclosure the nav loses the rule it drew when it sat under
+   the grid: the body's own top rule is that line now. */
+.search-filters .search-facets {
+  margin-top: 0;
+  padding-top: 16px;
+  border-top: 0;
+}
+
+.search-filters__price {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--cat-line);
+}
+
+.search-filters__price-title {
+  margin: 0 0 10px;
+  font-size: 16.002px;
+  font-weight: 700;
+  color: var(--cat-ink);
+}
+
+.search-filters__none,
+.search-filters__loading {
+  margin: 16px 0 0;
+  font-size: 14px;
+  color: var(--cat-muted);
+}
+
+/* The empty state's first door on a narrowed search: one button-shaped
+   link, the brand yellow, so "drop the filter" is a press and not a hunt. */
+.search-empty__widen {
+  margin: 16px 0 0;
+}
+
+.search-empty__action {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--spacing-touch-min);
+  padding: 0 20px;
+  border-radius: 22px;
+  background: var(--cat-brand);
+  color: var(--cat-ink);
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.search-empty__action:hover,
+.search-empty__action:focus-visible {
+  background: var(--cat-brand-hover);
+}
+
+/* ---------------------------------------------------------------------------
    UX14: the listing controls. A real view switcher, the list view it drives,
    the active-filter strip, the price form's refusal, and live's <ul> shape
    on the pagination. Colours are the tokens above; the only literal lengths
