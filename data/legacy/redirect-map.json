@@ -150,6 +150,7 @@
       "/admin/discounts",
       "/admin/discounts/new",
       "/admin/feature-flags",
+      "/admin/flash-deals",
       "/admin/fraud",
       "/admin/growth",
       "/admin/orders",
