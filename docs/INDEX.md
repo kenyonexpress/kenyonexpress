@@ -116,6 +116,7 @@ file or a prior document.
 | [RELEASE-PROCESS.md](RELEASE-PROCESS.md) | ✅ | Branch to production: who approves what, the gates, and how to roll back. Protection settings read from the API. |
 | [OPERATIONS-CALENDAR.md](OPERATIONS-CALENDAR.md) | ✅ | Every scheduled job, when it should run, what breaks while it does not. **Nothing is scheduled.** |
 | [DEPLOYMENT.md](DEPLOYMENT.md) | ✅ | Environments, secrets, deploy and rollback. |
+| [PREVIEW-DEPLOYMENTS.md](PREVIEW-DEPLOYMENTS.md) | ✅ | **Preview environment per pull request** (2026-10-14): Supabase branch `pr-<n>`, branch-scoped Vercel env, stable URL, sticky PR comment, teardown on close. `.github/workflows/preview.yml` and `scripts/preview/`. Gated on two secrets that are not yet set. |
 | [TESTING.md](TESTING.md) | ✅ | What is tested where, the gates, and what is *not* tested. |
 | [INDEX-USAGE-REPORT.md](INDEX-USAGE-REPORT.md) | ✅ | 281 indexes, 178 unscanned, and why not to drop them yet. |
 | [CRON-EXTERNAL.md](CRON-EXTERNAL.md) | ✅ | How to switch a scheduler on. Paste-ready table. |

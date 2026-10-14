@@ -107,6 +107,29 @@ aimed at a stale hostname. `secrets.PRODUCTION_SMOKE_HEADER` is optional and
 only matters if the site is ever put behind Deployment Protection, at which
 point an unauthenticated probe would read the SSO wall as a healthy 200.
 
+## `preview.yml`
+
+One preview environment per pull request, torn down when the PR closes.
+`docs/PREVIEW-DEPLOYMENTS.md` is the full account; this is the shape.
+
+The Vercel GitHub app already builds every PR on project `kenyonexpress-prod`
+and `vercel[bot]` already comments on it. Measured on PR #72 (2026-10-14): the
+check is red on every push, because that project's preview environment has no
+`SUPABASE_SECRET_KEY` and `/account/referrals` prerenders through the admin
+client. The workflow does not copy the production key into the preview
+environment to make that green; a preview that bypasses production RLS is the
+worse outcome. It gives each PR a database instead.
+
+| Job | Event | What it does |
+| --- | --- | --- |
+| `provision` | opened, synchronize, reopened | `scripts/preview/supabase-branch.mjs ensure` creates (or reuses) Supabase branch `pr-<n>`, cloned from the parent; `scripts/preview/vercel-preview.mjs wire` writes the three Supabase variables as preview env scoped to the PR's git branch, redeploys the head through the git source, waits for READY and assigns `kenyonexpress-prod-pr-<n>.vercel.app`; `scripts/preview/comment.mjs` writes one sticky comment (marker `<!-- ke-preview-bot -->`), edited in place on every push |
+| `teardown` | closed | deletes the branch (refusing by name anything that is not `pr-<n>`, so `main` and the persistent `staging` branch cannot be deleted by it), removes the branch-scoped env records and the alias, updates the same comment, and goes red if either half failed |
+
+Both jobs gate on `SUPABASE_ACCESS_TOKEN` and `VERCEL_TOKEN`, announce the
+skip, and exit green when either is missing; the comment then names the
+missing secret. Fork PRs are skipped. `secrets.` is never read from a step
+`if:`. `src/__tests__/preview-deployments-wiring.test.ts` pins all of this.
+
 ## `cron.yml`
 
 The ten scheduled jobs, moved out of `vercel.json` (see the section below) and

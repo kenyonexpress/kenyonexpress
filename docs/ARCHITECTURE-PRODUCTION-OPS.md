@@ -54,6 +54,8 @@
 
 הבעיה: Supabase branching (סביבת DB חולפת פר PR) **דורש Pro** ($25/חודש). ב-free אין branching בכלל.
 
+> **תיקון 2026-10-14:** הארגון `izakjexsygwjsueamxuq` נמדד דרך ה-management API כ-`plan: pro`, ו-branching **מופעל** על `ixvwfbuvfxxsjiywhbbb`: ענף ברירת מחדל `main` וענף קבוע `staging` (`sjojzzppqhjxvjlvnwdb`, `with_data`). ההנחה שלמטה ("אין branching") כבר לא נכונה. סביבת תצוגה מקדימה פר PR על ענף Supabase מתועדת ב-`PREVIEW-DEPLOYMENTS.md`.
+
 ההחלטה: **שני פרויקטים נפרדים, לא branching.** זה גם עדיף מבחינת בידוד: פרודקשן לעולם לא חולק state עם dev.
 
 ```
