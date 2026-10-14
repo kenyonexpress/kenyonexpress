@@ -1,0 +1,70 @@
+Already up to date
+Done in 193ms using pnpm v11.1.2
+[STARTED] Backing up original state...
+[COMPLETED] Backed up original state in git stash (25724034a)
+[STARTED] Running tasks for staged files...
+[STARTED] .lintstagedrc.json — 59 files
+[STARTED] *.{ts,tsx,js,jsx,mjs,cjs,json,jsonc,css} — 12 files
+[STARTED] biome check --write --no-errors-on-unmatched
+[COMPLETED] biome check --write --no-errors-on-unmatched
+[COMPLETED] *.{ts,tsx,js,jsx,mjs,cjs,json,jsonc,css} — 12 files
+[COMPLETED] .lintstagedrc.json — 59 files
+[COMPLETED] Running tasks for staged files...
+[STARTED] Applying modifications from tasks...
+[COMPLETED] Applying modifications from tasks...
+[STARTED] Cleaning up temporary files...
+[COMPLETED] Cleaning up temporary files...
+[phase5/homepage-closeout 8ef9006a8] [autopilot] UX16 cart page: the row leaves instead of vanishing (data-leaving, a 240ms fold from its measured height, the store write on animationend or a 450ms fallback, a refused removal puts the row back), the stepper explains its ceiling and announces the new count, the line total and the on-site total pulse when they move, a unit-price × count line on the card, and a totals breakdown: products/units note, per-product disclosure, savings sum and "חסכת", grand total with the in-store balance, VAT note, aria-live on the figure.
+ 59 files changed, 14296 insertions(+), 23 deletions(-)
+ create mode 100644 e2e/cart-page.spec.ts
+ create mode 100644 logs/ux16/after-1440.png
+ create mode 100644 logs/ux16/after-380.png
+ create mode 100644 logs/ux16/after-768.png
+ create mode 100644 logs/ux16/after-leaving-1440.png
+ create mode 100644 logs/ux16/after-leaving-380.png
+ create mode 100644 logs/ux16/after-qty2-1440.png
+ create mode 100644 logs/ux16/after-qty2-380.png
+ create mode 100644 logs/ux16/after-removed-1440.png
+ create mode 100644 logs/ux16/after-removed-380.png
+ create mode 100644 logs/ux16/after-removed-768.png
+ create mode 100644 logs/ux16/after.json
+ create mode 100644 logs/ux16/before-1440.png
+ create mode 100644 logs/ux16/before-380.png
+ create mode 100644 logs/ux16/before-768.png
+ create mode 100644 logs/ux16/before-removed-1440.png
+ create mode 100644 logs/ux16/before-removed-380.png
+ create mode 100644 logs/ux16/before-removed-768.png
+ create mode 100644 logs/ux16/before.json
+ create mode 100644 logs/ux16/build.log
+ create mode 100644 logs/ux16/build.pid
+ create mode 100644 logs/ux16/build2.log
+ create mode 100644 logs/ux16/commit-msg.txt
+ create mode 100644 logs/ux16/compare.log
+ create mode 100644 logs/ux16/debug-add.mjs
+ create mode 100644 logs/ux16/e2e-cart-page.log
+ create mode 100644 logs/ux16/e2e-cart-page2.log
+ create mode 100644 logs/ux16/e2e-cart-page3.log
+ create mode 100644 logs/ux16/e2e-cart-page4.log
+ create mode 100644 logs/ux16/e2e-cart274-rerun.log
+ create mode 100644 logs/ux16/e2e-cart274-rerun2.log
+ create mode 100644 logs/ux16/e2e-neighbours.log
+ create mode 100644 logs/ux16/failing-titles.txt
+ create mode 100644 logs/ux16/lint.log
+ create mode 100644 logs/ux16/lint2.log
+ create mode 100644 logs/ux16/neighbours-diff.txt
+ create mode 100644 logs/ux16/probe-after.err
+ create mode 100644 logs/ux16/probe-after.out
+ create mode 100644 logs/ux16/probe-before.err
+ create mode 100644 logs/ux16/probe-before.out
+ create mode 100644 logs/ux16/probe.mjs
+ create mode 100644 logs/ux16/server.pid
+ create mode 100644 logs/ux16/shots.mjs
+ create mode 100644 logs/ux16/start-3352-before.log
+ create mode 100644 logs/ux16/start-3353-after.log
+ create mode 100644 logs/ux16/start-3353-after2.log
+ create mode 100644 logs/ux16/state-update.py
+ create mode 100644 logs/ux16/test-full.log
+ create mode 100644 logs/ux16/tsc.log
+ create mode 100644 logs/ux16/tsc2.log
+ create mode 100644 src/components/cart/cart-line-remove-animation.test.tsx
+ create mode 100644 src/components/cart/cart-totals-breakdown.test.tsx
