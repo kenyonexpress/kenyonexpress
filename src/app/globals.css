@@ -372,6 +372,21 @@ body:has([data-home]) .topbar-greeting {
   }
 }
 
+/* UX05: the hero's autoplay progress fill (HeroSlider.tsx, data-hero-progress).
+   The fill inside the current 30x8 dot grows from the inline start across the
+   bar over one autoplay interval; the duration is set inline from the same
+   constant the timer uses. Under prefers-reduced-motion the global rule further
+   down collapses it to 0.01ms, and the timer itself stands down there (see
+   `reducedMotion` in HeroSlider.tsx), so the bar simply reads full. */
+@keyframes hero-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
 /* THE SEARCH PILL HAD NO VISIBLE FOCUS STATE. The pill is `overflow:hidden`
    (it clips the yellow button to the 22px radius), so the site-wide
    `:focus-visible` ring the input earned was drawn and then clipped: measured

@@ -7,7 +7,7 @@ import { useExperimentVariant } from '@/lib/analytics/use-experiment-variant'
 import { ELECTRO_HERO } from '@/lib/electro-hero-tokens'
 import { HERO_SLIDER_BG_CLASS } from '@/lib/hero-singlefile-data'
 import { getImageProps } from 'next/image'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 export type HeroSlideImageLayout = {
   offsetTop: number
@@ -169,7 +169,44 @@ export const HERO_DOT_GEOMETRY = {
   idle: DOT_WIDTH_IDLE,
   current: DOT_WIDTH_CURRENT,
 }
-const AUTOPLAY_MS = 5000
+/**
+ * 5000, which is what the goal asked for and what the e2e autoplay test has
+ * timed its 7s "did not move on its own" window against since STEP 8. Live's
+ * Revolution Slider sets no per-slide duration (refs/ke_live_home.html,
+ * `revolutionInit` for rev_slider_6_1), so it runs the RS6 default of 9000ms;
+ * ours is the faster of the two on purpose and the number is exported so the
+ * progress fill and the tests read the same one as the timer.
+ */
+export const HERO_AUTOPLAY_MS = 5000
+const AUTOPLAY_MS = HERO_AUTOPLAY_MS
+
+/**
+ * UX05 (14.10.2026): the horizontal distance a touch has to travel before it
+ * counts as a swipe. Live's slider has `navigation.touch.touchenabled:true`
+ * and leaves the rest at the RS6 defaults: swipe_threshold 75, swipe_min_touches
+ * 1, swipe_direction horizontal, drag_block_vertical false. So 75px, and a
+ * vertical pan is left to the browser (`touch-action: pan-y` on the root,
+ * which is what drag_block_vertical:false means in CSS).
+ *
+ * Mouse pointers never swipe (RS `touchOnDesktop` is false by default and
+ * live does not set it): a desktop visitor who drags across the slider is
+ * selecting text or a picture, not paging.
+ */
+export const HERO_SWIPE_THRESHOLD = 75
+
+/**
+ * The slider is `dir="rtl"`, so slide 1 sits at the inline START, the RIGHT
+ * edge, and slide 2 is to its LEFT. To pull slide 2 into view the strip has to
+ * move RIGHT, which is a finger travelling right, a positive dx. The dots are
+ * laid out in the same direction (first dot rightmost), so the swipe, the dot
+ * order and the reading direction all agree. Revolution Slider itself has no
+ * RTL mode and pages forward on a leftward swipe; following it would have the
+ * finger and the dots disagree.
+ */
+export const swipeDelta = (dx: number, dy: number): -1 | 0 | 1 => {
+  if (Math.abs(dx) < HERO_SWIPE_THRESHOLD || Math.abs(dx) <= Math.abs(dy)) return 0
+  return dx > 0 ? 1 : -1
+}
 
 /**
  * The rs-layer type ramp, measured off the live Revolution Slider at both
@@ -719,14 +756,78 @@ export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
   // paint on both sides of hydration, see use-experiment-variant.ts.
   const heroVariant = useExperimentVariant(HOME_HERO_EXPERIMENT)
   const autoplayAllowed = heroVariant !== 'static_hero'
+  /**
+   * UX05: `prefers-reduced-motion: reduce` holds the slide the visitor is on.
+   * The crossfade is already cut to 0.01ms by the global rule in globals.css,
+   * so under reduced motion an autoplaying carousel is a page that changes
+   * every five seconds with no transition to say so. The dots, the swipe and
+   * the keyboard still page; only the timer stands down, the same choice
+   * ArtDirectedHeroImage makes for the animation above. False on the server
+   * and on the first client render, so hydration sees one markup.
+   */
+  const [reducedMotion, setReducedMotion] = useState(false)
+  useEffect(() => {
+    if (typeof window.matchMedia !== 'function') return
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const sync = () => setReducedMotion(mq.matches)
+    sync()
+    mq.addEventListener('change', sync)
+    return () => mq.removeEventListener('change', sync)
+  }, [])
 
+  const slideCount = slides.length
+  const wrap = useCallback(
+    (index: number) => ((index % slideCount) + slideCount) % slideCount,
+    [slideCount],
+  )
   const goTo = useCallback(
     (index: number) => {
-      if (slides.length === 0) return
-      setActive(((index % slides.length) + slides.length) % slides.length)
+      if (slideCount === 0) return
+      setActive(wrap(index))
     },
-    [slides.length],
+    [slideCount, wrap],
   )
+  /** Relative paging off the CURRENT value, for callers that run outside render. */
+  const step = useCallback(
+    (delta: -1 | 1) => {
+      if (slideCount === 0) return
+      setActive((current) => wrap(current + delta))
+    },
+    [slideCount, wrap],
+  )
+
+  /**
+   * UX05: swipe. The start point is recorded on the root, the end point is read
+   * on `window`, because without pointer capture a finger that leaves the
+   * slider mid-gesture ends its pointerup on whatever is under it. Capture was
+   * not used on purpose: it retargets pointerup away from the dot buttons, and
+   * a tap on a dot has to stay a click on that dot. `pointercancel` is the
+   * browser taking the gesture for a vertical pan (touch-action: pan-y), and
+   * that is a cancelled swipe, not a short one.
+   */
+  const swipeStart = useRef<{ id: number; x: number; y: number } | null>(null)
+  const onSwipeStart = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType === 'mouse') return
+    swipeStart.current = { id: e.pointerId, x: e.clientX, y: e.clientY }
+  }, [])
+  useEffect(() => {
+    const end = (e: PointerEvent) => {
+      const start = swipeStart.current
+      if (!start || start.id !== e.pointerId) return
+      swipeStart.current = null
+      const delta = swipeDelta(e.clientX - start.x, e.clientY - start.y)
+      if (delta !== 0) step(delta)
+    }
+    const cancel = () => {
+      swipeStart.current = null
+    }
+    window.addEventListener('pointerup', end)
+    window.addEventListener('pointercancel', cancel)
+    return () => {
+      window.removeEventListener('pointerup', end)
+      window.removeEventListener('pointercancel', cancel)
+    }
+  }, [step])
 
   /**
    * Autoplay waits for the visitor to press something. This is the home page's
@@ -775,11 +876,44 @@ export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
     }
   }, [engaged])
 
+  /**
+   * One flag for the timer AND the progress fill, so the fill can never show
+   * a countdown the timer is not running. The interval below is re-created on
+   * every `active` change (a dot tap, a swipe or a tick), so the five seconds
+   * always start from the slide the visitor is looking at; the fill is keyed
+   * on `active` for the same reason, see the dots.
+   */
+  const running = engaged && autoplayAllowed && !reducedMotion && slides.length > 1 && !paused
+
   useEffect(() => {
-    if (!engaged || !autoplayAllowed || slides.length <= 1 || paused) return
+    if (!running) return
+    // goTo(active + 1) and not step(1): reading `active` here is what puts it
+    // in the dependency list, and that is what tears the interval down and
+    // starts a fresh five seconds on every slide change. hero-carousel.test
+    // ("restarts the five seconds from the swiped-to slide") failed on the
+    // step(1) form: a swipe 4s in was followed by a tick 1s later.
     const t = setInterval(() => goTo(active + 1), AUTOPLAY_MS)
     return () => clearInterval(t)
-  }, [engaged, autoplayAllowed, active, goTo, paused, slides.length])
+  }, [running, goTo, active])
+
+  /**
+   * UX05: lazy media. Before the visitor engages only the active slide mounts
+   * its images (the LCP reason above). After engagement this used to mount
+   * every slide at once, which on the five-slide live data meant four extra
+   * slide boxes (and, the day there are photographs, four rasters) fetched the
+   * moment the page was touched. Now a slide mounts when it is the active one
+   * or the NEXT one, and stays mounted once it has: the next slide is ready
+   * before the crossfade reveals it, the rest wait their turn, and nothing is
+   * unmounted and re-fetched on the way round. A dot tap three slides ahead
+   * mounts on demand, behind the 700ms crossfade. The set is a ref mutated in
+   * render because it is monotonic and idempotent: a second render adds the
+   * same indices.
+   */
+  const mounted = useRef<Set<number>>(new Set([0]))
+  if (slides.length > 0) {
+    mounted.current.add(active)
+    if (engaged && slides.length > 1) mounted.current.add(wrap(active + 1))
+  }
 
   if (slides.length === 0) return null
 
@@ -794,18 +928,30 @@ export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
       dir="rtl"
       data-hero-slider=""
       data-home-hero-variant={heroVariant === 'control' ? undefined : heroVariant}
-      className={`${HERO_SLIDER_BG_CLASS} relative h-full min-h-0 w-full min-w-0 flex-1 overflow-hidden border-x border-border-alt font-sans`}
+      // touch-pan-y: vertical pans stay the browser's (the page scrolls
+      // through the hero), horizontal ones reach the swipe handler. See
+      // HERO_SWIPE_THRESHOLD.
+      className={`${HERO_SLIDER_BG_CLASS} relative h-full min-h-0 w-full min-w-0 flex-1 touch-pan-y overflow-hidden border-x border-border-alt font-sans`}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocus={() => setPaused(true)}
       onBlur={() => setPaused(false)}
+      onPointerDown={onSwipeStart}
     >
+      {/*
+        UX05: the slide position for assistive tech. Visually hidden; the dots
+        are the visible indicator. Off while the carousel is rotating on its
+        own, so a screen reader is not interrupted every five seconds, and
+        polite otherwise, so a dot tap or a swipe is announced (WAI-ARIA APG
+        carousel pattern). data-hero-status is a hook for the e2e probe.
+      */}
+      <p className="sr-only" data-hero-status="" aria-live={running ? 'off' : 'polite'} aria-atomic>
+        שקופית {active + 1} מתוך {slides.length}
+      </p>
       {slides.map((slide, i) => {
         const isActive = i === active
-        // Until the visitor engages, only the first slide mounts its images.
-        // Mounting every slide's <Image> (desktop + mobile boxes) still fetched
-        // four extra rasters on a phone and contended with the LCP still.
-        const mountMedia = isActive || engaged
+        // Active or next, and sticky once mounted; see the note on `mounted`.
+        const mountMedia = mounted.current.has(i)
 
         return (
           <div
@@ -863,11 +1009,43 @@ export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
                   style={{
                     width: dotWidth(isCurrent),
                     height: DOT_HEIGHT,
-                    backgroundColor: isCurrent ? DOT_ACTIVE : DOT_INACTIVE,
+                    // While the timer runs the 30x8 bar is the idle grey and
+                    // the fill below paints the brand colour across it; at
+                    // rest the bar IS the brand colour and the fill sits on
+                    // top of it at full width, which is pixel for pixel what
+                    // the bar was before UX05 (the gate shoots the slider at
+                    // rest, paused by its mouseenter).
+                    backgroundColor: isCurrent && !running ? DOT_ACTIVE : DOT_INACTIVE,
                     borderRadius: isCurrent ? 3 : 9999,
                   }}
-                  className="block transition-all duration-200 hover:opacity-80"
-                />
+                  className="relative block overflow-hidden transition-all duration-200 hover:opacity-80"
+                >
+                  {isCurrent && (
+                    <span
+                      /*
+                        UX05: the autoplay progress indicator. Keyed on the
+                        slide so every slide change remounts it and the
+                        animation starts from zero together with the interval;
+                        a hover pause drops the animation (full bar, see
+                        `running`) and a resume restarts both. Grows from the
+                        inline start, the right edge in this dir="rtl" strip,
+                        the way the slides page. Live disables the Revolution
+                        Slider progress bar (`progressBar:{disableProgressBar:
+                        true}`), so this lives inside the dot live already
+                        draws rather than as a bar live does not.
+                      */
+                      key={active}
+                      data-hero-progress={running ? 'running' : 'idle'}
+                      className="absolute inset-0 origin-right"
+                      style={{
+                        backgroundColor: DOT_ACTIVE,
+                        animation: running
+                          ? `hero-progress ${AUTOPLAY_MS}ms linear forwards`
+                          : undefined,
+                      }}
+                    />
+                  )}
+                </span>
               </button>
             )
           })}

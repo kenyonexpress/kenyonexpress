@@ -181,7 +181,13 @@ test('the hero dots grow to 44px vertically and keep the pitch sideways', async 
   // (24 wide, tangent) and to the full 44 in the direction with no neighbour.
   await decideConsentUpfront(page)
   await page.goto('/')
-  const dots = page.locator('button[aria-label^="שקופית"]')
+  // ONE slider first: the homepage ships the authored hero as the Suspense
+  // fallback and the CMS hero replaces it on hydration, so a count taken
+  // before that holds ten dots and the sixth is gone by the time it is
+  // measured ("dot 6 box: null", measured UX05 on an idle server). The same
+  // race is documented on home.spec's autoplay test.
+  await expect(page.locator('[data-hero-slider]')).toHaveCount(1)
+  const dots = page.locator('[data-hero-slider] button[aria-label^="שקופית"]')
   const count = await dots.count()
   expect(count).toBeGreaterThan(1)
   for (let i = 0; i < count; i += 1) {
