@@ -2,6 +2,7 @@ import BenefitBar from '@/components/home/BenefitBar'
 import CmsHero from '@/components/home/CmsHero'
 import DealsOfTheDay from '@/components/home/DealsOfTheDay'
 import HeroSection from '@/components/home/HeroSection'
+import RecentlyViewedRail from '@/components/storefront/RecentlyViewedRail'
 import { buildSiteJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
 import { Suspense } from 'react'
 // home-handheld.css is imported by the root layout (see the note there): as a
@@ -114,6 +115,10 @@ export default function HomePage() {
       */}
       <BenefitBar />
       <DealsOfTheDay />
+      {/* Below the grid on purpose. It renders nothing on the server and
+          nothing for a browser with no history, which is every run of the
+          comparison gate, and when it does appear only the footer moves. */}
+      <RecentlyViewedRail placement="home" />
     </>
   )
 }
