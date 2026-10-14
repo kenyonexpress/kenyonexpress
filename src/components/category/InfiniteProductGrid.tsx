@@ -158,7 +158,7 @@ export default function InfiniteProductGrid({
         if (entries.some((entry) => entry.isIntersecting)) void loadNext()
       },
       // Start a screen early, so the next row is there before the last one is read.
-      { rootMargin: '0px 0px 100% 0px' },
+      { rootMargin: '0% 0% 100% 0%' },
     )
     observer.observe(node)
     return () => observer.disconnect()
