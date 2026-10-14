@@ -22,8 +22,8 @@ production has it.
 
 | | main | prod |
 |---|---|---|
-| EXISTS | 12 | 9 |
-| PARTIAL | 13 | 16 |
+| EXISTS | 13 | 9 |
+| PARTIAL | 12 | 16 |
 | MISSING | 5 | 5 |
 
 Nine features are further along on prod than on main: recently viewed,
@@ -55,7 +55,7 @@ what main has.
 | 12 | Apple and Google Wallet passes | Booking, Groupon | EXISTS | EXISTS | 0 | none. Needs certificates, a human item |
 | 13 | Offline redemption queue | Wolt (courier), Groupon Merchant | PARTIAL | PARTIAL | 3 | port queue, then IndexedDB and Background Sync |
 | 14 | Supplier onboarding wizard, six steps | Wolt, Lazada, TikTok Shop | PARTIAL | PARTIAL | 4 | port three steps, build three |
-| 15 | Admin KPI dashboard | all (seller centres) | PARTIAL | EXISTS | 1.5 | port ops KPIs, add payout tile |
+| 15 | Admin KPI dashboard | all (seller centres) | EXISTS | EXISTS | 0 | ops KPIs ported, active vouchers and payouts due added, closed 2026-10-14 |
 | 16 | Product reviews | Amazon, Booking, Lazada | PARTIAL | PARTIAL | 3 | finish. See note C |
 | 17 | Q&A on product page | Amazon, Lazada | MISSING | MISSING | 3 | build |
 | 18 | Related products | all | EXISTS | PARTIAL | done | closed 2026-10-14 |
@@ -330,6 +330,18 @@ opening hours, review.
 vouchers, redemptions) and `/admin/analytics` (GMV, revenue, funnel, top
 products and suppliers). Missing: refund rate, active vouchers, payouts-due
 total. prod adds `src/lib/analytics/ops-kpis.ts`.
+
+Closed on main, 2026-10-14. `/admin/analytics` now carries, for the chosen
+period: voucher redemption rate, redeemed over issued, completed refunds with
+their share of paid orders, and the amount refunded with its share of GMV
+(ported). Two tiles are new and ignore the period, because they are what is
+outstanding now: active vouchers (issued, not expired) and payouts due (sum
+and count of `payout_statements` awaiting approval or payment; a rolled-over
+statement is cancelled and not counted, so the money is not counted twice).
+Verified: unit tests, build, and the loader's exact filters run read-only
+against live data: 30 days gives 19 issued, 4 redeemed, 2 voided, 2 refunds
+both completed; 18 vouchers active now; 0 statements due. Not verified: the
+page in a browser, which needs an admin session.
 
 **16. Reviews.** main: table, rating and body, buyer-only form
 (`src/components/product/Reviews.tsx`), admin moderation at `/admin/reviews`
