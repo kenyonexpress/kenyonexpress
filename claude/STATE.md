@@ -4,7 +4,7 @@ Updated: 2026-10-14 (Asia/Bangkok). Queue: FINAL-CLOSEOUT L1 to L16, issued 14.1
 
 ## Current Position
 
-**המשך מ: שלב L10 (BUILD GAPS), שורה 9 (טיימרי דחיפות), ואז 10, 6, 8. סגורות: 2, 4, 18, 24, 28, 30, 29 (אדמין), 3 (חוץ מדירוג ופופולריות), 5 (פר-דפדפן; פר-חשבון ממתין למיגרציה)**
+**המשך מ: שלב L10 (BUILD GAPS), שורה 10 (פס אמון), ואז 6, 8. סגורות: 2, 4, 9, 18, 24, 28, 30, 29 (אדמין), 3 (חוץ מדירוג ופופולריות), 5 (פר-דפדפן)**
 
 The checklist with evidence is `docs/FINAL-CLOSEOUT.md`. Decisions taken alone
 are `docs/DECISIONS.md` D-42 onward.
@@ -65,6 +65,14 @@ Closed so far, each with type-check, lint, test green (510 files, 5949 passed):
   first visit, two cards on the third product viewed, three on home. Home
   parity gate 10.93 / 10.61 / 7.81. Row stays PARTIAL: per-account history
   needs a table (migration, not written).
+- Row 9, urgency timers: voucher countdown ported from prod (voucher page
+  and order page), deadline badge on listing cards within a week of
+  `offer_valid_until`. 519 files, 6067 tests, build 0. Unit tests only: no
+  live product has a deadline, and the voucher pages need a signed-in
+  customer with a coupon.
+- 14.10: other autopilot sessions (STEP 69, 70) run in
+  `/Users/ofir/kenyonexpress-autopilot` on another branch. This checkout
+  showed no foreign edits, so work continued.
 - Disk: the build died once with ENOSPC. Later the temp directory was cleared
   by something else and free space is 20 GB. 658 MB free after a clean rebuild.
   Nothing outside this checkout's own `.next` was removed. 1.6 GB sits in

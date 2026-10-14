@@ -528,6 +528,28 @@
   line-height: 2;
 }
 
+/* The offer's deadline, in its last week (components/category/CardOfferDeadline).
+   Over the image like the discount badge, at the opposite corner, so a line
+   that only exists after mount moves nothing. */
+.category-card__deadline {
+  position: absolute;
+  inset-inline-end: 0;
+  bottom: 0;
+  z-index: 2;
+  padding: 0 0.6em;
+  border-radius: 0.25em;
+  background-color: var(--cat-surface);
+  color: var(--cat-badge);
+  font-size: var(--cat-eyebrow-size);
+  font-weight: 700;
+  line-height: 2;
+}
+
+.category-card__deadline[data-urgency="today"] {
+  background-color: var(--cat-badge);
+  color: var(--cat-surface);
+}
+
 /* Footer: measured .price-add-to-cart = 186x36 with 7px below it. Price sits
    at the inline start, the round add-to-cart at the inline end. */
 .category-card__footer {

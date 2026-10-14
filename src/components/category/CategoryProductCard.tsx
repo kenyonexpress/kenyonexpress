@@ -1,6 +1,7 @@
 'use client'
 
 import AddToCartButton from '@/components/cart/AddToCartButton'
+import CardOfferDeadline from '@/components/category/CardOfferDeadline'
 import { cityByName } from '@/lib/geo/cities'
 import { formatDistance } from '@/lib/geo/distance'
 import { shekelsFromIlsRounded } from '@/lib/money-format'
@@ -49,6 +50,8 @@ export type CategoryProduct = {
   supplier?: { city?: string | null } | null
   /** Set by sortByDistance when the customer asked for "near me". */
   distanceKm?: number | null
+  /** `products.offer_valid_until`, ISO. Present once the query selects it. */
+  offer_valid_until?: string | null
 }
 
 function formatPrice(value: number): string {
@@ -138,6 +141,9 @@ export default function CategoryProductCard({ product }: { product: CategoryProd
               <span className="category-card__badge">
                 -<span className="percentage">{pct}%</span>
               </span>
+            )}
+            {product.offer_valid_until && (
+              <CardOfferDeadline validUntilIso={product.offer_valid_until} />
             )}
             {thumb ? (
               // width/height stay the 186 square the raw <img> declared: they are
