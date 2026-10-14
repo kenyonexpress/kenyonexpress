@@ -65,6 +65,7 @@ export default defineConfig({
       'scripts/security/**/*.test.mjs',
       'scripts/posthog/**/*.test.mjs',
       'scripts/seo/**/*.test.mjs',
+      'scripts/state/**/*.test.mjs',
     ],
     exclude: ['node_modules', '.next', 'e2e'],
     coverage: {
