@@ -1,0 +1,668 @@
+{
+  "380": {
+    "loginDialog": {
+      "url": "/?utm=ux24",
+      "dialog": {
+        "tag": "DIALOG",
+        "rect": {
+          "x": 15,
+          "y": 159.5,
+          "w": 350,
+          "h": 581
+        },
+        "label": "כניסה לחשבון",
+        "modal": "true",
+        "bodyLocked": "hidden"
+      },
+      "heading": "כניסה לחשבון",
+      "stepper": null,
+      "fields": [
+        {
+          "id": "login-dialog-email",
+          "type": "email",
+          "required": true,
+          "rect": {
+            "x": 39,
+            "y": 428.5,
+            "w": 302,
+            "h": 42
+          },
+          "label": "אימייל"
+        },
+        {
+          "id": "login-dialog-password",
+          "type": "password",
+          "required": true,
+          "rect": {
+            "x": 39,
+            "y": 510.5,
+            "w": 302,
+            "h": 42
+          },
+          "label": "סיסמה"
+        }
+      ],
+      "terms": null,
+      "buttons": [
+        {
+          "text": "",
+          "rect": {
+            "x": 28,
+            "y": 171.5,
+            "w": 44,
+            "h": 44
+          }
+        },
+        {
+          "text": "כניסה עם Google",
+          "rect": {
+            "x": 39,
+            "y": 248.5,
+            "w": 302,
+            "h": 44
+          }
+        },
+        {
+          "text": "כניסה עם טביעת אצבע או Face ID",
+          "rect": {
+            "x": 39,
+            "y": 304.5,
+            "w": 302,
+            "h": 44
+          }
+        },
+        {
+          "text": "כניסה",
+          "rect": {
+            "x": 39,
+            "y": 568.5,
+            "w": 302,
+            "h": 44
+          }
+        },
+        {
+          "text": "כניסה ללא סיסמה (קישור מאובטח לאימייל)",
+          "rect": {
+            "x": 39,
+            "y": 632.5,
+            "w": 302,
+            "h": 44
+          }
+        }
+      ],
+      "welcome": null,
+      "focus": {
+        "tag": "DIALOG",
+        "text": "כניסה לחשבוןכניסה עם Googleכניסה עם טביע",
+        "inDialog": true
+      },
+      "liveText": [],
+      "pageHeight": 22239,
+      "scrollWidth": 380
+    },
+    "signupLinkInDialog": {
+      "text": "הרשמה",
+      "href": "/signup?next=%2F%3Futm%3Dux24"
+    },
+    "afterSignupPress": {
+      "url": "/signup?next=%2F%3Futm%3Dux24",
+      "dialog": {
+        "tag": "DIALOG",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        },
+        "label": "כניסה לחשבון",
+        "modal": "true",
+        "bodyLocked": "visible"
+      },
+      "heading": "כניסה לחשבון",
+      "stepper": null,
+      "fields": [],
+      "terms": null,
+      "buttons": [],
+      "welcome": null,
+      "focus": {
+        "tag": "BODY",
+        "text": "(function(){try{var m=document.cookie.ma",
+        "inDialog": false
+      },
+      "liveText": [],
+      "pageHeight": 900,
+      "scrollWidth": 380
+    },
+    "signupPage": {
+      "url": "/signup",
+      "dialog": null,
+      "heading": "יצירת חשבון",
+      "stepper": null,
+      "fields": [
+        {
+          "id": "full_name",
+          "type": "text",
+          "required": true,
+          "rect": {
+            "x": 41,
+            "y": 381,
+            "w": 298,
+            "h": 42
+          },
+          "label": "שם מלא"
+        },
+        {
+          "id": "email",
+          "type": "email",
+          "required": true,
+          "rect": {
+            "x": 41,
+            "y": 463,
+            "w": 298,
+            "h": 42
+          },
+          "label": "אימייל"
+        },
+        {
+          "id": "phone",
+          "type": "tel",
+          "required": true,
+          "rect": {
+            "x": 41,
+            "y": 545,
+            "w": 298,
+            "h": 42
+          },
+          "label": "טלפון נייד *"
+        },
+        {
+          "id": "password",
+          "type": "password",
+          "required": true,
+          "rect": {
+            "x": 41,
+            "y": 647,
+            "w": 298,
+            "h": 42
+          },
+          "label": "סיסמה"
+        }
+      ],
+      "terms": null,
+      "buttons": [
+        {
+          "text": "הרשמה עם Google",
+          "rect": {
+            "x": 41,
+            "y": 259,
+            "w": 298,
+            "h": 42
+          }
+        },
+        {
+          "text": "הרשמה",
+          "rect": {
+            "x": 41,
+            "y": 705,
+            "w": 298,
+            "h": 40
+          }
+        }
+      ],
+      "welcome": null,
+      "focus": {
+        "tag": "BODY",
+        "text": "(function(){try{var m=document.cookie.ma",
+        "inDialog": null
+      },
+      "liveText": [],
+      "pageHeight": 900,
+      "scrollWidth": 380
+    },
+    "errors": []
+  },
+  "768": {
+    "loginDialog": {
+      "url": "/?utm=ux24",
+      "dialog": {
+        "tag": "DIALOG",
+        "rect": {
+          "x": 176,
+          "y": 159.5,
+          "w": 416,
+          "h": 581
+        },
+        "label": "כניסה לחשבון",
+        "modal": "true",
+        "bodyLocked": "hidden"
+      },
+      "heading": "כניסה לחשבון",
+      "stepper": null,
+      "fields": [
+        {
+          "id": "login-dialog-email",
+          "type": "email",
+          "required": true,
+          "rect": {
+            "x": 200,
+            "y": 428.5,
+            "w": 368,
+            "h": 42
+          },
+          "label": "אימייל"
+        },
+        {
+          "id": "login-dialog-password",
+          "type": "password",
+          "required": true,
+          "rect": {
+            "x": 200,
+            "y": 510.5,
+            "w": 368,
+            "h": 42
+          },
+          "label": "סיסמה"
+        }
+      ],
+      "terms": null,
+      "buttons": [
+        {
+          "text": "",
+          "rect": {
+            "x": 189,
+            "y": 171.5,
+            "w": 44,
+            "h": 44
+          }
+        },
+        {
+          "text": "כניסה עם Google",
+          "rect": {
+            "x": 200,
+            "y": 248.5,
+            "w": 368,
+            "h": 44
+          }
+        },
+        {
+          "text": "כניסה עם טביעת אצבע או Face ID",
+          "rect": {
+            "x": 200,
+            "y": 304.5,
+            "w": 368,
+            "h": 44
+          }
+        },
+        {
+          "text": "כניסה",
+          "rect": {
+            "x": 200,
+            "y": 568.5,
+            "w": 368,
+            "h": 44
+          }
+        },
+        {
+          "text": "כניסה ללא סיסמה (קישור מאובטח לאימייל)",
+          "rect": {
+            "x": 200,
+            "y": 632.5,
+            "w": 368,
+            "h": 44
+          }
+        }
+      ],
+      "welcome": null,
+      "focus": {
+        "tag": "DIALOG",
+        "text": "כניסה לחשבוןכניסה עם Googleכניסה עם טביע",
+        "inDialog": true
+      },
+      "liveText": [],
+      "pageHeight": 11584,
+      "scrollWidth": 768
+    },
+    "signupLinkInDialog": {
+      "text": "הרשמה",
+      "href": "/signup?next=%2F%3Futm%3Dux24"
+    },
+    "afterSignupPress": {
+      "url": "/signup?next=%2F%3Futm%3Dux24",
+      "dialog": {
+        "tag": "DIALOG",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        },
+        "label": "כניסה לחשבון",
+        "modal": "true",
+        "bodyLocked": "visible"
+      },
+      "heading": "כניסה לחשבון",
+      "stepper": null,
+      "fields": [],
+      "terms": null,
+      "buttons": [],
+      "welcome": null,
+      "focus": {
+        "tag": "BODY",
+        "text": "(function(){try{var m=document.cookie.ma",
+        "inDialog": false
+      },
+      "liveText": [],
+      "pageHeight": 900,
+      "scrollWidth": 768
+    },
+    "signupPage": {
+      "url": "/signup",
+      "dialog": null,
+      "heading": "יצירת חשבון",
+      "stepper": null,
+      "fields": [
+        {
+          "id": "full_name",
+          "type": "text",
+          "required": true,
+          "rect": {
+            "x": 217,
+            "y": 381,
+            "w": 334,
+            "h": 42
+          },
+          "label": "שם מלא"
+        },
+        {
+          "id": "email",
+          "type": "email",
+          "required": true,
+          "rect": {
+            "x": 217,
+            "y": 463,
+            "w": 334,
+            "h": 42
+          },
+          "label": "אימייל"
+        },
+        {
+          "id": "phone",
+          "type": "tel",
+          "required": true,
+          "rect": {
+            "x": 217,
+            "y": 545,
+            "w": 334,
+            "h": 42
+          },
+          "label": "טלפון נייד *"
+        },
+        {
+          "id": "password",
+          "type": "password",
+          "required": true,
+          "rect": {
+            "x": 217,
+            "y": 647,
+            "w": 334,
+            "h": 42
+          },
+          "label": "סיסמה"
+        }
+      ],
+      "terms": null,
+      "buttons": [
+        {
+          "text": "הרשמה עם Google",
+          "rect": {
+            "x": 217,
+            "y": 259,
+            "w": 334,
+            "h": 42
+          }
+        },
+        {
+          "text": "הרשמה",
+          "rect": {
+            "x": 217,
+            "y": 705,
+            "w": 334,
+            "h": 40
+          }
+        }
+      ],
+      "welcome": null,
+      "focus": {
+        "tag": "BODY",
+        "text": "(function(){try{var m=document.cookie.ma",
+        "inDialog": null
+      },
+      "liveText": [],
+      "pageHeight": 900,
+      "scrollWidth": 768
+    },
+    "errors": []
+  },
+  "1440": {
+    "loginDialog": {
+      "url": "/?utm=ux24",
+      "dialog": {
+        "tag": "DIALOG",
+        "rect": {
+          "x": 512,
+          "y": 159.5,
+          "w": 416,
+          "h": 581
+        },
+        "label": "כניסה לחשבון",
+        "modal": "true",
+        "bodyLocked": "hidden"
+      },
+      "heading": "כניסה לחשבון",
+      "stepper": null,
+      "fields": [
+        {
+          "id": "login-dialog-email",
+          "type": "email",
+          "required": true,
+          "rect": {
+            "x": 536,
+            "y": 428.5,
+            "w": 368,
+            "h": 42
+          },
+          "label": "אימייל"
+        },
+        {
+          "id": "login-dialog-password",
+          "type": "password",
+          "required": true,
+          "rect": {
+            "x": 536,
+            "y": 510.5,
+            "w": 368,
+            "h": 42
+          },
+          "label": "סיסמה"
+        }
+      ],
+      "terms": null,
+      "buttons": [
+        {
+          "text": "",
+          "rect": {
+            "x": 525,
+            "y": 171.5,
+            "w": 44,
+            "h": 44
+          }
+        },
+        {
+          "text": "כניסה עם Google",
+          "rect": {
+            "x": 536,
+            "y": 248.5,
+            "w": 368,
+            "h": 44
+          }
+        },
+        {
+          "text": "כניסה עם טביעת אצבע או Face ID",
+          "rect": {
+            "x": 536,
+            "y": 304.5,
+            "w": 368,
+            "h": 44
+          }
+        },
+        {
+          "text": "כניסה",
+          "rect": {
+            "x": 536,
+            "y": 568.5,
+            "w": 368,
+            "h": 44
+          }
+        },
+        {
+          "text": "כניסה ללא סיסמה (קישור מאובטח לאימייל)",
+          "rect": {
+            "x": 536,
+            "y": 632.5,
+            "w": 368,
+            "h": 44
+          }
+        }
+      ],
+      "welcome": null,
+      "focus": {
+        "tag": "DIALOG",
+        "text": "כניסה לחשבוןכניסה עם Googleכניסה עם טביע",
+        "inDialog": true
+      },
+      "liveText": [],
+      "pageHeight": 7138,
+      "scrollWidth": 1440
+    },
+    "signupLinkInDialog": {
+      "text": "הרשמה",
+      "href": "/signup?next=%2F%3Futm%3Dux24"
+    },
+    "afterSignupPress": {
+      "url": "/signup?next=%2F%3Futm%3Dux24",
+      "dialog": {
+        "tag": "DIALOG",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        },
+        "label": "כניסה לחשבון",
+        "modal": "true",
+        "bodyLocked": "visible"
+      },
+      "heading": "כניסה לחשבון",
+      "stepper": null,
+      "fields": [],
+      "terms": null,
+      "buttons": [],
+      "welcome": null,
+      "focus": {
+        "tag": "BODY",
+        "text": "(function(){try{var m=document.cookie.ma",
+        "inDialog": false
+      },
+      "liveText": [],
+      "pageHeight": 900,
+      "scrollWidth": 1440
+    },
+    "signupPage": {
+      "url": "/signup",
+      "dialog": null,
+      "heading": "יצירת חשבון",
+      "stepper": null,
+      "fields": [
+        {
+          "id": "full_name",
+          "type": "text",
+          "required": true,
+          "rect": {
+            "x": 553,
+            "y": 381,
+            "w": 334,
+            "h": 42
+          },
+          "label": "שם מלא"
+        },
+        {
+          "id": "email",
+          "type": "email",
+          "required": true,
+          "rect": {
+            "x": 553,
+            "y": 463,
+            "w": 334,
+            "h": 42
+          },
+          "label": "אימייל"
+        },
+        {
+          "id": "phone",
+          "type": "tel",
+          "required": true,
+          "rect": {
+            "x": 553,
+            "y": 545,
+            "w": 334,
+            "h": 42
+          },
+          "label": "טלפון נייד *"
+        },
+        {
+          "id": "password",
+          "type": "password",
+          "required": true,
+          "rect": {
+            "x": 553,
+            "y": 647,
+            "w": 334,
+            "h": 42
+          },
+          "label": "סיסמה"
+        }
+      ],
+      "terms": null,
+      "buttons": [
+        {
+          "text": "הרשמה עם Google",
+          "rect": {
+            "x": 553,
+            "y": 259,
+            "w": 334,
+            "h": 42
+          }
+        },
+        {
+          "text": "הרשמה",
+          "rect": {
+            "x": 553,
+            "y": 705,
+            "w": 334,
+            "h": 40
+          }
+        }
+      ],
+      "welcome": null,
+      "focus": {
+        "tag": "BODY",
+        "text": "(function(){try{var m=document.cookie.ma",
+        "inDialog": null
+      },
+      "liveText": [],
+      "pageHeight": 900,
+      "scrollWidth": 1440
+    },
+    "errors": []
+  }
+}

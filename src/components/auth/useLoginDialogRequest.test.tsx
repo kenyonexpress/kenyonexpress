@@ -44,6 +44,23 @@ describe('useLoginDialogRequest', () => {
     trigger.remove()
   })
 
+  it('carries the body the press asked for, login unless the detail says signup (UX24)', () => {
+    const seen: Array<LoginDialogRequest | null> = []
+    render(<Harness seen={seen} />)
+    act(() => {
+      openLoginDialog({ next: '/a' })
+    })
+    expect(seen[seen.length - 1]?.mode).toBe('login')
+    act(() => {
+      openLoginDialog({ next: '/a', mode: 'signup' })
+    })
+    expect(seen[seen.length - 1]?.mode).toBe('signup')
+    act(() => {
+      openLoginDialog()
+    })
+    expect(seen[seen.length - 1]?.mode).toBe('login')
+  })
+
   it('counts presses so a second one after a close is a new request', () => {
     const seen: Array<LoginDialogRequest | null> = []
     const { getByTestId } = render(<Harness seen={seen} />)

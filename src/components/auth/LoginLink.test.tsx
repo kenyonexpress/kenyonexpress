@@ -29,8 +29,8 @@ describe('LoginLink', () => {
     fireEvent.click(a, init)
     return navigates === true
   }
-  function mountHost(claim: boolean): { details: Array<{ next?: string }> } {
-    const details: Array<{ next?: string }> = []
+  function mountHost(claim: boolean): { details: Array<{ next?: string; mode?: string }> } {
+    const details: Array<{ next?: string; mode?: string }> = []
     const host = (e: Event) => {
       details.push((e as CustomEvent).detail)
       if (claim) e.preventDefault()
@@ -66,7 +66,7 @@ describe('LoginLink', () => {
     const { container } = render(<LoginLink href="/login">התחברות</LoginLink>)
     const a = container.querySelector('a') as HTMLAnchorElement
     expect(click(a)).toBe(false)
-    expect(details).toEqual([{ next: '/products?page=2' }])
+    expect(details).toEqual([{ next: '/products?page=2', mode: 'login' }])
   })
 
   it('passes the link’s own next through to the dialog', () => {
@@ -75,7 +75,25 @@ describe('LoginLink', () => {
       <LoginLink href="/login?next=%2Fgift%2Fabc">התחברות וקבלת הקופון</LoginLink>,
     )
     click(container.querySelector('a') as HTMLAnchorElement)
-    expect(details).toEqual([{ next: '/gift/abc' }])
+    expect(details).toEqual([{ next: '/gift/abc', mode: 'login' }])
+  })
+
+  it('asks for the register body when the href is /signup (UX24), with its next', () => {
+    const { details } = mountHost(true)
+    window.history.replaceState(null, '', '/products')
+    const { container } = render(
+      <>
+        <LoginLink href="/signup?next=%2Fcart">הרשמה</LoginLink>
+        <LoginLink href="/signup">הרשמה</LoginLink>
+      </>,
+    )
+    const [withNext, bare] = container.querySelectorAll('a')
+    expect(click(withNext as HTMLAnchorElement)).toBe(false)
+    expect(click(bare as HTMLAnchorElement)).toBe(false)
+    expect(details).toEqual([
+      { next: '/cart', mode: 'signup' },
+      { next: '/products', mode: 'signup' },
+    ])
   })
 
   it('leaves a modified click alone: a new tab is what the shopper asked for', () => {

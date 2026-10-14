@@ -53,6 +53,8 @@ const PUBLIC_ACTIONS = new Map<string, string>([
   // Both are reached before a session exists; the user id comes from the
   // challenge cookie the first send left, never from the caller, and both
   // are rate limited per IP (and the send per number) in their own bodies.
+  ['register.ts:registerAccount', 'registration (UX24 stepper), same ceiling as signUpWithEmail'],
+  ['register.ts:verifyRegisterPhone', 'registration step (UX24 stepper), rate limited per IP'],
   ['signup-phone.ts:resendSignupPhoneOtp', 'registration step, rate limited per IP and per number'],
   ['signup-phone.ts:verifySignupPhone', 'registration step, rate limited per IP'],
   // Compare (STEP 56): the list of ids lives in the browser, no account is

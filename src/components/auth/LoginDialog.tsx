@@ -1,12 +1,19 @@
 'use client'
 
+import type { AuthDialogMode } from '@/lib/auth/login-dialog'
 import { currentUserId } from '@/server/actions/session'
 import { X } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import LoginPanel from './LoginPanel'
+import RegisterPanel from './RegisterPanel'
 import type { LoginDialogRequest } from './useLoginDialogRequest'
+
+const TITLES: Record<AuthDialogMode, string> = {
+  login: 'כניסה לחשבון',
+  signup: 'יצירת חשבון',
+}
 
 const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])'
@@ -49,6 +56,13 @@ const FOCUSABLE =
  * would make every prerendered route dynamic), so a signed-in shopper can
  * press it. The page shows them the form; the dialog asks the server once
  * and, if there is a session, shows the way to the account instead.
+ *
+ * TWO BODIES, ONE HOST (UX24). The request says which body it wants (a
+ * press on a /login link or on a /signup one), and the two panels switch
+ * between each other in place: "הרשמה" inside the login body opens the
+ * register stepper, "כניסה" inside the stepper opens the login body, and
+ * the title follows. The register flow ends in the dialog with a welcome
+ * whose "המשך לגלוש" closes it; the account's mail is already on its way.
  */
 export default function LoginDialog({
   request,
@@ -59,6 +73,7 @@ export default function LoginDialog({
 }) {
   // The request this is open for; null once closed. A new `seq` reopens.
   const [active, setActive] = useState<LoginDialogRequest | null>(request)
+  const [mode, setMode] = useState<AuthDialogMode>(request.mode)
   const [signedIn, setSignedIn] = useState(false)
   const pathname = usePathname()
   const panelRef = useRef<HTMLDialogElement>(null)
@@ -67,11 +82,23 @@ export default function LoginDialog({
 
   useEffect(() => {
     setSignedIn(false)
+    setMode(request.mode)
     setActive(request)
   }, [request])
 
   const open = active !== null
   const next = active?.next ?? null
+
+  // A body switch unmounts the link that was pressed, and focus would fall
+  // to <body> behind the overlay (measured in logs/ux24/after.json: focus on
+  // BODY after הרשמה). Put it back on the labelled panel, where the opening
+  // put it, so the new title is read before the first control.
+  const focusedMode = useRef(mode)
+  useEffect(() => {
+    if (focusedMode.current === mode) return
+    focusedMode.current = mode
+    panelRef.current?.focus()
+  }, [mode])
 
   // A navigation while open (a sign-in's redirect, a link in the panel) closes it.
   useEffect(() => {
@@ -158,10 +185,11 @@ export default function LoginDialog({
         aria-labelledby="login-dialog-title"
         aria-modal="true"
         tabIndex={-1}
+        data-mode={mode}
       >
         <header className="login-dialog__header">
           <h2 id="login-dialog-title" className="login-dialog__title">
-            כניסה לחשבון
+            {TITLES[mode]}
           </h2>
           <button type="button" className="login-dialog__close" aria-label="סגירה" onClick={close}>
             <X size={20} aria-hidden="true" />
@@ -175,8 +203,20 @@ export default function LoginDialog({
                 לאזור האישי
               </Link>
             </div>
+          ) : mode === 'signup' ? (
+            <RegisterPanel
+              next={next}
+              variant="dialog"
+              onLogin={() => setMode('login')}
+              onDone={close}
+            />
           ) : (
-            <LoginPanel next={next} phoneEnabled={phoneEnabled} variant="dialog" />
+            <LoginPanel
+              next={next}
+              phoneEnabled={phoneEnabled}
+              variant="dialog"
+              onSignup={() => setMode('signup')}
+            />
           )}
         </div>
       </dialog>

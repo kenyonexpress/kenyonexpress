@@ -190,3 +190,37 @@ describe('the passkey fallback', () => {
     expect(screen.getByText('הכניסה עם המפתח נכשלה, אפשר להיכנס עם קישור לאימייל')).toBeVisible()
   })
 })
+
+describe('LoginPanel inside the dialog (UX24)', () => {
+  it('"הרשמה" keeps its href and switches bodies only on a plain press when the dialog asks', () => {
+    const onSignup = vi.fn()
+    const left: boolean[] = []
+    const settle = (e: Event) => {
+      left.push(!e.defaultPrevented)
+      e.preventDefault()
+    }
+    document.addEventListener('click', settle)
+    render(<LoginPanel next="/cart" variant="dialog" onSignup={onSignup} />)
+    const link = screen.getByRole('link', { name: 'הרשמה' })
+    expect(link).toHaveAttribute('href', '/signup?next=%2Fcart')
+    fireEvent.click(link, { metaKey: true })
+    expect(onSignup).not.toHaveBeenCalled()
+    fireEvent.click(link)
+    expect(onSignup).toHaveBeenCalledTimes(1)
+    document.removeEventListener('click', settle)
+    expect(left).toEqual([true, false])
+  })
+
+  it('without the callback (the /login page) the link is a plain navigation', () => {
+    const left: boolean[] = []
+    const settle = (e: Event) => {
+      left.push(!e.defaultPrevented)
+      e.preventDefault()
+    }
+    document.addEventListener('click', settle)
+    render(<LoginPanel />)
+    fireEvent.click(screen.getByRole('link', { name: 'הרשמה' }))
+    document.removeEventListener('click', settle)
+    expect(left).toEqual([true])
+  })
+})

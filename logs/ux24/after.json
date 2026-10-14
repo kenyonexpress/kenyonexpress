@@ -1,0 +1,3325 @@
+{
+  "380": {
+    "loginDialog": {
+      "url": "/?utm=ux24",
+      "dialog": {
+        "tag": "DIALOG",
+        "rect": {
+          "x": 15,
+          "y": 159.5,
+          "w": 350,
+          "h": 581
+        },
+        "label": "כניסה לחשבון",
+        "modal": "true",
+        "bodyLocked": "hidden"
+      },
+      "heading": "כניסה לחשבון",
+      "stepper": null,
+      "fields": [
+        {
+          "id": "login-dialog-email",
+          "type": "email",
+          "required": true,
+          "rect": {
+            "x": 39,
+            "y": 428.5,
+            "w": 302,
+            "h": 42
+          },
+          "label": "אימייל"
+        },
+        {
+          "id": "login-dialog-password",
+          "type": "password",
+          "required": true,
+          "rect": {
+            "x": 39,
+            "y": 510.5,
+            "w": 302,
+            "h": 42
+          },
+          "label": "סיסמה"
+        }
+      ],
+      "terms": null,
+      "buttons": [
+        {
+          "text": "",
+          "rect": {
+            "x": 28,
+            "y": 171.5,
+            "w": 44,
+            "h": 44
+          }
+        },
+        {
+          "text": "כניסה עם Google",
+          "rect": {
+            "x": 39,
+            "y": 248.5,
+            "w": 302,
+            "h": 44
+          }
+        },
+        {
+          "text": "כניסה עם טביעת אצבע או Face ID",
+          "rect": {
+            "x": 39,
+            "y": 304.5,
+            "w": 302,
+            "h": 44
+          }
+        },
+        {
+          "text": "כניסה",
+          "rect": {
+            "x": 39,
+            "y": 568.5,
+            "w": 302,
+            "h": 44
+          }
+        },
+        {
+          "text": "כניסה ללא סיסמה (קישור מאובטח לאימייל)",
+          "rect": {
+            "x": 39,
+            "y": 632.5,
+            "w": 302,
+            "h": 44
+          }
+        }
+      ],
+      "welcome": null,
+      "focus": {
+        "tag": "DIALOG",
+        "text": "כניסה לחשבוןכניסה עם Googleכניסה עם טביע",
+        "inDialog": true
+      },
+      "liveText": [],
+      "pageHeight": 22239,
+      "scrollWidth": 380
+    },
+    "signupLinkInDialog": {
+      "text": "הרשמה",
+      "href": "/signup?next=%2F%3Futm%3Dux24"
+    },
+    "afterSignupPress": {
+      "url": "/?utm=ux24",
+      "dialog": {
+        "tag": "DIALOG",
+        "rect": {
+          "x": 15,
+          "y": 129.9,
+          "w": 350,
+          "h": 640.2
+        },
+        "label": "יצירת חשבון",
+        "modal": "true",
+        "bodyLocked": "hidden"
+      },
+      "heading": "יצירת חשבון",
+      "stepper": {
+        "rect": {
+          "x": 39,
+          "y": 218.9,
+          "w": 302,
+          "h": 41.2
+        },
+        "label": "שלבי ההרשמה",
+        "steps": [
+          {
+            "text": "1פרטים",
+            "current": "step",
+            "state": "current"
+          },
+          {
+            "text": "2טלפון ותנאים",
+            "current": null,
+            "state": "upcoming"
+          },
+          {
+            "text": "3אימות הטלפון",
+            "current": null,
+            "state": "upcoming"
+          },
+          {
+            "text": "4ברוכים הבאים",
+            "current": null,
+            "state": "upcoming"
+          }
+        ]
+      },
+      "fields": [
+        {
+          "id": "register-dialog-full_name",
+          "type": "text",
+          "required": false,
+          "rect": {
+            "x": 39,
+            "y": 440.1,
+            "w": 302,
+            "h": 42
+          },
+          "label": "שם מלא"
+        },
+        {
+          "id": "register-dialog-email",
+          "type": "email",
+          "required": false,
+          "rect": {
+            "x": 39,
+            "y": 522.1,
+            "w": 302,
+            "h": 42
+          },
+          "label": "אימייל"
+        },
+        {
+          "id": "register-dialog-password",
+          "type": "password",
+          "required": false,
+          "rect": {
+            "x": 39,
+            "y": 604.1,
+            "w": 302,
+            "h": 42
+          },
+          "label": "סיסמה"
+        }
+      ],
+      "terms": {
+        "visible": false,
+        "required": false,
+        "checked": false,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        },
+        "links": ["/terms-and-conditions", "/privacy-policy"]
+      },
+      "buttons": [
+        {
+          "text": "",
+          "rect": {
+            "x": 28,
+            "y": 141.9,
+            "w": 44,
+            "h": 44
+          }
+        },
+        {
+          "text": "הרשמה עם Google",
+          "rect": {
+            "x": 39,
+            "y": 316.1,
+            "w": 302,
+            "h": 44
+          }
+        },
+        {
+          "text": "המשך",
+          "rect": {
+            "x": 39,
+            "y": 662.1,
+            "w": 302,
+            "h": 44
+          }
+        }
+      ],
+      "welcome": null,
+      "focus": {
+        "tag": "DIALOG",
+        "text": "יצירת חשבון1פרטים2טלפון ותנאים3אימות הטל",
+        "inDialog": true
+      },
+      "liveText": ["שלב 1 מתוך 4: פרטים"],
+      "pageHeight": 22239,
+      "scrollWidth": 380
+    },
+    "afterStepOne": {
+      "url": "/?utm=ux24",
+      "dialog": {
+        "tag": "DIALOG",
+        "rect": {
+          "x": 15,
+          "y": 180.9,
+          "w": 350,
+          "h": 538.2
+        },
+        "label": "יצירת חשבון",
+        "modal": "true",
+        "bodyLocked": "hidden"
+      },
+      "heading": "יצירת חשבון",
+      "stepper": {
+        "rect": {
+          "x": 39,
+          "y": 269.9,
+          "w": 302,
+          "h": 41.2
+        },
+        "label": "שלבי ההרשמה",
+        "steps": [
+          {
+            "text": "✓פרטים",
+            "current": null,
+            "state": "done"
+          },
+          {
+            "text": "2טלפון ותנאים",
+            "current": "step",
+            "state": "current"
+          },
+          {
+            "text": "3אימות הטלפון",
+            "current": null,
+            "state": "upcoming"
+          },
+          {
+            "text": "4ברוכים הבאים",
+            "current": null,
+            "state": "upcoming"
+          }
+        ]
+      },
+      "fields": [
+        {
+          "id": "register-dialog-phone",
+          "type": "tel",
+          "required": false,
+          "rect": {
+            "x": 39,
+            "y": 391.1,
+            "w": 302,
+            "h": 42
+          },
+          "label": "טלפון נייד"
+        },
+        {
+          "id": "register-dialog-accept_terms",
+          "type": "checkbox",
+          "required": false,
+          "rect": {
+            "x": 321,
+            "y": 491.1,
+            "w": 20,
+            "h": 20
+          },
+          "label": "קראתי ואני מאשר/ת את תנאי השימוש ואת מדיניות הפרטי"
+        }
+      ],
+      "terms": {
+        "visible": true,
+        "required": false,
+        "checked": false,
+        "rect": {
+          "x": 321,
+          "y": 491.1,
+          "w": 20,
+          "h": 20
+        },
+        "links": ["/terms-and-conditions", "/privacy-policy"]
+      },
+      "buttons": [
+        {
+          "text": "",
+          "rect": {
+            "x": 28,
+            "y": 192.9,
+            "w": 44,
+            "h": 44
+          }
+        },
+        {
+          "text": "יצירת חשבון",
+          "rect": {
+            "x": 39,
+            "y": 551.1,
+            "w": 302,
+            "h": 44
+          }
+        },
+        {
+          "text": "חזרה לפרטים",
+          "rect": {
+            "x": 39,
+            "y": 611.1,
+            "w": 302,
+            "h": 44
+          }
+        }
+      ],
+      "welcome": null,
+      "focus": {
+        "tag": "H3",
+        "text": "טלפון ותנאים",
+        "inDialog": true
+      },
+      "liveText": ["שלב 2 מתוך 4: טלפון ותנאים"],
+      "pageHeight": 22239,
+      "scrollWidth": 380,
+      "postRequests": 0
+    },
+    "afterBack": {
+      "url": "/?utm=ux24",
+      "dialog": {
+        "tag": "DIALOG",
+        "rect": {
+          "x": 15,
+          "y": 129.9,
+          "w": 350,
+          "h": 640.2
+        },
+        "label": "יצירת חשבון",
+        "modal": "true",
+        "bodyLocked": "hidden"
+      },
+      "heading": "יצירת חשבון",
+      "stepper": {
+        "rect": {
+          "x": 39,
+          "y": 218.9,
+          "w": 302,
+          "h": 41.2
+        },
+        "label": "שלבי ההרשמה",
+        "steps": [
+          {
+            "text": "1פרטים",
+            "current": "step",
+            "state": "current"
+          },
+          {
+            "text": "2טלפון ותנאים",
+            "current": null,
+            "state": "upcoming"
+          },
+          {
+            "text": "3אימות הטלפון",
+            "current": null,
+            "state": "upcoming"
+          },
+          {
+            "text": "4ברוכים הבאים",
+            "current": null,
+            "state": "upcoming"
+          }
+        ]
+      },
+      "fields": [
+        {
+          "id": "register-dialog-full_name",
+          "type": "text",
+          "required": false,
+          "rect": {
+            "x": 39,
+            "y": 440.1,
+            "w": 302,
+            "h": 42
+          },
+          "label": "שם מלא"
+        },
+        {
+          "id": "register-dialog-email",
+          "type": "email",
+          "required": false,
+          "rect": {
+            "x": 39,
+            "y": 522.1,
+            "w": 302,
+            "h": 42
+          },
+          "label": "אימייל"
+        },
+        {
+          "id": "register-dialog-password",
+          "type": "password",
+          "required": false,
+          "rect": {
+            "x": 39,
+            "y": 604.1,
+            "w": 302,
+            "h": 42
+          },
+          "label": "סיסמה"
+        }
+      ],
+      "terms": {
+        "visible": false,
+        "required": false,
+        "checked": false,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        },
+        "links": ["/terms-and-conditions", "/privacy-policy"]
+      },
+      "buttons": [
+        {
+          "text": "",
+          "rect": {
+            "x": 28,
+            "y": 141.9,
+            "w": 44,
+            "h": 44
+          }
+        },
+        {
+          "text": "הרשמה עם Google",
+          "rect": {
+            "x": 39,
+            "y": 316.1,
+            "w": 302,
+            "h": 44
+          }
+        },
+        {
+          "text": "המשך",
+          "rect": {
+            "x": 39,
+            "y": 662.1,
+            "w": 302,
+            "h": 44
+          }
+        }
+      ],
+      "welcome": null,
+      "focus": {
+        "tag": "H3",
+        "text": "פרטים",
+        "inDialog": true
+      },
+      "liveText": ["שלב 1 מתוך 4: פרטים"],
+      "pageHeight": 22239,
+      "scrollWidth": 380,
+      "fullName": "דנה כהן"
+    },
+    "afterSubmitWithoutTerms": {
+      "url": "/?utm=ux24",
+      "dialog": {
+        "tag": "DIALOG",
+        "rect": {
+          "x": 15,
+          "y": 164.9,
+          "w": 350,
+          "h": 570.2
+        },
+        "label": "יצירת חשבון",
+        "modal": "true",
+        "bodyLocked": "hidden"
+      },
+      "heading": "יצירת חשבון",
+      "stepper": {
+        "rect": {
+          "x": 39,
+          "y": 253.9,
+          "w": 302,
+          "h": 41.2
+        },
+        "label": "שלבי ההרשמה",
+        "steps": [
+          {
+            "text": "✓פרטים",
+            "current": null,
+            "state": "done"
+          },
+          {
+            "text": "2טלפון ותנאים",
+            "current": "step",
+            "state": "current"
+          },
+          {
+            "text": "3אימות הטלפון",
+            "current": null,
+            "state": "upcoming"
+          },
+          {
+            "text": "4ברוכים הבאים",
+            "current": null,
+            "state": "upcoming"
+          }
+        ]
+      },
+      "fields": [
+        {
+          "id": "register-dialog-phone",
+          "type": "tel",
+          "required": false,
+          "rect": {
+            "x": 39,
+            "y": 375.1,
+            "w": 302,
+            "h": 42
+          },
+          "label": "טלפון נייד"
+        },
+        {
+          "id": "register-dialog-accept_terms",
+          "type": "checkbox",
+          "required": false,
+          "rect": {
+            "x": 321,
+            "y": 475.1,
+            "w": 20,
+            "h": 20
+          },
+          "label": "קראתי ואני מאשר/ת את תנאי השימוש ואת מדיניות הפרטי"
+        }
+      ],
+      "terms": {
+        "visible": true,
+        "required": false,
+        "checked": false,
+        "rect": {
+          "x": 321,
+          "y": 475.1,
+          "w": 20,
+          "h": 20
+        },
+        "links": ["/terms-and-conditions", "/privacy-policy"]
+      },
+      "buttons": [
+        {
+          "text": "",
+          "rect": {
+            "x": 28,
+            "y": 176.9,
+            "w": 44,
+            "h": 44
+          }
+        },
+        {
+          "text": "יצירת חשבון",
+          "rect": {
+            "x": 39,
+            "y": 567.1,
+            "w": 302,
+            "h": 44
+          }
+        },
+        {
+          "text": "חזרה לפרטים",
+          "rect": {
+            "x": 39,
+            "y": 627.1,
+            "w": 302,
+            "h": 44
+          }
+        }
+      ],
+      "welcome": null,
+      "focus": {
+        "tag": "INPUT",
+        "text": "",
+        "inDialog": true
+      },
+      "liveText": ["שלב 2 מתוך 4: טלפון ותנאים"],
+      "pageHeight": 22239,
+      "scrollWidth": 380,
+      "postRequests": 0
+    },
+    "afterEscape": {
+      "url": "/?utm=ux24",
+      "dialog": null,
+      "heading": "תינוקות וילדים",
+      "stepper": null,
+      "fields": [
+        {
+          "id": "_R_3anppf9b_",
+          "type": "email",
+          "required": true,
+          "rect": {
+            "x": 134,
+            "y": 21668,
+            "w": 204,
+            "h": 44
+          },
+          "label": "הצטרפו לרשימת הדיוור"
+        }
+      ],
+      "terms": null,
+      "buttons": [
+        {
+          "text": "",
+          "rect": {
+            "x": 237,
+            "y": 307,
+            "w": 24,
+            "h": 44
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 199,
+            "y": 307,
+            "w": 30,
+            "h": 44
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 167,
+            "y": 307,
+            "w": 24,
+            "h": 44
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 143,
+            "y": 307,
+            "w": 24,
+            "h": 44
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 119,
+            "y": 307,
+            "w": 24,
+            "h": 44
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 49,
+            "y": 886,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 49,
+            "y": 1434,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 49,
+            "y": 1982,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 49,
+            "y": 2530,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 49,
+            "y": 3078,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 49,
+            "y": 3626,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 49,
+            "y": 4174,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 49,
+            "y": 4722,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 49,
+            "y": 5270,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 49,
+            "y": 5818,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 49,
+            "y": 6366,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 49,
+            "y": 6914,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 49,
+            "y": 7462,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 49,
+            "y": 8010,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 49,
+            "y": 8558,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 49,
+            "y": 9106,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 49,
+            "y": 9654,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 49,
+            "y": 10202,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 49,
+            "y": 10750,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 49,
+            "y": 11846,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 49,
+            "y": 12394,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 49,
+            "y": 12942,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 49,
+            "y": 13490,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 49,
+            "y": 14038,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 49,
+            "y": 14586,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 49,
+            "y": 15134,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 49,
+            "y": 15682,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 49,
+            "y": 16230,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 49,
+            "y": 16778,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 49,
+            "y": 17326,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 49,
+            "y": 17874,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "הוסף לעגלה",
+          "rect": {
+            "x": 190.9,
+            "y": 18232,
+            "w": 147.1,
+            "h": 44
+          }
+        },
+        {
+          "text": "הרשמה",
+          "rect": {
+            "x": 42,
+            "y": 21668,
+            "w": 84,
+            "h": 44
+          }
+        }
+      ],
+      "welcome": null,
+      "focus": {
+        "tag": "A",
+        "text": "התחברות",
+        "inDialog": null
+      },
+      "liveText": ["שקופית 2 מתוך 5", "03:14:31"],
+      "pageHeight": 22239,
+      "scrollWidth": 380
+    },
+    "signupPage": {
+      "url": "/signup",
+      "dialog": null,
+      "heading": "יצירת חשבון",
+      "stepper": {
+        "rect": {
+          "x": 41,
+          "y": 254.4,
+          "w": 298,
+          "h": 41.2
+        },
+        "label": "שלבי ההרשמה",
+        "steps": [
+          {
+            "text": "1פרטים",
+            "current": "step",
+            "state": "current"
+          },
+          {
+            "text": "2טלפון ותנאים",
+            "current": null,
+            "state": "upcoming"
+          },
+          {
+            "text": "3אימות הטלפון",
+            "current": null,
+            "state": "upcoming"
+          },
+          {
+            "text": "4ברוכים הבאים",
+            "current": null,
+            "state": "upcoming"
+          }
+        ]
+      },
+      "fields": [
+        {
+          "id": "register-full_name",
+          "type": "text",
+          "required": false,
+          "rect": {
+            "x": 41,
+            "y": 475.6,
+            "w": 298,
+            "h": 42
+          },
+          "label": "שם מלא"
+        },
+        {
+          "id": "register-email",
+          "type": "email",
+          "required": false,
+          "rect": {
+            "x": 41,
+            "y": 557.6,
+            "w": 298,
+            "h": 42
+          },
+          "label": "אימייל"
+        },
+        {
+          "id": "register-password",
+          "type": "password",
+          "required": false,
+          "rect": {
+            "x": 41,
+            "y": 639.6,
+            "w": 298,
+            "h": 42
+          },
+          "label": "סיסמה"
+        }
+      ],
+      "terms": {
+        "visible": false,
+        "required": false,
+        "checked": false,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        },
+        "links": ["/terms-and-conditions", "/privacy-policy"]
+      },
+      "buttons": [
+        {
+          "text": "הרשמה עם Google",
+          "rect": {
+            "x": 41,
+            "y": 351.6,
+            "w": 298,
+            "h": 44
+          }
+        },
+        {
+          "text": "המשך",
+          "rect": {
+            "x": 41,
+            "y": 697.6,
+            "w": 298,
+            "h": 44
+          }
+        }
+      ],
+      "welcome": null,
+      "focus": {
+        "tag": "BODY",
+        "text": "(function(){try{var m=document.cookie.ma",
+        "inDialog": null
+      },
+      "liveText": ["שלב 1 מתוך 4: פרטים"],
+      "pageHeight": 900,
+      "scrollWidth": 380
+    },
+    "errors": []
+  },
+  "768": {
+    "loginDialog": {
+      "url": "/?utm=ux24",
+      "dialog": {
+        "tag": "DIALOG",
+        "rect": {
+          "x": 176,
+          "y": 159.5,
+          "w": 416,
+          "h": 581
+        },
+        "label": "כניסה לחשבון",
+        "modal": "true",
+        "bodyLocked": "hidden"
+      },
+      "heading": "כניסה לחשבון",
+      "stepper": null,
+      "fields": [
+        {
+          "id": "login-dialog-email",
+          "type": "email",
+          "required": true,
+          "rect": {
+            "x": 200,
+            "y": 428.5,
+            "w": 368,
+            "h": 42
+          },
+          "label": "אימייל"
+        },
+        {
+          "id": "login-dialog-password",
+          "type": "password",
+          "required": true,
+          "rect": {
+            "x": 200,
+            "y": 510.5,
+            "w": 368,
+            "h": 42
+          },
+          "label": "סיסמה"
+        }
+      ],
+      "terms": null,
+      "buttons": [
+        {
+          "text": "",
+          "rect": {
+            "x": 189,
+            "y": 171.5,
+            "w": 44,
+            "h": 44
+          }
+        },
+        {
+          "text": "כניסה עם Google",
+          "rect": {
+            "x": 200,
+            "y": 248.5,
+            "w": 368,
+            "h": 44
+          }
+        },
+        {
+          "text": "כניסה עם טביעת אצבע או Face ID",
+          "rect": {
+            "x": 200,
+            "y": 304.5,
+            "w": 368,
+            "h": 44
+          }
+        },
+        {
+          "text": "כניסה",
+          "rect": {
+            "x": 200,
+            "y": 568.5,
+            "w": 368,
+            "h": 44
+          }
+        },
+        {
+          "text": "כניסה ללא סיסמה (קישור מאובטח לאימייל)",
+          "rect": {
+            "x": 200,
+            "y": 632.5,
+            "w": 368,
+            "h": 44
+          }
+        }
+      ],
+      "welcome": null,
+      "focus": {
+        "tag": "DIALOG",
+        "text": "כניסה לחשבוןכניסה עם Googleכניסה עם טביע",
+        "inDialog": true
+      },
+      "liveText": [],
+      "pageHeight": 11584,
+      "scrollWidth": 768
+    },
+    "signupLinkInDialog": {
+      "text": "הרשמה",
+      "href": "/signup?next=%2F%3Futm%3Dux24"
+    },
+    "afterSignupPress": {
+      "url": "/?utm=ux24",
+      "dialog": {
+        "tag": "DIALOG",
+        "rect": {
+          "x": 176,
+          "y": 129.3,
+          "w": 416,
+          "h": 641.4
+        },
+        "label": "יצירת חשבון",
+        "modal": "true",
+        "bodyLocked": "hidden"
+      },
+      "heading": "יצירת חשבון",
+      "stepper": {
+        "rect": {
+          "x": 200,
+          "y": 218.3,
+          "w": 368,
+          "h": 42.4
+        },
+        "label": "שלבי ההרשמה",
+        "steps": [
+          {
+            "text": "1פרטים",
+            "current": "step",
+            "state": "current"
+          },
+          {
+            "text": "2טלפון ותנאים",
+            "current": null,
+            "state": "upcoming"
+          },
+          {
+            "text": "3אימות הטלפון",
+            "current": null,
+            "state": "upcoming"
+          },
+          {
+            "text": "4ברוכים הבאים",
+            "current": null,
+            "state": "upcoming"
+          }
+        ]
+      },
+      "fields": [
+        {
+          "id": "register-dialog-full_name",
+          "type": "text",
+          "required": false,
+          "rect": {
+            "x": 200,
+            "y": 440.7,
+            "w": 368,
+            "h": 42
+          },
+          "label": "שם מלא"
+        },
+        {
+          "id": "register-dialog-email",
+          "type": "email",
+          "required": false,
+          "rect": {
+            "x": 200,
+            "y": 522.7,
+            "w": 368,
+            "h": 42
+          },
+          "label": "אימייל"
+        },
+        {
+          "id": "register-dialog-password",
+          "type": "password",
+          "required": false,
+          "rect": {
+            "x": 200,
+            "y": 604.7,
+            "w": 368,
+            "h": 42
+          },
+          "label": "סיסמה"
+        }
+      ],
+      "terms": {
+        "visible": false,
+        "required": false,
+        "checked": false,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        },
+        "links": ["/terms-and-conditions", "/privacy-policy"]
+      },
+      "buttons": [
+        {
+          "text": "",
+          "rect": {
+            "x": 189,
+            "y": 141.3,
+            "w": 44,
+            "h": 44
+          }
+        },
+        {
+          "text": "הרשמה עם Google",
+          "rect": {
+            "x": 200,
+            "y": 316.7,
+            "w": 368,
+            "h": 44
+          }
+        },
+        {
+          "text": "המשך",
+          "rect": {
+            "x": 200,
+            "y": 662.7,
+            "w": 368,
+            "h": 44
+          }
+        }
+      ],
+      "welcome": null,
+      "focus": {
+        "tag": "DIALOG",
+        "text": "יצירת חשבון1פרטים2טלפון ותנאים3אימות הטל",
+        "inDialog": true
+      },
+      "liveText": ["שלב 1 מתוך 4: פרטים"],
+      "pageHeight": 11584,
+      "scrollWidth": 768
+    },
+    "afterStepOne": {
+      "url": "/?utm=ux24",
+      "dialog": {
+        "tag": "DIALOG",
+        "rect": {
+          "x": 176,
+          "y": 180.3,
+          "w": 416,
+          "h": 539.4
+        },
+        "label": "יצירת חשבון",
+        "modal": "true",
+        "bodyLocked": "hidden"
+      },
+      "heading": "יצירת חשבון",
+      "stepper": {
+        "rect": {
+          "x": 200,
+          "y": 269.3,
+          "w": 368,
+          "h": 42.4
+        },
+        "label": "שלבי ההרשמה",
+        "steps": [
+          {
+            "text": "✓פרטים",
+            "current": null,
+            "state": "done"
+          },
+          {
+            "text": "2טלפון ותנאים",
+            "current": "step",
+            "state": "current"
+          },
+          {
+            "text": "3אימות הטלפון",
+            "current": null,
+            "state": "upcoming"
+          },
+          {
+            "text": "4ברוכים הבאים",
+            "current": null,
+            "state": "upcoming"
+          }
+        ]
+      },
+      "fields": [
+        {
+          "id": "register-dialog-phone",
+          "type": "tel",
+          "required": false,
+          "rect": {
+            "x": 200,
+            "y": 391.7,
+            "w": 368,
+            "h": 42
+          },
+          "label": "טלפון נייד"
+        },
+        {
+          "id": "register-dialog-accept_terms",
+          "type": "checkbox",
+          "required": false,
+          "rect": {
+            "x": 548,
+            "y": 491.7,
+            "w": 20,
+            "h": 20
+          },
+          "label": "קראתי ואני מאשר/ת את תנאי השימוש ואת מדיניות הפרטי"
+        }
+      ],
+      "terms": {
+        "visible": true,
+        "required": false,
+        "checked": false,
+        "rect": {
+          "x": 548,
+          "y": 491.7,
+          "w": 20,
+          "h": 20
+        },
+        "links": ["/terms-and-conditions", "/privacy-policy"]
+      },
+      "buttons": [
+        {
+          "text": "",
+          "rect": {
+            "x": 189,
+            "y": 192.3,
+            "w": 44,
+            "h": 44
+          }
+        },
+        {
+          "text": "יצירת חשבון",
+          "rect": {
+            "x": 200,
+            "y": 551.7,
+            "w": 368,
+            "h": 44
+          }
+        },
+        {
+          "text": "חזרה לפרטים",
+          "rect": {
+            "x": 200,
+            "y": 611.7,
+            "w": 368,
+            "h": 44
+          }
+        }
+      ],
+      "welcome": null,
+      "focus": {
+        "tag": "H3",
+        "text": "טלפון ותנאים",
+        "inDialog": true
+      },
+      "liveText": ["שלב 2 מתוך 4: טלפון ותנאים"],
+      "pageHeight": 11584,
+      "scrollWidth": 768,
+      "postRequests": 0
+    },
+    "afterBack": {
+      "url": "/?utm=ux24",
+      "dialog": {
+        "tag": "DIALOG",
+        "rect": {
+          "x": 176,
+          "y": 129.3,
+          "w": 416,
+          "h": 641.4
+        },
+        "label": "יצירת חשבון",
+        "modal": "true",
+        "bodyLocked": "hidden"
+      },
+      "heading": "יצירת חשבון",
+      "stepper": {
+        "rect": {
+          "x": 200,
+          "y": 218.3,
+          "w": 368,
+          "h": 42.4
+        },
+        "label": "שלבי ההרשמה",
+        "steps": [
+          {
+            "text": "1פרטים",
+            "current": "step",
+            "state": "current"
+          },
+          {
+            "text": "2טלפון ותנאים",
+            "current": null,
+            "state": "upcoming"
+          },
+          {
+            "text": "3אימות הטלפון",
+            "current": null,
+            "state": "upcoming"
+          },
+          {
+            "text": "4ברוכים הבאים",
+            "current": null,
+            "state": "upcoming"
+          }
+        ]
+      },
+      "fields": [
+        {
+          "id": "register-dialog-full_name",
+          "type": "text",
+          "required": false,
+          "rect": {
+            "x": 200,
+            "y": 440.7,
+            "w": 368,
+            "h": 42
+          },
+          "label": "שם מלא"
+        },
+        {
+          "id": "register-dialog-email",
+          "type": "email",
+          "required": false,
+          "rect": {
+            "x": 200,
+            "y": 522.7,
+            "w": 368,
+            "h": 42
+          },
+          "label": "אימייל"
+        },
+        {
+          "id": "register-dialog-password",
+          "type": "password",
+          "required": false,
+          "rect": {
+            "x": 200,
+            "y": 604.7,
+            "w": 368,
+            "h": 42
+          },
+          "label": "סיסמה"
+        }
+      ],
+      "terms": {
+        "visible": false,
+        "required": false,
+        "checked": false,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        },
+        "links": ["/terms-and-conditions", "/privacy-policy"]
+      },
+      "buttons": [
+        {
+          "text": "",
+          "rect": {
+            "x": 189,
+            "y": 141.3,
+            "w": 44,
+            "h": 44
+          }
+        },
+        {
+          "text": "הרשמה עם Google",
+          "rect": {
+            "x": 200,
+            "y": 316.7,
+            "w": 368,
+            "h": 44
+          }
+        },
+        {
+          "text": "המשך",
+          "rect": {
+            "x": 200,
+            "y": 662.7,
+            "w": 368,
+            "h": 44
+          }
+        }
+      ],
+      "welcome": null,
+      "focus": {
+        "tag": "H3",
+        "text": "פרטים",
+        "inDialog": true
+      },
+      "liveText": ["שלב 1 מתוך 4: פרטים"],
+      "pageHeight": 11584,
+      "scrollWidth": 768,
+      "fullName": "דנה כהן"
+    },
+    "afterSubmitWithoutTerms": {
+      "url": "/?utm=ux24",
+      "dialog": {
+        "tag": "DIALOG",
+        "rect": {
+          "x": 176,
+          "y": 164.3,
+          "w": 416,
+          "h": 571.4
+        },
+        "label": "יצירת חשבון",
+        "modal": "true",
+        "bodyLocked": "hidden"
+      },
+      "heading": "יצירת חשבון",
+      "stepper": {
+        "rect": {
+          "x": 200,
+          "y": 253.3,
+          "w": 368,
+          "h": 42.4
+        },
+        "label": "שלבי ההרשמה",
+        "steps": [
+          {
+            "text": "✓פרטים",
+            "current": null,
+            "state": "done"
+          },
+          {
+            "text": "2טלפון ותנאים",
+            "current": "step",
+            "state": "current"
+          },
+          {
+            "text": "3אימות הטלפון",
+            "current": null,
+            "state": "upcoming"
+          },
+          {
+            "text": "4ברוכים הבאים",
+            "current": null,
+            "state": "upcoming"
+          }
+        ]
+      },
+      "fields": [
+        {
+          "id": "register-dialog-phone",
+          "type": "tel",
+          "required": false,
+          "rect": {
+            "x": 200,
+            "y": 375.7,
+            "w": 368,
+            "h": 42
+          },
+          "label": "טלפון נייד"
+        },
+        {
+          "id": "register-dialog-accept_terms",
+          "type": "checkbox",
+          "required": false,
+          "rect": {
+            "x": 548,
+            "y": 475.7,
+            "w": 20,
+            "h": 20
+          },
+          "label": "קראתי ואני מאשר/ת את תנאי השימוש ואת מדיניות הפרטי"
+        }
+      ],
+      "terms": {
+        "visible": true,
+        "required": false,
+        "checked": false,
+        "rect": {
+          "x": 548,
+          "y": 475.7,
+          "w": 20,
+          "h": 20
+        },
+        "links": ["/terms-and-conditions", "/privacy-policy"]
+      },
+      "buttons": [
+        {
+          "text": "",
+          "rect": {
+            "x": 189,
+            "y": 176.3,
+            "w": 44,
+            "h": 44
+          }
+        },
+        {
+          "text": "יצירת חשבון",
+          "rect": {
+            "x": 200,
+            "y": 567.7,
+            "w": 368,
+            "h": 44
+          }
+        },
+        {
+          "text": "חזרה לפרטים",
+          "rect": {
+            "x": 200,
+            "y": 627.7,
+            "w": 368,
+            "h": 44
+          }
+        }
+      ],
+      "welcome": null,
+      "focus": {
+        "tag": "INPUT",
+        "text": "",
+        "inDialog": true
+      },
+      "liveText": ["שלב 2 מתוך 4: טלפון ותנאים"],
+      "pageHeight": 11584,
+      "scrollWidth": 768,
+      "postRequests": 0
+    },
+    "afterEscape": {
+      "url": "/?utm=ux24",
+      "dialog": null,
+      "heading": "תינוקות וילדים",
+      "stepper": null,
+      "fields": [
+        {
+          "id": "_R_3anppf9b_",
+          "type": "email",
+          "required": true,
+          "rect": {
+            "x": 378,
+            "y": 11017.3,
+            "w": 324,
+            "h": 39
+          },
+          "label": "הצטרפו לרשימת הדיוור"
+        }
+      ],
+      "terms": null,
+      "buttons": [
+        {
+          "text": "",
+          "rect": {
+            "x": 450,
+            "y": 342.3,
+            "w": 24,
+            "h": 44
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 412,
+            "y": 342.3,
+            "w": 30,
+            "h": 44
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 380,
+            "y": 342.3,
+            "w": 24,
+            "h": 44
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 356,
+            "y": 342.3,
+            "w": 24,
+            "h": 44
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 332,
+            "y": 342.3,
+            "w": 24,
+            "h": 44
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 409,
+            "y": 1148.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 74,
+            "y": 1148.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 409,
+            "y": 1649.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 74,
+            "y": 1649.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 409,
+            "y": 2150.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 74,
+            "y": 2150.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 409,
+            "y": 2651.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 74,
+            "y": 2651.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 409,
+            "y": 3152.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 74,
+            "y": 3152.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 409,
+            "y": 3653.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 74,
+            "y": 3653.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 409,
+            "y": 4154.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 74,
+            "y": 4154.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 409,
+            "y": 4655.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 74,
+            "y": 4655.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 409,
+            "y": 5156.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 74,
+            "y": 5156.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 409,
+            "y": 5657.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 409,
+            "y": 6158.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 74,
+            "y": 6158.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 409,
+            "y": 6659.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 74,
+            "y": 6659.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 409,
+            "y": 7160.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 74,
+            "y": 7160.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 409,
+            "y": 7661.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 74,
+            "y": 7661.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 409,
+            "y": 8162.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 74,
+            "y": 8162.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 409,
+            "y": 8663.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 74,
+            "y": 8663.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "הוסף לעגלה",
+          "rect": {
+            "x": 554.9,
+            "y": 9023.8,
+            "w": 147.1,
+            "h": 44
+          }
+        },
+        {
+          "text": "הרשמה",
+          "rect": {
+            "x": 286,
+            "y": 11017.3,
+            "w": 84,
+            "h": 39
+          }
+        }
+      ],
+      "welcome": null,
+      "focus": {
+        "tag": "A",
+        "text": "התחברות",
+        "inDialog": null
+      },
+      "liveText": ["שקופית 2 מתוך 5", "03:14:21"],
+      "pageHeight": 11584,
+      "scrollWidth": 768
+    },
+    "signupPage": {
+      "url": "/signup",
+      "dialog": null,
+      "heading": "יצירת חשבון",
+      "stepper": {
+        "rect": {
+          "x": 217,
+          "y": 253.8,
+          "w": 334,
+          "h": 42.4
+        },
+        "label": "שלבי ההרשמה",
+        "steps": [
+          {
+            "text": "1פרטים",
+            "current": "step",
+            "state": "current"
+          },
+          {
+            "text": "2טלפון ותנאים",
+            "current": null,
+            "state": "upcoming"
+          },
+          {
+            "text": "3אימות הטלפון",
+            "current": null,
+            "state": "upcoming"
+          },
+          {
+            "text": "4ברוכים הבאים",
+            "current": null,
+            "state": "upcoming"
+          }
+        ]
+      },
+      "fields": [
+        {
+          "id": "register-full_name",
+          "type": "text",
+          "required": false,
+          "rect": {
+            "x": 217,
+            "y": 476.2,
+            "w": 334,
+            "h": 42
+          },
+          "label": "שם מלא"
+        },
+        {
+          "id": "register-email",
+          "type": "email",
+          "required": false,
+          "rect": {
+            "x": 217,
+            "y": 558.2,
+            "w": 334,
+            "h": 42
+          },
+          "label": "אימייל"
+        },
+        {
+          "id": "register-password",
+          "type": "password",
+          "required": false,
+          "rect": {
+            "x": 217,
+            "y": 640.2,
+            "w": 334,
+            "h": 42
+          },
+          "label": "סיסמה"
+        }
+      ],
+      "terms": {
+        "visible": false,
+        "required": false,
+        "checked": false,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        },
+        "links": ["/terms-and-conditions", "/privacy-policy"]
+      },
+      "buttons": [
+        {
+          "text": "הרשמה עם Google",
+          "rect": {
+            "x": 217,
+            "y": 352.2,
+            "w": 334,
+            "h": 44
+          }
+        },
+        {
+          "text": "המשך",
+          "rect": {
+            "x": 217,
+            "y": 698.2,
+            "w": 334,
+            "h": 44
+          }
+        }
+      ],
+      "welcome": null,
+      "focus": {
+        "tag": "BODY",
+        "text": "(function(){try{var m=document.cookie.ma",
+        "inDialog": null
+      },
+      "liveText": ["שלב 1 מתוך 4: פרטים"],
+      "pageHeight": 900,
+      "scrollWidth": 768
+    },
+    "errors": []
+  },
+  "1440": {
+    "loginDialog": {
+      "url": "/?utm=ux24",
+      "dialog": {
+        "tag": "DIALOG",
+        "rect": {
+          "x": 512,
+          "y": 159.5,
+          "w": 416,
+          "h": 581
+        },
+        "label": "כניסה לחשבון",
+        "modal": "true",
+        "bodyLocked": "hidden"
+      },
+      "heading": "כניסה לחשבון",
+      "stepper": null,
+      "fields": [
+        {
+          "id": "login-dialog-email",
+          "type": "email",
+          "required": true,
+          "rect": {
+            "x": 536,
+            "y": 428.5,
+            "w": 368,
+            "h": 42
+          },
+          "label": "אימייל"
+        },
+        {
+          "id": "login-dialog-password",
+          "type": "password",
+          "required": true,
+          "rect": {
+            "x": 536,
+            "y": 510.5,
+            "w": 368,
+            "h": 42
+          },
+          "label": "סיסמה"
+        }
+      ],
+      "terms": null,
+      "buttons": [
+        {
+          "text": "",
+          "rect": {
+            "x": 525,
+            "y": 171.5,
+            "w": 44,
+            "h": 44
+          }
+        },
+        {
+          "text": "כניסה עם Google",
+          "rect": {
+            "x": 536,
+            "y": 248.5,
+            "w": 368,
+            "h": 44
+          }
+        },
+        {
+          "text": "כניסה עם טביעת אצבע או Face ID",
+          "rect": {
+            "x": 536,
+            "y": 304.5,
+            "w": 368,
+            "h": 44
+          }
+        },
+        {
+          "text": "כניסה",
+          "rect": {
+            "x": 536,
+            "y": 568.5,
+            "w": 368,
+            "h": 44
+          }
+        },
+        {
+          "text": "כניסה ללא סיסמה (קישור מאובטח לאימייל)",
+          "rect": {
+            "x": 536,
+            "y": 632.5,
+            "w": 368,
+            "h": 44
+          }
+        }
+      ],
+      "welcome": null,
+      "focus": {
+        "tag": "DIALOG",
+        "text": "כניסה לחשבוןכניסה עם Googleכניסה עם טביע",
+        "inDialog": true
+      },
+      "liveText": [],
+      "pageHeight": 7138,
+      "scrollWidth": 1440
+    },
+    "signupLinkInDialog": {
+      "text": "הרשמה",
+      "href": "/signup?next=%2F%3Futm%3Dux24"
+    },
+    "afterSignupPress": {
+      "url": "/?utm=ux24",
+      "dialog": {
+        "tag": "DIALOG",
+        "rect": {
+          "x": 512,
+          "y": 129.3,
+          "w": 416,
+          "h": 641.4
+        },
+        "label": "יצירת חשבון",
+        "modal": "true",
+        "bodyLocked": "hidden"
+      },
+      "heading": "יצירת חשבון",
+      "stepper": {
+        "rect": {
+          "x": 536,
+          "y": 218.3,
+          "w": 368,
+          "h": 42.4
+        },
+        "label": "שלבי ההרשמה",
+        "steps": [
+          {
+            "text": "1פרטים",
+            "current": "step",
+            "state": "current"
+          },
+          {
+            "text": "2טלפון ותנאים",
+            "current": null,
+            "state": "upcoming"
+          },
+          {
+            "text": "3אימות הטלפון",
+            "current": null,
+            "state": "upcoming"
+          },
+          {
+            "text": "4ברוכים הבאים",
+            "current": null,
+            "state": "upcoming"
+          }
+        ]
+      },
+      "fields": [
+        {
+          "id": "register-dialog-full_name",
+          "type": "text",
+          "required": false,
+          "rect": {
+            "x": 536,
+            "y": 440.7,
+            "w": 368,
+            "h": 42
+          },
+          "label": "שם מלא"
+        },
+        {
+          "id": "register-dialog-email",
+          "type": "email",
+          "required": false,
+          "rect": {
+            "x": 536,
+            "y": 522.7,
+            "w": 368,
+            "h": 42
+          },
+          "label": "אימייל"
+        },
+        {
+          "id": "register-dialog-password",
+          "type": "password",
+          "required": false,
+          "rect": {
+            "x": 536,
+            "y": 604.7,
+            "w": 368,
+            "h": 42
+          },
+          "label": "סיסמה"
+        }
+      ],
+      "terms": {
+        "visible": false,
+        "required": false,
+        "checked": false,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        },
+        "links": ["/terms-and-conditions", "/privacy-policy"]
+      },
+      "buttons": [
+        {
+          "text": "",
+          "rect": {
+            "x": 525,
+            "y": 141.3,
+            "w": 44,
+            "h": 44
+          }
+        },
+        {
+          "text": "הרשמה עם Google",
+          "rect": {
+            "x": 536,
+            "y": 316.7,
+            "w": 368,
+            "h": 44
+          }
+        },
+        {
+          "text": "המשך",
+          "rect": {
+            "x": 536,
+            "y": 662.7,
+            "w": 368,
+            "h": 44
+          }
+        }
+      ],
+      "welcome": null,
+      "focus": {
+        "tag": "DIALOG",
+        "text": "יצירת חשבון1פרטים2טלפון ותנאים3אימות הטל",
+        "inDialog": true
+      },
+      "liveText": ["שלב 1 מתוך 4: פרטים"],
+      "pageHeight": 7138,
+      "scrollWidth": 1440
+    },
+    "afterStepOne": {
+      "url": "/?utm=ux24",
+      "dialog": {
+        "tag": "DIALOG",
+        "rect": {
+          "x": 512,
+          "y": 180.3,
+          "w": 416,
+          "h": 539.4
+        },
+        "label": "יצירת חשבון",
+        "modal": "true",
+        "bodyLocked": "hidden"
+      },
+      "heading": "יצירת חשבון",
+      "stepper": {
+        "rect": {
+          "x": 536,
+          "y": 269.3,
+          "w": 368,
+          "h": 42.4
+        },
+        "label": "שלבי ההרשמה",
+        "steps": [
+          {
+            "text": "✓פרטים",
+            "current": null,
+            "state": "done"
+          },
+          {
+            "text": "2טלפון ותנאים",
+            "current": "step",
+            "state": "current"
+          },
+          {
+            "text": "3אימות הטלפון",
+            "current": null,
+            "state": "upcoming"
+          },
+          {
+            "text": "4ברוכים הבאים",
+            "current": null,
+            "state": "upcoming"
+          }
+        ]
+      },
+      "fields": [
+        {
+          "id": "register-dialog-phone",
+          "type": "tel",
+          "required": false,
+          "rect": {
+            "x": 536,
+            "y": 391.7,
+            "w": 368,
+            "h": 42
+          },
+          "label": "טלפון נייד"
+        },
+        {
+          "id": "register-dialog-accept_terms",
+          "type": "checkbox",
+          "required": false,
+          "rect": {
+            "x": 884,
+            "y": 491.7,
+            "w": 20,
+            "h": 20
+          },
+          "label": "קראתי ואני מאשר/ת את תנאי השימוש ואת מדיניות הפרטי"
+        }
+      ],
+      "terms": {
+        "visible": true,
+        "required": false,
+        "checked": false,
+        "rect": {
+          "x": 884,
+          "y": 491.7,
+          "w": 20,
+          "h": 20
+        },
+        "links": ["/terms-and-conditions", "/privacy-policy"]
+      },
+      "buttons": [
+        {
+          "text": "",
+          "rect": {
+            "x": 525,
+            "y": 192.3,
+            "w": 44,
+            "h": 44
+          }
+        },
+        {
+          "text": "יצירת חשבון",
+          "rect": {
+            "x": 536,
+            "y": 551.7,
+            "w": 368,
+            "h": 44
+          }
+        },
+        {
+          "text": "חזרה לפרטים",
+          "rect": {
+            "x": 536,
+            "y": 611.7,
+            "w": 368,
+            "h": 44
+          }
+        }
+      ],
+      "welcome": null,
+      "focus": {
+        "tag": "H3",
+        "text": "טלפון ותנאים",
+        "inDialog": true
+      },
+      "liveText": ["שלב 2 מתוך 4: טלפון ותנאים"],
+      "pageHeight": 7138,
+      "scrollWidth": 1440,
+      "postRequests": 0
+    },
+    "afterBack": {
+      "url": "/?utm=ux24",
+      "dialog": {
+        "tag": "DIALOG",
+        "rect": {
+          "x": 512,
+          "y": 129.3,
+          "w": 416,
+          "h": 641.4
+        },
+        "label": "יצירת חשבון",
+        "modal": "true",
+        "bodyLocked": "hidden"
+      },
+      "heading": "יצירת חשבון",
+      "stepper": {
+        "rect": {
+          "x": 536,
+          "y": 218.3,
+          "w": 368,
+          "h": 42.4
+        },
+        "label": "שלבי ההרשמה",
+        "steps": [
+          {
+            "text": "1פרטים",
+            "current": "step",
+            "state": "current"
+          },
+          {
+            "text": "2טלפון ותנאים",
+            "current": null,
+            "state": "upcoming"
+          },
+          {
+            "text": "3אימות הטלפון",
+            "current": null,
+            "state": "upcoming"
+          },
+          {
+            "text": "4ברוכים הבאים",
+            "current": null,
+            "state": "upcoming"
+          }
+        ]
+      },
+      "fields": [
+        {
+          "id": "register-dialog-full_name",
+          "type": "text",
+          "required": false,
+          "rect": {
+            "x": 536,
+            "y": 440.7,
+            "w": 368,
+            "h": 42
+          },
+          "label": "שם מלא"
+        },
+        {
+          "id": "register-dialog-email",
+          "type": "email",
+          "required": false,
+          "rect": {
+            "x": 536,
+            "y": 522.7,
+            "w": 368,
+            "h": 42
+          },
+          "label": "אימייל"
+        },
+        {
+          "id": "register-dialog-password",
+          "type": "password",
+          "required": false,
+          "rect": {
+            "x": 536,
+            "y": 604.7,
+            "w": 368,
+            "h": 42
+          },
+          "label": "סיסמה"
+        }
+      ],
+      "terms": {
+        "visible": false,
+        "required": false,
+        "checked": false,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        },
+        "links": ["/terms-and-conditions", "/privacy-policy"]
+      },
+      "buttons": [
+        {
+          "text": "",
+          "rect": {
+            "x": 525,
+            "y": 141.3,
+            "w": 44,
+            "h": 44
+          }
+        },
+        {
+          "text": "הרשמה עם Google",
+          "rect": {
+            "x": 536,
+            "y": 316.7,
+            "w": 368,
+            "h": 44
+          }
+        },
+        {
+          "text": "המשך",
+          "rect": {
+            "x": 536,
+            "y": 662.7,
+            "w": 368,
+            "h": 44
+          }
+        }
+      ],
+      "welcome": null,
+      "focus": {
+        "tag": "H3",
+        "text": "פרטים",
+        "inDialog": true
+      },
+      "liveText": ["שלב 1 מתוך 4: פרטים"],
+      "pageHeight": 7138,
+      "scrollWidth": 1440,
+      "fullName": "דנה כהן"
+    },
+    "afterSubmitWithoutTerms": {
+      "url": "/?utm=ux24",
+      "dialog": {
+        "tag": "DIALOG",
+        "rect": {
+          "x": 512,
+          "y": 164.3,
+          "w": 416,
+          "h": 571.4
+        },
+        "label": "יצירת חשבון",
+        "modal": "true",
+        "bodyLocked": "hidden"
+      },
+      "heading": "יצירת חשבון",
+      "stepper": {
+        "rect": {
+          "x": 536,
+          "y": 253.3,
+          "w": 368,
+          "h": 42.4
+        },
+        "label": "שלבי ההרשמה",
+        "steps": [
+          {
+            "text": "✓פרטים",
+            "current": null,
+            "state": "done"
+          },
+          {
+            "text": "2טלפון ותנאים",
+            "current": "step",
+            "state": "current"
+          },
+          {
+            "text": "3אימות הטלפון",
+            "current": null,
+            "state": "upcoming"
+          },
+          {
+            "text": "4ברוכים הבאים",
+            "current": null,
+            "state": "upcoming"
+          }
+        ]
+      },
+      "fields": [
+        {
+          "id": "register-dialog-phone",
+          "type": "tel",
+          "required": false,
+          "rect": {
+            "x": 536,
+            "y": 375.7,
+            "w": 368,
+            "h": 42
+          },
+          "label": "טלפון נייד"
+        },
+        {
+          "id": "register-dialog-accept_terms",
+          "type": "checkbox",
+          "required": false,
+          "rect": {
+            "x": 884,
+            "y": 475.7,
+            "w": 20,
+            "h": 20
+          },
+          "label": "קראתי ואני מאשר/ת את תנאי השימוש ואת מדיניות הפרטי"
+        }
+      ],
+      "terms": {
+        "visible": true,
+        "required": false,
+        "checked": false,
+        "rect": {
+          "x": 884,
+          "y": 475.7,
+          "w": 20,
+          "h": 20
+        },
+        "links": ["/terms-and-conditions", "/privacy-policy"]
+      },
+      "buttons": [
+        {
+          "text": "",
+          "rect": {
+            "x": 525,
+            "y": 176.3,
+            "w": 44,
+            "h": 44
+          }
+        },
+        {
+          "text": "יצירת חשבון",
+          "rect": {
+            "x": 536,
+            "y": 567.7,
+            "w": 368,
+            "h": 44
+          }
+        },
+        {
+          "text": "חזרה לפרטים",
+          "rect": {
+            "x": 536,
+            "y": 627.7,
+            "w": 368,
+            "h": 44
+          }
+        }
+      ],
+      "welcome": null,
+      "focus": {
+        "tag": "INPUT",
+        "text": "",
+        "inDialog": true
+      },
+      "liveText": ["שלב 2 מתוך 4: טלפון ותנאים"],
+      "pageHeight": 7138,
+      "scrollWidth": 1440,
+      "postRequests": 0
+    },
+    "afterEscape": {
+      "url": "/?utm=ux24",
+      "dialog": null,
+      "heading": "תינוקות וילדים",
+      "stepper": null,
+      "fields": [],
+      "terms": null,
+      "buttons": [
+        {
+          "text": "",
+          "rect": {
+            "x": 582,
+            "y": 382.3,
+            "w": 24,
+            "h": 44
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 544,
+            "y": 382.3,
+            "w": 30,
+            "h": 44
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 512,
+            "y": 382.3,
+            "w": 24,
+            "h": 44
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 488,
+            "y": 382.3,
+            "w": 24,
+            "h": 44
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 464,
+            "y": 382.3,
+            "w": 24,
+            "h": 44
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 1032.5,
+            "y": 1327.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 745,
+            "y": 1327.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 457.5,
+            "y": 1327.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 169,
+            "y": 1327.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 1032.5,
+            "y": 1828.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 745,
+            "y": 1828.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 457.5,
+            "y": 1828.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 169,
+            "y": 1828.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 1032.5,
+            "y": 2329.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 745,
+            "y": 2329.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 457.5,
+            "y": 2329.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 169,
+            "y": 2329.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 1032.5,
+            "y": 2830.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 745,
+            "y": 2830.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 457.5,
+            "y": 2830.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 169,
+            "y": 2830.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 1032.5,
+            "y": 3331.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 745,
+            "y": 3331.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 457.5,
+            "y": 3331.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 1032.5,
+            "y": 3832.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 745,
+            "y": 3832.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 457.5,
+            "y": 3832.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 169,
+            "y": 3832.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 1032.5,
+            "y": 4333.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 745,
+            "y": 4333.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 457.5,
+            "y": 4333.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 169,
+            "y": 4333.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 1032.5,
+            "y": 4834.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 745,
+            "y": 4834.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 457.5,
+            "y": 4834.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 169,
+            "y": 4834.3,
+            "w": 40,
+            "h": 40
+          }
+        },
+        {
+          "text": "הוסף לעגלה",
+          "rect": {
+            "x": 1130.9,
+            "y": 5173.3,
+            "w": 147.1,
+            "h": 44
+          }
+        }
+      ],
+      "welcome": null,
+      "focus": {
+        "tag": "A",
+        "text": "התחברות",
+        "inDialog": null
+      },
+      "liveText": ["שקופית 2 מתוך 5", "03:14:13"],
+      "pageHeight": 7138,
+      "scrollWidth": 1440
+    },
+    "signupPage": {
+      "url": "/signup",
+      "dialog": null,
+      "heading": "יצירת חשבון",
+      "stepper": {
+        "rect": {
+          "x": 553,
+          "y": 253.8,
+          "w": 334,
+          "h": 42.4
+        },
+        "label": "שלבי ההרשמה",
+        "steps": [
+          {
+            "text": "1פרטים",
+            "current": "step",
+            "state": "current"
+          },
+          {
+            "text": "2טלפון ותנאים",
+            "current": null,
+            "state": "upcoming"
+          },
+          {
+            "text": "3אימות הטלפון",
+            "current": null,
+            "state": "upcoming"
+          },
+          {
+            "text": "4ברוכים הבאים",
+            "current": null,
+            "state": "upcoming"
+          }
+        ]
+      },
+      "fields": [
+        {
+          "id": "register-full_name",
+          "type": "text",
+          "required": false,
+          "rect": {
+            "x": 553,
+            "y": 476.2,
+            "w": 334,
+            "h": 42
+          },
+          "label": "שם מלא"
+        },
+        {
+          "id": "register-email",
+          "type": "email",
+          "required": false,
+          "rect": {
+            "x": 553,
+            "y": 558.2,
+            "w": 334,
+            "h": 42
+          },
+          "label": "אימייל"
+        },
+        {
+          "id": "register-password",
+          "type": "password",
+          "required": false,
+          "rect": {
+            "x": 553,
+            "y": 640.2,
+            "w": 334,
+            "h": 42
+          },
+          "label": "סיסמה"
+        }
+      ],
+      "terms": {
+        "visible": false,
+        "required": false,
+        "checked": false,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        },
+        "links": ["/terms-and-conditions", "/privacy-policy"]
+      },
+      "buttons": [
+        {
+          "text": "הרשמה עם Google",
+          "rect": {
+            "x": 553,
+            "y": 352.2,
+            "w": 334,
+            "h": 44
+          }
+        },
+        {
+          "text": "המשך",
+          "rect": {
+            "x": 553,
+            "y": 698.2,
+            "w": 334,
+            "h": 44
+          }
+        }
+      ],
+      "welcome": null,
+      "focus": {
+        "tag": "BODY",
+        "text": "(function(){try{var m=document.cookie.ma",
+        "inDialog": null
+      },
+      "liveText": ["שלב 1 מתוך 4: פרטים"],
+      "pageHeight": 900,
+      "scrollWidth": 1440
+    },
+    "errors": []
+  }
+}

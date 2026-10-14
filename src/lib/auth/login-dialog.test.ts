@@ -3,6 +3,7 @@ import {
   LOGIN_DIALOG_EVENT,
   currentLocationNext,
   isPlainActivation,
+  modeFromAuthHref,
   nextFromLoginHref,
   openLoginDialog,
 } from './login-dialog'
@@ -72,5 +73,16 @@ describe('isPlainActivation', () => {
     ['already handled', { defaultPrevented: true }],
   ])('is false with %s, so a new-tab or handled click stays a navigation', (_, event) => {
     expect(isPlainActivation(event)).toBe(false)
+  })
+})
+
+describe('modeFromAuthHref (UX24)', () => {
+  it('is signup for /signup and its children, login for everything else', () => {
+    expect(modeFromAuthHref('/signup')).toBe('signup')
+    expect(modeFromAuthHref('/signup?next=%2Fcart')).toBe('signup')
+    expect(modeFromAuthHref('/signup/verify-phone?phone=x')).toBe('signup')
+    expect(modeFromAuthHref('/login')).toBe('login')
+    expect(modeFromAuthHref('/login?next=%2Fsignup')).toBe('login')
+    expect(modeFromAuthHref('/signupx')).toBe('login')
   })
 })

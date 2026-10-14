@@ -1,6 +1,7 @@
 'use client'
 
 import { GoogleLogo } from '@/components/shared/GoogleLogo'
+import { isPlainActivation } from '@/lib/auth/login-dialog'
 import {
   type AuthState,
   sendMagicLink,
@@ -9,7 +10,7 @@ import {
   verifyEmailOtp,
 } from '@/server/actions/auth'
 import Link from 'next/link'
-import { type KeyboardEvent, useActionState, useState } from 'react'
+import { type KeyboardEvent, type MouseEvent, useActionState, useState } from 'react'
 import PasskeyLoginButton from './PasskeyLoginButton'
 import PhoneOtpForm from './PhoneOtpForm'
 
@@ -94,6 +95,13 @@ export interface LoginPanelProps {
    * dialog and the signup link closes it on the way out.
    */
   variant?: 'page' | 'dialog'
+  /**
+   * Inside the dialog (UX24): a plain press on "הרשמה" switches the dialog
+   * to the register stepper in place instead of leaving for /signup. The
+   * anchor keeps its href, so a modifier, a middle button and no JavaScript
+   * still open the page.
+   */
+  onSignup?: () => void
 }
 
 /**
@@ -121,6 +129,7 @@ export default function LoginPanel({
   reauth = false,
   phoneEnabled = false,
   variant = 'page',
+  onSignup,
 }: LoginPanelProps) {
   const idPrefix = variant === 'dialog' ? 'login-dialog' : 'login'
   const id = (name: string) => `${idPrefix}-${name}`
@@ -168,6 +177,11 @@ export default function LoginPanel({
   }
 
   const signupHref = next ? `/signup?next=${encodeURIComponent(next)}` : '/signup'
+  function onSignupClick(event: MouseEvent<HTMLAnchorElement>) {
+    if (!onSignup || !isPlainActivation(event)) return
+    event.preventDefault()
+    onSignup()
+  }
 
   return (
     <div className="login-panel" data-variant={variant}>
@@ -384,7 +398,11 @@ export default function LoginPanel({
 
       <p className="mt-5 text-center text-sm text-gray-500">
         אין לכם חשבון?{' '}
-        <Link href={signupHref} className="text-link font-medium hover:underline">
+        <Link
+          href={signupHref}
+          onClick={onSignupClick}
+          className="text-link font-medium hover:underline"
+        >
           הרשמה
         </Link>
       </p>

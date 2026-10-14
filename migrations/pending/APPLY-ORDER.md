@@ -1,5 +1,16 @@
 # Apply order
 
+## 2026-10-15 (UX24): 272 filed; any time, no dependencies
+
+272 adds `profiles.terms_accepted_at` / `terms_version`, a second
+`auth.users` AFTER INSERT trigger that mirrors them from the metadata, and a
+backfill. It depends on nothing pending and nothing pending depends on it.
+Until it runs the acceptance lives only in `auth.users.raw_user_meta_data`,
+which UX24 writes on every registration; nothing in the app reads the
+profile columns yet. The sign it took: `select count(*) from profiles where
+terms_accepted_at is not null` equals the number of accounts registered
+since 15.10.
+
 ## 2026-10-14 (UX18): 271 filed; any time, no dependencies
 
 271 flips one row's `is_active` in `seo_redirects` (the `/wishlist` 410).

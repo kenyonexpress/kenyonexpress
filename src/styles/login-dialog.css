@@ -157,3 +157,322 @@ body.login-dialog-open {
     animation: none;
   }
 }
+
+/* ===========================================================================
+   UX24: THE REGISTER STEPPER.
+   The same body on /signup and inside the dialog (`.register-panel`), so
+   the rules ride in this sheet, which the root layout already imports.
+   Measured before (logs/ux24/before.json, the build of 43738bf43 at 380 /
+   768 / 1440): /signup was one four-field form with no terms control and
+   two buttons under the touch floor (42 / 40), the code lived on a second
+   page and the end on a third. Scoped BEM (`.register-*`), tokens only.
+   =========================================================================== */
+.register-steps {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.25rem;
+  margin: 0 0 1rem;
+  padding: 0;
+  list-style: none;
+  counter-reset: none;
+}
+
+.register-steps__item {
+  display: grid;
+  justify-items: center;
+  gap: 0.25rem;
+  position: relative;
+  font-size: 0.6875rem;
+  line-height: 1.2;
+  text-align: center;
+  color: var(--color-muted);
+}
+
+/* The rail between the dots: the item's own inline-start half, so the
+   first step has none. Logical sides, so it mirrors with the page. */
+.register-steps__item + .register-steps__item::before {
+  content: "";
+  position: absolute;
+  inset-inline-end: 50%;
+  inset-inline-start: -50%;
+  top: 0.75rem;
+  height: 2px;
+  background: var(--color-border-alt);
+}
+
+.register-steps__item[data-state="done"] + .register-steps__item::before,
+.register-steps__item[data-state="skipped"] + .register-steps__item::before,
+.register-steps__item[data-state="done"] + .register-steps__item[data-state="current"]::before {
+  background: var(--color-brand-primary);
+}
+
+.register-steps__num {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
+  border-radius: var(--radius-round);
+  border: 2px solid var(--color-border-alt);
+  background: var(--color-surface);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-muted);
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+
+.register-steps__item[data-state="current"] .register-steps__num {
+  border-color: var(--color-brand-primary);
+  background: var(--color-brand-primary);
+  color: var(--color-heading);
+}
+
+.register-steps__item[data-state="current"] .register-steps__label {
+  color: var(--color-heading);
+  font-weight: 600;
+}
+
+.register-steps__item[data-state="done"] .register-steps__num {
+  border-color: var(--color-brand-primary);
+  color: var(--color-heading);
+}
+
+.register-steps__item[data-state="skipped"] .register-steps__num {
+  border-style: dashed;
+}
+
+.register-steps__item[data-state="skipped"] .register-steps__label {
+  text-decoration: line-through;
+}
+
+@media (min-width: 420px) {
+  .register-steps__item {
+    font-size: 0.75rem;
+  }
+}
+
+.register-panel__step-title {
+  margin: 0 0 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-heading);
+}
+
+.register-panel__step-title:focus-visible {
+  outline: 2px solid var(--color-brand-primary);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Both sections live in the DOM; the inactive one is `hidden` and the
+   attribute must win over the display the utilities set. */
+.register-form[hidden],
+.register-step[hidden] {
+  display: none;
+}
+
+.register-step {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-inline-size: 0;
+}
+
+/* The terms row: the whole label is the hit area, on the touch floor, with
+   the box kept on the top line of a wrapped sentence. */
+.register-terms {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  min-block-size: var(--spacing-touch-min);
+  padding-block: 0.25rem;
+}
+
+.register-terms__box {
+  flex: none;
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
+  margin-top: 0.125rem;
+  accent-color: var(--color-brand-primary);
+  cursor: pointer;
+}
+
+.register-terms__box[aria-invalid="true"] {
+  outline: 2px solid #dc2626;
+  outline-offset: 1px;
+  border-radius: 3px;
+}
+
+.register-terms__label {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--color-foreground);
+  cursor: pointer;
+}
+
+.register-terms__label a {
+  color: var(--color-link, var(--color-brand-primary));
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* The welcome: a ring that draws itself, a check that follows, six specks
+   that lift and fade. Motion-safe: every animation is off under
+   prefers-reduced-motion and the end state is what is painted. */
+.register-welcome {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 0.875rem;
+  padding-block: 0.5rem 0.25rem;
+  text-align: center;
+  animation: register-welcome-in 250ms ease-out both;
+}
+
+.register-welcome__mark {
+  inline-size: 4rem;
+  block-size: 4rem;
+  overflow: visible;
+}
+
+.register-welcome__ring {
+  fill: none;
+  stroke: var(--color-brand-primary);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-dasharray: 176;
+  stroke-dashoffset: 0;
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+  animation: register-welcome-draw 550ms ease-out both;
+}
+
+.register-welcome__check {
+  fill: none;
+  stroke: var(--color-heading);
+  stroke-width: 4.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 40;
+  stroke-dashoffset: 0;
+  animation: register-welcome-draw 320ms 450ms ease-out both;
+}
+
+.register-welcome__confetti {
+  position: absolute;
+  inset-inline-start: 50%;
+  top: 2.5rem;
+  inline-size: 0;
+  block-size: 0;
+  pointer-events: none;
+}
+
+.register-welcome__confetti i {
+  position: absolute;
+  inline-size: 0.375rem;
+  block-size: 0.375rem;
+  border-radius: var(--radius-round);
+  background: var(--color-brand-primary);
+  opacity: 0;
+  animation: register-welcome-speck 900ms 500ms ease-out both;
+}
+
+.register-welcome__confetti i:nth-child(2) {
+  background: var(--color-brand-accent);
+  --speck-x: 2.6rem;
+  --speck-y: -2rem;
+}
+
+.register-welcome__confetti i:nth-child(3) {
+  --speck-x: -2.6rem;
+  --speck-y: -1.75rem;
+}
+
+.register-welcome__confetti i:nth-child(4) {
+  background: var(--color-brand-accent);
+  --speck-x: 3.2rem;
+  --speck-y: 0.5rem;
+}
+
+.register-welcome__confetti i:nth-child(5) {
+  --speck-x: -3.2rem;
+  --speck-y: 0.75rem;
+}
+
+.register-welcome__confetti i:nth-child(6) {
+  background: var(--color-brand-accent);
+  --speck-x: 0.4rem;
+  --speck-y: -3rem;
+}
+
+.register-welcome__confetti i:nth-child(1) {
+  --speck-x: -0.6rem;
+  --speck-y: -3.2rem;
+}
+
+.register-welcome__text {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--color-muted);
+}
+
+.register-welcome__actions {
+  display: grid;
+  gap: 0.5rem;
+  inline-size: 100%;
+  margin-top: 0.25rem;
+}
+
+@keyframes register-welcome-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes register-welcome-draw {
+  from {
+    stroke-dashoffset: var(--draw-from, 176);
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.register-welcome__check {
+  --draw-from: 40;
+}
+
+@keyframes register-welcome-speck {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.4);
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--speck-x, 0), var(--speck-y, -2rem)) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .register-welcome,
+  .register-welcome__ring,
+  .register-welcome__check,
+  .register-welcome__confetti i {
+    animation: none;
+  }
+
+  .register-welcome__confetti {
+    display: none;
+  }
+}

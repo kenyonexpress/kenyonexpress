@@ -1,6 +1,7 @@
 'use client'
 
 import {
+  type AuthDialogMode,
   LOGIN_DIALOG_EVENT,
   type LoginDialogDetail,
   currentLocationNext,
@@ -12,6 +13,8 @@ export interface LoginDialogRequest {
   /** Grows with every press, so a second press after a close reopens. */
   seq: number
   next: string
+  /** The body the press asked for: the login card or the register stepper (UX24). */
+  mode: AuthDialogMode
   /** The control that was focused at the press; focus goes back to it on close. */
   opener: HTMLElement | null
   /** The path the press happened on; a different path later means "navigated away, close". */
@@ -39,9 +42,10 @@ export function useLoginDialogRequest(): LoginDialogRequest | null {
       // Claiming the event is what tells the link not to navigate.
       custom.preventDefault()
       const next = custom.detail?.next ?? currentLocationNext(window.location)
+      const mode: AuthDialogMode = custom.detail?.mode === 'signup' ? 'signup' : 'login'
       const opener = document.activeElement as HTMLElement | null
       const pathname = window.location.pathname
-      setRequest((prev) => ({ seq: (prev?.seq ?? 0) + 1, next, opener, pathname }))
+      setRequest((prev) => ({ seq: (prev?.seq ?? 0) + 1, next, mode, opener, pathname }))
     }
     window.addEventListener(LOGIN_DIALOG_EVENT, onOpen)
     return () => window.removeEventListener(LOGIN_DIALOG_EVENT, onOpen)

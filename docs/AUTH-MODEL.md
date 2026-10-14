@@ -415,3 +415,84 @@ layout ליד ‏`mini-cart.css` (דף הבית שולח גיליון אחד; ר
 שנשארת ניווט, הדף השלם, וכניסה דרך החלון שחוזרת לדף). ‏`header-icons.test` ממשיך לפנות
 אל ‏`TopBar` כנקודת הכניסה היחידה: ‏`LoginLink` אינו ב-HEADER_CHROME והמחרוזת ‏`/login`
 נשארה ב-TopBar בלבד.
+
+## 12. הרשמה בשלבים: טלפון, תנאים, ברוכים הבאים (UX24, ‏15.10.2026)
+
+**מה נמדד לפני** (‏`logs/ux24/before.json`, ה-build של ‏43738bf43 ב-380 / 768 / 1440,
+אנונימי): קישור "הרשמה" בתוך חלון הכניסה עזב את הדף אל ‏`/signup` בכל רוחב; ‏`/signup`
+היה טופס אחד של ארבעה שדות (שם, אימייל, טלפון, סיסמה) ושני כפתורים (‏Google ‏42px,
+"הרשמה" ‏40px), **בלי שום פקד של תנאי שימוש**: חשבון נוצר בלי שהלקוח ראה את התקנון.
+קוד ה-SMS חי בדף שני (‏`/signup/verify-phone`) שמגיעים אליו ב-redirect, והסיום בדף
+שלישי (‏`/signup/confirm`).
+
+**המבנה.** גוף אחד, ‏`components/auth/RegisterPanel`, משרת גם את דף ‏`/signup` וגם את
+חלון ה-auth (אותו ‏`LoginDialog` של §11, שמחליף עכשיו בין שני גופים במקום). ארבעה
+שלבים ב-`<ol class="register-steps" aria-label="שלבי ההרשמה">`, אחד ‏`aria-current="step"`,
+‏`data-state` (‏done / current / upcoming / skipped) לכל ‏li, אזור ‏`aria-live="polite"`
+שאומר "שלב N מתוך 4: …", והפוקוס עובר לכותרת השלב בכל מעבר:
+
+1. **פרטים**: שם מלא, אימייל, סיסמה (ו-Google מעל, רק בשלב הזה). "המשך" מאמת
+   **בלקוח** מול אותה סכימת ‏zod שהשרת מפעיל (‏`lib/auth/register-steps.ts`:
+   ‏`detailsIssues` = ‏`signupSchema.pick`), כך שמה שהלקוח מעביר השרת מקבל, ואף
+   בקשה לא יוצאת. שגיאה לכל שדה, ‏aria-invalid, פוקוס על השדה הראשון שנכשל.
+2. **טלפון ותנאים**: טלפון נייד ותיבת "קראתי ואני מאשר/ת את תנאי השימוש ואת מדיניות
+   הפרטיות" (לא מסומנת מראש; הקישורים ל-`/terms-and-conditions` ו-`/privacy-policy`
+   נפתחים בלשונית חדשה כדי שהטופס שהוקלד לא יאבד). תיבה לא מסומנת מסורבת בלקוח
+   (‏`role="alert"`, בלי בקשה) **וגם בשרת** (‏`accept_terms` נבדק לפני ‏`signUp`;
+   ‏`lib/auth/terms-acceptance.ts`). שני השלבים הם שני ‏`<fieldset>` של **טופס אחד**
+   (‏`noValidate`, הלא-פעיל ‏`hidden`), כך שהשליחה בשלב 2 נושאת את כל השדות.
+   "חזרה לפרטים" שומר מה שהוקלד (‏state מבוקר, לא ‏remount).
+3. **אימות הטלפון**: שש ספרות, שליחה חוזרת, ו"דלגו בינתיים". מוצג **רק** כשקוד באמת
+   יצא; היום אף סביבה לא שולחת ‏SMS (§10), אז השלב מסומן ‏skipped (קו חוצה, מסגרת
+   מקווקוות) והחשבון ממשיך ישר לשלב 4.
+4. **ברוכים הבאים**: טבעת שמציירת את עצמה, וי שעוקב, שישה נקודים שעולים ונעלמים
+   (‏CSS בלבד, ‏`prefers-reduced-motion` מכבה הכול ומצב הסיום הוא מה שמצויר), שם פרטי
+   בכותרת, "שלחנו קישור אימות אל ‏<email>", סימון "מספר הטלפון אומת" כשאומת, ואז
+   "המשך לגלוש" (בחלון: סוגר אותו ומחזיר פוקוס לפותח; בדף: קישור ל-`next` או לבית)
+   ו"לכניסה".
+
+**הפעולות.** ‏`server/auth/register-core.ts` הוא ההרשמה האחת (תקרת ‏IP ‏5/שעה, סכימה
+עם **שם השדה** של הכשל הראשון, תיבת התנאים, ‏`signUp` עם הרשומה ב-metadata, ואז אתגר
+ה-SMS רק למשתמש שבאמת נוצר). ‏`signUpWithEmail` (הישן, ‏redirect) ו-`registerAccount`
+(‏`server/actions/register.ts`, מחזיר ‏`RegisterState`: ‏`{ error, field? }` /
+‏`{ step: 'verify', phone, email, next }` / ‏`{ step: 'welcome', phoneVerified, email, next }`)
+שניהם עטיפות שלו. באותו אופן ‏`server/auth/signup-phone-steps.ts` הוא גוף שני צעדי
+הקוד, ו-`verifySignupPhone` (‏redirect ל-`/signup/confirm`) ו-`verifyRegisterPhone`
+(‏welcome) עטיפות. מפת השגיאות של ‏GoTrue עברה ל-`server/auth/gotrue-errors.ts`
+(‏`gotrueErrorHebrew`), כי קובץ ‏`'use server'` לא יכול לייצא עוזר סינכרוני, ועכשיו היא
+נבדקת ישירות ולא דרך קריאת המקור. שגיאת שרת שנושאת ‏`field` מחזירה את ה-stepper
+לשלב שמחזיק את השדה (‏`stepForField`). הדפים ‏`/signup/verify-phone` ו-`/signup/confirm`
+נשארו כיעדי ה-redirect של המסלול הישן.
+
+**רשומת ההסכמה.** ‏`server/auth/terms-record.ts` מצרף ל-`options.data` של ‏`signUp`
+את ‏`terms_accepted_at` (‏ISO), ‏`terms_version` (‏`termsDoc.version`, ‏1.1) ו-`privacy_version`
+(‏`privacyDoc.version`, ‏2.1), כך שהרשומה נכתבת **באותו ‏INSERT שיוצר את החשבון**
+ואין חשבון בלי ההסכמה שנוצר תחתיה. **אין שינוי סכימה נדרש** כדי שהרשומה תתקיים.
+מיגרציה ‏272 (ממתינה) מוסיפה ‏`profiles.terms_accepted_at` / ‏`terms_version`,
+טריגר שני על ‏`auth.users` (‏`on_auth_user_created_terms`, ולא עריכה עיוורת של
+‏`handle_new_user` שהעותק שלו בפרודקשן אינו זה שבקבצים) ו-backfill מה-metadata.
+גרסה ולא בוליאני: לתקנון יש היסטוריה מפורסמת, ו"אישר" בלי גרסה לא אומר כלום אחרי
+שהטקסט משתנה.
+
+**איך החלון נפתח על ההרשמה.** ‏`ke:login-dialog` נושא עכשיו ‏`mode: 'login' | 'signup'`;
+‏`LoginLink` קורא אותו מה-href (‏`modeFromAuthHref`: ‏`/signup` וילדיו = ‏signup), כך
+שכל ‏`<a href="/signup...">` שעובר דרכו פותח את ה-stepper במקום ונשאר קישור אמיתי
+בלי ‏JS, בלחיצה אמצעית ובקבוצת מסלולים בלי מארח. בתוך החלון "הרשמה" (ב-LoginPanel,
+‏`onSignup`) ו"כניסה" (ב-RegisterPanel, ‏`onLogin`) מחליפים גוף **במקום**, הכותרת
+עוקבת (‏`data-mode` על ה-dialog), ובקשה חדשה מאפסת לגוף שהיא מבקשת.
+
+**גיליון.** אותו ‏`src/styles/login-dialog.css` (מיובא ב-root layout), בלוק ‏`.register-*`:
+ה-stepper (מסילה לוגית ‏inset-inline בין הנקודות, כך שהיא משתקפת ב-RTL), שורת התנאים על
+רצפת ‏44px עם ‏`accent-color` מהטוקן, ואנימציית ה-welcome (‏`stroke-dashoffset`,
+‏`translate` עם משתנים לכל נקוד).
+
+**נעוץ ב:** ‏`lib/auth/register-steps.test` (‏8), ‏`lib/auth/terms-acceptance.test` (‏2),
+‏`server/actions/register.test` (‏7), ‏`RegisterPanel.test` (‏9), ‏`LoginDialog.test`
+(‏+4: מצב ‏signup, החלפה במקום, איפוס בבקשה חדשה, "המשך לגלוש" סוגר ומחזיר פוקוס),
+‏`LoginPanel.test` (‏+2), ‏`LoginLink.test` (‏+1), ‏`useLoginDialogRequest.test` (‏+1),
+‏`login-dialog.test` (‏+1), ‏`auth-actions.test` (ההרשמה הישנה מסרבת בלי התיבה וכותבת
+את הרשומה), ‏`auth-error-map.test` (התנהגות ולא מקור), ‏`e2e/register-dialog.spec.ts`
+(‏5 מקרים: החלפה במקום עם ‏next, סירוב בלקוח בלי בקשה + התקדמות + חזרה, התיבה נדרשת
+לפני כל בקשה + שני הקישורים, רצפת מגע ב-380 + ‏Escape, ‏`/signup` נושא את אותו גוף),
+ו-`e2e/auth.spec.ts` (דף ההרשמה כ-stepper). **אין ‏e2e שיוצר חשבון**: ה-build המקומי
+מדבר עם הפרויקט המאוחסן, והרשמה היא שורה אמיתית ב-`auth.users`.

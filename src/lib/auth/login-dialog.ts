@@ -16,6 +16,13 @@
 
 export const LOGIN_DIALOG_EVENT = 'ke:login-dialog'
 
+/**
+ * Which body the dialog opens on: the /login card, or the /signup stepper
+ * (UX24). One host serves both, and the panels switch between them in
+ * place, so "אין לכם חשבון? הרשמה" inside the dialog never leaves the page.
+ */
+export type AuthDialogMode = 'login' | 'signup'
+
 export interface LoginDialogDetail {
   /**
    * Where to land after signing in: a same-site path with its query, the
@@ -23,6 +30,8 @@ export interface LoginDialogDetail {
    * now", which the host reads off `location` at open time.
    */
   next?: string
+  /** Absent means `login`. */
+  mode?: AuthDialogMode
 }
 
 /**
@@ -40,15 +49,24 @@ export function openLoginDialog(detail: LoginDialogDetail = {}): boolean {
 }
 
 /**
- * The `next` a login link carries, or null when it has none. Reads the query
- * of a `/login?next=...` href so a link that already says where to go back to
- * keeps saying it through the dialog.
+ * The `next` a login or signup link carries, or null when it has none. Reads
+ * the query of a `/login?next=...` (or `/signup?next=...`) href so a link
+ * that already says where to go back to keeps saying it through the dialog.
  */
 export function nextFromLoginHref(href: string): string | null {
   const q = href.indexOf('?')
   if (q === -1) return null
   const next = new URLSearchParams(href.slice(q + 1)).get('next')
   return next && next.length > 0 ? next : null
+}
+
+/**
+ * The body a link asks for, read off its path: `/signup` and anything under
+ * it is the register stepper, everything else the login card.
+ */
+export function modeFromAuthHref(href: string): AuthDialogMode {
+  const path = href.split(/[?#]/, 1)[0] ?? ''
+  return path === '/signup' || path.startsWith('/signup/') ? 'signup' : 'login'
 }
 
 /**

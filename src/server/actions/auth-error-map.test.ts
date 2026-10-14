@@ -1,65 +1,56 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 /**
- * READ AS SOURCE, AND NOT FOR WANT OF TRYING.
+ * THE GENERIC FALLBACK IS NEVER SILENT.
  *
- * `auth.ts` carries the `'use server'` directive, which requires every export
- * in the module to be an async function. `toHebrew` is a sync helper, so
- * exporting it to test it directly would fail the build - the thing under test
- * cannot be imported by design.
+ * Every key in the map is an English string SUPABASE chooses, matched by
+ * substring, and none of it is under our control. When one is reworded
+ * upstream the match stops firing and "כתובת אימייל או סיסמה שגויים" silently
+ * becomes the generic "אירעה שגיאה, נסו שוב": the form still looks like it
+ * works, the customer is told nothing useful, and we are told nothing at all.
  *
- * What is being protected is narrow enough to survive that. Every key in
- * `ERROR_MAP` is an English string SUPABASE chooses, matched by substring, and
- * none of it is under our control. When one is reworded upstream the match
- * stops firing and "כתובת אימייל או סיסמה שגויים" silently becomes the generic
- * "אירעה שגיאה, נסו שוב": the form still looks like it works, the customer is
- * told nothing useful, and we are told nothing at all.
- *
- * So the rule is that the generic fallback is never silent.
+ * Until UX24 the map lived inside `server/actions/auth.ts`, whose `'use
+ * server'` directive forbids exporting a sync helper, so this file read the
+ * SOURCE for `function toHebrew`. The map now lives in
+ * `server/auth/gotrue-errors.ts` (the registration core needed it outside
+ * the actions file), so the behaviour is tested directly.
  */
 
-const AUTH = join(process.cwd(), 'src/server/actions/auth.ts')
+const warn = vi.hoisted(() => vi.fn())
+vi.mock('@/lib/observability/log', () => ({
+  log: { warn, error: vi.fn(), info: vi.fn(), debug: vi.fn() },
+}))
 
-function source(): string {
-  return readFileSync(AUTH, 'utf8')
-}
-
-/** Comments describe the old behaviour; only real code should satisfy this. */
-function code(): string {
-  return source()
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/^\s*\/\/.*$/gm, '')
-}
+import { gotrueErrorHebrew } from '@/server/auth/gotrue-errors'
 
 describe('the Supabase error map', () => {
-  it('logs before falling back to the generic message', () => {
-    const fn = /function toHebrew\([\s\S]*?\n}/.exec(code())?.[0]
-    expect(fn, 'toHebrew has been renamed or moved; this test needs updating').toBeTruthy()
-
-    expect(fn).toContain('auth.error_unmapped')
+  it('logs before falling back to the generic message, with the unmatched text', () => {
+    warn.mockClear()
+    expect(gotrueErrorHebrew('Something GoTrue started saying today')).toBe('אירעה שגיאה, נסו שוב')
     // The unmatched message itself is what makes the log worth having: without
     // it the entry says only "something was unmapped".
-    expect(fn).toMatch(/log\.warn\('auth\.error_unmapped',\s*\{\s*reason:\s*msg\s*\}\)/)
+    expect(warn).toHaveBeenCalledWith('auth.error_unmapped', {
+      reason: 'Something GoTrue started saying today',
+    })
   })
 
   it('keeps the upstream text out of what the customer is shown', () => {
-    const fn = /function toHebrew\([\s\S]*?\n}/.exec(code())?.[0] ?? ''
-
-    // The returned strings are Hebrew constants or the generic fallback, never
-    // the raw message - the same split log-coverage.test.ts holds API routes to.
-    const returns = [...fn.matchAll(/return\s+([^\n]+)/g)].map((m) => (m[1] ?? '').trim())
-    expect(returns.length).toBeGreaterThan(0)
-    for (const value of returns) {
-      expect(value, 'the upstream message must not be returned to the caller').not.toContain('msg')
-    }
+    const raw = 'database error saving new user (code 23505)'
+    expect(gotrueErrorHebrew(raw)).not.toContain('database')
+    expect(gotrueErrorHebrew(raw)).not.toContain('23505')
   })
 
-  it('still maps the credential failure a shopper actually hits', () => {
+  it('still maps the credential failure a shopper actually hits, and does not log it', () => {
+    warn.mockClear()
     // The generic fallback being logged is not a licence to lose the mapping
     // that matters most: a wrong password is the common case on this form.
-    expect(code()).toContain("'Invalid login credentials': 'כתובת אימייל או סיסמה שגויים'")
+    expect(gotrueErrorHebrew('Invalid login credentials')).toBe('כתובת אימייל או סיסמה שגויים')
+    expect(gotrueErrorHebrew('AuthApiError: User already registered')).toBe(
+      'כתובת האימייל כבר רשומה במערכת',
+    )
+    expect(warn).not.toHaveBeenCalled()
   })
 
   /*
@@ -76,9 +67,7 @@ describe('the Supabase error map', () => {
     and the page would still render.
   */
   it('names the expired reset link instead of falling back', () => {
-    const src = code()
-    expect(src).toContain("'Auth session missing'")
-    const hebrew = /'Auth session missing':\s*'([^']+)'/.exec(src)?.[1] ?? ''
+    const hebrew = gotrueErrorHebrew('Auth session missing!')
     expect(hebrew).toContain('קישור האיפוס')
     expect(hebrew).not.toBe('אירעה שגיאה, נסו שוב')
   })

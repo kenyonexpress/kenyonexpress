@@ -1,5 +1,24 @@
 # `migrations/pending/`
 
+## 2026-10-15: 272 PENDING (terms acceptance on the profile, UX24)
+
+`272_profiles_terms_acceptance.sql` adds TWO nullable columns,
+`profiles.terms_accepted_at timestamptz` and `profiles.terms_version text`,
+a second AFTER INSERT trigger on `auth.users` (`on_auth_user_created_terms`,
+function `handle_new_user_terms`, SECURITY DEFINER, EXECUTE revoked from
+every role) that copies the two fields out of the new user's metadata onto
+the profile row `handle_new_user` just created, and a backfill for rows
+registered in between. A second trigger and not an edit of
+`handle_new_user`, because production's copy of that function is not the
+one in `supabase/migrations/` and rewriting it blind could drop what it
+does there. Since UX24 (15.10) every registration passes the acceptance to
+`signUp` as metadata (`src/server/auth/terms-record.ts`: the moment, the
+תקנון version, the privacy version), so the record exists in
+`auth.users.raw_user_meta_data` with or without this file; what this adds
+is a copy the application can read without the service role. Nothing in
+the app reads the columns yet, so there is no 42703 path. Idempotent.
+Rollback inside the file. No dependency on any other pending file.
+
 ## 2026-10-14: 271 PENDING (deactivate the `/wishlist` 410 row, UX18)
 
 `271_deactivate_wishlist_gone_row.sql` is ONE UPDATE: `seo_redirects` row

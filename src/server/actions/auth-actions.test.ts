@@ -330,17 +330,36 @@ describe('signUpWithEmail', () => {
     email: 'Dana@Example.com',
     phone: '050-123-4567',
     password: 'secret12',
+    accept_terms: 'on',
   }
 
-  it('creates the account with trimmed name and normalised contact, then confirms', async () => {
+  it('creates the account with trimmed name, normalised contact and the terms record, then confirms', async () => {
     await signUpWithEmail(null, form(VALID))
     expect(checkRateLimit).toHaveBeenCalledWith('signup:203.0.113.9', 5, 3600)
     expect(signUp).toHaveBeenCalledWith({
       email: 'dana@example.com',
       password: 'secret12',
-      options: { data: { full_name: 'דנה כהן', phone: '0501234567' } },
+      options: {
+        data: {
+          full_name: 'דנה כהן',
+          phone: '0501234567',
+          // UX24: the acceptance rides the same INSERT that creates the
+          // account, with the versions of both documents in force.
+          terms_accepted_at: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T/),
+          terms_version: '1.1',
+          privacy_version: '2.1',
+        },
+      },
     })
     expect(redirect).toHaveBeenCalledWith('/signup/confirm')
+  })
+
+  it('refuses without the terms box, before GoTrue is touched (UX24)', async () => {
+    const { accept_terms: _omitted, ...withoutTerms } = VALID
+    expect(await signUpWithEmail(null, form(withoutTerms))).toEqual({
+      error: 'כדי להירשם יש לאשר את תנאי השימוש ומדיניות הפרטיות',
+    })
+    expect(signUp).not.toHaveBeenCalled()
   })
 
   it('refuses under the ceiling, on a bad form, and maps a duplicate address', async () => {

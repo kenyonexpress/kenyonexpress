@@ -52,16 +52,27 @@ test.describe('Signup page', () => {
     await expect(page.getByRole('button', { name: /הרשמה עם Google/ })).toBeVisible()
   })
 
-  test('has phone field with Israeli hint', async ({ page }) => {
-    await expect(page.getByLabel(/טלפון נייד/)).toBeVisible()
-    await expect(page.getByText(/מספר ישראלי/)).toBeVisible()
-  })
-
-  test('has all required fields', async ({ page }) => {
+  // UX24: the page is a stepper. Step one holds the name, the address and
+  // the password; the phone and the terms box are step two, reached on the
+  // client once step one is valid.
+  test('has the stepper and step one’s fields', async ({ page }) => {
+    const steps = page.getByRole('list', { name: 'שלבי ההרשמה' }).getByRole('listitem')
+    await expect(steps).toHaveCount(4)
+    await expect(steps.nth(0)).toHaveAttribute('aria-current', 'step')
     await expect(page.getByLabel('שם מלא')).toBeVisible()
     await expect(page.getByLabel('אימייל', { exact: true })).toBeVisible()
-    await expect(page.getByLabel(/טלפון נייד/)).toBeVisible()
     await expect(page.getByLabel('סיסמה', { exact: true })).toBeVisible()
+    await expect(page.getByLabel(/טלפון נייד/)).toBeHidden()
+  })
+
+  test('has phone field with Israeli hint and the terms box on step two', async ({ page }) => {
+    await page.getByLabel('שם מלא').fill('דנה כהן')
+    await page.getByLabel('אימייל', { exact: true }).fill('ux24@example.com')
+    await page.getByLabel('סיסמה', { exact: true }).fill('secret12')
+    await page.getByRole('button', { name: 'המשך' }).click()
+    await expect(page.getByLabel(/טלפון נייד/)).toBeVisible()
+    await expect(page.getByText(/מספר ישראלי/)).toBeVisible()
+    await expect(page.getByLabel(/קראתי ואני מאשר/)).toBeVisible()
   })
 
   test('has link back to login', async ({ page }) => {

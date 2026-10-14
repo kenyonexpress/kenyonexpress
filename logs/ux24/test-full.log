@@ -1,0 +1,1171 @@
+Already up to date
+Done in 187ms using pnpm v11.1.2
+Already up to date
+Done in 187ms using pnpm v11.1.2
+
+ RUN  v4.1.11 /Users/ofir/kenyonexpress-autopilot
+
+Error: Not implemented: navigation (except hash changes)
+    at module.exports (/Users/ofir/kenyonexpress-autopilot/node_modules/.pnpm/jsdom@25.0.1/node_modules/jsdom/lib/jsdom/browser/not-implemented.js:9:17)
+    at navigateFetch (/Users/ofir/kenyonexpress-autopilot/node_modules/.pnpm/jsdom@25.0.1/node_modules/jsdom/lib/jsdom/living/window/navigation.js:77:3)
+    at exports.navigate (/Users/ofir/kenyonexpress-autopilot/node_modules/.pnpm/jsdom@25.0.1/node_modules/jsdom/lib/jsdom/living/window/navigation.js:55:3)
+    at Timeout._onTimeout (/Users/ofir/kenyonexpress-autopilot/node_modules/.pnpm/jsdom@25.0.1/node_modules/jsdom/lib/jsdom/living/nodes/HTMLHyperlinkElementUtils-impl.js:81:7)
+    at listOnTimeout (node:internal/timers:605:17)
+    at processTimers (node:internal/timers:541:7) undefined
+Error: Not implemented: navigation (except hash changes)
+    at module.exports (/Users/ofir/kenyonexpress-autopilot/node_modules/.pnpm/jsdom@25.0.1/node_modules/jsdom/lib/jsdom/browser/not-implemented.js:9:17)
+    at navigateFetch (/Users/ofir/kenyonexpress-autopilot/node_modules/.pnpm/jsdom@25.0.1/node_modules/jsdom/lib/jsdom/living/window/navigation.js:77:3)
+    at exports.navigate (/Users/ofir/kenyonexpress-autopilot/node_modules/.pnpm/jsdom@25.0.1/node_modules/jsdom/lib/jsdom/living/window/navigation.js:55:3)
+    at Timeout._onTimeout (/Users/ofir/kenyonexpress-autopilot/node_modules/.pnpm/jsdom@25.0.1/node_modules/jsdom/lib/jsdom/living/nodes/HTMLHyperlinkElementUtils-impl.js:81:7)
+    at listOnTimeout (node:internal/timers:605:17)
+    at processTimers (node:internal/timers:541:7) undefined
+Error: Not implemented: navigation (except hash changes)
+    at module.exports (/Users/ofir/kenyonexpress-autopilot/node_modules/.pnpm/jsdom@25.0.1/node_modules/jsdom/lib/jsdom/browser/not-implemented.js:9:17)
+    at navigateFetch (/Users/ofir/kenyonexpress-autopilot/node_modules/.pnpm/jsdom@25.0.1/node_modules/jsdom/lib/jsdom/living/window/navigation.js:77:3)
+    at exports.navigate (/Users/ofir/kenyonexpress-autopilot/node_modules/.pnpm/jsdom@25.0.1/node_modules/jsdom/lib/jsdom/living/window/navigation.js:55:3)
+    at Timeout._onTimeout (/Users/ofir/kenyonexpress-autopilot/node_modules/.pnpm/jsdom@25.0.1/node_modules/jsdom/lib/jsdom/living/nodes/HTMLHyperlinkElementUtils-impl.js:81:7)
+    at listOnTimeout (node:internal/timers:605:17)
+    at processTimers (node:internal/timers:541:7) undefined
+ ❯ src/lib/catalogue-render-path.test.ts (7 tests | 2 failed) 107ms
+     × app/(store)/layout.tsx reaches no cookie-reading Supabase client 21ms
+     × app/coupon/[slug]/CouponOfferPage.tsx reaches no cookie-reading Supabase client 22ms
+ ❯ src/server/actions/auth-error-map.test.ts (5 tests | 4 failed) 42ms
+     × logs before falling back to the generic message 5ms
+     × keeps the upstream text out of what the customer is shown 1ms
+     × still maps the credential failure a shopper actually hits 26ms
+     × names the expired reset link instead of falling back 7ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/lib/catalogue-render-path.test.ts > catalogue render path > app/(store)/layout.tsx reaches no cookie-reading Supabase client
+AssertionError: These modules import @/lib/supabase/server, which makes the route dynamic and costs one Supabase round trip per view. Move the read behind `use cache` on `createPublicClient` (see lib/related-products.ts).: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "app/(store)/layout.tsx -> components/store/StoreShell.tsx -> components/store/DeferredStoreChrome.tsx -> components/auth/DeferredLoginDialog.tsx -> components/auth/LoginDialog.tsx -> components/auth/RegisterPanel.tsx -> lib/auth/register-steps.ts -> server/auth/register-core.ts",
++ ]
+
+ ❯ src/lib/catalogue-render-path.test.ts:122:9
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  src/lib/catalogue-render-path.test.ts > catalogue render path > app/coupon/[slug]/CouponOfferPage.tsx reaches no cookie-reading Supabase client
+AssertionError: These modules import @/lib/supabase/server, which makes the route dynamic and costs one Supabase round trip per view. Move the read behind `use cache` on `createPublicClient` (see lib/related-products.ts).: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "app/coupon/[slug]/CouponOfferPage.tsx -> components/store/StoreShell.tsx -> components/store/DeferredStoreChrome.tsx -> components/auth/DeferredLoginDialog.tsx -> components/auth/LoginDialog.tsx -> components/auth/RegisterPanel.tsx -> lib/auth/register-steps.ts -> server/auth/register-core.ts",
++ ]
+
+ ❯ src/lib/catalogue-render-path.test.ts:122:9
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  src/server/actions/auth-error-map.test.ts > the Supabase error map > logs before falling back to the generic message
+AssertionError: toHebrew has been renamed or moved; this test needs updating: expected undefined to be truthy
+
+- Expected:
+true
+
++ Received:
+undefined
+
+ ❯ src/server/actions/auth-error-map.test.ts:39:80
+     37|   it('logs before falling back to the generic message', () => {
+     38|     const fn = /function toHebrew\([\s\S]*?\n}/.exec(code())?.[0]
+     39|     expect(fn, 'toHebrew has been renamed or moved; this test needs up…
+       |                                                                                ^
+     40|
+     41|     expect(fn).toContain('auth.error_unmapped')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  src/server/actions/auth-error-map.test.ts > the Supabase error map > keeps the upstream text out of what the customer is shown
+AssertionError: expected 0 to be greater than 0
+ ❯ src/server/actions/auth-error-map.test.ts:53:28
+     51|     // the raw message - the same split log-coverage.test.ts holds API…
+     52|     const returns = [...fn.matchAll(/return\s+([^\n]+)/g)].map((m) => …
+     53|     expect(returns.length).toBeGreaterThan(0)
+       |                            ^
+     54|     for (const value of returns) {
+     55|       expect(value, 'the upstream message must not be returned to the …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  src/server/actions/auth-error-map.test.ts > the Supabase error map > still maps the credential failure a shopper actually hits
+AssertionError: expected '\'use server\'\n\nimport { withAction…' to contain '\'Invalid login credentials\': \'כתוב…'
+
+- Expected
++ Received
+
+- 'Invalid login credentials': 'כתובת אימייל או סיסמה שגויים'
++ 'use server'
++
++ import { withActionContext } from '@/lib/observability/action-context'
++ import { log } from '@/lib/observability/log'
++
++ import { passwordResetResult } from '@/lib/auth/password-reset'
++ import { decidePhoneMerge } from '@/lib/auth/phone-merge'
++ import {
++   isSmsCapableIsraeli,
++   phoneAuthEnabled,
++   phoneAuthErrorHebrew,
++   toE164Israeli,
++ } from '@/lib/auth/phone-otp'
++ import { safeNextPath } from '@/lib/auth/safe-next'
++ import { confirmPath, verifyPhonePath } from '@/lib/auth/signup-phone'
++ import { GUEST_SESSION_COOKIE, getGuestSessionId } from '@/lib/cart/guest-session'
++ import { siteUrl } from '@/lib/site-url'
++ import { createAdminClient } from '@/lib/supabase/admin'
++ import { createPublicClient } from '@/lib/supabase/anon'
++ import { createClient } from '@/lib/supabase/server'
++ import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
++ import { escapeLikePattern } from '@/lib/utils/search-escape'
++ import {
++   changePasswordSchema,
++   emailOtpVerifySchema,
++   loginSchema,
++   magicLinkSchema,
++   newPasswordSchema,
++   passwordResetSchema,
++   phoneOtpSchema,
++   phoneVerifySchema,
++ } from '@/lib/validations/auth'
++ import { mergeGuestCart } from '@/server/actions/cart'
++ import { gotrueErrorHebrew } from '@/server/auth/gotrue-errors'
++ import { trySendBrandedMagicLink } from '@/server/auth/magic-link-send'
++ import { trySendBrandedPasswordReset } from '@/server/auth/password-reset-send'
++ import { registerCore } from '@/server/auth/register-core'
++ import { claimReferralOnce } from '@/server/referrals/claim'
++ import { cookies } from 'next/headers'
++ import { redirect } from 'next/navigation'
++
++ export type AuthState = { error: string } | { success: string } | null
++
++ const toHebrew = gotrueErrorHebrew
++
++ const safeNext = safeNextPath
++
++
++ function authRedirect(path: string): string {
++   return `${siteUrl()}${path}`
++ }
++
++
++
++ async function runSignInWithGoogle(_: AuthState, formData: FormData): Promise<AuthState> {
++   const next = safeNext(formData.get('next'))
++   const supabase = await createClient()
++   const { data, error } = await supabase.auth.signInWithOAuth({
++     provider: 'google',
++     options: {
++       redirectTo: authRedirect(`/auth/callback?next=${encodeURIComponent(next)}`),
++       scopes: 'openid email profile',
++     },
++   })
++   if (error) return { error: toHebrew(error.message) }
++   if (data.url) redirect(data.url)
++   return null
++ }
++
++
++
++ async function runSignInWithEmail(_: AuthState, formData: FormData): Promise<AuthState> {
++   const ip = await getClientIp()
++   const allowed = await checkRateLimit(`login:${ip}`)
++   if (!allowed) return { error: 'יותר מדי ניסיונות כניסה — נסו שוב בעוד שעה' }
++
++   const parsed = loginSchema.safeParse({
++     email: formData.get('email'),
++     password: formData.get('password'),
++   })
++   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'נתונים לא תקינים' }
++
++
++
++
++
++
++
++   const accountAllowed = await checkRateLimit(
++     `login-account:${parsed.data.email.trim().toLowerCase()}`,
++     20,
++     3600,
++   )
++
++
++
++   if (!accountAllowed) return { error: 'יותר מדי ניסיונות כניסה — נסו שוב בעוד שעה' }
++
++   const supabase = await createClient()
++   const { data: signInData, error } = await supabase.auth.signInWithPassword(parsed.data)
++   if (error) return { error: toHebrew(error.message) }
++
++   const sessionId = await getGuestSessionId()
++   if (signInData.user && sessionId) {
++
++
++     const merged = await mergeGuestCart(supabase, signInData.user.id, sessionId)
++     if (merged) {
++       const cookieStore = await cookies()
++       cookieStore.delete(GUEST_SESSION_COOKIE)
++     }
++   }
++
++   redirect(safeNext(formData.get('next')))
++ }
++
++
++
++ async function runSignUpWithEmail(_: AuthState, formData: FormData): Promise<AuthState> {
++
++
++
++
++
++   const outcome = await registerCore(formData)
++   if (!outcome.ok) return { error: outcome.error }
++   if (outcome.verifyingPhone) redirect(verifyPhonePath(outcome.verifyingPhone, outcome.next))
++   redirect(confirmPath(outcome.next, false))
++ }
++
++
++
++ async function runSendMagicLink(_: AuthState, formData: FormData): Promise<AuthState> {
++   const ip = await getClientIp()
++   const allowed = await checkRateLimit(`magic:${ip}`, 5, 3600)
++   if (!allowed) return { error: 'יותר מדי ניסיונות — נסו שוב בעוד שעה' }
++
++   const parsed = magicLinkSchema.safeParse({ email: formData.get('email') })
++   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'נתונים לא תקינים' }
++
++
++
++
++   const branded = await trySendBrandedMagicLink(parsed.data.email)
++   if (!branded) {
++     const supabase = await createClient()
++     const { error } = await supabase.auth.signInWithOtp({
++       email: parsed.data.email,
++       options: {
++         emailRedirectTo: authRedirect('/auth/callback'),
++       },
++     })
++     if (error) return { error: toHebrew(error.message) }
++   }
++   return { success: 'שלחנו קישור כניסה לאימייל שלך — בדקו את תיבת הדואר' }
++ }
++
++
++
++
++
++ async function attachPhoneToExistingAccount(e164: string): Promise<void> {
++   const admin = createAdminClient()
++
++
++
++
++
++
++
++   const suffix = e164.slice(-7)
++   const { data: profiles } = await admin
++     .from('profiles')
++     .select('id, phone, email')
++     .ilike('phone', `%${escapeLikePattern(suffix)}`)
++     .limit(50)
++   const candidates = (profiles ?? []).filter((row) => toE164Israeli(row.phone) === e164)
++
++   let authUser: { id: string; phone: string | null } | null = null
++   if (candidates.length === 1) {
++     const sole = candidates[0]
++     if (sole) {
++       const { data: found } = await admin.auth.admin.getUserById(sole.id)
++
++
++
++       authUser = found?.user
++         ? { id: found.user.id, phone: found.user.phone ? `+${found.user.phone}` : null }
++         : null
++     }
++   }
++
++
++
++
++
++
++   const alreadyAttachedToSomeone = authUser?.phone === e164
++
++   const decision = decidePhoneMerge({ e164, candidates, authUser, alreadyAttachedToSomeone })
++   if (decision.action !== 'attach') {
++     log.info('auth.phone_merge_skipped', { reason: decision.reason })
++     return
++   }
++
++   const { error } = await admin.auth.admin.updateUserById(decision.userId, {
++     phone: e164,
++
++
++
++     phone_confirm: true,
++   })
++   if (error) log.error('auth.phone_merge_failed', { reason: error.message })
++ }
++
++ async function runSendPhoneOtp(_: AuthState, formData: FormData): Promise<AuthState> {
++   if (!phoneAuthEnabled()) return { error: 'כניסה בטלפון אינה זמינה כרגע' }
++
++   const ip = await getClientIp()
++
++
++
++   const allowed = await checkRateLimit(`phone-otp:${ip}`, 5, 3600)
++   if (!allowed) return { error: 'יותר מדי ניסיונות — נסו שוב בעוד שעה' }
++
++   const parsed = phoneOtpSchema.safeParse({ phone: formData.get('phone') })
++   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'נתונים לא תקינים' }
++
++   const e164 = toE164Israeli(parsed.data.phone)
++   if (!e164 || !isSmsCapableIsraeli(parsed.data.phone)) {
++     return { error: 'יש להזין מספר טלפון נייד ישראלי (05X)' }
++   }
++
++
++   const numberAllowed = await checkRateLimit(`phone-otp-number:${e164}`, 5, 3600)
++   if (!numberAllowed) return { error: 'יותר מדי בקשות למספר הזה — נסו שוב בעוד שעה' }
++
++   await attachPhoneToExistingAccount(e164)
++
++   const supabase = await createClient()
++   const { error } = await supabase.auth.signInWithOtp({ phone: e164 })
++   if (error) {
++     log.error('auth.phone_otp_send_failed', { reason: error.message })
++     return { error: phoneAuthErrorHebrew(error.message) }
++   }
++
++   return { success: e164 }
++ }
++
++ async function runVerifyPhoneOtp(_: AuthState, formData: FormData): Promise<AuthState> {
++   if (!phoneAuthEnabled()) return { error: 'כניסה בטלפון אינה זמינה כרגע' }
++
++   const ip = await getClientIp()
++
++
++   const allowed = await checkRateLimit(`phone-verify:${ip}`, 20, 3600)
++   if (!allowed) return { error: 'יותר מדי ניסיונות — נסו שוב בעוד שעה' }
++
++   const parsed = phoneVerifySchema.safeParse({
++     phone: formData.get('phone'),
++     token: formData.get('token'),
++   })
++   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'נתונים לא תקינים' }
++
++   const e164 = toE164Israeli(parsed.data.phone)
++   if (!e164) return { error: 'מספר הטלפון אינו תקין' }
++
++   const supabase = await createClient()
++   const { data, error } = await supabase.auth.verifyOtp({
++     phone: e164,
++     token: parsed.data.token,
++     type: 'sms',
++   })
++   if (error) return { error: phoneAuthErrorHebrew(error.message) }
++
++   const sessionId = await getGuestSessionId()
++   if (data.user && sessionId) {
++
++
++     const merged = await mergeGuestCart(supabase, data.user.id, sessionId)
++     if (merged) {
++       const cookieStore = await cookies()
++       cookieStore.delete(GUEST_SESSION_COOKIE)
++     }
++   }
++
++
++
++   if (data.user) {
++     const admin = createAdminClient()
++     await admin
++       .from('profiles')
++       .upsert({ id: data.user.id, phone: e164 }, { onConflict: 'id', ignoreDuplicates: true })
++   }
++
++
++
++
++
++
++   if (data.user) {
++     await claimReferralOnce(data.user.id, sessionId)
++   }
++
++   redirect(safeNext(formData.get('next')))
++ }
++
++
++
++ async function runSignOut() {
++   const supabase = await createClient()
++   await supabase.auth.signOut({ scope: 'local' })
++   redirect('/login')
++ }
++
++
++
++ async function runSignOutAll() {
++   const supabase = await createClient()
++   await supabase.auth.signOut({ scope: 'global' })
++   redirect('/login')
++ }
++
++
++
++ async function runSendPasswordReset(_: AuthState, formData: FormData): Promise<AuthState> {
++   const ip = await getClientIp()
++   const allowed = await checkRateLimit(`reset:${ip}`, 5, 3600)
++   if (!allowed) return { error: 'יותר מדי ניסיונות — נסו שוב בעוד שעה' }
++
++   const parsed = passwordResetSchema.safeParse({ email: formData.get('email') })
++   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'נתונים לא תקינים' }
++
++
++   const addressAllowed = await checkRateLimit(
++     `reset-address:${parsed.data.email.trim().toLowerCase()}`,
++     5,
++     3600,
++   )
++
++
++
++   if (!addressAllowed) return passwordResetResult(null)
++
++
++
++
++   if (await trySendBrandedPasswordReset(parsed.data.email)) return passwordResetResult(null)
++
++   const supabase = await createClient()
++   const { error } = await supabase.auth.resetPasswordForEmail(parsed.data.email, {
++     redirectTo: authRedirect('/auth/callback?next=/reset-password'),
++   })
++
++
++   if (error) log.error('auth.password_reset_failed', { reason: error.message })
++   return passwordResetResult(error)
++ }
++
++
++
++ async function runUpdatePassword(_: AuthState, formData: FormData): Promise<AuthState> {
++
++
++
++
++   const ip = await getClientIp()
++   const allowed = await checkRateLimit(`update-password:${ip}`, 10, 3600)
++   if (!allowed) return { error: 'יותר מדי ניסיונות — נסו שוב בעוד שעה' }
++
++   const parsed = newPasswordSchema.safeParse({
++     password: formData.get('password'),
++     confirm_password: formData.get('confirm_password'),
++   })
++   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'נתונים לא תקינים' }
++
++   const supabase = await createClient()
++   const { error } = await supabase.auth.updateUser({ password: parsed.data.password })
++   if (error) return { error: toHebrew(error.message) }
++   redirect('/')
++ }
++
++
++
++ async function runVerifyEmailOtp(_: AuthState, formData: FormData): Promise<AuthState> {
++   const ip = await getClientIp()
++
++
++   const allowed = await checkRateLimit(`email-verify:${ip}`, 20, 3600)
++   if (!allowed) return { error: 'יותר מדי ניסיונות — נסו שוב בעוד שעה' }
++
++   const parsed = emailOtpVerifySchema.safeParse({
++     email: formData.get('email'),
++     token: formData.get('token'),
++   })
++   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'נתונים לא תקינים' }
++
++
++   const addressAllowed = await checkRateLimit(`email-verify-address:${parsed.data.email}`, 20, 3600)
++   if (!addressAllowed) return { error: 'יותר מדי ניסיונות — נסו שוב בעוד שעה' }
++
++   const supabase = await createClient()
++
++
++
++   const { data, error } = await supabase.auth.verifyOtp({
++     email: parsed.data.email,
++     token: parsed.data.token,
++     type: 'email',
++   })
++   if (error) return { error: toHebrew(error.message) }
++
++
++   const sessionId = await getGuestSessionId()
++   if (data.user && sessionId) {
++     const merged = await mergeGuestCart(supabase, data.user.id, sessionId)
++     if (merged) {
++       const cookieStore = await cookies()
++       cookieStore.delete(GUEST_SESSION_COOKIE)
++     }
++   }
++   if (data.user) {
++     await claimReferralOnce(data.user.id, sessionId)
++   }
++
++   redirect(safeNext(formData.get('next')))
++ }
++
++
++
++ async function runChangePassword(_: AuthState, formData: FormData): Promise<AuthState> {
++   const supabase = await createClient()
++   const {
++     data: { user },
++   } = await supabase.auth.getUser()
++   if (!user?.email) return { error: 'יש להתחבר' }
++
++
++   const allowed = await checkRateLimit(`change-password:${user.id}`, 10, 3600)
++   if (!allowed) return { error: 'יותר מדי ניסיונות — נסו שוב בעוד שעה' }
++
++   const parsed = changePasswordSchema.safeParse({
++     current_password: formData.get('current_password'),
++     password: formData.get('password'),
++     confirm_password: formData.get('confirm_password'),
++   })
++   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'נתונים לא תקינים' }
++
++
++
++
++
++   const verifier = createPublicClient()
++   const { error: verifyError } = await verifier.auth.signInWithPassword({
++     email: user.email,
++     password: parsed.data.current_password,
++   })
++   if (verifyError) return { error: 'הסיסמה הנוכחית שגויה' }
++   await verifier.auth.signOut({ scope: 'local' })
++
++   const { error } = await supabase.auth.updateUser({ password: parsed.data.password })
++   if (error) return { error: toHebrew(error.message) }
++   return { success: 'הסיסמה עודכנה' }
++ }
++
++ export async function signInWithGoogle(_: AuthState, formData: FormData): Promise<AuthState> {
++   return withActionContext('auth.sign_in_google', () => runSignInWithGoogle(_, formData))
++ }
++
++ export async function signInWithEmail(_: AuthState, formData: FormData): Promise<AuthState> {
++   return withActionContext('auth.sign_in_email', () => runSignInWithEmail(_, formData))
++ }
++
++ export async function signUpWithEmail(_: AuthState, formData: FormData): Promise<AuthState> {
++   return withActionContext('auth.sign_up_email', () => runSignUpWithEmail(_, formData))
++ }
++
++ export async function sendMagicLink(_: AuthState, formData: FormData): Promise<AuthState> {
++   return withActionContext('auth.send_magic_link', () => runSendMagicLink(_, formData))
++ }
++
++ export async function sendPhoneOtp(_: AuthState, formData: FormData): Promise<AuthState> {
++   return withActionContext('auth.send_phone_otp', () => runSendPhoneOtp(_, formData))
++ }
++
++ export async function verifyPhoneOtp(_: AuthState, formData: FormData): Promise<AuthState> {
++   return withActionContext('auth.verify_phone_otp', () => runVerifyPhoneOtp(_, formData))
++ }
++
++ export async function signOut() {
++   return withActionContext('auth.sign_out', () => runSignOut())
++ }
++
++ export async function signOutAll() {
++   return withActionContext('auth.sign_out_all', () => runSignOutAll())
++ }
++
++ export async function sendPasswordReset(_: AuthState, formData: FormData): Promise<AuthState> {
++   return withActionContext('auth.send_password_reset', () => runSendPasswordReset(_, formData))
++ }
++
++ export async function updatePassword(_: AuthState, formData: FormData): Promise<AuthState> {
++   return withActionContext('auth.update_password', () => runUpdatePassword(_, formData))
++ }
++
++ export async function verifyEmailOtp(_: AuthState, formData: FormData): Promise<AuthState> {
++   return withActionContext('auth.verify_email_otp', () => runVerifyEmailOtp(_, formData))
++ }
++
++ export async function changePassword(_: AuthState, formData: FormData): Promise<AuthState> {
++   return withActionContext('auth.change_password', () => runChangePassword(_, formData))
++ }
++
+
+ ❯ src/server/actions/auth-error-map.test.ts:62:20
+     60|     // The generic fallback being logged is not a licence to lose the …
+     61|     // that matters most: a wrong password is the common case on this …
+     62|     expect(code()).toContain("'Invalid login credentials': 'כתובת אימי…
+       |                    ^
+     63|   })
+     64|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  src/server/actions/auth-error-map.test.ts > the Supabase error map > names the expired reset link instead of falling back
+AssertionError: expected '\'use server\'\n\nimport { withAction…' to contain '\'Auth session missing\''
+
+- Expected
++ Received
+
+- 'Auth session missing'
++ 'use server'
++
++ import { withActionContext } from '@/lib/observability/action-context'
++ import { log } from '@/lib/observability/log'
++
++ import { passwordResetResult } from '@/lib/auth/password-reset'
++ import { decidePhoneMerge } from '@/lib/auth/phone-merge'
++ import {
++   isSmsCapableIsraeli,
++   phoneAuthEnabled,
++   phoneAuthErrorHebrew,
++   toE164Israeli,
++ } from '@/lib/auth/phone-otp'
++ import { safeNextPath } from '@/lib/auth/safe-next'
++ import { confirmPath, verifyPhonePath } from '@/lib/auth/signup-phone'
++ import { GUEST_SESSION_COOKIE, getGuestSessionId } from '@/lib/cart/guest-session'
++ import { siteUrl } from '@/lib/site-url'
++ import { createAdminClient } from '@/lib/supabase/admin'
++ import { createPublicClient } from '@/lib/supabase/anon'
++ import { createClient } from '@/lib/supabase/server'
++ import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
++ import { escapeLikePattern } from '@/lib/utils/search-escape'
++ import {
++   changePasswordSchema,
++   emailOtpVerifySchema,
++   loginSchema,
++   magicLinkSchema,
++   newPasswordSchema,
++   passwordResetSchema,
++   phoneOtpSchema,
++   phoneVerifySchema,
++ } from '@/lib/validations/auth'
++ import { mergeGuestCart } from '@/server/actions/cart'
++ import { gotrueErrorHebrew } from '@/server/auth/gotrue-errors'
++ import { trySendBrandedMagicLink } from '@/server/auth/magic-link-send'
++ import { trySendBrandedPasswordReset } from '@/server/auth/password-reset-send'
++ import { registerCore } from '@/server/auth/register-core'
++ import { claimReferralOnce } from '@/server/referrals/claim'
++ import { cookies } from 'next/headers'
++ import { redirect } from 'next/navigation'
++
++ export type AuthState = { error: string } | { success: string } | null
++
++ const toHebrew = gotrueErrorHebrew
++
++ const safeNext = safeNextPath
++
++
++ function authRedirect(path: string): string {
++   return `${siteUrl()}${path}`
++ }
++
++
++
++ async function runSignInWithGoogle(_: AuthState, formData: FormData): Promise<AuthState> {
++   const next = safeNext(formData.get('next'))
++   const supabase = await createClient()
++   const { data, error } = await supabase.auth.signInWithOAuth({
++     provider: 'google',
++     options: {
++       redirectTo: authRedirect(`/auth/callback?next=${encodeURIComponent(next)}`),
++       scopes: 'openid email profile',
++     },
++   })
++   if (error) return { error: toHebrew(error.message) }
++   if (data.url) redirect(data.url)
++   return null
++ }
++
++
++
++ async function runSignInWithEmail(_: AuthState, formData: FormData): Promise<AuthState> {
++   const ip = await getClientIp()
++   const allowed = await checkRateLimit(`login:${ip}`)
++   if (!allowed) return { error: 'יותר מדי ניסיונות כניסה — נסו שוב בעוד שעה' }
++
++   const parsed = loginSchema.safeParse({
++     email: formData.get('email'),
++     password: formData.get('password'),
++   })
++   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'נתונים לא תקינים' }
++
++
++
++
++
++
++
++   const accountAllowed = await checkRateLimit(
++     `login-account:${parsed.data.email.trim().toLowerCase()}`,
++     20,
++     3600,
++   )
++
++
++
++   if (!accountAllowed) return { error: 'יותר מדי ניסיונות כניסה — נסו שוב בעוד שעה' }
++
++   const supabase = await createClient()
++   const { data: signInData, error } = await supabase.auth.signInWithPassword(parsed.data)
++   if (error) return { error: toHebrew(error.message) }
++
++   const sessionId = await getGuestSessionId()
++   if (signInData.user && sessionId) {
++
++
++     const merged = await mergeGuestCart(supabase, signInData.user.id, sessionId)
++     if (merged) {
++       const cookieStore = await cookies()
++       cookieStore.delete(GUEST_SESSION_COOKIE)
++     }
++   }
++
++   redirect(safeNext(formData.get('next')))
++ }
++
++
++
++ async function runSignUpWithEmail(_: AuthState, formData: FormData): Promise<AuthState> {
++
++
++
++
++
++   const outcome = await registerCore(formData)
++   if (!outcome.ok) return { error: outcome.error }
++   if (outcome.verifyingPhone) redirect(verifyPhonePath(outcome.verifyingPhone, outcome.next))
++   redirect(confirmPath(outcome.next, false))
++ }
++
++
++
++ async function runSendMagicLink(_: AuthState, formData: FormData): Promise<AuthState> {
++   const ip = await getClientIp()
++   const allowed = await checkRateLimit(`magic:${ip}`, 5, 3600)
++   if (!allowed) return { error: 'יותר מדי ניסיונות — נסו שוב בעוד שעה' }
++
++   const parsed = magicLinkSchema.safeParse({ email: formData.get('email') })
++   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'נתונים לא תקינים' }
++
++
++
++
++   const branded = await trySendBrandedMagicLink(parsed.data.email)
++   if (!branded) {
++     const supabase = await createClient()
++     const { error } = await supabase.auth.signInWithOtp({
++       email: parsed.data.email,
++       options: {
++         emailRedirectTo: authRedirect('/auth/callback'),
++       },
++     })
++     if (error) return { error: toHebrew(error.message) }
++   }
++   return { success: 'שלחנו קישור כניסה לאימייל שלך — בדקו את תיבת הדואר' }
++ }
++
++
++
++
++
++ async function attachPhoneToExistingAccount(e164: string): Promise<void> {
++   const admin = createAdminClient()
++
++
++
++
++
++
++
++   const suffix = e164.slice(-7)
++   const { data: profiles } = await admin
++     .from('profiles')
++     .select('id, phone, email')
++     .ilike('phone', `%${escapeLikePattern(suffix)}`)
++     .limit(50)
++   const candidates = (profiles ?? []).filter((row) => toE164Israeli(row.phone) === e164)
++
++   let authUser: { id: string; phone: string | null } | null = null
++   if (candidates.length === 1) {
++     const sole = candidates[0]
++     if (sole) {
++       const { data: found } = await admin.auth.admin.getUserById(sole.id)
++
++
++
++       authUser = found?.user
++         ? { id: found.user.id, phone: found.user.phone ? `+${found.user.phone}` : null }
++         : null
++     }
++   }
++
++
++
++
++
++
++   const alreadyAttachedToSomeone = authUser?.phone === e164
++
++   const decision = decidePhoneMerge({ e164, candidates, authUser, alreadyAttachedToSomeone })
++   if (decision.action !== 'attach') {
++     log.info('auth.phone_merge_skipped', { reason: decision.reason })
++     return
++   }
++
++   const { error } = await admin.auth.admin.updateUserById(decision.userId, {
++     phone: e164,
++
++
++
++     phone_confirm: true,
++   })
++   if (error) log.error('auth.phone_merge_failed', { reason: error.message })
++ }
++
++ async function runSendPhoneOtp(_: AuthState, formData: FormData): Promise<AuthState> {
++   if (!phoneAuthEnabled()) return { error: 'כניסה בטלפון אינה זמינה כרגע' }
++
++   const ip = await getClientIp()
++
++
++
++   const allowed = await checkRateLimit(`phone-otp:${ip}`, 5, 3600)
++   if (!allowed) return { error: 'יותר מדי ניסיונות — נסו שוב בעוד שעה' }
++
++   const parsed = phoneOtpSchema.safeParse({ phone: formData.get('phone') })
++   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'נתונים לא תקינים' }
++
++   const e164 = toE164Israeli(parsed.data.phone)
++   if (!e164 || !isSmsCapableIsraeli(parsed.data.phone)) {
++     return { error: 'יש להזין מספר טלפון נייד ישראלי (05X)' }
++   }
++
++
++   const numberAllowed = await checkRateLimit(`phone-otp-number:${e164}`, 5, 3600)
++   if (!numberAllowed) return { error: 'יותר מדי בקשות למספר הזה — נסו שוב בעוד שעה' }
++
++   await attachPhoneToExistingAccount(e164)
++
++   const supabase = await createClient()
++   const { error } = await supabase.auth.signInWithOtp({ phone: e164 })
++   if (error) {
++     log.error('auth.phone_otp_send_failed', { reason: error.message })
++     return { error: phoneAuthErrorHebrew(error.message) }
++   }
++
++   return { success: e164 }
++ }
++
++ async function runVerifyPhoneOtp(_: AuthState, formData: FormData): Promise<AuthState> {
++   if (!phoneAuthEnabled()) return { error: 'כניסה בטלפון אינה זמינה כרגע' }
++
++   const ip = await getClientIp()
++
++
++   const allowed = await checkRateLimit(`phone-verify:${ip}`, 20, 3600)
++   if (!allowed) return { error: 'יותר מדי ניסיונות — נסו שוב בעוד שעה' }
++
++   const parsed = phoneVerifySchema.safeParse({
++     phone: formData.get('phone'),
++     token: formData.get('token'),
++   })
++   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'נתונים לא תקינים' }
++
++   const e164 = toE164Israeli(parsed.data.phone)
++   if (!e164) return { error: 'מספר הטלפון אינו תקין' }
++
++   const supabase = await createClient()
++   const { data, error } = await supabase.auth.verifyOtp({
++     phone: e164,
++     token: parsed.data.token,
++     type: 'sms',
++   })
++   if (error) return { error: phoneAuthErrorHebrew(error.message) }
++
++   const sessionId = await getGuestSessionId()
++   if (data.user && sessionId) {
++
++
++     const merged = await mergeGuestCart(supabase, data.user.id, sessionId)
++     if (merged) {
++       const cookieStore = await cookies()
++       cookieStore.delete(GUEST_SESSION_COOKIE)
++     }
++   }
++
++
++
++   if (data.user) {
++     const admin = createAdminClient()
++     await admin
++       .from('profiles')
++       .upsert({ id: data.user.id, phone: e164 }, { onConflict: 'id', ignoreDuplicates: true })
++   }
++
++
++
++
++
++
++   if (data.user) {
++     await claimReferralOnce(data.user.id, sessionId)
++   }
++
++   redirect(safeNext(formData.get('next')))
++ }
++
++
++
++ async function runSignOut() {
++   const supabase = await createClient()
++   await supabase.auth.signOut({ scope: 'local' })
++   redirect('/login')
++ }
++
++
++
++ async function runSignOutAll() {
++   const supabase = await createClient()
++   await supabase.auth.signOut({ scope: 'global' })
++   redirect('/login')
++ }
++
++
++
++ async function runSendPasswordReset(_: AuthState, formData: FormData): Promise<AuthState> {
++   const ip = await getClientIp()
++   const allowed = await checkRateLimit(`reset:${ip}`, 5, 3600)
++   if (!allowed) return { error: 'יותר מדי ניסיונות — נסו שוב בעוד שעה' }
++
++   const parsed = passwordResetSchema.safeParse({ email: formData.get('email') })
++   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'נתונים לא תקינים' }
++
++
++   const addressAllowed = await checkRateLimit(
++     `reset-address:${parsed.data.email.trim().toLowerCase()}`,
++     5,
++     3600,
++   )
++
++
++
++   if (!addressAllowed) return passwordResetResult(null)
++
++
++
++
++   if (await trySendBrandedPasswordReset(parsed.data.email)) return passwordResetResult(null)
++
++   const supabase = await createClient()
++   const { error } = await supabase.auth.resetPasswordForEmail(parsed.data.email, {
++     redirectTo: authRedirect('/auth/callback?next=/reset-password'),
++   })
++
++
++   if (error) log.error('auth.password_reset_failed', { reason: error.message })
++   return passwordResetResult(error)
++ }
++
++
++
++ async function runUpdatePassword(_: AuthState, formData: FormData): Promise<AuthState> {
++
++
++
++
++   const ip = await getClientIp()
++   const allowed = await checkRateLimit(`update-password:${ip}`, 10, 3600)
++   if (!allowed) return { error: 'יותר מדי ניסיונות — נסו שוב בעוד שעה' }
++
++   const parsed = newPasswordSchema.safeParse({
++     password: formData.get('password'),
++     confirm_password: formData.get('confirm_password'),
++   })
++   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'נתונים לא תקינים' }
++
++   const supabase = await createClient()
++   const { error } = await supabase.auth.updateUser({ password: parsed.data.password })
++   if (error) return { error: toHebrew(error.message) }
++   redirect('/')
++ }
++
++
++
++ async function runVerifyEmailOtp(_: AuthState, formData: FormData): Promise<AuthState> {
++   const ip = await getClientIp()
++
++
++   const allowed = await checkRateLimit(`email-verify:${ip}`, 20, 3600)
++   if (!allowed) return { error: 'יותר מדי ניסיונות — נסו שוב בעוד שעה' }
++
++   const parsed = emailOtpVerifySchema.safeParse({
++     email: formData.get('email'),
++     token: formData.get('token'),
++   })
++   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'נתונים לא תקינים' }
++
++
++   const addressAllowed = await checkRateLimit(`email-verify-address:${parsed.data.email}`, 20, 3600)
++   if (!addressAllowed) return { error: 'יותר מדי ניסיונות — נסו שוב בעוד שעה' }
++
++   const supabase = await createClient()
++
++
++
++   const { data, error } = await supabase.auth.verifyOtp({
++     email: parsed.data.email,
++     token: parsed.data.token,
++     type: 'email',
++   })
++   if (error) return { error: toHebrew(error.message) }
++
++
++   const sessionId = await getGuestSessionId()
++   if (data.user && sessionId) {
++     const merged = await mergeGuestCart(supabase, data.user.id, sessionId)
++     if (merged) {
++       const cookieStore = await cookies()
++       cookieStore.delete(GUEST_SESSION_COOKIE)
++     }
++   }
++   if (data.user) {
++     await claimReferralOnce(data.user.id, sessionId)
++   }
++
++   redirect(safeNext(formData.get('next')))
++ }
++
++
++
++ async function runChangePassword(_: AuthState, formData: FormData): Promise<AuthState> {
++   const supabase = await createClient()
++   const {
++     data: { user },
++   } = await supabase.auth.getUser()
++   if (!user?.email) return { error: 'יש להתחבר' }
++
++
++   const allowed = await checkRateLimit(`change-password:${user.id}`, 10, 3600)
++   if (!allowed) return { error: 'יותר מדי ניסיונות — נסו שוב בעוד שעה' }
++
++   const parsed = changePasswordSchema.safeParse({
++     current_password: formData.get('current_password'),
++     password: formData.get('password'),
++     confirm_password: formData.get('confirm_password'),
++   })
++   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'נתונים לא תקינים' }
++
++
++
++
++
++   const verifier = createPublicClient()
++   const { error: verifyError } = await verifier.auth.signInWithPassword({
++     email: user.email,
++     password: parsed.data.current_password,
++   })
++   if (verifyError) return { error: 'הסיסמה הנוכחית שגויה' }
++   await verifier.auth.signOut({ scope: 'local' })
++
++   const { error } = await supabase.auth.updateUser({ password: parsed.data.password })
++   if (error) return { error: toHebrew(error.message) }
++   return { success: 'הסיסמה עודכנה' }
++ }
++
++ export async function signInWithGoogle(_: AuthState, formData: FormData): Promise<AuthState> {
++   return withActionContext('auth.sign_in_google', () => runSignInWithGoogle(_, formData))
++ }
++
++ export async function signInWithEmail(_: AuthState, formData: FormData): Promise<AuthState> {
++   return withActionContext('auth.sign_in_email', () => runSignInWithEmail(_, formData))
++ }
++
++ export async function signUpWithEmail(_: AuthState, formData: FormData): Promise<AuthState> {
++   return withActionContext('auth.sign_up_email', () => runSignUpWithEmail(_, formData))
++ }
++
++ export async function sendMagicLink(_: AuthState, formData: FormData): Promise<AuthState> {
++   return withActionContext('auth.send_magic_link', () => runSendMagicLink(_, formData))
++ }
++
++ export async function sendPhoneOtp(_: AuthState, formData: FormData): Promise<AuthState> {
++   return withActionContext('auth.send_phone_otp', () => runSendPhoneOtp(_, formData))
++ }
++
++ export async function verifyPhoneOtp(_: AuthState, formData: FormData): Promise<AuthState> {
++   return withActionContext('auth.verify_phone_otp', () => runVerifyPhoneOtp(_, formData))
++ }
++
++ export async function signOut() {
++   return withActionContext('auth.sign_out', () => runSignOut())
++ }
++
++ export async function signOutAll() {
++   return withActionContext('auth.sign_out_all', () => runSignOutAll())
++ }
++
++ export async function sendPasswordReset(_: AuthState, formData: FormData): Promise<AuthState> {
++   return withActionContext('auth.send_password_reset', () => runSendPasswordReset(_, formData))
++ }
++
++ export async function updatePassword(_: AuthState, formData: FormData): Promise<AuthState> {
++   return withActionContext('auth.update_password', () => runUpdatePassword(_, formData))
++ }
++
++ export async function verifyEmailOtp(_: AuthState, formData: FormData): Promise<AuthState> {
++   return withActionContext('auth.verify_email_otp', () => runVerifyEmailOtp(_, formData))
++ }
++
++ export async function changePassword(_: AuthState, formData: FormData): Promise<AuthState> {
++   return withActionContext('auth.change_password', () => runChangePassword(_, formData))
++ }
++
+
+ ❯ src/server/actions/auth-error-map.test.ts:80:17
+     78|   it('names the expired reset link instead of falling back', () => {
+     79|     const src = code()
+     80|     expect(src).toContain("'Auth session missing'")
+       |                 ^
+     81|     const hebrew = /'Auth session missing':\s*'([^']+)'/.exec(src)?.[1…
+     82|     expect(hebrew).toContain('קישור האיפוס')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+
+ Test Files  2 failed | 876 passed (878)
+      Tests  6 failed | 10124 passed | 12 skipped (10142)
+   Start at  00:27:25
+   Duration  89.18s (transform 16.51s, setup 39.36s, import 71.35s, tests 41.40s, environment 309.61s)
+
+EXIT 1

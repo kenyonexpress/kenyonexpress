@@ -305,6 +305,19 @@ const nextConfig: NextConfig = {
      * whole icon set into the client graph for a handful of icons ([25]).
      */
     optimizePackageImports: ['lucide-react'],
+    /**
+     * THE PRERENDER TALKS TO THE HOSTED DATABASE, WHICH IS A NANO INSTANCE.
+     * Measured on 15.10 (UX24, logs/ux24/build{,2,3}.log): three clean builds
+     * in a row died on a different page each time with `TypeError: fetch
+     * failed … other side closed (UND_ERR_SOCKET)` out of a catalogue read,
+     * while the same REST endpoint answered a single request in 0.35s and a
+     * burst of sixteen in 0.45s to 9.5s. Eight pages prerendering at once is
+     * a burst. Half the concurrency, and one retry per page before the build
+     * is declared dead, because a socket the database closed is not a defect
+     * in the page.
+     */
+    staticGenerationMaxConcurrency: 4,
+    staticGenerationRetryCount: 2,
   },
 }
 

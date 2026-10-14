@@ -12,7 +12,7 @@ import {
   toE164Israeli,
 } from '@/lib/auth/phone-otp'
 import { safeNextPath } from '@/lib/auth/safe-next'
-import { confirmPath, signupStepAfterOtp } from '@/lib/auth/signup-phone'
+import { confirmPath, verifyPhonePath } from '@/lib/auth/signup-phone'
 import { GUEST_SESSION_COOKIE, getGuestSessionId } from '@/lib/cart/guest-session'
 import { siteUrl } from '@/lib/site-url'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -29,70 +29,19 @@ import {
   passwordResetSchema,
   phoneOtpSchema,
   phoneVerifySchema,
-  signupSchema,
 } from '@/lib/validations/auth'
 import { mergeGuestCart } from '@/server/actions/cart'
+import { gotrueErrorHebrew } from '@/server/auth/gotrue-errors'
 import { trySendBrandedMagicLink } from '@/server/auth/magic-link-send'
 import { trySendBrandedPasswordReset } from '@/server/auth/password-reset-send'
-import { issueSignupPhoneOtp } from '@/server/auth/signup-phone-otp'
+import { registerCore } from '@/server/auth/register-core'
 import { claimReferralOnce } from '@/server/referrals/claim'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
 export type AuthState = { error: string } | { success: string } | null
 
-const ERROR_MAP: Record<string, string> = {
-  'Invalid login credentials': 'כתובת אימייל או סיסמה שגויים',
-  'Email not confirmed': 'כתובת האימייל טרם אומתה — בדקו את תיבת הדואר',
-  'User already registered': 'כתובת האימייל כבר רשומה במערכת',
-  'Password should be at least 6 characters': 'הסיסמה חייבת להכיל לפחות 6 תווים',
-  'Signup is disabled': 'ההרשמה סגורה כרגע',
-  'Email rate limit exceeded': 'יותר מדי ניסיונות — נסו שוב מאוחר יותר',
-  'Too many requests': 'יותר מדי ניסיונות — נסו שוב מאוחר יותר',
-  /*
-    THE ONLY WAY /reset-password FAILS FOR A REAL CUSTOMER, AND IT USED TO SAY
-    NOTHING.
-
-    `updateUser` is authorised by the recovery session the mail link opens, so
-    a link that expired, was already used, or was never followed at all leaves
-    no session and this is what Supabase returns. It was unmapped, so the page
-    said "אירעה שגיאה, נסו שוב" - true, useless, and with no next step on a
-    screen that has no other link on it.
-
-    Not guessed. The string was READ OUT OF THE LOG that the unmapped-fallback
-    warning above started writing: `auth.error_unmapped … reason: "Auth session
-    missing!"`, from a direct visit to /reset-password. Sibling wordings for an
-    expired link are deliberately NOT listed here - they have not been seen on
-    this project, and the fallback now names anything new rather than hiding it.
-  */
-  'Auth session missing': 'קישור האיפוס פג או שכבר נעשה בו שימוש — בקשו קישור חדש',
-  // What `verifyOtp` answers for a typed code that is wrong, reused, or older
-  // than the project's OTP expiry. One sentence for all three on purpose:
-  // distinguishing "wrong" from "expired" tells a guesser which digits to keep.
-  'Token has expired or is invalid': 'הקוד שגוי או שפג תוקפו — בקשו קוד חדש',
-}
-
-/**
- * THE FALLBACK IS LOGGED, BECAUSE IT IS INDISTINGUISHABLE FROM WORKING.
- *
- * Every key above is an ENGLISH STRING SUPABASE CHOOSES, matched by substring.
- * Nothing here is under our control and nothing warns when one of them is
- * reworded upstream: the match simply stops firing, "כתובת אימייל או סיסמה
- * שגויים" quietly becomes "אירעה שגיאה, נסו שוב", and the sign-in form still
- * looks like it is behaving. The customer is told nothing useful and we are
- * told nothing at all.
- *
- * So an unmapped message is a warning with the message on it. The reason goes
- * to the log and never into the response - the same split the API routes are
- * held to by `log-coverage.test.ts`.
- */
-function toHebrew(msg: string): string {
-  for (const [key, val] of Object.entries(ERROR_MAP)) {
-    if (msg.includes(key)) return val
-  }
-  log.warn('auth.error_unmapped', { reason: msg })
-  return 'אירעה שגיאה, נסו שוב'
-}
+const toHebrew = gotrueErrorHebrew
 
 const safeNext = safeNextPath
 
@@ -193,42 +142,15 @@ async function runSignInWithEmail(_: AuthState, formData: FormData): Promise<Aut
 // Email / Password sign-up (phone required)
 // ──────────────────────────────────────────────
 async function runSignUpWithEmail(_: AuthState, formData: FormData): Promise<AuthState> {
-  const ip = await getClientIp()
-  const allowed = await checkRateLimit(`signup:${ip}`, 5, 3600)
-  if (!allowed) return { error: 'יותר מדי ניסיונות הרשמה — נסו שוב בעוד שעה' }
-
-  const parsed = signupSchema.safeParse({
-    full_name: formData.get('full_name'),
-    email: formData.get('email'),
-    phone: formData.get('phone'),
-    password: formData.get('password'),
-  })
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'נתונים לא תקינים' }
-
-  const supabase = await createClient()
-  const { data, error } = await supabase.auth.signUp({
-    email: parsed.data.email,
-    password: parsed.data.password,
-    options: {
-      data: { full_name: parsed.data.full_name, phone: parsed.data.phone },
-    },
-  })
-  if (error) return { error: toHebrew(error.message) }
-
-  // STEP 18: the phone from the form is challenged by SMS before the email
-  // step. Only for a user that was actually created: with confirmations on,
-  // GoTrue answers an existing address with a placeholder user that has no
-  // identities (its enumeration guard), and texting the phone typed next to
-  // somebody else's email would turn that guard into an SMS to a stranger.
-  // A code that cannot be sent skips the step (lib/auth/signup-phone.ts).
-  const next = safeNext(formData.get('next'))
-  const created = data.user && (data.user.identities?.length ?? 0) > 0 ? data.user : null
-  const e164 = toE164Israeli(parsed.data.phone)
-  if (created && e164 && isSmsCapableIsraeli(parsed.data.phone)) {
-    const outcome = await issueSignupPhoneOtp({ e164, userId: created.id })
-    redirect(signupStepAfterOtp(outcome, next === '/' ? null : next).path)
-  }
-  redirect(confirmPath(next === '/' ? null : next, false))
+  // The registration itself (ceiling, schema, terms, signUp, the SMS
+  // challenge) is `server/auth/register-core.ts`, shared with the inline
+  // `registerAccount` the register panel uses (UX24). This wrapper is the
+  // redirecting shape: the code screen when a text went out, the email step
+  // otherwise, carrying `next` either way.
+  const outcome = await registerCore(formData)
+  if (!outcome.ok) return { error: outcome.error }
+  if (outcome.verifyingPhone) redirect(verifyPhonePath(outcome.verifyingPhone, outcome.next))
+  redirect(confirmPath(outcome.next, false))
 }
 
 // ──────────────────────────────────────────────

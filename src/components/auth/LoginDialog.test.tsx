@@ -9,6 +9,16 @@ vi.mock('@/server/actions/auth', () => ({
   sendPhoneOtp: vi.fn(async () => null),
   verifyPhoneOtp: vi.fn(async () => null),
 }))
+const register = vi.hoisted(() => ({
+  account: vi.fn<(...args: unknown[]) => Promise<unknown>>(async () => null),
+}))
+vi.mock('@/server/actions/register', () => ({
+  registerAccount: (...a: unknown[]) => register.account(...a),
+  verifyRegisterPhone: vi.fn(async () => null),
+}))
+vi.mock('@/server/actions/signup-phone', () => ({
+  resendSignupPhoneOtp: vi.fn(async () => null),
+}))
 vi.mock('@/server/actions/passkeys', () => ({
   beginPasskeyLogin: vi.fn(async () => ({ error: 'x' })),
   finishPasskeyLogin: vi.fn(async () => ({ error: 'x' })),
@@ -59,7 +69,14 @@ function opener() {
 }
 
 function request(over: Partial<LoginDialogRequest> = {}): LoginDialogRequest {
-  return { seq: 1, next: '/products?page=2', opener: null, pathname: '/products', ...over }
+  return {
+    seq: 1,
+    next: '/products?page=2',
+    mode: 'login',
+    opener: null,
+    pathname: '/products',
+    ...over,
+  }
 }
 
 describe('LoginDialog', () => {
@@ -155,5 +172,81 @@ describe('LoginDialog', () => {
       fireEvent.click(screen.getByRole('tab', { name: 'קוד ב-SMS' }))
     })
     expect(document.getElementById('login-dialog-otp-phone')).not.toBeNull()
+  })
+})
+
+describe('LoginDialog in signup mode (UX24)', () => {
+  // jsdom cannot navigate, so the link presses below stop the default after
+  // React has seen the click; the submit presses must NOT be stopped, or the
+  // form action never runs.
+  const stop = (e: Event) => e.preventDefault()
+  beforeEach(() => {
+    register.account.mockReset().mockResolvedValue(null)
+  })
+
+  it('opens on the register stepper when the request asks for it, with the signup title', () => {
+    render(<LoginDialog request={request({ mode: 'signup', next: '/cart' })} />)
+    const dialog = screen.getByRole('dialog', { name: 'יצירת חשבון' })
+    expect(dialog).toHaveAttribute('data-mode', 'signup')
+    expect(screen.getByRole('list', { name: 'שלבי ההרשמה' })).toBeVisible()
+    expect(screen.getByLabelText('שם מלא')).toHaveAttribute('id', 'register-dialog-full_name')
+    expect(screen.queryByLabelText('סיסמה', { exact: true })).toBeVisible()
+    expect(screen.queryByRole('tablist')).toBeNull()
+    expect(document.querySelector('input[name="next"]')).toHaveValue('/cart')
+  })
+
+  it('switches bodies in place: הרשמה opens the stepper, כניסה returns, the URL never changes', () => {
+    document.addEventListener('click', stop)
+    render(<LoginDialog request={request({ next: '/cart' })} />)
+    expect(screen.getByRole('dialog', { name: 'כניסה לחשבון' })).toBeVisible()
+    fireEvent.click(screen.getByRole('link', { name: 'הרשמה' }))
+    expect(screen.getByRole('dialog', { name: 'יצירת חשבון' })).toBeVisible()
+    expect(screen.getByRole('list', { name: 'שלבי ההרשמה' })).toBeVisible()
+    // The pressed link is gone with the old body; focus is back on the panel.
+    expect(screen.getByRole('dialog', { name: 'יצירת חשבון' })).toHaveFocus()
+    fireEvent.click(screen.getByRole('link', { name: 'כניסה' }))
+    expect(screen.getByRole('dialog', { name: 'כניסה לחשבון' })).toBeVisible()
+    expect(screen.getByLabelText('אימייל', { exact: true })).toHaveAttribute(
+      'id',
+      'login-dialog-email',
+    )
+    document.removeEventListener('click', stop)
+  })
+
+  it('a new request resets the body to what it asks for', () => {
+    const { rerender } = render(<LoginDialog request={request({ mode: 'signup' })} />)
+    expect(screen.getByRole('dialog', { name: 'יצירת חשבון' })).toBeVisible()
+    rerender(<LoginDialog request={request({ seq: 2, mode: 'login' })} />)
+    expect(screen.getByRole('dialog', { name: 'כניסה לחשבון' })).toBeVisible()
+  })
+
+  it('the welcome’s המשך לגלוש closes the dialog and gives focus back to the opener', async () => {
+    register.account.mockResolvedValue({
+      step: 'welcome',
+      phoneVerified: false,
+      email: 'dana@example.com',
+      next: null,
+    })
+    const button = opener()
+    render(<LoginDialog request={request({ mode: 'signup', opener: button })} />)
+    fireEvent.change(screen.getByLabelText('שם מלא'), { target: { value: 'דנה כהן' } })
+    fireEvent.change(screen.getByLabelText('אימייל', { exact: true }), {
+      target: { value: 'dana@example.com' },
+    })
+    fireEvent.change(screen.getByLabelText('סיסמה', { exact: true }), {
+      target: { value: 'secret12' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'המשך' }))
+    fireEvent.change(screen.getByLabelText('טלפון נייד'), { target: { value: '0501234567' } })
+    fireEvent.click(screen.getByLabelText(/קראתי ואני מאשר/))
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'יצירת חשבון' }))
+    })
+    await waitFor(() => expect(screen.getByTestId('register-welcome')).toBeVisible())
+    fireEvent.click(screen.getByRole('button', { name: 'המשך לגלוש' }))
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(document.body.classList.contains('login-dialog-open')).toBe(false)
+    expect(button).toHaveFocus()
+    button.remove()
   })
 })

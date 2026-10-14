@@ -543,6 +543,9 @@ describe('the pending migration inventory', () => {
       // existed. One idempotent UPDATE; measured on the built server and
       // through the anon REST endpoint, README carries both.
       '271_deactivate_wishlist_gone_row.sql',
+      // 272 (2026-10-15, UX24): profiles.terms_accepted_at / terms_version and
+      // the auth.users trigger that mirrors them from the signup metadata.
+      '272_profiles_terms_acceptance.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])
