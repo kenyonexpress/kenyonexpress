@@ -830,6 +830,21 @@ body:has([data-home]) .topbar-greeting {
   .footer-disclosure > *:not(summary) {
     display: block !important;
   }
+
+  /* UX13 (14.10.2026): THE RULE ABOVE STOPPED WORKING IN CHROME 131. A closed
+     <details> no longer hides its content with display:none on the slot; it
+     hides it with `content-visibility: hidden` on the ::details-content
+     pseudo-element, and `display: block !important` on the children does not
+     reach that. Measured in the bundled Chromium 148 (logs/ux13/details-probe.mjs):
+     the links under the desktop footer headings had layout boxes (39x18) and
+     checkVisibility() false, and the 1440 capture (logs/ux13/before-1440.png)
+     shows two headings over nothing. Every current Chrome, Edge, Safari 18.4+
+     and Firefox 138+ ships ::details-content; the rule above stays for the
+     browsers that do not. */
+  .footer-disclosure::details-content {
+    content-visibility: visible;
+    display: block !important;
+  }
 }
 
 /* The phone rows carry live's disclosure affordance, not the browser's. */

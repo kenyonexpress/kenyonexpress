@@ -1,0 +1,857 @@
+{
+  "380": {
+    "footer": {
+      "x": 0,
+      "y": 186,
+      "w": 380,
+      "h": 426.5
+    },
+    "dir": "rtl",
+    "grid": {
+      "templateColumns": "350px",
+      "resolvedColumns": 1,
+      "visibleChildren": 3,
+      "childRects": [
+        {
+          "x": 15,
+          "y": 186,
+          "w": 350,
+          "h": 51
+        },
+        {
+          "x": 15,
+          "y": 237,
+          "w": 350,
+          "h": 51
+        },
+        {
+          "x": 15,
+          "y": 288,
+          "w": 350,
+          "h": 51
+        }
+      ]
+    },
+    "details": [
+      {
+        "title": "שירות לקוחות",
+        "open": false,
+        "summaryVisible": true,
+        "summaryH": 50,
+        "links": 5,
+        "linksVisible": 0,
+        "chevron": true
+      },
+      {
+        "title": "מדיניות ותקנון",
+        "open": false,
+        "summaryVisible": true,
+        "summaryH": 50,
+        "links": 6,
+        "linksVisible": 0,
+        "chevron": true
+      },
+      {
+        "title": "אזור אישי",
+        "open": false,
+        "summaryVisible": true,
+        "summaryH": 50,
+        "links": 3,
+        "linksVisible": 0,
+        "chevron": true
+      }
+    ],
+    "headings": ["שירות לקוחות", "מדיניות ותקנון", "אזור אישי"],
+    "socials": [
+      {
+        "label": "יוטיוב",
+        "href": "https://www.youtube.com/channel/UCTksP_5SYgaRrqBPgxBehQQ",
+        "rel": "noopener noreferrer",
+        "visible": true,
+        "size": {
+          "x": 280,
+          "y": 356,
+          "w": 44,
+          "h": 44
+        },
+        "bg": "rgb(51, 62, 72)"
+      },
+      {
+        "label": "אינסטגרם",
+        "href": "https://www.instagram.com/kenyonexpress",
+        "rel": "noopener noreferrer",
+        "visible": true,
+        "size": {
+          "x": 224,
+          "y": 356,
+          "w": 44,
+          "h": 44
+        },
+        "bg": "rgb(51, 62, 72)"
+      },
+      {
+        "label": "וואטסאפ",
+        "href": "https://wa.me/972524635550",
+        "rel": "noopener noreferrer",
+        "visible": true,
+        "size": {
+          "x": 168,
+          "y": 356,
+          "w": 44,
+          "h": 44
+        },
+        "bg": "rgb(51, 62, 72)"
+      },
+      {
+        "label": "טוויטר",
+        "href": "https://twitter.com/KenyonExpress",
+        "rel": "noopener noreferrer",
+        "visible": true,
+        "size": {
+          "x": 112,
+          "y": 356,
+          "w": 44,
+          "h": 44
+        },
+        "bg": "rgb(51, 62, 72)"
+      },
+      {
+        "label": "פייסבוק",
+        "href": "https://www.facebook.com/קניון-Express-114398873446854/",
+        "rel": "noopener noreferrer",
+        "visible": true,
+        "size": {
+          "x": 56,
+          "y": 356,
+          "w": 44,
+          "h": 44
+        },
+        "bg": "rgb(51, 62, 72)"
+      }
+    ],
+    "payment": [
+      {
+        "visible": true,
+        "items": [
+          {
+            "text": "ויזהVISA",
+            "svg": 1,
+            "img": 0,
+            "label": "ויזה",
+            "size": {
+              "x": 266,
+              "y": 570.5,
+              "w": 40,
+              "h": 26
+            }
+          },
+          {
+            "text": "מאסטרקארד",
+            "svg": 1,
+            "img": 0,
+            "label": "מאסטרקארד",
+            "size": {
+              "x": 218,
+              "y": 570.5,
+              "w": 40,
+              "h": 26
+            }
+          },
+          {
+            "text": "אמריקן אקספרסAMEX",
+            "svg": 1,
+            "img": 0,
+            "label": "אמריקן אקספרס",
+            "size": {
+              "x": 170,
+              "y": 570.5,
+              "w": 40,
+              "h": 26
+            }
+          },
+          {
+            "text": "ישראכרטISRACARD",
+            "svg": 1,
+            "img": 0,
+            "label": "ישראכרט",
+            "size": {
+              "x": 122,
+              "y": 570.5,
+              "w": 40,
+              "h": 26
+            }
+          },
+          {
+            "text": "דיינרס קלאב",
+            "svg": 1,
+            "img": 0,
+            "label": "דיינרס קלאב",
+            "size": {
+              "x": 74,
+              "y": 570.5,
+              "w": 40,
+              "h": 26
+            }
+          }
+        ]
+      },
+      {
+        "visible": false,
+        "items": [
+          {
+            "text": "ויזהVISA",
+            "svg": 1,
+            "img": 0,
+            "label": "ויזה",
+            "size": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            }
+          },
+          {
+            "text": "מאסטרקארד",
+            "svg": 1,
+            "img": 0,
+            "label": "מאסטרקארד",
+            "size": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            }
+          },
+          {
+            "text": "אמריקן אקספרסAMEX",
+            "svg": 1,
+            "img": 0,
+            "label": "אמריקן אקספרס",
+            "size": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            }
+          },
+          {
+            "text": "ישראכרטISRACARD",
+            "svg": 1,
+            "img": 0,
+            "label": "ישראכרט",
+            "size": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            }
+          },
+          {
+            "text": "דיינרס קלאב",
+            "svg": 1,
+            "img": 0,
+            "label": "דיינרס קלאב",
+            "size": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            }
+          }
+        ]
+      }
+    ],
+    "handheldBar": {
+      "visible": true,
+      "rect": {
+        "x": 0,
+        "y": 416,
+        "w": 380,
+        "h": 196.5
+      }
+    },
+    "bottomBar": {
+      "visible": false,
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "w": 0,
+        "h": 0
+      }
+    },
+    "newsletterVisible": false,
+    "deadHrefs": []
+  },
+  "768": {
+    "footer": {
+      "x": 0,
+      "y": 305.3,
+      "w": 768,
+      "h": 426.5
+    },
+    "dir": "rtl",
+    "grid": {
+      "templateColumns": "738px",
+      "resolvedColumns": 1,
+      "visibleChildren": 3,
+      "childRects": [
+        {
+          "x": 15,
+          "y": 305.3,
+          "w": 738,
+          "h": 51
+        },
+        {
+          "x": 15,
+          "y": 356.3,
+          "w": 738,
+          "h": 51
+        },
+        {
+          "x": 15,
+          "y": 407.3,
+          "w": 738,
+          "h": 51
+        }
+      ]
+    },
+    "details": [
+      {
+        "title": "שירות לקוחות",
+        "open": false,
+        "summaryVisible": true,
+        "summaryH": 50,
+        "links": 5,
+        "linksVisible": 0,
+        "chevron": true
+      },
+      {
+        "title": "מדיניות ותקנון",
+        "open": false,
+        "summaryVisible": true,
+        "summaryH": 50,
+        "links": 6,
+        "linksVisible": 0,
+        "chevron": true
+      },
+      {
+        "title": "אזור אישי",
+        "open": false,
+        "summaryVisible": true,
+        "summaryH": 50,
+        "links": 3,
+        "linksVisible": 0,
+        "chevron": true
+      }
+    ],
+    "headings": ["שירות לקוחות", "מדיניות ותקנון", "אזור אישי"],
+    "socials": [
+      {
+        "label": "יוטיוב",
+        "href": "https://www.youtube.com/channel/UCTksP_5SYgaRrqBPgxBehQQ",
+        "rel": "noopener noreferrer",
+        "visible": true,
+        "size": {
+          "x": 474,
+          "y": 475.3,
+          "w": 44,
+          "h": 44
+        },
+        "bg": "rgb(51, 62, 72)"
+      },
+      {
+        "label": "אינסטגרם",
+        "href": "https://www.instagram.com/kenyonexpress",
+        "rel": "noopener noreferrer",
+        "visible": true,
+        "size": {
+          "x": 418,
+          "y": 475.3,
+          "w": 44,
+          "h": 44
+        },
+        "bg": "rgb(51, 62, 72)"
+      },
+      {
+        "label": "וואטסאפ",
+        "href": "https://wa.me/972524635550",
+        "rel": "noopener noreferrer",
+        "visible": true,
+        "size": {
+          "x": 362,
+          "y": 475.3,
+          "w": 44,
+          "h": 44
+        },
+        "bg": "rgb(51, 62, 72)"
+      },
+      {
+        "label": "טוויטר",
+        "href": "https://twitter.com/KenyonExpress",
+        "rel": "noopener noreferrer",
+        "visible": true,
+        "size": {
+          "x": 306,
+          "y": 475.3,
+          "w": 44,
+          "h": 44
+        },
+        "bg": "rgb(51, 62, 72)"
+      },
+      {
+        "label": "פייסבוק",
+        "href": "https://www.facebook.com/קניון-Express-114398873446854/",
+        "rel": "noopener noreferrer",
+        "visible": true,
+        "size": {
+          "x": 250,
+          "y": 475.3,
+          "w": 44,
+          "h": 44
+        },
+        "bg": "rgb(51, 62, 72)"
+      }
+    ],
+    "payment": [
+      {
+        "visible": true,
+        "items": [
+          {
+            "text": "ויזהVISA",
+            "svg": 1,
+            "img": 0,
+            "label": "ויזה",
+            "size": {
+              "x": 460,
+              "y": 689.8,
+              "w": 40,
+              "h": 26
+            }
+          },
+          {
+            "text": "מאסטרקארד",
+            "svg": 1,
+            "img": 0,
+            "label": "מאסטרקארד",
+            "size": {
+              "x": 412,
+              "y": 689.8,
+              "w": 40,
+              "h": 26
+            }
+          },
+          {
+            "text": "אמריקן אקספרסAMEX",
+            "svg": 1,
+            "img": 0,
+            "label": "אמריקן אקספרס",
+            "size": {
+              "x": 364,
+              "y": 689.8,
+              "w": 40,
+              "h": 26
+            }
+          },
+          {
+            "text": "ישראכרטISRACARD",
+            "svg": 1,
+            "img": 0,
+            "label": "ישראכרט",
+            "size": {
+              "x": 316,
+              "y": 689.8,
+              "w": 40,
+              "h": 26
+            }
+          },
+          {
+            "text": "דיינרס קלאב",
+            "svg": 1,
+            "img": 0,
+            "label": "דיינרס קלאב",
+            "size": {
+              "x": 268,
+              "y": 689.8,
+              "w": 40,
+              "h": 26
+            }
+          }
+        ]
+      },
+      {
+        "visible": false,
+        "items": [
+          {
+            "text": "ויזהVISA",
+            "svg": 1,
+            "img": 0,
+            "label": "ויזה",
+            "size": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            }
+          },
+          {
+            "text": "מאסטרקארד",
+            "svg": 1,
+            "img": 0,
+            "label": "מאסטרקארד",
+            "size": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            }
+          },
+          {
+            "text": "אמריקן אקספרסAMEX",
+            "svg": 1,
+            "img": 0,
+            "label": "אמריקן אקספרס",
+            "size": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            }
+          },
+          {
+            "text": "ישראכרטISRACARD",
+            "svg": 1,
+            "img": 0,
+            "label": "ישראכרט",
+            "size": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            }
+          },
+          {
+            "text": "דיינרס קלאב",
+            "svg": 1,
+            "img": 0,
+            "label": "דיינרס קלאב",
+            "size": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            }
+          }
+        ]
+      }
+    ],
+    "handheldBar": {
+      "visible": true,
+      "rect": {
+        "x": 0,
+        "y": 535.3,
+        "w": 768,
+        "h": 196.5
+      }
+    },
+    "bottomBar": {
+      "visible": false,
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "w": 0,
+        "h": 0
+      }
+    },
+    "newsletterVisible": false,
+    "deadHrefs": []
+  },
+  "1440": {
+    "footer": {
+      "x": 0,
+      "y": 179.3,
+      "w": 1440,
+      "h": 553
+    },
+    "dir": "rtl",
+    "grid": {
+      "templateColumns": "461.719px 225.234px 225.219px 185.828px",
+      "resolvedColumns": 4,
+      "visibleChildren": 4,
+      "childRects": [
+        {
+          "x": 843.3,
+          "y": 319.3,
+          "w": 461.7,
+          "h": 234
+        },
+        {
+          "x": 594,
+          "y": 319.3,
+          "w": 225.2,
+          "h": 234
+        },
+        {
+          "x": 344.8,
+          "y": 319.3,
+          "w": 225.2,
+          "h": 234
+        },
+        {
+          "x": 135,
+          "y": 319.3,
+          "w": 185.8,
+          "h": 234
+        }
+      ]
+    },
+    "details": [
+      {
+        "title": "שירות לקוחות",
+        "open": false,
+        "summaryVisible": true,
+        "summaryH": 24,
+        "links": 5,
+        "linksVisible": 5,
+        "chevron": false
+      },
+      {
+        "title": "מדיניות ותקנון",
+        "open": false,
+        "summaryVisible": true,
+        "summaryH": 24,
+        "links": 6,
+        "linksVisible": 6,
+        "chevron": false
+      },
+      {
+        "title": "אזור אישי",
+        "open": false,
+        "summaryVisible": true,
+        "summaryH": 24,
+        "links": 3,
+        "linksVisible": 3,
+        "chevron": false
+      }
+    ],
+    "headings": ["קנה וחסוך, הירשם ל Newsletter", "שירות לקוחות", "מדיניות ותקנון", "אזור אישי"],
+    "socials": [
+      {
+        "label": "יוטיוב",
+        "href": "https://www.youtube.com/channel/UCTksP_5SYgaRrqBPgxBehQQ",
+        "rel": "noopener noreferrer",
+        "visible": true,
+        "size": {
+          "x": 804,
+          "y": 618.3,
+          "w": 40,
+          "h": 40
+        },
+        "bg": "rgb(51, 62, 72)"
+      },
+      {
+        "label": "אינסטגרם",
+        "href": "https://www.instagram.com/kenyonexpress",
+        "rel": "noopener noreferrer",
+        "visible": true,
+        "size": {
+          "x": 752,
+          "y": 618.3,
+          "w": 40,
+          "h": 40
+        },
+        "bg": "rgb(51, 62, 72)"
+      },
+      {
+        "label": "וואטסאפ",
+        "href": "https://wa.me/972524635550",
+        "rel": "noopener noreferrer",
+        "visible": true,
+        "size": {
+          "x": 700,
+          "y": 618.3,
+          "w": 40,
+          "h": 40
+        },
+        "bg": "rgb(51, 62, 72)"
+      },
+      {
+        "label": "טוויטר",
+        "href": "https://twitter.com/KenyonExpress",
+        "rel": "noopener noreferrer",
+        "visible": true,
+        "size": {
+          "x": 648,
+          "y": 618.3,
+          "w": 40,
+          "h": 40
+        },
+        "bg": "rgb(51, 62, 72)"
+      },
+      {
+        "label": "פייסבוק",
+        "href": "https://www.facebook.com/קניון-Express-114398873446854/",
+        "rel": "noopener noreferrer",
+        "visible": true,
+        "size": {
+          "x": 596,
+          "y": 618.3,
+          "w": 40,
+          "h": 40
+        },
+        "bg": "rgb(51, 62, 72)"
+      }
+    ],
+    "payment": [
+      {
+        "visible": false,
+        "items": [
+          {
+            "text": "ויזהVISA",
+            "svg": 1,
+            "img": 0,
+            "label": "ויזה",
+            "size": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            }
+          },
+          {
+            "text": "מאסטרקארד",
+            "svg": 1,
+            "img": 0,
+            "label": "מאסטרקארד",
+            "size": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            }
+          },
+          {
+            "text": "אמריקן אקספרסAMEX",
+            "svg": 1,
+            "img": 0,
+            "label": "אמריקן אקספרס",
+            "size": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            }
+          },
+          {
+            "text": "ישראכרטISRACARD",
+            "svg": 1,
+            "img": 0,
+            "label": "ישראכרט",
+            "size": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            }
+          },
+          {
+            "text": "דיינרס קלאב",
+            "svg": 1,
+            "img": 0,
+            "label": "דיינרס קלאב",
+            "size": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            }
+          }
+        ]
+      },
+      {
+        "visible": true,
+        "items": [
+          {
+            "text": "ויזהVISA",
+            "svg": 1,
+            "img": 0,
+            "label": "ויזה",
+            "size": {
+              "x": 328,
+              "y": 694.3,
+              "w": 40,
+              "h": 26
+            }
+          },
+          {
+            "text": "מאסטרקארד",
+            "svg": 1,
+            "img": 0,
+            "label": "מאסטרקארד",
+            "size": {
+              "x": 280,
+              "y": 694.3,
+              "w": 40,
+              "h": 26
+            }
+          },
+          {
+            "text": "אמריקן אקספרסAMEX",
+            "svg": 1,
+            "img": 0,
+            "label": "אמריקן אקספרס",
+            "size": {
+              "x": 232,
+              "y": 694.3,
+              "w": 40,
+              "h": 26
+            }
+          },
+          {
+            "text": "ישראכרטISRACARD",
+            "svg": 1,
+            "img": 0,
+            "label": "ישראכרט",
+            "size": {
+              "x": 184,
+              "y": 694.3,
+              "w": 40,
+              "h": 26
+            }
+          },
+          {
+            "text": "דיינרס קלאב",
+            "svg": 1,
+            "img": 0,
+            "label": "דיינרס קלאב",
+            "size": {
+              "x": 136,
+              "y": 694.3,
+              "w": 40,
+              "h": 26
+            }
+          }
+        ]
+      }
+    ],
+    "handheldBar": {
+      "visible": false,
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "w": 0,
+        "h": 0
+      }
+    },
+    "bottomBar": {
+      "visible": true,
+      "rect": {
+        "x": 0,
+        "y": 682.3,
+        "w": 1440,
+        "h": 50
+      }
+    },
+    "newsletterVisible": true,
+    "deadHrefs": []
+  }
+}

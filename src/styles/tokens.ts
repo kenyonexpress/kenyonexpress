@@ -195,6 +195,31 @@ export const SITE = {
      */
     base: '#166fe5',
   },
+  /**
+   * Card-scheme colours for the footer's payment marks (UX13). Same rule as
+   * `whatsapp` and `facebook`: each is the scheme's own published colour, held
+   * here so the mark is drawn once from tokens, and never rebranded with
+   * `brand.*`. The marks are logos, so the contrast exemption covers them; no
+   * token below paints text a customer reads.
+   */
+  payment: {
+    /** Visa wordmark blue. */
+    visa: '#1a1f71',
+    /** Mastercard's left circle. */
+    mastercardRed: '#eb001b',
+    /** Mastercard's right circle. */
+    mastercardOrange: '#f79e1b',
+    /** The lens where the two circles overlap. */
+    mastercardOverlap: '#ff5f00',
+    /** American Express "Bright Blue". */
+    amex: '#006fcf',
+    /** Isracard's blue. */
+    isracard: '#0b4ea2',
+    /** Diners Club's blue. */
+    diners: '#0079be',
+    /** The white of every card badge, named so the dark handheld bar can keep it. */
+    badge: '#ffffff',
+  },
 } as const
 
 /**
@@ -316,6 +341,15 @@ export const SITE_CSS_VARS: Record<string, string> = {
   '--color-whatsapp-ink': SITE.whatsapp.ink,
   '--color-whatsapp-ink-hover': SITE.whatsapp.inkHover,
   '--color-facebook': SITE.facebook.base,
+
+  '--color-payment-visa': SITE.payment.visa,
+  '--color-payment-mastercard-red': SITE.payment.mastercardRed,
+  '--color-payment-mastercard-orange': SITE.payment.mastercardOrange,
+  '--color-payment-mastercard-overlap': SITE.payment.mastercardOverlap,
+  '--color-payment-amex': SITE.payment.amex,
+  '--color-payment-isracard': SITE.payment.isracard,
+  '--color-payment-diners': SITE.payment.diners,
+  '--color-payment-badge': SITE.payment.badge,
 
   // Semantic + backward-compat aliases.
   '--color-background': SITE.surface.page,

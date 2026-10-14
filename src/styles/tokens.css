@@ -151,6 +151,19 @@
      #166fe5 is 4.73 and is still Facebook's colour, not one invented here. */
   --color-facebook: #166fe5;
 
+  /* --- Payment marks (UX13) ----------------------------------------------------
+     Each scheme's own published colour, drawn once by PaymentLogos.tsx. Logos,
+     not text: the contrast exemption covers them, and `brand.*` never
+     recolours them. */
+  --color-payment-visa: #1a1f71;
+  --color-payment-mastercard-red: #eb001b;
+  --color-payment-mastercard-orange: #f79e1b;
+  --color-payment-mastercard-overlap: #ff5f00;
+  --color-payment-amex: #006fcf;
+  --color-payment-isracard: #0b4ea2;
+  --color-payment-diners: #0079be;
+  --color-payment-badge: #ffffff;
+
   /* --- Semantic tokens ------------------------------------------------------- */
   --color-background: #ffffff; /* page background (body in ke_live_singlefile) */
   --color-foreground: #1a1a1a; /* default body text */

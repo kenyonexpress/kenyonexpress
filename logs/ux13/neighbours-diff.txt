@@ -1,0 +1,42 @@
+[chromium] › e2e/rtl-mobile.spec.ts:125:7 › no sideways scroll at 320px › the seeded single-page checkout fits 320px, every section at once
+[chromium] › e2e/rtl-mobile.spec.ts:164:7 › no sideways scroll at 320px › the open cart panel fits 320px
+[chromium] › e2e/rtl-mobile.spec.ts:188:7 › no sideways scroll at 320px › the install banner fits 320px
+[chromium] › e2e/rtl-mobile.spec.ts:202:7 › no sideways scroll at 320px › a product page fits 320px
+[chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › / fits 320px
+[chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /cart fits 320px
+[chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /category/baby-kids fits 320px
+[chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /category/hot-deals fits 320px
+[chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /category/phones-computers fits 320px
+[chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /checkout fits 320px
+[chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /contact fits 320px
+[chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /coupons fits 320px
+[chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /legal/accessibility fits 320px
+[chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /legal/privacy fits 320px
+[chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /legal/returns fits 320px
+[chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /legal/terms fits 320px
+[chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /privacy-policy fits 320px
+[chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /products fits 320px
+[chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /search?q=%D7%9E%D7%95%D7%A6%D7%A8 fits 320px
+[chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /suppliers fits 320px
+[chromium] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /terms-and-conditions fits 320px
+[mobile-chrome] › e2e/rtl-mobile.spec.ts:125:7 › no sideways scroll at 320px › the seeded single-page checkout fits 320px, every section at once
+[mobile-chrome] › e2e/rtl-mobile.spec.ts:164:7 › no sideways scroll at 320px › the open cart panel fits 320px
+[mobile-chrome] › e2e/rtl-mobile.spec.ts:188:7 › no sideways scroll at 320px › the install banner fits 320px
+[mobile-chrome] › e2e/rtl-mobile.spec.ts:202:7 › no sideways scroll at 320px › a product page fits 320px
+[mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › / fits 320px
+[mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /cart fits 320px
+[mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /category/baby-kids fits 320px
+[mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /category/hot-deals fits 320px
+[mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /category/phones-computers fits 320px
+[mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /checkout fits 320px
+[mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /contact fits 320px
+[mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /coupons fits 320px
+[mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /legal/accessibility fits 320px
+[mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /legal/privacy fits 320px
+[mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /legal/returns fits 320px
+[mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /legal/terms fits 320px
+[mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /privacy-policy fits 320px
+[mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /products fits 320px
+[mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /search?q=%D7%9E%D7%95%D7%A6%D7%A8 fits 320px
+[mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /suppliers fits 320px
+[mobile-chrome] › e2e/rtl-mobile.spec.ts:96:9 › no sideways scroll at 320px › /terms-and-conditions fits 320px

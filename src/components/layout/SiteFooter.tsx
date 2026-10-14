@@ -1,4 +1,5 @@
 import FooterNewsletterForm from '@/components/layout/FooterNewsletterForm'
+import PaymentLogos from '@/components/layout/PaymentLogos'
 import SmartImage from '@/components/ui/SmartImage'
 import { LOGO_FOOTER } from '@/lib/assets'
 import { storeWhatsAppLink } from '@/lib/whatsapp'
@@ -33,37 +34,36 @@ const PERSONAL_LINKS: { label: string; href: string; built?: false }[] = [
 ]
 
 const SERVICE_LINKS: { label: string; href: string; built?: false }[] = [
-  { label: 'אודות', href: '/about' },
   { label: 'צור קשר', href: '/contact' },
+  { label: 'אודות', href: '/about' },
   { label: 'שאלות נפוצות', href: '/faq' },
   { label: 'הבלוג', href: '/blog' },
-  // Above the legal block on purpose: this is the one link in the footer aimed
-  // at a business rather than a shopper, and burying it under four legal pages
-  // is where it stops being found.
+  // The one link in the footer aimed at a business rather than a shopper. It
+  // stays in the service column, where it is found, and not under the policies.
   { label: 'הצטרפו כספקים', href: '/suppliers' },
-  // The flag is gone from all four because the pages exist now ([58]). The two
-  // long ones are the site's OWN published Hebrew text, migrated out of the
-  // WordPress export rather than rewritten.
+]
+
+// UX13: the policies are their own column. Before, eleven links shared one
+// "שירות לקוחות" heading, which on a phone was one 49px row hiding a list
+// longer than the viewport. The four legal pages exist ([58]); the two long
+// ones are the site's OWN published Hebrew text, migrated out of the
+// WordPress export rather than rewritten. STEP 51 added the two policies the
+// four defer to: the privacy policy hands the cookie inventory to /cookies and
+// the terms hand delivery to /shipping.
+const POLICY_LINKS: { label: string; href: string; built?: false }[] = [
   { label: 'תקנון', href: '/terms-and-conditions' },
   { label: 'מדיניות פרטיות', href: '/privacy-policy' },
   { label: 'ביטולים והחזרות', href: '/refund_returns' },
-  // STEP 51: the two policies the four above defer to. The privacy policy
-  // hands the full cookie inventory to /cookies and the terms hand delivery to
-  // /shipping; a deferral with no footer link is a policy found only by
-  // reading another policy.
   { label: 'משלוחים ואספקה', href: '/shipping' },
   { label: 'מדיניות עוגיות', href: '/cookies' },
   { label: 'הצהרת נגישות', href: '/accessibility' },
 ]
 
 // lucide-react (this project) ships no brand icons — inline simple-icons glyphs.
-// RTL order as listed: Telegram (rightmost) … Facebook (leftmost).
+// RTL order as listed: YouTube (rightmost) … Facebook (leftmost). Telegram
+// was listed here with href '#' until UX13: a new tab that opened nothing,
+// and live links no Telegram channel.
 const SOCIALS: { label: string; href: string; path: string }[] = [
-  {
-    label: 'טלגרם',
-    href: '#',
-    path: 'M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212-.07-.062-.174-.041-.249-.024-.106.024-1.793 1.139-5.061 3.345-.479.329-.913.489-1.302.481-.428-.009-1.252-.242-1.865-.44-.752-.244-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z',
-  },
   {
     label: 'יוטיוב',
     href: 'https://www.youtube.com/channel/UCTksP_5SYgaRrqBPgxBehQQ',
@@ -93,6 +93,45 @@ const SOCIALS: { label: string; href: string; path: string }[] = [
     path: 'M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z',
   },
 ]
+
+type FooterLink = { label: string; href: string; built?: false }
+
+/**
+ * One link column. From lg it is a heading over a list; below lg it is one of
+ * live's 49px accordion rows, CLOSED, because refs/ke_live_computed.json holds
+ * the widget menu collapsed on every page the gate scores (see the note in
+ * globals.css). `<details>` and not a client component on purpose: the footer
+ * is on every page and a disclosure widget is not worth a hydration boundary.
+ * Open is forced from lg up by CSS (`.footer-disclosure`), so the desktop
+ * layout never depends on the attribute.
+ */
+function FooterLinkColumn({ title, links }: { title: string; links: FooterLink[] }) {
+  return (
+    <details className="footer-disclosure group border-b border-border lg:border-0">
+      <summary className="flex h-drawer-row cursor-pointer items-center justify-between text-base font-bold text-heading lg:mb-4 lg:h-auto lg:cursor-default lg:justify-start">
+        {title}
+        <ChevronDown
+          size={18}
+          aria-hidden="true"
+          className="shrink-0 transition-transform group-open:rotate-180 lg:hidden"
+        />
+      </summary>
+      <ul className="space-y-2.5 pb-4 lg:pb-0">
+        {links.map((link) => (
+          <li key={link.href}>
+            <Link
+              href={link.href}
+              prefetch={link.built === false ? false : undefined}
+              className="text-sm text-heading/80 transition-colors hover:text-heading"
+            >
+              {link.label}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </details>
+  )
+}
 
 function SocialGlyph({ path }: { path: string }) {
   return (
@@ -179,12 +218,17 @@ export default function SiteFooter() {
         </div>
       </div>
 
-      {/* 2. Three columns — white bg, RTL (right col first) */}
+      {/* 2. Four columns — white bg, RTL (contact col first) */}
       <div className="bg-white text-heading">
         {/* Measured on live: three columns of 492 / 335 / 335 with no gutter of
             their own inside the 1170 content width, and 60px of clearance under
-            the newsletter bar before the headings. */}
-        <div className="mx-auto grid max-w-store-footer grid-cols-1 gap-y-0 px-gutter pt-0 pb-0 lg:grid-cols-[492fr_335fr_335fr] lg:gap-x-0 lg:gap-y-8 lg:pt-footer-columns-top lg:pb-10">
+            the newsletter bar before the headings. UX13 adds a fourth column,
+            so the contact column keeps its 42% and the three link columns
+            share the rest (Electro's four-widget footer shape). */}
+        <div
+          data-footer-columns
+          className="mx-auto grid max-w-store-footer grid-cols-1 gap-y-0 px-gutter pt-0 pb-0 lg:grid-cols-[492fr_240fr_240fr_198fr] lg:gap-x-6 lg:gap-y-8 lg:pt-footer-columns-top lg:pb-10"
+        >
           {/* right column: logo + contact + address. Desktop-only: live's
               handheld footer carries none of it (see the note above). */}
           <div className="hidden lg:block">
@@ -221,68 +265,19 @@ export default function SiteFooter() {
             </div>
           </div>
 
-          {/* middle column: שירות לקוחות.
-              Below lg this is one of live's two 49px accordion rows -- CLOSED.
-              D20 added `open` from a measurement of a page the gate never
-              scores; refs/ke_live_computed.json shows the widget menu collapsed
-              at 108px on cart and checkout at 380 and 768, which are the pages
-              that are scored. See the note in globals.css. `<details>` and not
-              a client component on purpose: the footer is on every page and a
-              disclosure widget is not worth a hydration boundary. Open is
-              forced from lg up by CSS, so the desktop layout is unchanged. */}
-          <details className="footer-disclosure group border-b border-border lg:border-0">
-            <summary className="flex h-drawer-row cursor-pointer items-center justify-between text-base font-bold text-heading lg:mb-4 lg:h-auto lg:cursor-default lg:justify-start">
-              שירות לקוחות
-              <ChevronDown
-                size={18}
-                aria-hidden="true"
-                className="shrink-0 transition-transform group-open:rotate-180 lg:hidden"
-              />
-            </summary>
-            <ul className="space-y-2.5 pb-4 lg:pb-0">
-              {SERVICE_LINKS.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    prefetch={link.built === false ? false : undefined}
-                    className="text-sm text-heading/80 transition-colors hover:text-heading"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </details>
-
-          {/* left column: אזור אישי — live's second accordion row below lg,
-              closed like the first. */}
-          <details className="footer-disclosure group border-b border-border lg:border-0">
-            <summary className="flex h-drawer-row cursor-pointer items-center justify-between text-base font-bold text-heading lg:mb-4 lg:h-auto lg:cursor-default lg:justify-start">
-              אזור אישי
-              <ChevronDown
-                size={18}
-                aria-hidden="true"
-                className="shrink-0 transition-transform group-open:rotate-180 lg:hidden"
-              />
-            </summary>
-            <ul className="space-y-2.5 pb-4 lg:pb-0">
-              {PERSONAL_LINKS.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    prefetch={link.built === false ? false : undefined}
-                    className="text-sm text-heading/80 transition-colors hover:text-heading"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </details>
+          {/* UX13: three link columns beside the contact column, four in all.
+              Below lg each is one closed accordion row (live's 49px rows, three
+              of them now instead of two: the policies were eleven links under
+              one heading). */}
+          <FooterLinkColumn title="שירות לקוחות" links={SERVICE_LINKS} />
+          <FooterLinkColumn title="מדיניות ותקנון" links={POLICY_LINKS} />
+          <FooterLinkColumn title="אזור אישי" links={PERSONAL_LINKS} />
         </div>
 
-        {/* 3. Social icons row — dark circular */}
-        <div className="border-t border-border">
+        {/* 3. Social icons row — dark circular, every link a real profile (UX13
+            dropped the '#' one). A labelled nav so a screen reader can jump
+            to it; the icons carry their own Hebrew names. */}
+        <nav aria-label="רשתות חברתיות" className="border-t border-border">
           <div className="mx-auto flex max-w-store-footer items-center justify-center gap-3 px-4 py-4 lg:py-6">
             {SOCIALS.map((s) => (
               <a
@@ -297,7 +292,7 @@ export default function SiteFooter() {
               </a>
             ))}
           </div>
-        </div>
+        </nav>
       </div>
 
       {/*
@@ -337,26 +332,20 @@ export default function SiteFooter() {
           <p className="m-0 text-micro text-white/70">
             כל הזכויות שמורות © <strong className="font-bold">Kenyon Express</strong>
           </p>
+          {/* UX13: the cards the store takes, on the phone too. Before, only
+              the desktop bar said so, and as text. */}
+          <PaymentLogos className="mt-2" />
         </div>
       </div>
 
-      {/* 4b. Bottom gray bar — bg bottom-bar, copyright (right) + payment (left).
-          Desktop only: 4a is live's handheld ending. */}
+      {/* 4b. Bottom gray bar — bg bottom-bar, copyright (right) + payment marks
+          (left). Desktop only: 4a is live's handheld ending. */}
       <div className="hidden bg-bottom-bar text-heading lg:block">
         <div className="mx-auto flex max-w-store-footer flex-col items-center justify-between gap-3 px-4 py-3 sm:flex-row">
           <p className="m-0 text-sm">
             כל הזכויות שמורות © <strong className="font-bold">Kenyon Express</strong>
           </p>
-          <ul className="flex items-center gap-2.5" aria-label="אמצעי תשלום">
-            {['Visa', 'Mastercard', 'Discover', 'American Express'].map((label) => (
-              <li
-                key={label}
-                className="rounded border border-black/15 bg-white px-2 py-1 text-micro font-semibold text-heading/80"
-              >
-                {label}
-              </li>
-            ))}
-          </ul>
+          <PaymentLogos />
         </div>
       </div>
     </footer>

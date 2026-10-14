@@ -1,0 +1,620 @@
+{
+  "380": {
+    "footer": {
+      "x": 0,
+      "y": 273,
+      "w": 380,
+      "h": 339.5
+    },
+    "dir": "rtl",
+    "grid": {
+      "templateColumns": "350px",
+      "resolvedColumns": 1,
+      "visibleChildren": 2,
+      "childRects": [
+        {
+          "x": 15,
+          "y": 273,
+          "w": 350,
+          "h": 51
+        },
+        {
+          "x": 15,
+          "y": 324,
+          "w": 350,
+          "h": 51
+        }
+      ]
+    },
+    "details": [
+      {
+        "title": "שירות לקוחות",
+        "open": false,
+        "summaryVisible": true,
+        "summaryH": 50,
+        "links": 11,
+        "linksVisible": 11,
+        "chevron": true
+      },
+      {
+        "title": "אזור אישי",
+        "open": false,
+        "summaryVisible": true,
+        "summaryH": 50,
+        "links": 3,
+        "linksVisible": 3,
+        "chevron": true
+      }
+    ],
+    "headings": ["שירות לקוחות", "אזור אישי"],
+    "socials": [
+      {
+        "label": "טלגרם",
+        "href": "#",
+        "rel": "noopener noreferrer",
+        "visible": true,
+        "size": {
+          "x": 308,
+          "y": 392,
+          "w": 44,
+          "h": 44
+        },
+        "bg": "rgb(51, 62, 72)"
+      },
+      {
+        "label": "יוטיוב",
+        "href": "https://www.youtube.com/channel/UCTksP_5SYgaRrqBPgxBehQQ",
+        "rel": "noopener noreferrer",
+        "visible": true,
+        "size": {
+          "x": 252,
+          "y": 392,
+          "w": 44,
+          "h": 44
+        },
+        "bg": "rgb(51, 62, 72)"
+      },
+      {
+        "label": "אינסטגרם",
+        "href": "https://www.instagram.com/kenyonexpress",
+        "rel": "noopener noreferrer",
+        "visible": true,
+        "size": {
+          "x": 196,
+          "y": 392,
+          "w": 44,
+          "h": 44
+        },
+        "bg": "rgb(51, 62, 72)"
+      },
+      {
+        "label": "וואטסאפ",
+        "href": "https://wa.me/972524635550",
+        "rel": "noopener noreferrer",
+        "visible": true,
+        "size": {
+          "x": 140,
+          "y": 392,
+          "w": 44,
+          "h": 44
+        },
+        "bg": "rgb(51, 62, 72)"
+      },
+      {
+        "label": "טוויטר",
+        "href": "https://twitter.com/KenyonExpress",
+        "rel": "noopener noreferrer",
+        "visible": true,
+        "size": {
+          "x": 84,
+          "y": 392,
+          "w": 44,
+          "h": 44
+        },
+        "bg": "rgb(51, 62, 72)"
+      },
+      {
+        "label": "פייסבוק",
+        "href": "https://www.facebook.com/קניון-Express-114398873446854/",
+        "rel": "noopener noreferrer",
+        "visible": true,
+        "size": {
+          "x": 28,
+          "y": 392,
+          "w": 44,
+          "h": 44
+        },
+        "bg": "rgb(51, 62, 72)"
+      }
+    ],
+    "payment": [
+      {
+        "visible": false,
+        "items": [
+          {
+            "text": "Visa",
+            "svg": 0,
+            "img": 0,
+            "label": null,
+            "size": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            }
+          },
+          {
+            "text": "Mastercard",
+            "svg": 0,
+            "img": 0,
+            "label": null,
+            "size": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            }
+          },
+          {
+            "text": "Discover",
+            "svg": 0,
+            "img": 0,
+            "label": null,
+            "size": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            }
+          },
+          {
+            "text": "American Express",
+            "svg": 0,
+            "img": 0,
+            "label": null,
+            "size": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            }
+          }
+        ]
+      }
+    ],
+    "handheldBar": {
+      "visible": true,
+      "rect": {
+        "x": 0,
+        "y": 452,
+        "w": 380,
+        "h": 160.5
+      }
+    },
+    "bottomBar": {
+      "visible": false,
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "w": 0,
+        "h": 0
+      }
+    },
+    "newsletterVisible": false,
+    "deadHrefs": ["טלגרם"]
+  },
+  "768": {
+    "footer": {
+      "x": 0,
+      "y": 392.3,
+      "w": 768,
+      "h": 339.5
+    },
+    "dir": "rtl",
+    "grid": {
+      "templateColumns": "738px",
+      "resolvedColumns": 1,
+      "visibleChildren": 2,
+      "childRects": [
+        {
+          "x": 15,
+          "y": 392.3,
+          "w": 738,
+          "h": 51
+        },
+        {
+          "x": 15,
+          "y": 443.3,
+          "w": 738,
+          "h": 51
+        }
+      ]
+    },
+    "details": [
+      {
+        "title": "שירות לקוחות",
+        "open": false,
+        "summaryVisible": true,
+        "summaryH": 50,
+        "links": 11,
+        "linksVisible": 11,
+        "chevron": true
+      },
+      {
+        "title": "אזור אישי",
+        "open": false,
+        "summaryVisible": true,
+        "summaryH": 50,
+        "links": 3,
+        "linksVisible": 3,
+        "chevron": true
+      }
+    ],
+    "headings": ["שירות לקוחות", "אזור אישי"],
+    "socials": [
+      {
+        "label": "טלגרם",
+        "href": "#",
+        "rel": "noopener noreferrer",
+        "visible": true,
+        "size": {
+          "x": 502,
+          "y": 511.3,
+          "w": 44,
+          "h": 44
+        },
+        "bg": "rgb(51, 62, 72)"
+      },
+      {
+        "label": "יוטיוב",
+        "href": "https://www.youtube.com/channel/UCTksP_5SYgaRrqBPgxBehQQ",
+        "rel": "noopener noreferrer",
+        "visible": true,
+        "size": {
+          "x": 446,
+          "y": 511.3,
+          "w": 44,
+          "h": 44
+        },
+        "bg": "rgb(51, 62, 72)"
+      },
+      {
+        "label": "אינסטגרם",
+        "href": "https://www.instagram.com/kenyonexpress",
+        "rel": "noopener noreferrer",
+        "visible": true,
+        "size": {
+          "x": 390,
+          "y": 511.3,
+          "w": 44,
+          "h": 44
+        },
+        "bg": "rgb(51, 62, 72)"
+      },
+      {
+        "label": "וואטסאפ",
+        "href": "https://wa.me/972524635550",
+        "rel": "noopener noreferrer",
+        "visible": true,
+        "size": {
+          "x": 334,
+          "y": 511.3,
+          "w": 44,
+          "h": 44
+        },
+        "bg": "rgb(51, 62, 72)"
+      },
+      {
+        "label": "טוויטר",
+        "href": "https://twitter.com/KenyonExpress",
+        "rel": "noopener noreferrer",
+        "visible": true,
+        "size": {
+          "x": 278,
+          "y": 511.3,
+          "w": 44,
+          "h": 44
+        },
+        "bg": "rgb(51, 62, 72)"
+      },
+      {
+        "label": "פייסבוק",
+        "href": "https://www.facebook.com/קניון-Express-114398873446854/",
+        "rel": "noopener noreferrer",
+        "visible": true,
+        "size": {
+          "x": 222,
+          "y": 511.3,
+          "w": 44,
+          "h": 44
+        },
+        "bg": "rgb(51, 62, 72)"
+      }
+    ],
+    "payment": [
+      {
+        "visible": false,
+        "items": [
+          {
+            "text": "Visa",
+            "svg": 0,
+            "img": 0,
+            "label": null,
+            "size": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            }
+          },
+          {
+            "text": "Mastercard",
+            "svg": 0,
+            "img": 0,
+            "label": null,
+            "size": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            }
+          },
+          {
+            "text": "Discover",
+            "svg": 0,
+            "img": 0,
+            "label": null,
+            "size": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            }
+          },
+          {
+            "text": "American Express",
+            "svg": 0,
+            "img": 0,
+            "label": null,
+            "size": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            }
+          }
+        ]
+      }
+    ],
+    "handheldBar": {
+      "visible": true,
+      "rect": {
+        "x": 0,
+        "y": 571.3,
+        "w": 768,
+        "h": 160.5
+      }
+    },
+    "bottomBar": {
+      "visible": false,
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "w": 0,
+        "h": 0
+      }
+    },
+    "newsletterVisible": false,
+    "deadHrefs": ["טלגרם"]
+  },
+  "1440": {
+    "footer": {
+      "x": 0,
+      "y": 196.3,
+      "w": 1440,
+      "h": 536
+    },
+    "dir": "rtl",
+    "grid": {
+      "templateColumns": "495.375px 337.312px 337.312px",
+      "resolvedColumns": 3,
+      "visibleChildren": 3,
+      "childRects": [
+        {
+          "x": 809.6,
+          "y": 336.3,
+          "w": 495.4,
+          "h": 216.5
+        },
+        {
+          "x": 472.3,
+          "y": 336.3,
+          "w": 337.3,
+          "h": 216.5
+        },
+        {
+          "x": 135,
+          "y": 336.3,
+          "w": 337.3,
+          "h": 216.5
+        }
+      ]
+    },
+    "details": [
+      {
+        "title": "שירות לקוחות",
+        "open": false,
+        "summaryVisible": true,
+        "summaryH": 24,
+        "links": 11,
+        "linksVisible": 11,
+        "chevron": false
+      },
+      {
+        "title": "אזור אישי",
+        "open": false,
+        "summaryVisible": true,
+        "summaryH": 24,
+        "links": 3,
+        "linksVisible": 3,
+        "chevron": false
+      }
+    ],
+    "headings": ["קנה וחסוך, הירשם ל Newsletter", "שירות לקוחות", "אזור אישי"],
+    "socials": [
+      {
+        "label": "טלגרם",
+        "href": "#",
+        "rel": "noopener noreferrer",
+        "visible": true,
+        "size": {
+          "x": 830,
+          "y": 617.8,
+          "w": 40,
+          "h": 40
+        },
+        "bg": "rgb(51, 62, 72)"
+      },
+      {
+        "label": "יוטיוב",
+        "href": "https://www.youtube.com/channel/UCTksP_5SYgaRrqBPgxBehQQ",
+        "rel": "noopener noreferrer",
+        "visible": true,
+        "size": {
+          "x": 778,
+          "y": 617.8,
+          "w": 40,
+          "h": 40
+        },
+        "bg": "rgb(51, 62, 72)"
+      },
+      {
+        "label": "אינסטגרם",
+        "href": "https://www.instagram.com/kenyonexpress",
+        "rel": "noopener noreferrer",
+        "visible": true,
+        "size": {
+          "x": 726,
+          "y": 617.8,
+          "w": 40,
+          "h": 40
+        },
+        "bg": "rgb(51, 62, 72)"
+      },
+      {
+        "label": "וואטסאפ",
+        "href": "https://wa.me/972524635550",
+        "rel": "noopener noreferrer",
+        "visible": true,
+        "size": {
+          "x": 674,
+          "y": 617.8,
+          "w": 40,
+          "h": 40
+        },
+        "bg": "rgb(51, 62, 72)"
+      },
+      {
+        "label": "טוויטר",
+        "href": "https://twitter.com/KenyonExpress",
+        "rel": "noopener noreferrer",
+        "visible": true,
+        "size": {
+          "x": 622,
+          "y": 617.8,
+          "w": 40,
+          "h": 40
+        },
+        "bg": "rgb(51, 62, 72)"
+      },
+      {
+        "label": "פייסבוק",
+        "href": "https://www.facebook.com/קניון-Express-114398873446854/",
+        "rel": "noopener noreferrer",
+        "visible": true,
+        "size": {
+          "x": 570,
+          "y": 617.8,
+          "w": 40,
+          "h": 40
+        },
+        "bg": "rgb(51, 62, 72)"
+      }
+    ],
+    "payment": [
+      {
+        "visible": true,
+        "items": [
+          {
+            "text": "Visa",
+            "svg": 0,
+            "img": 0,
+            "label": null,
+            "size": {
+              "x": 408.7,
+              "y": 693.8,
+              "w": 39.6,
+              "h": 26.5
+            }
+          },
+          {
+            "text": "Mastercard",
+            "svg": 0,
+            "img": 0,
+            "label": null,
+            "size": {
+              "x": 324.2,
+              "y": 693.8,
+              "w": 74.5,
+              "h": 26.5
+            }
+          },
+          {
+            "text": "Discover",
+            "svg": 0,
+            "img": 0,
+            "label": null,
+            "size": {
+              "x": 253.3,
+              "y": 693.8,
+              "w": 61,
+              "h": 26.5
+            }
+          },
+          {
+            "text": "American Express",
+            "svg": 0,
+            "img": 0,
+            "label": null,
+            "size": {
+              "x": 136,
+              "y": 693.8,
+              "w": 107.3,
+              "h": 26.5
+            }
+          }
+        ]
+      }
+    ],
+    "handheldBar": {
+      "visible": false,
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "w": 0,
+        "h": 0
+      }
+    },
+    "bottomBar": {
+      "visible": true,
+      "rect": {
+        "x": 0,
+        "y": 681.8,
+        "w": 1440,
+        "h": 50.5
+      }
+    },
+    "newsletterVisible": true,
+    "deadHrefs": ["טלגרם"]
+  }
+}

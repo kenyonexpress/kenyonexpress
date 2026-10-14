@@ -1,0 +1,8 @@
+Already up to date
+Done in 199ms using pnpm v11.1.2
+$ biome check . && node scripts/tokens-gate.mjs && node scripts/copy-gate.mjs && node scripts/asset-gate.mjs && node scripts/media-ingest/blur-manifest.mjs --check
+Checked 2422 files in 784ms. No fixes applied.
+tokens gate: clean (no raw hex, rgb() or arbitrary px in src/)
+copy gate: clean (no Latin marketing sentence in a rendered component)
+asset gate: clean (no template or vendor product imagery under public/images)
+blur-manifest: 89 entries match the files on disk
