@@ -388,6 +388,9 @@ describe('the pending migration inventory', () => {
       // search_index_dlq; the closing block refuses any client-role grant or
       // policy. Not yet dry-run on production.
       '242_job_dlq.sql',
+      // 243: club tier thresholds, the table half of the production
+      // branch's 251. The reader falls back to compiled defaults without it.
+      '243_club_tiers.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

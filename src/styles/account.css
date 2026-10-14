@@ -850,3 +850,43 @@
   background: var(--account-yellow);
   border-radius: 4px;
 }
+
+/* Club tier (components/account/ClubTierCard, closeout L10 row 23). The bar
+   grows from the inline start, which under RTL is the right edge. */
+.club-progress {
+  block-size: 0.5rem;
+  margin: 0.75rem 0 0.5rem;
+  border-radius: 0.25rem;
+  overflow: hidden;
+  background: var(--account-line);
+}
+
+.club-progress__bar {
+  block-size: 100%;
+  background: var(--account-yellow);
+}
+
+/* The tier chip. Tones by tier from the account palette, so no colour here is
+   new: member is the line grey, gold is the brand yellow, platinum is ink. */
+.club-badge {
+  display: inline-block;
+  padding: 0.125rem 0.625rem;
+  border-radius: 1rem;
+  background: var(--account-line);
+  color: var(--account-ink);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.club-badge[data-tier="silver"] {
+  background: color-mix(in srgb, var(--account-muted) 30%, var(--account-line));
+}
+
+.club-badge[data-tier="gold"] {
+  background: var(--account-yellow);
+}
+
+.club-badge[data-tier="platinum"] {
+  background: var(--account-ink);
+  color: var(--account-line);
+}

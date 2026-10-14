@@ -23,8 +23,8 @@ production has it.
 | | main | prod |
 |---|---|---|
 | EXISTS | 15 | 9 |
-| PARTIAL | 11 | 16 |
-| MISSING | 4 | 5 |
+| PARTIAL | 12 | 16 |
+| MISSING | 3 | 5 |
 
 Nine features are further along on prod than on main: recently viewed,
 wishlist, social proof, offline redemption queue, supplier wizard, admin KPIs,
@@ -63,7 +63,7 @@ what main has.
 | 20 | Flash sales | Lazada, TikTok Shop, Groupon | PARTIAL | PARTIAL | 1.5 | admin form, cancel and link ported 2026-10-14; end time, banner, countdown and a sub-daily cron still open. Money path |
 | 21 | Gift cards | Amazon, Wolt | EXISTS | PARTIAL | 0 | QR, guarded admin switch and wallet link closed 2026-10-14 |
 | 22 | Referral program | Wolt, Booking | PARTIAL | EXISTS | 1 | port automatic payout. Money path |
-| 23 | Loyalty tiers | Booking (Genius), Lazada | MISSING | PARTIAL | 3 | port, then perks |
+| 23 | Loyalty tiers | Booking (Genius), Lazada | PARTIAL | PARTIAL | 1 | display ported 2026-10-14; perks and the order snapshot still open |
 | 24 | Push notifications | all | EXISTS | EXISTS | done | prompt wired 2026-10-14 |
 | 25 | Abandoned cart recovery | Amazon, Lazada | PARTIAL | PARTIAL | 2 | finish: second email, coupon code |
 | 26 | Product comparison, up to four | Zap, Amazon | EXISTS | MISSING | 0 | built 2026-10-14 at /products/compare |
@@ -431,6 +431,19 @@ sides automatically.
 property that says of itself it is not a loyalty programme. prod:
 `src/lib/club/tiers.ts`, four tiers from trailing-year spend, shown on
 `/account`; display only, no perks, table pending.
+
+main, 2026-10-14: the display is ported. `/account` shows the tier, the
+twelve-month paid spend and the gap to the next tier as a bar, computed at
+read time from paid orders (`src/server/queries/club.ts`). Thresholds come
+from `club_tiers` when it exists and from the compiled constants otherwise
+(0 / 1,000 / 3,000 / 10,000 ILS); the table is
+`migrations/pending/243_club_tiers.sql`, the table half of prod's 251, not
+applied. Live check: `club_tiers` answers PGRST205, the case the reader
+falls back on. Left out: the order snapshot columns and their checkout write
+(money path), and the admin settings form for the thresholds. Not verified
+in a browser (needs a customer session). The card says plainly that the tier
+carries no benefits yet, because it does not; perks are the open part of the
+row.
 
 **24. Push.** Both: VAPID web push (`src/lib/push/web-push.ts`,
 `src/components/pwa/PushOptIn.tsx`), Expo token registration in

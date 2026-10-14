@@ -108,6 +108,10 @@ Closed so far, each with type-check, lint, test green (510 files, 5949 passed):
   five-minute cadence; main's cron is daily at 03:00 UTC, and the page now
   says so. Stays PARTIAL: no end time, banner or countdown, and a daily cron
   cannot run an afternoon deal (plan and schedule question for Ofir).
+- Row 23, club tiers: display ported from prod onto `/account`, thresholds
+  from a pending table (`243_club_tiers.sql`, not applied) with compiled
+  fallback. 539 files, 6246 tests, build 0. Live `club_tiers` is PGRST205,
+  so the fallback is what runs. No perks; card says so.
 - 14.10: other autopilot sessions (STEP 69, 70) run in
   `/Users/ofir/kenyonexpress-autopilot` on another branch. This checkout
   showed no foreign edits, so work continued.
