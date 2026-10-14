@@ -62,6 +62,7 @@ export function toListingCard(row: CardSource): CategoryProduct {
     stock_quantity: row.stock_quantity ?? null,
     categories: (row.categories ?? []).map((c) => ({ name_he: c.name_he, slug: c.slug })),
     supplier: row.supplier ? { city: row.supplier.city ?? null } : null,
+    ...(row.offer_valid_until ? { offer_valid_until: row.offer_valid_until } : {}),
     ...(row.distanceKm != null ? { distanceKm: row.distanceKm } : {}),
   }
 }

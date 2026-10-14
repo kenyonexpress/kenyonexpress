@@ -1,6 +1,8 @@
+import ValidityCountdown from '@/components/coupon/ValidityCountdown'
 import WalletButtons from '@/components/coupon/WalletButtons'
 import { createClient } from '@/lib/supabase/server'
 import { buildSupplierContact } from '@/lib/supplier-contact'
+import { VALIDITY_LABEL } from '@/lib/vouchers/countdown'
 import {
   COUPON_TONE_CLASS,
   couponMoneyView,
@@ -173,6 +175,19 @@ async function CouponPageBody({ params }: Props) {
               <dt className="text-gray-500">בתוקף עד</dt>
               <dd className="font-medium text-gray-900">{formatCouponDate(voucher.expires_at)}</dd>
             </div>
+            {/* The live counter under the date, only while the coupon can
+                still be used; a spent or lapsed coupon shows the date alone. */}
+            {status.presentable && (
+              <div className="flex items-center justify-between">
+                <dt className="text-gray-500">{VALIDITY_LABEL}</dt>
+                <dd className="font-medium text-gray-900">
+                  <ValidityCountdown
+                    expiresAt={voucher.expires_at}
+                    fallback={formatCouponDate(voucher.expires_at)}
+                  />
+                </dd>
+              </div>
+            )}
           </dl>
 
           {!money.conserved && (

@@ -1,5 +1,7 @@
+import ValidityCountdown from '@/components/coupon/ValidityCountdown'
 import { formatDate, formatIls, orderStatusLabel, orderStatusTone } from '@/lib/account/format'
 import { resolveCarrier } from '@/lib/shipping/carriers'
+import { VALIDITY_LABEL } from '@/lib/vouchers/countdown'
 import { COUPON_TONE_CHIP, couponStatusView } from '@/lib/vouchers/coupon-view'
 import { getOrderDetail } from '@/server/queries/orders'
 import Link from 'next/link'
@@ -178,6 +180,17 @@ export default async function OrderDetailPage({ params }: Props) {
                               ? ` · בתוקף עד ${formatDate(voucher.expiresAt)}`
                               : ''}
                           </p>
+                          {/* The live counter, for a coupon that can still be
+                              used. The static date above stays as the fact
+                              both paints agree on. */}
+                          {status.presentable && voucher.expiresAt && (
+                            <p className="account-row__meta">
+                              <ValidityCountdown
+                                expiresAt={voucher.expiresAt}
+                                fallback={VALIDITY_LABEL}
+                              />
+                            </p>
+                          )}
                           {voucher.collectAmountAgorot != null &&
                             voucher.collectAmountAgorot > 0 && (
                               <p className="account-row__meta">

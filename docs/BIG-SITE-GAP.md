@@ -22,8 +22,8 @@ production has it.
 
 | | main | prod |
 |---|---|---|
-| EXISTS | 9 | 9 |
-| PARTIAL | 15 | 16 |
+| EXISTS | 10 | 9 |
+| PARTIAL | 14 | 16 |
 | MISSING | 6 | 5 |
 
 Nine features are further along on prod than on main: recently viewed,
@@ -49,7 +49,7 @@ what main has.
 | 6 | Wishlist | Amazon, Lazada, Booking | PARTIAL | EXISTS | 1 | port hearts and provider |
 | 7 | Price-drop alerts | Zap, Amazon | EXISTS | PARTIAL | 0 | none on main |
 | 8 | Social proof | Groupon, Booking | MISSING | EXISTS | 1 | port, add a "today" window |
-| 9 | Urgency timers | Groupon, Booking, Lazada | PARTIAL | PARTIAL | 1 | finish: cards and issued voucher |
+| 9 | Urgency timers | Groupon, Booking, Lazada | EXISTS | PARTIAL | 0 | cards and issued voucher closed 2026-10-14, unit-tested only |
 | 10 | Trust bar | Amazon, Booking | PARTIAL | PARTIAL | 1 | build |
 | 11 | Saved cards (token only, no PAN) | Amazon, Wolt | EXISTS | EXISTS | 0 | none |
 | 12 | Apple and Google Wallet passes | Booking, Groupon | EXISTS | EXISTS | 0 | none. Needs certificates, a human item |
@@ -239,6 +239,19 @@ on coupon product pages. Missing: cards, and the issued voucher. prod has the
 opposite half: `src/components/coupon/ValidityCountdown.tsx` on the voucher,
 none on the product page. `src/components/store/DealsSection.tsx` is orphaned
 on both and its timer is a hardcoded 23:59:59.
+
+Closed on main, 2026-10-14. Voucher: `ValidityCountdown` and
+`src/lib/vouchers/countdown.ts` are ported from prod and sit under the
+"valid until" date on `/coupon/[id]` and on each coupon of an order, only
+while the coupon can still be used. Cards: `CardOfferDeadline` prints the
+product page's own sentence over the card image when
+`products.offer_valid_until` is within a week, and nothing otherwise; the
+listing queries now select that column. Every number traces to a column, so
+no timer is invented. Verified: unit tests, and the listings still answer
+200 with the added column on a built server. Not seen in a browser: no live
+product has `offer_valid_until` set (0 of 46), and the voucher pages need a
+signed-in customer holding a coupon. `DealsSection.tsx` and its hardcoded
+timer are still orphaned and still in the tree.
 
 **10. Trust bar.** Both: `src/components/home/BenefitBar.tsx` is a selling-point
 strip, checkout has one line naming Cardcom, the footer links the refund
