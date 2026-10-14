@@ -24,6 +24,8 @@ export const SITE = {
   brand: {
     primary: '#fed700',
     primaryHover: '#fedd26',
+    /** Live `input:focus{border-color:#ffeb80}`: the search pill's focused border (UX03). */
+    primaryFocus: '#ffeb80',
     dark: '#1a1a1a',
     accent: '#eaf4f6',
   },
@@ -245,6 +247,7 @@ export function offPageRgb(hex: string): string {
 export const SITE_CSS_VARS: Record<string, string> = {
   '--color-brand-primary': SITE.brand.primary,
   '--color-brand-primary-hover': SITE.brand.primaryHover,
+  '--color-brand-primary-focus': SITE.brand.primaryFocus,
   '--color-brand-dark': SITE.brand.dark,
   '--color-brand-accent': SITE.brand.accent,
 
@@ -313,6 +316,7 @@ export const SITE_CSS_VARS: Record<string, string> = {
  */
 export const SITE_CSS_METRICS: Record<string, string> = {
   '--text-nano': '10px',
+  '--text-badge': '12px',
   '--text-micro': '11px',
   '--text-section-title': '22px',
   '--text-footer-note': '13px',
@@ -334,7 +338,7 @@ export const SITE_CSS_METRICS: Record<string, string> = {
   '--spacing-header-topbar': '37.3px',
   '--spacing-header-masthead': '109px',
   '--spacing-logo-h': '79px',
-  '--spacing-logo-w': '52px',
+  '--spacing-logo-w': '300px',
   '--spacing-footer-logo-h': '42px',
   '--spacing-footer-logo-w': '160px',
   '--spacing-newsletter-min': '470px',
@@ -351,6 +355,9 @@ export const SITE_CSS_METRICS: Record<string, string> = {
   // in tokens.css; the ones with no live counterpart say so there.
   '--spacing-search-pill': '534px',
   '--spacing-nav-gap': '38px',
+  '--spacing-touch-pad': '11px',
+  '--spacing-badge-masthead': '21px',
+  '--spacing-badge-handheld': '20px',
   '--spacing-region-inset': '53px',
   '--spacing-deals-pad': '25px',
   '--spacing-deals-pad-md': '49px',

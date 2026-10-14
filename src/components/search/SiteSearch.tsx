@@ -351,9 +351,13 @@ export default function SiteSearch({ id, variant, initialQuery = '', autoFocus, 
       </label>
       {/* Live (refs, 1440): the whole control is 534x41, a 22px-radius pill
           with the yellow 56x41 button at the inline end. The same height and
-          radius as the footer's newsletter pill, shared through the tokens. */}
+          radius as the footer's newsletter pill, shared through the tokens.
+          `site-search__pill` carries the focus state (globals.css, UX03):
+          live's lighter border while the field has focus, and the site's
+          focus ring on the pill itself, because `overflow-hidden` clips the
+          one the input would draw. */}
       <div
-        className={`flex items-stretch overflow-hidden rounded-pill border-2 border-brand-primary bg-white ${pill}`}
+        className={`site-search__pill flex items-stretch overflow-hidden rounded-pill border-2 border-brand-primary bg-white ${pill}`}
       >
         <input
           ref={inputRef}

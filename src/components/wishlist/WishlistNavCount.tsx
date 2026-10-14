@@ -1,5 +1,6 @@
 'use client'
 
+import HeaderBadge from '@/components/layout/HeaderBadge'
 import { useWishlistCount, useWishlistStore } from '@/lib/wishlist/client-store'
 import { useEffect } from 'react'
 
@@ -14,18 +15,14 @@ import { useEffect } from 'react'
 export default function WishlistNavCount() {
   const count = useWishlistCount()
   const load = useWishlistStore((s) => s.load)
+  // Armed once the list has loaded: a save after that pops the badge, the
+  // load itself does not (HeaderBadge.tsx).
+  const ready = useWishlistStore((s) => s.status === 'ready')
 
   useEffect(() => {
     void load()
   }, [load])
 
-  if (count === 0) return null
-  return (
-    <span
-      className="absolute -top-1.5 -start-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-primary px-1 text-nano font-bold text-brand-dark"
-      aria-hidden="true"
-    >
-      {count > 99 ? '99+' : count}
-    </span>
-  )
+  // The same two measured shapes as the cart's count, from one component.
+  return <HeaderBadge count={count} armed={ready} />
 }

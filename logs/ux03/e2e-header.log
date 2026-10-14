@@ -1,0 +1,32 @@
+Already up to date
+Done in 193ms using pnpm v11.1.2
+Already up to date
+Done in 195ms using pnpm v11.1.2
+
+Running 24 tests using 2 workers
+
+[1A[2K[1/24] [chromium] › e2e/header.spec.ts:75:9 › handheld header at 380px › the logo is width-bound at live’s 100px
+[1A[2K[2/24] [chromium] › e2e/header.spec.ts:84:9 › handheld header at 380px › the cluster is three 44px cells with the cart glyph on the gutter and no price
+[1A[2K[3/24] [chromium] › e2e/header.spec.ts:118:9 › handheld header at 380px › the badge is live’s 20px dark counter at the glyph’s bottom-left
+[1A[2K[4/24] [chromium] › e2e/header.spec.ts:143:9 › handheld header at 380px › the handheld search row lightens its border on focus
+[1A[2K[5/24] [chromium] › e2e/header.spec.ts:75:9 › handheld header at 768px › the logo is width-bound at live’s 100px
+[1A[2K[6/24] [chromium] › e2e/header.spec.ts:84:9 › handheld header at 768px › the cluster is three 44px cells with the cart glyph on the gutter and no price
+[1A[2K[7/24] [chromium] › e2e/header.spec.ts:118:9 › handheld header at 768px › the badge is live’s 20px dark counter at the glyph’s bottom-left
+[1A[2K[8/24] [chromium] › e2e/header.spec.ts:143:9 › handheld header at 768px › the handheld search row lightens its border on focus
+[1A[2K[9/24] [chromium] › e2e/header.spec.ts:158:7 › masthead at 1440px › the logo is 300x79 and the subtotal is live’s 16px / 700 / heading
+[1A[2K[10/24] [chromium] › e2e/header.spec.ts:179:7 › masthead at 1440px › the badge is live’s 21px yellow counter at the glyph’s bottom-left
+[1A[2K[11/24] [chromium] › e2e/header.spec.ts:205:7 › masthead at 1440px › hovering an icon darkens it to live’s #29323a, no opacity fade
+[1A[2K[12/24] [chromium] › e2e/header.spec.ts:219:7 › masthead at 1440px › the search pill lightens its border and carries the focus ring itself
+[1A[2K[13/24] [mobile-chrome] › e2e/header.spec.ts:75:9 › handheld header at 380px › the logo is width-bound at live’s 100px
+[1A[2K[14/24] [mobile-chrome] › e2e/header.spec.ts:84:9 › handheld header at 380px › the cluster is three 44px cells with the cart glyph on the gutter and no price
+[1A[2K[15/24] [mobile-chrome] › e2e/header.spec.ts:118:9 › handheld header at 380px › the badge is live’s 20px dark counter at the glyph’s bottom-left
+[1A[2K[16/24] [mobile-chrome] › e2e/header.spec.ts:143:9 › handheld header at 380px › the handheld search row lightens its border on focus
+[1A[2K[17/24] [mobile-chrome] › e2e/header.spec.ts:75:9 › handheld header at 768px › the logo is width-bound at live’s 100px
+[1A[2K[18/24] [mobile-chrome] › e2e/header.spec.ts:84:9 › handheld header at 768px › the cluster is three 44px cells with the cart glyph on the gutter and no price
+[1A[2K[19/24] [mobile-chrome] › e2e/header.spec.ts:118:9 › handheld header at 768px › the badge is live’s 20px dark counter at the glyph’s bottom-left
+[1A[2K[20/24] [mobile-chrome] › e2e/header.spec.ts:143:9 › handheld header at 768px › the handheld search row lightens its border on focus
+[1A[2K[21/24] [mobile-chrome] › e2e/header.spec.ts:158:7 › masthead at 1440px › the logo is 300x79 and the subtotal is live’s 16px / 700 / heading
+[1A[2K[22/24] [mobile-chrome] › e2e/header.spec.ts:179:7 › masthead at 1440px › the badge is live’s 21px yellow counter at the glyph’s bottom-left
+[1A[2K[23/24] [mobile-chrome] › e2e/header.spec.ts:205:7 › masthead at 1440px › hovering an icon darkens it to live’s #29323a, no opacity fade
+[1A[2K[24/24] [mobile-chrome] › e2e/header.spec.ts:219:7 › masthead at 1440px › the search pill lightens its border and carries the focus ring itself
+[1A[2K  24 passed (10.5s)

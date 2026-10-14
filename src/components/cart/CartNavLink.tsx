@@ -1,12 +1,20 @@
 'use client'
 
 import { useCart, useCartStoreApi } from '@/components/cart/CartProvider'
+import HeaderBadge from '@/components/layout/HeaderBadge'
 import { displayItemCount } from '@/lib/cart/store'
 import { shekelsRounded } from '@/lib/money-format'
 import { ShoppingCart } from 'lucide-react'
 import { useStore } from 'zustand'
 
-const ICON = { size: 22, color: 'var(--color-icon)', strokeWidth: 1.8 } as const
+/**
+ * 22px, live's `.handheld-header-links li>a{font-size:22px}`; the masthead
+ * glyph is 1.429em of 16 = 22.86 and rounds to the same lucide size. The
+ * colour is a class and not an inline style (UX03): an inline `color` beats
+ * every hover utility, which is why this used to fade with `opacity-70`
+ * instead of darkening to live's `a:hover{color:#29323a}`.
+ */
+const ICON = { size: 22, strokeWidth: 1.8 } as const
 
 export default function CartNavLink() {
   const { cart, isPending, drawerOpen, toggleDrawer } = useCart()
@@ -15,6 +23,9 @@ export default function CartNavLink() {
   // server cart, so a returning shopper sees "3" over ₪0 for the round trip
   // rather than a total that was true yesterday.
   const itemCount = useStore(useCartStoreApi(), displayItemCount)
+  // The badge pops on a change that lands after the server cart has: the
+  // mirror's 0 -> N on every page load must not pop (HeaderBadge.tsx).
+  const serverConfirmed = useStore(useCartStoreApi(), (s) => s.serverConfirmed)
   const label = `עגלת קניות, ${itemCount} פריטים, ${shekelsRounded(cart.subtotal)}`
 
   return (
@@ -28,21 +39,19 @@ export default function CartNavLink() {
       aria-haspopup="dialog"
       aria-expanded={drawerOpen}
       data-mini-cart-trigger=""
-      className={`tap-area -m-1 flex items-center gap-1.5 p-1 transition-opacity hover:opacity-70 ${isPending ? 'opacity-70' : ''}`}
-      style={{ color: ICON.color }}
+      className={`tap-area -m-1 flex items-center gap-1.5 p-1 text-icon transition-colors hover:text-heading-hover ${isPending ? 'opacity-70' : ''}`}
     >
       <span className="relative">
         <ShoppingCart size={ICON.size} strokeWidth={ICON.strokeWidth} aria-hidden="true" />
-        {itemCount > 0 && (
-          <span
-            className="absolute -top-1.5 -start-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-primary px-1 text-nano font-bold text-brand-dark"
-            aria-hidden="true"
-          >
-            {itemCount > 99 ? '99+' : itemCount}
-          </span>
-        )}
+        <HeaderBadge count={itemCount} armed={serverConfirmed} />
       </span>
-      <span className="text-sm font-semibold text-black tabular-nums">
+      {/* MASTHEAD ONLY. Live's handheld cart is the glyph and its count
+          (`li.cart > a > i + span.count`, no price); the masthead link adds
+          `.cart-items-total-price` at 15.988px/700 in #333e48 (measured,
+          docs/coupon-page-measured.md). Below xl the price pushed the glyph
+          from live's x15 to x45 (logs/ux03/before.json). The aria-label
+          above still reads the subtotal at every width. */}
+      <span className="hidden text-base font-bold text-heading tabular-nums xl:inline">
         {shekelsRounded(cart.subtotal)}
       </span>
     </button>

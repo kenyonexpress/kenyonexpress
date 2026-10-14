@@ -48,7 +48,7 @@ export default function HandheldSearch() {
         aria-controls={ROW_ID}
         aria-label={open ? 'סגירת החיפוש' : 'חיפוש מוצרים'}
         onClick={() => (open ? close() : setOpen(true))}
-        className="grid size-touch-min place-items-center text-icon transition-opacity hover:opacity-70"
+        className="grid size-touch-min place-items-center text-icon transition-colors hover:text-heading-hover"
       >
         {open ? (
           <X size={22} strokeWidth={1.8} aria-hidden="true" />

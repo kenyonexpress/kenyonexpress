@@ -1,0 +1,150 @@
+Already up to date
+Done in 232ms using pnpm v11.1.2
+Already up to date
+Done in 225ms using pnpm v11.1.2
+
+Running 5 tests using 2 workers
+
+[1A[2K[1/5] [chromium] › e2e/a11y.spec.ts:722:7 › every Tab stop on /products is visible, on screen and not under fixed chrome
+[1A[2K[2/5] [chromium] › e2e/a11y.spec.ts:722:7 › every Tab stop on / is visible, on screen and not under fixed chrome
+[1A[2K  1) [chromium] › e2e/a11y.spec.ts:722:7 › every Tab stop on / is visible, on screen and not under fixed chrome 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 4[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "focus hidden under div.mx-auto flex h-header-handheld max-w-pag: a \"הדילים החמים של השבועלרכישה\"",[39m
+    [31m+   "focus hidden under section.: a \"דברו איתנו בוואטסאפ\"",[39m
+    [31m+ ][39m
+
+      727 |     const { stops, problems } = await walkFocus(page)
+      728 |     expect(stops, 'the walk found nothing to focus; the page did not render').toBeGreaterThan(3)
+    > 729 |     expect(problems).toEqual([])
+          |                      ^
+      730 |   })
+      731 | }
+      732 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:729:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-every-Tab-stop-on-is--1380c--and-not-under-fixed-chrome-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-every-Tab-stop-on-is--1380c--and-not-under-fixed-chrome-chromium/error-context.md
+
+
+[1A[2K  2) [chromium] › e2e/a11y.spec.ts:722:7 › every Tab stop on /products is visible, on screen and not under fixed chrome 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  -  1[39m
+    [31m+ Received  + 22[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "focus hidden under div.mx-auto flex h-header-handheld max-w-pag: a \"טיפוח בריאות ויופי\"",[39m
+    [31m+   "focus hidden under div.mx-auto flex h-header-handheld max-w-pag: a \"טלפונים ואלקטרוניקה\"",[39m
+    [31m+   "focus hidden under div.mx-auto flex h-header-handheld max-w-pag: a \"טלפונים ואלקטרוניקה\"",[39m
+    [31m+   "focus hidden under div.mx-auto flex h-header-handheld max-w-pag: a \"מסעדות ובתי קפה\"",[39m
+    [31m+   "focus hidden under div.mx-auto flex h-header-handheld max-w-pag: a \"מסעדות ובתי קפה\"",[39m
+    [31m+   "focus hidden under div.mx-auto flex h-header-handheld max-w-pag: a \"מסעדות ובתי קפה\"",[39m
+    [31m+   "focus hidden under div.mx-auto flex h-header-handheld max-w-pag: a \"מסעדות ובתי קפה\"",[39m
+    [31m+   "focus hidden under div.mx-auto flex h-header-handheld max-w-pag: a \"טיפוח בריאות ויופי\"",[39m
+    [31m+   "focus hidden under div.mx-auto flex h-header-handheld max-w-pag: a \"מסעדות ובתי קפה\"",[39m
+    [31m+   "focus hidden under div.mx-auto flex h-header-handheld max-w-pag: a \"צימרים מלונות ונופש\"",[39m
+    [31m+   "focus hidden under div.mx-auto flex h-header-handheld max-w-pag: a \"מסעדות ובתי קפה\"",[39m
+    [31m+   "focus hidden under div.mx-auto flex h-header-handheld max-w-pag: a \"צימרים מלונות ונופש\"",[39m
+    [31m+   "focus hidden under div.mx-auto flex h-header-handheld max-w-pag: a \"תינוקות וילדים\"",[39m
+    [31m+   "focus hidden under div.mx-auto flex h-header-handheld max-w-pag: a \"תינוקות וילדים\"",[39m
+    [31m+   "focus hidden under div.mx-auto flex h-header-handheld max-w-pag: a \"צימרים מלונות ונופש\"",[39m
+    [31m+   "focus hidden under div.mx-auto flex h-header-handheld max-w-pag: a \"צימרים מלונות ונופש\"",[39m
+    [31m+   "focus hidden under div.mx-auto flex h-header-handheld max-w-pag: a \"טיפוח בריאות ויופי\"",[39m
+    [31m+   "focus hidden under div.mx-auto flex h-header-handheld max-w-pag: a \"טיפוח בריאות ויופי\"",[39m
+    [31m+   "focus hidden under div.mx-auto flex h-header-handheld max-w-pag: a \"טיפוח בריאות ויופי\"",[39m
+    [31m+   "focus hidden under section.: a \"דברו איתנו בוואטסאפ\"",[39m
+    [31m+ ][39m
+
+      727 |     const { stops, problems } = await walkFocus(page)
+      728 |     expect(stops, 'the walk found nothing to focus; the page did not render').toBeGreaterThan(3)
+    > 729 |     expect(problems).toEqual([])
+          |                      ^
+      730 |   })
+      731 | }
+      732 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:729:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-every-Tab-stop-on-pro-a2770--and-not-under-fixed-chrome-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-every-Tab-stop-on-pro-a2770--and-not-under-fixed-chrome-chromium/error-context.md
+
+
+[1A[2K[3/5] [chromium] › e2e/a11y.spec.ts:722:7 › every Tab stop on /cart is visible, on screen and not under fixed chrome
+[1A[2K[4/5] [chromium] › e2e/a11y.spec.ts:722:7 › every Tab stop on /coupons is visible, on screen and not under fixed chrome
+[1A[2K  3) [chromium] › e2e/a11y.spec.ts:722:7 › every Tab stop on /cart is visible, on screen and not under fixed chrome 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "focus hidden under section.: a \"דברו איתנו בוואטסאפ\"",[39m
+    [31m+ ][39m
+
+      727 |     const { stops, problems } = await walkFocus(page)
+      728 |     expect(stops, 'the walk found nothing to focus; the page did not render').toBeGreaterThan(3)
+    > 729 |     expect(problems).toEqual([])
+          |                      ^
+      730 |   })
+      731 | }
+      732 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:729:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-every-Tab-stop-on-car-abe74--and-not-under-fixed-chrome-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-every-Tab-stop-on-car-abe74--and-not-under-fixed-chrome-chromium/error-context.md
+
+
+[1A[2K[5/5] [chromium] › e2e/a11y.spec.ts:722:7 › every Tab stop on /login is visible, on screen and not under fixed chrome
+[1A[2K  4) [chromium] › e2e/a11y.spec.ts:722:7 › every Tab stop on /coupons is visible, on screen and not under fixed chrome 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "focus hidden under section.: a \"דברו איתנו בוואטסאפ\"",[39m
+    [31m+ ][39m
+
+      727 |     const { stops, problems } = await walkFocus(page)
+      728 |     expect(stops, 'the walk found nothing to focus; the page did not render').toBeGreaterThan(3)
+    > 729 |     expect(problems).toEqual([])
+          |                      ^
+      730 |   })
+      731 | }
+      732 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:729:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-every-Tab-stop-on-cou-a0536--and-not-under-fixed-chrome-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-every-Tab-stop-on-cou-a0536--and-not-under-fixed-chrome-chromium/error-context.md
+
+
+[1A[2K  4 failed
+    [chromium] › e2e/a11y.spec.ts:722:7 › every Tab stop on / is visible, on screen and not under fixed chrome 
+    [chromium] › e2e/a11y.spec.ts:722:7 › every Tab stop on /products is visible, on screen and not under fixed chrome 
+    [chromium] › e2e/a11y.spec.ts:722:7 › every Tab stop on /cart is visible, on screen and not under fixed chrome 
+    [chromium] › e2e/a11y.spec.ts:722:7 › every Tab stop on /coupons is visible, on screen and not under fixed chrome 
+  1 passed (3.8s)

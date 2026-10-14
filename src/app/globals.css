@@ -276,6 +276,117 @@ body:has([data-home]) .topbar-greeting {
   }
 }
 
+/* ============================================================================
+   THE MASTHEAD ICON CLUSTER: count badges and the search pill's focus (UX03)
+   ============================================================================
+
+   THE BADGE IS TWO MEASURED SHAPES, ONE ELEMENT. Live draws the cart count
+   twice, with different rules on each header variant:
+
+     handheld  `.handheld-header-links .cart .count`  20x20, #333e48 behind
+               white 10/700, `top:9px; right:9px` of the 22px glyph link
+     masthead  `.header-icon-counter`                 1.75em of 12px = 21px,
+               yellow behind dark 12/700, `bottom:-3px; right:7px`
+
+   Both hang off the glyph's physical left (`right:Npx` from the right edge of
+   a 22px box is a badge that covers the left side), which in this RTL shell
+   is the inline END. The two clusters switch at `xl`, the same breakpoint the
+   two live headers switch on (`hidden-xl-up` / `d-xl-block`), so the media
+   query below is that switch and not a third one: below it every visible
+   badge is a handheld one, from it every visible badge is a masthead one.
+   1280px is Tailwind's `xl` (80rem); a breakpoint cannot read a custom
+   property, so it is written out, the way .topbar-container above does.
+
+   The ours-before-UX03 badge was one 16px yellow circle at the top-right, on
+   both headers; measured 2026-10-14 in logs/ux03/before-badge.json.
+
+   THE POP. A count that changes under the shopper's hands scales the badge
+   1 -> 1.35 -> 1 once (320ms). HeaderBadge.tsx adds the class only for a
+   change that happens after the store has settled, so the badge arriving
+   with the cart mirror on every page load does not pop. Reduced motion is
+   honoured by the global rule further down, which also leaves
+   `animationend` firing so the class is cleared. */
+.header-badge {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  font-weight: 700;
+  line-height: 1;
+  pointer-events: none;
+  transform-origin: center;
+  /* handheld */
+  top: 9px;
+  inset-inline-start: 9px;
+  min-width: var(--spacing-badge-handheld);
+  height: var(--spacing-badge-handheld);
+  padding-inline: 2px;
+  font-size: var(--text-nano);
+  color: var(--color-surface);
+  background-color: var(--color-heading);
+}
+@media (min-width: 1280px) {
+  .header-badge {
+    top: auto;
+    bottom: -3px;
+    inset-inline-start: 7px;
+    min-width: var(--spacing-badge-masthead);
+    height: var(--spacing-badge-masthead);
+    font-size: var(--text-badge);
+    color: var(--color-heading);
+    background-color: var(--color-brand-primary);
+  }
+}
+.header-badge--bump {
+  animation: header-badge-pop 320ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@keyframes header-badge-pop {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.35);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* THE SEARCH PILL HAD NO VISIBLE FOCUS STATE. The pill is `overflow:hidden`
+   (it clips the yellow button to the 22px radius), so the site-wide
+   `:focus-visible` ring the input earned was drawn and then clipped: measured
+   2026-10-14, the focused input reported `outline: solid 3px` and the 6px
+   dark shadow while the pill's own outline was `none`, and the screenshot
+   showed a dark hairline inside the pill and nothing outside it
+   (logs/ux03/before-pill-focus-1440.png). A keyboard user tabbing into the
+   masthead got no ring, and a shopper clicking in got the hairline.
+
+   Live's answer is `input:focus{border-color:#ffeb80; outline:0; box-shadow:
+   none}`: the yellow border lightens one step. That is kept, on the pill
+   (`:focus-within`, since the border is the pill's and not the input's), and
+   the ring the rest of the site draws is lifted from the clipped input onto
+   the pill, radius and all. The submit button sits inside the clip too, so
+   its ring is an INSET one that the clip cannot touch, and the pill ring is
+   reserved for the field: a tab from the field to the button changes which
+   control is marked, which a shared ring would not. */
+.site-search__pill:focus-within {
+  border-color: var(--color-brand-primary-focus);
+}
+.site-search__pill:has(> input:focus-visible) {
+  outline: 3px solid var(--color-brand-primary);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 6px var(--color-heading);
+}
+.site-search__pill > input:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+.site-search__pill > button:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 3px var(--color-heading);
+}
+
 /* The footer's two link columns are <details>, CLOSED below lg.
    D20 re-measured one live page, found `.handheld-widget-menu` open at 365px,
    and flipped the markup to `open`. That measurement was real but taken on a

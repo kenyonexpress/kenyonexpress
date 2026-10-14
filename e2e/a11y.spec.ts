@@ -682,10 +682,19 @@ async function walkFocus(page: Page) {
       const s = getComputedStyle(el)
       const r = el.getBoundingClientRect()
       const label = `${el.tagName.toLowerCase()} "${(el.getAttribute('aria-label') ?? el.textContent ?? '').trim().slice(0, 30)}"`
+      const drawsOutline = (style: CSSStyleDeclaration) =>
+        style.outlineStyle !== 'none' && Number.parseFloat(style.outlineWidth) > 0
+      // A ring on the control's own parent counts, and only an OUTLINE there:
+      // the search pill (UX03) is `overflow:hidden`, so the ring the input
+      // would draw was clipped to nothing, and globals.css lifts it onto the
+      // pill with `:has(> input:focus-visible)` instead. The parent encloses
+      // the control, so the ring still marks it. A parent box-shadow is not
+      // accepted, because cards carry one permanently and a ringless child
+      // inside one would pass on its container's decoration.
+      const parent = el.parentElement
+      const ringOnParent = Boolean(parent && drawsOutline(getComputedStyle(parent)))
       const ring =
-        !el.matches(':focus-visible') ||
-        (s.outlineStyle !== 'none' && Number.parseFloat(s.outlineWidth) > 0) ||
-        s.boxShadow !== 'none'
+        !el.matches(':focus-visible') || drawsOutline(s) || s.boxShadow !== 'none' || ringOnParent
       const offscreen =
         r.bottom <= 0 || r.top >= innerHeight || r.right <= 0 || r.left >= innerWidth
       const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2)

@@ -52,6 +52,10 @@
   /* --- Brand identity -------------------------------------------------------- */
   --color-brand-primary: #fed700; /* CTAs, active state, badges */
   --color-brand-primary-hover: #fedd26; /* hover / pressed */
+  /* Live's `input:focus{border-color:#ffeb80}`: the search pill's border
+     lightens one step while the field has focus (UX03). The brand yellow
+     is not a foreground colour and neither is this; it is a border only. */
+  --color-brand-primary-focus: #ffeb80;
   --color-brand-dark: #1a1a1a; /* dark text, dark surfaces */
   --color-brand-accent: #eaf4f6; /* tinted backgrounds, soft surfaces */
 
@@ -152,7 +156,10 @@
      Tailwind pairs its own sizes with a line-height. These declare size ONLY,
      so `text-section-title` is byte-identical to the `text-[22px]` it replaced.
      Adding a line-height here would silently reflow every 1:1 comparison. */
-  --text-nano: 10px; /* cart count badge */
+  --text-nano: 10px; /* cart count badge (handheld: live `.cart .count{font-size:10px}`) */
+  /* The masthead counter: live `.header-icon-counter{font-size:.75em}` off
+     the 16px (1.142em of 14) icon link = 12px. UX03. */
+  --text-badge: 12px;
   --text-micro: 11px; /* captions, payment chips, promo eyebrow */
   --text-section-title: 22px; /* section headings + product-card titles */
   --text-footer-note: 13px; /* footer smallprint + copyright */
@@ -244,7 +251,10 @@
      The old 40px was a deliberate mismatch justified by the 1320 container
      ("matching the live SIZE lands it on different pixels"); with the container
      at live's 1200 that reasoning no longer holds. */
-  --spacing-logo-w: 52px;
+  /* 300, not 52 (UX03). Live `.header-v8 .masthead .header-site-branding img
+     {max-width:300px}` on a 380x100 file; the fallback box is the same
+     300x79 the image paints, so a missing logo keeps the masthead's shape. */
+  --spacing-logo-w: 300px;
   --spacing-footer-logo-h: 42px;
   --spacing-footer-logo-w: 160px;
   --spacing-newsletter-min: 470px; /* live newsletter pill: 470x41 */
@@ -354,6 +364,16 @@
      under it; ours keeps live's PAINTED size and pads the hit area out to 44,
      so the pixel comparison sees live's button and a thumb gets the target. */
   --spacing-touch-min: 44px;
+  /* (44 - 22) / 2: how far a 44px touch cell overhangs its 22px glyph on
+     one side. The handheld icon cluster pulls itself back by this much so
+     the cart glyph sits at live's x15 (the gutter) while every cell keeps
+     the 44px floor. UX03. */
+  --spacing-touch-pad: 11px;
+  /* The header count badges, both measured on live (UX03):
+       masthead  `.header-icon-counter`: 1.75em of 12px = 21px, yellow, dark 12/700
+       handheld  `.cart .count`: 20x20, #333e48 behind white 10/700 */
+  --spacing-badge-masthead: 21px;
+  --spacing-badge-handheld: 20px;
 
   /* The region menu ("בחר אזור"), live's `secondary-nav`. Read off the rendered
      page at 1440 on 2026-09-03: the nav row is 44.996px of line-height, and the

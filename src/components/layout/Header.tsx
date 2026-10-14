@@ -98,7 +98,12 @@ export default function SiteHeader() {
               // shift to that re-measure ("media element lacking an explicit
               // size"). A CSS aspect ratio wins over the intrinsic one, so
               // the box is final before the first byte.
-              className="aspect-[19/5] h-handheld-logo-h w-auto object-contain xl:h-logo-h"
+              // WIDTH-BOUND BELOW xl, HEIGHT-BOUND FROM IT (UX03). Live's
+              // handheld rule is `.header-logo img{max-width:100px}` and the
+              // masthead's is `max-width:300px` with the row's height; a
+              // height-bound 26px drew 98.8px wide (19/5 x 26), measured in
+              // logs/ux03/before.json, where live paints the full 100.
+              className="aspect-[19/5] h-auto w-handheld-logo-w object-contain xl:h-logo-h xl:w-auto"
               fallbackClassName="h-handheld-logo-h w-handheld-logo-w rounded-md xl:h-logo-h xl:w-logo-w"
               priority
             />
@@ -119,7 +124,15 @@ export default function SiteHeader() {
               while live measures it at x=15, hard against the left edge. Heart
               first, cart second puts the cart back on the left and gives the
               heart live's x=57 slot. */}
-          <div className="flex items-center gap-2 xl:hidden">
+          {/* THREE 44px CELLS, NO GAP, PULLED 11px PAST THE GUTTER (UX03).
+              Live's row is three 22px glyphs with 20px between them, the
+              first one at x15: cart 15, user 57, search 99. A 44px cell
+              around each 22px glyph overhangs it by 11 on each side, so
+              `-me-touch-pad` puts the cart glyph on the gutter and the cells
+              touch at a 44px pitch (cart 15, heart 59, search 103; live's is
+              42). Before this the cart carried its price below xl too, and
+              the glyph measured x45 with the heart at x86. */}
+          <div className="-me-touch-pad flex items-center gap-0 xl:hidden">
             {/* Live's handheld header has a search icon; this one opens the
                 combobox in a row under the header (HandheldSearch.tsx). First
                 in the cluster, so RTL paints it rightmost of the three and the
@@ -128,14 +141,18 @@ export default function SiteHeader() {
             <Link
               href="/wishlist"
               aria-label="המועדפים שלי"
-              className="grid size-touch-min place-items-center text-icon transition-opacity hover:opacity-70"
+              className="grid size-touch-min place-items-center text-icon transition-colors hover:text-heading-hover"
             >
               <span className="relative">
                 <Heart size={22} strokeWidth={1.8} aria-hidden="true" />
                 <WishlistNavCount />
               </span>
             </Link>
-            <HeaderCart />
+            {/* The cart's own box is the 30px tap-area it has in the masthead;
+                the cell gives it the same 44px pitch as its two neighbours. */}
+            <div className="grid size-touch-min place-items-center">
+              <HeaderCart />
+            </div>
           </div>
 
           {/* DESKTOP (xl and up): the measured masthead nav. */}

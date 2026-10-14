@@ -1,0 +1,290 @@
+{
+  "380": {
+    "header": {
+      "x": 0,
+      "y": 113,
+      "w": 380,
+      "h": 50
+    },
+    "logo": {
+      "box": {
+        "x": 178.5,
+        "y": 124.3,
+        "w": 100,
+        "h": 26.3
+      },
+      "cs": {
+        "width": "100px",
+        "height": "26.3125px"
+      }
+    },
+    "burger": {
+      "x": 321,
+      "y": 115.5,
+      "w": 44,
+      "h": 44
+    },
+    "search": {
+      "x": 92,
+      "y": 115.5,
+      "w": 44,
+      "h": 44
+    },
+    "heart": {
+      "box": {
+        "x": 48,
+        "y": 115.5,
+        "w": 44,
+        "h": 44
+      },
+      "svg": {
+        "x": 59,
+        "y": 126.5,
+        "w": 22,
+        "h": 22
+      },
+      "cs": {
+        "color": "rgb(81, 81, 81)"
+      }
+    },
+    "cart": {
+      "box": {
+        "x": 11,
+        "y": 122.5,
+        "w": 30,
+        "h": 30
+      },
+      "svg": {
+        "x": 15,
+        "y": 126.5,
+        "w": 22,
+        "h": 22
+      },
+      "cs": {
+        "color": "rgb(81, 81, 81)"
+      }
+    },
+    "badge": null,
+    "price": {
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 0,
+        "h": 0
+      },
+      "text": "⁦0 ₪⁩",
+      "cs": {
+        "font-size": "16px",
+        "font-weight": "700",
+        "color": "rgb(51, 62, 72)",
+        "line-height": "24px"
+      }
+    },
+    "pill": {
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 0,
+        "h": 0
+      },
+      "cs": {
+        "border-color": "rgb(254, 215, 0)",
+        "outline-style": "none",
+        "box-shadow": "none",
+        "overflow": "hidden"
+      }
+    }
+  },
+  "768": {
+    "header": {
+      "x": 0,
+      "y": 38.3,
+      "w": 768,
+      "h": 50
+    },
+    "logo": {
+      "box": {
+        "x": 372.5,
+        "y": 49.6,
+        "w": 100,
+        "h": 26.3
+      },
+      "cs": {
+        "width": "100px",
+        "height": "26.3125px"
+      }
+    },
+    "burger": {
+      "x": 709,
+      "y": 40.8,
+      "w": 44,
+      "h": 44
+    },
+    "search": {
+      "x": 92,
+      "y": 40.8,
+      "w": 44,
+      "h": 44
+    },
+    "heart": {
+      "box": {
+        "x": 48,
+        "y": 40.8,
+        "w": 44,
+        "h": 44
+      },
+      "svg": {
+        "x": 59,
+        "y": 51.8,
+        "w": 22,
+        "h": 22
+      },
+      "cs": {
+        "color": "rgb(81, 81, 81)"
+      }
+    },
+    "cart": {
+      "box": {
+        "x": 11,
+        "y": 47.8,
+        "w": 30,
+        "h": 30
+      },
+      "svg": {
+        "x": 15,
+        "y": 51.8,
+        "w": 22,
+        "h": 22
+      },
+      "cs": {
+        "color": "rgb(81, 81, 81)"
+      }
+    },
+    "badge": null,
+    "price": {
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 0,
+        "h": 0
+      },
+      "text": "⁦0 ₪⁩",
+      "cs": {
+        "font-size": "16px",
+        "font-weight": "700",
+        "color": "rgb(51, 62, 72)",
+        "line-height": "24px"
+      }
+    },
+    "pill": {
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 0,
+        "h": 0
+      },
+      "cs": {
+        "border-color": "rgb(254, 215, 0)",
+        "outline-style": "none",
+        "box-shadow": "none",
+        "overflow": "hidden"
+      }
+    }
+  },
+  "1440": {
+    "header": {
+      "x": 0,
+      "y": 38.3,
+      "w": 1440,
+      "h": 110
+    },
+    "logo": {
+      "box": {
+        "x": 1004.8,
+        "y": 53.3,
+        "w": 300.2,
+        "h": 79
+      },
+      "cs": {
+        "width": "300.188px",
+        "height": "79px"
+      }
+    },
+    "burger": null,
+    "search": null,
+    "heart": {
+      "box": {
+        "x": 225.1,
+        "y": 77.8,
+        "w": 30,
+        "h": 30
+      },
+      "svg": {
+        "x": 229.1,
+        "y": 81.8,
+        "w": 22,
+        "h": 22
+      },
+      "cs": {
+        "color": "rgb(81, 81, 81)"
+      }
+    },
+    "cart": {
+      "box": {
+        "x": 131,
+        "y": 76.8,
+        "w": 64.1,
+        "h": 32
+      },
+      "svg": {
+        "x": 169.1,
+        "y": 81.8,
+        "w": 22,
+        "h": 22
+      },
+      "cs": {
+        "color": "rgb(81, 81, 81)"
+      }
+    },
+    "badge": null,
+    "price": {
+      "box": {
+        "x": 135,
+        "y": 80.8,
+        "w": 28.1,
+        "h": 24
+      },
+      "text": "⁦0 ₪⁩",
+      "cs": {
+        "font-size": "16px",
+        "font-weight": "700",
+        "color": "rgb(51, 62, 72)",
+        "line-height": "24px"
+      }
+    },
+    "pill": {
+      "box": {
+        "x": 438.8,
+        "y": 72.3,
+        "w": 534,
+        "h": 41
+      },
+      "cs": {
+        "border-color": "rgb(254, 215, 0)",
+        "outline-style": "none",
+        "box-shadow": "none",
+        "overflow": "hidden"
+      }
+    },
+    "focus": {
+      "active": true,
+      "matchesFV": true,
+      "inputOutline": "none 3px",
+      "inputShadow": "none",
+      "pillBorder": "rgb(255, 235, 128)",
+      "pillOutline": "solid 3px",
+      "pillShadow": "rgb(51, 62, 72) 0px 0px 0px 6px",
+      "pngBytesDiffer": true
+    }
+  }
+}

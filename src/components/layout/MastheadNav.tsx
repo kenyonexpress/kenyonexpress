@@ -5,7 +5,8 @@ import WishlistNavCount from '@/components/wishlist/WishlistNavCount'
 import { Heart } from 'lucide-react'
 import Link from 'next/link'
 
-const ICON = { size: 22, color: 'var(--color-icon)', strokeWidth: 1.8 } as const
+/** Class-driven colour (text-icon), not inline, so the hover utility can win. UX03. */
+const ICON = { size: 22, strokeWidth: 1.8 } as const
 
 /**
  * The masthead's left-hand group (RTL): the region selector and the two-icon
@@ -54,8 +55,7 @@ export default function MastheadNav() {
         <Link
           href="/wishlist"
           aria-label="המועדפים שלי"
-          className="-m-1 p-1 transition-opacity hover:opacity-70"
-          style={{ color: ICON.color }}
+          className="-m-1 p-1 text-icon transition-colors hover:text-heading-hover"
         >
           <span className="relative block">
             <Heart size={ICON.size} strokeWidth={ICON.strokeWidth} aria-hidden="true" />
