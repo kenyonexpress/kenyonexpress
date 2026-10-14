@@ -1,0 +1,168 @@
+{
+  "380": {
+    "width": 380,
+    "atRest": {
+      "activeDot": "שקופית 1",
+      "slides": 5,
+      "mounted": 1,
+      "progress": {
+        "state": "idle",
+        "animation": "none",
+        "duration": "0s",
+        "transform": "none"
+      },
+      "status": {
+        "text": "שקופית 1 מתוך 5",
+        "live": "polite"
+      },
+      "touchAction": "pan-y"
+    },
+    "afterSwipeRight": {
+      "activeDot": "שקופית 2",
+      "slides": 5,
+      "mounted": 3,
+      "progress": {
+        "state": "running",
+        "animation": "hero-progress",
+        "duration": "5s",
+        "transform": "matrix(0.0533278, 0, 0, 1, 0, 0)"
+      },
+      "status": {
+        "text": "שקופית 2 מתוך 5",
+        "live": "off"
+      },
+      "touchAction": "pan-y"
+    },
+    "afterSwipeLeft": {
+      "activeDot": "שקופית 1",
+      "slides": 5,
+      "mounted": 3,
+      "progress": {
+        "state": "running",
+        "animation": "hero-progress",
+        "duration": "5s",
+        "transform": "matrix(0.0566652, 0, 0, 1, 0, 0)"
+      },
+      "status": {
+        "text": "שקופית 1 מתוך 5",
+        "live": "off"
+      },
+      "touchAction": "pan-y"
+    },
+    "afterShortDrag": {
+      "activeDot": "שקופית 1",
+      "slides": 5,
+      "mounted": 3,
+      "progress": {
+        "state": "running",
+        "animation": "hero-progress",
+        "duration": "5s",
+        "transform": "matrix(0.166384, 0, 0, 1, 0, 0)"
+      },
+      "status": {
+        "text": "שקופית 1 מתוך 5",
+        "live": "off"
+      },
+      "touchAction": "pan-y"
+    },
+    "after5600ms": {
+      "activeDot": "שקופית 2",
+      "slides": 5,
+      "mounted": 3,
+      "progress": {
+        "state": "running",
+        "animation": "hero-progress",
+        "duration": "5s",
+        "transform": "matrix(0.290096, 0, 0, 1, 0, 0)"
+      },
+      "status": {
+        "text": "שקופית 2 מתוך 5",
+        "live": "off"
+      },
+      "touchAction": "pan-y"
+    }
+  },
+  "1440": {
+    "width": 1440,
+    "atRest": {
+      "activeDot": "שקופית 1",
+      "slides": 5,
+      "mounted": 1,
+      "progress": {
+        "state": "idle",
+        "animation": "none",
+        "duration": "0s",
+        "transform": "none"
+      },
+      "status": {
+        "text": "שקופית 1 מתוך 5",
+        "live": "polite"
+      },
+      "touchAction": "pan-y"
+    },
+    "afterSwipeRight": {
+      "activeDot": "שקופית 2",
+      "slides": 5,
+      "mounted": 3,
+      "progress": {
+        "state": "running",
+        "animation": "hero-progress",
+        "duration": "5s",
+        "transform": "matrix(0.0533422, 0, 0, 1, 0, 0)"
+      },
+      "status": {
+        "text": "שקופית 2 מתוך 5",
+        "live": "off"
+      },
+      "touchAction": "pan-y"
+    },
+    "afterSwipeLeft": {
+      "activeDot": "שקופית 1",
+      "slides": 5,
+      "mounted": 3,
+      "progress": {
+        "state": "running",
+        "animation": "hero-progress",
+        "duration": "5s",
+        "transform": "matrix(0.0566546, 0, 0, 1, 0, 0)"
+      },
+      "status": {
+        "text": "שקופית 1 מתוך 5",
+        "live": "off"
+      },
+      "touchAction": "pan-y"
+    },
+    "afterShortDrag": {
+      "activeDot": "שקופית 1",
+      "slides": 5,
+      "mounted": 3,
+      "progress": {
+        "state": "running",
+        "animation": "hero-progress",
+        "duration": "5s",
+        "transform": "matrix(0.169988, 0, 0, 1, 0, 0)"
+      },
+      "status": {
+        "text": "שקופית 1 מתוך 5",
+        "live": "off"
+      },
+      "touchAction": "pan-y"
+    },
+    "after5600ms": {
+      "activeDot": "שקופית 2",
+      "slides": 5,
+      "mounted": 3,
+      "progress": {
+        "state": "running",
+        "animation": "hero-progress",
+        "duration": "5s",
+        "transform": "matrix(0.28999, 0, 0, 1, 0, 0)"
+      },
+      "status": {
+        "text": "שקופית 2 מתוך 5",
+        "live": "off"
+      },
+      "touchAction": "pan-y"
+    }
+  }
+}

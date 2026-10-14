@@ -1,0 +1,88 @@
+{
+  "380": {
+    "width": 380,
+    "atRest": {
+      "activeDot": "שקופית 1",
+      "slides": 5,
+      "mounted": 1,
+      "progress": null,
+      "status": null,
+      "touchAction": "auto"
+    },
+    "afterSwipeRight": {
+      "activeDot": "שקופית 1",
+      "slides": 5,
+      "mounted": 1,
+      "progress": null,
+      "status": null,
+      "touchAction": "auto"
+    },
+    "afterSwipeLeft": {
+      "activeDot": "שקופית 1",
+      "slides": 5,
+      "mounted": 1,
+      "progress": null,
+      "status": null,
+      "touchAction": "auto"
+    },
+    "afterShortDrag": {
+      "activeDot": "שקופית 1",
+      "slides": 5,
+      "mounted": 1,
+      "progress": null,
+      "status": null,
+      "touchAction": "auto"
+    },
+    "after5600ms": {
+      "activeDot": "שקופית 1",
+      "slides": 5,
+      "mounted": 1,
+      "progress": null,
+      "status": null,
+      "touchAction": "auto"
+    }
+  },
+  "1440": {
+    "width": 1440,
+    "atRest": {
+      "activeDot": "שקופית 1",
+      "slides": 5,
+      "mounted": 1,
+      "progress": null,
+      "status": null,
+      "touchAction": "auto"
+    },
+    "afterSwipeRight": {
+      "activeDot": "שקופית 1",
+      "slides": 5,
+      "mounted": 1,
+      "progress": null,
+      "status": null,
+      "touchAction": "auto"
+    },
+    "afterSwipeLeft": {
+      "activeDot": "שקופית 1",
+      "slides": 5,
+      "mounted": 1,
+      "progress": null,
+      "status": null,
+      "touchAction": "auto"
+    },
+    "afterShortDrag": {
+      "activeDot": "שקופית 1",
+      "slides": 5,
+      "mounted": 1,
+      "progress": null,
+      "status": null,
+      "touchAction": "auto"
+    },
+    "after5600ms": {
+      "activeDot": "שקופית 1",
+      "slides": 5,
+      "mounted": 1,
+      "progress": null,
+      "status": null,
+      "touchAction": "auto"
+    }
+  }
+}

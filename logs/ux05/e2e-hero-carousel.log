@@ -1,0 +1,16 @@
+Already up to date
+Done in 237ms using pnpm v11.1.2
+
+Running 10 tests using 2 workers
+
+[1A[2K[1/10] [chromium] › e2e/hero-carousel.spec.ts:112:5 › the current dot carries a 5s progress fill while rotating and reads full at rest
+[1A[2K[2/10] [chromium] › e2e/hero-carousel.spec.ts:87:5 › a touch swipe pages the hero: right is next in RTL, left is back, a short drag is nothing
+[1A[2K[3/10] [chromium] › e2e/hero-carousel.spec.ts:152:5 › the slide position is a visually hidden live status
+[1A[2K[4/10] [chromium] › e2e/hero-carousel.spec.ts:166:5 › media mounts one slide ahead after engagement, not all at once
+[1A[2K[5/10] [chromium] › e2e/hero-carousel.spec.ts:181:5 › the hero holds its slide under prefers-reduced-motion and the dots still page
+[1A[2K[6/10] [mobile-chrome] › e2e/hero-carousel.spec.ts:87:5 › a touch swipe pages the hero: right is next in RTL, left is back, a short drag is nothing
+[1A[2K[7/10] [mobile-chrome] › e2e/hero-carousel.spec.ts:112:5 › the current dot carries a 5s progress fill while rotating and reads full at rest
+[1A[2K[8/10] [mobile-chrome] › e2e/hero-carousel.spec.ts:152:5 › the slide position is a visually hidden live status
+[1A[2K[9/10] [mobile-chrome] › e2e/hero-carousel.spec.ts:166:5 › media mounts one slide ahead after engagement, not all at once
+[1A[2K[10/10] [mobile-chrome] › e2e/hero-carousel.spec.ts:181:5 › the hero holds its slide under prefers-reduced-motion and the dots still page
+[1A[2K  10 passed (21.4s)

@@ -1,0 +1,624 @@
+Already up to date
+Done in 191ms using pnpm v11.1.2
+
+Running 34 tests using 2 workers
+
+[1A[2K[1/34] [chromium] › e2e/a11y.spec.ts:722:7 › every Tab stop on / is visible, on screen and not under fixed chrome
+[1A[2K[2/34] [chromium] › e2e/a11y.spec.ts:142:7 › home has no WCAG A/AA violations
+[1A[2K[3/34] [chromium] › e2e/a11y.spec.ts:722:7 › every Tab stop on /products is visible, on screen and not under fixed chrome
+[1A[2K  1) [chromium] › e2e/a11y.spec.ts:722:7 › every Tab stop on /products is visible, on screen and not under fixed chrome 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "focus hidden under section.: a \"דברו איתנו בוואטסאפ\"",[39m
+    [31m+ ][39m
+
+      727 |     const { stops, problems } = await walkFocus(page)
+      728 |     expect(stops, 'the walk found nothing to focus; the page did not render').toBeGreaterThan(3)
+    > 729 |     expect(problems).toEqual([])
+          |                      ^
+      730 |   })
+      731 | }
+      732 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:729:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-every-Tab-stop-on-pro-a2770--and-not-under-fixed-chrome-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-every-Tab-stop-on-pro-a2770--and-not-under-fixed-chrome-chromium/error-context.md
+
+
+[1A[2K  2) [chromium] › e2e/a11y.spec.ts:722:7 › every Tab stop on / is visible, on screen and not under fixed chrome 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "focus hidden under section.: a \"דברו איתנו בוואטסאפ\"",[39m
+    [31m+ ][39m
+
+      727 |     const { stops, problems } = await walkFocus(page)
+      728 |     expect(stops, 'the walk found nothing to focus; the page did not render').toBeGreaterThan(3)
+    > 729 |     expect(problems).toEqual([])
+          |                      ^
+      730 |   })
+      731 | }
+      732 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:729:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-every-Tab-stop-on-is--1380c--and-not-under-fixed-chrome-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-every-Tab-stop-on-is--1380c--and-not-under-fixed-chrome-chromium/error-context.md
+
+
+[1A[2K[4/34] [chromium] › e2e/a11y.spec.ts:722:7 › every Tab stop on /cart is visible, on screen and not under fixed chrome
+[1A[2K[5/34] [chromium] › e2e/a11y.spec.ts:722:7 › every Tab stop on /coupons is visible, on screen and not under fixed chrome
+[1A[2K  3) [chromium] › e2e/a11y.spec.ts:722:7 › every Tab stop on /cart is visible, on screen and not under fixed chrome 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "focus hidden under section.: a \"דברו איתנו בוואטסאפ\"",[39m
+    [31m+ ][39m
+
+      727 |     const { stops, problems } = await walkFocus(page)
+      728 |     expect(stops, 'the walk found nothing to focus; the page did not render').toBeGreaterThan(3)
+    > 729 |     expect(problems).toEqual([])
+          |                      ^
+      730 |   })
+      731 | }
+      732 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:729:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-every-Tab-stop-on-car-abe74--and-not-under-fixed-chrome-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-every-Tab-stop-on-car-abe74--and-not-under-fixed-chrome-chromium/error-context.md
+
+
+[1A[2K  4) [chromium] › e2e/a11y.spec.ts:722:7 › every Tab stop on /coupons is visible, on screen and not under fixed chrome 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "focus hidden under section.: a \"דברו איתנו בוואטסאפ\"",[39m
+    [31m+ ][39m
+
+      727 |     const { stops, problems } = await walkFocus(page)
+      728 |     expect(stops, 'the walk found nothing to focus; the page did not render').toBeGreaterThan(3)
+    > 729 |     expect(problems).toEqual([])
+          |                      ^
+      730 |   })
+      731 | }
+      732 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:729:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-every-Tab-stop-on-cou-a0536--and-not-under-fixed-chrome-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-every-Tab-stop-on-cou-a0536--and-not-under-fixed-chrome-chromium/error-context.md
+
+
+[1A[2K[6/34] [chromium] › e2e/a11y.spec.ts:722:7 › every Tab stop on /login is visible, on screen and not under fixed chrome
+[1A[2K[7/34] [chromium] › e2e/a11y.spec.ts:794:7 › the first Tab on /products is a skip link that lands focus in <main>
+[1A[2K[8/34] [chromium] › e2e/a11y.spec.ts:794:7 › the first Tab on / is a skip link that lands focus in <main>
+[1A[2K  5) [chromium] › e2e/a11y.spec.ts:794:7 › the first Tab on /products is a skip link that lands focus in <main> 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveAttribute[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  locator(':focus')
+    Expected: [32m"#main-content"[39m
+    Received: [31m""[39m
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toHaveAttribute" with timeout 5000ms[22m
+    [2m  - waiting for locator(':focus')[22m
+    [2m    14 × locator resolved to <button type="submit" class="min-h-11 rounded-lg border border-black/15 px-4 py-2 text-sm font-medium text-black/70 transition-colors hover:bg-black/[0.04]">לא תודה</button>[22m
+    [2m       - unexpected value "null"[22m
+
+
+      798 |     await page.keyboard.press('Tab')
+      799 |     const link = page.locator(':focus')
+    > 800 |     await expect(link).toHaveAttribute('href', '#main-content')
+          |                        ^
+      801 |     await expect(link).toHaveText('דילוג לתוכן הראשי')
+      802 |     // Visible while focused, not only present: `sr-only` alone would keep
+      803 |     // the 1x1 clip and the sighted keyboard user would see nothing move.
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:800:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-the-first-Tab-on-prod-be532-k-that-lands-focus-in-main--chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-the-first-Tab-on-prod-be532-k-that-lands-focus-in-main--chromium/error-context.md
+
+
+[1A[2K  6) [chromium] › e2e/a11y.spec.ts:794:7 › the first Tab on / is a skip link that lands focus in <main> 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveAttribute[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  locator(':focus')
+    Expected: [32m"#main-content"[39m
+    Received: [31m""[39m
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toHaveAttribute" with timeout 5000ms[22m
+    [2m  - waiting for locator(':focus')[22m
+    [2m    14 × locator resolved to <button type="submit" class="min-h-11 rounded-lg border border-black/15 px-4 py-2 text-sm font-medium text-black/70 transition-colors hover:bg-black/[0.04]">לא תודה</button>[22m
+    [2m       - unexpected value "null"[22m
+
+
+      798 |     await page.keyboard.press('Tab')
+      799 |     const link = page.locator(':focus')
+    > 800 |     await expect(link).toHaveAttribute('href', '#main-content')
+          |                        ^
+      801 |     await expect(link).toHaveText('דילוג לתוכן הראשי')
+      802 |     // Visible while focused, not only present: `sr-only` alone would keep
+      803 |     // the 1x1 clip and the sighted keyboard user would see nothing move.
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:800:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-the-first-Tab-on-is-a-78b99-k-that-lands-focus-in-main--chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-the-first-Tab-on-is-a-78b99-k-that-lands-focus-in-main--chromium/error-context.md
+
+
+[1A[2K[9/34] [chromium] › e2e/a11y.spec.ts:794:7 › the first Tab on /coupons is a skip link that lands focus in <main>
+[1A[2K[10/34] [chromium] › e2e/a11y.spec.ts:794:7 › the first Tab on /legal/privacy is a skip link that lands focus in <main>
+[1A[2K  7) [chromium] › e2e/a11y.spec.ts:794:7 › the first Tab on /coupons is a skip link that lands focus in <main> 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveAttribute[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  locator(':focus')
+    Expected: [32m"#main-content"[39m
+    Received: [31m""[39m
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toHaveAttribute" with timeout 5000ms[22m
+    [2m  - waiting for locator(':focus')[22m
+    [2m    14 × locator resolved to <button type="submit" class="min-h-11 rounded-lg border border-black/15 px-4 py-2 text-sm font-medium text-black/70 transition-colors hover:bg-black/[0.04]">לא תודה</button>[22m
+    [2m       - unexpected value "null"[22m
+
+
+      798 |     await page.keyboard.press('Tab')
+      799 |     const link = page.locator(':focus')
+    > 800 |     await expect(link).toHaveAttribute('href', '#main-content')
+          |                        ^
+      801 |     await expect(link).toHaveText('דילוג לתוכן הראשי')
+      802 |     // Visible while focused, not only present: `sr-only` alone would keep
+      803 |     // the 1x1 clip and the sighted keyboard user would see nothing move.
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:800:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-the-first-Tab-on-coup-49cbf-k-that-lands-focus-in-main--chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-the-first-Tab-on-coup-49cbf-k-that-lands-focus-in-main--chromium/error-context.md
+
+
+[1A[2K  8) [chromium] › e2e/a11y.spec.ts:794:7 › the first Tab on /legal/privacy is a skip link that lands focus in <main> 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveAttribute[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  locator(':focus')
+    Expected: [32m"#main-content"[39m
+    Received: [31m""[39m
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toHaveAttribute" with timeout 5000ms[22m
+    [2m  - waiting for locator(':focus')[22m
+    [2m    14 × locator resolved to <button type="submit" class="min-h-11 rounded-lg border border-black/15 px-4 py-2 text-sm font-medium text-black/70 transition-colors hover:bg-black/[0.04]">לא תודה</button>[22m
+    [2m       - unexpected value "null"[22m
+
+
+      798 |     await page.keyboard.press('Tab')
+      799 |     const link = page.locator(':focus')
+    > 800 |     await expect(link).toHaveAttribute('href', '#main-content')
+          |                        ^
+      801 |     await expect(link).toHaveText('דילוג לתוכן הראשי')
+      802 |     // Visible while focused, not only present: `sr-only` alone would keep
+      803 |     // the 1x1 clip and the sighted keyboard user would see nothing move.
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:800:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-the-first-Tab-on-lega-ba2c1-k-that-lands-focus-in-main--chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-the-first-Tab-on-lega-ba2c1-k-that-lands-focus-in-main--chromium/error-context.md
+
+
+[1A[2K[11/34] [chromium] › e2e/home-rtl.spec.ts:76:7 › home page RTL › body and 20 anchors resolve to direction rtl
+[1A[2K[12/34] [chromium] › e2e/home-rtl.spec.ts:100:7 › home page RTL › the hero promo lines are Hebrew paragraphs laid out rtl
+[1A[2K[13/34] [chromium] › e2e/home-rtl.spec.ts:120:7 › home page RTL › every ltr node on the page is on the allow-list
+[1A[2K[14/34] [chromium] › e2e/home.spec.ts:258:7 › homepage › the hero fetches no slider raster, because it has no photograph
+[1A[2K  9) [chromium] › e2e/home-rtl.spec.ts:120:7 › home page RTL › every ltr node on the page is on the allow-list 
+
+    Error: ltr nodes outside the allow-list
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "div.hidden.min-w-0 > div.flex.min-w-0 > form[aria-label=\"חיפוש מוצרים באתר\"] > div.site-search__pill.flex > input#masthead-search",[39m
+    [31m+ ][39m
+
+      154 |     )
+      155 |
+    > 156 |     expect(offenders, 'ltr nodes outside the allow-list').toEqual([])
+          |                                                           ^
+      157 |   })
+      158 | })
+      159 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/home-rtl.spec.ts:156:59
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/home-rtl-home-page-RTL-eve-4bbfa-e-page-is-on-the-allow-list-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/home-rtl-home-page-RTL-eve-4bbfa-e-page-is-on-the-allow-list-chromium/error-context.md
+
+
+[1A[2K[15/34] [chromium] › e2e/home.spec.ts:518:7 › homepage › the hero holds its first slide until the visitor interacts, then rotates
+[1A[2K[16/34] [chromium] › e2e/home.spec.ts:579:7 › homepage › the hero slot renders the branded placeholder, named, with no vendor raster
+[1A[2K[17/34] [chromium] › e2e/touch-targets.spec.ts:178:5 › the hero dots grow to 44px vertically and keep the pitch sideways
+[1A[2K  10) [chromium] › e2e/touch-targets.spec.ts:178:5 › the hero dots grow to 44px vertically and keep the pitch sideways 
+
+    Error: dot 6 box
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mnot[2m.[22mtoBeNull[2m()[22m
+
+    Received: [31mnull[39m
+
+      187 |   for (let i = 0; i < count; i += 1) {
+      188 |     const box = await dots.nth(i).boundingBox()
+    > 189 |     expect(box, `dot ${i + 1} box`).not.toBeNull()
+          |                                         ^
+      190 |     expect(box?.height ?? 0).toBeGreaterThanOrEqual(MIN_PRIMARY)
+      191 |     expect(box?.width ?? 0).toBeGreaterThanOrEqual(MIN_ANY)
+      192 |   }
+        at /Users/ofir/kenyonexpress-autopilot/e2e/touch-targets.spec.ts:189:41
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/touch-targets-the-hero-dot-52f71-and-keep-the-pitch-sideways-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/touch-targets-the-hero-dot-52f71-and-keep-the-pitch-sideways-chromium/error-context.md
+
+
+[1A[2K[18/34] [mobile-chrome] › e2e/a11y.spec.ts:142:7 › home has no WCAG A/AA violations
+[1A[2K[19/34] [mobile-chrome] › e2e/a11y.spec.ts:722:7 › every Tab stop on / is visible, on screen and not under fixed chrome
+[1A[2K  11) [mobile-chrome] › e2e/a11y.spec.ts:722:7 › every Tab stop on / is visible, on screen and not under fixed chrome 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "focus hidden under details.mt-2: a \"דברו איתנו בוואטסאפ\"",[39m
+    [31m+ ][39m
+
+      727 |     const { stops, problems } = await walkFocus(page)
+      728 |     expect(stops, 'the walk found nothing to focus; the page did not render').toBeGreaterThan(3)
+    > 729 |     expect(problems).toEqual([])
+          |                      ^
+      730 |   })
+      731 | }
+      732 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:729:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-every-Tab-stop-on-is--1380c--and-not-under-fixed-chrome-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-every-Tab-stop-on-is--1380c--and-not-under-fixed-chrome-mobile-chrome/error-context.md
+
+
+[1A[2K[20/34] [mobile-chrome] › e2e/a11y.spec.ts:722:7 › every Tab stop on /products is visible, on screen and not under fixed chrome
+[1A[2K  12) [mobile-chrome] › e2e/a11y.spec.ts:722:7 › every Tab stop on /products is visible, on screen and not under fixed chrome 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "focus hidden under details.mt-2: a \"דברו איתנו בוואטסאפ\"",[39m
+    [31m+ ][39m
+
+      727 |     const { stops, problems } = await walkFocus(page)
+      728 |     expect(stops, 'the walk found nothing to focus; the page did not render').toBeGreaterThan(3)
+    > 729 |     expect(problems).toEqual([])
+          |                      ^
+      730 |   })
+      731 | }
+      732 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:729:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-every-Tab-stop-on-pro-a2770--and-not-under-fixed-chrome-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-every-Tab-stop-on-pro-a2770--and-not-under-fixed-chrome-mobile-chrome/error-context.md
+
+
+[1A[2K[21/34] [mobile-chrome] › e2e/a11y.spec.ts:722:7 › every Tab stop on /cart is visible, on screen and not under fixed chrome
+[1A[2K  13) [mobile-chrome] › e2e/a11y.spec.ts:722:7 › every Tab stop on /cart is visible, on screen and not under fixed chrome 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "focus hidden under details.mt-2: a \"דברו איתנו בוואטסאפ\"",[39m
+    [31m+ ][39m
+
+      727 |     const { stops, problems } = await walkFocus(page)
+      728 |     expect(stops, 'the walk found nothing to focus; the page did not render').toBeGreaterThan(3)
+    > 729 |     expect(problems).toEqual([])
+          |                      ^
+      730 |   })
+      731 | }
+      732 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:729:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-every-Tab-stop-on-car-abe74--and-not-under-fixed-chrome-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-every-Tab-stop-on-car-abe74--and-not-under-fixed-chrome-mobile-chrome/error-context.md
+
+
+[1A[2K[22/34] [mobile-chrome] › e2e/a11y.spec.ts:722:7 › every Tab stop on /coupons is visible, on screen and not under fixed chrome
+[1A[2K  14) [mobile-chrome] › e2e/a11y.spec.ts:722:7 › every Tab stop on /coupons is visible, on screen and not under fixed chrome 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "focus hidden under details.mt-2: a \"דברו איתנו בוואטסאפ\"",[39m
+    [31m+ ][39m
+
+      727 |     const { stops, problems } = await walkFocus(page)
+      728 |     expect(stops, 'the walk found nothing to focus; the page did not render').toBeGreaterThan(3)
+    > 729 |     expect(problems).toEqual([])
+          |                      ^
+      730 |   })
+      731 | }
+      732 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:729:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-every-Tab-stop-on-cou-a0536--and-not-under-fixed-chrome-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-every-Tab-stop-on-cou-a0536--and-not-under-fixed-chrome-mobile-chrome/error-context.md
+
+
+[1A[2K[23/34] [mobile-chrome] › e2e/a11y.spec.ts:722:7 › every Tab stop on /login is visible, on screen and not under fixed chrome
+[1A[2K[24/34] [mobile-chrome] › e2e/a11y.spec.ts:794:7 › the first Tab on / is a skip link that lands focus in <main>
+[1A[2K[25/34] [mobile-chrome] › e2e/a11y.spec.ts:794:7 › the first Tab on /products is a skip link that lands focus in <main>
+[1A[2K  15) [mobile-chrome] › e2e/a11y.spec.ts:794:7 › the first Tab on / is a skip link that lands focus in <main> 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveAttribute[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  locator(':focus')
+    Expected: [32m"#main-content"[39m
+    Received: [31m""[39m
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toHaveAttribute" with timeout 5000ms[22m
+    [2m  - waiting for locator(':focus')[22m
+    [2m    14 × locator resolved to <button type="submit" class="min-h-11 rounded-lg border border-black/15 px-4 py-2 text-sm font-medium text-black/70 transition-colors hover:bg-black/[0.04]">לא תודה</button>[22m
+    [2m       - unexpected value "null"[22m
+
+
+      798 |     await page.keyboard.press('Tab')
+      799 |     const link = page.locator(':focus')
+    > 800 |     await expect(link).toHaveAttribute('href', '#main-content')
+          |                        ^
+      801 |     await expect(link).toHaveText('דילוג לתוכן הראשי')
+      802 |     // Visible while focused, not only present: `sr-only` alone would keep
+      803 |     // the 1x1 clip and the sighted keyboard user would see nothing move.
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:800:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-the-first-Tab-on-is-a-78b99-k-that-lands-focus-in-main--mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-the-first-Tab-on-is-a-78b99-k-that-lands-focus-in-main--mobile-chrome/error-context.md
+
+
+[1A[2K[26/34] [mobile-chrome] › e2e/a11y.spec.ts:794:7 › the first Tab on /coupons is a skip link that lands focus in <main>
+[1A[2K  16) [mobile-chrome] › e2e/a11y.spec.ts:794:7 › the first Tab on /products is a skip link that lands focus in <main> 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveAttribute[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  locator(':focus')
+    Expected: [32m"#main-content"[39m
+    Received: [31m""[39m
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toHaveAttribute" with timeout 5000ms[22m
+    [2m  - waiting for locator(':focus')[22m
+    [2m    14 × locator resolved to <button type="submit" class="min-h-11 rounded-lg border border-black/15 px-4 py-2 text-sm font-medium text-black/70 transition-colors hover:bg-black/[0.04]">לא תודה</button>[22m
+    [2m       - unexpected value "null"[22m
+
+
+      798 |     await page.keyboard.press('Tab')
+      799 |     const link = page.locator(':focus')
+    > 800 |     await expect(link).toHaveAttribute('href', '#main-content')
+          |                        ^
+      801 |     await expect(link).toHaveText('דילוג לתוכן הראשי')
+      802 |     // Visible while focused, not only present: `sr-only` alone would keep
+      803 |     // the 1x1 clip and the sighted keyboard user would see nothing move.
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:800:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-the-first-Tab-on-prod-be532-k-that-lands-focus-in-main--mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-the-first-Tab-on-prod-be532-k-that-lands-focus-in-main--mobile-chrome/error-context.md
+
+
+[1A[2K[27/34] [mobile-chrome] › e2e/a11y.spec.ts:794:7 › the first Tab on /legal/privacy is a skip link that lands focus in <main>
+[1A[2K  17) [mobile-chrome] › e2e/a11y.spec.ts:794:7 › the first Tab on /coupons is a skip link that lands focus in <main> 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveAttribute[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  locator(':focus')
+    Expected: [32m"#main-content"[39m
+    Received: [31m""[39m
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toHaveAttribute" with timeout 5000ms[22m
+    [2m  - waiting for locator(':focus')[22m
+    [2m    14 × locator resolved to <button type="submit" class="min-h-11 rounded-lg border border-black/15 px-4 py-2 text-sm font-medium text-black/70 transition-colors hover:bg-black/[0.04]">לא תודה</button>[22m
+    [2m       - unexpected value "null"[22m
+
+
+      798 |     await page.keyboard.press('Tab')
+      799 |     const link = page.locator(':focus')
+    > 800 |     await expect(link).toHaveAttribute('href', '#main-content')
+          |                        ^
+      801 |     await expect(link).toHaveText('דילוג לתוכן הראשי')
+      802 |     // Visible while focused, not only present: `sr-only` alone would keep
+      803 |     // the 1x1 clip and the sighted keyboard user would see nothing move.
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:800:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-the-first-Tab-on-coup-49cbf-k-that-lands-focus-in-main--mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-the-first-Tab-on-coup-49cbf-k-that-lands-focus-in-main--mobile-chrome/error-context.md
+
+
+[1A[2K[28/34] [mobile-chrome] › e2e/home-rtl.spec.ts:76:7 › home page RTL › body and 20 anchors resolve to direction rtl
+[1A[2K[29/34] [mobile-chrome] › e2e/home-rtl.spec.ts:100:7 › home page RTL › the hero promo lines are Hebrew paragraphs laid out rtl
+[1A[2K[30/34] [mobile-chrome] › e2e/home-rtl.spec.ts:120:7 › home page RTL › every ltr node on the page is on the allow-list
+[1A[2K  18) [mobile-chrome] › e2e/a11y.spec.ts:794:7 › the first Tab on /legal/privacy is a skip link that lands focus in <main> 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveAttribute[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  locator(':focus')
+    Expected: [32m"#main-content"[39m
+    Received: [31m""[39m
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toHaveAttribute" with timeout 5000ms[22m
+    [2m  - waiting for locator(':focus')[22m
+    [2m    14 × locator resolved to <button type="submit" class="min-h-11 rounded-lg border border-black/15 px-4 py-2 text-sm font-medium text-black/70 transition-colors hover:bg-black/[0.04]">לא תודה</button>[22m
+    [2m       - unexpected value "null"[22m
+
+
+      798 |     await page.keyboard.press('Tab')
+      799 |     const link = page.locator(':focus')
+    > 800 |     await expect(link).toHaveAttribute('href', '#main-content')
+          |                        ^
+      801 |     await expect(link).toHaveText('דילוג לתוכן הראשי')
+      802 |     // Visible while focused, not only present: `sr-only` alone would keep
+      803 |     // the 1x1 clip and the sighted keyboard user would see nothing move.
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:800:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-the-first-Tab-on-lega-ba2c1-k-that-lands-focus-in-main--mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-the-first-Tab-on-lega-ba2c1-k-that-lands-focus-in-main--mobile-chrome/error-context.md
+
+
+[1A[2K[31/34] [mobile-chrome] › e2e/home.spec.ts:258:7 › homepage › the hero fetches no slider raster, because it has no photograph
+[1A[2K  19) [mobile-chrome] › e2e/home-rtl.spec.ts:120:7 › home page RTL › every ltr node on the page is on the allow-list 
+
+    Error: ltr nodes outside the allow-list
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "div.hidden.min-w-0 > div.flex.min-w-0 > form[aria-label=\"חיפוש מוצרים באתר\"] > div.site-search__pill.flex > input#masthead-search",[39m
+    [31m+ ][39m
+
+      154 |     )
+      155 |
+    > 156 |     expect(offenders, 'ltr nodes outside the allow-list').toEqual([])
+          |                                                           ^
+      157 |   })
+      158 | })
+      159 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/home-rtl.spec.ts:156:59
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/home-rtl-home-page-RTL-eve-4bbfa-e-page-is-on-the-allow-list-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/home-rtl-home-page-RTL-eve-4bbfa-e-page-is-on-the-allow-list-mobile-chrome/error-context.md
+
+
+[1A[2K[32/34] [mobile-chrome] › e2e/home.spec.ts:518:7 › homepage › the hero holds its first slide until the visitor interacts, then rotates
+[1A[2K[33/34] [mobile-chrome] › e2e/home.spec.ts:579:7 › homepage › the hero slot renders the branded placeholder, named, with no vendor raster
+[1A[2K[34/34] [mobile-chrome] › e2e/touch-targets.spec.ts:178:5 › the hero dots grow to 44px vertically and keep the pitch sideways
+[1A[2K  19 failed
+    [chromium] › e2e/a11y.spec.ts:722:7 › every Tab stop on / is visible, on screen and not under fixed chrome 
+    [chromium] › e2e/a11y.spec.ts:722:7 › every Tab stop on /products is visible, on screen and not under fixed chrome 
+    [chromium] › e2e/a11y.spec.ts:722:7 › every Tab stop on /cart is visible, on screen and not under fixed chrome 
+    [chromium] › e2e/a11y.spec.ts:722:7 › every Tab stop on /coupons is visible, on screen and not under fixed chrome 
+    [chromium] › e2e/a11y.spec.ts:794:7 › the first Tab on / is a skip link that lands focus in <main> 
+    [chromium] › e2e/a11y.spec.ts:794:7 › the first Tab on /products is a skip link that lands focus in <main> 
+    [chromium] › e2e/a11y.spec.ts:794:7 › the first Tab on /coupons is a skip link that lands focus in <main> 
+    [chromium] › e2e/a11y.spec.ts:794:7 › the first Tab on /legal/privacy is a skip link that lands focus in <main> 
+    [chromium] › e2e/home-rtl.spec.ts:120:7 › home page RTL › every ltr node on the page is on the allow-list 
+    [chromium] › e2e/touch-targets.spec.ts:178:5 › the hero dots grow to 44px vertically and keep the pitch sideways 
+    [mobile-chrome] › e2e/a11y.spec.ts:722:7 › every Tab stop on / is visible, on screen and not under fixed chrome 
+    [mobile-chrome] › e2e/a11y.spec.ts:722:7 › every Tab stop on /products is visible, on screen and not under fixed chrome 
+    [mobile-chrome] › e2e/a11y.spec.ts:722:7 › every Tab stop on /cart is visible, on screen and not under fixed chrome 
+    [mobile-chrome] › e2e/a11y.spec.ts:722:7 › every Tab stop on /coupons is visible, on screen and not under fixed chrome 
+    [mobile-chrome] › e2e/a11y.spec.ts:794:7 › the first Tab on / is a skip link that lands focus in <main> 
+    [mobile-chrome] › e2e/a11y.spec.ts:794:7 › the first Tab on /products is a skip link that lands focus in <main> 
+    [mobile-chrome] › e2e/a11y.spec.ts:794:7 › the first Tab on /coupons is a skip link that lands focus in <main> 
+    [mobile-chrome] › e2e/a11y.spec.ts:794:7 › the first Tab on /legal/privacy is a skip link that lands focus in <main> 
+    [mobile-chrome] › e2e/home-rtl.spec.ts:120:7 › home page RTL › every ltr node on the page is on the allow-list 
+  15 passed (59.6s)
