@@ -58,7 +58,7 @@ async function runUpdateProfileDetails(
 
   if (error) return { error: 'שמירת הפרטים נכשלה' }
 
-  revalidatePath('/account/details')
+  revalidatePath('/account/settings')
   revalidatePath('/account')
   return { success: 'הפרטים נשמרו' }
 }

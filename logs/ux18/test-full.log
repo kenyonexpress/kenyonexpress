@@ -1,0 +1,68 @@
+Already up to date
+Done in 264ms using pnpm v11.1.2
+Already up to date
+Done in 239ms using pnpm v11.1.2
+
+ RUN  v4.1.11 /Users/ofir/kenyonexpress-autopilot
+
+Error: Not implemented: navigation (except hash changes)
+    at module.exports (/Users/ofir/kenyonexpress-autopilot/node_modules/.pnpm/jsdom@25.0.1/node_modules/jsdom/lib/jsdom/browser/not-implemented.js:9:17)
+    at navigateFetch (/Users/ofir/kenyonexpress-autopilot/node_modules/.pnpm/jsdom@25.0.1/node_modules/jsdom/lib/jsdom/living/window/navigation.js:77:3)
+    at exports.navigate (/Users/ofir/kenyonexpress-autopilot/node_modules/.pnpm/jsdom@25.0.1/node_modules/jsdom/lib/jsdom/living/window/navigation.js:55:3)
+    at Timeout._onTimeout (/Users/ofir/kenyonexpress-autopilot/node_modules/.pnpm/jsdom@25.0.1/node_modules/jsdom/lib/jsdom/living/nodes/HTMLHyperlinkElementUtils-impl.js:81:7)
+    at listOnTimeout (node:internal/timers:605:17)
+    at processTimers (node:internal/timers:541:7) undefined
+Error: Not implemented: navigation (except hash changes)
+    at module.exports (/Users/ofir/kenyonexpress-autopilot/node_modules/.pnpm/jsdom@25.0.1/node_modules/jsdom/lib/jsdom/browser/not-implemented.js:9:17)
+    at navigateFetch (/Users/ofir/kenyonexpress-autopilot/node_modules/.pnpm/jsdom@25.0.1/node_modules/jsdom/lib/jsdom/living/window/navigation.js:77:3)
+    at exports.navigate (/Users/ofir/kenyonexpress-autopilot/node_modules/.pnpm/jsdom@25.0.1/node_modules/jsdom/lib/jsdom/living/window/navigation.js:55:3)
+    at Timeout._onTimeout (/Users/ofir/kenyonexpress-autopilot/node_modules/.pnpm/jsdom@25.0.1/node_modules/jsdom/lib/jsdom/living/nodes/HTMLHyperlinkElementUtils-impl.js:81:7)
+    at listOnTimeout (node:internal/timers:605:17)
+    at processTimers (node:internal/timers:541:7) undefined
+Error: Not implemented: navigation (except hash changes)
+    at module.exports (/Users/ofir/kenyonexpress-autopilot/node_modules/.pnpm/jsdom@25.0.1/node_modules/jsdom/lib/jsdom/browser/not-implemented.js:9:17)
+    at navigateFetch (/Users/ofir/kenyonexpress-autopilot/node_modules/.pnpm/jsdom@25.0.1/node_modules/jsdom/lib/jsdom/living/window/navigation.js:77:3)
+    at exports.navigate (/Users/ofir/kenyonexpress-autopilot/node_modules/.pnpm/jsdom@25.0.1/node_modules/jsdom/lib/jsdom/living/window/navigation.js:55:3)
+    at Timeout._onTimeout (/Users/ofir/kenyonexpress-autopilot/node_modules/.pnpm/jsdom@25.0.1/node_modules/jsdom/lib/jsdom/living/nodes/HTMLHyperlinkElementUtils-impl.js:81:7)
+    at listOnTimeout (node:internal/timers:605:17)
+    at processTimers (node:internal/timers:541:7) undefined
+ ❯ src/lib/seo/legacy-redirects.test.ts (15 tests | 1 failed) 43ms
+     × lists exactly the static routes src/app defines 32ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/lib/seo/legacy-redirects.test.ts > the artefact describes this repository > lists exactly the static routes src/app defines
+AssertionError: expected [ '/', '/about', …(123) ] to deeply equal [ '/', '/about', …(124) ]
+
+- Expected
++ Received
+
+@@ -15,11 +15,10 @@
+    "/account/privacy",
+    "/account/referrals",
+    "/account/return",
+    "/account/saved-searches",
+    "/account/security",
+-   "/account/settings",
+    "/account/subscriptions",
+    "/account/tokens",
+    "/account/vouchers",
+    "/account/wallet",
+    "/account/wishlist",
+
+ ❯ src/lib/seo/legacy-redirects.test.ts:109:40
+    107|     // is precisely how /blog came to be marked gone: the page was add…
+    108|     // the 2026-08-11 crawl and nothing re-asked the question.
+    109|     expect(map.$targets.static_routes).toEqual(staticRoutesFromDisk())
+       |                                        ^
+    110|   })
+    111|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 854 passed (855)
+      Tests  1 failed | 9919 passed | 12 skipped (9932)
+   Start at  19:32:56
+   Duration  141.66s (transform 24.93s, setup 65.59s, import 109.80s, tests 59.25s, environment 513.38s)
+

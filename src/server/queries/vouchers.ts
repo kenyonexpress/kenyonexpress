@@ -45,7 +45,7 @@ async function customerSelect(extra = ''): Promise<string> {
        face_value_agorot, coupon_price_agorot, remaining_amount_due_agorot,
        offer_valid_until, expires_at, issued_at, redeemed_at,
        product:products(name_he, slug),
-       supplier:suppliers(name${extra})`
+       supplier:suppliers!vouchers_supplier_id_fkey(name${extra})`
 }
 
 /**

@@ -142,7 +142,7 @@ async function runLoadGiftPreview(token: string): Promise<GiftPreview | null> {
   const { data } = await admin
     .from('vouchers')
     .select(
-      'status, expires_at, gift_recipient_name, gift_message, gift_claimed_at, products(name_he), suppliers(name)',
+      'status, expires_at, gift_recipient_name, gift_message, gift_claimed_at, products(name_he), suppliers:suppliers!vouchers_supplier_id_fkey(name)',
     )
     .eq('gift_claim_token_hash', hashGiftClaimToken(token))
     .maybeSingle()

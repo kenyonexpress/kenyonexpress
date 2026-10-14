@@ -156,7 +156,7 @@ describe('updateProfileDetails', () => {
     expect(write?.payload).toEqual({ full_name: 'דנה כהן', phone: '052-9876543' })
     expect(write?.chain).toContainEqual(['eq', ['id', USER]])
     expect(calls.some((c) => c.table.startsWith('admin:'))).toBe(false)
-    expect(revalidatePath).toHaveBeenCalledWith('/account/details')
+    expect(revalidatePath).toHaveBeenCalledWith('/account/settings')
     expect(revalidatePath).toHaveBeenCalledWith('/account')
   })
 

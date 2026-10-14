@@ -1,0 +1,264 @@
+Already up to date
+Done in 190ms using pnpm v11.1.2
+$ next start
+▲ Next.js 16.3.3
+- Local:         http://localhost:3356
+- Network:       http://100.84.130.122:3356
+✓ Ready in 81ms
+✓ Running next.config.ts took 305ms
+{"ts":"2026-10-14T12:20:25.723Z","level":"warn","event":"env.checks_skipped","request_id":null,"detail":"ALLOW_INCOMPLETE_ENV=true. Correct for a local `next start`; wrong anywhere a customer can reach."}
+{"ts":"2026-10-14T12:20:27.704Z","level":"info","event":"env.probe_ok","request_id":null,"checked":2}
+(node:40342) ExperimentalWarning: The supports Web Crypto API method is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:40342) ExperimentalWarning: The ML-DSA-44 Web Crypto API algorithm is an experimental feature and might change at any time
+{"ts":"2026-10-14T12:20:59.207Z","level":"warn","event":"db.query_slow","request_id":"efd517d7-49b8-465a-8355-ad7ad0af1d7e","route":"action","method":"POST","target":"rpc:check_rate_limit","status":200,"duration_ms":328,"threshold_ms":300}
+{"ts":"2026-10-14T12:20:59.770Z","level":"warn","event":"db.query_slow","request_id":"efd517d7-49b8-465a-8355-ad7ad0af1d7e","route":"action","method":"POST","target":"rpc:check_rate_limit","status":200,"duration_ms":557,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:00.571Z","level":"warn","event":"db.query_slow","request_id":"efd517d7-49b8-465a-8355-ad7ad0af1d7e","route":"action","method":"POST","target":"auth:token","status":200,"duration_ms":798,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:00.886Z","level":"warn","event":"db.query_slow","request_id":"efd517d7-49b8-465a-8355-ad7ad0af1d7e","route":"action","method":"GET","target":"carts","status":200,"duration_ms":307,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:00.890Z","level":"warn","event":"db.query_slow","request_id":"efd517d7-49b8-465a-8355-ad7ad0af1d7e","route":"action","method":"GET","target":"carts","status":200,"duration_ms":313,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:01.541Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":329,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:01.556Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":344,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:01.582Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":369,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:01.585Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"payment_tokens","status":200,"duration_ms":369,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:01.627Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"notification_preferences","status":200,"duration_ms":410,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:01.629Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"v_wallet_ledger","status":200,"duration_ms":413,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:01.654Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"user_addresses","status":200,"duration_ms":438,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:01.848Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":635,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:01.879Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":378,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:01.891Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":389,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:01.895Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"orders","status":400,"duration_ms":352,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:01.897Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":395,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:01.899Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"vouchers","status":400,"duration_ms":342,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:01.902Z","level":"warn","event":"db.query_slow","request_id":"221093a1-aae5-43de-8216-a416b3c7f294","route":"action","method":"GET","target":"auth:user","status":200,"duration_ms":307,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:01.904Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"cashback_ledger","status":200,"duration_ms":318,"threshold_ms":300}
+(node:40342) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T12:21:02.071Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":423,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:02.076Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":426,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:02.159Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":511,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:02.164Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":514,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:02.170Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"notification_preferences","status":200,"duration_ms":518,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:02.170Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"v_wallet_ledger","status":200,"duration_ms":520,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:02.172Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"payment_tokens","status":200,"duration_ms":520,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:02.195Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":547,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:02.196Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"profiles","status":200,"duration_ms":316,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:02.199Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"wallet_accounts","status":400,"duration_ms":307,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:02.285Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"vouchers","status":300,"duration_ms":380,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:02.285Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"orders","status":200,"duration_ms":359,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:02.285Z","level":"warn","event":"db.query_slow","request_id":"221093a1-aae5-43de-8216-a416b3c7f294","route":"action","method":"GET","target":"wishlists","status":200,"duration_ms":379,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:02.286Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"user_addresses","status":200,"duration_ms":635,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:02.286Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"loyalty_tiers","status":404,"duration_ms":436,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:02.286Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"orders","status":200,"duration_ms":390,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:02.290Z","level":"error","event":"voucher.customer_list_read_failed","request_id":null,"userId":"89e848ca-5652-479b-880d-6edc19062025","error":{"code":"PGRST201","details":[{"cardinality":"[redacted]","embedding":"vouchers with suppliers","relationship":"vouchers_redeemed_by_supplier_id_fkey using vouchers(redeemed_by_supplier_id) and suppliers(id)"},{"cardinality":"[redacted]","embedding":"vouchers with suppliers","relationship":"vouchers_supplier_id_fkey using vouchers(supplier_id) and suppliers(id)"}],"hint":"Try changing 'suppliers' to one of the following: 'suppliers!vouchers_redeemed_by_supplier_id_fkey', 'suppliers!vouchers_supplier_id_fkey'. Find the desired relationship in the 'details' key.","message":"Could not embed because more than one relationship was found for 'vouchers' and 'suppliers'"}}
+⨯ Error: voucher.customer_list_read_failed: Could not embed because more than one relationship was found for 'vouchers' and 'suppliers'
+    at g (.next/server/chunks/ssr/[root-of-the-server]__10xb1lt._.js:6:154)
+    at h (.next/server/chunks/ssr/[root-of-the-server]__10xb1lt._.js:6:311)
+    at async p (.next/server/chunks/ssr/src_04bbqle._.js:2:388) {
+  digest: '1128620422'
+}
+{"ts":"2026-10-14T12:21:02.739Z","level":"warn","event":"db.query_slow","request_id":"83d5fdc2-d1f9-4c13-88b0-17ab137eb195","route":"action","method":"GET","target":"auth:user","status":200,"duration_ms":449,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:02.741Z","level":"warn","event":"db.query_slow","request_id":"663e8e1a-cd2e-4877-b1d8-8280039c7bf1","route":"/api/cart","method":"GET","target":"auth:user","status":200,"duration_ms":463,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:02.742Z","level":"warn","event":"db.query_slow","request_id":"663e8e1a-cd2e-4877-b1d8-8280039c7bf1","route":"action","method":"GET","target":"auth:user","status":200,"duration_ms":463,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:02.760Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":593,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:02.767Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"wallet_accounts","status":200,"duration_ms":564,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:02.767Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":599,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:02.767Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":600,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:02.768Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"wallet_accounts","status":200,"duration_ms":566,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:02.770Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"vouchers","status":300,"duration_ms":608,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:02.956Z","level":"error","event":"voucher.customer_list_read_failed","request_id":null,"userId":"89e848ca-5652-479b-880d-6edc19062025","error":{"code":"PGRST201","details":[{"cardinality":"[redacted]","embedding":"vouchers with suppliers","relationship":"vouchers_redeemed_by_supplier_id_fkey using vouchers(redeemed_by_supplier_id) and suppliers(id)"},{"cardinality":"[redacted]","embedding":"vouchers with suppliers","relationship":"vouchers_supplier_id_fkey using vouchers(supplier_id) and suppliers(id)"}],"hint":"Try changing 'suppliers' to one of the following: 'suppliers!vouchers_redeemed_by_supplier_id_fkey', 'suppliers!vouchers_supplier_id_fkey'. Find the desired relationship in the 'details' key.","message":"Could not embed because more than one relationship was found for 'vouchers' and 'suppliers'"}}
+⨯ Error: voucher.customer_list_read_failed: Could not embed because more than one relationship was found for 'vouchers' and 'suppliers'
+    at g (.next/server/chunks/ssr/[root-of-the-server]__10xb1lt._.js:6:154)
+    at h (.next/server/chunks/ssr/[root-of-the-server]__10xb1lt._.js:6:311)
+    at async p (.next/server/chunks/ssr/src_04bbqle._.js:2:388) {
+  digest: '1128620422'
+}
+{"ts":"2026-10-14T12:21:03.035Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"orders","status":200,"duration_ms":838,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:03.094Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"wallet_accounts","status":200,"duration_ms":325,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:04.265Z","level":"warn","event":"db.query_slow","request_id":"5e798f08-ef14-40e2-8416-76fd2f32b8b5","route":"action","method":"GET","target":"auth:user","status":200,"duration_ms":309,"threshold_ms":300}
+(node:40342) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+(node:40342) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T12:21:23.839Z","level":"warn","event":"db.query_slow","request_id":"c03732ce-8efb-47c3-8e8a-7fefd3b6bf5c","route":"action","method":"GET","target":"auth:user","status":200,"duration_ms":371,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:23.845Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":1747,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:24.489Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"loyalty_tiers","status":404,"duration_ms":362,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:25.582Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"orders","status":200,"duration_ms":3243,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:25.938Z","level":"warn","event":"db.query_slow","request_id":"83618f60-2544-4fa5-87fa-4c75bb9ae170","route":"action","method":"GET","target":"auth:user","status":200,"duration_ms":336,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:25.961Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"payment_tokens","status":200,"duration_ms":359,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:25.963Z","level":"warn","event":"db.query_slow","request_id":"ad92ec78-3838-483c-a7aa-ca6acd31db13","route":"action","method":"GET","target":"carts","status":200,"duration_ms":318,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:29.351Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":343,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:29.676Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":301,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:29.709Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":333,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:29.743Z","level":"warn","event":"db.query_slow","request_id":"efadcc21-1940-4010-b9b6-fef485ab0f7e","route":"action","method":"GET","target":"auth:user","status":200,"duration_ms":377,"threshold_ms":300}
+(node:40342) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T12:21:30.023Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"profiles","status":200,"duration_ms":345,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:30.035Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"orders","status":200,"duration_ms":324,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:30.211Z","level":"warn","event":"db.query_slow","request_id":"efadcc21-1940-4010-b9b6-fef485ab0f7e","route":"action","method":"GET","target":"wishlists","status":200,"duration_ms":446,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:30.240Z","level":"warn","event":"db.query_slow","request_id":"6016b7e1-8aca-4cfb-99ce-86f35a8cc5e4","route":"action","method":"GET","target":"carts","status":200,"duration_ms":302,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:30.598Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":1223,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:30.913Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"wallet_accounts","status":200,"duration_ms":313,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:31.274Z","level":"warn","event":"db.query_slow","request_id":"394dd704-c32e-4d7f-8530-482a6113ab30","route":"action","method":"GET","target":"auth:user","status":200,"duration_ms":773,"threshold_ms":300}
+(node:40342) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T12:21:32.450Z","level":"warn","event":"db.query_slow","request_id":"fbff80f5-fe8a-4e94-a5cb-286c39397d20","route":"action","method":"GET","target":"auth:user","status":200,"duration_ms":382,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:33.063Z","level":"warn","event":"db.query_slow","request_id":"fbff80f5-fe8a-4e94-a5cb-286c39397d20","route":"action","method":"GET","target":"notification_preferences","status":200,"duration_ms":609,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:33.852Z","level":"warn","event":"db.query_slow","request_id":"fbff80f5-fe8a-4e94-a5cb-286c39397d20","route":"action","method":"GET","target":"notifications","status":200,"duration_ms":788,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:34.458Z","level":"warn","event":"db.query_slow","request_id":"fbff80f5-fe8a-4e94-a5cb-286c39397d20","route":"action","method":"HEAD","target":"notifications","status":200,"duration_ms":603,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:49.271Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":384,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:49.271Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":386,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:49.273Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"user_addresses","status":200,"duration_ms":714,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:49.589Z","level":"warn","event":"db.query_slow","request_id":"da75b593-0e5e-497a-8263-dae9705df5ee","route":"action","method":"GET","target":"auth:user","status":200,"duration_ms":338,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:49.636Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"orders","status":200,"duration_ms":361,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:49.636Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"wallet_accounts","status":200,"duration_ms":361,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:49.650Z","level":"warn","event":"db.query_slow","request_id":"c01399cf-1926-4e76-a172-85539b31b8b9","route":"action","method":"GET","target":"wishlists","status":200,"duration_ms":351,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:50.321Z","level":"warn","event":"db.query_slow","request_id":"f4b488ad-93f4-40ac-8184-6ebb2ff5eeb7","route":"action","method":"GET","target":"auth:user","status":200,"duration_ms":396,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:50.970Z","level":"warn","event":"db.query_slow","request_id":"17769cab-d997-4c5a-b4c8-4f03a05790ad","route":"action","method":"GET","target":"auth:user","status":200,"duration_ms":340,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:52.152Z","level":"warn","event":"db.query_slow","request_id":"6f44c934-0d46-49e6-938d-4959985ca197","route":"action","method":"GET","target":"notifications","status":200,"duration_ms":399,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:52.593Z","level":"warn","event":"db.query_slow","request_id":"6f44c934-0d46-49e6-938d-4959985ca197","route":"action","method":"HEAD","target":"notifications","status":200,"duration_ms":439,"threshold_ms":300}
+(node:40342) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T12:21:56.652Z","level":"warn","event":"db.query_slow","request_id":"816b5f7c-e770-49fb-9e1e-1475d0e5ecb2","route":"action","method":"GET","target":"auth:user","status":200,"duration_ms":449,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:56.746Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"profiles","status":200,"duration_ms":564,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:56.760Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":581,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:57.063Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"orders","status":200,"duration_ms":300,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:57.618Z","level":"warn","event":"db.query_slow","request_id":"8dd14534-aae5-4ecf-a1f0-2a7873d6afe4","route":"action","method":"GET","target":"auth:user","status":200,"duration_ms":555,"threshold_ms":300}
+{"ts":"2026-10-14T12:21:59.487Z","level":"warn","event":"db.query_slow","request_id":"e23ae2fd-1a75-43df-ba0a-fe0b399df815","route":"action","method":"HEAD","target":"notifications","status":200,"duration_ms":326,"threshold_ms":300}
+{"ts":"2026-10-14T12:22:21.858Z","level":"warn","event":"db.query_slow","request_id":"9333b37d-36c7-481f-9d49-b856a77e738d","route":"action","method":"POST","target":"rpc:check_rate_limit","status":200,"duration_ms":433,"threshold_ms":300}
+{"ts":"2026-10-14T12:22:22.214Z","level":"warn","event":"db.query_slow","request_id":"9333b37d-36c7-481f-9d49-b856a77e738d","route":"action","method":"POST","target":"rpc:check_rate_limit","status":200,"duration_ms":352,"threshold_ms":300}
+{"ts":"2026-10-14T12:22:22.756Z","level":"warn","event":"db.query_slow","request_id":"9333b37d-36c7-481f-9d49-b856a77e738d","route":"action","method":"POST","target":"auth:token","status":200,"duration_ms":541,"threshold_ms":300}
+{"ts":"2026-10-14T12:22:23.656Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":351,"threshold_ms":300}
+{"ts":"2026-10-14T12:22:23.660Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":353,"threshold_ms":300}
+{"ts":"2026-10-14T12:22:23.661Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":355,"threshold_ms":300}
+{"ts":"2026-10-14T12:22:23.662Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"payment_tokens","status":200,"duration_ms":352,"threshold_ms":300}
+{"ts":"2026-10-14T12:22:23.662Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"notification_preferences","status":200,"duration_ms":352,"threshold_ms":300}
+{"ts":"2026-10-14T12:22:23.668Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":360,"threshold_ms":300}
+{"ts":"2026-10-14T12:22:23.681Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"user_addresses","status":200,"duration_ms":372,"threshold_ms":300}
+{"ts":"2026-10-14T12:22:23.689Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":383,"threshold_ms":300}
+{"ts":"2026-10-14T12:22:23.729Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"v_wallet_ledger","status":200,"duration_ms":420,"threshold_ms":300}
+{"ts":"2026-10-14T12:22:23.730Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":422,"threshold_ms":300}
+{"ts":"2026-10-14T12:22:23.805Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":501,"threshold_ms":300}
+(node:40342) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T12:22:23.918Z","level":"error","event":"voucher.customer_list_read_failed","request_id":null,"userId":"89e848ca-5652-479b-880d-6edc19062025","error":{"code":"PGRST201","details":[{"cardinality":"[redacted]","embedding":"vouchers with suppliers","relationship":"vouchers_redeemed_by_supplier_id_fkey using vouchers(redeemed_by_supplier_id) and suppliers(id)"},{"cardinality":"[redacted]","embedding":"vouchers with suppliers","relationship":"vouchers_supplier_id_fkey using vouchers(supplier_id) and suppliers(id)"}],"hint":"Try changing 'suppliers' to one of the following: 'suppliers!vouchers_redeemed_by_supplier_id_fkey', 'suppliers!vouchers_supplier_id_fkey'. Find the desired relationship in the 'details' key.","message":"Could not embed because more than one relationship was found for 'vouchers' and 'suppliers'"}}
+⨯ Error: voucher.customer_list_read_failed: Could not embed because more than one relationship was found for 'vouchers' and 'suppliers'
+    at g (.next/server/chunks/ssr/[root-of-the-server]__10xb1lt._.js:6:154)
+    at h (.next/server/chunks/ssr/[root-of-the-server]__10xb1lt._.js:6:311)
+    at async p (.next/server/chunks/ssr/src_04bbqle._.js:2:388) {
+  digest: '1128620422'
+}
+{"ts":"2026-10-14T12:22:24.059Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":334,"threshold_ms":300}
+{"ts":"2026-10-14T12:22:24.060Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":336,"threshold_ms":300}
+{"ts":"2026-10-14T12:22:24.061Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":337,"threshold_ms":300}
+{"ts":"2026-10-14T12:22:24.079Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":357,"threshold_ms":300}
+{"ts":"2026-10-14T12:22:24.089Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"notification_preferences","status":200,"duration_ms":362,"threshold_ms":300}
+{"ts":"2026-10-14T12:22:24.089Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":364,"threshold_ms":300}
+{"ts":"2026-10-14T12:22:24.090Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"payment_tokens","status":200,"duration_ms":364,"threshold_ms":300}
+{"ts":"2026-10-14T12:22:24.143Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"wallet_accounts","status":200,"duration_ms":302,"threshold_ms":300}
+{"ts":"2026-10-14T12:22:24.227Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":557,"threshold_ms":300}
+{"ts":"2026-10-14T12:22:24.247Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"orders","status":200,"duration_ms":581,"threshold_ms":300}
+{"ts":"2026-10-14T12:22:24.436Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"v_wallet_ledger","status":200,"duration_ms":710,"threshold_ms":300}
+{"ts":"2026-10-14T12:22:24.438Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"user_addresses","status":200,"duration_ms":712,"threshold_ms":300}
+{"ts":"2026-10-14T12:22:24.673Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"wallet_accounts","status":200,"duration_ms":304,"threshold_ms":300}
+{"ts":"2026-10-14T12:22:24.674Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"orders","status":200,"duration_ms":608,"threshold_ms":300}
+{"ts":"2026-10-14T12:22:24.675Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"orders","status":200,"duration_ms":301,"threshold_ms":300}
+{"ts":"2026-10-14T12:22:24.681Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"profiles","status":200,"duration_ms":310,"threshold_ms":300}
+{"ts":"2026-10-14T12:22:24.686Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"vouchers","status":300,"duration_ms":605,"threshold_ms":300}
+{"ts":"2026-10-14T12:22:24.709Z","level":"error","event":"voucher.customer_list_read_failed","request_id":null,"userId":"89e848ca-5652-479b-880d-6edc19062025","error":{"code":"PGRST201","details":[{"cardinality":"[redacted]","embedding":"vouchers with suppliers","relationship":"vouchers_redeemed_by_supplier_id_fkey using vouchers(redeemed_by_supplier_id) and suppliers(id)"},{"cardinality":"[redacted]","embedding":"vouchers with suppliers","relationship":"vouchers_supplier_id_fkey using vouchers(supplier_id) and suppliers(id)"}],"hint":"Try changing 'suppliers' to one of the following: 'suppliers!vouchers_redeemed_by_supplier_id_fkey', 'suppliers!vouchers_supplier_id_fkey'. Find the desired relationship in the 'details' key.","message":"Could not embed because more than one relationship was found for 'vouchers' and 'suppliers'"}}
+⨯ Error: voucher.customer_list_read_failed: Could not embed because more than one relationship was found for 'vouchers' and 'suppliers'
+    at g (.next/server/chunks/ssr/[root-of-the-server]__10xb1lt._.js:6:154)
+    at h (.next/server/chunks/ssr/[root-of-the-server]__10xb1lt._.js:6:311)
+    at async p (.next/server/chunks/ssr/src_04bbqle._.js:2:388) {
+  digest: '1128620422'
+}
+{"ts":"2026-10-14T12:22:24.878Z","level":"warn","event":"db.query_slow","request_id":"e0d6d5b9-caeb-4587-949d-760075232f18","route":"action","method":"GET","target":"auth:user","status":200,"duration_ms":312,"threshold_ms":300}
+{"ts":"2026-10-14T12:22:25.731Z","level":"warn","event":"db.query_slow","request_id":"f159e205-efa9-4e56-a8c2-07a11ee4f4a3","route":"action","method":"GET","target":"auth:user","status":200,"duration_ms":357,"threshold_ms":300}
+{"ts":"2026-10-14T12:22:27.085Z","level":"warn","event":"db.query_slow","request_id":"a822c798-e1ea-4db3-8fe2-a1c855278fbe","route":"action","method":"GET","target":"auth:user","status":200,"duration_ms":586,"threshold_ms":300}
+(node:40342) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T12:22:45.212Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"orders","status":200,"duration_ms":356,"threshold_ms":300}
+{"ts":"2026-10-14T12:22:45.213Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":307,"threshold_ms":300}
+{"ts":"2026-10-14T12:22:45.288Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":381,"threshold_ms":300}
+{"ts":"2026-10-14T12:22:45.299Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":390,"threshold_ms":300}
+{"ts":"2026-10-14T12:22:45.735Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"wallet_accounts","status":200,"duration_ms":443,"threshold_ms":300}
+{"ts":"2026-10-14T12:22:45.737Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"orders","status":200,"duration_ms":431,"threshold_ms":300}
+{"ts":"2026-10-14T12:22:45.752Z","level":"warn","event":"db.query_slow","request_id":"52e838df-40b4-4bd5-999c-aa7462f4307d","route":"action","method":"GET","target":"auth:user","status":200,"duration_ms":791,"threshold_ms":300}
+{"ts":"2026-10-14T12:22:45.763Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"loyalty_tiers","status":404,"duration_ms":457,"threshold_ms":300}
+{"ts":"2026-10-14T12:22:45.785Z","level":"warn","event":"db.query_slow","request_id":"25931bc7-3e5b-4259-99b2-514ac4045de6","route":"action","method":"GET","target":"carts","status":200,"duration_ms":301,"threshold_ms":300}
+{"ts":"2026-10-14T12:22:46.179Z","level":"warn","event":"db.query_slow","request_id":"52e838df-40b4-4bd5-999c-aa7462f4307d","route":"action","method":"GET","target":"carts","status":200,"duration_ms":422,"threshold_ms":300}
+{"ts":"2026-10-14T12:22:47.829Z","level":"warn","event":"db.query_slow","request_id":"61ef4d10-69c7-4832-a64f-174d0ed276ec","route":"action","method":"GET","target":"notifications","status":200,"duration_ms":331,"threshold_ms":300}
+{"ts":"2026-10-14T12:22:50.635Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":342,"threshold_ms":300}
+{"ts":"2026-10-14T12:22:51.235Z","level":"warn","event":"db.query_slow","request_id":"33fbf764-8211-43e2-8089-cbc174def216","route":"action","method":"GET","target":"auth:user","status":200,"duration_ms":355,"threshold_ms":300}
+{"ts":"2026-10-14T12:22:51.592Z","level":"warn","event":"db.query_slow","request_id":"33fbf764-8211-43e2-8089-cbc174def216","route":"action","method":"GET","target":"carts","status":200,"duration_ms":357,"threshold_ms":300}
+{"ts":"2026-10-14T12:22:51.764Z","level":"warn","event":"db.query_slow","request_id":"72fb9110-351d-4181-9e00-44e101cd3cfe","route":"action","method":"GET","target":"auth:user","status":200,"duration_ms":343,"threshold_ms":300}
+(node:40342) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T12:23:11.012Z","level":"warn","event":"db.query_slow","request_id":"b350399a-dc13-4e2e-9330-607bd288874a","route":"action","method":"GET","target":"auth:user","status":200,"duration_ms":673,"threshold_ms":300}
+{"ts":"2026-10-14T12:23:12.720Z","level":"warn","event":"db.query_slow","request_id":"acaabe59-5c45-4807-abca-141b0027f6f9","route":"action","method":"HEAD","target":"notifications","status":200,"duration_ms":633,"threshold_ms":300}
+{"ts":"2026-10-14T12:23:18.396Z","level":"warn","event":"db.query_slow","request_id":"85259fce-4ada-4c8e-807c-810da9be8016","route":"action","method":"GET","target":"auth:user","status":200,"duration_ms":987,"threshold_ms":300}
+(node:40342) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T12:23:41.779Z","level":"warn","event":"db.query_slow","request_id":"28326490-4023-459b-ba9c-eeadc93cf4c5","route":"action","method":"POST","target":"rpc:check_rate_limit","status":200,"duration_ms":458,"threshold_ms":300}
+{"ts":"2026-10-14T12:23:42.106Z","level":"warn","event":"db.query_slow","request_id":"28326490-4023-459b-ba9c-eeadc93cf4c5","route":"action","method":"POST","target":"rpc:check_rate_limit","status":200,"duration_ms":323,"threshold_ms":300}
+{"ts":"2026-10-14T12:23:42.619Z","level":"warn","event":"db.query_slow","request_id":"28326490-4023-459b-ba9c-eeadc93cf4c5","route":"action","method":"POST","target":"auth:token","status":200,"duration_ms":512,"threshold_ms":300}
+{"ts":"2026-10-14T12:23:43.733Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":370,"threshold_ms":300}
+{"ts":"2026-10-14T12:23:43.735Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":370,"threshold_ms":300}
+{"ts":"2026-10-14T12:23:43.750Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"notification_preferences","status":200,"duration_ms":382,"threshold_ms":300}
+{"ts":"2026-10-14T12:23:43.751Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":385,"threshold_ms":300}
+{"ts":"2026-10-14T12:23:43.752Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":386,"threshold_ms":300}
+{"ts":"2026-10-14T12:23:43.753Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"payment_tokens","status":200,"duration_ms":385,"threshold_ms":300}
+{"ts":"2026-10-14T12:23:43.754Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":388,"threshold_ms":300}
+{"ts":"2026-10-14T12:23:43.794Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"v_wallet_ledger","status":200,"duration_ms":427,"threshold_ms":300}
+{"ts":"2026-10-14T12:23:43.795Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"user_addresses","status":200,"duration_ms":428,"threshold_ms":300}
+(node:40342) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T12:23:43.997Z","level":"error","event":"voucher.customer_list_read_failed","request_id":null,"userId":"89e848ca-5652-479b-880d-6edc19062025","error":{"code":"PGRST201","details":[{"cardinality":"[redacted]","embedding":"vouchers with suppliers","relationship":"vouchers_redeemed_by_supplier_id_fkey using vouchers(redeemed_by_supplier_id) and suppliers(id)"},{"cardinality":"[redacted]","embedding":"vouchers with suppliers","relationship":"vouchers_supplier_id_fkey using vouchers(supplier_id) and suppliers(id)"}],"hint":"Try changing 'suppliers' to one of the following: 'suppliers!vouchers_redeemed_by_supplier_id_fkey', 'suppliers!vouchers_supplier_id_fkey'. Find the desired relationship in the 'details' key.","message":"Could not embed because more than one relationship was found for 'vouchers' and 'suppliers'"}}
+⨯ Error: voucher.customer_list_read_failed: Could not embed because more than one relationship was found for 'vouchers' and 'suppliers'
+    at g (.next/server/chunks/ssr/[root-of-the-server]__10xb1lt._.js:6:154)
+    at h (.next/server/chunks/ssr/[root-of-the-server]__10xb1lt._.js:6:311)
+    at async p (.next/server/chunks/ssr/src_04bbqle._.js:2:388) {
+  digest: '1128620422'
+}
+{"ts":"2026-10-14T12:23:44.156Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"cashback_ledger","status":200,"duration_ms":395,"threshold_ms":300}
+{"ts":"2026-10-14T12:23:44.179Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":389,"threshold_ms":300}
+{"ts":"2026-10-14T12:23:44.180Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":389,"threshold_ms":300}
+{"ts":"2026-10-14T12:23:44.183Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":392,"threshold_ms":300}
+{"ts":"2026-10-14T12:23:44.186Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":396,"threshold_ms":300}
+{"ts":"2026-10-14T12:23:44.190Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":401,"threshold_ms":300}
+{"ts":"2026-10-14T12:23:44.203Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":412,"threshold_ms":300}
+{"ts":"2026-10-14T12:23:44.217Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"v_wallet_ledger","status":200,"duration_ms":424,"threshold_ms":300}
+{"ts":"2026-10-14T12:23:44.219Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":427,"threshold_ms":300}
+{"ts":"2026-10-14T12:23:44.228Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"user_addresses","status":200,"duration_ms":435,"threshold_ms":300}
+{"ts":"2026-10-14T12:23:44.237Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"notification_preferences","status":200,"duration_ms":443,"threshold_ms":300}
+{"ts":"2026-10-14T12:23:44.237Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"payment_tokens","status":200,"duration_ms":444,"threshold_ms":300}
+{"ts":"2026-10-14T12:23:44.371Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"wallet_accounts","status":200,"duration_ms":361,"threshold_ms":300}
+{"ts":"2026-10-14T12:23:44.373Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"profiles","status":200,"duration_ms":377,"threshold_ms":300}
+{"ts":"2026-10-14T12:23:44.377Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"orders","status":200,"duration_ms":364,"threshold_ms":300}
+{"ts":"2026-10-14T12:23:44.404Z","level":"warn","event":"db.query_slow","request_id":"3429e9f1-9fdb-444b-a68a-813af5a624cf","route":"action","method":"GET","target":"wishlists","status":200,"duration_ms":354,"threshold_ms":300}
+{"ts":"2026-10-14T12:23:44.426Z","level":"warn","event":"db.query_slow","request_id":"fd914d0a-3d1b-418a-b1f0-89e915cf0f28","route":"action","method":"GET","target":"carts","status":200,"duration_ms":347,"threshold_ms":300}
+{"ts":"2026-10-14T12:23:44.429Z","level":"error","event":"voucher.customer_list_read_failed","request_id":null,"userId":"89e848ca-5652-479b-880d-6edc19062025","error":{"code":"PGRST201","details":[{"cardinality":"[redacted]","embedding":"vouchers with suppliers","relationship":"vouchers_redeemed_by_supplier_id_fkey using vouchers(redeemed_by_supplier_id) and suppliers(id)"},{"cardinality":"[redacted]","embedding":"vouchers with suppliers","relationship":"vouchers_supplier_id_fkey using vouchers(supplier_id) and suppliers(id)"}],"hint":"Try changing 'suppliers' to one of the following: 'suppliers!vouchers_redeemed_by_supplier_id_fkey', 'suppliers!vouchers_supplier_id_fkey'. Find the desired relationship in the 'details' key.","message":"Could not embed because more than one relationship was found for 'vouchers' and 'suppliers'"}}
+⨯ Error: voucher.customer_list_read_failed: Could not embed because more than one relationship was found for 'vouchers' and 'suppliers'
+    at g (.next/server/chunks/ssr/[root-of-the-server]__10xb1lt._.js:6:154)
+    at h (.next/server/chunks/ssr/[root-of-the-server]__10xb1lt._.js:6:311)
+    at async p (.next/server/chunks/ssr/src_04bbqle._.js:2:388) {
+  digest: '1128620422'
+}
+{"ts":"2026-10-14T12:23:44.691Z","level":"warn","event":"db.query_slow","request_id":"98be6009-9357-4631-92c6-cac438cda70a","route":"action","method":"GET","target":"auth:user","status":200,"duration_ms":309,"threshold_ms":300}
+{"ts":"2026-10-14T12:23:46.447Z","level":"warn","event":"db.query_slow","request_id":"e13c2077-4bf4-43e7-a04f-d973e7b9e644","route":"action","method":"GET","target":"auth:user","status":200,"duration_ms":442,"threshold_ms":300}
+{"ts":"2026-10-14T12:23:47.497Z","level":"warn","event":"db.query_slow","request_id":"98645c9c-2495-465d-bb24-b3fe859f8f0d","route":"action","method":"GET","target":"notifications","status":200,"duration_ms":317,"threshold_ms":300}
+(node:40342) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+(node:40342) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T12:24:05.004Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":439,"threshold_ms":300}
+{"ts":"2026-10-14T12:24:05.325Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":317,"threshold_ms":300}
+{"ts":"2026-10-14T12:24:05.396Z","level":"warn","event":"db.query_slow","request_id":"74a833ec-90ca-4be8-9235-9b71688bd1b2","route":"action","method":"GET","target":"auth:user","status":200,"duration_ms":310,"threshold_ms":300}
+{"ts":"2026-10-14T12:24:05.402Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":392,"threshold_ms":300}
+{"ts":"2026-10-14T12:24:05.416Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":405,"threshold_ms":300}
+{"ts":"2026-10-14T12:24:05.461Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"payment_tokens","status":200,"duration_ms":374,"threshold_ms":300}
+{"ts":"2026-10-14T12:24:11.945Z","level":"warn","event":"db.query_slow","request_id":"0b45d075-f8ce-4bc0-a3c9-e41186bac9f0","route":"action","method":"GET","target":"auth:user","status":200,"duration_ms":304,"threshold_ms":300}
+{"ts":"2026-10-14T12:24:11.947Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":329,"threshold_ms":300}
+{"ts":"2026-10-14T12:24:12.167Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":546,"threshold_ms":300}
+{"ts":"2026-10-14T12:24:12.260Z","level":"warn","event":"db.query_slow","request_id":"0b45d075-f8ce-4bc0-a3c9-e41186bac9f0","route":"action","method":"GET","target":"wishlists","status":200,"duration_ms":302,"threshold_ms":300}
+{"ts":"2026-10-14T12:24:12.282Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"profiles","status":200,"duration_ms":325,"threshold_ms":300}
+{"ts":"2026-10-14T12:24:12.509Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"orders","status":200,"duration_ms":338,"threshold_ms":300}
+{"ts":"2026-10-14T12:24:12.738Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":1119,"threshold_ms":300}
+{"ts":"2026-10-14T12:24:12.916Z","level":"warn","event":"db.query_slow","request_id":"731d9b7b-81f8-46df-af4d-e1a7613c96f4","route":"action","method":"GET","target":"auth:user","status":200,"duration_ms":386,"threshold_ms":300}
+(node:40342) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T12:24:31.129Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":371,"threshold_ms":300}
+{"ts":"2026-10-14T12:24:31.539Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":402,"threshold_ms":300}
+{"ts":"2026-10-14T12:24:31.549Z","level":"warn","event":"db.query_slow","request_id":"884fdc8f-b79e-4ed7-b252-21f90944ca16","route":"action","method":"GET","target":"auth:user","status":200,"duration_ms":407,"threshold_ms":300}
+{"ts":"2026-10-14T12:24:31.684Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"user_addresses","status":200,"duration_ms":925,"threshold_ms":300}
+{"ts":"2026-10-14T12:24:38.201Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":333,"threshold_ms":300}
+{"ts":"2026-10-14T12:24:38.221Z","level":"warn","event":"db.query_slow","request_id":"dea4b6e2-3277-4490-b97f-f7531326791a","route":"action","method":"GET","target":"auth:user","status":200,"duration_ms":317,"threshold_ms":300}
+{"ts":"2026-10-14T12:24:38.222Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":355,"threshold_ms":300}
+{"ts":"2026-10-14T12:24:39.108Z","level":"warn","event":"db.query_slow","request_id":"3c06b6d7-00fb-4418-9528-d841e35692d7","route":"action","method":"GET","target":"auth:user","status":200,"duration_ms":330,"threshold_ms":300}
+{"ts":"2026-10-14T12:24:40.543Z","level":"warn","event":"db.query_slow","request_id":"3a53a30d-d285-456a-83a1-b3dd6ff2ec1f","route":"action","method":"GET","target":"notification_preferences","status":200,"duration_ms":317,"threshold_ms":300}
+[ELIFECYCLE] Command failed with exit code 143.

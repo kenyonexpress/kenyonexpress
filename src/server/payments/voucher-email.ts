@@ -85,7 +85,7 @@ export async function sendVoucherEmail(
       .select(
         `id, code, ${hasFallback ? 'fallback_code, ' : ''}face_value_agorot, coupon_price_agorot, remaining_amount_due_agorot, expires_at,
          products(name_he),
-         suppliers(name, address, contact_phone)`,
+         suppliers:suppliers!vouchers_supplier_id_fkey(name, address, contact_phone)`,
       )
       .eq('order_id', context.orderId)
       .eq('status', 'issued')

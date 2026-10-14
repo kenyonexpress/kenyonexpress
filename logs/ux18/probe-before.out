@@ -1,0 +1,413 @@
+{
+  "380": {
+    "routes": {
+      "/account": {
+        "status": 200,
+        "landed": "/account",
+        "title": "האזור האישי | קניון אקספרס",
+        "h1": "משהו השתבש אצלנו",
+        "inAccountShell": false,
+        "tabbar": null,
+        "sideNav": {
+          "rect": null,
+          "items": 0,
+          "active": []
+        },
+        "content": null,
+        "pageHeight": 900,
+        "scrollWidth": 380
+      },
+      "/account/orders": {
+        "status": 200,
+        "landed": "/account/orders",
+        "title": "ההזמנות שלי | קניון אקספרס",
+        "h1": "ההזמנות שלי",
+        "inAccountShell": true,
+        "tabbar": null,
+        "sideNav": {
+          "rect": {
+            "x": 15,
+            "y": 205.7,
+            "w": 350,
+            "h": 938.5
+          },
+          "items": 18,
+          "active": [
+            "ההזמנות שלי"
+          ]
+        },
+        "content": {
+          "x": 15,
+          "y": 1174.2,
+          "w": 350,
+          "h": 6011
+        },
+        "pageHeight": 7668,
+        "scrollWidth": 380
+      },
+      "/account/wishlist": {
+        "status": 200,
+        "landed": "/",
+        "title": "",
+        "h1": null,
+        "inAccountShell": false,
+        "tabbar": null,
+        "sideNav": {
+          "rect": null,
+          "items": 0,
+          "active": []
+        },
+        "content": null,
+        "pageHeight": 900,
+        "scrollWidth": 380
+      },
+      "/account/addresses": {
+        "status": 200,
+        "landed": "/account/addresses",
+        "title": "כתובות | קניון אקספרס",
+        "h1": "כתובות",
+        "inAccountShell": true,
+        "tabbar": null,
+        "sideNav": {
+          "rect": {
+            "x": 15,
+            "y": 205.7,
+            "w": 350,
+            "h": 938.5
+          },
+          "items": 18,
+          "active": [
+            "כתובות"
+          ]
+        },
+        "content": {
+          "x": 15,
+          "y": 1174.2,
+          "w": 350,
+          "h": 340.5
+        },
+        "pageHeight": 1997,
+        "scrollWidth": 380
+      },
+      "/account/details": {
+        "status": 200,
+        "landed": "/account/details",
+        "title": "הפרטים שלי | קניון אקספרס",
+        "h1": "הפרטים שלי",
+        "inAccountShell": true,
+        "tabbar": null,
+        "sideNav": {
+          "rect": {
+            "x": 15,
+            "y": 205.7,
+            "w": 350,
+            "h": 938.5
+          },
+          "items": 18,
+          "active": [
+            "הפרטים שלי"
+          ]
+        },
+        "content": {
+          "x": 15,
+          "y": 1174.2,
+          "w": 350,
+          "h": 744.5
+        },
+        "pageHeight": 2401,
+        "scrollWidth": 380
+      },
+      "/account/settings": {
+        "status": 404,
+        "landed": "/account/settings",
+        "title": "הדף לא נמצא | קניון אקספרס",
+        "h1": "הדף שחיפשתם לא נמצא",
+        "inAccountShell": false,
+        "tabbar": null,
+        "sideNav": {
+          "rect": null,
+          "items": 0,
+          "active": []
+        },
+        "content": null,
+        "pageHeight": 900,
+        "scrollWidth": 380
+      }
+    },
+    "errors": []
+  },
+  "768": {
+    "routes": {
+      "/account": {
+        "status": 200,
+        "landed": "/account",
+        "title": "האזור האישי | קניון אקספרס",
+        "h1": "משהו השתבש אצלנו",
+        "inAccountShell": false,
+        "tabbar": null,
+        "sideNav": {
+          "rect": null,
+          "items": 0,
+          "active": []
+        },
+        "content": null,
+        "pageHeight": 900,
+        "scrollWidth": 768
+      },
+      "/account/orders": {
+        "status": 200,
+        "landed": "/account/orders",
+        "title": "ההזמנות שלי | קניון אקספרס",
+        "h1": "ההזמנות שלי",
+        "inAccountShell": true,
+        "tabbar": null,
+        "sideNav": {
+          "rect": {
+            "x": 15,
+            "y": 168.3,
+            "w": 738,
+            "h": 938.5
+          },
+          "items": 18,
+          "active": [
+            "ההזמנות שלי"
+          ]
+        },
+        "content": {
+          "x": 15,
+          "y": 1136.8,
+          "w": 738,
+          "h": 3527
+        },
+        "pageHeight": 5146,
+        "scrollWidth": 768
+      },
+      "/account/wishlist": {
+        "status": 200,
+        "landed": "/",
+        "title": "",
+        "h1": null,
+        "inAccountShell": false,
+        "tabbar": null,
+        "sideNav": {
+          "rect": null,
+          "items": 0,
+          "active": []
+        },
+        "content": null,
+        "pageHeight": 900,
+        "scrollWidth": 768
+      },
+      "/account/addresses": {
+        "status": 200,
+        "landed": "/account/addresses",
+        "title": "כתובות | קניון אקספרס",
+        "h1": "כתובות",
+        "inAccountShell": true,
+        "tabbar": null,
+        "sideNav": {
+          "rect": {
+            "x": 15,
+            "y": 168.3,
+            "w": 738,
+            "h": 938.5
+          },
+          "items": 18,
+          "active": [
+            "כתובות"
+          ]
+        },
+        "content": {
+          "x": 15,
+          "y": 1136.8,
+          "w": 738,
+          "h": 340.5
+        },
+        "pageHeight": 1960,
+        "scrollWidth": 768
+      },
+      "/account/details": {
+        "status": 200,
+        "landed": "/account/details",
+        "title": "הפרטים שלי | קניון אקספרס",
+        "h1": "הפרטים שלי",
+        "inAccountShell": true,
+        "tabbar": null,
+        "sideNav": {
+          "rect": {
+            "x": 15,
+            "y": 168.3,
+            "w": 738,
+            "h": 938.5
+          },
+          "items": 18,
+          "active": [
+            "הפרטים שלי"
+          ]
+        },
+        "content": {
+          "x": 15,
+          "y": 1136.8,
+          "w": 738,
+          "h": 645.5
+        },
+        "pageHeight": 2265,
+        "scrollWidth": 768
+      },
+      "/account/settings": {
+        "status": 404,
+        "landed": "/account/settings",
+        "title": "הדף לא נמצא | קניון אקספרס",
+        "h1": "הדף שחיפשתם לא נמצא",
+        "inAccountShell": false,
+        "tabbar": null,
+        "sideNav": {
+          "rect": null,
+          "items": 0,
+          "active": []
+        },
+        "content": null,
+        "pageHeight": 900,
+        "scrollWidth": 768
+      }
+    },
+    "errors": []
+  },
+  "1440": {
+    "routes": {
+      "/account": {
+        "status": 200,
+        "landed": "/account",
+        "title": "האזור האישי | קניון אקספרס",
+        "h1": "משהו השתבש אצלנו",
+        "inAccountShell": false,
+        "tabbar": null,
+        "sideNav": {
+          "rect": null,
+          "items": 0,
+          "active": []
+        },
+        "content": null,
+        "pageHeight": 900,
+        "scrollWidth": 1440
+      },
+      "/account/orders": {
+        "status": 200,
+        "landed": "/account/orders",
+        "title": "ההזמנות שלי | קניון אקספרס",
+        "h1": "ההזמנות שלי",
+        "inAccountShell": true,
+        "tabbar": null,
+        "sideNav": {
+          "rect": {
+            "x": 1105,
+            "y": 228.3,
+            "w": 260,
+            "h": 958
+          },
+          "items": 18,
+          "active": [
+            "ההזמנות שלי"
+          ]
+        },
+        "content": {
+          "x": 75,
+          "y": 228.3,
+          "w": 1000,
+          "h": 3527
+        },
+        "pageHeight": 4364,
+        "scrollWidth": 1440
+      },
+      "/account/wishlist": {
+        "status": 200,
+        "landed": "/",
+        "title": "",
+        "h1": null,
+        "inAccountShell": false,
+        "tabbar": null,
+        "sideNav": {
+          "rect": null,
+          "items": 0,
+          "active": []
+        },
+        "content": null,
+        "pageHeight": 900,
+        "scrollWidth": 1440
+      },
+      "/account/addresses": {
+        "status": 200,
+        "landed": "/account/addresses",
+        "title": "כתובות | קניון אקספרס",
+        "h1": "כתובות",
+        "inAccountShell": true,
+        "tabbar": null,
+        "sideNav": {
+          "rect": {
+            "x": 1105,
+            "y": 228.3,
+            "w": 260,
+            "h": 958
+          },
+          "items": 18,
+          "active": [
+            "כתובות"
+          ]
+        },
+        "content": {
+          "x": 75,
+          "y": 228.3,
+          "w": 1000,
+          "h": 340.5
+        },
+        "pageHeight": 1795,
+        "scrollWidth": 1440
+      },
+      "/account/details": {
+        "status": 200,
+        "landed": "/account/details",
+        "title": "הפרטים שלי | קניון אקספרס",
+        "h1": "הפרטים שלי",
+        "inAccountShell": true,
+        "tabbar": null,
+        "sideNav": {
+          "rect": {
+            "x": 1105,
+            "y": 228.3,
+            "w": 260,
+            "h": 958
+          },
+          "items": 18,
+          "active": [
+            "הפרטים שלי"
+          ]
+        },
+        "content": {
+          "x": 75,
+          "y": 228.3,
+          "w": 1000,
+          "h": 645.5
+        },
+        "pageHeight": 1795,
+        "scrollWidth": 1440
+      },
+      "/account/settings": {
+        "status": 404,
+        "landed": "/account/settings",
+        "title": "הדף לא נמצא | קניון אקספרס",
+        "h1": "הדף שחיפשתם לא נמצא",
+        "inAccountShell": false,
+        "tabbar": null,
+        "sideNav": {
+          "rect": null,
+          "items": 0,
+          "active": []
+        },
+        "content": null,
+        "pageHeight": 900,
+        "scrollWidth": 1440
+      }
+    },
+    "errors": []
+  }
+}

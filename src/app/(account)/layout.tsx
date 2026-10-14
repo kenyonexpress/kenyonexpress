@@ -1,5 +1,7 @@
 import SkipLink from '@/components/a11y/SkipLink'
 import AccountNav from '@/components/account/AccountNav'
+import AccountTabs from '@/components/account/AccountTabs'
+import AccountTabsList from '@/components/account/AccountTabsList'
 import NotificationBell from '@/components/account/NotificationBell'
 import CartBootstrap from '@/components/cart/CartBootstrap'
 import CartDrawer from '@/components/cart/CartDrawer'
@@ -13,6 +15,7 @@ import { getAccountProfile, getWalletSummary } from '@/server/queries/account'
 import { getMyLoyalty } from '@/server/queries/loyalty'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
+import { connection } from 'next/server'
 import { Suspense } from 'react'
 import '@/styles/account.css'
 
@@ -61,6 +64,32 @@ async function AccountSideNav() {
   )
 }
 
+/**
+ * The tab bar's request-time slot (UX18).
+ *
+ * `AccountTabs` reads `usePathname()`, and under `cacheComponents` that hook
+ * is URL data: on /account/orders/[id] it cannot resolve at build time and
+ * the build stops (CLIENT_HOOK_DYNAMIC) unless a boundary holds a fallback.
+ * On the static routes it DOES resolve during the prerender, which is
+ * worse: the boundary completes inside the static shell and Fizz writes
+ * `$RC("B:6","S:6")` into the HTML with no nonce, and
+ * `scripts/security/csp-shell-gate.mjs` fails 21 account shells (measured,
+ * logs/ux18/build2.log). The document policy allows exactly two hashed
+ * scripts in a shell; everything that varies has to arrive on the resume
+ * path, where it is nonced.
+ *
+ * `connection()` puts this boundary on that path: the prerender stops here,
+ * the shell carries the fallback (the five links, none lit), and the request
+ * resumes it with the pathname known. Same mechanism as the side nav above,
+ * which is why the two arrive together. On a client-side navigation between
+ * tabs the layout persists and the mounted client component re-renders from
+ * the hook, so the lit tab moves without a server round trip.
+ */
+async function AccountTabsSlot() {
+  await connection()
+  return <AccountTabs />
+}
+
 export default function AccountLayout({ children }: { children: React.ReactNode }) {
   return (
     <CartProvider>
@@ -92,6 +121,13 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
                   fallback={<div className="account-nav account-nav--pending" aria-hidden="true" />}
                 >
                   <AccountSideNav />
+                </Suspense>
+                {/* UX18: the five tabs, a grid sibling so the stylesheet can
+                    put them above the content on a desktop and first on a
+                    phone. The fallback is the same five links with none lit:
+                    see AccountTabsSlot for why the slot is request-time. */}
+                <Suspense fallback={<AccountTabsList active={null} />}>
+                  <AccountTabsSlot />
                 </Suspense>
                 {/* Every /account page reads rows scoped to the signed-in user,
                     so each one is request-time work. One boundary here covers

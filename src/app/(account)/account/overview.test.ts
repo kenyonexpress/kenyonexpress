@@ -19,6 +19,8 @@ const ACCOUNT = join(APP, '(account)/account')
 const OVERVIEW = join(ACCOUNT, 'page.tsx')
 const NOTIFICATIONS = join(ACCOUNT, 'notifications/page.tsx')
 const DETAILS = join(ACCOUNT, 'details/page.tsx')
+const SETTINGS = join(ACCOUNT, 'settings/page.tsx')
+const WISHLIST = join(ACCOUNT, 'wishlist/page.tsx')
 const PRIVACY = join(ACCOUNT, 'privacy/page.tsx')
 
 function code(file: string): string {
@@ -78,6 +80,66 @@ describe('the notification switches', () => {
   })
 })
 
+describe('the tabs (UX18)', () => {
+  it('the settings hub holds the profile form and the sign-out that /account/details held', () => {
+    const settings = code(SETTINGS)
+    expect(settings).toContain('<ProfileDetailsForm')
+    expect(settings).toContain('action={signOut}')
+    for (const href of [
+      '/account/notifications',
+      '/account/security',
+      '/account/tokens',
+      '/account/privacy',
+    ]) {
+      expect(settings).toContain(`href="${href}"`)
+    }
+  })
+
+  it('/account/details is a permanent redirect to the hub, with no form of its own', () => {
+    const details = code(DETAILS)
+    expect(details).toContain("permanentRedirect('/account/settings')")
+    expect(details).not.toContain('ProfileDetailsForm')
+  })
+
+  it('/account/wishlist is a page inside the shell, not a bounce to the public page', () => {
+    const wishlist = code(WISHLIST)
+    expect(wishlist).toContain('<WishlistPageView embedded />')
+    expect(wishlist).not.toMatch(/redirect\(/)
+  })
+
+  it('the layout renders the tab bar as a grid sibling of the nav and the content', () => {
+    const layout = code(join(APP, '(account)/layout.tsx'))
+    expect(layout).toContain('<AccountTabsSlot />')
+    expect(layout.indexOf('<AccountTabsSlot />')).toBeGreaterThan(
+      layout.indexOf('<AccountSideNav />'),
+    )
+    expect(layout.indexOf('<AccountTabsSlot />')).toBeLessThan(
+      layout.indexOf('className="account-content"'),
+    )
+  })
+
+  it('the tab bar is on the request-time resume path, behind a fallback with no tab lit', () => {
+    // usePathname() resolving inside the prerender wrote a nonce-less
+    // $RC(...) into 21 account shells and failed csp-shell-gate (UX18,
+    // logs/ux18/build2.log). connection() stops the prerender at the slot.
+    const layout = code(join(APP, '(account)/layout.tsx'))
+    const slot = layout.slice(layout.indexOf('async function AccountTabsSlot'))
+    expect(slot).toMatch(/await connection\(\)[\s\S]*?return <AccountTabs \/>/)
+    expect(layout).toContain("import { connection } from 'next/server'")
+    expect(layout).toMatch(
+      /<Suspense fallback=\{<AccountTabsList active=\{null\} \/>\}>\s*<AccountTabsSlot \/>/,
+    )
+  })
+
+  it('the side nav sends the wishlist and the settings into the shell', () => {
+    const nav = code(join(process.cwd(), 'src/components/account/AccountNav.tsx'))
+    expect(nav).toContain("href: '/account/wishlist'")
+    expect(nav).toContain("href: '/account/settings'")
+    expect(nav).not.toContain("href: '/wishlist'")
+    expect(nav).not.toContain("href: '/account/details'")
+  })
+})
+
 describe('account deletion', () => {
   it('has one form, on the privacy page', () => {
     const forms = sourceFiles(ACCOUNT)
@@ -87,10 +149,10 @@ describe('account deletion', () => {
     expect(code(PRIVACY)).toContain('<DeleteAccountForm />')
   })
 
-  it('is reached from the details page rather than duplicated there', () => {
-    const details = code(DETAILS)
-    expect(details).toContain('href="/account/privacy"')
-    expect(details).not.toContain('DeleteAccountSection')
+  it('is reached from the settings hub rather than duplicated there', () => {
+    const settings = code(SETTINGS)
+    expect(settings).toContain('href="/account/privacy"')
+    expect(settings).not.toContain('DeleteAccountSection')
   })
 
   it('has one server action and one confirmation word', () => {

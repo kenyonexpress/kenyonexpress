@@ -39,13 +39,96 @@
 .account-shell {
   display: grid;
   grid-template-columns: 260px 1fr;
+  grid-template-rows: auto 1fr;
   gap: 30px;
   align-items: start;
+}
+
+/* UX18: the side nav (and its pending box) spans both rows, so the tab bar
+   sits above the content column and the content starts under the bar, not
+   under the nav. The tab bar keeps the shell's 30px column gap but closes
+   the row gap to its own margin. */
+.account-shell > .account-nav {
+  grid-row: 1 / span 2;
+}
+
+.account-shell > .account-tabbar {
+  margin-bottom: -10px;
 }
 
 @media (max-width: 900px) {
   .account-shell {
     grid-template-columns: 1fr;
+    grid-template-rows: none;
+    gap: 20px;
+  }
+
+  .account-shell > .account-nav {
+    grid-row: auto;
+  }
+
+  /* The tabs first: on a phone the nav is nine hundred pixels of rows and
+     the page's own content began under all of it. */
+  .account-shell > .account-tabbar {
+    order: -1;
+    margin-bottom: 0;
+  }
+}
+
+/* UX18: the five tabs. One row at every width, scrolling sideways on a phone
+   instead of wrapping; each link 44px tall. The current one is the ink with
+   a yellow rule under it, the others are muted. */
+.account-tabbar {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--account-line);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.account-tabbar::-webkit-scrollbar {
+  display: none;
+}
+
+.account-tabbar__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  min-height: 44px;
+  padding: 0 16px;
+  margin-bottom: -1px;
+  border-bottom: 3px solid transparent;
+  scroll-snap-align: start;
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--account-muted);
+  text-decoration: none;
+}
+
+.account-tabbar__link:hover {
+  color: var(--account-ink);
+  background: #fffbe6;
+}
+
+.account-tabbar__link:focus-visible {
+  outline: 2px solid var(--account-yellow);
+  outline-offset: -2px;
+}
+
+.account-tabbar__link[aria-current="page"] {
+  color: var(--account-ink);
+  font-weight: 700;
+  border-bottom-color: var(--account-yellow);
+}
+
+@media (max-width: 480px) {
+  .account-tabbar__link {
+    padding: 0 12px;
   }
 }
 

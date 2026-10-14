@@ -1,0 +1,55 @@
+Already up to date
+Done in 192ms using pnpm v11.1.2
+Already up to date
+Done in 189ms using pnpm v11.1.2
+
+Running 47 tests using 2 workers
+
+[1A[2K[1/47] [chromium] › e2e/auth.spec.ts:13:7 › Login page › shows כניסה heading and Google button
+[1A[2K[2/47] [chromium] › e2e/auth.spec.ts:8:7 › Login page › renders the auth layout with branding
+[1A[2K[3/47] [chromium] › e2e/auth.spec.ts:18:7 › Login page › shows email and password fields
+[1A[2K[4/47] [chromium] › e2e/auth.spec.ts:24:7 › Login page › has forgot password link
+[1A[2K[5/47] [chromium] › e2e/auth.spec.ts:28:7 › Login page › shows magic link form on toggle
+[1A[2K[6/47] [chromium] › e2e/auth.spec.ts:34:7 › Login page › has link to signup
+[1A[2K[7/47] [chromium] › e2e/auth.spec.ts:38:7 › Login page › shows inline error on empty email submit
+[1A[2K[8/47] [chromium] › e2e/auth.spec.ts:50:7 › Signup page › renders signup heading and Google button
+[1A[2K[9/47] [chromium] › e2e/auth.spec.ts:55:7 › Signup page › has phone field with Israeli hint
+[1A[2K[10/47] [chromium] › e2e/auth.spec.ts:60:7 › Signup page › has all required fields
+[1A[2K[11/47] [chromium] › e2e/auth.spec.ts:67:7 › Signup page › has link back to login
+[1A[2K[12/47] [chromium] › e2e/auth.spec.ts:77:7 › Forgot password page › renders heading and email field
+[1A[2K[13/47] [chromium] › e2e/auth.spec.ts:83:7 › Forgot password page › has back-to-login link
+[1A[2K[14/47] [chromium] › e2e/auth.spec.ts:93:7 › Reset password page › renders new password fields
+[1A[2K[15/47] [chromium] › e2e/auth.spec.ts:102:7 › Route protection › redirects unauthenticated user from /account to /login
+[1A[2K[16/47] [chromium] › e2e/auth.spec.ts:112:7 › Route protection › redirects unauthenticated user from /checkout/return to /login
+[1A[2K[17/47] [chromium] › e2e/smoke-all-routes.spec.ts:57:9 › smoke: every static route answers › public /
+[1A[2K[18/47] [chromium] › e2e/smoke-all-routes.spec.ts:57:9 › smoke: every static route answers › public /about
+[1A[2K[19/47] [chromium] › e2e/smoke-all-routes.spec.ts:57:9 › smoke: every static route answers › public /accessibility
+[1A[2K[20/47] [chromium] › e2e/smoke-all-routes.spec.ts:57:9 › smoke: every static route answers › public /blog
+[1A[2K[21/47] [chromium] › e2e/smoke-all-routes.spec.ts:57:9 › smoke: every static route answers › public /cart
+[1A[2K[22/47] [chromium] › e2e/smoke-all-routes.spec.ts:57:9 › smoke: every static route answers › public /checkout
+[1A[2K[23/47] [chromium] › e2e/smoke-all-routes.spec.ts:57:9 › smoke: every static route answers › public /checkout/failed
+[1A[2K[24/47] [chromium] › e2e/smoke-all-routes.spec.ts:57:9 › smoke: every static route answers › public /contact
+[1A[2K[25/47] [chromium] › e2e/smoke-all-routes.spec.ts:57:9 › smoke: every static route answers › public /coupons
+[1A[2K[26/47] [chromium] › e2e/smoke-all-routes.spec.ts:57:9 › smoke: every static route answers › public /faq
+[1A[2K[27/47] [chromium] › e2e/smoke-all-routes.spec.ts:57:9 › smoke: every static route answers › public /help
+[1A[2K[28/47] [chromium] › e2e/smoke-all-routes.spec.ts:57:9 › smoke: every static route answers › public /merchants
+[1A[2K[29/47] [chromium] › e2e/smoke-all-routes.spec.ts:57:9 › smoke: every static route answers › public /privacy-policy
+[1A[2K[30/47] [chromium] › e2e/smoke-all-routes.spec.ts:57:9 › smoke: every static route answers › public /products
+[1A[2K[31/47] [chromium] › e2e/smoke-all-routes.spec.ts:57:9 › smoke: every static route answers › public /refund_returns
+[1A[2K[32/47] [chromium] › e2e/smoke-all-routes.spec.ts:57:9 › smoke: every static route answers › public /suppliers
+[1A[2K[33/47] [chromium] › e2e/smoke-all-routes.spec.ts:57:9 › smoke: every static route answers › public /terms-and-conditions
+[1A[2K[34/47] [chromium] › e2e/smoke-all-routes.spec.ts:57:9 › smoke: every static route answers › public /legal/accessibility
+[1A[2K[35/47] [chromium] › e2e/smoke-all-routes.spec.ts:57:9 › smoke: every static route answers › public /legal/privacy
+[1A[2K[36/47] [chromium] › e2e/smoke-all-routes.spec.ts:57:9 › smoke: every static route answers › public /legal/returns
+[1A[2K[37/47] [chromium] › e2e/smoke-all-routes.spec.ts:57:9 › smoke: every static route answers › public /legal/terms
+[1A[2K[38/47] [chromium] › e2e/smoke-all-routes.spec.ts:57:9 › smoke: every static route answers › public /newsletter/unsubscribe
+[1A[2K[39/47] [chromium] › e2e/smoke-all-routes.spec.ts:57:9 › smoke: every static route answers › public /supplier/login
+[1A[2K[40/47] [chromium] › e2e/smoke-all-routes.spec.ts:57:9 › smoke: every static route answers › public /supplier/access-denied
+[1A[2K[41/47] [chromium] › e2e/smoke-all-routes.spec.ts:57:9 › smoke: every static route answers › public /offline
+[1A[2K[42/47] [chromium] › e2e/smoke-all-routes.spec.ts:69:9 › smoke: every static route answers › gated /account
+[1A[2K[43/47] [chromium] › e2e/smoke-all-routes.spec.ts:69:9 › smoke: every static route answers › gated /account/orders
+[1A[2K[44/47] [chromium] › e2e/smoke-all-routes.spec.ts:69:9 › smoke: every static route answers › gated /admin
+[1A[2K[45/47] [chromium] › e2e/smoke-all-routes.spec.ts:69:9 › smoke: every static route answers › gated /admin/orders
+[1A[2K[46/47] [chromium] › e2e/smoke-all-routes.spec.ts:69:9 › smoke: every static route answers › gated /supplier
+[1A[2K[47/47] [chromium] › e2e/smoke-all-routes.spec.ts:69:9 › smoke: every static route answers › gated /scan
+[1A[2K  47 passed (4.3s)

@@ -1,0 +1,16 @@
+Already up to date
+Done in 192ms using pnpm v11.1.2
+Already up to date
+Done in 189ms using pnpm v11.1.2
+
+Running 8 tests using 2 workers
+
+[1A[2K[1/8] [chromium] › e2e/account-tabs.spec.ts:35:7 › account tabs (UX18) › the shell carries the five tabs in Hebrew and the overview is current
+[1A[2K[2/8] [chromium] › e2e/account-tabs.spec.ts:86:7 › account tabs (UX18) › a child route keeps its tab current, and the old details address lands on settings
+[1A[2K[3/8] [chromium] › e2e/account-tabs.spec.ts:51:7 › account tabs (UX18) › each tab opens its page inside the shell and becomes current
+[1A[2K[4/8] [chromium] › e2e/account-tabs.spec.ts:109:7 › account tabs (UX18) › the tabs are one row of 44px links, and on a phone they come before the side nav
+[1A[2K[5/8] [mobile-chrome] › e2e/account-tabs.spec.ts:35:7 › account tabs (UX18) › the shell carries the five tabs in Hebrew and the overview is current
+[1A[2K[6/8] [mobile-chrome] › e2e/account-tabs.spec.ts:86:7 › account tabs (UX18) › a child route keeps its tab current, and the old details address lands on settings
+[1A[2K[7/8] [mobile-chrome] › e2e/account-tabs.spec.ts:51:7 › account tabs (UX18) › each tab opens its page inside the shell and becomes current
+[1A[2K[8/8] [mobile-chrome] › e2e/account-tabs.spec.ts:109:7 › account tabs (UX18) › the tabs are one row of 44px links, and on a phone they come before the side nav
+[1A[2K  8 passed (24.4s)

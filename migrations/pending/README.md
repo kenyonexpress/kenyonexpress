@@ -1,5 +1,22 @@
 # `migrations/pending/`
 
+## 2026-10-14: 271 PENDING (deactivate the `/wishlist` 410 row, UX18)
+
+`271_deactivate_wishlist_gone_row.sql` is ONE UPDATE: `seo_redirects` row
+`source_path = '/wishlist'` (410, active, written by the 09.09 run of 192)
+gets `is_active = false`. Measured on 2026-10-14 through the anon REST
+endpoint and on the built server (`curl -I /wishlist` answers 410): the
+proxy resolves the table before routing, so the live `/wishlist` page (STEP
+12) is dead on production and every "רשימת המשאלות" link that pointed at it
+landed on a blank Gone. The regenerated map (`data/legacy/redirect-map.json`)
+already lists `/wishlist` under `source_is_live`; production never received
+it. Deactivates, does not delete: the row stays as evidence, and 192's
+loader filters on `is_active`. Idempotent (`and is_active = true`). The
+proxy caches the table for five minutes, so a warm instance keeps answering
+410 for up to that long after. Rollback is the same UPDATE with `true`. No
+dependency on any other pending file; `/account/wishlist` (the tab) is a
+page inside the account shell since UX18 and does not wait for this.
+
 ## 2026-10-14: 270 PENDING (coupon deal code: the code the hot-coupon ticket's copy button hands the shopper, UX10)
 
 `270_coupon_deals_code.sql` adds ONE nullable column, `coupon_deals.code`

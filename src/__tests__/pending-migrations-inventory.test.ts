@@ -538,6 +538,11 @@ describe('the pending migration inventory', () => {
       // readOptionalColumns, so nothing breaks before it exists. README
       // carries the measurement (8 active deals, none with a deadline).
       '270_coupon_deals_code.sql',
+      // 2026-10-14 (UX18): deactivates the `/wishlist` 410 row in
+      // seo_redirects, a live route the 09.09 seed of 192 retired before it
+      // existed. One idempotent UPDATE; measured on the built server and
+      // through the anon REST endpoint, README carries both.
+      '271_deactivate_wishlist_gone_row.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

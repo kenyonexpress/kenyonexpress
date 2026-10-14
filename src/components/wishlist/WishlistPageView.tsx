@@ -34,7 +34,7 @@ import { toast } from 'sonner'
  * purpose so a visitor who pressed a heart lands somewhere that explains and
  * offers sign-in with a return path.
  */
-export default function WishlistPageView() {
+export default function WishlistPageView({ embedded = false }: { embedded?: boolean }) {
   const [view, setView] = useState<WishlistViewState | null>(null)
   const [failed, setFailed] = useState(false)
   const replace = useWishlistStore((s) => s.replace)
@@ -55,6 +55,32 @@ export default function WishlistPageView() {
     }
   }, [replace])
 
+  const body = failed ? (
+    <p className="text-muted" role="alert">
+      לא הצלחנו לטעון את הרשימה. נסו לרענן את הדף.
+    </p>
+  ) : view === null ? (
+    <p className="text-muted" aria-live="polite">
+      טוען את הרשימה...
+    </p>
+  ) : !view.signedIn ? (
+    <SignedOut returnTo={embedded ? '/account/wishlist' : '/wishlist'} />
+  ) : (
+    <SignedIn view={view} onChange={setView} />
+  )
+
+  // UX18: inside the account shell the breadcrumb and the frame are the
+  // shell's; the page contributes its title in the account's own type.
+  if (embedded) {
+    return (
+      <>
+        <h1 className="account-title">רשימת המשאלות</h1>
+        <p className="account-subtitle">המוצרים ששמרת עם הלב, מכל מכשיר</p>
+        {body}
+      </>
+    )
+  }
+
   return (
     <div className="cart-page">
       <nav className="cart-page__breadcrumb" aria-label="פירורי לחם">
@@ -63,25 +89,12 @@ export default function WishlistPageView() {
         <span aria-current="page">רשימת המשאלות</span>
       </nav>
       <h1 className="cart-page__title">רשימת המשאלות שלי</h1>
-
-      {failed ? (
-        <p className="text-muted" role="alert">
-          לא הצלחנו לטעון את הרשימה. נסו לרענן את הדף.
-        </p>
-      ) : view === null ? (
-        <p className="text-muted" aria-live="polite">
-          טוען את הרשימה...
-        </p>
-      ) : !view.signedIn ? (
-        <SignedOut />
-      ) : (
-        <SignedIn view={view} onChange={setView} />
-      )}
+      {body}
     </div>
   )
 }
 
-function SignedOut() {
+function SignedOut({ returnTo }: { returnTo: string }) {
   return (
     <section className="rounded-lg border border-border-alt bg-white p-6">
       <p className="mb-3 flex items-center gap-2 text-lg font-bold text-heading">
@@ -94,7 +107,7 @@ function SignedOut() {
       </p>
       <div className="mt-4 flex flex-wrap gap-3">
         <Link
-          href={loginHrefForWishlist('/wishlist')}
+          href={loginHrefForWishlist(returnTo)}
           className="inline-flex items-center rounded-md bg-brand-primary px-4 py-2 text-sm font-bold text-brand-dark hover:opacity-90"
         >
           התחברות

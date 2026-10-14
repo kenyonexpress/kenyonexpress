@@ -1,5 +1,14 @@
 # Apply order
 
+## 2026-10-14 (UX18): 271 filed; any time, no dependencies
+
+271 flips one row's `is_active` in `seo_redirects` (the `/wishlist` 410).
+It depends on nothing pending and nothing pending depends on it. Until it
+runs, `/wishlist` (the header's heart) answers 410 on production; the
+account's own "רשימת המשאלות" tab opens `/account/wishlist`, which has no
+row and works today. The sign it took is `curl -I https://kenyonexpress.co.il/wishlist`
+answering 200 (within five minutes, the proxy's cache TTL).
+
 ## 2026-10-14 (UX10): 270 filed; any time, no dependencies
 
 270 adds one nullable column, `coupon_deals.code`, and a partial unique
