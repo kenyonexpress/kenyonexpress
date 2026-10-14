@@ -472,7 +472,13 @@ layout ליד ‏`mini-cart.css` (דף הבית שולח גיליון אחד; ר
 טריגר שני על ‏`auth.users` (‏`on_auth_user_created_terms`, ולא עריכה עיוורת של
 ‏`handle_new_user` שהעותק שלו בפרודקשן אינו זה שבקבצים) ו-backfill מה-metadata.
 גרסה ולא בוליאני: לתקנון יש היסטוריה מפורסמת, ו"אישר" בלי גרסה לא אומר כלום אחרי
-שהטקסט משתנה.
+שהטקסט משתנה. **נמדד בפרודקשן** (‏15.10, שרת ה-MCP הרשמי של ‏Supabase מקומית בקריאה
+בלבד, ‏`logs/ux24/supabase-mcp.json`, ואז ‏rehearsal ב-`BEGIN … ROLLBACK` דרך ה-management
+API, ‏`logs/ux24/rehearse-272.out`): ‏`handle_new_user` בפרודקשן מכניס ‏`(id, email, full_name)`
+בלבד ואינו הקובץ שבריפו; ‏272 רצה כולה, שתי העמודות קיימות, הטריגרים בסדר שמות
+‏`on_auth_user_created,on_auth_user_created_terms`, ‏backfill ‏0 (‏14 משתמשים, ‏0 עם הרשומה
+ב-metadata כי ‏UX24 טרם נפרס), השורה של הלקוח נראית ל-JWT שלו עם העמודה החדשה ו-anon
+רואה ‏0 שורות, ואחרי ה-ROLLBACK שום דבר לא נשאר.
 
 **איך החלון נפתח על ההרשמה.** ‏`ke:login-dialog` נושא עכשיו ‏`mode: 'login' | 'signup'`;
 ‏`LoginLink` קורא אותו מה-href (‏`modeFromAuthHref`: ‏`/signup` וילדיו = ‏signup), כך

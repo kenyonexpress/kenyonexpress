@@ -19,6 +19,26 @@ is a copy the application can read without the service role. Nothing in
 the app reads the columns yet, so there is no 42703 path. Idempotent.
 Rollback inside the file. No dependency on any other pending file.
 
+**Measured on production, 2026-10-15** (read-only through the official
+Supabase MCP server over stdio with the CLI token, `logs/ux24/supabase-mcp.mjs`
+/ `.json`, then the management API for the rehearsal, `logs/ux24/rehearse-272.*`):
+`profiles` has thirteen columns and neither `terms_accepted_at` nor
+`phone_verified_at` (254 is still unapplied too); `auth.users` carries ONE
+non-internal trigger, `on_auth_user_created` -> `handle_new_user`, whose
+production body inserts `(id, email, full_name)` only (no phone, no wallet
+row: not the file in `supabase/migrations/001`, which is why 272 adds a second
+trigger instead of replacing it); `profiles` RLS is `profiles_select_unified`
+(own row or `is_support()`), `profiles_update_unified` and
+`profiles_super_admin_mfa`, all `authenticated`; 14 users, 0 with
+`terms_accepted_at` in their metadata (UX24 is not deployed yet). The whole
+file ran inside `BEGIN … ROLLBACK` with a probe at the end: 2 columns present,
+triggers in name order `on_auth_user_created,on_auth_user_created_terms`,
+backfill 0 rows, the first profile visible to its own `authenticated` JWT with
+the new column (1 row), `anon` sees 0 rows; afterwards
+`to_regprocedure('public.handle_new_user_terms()')` is null and the column
+count is 0, so nothing persisted. The function pins `search_path = public,
+pg_temp`, the same shape production's `handle_new_user` has.
+
 ## 2026-10-14: 271 PENDING (deactivate the `/wishlist` 410 row, UX18)
 
 `271_deactivate_wishlist_gone_row.sql` is ONE UPDATE: `seo_redirects` row

@@ -1,0 +1,2 @@
+{"message":"Failed to run sql query: ERROR:  P0001: PROBE cols=2 triggers=on_auth_user_created,on_auth_user_created_terms backfilled=0 own_row_visible_as_authenticated=1 anon_rows=0\nCONTEXT:  PL/pgSQL function inline_code_block line 14 at RAISE\n"}
+HTTP 400

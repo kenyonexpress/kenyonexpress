@@ -61,7 +61,7 @@ COMMENT ON COLUMN public.profiles.terms_version IS
 
 CREATE OR REPLACE FUNCTION public.handle_new_user_terms()
 RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER
-SET search_path = public AS $$
+SET search_path = public, pg_temp AS $$
 BEGIN
   IF NEW.raw_user_meta_data ? 'terms_accepted_at' THEN
     UPDATE public.profiles
