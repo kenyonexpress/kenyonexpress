@@ -163,5 +163,7 @@ pnpm migrate:plan:check      # exit 1 על סחף או snapshot ישן
 - **עשרת קבצי הסחף לא הועברו ל-`applied/`.** ראה §0.
 - **‏`e2e-preview` ב-`ci.yml` לא נגע.** הוא בודק ‏PR previews עם ‏Playwright; זה
   מסלול הבדיקה של הקוד, לא של הפריסה, והשניים משלימים.
-- **אין ‏staging DB.** ‏preview ופרודקשן מצביעים על אותו ‏Supabase (‏`RELEASE-PROCESS.md` §0.4),
+- **‏preview ופרודקשן מצביעים על אותו ‏Supabase** (‏`RELEASE-PROCESS.md` §0.4),
   ולכן ה-smoke על ה-green קורא רק: דפים, ‏health, וסטטוס של נתיבי ‏cron מוגנים.
+  סביבת ‏staging נפרדת, עם ‏Supabase branch משלה וסיסמה, קיימת מ-14.10 ואינה חלק
+  מהצינור הזה: ‏`docs/STAGING.md`.

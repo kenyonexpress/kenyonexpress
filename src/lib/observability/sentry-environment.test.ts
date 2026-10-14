@@ -10,6 +10,18 @@ describe('sentryEnvironment', () => {
   })
 
   it('a hand-set variable is the fallback off the platform', () => {
+    expect(sentryEnvironment({ SENTRY_ENVIRONMENT: 'shop-b' })).toBe('shop-b')
+  })
+
+  it('staging is the one hand-set value that outranks the platform', () => {
+    // The staging project's production branch is the staging deployment, so
+    // the platform says `production` about the one host that is not.
+    expect(sentryEnvironment({ VERCEL_ENV: 'production', SENTRY_ENVIRONMENT: 'staging' })).toBe(
+      'staging',
+    )
+    expect(sentryEnvironment({ VERCEL_ENV: 'preview', SENTRY_ENVIRONMENT: ' staging ' })).toBe(
+      'staging',
+    )
     expect(sentryEnvironment({ SENTRY_ENVIRONMENT: 'staging' })).toBe('staging')
   })
 

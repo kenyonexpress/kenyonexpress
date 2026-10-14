@@ -63,4 +63,24 @@ describe('robots', () => {
     expect(robots().sitemap).toBe('https://example.test/sitemap.xml')
     expect(robots().host).toBe('https://example.test')
   })
+
+  describe('behind the staging gate', () => {
+    it('disallows the whole host and names no sitemap', () => {
+      vi.stubEnv('STAGING_PASSWORD', 'a-staging-password')
+      vi.stubEnv('NEXT_PUBLIC_APP_URL', 'https://staging.example.test')
+      const result = robots()
+      const first = Array.isArray(result.rules) ? result.rules[0] : result.rules
+      expect(first?.disallow).toBe('/')
+      expect(first?.allow).toBeUndefined()
+      expect(result.sitemap).toBeUndefined()
+    })
+
+    it('a blank password is no gate, and the storefront stays crawlable', () => {
+      vi.stubEnv('STAGING_PASSWORD', '  ')
+      expect(disallowList()).toContain('/redeem/')
+      const rules = robots().rules
+      const first = Array.isArray(rules) ? rules[0] : rules
+      expect(first?.allow).toBe('/')
+    })
+  })
 })

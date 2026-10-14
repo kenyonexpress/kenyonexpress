@@ -82,6 +82,15 @@ const schema = z
     VOUCHER_QR_SECRET: z.string().optional(),
     CRON_SECRET: z.string().optional(),
     /**
+     * The staging gate (STEP 69, lib/staging/gate.ts). Set on the staging
+     * Vercel project and NOWHERE ELSE: present, the proxy answers every
+     * browser request without it with 401 and a Basic challenge, robots
+     * disallows the host and every response is noindex. Absent, nothing in
+     * the app changes. `scripts/deploy-preflight.mjs` refuses a build that
+     * carries it together with the production host.
+     */
+    STAGING_PASSWORD: z.string().min(12).optional().or(z.literal('')),
+    /**
      * Bearer for `/api/revalidate`, the on-demand storefront cache purge
      * (STEP 36). OPTIONAL EVERYWHERE and closed when unset: `bearerMatches`
      * compares against "" and never matches. Deliberately NOT derived from

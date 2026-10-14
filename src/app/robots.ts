@@ -1,4 +1,5 @@
 import { siteUrl } from '@/lib/site-url'
+import { stagingPasswordFromEnv } from '@/lib/staging/gate'
 import type { MetadataRoute } from 'next'
 
 /**
@@ -17,6 +18,14 @@ import type { MetadataRoute } from 'next'
  */
 
 export default function robots(): MetadataRoute.Robots {
+  // Behind the staging gate (lib/staging/gate.ts) there is nothing to crawl
+  // and no sitemap to point at: the whole host is disallowed. The proxy's
+  // X-Robots-Tag on every response is the layer that holds when a crawler
+  // ignores this file.
+  if (stagingPasswordFromEnv(process.env)) {
+    return { rules: [{ userAgent: '*', disallow: '/' }] }
+  }
+
   const base = siteUrl()
 
   return {

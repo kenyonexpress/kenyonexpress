@@ -33,6 +33,14 @@
  * `NEXT_PUBLIC_SENTRY_ENVIRONMENT` in the `SENTRY_ENVIRONMENT` slot, and both
  * callers must reference `process.env.X` LITERALLY for Next to inline it.
  *
+ * THE ONE EXCEPTION IS `staging` (STEP 69). The staging host is a second
+ * Vercel project whose production branch IS the staging deployment, so the
+ * platform labels it `production`, which is the one thing it is not. The
+ * platform can never emit the value `staging` itself, so a hand-set
+ * `staging` is not a stale copy of anything the platform knows and it wins.
+ * The copy-paste risk runs the other way (the word `staging` pasted into the
+ * shop's variables) and `scripts/deploy-preflight.mjs` refuses that build.
+ *
  * Edge-safe and browser-safe: no imports at all.
  */
 
@@ -43,10 +51,14 @@ export type SentryEnvironmentSource = {
   SENTRY_ENVIRONMENT?: string
 }
 
+export const STAGING_ENVIRONMENT = 'staging'
+
 export function sentryEnvironment(source: SentryEnvironmentSource): SentryEnvironment {
+  const explicit = source.SENTRY_ENVIRONMENT?.trim()
+  if (explicit === STAGING_ENVIRONMENT) return STAGING_ENVIRONMENT
+
   const platform = source.VERCEL_ENV?.trim()
   if (platform) return platform
 
-  const explicit = source.SENTRY_ENVIRONMENT?.trim()
   return explicit ? explicit : 'local'
 }

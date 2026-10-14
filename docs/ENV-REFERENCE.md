@@ -289,6 +289,7 @@ unset; nothing is sent.** Logs: `analytics.meta_purchase_failed`,
 |---|---|---|
 | `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_SITE_URL` | required in practice | Absolute URLs in emails, sitemap, OG images and the Cardcom return URL. Wrong here means a customer is redirected to the wrong host after paying. |
 | `CHECKOUT_ENABLED` | optional | A kill switch for checkout. |
+| `STAGING_PASSWORD` | optional, **staging project only** | The staging gate (`src/lib/staging/gate.ts`): 401 + Basic challenge on every browser request without it, robots disallow, `X-Robots-Tag: noindex`. Set on the shop it locks the shop; `scripts/deploy-preflight.mjs` refuses that build. `docs/STAGING.md`. |
 | `PUSH_ENABLED` | optional | |
 | `PHONE_AUTH_ENABLED`, `NEXT_PUBLIC_PHONE_AUTH_ENABLED` | optional | |
 | `NEXT_PUBLIC_WHATSAPP_PHONE` | optional | |

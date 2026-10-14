@@ -19,6 +19,7 @@
  * Exit: 0 clean, 1 refuse.
  */
 import { compromisedKeyMessage, scanEnvironmentForCompromisedKeys } from './compromised-keys.mjs'
+import { stagingMarkersOnProductionHost } from './staging/lib.mjs'
 
 const REQUIRED_RUNTIME = [
   'NEXT_PUBLIC_SUPABASE_URL',
@@ -60,6 +61,17 @@ if (process.env.CARDCOM_SANDBOX === 'true') {
 if (process.env.ALLOW_INCOMPLETE_ENV === 'true') {
   problems.push(
     'WAIVER       ALLOW_INCOMPLETE_ENV=true נועד ל-`next start` מקומי בלבד. על פלטפורמת פריסה זו עקיפה של כל הבדיקות שלמעלה.',
+  )
+}
+
+// 5. Staging markers on the production host (STEP 69). With the gate password
+//    the shop is locked to its customers; with the branch URL it sells from a
+//    database nobody reconciles. Either way it is a staging environment
+//    wearing the production domain, and it does not ship.
+const staging = stagingMarkersOnProductionHost(process.env)
+if (staging) {
+  problems.push(
+    `STAGING      ${staging.markers.join(', ')} מוגדרים יחד עם NEXT_PUBLIC_APP_URL על ${staging.host}: סימוני סביבת בדיקות על הדומיין של החנות. ראה docs/STAGING.md.`,
   )
 }
 

@@ -18,6 +18,7 @@
 import { appendFileSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { stagingHeaders } from '../staging/lib.mjs'
 import { evaluateSmoke, normalizeBase, probePlan } from './lib.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
@@ -36,8 +37,14 @@ function parseArgs(argv) {
 }
 
 /** One GET, status plus the first 2KB of body. Never throws: 0 is "no answer". */
-export async function probeUrl(url, { bypass, fetchImpl = fetch } = {}) {
-  const headers = bypass ? { 'x-vercel-protection-bypass': bypass } : {}
+export async function probeUrl(url, { bypass, stagingPassword, fetchImpl = fetch } = {}) {
+  // Two doors, each with its own key: Vercel's protection bypass for a
+  // preview, and the staging gate's password for staging.kenyonexpress.co.il
+  // (scripts/staging/lib.mjs). Neither header is sent when its key is unset.
+  const headers = {
+    ...(bypass ? { 'x-vercel-protection-bypass': bypass } : {}),
+    ...stagingHeaders(stagingPassword),
+  }
   try {
     const res = await fetchImpl(url, {
       method: 'GET',
@@ -52,11 +59,22 @@ export async function probeUrl(url, { bypass, fetchImpl = fetch } = {}) {
   }
 }
 
-export async function runSmoke({ base, bypass, jobs, fetchImpl = fetch, log = () => {} }) {
+export async function runSmoke({
+  base,
+  bypass,
+  stagingPassword,
+  jobs,
+  fetchImpl = fetch,
+  log = () => {},
+}) {
   const plan = probePlan(jobs)
   const probes = []
   for (const step of plan) {
-    const { status, body } = await probeUrl(`${base}${step.path}`, { bypass, fetchImpl })
+    const { status, body } = await probeUrl(`${base}${step.path}`, {
+      bypass,
+      stagingPassword,
+      fetchImpl,
+    })
     probes.push({ ...step, status, body })
   }
   const verdict = evaluateSmoke(probes)
@@ -96,16 +114,25 @@ async function main() {
   const args = parseArgs(process.argv.slice(2))
   const base = normalizeBase(args.base ?? process.env.SMOKE_BASE_URL ?? process.env.PRODUCTION_URL)
   if (!base) {
-    console.error('usage: smoke.mjs --base https://host [--bypass SECRET] [--json out.json]')
+    console.error(
+      'usage: smoke.mjs --base https://host [--bypass SECRET] [--staging-password PW] [--json out.json]',
+    )
     return 2
   }
   const bypass = args.bypass ?? process.env.VERCEL_AUTOMATION_BYPASS_SECRET ?? undefined
+  const stagingPassword = args['staging-password'] ?? process.env.STAGING_PASSWORD ?? undefined
   const registry = JSON.parse(readFileSync(REGISTRY, 'utf8'))
   console.log(
-    `smoke: ${base} (${registry.jobs.length} cron paths, bypass ${bypass ? 'set' : 'unset'})`,
+    `smoke: ${base} (${registry.jobs.length} cron paths, bypass ${bypass ? 'set' : 'unset'}, staging password ${stagingPassword ? 'set' : 'unset'})`,
   )
 
-  const verdict = await runSmoke({ base, bypass, jobs: registry.jobs, log: console.log })
+  const verdict = await runSmoke({
+    base,
+    bypass,
+    stagingPassword,
+    jobs: registry.jobs,
+    log: console.log,
+  })
   if (args.json) writeFileSync(args.json, JSON.stringify({ base, ...verdict }, null, 2))
   writeGithubOutput(verdict)
 

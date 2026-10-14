@@ -32,4 +32,8 @@
 **/*.spec.tsx
 /vitest.config.ts
 /playwright.config.ts
+# Imports ./playwright.config, which the line above strips; left behind it fails
+# the build's type check with TS2307 (measured on the first staging git deploy,
+# 2026-10-14). Anything that imports a stripped file must be stripped with it.
+/playwright.cross-browser.config.ts
 /biome.json

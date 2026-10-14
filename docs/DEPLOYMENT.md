@@ -75,6 +75,7 @@ path.
 | push to `main` | nothing | production deploy |
 | push to any branch | nothing | preview deploy |
 | `vercel deploy --prod` | production | production (discouraged then) |
+| `node scripts/staging/deploy.mjs` | staging (`staging.kenyonexpress.co.il`, password-gated, Supabase branch `staging`) | same; `docs/STAGING.md` |
 
 ## Related
 

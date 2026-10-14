@@ -72,12 +72,20 @@ export default defineConfig({
      * With the variable unset the object is empty and nothing about a local or
      * localhost run changes.
      */
-    extraHTTPHeaders: process.env.VERCEL_AUTOMATION_BYPASS_SECRET
-      ? {
-          'x-vercel-protection-bypass': process.env.VERCEL_AUTOMATION_BYPASS_SECRET,
-          'x-vercel-set-bypass-cookie': 'true',
-        }
-      : {},
+    extraHTTPHeaders: {
+      ...(process.env.VERCEL_AUTOMATION_BYPASS_SECRET
+        ? {
+            'x-vercel-protection-bypass': process.env.VERCEL_AUTOMATION_BYPASS_SECRET,
+            'x-vercel-set-bypass-cookie': 'true',
+          }
+        : {}),
+      // The staging gate (src/lib/staging/gate.ts): with STAGING_PASSWORD set
+      // the suite can be aimed at staging.kenyonexpress.co.il. Unset, nothing
+      // is sent.
+      ...(process.env.STAGING_PASSWORD?.trim()
+        ? { 'x-staging-password': process.env.STAGING_PASSWORD.trim() }
+        : {}),
+    },
   },
   projects: [
     {

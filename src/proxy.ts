@@ -30,6 +30,12 @@ import {
 import { REQUEST_PATH_HEADER } from '@/lib/security/request-path'
 import { CROSS_SITE_REJECTION, isCrossSiteApiMutation } from '@/lib/security/same-origin'
 import { lookupRedirect } from '@/lib/seo/redirects'
+import {
+  STAGING_ROBOTS_TAG,
+  stagingChallengeResponse,
+  stagingGateDecision,
+  stagingPasswordFromEnv,
+} from '@/lib/staging/gate'
 import { requireAnonKey } from '@/lib/supabase/anon-key'
 import { couponPathNeedsSession } from '@/lib/vouchers/coupon-path'
 import { createServerClient } from '@supabase/ssr'
@@ -99,6 +105,9 @@ function withRequestId<T extends Response>(response: T, requestId: string): T {
 // of string checks that would otherwise run on every hit.
 const CSP_REPORT_URI = cspReportUriFromEnv(process.env)
 const CSP_VENDORS = vendorSources(process.env)
+// The staging gate's password (STEP 69, lib/staging/gate.ts). Null on every
+// deployment but staging, and then the gate below is not consulted at all.
+const STAGING_PASSWORD = stagingPasswordFromEnv(process.env)
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -134,6 +143,10 @@ export async function proxy(request: NextRequest) {
   // 429s: a policy on a redirect is inert, and one missing from an HTML error
   // body is a page with no policy at all.
   response.headers.set('Content-Security-Policy', context.csp)
+  // Behind the staging gate every response is noindex, the pages a visitor
+  // with the password sees included: robots.txt is only a request, and a
+  // header is what stops a crawler that was handed the credential.
+  if (STAGING_PASSWORD) response.headers.set('X-Robots-Tag', STAGING_ROBOTS_TAG)
   return response
 }
 
@@ -151,6 +164,18 @@ async function route(request: NextRequest, context: RequestContext): Promise<Res
   // Neither branch was wrong on its own, which is how the two of them produced
   // it.
   if (pathname.startsWith('/monitoring')) return forward(request, context)
+
+  // The staging gate (STEP 69). Second, right after the tunnel and before
+  // anything that costs a round trip: a stranger on staging gets a 401 and
+  // a Basic challenge, and spends neither a rate-limit slot nor a session
+  // refresh. The machine-credentialed paths (cron, webhooks, the till app,
+  // health) are exempt inside the decision, with the reasons listed there.
+  if (STAGING_PASSWORD) {
+    const decision = stagingGateDecision({ pathname, headers: request.headers }, STAGING_PASSWORD)
+    if (decision.kind === 'challenge') {
+      return withRequestId(stagingChallengeResponse(), requestId)
+    }
+  }
 
   // The CSRF gate for route handlers. A state-changing call to /api/* that a
   // browser says came from another site is refused here, before the session
