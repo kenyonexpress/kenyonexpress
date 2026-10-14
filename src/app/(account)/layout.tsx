@@ -1,4 +1,3 @@
-import SkipLink from '@/components/a11y/SkipLink'
 import AccountNav from '@/components/account/AccountNav'
 import AccountTabs from '@/components/account/AccountTabs'
 import AccountTabsList from '@/components/account/AccountTabsList'
@@ -101,7 +100,6 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
       <CartBootstrap />
       <div className="min-h-screen flex flex-col bg-white">
         {/* STEP 32: same masthead as the storefront, same way past it. */}
-        <SkipLink />
         <SiteHeader />
         <main id="main-content" tabIndex={-1} className="flex-1 w-full outline-none">
           <div className="account-page">

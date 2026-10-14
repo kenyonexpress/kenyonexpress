@@ -240,11 +240,17 @@ export default async function ProductPage({ params }: Props) {
         {/* Breadcrumb. The row is 84px on live, and that height is what puts
             the columns block below it on y250. */}
         <nav className="pdp-breadcrumb" aria-label="נתיב ניווט">
-          <Link href="/">בית</Link>
+          {/* tap-area: "בית" paints 22x24 and the 24px floor of 2.5.8 is
+              measured on the hit box (touch-targets.spec, 15.10.2026). */}
+          <Link href="/" className="tap-area">
+            בית
+          </Link>
           {category && (
             <>
               <span className="pdp-breadcrumb__sep">/</span>
-              <Link href={`/category/${category.slug}`}>{category.name_he}</Link>
+              <Link href={`/category/${category.slug}`} className="tap-area">
+                {category.name_he}
+              </Link>
             </>
           )}
           <span className="pdp-breadcrumb__sep">/</span>

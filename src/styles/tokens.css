@@ -650,6 +650,7 @@
 
      Tailwind's own sm/md/lg/xl/2xl remain available and unchanged; these are
      additional named stops, not a replacement scale. */
+  --breakpoint-narrow: 360px; /* the handheld header row fits 320 only below this (Header.tsx, XF04) */
   --breakpoint-mobile: 380px; /* compare.mjs narrow */
   --breakpoint-tablet: 768px; /* compare.mjs middle; equals Tailwind md */
   --breakpoint-desktop: 1440px; /* compare.mjs wide; the reference viewport */

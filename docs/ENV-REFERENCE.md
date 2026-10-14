@@ -307,7 +307,11 @@ Set in the Expo project. `EXPO_PUBLIC_*` is inlined into the app binary.
 
 **E2E:** `E2E_BASE_URL`, `E2E_WEB_COMMAND`, `E2E_PORT`, `E2E_WORKERS`,
 `E2E_PAID_FLOW`, `E2E_CUSTOMER_EMAIL`, `E2E_CUSTOMER_PASSWORD`,
-`E2E_SUPPLIER_EMAIL`, `E2E_SUPPLIER_PASSWORD`, `PLAYWRIGHT_BROWSERS_PATH`.
+`E2E_SUPPLIER_EMAIL`, `E2E_SUPPLIER_PASSWORD`, `E2E_ADMIN_EMAIL`,
+`E2E_ADMIN_PASSWORD`, `E2E_ADMIN_TOTP_SECRET`, `E2E_FORWARDED_FOR` (one
+`x-forwarded-for` address for the whole run, a fresh rate-limit bucket),
+`E2E_FORWARDED_FOR_PREFIX` (one address per worker: `<prefix>.<n>`),
+`PLAYWRIGHT_BROWSERS_PATH`.
 
 **Pixel comparison** (`scripts/compare.mjs`): `LOCAL_BASE`, `LIVE_BASE`,
 `COMPARE_*`, `LIVE_PRODUCT_PATH`, `LOCAL_PRODUCT_PATH`, `LIVE_CATEGORY_PATH`,

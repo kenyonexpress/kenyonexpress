@@ -88,6 +88,15 @@ test.describe('city pages', () => {
   test('an unknown slug is a 404 that asks not to be indexed', async ({ page }) => {
     const response = await page.goto('/city/no-such-city')
     expect(response?.status()).toBe(404)
-    await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/)
+    // The 404 can carry more than one robots meta (the not-found page's and
+    // the segment's; three were counted once on 15.10.2026, XF04), and strict
+    // mode refuses the set. Every one of them must say noindex.
+    const robots = page.locator('meta[name="robots"]')
+    expect(await robots.count()).toBeGreaterThan(0)
+    for (const content of await robots.evaluateAll((els) =>
+      els.map((el) => el.getAttribute('content') ?? ''),
+    )) {
+      expect(content).toMatch(/noindex/)
+    }
   })
 })

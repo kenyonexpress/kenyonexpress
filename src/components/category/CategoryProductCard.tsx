@@ -89,7 +89,7 @@ const OVERLAY_WISHLIST_CLASS =
 
 // Under the heart, same corner, same hover rule (STEP 56).
 const OVERLAY_COMPARE_CLASS =
-  'tap-area absolute bottom-12 end-2 z-10 grid h-9 w-9 place-items-center rounded-full border border-gray-200 bg-white/95 text-icon opacity-0 shadow-sm transition-opacity hover:border-price focus-visible:opacity-100 group-hover:opacity-100 data-[compared=true]:border-price data-[compared=true]:text-price data-[compared=true]:opacity-100 [@media(hover:none)]:opacity-100'
+  'tap-area absolute bottom-13 end-2 z-10 grid h-9 w-9 place-items-center rounded-full border border-gray-200 bg-white/95 text-icon opacity-0 shadow-sm transition-opacity hover:border-price focus-visible:opacity-100 group-hover:opacity-100 data-[compared=true]:border-price data-[compared=true]:text-price data-[compared=true]:opacity-100 [@media(hover:none)]:opacity-100'
 
 /**
  * One card of the archive grid, or one row of the archive list (UX14).

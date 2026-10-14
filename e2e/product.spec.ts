@@ -133,7 +133,9 @@ test.describe('product page', () => {
   test('related-product thumbnails do not over-order pixels', async ({ page }) => {
     await openFirstProduct(page)
 
-    const grid = page.locator('.pdp-related__grid')
+    // Two strips paint `.pdp-related__grid` (related products and the
+    // recommendations under them); this test is about the related strip.
+    const grid = page.locator('section[data-strip="related"] .pdp-related__grid')
     await expect(grid.locator('img').first()).toBeAttached({ timeout: 15000 })
     // The grid is below the fold and the thumbnails are lazy, so without the
     // scroll `currentSrc` is the empty string and every assertion below passes
@@ -142,15 +144,17 @@ test.describe('product page', () => {
     await grid.scrollIntoViewIfNeeded()
     await page.waitForFunction(
       () =>
-        Array.from(document.querySelectorAll('.pdp-related__grid img')).every(
-          (el) => (el as HTMLImageElement).currentSrc !== '',
-        ),
+        Array.from(
+          document.querySelectorAll('section[data-strip="related"] .pdp-related__grid img'),
+        ).every((el) => (el as HTMLImageElement).currentSrc !== ''),
       undefined,
       { timeout: 15000 },
     )
 
     const shots = await page.evaluate(() =>
-      Array.from(document.querySelectorAll('.pdp-related__grid img')).map((el) => {
+      Array.from(
+        document.querySelectorAll('section[data-strip="related"] .pdp-related__grid img'),
+      ).map((el) => {
         const img = el as HTMLImageElement
         const painted = img.getBoundingClientRect().width
         const w = new URL(img.currentSrc, location.href).searchParams.get('w')

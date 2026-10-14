@@ -45,13 +45,16 @@ describe('safe-area insets', () => {
     expect(css).toMatch(/body\s*\{[^}]*padding-right:\s*var\(--safe-right\)/)
   })
 
-  it('lifts the WhatsApp float by the bottom inset in both of its positions', () => {
+  it('lifts the WhatsApp float by the bottom inset and the two fixed strips in both of its positions', () => {
+    // The consent and install strips reserve space at the bottom (globals.css
+    // --reserve-*); without them in the offset the button sat under the banner
+    // and e2e/a11y.spec.ts's focus walk found it hidden (15.10.2026, XF04).
     expect(css).toMatch(
-      /\.whatsapp-float\s*\{[^}]*bottom:\s*calc\(1\.25rem \+ var\(--safe-bottom\)\)/,
+      /\.whatsapp-float\s*\{[^}]*bottom:\s*calc\(\s*1\.25rem \+\s*var\(--safe-bottom\) \+\s*var\(--reserve-consent, 0rem\) \+\s*var\(--reserve-pwa, 0rem\)\s*\)/,
     )
     const miniCart = stripComments(read('src/styles/mini-cart.css'))
     expect(miniCart).toMatch(
-      /body\.mobile-cart-bar-visible \.whatsapp-float\s*\{[^}]*env\(safe-area-inset-bottom/,
+      /body\.mobile-cart-bar-visible \.whatsapp-float\s*\{[^}]*env\(safe-area-inset-bottom[^}]*var\(--reserve-consent, 0rem\)/,
     )
   })
 
@@ -133,7 +136,7 @@ describe('tap area', () => {
     const consumers: Record<string, RegExp> = {
       'src/components/layout/Header.tsx': /className="tap-area shrink-0"/, // logo link 100x26
       'src/components/cart/CartNavLink.tsx': /tap-area -m-1 flex/, // cart trigger 60x30
-      'src/components/layout/TopBar.tsx': /tap-area flex h-topbar-row/, // sign-in 78x37
+      'src/components/layout/TopBar.tsx': /tap-area tap-area--down flex h-topbar-row/, // sign-in 78x37
       'src/components/ProductCard.tsx': /tap-area flex h-full w-full/, // home add-to-cart 40x40
       'src/components/ProductDealCard.tsx': /tap-area flex h-full w-full/,
       'src/components/category/CategoryProductCard.tsx': /tap-area category-card__atc/, // 37x34
@@ -154,7 +157,7 @@ describe('tap area', () => {
     // overflow: hidden (line-clamp) clips ::after, so the category link on the
     // compact card grows with py-1 and hands it back with -my-1.
     expect(read('src/components/ProductCard.tsx')).toMatch(
-      /className="-my-1 block py-1 text-xs text-muted-2 hover:text-heading line-clamp-1"/,
+      /className="-my-1 block min-h-6 py-1 text-xs text-muted-2 hover:text-heading line-clamp-1"/,
     )
   })
 })

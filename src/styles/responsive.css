@@ -70,7 +70,16 @@ body {
    lifted position while the mobile cart bar shows is in mini-cart.css and
    adds the same inset. */
 .whatsapp-float {
-  bottom: calc(1.25rem + var(--safe-bottom));
+  /* Plus the two fixed strips (globals.css --reserve-*): with the consent
+     banner up the button sat under it, and the focus walk in e2e/a11y.spec.ts
+     reported "focus hidden under details.mt-2" on /, /products, /cart and
+     /coupons (measured 15.10.2026, XF04). Both are 0rem once decided. */
+  bottom: calc(
+    1.25rem +
+    var(--safe-bottom) +
+    var(--reserve-consent, 0rem) +
+    var(--reserve-pwa, 0rem)
+  );
   inset-inline-end: calc(1.25rem + var(--safe-left));
 }
 
@@ -115,6 +124,15 @@ body {
 
   .tap-area--36 {
     --tap-size: 36px;
+  }
+
+  /* A host at the very top of the page (the top bar's sign-in link, 37.33px
+     tall at y=0): the centred box put 3.33px above the viewport, where no
+     thumb can land, and e2e/touch-targets.spec.ts measured 72x41 (15.10.2026,
+     XF04). This one keeps the top edge and grows downward only. */
+  .tap-area--down::after {
+    inset-block-start: 0;
+    inset-block-end: min(0px, calc(100% - var(--tap-size, var(--spacing-touch-min))));
   }
 }
 

@@ -296,3 +296,63 @@ export async function raiseInstallBanner(page: Page): Promise<Locator> {
   }
   return banner
 }
+
+/**
+ * The sentence the checkout shows when payment is not live
+ * (src/lib/payments/provider-gate.ts, PAYMENT_GATE_CLOSED_MESSAGE). A mock
+ * provider in a production build closes the gate unless the server runs with
+ * E2E_MOCK_CHECKOUT=local-build (never honoured on Vercel), so the money specs
+ * skip on this text rather than time out on a pay button that reads
+ * "התשלום ייפתח בקרוב" (measured 15.10.2026, XF04).
+ */
+export const PAYMENT_GATE_CLOSED_TEXT = 'התשלום באתר עדיין לא פעיל'
+
+export async function paymentGateClosed(page: Page): Promise<boolean> {
+  return (await page.getByText(PAYMENT_GATE_CLOSED_TEXT).count()) > 0
+}
+
+/**
+ * Walks the desktop checkout wizard from wherever it opens to the payment
+ * step, filling the details and the address when their steps are current,
+ * and ends with the terms checkbox visible. Below 768 (D25) every section
+ * is on the page at once and the walk is a no-op apart from the fields.
+ * The order the three money specs used to repeat by hand; one of them
+ * (physical-purchase, admin-refund) expected to land on the payment step
+ * directly and timed out on a hidden checkbox once the wizard opened on the
+ * details step for a signed-in customer too (measured 15.10.2026, XF04).
+ */
+export async function walkCheckoutToPayment(page: Page, email: string): Promise<void> {
+  // Field ids rather than labels: the footer newsletter box also answers to
+  // "כתובת אימייל", so labels are ambiguous the moment the footer renders.
+  if (
+    await page
+      .locator('#co-first-name')
+      .isVisible()
+      .catch(() => false)
+  ) {
+    await page.locator('#co-first-name').fill('בדיקה')
+    await page.locator('#co-last-name').fill('אוטומטית')
+    await page.locator('#co-phone').fill('0501234567')
+    await page.locator('#co-email').fill(email)
+    await page.getByRole('button', { name: 'המשך', exact: true }).click()
+  }
+
+  // The address step is required even for coupon-only carts. A saved
+  // address shows the step with a summary line and the same continue button.
+  if (
+    await page
+      .locator('#co-city')
+      .isVisible()
+      .catch(() => false)
+  ) {
+    await page.locator('#co-city').fill('תל אביב')
+    await page.locator('#co-street').fill('הרצל')
+    await page.locator('#co-number').fill('1')
+  }
+  const toPayment = page.getByRole('button', { name: 'המשך', exact: true })
+  if (await toPayment.isVisible().catch(() => false)) {
+    await toPayment.click()
+  }
+
+  await expect(page.locator('input[name="accept_terms"]')).toBeVisible()
+}

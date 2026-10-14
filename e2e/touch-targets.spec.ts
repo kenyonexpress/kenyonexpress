@@ -119,7 +119,12 @@ async function measure(page: Page): Promise<Measured[]> {
         const cx = r.left + r.width / 2
         const cy = r.top + r.height / 2
         const label = `${el.tagName.toLowerCase()}[${(el.getAttribute('aria-label') ?? el.textContent ?? '').trim().slice(0, 30)}]`
-        const primary = primarySelectors.some((s) => el.matches(s))
+        // `.tap-area--36` is the product page's share-row pitch (responsive.css):
+        // the inline wishlist and compare buttons there carry an "הוסף " label
+        // like the card overlays but are sized to that row on purpose, so
+        // they are held to the 24px floor and not the 44 of the overlays.
+        const primary =
+          primarySelectors.some((s) => el.matches(s)) && !el.classList.contains('tap-area--36')
         if (!hits(el, cx, cy)) {
           out.push({ label, width: 0, height: 0, primary, covered: true })
           continue

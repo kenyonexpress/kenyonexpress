@@ -96,7 +96,7 @@ function InfoItem({ Icon, label, href }: InfoItemProps) {
   return href ? (
     <LoginLink
       href={href}
-      className="tap-area flex h-topbar-row items-center gap-1.5 transition-colors hover:text-heading-hover"
+      className="tap-area tap-area--down flex h-topbar-row items-center gap-1.5 transition-colors hover:text-heading-hover"
     >
       {body}
     </LoginLink>

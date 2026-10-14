@@ -54,7 +54,13 @@ test.describe('account tabs (UX18)', () => {
 
     await bar.getByRole('link', { name: 'ההזמנות שלי' }).click()
     await expect(page).toHaveURL(/\/account\/orders$/)
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('ההזמנות שלי')
+    // 15s, not the 5s default: the orders page reads the hosted database and
+    // its render sat past 5s once in two runs on 15.10.2026 (XF04) while the
+    // same press passed in the other run; the server log shows db.query_slow
+    // around it, not an error.
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('ההזמנות שלי', {
+      timeout: 15_000,
+    })
     await expect(bar.getByRole('link', { name: 'ההזמנות שלי' })).toHaveAttribute(
       'aria-current',
       'page',

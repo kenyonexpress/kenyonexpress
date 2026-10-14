@@ -23,7 +23,10 @@ test.describe('category archive', () => {
     // Either products, or the empty-state copy. Both are valid archive states;
     // a blank page with neither is the regression this guards against.
     const grid = page.locator('a[href^="/product/"]').first()
-    const empty = page.getByText('לא נמצאו מוצרים התואמים את הבחירה שלך.')
+    // `.first()`: the archive prints the empty-state sentence twice (one per
+    // view), and `or()` under strict mode refused the pair once in two runs
+    // on 15.10.2026 (XF04) when the filter emptied the archive.
+    const empty = page.getByText('לא נמצאו מוצרים התואמים את הבחירה שלך.').first()
     await expect(grid.or(empty)).toBeVisible({ timeout: 15_000 })
   })
 
@@ -192,7 +195,10 @@ test.describe('category archive', () => {
     expect(response?.status()).toBe(200)
 
     const grid = page.locator('a[href^="/product/"]').first()
-    const empty = page.getByText('לא נמצאו מוצרים התואמים את הבחירה שלך.')
+    // `.first()`: the archive prints the empty-state sentence twice (one per
+    // view), and `or()` under strict mode refused the pair once in two runs
+    // on 15.10.2026 (XF04) when the filter emptied the archive.
+    const empty = page.getByText('לא נמצאו מוצרים התואמים את הבחירה שלך.').first()
     await expect(grid.or(empty)).toBeVisible({ timeout: 15_000 })
 
     const badges = await page
@@ -240,7 +246,10 @@ test.describe('category archive', () => {
     expect(response?.status()).toBe(200)
 
     const grid = page.locator('a[href^="/product/"]').first()
-    const empty = page.getByText('לא נמצאו מוצרים התואמים את הבחירה שלך.')
+    // `.first()`: the archive prints the empty-state sentence twice (one per
+    // view), and `or()` under strict mode refused the pair once in two runs
+    // on 15.10.2026 (XF04) when the filter emptied the archive.
+    const empty = page.getByText('לא נמצאו מוצרים התואמים את הבחירה שלך.').first()
     await expect(grid.or(empty)).toBeVisible({ timeout: 15_000 })
   })
 

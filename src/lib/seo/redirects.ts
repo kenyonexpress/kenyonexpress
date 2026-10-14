@@ -121,10 +121,36 @@ async function getMap(): Promise<Map<string, RedirectHit> | null> {
   }
 }
 
+/**
+ * Paths this app serves that the legacy WordPress map also knows as retired
+ * WooCommerce URLs. `data/legacy/redirect-map.json` lists them under
+ * "excluded ... source_is_live" ("serves 200 today; a row here would take it
+ * down"), but production's table still carries the 09.09 seed of 192: measured
+ * 14.10.2026 (UX18) and again 15.10.2026 (XF04, e2e/home.spec.ts "reaching
+ * the footer costs no 404s"), `/wishlist` answered 410 from the row below
+ * before routing, and the masthead heart, the account nav and the footer all
+ * link there. `migrations/pending/271_deactivate_wishlist_gone_row.sql`
+ * retires the row; until it is applied, and against any future stale row,
+ * a path in this set is never answered from the table. The set mirrors the
+ * map's exclusion list and is pinned by redirects.test.ts.
+ */
+export const LIVE_ROUTES: ReadonlySet<string> = new Set([
+  '/about',
+  '/blog',
+  '/compare',
+  '/contact',
+  '/privacy-policy',
+  '/refund_returns',
+  '/terms-and-conditions',
+  '/wishlist',
+])
+
 export async function lookupRedirect(pathname: string): Promise<RedirectHit | null> {
+  const path = normalizePath(pathname)
+  if (LIVE_ROUTES.has(path)) return null
   const map = await getMap()
   if (!map) return null
-  return map.get(normalizePath(pathname)) ?? null
+  return map.get(path) ?? null
 }
 
 /** Test seam and admin hook: drop the cache so the next lookup re-reads. */

@@ -174,7 +174,9 @@ export default function CouponOfferPage({
           />
 
           <nav className="pdp-breadcrumb" aria-label="נתיב ניווט">
-            <Link href="/">בית</Link>
+            <Link href="/" className="tap-area">
+              בית
+            </Link>
             {category && (
               <>
                 <span className="pdp-breadcrumb__sep">/</span>

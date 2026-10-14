@@ -14,6 +14,16 @@ const WEB_COMMAND = process.env.E2E_WEB_COMMAND ?? 'pnpm dev'
 /** e2e/visual.spec.ts: Percy snapshots, run only by the `visual` project. */
 const VISUAL_SPEC = /visual\.spec\.ts$/
 
+/** The x-forwarded-for header, if any: one fixed address, or one per worker. */
+function forwardedForHeader(): Record<string, string> {
+  const fixed = process.env.E2E_FORWARDED_FOR?.trim()
+  if (fixed) return { 'x-forwarded-for': fixed }
+  const prefix = process.env.E2E_FORWARDED_FOR_PREFIX?.trim()
+  if (!prefix) return {}
+  const worker = Number(process.env.TEST_PARALLEL_INDEX ?? 0)
+  return { 'x-forwarded-for': `${prefix}.${(Number.isFinite(worker) ? worker : 0) + 1}` }
+}
+
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
@@ -93,9 +103,18 @@ export default defineConfig({
       // did not stick: 0 -> 0" (measured 14.10.2026, UX16: the toast said
       // "יותר מדי פעולות"). Set E2E_FORWARDED_FOR to a fresh address to run
       // under a fresh key. Unset, nothing is sent.
-      ...(process.env.E2E_FORWARDED_FOR?.trim()
-        ? { 'x-forwarded-for': process.env.E2E_FORWARDED_FOR.trim() }
-        : {}),
+      //
+      // E2E_FORWARDED_FOR_PREFIX=10.44.1 hands every worker its own address
+      // instead (10.44.1.1, 10.44.1.2, ...), so a full run's cart writes are
+      // spread over as many buckets as there are workers. Playwright sets
+      // TEST_PARALLEL_INDEX before it re-evaluates this file inside each
+      // worker process (lib/worker/workerProcessEntry.js, then
+      // configLoader.deserializeConfig), which is what makes a per-worker
+      // value possible from a static config. Measured 15.10.2026 (XF04): the
+      // full suite is 1,122 cases on two workers, and its adds alone cross the
+      // 120-an-hour ceiling of one address before the second back-to-back run
+      // begins. The explicit single address wins when both are set.
+      ...forwardedForHeader(),
     },
   },
   projects: [
@@ -141,6 +160,10 @@ export default defineConfig({
           CARDCOM_WEBHOOK_SECRET: process.env.CARDCOM_WEBHOOK_SECRET ?? 'mock-webhook-secret',
           NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL ?? BASE_URL,
           CHECKOUT_ENABLED: process.env.CHECKOUT_ENABLED ?? 'true',
+          // `next start` is NODE_ENV=production and the provider gate closes
+          // on a mock provider there; this opens it for the mock only, and
+          // never where VERCEL is set (src/lib/payments/provider-gate.ts).
+          E2E_MOCK_CHECKOUT: process.env.E2E_MOCK_CHECKOUT ?? 'local-build',
         },
       },
 })

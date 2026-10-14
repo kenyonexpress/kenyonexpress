@@ -167,17 +167,17 @@ function VersionStamp({ doc }: { doc: LegalDoc }) {
       className="mt-4 grid grid-cols-1 gap-x-8 gap-y-2 rounded-xl border-2 border-heading/20 bg-heading/5 px-5 py-4 text-sm sm:grid-cols-3"
     >
       <div>
-        <dt className="text-heading/70">גרסה</dt>
+        <dt className="text-heading/80">גרסה</dt>
         <dd className="text-base font-bold text-heading tabular-nums">{doc.version}</dd>
       </div>
       <div>
-        <dt className="text-heading/70">בתוקף מיום</dt>
+        <dt className="text-heading/80">בתוקף מיום</dt>
         <dd className="text-base font-bold text-heading">
           <time dateTime={doc.effectiveAt}>{hebrewDate(doc.effectiveAt)}</time>
         </dd>
       </div>
       <div>
-        <dt className="text-heading/70">עודכן לאחרונה</dt>
+        <dt className="text-heading/80">עודכן לאחרונה</dt>
         <dd className="text-base font-bold text-heading">
           <time dateTime={doc.updatedAt}>{hebrewDate(doc.updatedAt)}</time>
         </dd>

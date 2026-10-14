@@ -41,11 +41,23 @@ test.describe('wishlist page (UX20)', () => {
         .filter({ hasText: /שמירה|נשמר/ })
         .first()
       await heart.waitFor()
-      // The store answers after one read; wait for the label to settle.
-      await page.waitForTimeout(600)
+      // The heart reads "הוסף" until the store's first read answers, and on
+      // the hosted database that read sat past the 600ms this used to wait
+      // (15.10.2026, XF04: the press then REMOVED a saved product and the list
+      // opened with one card). Wait for the page to go quiet, and let the
+      // press's outcome decide: a product that was saved after all comes back
+      // with a second press.
+      await page.waitForLoadState('networkidle')
+      await page.waitForTimeout(400)
       if ((await heart.getAttribute('aria-label')) === 'הוסף לרשימת המשאלות') {
         await heart.click()
-        await expect(heart).toHaveAttribute('aria-label', 'הסר מרשימת המשאלות')
+        await expect(heart).not.toBeDisabled({ timeout: 15_000 })
+        if ((await heart.getAttribute('aria-label')) === 'הוסף לרשימת המשאלות') {
+          await heart.click()
+        }
+        await expect(heart).toHaveAttribute('aria-label', 'הסר מרשימת המשאלות', {
+          timeout: 15_000,
+        })
       }
     }
     session = (await page.context().storageState()).cookies
@@ -161,10 +173,19 @@ test.describe('wishlist page (UX20)', () => {
       .filter({ hasText: /שמירה|נשמר/ })
       .first()
     await heart.waitFor()
-    await page.waitForTimeout(600)
+    // Same race as the seeding above: the label is stale until the store's
+    // first read answers.
+    await page.waitForLoadState('networkidle')
+    await page.waitForTimeout(400)
     if ((await heart.getAttribute('aria-label')) === 'הוסף לרשימת המשאלות') {
       await heart.click()
-      await expect(heart).toHaveAttribute('aria-label', 'הסר מרשימת המשאלות')
+      await expect(heart).not.toBeDisabled({ timeout: 15_000 })
+      if ((await heart.getAttribute('aria-label')) === 'הוסף לרשימת המשאלות') {
+        await heart.click()
+      }
+      await expect(heart).toHaveAttribute('aria-label', 'הסר מרשימת המשאלות', {
+        timeout: 15_000,
+      })
     }
   })
 

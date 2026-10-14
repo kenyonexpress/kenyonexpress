@@ -1,6 +1,6 @@
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { type Page, expect } from '@playwright/test'
+import { type BrowserContext, type Page, expect } from '@playwright/test'
 import { msUntilNextStep, totpCode } from '../scripts/seed/totp.mjs'
 
 /**
@@ -50,12 +50,80 @@ export function paidFlowEnabled(): boolean {
   return Boolean(E2E_CUSTOMER_EMAIL && E2E_CUSTOMER_PASSWORD)
 }
 
+/**
+ * One password sign-in per role per run, replayed as cookies afterwards.
+ *
+ * The sign-in action is limited to ten an hour per client IP (`login:<ip>`,
+ * the checkRateLimit default) and twenty an hour per account
+ * (`login-account:<email>`), both DB-backed, so neither resets with the server.
+ * Counted on 15.10.2026 (XF04): the full suite signs the customer in from
+ * eight specs on two projects, sixteen times, plus the supplier and the admin,
+ * and the second back-to-back run started inside the same hour. The limiter
+ * is right; the suite was the abuser. Signing in once per role and replaying
+ * the cookies keeps a run at about three sign-ins however many specs need a
+ * session, and two runs an hour apart or not stay under both ceilings.
+ *
+ * The cache lives under Playwright's output directory, which it empties at the
+ * start of every run, so a session never outlives the run that made it. A
+ * replay that lands on /login again (expired, or revoked by a neighbouring
+ * sign-in) falls through to a real sign-in, so a stale file costs one login,
+ * not a failure. Specs that test the login UI itself (login-dialog) drive the
+ * form directly and do not go through here.
+ */
+const AUTH_CACHE_DIR = 'test-results/.auth'
+
+function cachePath(email: string): string {
+  return resolve(process.cwd(), AUTH_CACHE_DIR, `${email.replace(/[^a-z0-9]/gi, '_')}.json`)
+}
+
+type Cookie = Awaited<ReturnType<BrowserContext['cookies']>>[number]
+
+function readCachedCookies(email: string): Cookie[] | null {
+  try {
+    const parsed = JSON.parse(readFileSync(cachePath(email), 'utf8')) as { cookies?: Cookie[] }
+    return Array.isArray(parsed.cookies) && parsed.cookies.length > 0 ? parsed.cookies : null
+  } catch {
+    return null
+  }
+}
+
+async function writeCachedCookies(page: Page, email: string): Promise<void> {
+  try {
+    mkdirSync(resolve(process.cwd(), AUTH_CACHE_DIR), { recursive: true })
+    const state = await page.context().storageState()
+    writeFileSync(cachePath(email), JSON.stringify({ cookies: state.cookies }))
+  } catch {
+    // A cache that cannot be written costs the next spec a sign-in, nothing more.
+  }
+}
+
+function onLoginOrChallenge(url: URL): boolean {
+  return url.pathname.startsWith('/login') || url.pathname.startsWith('/admin-mfa')
+}
+
 export async function signInWithEmail(
   page: Page,
   email: string,
   password: string,
   nextPath?: string,
+  options: {
+    /**
+     * Drive the real form even when a session is cached. The sign-in action
+     * is what merges the guest cart into the account (`mergeGuestCart` in
+     * server/actions/auth.ts); replayed cookies skip it, and a spec that built
+     * a guest cart first would then pay for whatever the account held.
+     */
+    mergeGuestCart?: boolean
+  } = {},
 ): Promise<void> {
+  const cached = options.mergeGuestCart ? null : readCachedCookies(email)
+  if (cached) {
+    await page.context().addCookies(cached)
+    await page.goto(nextPath ?? '/account')
+    if (!onLoginOrChallenge(new URL(page.url()))) return
+    await page.context().clearCookies()
+  }
+
   const loginUrl = nextPath ? `/login?next=${encodeURIComponent(nextPath)}` : '/login'
   await page.goto(loginUrl)
   await expect(page.getByRole('heading', { name: 'כניסה לחשבון' })).toBeVisible()
@@ -64,6 +132,9 @@ export async function signInWithEmail(
   await page.getByRole('button', { name: 'כניסה', exact: true }).click()
   // Either the return path or a generic signed-in page; never stay on /login.
   await page.waitForURL((url) => !url.pathname.startsWith('/login'), { timeout: 20_000 })
+  // An admin session is only worth replaying once the MFA challenge is behind
+  // it; signInAsAdmin writes that one after completeAdminMfaIfAsked.
+  if (!new URL(page.url()).pathname.startsWith('/admin-mfa')) await writeCachedCookies(page, email)
 }
 
 /**
@@ -87,7 +158,9 @@ export async function completeAdminMfaIfAsked(page: Page): Promise<void> {
 /** Password login for the admin fixture, then the MFA challenge it always meets. */
 export async function signInAsAdmin(page: Page, nextPath?: string): Promise<void> {
   await signInWithEmail(page, E2E_ADMIN_EMAIL, E2E_ADMIN_PASSWORD, nextPath)
+  const challenged = new URL(page.url()).pathname.startsWith('/admin-mfa')
   await completeAdminMfaIfAsked(page)
+  if (challenged) await writeCachedCookies(page, E2E_ADMIN_EMAIL)
 }
 
 /** Clears the browser storage so the next sign-in is a fresh guest session. */

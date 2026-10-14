@@ -53,9 +53,12 @@ test.describe('homepage', () => {
       await expect(input).toHaveAttribute('role', 'combobox')
     }
 
+    // The consent banner's "customise" row (STEP 31) holds one checkbox per
+    // analytics category; they are the banner's, not the page's.
     const typed = page.locator('input:not([type="hidden"])')
     for (const input of await typed.all()) {
       const type = await input.getAttribute('type')
+      if (await input.evaluate((el) => Boolean(el.closest('[data-consent-banner]')))) continue
       expect(['email', 'search'], 'only the newsletter and the search field').toContain(type)
     }
   })
@@ -199,6 +202,24 @@ test.describe('homepage', () => {
 
     const sourceUrl = new URL(optimizedUrl).searchParams.get('url')
     expect(sourceUrl, 'optimizer URL carries no source').toBeTruthy()
+    // next/image returns an AVIF (and SVG, ICO, HEIC) source UNCHANGED at
+    // every width, by design and not by a sharp failure: the optimizer only
+    // re-encodes what it can improve on. The deal card's artwork is AVIF
+    // (measured 15.10.2026, XF04: 20,215 bytes at w=256 and at w=640, the
+    // source's own size), so the pass-through signature below would call a
+    // working optimizer broken. The invariant for an AVIF source is the
+    // opposite one: the bytes ARE the source's.
+    if (/\.avif(\?|$)/i.test(sourceUrl as string)) {
+      const [optimized, source] = await Promise.all([
+        request.get(optimizedUrl),
+        request.get(sourceUrl as string),
+      ])
+      expect(optimized.status()).toBe(200)
+      expect((await optimized.body()).length, 'AVIF is passed through unchanged').toBe(
+        (await source.body()).length,
+      )
+      return
+    }
 
     const [optimized, source] = await Promise.all([
       request.get(optimizedUrl),
@@ -451,16 +472,25 @@ test.describe('homepage', () => {
    * `import '@/styles/x.css'` inside a page or a component adds a round trip to
    * the critical path, and it is invisible in the diff that adds it.
    */
-  test('the homepage costs one render-blocking stylesheet', async ({ page }) => {
+  test('the homepage costs one render-blocking stylesheet', async ({ page, request }) => {
     await page.goto('/')
 
-    const sheets = await page.evaluate(() =>
+    const hrefs = await page.evaluate(() =>
       Array.from(document.querySelectorAll('link[rel="stylesheet"]'))
         .map((l) => (l as HTMLLinkElement).getAttribute('href') ?? '')
-        // next/font injects its own <link> for the self-hosted Heebo; this is
-        // about the CSS chunks the app's own imports produce.
         .filter((href) => href.endsWith('.css')),
     )
+    // next/font emits the self-hosted Heebo as its own .css chunk (one
+    // @font-face rule, 3.6 KB, measured 15.10.2026) and its href is shaped
+    // like every other chunk's, so it is told apart by its content: a sheet
+    // that is nothing but @font-face is the font's, and this test is about
+    // the chunks the app's own imports produce.
+    const sheets: string[] = []
+    for (const href of hrefs) {
+      const css = await (await request.get(href)).text()
+      const fontOnly = css.replace(/@font-face\s*\{[^}]*\}/g, '').trim() === ''
+      if (!fontOnly) sheets.push(href)
+    }
 
     expect(sheets, `homepage stylesheets: ${sheets.join(', ')}`).toHaveLength(1)
   })

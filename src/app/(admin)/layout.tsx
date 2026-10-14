@@ -1,4 +1,3 @@
-import SkipLink from '@/components/a11y/SkipLink'
 import AdminSidebar from '@/components/admin/AdminSidebar'
 import CommandPalette from '@/components/admin/CommandPalette'
 import DeferredToaster from '@/components/ui/DeferredToaster'
@@ -38,7 +37,6 @@ async function AdminFrame({ children }: { children: React.ReactNode }) {
   return (
     <>
       {/* STEP 32: the panel header and sidebar repeat on all 34 routes. */}
-      <SkipLink />
       <header className="sticky top-0 z-20 border-b border-gray-200 bg-white px-6 py-3">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
           <Link href={adminLandingPath(role)} className="text-lg font-bold text-heading">

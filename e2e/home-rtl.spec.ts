@@ -74,6 +74,10 @@ const LTR_ALLOWED: ReadonlyArray<readonly [reason: string, selector: string]> = 
   ['coupon code', '[data-coupon-code]'],
   // Addresses are Latin and read left to right in every locale.
   ['e-mail field', 'input[type="email"]'],
+  // The search box is dir="auto" (SiteSearch.tsx) so a Latin brand name or
+  // a model number types the way it reads; an EMPTY auto box resolves to ltr
+  // by the HTML algorithm, and that is what the page shows at rest.
+  ['search box, dir=auto while empty', 'input[type="search"][dir="auto"]'],
 ]
 
 /** Bounded so a failure names the first offenders rather than a wall of paths. */

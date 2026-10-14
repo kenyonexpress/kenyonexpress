@@ -70,7 +70,13 @@ export default function SiteHeader() {
           live's own switch is `hidden-xl-up` / `d-xl-block` on the two header
           variants -- the handheld header is what 768 AND 1024 get.
         */}
-        <div className="mx-auto flex h-header-handheld max-w-page items-center justify-between gap-4 px-gutter xl:h-header-masthead">
+        {/* gap-2 below 360: hamburger 44 + logo 100 + the three-cell cluster 132
+            is 276, plus two 16px gaps and the 30px gutter pair is 338, which
+            does not fit 320 (the cluster's 11px pull leaves 7px of sideways
+            scroll on every page; e2e/rtl-mobile.spec.ts, 15.10.2026, XF04).
+            Two 8px gaps make it 311. From 360 (--breakpoint-narrow) the row
+            is live's 16px. */}
+        <div className="mx-auto flex h-header-handheld max-w-page items-center justify-between gap-2 px-gutter narrow:gap-4 xl:h-header-masthead">
           {/* HANDHELD (below xl), in live's order: hamburger on the right,
               logo centred, the two-icon cluster on the left. */}
           {/* THE HAMBURGER IS ON THE INLINE-START, WHICH IN RTL IS THE RIGHT,

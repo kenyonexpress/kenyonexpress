@@ -59,6 +59,15 @@ test.describe('500 page and /status (UX26)', () => {
       test.skip(probe.status() === 404, 'SENTRY_DEBUG_ROUTES is off on this server')
 
       await page.goto(path)
+      // The route calls notFound() behind a Suspense boundary after
+      // connection(), so with SENTRY_DEBUG_ROUTES off the shell streams with
+      // a 200 and the not-found page renders inside it (measured 15.10.2026,
+      // XF04); the status probe above cannot see that, the heading can.
+      const notFoundShown = await page
+        .getByRole('heading', { level: 1, name: 'הדף שחיפשתם לא נמצא' })
+        .isVisible()
+        .catch(() => false)
+      test.skip(notFoundShown, 'SENTRY_DEBUG_ROUTES is off on this server (not-found rendered)')
       await expect(page.getByRole('heading', { level: 1, name: 'משהו השתבש אצלנו' })).toBeVisible()
       await expect(page).toHaveTitle(/משהו השתבש/)
       await expect(page.locator('main')).toHaveCount(1)

@@ -150,6 +150,17 @@ fixture rather than a regression in the code. The suite passes at two workers
 and in CI at one. Raising `E2E_WORKERS` to "speed things up" produces failures
 that are real conflicts and not real bugs.
 
+### The rate limiters count the suite as one client
+
+Sign-in is capped at 10 an hour per IP and 20 an hour per account, cart
+writes at 120 an hour per IP, all DB-backed, so a server restart resets
+nothing. `e2e/auth-session.ts` signs in once per role per run and replays the
+cookies (cache under `test-results/.auth`, wiped by Playwright each run), and
+`E2E_FORWARDED_FOR_PREFIX=10.44.1` gives every worker its own forwarded
+address so the cart ceiling is per worker. Use a new prefix per run; two
+back-to-back runs on one address exhaust the cart bucket (measured 15.10.2026,
+`docs/E2E-STATUS.md`).
+
 ### Paid flows are opt-in
 
 `E2E_PAID_FLOW` gates the specs that would drive a real Cardcom charge. Leave it

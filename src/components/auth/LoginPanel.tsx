@@ -292,7 +292,10 @@ export default function LoginPanel({
               <label htmlFor={id('password')} className="block text-sm font-medium text-gray-700">
                 סיסמה
               </label>
-              <Link href="/forgot-password" className="text-xs text-link hover:underline">
+              <Link
+                href="/forgot-password"
+                className="tap-area inline-flex items-center text-xs text-link hover:underline"
+              >
                 שכחתם סיסמה?
               </Link>
             </div>

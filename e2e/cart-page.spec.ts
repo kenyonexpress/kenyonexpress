@@ -78,7 +78,9 @@ test.describe('cart page controls (UX16)', () => {
     page,
   }) => {
     const summary = page.getByRole('complementary', { name: 'סיכום הזמנה' })
-    await expect(summary.getByText('המחירים כוללים מע״מ')).toBeVisible()
+    // 15s: the summary waits on the hosted cart read, which sat past the 5s
+    // default once in two runs on 15.10.2026 (XF04) with no error logged.
+    await expect(summary.getByText('המחירים כוללים מע״מ')).toBeVisible({ timeout: 15_000 })
     await expect(summary.getByTestId('cart-savings-row')).toHaveCount(0)
     await expect(summary.getByTestId('cart-saved-line')).toHaveCount(0)
     await expect(summary.getByTestId('cart-grand-total')).toHaveCount(0)

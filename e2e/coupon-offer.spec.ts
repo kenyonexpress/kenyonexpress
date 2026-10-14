@@ -44,6 +44,13 @@ test.describe('coupon variant', () => {
     await expect(terms.first()).toHaveAttribute('open', '')
     const last = terms.last()
     await last.locator('summary').click()
+    if ((await terms.count()) === 1) {
+      // One section only (the catalogue's first coupon carries just
+      // "ביטול והחזר", measured 15.10.2026): last IS the open first, so the
+      // press closes it and a second press opens it again.
+      await expect(last).not.toHaveAttribute('open', '')
+      await last.locator('summary').click()
+    }
     await expect(last).toHaveAttribute('open', '')
 
     await expect(page.locator('[data-cpn="map"]')).toBeVisible()
@@ -79,9 +86,8 @@ test.describe('coupon variant', () => {
     const slug = (await link.getAttribute('href'))?.replace(/^\/product\//, '') ?? ''
 
     await page.goto(`/coupon/${slug}`)
-    await expect(page).toHaveURL(
-      new RegExp(`/product/${slug.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\$&')}$`),
-    )
+    // `page.url()` carries a Hebrew slug percent-encoded; compare decoded.
+    await page.waitForURL((url) => decodeURIComponent(url.pathname) === `/product/${slug}`)
   })
 
   test('an unknown slug is a real 404 and a UUID still needs a session', async ({ page }) => {

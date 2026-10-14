@@ -10,6 +10,14 @@
 /* Safe-area insets, the 44px tap area and the coarse-pointer floors. STEP 33;
    the file explains why each lives there and not in a component. */
 @import "../styles/responsive.css";
+/* The header cart is in the masthead on every route and the login dialog
+   (UX23) can open on any page, so both sheets belong to the root bundle. They
+   are @imported HERE rather than imported beside globals.css in layout.tsx
+   because a sibling import is its own CSS chunk under Turbopack: the homepage
+   shipped three render-blocking sheets (font, globals, cart) and
+   e2e/home.spec.ts counts one (measured 15.10.2026, XF04). */
+@import "../styles/mini-cart.css";
+@import "../styles/login-dialog.css";
 
 body {
   background-color: var(--color-background);

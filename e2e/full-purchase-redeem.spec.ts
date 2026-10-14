@@ -9,7 +9,12 @@ import {
   paidFlowEnabled,
   signInWithEmail,
 } from './auth-session'
-import { addOpenProductToCart, expectHebrewRtl } from './helpers'
+import {
+  addOpenProductToCart,
+  expectHebrewRtl,
+  paymentGateClosed,
+  walkCheckoutToPayment,
+} from './helpers'
 
 /**
  * End-to-end money path against Cardcom mock + seeded fixtures:
@@ -36,43 +41,6 @@ import { addOpenProductToCart, expectHebrewRtl } from './helpers'
  * step. A returning customer with a saved address starts on the address step
  * with nothing to type, so each leg is conditional on its fields being on
  * screen; the continue button is the same "המשך" on both typed steps. */
-async function walkCheckoutStepsToConfirm(page: import('@playwright/test').Page): Promise<void> {
-  // Field ids rather than labels: the footer newsletter box also answers to
-  // "כתובת אימייל", so labels are ambiguous the moment the footer renders.
-  // Step 1: personal details.
-  if (
-    await page
-      .locator('#co-first-name')
-      .isVisible()
-      .catch(() => false)
-  ) {
-    await page.locator('#co-first-name').fill('בדיקה')
-    await page.locator('#co-last-name').fill('אוטומטית')
-    await page.locator('#co-phone').fill('0501234567')
-    await page.locator('#co-email').fill(E2E_CUSTOMER_EMAIL)
-    await page.getByRole('button', { name: 'המשך', exact: true }).click()
-  }
-
-  // Step 2: address (required even for coupon-only carts). A saved address
-  // shows the step with a summary line and the same continue button.
-  if (
-    await page
-      .locator('#co-city')
-      .isVisible()
-      .catch(() => false)
-  ) {
-    await page.locator('#co-city').fill('תל אביב')
-    await page.locator('#co-street').fill('הרצל')
-    await page.locator('#co-number').fill('1')
-  }
-  const toPayment = page.getByRole('button', { name: 'המשך', exact: true })
-  if (await toPayment.isVisible().catch(() => false)) {
-    await toPayment.click()
-  }
-
-  await expect(page.locator('input[name="accept_terms"]')).toBeVisible()
-}
-
 test.describe('full purchase to redeem @checkout @redeem @money', () => {
   test.describe.configure({ timeout: 120_000 })
 
@@ -101,12 +69,18 @@ test.describe('full purchase to redeem @checkout @redeem @money', () => {
 
     // CI cannot complete real Google OAuth. Email/password hits the same
     // mergeGuestCart path the Google callback uses after the OAuth hop.
-    await signInWithEmail(page, E2E_CUSTOMER_EMAIL, E2E_CUSTOMER_PASSWORD, '/checkout')
+    await signInWithEmail(page, E2E_CUSTOMER_EMAIL, E2E_CUSTOMER_PASSWORD, '/checkout', {
+      mergeGuestCart: true,
+    })
     await page.goto('/checkout')
     await expect(page.getByRole('heading', { name: 'קופה' })).toBeVisible({ timeout: 15_000 })
     await expect(page.getByText('קופון בדיקות אוטומטיות')).toBeVisible()
 
-    await walkCheckoutStepsToConfirm(page)
+    test.skip(
+      await paymentGateClosed(page),
+      'payment gate closed: mock provider in a production build without E2E_MOCK_CHECKOUT=local-build',
+    )
+    await walkCheckoutToPayment(page, E2E_CUSTOMER_EMAIL)
     await page.locator('input[name="accept_terms"]').check()
     await page.getByRole('button', { name: 'שליחת הזמנה' }).click()
 

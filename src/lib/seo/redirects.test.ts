@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 /**
@@ -39,7 +41,9 @@ function stubRest() {
   return fetchMock
 }
 
-const { invalidateRedirectCache, lookupRedirect, normalizePath } = await import('./redirects')
+const { LIVE_ROUTES, invalidateRedirectCache, lookupRedirect, normalizePath } = await import(
+  './redirects'
+)
 
 beforeEach(() => {
   vi.stubEnv('NEXT_PUBLIC_SUPABASE_URL', 'https://project.supabase.test')
@@ -66,6 +70,30 @@ afterEach(() => {
 })
 
 describe('lookupRedirect', () => {
+  it('never answers from the table for a path this app serves, whatever the row says', async () => {
+    pages = [
+      [
+        { source_path: '/wishlist', target_path: '', status_code: 410 },
+        { source_path: '/contact', target_path: '/contact-us', status_code: 301 },
+        { source_path: '/gone', target_path: '/', status_code: 410 },
+      ],
+    ]
+    expect(await lookupRedirect('/wishlist')).toBeNull()
+    expect(await lookupRedirect('/wishlist/')).toBeNull()
+    expect(await lookupRedirect('/contact')).toBeNull()
+    // The table still rules everything else.
+    expect(await lookupRedirect('/gone')).toEqual({ target: '/', status: 410 })
+    // Mirrors the legacy map's own exclusion list.
+    const map = JSON.parse(
+      readFileSync(join(process.cwd(), 'data/legacy/redirect-map.json'), 'utf8'),
+    ) as { excluded: Array<{ reason: string; source?: string; source_path?: string }> }
+    const live = map.excluded
+      .filter((row) => row.reason === 'source_is_live')
+      .map((row) => row.source ?? row.source_path ?? '')
+      .filter((path) => path.startsWith('/') && !path.startsWith('/product/'))
+    for (const path of live) expect(LIVE_ROUTES.has(path), path).toBe(true)
+  })
+
   it('reads the active rows through the anon key and answers 301 and 410 hits', async () => {
     expect(await lookupRedirect('/old-page')).toEqual({ target: '/new-page', status: 301 })
     expect(await lookupRedirect('/gone')).toEqual({ target: '/', status: 410 })

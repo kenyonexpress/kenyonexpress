@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import {
+  E2E_MOCK_CHECKOUT_VALUE,
   PAYMENT_GATE_CLOSED_MESSAGE,
   assessPaymentProviderGate,
+  mockAllowedInProductionBuild,
   readPaymentProviderGate,
 } from './provider-gate'
 
@@ -27,6 +29,26 @@ describe('assessPaymentProviderGate', () => {
     const gate = assessPaymentProviderGate({ checkoutEnabled: true, useMock: true }, 'production')
     expect(gate.live).toBe(false)
     expect(gate.reasons).toEqual(['MOCK_IN_PRODUCTION'])
+  })
+
+  it('opens for the mock provider in a production build only through the local-build hatch', () => {
+    expect(
+      assessPaymentProviderGate({ checkoutEnabled: true, useMock: true }, 'production', true),
+    ).toEqual({ live: true, reasons: [] })
+    // The operator switch still wins.
+    expect(
+      assessPaymentProviderGate({ checkoutEnabled: false, useMock: true }, 'production', true)
+        .reasons,
+    ).toContain('CHECKOUT_DISABLED')
+  })
+
+  it('the hatch reads E2E_MOCK_CHECKOUT=local-build and is inert wherever VERCEL is set', () => {
+    expect(mockAllowedInProductionBuild({ E2E_MOCK_CHECKOUT: E2E_MOCK_CHECKOUT_VALUE })).toBe(true)
+    expect(mockAllowedInProductionBuild({ E2E_MOCK_CHECKOUT: 'true' })).toBe(false)
+    expect(mockAllowedInProductionBuild({})).toBe(false)
+    expect(
+      mockAllowedInProductionBuild({ E2E_MOCK_CHECKOUT: E2E_MOCK_CHECKOUT_VALUE, VERCEL: '1' }),
+    ).toBe(false)
   })
 
   it('reports both reasons at once rather than the first it met', () => {

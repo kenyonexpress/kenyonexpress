@@ -6,7 +6,7 @@ import {
   paidFlowEnabled,
   signInWithEmail,
 } from './auth-session'
-import { BUY_BUTTON, expectHebrewRtl } from './helpers'
+import { BUY_BUTTON, expectHebrewRtl, paymentGateClosed, walkCheckoutToPayment } from './helpers'
 
 /**
  * A signed-in customer buys a PHYSICAL product (marathon step 10, journey b).
@@ -46,8 +46,15 @@ test.describe('logged-in physical purchase @checkout @money', () => {
     await page.goto('/checkout')
     await expect(page.getByRole('heading', { name: 'תשלום' })).toBeVisible({ timeout: 15_000 })
     await expect(page.getByText('מוצר פיזי לבדיקות אוטומטיות')).toBeVisible()
+    test.skip(
+      await paymentGateClosed(page),
+      'payment gate closed: mock provider in a production build without E2E_MOCK_CHECKOUT=local-build',
+    )
+    await walkCheckoutToPayment(page, E2E_CUSTOMER_EMAIL)
     await page.locator('input[name="accept_terms"]').check()
-    await page.getByRole('button', { name: 'מעבר לתשלום מאובטח' }).click()
+    // The resting label (checkout-form-contract.test.tsx); "מעבר לתשלום מאובטח"
+    // is the checklist's name for it, not the button's text.
+    await page.getByRole('button', { name: 'שליחת הזמנה' }).click()
 
     await page.waitForURL(/\/checkout\/return\?.*order_id=/, { timeout: 45_000 })
     await expect(page.getByRole('heading', { name: 'התשלום הצליח!' })).toBeVisible({

@@ -32,13 +32,32 @@ export type PaymentProviderGate = {
   reasons: PaymentGateReason[]
 }
 
+/**
+ * The one way past MOCK_IN_PRODUCTION, and it cannot be taken on Vercel.
+ *
+ * `next start` on a laptop is NODE_ENV=production, so the E2E money specs
+ * (full-purchase-redeem, physical-purchase, admin-refund), which the repo
+ * insists run against the built app, met a closed gate and timed out on a
+ * pay button that read "התשלום ייפתח בקרוב" (measured 15.10.2026, XF04).
+ * `E2E_MOCK_CHECKOUT=local-build` opens the gate for the mock provider ONLY
+ * when `VERCEL` is unset: every Vercel runtime sets VERCEL=1, so the variable
+ * is inert on the deployed site whatever its value there.
+ */
+export const E2E_MOCK_CHECKOUT_VALUE = 'local-build'
+
+export function mockAllowedInProductionBuild(source: Record<string, string | undefined>): boolean {
+  return source.E2E_MOCK_CHECKOUT === E2E_MOCK_CHECKOUT_VALUE && !source.VERCEL
+}
+
 export function assessPaymentProviderGate(
   env: Pick<CardcomEnv, 'checkoutEnabled' | 'useMock'>,
   nodeEnv: string | undefined = process.env.NODE_ENV,
+  allowMockInProductionBuild = false,
 ): PaymentProviderGate {
   const reasons: PaymentGateReason[] = []
   if (!env.checkoutEnabled) reasons.push('CHECKOUT_DISABLED')
-  if (nodeEnv === 'production' && env.useMock) reasons.push('MOCK_IN_PRODUCTION')
+  if (nodeEnv === 'production' && env.useMock && !allowMockInProductionBuild)
+    reasons.push('MOCK_IN_PRODUCTION')
   return { live: reasons.length === 0, reasons }
 }
 
@@ -50,7 +69,11 @@ export function readPaymentProviderGate(
   source: NodeJS.ProcessEnv = process.env,
 ): PaymentProviderGate {
   try {
-    return assessPaymentProviderGate(loadCardcomEnv(source), source.NODE_ENV)
+    return assessPaymentProviderGate(
+      loadCardcomEnv(source),
+      source.NODE_ENV,
+      mockAllowedInProductionBuild(source),
+    )
   } catch {
     return { live: false, reasons: ['ENV_INCOMPLETE'] }
   }

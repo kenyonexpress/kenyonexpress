@@ -719,7 +719,13 @@
   }
 
   body.mobile-cart-bar-visible .whatsapp-float {
-    bottom: calc(4.25rem + 1.25rem + env(safe-area-inset-bottom, 0px));
+    bottom: calc(
+      4.25rem +
+      1.25rem +
+      env(safe-area-inset-bottom, 0px) +
+      var(--reserve-consent, 0rem) +
+      var(--reserve-pwa, 0rem)
+    );
   }
 
   /* The scroll lock belongs to the SHEET, so it lives at the sheet's width.

@@ -22,13 +22,16 @@ export default function WhatsAppSupportButton({
       target="_blank"
       rel="noopener noreferrer"
       data-testid="whatsapp-support"
-      className="inline-flex min-h-12 items-center gap-3 rounded-xl bg-whatsapp px-5 py-3 text-base font-bold text-white shadow-sm transition-transform hover:scale-[1.02] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-whatsapp"
+      // bg-whatsapp-ink, not bg-whatsapp: white on #25d366 is 1.9:1 and axe failed
+      // both spans on /contact (color-contrast x2, 15.10.2026, XF04); the ink
+      // teal is the 7.67:1 pairing tokens.css documents for text on WhatsApp.
+      className="inline-flex min-h-12 items-center gap-3 rounded-xl bg-whatsapp-ink px-5 py-3 text-base font-bold text-white shadow-sm transition-transform hover:scale-[1.02] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-whatsapp-ink"
     >
       <WhatsAppIcon size={26} />
       <span>
         תמיכה בוואטסאפ
         {display && (
-          <span dir="ltr" className="ms-2 font-normal opacity-90">
+          <span dir="ltr" className="ms-2 font-normal">
             {display}
           </span>
         )}

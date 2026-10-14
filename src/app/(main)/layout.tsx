@@ -1,7 +1,6 @@
 import LeftSidebar from '@/components/LeftSidebar'
 import RightSidebar from '@/components/RightSidebar'
 import SiteFooter from '@/components/SiteFooter'
-import SkipLink from '@/components/a11y/SkipLink'
 import DeferredLoginDialog from '@/components/auth/DeferredLoginDialog'
 import CartBootstrap from '@/components/cart/CartBootstrap'
 import CartDrawer from '@/components/cart/CartDrawer'
@@ -22,10 +21,10 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         {/*
           STEP 32 (2026-10-07): this group (coupons, newsletter, wishlist
           alerts) had the same masthead as the storefront and no way past it.
-          `StoreShell` and the legal layout carry the link; this one did not.
-          The target carries tabIndex={-1} for the reason SkipLink.tsx gives.
+          Since XF04 (15.10.2026) the root layout renders the one skip link,
+          ahead of the consent banner; the target here carries tabIndex={-1}
+          for the reason SkipLink.tsx gives.
         */}
-        <SkipLink />
         <Header />
         <div className="flex-1 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 py-4">

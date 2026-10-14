@@ -1,3 +1,4 @@
+import SkipLink from '@/components/a11y/SkipLink'
 import AnalyticsProvider from '@/components/analytics/AnalyticsProvider'
 import ConsentBanner from '@/components/analytics/ConsentBanner'
 import PostHogReplay from '@/components/analytics/PostHogReplay'
@@ -12,13 +13,10 @@ import { SpeedInsights } from '@vercel/speed-insights/next'
 import type { Metadata, Viewport } from 'next'
 import { Heebo } from 'next/font/google'
 import { Suspense } from 'react'
+// mini-cart.css (the masthead cart, every route) and login-dialog.css (UX23,
+// any page) are @imported by globals.css so the root bundle is ONE chunk;
+// a sibling import here was a second render-blocking sheet.
 import './globals.css'
-// The header cart is in the masthead on every route, so its styles load here
-// rather than with the /cart page. See the note at the top of the file.
-import '@/styles/mini-cart.css'
-// The login dialog (UX23) can open on any storefront page, so its sheet loads
-// here with the cart drawer's; scoped `.login-dialog*` BEM, nothing bare.
-import '@/styles/login-dialog.css'
 /**
  * The three below are imported HERE, not by the segment that uses them, and the
  * reason is the number of requests rather than the number of bytes.
@@ -172,6 +170,17 @@ export default function RootLayout({
           fixed positioning it can paint as soon as the parser reaches it,
           without waiting for the rest of the document or the big stylesheet.
         */}
+        {/*
+          The skip link lives HERE, ahead of the banner, and nowhere else.
+          The banner is first in the document for the paint reason above, and
+          its two buttons were therefore the first two Tab stops on every page
+          for a first-time visitor: measured 15.10.2026 (XF04), the first Tab
+          on /, /products, /coupons and /legal/privacy landed on the consent
+          button and the skip link was the third stop. One link in the root
+          keeps 2.4.1 ahead of everything, including the banner; every route
+          group's <main> carries id="main-content" tabIndex={-1} for it.
+        */}
+        <SkipLink />
         <ConsentBanner />
         {children}
         {/*
