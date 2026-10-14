@@ -1,6 +1,7 @@
 'use client'
 
 import AddToCartButton from '@/components/cart/AddToCartButton'
+import WishlistHeart from '@/components/wishlist/WishlistHeart'
 import { shekelsFromIlsRounded } from '@/lib/money-format'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -118,6 +119,9 @@ function DealsProductCard({ product }: { product: Product }) {
       </div>
 
       <div className="p_con__image-wrap relative">
+        {/* The heart. An overlay inside the image wrap, so it adds nothing to
+            the card's flow and cannot move a measured element. */}
+        <WishlistHeart productId={product.id} productName={product.name_he} />
         {/* aria-label, not just the img alt: a product with no thumbnail renders
             this link with NO children at all, and an empty link has no
             accessible name. Lighthouse flags exactly one on the homepage today,
