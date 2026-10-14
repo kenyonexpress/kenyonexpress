@@ -60,7 +60,7 @@ what main has.
 | 17 | Q&A on product page | Amazon, Lazada | MISSING | MISSING | 3 | build |
 | 18 | Related products | all | EXISTS | PARTIAL | done | closed 2026-10-14 |
 | 19 | Bundle deals, N for X | Amazon, Lazada | MISSING | MISSING | 4 | build. Money path |
-| 20 | Flash sales | Lazada, TikTok Shop, Groupon | PARTIAL | PARTIAL | 4 | build. Money path |
+| 20 | Flash sales | Lazada, TikTok Shop, Groupon | PARTIAL | PARTIAL | 1.5 | admin form, cancel and link ported 2026-10-14; end time, banner, countdown and a sub-daily cron still open. Money path |
 | 21 | Gift cards | Amazon, Wolt | EXISTS | PARTIAL | 0 | QR, guarded admin switch and wallet link closed 2026-10-14 |
 | 22 | Referral program | Wolt, Booking | PARTIAL | EXISTS | 1 | port automatic payout. Money path |
 | 23 | Loyalty tiers | Booking (Genius), Lazada | MISSING | PARTIAL | 3 | port, then perks |
@@ -379,6 +379,19 @@ until tags are entered. prod: five newest in the same category, no ranking.
 `src/lib/pricing/flash-deals.ts`, a daily cron, and nothing in `src` that
 writes a row. No end time, no banner, no countdown. prod: an admin form at
 `/admin/flash-deals` with no sidebar link.
+
+main, 2026-10-14: the admin form and its action are ported, so the table has
+a writer. Prices are stored as integer agorot, a past moment and a "before"
+price at or under the new price are refused, and every change and cancel is
+audited. Added here: a cancel button (prod has the action and no control) and
+a link from the growth page. One sentence was changed rather than ported:
+prod's page says changes apply "every five minutes", but on this line the
+applying cron is daily (`vercel.json`, 03:00 UTC), so the page now says a
+change takes effect the night after its moment. Verified by unit tests and a
+signed-out request that is redirected to login. Not verified in a browser
+(needs an admin session). Still open, so the row stays PARTIAL: an end time,
+a storefront banner and countdown, and a cron frequent enough for a deal that
+lasts an afternoon. The last is a Vercel plan and schedule question.
 
 **21. Gift cards.** main: `products.is_gift_card`, `gift_cards`,
 `redeem_gift_card` (`migrations/applied/234_gift_cards.sql`), issue at
