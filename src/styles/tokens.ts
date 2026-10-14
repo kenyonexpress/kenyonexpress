@@ -51,6 +51,14 @@ export const SITE = {
     success: '#5cb85c',
     link: '#0062bd',
     heading: '#333e48',
+    /**
+     * Live's `a:hover{color:#29323a}`: every plain anchor in the live
+     * stylesheet darkens by this one step on hover, and the top bar's
+     * התחברות is a plain anchor. UX02 (14.10.2026) replaced the
+     * `hover:opacity-70` that stood in for it; opacity fades the icon and
+     * the glyph together, which live never does.
+     */
+    headingHover: '#29323a',
     /* WCAG AA ([40]): the live green is #44b81b and white text on it is
        2.58:1 -- it fails even the 3:1 large-text floor. Darkened by the
        minimum that clears 4.5:1 in both directions (white on it, and it as
@@ -248,6 +256,7 @@ export const SITE_CSS_VARS: Record<string, string> = {
   '--color-success': SITE.functional.success,
   '--color-link': SITE.functional.link,
   '--color-heading': SITE.functional.heading,
+  '--color-heading-hover': SITE.functional.headingHover,
   '--color-sale-badge': SITE.functional.saleBadge,
 
   '--color-border': SITE.neutral.border,

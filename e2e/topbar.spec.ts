@@ -37,7 +37,30 @@ function rowsOf(boxes: Array<{ y: number } | null>): number {
   return new Set(ys).size
 }
 
-for (const width of [380, 768, 1440] as const) {
+/**
+ * The wrap shape per width, measured on live (UX02, 14.10.2026). Below 576
+ * the container is the viewport less 30px; the four items are 96 + 145 + 116
+ * + 103 wide (each `|` adds 33), so 345px of row fits two and 384px fits
+ * three. From 768 the greeting and all four share one 37px row.
+ */
+const ROW_SHAPE = {
+  375: { rows: 3, firstRow: INFO_LABELS.slice(0, 2) },
+  380: { rows: 3, firstRow: INFO_LABELS.slice(0, 2) },
+  414: { rows: 3, firstRow: INFO_LABELS.slice(0, 3) },
+  768: { rows: 1, firstRow: [...INFO_LABELS, ACCOUNT] },
+  1440: { rows: 1, firstRow: [...INFO_LABELS, ACCOUNT] },
+} satisfies Record<number, { rows: number; firstRow: readonly string[] }>
+
+/** Live's `.container` at each width: 100% below 576, 720 at 768, 1200 at 1440. */
+const CONTAINER = {
+  375: { x: 0, w: 375 },
+  380: { x: 0, w: 380 },
+  414: { x: 0, w: 414 },
+  768: { x: 24, w: 720 },
+  1440: { x: 120, w: 1200 },
+} satisfies Record<number, { x: number; w: number }>
+
+for (const width of [375, 380, 414, 768, 1440] as const) {
   test.describe(`top bar at ${width}px`, () => {
     test.use({ viewport: { width, height: 900 } })
 
@@ -87,14 +110,60 @@ for (const width of [380, 768, 1440] as const) {
         expect(greetingBox.x + greetingBox.width).toBeGreaterThan(accountBox.x + accountBox.width)
       }
 
-      // Row count. Measured on live: one row from 768 up, and at 380 the
-      // greeting alone then the four items two-and-two -- three rows.
+      // Row count and the wrap shape. Measured on live: one row from 768 up;
+      // below 576 the greeting alone, then the items wrap at the row width:
+      // two-and-two at 375/380, three-and-one at 414. The 414 shape is the
+      // one the 14.864px type got wrong (UX02).
+      const shape = ROW_SHAPE[width]
       const rows = rowsOf([greetingBox, ...itemBoxes, accountBox])
-      if (width === 380) {
-        expect(rows, 'greeting row + two rows of two items').toBe(3)
-      } else {
-        expect(rows, 'greeting and all four items on one 37px row').toBe(1)
+      expect(rows, `${shape.rows} row(s) at ${width}`).toBe(shape.rows)
+      const firstRowY = Math.round(itemBoxes[0]?.y ?? -1)
+      const onFirstRow = [...INFO_LABELS, ACCOUNT].filter((label, i) => {
+        const box = label === ACCOUNT ? accountBox : itemBoxes[i]
+        return box != null && Math.round(box.y) === firstRowY
+      })
+      expect(onFirstRow, `items on the first items row at ${width}`).toEqual(shape.firstRow)
+    })
+
+    test('type is live’s 13.006px and the bar sits in Bootstrap’s container', async ({ page }) => {
+      await page.goto('/')
+      const bar = topBar(page)
+      const account = bar.getByRole('link', { name: ACCOUNT })
+      const fontSize = await account.evaluate((el) =>
+        Number.parseFloat(getComputedStyle(el).fontSize),
+      )
+      // .929em off live's 14px body. Off our 16px body it rendered 14.864.
+      expect(fontSize).toBeCloseTo(13.006, 1)
+
+      const icon = account.locator('svg')
+      const iconBox = await icon.boundingBox()
+      expect(iconBox?.width, 'live `i{font-size:1rem}` is a 16px glyph').toBe(16)
+      expect(iconBox?.height).toBe(16)
+
+      const container = await bar.locator('.topbar-container').boundingBox()
+      expect(container).not.toBeNull()
+      if (container) {
+        expect(Math.round(container.x), `container x at ${width}`).toBe(CONTAINER[width].x)
+        expect(Math.round(container.width), `container width at ${width}`).toBe(CONTAINER[width].w)
       }
+    })
+
+    test('hovering the account link darkens it to live’s #29323a', async ({ page }) => {
+      await page.goto('/')
+      const account = topBar(page).getByRole('link', { name: ACCOUNT })
+      const rest = await account.evaluate((el) => getComputedStyle(el).color)
+      expect(rest).toBe('rgb(51, 62, 72)')
+      await account.hover()
+      // Tailwind wraps `hover:` in `@media (hover: hover)`, so the Pixel 5
+      // project (a touch device, `hover: none`) must KEEP the rest colour:
+      // that is the no-stuck-hover-after-tap guarantee, asserted rather
+      // than skipped.
+      const canHover = await page.evaluate(() => matchMedia('(hover: hover)').matches)
+      await expect
+        .poll(() => account.evaluate((el) => getComputedStyle(el).color))
+        .toBe(canHover ? 'rgb(41, 50, 58)' : 'rgb(51, 62, 72)')
+      // A colour change, not an opacity fade: the icon must stay fully opaque.
+      expect(await account.evaluate((el) => getComputedStyle(el).opacity)).toBe('1')
     })
 
     test('an inner page keeps the four items and drops the greeting', async ({ page }) => {

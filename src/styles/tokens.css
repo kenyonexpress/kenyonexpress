@@ -77,6 +77,7 @@
      round had none. This one measures 6.03:1. */
   --color-link: #0062bd; /* product names + links (distinct from red price) */
   --color-heading: #333e48; /* hero + section headings (electro home-v7) */
+  --color-heading-hover: #29323a; /* live `a:hover`; the top bar's account link (UX02) */
   --color-sale-badge: #328614; /* on-sale badge green; darkened from live #44b81b for WCAG AA */
 
   /* --- Neutrals / borders / muted text (live measured) ----------------------- */
@@ -155,6 +156,13 @@
   --text-micro: 11px; /* captions, payment chips, promo eyebrow */
   --text-section-title: 22px; /* section headings + product-card titles */
   --text-footer-note: 13px; /* footer smallprint + copyright */
+  /* The top bar's type. Live: `.top-bar .nav-inline .menu-item{font-size:.929em}`
+     off a 14px body (`body{font-size:.875rem}`), i.e. 13.006px. Ours was the
+     same .929em off OUR 16px body, i.e. 14.864px -- every item 14% wide of
+     live (111.5 vs 96, 129.9 vs 112, 92.7 vs 83, 77.8 vs 70, measured UX02
+     14.10.2026) and the 414 wrap landed 2+2 where live lands 3+1. Pinned in
+     px so the body scale cannot leak into it again. */
+  --text-topbar: 13.006px;
   --text-footer-link: 14px; /* footer nav links + contact lines */
   --text-footer-head: 16px; /* footer column headings */
   --text-footer-phone: 20px; /* footer support phone number */
@@ -206,6 +214,20 @@
   --container-hero-row: 1170px;
   --container-store-footer: 1200px;
   --container-deals: 1150px;
+  /* Bootstrap's `.container` stops, which live's top bar sits in at every
+     width: 100% below 576, then 540 / 720 / 960, then --container-page (1200)
+     from 1200 (live goes to 1430 from 1480; nothing here is measured there).
+     ONLY the top bar: live's handheld masthead is `.handheld-header-wrap
+     .container{max-width:100%}`, full width with the 15px gutter at every
+     handheld width, so at 768 the masthead content starts at x15 and the top
+     bar's at x39 (24 + 15), and the two are NOT meant to align. Measured
+     off `refs/ke_live_home.html` (UX02, 14.10.2026): top bar container x24
+     w720 at 768, x120 w1200 at 1440. The media stops themselves live in
+     globals.css (`.topbar-container`), since a breakpoint cannot read a
+     custom property. */
+  --container-topbar-sm: 540px;
+  --container-topbar-md: 720px;
+  --container-topbar-lg: 960px;
 
   /* --- Measured layout boxes -------------------------------------------------
      Each was read off the live site; the component that used to inline the

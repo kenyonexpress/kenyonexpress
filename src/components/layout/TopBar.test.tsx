@@ -78,6 +78,32 @@ describe('TopBar, component 01', () => {
     expect(html).toMatch(/class="topbar-greeting hidden[^"]*"/)
   })
 
+  it('hovers the account link to live’s darker heading colour, not an opacity fade', () => {
+    // Live: `a:hover{color:#29323a}` on text and icon together. `opacity-70`
+    // greyed both instead, and a phone could hold it after a tap.
+    const link = html.match(/<a [^>]*href="\/login"[^>]*>/)?.[0] ?? ''
+    expect(link).toContain('hover:text-heading-hover')
+    expect(link).toContain('transition-colors')
+    expect(link).not.toMatch(/opacity/)
+  })
+
+  it('pins the type to the 13.006px token rather than an em off the body', () => {
+    // .929em is live's rule, off live's 14px body. Off our 16px body it is
+    // 14.864px, every item 14% wide, and 414 wraps 2+2 where live wraps 3+1.
+    expect(html).toContain('text-topbar')
+    expect(html).not.toMatch(/text-\[0?\.929em\]/)
+  })
+
+  it('sits in Bootstrap’s responsive container, not the page container', () => {
+    // 100% / 540 / 720 / 960 / 1200: at 768 the items start at x39, and the
+    // masthead under them, full width on live, at x15. `max-w-page` had both
+    // at x15.
+    const row = html.match(/<div class="topbar-container[^"]*"/)?.[0] ?? ''
+    expect(row, 'the container class is on the row').not.toBe('')
+    expect(row).toContain('px-gutter')
+    expect(row).not.toContain('max-w-page')
+  })
+
   it('spends no flex gap on top of the separators', () => {
     // A `gap-x-*` on the row would double-count live's 1em margins, which is
     // how the bar ends up 63px wide of live at 1440 while looking fine.

@@ -84,10 +84,17 @@ function InfoItem({ Icon, label, href }: InfoItemProps) {
   )
   // The row is 37px, which already clears the 44px floor only for the link;
   // `min-h` on the anchor keeps the tappable one honest at any type size.
+  //
+  // HOVER IS LIVE'S `a:hover{color:#29323a}`, one step darker than the
+  // #333e48 it rests at, on the text and the icon together (the icon takes
+  // currentColor). It used to be `hover:opacity-70`, which live never does
+  // and which fades the glyph grey rather than darkening it. Tailwind wraps
+  // `hover:` in `@media (hover: hover)`, so a phone never gets a stuck hover
+  // after the tap. Focus is the global `:focus-visible` ring in globals.css.
   return href ? (
     <Link
       href={href}
-      className="tap-area flex h-topbar-row items-center gap-1.5 transition-opacity hover:opacity-70"
+      className="tap-area flex h-topbar-row items-center gap-1.5 transition-colors hover:text-heading-hover"
     >
       {body}
     </Link>
@@ -136,7 +143,26 @@ export default function TopBar() {
         of 37.333 on an inner page, three on home. h-header-topbar (37.3) from
         md up is live's 38 less its 1px border.
       */}
-      <div className="mx-auto flex max-w-page flex-wrap items-center px-gutter text-[0.929em] text-heading md:h-header-topbar md:flex-nowrap">
+      {/*
+        `topbar-container`, NOT `max-w-page`: live's top bar sits in
+        Bootstrap's `.container` (100% / 540 / 720 / 960 / 1200 at 576 / 768 /
+        992 / 1200) while the masthead under it is full width at every
+        handheld width. At 768 that is x39 for the bar's items and x15 for the
+        masthead's, and `max-w-page` had both at x15. The rule and its stops
+        are in globals.css, the widths in tokens.css.
+
+        `text-topbar` (13.006px), NOT `text-[0.929em]`: live's .929em is off a
+        14px body and ours is 16px, so the em rendered 14.864px and every item
+        ran 14% wide. That is also why 414 wrapped the items 2+2 where live
+        wraps 3+1 (357px of items in a 384px row). Measured UX02, 14.10.2026:
+
+          width  rows (home)  items row 1         items row 2
+          -----  -----------  ------------------  -----------
+          375    3            ארצית, משלוח        בטוחה, התחברות
+          414    3            ארצית, משלוח, בטוחה  התחברות
+          768    1            all four, x39..x729 (720 container)
+      */}
+      <div className="topbar-container mx-auto flex flex-wrap items-center px-gutter text-topbar text-heading md:h-header-topbar md:flex-nowrap">
         {/* Home only. See the note above: revealed by `:has()` in globals.css
             against the marker the home page renders, because reading the
             pathname here would turn every prerendered route dynamic. */}

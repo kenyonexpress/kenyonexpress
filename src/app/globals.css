@@ -243,6 +243,39 @@ body:has([data-home]) .topbar-greeting {
   display: flex;
 }
 
+/* THE TOP BAR SITS IN BOOTSTRAP'S CONTAINER, NOT THE PAGE CONTAINER.
+   Live's `.top-bar .container` is 100% wide below 576 and then 540 / 720 /
+   960 / 1200 at Bootstrap's own stops (576 / 768 / 992 / 1200), while the
+   masthead below it is full width at every handheld width. `max-w-page` put
+   the bar's items at x15 at 768 where live has them at x39 (the 720
+   container centred in 768, plus the 15px gutter). The widths are tokens
+   (--container-topbar-*); the stops are literal because a media query cannot
+   read a custom property, and they are Bootstrap's, not Tailwind's (sm is
+   640 there, lg is 1024, xl is 1280). Measured UX02, 14.10.2026. */
+.topbar-container {
+  max-width: 100%;
+}
+@media (min-width: 576px) {
+  .topbar-container {
+    max-width: var(--container-topbar-sm);
+  }
+}
+@media (min-width: 768px) {
+  .topbar-container {
+    max-width: var(--container-topbar-md);
+  }
+}
+@media (min-width: 992px) {
+  .topbar-container {
+    max-width: var(--container-topbar-lg);
+  }
+}
+@media (min-width: 1200px) {
+  .topbar-container {
+    max-width: var(--container-page);
+  }
+}
+
 /* The footer's two link columns are <details>, CLOSED below lg.
    D20 re-measured one live page, found `.handheld-widget-menu` open at 365px,
    and flipped the markup to `open`. That measurement was real but taken on a
