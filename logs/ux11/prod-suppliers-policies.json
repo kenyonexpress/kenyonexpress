@@ -1,0 +1,26 @@
+[
+  {
+    "policyname": "suppliers_delete_unified",
+    "roles": "{authenticated}",
+    "cmd": "DELETE",
+    "qual": "is_admin()"
+  },
+  {
+    "policyname": "suppliers_insert_unified",
+    "roles": "{authenticated}",
+    "cmd": "INSERT",
+    "qual": null
+  },
+  {
+    "policyname": "suppliers_select_unified",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "((deleted_at IS NULL) OR is_admin())"
+  },
+  {
+    "policyname": "suppliers_update_unified",
+    "roles": "{authenticated}",
+    "cmd": "UPDATE",
+    "qual": "(is_admin() OR has_role('content_uploader'::text))"
+  }
+]
