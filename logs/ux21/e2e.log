@@ -1,0 +1,90 @@
+Already up to date
+Done in 190ms using pnpm v11.1.2
+
+Running 30 tests using 2 workers
+
+[1A[2K[1/30] [chromium] › e2e/home.spec.ts:63:7 › homepage › the header search suggests products and Enter opens the highlighted one
+[1A[2K[2/30] [chromium] › e2e/home.spec.ts:38:7 › homepage › renders the header search combobox
+[1A[2K  1) [chromium] › e2e/home.spec.ts:38:7 › homepage › renders the header search combobox ────────────
+
+    Error: only the newsletter and the search field
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoContain[2m([22m[32mexpected[39m[2m) // indexOf[22m
+
+    Expected value: [32m"checkbox"[39m
+    Received array: [31m["email", "search"][39m
+
+      57 |     for (const input of await typed.all()) {
+      58 |       const type = await input.getAttribute('type')
+    > 59 |       expect(['email', 'search'], 'only the newsletter and the search field').toContain(type)
+         |                                                                               ^
+      60 |     }
+      61 |   })
+      62 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/home.spec.ts:59:79
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/home-homepage-renders-the-header-search-combobox-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/home-homepage-renders-the-header-search-combobox-chromium/error-context.md
+
+
+[1A[2K[3/30] [chromium] › e2e/home.spec.ts:383:7 › homepage › search results page finds products
+[1A[2K[4/30] [chromium] › e2e/home.spec.ts:389:7 › homepage › short query shows the minimum-characters hint
+[1A[2K[5/30] [chromium] › e2e/home.spec.ts:394:7 › homepage › a search term with SQL wildcards is treated as text, not a pattern
+[1A[2K[6/30] [chromium] › e2e/layout-stability.spec.ts:79:7 › search stays under the CLS budget: no results, the collapse case
+[1A[2K[7/30] [chromium] › e2e/layout-stability.spec.ts:79:7 › search stays under the CLS budget: sixteen results, the growth case
+[1A[2K[8/30] [chromium] › e2e/search-results.spec.ts:38:7 › search results page (UX21) › carries a control bar whose sort rewrites the URL and keeps the query
+[1A[2K[9/30] [chromium] › e2e/search-results.spec.ts:58:7 › search results page (UX21) › the count line names the engine for probes, never for people
+[1A[2K[10/30] [chromium] › e2e/search-results.spec.ts:73:7 › search results page (UX21) › the filters are one closed row in the first screen that opens to facet links with counts
+[1A[2K[11/30] [chromium] › e2e/search-results.spec.ts:102:7 › search results page (UX21) › choosing a facet puts a removable chip above the grid, and the chip removes it
+[1A[2K[12/30] [chromium] › e2e/search-results.spec.ts:132:7 › search results page (UX21) › a search narrowed to nothing offers the unfiltered results as one press
+[1A[2K[13/30] [chromium] › e2e/search-results.spec.ts:160:7 › search results page (UX21) › a query nothing matches keeps the empty state the home spec reads
+[1A[2K[14/30] [chromium] › e2e/search-results.spec.ts:169:7 › search results page (UX21) › pages the results when there are more than one page of them
+[1A[2K[15/30] [chromium] › e2e/search-results.spec.ts:187:7 › search results page (UX21) › on a phone the bar carries a filters link that opens the disclosure
+[1A[2K[16/30] [mobile-chrome] › e2e/home.spec.ts:38:7 › homepage › renders the header search combobox
+[1A[2K[17/30] [mobile-chrome] › e2e/home.spec.ts:63:7 › homepage › the header search suggests products and Enter opens the highlighted one
+[1A[2K  2) [mobile-chrome] › e2e/home.spec.ts:38:7 › homepage › renders the header search combobox ───────
+
+    Error: only the newsletter and the search field
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoContain[2m([22m[32mexpected[39m[2m) // indexOf[22m
+
+    Expected value: [32m"checkbox"[39m
+    Received array: [31m["email", "search"][39m
+
+      57 |     for (const input of await typed.all()) {
+      58 |       const type = await input.getAttribute('type')
+    > 59 |       expect(['email', 'search'], 'only the newsletter and the search field').toContain(type)
+         |                                                                               ^
+      60 |     }
+      61 |   })
+      62 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/home.spec.ts:59:79
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/home-homepage-renders-the-header-search-combobox-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/home-homepage-renders-the-header-search-combobox-mobile-chrome/error-context.md
+
+
+[1A[2K[18/30] [mobile-chrome] › e2e/home.spec.ts:383:7 › homepage › search results page finds products
+[1A[2K[19/30] [mobile-chrome] › e2e/home.spec.ts:389:7 › homepage › short query shows the minimum-characters hint
+[1A[2K[20/30] [mobile-chrome] › e2e/home.spec.ts:394:7 › homepage › a search term with SQL wildcards is treated as text, not a pattern
+[1A[2K[21/30] [mobile-chrome] › e2e/layout-stability.spec.ts:79:7 › search stays under the CLS budget: no results, the collapse case
+[1A[2K[22/30] [mobile-chrome] › e2e/layout-stability.spec.ts:79:7 › search stays under the CLS budget: sixteen results, the growth case
+[1A[2K[23/30] [mobile-chrome] › e2e/search-results.spec.ts:38:7 › search results page (UX21) › carries a control bar whose sort rewrites the URL and keeps the query
+[1A[2K[24/30] [mobile-chrome] › e2e/search-results.spec.ts:58:7 › search results page (UX21) › the count line names the engine for probes, never for people
+[1A[2K[25/30] [mobile-chrome] › e2e/search-results.spec.ts:73:7 › search results page (UX21) › the filters are one closed row in the first screen that opens to facet links with counts
+[1A[2K[26/30] [mobile-chrome] › e2e/search-results.spec.ts:102:7 › search results page (UX21) › choosing a facet puts a removable chip above the grid, and the chip removes it
+[1A[2K[27/30] [mobile-chrome] › e2e/search-results.spec.ts:132:7 › search results page (UX21) › a search narrowed to nothing offers the unfiltered results as one press
+[1A[2K[28/30] [mobile-chrome] › e2e/search-results.spec.ts:160:7 › search results page (UX21) › a query nothing matches keeps the empty state the home spec reads
+[1A[2K[29/30] [mobile-chrome] › e2e/search-results.spec.ts:169:7 › search results page (UX21) › pages the results when there are more than one page of them
+[1A[2K[30/30] [mobile-chrome] › e2e/search-results.spec.ts:187:7 › search results page (UX21) › on a phone the bar carries a filters link that opens the disclosure
+[1A[2K  2 failed
+    [chromium] › e2e/home.spec.ts:38:7 › homepage › renders the header search combobox ─────────────
+    [mobile-chrome] › e2e/home.spec.ts:38:7 › homepage › renders the header search combobox ────────
+  1 skipped
+  27 passed (33.6s)

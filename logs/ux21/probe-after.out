@@ -1,0 +1,339 @@
+{
+ "380": {
+  "results": {
+   "h1": "תוצאות חיפוש עבור \"זוג\"",
+   "countText": "נמצאו ⁦7⁩ מוצרים",
+   "countEngine": "database",
+   "engineInCopy": false,
+   "cards": 7,
+   "grid": {
+    "x": 15,
+    "y": 553.2,
+    "w": 350,
+    "h": 1557.8
+   },
+   "firstCard": {
+    "x": 190,
+    "y": 553.2,
+    "w": 175,
+    "h": 398.4
+   },
+   "bar": {
+    "rect": {
+     "x": 15,
+     "y": 429.6,
+     "w": 350,
+     "h": 49.6
+    },
+    "sort": {
+     "id": "search-orderby",
+     "options": [
+      "הרלוונטיים ביותר",
+      "החדשים ביותר",
+      "מחיר: מהנמוך לגבוה",
+      "מחיר: מהגבוה לנמוך"
+     ],
+     "value": "relevance"
+    },
+    "filtersLink": {
+     "text": "סינון",
+     "rect": {
+      "x": 284.6,
+      "y": 432.4,
+      "w": 60.4,
+      "h": 44
+     },
+     "visible": true
+    },
+    "switcher": {
+     "visible": false
+    }
+   },
+   "facets": {
+    "rect": {
+     "x": 32,
+     "y": 537.2,
+     "w": 316,
+     "h": 416
+    },
+    "aboveGrid": true,
+    "inFirstScreen": true,
+    "sections": [
+     "סוג",
+     "קטגוריה",
+     "זמינות"
+    ],
+    "options": 5,
+    "firstOption": {
+     "x": 32,
+     "y": 590.2,
+     "w": 316,
+     "h": 44
+    }
+   },
+   "facetsDisclosure": {
+    "open": false,
+    "summary": "סינון תוצאות",
+    "rect": {
+     "x": 15,
+     "y": 491.2,
+     "w": 350,
+     "h": 46
+    },
+    "summaryRect": {
+     "x": 16,
+     "y": 492.2,
+     "w": 348,
+     "h": 44
+    },
+    "aboveGrid": true
+   },
+   "chipsAbove": null,
+   "pagination": null,
+   "empty": null,
+   "sidebar": null,
+   "live": [
+    {
+     "tag": "OUTPUT",
+     "text": ""
+    }
+   ],
+   "pageHeight": 2537,
+   "scrollWidth": 380,
+   "status": 200
+  },
+  "empty": {
+   "h1": "תוצאות חיפוש עבור \"חחחקקק\"",
+   "countText": "לא נמצאו מוצרים",
+   "countEngine": "database",
+   "engineInCopy": false,
+   "cards": 0,
+   "grid": null,
+   "firstCard": null,
+   "bar": {
+    "rect": {
+     "x": 15,
+     "y": 429.6,
+     "w": 350,
+     "h": 49.6
+    },
+    "sort": {
+     "id": "search-orderby",
+     "options": [
+      "הרלוונטיים ביותר",
+      "החדשים ביותר",
+      "מחיר: מהנמוך לגבוה",
+      "מחיר: מהגבוה לנמוך"
+     ],
+     "value": "relevance"
+    },
+    "filtersLink": {
+     "text": "סינון",
+     "rect": {
+      "x": 284.6,
+      "y": 432.4,
+      "w": 60.4,
+      "h": 44
+     },
+     "visible": true
+    },
+    "switcher": {
+     "visible": false
+    }
+   },
+   "facets": null,
+   "facetsDisclosure": {
+    "open": false,
+    "summary": "סינון תוצאות",
+    "rect": {
+     "x": 15,
+     "y": 491.2,
+     "w": 350,
+     "h": 46
+    },
+    "summaryRect": {
+     "x": 16,
+     "y": 492.2,
+     "w": 348,
+     "h": 44
+    },
+    "aboveGrid": null
+   },
+   "chipsAbove": null,
+   "pagination": null,
+   "empty": {
+    "rect": {
+     "x": 15,
+     "y": 553.2,
+     "w": 350,
+     "h": 446
+    },
+    "text": [
+     "לא נמצאו מוצרים עבור \"חחחקקק\".",
+     "נסו מילת חיפוש אחרת.",
+     "לכל המוצרים"
+    ],
+    "links": [
+     {
+      "text": "דיל חם 🔥",
+      "href": "/category/hot-deals"
+     },
+     {
+      "text": "עד ⁦99 ₪⁩",
+      "href": "/category/under-99"
+     },
+     {
+      "text": "החדשים",
+      "href": "/category/new"
+     },
+     {
+      "text": "מסעדות ובתי קפה",
+      "href": "/category/restaurants-cafes"
+     },
+     {
+      "text": "טיפוח בריאות ויופי",
+      "href": "/category/beauty-health"
+     },
+     {
+      "text": "טלפונים ואלקטרוניקה",
+      "href": "/category/phones-computers"
+     },
+     {
+      "text": "תינוקות וילדים",
+      "href": "/category/baby-kids"
+     },
+     {
+      "text": "צימרים מלונות ונופש",
+      "href": "/category/vacation"
+     },
+     {
+      "text": "לכל המוצרים",
+      "href": "/products"
+     }
+    ],
+    "clearAction": false,
+    "relaxed": null
+   },
+   "sidebar": null,
+   "live": [
+    {
+     "tag": "OUTPUT",
+     "text": ""
+    }
+   ],
+   "pageHeight": 1722,
+   "scrollWidth": 380,
+   "status": 200
+  },
+  "narrowed-empty": {
+   "h1": "תוצאות חיפוש עבור \"זוג\"",
+   "countText": "לא נמצאו מוצרים",
+   "countEngine": "database",
+   "engineInCopy": false,
+   "cards": 0,
+   "grid": null,
+   "firstCard": null,
+   "bar": {
+    "rect": {
+     "x": 15,
+     "y": 429.6,
+     "w": 350,
+     "h": 49.6
+    },
+    "sort": {
+     "id": "search-orderby",
+     "options": [
+      "הרלוונטיים ביותר",
+      "החדשים ביותר",
+      "מחיר: מהנמוך לגבוה",
+      "מחיר: מהגבוה לנמוך"
+     ],
+     "value": "relevance"
+    },
+    "filtersLink": {
+     "text": "סינון סינונים פעילים: 1",
+     "rect": {
+      "x": 256.6,
+      "y": 432.4,
+      "w": 88.4,
+      "h": 44
+     },
+     "visible": true
+    },
+    "switcher": {
+     "visible": false
+    }
+   },
+   "facets": null,
+   "facetsDisclosure": {
+    "open": false,
+    "summary": "סינון תוצאות סינונים פעילים: (1)",
+    "rect": {
+     "x": 15,
+     "y": 549.2,
+     "w": 350,
+     "h": 46
+    },
+    "summaryRect": {
+     "x": 16,
+     "y": 550.2,
+     "w": 348,
+     "h": 44
+    },
+    "aboveGrid": null
+   },
+   "chipsAbove": {
+    "cls": "category-active-filters search-active-filters",
+    "rect": {
+     "x": 15,
+     "y": 479.2,
+     "w": 350,
+     "h": 58
+    },
+    "aboveGrid": true,
+    "chips": [
+     "עיר: חיפה ×",
+     "נקו הכל"
+    ]
+   },
+   "pagination": null,
+   "empty": {
+    "rect": {
+     "x": 15,
+     "y": 611.2,
+     "w": 350,
+     "h": 506
+    },
+    "text": [
+     "לא נמצאו מוצרים עבור \"זוג\".",
+     "נסו להסיר סינון או מילת חיפוש אחרת.",
+     "הצגת כל ⁦7⁩ התוצאות ללא סינון",
+     "לכל המוצרים"
+    ],
+    "links": [
+     {
+      "text": "הצגת כל ⁦7⁩ התוצאות ללא סינון",
+      "href": "/search?q=%D7%96%D7%95%D7%92"
+     },
+     {
+      "text": "דיל חם 🔥",
+      "href": "/category/hot-deals"
+     },
+     {
+      "text": "עד ⁦99 ₪⁩",
+      "href": "/category/under-99"
+     },
+     {
+      "text": "החדשים",
+      "href": "/category/new"
+     },
+     {
+      "text": "מסעדות ובתי קפה",
+      "href": "/category/restaurants-cafes"
+     },
+     {
+      "text": "טיפוח בריאות ויופי",
+      "href": "/category/beauty-health"
+     },
+     {
+      "text": "ט

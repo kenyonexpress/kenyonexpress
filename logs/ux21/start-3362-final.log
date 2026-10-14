@@ -1,0 +1,288 @@
+Already up to date
+Done in 191ms using pnpm v11.1.2
+$ next start
+▲ Next.js 16.3.3
+- Local:         http://localhost:3362
+- Network:       http://100.84.130.122:3362
+✓ Ready in 116ms
+✓ Running next.config.ts took 378ms
+{"ts":"2026-10-14T15:24:39.361Z","level":"warn","event":"env.checks_skipped","request_id":null,"detail":"ALLOW_INCOMPLETE_ENV=true. Correct for a local `next start`; wrong anywhere a customer can reach."}
+{"ts":"2026-10-14T15:24:40.705Z","level":"info","event":"env.probe_ok","request_id":null,"checked":2}
+{"ts":"2026-10-14T15:24:42.660Z","level":"warn","event":"db.query_slow","request_id":"457a2fc2-f875-4234-bd4f-b6b6e106cbb8","route":"action","method":"GET","target":"carts","status":200,"duration_ms":473,"threshold_ms":300}
+{"ts":"2026-10-14T15:24:42.679Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"categories","status":200,"duration_ms":748,"threshold_ms":300}
+{"ts":"2026-10-14T15:24:42.956Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":7,"ms":273,"query_length":3,"facets":[]}
+{"ts":"2026-10-14T15:24:43.506Z","level":"error","event":"supabase.rls_denied","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401}
+{"ts":"2026-10-14T15:24:43.540Z","level":"warn","event":"search.recent_record_failed","request_id":null,"reason":"permission denied for function fn_record_recent_search"}
+(node:48395) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+(Use `node --trace-warnings ...` to show where the warning was created)
+{"ts":"2026-10-14T15:24:44.728Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"products","status":200,"duration_ms":409,"threshold_ms":300}
+{"ts":"2026-10-14T15:24:44.728Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":0,"ms":409,"query_length":6,"facets":[]}
+{"ts":"2026-10-14T15:24:44.732Z","level":"warn","event":"db.query_slow","request_id":"88bc77c2-007f-4bc0-93b4-5e0c857817d9","route":"action","method":"GET","target":"carts","status":200,"duration_ms":369,"threshold_ms":300}
+{"ts":"2026-10-14T15:24:45.255Z","level":"error","event":"supabase.rls_denied","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401}
+{"ts":"2026-10-14T15:24:45.257Z","level":"warn","event":"search.recent_record_failed","request_id":null,"reason":"permission denied for function fn_record_recent_search"}
+{"ts":"2026-10-14T15:24:46.440Z","level":"warn","event":"db.query_slow","request_id":"18844230-dcf4-4067-8c09-c3a2212304e0","route":"action","method":"GET","target":"carts","status":200,"duration_ms":493,"threshold_ms":300}
+{"ts":"2026-10-14T15:24:46.447Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"products","status":200,"duration_ms":544,"threshold_ms":300}
+{"ts":"2026-10-14T15:24:46.450Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":0,"ms":548,"query_length":3,"facets":["city"]}
+(node:48395) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T15:24:46.870Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"products","status":200,"duration_ms":418,"threshold_ms":300}
+{"ts":"2026-10-14T15:24:46.872Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":7,"ms":421,"query_length":3,"facets":[]}
+{"ts":"2026-10-14T15:24:48.203Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"popular_searches","status":200,"duration_ms":312,"threshold_ms":300}
+(node:48395) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T15:24:49.096Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":7,"ms":248,"query_length":3,"facets":[]}
+{"ts":"2026-10-14T15:24:49.714Z","level":"warn","event":"db.query_slow","request_id":null,"method":"POST","target":"rpc:fn_record_search","status":204,"duration_ms":616,"threshold_ms":300}
+{"ts":"2026-10-14T15:24:49.964Z","level":"error","event":"supabase.rls_denied","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401}
+{"ts":"2026-10-14T15:24:49.966Z","level":"warn","event":"search.recent_record_failed","request_id":null,"reason":"permission denied for function fn_record_recent_search"}
+{"ts":"2026-10-14T15:24:50.269Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":7,"ms":251,"query_length":3,"facets":[]}
+{"ts":"2026-10-14T15:24:50.768Z","level":"error","event":"supabase.rls_denied","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401}
+{"ts":"2026-10-14T15:24:50.771Z","level":"warn","event":"search.recent_record_failed","request_id":null,"reason":"permission denied for function fn_record_recent_search"}
+{"ts":"2026-10-14T15:24:51.159Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"products","status":200,"duration_ms":313,"threshold_ms":300}
+{"ts":"2026-10-14T15:24:51.160Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":7,"ms":314,"query_length":3,"facets":[]}
+{"ts":"2026-10-14T15:24:51.516Z","level":"warn","event":"db.query_slow","request_id":null,"method":"POST","target":"rpc:fn_record_search","status":204,"duration_ms":355,"threshold_ms":300}
+{"ts":"2026-10-14T15:24:51.777Z","level":"error","event":"supabase.rls_denied","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401}
+{"ts":"2026-10-14T15:24:51.779Z","level":"warn","event":"search.recent_record_failed","request_id":null,"reason":"permission denied for function fn_record_recent_search"}
+(node:48395) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T15:24:53.015Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"products","status":200,"duration_ms":491,"threshold_ms":300}
+{"ts":"2026-10-14T15:24:53.016Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":0,"ms":493,"query_length":6,"facets":[]}
+{"ts":"2026-10-14T15:24:53.068Z","level":"warn","event":"db.query_slow","request_id":"42ff0aba-92e6-4e85-af26-768f538ccbac","route":"action","method":"GET","target":"carts","status":200,"duration_ms":507,"threshold_ms":300}
+{"ts":"2026-10-14T15:24:53.463Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"popular_searches","status":200,"duration_ms":442,"threshold_ms":300}
+{"ts":"2026-10-14T15:24:54.058Z","level":"warn","event":"db.query_slow","request_id":null,"method":"POST","target":"rpc:fn_record_search","status":204,"duration_ms":1041,"threshold_ms":300}
+{"ts":"2026-10-14T15:24:54.298Z","level":"error","event":"supabase.rls_denied","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401}
+{"ts":"2026-10-14T15:24:54.300Z","level":"warn","event":"search.recent_record_failed","request_id":null,"reason":"permission denied for function fn_record_recent_search"}
+{"ts":"2026-10-14T15:24:55.227Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":0,"ms":274,"query_length":3,"facets":["city"]}
+{"ts":"2026-10-14T15:24:55.608Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"products","status":200,"duration_ms":380,"threshold_ms":300}
+{"ts":"2026-10-14T15:24:55.610Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":7,"ms":382,"query_length":3,"facets":[]}
+{"ts":"2026-10-14T15:24:55.946Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"popular_searches","status":200,"duration_ms":335,"threshold_ms":300}
+(node:48395) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T15:24:56.980Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"popular_searches","status":200,"duration_ms":336,"threshold_ms":300}
+{"ts":"2026-10-14T15:24:56.982Z","level":"warn","event":"db.query_slow","request_id":"d9743abf-3bdc-489c-a98e-dfd47cf731ce","route":"action","method":"GET","target":"carts","status":200,"duration_ms":303,"threshold_ms":300}
+(node:48395) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T15:24:58.180Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":7,"ms":270,"query_length":3,"facets":[]}
+{"ts":"2026-10-14T15:24:58.564Z","level":"warn","event":"db.query_slow","request_id":null,"method":"POST","target":"rpc:fn_record_search","status":204,"duration_ms":383,"threshold_ms":300}
+{"ts":"2026-10-14T15:24:58.944Z","level":"warn","event":"db.query_slow","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401,"duration_ms":379,"threshold_ms":300}
+{"ts":"2026-10-14T15:24:58.945Z","level":"error","event":"supabase.rls_denied","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401}
+{"ts":"2026-10-14T15:24:58.947Z","level":"warn","event":"search.recent_record_failed","request_id":null,"reason":"permission denied for function fn_record_recent_search"}
+{"ts":"2026-10-14T15:24:59.330Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"products","status":200,"duration_ms":330,"threshold_ms":300}
+{"ts":"2026-10-14T15:24:59.331Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":7,"ms":331,"query_length":3,"facets":[]}
+(node:48395) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T15:24:59.909Z","level":"warn","event":"db.query_slow","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401,"duration_ms":341,"threshold_ms":300}
+{"ts":"2026-10-14T15:24:59.910Z","level":"error","event":"supabase.rls_denied","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401}
+{"ts":"2026-10-14T15:24:59.912Z","level":"warn","event":"search.recent_record_failed","request_id":null,"reason":"permission denied for function fn_record_recent_search"}
+{"ts":"2026-10-14T15:25:00.231Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":7,"ms":250,"query_length":3,"facets":[]}
+{"ts":"2026-10-14T15:25:01.725Z","level":"warn","event":"db.query_slow","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401,"duration_ms":1241,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:01.726Z","level":"error","event":"supabase.rls_denied","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401}
+{"ts":"2026-10-14T15:25:01.729Z","level":"warn","event":"search.recent_record_failed","request_id":null,"reason":"permission denied for function fn_record_recent_search"}
+(node:48395) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T15:25:02.737Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":0,"ms":249,"query_length":6,"facets":[]}
+{"ts":"2026-10-14T15:25:03.053Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"popular_searches","status":200,"duration_ms":314,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:03.081Z","level":"warn","event":"db.query_slow","request_id":null,"method":"POST","target":"rpc:fn_record_search","status":204,"duration_ms":343,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:03.346Z","level":"error","event":"supabase.rls_denied","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401}
+{"ts":"2026-10-14T15:25:03.349Z","level":"warn","event":"search.recent_record_failed","request_id":null,"reason":"permission denied for function fn_record_recent_search"}
+(node:48395) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T15:25:04.354Z","level":"warn","event":"db.query_slow","request_id":"7dd667a1-b556-4403-afb8-ad60f52f2ac0","route":"action","method":"GET","target":"carts","status":200,"duration_ms":308,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:04.357Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"products","status":200,"duration_ms":357,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:04.359Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":0,"ms":360,"query_length":3,"facets":["city"]}
+{"ts":"2026-10-14T15:25:04.637Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":7,"ms":277,"query_length":3,"facets":[]}
+(node:48395) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+(node:48395) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T15:25:06.786Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":7,"ms":249,"query_length":3,"facets":[]}
+{"ts":"2026-10-14T15:25:07.326Z","level":"error","event":"supabase.rls_denied","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401}
+{"ts":"2026-10-14T15:25:07.328Z","level":"warn","event":"search.recent_record_failed","request_id":null,"reason":"permission denied for function fn_record_recent_search"}
+{"ts":"2026-10-14T15:25:07.619Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":7,"ms":244,"query_length":3,"facets":[]}
+{"ts":"2026-10-14T15:25:08.129Z","level":"error","event":"supabase.rls_denied","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401}
+{"ts":"2026-10-14T15:25:08.132Z","level":"warn","event":"search.recent_record_failed","request_id":null,"reason":"permission denied for function fn_record_recent_search"}
+{"ts":"2026-10-14T15:25:08.545Z","level":"warn","event":"db.query_slow","request_id":"5ceeeaf2-7ee9-44dc-aad3-c0a1eafb2663","route":"/api/search/facets","method":"POST","target":"rpc:check_rate_limit","status":200,"duration_ms":365,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:08.789Z","level":"info","event":"search.executed","request_id":"5ceeeaf2-7ee9-44dc-aad3-c0a1eafb2663","route":"/api/search/facets","method":"GET","engine":"database","hits":7,"ms":242,"query_length":3,"facets":[]}
+{"ts":"2026-10-14T15:25:10.458Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"v_banners_live","status":200,"duration_ms":384,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:10.459Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"v_homepage_sections_live","status":200,"duration_ms":385,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:10.513Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"v_banners_live","status":200,"duration_ms":425,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:10.524Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"v_homepage_sections_live","status":200,"duration_ms":435,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:10.706Z","level":"warn","event":"db.query_slow","request_id":"b5a2cce5-a8ff-4e8e-8b3d-fb586e1d587e","route":"action","method":"GET","target":"carts","status":200,"duration_ms":459,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:11.437Z","level":"warn","event":"db.query_slow","request_id":"54918011-405f-4b6a-bb3b-452eb261cfda","route":"/api/search/suggest","method":"POST","target":"rpc:check_rate_limit","status":200,"duration_ms":660,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:11.793Z","level":"warn","event":"db.query_slow","request_id":"91f747c8-3ad2-488d-a8ba-111be26e7ad8","route":"action","method":"GET","target":"carts","status":200,"duration_ms":700,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:11.796Z","level":"warn","event":"db.query_slow","request_id":"54918011-405f-4b6a-bb3b-452eb261cfda","route":"/api/search/suggest","method":"POST","target":"rpc:search_products","status":200,"duration_ms":357,"threshold_ms":300}
+(node:48395) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T15:25:12.700Z","level":"warn","event":"db.query_slow","request_id":null,"method":"POST","target":"rpc:available_stock","status":200,"duration_ms":649,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:12.930Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":46,"ms":265,"query_length":0,"facets":[]}
+{"ts":"2026-10-14T15:25:13.050Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"products","status":200,"duration_ms":2057,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:13.060Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":2,"ms":2067,"query_length":4,"facets":[]}
+{"ts":"2026-10-14T15:25:13.547Z","level":"warn","event":"db.query_slow","request_id":"10537d5f-2f21-424a-9953-1eb0bb2409e8","route":"action","method":"GET","target":"carts","status":200,"duration_ms":3294,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:13.553Z","level":"warn","event":"db.query_slow","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401,"duration_ms":355,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:13.554Z","level":"error","event":"supabase.rls_denied","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401}
+{"ts":"2026-10-14T15:25:13.557Z","level":"warn","event":"search.recent_record_failed","request_id":null,"reason":"permission denied for function fn_record_recent_search"}
+{"ts":"2026-10-14T15:25:13.606Z","level":"error","event":"supabase.rls_denied","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401}
+{"ts":"2026-10-14T15:25:13.607Z","level":"warn","event":"search.recent_record_failed","request_id":null,"reason":"permission denied for function fn_record_recent_search"}
+(node:48395) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T15:25:13.847Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":0,"ms":246,"query_length":5,"facets":[]}
+{"ts":"2026-10-14T15:25:13.962Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":0,"ms":243,"query_length":8,"facets":[]}
+{"ts":"2026-10-14T15:25:14.282Z","level":"warn","event":"db.query_slow","request_id":"59a04dbe-b8f9-4c0c-b53d-8fef46d540c4","route":"action","method":"GET","target":"carts","status":200,"duration_ms":462,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:14.292Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"popular_searches","status":200,"duration_ms":444,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:14.298Z","level":"warn","event":"db.query_slow","request_id":null,"method":"POST","target":"rpc:fn_record_search","status":204,"duration_ms":451,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:14.319Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"popular_searches","status":200,"duration_ms":355,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:14.334Z","level":"warn","event":"db.query_slow","request_id":null,"method":"POST","target":"rpc:fn_record_search","status":204,"duration_ms":371,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:14.628Z","level":"warn","event":"db.query_slow","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401,"duration_ms":330,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:14.629Z","level":"error","event":"supabase.rls_denied","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401}
+{"ts":"2026-10-14T15:25:14.631Z","level":"warn","event":"search.recent_record_failed","request_id":null,"reason":"permission denied for function fn_record_recent_search"}
+{"ts":"2026-10-14T15:25:14.633Z","level":"error","event":"supabase.rls_denied","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401}
+{"ts":"2026-10-14T15:25:14.635Z","level":"warn","event":"search.recent_record_failed","request_id":null,"reason":"permission denied for function fn_record_recent_search"}
+{"ts":"2026-10-14T15:25:16.454Z","level":"warn","event":"db.query_slow","request_id":"6637eb94-b38c-4712-8b84-67711d56953d","route":"action","method":"GET","target":"carts","status":200,"duration_ms":1737,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:16.467Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"products","status":200,"duration_ms":1799,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:16.467Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":2,"ms":1800,"query_length":3,"facets":[]}
+{"ts":"2026-10-14T15:25:16.943Z","level":"error","event":"supabase.rls_denied","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401}
+{"ts":"2026-10-14T15:25:16.946Z","level":"warn","event":"search.recent_record_failed","request_id":null,"reason":"permission denied for function fn_record_recent_search"}
+{"ts":"2026-10-14T15:25:17.316Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":2,"ms":253,"query_length":4,"facets":[]}
+{"ts":"2026-10-14T15:25:17.731Z","level":"info","event":"search.executed","request_id":"99e2b273-7913-4a37-a899-88acc6179188","route":"/api/search/facets","method":"GET","engine":"database","hits":7,"ms":251,"query_length":3,"facets":[]}
+{"ts":"2026-10-14T15:25:17.836Z","level":"error","event":"supabase.rls_denied","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401}
+{"ts":"2026-10-14T15:25:17.837Z","level":"warn","event":"search.recent_record_failed","request_id":null,"reason":"permission denied for function fn_record_recent_search"}
+{"ts":"2026-10-14T15:25:18.022Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":7,"ms":268,"query_length":3,"facets":[]}
+{"ts":"2026-10-14T15:25:18.432Z","level":"warn","event":"db.query_slow","request_id":null,"method":"POST","target":"rpc:fn_record_search","status":204,"duration_ms":409,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:18.497Z","level":"warn","event":"db.query_slow","request_id":"ccafce21-e8b0-428e-a7cd-d3971ff27dbb","route":"action","method":"GET","target":"carts","status":200,"duration_ms":625,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:19.127Z","level":"warn","event":"db.query_slow","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401,"duration_ms":694,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:19.128Z","level":"error","event":"supabase.rls_denied","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401}
+{"ts":"2026-10-14T15:25:19.131Z","level":"warn","event":"search.recent_record_failed","request_id":null,"reason":"permission denied for function fn_record_recent_search"}
+(node:48395) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T15:25:19.522Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"products","status":200,"duration_ms":339,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:19.522Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":7,"ms":340,"query_length":3,"facets":[]}
+{"ts":"2026-10-14T15:25:19.849Z","level":"warn","event":"db.query_slow","request_id":null,"method":"POST","target":"rpc:fn_record_search","status":204,"duration_ms":327,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:20.107Z","level":"error","event":"supabase.rls_denied","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401}
+{"ts":"2026-10-14T15:25:20.110Z","level":"warn","event":"search.recent_record_failed","request_id":null,"reason":"permission denied for function fn_record_recent_search"}
+{"ts":"2026-10-14T15:25:20.771Z","level":"info","event":"search.executed","request_id":"39a3ca04-796a-4a9a-ada6-3b3ebe4acf07","route":"/api/search/facets","method":"GET","engine":"database","hits":7,"ms":241,"query_length":3,"facets":[]}
+{"ts":"2026-10-14T15:25:20.952Z","level":"warn","event":"db.query_slow","request_id":"be33a1f7-68dd-458c-ab25-8111c9cf2e85","route":"/api/search/facets","method":"GET","target":"products","status":200,"duration_ms":304,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:20.952Z","level":"info","event":"search.executed","request_id":"be33a1f7-68dd-458c-ab25-8111c9cf2e85","route":"/api/search/facets","method":"GET","engine":"database","hits":7,"ms":305,"query_length":3,"facets":[]}
+{"ts":"2026-10-14T15:25:21.197Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"products","status":200,"duration_ms":406,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:21.198Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":7,"ms":407,"query_length":3,"facets":[]}
+{"ts":"2026-10-14T15:25:21.223Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":7,"ms":261,"query_length":3,"facets":[]}
+{"ts":"2026-10-14T15:25:21.419Z","level":"warn","event":"db.query_slow","request_id":"43d92a4e-27fa-4010-8d60-7fe24931f003","route":"action","method":"GET","target":"carts","status":200,"duration_ms":356,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:21.690Z","level":"error","event":"supabase.rls_denied","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401}
+{"ts":"2026-10-14T15:25:21.694Z","level":"warn","event":"search.recent_record_failed","request_id":null,"reason":"permission denied for function fn_record_recent_search"}
+{"ts":"2026-10-14T15:25:21.694Z","level":"error","event":"supabase.rls_denied","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401}
+{"ts":"2026-10-14T15:25:21.696Z","level":"warn","event":"search.recent_record_failed","request_id":null,"reason":"permission denied for function fn_record_recent_search"}
+{"ts":"2026-10-14T15:25:22.153Z","level":"warn","event":"db.query_slow","request_id":"90b5010e-8d12-4017-a4d3-f5fc6f8d88fa","route":"/api/search/facets","method":"POST","target":"rpc:check_rate_limit","status":200,"duration_ms":310,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:22.396Z","level":"info","event":"search.executed","request_id":"90b5010e-8d12-4017-a4d3-f5fc6f8d88fa","route":"/api/search/facets","method":"GET","engine":"database","hits":7,"ms":242,"query_length":3,"facets":[]}
+{"ts":"2026-10-14T15:25:22.404Z","level":"info","event":"search.executed","request_id":"523ef8fe-fdb2-410b-8e13-881013a448b4","route":"/api/search/facets","method":"GET","engine":"database","hits":7,"ms":248,"query_length":3,"facets":[]}
+{"ts":"2026-10-14T15:25:22.712Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":7,"ms":288,"query_length":3,"facets":[]}
+{"ts":"2026-10-14T15:25:22.713Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":0,"ms":282,"query_length":3,"facets":["city"]}
+{"ts":"2026-10-14T15:25:23.062Z","level":"warn","event":"db.query_slow","request_id":null,"method":"POST","target":"rpc:fn_record_search","status":204,"duration_ms":349,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:23.066Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"products","status":200,"duration_ms":352,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:23.067Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":7,"ms":354,"query_length":3,"facets":[]}
+{"ts":"2026-10-14T15:25:23.310Z","level":"error","event":"supabase.rls_denied","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401}
+{"ts":"2026-10-14T15:25:23.313Z","level":"warn","event":"search.recent_record_failed","request_id":null,"reason":"permission denied for function fn_record_recent_search"}
+{"ts":"2026-10-14T15:25:23.676Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":7,"ms":264,"query_length":3,"facets":[]}
+{"ts":"2026-10-14T15:25:23.678Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":6,"ms":252,"query_length":3,"facets":["type"]}
+{"ts":"2026-10-14T15:25:24.053Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"products","status":200,"duration_ms":313,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:24.054Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":7,"ms":314,"query_length":3,"facets":[]}
+{"ts":"2026-10-14T15:25:24.242Z","level":"warn","event":"db.query_slow","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401,"duration_ms":312,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:24.243Z","level":"error","event":"supabase.rls_denied","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401}
+{"ts":"2026-10-14T15:25:24.246Z","level":"warn","event":"search.recent_record_failed","request_id":null,"reason":"permission denied for function fn_record_recent_search"}
+{"ts":"2026-10-14T15:25:24.492Z","level":"warn","event":"db.query_slow","request_id":null,"method":"POST","target":"rpc:fn_record_search","status":204,"duration_ms":438,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:24.737Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"products","status":200,"duration_ms":330,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:24.737Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":0,"ms":331,"query_length":9,"facets":[]}
+{"ts":"2026-10-14T15:25:24.743Z","level":"error","event":"supabase.rls_denied","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401}
+{"ts":"2026-10-14T15:25:24.745Z","level":"warn","event":"search.recent_record_failed","request_id":null,"reason":"permission denied for function fn_record_recent_search"}
+{"ts":"2026-10-14T15:25:24.814Z","level":"warn","event":"db.query_slow","request_id":"e3bf2af6-42a8-43f4-bf70-9619158b1681","route":"action","method":"GET","target":"carts","status":200,"duration_ms":301,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:25.237Z","level":"warn","event":"db.query_slow","request_id":null,"method":"POST","target":"rpc:fn_record_search","status":204,"duration_ms":499,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:25.363Z","level":"info","event":"search.executed","request_id":"34f7a5e6-65a3-4a89-9dd1-3c5cf4184b3f","route":"/api/search/facets","method":"GET","engine":"database","hits":7,"ms":262,"query_length":3,"facets":[]}
+{"ts":"2026-10-14T15:25:25.475Z","level":"error","event":"supabase.rls_denied","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401}
+{"ts":"2026-10-14T15:25:25.476Z","level":"warn","event":"search.recent_record_failed","request_id":null,"reason":"permission denied for function fn_record_recent_search"}
+{"ts":"2026-10-14T15:25:25.664Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":7,"ms":278,"query_length":3,"facets":[]}
+{"ts":"2026-10-14T15:25:26.155Z","level":"error","event":"supabase.rls_denied","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401}
+{"ts":"2026-10-14T15:25:26.156Z","level":"warn","event":"search.recent_record_failed","request_id":null,"reason":"permission denied for function fn_record_recent_search"}
+{"ts":"2026-10-14T15:25:26.396Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"v_banners_live","status":200,"duration_ms":362,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:26.396Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"v_homepage_sections_live","status":200,"duration_ms":362,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:26.943Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"v_homepage_sections_live","status":200,"duration_ms":308,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:27.561Z","level":"warn","event":"db.query_slow","request_id":"ae96085b-2082-46ef-8c98-d5dcda2b21bf","route":"/api/search/quick-links","method":"GET","target":"popular_searches","status":200,"duration_ms":550,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:27.565Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"products","status":200,"duration_ms":536,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:27.566Z","level":"warn","event":"db.query_slow","request_id":"78cf7345-0fd3-4278-a7d0-5e51f7993fe3","route":"action","method":"GET","target":"carts","status":200,"duration_ms":432,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:27.569Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":2,"ms":540,"query_length":4,"facets":[]}
+{"ts":"2026-10-14T15:25:27.575Z","level":"warn","event":"db.query_slow","request_id":"c9e47b85-c082-47a8-bb8f-b97633204e26","route":"/api/search/suggest","method":"POST","target":"rpc:check_rate_limit","status":200,"duration_ms":405,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:28.058Z","level":"error","event":"supabase.rls_denied","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401}
+{"ts":"2026-10-14T15:25:28.061Z","level":"warn","event":"search.recent_record_failed","request_id":null,"reason":"permission denied for function fn_record_recent_search"}
+{"ts":"2026-10-14T15:25:28.218Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"products","status":200,"duration_ms":309,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:28.218Z","level":"warn","event":"db.query_slow","request_id":null,"method":"POST","target":"rpc:available_stock","status":200,"duration_ms":310,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:28.825Z","level":"warn","event":"db.query_slow","request_id":"078b5b6b-8ff5-43d7-9106-ed4ac7f6ba40","route":"action","method":"GET","target":"carts","status":200,"duration_ms":465,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:28.912Z","level":"warn","event":"db.query_slow","request_id":"dd06774c-a08e-4155-bf96-f1503e28c257","route":"action","method":"GET","target":"carts","status":200,"duration_ms":619,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:29.091Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"products","status":200,"duration_ms":841,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:29.093Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":46,"ms":843,"query_length":0,"facets":[]}
+{"ts":"2026-10-14T15:25:29.294Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"popular_searches","status":200,"duration_ms":1103,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:29.600Z","level":"error","event":"supabase.rls_denied","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401}
+{"ts":"2026-10-14T15:25:29.601Z","level":"warn","event":"search.recent_record_failed","request_id":null,"reason":"permission denied for function fn_record_recent_search"}
+{"ts":"2026-10-14T15:25:29.706Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"products","status":200,"duration_ms":306,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:29.706Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":0,"ms":306,"query_length":8,"facets":[]}
+(node:48395) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T15:25:29.877Z","level":"warn","event":"db.query_slow","request_id":"9c07d5f1-70b2-464b-a92f-0556d286467c","route":"action","method":"GET","target":"carts","status":200,"duration_ms":379,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:29.883Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":0,"ms":258,"query_length":5,"facets":[]}
+{"ts":"2026-10-14T15:25:29.966Z","level":"warn","event":"db.query_slow","request_id":"a332af26-0d66-4e50-97a0-34764501bc84","route":"action","method":"GET","target":"carts","status":200,"duration_ms":307,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:30.317Z","level":"warn","event":"db.query_slow","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401,"duration_ms":311,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:30.318Z","level":"error","event":"supabase.rls_denied","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401}
+{"ts":"2026-10-14T15:25:30.321Z","level":"warn","event":"search.recent_record_failed","request_id":null,"reason":"permission denied for function fn_record_recent_search"}
+{"ts":"2026-10-14T15:25:30.412Z","level":"error","event":"supabase.rls_denied","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401}
+{"ts":"2026-10-14T15:25:30.416Z","level":"warn","event":"search.recent_record_failed","request_id":null,"reason":"permission denied for function fn_record_recent_search"}
+(node:48395) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T15:25:30.955Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"products","status":200,"duration_ms":498,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:30.957Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":2,"ms":500,"query_length":3,"facets":[]}
+{"ts":"2026-10-14T15:25:30.994Z","level":"warn","event":"db.query_slow","request_id":"6879d8aa-30ae-4a1a-8f65-f5430c8023db","route":"action","method":"GET","target":"carts","status":200,"duration_ms":507,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:31.423Z","level":"error","event":"supabase.rls_denied","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401}
+{"ts":"2026-10-14T15:25:31.428Z","level":"warn","event":"search.recent_record_failed","request_id":null,"reason":"permission denied for function fn_record_recent_search"}
+{"ts":"2026-10-14T15:25:31.827Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":2,"ms":280,"query_length":4,"facets":[]}
+{"ts":"2026-10-14T15:25:32.412Z","level":"error","event":"supabase.rls_denied","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401}
+{"ts":"2026-10-14T15:25:32.417Z","level":"warn","event":"search.recent_record_failed","request_id":null,"reason":"permission denied for function fn_record_recent_search"}
+{"ts":"2026-10-14T15:25:33.460Z","level":"info","event":"search.executed","request_id":"cdcdfb57-20e3-4127-acef-a9172b7d47a3","route":"/api/search/facets","method":"GET","engine":"database","hits":7,"ms":245,"query_length":3,"facets":[]}
+{"ts":"2026-10-14T15:25:33.872Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"products","status":200,"duration_ms":396,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:33.873Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":7,"ms":399,"query_length":3,"facets":[]}
+{"ts":"2026-10-14T15:25:34.369Z","level":"error","event":"supabase.rls_denied","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401}
+{"ts":"2026-10-14T15:25:34.376Z","level":"warn","event":"search.recent_record_failed","request_id":null,"reason":"permission denied for function fn_record_recent_search"}
+{"ts":"2026-10-14T15:25:34.752Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"products","status":200,"duration_ms":324,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:34.752Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":7,"ms":325,"query_length":3,"facets":[]}
+{"ts":"2026-10-14T15:25:35.209Z","level":"error","event":"supabase.rls_denied","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401}
+{"ts":"2026-10-14T15:25:35.213Z","level":"warn","event":"search.recent_record_failed","request_id":null,"reason":"permission denied for function fn_record_recent_search"}
+{"ts":"2026-10-14T15:25:35.566Z","level":"info","event":"search.executed","request_id":"895a8a40-84a6-4e03-9aac-d066e9e8a2f8","route":"/api/search/facets","method":"GET","engine":"database","hits":7,"ms":278,"query_length":3,"facets":[]}
+{"ts":"2026-10-14T15:25:35.861Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":7,"ms":273,"query_length":3,"facets":[]}
+{"ts":"2026-10-14T15:25:35.947Z","level":"warn","event":"db.query_slow","request_id":"429f5a59-d00c-4a4b-9503-cfa61e066395","route":"/api/search/facets","method":"GET","target":"products","status":200,"duration_ms":333,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:35.948Z","level":"info","event":"search.executed","request_id":"429f5a59-d00c-4a4b-9503-cfa61e066395","route":"/api/search/facets","method":"GET","engine":"database","hits":7,"ms":334,"query_length":3,"facets":[]}
+{"ts":"2026-10-14T15:25:36.216Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":7,"ms":258,"query_length":3,"facets":[]}
+{"ts":"2026-10-14T15:25:36.390Z","level":"error","event":"supabase.rls_denied","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401}
+{"ts":"2026-10-14T15:25:36.394Z","level":"warn","event":"search.recent_record_failed","request_id":null,"reason":"permission denied for function fn_record_recent_search"}
+{"ts":"2026-10-14T15:25:37.356Z","level":"warn","event":"db.query_slow","request_id":"eb4a702c-fcdb-4883-98e2-70dd78c630a1","route":"/api/search/facets","method":"POST","target":"rpc:check_rate_limit","status":200,"duration_ms":830,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:37.358Z","level":"warn","event":"db.query_slow","request_id":null,"method":"POST","target":"rpc:fn_record_search","status":204,"duration_ms":1141,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:37.659Z","level":"warn","event":"db.query_slow","request_id":"eb4a702c-fcdb-4883-98e2-70dd78c630a1","route":"/api/search/facets","method":"GET","target":"products","status":200,"duration_ms":302,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:37.660Z","level":"error","event":"supabase.rls_denied","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401}
+{"ts":"2026-10-14T15:25:37.666Z","level":"warn","event":"search.recent_record_failed","request_id":null,"reason":"permission denied for function fn_record_recent_search"}
+{"ts":"2026-10-14T15:25:37.667Z","level":"info","event":"search.executed","request_id":"eb4a702c-fcdb-4883-98e2-70dd78c630a1","route":"/api/search/facets","method":"GET","engine":"database","hits":7,"ms":311,"query_length":3,"facets":[]}
+{"ts":"2026-10-14T15:25:37.936Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":7,"ms":249,"query_length":3,"facets":[]}
+{"ts":"2026-10-14T15:25:38.145Z","level":"warn","event":"db.query_slow","request_id":"23737e6c-2540-44c5-a3ea-67318b874087","route":"action","method":"GET","target":"carts","status":200,"duration_ms":342,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:38.266Z","level":"warn","event":"db.query_slow","request_id":null,"method":"POST","target":"rpc:fn_record_search","status":204,"duration_ms":330,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:38.405Z","level":"info","event":"search.executed","request_id":"db90febc-9efe-4e79-a7e1-792b48d93f0e","route":"/api/search/facets","method":"GET","engine":"database","hits":7,"ms":258,"query_length":3,"facets":[]}
+{"ts":"2026-10-14T15:25:38.556Z","level":"error","event":"supabase.rls_denied","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401}
+{"ts":"2026-10-14T15:25:38.557Z","level":"warn","event":"search.recent_record_failed","request_id":null,"reason":"permission denied for function fn_record_recent_search"}
+{"ts":"2026-10-14T15:25:38.910Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"products","status":200,"duration_ms":489,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:38.910Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":0,"ms":489,"query_length":3,"facets":["city"]}
+{"ts":"2026-10-14T15:25:38.976Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"products","status":200,"duration_ms":332,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:38.976Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":6,"ms":333,"query_length":3,"facets":["type"]}
+{"ts":"2026-10-14T15:25:39.251Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"products","status":200,"duration_ms":340,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:39.251Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":7,"ms":340,"query_length":3,"facets":[]}
+{"ts":"2026-10-14T15:25:39.259Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":7,"ms":236,"query_length":3,"facets":[]}
+{"ts":"2026-10-14T15:25:39.768Z","level":"error","event":"supabase.rls_denied","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401}
+{"ts":"2026-10-14T15:25:39.770Z","level":"warn","event":"search.recent_record_failed","request_id":null,"reason":"permission denied for function fn_record_recent_search"}
+{"ts":"2026-10-14T15:25:39.840Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":7,"ms":243,"query_length":3,"facets":[]}
+{"ts":"2026-10-14T15:25:40.126Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":0,"ms":239,"query_length":9,"facets":[]}
+{"ts":"2026-10-14T15:25:40.345Z","level":"error","event":"supabase.rls_denied","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401}
+{"ts":"2026-10-14T15:25:40.352Z","level":"warn","event":"search.recent_record_failed","request_id":null,"reason":"permission denied for function fn_record_recent_search"}
+{"ts":"2026-10-14T15:25:40.810Z","level":"warn","event":"db.query_slow","request_id":"8c201416-553f-4198-96e3-7898aa295c54","route":"/api/search/facets","method":"POST","target":"rpc:check_rate_limit","status":200,"duration_ms":327,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:40.855Z","level":"warn","event":"db.query_slow","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401,"duration_ms":446,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:40.856Z","level":"error","event":"supabase.rls_denied","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401}
+{"ts":"2026-10-14T15:25:40.862Z","level":"warn","event":"search.recent_record_failed","request_id":null,"reason":"permission denied for function fn_record_recent_search"}
+{"ts":"2026-10-14T15:25:41.072Z","level":"info","event":"search.executed","request_id":"8c201416-553f-4198-96e3-7898aa295c54","route":"/api/search/facets","method":"GET","engine":"database","hits":7,"ms":262,"query_length":3,"facets":[]}
+{"ts":"2026-10-14T15:25:41.326Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":7,"ms":244,"query_length":3,"facets":[]}
+{"ts":"2026-10-14T15:25:41.759Z","level":"warn","event":"db.query_slow","request_id":"077b73d0-0ed5-4a09-a5a0-66e5bf193bf3","route":"/api/search/facets","method":"GET","target":"products","status":200,"duration_ms":513,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:41.761Z","level":"warn","event":"db.query_slow","request_id":null,"method":"POST","target":"rpc:fn_record_search","status":204,"duration_ms":434,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:41.763Z","level":"info","event":"search.executed","request_id":"077b73d0-0ed5-4a09-a5a0-66e5bf193bf3","route":"/api/search/facets","method":"GET","engine":"database","hits":7,"ms":517,"query_length":3,"facets":[]}
+{"ts":"2026-10-14T15:25:42.225Z","level":"warn","event":"db.query_slow","request_id":"143fe77b-6602-4eca-b050-c592b78a9955","route":"action","method":"GET","target":"carts","status":200,"duration_ms":336,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:42.276Z","level":"warn","event":"db.query_slow","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401,"duration_ms":515,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:42.278Z","level":"error","event":"supabase.rls_denied","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401}
+{"ts":"2026-10-14T15:25:42.285Z","level":"warn","event":"search.recent_record_failed","request_id":null,"reason":"permission denied for function fn_record_recent_search"}
+{"ts":"2026-10-14T15:25:42.339Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"products","status":200,"duration_ms":560,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:42.339Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":7,"ms":561,"query_length":3,"facets":[]}
+{"ts":"2026-10-14T15:25:42.770Z","level":"warn","event":"db.query_slow","request_id":null,"method":"POST","target":"rpc:fn_record_search","status":204,"duration_ms":431,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:43.115Z","level":"warn","event":"db.query_slow","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401,"duration_ms":344,"threshold_ms":300}
+{"ts":"2026-10-14T15:25:43.116Z","level":"error","event":"supabase.rls_denied","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401}
+{"ts":"2026-10-14T15:25:43.123Z","level":"warn","event":"search.recent_record_failed","request_id":null,"reason":"permission denied for function fn_record_recent_search"}
+[ELIFECYCLE] Command failed with exit code 143.
