@@ -138,7 +138,15 @@ function ItemSeparator() {
 
 export default function TopBar() {
   return (
-    <div dir="rtl" className="w-full border-b border-border bg-white">
+    <div dir="rtl" className="relative z-50 w-full border-b border-border bg-white">
+      {/*
+        `relative z-50`: the sign-in link's hit box grows 6.67px DOWN past the
+        37px row (`.tap-area--down`), into the sticky header below, which is
+        `z-40` and painted over it: elementFromPoint returned the header's row
+        and touch-targets.spec measured 72x38 on every route (post-fix run 1 of
+        XF04, 15.10.2026). The bar sits above the header only in those pixels at
+        scroll 0; once scrolled it is off-screen.
+      */}
       {/*
         NO handheld height below md: the rows wrap and the bar is as tall as
         they make it, which is the whole point (see the header note). Two rows

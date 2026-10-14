@@ -135,9 +135,15 @@ What run 1 proved, and what was fixed on top of it in the same commit:
   the consent reserve on a first visit (308px measured), by design since
   XF04 lifted it above the banner; the test now visits with consent decided,
   which is what it was measuring (4 passed on the running server).
+- **touch-targets.spec on every route (12 cases):** two causes. The sign-in
+  link's `.tap-area--down` box grows into the sticky header, which is `z-40`
+  and painted over it (elementFromPoint: the header's row; 72x38 measured),
+  so the top bar is `relative z-50` now, verified by injecting the style on
+  the running build (link hit at +1, +3 and +6px). The product page's other
+  eight entries are the related-card category links at 97x20, the same
+  overlap the axe finding above describes, fixed by the `-mt-1` change.
 - **Not fixed here, for the retry:** `category.spec.ts` catalogue thumbnails
-  on mobile-chrome (element detached mid-scroll), `touch-targets.spec.ts` on every route
-  (the XF04 tap-area fixes did not hold at the measured widths),
+  on mobile-chrome (element detached mid-scroll),
   `coupon-offer.spec.ts` (the `/coupon/<physical slug>` probe landed on the
   not-found page in the browser while curl got the 307),
   `wishlist-page.spec.ts` share button, and the E2E customer's cart, which
