@@ -1,0 +1,48 @@
+Already up to date
+Done in 190ms using pnpm v11.1.2
+[STARTED] Backing up original state...
+[COMPLETED] Backed up original state in git stash (f58b6ed7b)
+[STARTED] Running tasks for staged files...
+[STARTED] .lintstagedrc.json — 36 files
+[STARTED] *.{ts,tsx,js,jsx,mjs,cjs,json,jsonc,css} — 9 files
+[STARTED] biome check --write --no-errors-on-unmatched
+[COMPLETED] biome check --write --no-errors-on-unmatched
+[COMPLETED] *.{ts,tsx,js,jsx,mjs,cjs,json,jsonc,css} — 9 files
+[COMPLETED] .lintstagedrc.json — 36 files
+[COMPLETED] Running tasks for staged files...
+[STARTED] Applying modifications from tasks...
+[COMPLETED] Applying modifications from tasks...
+[STARTED] Cleaning up temporary files...
+[COMPLETED] Cleaning up temporary files...
+[phase5/homepage-closeout 8287d789e] [autopilot] UX09 featured deals grid: a CSS grid with one row height, 4 / 2 / 1 columns, and every card reserving its slots. Measured before (logs/ux09/before.json, the existing build of HEAD at 380/768/1024/1199/1440 on 3346): the 32-card "מוצרים מובילים" section already laid out 1 / 2 / 2 / 2 / 4 columns (flex-wrap, basis 100/50/25% at 0/768/1200) and every card was the same height (548 on a phone, 501 from 768, live's pitch), but only because every fixture card carries a category, a photograph and a price: the category link and the <img> were conditional, a card without a category was 40px shorter (24px row + 16px gap) and one without a thumbnail 245px shorter, and flex-wrap sizes each row on its own. Now: .jet-listing-grid-deals is display grid with repeat(1|2|4, minmax(0,1fr)) at 0/768/1200 and grid-auto-rows: 1fr, so every row is the tallest card's height across the whole section; .p_con__category gains min-height 24px and .p_con__image-wrap min-height 245px, so both conditional slots hold their measured height without content; ProductDealCard (home) and ProductCard variant=deals (landing, store) render an empty aria-hidden span.p_con__category with data-empty-slot instead of nothing. The flex basis and max-width leave the item. Tablet is 768..1199 (live's Bootstrap xl switch at 1200, UX01); 1024 stays two columns like live. Measured after (logs/ux09/after.json): display grid, the same 1/2/2/2/4 columns, the same 548/501 pitch, the same item widths 330/335/463/526/287.5, the same slot heights, byte-identical geometry. Pinned by product-card-deals.test.ts (+2: grid and breakpoints, slot reservations), ProductDealCard.test.tsx (4, both cards, link vs empty slot, slot order) and e2e/deals-grid.spec.ts (12/12 chromium + mobile-chrome), which also hollows one card out in the DOM the way the markup does for a product with no category and no thumbnail and measures it still exactly as tall as its row with the slots at 24 and 245. Neighbour e2e (home + home-rtl on both projects): 10 failing titles, identical to UX08's set (logs/ux09/failing-titles.txt). Measured: full suite 827 files / 9665 tests green, type-check and repo-wide lint clean, build green (fresh .next), home gate 2.22 / 1.24 / 1.32 against the frozen captures (unchanged). FeaturedProducts.tsx is untouched: it renders on no page; FeaturedProductsTabs shares the grid and inherits the fix.
+ 36 files changed, 9620 insertions(+), 21 deletions(-)
+ create mode 100644 e2e/deals-grid.spec.ts
+ create mode 100644 logs/ux09/after-1024.png
+ create mode 100644 logs/ux09/after-1199.png
+ create mode 100644 logs/ux09/after-1440.png
+ create mode 100644 logs/ux09/after-380.png
+ create mode 100644 logs/ux09/after-768.png
+ create mode 100644 logs/ux09/after.json
+ create mode 100644 logs/ux09/before-1024.png
+ create mode 100644 logs/ux09/before-1199.png
+ create mode 100644 logs/ux09/before-1440.png
+ create mode 100644 logs/ux09/before-380.png
+ create mode 100644 logs/ux09/before-768.png
+ create mode 100644 logs/ux09/before.json
+ create mode 100644 logs/ux09/build.log
+ create mode 100644 logs/ux09/commit-msg.txt
+ create mode 100644 logs/ux09/compare.log
+ create mode 100644 logs/ux09/e2e-deals-grid.log
+ create mode 100644 logs/ux09/e2e-neighbours.log
+ create mode 100644 logs/ux09/failing-titles.txt
+ create mode 100644 logs/ux09/lint.log
+ create mode 100644 logs/ux09/probe-after.err
+ create mode 100644 logs/ux09/probe-before.err
+ create mode 100644 logs/ux09/probe.mjs
+ create mode 100644 logs/ux09/start-3346-after.log
+ create mode 100644 logs/ux09/start-3346.log
+ create mode 100644 logs/ux09/state-update.py
+ create mode 100644 logs/ux09/test-full.log
+ create mode 100644 logs/ux09/type-check.log
+ create mode 100644 logs/ux09/ux08-home-failing.txt
+ create mode 100644 src/components/ProductDealCard.test.tsx

@@ -262,3 +262,4 @@ $ next start
 {"ts":"2026-10-14T06:37:44.817Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"v_banners_live","status":200,"duration_ms":317,"threshold_ms":300}
 {"ts":"2026-10-14T06:37:44.817Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"v_homepage_sections_live","status":200,"duration_ms":318,"threshold_ms":300}
 {"ts":"2026-10-14T06:37:45.215Z","level":"warn","event":"db.query_slow","request_id":"393b5af6-cca5-4cb6-849f-77afb4aeb7c9","route":"action","method":"GET","target":"carts","status":200,"duration_ms":584,"threshold_ms":300}
+[ELIFECYCLE] Command failed with exit code 143.
