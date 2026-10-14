@@ -92,7 +92,7 @@ sequenceDiagram
 |---|---|
 | HttpOnly cookie `ke_session_id` | Canonical guest identity (UUID). 30 days, `SameSite=Lax`, path `/` |
 | `public.carts` | Server source of truth. Guest: `session_id` + `profile_id IS NULL`. User: `profile_id` |
-| `localStorage` key `ke_cart_mirror_v1` | **Optimistic UX only** (drawer instant paint). Never trusted for price or checkout. Hydrate from server on mount; overwrite after every Server Action |
+| `localStorage` key `ke_cart_mirror_v1` | **Optimistic UX only** (drawer instant paint). Never trusted for price or checkout. Hydrate from server on mount; overwrite after every Server Action. Whether the read HAPPENED is the persist middleware's own `hasHydrated()`, surfaced by `useCartMirrorHydrated()` and not a store field (a field would be `set()` on hydration, and the middleware writes the key on every set, so every first visit would have written a mirror for a cart that does not exist): a read that finds nothing is an answer, "this device holds no cart", and the cart page may show its empty state on it without waiting for the server (UX27, 15.10) |
 | `localStorage` key `ke_cart_fallback_v1` | **Display fallback only** (STEP 09, 30.09). The last server-confirmed `CartView`, written by the store on every confirmed cart, removed on an empty one. Restored by `CartBootstrap` only when `/api/cart` fails, flagged `fallbackActive`: every checkout button refuses and every cart surface shows "העגלה מוצגת מהמכשיר". The first server answer (retry on `online`, or any settled mutation) overwrites it. Max age `CART_EXPIRY_DAYS`. `src/lib/cart/local-fallback.ts` |
 
 Rules:
@@ -102,6 +102,36 @@ Rules:
 - Cart items JSON is identity + quantity only. Prices always re-resolved from `products` on read.
 - Expiry: `expires_at = now() + 30 days` on every write. Cron deletes expired guest rows.
 - Max quantity per line: 99. Max distinct lines: 50 (reject with Hebrew error).
+
+#### 2.1.1 What the cart page shows before the server has answered (UX27, 15.10)
+
+`/cart` is static and the cart arrives from `/api/cart` after hydration, so for
+a moment the page cannot know what it holds. MEASURED on a built server at
+380 / 768 / 1440 (`logs/ux27/before.json`): a shopper with a line in the cart
+read the yellow "סל הקניות שלך ריק כרגע" banner for **1.5-2.0s on every
+visit**, because the static HTML rendered the empty state and the lines came
+later. "Empty" is a verdict, and the page had no grounds for it.
+
+`CartPageView` now treats the store as **settled** when any of these holds:
+`serverConfirmed` (the server answered), `fallbackActive` (the device copy is on
+screen, STEP 09), or `useCartMirrorHydrated() && mirrorCount === 0` (the mirror
+has been read and says there is nothing). An empty list before that is a cart still
+loading and renders `CartPageSkeleton`: the page's own grid on the real classes
+(the items frame with one `.cart-line` row per mirrored line, capped at three,
+and the totals column with its title, three rows and the checkout button's
+box), `aria-busy`, one `sr-only` sentence. The static HTML therefore carries
+the skeleton, not a verdict. Measured after (`logs/ux27/after-cart.json`): the
+skeleton from the first parse (18 / 33 / 22ms) until the lines at 1913 / 1376 /
+1499ms, the empty banner never shown; a device with no cart reaches the empty
+state as soon as the mirror is read (e2e `loading-skeletons.spec`).
+
+The checkout link gives the press back too: `/checkout` is dynamic and its
+shell is not always prefetched by the time המשך לתשלום is pressed (the URL
+changed 306-724ms after the press, before). `CartCheckoutButton` carries a
+fixed 1em ring (`.checkout-link__hint`, absolute, so the label never moves)
+whose state follows `useLinkStatus`, and an `<output aria-live>` that says
+"עוברים לקופה…" while the navigation is in flight. Measured: pending from 0-1ms
+after the press. One link, four surfaces (page, drawer, mini cart, mobile bar).
 
 ### 2.2 Cart item shape (storage)
 

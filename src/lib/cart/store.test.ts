@@ -381,6 +381,30 @@ describe('cart store', () => {
       expect(raw).not.toMatch(/subtotal|unit_price|line_total|platform_fee/)
     })
 
+    it('reports that it has been read, whether or not anything was stored, without writing (UX27)', () => {
+      // The cart page shows its skeleton until the store is settled, and a
+      // mirror that has been read and holds nothing is one way to be settled:
+      // "this device has no cart" is an answer. The flag is the persist
+      // middleware's own, not a field: a field would be set() on hydration
+      // and the middleware writes the key on every set, so a first visit
+      // would have written a mirror for a cart that does not exist.
+      const fresh = createCartStore(EMPTY_CART)
+      expect(fresh.persist.hasHydrated()).toBe(false)
+      fresh.persist.rehydrate()
+      expect(fresh.persist.hasHydrated()).toBe(true)
+      expect(fresh.getState().mirrorCount).toBe(0)
+      expect(localStorage.length).toBe(0)
+
+      localStorage.setItem(
+        CART_MIRROR_KEY,
+        JSON.stringify({ state: { mirrorCount: 4 }, version: 0 }),
+      )
+      const stored = createCartStore(EMPTY_CART)
+      stored.persist.rehydrate()
+      expect(stored.persist.hasHydrated()).toBe(true)
+      expect(stored.getState().mirrorCount).toBe(4)
+    })
+
     it('speaks for the badge until the server answers', () => {
       localStorage.setItem(
         CART_MIRROR_KEY,

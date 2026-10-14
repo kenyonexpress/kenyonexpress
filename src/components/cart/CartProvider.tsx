@@ -9,7 +9,7 @@ import {
 import { EMPTY_CART } from '@/lib/cart/types'
 import type { CartView } from '@/lib/cart/types'
 import { notify } from '@/lib/ui/toast'
-import { type ReactNode, createContext, useContext, useEffect, useRef } from 'react'
+import { type ReactNode, createContext, useContext, useEffect, useRef, useState } from 'react'
 import { useStore } from 'zustand'
 
 // `notify` imports sonner on the first call (lib/ui/toast.ts). This provider
@@ -67,6 +67,33 @@ export function CartProvider({
   }, [store])
 
   return <CartStoreContext.Provider value={store}>{children}</CartStoreContext.Provider>
+}
+
+/**
+ * Whether the `localStorage` mirror has been read in this tab (UX27).
+ *
+ * Until it has, `mirrorCount` is the server-rendered zero and says nothing;
+ * after it has, a zero means "this device holds no cart", which is as much of
+ * an answer as a count, and the cart page may show its empty state on it
+ * without waiting for the server. Read off the persist middleware's own
+ * hydration flag rather than a field in the store: a field would be `set()`
+ * on hydration, and the middleware writes the mirror key on every `set`, so
+ * every first visit would have written a key for a cart that does not exist
+ * (cart-line-remove-animation.test pins "nothing written until the exit").
+ * False on the server and on the first client render alike, so there is no
+ * hydration mismatch; the effect flips it.
+ */
+export function useCartMirrorHydrated(): boolean {
+  const store = useCartStoreApi()
+  const [hydrated, setHydrated] = useState(false)
+  useEffect(() => {
+    if (store.persist.hasHydrated()) {
+      setHydrated(true)
+      return
+    }
+    return store.persist.onFinishHydration(() => setHydrated(true))
+  }, [store])
+  return hydrated
 }
 
 export function useCartAuth(): boolean {

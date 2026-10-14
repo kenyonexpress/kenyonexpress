@@ -67,19 +67,26 @@ Judgements are based on the actual file contents (with `file:line` references wh
 | UsersTable | src/components/admin/UsersTable.tsx | `{ users, callerRole }` | users/page | NO (`bg-[#fed700]`/`text-[#000000]` role badge :20) | YES |
 | VendorForm (+Field) | src/components/admin/VendorForm.tsx | `{ vendor? }` | suppliers/new, suppliers/[id] | NO (`hover:bg-[#fedd26]` :171) | YES |
 
+## src/components/account
+
+| Component | File | Props (key props / type) | Used in (where imported) | Tokens compliant? | RTL safe? |
+|---|---|---|---|---|---|
+| AccountContentSkeleton | src/components/account/AccountContentSkeleton.tsx | `{ cards?: number }` (server; `ACCOUNT_SKELETON_CARDS`, `ACCOUNT_LOADING_LABEL`; an `aria-busy` region with one `sr-only` sentence, every bar `aria-hidden`; the bars are `.ke-skeleton` (globals.css) sized by `.account-pending__*` in account.css) | app/(account)/account/loading.tsx (UX27): the ONE boundary over the account column, the instant client-side state and the server's first flush alike. The layout carries no Suspense of its own round children: a second boundary was 23 account shells refused by the csp gate | YES | YES |
+
 ## src/components/cart
 
 | Component | File | Props (key props / type) | Used in (where imported) | Tokens compliant? | RTL safe? |
 |---|---|---|---|---|---|
 | AddToCartButton | src/components/cart/AddToCartButton.tsx | `{ productId, productName, variantId?, quantity?, disabled?, className?, variant?, children? }` | ProductCard, category/CategoryProductCard | YES (styling passed via className; internals use tokens) | YES |
-| CartCheckoutButton | src/components/cart/CartCheckoutButton.tsx | `{ isAuthenticated, disabled? }` | CartPageView | YES | YES |
+| CartCheckoutButton (+CheckoutLinkPending) | src/components/cart/CartCheckoutButton.tsx | `{ isAuthenticated, disabled?, className?, onNavigate? }` (`CHECKOUT_PENDING_LABEL`; the link carries `data-checkout-link` and a fixed 1em ring, `.checkout-link__hint[data-link-pending]`, driven by `useLinkStatus`, plus an `<output aria-live>` that names the wait; UX27) | CartPageView, CartDrawer, MiniCartDropdown, MobileCartBar | YES | YES |
 | CartDrawer (+DrawerLineItem) | src/components/cart/CartDrawer.tsx | (no props; reads `useCart`) | app/(main)/layout, app/(store)/layout | NO (`border-[#ccc]` :133) | YES |
 | CartLineItem (+CartEmptyState) | src/components/cart/CartLineItem.tsx | `{ item: CartViewItem }` | CartPageView | YES | YES |
 | CartDeliveryEstimate | src/components/cart/CartDeliveryEstimate.tsx | `{ shipping: CartShipping }` | CartTotalsSidebar | YES | YES |
 | SavedForLaterProvider (+useSavedForLater) | src/components/cart/SavedForLaterProvider.tsx | `{ children }` | CartPageView | YES | YES |
 | SavedForLaterList | src/components/cart/SavedForLaterList.tsx | (no props; reads `useSavedForLater`, `useCart`) | CartPageView | YES | YES |
 | CartNavLink | src/components/cart/CartNavLink.tsx | (no props) | layout/MastheadNav | NO (`text-[#515151]` :6, `text-[10px]` :30) | YES |
-| CartPageView | src/components/cart/CartPageView.tsx | `{ initialCart, isAuthenticated }` | app/(store)/cart/page | YES | YES |
+| CartPageSkeleton | src/components/cart/CartPageSkeleton.tsx | `{ lines?: number }` (clamped 1..3; `CART_LOADING_LABEL`; `data-cart-skeleton`, `aria-busy`; the real `.cart-page__grid` / `.cart-line` / `.cart-sidebar` classes with `.cart-pending__*` bars) | CartPageView while the store is not settled: before the server, the device fallback, or a read mirror that says zero (UX27) | YES | YES |
+| CartPageView | src/components/cart/CartPageView.tsx | (no props; reads `useCart` and `useCartMirrorHydrated`: `serverConfirmed`, `fallbackActive`, the read mirror and `mirrorCount` decide skeleton / empty / lines, UX27) | app/(store)/cart/page | YES | YES |
 | CartProvider (+useCart/useCartStoreApi) | src/components/cart/CartProvider.tsx | `{ children, initialCart }` | layouts, ProductInfo, CartPageView (+4) | N/A (context provider, no visual markup) | N/A |
 | CartTotalsSidebar | src/components/cart/CartTotalsSidebar.tsx | `{ cart: CartView }` | CartPageView | YES | YES |
 
@@ -90,6 +97,7 @@ Judgements are based on the actual file contents (with `file:line` references wh
 | CategoryBreadcrumb (+defaultHomeCrumb) | src/components/category/CategoryBreadcrumb.tsx | `{ items: Crumb[] }` | (store)/products, (store)/category/[slug] | YES (uses `category-breadcrumb` CSS class) | YES |
 | CategoryControlBar (+ViewSwitcher) | src/components/category/CategoryControlBar.tsx | `{ value: SortValue }` | (store)/products, (store)/category/[slug] | YES (`CATEGORY_TOKENS` from category-tokens) | YES (comment: inline-start / inline-end) |
 | CategoryFilterSidebar | src/components/category/CategoryFilterSidebar.tsx | `{ categories, currentSlug?, priceMin?, priceMax? }` | (store)/products, (store)/category/[slug] | YES | YES |
+| CategoryGridSkeleton (+CategoryCardSkeleton) | src/components/category/CategoryGridSkeleton.tsx | `{ count?: number }` (the grid of placeholders); `CategoryCardSkeleton` the one card, `.ke-skeleton` boxes at `.category-skeleton--*` sizes | (store)/products, category/[slug], search, city/[slug], s/[id], wishlist/shared (grid); CatalogGrid appends the card for every product in flight, `data-pending-card` (UX27) | YES | YES |
 | CategoryProductCard | src/components/category/CategoryProductCard.tsx | `{ product: CategoryProduct }` | (store)/products, (store)/category/[slug] | YES (uses CSS classes) | YES |
 | CategorySort | src/components/category/CategorySort.tsx | `{ value: SortValue }` (+`SORT_OPTIONS`) | unused | YES | YES |
 | Pagination (+Chevron) | src/components/category/Pagination.tsx | `{ pathname, params, currentPage, totalPages }` | (store)/products, (store)/category/[slug] | YES | YES |

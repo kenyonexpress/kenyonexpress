@@ -1,6 +1,32 @@
 'use client'
 
-import Link from 'next/link'
+import Link, { useLinkStatus } from 'next/link'
+
+export const CHECKOUT_PENDING_LABEL = 'עוברים לקופה…'
+
+/**
+ * The press acknowledged (UX27). /checkout is a dynamic route whose shell is
+ * not always prefetched by the time the button is pressed: measured on a
+ * built server, the URL changed 306-724ms after the press at 380 / 768 / 1440
+ * and the cart page stood still until then (logs/ux27/before.json). The ring
+ * is always in the document at a fixed size and only its opacity changes, so
+ * the label never moves; the live region names the wait for a screen reader.
+ */
+function CheckoutLinkPending() {
+  const { pending } = useLinkStatus()
+  return (
+    <>
+      <span
+        className="checkout-link__hint"
+        aria-hidden="true"
+        data-link-pending={pending ? 'true' : 'false'}
+      />
+      <output className="sr-only" aria-live="polite">
+        {pending ? CHECKOUT_PENDING_LABEL : ''}
+      </output>
+    </>
+  )
+}
 
 export default function CartCheckoutButton({
   isAuthenticated,
@@ -47,8 +73,10 @@ export default function CartCheckoutButton({
       aria-disabled={disabled}
       data-disabled={disabled ? '' : undefined}
       data-guest={isAuthenticated ? undefined : ''}
+      data-checkout-link=""
     >
       המשך לתשלום
+      <CheckoutLinkPending />
     </Link>
   )
 }

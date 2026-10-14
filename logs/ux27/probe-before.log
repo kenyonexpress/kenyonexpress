@@ -1,0 +1,571 @@
+{
+  "base": "http://localhost:3364",
+  "tag": "before",
+  "widths": {
+    "380": {
+      "errors": [],
+      "accountTab": {
+        "before": {
+          "url": "/account",
+          "h1": "האזור האישי",
+          "contentChildren": 7,
+          "contentHeight": 2480,
+          "skeleton": false,
+          "busy": false,
+          "tabCurrent": "סקירה"
+        },
+        "elapsed": 2289,
+        "leftAt": 2289,
+        "arrivedAt": 2289,
+        "between": [],
+        "arrived": {
+          "t": 2289,
+          "url": "/account/orders",
+          "h1": "ההזמנות שלי",
+          "contentChildren": 10,
+          "contentHeight": 14272,
+          "skeleton": false,
+          "busy": false,
+          "tabCurrent": "ההזמנות שלי"
+        }
+      },
+      "accountHtml": {
+        "status": 200,
+        "firstChunkAt": 313,
+        "firstChunkBytes": 15593,
+        "totalBytes": 357226,
+        "skeletonAt": null,
+        "contentAt": 2326,
+        "firstChunkHasTitle": false,
+        "firstChunkHasSkeleton": false,
+        "firstChunkContentOpening": null
+      },
+      "loadMore": {
+        "before": {
+          "items": 24,
+          "skeletons": 0,
+          "listHeight": 4720,
+          "button": "טעינת עוד מוצרים",
+          "buttonStatus": "idle",
+          "busy": false
+        },
+        "elapsed": 589,
+        "leftAt": 1,
+        "arrivedAt": 589,
+        "between": [
+          {
+            "t": 1,
+            "items": 24,
+            "skeletons": 0,
+            "listHeight": 4720,
+            "button": "טוען מוצרים…",
+            "buttonStatus": "loading",
+            "busy": true
+          }
+        ],
+        "arrived": {
+          "t": 589,
+          "items": 46,
+          "skeletons": 0,
+          "listHeight": 8993,
+          "button": null,
+          "buttonStatus": null,
+          "busy": false
+        }
+      },
+      "categoryTile": {
+        "href": "/category/hot-deals",
+        "elapsed": 8016,
+        "leftAt": null,
+        "arrivedAt": null,
+        "between": [
+          {
+            "t": 1,
+            "url": "/",
+            "h1": "ברוכים הבאיםלקניון Express",
+            "categoryPage": false,
+            "skeletons": 0,
+            "cards": 0,
+            "pendingHint": false,
+            "homeGrid": true,
+            "mainHeight": 21650
+          },
+          {
+            "t": 18,
+            "url": "/category/hot-deals",
+            "h1": "ברוכים הבאיםלקניון Express",
+            "categoryPage": true,
+            "skeletons": 24,
+            "cards": 0,
+            "pendingHint": false,
+            "homeGrid": true,
+            "mainHeight": 957
+          },
+          {
+            "t": 313,
+            "url": "/category/hot-deals",
+            "h1": "דיל חם 🔥",
+            "categoryPage": true,
+            "skeletons": 24,
+            "cards": 0,
+            "pendingHint": false,
+            "homeGrid": true,
+            "mainHeight": 1121
+          },
+          {
+            "t": 331,
+            "url": "/category/hot-deals",
+            "h1": "דיל חם 🔥",
+            "categoryPage": true,
+            "skeletons": 0,
+            "cards": 2,
+            "pendingHint": false,
+            "homeGrid": true,
+            "mainHeight": 825
+          },
+          {
+            "t": 637,
+            "url": "/category/hot-deals",
+            "h1": "דיל חם 🔥",
+            "categoryPage": true,
+            "skeletons": 0,
+            "cards": 2,
+            "pendingHint": false,
+            "homeGrid": true,
+            "mainHeight": 2170
+          }
+        ],
+        "arrived": null
+      },
+      "cartFirst": {
+        "elapsed": 1686,
+        "leftAt": 19,
+        "arrivedAt": 1686,
+        "between": [
+          {
+            "t": 19,
+            "url": "/cart",
+            "empty": true,
+            "emptyText": "סל הקניות שלך ריק כרגע.",
+            "lines": 0,
+            "skeleton": false,
+            "h1": "סל הקניות",
+            "badge": null
+          }
+        ],
+        "arrived": {
+          "t": 1686,
+          "url": "/cart",
+          "empty": false,
+          "emptyText": null,
+          "lines": 5,
+          "skeleton": false,
+          "h1": "סל הקניות",
+          "badge": null
+        },
+        "emptyShown": true,
+        "emptyWindowMs": 1667
+      },
+      "cartToCheckout": {
+        "elapsed": 2521,
+        "leftAt": null,
+        "arrivedAt": 2521,
+        "between": [
+          {
+            "t": 1,
+            "url": "/cart",
+            "h1": "סל הקניות",
+            "shell": 0,
+            "fields": 0,
+            "steps": 0,
+            "cartPage": true,
+            "mainHeight": 3061
+          },
+          {
+            "t": 306,
+            "url": "/checkout",
+            "h1": "קופה",
+            "shell": 4,
+            "fields": 0,
+            "steps": 3,
+            "cartPage": true,
+            "mainHeight": 903
+          }
+        ],
+        "arrived": {
+          "t": 2521,
+          "url": "/checkout",
+          "h1": "קופה",
+          "shell": 0,
+          "fields": 12,
+          "steps": 3,
+          "cartPage": true,
+          "mainHeight": 1982
+        }
+      }
+    },
+    "768": {
+      "errors": [],
+      "accountTab": {
+        "before": {
+          "url": "/account",
+          "h1": "האזור האישי",
+          "contentChildren": 7,
+          "contentHeight": 1243,
+          "skeleton": false,
+          "busy": false,
+          "tabCurrent": "סקירה"
+        },
+        "elapsed": 2530,
+        "leftAt": 2530,
+        "arrivedAt": 2530,
+        "between": [],
+        "arrived": {
+          "t": 2530,
+          "url": "/account/orders",
+          "h1": "ההזמנות שלי",
+          "contentChildren": 10,
+          "contentHeight": 10716,
+          "skeleton": false,
+          "busy": false,
+          "tabCurrent": "ההזמנות שלי"
+        }
+      },
+      "loadMore": {
+        "before": {
+          "items": 24,
+          "skeletons": 0,
+          "listHeight": 3007,
+          "button": "טעינת עוד מוצרים",
+          "buttonStatus": "idle",
+          "busy": false
+        },
+        "elapsed": 1193,
+        "leftAt": 1,
+        "arrivedAt": 1193,
+        "between": [
+          {
+            "t": 1,
+            "items": 24,
+            "skeletons": 0,
+            "listHeight": 3007,
+            "button": "טוען מוצרים…",
+            "buttonStatus": "loading",
+            "busy": true
+          }
+        ],
+        "arrived": {
+          "t": 1193,
+          "items": 46,
+          "skeletons": 0,
+          "listHeight": 5977,
+          "button": null,
+          "buttonStatus": null,
+          "busy": false
+        }
+      },
+      "categoryTile": {
+        "href": "/category/hot-deals",
+        "elapsed": 8020,
+        "leftAt": null,
+        "arrivedAt": null,
+        "between": [
+          {
+            "t": 2,
+            "url": "/",
+            "h1": "ברוכים הבאיםלקניון Express",
+            "categoryPage": false,
+            "skeletons": 0,
+            "cards": 0,
+            "pendingHint": false,
+            "homeGrid": true,
+            "mainHeight": 11069
+          },
+          {
+            "t": 20,
+            "url": "/category/hot-deals",
+            "h1": "ברוכים הבאיםלקניון Express",
+            "categoryPage": true,
+            "skeletons": 24,
+            "cards": 0,
+            "pendingHint": false,
+            "homeGrid": true,
+            "mainHeight": 986
+          },
+          {
+            "t": 552,
+            "url": "/category/hot-deals",
+            "h1": "דיל חם 🔥",
+            "categoryPage": true,
+            "skeletons": 24,
+            "cards": 0,
+            "pendingHint": false,
+            "homeGrid": true,
+            "mainHeight": 1941
+          },
+          {
+            "t": 1160,
+            "url": "/category/hot-deals",
+            "h1": "דיל חם 🔥",
+            "categoryPage": true,
+            "skeletons": 0,
+            "cards": 2,
+            "pendingHint": false,
+            "homeGrid": true,
+            "mainHeight": 1630
+          }
+        ],
+        "arrived": null
+      },
+      "cartFirst": {
+        "elapsed": 2051,
+        "leftAt": 8,
+        "arrivedAt": 2051,
+        "between": [
+          {
+            "t": 8,
+            "url": "/cart",
+            "empty": true,
+            "emptyText": "סל הקניות שלך ריק כרגע.",
+            "lines": 0,
+            "skeleton": false,
+            "h1": "סל הקניות",
+            "badge": null
+          }
+        ],
+        "arrived": {
+          "t": 2051,
+          "url": "/cart",
+          "empty": false,
+          "emptyText": null,
+          "lines": 5,
+          "skeleton": false,
+          "h1": "סל הקניות",
+          "badge": null
+        },
+        "emptyShown": true,
+        "emptyWindowMs": 2043
+      },
+      "cartToCheckout": {
+        "elapsed": 2377,
+        "leftAt": null,
+        "arrivedAt": 2377,
+        "between": [
+          {
+            "t": 1,
+            "url": "/cart",
+            "h1": "סל הקניות",
+            "shell": 0,
+            "fields": 0,
+            "steps": 0,
+            "cartPage": true,
+            "mainHeight": 1923
+          },
+          {
+            "t": 431,
+            "url": "/checkout",
+            "h1": "קופה",
+            "shell": 4,
+            "fields": 0,
+            "steps": 3,
+            "cartPage": true,
+            "mainHeight": 910
+          }
+        ],
+        "arrived": {
+          "t": 2377,
+          "url": "/checkout",
+          "h1": "קופה",
+          "shell": 0,
+          "fields": 12,
+          "steps": 3,
+          "cartPage": true,
+          "mainHeight": 1919
+        }
+      }
+    },
+    "1440": {
+      "errors": [],
+      "accountTab": {
+        "before": {
+          "url": "/account",
+          "h1": "האזור האישי",
+          "contentChildren": 7,
+          "contentHeight": 1020,
+          "skeleton": false,
+          "busy": false,
+          "tabCurrent": "סקירה"
+        },
+        "elapsed": 2609,
+        "leftAt": 2609,
+        "arrivedAt": 2609,
+        "between": [],
+        "arrived": {
+          "t": 2609,
+          "url": "/account/orders",
+          "h1": "ההזמנות שלי",
+          "contentChildren": 10,
+          "contentHeight": 10716,
+          "skeleton": false,
+          "busy": false,
+          "tabCurrent": "ההזמנות שלי"
+        }
+      },
+      "loadMore": {
+        "before": {
+          "items": 24,
+          "skeletons": 0,
+          "listHeight": 1895,
+          "button": "טעינת עוד מוצרים",
+          "buttonStatus": "idle",
+          "busy": false
+        },
+        "elapsed": 1179,
+        "leftAt": 2,
+        "arrivedAt": 1179,
+        "between": [
+          {
+            "t": 2,
+            "items": 24,
+            "skeletons": 0,
+            "listHeight": 1895,
+            "button": "טוען מוצרים…",
+            "buttonStatus": "loading",
+            "busy": true
+          }
+        ],
+        "arrived": {
+          "t": 1179,
+          "items": 46,
+          "skeletons": 0,
+          "listHeight": 3772,
+          "button": null,
+          "buttonStatus": null,
+          "busy": false
+        }
+      },
+      "categoryTile": {
+        "href": "/category/hot-deals",
+        "elapsed": 8017,
+        "leftAt": null,
+        "arrivedAt": null,
+        "between": [
+          {
+            "t": 11,
+            "url": "/category/hot-deals",
+            "h1": "ברוכים הבאיםלקניון Express",
+            "categoryPage": true,
+            "skeletons": 24,
+            "cards": 0,
+            "pendingHint": false,
+            "homeGrid": true,
+            "mainHeight": 986
+          },
+          {
+            "t": 794,
+            "url": "/category/hot-deals",
+            "h1": "דיל חם 🔥",
+            "categoryPage": true,
+            "skeletons": 24,
+            "cards": 0,
+            "pendingHint": false,
+            "homeGrid": true,
+            "mainHeight": 1941
+          },
+          {
+            "t": 1403,
+            "url": "/category/hot-deals",
+            "h1": "דיל חם 🔥",
+            "categoryPage": true,
+            "skeletons": 0,
+            "cards": 2,
+            "pendingHint": false,
+            "homeGrid": true,
+            "mainHeight": 1630
+          }
+        ],
+        "arrived": null
+      },
+      "cartFirst": {
+        "elapsed": 1523,
+        "leftAt": 2,
+        "arrivedAt": 1523,
+        "between": [
+          {
+            "t": 2,
+            "url": "/cart",
+            "empty": false,
+            "emptyText": null,
+            "lines": 0,
+            "skeleton": false,
+            "h1": null,
+            "badge": null
+          },
+          {
+            "t": 22,
+            "url": "/cart",
+            "empty": true,
+            "emptyText": "סל הקניות שלך ריק כרגע.",
+            "lines": 0,
+            "skeleton": false,
+            "h1": "סל הקניות",
+            "badge": null
+          }
+        ],
+        "arrived": {
+          "t": 1523,
+          "url": "/cart",
+          "empty": false,
+          "emptyText": null,
+          "lines": 5,
+          "skeleton": false,
+          "h1": "סל הקניות",
+          "badge": null
+        },
+        "emptyShown": true,
+        "emptyWindowMs": 1501
+      },
+      "cartToCheckout": {
+        "elapsed": 2750,
+        "leftAt": null,
+        "arrivedAt": 2750,
+        "between": [
+          {
+            "t": 0,
+            "url": "/cart",
+            "h1": "סל הקניות",
+            "shell": 0,
+            "fields": 0,
+            "steps": 0,
+            "cartPage": true,
+            "mainHeight": 1183
+          },
+          {
+            "t": 724,
+            "url": "/checkout",
+            "h1": "קופה",
+            "shell": 4,
+            "fields": 0,
+            "steps": 3,
+            "cartPage": true,
+            "mainHeight": 910
+          }
+        ],
+        "arrived": {
+          "t": 2750,
+          "url": "/checkout",
+          "h1": "קופה",
+          "shell": 0,
+          "fields": 12,
+          "steps": 3,
+          "cartPage": true,
+          "mainHeight": 1298
+        }
+      }
+    }
+  },
+  "login": {
+    "ok": true,
+    "cookies": 2
+  }
+}

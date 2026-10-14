@@ -1,0 +1,112 @@
+Already up to date
+Done in 188ms using pnpm v11.1.2
+
+Running 8 tests using 2 workers
+
+[1A[2K[1/8] [chromium] › e2e/loading-skeletons.spec.ts:71:7 › loading skeletons (UX27) › the cart page never pronounces a cart with lines in it empty before the server answers
+[1A[2K[2/8] [chromium] › e2e/loading-skeletons.spec.ts:95:7 › loading skeletons (UX27) › a device with no cart sees the empty state, not a skeleton that never resolves
+[1A[2K  1) [chromium] › e2e/loading-skeletons.spec.ts:95:7 › loading skeletons (UX27) › a device with no cart sees the empty state, not a skeleton that never resolves 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32m"[7mskelet[27mon"[39m
+    Received: [31m"[7mn[27mon[7me[27m"[39m
+
+      103 |     const seen = await page.evaluate(() => window.__ux27 ?? [])
+      104 |     // The HTML carries the skeleton; the mirror, once read, says "no cart".
+    > 105 |     expect(seen[0]).toBe('skeleton')
+          |                     ^
+      106 |     expect(seen).not.toContain('lines')
+      107 |   })
+      108 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/loading-skeletons.spec.ts:105:21
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/loading-skeletons-loading--2f0ae-keleton-that-never-resolves-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/loading-skeletons-loading--2f0ae-keleton-that-never-resolves-chromium/error-context.md
+
+
+[1A[2K[3/8] [chromium] › e2e/loading-skeletons.spec.ts:109:7 › loading skeletons (UX27) › the archive holds a card-shaped box for every product in flight while a page loads
+[1A[2K[4/8] [chromium] › e2e/loading-skeletons.spec.ts:161:7 › account loading skeleton (UX27) › a tab press paints the column skeleton before the new page, and a direct load flushes it first
+[1A[2K  2) [chromium] › e2e/loading-skeletons.spec.ts:71:7 › loading skeletons (UX27) › the cart page never pronounces a cart with lines in it empty before the server answers 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32m"lines"[39m
+    Received: [31m"skeleton"[39m
+
+      83 |     expect(seen).not.toContain('empty')
+      84 |     expect(seen).toContain('skeleton')
+    > 85 |     expect(seen[seen.length - 1]).toBe('lines')
+         |                                   ^
+      86 |
+      87 |     // The checkout link carries its pending ring, off until a press.
+      88 |     const link = page.getByRole('link', { name: 'המשך לתשלום' }).first()
+        at /Users/ofir/kenyonexpress-autopilot/e2e/loading-skeletons.spec.ts:85:35
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/loading-skeletons-loading--c21a1-y-before-the-server-answers-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/loading-skeletons-loading--c21a1-y-before-the-server-answers-chromium/error-context.md
+
+
+[1A[2K[5/8] [mobile-chrome] › e2e/loading-skeletons.spec.ts:71:7 › loading skeletons (UX27) › the cart page never pronounces a cart with lines in it empty before the server answers
+[1A[2K  3) [mobile-chrome] › e2e/loading-skeletons.spec.ts:71:7 › loading skeletons (UX27) › the cart page never pronounces a cart with lines in it empty before the server answers 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32m"lines"[39m
+    Received: [31m"skeleton"[39m
+
+      83 |     expect(seen).not.toContain('empty')
+      84 |     expect(seen).toContain('skeleton')
+    > 85 |     expect(seen[seen.length - 1]).toBe('lines')
+         |                                   ^
+      86 |
+      87 |     // The checkout link carries its pending ring, off until a press.
+      88 |     const link = page.getByRole('link', { name: 'המשך לתשלום' }).first()
+        at /Users/ofir/kenyonexpress-autopilot/e2e/loading-skeletons.spec.ts:85:35
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/loading-skeletons-loading--c21a1-y-before-the-server-answers-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/loading-skeletons-loading--c21a1-y-before-the-server-answers-mobile-chrome/error-context.md
+
+
+[1A[2K[6/8] [mobile-chrome] › e2e/loading-skeletons.spec.ts:95:7 › loading skeletons (UX27) › a device with no cart sees the empty state, not a skeleton that never resolves
+[1A[2K  4) [mobile-chrome] › e2e/loading-skeletons.spec.ts:95:7 › loading skeletons (UX27) › a device with no cart sees the empty state, not a skeleton that never resolves 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32m"[7mskelet[27mon"[39m
+    Received: [31m"[7mn[27mon[7me[27m"[39m
+
+      103 |     const seen = await page.evaluate(() => window.__ux27 ?? [])
+      104 |     // The HTML carries the skeleton; the mirror, once read, says "no cart".
+    > 105 |     expect(seen[0]).toBe('skeleton')
+          |                     ^
+      106 |     expect(seen).not.toContain('lines')
+      107 |   })
+      108 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/loading-skeletons.spec.ts:105:21
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/loading-skeletons-loading--2f0ae-keleton-that-never-resolves-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/loading-skeletons-loading--2f0ae-keleton-that-never-resolves-mobile-chrome/error-context.md
+
+
+[1A[2K[7/8] [mobile-chrome] › e2e/loading-skeletons.spec.ts:109:7 › loading skeletons (UX27) › the archive holds a card-shaped box for every product in flight while a page loads
+[1A[2K[8/8] [mobile-chrome] › e2e/loading-skeletons.spec.ts:161:7 › account loading skeleton (UX27) › a tab press paints the column skeleton before the new page, and a direct load flushes it first
+[1A[2K  4 failed
+    [chromium] › e2e/loading-skeletons.spec.ts:71:7 › loading skeletons (UX27) › the cart page never pronounces a cart with lines in it empty before the server answers 
+    [chromium] › e2e/loading-skeletons.spec.ts:95:7 › loading skeletons (UX27) › a device with no cart sees the empty state, not a skeleton that never resolves 
+    [mobile-chrome] › e2e/loading-skeletons.spec.ts:71:7 › loading skeletons (UX27) › the cart page never pronounces a cart with lines in it empty before the server answers 
+    [mobile-chrome] › e2e/loading-skeletons.spec.ts:95:7 › loading skeletons (UX27) › a device with no cart sees the empty state, not a skeleton that never resolves 
+  4 passed (31.5s)
+e2e exit 1

@@ -135,11 +135,24 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
                   <AccountTabsSlot />
                 </Suspense>
                 {/* Every /account page reads rows scoped to the signed-in user,
-                    so each one is request-time work. One boundary here covers
-                    all ten rather than ten boundaries in ten files. */}
-                <div className="account-content">
-                  <Suspense fallback={null}>{children}</Suspense>
-                </div>
+                    so each one is request-time work. The boundary that covers
+                    them is account/loading.tsx (UX27), not a <Suspense> here,
+                    and the difference was measured twice over:
+
+                    - A `fallback={null}` boundary here flushed an EMPTY column
+                      for the ~2s a page took to stream, and a tab press kept
+                      the OLD page in place for as long (logs/ux27/before.json).
+                      loading.tsx paints its skeleton the instant a client-side
+                      navigation starts, which a layout-owned boundary cannot:
+                      React keeps a mounted boundary's old content through a
+                      transition.
+                    - A boundary here AND loading.tsx below it was 23 account
+                      shells refused by the csp gate (logs/ux27/build.log): the
+                      outer boundary completes during the prerender (its child
+                      is the inner boundary's fallback), so Fizz writes its
+                      nonce-less reveal runtime ($RB/$RV) into the static HTML.
+                      One boundary, the segment's own, stays postponed. */}
+                <div className="account-content">{children}</div>
               </div>
             </div>
           </div>

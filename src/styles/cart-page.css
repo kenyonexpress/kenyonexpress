@@ -1301,3 +1301,83 @@
     display: none;
   }
 }
+
+/* UX27: the cart before the server has answered (CartPageSkeleton). The
+   frame, the row grid and the sidebar are the real classes; these hold only
+   the sizes of what each bar stands in for. */
+.cart-line--pending {
+  align-items: start;
+}
+
+.cart-pending__thumb {
+  border-radius: 0.5rem;
+}
+
+.cart-pending__name {
+  height: 24px;
+  width: 70%;
+}
+
+.cart-pending__meta {
+  height: 13px;
+  width: 40%;
+}
+
+.cart-pending__qty {
+  height: 36px;
+  width: 120px;
+  border-radius: 18px;
+}
+
+.cart-pending__title {
+  height: 30px;
+  width: 50%;
+}
+
+.cart-pending__row {
+  height: 15px;
+  width: 100%;
+}
+
+.cart-pending__row.is-total {
+  height: 20px;
+}
+
+.cart-pending__button {
+  height: 47.52px;
+  width: 100%;
+  border-radius: 999px;
+}
+
+/* UX27: the checkout link's pending ring (CartCheckoutButton). Absolute, so
+   the label does not move when it appears; a fixed 1em box whose opacity is
+   the only thing that changes. The spin is cut to one frame with every other
+   animation under prefers-reduced-motion (globals.css). */
+[data-checkout-link] {
+  position: relative;
+}
+
+.checkout-link__hint {
+  position: absolute;
+  inset-inline-end: 14px;
+  top: 50%;
+  width: 1em;
+  height: 1em;
+  margin-top: -0.5em;
+  border: 2px solid currentColor;
+  border-inline-end-color: transparent;
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.checkout-link__hint[data-link-pending="true"] {
+  opacity: 1;
+  animation: checkout-link-spin 0.8s linear infinite;
+}
+
+@keyframes checkout-link-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

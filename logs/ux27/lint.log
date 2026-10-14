@@ -1,0 +1,269 @@
+Already up to date
+Done in 191ms using pnpm v11.1.2
+$ biome check . && node scripts/tokens-gate.mjs && node scripts/copy-gate.mjs && node scripts/asset-gate.mjs && node scripts/media-ingest/blur-manifest.mjs --check
+./logs/ux27/debug-account.mjs format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+     2  2 │   const BASE = 'http://localhost:3364'
+     3  3 │   const browser = await chromium.launch()
+     4    │ - const·ctx·=·await·browser.newContext({·viewport:·{·width:·380,·height:·900·},·locale:·'he-IL',·hasTouch:·true·})
+        4 │ + const·ctx·=·await·browser.newContext({
+        5 │ + ··viewport:·{·width:·380,·height:·900·},
+        6 │ + ··locale:·'he-IL',
+        7 │ + ··hasTouch:·true,
+        8 │ + })
+     5  9 │   await ctx.addCookies([{ name: 'ke_consent', value: 'denied.2', domain: 'localhost', path: '/' }])
+     6 10 │   const page = await ctx.newPage()
+    ····· │ 
+    13 17 │   await page.goto(`${BASE}/account`, { waitUntil: 'networkidle' })
+    14 18 │   console.log('account url', page.url())
+    15    │ - console.log(await·page.evaluate(()·=>·({·navs:·[...document.querySelectorAll('nav')].map(n·=>·n.getAttribute('aria-label')),·tabs:·[...document.querrySelectorAll?.('.account-tabbar·a')·??·document.querySelectorAll('.account-tabbar·a')].map(a·=>·a.textContent.trim()),·h1:·document.querySelector('h1')?.textContent·})))
+       19 │ + console.log(
+       20 │ + ··await·page.evaluate(()·=>·({
+       21 │ + ····navs:·[...document.querySelectorAll('nav')].map((n)·=>·n.getAttribute('aria-label')),
+       22 │ + ····tabs:·[
+       23 │ + ······...(document.querrySelectorAll?.('.account-tabbar·a')·??
+       24 │ + ········document.querySelectorAll('.account-tabbar·a')),
+       25 │ + ····].map((a)·=>·a.textContent.trim()),
+       26 │ + ····h1:·document.querySelector('h1')?.textContent,
+       27 │ + ··})),
+       28 │ + )
+    16 29 │   await page.screenshot({ path: 'logs/ux27/debug-account-380.png' })
+    17 30 │   await browser.close()
+  
+
+./logs/ux27/before.json format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+    569 569 │       "cookies": 2
+    570 570 │     }
+    571     │ - }
+        571 │ + }
+        572 │ + 
+  
+
+./logs/ux27/debug-account2.mjs:7:160 lint/complexity/useLiteralKeys  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━
+
+  × The computed expression can be simplified without the use of a string literal.
+  
+    5 │ await ctx.addCookies([{ name: 'ke_consent', value: 'denied.2', domain: 'localhost', path: '/' }])
+    6 │ const page = await ctx.newPage()
+  > 7 │ page.on('response', (r) => { if (r.url().includes('/account') || r.url().includes('/login')) console.log('resp', r.status(), r.url().slice(0, 90), r.headers()['location'] ?? '') })
+      │                                                                                                                                                                ^^^^^^^^^^
+    8 │ await page.goto(`${BASE}/login?next=%2Faccount`)
+    9 │ await page.getByLabel('אימייל', { exact: true }).fill('e2e-customer@test.kenyonexpress.local')
+  
+  i Unsafe fix: Use a literal key instead.
+  
+     5  5 │   await ctx.addCookies([{ name: 'ke_consent', value: 'denied.2', domain: 'localhost', path: '/' }])
+     6  6 │   const page = await ctx.newPage()
+     7    │ - page.on('response',·(r)·=>·{·if·(r.url().includes('/account')·||·r.url().includes('/login'))·console.log('resp',·r.status(),·r.url().slice(0,·90),·r.headers()['location']·??·'')·})
+        7 │ + page.on('response',·(r)·=>·{·if·(r.url().includes('/account')·||·r.url().includes('/login'))·console.log('resp',·r.status(),·r.url().slice(0,·90),·r.headers().location·??·'')·})
+     8  8 │   await page.goto(`${BASE}/login?next=%2Faccount`)
+     9  9 │   await page.getByLabel('אימייל', { exact: true }).fill('e2e-customer@test.kenyonexpress.local')
+  
+
+./logs/ux27/debug-account2.mjs format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+     5  5 │   await ctx.addCookies([{ name: 'ke_consent', value: 'denied.2', domain: 'localhost', path: '/' }])
+     6  6 │   const page = await ctx.newPage()
+     7    │ - page.on('response',·(r)·=>·{·if·(r.url().includes('/account')·||·r.url().includes('/login'))·console.log('resp',·r.status(),·r.url().slice(0,·90),·r.headers()['location']·??·'')·})
+        7 │ + page.on('response',·(r)·=>·{
+        8 │ + ··if·(r.url().includes('/account')·||·r.url().includes('/login'))
+        9 │ + ····console.log('resp',·r.status(),·r.url().slice(0,·90),·r.headers()['location']·??·'')
+       10 │ + })
+     8 11 │   await page.goto(`${BASE}/login?next=%2Faccount`)
+     9 12 │   await page.getByLabel('אימייל', { exact: true }).fill('e2e-customer@test.kenyonexpress.local')
+    ····· │ 
+    15 18 │   console.log('h1 after login', await page.evaluate(() => document.querySelector('h1')?.textContent))
+    16 19 │   const cookies = await ctx.cookies()
+    17    │ - console.log('cookies',·cookies.map(c·=>·`${c.name}·secure=${c.secure}·http=${c.httpOnly}·exp=${c.expires}·path=${c.path}·len=${c.value.length}`))
+       20 │ + console.log(
+       21 │ + ··'cookies',
+       22 │ + ··cookies.map(
+       23 │ + ····(c)·=>
+       24 │ + ······`${c.name}·secure=${c.secure}·http=${c.httpOnly}·exp=${c.expires}·path=${c.path}·len=${c.value.length}`,
+       25 │ + ··),
+       26 │ + )
+    18 27 │   console.log('--- second goto')
+    19 28 │   await page.goto(`${BASE}/account/orders`, { waitUntil: 'networkidle' })
+    20    │ - console.log('url',·page.url(),·'h1',·await·page.evaluate(()·=>·document.querySelector('h1')?.textContent))
+       29 │ + console.log(
+       30 │ + ··'url',
+       31 │ + ··page.url(),
+       32 │ + ··'h1',
+       33 │ + ··await·page.evaluate(()·=>·document.querySelector('h1')?.textContent),
+       34 │ + )
+    21 35 │   await browser.close()
+    22 36 │   
+  
+
+./logs/ux27/probe.mjs format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+    228 228 │     page.on('pageerror', (e) => w.errors.push(String(e).slice(0, 120)))
+    229 229 │     try {
+    230     │ - 
+    231     │ - ··//·1.·account·tab·navigation
+    232     │ - ··if·(session)·{
+    233     │ - ····await·page.goto(`${BASE}/account`,·{·waitUntil:·'networkidle'·})
+    234     │ - ····const·before·=·await·page.evaluate(accountContent)
+    235     │ - ····const·tab·=·page.getByRole('navigation',·{·name:·'אזורי·החשבון'·}).getByRole('link',·{
+    236     │ - ······name:·'ההזמנות·שלי',
+    237     │ - ····})
+    238     │ - ····const·tabVisible·=·await·tab.isVisible().catch(()·=>·false)
+    239     │ - ····if·(!tabVisible)·{
+    240     │ - ······w.accountTab·=·{·skipped:·`no·tab·bar·at·${page.url()}`·}
+    241     │ - ····}·else·{
+    242     │ - ····await·tab.click()
+    243     │ - ····const·run·=·await·sampleUntil(page,·accountContent,·(s)·=>·s.h1·===·'ההזמנות·שלי')
+    244     │ - ····w.accountTab·=·{
+    245     │ - ······before,
+    246     │ - ······...summarize(run,·{
+    247     │ - ········from:·(s)·=>·s.h1·===·'האזור·האישי'·&&·s.contentChildren·===·before.contentChildren,
+    248     │ - ········to:·(s)·=>·s.h1·===·'ההזמנות·שלי',
+    249     │ - ······}),
+    250     │ - ····}
+    251     │ - ····await·page.screenshot({·path:·`logs/ux27/${TAG}-${width}-accountTab.png`·})
+    252     │ - ····}
+    253     │ - ····if·(width·===·WIDTHS[0])·{
+    254     │ - ······w.accountHtml·=·await·streamAccountHtml(session,·'/account/orders')
+    255     │ - ····}
+    256     │ - ··}·else·{
+    257     │ - ····w.accountTab·=·{·skipped:·loginError·}
+    258     │ - ··}
+        230 │ + ····//·1.·account·tab·navigation
+        231 │ + ····if·(session)·{
+        232 │ + ······await·page.goto(`${BASE}/account`,·{·waitUntil:·'networkidle'·})
+        233 │ + ······const·before·=·await·page.evaluate(accountContent)
+        234 │ + ······const·tab·=·page.getByRole('navigation',·{·name:·'אזורי·החשבון'·}).getByRole('link',·{
+        235 │ + ········name:·'ההזמנות·שלי',
+        236 │ + ······})
+        237 │ + ······const·tabVisible·=·await·tab.isVisible().catch(()·=>·false)
+        238 │ + ······if·(!tabVisible)·{
+        239 │ + ········w.accountTab·=·{·skipped:·`no·tab·bar·at·${page.url()}`·}
+        240 │ + ······}·else·{
+        241 │ + ········await·tab.click()
+        242 │ + ········const·run·=·await·sampleUntil(page,·accountContent,·(s)·=>·s.h1·===·'ההזמנות·שלי')
+        243 │ + ········w.accountTab·=·{
+        244 │ + ··········before,
+        245 │ + ··········...summarize(run,·{
+        246 │ + ············from:·(s)·=>·s.h1·===·'האזור·האישי'·&&·s.contentChildren·===·before.contentChildren,
+        247 │ + ············to:·(s)·=>·s.h1·===·'ההזמנות·שלי',
+        248 │ + ··········}),
+        249 │ + ········}
+        250 │ + ········await·page.screenshot({·path:·`logs/ux27/${TAG}-${width}-accountTab.png`·})
+        251 │ + ······}
+        252 │ + ······if·(width·===·WIDTHS[0])·{
+        253 │ + ········w.accountHtml·=·await·streamAccountHtml(session,·'/account/orders')
+        254 │ + ······}
+        255 │ + ····}·else·{
+        256 │ + ······w.accountTab·=·{·skipped:·loginError·}
+        257 │ + ····}
+    259 258 │   
+    260     │ - ··//·2.·catalogue·load·more
+    261     │ - ··await·page.goto(`${BASE}/products`,·{·waitUntil:·'networkidle'·})
+    262     │ - ··await·page.evaluate(()·=>·window.localStorage.setItem('ke_catalog_paging_v1',·'scroll'))
+    263     │ - ··await·page.reload({·waitUntil:·'networkidle'·})
+    264     │ - ··const·btn·=·page.locator('.category-load-more__btn')
+    265     │ - ··const·hasButton·=·(await·btn.count())·>·0
+    266     │ - ··if·(hasButton)·{
+    267     │ - ····const·before·=·await·page.evaluate(catalogList)
+    268     │ - ····//·Page·two·may·already·be·on·its·way·from·the·observer:·wait·for·idle.
+    269     │ - ····await·page.waitForFunction(
+    270     │ - ······()·=>·document.querySelector('.category-load-more__btn')?.getAttribute('data-status')·===·'idle',
+    271     │ - ······null,
+    272     │ - ······{·timeout:·15_000·},
+    273     │ - ····).catch(()·=>·{})
+    274     │ - ····const·atIdle·=·await·page.evaluate(catalogList)
+    275     │ - ····if·(atIdle.items·===·before.items)·{
+    276     │ - ······await·btn.evaluate((el)·=>·el.click())
+    277     │ - ····}
+    278     │ - ····const·run·=·await·sampleUntil(page,·catalogList,·(s)·=>·s.items·>·atIdle.items)
+    279     │ - ····w.loadMore·=·{
+    280     │ - ······before:·atIdle,
+    281     │ - ······...summarize(run,·{
+    282     │ - ········from:·(s)·=>·s.buttonStatus·===·'idle',
+    283     │ - ········to:·(s)·=>·s.items·>·atIdle.items,
+    284     │ - ······}),
+    285     │ - ····}
+    286     │ - ····await·page.screenshot({·path:·`logs/ux27/${TAG}-${width}-loadMore.png`·})
+    287     │ - ··}·else·{
+    288     │ - ····w.loadMore·=·{·skipped:·'no·continuous·control·on·/products'·}
+    289     │ - ··}
+        259 │ + ····//·2.·catalogue·load·more
+        260 │ + ····await·page.goto(`${BASE}/products`,·{·waitUntil:·'networkidle'·})
+        261 │ + ····await·page.evaluate(()·=>·window.localStorage.setItem('ke_catalog_paging_v1',·'scroll'))
+        262 │ + ····await·page.reload({·waitUntil:·'networkidle'·})
+        263 │ + ····const·btn·=·page.locator('.category-load-more__btn')
+        264 │ + ····const·hasButton·=·(await·btn.count())·>·0
+        265 │ + ····if·(hasButton)·{
+        266 │ + ······const·before·=·await·page.evaluate(catalogList)
+        267 │ + ······//·Page·two·may·already·be·on·its·way·from·the·observer:·wait·for·idle.
+        268 │ + ······await·page
+        269 │ + ········.waitForFunction(
+        270 │ + ··········()·=>
+        271 │ + ············document.querySelector('.category-load-more__btn')?.getAttribute('data-status')·===
+        272 │ + ············'idle',
+        273 │ + ··········null,
+        274 │ + ··········{·timeout:·15_000·},
+        275 │ + ········)
+        276 │ + ········.catch(()·=>·{})
+        277 │ + ······const·atIdle·=·await·page.evaluate(catalogList)
+        278 │ + ······if·(atIdle.items·===·before.items)·{
+        279 │ + ········await·btn.evaluate((el)·=>·el.click())
+        280 │ + ······}
+        281 │ + ······const·run·=·await·sampleUntil(page,·catalogList,·(s)·=>·s.items·>·atIdle.items)
+        282 │ + ······w.loadMore·=·{
+        283 │ + ········before:·atIdle,
+        284 │ + ········...summarize(run,·{
+        285 │ + ··········from:·(s)·=>·s.buttonStatus·===·'idle',
+        286 │ + ··········to:·(s)·=>·s.items·>·atIdle.items,
+        287 │ + ········}),
+        288 │ + ······}
+        289 │ + ······await·page.screenshot({·path:·`logs/ux27/${TAG}-${width}-loadMore.png`·})
+        290 │ + ····}·else·{
+        291 │ + ······w.loadMore·=·{·skipped:·'no·continuous·control·on·/products'·}
+        292 │ + ····}
+    290 293 │   
+    291     │ - ··//·3.·category·tile·from·home
+    292     │ - ··await·page.goto(`${BASE}/`,·{·waitUntil:·'networkidle'·})
+    293     │ - ··const·tile·=·page.locator('section[aria-labelledby="home-categories-title"]·a').first()
+    294     │ - ··await·tile.scrollIntoViewIfNeeded()
+    295     │ - ··const·tileHref·=·await·tile.getAttribute('href')
+    296     │ - ··//·A·cold·route:·drop·the·prefetch·cache·by·opening·the·tile·in·a·fresh
+    297     │ - ··//·page·with·scripting·intact·but·before·the·prefetch·could·land.
+    298     │ - ··await·tile.click()
+    299     │ - ··const·run3·=·await·sampleUntil(page,·categoryNav,·(s)·=>·s.cards·>·0·&&·!s.homeGrid)
+    300     │ - ··w.categoryTile·=·{
+    301     │ - ····href:·tileHref,
+    302     │ - ····...summarize(run3,·{·from:·(s)·=>·s.homeGrid,·to:·(s)·=>·s.cards·>·0·&&·!s.homeGrid·}),
+    303     │ - ··}
+    304     │ - ··await·page.screenshot({·path:·`logs/ux27/${TAG}-${width}-categoryTile.png`·})
+        294 │ + ····//·3.·category·tile·from·home
+        295 │ + ····await·page.goto(`${BASE}/`,·{·waitUntil:·'networkidle'·})
+        296 │ + ····const·tile·=·page.locator('section[aria-labelledby="home-categories-title"]·a').first()
+        297 │ + ····await·tile.scrollIntoViewIfNeeded()
+        298 │ + ····const·tileHref·=·await·tile.getAttribute('href')
+        299 │ + ····//·A·cold·route:·drop·the·prefetch·cache·by·opening·the·tile·in·a·fresh
+        300 │ + ····//·page·with·scripting·intact·but·before·the·prefetch·could·land.
+        301 │ + ····await·tile.click()
+        302 │ + ····const·run3·=·await·sampleUntil(page,·categoryNav,·(s)·=>·s.cards·>·0·&&·!s.homeGrid)
+        303 │ + ····w.categoryTile·=·{
+        304 │ + ······href:·tileHref,
+  83 more lines truncated
+  
+
+Checked 2612 files in 865ms. No fixes applied.
+Found 5 errors.
+check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Some errors were emitted while running checks.
+  
+
+[ELIFECYCLE] Command failed with exit code 1.

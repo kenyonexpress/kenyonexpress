@@ -1,0 +1,29 @@
+Already up to date
+Done in 191ms using pnpm v11.1.2
+
+Running 22 tests using 2 workers
+
+[1A[2K[1/22] [chromium] › e2e/account-tabs.spec.ts:86:7 › account tabs (UX18) › a child route keeps its tab current, and the old details address lands on settings
+[1A[2K[2/22] [chromium] › e2e/account-tabs.spec.ts:35:7 › account tabs (UX18) › the shell carries the five tabs in Hebrew and the overview is current
+[1A[2K[3/22] [chromium] › e2e/account-tabs.spec.ts:51:7 › account tabs (UX18) › each tab opens its page inside the shell and becomes current
+[1A[2K[4/22] [chromium] › e2e/account-tabs.spec.ts:109:7 › account tabs (UX18) › the tabs are one row of 44px links, and on a phone they come before the side nav
+[1A[2K[5/22] [chromium] › e2e/cart-page.spec.ts:49:7 › cart page controls (UX16) › a plus press is answered by the live region, the meta line and the total
+[1A[2K[6/22] [chromium] › e2e/cart-page.spec.ts:77:7 › cart page controls (UX16) › the summary says prices include VAT and shows no savings without a discount
+[1A[2K[7/22] [chromium] › e2e/cart-page.spec.ts:87:7 › cart page controls (UX16) › the remove press marks the row as leaving before it goes, then the cart is empty
+[1A[2K[8/22] [chromium] › e2e/cart-page.spec.ts:109:7 › cart page controls (UX16) › with motion reduced the row still leaves and the cart still empties
+[1A[2K[9/22] [chromium] › e2e/catalog-infinite-scroll.spec.ts:32:7 › archive paging switch (UX22) › the next page is served as JSON with the archive cache policy
+[1A[2K[10/22] [chromium] › e2e/catalog-infinite-scroll.spec.ts:42:7 › archive paging switch (UX22) › continuous loading appends the next page inside the grid and survives a reload
+[1A[2K[11/22] [chromium] › e2e/catalog-infinite-scroll.spec.ts:96:7 › archive paging switch (UX22) › a one-page archive offers no switch
+[1A[2K[12/22] [mobile-chrome] › e2e/account-tabs.spec.ts:35:7 › account tabs (UX18) › the shell carries the five tabs in Hebrew and the overview is current
+[1A[2K[13/22] [mobile-chrome] › e2e/account-tabs.spec.ts:86:7 › account tabs (UX18) › a child route keeps its tab current, and the old details address lands on settings
+[1A[2K[14/22] [mobile-chrome] › e2e/account-tabs.spec.ts:51:7 › account tabs (UX18) › each tab opens its page inside the shell and becomes current
+[1A[2K[15/22] [mobile-chrome] › e2e/account-tabs.spec.ts:109:7 › account tabs (UX18) › the tabs are one row of 44px links, and on a phone they come before the side nav
+[1A[2K[16/22] [mobile-chrome] › e2e/cart-page.spec.ts:49:7 › cart page controls (UX16) › a plus press is answered by the live region, the meta line and the total
+[1A[2K[17/22] [mobile-chrome] › e2e/cart-page.spec.ts:77:7 › cart page controls (UX16) › the summary says prices include VAT and shows no savings without a discount
+[1A[2K[18/22] [mobile-chrome] › e2e/cart-page.spec.ts:87:7 › cart page controls (UX16) › the remove press marks the row as leaving before it goes, then the cart is empty
+[1A[2K[19/22] [mobile-chrome] › e2e/cart-page.spec.ts:109:7 › cart page controls (UX16) › with motion reduced the row still leaves and the cart still empties
+[1A[2K[20/22] [mobile-chrome] › e2e/catalog-infinite-scroll.spec.ts:32:7 › archive paging switch (UX22) › the next page is served as JSON with the archive cache policy
+[1A[2K[21/22] [mobile-chrome] › e2e/catalog-infinite-scroll.spec.ts:42:7 › archive paging switch (UX22) › continuous loading appends the next page inside the grid and survives a reload
+[1A[2K[22/22] [mobile-chrome] › e2e/catalog-infinite-scroll.spec.ts:96:7 › archive paging switch (UX22) › a one-page archive offers no switch
+[1A[2K  22 passed (1.2m)
+e2e exit 0

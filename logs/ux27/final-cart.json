@@ -1,0 +1,183 @@
+{
+  "base": "http://localhost:3364",
+  "tag": "final",
+  "widths": {
+    "380": {
+      "errors": [],
+      "cartFirst": {
+        "parsedAt": 42,
+        "skeletonAt": 42,
+        "skeletonRows": 1,
+        "emptyAt": null,
+        "linesAt": 1599,
+        "emptyShown": false,
+        "states": [
+          {
+            "t": 1,
+            "skeleton": false,
+            "empty": false,
+            "lines": 0
+          },
+          {
+            "t": 42,
+            "skeleton": true,
+            "empty": false,
+            "lines": 0
+          },
+          {
+            "t": 1599,
+            "skeleton": false,
+            "empty": false,
+            "lines": 1
+          }
+        ]
+      },
+      "cartToCheckout": {
+        "ringBefore": {
+          "url": "/cart",
+          "ring": "false",
+          "live": "",
+          "checkoutShell": 0
+        },
+        "pendingFrom": 1,
+        "pendingLive": "עוברים לקופה…",
+        "urlChangedAt": 19,
+        "shellAtArrival": 4,
+        "states": [
+          {
+            "t": 1,
+            "url": "/cart",
+            "ring": "true",
+            "live": "עוברים לקופה…",
+            "checkoutShell": 0
+          },
+          {
+            "t": 19,
+            "url": "/checkout",
+            "ring": "true",
+            "live": "עוברים לקופה…",
+            "checkoutShell": 4
+          }
+        ]
+      }
+    },
+    "768": {
+      "errors": [],
+      "cartFirst": {
+        "parsedAt": 34,
+        "skeletonAt": 34,
+        "skeletonRows": 1,
+        "emptyAt": null,
+        "linesAt": 1463,
+        "emptyShown": false,
+        "states": [
+          {
+            "t": 6,
+            "skeleton": false,
+            "empty": false,
+            "lines": 0
+          },
+          {
+            "t": 34,
+            "skeleton": true,
+            "empty": false,
+            "lines": 0
+          },
+          {
+            "t": 1463,
+            "skeleton": false,
+            "empty": false,
+            "lines": 1
+          }
+        ]
+      },
+      "cartToCheckout": {
+        "ringBefore": {
+          "url": "/cart",
+          "ring": "false",
+          "live": "",
+          "checkoutShell": 0
+        },
+        "pendingFrom": 0,
+        "pendingLive": "עוברים לקופה…",
+        "urlChangedAt": 50,
+        "shellAtArrival": 4,
+        "states": [
+          {
+            "t": 0,
+            "url": "/cart",
+            "ring": "true",
+            "live": "עוברים לקופה…",
+            "checkoutShell": 0
+          },
+          {
+            "t": 50,
+            "url": "/checkout",
+            "ring": "true",
+            "live": "עוברים לקופה…",
+            "checkoutShell": 4
+          }
+        ]
+      }
+    },
+    "1440": {
+      "errors": [],
+      "cartFirst": {
+        "parsedAt": 45,
+        "skeletonAt": 45,
+        "skeletonRows": 1,
+        "emptyAt": null,
+        "linesAt": 1075,
+        "emptyShown": false,
+        "states": [
+          {
+            "t": 8,
+            "skeleton": false,
+            "empty": false,
+            "lines": 0
+          },
+          {
+            "t": 45,
+            "skeleton": true,
+            "empty": false,
+            "lines": 0
+          },
+          {
+            "t": 1075,
+            "skeleton": false,
+            "empty": false,
+            "lines": 1
+          }
+        ]
+      },
+      "cartToCheckout": {
+        "ringBefore": {
+          "url": "/cart",
+          "ring": "false",
+          "live": "",
+          "checkoutShell": 0
+        },
+        "pendingFrom": 1,
+        "pendingLive": "עוברים לקופה…",
+        "urlChangedAt": 34,
+        "shellAtArrival": 4,
+        "states": [
+          {
+            "t": 1,
+            "url": "/cart",
+            "ring": "true",
+            "live": "עוברים לקופה…",
+            "checkoutShell": 0
+          },
+          {
+            "t": 34,
+            "url": "/checkout",
+            "ring": "true",
+            "live": "עוברים לקופה…",
+            "checkoutShell": 4
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,98 @@
+Already up to date
+Done in 210ms using pnpm v11.1.2
+
+Running 8 tests using 2 workers
+
+[1A[2K[1/8] [chromium] › e2e/loading-skeletons.spec.ts:71:7 › loading skeletons (UX27) › the cart page never pronounces a cart with lines in it empty before the server answers
+[1A[2K[2/8] [chromium] › e2e/loading-skeletons.spec.ts:97:7 › loading skeletons (UX27) › a device with no cart sees the empty state, not a skeleton that never resolves
+[1A[2K[3/8] [chromium] › e2e/loading-skeletons.spec.ts:114:7 › loading skeletons (UX27) › the archive holds a card-shaped box for every product in flight while a page loads
+[1A[2K[4/8] [chromium] › e2e/loading-skeletons.spec.ts:170:7 › account loading skeleton (UX27) › a tab press paints the column skeleton before the new page, and a direct load flushes it first
+[1A[2K[5/8] [mobile-chrome] › e2e/loading-skeletons.spec.ts:71:7 › loading skeletons (UX27) › the cart page never pronounces a cart with lines in it empty before the server answers
+[1A[2K  1) [chromium] › e2e/loading-skeletons.spec.ts:170:7 › account loading skeleton (UX27) › a tab press paints the column skeleton before the new page, and a direct load flushes it first 
+
+    TimeoutError: page.waitForURL: Timeout 20000ms exceeded.
+    =========================== logs ===========================
+    waiting for navigation until "load"
+    ============================================================
+
+       at auth-session.ts:66
+
+      64 |   await page.getByRole('button', { name: 'כניסה', exact: true }).click()
+      65 |   // Either the return path or a generic signed-in page; never stay on /login.
+    > 66 |   await page.waitForURL((url) => !url.pathname.startsWith('/login'), { timeout: 20_000 })
+         |              ^
+      67 | }
+      68 |
+      69 | /**
+        at signInWithEmail (/Users/ofir/kenyonexpress-autopilot/e2e/auth-session.ts:66:14)
+        at /Users/ofir/kenyonexpress-autopilot/e2e/loading-skeletons.spec.ts:161:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/loading-skeletons-account--32b47-irect-load-flushes-it-first-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/loading-skeletons-account--32b47-irect-load-flushes-it-first-chromium/error-context.md
+
+
+[1A[2K[6/8] [mobile-chrome] › e2e/loading-skeletons.spec.ts:97:7 › loading skeletons (UX27) › a device with no cart sees the empty state, not a skeleton that never resolves
+[1A[2K[7/8] [mobile-chrome] › e2e/loading-skeletons.spec.ts:114:7 › loading skeletons (UX27) › the archive holds a card-shaped box for every product in flight while a page loads
+[1A[2K[8/8] [mobile-chrome] › e2e/loading-skeletons.spec.ts:170:7 › account loading skeleton (UX27) › a tab press paints the column skeleton before the new page, and a direct load flushes it first
+[1A[2K  2) [mobile-chrome] › e2e/loading-skeletons.spec.ts:71:7 › loading skeletons (UX27) › the cart page never pronounces a cart with lines in it empty before the server answers 
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    Error: locator.getAttribute: Test timeout of 30000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('a[href^="/product/"]').nth(24)[22m
+
+
+       at helpers.ts:60
+
+      58 |   const count = await links.count()
+      59 |   for (let i = 0; i < count; i += 1) {
+    > 60 |     const href = await links.nth(i).getAttribute('href')
+         |                                     ^
+      61 |     if (href && !hrefs.includes(href)) hrefs.push(href)
+      62 |   }
+      63 |
+        at openPurchasableProduct (/Users/ofir/kenyonexpress-autopilot/e2e/helpers.ts:60:37)
+        at /Users/ofir/kenyonexpress-autopilot/e2e/loading-skeletons.spec.ts:75:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/loading-skeletons-loading--c21a1-y-before-the-server-answers-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/loading-skeletons-loading--c21a1-y-before-the-server-answers-mobile-chrome/error-context.md
+
+
+[1A[2K  3) [mobile-chrome] › e2e/loading-skeletons.spec.ts:170:7 › account loading skeleton (UX27) › a tab press paints the column skeleton before the new page, and a direct load flushes it first 
+
+    TimeoutError: page.waitForURL: Timeout 20000ms exceeded.
+    =========================== logs ===========================
+    waiting for navigation until "load"
+    ============================================================
+
+       at auth-session.ts:66
+
+      64 |   await page.getByRole('button', { name: 'כניסה', exact: true }).click()
+      65 |   // Either the return path or a generic signed-in page; never stay on /login.
+    > 66 |   await page.waitForURL((url) => !url.pathname.startsWith('/login'), { timeout: 20_000 })
+         |              ^
+      67 | }
+      68 |
+      69 | /**
+        at signInWithEmail (/Users/ofir/kenyonexpress-autopilot/e2e/auth-session.ts:66:14)
+        at /Users/ofir/kenyonexpress-autopilot/e2e/loading-skeletons.spec.ts:161:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/loading-skeletons-account--32b47-irect-load-flushes-it-first-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/loading-skeletons-account--32b47-irect-load-flushes-it-first-mobile-chrome/error-context.md
+
+
+[1A[2K  3 failed
+    [chromium] › e2e/loading-skeletons.spec.ts:170:7 › account loading skeleton (UX27) › a tab press paints the column skeleton before the new page, and a direct load flushes it first 
+    [mobile-chrome] › e2e/loading-skeletons.spec.ts:71:7 › loading skeletons (UX27) › the cart page never pronounces a cart with lines in it empty before the server answers 
+    [mobile-chrome] › e2e/loading-skeletons.spec.ts:170:7 › account loading skeleton (UX27) › a tab press paints the column skeleton before the new page, and a direct load flushes it first 
+  5 passed (50.5s)

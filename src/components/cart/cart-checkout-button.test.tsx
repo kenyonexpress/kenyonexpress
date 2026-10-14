@@ -45,6 +45,23 @@ describe('CartCheckoutButton', () => {
     expect(onNavigate).not.toHaveBeenCalled()
   })
 
+  it('carries a fixed pending ring that is off until a navigation is in flight (UX27)', () => {
+    // Measured: the URL changed 306-724ms after the press with nothing on
+    // screen to say the press landed. The ring is always in the document so
+    // the label never moves; only its state flips. Outside a navigation it
+    // is off and the live region is silent.
+    render(<CartCheckoutButton isAuthenticated />)
+    const link = screen.getByRole('link', { name: 'המשך לתשלום' })
+    expect(link.hasAttribute('data-checkout-link')).toBe(true)
+    const hint = link.querySelector('.checkout-link__hint')
+    expect(hint).not.toBeNull()
+    expect(hint?.getAttribute('aria-hidden')).toBe('true')
+    expect(hint?.getAttribute('data-link-pending')).toBe('false')
+    const live = link.querySelector('output[aria-live="polite"]')
+    expect(live).not.toBeNull()
+    expect(live?.textContent).toBe('')
+  })
+
   it('still points at the checkout while disabled, so the target is discoverable', () => {
     // Not a rewrite to `href={undefined}`: the control stays announced and
     // focusable, which is what aria-disabled is for. Only the activation goes.

@@ -959,9 +959,10 @@
   gap: 0;
 }
 
+/* The colour and the motion are `.ke-skeleton` in globals.css (UX27); this
+   class holds only the card's measured boxes below. */
 .category-skeleton {
   display: block;
-  background: var(--cat-bar);
   border-radius: 4px;
 }
 
@@ -993,21 +994,6 @@
   width: 100%;
   margin-top: 8px;
   margin-bottom: 7px;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .category-skeleton {
-    animation: category-skeleton-pulse 1.4s ease-in-out infinite;
-  }
-  @keyframes category-skeleton-pulse {
-    0%,
-    100% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0.55;
-    }
-  }
 }
 
 /* Filter disclosure: closed it is one row, so the footer stays near live's. */

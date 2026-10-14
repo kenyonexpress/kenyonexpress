@@ -54,12 +54,20 @@ export async function openPurchasableProduct(page: Page): Promise<void> {
   const links = page.locator('a[href^="/product/"]')
   await expect(links.first()).toBeVisible({ timeout: DISCOVERY_TIMEOUT })
 
-  const hrefs: string[] = []
-  const count = await links.count()
-  for (let i = 0; i < count; i += 1) {
-    const href = await links.nth(i).getAttribute('href')
-    if (href && !hrefs.includes(href)) hrefs.push(href)
-  }
+  // One atomic read of the hrefs, not count() followed by nth(i): the
+  // archive streams in under a Suspense boundary, and for a moment the hidden
+  // streamed copy and the live grid are BOTH in the document, so a count
+  // taken then (48) outlives the swap and nth(24) waits for a link that no
+  // longer exists until the test times out (UX27 saw it twice in a row on a
+  // slow database night).
+  const hrefs = await links.evaluateAll((anchors) => {
+    const seen: string[] = []
+    for (const anchor of anchors) {
+      const href = anchor.getAttribute('href')
+      if (href && !seen.includes(href)) seen.push(href)
+    }
+    return seen
+  })
 
   // Bounded: a seed where none of the first few is buyable is a seed problem,
   // and walking all of it would blow the per-test timeout instead of saying so.

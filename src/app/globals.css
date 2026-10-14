@@ -928,3 +928,45 @@ body:has([data-home]) .topbar-greeting {
   inline-size: 0;
   overflow: hidden;
 }
+
+/* THE ONE SKELETON BOX (UX27).
+ *
+ * Every placeholder that stands in for content still on its way is one of
+ * these: the account column while a page streams, the cart's lines before the
+ * server has answered, the archive's next page while it is fetched, the
+ * catalogue card while a grid streams. One class, one colour, one motion, so
+ * a shopper learns the shape once. Each caller sets only the box's size with
+ * a class of its own; nothing here reserves geometry.
+ *
+ * The sweep runs right to left, the reading direction of the page: with the
+ * image twice the box's width, position 0 puts the highlight at the inline
+ * end (the right edge in RTL) and 100% carries it to the inline start. Under
+ * prefers-reduced-motion the global rule above cuts the animation to one
+ * frame, and the box stays a flat grey. */
+.ke-skeleton {
+  display: block;
+  border-radius: 4px;
+  background-color: #efefef;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .ke-skeleton {
+    background-image: linear-gradient(
+      90deg,
+      #efefef 0%,
+      #efefef 38%,
+      #f9f9f9 50%,
+      #efefef 62%,
+      #efefef 100%
+    );
+    background-size: 200% 100%;
+    background-position: 0 0;
+    animation: ke-skeleton-sweep 1.4s linear infinite;
+  }
+
+  @keyframes ke-skeleton-sweep {
+    to {
+      background-position: 100% 0;
+    }
+  }
+}

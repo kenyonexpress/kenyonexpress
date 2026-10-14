@@ -3,7 +3,8 @@
 import CartCheckoutButton from '@/components/cart/CartCheckoutButton'
 import CartLineItem, { CartEmptyState } from '@/components/cart/CartLineItem'
 import { CartOfflineNotice } from '@/components/cart/CartOfflineNotice'
-import { useCart, useCartAuth } from '@/components/cart/CartProvider'
+import CartPageSkeleton from '@/components/cart/CartPageSkeleton'
+import { useCart, useCartAuth, useCartMirrorHydrated } from '@/components/cart/CartProvider'
 import CartTotalsSidebar from '@/components/cart/CartTotalsSidebar'
 import SavedForLaterList from '@/components/cart/SavedForLaterList'
 import { SavedForLaterProvider } from '@/components/cart/SavedForLaterProvider'
@@ -22,12 +23,31 @@ import Link from 'next/link'
  * whole route in the static shell.
  */
 export default function CartPageView() {
-  const { cart, clear, removeUnavailable, isPending, fallbackActive, queuedLines } = useCart()
+  const {
+    cart,
+    clear,
+    removeUnavailable,
+    isPending,
+    fallbackActive,
+    queuedLines,
+    serverConfirmed,
+    mirrorCount,
+  } = useCart()
   const isAuthenticated = useCartAuth()
+  const mirrorHydrated = useCartMirrorHydrated()
 
   const unavailableCount = cart.items.filter((item) => !item.available).length
   const hasUnavailable = unavailableCount > 0
   const isEmpty = cart.items.length === 0
+  // UX27: "empty" is a verdict, and before the server has spoken the page has
+  // no grounds for it. The static HTML used to carry the yellow "your cart is
+  // empty" banner, and a shopper with three lines read it for 1.5-2.0s on
+  // every visit (measured, logs/ux27/before.json) until /api/cart answered.
+  // The cart is settled once the server has answered, once the device's
+  // fallback copy is on screen, or once the mirror has been read and says this
+  // device holds no cart; until then an empty list is a cart still loading.
+  const settled = serverConfirmed || fallbackActive || (mirrorHydrated && mirrorCount === 0)
+  const awaitingCart = isEmpty && !settled
 
   return (
     <SavedForLaterProvider>
@@ -46,7 +66,9 @@ export default function CartPageView() {
         </nav>
         <h1 className="cart-page__title">סל הקניות</h1>
 
-        {isEmpty ? (
+        {awaitingCart ? (
+          <CartPageSkeleton lines={Math.min(Math.max(mirrorCount, 1), 3)} />
+        ) : isEmpty ? (
           <>
             <CartEmptyState />
             {/* The parked rows outlive the cart: an empty cart with a saved

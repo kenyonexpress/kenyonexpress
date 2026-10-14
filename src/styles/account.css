@@ -1764,3 +1764,55 @@
 .account-bell__footer:hover {
   background: #fafafa;
 }
+
+/* UX27: the column while a page streams (AccountContentSkeleton). The bars
+   are `.ke-skeleton` (globals.css); these classes hold only the sizes of the
+   lines they stand in for: the 25px/40px title, the 14px subtitle, the card's
+   title, two body lines and a 36px control. */
+.account-pending__title {
+  display: flex;
+  align-items: center;
+}
+
+.account-pending__bar--title {
+  height: 25px;
+  width: 40%;
+  max-width: 260px;
+}
+
+.account-pending__subtitle {
+  line-height: 20px;
+}
+
+.account-pending__bar--subtitle {
+  height: 14px;
+  width: 55%;
+  max-width: 340px;
+}
+
+.account-pending__card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.account-pending__bar--card-title {
+  height: 18px;
+  width: 35%;
+  max-width: 200px;
+}
+
+.account-pending__bar--line {
+  height: 14px;
+  width: 85%;
+}
+
+.account-pending__bar--line.is-short {
+  width: 55%;
+}
+
+.account-pending__bar--control {
+  height: 36px;
+  width: 140px;
+  border-radius: 4px;
+}

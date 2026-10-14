@@ -1,0 +1,14 @@
+
+=== width 380 ===
+REFUSING to measure: https://kenyonexpress.co.il/ is not the reference.
+  It is this project's own build (35 /_next/ asset reference(s) and a Next runtime element, and no wp-content stylesheet or script at all).
+  kenyonexpress.co.il points at our Vercel deployment now, so scoring against it
+  compares our build with our build. That is not a low parity number, it is no
+  measurement at all -- and unlike the other failures here, it fails SAFE and
+  would have been recorded as a pass.
+  See docs/PARITY-REFERENCE.md for what a reference has to be before this gate
+  can produce a number again.
+
+=== home parity, gate 11% ===
+   380      n/a  no number (exit 5)
+compare exit 5

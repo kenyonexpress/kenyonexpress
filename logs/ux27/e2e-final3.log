@@ -1,0 +1,66 @@
+Already up to date
+Done in 194ms using pnpm v11.1.2
+
+Running 2 tests using 2 workers
+
+[1A[2K[1/2] [chromium] › e2e/loading-skeletons.spec.ts:71:7 › loading skeletons (UX27) › the cart page never pronounces a cart with lines in it empty before the server answers
+[1A[2K[2/2] [chromium] › e2e/loading-skeletons.spec.ts:71:7 › loading skeletons (UX27) › the cart page never pronounces a cart with lines in it empty before the server answers
+[1A[2K  1) [chromium] › e2e/loading-skeletons.spec.ts:71:7 › loading skeletons (UX27) › the cart page never pronounces a cart with lines in it empty before the server answers 
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    Error: locator.getAttribute: Test timeout of 30000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('a[href^="/product/"]').nth(24)[22m
+
+
+       at helpers.ts:60
+
+      58 |   const count = await links.count()
+      59 |   for (let i = 0; i < count; i += 1) {
+    > 60 |     const href = await links.nth(i).getAttribute('href')
+         |                                     ^
+      61 |     if (href && !hrefs.includes(href)) hrefs.push(href)
+      62 |   }
+      63 |
+        at openPurchasableProduct (/Users/ofir/kenyonexpress-autopilot/e2e/helpers.ts:60:37)
+        at /Users/ofir/kenyonexpress-autopilot/e2e/loading-skeletons.spec.ts:75:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/loading-skeletons-loading--c21a1-y-before-the-server-answers-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/loading-skeletons-loading--c21a1-y-before-the-server-answers-chromium/error-context.md
+
+
+[1A[2K  2) [chromium] › e2e/loading-skeletons.spec.ts:71:7 › loading skeletons (UX27) › the cart page never pronounces a cart with lines in it empty before the server answers 
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    Error: locator.getAttribute: Test timeout of 30000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('a[href^="/product/"]').nth(24)[22m
+
+
+       at helpers.ts:60
+
+      58 |   const count = await links.count()
+      59 |   for (let i = 0; i < count; i += 1) {
+    > 60 |     const href = await links.nth(i).getAttribute('href')
+         |                                     ^
+      61 |     if (href && !hrefs.includes(href)) hrefs.push(href)
+      62 |   }
+      63 |
+        at openPurchasableProduct (/Users/ofir/kenyonexpress-autopilot/e2e/helpers.ts:60:37)
+        at /Users/ofir/kenyonexpress-autopilot/e2e/loading-skeletons.spec.ts:75:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/loading-skeletons-loading--c21a1-y-before-the-server-answers-chromium-repeat1/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/loading-skeletons-loading--c21a1-y-before-the-server-answers-chromium-repeat1/error-context.md
+
+
+[1A[2K  2 failed
+    [chromium] › e2e/loading-skeletons.spec.ts:71:7 › loading skeletons (UX27) › the cart page never pronounces a cart with lines in it empty before the server answers 
+    [chromium] › e2e/loading-skeletons.spec.ts:71:7 › loading skeletons (UX27) › the cart page never pronounces a cart with lines in it empty before the server answers 

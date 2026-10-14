@@ -1,5 +1,6 @@
 'use client'
 
+import { CategoryCardSkeleton } from '@/components/category/CategoryGridSkeleton'
 import CategoryProductCard from '@/components/category/CategoryProductCard'
 import {
   type ArchivePageItem,
@@ -95,6 +96,10 @@ export default function CatalogGrid({
   const [paging, setPaging] = useState<CatalogPaging>(DEFAULT_CATALOG_PAGING)
   const [loaded, setLoaded] = useState<LoadedPage[]>([])
   const [status, setStatus] = useState<Status>('idle')
+  // UX27: how many pages are on their way, so the list can hold a card-shaped
+  // box for each product about to land instead of changing a button's label
+  // alone (measured: 0.6-1.2s of nothing below the grid while page two came).
+  const [pendingPages, setPendingPages] = useState(0)
   const [announcement, setAnnouncement] = useState('')
   const buttonRef = useRef<HTMLButtonElement | null>(null)
   const inFlight = useRef(false)
@@ -123,6 +128,7 @@ export default function CatalogGrid({
     if (inFlight.current || !hasMore) return
     inFlight.current = true
     setStatus('loading')
+    setPendingPages(1)
     const target = loadedThrough + 1
     try {
       const next = await fetchPage(target)
@@ -140,6 +146,7 @@ export default function CatalogGrid({
       setStatus('error')
     } finally {
       inFlight.current = false
+      setPendingPages(0)
     }
   }, [fetchPage, from, hasMore, loadedThrough, pageSize, total])
 
@@ -159,6 +166,7 @@ export default function CatalogGrid({
     if (targets.length === 0) return
     inFlight.current = true
     setStatus('loading')
+    setPendingPages(targets.length)
     Promise.all(targets.map((p) => fetchPage(p).catch(() => null)))
       .then((pages) => {
         // Stop at the first page that did not come back, so the list is
@@ -175,6 +183,7 @@ export default function CatalogGrid({
       })
       .finally(() => {
         inFlight.current = false
+        setPendingPages(0)
       })
   }, [continuous, fetchPage, page, totalPages])
 
@@ -220,10 +229,14 @@ export default function CatalogGrid({
   const buttonLabel =
     status === 'loading' ? LOADING_LABEL : status === 'error' ? RETRY_LABEL : LOAD_MORE_LABEL
   const countTo = continuous ? Math.min(loadedThrough * pageSize, total) : to
+  // One box per product still to come, never more than the archive holds:
+  // the last page of a 46-product archive is 22 cards, not 24.
+  const pendingCards =
+    status === 'loading' ? Math.min(pendingPages * pageSize, Math.max(0, total - countTo)) : 0
 
   return (
     <>
-      <ul className="category-products">
+      <ul className="category-products" aria-busy={status === 'loading' || undefined}>
         {children}
         {loaded.map((entry) =>
           entry.items.map((item) => (
@@ -240,6 +253,17 @@ export default function CatalogGrid({
             </li>
           )),
         )}
+        {Array.from({ length: pendingCards }, (_, i) => (
+          <li
+            // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length placeholder, never reordered
+            key={`pending-${i}`}
+            className="category-products__item"
+            data-pending-card=""
+            aria-hidden="true"
+          >
+            <CategoryCardSkeleton />
+          </li>
+        ))}
       </ul>
 
       {continuous ? (

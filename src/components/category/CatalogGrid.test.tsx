@@ -207,10 +207,20 @@ describe('CatalogGrid', () => {
     expect(screen.getByRole('button', { name: LOADING_LABEL })).toBeDisabled()
     fireEvent.click(screen.getByRole('button', { name: LOADING_LABEL }))
     expect(fetchMock).toHaveBeenCalledTimes(1)
+    // UX27: while the page is in flight the list holds a card-shaped box for
+    // every product still to come: 46 in the archive, 24 on screen, so 22,
+    // not a full page of 24. Decorative, so not list items to a reader.
+    const list = screen.getAllByRole('listitem')[0]?.closest('ul')
+    expect(list?.getAttribute('aria-busy')).toBe('true')
+    expect(list?.querySelectorAll('[data-pending-card]')).toHaveLength(22)
+    expect(list?.querySelectorAll('[data-pending-card] .category-card--skeleton')).toHaveLength(22)
+    expect(screen.getAllByRole('listitem')).toHaveLength(24)
     await act(async () => {
       resolve(jsonResponse(pageBody(2, [item('n1')])))
     })
     await waitFor(() => expect(screen.getAllByRole('listitem')).toHaveLength(25))
+    expect(document.querySelectorAll('[data-pending-card]')).toHaveLength(0)
+    expect(list?.getAttribute('aria-busy')).toBeNull()
   })
 
   it('lets the observer press the button when the foot is reached, or already passed', async () => {
