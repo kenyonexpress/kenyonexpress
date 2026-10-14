@@ -1,0 +1,18 @@
+Already up to date
+Done in 1s using pnpm v11.1.2
+
+Running 10 tests using 2 workers
+
+[1A[2K[1/10] [chromium] › e2e/listing-controls.spec.ts:69:7 › listing controls (UX14) › the sort select offers only orders the catalogue honours
+[1A[2K[2/10] [chromium] › e2e/listing-controls.spec.ts:32:7 › listing controls (UX14) › the view switcher lays the grid out as rows and remembers it
+[1A[2K[3/10] [chromium] › e2e/listing-controls.spec.ts:79:7 › listing controls (UX14) › an active filter is a removable chip, and two of them get a clear-all link
+[1A[2K[4/10] [chromium] › e2e/listing-controls.spec.ts:100:7 › listing controls (UX14) › the price form refuses an inverted range on the page, without a request
+[1A[2K[5/10] [chromium] › e2e/listing-controls.spec.ts:120:7 › listing controls (UX14) › pagination is a list of labelled pages
+[1A[2K[6/10] [mobile-chrome] › e2e/listing-controls.spec.ts:32:7 › listing controls (UX14) › the view switcher lays the grid out as rows and remembers it
+[1A[2K[7/10] [mobile-chrome] › e2e/listing-controls.spec.ts:79:7 › listing controls (UX14) › an active filter is a removable chip, and two of them get a clear-all link
+[1A[2K[8/10] [mobile-chrome] › e2e/listing-controls.spec.ts:69:7 › listing controls (UX14) › the sort select offers only orders the catalogue honours
+[1A[2K[9/10] [mobile-chrome] › e2e/listing-controls.spec.ts:100:7 › listing controls (UX14) › the price form refuses an inverted range on the page, without a request
+[1A[2K[10/10] [mobile-chrome] › e2e/listing-controls.spec.ts:120:7 › listing controls (UX14) › pagination is a list of labelled pages
+[1A[2K  1 skipped
+  9 passed (16.0s)
+E2E_EXIT=0

@@ -1,4 +1,6 @@
 import ViewTracker from '@/components/analytics/ViewTracker'
+import { CatalogViewBody, CatalogViewProvider } from '@/components/category/CatalogViewProvider'
+import CategoryActiveFilters from '@/components/category/CategoryActiveFilters'
 import CategoryBreadcrumb, { defaultHomeCrumb } from '@/components/category/CategoryBreadcrumb'
 import CategoryBuyerGuide from '@/components/category/CategoryBuyerGuide'
 import CategoryControlBar from '@/components/category/CategoryControlBar'
@@ -12,6 +14,7 @@ import CategoryProductCard, {
 import Pagination from '@/components/category/Pagination'
 import { ABOVE_FOLD_CARD_COUNT } from '@/components/category/above-fold'
 import CityTags from '@/components/geo/CityTags'
+import { activeFilterCount } from '@/lib/category-filters'
 import { guideExcerpt } from '@/lib/category-guides/markdown'
 import { getCategoryGuide } from '@/lib/category-guides/read'
 import {
@@ -478,16 +481,24 @@ async function CategoryPageBody({
           </Suspense>
         </header>
 
-        <CategoryControlBar value={sort} />
+        {/* The grid / list preference (UX14): one client context around the
+            bar that sets it, the body that carries it as `data-view` and the
+            cards that read it. The fallback shell above keeps its plain div. */}
+        <CatalogViewProvider>
+          <CategoryControlBar value={sort} activeFilterCount={activeFilterCount(linkParams)} />
 
-        <div className="category-page__body">
-          <div className="category-page__main">
-            <Suspense fallback={<CategoryGridSkeleton count={CATEGORY_PAGE_SIZE} />}>
-              <ResultGrid args={args} pathname={pathname} linkParams={linkParams} />
-            </Suspense>
-          </div>
+          {/* Null on an unfiltered page, so the zero gap between the bar and
+              the first card that the parity gate measured is kept. */}
+          <CategoryActiveFilters pathname={pathname} params={linkParams} />
 
-          {/* The city picker. Same component as the row under the hero, so the
+          <CatalogViewBody>
+            <div className="category-page__main">
+              <Suspense fallback={<CategoryGridSkeleton count={CATEGORY_PAGE_SIZE} />}>
+                <ResultGrid args={args} pathname={pathname} linkParams={linkParams} />
+              </Suspense>
+            </div>
+
+            {/* The city picker. Same component as the row under the hero, so the
               two cannot drift apart in behaviour or in what "one city" means.
 
               BELOW THE GRID, for the reason category-page.css already gives for
@@ -497,21 +508,23 @@ async function CategoryPageBody({
               was ~100px of exactly that, and it sat ABOVE the grid while the
               filters -- the same kind of control, with the same argument
               written next to them -- sat below. It is one rule now. */}
-          <Suspense fallback={null}>
-            <CityTags className="mt-3" />
-          </Suspense>
+            <Suspense fallback={null}>
+              <CityTags className="mt-3" />
+            </Suspense>
 
-          <CategoryFilterSidebar
-            categories={allCategories}
-            currentSlug={category.slug}
-            priceMin={priceMin}
-            priceMax={priceMax}
-            productType={productType}
-            brands={brands}
-            brand={brand}
-            minDiscount={minDiscount}
-          />
-        </div>
+            <CategoryFilterSidebar
+              categories={allCategories}
+              currentSlug={category.slug}
+              priceMin={priceMin}
+              priceMax={priceMax}
+              productType={productType}
+              brands={brands}
+              brand={brand}
+              minDiscount={minDiscount}
+              activeCount={activeFilterCount(linkParams)}
+            />
+          </CatalogViewBody>
+        </CatalogViewProvider>
 
         {/* The buyer guide (STEP 65): a few hundred indexable words on how to
             choose in this category, under the grid and the filters where it

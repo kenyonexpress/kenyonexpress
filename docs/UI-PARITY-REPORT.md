@@ -155,3 +155,5 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-14 08:58 | home | 1440 | 1.32% | PASS | `efe44cf05-dirty` | live side: frozen capture `refs/ke_live_1440.png`; overall 10.92% (reference blank 8.52%, ours blank 1.09%) |
 | 2026-10-14 08:59 | cart | 380 | n/a | REFUSED | `efe44cf05-dirty` | live side is our-build |
 | 2026-10-14 08:59 | checkout | 380 | n/a | REFUSED | `efe44cf05-dirty` | live side is our-build |
+| 2026-10-14 10:02 | home | 380 | 2.22% | PASS | `e82d21e59-dirty` | live side: frozen capture `refs/ke_live_380.png`; overall 4.44% (reference blank 1.14%, ours blank 1.08%) |
+| 2026-10-14 10:04 | home | 768 | 1.24% | PASS | `e82d21e59-dirty` | live side: frozen capture `refs/ke_live_768.png`; overall 5.23% (reference blank 2.83%, ours blank 1.15%) |

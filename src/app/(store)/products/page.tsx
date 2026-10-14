@@ -1,3 +1,5 @@
+import { CatalogViewBody, CatalogViewProvider } from '@/components/category/CatalogViewProvider'
+import CategoryActiveFilters from '@/components/category/CategoryActiveFilters'
 import CategoryBreadcrumb, { defaultHomeCrumb } from '@/components/category/CategoryBreadcrumb'
 import CategoryControlBar from '@/components/category/CategoryControlBar'
 import CategoryFilterSidebar from '@/components/category/CategoryFilterSidebar'
@@ -7,6 +9,7 @@ import CategoryProductCard, {
 } from '@/components/category/CategoryProductCard'
 import Pagination from '@/components/category/Pagination'
 import { ABOVE_FOLD_CARD_COUNT } from '@/components/category/above-fold'
+import { activeFilterCount } from '@/lib/category-filters'
 import {
   type ProductTypeFilter,
   SHOP_PAGE_SIZE,
@@ -194,8 +197,14 @@ async function ShopResultCount({ searchParams }: Props) {
 }
 
 async function ShopControlBar({ searchParams }: Props) {
-  const { args } = await shopArgs(searchParams)
-  return <CategoryControlBar value={args.sort} />
+  const { args, linkParams } = await shopArgs(searchParams)
+  return <CategoryControlBar value={args.sort} activeFilterCount={activeFilterCount(linkParams)} />
+}
+
+/** The active-filter strip (UX14). Null on the bare archive, so nothing moves there. */
+async function ShopActiveFilters({ searchParams }: Props) {
+  const { linkParams } = await shopArgs(searchParams)
+  return <CategoryActiveFilters pathname="/products" params={linkParams} />
 }
 
 async function ShopGrid({ searchParams }: Props) {
@@ -204,13 +213,17 @@ async function ShopGrid({ searchParams }: Props) {
 }
 
 async function ShopSidebar({ searchParams }: Props) {
-  const [{ args }, allCategories] = await Promise.all([shopArgs(searchParams), getAllCategories()])
+  const [{ args, linkParams }, allCategories] = await Promise.all([
+    shopArgs(searchParams),
+    getAllCategories(),
+  ])
   return (
     <CategoryFilterSidebar
       categories={allCategories}
       priceMin={args.priceMin}
       priceMax={args.priceMax}
       productType={args.productType}
+      activeCount={activeFilterCount(linkParams)}
     />
   )
 }
@@ -252,21 +265,32 @@ export default function ProductsPage({ searchParams }: Props) {
             the same measured 45.89px min-height, radius and `--cat-bar` fill -
             and the controls land in it. Rendering `<CategoryControlBar>` here
             instead type-checks and then fails the build. */}
-        <Suspense fallback={<div className="category-control-bar" aria-hidden="true" />}>
-          <ShopControlBar searchParams={searchParams} />
-        </Suspense>
-
-        <div className="category-page__body">
-          <div className="category-page__main">
-            <Suspense fallback={<CategoryGridSkeleton count={SHOP_PAGE_SIZE} />}>
-              <ShopGrid searchParams={searchParams} />
-            </Suspense>
-          </div>
-
-          <Suspense fallback={<div className="category-sidebar" aria-hidden="true" />}>
-            <ShopSidebar searchParams={searchParams} />
+        {/* The grid / list preference (UX14) is one client context around the
+            bar that sets it, the body that carries it as `data-view`, and the
+            cards that read it. Server children pass through untouched. */}
+        <CatalogViewProvider>
+          <Suspense fallback={<div className="category-control-bar" aria-hidden="true" />}>
+            <ShopControlBar searchParams={searchParams} />
           </Suspense>
-        </div>
+
+          {/* No fallback: the strip has no height on the bare archive and
+              streams in only when a facet is set. */}
+          <Suspense fallback={null}>
+            <ShopActiveFilters searchParams={searchParams} />
+          </Suspense>
+
+          <CatalogViewBody>
+            <div className="category-page__main">
+              <Suspense fallback={<CategoryGridSkeleton count={SHOP_PAGE_SIZE} />}>
+                <ShopGrid searchParams={searchParams} />
+              </Suspense>
+            </div>
+
+            <Suspense fallback={<div className="category-sidebar" aria-hidden="true" />}>
+              <ShopSidebar searchParams={searchParams} />
+            </Suspense>
+          </CatalogViewBody>
+        </CatalogViewProvider>
       </div>
     </div>
   )

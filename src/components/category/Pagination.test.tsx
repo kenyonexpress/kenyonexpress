@@ -63,3 +63,24 @@ describe('Pagination', () => {
     expect(screen.getByRole('link', { name: 'העמוד הקודם' })).toHaveAttribute('href', '/p?page=3')
   })
 })
+
+/**
+ * UX14: live's shape. A `<ul>` of items inside the `<nav>`, every number
+ * labelled "עמוד N", the current one marked for assistive tech.
+ */
+describe('Pagination labels (UX14)', () => {
+  it('lists the pages with their names and marks the current one', () => {
+    render(<Pagination pathname="/products" params={{}} currentPage={2} totalPages={3} />)
+    const nav = screen.getByRole('navigation', { name: 'ניווט בין עמודים' })
+    const list = nav.querySelector('ul.category-pagination__list')
+    expect(list).not.toBeNull()
+    expect(list?.querySelectorAll(':scope > li')).toHaveLength(5)
+    expect(screen.getByRole('link', { name: 'עמוד 1' })).toHaveAttribute('href', '/products')
+    expect(screen.getByRole('link', { name: 'עמוד 3' })).toHaveAttribute('href', '/products?page=3')
+    const current = nav.querySelector('[aria-current="page"]')
+    expect(current).toHaveTextContent('2')
+    expect(current).toHaveAttribute('aria-label', 'עמוד 2')
+    expect(screen.getByRole('link', { name: 'העמוד הקודם' })).toHaveAttribute('rel', 'prev')
+    expect(screen.getByRole('link', { name: 'העמוד הבא' })).toHaveAttribute('rel', 'next')
+  })
+})

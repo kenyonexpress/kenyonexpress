@@ -50,6 +50,21 @@ function Chevron({ dir }: { dir: 'prev' | 'next' }) {
   )
 }
 
+/** Live's `aria-label="עמוד N"` on every number (refs/ke_live_products.html). */
+function pageLabel(page: number): string {
+  return `עמוד ${page}`
+}
+
+/**
+ * The archive's page links.
+ *
+ * Live's shape (UX14): a `<nav>` holding a `<ul>` of items, each number with
+ * its own "עמוד N" label, the current one marked `aria-current="page"`. A
+ * screen reader used to hear "1, 2, link" and nothing that said those were
+ * pages; now it hears "עמוד 2, link" and "עמוד 1, current page". The links
+ * themselves are the contract `Pagination.test.tsx` reads: every active filter
+ * survives in every page link, and `page=1` is the bare URL.
+ */
 export default function Pagination({ pathname, params, currentPage, totalPages }: Props) {
   if (totalPages <= 1) return null
 
@@ -58,41 +73,61 @@ export default function Pagination({ pathname, params, currentPage, totalPages }
 
   return (
     <nav className="category-pagination" aria-label="ניווט בין עמודים">
-      {prevDisabled ? (
-        <span className="is-disabled" aria-hidden>
-          <Chevron dir="prev" />
-        </span>
-      ) : (
-        <Link href={hrefFor(pathname, params, currentPage - 1)} aria-label="העמוד הקודם" rel="prev">
-          <Chevron dir="prev" />
-        </Link>
-      )}
+      <ul className="category-pagination__list">
+        <li>
+          {prevDisabled ? (
+            <span className="is-disabled" aria-hidden>
+              <Chevron dir="prev" />
+            </span>
+          ) : (
+            <Link
+              href={hrefFor(pathname, params, currentPage - 1)}
+              aria-label="העמוד הקודם"
+              rel="prev"
+            >
+              <Chevron dir="prev" />
+            </Link>
+          )}
+        </li>
 
-      {pageWindow(currentPage, totalPages).map((p) =>
-        typeof p === 'string' ? (
-          <span key={p} className="is-disabled" aria-hidden>
-            …
-          </span>
-        ) : p === currentPage ? (
-          <span key={p} aria-current="page" className="is-current">
-            {p}
-          </span>
-        ) : (
-          <Link key={p} href={hrefFor(pathname, params, p)}>
-            {p}
-          </Link>
-        ),
-      )}
+        {pageWindow(currentPage, totalPages).map((p) =>
+          typeof p === 'string' ? (
+            <li key={p}>
+              <span className="is-disabled" aria-hidden>
+                …
+              </span>
+            </li>
+          ) : p === currentPage ? (
+            <li key={p}>
+              <span aria-current="page" aria-label={pageLabel(p)} className="is-current">
+                {p}
+              </span>
+            </li>
+          ) : (
+            <li key={p}>
+              <Link href={hrefFor(pathname, params, p)} aria-label={pageLabel(p)}>
+                {p}
+              </Link>
+            </li>
+          ),
+        )}
 
-      {nextDisabled ? (
-        <span className="is-disabled" aria-hidden>
-          <Chevron dir="next" />
-        </span>
-      ) : (
-        <Link href={hrefFor(pathname, params, currentPage + 1)} aria-label="העמוד הבא" rel="next">
-          <Chevron dir="next" />
-        </Link>
-      )}
+        <li>
+          {nextDisabled ? (
+            <span className="is-disabled" aria-hidden>
+              <Chevron dir="next" />
+            </span>
+          ) : (
+            <Link
+              href={hrefFor(pathname, params, currentPage + 1)}
+              aria-label="העמוד הבא"
+              rel="next"
+            >
+              <Chevron dir="next" />
+            </Link>
+          )}
+        </li>
+      </ul>
     </nav>
   )
 }

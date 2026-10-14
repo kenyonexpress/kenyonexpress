@@ -1214,3 +1214,249 @@
   margin: 12px 0 4px;
   max-width: var(--spacing-search-pill);
 }
+
+/* ---------------------------------------------------------------------------
+   UX14: the listing controls. A real view switcher, the list view it drives,
+   the active-filter strip, the price form's refusal, and live's <ul> shape
+   on the pagination. Colours are the tokens above; the only literal lengths
+   are the two percentages Electro's list row is cut at and small paddings.
+   --------------------------------------------------------------------------- */
+
+/* The switcher is a <fieldset> (a named group of two buttons), so the UA
+   fieldset chrome goes; the display rules above it still apply. */
+.category-view-switcher {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-inline-size: 0;
+}
+
+/* The switcher's two states are buttons now, so the UA button chrome goes.
+   The painted box stays 26 x 39.33 as measured; the touch floor comes from
+   `.tap-area` in responsive.css, which this host carries. */
+.category-view-switcher__btn {
+  padding: 0;
+  font: inherit;
+}
+
+.category-view-switcher__btn:focus-visible {
+  outline: 2px solid var(--cat-ink);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* The count beside the phone's "סינון" link and inside the closed summary:
+   a small brand-yellow pill, so a narrowed archive says so on the one screen
+   the shopper sees first. */
+.category-control-bar__filters-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+  background: var(--cat-brand);
+  color: var(--cat-ink);
+  font-size: var(--cat-eyebrow-size);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.category-sidebar__summary-count {
+  color: var(--cat-muted);
+  font-weight: 400;
+}
+
+/* The active-filter strip: between the bar and the grid, only when a facet
+   is on. Same chip shape as the search page's facet nav so the two archives
+   read as one system. */
+.category-active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 0 14px;
+  font-size: 14px;
+  color: var(--cat-muted);
+}
+
+.category-active-filters__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.category-active-filters__chip,
+.category-active-filters__clear {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 4px 12px;
+  border: 1px solid var(--cat-line);
+  border-radius: 999px;
+  background: var(--cat-surface);
+  font-size: 13px;
+  color: var(--cat-ink);
+  text-decoration: none;
+}
+
+.category-active-filters__chip:hover,
+.category-active-filters__clear:hover,
+.category-active-filters__chip:focus-visible,
+.category-active-filters__clear:focus-visible {
+  color: var(--cat-link);
+  border-color: var(--cat-link);
+}
+
+.category-active-filters__clear {
+  border-style: dashed;
+}
+
+/* The price form's refusal: the form error red, under the two fields. */
+.category-sidebar__price-error {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--color-error);
+}
+
+.category-sidebar__price-input[aria-invalid="true"] {
+  border-color: var(--color-error);
+}
+
+/* Pagination as live renders it: a <ul> of items inside the <nav>. The item
+   boxes keep the rules above (36px pills, brand yellow on the current page). */
+.category-pagination__list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* THE LIST VIEW. Electro's `ul.products[data-view=list-view]`: every product
+   is a full-width row cut into picture / text / price-and-button columns at
+   33% / 42% / 25%, 30px 15px of padding, a hairline between rows, and the
+   add-to-cart grown into a full-width brand button. Below 768 the row keeps
+   the picture on the inline-start and stacks the text over the button. */
+.category-page__body[data-view="list"] .category-products__item {
+  width: 100%;
+  flex: 0 0 100%;
+}
+
+.category-card--list {
+  display: grid;
+  grid-template-columns: minmax(0, 4fr) minmax(0, 5fr) minmax(0, 3fr);
+  grid-template-areas: "media body footer";
+  column-gap: 30px;
+  align-items: start;
+  height: auto;
+  padding: 30px 15px;
+  border-bottom: 1px solid var(--cat-line);
+}
+
+.category-card--list .category-card__media {
+  grid-area: media;
+}
+
+.category-card--list .category-card__thumb {
+  margin-top: 0;
+}
+
+.category-card--list .category-card__body {
+  grid-area: body;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.category-card--list .category-card__title {
+  margin: 6px 0 8px;
+  font-size: 16px;
+  line-height: 22px;
+}
+
+/* Electro's .product-short-description: muted ink, .857em over a 1.75em
+   line, clipped. Three lines here, so a long blurb cannot stretch its row
+   past the picture beside it. */
+.category-card__desc {
+  display: none;
+}
+
+.category-card--list .category-card__desc {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  margin: 0 0 1.5em;
+  font-size: var(--cat-eyebrow-size);
+  line-height: 1.75em;
+  color: var(--cat-muted);
+}
+
+.category-card--list .category-card__footer--list {
+  grid-area: footer;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  height: auto;
+  margin: 0;
+}
+
+.category-card--list .category-card__price {
+  height: auto;
+  line-height: var(--cat-body-line);
+}
+
+/* The full-width add-to-cart of the list row: the brand button at the touch
+   floor, the same pill radius as the price form's button beside it. */
+.category-card__atc-full {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: var(--spacing-touch-min, 44px);
+  padding: 10px 25px;
+  border: 0;
+  border-radius: var(--cat-price-size);
+  background: var(--cat-brand);
+  color: var(--cat-ink);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.category-card__atc-full:hover,
+.category-card__atc-full:focus-visible {
+  background: var(--cat-brand-hover);
+}
+
+.category-card__atc-full[disabled] {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+@media (max-width: 767px) {
+  .category-card--list {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    grid-template-areas:
+      "media body"
+      "media footer";
+    column-gap: 16px;
+    padding: 20px 0;
+  }
+
+  .category-card--list .category-card__thumb {
+    height: auto;
+    line-height: normal;
+  }
+}

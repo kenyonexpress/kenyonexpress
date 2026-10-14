@@ -24,7 +24,19 @@ type Props = {
   brand?: string
   /** The selected minimum saving, from `parseMinDiscount`. */
   minDiscount?: number
+  /**
+   * How many facets narrow the page (UX14), from `activeFilterCount`. Shown
+   * on the closed summary, because the panel is closed and below the grid and
+   * nothing else on it said that a filter was already applied.
+   */
+  activeCount?: number
 }
+
+/** The price form's two refusals, in the shopper's words. */
+export const PRICE_ERRORS = {
+  order: 'המחיר המינימלי גבוה מהמקסימלי',
+  shape: 'נא להזין מחירים כמספרים חיוביים',
+} as const
 
 const TYPE_OPTIONS = [
   { value: undefined, label: 'הכל' },
@@ -49,6 +61,7 @@ export default function CategoryFilterSidebar({
   brands = [],
   brand,
   minDiscount,
+  activeCount = 0,
 }: Props) {
   const router = useRouter()
   const pathname = usePathname()
@@ -56,6 +69,7 @@ export default function CategoryFilterSidebar({
   const [isPending, startTransition] = useTransition()
   const [min, setMin] = useState(priceMin != null ? String(priceMin) : '')
   const [max, setMax] = useState(priceMax != null ? String(priceMax) : '')
+  const [priceError, setPriceError] = useState<string | null>(null)
   const current = currentSlug ? categories.find((c) => c.slug === currentSlug) : undefined
 
   /** Any filter change resets paging: page 3 of the old result set is meaningless. */
@@ -69,12 +83,32 @@ export default function CategoryFilterSidebar({
     })
   }
 
+  /**
+   * The price range is checked HERE before it becomes a URL (UX14). Before,
+   * `min=200&max=50` was sent as typed and came back as an empty grid that
+   * blamed "your selection", and a negative number was silently dropped. Now
+   * an inverted range or a non-number stops on the page with a Hebrew
+   * sentence in a live region and nothing is requested; a blank field is
+   * "no bound", as it always was.
+   */
   function applyPrice(e: React.FormEvent) {
     e.preventDefault()
+    const lo = min.trim() === '' ? null : Number(min)
+    const hi = max.trim() === '' ? null : Number(max)
+    const bad = (n: number | null) => n != null && !(Number.isFinite(n) && n >= 0)
+    if (bad(lo) || bad(hi)) {
+      setPriceError(PRICE_ERRORS.shape)
+      return
+    }
+    if (lo != null && hi != null && lo > hi) {
+      setPriceError(PRICE_ERRORS.order)
+      return
+    }
+    setPriceError(null)
     pushWith((params) => {
-      if (min && Number(min) >= 0) params.set('min', min)
+      if (lo != null) params.set('min', min.trim())
       else params.delete('min')
-      if (max && Number(max) >= 0) params.set('max', max)
+      if (hi != null) params.set('max', max.trim())
       else params.delete('max')
     })
   }
@@ -111,7 +145,15 @@ export default function CategoryFilterSidebar({
           cost more in the comparison than the column ever did. Closed, it is a
           single row; open, it is the full filter set. */}
       <details className="category-sidebar__disclosure">
-        <summary className="category-sidebar__summary">סינון מוצרים</summary>
+        <summary className="category-sidebar__summary">
+          סינון מוצרים
+          {activeCount > 0 && (
+            <>
+              <span className="sr-only"> סינונים פעילים: </span>
+              <span className="category-sidebar__summary-count"> ({activeCount})</span>
+            </>
+          )}
+        </summary>
         <div className="category-sidebar__widgets">
           {/* The archive-scoped field, distinct from the site search in the
               header. See the note at the top of CategoryAutocomplete.tsx and
@@ -228,7 +270,7 @@ export default function CategoryFilterSidebar({
 
           <div className="category-sidebar__widget">
             <h3 className="category-sidebar__title">סינון לפי מחיר</h3>
-            <form className="category-sidebar__price-form" onSubmit={applyPrice}>
+            <form className="category-sidebar__price-form" onSubmit={applyPrice} noValidate>
               <div className="category-sidebar__price-row">
                 <label className="sr-only" htmlFor="price-min">
                   מחיר מינימלי
@@ -241,7 +283,12 @@ export default function CategoryFilterSidebar({
                   min={0}
                   placeholder="מ- ₪"
                   value={min}
-                  onChange={(e) => setMin(e.target.value)}
+                  aria-invalid={priceError ? true : undefined}
+                  aria-describedby={priceError ? 'price-error' : undefined}
+                  onChange={(e) => {
+                    setMin(e.target.value)
+                    setPriceError(null)
+                  }}
                 />
                 <label className="sr-only" htmlFor="price-max">
                   מחיר מקסימלי
@@ -254,9 +301,19 @@ export default function CategoryFilterSidebar({
                   min={0}
                   placeholder="עד ₪"
                   value={max}
-                  onChange={(e) => setMax(e.target.value)}
+                  aria-invalid={priceError ? true : undefined}
+                  aria-describedby={priceError ? 'price-error' : undefined}
+                  onChange={(e) => {
+                    setMax(e.target.value)
+                    setPriceError(null)
+                  }}
                 />
               </div>
+              {priceError && (
+                <p id="price-error" className="category-sidebar__price-error" role="alert">
+                  {priceError}
+                </p>
+              )}
               <button type="submit" className="category-sidebar__price-btn" disabled={isPending}>
                 סינון
               </button>

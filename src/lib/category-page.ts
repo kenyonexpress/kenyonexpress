@@ -113,6 +113,8 @@ export type CategoryProductRow = {
   images: unknown
   stock_quantity: number | null
   created_at: string
+  /** Plain text, up to 300 characters. Read by the list view (UX14); 19 of 46 live rows carry one. */
+  short_description_he?: string | null
   categories: { name_he: string; slug: string } | { name_he: string; slug: string }[] | null
   /** The raw PostgREST join, singular or array depending on the relationship. */
   suppliers?: SupplierJoin | SupplierJoin[] | null
@@ -548,7 +550,7 @@ export async function getCategoryProducts(opts: {
       // empty grid. That exact failure is why src/lib/supabase/optional-columns.ts
       // exists. Add the two columns to this string when 136 is applied;
       // `supplierLocation` already prefers them the moment they are present.
-      'id, slug, name_he, kenyon_price, full_price, images, stock_quantity, created_at, type, categories!products_category_id_fkey(name_he, slug), suppliers(city)',
+      'id, slug, name_he, kenyon_price, full_price, images, stock_quantity, created_at, type, short_description_he, categories!products_category_id_fkey(name_he, slug), suppliers(city)',
       { count: 'exact' },
     )
     .eq('status', 'active')
@@ -674,7 +676,7 @@ export async function getShopProducts(opts: {
   let query = supabase
     .from('products')
     .select(
-      'id, slug, name_he, kenyon_price, full_price, images, stock_quantity, created_at, type, categories!products_category_id_fkey(name_he, slug)',
+      'id, slug, name_he, kenyon_price, full_price, images, stock_quantity, created_at, type, short_description_he, categories!products_category_id_fkey(name_he, slug)',
       { count: 'exact' },
     )
     .eq('status', 'active')
@@ -701,7 +703,13 @@ export async function getShopProducts(opts: {
       query = query.order('created_at', { ascending: false })
       break
     default:
-      query = query.order('name_he', { ascending: true })
+      // The same default as a category (UX14): featured pinned, then Hebrew
+      // alphabetical, which is live's /shop/ order as verified in
+      // getCategoryProducts. The shop sorted by name alone, so the one
+      // archive that lists everything was the one that ignored the pin.
+      query = query
+        .order('is_featured', { ascending: false, nullsFirst: false })
+        .order('name_he', { ascending: true })
   }
 
   const { data, count } = orFailWithCount(

@@ -10,6 +10,7 @@ import { CART_COUPON_COOKIE, CART_EXPIRY_DAYS } from '@/lib/cart/coupon-cookie'
 import { GUEST_SESSION_COOKIE, GUEST_SESSION_MAX_AGE } from '@/lib/cart/guest-session-cookie'
 import { CART_FALLBACK_KEY } from '@/lib/cart/local-fallback'
 import { CART_SHIPPING_COOKIE } from '@/lib/cart/shipping-cookie'
+import { CATALOG_VIEW_KEY } from '@/lib/catalog-view'
 import { COMPARE_STORAGE_KEY } from '@/lib/compare/limit'
 import { LANDING_BUCKET_COOKIE, LANDING_BUCKET_MAX_AGE_SECONDS } from '@/lib/landing/variant'
 import { POSTHOG_ID_COOKIE } from '@/lib/observability/posthog'
@@ -160,6 +161,12 @@ const storageRows: string[][] = [
     'localStorage',
     NECESSARY,
     'היישוב שבחרתם להערכת זמן המשלוח בעגלה, כדי שלא תישאלו שוב. אינו נשלח לשרת.',
+  ],
+  [
+    CATALOG_VIEW_KEY,
+    'localStorage',
+    NECESSARY,
+    'תצוגת המוצרים שבחרתם בעמודי הקטגוריה והחנות (רשת או רשימה), כדי שתישמר בין עמודים. נשמר רק כשבחרתם רשימה, ואינו נשלח לשרת.',
   ],
   [
     COMPARE_STORAGE_KEY,

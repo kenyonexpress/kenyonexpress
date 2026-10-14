@@ -1,0 +1,164 @@
+Already up to date
+Done in 189ms using pnpm v11.1.2
+
+Running 56 tests using 2 workers
+
+[1A[2K[1/56] [chromium] › e2e/category-seo.spec.ts:76:7 › category page SEO › the BreadcrumbList names the same trail the visible breadcrumb prints
+[1A[2K[2/56] [chromium] › e2e/category-seo.spec.ts:40:7 › category page SEO › carries one canonical pointing at the bare archive, even when filtered
+[1A[2K[3/56] [chromium] › e2e/category-seo.spec.ts:104:7 › category page SEO › the ItemList is the cards on the page, in page order, numbered from one
+[1A[2K[4/56] [chromium] › e2e/category-seo.spec.ts:138:7 › category page SEO › the archive resolves to direction rtl and carries no dir=ltr
+[1A[2K[5/56] [chromium] › e2e/category-seo.spec.ts:158:7 › category page SEO › a facet nobody matches shows the empty state with a way out
+[1A[2K[6/56] [chromium] › e2e/category.spec.ts:14:7 › category archive › renders the title, result count, breadcrumb and a product grid
+[1A[2K[7/56] [chromium] › e2e/category.spec.ts:30:7 › category archive › sorting by price rewrites the URL and keeps the archive rendered
+[1A[2K[8/56] [chromium] › e2e/category.spec.ts:46:7 › category archive › keeps the sort selection when the page reloads
+[1A[2K[9/56] [chromium] › e2e/category.spec.ts:54:7 › category archive › an unrecognised sort key falls back to the default order
+[1A[2K[10/56] [chromium] › e2e/category.spec.ts:76:7 › category archive › an unknown category slug 404s, is noindex, and shows the not-found page
+[1A[2K[11/56] [chromium] › e2e/category.spec.ts:96:7 › category archive › a real category still streams a prerendered shell
+[1A[2K[12/56] [chromium] › e2e/category.spec.ts:146:7 › category archive › an out-of-range page number clamps to the last page
+[1A[2K[13/56] [chromium] › e2e/category.spec.ts:166:7 › category archive › the shop archive clamps an out-of-range page the same way
+[1A[2K[14/56] [chromium] › e2e/category.spec.ts:187:7 › category archive › a discount filter leaves only cards whose badge meets it
+[1A[2K[15/56] [chromium] › e2e/category.spec.ts:215:7 › category archive › an unknown brand narrows to the empty state, not a blank page
+[1A[2K[16/56] [chromium] › e2e/category.spec.ts:227:7 › category archive › ?sort=relevance is accepted and reads as the default order
+[1A[2K[17/56] [chromium] › e2e/category.spec.ts:235:7 › category archive › a price filter narrows the archive without breaking it
+[1A[2K[18/56] [chromium] › e2e/category.spec.ts:265:7 › category archive › catalog thumbnails go through the image optimizer and decode
+[1A[2K[19/56] [chromium] › e2e/category.spec.ts:335:9 › catalogue on a phone › no thumb paints outside its card on /products
+[1A[2K[20/56] [chromium] › e2e/category.spec.ts:335:9 › catalogue on a phone › no thumb paints outside its card on /search?q=%D7%A6%D7%99%D7%9E%D7%A8
+[1A[2K[21/56] [chromium] › e2e/category.spec.ts:372:7 › category listing: page size and autocomplete › never renders more than 24 cards on a page, and page 2 links when there are more
+[1A[2K[22/56] [chromium] › e2e/category.spec.ts:396:7 › category listing: page size and autocomplete › the sidebar combobox asks the suggest route with this category as scope
+[1A[2K[23/56] [chromium] › e2e/category.spec.ts:419:7 › category listing: page size and autocomplete › the shell carries the site search and no other typed field
+[1A[2K[24/56] [chromium] › e2e/listing-controls.spec.ts:32:7 › listing controls (UX14) › the view switcher lays the grid out as rows and remembers it
+[1A[2K  1) [chromium] › e2e/listing-controls.spec.ts:32:7 › listing controls (UX14) › the view switcher lays the grid out as rows and remembers it 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveAttribute[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  getByRole('button', { name: 'תצוגת רשימה' })
+    Expected: [32m"[7mtru[27me"[39m
+    Received: [31m"[7mfals[27me"[39m
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toHaveAttribute" with timeout 5000ms[22m
+    [2m  - waiting for getByRole('button', { name: 'תצוגת רשימה' })[22m
+    [2m    10 × locator resolved to <button type="button" data-view="list" title="תצוגת רשימה" aria-pressed="false" aria-label="תצוגת רשימה" class="category-view-switcher__btn tap-area">…</button>[22m
+    [2m       - unexpected value "false"[22m
+
+
+      60 |     await page.reload()
+      61 |     await expect(page.locator(SETTLED).first()).toBeVisible({ timeout: 15_000 })
+    > 62 |     await expect(page.getByRole('button', { name: 'תצוגת רשימה' })).toHaveAttribute(
+         |                                                                     ^
+      63 |       'aria-pressed',
+      64 |       'true',
+      65 |     )
+        at /Users/ofir/kenyonexpress-autopilot/e2e/listing-controls.spec.ts:62:69
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/listing-controls-listing-c-dc720-ut-as-rows-and-remembers-it-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/listing-controls-listing-c-dc720-ut-as-rows-and-remembers-it-chromium/error-context.md
+
+
+[1A[2K[25/56] [chromium] › e2e/listing-controls.spec.ts:79:7 › listing controls (UX14) › an active filter is a removable chip, and two of them get a clear-all link
+[1A[2K[26/56] [chromium] › e2e/listing-controls.spec.ts:69:7 › listing controls (UX14) › the sort select offers only orders the catalogue honours
+[1A[2K[27/56] [chromium] › e2e/listing-controls.spec.ts:100:7 › listing controls (UX14) › the price form refuses an inverted range on the page, without a request
+[1A[2K[28/56] [chromium] › e2e/listing-controls.spec.ts:120:7 › listing controls (UX14) › pagination is a list of labelled pages
+[1A[2K[29/56] [mobile-chrome] › e2e/category-seo.spec.ts:40:7 › category page SEO › carries one canonical pointing at the bare archive, even when filtered
+[1A[2K[30/56] [mobile-chrome] › e2e/category-seo.spec.ts:76:7 › category page SEO › the BreadcrumbList names the same trail the visible breadcrumb prints
+[1A[2K[31/56] [mobile-chrome] › e2e/category-seo.spec.ts:104:7 › category page SEO › the ItemList is the cards on the page, in page order, numbered from one
+[1A[2K[32/56] [mobile-chrome] › e2e/category-seo.spec.ts:138:7 › category page SEO › the archive resolves to direction rtl and carries no dir=ltr
+[1A[2K[33/56] [mobile-chrome] › e2e/category-seo.spec.ts:158:7 › category page SEO › a facet nobody matches shows the empty state with a way out
+[1A[2K  2) [chromium] › e2e/listing-controls.spec.ts:79:7 › listing controls (UX14) › an active filter is a removable chip, and two of them get a clear-all link 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoContainText[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator: locator('.category-sidebar__summary')
+    Expected substring: [32m"[7m([27m2)"[39m
+    Received string:    [31m"[7mסינון מוצרים (סינונים פעילים: [27m2)"[39m
+    Timeout: 5000ms
+
+    Call log:
+    [2m  - Expect "toContainText" with timeout 5000ms[22m
+    [2m  - waiting for locator('.category-sidebar__summary')[22m
+    [2m    14 × locator resolved to <summary class="category-sidebar__summary">…</summary>[22m
+    [2m       - unexpected value "סינון מוצרים (סינונים פעילים: 2)"[22m
+
+
+      90 |
+      91 |     // The closed sidebar says how many facets are on, before it is opened.
+    > 92 |     await expect(page.locator('.category-sidebar__summary')).toContainText('(2)')
+         |                                                              ^
+      93 |
+      94 |     await strip.getByRole('link', { name: 'הסרת הסינון סוג: קופונים' }).click()
+      95 |     await page.waitForURL(/\/products\?min=50$/)
+        at /Users/ofir/kenyonexpress-autopilot/e2e/listing-controls.spec.ts:92:62
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/listing-controls-listing-c-5c5f2-f-them-get-a-clear-all-link-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/listing-controls-listing-c-5c5f2-f-them-get-a-clear-all-link-chromium/error-context.md
+
+
+[1A[2K[34/56] [mobile-chrome] › e2e/category.spec.ts:14:7 › category archive › renders the title, result count, breadcrumb and a product grid
+[1A[2K[35/56] [mobile-chrome] › e2e/category.spec.ts:46:7 › category archive › keeps the sort selection when the page reloads
+[1A[2K[36/56] [mobile-chrome] › e2e/category.spec.ts:30:7 › category archive › sorting by price rewrites the URL and keeps the archive rendered
+[1A[2K[37/56] [mobile-chrome] › e2e/category.spec.ts:54:7 › category archive › an unrecognised sort key falls back to the default order
+[1A[2K[38/56] [mobile-chrome] › e2e/category.spec.ts:76:7 › category archive › an unknown category slug 404s, is noindex, and shows the not-found page
+[1A[2K[39/56] [mobile-chrome] › e2e/category.spec.ts:96:7 › category archive › a real category still streams a prerendered shell
+[1A[2K[40/56] [mobile-chrome] › e2e/category.spec.ts:146:7 › category archive › an out-of-range page number clamps to the last page
+[1A[2K[41/56] [mobile-chrome] › e2e/category.spec.ts:166:7 › category archive › the shop archive clamps an out-of-range page the same way
+[1A[2K[42/56] [mobile-chrome] › e2e/category.spec.ts:187:7 › category archive › a discount filter leaves only cards whose badge meets it
+[1A[2K[43/56] [mobile-chrome] › e2e/category.spec.ts:215:7 › category archive › an unknown brand narrows to the empty state, not a blank page
+[1A[2K[44/56] [mobile-chrome] › e2e/category.spec.ts:227:7 › category archive › ?sort=relevance is accepted and reads as the default order
+[1A[2K[45/56] [mobile-chrome] › e2e/category.spec.ts:235:7 › category archive › a price filter narrows the archive without breaking it
+[1A[2K[46/56] [mobile-chrome] › e2e/category.spec.ts:265:7 › category archive › catalog thumbnails go through the image optimizer and decode
+[1A[2K[47/56] [mobile-chrome] › e2e/category.spec.ts:335:9 › catalogue on a phone › no thumb paints outside its card on /products
+[1A[2K[48/56] [mobile-chrome] › e2e/category.spec.ts:335:9 › catalogue on a phone › no thumb paints outside its card on /search?q=%D7%A6%D7%99%D7%9E%D7%A8
+[1A[2K[49/56] [mobile-chrome] › e2e/category.spec.ts:372:7 › category listing: page size and autocomplete › never renders more than 24 cards on a page, and page 2 links when there are more
+[1A[2K[50/56] [mobile-chrome] › e2e/category.spec.ts:396:7 › category listing: page size and autocomplete › the sidebar combobox asks the suggest route with this category as scope
+[1A[2K[51/56] [mobile-chrome] › e2e/category.spec.ts:419:7 › category listing: page size and autocomplete › the shell carries the site search and no other typed field
+[1A[2K[52/56] [mobile-chrome] › e2e/listing-controls.spec.ts:32:7 › listing controls (UX14) › the view switcher lays the grid out as rows and remembers it
+[1A[2K[53/56] [mobile-chrome] › e2e/listing-controls.spec.ts:69:7 › listing controls (UX14) › the sort select offers only orders the catalogue honours
+[1A[2K[54/56] [mobile-chrome] › e2e/listing-controls.spec.ts:79:7 › listing controls (UX14) › an active filter is a removable chip, and two of them get a clear-all link
+[1A[2K[55/56] [mobile-chrome] › e2e/listing-controls.spec.ts:100:7 › listing controls (UX14) › the price form refuses an inverted range on the page, without a request
+[1A[2K[56/56] [mobile-chrome] › e2e/listing-controls.spec.ts:120:7 › listing controls (UX14) › pagination is a list of labelled pages
+[1A[2K  3) [mobile-chrome] › e2e/listing-controls.spec.ts:79:7 › listing controls (UX14) › an active filter is a removable chip, and two of them get a clear-all link 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoContainText[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator: locator('.category-sidebar__summary')
+    Expected substring: [32m"[7m([27m2)"[39m
+    Received string:    [31m"[7mסינון מוצרים (סינונים פעילים: [27m2)"[39m
+    Timeout: 5000ms
+
+    Call log:
+    [2m  - Expect "toContainText" with timeout 5000ms[22m
+    [2m  - waiting for locator('.category-sidebar__summary')[22m
+    [2m    14 × locator resolved to <summary class="category-sidebar__summary">…</summary>[22m
+    [2m       - unexpected value "סינון מוצרים (סינונים פעילים: 2)"[22m
+
+
+      90 |
+      91 |     // The closed sidebar says how many facets are on, before it is opened.
+    > 92 |     await expect(page.locator('.category-sidebar__summary')).toContainText('(2)')
+         |                                                              ^
+      93 |
+      94 |     await strip.getByRole('link', { name: 'הסרת הסינון סוג: קופונים' }).click()
+      95 |     await page.waitForURL(/\/products\?min=50$/)
+        at /Users/ofir/kenyonexpress-autopilot/e2e/listing-controls.spec.ts:92:62
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/listing-controls-listing-c-5c5f2-f-them-get-a-clear-all-link-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/listing-controls-listing-c-5c5f2-f-them-get-a-clear-all-link-mobile-chrome/error-context.md
+
+
+[1A[2K  3 failed
+    [chromium] › e2e/listing-controls.spec.ts:32:7 › listing controls (UX14) › the view switcher lays the grid out as rows and remembers it 
+    [chromium] › e2e/listing-controls.spec.ts:79:7 › listing controls (UX14) › an active filter is a removable chip, and two of them get a clear-all link 
+    [mobile-chrome] › e2e/listing-controls.spec.ts:79:7 › listing controls (UX14) › an active filter is a removable chip, and two of them get a clear-all link 
+  1 skipped
+  52 passed (2.9m)
+E2E_EXIT=1

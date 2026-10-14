@@ -403,7 +403,7 @@ describe('getCategoryProducts', () => {
 })
 
 describe('getShopProducts', () => {
-  it('reads the whole active catalogue by name, 24 a page', async () => {
+  it('reads the whole active catalogue featured-first then by name, 24 a page', async () => {
     results.push({ data: [product('a', { categories: CAT })], count: 61, error: null })
     const { items, total } = await getShopProducts({ sort: 'menu_order', page: 2 })
 
@@ -412,7 +412,12 @@ describe('getShopProducts', () => {
     const chain = chains[0] as Chain
     expect(calls(chain, 'eq')).toEqual([['status', 'active']])
     expect(calls(chain, 'is')).toEqual([['deleted_at', null]])
-    expect(orders(chain)).toEqual([['name_he', { ascending: true }]])
+    // UX14: the same pin as a category page, so the shop's default order is
+    // live's /shop/ order and not a name-only sort that buried the featured rows.
+    expect(orders(chain)).toEqual([
+      ['is_featured', { ascending: false, nullsFirst: false }],
+      ['name_he', { ascending: true }],
+    ])
     expect(calls(chain, 'range')).toEqual([[SHOP_PAGE_SIZE, 2 * SHOP_PAGE_SIZE - 1]])
   })
 

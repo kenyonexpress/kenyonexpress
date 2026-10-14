@@ -1,0 +1,1115 @@
+{
+  "380|/products": {
+    "url": "/products",
+    "bar": {
+      "rect": {
+        "x": 15,
+        "y": 319.6,
+        "w": 350,
+        "h": 49.6
+      },
+      "visible": true
+    },
+    "switcher": {
+      "visible": false,
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "w": 0,
+        "h": 0
+      },
+      "ariaHidden": null,
+      "role": null,
+      "label": null,
+      "children": [
+        {
+          "tag": "legend",
+          "pressed": null,
+          "label": null,
+          "active": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        {
+          "tag": "button",
+          "pressed": "true",
+          "label": "תצוגת רשת",
+          "active": true,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        {
+          "tag": "button",
+          "pressed": "false",
+          "label": "תצוגת רשימה",
+          "active": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        }
+      ]
+    },
+    "select": {
+      "rect": {
+        "x": 35,
+        "y": 327.3,
+        "w": 174,
+        "h": 34.3
+      },
+      "value": "menu_order",
+      "options": ["menu_order", "date", "price", "price-desc"]
+    },
+    "filtersLink": {
+      "visible": true,
+      "text": "סינון",
+      "href": "#category-filters"
+    },
+    "grid": {
+      "count": 24,
+      "firstItemRect": {
+        "x": 190,
+        "y": 369.2,
+        "w": 175,
+        "h": 393.4
+      },
+      "secondItemRect": {
+        "x": 15,
+        "y": 369.2,
+        "w": 175,
+        "h": 393.4
+      },
+      "dataView": "grid",
+      "cardClasses": "category-card",
+      "descShown": 0
+    },
+    "pagination": {
+      "rect": {
+        "x": 15,
+        "y": 5117.5,
+        "w": 350,
+        "h": 36
+      },
+      "items": [
+        {
+          "tag": "span",
+          "text": "",
+          "label": null,
+          "current": null,
+          "rect": {
+            "x": 232,
+            "y": 5117.5,
+            "w": 36,
+            "h": 36
+          }
+        },
+        {
+          "tag": "span",
+          "text": "1",
+          "label": "עמוד 1",
+          "current": "page",
+          "rect": {
+            "x": 192,
+            "y": 5117.5,
+            "w": 36,
+            "h": 36
+          }
+        },
+        {
+          "tag": "a",
+          "text": "2",
+          "label": "עמוד 2",
+          "current": null,
+          "rect": {
+            "x": 152,
+            "y": 5117.5,
+            "w": 36,
+            "h": 36
+          }
+        },
+        {
+          "tag": "a",
+          "text": "",
+          "label": "העמוד הבא",
+          "current": null,
+          "rect": {
+            "x": 112,
+            "y": 5117.5,
+            "w": 36,
+            "h": 36
+          }
+        }
+      ],
+      "listTag": "ul"
+    },
+    "sidebar": {
+      "summaryText": "סינון מוצרים",
+      "open": false,
+      "pressed": ["הכל", "הכל"],
+      "priceError": null
+    },
+    "activeFilters": null
+  },
+  "380|/products?type=coupon&min=50": {
+    "url": "/products?type=coupon&min=50",
+    "bar": {
+      "rect": {
+        "x": 15,
+        "y": 319.6,
+        "w": 350,
+        "h": 49.6
+      },
+      "visible": true
+    },
+    "switcher": {
+      "visible": false,
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "w": 0,
+        "h": 0
+      },
+      "ariaHidden": null,
+      "role": null,
+      "label": null,
+      "children": [
+        {
+          "tag": "legend",
+          "pressed": null,
+          "label": null,
+          "active": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        {
+          "tag": "button",
+          "pressed": "true",
+          "label": "תצוגת רשת",
+          "active": true,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        {
+          "tag": "button",
+          "pressed": "false",
+          "label": "תצוגת רשימה",
+          "active": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        }
+      ]
+    },
+    "select": {
+      "rect": {
+        "x": 35,
+        "y": 327.3,
+        "w": 174,
+        "h": 34.3
+      },
+      "value": "menu_order",
+      "options": ["menu_order", "date", "price", "price-desc"]
+    },
+    "filtersLink": {
+      "visible": true,
+      "text": "סינון סינונים פעילים: 2",
+      "href": "#category-filters"
+    },
+    "grid": {
+      "count": 3,
+      "firstItemRect": {
+        "x": 190,
+        "y": 469.2,
+        "w": 175,
+        "h": 393.4
+      },
+      "secondItemRect": {
+        "x": 15,
+        "y": 469.2,
+        "w": 175,
+        "h": 393.4
+      },
+      "dataView": "grid",
+      "cardClasses": "category-card",
+      "descShown": 0
+    },
+    "pagination": null,
+    "sidebar": {
+      "summaryText": "סינון מוצרים סינונים פעילים:  (2)",
+      "open": false,
+      "pressed": ["קופונים", "הכל"],
+      "priceError": null
+    },
+    "activeFilters": {
+      "visible": true,
+      "text": "מסונן לפי:סוג: קופונים ×מחיר: מ-⁦50 ₪⁩ ×נקה הכל",
+      "links": 3
+    }
+  },
+  "380|/category/restaurants-cafes": {
+    "url": "/category/restaurants-cafes",
+    "bar": {
+      "rect": {
+        "x": 15,
+        "y": 257.7,
+        "w": 350,
+        "h": 49.6
+      },
+      "visible": true
+    },
+    "switcher": {
+      "visible": false,
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "w": 0,
+        "h": 0
+      },
+      "ariaHidden": null,
+      "role": null,
+      "label": null,
+      "children": [
+        {
+          "tag": "legend",
+          "pressed": null,
+          "label": null,
+          "active": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        {
+          "tag": "button",
+          "pressed": "true",
+          "label": "תצוגת רשת",
+          "active": true,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        {
+          "tag": "button",
+          "pressed": "false",
+          "label": "תצוגת רשימה",
+          "active": false,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        }
+      ]
+    },
+    "select": {
+      "rect": {
+        "x": 35,
+        "y": 265.3,
+        "w": 174,
+        "h": 34.3
+      },
+      "value": "menu_order",
+      "options": ["menu_order", "date", "price", "price-desc"]
+    },
+    "filtersLink": {
+      "visible": true,
+      "text": "סינון",
+      "href": "#category-filters"
+    },
+    "grid": {
+      "count": 10,
+      "firstItemRect": {
+        "x": 190,
+        "y": 307.3,
+        "w": 175,
+        "h": 393.4
+      },
+      "secondItemRect": {
+        "x": 15,
+        "y": 307.3,
+        "w": 175,
+        "h": 393.4
+      },
+      "dataView": "grid",
+      "cardClasses": "category-card",
+      "descShown": 0
+    },
+    "pagination": null,
+    "sidebar": {
+      "summaryText": "סינון מוצרים",
+      "open": false,
+      "pressed": ["הכל", "הכל"],
+      "priceError": null
+    },
+    "activeFilters": null
+  },
+  "768|/products": {
+    "url": "/products",
+    "bar": {
+      "rect": {
+        "x": 15,
+        "y": 283.7,
+        "w": 738,
+        "h": 45.9
+      },
+      "visible": true
+    },
+    "switcher": {
+      "visible": true,
+      "rect": {
+        "x": 675,
+        "y": 286.9,
+        "w": 58,
+        "h": 39.3
+      },
+      "ariaHidden": null,
+      "role": null,
+      "label": null,
+      "children": [
+        {
+          "tag": "legend",
+          "pressed": null,
+          "label": null,
+          "active": false,
+          "rect": {
+            "x": 733,
+            "y": 306.1,
+            "w": 1,
+            "h": 1
+          }
+        },
+        {
+          "tag": "button",
+          "pressed": "true",
+          "label": "תצוגת רשת",
+          "active": true,
+          "rect": {
+            "x": 707,
+            "y": 286.9,
+            "w": 26,
+            "h": 39.3
+          }
+        },
+        {
+          "tag": "button",
+          "pressed": "false",
+          "label": "תצוגת רשימה",
+          "active": false,
+          "rect": {
+            "x": 675,
+            "y": 286.9,
+            "w": 26,
+            "h": 39.3
+          }
+        }
+      ]
+    },
+    "select": {
+      "rect": {
+        "x": 35,
+        "y": 289.5,
+        "w": 174,
+        "h": 34.3
+      },
+      "value": "menu_order",
+      "options": ["menu_order", "date", "price", "price-desc"]
+    },
+    "filtersLink": {
+      "visible": false,
+      "text": "סינון",
+      "href": "#category-filters"
+    },
+    "grid": {
+      "count": 24,
+      "firstItemRect": {
+        "x": 519,
+        "y": 329.5,
+        "w": 234,
+        "h": 364.6
+      },
+      "secondItemRect": {
+        "x": 285,
+        "y": 329.5,
+        "w": 234,
+        "h": 364.6
+      },
+      "dataView": "grid",
+      "cardClasses": "category-card",
+      "descShown": 0
+    },
+    "pagination": {
+      "rect": {
+        "x": 15,
+        "y": 3364,
+        "w": 738,
+        "h": 36
+      },
+      "items": [
+        {
+          "tag": "span",
+          "text": "",
+          "label": null,
+          "current": null,
+          "rect": {
+            "x": 426,
+            "y": 3364,
+            "w": 36,
+            "h": 36
+          }
+        },
+        {
+          "tag": "span",
+          "text": "1",
+          "label": "עמוד 1",
+          "current": "page",
+          "rect": {
+            "x": 386,
+            "y": 3364,
+            "w": 36,
+            "h": 36
+          }
+        },
+        {
+          "tag": "a",
+          "text": "2",
+          "label": "עמוד 2",
+          "current": null,
+          "rect": {
+            "x": 346,
+            "y": 3364,
+            "w": 36,
+            "h": 36
+          }
+        },
+        {
+          "tag": "a",
+          "text": "",
+          "label": "העמוד הבא",
+          "current": null,
+          "rect": {
+            "x": 306,
+            "y": 3364,
+            "w": 36,
+            "h": 36
+          }
+        }
+      ],
+      "listTag": "ul"
+    },
+    "sidebar": {
+      "summaryText": "סינון מוצרים",
+      "open": false,
+      "pressed": ["הכל", "הכל"],
+      "priceError": null
+    },
+    "activeFilters": null
+  },
+  "768|/products?type=coupon&min=50": {
+    "url": "/products?type=coupon&min=50",
+    "bar": {
+      "rect": {
+        "x": 15,
+        "y": 283.7,
+        "w": 738,
+        "h": 45.9
+      },
+      "visible": true
+    },
+    "switcher": {
+      "visible": true,
+      "rect": {
+        "x": 675,
+        "y": 286.9,
+        "w": 58,
+        "h": 39.3
+      },
+      "ariaHidden": null,
+      "role": null,
+      "label": null,
+      "children": [
+        {
+          "tag": "legend",
+          "pressed": null,
+          "label": null,
+          "active": false,
+          "rect": {
+            "x": 733,
+            "y": 306.1,
+            "w": 1,
+            "h": 1
+          }
+        },
+        {
+          "tag": "button",
+          "pressed": "true",
+          "label": "תצוגת רשת",
+          "active": true,
+          "rect": {
+            "x": 707,
+            "y": 286.9,
+            "w": 26,
+            "h": 39.3
+          }
+        },
+        {
+          "tag": "button",
+          "pressed": "false",
+          "label": "תצוגת רשימה",
+          "active": false,
+          "rect": {
+            "x": 675,
+            "y": 286.9,
+            "w": 26,
+            "h": 39.3
+          }
+        }
+      ]
+    },
+    "select": {
+      "rect": {
+        "x": 35,
+        "y": 289.5,
+        "w": 174,
+        "h": 34.3
+      },
+      "value": "menu_order",
+      "options": ["menu_order", "date", "price", "price-desc"]
+    },
+    "filtersLink": {
+      "visible": false,
+      "text": "סינון סינונים פעילים: 2",
+      "href": "#category-filters"
+    },
+    "grid": {
+      "count": 3,
+      "firstItemRect": {
+        "x": 519,
+        "y": 387.5,
+        "w": 234,
+        "h": 364.6
+      },
+      "secondItemRect": {
+        "x": 285,
+        "y": 387.5,
+        "w": 234,
+        "h": 364.6
+      },
+      "dataView": "grid",
+      "cardClasses": "category-card",
+      "descShown": 0
+    },
+    "pagination": null,
+    "sidebar": {
+      "summaryText": "סינון מוצרים סינונים פעילים:  (2)",
+      "open": false,
+      "pressed": ["קופונים", "הכל"],
+      "priceError": null
+    },
+    "activeFilters": {
+      "visible": true,
+      "text": "מסונן לפי:סוג: קופונים ×מחיר: מ-⁦50 ₪⁩ ×נקה הכל",
+      "links": 3
+    }
+  },
+  "768|/category/restaurants-cafes": {
+    "url": "/category/restaurants-cafes",
+    "bar": {
+      "rect": {
+        "x": 15,
+        "y": 221.7,
+        "w": 738,
+        "h": 45.9
+      },
+      "visible": true
+    },
+    "switcher": {
+      "visible": true,
+      "rect": {
+        "x": 675,
+        "y": 225,
+        "w": 58,
+        "h": 39.3
+      },
+      "ariaHidden": null,
+      "role": null,
+      "label": null,
+      "children": [
+        {
+          "tag": "legend",
+          "pressed": null,
+          "label": null,
+          "active": false,
+          "rect": {
+            "x": 733,
+            "y": 244.1,
+            "w": 1,
+            "h": 1
+          }
+        },
+        {
+          "tag": "button",
+          "pressed": "true",
+          "label": "תצוגת רשת",
+          "active": true,
+          "rect": {
+            "x": 707,
+            "y": 225,
+            "w": 26,
+            "h": 39.3
+          }
+        },
+        {
+          "tag": "button",
+          "pressed": "false",
+          "label": "תצוגת רשימה",
+          "active": false,
+          "rect": {
+            "x": 675,
+            "y": 225,
+            "w": 26,
+            "h": 39.3
+          }
+        }
+      ]
+    },
+    "select": {
+      "rect": {
+        "x": 35,
+        "y": 227.5,
+        "w": 174,
+        "h": 34.3
+      },
+      "value": "menu_order",
+      "options": ["menu_order", "date", "price", "price-desc"]
+    },
+    "filtersLink": {
+      "visible": false,
+      "text": "סינון",
+      "href": "#category-filters"
+    },
+    "grid": {
+      "count": 10,
+      "firstItemRect": {
+        "x": 519,
+        "y": 267.6,
+        "w": 234,
+        "h": 382.6
+      },
+      "secondItemRect": {
+        "x": 285,
+        "y": 267.6,
+        "w": 234,
+        "h": 382.6
+      },
+      "dataView": "grid",
+      "cardClasses": "category-card",
+      "descShown": 0
+    },
+    "pagination": null,
+    "sidebar": {
+      "summaryText": "סינון מוצרים",
+      "open": false,
+      "pressed": ["הכל", "הכל"],
+      "priceError": null
+    },
+    "activeFilters": null
+  },
+  "1440|/products": {
+    "url": "/products",
+    "bar": {
+      "rect": {
+        "x": 135,
+        "y": 343.7,
+        "w": 1170,
+        "h": 45.9
+      },
+      "visible": true
+    },
+    "switcher": {
+      "visible": true,
+      "rect": {
+        "x": 1227,
+        "y": 346.9,
+        "w": 58,
+        "h": 39.3
+      },
+      "ariaHidden": null,
+      "role": null,
+      "label": null,
+      "children": [
+        {
+          "tag": "legend",
+          "pressed": null,
+          "label": null,
+          "active": false,
+          "rect": {
+            "x": 1285,
+            "y": 366.1,
+            "w": 1,
+            "h": 1
+          }
+        },
+        {
+          "tag": "button",
+          "pressed": "true",
+          "label": "תצוגת רשת",
+          "active": true,
+          "rect": {
+            "x": 1259,
+            "y": 346.9,
+            "w": 26,
+            "h": 39.3
+          }
+        },
+        {
+          "tag": "button",
+          "pressed": "false",
+          "label": "תצוגת רשימה",
+          "active": false,
+          "rect": {
+            "x": 1227,
+            "y": 346.9,
+            "w": 26,
+            "h": 39.3
+          }
+        }
+      ]
+    },
+    "select": {
+      "rect": {
+        "x": 155,
+        "y": 349.5,
+        "w": 174,
+        "h": 34.3
+      },
+      "value": "menu_order",
+      "options": ["menu_order", "date", "price", "price-desc"]
+    },
+    "filtersLink": {
+      "visible": false,
+      "text": "סינון",
+      "href": "#category-filters"
+    },
+    "grid": {
+      "count": 24,
+      "firstItemRect": {
+        "x": 1071,
+        "y": 389.5,
+        "w": 234,
+        "h": 364.6
+      },
+      "secondItemRect": {
+        "x": 837,
+        "y": 389.5,
+        "w": 234,
+        "h": 364.6
+      },
+      "dataView": "grid",
+      "cardClasses": "category-card",
+      "descShown": 0
+    },
+    "pagination": {
+      "rect": {
+        "x": 135,
+        "y": 2312.4,
+        "w": 1170,
+        "h": 36
+      },
+      "items": [
+        {
+          "tag": "span",
+          "text": "",
+          "label": null,
+          "current": null,
+          "rect": {
+            "x": 762,
+            "y": 2312.4,
+            "w": 36,
+            "h": 36
+          }
+        },
+        {
+          "tag": "span",
+          "text": "1",
+          "label": "עמוד 1",
+          "current": "page",
+          "rect": {
+            "x": 722,
+            "y": 2312.4,
+            "w": 36,
+            "h": 36
+          }
+        },
+        {
+          "tag": "a",
+          "text": "2",
+          "label": "עמוד 2",
+          "current": null,
+          "rect": {
+            "x": 682,
+            "y": 2312.4,
+            "w": 36,
+            "h": 36
+          }
+        },
+        {
+          "tag": "a",
+          "text": "",
+          "label": "העמוד הבא",
+          "current": null,
+          "rect": {
+            "x": 642,
+            "y": 2312.4,
+            "w": 36,
+            "h": 36
+          }
+        }
+      ],
+      "listTag": "ul"
+    },
+    "sidebar": {
+      "summaryText": "סינון מוצרים",
+      "open": false,
+      "pressed": ["הכל", "הכל"],
+      "priceError": null
+    },
+    "activeFilters": null
+  },
+  "1440|/products?type=coupon&min=50": {
+    "url": "/products?type=coupon&min=50",
+    "bar": {
+      "rect": {
+        "x": 135,
+        "y": 343.7,
+        "w": 1170,
+        "h": 45.9
+      },
+      "visible": true
+    },
+    "switcher": {
+      "visible": true,
+      "rect": {
+        "x": 1227,
+        "y": 346.9,
+        "w": 58,
+        "h": 39.3
+      },
+      "ariaHidden": null,
+      "role": null,
+      "label": null,
+      "children": [
+        {
+          "tag": "legend",
+          "pressed": null,
+          "label": null,
+          "active": false,
+          "rect": {
+            "x": 1285,
+            "y": 366.1,
+            "w": 1,
+            "h": 1
+          }
+        },
+        {
+          "tag": "button",
+          "pressed": "true",
+          "label": "תצוגת רשת",
+          "active": true,
+          "rect": {
+            "x": 1259,
+            "y": 346.9,
+            "w": 26,
+            "h": 39.3
+          }
+        },
+        {
+          "tag": "button",
+          "pressed": "false",
+          "label": "תצוגת רשימה",
+          "active": false,
+          "rect": {
+            "x": 1227,
+            "y": 346.9,
+            "w": 26,
+            "h": 39.3
+          }
+        }
+      ]
+    },
+    "select": {
+      "rect": {
+        "x": 155,
+        "y": 349.5,
+        "w": 174,
+        "h": 34.3
+      },
+      "value": "menu_order",
+      "options": ["menu_order", "date", "price", "price-desc"]
+    },
+    "filtersLink": {
+      "visible": false,
+      "text": "סינון סינונים פעילים: 2",
+      "href": "#category-filters"
+    },
+    "grid": {
+      "count": 3,
+      "firstItemRect": {
+        "x": 1071,
+        "y": 447.5,
+        "w": 234,
+        "h": 364.6
+      },
+      "secondItemRect": {
+        "x": 837,
+        "y": 447.5,
+        "w": 234,
+        "h": 364.6
+      },
+      "dataView": "grid",
+      "cardClasses": "category-card",
+      "descShown": 0
+    },
+    "pagination": null,
+    "sidebar": {
+      "summaryText": "סינון מוצרים סינונים פעילים:  (2)",
+      "open": false,
+      "pressed": ["קופונים", "הכל"],
+      "priceError": null
+    },
+    "activeFilters": {
+      "visible": true,
+      "text": "מסונן לפי:סוג: קופונים ×מחיר: מ-⁦50 ₪⁩ ×נקה הכל",
+      "links": 3
+    }
+  },
+  "1440|/category/restaurants-cafes": {
+    "url": "/category/restaurants-cafes",
+    "bar": {
+      "rect": {
+        "x": 135,
+        "y": 281.7,
+        "w": 1170,
+        "h": 45.9
+      },
+      "visible": true
+    },
+    "switcher": {
+      "visible": true,
+      "rect": {
+        "x": 1227,
+        "y": 285,
+        "w": 58,
+        "h": 39.3
+      },
+      "ariaHidden": null,
+      "role": null,
+      "label": null,
+      "children": [
+        {
+          "tag": "legend",
+          "pressed": null,
+          "label": null,
+          "active": false,
+          "rect": {
+            "x": 1285,
+            "y": 304.1,
+            "w": 1,
+            "h": 1
+          }
+        },
+        {
+          "tag": "button",
+          "pressed": "true",
+          "label": "תצוגת רשת",
+          "active": true,
+          "rect": {
+            "x": 1259,
+            "y": 285,
+            "w": 26,
+            "h": 39.3
+          }
+        },
+        {
+          "tag": "button",
+          "pressed": "false",
+          "label": "תצוגת רשימה",
+          "active": false,
+          "rect": {
+            "x": 1227,
+            "y": 285,
+            "w": 26,
+            "h": 39.3
+          }
+        }
+      ]
+    },
+    "select": {
+      "rect": {
+        "x": 155,
+        "y": 287.5,
+        "w": 174,
+        "h": 34.3
+      },
+      "value": "menu_order",
+      "options": ["menu_order", "date", "price", "price-desc"]
+    },
+    "filtersLink": {
+      "visible": false,
+      "text": "סינון",
+      "href": "#category-filters"
+    },
+    "grid": {
+      "count": 10,
+      "firstItemRect": {
+        "x": 1071,
+        "y": 327.6,
+        "w": 234,
+        "h": 382.6
+      },
+      "secondItemRect": {
+        "x": 837,
+        "y": 327.6,
+        "w": 234,
+        "h": 382.6
+      },
+      "dataView": "grid",
+      "cardClasses": "category-card",
+      "descShown": 0
+    },
+    "pagination": null,
+    "sidebar": {
+      "summaryText": "סינון מוצרים",
+      "open": false,
+      "pressed": ["הכל", "הכל"],
+      "priceError": null
+    },
+    "activeFilters": null
+  }
+}

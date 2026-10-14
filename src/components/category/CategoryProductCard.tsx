@@ -1,6 +1,7 @@
 'use client'
 
 import AddToCartButton from '@/components/cart/AddToCartButton'
+import { useCatalogView } from '@/components/category/CatalogViewProvider'
 import CompareButton from '@/components/compare/CompareButton'
 import WishlistButton from '@/components/product/WishlistButton'
 import { discountPercent } from '@/lib/discount-percent'
@@ -48,6 +49,8 @@ export type CategoryProduct = {
   full_price?: number | null
   images: unknown
   stock_quantity?: number | null
+  /** Plain text, up to 300 characters (admin form). Shown by the list view only (UX14). */
+  short_description_he?: string | null
   categories?: { name_he: string; slug: string }[]
   /** Normalised supplier join. Present once the query selects it. */
   supplier?: { city?: string | null } | null
@@ -81,6 +84,27 @@ function CartPlusIcon() {
 // `./above-fold.ts`: a value exported from this `'use client'` module is a
 // client-reference proxy on the server, not a number. See that file.
 
+const OVERLAY_WISHLIST_CLASS =
+  'tap-area absolute bottom-2 end-2 z-10 grid h-9 w-9 place-items-center rounded-full border border-gray-200 bg-white/95 text-icon opacity-0 shadow-sm transition-opacity hover:border-price focus-visible:opacity-100 disabled:opacity-50 group-hover:opacity-100 data-[saved=true]:text-price data-[saved=true]:opacity-100 [@media(hover:none)]:opacity-100'
+
+// Under the heart, same corner, same hover rule (STEP 56).
+const OVERLAY_COMPARE_CLASS =
+  'tap-area absolute bottom-12 end-2 z-10 grid h-9 w-9 place-items-center rounded-full border border-gray-200 bg-white/95 text-icon opacity-0 shadow-sm transition-opacity hover:border-price focus-visible:opacity-100 group-hover:opacity-100 data-[compared=true]:border-price data-[compared=true]:text-price data-[compared=true]:opacity-100 [@media(hover:none)]:opacity-100'
+
+/**
+ * One card of the archive grid, or one row of the archive list (UX14).
+ *
+ * Which one is decided by `useCatalogView()`, the preference the control bar's
+ * switcher writes. Without a provider above it (the search results page) the
+ * context's default is the grid, so the card there is unchanged.
+ *
+ * The GRID markup is byte-for-byte what it was before the list existed: the
+ * parity gate measured it and `CategoryProductCard.test.tsx` reads its image
+ * attributes. The LIST is live's `ul.products[data-view=list-view]` row:
+ * the picture in the first column, the title with the short description in
+ * the second, the price over a full-width add-to-cart button in the third,
+ * one row per product with a hairline between rows.
+ */
 export default function CategoryProductCard({
   product,
   priority = false,
@@ -105,6 +129,9 @@ export default function CategoryProductCard({
    */
   dimensions?: { w: number; h: number }
 }) {
+  const { view } = useCatalogView()
+  const list = view === 'list'
+
   const thumb =
     Array.isArray(product.images) && typeof product.images[0] === 'string'
       ? (product.images[0] as string)
@@ -123,6 +150,7 @@ export default function CategoryProductCard({
   const cityLabel = cityByName(product.supplier?.city)?.name ?? null
   const distanceLabel =
     typeof product.distanceKm === 'number' ? formatDistance(product.distanceKm) : null
+  const description = list ? product.short_description_he?.trim() || null : null
 
   const priceBlock =
     price == null ? null : hasDiscount && old != null ? (
@@ -134,87 +162,135 @@ export default function CategoryProductCard({
       <span>{formatPrice(price)}</span>
     )
 
+  const eyebrow = categoryTags.length > 0 && (
+    <span className="category-card__categories">
+      {categoryTags.map((cat, i) => (
+        <span key={cat.slug}>
+          {i > 0 && ', '}
+          <Link href={`/category/${cat.slug}`}>{cat.name_he}</Link>
+        </span>
+      ))}
+    </span>
+  )
+
+  // Where the business is. Shown only when the city is one this project knows
+  // - cityByName returns null rather than guessing, so a business is never
+  // labelled with a city it is not in. The distance appears only after the
+  // customer asked for "near me".
+  const cityRow = cityLabel && (
+    <span className="category-card__city">
+      <MapPin size={11} aria-hidden="true" />
+      {cityLabel}
+      {distanceLabel && <span className="category-card__distance"> · {distanceLabel}</span>}
+    </span>
+  )
+
+  const thumbBox = (
+    <span className="category-card__thumb">
+      {hasDiscount && (
+        <span className="category-card__badge">
+          -<span className="percentage">{pct}%</span>
+        </span>
+      )}
+      {signal?.allTimeLow ? (
+        <span className="category-card__signal" data-signal="all-time-low">
+          המחיר הנמוך ביותר
+        </span>
+      ) : signal?.drop ? (
+        <span className="category-card__signal" data-signal="drop">
+          ירד ב-{signal.drop.percent}%
+        </span>
+      ) : null}
+      {thumb ? (
+        // width/height stay the 186 square the raw <img> declared: they are
+        // the pre-load reservation, and the CSS is width:auto/height:auto
+        // under a 186 max on both axes, so the real aspect takes over the
+        // moment the file lands. `fill` is what collapsed the deal cards on
+        // the homepage - it writes position:absolute inline and the wrapper
+        // that takes its height from the image drops to 0.
+        <Image
+          src={thumb}
+          alt={product.name_he}
+          width={dimensions?.w ?? 186}
+          height={dimensions?.h ?? 186}
+          sizes={THUMB_SIZES}
+          // next/image refuses `priority` together with `loading`, so
+          // the lazy/eager choice is made only for the non-priority
+          // cards. `priority` alone gives eager + a head preload; the
+          // fetch priority is passed through, not added (Next 16).
+          {...(priority
+            ? { priority: true, fetchPriority: 'high' as const }
+            : { loading: eager ? ('eager' as const) : ('lazy' as const) })}
+          {...(blurDataURL ? { placeholder: 'blur' as const, blurDataURL } : {})}
+        />
+      ) : null}
+    </span>
+  )
+
+  const overlayButtons = (
+    <>
+      <WishlistButton productId={product.id} variant="overlay" className={OVERLAY_WISHLIST_CLASS} />
+      <CompareButton productId={product.id} variant="overlay" className={OVERLAY_COMPARE_CLASS} />
+    </>
+  )
+
+  if (list) {
+    return (
+      <article className="category-card category-card--list" data-view="list">
+        <div className="category-card__media group relative">
+          {overlayButtons}
+          <Link
+            href={`/product/${product.slug}`}
+            className="category-card__link"
+            aria-label={product.name_he}
+            tabIndex={-1}
+          >
+            {thumbBox}
+          </Link>
+        </div>
+
+        <div className="category-card__body">
+          {eyebrow}
+          {cityRow}
+          <Link href={`/product/${product.slug}`} className="category-card__link">
+            <h2 className="category-card__title">{product.name_he}</h2>
+          </Link>
+          {description && <p className="category-card__desc">{description}</p>}
+        </div>
+
+        {/* Live's list footer: the price on its own line, then the add-to-cart
+            as a full-width button in the brand yellow. */}
+        <div className="category-card__footer category-card__footer--list">
+          {priceBlock && <span className="category-card__price">{priceBlock}</span>}
+          {canAdd && (
+            <AddToCartButton
+              productId={product.id}
+              productName={product.name_he}
+              priceAgorot={Math.round(Number(product.kenyon_price ?? 0) * 100)}
+              className="category-card__atc-full"
+              addedLabel="נוסף לעגלה"
+            >
+              <CartPlusIcon />
+              הוספה לעגלה
+            </AddToCartButton>
+          )}
+        </div>
+      </article>
+    )
+  }
+
   return (
     <article className="category-card">
       <div className="category-card__header">
-        {categoryTags.length > 0 && (
-          <span className="category-card__categories">
-            {categoryTags.map((cat, i) => (
-              <span key={cat.slug}>
-                {i > 0 && ', '}
-                <Link href={`/category/${cat.slug}`}>{cat.name_he}</Link>
-              </span>
-            ))}
-          </span>
-        )}
-
-        {/* Where the business is. Shown only when the city is one this
-            project knows - cityByName returns null rather than guessing, so a
-            business is never labelled with a city it is not in. The distance
-            appears only after the customer asked for "near me". */}
-        {cityLabel && (
-          <span className="category-card__city">
-            <MapPin size={11} aria-hidden="true" />
-            {cityLabel}
-            {distanceLabel && <span className="category-card__distance"> · {distanceLabel}</span>}
-          </span>
-        )}
-
+        {eyebrow}
+        {cityRow}
         {priceBlock && <span className="category-card__price">{priceBlock}</span>}
 
         <div className="group relative">
-          <WishlistButton
-            productId={product.id}
-            variant="overlay"
-            className="tap-area absolute bottom-2 end-2 z-10 grid h-9 w-9 place-items-center rounded-full border border-gray-200 bg-white/95 text-icon opacity-0 shadow-sm transition-opacity hover:border-price focus-visible:opacity-100 disabled:opacity-50 group-hover:opacity-100 data-[saved=true]:text-price data-[saved=true]:opacity-100 [@media(hover:none)]:opacity-100"
-          />
-          {/* Under the heart, same corner, same hover rule (STEP 56). */}
-          <CompareButton
-            productId={product.id}
-            variant="overlay"
-            className="tap-area absolute bottom-12 end-2 z-10 grid h-9 w-9 place-items-center rounded-full border border-gray-200 bg-white/95 text-icon opacity-0 shadow-sm transition-opacity hover:border-price focus-visible:opacity-100 group-hover:opacity-100 data-[compared=true]:border-price data-[compared=true]:text-price data-[compared=true]:opacity-100 [@media(hover:none)]:opacity-100"
-          />
+          {overlayButtons}
           <Link href={`/product/${product.slug}`} className="category-card__link">
             <h2 className="category-card__title">{product.name_he}</h2>
-            <span className="category-card__thumb">
-              {hasDiscount && (
-                <span className="category-card__badge">
-                  -<span className="percentage">{pct}%</span>
-                </span>
-              )}
-              {signal?.allTimeLow ? (
-                <span className="category-card__signal" data-signal="all-time-low">
-                  המחיר הנמוך ביותר
-                </span>
-              ) : signal?.drop ? (
-                <span className="category-card__signal" data-signal="drop">
-                  ירד ב-{signal.drop.percent}%
-                </span>
-              ) : null}
-              {thumb ? (
-                // width/height stay the 186 square the raw <img> declared: they are
-                // the pre-load reservation, and the CSS is width:auto/height:auto
-                // under a 186 max on both axes, so the real aspect takes over the
-                // moment the file lands. `fill` is what collapsed the deal cards on
-                // the homepage - it writes position:absolute inline and the wrapper
-                // that takes its height from the image drops to 0.
-                <Image
-                  src={thumb}
-                  alt={product.name_he}
-                  width={dimensions?.w ?? 186}
-                  height={dimensions?.h ?? 186}
-                  sizes={THUMB_SIZES}
-                  // next/image refuses `priority` together with `loading`, so
-                  // the lazy/eager choice is made only for the non-priority
-                  // cards. `priority` alone gives eager + a head preload; the
-                  // fetch priority is passed through, not added (Next 16).
-                  {...(priority
-                    ? { priority: true, fetchPriority: 'high' as const }
-                    : { loading: eager ? ('eager' as const) : ('lazy' as const) })}
-                  {...(blurDataURL ? { placeholder: 'blur' as const, blurDataURL } : {})}
-                />
-              ) : null}
-            </span>
+            {thumbBox}
           </Link>
         </div>
       </div>

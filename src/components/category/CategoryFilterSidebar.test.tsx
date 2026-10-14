@@ -125,3 +125,55 @@ describe('CategoryFilterSidebar facets', () => {
     })
   })
 })
+
+/**
+ * UX14: the price form checks the range before it becomes a URL, and the
+ * closed summary says how many facets are already on.
+ */
+describe('CategoryFilterSidebar price form and active count', () => {
+  it('refuses an inverted range on the page and pushes nothing', () => {
+    render(<CategoryFilterSidebar categories={CATEGORIES} currentSlug="spa" />)
+    fireEvent.change(screen.getByLabelText('מחיר מינימלי'), { target: { value: '200' } })
+    fireEvent.change(screen.getByLabelText('מחיר מקסימלי'), { target: { value: '50' } })
+    fireEvent.click(screen.getByRole('button', { name: 'סינון' }))
+    expect(screen.getByRole('alert')).toHaveTextContent('המחיר המינימלי גבוה מהמקסימלי')
+    expect(screen.getByLabelText('מחיר מינימלי')).toHaveAttribute('aria-invalid', 'true')
+    expect(screen.getByLabelText('מחיר מינימלי')).toHaveAttribute('aria-describedby', 'price-error')
+    expect(push).not.toHaveBeenCalled()
+
+    // Typing again clears the sentence.
+    fireEvent.change(screen.getByLabelText('מחיר מקסימלי'), { target: { value: '500' } })
+    expect(screen.queryByRole('alert')).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'סינון' }))
+    expect(push).toHaveBeenCalledWith('/category/spa?min=200&max=500', { scroll: false })
+  })
+
+  it('refuses a negative bound', () => {
+    render(<CategoryFilterSidebar categories={CATEGORIES} currentSlug="spa" />)
+    fireEvent.change(screen.getByLabelText('מחיר מינימלי'), { target: { value: '-5' } })
+    fireEvent.click(screen.getByRole('button', { name: 'סינון' }))
+    expect(screen.getByRole('alert')).toHaveTextContent('נא להזין מחירים כמספרים חיוביים')
+    expect(push).not.toHaveBeenCalled()
+  })
+
+  it('treats a blank field as no bound and drops the page', () => {
+    search = 'page=2&sort=price_asc'
+    render(<CategoryFilterSidebar categories={CATEGORIES} currentSlug="spa" />)
+    fireEvent.change(screen.getByLabelText('מחיר מקסימלי'), { target: { value: '99' } })
+    fireEvent.click(screen.getByRole('button', { name: 'סינון' }))
+    expect(push).toHaveBeenCalledWith('/category/spa?sort=price_asc&max=99', { scroll: false })
+  })
+
+  it('shows the active count on the closed summary, and nothing at zero', () => {
+    const { unmount } = render(
+      <CategoryFilterSidebar categories={CATEGORIES} currentSlug="spa" activeCount={2} />,
+    )
+    const summary = document.querySelector('.category-sidebar__summary') as HTMLElement
+    expect(summary).toHaveTextContent('סינון מוצרים')
+    expect(summary.querySelector('.category-sidebar__summary-count')).toHaveTextContent(/2\)$/)
+    expect(summary).toHaveTextContent('סינונים פעילים: (2)')
+    unmount()
+    render(<CategoryFilterSidebar categories={CATEGORIES} currentSlug="spa" />)
+    expect(document.querySelector('.category-sidebar__summary-count')).toBeNull()
+  })
+})

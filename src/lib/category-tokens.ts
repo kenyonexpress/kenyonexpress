@@ -56,6 +56,24 @@ export const CATEGORY_TOKENS = {
   },
 } as const
 
+/**
+ * The options the sort <select> OFFERS (UX14): live's six minus the two this
+ * catalogue cannot honour.
+ *
+ * Measured against the built page on 2026-10-14: `?sort=popularity` and
+ * `?sort=rating` returned the same first three cards as the bare archive,
+ * because both fall through to the default order in `lib/category-page.ts`.
+ * There is nothing for them to read: `products` has no sales or view count,
+ * and `reviews` answers the anon key with 401, so a rating average cannot be
+ * read by the catalogue client at all. A select option that changes nothing
+ * is a control that lies, so the two are not offered. The URL values stay
+ * accepted by `parseSort` (an old link still lands on a page) and the
+ * WooCommerce strings stay in `sortOptions` above as the measured source.
+ */
+export const SORT_SELECT_OPTIONS = CATEGORY_TOKENS.sortOptions.filter(
+  (option) => option.value !== 'popularity' && option.value !== 'rating',
+)
+
 /** Map live WooCommerce orderby values to our searchParams sort keys. */
 export const SORT_TO_ORDERBY: Record<string, string> = {
   newest: 'date',

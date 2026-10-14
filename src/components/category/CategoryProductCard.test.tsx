@@ -1,5 +1,8 @@
+import { CATALOG_VIEW_KEY } from '@/lib/catalog-view'
+import { render, screen, waitFor } from '@testing-library/react'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { CatalogViewProvider } from './CatalogViewProvider'
 import CategoryProductCard, { type CategoryProduct } from './CategoryProductCard'
 import { ABOVE_FOLD_CARD_COUNT } from './above-fold'
 
@@ -91,5 +94,64 @@ describe('CategoryProductCard image loading hints', () => {
     expect(img).toContain(BLUR)
     expect(img).toMatch(/ width="600"/)
     expect(img).toMatch(/ height="417"/)
+  })
+})
+
+/**
+ * THE LIST ROW (UX14). The grid markup above is what the parity gate measured
+ * and is untouched; the list is a second shape the same component takes when
+ * the switcher's preference says so. With no provider, or with the grid
+ * stored, nothing of the list exists in the DOM.
+ */
+describe('CategoryProductCard list view', () => {
+  afterEach(() => {
+    window.localStorage.clear()
+  })
+
+  const withBlurb: CategoryProduct = {
+    ...product(1),
+    short_description_he: 'ארוחה זוגית: פלטת קילו בשרים, שתייה וקינוח',
+  }
+
+  it('is the grid card, with no description and no list footer, outside a provider', () => {
+    const html = renderToStaticMarkup(<CategoryProductCard product={withBlurb} />)
+    expect(html).toContain('class="category-card"')
+    expect(html).not.toContain('category-card--list')
+    expect(html).not.toContain('category-card__desc')
+    expect(html).not.toContain(withBlurb.short_description_he)
+  })
+
+  it('becomes a row with the short description and a full-width footer when the list is stored', async () => {
+    window.localStorage.setItem(CATALOG_VIEW_KEY, 'list')
+    render(
+      <CatalogViewProvider>
+        <CategoryProductCard product={withBlurb} />
+      </CatalogViewProvider>,
+    )
+    await waitFor(() => expect(document.querySelector('.category-card--list')).not.toBeNull())
+    const card = document.querySelector('.category-card--list') as HTMLElement
+    expect(card.getAttribute('data-view')).toBe('list')
+    expect(card.querySelector('.category-card__media img')).not.toBeNull()
+    expect(card.querySelector('.category-card__body .category-card__title')).toHaveTextContent(
+      'מוצר 1',
+    )
+    expect(screen.getByText(withBlurb.short_description_he as string)).toHaveClass(
+      'category-card__desc',
+    )
+    expect(card.querySelector('.category-card__footer--list .category-card__price')).not.toBeNull()
+    // The grid's header and round icon button are not in the row.
+    expect(card.querySelector('.category-card__header')).toBeNull()
+    expect(card.querySelector('.category-card__atc')).toBeNull()
+  })
+
+  it('renders no description paragraph in the list when the product has none', async () => {
+    window.localStorage.setItem(CATALOG_VIEW_KEY, 'list')
+    render(
+      <CatalogViewProvider>
+        <CategoryProductCard product={product(2)} />
+      </CatalogViewProvider>,
+    )
+    await waitFor(() => expect(document.querySelector('.category-card--list')).not.toBeNull())
+    expect(document.querySelector('.category-card__desc')).toBeNull()
   })
 })
