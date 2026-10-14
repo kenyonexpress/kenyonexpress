@@ -71,6 +71,9 @@ export const FILTERABLE_ATTRIBUTES = [
   // index: a brand document's `name` is exactly this attribute's value.
   'brand',
   'kenyon_price',
+  // The discount facet ("at least N% off") filters on the stored key the
+  // discount sort orders by.
+  'discount_bp',
   'in_stock',
   // Enables `_geoRadius(lat, lng, metres)`. Filtering by distance and sorting
   // by it are separate permissions in Meilisearch, so `_geo` has to appear in

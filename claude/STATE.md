@@ -4,7 +4,7 @@ Updated: 2026-10-14 (Asia/Bangkok). Queue: FINAL-CLOSEOUT L1 to L16, issued 14.1
 
 ## Current Position
 
-**המשך מ: שלב L10 (BUILD GAPS), שורה 2 (facets: הנחה, ספק, עץ קטגוריות), ואז שורה 4. סגורות: 18, 24, 28, 30, 29 (אדמין), 3 (חוץ מדירוג ופופולריות, ממתינות ל-235)**
+**המשך מ: שלב L10 (BUILD GAPS), שורה 4 (גלילה אינסופית), ואז 9, 10, 6, 8, 5. סגורות: 2, 18, 24, 28, 30, 29 (אדמין), 3 (חוץ מדירוג ופופולריות, ממתינות ל-235)**
 
 The checklist with evidence is `docs/FINAL-CLOSEOUT.md`. Decisions taken alone
 are `docs/DECISIONS.md` D-42 onward.
@@ -44,6 +44,12 @@ Closed so far, each with type-check, lint, test green (510 files, 5949 passed):
   result set was two products. Meilisearch itself was not exercised: it needs
   the settings re-applied and a full reindex before it sorts on the new field
   (until then it refuses and the database fallback answers).
+- Row 2, facets on the search page: supplier, discount threshold and a
+  category tree. 512 files, 6019 tests, build 0. Built server, live data,
+  database engine: facet counts equal filtered totals for two suppliers,
+  three thresholds, three categories. The tree's nesting is unit-tested only:
+  all 13 live categories are roots. Meilisearch not exercised. The category
+  pages did not get these facets.
 - Disk: the build died once with ENOSPC. 658 MB free after a clean rebuild.
   Nothing outside this checkout's own `.next` was removed. 1.6 GB sits in
   another session's temp directory (`3d900add...`), three desktop backups are

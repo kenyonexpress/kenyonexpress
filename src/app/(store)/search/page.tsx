@@ -7,6 +7,7 @@ import CategoryProductCard, {
 import SearchFacetNav from '@/components/search/SearchFacetNav'
 import SearchSortNav from '@/components/search/SearchSortNav'
 import { getAllCategories, parseProductType } from '@/lib/category-page'
+import { loadFacetContext } from '@/lib/search/facet-labels'
 import { hasActiveFacets, toFacetSearchParams } from '@/lib/search/facet-links'
 import { parseFacetedParams } from '@/lib/search/faceted'
 import { type FacetHit, facetedSearchCached } from '@/lib/search/faceted-server'
@@ -141,7 +142,8 @@ async function ResultGrid({ params }: { params: URLSearchParams }) {
 async function ResultFacets({ params }: { params: URLSearchParams }) {
   const outcome = await facetedSearchCached(params)
   if ('error' in outcome) return null
-  return <SearchFacetNav facets={outcome.facets} current={params} />
+  const context = await loadFacetContext(outcome.facets, params)
+  return <SearchFacetNav facets={outcome.facets} current={params} context={context} />
 }
 
 /**

@@ -1,10 +1,13 @@
 import 'server-only'
 
+import { getCategoryIndex } from '@/lib/category-page'
+import { categorySubtree } from '@/lib/category-tree'
 import { log } from '@/lib/observability/log'
 import {
   FACET_ATTRIBUTES,
   type FacetDistribution,
   type FacetedSearchParams,
+  LEGACY_FACET_ATTRIBUTES,
   applyFacetFilters,
   buildMeiliFilters,
   buildMeiliSort,
@@ -98,40 +101,76 @@ type MeiliFacetResponse = {
   facetDistribution?: FacetDistribution
 }
 
-/** Null on any failure, so the database path takes over rather than a 500. */
+/**
+ * Null on any failure, so the database path takes over rather than a 500.
+ *
+ * Two attempts when the request does not itself depend on `discount_bp`: an
+ * index built before that field was filterable refuses the full facet list
+ * with a 400, and answering every search from Postgres until the next reindex
+ * would be a worse outcome than one facet missing from the sidebar.
+ */
 async function searchMeiliFaceted(params: FacetedSearchParams): Promise<FacetsResponse | null> {
+  const needsDiscount = params.discountMin !== undefined || params.sort === 'discount_desc'
+  const attempts: readonly (readonly string[])[] = needsDiscount
+    ? [FACET_ATTRIBUTES]
+    : [FACET_ATTRIBUTES, LEGACY_FACET_ATTRIBUTES]
   try {
     const host = (process.env.MEILISEARCH_HOST as string).replace(/\/$/, '')
     const sort = buildMeiliSort(params.sort)
-    const res = await fetch(`${host}/indexes/${PRODUCTS_INDEX}/search`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${process.env.MEILISEARCH_API_KEY}`,
-      },
-      body: JSON.stringify({
-        q: params.q,
-        limit: params.limit,
-        offset: params.offset,
-        filter: buildMeiliFilters(params),
-        facets: [...FACET_ATTRIBUTES],
-        ...(sort ? { sort } : {}),
-        ...localesParam(params.q),
-      }),
-      cache: 'no-store',
-    })
-    if (!res.ok) return null
-    const data = (await res.json()) as MeiliFacetResponse
-    const hits = data.hits ?? []
-    return {
-      query: params.q,
-      results: hits.map(docToHit),
-      total: data.estimatedTotalHits ?? hits.length,
-      facets: data.facetDistribution ?? {},
-      engine: 'meilisearch',
+    for (const facets of attempts) {
+      const res = await fetch(`${host}/indexes/${PRODUCTS_INDEX}/search`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${process.env.MEILISEARCH_API_KEY}`,
+        },
+        body: JSON.stringify({
+          q: params.q,
+          limit: params.limit,
+          offset: params.offset,
+          filter: buildMeiliFilters(params),
+          facets: [...facets],
+          ...(sort ? { sort } : {}),
+          ...localesParam(params.q),
+        }),
+        cache: 'no-store',
+      })
+      if (!res.ok) continue
+      const data = (await res.json()) as MeiliFacetResponse
+      const hits = data.hits ?? []
+      return {
+        query: params.q,
+        results: hits.map(docToHit),
+        total: data.estimatedTotalHits ?? hits.length,
+        facets: data.facetDistribution ?? {},
+        engine: 'meilisearch',
+      }
     }
+    return null
   } catch {
     return null
+  }
+}
+
+/**
+ * Widens `category` to the category and everything under it, so a parent in
+ * the tree facet shows its children's products. The index is the cached
+ * catalogue read the breadcrumbs use. A slug the index does not know, or an
+ * index that cannot be read, leaves the filter on the one slug: narrower than
+ * intended, never wider.
+ */
+async function withCategorySubtree(params: FacetedSearchParams): Promise<FacetedSearchParams> {
+  if (!params.category) return params
+  try {
+    const index = await getCategoryIndex()
+    const node = index.find((entry) => entry.slug === params.category)
+    if (!node) return params
+    return { ...params, categorySlugs: categorySubtree(index, node.id).map((entry) => entry.slug) }
+  } catch (error) {
+    log.warn('search.category_subtree_failed', {
+      reason: error instanceof Error ? error.message : 'unknown',
+    })
+    return params
   }
 }
 
@@ -196,7 +235,7 @@ async function searchDbFaceted(params: FacetedSearchParams): Promise<FacetedOutc
  * only on the results page, never here).
  */
 export async function facetedSearch(input: FacetedSearchParams): Promise<FacetedOutcome> {
-  const params = { ...input, q: sanitizeOrTerm(input.q) }
+  const params = await withCategorySubtree({ ...input, q: sanitizeOrTerm(input.q) })
   const started = Date.now()
 
   let outcome: FacetedOutcome | null = null
@@ -220,6 +259,8 @@ export function activeFacetNames(params: FacetedSearchParams): string[] {
   const names: string[] = []
   if (params.type) names.push('type')
   if (params.category) names.push('category')
+  if (params.supplier) names.push('supplier')
+  if (params.discountMin !== undefined) names.push('discount')
   if (params.city) names.push('city')
   if (params.brand) names.push('brand')
   if (params.tag) names.push('tag')

@@ -1,4 +1,10 @@
-import type { FacetDistribution, FacetedSearchParams, FacetedSort } from '@/lib/search/faceted'
+import { type CategoryNode, categorySubtree } from '@/lib/category-tree'
+import {
+  DISCOUNT_STEPS,
+  type FacetDistribution,
+  type FacetedSearchParams,
+  type FacetedSort,
+} from '@/lib/search/faceted'
 
 /**
  * Facet navigation as links, and nothing but links.
@@ -17,23 +23,46 @@ import type { FacetDistribution, FacetedSearchParams, FacetedSort } from '@/lib/
 export const FACET_PARAM: Record<FacetName, string> = {
   type: 'type',
   category_slug: 'category',
+  discount_bp: 'discount_min',
   city: 'city',
+  supplier_id: 'supplier',
   brand: 'brand',
   tags: 'tag',
   in_stock: 'in_stock',
 }
 
-export type FacetName = 'type' | 'category_slug' | 'city' | 'brand' | 'tags' | 'in_stock'
+export type FacetName =
+  | 'type'
+  | 'category_slug'
+  | 'discount_bp'
+  | 'city'
+  | 'supplier_id'
+  | 'brand'
+  | 'tags'
+  | 'in_stock'
 
 /** Section headings, in the order the navigation renders them. */
 export const FACET_LABELS: readonly { name: FacetName; label: string }[] = [
   { name: 'type', label: 'סוג' },
   { name: 'category_slug', label: 'קטגוריה' },
+  { name: 'discount_bp', label: 'הנחה' },
   { name: 'city', label: 'עיר' },
+  { name: 'supplier_id', label: 'ספק' },
   { name: 'brand', label: 'מותג' },
   { name: 'tags', label: 'תגיות' },
   { name: 'in_stock', label: 'זמינות' },
 ]
+
+/**
+ * What the labels need and the distribution does not carry: a facet value is
+ * a slug or an id, and a shopper reads a name. Both are optional. Without the
+ * category index the category facet is the flat list of slugs it was; without
+ * a supplier's name that supplier is left out, because an id is not a label.
+ */
+export type FacetContext = {
+  categoryIndex?: readonly CategoryNode[]
+  supplierNames?: Readonly<Record<string, string>>
+}
 
 /** Values that have a display name of their own; everything else is shown as-is. */
 const VALUE_LABELS: Record<string, Record<string, string>> = {
@@ -41,7 +70,16 @@ const VALUE_LABELS: Record<string, Record<string, string>> = {
   in_stock: { true: 'במלאי', false: 'אזל מהמלאי' },
 }
 
-export function facetValueLabel(name: FacetName, value: string): string {
+export function facetValueLabel(
+  name: FacetName,
+  value: string,
+  context: FacetContext = {},
+): string {
+  if (name === 'discount_bp') return `${value}% ומעלה`
+  if (name === 'supplier_id') return context.supplierNames?.[value] ?? 'ספק'
+  if (name === 'category_slug') {
+    return context.categoryIndex?.find((node) => node.slug === value)?.name_he ?? value
+  }
   return VALUE_LABELS[name]?.[value] ?? value
 }
 
@@ -155,6 +193,8 @@ export type FacetOption = {
   count: number
   selected: boolean
   href: string
+  /** Levels below the top of a tree facet; 0 everywhere else. */
+  depth: number
 }
 
 export type FacetSection = {
@@ -165,6 +205,99 @@ export type FacetSection = {
 
 /** How many values a section shows; the long tail is noise in a sidebar. */
 export const MAX_OPTIONS_PER_FACET = 12
+
+/** How many nodes the category tree shows. */
+export const MAX_TREE_OPTIONS = 24
+
+type FacetEntry = { value: string; count: number; depth: number }
+
+/**
+ * "At least N% off" counts from the per-value counts the engine reports for
+ * `discount_bp`. A product 60% off is counted under 10, 25 and 50 alike: the
+ * options are thresholds, so they nest, and a count is what the grid shows
+ * after the click. A threshold nothing reaches is not offered.
+ */
+export function discountBuckets(bucket: Readonly<Record<string, number>>): Record<string, number> {
+  const out: Record<string, number> = {}
+  for (const step of DISCOUNT_STEPS) {
+    let count = 0
+    for (const [value, n] of Object.entries(bucket)) {
+      if (Number(value) >= step * 100) count += n
+    }
+    if (count > 0) out[String(step)] = count
+  }
+  return out
+}
+
+/**
+ * The category facet as a tree: every category that has a matching product
+ * somewhere under it, parents before children, each with the count of its
+ * whole subtree. That count is honest because the engine filters a parent the
+ * same way (`withCategorySubtree`). Siblings are ordered by count, then name.
+ * A slug the index does not know keeps its own row at the top level rather
+ * than vanishing with its products.
+ */
+export function categoryTreeEntries(
+  bucket: Readonly<Record<string, number>>,
+  index: readonly CategoryNode[],
+): FacetEntry[] {
+  const ids = new Set(index.map((node) => node.id))
+  const rolled = new Map<string, number>()
+  for (const node of index) {
+    let count = 0
+    for (const member of categorySubtree(index, node.id)) count += bucket[member.slug] ?? 0
+    if (count > 0) rolled.set(node.id, count)
+  }
+
+  const bySize = (a: CategoryNode, b: CategoryNode) =>
+    (rolled.get(b.id) ?? 0) - (rolled.get(a.id) ?? 0) || a.name_he.localeCompare(b.name_he, 'he')
+  const out: FacetEntry[] = []
+  const seen = new Set<string>()
+  const walk = (node: CategoryNode, depth: number) => {
+    if (seen.has(node.id)) return
+    seen.add(node.id)
+    out.push({ value: node.slug, count: rolled.get(node.id) ?? 0, depth })
+    for (const child of index
+      .filter((n) => n.parent_id === node.id && rolled.has(n.id))
+      .sort(bySize)) {
+      walk(child, depth + 1)
+    }
+  }
+  const roots = index.filter(
+    (node) => rolled.has(node.id) && (!node.parent_id || !ids.has(node.parent_id)),
+  )
+  for (const root of roots.sort(bySize)) walk(root, 0)
+
+  const known = new Set(index.map((node) => node.slug))
+  for (const [slug, count] of Object.entries(bucket)) {
+    if (slug !== '' && !known.has(slug)) out.push({ value: slug, count, depth: 0 })
+  }
+  return out
+}
+
+function facetEntries(
+  name: FacetName,
+  bucket: Readonly<Record<string, number>>,
+  context: FacetContext,
+): FacetEntry[] {
+  if (name === 'category_slug' && context.categoryIndex) {
+    return categoryTreeEntries(bucket, context.categoryIndex).slice(0, MAX_TREE_OPTIONS)
+  }
+  if (name === 'discount_bp') {
+    // Smallest threshold first: the list reads as a scale, not a ranking.
+    return Object.entries(discountBuckets(bucket)).map(([value, count]) => ({
+      value,
+      count,
+      depth: 0,
+    }))
+  }
+  return Object.entries(bucket)
+    .filter(([value]) => value !== '')
+    .filter(([value]) => name !== 'supplier_id' || Boolean(context.supplierNames?.[value]))
+    .sort(([a, ca], [b, cb]) => cb - ca || a.localeCompare(b, 'he'))
+    .slice(0, MAX_OPTIONS_PER_FACET)
+    .map(([value, count]) => ({ value, count, depth: 0 }))
+}
 
 /**
  * The navigation model: one section per facet that has at least one value,
@@ -178,32 +311,30 @@ export function buildFacetSections(
   distribution: FacetDistribution,
   current: URLSearchParams,
   pathname = '/search',
+  context: FacetContext = {},
 ): FacetSection[] {
   const sections: FacetSection[] = []
   for (const { name, label } of FACET_LABELS) {
     const bucket = distribution[name]
     if (!bucket) continue
     const selectedValue = current.get(FACET_PARAM[name]) ?? undefined
-    const entries = Object.entries(bucket)
-      .filter(([value]) => value !== '')
-      .sort(([a, ca], [b, cb]) => cb - ca || a.localeCompare(b, 'he'))
-    let top = entries.slice(0, MAX_OPTIONS_PER_FACET)
-    if (selectedValue && !top.some(([value]) => value === selectedValue)) {
-      const selectedEntry = entries.find(([value]) => value === selectedValue)
-      top = selectedEntry ? [...top, selectedEntry] : [...top, [selectedValue, 0]]
-    } else if (selectedValue && entries.length === 0) {
-      top = [[selectedValue, 0]]
+    const entries = facetEntries(name, bucket, context)
+    if (selectedValue && !entries.some((entry) => entry.value === selectedValue)) {
+      // The count under a threshold is the nested one, never the raw bucket's.
+      const counts = name === 'discount_bp' ? discountBuckets(bucket) : bucket
+      entries.push({ value: selectedValue, count: counts[selectedValue] ?? 0, depth: 0 })
     }
-    if (top.length === 0) continue
+    if (entries.length === 0) continue
     sections.push({
       name,
       label,
-      options: top.map(([value, count]) => ({
+      options: entries.map(({ value, count, depth }) => ({
         value,
-        label: facetValueLabel(name, value),
+        label: facetValueLabel(name, value, context),
         count,
         selected: value === selectedValue,
         href: facetHref(current, name, value, pathname),
+        depth,
       })),
     })
   }
@@ -214,6 +345,7 @@ export function buildFacetSections(
 export function activeFacetChips(
   current: URLSearchParams,
   pathname = '/search',
+  context: FacetContext = {},
 ): { name: FacetName; label: string; value: string; valueLabel: string; href: string }[] {
   const chips = []
   for (const { name, label } of FACET_LABELS) {
@@ -223,7 +355,7 @@ export function activeFacetChips(
       name,
       label,
       value,
-      valueLabel: facetValueLabel(name, value),
+      valueLabel: facetValueLabel(name, value, context),
       href: facetHref(current, name, value, pathname),
     })
   }
@@ -242,7 +374,18 @@ export function toFacetSearchParams(
 ): URLSearchParams {
   const params = new URLSearchParams()
   const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v)
-  for (const key of ['q', 'type', 'category', 'city', 'brand', 'tag', 'in_stock', 'sort']) {
+  for (const key of [
+    'q',
+    'type',
+    'category',
+    'city',
+    'brand',
+    'tag',
+    'in_stock',
+    'supplier',
+    'discount_min',
+    'sort',
+  ]) {
     const value = first(sp[key])?.trim()
     if (value) params.set(key, value)
   }
@@ -264,6 +407,8 @@ export function hasActiveFacets(params: FacetedSearchParams): boolean {
   return Boolean(
     params.type ||
       params.category ||
+      params.supplier ||
+      params.discountMin !== undefined ||
       params.city ||
       params.brand ||
       params.tag ||

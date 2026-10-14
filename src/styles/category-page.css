@@ -1100,6 +1100,15 @@
   text-decoration: none;
 }
 
+/* The category facet is a tree: a child sits one step in from its parent. */
+.search-facets__option--depth-1 {
+  padding-inline-start: 1em;
+}
+
+.search-facets__option--depth-2 {
+  padding-inline-start: 2em;
+}
+
 .search-facets__option:hover {
   color: var(--cat-link);
 }

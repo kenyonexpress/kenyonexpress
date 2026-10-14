@@ -4,7 +4,9 @@ import {
   activeFacetChips,
   buildFacetSections,
   buildSortOptions,
+  categoryTreeEntries,
   clearFacetsHref,
+  discountBuckets,
   facetHref,
   hasActiveFacets,
   sortHref,
@@ -199,5 +201,123 @@ describe('hasActiveFacets', () => {
     if (!bare.ok || !narrowed.ok) throw new Error('parse failed')
     expect(hasActiveFacets(bare.params)).toBe(false)
     expect(hasActiveFacets(narrowed.params)).toBe(true)
+  })
+})
+
+describe('discountBuckets', () => {
+  it('nests the thresholds: a deeper discount counts under every shallower one', () => {
+    expect(discountBuckets({ '0': 4, '1000': 1, '3000': 2, '9000': 1 })).toEqual({
+      '10': 4,
+      '25': 3,
+      '50': 1,
+    })
+  })
+
+  it('offers no threshold that nothing reaches', () => {
+    expect(discountBuckets({ '0': 3, '999': 2 })).toEqual({})
+  })
+})
+
+describe('categoryTreeEntries', () => {
+  const index = [
+    { id: 'r1', slug: 'leisure', name_he: 'פנאי', parent_id: null },
+    { id: 'c1', slug: 'spa', name_he: 'ספא', parent_id: 'r1' },
+    { id: 'g1', slug: 'couples-spa', name_he: 'ספא זוגי', parent_id: 'c1' },
+    { id: 'c2', slug: 'food', name_he: 'אוכל', parent_id: 'r1' },
+    { id: 'r2', slug: 'home', name_he: 'בית', parent_id: null },
+    { id: 'r3', slug: 'empty', name_he: 'ריק', parent_id: null },
+  ]
+
+  it('rolls a child count up into every ancestor and walks parents first', () => {
+    const entries = categoryTreeEntries({ 'couples-spa': 2, food: 1, home: 5 }, index)
+    expect(entries).toEqual([
+      { value: 'home', count: 5, depth: 0 },
+      { value: 'leisure', count: 3, depth: 0 },
+      { value: 'spa', count: 2, depth: 1 },
+      { value: 'couples-spa', count: 2, depth: 2 },
+      { value: 'food', count: 1, depth: 1 },
+    ])
+  })
+
+  it('keeps a slug the index does not know, at the top level', () => {
+    const entries = categoryTreeEntries({ retired: 3 }, index)
+    expect(entries).toEqual([{ value: 'retired', count: 3, depth: 0 }])
+  })
+})
+
+describe('the facets added for the closeout', () => {
+  const context = {
+    categoryIndex: [
+      { id: 'r1', slug: 'leisure', name_he: 'פנאי', parent_id: null },
+      { id: 'c1', slug: 'spa', name_he: 'ספא', parent_id: 'r1' },
+    ],
+    supplierNames: { '11111111-1111-4111-8111-111111111111': 'ספא הגליל' },
+  }
+  const distribution = {
+    category_slug: { spa: 2 },
+    supplier_id: {
+      '11111111-1111-4111-8111-111111111111': 2,
+      '22222222-2222-4222-8222-222222222222': 1,
+    },
+    discount_bp: { '0': 1, '5000': 2 },
+  }
+
+  it('labels a category by name and indents the child under its parent', () => {
+    const section = buildFacetSections(distribution, sp('q=spa'), '/search', context).find(
+      (s) => s.name === 'category_slug',
+    )
+    expect(section?.options.map((o) => [o.label, o.count, o.depth])).toEqual([
+      ['פנאי', 2, 0],
+      ['ספא', 2, 1],
+    ])
+  })
+
+  it('offers a supplier by its name and leaves out one it cannot name', () => {
+    const section = buildFacetSections(distribution, sp('q=spa'), '/search', context).find(
+      (s) => s.name === 'supplier_id',
+    )
+    expect(section?.options.map((o) => o.label)).toEqual(['ספא הגליל'])
+    expect(section?.options[0]?.href).toBe(
+      '/search?q=spa&supplier=11111111-1111-4111-8111-111111111111',
+    )
+  })
+
+  it('offers discount thresholds smallest first, as links the parser accepts', () => {
+    const section = buildFacetSections(distribution, sp('q=spa'), '/search', context).find(
+      (s) => s.name === 'discount_bp',
+    )
+    expect(section?.options.map((o) => [o.label, o.count])).toEqual([
+      ['10% ומעלה', 2],
+      ['25% ומעלה', 2],
+      ['50% ומעלה', 2],
+    ])
+    for (const option of section?.options ?? []) {
+      const parsed = parseFacetedParams(new URL(option.href, 'http://x').searchParams)
+      expect(parsed.ok).toBe(true)
+    }
+  })
+
+  it('carries the new parameters to the engine and counts them as narrowing', () => {
+    const params = toFacetSearchParams({
+      q: 'spa',
+      supplier: '11111111-1111-4111-8111-111111111111',
+      discount_min: '25',
+    })
+    const parsed = parseFacetedParams(params)
+    expect(parsed.ok && parsed.params.supplier).toBe('11111111-1111-4111-8111-111111111111')
+    expect(parsed.ok && parsed.params.discountMin).toBe(25)
+    expect(parsed.ok && hasActiveFacets(parsed.params)).toBe(true)
+  })
+
+  it('names the supplier on its active chip', () => {
+    const chips = activeFacetChips(
+      sp('q=spa&supplier=11111111-1111-4111-8111-111111111111&discount_min=50'),
+      '/search',
+      context,
+    )
+    expect(chips.map((c) => `${c.label}: ${c.valueLabel}`)).toEqual([
+      'הנחה: 50% ומעלה',
+      'ספק: ספא הגליל',
+    ])
   })
 })

@@ -226,3 +226,55 @@ describe('discount order', () => {
     ])
   })
 })
+
+describe('supplier, discount and category-subtree filters', () => {
+  const SUPPLIER = '11111111-1111-4111-8111-111111111111'
+
+  it('refuses a supplier that is not an id and a discount that is not a step', () => {
+    expect(parseFacetedParams(params('q=a&supplier=x" OR 1=1')).ok).toBe(false)
+    expect(parseFacetedParams(params('q=a&discount_min=33')).ok).toBe(false)
+    expect(parseFacetedParams(params('q=a&discount_min=25.0')).ok).toBe(false)
+    expect(parseFacetedParams(params(`q=a&supplier=${SUPPLIER}&discount_min=25`)).ok).toBe(true)
+  })
+
+  it('builds the engine filters, with a subtree as one IN clause', () => {
+    const parsed = parseFacetedParams(
+      params(`q=a&category=spa&supplier=${SUPPLIER}&discount_min=25`),
+    )
+    if (!parsed.ok) throw new Error('expected ok')
+    expect(buildMeiliFilters(parsed.params)).toEqual([
+      'category_slug = "spa"',
+      `supplier_id = "${SUPPLIER}"`,
+      'discount_bp >= 2500',
+    ])
+    expect(buildMeiliFilters({ ...parsed.params, categorySlugs: ['spa', 'couples-spa'] })[0]).toBe(
+      'category_slug IN ["spa", "couples-spa"]',
+    )
+  })
+
+  it('applies the same three filters in the fallback', () => {
+    const docs = [
+      doc({ id: 'a', category_slug: 'couples-spa', supplier_id: SUPPLIER, discount_bp: 3000 }),
+      doc({ id: 'b', category_slug: 'spa', supplier_id: SUPPLIER, discount_bp: 2499 }),
+      doc({ id: 'c', category_slug: 'food', supplier_id: SUPPLIER, discount_bp: 9000 }),
+      doc({ id: 'd', category_slug: 'spa', supplier_id: null, discount_bp: 9000 }),
+    ]
+    const parsed = parseFacetedParams(
+      params(`q=a&category=spa&supplier=${SUPPLIER}&discount_min=25`),
+    )
+    if (!parsed.ok) throw new Error('expected ok')
+    const wide = { ...parsed.params, categorySlugs: ['spa', 'couples-spa'] }
+    expect(applyFacetFilters(docs, wide).map((d) => d.id)).toEqual(['a'])
+    expect(applyFacetFilters(docs, parsed.params).map((d) => d.id)).toEqual([])
+  })
+
+  it('counts suppliers and discount keys in the fallback distribution', () => {
+    const distribution = computeFacetDistribution([
+      doc({ supplier_id: SUPPLIER, discount_bp: 5000 }),
+      doc({ supplier_id: SUPPLIER, discount_bp: 0 }),
+      doc({ supplier_id: null, discount_bp: 5000 }),
+    ])
+    expect(distribution.supplier_id).toEqual({ [SUPPLIER]: 2 })
+    expect(distribution.discount_bp).toEqual({ '5000': 2, '0': 1 })
+  })
+})

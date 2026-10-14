@@ -19,7 +19,29 @@ export const FACET_ATTRIBUTES = [
   'brand',
   'tags',
   'in_stock',
+  'supplier_id',
+  'discount_bp',
 ] as const
+
+/**
+ * The facets an index built before `discount_bp` existed can answer. Asking
+ * such an index for the full list is a 400 on the whole search, so the engine
+ * retries with this one rather than losing Meilisearch for every query until
+ * the next reindex.
+ */
+export const LEGACY_FACET_ATTRIBUTES = FACET_ATTRIBUTES.filter(
+  (attribute) => attribute !== 'discount_bp',
+)
+
+/**
+ * The discount facet's thresholds, in whole percent of the full price: "at
+ * least this much off". A fixed list, so the parameter is validated against
+ * it and can never reach a filter expression as free text. These are filter
+ * bounds on a ranking key, not rates applied to any amount.
+ */
+export const DISCOUNT_STEPS = [10, 25, 50] as const
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 /** Mirrors resolveStorefrontProductType: the four types the storefront names. */
 const PRODUCT_TYPES = ['coupon', 'physical', 'service', 'recurring'] as const
@@ -31,6 +53,16 @@ export type FacetedSearchParams = {
   q: string
   type?: (typeof PRODUCT_TYPES)[number]
   category?: string
+  /**
+   * `category` widened to its whole subtree, by the engine and never by the
+   * URL: choosing a parent category shows what sits under its children too.
+   * Absent means the one slug in `category`.
+   */
+  categorySlugs?: readonly string[]
+  /** A supplier id. The facet's label is the supplier's public name. */
+  supplier?: string
+  /** One of `DISCOUNT_STEPS`: at least this many percent off the full price. */
+  discountMin?: number
   city?: string
   brand?: string
   tag?: string
@@ -92,6 +124,16 @@ export function parseFacetedParams(searchParams: URLSearchParams): ParseOutcome 
     return { ok: false, error: 'invalid_sort' }
   }
 
+  const supplier = readValue(searchParams, 'supplier')
+  if (supplier && !UUID.test(supplier)) return { ok: false, error: 'invalid_supplier' }
+
+  const discountRaw = searchParams.get('discount_min')?.trim()
+  let discountMin: number | undefined
+  if (discountRaw) {
+    discountMin = (DISCOUNT_STEPS as readonly number[]).find((step) => String(step) === discountRaw)
+    if (discountMin === undefined) return { ok: false, error: 'invalid_discount' }
+  }
+
   const priceMin = readAgorot(searchParams, 'price_min')
   if (priceMin === 'invalid') return { ok: false, error: 'invalid_price' }
   const priceMax = readAgorot(searchParams, 'price_max')
@@ -117,6 +159,8 @@ export function parseFacetedParams(searchParams: URLSearchParams): ParseOutcome 
       q,
       type: type as FacetedSearchParams['type'],
       category: readValue(searchParams, 'category'),
+      supplier,
+      discountMin,
       city: readValue(searchParams, 'city'),
       brand: readValue(searchParams, 'brand'),
       tag: readValue(searchParams, 'tag'),
@@ -139,11 +183,24 @@ export function escapeMeiliFilterValue(value: string): string {
   return `"${value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`
 }
 
+/** The slugs the category filter accepts: the expanded subtree, else the one named. */
+function categoryFilterSlugs(params: FacetedSearchParams): readonly string[] {
+  if (params.categorySlugs && params.categorySlugs.length > 0) return params.categorySlugs
+  return params.category ? [params.category] : []
+}
+
 /** The filter array for the Meilisearch request body. ANDed by the engine. */
 export function buildMeiliFilters(params: FacetedSearchParams): string[] {
   const filters: string[] = []
   if (params.type) filters.push(`type = ${escapeMeiliFilterValue(params.type)}`)
-  if (params.category) filters.push(`category_slug = ${escapeMeiliFilterValue(params.category)}`)
+  const slugs = categoryFilterSlugs(params)
+  if (slugs.length === 1) {
+    filters.push(`category_slug = ${escapeMeiliFilterValue(slugs[0] as string)}`)
+  } else if (slugs.length > 1) {
+    filters.push(`category_slug IN [${slugs.map(escapeMeiliFilterValue).join(', ')}]`)
+  }
+  if (params.supplier) filters.push(`supplier_id = ${escapeMeiliFilterValue(params.supplier)}`)
+  if (params.discountMin !== undefined) filters.push(`discount_bp >= ${params.discountMin * 100}`)
   if (params.city) filters.push(`city = ${escapeMeiliFilterValue(params.city)}`)
   if (params.brand) filters.push(`brand = ${escapeMeiliFilterValue(params.brand)}`)
   if (params.tag) filters.push(`tags = ${escapeMeiliFilterValue(params.tag)}`)
@@ -191,6 +248,8 @@ export function computeFacetDistribution(docs: ProductDocument[]): FacetDistribu
     if (doc.brand) bump('brand', doc.brand)
     for (const tag of doc.tags) bump('tags', tag)
     bump('in_stock', String(doc.in_stock))
+    if (doc.supplier_id) bump('supplier_id', doc.supplier_id)
+    bump('discount_bp', String(doc.discount_bp ?? 0))
   }
   return distribution
 }
@@ -200,9 +259,14 @@ export function applyFacetFilters(
   docs: ProductDocument[],
   params: FacetedSearchParams,
 ): ProductDocument[] {
+  const slugs = categoryFilterSlugs(params)
   return docs.filter((doc) => {
     if (params.type && doc.type !== params.type) return false
-    if (params.category && doc.category_slug !== params.category) return false
+    if (slugs.length > 0 && !(doc.category_slug && slugs.includes(doc.category_slug))) return false
+    if (params.supplier && doc.supplier_id !== params.supplier) return false
+    if (params.discountMin !== undefined && (doc.discount_bp ?? 0) < params.discountMin * 100) {
+      return false
+    }
     if (params.city && doc.city !== params.city) return false
     if (params.brand && doc.brand !== params.brand) return false
     if (params.tag && !doc.tags.includes(params.tag)) return false
