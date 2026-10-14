@@ -23,6 +23,9 @@ import { useEffect, useState } from 'react'
  * on a narrow screen; the page never does.
  */
 
+/** The product image's box, in CSS pixels. `.compare-table__product img` is the same 7.5rem. */
+const THUMB = 120
+
 type State = { status: 'loading' } | { status: 'ready'; columns: CompareColumn[] }
 
 export default function CompareTable() {
@@ -87,9 +90,9 @@ export default function CompareTable() {
                       <Image
                         src={column.image}
                         alt=""
-                        width={120}
-                        height={120}
-                        sizes="120px"
+                        width={THUMB}
+                        height={THUMB}
+                        sizes={`${THUMB}px`}
                         loading="lazy"
                       />
                     ) : null}
