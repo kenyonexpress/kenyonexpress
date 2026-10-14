@@ -1,5 +1,6 @@
 import ViewTracker from '@/components/analytics/ViewTracker'
 import Reviews from '@/components/product/Reviews'
+import BoughtThisWeek from '@/components/storefront/BoughtThisWeek'
 import { CouponTerms } from '@/components/storefront/CouponPricing'
 import CouponQrExpiry from '@/components/storefront/CouponQrExpiry'
 import ProductGallery from '@/components/storefront/ProductGallery'
@@ -298,6 +299,13 @@ export default async function ProductPage({ params }: Props) {
                   trackedLevel={product.stock_quantity}
                   isCoupon={isCoupon}
                 />
+              </Suspense>
+            }
+            /* Real paid orders or nothing. Its own boundary for the same
+               reason as the line above; under the floor it renders null. */
+            proofSlot={
+              <Suspense fallback={null}>
+                <BoughtThisWeek productId={product.id} />
               </Suspense>
             }
             sku={product.sku}

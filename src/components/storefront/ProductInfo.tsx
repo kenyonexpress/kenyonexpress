@@ -49,6 +49,8 @@ interface Props {
    * page - out of the cache.
    */
   scarcitySlot?: ReactNode
+  /** The live "bought this week" line, streamed in by the page like the scarcity one. */
+  proofSlot?: ReactNode
   sku: string | null
   /** Category name, shown in the eyebrow slot live fills with its category links. */
   categoryName: string | null
@@ -106,6 +108,7 @@ export default function ProductInfo({
   oldPrice: cachedOldPrice,
   baseStock,
   scarcitySlot = null,
+  proofSlot = null,
   sku,
   categoryName,
   city,
@@ -286,6 +289,7 @@ export default function ProductInfo({
         catalogue.
       */}
       {!outOfStock && scarcitySlot}
+      {!outOfStock && proofSlot}
 
       {/* A subscription is priced per cycle; quoting the one-off price here
           would promise the wrong number. The renewal terms sit next to the
