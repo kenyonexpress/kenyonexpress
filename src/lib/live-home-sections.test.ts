@@ -88,6 +88,7 @@ describe('the homepage sections live actually has', () => {
       '<CategoryGrid',
       '<PopularSearches',
       '<HotCoupons',
+      '<BrandsRow',
       '<HomeNewsletter',
     ]
     const at = marks.map((m) => home.indexOf(m))
@@ -98,10 +99,28 @@ describe('the homepage sections live actually has', () => {
     )
   })
 
-  it('ships no brand strip, because live has none', () => {
-    // `brands-carousel` is zero on live and renders nowhere at either width.
+  it('ships no Electro brands-carousel; the brands row is the merchant directory, under the gate window', () => {
+    // 2026-10-14 (UX11). `brands-carousel` is zero on live and renders nowhere
+    // at either width (the only "Brands" in live's markup is the Font Awesome
+    // 5 Brands face), so queue row 09 was refused while the queue was a
+    // parity queue. The UX queue asked for a brands row, and it is built as
+    // CONTENT FROM THE DATABASE (the merchant directory, /merchants, the same
+    // two reads and the same pure builder) with SHAPE FROM ELECTRO (the brand
+    // cell measured off refs/electro-home-v7_computed.json: 234x50 cells, a
+    // 167x50 image), mounted after HotCoupons so it sits under the 2600px the
+    // gate scores. It is not a carousel: no owl, no autoplay, a scroll strip
+    // on a phone and a grid from 768.
     const home = read('src/app/(store)/page.tsx')
-    expect(home).not.toMatch(/Brand(Strip|sCarousel|sRail)/)
+    expect(home).not.toMatch(/brands-carousel|BrandsCarousel|BrandStrip|BrandsRail/)
+    expect(home).toMatch(/<BrandsRow/)
+    const row = read('src/components/home/BrandsRow.tsx')
+    expect(row, 'the row links to the merchant directory it is built from').toMatch(/"\/merchants"/)
+    expect(
+      row,
+      'and reads through the home-page reader, not the page\u2019s orFail loader',
+    ).toMatch(/getHomeBrands/)
+    // The markup, not the comment that explains why it is not one.
+    expect(row.replace(/\/\*[\s\S]*?\*\//g, '')).not.toMatch(/owl-|autoplay|carousel/i)
   })
 
   it('ships live’s handheld bar as a static footer block, not a fixed nav', () => {

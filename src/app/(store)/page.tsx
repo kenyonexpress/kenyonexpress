@@ -1,5 +1,6 @@
 import BenefitBar from '@/components/home/BenefitBar'
 import BenefitBarExperiment from '@/components/home/BenefitBarExperiment'
+import BrandsRow from '@/components/home/BrandsRow'
 import CategoryGrid from '@/components/home/CategoryGrid'
 import CmsHero from '@/components/home/CmsHero'
 import DealOfTheDay from '@/components/home/DealOfTheDay'
@@ -160,6 +161,15 @@ export default function HomePage() {
       <CategoryGrid />
       <PopularSearches />
       <HotCoupons />
+      {/*
+        THE BRANDS ROW (UX11) IS THE MERCHANT DIRECTORY ON THE HOME PAGE, under
+        the coupons it sells and above the newsletter, for the same reason as
+        everything in this block: live has no brand strip (queue row 09), so
+        the gate's window must not see one. It is a cached read of the same
+        two queries /merchants makes, and renders nothing on a catalogue with
+        no merchant that has a product on sale.
+      */}
+      <BrandsRow />
       <HomeNewsletter />
     </>
   )

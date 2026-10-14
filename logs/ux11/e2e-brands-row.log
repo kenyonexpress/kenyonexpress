@@ -1,0 +1,83 @@
+Already up to date
+Done in 189ms using pnpm v11.1.2
+
+Running 14 tests using 2 workers
+
+[1A[2K[1/14] [chromium] › e2e/brands-row.spec.ts:53:7 › brands row (UX11) › is a scroll strip on a phone and a 3 / 5 grid at 768 / 1440
+[1A[2K[2/14] [chromium] › e2e/brands-row.spec.ts:96:7 › brands row (UX11) › every tile is one link to a merchant storefront, at least 44px tall, 12px corners
+[1A[2K[3/14] [chromium] › e2e/brands-row.spec.ts:128:7 › brands row (UX11) › a logo is grey at rest and in colour under hover, only where a pointer exists
+[1A[2K[4/14] [chromium] › e2e/brands-row.spec.ts:156:7 › brands row (UX11) › a wordmark is muted ink at rest and heading ink under hover and keyboard focus
+[1A[2K[5/14] [chromium] › e2e/home-rtl.spec.ts:83:7 › home page RTL › body and 20 anchors resolve to direction rtl
+[1A[2K[6/14] [chromium] › e2e/home-rtl.spec.ts:107:7 › home page RTL › the hero promo lines are Hebrew paragraphs laid out rtl
+[1A[2K[7/14] [chromium] › e2e/home-rtl.spec.ts:127:7 › home page RTL › every ltr node on the page is on the allow-list
+[1A[2K[8/14] [mobile-chrome] › e2e/brands-row.spec.ts:53:7 › brands row (UX11) › is a scroll strip on a phone and a 3 / 5 grid at 768 / 1440
+[1A[2K  1) [chromium] › e2e/home-rtl.spec.ts:127:7 › home page RTL › every ltr node on the page is on the allow-list 
+
+    Error: ltr nodes outside the allow-list
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "div.hidden.min-w-0 > div.flex.min-w-0 > form[aria-label=\"חיפוש מוצרים באתר\"] > div.site-search__pill.flex > input#masthead-search",[39m
+    [31m+ ][39m
+
+      161 |     )
+      162 |
+    > 163 |     expect(offenders, 'ltr nodes outside the allow-list').toEqual([])
+          |                                                           ^
+      164 |   })
+      165 | })
+      166 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/home-rtl.spec.ts:163:59
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/home-rtl-home-page-RTL-eve-4bbfa-e-page-is-on-the-allow-list-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/home-rtl-home-page-RTL-eve-4bbfa-e-page-is-on-the-allow-list-chromium/error-context.md
+
+
+[1A[2K[9/14] [mobile-chrome] › e2e/brands-row.spec.ts:96:7 › brands row (UX11) › every tile is one link to a merchant storefront, at least 44px tall, 12px corners
+[1A[2K[10/14] [mobile-chrome] › e2e/brands-row.spec.ts:128:7 › brands row (UX11) › a logo is grey at rest and in colour under hover, only where a pointer exists
+[1A[2K[11/14] [mobile-chrome] › e2e/brands-row.spec.ts:156:7 › brands row (UX11) › a wordmark is muted ink at rest and heading ink under hover and keyboard focus
+[1A[2K[12/14] [mobile-chrome] › e2e/home-rtl.spec.ts:83:7 › home page RTL › body and 20 anchors resolve to direction rtl
+[1A[2K[13/14] [mobile-chrome] › e2e/home-rtl.spec.ts:107:7 › home page RTL › the hero promo lines are Hebrew paragraphs laid out rtl
+[1A[2K[14/14] [mobile-chrome] › e2e/home-rtl.spec.ts:127:7 › home page RTL › every ltr node on the page is on the allow-list
+[1A[2K  2) [mobile-chrome] › e2e/home-rtl.spec.ts:127:7 › home page RTL › every ltr node on the page is on the allow-list 
+
+    Error: ltr nodes outside the allow-list
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "div.hidden.min-w-0 > div.flex.min-w-0 > form[aria-label=\"חיפוש מוצרים באתר\"] > div.site-search__pill.flex > input#masthead-search",[39m
+    [31m+ ][39m
+
+      161 |     )
+      162 |
+    > 163 |     expect(offenders, 'ltr nodes outside the allow-list').toEqual([])
+          |                                                           ^
+      164 |   })
+      165 | })
+      166 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/home-rtl.spec.ts:163:59
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/home-rtl-home-page-RTL-eve-4bbfa-e-page-is-on-the-allow-list-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/home-rtl-home-page-RTL-eve-4bbfa-e-page-is-on-the-allow-list-mobile-chrome/error-context.md
+
+
+[1A[2K  2 failed
+    [chromium] › e2e/home-rtl.spec.ts:127:7 › home page RTL › every ltr node on the page is on the allow-list 
+    [mobile-chrome] › e2e/home-rtl.spec.ts:127:7 › home page RTL › every ltr node on the page is on the allow-list 
+  12 passed (8.1s)

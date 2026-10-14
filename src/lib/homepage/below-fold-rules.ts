@@ -1,3 +1,5 @@
+import { isAllowedImageUrl } from '@/lib/images/remote-hosts'
+import type { MerchantDirectoryEntry } from '@/lib/merchant-directory'
 import { type DealCandidate, rankDeals } from '@/lib/pricing/flash-deals'
 import { type PopularSearch, searchHref } from '@/lib/search/empty-state'
 
@@ -207,4 +209,57 @@ export function pickDealOfTheDay(
     discountBp: top.discountBp,
     category: product.category ?? null,
   }
+}
+
+/**
+ * UX11: the brands row. At most twelve tiles: six is one row at 1200 and
+ * twelve two, and a phone scrolls the strip whatever the count.
+ */
+export const HOME_BRAND_COUNT = 12
+
+export interface BrandTile {
+  id: string
+  name: string
+  /** A logo the image optimizer may fetch, or null for a wordmark tile. */
+  logoUrl: string | null
+  href: string
+}
+
+/**
+ * The merchant directory's entries as brand tiles, pure.
+ *
+ * A BRAND ON THE HOME PAGE IS A MERCHANT WITH SOMETHING ON SALE. The directory
+ * lists every active supplier, with "אין קופונים כרגע" for one that has no
+ * live product; a home-page row is a promise that the tile leads somewhere
+ * worth going, so an entry with no product is dropped rather than shown grey.
+ *
+ * LOGO TILES FIRST, then wordmarks, keeping the directory's own order
+ * (most products first, then Hebrew alphabetical) inside each group, the way
+ * `pickCategoryTiles` leads with the photographed tiles. A logo is only used
+ * when `isAllowedImageUrl` accepts it: `suppliers.logo_url` is free text an
+ * admin typed, and next/image THROWS on a host outside the allowlist, which
+ * would take the section down for one bad row. Such a row renders its name.
+ *
+ * Measured on production, 2026-10-14 (anon REST, read-only): 7 active
+ * suppliers, every one with at least one active product, exactly one with a
+ * `logo_url` (the platform's own supplier row, `/images/logo.webp`). So the
+ * row is one logo and six wordmarks until the merchants upload theirs; the
+ * wordmark is the design, not a fallback that apologises.
+ */
+export function pickBrandTiles(
+  entries: readonly MerchantDirectoryEntry[],
+  limit: number,
+): BrandTile[] {
+  const logos: BrandTile[] = []
+  const wordmarks: BrandTile[] = []
+  for (const entry of entries) {
+    if (entry.couponCount <= 0) continue
+    const name = entry.name.replace(/\s+/g, ' ').trim()
+    if (!name) continue
+    const logoUrl = isAllowedImageUrl(entry.logoUrl) ? (entry.logoUrl as string).trim() : null
+    const tile: BrandTile = { id: entry.id, name, logoUrl, href: `/s/${entry.id}` }
+    if (logoUrl) logos.push(tile)
+    else wordmarks.push(tile)
+  }
+  return [...logos, ...wordmarks].slice(0, Math.max(0, limit))
 }

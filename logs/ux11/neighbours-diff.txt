@@ -1,0 +1,82 @@
+1,7c1,7
+< [chromium] › e2e/a11y.spec.ts:142:7 › contact has no WCAG A/AA violations ─────────────────────
+< [chromium] › e2e/a11y.spec.ts:142:7 › legal accessibility has no WCAG A/AA violations ─────────
+< [chromium] › e2e/a11y.spec.ts:142:7 › legal privacy has no WCAG A/AA violations ───────────────
+< [chromium] › e2e/a11y.spec.ts:142:7 › legal returns has no WCAG A/AA violations ───────────────
+< [chromium] › e2e/a11y.spec.ts:142:7 › legal terms has no WCAG A/AA violations ─────────────────
+< [chromium] › e2e/a11y.spec.ts:142:7 › privacy policy has no WCAG A/AA violations ──────────────
+< [chromium] › e2e/a11y.spec.ts:142:7 › terms and conditions has no WCAG A/AA violations ────────
+---
+> [chromium] › e2e/a11y.spec.ts:142:7 › contact has no WCAG A/AA violations ──────────────────────
+> [chromium] › e2e/a11y.spec.ts:142:7 › legal accessibility has no WCAG A/AA violations ──────────
+> [chromium] › e2e/a11y.spec.ts:142:7 › legal privacy has no WCAG A/AA violations ────────────────
+> [chromium] › e2e/a11y.spec.ts:142:7 › legal returns has no WCAG A/AA violations ────────────────
+> [chromium] › e2e/a11y.spec.ts:142:7 › legal terms has no WCAG A/AA violations ──────────────────
+> [chromium] › e2e/a11y.spec.ts:142:7 › privacy policy has no WCAG A/AA violations ───────────────
+> [chromium] › e2e/a11y.spec.ts:142:7 › terms and conditions has no WCAG A/AA violations ─────────
+13d12
+< [chromium] › e2e/a11y.spec.ts:722:7 › every Tab stop on / is visible, on screen and not under fixed chrome
+21c20,21
+< [chromium] › e2e/home-rtl.spec.ts:127:7 › home page RTL › every ltr node on the page is on the allow-list
+---
+> [chromium] › e2e/home-rtl.spec.ts:129:7 › home page RTL › every ltr node on the page is on the allow-list
+> [chromium] › e2e/home-rtl.spec.ts:85:7 › home page RTL › body and 20 anchors resolve to direction rtl
+23c23
+< [chromium] › e2e/home.spec.ts:38:7 › homepage › renders the header search combobox ───────────
+---
+> [chromium] › e2e/home.spec.ts:38:7 › homepage › renders the header search combobox ─────────────
+25,27c25,27
+< [chromium] › e2e/home.spec.ts:481:7 › homepage › reaching the footer costs no 404s ───────────
+< [chromium] › e2e/touch-targets.spec.ts:155:7 › every control on / is thumb-sized ─────────────
+< [chromium] › e2e/touch-targets.spec.ts:155:7 › every control on /cart is thumb-sized ─────────
+---
+> [chromium] › e2e/home.spec.ts:481:7 › homepage › reaching the footer costs no 404s ─────────────
+> [chromium] › e2e/touch-targets.spec.ts:155:7 › every control on / is thumb-sized ───────────────
+> [chromium] › e2e/touch-targets.spec.ts:155:7 › every control on /cart is thumb-sized ───────────
+29,31c29,31
+< [chromium] › e2e/touch-targets.spec.ts:155:7 › every control on /legal/terms is thumb-sized ──
+< [chromium] › e2e/touch-targets.spec.ts:155:7 › every control on /login is thumb-sized ────────
+< [chromium] › e2e/touch-targets.spec.ts:155:7 › every control on /products is thumb-sized ─────
+---
+> [chromium] › e2e/touch-targets.spec.ts:155:7 › every control on /legal/terms is thumb-sized ────
+> [chromium] › e2e/touch-targets.spec.ts:155:7 › every control on /login is thumb-sized ──────────
+> [chromium] › e2e/touch-targets.spec.ts:155:7 › every control on /products is thumb-sized ───────
+33,39c33,39
+< [mobile-chrome] › e2e/a11y.spec.ts:142:7 › contact has no WCAG A/AA violations ───────────────
+< [mobile-chrome] › e2e/a11y.spec.ts:142:7 › legal accessibility has no WCAG A/AA violations ───
+< [mobile-chrome] › e2e/a11y.spec.ts:142:7 › legal privacy has no WCAG A/AA violations ─────────
+< [mobile-chrome] › e2e/a11y.spec.ts:142:7 › legal returns has no WCAG A/AA violations ─────────
+< [mobile-chrome] › e2e/a11y.spec.ts:142:7 › legal terms has no WCAG A/AA violations ───────────
+< [mobile-chrome] › e2e/a11y.spec.ts:142:7 › privacy policy has no WCAG A/AA violations ────────
+< [mobile-chrome] › e2e/a11y.spec.ts:142:7 › terms and conditions has no WCAG A/AA violations ──
+---
+> [mobile-chrome] › e2e/a11y.spec.ts:142:7 › contact has no WCAG A/AA violations ─────────────────
+> [mobile-chrome] › e2e/a11y.spec.ts:142:7 › legal accessibility has no WCAG A/AA violations ─────
+> [mobile-chrome] › e2e/a11y.spec.ts:142:7 › legal privacy has no WCAG A/AA violations ───────────
+> [mobile-chrome] › e2e/a11y.spec.ts:142:7 › legal returns has no WCAG A/AA violations ───────────
+> [mobile-chrome] › e2e/a11y.spec.ts:142:7 › legal terms has no WCAG A/AA violations ─────────────
+> [mobile-chrome] › e2e/a11y.spec.ts:142:7 › privacy policy has no WCAG A/AA violations ──────────
+> [mobile-chrome] › e2e/a11y.spec.ts:142:7 › terms and conditions has no WCAG A/AA violations ────
+53c53,54
+< [mobile-chrome] › e2e/home-rtl.spec.ts:127:7 › home page RTL › every ltr node on the page is on the allow-list
+---
+> [mobile-chrome] › e2e/home-rtl.spec.ts:129:7 › home page RTL › every ltr node on the page is on the allow-list
+> [mobile-chrome] › e2e/home-rtl.spec.ts:85:7 › home page RTL › body and 20 anchors resolve to direction rtl
+55c56
+< [mobile-chrome] › e2e/home.spec.ts:38:7 › homepage › renders the header search combobox ──────
+---
+> [mobile-chrome] › e2e/home.spec.ts:38:7 › homepage › renders the header search combobox ────────
+57,59c58,60
+< [mobile-chrome] › e2e/home.spec.ts:481:7 › homepage › reaching the footer costs no 404s ──────
+< [mobile-chrome] › e2e/touch-targets.spec.ts:155:7 › every control on / is thumb-sized ────────
+< [mobile-chrome] › e2e/touch-targets.spec.ts:155:7 › every control on /cart is thumb-sized ────
+---
+> [mobile-chrome] › e2e/home.spec.ts:481:7 › homepage › reaching the footer costs no 404s ────────
+> [mobile-chrome] › e2e/touch-targets.spec.ts:155:7 › every control on / is thumb-sized ──────────
+> [mobile-chrome] › e2e/touch-targets.spec.ts:155:7 › every control on /cart is thumb-sized ──────
+62,63c63,64
+< [mobile-chrome] › e2e/touch-targets.spec.ts:155:7 › every control on /login is thumb-sized ───
+< [mobile-chrome] › e2e/touch-targets.spec.ts:155:7 › every control on /products is thumb-sized
+---
+> [mobile-chrome] › e2e/touch-targets.spec.ts:155:7 › every control on /login is thumb-sized ─────
+> [mobile-chrome] › e2e/touch-targets.spec.ts:155:7 › every control on /products is thumb-sized ──

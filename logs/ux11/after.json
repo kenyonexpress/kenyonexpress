@@ -1,0 +1,935 @@
+{
+  "380": {
+    "present": true,
+    "rest": {
+      "phase": "rest",
+      "heading": {
+        "rect": {
+          "x": 208.05,
+          "y": 246.48,
+          "w": 146.95,
+          "h": 33
+        },
+        "text": "בתי העסק שלנו"
+      },
+      "more": {
+        "rect": {
+          "x": 25,
+          "y": 240.98,
+          "w": 103.16,
+          "h": 44
+        },
+        "text": "לכל בתי העסק"
+      },
+      "list": {
+        "rect": {
+          "x": 25,
+          "y": 300.98,
+          "w": 330,
+          "h": 80
+        },
+        "display": "flex",
+        "columns": "none",
+        "overflowX": "auto",
+        "snapType": "x",
+        "gap": "12px",
+        "scrollWidth": 1122,
+        "clientWidth": 330,
+        "scrollable": true
+      },
+      "hoverCapable": true,
+      "count": 7,
+      "columnsPerRow": [7],
+      "tileHeights": [80],
+      "tileWidths": [150],
+      "tiles": [
+        {
+          "i": 0,
+          "rect": {
+            "x": 205,
+            "y": 300.98,
+            "w": 150,
+            "h": 80
+          },
+          "link": {
+            "x": 205,
+            "y": 300.98,
+            "w": 150,
+            "h": 80
+          },
+          "kind": "logo",
+          "alt": "קניון אקספרס",
+          "text": null,
+          "visual": {
+            "x": 218,
+            "y": 315.98,
+            "w": 124,
+            "h": 50
+          },
+          "filter": "grayscale(1)",
+          "opacity": "0.75",
+          "color": "rgba(0, 0, 0, 0)",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "radius": "0px",
+          "border": "0px",
+          "snap": "start",
+          "links": 1
+        },
+        {
+          "i": 1,
+          "rect": {
+            "x": 43,
+            "y": 300.98,
+            "w": 150,
+            "h": 80
+          },
+          "link": {
+            "x": 43,
+            "y": 300.98,
+            "w": 150,
+            "h": 80
+          },
+          "kind": "wordmark",
+          "alt": null,
+          "text": "ביוטי לאב",
+          "visual": {
+            "x": 86.66,
+            "y": 331.23,
+            "w": 62.7,
+            "h": 19.5
+          },
+          "filter": "none",
+          "opacity": "1",
+          "color": "rgb(111, 111, 111)",
+          "fontSize": "15px",
+          "fontWeight": "700",
+          "radius": "0px",
+          "border": "0px",
+          "snap": "start",
+          "links": 1
+        },
+        {
+          "i": 2,
+          "rect": {
+            "x": -119,
+            "y": 300.98,
+            "w": 150,
+            "h": 80
+          },
+          "link": {
+            "x": -119,
+            "y": 300.98,
+            "w": 150,
+            "h": 80
+          },
+          "kind": "wordmark",
+          "alt": null,
+          "text": "ספורט מקס",
+          "visual": {
+            "x": -81.25,
+            "y": 331.23,
+            "w": 74.52,
+            "h": 19.5
+          },
+          "filter": "none",
+          "opacity": "1",
+          "color": "rgb(111, 111, 111)",
+          "fontSize": "15px",
+          "fontWeight": "700",
+          "radius": "0px",
+          "border": "0px",
+          "snap": "start",
+          "links": 1
+        },
+        {
+          "i": 3,
+          "rect": {
+            "x": -281,
+            "y": 300.98,
+            "w": 150,
+            "h": 80
+          },
+          "link": {
+            "x": -281,
+            "y": 300.98,
+            "w": 150,
+            "h": 80
+          },
+          "kind": "wordmark",
+          "alt": null,
+          "text": "טעמים גורמה",
+          "visual": {
+            "x": -248.77,
+            "y": 331.23,
+            "w": 85.55,
+            "h": 19.5
+          },
+          "filter": "none",
+          "opacity": "1",
+          "color": "rgb(111, 111, 111)",
+          "fontSize": "15px",
+          "fontWeight": "700",
+          "radius": "0px",
+          "border": "0px",
+          "snap": "start",
+          "links": 1
+        },
+        {
+          "i": 4,
+          "rect": {
+            "x": -443,
+            "y": 300.98,
+            "w": 150,
+            "h": 80
+          },
+          "link": {
+            "x": -443,
+            "y": 300.98,
+            "w": 150,
+            "h": 80
+          },
+          "kind": "wordmark",
+          "alt": null,
+          "text": "טק וורלד",
+          "visual": {
+            "x": -396.31,
+            "y": 331.23,
+            "w": 56.63,
+            "h": 19.5
+          },
+          "filter": "none",
+          "opacity": "1",
+          "color": "rgb(111, 111, 111)",
+          "fontSize": "15px",
+          "fontWeight": "700",
+          "radius": "0px",
+          "border": "0px",
+          "snap": "start",
+          "links": 1
+        },
+        {
+          "i": 5,
+          "rect": {
+            "x": -605,
+            "y": 300.98,
+            "w": 150,
+            "h": 80
+          },
+          "link": {
+            "x": -605,
+            "y": 300.98,
+            "w": 150,
+            "h": 80
+          },
+          "kind": "wordmark",
+          "alt": null,
+          "text": "סטייל הבית",
+          "visual": {
+            "x": -566.75,
+            "y": 331.23,
+            "w": 73.5,
+            "h": 19.5
+          },
+          "filter": "none",
+          "opacity": "1",
+          "color": "rgb(111, 111, 111)",
+          "fontSize": "15px",
+          "fontWeight": "700",
+          "radius": "0px",
+          "border": "0px",
+          "snap": "start",
+          "links": 1
+        },
+        {
+          "i": 6,
+          "rect": {
+            "x": -767,
+            "y": 300.98,
+            "w": 150,
+            "h": 80
+          },
+          "link": {
+            "x": -767,
+            "y": 300.98,
+            "w": 150,
+            "h": 80
+          },
+          "kind": "wordmark",
+          "alt": null,
+          "text": "ספק בדיקות אוטומטיות",
+          "visual": {
+            "x": -754,
+            "y": 321.48,
+            "w": 124,
+            "h": 39
+          },
+          "filter": "none",
+          "opacity": "1",
+          "color": "rgb(111, 111, 111)",
+          "fontSize": "15px",
+          "fontWeight": "700",
+          "radius": "0px",
+          "border": "0px",
+          "snap": "start",
+          "links": 1
+        }
+      ]
+    },
+    "hoverFirst": {
+      "i": 0,
+      "rect": {
+        "x": 205,
+        "y": 300.98,
+        "w": 150,
+        "h": 80
+      },
+      "link": {
+        "x": 205,
+        "y": 300.98,
+        "w": 150,
+        "h": 80
+      },
+      "kind": "logo",
+      "alt": "קניון אקספרס",
+      "text": null,
+      "visual": {
+        "x": 218,
+        "y": 315.98,
+        "w": 124,
+        "h": 50
+      },
+      "filter": "none",
+      "opacity": "1",
+      "color": "rgba(0, 0, 0, 0)",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "radius": "0px",
+      "border": "0px",
+      "snap": "start",
+      "links": 1
+    }
+  },
+  "768": {
+    "present": true,
+    "rest": {
+      "phase": "rest",
+      "heading": {
+        "rect": {
+          "x": 572.05,
+          "y": 214.8,
+          "w": 146.95,
+          "h": 33
+        },
+        "text": "בתי העסק שלנו"
+      },
+      "more": {
+        "rect": {
+          "x": 49,
+          "y": 209.3,
+          "w": 103.16,
+          "h": 44
+        },
+        "text": "לכל בתי העסק"
+      },
+      "list": {
+        "rect": {
+          "x": 49,
+          "y": 269.3,
+          "w": 670,
+          "h": 264
+        },
+        "display": "grid",
+        "columns": "215.328px 215.328px 215.328px",
+        "overflowX": "visible",
+        "snapType": "none",
+        "gap": "12px",
+        "scrollWidth": 670,
+        "clientWidth": 670,
+        "scrollable": false
+      },
+      "hoverCapable": true,
+      "count": 7,
+      "columnsPerRow": [3, 3, 1],
+      "tileHeights": [80],
+      "tileWidths": [215.3],
+      "tiles": [
+        {
+          "i": 0,
+          "rect": {
+            "x": 503.67,
+            "y": 269.3,
+            "w": 215.33,
+            "h": 80
+          },
+          "link": {
+            "x": 503.67,
+            "y": 269.3,
+            "w": 215.33,
+            "h": 80
+          },
+          "kind": "logo",
+          "alt": "קניון אקספרס",
+          "text": null,
+          "visual": {
+            "x": 527.84,
+            "y": 284.3,
+            "w": 167,
+            "h": 50
+          },
+          "filter": "grayscale(1)",
+          "opacity": "0.75",
+          "color": "rgba(0, 0, 0, 0)",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "radius": "0px",
+          "border": "0px",
+          "snap": "start",
+          "links": 1
+        },
+        {
+          "i": 1,
+          "rect": {
+            "x": 276.34,
+            "y": 269.3,
+            "w": 215.33,
+            "h": 80
+          },
+          "link": {
+            "x": 276.34,
+            "y": 269.3,
+            "w": 215.33,
+            "h": 80
+          },
+          "kind": "wordmark",
+          "alt": null,
+          "text": "ביוטי לאב",
+          "visual": {
+            "x": 352.66,
+            "y": 299.55,
+            "w": 62.7,
+            "h": 19.5
+          },
+          "filter": "none",
+          "opacity": "1",
+          "color": "rgb(111, 111, 111)",
+          "fontSize": "15px",
+          "fontWeight": "700",
+          "radius": "0px",
+          "border": "0px",
+          "snap": "start",
+          "links": 1
+        },
+        {
+          "i": 2,
+          "rect": {
+            "x": 49.02,
+            "y": 269.3,
+            "w": 215.33,
+            "h": 80
+          },
+          "link": {
+            "x": 49.02,
+            "y": 269.3,
+            "w": 215.33,
+            "h": 80
+          },
+          "kind": "wordmark",
+          "alt": null,
+          "text": "ספורט מקס",
+          "visual": {
+            "x": 119.42,
+            "y": 299.55,
+            "w": 74.52,
+            "h": 19.5
+          },
+          "filter": "none",
+          "opacity": "1",
+          "color": "rgb(111, 111, 111)",
+          "fontSize": "15px",
+          "fontWeight": "700",
+          "radius": "0px",
+          "border": "0px",
+          "snap": "start",
+          "links": 1
+        },
+        {
+          "i": 3,
+          "rect": {
+            "x": 503.67,
+            "y": 361.3,
+            "w": 215.33,
+            "h": 80
+          },
+          "link": {
+            "x": 503.67,
+            "y": 361.3,
+            "w": 215.33,
+            "h": 80
+          },
+          "kind": "wordmark",
+          "alt": null,
+          "text": "טעמים גורמה",
+          "visual": {
+            "x": 568.56,
+            "y": 391.55,
+            "w": 85.55,
+            "h": 19.5
+          },
+          "filter": "none",
+          "opacity": "1",
+          "color": "rgb(111, 111, 111)",
+          "fontSize": "15px",
+          "fontWeight": "700",
+          "radius": "0px",
+          "border": "0px",
+          "snap": "start",
+          "links": 1
+        },
+        {
+          "i": 4,
+          "rect": {
+            "x": 276.34,
+            "y": 361.3,
+            "w": 215.33,
+            "h": 80
+          },
+          "link": {
+            "x": 276.34,
+            "y": 361.3,
+            "w": 215.33,
+            "h": 80
+          },
+          "kind": "wordmark",
+          "alt": null,
+          "text": "טק וורלד",
+          "visual": {
+            "x": 355.7,
+            "y": 391.55,
+            "w": 56.63,
+            "h": 19.5
+          },
+          "filter": "none",
+          "opacity": "1",
+          "color": "rgb(111, 111, 111)",
+          "fontSize": "15px",
+          "fontWeight": "700",
+          "radius": "0px",
+          "border": "0px",
+          "snap": "start",
+          "links": 1
+        },
+        {
+          "i": 5,
+          "rect": {
+            "x": 49.02,
+            "y": 361.3,
+            "w": 215.33,
+            "h": 80
+          },
+          "link": {
+            "x": 49.02,
+            "y": 361.3,
+            "w": 215.33,
+            "h": 80
+          },
+          "kind": "wordmark",
+          "alt": null,
+          "text": "סטייל הבית",
+          "visual": {
+            "x": 119.94,
+            "y": 391.55,
+            "w": 73.5,
+            "h": 19.5
+          },
+          "filter": "none",
+          "opacity": "1",
+          "color": "rgb(111, 111, 111)",
+          "fontSize": "15px",
+          "fontWeight": "700",
+          "radius": "0px",
+          "border": "0px",
+          "snap": "start",
+          "links": 1
+        },
+        {
+          "i": 6,
+          "rect": {
+            "x": 503.67,
+            "y": 453.3,
+            "w": 215.33,
+            "h": 80
+          },
+          "link": {
+            "x": 503.67,
+            "y": 453.3,
+            "w": 215.33,
+            "h": 80
+          },
+          "kind": "wordmark",
+          "alt": null,
+          "text": "ספק בדיקות אוטומטיות",
+          "visual": {
+            "x": 535.91,
+            "y": 483.55,
+            "w": 150.88,
+            "h": 19.5
+          },
+          "filter": "none",
+          "opacity": "1",
+          "color": "rgb(111, 111, 111)",
+          "fontSize": "15px",
+          "fontWeight": "700",
+          "radius": "0px",
+          "border": "0px",
+          "snap": "start",
+          "links": 1
+        }
+      ]
+    },
+    "hoverFirst": {
+      "i": 0,
+      "rect": {
+        "x": 503.67,
+        "y": 269.3,
+        "w": 215.33,
+        "h": 80
+      },
+      "link": {
+        "x": 503.67,
+        "y": 269.3,
+        "w": 215.33,
+        "h": 80
+      },
+      "kind": "logo",
+      "alt": "קניון אקספרס",
+      "text": null,
+      "visual": {
+        "x": 527.84,
+        "y": 284.3,
+        "w": 167,
+        "h": 50
+      },
+      "filter": "none",
+      "opacity": "1",
+      "color": "rgba(0, 0, 0, 0)",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "radius": "0px",
+      "border": "0px",
+      "snap": "start",
+      "links": 1
+    }
+  },
+  "1440": {
+    "present": true,
+    "rest": {
+      "phase": "rest",
+      "heading": {
+        "rect": {
+          "x": 1148.05,
+          "y": 290.8,
+          "w": 146.95,
+          "h": 33
+        },
+        "text": "בתי העסק שלנו"
+      },
+      "more": {
+        "rect": {
+          "x": 145,
+          "y": 285.3,
+          "w": 103.16,
+          "h": 44
+        },
+        "text": "לכל בתי העסק"
+      },
+      "list": {
+        "rect": {
+          "x": 145,
+          "y": 345.3,
+          "w": 1150,
+          "h": 172
+        },
+        "display": "grid",
+        "columns": "220.391px 220.406px 220.391px 220.406px 220.391px",
+        "overflowX": "visible",
+        "snapType": "none",
+        "gap": "12px",
+        "scrollWidth": 1150,
+        "clientWidth": 1150,
+        "scrollable": false
+      },
+      "hoverCapable": true,
+      "count": 7,
+      "columnsPerRow": [5, 2],
+      "tileHeights": [80],
+      "tileWidths": [220.4],
+      "tiles": [
+        {
+          "i": 0,
+          "rect": {
+            "x": 1074.61,
+            "y": 345.3,
+            "w": 220.39,
+            "h": 80
+          },
+          "link": {
+            "x": 1074.61,
+            "y": 345.3,
+            "w": 220.39,
+            "h": 80
+          },
+          "kind": "logo",
+          "alt": "קניון אקספרס",
+          "text": null,
+          "visual": {
+            "x": 1101.31,
+            "y": 360.3,
+            "w": 167,
+            "h": 50
+          },
+          "filter": "grayscale(1)",
+          "opacity": "0.75",
+          "color": "rgba(0, 0, 0, 0)",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "radius": "0px",
+          "border": "0px",
+          "snap": "start",
+          "links": 1
+        },
+        {
+          "i": 1,
+          "rect": {
+            "x": 842.2,
+            "y": 345.3,
+            "w": 220.41,
+            "h": 80
+          },
+          "link": {
+            "x": 842.2,
+            "y": 345.3,
+            "w": 220.41,
+            "h": 80
+          },
+          "kind": "wordmark",
+          "alt": null,
+          "text": "ביוטי לאב",
+          "visual": {
+            "x": 921.06,
+            "y": 375.55,
+            "w": 62.7,
+            "h": 19.5
+          },
+          "filter": "none",
+          "opacity": "1",
+          "color": "rgb(111, 111, 111)",
+          "fontSize": "15px",
+          "fontWeight": "700",
+          "radius": "0px",
+          "border": "0px",
+          "snap": "start",
+          "links": 1
+        },
+        {
+          "i": 2,
+          "rect": {
+            "x": 609.81,
+            "y": 345.3,
+            "w": 220.39,
+            "h": 80
+          },
+          "link": {
+            "x": 609.81,
+            "y": 345.3,
+            "w": 220.39,
+            "h": 80
+          },
+          "kind": "wordmark",
+          "alt": null,
+          "text": "ספורט מקס",
+          "visual": {
+            "x": 682.75,
+            "y": 375.55,
+            "w": 74.52,
+            "h": 19.5
+          },
+          "filter": "none",
+          "opacity": "1",
+          "color": "rgb(111, 111, 111)",
+          "fontSize": "15px",
+          "fontWeight": "700",
+          "radius": "0px",
+          "border": "0px",
+          "snap": "start",
+          "links": 1
+        },
+        {
+          "i": 3,
+          "rect": {
+            "x": 377.41,
+            "y": 345.3,
+            "w": 220.41,
+            "h": 80
+          },
+          "link": {
+            "x": 377.41,
+            "y": 345.3,
+            "w": 220.41,
+            "h": 80
+          },
+          "kind": "wordmark",
+          "alt": null,
+          "text": "טעמים גורמה",
+          "visual": {
+            "x": 444.84,
+            "y": 375.55,
+            "w": 85.55,
+            "h": 19.5
+          },
+          "filter": "none",
+          "opacity": "1",
+          "color": "rgb(111, 111, 111)",
+          "fontSize": "15px",
+          "fontWeight": "700",
+          "radius": "0px",
+          "border": "0px",
+          "snap": "start",
+          "links": 1
+        },
+        {
+          "i": 4,
+          "rect": {
+            "x": 145.02,
+            "y": 345.3,
+            "w": 220.39,
+            "h": 80
+          },
+          "link": {
+            "x": 145.02,
+            "y": 345.3,
+            "w": 220.39,
+            "h": 80
+          },
+          "kind": "wordmark",
+          "alt": null,
+          "text": "טק וורלד",
+          "visual": {
+            "x": 226.91,
+            "y": 375.55,
+            "w": 56.63,
+            "h": 19.5
+          },
+          "filter": "none",
+          "opacity": "1",
+          "color": "rgb(111, 111, 111)",
+          "fontSize": "15px",
+          "fontWeight": "700",
+          "radius": "0px",
+          "border": "0px",
+          "snap": "start",
+          "links": 1
+        },
+        {
+          "i": 5,
+          "rect": {
+            "x": 1074.61,
+            "y": 437.3,
+            "w": 220.39,
+            "h": 80
+          },
+          "link": {
+            "x": 1074.61,
+            "y": 437.3,
+            "w": 220.39,
+            "h": 80
+          },
+          "kind": "wordmark",
+          "alt": null,
+          "text": "סטייל הבית",
+          "visual": {
+            "x": 1148.06,
+            "y": 467.55,
+            "w": 73.5,
+            "h": 19.5
+          },
+          "filter": "none",
+          "opacity": "1",
+          "color": "rgb(111, 111, 111)",
+          "fontSize": "15px",
+          "fontWeight": "700",
+          "radius": "0px",
+          "border": "0px",
+          "snap": "start",
+          "links": 1
+        },
+        {
+          "i": 6,
+          "rect": {
+            "x": 842.2,
+            "y": 437.3,
+            "w": 220.41,
+            "h": 80
+          },
+          "link": {
+            "x": 842.2,
+            "y": 437.3,
+            "w": 220.41,
+            "h": 80
+          },
+          "kind": "wordmark",
+          "alt": null,
+          "text": "ספק בדיקות אוטומטיות",
+          "visual": {
+            "x": 876.97,
+            "y": 467.55,
+            "w": 150.88,
+            "h": 19.5
+          },
+          "filter": "none",
+          "opacity": "1",
+          "color": "rgb(111, 111, 111)",
+          "fontSize": "15px",
+          "fontWeight": "700",
+          "radius": "0px",
+          "border": "0px",
+          "snap": "start",
+          "links": 1
+        }
+      ]
+    },
+    "hoverFirst": {
+      "i": 0,
+      "rect": {
+        "x": 1074.61,
+        "y": 345.3,
+        "w": 220.39,
+        "h": 80
+      },
+      "link": {
+        "x": 1074.61,
+        "y": 345.3,
+        "w": 220.39,
+        "h": 80
+      },
+      "kind": "logo",
+      "alt": "קניון אקספרס",
+      "text": null,
+      "visual": {
+        "x": 1101.31,
+        "y": 360.3,
+        "w": 167,
+        "h": 50
+      },
+      "filter": "none",
+      "opacity": "1",
+      "color": "rgba(0, 0, 0, 0)",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "radius": "0px",
+      "border": "0px",
+      "snap": "start",
+      "links": 1
+    }
+  }
+}

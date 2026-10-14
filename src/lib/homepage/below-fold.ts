@@ -3,6 +3,13 @@ import { CATEGORY_TILE_IMAGES } from '@/lib/assets'
 import { CacheLife, CacheTags } from '@/lib/cache/tags'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { orderedByMenu } from '@/lib/category-page'
+import {
+  type DirectoryProductRow,
+  type DirectorySupplierRow,
+  MERCHANT_DIRECTORY_PRODUCT_COLUMNS,
+  MERCHANT_DIRECTORY_SUPPLIER_COLUMNS,
+  buildMerchantDirectory,
+} from '@/lib/merchant-directory'
 import { log } from '@/lib/observability/log'
 import { POPULAR_SEARCHES_TAG } from '@/lib/search/empty-state'
 import { readOptionalColumns } from '@/lib/supabase/optional-columns'
@@ -10,14 +17,17 @@ import { createCatalogueReadClient } from '@/lib/supabase/read-replica'
 import { sanitizeOrTerm } from '@/lib/utils/search-escape'
 import { cacheLife, cacheTag } from 'next/cache'
 import {
+  type BrandTile,
   type CategoryTile,
   type CategoryTileRow,
   type DealOfTheDay,
   type DealOfTheDayCandidate,
+  HOME_BRAND_COUNT,
   HOME_CATEGORY_TILE_COUNT,
   HOME_POPULAR_SEARCH_COUNT,
   HOT_COUPON_COUNT,
   type PopularSearchChip,
+  pickBrandTiles,
   pickCategoryTiles,
   pickDealOfTheDay,
   pickPopularSearches,
@@ -207,6 +217,60 @@ export async function getHomePopularSearches(): Promise<PopularSearchChip[]> {
     )
   } catch (error) {
     log.warn('homepage.popular_searches_read_threw', {
+      reason: error instanceof Error ? error.message : 'unknown',
+    })
+    return []
+  }
+}
+
+/**
+ * The brands row (UX11): the merchant directory's entries, as tiles.
+ *
+ * THE SAME TWO READS `/merchants` MAKES, through the same column constants
+ * and the same pure builder (`buildMerchantDirectory`), so a merchant is the
+ * same merchant on both pages: same count, same order, same logo. What
+ * differs is the contract. `loadMerchantDirectory` is `orFail`, which is right
+ * for a page whose whole content it is; here a failed read is logged and the
+ * row renders nothing, like every reader above. Cached under `CacheLife.home`
+ * with the home tag, and under `productList` too, because a product moving in
+ * or out of a supplier is what changes its tile.
+ */
+export async function getHomeBrands(): Promise<BrandTile[]> {
+  'use cache'
+  cacheLife(CacheLife.home)
+  cacheTag(CATALOGUE_TAG, CacheTags.home, CacheTags.productList)
+  try {
+    const supabase = createCatalogueReadClient()
+    const [suppliersRead, productsRead] = await Promise.all([
+      supabase
+        .from('suppliers')
+        .select(MERCHANT_DIRECTORY_SUPPLIER_COLUMNS)
+        .eq('status', 'active')
+        .is('deleted_at', null)
+        .limit(500),
+      supabase
+        .from('products')
+        .select(MERCHANT_DIRECTORY_PRODUCT_COLUMNS)
+        .eq('status', 'active')
+        .is('deleted_at', null)
+        .not('supplier_id', 'is', null)
+        .limit(5000),
+    ])
+    if (suppliersRead.error) {
+      log.warn('homepage.brands_suppliers_read_failed', { reason: suppliersRead.error.message })
+      return []
+    }
+    if (productsRead.error) {
+      log.warn('homepage.brands_products_read_failed', { reason: productsRead.error.message })
+      return []
+    }
+    const entries = buildMerchantDirectory(
+      (suppliersRead.data ?? []) as DirectorySupplierRow[],
+      (productsRead.data ?? []) as DirectoryProductRow[],
+    )
+    return pickBrandTiles(entries, HOME_BRAND_COUNT)
+  } catch (error) {
+    log.warn('homepage.brands_read_threw', {
       reason: error instanceof Error ? error.message : 'unknown',
     })
     return []

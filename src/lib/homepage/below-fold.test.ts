@@ -60,8 +60,13 @@ vi.mock('@/lib/observability/log', () => ({
   },
 }))
 
-const { getDealOfTheDay, getHomeCategoryTiles, getHotCouponDeals } = await import('./below-fold')
+const { getDealOfTheDay, getHomeBrands, getHomeCategoryTiles, getHotCouponDeals } = await import(
+  './below-fold'
+)
 const { HOME_CATEGORY_TILE_COUNT, HOT_COUPON_COUNT } = await import('./below-fold-rules')
+const { MERCHANT_DIRECTORY_PRODUCT_COLUMNS, MERCHANT_DIRECTORY_SUPPLIER_COLUMNS } = await import(
+  '@/lib/merchant-directory'
+)
 
 function calls(chain: Chain | undefined, method: string): unknown[][] {
   return (chain ?? []).filter(([name]) => name === method).map(([, args]) => args)
@@ -284,5 +289,71 @@ describe('getHotCouponDeals', () => {
     clientThrows = 'string' as unknown as Error
     await expect(getHotCouponDeals()).resolves.toEqual([])
     expect(warn).toHaveBeenCalledWith('homepage.hot_coupons_read_threw', { reason: 'unknown' })
+  })
+})
+
+describe('getHomeBrands (UX11)', () => {
+  const supplier = (id: string, name: string, logo_url: string | null = null) => ({
+    id,
+    name,
+    city: null,
+    logo_url,
+    status: 'active',
+    deleted_at: null,
+  })
+
+  it('makes the merchant directory\u2019s two reads, through its column constants', async () => {
+    results.push({ data: [], error: null }, { data: [], error: null })
+    await getHomeBrands()
+    const [suppliers, products] = chains
+    expect(suppliers?.[0]).toEqual(['from', ['suppliers']])
+    expect(calls(suppliers, 'select')).toEqual([[MERCHANT_DIRECTORY_SUPPLIER_COLUMNS]])
+    expect(calls(suppliers, 'eq')).toEqual([['status', 'active']])
+    expect(calls(suppliers, 'is')).toEqual([['deleted_at', null]])
+    expect(products?.[0]).toEqual(['from', ['products']])
+    expect(calls(products, 'select')).toEqual([[MERCHANT_DIRECTORY_PRODUCT_COLUMNS]])
+    expect(calls(products, 'eq')).toEqual([['status', 'active']])
+    expect(calls(products, 'not')).toEqual([['supplier_id', 'is', null]])
+  })
+
+  it('returns the merchants with a product on sale as tiles, logos first', async () => {
+    results.push(
+      {
+        data: [supplier('a', 'אלף'), supplier('b', 'בית', '/images/b.webp'), supplier('c', 'גימל')],
+        error: null,
+      },
+      {
+        data: [
+          { supplier_id: 'a', categories: null },
+          { supplier_id: 'a', categories: null },
+          { supplier_id: 'b', categories: null },
+        ],
+        error: null,
+      },
+    )
+    const tiles = await getHomeBrands()
+    expect(tiles).toEqual([
+      { id: 'b', name: 'בית', logoUrl: '/images/b.webp', href: '/s/b' },
+      { id: 'a', name: 'אלף', logoUrl: null, href: '/s/a' },
+    ])
+  })
+
+  it('returns nothing and warns when either read fails or the client throws', async () => {
+    results.push({ data: null, error: { message: 'suppliers down' } }, { data: [], error: null })
+    expect(await getHomeBrands()).toEqual([])
+    expect(warn).toHaveBeenCalledWith('homepage.brands_suppliers_read_failed', {
+      reason: 'suppliers down',
+    })
+
+    results.length = 0
+    results.push({ data: [], error: null }, { data: null, error: { message: 'products down' } })
+    expect(await getHomeBrands()).toEqual([])
+    expect(warn).toHaveBeenCalledWith('homepage.brands_products_read_failed', {
+      reason: 'products down',
+    })
+
+    clientThrows = new Error('no key')
+    expect(await getHomeBrands()).toEqual([])
+    expect(warn).toHaveBeenCalledWith('homepage.brands_read_threw', { reason: 'no key' })
   })
 })

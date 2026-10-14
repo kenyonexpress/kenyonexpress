@@ -2,10 +2,13 @@ import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { CATEGORY_TILE_IMAGES } from '@/lib/assets'
 import { KE_LIVE_CATEGORIES } from '@/lib/ke-live-hero-data'
+import type { MerchantDirectoryEntry } from '@/lib/merchant-directory'
 import { describe, expect, it } from 'vitest'
 import {
+  HOME_BRAND_COUNT,
   firstImage,
   formatCountdown,
+  pickBrandTiles,
   pickCategoryTiles,
   pickDealOfTheDay,
   secondsUntilJerusalemMidnight,
@@ -231,5 +234,65 @@ describe('pickDealOfTheDay', () => {
         },
       ]),
     ).toBeNull()
+  })
+})
+
+describe('pickBrandTiles (UX11)', () => {
+  const entry = (
+    id: string,
+    name: string,
+    couponCount: number,
+    logoUrl: string | null = null,
+  ): MerchantDirectoryEntry => ({ id, name, city: null, logoUrl, categories: [], couponCount })
+
+  it('drops a merchant with nothing on sale and keeps the directory order otherwise', () => {
+    const tiles = pickBrandTiles(
+      [entry('a', 'אלף', 3), entry('b', 'בית', 0), entry('c', 'גימל', 1)],
+      12,
+    )
+    expect(tiles.map((t) => t.id)).toEqual(['a', 'c'])
+    expect(tiles[0]).toEqual({ id: 'a', name: 'אלף', logoUrl: null, href: '/s/a' })
+  })
+
+  it('puts logo tiles before wordmarks, keeping the order inside each group', () => {
+    const tiles = pickBrandTiles(
+      [
+        entry('a', 'אלף', 5),
+        entry('b', 'בית', 4, '/images/b.webp'),
+        entry('c', 'גימל', 3),
+        entry('d', 'דלת', 2, 'https://cdn.kenyonexpress.co.il/d.png'),
+      ],
+      12,
+    )
+    expect(tiles.map((t) => t.id)).toEqual(['b', 'd', 'a', 'c'])
+  })
+
+  it('renders a wordmark for a logo next/image would refuse, instead of throwing', () => {
+    const tiles = pickBrandTiles(
+      [
+        entry('a', 'אלף', 1, 'https://evil.example/logo.png'),
+        entry('b', 'בית', 1, 'http://kenyonexpress.co.il/plain.png'),
+        entry('c', 'גימל', 1, '//cdn.kenyonexpress.co.il/x.png'),
+        entry('d', 'דלת', 1, '  /images/d.webp  '),
+      ],
+      12,
+    )
+    expect(tiles.map((t) => [t.id, t.logoUrl])).toEqual([
+      ['d', '/images/d.webp'],
+      ['a', null],
+      ['b', null],
+      ['c', null],
+    ])
+  })
+
+  it('collapses whitespace in the name and drops a blank one', () => {
+    const tiles = pickBrandTiles([entry('a', '  טק   וורלד ', 1), entry('b', '   ', 1)], 12)
+    expect(tiles).toEqual([{ id: 'a', name: 'טק וורלד', logoUrl: null, href: '/s/a' }])
+  })
+
+  it('caps at the limit, after the grouping', () => {
+    const many = Array.from({ length: 15 }, (_, i) => entry(`m${i}`, `עסק ${i}`, 15 - i))
+    expect(pickBrandTiles(many, HOME_BRAND_COUNT)).toHaveLength(12)
+    expect(pickBrandTiles(many, 0)).toEqual([])
   })
 })

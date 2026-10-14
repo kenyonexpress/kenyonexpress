@@ -657,6 +657,116 @@ body:has([data-home]) .topbar-greeting {
   gap: 4px;
 }
 
+/* UX11: THE BRANDS ROW (home/BrandsRow.tsx). Live has no brand strip
+   (live-home-sections.test.ts); the cell is Electro's brand cell, measured
+   (refs/electro-home-v7_computed.json): five cells across the 1170 container,
+   a 167x50 image centred in each. Below 768 the list is one scrolling row of
+   --spacing-brand-tile-w tiles with snap points and no painted scrollbar
+   (the benefit bar's recipe, live's features-list); from 768 a grid of three,
+   from 1200 five, every row one height. Grey at rest and colour under the
+   pointer ONLY where a pointer exists (`hover: hover`): on a phone nothing is
+   ever hovered, so an unconditional rule would have left every logo grey for
+   good. Keyboard focus colours the tile too. Tokens: --spacing-brand-tile-w,
+   --spacing-brand-tile-h, --spacing-brand-logo-w, --spacing-brand-logo-h. */
+.brands-row__list {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  scroll-padding-inline: 0;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.brands-row__list::-webkit-scrollbar {
+  display: none;
+}
+.brands-row__tile {
+  flex: 0 0 var(--spacing-brand-tile-w);
+  min-width: 0;
+  scroll-snap-align: start;
+}
+@media (min-width: 768px) {
+  .brands-row__list {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-auto-rows: 1fr;
+    overflow: visible;
+    scroll-snap-type: none;
+  }
+  .brands-row__tile {
+    flex: none;
+  }
+}
+@media (min-width: 1200px) {
+  .brands-row__list {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+.brands-row__link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: var(--spacing-brand-tile-h);
+  height: 100%;
+  padding: 12px;
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-elevated);
+  background-color: var(--color-surface);
+  color: var(--color-muted);
+  text-decoration: none;
+  transition: box-shadow 150ms ease, color 150ms ease;
+}
+.brands-row__logo {
+  position: relative;
+  display: block;
+  width: 100%;
+  max-width: var(--spacing-brand-logo-w);
+  height: var(--spacing-brand-logo-h);
+}
+.brands-row__img {
+  transition: filter 150ms ease, opacity 150ms ease;
+}
+.brands-row__wordmark {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  text-align: center;
+  font-size: var(--text-body-lg);
+  font-weight: 700;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+@media (hover: hover) {
+  .brands-row__img {
+    filter: grayscale(1);
+    opacity: 0.75;
+  }
+  .brands-row__link:hover .brands-row__img,
+  .brands-row__link:focus-visible .brands-row__img {
+    filter: none;
+    opacity: 1;
+  }
+  .brands-row__link:hover,
+  .brands-row__link:focus-visible {
+    color: var(--color-heading);
+    box-shadow: var(--shadow-card-hover);
+  }
+}
+@media (hover: none) {
+  .brands-row__link {
+    color: var(--color-heading);
+  }
+}
+
 /* THE SEARCH PILL HAD NO VISIBLE FOCUS STATE. The pill is `overflow:hidden`
    (it clips the yellow button to the 22px radius), so the site-wide
    `:focus-visible` ring the input earned was drawn and then clipped: measured

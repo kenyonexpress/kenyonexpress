@@ -1,0 +1,80 @@
+{
+  "380": {
+    "present": false,
+    "merchants": {
+      "cards": 7,
+      "card": {
+        "x": 16,
+        "y": 397.66,
+        "w": 348,
+        "h": 170
+      },
+      "logoBox": {
+        "x": 267,
+        "y": 414.66,
+        "w": 80,
+        "h": 80
+      },
+      "logoImg": {
+        "x": 268,
+        "y": 415.66,
+        "w": 78,
+        "h": 78
+      },
+      "filter": "none",
+      "withLogo": 1
+    }
+  },
+  "768": {
+    "present": false,
+    "merchants": {
+      "cards": 7,
+      "card": {
+        "x": 392,
+        "y": 308.3,
+        "w": 360,
+        "h": 140
+      },
+      "logoBox": {
+        "x": 655,
+        "y": 325.3,
+        "w": 80,
+        "h": 80
+      },
+      "logoImg": {
+        "x": 656,
+        "y": 326.3,
+        "w": 78,
+        "h": 78
+      },
+      "filter": "none",
+      "withLogo": 1
+    }
+  },
+  "1440": {
+    "present": false,
+    "merchants": {
+      "cards": 7,
+      "card": {
+        "x": 925.34,
+        "y": 368.3,
+        "w": 378.66,
+        "h": 140
+      },
+      "logoBox": {
+        "x": 1207,
+        "y": 385.3,
+        "w": 80,
+        "h": 80
+      },
+      "logoImg": {
+        "x": 1208,
+        "y": 386.3,
+        "w": 78,
+        "h": 78
+      },
+      "filter": "none",
+      "withLogo": 1
+    }
+  }
+}

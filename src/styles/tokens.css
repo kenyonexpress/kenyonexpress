@@ -456,6 +456,19 @@
   --spacing-coupon-stub: 72px;
   --spacing-coupon-notch: 18px;
 
+  /* UX11: the brands row (home/BrandsRow.tsx, `.brands-row__*` in
+     globals.css). Live has no brand strip (live-home-sections.test.ts); the
+     cell is Electro's, measured off refs/electro-home-v7_computed.json: five
+     234x50 cells in the 1170 container with a 167x50 image centred in each.
+     The tile is taller than Electro's 50 so the 44px hit area and a two-line
+     wordmark fit, the logo box keeps Electro's 167x50, and the phone tile
+     width is what shows two and a half tiles at 380, which is what tells a
+     thumb the strip scrolls. */
+  --spacing-brand-tile-w: 150px;
+  --spacing-brand-tile-h: 80px;
+  --spacing-brand-logo-w: 167px;
+  --spacing-brand-logo-h: 50px;
+
   /* The store footer's column block, top padding from lg. */
   --spacing-footer-columns-top: 60px;
 
