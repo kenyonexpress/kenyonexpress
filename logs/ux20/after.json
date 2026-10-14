@@ -1,0 +1,442 @@
+{
+  "380": {
+    "status": 200,
+    "landed": "/account/wishlist",
+    "publicWishlistStatus": 410,
+    "seeded": [
+      {
+        "slug": "e2e-test-physical",
+        "before": "הוסף לרשימת המשאלות",
+        "after": "הוסף לרשימת המשאלות"
+      },
+      {
+        "slug": "e2e-test-coupon",
+        "before": "הוסף לרשימת המשאלות",
+        "after": "הוסף לרשימת המשאלות"
+      },
+      {
+        "slug": "6253",
+        "before": "הוסף לרשימת המשאלות",
+        "after": "הוסף לרשימת המשאלות"
+      }
+    ],
+    "initial": {
+      "h1": "רשימת המשאלות",
+      "count": 1,
+      "columns": 1,
+      "list": {
+        "x": 15,
+        "y": 1373.2,
+        "w": 350,
+        "h": 322.8
+      },
+      "listClass": "wishlist-grid",
+      "card": {
+        "x": 198,
+        "y": 1373.2,
+        "w": 167,
+        "h": 322.8
+      },
+      "cardAttrs": {
+        "class": "wishlist-grid__item"
+      },
+      "thumb": {
+        "x": 211,
+        "y": 1386.2,
+        "w": 141,
+        "h": 141
+      },
+      "thumbSizes": "(max-width: 767px) 50vw, 240px",
+      "name": "מלון 4 כוכבים- פלוס ארוחת בוקר",
+      "price": "⁦300 ₪⁩",
+      "savedAt": true,
+      "move": {
+        "text": "העברה לסל",
+        "rect": {
+          "x": 263,
+          "y": 1638.9,
+          "w": 89,
+          "h": 44
+        },
+        "disabled": false
+      },
+      "remove": {
+        "label": "הסרת מלון 4 כוכבים- פלוס ארוחת בוקר מהרשימה",
+        "rect": {
+          "x": 211,
+          "y": 1638.9,
+          "w": 44,
+          "h": 44
+        },
+        "disabled": false
+      },
+      "toolbar": [
+        {
+          "tag": "BUTTON",
+          "text": "שיתוף הרשימה",
+          "rect": {
+            "x": 15,
+            "y": 1313.2,
+            "w": 150.9,
+            "h": 44
+          }
+        }
+      ],
+      "countText": "מוצר אחד שמור",
+      "share": null,
+      "live": [
+        {
+          "tag": "OUTPUT",
+          "live": "polite",
+          "text": ""
+        }
+      ],
+      "pageHeight": 2346,
+      "scrollWidth": 380,
+      "moveButtons": [
+        {
+          "text": "העברה לסל",
+          "disabled": false
+        }
+      ]
+    },
+    "midRemove": {
+      "present": true,
+      "leaving": "remove",
+      "busy": "true",
+      "animation": "wishlist-card-leave",
+      "duration": "0.24s",
+      "opacity": "0.887356",
+      "maxHeight": "none",
+      "buttonsDisabled": true
+    },
+    "afterRemove": {
+      "count": 0,
+      "toasts": ["מלון 4 כוכבים- פלוס ארוחת בוקר הוסר מהרשימהביטול"],
+      "undo": "ביטול",
+      "live": ["מלון 4 כוכבים- פלוס ארוחת בוקר הוסר מהרשימה"],
+      "afterUndoCount": 1,
+      "afterUndoLive": ["מלון 4 כוכבים- פלוס ארוחת בוקר חזר לרשימה"]
+    },
+    "move": {
+      "productId": "ab841597-0e49-40a0-ac85-c5b7845947ad",
+      "countBefore": 1,
+      "mid": {
+        "present": true,
+        "leaving": null,
+        "busy": "true",
+        "pending": ["מעביר...", ""]
+      },
+      "countAfter": 0,
+      "cartBefore": 2,
+      "cartAfter": 3,
+      "toasts": ["מלון 4 כוכבים- פלוס ארוחת בוקר נוסף לעגלה"],
+      "live": ["מלון 4 כוכבים- פלוס ארוחת בוקר עבר לסל"]
+    },
+    "errors": []
+  },
+  "768": {
+    "status": 200,
+    "landed": "/account/wishlist",
+    "publicWishlistStatus": 410,
+    "seeded": [
+      {
+        "slug": "e2e-test-physical",
+        "before": "הוסף לרשימת המשאלות",
+        "after": null
+      },
+      {
+        "slug": "e2e-test-coupon",
+        "before": "הוסף לרשימת המשאלות",
+        "after": null
+      },
+      {
+        "slug": "6253",
+        "before": "הוסף לרשימת המשאלות",
+        "after": null
+      }
+    ],
+    "initial": {
+      "h1": "רשימת המשאלות",
+      "count": 3,
+      "columns": 3,
+      "list": {
+        "x": 15,
+        "y": 1316.8,
+        "w": 738,
+        "h": 391.1
+      },
+      "listClass": "wishlist-grid",
+      "card": {
+        "x": 517.7,
+        "y": 1316.8,
+        "w": 235.3,
+        "h": 391.1
+      },
+      "cardAttrs": {
+        "class": "wishlist-grid__item"
+      },
+      "thumb": {
+        "x": 530.7,
+        "y": 1329.8,
+        "w": 209.3,
+        "h": 209.3
+      },
+      "thumbSizes": "(max-width: 767px) 50vw, 240px",
+      "name": "חבילת חופשה למאלדיבים - 2 טיסות",
+      "price": "⁦1,200 ₪⁩",
+      "savedAt": true,
+      "move": {
+        "text": "העברה לסל",
+        "rect": {
+          "x": 582.7,
+          "y": 1650.9,
+          "w": 157.3,
+          "h": 44
+        },
+        "disabled": false
+      },
+      "remove": {
+        "label": "הסרת חבילת חופשה למאלדיבים - 2 טיסות מהרשימה",
+        "rect": {
+          "x": 530.7,
+          "y": 1650.9,
+          "w": 44,
+          "h": 44
+        },
+        "disabled": false
+      },
+      "toolbar": [
+        {
+          "tag": "BUTTON",
+          "text": "שיתוף הרשימה",
+          "rect": {
+            "x": 198.5,
+            "y": 1256.8,
+            "w": 150.9,
+            "h": 44
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "text": "העברת הכל לסל (3)",
+          "rect": {
+            "x": 15,
+            "y": 1256.8,
+            "w": 175.5,
+            "h": 44
+          }
+        }
+      ],
+      "countText": "3 מוצרים שמורים",
+      "share": null,
+      "live": [
+        {
+          "tag": "OUTPUT",
+          "live": "polite",
+          "text": ""
+        }
+      ],
+      "pageHeight": 2358,
+      "scrollWidth": 768,
+      "moveButtons": [
+        {
+          "text": "העברה לסל",
+          "disabled": false
+        },
+        {
+          "text": "העברה לסל",
+          "disabled": false
+        },
+        {
+          "text": "העברה לסל",
+          "disabled": false
+        }
+      ]
+    },
+    "midRemove": {
+      "present": true,
+      "leaving": "remove",
+      "busy": "true",
+      "animation": "wishlist-card-leave",
+      "duration": "0.24s",
+      "opacity": "0.886971",
+      "maxHeight": "none",
+      "buttonsDisabled": true
+    },
+    "afterRemove": {
+      "count": 2,
+      "toasts": ["מוצר פיזי לבדיקות אוטומטיות הוסר מהרשימהביטול"],
+      "undo": "ביטול",
+      "live": ["מוצר פיזי לבדיקות אוטומטיות הוסר מהרשימה"],
+      "afterUndoCount": 3,
+      "afterUndoLive": ["מוצר פיזי לבדיקות אוטומטיות חזר לרשימה"]
+    },
+    "move": {
+      "productId": "aa8b918d-2005-4aba-81d4-ae04e6158bd0",
+      "countBefore": 3,
+      "mid": {
+        "present": true,
+        "leaving": null,
+        "busy": "true",
+        "pending": ["מעביר...", ""]
+      },
+      "countAfter": 2,
+      "cartBefore": 3,
+      "cartAfter": 4,
+      "toasts": ["חבילת חופשה למאלדיבים - 2 טיסות נוסף לעגלה"],
+      "live": ["חבילת חופשה למאלדיבים - 2 טיסות עבר לסל"]
+    },
+    "errors": []
+  },
+  "1440": {
+    "status": 200,
+    "landed": "/account/wishlist",
+    "publicWishlistStatus": 410,
+    "seeded": [
+      {
+        "slug": "e2e-test-physical",
+        "before": null,
+        "after": null
+      },
+      {
+        "slug": "e2e-test-coupon",
+        "before": "הוסף לרשימת המשאלות",
+        "after": "הוסף לרשימת המשאלות"
+      },
+      {
+        "slug": "6253",
+        "before": "הוסף לרשימת המשאלות",
+        "after": null
+      }
+    ],
+    "initial": {
+      "h1": "רשימת המשאלות",
+      "count": 2,
+      "columns": 2,
+      "list": {
+        "x": 75,
+        "y": 437.3,
+        "w": 1000,
+        "h": 393.8
+      },
+      "listClass": "wishlist-grid",
+      "card": {
+        "x": 837,
+        "y": 437.3,
+        "w": 238,
+        "h": 393.8
+      },
+      "cardAttrs": {
+        "class": "wishlist-grid__item"
+      },
+      "thumb": {
+        "x": 850,
+        "y": 450.3,
+        "w": 212,
+        "h": 212
+      },
+      "thumbSizes": "(max-width: 767px) 50vw, 240px",
+      "name": "חבילת חופשה למאלדיבים - 2 טיסות",
+      "price": "⁦1,200 ₪⁩",
+      "savedAt": true,
+      "move": {
+        "text": "העברה לסל",
+        "rect": {
+          "x": 902,
+          "y": 774.1,
+          "w": 160,
+          "h": 44
+        },
+        "disabled": false
+      },
+      "remove": {
+        "label": "הסרת חבילת חופשה למאלדיבים - 2 טיסות מהרשימה",
+        "rect": {
+          "x": 850,
+          "y": 774.1,
+          "w": 44,
+          "h": 44
+        },
+        "disabled": false
+      },
+      "toolbar": [
+        {
+          "tag": "BUTTON",
+          "text": "שיתוף הרשימה",
+          "rect": {
+            "x": 258.5,
+            "y": 377.3,
+            "w": 150.9,
+            "h": 44
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "text": "העברת הכל לסל (2)",
+          "rect": {
+            "x": 75,
+            "y": 377.3,
+            "w": 175.5,
+            "h": 44
+          }
+        }
+      ],
+      "countText": "2 מוצרים שמורים",
+      "share": null,
+      "live": [
+        {
+          "tag": "OUTPUT",
+          "live": "polite",
+          "text": ""
+        }
+      ],
+      "pageHeight": 1795,
+      "scrollWidth": 1440,
+      "moveButtons": [
+        {
+          "text": "העברה לסל",
+          "disabled": false
+        },
+        {
+          "text": "העברה לסל",
+          "disabled": false
+        }
+      ]
+    },
+    "midRemove": {
+      "present": true,
+      "leaving": "remove",
+      "busy": "true",
+      "animation": "wishlist-card-leave",
+      "duration": "0.24s",
+      "opacity": "0.887007",
+      "maxHeight": "none",
+      "buttonsDisabled": true
+    },
+    "afterRemove": {
+      "count": 1,
+      "toasts": ["מוצר פיזי לבדיקות אוטומטיות הוסר מהרשימהביטול"],
+      "undo": "ביטול",
+      "live": ["מוצר פיזי לבדיקות אוטומטיות הוסר מהרשימה"],
+      "afterUndoCount": 2,
+      "afterUndoLive": ["מוצר פיזי לבדיקות אוטומטיות חזר לרשימה"]
+    },
+    "move": {
+      "productId": "aa8b918d-2005-4aba-81d4-ae04e6158bd0",
+      "countBefore": 2,
+      "mid": {
+        "present": true,
+        "leaving": null,
+        "busy": "true",
+        "pending": ["מעביר...", ""]
+      },
+      "countAfter": 1,
+      "cartBefore": 4,
+      "cartAfter": 5,
+      "toasts": ["חבילת חופשה למאלדיבים - 2 טיסות נוסף לעגלה"],
+      "live": ["חבילת חופשה למאלדיבים - 2 טיסות עבר לסל"]
+    },
+    "errors": []
+  }
+}

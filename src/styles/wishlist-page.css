@@ -1,0 +1,385 @@
+/* ===========================================================================
+   UX20: THE WISHLIST IS A PRODUCT GRID, NOT A LIST OF ROWS.
+   Measured before (logs/ux20/before.json, the build of f51d0aae1 on 3360,
+   signed in as the E2E customer, /account/wishlist): one column at 380 and
+   two at 768 of 158-pixel rows carrying an 80-pixel thumbnail beside the
+   name, the move button 36 tall and the remove button 40 square (both under
+   the touch floor), a remove press that froze every button on the page and
+   took the row out of the DOM with no leaving state, no undo and no live
+   region, a move press that did the same, and no share control anywhere on
+   the page (the share card only exists once 248 is applied, and production
+   has not applied it: `wishlist_shares` answers 404 to anon REST).
+
+   The grid is the catalogue's: two cards across on a phone, three from the
+   tablet breakpoint, four from the desktop one (inside the account column
+   that is the catalogue's 234-pixel card). Every colour is a token, every
+   length is a token or rem; the only raw numbers are the keyframes' own.
+   =========================================================================== */
+.wishlist {
+  --wishlist-touch: var(--spacing-touch-min);
+  --wishlist-gap: 1rem;
+  --wishlist-radius: var(--radius-md);
+  --wishlist-thumb-radius: var(--radius-sm);
+  --wishlist-line: var(--color-border-alt);
+  display: block;
+}
+
+.wishlist-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin: 0 0 var(--wishlist-gap);
+}
+
+.wishlist-toolbar__count {
+  margin: 0;
+  color: var(--color-muted);
+}
+
+.wishlist-toolbar__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.wishlist-toolbar__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: var(--wishlist-touch);
+  padding: 0 1rem;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-pdp-body);
+  font-weight: 700;
+  cursor: pointer;
+  border: thin solid var(--wishlist-line);
+  background: var(--color-surface);
+  color: var(--color-heading);
+}
+
+.wishlist-toolbar__button:hover {
+  border-color: var(--color-price);
+}
+
+.wishlist-toolbar__button--primary {
+  border-color: var(--color-brand-primary);
+  background: var(--color-brand-primary);
+  color: var(--color-brand-dark);
+}
+
+.wishlist-toolbar__button--primary:hover {
+  border-color: var(--color-brand-primary-hover);
+  background: var(--color-brand-primary-hover);
+}
+
+.wishlist-toolbar__button[disabled],
+.wishlist-toolbar__button[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* The grid: 2 / 3 / 4 across. `list-style: none` because it is a <ul>. */
+.wishlist-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--wishlist-gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 48rem) {
+  .wishlist-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 75rem) {
+  .wishlist-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.wishlist-grid__item {
+  min-width: 0;
+}
+
+/* One card. `height: 100%` so a row's cards share a bottom edge and the
+   actions line up across the row. */
+.wishlist-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 0.75rem;
+  border: thin solid var(--wishlist-line);
+  border-radius: var(--wishlist-radius);
+  background: var(--color-surface);
+  box-sizing: border-box;
+}
+
+.wishlist-card__link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+.wishlist-card__link:hover .wishlist-card__title {
+  text-decoration: underline;
+}
+
+/* A square reservation, like the catalogue thumb: the box never moves while
+   the bytes land. `object-fit: contain` because product photos are not all
+   square and a crop would cut a label off. */
+.wishlist-card__thumb {
+  position: relative;
+  display: block;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-radius: var(--wishlist-thumb-radius);
+  background: var(--color-surface-hover);
+}
+
+.wishlist-card__thumb img {
+  object-fit: contain;
+}
+
+.wishlist-card__badge {
+  position: absolute;
+  inset-inline-start: 0;
+  bottom: 0;
+  padding: 0.125rem 0.625rem;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-badge);
+  font-weight: 700;
+  color: var(--color-surface);
+  background: var(--color-success);
+}
+
+.wishlist-card__title {
+  display: -webkit-box;
+  margin: 0.625rem 0 0;
+  font-size: var(--text-pdp-body);
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--color-heading);
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.wishlist-card__price {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0.375rem 0 0;
+  font-size: var(--text-footer-head);
+  font-weight: 700;
+  color: var(--color-price);
+}
+
+.wishlist-card__price del {
+  font-size: var(--text-badge);
+  font-weight: 400;
+  color: var(--color-price-strike);
+}
+
+.wishlist-card__state {
+  margin: 0.25rem 0 0;
+  font-size: var(--text-badge);
+  font-weight: 600;
+  color: var(--color-muted);
+}
+
+.wishlist-card__state[data-state="sold-out"] {
+  color: var(--color-price);
+}
+
+.wishlist-card__saved {
+  margin: 0.25rem 0 0;
+  font-size: var(--text-badge);
+  color: var(--color-muted);
+}
+
+/* The two actions sit at the foot of every card at the same height, which is
+   what `margin-top: auto` on a flex column does. Both are the touch floor
+   tall; the remove is as wide as well. */
+.wishlist-card__actions {
+  display: flex;
+  align-items: stretch;
+  gap: 0.5rem;
+  margin-top: auto;
+  padding-top: 0.75rem;
+}
+
+.wishlist-card__move {
+  display: inline-flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  min-width: 0;
+  min-height: var(--wishlist-touch);
+  padding: 0 0.625rem;
+  border: thin solid var(--color-brand-primary);
+  border-radius: var(--radius-sm);
+  background: var(--color-brand-primary);
+  color: var(--color-brand-dark);
+  font-size: var(--text-footer-note);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.wishlist-card__move:hover {
+  border-color: var(--color-brand-primary-hover);
+  background: var(--color-brand-primary-hover);
+}
+
+.wishlist-card__move[disabled] {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.wishlist-card__remove {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: var(--wishlist-touch);
+  min-height: var(--wishlist-touch);
+  border: thin solid var(--wishlist-line);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-icon);
+  cursor: pointer;
+}
+
+.wishlist-card__remove:hover {
+  border-color: var(--color-price);
+  color: var(--color-price);
+}
+
+.wishlist-card__remove[disabled] {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* A CARD LEAVES, IT DOES NOT VANISH. `data-leaving` is set on the press
+   (remove) or on the cart's acceptance (move); the card fades and shrinks in
+   place for 240ms and the `animationend` fires the store write, after which
+   the grid reflows once. In a grid a height fold would drag the whole row,
+   so the exit is scale + fade, not the cart's fold. The global
+   prefers-reduced-motion rule collapses it to 0.01ms and the event still
+   fires. */
+.wishlist-card[data-leaving] {
+  animation: wishlist-card-leave 240ms ease-in forwards;
+  pointer-events: none;
+}
+
+@keyframes wishlist-card-leave {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+}
+
+.wishlist-card[data-leaving="move"] .wishlist-card__move {
+  border-color: var(--color-success);
+  background: var(--color-success);
+  color: var(--color-surface);
+}
+
+/* The loading grid: the same cells, so nothing jumps when the list lands. */
+.wishlist-card--skeleton {
+  min-height: 18.75rem;
+  animation: wishlist-skeleton 1.2s ease-in-out infinite;
+}
+
+@keyframes wishlist-skeleton {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+.wishlist-skeleton {
+  display: block;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-hover);
+}
+
+.wishlist-skeleton--thumb {
+  aspect-ratio: 1 / 1;
+  border-radius: var(--wishlist-thumb-radius);
+}
+
+.wishlist-skeleton--line {
+  height: 0.875rem;
+  margin-top: 0.625rem;
+}
+
+.wishlist-skeleton--line.is-short {
+  width: 50%;
+}
+
+/* The empty state: one card, the heart, the words, two ways onward. */
+.wishlist-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  border: thin solid var(--wishlist-line);
+  border-radius: var(--wishlist-radius);
+  background: var(--color-surface);
+}
+
+.wishlist-empty__title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-heading);
+}
+
+.wishlist-empty__title svg {
+  color: var(--color-price);
+}
+
+.wishlist-empty__text {
+  margin: 0;
+  color: var(--color-muted);
+}
+
+.wishlist-empty__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+/* The two cards at the foot (share, alerts): side by side from the desktop
+   breakpoint. */
+.wishlist-foot {
+  display: grid;
+  gap: var(--wishlist-gap);
+  margin-top: 2rem;
+}
+
+@media (min-width: 64rem) {
+  .wishlist-foot {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

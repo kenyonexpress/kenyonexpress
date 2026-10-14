@@ -18,6 +18,11 @@ import { redirect } from 'next/navigation'
 import { connection } from 'next/server'
 import { Suspense } from 'react'
 import '@/styles/account.css'
+// UX20: the wishlist tab's grid. Imported by the layout and not by the page
+// because a stylesheet owned by a page inside the shell's Suspense boundary
+// made Fizz emit its nonce-less reveal runtime ($RB/$RV) into
+// account/wishlist.html, which csp-shell-gate refuses (logs/ux20/build.log).
+import '@/styles/wishlist-page.css'
 
 /**
  * The session check and the identity the side nav shows, together, because both

@@ -23,15 +23,21 @@ import { useEffect, useState, useTransition } from 'react'
  *
  * "Rotate" is deliberately a second click away from "share": it kills a link
  * the shopper may have posted, and the copy says so.
+ *
+ * UX20: the share state is the page's (`WishlistPageView` holds it) so the
+ * toolbar's one-press share (`WishlistShareAction`) and this card agree; the
+ * card is the management panel, the toolbar is the fast path.
  */
 export default function WishlistShareCard({
-  initial,
+  share,
+  onChange,
   itemCount,
 }: {
-  initial: WishlistShareState
+  /** Lifted to the page (UX20): the toolbar's share button edits the same state. */
+  share: WishlistShareState
+  onChange: (next: WishlistShareState) => void
   itemCount: number
 }) {
-  const [share, setShare] = useState<WishlistShareState>(initial)
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
   const [canShare, setCanShare] = useState(false)
@@ -52,7 +58,7 @@ export default function WishlistShareCard({
     setError(null)
     startTransition(async () => {
       const result = await setWishlistShare(command)
-      if (result.ok) setShare(result.share)
+      if (result.ok) onChange(result.share)
       else setError(result.error)
     })
   }

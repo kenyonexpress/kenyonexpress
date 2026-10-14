@@ -1,4 +1,5 @@
 import WishlistPageView from '@/components/wishlist/WishlistPageView'
+import { connection } from 'next/server'
 
 export const metadata = { title: 'רשימת המשאלות' }
 
@@ -18,6 +19,14 @@ export const metadata = { title: 'רשימת המשאלות' }
  * nav to a blank "Gone". A tab that opens its list here does not depend on
  * that row; migrations/pending/271 deactivates it.
  */
-export default function AccountWishlistPage() {
+export default async function AccountWishlistPage() {
+  // UX20: on the resume path like every other account page. As a static
+  // page the client view's boundary completed INSIDE the prerender once the
+  // view grew (the skeleton grid and the card's module graph), and Fizz
+  // wrote its nonce-less reveal runtime ($RB/$RV/$RC("B:5","S:5")) into
+  // account/wishlist.html; csp-shell-gate refused the build
+  // (logs/ux20/build3.log). The shell keeps the layout's empty fallback and
+  // the view streams at request time under the nonce, same as UX18's tabs.
+  await connection()
   return <WishlistPageView embedded />
 }

@@ -2,26 +2,46 @@
 
 import WishlistAlertPrefsCard from '@/components/account/WishlistAlertPrefs'
 import { useCart } from '@/components/cart/CartProvider'
+import WishlistCard, { type WishlistCardOutcome } from '@/components/wishlist/WishlistCard'
+import WishlistShareAction from '@/components/wishlist/WishlistShareAction'
 import WishlistShareCard from '@/components/wishlist/WishlistShareCard'
 import { track } from '@/lib/analytics/tracker'
-import { shekelsFromIlsRounded } from '@/lib/money-format'
 import { loginHrefForWishlist, useWishlistStore } from '@/lib/wishlist/client-store'
 import {
+  movableItems,
+  moveAllLabel,
+  movedAnnouncement,
+  movedManyAnnouncement,
+  removedAnnouncement,
+  restoreItem,
+  restoredAnnouncement,
+  savedCountLabel,
+} from '@/lib/wishlist/page-view'
+import {
+  type WishlistShareState,
   type WishlistViewItem,
   type WishlistViewState,
   getMyWishlistView,
 } from '@/server/actions/wishlist'
-import { Heart, ShoppingCart, Trash2 } from 'lucide-react'
-import Image from 'next/image'
+import { Heart, ShoppingCart } from 'lucide-react'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { type Dispatch, type SetStateAction, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
 /**
- * `/wishlist`, the page the heart points at. Client-rendered from one server
- * read after hydration, like `/cart`: the page itself is static, the list is
- * per shopper, and a static shell with a client fetch is what lets the route
- * be prerendered and cached under `cacheComponents`.
+ * `/wishlist` and `/account/wishlist`, the page the heart points at. Client-
+ * rendered from one server read after hydration, like `/cart`: the page
+ * itself is static, the list is per shopper, and a static shell with a client
+ * fetch is what lets the route be prerendered and cached under
+ * `cacheComponents`.
+ *
+ * UX20: A PRODUCT GRID WITH A TOOLBAR. Two cards across on a phone, three
+ * from 768, four from 1200, each the catalogue card's anatomy (photo, name,
+ * price, stock line) plus the two actions the catalogue card does not have:
+ * move to cart and remove. The toolbar above it carries the count, a one-
+ * press share, and "move all". A sr-only live region announces every move
+ * and removal; a removal offers an undo in its toast that puts the product
+ * back where it was.
  *
  * MOVE TO CART IS TWO STEPS IN ONE ORDER, AND THE ORDER MATTERS. The cart is
  * asked first, on the cart store (the same path the card button takes, so
@@ -60,9 +80,7 @@ export default function WishlistPageView({ embedded = false }: { embedded?: bool
       לא הצלחנו לטעון את הרשימה. נסו לרענן את הדף.
     </p>
   ) : view === null ? (
-    <p className="text-muted" aria-live="polite">
-      טוען את הרשימה...
-    </p>
+    <LoadingGrid />
   ) : !view.signedIn ? (
     <SignedOut returnTo={embedded ? '/account/wishlist' : '/wishlist'} />
   ) : (
@@ -94,28 +112,45 @@ export default function WishlistPageView({ embedded = false }: { embedded?: bool
   )
 }
 
+/** The same cells as the grid, so nothing moves when the list lands. */
+function LoadingGrid() {
+  return (
+    <div className="wishlist">
+      <ul className="wishlist-grid" aria-busy="true" aria-label="טוען את הרשימה">
+        {Array.from({ length: 4 }, (_, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length placeholder, never reordered
+          <li key={i} className="wishlist-grid__item">
+            <div className="wishlist-card wishlist-card--skeleton">
+              <span className="wishlist-skeleton wishlist-skeleton--thumb" />
+              <span className="wishlist-skeleton wishlist-skeleton--line" />
+              <span className="wishlist-skeleton wishlist-skeleton--line is-short" />
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
 function SignedOut({ returnTo }: { returnTo: string }) {
   return (
-    <section className="rounded-lg border border-border-alt bg-white p-6">
-      <p className="mb-3 flex items-center gap-2 text-lg font-bold text-heading">
-        <Heart size={20} aria-hidden="true" className="text-price" />
+    <section className="wishlist-empty">
+      <p className="wishlist-empty__title">
+        <Heart size={20} aria-hidden="true" />
         רשימת המשאלות נשמרת בחשבון שלך
       </p>
-      <p className="text-muted">
+      <p className="wishlist-empty__text">
         התחברות קצרה, והלב על כל מוצר שומר אותו כאן: מכל מכשיר, עם התראה במייל כשהמחיר יורד או
         כשהמוצר חוזר למלאי.
       </p>
-      <div className="mt-4 flex flex-wrap gap-3">
+      <div className="wishlist-empty__actions">
         <Link
           href={loginHrefForWishlist(returnTo)}
-          className="inline-flex items-center rounded-md bg-brand-primary px-4 py-2 text-sm font-bold text-brand-dark hover:opacity-90"
+          className="wishlist-toolbar__button wishlist-toolbar__button--primary"
         >
           התחברות
         </Link>
-        <Link
-          href="/products"
-          className="inline-flex items-center rounded-md border border-border-alt px-4 py-2 text-sm font-semibold text-heading hover:border-price"
-        >
+        <Link href="/products" className="wishlist-toolbar__button">
           לכל המוצרים
         </Link>
       </div>
@@ -123,181 +158,179 @@ function SignedOut({ returnTo }: { returnTo: string }) {
   )
 }
 
+type SignedInView = Extract<WishlistViewState, { signedIn: true }>
+
 function SignedIn({
   view,
   onChange,
 }: {
-  view: Extract<WishlistViewState, { signedIn: true }>
-  onChange: (next: WishlistViewState) => void
+  view: SignedInView
+  /**
+   * A functional updater on purpose: the undo in a toast fires after other
+   * removals may have landed, so every edit reads the freshest view the page
+   * holds rather than the one the closure captured.
+   */
+  onChange: Dispatch<SetStateAction<WishlistViewState | null>>
 }) {
   const { addToCart } = useCart()
   const remove = useWishlistStore((s) => s.remove)
-  const [busy, setBusy] = useState<string | 'all' | null>(null)
+  const toggle = useWishlistStore((s) => s.toggle)
+  const [movingAll, setMovingAll] = useState(false)
+  const [announcement, setAnnouncement] = useState('')
 
   const items = view.items
-  const movable = items.filter((i) => i.available)
+  const movable = movableItems(items)
 
-  function drop(productId: string) {
-    onChange({ ...view, items: view.items.filter((i) => i.productId !== productId) })
+  function editItems(edit: (items: WishlistViewItem[]) => WishlistViewItem[]) {
+    onChange((prev) => (prev?.signedIn ? { ...prev, items: edit(prev.items) } : prev))
   }
 
-  async function moveOne(item: WishlistViewItem): Promise<boolean> {
+  function setShare(share: WishlistShareState) {
+    onChange((prev) => (prev?.signedIn ? { ...prev, share } : prev))
+  }
+
+  /** Ask the cart. The card starts its exit only on `true`. */
+  async function moveToCart(item: WishlistViewItem): Promise<boolean> {
     const accepted = await addToCart(item.productId, null, 1, item.name)
     if (!accepted) return false
     track('add_to_cart', { product_id: item.productId, quantity: 1, variant_id: null })
-    const result = await remove(item.productId)
-    if (result.ok) drop(item.productId)
     return true
   }
 
-  async function onMove(item: WishlistViewItem) {
-    setBusy(item.productId)
-    try {
-      await moveOne(item)
-    } finally {
-      setBusy(null)
+  /** The wishlist write, after the card's exit. */
+  async function removeSaved(
+    item: WishlistViewItem,
+    reason: 'remove' | 'move',
+  ): Promise<WishlistCardOutcome> {
+    const index = view.items.findIndex((i) => i.productId === item.productId)
+    const result = await remove(item.productId)
+    if (!result.ok) {
+      if (!result.signedOut) toast.error(result.error)
+      return { ok: false }
     }
+    editItems((current) => current.filter((i) => i.productId !== item.productId))
+    if (reason === 'move') {
+      setAnnouncement(movedAnnouncement(item.name))
+      return { ok: true }
+    }
+    setAnnouncement(removedAnnouncement(item.name))
+    toast.success(removedAnnouncement(item.name), {
+      action: {
+        label: 'ביטול',
+        onClick: () => void restore(item, index),
+      },
+    })
+    return { ok: true }
   }
 
-  async function onRemove(item: WishlistViewItem) {
-    setBusy(item.productId)
-    try {
-      const result = await remove(item.productId)
-      if (result.ok) drop(item.productId)
-      else if (!result.signedOut) toast.error(result.error)
-    } finally {
-      setBusy(null)
+  /** The undo: the heart's own toggle puts the row back, then the card. */
+  async function restore(item: WishlistViewItem, index: number) {
+    const result = await toggle(item.productId)
+    if (!result.ok) {
+      if (!result.signedOut) toast.error(result.error)
+      return
     }
+    if (!result.saved) return
+    editItems((current) => restoreItem(current, item, index))
+    setAnnouncement(restoredAnnouncement(item.name))
   }
 
   async function onMoveAll() {
-    setBusy('all')
+    setMovingAll(true)
     let moved = 0
     try {
       for (const item of movable) {
-        if (await moveOne(item)) moved += 1
+        const accepted = await moveToCart(item)
+        if (!accepted) continue
+        const result = await remove(item.productId)
+        if (!result.ok) continue
+        moved += 1
+        editItems((current) => current.filter((i) => i.productId !== item.productId))
       }
-      if (moved > 0) toast.success(`${moved} מוצרים עברו לסל`)
+      if (moved > 0) {
+        setAnnouncement(movedManyAnnouncement(moved))
+        toast.success(movedManyAnnouncement(moved))
+      }
     } finally {
-      setBusy(null)
+      setMovingAll(false)
     }
   }
 
   if (items.length === 0) {
     return (
-      <>
-        <section className="rounded-lg border border-border-alt bg-white p-6">
-          <p className="text-muted">
-            עוד לא שמרת מוצרים. לחיצה על הלב על כל מוצר שומרת אותו כאן.{' '}
-            <Link href="/products" className="font-semibold text-price underline">
+      <div className="wishlist">
+        <section className="wishlist-empty">
+          <p className="wishlist-empty__title">
+            <Heart size={20} aria-hidden="true" />
+            עוד לא שמרת מוצרים
+          </p>
+          <p className="wishlist-empty__text">
+            לחיצה על הלב על כל מוצר שומרת אותו כאן, ונודיע לך במייל כשהמחיר יורד או כשהמוצר חוזר
+            למלאי.
+          </p>
+          <div className="wishlist-empty__actions">
+            <Link
+              href="/products"
+              className="wishlist-toolbar__button wishlist-toolbar__button--primary"
+            >
               לכל המוצרים
             </Link>
-          </p>
+            <Link href="/coupons" className="wishlist-toolbar__button">
+              לקופונים
+            </Link>
+          </div>
         </section>
-        <div className="mt-6 grid gap-4 lg:grid-cols-2">
+        <output className="sr-only" aria-live="polite">
+          {announcement}
+        </output>
+        <div className="wishlist-foot">
           <WishlistAlertPrefsCard />
         </div>
-      </>
+      </div>
     )
   }
 
   return (
-    <>
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <p className="text-muted">
-          {items.length === 1 ? 'מוצר אחד שמור' : `${items.length} מוצרים שמורים`}
-        </p>
-        {movable.length > 1 ? (
-          <button
-            type="button"
-            onClick={() => void onMoveAll()}
-            disabled={busy !== null}
-            className="inline-flex items-center gap-2 rounded-md bg-brand-primary px-4 py-2 text-sm font-bold text-brand-dark hover:opacity-90 disabled:opacity-50"
-          >
-            <ShoppingCart size={16} aria-hidden="true" />
-            העברת הכל לסל ({movable.length})
-          </button>
-        ) : null}
+    <div className="wishlist">
+      <div className="wishlist-toolbar">
+        <p className="wishlist-toolbar__count">{savedCountLabel(items.length)}</p>
+        <div className="wishlist-toolbar__actions">
+          <WishlistShareAction share={view.share} onShareChange={setShare} />
+          {movable.length > 1 ? (
+            <button
+              type="button"
+              onClick={() => void onMoveAll()}
+              disabled={movingAll}
+              className="wishlist-toolbar__button wishlist-toolbar__button--primary"
+            >
+              <ShoppingCart size={16} aria-hidden="true" />
+              {movingAll ? 'מעביר לסל...' : moveAllLabel(movable.length)}
+            </button>
+          ) : null}
+        </div>
       </div>
 
-      <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <ul className="wishlist-grid" aria-label="המוצרים השמורים">
         {items.map((item) => (
-          <li
-            key={item.productId}
-            className="flex flex-col rounded-lg border border-border-alt bg-white p-3"
-          >
-            <ItemBody item={item} />
-            <div className="mt-3 flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => void onMove(item)}
-                disabled={!item.available || busy !== null}
-                className="inline-flex flex-1 items-center justify-center gap-2 rounded-md bg-brand-primary px-3 py-2 text-sm font-bold text-brand-dark hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <ShoppingCart size={16} aria-hidden="true" />
-                {item.available ? 'העברה לסל' : item.soldOut ? 'אזל מהמלאי' : 'לא זמין'}
-              </button>
-              <button
-                type="button"
-                onClick={() => void onRemove(item)}
-                disabled={busy !== null}
-                aria-label={`הסרת ${item.name} מהרשימה`}
-                title="הסרה מהרשימה"
-                className="grid h-10 w-10 place-items-center rounded-md border border-border-alt text-icon hover:border-price hover:text-price disabled:opacity-50"
-              >
-                <Trash2 size={16} aria-hidden="true" />
-              </button>
-            </div>
+          <li key={item.productId} className="wishlist-grid__item">
+            <WishlistCard
+              item={item}
+              disabled={movingAll}
+              onMove={moveToCart}
+              onRemove={removeSaved}
+            />
           </li>
         ))}
       </ul>
 
-      <div className="mt-8 grid gap-4 lg:grid-cols-2">
-        <WishlistShareCard initial={view.share} itemCount={items.length} />
+      <output className="sr-only" aria-live="polite">
+        {announcement}
+      </output>
+
+      <div className="wishlist-foot">
+        <WishlistShareCard share={view.share} onChange={setShare} itemCount={items.length} />
         <WishlistAlertPrefsCard />
       </div>
-    </>
-  )
-}
-
-function ItemBody({ item }: { item: WishlistViewItem }) {
-  const price = item.priceIls
-  const old = item.fullPriceIls
-  const hasDiscount = price != null && old != null && Number(old) > Number(price)
-  const body = (
-    <span className="flex items-center gap-3">
-      {item.image ? (
-        <span className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-surface-hover">
-          <Image src={item.image} alt="" fill sizes="80px" className="object-cover" />
-        </span>
-      ) : (
-        <span aria-hidden="true" className="h-20 w-20 shrink-0 rounded-lg bg-surface-hover" />
-      )}
-      <span className="min-w-0">
-        <span className="line-clamp-2 block font-semibold text-heading">{item.name}</span>
-        {price != null ? (
-          <span className="mt-1 flex items-baseline gap-2">
-            <span className="text-price font-bold">{shekelsFromIlsRounded(price)}</span>
-            {hasDiscount ? (
-              <span className="text-sm text-price-strike line-through">
-                {shekelsFromIlsRounded(old)}
-              </span>
-            ) : null}
-          </span>
-        ) : null}
-        {item.soldOut ? (
-          <span className="mt-1 block text-xs font-semibold text-price">אזל מהמלאי</span>
-        ) : !item.available ? (
-          <span className="mt-1 block text-xs font-semibold text-muted">המוצר כבר לא זמין</span>
-        ) : null}
-      </span>
-    </span>
-  )
-  return item.slug ? (
-    <Link href={`/product/${item.slug}`} className="hover:underline">
-      {body}
-    </Link>
-  ) : (
-    body
+    </div>
   )
 }

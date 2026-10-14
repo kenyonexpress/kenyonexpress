@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 // cart-page.css is imported by the root layout; the page shares its frame,
 // breadcrumb and title so the two lists the shopper keeps look like siblings.
 import '@/styles/account.css'
+import '@/styles/wishlist-page.css'
 
 export const metadata: Metadata = {
   title: 'רשימת המשאלות שלי',
