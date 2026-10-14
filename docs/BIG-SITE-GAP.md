@@ -160,8 +160,8 @@ supplier and a test category are live and show up in the facets.
 on 1 of 46 active products; verified on a built server, the first eight
 products of `/products?sort=discount_desc` match the order computed from live
 prices. Still missing: `popularity` and `rating` are offered and fall through
-to the default (no column holds either; rating waits on
-`migrations/pending/235_product_live_and_rating.sql`). Since 2026-10-14 the
+to the default (no column holds either; 235, applied 2026-10-15, gives a
+per-product `product_rating_summary`, not a sortable column). Since 2026-10-14 the
 search page has a sort control (`src/components/search/SearchSortNav.tsx`):
 five links, relevance, newest, the two price orders and discount, built by
 `buildSortOptions` in `src/lib/search/facet-links.ts`, keeping the query and
@@ -359,7 +359,7 @@ page in a browser, which needs an admin session.
 **16. Reviews.** main: table, rating and body, buyer-only form
 (`src/components/product/Reviews.tsx`), admin moderation at `/admin/reviews`
 with no sidebar link. Missing: public list (note C), owner edit, star summary
-(needs `migrations/pending/235_product_live_and_rating.sql`). prod: a public
+(`product_rating_summary` is live since 2026-10-15, migration 235; 0 approved reviews today). prod: a public
 `/product/[slug]/reviews` page whose read grant is itself pending.
 
 **17. Q&A.** Both: nothing stored. prod has a WhatsApp deep link

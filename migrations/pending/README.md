@@ -1,5 +1,32 @@
 # `migrations/pending/`
 
+## 2026-10-15: 240, 241 AND 235 APPLIED (approved by Ofir in session)
+
+Applied to production in that order through the Supabase MCP
+`apply_migration`, each verified with `execute_sql` before the next, and
+moved to `applied/`:
+
+- `240_perf_fk_indexes_and_cart_uniqueness.sql` as
+  `perf_fk_indexes_and_cart_uniqueness_240` (`20261014205117`). Before: none
+  of the ten indexes existed, 0 accounts held two carts (1801 carts). After:
+  all ten present, `carts_profile_id_uidx` partial on `profile_id IS NOT NULL`.
+  The production branch's cart merge does not check the INSERT error, so a
+  racing second login now loses that guest cart's lines once instead of
+  leaving the account with two rows that fail every later read.
+- `241_rls_initplan_policies.sql` as `rls_initplan_policies_241`
+  (`20261014205130`). The six live quals were re-read first and matched the
+  file's text except for the wrapping. After: six policies, the MFA one still
+  RESTRICTIVE, every `auth.uid()` / `current_user_role()` in the
+  `( SELECT ... )` form.
+- `235_product_live_and_rating.sql` as `product_live_and_rating_235`
+  (`20261014205145`), with its own `BEGIN;` / `COMMIT;` lines left out
+  because `apply_migration` runs the body in one transaction. All three
+  preconditions held. After: `products_broadcast_live` trigger enabled,
+  `anon` can execute `product_rating_summary` (returns `null / 0`; there
+  are 0 approved reviews) and cannot execute the trigger function.
+
+`/api/health` answered `ok` with the database `ok` after the three.
+
 ## 2026-10-14: 243 PENDING (club tier thresholds)
 
 `243_club_tiers.sql` adds `club_tiers`, four rows (member, silver, gold,
@@ -1206,6 +1233,9 @@ effect, not by trusting this list. The version string is from
 | `210_media_ingest_queue.sql` | `20260909093018` | `media_ingest_queue_210` | table live with RLS on, zero policies, client grants revoked (the file's documented design) |
 | `212_rbac_truncate_and_search_path.sql` | `20260909115250` | `212_rbac_truncate_and_search_path` | verified 2026-09-09 post-apply: 0 client TRUNCATE grants in public, all 3 target functions have pinned search_path |
 | `215_cashback_expiry.sql` | `20260909132729` | `cashback_expiry_215` | verified 2026-09-09 post-apply: live `fn_cashback_expire()` returned swept 0 / errors 0 (no credit is 12 months old yet); the full behavioral proof ran pre-apply in a rolled-back transaction |
+| `235_product_live_and_rating.sql` | `20261014205145` | `product_live_and_rating_235` | verified 2026-10-15 post-apply: trigger `products_broadcast_live` enabled, `anon` EXECUTE on `product_rating_summary(uuid)` true, on `products_broadcast_live()` false |
+| `240_perf_fk_indexes_and_cart_uniqueness.sql` | `20261014205117` | `perf_fk_indexes_and_cart_uniqueness_240` | verified 2026-10-15 post-apply: all ten index names in `pg_indexes`, `carts_profile_id_uidx` unique and partial |
+| `241_rls_initplan_policies.sql` | `20261014205130` | `rls_initplan_policies_241` | verified 2026-10-15 post-apply: six policies, `profiles_super_admin_mfa` RESTRICTIVE, every qual in the InitPlan form |
 
 **`124_categories_sort_order.sql` is a different case.** `categories.sort_order`
 exists in production, so the migration must not be run again, but there is **no

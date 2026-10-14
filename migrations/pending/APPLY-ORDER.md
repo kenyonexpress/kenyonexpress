@@ -1,5 +1,12 @@
 # Apply order
 
+## 2026-10-15: 240, 241 AND 235 APPLIED
+
+Applied in that order through MCP `apply_migration` with explicit approval,
+each verified before the next; the files are in `migrations/applied/` and
+the measurements are in `README.md` under the same date. The dry-run notes
+below are kept as the record of what was proven before.
+
 ## 2026-09-17 (PERFORMANCE goal): 240 AND 241 WRITTEN, BOTH DRY-RUN ON PRODUCTION, NEITHER APPLIED
 
 Both files ran in full inside a `DO` block that ends in `RAISE EXCEPTION`,
