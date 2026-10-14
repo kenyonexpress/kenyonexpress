@@ -1,5 +1,25 @@
 # `migrations/pending/`
 
+## 2026-10-14: 270 PENDING (coupon deal code: the code the hot-coupon ticket's copy button hands the shopper, UX10)
+
+`270_coupon_deals_code.sql` adds ONE nullable column, `coupon_deals.code`
+(`text`, CHECKed to `^[A-Z0-9]{4,16}$`), and a partial unique index on it
+(`WHERE code IS NOT NULL`), so two deals cannot advertise one code and a
+deal with none costs nothing. No function, no trigger, no policy change:
+the table's existing SELECT policies cover the column, and the home page
+already reads `coupon_deals` on the anon client. The storefront reads it
+through `readOptionalColumns` (`lib/homepage/below-fold.ts`), so until the
+column exists the read logs `db.optional_column_missing` once and every
+ticket shows a "לפרטי הקופון" link instead of the copy button; the admin
+form (`CouponDealForm`) accepts the field now and the action
+(`admin/coupon-deals.ts`) retries a save without it on 42703 when the field
+was empty, and refuses with "קוד קופון דורש את מיגרציה 270" when it was not.
+Measured on 2026-10-14: 8 active deals, none with a `valid_until`, no code
+anywhere (the column does not exist). Self-check inside a rolled-back block:
+a lowercase code refused, a 3-character code refused, a duplicate refused,
+two NULLs allowed. Rollback is one DROP INDEX and one DROP COLUMN. No
+dependency on any other pending file.
+
 ## 2026-10-09: 269 PENDING (health incident log: one row per dependency outage seen by the cron, STEP 67)
 
 `269_health_incidents.sql` adds `public.health_incidents`: `dependency`

@@ -156,6 +156,33 @@ export default function CouponDealForm({ deal, vendors }: Props) {
             </div>
           </div>
 
+          {/* UX10: the code the shopper shows at the business, copied off the
+              ticket (CouponCard). The column is pending migration 270: until it
+              is applied the save refuses a code with a message that says so,
+              and an empty field saves exactly as before. `CouponDeal` is the
+              generated row, so the column is read off it loosely. */}
+          <div>
+            <label htmlFor="cd-code" className="block text-xs font-medium text-gray-700 mb-1">
+              קוד קופון (אופציונלי)
+            </label>
+            <input
+              id="cd-code"
+              name="code"
+              type="text"
+              autoCapitalize="characters"
+              pattern="[A-Za-z0-9]{4,16}"
+              title="4 עד 16 אותיות לטיניות או ספרות"
+              placeholder="SPA90"
+              defaultValue={(deal as { code?: string | null } | undefined)?.code ?? ''}
+              dir="ltr"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono tracking-wider focus:outline-none focus:ring-2 focus:ring-brand"
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              מוצג על הכרטיס עם כפתור העתקה. דורש את מיגרציה 270 (ממתינה); בלי קוד הכרטיס מציג קישור
+              לפרטים.
+            </p>
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label htmlFor="cd-max" className="block text-xs font-medium text-gray-700 mb-1">

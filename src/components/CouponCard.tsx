@@ -1,5 +1,8 @@
+import CopyCouponCode from '@/components/coupon/CopyCouponCode'
+import CouponCountdown from '@/components/coupon/CouponCountdown'
+import { countdownDeadline } from '@/lib/homepage/coupon-countdown'
 import { shekelsFromIls } from '@/lib/money-format'
-import { MapPin, Tag } from 'lucide-react'
+import { MapPin, TicketPercent } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -12,98 +15,150 @@ export type Coupon = {
   discount_percentage: number | null
   location_he: string | null
   image_url: string | null
+  /** `coupon_deals.valid_until`; optional because older readers omit it. */
+  valid_until?: string | null
+  /**
+   * `coupon_deals.code`, pending migration 270: the code the shopper shows at
+   * the business. Read through `readOptionalColumns`, so it is `undefined`
+   * until the column exists and `null` on a row that has none.
+   */
+  code?: string | null
 }
 
+/**
+ * The percentage the stub advertises: the row's own figure, else derived from
+ * the two prices, else nothing (a card without a price advertises no number).
+ */
+export function couponDiscountPercent(
+  coupon: Pick<Coupon, 'discount_percentage' | 'platform_price' | 'original_price'>,
+): number | null {
+  const original = Number(coupon.original_price)
+  const pct =
+    coupon.discount_percentage != null
+      ? Math.round(Number(coupon.discount_percentage))
+      : coupon.platform_price != null && original > 0
+        ? Math.round((1 - coupon.platform_price / original) * 100)
+        : null
+  return pct != null && Number.isFinite(pct) && pct > 0 ? pct : null
+}
+
+/**
+ * A coupon deal as a TICKET (UX10): a brand-yellow stub carrying the
+ * percentage, a dashed perforation with a notch at each end, and the body with
+ * the business, the title, the price split and, in the footer, the countdown
+ * to `valid_until` and the copy-code button.
+ *
+ * THE CARD IS NO LONGER ONE LINK. It used to be an `<a>` around everything,
+ * which is invalid the moment a button goes inside it, and a copy button is
+ * the point of this step. The title is the link to the deal; the photograph,
+ * when there is one, is a second link to the same place for the thumb, hidden
+ * from the accessibility tree so the deal is not announced twice; and the
+ * footer's action is the copy button when the row has a code and a "לפרטי
+ * הקופון" link when it has none. Every control is at least 44px tall
+ * (`touch-targets.spec.ts` measures `/` at 375).
+ *
+ * WHAT IS CONDITIONAL AND WHAT IS NOT. The countdown mounts only for a set,
+ * parseable `valid_until` (`countdownDeadline`): a deal with no deadline makes
+ * no urgency claim at all, the same rule as the product page. The copy button
+ * mounts only for a row with a code, which today is none of them: the column
+ * arrives with pending migration 270, and until it is applied every card shows
+ * the details link. The title reserves two lines and the footer sits at the
+ * bottom of the body, so a row of tickets lines up whatever each one has;
+ * `grid-auto-rows: 1fr` on the grids that hold them does the rest (UX09).
+ *
+ * The photograph goes through the optimizer for the CSP reason the previous
+ * card gave (`img-src` allows self, so `/_next/image` covers any upstream), and
+ * `sizes` is the ticket's own column: one column on a phone, two from 768, four
+ * from 1200 on the home page, three from 1024 on /coupons.
+ */
 export default function CouponCard({ coupon }: { coupon: Coupon }) {
+  const href = `/coupons/${coupon.id}`
   // platform_price is the absolute amount charged online, set per product by
   // the admin. There is no default: the card used to fall back to 10% of the
-  // sticker and the strip below it read "שלם 10% עכשיו, 90% בבית העסק", which
-  // is the pricing model abolished on 2026-07-24. A coupon without a price is
-  // shown without one rather than advertised at an invented number.
+  // sticker, the pricing model abolished on 2026-07-24. A coupon without a
+  // price is shown without one rather than advertised at an invented number.
   const platformPrice = coupon.platform_price
   const original = Number(coupon.original_price)
-  const discountPct =
-    coupon.discount_percentage ??
-    (platformPrice != null && original > 0
-      ? Math.round((1 - platformPrice / original) * 100)
-      : null)
+  const discountPct = couponDiscountPercent(coupon)
+  const deadline = countdownDeadline(coupon.valid_until)
+  const code = coupon.code?.trim() || null
 
   return (
-    <Link
-      href={`/coupons/${coupon.id}`}
-      className="block bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-md transition-shadow"
-    >
-      <div className="relative h-32 bg-gray-100">
-        {coupon.image_url ? (
-          /**
-           * Through the optimizer, not a raw <img>, and the reason is CSP
-           * before it is bytes: `img-src` allows self, data, blob, Supabase and
-           * Unsplash only, so a raw tag pointed at any other allowed host - R2,
-           * picsum - renders a BROKEN IMAGE. `/_next/image` is same-origin, so
-           * `'self'` covers whatever the upstream host is. Same fix as [18].
-           *
-           * `fill` is safe here only because the parent is `relative h-32`: it
-           * has its own height, so an out-of-flow image cannot collapse it.
-           *
-           * `sizes` is measured on the rendered grid, not guessed from the
-           * column: 360 -> 158, 412 -> 184, 480 -> 218, 640 -> 298, 767 ->
-           * 361.5 (= 50vw - 22px), 768 -> 237.33, 900 -> 281.33 (= 33.33vw -
-           * 18.67px), then the lg middle column, 1024 -> 162 and 1280 and up ->
-           * 247.33, capped by max-w-7xl.
-           */
+    <article className="coupon-ticket" data-coupon-card>
+      {coupon.image_url && (
+        <Link
+          href={href}
+          className="coupon-ticket__image"
+          data-coupon-image
+          aria-hidden="true"
+          tabIndex={-1}
+        >
           <Image
             src={coupon.image_url}
-            alt={coupon.title_he}
+            alt=""
             fill
-            sizes="(max-width: 767px) calc(50vw - 22px), (max-width: 1023px) calc(33.33vw - 18.67px), (max-width: 1279px) calc(33.33vw - 179.33px), 248px"
+            sizes="(max-width: 767px) calc(100vw - 50px), (max-width: 1199px) calc(50vw - 55px), 280px"
             className="object-cover"
           />
-        ) : (
-          <div className="flex items-center justify-center h-full text-gray-300">
-            <Tag size={36} />
-          </div>
-        )}
-        {discountPct != null && discountPct > 0 && (
-          <div // White on brand yellow is 1.41:1. This badge carries the discount
-            // percentage, so an unreadable one loses the single number the card
-            // exists to advertise.
-            // start-2, the inline-start corner (the right in RTL): the corner
-            // the measured .category-card__badge uses for grid cards, and the
-            // corner the coupon DETAIL page pins the same badge to. This card
-            // had it on the opposite corner from its own detail page.
-            className="absolute top-2 start-2 bg-brand text-heading text-xs font-bold px-2 py-1 rounded-lg"
-          >
-            {discountPct}% הנחה
-          </div>
-        )}
-      </div>
-      <div className="p-3 space-y-1">
-        <p className="text-xs text-gray-500">{coupon.business_name}</p>
-        <p className="text-sm font-semibold text-gray-900 line-clamp-2 leading-snug">
-          {coupon.title_he}
-        </p>
-        {coupon.location_he && (
-          <div className="flex items-center gap-1 text-xs text-gray-500">
-            <MapPin size={11} />
-            {coupon.location_he}
-          </div>
-        )}
-        <div className="pt-1 flex items-baseline gap-2">
-          {platformPrice != null ? (
+        </Link>
+      )}
+      <div className="coupon-ticket__row">
+        <div className="coupon-ticket__stub" data-coupon-stub>
+          {discountPct != null ? (
             <>
-              <span className="text-lg font-bold text-price">{shekelsFromIls(platformPrice)}</span>
-              <span className="text-xs text-gray-500 line-through">{shekelsFromIls(original)}</span>
+              <span className="coupon-ticket__pct" data-coupon-badge>
+                {discountPct}%
+              </span>
+              <span className="coupon-ticket__pct-label">הנחה</span>
             </>
           ) : (
-            <span className="text-sm text-gray-500">המחיר יעודכן בקרוב</span>
+            <TicketPercent size={28} aria-hidden="true" />
           )}
         </div>
-        {platformPrice != null && (
-          <p className="text-micro text-gray-500">
-            {shekelsFromIls(platformPrice)} באתר, היתרה בבית העסק
+        <div className="coupon-ticket__body">
+          <p className="coupon-ticket__business" data-coupon-business>
+            {coupon.business_name}
           </p>
-        )}
+          <h3 className="coupon-ticket__title" data-coupon-title>
+            <Link href={href} className="coupon-ticket__title-link">
+              {coupon.title_he}
+            </Link>
+          </h3>
+          {coupon.location_he && (
+            <p className="coupon-ticket__location">
+              <MapPin size={11} aria-hidden="true" />
+              {coupon.location_he}
+            </p>
+          )}
+          <div className="coupon-ticket__price">
+            {platformPrice != null ? (
+              <>
+                <span className="coupon-ticket__now" data-coupon-price>
+                  {shekelsFromIls(platformPrice)}
+                </span>
+                <span className="coupon-ticket__was">{shekelsFromIls(original)}</span>
+              </>
+            ) : (
+              <span className="coupon-ticket__tba">המחיר יעודכן בקרוב</span>
+            )}
+          </div>
+          {platformPrice != null && (
+            <p className="coupon-ticket__split">
+              {shekelsFromIls(platformPrice)} באתר, היתרה בבית העסק
+            </p>
+          )}
+          <div className="coupon-ticket__footer">
+            {deadline && <CouponCountdown validUntilIso={deadline} />}
+            {code ? (
+              <CopyCouponCode code={code} />
+            ) : (
+              <Link href={href} className="coupon-ticket__more" data-coupon-more>
+                לפרטי הקופון
+              </Link>
+            )}
+          </div>
+        </div>
       </div>
-    </Link>
+    </article>
   )
 }

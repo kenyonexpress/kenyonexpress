@@ -1,0 +1,2293 @@
+Already up to date
+Done in 192ms using pnpm v11.1.2
+
+Running 188 tests using 2 workers
+
+[1A[2K[1/188] [chromium] › e2e/a11y.spec.ts:142:7 › products has no WCAG A/AA violations
+[1A[2K[2/188] [chromium] › e2e/a11y.spec.ts:142:7 › home has no WCAG A/AA violations
+[1A[2K[3/188] [chromium] › e2e/a11y.spec.ts:142:7 › cart has no WCAG A/AA violations
+[1A[2K[4/188] [chromium] › e2e/a11y.spec.ts:142:7 › contact has no WCAG A/AA violations
+[1A[2K[5/188] [chromium] › e2e/a11y.spec.ts:142:7 › offline has no WCAG A/AA violations
+[1A[2K  1) [chromium] › e2e/a11y.spec.ts:142:7 › contact has no WCAG A/AA violations ─────────────────────
+
+    Error: 
+      color-contrast (serious) x2: Elements must meet minimum color contrast ratio thresholds
+        .shadow-sm > span | .ms-2
+
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "color-contrast x2",[39m
+    [31m+ ][39m
+
+      151 |     const summary = results.violations.map((v) => `${v.id} x${v.nodes.length}`)
+      152 |
+    > 153 |     expect(summary, `\n  ${describe(results)}\n`).toEqual([])
+          |                                                   ^
+      154 |   })
+      155 | }
+      156 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:153:51
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-contact-has-no-WCAG-A-AA-violations-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-contact-has-no-WCAG-A-AA-violations-chromium/error-context.md
+
+
+[1A[2K[6/188] [chromium] › e2e/a11y.spec.ts:142:7 › coupons has no WCAG A/AA violations
+[1A[2K[7/188] [chromium] › e2e/a11y.spec.ts:142:7 › supplier login has no WCAG A/AA violations
+[1A[2K[8/188] [chromium] › e2e/a11y.spec.ts:142:7 › suppliers has no WCAG A/AA violations
+[1A[2K[9/188] [chromium] › e2e/a11y.spec.ts:142:7 › login has no WCAG A/AA violations
+[1A[2K[10/188] [chromium] › e2e/a11y.spec.ts:142:7 › signup has no WCAG A/AA violations
+[1A[2K[11/188] [chromium] › e2e/a11y.spec.ts:142:7 › reset password has no WCAG A/AA violations
+[1A[2K[12/188] [chromium] › e2e/a11y.spec.ts:142:7 › search results has no WCAG A/AA violations
+[1A[2K[13/188] [chromium] › e2e/a11y.spec.ts:142:7 › category archive has no WCAG A/AA violations
+[1A[2K[14/188] [chromium] › e2e/a11y.spec.ts:142:7 › legal terms has no WCAG A/AA violations
+[1A[2K[15/188] [chromium] › e2e/a11y.spec.ts:142:7 › legal privacy has no WCAG A/AA violations
+[1A[2K  2) [chromium] › e2e/a11y.spec.ts:142:7 › legal terms has no WCAG A/AA violations ─────────────────
+
+    Error: 
+      color-contrast (serious) x3: Elements must meet minimum color contrast ratio thresholds
+        div:nth-child(1) > dt | div:nth-child(2) > dt | div:nth-child(3) > dt
+
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "color-contrast x3",[39m
+    [31m+ ][39m
+
+      151 |     const summary = results.violations.map((v) => `${v.id} x${v.nodes.length}`)
+      152 |
+    > 153 |     expect(summary, `\n  ${describe(results)}\n`).toEqual([])
+          |                                                   ^
+      154 |   })
+      155 | }
+      156 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:153:51
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-legal-terms-has-no-WCAG-A-AA-violations-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-legal-terms-has-no-WCAG-A-AA-violations-chromium/error-context.md
+
+
+[1A[2K  3) [chromium] › e2e/a11y.spec.ts:142:7 › legal privacy has no WCAG A/AA violations ───────────────
+
+    Error: 
+      color-contrast (serious) x3: Elements must meet minimum color contrast ratio thresholds
+        div:nth-child(1) > dt | div:nth-child(2) > dt | div:nth-child(3) > dt
+
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "color-contrast x3",[39m
+    [31m+ ][39m
+
+      151 |     const summary = results.violations.map((v) => `${v.id} x${v.nodes.length}`)
+      152 |
+    > 153 |     expect(summary, `\n  ${describe(results)}\n`).toEqual([])
+          |                                                   ^
+      154 |   })
+      155 | }
+      156 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:153:51
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-legal-privacy-has-no-WCAG-A-AA-violations-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-legal-privacy-has-no-WCAG-A-AA-violations-chromium/error-context.md
+
+
+[1A[2K[16/188] [chromium] › e2e/a11y.spec.ts:142:7 › legal accessibility has no WCAG A/AA violations
+[1A[2K[17/188] [chromium] › e2e/a11y.spec.ts:142:7 › legal returns has no WCAG A/AA violations
+[1A[2K  4) [chromium] › e2e/a11y.spec.ts:142:7 › legal accessibility has no WCAG A/AA violations ─────────
+
+    Error: 
+      color-contrast (serious) x3: Elements must meet minimum color contrast ratio thresholds
+        div:nth-child(1) > dt | div:nth-child(2) > dt | div:nth-child(3) > dt
+
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "color-contrast x3",[39m
+    [31m+ ][39m
+
+      151 |     const summary = results.violations.map((v) => `${v.id} x${v.nodes.length}`)
+      152 |
+    > 153 |     expect(summary, `\n  ${describe(results)}\n`).toEqual([])
+          |                                                   ^
+      154 |   })
+      155 | }
+      156 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:153:51
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-legal-accessibility-has-no-WCAG-A-AA-violations-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-legal-accessibility-has-no-WCAG-A-AA-violations-chromium/error-context.md
+
+
+[1A[2K  5) [chromium] › e2e/a11y.spec.ts:142:7 › legal returns has no WCAG A/AA violations ───────────────
+
+    Error: 
+      color-contrast (serious) x3: Elements must meet minimum color contrast ratio thresholds
+        div:nth-child(1) > dt | div:nth-child(2) > dt | div:nth-child(3) > dt
+
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "color-contrast x3",[39m
+    [31m+ ][39m
+
+      151 |     const summary = results.violations.map((v) => `${v.id} x${v.nodes.length}`)
+      152 |
+    > 153 |     expect(summary, `\n  ${describe(results)}\n`).toEqual([])
+          |                                                   ^
+      154 |   })
+      155 | }
+      156 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:153:51
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-legal-returns-has-no-WCAG-A-AA-violations-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-legal-returns-has-no-WCAG-A-AA-violations-chromium/error-context.md
+
+
+[1A[2K[18/188] [chromium] › e2e/a11y.spec.ts:142:7 › terms and conditions has no WCAG A/AA violations
+[1A[2K[19/188] [chromium] › e2e/a11y.spec.ts:142:7 › privacy policy has no WCAG A/AA violations
+[1A[2K  6) [chromium] › e2e/a11y.spec.ts:142:7 › terms and conditions has no WCAG A/AA violations ────────
+
+    Error: 
+      color-contrast (serious) x3: Elements must meet minimum color contrast ratio thresholds
+        div:nth-child(1) > dt | div:nth-child(2) > dt | div:nth-child(3) > dt
+
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "color-contrast x3",[39m
+    [31m+ ][39m
+
+      151 |     const summary = results.violations.map((v) => `${v.id} x${v.nodes.length}`)
+      152 |
+    > 153 |     expect(summary, `\n  ${describe(results)}\n`).toEqual([])
+          |                                                   ^
+      154 |   })
+      155 | }
+      156 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:153:51
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-terms-and-conditions-has-no-WCAG-A-AA-violations-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-terms-and-conditions-has-no-WCAG-A-AA-violations-chromium/error-context.md
+
+
+[1A[2K  7) [chromium] › e2e/a11y.spec.ts:142:7 › privacy policy has no WCAG A/AA violations ──────────────
+
+    Error: 
+      color-contrast (serious) x3: Elements must meet minimum color contrast ratio thresholds
+        div:nth-child(1) > dt | div:nth-child(2) > dt | div:nth-child(3) > dt
+
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "color-contrast x3",[39m
+    [31m+ ][39m
+
+      151 |     const summary = results.violations.map((v) => `${v.id} x${v.nodes.length}`)
+      152 |
+    > 153 |     expect(summary, `\n  ${describe(results)}\n`).toEqual([])
+          |                                                   ^
+      154 |   })
+      155 | }
+      156 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:153:51
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-privacy-policy-has-no-WCAG-A-AA-violations-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-privacy-policy-has-no-WCAG-A-AA-violations-chromium/error-context.md
+
+
+[1A[2K[20/188] [chromium] › e2e/a11y.spec.ts:157:5 › the document declares Hebrew and RTL, so a screen reader picks the right voice
+[1A[2K[21/188] [chromium] › e2e/a11y.spec.ts:224:7 › every interactive control on / is reachable by keyboard
+[1A[2K[22/188] [chromium] › e2e/a11y.spec.ts:224:7 › every interactive control on /products is reachable by keyboard
+[1A[2K[23/188] [chromium] › e2e/a11y.spec.ts:224:7 › every interactive control on /cart is reachable by keyboard
+[1A[2K[24/188] [chromium] › e2e/a11y.spec.ts:224:7 › every interactive control on /category/hot-deals is reachable by keyboard
+[1A[2K[25/188] [chromium] › e2e/a11y.spec.ts:224:7 › every interactive control on /search?q=%D7%9E%D7%95%D7%A6%D7%A8 is reachable by keyboard
+[1A[2K[26/188] [chromium] › e2e/a11y.spec.ts:224:7 › every interactive control on /coupons is reachable by keyboard
+[1A[2K[27/188] [chromium] › e2e/a11y.spec.ts:224:7 › every interactive control on /login is reachable by keyboard
+[1A[2K[28/188] [chromium] › e2e/a11y.spec.ts:224:7 › every interactive control on /contact is reachable by keyboard
+[1A[2K[29/188] [chromium] › e2e/a11y.spec.ts:224:7 › every interactive control on /suppliers is reachable by keyboard
+[1A[2K[30/188] [chromium] › e2e/a11y.spec.ts:231:5 › every interactive control on a product page is reachable by keyboard
+[1A[2K[31/188] [chromium] › e2e/a11y.spec.ts:240:5 › every control in the seeded checkout is reachable by keyboard
+[1A[2K[32/188] [chromium] › e2e/a11y.spec.ts:262:7 › the consent banner does not cover the page it sits on at 320px
+[1A[2K[33/188] [chromium] › e2e/a11y.spec.ts:262:7 › the consent banner does not cover the page it sits on at 640px
+[1A[2K[34/188] [chromium] › e2e/a11y.spec.ts:262:7 › the consent banner does not cover the page it sits on at 1440px
+[1A[2K[35/188] [chromium] › e2e/a11y.spec.ts:303:7 › product pages have no WCAG A/AA violations › the first product in the catalogue
+[1A[2K  8) [chromium] › e2e/a11y.spec.ts:303:7 › product pages have no WCAG A/AA violations › the first product in the catalogue 
+
+    Error: /product/צימר-מאסטר
+      target-size (serious) x8: All touch targets must be 24px large, or leave sufficient space
+        section[data-strip="related"] > .pdp-related__grid > .rounded-xl.border-gray-100.overflow-hidden:nth-child(1) > .space-y-2.p-3 > .-my-1.text-muted-2.line-clamp-1 | section[data-strip="related"] > .pdp-related__grid > .rounded-xl.border-gray-100.overflow-hidden:nth-child(2) > .space-y-2.p-3 > .-my-1.text-muted-2.line-clamp-1 | section[data-strip="related"] > .pdp-related__grid > .rounded-xl.border-gray-100.overflow-hidden:nth-child(3) > .space-y-2.p-3 > .-my-1.text-muted-2.line-clamp-1
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "target-size",[39m
+    [31m+ ][39m
+
+      310 |       results.violations.map((v) => v.id),
+      311 |       `${href}\n  ${describe(results)}`,
+    > 312 |     ).toEqual([])
+          |       ^
+      313 |   })
+      314 |
+      315 |   test('a coupon product, which renders the struck regular price', async ({ page }) => {
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:312:7
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-product-pages-have-no-5a107-st-product-in-the-catalogue-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-product-pages-have-no-5a107-st-product-in-the-catalogue-chromium/error-context.md
+
+
+[1A[2K[36/188] [chromium] › e2e/a11y.spec.ts:315:7 › product pages have no WCAG A/AA violations › a coupon product, which renders the struck regular price
+[1A[2K[37/188] [chromium] › e2e/a11y.spec.ts:358:7 › the checkout with a seeded cart › cart and checkout have no WCAG A/AA violations
+[1A[2K  9) [chromium] › e2e/a11y.spec.ts:315:7 › product pages have no WCAG A/AA violations › a coupon product, which renders the struck regular price 
+
+    Error: /product/צימר-מאסטר
+      target-size (serious) x8: All touch targets must be 24px large, or leave sufficient space
+        section[data-strip="related"] > .pdp-related__grid > .rounded-xl.border-gray-100.overflow-hidden:nth-child(1) > .space-y-2.p-3 > .-my-1.text-muted-2.line-clamp-1 | section[data-strip="related"] > .pdp-related__grid > .rounded-xl.border-gray-100.overflow-hidden:nth-child(2) > .space-y-2.p-3 > .-my-1.text-muted-2.line-clamp-1 | section[data-strip="related"] > .pdp-related__grid > .rounded-xl.border-gray-100.overflow-hidden:nth-child(3) > .space-y-2.p-3 > .-my-1.text-muted-2.line-clamp-1
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "target-size",[39m
+    [31m+ ][39m
+
+      333 |       results.violations.map((v) => v.id),
+      334 |       `${coupon}\n  ${describe(results)}`,
+    > 335 |     ).toEqual([])
+          |       ^
+      336 |   })
+      337 | })
+      338 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:335:7
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-product-pages-have-no-44416-rs-the-struck-regular-price-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-product-pages-have-no-44416-rs-the-struck-regular-price-chromium/error-context.md
+
+
+[1A[2K[38/188] [chromium] › e2e/a11y.spec.ts:408:7 › the checkout wizard, step by step › every step of the checkout has no WCAG A/AA violations
+[1A[2K  10) [chromium] › e2e/a11y.spec.ts:358:7 › the checkout with a seeded cart › cart and checkout have no WCAG A/AA violations 
+
+    Error: /checkout
+      color-contrast (serious) x4: Elements must meet minimum color contrast ratio thresholds
+        #co-delivery-slot-hint | .checkout-field__hint[aria-live="polite"] | p[data-testid="gift-card-login-hint"]
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "color-contrast",[39m
+    [31m+ ][39m
+
+      380 |       checkout.violations.map((v) => v.id),
+      381 |       `/checkout\n  ${describe(checkout)}`,
+    > 382 |     ).toEqual([])
+          |       ^
+      383 |   })
+      384 | })
+      385 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:382:7
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-the-checkout-with-a-s-426db-ave-no-WCAG-A-AA-violations-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-the-checkout-with-a-s-426db-ave-no-WCAG-A-AA-violations-chromium/error-context.md
+
+
+[1A[2K[39/188] [chromium] › e2e/a11y.spec.ts:514:5 › the cart panel that opens on add-to-cart has no WCAG A/AA violations
+[1A[2K  11) [chromium] › e2e/a11y.spec.ts:514:5 › the cart panel that opens on add-to-cart has no WCAG A/AA violations 
+
+    Error: 
+      target-size (serious) x8: All touch targets must be 24px large, or leave sufficient space
+        section[data-strip="related"] > .pdp-related__grid > .rounded-xl.border-gray-100.overflow-hidden:nth-child(1) > .space-y-2.p-3 > .-my-1.text-muted-2.line-clamp-1 | section[data-strip="related"] > .pdp-related__grid > .rounded-xl.border-gray-100.overflow-hidden:nth-child(2) > .space-y-2.p-3 > .-my-1.text-muted-2.line-clamp-1 | section[data-strip="related"] > .pdp-related__grid > .rounded-xl.border-gray-100.overflow-hidden:nth-child(3) > .space-y-2.p-3 > .-my-1.text-muted-2.line-clamp-1
+
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "target-size x8",[39m
+    [31m+ ][39m
+
+      525 |     results.violations.map((v) => `${v.id} x${v.nodes.length}`),
+      526 |     `\n  ${describe(results)}\n`,
+    > 527 |   ).toEqual([])
+          |     ^
+      528 | })
+      529 |
+      530 | /**
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:527:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-the-cart-panel-that-o-602cf-has-no-WCAG-A-AA-violations-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-the-cart-panel-that-o-602cf-has-no-WCAG-A-AA-violations-chromium/error-context.md
+
+
+[1A[2K[40/188] [chromium] › e2e/a11y.spec.ts:543:5 › the install banner has no WCAG A/AA violations
+[1A[2K[41/188] [chromium] › e2e/a11y.spec.ts:574:5 › the search combobox says which suggestion is selected
+[1A[2K[42/188] [chromium] › e2e/a11y.spec.ts:722:7 › every Tab stop on / is visible, on screen and not under fixed chrome
+[1A[2K  12) [chromium] › e2e/a11y.spec.ts:722:7 › every Tab stop on / is visible, on screen and not under fixed chrome 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "focus hidden under section.: a \"דברו איתנו בוואטסאפ\"",[39m
+    [31m+ ][39m
+
+      727 |     const { stops, problems } = await walkFocus(page)
+      728 |     expect(stops, 'the walk found nothing to focus; the page did not render').toBeGreaterThan(3)
+    > 729 |     expect(problems).toEqual([])
+          |                      ^
+      730 |   })
+      731 | }
+      732 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:729:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-every-Tab-stop-on-is--1380c--and-not-under-fixed-chrome-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-every-Tab-stop-on-is--1380c--and-not-under-fixed-chrome-chromium/error-context.md
+
+
+[1A[2K[43/188] [chromium] › e2e/a11y.spec.ts:722:7 › every Tab stop on /products is visible, on screen and not under fixed chrome
+[1A[2K  13) [chromium] › e2e/a11y.spec.ts:722:7 › every Tab stop on /products is visible, on screen and not under fixed chrome 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "focus hidden under section.: a \"דברו איתנו בוואטסאפ\"",[39m
+    [31m+ ][39m
+
+      727 |     const { stops, problems } = await walkFocus(page)
+      728 |     expect(stops, 'the walk found nothing to focus; the page did not render').toBeGreaterThan(3)
+    > 729 |     expect(problems).toEqual([])
+          |                      ^
+      730 |   })
+      731 | }
+      732 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:729:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-every-Tab-stop-on-pro-a2770--and-not-under-fixed-chrome-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-every-Tab-stop-on-pro-a2770--and-not-under-fixed-chrome-chromium/error-context.md
+
+
+[1A[2K[44/188] [chromium] › e2e/a11y.spec.ts:722:7 › every Tab stop on /cart is visible, on screen and not under fixed chrome
+[1A[2K  14) [chromium] › e2e/a11y.spec.ts:722:7 › every Tab stop on /cart is visible, on screen and not under fixed chrome 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "focus hidden under section.: a \"דברו איתנו בוואטסאפ\"",[39m
+    [31m+ ][39m
+
+      727 |     const { stops, problems } = await walkFocus(page)
+      728 |     expect(stops, 'the walk found nothing to focus; the page did not render').toBeGreaterThan(3)
+    > 729 |     expect(problems).toEqual([])
+          |                      ^
+      730 |   })
+      731 | }
+      732 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:729:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-every-Tab-stop-on-car-abe74--and-not-under-fixed-chrome-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-every-Tab-stop-on-car-abe74--and-not-under-fixed-chrome-chromium/error-context.md
+
+
+[1A[2K[45/188] [chromium] › e2e/a11y.spec.ts:722:7 › every Tab stop on /coupons is visible, on screen and not under fixed chrome
+[1A[2K  15) [chromium] › e2e/a11y.spec.ts:722:7 › every Tab stop on /coupons is visible, on screen and not under fixed chrome 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "focus hidden under section.: a \"דברו איתנו בוואטסאפ\"",[39m
+    [31m+ ][39m
+
+      727 |     const { stops, problems } = await walkFocus(page)
+      728 |     expect(stops, 'the walk found nothing to focus; the page did not render').toBeGreaterThan(3)
+    > 729 |     expect(problems).toEqual([])
+          |                      ^
+      730 |   })
+      731 | }
+      732 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:729:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-every-Tab-stop-on-cou-a0536--and-not-under-fixed-chrome-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-every-Tab-stop-on-cou-a0536--and-not-under-fixed-chrome-chromium/error-context.md
+
+
+[1A[2K[46/188] [chromium] › e2e/a11y.spec.ts:722:7 › every Tab stop on /login is visible, on screen and not under fixed chrome
+[1A[2K[47/188] [chromium] › e2e/a11y.spec.ts:742:5 › the category drawer keeps Tab inside, is inert when closed, and Escape returns to the trigger
+[1A[2K[48/188] [chromium] › e2e/a11y.spec.ts:794:7 › the first Tab on / is a skip link that lands focus in <main>
+[1A[2K  16) [chromium] › e2e/a11y.spec.ts:794:7 › the first Tab on / is a skip link that lands focus in <main> 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveAttribute[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  locator(':focus')
+    Expected: [32m"#main-content"[39m
+    Received: [31m""[39m
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toHaveAttribute" with timeout 5000ms[22m
+    [2m  - waiting for locator(':focus')[22m
+    [2m    14 × locator resolved to <button type="submit" class="min-h-11 rounded-lg border border-black/15 px-4 py-2 text-sm font-medium text-black/70 transition-colors hover:bg-black/[0.04]">לא תודה</button>[22m
+    [2m       - unexpected value "null"[22m
+
+
+      798 |     await page.keyboard.press('Tab')
+      799 |     const link = page.locator(':focus')
+    > 800 |     await expect(link).toHaveAttribute('href', '#main-content')
+          |                        ^
+      801 |     await expect(link).toHaveText('דילוג לתוכן הראשי')
+      802 |     // Visible while focused, not only present: `sr-only` alone would keep
+      803 |     // the 1x1 clip and the sighted keyboard user would see nothing move.
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:800:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-the-first-Tab-on-is-a-78b99-k-that-lands-focus-in-main--chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-the-first-Tab-on-is-a-78b99-k-that-lands-focus-in-main--chromium/error-context.md
+
+
+[1A[2K[49/188] [chromium] › e2e/a11y.spec.ts:794:7 › the first Tab on /products is a skip link that lands focus in <main>
+[1A[2K  17) [chromium] › e2e/a11y.spec.ts:408:7 › the checkout wizard, step by step › every step of the checkout has no WCAG A/AA violations 
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('.checkout-nav__next').first()[22m
+
+
+      447 |     // accessible while empty: red-on-white at 12px is exactly the pairing that
+      448 |     // misses AA, and #dc3545 clears it on white by 0.03.
+    > 449 |     await next.click()
+          |                ^
+      450 |     await expect(
+      451 |       page.locator('.checkout-field__error').first(),
+      452 |       'pressing continue on an empty step raised no error to scan',
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:449:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-the-checkout-wizard-s-3e805-has-no-WCAG-A-AA-violations-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-the-checkout-wizard-s-3e805-has-no-WCAG-A-AA-violations-chromium/error-context.md
+
+
+[1A[2K[50/188] [chromium] › e2e/a11y.spec.ts:794:7 › the first Tab on /coupons is a skip link that lands focus in <main>
+[1A[2K  18) [chromium] › e2e/a11y.spec.ts:794:7 › the first Tab on /products is a skip link that lands focus in <main> 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveAttribute[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  locator(':focus')
+    Expected: [32m"#main-content"[39m
+    Received: [31m""[39m
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toHaveAttribute" with timeout 5000ms[22m
+    [2m  - waiting for locator(':focus')[22m
+    [2m    14 × locator resolved to <button type="submit" class="min-h-11 rounded-lg border border-black/15 px-4 py-2 text-sm font-medium text-black/70 transition-colors hover:bg-black/[0.04]">לא תודה</button>[22m
+    [2m       - unexpected value "null"[22m
+
+
+      798 |     await page.keyboard.press('Tab')
+      799 |     const link = page.locator(':focus')
+    > 800 |     await expect(link).toHaveAttribute('href', '#main-content')
+          |                        ^
+      801 |     await expect(link).toHaveText('דילוג לתוכן הראשי')
+      802 |     // Visible while focused, not only present: `sr-only` alone would keep
+      803 |     // the 1x1 clip and the sighted keyboard user would see nothing move.
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:800:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-the-first-Tab-on-prod-be532-k-that-lands-focus-in-main--chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-the-first-Tab-on-prod-be532-k-that-lands-focus-in-main--chromium/error-context.md
+
+
+[1A[2K[51/188] [chromium] › e2e/a11y.spec.ts:794:7 › the first Tab on /legal/privacy is a skip link that lands focus in <main>
+[1A[2K  19) [chromium] › e2e/a11y.spec.ts:794:7 › the first Tab on /coupons is a skip link that lands focus in <main> 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveAttribute[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  locator(':focus')
+    Expected: [32m"#main-content"[39m
+    Received: [31m""[39m
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toHaveAttribute" with timeout 5000ms[22m
+    [2m  - waiting for locator(':focus')[22m
+    [2m    14 × locator resolved to <button type="submit" class="min-h-11 rounded-lg border border-black/15 px-4 py-2 text-sm font-medium text-black/70 transition-colors hover:bg-black/[0.04]">לא תודה</button>[22m
+    [2m       - unexpected value "null"[22m
+
+
+      798 |     await page.keyboard.press('Tab')
+      799 |     const link = page.locator(':focus')
+    > 800 |     await expect(link).toHaveAttribute('href', '#main-content')
+          |                        ^
+      801 |     await expect(link).toHaveText('דילוג לתוכן הראשי')
+      802 |     // Visible while focused, not only present: `sr-only` alone would keep
+      803 |     // the 1x1 clip and the sighted keyboard user would see nothing move.
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:800:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-the-first-Tab-on-coup-49cbf-k-that-lands-focus-in-main--chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-the-first-Tab-on-coup-49cbf-k-that-lands-focus-in-main--chromium/error-context.md
+
+
+[1A[2K[52/188] [chromium] › e2e/a11y.spec.ts:837:9 › the accessibility tree is named in Hebrew › every control and landmark on /
+[1A[2K  20) [chromium] › e2e/a11y.spec.ts:794:7 › the first Tab on /legal/privacy is a skip link that lands focus in <main> 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveAttribute[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  locator(':focus')
+    Expected: [32m"#main-content"[39m
+    Received: [31m""[39m
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toHaveAttribute" with timeout 5000ms[22m
+    [2m  - waiting for locator(':focus')[22m
+    [2m    14 × locator resolved to <button type="submit" class="min-h-11 rounded-lg border border-black/15 px-4 py-2 text-sm font-medium text-black/70 transition-colors hover:bg-black/[0.04]">לא תודה</button>[22m
+    [2m       - unexpected value "null"[22m
+
+
+      798 |     await page.keyboard.press('Tab')
+      799 |     const link = page.locator(':focus')
+    > 800 |     await expect(link).toHaveAttribute('href', '#main-content')
+          |                        ^
+      801 |     await expect(link).toHaveText('דילוג לתוכן הראשי')
+      802 |     // Visible while focused, not only present: `sr-only` alone would keep
+      803 |     // the 1x1 clip and the sighted keyboard user would see nothing move.
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:800:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-the-first-Tab-on-lega-ba2c1-k-that-lands-focus-in-main--chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-the-first-Tab-on-lega-ba2c1-k-that-lands-focus-in-main--chromium/error-context.md
+
+
+[1A[2K[53/188] [chromium] › e2e/a11y.spec.ts:837:9 › the accessibility tree is named in Hebrew › every control and landmark on /products
+[1A[2K[54/188] [chromium] › e2e/a11y.spec.ts:837:9 › the accessibility tree is named in Hebrew › every control and landmark on /cart
+[1A[2K[55/188] [chromium] › e2e/a11y.spec.ts:837:9 › the accessibility tree is named in Hebrew › every control and landmark on /login
+[1A[2K[56/188] [chromium] › e2e/a11y.spec.ts:837:9 › the accessibility tree is named in Hebrew › every control and landmark on /coupons
+[1A[2K[57/188] [chromium] › e2e/a11y.spec.ts:837:9 › the accessibility tree is named in Hebrew › every control and landmark on /contact
+[1A[2K[58/188] [chromium] › e2e/a11y.spec.ts:878:5 › the WhatsApp help float is in the same place on every storefront page
+[1A[2K[59/188] [chromium] › e2e/a11y.spec.ts:900:5 › login asks for nothing a password manager or a pasted code cannot supply
+[1A[2K[60/188] [chromium] › e2e/home-rtl.spec.ts:83:7 › home page RTL › body and 20 anchors resolve to direction rtl
+[1A[2K[61/188] [chromium] › e2e/home-rtl.spec.ts:107:7 › home page RTL › the hero promo lines are Hebrew paragraphs laid out rtl
+[1A[2K[62/188] [chromium] › e2e/home-rtl.spec.ts:127:7 › home page RTL › every ltr node on the page is on the allow-list
+[1A[2K  21) [chromium] › e2e/home-rtl.spec.ts:127:7 › home page RTL › every ltr node on the page is on the allow-list 
+
+    Error: ltr nodes outside the allow-list
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "div.hidden.min-w-0 > div.flex.min-w-0 > form[aria-label=\"חיפוש מוצרים באתר\"] > div.site-search__pill.flex > input#masthead-search",[39m
+    [31m+ ][39m
+
+      161 |     )
+      162 |
+    > 163 |     expect(offenders, 'ltr nodes outside the allow-list').toEqual([])
+          |                                                           ^
+      164 |   })
+      165 | })
+      166 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/home-rtl.spec.ts:163:59
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/home-rtl-home-page-RTL-eve-4bbfa-e-page-is-on-the-allow-list-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/home-rtl-home-page-RTL-eve-4bbfa-e-page-is-on-the-allow-list-chromium/error-context.md
+
+
+[1A[2K[63/188] [chromium] › e2e/home.spec.ts:38:7 › homepage › renders the header search combobox
+[1A[2K[64/188] [chromium] › e2e/home.spec.ts:11:7 › homepage › loads with RTL layout and the Hebrew locale
+[1A[2K  22) [chromium] › e2e/home.spec.ts:38:7 › homepage › renders the header search combobox ───────────
+
+    Error: only the newsletter and the search field
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoContain[2m([22m[32mexpected[39m[2m) // indexOf[22m
+
+    Expected value: [32m"checkbox"[39m
+    Received array: [31m["email", "search"][39m
+
+      57 |     for (const input of await typed.all()) {
+      58 |       const type = await input.getAttribute('type')
+    > 59 |       expect(['email', 'search'], 'only the newsletter and the search field').toContain(type)
+         |                                                                               ^
+      60 |     }
+      61 |   })
+      62 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/home.spec.ts:59:79
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/home-homepage-renders-the-header-search-combobox-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/home-homepage-renders-the-header-search-combobox-chromium/error-context.md
+
+
+[1A[2K[65/188] [chromium] › e2e/home.spec.ts:87:7 › homepage › renders product links with add-to-cart buttons
+[1A[2K[66/188] [chromium] › e2e/home.spec.ts:63:7 › homepage › the header search suggests products and Enter opens the highlighted one
+[1A[2K[67/188] [chromium] › e2e/home.spec.ts:114:7 › homepage › deal card images occupy a box, not just load
+[1A[2K[68/188] [chromium] › e2e/home.spec.ts:153:7 › homepage › every deal card image is pinned to the same 245px height
+[1A[2K[69/188] [chromium] › e2e/home.spec.ts:189:7 › homepage › the image optimizer re-encodes per width instead of passing the source through
+[1A[2K  23) [chromium] › e2e/home.spec.ts:189:7 › homepage › the image optimizer re-encodes per width instead of passing the source through 
+
+    Error: optimizer returned 20215B at w=256 and 20215B at w=640 - identical bytes at different widths is exactly what a pass-through fallback looks like
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mnot[2m.[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: not [32m20215[39m
+
+      232 |       twoWidths[0],
+      233 |       `optimizer returned ${twoWidths[0]}B at w=256 and ${twoWidths[1]}B at w=640 - identical bytes at different widths is exactly what a pass-through fallback looks like`,
+    > 234 |     ).not.toBe(twoWidths[1])
+          |           ^
+      235 |     const [small, large] = twoWidths as [number, number]
+      236 |     expect(small, 'w=256 should be cheaper than w=640').toBeLessThan(large)
+      237 |     expect(optimizedBytes, 'optimizer returned nothing').toBeGreaterThan(0)
+        at /Users/ofir/kenyonexpress-autopilot/e2e/home.spec.ts:234:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/home-homepage-the-image-op-f2c28--passing-the-source-through-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/home-homepage-the-image-op-f2c28--passing-the-source-through-chromium/error-context.md
+
+
+[1A[2K[70/188] [chromium] › e2e/home.spec.ts:258:7 › homepage › the hero fetches no slider raster, because it has no photograph
+[1A[2K[71/188] [chromium] › e2e/home.spec.ts:287:7 › homepage › consent banner ships in the HTML, not built by React
+[1A[2K[72/188] [chromium] › e2e/home.spec.ts:294:7 › homepage › consent banner is visible to a visitor who has not decided
+[1A[2K[73/188] [chromium] › e2e/home.spec.ts:311:7 › homepage › consent banner is absent when script is off
+[1A[2K[74/188] [chromium] › e2e/home.spec.ts:339:7 › homepage › the pre-paint consent snippet survives the build byte for byte
+[1A[2K[75/188] [chromium] › e2e/home.spec.ts:347:7 › homepage › consent banner is hidden for a visitor who decided
+[1A[2K[76/188] [chromium] › e2e/home.spec.ts:373:7 › homepage › offers category navigation into the archives
+[1A[2K[77/188] [chromium] › e2e/home.spec.ts:378:7 › homepage › shows a cart control in the header before anything is added
+[1A[2K[78/188] [chromium] › e2e/home.spec.ts:383:7 › homepage › search results page finds products
+[1A[2K[79/188] [chromium] › e2e/home.spec.ts:389:7 › homepage › short query shows the minimum-characters hint
+[1A[2K[80/188] [chromium] › e2e/home.spec.ts:394:7 › homepage › a search term with SQL wildcards is treated as text, not a pattern
+[1A[2K[81/188] [chromium] › e2e/home.spec.ts:419:7 › homepage › every category link on the home page resolves
+[1A[2K[82/188] [chromium] › e2e/home.spec.ts:454:7 › homepage › the homepage costs one render-blocking stylesheet
+[1A[2K  24) [chromium] › e2e/home.spec.ts:454:7 › homepage › the homepage costs one render-blocking stylesheet 
+
+    Error: homepage stylesheets: /_next/static/chunks/2gikplvv0xfog.css, /_next/static/chunks/23vg9fyu4pxw0.css, /_next/static/chunks/2de9-2o841xw1.css
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoHaveLength[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected length: [32m1[39m
+    Received length: [31m3[39m
+    Received array:  [31m["/_next/static/chunks/2gikplvv0xfog.css", "/_next/static/chunks/23vg9fyu4pxw0.css", "/_next/static/chunks/2de9-2o841xw1.css"][39m
+
+      463 |     )
+      464 |
+    > 465 |     expect(sheets, `homepage stylesheets: ${sheets.join(', ')}`).toHaveLength(1)
+          |                                                                  ^
+      466 |   })
+      467 |
+      468 |   /**
+        at /Users/ofir/kenyonexpress-autopilot/e2e/home.spec.ts:465:66
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/home-homepage-the-homepage-9b3f9--render-blocking-stylesheet-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/home-homepage-the-homepage-9b3f9--render-blocking-stylesheet-chromium/error-context.md
+
+
+[1A[2K[83/188] [chromium] › e2e/home.spec.ts:481:7 › homepage › reaching the footer costs no 404s
+[1A[2K  25) [chromium] › e2e/home.spec.ts:481:7 › homepage › reaching the footer costs no 404s ───────────
+
+    Error: 410 /wishlist
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "410 /wishlist",[39m
+    [31m+ ][39m
+
+      497 |     await page.waitForTimeout(3000)
+      498 |
+    > 499 |     expect(failed, failed.join(', ')).toEqual([])
+          |                                       ^
+      500 |   })
+      501 |
+      502 |   /**
+        at /Users/ofir/kenyonexpress-autopilot/e2e/home.spec.ts:499:39
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/home-homepage-reaching-the-footer-costs-no-404s-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/home-homepage-reaching-the-footer-costs-no-404s-chromium/error-context.md
+
+
+[1A[2K[84/188] [chromium] › e2e/home.spec.ts:518:7 › homepage › the hero holds its first slide until the visitor interacts, then rotates
+[1A[2K[85/188] [chromium] › e2e/home.spec.ts:579:7 › homepage › the hero slot renders the branded placeholder, named, with no vendor raster
+[1A[2K[86/188] [chromium] › e2e/touch-targets.spec.ts:146:5 › the emulated phone reports a coarse pointer
+[1A[2K[87/188] [chromium] › e2e/touch-targets.spec.ts:155:7 › every control on / is thumb-sized
+[1A[2K  26) [chromium] › e2e/touch-targets.spec.ts:155:7 › every control on / is thumb-sized ─────────────
+
+    Error: sub-floor targets on /
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "a[התחברות] hit 72x41 (primary, 44)",[39m
+    [31m+ ][39m
+
+      157 |     await page.goto(route)
+      158 |     await page.waitForLoadState('networkidle')
+    > 159 |     expect(offenders(await measure(page)), `sub-floor targets on ${route}`).toEqual([])
+          |                                                                             ^
+      160 |   })
+      161 | }
+      162 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/touch-targets.spec.ts:159:77
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/touch-targets-every-control-on-is-thumb-sized-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/touch-targets-every-control-on-is-thumb-sized-chromium/error-context.md
+
+
+[1A[2K[88/188] [chromium] › e2e/touch-targets.spec.ts:155:7 › every control on /products is thumb-sized
+[1A[2K  27) [chromium] › e2e/touch-targets.spec.ts:155:7 › every control on /products is thumb-sized ─────
+
+    Error: sub-floor targets on /products
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  -  1[39m
+    [31m+ Received  + 27[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "a[התחברות] hit 72x41 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+ ][39m
+
+      157 |     await page.goto(route)
+      158 |     await page.waitForLoadState('networkidle')
+    > 159 |     expect(offenders(await measure(page)), `sub-floor targets on ${route}`).toEqual([])
+          |                                                                             ^
+      160 |   })
+      161 | }
+      162 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/touch-targets.spec.ts:159:77
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/touch-targets-every-control-on-products-is-thumb-sized-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/touch-targets-every-control-on-products-is-thumb-sized-chromium/error-context.md
+
+
+[1A[2K[89/188] [chromium] › e2e/touch-targets.spec.ts:155:7 › every control on /category/hot-deals is thumb-sized
+[1A[2K  28) [chromium] › e2e/touch-targets.spec.ts:155:7 › every control on /category/hot-deals is thumb-sized 
+
+    Error: sub-floor targets on /category/hot-deals
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 5[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "a[התחברות] hit 72x41 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+ ][39m
+
+      157 |     await page.goto(route)
+      158 |     await page.waitForLoadState('networkidle')
+    > 159 |     expect(offenders(await measure(page)), `sub-floor targets on ${route}`).toEqual([])
+          |                                                                             ^
+      160 |   })
+      161 | }
+      162 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/touch-targets.spec.ts:159:77
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/touch-targets-every-contro-7fccd-ry-hot-deals-is-thumb-sized-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/touch-targets-every-contro-7fccd-ry-hot-deals-is-thumb-sized-chromium/error-context.md
+
+
+[1A[2K[90/188] [chromium] › e2e/touch-targets.spec.ts:155:7 › every control on /cart is thumb-sized
+[1A[2K  29) [chromium] › e2e/touch-targets.spec.ts:155:7 › every control on /cart is thumb-sized ─────────
+
+    Error: sub-floor targets on /cart
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "a[התחברות] hit 72x41 (primary, 44)",[39m
+    [31m+ ][39m
+
+      157 |     await page.goto(route)
+      158 |     await page.waitForLoadState('networkidle')
+    > 159 |     expect(offenders(await measure(page)), `sub-floor targets on ${route}`).toEqual([])
+          |                                                                             ^
+      160 |   })
+      161 | }
+      162 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/touch-targets.spec.ts:159:77
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/touch-targets-every-control-on-cart-is-thumb-sized-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/touch-targets-every-control-on-cart-is-thumb-sized-chromium/error-context.md
+
+
+[1A[2K[91/188] [chromium] › e2e/touch-targets.spec.ts:155:7 › every control on /login is thumb-sized
+[1A[2K  30) [chromium] › e2e/touch-targets.spec.ts:155:7 › every control on /login is thumb-sized ────────
+
+    Error: sub-floor targets on /login
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 4[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "a[שכחתם סיסמה?] hit 82x18 (24)",[39m
+    [31m+   "button[כניסה ללא סיסמה (קישור מאובטח ] hit 97x21 (24)",[39m
+    [31m+ ][39m
+
+      157 |     await page.goto(route)
+      158 |     await page.waitForLoadState('networkidle')
+    > 159 |     expect(offenders(await measure(page)), `sub-floor targets on ${route}`).toEqual([])
+          |                                                                             ^
+      160 |   })
+      161 | }
+      162 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/touch-targets.spec.ts:159:77
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/touch-targets-every-control-on-login-is-thumb-sized-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/touch-targets-every-control-on-login-is-thumb-sized-chromium/error-context.md
+
+
+[1A[2K[92/188] [chromium] › e2e/touch-targets.spec.ts:155:7 › every control on /legal/terms is thumb-sized
+[1A[2K  31) [chromium] › e2e/touch-targets.spec.ts:155:7 › every control on /legal/terms is thumb-sized ──
+
+    Error: sub-floor targets on /legal/terms
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "a[התחברות] hit 72x41 (primary, 44)",[39m
+    [31m+ ][39m
+
+      157 |     await page.goto(route)
+      158 |     await page.waitForLoadState('networkidle')
+    > 159 |     expect(offenders(await measure(page)), `sub-floor targets on ${route}`).toEqual([])
+          |                                                                             ^
+      160 |   })
+      161 | }
+      162 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/touch-targets.spec.ts:159:77
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/touch-targets-every-control-on-legal-terms-is-thumb-sized-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/touch-targets-every-control-on-legal-terms-is-thumb-sized-chromium/error-context.md
+
+
+[1A[2K[93/188] [chromium] › e2e/touch-targets.spec.ts:163:5 › every control on a product page is thumb-sized, buy row included
+[1A[2K[94/188] [chromium] › e2e/touch-targets.spec.ts:178:5 › the hero dots grow to 44px vertically and keep the pitch sideways
+[1A[2K  32) [chromium] › e2e/touch-targets.spec.ts:163:5 › every control on a product page is thumb-sized, buy row included 
+
+    Error: sub-floor targets on /product/צימר-מאסטר
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  -  1[39m
+    [31m+ Received  + 14[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "a[התחברות] hit 72x41 (primary, 44)",[39m
+    [31m+   "a[בית] hit 22x24 (24)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 62x36 (primary, 44)",[39m
+    [31m+   "button[הוסף להשוואה] hit 54x36 (primary, 44)",[39m
+    [31m+   "a[צימרים מלונות ונופש] hit 97x20 (24)",[39m
+    [31m+   "a[צימרים מלונות ונופש] hit 97x20 (24)",[39m
+    [31m+   "a[צימרים מלונות ונופש] hit 97x20 (24)",[39m
+    [31m+   "a[צימרים מלונות ונופש] hit 97x20 (24)",[39m
+    [31m+   "a[צימרים מלונות ונופש] hit 97x20 (24)",[39m
+    [31m+   "a[טלפונים ואלקטרוניקה] hit 97x21 (24)",[39m
+    [31m+   "a[טלפונים ואלקטרוניקה] hit 97x20 (24)",[39m
+    [31m+   "a[צימרים מלונות ונופש] hit 97x20 (24)",[39m
+    [31m+ ][39m
+
+      167 |   await page.waitForLoadState('networkidle')
+      168 |   const measured = await measure(page)
+    > 169 |   expect(offenders(measured), `sub-floor targets on ${href}`).toEqual([])
+          |                                                               ^
+      170 |   // The buy row must actually have been measured, or the assertion above is
+      171 |   // vacuous on an unsellable catalogue.
+      172 |   expect(
+        at /Users/ofir/kenyonexpress-autopilot/e2e/touch-targets.spec.ts:169:63
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/touch-targets-every-contro-5e973-humb-sized-buy-row-included-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/touch-targets-every-contro-5e973-humb-sized-buy-row-included-chromium/error-context.md
+
+
+[1A[2K[95/188] [mobile-chrome] › e2e/a11y.spec.ts:142:7 › home has no WCAG A/AA violations
+[1A[2K[96/188] [mobile-chrome] › e2e/a11y.spec.ts:142:7 › products has no WCAG A/AA violations
+[1A[2K[97/188] [mobile-chrome] › e2e/a11y.spec.ts:142:7 › cart has no WCAG A/AA violations
+[1A[2K[98/188] [mobile-chrome] › e2e/a11y.spec.ts:142:7 › contact has no WCAG A/AA violations
+[1A[2K[99/188] [mobile-chrome] › e2e/a11y.spec.ts:142:7 › offline has no WCAG A/AA violations
+[1A[2K[100/188] [mobile-chrome] › e2e/a11y.spec.ts:142:7 › supplier login has no WCAG A/AA violations
+[1A[2K  33) [mobile-chrome] › e2e/a11y.spec.ts:142:7 › contact has no WCAG A/AA violations ───────────────
+
+    Error: 
+      color-contrast (serious) x2: Elements must meet minimum color contrast ratio thresholds
+        .shadow-sm > span | .ms-2
+
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "color-contrast x2",[39m
+    [31m+ ][39m
+
+      151 |     const summary = results.violations.map((v) => `${v.id} x${v.nodes.length}`)
+      152 |
+    > 153 |     expect(summary, `\n  ${describe(results)}\n`).toEqual([])
+          |                                                   ^
+      154 |   })
+      155 | }
+      156 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:153:51
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-contact-has-no-WCAG-A-AA-violations-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-contact-has-no-WCAG-A-AA-violations-mobile-chrome/error-context.md
+
+
+[1A[2K[101/188] [mobile-chrome] › e2e/a11y.spec.ts:142:7 › suppliers has no WCAG A/AA violations
+[1A[2K[102/188] [mobile-chrome] › e2e/a11y.spec.ts:142:7 › coupons has no WCAG A/AA violations
+[1A[2K[103/188] [mobile-chrome] › e2e/a11y.spec.ts:142:7 › login has no WCAG A/AA violations
+[1A[2K[104/188] [mobile-chrome] › e2e/a11y.spec.ts:142:7 › signup has no WCAG A/AA violations
+[1A[2K[105/188] [mobile-chrome] › e2e/a11y.spec.ts:142:7 › reset password has no WCAG A/AA violations
+[1A[2K[106/188] [mobile-chrome] › e2e/a11y.spec.ts:142:7 › search results has no WCAG A/AA violations
+[1A[2K[107/188] [mobile-chrome] › e2e/a11y.spec.ts:142:7 › category archive has no WCAG A/AA violations
+[1A[2K[108/188] [mobile-chrome] › e2e/a11y.spec.ts:142:7 › legal terms has no WCAG A/AA violations
+[1A[2K[109/188] [mobile-chrome] › e2e/a11y.spec.ts:142:7 › legal privacy has no WCAG A/AA violations
+[1A[2K  34) [mobile-chrome] › e2e/a11y.spec.ts:142:7 › legal terms has no WCAG A/AA violations ───────────
+
+    Error: 
+      color-contrast (serious) x3: Elements must meet minimum color contrast ratio thresholds
+        div:nth-child(1) > dt | div:nth-child(2) > dt | div:nth-child(3) > dt
+
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "color-contrast x3",[39m
+    [31m+ ][39m
+
+      151 |     const summary = results.violations.map((v) => `${v.id} x${v.nodes.length}`)
+      152 |
+    > 153 |     expect(summary, `\n  ${describe(results)}\n`).toEqual([])
+          |                                                   ^
+      154 |   })
+      155 | }
+      156 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:153:51
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-legal-terms-has-no-WCAG-A-AA-violations-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-legal-terms-has-no-WCAG-A-AA-violations-mobile-chrome/error-context.md
+
+
+[1A[2K[110/188] [mobile-chrome] › e2e/a11y.spec.ts:142:7 › legal returns has no WCAG A/AA violations
+[1A[2K  35) [mobile-chrome] › e2e/a11y.spec.ts:142:7 › legal privacy has no WCAG A/AA violations ─────────
+
+    Error: 
+      color-contrast (serious) x3: Elements must meet minimum color contrast ratio thresholds
+        div:nth-child(1) > dt | div:nth-child(2) > dt | div:nth-child(3) > dt
+
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "color-contrast x3",[39m
+    [31m+ ][39m
+
+      151 |     const summary = results.violations.map((v) => `${v.id} x${v.nodes.length}`)
+      152 |
+    > 153 |     expect(summary, `\n  ${describe(results)}\n`).toEqual([])
+          |                                                   ^
+      154 |   })
+      155 | }
+      156 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:153:51
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-legal-privacy-has-no-WCAG-A-AA-violations-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-legal-privacy-has-no-WCAG-A-AA-violations-mobile-chrome/error-context.md
+
+
+[1A[2K[111/188] [mobile-chrome] › e2e/a11y.spec.ts:142:7 › legal accessibility has no WCAG A/AA violations
+[1A[2K  36) [mobile-chrome] › e2e/a11y.spec.ts:142:7 › legal returns has no WCAG A/AA violations ─────────
+
+    Error: 
+      color-contrast (serious) x3: Elements must meet minimum color contrast ratio thresholds
+        div:nth-child(1) > dt | div:nth-child(2) > dt | div:nth-child(3) > dt
+
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "color-contrast x3",[39m
+    [31m+ ][39m
+
+      151 |     const summary = results.violations.map((v) => `${v.id} x${v.nodes.length}`)
+      152 |
+    > 153 |     expect(summary, `\n  ${describe(results)}\n`).toEqual([])
+          |                                                   ^
+      154 |   })
+      155 | }
+      156 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:153:51
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-legal-returns-has-no-WCAG-A-AA-violations-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-legal-returns-has-no-WCAG-A-AA-violations-mobile-chrome/error-context.md
+
+
+[1A[2K[112/188] [mobile-chrome] › e2e/a11y.spec.ts:142:7 › terms and conditions has no WCAG A/AA violations
+[1A[2K  37) [mobile-chrome] › e2e/a11y.spec.ts:142:7 › legal accessibility has no WCAG A/AA violations ───
+
+    Error: 
+      color-contrast (serious) x3: Elements must meet minimum color contrast ratio thresholds
+        div:nth-child(1) > dt | div:nth-child(2) > dt | div:nth-child(3) > dt
+
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "color-contrast x3",[39m
+    [31m+ ][39m
+
+      151 |     const summary = results.violations.map((v) => `${v.id} x${v.nodes.length}`)
+      152 |
+    > 153 |     expect(summary, `\n  ${describe(results)}\n`).toEqual([])
+          |                                                   ^
+      154 |   })
+      155 | }
+      156 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:153:51
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-legal-accessibility-has-no-WCAG-A-AA-violations-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-legal-accessibility-has-no-WCAG-A-AA-violations-mobile-chrome/error-context.md
+
+
+[1A[2K[113/188] [mobile-chrome] › e2e/a11y.spec.ts:142:7 › privacy policy has no WCAG A/AA violations
+[1A[2K  38) [mobile-chrome] › e2e/a11y.spec.ts:142:7 › terms and conditions has no WCAG A/AA violations ──
+
+    Error: 
+      color-contrast (serious) x3: Elements must meet minimum color contrast ratio thresholds
+        div:nth-child(1) > dt | div:nth-child(2) > dt | div:nth-child(3) > dt
+
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "color-contrast x3",[39m
+    [31m+ ][39m
+
+      151 |     const summary = results.violations.map((v) => `${v.id} x${v.nodes.length}`)
+      152 |
+    > 153 |     expect(summary, `\n  ${describe(results)}\n`).toEqual([])
+          |                                                   ^
+      154 |   })
+      155 | }
+      156 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:153:51
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-terms-and-conditions-has-no-WCAG-A-AA-violations-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-terms-and-conditions-has-no-WCAG-A-AA-violations-mobile-chrome/error-context.md
+
+
+[1A[2K[114/188] [mobile-chrome] › e2e/a11y.spec.ts:157:5 › the document declares Hebrew and RTL, so a screen reader picks the right voice
+[1A[2K  39) [mobile-chrome] › e2e/a11y.spec.ts:142:7 › privacy policy has no WCAG A/AA violations ────────
+
+    Error: 
+      color-contrast (serious) x3: Elements must meet minimum color contrast ratio thresholds
+        div:nth-child(1) > dt | div:nth-child(2) > dt | div:nth-child(3) > dt
+
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "color-contrast x3",[39m
+    [31m+ ][39m
+
+      151 |     const summary = results.violations.map((v) => `${v.id} x${v.nodes.length}`)
+      152 |
+    > 153 |     expect(summary, `\n  ${describe(results)}\n`).toEqual([])
+          |                                                   ^
+      154 |   })
+      155 | }
+      156 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:153:51
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-privacy-policy-has-no-WCAG-A-AA-violations-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-privacy-policy-has-no-WCAG-A-AA-violations-mobile-chrome/error-context.md
+
+
+[1A[2K[115/188] [mobile-chrome] › e2e/a11y.spec.ts:224:7 › every interactive control on / is reachable by keyboard
+[1A[2K[116/188] [mobile-chrome] › e2e/a11y.spec.ts:224:7 › every interactive control on /products is reachable by keyboard
+[1A[2K[117/188] [mobile-chrome] › e2e/a11y.spec.ts:224:7 › every interactive control on /cart is reachable by keyboard
+[1A[2K[118/188] [mobile-chrome] › e2e/a11y.spec.ts:224:7 › every interactive control on /category/hot-deals is reachable by keyboard
+[1A[2K[119/188] [mobile-chrome] › e2e/a11y.spec.ts:224:7 › every interactive control on /search?q=%D7%9E%D7%95%D7%A6%D7%A8 is reachable by keyboard
+[1A[2K[120/188] [mobile-chrome] › e2e/a11y.spec.ts:224:7 › every interactive control on /coupons is reachable by keyboard
+[1A[2K[121/188] [mobile-chrome] › e2e/a11y.spec.ts:224:7 › every interactive control on /login is reachable by keyboard
+[1A[2K[122/188] [mobile-chrome] › e2e/a11y.spec.ts:224:7 › every interactive control on /contact is reachable by keyboard
+[1A[2K[123/188] [mobile-chrome] › e2e/a11y.spec.ts:224:7 › every interactive control on /suppliers is reachable by keyboard
+[1A[2K[124/188] [mobile-chrome] › e2e/a11y.spec.ts:231:5 › every interactive control on a product page is reachable by keyboard
+[1A[2K[125/188] [mobile-chrome] › e2e/a11y.spec.ts:240:5 › every control in the seeded checkout is reachable by keyboard
+[1A[2K[126/188] [mobile-chrome] › e2e/a11y.spec.ts:262:7 › the consent banner does not cover the page it sits on at 320px
+[1A[2K[127/188] [mobile-chrome] › e2e/a11y.spec.ts:262:7 › the consent banner does not cover the page it sits on at 640px
+[1A[2K[128/188] [mobile-chrome] › e2e/a11y.spec.ts:262:7 › the consent banner does not cover the page it sits on at 1440px
+[1A[2K[129/188] [mobile-chrome] › e2e/a11y.spec.ts:303:7 › product pages have no WCAG A/AA violations › the first product in the catalogue
+[1A[2K[130/188] [mobile-chrome] › e2e/a11y.spec.ts:315:7 › product pages have no WCAG A/AA violations › a coupon product, which renders the struck regular price
+[1A[2K  40) [mobile-chrome] › e2e/a11y.spec.ts:303:7 › product pages have no WCAG A/AA violations › the first product in the catalogue 
+
+    Error: /product/צימר-מאסטר
+      target-size (serious) x8: All touch targets must be 24px large, or leave sufficient space
+        section[data-strip="related"] > .pdp-related__grid > .rounded-xl.border-gray-100.overflow-hidden:nth-child(1) > .space-y-2.p-3 > .-my-1.text-muted-2.line-clamp-1 | section[data-strip="related"] > .pdp-related__grid > .rounded-xl.border-gray-100.overflow-hidden:nth-child(2) > .space-y-2.p-3 > .-my-1.text-muted-2.line-clamp-1 | section[data-strip="related"] > .pdp-related__grid > .rounded-xl.border-gray-100.overflow-hidden:nth-child(3) > .space-y-2.p-3 > .-my-1.text-muted-2.line-clamp-1
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "target-size",[39m
+    [31m+ ][39m
+
+      310 |       results.violations.map((v) => v.id),
+      311 |       `${href}\n  ${describe(results)}`,
+    > 312 |     ).toEqual([])
+          |       ^
+      313 |   })
+      314 |
+      315 |   test('a coupon product, which renders the struck regular price', async ({ page }) => {
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:312:7
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-product-pages-have-no-5a107-st-product-in-the-catalogue-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-product-pages-have-no-5a107-st-product-in-the-catalogue-mobile-chrome/error-context.md
+
+
+[1A[2K  41) [mobile-chrome] › e2e/a11y.spec.ts:315:7 › product pages have no WCAG A/AA violations › a coupon product, which renders the struck regular price 
+
+    Error: /product/צימר-מאסטר
+      target-size (serious) x8: All touch targets must be 24px large, or leave sufficient space
+        section[data-strip="related"] > .pdp-related__grid > .rounded-xl.border-gray-100.overflow-hidden:nth-child(1) > .space-y-2.p-3 > .-my-1.text-muted-2.line-clamp-1 | section[data-strip="related"] > .pdp-related__grid > .rounded-xl.border-gray-100.overflow-hidden:nth-child(2) > .space-y-2.p-3 > .-my-1.text-muted-2.line-clamp-1 | section[data-strip="related"] > .pdp-related__grid > .rounded-xl.border-gray-100.overflow-hidden:nth-child(3) > .space-y-2.p-3 > .-my-1.text-muted-2.line-clamp-1
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "target-size",[39m
+    [31m+ ][39m
+
+      333 |       results.violations.map((v) => v.id),
+      334 |       `${coupon}\n  ${describe(results)}`,
+    > 335 |     ).toEqual([])
+          |       ^
+      336 |   })
+      337 | })
+      338 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:335:7
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-product-pages-have-no-44416-rs-the-struck-regular-price-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-product-pages-have-no-44416-rs-the-struck-regular-price-mobile-chrome/error-context.md
+
+
+[1A[2K[131/188] [mobile-chrome] › e2e/a11y.spec.ts:358:7 › the checkout with a seeded cart › cart and checkout have no WCAG A/AA violations
+[1A[2K[132/188] [mobile-chrome] › e2e/a11y.spec.ts:408:7 › the checkout wizard, step by step › every step of the checkout has no WCAG A/AA violations
+[1A[2K  42) [mobile-chrome] › e2e/a11y.spec.ts:358:7 › the checkout with a seeded cart › cart and checkout have no WCAG A/AA violations 
+
+    Error: /checkout
+      color-contrast (serious) x4: Elements must meet minimum color contrast ratio thresholds
+        #co-delivery-slot-hint | .checkout-field__hint[aria-live="polite"] | p[data-testid="gift-card-login-hint"]
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "color-contrast",[39m
+    [31m+ ][39m
+
+      380 |       checkout.violations.map((v) => v.id),
+      381 |       `/checkout\n  ${describe(checkout)}`,
+    > 382 |     ).toEqual([])
+          |       ^
+      383 |   })
+      384 | })
+      385 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:382:7
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-the-checkout-with-a-s-426db-ave-no-WCAG-A-AA-violations-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-the-checkout-with-a-s-426db-ave-no-WCAG-A-AA-violations-mobile-chrome/error-context.md
+
+
+[1A[2K[133/188] [mobile-chrome] › e2e/a11y.spec.ts:514:5 › the cart panel that opens on add-to-cart has no WCAG A/AA violations
+[1A[2K  43) [mobile-chrome] › e2e/a11y.spec.ts:514:5 › the cart panel that opens on add-to-cart has no WCAG A/AA violations 
+
+    Error: 
+      target-size (serious) x9: All touch targets must be 24px large, or leave sufficient space
+        section[data-strip="related"] > .pdp-related__grid > .rounded-xl.border-gray-100.overflow-hidden:nth-child(1) > .space-y-2.p-3 > .-my-1.text-muted-2.line-clamp-1 | section[data-strip="related"] > .pdp-related__grid > .rounded-xl.border-gray-100.overflow-hidden:nth-child(2) > .space-y-2.p-3 > .-my-1.text-muted-2.line-clamp-1 | section[data-strip="related"] > .pdp-related__grid > .rounded-xl.border-gray-100.overflow-hidden:nth-child(3) > .space-y-2.p-3 > .-my-1.text-muted-2.line-clamp-1
+
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "target-size x9",[39m
+    [31m+ ][39m
+
+      525 |     results.violations.map((v) => `${v.id} x${v.nodes.length}`),
+      526 |     `\n  ${describe(results)}\n`,
+    > 527 |   ).toEqual([])
+          |     ^
+      528 | })
+      529 |
+      530 | /**
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:527:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-the-cart-panel-that-o-602cf-has-no-WCAG-A-AA-violations-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-the-cart-panel-that-o-602cf-has-no-WCAG-A-AA-violations-mobile-chrome/error-context.md
+
+
+[1A[2K[134/188] [mobile-chrome] › e2e/a11y.spec.ts:543:5 › the install banner has no WCAG A/AA violations
+[1A[2K[135/188] [mobile-chrome] › e2e/a11y.spec.ts:574:5 › the search combobox says which suggestion is selected
+[1A[2K[136/188] [mobile-chrome] › e2e/a11y.spec.ts:722:7 › every Tab stop on / is visible, on screen and not under fixed chrome
+[1A[2K  44) [mobile-chrome] › e2e/a11y.spec.ts:722:7 › every Tab stop on / is visible, on screen and not under fixed chrome 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "focus hidden under details.mt-2: a \"דברו איתנו בוואטסאפ\"",[39m
+    [31m+ ][39m
+
+      727 |     const { stops, problems } = await walkFocus(page)
+      728 |     expect(stops, 'the walk found nothing to focus; the page did not render').toBeGreaterThan(3)
+    > 729 |     expect(problems).toEqual([])
+          |                      ^
+      730 |   })
+      731 | }
+      732 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:729:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-every-Tab-stop-on-is--1380c--and-not-under-fixed-chrome-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-every-Tab-stop-on-is--1380c--and-not-under-fixed-chrome-mobile-chrome/error-context.md
+
+
+[1A[2K[137/188] [mobile-chrome] › e2e/a11y.spec.ts:722:7 › every Tab stop on /products is visible, on screen and not under fixed chrome
+[1A[2K  45) [mobile-chrome] › e2e/a11y.spec.ts:722:7 › every Tab stop on /products is visible, on screen and not under fixed chrome 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "focus hidden under details.mt-2: a \"דברו איתנו בוואטסאפ\"",[39m
+    [31m+ ][39m
+
+      727 |     const { stops, problems } = await walkFocus(page)
+      728 |     expect(stops, 'the walk found nothing to focus; the page did not render').toBeGreaterThan(3)
+    > 729 |     expect(problems).toEqual([])
+          |                      ^
+      730 |   })
+      731 | }
+      732 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:729:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-every-Tab-stop-on-pro-a2770--and-not-under-fixed-chrome-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-every-Tab-stop-on-pro-a2770--and-not-under-fixed-chrome-mobile-chrome/error-context.md
+
+
+[1A[2K[138/188] [mobile-chrome] › e2e/a11y.spec.ts:722:7 › every Tab stop on /cart is visible, on screen and not under fixed chrome
+[1A[2K  46) [mobile-chrome] › e2e/a11y.spec.ts:722:7 › every Tab stop on /cart is visible, on screen and not under fixed chrome 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "focus hidden under details.mt-2: a \"דברו איתנו בוואטסאפ\"",[39m
+    [31m+ ][39m
+
+      727 |     const { stops, problems } = await walkFocus(page)
+      728 |     expect(stops, 'the walk found nothing to focus; the page did not render').toBeGreaterThan(3)
+    > 729 |     expect(problems).toEqual([])
+          |                      ^
+      730 |   })
+      731 | }
+      732 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:729:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-every-Tab-stop-on-car-abe74--and-not-under-fixed-chrome-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-every-Tab-stop-on-car-abe74--and-not-under-fixed-chrome-mobile-chrome/error-context.md
+
+
+[1A[2K[139/188] [mobile-chrome] › e2e/a11y.spec.ts:722:7 › every Tab stop on /coupons is visible, on screen and not under fixed chrome
+[1A[2K  47) [mobile-chrome] › e2e/a11y.spec.ts:722:7 › every Tab stop on /coupons is visible, on screen and not under fixed chrome 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "focus hidden under details.mt-2: a \"דברו איתנו בוואטסאפ\"",[39m
+    [31m+ ][39m
+
+      727 |     const { stops, problems } = await walkFocus(page)
+      728 |     expect(stops, 'the walk found nothing to focus; the page did not render').toBeGreaterThan(3)
+    > 729 |     expect(problems).toEqual([])
+          |                      ^
+      730 |   })
+      731 | }
+      732 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:729:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-every-Tab-stop-on-cou-a0536--and-not-under-fixed-chrome-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-every-Tab-stop-on-cou-a0536--and-not-under-fixed-chrome-mobile-chrome/error-context.md
+
+
+[1A[2K[140/188] [mobile-chrome] › e2e/a11y.spec.ts:722:7 › every Tab stop on /login is visible, on screen and not under fixed chrome
+[1A[2K[141/188] [mobile-chrome] › e2e/a11y.spec.ts:742:5 › the category drawer keeps Tab inside, is inert when closed, and Escape returns to the trigger
+[1A[2K[142/188] [mobile-chrome] › e2e/a11y.spec.ts:794:7 › the first Tab on / is a skip link that lands focus in <main>
+[1A[2K  48) [mobile-chrome] › e2e/a11y.spec.ts:794:7 › the first Tab on / is a skip link that lands focus in <main> 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveAttribute[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  locator(':focus')
+    Expected: [32m"#main-content"[39m
+    Received: [31m""[39m
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toHaveAttribute" with timeout 5000ms[22m
+    [2m  - waiting for locator(':focus')[22m
+    [2m    14 × locator resolved to <button type="submit" class="min-h-11 rounded-lg border border-black/15 px-4 py-2 text-sm font-medium text-black/70 transition-colors hover:bg-black/[0.04]">לא תודה</button>[22m
+    [2m       - unexpected value "null"[22m
+
+
+      798 |     await page.keyboard.press('Tab')
+      799 |     const link = page.locator(':focus')
+    > 800 |     await expect(link).toHaveAttribute('href', '#main-content')
+          |                        ^
+      801 |     await expect(link).toHaveText('דילוג לתוכן הראשי')
+      802 |     // Visible while focused, not only present: `sr-only` alone would keep
+      803 |     // the 1x1 clip and the sighted keyboard user would see nothing move.
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:800:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-the-first-Tab-on-is-a-78b99-k-that-lands-focus-in-main--mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-the-first-Tab-on-is-a-78b99-k-that-lands-focus-in-main--mobile-chrome/error-context.md
+
+
+[1A[2K[143/188] [mobile-chrome] › e2e/a11y.spec.ts:794:7 › the first Tab on /products is a skip link that lands focus in <main>
+[1A[2K  49) [mobile-chrome] › e2e/a11y.spec.ts:408:7 › the checkout wizard, step by step › every step of the checkout has no WCAG A/AA violations 
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('.checkout-pay-btn')[22m
+    [2m    - locator resolved to <button disabled type="submit" class="checkout-pay-btn" aria-describedby="co-gate-note">התשלום ייפתח בקרוב</button>[22m
+    [2m  - attempting click action[22m
+    [2m    - waiting for element to be visible, enabled and stable[22m
+    [2m    - element is not stable[22m
+    [2m  - retrying click action[22m
+    [2m    - waiting for element to be visible, enabled and stable[22m
+    [2m    - element is not enabled[22m
+    [2m  - retrying click action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is not enabled[22m
+    [2m    - retrying click action[22m
+    [2m      - waiting 100ms[22m
+    [2m    39 × waiting for element to be visible, enabled and stable[22m
+    [2m       - element is not enabled[22m
+    [2m     - retrying click action[22m
+    [2m       - waiting 500ms[22m
+
+
+      420 |     // the error state, raised through the same submit the shopper uses.
+      421 |     if ((viewport?.width ?? 1280) < 768) {
+    > 422 |       await page.locator('.checkout-pay-btn').click()
+          |                                               ^
+      423 |       await expect(
+      424 |         page.locator('.checkout-field__error').first(),
+      425 |         'submitting the empty single-page checkout raised no error to scan',
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:422:47
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-the-checkout-wizard-s-3e805-has-no-WCAG-A-AA-violations-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-the-checkout-wizard-s-3e805-has-no-WCAG-A-AA-violations-mobile-chrome/error-context.md
+
+
+[1A[2K[144/188] [mobile-chrome] › e2e/a11y.spec.ts:794:7 › the first Tab on /coupons is a skip link that lands focus in <main>
+[1A[2K  50) [mobile-chrome] › e2e/a11y.spec.ts:794:7 › the first Tab on /products is a skip link that lands focus in <main> 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveAttribute[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  locator(':focus')
+    Expected: [32m"#main-content"[39m
+    Received: [31m""[39m
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toHaveAttribute" with timeout 5000ms[22m
+    [2m  - waiting for locator(':focus')[22m
+    [2m    14 × locator resolved to <button type="submit" class="min-h-11 rounded-lg border border-black/15 px-4 py-2 text-sm font-medium text-black/70 transition-colors hover:bg-black/[0.04]">לא תודה</button>[22m
+    [2m       - unexpected value "null"[22m
+
+
+      798 |     await page.keyboard.press('Tab')
+      799 |     const link = page.locator(':focus')
+    > 800 |     await expect(link).toHaveAttribute('href', '#main-content')
+          |                        ^
+      801 |     await expect(link).toHaveText('דילוג לתוכן הראשי')
+      802 |     // Visible while focused, not only present: `sr-only` alone would keep
+      803 |     // the 1x1 clip and the sighted keyboard user would see nothing move.
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:800:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-the-first-Tab-on-prod-be532-k-that-lands-focus-in-main--mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-the-first-Tab-on-prod-be532-k-that-lands-focus-in-main--mobile-chrome/error-context.md
+
+
+[1A[2K[145/188] [mobile-chrome] › e2e/a11y.spec.ts:794:7 › the first Tab on /legal/privacy is a skip link that lands focus in <main>
+[1A[2K  51) [mobile-chrome] › e2e/a11y.spec.ts:794:7 › the first Tab on /coupons is a skip link that lands focus in <main> 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveAttribute[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  locator(':focus')
+    Expected: [32m"#main-content"[39m
+    Received: [31m""[39m
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toHaveAttribute" with timeout 5000ms[22m
+    [2m  - waiting for locator(':focus')[22m
+    [2m    14 × locator resolved to <button type="submit" class="min-h-11 rounded-lg border border-black/15 px-4 py-2 text-sm font-medium text-black/70 transition-colors hover:bg-black/[0.04]">לא תודה</button>[22m
+    [2m       - unexpected value "null"[22m
+
+
+      798 |     await page.keyboard.press('Tab')
+      799 |     const link = page.locator(':focus')
+    > 800 |     await expect(link).toHaveAttribute('href', '#main-content')
+          |                        ^
+      801 |     await expect(link).toHaveText('דילוג לתוכן הראשי')
+      802 |     // Visible while focused, not only present: `sr-only` alone would keep
+      803 |     // the 1x1 clip and the sighted keyboard user would see nothing move.
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:800:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-the-first-Tab-on-coup-49cbf-k-that-lands-focus-in-main--mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-the-first-Tab-on-coup-49cbf-k-that-lands-focus-in-main--mobile-chrome/error-context.md
+
+
+[1A[2K[146/188] [mobile-chrome] › e2e/a11y.spec.ts:837:9 › the accessibility tree is named in Hebrew › every control and landmark on /
+[1A[2K[147/188] [mobile-chrome] › e2e/a11y.spec.ts:837:9 › the accessibility tree is named in Hebrew › every control and landmark on /products
+[1A[2K[148/188] [mobile-chrome] › e2e/a11y.spec.ts:837:9 › the accessibility tree is named in Hebrew › every control and landmark on /cart
+[1A[2K  52) [mobile-chrome] › e2e/a11y.spec.ts:794:7 › the first Tab on /legal/privacy is a skip link that lands focus in <main> 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveAttribute[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  locator(':focus')
+    Expected: [32m"#main-content"[39m
+    Received: [31m""[39m
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toHaveAttribute" with timeout 5000ms[22m
+    [2m  - waiting for locator(':focus')[22m
+    [2m    14 × locator resolved to <button type="submit" class="min-h-11 rounded-lg border border-black/15 px-4 py-2 text-sm font-medium text-black/70 transition-colors hover:bg-black/[0.04]">לא תודה</button>[22m
+    [2m       - unexpected value "null"[22m
+
+
+      798 |     await page.keyboard.press('Tab')
+      799 |     const link = page.locator(':focus')
+    > 800 |     await expect(link).toHaveAttribute('href', '#main-content')
+          |                        ^
+      801 |     await expect(link).toHaveText('דילוג לתוכן הראשי')
+      802 |     // Visible while focused, not only present: `sr-only` alone would keep
+      803 |     // the 1x1 clip and the sighted keyboard user would see nothing move.
+        at /Users/ofir/kenyonexpress-autopilot/e2e/a11y.spec.ts:800:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/a11y-the-first-Tab-on-lega-ba2c1-k-that-lands-focus-in-main--mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/a11y-the-first-Tab-on-lega-ba2c1-k-that-lands-focus-in-main--mobile-chrome/error-context.md
+
+
+[1A[2K[149/188] [mobile-chrome] › e2e/a11y.spec.ts:837:9 › the accessibility tree is named in Hebrew › every control and landmark on /coupons
+[1A[2K[150/188] [mobile-chrome] › e2e/a11y.spec.ts:837:9 › the accessibility tree is named in Hebrew › every control and landmark on /login
+[1A[2K[151/188] [mobile-chrome] › e2e/a11y.spec.ts:837:9 › the accessibility tree is named in Hebrew › every control and landmark on /contact
+[1A[2K[152/188] [mobile-chrome] › e2e/a11y.spec.ts:878:5 › the WhatsApp help float is in the same place on every storefront page
+[1A[2K[153/188] [mobile-chrome] › e2e/a11y.spec.ts:900:5 › login asks for nothing a password manager or a pasted code cannot supply
+[1A[2K[154/188] [mobile-chrome] › e2e/home-rtl.spec.ts:83:7 › home page RTL › body and 20 anchors resolve to direction rtl
+[1A[2K[155/188] [mobile-chrome] › e2e/home-rtl.spec.ts:107:7 › home page RTL › the hero promo lines are Hebrew paragraphs laid out rtl
+[1A[2K[156/188] [mobile-chrome] › e2e/home-rtl.spec.ts:127:7 › home page RTL › every ltr node on the page is on the allow-list
+[1A[2K[157/188] [mobile-chrome] › e2e/home.spec.ts:11:7 › homepage › loads with RTL layout and the Hebrew locale
+[1A[2K[158/188] [mobile-chrome] › e2e/home.spec.ts:38:7 › homepage › renders the header search combobox
+[1A[2K  53) [mobile-chrome] › e2e/home-rtl.spec.ts:127:7 › home page RTL › every ltr node on the page is on the allow-list 
+
+    Error: ltr nodes outside the allow-list
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "div.hidden.min-w-0 > div.flex.min-w-0 > form[aria-label=\"חיפוש מוצרים באתר\"] > div.site-search__pill.flex > input#masthead-search",[39m
+    [31m+ ][39m
+
+      161 |     )
+      162 |
+    > 163 |     expect(offenders, 'ltr nodes outside the allow-list').toEqual([])
+          |                                                           ^
+      164 |   })
+      165 | })
+      166 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/home-rtl.spec.ts:163:59
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/home-rtl-home-page-RTL-eve-4bbfa-e-page-is-on-the-allow-list-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/home-rtl-home-page-RTL-eve-4bbfa-e-page-is-on-the-allow-list-mobile-chrome/error-context.md
+
+
+[1A[2K  54) [mobile-chrome] › e2e/home.spec.ts:38:7 › homepage › renders the header search combobox ──────
+
+    Error: only the newsletter and the search field
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoContain[2m([22m[32mexpected[39m[2m) // indexOf[22m
+
+    Expected value: [32m"checkbox"[39m
+    Received array: [31m["email", "search"][39m
+
+      57 |     for (const input of await typed.all()) {
+      58 |       const type = await input.getAttribute('type')
+    > 59 |       expect(['email', 'search'], 'only the newsletter and the search field').toContain(type)
+         |                                                                               ^
+      60 |     }
+      61 |   })
+      62 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/home.spec.ts:59:79
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/home-homepage-renders-the-header-search-combobox-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/home-homepage-renders-the-header-search-combobox-mobile-chrome/error-context.md
+
+
+[1A[2K[159/188] [mobile-chrome] › e2e/home.spec.ts:63:7 › homepage › the header search suggests products and Enter opens the highlighted one
+[1A[2K[160/188] [mobile-chrome] › e2e/home.spec.ts:87:7 › homepage › renders product links with add-to-cart buttons
+[1A[2K[161/188] [mobile-chrome] › e2e/home.spec.ts:114:7 › homepage › deal card images occupy a box, not just load
+[1A[2K[162/188] [mobile-chrome] › e2e/home.spec.ts:153:7 › homepage › every deal card image is pinned to the same 245px height
+[1A[2K[163/188] [mobile-chrome] › e2e/home.spec.ts:189:7 › homepage › the image optimizer re-encodes per width instead of passing the source through
+[1A[2K  55) [mobile-chrome] › e2e/home.spec.ts:189:7 › homepage › the image optimizer re-encodes per width instead of passing the source through 
+
+    Error: optimizer returned 20215B at w=256 and 20215B at w=640 - identical bytes at different widths is exactly what a pass-through fallback looks like
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mnot[2m.[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: not [32m20215[39m
+
+      232 |       twoWidths[0],
+      233 |       `optimizer returned ${twoWidths[0]}B at w=256 and ${twoWidths[1]}B at w=640 - identical bytes at different widths is exactly what a pass-through fallback looks like`,
+    > 234 |     ).not.toBe(twoWidths[1])
+          |           ^
+      235 |     const [small, large] = twoWidths as [number, number]
+      236 |     expect(small, 'w=256 should be cheaper than w=640').toBeLessThan(large)
+      237 |     expect(optimizedBytes, 'optimizer returned nothing').toBeGreaterThan(0)
+        at /Users/ofir/kenyonexpress-autopilot/e2e/home.spec.ts:234:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/home-homepage-the-image-op-f2c28--passing-the-source-through-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/home-homepage-the-image-op-f2c28--passing-the-source-through-mobile-chrome/error-context.md
+
+
+[1A[2K[164/188] [mobile-chrome] › e2e/home.spec.ts:258:7 › homepage › the hero fetches no slider raster, because it has no photograph
+[1A[2K[165/188] [mobile-chrome] › e2e/home.spec.ts:287:7 › homepage › consent banner ships in the HTML, not built by React
+[1A[2K[166/188] [mobile-chrome] › e2e/home.spec.ts:294:7 › homepage › consent banner is visible to a visitor who has not decided
+[1A[2K[167/188] [mobile-chrome] › e2e/home.spec.ts:311:7 › homepage › consent banner is absent when script is off
+[1A[2K[168/188] [mobile-chrome] › e2e/home.spec.ts:339:7 › homepage › the pre-paint consent snippet survives the build byte for byte
+[1A[2K[169/188] [mobile-chrome] › e2e/home.spec.ts:347:7 › homepage › consent banner is hidden for a visitor who decided
+[1A[2K[170/188] [mobile-chrome] › e2e/home.spec.ts:373:7 › homepage › offers category navigation into the archives
+[1A[2K[171/188] [mobile-chrome] › e2e/home.spec.ts:378:7 › homepage › shows a cart control in the header before anything is added
+[1A[2K[172/188] [mobile-chrome] › e2e/home.spec.ts:383:7 › homepage › search results page finds products
+[1A[2K[173/188] [mobile-chrome] › e2e/home.spec.ts:389:7 › homepage › short query shows the minimum-characters hint
+[1A[2K[174/188] [mobile-chrome] › e2e/home.spec.ts:394:7 › homepage › a search term with SQL wildcards is treated as text, not a pattern
+[1A[2K[175/188] [mobile-chrome] › e2e/home.spec.ts:419:7 › homepage › every category link on the home page resolves
+[1A[2K[176/188] [mobile-chrome] › e2e/home.spec.ts:454:7 › homepage › the homepage costs one render-blocking stylesheet
+[1A[2K  56) [mobile-chrome] › e2e/home.spec.ts:454:7 › homepage › the homepage costs one render-blocking stylesheet 
+
+    Error: homepage stylesheets: /_next/static/chunks/2gikplvv0xfog.css, /_next/static/chunks/23vg9fyu4pxw0.css, /_next/static/chunks/2de9-2o841xw1.css
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoHaveLength[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected length: [32m1[39m
+    Received length: [31m3[39m
+    Received array:  [31m["/_next/static/chunks/2gikplvv0xfog.css", "/_next/static/chunks/23vg9fyu4pxw0.css", "/_next/static/chunks/2de9-2o841xw1.css"][39m
+
+      463 |     )
+      464 |
+    > 465 |     expect(sheets, `homepage stylesheets: ${sheets.join(', ')}`).toHaveLength(1)
+          |                                                                  ^
+      466 |   })
+      467 |
+      468 |   /**
+        at /Users/ofir/kenyonexpress-autopilot/e2e/home.spec.ts:465:66
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/home-homepage-the-homepage-9b3f9--render-blocking-stylesheet-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/home-homepage-the-homepage-9b3f9--render-blocking-stylesheet-mobile-chrome/error-context.md
+
+
+[1A[2K[177/188] [mobile-chrome] › e2e/home.spec.ts:481:7 › homepage › reaching the footer costs no 404s
+[1A[2K  57) [mobile-chrome] › e2e/home.spec.ts:481:7 › homepage › reaching the footer costs no 404s ──────
+
+    Error: 410 /wishlist
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "410 /wishlist",[39m
+    [31m+ ][39m
+
+      497 |     await page.waitForTimeout(3000)
+      498 |
+    > 499 |     expect(failed, failed.join(', ')).toEqual([])
+          |                                       ^
+      500 |   })
+      501 |
+      502 |   /**
+        at /Users/ofir/kenyonexpress-autopilot/e2e/home.spec.ts:499:39
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/home-homepage-reaching-the-footer-costs-no-404s-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/home-homepage-reaching-the-footer-costs-no-404s-mobile-chrome/error-context.md
+
+
+[1A[2K[178/188] [mobile-chrome] › e2e/home.spec.ts:518:7 › homepage › the hero holds its first slide until the visitor interacts, then rotates
+[1A[2K[179/188] [mobile-chrome] › e2e/home.spec.ts:579:7 › homepage › the hero slot renders the branded placeholder, named, with no vendor raster
+[1A[2K[180/188] [mobile-chrome] › e2e/touch-targets.spec.ts:146:5 › the emulated phone reports a coarse pointer
+[1A[2K[181/188] [mobile-chrome] › e2e/touch-targets.spec.ts:155:7 › every control on / is thumb-sized
+[1A[2K  58) [mobile-chrome] › e2e/touch-targets.spec.ts:155:7 › every control on / is thumb-sized ────────
+
+    Error: sub-floor targets on /
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "a[התחברות] hit 72x41 (primary, 44)",[39m
+    [31m+ ][39m
+
+      157 |     await page.goto(route)
+      158 |     await page.waitForLoadState('networkidle')
+    > 159 |     expect(offenders(await measure(page)), `sub-floor targets on ${route}`).toEqual([])
+          |                                                                             ^
+      160 |   })
+      161 | }
+      162 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/touch-targets.spec.ts:159:77
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/touch-targets-every-control-on-is-thumb-sized-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/touch-targets-every-control-on-is-thumb-sized-mobile-chrome/error-context.md
+
+
+[1A[2K[182/188] [mobile-chrome] › e2e/touch-targets.spec.ts:155:7 › every control on /products is thumb-sized
+[1A[2K  59) [mobile-chrome] › e2e/touch-targets.spec.ts:155:7 › every control on /products is thumb-sized 
+
+    Error: sub-floor targets on /products
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  -  1[39m
+    [31m+ Received  + 27[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "a[התחברות] hit 72x41 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+ ][39m
+
+      157 |     await page.goto(route)
+      158 |     await page.waitForLoadState('networkidle')
+    > 159 |     expect(offenders(await measure(page)), `sub-floor targets on ${route}`).toEqual([])
+          |                                                                             ^
+      160 |   })
+      161 | }
+      162 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/touch-targets.spec.ts:159:77
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/touch-targets-every-control-on-products-is-thumb-sized-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/touch-targets-every-control-on-products-is-thumb-sized-mobile-chrome/error-context.md
+
+
+[1A[2K[183/188] [mobile-chrome] › e2e/touch-targets.spec.ts:155:7 › every control on /category/hot-deals is thumb-sized
+[1A[2K  60) [mobile-chrome] › e2e/touch-targets.spec.ts:155:7 › every control on /category/hot-deals is thumb-sized 
+
+    Error: sub-floor targets on /category/hot-deals
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 5[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "a[התחברות] hit 72x41 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 44x40 (primary, 44)",[39m
+    [31m+ ][39m
+
+      157 |     await page.goto(route)
+      158 |     await page.waitForLoadState('networkidle')
+    > 159 |     expect(offenders(await measure(page)), `sub-floor targets on ${route}`).toEqual([])
+          |                                                                             ^
+      160 |   })
+      161 | }
+      162 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/touch-targets.spec.ts:159:77
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/touch-targets-every-contro-7fccd-ry-hot-deals-is-thumb-sized-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/touch-targets-every-contro-7fccd-ry-hot-deals-is-thumb-sized-mobile-chrome/error-context.md
+
+
+[1A[2K[184/188] [mobile-chrome] › e2e/touch-targets.spec.ts:155:7 › every control on /cart is thumb-sized
+[1A[2K  61) [mobile-chrome] › e2e/touch-targets.spec.ts:155:7 › every control on /cart is thumb-sized ────
+
+    Error: sub-floor targets on /cart
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "a[התחברות] hit 72x41 (primary, 44)",[39m
+    [31m+ ][39m
+
+      157 |     await page.goto(route)
+      158 |     await page.waitForLoadState('networkidle')
+    > 159 |     expect(offenders(await measure(page)), `sub-floor targets on ${route}`).toEqual([])
+          |                                                                             ^
+      160 |   })
+      161 | }
+      162 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/touch-targets.spec.ts:159:77
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/touch-targets-every-control-on-cart-is-thumb-sized-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/touch-targets-every-control-on-cart-is-thumb-sized-mobile-chrome/error-context.md
+
+
+[1A[2K[185/188] [mobile-chrome] › e2e/touch-targets.spec.ts:155:7 › every control on /login is thumb-sized
+[1A[2K  62) [mobile-chrome] › e2e/touch-targets.spec.ts:155:7 › every control on /login is thumb-sized ───
+
+    Error: sub-floor targets on /login
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 4[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "a[שכחתם סיסמה?] hit 82x18 (24)",[39m
+    [31m+   "button[כניסה ללא סיסמה (קישור מאובטח ] hit 97x21 (24)",[39m
+    [31m+ ][39m
+
+      157 |     await page.goto(route)
+      158 |     await page.waitForLoadState('networkidle')
+    > 159 |     expect(offenders(await measure(page)), `sub-floor targets on ${route}`).toEqual([])
+          |                                                                             ^
+      160 |   })
+      161 | }
+      162 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/touch-targets.spec.ts:159:77
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/touch-targets-every-control-on-login-is-thumb-sized-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/touch-targets-every-control-on-login-is-thumb-sized-mobile-chrome/error-context.md
+
+
+[1A[2K[186/188] [mobile-chrome] › e2e/touch-targets.spec.ts:155:7 › every control on /legal/terms is thumb-sized
+[1A[2K[187/188] [mobile-chrome] › e2e/touch-targets.spec.ts:163:5 › every control on a product page is thumb-sized, buy row included
+[1A[2K  63) [mobile-chrome] › e2e/touch-targets.spec.ts:155:7 › every control on /legal/terms is thumb-sized 
+
+    Error: sub-floor targets on /legal/terms
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "a[התחברות] hit 72x41 (primary, 44)",[39m
+    [31m+ ][39m
+
+      157 |     await page.goto(route)
+      158 |     await page.waitForLoadState('networkidle')
+    > 159 |     expect(offenders(await measure(page)), `sub-floor targets on ${route}`).toEqual([])
+          |                                                                             ^
+      160 |   })
+      161 | }
+      162 |
+        at /Users/ofir/kenyonexpress-autopilot/e2e/touch-targets.spec.ts:159:77
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/touch-targets-every-control-on-legal-terms-is-thumb-sized-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/touch-targets-every-control-on-legal-terms-is-thumb-sized-mobile-chrome/error-context.md
+
+
+[1A[2K[188/188] [mobile-chrome] › e2e/touch-targets.spec.ts:178:5 › the hero dots grow to 44px vertically and keep the pitch sideways
+[1A[2K  64) [mobile-chrome] › e2e/touch-targets.spec.ts:163:5 › every control on a product page is thumb-sized, buy row included 
+
+    Error: sub-floor targets on /product/צימר-מאסטר
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  -  1[39m
+    [31m+ Received  + 14[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "a[התחברות] hit 72x41 (primary, 44)",[39m
+    [31m+   "a[בית] hit 22x24 (24)",[39m
+    [31m+   "button[הוסף לרשימת המשאלות] hit 62x36 (primary, 44)",[39m
+    [31m+   "button[הוסף להשוואה] hit 54x36 (primary, 44)",[39m
+    [31m+   "a[צימרים מלונות ונופש] hit 97x20 (24)",[39m
+    [31m+   "a[צימרים מלונות ונופש] hit 97x20 (24)",[39m
+    [31m+   "a[צימרים מלונות ונופש] hit 97x20 (24)",[39m
+    [31m+   "a[צימרים מלונות ונופש] hit 97x20 (24)",[39m
+    [31m+   "a[צימרים מלונות ונופש] hit 97x21 (24)",[39m
+    [31m+   "a[טלפונים ואלקטרוניקה] hit 97x21 (24)",[39m
+    [31m+   "a[טלפונים ואלקטרוניקה] hit 97x20 (24)",[39m
+    [31m+   "a[צימרים מלונות ונופש] hit 97x20 (24)",[39m
+    [31m+ ][39m
+
+      167 |   await page.waitForLoadState('networkidle')
+      168 |   const measured = await measure(page)
+    > 169 |   expect(offenders(measured), `sub-floor targets on ${href}`).toEqual([])
+          |                                                               ^
+      170 |   // The buy row must actually have been measured, or the assertion above is
+      171 |   // vacuous on an unsellable catalogue.
+      172 |   expect(
+        at /Users/ofir/kenyonexpress-autopilot/e2e/touch-targets.spec.ts:169:63
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/touch-targets-every-contro-5e973-humb-sized-buy-row-included-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/touch-targets-every-contro-5e973-humb-sized-buy-row-included-mobile-chrome/error-context.md
+
+
+[1A[2K  64 failed
+    [chromium] › e2e/a11y.spec.ts:142:7 › contact has no WCAG A/AA violations ──────────────────────
+    [chromium] › e2e/a11y.spec.ts:142:7 › legal terms has no WCAG A/AA violations ──────────────────
+    [chromium] › e2e/a11y.spec.ts:142:7 › legal privacy has no WCAG A/AA violations ────────────────
+    [chromium] › e2e/a11y.spec.ts:142:7 › legal returns has no WCAG A/AA violations ────────────────
+    [chromium] › e2e/a11y.spec.ts:142:7 › legal accessibility has no WCAG A/AA violations ──────────
+    [chromium] › e2e/a11y.spec.ts:142:7 › terms and conditions has no WCAG A/AA violations ─────────
+    [chromium] › e2e/a11y.spec.ts:142:7 › privacy policy has no WCAG A/AA violations ───────────────
+    [chromium] › e2e/a11y.spec.ts:303:7 › product pages have no WCAG A/AA violations › the first product in the catalogue 
+    [chromium] › e2e/a11y.spec.ts:315:7 › product pages have no WCAG A/AA violations › a coupon product, which renders the struck regular price 
+    [chromium] › e2e/a11y.spec.ts:358:7 › the checkout with a seeded cart › cart and checkout have no WCAG A/AA violations 
+    [chromium] › e2e/a11y.spec.ts:408:7 › the checkout wizard, step by step › every step of the checkout has no WCAG A/AA violations 
+    [chromium] › e2e/a11y.spec.ts:514:5 › the cart panel that opens on add-to-cart has no WCAG A/AA violations 
+    [chromium] › e2e/a11y.spec.ts:722:7 › every Tab stop on / is visible, on screen and not under fixed chrome 
+    [chromium] › e2e/a11y.spec.ts:722:7 › every Tab stop on /products is visible, on screen and not under fixed chrome 
+    [chromium] › e2e/a11y.spec.ts:722:7 › every Tab stop on /cart is visible, on screen and not under fixed chrome 
+    [chromium] › e2e/a11y.spec.ts:722:7 › every Tab stop on /coupons is visible, on screen and not under fixed chrome 
+    [chromium] › e2e/a11y.spec.ts:794:7 › the first Tab on / is a skip link that lands focus in <main> 
+    [chromium] › e2e/a11y.spec.ts:794:7 › the first Tab on /products is a skip link that lands focus in <main> 
+    [chromium] › e2e/a11y.spec.ts:794:7 › the first Tab on /coupons is a skip link that lands focus in <main> 
+    [chromium] › e2e/a11y.spec.ts:794:7 › the first Tab on /legal/privacy is a skip link that lands focus in <main> 
+    [chromium] › e2e/home-rtl.spec.ts:127:7 › home page RTL › every ltr node on the page is on the allow-list 
+    [chromium] › e2e/home.spec.ts:38:7 › homepage › renders the header search combobox ─────────────
+    [chromium] › e2e/home.spec.ts:189:7 › homepage › the image optimizer re-encodes per width instead of passing the source through 
+    [chromium] › e2e/home.spec.ts:454:7 › homepage › the homepage costs one render-blocking stylesheet 
+    [chromium] › e2e/home.spec.ts:481:7 › homepage › reaching the footer costs no 404s ─────────────
+    [chromium] › e2e/touch-targets.spec.ts:155:7 › every control on / is thumb-sized ───────────────
+    [chromium] › e2e/touch-targets.spec.ts:155:7 › every control on /products is thumb-sized ───────
+    [chromium] › e2e/touch-targets.spec.ts:155:7 › every control on /category/hot-deals is thumb-sized 
+    [chromium] › e2e/touch-targets.spec.ts:155:7 › every control on /cart is thumb-sized ───────────
+    [chromium] › e2e/touch-targets.spec.ts:155:7 › every control on /login is thumb-sized ──────────
+    [chromium] › e2e/touch-targets.spec.ts:155:7 › every control on /legal/terms is thumb-sized ────
+    [chromium] › e2e/touch-targets.spec.ts:163:5 › every control on a product page is thumb-sized, buy row included 
+    [mobile-chrome] › e2e/a11y.spec.ts:142:7 › contact has no WCAG A/AA violations ─────────────────
+    [mobile-chrome] › e2e/a11y.spec.ts:142:7 › legal terms has no WCAG A/AA violations ─────────────
+    [mobile-chrome] › e2e/a11y.spec.ts:142:7 › legal privacy has no WCAG A/AA violations ───────────
+    [mobile-chrome] › e2e/a11y.spec.ts:142:7 › legal returns has no WCAG A/AA violations ───────────
+    [mobile-chrome] › e2e/a11y.spec.ts:142:7 › legal accessibility has no WCAG A/AA violations ─────
+    [mobile-chrome] › e2e/a11y.spec.ts:142:7 › terms and conditions has no WCAG A/AA violations ────
+    [mobile-chrome] › e2e/a11y.spec.ts:142:7 › privacy policy has no WCAG A/AA violations ──────────
+    [mobile-chrome] › e2e/a11y.spec.ts:303:7 › product pages have no WCAG A/AA violations › the first product in the catalogue 
+    [mobile-chrome] › e2e/a11y.spec.ts:315:7 › product pages have no WCAG A/AA violations › a coupon product, which renders the struck regular price 
+    [mobile-chrome] › e2e/a11y.spec.ts:358:7 › the checkout with a seeded cart › cart and checkout have no WCAG A/AA violations 
+    [mobile-chrome] › e2e/a11y.spec.ts:408:7 › the checkout wizard, step by step › every step of the checkout has no WCAG A/AA violations 
+    [mobile-chrome] › e2e/a11y.spec.ts:514:5 › the cart panel that opens on add-to-cart has no WCAG A/AA violations 
+    [mobile-chrome] › e2e/a11y.spec.ts:722:7 › every Tab stop on / is visible, on screen and not under fixed chrome 
+    [mobile-chrome] › e2e/a11y.spec.ts:722:7 › every Tab stop on /products is visible, on screen and not under fixed chrome 
+    [mobile-chrome] › e2e/a11y.spec.ts:722:7 › every Tab stop on /cart is visible, on screen and not under fixed chrome 
+    [mobile-chrome] › e2e/a11y.spec.ts:722:7 › every Tab stop on /coupons is visible, on screen and not under fixed chrome 
+    [mobile-chrome] › e2e/a11y.spec.ts:794:7 › the first Tab on / is a skip link that lands focus in <main> 
+    [mobile-chrome] › e2e/a11y.spec.ts:794:7 › the first Tab on /products is a skip link that lands focus in <main> 
+    [mobile-chrome] › e2e/a11y.spec.ts:794:7 › the first Tab on /coupons is a skip link that lands focus in <main> 
+    [mobile-chrome] › e2e/a11y.spec.ts:794:7 › the first Tab on /legal/privacy is a skip link that lands focus in <main> 
+    [mobile-chrome] › e2e/home-rtl.spec.ts:127:7 › home page RTL › every ltr node on the page is on the allow-list 
+    [mobile-chrome] › e2e/home.spec.ts:38:7 › homepage › renders the header search combobox ────────
+    [mobile-chrome] › e2e/home.spec.ts:189:7 › homepage › the image optimizer re-encodes per width instead of passing the source through 
+    [mobile-chrome] › e2e/home.spec.ts:454:7 › homepage › the homepage costs one render-blocking stylesheet 
+    [mobile-chrome] › e2e/home.spec.ts:481:7 › homepage › reaching the footer costs no 404s ────────
+    [mobile-chrome] › e2e/touch-targets.spec.ts:155:7 › every control on / is thumb-sized ──────────
+    [mobile-chrome] › e2e/touch-targets.spec.ts:155:7 › every control on /products is thumb-sized ──
+    [mobile-chrome] › e2e/touch-targets.spec.ts:155:7 › every control on /category/hot-deals is thumb-sized 
+    [mobile-chrome] › e2e/touch-targets.spec.ts:155:7 › every control on /cart is thumb-sized ──────
+    [mobile-chrome] › e2e/touch-targets.spec.ts:155:7 › every control on /login is thumb-sized ─────
+    [mobile-chrome] › e2e/touch-targets.spec.ts:155:7 › every control on /legal/terms is thumb-sized 
+    [mobile-chrome] › e2e/touch-targets.spec.ts:163:5 › every control on a product page is thumb-sized, buy row included 
+  2 skipped
+  122 passed (3.2m)

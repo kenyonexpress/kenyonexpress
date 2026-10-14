@@ -18,29 +18,35 @@
  * screen, and it stays off screen while the grid resolves.
  */
 export default function CouponCardSkeleton() {
+  // UX10: the ticket's box, not the old image card's: the stub, then the body
+  // stack at the ticket's own sizes (business 12, two title lines at 14/1.375,
+  // location 12, price row, split line, a 44px footer control). The eight seed
+  // rows carry no photograph, so the placeholder reserves no image band.
   return (
-    <div
-      className="block bg-white rounded-xl border border-gray-100 overflow-hidden"
-      aria-hidden="true"
-    >
-      <div className="relative h-32 bg-gray-100" />
-      <div className="p-3 space-y-1">
-        <p className="text-xs">
-          <span className="block h-3 w-2/5 rounded bg-gray-100" />
-        </p>
-        <p className="text-sm leading-snug">
-          <span className="block h-4 w-full rounded bg-gray-100" />
-        </p>
-        <div className="flex items-center gap-1 text-xs">
-          <span className="block h-3 w-1/3 rounded bg-gray-100" />
+    <div className="coupon-ticket" aria-hidden="true">
+      <div className="coupon-ticket__row">
+        <div className="coupon-ticket__stub" />
+        <div className="coupon-ticket__body">
+          <p className="coupon-ticket__business">
+            <span className="block h-3 w-2/5 rounded bg-gray-100" />
+          </p>
+          <p className="coupon-ticket__title">
+            <span className="block h-4 w-full rounded bg-gray-100" />
+          </p>
+          <p className="coupon-ticket__location">
+            <span className="block h-3 w-1/3 rounded bg-gray-100" />
+          </p>
+          <div className="coupon-ticket__price">
+            <span className="block h-5 w-16 rounded bg-gray-100" />
+            <span className="block h-3 w-10 rounded bg-gray-100" />
+          </div>
+          <p className="coupon-ticket__split">
+            <span className="block h-3 w-3/4 rounded bg-gray-100" />
+          </p>
+          <div className="coupon-ticket__footer">
+            <span className="block h-11 w-28 rounded bg-gray-100" />
+          </div>
         </div>
-        <div className="pt-1 flex items-baseline gap-2">
-          <span className="block h-5 w-16 rounded bg-gray-100" />
-          <span className="block h-3 w-10 rounded bg-gray-100" />
-        </div>
-        <p className="text-micro">
-          <span className="block h-3 w-3/4 rounded bg-gray-100" />
-        </p>
       </div>
     </div>
   )
@@ -50,7 +56,7 @@ export default function CouponCardSkeleton() {
 export function CouponsGridSkeleton({ count = 8 }: { count?: number }) {
   return (
     <div
-      className="grid grid-cols-2 md:grid-cols-3 gap-3"
+      className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
       aria-busy="true"
       aria-label="טוען קופונים"
     >

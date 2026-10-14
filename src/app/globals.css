@@ -421,6 +421,242 @@ body:has([data-home]) .topbar-greeting {
   }
 }
 
+/* UX10: the hot-coupon grid and the coupon ticket (CouponCard.tsx, mounted by
+   home/HotCoupons.tsx and /coupons). The grid is the deals grid's own
+   columns (product-card-deals.css: 1 / 2 / 4 at 0 / 768 / 1200, Bootstrap's xl
+   switch that live runs, UX01) with `grid-auto-rows: 1fr`, so a row of tickets
+   is one height. The ticket is a yellow stub, a dashed perforation and a body;
+   the two notches are pseudo-elements centred on the perforation line and
+   clipped by the card's overflow to the half-circle bite a real ticket has.
+   Tokens: --spacing-coupon-stub, --spacing-coupon-notch (tokens.css). */
+.hot-coupons__grid {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  grid-auto-rows: 1fr;
+  align-items: stretch;
+  gap: 12px;
+}
+@media (min-width: 768px) {
+  .hot-coupons__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (min-width: 1200px) {
+  .hot-coupons__grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+.coupon-ticket {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-elevated);
+  background-color: var(--color-surface);
+  transition: box-shadow 150ms ease;
+}
+.coupon-ticket:hover {
+  box-shadow: 0 4px 14px rgb(0 0 0 / 0.08);
+}
+.coupon-ticket__image {
+  position: relative;
+  display: block;
+  height: 128px;
+  background-color: var(--color-surface-hover);
+}
+.coupon-ticket__row {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.coupon-ticket__stub {
+  position: relative;
+  display: flex;
+  flex: 0 0 var(--spacing-coupon-stub);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 12px 6px;
+  color: var(--color-heading);
+  background-color: var(--color-brand-primary);
+  border-inline-end: 1px dashed color-mix(in srgb, var(--color-heading) 40%, transparent);
+}
+.coupon-ticket__stub::before,
+.coupon-ticket__stub::after {
+  content: "";
+  position: absolute;
+  inset-inline-end: calc(var(--spacing-coupon-notch) / -2);
+  width: var(--spacing-coupon-notch);
+  height: var(--spacing-coupon-notch);
+  border-radius: 50%;
+  background-color: var(--color-surface);
+  box-shadow: inset 0 0 0 1px var(--color-rule);
+  z-index: 1;
+}
+.coupon-ticket__stub::before {
+  top: calc(var(--spacing-coupon-notch) / -2);
+}
+.coupon-ticket__stub::after {
+  bottom: calc(var(--spacing-coupon-notch) / -2);
+}
+.coupon-ticket__pct {
+  font-size: var(--text-section-title);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.coupon-ticket__pct-label {
+  font-size: var(--text-micro);
+  font-weight: 700;
+  line-height: 1;
+}
+.coupon-ticket__body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding: 12px;
+}
+.coupon-ticket__business {
+  margin: 0;
+  font-size: var(--text-tiny);
+  color: var(--color-muted);
+}
+.coupon-ticket__title {
+  margin: 0;
+  min-height: calc(2 * 1.375 * var(--text-pdp-body));
+  font-size: var(--text-pdp-body);
+  font-weight: 600;
+  line-height: 1.375;
+  color: var(--color-heading);
+}
+.coupon-ticket__title-link {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  min-height: 24px;
+  overflow: hidden;
+  color: inherit;
+  text-decoration: none;
+}
+.coupon-ticket__title-link:hover {
+  text-decoration: underline;
+}
+.coupon-ticket__location {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+  font-size: var(--text-tiny);
+  color: var(--color-muted);
+}
+.coupon-ticket__price {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding-top: 4px;
+}
+.coupon-ticket__now {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-price);
+}
+.coupon-ticket__was {
+  font-size: var(--text-tiny);
+  color: var(--color-price-strike);
+  text-decoration: line-through;
+}
+.coupon-ticket__tba {
+  font-size: var(--text-pdp-body);
+  color: var(--color-muted);
+}
+.coupon-ticket__split {
+  margin: 0;
+  font-size: var(--text-micro);
+  color: var(--color-muted);
+}
+.coupon-ticket__footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 8px;
+}
+.coupon-ticket__countdown {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  min-height: 28px;
+  padding: 2px 10px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  background-color: var(--color-surface-hover);
+  font-size: var(--text-tiny);
+  font-weight: 700;
+  color: var(--color-heading);
+}
+.coupon-ticket__countdown[data-urgency="soon"] {
+  background-color: var(--color-brand-accent);
+}
+.coupon-ticket__countdown[data-urgency="today"] {
+  border-color: var(--color-deal-badge);
+  background-color: var(--color-surface);
+  color: var(--color-deal-badge);
+}
+.coupon-ticket__countdown[data-urgency="ended"] {
+  color: var(--color-muted);
+}
+.coupon-ticket__copy,
+.coupon-ticket__more {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 4px 12px;
+  border: 1px dashed color-mix(in srgb, var(--color-heading) 45%, transparent);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface);
+  font-size: var(--text-tiny);
+  font-weight: 700;
+  color: var(--color-heading);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 150ms ease, border-color 150ms ease;
+}
+.coupon-ticket__copy:hover,
+.coupon-ticket__more:hover {
+  background-color: var(--color-brand-accent);
+}
+.coupon-ticket__copy[data-state="copied"] {
+  border-style: solid;
+  border-color: var(--color-sale-badge);
+  color: var(--color-sale-badge);
+}
+.coupon-ticket__copy[data-state="failed"] {
+  border-style: solid;
+  border-color: var(--color-deal-badge);
+}
+.coupon-ticket__code {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: var(--text-pdp-body);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+.coupon-ticket__copy-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
 /* THE SEARCH PILL HAD NO VISIBLE FOCUS STATE. The pill is `overflow:hidden`
    (it clips the yellow button to the 22px radius), so the site-wide
    `:focus-visible` ring the input earned was drawn and then clipped: measured

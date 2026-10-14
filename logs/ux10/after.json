@@ -1,0 +1,3038 @@
+{
+  "380": {
+    "present": true,
+    "section": {
+      "x": 0,
+      "y": -641.02,
+      "w": 380,
+      "h": 1944
+    },
+    "heading": {
+      "rect": {
+        "x": 225.64,
+        "y": -635.52,
+        "w": 129.36,
+        "h": 33
+      },
+      "style": {
+        "size": "22px",
+        "weight": "700",
+        "color": "rgb(51, 62, 72)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "radius": "0px",
+        "border": "0px solid rgb(51, 62, 72)"
+      },
+      "text": "קופונים חמים"
+    },
+    "more": {
+      "rect": {
+        "x": 25,
+        "y": -641.02,
+        "w": 97.55,
+        "h": 44
+      },
+      "text": "לכל הקופונים"
+    },
+    "grid": {
+      "rect": {
+        "x": 25,
+        "y": -581.02,
+        "w": 330,
+        "h": 1844
+      },
+      "display": "grid",
+      "columns": "330px",
+      "gap": "12px"
+    },
+    "count": 8,
+    "columnsPerRow": [1, 1, 1, 1, 1, 1, 1, 1],
+    "cardHeights": [220],
+    "cardWidths": [330],
+    "cards": [
+      {
+        "i": 0,
+        "tag": "article",
+        "rect": {
+          "x": 25,
+          "y": -581.02,
+          "w": 330,
+          "h": 220
+        },
+        "style": {
+          "size": "16px",
+          "weight": "400",
+          "color": "rgb(26, 26, 26)",
+          "bg": "rgb(255, 255, 255)",
+          "radius": "12px",
+          "border": "1px solid rgb(237, 237, 237)"
+        },
+        "imageBand": null,
+        "badge": {
+          "rect": {
+            "x": 298.3,
+            "y": -488.52,
+            "w": 40.42,
+            "h": 22
+          },
+          "style": {
+            "size": "22px",
+            "weight": "800",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          },
+          "text": "90%"
+        },
+        "stub": {
+          "rect": {
+            "x": 282,
+            "y": -580.02,
+            "w": 72,
+            "h": 218
+          },
+          "style": {
+            "size": "16px",
+            "weight": "400",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgb(254, 215, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          }
+        },
+        "business": {
+          "rect": {
+            "x": 38,
+            "y": -568.02,
+            "w": 232,
+            "h": 18
+          },
+          "text": "ספא נירוונה"
+        },
+        "title": {
+          "rect": {
+            "x": 38,
+            "y": -546.02,
+            "w": 232,
+            "h": 38.5
+          },
+          "style": {
+            "size": "14px",
+            "weight": "600",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          }
+        },
+        "price": {
+          "rect": {
+            "x": 202.17,
+            "y": -477.52,
+            "w": 67.83,
+            "h": 27
+          },
+          "style": {
+            "size": "18px",
+            "weight": "700",
+            "color": "rgb(220, 53, 69)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(220, 53, 69)"
+          },
+          "text": "⁦32.00 ₪⁩"
+        },
+        "code": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "copy": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "countdown": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "cta": {
+          "rect": {
+            "x": 38,
+            "y": -546.02,
+            "w": 232,
+            "h": 24
+          },
+          "text": "עיסוי שוודי מפנק 60 דקות"
+        },
+        "links": 2,
+        "buttons": 0
+      },
+      {
+        "i": 1,
+        "tag": "article",
+        "rect": {
+          "x": 25,
+          "y": -349.02,
+          "w": 330,
+          "h": 220
+        },
+        "style": {
+          "size": "16px",
+          "weight": "400",
+          "color": "rgb(26, 26, 26)",
+          "bg": "rgb(255, 255, 255)",
+          "radius": "12px",
+          "border": "1px solid rgb(237, 237, 237)"
+        },
+        "imageBand": null,
+        "badge": {
+          "rect": {
+            "x": 298.3,
+            "y": -256.52,
+            "w": 40.42,
+            "h": 22
+          },
+          "style": {
+            "size": "22px",
+            "weight": "800",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          },
+          "text": "90%"
+        },
+        "stub": {
+          "rect": {
+            "x": 282,
+            "y": -348.02,
+            "w": 72,
+            "h": 218
+          },
+          "style": {
+            "size": "16px",
+            "weight": "400",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgb(254, 215, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          }
+        },
+        "business": {
+          "rect": {
+            "x": 38,
+            "y": -336.02,
+            "w": 232,
+            "h": 18
+          },
+          "text": "טרטוריה בלה"
+        },
+        "title": {
+          "rect": {
+            "x": 38,
+            "y": -314.02,
+            "w": 232,
+            "h": 38.5
+          },
+          "style": {
+            "size": "14px",
+            "weight": "600",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          }
+        },
+        "price": {
+          "rect": {
+            "x": 202.17,
+            "y": -245.52,
+            "w": 67.83,
+            "h": 27
+          },
+          "style": {
+            "size": "18px",
+            "weight": "700",
+            "color": "rgb(220, 53, 69)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(220, 53, 69)"
+          },
+          "text": "⁦24.00 ₪⁩"
+        },
+        "code": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "copy": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "countdown": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "cta": {
+          "rect": {
+            "x": 38,
+            "y": -314.02,
+            "w": 232,
+            "h": 24
+          },
+          "text": "ארוחה זוגית במסעדה איטלקית"
+        },
+        "links": 2,
+        "buttons": 0
+      },
+      {
+        "i": 2,
+        "tag": "article",
+        "rect": {
+          "x": 25,
+          "y": -117.02,
+          "w": 330,
+          "h": 220
+        },
+        "style": {
+          "size": "16px",
+          "weight": "400",
+          "color": "rgb(26, 26, 26)",
+          "bg": "rgb(255, 255, 255)",
+          "radius": "12px",
+          "border": "1px solid rgb(237, 237, 237)"
+        },
+        "imageBand": null,
+        "badge": {
+          "rect": {
+            "x": 298.3,
+            "y": -24.52,
+            "w": 40.42,
+            "h": 22
+          },
+          "style": {
+            "size": "22px",
+            "weight": "800",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          },
+          "text": "90%"
+        },
+        "stub": {
+          "rect": {
+            "x": 282,
+            "y": -116.02,
+            "w": 72,
+            "h": 218
+          },
+          "style": {
+            "size": "16px",
+            "weight": "400",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgb(254, 215, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          }
+        },
+        "business": {
+          "rect": {
+            "x": 38,
+            "y": -104.02,
+            "w": 232,
+            "h": 18
+          },
+          "text": "ימית 2000"
+        },
+        "title": {
+          "rect": {
+            "x": 38,
+            "y": -82.02,
+            "w": 232,
+            "h": 38.5
+          },
+          "style": {
+            "size": "14px",
+            "weight": "600",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          }
+        },
+        "price": {
+          "rect": {
+            "x": 202.17,
+            "y": -13.52,
+            "w": 67.83,
+            "h": 27
+          },
+          "style": {
+            "size": "18px",
+            "weight": "700",
+            "color": "rgb(220, 53, 69)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(220, 53, 69)"
+          },
+          "text": "⁦18.00 ₪⁩"
+        },
+        "code": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "copy": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "countdown": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "cta": {
+          "rect": {
+            "x": 38,
+            "y": -82.02,
+            "w": 232,
+            "h": 24
+          },
+          "text": "כניסה זוגית לפארק מים"
+        },
+        "links": 2,
+        "buttons": 0
+      },
+      {
+        "i": 3,
+        "tag": "article",
+        "rect": {
+          "x": 25,
+          "y": 114.98,
+          "w": 330,
+          "h": 220
+        },
+        "style": {
+          "size": "16px",
+          "weight": "400",
+          "color": "rgb(26, 26, 26)",
+          "bg": "rgb(255, 255, 255)",
+          "radius": "12px",
+          "border": "1px solid rgb(237, 237, 237)"
+        },
+        "imageBand": null,
+        "badge": {
+          "rect": {
+            "x": 298.3,
+            "y": 207.48,
+            "w": 40.42,
+            "h": 22
+          },
+          "style": {
+            "size": "22px",
+            "weight": "800",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          },
+          "text": "90%"
+        },
+        "stub": {
+          "rect": {
+            "x": 282,
+            "y": 115.98,
+            "w": 72,
+            "h": 218
+          },
+          "style": {
+            "size": "16px",
+            "weight": "400",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgb(254, 215, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          }
+        },
+        "business": {
+          "rect": {
+            "x": 38,
+            "y": 127.98,
+            "w": 232,
+            "h": 18
+          },
+          "text": "קליניק ביוטי"
+        },
+        "title": {
+          "rect": {
+            "x": 38,
+            "y": 149.98,
+            "w": 232,
+            "h": 38.5
+          },
+          "style": {
+            "size": "14px",
+            "weight": "600",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          }
+        },
+        "price": {
+          "rect": {
+            "x": 202.17,
+            "y": 218.48,
+            "w": 67.83,
+            "h": 27
+          },
+          "style": {
+            "size": "18px",
+            "weight": "700",
+            "color": "rgb(220, 53, 69)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(220, 53, 69)"
+          },
+          "text": "⁦29.00 ₪⁩"
+        },
+        "code": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "copy": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "countdown": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "cta": {
+          "rect": {
+            "x": 38,
+            "y": 149.98,
+            "w": 232,
+            "h": 24
+          },
+          "text": "טיפול פנים יוקרתי"
+        },
+        "links": 2,
+        "buttons": 0
+      },
+      {
+        "i": 4,
+        "tag": "article",
+        "rect": {
+          "x": 25,
+          "y": 346.98,
+          "w": 330,
+          "h": 220
+        },
+        "style": {
+          "size": "16px",
+          "weight": "400",
+          "color": "rgb(26, 26, 26)",
+          "bg": "rgb(255, 255, 255)",
+          "radius": "12px",
+          "border": "1px solid rgb(237, 237, 237)"
+        },
+        "imageBand": null,
+        "badge": {
+          "rect": {
+            "x": 298.3,
+            "y": 439.48,
+            "w": 40.42,
+            "h": 22
+          },
+          "style": {
+            "size": "22px",
+            "weight": "800",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          },
+          "text": "90%"
+        },
+        "stub": {
+          "rect": {
+            "x": 282,
+            "y": 347.98,
+            "w": 72,
+            "h": 218
+          },
+          "style": {
+            "size": "16px",
+            "weight": "400",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgb(254, 215, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          }
+        },
+        "business": {
+          "rect": {
+            "x": 38,
+            "y": 359.98,
+            "w": 232,
+            "h": 18
+          },
+          "text": "צימרים בגליל"
+        },
+        "title": {
+          "rect": {
+            "x": 38,
+            "y": 381.98,
+            "w": 232,
+            "h": 38.5
+          },
+          "style": {
+            "size": "14px",
+            "weight": "600",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          }
+        },
+        "price": {
+          "rect": {
+            "x": 202.17,
+            "y": 450.48,
+            "w": 67.83,
+            "h": 27
+          },
+          "style": {
+            "size": "18px",
+            "weight": "700",
+            "color": "rgb(220, 53, 69)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(220, 53, 69)"
+          },
+          "text": "⁦85.00 ₪⁩"
+        },
+        "code": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "copy": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "countdown": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "cta": {
+          "rect": {
+            "x": 38,
+            "y": 381.98,
+            "w": 232,
+            "h": 24
+          },
+          "text": "לילה רומנטי בצימר בצפון"
+        },
+        "links": 2,
+        "buttons": 0
+      },
+      {
+        "i": 5,
+        "tag": "article",
+        "rect": {
+          "x": 25,
+          "y": 578.98,
+          "w": 330,
+          "h": 220
+        },
+        "style": {
+          "size": "16px",
+          "weight": "400",
+          "color": "rgb(26, 26, 26)",
+          "bg": "rgb(255, 255, 255)",
+          "radius": "12px",
+          "border": "1px solid rgb(237, 237, 237)"
+        },
+        "imageBand": null,
+        "badge": {
+          "rect": {
+            "x": 298.3,
+            "y": 671.48,
+            "w": 40.42,
+            "h": 22
+          },
+          "style": {
+            "size": "22px",
+            "weight": "800",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          },
+          "text": "90%"
+        },
+        "stub": {
+          "rect": {
+            "x": 282,
+            "y": 579.98,
+            "w": 72,
+            "h": 218
+          },
+          "style": {
+            "size": "16px",
+            "weight": "400",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgb(254, 215, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          }
+        },
+        "business": {
+          "rect": {
+            "x": 38,
+            "y": 591.98,
+            "w": 232,
+            "h": 18
+          },
+          "text": "שף בבית"
+        },
+        "title": {
+          "rect": {
+            "x": 38,
+            "y": 613.98,
+            "w": 232,
+            "h": 38.5
+          },
+          "style": {
+            "size": "14px",
+            "weight": "600",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          }
+        },
+        "price": {
+          "rect": {
+            "x": 202.17,
+            "y": 682.48,
+            "w": 67.83,
+            "h": 27
+          },
+          "style": {
+            "size": "18px",
+            "weight": "700",
+            "color": "rgb(220, 53, 69)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(220, 53, 69)"
+          },
+          "text": "⁦36.00 ₪⁩"
+        },
+        "code": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "copy": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "countdown": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "cta": {
+          "rect": {
+            "x": 38,
+            "y": 613.98,
+            "w": 232,
+            "h": 24
+          },
+          "text": "קורס סדנת בישול איטלקי"
+        },
+        "links": 2,
+        "buttons": 0
+      },
+      {
+        "i": 6,
+        "tag": "article",
+        "rect": {
+          "x": 25,
+          "y": 810.98,
+          "w": 330,
+          "h": 220
+        },
+        "style": {
+          "size": "16px",
+          "weight": "400",
+          "color": "rgb(26, 26, 26)",
+          "bg": "rgb(255, 255, 255)",
+          "radius": "12px",
+          "border": "1px solid rgb(237, 237, 237)"
+        },
+        "imageBand": null,
+        "badge": {
+          "rect": {
+            "x": 298.3,
+            "y": 903.48,
+            "w": 40.42,
+            "h": 22
+          },
+          "style": {
+            "size": "22px",
+            "weight": "800",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          },
+          "text": "90%"
+        },
+        "stub": {
+          "rect": {
+            "x": 282,
+            "y": 811.98,
+            "w": 72,
+            "h": 218
+          },
+          "style": {
+            "size": "16px",
+            "weight": "400",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgb(254, 215, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          }
+        },
+        "business": {
+          "rect": {
+            "x": 38,
+            "y": 823.98,
+            "w": 232,
+            "h": 18
+          },
+          "text": "היכל התרבות"
+        },
+        "title": {
+          "rect": {
+            "x": 38,
+            "y": 845.98,
+            "w": 232,
+            "h": 38.5
+          },
+          "style": {
+            "size": "14px",
+            "weight": "600",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          }
+        },
+        "price": {
+          "rect": {
+            "x": 202.17,
+            "y": 914.48,
+            "w": 67.83,
+            "h": 27
+          },
+          "style": {
+            "size": "18px",
+            "weight": "700",
+            "color": "rgb(220, 53, 69)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(220, 53, 69)"
+          },
+          "text": "⁦28.00 ₪⁩"
+        },
+        "code": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "copy": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "countdown": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "cta": {
+          "rect": {
+            "x": 38,
+            "y": 845.98,
+            "w": 232,
+            "h": 24
+          },
+          "text": "כרטיס זוגי להופעה"
+        },
+        "links": 2,
+        "buttons": 0
+      },
+      {
+        "i": 7,
+        "tag": "article",
+        "rect": {
+          "x": 25,
+          "y": 1042.98,
+          "w": 330,
+          "h": 220
+        },
+        "style": {
+          "size": "16px",
+          "weight": "400",
+          "color": "rgb(26, 26, 26)",
+          "bg": "rgb(255, 255, 255)",
+          "radius": "12px",
+          "border": "1px solid rgb(237, 237, 237)"
+        },
+        "imageBand": null,
+        "badge": {
+          "rect": {
+            "x": 298.3,
+            "y": 1135.48,
+            "w": 40.42,
+            "h": 22
+          },
+          "style": {
+            "size": "22px",
+            "weight": "800",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          },
+          "text": "90%"
+        },
+        "stub": {
+          "rect": {
+            "x": 282,
+            "y": 1043.98,
+            "w": 72,
+            "h": 218
+          },
+          "style": {
+            "size": "16px",
+            "weight": "400",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgb(254, 215, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          }
+        },
+        "business": {
+          "rect": {
+            "x": 38,
+            "y": 1055.98,
+            "w": 232,
+            "h": 18
+          },
+          "text": "אתגר אקסטרים"
+        },
+        "title": {
+          "rect": {
+            "x": 38,
+            "y": 1077.98,
+            "w": 232,
+            "h": 38.5
+          },
+          "style": {
+            "size": "14px",
+            "weight": "600",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          }
+        },
+        "price": {
+          "rect": {
+            "x": 202.17,
+            "y": 1146.48,
+            "w": 67.83,
+            "h": 27
+          },
+          "style": {
+            "size": "18px",
+            "weight": "700",
+            "color": "rgb(220, 53, 69)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(220, 53, 69)"
+          },
+          "text": "⁦19.90 ₪⁩"
+        },
+        "code": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "copy": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "countdown": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "cta": {
+          "rect": {
+            "x": 38,
+            "y": 1077.98,
+            "w": 232,
+            "h": 24
+          },
+          "text": "חבילת גלישה וסאפ"
+        },
+        "links": 2,
+        "buttons": 0
+      }
+    ]
+  },
+  "768": {
+    "present": true,
+    "section": {
+      "x": 0,
+      "y": -116.7,
+      "w": 768,
+      "h": 1016
+    },
+    "heading": {
+      "rect": {
+        "x": 589.64,
+        "y": -111.2,
+        "w": 129.36,
+        "h": 33
+      },
+      "style": {
+        "size": "22px",
+        "weight": "700",
+        "color": "rgb(51, 62, 72)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "radius": "0px",
+        "border": "0px solid rgb(51, 62, 72)"
+      },
+      "text": "קופונים חמים"
+    },
+    "more": {
+      "rect": {
+        "x": 49,
+        "y": -116.7,
+        "w": 97.55,
+        "h": 44
+      },
+      "text": "לכל הקופונים"
+    },
+    "grid": {
+      "rect": {
+        "x": 49,
+        "y": -56.7,
+        "w": 670,
+        "h": 916
+      },
+      "display": "grid",
+      "columns": "329px 329px",
+      "gap": "12px"
+    },
+    "count": 8,
+    "columnsPerRow": [2, 2, 2, 2],
+    "cardHeights": [220],
+    "cardWidths": [329],
+    "cards": [
+      {
+        "i": 0,
+        "tag": "article",
+        "rect": {
+          "x": 390,
+          "y": -56.7,
+          "w": 329,
+          "h": 220
+        },
+        "style": {
+          "size": "16px",
+          "weight": "400",
+          "color": "rgb(26, 26, 26)",
+          "bg": "rgb(255, 255, 255)",
+          "radius": "12px",
+          "border": "1px solid rgb(237, 237, 237)"
+        },
+        "imageBand": null,
+        "badge": {
+          "rect": {
+            "x": 662.3,
+            "y": 35.8,
+            "w": 40.42,
+            "h": 22
+          },
+          "style": {
+            "size": "22px",
+            "weight": "800",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          },
+          "text": "90%"
+        },
+        "stub": {
+          "rect": {
+            "x": 646,
+            "y": -55.7,
+            "w": 72,
+            "h": 218
+          },
+          "style": {
+            "size": "16px",
+            "weight": "400",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgb(254, 215, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          }
+        },
+        "business": {
+          "rect": {
+            "x": 403,
+            "y": -43.7,
+            "w": 231,
+            "h": 18
+          },
+          "text": "ספא נירוונה"
+        },
+        "title": {
+          "rect": {
+            "x": 403,
+            "y": -21.7,
+            "w": 231,
+            "h": 38.5
+          },
+          "style": {
+            "size": "14px",
+            "weight": "600",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          }
+        },
+        "price": {
+          "rect": {
+            "x": 566.17,
+            "y": 46.8,
+            "w": 67.83,
+            "h": 27
+          },
+          "style": {
+            "size": "18px",
+            "weight": "700",
+            "color": "rgb(220, 53, 69)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(220, 53, 69)"
+          },
+          "text": "⁦32.00 ₪⁩"
+        },
+        "code": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "copy": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "countdown": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "cta": {
+          "rect": {
+            "x": 403,
+            "y": -21.7,
+            "w": 231,
+            "h": 24
+          },
+          "text": "עיסוי שוודי מפנק 60 דקות"
+        },
+        "links": 2,
+        "buttons": 0
+      },
+      {
+        "i": 1,
+        "tag": "article",
+        "rect": {
+          "x": 49,
+          "y": -56.7,
+          "w": 329,
+          "h": 220
+        },
+        "style": {
+          "size": "16px",
+          "weight": "400",
+          "color": "rgb(26, 26, 26)",
+          "bg": "rgb(255, 255, 255)",
+          "radius": "12px",
+          "border": "1px solid rgb(237, 237, 237)"
+        },
+        "imageBand": null,
+        "badge": {
+          "rect": {
+            "x": 321.3,
+            "y": 35.8,
+            "w": 40.42,
+            "h": 22
+          },
+          "style": {
+            "size": "22px",
+            "weight": "800",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          },
+          "text": "90%"
+        },
+        "stub": {
+          "rect": {
+            "x": 305,
+            "y": -55.7,
+            "w": 72,
+            "h": 218
+          },
+          "style": {
+            "size": "16px",
+            "weight": "400",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgb(254, 215, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          }
+        },
+        "business": {
+          "rect": {
+            "x": 62,
+            "y": -43.7,
+            "w": 231,
+            "h": 18
+          },
+          "text": "טרטוריה בלה"
+        },
+        "title": {
+          "rect": {
+            "x": 62,
+            "y": -21.7,
+            "w": 231,
+            "h": 38.5
+          },
+          "style": {
+            "size": "14px",
+            "weight": "600",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          }
+        },
+        "price": {
+          "rect": {
+            "x": 225.17,
+            "y": 46.8,
+            "w": 67.83,
+            "h": 27
+          },
+          "style": {
+            "size": "18px",
+            "weight": "700",
+            "color": "rgb(220, 53, 69)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(220, 53, 69)"
+          },
+          "text": "⁦24.00 ₪⁩"
+        },
+        "code": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "copy": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "countdown": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "cta": {
+          "rect": {
+            "x": 62,
+            "y": -21.7,
+            "w": 231,
+            "h": 24
+          },
+          "text": "ארוחה זוגית במסעדה איטלקית"
+        },
+        "links": 2,
+        "buttons": 0
+      },
+      {
+        "i": 2,
+        "tag": "article",
+        "rect": {
+          "x": 390,
+          "y": 175.3,
+          "w": 329,
+          "h": 220
+        },
+        "style": {
+          "size": "16px",
+          "weight": "400",
+          "color": "rgb(26, 26, 26)",
+          "bg": "rgb(255, 255, 255)",
+          "radius": "12px",
+          "border": "1px solid rgb(237, 237, 237)"
+        },
+        "imageBand": null,
+        "badge": {
+          "rect": {
+            "x": 662.3,
+            "y": 267.8,
+            "w": 40.42,
+            "h": 22
+          },
+          "style": {
+            "size": "22px",
+            "weight": "800",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          },
+          "text": "90%"
+        },
+        "stub": {
+          "rect": {
+            "x": 646,
+            "y": 176.3,
+            "w": 72,
+            "h": 218
+          },
+          "style": {
+            "size": "16px",
+            "weight": "400",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgb(254, 215, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          }
+        },
+        "business": {
+          "rect": {
+            "x": 403,
+            "y": 188.3,
+            "w": 231,
+            "h": 18
+          },
+          "text": "ימית 2000"
+        },
+        "title": {
+          "rect": {
+            "x": 403,
+            "y": 210.3,
+            "w": 231,
+            "h": 38.5
+          },
+          "style": {
+            "size": "14px",
+            "weight": "600",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          }
+        },
+        "price": {
+          "rect": {
+            "x": 566.17,
+            "y": 278.8,
+            "w": 67.83,
+            "h": 27
+          },
+          "style": {
+            "size": "18px",
+            "weight": "700",
+            "color": "rgb(220, 53, 69)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(220, 53, 69)"
+          },
+          "text": "⁦18.00 ₪⁩"
+        },
+        "code": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "copy": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "countdown": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "cta": {
+          "rect": {
+            "x": 403,
+            "y": 210.3,
+            "w": 231,
+            "h": 24
+          },
+          "text": "כניסה זוגית לפארק מים"
+        },
+        "links": 2,
+        "buttons": 0
+      },
+      {
+        "i": 3,
+        "tag": "article",
+        "rect": {
+          "x": 49,
+          "y": 175.3,
+          "w": 329,
+          "h": 220
+        },
+        "style": {
+          "size": "16px",
+          "weight": "400",
+          "color": "rgb(26, 26, 26)",
+          "bg": "rgb(255, 255, 255)",
+          "radius": "12px",
+          "border": "1px solid rgb(237, 237, 237)"
+        },
+        "imageBand": null,
+        "badge": {
+          "rect": {
+            "x": 321.3,
+            "y": 267.8,
+            "w": 40.42,
+            "h": 22
+          },
+          "style": {
+            "size": "22px",
+            "weight": "800",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          },
+          "text": "90%"
+        },
+        "stub": {
+          "rect": {
+            "x": 305,
+            "y": 176.3,
+            "w": 72,
+            "h": 218
+          },
+          "style": {
+            "size": "16px",
+            "weight": "400",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgb(254, 215, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          }
+        },
+        "business": {
+          "rect": {
+            "x": 62,
+            "y": 188.3,
+            "w": 231,
+            "h": 18
+          },
+          "text": "קליניק ביוטי"
+        },
+        "title": {
+          "rect": {
+            "x": 62,
+            "y": 210.3,
+            "w": 231,
+            "h": 38.5
+          },
+          "style": {
+            "size": "14px",
+            "weight": "600",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          }
+        },
+        "price": {
+          "rect": {
+            "x": 225.17,
+            "y": 278.8,
+            "w": 67.83,
+            "h": 27
+          },
+          "style": {
+            "size": "18px",
+            "weight": "700",
+            "color": "rgb(220, 53, 69)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(220, 53, 69)"
+          },
+          "text": "⁦29.00 ₪⁩"
+        },
+        "code": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "copy": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "countdown": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "cta": {
+          "rect": {
+            "x": 62,
+            "y": 210.3,
+            "w": 231,
+            "h": 24
+          },
+          "text": "טיפול פנים יוקרתי"
+        },
+        "links": 2,
+        "buttons": 0
+      },
+      {
+        "i": 4,
+        "tag": "article",
+        "rect": {
+          "x": 390,
+          "y": 407.3,
+          "w": 329,
+          "h": 220
+        },
+        "style": {
+          "size": "16px",
+          "weight": "400",
+          "color": "rgb(26, 26, 26)",
+          "bg": "rgb(255, 255, 255)",
+          "radius": "12px",
+          "border": "1px solid rgb(237, 237, 237)"
+        },
+        "imageBand": null,
+        "badge": {
+          "rect": {
+            "x": 662.3,
+            "y": 499.8,
+            "w": 40.42,
+            "h": 22
+          },
+          "style": {
+            "size": "22px",
+            "weight": "800",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          },
+          "text": "90%"
+        },
+        "stub": {
+          "rect": {
+            "x": 646,
+            "y": 408.3,
+            "w": 72,
+            "h": 218
+          },
+          "style": {
+            "size": "16px",
+            "weight": "400",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgb(254, 215, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          }
+        },
+        "business": {
+          "rect": {
+            "x": 403,
+            "y": 420.3,
+            "w": 231,
+            "h": 18
+          },
+          "text": "צימרים בגליל"
+        },
+        "title": {
+          "rect": {
+            "x": 403,
+            "y": 442.3,
+            "w": 231,
+            "h": 38.5
+          },
+          "style": {
+            "size": "14px",
+            "weight": "600",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          }
+        },
+        "price": {
+          "rect": {
+            "x": 566.17,
+            "y": 510.8,
+            "w": 67.83,
+            "h": 27
+          },
+          "style": {
+            "size": "18px",
+            "weight": "700",
+            "color": "rgb(220, 53, 69)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(220, 53, 69)"
+          },
+          "text": "⁦85.00 ₪⁩"
+        },
+        "code": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "copy": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "countdown": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "cta": {
+          "rect": {
+            "x": 403,
+            "y": 442.3,
+            "w": 231,
+            "h": 24
+          },
+          "text": "לילה רומנטי בצימר בצפון"
+        },
+        "links": 2,
+        "buttons": 0
+      },
+      {
+        "i": 5,
+        "tag": "article",
+        "rect": {
+          "x": 49,
+          "y": 407.3,
+          "w": 329,
+          "h": 220
+        },
+        "style": {
+          "size": "16px",
+          "weight": "400",
+          "color": "rgb(26, 26, 26)",
+          "bg": "rgb(255, 255, 255)",
+          "radius": "12px",
+          "border": "1px solid rgb(237, 237, 237)"
+        },
+        "imageBand": null,
+        "badge": {
+          "rect": {
+            "x": 321.3,
+            "y": 499.8,
+            "w": 40.42,
+            "h": 22
+          },
+          "style": {
+            "size": "22px",
+            "weight": "800",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          },
+          "text": "90%"
+        },
+        "stub": {
+          "rect": {
+            "x": 305,
+            "y": 408.3,
+            "w": 72,
+            "h": 218
+          },
+          "style": {
+            "size": "16px",
+            "weight": "400",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgb(254, 215, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          }
+        },
+        "business": {
+          "rect": {
+            "x": 62,
+            "y": 420.3,
+            "w": 231,
+            "h": 18
+          },
+          "text": "שף בבית"
+        },
+        "title": {
+          "rect": {
+            "x": 62,
+            "y": 442.3,
+            "w": 231,
+            "h": 38.5
+          },
+          "style": {
+            "size": "14px",
+            "weight": "600",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          }
+        },
+        "price": {
+          "rect": {
+            "x": 225.17,
+            "y": 510.8,
+            "w": 67.83,
+            "h": 27
+          },
+          "style": {
+            "size": "18px",
+            "weight": "700",
+            "color": "rgb(220, 53, 69)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(220, 53, 69)"
+          },
+          "text": "⁦36.00 ₪⁩"
+        },
+        "code": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "copy": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "countdown": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "cta": {
+          "rect": {
+            "x": 62,
+            "y": 442.3,
+            "w": 231,
+            "h": 24
+          },
+          "text": "קורס סדנת בישול איטלקי"
+        },
+        "links": 2,
+        "buttons": 0
+      },
+      {
+        "i": 6,
+        "tag": "article",
+        "rect": {
+          "x": 390,
+          "y": 639.3,
+          "w": 329,
+          "h": 220
+        },
+        "style": {
+          "size": "16px",
+          "weight": "400",
+          "color": "rgb(26, 26, 26)",
+          "bg": "rgb(255, 255, 255)",
+          "radius": "12px",
+          "border": "1px solid rgb(237, 237, 237)"
+        },
+        "imageBand": null,
+        "badge": {
+          "rect": {
+            "x": 662.3,
+            "y": 731.8,
+            "w": 40.42,
+            "h": 22
+          },
+          "style": {
+            "size": "22px",
+            "weight": "800",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          },
+          "text": "90%"
+        },
+        "stub": {
+          "rect": {
+            "x": 646,
+            "y": 640.3,
+            "w": 72,
+            "h": 218
+          },
+          "style": {
+            "size": "16px",
+            "weight": "400",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgb(254, 215, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          }
+        },
+        "business": {
+          "rect": {
+            "x": 403,
+            "y": 652.3,
+            "w": 231,
+            "h": 18
+          },
+          "text": "היכל התרבות"
+        },
+        "title": {
+          "rect": {
+            "x": 403,
+            "y": 674.3,
+            "w": 231,
+            "h": 38.5
+          },
+          "style": {
+            "size": "14px",
+            "weight": "600",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          }
+        },
+        "price": {
+          "rect": {
+            "x": 566.17,
+            "y": 742.8,
+            "w": 67.83,
+            "h": 27
+          },
+          "style": {
+            "size": "18px",
+            "weight": "700",
+            "color": "rgb(220, 53, 69)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(220, 53, 69)"
+          },
+          "text": "⁦28.00 ₪⁩"
+        },
+        "code": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "copy": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "countdown": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "cta": {
+          "rect": {
+            "x": 403,
+            "y": 674.3,
+            "w": 231,
+            "h": 24
+          },
+          "text": "כרטיס זוגי להופעה"
+        },
+        "links": 2,
+        "buttons": 0
+      },
+      {
+        "i": 7,
+        "tag": "article",
+        "rect": {
+          "x": 49,
+          "y": 639.3,
+          "w": 329,
+          "h": 220
+        },
+        "style": {
+          "size": "16px",
+          "weight": "400",
+          "color": "rgb(26, 26, 26)",
+          "bg": "rgb(255, 255, 255)",
+          "radius": "12px",
+          "border": "1px solid rgb(237, 237, 237)"
+        },
+        "imageBand": null,
+        "badge": {
+          "rect": {
+            "x": 321.3,
+            "y": 731.8,
+            "w": 40.42,
+            "h": 22
+          },
+          "style": {
+            "size": "22px",
+            "weight": "800",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          },
+          "text": "90%"
+        },
+        "stub": {
+          "rect": {
+            "x": 305,
+            "y": 640.3,
+            "w": 72,
+            "h": 218
+          },
+          "style": {
+            "size": "16px",
+            "weight": "400",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgb(254, 215, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          }
+        },
+        "business": {
+          "rect": {
+            "x": 62,
+            "y": 652.3,
+            "w": 231,
+            "h": 18
+          },
+          "text": "אתגר אקסטרים"
+        },
+        "title": {
+          "rect": {
+            "x": 62,
+            "y": 674.3,
+            "w": 231,
+            "h": 38.5
+          },
+          "style": {
+            "size": "14px",
+            "weight": "600",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          }
+        },
+        "price": {
+          "rect": {
+            "x": 225.17,
+            "y": 742.8,
+            "w": 67.83,
+            "h": 27
+          },
+          "style": {
+            "size": "18px",
+            "weight": "700",
+            "color": "rgb(220, 53, 69)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(220, 53, 69)"
+          },
+          "text": "⁦19.90 ₪⁩"
+        },
+        "code": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "copy": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "countdown": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "cta": {
+          "rect": {
+            "x": 62,
+            "y": 674.3,
+            "w": 231,
+            "h": 24
+          },
+          "text": "חבילת גלישה וסאפ"
+        },
+        "links": 2,
+        "buttons": 0
+      }
+    ]
+  },
+  "1440": {
+    "present": true,
+    "section": {
+      "x": 145,
+      "y": 145.3,
+      "w": 1150,
+      "h": 552
+    },
+    "heading": {
+      "rect": {
+        "x": 1165.64,
+        "y": 150.8,
+        "w": 129.36,
+        "h": 33
+      },
+      "style": {
+        "size": "22px",
+        "weight": "700",
+        "color": "rgb(51, 62, 72)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "radius": "0px",
+        "border": "0px solid rgb(51, 62, 72)"
+      },
+      "text": "קופונים חמים"
+    },
+    "more": {
+      "rect": {
+        "x": 145,
+        "y": 145.3,
+        "w": 97.55,
+        "h": 44
+      },
+      "text": "לכל הקופונים"
+    },
+    "grid": {
+      "rect": {
+        "x": 145,
+        "y": 205.3,
+        "w": 1150,
+        "h": 452
+      },
+      "display": "grid",
+      "columns": "278.5px 278.5px 278.5px 278.5px",
+      "gap": "12px"
+    },
+    "count": 8,
+    "columnsPerRow": [4, 4],
+    "cardHeights": [220],
+    "cardWidths": [278.5],
+    "cards": [
+      {
+        "i": 0,
+        "tag": "article",
+        "rect": {
+          "x": 1016.5,
+          "y": 205.3,
+          "w": 278.5,
+          "h": 220
+        },
+        "style": {
+          "size": "16px",
+          "weight": "400",
+          "color": "rgb(26, 26, 26)",
+          "bg": "rgb(255, 255, 255)",
+          "radius": "12px",
+          "border": "1px solid rgb(237, 237, 237)"
+        },
+        "imageBand": null,
+        "badge": {
+          "rect": {
+            "x": 1238.3,
+            "y": 297.8,
+            "w": 40.42,
+            "h": 22
+          },
+          "style": {
+            "size": "22px",
+            "weight": "800",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          },
+          "text": "90%"
+        },
+        "stub": {
+          "rect": {
+            "x": 1222,
+            "y": 206.3,
+            "w": 72,
+            "h": 218
+          },
+          "style": {
+            "size": "16px",
+            "weight": "400",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgb(254, 215, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          }
+        },
+        "business": {
+          "rect": {
+            "x": 1029.5,
+            "y": 218.3,
+            "w": 180.5,
+            "h": 18
+          },
+          "text": "ספא נירוונה"
+        },
+        "title": {
+          "rect": {
+            "x": 1029.5,
+            "y": 240.3,
+            "w": 180.5,
+            "h": 38.5
+          },
+          "style": {
+            "size": "14px",
+            "weight": "600",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          }
+        },
+        "price": {
+          "rect": {
+            "x": 1142.17,
+            "y": 308.8,
+            "w": 67.83,
+            "h": 27
+          },
+          "style": {
+            "size": "18px",
+            "weight": "700",
+            "color": "rgb(220, 53, 69)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(220, 53, 69)"
+          },
+          "text": "⁦32.00 ₪⁩"
+        },
+        "code": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "copy": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "countdown": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "cta": {
+          "rect": {
+            "x": 1029.5,
+            "y": 240.3,
+            "w": 180.5,
+            "h": 24
+          },
+          "text": "עיסוי שוודי מפנק 60 דקות"
+        },
+        "links": 2,
+        "buttons": 0
+      },
+      {
+        "i": 1,
+        "tag": "article",
+        "rect": {
+          "x": 726,
+          "y": 205.3,
+          "w": 278.5,
+          "h": 220
+        },
+        "style": {
+          "size": "16px",
+          "weight": "400",
+          "color": "rgb(26, 26, 26)",
+          "bg": "rgb(255, 255, 255)",
+          "radius": "12px",
+          "border": "1px solid rgb(237, 237, 237)"
+        },
+        "imageBand": null,
+        "badge": {
+          "rect": {
+            "x": 947.8,
+            "y": 297.8,
+            "w": 40.42,
+            "h": 22
+          },
+          "style": {
+            "size": "22px",
+            "weight": "800",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          },
+          "text": "90%"
+        },
+        "stub": {
+          "rect": {
+            "x": 931.5,
+            "y": 206.3,
+            "w": 72,
+            "h": 218
+          },
+          "style": {
+            "size": "16px",
+            "weight": "400",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgb(254, 215, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          }
+        },
+        "business": {
+          "rect": {
+            "x": 739,
+            "y": 218.3,
+            "w": 180.5,
+            "h": 18
+          },
+          "text": "טרטוריה בלה"
+        },
+        "title": {
+          "rect": {
+            "x": 739,
+            "y": 240.3,
+            "w": 180.5,
+            "h": 38.5
+          },
+          "style": {
+            "size": "14px",
+            "weight": "600",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          }
+        },
+        "price": {
+          "rect": {
+            "x": 851.67,
+            "y": 308.8,
+            "w": 67.83,
+            "h": 27
+          },
+          "style": {
+            "size": "18px",
+            "weight": "700",
+            "color": "rgb(220, 53, 69)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(220, 53, 69)"
+          },
+          "text": "⁦24.00 ₪⁩"
+        },
+        "code": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "copy": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "countdown": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "cta": {
+          "rect": {
+            "x": 739,
+            "y": 240.3,
+            "w": 180.5,
+            "h": 24
+          },
+          "text": "ארוחה זוגית במסעדה איטלקית"
+        },
+        "links": 2,
+        "buttons": 0
+      },
+      {
+        "i": 2,
+        "tag": "article",
+        "rect": {
+          "x": 435.5,
+          "y": 205.3,
+          "w": 278.5,
+          "h": 220
+        },
+        "style": {
+          "size": "16px",
+          "weight": "400",
+          "color": "rgb(26, 26, 26)",
+          "bg": "rgb(255, 255, 255)",
+          "radius": "12px",
+          "border": "1px solid rgb(237, 237, 237)"
+        },
+        "imageBand": null,
+        "badge": {
+          "rect": {
+            "x": 657.3,
+            "y": 297.8,
+            "w": 40.42,
+            "h": 22
+          },
+          "style": {
+            "size": "22px",
+            "weight": "800",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          },
+          "text": "90%"
+        },
+        "stub": {
+          "rect": {
+            "x": 641,
+            "y": 206.3,
+            "w": 72,
+            "h": 218
+          },
+          "style": {
+            "size": "16px",
+            "weight": "400",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgb(254, 215, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          }
+        },
+        "business": {
+          "rect": {
+            "x": 448.5,
+            "y": 218.3,
+            "w": 180.5,
+            "h": 18
+          },
+          "text": "ימית 2000"
+        },
+        "title": {
+          "rect": {
+            "x": 448.5,
+            "y": 240.3,
+            "w": 180.5,
+            "h": 38.5
+          },
+          "style": {
+            "size": "14px",
+            "weight": "600",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          }
+        },
+        "price": {
+          "rect": {
+            "x": 561.17,
+            "y": 308.8,
+            "w": 67.83,
+            "h": 27
+          },
+          "style": {
+            "size": "18px",
+            "weight": "700",
+            "color": "rgb(220, 53, 69)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(220, 53, 69)"
+          },
+          "text": "⁦18.00 ₪⁩"
+        },
+        "code": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "copy": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "countdown": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "cta": {
+          "rect": {
+            "x": 448.5,
+            "y": 240.3,
+            "w": 180.5,
+            "h": 24
+          },
+          "text": "כניסה זוגית לפארק מים"
+        },
+        "links": 2,
+        "buttons": 0
+      },
+      {
+        "i": 3,
+        "tag": "article",
+        "rect": {
+          "x": 145,
+          "y": 205.3,
+          "w": 278.5,
+          "h": 220
+        },
+        "style": {
+          "size": "16px",
+          "weight": "400",
+          "color": "rgb(26, 26, 26)",
+          "bg": "rgb(255, 255, 255)",
+          "radius": "12px",
+          "border": "1px solid rgb(237, 237, 237)"
+        },
+        "imageBand": null,
+        "badge": {
+          "rect": {
+            "x": 366.8,
+            "y": 297.8,
+            "w": 40.42,
+            "h": 22
+          },
+          "style": {
+            "size": "22px",
+            "weight": "800",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          },
+          "text": "90%"
+        },
+        "stub": {
+          "rect": {
+            "x": 350.5,
+            "y": 206.3,
+            "w": 72,
+            "h": 218
+          },
+          "style": {
+            "size": "16px",
+            "weight": "400",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgb(254, 215, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          }
+        },
+        "business": {
+          "rect": {
+            "x": 158,
+            "y": 218.3,
+            "w": 180.5,
+            "h": 18
+          },
+          "text": "קליניק ביוטי"
+        },
+        "title": {
+          "rect": {
+            "x": 158,
+            "y": 240.3,
+            "w": 180.5,
+            "h": 38.5
+          },
+          "style": {
+            "size": "14px",
+            "weight": "600",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          }
+        },
+        "price": {
+          "rect": {
+            "x": 270.67,
+            "y": 308.8,
+            "w": 67.83,
+            "h": 27
+          },
+          "style": {
+            "size": "18px",
+            "weight": "700",
+            "color": "rgb(220, 53, 69)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(220, 53, 69)"
+          },
+          "text": "⁦29.00 ₪⁩"
+        },
+        "code": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "copy": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "countdown": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "cta": {
+          "rect": {
+            "x": 158,
+            "y": 240.3,
+            "w": 180.5,
+            "h": 24
+          },
+          "text": "טיפול פנים יוקרתי"
+        },
+        "links": 2,
+        "buttons": 0
+      },
+      {
+        "i": 4,
+        "tag": "article",
+        "rect": {
+          "x": 1016.5,
+          "y": 437.3,
+          "w": 278.5,
+          "h": 220
+        },
+        "style": {
+          "size": "16px",
+          "weight": "400",
+          "color": "rgb(26, 26, 26)",
+          "bg": "rgb(255, 255, 255)",
+          "radius": "12px",
+          "border": "1px solid rgb(237, 237, 237)"
+        },
+        "imageBand": null,
+        "badge": {
+          "rect": {
+            "x": 1238.3,
+            "y": 529.8,
+            "w": 40.42,
+            "h": 22
+          },
+          "style": {
+            "size": "22px",
+            "weight": "800",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          },
+          "text": "90%"
+        },
+        "stub": {
+          "rect": {
+            "x": 1222,
+            "y": 438.3,
+            "w": 72,
+            "h": 218
+          },
+          "style": {
+            "size": "16px",
+            "weight": "400",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgb(254, 215, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          }
+        },
+        "business": {
+          "rect": {
+            "x": 1029.5,
+            "y": 450.3,
+            "w": 180.5,
+            "h": 18
+          },
+          "text": "צימרים בגליל"
+        },
+        "title": {
+          "rect": {
+            "x": 1029.5,
+            "y": 472.3,
+            "w": 180.5,
+            "h": 38.5
+          },
+          "style": {
+            "size": "14px",
+            "weight": "600",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          }
+        },
+        "price": {
+          "rect": {
+            "x": 1142.17,
+            "y": 540.8,
+            "w": 67.83,
+            "h": 27
+          },
+          "style": {
+            "size": "18px",
+            "weight": "700",
+            "color": "rgb(220, 53, 69)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(220, 53, 69)"
+          },
+          "text": "⁦85.00 ₪⁩"
+        },
+        "code": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "copy": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "countdown": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "cta": {
+          "rect": {
+            "x": 1029.5,
+            "y": 472.3,
+            "w": 180.5,
+            "h": 24
+          },
+          "text": "לילה רומנטי בצימר בצפון"
+        },
+        "links": 2,
+        "buttons": 0
+      },
+      {
+        "i": 5,
+        "tag": "article",
+        "rect": {
+          "x": 726,
+          "y": 437.3,
+          "w": 278.5,
+          "h": 220
+        },
+        "style": {
+          "size": "16px",
+          "weight": "400",
+          "color": "rgb(26, 26, 26)",
+          "bg": "rgb(255, 255, 255)",
+          "radius": "12px",
+          "border": "1px solid rgb(237, 237, 237)"
+        },
+        "imageBand": null,
+        "badge": {
+          "rect": {
+            "x": 947.8,
+            "y": 529.8,
+            "w": 40.42,
+            "h": 22
+          },
+          "style": {
+            "size": "22px",
+            "weight": "800",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          },
+          "text": "90%"
+        },
+        "stub": {
+          "rect": {
+            "x": 931.5,
+            "y": 438.3,
+            "w": 72,
+            "h": 218
+          },
+          "style": {
+            "size": "16px",
+            "weight": "400",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgb(254, 215, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          }
+        },
+        "business": {
+          "rect": {
+            "x": 739,
+            "y": 450.3,
+            "w": 180.5,
+            "h": 18
+          },
+          "text": "שף בבית"
+        },
+        "title": {
+          "rect": {
+            "x": 739,
+            "y": 472.3,
+            "w": 180.5,
+            "h": 38.5
+          },
+          "style": {
+            "size": "14px",
+            "weight": "600",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          }
+        },
+        "price": {
+          "rect": {
+            "x": 851.67,
+            "y": 540.8,
+            "w": 67.83,
+            "h": 27
+          },
+          "style": {
+            "size": "18px",
+            "weight": "700",
+            "color": "rgb(220, 53, 69)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(220, 53, 69)"
+          },
+          "text": "⁦36.00 ₪⁩"
+        },
+        "code": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "copy": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "countdown": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "cta": {
+          "rect": {
+            "x": 739,
+            "y": 472.3,
+            "w": 180.5,
+            "h": 24
+          },
+          "text": "קורס סדנת בישול איטלקי"
+        },
+        "links": 2,
+        "buttons": 0
+      },
+      {
+        "i": 6,
+        "tag": "article",
+        "rect": {
+          "x": 435.5,
+          "y": 437.3,
+          "w": 278.5,
+          "h": 220
+        },
+        "style": {
+          "size": "16px",
+          "weight": "400",
+          "color": "rgb(26, 26, 26)",
+          "bg": "rgb(255, 255, 255)",
+          "radius": "12px",
+          "border": "1px solid rgb(237, 237, 237)"
+        },
+        "imageBand": null,
+        "badge": {
+          "rect": {
+            "x": 657.3,
+            "y": 529.8,
+            "w": 40.42,
+            "h": 22
+          },
+          "style": {
+            "size": "22px",
+            "weight": "800",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          },
+          "text": "90%"
+        },
+        "stub": {
+          "rect": {
+            "x": 641,
+            "y": 438.3,
+            "w": 72,
+            "h": 218
+          },
+          "style": {
+            "size": "16px",
+            "weight": "400",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgb(254, 215, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          }
+        },
+        "business": {
+          "rect": {
+            "x": 448.5,
+            "y": 450.3,
+            "w": 180.5,
+            "h": 18
+          },
+          "text": "היכל התרבות"
+        },
+        "title": {
+          "rect": {
+            "x": 448.5,
+            "y": 472.3,
+            "w": 180.5,
+            "h": 38.5
+          },
+          "style": {
+            "size": "14px",
+            "weight": "600",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          }
+        },
+        "price": {
+          "rect": {
+            "x": 561.17,
+            "y": 540.8,
+            "w": 67.83,
+            "h": 27
+          },
+          "style": {
+            "size": "18px",
+            "weight": "700",
+            "color": "rgb(220, 53, 69)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(220, 53, 69)"
+          },
+          "text": "⁦28.00 ₪⁩"
+        },
+        "code": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "copy": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "countdown": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "cta": {
+          "rect": {
+            "x": 448.5,
+            "y": 472.3,
+            "w": 180.5,
+            "h": 24
+          },
+          "text": "כרטיס זוגי להופעה"
+        },
+        "links": 2,
+        "buttons": 0
+      },
+      {
+        "i": 7,
+        "tag": "article",
+        "rect": {
+          "x": 145,
+          "y": 437.3,
+          "w": 278.5,
+          "h": 220
+        },
+        "style": {
+          "size": "16px",
+          "weight": "400",
+          "color": "rgb(26, 26, 26)",
+          "bg": "rgb(255, 255, 255)",
+          "radius": "12px",
+          "border": "1px solid rgb(237, 237, 237)"
+        },
+        "imageBand": null,
+        "badge": {
+          "rect": {
+            "x": 366.8,
+            "y": 529.8,
+            "w": 40.42,
+            "h": 22
+          },
+          "style": {
+            "size": "22px",
+            "weight": "800",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          },
+          "text": "90%"
+        },
+        "stub": {
+          "rect": {
+            "x": 350.5,
+            "y": 438.3,
+            "w": 72,
+            "h": 218
+          },
+          "style": {
+            "size": "16px",
+            "weight": "400",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgb(254, 215, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          }
+        },
+        "business": {
+          "rect": {
+            "x": 158,
+            "y": 450.3,
+            "w": 180.5,
+            "h": 18
+          },
+          "text": "אתגר אקסטרים"
+        },
+        "title": {
+          "rect": {
+            "x": 158,
+            "y": 472.3,
+            "w": 180.5,
+            "h": 38.5
+          },
+          "style": {
+            "size": "14px",
+            "weight": "600",
+            "color": "rgb(51, 62, 72)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(51, 62, 72)"
+          }
+        },
+        "price": {
+          "rect": {
+            "x": 270.67,
+            "y": 540.8,
+            "w": 67.83,
+            "h": 27
+          },
+          "style": {
+            "size": "18px",
+            "weight": "700",
+            "color": "rgb(220, 53, 69)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "border": "0px solid rgb(220, 53, 69)"
+          },
+          "text": "⁦19.90 ₪⁩"
+        },
+        "code": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "copy": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "countdown": {
+          "rect": null,
+          "style": null,
+          "text": null
+        },
+        "cta": {
+          "rect": {
+            "x": 158,
+            "y": 472.3,
+            "w": 180.5,
+            "h": 24
+          },
+          "text": "חבילת גלישה וסאפ"
+        },
+        "links": 2,
+        "buttons": 0
+      }
+    ]
+  }
+}

@@ -219,6 +219,10 @@ describe('getHotCouponDeals', () => {
     expect(chain?.[0]).toEqual(['from', ['coupon_deals']])
     expect(calls(chain, 'eq')).toEqual([['status', 'active']])
     expect(calls(chain, 'is')).toEqual([['deleted_at', null]])
+    // UX10: a deal past its deadline is not hot; unset deadlines stay in.
+    const [[orFilter]] = calls(chain, 'or') as [[string]]
+    expect(orFilter).toMatch(/^valid_until\.is\.null,valid_until\.gt\.\d{4}-\d\d-\d\dT/)
+    expect(calls(chain, 'select')[0]?.[0]).toContain('valid_until')
     expect(calls(chain, 'order')).toEqual([
       ['discount_percentage', { ascending: false, nullsFirst: false }],
       ['created_at', { ascending: false }],
@@ -226,10 +230,42 @@ describe('getHotCouponDeals', () => {
     expect(calls(chain, 'limit')).toEqual([[HOT_COUPON_COUNT]])
   })
 
-  it('passes the rows through untouched', async () => {
+  it('passes the rows through with the code from the optional 270 read, null until it exists', async () => {
     const rows = [{ id: 'c1', title_he: 'קופון', business_name: 'עסק' }]
     results.push({ data: rows, error: null })
-    await expect(getHotCouponDeals()).resolves.toEqual(rows)
+    // The second chain is the `code` probe (pending 270); 42703 is the hosted
+    // database today, and it must cost the card its button, not the section.
+    results.push({ data: null, error: { code: '42703', message: 'column code does not exist' } })
+    await expect(getHotCouponDeals()).resolves.toEqual([{ ...rows[0], code: null }])
+    const probe = chains[1]
+    expect(probe?.[0]).toEqual(['from', ['coupon_deals']])
+    expect(calls(probe, 'select')).toEqual([['id, code']])
+    expect(calls(probe, 'in')).toEqual([['id', ['c1']]])
+    expect(warn).toHaveBeenCalledWith(
+      'db.optional_column_missing',
+      expect.objectContaining({ detail: expect.stringContaining('270_coupon_deals_code.sql') }),
+    )
+  })
+
+  it('attaches the code once the column answers, and survives a failed code read', async () => {
+    const rows = [{ id: 'c1' }, { id: 'c2' }]
+    results.push({ data: rows, error: null })
+    results.push({ data: [{ id: 'c2', code: 'SPA90' }], error: null })
+    await expect(getHotCouponDeals()).resolves.toEqual([
+      { id: 'c1', code: null },
+      { id: 'c2', code: 'SPA90' },
+    ])
+
+    results.length = 0
+    results.push({ data: rows, error: null })
+    results.push({ data: null, error: { message: 'replica gone' } })
+    await expect(getHotCouponDeals()).resolves.toEqual([
+      { id: 'c1', code: null },
+      { id: 'c2', code: null },
+    ])
+    expect(warn).toHaveBeenCalledWith('homepage.hot_coupons_code_read_failed', {
+      reason: 'hot coupons: replica gone',
+    })
   })
 
   it('returns nothing and warns when the read fails or the client throws', async () => {

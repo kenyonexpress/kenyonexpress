@@ -1,5 +1,16 @@
 # Apply order
 
+## 2026-10-14 (UX10): 270 filed; any time, no dependencies
+
+270 adds one nullable column, `coupon_deals.code`, and a partial unique
+index on it. It depends on nothing pending and nothing pending depends on
+it; it can be applied before or after 269 or any other file here. Nothing
+breaks before it exists: the home page reads the column through
+`readOptionalColumns` and shows a details link in place of the copy button,
+and the admin save retries without the column on 42703. The sign it took is
+the `db.optional_column_missing` warning for "hot coupons" no longer
+appearing on a cold start, and the admin form accepting a code.
+
 ## 2026-10-09 (STEP 67): 269 filed; any time, no dependencies
 
 269 creates one table, `health_incidents`, and depends only on

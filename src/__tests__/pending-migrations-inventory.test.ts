@@ -532,6 +532,12 @@ describe('the pending migration inventory', () => {
       // BEGIN/ROLLBACK 2026-10-09 (table, RLS on, one policy, self-check
       // passed, to_regclass NULL after). Not applied; README carries the row.
       '269_health_incidents.sql',
+      // 270 is PENDING (2026-10-14, UX10): `coupon_deals.code`, one nullable
+      // CHECKed column with a partial unique index, the code the hot-coupon
+      // ticket's copy button hands the shopper. Read through
+      // readOptionalColumns, so nothing breaks before it exists. README
+      // carries the measurement (8 active deals, none with a deadline).
+      '270_coupon_deals_code.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

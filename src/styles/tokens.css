@@ -444,6 +444,18 @@
   --spacing-deal-countdown: 36px;
   --spacing-deal-countdown-pad: 34px;
 
+  /* UX10: the hot-coupon ticket (CouponCard.tsx, `.coupon-ticket` in
+     globals.css). Neither live nor Electro has a coupon card at all (live's
+     deals grid is product cards, live-home-sections.test.ts; Electro ships no
+     coupon block), so the shape is this project's own, built from the tokens
+     above it: the brand yellow stub, the heading ink on it, the 12px elevated
+     radius (UX07/UX08 found the 25px modal radius on cards and took it off),
+     and live's deals-card badge red for the urgent countdown. The stub is
+     wide enough for "100%" at 22px/800 with 8px either side; the notch is
+     the circle bitten out of each end of the perforation, centred on it. */
+  --spacing-coupon-stub: 72px;
+  --spacing-coupon-notch: 18px;
+
   /* The store footer's column block, top padding from lg. */
   --spacing-footer-columns-top: 60px;
 

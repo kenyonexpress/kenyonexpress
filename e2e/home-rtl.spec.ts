@@ -67,8 +67,11 @@ const LTR_ALLOWED: ReadonlyArray<readonly [reason: string, selector: string]> = 
   // ltr sits on an inner span because `end-0` on the badge resolves against
   // its own direction.
   ['deal of the day badge', '[data-deal-badge] span'],
-  // "12:34:56" / "--:--:--": the countdown is a clock, not a sentence.
+  // "12:34:56" / "--:--:--": the countdown is a clock, not a sentence. The
+  // hot-coupon countdown (UX10) is the same element for the same reason.
   ['deal countdown', 'output'],
+  // "SPA90": a coupon code is Latin letters and digits (UX10, CopyCouponCode).
+  ['coupon code', '[data-coupon-code]'],
   // Addresses are Latin and read left to right in every locale.
   ['e-mail field', 'input[type="email"]'],
 ]

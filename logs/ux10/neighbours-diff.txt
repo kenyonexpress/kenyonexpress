@@ -1,0 +1,7 @@
+UX10 neighbour e2e (home-rtl, touch-targets, a11y, home; chromium + mobile-chrome) failing titles vs UX08, line numbers stripped
+ux10: 64  ux08: 64
+--- new in UX10:
+--- gone since UX08:
+--- offenders reported on / :
+touch-targets: a[התחברות] hit 72x41 (primary, 44)   (prior offender, UX06..UX09)
+home-rtl: input#masthead-search   (prior offender, UX06..UX09)

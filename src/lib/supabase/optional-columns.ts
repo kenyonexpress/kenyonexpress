@@ -56,6 +56,12 @@ export async function readOptionalColumns<Row extends { id: string }>(
   columns: readonly string[],
   ids: readonly string[],
   label: string,
+  /**
+   * What the warning tells the reader to do. The default is 054's remedy,
+   * which every caller before UX10 meant; a caller reading another pending
+   * migration's columns names that migration instead.
+   */
+  remedy = 'apply supabase/migrations/054_voucher_redemption.sql. Coupons will read as unpriced until then.',
 ): Promise<Map<string, Row>> {
   if (ids.length === 0) return new Map()
 
@@ -63,10 +69,7 @@ export async function readOptionalColumns<Row extends { id: string }>(
 
   if (error) {
     if (error.code === UNDEFINED_COLUMN) {
-      warnOnce(
-        label,
-        `${label}: ${columns.join(', ')} missing from this database — apply supabase/migrations/054_voucher_redemption.sql. Coupons will read as unpriced until then.`,
-      )
+      warnOnce(label, `${label}: ${columns.join(', ')} missing from this database — ${remedy}`)
       return new Map()
     }
     throw new Error(`${label}: ${error.message}`)

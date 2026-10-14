@@ -43,7 +43,7 @@ async function CouponsGrid() {
     await supabase
       .from('coupon_deals')
       .select(
-        'id, title_he, business_name, original_price, platform_price, discount_percentage, location_he, image_url',
+        'id, title_he, business_name, original_price, platform_price, discount_percentage, location_he, image_url, valid_until',
       )
       .eq('status', 'active')
       .is('deleted_at', null)
@@ -51,8 +51,11 @@ async function CouponsGrid() {
     'coupons.list_read_failed',
   )
 
+  // UX10: one ticket per row on a phone (the stub, a code and a countdown do
+  // not fit a 159px column), two from 640, three from 1024. Same columns as
+  // CouponsGridSkeleton. `grid-auto-rows: 1fr` so a row is one height.
   return coupons?.length ? (
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 [grid-auto-rows:1fr]">
       {(coupons as Coupon[]).map((c) => (
         <CouponCard key={c.id} coupon={c} />
       ))}

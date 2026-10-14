@@ -1,0 +1,4 @@
+tokens gate: clean (no raw hex, rgb() or arbitrary px in src/)
+copy gate: clean (no Latin marketing sentence in a rendered component)
+asset gate: clean (no template or vendor product imagery under public/images)
+blur-manifest: 89 entries match the files on disk

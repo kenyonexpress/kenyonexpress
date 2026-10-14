@@ -36,7 +36,24 @@ const schema = z.object({
    */
   image_url: z.string().refine(isAllowedImageUrl, IMAGE_HOST_ERROR).nullable().optional(),
   status: z.enum(['draft', 'active', 'paused', 'archived']).default('draft'),
+  /**
+   * UX10: the code the ticket's copy button hands the shopper, pending
+   * migration 270 (`coupon_deals.code`, CHECKed to the same pattern). Upper-
+   * cased here so "spa90" and "SPA90" are one code, and so the unique index
+   * on the column holds.
+   */
+  code: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .regex(/^[A-Z0-9]{4,16}$/, 'קוד קופון: 4 עד 16 אותיות לטיניות או ספרות')
+    .nullable()
+    .optional(),
 })
+
+/** Postgres: undefined_column, the hosted database before 270 is applied. */
+const UNDEFINED_COLUMN = '42703'
+const CODE_NEEDS_270 = 'קוד קופון דורש את מיגרציה 270 (ממתינה). שמרו בלי קוד או החילו אותה קודם'
 
 export type CouponDealFormState = { error: string } | { success: string } | null
 
@@ -68,6 +85,7 @@ async function runUpsertCouponDeal(
     lng: formData.get('lng') || null,
     image_url: formData.get('image_url') || null,
     status: formData.get('status'),
+    code: formData.get('code') || null,
   })
 
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'נתונים לא תקינים' }
@@ -92,35 +110,49 @@ async function runUpsertCouponDeal(
     data: { user },
   } = await supabase.auth.getUser()
 
-  const { id, ...fields } = parsed.data
+  const { id, code, ...rest } = parsed.data
 
-  if (id) {
-    const { error } = await supabase.from('coupon_deals').update(fields).eq('id', id)
-    if (error) return { error: error.message }
-    await writeAuditLog({
-      actorId: session.userId,
-      actorRole: session.role,
-      action: 'updated',
-      entityType: 'coupon_deals',
-      entityId: id,
-      changes: { ...fields },
-    })
-  } else {
+  // WRITTEN TWICE AT MOST. The first write names `code` (null clears it); on
+  // the hosted database, where 270 is pending, that is 42703 and the second
+  // write goes without the column, so a save that never mentioned a code is
+  // exactly the save it was before this field. A save that DID type a code
+  // stops with CODE_NEEDS_270 rather than silently dropping it. The generated
+  // row type predates 270, hence the loose cast on the first attempt.
+  type Fields = typeof rest & { code?: string | null }
+  type Written = { error: { code?: string; message: string } | null; id: string | null }
+  const write = async (fields: Fields): Promise<Written> => {
+    if (id) {
+      const { error } = await supabase
+        .from('coupon_deals')
+        .update(fields as never)
+        .eq('id', id)
+      return { error, id }
+    }
     const { data, error } = await supabase
       .from('coupon_deals')
-      .insert({ ...fields, created_by: user!.id })
+      .insert({ ...fields, created_by: user!.id } as never)
       .select('id')
       .single()
-    if (error) return { error: error.message }
-    await writeAuditLog({
-      actorId: session.userId,
-      actorRole: session.role,
-      action: 'created',
-      entityType: 'coupon_deals',
-      entityId: data.id,
-      changes: { ...fields },
-    })
+    return { error, id: data?.id ?? null }
   }
+
+  let fields: Fields = { ...rest, code: code ?? null }
+  let result = await write(fields)
+  if (result.error?.code === UNDEFINED_COLUMN) {
+    if (code) return { error: CODE_NEEDS_270 }
+    fields = rest
+    result = await write(fields)
+  }
+  if (result.error) return { error: result.error.message }
+
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: id ? 'updated' : 'created',
+    entityType: 'coupon_deals',
+    entityId: result.id ?? undefined,
+    changes: { ...fields },
+  })
 
   // The storefront's read of this row is `use cache` (lib/coupon-deals.ts), so
   // without this the save is invisible on /coupons/[id] for an hour while the

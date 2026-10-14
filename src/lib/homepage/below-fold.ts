@@ -5,7 +5,9 @@ import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { orderedByMenu } from '@/lib/category-page'
 import { log } from '@/lib/observability/log'
 import { POPULAR_SEARCHES_TAG } from '@/lib/search/empty-state'
+import { readOptionalColumns } from '@/lib/supabase/optional-columns'
 import { createCatalogueReadClient } from '@/lib/supabase/read-replica'
+import { sanitizeOrTerm } from '@/lib/utils/search-escape'
 import { cacheLife, cacheTag } from 'next/cache'
 import {
   type CategoryTile,
@@ -110,19 +112,35 @@ export async function getDealOfTheDay(): Promise<DealOfTheDay | null> {
   }
 }
 
+/**
+ * The columns pending migration 270 adds to `coupon_deals`, read on their own
+ * through `readOptionalColumns` so a database without them answers the card
+ * with no code instead of 42703 taking the whole section down.
+ */
+export const COUPON_270_COLUMNS = ['code'] as const
+type Coupon270Row = { id: string; code: string | null }
+
 export async function getHotCouponDeals(): Promise<Coupon[]> {
   'use cache'
   cacheLife(CacheLife.home)
   cacheTag(CATALOGUE_TAG, CacheTags.home)
   try {
     const supabase = createCatalogueReadClient()
+    // A deal past its `valid_until` is not hot, it is over: the card's
+    // countdown would open on "המבצע הסתיים". Unset deadlines stay in. The
+    // timestamp is the cache entry's, refreshed with it (CacheLife.home).
+    // `sanitizeOrTerm` because it lands in an `.or()` expression, where the
+    // parameterized-queries gate rightly refuses a raw interpolation; an ISO
+    // timestamp passes through it unchanged.
+    const now = sanitizeOrTerm(new Date().toISOString())
     const { data, error } = await supabase
       .from('coupon_deals')
       .select(
-        'id, title_he, business_name, original_price, platform_price, discount_percentage, location_he, image_url',
+        'id, title_he, business_name, original_price, platform_price, discount_percentage, location_he, image_url, valid_until',
       )
       .eq('status', 'active')
       .is('deleted_at', null)
+      .or(`valid_until.is.null,valid_until.gt.${now}`)
       .order('discount_percentage', { ascending: false, nullsFirst: false })
       .order('created_at', { ascending: false })
       .limit(HOT_COUPON_COUNT)
@@ -130,7 +148,26 @@ export async function getHotCouponDeals(): Promise<Coupon[]> {
       log.warn('homepage.hot_coupons_read_failed', { reason: error.message })
       return []
     }
-    return (data ?? []) as Coupon[]
+    const rows = (data ?? []) as Coupon[]
+    // Its own try: a failed code read costs the cards their copy button, not
+    // the section. `readOptionalColumns` already maps 42703 to an empty map.
+    let codes = new Map<string, Coupon270Row>()
+    try {
+      const probe = (select: string, ids: string[]) =>
+        createCatalogueReadClient().from('coupon_deals').select(select).in('id', ids) as never
+      codes = await readOptionalColumns<Coupon270Row>(
+        probe,
+        COUPON_270_COLUMNS,
+        rows.map((r) => r.id),
+        'hot coupons',
+        'apply migrations/pending/270_coupon_deals_code.sql. Cards show no copy-code button until then.',
+      )
+    } catch (error) {
+      log.warn('homepage.hot_coupons_code_read_failed', {
+        reason: error instanceof Error ? error.message : 'unknown',
+      })
+    }
+    return rows.map((row) => ({ ...row, code: codes.get(row.id)?.code ?? null }))
   } catch (error) {
     log.warn('homepage.hot_coupons_read_threw', {
       reason: error instanceof Error ? error.message : 'unknown',

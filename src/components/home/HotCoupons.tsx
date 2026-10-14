@@ -8,6 +8,13 @@ import Link from 'next/link'
  * deals grid, with the same card `/coupons` renders so a deal looks the same
  * on both pages. Below the 2600px the parity gate scores (see
  * `lib/homepage/below-fold-rules.ts`).
+ *
+ * UX10: the cards are tickets (`CouponCard`) in the deals grid's own columns,
+ * 1 / 2 / 4 at 0 / 768 / 1200 (`.hot-coupons__grid`, globals.css), with
+ * `grid-auto-rows: 1fr` so a row of tickets is one height whatever each
+ * carries. Before this it was two 159px columns on a phone and four 158px
+ * columns at 768 (logs/ux10/before.json), too narrow for a stub, a code and a
+ * countdown side by side.
  */
 export default async function HotCoupons() {
   const coupons = await getHotCouponDeals()
@@ -31,7 +38,7 @@ export default async function HotCoupons() {
           <ArrowLeft size={16} aria-hidden="true" />
         </Link>
       </div>
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+      <div className="hot-coupons__grid" data-hot-coupons-grid>
         {coupons.map((coupon) => (
           <CouponCard key={coupon.id} coupon={coupon} />
         ))}

@@ -1,0 +1,17 @@
+Already up to date
+Done in 191ms using pnpm v11.1.2
+
+Running 10 tests using 2 workers
+
+[1A[2K[1/10] [chromium] › e2e/hot-coupons.spec.ts:53:7 › hot coupons (UX10) › lays the tickets out 1 / 2 / 4 across at 380 / 768 / 1440, one row height
+[1A[2K[2/10] [chromium] › e2e/hot-coupons.spec.ts:83:7 › hot coupons (UX10) › each ticket is an article with a yellow stub, a dashed perforation and two notches
+[1A[2K[3/10] [chromium] › e2e/hot-coupons.spec.ts:121:7 › hot coupons (UX10) › the title links to the deal, the card itself does not, and the footer control is 44px
+[1A[2K[4/10] [chromium] › e2e/hot-coupons.spec.ts:142:7 › hot coupons (UX10) › a countdown appears only where the row has a deadline, and then it ticks
+[1A[2K[5/10] [chromium] › e2e/hot-coupons.spec.ts:174:7 › hot coupons (UX10) › the copy button writes the code to the clipboard and confirms in place
+[1A[2K[6/10] [mobile-chrome] › e2e/hot-coupons.spec.ts:53:7 › hot coupons (UX10) › lays the tickets out 1 / 2 / 4 across at 380 / 768 / 1440, one row height
+[1A[2K[7/10] [mobile-chrome] › e2e/hot-coupons.spec.ts:83:7 › hot coupons (UX10) › each ticket is an article with a yellow stub, a dashed perforation and two notches
+[1A[2K[8/10] [mobile-chrome] › e2e/hot-coupons.spec.ts:121:7 › hot coupons (UX10) › the title links to the deal, the card itself does not, and the footer control is 44px
+[1A[2K[9/10] [mobile-chrome] › e2e/hot-coupons.spec.ts:142:7 › hot coupons (UX10) › a countdown appears only where the row has a deadline, and then it ticks
+[1A[2K[10/10] [mobile-chrome] › e2e/hot-coupons.spec.ts:174:7 › hot coupons (UX10) › the copy button writes the code to the clipboard and confirms in place
+[1A[2K  2 skipped
+  8 passed (4.8s)
