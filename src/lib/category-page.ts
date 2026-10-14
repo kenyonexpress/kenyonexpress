@@ -37,11 +37,23 @@ import { cache } from 'react'
  */
 
 /**
- * Eight cards a page. Two rows of four at 1440, four rows of two at 380; the
- * grid, the skeleton, the result-count wording and the page-window arithmetic
- * all read this one constant, and `category-page.test.ts` pins the number.
+ * Twenty-four cards a page, the same as /products (closeout L10 row 4,
+ * D-45). It was eight until 2026-10-14, when the grid started appending the
+ * next page on scroll: a page is now a unit of loading, not a screen, and
+ * eight made a shopper wait for a request every two rows. The grid, the
+ * result-count wording and the page-window arithmetic all read this one
+ * constant, and `category-page.test.ts` pins the number.
  */
-export const CATEGORY_PAGE_SIZE = 8
+export const CATEGORY_PAGE_SIZE = 24
+
+/**
+ * The placeholder is still eight cards, and deliberately not the page size.
+ * Most categories hold fewer than ten products, and every placeholder row the
+ * results do not fill collapses when the grid resolves and drags the footer
+ * up with it (the measurements are on `SEARCH_SKELETON_CARDS` in
+ * search/page.tsx). Eight is what the placeholder was measured at.
+ */
+export const CATEGORY_SKELETON_CARDS = 8
 
 /**
  * Both unwrappers live in `src/lib/catalogue-read.ts`, not here.

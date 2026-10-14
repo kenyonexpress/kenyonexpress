@@ -86,7 +86,7 @@ file or a prior document.
 | [SEARCH-PIPELINE-SPEC.md](SEARCH-PIPELINE-SPEC.md) | ✅ | Two write paths, the outbox, Meilisearch settings as implemented. |
 | [API-REFERENCE.md](API-REFERENCE.md) | ✅ | 30 routes and 85 server actions: method, auth, shapes. |
 | [ROLES-AND-PERMISSIONS.md](ROLES-AND-PERMISSIONS.md) | ✅ | Three role systems, and three traps in `has_role`. |
-| [DECISIONS.md](DECISIONS.md) | ✅ | 44 architecture decisions with reasoning, plus 7 superseded. |
+| [DECISIONS.md](DECISIONS.md) | ✅ | 45 architecture decisions with reasoning, plus 7 superseded. |
 | [BIG-SITE-GAP.md](BIG-SITE-GAP.md) | ✅ | Thirty big-site features against main and the production branch: state, files, what is missing, effort. |
 | [FINAL-CLOSEOUT.md](FINAL-CLOSEOUT.md) | ✅ | The L1 to L16 closeout queue of 2026-10-14, one row per item with the evidence that closed it. |
 | [DECISIONS-PROVISIONAL.md](DECISIONS-PROVISIONAL.md) | ✅ | Decisions taken in Ofir's absence, still awaiting approval. |

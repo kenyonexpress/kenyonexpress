@@ -2,10 +2,12 @@ import CategoryBreadcrumb, { defaultHomeCrumb } from '@/components/category/Cate
 import CategoryControlBar from '@/components/category/CategoryControlBar'
 import CategoryFilterSidebar from '@/components/category/CategoryFilterSidebar'
 import CategoryGridSkeleton from '@/components/category/CategoryGridSkeleton'
-import CategoryProductCard, {
-  type CategoryProduct,
-} from '@/components/category/CategoryProductCard'
+import type { CategoryProduct } from '@/components/category/CategoryProductCard'
+import InfiniteProductGrid from '@/components/category/InfiniteProductGrid'
 import Pagination from '@/components/category/Pagination'
+import { listingEndpoint } from '@/lib/catalogue/infinite-state'
+import { toListingCard } from '@/lib/catalogue/listing-page'
+import { resultCountText } from '@/lib/catalogue/result-count'
 import {
   type ProductTypeFilter,
   SHOP_PAGE_SIZE,
@@ -38,12 +40,6 @@ function parsePrice(raw: string | string[] | undefined): number | undefined {
   if (typeof raw !== 'string') return undefined
   const n = Number.parseFloat(raw)
   return Number.isFinite(n) && n >= 0 ? n : undefined
-}
-
-function resultCountText(total: number, from: number, to: number): string {
-  if (total === 1) return 'מציג תוצאה יחידה'
-  if (to - from + 1 >= total) return `מציגים את כל ⁦${total}⁩ התוצאות`
-  return `מציג ${from}–${to} מתוך ${total} תוצאות`
 }
 
 type QueryArgs = {
@@ -145,27 +141,26 @@ async function ResultGrid({
     )
   }
 
-  const { totalPages, currentPage, from, to } = pageWindow(total, args.page)
+  const { totalPages, currentPage } = pageWindow(total, args.page)
 
+  // The first page is rendered here, on the server, and the numbered links
+  // are handed to the grid as its fallback. See InfiniteProductGrid.
   return (
-    <>
-      <ul className="category-products">
-        {items.map((product) => (
-          <li key={product.id} className="category-products__item">
-            <CategoryProductCard product={product as CategoryProduct} />
-          </li>
-        ))}
-      </ul>
+    <InfiniteProductGrid
+      initial={items.map((product) => toListingCard(product as CategoryProduct))}
+      startPage={currentPage}
+      totalPages={totalPages}
+      total={total}
+      pageSize={SHOP_PAGE_SIZE}
+      endpoint={listingEndpoint('shop', linkParams)}
+    >
       <Pagination
         pathname="/products"
         params={linkParams}
         currentPage={currentPage}
         totalPages={totalPages}
       />
-      <p className="category-page__count category-page__count--bottom">
-        {resultCountText(total, from, to)}
-      </p>
-    </>
+    </InfiniteProductGrid>
   )
 }
 

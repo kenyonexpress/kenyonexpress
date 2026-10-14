@@ -22,9 +22,9 @@ production has it.
 
 | | main | prod |
 |---|---|---|
-| EXISTS | 7 | 9 |
-| PARTIAL | 15 | 16 |
-| MISSING | 8 | 5 |
+| EXISTS | 9 | 9 |
+| PARTIAL | 14 | 16 |
+| MISSING | 7 | 5 |
 
 Nine features are further along on prod than on main: recently viewed,
 wishlist, social proof, offline redemption queue, supplier wizard, admin KPIs,
@@ -44,7 +44,7 @@ what main has.
 | 1 | Instant search, typo tolerance, Hebrew synonyms | Amazon, Zap, Wolt | PARTIAL | PARTIAL | 2 | build. Blocked by a product rule, see note A |
 | 2 | Facets: price, city, category tree, discount, supplier | Amazon, Zap, Booking | EXISTS | PARTIAL | 0 | closed 2026-10-14 on the search page |
 | 3 | Sort: relevance, price, discount, newest, rating | all | PARTIAL | PARTIAL | 1 | discount and search-page control closed 2026-10-14; rating needs pending 235 |
-| 4 | Infinite scroll, 24 per page, scroll restoration | TikTok Shop, Lazada, Wolt | MISSING | MISSING | 2 | build |
+| 4 | Infinite scroll, 24 per page, scroll restoration | TikTok Shop, Lazada, Wolt | EXISTS | MISSING | 0 | closed 2026-10-14 |
 | 5 | Recently viewed | Amazon, Booking | MISSING | PARTIAL | 1.5 | port, then add home rail. See note B |
 | 6 | Wishlist | Amazon, Lazada, Booking | PARTIAL | EXISTS | 1 | port hearts and provider |
 | 7 | Price-drop alerts | Zap, Amazon | EXISTS | PARTIAL | 0 | none on main |
@@ -179,6 +179,24 @@ and no search-page control, otherwise identical.
 **4. Infinite scroll.** Both lines: numbered `src/components/category/Pagination.tsx`
 with `?page=`. No `IntersectionObserver` in `src`. Category page size is 8 on
 main and 12 on prod; the queue asks for 24.
+
+Closed on main, 2026-10-14. `src/components/category/InfiniteProductGrid.tsx`
+renders the server's first page and appends the next one when the end of the
+grid nears, from `/api/catalogue/listing` (the pages' own parsers and cached
+loaders, `src/lib/catalogue/listing-page.ts`). Both listings hold 24 a page
+(D-45). The numbered links stay in the response and are replaced by a "load
+more" button only after the grid has mounted and can observe. What was loaded
+and the scroll offset are kept in sessionStorage and put back on a history
+navigation only.
+
+Verified in Chromium against a built server and live data, `/products`, 46
+products: 24 cards, then 46 after scrolling, no duplicates, the count line
+follows; a click on card 31 and Back returns 46 cards at the same offset
+(2245); a fresh visit starts at 24 and the top. With script disabled the
+response carries the numbered links. Not verified: a category page in the
+browser (no live category holds more than 24, so none has a second page;
+covered by unit tests and the endpoint), Safari and Firefox, and layout shift.
+The search page keeps its single page of 48.
 
 **5. Recently viewed.** main: nothing. prod: `src/components/storefront/RecentlyViewedRail.tsx`
 on the product page, localStorage key `ke_recently_viewed`, 12 items, hydrated
