@@ -4,7 +4,7 @@ Updated: 2026-10-14 (Asia/Bangkok). Queue: FINAL-CLOSEOUT L1 to L16, issued 14.1
 
 ## Current Position
 
-**המשך מ: שלב L10 (BUILD GAPS), השורות שנותרו: 1/27/29 (חיפוש בכותרת ומגה-מניו, סותרות כלל קיים), 13 (IndexedDB + Background Sync), 14, 16, 17, 21, 23, 25, ואז מסלול הכסף (19, 20, 22) אחד לכל PR. הבא: 21 (כרטיסי מתנה) או 25 (עגלה נטושה). סגורות: 2, 4, 6, 8, 9, 15, 18, 24, 26, 28, 30, 29 (אדמין), 3 (חוץ מדירוג ופופולריות), 5 (פר-דפדפן), 10 (חוץ משעות שירות)**
+**המשך מ: שלב L10 (BUILD GAPS), השורות שנותרו: 1/27/29 (חיפוש בכותרת ומגה-מניו, סותרות כלל קיים), 13 (IndexedDB + Background Sync), 14, 16, 17, 23, 25, ואז מסלול הכסף (19, 20, 22) אחד לכל PR. הבא: 25 (עגלה נטושה). סגורות: 2, 4, 6, 8, 9, 15, 18, 21, 24, 26, 28, 30, 29 (אדמין), 3 (חוץ מדירוג ופופולריות), 5 (פר-דפדפן), 10 (חוץ משעות שירות)**
 
 The checklist with evidence is `docs/FINAL-CLOSEOUT.md`. Decisions taken alone
 are `docs/DECISIONS.md` D-42 onward.
@@ -97,6 +97,12 @@ Closed so far, each with type-check, lint, test green (510 files, 5949 passed):
   1440 with live data: pick three, table of three, remove one, reload keeps
   two. `/compare` itself is a legacy URL answered 410, which is why the page
   is not there; the route-inventory test is what caught it.
+- Row 21, gift cards: guarded admin switch for `is_gift_card`, printable QR
+  with the code in the URL fragment, link from the wallet. 534 files, 6195
+  tests, build 0. Chromium: fragment prefill works and no request carried the
+  code. No gift card exists live, so the QR was not seen for a real card.
+  Two repo guards fired during the work and were followed: QR encoding only
+  through `lib/vouchers/qr-image.ts`, and `requireAdminSession` for the switch.
 - 14.10: other autopilot sessions (STEP 69, 70) run in
   `/Users/ofir/kenyonexpress-autopilot` on another branch. This checkout
   showed no foreign edits, so work continued.

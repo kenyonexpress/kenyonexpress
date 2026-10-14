@@ -2,6 +2,7 @@
 
 import { type GiftCardState, judgeGiftCard } from '@/lib/commerce/gift-card'
 import { hashGiftCardCode, isWellFormedGiftCardCode } from '@/lib/gift-cards/code'
+import { giftCardQrDataUrl } from '@/lib/gift-cards/qr'
 import { withActionContext } from '@/lib/observability/action-context'
 import { log } from '@/lib/observability/log'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -47,6 +48,12 @@ export type GiftCardBalanceState = {
   /** Integer agorot. Face value while active, zero in every other state. */
   balanceAgorot?: number
   expiresAt?: string
+  /**
+   * A QR that opens the redeem page with this code typed, for printing. Only
+   * for a card that can still be redeemed, and only to someone who already
+   * typed the code: it carries nothing they do not hold.
+   */
+  qrDataUrl?: string | null
 }
 
 export type GiftCardRedeemState = {
@@ -95,6 +102,7 @@ async function runCheckGiftCardBalance(
     state: judged.state,
     balanceAgorot: judged.balanceAgorot,
     expiresAt: judged.expiresAt.toISOString(),
+    qrDataUrl: judged.state === 'active' ? await giftCardQrDataUrl(raw) : null,
   }
 }
 

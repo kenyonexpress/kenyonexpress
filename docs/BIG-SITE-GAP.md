@@ -22,8 +22,8 @@ production has it.
 
 | | main | prod |
 |---|---|---|
-| EXISTS | 14 | 9 |
-| PARTIAL | 12 | 16 |
+| EXISTS | 15 | 9 |
+| PARTIAL | 11 | 16 |
 | MISSING | 4 | 5 |
 
 Nine features are further along on prod than on main: recently viewed,
@@ -61,7 +61,7 @@ what main has.
 | 18 | Related products | all | EXISTS | PARTIAL | done | closed 2026-10-14 |
 | 19 | Bundle deals, N for X | Amazon, Lazada | MISSING | MISSING | 4 | build. Money path |
 | 20 | Flash sales | Lazada, TikTok Shop, Groupon | PARTIAL | PARTIAL | 4 | build. Money path |
-| 21 | Gift cards | Amazon, Wolt | PARTIAL | PARTIAL | 2 | finish: QR, admin toggle, entry link |
+| 21 | Gift cards | Amazon, Wolt | EXISTS | PARTIAL | 0 | QR, guarded admin switch and wallet link closed 2026-10-14 |
 | 22 | Referral program | Wolt, Booking | PARTIAL | EXISTS | 1 | port automatic payout. Money path |
 | 23 | Loyalty tiers | Booking (Genius), Lazada | MISSING | PARTIAL | 3 | port, then perks |
 | 24 | Push notifications | all | EXISTS | EXISTS | done | prompt wired 2026-10-14 |
@@ -385,6 +385,29 @@ writes a row. No end time, no banner, no countdown. prod: an admin form at
 finalize, email, `/gift-card` to check and redeem to wallet. Missing: printable
 QR, an admin control for the flag, any link to `/gift-card`. prod: gifting a
 purchased voucher instead, a different feature.
+
+Closed on main, 2026-10-14.
+
+- Admin control: a switch on the product edit page, saved by its own action
+  (`src/server/actions/admin/product-gift-card.ts`), admin tier only. Turning
+  it on is refused unless the product has no supplier, a platform share of
+  100, is not a coupon or a subscription, and is priced at its full value
+  (`src/lib/gift-cards/product-rule.ts`). Those are the four things finalize
+  and migration 234 assume and nothing in the database enforces. Turning it
+  off is always allowed.
+- Printable QR: checking the balance of an active card shows a QR and a print
+  button. The QR opens `/gift-card#CODE`. The code is in the URL fragment,
+  which is never sent to a server, and the page removes it from the address
+  bar after typing it into the field.
+- Link: the wallet page links to `/gift-card`. The footer was left alone: the
+  home parity gate has 0.07 points of headroom at 380.
+
+Verified: unit tests; in Chromium on a built server the fragment fills the
+field, the address becomes `/gift-card`, and no request carried the code; an
+unknown code is refused with no QR. Not verified: the QR for a real card (no
+gift card has ever been issued: `gift_cards` has 0 rows, and no product is
+flagged), and the admin switch in a browser (needs an admin session). A
+nested `<main>` on the page was also replaced with a `<div>`.
 
 **22. Referral.** main: code per user, `?ref` cookie, claim at signup,
 `src/server/referrals/complete.ts` on the first order. The bonus is paid only

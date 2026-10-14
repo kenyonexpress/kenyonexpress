@@ -7,7 +7,15 @@ import {
   redeemGiftCard,
 } from '@/server/actions/gift-cards'
 import Link from 'next/link'
-import { useActionState, useId } from 'react'
+import { useActionState, useEffect, useId, useRef } from 'react'
+
+/**
+ * Roughly a code: sixteen letters and digits, with or without the dashes.
+ * Only decides whether a URL fragment is worth typing into the field. The
+ * real check is the server's (`isWellFormedGiftCardCode`), which lives in a
+ * module that imports `node:crypto` and so cannot be loaded here.
+ */
+const CODE_SHAPE = /^[A-Za-z0-9]{4}(-?[A-Za-z0-9]{4}){3}$/
 
 const EMPTY_BALANCE: GiftCardBalanceState = { ok: false }
 const EMPTY_REDEEM: GiftCardRedeemState = { ok: false }
@@ -51,6 +59,30 @@ function BalanceResult({ state }: { state: GiftCardBalanceState }) {
       {state.state === 'active' && expiry && (
         <p className="mt-1 text-heading/70">בתוקף עד {expiry}.</p>
       )}
+      {state.qrDataUrl && (
+        <div className="mt-4 border-t border-border pt-4">
+          <p className="text-heading/80">
+            רוצים לתת את הכרטיס במתנה? סריקת הקוד פותחת את דף המימוש עם הקוד כבר מוקלד.
+          </p>
+          <img
+            src={state.qrDataUrl}
+            alt="קוד QR למימוש הגיפט קארד"
+            width={200}
+            height={200}
+            className="mt-3"
+          />
+          <button
+            type="button"
+            onClick={() => window.print()}
+            className="mt-3 min-h-11 rounded-lg border border-border px-4 text-sm font-semibold text-heading print:hidden"
+          >
+            הדפסה
+          </button>
+          <p className="mt-2 text-xs text-heading/70">
+            מי שמחזיק בקוד יכול לממש אותו. שמרו על הדף המודפס כמו על כסף מזומן.
+          </p>
+        </div>
+      )}
     </output>
   )
 }
@@ -68,6 +100,18 @@ export default function GiftCardRedeemForm({ signedIn }: { signedIn: boolean }) 
   const [redeem, redeemAction, redeemPending] = useActionState(redeemGiftCard, EMPTY_REDEEM)
   const baseId = useId()
   const pending = balancePending || redeemPending
+
+  // A printed card's QR opens this page as `/gift-card#CODE`. The fragment
+  // never reaches the server (see lib/gift-cards/qr.ts), so it is read here,
+  // typed into the field, and then removed from the address bar so the code
+  // does not sit in the history entry or get copied with the link.
+  const codeInput = useRef<HTMLInputElement | null>(null)
+  useEffect(() => {
+    const fromHash = decodeURIComponent(window.location.hash.replace(/^#/, ''))
+    if (!CODE_SHAPE.test(fromHash) || !codeInput.current) return
+    codeInput.current.value = fromHash
+    window.history.replaceState(null, '', window.location.pathname + window.location.search)
+  }, [])
 
   if (redeem.ok) {
     return (
@@ -97,6 +141,7 @@ export default function GiftCardRedeemForm({ signedIn }: { signedIn: boolean }) 
           </label>
           <input
             id={`${baseId}-code`}
+            ref={codeInput}
             name="code"
             type="text"
             required

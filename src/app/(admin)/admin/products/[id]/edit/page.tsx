@@ -1,3 +1,4 @@
+import GiftCardFlagToggle from '@/components/admin/GiftCardFlagToggle'
 import ProductForm, { type SupplierOption } from '@/components/admin/ProductForm'
 import { canSeeMoney } from '@/lib/admin/permissions'
 import { requireSection } from '@/lib/admin/rbac'
@@ -66,6 +67,14 @@ export default async function EditProductPage({ params }: Props) {
         suppliers={(suppliers ?? []) as SupplierOption[]}
         hidePricing={!canSeeMoney(session.role)}
       />
+      {/* A money decision, so the same tier that sees money. The column is
+          not in the generated types; a database without it reads as off. */}
+      {canSeeMoney(session.role) && (
+        <GiftCardFlagToggle
+          productId={product.id}
+          enabled={(product as { is_gift_card?: boolean | null }).is_gift_card === true}
+        />
+      )}
     </div>
   )
 }
