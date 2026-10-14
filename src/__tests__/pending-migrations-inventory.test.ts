@@ -167,6 +167,14 @@ describe('the pending migration inventory', () => {
       '232_reviews_admin_moderation_only.sql',
       '233_wishlist_alerts.sql',
       '234_gift_cards.sql',
+      // 235, 240 and 241 ARE applied (2026-10-15, approved in session):
+      // `product_live_and_rating_235`, `perf_fk_indexes_and_cart_uniqueness_240`
+      // and `rls_initplan_policies_241`, through MCP apply_migration in the
+      // order 240, 241, 235, each verified object-by-object before the next.
+      // README carries the before/after measurements.
+      '235_product_live_and_rating.sql',
+      '240_perf_fk_indexes_and_cart_uniqueness.sql',
+      '241_rls_initplan_policies.sql',
     ])
   })
 
@@ -354,11 +362,6 @@ describe('the pending migration inventory', () => {
       '162_cron_schedule.sql',
       '184_orders_monthly_partitioning.sql',
       '211_whatsapp_selfservice.sql',
-      // 235 is PENDING (2026-09-16): the product page's broadcast topic
-      // (trigger + realtime.send, chosen payload, never raises) and the
-      // approved-reviews rating summary. Dry-run rolled back on production;
-      // apply waits on the migration gate. README carries the measurement.
-      '235_product_live_and_rating.sql',
       // 236 is PENDING (2026-09-16): where the cart's shipping-method pick
       // lands on the order. `orders.shipping_method` (checked text, NULL means
       // the supplier delivers) and `orders.shipping_agorot` (bigint, default 0,
@@ -381,8 +384,6 @@ describe('the pending migration inventory', () => {
       // a second 237 by a parallel session and renumbered to the next free
       // slot; README carries the reasoning and the preconditions.
       '239_push_deliveries_sms_log_opt_outs.sql',
-      '240_perf_fk_indexes_and_cart_uniqueness.sql',
-      '241_rls_initplan_policies.sql',
       // 242 is PENDING (2026-09-17): `job_dlq`, the dead-letter table for the
       // general job queue (src/lib/jobs). Server-only like 069's
       // search_index_dlq; the closing block refuses any client-role grant or
