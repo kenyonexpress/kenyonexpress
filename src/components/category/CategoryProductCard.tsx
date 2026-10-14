@@ -2,6 +2,7 @@
 
 import AddToCartButton from '@/components/cart/AddToCartButton'
 import CardOfferDeadline from '@/components/category/CardOfferDeadline'
+import CompareToggle from '@/components/compare/CompareToggle'
 import WishlistHeart from '@/components/wishlist/WishlistHeart'
 import { cityByName } from '@/lib/geo/cities'
 import { formatDistance } from '@/lib/geo/distance'
@@ -171,6 +172,12 @@ export default function CategoryProductCard({ product }: { product: CategoryProd
           productId={product.id}
           productName={product.name_he}
           className="category-card__heart"
+        />
+        {/* The other top corner of the image. */}
+        <CompareToggle
+          productId={product.id}
+          productName={product.name_he}
+          className="category-card__compare"
         />
       </div>
 
