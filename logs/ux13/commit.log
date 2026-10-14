@@ -1,0 +1,51 @@
+Already up to date
+Done in 194ms using pnpm v11.1.2
+[STARTED] Backing up original state...
+[COMPLETED] Backed up original state in git stash (3d000aee8)
+[STARTED] Running tasks for staged files...
+[STARTED] .lintstagedrc.json — 40 files
+[STARTED] *.{ts,tsx,js,jsx,mjs,cjs,json,jsonc,css} — 14 files
+[STARTED] biome check --write --no-errors-on-unmatched
+[COMPLETED] biome check --write --no-errors-on-unmatched
+[COMPLETED] *.{ts,tsx,js,jsx,mjs,cjs,json,jsonc,css} — 14 files
+[COMPLETED] .lintstagedrc.json — 40 files
+[COMPLETED] Running tasks for staged files...
+[STARTED] Applying modifications from tasks...
+[COMPLETED] Applying modifications from tasks...
+[STARTED] Cleaning up temporary files...
+[COMPLETED] Cleaning up temporary files...
+[phase5/homepage-closeout f7889b2b4] [autopilot] UX13 footer: four columns from lg, a closed accordion of three rows below it, a labelled social nav of real profiles, and payment marks on both bars; the desktop link columns paint again in Chromium 131+.
+ 40 files changed, 6409 insertions(+), 94 deletions(-)
+ create mode 100644 e2e/footer.spec.ts
+ create mode 100644 logs/ux13/after-1440.png
+ create mode 100644 logs/ux13/after-380.png
+ create mode 100644 logs/ux13/after-768.png
+ create mode 100644 logs/ux13/after.json
+ create mode 100644 logs/ux13/before-1440.png
+ create mode 100644 logs/ux13/before-380.png
+ create mode 100644 logs/ux13/before-768.png
+ create mode 100644 logs/ux13/before.json
+ create mode 100644 logs/ux13/build.log
+ create mode 100644 logs/ux13/commit-msg.txt
+ create mode 100644 logs/ux13/compare.log
+ create mode 100644 logs/ux13/details-probe.mjs
+ create mode 100644 logs/ux13/details-probe.png
+ create mode 100644 logs/ux13/e2e-footer.log
+ create mode 100644 logs/ux13/e2e-neighbours.log
+ create mode 100644 logs/ux13/failing-titles.txt
+ create mode 100644 logs/ux13/lint-final.log
+ create mode 100644 logs/ux13/lint.log
+ create mode 100644 logs/ux13/neighbours-diff.txt
+ create mode 100644 logs/ux13/overflow-probe.mjs
+ create mode 100644 logs/ux13/overflow-probe2.mjs
+ create mode 100644 logs/ux13/probe-after.err
+ create mode 100644 logs/ux13/probe-before.err
+ create mode 100644 logs/ux13/probe.mjs
+ create mode 100644 logs/ux13/rewrite-footer.py
+ create mode 100644 logs/ux13/start-3347-before.log
+ create mode 100644 logs/ux13/start-3348-after.log
+ create mode 100644 logs/ux13/state-update.py
+ create mode 100644 logs/ux13/test-full.log
+ create mode 100644 src/components/layout/PaymentLogos.test.tsx
+ create mode 100644 src/components/layout/PaymentLogos.tsx
+ create mode 100644 src/components/layout/SiteFooter.test.tsx
