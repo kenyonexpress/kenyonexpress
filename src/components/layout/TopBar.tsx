@@ -1,5 +1,5 @@
+import LoginLink from '@/components/auth/LoginLink'
 import { MapPin, ShoppingBag, Truck, User } from 'lucide-react'
-import Link from 'next/link'
 
 /**
  * COMPONENT 01 OF `docs/COMPONENT-QUEUE.md`: kenyonexpress.co.il's top bar.
@@ -91,13 +91,15 @@ function InfoItem({ Icon, label, href }: InfoItemProps) {
   // and which fades the glyph grey rather than darkening it. Tailwind wraps
   // `hover:` in `@media (hover: hover)`, so a phone never gets a stuck hover
   // after the tap. Focus is the global `:focus-visible` ring in globals.css.
+  // A LoginLink (UX23): the same anchor to /login, which opens the login
+  // dialog over the page when one is mounted and navigates when none is.
   return href ? (
-    <Link
+    <LoginLink
       href={href}
       className="tap-area flex h-topbar-row items-center gap-1.5 transition-colors hover:text-heading-hover"
     >
       {body}
-    </Link>
+    </LoginLink>
   ) : (
     <span className="flex h-topbar-row items-center gap-1.5">{body}</span>
   )

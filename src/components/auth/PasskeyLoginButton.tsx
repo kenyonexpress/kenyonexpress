@@ -66,7 +66,7 @@ export default function PasskeyLoginButton({
         type="button"
         onClick={signIn}
         disabled={pending}
-        className="w-full flex items-center justify-center gap-2 border border-gray-300 rounded-lg py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-60"
+        className="w-full flex min-h-touch-min items-center justify-center gap-2 border border-gray-300 rounded-lg py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-60"
       >
         <svg
           aria-hidden="true"

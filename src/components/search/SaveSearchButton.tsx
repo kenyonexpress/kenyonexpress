@@ -1,5 +1,6 @@
 'use client'
 
+import LoginLink from '@/components/auth/LoginLink'
 import { deleteSavedSearch, saveSearch } from '@/server/actions/saved-searches'
 import { Bookmark, BookmarkCheck } from 'lucide-react'
 import { useState, useTransition } from 'react'
@@ -26,14 +27,14 @@ export default function SaveSearchButton({
 
   if (!signedIn) {
     return (
-      <a
+      <LoginLink
         href={`/login?next=${encodeURIComponent(href)}`}
         className="search-save search-save--link"
         data-testid="save-search-login"
       >
         <Bookmark size={16} aria-hidden="true" />
         התחברו כדי לשמור את החיפוש
-      </a>
+      </LoginLink>
     )
   }
 

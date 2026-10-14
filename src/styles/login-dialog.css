@@ -1,0 +1,159 @@
+/* ===========================================================================
+   UX23: THE LOGIN DIALOG.
+   Measured before (logs/ux23/before.json, the build of 444ed8051 on 3364,
+   anonymous, 380 / 768 / 1440): pressing the top bar's התחברות navigated to
+   /login at every width, so the account was a page away from the cart, the
+   product or the search the shopper was in. The dialog is the /login card's
+   body over the page the shopper is on, with the same modal mechanics as the
+   cart drawer (an overlay button, a body scroll lock as a class, Escape, a
+   Tab wrap) and the same tokens. Scoped BEM (`.login-dialog*`), which is
+   what lets the root layout import it for the whole site: on a page with no
+   dialog it matches nothing.
+   =========================================================================== */
+.login-dialog-root {
+  --login-dialog-gutter: var(--spacing-gutter);
+  --login-dialog-touch: var(--spacing-touch-min);
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  /* The gutter plus the notch insets, so the panel's edge never sits under
+     a rounded corner or the home indicator on a phone. */
+  padding: calc(var(--login-dialog-gutter) + env(safe-area-inset-top, 0px))
+    calc(var(--login-dialog-gutter) + env(safe-area-inset-right, 0px))
+    calc(var(--login-dialog-gutter) + env(safe-area-inset-bottom, 0px))
+    calc(var(--login-dialog-gutter) + env(safe-area-inset-left, 0px));
+  animation: login-dialog-in 150ms ease-out;
+}
+
+.login-dialog__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgb(0 0 0 / 45%);
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+/* The UA sheet for <dialog> is position:absolute, a solid border, 1em of
+   padding and Canvas colours; every one of those is restated here so the
+   panel reads as the /login card (white, the large radius, the card shadow)
+   and sits in the grid cell the root centres. */
+.login-dialog {
+  position: relative;
+  inset: auto;
+  width: min(100%, 26rem);
+  max-height: calc(
+    100dvh -
+    2 *
+    var(--login-dialog-gutter) -
+    env(safe-area-inset-top, 0px) -
+    env(safe-area-inset-bottom, 0px)
+  );
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  color: var(--color-foreground);
+  box-shadow: var(--shadow-card-hover);
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.login-dialog:focus-visible {
+  outline: 2px solid var(--color-brand-primary);
+  outline-offset: -2px;
+}
+
+.login-dialog__header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem 0.75rem 1.5rem;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border-alt);
+}
+
+.login-dialog__title {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-heading);
+}
+
+.login-dialog__close {
+  display: grid;
+  place-items: center;
+  inline-size: var(--login-dialog-touch);
+  block-size: var(--login-dialog-touch);
+  margin-inline-end: calc(-1 * var(--spacing-touch-pad));
+  border: 0;
+  border-radius: var(--radius-round);
+  background: transparent;
+  color: var(--color-icon);
+  cursor: pointer;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.login-dialog__close:hover {
+  background: var(--color-surface-hover);
+  color: var(--color-heading);
+}
+
+.login-dialog__body {
+  padding: 1.25rem 1.5rem 1.5rem;
+}
+
+.login-dialog__signed-in {
+  display: grid;
+  gap: 1rem;
+  text-align: center;
+}
+
+.login-dialog__signed-in-text {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--color-muted);
+}
+
+.login-dialog__account-link {
+  display: inline-grid;
+  place-items: center;
+  min-block-size: var(--login-dialog-touch);
+  padding-inline: 1.25rem;
+  border-radius: var(--radius-cta);
+  background: var(--color-brand-primary);
+  color: var(--color-heading);
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: background-color 150ms ease;
+}
+
+.login-dialog__account-link:hover {
+  background: var(--color-brand-primary-hover);
+}
+
+body.login-dialog-open {
+  overflow: hidden;
+}
+
+@keyframes login-dialog-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-dialog-root {
+    animation: none;
+  }
+}

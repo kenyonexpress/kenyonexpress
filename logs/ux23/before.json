@@ -1,0 +1,908 @@
+{
+  "380": {
+    "home": {
+      "accountLinks": 1,
+      "accountLink": {
+        "text": "התחברות",
+        "href": "/login",
+        "visible": true,
+        "rect": {
+          "x": 152,
+          "y": 74.7,
+          "w": 70.8,
+          "h": 37.3
+        }
+      }
+    },
+    "afterPress": {
+      "url": "/login",
+      "dialog": null,
+      "tablist": null,
+      "forms": [
+        {
+          "visible": true,
+          "rect": {
+            "x": 41,
+            "y": 302,
+            "w": 298,
+            "h": 42
+          },
+          "fields": [],
+          "hiddenNext": null,
+          "submit": "כניסה עם Google"
+        },
+        {
+          "visible": true,
+          "rect": {
+            "x": 41,
+            "y": 454,
+            "w": 298,
+            "h": 204
+          },
+          "fields": ["email", "password"],
+          "hiddenNext": null,
+          "submit": "כניסה"
+        }
+      ],
+      "buttons": [
+        {
+          "text": "כניסה עם Google",
+          "rect": {
+            "x": 41,
+            "y": 302,
+            "w": 298,
+            "h": 42
+          }
+        },
+        {
+          "text": "כניסה עם טביעת אצבע או Face ID",
+          "rect": {
+            "x": 41,
+            "y": 356,
+            "w": 298,
+            "h": 42
+          }
+        },
+        {
+          "text": "כניסה",
+          "rect": {
+            "x": 41,
+            "y": 618,
+            "w": 298,
+            "h": 40
+          }
+        },
+        {
+          "text": "כניסה ללא סיסמה (קישור מאובטח לאימייל)",
+          "rect": {
+            "x": 41,
+            "y": 681,
+            "w": 298,
+            "h": 20
+          }
+        }
+      ],
+      "passkey": {
+        "text": "כניסה עם טביעת אצבע או Face ID",
+        "rect": {
+          "x": 41,
+          "y": 356,
+          "w": 298,
+          "h": 42
+        }
+      },
+      "magic": {
+        "text": "כניסה ללא סיסמה (קישור מאובטח לאימייל)",
+        "rect": {
+          "x": 41,
+          "y": 681,
+          "w": 298,
+          "h": 20
+        }
+      },
+      "sms": null,
+      "focus": {
+        "tag": "BODY",
+        "text": "(function(){try{var m=document.cookie.ma",
+        "inDialog": null
+      },
+      "pageHeight": 900,
+      "scrollWidth": 380
+    },
+    "afterEscape": {
+      "url": "/login",
+      "dialog": null,
+      "tablist": null,
+      "forms": [
+        {
+          "visible": true,
+          "rect": {
+            "x": 41,
+            "y": 302,
+            "w": 298,
+            "h": 42
+          },
+          "fields": [],
+          "hiddenNext": null,
+          "submit": "כניסה עם Google"
+        },
+        {
+          "visible": true,
+          "rect": {
+            "x": 41,
+            "y": 454,
+            "w": 298,
+            "h": 204
+          },
+          "fields": ["email", "password"],
+          "hiddenNext": null,
+          "submit": "כניסה"
+        }
+      ],
+      "buttons": [
+        {
+          "text": "כניסה עם Google",
+          "rect": {
+            "x": 41,
+            "y": 302,
+            "w": 298,
+            "h": 42
+          }
+        },
+        {
+          "text": "כניסה עם טביעת אצבע או Face ID",
+          "rect": {
+            "x": 41,
+            "y": 356,
+            "w": 298,
+            "h": 42
+          }
+        },
+        {
+          "text": "כניסה",
+          "rect": {
+            "x": 41,
+            "y": 618,
+            "w": 298,
+            "h": 40
+          }
+        },
+        {
+          "text": "כניסה ללא סיסמה (קישור מאובטח לאימייל)",
+          "rect": {
+            "x": 41,
+            "y": 681,
+            "w": 298,
+            "h": 20
+          }
+        }
+      ],
+      "passkey": {
+        "text": "כניסה עם טביעת אצבע או Face ID",
+        "rect": {
+          "x": 41,
+          "y": 356,
+          "w": 298,
+          "h": 42
+        }
+      },
+      "magic": {
+        "text": "כניסה ללא סיסמה (קישור מאובטח לאימייל)",
+        "rect": {
+          "x": 41,
+          "y": 681,
+          "w": 298,
+          "h": 20
+        }
+      },
+      "sms": null,
+      "focus": {
+        "tag": "BODY",
+        "text": "(function(){try{var m=document.cookie.ma",
+        "inDialog": null
+      },
+      "pageHeight": 900,
+      "scrollWidth": 380
+    },
+    "loginPage": {
+      "url": "/login",
+      "dialog": null,
+      "tablist": null,
+      "forms": [
+        {
+          "visible": true,
+          "rect": {
+            "x": 41,
+            "y": 302,
+            "w": 298,
+            "h": 42
+          },
+          "fields": [],
+          "hiddenNext": null,
+          "submit": "כניסה עם Google"
+        },
+        {
+          "visible": true,
+          "rect": {
+            "x": 41,
+            "y": 454,
+            "w": 298,
+            "h": 204
+          },
+          "fields": ["email", "password"],
+          "hiddenNext": null,
+          "submit": "כניסה"
+        }
+      ],
+      "buttons": [
+        {
+          "text": "כניסה עם Google",
+          "rect": {
+            "x": 41,
+            "y": 302,
+            "w": 298,
+            "h": 42
+          }
+        },
+        {
+          "text": "כניסה עם טביעת אצבע או Face ID",
+          "rect": {
+            "x": 41,
+            "y": 356,
+            "w": 298,
+            "h": 42
+          }
+        },
+        {
+          "text": "כניסה",
+          "rect": {
+            "x": 41,
+            "y": 618,
+            "w": 298,
+            "h": 40
+          }
+        },
+        {
+          "text": "כניסה ללא סיסמה (קישור מאובטח לאימייל)",
+          "rect": {
+            "x": 41,
+            "y": 681,
+            "w": 298,
+            "h": 20
+          }
+        }
+      ],
+      "passkey": {
+        "text": "כניסה עם טביעת אצבע או Face ID",
+        "rect": {
+          "x": 41,
+          "y": 356,
+          "w": 298,
+          "h": 42
+        }
+      },
+      "magic": {
+        "text": "כניסה ללא סיסמה (קישור מאובטח לאימייל)",
+        "rect": {
+          "x": 41,
+          "y": 681,
+          "w": 298,
+          "h": 20
+        }
+      },
+      "sms": null,
+      "focus": {
+        "tag": "BODY",
+        "text": "(function(){try{var m=document.cookie.ma",
+        "inDialog": null
+      },
+      "pageHeight": 900,
+      "scrollWidth": 380
+    },
+    "errors": []
+  },
+  "768": {
+    "home": {
+      "accountLinks": 1,
+      "accountLink": {
+        "text": "התחברות",
+        "href": "/login",
+        "visible": true,
+        "rect": {
+          "x": 39,
+          "y": 0,
+          "w": 70.8,
+          "h": 37.3
+        }
+      }
+    },
+    "afterPress": {
+      "url": "/login",
+      "dialog": null,
+      "tablist": null,
+      "forms": [
+        {
+          "visible": true,
+          "rect": {
+            "x": 217,
+            "y": 302,
+            "w": 334,
+            "h": 42
+          },
+          "fields": [],
+          "hiddenNext": null,
+          "submit": "כניסה עם Google"
+        },
+        {
+          "visible": true,
+          "rect": {
+            "x": 217,
+            "y": 454,
+            "w": 334,
+            "h": 204
+          },
+          "fields": ["email", "password"],
+          "hiddenNext": null,
+          "submit": "כניסה"
+        }
+      ],
+      "buttons": [
+        {
+          "text": "כניסה עם Google",
+          "rect": {
+            "x": 217,
+            "y": 302,
+            "w": 334,
+            "h": 42
+          }
+        },
+        {
+          "text": "כניסה עם טביעת אצבע או Face ID",
+          "rect": {
+            "x": 217,
+            "y": 356,
+            "w": 334,
+            "h": 42
+          }
+        },
+        {
+          "text": "כניסה",
+          "rect": {
+            "x": 217,
+            "y": 618,
+            "w": 334,
+            "h": 40
+          }
+        },
+        {
+          "text": "כניסה ללא סיסמה (קישור מאובטח לאימייל)",
+          "rect": {
+            "x": 217,
+            "y": 681,
+            "w": 334,
+            "h": 20
+          }
+        }
+      ],
+      "passkey": {
+        "text": "כניסה עם טביעת אצבע או Face ID",
+        "rect": {
+          "x": 217,
+          "y": 356,
+          "w": 334,
+          "h": 42
+        }
+      },
+      "magic": {
+        "text": "כניסה ללא סיסמה (קישור מאובטח לאימייל)",
+        "rect": {
+          "x": 217,
+          "y": 681,
+          "w": 334,
+          "h": 20
+        }
+      },
+      "sms": null,
+      "focus": {
+        "tag": "BODY",
+        "text": "(function(){try{var m=document.cookie.ma",
+        "inDialog": null
+      },
+      "pageHeight": 900,
+      "scrollWidth": 768
+    },
+    "afterEscape": {
+      "url": "/login",
+      "dialog": null,
+      "tablist": null,
+      "forms": [
+        {
+          "visible": true,
+          "rect": {
+            "x": 217,
+            "y": 302,
+            "w": 334,
+            "h": 42
+          },
+          "fields": [],
+          "hiddenNext": null,
+          "submit": "כניסה עם Google"
+        },
+        {
+          "visible": true,
+          "rect": {
+            "x": 217,
+            "y": 454,
+            "w": 334,
+            "h": 204
+          },
+          "fields": ["email", "password"],
+          "hiddenNext": null,
+          "submit": "כניסה"
+        }
+      ],
+      "buttons": [
+        {
+          "text": "כניסה עם Google",
+          "rect": {
+            "x": 217,
+            "y": 302,
+            "w": 334,
+            "h": 42
+          }
+        },
+        {
+          "text": "כניסה עם טביעת אצבע או Face ID",
+          "rect": {
+            "x": 217,
+            "y": 356,
+            "w": 334,
+            "h": 42
+          }
+        },
+        {
+          "text": "כניסה",
+          "rect": {
+            "x": 217,
+            "y": 618,
+            "w": 334,
+            "h": 40
+          }
+        },
+        {
+          "text": "כניסה ללא סיסמה (קישור מאובטח לאימייל)",
+          "rect": {
+            "x": 217,
+            "y": 681,
+            "w": 334,
+            "h": 20
+          }
+        }
+      ],
+      "passkey": {
+        "text": "כניסה עם טביעת אצבע או Face ID",
+        "rect": {
+          "x": 217,
+          "y": 356,
+          "w": 334,
+          "h": 42
+        }
+      },
+      "magic": {
+        "text": "כניסה ללא סיסמה (קישור מאובטח לאימייל)",
+        "rect": {
+          "x": 217,
+          "y": 681,
+          "w": 334,
+          "h": 20
+        }
+      },
+      "sms": null,
+      "focus": {
+        "tag": "BODY",
+        "text": "(function(){try{var m=document.cookie.ma",
+        "inDialog": null
+      },
+      "pageHeight": 900,
+      "scrollWidth": 768
+    },
+    "loginPage": {
+      "url": "/login",
+      "dialog": null,
+      "tablist": null,
+      "forms": [
+        {
+          "visible": true,
+          "rect": {
+            "x": 217,
+            "y": 302,
+            "w": 334,
+            "h": 42
+          },
+          "fields": [],
+          "hiddenNext": null,
+          "submit": "כניסה עם Google"
+        },
+        {
+          "visible": true,
+          "rect": {
+            "x": 217,
+            "y": 454,
+            "w": 334,
+            "h": 204
+          },
+          "fields": ["email", "password"],
+          "hiddenNext": null,
+          "submit": "כניסה"
+        }
+      ],
+      "buttons": [
+        {
+          "text": "כניסה עם Google",
+          "rect": {
+            "x": 217,
+            "y": 302,
+            "w": 334,
+            "h": 42
+          }
+        },
+        {
+          "text": "כניסה עם טביעת אצבע או Face ID",
+          "rect": {
+            "x": 217,
+            "y": 356,
+            "w": 334,
+            "h": 42
+          }
+        },
+        {
+          "text": "כניסה",
+          "rect": {
+            "x": 217,
+            "y": 618,
+            "w": 334,
+            "h": 40
+          }
+        },
+        {
+          "text": "כניסה ללא סיסמה (קישור מאובטח לאימייל)",
+          "rect": {
+            "x": 217,
+            "y": 681,
+            "w": 334,
+            "h": 20
+          }
+        }
+      ],
+      "passkey": {
+        "text": "כניסה עם טביעת אצבע או Face ID",
+        "rect": {
+          "x": 217,
+          "y": 356,
+          "w": 334,
+          "h": 42
+        }
+      },
+      "magic": {
+        "text": "כניסה ללא סיסמה (קישור מאובטח לאימייל)",
+        "rect": {
+          "x": 217,
+          "y": 681,
+          "w": 334,
+          "h": 20
+        }
+      },
+      "sms": null,
+      "focus": {
+        "tag": "BODY",
+        "text": "(function(){try{var m=document.cookie.ma",
+        "inDialog": null
+      },
+      "pageHeight": 900,
+      "scrollWidth": 768
+    },
+    "errors": []
+  },
+  "1440": {
+    "home": {
+      "accountLinks": 1,
+      "accountLink": {
+        "text": "התחברות",
+        "href": "/login",
+        "visible": true,
+        "rect": {
+          "x": 135,
+          "y": 0,
+          "w": 70.8,
+          "h": 37.3
+        }
+      }
+    },
+    "afterPress": {
+      "url": "/login",
+      "dialog": null,
+      "tablist": null,
+      "forms": [
+        {
+          "visible": true,
+          "rect": {
+            "x": 553,
+            "y": 302,
+            "w": 334,
+            "h": 42
+          },
+          "fields": [],
+          "hiddenNext": null,
+          "submit": "כניסה עם Google"
+        },
+        {
+          "visible": true,
+          "rect": {
+            "x": 553,
+            "y": 454,
+            "w": 334,
+            "h": 204
+          },
+          "fields": ["email", "password"],
+          "hiddenNext": null,
+          "submit": "כניסה"
+        }
+      ],
+      "buttons": [
+        {
+          "text": "כניסה עם Google",
+          "rect": {
+            "x": 553,
+            "y": 302,
+            "w": 334,
+            "h": 42
+          }
+        },
+        {
+          "text": "כניסה עם טביעת אצבע או Face ID",
+          "rect": {
+            "x": 553,
+            "y": 356,
+            "w": 334,
+            "h": 42
+          }
+        },
+        {
+          "text": "כניסה",
+          "rect": {
+            "x": 553,
+            "y": 618,
+            "w": 334,
+            "h": 40
+          }
+        },
+        {
+          "text": "כניסה ללא סיסמה (קישור מאובטח לאימייל)",
+          "rect": {
+            "x": 553,
+            "y": 681,
+            "w": 334,
+            "h": 20
+          }
+        }
+      ],
+      "passkey": {
+        "text": "כניסה עם טביעת אצבע או Face ID",
+        "rect": {
+          "x": 553,
+          "y": 356,
+          "w": 334,
+          "h": 42
+        }
+      },
+      "magic": {
+        "text": "כניסה ללא סיסמה (קישור מאובטח לאימייל)",
+        "rect": {
+          "x": 553,
+          "y": 681,
+          "w": 334,
+          "h": 20
+        }
+      },
+      "sms": null,
+      "focus": {
+        "tag": "BODY",
+        "text": "(function(){try{var m=document.cookie.ma",
+        "inDialog": null
+      },
+      "pageHeight": 900,
+      "scrollWidth": 1440
+    },
+    "afterEscape": {
+      "url": "/login",
+      "dialog": null,
+      "tablist": null,
+      "forms": [
+        {
+          "visible": true,
+          "rect": {
+            "x": 553,
+            "y": 302,
+            "w": 334,
+            "h": 42
+          },
+          "fields": [],
+          "hiddenNext": null,
+          "submit": "כניסה עם Google"
+        },
+        {
+          "visible": true,
+          "rect": {
+            "x": 553,
+            "y": 454,
+            "w": 334,
+            "h": 204
+          },
+          "fields": ["email", "password"],
+          "hiddenNext": null,
+          "submit": "כניסה"
+        }
+      ],
+      "buttons": [
+        {
+          "text": "כניסה עם Google",
+          "rect": {
+            "x": 553,
+            "y": 302,
+            "w": 334,
+            "h": 42
+          }
+        },
+        {
+          "text": "כניסה עם טביעת אצבע או Face ID",
+          "rect": {
+            "x": 553,
+            "y": 356,
+            "w": 334,
+            "h": 42
+          }
+        },
+        {
+          "text": "כניסה",
+          "rect": {
+            "x": 553,
+            "y": 618,
+            "w": 334,
+            "h": 40
+          }
+        },
+        {
+          "text": "כניסה ללא סיסמה (קישור מאובטח לאימייל)",
+          "rect": {
+            "x": 553,
+            "y": 681,
+            "w": 334,
+            "h": 20
+          }
+        }
+      ],
+      "passkey": {
+        "text": "כניסה עם טביעת אצבע או Face ID",
+        "rect": {
+          "x": 553,
+          "y": 356,
+          "w": 334,
+          "h": 42
+        }
+      },
+      "magic": {
+        "text": "כניסה ללא סיסמה (קישור מאובטח לאימייל)",
+        "rect": {
+          "x": 553,
+          "y": 681,
+          "w": 334,
+          "h": 20
+        }
+      },
+      "sms": null,
+      "focus": {
+        "tag": "BODY",
+        "text": "(function(){try{var m=document.cookie.ma",
+        "inDialog": null
+      },
+      "pageHeight": 900,
+      "scrollWidth": 1440
+    },
+    "loginPage": {
+      "url": "/login",
+      "dialog": null,
+      "tablist": null,
+      "forms": [
+        {
+          "visible": true,
+          "rect": {
+            "x": 553,
+            "y": 302,
+            "w": 334,
+            "h": 42
+          },
+          "fields": [],
+          "hiddenNext": null,
+          "submit": "כניסה עם Google"
+        },
+        {
+          "visible": true,
+          "rect": {
+            "x": 553,
+            "y": 454,
+            "w": 334,
+            "h": 204
+          },
+          "fields": ["email", "password"],
+          "hiddenNext": null,
+          "submit": "כניסה"
+        }
+      ],
+      "buttons": [
+        {
+          "text": "כניסה עם Google",
+          "rect": {
+            "x": 553,
+            "y": 302,
+            "w": 334,
+            "h": 42
+          }
+        },
+        {
+          "text": "כניסה עם טביעת אצבע או Face ID",
+          "rect": {
+            "x": 553,
+            "y": 356,
+            "w": 334,
+            "h": 42
+          }
+        },
+        {
+          "text": "כניסה",
+          "rect": {
+            "x": 553,
+            "y": 618,
+            "w": 334,
+            "h": 40
+          }
+        },
+        {
+          "text": "כניסה ללא סיסמה (קישור מאובטח לאימייל)",
+          "rect": {
+            "x": 553,
+            "y": 681,
+            "w": 334,
+            "h": 20
+          }
+        }
+      ],
+      "passkey": {
+        "text": "כניסה עם טביעת אצבע או Face ID",
+        "rect": {
+          "x": 553,
+          "y": 356,
+          "w": 334,
+          "h": 42
+        }
+      },
+      "magic": {
+        "text": "כניסה ללא סיסמה (קישור מאובטח לאימייל)",
+        "rect": {
+          "x": 553,
+          "y": 681,
+          "w": 334,
+          "h": 20
+        }
+      },
+      "sms": null,
+      "focus": {
+        "tag": "BODY",
+        "text": "(function(){try{var m=document.cookie.ma",
+        "inDialog": null
+      },
+      "pageHeight": 900,
+      "scrollWidth": 1440
+    },
+    "errors": []
+  }
+}

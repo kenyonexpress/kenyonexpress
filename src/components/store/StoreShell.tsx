@@ -5,6 +5,7 @@ import SiteFooter from '@/components/layout/SiteFooter'
 import SiteHeader from '@/components/layout/SiteHeader'
 import WhatsAppFloat from '@/components/shared/WhatsAppFloat'
 import DeferredStoreChrome from '@/components/store/DeferredStoreChrome'
+import { phoneAuthEnabled } from '@/lib/auth/phone-otp'
 
 /**
  * The storefront's chrome and providers, as one component.
@@ -47,7 +48,7 @@ export default function StoreShell({ children }: { children: React.ReactNode }) 
         <SiteFooter />
       </div>
       <WhatsAppFloat />
-      <DeferredStoreChrome />
+      <DeferredStoreChrome phoneEnabled={phoneAuthEnabled()} />
     </CartProvider>
   )
 }

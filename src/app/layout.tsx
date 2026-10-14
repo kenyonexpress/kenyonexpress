@@ -16,6 +16,9 @@ import './globals.css'
 // The header cart is in the masthead on every route, so its styles load here
 // rather than with the /cart page. See the note at the top of the file.
 import '@/styles/mini-cart.css'
+// The login dialog (UX23) can open on any storefront page, so its sheet loads
+// here with the cart drawer's; scoped `.login-dialog*` BEM, nothing bare.
+import '@/styles/login-dialog.css'
 /**
  * The three below are imported HERE, not by the segment that uses them, and the
  * reason is the number of requests rather than the number of bytes.

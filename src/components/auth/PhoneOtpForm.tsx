@@ -25,7 +25,16 @@ function getSuccess(state: AuthState): string | null {
   return state && 'success' in state ? state.success : null
 }
 
-export default function PhoneOtpForm({ next }: { next?: string }) {
+export default function PhoneOtpForm({
+  next,
+  idPrefix = 'otp',
+}: {
+  next?: string
+  /** Keeps the field ids unique when the form renders inside the login dialog (UX23). */
+  idPrefix?: string
+}) {
+  const phoneId = `${idPrefix}-phone`
+  const tokenId = `${idPrefix}-token`
   const [sendState, sendAction, sendPending] = useActionState<AuthState, FormData>(
     sendPhoneOtp,
     null,
@@ -48,11 +57,11 @@ export default function PhoneOtpForm({ next }: { next?: string }) {
   if (!confirmed) {
     return (
       <form action={sendAction} className="space-y-3">
-        <label htmlFor="otp-phone" className="block text-sm font-medium text-gray-700">
+        <label htmlFor={phoneId} className="block text-sm font-medium text-gray-700">
           מספר טלפון נייד
         </label>
         <input
-          id="otp-phone"
+          id={phoneId}
           name="phone"
           type="tel"
           required
@@ -72,7 +81,7 @@ export default function PhoneOtpForm({ next }: { next?: string }) {
         <button
           type="submit"
           disabled={sendPending}
-          className="w-full border border-brand text-heading hover:bg-brand/5 disabled:opacity-60 font-semibold rounded-lg py-2.5 text-sm transition-colors"
+          className="w-full min-h-touch-min border border-brand text-heading hover:bg-brand/5 disabled:opacity-60 font-semibold rounded-lg py-2.5 text-sm transition-colors"
         >
           {sendPending ? 'שולחים קוד...' : 'שליחת קוד ב-SMS'}
         </button>
@@ -87,11 +96,11 @@ export default function PhoneOtpForm({ next }: { next?: string }) {
 
       <p className="text-sm text-gray-600">{`שלחנו קוד ל-${confirmed}`}</p>
 
-      <label htmlFor="otp-token" className="block text-sm font-medium text-gray-700">
+      <label htmlFor={tokenId} className="block text-sm font-medium text-gray-700">
         הקוד מה-SMS
       </label>
       <input
-        id="otp-token"
+        id={tokenId}
         name="token"
         type="text"
         required
@@ -114,7 +123,7 @@ export default function PhoneOtpForm({ next }: { next?: string }) {
       <button
         type="submit"
         disabled={verifyPending}
-        className="w-full bg-brand text-heading hover:bg-brand-dark hover:text-white disabled:opacity-60 font-semibold rounded-lg py-2.5 text-sm transition-colors"
+        className="w-full min-h-touch-min bg-brand text-heading hover:bg-brand-dark hover:text-white disabled:opacity-60 font-semibold rounded-lg py-2.5 text-sm transition-colors"
       >
         {verifyPending ? 'מאמתים...' : 'כניסה'}
       </button>
@@ -122,7 +131,7 @@ export default function PhoneOtpForm({ next }: { next?: string }) {
       <button
         type="button"
         onClick={() => setConfirmed(null)}
-        className="w-full text-xs text-center text-gray-500 hover:text-link"
+        className="w-full min-h-touch-min text-xs text-center text-gray-500 hover:text-link"
       >
         שינוי מספר טלפון
       </button>

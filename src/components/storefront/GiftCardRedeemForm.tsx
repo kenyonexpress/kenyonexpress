@@ -1,5 +1,6 @@
 'use client'
 
+import LoginLink from '@/components/auth/LoginLink'
 import {
   type GiftCardBalanceState,
   type GiftCardRedeemState,
@@ -120,12 +121,12 @@ export default function GiftCardRedeemForm({ signedIn }: { signedIn: boolean }) 
               {redeemPending ? 'ממיר לארנק...' : 'מימוש לארנק'}
             </button>
           ) : (
-            <Link
+            <LoginLink
               href="/login?next=/gift-card"
               className={`${buttonClass} inline-flex items-center`}
             >
               התחברות למימוש
-            </Link>
+            </LoginLink>
           )}
           <button
             type="submit"

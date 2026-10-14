@@ -2,12 +2,14 @@ import LeftSidebar from '@/components/LeftSidebar'
 import RightSidebar from '@/components/RightSidebar'
 import SiteFooter from '@/components/SiteFooter'
 import SkipLink from '@/components/a11y/SkipLink'
+import DeferredLoginDialog from '@/components/auth/DeferredLoginDialog'
 import CartBootstrap from '@/components/cart/CartBootstrap'
 import CartDrawer from '@/components/cart/CartDrawer'
 import { CartProvider } from '@/components/cart/CartProvider'
 import Header from '@/components/layout/Header'
 import WhatsAppFloat from '@/components/shared/WhatsAppFloat'
 import DeferredToaster from '@/components/ui/DeferredToaster'
+import { phoneAuthEnabled } from '@/lib/auth/phone-otp'
 
 // Synchronous for the same reason as the store group's layout: the cart's two
 // cookie reads live in /api/cart, fetched client-side by <CartBootstrap>, so
@@ -67,6 +69,8 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         <SiteFooter />
       </div>
       <CartDrawer />
+      {/* The login dialog (UX23), the same host the storefront chrome mounts. */}
+      <DeferredLoginDialog phoneEnabled={phoneAuthEnabled()} />
       <WhatsAppFloat />
       <DeferredToaster position="top-center" dir="rtl" richColors closeButton />
     </CartProvider>

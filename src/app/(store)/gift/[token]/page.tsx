@@ -1,3 +1,4 @@
+import LoginLink from '@/components/auth/LoginLink'
 import GiftClaimForm from '@/components/gifts/GiftClaimForm'
 import { createClient } from '@/lib/supabase/server'
 import { loadGiftPreview } from '@/server/actions/gifts'
@@ -101,12 +102,12 @@ async function GiftContent({ params }: Props) {
               כדי לקבל את הקופון לחשבון שלכם צריך להתחבר או להירשם. הקופון יישמר בחשבון שאיתו
               תתחברו.
             </p>
-            <Link
+            <LoginLink
               href={`/login?next=${encodeURIComponent(`/gift/${token}`)}`}
               className="mt-4 inline-block rounded-lg bg-brand px-6 py-3 font-semibold text-brand-dark transition-colors hover:bg-brand-primary-hover"
             >
               התחברות וקבלת הקופון
-            </Link>
+            </LoginLink>
           </>
         )}
       </div>

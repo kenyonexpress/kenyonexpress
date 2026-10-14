@@ -1,5 +1,6 @@
 'use client'
 
+import DeferredLoginDialog from '@/components/auth/DeferredLoginDialog'
 import dynamic from 'next/dynamic'
 
 /**
@@ -28,10 +29,12 @@ const CompareBar = dynamic(() => import('@/components/compare/CompareBar'), {
   ssr: false,
 })
 
-export default function DeferredStoreChrome() {
+export default function DeferredStoreChrome({ phoneEnabled = false }: { phoneEnabled?: boolean }) {
   return (
     <>
       <CartDrawer />
+      {/* The login dialog (UX23): opened by any LoginLink on the page. */}
+      <DeferredLoginDialog phoneEnabled={phoneEnabled} />
       <MobileCartBar />
       <CompareBar />
       <Toaster position="top-center" dir="rtl" richColors closeButton />
