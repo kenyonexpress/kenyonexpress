@@ -1,0 +1,36 @@
+Already up to date
+Done in 197ms using pnpm v11.1.2
+
+Running 1 test using 1 worker
+
+[1A[2K[1/1] [mobile-chrome] › e2e/cart.spec.ts:274:7 › the cart sheet and the keyboard › the phone sheet takes focus, keeps it, and gives it back on Escape
+[1A[2K  1) [mobile-chrome] › e2e/cart.spec.ts:274:7 › the cart sheet and the keyboard › the phone sheet takes focus, keeps it, and gives it back on Escape 
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    Error: locator.getAttribute: Test timeout of 30000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('a[href^="/product/"]').nth(26)[22m
+
+
+       at helpers.ts:60
+
+      58 |   const count = await links.count()
+      59 |   for (let i = 0; i < count; i += 1) {
+    > 60 |     const href = await links.nth(i).getAttribute('href')
+         |                                     ^
+      61 |     if (href && !hrefs.includes(href)) hrefs.push(href)
+      62 |   }
+      63 |
+        at openPurchasableProduct (/Users/ofir/kenyonexpress-autopilot/e2e/helpers.ts:60:37)
+        at /Users/ofir/kenyonexpress-autopilot/e2e/cart.spec.ts:280:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/cart-the-cart-sheet-and-th-65e00-and-gives-it-back-on-Escape-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/cart-the-cart-sheet-and-th-65e00-and-gives-it-back-on-Escape-mobile-chrome/error-context.md
+
+
+[1A[2K  1 failed
+    [mobile-chrome] › e2e/cart.spec.ts:274:7 › the cart sheet and the keyboard › the phone sheet takes focus, keeps it, and gives it back on Escape 

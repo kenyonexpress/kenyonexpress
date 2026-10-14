@@ -1,0 +1,7 @@
+Already up to date
+Done in 193ms using pnpm v11.1.2
+
+Running 1 test using 1 worker
+
+[1A[2K[1/1] [mobile-chrome] › e2e/cart-page.spec.ts:109:7 › cart page controls (UX16) › with motion reduced the row still leaves and the cart still empties
+[1A[2K  1 passed (10.8s)

@@ -156,6 +156,89 @@
   color: #666;
 }
 
+/* UX16: the unit price times the count, under the name on the card. The
+   stacked rows below 768 carry their own unit-price row, so it is hidden
+   there (see the mobile block). */
+.cart-line__meta {
+  font-size: 0.8125rem;
+  color: #657888;
+}
+
+/* UX16: why "+" is grey. Under the pill, in the pill's own muted ink. */
+.cart-line__qty-hint {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: 0.75rem;
+  color: #6f6f6f;
+  text-align: start;
+}
+
+/* ===========================================================================
+   UX16: A ROW LEAVES, IT DOES NOT VANISH.
+   Measured before (logs/ux16/before.json, midRemove): the article was gone
+   from the DOM within one frame of the remove press and everything under it
+   jumped up by 140px (379 on a phone) with nothing to say what had gone.
+   `data-leaving` is set by CartLineItem on the press; the row fades and folds
+   from its measured height (--cart-line-h, set inline) to nothing, and the
+   `animationend` fires the store write. The global prefers-reduced-motion
+   rule in globals.css collapses the duration to 0.01ms, so a shopper who
+   asked for no motion still gets the event and the removal, just not the
+   fold. Overflow is clipped so the folding box hides its own contents rather
+   than letting them spill over the next row.
+   =========================================================================== */
+.cart-line[data-leaving] {
+  animation: cart-line-leave 240ms ease-in forwards;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+@keyframes cart-line-leave {
+  from {
+    opacity: 1;
+    max-height: var(--cart-line-h, 400px);
+    transform: translateX(0);
+  }
+  60% {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+  to {
+    opacity: 0;
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    border-bottom-width: 0;
+    transform: translateX(12px);
+  }
+}
+
+/* UX16: the line total and the on-site total pulse once when the server's
+   figure for them moves, so a quantity press is answered by the number it
+   changed and not only by the field beside the button. Same reduced-motion
+   collapse as the exit above. */
+.cart-line__price[data-pulse],
+.cart-sidebar__total strong[data-pulse] {
+  animation: cart-total-pulse 500ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes cart-total-pulse {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.cart-line__price,
+.cart-sidebar__total strong {
+  display: inline-block;
+  transform-origin: center;
+}
+
 /* The engine's cashback for this line. Same green as the discount row so the
    two "money back" facts of the cart share one colour. */
 .cart-line__cashback {
@@ -369,6 +452,22 @@
   .cart-line__save {
     order: 4;
     grid-column: 1 / -1;
+  }
+
+  /* The unit-price row (order 5) already says this below 768. */
+  .cart-line__meta {
+    display: none;
+  }
+
+  /* Directly under the quantity pill (order 7), full width. */
+  .cart-line__qty-hint {
+    order: 7;
+    grid-column: 1 / -1;
+    text-align: end;
+  }
+
+  .cart-line__announce {
+    order: 10;
   }
 
   .cart-line__save {
@@ -772,6 +871,134 @@
 
 .cart-sidebar__row--discount {
   color: #328614;
+  font-weight: 700;
+}
+
+/* UX16: the totals breakdown. The savings sum shares the discount rows'
+   green; the notes under a row and under the grand total share the
+   disclaimer's #6f6f6f (5.02:1 on white). No new colour. */
+.cart-sidebar__row--savings {
+  color: #328614;
+  font-weight: 700;
+  padding-top: 0.5rem;
+  border-top: 1px dashed #eee;
+}
+
+.cart-sidebar__row-note {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: #6f6f6f;
+  margin-top: 0.125rem;
+}
+
+.cart-sidebar__saved {
+  margin: -0.5rem 0 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #328614;
+}
+
+.cart-sidebar__grand {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.25rem 1rem;
+  margin: 0 0 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #eee;
+  font-size: 0.9375rem;
+  color: #333e48;
+}
+
+.cart-sidebar__grand strong {
+  font-weight: 700;
+}
+
+.cart-sidebar__grand-note {
+  flex-basis: 100%;
+  font-size: 0.75rem;
+  color: #6f6f6f;
+}
+
+.cart-sidebar__vat {
+  margin: 0 0 1rem;
+  font-size: 0.75rem;
+  color: #6f6f6f;
+}
+
+/* The per-product list behind the subtotal, closed by default. The summary
+   is a 44px row so it is a target on a phone; the marker is the coupon
+   disclosure's chevron rule, drawn with the same border trick. */
+.cart-sidebar__breakdown {
+  margin: 0 0 1rem;
+  border-top: 1px solid #eee;
+}
+
+.cart-sidebar__breakdown-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: var(--cart-touch);
+  cursor: pointer;
+  list-style: none;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #333e48;
+}
+
+.cart-sidebar__breakdown-summary::-webkit-details-marker {
+  display: none;
+}
+
+.cart-sidebar__breakdown-summary::after {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  /* Physical sides on purpose: right + bottom rotated 45deg is a chevron
+     pointing down whichever way the page reads; the logical pair pointed
+     sideways in RTL (logs/ux16/after-qty2-380.png, first cut). */
+  border-right: 2px solid #657888;
+  border-bottom: 2px solid #657888;
+  margin-bottom: 0.25rem;
+  transform: rotate(45deg);
+  transition: transform 0.15s;
+}
+
+.cart-sidebar__breakdown[open] .cart-sidebar__breakdown-summary::after {
+  transform: rotate(-135deg);
+}
+
+.cart-sidebar__breakdown-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0 0 0.75rem;
+  padding: 0;
+  list-style: none;
+}
+
+.cart-sidebar__breakdown-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.125rem 1rem;
+  font-size: 0.8125rem;
+  color: #333e48;
+}
+
+.cart-sidebar__breakdown-name {
+  grid-column: 1 / -1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cart-sidebar__breakdown-calc {
+  color: #6f6f6f;
+}
+
+.cart-sidebar__breakdown-sum {
   font-weight: 700;
 }
 

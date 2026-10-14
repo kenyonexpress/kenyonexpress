@@ -9,7 +9,7 @@ import type { CartViewItem } from '@/lib/cart/types'
 import { shekels } from '@/lib/money-format'
 import { Bookmark, Minus, Plus, Trash2 } from 'lucide-react'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { type AnimationEvent, useEffect, useId, useRef, useState } from 'react'
 
 /**
  * What a typed quantity becomes. Pure so the test can name every edge:
@@ -25,6 +25,32 @@ export function commitTypedQuantity(raw: string, current: number, maxQty: number
   return next === current ? null : next
 }
 
+/**
+ * How long the row is given to animate out before the removal fires anyway.
+ *
+ * The exit is `cart-line-leave` in cart-page.css (240ms; the global
+ * prefers-reduced-motion rule collapses it to 0.01ms and `animationend` still
+ * fires). This is the floor under that: a stylesheet that failed to load, or a
+ * test renderer with no layout, never fires the event, and a remove button
+ * that only works when the CSS arrived is not a remove button.
+ */
+export const CART_LINE_LEAVE_FALLBACK_MS = 450
+
+/** What the sr-only live region says after a quantity change. */
+export function quantityAnnouncement(name: string, quantity: number): string {
+  return `הכמות של ${name} עודכנה ל-${quantity}`
+}
+
+/**
+ * The sentence under the stepper once `+` has nothing left to give, or null
+ * while it has. Two sentences because the two ceilings mean different things:
+ * the shelf is what the catalogue has, the cap is what one order may hold.
+ */
+export function ceilingHint(quantity: number, maxQty: number, tracked: boolean): string | null {
+  if (quantity < maxQty) return null
+  return tracked ? 'זו הכמות המקסימלית במלאי' : `עד ${maxQty} יחידות בהזמנה אחת`
+}
+
 export default function CartLineItem({ item }: { item: CartViewItem }) {
   const { updateQuantity, removeItem, isPending } = useCart()
   // Null outside the cart page (drawer, mini cart), where there is no list
@@ -36,24 +62,59 @@ export default function CartLineItem({ item }: { item: CartViewItem }) {
   // type a new value: backspace over "3" would snap to "1" before the "5" was
   // pressed. It follows `localQty` whenever that moves.
   const [draft, setDraft] = useState(String(item.quantity))
+  // What the live region says. Set by the stepper and the typed field, never
+  // by the server echo, so a change made in another tab is not narrated here.
+  const [announce, setAnnounce] = useState('')
+  // True from the remove (or park) press until the exit animation has ended
+  // and the store write has fired. The row stays in the DOM for that long.
+  const [leaving, setLeaving] = useState(false)
+  // Pulses the line total once when the server's figure for it moves.
+  const [pulse, setPulse] = useState(false)
+  const previousTotal = useRef(item.line_total)
+  const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const afterLeave = useRef<(() => void) | null>(null)
+  const article = useRef<HTMLElement>(null)
+  const hintId = useId()
 
   useEffect(() => {
     setLocalQty(item.quantity)
     setDraft(String(item.quantity))
   }, [item.quantity])
 
+  useEffect(() => {
+    if (previousTotal.current === item.line_total) return
+    previousTotal.current = item.line_total
+    setPulse(true)
+    const timer = setTimeout(() => setPulse(false), 600)
+    return () => clearTimeout(timer)
+  }, [item.line_total])
+
+  useEffect(
+    () => () => {
+      if (leaveTimer.current) clearTimeout(leaveTimer.current)
+    },
+    [],
+  )
+
   // Before this, `+` ran to 99 against any stock level, so the only way to
   // discover there were three left was to press it a fourth time and read the
   // error toast the server sent back.
   const maxQty = lineQuantityCeiling(item)
   const warning = unavailableMessage(item)
+  const hint = ceilingHint(localQty, maxQty, item.max_quantity !== null)
+  const busy = isPending || leaving
+
+  const commit = (next: number) => {
+    setLocalQty(next)
+    setDraft(String(next))
+    setAnnounce(quantityAnnouncement(item.name_he, next))
+    void updateQuantity(item.product_id, item.variant_id, next)
+  }
 
   const dec = () => {
     const next = Math.max(1, localQty - 1)
     if (next === localQty) return
-    setLocalQty(next)
-    setDraft(String(next))
-    void updateQuantity(item.product_id, item.variant_id, next)
+    commit(next)
   }
 
   const inc = () => {
@@ -61,9 +122,7 @@ export default function CartLineItem({ item }: { item: CartViewItem }) {
     // At the ceiling `next` equals `localQty`, and firing the write anyway
     // would spend a round trip to be told the quantity it already has.
     if (next === localQty) return
-    setLocalQty(next)
-    setDraft(String(next))
-    void updateQuantity(item.product_id, item.variant_id, next)
+    commit(next)
   }
 
   // The stepper is one press per unit, and a shopper who wants twelve of
@@ -76,13 +135,45 @@ export default function CartLineItem({ item }: { item: CartViewItem }) {
       setDraft(String(localQty))
       return
     }
-    setLocalQty(next)
-    setDraft(String(next))
-    void updateQuantity(item.product_id, item.variant_id, next)
+    commit(next)
+  }
+
+  // The row leaves before the store does. `data-leaving` starts the exit in
+  // cart-page.css; `animationend` (or the fallback timer, whichever is first)
+  // fires the write exactly once. Measured before this (logs/ux16/before.json,
+  // midRemove): the row was gone from the DOM within one frame of the press,
+  // and the list under it jumped up by the row's height with nothing to say
+  // which row had gone.
+  //
+  // The write is awaited so a REFUSED removal can put the row back: the store
+  // rolls the line into the cart under the same key, so this very component
+  // survives, and a `leaving` left true would be a row the shopper can see
+  // through and cannot touch.
+  const leave = (write: () => Promise<void>) => {
+    if (leaving) return
+    // The fold animates max-height, which needs a number to start from; the
+    // row's own height, read now, is that number.
+    const el = article.current
+    if (el) el.style.setProperty('--cart-line-h', `${el.getBoundingClientRect().height}px`)
+    afterLeave.current = () => {
+      afterLeave.current = null
+      if (leaveTimer.current) clearTimeout(leaveTimer.current)
+      leaveTimer.current = null
+      void write().finally(() => setLeaving(false))
+    }
+    setLeaving(true)
+    leaveTimer.current = setTimeout(() => afterLeave.current?.(), CART_LINE_LEAVE_FALLBACK_MS)
+  }
+
+  const onLeaveEnd = (event: AnimationEvent<HTMLElement>) => {
+    // The name check keeps the price pulse (a child animation that bubbles)
+    // from ending the exit early.
+    if (event.target !== event.currentTarget || event.animationName !== 'cart-line-leave') return
+    afterLeave.current?.()
   }
 
   const remove = () => {
-    void removeItem(item.product_id, item.variant_id)
+    leave(() => removeItem(item.product_id, item.variant_id))
   }
 
   // Park first, then remove. The order matters when the remove is refused:
@@ -91,12 +182,21 @@ export default function CartLineItem({ item }: { item: CartViewItem }) {
   // the line on a refused park, and nothing refuses a localStorage write.
   const saveForLater = () => {
     if (!savedStore) return
-    savedStore.getState().save(savedItemFromLine(item))
-    void removeItem(item.product_id, item.variant_id)
+    const store = savedStore
+    leave(() => {
+      store.getState().save(savedItemFromLine(item))
+      return removeItem(item.product_id, item.variant_id)
+    })
   }
 
   return (
-    <article className="cart-line">
+    <article
+      ref={article}
+      className="cart-line"
+      data-leaving={leaving || undefined}
+      aria-busy={leaving || undefined}
+      onAnimationEnd={onLeaveEnd}
+    >
       <Link href={`/product/${item.slug}`} className="cart-line__thumb">
         {item.image_url ? (
           <SmartImage
@@ -124,6 +224,15 @@ export default function CartLineItem({ item }: { item: CartViewItem }) {
             response to the shopper's own action, announced when a quantity
             change turns a line unavailable rather than only read on load. */}
         {warning && <output className="cart-line__warning">{warning}</output>}
+
+        {/* The unit price times the count, on the card only (below 768 the
+            stacked rows already carry a unit-price row). Hidden at one: "x1"
+            tells the shopper nothing the line total does not. */}
+        {item.quantity > 1 && (
+          <p className="cart-line__meta" data-testid="cart-line-meta">
+            {shekels(item.unit_price)} × {item.quantity}
+          </p>
+        )}
 
         {item.type === 'coupon' && item.balance_due_at_business > 0 && (
           <p className="cart-line__coupon-note">
@@ -167,7 +276,7 @@ export default function CartLineItem({ item }: { item: CartViewItem }) {
           <button
             type="button"
             onClick={remove}
-            disabled={isPending}
+            disabled={busy}
             aria-label={`הסר ${item.name_he} מהעגלה`}
             className="cart-line__remove"
           >
@@ -178,7 +287,7 @@ export default function CartLineItem({ item }: { item: CartViewItem }) {
             <button
               type="button"
               onClick={saveForLater}
-              disabled={isPending}
+              disabled={busy}
               className="cart-line__save"
               aria-label={`שמור ${item.name_he} לאחר כך`}
             >
@@ -192,7 +301,9 @@ export default function CartLineItem({ item }: { item: CartViewItem }) {
           <span className="cart-line__mlabel" aria-hidden="true">
             מחיר:
           </span>
-          <span className="cart-line__price">{shekels(item.line_total)}</span>
+          <span className="cart-line__price" data-pulse={pulse || undefined}>
+            {shekels(item.line_total)}
+          </span>
 
           <span className="cart-line__mlabel" aria-hidden="true">
             כמות:
@@ -201,7 +312,7 @@ export default function CartLineItem({ item }: { item: CartViewItem }) {
             <button
               type="button"
               onClick={dec}
-              disabled={localQty <= 1 || isPending}
+              disabled={localQty <= 1 || busy}
               aria-label="הפחת כמות"
               className="cart-line__qty-btn"
             >
@@ -222,20 +333,34 @@ export default function CartLineItem({ item }: { item: CartViewItem }) {
                   event.currentTarget.blur()
                 }
               }}
-              disabled={isPending}
+              disabled={busy}
               aria-label={`כמות עבור ${item.name_he}`}
               className="cart-line__qty-value tabular-nums"
             />
             <button
               type="button"
               onClick={inc}
-              disabled={localQty >= maxQty || isPending}
+              disabled={localQty >= maxQty || busy}
               aria-label="הוסף כמות"
+              aria-describedby={hint ? hintId : undefined}
               className="cart-line__qty-btn"
             >
               <Plus size={14} />
             </button>
           </div>
+
+          {/* Why `+` is grey, said once it is. Before this the disabled button
+              was the whole explanation. */}
+          {hint && (
+            <p id={hintId} className="cart-line__qty-hint">
+              {hint}
+            </p>
+          )}
+
+          {/* Announced, not shown: the field already shows the number. */}
+          <output className="sr-only cart-line__announce" aria-live="polite">
+            {announce}
+          </output>
         </div>
       </div>
     </article>

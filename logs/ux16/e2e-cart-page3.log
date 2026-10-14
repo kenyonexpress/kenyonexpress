@@ -1,0 +1,53 @@
+Already up to date
+Done in 190ms using pnpm v11.1.2
+
+Running 8 tests using 2 workers
+
+[1A[2K[1/8] [chromium] › e2e/cart-page.spec.ts:49:7 › cart page controls (UX16) › a plus press is answered by the live region, the meta line and the total
+[1A[2K[2/8] [chromium] › e2e/cart-page.spec.ts:77:7 › cart page controls (UX16) › the summary says prices include VAT and shows no savings without a discount
+[1A[2K[3/8] [chromium] › e2e/cart-page.spec.ts:87:7 › cart page controls (UX16) › the remove press marks the row as leaving before it goes, then the cart is empty
+[1A[2K[4/8] [chromium] › e2e/cart-page.spec.ts:109:7 › cart page controls (UX16) › with motion reduced the row still leaves and the cart still empties
+[1A[2K[5/8] [mobile-chrome] › e2e/cart-page.spec.ts:49:7 › cart page controls (UX16) › a plus press is answered by the live region, the meta line and the total
+[1A[2K[6/8] [mobile-chrome] › e2e/cart-page.spec.ts:77:7 › cart page controls (UX16) › the summary says prices include VAT and shows no savings without a discount
+[1A[2K[7/8] [mobile-chrome] › e2e/cart-page.spec.ts:87:7 › cart page controls (UX16) › the remove press marks the row as leaving before it goes, then the cart is empty
+[1A[2K[8/8] [mobile-chrome] › e2e/cart-page.spec.ts:109:7 › cart page controls (UX16) › with motion reduced the row still leaves and the cart still empties
+[1A[2K  1) [mobile-chrome] › e2e/cart-page.spec.ts:109:7 › cart page controls (UX16) › with motion reduced the row still leaves and the cart still empties 
+
+    [31mTest timeout of 30000ms exceeded while running "beforeEach" hook.[39m
+
+      39 |
+      40 | test.describe('cart page controls (UX16)', () => {
+    > 41 |   test.beforeEach(async ({ page }) => {
+         |        ^
+      42 |     await preset(page)
+      43 |     await openPurchasableProduct(page)
+      44 |     await addOpenProductToCart(page)
+        at /Users/ofir/kenyonexpress-autopilot/e2e/cart-page.spec.ts:41:8
+
+    Error: locator.getAttribute: Test timeout of 30000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('a[href^="/product/"]').nth(24)[22m
+
+
+       at helpers.ts:60
+
+      58 |   const count = await links.count()
+      59 |   for (let i = 0; i < count; i += 1) {
+    > 60 |     const href = await links.nth(i).getAttribute('href')
+         |                                     ^
+      61 |     if (href && !hrefs.includes(href)) hrefs.push(href)
+      62 |   }
+      63 |
+        at openPurchasableProduct (/Users/ofir/kenyonexpress-autopilot/e2e/helpers.ts:60:37)
+        at /Users/ofir/kenyonexpress-autopilot/e2e/cart-page.spec.ts:43:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/cart-page-cart-page-contro-15a72--and-the-cart-still-empties-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/cart-page-cart-page-contro-15a72--and-the-cart-still-empties-mobile-chrome/error-context.md
+
+
+[1A[2K  1 failed
+    [mobile-chrome] › e2e/cart-page.spec.ts:109:7 › cart page controls (UX16) › with motion reduced the row still leaves and the cart still empties 
+  7 passed (58.7s)

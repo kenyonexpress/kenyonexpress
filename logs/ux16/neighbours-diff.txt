@@ -1,0 +1,6 @@
+NEW (failing now, not in UX15 set):
+[mobile-chrome] › e2e/cart.spec.ts:274:7 › the cart sheet and the keyboard › the phone sheet takes focus, keeps it, and gives it back on Escape
+
+GONE (in UX15 set, not failing now):
+[chromium] › e2e/product.spec.ts:133:7 › product page › related-product thumbnails do not over-order pixels
+[mobile-chrome] › e2e/product.spec.ts:133:7 › product page › related-product thumbnails do not over-order pixels

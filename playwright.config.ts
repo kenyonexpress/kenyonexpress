@@ -85,6 +85,17 @@ export default defineConfig({
       ...(process.env.STAGING_PASSWORD?.trim()
         ? { 'x-staging-password': process.env.STAGING_PASSWORD.trim() }
         : {}),
+      // The cart's write limiter is 120 an hour per client IP
+      // (`cart_write:ip:<ip>` in server/actions/cart.ts), and `getClientIp`
+      // reads x-forwarded-for first. A laptop that has run the probes, this
+      // suite and the neighbour specs against one local server in an
+      // afternoon uses that up, after which every add reports "add-to-cart
+      // did not stick: 0 -> 0" (measured 14.10.2026, UX16: the toast said
+      // "יותר מדי פעולות"). Set E2E_FORWARDED_FOR to a fresh address to run
+      // under a fresh key. Unset, nothing is sent.
+      ...(process.env.E2E_FORWARDED_FOR?.trim()
+        ? { 'x-forwarded-for': process.env.E2E_FORWARDED_FOR.trim() }
+        : {}),
     },
   },
   projects: [
