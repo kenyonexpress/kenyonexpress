@@ -1,0 +1,57 @@
+# Read-replica lag watchdog (STEP 71). docs/ARCHITECTURE-SCALABILITY.md §1.
+#
+# Measured 2026-10-14: the primary runs in eu-north-1 on Nano compute,
+# `pg_stat_replication` is empty and SUPABASE_READ_REPLICA_URL is unset in
+# every environment, so today this prints `none` and exits 0. It exists
+# before the replica does for the same reason backup-health.yml exists: the
+# failure that matters is silent. A replica Supabase removes, or one that
+# stops replaying WAL, keeps answering catalogue reads with yesterday's
+# prices and no error. The day SUPABASE_READ_REPLICA_URL is set in Vercel
+# and the primary streams to nobody, this pages ntfy at high priority and
+# the run is red.
+#
+#   Secret SUPABASE_ACCESS_TOKEN   management token: pg_stat_replication on
+#                                  the primary (replay_lag per replica)
+#   Secret SUPABASE_METRICS_KEY    OPTIONAL service key for the project's
+#                                  Prometheus endpoint: each replica's own
+#                                  lag seconds, connected, replay paused.
+#                                  Deliberately not under the CI prefix the
+#                                  E2E job keys on: that would un-skip the
+#                                  job that seeds production.
+#   Variable SUPABASE_READ_REPLICA_URL  mirror of the Vercel value, so the
+#                                  check knows whether the app EXPECTS one
+#   Variable CRON_NTFY_TOPIC       where to page (already set)
+#
+# Policy (scripts/dr/read-replica-lib.mjs notifyPolicy): fail pages high and
+# exits 1; warn (5 to 30 s behind) pages default and exits 0; ok and none are
+# silent. Thresholds: --warn / --fail seconds on the script.
+name: Read replica lag
+
+on:
+  schedule:
+    - cron: '*/30 * * * *' # every 30 minutes; a replica lags in seconds, not days
+  workflow_dispatch:
+
+concurrency:
+  group: replica-lag
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  lag:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      # Stdlib only, no pnpm install, like backup-health.yml.
+      - name: Measure replication lag and page ntfy
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_METRICS_KEY }}
+          SUPABASE_READ_REPLICA_URL: ${{ vars.SUPABASE_READ_REPLICA_URL }}
+          NTFY_TOPIC: ${{ vars.CRON_NTFY_TOPIC }}
+        run: node scripts/dr/read-replica.mjs --lag

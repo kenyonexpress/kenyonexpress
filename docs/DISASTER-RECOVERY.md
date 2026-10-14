@@ -63,6 +63,21 @@ node scripts/dr/pitr.mjs --enable --variant=pitr_7 --yes
 עד אז ‏`.github/workflows/backup-health.yml` מדווח ‏`pitr_disabled` כאזהרה
 בכל ‏heartbeat של יום שני. הנוהל המלא ב-`docs/DB-RESTORE-RUNBOOK.md`.
 
+**רפליקת קריאה (‏STEP 71, נמדד ‏14.10).** אותו דפוס: הראשי ב-eu-north-1,
+‏`pg_stat_replication` ריק, והקוד כבר מפצל קריאות קטלוג לרפליקה כש-
+‏`SUPABASE_READ_REPLICA_URL` מוגדר (‏`docs/ARCHITECTURE-SCALABILITY.md` §1).
+רפליקה מחויבת לפי שעה בגודל ה-compute של הראשי ועוד ‏1.25x מהדיסק, מחוץ
+לקרדיטים ול-spend cap, ולכן **לא הוקמה אוטומטית**:
+
+```bash
+node scripts/dr/read-replica.mjs --status --keychain                 # קריאה בלבד
+node scripts/dr/read-replica.mjs --lag --keychain --no-notify        # מה ש-replica-lag.yml מריץ
+node scripts/dr/read-replica.mjs --setup --region=eu-north-1 --yes   # חיוב חוזר
+```
+
+‏`.github/workflows/replica-lag.yml` מודד כל ‏30 דקות ומדווח ‏`none` עד
+שתהיה רפליקה; ‏fail כשהאפליקציה מצביעה על רפליקה שהראשי לא משדר אליה.
+
 ---
 
 ## 3. ‏`scripts/backup-schema.sh`

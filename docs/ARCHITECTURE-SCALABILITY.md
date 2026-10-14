@@ -17,11 +17,27 @@ outage dressed as an upgrade.
 | Who must not | cart, checkout, auth: they read rows they just wrote, and a replica lags by seconds |
 | Guard | `read-replica-callers.test.ts` refuses a file that imports the replica client and also writes, and pins the three write-adjacent paths to the primary |
 | Health | `read_replica` in `lib/health/checks.ts`: `not_configured` / `ok` / `down`, probed through an ANON client because that is the client the catalogue reads with |
+| Provisioning | `scripts/dr/read-replica.mjs --setup --region=eu-north-1 --yes` (management API `read-replicas/setup`, Beta); refuses without `--yes` because a replica bills hourly at the primary's compute size plus 1.25x its disk, outside credits and the spend cap. `--remove --identifier=<ref>-rr-eu-north-1-<suffix> --yes` is the mirror |
+| Lag monitor | `scripts/dr/read-replica.mjs --lag`, every 30 minutes from `.github/workflows/replica-lag.yml`. Two legs: `pg_stat_replication.replay_lag` on the primary (management token) and `physical_replication_lag_physical_replication_lag_seconds` per `supabase_identifier` from the project's Prometheus endpoint (service key, optional). Warn over 5 s, fail over 30 s, fail when the app has a replica URL and the primary streams to nobody |
 
 Why only the catalogue: every one of those readers sits behind `use cache`
 or ISR and is already minutes stale by design, so replication lag is
 invisible underneath it. A value equal to the primary URL is treated as
-unset rather than reported as a replica.
+unset rather than reported as a replica. The reader list above is the
+2026-09-17 set; `read-replica-callers.test.ts` holds the live count (the
+homepage below-fold, city pages, merchant directory, bundles, price history
+and recommendations joined later) and still refuses any of them a write.
+
+Measured 2026-10-14 (STEP 71), management API with the CLI keychain token:
+the primary is `eu-north-1`, Postgres 17.6, Nano compute (`selected_addons:
+[]`), PITR off; `pg_stat_replication` returns zero rows and
+`pg_replication_slots` has no physical slot, so no replica exists. The
+metrics endpoint already reports the primary's own row (lag 0, connected 0,
+`pg_stat_replication_replay_lag` NaN), which is the shape the monitor
+parses. `--setup` was NOT run: it is a recurring charge on Ofir's card, the
+same billing decision as PITR. The replica would sit in the same region as
+the primary, so it is read scale-out, not geo-routing; Supabase sends Auth,
+Storage and Realtime to the primary regardless.
 
 ## 2. Graduated rate limiting (`src/lib/rate-limit/graduated.ts`)
 
@@ -114,3 +130,8 @@ logged at error level. A cold cache is a slow page, not a wrong deal.
   queue or a deployed Worker, because none exists for this project yet.
   The health report is where that shows up first; the three `not_configured`
   rows are the honest state today.
+- The replica's ABSENCE is measured (2026-10-14, §1): zero
+  `pg_stat_replication` rows on the primary, and `read-replica.mjs --status`
+  prints `none` with the setup plan. The lag monitor's parsing is tested on
+  the real primary-only scrape plus fixture replica rows in the identifier
+  shape Supabase documents; its first real replica row is still ahead of it.

@@ -3,7 +3,7 @@
 | שדה | ערך |
 | --- | --- |
 | רכיב | ‏Postgres מנוהל, ‏RLS, מיגרציות, רפליקת קריאה |
-| ספק | ‏Supabase, פרויקט ‏`ixvwfbuvfxxsjiywhbbb`, ‏eu-central |
+| ספק | ‏Supabase, פרויקט ‏`ixvwfbuvfxxsjiywhbbb`, ‏eu-north-1 (נמדד ‏14.10 מול ‏`GET /v1/projects/{ref}`; אין רפליקה) |
 | כרטיס ב-/admin/health | `database`, `read_replica` |
 | כונן | אופיר |
 | חומרה ברירת מחדל | ‏SEV1: ‏DB לא עונה, או טבלת כסף עם ‏RLS פתוח |
@@ -22,6 +22,10 @@
   חסרה), ‏`23514` (טריגר מעבר מצב דחה), ‏`PGRST201` (‏embed דו-משמעי).
 - ‏Supabase Dashboard > Reports: ‏CPU, חיבורים, גודל דיסק.
 - ‏`backup-health.yml` יומי מתריע ל-ntfy כשאין גיבוי טרי.
+- ‏`replica-lag.yml` כל ‏30 דקות: ‏`scripts/dr/read-replica.mjs --lag` קורא
+  ‏`pg_stat_replication` בראשי ואת ה-lag של כל רפליקה מנקודת ה-metrics.
+  ‏warn מעל ‏5 שניות, ‏fail מעל ‏30 או כשהאפליקציה מצביעה על רפליקה
+  (‏`SUPABASE_READ_REPLICA_URL`) והראשי לא משדר לאף אחת. היום: ‏`none`.
 
 ## 3. טריאז'
 
@@ -70,6 +74,13 @@ curl -s --http1.1 -H "Authorization: Bearer $DEC" -H "Content-Type: application/
    ‏RPO עד ‏24 שעות.
 5. **קוד שנכנס לפני המיגרציה שלו**: ‏rollback של האפליקציה (‏`web-vercel.md`
    §4) ולא החלה דחופה.
+6. **רפליקת קריאה מפגרת או נעלמה** (‏`replica-lag.yml` אדום, או מחירי
+   קטלוג ישנים בלי שגיאה): הבלם הוא מחיקת ‏`SUPABASE_READ_REPLICA_URL`
+   מ-Vercel ו-redeploy; הקטלוג חוזר לראשי בלי שינוי קוד
+   (‏`src/lib/supabase/read-replica.ts`). רק אחר כך
+   ‏`node scripts/dr/read-replica.mjs --status --keychain`, ואם צריך
+   ‏`--remove --identifier=<ref>-rr-eu-north-1-<suffix> --yes`. הסרת הרפליקה
+   האחרונה מסירה גם את ה-load balancer, לכן הסדר הזה ולא ההפוך.
 
 ## 5. מה לא ניתן להחזיר
 
@@ -101,4 +112,5 @@ curl -sS https://kenyonexpress.co.il/api/health; echo     # {"ok":true,"database
 
 ‏`../RUNBOOK.md` §5.2 עד ‏5.4 ו-§7, ‏`../DB-RESTORE-RUNBOOK.md`,
 ‏`../DR-RUNBOOK.md`, ‏`../MIGRATION-REVIEW.md`, ‏`migrations/pending/APPLY-ORDER.md`,
-‏`scripts/dr/pitr.mjs`, ‏`../QUERY-COOKBOOK.md`.
+‏`scripts/dr/pitr.mjs`, ‏`scripts/dr/read-replica.mjs`, ‏`../ARCHITECTURE-SCALABILITY.md` §1,
+‏`../QUERY-COOKBOOK.md`.

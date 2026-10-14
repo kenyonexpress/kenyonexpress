@@ -69,6 +69,31 @@ async function request(token, method, path, body, fetchImpl = fetch) {
 export const mgmtGet = (token, path, fetchImpl) => request(token, 'GET', path, undefined, fetchImpl)
 export const mgmtPatch = (token, path, body, fetchImpl) =>
   request(token, 'PATCH', path, body, fetchImpl)
+export const mgmtPost = (token, path, body, fetchImpl) =>
+  request(token, 'POST', path, body, fetchImpl)
 
+export const projectPath = (ref) => `/v1/projects/${ref}`
 export const backupsPath = (ref) => `/v1/projects/${ref}/database/backups`
 export const addonsPath = (ref) => `/v1/projects/${ref}/billing/addons`
+/** Runs SQL on the PRIMARY in one session; `BEGIN; ...; ROLLBACK;` inside really rolls back. */
+export const databaseQueryPath = (ref) => `/v1/projects/${ref}/database/query`
+/** Beta endpoints (api.supabase.com/api/v1-json, measured 2026-10-14): 204 on success. */
+export const readReplicaSetupPath = (ref) => `/v1/projects/${ref}/read-replicas/setup`
+export const readReplicaRemovePath = (ref) => `/v1/projects/${ref}/read-replicas/remove`
+
+/**
+ * The Prometheus endpoint every Supabase project exposes. Basic auth,
+ * user `service_role`, password the service key. It reports one row per
+ * database, primary and replicas alike, under `supabase_identifier`.
+ */
+export const metricsUrl = (ref) => `https://${ref}.supabase.co/customer/v1/privileged/metrics`
+
+export async function fetchMetricsText(ref, serviceKey, fetchImpl = fetch) {
+  const auth = Buffer.from(`service_role:${serviceKey}`).toString('base64')
+  const res = await fetchImpl(metricsUrl(ref), {
+    headers: { authorization: `Basic ${auth}`, accept: 'text/plain' },
+    signal: AbortSignal.timeout(20_000),
+  })
+  if (!res.ok) throw new Error(`GET metrics -> ${res.status}`)
+  return res.text()
+}
