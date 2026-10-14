@@ -1,0 +1,40 @@
+Already up to date
+Done in 193ms using pnpm v11.1.2
+[STARTED] Backing up original state...
+[COMPLETED] Backed up original state in git stash (30e972004)
+[STARTED] Running tasks for staged files...
+[STARTED] .lintstagedrc.json — 33 files
+[STARTED] *.{ts,tsx,js,jsx,mjs,cjs,json,jsonc,css} — 14 files
+[STARTED] biome check --write --no-errors-on-unmatched
+[COMPLETED] biome check --write --no-errors-on-unmatched
+[COMPLETED] *.{ts,tsx,js,jsx,mjs,cjs,json,jsonc,css} — 14 files
+[COMPLETED] .lintstagedrc.json — 33 files
+[COMPLETED] Running tasks for staged files...
+[STARTED] Applying modifications from tasks...
+[COMPLETED] Applying modifications from tasks...
+[STARTED] Cleaning up temporary files...
+[COMPLETED] Cleaning up temporary files...
+[phase5/homepage-closeout 4b3d4e329] [autopilot] UX11 brands row: a logo grid of the merchants with something on sale, grey at rest and colour under the pointer, a horizontal scroll strip on a phone.
+ 33 files changed, 7103 insertions(+), 6 deletions(-)
+ create mode 100644 e2e/brands-row.spec.ts
+ create mode 100644 logs/ux11/after-1440.png
+ create mode 100644 logs/ux11/after-380.png
+ create mode 100644 logs/ux11/after-768.png
+ create mode 100644 logs/ux11/after.json
+ create mode 100644 logs/ux11/before.json
+ create mode 100644 logs/ux11/build.log
+ create mode 100644 logs/ux11/commit-msg.txt
+ create mode 100644 logs/ux11/compare.log
+ create mode 100644 logs/ux11/e2e-brands-row.log
+ create mode 100644 logs/ux11/e2e-neighbours.log
+ create mode 100644 logs/ux11/failing-titles.txt
+ create mode 100644 logs/ux11/neighbours-diff.txt
+ create mode 100644 logs/ux11/probe-after.err
+ create mode 100644 logs/ux11/probe-before.err
+ create mode 100644 logs/ux11/probe.mjs
+ create mode 100644 logs/ux11/start-3346-after.log
+ create mode 100644 logs/ux11/start-3346.log
+ create mode 100644 logs/ux11/state-update.py
+ create mode 100644 logs/ux11/test-full.log
+ create mode 100644 src/components/home/BrandsRow.test.tsx
+ create mode 100644 src/components/home/BrandsRow.tsx
