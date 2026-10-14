@@ -30,6 +30,28 @@ export interface OrderSummary {
   hasVouchers: boolean
   /** The physical lines folded into one chip; `kind: 'none'` for coupons only. */
   shipping: ShippingSummary
+  /**
+   * The order's lines, enough for the list card to open in place (UX19):
+   * name, link, picture, count, price and the line's own status. The
+   * voucher codes, the supplier and the QR stay on the detail page.
+   */
+  lines: OrderListLine[]
+}
+
+export interface OrderListLine {
+  id: string
+  productId: string | null
+  productName: string
+  productSlug: string | null
+  productImage: string | null
+  productType: 'coupon' | 'physical'
+  quantity: number
+  unitPriceAgorot: Agorot
+  totalAgorot: Agorot
+  settlementStatus: SettlementState
+  itemStatus: string
+  carrier: string | null
+  trackingNumber: string | null
 }
 
 export interface OrderVoucher {
@@ -143,11 +165,18 @@ export async function getMyOrders(): Promise<OrderSummary[]> {
   // of a null `rows`, and does nothing about a timeout, a dropped connection or
   // a policy change, each of which renders the same "you have no orders" to a
   // customer who has paid, with nothing in any log.
+  // The line prices ride the same resolver as the detail page: pre-059 the
+  // embed aliases the generated `total_price_ils_agorot` twin back onto
+  // `total_price_agorot`, and naming the bare column there would 42703 the
+  // whole order list.
+  const itemGeneration = await resolveOrderItemGeneration(
+    moneyColumnProbe(admin as never, 'order_items'),
+  )
   const rows = orFail(
     await admin
       .from('orders')
       .select(
-        `id, status, created_at, paid_at, ${orderMoneySelect(generation)}, order_items(quantity, product_type, settlement_status, item_status, carrier, tracking_number)`,
+        `id, status, created_at, paid_at, ${orderMoneySelect(generation)}, order_items(id, product_id, quantity, product_type, ${orderItemPriceSelect(itemGeneration)}, settlement_status, item_status, carrier, tracking_number)`,
       )
       .eq('user_id', userId)
       .is('deleted_at', null)
@@ -164,8 +193,12 @@ export async function getMyOrders(): Promise<OrderSummary[]> {
     paid_at: string | null
     order_items:
       | {
+          id: string
+          product_id: string | null
           quantity: number | null
           product_type: string
+          unit_price_agorot: number | null
+          total_price_agorot: number | null
           settlement_status: string
           item_status: string | null
           carrier: string | null
@@ -175,25 +208,70 @@ export async function getMyOrders(): Promise<OrderSummary[]> {
   }
   const orders = rows as unknown as OrderListRow[] | null
 
+  // One products read for the whole page, not one per order: the card names
+  // its lines (UX19), and 50 orders of the same coupon is one id. A failed
+  // read throws like the list itself; a card with no names is the old list.
+  const productIds = [
+    ...new Set(
+      (orders ?? [])
+        .flatMap((order) => order.order_items ?? [])
+        .map((i) => i.product_id)
+        .filter((v): v is string => Boolean(v)),
+    ),
+  ]
+  const products =
+    productIds.length > 0
+      ? orFail(
+          await admin.from('products').select('id, name_he, slug, images').in('id', productIds),
+          'orders.list_products_read_failed',
+          { userId },
+        )
+      : []
+  const productMap = new Map(
+    (products ?? []).map((p) => [
+      p.id,
+      {
+        name: p.name_he,
+        slug: p.slug,
+        image:
+          Array.isArray(p.images) && typeof p.images[0] === 'string'
+            ? (p.images[0] as string)
+            : null,
+      },
+    ]),
+  )
+
   return (orders ?? []).map((order) => {
     const items = order.order_items ?? []
+    const lines: OrderListLine[] = items.map((i) => {
+      const product = i.product_id ? productMap.get(i.product_id) : undefined
+      return {
+        id: i.id,
+        productId: i.product_id,
+        productName: product?.name ?? 'מוצר',
+        productSlug: product?.slug ?? null,
+        productImage: product?.image ?? null,
+        productType: i.product_type === 'coupon' ? 'coupon' : 'physical',
+        quantity: i.quantity ?? 0,
+        unitPriceAgorot: agorot(i.unit_price_agorot ?? 0),
+        totalAgorot: agorot(i.total_price_agorot ?? 0),
+        settlementStatus: asSettlementState(i.settlement_status),
+        itemStatus: i.item_status ?? 'pending',
+        carrier: i.carrier,
+        trackingNumber: i.tracking_number,
+      }
+    })
     return {
       id: order.id,
       status: order.status,
-      settlementStatus: deriveOrderStatus(items.map((i) => asSettlementState(i.settlement_status))),
+      settlementStatus: deriveOrderStatus(lines.map((l) => l.settlementStatus)),
       createdAt: order.created_at,
       paidAt: order.paid_at,
       totalAgorot: agorot(readOrderMoney(generation, order).totalAgorot),
-      itemCount: items.reduce((sum, i) => sum + (i.quantity ?? 0), 0),
-      hasVouchers: items.some((i) => i.product_type === 'coupon'),
-      shipping: summarizeShipping(
-        items.map((i) => ({
-          productType: i.product_type === 'coupon' ? 'coupon' : 'physical',
-          itemStatus: i.item_status ?? 'pending',
-          carrier: i.carrier,
-          trackingNumber: i.tracking_number,
-        })),
-      ),
+      itemCount: lines.reduce((sum, l) => sum + l.quantity, 0),
+      hasVouchers: lines.some((l) => l.productType === 'coupon'),
+      shipping: summarizeShipping(lines),
+      lines,
     }
   })
 }

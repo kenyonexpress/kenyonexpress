@@ -1,0 +1,23 @@
+Already up to date
+Done in 192ms using pnpm v11.1.2
+$ next start
+▲ Next.js 16.3.3
+- Local:         http://localhost:3359
+- Network:       http://100.84.130.122:3359
+✓ Ready in 115ms
+✓ Running next.config.ts took 355ms
+{"ts":"2026-10-14T13:06:03.288Z","level":"warn","event":"env.checks_skipped","request_id":null,"detail":"ALLOW_INCOMPLETE_ENV=true. Correct for a local `next start`; wrong anywhere a customer can reach."}
+(node:69059) ExperimentalWarning: The supports Web Crypto API method is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:69059) ExperimentalWarning: The ML-DSA-44 Web Crypto API algorithm is an experimental feature and might change at any time
+{"ts":"2026-10-14T13:06:04.590Z","level":"info","event":"env.probe_ok","request_id":null,"checked":2}
+{"ts":"2026-10-14T13:06:05.100Z","level":"warn","event":"db.query_slow","request_id":"c10519da-d48f-41b1-b060-f12388454324","route":"action","method":"POST","target":"rpc:check_rate_limit","status":200,"duration_ms":319,"threshold_ms":300}
+{"ts":"2026-10-14T13:06:05.109Z","level":"warn","event":"db.query_slow","request_id":"8dd6eafc-1811-4523-98f3-8399ab0be1f5","route":"action","method":"POST","target":"rpc:check_rate_limit","status":200,"duration_ms":332,"threshold_ms":300}
+{"ts":"2026-10-14T13:06:05.502Z","level":"warn","event":"db.query_slow","request_id":"8dd6eafc-1811-4523-98f3-8399ab0be1f5","route":"action","method":"POST","target":"rpc:check_rate_limit","status":200,"duration_ms":391,"threshold_ms":300}
+{"ts":"2026-10-14T13:06:05.530Z","level":"warn","event":"db.query_slow","request_id":"c10519da-d48f-41b1-b060-f12388454324","route":"action","method":"POST","target":"rpc:check_rate_limit","status":200,"duration_ms":425,"threshold_ms":300}
+{"ts":"2026-10-14T13:06:05.589Z","level":"warn","event":"db.query_slow","request_id":"aaab13eb-6bbc-4489-8121-d747c9811599","route":"action","method":"POST","target":"rpc:check_rate_limit","status":200,"duration_ms":405,"threshold_ms":300}
+{"ts":"2026-10-14T13:06:25.750Z","level":"warn","event":"db.query_slow","request_id":"f7405b03-1ddc-4266-88de-f3d555ef1d28","route":"action","method":"POST","target":"rpc:check_rate_limit","status":200,"duration_ms":307,"threshold_ms":300}
+{"ts":"2026-10-14T13:06:26.083Z","level":"warn","event":"db.query_slow","request_id":"97da66dc-3d4a-4278-927f-3a799542a3c0","route":"action","method":"POST","target":"rpc:check_rate_limit","status":200,"duration_ms":618,"threshold_ms":300}
+{"ts":"2026-10-14T13:06:26.088Z","level":"warn","event":"db.query_slow","request_id":"f7405b03-1ddc-4266-88de-f3d555ef1d28","route":"action","method":"POST","target":"rpc:check_rate_limit","status":200,"duration_ms":335,"threshold_ms":300}
+{"ts":"2026-10-14T13:07:31.098Z","level":"warn","event":"db.query_slow","request_id":"7927c848-95b1-48f0-b6b3-da7689c52044","route":"action","method":"POST","target":"rpc:check_rate_limit","status":200,"duration_ms":360,"threshold_ms":300}
+{"ts":"2026-10-14T13:07:31.498Z","level":"warn","event":"db.query_slow","request_id":"7927c848-95b1-48f0-b6b3-da7689c52044","route":"action","method":"POST","target":"rpc:check_rate_limit","status":200,"duration_ms":398,"threshold_ms":300}

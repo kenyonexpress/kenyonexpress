@@ -1,0 +1,62 @@
+Already up to date
+Done in 188ms using pnpm v11.1.2
+$ next start
+▲ Next.js 16.3.3
+- Local:         http://localhost:3358
+- Network:       http://100.84.130.122:3358
+✓ Ready in 117ms
+✓ Running next.config.ts took 444ms
+{"ts":"2026-10-14T12:53:52.690Z","level":"warn","event":"env.checks_skipped","request_id":null,"detail":"ALLOW_INCOMPLETE_ENV=true. Correct for a local `next start`; wrong anywhere a customer can reach."}
+{"ts":"2026-10-14T12:53:55.221Z","level":"info","event":"env.probe_ok","request_id":null,"checked":2}
+(node:61043) ExperimentalWarning: The supports Web Crypto API method is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:61043) ExperimentalWarning: The ML-DSA-44 Web Crypto API algorithm is an experimental feature and might change at any time
+{"ts":"2026-10-14T12:54:35.711Z","level":"warn","event":"db.query_slow","request_id":"9c091f10-ac97-4e27-a7ba-52701b7d8c26","route":"action","method":"POST","target":"rpc:check_rate_limit","status":200,"duration_ms":347,"threshold_ms":300}
+{"ts":"2026-10-14T12:54:36.095Z","level":"warn","event":"db.query_slow","request_id":"9c091f10-ac97-4e27-a7ba-52701b7d8c26","route":"action","method":"POST","target":"rpc:check_rate_limit","status":200,"duration_ms":381,"threshold_ms":300}
+{"ts":"2026-10-14T12:54:37.016Z","level":"warn","event":"db.query_slow","request_id":"9c091f10-ac97-4e27-a7ba-52701b7d8c26","route":"action","method":"POST","target":"auth:token","status":200,"duration_ms":918,"threshold_ms":300}
+{"ts":"2026-10-14T12:54:38.197Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":537,"threshold_ms":300}
+{"ts":"2026-10-14T12:54:38.273Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"orders","status":400,"duration_ms":334,"threshold_ms":300}
+{"ts":"2026-10-14T12:54:38.617Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":394,"threshold_ms":300}
+{"ts":"2026-10-14T12:54:38.624Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":402,"threshold_ms":300}
+{"ts":"2026-10-14T12:54:38.765Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"orders","status":200,"duration_ms":491,"threshold_ms":300}
+{"ts":"2026-10-14T12:54:38.781Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"profiles","status":200,"duration_ms":314,"threshold_ms":300}
+{"ts":"2026-10-14T12:54:38.827Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"wallet_accounts","status":400,"duration_ms":367,"threshold_ms":300}
+(node:61043) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T12:54:39.243Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"wallet_accounts","status":400,"duration_ms":361,"threshold_ms":300}
+{"ts":"2026-10-14T12:54:39.244Z","level":"warn","event":"db.query_slow","request_id":"0bca122d-a3e8-4560-ba01-32c059092f75","route":"action","method":"GET","target":"wishlists","status":200,"duration_ms":342,"threshold_ms":300}
+{"ts":"2026-10-14T12:54:39.268Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"payment_tokens","status":200,"duration_ms":375,"threshold_ms":300}
+{"ts":"2026-10-14T12:54:39.268Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"orders","status":200,"duration_ms":387,"threshold_ms":300}
+{"ts":"2026-10-14T12:54:40.190Z","level":"warn","event":"db.query_slow","request_id":"f7868c48-8281-4d8e-9567-0ff5cbfb8cd8","route":"action","method":"GET","target":"auth:user","status":200,"duration_ms":639,"threshold_ms":300}
+{"ts":"2026-10-14T12:54:40.192Z","level":"warn","event":"db.query_slow","request_id":"f9fe8d6d-9fd3-4d6e-aae8-f1d9c4365887","route":"action","method":"GET","target":"auth:user","status":200,"duration_ms":1299,"threshold_ms":300}
+{"ts":"2026-10-14T12:54:40.600Z","level":"warn","event":"db.query_slow","request_id":"f9fe8d6d-9fd3-4d6e-aae8-f1d9c4365887","route":"action","method":"GET","target":"carts","status":200,"duration_ms":384,"threshold_ms":300}
+{"ts":"2026-10-14T12:54:42.445Z","level":"warn","event":"db.query_slow","request_id":"82e69fc8-ab2f-4df9-a25f-2a2e82845d7c","route":"action","method":"POST","target":"rpc:check_rate_limit","status":200,"duration_ms":344,"threshold_ms":300}
+{"ts":"2026-10-14T12:54:42.851Z","level":"warn","event":"db.query_slow","request_id":"82e69fc8-ab2f-4df9-a25f-2a2e82845d7c","route":"action","method":"POST","target":"auth:token","status":200,"duration_ms":404,"threshold_ms":300}
+(node:61043) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T12:54:44.117Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":311,"threshold_ms":300}
+{"ts":"2026-10-14T12:54:44.276Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":470,"threshold_ms":300}
+{"ts":"2026-10-14T12:54:44.286Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"loyalty_tiers","status":404,"duration_ms":301,"threshold_ms":300}
+{"ts":"2026-10-14T12:54:44.288Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"profiles","status":200,"duration_ms":305,"threshold_ms":300}
+{"ts":"2026-10-14T12:54:44.493Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"orders","status":200,"duration_ms":508,"threshold_ms":300}
+{"ts":"2026-10-14T12:54:44.497Z","level":"warn","event":"db.query_slow","request_id":"7af11271-38b4-4ae1-b17c-8238a7fb71b1","route":"/api/cart","method":"GET","target":"auth:user","status":200,"duration_ms":367,"threshold_ms":300}
+{"ts":"2026-10-14T12:54:44.499Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"payment_tokens","status":200,"duration_ms":498,"threshold_ms":300}
+{"ts":"2026-10-14T12:54:44.500Z","level":"warn","event":"db.query_slow","request_id":"7af11271-38b4-4ae1-b17c-8238a7fb71b1","route":"action","method":"GET","target":"auth:user","status":200,"duration_ms":368,"threshold_ms":300}
+{"ts":"2026-10-14T12:54:44.500Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"orders","status":200,"duration_ms":378,"threshold_ms":300}
+{"ts":"2026-10-14T12:54:44.501Z","level":"warn","event":"db.query_slow","request_id":"caea5b03-e4b6-4fbd-8f98-3b6d46d7a03a","route":"action","method":"GET","target":"auth:user","status":200,"duration_ms":366,"threshold_ms":300}
+{"ts":"2026-10-14T12:54:47.179Z","level":"warn","event":"db.query_slow","request_id":"5438203a-dee9-4ff5-aefa-58a8436242b5","route":"action","method":"POST","target":"auth:token","status":200,"duration_ms":479,"threshold_ms":300}
+(node:61043) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T12:54:48.351Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":301,"threshold_ms":300}
+{"ts":"2026-10-14T12:54:48.352Z","level":"warn","event":"db.query_slow","request_id":"2148d6a7-c299-4f82-a793-3a9de932c3d4","route":"action","method":"GET","target":"auth:user","status":200,"duration_ms":310,"threshold_ms":300}
+{"ts":"2026-10-14T12:54:48.353Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":304,"threshold_ms":300}
+{"ts":"2026-10-14T12:54:48.362Z","level":"warn","event":"db.query_slow","request_id":"d0a9fd66-de96-4f72-b8c8-89643e290ef9","route":"action","method":"GET","target":"auth:user","status":200,"duration_ms":303,"threshold_ms":300}
+{"ts":"2026-10-14T12:54:48.742Z","level":"warn","event":"db.query_slow","request_id":"5438203a-dee9-4ff5-aefa-58a8436242b5","route":"action","method":"GET","target":"carts","status":200,"duration_ms":303,"threshold_ms":300}
+{"ts":"2026-10-14T12:54:48.743Z","level":"warn","event":"db.query_slow","request_id":"7186f34a-6ed7-4775-8d69-9c186ad0790e","route":"action","method":"GET","target":"auth:user","status":200,"duration_ms":372,"threshold_ms":300}
+{"ts":"2026-10-14T12:54:48.744Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"orders","status":200,"duration_ms":385,"threshold_ms":300}
+{"ts":"2026-10-14T12:54:48.745Z","level":"warn","event":"db.query_slow","request_id":"d0a9fd66-de96-4f72-b8c8-89643e290ef9","route":"action","method":"GET","target":"carts","status":200,"duration_ms":379,"threshold_ms":300}
+{"ts":"2026-10-14T12:54:48.772Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":416,"threshold_ms":300}
+{"ts":"2026-10-14T12:54:48.773Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"auth:user","status":200,"duration_ms":415,"threshold_ms":300}
+{"ts":"2026-10-14T12:54:48.791Z","level":"warn","event":"db.query_slow","request_id":"9e4b033e-a65c-4020-9f7c-c9b0dead1fdb","route":"action","method":"GET","target":"auth:user","status":200,"duration_ms":413,"threshold_ms":300}
+{"ts":"2026-10-14T12:54:48.848Z","level":"warn","event":"db.query_slow","request_id":"2148d6a7-c299-4f82-a793-3a9de932c3d4","route":"action","method":"GET","target":"wishlists","status":200,"duration_ms":490,"threshold_ms":300}
+{"ts":"2026-10-14T12:54:48.905Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"payment_tokens","status":200,"duration_ms":702,"threshold_ms":300}
+{"ts":"2026-10-14T12:54:48.906Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"wallet_accounts","status":200,"duration_ms":321,"threshold_ms":300}
+{"ts":"2026-10-14T12:54:49.979Z","level":"warn","event":"db.query_slow","request_id":"9e4b033e-a65c-4020-9f7c-c9b0dead1fdb","route":"/api/cart","method":"GET","target":"auth:user","status":200,"duration_ms":1601,"threshold_ms":300}
+[ELIFECYCLE] Command failed with exit code 143.

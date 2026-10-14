@@ -1,0 +1,124 @@
+Already up to date
+Done in 220ms using pnpm v11.1.2
+
+Running 8 tests using 2 workers
+
+[1A[2K[1/8] [chromium] › e2e/account-orders.spec.ts:35:7 › account orders (UX19) › each order is an article with a number, chips, a preview and a total
+[1A[2K[2/8] [chromium] › e2e/account-orders.spec.ts:83:7 › account orders (UX19) › the foot holds "order again" on a paid order and both actions are 44px tall
+[1A[2K  1) [chromium] › e2e/account-orders.spec.ts:83:7 › account orders (UX19) › the foot holds "order again" on a paid order and both actions are 44px tall 
+
+    TimeoutError: page.waitForURL: Timeout 20000ms exceeded.
+    =========================== logs ===========================
+    waiting for navigation until "load"
+    ============================================================
+
+       at auth-session.ts:66
+
+      64 |   await page.getByRole('button', { name: 'כניסה', exact: true }).click()
+      65 |   // Either the return path or a generic signed-in page; never stay on /login.
+    > 66 |   await page.waitForURL((url) => !url.pathname.startsWith('/login'), { timeout: 20_000 })
+         |              ^
+      67 | }
+      68 |
+      69 | /**
+        at signInWithEmail (/Users/ofir/kenyonexpress-autopilot/e2e/auth-session.ts:66:14)
+        at /Users/ofir/kenyonexpress-autopilot/e2e/account-orders.spec.ts:26:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/account-orders-account-ord-97908--both-actions-are-44px-tall-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/account-orders-account-ord-97908--both-actions-are-44px-tall-chromium/error-context.md
+
+
+[1A[2K[3/8] [chromium] › e2e/account-orders.spec.ts:103:7 › account orders (UX19) › an unpaid order offers no reorder
+[1A[2K  2) [chromium] › e2e/account-orders.spec.ts:35:7 › account orders (UX19) › each order is an article with a number, chips, a preview and a total 
+
+    TimeoutError: page.waitForURL: Timeout 20000ms exceeded.
+    =========================== logs ===========================
+    waiting for navigation until "load"
+    ============================================================
+
+       at auth-session.ts:66
+
+      64 |   await page.getByRole('button', { name: 'כניסה', exact: true }).click()
+      65 |   // Either the return path or a generic signed-in page; never stay on /login.
+    > 66 |   await page.waitForURL((url) => !url.pathname.startsWith('/login'), { timeout: 20_000 })
+         |              ^
+      67 | }
+      68 |
+      69 | /**
+        at signInWithEmail (/Users/ofir/kenyonexpress-autopilot/e2e/auth-session.ts:66:14)
+        at /Users/ofir/kenyonexpress-autopilot/e2e/account-orders.spec.ts:26:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/account-orders-account-ord-2dd2a-chips-a-preview-and-a-total-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/account-orders-account-ord-2dd2a-chips-a-preview-and-a-total-chromium/error-context.md
+
+
+[1A[2K[4/8] [chromium] › e2e/account-orders.spec.ts:54:7 › account orders (UX19) › the toggle opens the lines in place and closes them again
+[1A[2K[5/8] [mobile-chrome] › e2e/account-orders.spec.ts:35:7 › account orders (UX19) › each order is an article with a number, chips, a preview and a total
+[1A[2K[6/8] [mobile-chrome] › e2e/account-orders.spec.ts:83:7 › account orders (UX19) › the foot holds "order again" on a paid order and both actions are 44px tall
+[1A[2K  3) [mobile-chrome] › e2e/account-orders.spec.ts:35:7 › account orders (UX19) › each order is an article with a number, chips, a preview and a total 
+
+    TimeoutError: page.waitForURL: Timeout 20000ms exceeded.
+    =========================== logs ===========================
+    waiting for navigation until "load"
+    ============================================================
+
+       at auth-session.ts:66
+
+      64 |   await page.getByRole('button', { name: 'כניסה', exact: true }).click()
+      65 |   // Either the return path or a generic signed-in page; never stay on /login.
+    > 66 |   await page.waitForURL((url) => !url.pathname.startsWith('/login'), { timeout: 20_000 })
+         |              ^
+      67 | }
+      68 |
+      69 | /**
+        at signInWithEmail (/Users/ofir/kenyonexpress-autopilot/e2e/auth-session.ts:66:14)
+        at /Users/ofir/kenyonexpress-autopilot/e2e/account-orders.spec.ts:26:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/account-orders-account-ord-2dd2a-chips-a-preview-and-a-total-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/account-orders-account-ord-2dd2a-chips-a-preview-and-a-total-mobile-chrome/error-context.md
+
+
+[1A[2K[7/8] [mobile-chrome] › e2e/account-orders.spec.ts:54:7 › account orders (UX19) › the toggle opens the lines in place and closes them again
+[1A[2K  4) [mobile-chrome] › e2e/account-orders.spec.ts:83:7 › account orders (UX19) › the foot holds "order again" on a paid order and both actions are 44px tall 
+
+    TimeoutError: page.waitForURL: Timeout 20000ms exceeded.
+    =========================== logs ===========================
+    waiting for navigation until "load"
+    ============================================================
+
+       at auth-session.ts:66
+
+      64 |   await page.getByRole('button', { name: 'כניסה', exact: true }).click()
+      65 |   // Either the return path or a generic signed-in page; never stay on /login.
+    > 66 |   await page.waitForURL((url) => !url.pathname.startsWith('/login'), { timeout: 20_000 })
+         |              ^
+      67 | }
+      68 |
+      69 | /**
+        at signInWithEmail (/Users/ofir/kenyonexpress-autopilot/e2e/auth-session.ts:66:14)
+        at /Users/ofir/kenyonexpress-autopilot/e2e/account-orders.spec.ts:26:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/account-orders-account-ord-97908--both-actions-are-44px-tall-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/account-orders-account-ord-97908--both-actions-are-44px-tall-mobile-chrome/error-context.md
+
+
+[1A[2K[8/8] [mobile-chrome] › e2e/account-orders.spec.ts:103:7 › account orders (UX19) › an unpaid order offers no reorder
+[1A[2K  4 failed
+    [chromium] › e2e/account-orders.spec.ts:35:7 › account orders (UX19) › each order is an article with a number, chips, a preview and a total 
+    [chromium] › e2e/account-orders.spec.ts:83:7 › account orders (UX19) › the foot holds "order again" on a paid order and both actions are 44px tall 
+    [mobile-chrome] › e2e/account-orders.spec.ts:35:7 › account orders (UX19) › each order is an article with a number, chips, a preview and a total 
+    [mobile-chrome] › e2e/account-orders.spec.ts:83:7 › account orders (UX19) › the foot holds "order again" on a paid order and both actions are 44px tall 
+  4 did not run
+e2e exit 1

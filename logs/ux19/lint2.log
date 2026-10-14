@@ -1,0 +1,102 @@
+Already up to date
+Done in 211ms using pnpm v11.1.2
+$ biome check . && node scripts/tokens-gate.mjs && node scripts/copy-gate.mjs && node scripts/asset-gate.mjs && node scripts/media-ingest/blur-manifest.mjs --check
+./logs/ux19/after.json format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+     14  14 │         },
+     15  15 │         "orderNumber": "הזמנה #0EAFF019",
+     16     │ - ······"badges":·[
+     17     │ - ········"הושלמה"
+     18     │ - ······],
+         16 │ + ······"badges":·["הושלמה"],
+     19  17 │         "badgeGroup": true,
+     20     │ - ······"productNames":·[
+     21     │ - ········"קופון·בדיקות·אוטומטיות",
+     22     │ - ········"קופון·בדיקות·אוטומטיות"
+     23     │ - ······],
+         18 │ + ······"productNames":·["קופון·בדיקות·אוטומטיות",·"קופון·בדיקות·אוטומטיות"],
+     24  19 │         "mainWidth": 308,
+     25  20 │         "actionsWidth": 308,
+    ······· │ 
+     88  83 │           "hidden": false,
+     89  84 │           "lines": 1,
+     90     │ - ········"lineNames":·[
+     91     │ - ··········"קופון·בדיקות·אוטומטיות"
+     92     │ - ········],
+         85 │ + ········"lineNames":·["קופון·בדיקות·אוטומטיות"],
+     93  86 │           "lineChips": []
+     94  87 │         },
+    ······· │ 
+    117 110 │         },
+    118 111 │         "orderNumber": "הזמנה #0EAFF019",
+    119     │ - ······"badges":·[
+    120     │ - ········"הושלמה"
+    121     │ - ······],
+        112 │ + ······"badges":·["הושלמה"],
+    122 113 │         "badgeGroup": true,
+    123     │ - ······"productNames":·[
+    124     │ - ········"קופון·בדיקות·אוטומטיות",
+    125     │ - ········"קופון·בדיקות·אוטומטיות"
+    126     │ - ······],
+        114 │ + ······"productNames":·["קופון·בדיקות·אוטומטיות",·"קופון·בדיקות·אוטומטיות"],
+    127 115 │         "mainWidth": 696,
+    128 116 │         "actionsWidth": 696,
+    ······· │ 
+    191 179 │           "hidden": false,
+    192 180 │           "lines": 1,
+    193     │ - ········"lineNames":·[
+    194     │ - ··········"קופון·בדיקות·אוטומטיות"
+    195     │ - ········],
+        181 │ + ········"lineNames":·["קופון·בדיקות·אוטומטיות"],
+    196 182 │           "lineChips": []
+    197 183 │         },
+    ······· │ 
+    220 206 │         },
+    221 207 │         "orderNumber": "הזמנה #0EAFF019",
+    222     │ - ······"badges":·[
+    223     │ - ········"הושלמה"
+    224     │ - ······],
+        208 │ + ······"badges":·["הושלמה"],
+    225 209 │         "badgeGroup": true,
+    226     │ - ······"productNames":·[
+    227     │ - ········"קופון·בדיקות·אוטומטיות",
+    228     │ - ········"קופון·בדיקות·אוטומטיות"
+    229     │ - ······],
+        210 │ + ······"productNames":·["קופון·בדיקות·אוטומטיות",·"קופון·בדיקות·אוטומטיות"],
+    230 211 │         "mainWidth": 958,
+    231 212 │         "actionsWidth": 958,
+    ······· │ 
+    294 275 │           "hidden": false,
+    295 276 │           "lines": 1,
+    296     │ - ········"lineNames":·[
+    297     │ - ··········"קופון·בדיקות·אוטומטיות"
+    298     │ - ········],
+        277 │ + ········"lineNames":·["קופון·בדיקות·אוטומטיות"],
+    299 278 │           "lineChips": []
+    300 279 │         },
+  
+
+./logs/ux19/login-probe.mjs format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+     3  3 │   const ctx = await browser.newContext({ extraHTTPHeaders: { 'x-forwarded-for': '10.19.77.5' } })
+     4  4 │   const page = await ctx.newPage()
+     5    │ - await·page.goto('http://localhost:3359/login?next=%2Faccount%2Forders',·{·waitUntil:·'networkidle'·})
+        5 │ + await·page.goto('http://localhost:3359/login?next=%2Faccount%2Forders',·{
+        6 │ + ··waitUntil:·'networkidle',
+        7 │ + })
+     6  8 │   await page.getByLabel('אימייל').fill('e2e-customer@test.kenyonexpress.local')
+     7  9 │   await page.getByLabel('סיסמה').fill('E2eCustomer!pass1')
+  
+
+Checked 2490 files in 899ms. No fixes applied.
+Found 2 errors.
+check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Some errors were emitted while running checks.
+  
+
+[ELIFECYCLE] Command failed with exit code 1.

@@ -1002,6 +1002,264 @@
   text-decoration: underline;
 }
 
+/* Order cards (UX19): one article per order on /account/orders. The head
+   (number, date, chips), the body (preview, count, total), the disclosure
+   (lines, tracking) and the foot (order again, the page link) stack; the
+   row this replaces put the actions beside the text and squeezed the text
+   to a few words per line on a phone. rem and tokens only. */
+.order-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.order-card {
+  border: thin solid var(--account-line);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  padding: 1rem 1.25rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.order-card__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+}
+
+.order-card__id {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.order-card__number {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--account-ink);
+}
+
+.order-card__date {
+  font-size: 0.8125rem;
+  color: var(--account-muted);
+}
+
+.order-card__badges {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+/* Named areas, not auto-placement: a card without a picture has no thumbs
+   item, and auto-placement then dropped the summary into the content-sized
+   first track (15% of the card at 1440, measured) and the total into the
+   1fr one. */
+.order-card__body {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas: "thumbs summary total";
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.order-card__thumbs {
+  grid-area: thumbs;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 0.25rem;
+}
+
+.order-card__thumb {
+  width: 3.5rem;
+  height: 3.5rem;
+  border: thin solid var(--account-line);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--color-surface);
+}
+
+.order-card__thumb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.order-card__summary {
+  grid-area: summary;
+  min-width: 0;
+}
+
+.order-card__preview {
+  font-size: 0.875rem;
+  font-weight: 700;
+  margin: 0 0 0.125rem;
+  overflow-wrap: anywhere;
+}
+
+.order-card__meta {
+  font-size: 0.8125rem;
+  color: var(--account-muted);
+  margin: 0;
+}
+
+.order-card__total {
+  grid-area: total;
+  margin: 0;
+  display: grid;
+  justify-items: end;
+  text-align: end;
+}
+
+.order-card__total-label {
+  font-size: 0.75rem;
+  color: var(--account-muted);
+}
+
+.order-card__total-value {
+  font-size: 1rem;
+  white-space: nowrap;
+}
+
+.order-card__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-height: 2.75rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--account-blue);
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  cursor: pointer;
+  justify-self: start;
+}
+
+.order-card__toggle:hover {
+  text-decoration: underline;
+}
+
+.order-card__chevron {
+  transition: transform 0.2s ease;
+}
+
+.order-card__toggle[aria-expanded="true"] .order-card__chevron {
+  transform: rotate(180deg);
+}
+
+.order-card__details {
+  border-top: thin solid var(--account-line);
+  padding-top: 0.75rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.order-card__details[hidden] {
+  display: none;
+}
+
+.order-card__lines,
+.order-card__tracking {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.order-card__line {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.order-card__line-main {
+  min-width: 0;
+}
+
+.order-card__line-name {
+  font-size: 0.875rem;
+  font-weight: 700;
+  margin: 0 0 0.125rem;
+  overflow-wrap: anywhere;
+}
+
+.order-card__line-name a:hover {
+  text-decoration: underline;
+}
+
+.order-card__line-meta {
+  font-size: 0.8125rem;
+  color: var(--account-muted);
+  margin: 0;
+}
+
+.order-card__line-side {
+  display: grid;
+  justify-items: end;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.order-card__line-total {
+  font-size: 0.875rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.order-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  border-top: thin solid var(--account-line);
+  padding-top: 0.75rem;
+}
+
+.order-card__actions .account-btn,
+.order-card__actions .account-reorder {
+  min-height: 2.75rem;
+}
+
+@media (max-width: 30em) {
+  .order-card__body {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      "thumbs summary"
+      "total total";
+  }
+
+  .order-card__total {
+    grid-auto-flow: column;
+    justify-content: space-between;
+    align-items: baseline;
+    width: 100%;
+  }
+
+  .order-card__actions {
+    display: grid;
+  }
+
+  .order-card__actions .account-reorder,
+  .order-card__actions .account-reorder[data-variant="compact"] {
+    display: grid;
+  }
+
+  .order-card__actions .account-btn {
+    width: 100%;
+  }
+}
+
 /* Private order feedback (STEP 11): the form on a paid order, then the row
    it stored. Star 1 sits on the right because the document is RTL; nothing
    here reverses the row. */

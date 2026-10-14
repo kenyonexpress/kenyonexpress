@@ -1,0 +1,290 @@
+{
+  "380": {
+    "h1": "ההזמנות שלי",
+    "subtitle": "42 הזמנות",
+    "entries": 42,
+    "articles": 42,
+    "first": {
+      "tag": "article",
+      "rect": {
+        "x": 15,
+        "y": 1294.2,
+        "w": 350,
+        "h": 325.5
+      },
+      "orderNumber": "הזמנה #0EAFF019",
+      "badges": ["הושלמה"],
+      "badgeGroup": true,
+      "productNames": ["קופון בדיקות אוטומטיות", "קופון בדיקות אוטומטיות"],
+      "mainWidth": 308,
+      "actionsWidth": 308,
+      "metaLines": 1,
+      "expand": {
+        "text": "הצגת הפריט",
+        "expanded": "false",
+        "controls": "_R_1gelubsnud9f9b_",
+        "rect": {
+          "x": 253.2,
+          "y": 1437.7,
+          "w": 90.8,
+          "h": 44
+        }
+      },
+      "reorder": "הזמנה חוזרת בלחיצה אחת",
+      "detailsLink": "לעמוד ההזמנה",
+      "buttons": [
+        {
+          "text": "הצגת הפריט",
+          "rect": {
+            "x": 253.2,
+            "y": 1437.7,
+            "w": 90.8,
+            "h": 44
+          }
+        },
+        {
+          "text": "הזמנה חוזרת בלחיצה אחת",
+          "rect": {
+            "x": 36,
+            "y": 1506.7,
+            "w": 308,
+            "h": 44
+          }
+        },
+        {
+          "text": "לעמוד ההזמנה",
+          "rect": {
+            "x": 36,
+            "y": 1558.7,
+            "w": 308,
+            "h": 44
+          }
+        }
+      ]
+    },
+    "content": {
+      "x": 15,
+      "y": 1209.2,
+      "w": 350,
+      "h": 14272
+    },
+    "pageHeight": 15964,
+    "scrollWidth": 380,
+    "opened": {
+      "expanded": "true",
+      "text": "הסתרת הפריטים",
+      "panel": {
+        "rect": {
+          "x": 36,
+          "y": 1493.7,
+          "w": 308,
+          "h": 55.5
+        },
+        "hidden": false,
+        "lines": 1,
+        "lineNames": ["קופון בדיקות אוטומטיות"],
+        "lineChips": []
+      },
+      "cardRect": {
+        "x": 15,
+        "y": 1294.2,
+        "w": 350,
+        "h": 393
+      },
+      "collapsedAgain": "false"
+    },
+    "errors": []
+  },
+  "768": {
+    "h1": "ההזמנות שלי",
+    "subtitle": "42 הזמנות",
+    "entries": 42,
+    "articles": 42,
+    "first": {
+      "tag": "article",
+      "rect": {
+        "x": 15,
+        "y": 1256.8,
+        "w": 738,
+        "h": 237.5
+      },
+      "orderNumber": "הזמנה #0EAFF019",
+      "badges": ["הושלמה"],
+      "badgeGroup": true,
+      "productNames": ["קופון בדיקות אוטומטיות", "קופון בדיקות אוטומטיות"],
+      "mainWidth": 696,
+      "actionsWidth": 696,
+      "metaLines": 1,
+      "expand": {
+        "text": "הצגת הפריט",
+        "expanded": "false",
+        "controls": "_R_1gelubsnud9f9b_",
+        "rect": {
+          "x": 641.2,
+          "y": 1364.3,
+          "w": 90.8,
+          "h": 44
+        }
+      },
+      "reorder": "הזמנה חוזרת בלחיצה אחת",
+      "detailsLink": "לעמוד ההזמנה",
+      "buttons": [
+        {
+          "text": "הצגת הפריט",
+          "rect": {
+            "x": 641.2,
+            "y": 1364.3,
+            "w": 90.8,
+            "h": 44
+          }
+        },
+        {
+          "text": "הזמנה חוזרת בלחיצה אחת",
+          "rect": {
+            "x": 553.5,
+            "y": 1433.3,
+            "w": 178.5,
+            "h": 44
+          }
+        },
+        {
+          "text": "לעמוד ההזמנה",
+          "rect": {
+            "x": 430.2,
+            "y": 1433.3,
+            "w": 115.4,
+            "h": 44
+          }
+        }
+      ]
+    },
+    "content": {
+      "x": 15,
+      "y": 1171.8,
+      "w": 738,
+      "h": 10716
+    },
+    "pageHeight": 12370,
+    "scrollWidth": 768,
+    "opened": {
+      "expanded": "true",
+      "text": "הסתרת הפריטים",
+      "panel": {
+        "rect": {
+          "x": 36,
+          "y": 1420.3,
+          "w": 696,
+          "h": 55.5
+        },
+        "hidden": false,
+        "lines": 1,
+        "lineNames": ["קופון בדיקות אוטומטיות"],
+        "lineChips": []
+      },
+      "cardRect": {
+        "x": 15,
+        "y": 1256.8,
+        "w": 738,
+        "h": 305
+      },
+      "collapsedAgain": "false"
+    },
+    "errors": []
+  },
+  "1440": {
+    "h1": "ההזמנות שלי",
+    "subtitle": "42 הזמנות",
+    "entries": 42,
+    "articles": 42,
+    "first": {
+      "tag": "article",
+      "rect": {
+        "x": 75,
+        "y": 358.3,
+        "w": 1000,
+        "h": 237.5
+      },
+      "orderNumber": "הזמנה #0EAFF019",
+      "badges": ["הושלמה"],
+      "badgeGroup": true,
+      "productNames": ["קופון בדיקות אוטומטיות", "קופון בדיקות אוטומטיות"],
+      "mainWidth": 958,
+      "actionsWidth": 958,
+      "metaLines": 1,
+      "expand": {
+        "text": "הצגת הפריט",
+        "expanded": "false",
+        "controls": "_R_1gelubsnud9f9b_",
+        "rect": {
+          "x": 963.2,
+          "y": 465.8,
+          "w": 90.8,
+          "h": 44
+        }
+      },
+      "reorder": "הזמנה חוזרת בלחיצה אחת",
+      "detailsLink": "לעמוד ההזמנה",
+      "buttons": [
+        {
+          "text": "הצגת הפריט",
+          "rect": {
+            "x": 963.2,
+            "y": 465.8,
+            "w": 90.8,
+            "h": 44
+          }
+        },
+        {
+          "text": "הזמנה חוזרת בלחיצה אחת",
+          "rect": {
+            "x": 875.5,
+            "y": 534.8,
+            "w": 178.5,
+            "h": 44
+          }
+        },
+        {
+          "text": "לעמוד ההזמנה",
+          "rect": {
+            "x": 752.2,
+            "y": 534.8,
+            "w": 115.4,
+            "h": 44
+          }
+        }
+      ]
+    },
+    "content": {
+      "x": 75,
+      "y": 273.3,
+      "w": 1000,
+      "h": 10716
+    },
+    "pageHeight": 11598,
+    "scrollWidth": 1440,
+    "opened": {
+      "expanded": "true",
+      "text": "הסתרת הפריטים",
+      "panel": {
+        "rect": {
+          "x": 96,
+          "y": 521.8,
+          "w": 958,
+          "h": 55.5
+        },
+        "hidden": false,
+        "lines": 1,
+        "lineNames": ["קופון בדיקות אוטומטיות"],
+        "lineChips": []
+      },
+      "cardRect": {
+        "x": 75,
+        "y": 358.3,
+        "w": 1000,
+        "h": 305
+      },
+      "collapsedAgain": "false"
+    },
+    "errors": []
+  }
+}

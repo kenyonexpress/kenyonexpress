@@ -1,0 +1,173 @@
+{
+  "380": {
+    "h1": "ההזמנות שלי",
+    "subtitle": "42 הזמנות",
+    "entries": 42,
+    "articles": 0,
+    "first": {
+      "tag": "div",
+      "rect": {
+        "x": 36,
+        "y": 1315.2,
+        "w": 308,
+        "h": 179.5
+      },
+      "orderNumber": null,
+      "badges": [
+        "הושלמה"
+      ],
+      "badgeGroup": false,
+      "productNames": [],
+      "mainWidth": 35.3,
+      "actionsWidth": 256.7,
+      "metaLines": 5,
+      "expand": null,
+      "reorder": "הזמנה חוזרת בלחיצה אחת",
+      "detailsLink": "פרטים",
+      "buttons": [
+        {
+          "text": "הזמנה חוזרת בלחיצה אחת",
+          "rect": {
+            "x": 114.3,
+            "y": 1331.2,
+            "w": 178.5,
+            "h": 36
+          }
+        },
+        {
+          "text": "פרטים",
+          "rect": {
+            "x": 36,
+            "y": 1331.2,
+            "w": 70.3,
+            "h": 36
+          }
+        }
+      ]
+    },
+    "content": {
+      "x": 15,
+      "y": 1209.2,
+      "w": 350,
+      "h": 6011
+    },
+    "pageHeight": 7703,
+    "scrollWidth": 380,
+    "opened": null,
+    "errors": []
+  },
+  "768": {
+    "h1": "ההזמנות שלי",
+    "subtitle": "42 הזמנות",
+    "entries": 42,
+    "articles": 0,
+    "first": {
+      "tag": "div",
+      "rect": {
+        "x": 36,
+        "y": 1277.8,
+        "w": 696,
+        "h": 80.5
+      },
+      "orderNumber": null,
+      "badges": [
+        "הושלמה"
+      ],
+      "badgeGroup": false,
+      "productNames": [],
+      "mainWidth": 202.4,
+      "actionsWidth": 256.7,
+      "metaLines": 1,
+      "expand": null,
+      "reorder": "הזמנה חוזרת בלחיצה אחת",
+      "detailsLink": "פרטים",
+      "buttons": [
+        {
+          "text": "הזמנה חוזרת בלחיצה אחת",
+          "rect": {
+            "x": 114.3,
+            "y": 1293.8,
+            "w": 178.5,
+            "h": 36
+          }
+        },
+        {
+          "text": "פרטים",
+          "rect": {
+            "x": 36,
+            "y": 1293.8,
+            "w": 70.3,
+            "h": 36
+          }
+        }
+      ]
+    },
+    "content": {
+      "x": 15,
+      "y": 1171.8,
+      "w": 738,
+      "h": 3527
+    },
+    "pageHeight": 5181,
+    "scrollWidth": 768,
+    "opened": null,
+    "errors": []
+  },
+  "1440": {
+    "h1": "ההזמנות שלי",
+    "subtitle": "42 הזמנות",
+    "entries": 42,
+    "articles": 0,
+    "first": {
+      "tag": "div",
+      "rect": {
+        "x": 96,
+        "y": 379.3,
+        "w": 958,
+        "h": 80.5
+      },
+      "orderNumber": null,
+      "badges": [
+        "הושלמה"
+      ],
+      "badgeGroup": false,
+      "productNames": [],
+      "mainWidth": 202.4,
+      "actionsWidth": 256.7,
+      "metaLines": 1,
+      "expand": null,
+      "reorder": "הזמנה חוזרת בלחיצה אחת",
+      "detailsLink": "פרטים",
+      "buttons": [
+        {
+          "text": "הזמנה חוזרת בלחיצה אחת",
+          "rect": {
+            "x": 174.3,
+            "y": 395.3,
+            "w": 178.5,
+            "h": 36
+          }
+        },
+        {
+          "text": "פרטים",
+          "rect": {
+            "x": 96,
+            "y": 395.3,
+            "w": 70.3,
+            "h": 36
+          }
+        }
+      ]
+    },
+    "content": {
+      "x": 75,
+      "y": 273.3,
+      "w": 1000,
+      "h": 3527
+    },
+    "pageHeight": 4409,
+    "scrollWidth": 1440,
+    "opened": null,
+    "errors": []
+  }
+}
