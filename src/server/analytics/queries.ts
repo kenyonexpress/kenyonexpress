@@ -2,7 +2,15 @@ import { log } from '@/lib/observability/log'
 import 'server-only'
 
 import type { FunnelRow, SaleLine } from '@/lib/analytics/aggregate'
+import {
+  PAYOUT_DUE_STATUSES,
+  type RefundCounts,
+  type StandingCounts,
+  type VoucherCounts,
+  sumPayoutsDue,
+} from '@/lib/analytics/ops-kpis'
 import { agorot, agorotToIls } from '@/lib/commerce/money'
+import { parseIls } from '@/lib/money'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { supplierDueAgorot } from '@/lib/supplier/dashboard'
 
@@ -165,4 +173,105 @@ export async function loadFunnel(days: number): Promise<FunnelLoad> {
   }
 
   return { available: true, row, days }
+}
+
+export type OpsLoad =
+  | { available: true; vouchers: VoucherCounts; refunds: RefundCounts; standing: StandingCounts }
+  | { available: false; reason: string }
+
+/** A numeric shekel column as integer agorot, or -1 so the caller's sum skips it. */
+function ilsColumnToAgorot(value: string | number | null): number {
+  if (value === null) return 0
+  try {
+    return parseIls(typeof value === 'number' ? value.toFixed(2) : value)
+  } catch {
+    return -1
+  }
+}
+
+/**
+ * Redemption and refund counts for the window, for `computeOpsKpis`, plus the
+ * two standing figures.
+ *
+ * Vouchers are counted by `created_at`, refunds by `requested_at`: both are
+ * "what was opened in this window", which is the population the sales KPIs
+ * on the same page describe. A voucher issued last month and redeemed today is
+ * not in a 30-day redemption rate, on purpose: that rate answers "of what we
+ * sold recently, how much has been used".
+ *
+ * Active vouchers and payouts due ignore the window. They are what is
+ * outstanding now, and a tile that shrank when the admin picked "7 days"
+ * would be reporting the filter, not the liability.
+ *
+ * Counts with `head: true` cost no rows, and PostgREST has no GROUP BY, so
+ * this is several small reads rather than one aggregate.
+ */
+export async function loadOpsKpis(days: number, now: Date = new Date()): Promise<OpsLoad> {
+  const admin = createAdminClient()
+  const since = windowStart(days, now)
+
+  const count = (status?: string[]) => {
+    let q = admin
+      .from('vouchers')
+      .select('id', { count: 'exact', head: true })
+      .gte('created_at', since)
+    if (status) q = q.in('status', status as never)
+    return q
+  }
+
+  const [issued, redeemed, voided, refundRows, active, payouts] = await Promise.all([
+    count(),
+    count(['redeemed']),
+    count(['cancelled', 'refunded']),
+    admin.from('refunds').select('state, granted_agorot').gte('requested_at', since),
+    admin
+      .from('vouchers')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'issued' as never)
+      .gt('expires_at', now.toISOString()),
+    admin
+      .from('payout_statements')
+      .select('status, rolled_over, total_payout_ils')
+      .in('status', [...PAYOUT_DUE_STATUSES] as never),
+  ])
+
+  const failed = [issued, redeemed, voided, refundRows, active, payouts].find((r) => r.error)
+  if (failed?.error) {
+    log.warn('analytics.ops_kpis_failed', { reason: failed.error.message })
+    return { available: false, reason: failed.error.message }
+  }
+
+  let completed = 0
+  let granted = 0
+  for (const row of refundRows.data ?? []) {
+    if (row.state !== 'completed') continue
+    completed += 1
+    granted += Number(row.granted_agorot ?? 0)
+  }
+
+  const due = sumPayoutsDue(
+    (payouts.data ?? []).map((row) => ({
+      status: row.status as string,
+      amountAgorot: ilsColumnToAgorot(row.total_payout_ils as string | number | null),
+    })),
+  )
+
+  return {
+    available: true,
+    vouchers: {
+      issued: issued.count ?? 0,
+      redeemed: redeemed.count ?? 0,
+      voided: voided.count ?? 0,
+    },
+    refunds: {
+      requested: (refundRows.data ?? []).length,
+      completed,
+      grantedAgorot: agorot(granted),
+    },
+    standing: {
+      activeVouchers: active.count ?? 0,
+      payoutsDue: due.count,
+      payoutsDueAgorot: due.totalAgorot,
+    },
+  }
 }
