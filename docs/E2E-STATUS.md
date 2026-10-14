@@ -10,15 +10,17 @@ the json reporter output of the two runs.
 
 ## Results
 
-**Status: NOT GREEN YET.** The two runs below are the pre-fix baseline, taken
-on the build as it stood before any of the fixes in this document. The two
-post-fix runs that XF04 asked for were never completed: the item ran out of
-its 3,600-second budget after the fixes were written (the loop recorded
-`rc=124` at 05:41), and the second of the pair had already died on a
-word-split `--reporter` argument in `run.sh` (`ist,json: command not found`,
-since corrected). The post-fix pair is queued again as `WRETRY-XF04` at the
-head of `~/ke-goals/queue.txt`; it fills this section and the flake list
-from `/tmp/xf04/run1.json` and `run2.json` through `summarize.mjs`.
+**Status: NOT GREEN YET.** Three runs are recorded below: two pre-fix
+baselines on the build as it stood before any fix in this document, and one
+post-fix run on the build of 81527ead1. XF04 itself ran out of its
+3,600-second budget after the fixes were written (the loop recorded `rc=124`
+at 05:41), and the second baseline had died on a word-split `--reporter`
+argument in `run.sh` (`ist,json: command not found`, since corrected). The
+post-fix run cut the failures from 128 to 36 and found six more causes, five
+of them fixed in the commit that carries this paragraph. The green pair is
+queued as `WRETRY-XF04` at the head of `~/ke-goals/queue.txt`; it fills the
+final tables and the flake list from `/tmp/xf04/run1.json` and `run2.json`
+through `summarize.mjs`.
 
 ### Pre-fix baseline (the build of a1d7af001, before the fixes below)
 
@@ -38,6 +40,108 @@ post-fix pair decides which of those twelve survive.
 
 The per-spec table of the baseline is `/tmp/xf04/baseline-summary.txt`
 (not committed: the json reporter output it reads is 1.8 MB per run).
+
+### Post-fix run 1 (the build of 81527ead1, 15.10.2026, started 05:49:08)
+
+Run by hand inside the XF05 item with `logs/xf04/run.sh 1`: the whole suite,
+1122 cases, **1065 passed, 36 failed, 21 skipped** in
+1328s (ended 06:11:16); the baseline was 128 failed. It is
+evidence for what the XF04 fixes left open, not a green run, and it was one
+run, not two: `WRETRY-XF04` runs the full pair on the build that carries the
+fixes below.
+
+| spec | failed in run 1 |
+| --- | --- |
+| a11y.spec.ts | 6 |
+| admin-refund.spec.ts | 2 |
+| category-seo.spec.ts | 1 |
+| category.spec.ts | 2 |
+| coupon-offer.spec.ts | 1 |
+| error-page.spec.ts | 2 |
+| full-purchase-redeem.spec.ts | 1 |
+| home.spec.ts | 2 |
+| physical-purchase.spec.ts | 2 |
+| responsive.spec.ts | 2 |
+| rtl-mobile.spec.ts | 1 |
+| touch-targets.spec.ts | 12 |
+| wishlist-page.spec.ts | 2 |
+
+- [chromium] › e2e/a11y.spec.ts:303:7 › product pages have no WCAG A/AA violations › the first product in the catalogue
+- [chromium] › e2e/a11y.spec.ts:315:7 › product pages have no WCAG A/AA violations › a coupon product, which renders the struck regular price
+- [chromium] › e2e/a11y.spec.ts:492:5 › the cart panel that opens on add-to-cart has no WCAG A/AA violations
+- [chromium] › e2e/admin-refund.spec.ts:31:7 › admin cancel and refund @money @admin › a paid coupon order is refunded from the admin, and the voucher dies with it
+- [chromium] › e2e/error-page.spec.ts:54:9 › 500 page and /status (UX26) › a render error under the root boundary shows the status check, the status link and the support button
+- [chromium] › e2e/coupon-offer.spec.ts:80:7 › coupon variant › a physical product has no coupon variant and lands on its product page
+- [chromium] › e2e/error-page.spec.ts:54:9 › 500 page and /status (UX26) › a render error under the store boundary shows the status check, the status link and the support button
+- [chromium] › e2e/full-purchase-redeem.spec.ts:51:7 › full purchase to redeem @checkout @redeem @money › guest coupon cart → guest checkout → email sign-in at pay → mock pay → voucher → supplier redeem
+- [chromium] › e2e/home.spec.ts:475:7 › homepage › the homepage costs one render-blocking stylesheet
+- [chromium] › e2e/physical-purchase.spec.ts:25:7 › logged-in physical purchase @checkout @money › signed-in customer → physical product → mock pay → order, no voucher
+- [chromium] › e2e/responsive.spec.ts:98:7 › safe area › the bottom-anchored fixed elements resolve their inset in the computed style
+- [chromium] › e2e/touch-targets.spec.ts:160:7 › every control on / is thumb-sized
+- [chromium] › e2e/touch-targets.spec.ts:160:7 › every control on /products is thumb-sized
+- [chromium] › e2e/touch-targets.spec.ts:160:7 › every control on /cart is thumb-sized
+- [chromium] › e2e/touch-targets.spec.ts:160:7 › every control on /category/hot-deals is thumb-sized
+- [chromium] › e2e/touch-targets.spec.ts:160:7 › every control on /legal/terms is thumb-sized
+- [chromium] › e2e/touch-targets.spec.ts:168:5 › every control on a product page is thumb-sized, buy row included
+- [chromium] › e2e/wishlist-page.spec.ts:192:7 › wishlist page (UX20) › the share button either copies a link or says the feature is not open
+- [mobile-chrome] › e2e/a11y.spec.ts:303:7 › product pages have no WCAG A/AA violations › the first product in the catalogue
+- [mobile-chrome] › e2e/a11y.spec.ts:315:7 › product pages have no WCAG A/AA violations › a coupon product, which renders the struck regular price
+- [mobile-chrome] › e2e/a11y.spec.ts:492:5 › the cart panel that opens on add-to-cart has no WCAG A/AA violations
+- [mobile-chrome] › e2e/admin-refund.spec.ts:31:7 › admin cancel and refund @money @admin › a paid coupon order is refunded from the admin, and the voucher dies with it
+- [mobile-chrome] › e2e/category-seo.spec.ts:158:7 › category page SEO › a facet nobody matches shows the empty state with a way out
+- [mobile-chrome] › e2e/category.spec.ts:221:7 › category archive › an unknown brand narrows to the empty state, not a blank page
+- [mobile-chrome] › e2e/category.spec.ts:274:7 › category archive › catalog thumbnails go through the image optimizer and decode
+- [mobile-chrome] › e2e/home.spec.ts:475:7 › homepage › the homepage costs one render-blocking stylesheet
+- [mobile-chrome] › e2e/physical-purchase.spec.ts:25:7 › logged-in physical purchase @checkout @money › signed-in customer → physical product → mock pay → order, no voucher
+- [mobile-chrome] › e2e/responsive.spec.ts:98:7 › safe area › the bottom-anchored fixed elements resolve their inset in the computed style
+- [mobile-chrome] › e2e/rtl-mobile.spec.ts:125:7 › no sideways scroll at 320px › the seeded single-page checkout fits 320px, every section at once
+- [mobile-chrome] › e2e/touch-targets.spec.ts:160:7 › every control on / is thumb-sized
+- [mobile-chrome] › e2e/touch-targets.spec.ts:160:7 › every control on /products is thumb-sized
+- [mobile-chrome] › e2e/touch-targets.spec.ts:160:7 › every control on /cart is thumb-sized
+- [mobile-chrome] › e2e/touch-targets.spec.ts:160:7 › every control on /category/hot-deals is thumb-sized
+- [mobile-chrome] › e2e/touch-targets.spec.ts:168:5 › every control on a product page is thumb-sized, buy row included
+- [mobile-chrome] › e2e/touch-targets.spec.ts:160:7 › every control on /legal/terms is thumb-sized
+- [mobile-chrome] › e2e/wishlist-page.spec.ts:192:7 › wishlist page (UX20) › the share button either copies a link or says the feature is not open
+
+What run 1 proved, and what was fixed on top of it in the same commit:
+
+- **Product and cart-panel a11y (target-size x8):** the related card's
+  category link kept `-my-1`, and a `-mb-1` beats the parent's `space-y-2`,
+  so the title below overlapped the link's bottom 4px (axe: 204x20, needs
+  24). Now `-mt-1` only (`ProductCard.tsx`, pinned in `responsive.test.ts`).
+- **The three money specs:** the checkout page read the gate through
+  `readPaymentProviderGate()` (which honours `E2E_MOCK_CHECKOUT=local-build`)
+  while `beginCheckout`, the pay step and `reorder` called
+  `assessPaymentProviderGate(env)` with no allowance, so the button was
+  enabled and the action answered the closed message; the server's
+  environment was verified to carry the variable. All three now use the
+  page's reader; `provider-gate.test.ts` refuses a server action that imports
+  the bare assess.
+- **error-page (4 cases):** `goto` resolved before the streamed not-found
+  heading painted, so an unawaited `isVisible()` was always false and the
+  crash heading timed out. The spec waits for either heading now; verified
+  against the running server (1 passed, 2 skipped).
+- **home.spec, one render-blocking stylesheet:** four sheets were still
+  imported beside `globals.css` in the root layout (cart-page, home-handheld,
+  newsletter, product-card-deals), which is its own chunk under Turbopack;
+  they are `@import`ed by `globals.css` now, as XF04 did for the cart and
+  login sheets.
+- **category and category-seo empty state (mobile-chrome, 2 cases):** the
+  empty state streams through a Suspense boundary, so the HTML carries it
+  twice until React commits and the strict locator saw both; the two
+  assertions are scoped to `#main-content` now (2 passed on the running
+  server under mobile-chrome).
+- **responsive.spec safe area (both projects):** the float's inset is 20px +
+  the consent reserve on a first visit (308px measured), by design since
+  XF04 lifted it above the banner; the test now visits with consent decided,
+  which is what it was measuring (4 passed on the running server).
+- **Not fixed here, for the retry:** `category.spec.ts` catalogue thumbnails
+  on mobile-chrome (element detached mid-scroll), `touch-targets.spec.ts` on every route
+  (the XF04 tap-area fixes did not hold at the measured widths),
+  `coupon-offer.spec.ts` (the `/coupon/<physical slug>` probe landed on the
+  not-found page in the browser while curl got the 307),
+  `wishlist-page.spec.ts` share button, and the E2E customer's cart, which
+  carries 27 lines from earlier runs and is never cleared.
 
 
 ## How the suite got there

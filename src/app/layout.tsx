@@ -18,8 +18,8 @@ import { Suspense } from 'react'
 // a sibling import here was a second render-blocking sheet.
 import './globals.css'
 /**
- * The three below are imported HERE, not by the segment that uses them, and the
- * reason is the number of requests rather than the number of bytes.
+ * Four page-scoped sheets live in the ROOT bundle, not in the segment that uses
+ * them, and the reason is the number of requests rather than the number of bytes.
  *
  * A stylesheet imported by a route segment gets its own chunk, and every chunk
  * is a render-blocking <link>. The homepage was shipping four: the root bundle
@@ -33,10 +33,10 @@ import './globals.css'
  * that has none of those elements matches nothing. A file with bare element or
  * utility selectors does NOT belong here - it would now apply site-wide.
  */
-import '@/styles/cart-page.css'
-import '@/styles/home-handheld.css'
-import '@/styles/newsletter.css'
-import '@/styles/product-card-deals.css'
+// They are @imported by globals.css (cart-page, home-handheld, newsletter,
+// product-card-deals): a sibling import here is its own CSS chunk under
+// Turbopack, and the post-fix run 1 of XF04 (15.10.2026) still counted two app
+// chunks on the homepage while they sat here.
 
 const heebo = Heebo({
   variable: '--font-heebo',

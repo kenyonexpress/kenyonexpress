@@ -73,7 +73,7 @@ vi.mock('@/lib/utils/rate-limit', () => ({ checkRateLimit: async () => true }))
 vi.mock('@/lib/payments', () => ({ loadCardcomEnv: () => ({}) }))
 vi.mock('@/lib/payments/provider-gate', () => ({
   PAYMENT_GATE_CLOSED_MESSAGE: 'gate closed',
-  assessPaymentProviderGate: () => gate,
+  readPaymentProviderGate: () => gate,
 }))
 vi.mock('@/server/actions/cart', () => ({
   clearCart: () => clearCart(),

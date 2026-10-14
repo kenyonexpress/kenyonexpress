@@ -1,3 +1,5 @@
+import { readFileSync, readdirSync } from 'node:fs'
+import { join, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import {
   E2E_MOCK_CHECKOUT_VALUE,
@@ -114,5 +116,28 @@ describe('readPaymentProviderGate', () => {
   it('carries one Hebrew sentence for the shopper, whatever the reason', () => {
     expect(PAYMENT_GATE_CLOSED_MESSAGE).toMatch(/[֐-׿]/)
     expect(PAYMENT_GATE_CLOSED_MESSAGE).not.toMatch(/CHECKOUT_ENABLED|MOCK/)
+  })
+})
+
+describe('the actions read the gate through the same reader as the page', () => {
+  // beginCheckout, the pay step and reorder called assessPaymentProviderGate(env)
+  // with no third argument, so E2E_MOCK_CHECKOUT=local-build opened the gate on
+  // the checkout page and the action still answered PAYMENT_GATE_CLOSED_MESSAGE
+  // (measured 15.10.2026: every money spec timed out on the pay click). One
+  // reader, readPaymentProviderGate(), is the only entry point outside this file.
+  it('no server action imports assessPaymentProviderGate', () => {
+    const dir = resolve(process.cwd(), 'src/server/actions')
+    const offenders: string[] = []
+    const walk = (d: string) => {
+      for (const entry of readdirSync(d, { withFileTypes: true })) {
+        const full = join(d, entry.name)
+        if (entry.isDirectory()) walk(full)
+        else if (/\.tsx?$/.test(entry.name) && !/\.test\./.test(entry.name)) {
+          if (readFileSync(full, 'utf8').includes('assessPaymentProviderGate')) offenders.push(full)
+        }
+      }
+    }
+    walk(dir)
+    expect(offenders).toEqual([])
   })
 })

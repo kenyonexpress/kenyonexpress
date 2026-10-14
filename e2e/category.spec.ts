@@ -225,7 +225,13 @@ test.describe('category archive', () => {
     const response = await page.goto(`/category/${slug}?brand=no-such-brand-12345`)
     expect(response?.status()).toBe(200)
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
-    await expect(page.getByText('לא נמצאו מוצרים התואמים את הבחירה שלך.')).toBeVisible({
+    // The empty state streams in through a Suspense boundary, so the served
+    // HTML carries it twice (the hidden segment and the swapped-in one) until
+    // React commits; strict mode saw both on mobile-chrome (15.10.2026, the
+    // post-fix run 1 of XF04). Scope to <main>, where only the live copy is.
+    await expect(
+      page.locator('#main-content').getByText('לא נמצאו מוצרים התואמים את הבחירה שלך.'),
+    ).toBeVisible({
       timeout: 15_000,
     })
   })

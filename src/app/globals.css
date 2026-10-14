@@ -18,6 +18,10 @@
    e2e/home.spec.ts counts one (measured 15.10.2026, XF04). */
 @import "../styles/mini-cart.css";
 @import "../styles/login-dialog.css";
+@import "../styles/cart-page.css";
+@import "../styles/home-handheld.css";
+@import "../styles/newsletter.css";
+@import "../styles/product-card-deals.css";
 
 body {
   background-color: var(--color-background);

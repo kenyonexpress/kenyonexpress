@@ -3,11 +3,7 @@
 import { type ReorderCard, pickReorderCard, planReorderLines } from '@/lib/checkout/reorder'
 import { withActionContext } from '@/lib/observability/action-context'
 import { log } from '@/lib/observability/log'
-import { loadCardcomEnv } from '@/lib/payments'
-import {
-  PAYMENT_GATE_CLOSED_MESSAGE,
-  assessPaymentProviderGate,
-} from '@/lib/payments/provider-gate'
+import { PAYMENT_GATE_CLOSED_MESSAGE, readPaymentProviderGate } from '@/lib/payments/provider-gate'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit } from '@/lib/utils/rate-limit'
@@ -224,7 +220,7 @@ async function nameProducts(admin: Admin, ids: string[]): Promise<string[]> {
 async function runReorderOneClick(rawInput: unknown): Promise<ReorderResult> {
   // Same two switches `beginCheckout` reads, checked before the cart is
   // touched: a closed gate must not leave the shopper's cart replaced.
-  const gate = assessPaymentProviderGate(loadCardcomEnv())
+  const gate = readPaymentProviderGate()
   if (!gate.live) {
     return {
       ok: false,

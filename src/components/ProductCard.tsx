@@ -293,7 +293,7 @@ function DefaultProductCard({
         {product.category && (
           <Link
             href={`/category/${product.category.slug}`}
-            className="-my-1 block min-h-6 py-1 text-xs text-muted-2 hover:text-heading line-clamp-1"
+            className="-mt-1 block min-h-6 py-1 text-xs text-muted-2 hover:text-heading line-clamp-1"
           >
             {product.category.name_he}
           </Link>

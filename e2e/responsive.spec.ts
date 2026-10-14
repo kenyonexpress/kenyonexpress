@@ -85,6 +85,16 @@ for (const width of WIDTHS) {
 }
 
 test.describe('safe area', () => {
+  // The float is lifted by --reserve-consent while the banner is up (XF04,
+  // 15.10.2026: it sat under the banner and hid Tab stops), so a first visit
+  // reads bottom: 308px. This test is about the inset RESOLVING, not about
+  // the banner, so it visits as a shopper who has already decided.
+  test.beforeEach(async ({ context }) => {
+    await context.addCookies([
+      { name: 'ke_consent', value: 'denied.2', domain: 'localhost', path: '/' },
+    ])
+  })
+
   test('the viewport meta opts into the notch with viewport-fit=cover', async ({ page }) => {
     // Without it env(safe-area-inset-*) is 0 on every phone and the insets
     // the fixed elements add are inert. Next writes the meta from

@@ -41,10 +41,7 @@ import {
   readAmountAgorot,
   resolvePaymentMoneySchema,
 } from '@/lib/payments/payment-money-columns'
-import {
-  PAYMENT_GATE_CLOSED_MESSAGE,
-  assessPaymentProviderGate,
-} from '@/lib/payments/provider-gate'
+import { PAYMENT_GATE_CLOSED_MESSAGE, readPaymentProviderGate } from '@/lib/payments/provider-gate'
 import { isThreeDSChallengeRequired } from '@/lib/payments/threeds'
 import { isCardTokenExpired } from '@/lib/payments/token-expiry'
 import { DEFAULT_SHIPPING_METHOD_ID } from '@/lib/shipping/methods'
@@ -396,7 +393,10 @@ async function runBeginCheckout(
   // Both switches at once: the operator's CHECKOUT_ENABLED and the mock
   // provider in production. See lib/payments/provider-gate.ts for the day
   // only the first was read here and orders finalized with no card charged.
-  const gate = assessPaymentProviderGate(env)
+  // The SAME reader as the page: a bare assess() here ignored the
+  // E2E_MOCK_CHECKOUT=local-build allowance, so the page showed an open gate
+  // and this action refused (measured 15.10.2026, the three money specs).
+  const gate = readPaymentProviderGate()
   if (!gate.live) {
     log.warn('checkout.gate_closed', { reasons: gate.reasons })
     return { ok: false, error: PAYMENT_GATE_CLOSED_MESSAGE, code: 'CHECKOUT_DISABLED' }
@@ -1443,7 +1443,7 @@ async function runSubmitCheckout(
   // behind. beginCheckout asks the same question again for callers that skip
   // this wrapper (the app), and the page reads it to disable the button, so
   // the shopper normally never reaches this line with it closed.
-  const gate = assessPaymentProviderGate(loadCardcomEnv())
+  const gate = readPaymentProviderGate()
   if (!gate.live) {
     return { error: PAYMENT_GATE_CLOSED_MESSAGE, code: 'CHECKOUT_DISABLED' }
   }

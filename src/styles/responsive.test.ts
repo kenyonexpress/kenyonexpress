@@ -155,9 +155,12 @@ describe('tap area', () => {
 
   it('uses padding, not the pseudo-element, on the line-clamped card link', () => {
     // overflow: hidden (line-clamp) clips ::after, so the category link on the
-    // compact card grows with py-1 and hands it back with -my-1.
+    // compact card grows with py-1. Only the TOP is handed back (-mt-1, into the
+    // card's padding): a -mb-1 beat the parent's space-y-2 and the title below
+    // overlapped the link's bottom 4px, which axe reads as a 20px target
+    // (measured 15.10 on /product/צימר-מאסטר, target-size x8).
     expect(read('src/components/ProductCard.tsx')).toMatch(
-      /className="-my-1 block min-h-6 py-1 text-xs text-muted-2 hover:text-heading line-clamp-1"/,
+      /className="-mt-1 block min-h-6 py-1 text-xs text-muted-2 hover:text-heading line-clamp-1"/,
     )
   })
 })
