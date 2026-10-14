@@ -132,6 +132,12 @@ Judgements are based on the actual file contents (with `file:line` references wh
 | HomeHeroSection (shim) | src/components/store/HomeHeroSection.tsx | re-export of home/HeroSection | unused | N/A (shim) | N/A |
 | PromoBanners (shim) | src/components/store/PromoBanners.tsx | re-export of home/HeroPromoBanners | unused | N/A (shim) | N/A |
 
+## src/components/not-found
+
+| Component | File | Props (key props / type) | Used in (where imported) | Tokens compliant? | RTL safe? |
+|---|---|---|---|---|---|
+| NotFoundBody | src/components/not-found/NotFoundBody.tsx | `{ compact?: boolean }` (async server component; `notFoundMetadata`, `NOT_FOUND_HEADING`, `NOT_FOUND_CATEGORY_COUNT`) | app/not-found (inside StoreShell) and every route group's not-found.tsx (UX25) | YES (tokens only: brand-primary, heading, muted, border, pill, elevated, touch-min) | YES (`dir="rtl"`, logical classes) |
+
 ## src/components/storefront
 
 | Component | File | Props (key props / type) | Used in (where imported) | Tokens compliant? | RTL safe? |

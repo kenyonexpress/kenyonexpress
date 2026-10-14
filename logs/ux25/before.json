@@ -1,0 +1,455 @@
+{
+  "380": {
+    "unmatched": {
+      "status": 404,
+      "url": "/this-page-does-not-exist-ux25",
+      "title": "הדף לא נמצא | קניון אקספרס",
+      "htmlDir": "rtl",
+      "mainDir": "rtl",
+      "robots": "noindex",
+      "header": false,
+      "footer": false,
+      "skipLink": false,
+      "mastheadSearch": false,
+      "h1": "הדף שחיפשתם לא נמצא",
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "הדף שחיפשתם לא נמצא",
+          "rect": {
+            "x": 61.3,
+            "y": 156,
+            "w": 257.5,
+            "h": 32
+          }
+        }
+      ],
+      "mainSearch": null,
+      "categoryLinks": [],
+      "categorySection": null,
+      "homeLink": {
+        "href": "/",
+        "text": "לדף הבית",
+        "rect": {
+          "x": 137.1,
+          "y": 331.5,
+          "w": 105.7,
+          "h": 44
+        }
+      },
+      "links": [
+        {
+          "href": "/products",
+          "text": "לכל המוצרים",
+          "rect": {
+            "x": 201.7,
+            "y": 274.5,
+            "w": 125.9,
+            "h": 44
+          }
+        },
+        {
+          "href": "/products?view=categories",
+          "text": "עיון בקטגוריות",
+          "rect": {
+            "x": 52.4,
+            "y": 273.5,
+            "w": 137.3,
+            "h": 46
+          }
+        },
+        {
+          "href": "/",
+          "text": "לדף הבית",
+          "rect": {
+            "x": 137.1,
+            "y": 331.5,
+            "w": 105.7,
+            "h": 44
+          }
+        }
+      ],
+      "buttons": [],
+      "brandMark": false,
+      "pageHeight": 900,
+      "scrollWidth": 380
+    },
+    "deadProduct": {
+      "status": 404,
+      "url": "/product/no-such-product-slug-12345",
+      "title": "הדף לא נמצא | קניון אקספרס",
+      "htmlDir": "rtl",
+      "mainDir": null,
+      "robots": "noindex",
+      "header": true,
+      "footer": true,
+      "skipLink": true,
+      "mastheadSearch": true,
+      "h1": "הדף שחיפשתם לא נמצא",
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "הדף שחיפשתם לא נמצא",
+          "rect": {
+            "x": 61.3,
+            "y": 281.7,
+            "w": 257.5,
+            "h": 32
+          }
+        }
+      ],
+      "mainSearch": null,
+      "categoryLinks": [],
+      "categorySection": null,
+      "homeLink": {
+        "href": "/",
+        "text": "לדף הבית",
+        "rect": {
+          "x": 137.1,
+          "y": 457.2,
+          "w": 105.7,
+          "h": 44
+        }
+      },
+      "links": [
+        {
+          "href": "/products",
+          "text": "לכל המוצרים",
+          "rect": {
+            "x": 201.7,
+            "y": 400.2,
+            "w": 125.9,
+            "h": 44
+          }
+        },
+        {
+          "href": "/products?view=categories",
+          "text": "עיון בקטגוריות",
+          "rect": {
+            "x": 52.4,
+            "y": 399.2,
+            "w": 137.3,
+            "h": 46
+          }
+        },
+        {
+          "href": "/",
+          "text": "לדף הבית",
+          "rect": {
+            "x": 137.1,
+            "y": 457.2,
+            "w": 105.7,
+            "h": 44
+          }
+        }
+      ],
+      "buttons": [],
+      "brandMark": false,
+      "pageHeight": 1296,
+      "scrollWidth": 380
+    },
+    "errors": []
+  },
+  "768": {
+    "unmatched": {
+      "status": 404,
+      "url": "/this-page-does-not-exist-ux25",
+      "title": "הדף לא נמצא | קניון אקספרס",
+      "htmlDir": "rtl",
+      "mainDir": "rtl",
+      "robots": "noindex",
+      "header": false,
+      "footer": false,
+      "skipLink": false,
+      "mastheadSearch": false,
+      "h1": "הדף שחיפשתם לא נמצא",
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "הדף שחיפשתם לא נמצא",
+          "rect": {
+            "x": 255.3,
+            "y": 156,
+            "w": 257.5,
+            "h": 32
+          }
+        }
+      ],
+      "mainSearch": null,
+      "categoryLinks": [],
+      "categorySection": null,
+      "homeLink": {
+        "href": "/",
+        "text": "לדף הבית",
+        "rect": {
+          "x": 187.6,
+          "y": 251.8,
+          "w": 105.7,
+          "h": 44
+        }
+      },
+      "links": [
+        {
+          "href": "/products",
+          "text": "לכל המוצרים",
+          "rect": {
+            "x": 454.6,
+            "y": 251.8,
+            "w": 125.9,
+            "h": 44
+          }
+        },
+        {
+          "href": "/products?view=categories",
+          "text": "עיון בקטגוריות",
+          "rect": {
+            "x": 305.3,
+            "y": 250.8,
+            "w": 137.3,
+            "h": 46
+          }
+        },
+        {
+          "href": "/",
+          "text": "לדף הבית",
+          "rect": {
+            "x": 187.6,
+            "y": 251.8,
+            "w": 105.7,
+            "h": 44
+          }
+        }
+      ],
+      "buttons": [],
+      "brandMark": false,
+      "pageHeight": 900,
+      "scrollWidth": 768
+    },
+    "deadProduct": {
+      "status": 404,
+      "url": "/product/no-such-product-slug-12345",
+      "title": "הדף לא נמצא | קניון אקספרס",
+      "htmlDir": "rtl",
+      "mainDir": null,
+      "robots": "noindex",
+      "header": true,
+      "footer": true,
+      "skipLink": true,
+      "mastheadSearch": true,
+      "h1": "הדף שחיפשתם לא נמצא",
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "הדף שחיפשתם לא נמצא",
+          "rect": {
+            "x": 255.3,
+            "y": 244.3,
+            "w": 257.5,
+            "h": 32
+          }
+        }
+      ],
+      "mainSearch": null,
+      "categoryLinks": [],
+      "categorySection": null,
+      "homeLink": {
+        "href": "/",
+        "text": "לדף הבית",
+        "rect": {
+          "x": 187.6,
+          "y": 340,
+          "w": 105.7,
+          "h": 44
+        }
+      },
+      "links": [
+        {
+          "href": "/products",
+          "text": "לכל המוצרים",
+          "rect": {
+            "x": 454.6,
+            "y": 340,
+            "w": 125.9,
+            "h": 44
+          }
+        },
+        {
+          "href": "/products?view=categories",
+          "text": "עיון בקטגוריות",
+          "rect": {
+            "x": 305.3,
+            "y": 339,
+            "w": 137.3,
+            "h": 46
+          }
+        },
+        {
+          "href": "/",
+          "text": "לדף הבית",
+          "rect": {
+            "x": 187.6,
+            "y": 340,
+            "w": 105.7,
+            "h": 44
+          }
+        }
+      ],
+      "buttons": [],
+      "brandMark": false,
+      "pageHeight": 1068,
+      "scrollWidth": 768
+    },
+    "errors": []
+  },
+  "1440": {
+    "unmatched": {
+      "status": 404,
+      "url": "/this-page-does-not-exist-ux25",
+      "title": "הדף לא נמצא | קניון אקספרס",
+      "htmlDir": "rtl",
+      "mainDir": "rtl",
+      "robots": "noindex",
+      "header": false,
+      "footer": false,
+      "skipLink": false,
+      "mastheadSearch": false,
+      "h1": "הדף שחיפשתם לא נמצא",
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "הדף שחיפשתם לא נמצא",
+          "rect": {
+            "x": 591.3,
+            "y": 156,
+            "w": 257.5,
+            "h": 32
+          }
+        }
+      ],
+      "mainSearch": null,
+      "categoryLinks": [],
+      "categorySection": null,
+      "homeLink": {
+        "href": "/",
+        "text": "לדף הבית",
+        "rect": {
+          "x": 523.6,
+          "y": 251.8,
+          "w": 105.7,
+          "h": 44
+        }
+      },
+      "links": [
+        {
+          "href": "/products",
+          "text": "לכל המוצרים",
+          "rect": {
+            "x": 790.6,
+            "y": 251.8,
+            "w": 125.9,
+            "h": 44
+          }
+        },
+        {
+          "href": "/products?view=categories",
+          "text": "עיון בקטגוריות",
+          "rect": {
+            "x": 641.3,
+            "y": 250.8,
+            "w": 137.3,
+            "h": 46
+          }
+        },
+        {
+          "href": "/",
+          "text": "לדף הבית",
+          "rect": {
+            "x": 523.6,
+            "y": 251.8,
+            "w": 105.7,
+            "h": 44
+          }
+        }
+      ],
+      "buttons": [],
+      "brandMark": false,
+      "pageHeight": 900,
+      "scrollWidth": 1440
+    },
+    "deadProduct": {
+      "status": 404,
+      "url": "/product/no-such-product-slug-12345",
+      "title": "הדף לא נמצא | קניון אקספרס",
+      "htmlDir": "rtl",
+      "mainDir": null,
+      "robots": "noindex",
+      "header": true,
+      "footer": true,
+      "skipLink": true,
+      "mastheadSearch": true,
+      "h1": "הדף שחיפשתם לא נמצא",
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "הדף שחיפשתם לא נמצא",
+          "rect": {
+            "x": 591.3,
+            "y": 304.3,
+            "w": 257.5,
+            "h": 32
+          }
+        }
+      ],
+      "mainSearch": null,
+      "categoryLinks": [],
+      "categorySection": null,
+      "homeLink": {
+        "href": "/",
+        "text": "לדף הבית",
+        "rect": {
+          "x": 523.6,
+          "y": 400,
+          "w": 105.7,
+          "h": 44
+        }
+      },
+      "links": [
+        {
+          "href": "/products",
+          "text": "לכל המוצרים",
+          "rect": {
+            "x": 790.6,
+            "y": 400,
+            "w": 125.9,
+            "h": 44
+          }
+        },
+        {
+          "href": "/products?view=categories",
+          "text": "עיון בקטגוריות",
+          "rect": {
+            "x": 641.3,
+            "y": 399,
+            "w": 137.3,
+            "h": 46
+          }
+        },
+        {
+          "href": "/",
+          "text": "לדף הבית",
+          "rect": {
+            "x": 523.6,
+            "y": 400,
+            "w": 105.7,
+            "h": 44
+          }
+        }
+      ],
+      "buttons": [],
+      "brandMark": false,
+      "pageHeight": 1246,
+      "scrollWidth": 1440
+    },
+    "errors": []
+  }
+}

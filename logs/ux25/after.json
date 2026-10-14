@@ -1,0 +1,1478 @@
+{
+  "380": {
+    "unmatched": {
+      "status": 404,
+      "url": "/this-page-does-not-exist-ux25",
+      "title": "הדף לא נמצא | קניון אקספרס",
+      "htmlDir": "rtl",
+      "mainDir": null,
+      "robots": "noindex",
+      "header": true,
+      "footer": true,
+      "skipLink": true,
+      "mastheadSearch": true,
+      "h1": "הדף שחיפשתם לא נמצא",
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "הדף שחיפשתם לא נמצא",
+          "rect": {
+            "x": 61.3,
+            "y": 301.7,
+            "w": 257.5,
+            "h": 32
+          }
+        },
+        {
+          "tag": "H2",
+          "text": "קטגוריות פופולריות",
+          "rect": {
+            "x": 25,
+            "y": 649.9,
+            "w": 330,
+            "h": 33
+          }
+        }
+      ],
+      "mainSearch": {
+        "id": "not-found-search",
+        "role": "combobox",
+        "rect": {
+          "x": 83,
+          "y": 435.9,
+          "w": 270,
+          "h": 40
+        },
+        "label": "חיפוש מוצרים",
+        "form": true,
+        "formAction": null
+      },
+      "categoryLinks": [
+        {
+          "href": "/category/hot-deals",
+          "text": "דיל חם",
+          "rect": {
+            "x": 196,
+            "y": 698.9,
+            "w": 159,
+            "h": 166
+          },
+          "img": true
+        },
+        {
+          "href": "/category/under-99",
+          "text": "עד ⁦99 ₪⁩",
+          "rect": {
+            "x": 25,
+            "y": 698.9,
+            "w": 159,
+            "h": 166
+          },
+          "img": true
+        },
+        {
+          "href": "/category/new",
+          "text": "החדשים",
+          "rect": {
+            "x": 196,
+            "y": 876.9,
+            "w": 159,
+            "h": 166
+          },
+          "img": true
+        },
+        {
+          "href": "/category/restaurants-cafes",
+          "text": "מסעדות ובתי קפה",
+          "rect": {
+            "x": 25,
+            "y": 876.9,
+            "w": 159,
+            "h": 166
+          },
+          "img": true
+        },
+        {
+          "href": "/category/beauty-health",
+          "text": "טיפוח בריאות ויופי",
+          "rect": {
+            "x": 196,
+            "y": 1054.9,
+            "w": 159,
+            "h": 166
+          },
+          "img": true
+        },
+        {
+          "href": "/category/phones-computers",
+          "text": "טלפונים ואלקטרוניקה",
+          "rect": {
+            "x": 25,
+            "y": 1054.9,
+            "w": 159,
+            "h": 166
+          },
+          "img": true
+        }
+      ],
+      "categorySection": {
+        "rect": {
+          "x": 25,
+          "y": 649.9,
+          "w": 330,
+          "h": 571
+        },
+        "label": "קטגוריות פופולריות",
+        "columns": 2
+      },
+      "homeLink": {
+        "href": "/",
+        "text": "לדף הבית",
+        "rect": {
+          "x": 207.1,
+          "y": 501.9,
+          "w": 105.7,
+          "h": 44
+        }
+      },
+      "links": [
+        {
+          "href": "/",
+          "text": "לדף הבית",
+          "rect": {
+            "x": 207.1,
+            "y": 501.9,
+            "w": 105.7,
+            "h": 44
+          }
+        },
+        {
+          "href": "/products",
+          "text": "לכל המוצרים",
+          "rect": {
+            "x": 67.2,
+            "y": 501.9,
+            "w": 127.9,
+            "h": 44
+          }
+        },
+        {
+          "href": "/contact",
+          "text": "צרו קשר",
+          "rect": {
+            "x": 148.4,
+            "y": 557.9,
+            "w": 83.2,
+            "h": 44
+          }
+        },
+        {
+          "href": "/category/hot-deals",
+          "text": "דיל חם",
+          "rect": {
+            "x": 196,
+            "y": 698.9,
+            "w": 159,
+            "h": 166
+          }
+        },
+        {
+          "href": "/category/under-99",
+          "text": "עד ⁦99 ₪⁩",
+          "rect": {
+            "x": 25,
+            "y": 698.9,
+            "w": 159,
+            "h": 166
+          }
+        },
+        {
+          "href": "/category/new",
+          "text": "החדשים",
+          "rect": {
+            "x": 196,
+            "y": 876.9,
+            "w": 159,
+            "h": 166
+          }
+        },
+        {
+          "href": "/category/restaurants-cafes",
+          "text": "מסעדות ובתי קפה",
+          "rect": {
+            "x": 25,
+            "y": 876.9,
+            "w": 159,
+            "h": 166
+          }
+        },
+        {
+          "href": "/category/beauty-health",
+          "text": "טיפוח בריאות ויופי",
+          "rect": {
+            "x": 196,
+            "y": 1054.9,
+            "w": 159,
+            "h": 166
+          }
+        },
+        {
+          "href": "/category/phones-computers",
+          "text": "טלפונים ואלקטרוניקה",
+          "rect": {
+            "x": 25,
+            "y": 1054.9,
+            "w": 159,
+            "h": 166
+          }
+        }
+      ],
+      "buttons": [
+        {
+          "text": "חפש",
+          "rect": {
+            "x": 27,
+            "y": 435.9,
+            "w": 56,
+            "h": 40
+          }
+        }
+      ],
+      "brandMark": true,
+      "pageHeight": 1687,
+      "scrollWidth": 380
+    },
+    "search": {
+      "expanded": "false",
+      "options": 0,
+      "urlAfterEnter": "/search?q=%D7%91%D7%A8%D7%91%D7%99%D7%A7%D7%99%D7%95"
+    },
+    "deadProduct": {
+      "status": 404,
+      "url": "/product/no-such-product-slug-12345",
+      "title": "הדף לא נמצא | קניון אקספרס",
+      "htmlDir": "rtl",
+      "mainDir": null,
+      "robots": "noindex",
+      "header": true,
+      "footer": true,
+      "skipLink": true,
+      "mastheadSearch": true,
+      "h1": "הדף שחיפשתם לא נמצא",
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "הדף שחיפשתם לא נמצא",
+          "rect": {
+            "x": 61.3,
+            "y": 301.7,
+            "w": 257.5,
+            "h": 32
+          }
+        },
+        {
+          "tag": "H2",
+          "text": "קטגוריות פופולריות",
+          "rect": {
+            "x": 25,
+            "y": 649.9,
+            "w": 330,
+            "h": 33
+          }
+        }
+      ],
+      "mainSearch": {
+        "id": "not-found-search",
+        "role": "combobox",
+        "rect": {
+          "x": 83,
+          "y": 435.9,
+          "w": 270,
+          "h": 40
+        },
+        "label": "חיפוש מוצרים",
+        "form": true,
+        "formAction": null
+      },
+      "categoryLinks": [
+        {
+          "href": "/category/hot-deals",
+          "text": "דיל חם",
+          "rect": {
+            "x": 196,
+            "y": 698.9,
+            "w": 159,
+            "h": 166
+          },
+          "img": true
+        },
+        {
+          "href": "/category/under-99",
+          "text": "עד ⁦99 ₪⁩",
+          "rect": {
+            "x": 25,
+            "y": 698.9,
+            "w": 159,
+            "h": 166
+          },
+          "img": true
+        },
+        {
+          "href": "/category/new",
+          "text": "החדשים",
+          "rect": {
+            "x": 196,
+            "y": 876.9,
+            "w": 159,
+            "h": 166
+          },
+          "img": true
+        },
+        {
+          "href": "/category/restaurants-cafes",
+          "text": "מסעדות ובתי קפה",
+          "rect": {
+            "x": 25,
+            "y": 876.9,
+            "w": 159,
+            "h": 166
+          },
+          "img": true
+        },
+        {
+          "href": "/category/beauty-health",
+          "text": "טיפוח בריאות ויופי",
+          "rect": {
+            "x": 196,
+            "y": 1054.9,
+            "w": 159,
+            "h": 166
+          },
+          "img": true
+        },
+        {
+          "href": "/category/phones-computers",
+          "text": "טלפונים ואלקטרוניקה",
+          "rect": {
+            "x": 25,
+            "y": 1054.9,
+            "w": 159,
+            "h": 166
+          },
+          "img": true
+        }
+      ],
+      "categorySection": {
+        "rect": {
+          "x": 25,
+          "y": 649.9,
+          "w": 330,
+          "h": 571
+        },
+        "label": "קטגוריות פופולריות",
+        "columns": 2
+      },
+      "homeLink": {
+        "href": "/",
+        "text": "לדף הבית",
+        "rect": {
+          "x": 207.1,
+          "y": 501.9,
+          "w": 105.7,
+          "h": 44
+        }
+      },
+      "links": [
+        {
+          "href": "/",
+          "text": "לדף הבית",
+          "rect": {
+            "x": 207.1,
+            "y": 501.9,
+            "w": 105.7,
+            "h": 44
+          }
+        },
+        {
+          "href": "/products",
+          "text": "לכל המוצרים",
+          "rect": {
+            "x": 67.2,
+            "y": 501.9,
+            "w": 127.9,
+            "h": 44
+          }
+        },
+        {
+          "href": "/contact",
+          "text": "צרו קשר",
+          "rect": {
+            "x": 148.4,
+            "y": 557.9,
+            "w": 83.2,
+            "h": 44
+          }
+        },
+        {
+          "href": "/category/hot-deals",
+          "text": "דיל חם",
+          "rect": {
+            "x": 196,
+            "y": 698.9,
+            "w": 159,
+            "h": 166
+          }
+        },
+        {
+          "href": "/category/under-99",
+          "text": "עד ⁦99 ₪⁩",
+          "rect": {
+            "x": 25,
+            "y": 698.9,
+            "w": 159,
+            "h": 166
+          }
+        },
+        {
+          "href": "/category/new",
+          "text": "החדשים",
+          "rect": {
+            "x": 196,
+            "y": 876.9,
+            "w": 159,
+            "h": 166
+          }
+        },
+        {
+          "href": "/category/restaurants-cafes",
+          "text": "מסעדות ובתי קפה",
+          "rect": {
+            "x": 25,
+            "y": 876.9,
+            "w": 159,
+            "h": 166
+          }
+        },
+        {
+          "href": "/category/beauty-health",
+          "text": "טיפוח בריאות ויופי",
+          "rect": {
+            "x": 196,
+            "y": 1054.9,
+            "w": 159,
+            "h": 166
+          }
+        },
+        {
+          "href": "/category/phones-computers",
+          "text": "טלפונים ואלקטרוניקה",
+          "rect": {
+            "x": 25,
+            "y": 1054.9,
+            "w": 159,
+            "h": 166
+          }
+        }
+      ],
+      "buttons": [
+        {
+          "text": "חפש",
+          "rect": {
+            "x": 27,
+            "y": 435.9,
+            "w": 56,
+            "h": 40
+          }
+        }
+      ],
+      "brandMark": true,
+      "pageHeight": 1975,
+      "scrollWidth": 380
+    },
+    "errors": []
+  },
+  "768": {
+    "unmatched": {
+      "status": 404,
+      "url": "/this-page-does-not-exist-ux25",
+      "title": "הדף לא נמצא | קניון אקספרס",
+      "htmlDir": "rtl",
+      "mainDir": null,
+      "robots": "noindex",
+      "header": true,
+      "footer": true,
+      "skipLink": true,
+      "mastheadSearch": true,
+      "h1": "הדף שחיפשתם לא נמצא",
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "הדף שחיפשתם לא נמצא",
+          "rect": {
+            "x": 223.1,
+            "y": 296.3,
+            "w": 321.8,
+            "h": 36
+          }
+        },
+        {
+          "tag": "H2",
+          "text": "קטגוריות פופולריות",
+          "rect": {
+            "x": 49,
+            "y": 618.3,
+            "w": 670,
+            "h": 33
+          }
+        }
+      ],
+      "mainSearch": {
+        "id": "not-found-search",
+        "role": "combobox",
+        "rect": {
+          "x": 175,
+          "y": 444.3,
+          "w": 474,
+          "h": 40
+        },
+        "label": "חיפוש מוצרים",
+        "form": true,
+        "formAction": null
+      },
+      "categoryLinks": [
+        {
+          "href": "/category/hot-deals",
+          "text": "דיל חם",
+          "rect": {
+            "x": 503.7,
+            "y": 667.3,
+            "w": 215.3,
+            "h": 166
+          },
+          "img": true
+        },
+        {
+          "href": "/category/under-99",
+          "text": "עד ⁦99 ₪⁩",
+          "rect": {
+            "x": 276.3,
+            "y": 667.3,
+            "w": 215.3,
+            "h": 166
+          },
+          "img": true
+        },
+        {
+          "href": "/category/new",
+          "text": "החדשים",
+          "rect": {
+            "x": 49,
+            "y": 667.3,
+            "w": 215.3,
+            "h": 166
+          },
+          "img": true
+        },
+        {
+          "href": "/category/restaurants-cafes",
+          "text": "מסעדות ובתי קפה",
+          "rect": {
+            "x": 503.7,
+            "y": 845.3,
+            "w": 215.3,
+            "h": 166
+          },
+          "img": true
+        },
+        {
+          "href": "/category/beauty-health",
+          "text": "טיפוח בריאות ויופי",
+          "rect": {
+            "x": 276.3,
+            "y": 845.3,
+            "w": 215.3,
+            "h": 166
+          },
+          "img": true
+        },
+        {
+          "href": "/category/phones-computers",
+          "text": "טלפונים ואלקטרוניקה",
+          "rect": {
+            "x": 49,
+            "y": 845.3,
+            "w": 215.3,
+            "h": 166
+          },
+          "img": true
+        }
+      ],
+      "categorySection": {
+        "rect": {
+          "x": 49,
+          "y": 618.3,
+          "w": 670,
+          "h": 393
+        },
+        "label": "קטגוריות פופולריות",
+        "columns": 3
+      },
+      "homeLink": {
+        "href": "/",
+        "text": "לדף הבית",
+        "rect": {
+          "x": 448.7,
+          "y": 510.3,
+          "w": 105.7,
+          "h": 44
+        }
+      },
+      "links": [
+        {
+          "href": "/",
+          "text": "לדף הבית",
+          "rect": {
+            "x": 448.7,
+            "y": 510.3,
+            "w": 105.7,
+            "h": 44
+          }
+        },
+        {
+          "href": "/products",
+          "text": "לכל המוצרים",
+          "rect": {
+            "x": 308.8,
+            "y": 510.3,
+            "w": 127.9,
+            "h": 44
+          }
+        },
+        {
+          "href": "/contact",
+          "text": "צרו קשר",
+          "rect": {
+            "x": 213.6,
+            "y": 510.3,
+            "w": 83.2,
+            "h": 44
+          }
+        },
+        {
+          "href": "/category/hot-deals",
+          "text": "דיל חם",
+          "rect": {
+            "x": 503.7,
+            "y": 667.3,
+            "w": 215.3,
+            "h": 166
+          }
+        },
+        {
+          "href": "/category/under-99",
+          "text": "עד ⁦99 ₪⁩",
+          "rect": {
+            "x": 276.3,
+            "y": 667.3,
+            "w": 215.3,
+            "h": 166
+          }
+        },
+        {
+          "href": "/category/new",
+          "text": "החדשים",
+          "rect": {
+            "x": 49,
+            "y": 667.3,
+            "w": 215.3,
+            "h": 166
+          }
+        },
+        {
+          "href": "/category/restaurants-cafes",
+          "text": "מסעדות ובתי קפה",
+          "rect": {
+            "x": 503.7,
+            "y": 845.3,
+            "w": 215.3,
+            "h": 166
+          }
+        },
+        {
+          "href": "/category/beauty-health",
+          "text": "טיפוח בריאות ויופי",
+          "rect": {
+            "x": 276.3,
+            "y": 845.3,
+            "w": 215.3,
+            "h": 166
+          }
+        },
+        {
+          "href": "/category/phones-computers",
+          "text": "טלפונים ואלקטרוניקה",
+          "rect": {
+            "x": 49,
+            "y": 845.3,
+            "w": 215.3,
+            "h": 166
+          }
+        }
+      ],
+      "buttons": [
+        {
+          "text": "חפש",
+          "rect": {
+            "x": 119,
+            "y": 444.3,
+            "w": 56,
+            "h": 40
+          }
+        }
+      ],
+      "brandMark": true,
+      "pageHeight": 1494,
+      "scrollWidth": 768
+    },
+    "search": {
+      "expanded": "true",
+      "options": 2,
+      "urlAfterEnter": "/search?q=%D7%91%D7%A8%D7%91%D7%99%D7%A7%D7%99%D7%95"
+    },
+    "deadProduct": {
+      "status": 404,
+      "url": "/product/no-such-product-slug-12345",
+      "title": "הדף לא נמצא | קניון אקספרס",
+      "htmlDir": "rtl",
+      "mainDir": null,
+      "robots": "noindex",
+      "header": true,
+      "footer": true,
+      "skipLink": true,
+      "mastheadSearch": true,
+      "h1": "הדף שחיפשתם לא נמצא",
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "הדף שחיפשתם לא נמצא",
+          "rect": {
+            "x": 223.1,
+            "y": 296.3,
+            "w": 321.8,
+            "h": 36
+          }
+        },
+        {
+          "tag": "H2",
+          "text": "קטגוריות פופולריות",
+          "rect": {
+            "x": 49,
+            "y": 618.3,
+            "w": 670,
+            "h": 33
+          }
+        }
+      ],
+      "mainSearch": {
+        "id": "not-found-search",
+        "role": "combobox",
+        "rect": {
+          "x": 175,
+          "y": 444.3,
+          "w": 474,
+          "h": 40
+        },
+        "label": "חיפוש מוצרים",
+        "form": true,
+        "formAction": null
+      },
+      "categoryLinks": [
+        {
+          "href": "/category/hot-deals",
+          "text": "דיל חם",
+          "rect": {
+            "x": 503.7,
+            "y": 667.3,
+            "w": 215.3,
+            "h": 166
+          },
+          "img": true
+        },
+        {
+          "href": "/category/under-99",
+          "text": "עד ⁦99 ₪⁩",
+          "rect": {
+            "x": 276.3,
+            "y": 667.3,
+            "w": 215.3,
+            "h": 166
+          },
+          "img": true
+        },
+        {
+          "href": "/category/new",
+          "text": "החדשים",
+          "rect": {
+            "x": 49,
+            "y": 667.3,
+            "w": 215.3,
+            "h": 166
+          },
+          "img": true
+        },
+        {
+          "href": "/category/restaurants-cafes",
+          "text": "מסעדות ובתי קפה",
+          "rect": {
+            "x": 503.7,
+            "y": 845.3,
+            "w": 215.3,
+            "h": 166
+          },
+          "img": true
+        },
+        {
+          "href": "/category/beauty-health",
+          "text": "טיפוח בריאות ויופי",
+          "rect": {
+            "x": 276.3,
+            "y": 845.3,
+            "w": 215.3,
+            "h": 166
+          },
+          "img": true
+        },
+        {
+          "href": "/category/phones-computers",
+          "text": "טלפונים ואלקטרוניקה",
+          "rect": {
+            "x": 49,
+            "y": 845.3,
+            "w": 215.3,
+            "h": 166
+          },
+          "img": true
+        }
+      ],
+      "categorySection": {
+        "rect": {
+          "x": 49,
+          "y": 618.3,
+          "w": 670,
+          "h": 393
+        },
+        "label": "קטגוריות פופולריות",
+        "columns": 3
+      },
+      "homeLink": {
+        "href": "/",
+        "text": "לדף הבית",
+        "rect": {
+          "x": 448.7,
+          "y": 510.3,
+          "w": 105.7,
+          "h": 44
+        }
+      },
+      "links": [
+        {
+          "href": "/",
+          "text": "לדף הבית",
+          "rect": {
+            "x": 448.7,
+            "y": 510.3,
+            "w": 105.7,
+            "h": 44
+          }
+        },
+        {
+          "href": "/products",
+          "text": "לכל המוצרים",
+          "rect": {
+            "x": 308.8,
+            "y": 510.3,
+            "w": 127.9,
+            "h": 44
+          }
+        },
+        {
+          "href": "/contact",
+          "text": "צרו קשר",
+          "rect": {
+            "x": 213.6,
+            "y": 510.3,
+            "w": 83.2,
+            "h": 44
+          }
+        },
+        {
+          "href": "/category/hot-deals",
+          "text": "דיל חם",
+          "rect": {
+            "x": 503.7,
+            "y": 667.3,
+            "w": 215.3,
+            "h": 166
+          }
+        },
+        {
+          "href": "/category/under-99",
+          "text": "עד ⁦99 ₪⁩",
+          "rect": {
+            "x": 276.3,
+            "y": 667.3,
+            "w": 215.3,
+            "h": 166
+          }
+        },
+        {
+          "href": "/category/new",
+          "text": "החדשים",
+          "rect": {
+            "x": 49,
+            "y": 667.3,
+            "w": 215.3,
+            "h": 166
+          }
+        },
+        {
+          "href": "/category/restaurants-cafes",
+          "text": "מסעדות ובתי קפה",
+          "rect": {
+            "x": 503.7,
+            "y": 845.3,
+            "w": 215.3,
+            "h": 166
+          }
+        },
+        {
+          "href": "/category/beauty-health",
+          "text": "טיפוח בריאות ויופי",
+          "rect": {
+            "x": 276.3,
+            "y": 845.3,
+            "w": 215.3,
+            "h": 166
+          }
+        },
+        {
+          "href": "/category/phones-computers",
+          "text": "טלפונים ואלקטרוניקה",
+          "rect": {
+            "x": 49,
+            "y": 845.3,
+            "w": 215.3,
+            "h": 166
+          }
+        }
+      ],
+      "buttons": [
+        {
+          "text": "חפש",
+          "rect": {
+            "x": 119,
+            "y": 444.3,
+            "w": 56,
+            "h": 40
+          }
+        }
+      ],
+      "brandMark": true,
+      "pageHeight": 1662,
+      "scrollWidth": 768
+    },
+    "errors": []
+  },
+  "1440": {
+    "unmatched": {
+      "status": 404,
+      "url": "/this-page-does-not-exist-ux25",
+      "title": "הדף לא נמצא | קניון אקספרס",
+      "htmlDir": "rtl",
+      "mainDir": null,
+      "robots": "noindex",
+      "header": true,
+      "footer": true,
+      "skipLink": true,
+      "mastheadSearch": true,
+      "h1": "הדף שחיפשתם לא נמצא",
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "הדף שחיפשתם לא נמצא",
+          "rect": {
+            "x": 559.1,
+            "y": 356.3,
+            "w": 321.8,
+            "h": 36
+          }
+        },
+        {
+          "tag": "H2",
+          "text": "קטגוריות פופולריות",
+          "rect": {
+            "x": 145,
+            "y": 678.3,
+            "w": 1150,
+            "h": 33
+          }
+        }
+      ],
+      "mainSearch": {
+        "id": "not-found-search",
+        "role": "combobox",
+        "rect": {
+          "x": 511,
+          "y": 504.3,
+          "w": 474,
+          "h": 40
+        },
+        "label": "חיפוש מוצרים",
+        "form": true,
+        "formAction": null
+      },
+      "categoryLinks": [
+        {
+          "href": "/category/hot-deals",
+          "text": "דיל חם",
+          "rect": {
+            "x": 1113.3,
+            "y": 727.3,
+            "w": 181.7,
+            "h": 166
+          },
+          "img": true
+        },
+        {
+          "href": "/category/under-99",
+          "text": "עד ⁦99 ₪⁩",
+          "rect": {
+            "x": 919.7,
+            "y": 727.3,
+            "w": 181.7,
+            "h": 166
+          },
+          "img": true
+        },
+        {
+          "href": "/category/new",
+          "text": "החדשים",
+          "rect": {
+            "x": 726,
+            "y": 727.3,
+            "w": 181.7,
+            "h": 166
+          },
+          "img": true
+        },
+        {
+          "href": "/category/restaurants-cafes",
+          "text": "מסעדות ובתי קפה",
+          "rect": {
+            "x": 532.3,
+            "y": 727.3,
+            "w": 181.7,
+            "h": 166
+          },
+          "img": true
+        },
+        {
+          "href": "/category/beauty-health",
+          "text": "טיפוח בריאות ויופי",
+          "rect": {
+            "x": 338.7,
+            "y": 727.3,
+            "w": 181.7,
+            "h": 166
+          },
+          "img": true
+        },
+        {
+          "href": "/category/phones-computers",
+          "text": "טלפונים ואלקטרוניקה",
+          "rect": {
+            "x": 145,
+            "y": 727.3,
+            "w": 181.7,
+            "h": 166
+          },
+          "img": true
+        }
+      ],
+      "categorySection": {
+        "rect": {
+          "x": 145,
+          "y": 678.3,
+          "w": 1150,
+          "h": 215
+        },
+        "label": "קטגוריות פופולריות",
+        "columns": 6
+      },
+      "homeLink": {
+        "href": "/",
+        "text": "לדף הבית",
+        "rect": {
+          "x": 784.7,
+          "y": 570.3,
+          "w": 105.7,
+          "h": 44
+        }
+      },
+      "links": [
+        {
+          "href": "/",
+          "text": "לדף הבית",
+          "rect": {
+            "x": 784.7,
+            "y": 570.3,
+            "w": 105.7,
+            "h": 44
+          }
+        },
+        {
+          "href": "/products",
+          "text": "לכל המוצרים",
+          "rect": {
+            "x": 644.8,
+            "y": 570.3,
+            "w": 127.9,
+            "h": 44
+          }
+        },
+        {
+          "href": "/contact",
+          "text": "צרו קשר",
+          "rect": {
+            "x": 549.6,
+            "y": 570.3,
+            "w": 83.2,
+            "h": 44
+          }
+        },
+        {
+          "href": "/category/hot-deals",
+          "text": "דיל חם",
+          "rect": {
+            "x": 1113.3,
+            "y": 727.3,
+            "w": 181.7,
+            "h": 166
+          }
+        },
+        {
+          "href": "/category/under-99",
+          "text": "עד ⁦99 ₪⁩",
+          "rect": {
+            "x": 919.7,
+            "y": 727.3,
+            "w": 181.7,
+            "h": 166
+          }
+        },
+        {
+          "href": "/category/new",
+          "text": "החדשים",
+          "rect": {
+            "x": 726,
+            "y": 727.3,
+            "w": 181.7,
+            "h": 166
+          }
+        },
+        {
+          "href": "/category/restaurants-cafes",
+          "text": "מסעדות ובתי קפה",
+          "rect": {
+            "x": 532.3,
+            "y": 727.3,
+            "w": 181.7,
+            "h": 166
+          }
+        },
+        {
+          "href": "/category/beauty-health",
+          "text": "טיפוח בריאות ויופי",
+          "rect": {
+            "x": 338.7,
+            "y": 727.3,
+            "w": 181.7,
+            "h": 166
+          }
+        },
+        {
+          "href": "/category/phones-computers",
+          "text": "טלפונים ואלקטרוניקה",
+          "rect": {
+            "x": 145,
+            "y": 727.3,
+            "w": 181.7,
+            "h": 166
+          }
+        }
+      ],
+      "buttons": [
+        {
+          "text": "חפש",
+          "rect": {
+            "x": 455,
+            "y": 504.3,
+            "w": 56,
+            "h": 40
+          }
+        }
+      ],
+      "brandMark": true,
+      "pageHeight": 1502,
+      "scrollWidth": 1440
+    },
+    "search": {
+      "expanded": "true",
+      "options": 2,
+      "urlAfterEnter": "/search?q=%D7%91%D7%A8%D7%91%D7%99%D7%A7%D7%99%D7%95"
+    },
+    "deadProduct": {
+      "status": 404,
+      "url": "/product/no-such-product-slug-12345",
+      "title": "הדף לא נמצא | קניון אקספרס",
+      "htmlDir": "rtl",
+      "mainDir": null,
+      "robots": "noindex",
+      "header": true,
+      "footer": true,
+      "skipLink": true,
+      "mastheadSearch": true,
+      "h1": "הדף שחיפשתם לא נמצא",
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "הדף שחיפשתם לא נמצא",
+          "rect": {
+            "x": 559.1,
+            "y": 356.3,
+            "w": 321.8,
+            "h": 36
+          }
+        },
+        {
+          "tag": "H2",
+          "text": "קטגוריות פופולריות",
+          "rect": {
+            "x": 145,
+            "y": 678.3,
+            "w": 1150,
+            "h": 33
+          }
+        }
+      ],
+      "mainSearch": {
+        "id": "not-found-search",
+        "role": "combobox",
+        "rect": {
+          "x": 511,
+          "y": 504.3,
+          "w": 474,
+          "h": 40
+        },
+        "label": "חיפוש מוצרים",
+        "form": true,
+        "formAction": null
+      },
+      "categoryLinks": [
+        {
+          "href": "/category/hot-deals",
+          "text": "דיל חם",
+          "rect": {
+            "x": 1113.3,
+            "y": 727.3,
+            "w": 181.7,
+            "h": 166
+          },
+          "img": true
+        },
+        {
+          "href": "/category/under-99",
+          "text": "עד ⁦99 ₪⁩",
+          "rect": {
+            "x": 919.7,
+            "y": 727.3,
+            "w": 181.7,
+            "h": 166
+          },
+          "img": true
+        },
+        {
+          "href": "/category/new",
+          "text": "החדשים",
+          "rect": {
+            "x": 726,
+            "y": 727.3,
+            "w": 181.7,
+            "h": 166
+          },
+          "img": true
+        },
+        {
+          "href": "/category/restaurants-cafes",
+          "text": "מסעדות ובתי קפה",
+          "rect": {
+            "x": 532.3,
+            "y": 727.3,
+            "w": 181.7,
+            "h": 166
+          },
+          "img": true
+        },
+        {
+          "href": "/category/beauty-health",
+          "text": "טיפוח בריאות ויופי",
+          "rect": {
+            "x": 338.7,
+            "y": 727.3,
+            "w": 181.7,
+            "h": 166
+          },
+          "img": true
+        },
+        {
+          "href": "/category/phones-computers",
+          "text": "טלפונים ואלקטרוניקה",
+          "rect": {
+            "x": 145,
+            "y": 727.3,
+            "w": 181.7,
+            "h": 166
+          },
+          "img": true
+        }
+      ],
+      "categorySection": {
+        "rect": {
+          "x": 145,
+          "y": 678.3,
+          "w": 1150,
+          "h": 215
+        },
+        "label": "קטגוריות פופולריות",
+        "columns": 6
+      },
+      "homeLink": {
+        "href": "/",
+        "text": "לדף הבית",
+        "rect": {
+          "x": 784.7,
+          "y": 570.3,
+          "w": 105.7,
+          "h": 44
+        }
+      },
+      "links": [
+        {
+          "href": "/",
+          "text": "לדף הבית",
+          "rect": {
+            "x": 784.7,
+            "y": 570.3,
+            "w": 105.7,
+            "h": 44
+          }
+        },
+        {
+          "href": "/products",
+          "text": "לכל המוצרים",
+          "rect": {
+            "x": 644.8,
+            "y": 570.3,
+            "w": 127.9,
+            "h": 44
+          }
+        },
+        {
+          "href": "/contact",
+          "text": "צרו קשר",
+          "rect": {
+            "x": 549.6,
+            "y": 570.3,
+            "w": 83.2,
+            "h": 44
+          }
+        },
+        {
+          "href": "/category/hot-deals",
+          "text": "דיל חם",
+          "rect": {
+            "x": 1113.3,
+            "y": 727.3,
+            "w": 181.7,
+            "h": 166
+          }
+        },
+        {
+          "href": "/category/under-99",
+          "text": "עד ⁦99 ₪⁩",
+          "rect": {
+            "x": 919.7,
+            "y": 727.3,
+            "w": 181.7,
+            "h": 166
+          }
+        },
+        {
+          "href": "/category/new",
+          "text": "החדשים",
+          "rect": {
+            "x": 726,
+            "y": 727.3,
+            "w": 181.7,
+            "h": 166
+          }
+        },
+        {
+          "href": "/category/restaurants-cafes",
+          "text": "מסעדות ובתי קפה",
+          "rect": {
+            "x": 532.3,
+            "y": 727.3,
+            "w": 181.7,
+            "h": 166
+          }
+        },
+        {
+          "href": "/category/beauty-health",
+          "text": "טיפוח בריאות ויופי",
+          "rect": {
+            "x": 338.7,
+            "y": 727.3,
+            "w": 181.7,
+            "h": 166
+          }
+        },
+        {
+          "href": "/category/phones-computers",
+          "text": "טלפונים ואלקטרוניקה",
+          "rect": {
+            "x": 145,
+            "y": 727.3,
+            "w": 181.7,
+            "h": 166
+          }
+        }
+      ],
+      "buttons": [
+        {
+          "text": "חפש",
+          "rect": {
+            "x": 455,
+            "y": 504.3,
+            "w": 56,
+            "h": 40
+          }
+        }
+      ],
+      "brandMark": true,
+      "pageHeight": 1670,
+      "scrollWidth": 1440
+    },
+    "errors": []
+  }
+}

@@ -1,3 +1,5 @@
+import { existsSync, readFileSync, readdirSync } from 'node:fs'
+import { join, resolve } from 'node:path'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { afterEach, describe, expect, it, vi } from 'vitest'
@@ -35,6 +37,8 @@ vi.mock('@sentry/nextjs', () => ({
   setUser: vi.fn(),
 }))
 
+import NotFoundBody, { notFoundMetadata } from '@/components/not-found/NotFoundBody'
+import StoreShell from '@/components/store/StoreShell'
 import { BUGGY_SESSION_STORAGE_KEY } from '@/lib/analytics/replay-trigger'
 import AppError from './error'
 import GlobalError from './global-error'
@@ -46,17 +50,56 @@ afterEach(() => {
 })
 
 describe('not-found.tsx', () => {
-  it('is Hebrew, right-to-left, and offers the catalogue and the homepage', () => {
-    render(<NotFound />)
-    expect(screen.getByRole('main')).toHaveAttribute('dir', 'rtl')
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('הדף שחיפשתם לא נמצא')
-    const hrefs = screen.getAllByRole('link').map((a) => a.getAttribute('href'))
-    expect(hrefs).toContain('/')
-    expect(hrefs).toContain('/products')
+  /**
+   * UX25: the root file is the shell around the shared body, and every route
+   * group that paints its own chrome has a not-found.tsx of its own that
+   * renders the body bare. The body's own shape (RTL, the heading, the search
+   * field, the tiles, the home link) is components/not-found/NotFoundBody.test;
+   * here is the composition, which no render can see: Next inherits the root
+   * file into every nested layout, so a root file wrapped in StoreShell and a
+   * group without its own file is a header painted twice.
+   */
+  it('wraps the shared body in the storefront shell, for the URL no layout matches', () => {
+    const tree = NotFound()
+    expect(tree.type).toBe(StoreShell)
+    expect(tree.props.children.type).toBe(NotFoundBody)
+    expect(metadata).toBe(notFoundMetadata)
   })
 
   it('asks search engines not to index it', () => {
     expect(metadata.robots).toMatchObject({ index: false })
+  })
+
+  it('every route group with a layout renders the bare body, never the shell', () => {
+    const appDir = resolve(process.cwd(), 'src/app')
+    const groups = readdirSync(appDir, { withFileTypes: true })
+      .filter((d) => d.isDirectory() && /^\(.*\)$/.test(d.name))
+      .filter((d) => existsSync(join(appDir, d.name, 'layout.tsx')))
+      .map((d) => d.name)
+    expect(groups.length).toBeGreaterThan(0)
+    for (const group of groups) {
+      const file = join(appDir, group, 'not-found.tsx')
+      expect(existsSync(file), `${group}/not-found.tsx exists`).toBe(true)
+      const source = readFileSync(file, 'utf8')
+      expect(source, `${group}/not-found.tsx renders the body`).toContain('<NotFoundBody')
+      expect(source, `${group}/not-found.tsx does not wrap it in StoreShell`).not.toMatch(
+        /import .*StoreShell|<StoreShell/,
+      )
+      expect(source, `${group}/not-found.tsx carries the metadata`).toContain(
+        'export const metadata = notFoundMetadata',
+      )
+    }
+    // The storefront groups offer the search and the tiles; the back offices do not.
+    for (const group of ['(store)', '(main)', '(account)', '(legal)']) {
+      expect(readFileSync(join(appDir, group, 'not-found.tsx'), 'utf8')).toContain(
+        '<NotFoundBody />',
+      )
+    }
+    for (const group of ['(admin)', '(supplier)', '(auth)']) {
+      expect(readFileSync(join(appDir, group, 'not-found.tsx'), 'utf8')).toContain(
+        '<NotFoundBody compact />',
+      )
+    }
   })
 })
 

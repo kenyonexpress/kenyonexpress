@@ -1,0 +1,18 @@
+Already up to date
+Done in 185ms using pnpm v11.1.2
+$ next start
+▲ Next.js 16.3.3
+- Local:         http://localhost:3364
+- Network:       http://100.84.130.122:3364
+✓ Ready in 137ms
+✓ Running next.config.ts took 403ms
+{"ts":"2026-10-14T18:03:39.306Z","level":"warn","event":"env.checks_skipped","request_id":null,"detail":"ALLOW_INCOMPLETE_ENV=true. Correct for a local `next start`; wrong anywhere a customer can reach."}
+{"ts":"2026-10-14T18:03:40.801Z","level":"info","event":"env.probe_ok","request_id":null,"checked":2}
+{"ts":"2026-10-14T18:04:13.623Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"products","status":200,"duration_ms":620,"threshold_ms":300}
+{"ts":"2026-10-14T18:04:13.638Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"products","status":200,"duration_ms":637,"threshold_ms":300}
+(node:43781) ExperimentalWarning: The supports Web Crypto API method is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:43781) ExperimentalWarning: The ML-DSA-44 Web Crypto API algorithm is an experimental feature and might change at any time
+(node:43781) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+(node:43781) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+[ELIFECYCLE] Command failed with exit code 130.

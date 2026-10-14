@@ -21,8 +21,8 @@ import { describe, expect, it } from 'vitest'
  *      same widget (HeaderSearch, DeferredHeaderSearch, SearchBox), two dead,
  *      and the a11y wiring was missing from the live one. A second copy is how
  *      that happens again.
- *   2. THREE MOUNTS, FIXED IDS. The masthead, the handheld row and the results
- *      page mount it, with the ids `e2e/a11y.spec.ts` walks. Two mounts in the
+ *   2. FOUR MOUNTS, FIXED IDS. The masthead, the handheld row, the results
+ *      page and the 404 body (UX25) mount it, with the ids `e2e/a11y.spec.ts` walks. Two mounts in the
  *      same DOM with the same id would be a duplicate id and a broken
  *      `aria-controls`.
  *   3. THE COMBOBOX WIRING. `role="combobox"`, `aria-activedescendant`,
@@ -45,10 +45,13 @@ const ROOT = process.cwd()
 const SITE_SEARCH = 'src/components/search/SiteSearch.tsx'
 const HANDHELD = 'src/components/search/HandheldSearch.tsx'
 const RESULTS_PAGE = 'src/app/(store)/search/page.tsx'
+const NOT_FOUND = 'src/components/not-found/NotFoundBody.tsx'
 const MOUNTS: Record<string, string> = {
   'src/components/layout/MastheadNav.tsx': 'masthead-search',
   [HANDHELD]: 'handheld-search',
   [RESULTS_PAGE]: 'page-search',
+  // UX25: the 404 offers the same field, under the masthead's, with its own id.
+  [NOT_FOUND]: 'not-found-search',
 }
 
 /** The listing page's category-scoped field, and its one host. */
@@ -107,7 +110,7 @@ describe('the site search field', () => {
     expect(declaring, 'files declaring a search-typed control').toEqual([SITE_SEARCH])
   })
 
-  it('is mounted by the masthead, the handheld row and the results page, each with its own id', () => {
+  it('is mounted by the masthead, the handheld row, the results page and the 404, each with its own id', () => {
     const importers = files.filter((f) => f !== SITE_SEARCH && /\bSiteSearch\b/.test(markup(f)))
     expect(importers.sort()).toEqual(Object.keys(MOUNTS).sort())
     for (const [file, id] of Object.entries(MOUNTS)) {

@@ -1,0 +1,60 @@
+Already up to date
+Done in 193ms using pnpm v11.1.2
+$ next start
+▲ Next.js 16.3.3
+- Local:         http://localhost:3364
+- Network:       http://100.84.130.122:3364
+✓ Ready in 122ms
+✓ Running next.config.ts took 438ms
+{"ts":"2026-10-14T18:11:56.099Z","level":"warn","event":"env.checks_skipped","request_id":null,"detail":"ALLOW_INCOMPLETE_ENV=true. Correct for a local `next start`; wrong anywhere a customer can reach."}
+{"ts":"2026-10-14T18:11:57.846Z","level":"info","event":"env.probe_ok","request_id":null,"checked":2}
+(node:48659) ExperimentalWarning: The supports Web Crypto API method is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:48659) ExperimentalWarning: The ML-DSA-44 Web Crypto API algorithm is an experimental feature and might change at any time
+{"ts":"2026-10-14T18:12:03.142Z","level":"warn","event":"db.query_slow","request_id":"02896eed-a5b6-4e64-b216-befcb7ac368e","route":"action","method":"GET","target":"carts","status":200,"duration_ms":469,"threshold_ms":300}
+{"ts":"2026-10-14T18:12:04.136Z","level":"warn","event":"db.query_slow","request_id":"dc87fc3e-c4a5-4c4f-a298-1ee6a4bcc1a1","route":"/api/search/quick-links","method":"GET","target":"popular_searches","status":200,"duration_ms":379,"threshold_ms":300}
+{"ts":"2026-10-14T18:12:04.555Z","level":"warn","event":"db.query_slow","request_id":"f7b3cd80-ab3a-4f53-b010-a382f02f458b","route":"/api/search/suggest","method":"POST","target":"rpc:check_rate_limit","status":200,"duration_ms":518,"threshold_ms":300}
+{"ts":"2026-10-14T18:12:05.014Z","level":"warn","event":"db.query_slow","request_id":"f7b3cd80-ab3a-4f53-b010-a382f02f458b","route":"/api/search/suggest","method":"POST","target":"rpc:search_products","status":200,"duration_ms":456,"threshold_ms":300}
+{"ts":"2026-10-14T18:12:05.170Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"categories","status":200,"duration_ms":374,"threshold_ms":300}
+{"ts":"2026-10-14T18:12:05.172Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"products","status":200,"duration_ms":374,"threshold_ms":300}
+{"ts":"2026-10-14T18:12:05.174Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"products","status":200,"duration_ms":377,"threshold_ms":300}
+{"ts":"2026-10-14T18:12:05.192Z","level":"warn","event":"db.query_slow","request_id":"5423ec3d-7f70-432d-8849-3f92293893be","route":"action","method":"GET","target":"carts","status":200,"duration_ms":390,"threshold_ms":300}
+(node:48659) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T18:12:05.285Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":1,"ms":279,"query_length":7,"facets":[]}
+(node:48659) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T18:12:05.598Z","level":"warn","event":"db.query_slow","request_id":null,"method":"POST","target":"rpc:fn_record_search","status":204,"duration_ms":312,"threshold_ms":300}
+{"ts":"2026-10-14T18:12:05.847Z","level":"error","event":"supabase.rls_denied","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401}
+{"ts":"2026-10-14T18:12:05.880Z","level":"warn","event":"search.recent_record_failed","request_id":null,"reason":"permission denied for function fn_record_recent_search"}
+{"ts":"2026-10-14T18:12:07.917Z","level":"warn","event":"db.query_slow","request_id":"c605c9aa-5cc4-4c30-8e7c-fc9f23c48cb9","route":"/api/search/quick-links","method":"GET","target":"popular_searches","status":200,"duration_ms":764,"threshold_ms":300}
+{"ts":"2026-10-14T18:12:07.948Z","level":"warn","event":"db.query_slow","request_id":"27c8abdf-ae4c-4356-bd37-860ea01e92b1","route":"/api/search/suggest","method":"POST","target":"rpc:search_products","status":200,"duration_ms":303,"threshold_ms":300}
+(node:48659) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T18:12:08.355Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":1,"ms":278,"query_length":7,"facets":[]}
+{"ts":"2026-10-14T18:12:08.862Z","level":"error","event":"supabase.rls_denied","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401}
+{"ts":"2026-10-14T18:12:08.865Z","level":"warn","event":"search.recent_record_failed","request_id":null,"reason":"permission denied for function fn_record_recent_search"}
+{"ts":"2026-10-14T18:12:10.423Z","level":"warn","event":"db.query_slow","request_id":"916bc776-f172-4bf4-8244-b56f4f69fc4f","route":"/api/search/quick-links","method":"GET","target":"popular_searches","status":200,"duration_ms":373,"threshold_ms":300}
+(node:48659) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T18:12:11.246Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":1,"ms":268,"query_length":7,"facets":[]}
+{"ts":"2026-10-14T18:12:11.761Z","level":"error","event":"supabase.rls_denied","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401}
+{"ts":"2026-10-14T18:12:11.764Z","level":"warn","event":"search.recent_record_failed","request_id":null,"reason":"permission denied for function fn_record_recent_search"}
+{"ts":"2026-10-14T18:12:28.831Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"categories","status":406,"duration_ms":472,"threshold_ms":300}
+{"ts":"2026-10-14T18:12:28.832Z","level":"warn","event":"db.query_slow","request_id":"174dc1b4-1346-43e7-932e-99adc5226392","route":"action","method":"GET","target":"carts","status":200,"duration_ms":364,"threshold_ms":300}
+(node:48659) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T18:12:29.140Z","level":"warn","event":"db.query_slow","request_id":"9e4167cb-59ea-4602-abbf-eab7c77974c8","route":"action","method":"GET","target":"carts","status":200,"duration_ms":391,"threshold_ms":300}
+{"ts":"2026-10-14T18:12:29.303Z","level":"warn","event":"db.query_slow","request_id":"35c2bc77-4dc3-4a93-9d69-1a2c5a920e9f","route":"action","method":"GET","target":"carts","status":200,"duration_ms":300,"threshold_ms":300}
+{"ts":"2026-10-14T18:12:29.304Z","level":"warn","event":"db.query_slow","request_id":"3315849f-d838-4e8c-9348-620584fb2dd6","route":"/api/search/quick-links","method":"GET","target":"popular_searches","status":200,"duration_ms":303,"threshold_ms":300}
+{"ts":"2026-10-14T18:12:29.405Z","level":"warn","event":"db.query_slow","request_id":"c05a3d91-ba06-41be-922d-28e7af7b763c","route":"action","method":"GET","target":"carts","status":200,"duration_ms":366,"threshold_ms":300}
+{"ts":"2026-10-14T18:12:29.435Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"products","status":200,"duration_ms":403,"threshold_ms":300}
+{"ts":"2026-10-14T18:12:29.436Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":1,"ms":405,"query_length":4,"facets":[]}
+{"ts":"2026-10-14T18:12:29.546Z","level":"warn","event":"db.query_slow","request_id":"c2d0c6b2-eb62-4459-aa70-eb24248cbbc4","route":"action","method":"GET","target":"carts","status":200,"duration_ms":307,"threshold_ms":300}
+{"ts":"2026-10-14T18:12:29.590Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"products","status":200,"duration_ms":318,"threshold_ms":300}
+{"ts":"2026-10-14T18:12:29.628Z","level":"warn","event":"db.query_slow","request_id":"e308eaba-5da8-4aa1-906a-904257c685c6","route":"action","method":"GET","target":"carts","status":200,"duration_ms":489,"threshold_ms":300}
+{"ts":"2026-10-14T18:12:29.894Z","level":"warn","event":"category_banners.schema_absent","request_id":null,"where":"category","hint":"migration 267 not applied"}
+{"ts":"2026-10-14T18:12:29.895Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"products","status":200,"duration_ms":302,"threshold_ms":300}
+{"ts":"2026-10-14T18:12:30.084Z","level":"error","event":"supabase.rls_denied","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401}
+{"ts":"2026-10-14T18:12:30.085Z","level":"warn","event":"search.recent_record_failed","request_id":null,"reason":"permission denied for function fn_record_recent_search"}
+{"ts":"2026-10-14T18:12:30.359Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"price_history","status":200,"duration_ms":462,"threshold_ms":300}
+{"ts":"2026-10-14T18:12:30.899Z","level":"warn","event":"db.query_slow","request_id":"84c28f56-2df6-4cc8-9322-3bbbf292afff","route":"action","method":"GET","target":"carts","status":200,"duration_ms":494,"threshold_ms":300}
+{"ts":"2026-10-14T18:12:30.970Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":1,"ms":239,"query_length":4,"facets":[]}
+{"ts":"2026-10-14T18:12:31.389Z","level":"warn","event":"db.query_slow","request_id":null,"method":"POST","target":"rpc:fn_record_search","status":204,"duration_ms":419,"threshold_ms":300}
+{"ts":"2026-10-14T18:12:31.676Z","level":"error","event":"supabase.rls_denied","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401}
+{"ts":"2026-10-14T18:12:31.681Z","level":"warn","event":"search.recent_record_failed","request_id":null,"reason":"permission denied for function fn_record_recent_search"}
