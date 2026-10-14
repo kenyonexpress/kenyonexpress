@@ -277,8 +277,19 @@
      the grid; with those two corrected to live's values it has to be right on
      its own. */
   --spacing-hero-desktop: 613px;
+  /* 194 inside the 213 row: refs/ke_live_380.png paints the slider box at
+     y161..y355 and leaves the last 19px of the row white (UX01, 14.10). */
+  --spacing-hero-slider-mobile: 194px;
   --spacing-hero-slider-tablet: 304px;
   --spacing-hero-slider-desktop: 370px;
+  /* The hero row below lg keeps live's Bootstrap container (UX01, 14.10):
+     15px of gutter at 380 (--spacing-gutter), 39 at 768 -- 9px of centring
+     round the 750px container, its 15px padding and a further 15px list
+     margin (refs/ke_live_768.png: slider and strip start at x39, the feature
+     bar runs x39..x728). The centre column there is the DESKTOP 728, hung
+     from that left edge and running to x767. */
+  --spacing-hero-gutter-tablet: 39px;
+  --spacing-hero-center-tablet: 728px;
   /* Live collapses the feature bar to an empty 31px strip at 380: the five
      `.feature` blocks are not rendered at all below md. From md up it is a
      flat 134px at BOTH 768 and 1440 -- ours was 223 at 768 and 76 at 1440,

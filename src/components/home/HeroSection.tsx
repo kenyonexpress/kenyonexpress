@@ -41,7 +41,15 @@ export default function HeroSection({
     <section
       aria-label="אזור ראשי"
       dir="rtl"
-      className="mx-auto flex h-hero-mobile w-full max-w-hero-row flex-col border-b border-border font-sans md:h-hero-tablet lg:h-hero-desktop lg:flex-row lg:items-stretch"
+      // px-gutter / md:px-hero-gutter-tablet / lg:px-0: live keeps its Bootstrap container
+      // below lg, so the slider, the strip and the feature bar all sit inside
+      // a 15px gutter at 380 (slider x15..x365) and 39px at 768 (x39..x728:
+      // 9px of centring, 15px container padding, 15px list margin). Ours
+      // bled edge to edge at both. Measured UX01, 14.10.2026.
+      // No border-b: live draws no rule under the hero row at any of the
+      // three widths (columns x400-410 at 1440, x45-60 at 768, x20-30 at 380
+      // all read white between the row and the feature bar).
+      className="mx-auto flex h-hero-mobile w-full max-w-hero-row flex-col px-gutter font-sans md:h-hero-tablet md:px-hero-gutter-tablet lg:h-hero-desktop lg:flex-row lg:items-stretch lg:px-0"
     >
       <HeroCategorySidebar />
       {/* Live (refs, 1440): the center column is the slider (728x370) with the
@@ -50,7 +58,13 @@ export default function HeroSection({
           to render as a separate full-width section below the hero, which put
           five 146px cells on entirely different pixels and was most of the
           y500-700 band difference. */}
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+      {/* md:w-hero-center-tablet md:self-end: at 768 live's slider and strip are the
+          desktop 728 wide, anchored at the container's LEFT edge (x39) and
+          running to x767 -- past the 690px container, which is a horizontal
+          overflow on live that we do not reproduce (the row still fits the
+          768 viewport exactly, so nothing scrolls). self-end is the left
+          edge in this dir="rtl" column. Measured UX01, 14.10.2026. */}
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col md:w-hero-center-tablet md:self-end lg:w-auto lg:self-auto">
         {/* Live: slider 728x370 (y148..518), the strip 170 directly under it,
             and the remaining 53px of the 593 column stay white BELOW the strip
             -- the strip is not bottom-anchored. mt-auto put it at the bottom
@@ -60,7 +74,11 @@ export default function HeroSection({
             fixed 370 at lg (the measured slot), flex-fill below. Two mounted
             instances meant two rotation timers and broke the e2e guard that
             counts exactly one [data-hero-slider]. */}
-        <div className="flex min-h-0 flex-1 flex-col md:h-hero-slider-tablet md:min-h-hero-slider-tablet md:flex-none lg:block lg:h-hero-slider-desktop lg:min-h-hero-slider-desktop">
+        {/* 194 at 380, not the row's 213: live's slider box runs y161..y355
+            and the remaining 19px of the row stay white under it, the same
+            shape as the 53px under the strip at 1440. Flex-fill painted the
+            slider background over the whole row. */}
+        <div className="flex h-hero-slider-mobile min-h-0 flex-none flex-col md:h-hero-slider-tablet md:min-h-hero-slider-tablet lg:block lg:h-hero-slider-desktop lg:min-h-hero-slider-desktop">
           <HeroSlider slides={slides} />
         </div>
         <div className="hidden md:block">

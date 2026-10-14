@@ -623,15 +623,24 @@ function ProductSlideCopy({ slide }: { slide: HeroSlide }) {
 
 function WelcomeSlideCopy({ slide }: { slide: HeroSlide }) {
   return (
+    // The padding-top rides custom properties rather than an inline value so
+    // src/styles/home-handheld.css can shrink it below 768px: an inline style
+    // cannot be overridden by a media query. The hero-welcome-* classes are
+    // hooks for the same stylesheet; above 1024px none of them do anything.
     <div
-      className={`${RS.copyColumn} w-full pb-12 lg:w-1/2`}
-      style={{ paddingTop: SLIDE.text.paddingTop }}
+      className={`${RS.copyColumn} hero-welcome-copy w-full pb-12 pt-[var(--hero-copy-pt,var(--hero-copy-pt-lg))] lg:w-1/2`}
+      // Two properties, because an inline custom property beats any class
+      // rule on the same element: the desktop value is the FALLBACK, and the
+      // phone stylesheet sets --hero-copy-pt itself (measured UX01: with one
+      // property the 47px inline value won on every phone and the promo
+      // price stayed under the dots).
+      style={{ '--hero-copy-pt-lg': `${SLIDE.text.paddingTop}px` } as React.CSSProperties}
     >
-      <h1 className={RS.headBox}>
+      <h1 className={`hero-welcome-head ${RS.headBox}`}>
         {slide.title && (
           <span
             style={{ color: T.headline1.color }}
-            className={`hero-headline block whitespace-nowrap font-light ${WELCOME_HEAD.line1}`}
+            className={`hero-headline hero-welcome-line1 block whitespace-nowrap font-light ${WELCOME_HEAD.line1}`}
           >
             {slide.title}
           </span>
@@ -639,7 +648,7 @@ function WelcomeSlideCopy({ slide }: { slide: HeroSlide }) {
         {slide.title_secondary && (
           <span
             style={{ color: T.headline2.color, letterSpacing: RS.h2Tracking }}
-            className={`hero-headline mt-0.5 block whitespace-nowrap font-light lg:mt-1 ${WELCOME_HEAD.line2} ${
+            className={`hero-headline hero-welcome-line2 mt-0.5 block whitespace-nowrap font-light lg:mt-1 ${WELCOME_HEAD.line2} ${
               slide.title_secondary_indent ? RS.indentMd : ''
             }`}
           >
@@ -648,7 +657,10 @@ function WelcomeSlideCopy({ slide }: { slide: HeroSlide }) {
         )}
       </h1>
       {slide.tagline && (
-        <p style={{ color: T.tagline.color }} className={`mt-4 lg:mt-5 ${RS.tagline}`}>
+        <p
+          style={{ color: T.tagline.color }}
+          className={`hero-welcome-tagline mt-4 lg:mt-5 ${RS.tagline}`}
+        >
           {slide.tagline}
         </p>
       )}
@@ -666,7 +678,7 @@ function WelcomeSlideCopy({ slide }: { slide: HeroSlide }) {
       {slide.promo_small && (
         <p
           style={{ color: T.headline1.color }}
-          className={`mt-3 text-end lg:mt-4 ${RS.promoSmallInset} ${RS.promoSmallWelcome}`}
+          className={`hero-welcome-promo-small mt-3 text-end lg:mt-4 ${RS.promoSmallInset} ${RS.promoSmallWelcome}`}
         >
           {slide.promo_small}
         </p>
@@ -674,7 +686,7 @@ function WelcomeSlideCopy({ slide }: { slide: HeroSlide }) {
       {slide.promo_large && (
         <p
           style={{ color: T.price.color }}
-          className={`mt-0 text-end ${RS.promoLargeInset} ${RS.promoLargeWelcome}`}
+          className={`hero-welcome-promo-large mt-0 text-end ${RS.promoLargeInset} ${RS.promoLargeWelcome}`}
         >
           {slide.promo_large}
         </p>

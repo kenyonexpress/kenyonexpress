@@ -39,6 +39,22 @@ export const ELECTRO_HERO = {
     // 593: the live hero columns all run y148..y741 (refs, 2026-09-02).
     height: 593,
     textColor: '#333e48',
+    /* THE LIST IS WIDER THAN THE COLUMN. Measured UX01 (14.10.2026) on
+       refs/ke_live_1440.png: the yellow title box is x1064..x1304 (the 241
+       above, confirmed at a threshold that excludes the slider's tint), but
+       the row rules run x1049..x1290 and the white behind them starts at
+       x1035 -- Electro's departments dropdown is 270 wide, hung from the
+       column's inline start, and its extra 29px lie OVER the slider's right
+       edge (the tint stops at x1034 from y196 to y593, and the strip's last
+       tile border at x1063 shows again below y593). So the list carries its
+       own width, a negative inline-end margin, a white background and a
+       z-index, and the aside no longer clips or stretches. */
+    listWidth: 270,
+    /* Bootstrap's `.dropdown-menu{padding:5px 0}` plus the 1px border it
+       keeps and we zero: 7 above the first row (rule y237, not y230), 5 under
+       the last (list bottom y593). */
+    listPaddingTop: 7,
+    listPaddingBottom: 5,
   },
   sideBanners: {
     /* 201 measured on live; see the note on categoryColumn.width above. */
@@ -84,17 +100,33 @@ export const ELECTRO_HERO = {
   /**
    * USP / benefit bar (the icons-with-text strip below the hero).
    * Values match the electro home-v7 / ke_live build (compare.mjs band ~6.6%).
-   * paddingBlock kept as em (relative to the 16px row font-size) to reproduce
-   * the exact measured row height without a magic pixel constant.
+   * REMEASURED UX01 (14.10.2026) against refs/ke_live_{768,1440}.png: the live
+   * cell is 81px outer (1 + 19 + 47 + 13 + 1) at both widths and ours was 74,
+   * with the text block starting 5px too high. The em padding was computed
+   * off a 16px row font, which is not what Electro does: `.feature` is
+   * 1.357em/0.929em of a 14px font, i.e. 19px and 13px, and the two text
+   * lines sit at line-height 1.6 (15 * 1.6 + 13 * 1.6 + 2 = 46.8), not
+   * `leading-tight`. Pixels, because the measurement is in pixels.
+   *
+   * mdWidth: at 768 live's `.features-list` spans x39..x728, 690px, inside
+   * the 750px Bootstrap container with its 15px padding and a further 15px
+   * list margin. Ours ran the full 768 with no page inset at all.
    */
   uspBar: {
     maxWidth: 1170,
+    mdWidth: 690,
     borderColor: '#ddd',
     borderRadius: 8,
     gap: 10,
     paddingInline: 16,
-    paddingBlockStart: '1.357em',
-    paddingBlockEnd: '0.929em',
+    paddingBlockStart: 19,
+    paddingBlockEnd: 13,
+    lineHeight: 1.6,
+    /* The bar is not centred in its 134px strip: live's list starts 30px under
+       the hero row at both 768 (y613 = 88 + 495 + 30) and 1440 (y791 = 148 +
+       613 + 30), and the remaining 23 stay white below it. Centring the
+       81px list put it 3px high at both widths. */
+    topMargin: 30,
     icon: {
       size: 36,
       color: '#fed700',
@@ -115,8 +147,20 @@ export const ELECTRO_HERO = {
     offsetInlineEnd: 517,
     maxWidth: 728,
     itemPaddingInline: 12,
-    itemPaddingTop: 16,
-    image: { size: 100, marginBottom: 10, fallbackIconSize: 28 },
+    /* 28 / 80 / 7, re-solved UX01 (14.10.2026) against refs/ke_live_{768,1440}.png.
+       The photo (100 wide, 70-71 tall under object-contain) sits with its
+       centre 68px under the strip's top rule at both widths, and the label's
+       glyphs start 115px under it; with the old 16 / 100 / 10 ours painted the
+       photo 2px high and the label 11px low on every tile. Any (padding, box
+       height, margin) with padding + height/2 = 68 and padding + height +
+       margin = 115 renders these photos identically; 80 is the box that keeps
+       the 100 width and a sane margin. */
+    itemPaddingTop: 28,
+    image: { size: 100, height: 80, marginBottom: 7, fallbackIconSize: 28 },
+    /* The text-only tile ("עד ₪99") centres its label 4.5px above the strip's
+       mid-line on live (y598.5 against a 518..688 strip at 1440; the same at
+       768): a 9px bottom inset reproduces it. */
+    labelOnlyPaddingBottom: 9,
     label: { size: 14, weight: 600, color: '#333e48' },
     hoverShadow: '0 0 18px -2px rgba(0,0,0,0.2)',
   },

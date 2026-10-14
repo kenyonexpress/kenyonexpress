@@ -71,17 +71,29 @@ export default function CategoryStrip({ inHero = false }: { inHero?: boolean } =
           {CATEGORIES.map((cat) => (
             <li
               key={cat.id}
-              className="flex w-1/2 border-e first:border-s lg:w-[20%] lg:flex-[0_0_20%]"
+              // Inside the hero the strip is five equal cells from md up:
+              // live's tile rules at 768 sit at x185/331/476/622, 145.6 apart,
+              // and `w-1/2` under flex-nowrap let five cells shrink to their
+              // labels (ours read x182/332/481/624). Standalone, the phone
+              // layout stays two-up and only lg goes five-up.
+              className={`flex w-1/2 border-e first:border-s ${
+                inHero ? 'md:w-[20%] md:flex-[0_0_20%]' : 'lg:w-[20%] lg:flex-[0_0_20%]'
+              }`}
               style={{ borderColor: C.borderColor }}
             >
               <Link
                 href={cat.href}
-                className={`group mx-auto flex h-full flex-col items-center text-center transition-shadow hover:shadow-[var(--cat-hover-shadow)] max-lg:min-h-11 max-lg:justify-center ${
+                // A photo tile is top-aligned at every width (live's photo
+                // sits at y424 in the 390..560 strip at 768, the same 28px in
+                // as at 1440); only the text-only tile centres. The old
+                // max-lg:justify-center floated every photo 19px low at 768.
+                className={`group mx-auto flex h-full flex-col items-center text-center transition-shadow hover:shadow-[var(--cat-hover-shadow)] max-lg:min-h-11 ${
                   cat.image ? 'justify-start' : 'justify-center'
                 }`}
                 style={{
                   paddingInline: C.itemPaddingInline,
                   paddingTop: cat.image ? C.itemPaddingTop : undefined,
+                  paddingBottom: cat.image ? undefined : C.labelOnlyPaddingBottom,
                 }}
               >
                 {cat.image ? (
@@ -89,7 +101,7 @@ export default function CategoryStrip({ inHero = false }: { inHero?: boolean } =
                     className="relative"
                     style={{
                       width: C.image.size,
-                      height: C.image.size,
+                      height: C.image.height,
                       marginBottom: C.image.marginBottom,
                     }}
                   >

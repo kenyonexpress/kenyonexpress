@@ -298,12 +298,14 @@ Everything below is read off `curl` of a clean `pnpm build && pnpm start` on
 3335 (markup: preload links, `fetchPriority`, `loading`, blur style,
 width/height) or off `node scripts/_image-fold-probe.mjs --raw-images` (layout shift
 and the LCP entry from the browser's own PerformanceObserver, consent granted,
-4 s after `load`). `--raw-images` exists because the local optimizer route does
-not: `images.loader` is `'custom'` (STEP 22) and `next-server.js:198` skips
+4 s after `load`). `--raw-images` existed because the local optimizer route did
+not: `images.loader` was `'custom'` (STEP 22) and `next-server.js:198` skips
 `/_next/image` for any loader but the default, so every optimized image on a
-local `pnpm start` is a 404 and nothing above the fold ever loads. Production
-answers 200 (Vercel serves the route itself). Image timings therefore belong to
-a Vercel URL; what is pinned here is the markup and the layout.
+local `pnpm start` was a 404 and nothing above the fold ever loaded. Production
+answered 200 (Vercel serves the route itself). Since UX01 (14.10.2026) the custom
+loader is installed only under `NEXT_PUBLIC_R2_IMAGES=1`, so a plain local
+`pnpm start` serves the route again; the timings below predate that and belong
+to a Vercel URL. What is pinned here is the markup and the layout.
 
 ### What production had (counted, not assumed)
 

@@ -215,9 +215,22 @@ const nextConfig: NextConfig = {
      * public/. Byte-equal to the default for everything else; the test next
      * to the file pins that, because a loader is in the path of every
      * product photo and a drift here is a drift on every page.
+     *
+     * INSTALLED ONLY WHEN R2 IS ON (UX01, 14.10.2026). `next-server.js:198`
+     * answers every `/_next/image` request with a 404 for any loader but
+     * `'default'`, so from STEP 22 until here a local `pnpm start` served no
+     * optimized image at all: the logo, the hero placeholder, the category
+     * tiles and every product photo rendered as a broken image, the header
+     * flex collapsed around a 35px logo box, and the parity gate measured a
+     * page a quarter blank. Production never noticed because Vercel serves
+     * the route itself. With R2 off the custom loader emits byte-identical
+     * URLs to Next's own, so there is nothing to install; with it on, the
+     * re-homing is the whole point and the local 404 is the known price.
+     * Next refuses `loaderFile` under any other loader, hence the spread.
      */
-    loader: 'custom',
-    loaderFile: './src/lib/images/loader.ts',
+    ...(process.env.NEXT_PUBLIC_R2_IMAGES === '1'
+      ? { loader: 'custom' as const, loaderFile: './src/lib/images/loader.ts' }
+      : {}),
   },
   compiler: {
     /**

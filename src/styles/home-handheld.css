@@ -31,3 +31,51 @@
     white-space: normal;
   }
 }
+
+/* THE WELCOME COPY HAS TO FIT A 194PX BOX ON A PHONE.
+ *
+ * Measured UX01 (14.10.2026) on refs/ke_live_380.png: the slider box is
+ * 350x194 (x15..x365, y161..y355). The copy column's stack at the 1024px
+ * sizes -- 47px padding, 43 + 2 + 38 of headline, 16 + 11 of tagline, 12 + 15
+ * of promo line, 40 of promo price -- is 224px before the dot row, so the
+ * price line was painted under the dots and clipped by the box: "פשוט הכי
+ * טוב" lost its bottom half on every phone. The 1440 sizes are measured
+ * against live's slide; the phone sizes below are chosen so the same copy
+ * ends at y139 of the box, above the dots at y162. Between 768 and 1023 the
+ * box is 304px and the stack fits as it was; nothing here applies there.
+ *
+ * Same doubled selectors as above, for the same source-order reason.
+ */
+@media (max-width: 767px) {
+  .hero-welcome-copy.hero-welcome-copy {
+    --hero-copy-pt: 12px;
+  }
+
+  .hero-welcome-head.hero-welcome-head {
+    min-height: 62px;
+  }
+
+  .hero-welcome-line1.hero-welcome-line1 {
+    font-size: 30px;
+    line-height: 32px;
+  }
+
+  .hero-welcome-line2.hero-welcome-line2 {
+    font-size: 26px;
+    line-height: 28px;
+  }
+
+  .hero-welcome-tagline.hero-welcome-tagline {
+    margin-top: 6px;
+  }
+
+  .hero-welcome-promo-small.hero-welcome-promo-small {
+    margin-top: 4px;
+    line-height: 14px;
+  }
+
+  .hero-welcome-promo-large.hero-welcome-promo-large {
+    font-size: 26px;
+    line-height: 28px;
+  }
+}

@@ -114,7 +114,13 @@
 .jet-listing-grid-deals h2.p_con__title {
   color: var(--color-link);
   font-size: 22px;
-  line-height: 32px; /* live: 2 clamped lines = 64px */
+  /* 26, not 32. Measured UX01 (14.10.2026) on refs/ke_live_1440.png: the two
+     lines of "עוזרת אישית - שירותי משרד" pitch at 26px (y977 -> y1003) and ours
+     at 32 (y980 -> y1012), which also put the first line 3px low through the
+     half-leading. The 64px the old value was derived from is the WRAP's
+     min-height above, which still holds the slot open; it was never the
+     line box. 22 * 1.2 = 26.4, Electro's own ratio. */
+  line-height: 26px;
   margin: 0;
   font-weight: inherit;
   display: -webkit-box;
@@ -122,6 +128,34 @@
   -webkit-line-clamp: 2;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* Below the desktop grid the title is 24px at the same 1.2: live's two-line
+   titles pitch at 28/29px (y1034 -> y1062 at 380, y796 -> y825 at 768) with
+   glyphs a row taller than our 22px, and the label-to-title distance stays
+   the desktop 39px, which only a 1.2 half-leading gives. The wrap is 63 and
+   not 64 there: live's photo sits one row higher than ours did at both 380
+   (y561 vs y562) and 768 (y871 vs y872) under identical label rows. Measured
+   UX01, 14.10.2026. */
+@media (max-width: 1199px) {
+  .p_con__title,
+  .jet-listing-grid-deals h2.p_con__title {
+    font-size: 24px;
+    line-height: 1.2;
+  }
+
+  .p_con__title-wrap {
+    min-height: 63px;
+  }
+}
+
+/* Tablet keeps live's 501px card pitch with the one-row-higher photo above:
+   the row is a pixel longer at the bottom (cart y1148..y1187, next row's
+   photo y1372 on both sides once the photo is at y871). */
+@media (min-width: 768px) and (max-width: 1199px) {
+  .p_con {
+    padding-bottom: 25px;
+  }
 }
 
 .p_con__image-wrap {
@@ -210,8 +244,14 @@
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 21px;
-  margin-top: 16px;
+  /* 18 / 19 on a phone, not 16 / 21: with the photo one row higher (the 63px
+     wrap above) live still centres the price glyphs on y851 and starts the
+     cart circle on y885 under the first card, and pitches the cards at 548.
+     16 / 21 under the 64 wrap read y851 / y887 / 549. Measured UX01 at 380
+     against refs/ke_live_380.png; from 768 up the footer is a row and the
+     16 below applies. */
+  gap: 19px;
+  margin-top: 18px;
 }
 
 .p_con__footer .atc {
@@ -219,9 +259,12 @@
 }
 
 /* Live's price row is 27px tall on a phone (y872 h27); ours came out at 24,
-   which left the card 2px short and drifted 8px by the fourth row. */
+   which left the card 2px short and drifted 8px by the fourth row. The line
+   height is pinned too: the 16px sale price inherits the body's 1.8 and made
+   the row 29, which put the cart button 2px low on every phone card (UX01). */
 .p_con__footer .p_con__prices {
   min-height: 27px;
+  line-height: 27px;
 }
 
 @media (min-width: 768px) {
@@ -230,6 +273,7 @@
     justify-content: space-between;
     align-items: center;
     gap: 0;
+    margin-top: 16px;
   }
 
   .p_con__footer .atc {
@@ -247,7 +291,12 @@
   flex-wrap: nowrap;
   align-items: center;
   gap: 8px;
-  text-align: end;
+  /* start, not end: both prices flex-grow, so on a phone each owns half the
+     282px row, and `end` pushed the strike to the row's middle and the sale
+     price to the far left. Live (y1399 at 380) keeps the strike at the right
+     edge and the sale price at the start of its half. From 768 up the row is
+     only as wide as its text and the value is moot. */
+  text-align: start;
 }
 
 .p_con__strike {

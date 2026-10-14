@@ -71,9 +71,14 @@ export default function BenefitBar() {
   return (
     <section
       dir="rtl"
-      className="h-feature-bar-mobile w-full bg-white font-sans md:flex md:h-feature-bar md:items-center"
+      // items-start + a 30px top inset, not items-center: see USP.topMargin.
+      className="h-feature-bar-mobile w-full bg-white font-sans md:flex md:h-feature-bar md:items-start md:pt-[var(--usp-top)]"
+      style={{ '--usp-top': `${USP.topMargin}px` } as React.CSSProperties}
     >
-      <div className="mx-auto hidden w-full md:block" style={{ maxWidth: USP.maxWidth }}>
+      <div
+        className="mx-auto hidden w-full md:block md:w-[var(--usp-md-w)] lg:w-full"
+        style={{ maxWidth: USP.maxWidth, '--usp-md-w': `${USP.mdWidth}px` } as React.CSSProperties}
+      >
         {/*
           ONE ROW AT EVERY WIDTH, the way live's `.features-list` is:
           `flex-wrap:nowrap; overflow:auto`, and below 992px each `.feature`
@@ -118,20 +123,20 @@ export default function BenefitBar() {
                 />
                 <div className="text-center">
                   <div
-                    className="leading-tight"
                     style={{
                       fontSize: USP.title.size,
                       fontWeight: USP.title.weight,
+                      lineHeight: USP.lineHeight,
                       color: USP.title.color,
                     }}
                   >
                     {b.title}
                   </div>
                   <div
-                    className="leading-tight"
                     style={{
                       fontSize: USP.subtitle.size,
                       fontWeight: USP.subtitle.weight,
+                      lineHeight: USP.lineHeight,
                       color: USP.subtitle.color,
                       marginBlockStart: USP.subtitle.marginBlockStart,
                     }}

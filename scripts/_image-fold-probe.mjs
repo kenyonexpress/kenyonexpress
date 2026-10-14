@@ -14,10 +14,11 @@ import { chromium } from '@playwright/test'
 // returning visitor never sees it.
 //
 // --raw-images answers every /_next/image request with the raw file under
-// public/. Locally the optimizer route does not exist at all (images.loader
-// is 'custom', next-server.js skips the route) and every optimized image is a
-// 404, so without this flag no image ever loads and the load-time shift and
-// the real LCP element cannot be seen. The bytes are the originals, so sizes
+// public/. It exists for builds with NEXT_PUBLIC_R2_IMAGES=1, where the
+// optimizer route does not exist locally (images.loader is 'custom' and
+// next-server.js skips the route) and every optimized image is a 404. With
+// R2 off (the default since UX01, 14.10.2026) `pnpm start` serves the route
+// itself and the flag is unnecessary. The bytes are the originals, so sizes
 // are wrong but ratios and layout are right.
 
 const argOf = (name, dflt) => {

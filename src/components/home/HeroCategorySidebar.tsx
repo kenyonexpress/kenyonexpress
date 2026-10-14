@@ -5,7 +5,9 @@ import Link from 'next/link'
 const CC = ELECTRO_HERO.categoryColumn
 
 /** refs/ke_live_singlefile-hero.css — .departments-menu-v2 .departments-menu-v2-title + .dropdown-menu */
-const MENU_LI_STYLE = { padding: '0 1em' } as const
+// 14px, not 1em of the 16px body: live's rules run x1049..x1290 inside the
+// x1035..x1304 list, 14 in from each side (UX01, 14.10.2026).
+const MENU_LI_STYLE = { padding: '0 14px' } as const
 const MENU_LINK_STYLE = {
   padding: '6.5px 5px 6.5px 0',
   // 14px explicitly: the live rows are 34.66px = 2x6.5 padding + 14x1.5 line
@@ -26,9 +28,14 @@ export default function HeroCategorySidebar() {
       dir="rtl"
       aria-label="קטגוריות"
       style={{ width: CC.width, color: CC.textColor }}
-      className="home-vertical-nav departments-menu-v2 hidden h-full shrink-0 flex-col overflow-hidden bg-white font-sans lg:flex"
+      // self-start, z-10, no overflow clip and NOT h-full: the list below is
+      // 29px wider than this column and hangs over the slider's edge, and the
+      // column is only as tall as that list (see categoryColumn.listWidth in
+      // electro-hero-tokens.ts). Stretched to the row it painted white over
+      // the strip's tile border live shows below y593.
+      className="home-vertical-nav departments-menu-v2 relative z-10 hidden shrink-0 self-start flex-col bg-white font-sans lg:flex"
     >
-      <div className="dropdown show-dropdown flex h-full min-h-0 flex-col">
+      <div className="dropdown show-dropdown flex min-h-0 flex-col">
         {/*
           THE YELLOW BAR HAD NO CONTENT IN IT, and shipped as an empty coloured
           box above the departments list.
@@ -67,8 +74,22 @@ export default function HeroCategorySidebar() {
 
         <nav className="min-h-0 flex-1">
           <ul
-            className="dropdown-menu yamm m-0 list-none p-0"
-            style={{ borderWidth: 0, borderRadius: 0 }}
+            className="dropdown-menu yamm m-0 list-none bg-white p-0"
+            // paddingTop 7: measured on refs/ke_live_1440.png (UX01, 14.10).
+            // The yellow bar ends at y196 on both sides, but live's first row
+            // rule sits at y237 and ours sat at y230 -- every rule below it
+            // was 7px high, through the last one (552 vs 545). The rows
+            // themselves pitch at 35px on both, so the whole drift is the gap
+            // between the bar and the first row: Bootstrap's `.dropdown-menu`
+            // 5px block padding plus the border it keeps and we zero.
+            style={{
+              borderWidth: 0,
+              borderRadius: 0,
+              width: CC.listWidth,
+              marginInlineEnd: CC.width - CC.listWidth,
+              paddingTop: CC.listPaddingTop,
+              paddingBottom: CC.listPaddingBottom,
+            }}
           >
             {KE_LIVE_CATEGORIES.map((cat) => {
               const href = cat.href ?? `/category/${cat.slug}`

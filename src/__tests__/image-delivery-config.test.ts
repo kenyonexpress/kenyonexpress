@@ -43,4 +43,17 @@ describe('next.config images', () => {
   it('builds remotePatterns from the single host list', () => {
     expect(imagesBlock()).toContain('remotePatterns: [...REMOTE_IMAGE_PATTERNS]')
   })
+
+  it('installs the R2 loader only when R2 is on, so a local start serves /_next/image', () => {
+    // next-server.js answers the optimizer route with a 404 under any loader
+    // but 'default'. With NEXT_PUBLIC_R2_IMAGES off the custom loader emits
+    // the same URLs as Next's own (loader.test.ts), so it has nothing to add
+    // and installing it only costs every image on a local `pnpm start`.
+    const block = imagesBlock()
+    expect(block).toMatch(
+      /process\.env\.NEXT_PUBLIC_R2_IMAGES === '1'\s*\?\s*\{\s*loader: 'custom'/,
+    )
+    expect(block).toMatch(/loaderFile: '\.\/src\/lib\/images\/loader\.ts'/)
+    expect(block).not.toMatch(/^\s*loader: 'custom',\s*$/m)
+  })
 })
