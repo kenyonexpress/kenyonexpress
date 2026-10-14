@@ -116,6 +116,10 @@ playwright.cross-browser.config.ts(2,18): error TS2307: Cannot find module './pl
 
 ## 5. הנתונים ב-branch
 
+**‏Supabase MCP** של ההרנס דורש ‏OAuth (‏`claude mcp list`: ‏"Needs authentication") שאי אפשר
+להשלים בסשן לא-אינטראקטיבי; עד שאופיר יאשר אותו ב-claude.ai, כל גישת ‏DB כאן היא דרך
+‏management API עם הטוקן של ה-CLI (‏`docs/QUERY-COOKBOOK.md`).
+
 ה-branch נוצר ב-08.10 עם ‏`with_data: true`, כלומר סכימה **ושורות** של פרודקשן באותו
 רגע: ‏162 מיגרציות, אותו ‏`max(version)` כמו בפרודקשן (‏`20260910085722`), ואותן
 טבלאות חסרות (‏`health_incidents`, ‏`category_guides` עדיין ‏pending בשניהם).
@@ -124,8 +128,8 @@ playwright.cross-browser.config.ts(2,18): error TS2307: Cannot find module './pl
 
 | טבלה | פרודקשן | ‏staging | ההפרש |
 |---|---|---|---|
-| ‏products | ‏82 | ‏142 | ‏60 מוצרי דמו (‏`d3e30000-…`, ‏`scripts/seed/demo-data.mjs`: 40 פיזיים ו-20 קופונים) |
-| ‏suppliers | ‏13 | ‏16 | ‏3 ספקי דמו מאותו ‏seed |
+| ‏products | ‏82 | ‏182 | ‏60 מוצרי דמו (‏`d3e30000-…`, ‏`scripts/seed/demo-data.mjs`: 40 פיזיים ו-20 קופונים, הוחלו ב-08.10) ‏+ ‏40 דילים (‏`5eed0000-…`, ‏`scripts/seed-catalogue.mjs --sql`, הוחלו ב-14.10) |
+| ‏suppliers | ‏13 | ‏30 | ‏3 ספקי דמו ‏+ ‏14 ספקי ה-seed, מאותם שני מקורות |
 | ‏categories | ‏13 | ‏13 | |
 | ‏orders | ‏46 | ‏46 | עותק; ‏26 ‏paid, ‏24 ‏vouchers |
 | ‏auth.users | ‏14 | ‏14 | ‏10 ‏`user-*@staging.kenyonexpress.local` (פסאודונימים מהייבוא), ‏2 ‏fixtures של ‏E2E, ‏2 חשבונות ניהול |
@@ -133,14 +137,26 @@ playwright.cross-browser.config.ts(2,18): error TS2307: Cannot find module './pl
 אין בו פרטי לקוח אמיתיים: לפי ‏`docs/INDEX.md` אף לקוח לא קנה, וההזמנות הן ‏fixtures.
 אם זה ישתנה, ה-branch ייבנה מחדש **בלי** ‏`with_data` ועם ‏seed בלבד.
 
-**‏fixtures של ‏E2E** (‏`scripts/seed-test-data.mjs`): קיימים ב-branch (‏2 מוצרים במרחב
-‏`0e02b2c3d`). להרצה מחדש מול ה-branch, עם המפתחות של ה-branch ולא של פרודקשן:
+**‏fixtures של ‏E2E** (‏`scripts/seed-test-data.mjs`): הורצו במצב כתיבה מול ה-branch ב-14.10
+(כל ‏8 השורות ‏`ok`, גורם ה-TOTP של האדמין נרשם מחדש; הסוד שלו ב-`~/.kenyonexpress/staging-admin-totp.secret`
+על המחשב של אופיר, לא בריפו, כי ‏`.e2e/admin-totp.secret` המקומי שייך ל-fixtures של פרודקשן).
+להרצה חוזרת, עם המפתחות של ה-branch ולא של פרודקשן:
 
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=https://sjojzzppqhjxvjlvnwdb.supabase.co \
 NEXT_PUBLIC_SUPABASE_ANON_KEY=... SUPABASE_SECRET_KEY=... \
-node scripts/seed-test-data.mjs --check
+node scripts/seed-test-data.mjs            # --check מדווח בלי לכתוב
 ```
+
+**‏seed הקטלוג** (‏`scripts/seed-catalogue.mjs --sql`, ‏upsert אידמפוטנטי על ‏id קבוע): הוחל
+ב-14.10 דרך ‏management API בתוך ‏`BEGIN … COMMIT`, אחרי חזרה זהה עם ‏`ROLLBACK` שחזרה ‏`[]`.
+המחולל כוון מחדש לסכימה: ‏`suppliers.default_split_percent` כבר לא קיימת (הפיצול לכל מוצר
+ב-`supplier_split_percent`). להרצה חוזרת: לייצר את ה-SQL, לעטוף ב-`BEGIN;`/`COMMIT;` ולשלוח
+ל-`POST /v1/projects/sjojzzppqhjxvjlvnwdb/database/query` עם ‏`curl --http1.1`. **לעולם לא
+ל-`ixvwfbuvfxxsjiywhbbb`** (פרודקשן) בלי אישור.
+
+דף ‏`/merchants` הוא ‏`use cache` ולכן מציג ספק חדש רק אחרי ‏revalidate; ‏`/s/<id>` ו-`/api/search`
+מציגים אותו מיידית (נבדק).
 
 **איפוס מלא** (מחיקת ה-branch ויצירה מחדש) הוא מחיקת ‏DB ולכן עצירה לפי הכלל הקבוע;
 לא בוצע ולא יבוצע בלי אישור. הפקודות: ‏`DELETE /v1/branches/{ref}` ואז

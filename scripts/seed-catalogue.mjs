@@ -76,7 +76,7 @@ function supplierRows(set = CATALOGUE_SET) {
       (s) =>
         `  (${q(s.id)}, ${q(s.name)}, ${q(s.contactName)}, ${q(s.contactEmail)}, ${q(s.contactPhone)}, ` +
         `${q(s.whatsapp)}, ${q(s.address)}, ${q(s.city)}, ${q(s.website)}, ${q(s.businessId)}, ` +
-        `${q(s.logoUrl)}, ${s.defaultSplitPercent})`,
+        `${q(s.logoUrl)})`,
     )
     .join(',\n')
 }
@@ -100,17 +100,19 @@ function upsertSql(set = CATALOGUE_SET) {
 
 INSERT INTO public.suppliers
   (id, name, contact_name, contact_email, contact_phone, whatsapp,
-   address, city, website, business_id, logo_url, default_split_percent, status)
+   address, city, website, business_id, logo_url, status)
+-- default_split_percent is no longer a suppliers column (2026-10-14, read from
+-- the schema): the split lives per product in supplier_split_percent below.
 -- Every column is cast explicitly. A VALUES list is untyped text, and the
 -- first probe of this statement against production answered
 --   42804: column "id" is of type uuid but expression is of type text
 -- on the very first column.
 SELECT v.id::uuid, v.name, v.contact_name, v.contact_email, v.contact_phone, v.whatsapp,
-       v.address, v.city, v.website, v.business_id, v.logo_url, v.split::numeric, 'active'
+       v.address, v.city, v.website, v.business_id, v.logo_url, 'active'
 FROM (VALUES
 ${supplierRows(set)}
 ) AS v(id, name, contact_name, contact_email, contact_phone, whatsapp,
-       address, city, website, business_id, logo_url, split)
+       address, city, website, business_id, logo_url)
 ON CONFLICT (id) DO UPDATE SET
   name = EXCLUDED.name,
   contact_name = EXCLUDED.contact_name,
@@ -122,7 +124,6 @@ ON CONFLICT (id) DO UPDATE SET
   website = EXCLUDED.website,
   business_id = EXCLUDED.business_id,
   logo_url = EXCLUDED.logo_url,
-  default_split_percent = EXCLUDED.default_split_percent,
   status = 'active',
   deleted_at = NULL;
 
