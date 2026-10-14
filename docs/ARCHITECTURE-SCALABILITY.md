@@ -34,9 +34,16 @@ the primary is `eu-north-1`, Postgres 17.6, Nano compute (`selected_addons:
 `pg_replication_slots` has no physical slot, so no replica exists. The
 metrics endpoint already reports the primary's own row (lag 0, connected 0,
 `pg_stat_replication_replay_lag` NaN), which is the shape the monitor
-parses. `--setup` was NOT run: it is a recurring charge on Ofir's card, the
-same billing decision as PITR. The replica would sit in the same region as
-the primary, so it is read scale-out, not geo-routing; Supabase sends Auth,
+parses. `--setup --region=eu-north-1 --yes` WAS run once, and Supabase
+refused it: `POST read-replicas/setup -> 400: Read replicas require a
+minimum size of small`. That is the measured prerequisite, the same Small
+floor PITR has (`scripts/dr/pitr-lib.mjs`), so `planReplicaSetup` now lists
+Nano as a blocker and the command refuses before the request. Lifting it is
+`PATCH billing/addons compute_instance=ci_small` ($15/mo recurring, and a
+restart of the production database), after which the replica itself runs at
+Small ($15/mo plus 1.25x disk). Both are billing decisions left to Ofir, as
+PITR was in STEP 38. The replica would sit in the same region as the
+primary, so it is read scale-out, not geo-routing; Supabase sends Auth,
 Storage and Realtime to the primary regardless.
 
 ## 2. Graduated rate limiting (`src/lib/rate-limit/graduated.ts`)

@@ -13,8 +13,11 @@ import {
   DEFAULT_REPLICA_REGION,
   LAG_FAIL_SECONDS,
   LAG_WARN_SECONDS,
+  MIN_COMPUTE_FOR_REPLICA,
+  REPLICA_COMPUTE_FLOOR_MESSAGE,
   REPLICA_REGIONS,
   assessReplicaLag,
+  computeMeetsReplicaFloor,
   formatNtfyBody,
   formatStatus,
   isReplicaIdentifier,
@@ -255,7 +258,7 @@ describe('planReplicaSetup', () => {
   const addonsNano = { selected_addons: [] }
   const backupsNoPitr = { region: 'eu-north-1', pitr_enabled: false, walg_enabled: true }
 
-  it('plans eu-north-1 next to the primary and names the measured cost facts, not guesses', () => {
+  it('plans eu-north-1 next to the primary and blocks on Nano, as the API did on 2026-10-14', () => {
     const plan = planReplicaSetup({ project, addons: addonsNano, backups: backupsNoPitr })
     expect(plan).toMatchObject({
       region: 'eu-north-1',
@@ -263,10 +266,27 @@ describe('planReplicaSetup', () => {
       sameRegionAsPrimary: true,
       computeVariant: null,
       pitrEnabled: false,
-      blockers: [],
-      notes: ['primary_on_nano_compute', 'pitr_disabled'],
+      blockers: ['compute_below_small:ci_nano'],
+      notes: ['pitr_disabled'],
       request: { path: 'read-replicas/setup', body: { read_replica_region: 'eu-north-1' } },
     })
+    expect(REPLICA_COMPUTE_FLOOR_MESSAGE).toBe('Read replicas require a minimum size of small')
+    expect(MIN_COMPUTE_FOR_REPLICA).toBe('ci_small')
+  })
+
+  it('ranks compute against the Small floor with Nano as the no-add-on tier', () => {
+    expect(computeMeetsReplicaFloor(null)).toBe(false)
+    expect(computeMeetsReplicaFloor('ci_micro')).toBe(false)
+    expect(computeMeetsReplicaFloor('ci_small')).toBe(true)
+    expect(computeMeetsReplicaFloor('ci_large')).toBe(true)
+    const micro = planReplicaSetup({
+      project,
+      addons: {
+        selected_addons: [{ type: 'compute_instance', variant: { identifier: 'ci_micro' } }],
+      },
+      backups: backupsNoPitr,
+    })
+    expect(micro.blockers).toEqual(['compute_below_small:ci_micro'])
   })
 
   it('refuses a region outside the API enum before any request', () => {
@@ -276,7 +296,10 @@ describe('planReplicaSetup', () => {
       backups: backupsNoPitr,
       region: 'il-central-1',
     })
-    expect(plan.blockers).toEqual(['region_not_in_enum:il-central-1'])
+    expect(plan.blockers).toEqual([
+      'region_not_in_enum:il-central-1',
+      'compute_below_small:ci_nano',
+    ])
   })
 
   it('reads the compute variant when one is selected', () => {

@@ -93,7 +93,9 @@ curl -s --http1.1 -H "Authorization: Bearer $DEC" -H "Content-Type: application/
 ## 6. מתי להסלים
 
 - **כל** החלה של מיגרציה בפרודקשן, כולל היפוך: מצב קבוע מארבעת המצבים.
-- שחזור מגיבוי, הפעלת ‏PITR (‏~115 דולר לחודש), שדרוג תוכנית.
+- שחזור מגיבוי, הפעלת ‏PITR (‏~115 דולר לחודש), שדרוג תוכנית, שדרוג
+  ‏compute ל-Small (מאתחל את מסד הפרודקשן; ‏Supabase דורש אותו לפני רפליקת
+  קריאה, נמדד ‏14.10: ‏`400: Read replicas require a minimum size of small`).
 - מחיקת נתונים מכל סוג.
 - ‏RLS פתוח על ‏orders, ‏order_items, ‏payments, ‏vouchers, ‏wallet: מיידי,
   ‏SEV1, גם בלילה.

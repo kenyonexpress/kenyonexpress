@@ -27,7 +27,19 @@
  * seconds are invisible; 30 s is where a stale deal price becomes a complaint.
  */
 
+import { COMPUTE_ORDER, MIN_COMPUTE_FOR_PITR } from './pitr-lib.mjs'
+
 export const DEFAULT_REPLICA_REGION = 'eu-north-1'
+
+/** The API's own words on 2026-10-14, kept verbatim so the plan can quote them. */
+export const REPLICA_COMPUTE_FLOOR_MESSAGE = 'Read replicas require a minimum size of small'
+export const MIN_COMPUTE_FOR_REPLICA = MIN_COMPUTE_FOR_PITR
+
+/** True when the primary's compute add-on is Small or larger; null (no add-on) is Nano. */
+export function computeMeetsReplicaFloor(computeVariant) {
+  const rank = (v) => COMPUTE_ORDER.indexOf(v ?? 'ci_nano')
+  return rank(computeVariant) >= rank(MIN_COMPUTE_FOR_REPLICA)
+}
 
 /** `SetUpReadReplicaBody.read_replica_region` enum, api.supabase.com/api/v1-json 2026-10-14. */
 export const REPLICA_REGIONS = [
@@ -251,7 +263,12 @@ export function planReplicaSetup({ project, addons, backups, region = DEFAULT_RE
   const computeVariant = compute?.variant?.identifier ?? null
   const pitrEnabled = backups?.pitr_enabled ?? null
   const notes = []
-  if (computeVariant === null) notes.push('primary_on_nano_compute')
+  // Measured 2026-10-14: POST read-replicas/setup on this Nano project answered
+  // `400: Read replicas require a minimum size of small`. The floor is the same
+  // one PITR has, so the compute order in pitr-lib.mjs is the one source.
+  if (!computeMeetsReplicaFloor(computeVariant)) {
+    blockers.push(`compute_below_small:${computeVariant ?? 'ci_nano'}`)
+  }
   if (pitrEnabled === false) notes.push('pitr_disabled')
   return {
     region,

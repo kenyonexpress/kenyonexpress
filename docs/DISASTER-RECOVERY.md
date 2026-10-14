@@ -75,6 +75,12 @@ node scripts/dr/read-replica.mjs --lag --keychain --no-notify        # מה ש-r
 node scripts/dr/read-replica.mjs --setup --region=eu-north-1 --yes   # חיוב חוזר
 ```
 
+‏`--setup --yes` הורץ פעם אחת ב-14.10 ו-Supabase סירב:
+‏`400: Read replicas require a minimum size of small`. כלומר התנאי המוקדם
+הוא אותו ‏Small של ‏PITR (‏$15 לחודש ואתחול של מסד הפרודקשן), ואחריו הרפליקה
+עצמה רצה ב-Small (‏$15 לחודש ועוד ‏1.25x דיסק). שתי החלטות חיוב של אופיר;
+הפקודה מסרבת עכשיו לפני הבקשה כשה-compute מתחת ל-Small.
+
 ‏`.github/workflows/replica-lag.yml` מודד כל ‏30 דקות ומדווח ‏`none` עד
 שתהיה רפליקה; ‏fail כשהאפליקציה מצביעה על רפליקה שהראשי לא משדר אליה.
 
