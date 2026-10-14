@@ -1,0 +1,151 @@
+Already up to date
+Done in 191ms using pnpm v11.1.2
+
+Running 8 tests using 2 workers
+
+[1A[2K[1/8] [chromium] › e2e/wishlist-page.spec.ts:125:7 › wishlist page (UX20) › move to cart asks the cart first, then the card leaves and the header counts it
+[1A[2K[2/8] [chromium] › e2e/wishlist-page.spec.ts:62:7 › wishlist page (UX20) › the list is a grid of product cards with a toolbar
+[1A[2K  1) [chromium] › e2e/wishlist-page.spec.ts:62:7 › wishlist page (UX20) › the list is a grid of product cards with a toolbar 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveAttribute[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  getByRole('button', { name: /לרשימת המשאלות/ }).filter({ hasText: /שמירה|נשמר/ }).first()
+    Expected: [32m"ה[7mסר מ[27mרשימת המשאלות"[39m
+    Received: [31m"ה[7mוסף ל[27mרשימת המשאלות"[39m
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toHaveAttribute" with timeout 5000ms[22m
+    [2m  - waiting for getByRole('button', { name: /לרשימת המשאלות/ }).filter({ hasText: /שמירה|נשמר/ }).first()[22m
+    [2m    2 × locator resolved to <button disabled type="button" aria-pressed="false" aria-label="הוסף לרשימת המשאלות" class="tap-area tap-area--36 inline-flex items-center gap-1.5 text-sm font-semibold text-heading transition-colors hover:text-price disabled:opacity-50">…</button>[22m
+    [2m      - unexpected value "הוסף לרשימת המשאלות"[22m
+    [2m    4 × locator resolved to <button type="button" aria-pressed="false" aria-label="הוסף לרשימת המשאלות" class="tap-area tap-area--36 inline-flex items-center gap-1.5 text-sm font-semibold text-heading transition-colors hover:text-price disabled:opacity-50">…</button>[22m
+    [2m      - unexpected value "הוסף לרשימת המשאלות"[22m
+
+
+      46 |       if ((await heart.getAttribute('aria-label')) === 'הוסף לרשימת המשאלות') {
+      47 |         await heart.click()
+    > 48 |         await expect(heart).toHaveAttribute('aria-label', 'הסר מרשימת המשאלות')
+         |                             ^
+      49 |       }
+      50 |     }
+      51 |     session = (await page.context().storageState()).cookies
+        at /Users/ofir/kenyonexpress-autopilot/e2e/wishlist-page.spec.ts:48:29
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/wishlist-page-wishlist-pag-29c2a-roduct-cards-with-a-toolbar-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/wishlist-page-wishlist-pag-29c2a-roduct-cards-with-a-toolbar-chromium/error-context.md
+
+
+[1A[2K[3/8] [chromium] › e2e/wishlist-page.spec.ts:96:7 › wishlist page (UX20) › remove leaves with an exit, announces, and the undo puts it back
+[1A[2K  2) [chromium] › e2e/wishlist-page.spec.ts:125:7 › wishlist page (UX20) › move to cart asks the cart first, then the card leaves and the header counts it 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveAttribute[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  getByRole('button', { name: /לרשימת המשאלות/ }).filter({ hasText: /שמירה|נשמר/ }).first()
+    Expected: [32m"ה[7mסר מ[27mרשימת המשאלות"[39m
+    Received: [31m"ה[7mוסף ל[27mרשימת המשאלות"[39m
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toHaveAttribute" with timeout 5000ms[22m
+    [2m  - waiting for getByRole('button', { name: /לרשימת המשאלות/ }).filter({ hasText: /שמירה|נשמר/ }).first()[22m
+    [2m    2 × locator resolved to <button disabled type="button" aria-pressed="false" aria-label="הוסף לרשימת המשאלות" class="tap-area tap-area--36 inline-flex items-center gap-1.5 text-sm font-semibold text-heading transition-colors hover:text-price disabled:opacity-50">…</button>[22m
+    [2m      - unexpected value "הוסף לרשימת המשאלות"[22m
+    [2m    4 × locator resolved to <button type="button" aria-pressed="false" aria-label="הוסף לרשימת המשאלות" class="tap-area tap-area--36 inline-flex items-center gap-1.5 text-sm font-semibold text-heading transition-colors hover:text-price disabled:opacity-50">…</button>[22m
+    [2m      - unexpected value "הוסף לרשימת המשאלות"[22m
+
+
+      46 |       if ((await heart.getAttribute('aria-label')) === 'הוסף לרשימת המשאלות') {
+      47 |         await heart.click()
+    > 48 |         await expect(heart).toHaveAttribute('aria-label', 'הסר מרשימת המשאלות')
+         |                             ^
+      49 |       }
+      50 |     }
+      51 |     session = (await page.context().storageState()).cookies
+        at /Users/ofir/kenyonexpress-autopilot/e2e/wishlist-page.spec.ts:48:29
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/wishlist-page-wishlist-pag-4ddc1-es-and-the-header-counts-it-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/wishlist-page-wishlist-pag-4ddc1-es-and-the-header-counts-it-chromium/error-context.md
+
+
+[1A[2K[4/8] [chromium] › e2e/wishlist-page.spec.ts:171:7 › wishlist page (UX20) › the share button either copies a link or says the feature is not open
+[1A[2K[5/8] [mobile-chrome] › e2e/wishlist-page.spec.ts:125:7 › wishlist page (UX20) › move to cart asks the cart first, then the card leaves and the header counts it
+[1A[2K[6/8] [mobile-chrome] › e2e/wishlist-page.spec.ts:62:7 › wishlist page (UX20) › the list is a grid of product cards with a toolbar
+[1A[2K  3) [mobile-chrome] › e2e/wishlist-page.spec.ts:62:7 › wishlist page (UX20) › the list is a grid of product cards with a toolbar 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveAttribute[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator: getByRole('button', { name: /לרשימת המשאלות/ }).filter({ hasText: /שמירה|נשמר/ }).first()
+    Expected: [32m"הסר מרשימת המשאלות"[39m
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toHaveAttribute" with timeout 5000ms[22m
+    [2m  - waiting for getByRole('button', { name: /לרשימת המשאלות/ }).filter({ hasText: /שמירה|נשמר/ }).first()[22m
+    [2m    9 × locator resolved to <button disabled type="button" aria-pressed="false" aria-label="הוסף לרשימת המשאלות" class="tap-area tap-area--36 inline-flex items-center gap-1.5 text-sm font-semibold text-heading transition-colors hover:text-price disabled:opacity-50">…</button>[22m
+    [2m      - unexpected value "הוסף לרשימת המשאלות"[22m
+
+
+      46 |       if ((await heart.getAttribute('aria-label')) === 'הוסף לרשימת המשאלות') {
+      47 |         await heart.click()
+    > 48 |         await expect(heart).toHaveAttribute('aria-label', 'הסר מרשימת המשאלות')
+         |                             ^
+      49 |       }
+      50 |     }
+      51 |     session = (await page.context().storageState()).cookies
+        at /Users/ofir/kenyonexpress-autopilot/e2e/wishlist-page.spec.ts:48:29
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/wishlist-page-wishlist-pag-29c2a-roduct-cards-with-a-toolbar-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/wishlist-page-wishlist-pag-29c2a-roduct-cards-with-a-toolbar-mobile-chrome/error-context.md
+
+
+[1A[2K[7/8] [mobile-chrome] › e2e/wishlist-page.spec.ts:96:7 › wishlist page (UX20) › remove leaves with an exit, announces, and the undo puts it back
+[1A[2K  4) [mobile-chrome] › e2e/wishlist-page.spec.ts:125:7 › wishlist page (UX20) › move to cart asks the cart first, then the card leaves and the header counts it 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveAttribute[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  getByRole('button', { name: /לרשימת המשאלות/ }).filter({ hasText: /שמירה|נשמר/ }).first()
+    Expected: [32m"ה[7mסר מ[27mרשימת המשאלות"[39m
+    Received: [31m"ה[7mוסף ל[27mרשימת המשאלות"[39m
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toHaveAttribute" with timeout 5000ms[22m
+    [2m  - waiting for getByRole('button', { name: /לרשימת המשאלות/ }).filter({ hasText: /שמירה|נשמר/ }).first()[22m
+    [2m    4 × locator resolved to <button disabled type="button" aria-pressed="false" aria-label="הוסף לרשימת המשאלות" class="tap-area tap-area--36 inline-flex items-center gap-1.5 text-sm font-semibold text-heading transition-colors hover:text-price disabled:opacity-50">…</button>[22m
+    [2m      - unexpected value "הוסף לרשימת המשאלות"[22m
+
+
+      46 |       if ((await heart.getAttribute('aria-label')) === 'הוסף לרשימת המשאלות') {
+      47 |         await heart.click()
+    > 48 |         await expect(heart).toHaveAttribute('aria-label', 'הסר מרשימת המשאלות')
+         |                             ^
+      49 |       }
+      50 |     }
+      51 |     session = (await page.context().storageState()).cookies
+        at /Users/ofir/kenyonexpress-autopilot/e2e/wishlist-page.spec.ts:48:29
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/wishlist-page-wishlist-pag-4ddc1-es-and-the-header-counts-it-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/wishlist-page-wishlist-pag-4ddc1-es-and-the-header-counts-it-mobile-chrome/error-context.md
+
+
+[1A[2K[8/8] [mobile-chrome] › e2e/wishlist-page.spec.ts:171:7 › wishlist page (UX20) › the share button either copies a link or says the feature is not open
+[1A[2K  4 failed
+    [chromium] › e2e/wishlist-page.spec.ts:62:7 › wishlist page (UX20) › the list is a grid of product cards with a toolbar 
+    [chromium] › e2e/wishlist-page.spec.ts:125:7 › wishlist page (UX20) › move to cart asks the cart first, then the card leaves and the header counts it 
+    [mobile-chrome] › e2e/wishlist-page.spec.ts:62:7 › wishlist page (UX20) › the list is a grid of product cards with a toolbar 
+    [mobile-chrome] › e2e/wishlist-page.spec.ts:125:7 › wishlist page (UX20) › move to cart asks the cart first, then the card leaves and the header counts it 
+  4 did not run

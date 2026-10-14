@@ -1,0 +1,19 @@
+Already up to date
+Done in 192ms using pnpm v11.1.2
+$ next start
+▲ Next.js 16.3.3
+- Local:         http://localhost:3361
+- Network:       http://100.84.130.122:3361
+✓ Ready in 115ms
+✓ Running next.config.ts took 377ms
+{"ts":"2026-10-14T14:38:51.236Z","level":"warn","event":"env.checks_skipped","request_id":null,"detail":"ALLOW_INCOMPLETE_ENV=true. Correct for a local `next start`; wrong anywhere a customer can reach."}
+{"ts":"2026-10-14T14:38:52.492Z","level":"info","event":"env.probe_ok","request_id":null,"checked":2}
+{"ts":"2026-10-14T14:38:58.518Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"price_history","status":200,"duration_ms":360,"threshold_ms":300}
+(node:21328) ExperimentalWarning: The supports Web Crypto API method is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:21328) ExperimentalWarning: The ML-DSA-44 Web Crypto API algorithm is an experimental feature and might change at any time
+{"ts":"2026-10-14T14:39:01.074Z","level":"warn","event":"db.query_slow","request_id":"eeae134d-a142-4409-9b8e-a99889c2df2b","route":"action","method":"POST","target":"rpc:check_rate_limit","status":200,"duration_ms":309,"threshold_ms":300}
+{"ts":"2026-10-14T14:39:01.329Z","level":"warn","event":"db.query_slow","request_id":"9df4c2fe-fb22-4882-8fb5-e91986389ba9","route":"action","method":"POST","target":"rpc:check_rate_limit","status":200,"duration_ms":837,"threshold_ms":300}
+{"ts":"2026-10-14T14:39:01.835Z","level":"warn","event":"db.query_slow","request_id":"9df4c2fe-fb22-4882-8fb5-e91986389ba9","route":"action","method":"POST","target":"rpc:check_rate_limit","status":200,"duration_ms":503,"threshold_ms":300}
+{"ts":"2026-10-14T14:39:21.870Z","level":"warn","event":"db.query_slow","request_id":"fc40ee35-44ee-4a65-9917-355a4a763126","route":"action","method":"POST","target":"rpc:check_rate_limit","status":200,"duration_ms":699,"threshold_ms":300}
+{"ts":"2026-10-14T14:39:21.874Z","level":"warn","event":"db.query_slow","request_id":"a67ae048-a291-4547-ae56-fcf3b3353693","route":"action","method":"POST","target":"rpc:check_rate_limit","status":200,"duration_ms":707,"threshold_ms":300}

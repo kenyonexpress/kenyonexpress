@@ -1,0 +1,345 @@
+{
+  "380": {
+    "status": 200,
+    "landed": "/account/wishlist",
+    "publicWishlistStatus": 410,
+    "seeded": [
+      {
+        "slug": "e2e-test-physical",
+        "before": "הוסף לרשימת המשאלות",
+        "after": "הוסף לרשימת המשאלות"
+      },
+      {
+        "slug": "e2e-test-coupon",
+        "before": "הוסף לרשימת המשאלות",
+        "after": "הוסף לרשימת המשאלות"
+      },
+      {
+        "slug": "6253",
+        "before": "הוסף לרשימת המשאלות",
+        "after": "הוסף לרשימת המשאלות"
+      }
+    ],
+    "initial": {
+      "h1": "רשימת המשאלות",
+      "count": 2,
+      "columns": 1,
+      "list": {
+        "x": 15,
+        "y": 1365.2,
+        "w": 350,
+        "h": 332
+      },
+      "listClass": "grid gap-4 sm:grid-cols-2 lg:grid-cols-3",
+      "card": {
+        "x": 15,
+        "y": 1365.2,
+        "w": 350,
+        "h": 158
+      },
+      "cardAttrs": {
+        "class": "flex flex-col rounded-lg border border-border-alt bg-white p-3"
+      },
+      "thumb": null,
+      "thumbSizes": null,
+      "name": "קופון בדיקות אוטומטיות",
+      "price": "⁦400 ₪⁩",
+      "savedAt": false,
+      "move": {
+        "text": "העברה לסל",
+        "rect": {
+          "x": 76,
+          "y": 1472.2,
+          "w": 276,
+          "h": 36
+        },
+        "disabled": false
+      },
+      "remove": {
+        "label": "הסרת קופון בדיקות אוטומטיות מהרשימה",
+        "rect": {
+          "x": 28,
+          "y": 1470.2,
+          "w": 40,
+          "h": 40
+        },
+        "disabled": false
+      },
+      "toolbar": [
+        {
+          "tag": "BUTTON",
+          "text": "העברת הכל לסל (2)",
+          "rect": {
+            "x": 15,
+            "y": 1313.2,
+            "w": 173.5,
+            "h": 36
+          }
+        }
+      ],
+      "countText": "2 מוצרים שמורים",
+      "share": null,
+      "live": [],
+      "pageHeight": 2347,
+      "scrollWidth": 380,
+      "moveButtons": [
+        {
+          "text": "העברה לסל",
+          "disabled": false
+        },
+        {
+          "text": "העברה לסל",
+          "disabled": false
+        }
+      ]
+    },
+    "midRemove": {
+      "present": true,
+      "leaving": null,
+      "busy": null,
+      "animation": "none",
+      "duration": "0s",
+      "opacity": "1",
+      "maxHeight": "none",
+      "buttonsDisabled": true
+    },
+    "afterRemove": {
+      "count": 1,
+      "toasts": [],
+      "undo": null,
+      "live": []
+    },
+    "move": {
+      "countBefore": 1,
+      "mid": {
+        "present": false
+      },
+      "countAfter": 0,
+      "cartBefore": "1",
+      "cartAfter": "1",
+      "toasts": [],
+      "live": []
+    },
+    "errors": []
+  },
+  "768": {
+    "status": 200,
+    "landed": "/account/wishlist",
+    "publicWishlistStatus": 410,
+    "seeded": [
+      {
+        "slug": "e2e-test-physical",
+        "before": "הוסף לרשימת המשאלות",
+        "after": "הוסף לרשימת המשאלות"
+      },
+      {
+        "slug": "e2e-test-coupon",
+        "before": "הוסף לרשימת המשאלות",
+        "after": "הוסף לרשימת המשאלות"
+      },
+      {
+        "slug": "6253",
+        "before": "הוסף לרשימת המשאלות",
+        "after": "הוסף לרשימת המשאלות"
+      }
+    ],
+    "initial": {
+      "h1": "רשימת המשאלות",
+      "count": 3,
+      "columns": 2,
+      "list": {
+        "x": 15,
+        "y": 1308.8,
+        "w": 738,
+        "h": 332
+      },
+      "listClass": "grid gap-4 sm:grid-cols-2 lg:grid-cols-3",
+      "card": {
+        "x": 392,
+        "y": 1308.8,
+        "w": 361,
+        "h": 158
+      },
+      "cardAttrs": {
+        "class": "flex flex-col rounded-lg border border-border-alt bg-white p-3"
+      },
+      "thumb": {
+        "x": 660,
+        "y": 1321.8,
+        "w": 80,
+        "h": 80
+      },
+      "thumbSizes": "80px",
+      "name": "חבילת חופשה למאלדיבים - 2 טיסות",
+      "price": "⁦1,200 ₪⁩",
+      "savedAt": false,
+      "move": {
+        "text": "העברה לסל",
+        "rect": {
+          "x": 453,
+          "y": 1415.8,
+          "w": 287,
+          "h": 36
+        },
+        "disabled": false
+      },
+      "remove": {
+        "label": "הסרת חבילת חופשה למאלדיבים - 2 טיסות מהרשימה",
+        "rect": {
+          "x": 405,
+          "y": 1413.8,
+          "w": 40,
+          "h": 40
+        },
+        "disabled": false
+      },
+      "toolbar": [
+        {
+          "tag": "BUTTON",
+          "text": "העברת הכל לסל (3)",
+          "rect": {
+            "x": 15,
+            "y": 1256.8,
+            "w": 173.5,
+            "h": 36
+          }
+        }
+      ],
+      "countText": "3 מוצרים שמורים",
+      "share": null,
+      "live": [],
+      "pageHeight": 2291,
+      "scrollWidth": 768,
+      "moveButtons": [
+        {
+          "text": "העברה לסל",
+          "disabled": false
+        },
+        {
+          "text": "העברה לסל",
+          "disabled": false
+        },
+        {
+          "text": "העברה לסל",
+          "disabled": false
+        }
+      ]
+    },
+    "midRemove": {
+      "present": true,
+      "leaving": null,
+      "busy": null,
+      "animation": "none",
+      "duration": "0s",
+      "opacity": "1",
+      "maxHeight": "none",
+      "buttonsDisabled": true
+    },
+    "afterRemove": {
+      "count": 3,
+      "toasts": [],
+      "undo": null,
+      "live": []
+    },
+    "move": null,
+    "errors": []
+  },
+  "1440": {
+    "status": 200,
+    "landed": "/account/wishlist",
+    "publicWishlistStatus": 410,
+    "seeded": [
+      {
+        "slug": "e2e-test-physical",
+        "before": "הוסף לרשימת המשאלות",
+        "after": "הוסף לרשימת המשאלות"
+      },
+      {
+        "slug": "e2e-test-coupon",
+        "before": "הוסף לרשימת המשאלות",
+        "after": "הוסף לרשימת המשאלות"
+      },
+      {
+        "slug": "6253",
+        "before": "הוסף לרשימת המשאלות",
+        "after": "הוסף לרשימת המשאלות"
+      }
+    ],
+    "initial": {
+      "h1": "רשימת המשאלות",
+      "count": 1,
+      "columns": 1,
+      "list": {
+        "x": 75,
+        "y": 417.3,
+        "w": 1000,
+        "h": 158
+      },
+      "listClass": "grid gap-4 sm:grid-cols-2 lg:grid-cols-3",
+      "card": {
+        "x": 752.3,
+        "y": 417.3,
+        "w": 322.7,
+        "h": 158
+      },
+      "cardAttrs": {
+        "class": "flex flex-col rounded-lg border border-border-alt bg-white p-3"
+      },
+      "thumb": null,
+      "thumbSizes": null,
+      "name": "מוצר פיזי לבדיקות אוטומטיות",
+      "price": "⁦100 ₪⁩",
+      "savedAt": false,
+      "move": {
+        "text": "העברה לסל",
+        "rect": {
+          "x": 813.3,
+          "y": 524.3,
+          "w": 248.7,
+          "h": 36
+        },
+        "disabled": false
+      },
+      "remove": {
+        "label": "הסרת מוצר פיזי לבדיקות אוטומטיות מהרשימה",
+        "rect": {
+          "x": 765.3,
+          "y": 522.3,
+          "w": 40,
+          "h": 40
+        },
+        "disabled": false
+      },
+      "toolbar": [],
+      "countText": "מוצר אחד שמור",
+      "share": null,
+      "live": [],
+      "pageHeight": 1795,
+      "scrollWidth": 1440,
+      "moveButtons": [
+        {
+          "text": "העברה לסל",
+          "disabled": false
+        }
+      ]
+    },
+    "midRemove": {
+      "present": true,
+      "leaving": null,
+      "busy": null,
+      "animation": "none",
+      "duration": "0s",
+      "opacity": "1",
+      "maxHeight": "none",
+      "buttonsDisabled": true
+    },
+    "afterRemove": {
+      "count": 1,
+      "toasts": [],
+      "undo": null,
+      "live": []
+    },
+    "move": null,
+    "errors": []
+  }
+}

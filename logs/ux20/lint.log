@@ -1,0 +1,36 @@
+Already up to date
+Done in 192ms using pnpm v11.1.2
+$ biome check . && node scripts/tokens-gate.mjs && node scripts/copy-gate.mjs && node scripts/asset-gate.mjs && node scripts/media-ingest/blur-manifest.mjs --check
+./logs/ux20/probe.mjs format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+    107 107 │         await page.waitForTimeout(800)
+    108 108 │       }
+    109     │ - ····seeded.push({·slug,·before:·label,·after:·await·heart.getAttribute('aria-label').catch(()·=>·null)·})
+        109 │ + ····seeded.push({
+        110 │ + ······slug,
+        111 │ + ······before:·label,
+        112 │ + ······after:·await·heart.getAttribute('aria-label').catch(()·=>·null),
+        113 │ + ····})
+    110 114 │     }
+    111 115 │   
+    ······· │ 
+    123 127 │     await page.waitForTimeout(400)
+    124 128 │     const initial = await page.evaluate(shapeFn)
+    125     │ - ··initial.moveButtons·=·await·page.locator('ul·li·button',·{·hasText:·/לסל|אזל|זמין/·}).evaluateAll((bs)·=>·bs.map((b)·=>·({·text:·b.textContent.trim(),·disabled:·b.disabled·})))
+        129 │ + ··initial.moveButtons·=·await·page
+        130 │ + ····.locator('ul·li·button',·{·hasText:·/לסל|אזל|זמין/·})
+        131 │ + ····.evaluateAll((bs)·=>·bs.map((b)·=>·({·text:·b.textContent.trim(),·disabled:·b.disabled·})))
+    126 132 │     await page.screenshot({ path: `logs/ux20/${TAG}-${width}.png`, fullPage: true })
+    127 133 │   
+  
+
+Checked 2499 files in 830ms. No fixes applied.
+Found 1 error.
+check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Some errors were emitted while running checks.
+  
+
+[ELIFECYCLE] Command failed with exit code 1.
