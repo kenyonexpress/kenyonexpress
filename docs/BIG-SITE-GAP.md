@@ -23,8 +23,8 @@ production has it.
 | | main | prod |
 |---|---|---|
 | EXISTS | 9 | 9 |
-| PARTIAL | 14 | 16 |
-| MISSING | 7 | 5 |
+| PARTIAL | 15 | 16 |
+| MISSING | 6 | 5 |
 
 Nine features are further along on prod than on main: recently viewed,
 wishlist, social proof, offline redemption queue, supplier wizard, admin KPIs,
@@ -45,7 +45,7 @@ what main has.
 | 2 | Facets: price, city, category tree, discount, supplier | Amazon, Zap, Booking | EXISTS | PARTIAL | 0 | closed 2026-10-14 on the search page |
 | 3 | Sort: relevance, price, discount, newest, rating | all | PARTIAL | PARTIAL | 1 | discount and search-page control closed 2026-10-14; rating needs pending 235 |
 | 4 | Infinite scroll, 24 per page, scroll restoration | TikTok Shop, Lazada, Wolt | EXISTS | MISSING | 0 | closed 2026-10-14 |
-| 5 | Recently viewed | Amazon, Booking | MISSING | PARTIAL | 1.5 | port, then add home rail. See note B |
+| 5 | Recently viewed | Amazon, Booking | PARTIAL | PARTIAL | 0.5 | per-browser rail on product and home closed 2026-10-14; per-account history needs a table. See note B |
 | 6 | Wishlist | Amazon, Lazada, Booking | PARTIAL | EXISTS | 1 | port hearts and provider |
 | 7 | Price-drop alerts | Zap, Amazon | EXISTS | PARTIAL | 0 | none on main |
 | 8 | Social proof | Groupon, Booking | MISSING | EXISTS | 1 | port, add a "today" window |
@@ -202,6 +202,18 @@ The search page keeps its single page of 48.
 on the product page, localStorage key `ke_recently_viewed`, 12 items, hydrated
 by `src/server/actions/recently-viewed.ts`. Missing on prod: home rail,
 per-account history.
+
+main, 2026-10-14: the three production files are ported and the rail has two
+placements. On a product page it records the view and lists the others. On the
+home page it only reads, shows one row of four, and sits below the deals grid
+so that only the footer moves when it appears. Verified in Chromium on a built
+server with live data: nothing on a first visit; after three product views
+the third product's page lists the other two and the home page shows three
+cards under the grid (rail top y4966, grid bottom y4906). Home parity gate
+after the change: 10.93 / 10.61 / 7.81 at 380 / 768 / 1440, all under 11.
+Still open, and why the row stays PARTIAL: history is per browser. Following
+a shopper across devices needs a table and a merge on sign-in, which is a
+migration and waits for approval.
 
 **6. Wishlist.** main: `wishlists` with owner-only RLS
 (`migrations/applied/154_reviews_wishlist.sql`), `toggleWishlist` in

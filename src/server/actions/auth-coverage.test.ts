@@ -71,6 +71,13 @@ const PUBLIC_ACTIONS = new Map<string, string>([
   // The recipient of a printed gift card usually has no account yet; the
   // 78-bit bearer code is the authorisation, rate limited per IP in the body.
   ['gift-cards.ts:checkGiftCardBalance', 'bearer code is the authorisation, rate limited'],
+  // Read-only and per-browser: the id list lives in the caller's own
+  // localStorage and never identifies an account, so there is nothing here a
+  // session check would protect.
+  [
+    'recently-viewed.ts:getRecentlyViewedProducts',
+    "public catalogue read, ids come from the caller's own localStorage",
+  ],
 ])
 
 function filesUnder(dir: string): string[] {

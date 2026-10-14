@@ -4,7 +4,7 @@ Updated: 2026-10-14 (Asia/Bangkok). Queue: FINAL-CLOSEOUT L1 to L16, issued 14.1
 
 ## Current Position
 
-**המשך מ: שלב L10 (BUILD GAPS), שורה 5 (נצפו לאחרונה, פורט מפרוד + פס בדף הבית), ואז 9, 10, 6, 8. סגורות: 2, 4, 18, 24, 28, 30, 29 (אדמין), 3 (חוץ מדירוג ופופולריות, ממתינות ל-235)**
+**המשך מ: שלב L10 (BUILD GAPS), שורה 9 (טיימרי דחיפות), ואז 10, 6, 8. סגורות: 2, 4, 18, 24, 28, 30, 29 (אדמין), 3 (חוץ מדירוג ופופולריות), 5 (פר-דפדפן; פר-חשבון ממתין למיגרציה)**
 
 The checklist with evidence is `docs/FINAL-CLOSEOUT.md`. Decisions taken alone
 are `docs/DECISIONS.md` D-42 onward.
@@ -60,6 +60,11 @@ Closed so far, each with type-check, lint, test green (510 files, 5949 passed):
   `generateMetadata` and `generateStaticParams` from the category page. Tests,
   type-check and lint all passed without them. Restored from git before
   commit; every removed line of both pages was then read.
+- Row 5, recently viewed: ported from prod, plus a home rail below the deals
+  grid. 517 files, 6052 tests, build 0. Chromium, built server: empty on a
+  first visit, two cards on the third product viewed, three on home. Home
+  parity gate 10.93 / 10.61 / 7.81. Row stays PARTIAL: per-account history
+  needs a table (migration, not written).
 - Disk: the build died once with ENOSPC. Later the temp directory was cleared
   by something else and free space is 20 GB. 658 MB free after a clean rebuild.
   Nothing outside this checkout's own `.next` was removed. 1.6 GB sits in
