@@ -63,6 +63,10 @@ const ANCHORS: ReadonlyArray<readonly [label: string, selector: string]> = [
 const LTR_ALLOWED: ReadonlyArray<readonly [reason: string, selector: string]> = [
   // "-37%": under an RTL base direction the minus lands after the number.
   ['discount badge', '.discount_per'],
+  // "-50%" on the deal of the day (UX08): the same badge, the same reason; the
+  // ltr sits on an inner span because `end-0` on the badge resolves against
+  // its own direction.
+  ['deal of the day badge', '[data-deal-badge] span'],
   // "12:34:56" / "--:--:--": the countdown is a clock, not a sentence.
   ['deal countdown', 'output'],
   // Addresses are Latin and read left to right in every locale.

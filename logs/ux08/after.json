@@ -1,0 +1,449 @@
+{
+  "380": {
+    "present": true,
+    "section": {
+      "x": 0,
+      "y": 11.98,
+      "w": 380,
+      "h": 639
+    },
+    "card": {
+      "rect": {
+        "x": 25,
+        "y": 11.98,
+        "w": 330,
+        "h": 599
+      },
+      "borderRadius": "12px",
+      "boxShadow": "none",
+      "borderTopWidth": "1px",
+      "borderTopColor": "rgb(221, 221, 221)",
+      "backgroundColor": "rgb(255, 255, 255)",
+      "flexDirection": "column",
+      "gap": "16px",
+      "padding": "16px"
+    },
+    "heading": {
+      "text": "הדיל של היום",
+      "rect": {
+        "x": 208.25,
+        "y": 28.98,
+        "w": 129.75,
+        "h": 33
+      },
+      "fontSize": "22px",
+      "fontWeight": "700",
+      "lineHeight": "33px",
+      "fontFamily": "Heebo, \"Heebo Fallback\", Arial, sans-serif",
+      "color": "rgb(51, 62, 72)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderRadius": "0px",
+      "padding": "0px",
+      "direction": "rtl",
+      "letterSpacing": "normal"
+    },
+    "countdown": {
+      "html": "<p data-deal-countdown=\"true\" class=\"m-0 inline-flex min-h-deal-countdown max-w-full items-center gap-2.5 rounded-full bg-brand-primary px-deal-countdown-pad py-1 text-body-lg font-bold text-heading\"><span>מסתיים בעוד:</span><output dir=\"ltr\" aria-live=\"off\" class=\"tabular-nums\">14:46:38</output></p>",
+      "rect": {
+        "x": 111.83,
+        "y": 69.98,
+        "w": 226.17,
+        "h": 36
+      },
+      "label": "מסתיים בעוד:",
+      "value": "14:46:38",
+      "tag": "OUTPUT",
+      "box": {
+        "x": 145.83,
+        "y": 76.73,
+        "w": 60.17,
+        "h": 22.5
+      },
+      "fontSize": "15px",
+      "fontWeight": "700",
+      "lineHeight": "22.5px",
+      "fontFamily": "Heebo, \"Heebo Fallback\", Arial, sans-serif",
+      "color": "rgb(51, 62, 72)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderRadius": "0px",
+      "padding": "0px",
+      "direction": "ltr",
+      "letterSpacing": "normal",
+      "ariaLive": "off"
+    },
+    "badge": {
+      "text": "-50%",
+      "rect": {
+        "x": 42,
+        "y": 297.98,
+        "w": 47.31,
+        "h": 28
+      },
+      "fontSize": "12px",
+      "fontWeight": "700",
+      "lineHeight": "24px",
+      "fontFamily": "Heebo, \"Heebo Fallback\", Arial, sans-serif",
+      "color": "rgb(255, 255, 255)",
+      "backgroundColor": "rgb(238, 0, 0)",
+      "borderRadius": "4px",
+      "padding": "2px 10px",
+      "direction": "rtl",
+      "letterSpacing": "normal",
+      "inPictureBox": true
+    },
+    "prices": {
+      "text": "⁦250.00 ₪⁩⁦500.00 ₪⁩50% הנחה",
+      "rect": {
+        "x": 42,
+        "y": 193.98,
+        "w": 296,
+        "h": 32
+      }
+    },
+    "picture": {
+      "rect": {
+        "x": 42,
+        "y": 297.98,
+        "w": 296,
+        "h": 296
+      },
+      "borderRadius": "12px",
+      "overflow": "hidden",
+      "backgroundColor": "rgb(255, 255, 255)",
+      "position": "relative",
+      "img": {
+        "natural": 320,
+        "rect": {
+          "x": 42,
+          "y": 297.98,
+          "w": 296,
+          "h": 296
+        },
+        "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fproducts%2FWhatsApp-Image-2023-12-22-at-15.27.50-600x600.webp&w=640&q="
+      }
+    },
+    "cta": {
+      "tag": "BUTTON",
+      "text": "הוסף לעגלה",
+      "href": null,
+      "rect": {
+        "x": 190.89,
+        "y": 237.98,
+        "w": 147.11,
+        "h": 44
+      },
+      "fontSize": "14px",
+      "fontWeight": "700",
+      "lineHeight": "20px",
+      "fontFamily": "Heebo, \"Heebo Fallback\", Arial, sans-serif",
+      "color": "rgb(51, 62, 72)",
+      "backgroundColor": "rgb(254, 215, 0)",
+      "borderRadius": "3.35544e+07px",
+      "padding": "0px 24px",
+      "direction": "rtl",
+      "letterSpacing": "normal",
+      "minHeight": "44px",
+      "transitionProperty": "opacity",
+      "animationName": "none"
+    },
+    "ctaCount": 1
+  },
+  "768": {
+    "present": true,
+    "section": {
+      "x": 0,
+      "y": 226.3,
+      "w": 768,
+      "h": 330
+    },
+    "card": {
+      "rect": {
+        "x": 49,
+        "y": 226.3,
+        "w": 670,
+        "h": 290
+      },
+      "borderRadius": "12px",
+      "boxShadow": "none",
+      "borderTopWidth": "1px",
+      "borderTopColor": "rgb(221, 221, 221)",
+      "backgroundColor": "rgb(255, 255, 255)",
+      "flexDirection": "row",
+      "gap": "32px",
+      "padding": "16px"
+    },
+    "heading": {
+      "text": "הדיל של היום",
+      "rect": {
+        "x": 572.25,
+        "y": 244.8,
+        "w": 129.75,
+        "h": 33
+      },
+      "fontSize": "22px",
+      "fontWeight": "700",
+      "lineHeight": "33px",
+      "fontFamily": "Heebo, \"Heebo Fallback\", Arial, sans-serif",
+      "color": "rgb(51, 62, 72)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderRadius": "0px",
+      "padding": "0px",
+      "direction": "rtl",
+      "letterSpacing": "normal"
+    },
+    "countdown": {
+      "html": "<p data-deal-countdown=\"true\" class=\"m-0 inline-flex min-h-deal-countdown max-w-full items-center gap-2.5 rounded-full bg-brand-primary px-deal-countdown-pad py-1 text-body-lg font-bold text-heading\"><span>מסתיים בעוד:</span><output dir=\"ltr\" aria-live=\"off\" class=\"tabular-nums\">14:46:35</output></p>",
+      "rect": {
+        "x": 475.83,
+        "y": 285.8,
+        "w": 226.17,
+        "h": 36
+      },
+      "label": "מסתיים בעוד:",
+      "value": "14:46:35",
+      "tag": "OUTPUT",
+      "box": {
+        "x": 509.83,
+        "y": 292.55,
+        "w": 60.17,
+        "h": 22.5
+      },
+      "fontSize": "15px",
+      "fontWeight": "700",
+      "lineHeight": "22.5px",
+      "fontFamily": "Heebo, \"Heebo Fallback\", Arial, sans-serif",
+      "color": "rgb(51, 62, 72)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderRadius": "0px",
+      "padding": "0px",
+      "direction": "ltr",
+      "letterSpacing": "normal",
+      "ariaLive": "off"
+    },
+    "badge": {
+      "text": "-50%",
+      "rect": {
+        "x": 66,
+        "y": 243.3,
+        "w": 47.31,
+        "h": 28
+      },
+      "fontSize": "12px",
+      "fontWeight": "700",
+      "lineHeight": "24px",
+      "fontFamily": "Heebo, \"Heebo Fallback\", Arial, sans-serif",
+      "color": "rgb(255, 255, 255)",
+      "backgroundColor": "rgb(238, 0, 0)",
+      "borderRadius": "4px",
+      "padding": "2px 10px",
+      "direction": "rtl",
+      "letterSpacing": "normal",
+      "inPictureBox": true
+    },
+    "prices": {
+      "text": "⁦250.00 ₪⁩⁦500.00 ₪⁩50% הנחה",
+      "rect": {
+        "x": 354,
+        "y": 409.8,
+        "w": 348,
+        "h": 32
+      }
+    },
+    "picture": {
+      "rect": {
+        "x": 66,
+        "y": 243.3,
+        "w": 256,
+        "h": 256
+      },
+      "borderRadius": "12px",
+      "overflow": "hidden",
+      "backgroundColor": "rgb(255, 255, 255)",
+      "position": "relative",
+      "img": {
+        "natural": 240,
+        "rect": {
+          "x": 66,
+          "y": 243.3,
+          "w": 256,
+          "h": 256
+        },
+        "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fproducts%2FWhatsApp-Image-2023-12-22-at-15.27.50-600x600.webp&w=640&q="
+      }
+    },
+    "cta": {
+      "tag": "BUTTON",
+      "text": "הוסף לעגלה",
+      "href": null,
+      "rect": {
+        "x": 554.89,
+        "y": 453.8,
+        "w": 147.11,
+        "h": 44
+      },
+      "fontSize": "14px",
+      "fontWeight": "700",
+      "lineHeight": "20px",
+      "fontFamily": "Heebo, \"Heebo Fallback\", Arial, sans-serif",
+      "color": "rgb(51, 62, 72)",
+      "backgroundColor": "rgb(254, 215, 0)",
+      "borderRadius": "3.35544e+07px",
+      "padding": "0px 24px",
+      "direction": "rtl",
+      "letterSpacing": "normal",
+      "minHeight": "44px",
+      "transitionProperty": "opacity",
+      "animationName": "none"
+    },
+    "ctaCount": 1
+  },
+  "1440": {
+    "present": true,
+    "section": {
+      "x": 145,
+      "y": 256.3,
+      "w": 1150,
+      "h": 330
+    },
+    "card": {
+      "rect": {
+        "x": 145,
+        "y": 256.3,
+        "w": 1150,
+        "h": 290
+      },
+      "borderRadius": "12px",
+      "boxShadow": "none",
+      "borderTopWidth": "1px",
+      "borderTopColor": "rgb(221, 221, 221)",
+      "backgroundColor": "rgb(255, 255, 255)",
+      "flexDirection": "row",
+      "gap": "32px",
+      "padding": "16px"
+    },
+    "heading": {
+      "text": "הדיל של היום",
+      "rect": {
+        "x": 1148.25,
+        "y": 296.8,
+        "w": 129.75,
+        "h": 33
+      },
+      "fontSize": "22px",
+      "fontWeight": "700",
+      "lineHeight": "33px",
+      "fontFamily": "Heebo, \"Heebo Fallback\", Arial, sans-serif",
+      "color": "rgb(51, 62, 72)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderRadius": "0px",
+      "padding": "0px",
+      "direction": "rtl",
+      "letterSpacing": "normal"
+    },
+    "countdown": {
+      "html": "<p data-deal-countdown=\"true\" class=\"m-0 inline-flex min-h-deal-countdown max-w-full items-center gap-2.5 rounded-full bg-brand-primary px-deal-countdown-pad py-1 text-body-lg font-bold text-heading\"><span>מסתיים בעוד:</span><output dir=\"ltr\" aria-live=\"off\" class=\"tabular-nums\">14:46:33</output></p>",
+      "rect": {
+        "x": 892.08,
+        "y": 295.3,
+        "w": 226.17,
+        "h": 36
+      },
+      "label": "מסתיים בעוד:",
+      "value": "14:46:33",
+      "tag": "OUTPUT",
+      "box": {
+        "x": 926.08,
+        "y": 302.05,
+        "w": 60.17,
+        "h": 22.5
+      },
+      "fontSize": "15px",
+      "fontWeight": "700",
+      "lineHeight": "22.5px",
+      "fontFamily": "Heebo, \"Heebo Fallback\", Arial, sans-serif",
+      "color": "rgb(51, 62, 72)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderRadius": "0px",
+      "padding": "0px",
+      "direction": "ltr",
+      "letterSpacing": "normal",
+      "ariaLive": "off"
+    },
+    "badge": {
+      "text": "-50%",
+      "rect": {
+        "x": 162,
+        "y": 273.3,
+        "w": 47.31,
+        "h": 28
+      },
+      "fontSize": "12px",
+      "fontWeight": "700",
+      "lineHeight": "24px",
+      "fontFamily": "Heebo, \"Heebo Fallback\", Arial, sans-serif",
+      "color": "rgb(255, 255, 255)",
+      "backgroundColor": "rgb(238, 0, 0)",
+      "borderRadius": "4px",
+      "padding": "2px 10px",
+      "direction": "rtl",
+      "letterSpacing": "normal",
+      "inPictureBox": true
+    },
+    "prices": {
+      "text": "⁦250.00 ₪⁩⁦500.00 ₪⁩50% הנחה",
+      "rect": {
+        "x": 450,
+        "y": 419.3,
+        "w": 828,
+        "h": 32
+      }
+    },
+    "picture": {
+      "rect": {
+        "x": 162,
+        "y": 273.3,
+        "w": 256,
+        "h": 256
+      },
+      "borderRadius": "12px",
+      "overflow": "hidden",
+      "backgroundColor": "rgb(255, 255, 255)",
+      "position": "relative",
+      "img": {
+        "natural": 240,
+        "rect": {
+          "x": 162,
+          "y": 273.3,
+          "w": 256,
+          "h": 256
+        },
+        "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fproducts%2FWhatsApp-Image-2023-12-22-at-15.27.50-600x600.webp&w=640&q="
+      }
+    },
+    "cta": {
+      "tag": "BUTTON",
+      "text": "הוסף לעגלה",
+      "href": null,
+      "rect": {
+        "x": 1130.89,
+        "y": 463.3,
+        "w": 147.11,
+        "h": 44
+      },
+      "fontSize": "14px",
+      "fontWeight": "700",
+      "lineHeight": "20px",
+      "fontFamily": "Heebo, \"Heebo Fallback\", Arial, sans-serif",
+      "color": "rgb(51, 62, 72)",
+      "backgroundColor": "rgb(254, 215, 0)",
+      "borderRadius": "3.35544e+07px",
+      "padding": "0px 24px",
+      "direction": "rtl",
+      "letterSpacing": "normal",
+      "minHeight": "44px",
+      "transitionProperty": "opacity",
+      "animationName": "none"
+    },
+    "ctaCount": 1
+  }
+}

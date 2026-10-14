@@ -434,6 +434,16 @@
      points fix; see docs/LIVE-DELTA.md. */
   --spacing-deals-footer-gap: 60px;
 
+  /* UX08: the deal-of-the-day countdown pill, Electro's `.deal-countdown-timer`
+     measured off refs/electro-home-v7_computed.json at 1440: 207x36, padding
+     5px 34px, 15px/700 in the heading colour on the brand yellow, radius 50px
+     (a full round on a 36px box). Live has no countdown anywhere (its deals
+     grid is flat, live-home-sections.test.ts), so this is shape from Electro,
+     as docs/SOURCING-RULES.md allows. The type size is --text-body-lg, which
+     is already 15px. */
+  --spacing-deal-countdown: 36px;
+  --spacing-deal-countdown-pad: 34px;
+
   /* The store footer's column block, top padding from lg. */
   --spacing-footer-columns-top: 60px;
 

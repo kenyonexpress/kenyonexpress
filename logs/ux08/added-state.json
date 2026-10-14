@@ -1,0 +1,17 @@
+{
+  "before": {
+    "bg": "rgb(254, 215, 0)",
+    "color": "rgb(51, 62, 72)",
+    "animation": "none"
+  },
+  "after": {
+    "bg": "rgb(50, 134, 20)",
+    "color": "rgb(255, 255, 255)",
+    "animation": "deal-cta-pop",
+    "duration": "0.42s",
+    "text": "נוסף לעגלה",
+    "check": "deal-cta-check"
+  },
+  "drawerOpen": 1,
+  "revertedAfter2200ms": true
+}

@@ -1,0 +1,12 @@
+Already up to date
+Done in 193ms using pnpm v11.1.2
+
+Running 6 tests using 2 workers
+
+[1A[2K[1/6] [chromium] › e2e/deal-of-the-day.spec.ts:60:7 › deal of the day (UX08) › the countdown is one yellow pill in the heading row, ticking HH:MM:SS
+[1A[2K[2/6] [chromium] › e2e/deal-of-the-day.spec.ts:97:7 › deal of the day (UX08) › the discount badge wears the deals-card shape on the photograph corner
+[1A[2K[3/6] [chromium] › e2e/deal-of-the-day.spec.ts:141:7 › deal of the day (UX08) › the CTA adds to the cart and confirms in place
+[1A[2K[4/6] [mobile-chrome] › e2e/deal-of-the-day.spec.ts:60:7 › deal of the day (UX08) › the countdown is one yellow pill in the heading row, ticking HH:MM:SS
+[1A[2K[5/6] [mobile-chrome] › e2e/deal-of-the-day.spec.ts:97:7 › deal of the day (UX08) › the discount badge wears the deals-card shape on the photograph corner
+[1A[2K[6/6] [mobile-chrome] › e2e/deal-of-the-day.spec.ts:141:7 › deal of the day (UX08) › the CTA adds to the cart and confirms in place
+[1A[2K  6 passed (10.7s)

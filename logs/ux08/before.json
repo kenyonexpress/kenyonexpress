@@ -1,0 +1,449 @@
+{
+  "380": {
+    "present": true,
+    "section": {
+      "x": 0,
+      "y": 15.98,
+      "w": 380,
+      "h": 631
+    },
+    "card": {
+      "rect": {
+        "x": 25,
+        "y": 15.98,
+        "w": 330,
+        "h": 591
+      },
+      "borderRadius": "25px",
+      "boxShadow": "none",
+      "borderTopWidth": "1px",
+      "borderTopColor": "rgb(221, 221, 221)",
+      "backgroundColor": "rgb(255, 255, 255)",
+      "flexDirection": "column",
+      "gap": "16px",
+      "padding": "16px"
+    },
+    "heading": {
+      "text": "הדיל של היום",
+      "rect": {
+        "x": 42,
+        "y": 32.98,
+        "w": 296,
+        "h": 33
+      },
+      "fontSize": "22px",
+      "fontWeight": "700",
+      "lineHeight": "33px",
+      "fontFamily": "Heebo, \"Heebo Fallback\", Arial, sans-serif",
+      "color": "rgb(51, 62, 72)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderRadius": "0px",
+      "padding": "0px",
+      "direction": "rtl",
+      "letterSpacing": "normal"
+    },
+    "countdown": {
+      "html": "<p class=\"m-0 flex items-center gap-2 text-sm text-heading\"><span>המבצע מתחדש בעוד</span><output dir=\"ltr\" aria-live=\"off\" class=\"rounded bg-brand-secondary px-3 py-1 font-mono text-base font-black tabular-nums tracking-widest text-heading\">15:16:04</output></p>",
+      "rect": {
+        "x": 42,
+        "y": 77.98,
+        "w": 296,
+        "h": 32
+      },
+      "label": "המבצע מתחדש בעוד",
+      "value": "15:16:04",
+      "tag": "OUTPUT",
+      "box": {
+        "x": 97.5,
+        "y": 77.98,
+        "w": 113.88,
+        "h": 32
+      },
+      "fontSize": "16px",
+      "fontWeight": "900",
+      "lineHeight": "24px",
+      "fontFamily": "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace",
+      "color": "rgb(51, 62, 72)",
+      "backgroundColor": "rgb(254, 215, 0)",
+      "borderRadius": "4px",
+      "padding": "4px 12px",
+      "direction": "ltr",
+      "letterSpacing": "1.6px",
+      "ariaLive": "off"
+    },
+    "badge": {
+      "text": "50% הנחה",
+      "rect": {
+        "x": 79.78,
+        "y": 196.98,
+        "w": 68.86,
+        "h": 24
+      },
+      "fontSize": "12px",
+      "fontWeight": "700",
+      "lineHeight": "16px",
+      "fontFamily": "Heebo, \"Heebo Fallback\", Arial, sans-serif",
+      "color": "rgb(51, 62, 72)",
+      "backgroundColor": "rgb(254, 215, 0)",
+      "borderRadius": "25px",
+      "padding": "4px 8px",
+      "direction": "rtl",
+      "letterSpacing": "normal",
+      "inPictureBox": false
+    },
+    "prices": {
+      "text": "המבצע מתחדש בעוד15:16:04",
+      "rect": {
+        "x": 42,
+        "y": 77.98,
+        "w": 296,
+        "h": 32
+      }
+    },
+    "picture": {
+      "rect": {
+        "x": 42,
+        "y": 293.98,
+        "w": 296,
+        "h": 296
+      },
+      "borderRadius": "25px",
+      "overflow": "hidden",
+      "backgroundColor": "rgb(255, 255, 255)",
+      "position": "relative",
+      "img": {
+        "natural": 320,
+        "rect": {
+          "x": 42,
+          "y": 293.98,
+          "w": 296,
+          "h": 296
+        },
+        "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fproducts%2FWhatsApp-Image-2023-12-22-at-15.27.50-600x600.webp&w=640&q="
+      }
+    },
+    "cta": {
+      "tag": "A",
+      "text": "לרכישה",
+      "href": "/product/טיפול-פנים-copy",
+      "rect": {
+        "x": 242.28,
+        "y": 233.98,
+        "w": 95.72,
+        "h": 44
+      },
+      "fontSize": "14px",
+      "fontWeight": "700",
+      "lineHeight": "20px",
+      "fontFamily": "Heebo, \"Heebo Fallback\", Arial, sans-serif",
+      "color": "rgb(51, 62, 72)",
+      "backgroundColor": "rgb(254, 215, 0)",
+      "borderRadius": "3.35544e+07px",
+      "padding": "0px 24px",
+      "direction": "rtl",
+      "letterSpacing": "normal",
+      "minHeight": "44px",
+      "transitionProperty": "opacity",
+      "animationName": "none"
+    },
+    "ctaCount": 1
+  },
+  "768": {
+    "present": true,
+    "section": {
+      "x": 0,
+      "y": 226.3,
+      "w": 768,
+      "h": 330
+    },
+    "card": {
+      "rect": {
+        "x": 49,
+        "y": 226.3,
+        "w": 670,
+        "h": 290
+      },
+      "borderRadius": "25px",
+      "boxShadow": "none",
+      "borderTopWidth": "1px",
+      "borderTopColor": "rgb(221, 221, 221)",
+      "backgroundColor": "rgb(255, 255, 255)",
+      "flexDirection": "row",
+      "gap": "32px",
+      "padding": "16px"
+    },
+    "heading": {
+      "text": "הדיל של היום",
+      "rect": {
+        "x": 354,
+        "y": 248.8,
+        "w": 348,
+        "h": 33
+      },
+      "fontSize": "22px",
+      "fontWeight": "700",
+      "lineHeight": "33px",
+      "fontFamily": "Heebo, \"Heebo Fallback\", Arial, sans-serif",
+      "color": "rgb(51, 62, 72)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderRadius": "0px",
+      "padding": "0px",
+      "direction": "rtl",
+      "letterSpacing": "normal"
+    },
+    "countdown": {
+      "html": "<p class=\"m-0 flex items-center gap-2 text-sm text-heading\"><span>המבצע מתחדש בעוד</span><output dir=\"ltr\" aria-live=\"off\" class=\"rounded bg-brand-secondary px-3 py-1 font-mono text-base font-black tabular-nums tracking-widest text-heading\">15:16:00</output></p>",
+      "rect": {
+        "x": 354,
+        "y": 293.8,
+        "w": 348,
+        "h": 32
+      },
+      "label": "המבצע מתחדש בעוד",
+      "value": "15:16:00",
+      "tag": "OUTPUT",
+      "box": {
+        "x": 461.5,
+        "y": 293.8,
+        "w": 113.88,
+        "h": 32
+      },
+      "fontSize": "16px",
+      "fontWeight": "900",
+      "lineHeight": "24px",
+      "fontFamily": "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace",
+      "color": "rgb(51, 62, 72)",
+      "backgroundColor": "rgb(254, 215, 0)",
+      "borderRadius": "4px",
+      "padding": "4px 12px",
+      "direction": "ltr",
+      "letterSpacing": "1.6px",
+      "ariaLive": "off"
+    },
+    "badge": {
+      "text": "50% הנחה",
+      "rect": {
+        "x": 443.78,
+        "y": 412.8,
+        "w": 68.86,
+        "h": 24
+      },
+      "fontSize": "12px",
+      "fontWeight": "700",
+      "lineHeight": "16px",
+      "fontFamily": "Heebo, \"Heebo Fallback\", Arial, sans-serif",
+      "color": "rgb(51, 62, 72)",
+      "backgroundColor": "rgb(254, 215, 0)",
+      "borderRadius": "25px",
+      "padding": "4px 8px",
+      "direction": "rtl",
+      "letterSpacing": "normal",
+      "inPictureBox": false
+    },
+    "prices": {
+      "text": "המבצע מתחדש בעוד15:16:00",
+      "rect": {
+        "x": 354,
+        "y": 293.8,
+        "w": 348,
+        "h": 32
+      }
+    },
+    "picture": {
+      "rect": {
+        "x": 66,
+        "y": 243.3,
+        "w": 256,
+        "h": 256
+      },
+      "borderRadius": "25px",
+      "overflow": "hidden",
+      "backgroundColor": "rgb(255, 255, 255)",
+      "position": "relative",
+      "img": {
+        "natural": 240,
+        "rect": {
+          "x": 66,
+          "y": 243.3,
+          "w": 256,
+          "h": 256
+        },
+        "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fproducts%2FWhatsApp-Image-2023-12-22-at-15.27.50-600x600.webp&w=640&q="
+      }
+    },
+    "cta": {
+      "tag": "A",
+      "text": "לרכישה",
+      "href": "/product/טיפול-פנים-copy",
+      "rect": {
+        "x": 606.28,
+        "y": 449.8,
+        "w": 95.72,
+        "h": 44
+      },
+      "fontSize": "14px",
+      "fontWeight": "700",
+      "lineHeight": "20px",
+      "fontFamily": "Heebo, \"Heebo Fallback\", Arial, sans-serif",
+      "color": "rgb(51, 62, 72)",
+      "backgroundColor": "rgb(254, 215, 0)",
+      "borderRadius": "3.35544e+07px",
+      "padding": "0px 24px",
+      "direction": "rtl",
+      "letterSpacing": "normal",
+      "minHeight": "44px",
+      "transitionProperty": "opacity",
+      "animationName": "none"
+    },
+    "ctaCount": 1
+  },
+  "1440": {
+    "present": true,
+    "section": {
+      "x": 145,
+      "y": 256.3,
+      "w": 1150,
+      "h": 330
+    },
+    "card": {
+      "rect": {
+        "x": 145,
+        "y": 256.3,
+        "w": 1150,
+        "h": 290
+      },
+      "borderRadius": "25px",
+      "boxShadow": "none",
+      "borderTopWidth": "1px",
+      "borderTopColor": "rgb(221, 221, 221)",
+      "backgroundColor": "rgb(255, 255, 255)",
+      "flexDirection": "row",
+      "gap": "32px",
+      "padding": "16px"
+    },
+    "heading": {
+      "text": "הדיל של היום",
+      "rect": {
+        "x": 450,
+        "y": 278.8,
+        "w": 828,
+        "h": 33
+      },
+      "fontSize": "22px",
+      "fontWeight": "700",
+      "lineHeight": "33px",
+      "fontFamily": "Heebo, \"Heebo Fallback\", Arial, sans-serif",
+      "color": "rgb(51, 62, 72)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderRadius": "0px",
+      "padding": "0px",
+      "direction": "rtl",
+      "letterSpacing": "normal"
+    },
+    "countdown": {
+      "html": "<p class=\"m-0 flex items-center gap-2 text-sm text-heading\"><span>המבצע מתחדש בעוד</span><output dir=\"ltr\" aria-live=\"off\" class=\"rounded bg-brand-secondary px-3 py-1 font-mono text-base font-black tabular-nums tracking-widest text-heading\">15:15:58</output></p>",
+      "rect": {
+        "x": 450,
+        "y": 323.8,
+        "w": 828,
+        "h": 32
+      },
+      "label": "המבצע מתחדש בעוד",
+      "value": "15:15:58",
+      "tag": "OUTPUT",
+      "box": {
+        "x": 1037.5,
+        "y": 323.8,
+        "w": 113.88,
+        "h": 32
+      },
+      "fontSize": "16px",
+      "fontWeight": "900",
+      "lineHeight": "24px",
+      "fontFamily": "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace",
+      "color": "rgb(51, 62, 72)",
+      "backgroundColor": "rgb(254, 215, 0)",
+      "borderRadius": "4px",
+      "padding": "4px 12px",
+      "direction": "ltr",
+      "letterSpacing": "1.6px",
+      "ariaLive": "off"
+    },
+    "badge": {
+      "text": "50% הנחה",
+      "rect": {
+        "x": 1019.78,
+        "y": 442.8,
+        "w": 68.86,
+        "h": 24
+      },
+      "fontSize": "12px",
+      "fontWeight": "700",
+      "lineHeight": "16px",
+      "fontFamily": "Heebo, \"Heebo Fallback\", Arial, sans-serif",
+      "color": "rgb(51, 62, 72)",
+      "backgroundColor": "rgb(254, 215, 0)",
+      "borderRadius": "25px",
+      "padding": "4px 8px",
+      "direction": "rtl",
+      "letterSpacing": "normal",
+      "inPictureBox": false
+    },
+    "prices": {
+      "text": "המבצע מתחדש בעוד15:15:58",
+      "rect": {
+        "x": 450,
+        "y": 323.8,
+        "w": 828,
+        "h": 32
+      }
+    },
+    "picture": {
+      "rect": {
+        "x": 162,
+        "y": 273.3,
+        "w": 256,
+        "h": 256
+      },
+      "borderRadius": "25px",
+      "overflow": "hidden",
+      "backgroundColor": "rgb(255, 255, 255)",
+      "position": "relative",
+      "img": {
+        "natural": 240,
+        "rect": {
+          "x": 162,
+          "y": 273.3,
+          "w": 256,
+          "h": 256
+        },
+        "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fproducts%2FWhatsApp-Image-2023-12-22-at-15.27.50-600x600.webp&w=640&q="
+      }
+    },
+    "cta": {
+      "tag": "A",
+      "text": "לרכישה",
+      "href": "/product/טיפול-פנים-copy",
+      "rect": {
+        "x": 1182.28,
+        "y": 479.8,
+        "w": 95.72,
+        "h": 44
+      },
+      "fontSize": "14px",
+      "fontWeight": "700",
+      "lineHeight": "20px",
+      "fontFamily": "Heebo, \"Heebo Fallback\", Arial, sans-serif",
+      "color": "rgb(51, 62, 72)",
+      "backgroundColor": "rgb(254, 215, 0)",
+      "borderRadius": "3.35544e+07px",
+      "padding": "0px 24px",
+      "direction": "rtl",
+      "letterSpacing": "normal",
+      "minHeight": "44px",
+      "transitionProperty": "opacity",
+      "animationName": "none"
+    },
+    "ctaCount": 1
+  }
+}
