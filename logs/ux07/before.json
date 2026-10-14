@@ -1,0 +1,881 @@
+{
+  "380": {
+    "rest": {
+      "section": {
+        "x": 0,
+        "y": -105.02,
+        "w": 380,
+        "h": 873
+      },
+      "list": {
+        "x": 25,
+        "y": -56.02,
+        "w": 330,
+        "h": 784
+      },
+      "columns": 2,
+      "gap": "12px",
+      "count": 8,
+      "tiles": [
+        {
+          "href": "/category/under-99",
+          "rect": {
+            "x": 196,
+            "y": -56.02,
+            "w": 159,
+            "h": 182
+          },
+          "radius": "25px",
+          "shadow": "none",
+          "border": "1px rgb(221, 221, 221)",
+          "transition": "box-shadow",
+          "img": {
+            "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fcategories%2Funder-99.png&w=288&q=75",
+            "natural": 171,
+            "rect": {
+              "x": 211.5,
+              "y": -43.02,
+              "w": 128,
+              "h": 128
+            }
+          },
+          "fallback": false,
+          "mediaTransform": "none",
+          "mediaScale": "none",
+          "mediaOverflow": "visible",
+          "label": "עד ⁦99 ₪⁩",
+          "labelEmoji": false,
+          "hovered": false
+        },
+        {
+          "href": "/category/restaurants-cafes",
+          "rect": {
+            "x": 25,
+            "y": -56.02,
+            "w": 159,
+            "h": 182
+          },
+          "radius": "25px",
+          "shadow": "none",
+          "border": "1px rgb(221, 221, 221)",
+          "transition": "box-shadow",
+          "img": {
+            "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fproducts%2Fbq-plate-3-600x600.webp&w=288&q=75",
+            "natural": 171,
+            "rect": {
+              "x": 40.5,
+              "y": -43.02,
+              "w": 128,
+              "h": 128
+            }
+          },
+          "fallback": false,
+          "mediaTransform": "none",
+          "mediaScale": "none",
+          "mediaOverflow": "visible",
+          "label": "מסעדות ובתי קפה",
+          "labelEmoji": false,
+          "hovered": false
+        },
+        {
+          "href": "/category/beauty-health",
+          "rect": {
+            "x": 196,
+            "y": 137.98,
+            "w": 159,
+            "h": 182
+          },
+          "radius": "25px",
+          "shadow": "none",
+          "border": "1px rgb(221, 221, 221)",
+          "transition": "box-shadow",
+          "img": {
+            "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fproducts%2Ffacial-small-600x600.webp&w=288&q=75",
+            "natural": 171,
+            "rect": {
+              "x": 211.5,
+              "y": 150.98,
+              "w": 128,
+              "h": 128
+            }
+          },
+          "fallback": false,
+          "mediaTransform": "none",
+          "mediaScale": "none",
+          "mediaOverflow": "visible",
+          "label": "טיפוח בריאות ויופי",
+          "labelEmoji": false,
+          "hovered": false
+        },
+        {
+          "href": "/category/phones-computers",
+          "rect": {
+            "x": 25,
+            "y": 137.98,
+            "w": 159,
+            "h": 182
+          },
+          "radius": "25px",
+          "shadow": "none",
+          "border": "1px rgb(221, 221, 221)",
+          "transition": "box-shadow",
+          "img": {
+            "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fproducts%2Fmaxresdefault-1-600x600.webp&w=288&q=75",
+            "natural": 171,
+            "rect": {
+              "x": 40.5,
+              "y": 150.98,
+              "w": 128,
+              "h": 128
+            }
+          },
+          "fallback": false,
+          "mediaTransform": "none",
+          "mediaScale": "none",
+          "mediaOverflow": "visible",
+          "label": "טלפונים ואלקטרוניקה",
+          "labelEmoji": false,
+          "hovered": false
+        },
+        {
+          "href": "/category/baby-kids",
+          "rect": {
+            "x": 196,
+            "y": 331.98,
+            "w": 159,
+            "h": 182
+          },
+          "radius": "25px",
+          "shadow": "none",
+          "border": "1px rgb(221, 221, 221)",
+          "transition": "box-shadow",
+          "img": {
+            "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fhero%2Fcategory%2Fe-baby-d2.webp&w=288&q=75",
+            "natural": 171,
+            "rect": {
+              "x": 211.5,
+              "y": 344.98,
+              "w": 128,
+              "h": 128
+            }
+          },
+          "fallback": false,
+          "mediaTransform": "none",
+          "mediaScale": "none",
+          "mediaOverflow": "visible",
+          "label": "תינוקות וילדים",
+          "labelEmoji": false,
+          "hovered": false
+        },
+        {
+          "href": "/category/vacation",
+          "rect": {
+            "x": 25,
+            "y": 331.98,
+            "w": 159,
+            "h": 182
+          },
+          "radius": "25px",
+          "shadow": "none",
+          "border": "1px rgb(221, 221, 221)",
+          "transition": "box-shadow",
+          "img": {
+            "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fhero%2Fcategory%2Fmaldives-2-600x488.webp&w=288&q=75",
+            "natural": 171,
+            "rect": {
+              "x": 40.5,
+              "y": 344.98,
+              "w": 128,
+              "h": 128
+            }
+          },
+          "fallback": false,
+          "mediaTransform": "none",
+          "mediaScale": "none",
+          "mediaOverflow": "visible",
+          "label": "צימרים מלונות ונופש",
+          "labelEmoji": false,
+          "hovered": false
+        },
+        {
+          "href": "/category/pets",
+          "rect": {
+            "x": 196,
+            "y": 525.98,
+            "w": 159,
+            "h": 182
+          },
+          "radius": "25px",
+          "shadow": "none",
+          "border": "1px rgb(221, 221, 221)",
+          "transition": "box-shadow",
+          "img": {
+            "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fhero%2Fcategory%2Fcute-golden-retriever-600x600.webp&w=288&q=75",
+            "natural": 171,
+            "rect": {
+              "x": 211.5,
+              "y": 538.98,
+              "w": 128,
+              "h": 128
+            }
+          },
+          "fallback": false,
+          "mediaTransform": "none",
+          "mediaScale": "none",
+          "mediaOverflow": "visible",
+          "label": "ציוד ומזון לבעלי חיים",
+          "labelEmoji": false,
+          "hovered": false
+        },
+        {
+          "href": "/category/courses",
+          "rect": {
+            "x": 25,
+            "y": 525.98,
+            "w": 159,
+            "h": 202
+          },
+          "radius": "25px",
+          "shadow": "none",
+          "border": "1px rgb(221, 221, 221)",
+          "transition": "box-shadow",
+          "img": {
+            "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fhero%2Fcategory%2Fstudent-849821_1280-600x600.webp&w=288&q=75",
+            "natural": 171,
+            "rect": {
+              "x": 40.5,
+              "y": 538.98,
+              "w": 128,
+              "h": 128
+            }
+          },
+          "fallback": false,
+          "mediaTransform": "none",
+          "mediaScale": "none",
+          "mediaOverflow": "visible",
+          "label": "קורסים Express בקרוב",
+          "labelEmoji": false,
+          "hovered": false
+        }
+      ]
+    },
+    "hoverFirst": {
+      "href": "/category/under-99",
+      "rect": {
+        "x": 196,
+        "y": 49.98,
+        "w": 159,
+        "h": 182
+      },
+      "radius": "25px",
+      "shadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.1) 0px 2px 4px -2px",
+      "border": "1px rgb(221, 221, 221)",
+      "transition": "box-shadow",
+      "img": {
+        "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fcategories%2Funder-99.png&w=288&q=75",
+        "natural": 171,
+        "rect": {
+          "x": 208.3,
+          "y": 59.78,
+          "w": 134.4,
+          "h": 134.4
+        }
+      },
+      "fallback": false,
+      "mediaTransform": "none",
+      "mediaScale": "1.05",
+      "mediaOverflow": "visible",
+      "label": "עד ⁦99 ₪⁩",
+      "labelEmoji": false,
+      "hovered": true
+    },
+    "emojiLabels": [],
+    "fallbacks": []
+  },
+  "768": {
+    "rest": {
+      "section": {
+        "x": 0,
+        "y": 148.3,
+        "w": 768,
+        "h": 485
+      },
+      "list": {
+        "x": 49,
+        "y": 197.3,
+        "w": 670,
+        "h": 396
+      },
+      "columns": 4,
+      "gap": "12px",
+      "count": 8,
+      "tiles": [
+        {
+          "href": "/category/under-99",
+          "rect": {
+            "x": 560.5,
+            "y": 197.3,
+            "w": 158.5,
+            "h": 182
+          },
+          "radius": "25px",
+          "shadow": "none",
+          "border": "1px rgb(221, 221, 221)",
+          "transition": "box-shadow",
+          "img": {
+            "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fcategories%2Funder-99.png&w=288&q=75",
+            "natural": 128,
+            "rect": {
+              "x": 575.75,
+              "y": 210.3,
+              "w": 128,
+              "h": 128
+            }
+          },
+          "fallback": false,
+          "mediaTransform": "none",
+          "mediaScale": "none",
+          "mediaOverflow": "visible",
+          "label": "עד ⁦99 ₪⁩",
+          "labelEmoji": false,
+          "hovered": false
+        },
+        {
+          "href": "/category/restaurants-cafes",
+          "rect": {
+            "x": 390,
+            "y": 197.3,
+            "w": 158.5,
+            "h": 182
+          },
+          "radius": "25px",
+          "shadow": "none",
+          "border": "1px rgb(221, 221, 221)",
+          "transition": "box-shadow",
+          "img": {
+            "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fproducts%2Fbq-plate-3-600x600.webp&w=288&q=75",
+            "natural": 128,
+            "rect": {
+              "x": 405.25,
+              "y": 210.3,
+              "w": 128,
+              "h": 128
+            }
+          },
+          "fallback": false,
+          "mediaTransform": "none",
+          "mediaScale": "none",
+          "mediaOverflow": "visible",
+          "label": "מסעדות ובתי קפה",
+          "labelEmoji": false,
+          "hovered": false
+        },
+        {
+          "href": "/category/beauty-health",
+          "rect": {
+            "x": 219.5,
+            "y": 197.3,
+            "w": 158.5,
+            "h": 182
+          },
+          "radius": "25px",
+          "shadow": "none",
+          "border": "1px rgb(221, 221, 221)",
+          "transition": "box-shadow",
+          "img": {
+            "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fproducts%2Ffacial-small-600x600.webp&w=288&q=75",
+            "natural": 128,
+            "rect": {
+              "x": 234.75,
+              "y": 210.3,
+              "w": 128,
+              "h": 128
+            }
+          },
+          "fallback": false,
+          "mediaTransform": "none",
+          "mediaScale": "none",
+          "mediaOverflow": "visible",
+          "label": "טיפוח בריאות ויופי",
+          "labelEmoji": false,
+          "hovered": false
+        },
+        {
+          "href": "/category/phones-computers",
+          "rect": {
+            "x": 49,
+            "y": 197.3,
+            "w": 158.5,
+            "h": 182
+          },
+          "radius": "25px",
+          "shadow": "none",
+          "border": "1px rgb(221, 221, 221)",
+          "transition": "box-shadow",
+          "img": {
+            "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fproducts%2Fmaxresdefault-1-600x600.webp&w=288&q=75",
+            "natural": 128,
+            "rect": {
+              "x": 64.25,
+              "y": 210.3,
+              "w": 128,
+              "h": 128
+            }
+          },
+          "fallback": false,
+          "mediaTransform": "none",
+          "mediaScale": "none",
+          "mediaOverflow": "visible",
+          "label": "טלפונים ואלקטרוניקה",
+          "labelEmoji": false,
+          "hovered": false
+        },
+        {
+          "href": "/category/baby-kids",
+          "rect": {
+            "x": 560.5,
+            "y": 391.3,
+            "w": 158.5,
+            "h": 182
+          },
+          "radius": "25px",
+          "shadow": "none",
+          "border": "1px rgb(221, 221, 221)",
+          "transition": "box-shadow",
+          "img": {
+            "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fhero%2Fcategory%2Fe-baby-d2.webp&w=288&q=75",
+            "natural": 128,
+            "rect": {
+              "x": 575.75,
+              "y": 404.3,
+              "w": 128,
+              "h": 128
+            }
+          },
+          "fallback": false,
+          "mediaTransform": "none",
+          "mediaScale": "none",
+          "mediaOverflow": "visible",
+          "label": "תינוקות וילדים",
+          "labelEmoji": false,
+          "hovered": false
+        },
+        {
+          "href": "/category/vacation",
+          "rect": {
+            "x": 390,
+            "y": 391.3,
+            "w": 158.5,
+            "h": 182
+          },
+          "radius": "25px",
+          "shadow": "none",
+          "border": "1px rgb(221, 221, 221)",
+          "transition": "box-shadow",
+          "img": {
+            "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fhero%2Fcategory%2Fmaldives-2-600x488.webp&w=288&q=75",
+            "natural": 128,
+            "rect": {
+              "x": 405.25,
+              "y": 404.3,
+              "w": 128,
+              "h": 128
+            }
+          },
+          "fallback": false,
+          "mediaTransform": "none",
+          "mediaScale": "none",
+          "mediaOverflow": "visible",
+          "label": "צימרים מלונות ונופש",
+          "labelEmoji": false,
+          "hovered": false
+        },
+        {
+          "href": "/category/pets",
+          "rect": {
+            "x": 219.5,
+            "y": 391.3,
+            "w": 158.5,
+            "h": 182
+          },
+          "radius": "25px",
+          "shadow": "none",
+          "border": "1px rgb(221, 221, 221)",
+          "transition": "box-shadow",
+          "img": {
+            "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fhero%2Fcategory%2Fcute-golden-retriever-600x600.webp&w=288&q=75",
+            "natural": 128,
+            "rect": {
+              "x": 234.75,
+              "y": 404.3,
+              "w": 128,
+              "h": 128
+            }
+          },
+          "fallback": false,
+          "mediaTransform": "none",
+          "mediaScale": "none",
+          "mediaOverflow": "visible",
+          "label": "ציוד ומזון לבעלי חיים",
+          "labelEmoji": false,
+          "hovered": false
+        },
+        {
+          "href": "/category/courses",
+          "rect": {
+            "x": 49,
+            "y": 391.3,
+            "w": 158.5,
+            "h": 202
+          },
+          "radius": "25px",
+          "shadow": "none",
+          "border": "1px rgb(221, 221, 221)",
+          "transition": "box-shadow",
+          "img": {
+            "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fhero%2Fcategory%2Fstudent-849821_1280-600x600.webp&w=288&q=75",
+            "natural": 128,
+            "rect": {
+              "x": 64.25,
+              "y": 404.3,
+              "w": 128,
+              "h": 128
+            }
+          },
+          "fallback": false,
+          "mediaTransform": "none",
+          "mediaScale": "none",
+          "mediaOverflow": "visible",
+          "label": "קורסים Express בקרוב",
+          "labelEmoji": false,
+          "hovered": false
+        }
+      ]
+    },
+    "hoverFirst": {
+      "href": "/category/under-99",
+      "rect": {
+        "x": 560.5,
+        "y": 197.3,
+        "w": 158.5,
+        "h": 182
+      },
+      "radius": "25px",
+      "shadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.1) 0px 2px 4px -2px",
+      "border": "1px rgb(221, 221, 221)",
+      "transition": "box-shadow",
+      "img": {
+        "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fcategories%2Funder-99.png&w=288&q=75",
+        "natural": 128,
+        "rect": {
+          "x": 572.55,
+          "y": 207.1,
+          "w": 134.4,
+          "h": 134.4
+        }
+      },
+      "fallback": false,
+      "mediaTransform": "none",
+      "mediaScale": "1.05",
+      "mediaOverflow": "visible",
+      "label": "עד ⁦99 ₪⁩",
+      "labelEmoji": false,
+      "hovered": true
+    },
+    "emojiLabels": [],
+    "fallbacks": []
+  },
+  "1440": {
+    "rest": {
+      "section": {
+        "x": 145,
+        "y": 188.3,
+        "w": 1150,
+        "h": 465
+      },
+      "list": {
+        "x": 145,
+        "y": 237.3,
+        "w": 1150,
+        "h": 376
+      },
+      "columns": 4,
+      "gap": "12px",
+      "count": 8,
+      "tiles": [
+        {
+          "href": "/category/under-99",
+          "rect": {
+            "x": 1016.5,
+            "y": 237.3,
+            "w": 278.5,
+            "h": 182
+          },
+          "radius": "25px",
+          "shadow": "none",
+          "border": "1px rgb(221, 221, 221)",
+          "transition": "box-shadow",
+          "img": {
+            "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fcategories%2Funder-99.png&w=288&q=75",
+            "natural": 128,
+            "rect": {
+              "x": 1091.75,
+              "y": 250.3,
+              "w": 128,
+              "h": 128
+            }
+          },
+          "fallback": false,
+          "mediaTransform": "none",
+          "mediaScale": "none",
+          "mediaOverflow": "visible",
+          "label": "עד ⁦99 ₪⁩",
+          "labelEmoji": false,
+          "hovered": false
+        },
+        {
+          "href": "/category/restaurants-cafes",
+          "rect": {
+            "x": 726,
+            "y": 237.3,
+            "w": 278.5,
+            "h": 182
+          },
+          "radius": "25px",
+          "shadow": "none",
+          "border": "1px rgb(221, 221, 221)",
+          "transition": "box-shadow",
+          "img": {
+            "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fproducts%2Fbq-plate-3-600x600.webp&w=288&q=75",
+            "natural": 128,
+            "rect": {
+              "x": 801.25,
+              "y": 250.3,
+              "w": 128,
+              "h": 128
+            }
+          },
+          "fallback": false,
+          "mediaTransform": "none",
+          "mediaScale": "none",
+          "mediaOverflow": "visible",
+          "label": "מסעדות ובתי קפה",
+          "labelEmoji": false,
+          "hovered": false
+        },
+        {
+          "href": "/category/beauty-health",
+          "rect": {
+            "x": 435.5,
+            "y": 237.3,
+            "w": 278.5,
+            "h": 182
+          },
+          "radius": "25px",
+          "shadow": "none",
+          "border": "1px rgb(221, 221, 221)",
+          "transition": "box-shadow",
+          "img": {
+            "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fproducts%2Ffacial-small-600x600.webp&w=288&q=75",
+            "natural": 128,
+            "rect": {
+              "x": 510.75,
+              "y": 250.3,
+              "w": 128,
+              "h": 128
+            }
+          },
+          "fallback": false,
+          "mediaTransform": "none",
+          "mediaScale": "none",
+          "mediaOverflow": "visible",
+          "label": "טיפוח בריאות ויופי",
+          "labelEmoji": false,
+          "hovered": false
+        },
+        {
+          "href": "/category/phones-computers",
+          "rect": {
+            "x": 145,
+            "y": 237.3,
+            "w": 278.5,
+            "h": 182
+          },
+          "radius": "25px",
+          "shadow": "none",
+          "border": "1px rgb(221, 221, 221)",
+          "transition": "box-shadow",
+          "img": {
+            "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fproducts%2Fmaxresdefault-1-600x600.webp&w=288&q=75",
+            "natural": 128,
+            "rect": {
+              "x": 220.25,
+              "y": 250.3,
+              "w": 128,
+              "h": 128
+            }
+          },
+          "fallback": false,
+          "mediaTransform": "none",
+          "mediaScale": "none",
+          "mediaOverflow": "visible",
+          "label": "טלפונים ואלקטרוניקה",
+          "labelEmoji": false,
+          "hovered": false
+        },
+        {
+          "href": "/category/baby-kids",
+          "rect": {
+            "x": 1016.5,
+            "y": 431.3,
+            "w": 278.5,
+            "h": 182
+          },
+          "radius": "25px",
+          "shadow": "none",
+          "border": "1px rgb(221, 221, 221)",
+          "transition": "box-shadow",
+          "img": {
+            "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fhero%2Fcategory%2Fe-baby-d2.webp&w=288&q=75",
+            "natural": 128,
+            "rect": {
+              "x": 1091.75,
+              "y": 444.3,
+              "w": 128,
+              "h": 128
+            }
+          },
+          "fallback": false,
+          "mediaTransform": "none",
+          "mediaScale": "none",
+          "mediaOverflow": "visible",
+          "label": "תינוקות וילדים",
+          "labelEmoji": false,
+          "hovered": false
+        },
+        {
+          "href": "/category/vacation",
+          "rect": {
+            "x": 726,
+            "y": 431.3,
+            "w": 278.5,
+            "h": 182
+          },
+          "radius": "25px",
+          "shadow": "none",
+          "border": "1px rgb(221, 221, 221)",
+          "transition": "box-shadow",
+          "img": {
+            "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fhero%2Fcategory%2Fmaldives-2-600x488.webp&w=288&q=75",
+            "natural": 128,
+            "rect": {
+              "x": 801.25,
+              "y": 444.3,
+              "w": 128,
+              "h": 128
+            }
+          },
+          "fallback": false,
+          "mediaTransform": "none",
+          "mediaScale": "none",
+          "mediaOverflow": "visible",
+          "label": "צימרים מלונות ונופש",
+          "labelEmoji": false,
+          "hovered": false
+        },
+        {
+          "href": "/category/pets",
+          "rect": {
+            "x": 435.5,
+            "y": 431.3,
+            "w": 278.5,
+            "h": 182
+          },
+          "radius": "25px",
+          "shadow": "none",
+          "border": "1px rgb(221, 221, 221)",
+          "transition": "box-shadow",
+          "img": {
+            "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fhero%2Fcategory%2Fcute-golden-retriever-600x600.webp&w=288&q=75",
+            "natural": 128,
+            "rect": {
+              "x": 510.75,
+              "y": 444.3,
+              "w": 128,
+              "h": 128
+            }
+          },
+          "fallback": false,
+          "mediaTransform": "none",
+          "mediaScale": "none",
+          "mediaOverflow": "visible",
+          "label": "ציוד ומזון לבעלי חיים",
+          "labelEmoji": false,
+          "hovered": false
+        },
+        {
+          "href": "/category/courses",
+          "rect": {
+            "x": 145,
+            "y": 431.3,
+            "w": 278.5,
+            "h": 182
+          },
+          "radius": "25px",
+          "shadow": "none",
+          "border": "1px rgb(221, 221, 221)",
+          "transition": "box-shadow",
+          "img": {
+            "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fhero%2Fcategory%2Fstudent-849821_1280-600x600.webp&w=288&q=75",
+            "natural": 128,
+            "rect": {
+              "x": 220.25,
+              "y": 444.3,
+              "w": 128,
+              "h": 128
+            }
+          },
+          "fallback": false,
+          "mediaTransform": "none",
+          "mediaScale": "none",
+          "mediaOverflow": "visible",
+          "label": "קורסים Express בקרוב",
+          "labelEmoji": false,
+          "hovered": false
+        }
+      ]
+    },
+    "hoverFirst": {
+      "href": "/category/under-99",
+      "rect": {
+        "x": 1016.5,
+        "y": 237.3,
+        "w": 278.5,
+        "h": 182
+      },
+      "radius": "25px",
+      "shadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.1) 0px 2px 4px -2px",
+      "border": "1px rgb(221, 221, 221)",
+      "transition": "box-shadow",
+      "img": {
+        "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fcategories%2Funder-99.png&w=288&q=75",
+        "natural": 128,
+        "rect": {
+          "x": 1088.55,
+          "y": 247.1,
+          "w": 134.4,
+          "h": 134.4
+        }
+      },
+      "fallback": false,
+      "mediaTransform": "none",
+      "mediaScale": "1.05",
+      "mediaOverflow": "visible",
+      "label": "עד ⁦99 ₪⁩",
+      "labelEmoji": false,
+      "hovered": true
+    },
+    "emojiLabels": [],
+    "fallbacks": []
+  }
+}

@@ -526,6 +526,12 @@
   --radius-sm: 4px; /* 127 elements: buttons, inputs, small chips */
   --radius-md: 7px; /* 28 elements: cards, dropdown panels */
   --radius-lg: 25px; /* 14 elements: modal + large panel corners */
+  /* NOT off live: the category tile grid under the deals (CategoryGrid) sits
+     below the 2600px the gate scores and live has no such row, so there is
+     nothing to measure. 12px is Electro's elevated-card corner
+     (ELECTRO.radius.elevated in tokens.ts); it was `rounded-lg`, i.e. the
+     25px modal corner above, until UX07 (14.10.2026). */
+  --radius-elevated: 12px;
   --radius-pill: 22px; /* 188 elements: the search/newsletter pill and tags */
   --radius-round: 200px; /* 96 elements: avatars and icon buttons */
 

@@ -1,0 +1,881 @@
+{
+  "380": {
+    "rest": {
+      "section": {
+        "x": 0,
+        "y": -95.02,
+        "w": 380,
+        "h": 853
+      },
+      "list": {
+        "x": 25,
+        "y": -46.02,
+        "w": 330,
+        "h": 764
+      },
+      "columns": 2,
+      "gap": "12px",
+      "count": 8,
+      "tiles": [
+        {
+          "href": "/category/hot-deals",
+          "rect": {
+            "x": 196,
+            "y": -46.02,
+            "w": 159,
+            "h": 182
+          },
+          "radius": "12px",
+          "shadow": "none",
+          "border": "1px rgb(221, 221, 221)",
+          "transition": "box-shadow",
+          "img": {
+            "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fproducts%2Frm5-600x600.webp&w=288&q=75",
+            "natural": 171,
+            "rect": {
+              "x": 211.5,
+              "y": -33.02,
+              "w": 128,
+              "h": 128
+            }
+          },
+          "fallback": false,
+          "mediaTransform": "none",
+          "mediaScale": "none",
+          "mediaOverflow": "hidden",
+          "label": "דיל חם",
+          "labelEmoji": false,
+          "hovered": false
+        },
+        {
+          "href": "/category/under-99",
+          "rect": {
+            "x": 25,
+            "y": -46.02,
+            "w": 159,
+            "h": 182
+          },
+          "radius": "12px",
+          "shadow": "none",
+          "border": "1px rgb(221, 221, 221)",
+          "transition": "box-shadow",
+          "img": {
+            "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fcategories%2Funder-99.png&w=288&q=75",
+            "natural": 171,
+            "rect": {
+              "x": 40.5,
+              "y": -33.02,
+              "w": 128,
+              "h": 128
+            }
+          },
+          "fallback": false,
+          "mediaTransform": "none",
+          "mediaScale": "none",
+          "mediaOverflow": "hidden",
+          "label": "עד ⁦99 ₪⁩",
+          "labelEmoji": false,
+          "hovered": false
+        },
+        {
+          "href": "/category/new",
+          "rect": {
+            "x": 196,
+            "y": 147.98,
+            "w": 159,
+            "h": 182
+          },
+          "radius": "12px",
+          "shadow": "none",
+          "border": "1px rgb(221, 221, 221)",
+          "transition": "box-shadow",
+          "img": {
+            "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fproducts%2Fice3-600x600.webp&w=288&q=75",
+            "natural": 171,
+            "rect": {
+              "x": 211.5,
+              "y": 160.98,
+              "w": 128,
+              "h": 128
+            }
+          },
+          "fallback": false,
+          "mediaTransform": "none",
+          "mediaScale": "none",
+          "mediaOverflow": "hidden",
+          "label": "החדשים",
+          "labelEmoji": false,
+          "hovered": false
+        },
+        {
+          "href": "/category/restaurants-cafes",
+          "rect": {
+            "x": 25,
+            "y": 147.98,
+            "w": 159,
+            "h": 182
+          },
+          "radius": "12px",
+          "shadow": "none",
+          "border": "1px rgb(221, 221, 221)",
+          "transition": "box-shadow",
+          "img": {
+            "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fproducts%2Fbq-plate-3-600x600.webp&w=288&q=75",
+            "natural": 171,
+            "rect": {
+              "x": 40.5,
+              "y": 160.98,
+              "w": 128,
+              "h": 128
+            }
+          },
+          "fallback": false,
+          "mediaTransform": "none",
+          "mediaScale": "none",
+          "mediaOverflow": "hidden",
+          "label": "מסעדות ובתי קפה",
+          "labelEmoji": false,
+          "hovered": false
+        },
+        {
+          "href": "/category/beauty-health",
+          "rect": {
+            "x": 196,
+            "y": 341.98,
+            "w": 159,
+            "h": 182
+          },
+          "radius": "12px",
+          "shadow": "none",
+          "border": "1px rgb(221, 221, 221)",
+          "transition": "box-shadow",
+          "img": {
+            "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fproducts%2Ffacial-small-600x600.webp&w=288&q=75",
+            "natural": 171,
+            "rect": {
+              "x": 211.5,
+              "y": 354.98,
+              "w": 128,
+              "h": 128
+            }
+          },
+          "fallback": false,
+          "mediaTransform": "none",
+          "mediaScale": "none",
+          "mediaOverflow": "hidden",
+          "label": "טיפוח בריאות ויופי",
+          "labelEmoji": false,
+          "hovered": false
+        },
+        {
+          "href": "/category/phones-computers",
+          "rect": {
+            "x": 25,
+            "y": 341.98,
+            "w": 159,
+            "h": 182
+          },
+          "radius": "12px",
+          "shadow": "none",
+          "border": "1px rgb(221, 221, 221)",
+          "transition": "box-shadow",
+          "img": {
+            "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fproducts%2Fmaxresdefault-1-600x600.webp&w=288&q=75",
+            "natural": 171,
+            "rect": {
+              "x": 40.5,
+              "y": 354.98,
+              "w": 128,
+              "h": 128
+            }
+          },
+          "fallback": false,
+          "mediaTransform": "none",
+          "mediaScale": "none",
+          "mediaOverflow": "hidden",
+          "label": "טלפונים ואלקטרוניקה",
+          "labelEmoji": false,
+          "hovered": false
+        },
+        {
+          "href": "/category/baby-kids",
+          "rect": {
+            "x": 196,
+            "y": 535.98,
+            "w": 159,
+            "h": 182
+          },
+          "radius": "12px",
+          "shadow": "none",
+          "border": "1px rgb(221, 221, 221)",
+          "transition": "box-shadow",
+          "img": {
+            "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fhero%2Fcategory%2Fe-baby-d2.webp&w=288&q=75",
+            "natural": 171,
+            "rect": {
+              "x": 211.5,
+              "y": 548.98,
+              "w": 128,
+              "h": 128
+            }
+          },
+          "fallback": false,
+          "mediaTransform": "none",
+          "mediaScale": "none",
+          "mediaOverflow": "hidden",
+          "label": "תינוקות וילדים",
+          "labelEmoji": false,
+          "hovered": false
+        },
+        {
+          "href": "/category/vacation",
+          "rect": {
+            "x": 25,
+            "y": 535.98,
+            "w": 159,
+            "h": 182
+          },
+          "radius": "12px",
+          "shadow": "none",
+          "border": "1px rgb(221, 221, 221)",
+          "transition": "box-shadow",
+          "img": {
+            "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fhero%2Fcategory%2Fmaldives-2-600x488.webp&w=288&q=75",
+            "natural": 171,
+            "rect": {
+              "x": 40.5,
+              "y": 548.98,
+              "w": 128,
+              "h": 128
+            }
+          },
+          "fallback": false,
+          "mediaTransform": "none",
+          "mediaScale": "none",
+          "mediaOverflow": "hidden",
+          "label": "צימרים מלונות ונופש",
+          "labelEmoji": false,
+          "hovered": false
+        }
+      ]
+    },
+    "hoverFirst": {
+      "href": "/category/hot-deals",
+      "rect": {
+        "x": 196,
+        "y": 49.98,
+        "w": 159,
+        "h": 182
+      },
+      "radius": "12px",
+      "shadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.12) 0px 4px 16px 0px",
+      "border": "1px rgb(221, 221, 221)",
+      "transition": "box-shadow",
+      "img": {
+        "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fproducts%2Frm5-600x600.webp&w=288&q=75",
+        "natural": 171,
+        "rect": {
+          "x": 208.3,
+          "y": 59.78,
+          "w": 134.4,
+          "h": 134.4
+        }
+      },
+      "fallback": false,
+      "mediaTransform": "none",
+      "mediaScale": "1.05",
+      "mediaOverflow": "hidden",
+      "label": "דיל חם",
+      "labelEmoji": false,
+      "hovered": true
+    },
+    "emojiLabels": [],
+    "fallbacks": []
+  },
+  "768": {
+    "rest": {
+      "section": {
+        "x": 0,
+        "y": 158.3,
+        "w": 768,
+        "h": 465
+      },
+      "list": {
+        "x": 49,
+        "y": 207.3,
+        "w": 670,
+        "h": 376
+      },
+      "columns": 4,
+      "gap": "12px",
+      "count": 8,
+      "tiles": [
+        {
+          "href": "/category/hot-deals",
+          "rect": {
+            "x": 560.5,
+            "y": 207.3,
+            "w": 158.5,
+            "h": 182
+          },
+          "radius": "12px",
+          "shadow": "none",
+          "border": "1px rgb(221, 221, 221)",
+          "transition": "box-shadow",
+          "img": {
+            "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fproducts%2Frm5-600x600.webp&w=288&q=75",
+            "natural": 128,
+            "rect": {
+              "x": 575.75,
+              "y": 220.3,
+              "w": 128,
+              "h": 128
+            }
+          },
+          "fallback": false,
+          "mediaTransform": "none",
+          "mediaScale": "none",
+          "mediaOverflow": "hidden",
+          "label": "דיל חם",
+          "labelEmoji": false,
+          "hovered": false
+        },
+        {
+          "href": "/category/under-99",
+          "rect": {
+            "x": 390,
+            "y": 207.3,
+            "w": 158.5,
+            "h": 182
+          },
+          "radius": "12px",
+          "shadow": "none",
+          "border": "1px rgb(221, 221, 221)",
+          "transition": "box-shadow",
+          "img": {
+            "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fcategories%2Funder-99.png&w=288&q=75",
+            "natural": 128,
+            "rect": {
+              "x": 405.25,
+              "y": 220.3,
+              "w": 128,
+              "h": 128
+            }
+          },
+          "fallback": false,
+          "mediaTransform": "none",
+          "mediaScale": "none",
+          "mediaOverflow": "hidden",
+          "label": "עד ⁦99 ₪⁩",
+          "labelEmoji": false,
+          "hovered": false
+        },
+        {
+          "href": "/category/new",
+          "rect": {
+            "x": 219.5,
+            "y": 207.3,
+            "w": 158.5,
+            "h": 182
+          },
+          "radius": "12px",
+          "shadow": "none",
+          "border": "1px rgb(221, 221, 221)",
+          "transition": "box-shadow",
+          "img": {
+            "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fproducts%2Fice3-600x600.webp&w=288&q=75",
+            "natural": 128,
+            "rect": {
+              "x": 234.75,
+              "y": 220.3,
+              "w": 128,
+              "h": 128
+            }
+          },
+          "fallback": false,
+          "mediaTransform": "none",
+          "mediaScale": "none",
+          "mediaOverflow": "hidden",
+          "label": "החדשים",
+          "labelEmoji": false,
+          "hovered": false
+        },
+        {
+          "href": "/category/restaurants-cafes",
+          "rect": {
+            "x": 49,
+            "y": 207.3,
+            "w": 158.5,
+            "h": 182
+          },
+          "radius": "12px",
+          "shadow": "none",
+          "border": "1px rgb(221, 221, 221)",
+          "transition": "box-shadow",
+          "img": {
+            "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fproducts%2Fbq-plate-3-600x600.webp&w=288&q=75",
+            "natural": 128,
+            "rect": {
+              "x": 64.25,
+              "y": 220.3,
+              "w": 128,
+              "h": 128
+            }
+          },
+          "fallback": false,
+          "mediaTransform": "none",
+          "mediaScale": "none",
+          "mediaOverflow": "hidden",
+          "label": "מסעדות ובתי קפה",
+          "labelEmoji": false,
+          "hovered": false
+        },
+        {
+          "href": "/category/beauty-health",
+          "rect": {
+            "x": 560.5,
+            "y": 401.3,
+            "w": 158.5,
+            "h": 182
+          },
+          "radius": "12px",
+          "shadow": "none",
+          "border": "1px rgb(221, 221, 221)",
+          "transition": "box-shadow",
+          "img": {
+            "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fproducts%2Ffacial-small-600x600.webp&w=288&q=75",
+            "natural": 128,
+            "rect": {
+              "x": 575.75,
+              "y": 414.3,
+              "w": 128,
+              "h": 128
+            }
+          },
+          "fallback": false,
+          "mediaTransform": "none",
+          "mediaScale": "none",
+          "mediaOverflow": "hidden",
+          "label": "טיפוח בריאות ויופי",
+          "labelEmoji": false,
+          "hovered": false
+        },
+        {
+          "href": "/category/phones-computers",
+          "rect": {
+            "x": 390,
+            "y": 401.3,
+            "w": 158.5,
+            "h": 182
+          },
+          "radius": "12px",
+          "shadow": "none",
+          "border": "1px rgb(221, 221, 221)",
+          "transition": "box-shadow",
+          "img": {
+            "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fproducts%2Fmaxresdefault-1-600x600.webp&w=288&q=75",
+            "natural": 128,
+            "rect": {
+              "x": 405.25,
+              "y": 414.3,
+              "w": 128,
+              "h": 128
+            }
+          },
+          "fallback": false,
+          "mediaTransform": "none",
+          "mediaScale": "none",
+          "mediaOverflow": "hidden",
+          "label": "טלפונים ואלקטרוניקה",
+          "labelEmoji": false,
+          "hovered": false
+        },
+        {
+          "href": "/category/baby-kids",
+          "rect": {
+            "x": 219.5,
+            "y": 401.3,
+            "w": 158.5,
+            "h": 182
+          },
+          "radius": "12px",
+          "shadow": "none",
+          "border": "1px rgb(221, 221, 221)",
+          "transition": "box-shadow",
+          "img": {
+            "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fhero%2Fcategory%2Fe-baby-d2.webp&w=288&q=75",
+            "natural": 128,
+            "rect": {
+              "x": 234.75,
+              "y": 414.3,
+              "w": 128,
+              "h": 128
+            }
+          },
+          "fallback": false,
+          "mediaTransform": "none",
+          "mediaScale": "none",
+          "mediaOverflow": "hidden",
+          "label": "תינוקות וילדים",
+          "labelEmoji": false,
+          "hovered": false
+        },
+        {
+          "href": "/category/vacation",
+          "rect": {
+            "x": 49,
+            "y": 401.3,
+            "w": 158.5,
+            "h": 182
+          },
+          "radius": "12px",
+          "shadow": "none",
+          "border": "1px rgb(221, 221, 221)",
+          "transition": "box-shadow",
+          "img": {
+            "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fhero%2Fcategory%2Fmaldives-2-600x488.webp&w=288&q=75",
+            "natural": 128,
+            "rect": {
+              "x": 64.25,
+              "y": 414.3,
+              "w": 128,
+              "h": 128
+            }
+          },
+          "fallback": false,
+          "mediaTransform": "none",
+          "mediaScale": "none",
+          "mediaOverflow": "hidden",
+          "label": "צימרים מלונות ונופש",
+          "labelEmoji": false,
+          "hovered": false
+        }
+      ]
+    },
+    "hoverFirst": {
+      "href": "/category/hot-deals",
+      "rect": {
+        "x": 560.5,
+        "y": 207.3,
+        "w": 158.5,
+        "h": 182
+      },
+      "radius": "12px",
+      "shadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.12) 0px 4px 16px 0px",
+      "border": "1px rgb(221, 221, 221)",
+      "transition": "box-shadow",
+      "img": {
+        "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fproducts%2Frm5-600x600.webp&w=288&q=75",
+        "natural": 128,
+        "rect": {
+          "x": 572.55,
+          "y": 217.1,
+          "w": 134.4,
+          "h": 134.4
+        }
+      },
+      "fallback": false,
+      "mediaTransform": "none",
+      "mediaScale": "1.05",
+      "mediaOverflow": "hidden",
+      "label": "דיל חם",
+      "labelEmoji": false,
+      "hovered": true
+    },
+    "emojiLabels": [],
+    "fallbacks": []
+  },
+  "1440": {
+    "rest": {
+      "section": {
+        "x": 145,
+        "y": 188.3,
+        "w": 1150,
+        "h": 465
+      },
+      "list": {
+        "x": 145,
+        "y": 237.3,
+        "w": 1150,
+        "h": 376
+      },
+      "columns": 4,
+      "gap": "12px",
+      "count": 8,
+      "tiles": [
+        {
+          "href": "/category/hot-deals",
+          "rect": {
+            "x": 1016.5,
+            "y": 237.3,
+            "w": 278.5,
+            "h": 182
+          },
+          "radius": "12px",
+          "shadow": "none",
+          "border": "1px rgb(221, 221, 221)",
+          "transition": "box-shadow",
+          "img": {
+            "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fproducts%2Frm5-600x600.webp&w=288&q=75",
+            "natural": 128,
+            "rect": {
+              "x": 1091.75,
+              "y": 250.3,
+              "w": 128,
+              "h": 128
+            }
+          },
+          "fallback": false,
+          "mediaTransform": "none",
+          "mediaScale": "none",
+          "mediaOverflow": "hidden",
+          "label": "דיל חם",
+          "labelEmoji": false,
+          "hovered": false
+        },
+        {
+          "href": "/category/under-99",
+          "rect": {
+            "x": 726,
+            "y": 237.3,
+            "w": 278.5,
+            "h": 182
+          },
+          "radius": "12px",
+          "shadow": "none",
+          "border": "1px rgb(221, 221, 221)",
+          "transition": "box-shadow",
+          "img": {
+            "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fcategories%2Funder-99.png&w=288&q=75",
+            "natural": 128,
+            "rect": {
+              "x": 801.25,
+              "y": 250.3,
+              "w": 128,
+              "h": 128
+            }
+          },
+          "fallback": false,
+          "mediaTransform": "none",
+          "mediaScale": "none",
+          "mediaOverflow": "hidden",
+          "label": "עד ⁦99 ₪⁩",
+          "labelEmoji": false,
+          "hovered": false
+        },
+        {
+          "href": "/category/new",
+          "rect": {
+            "x": 435.5,
+            "y": 237.3,
+            "w": 278.5,
+            "h": 182
+          },
+          "radius": "12px",
+          "shadow": "none",
+          "border": "1px rgb(221, 221, 221)",
+          "transition": "box-shadow",
+          "img": {
+            "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fproducts%2Fice3-600x600.webp&w=288&q=75",
+            "natural": 128,
+            "rect": {
+              "x": 510.75,
+              "y": 250.3,
+              "w": 128,
+              "h": 128
+            }
+          },
+          "fallback": false,
+          "mediaTransform": "none",
+          "mediaScale": "none",
+          "mediaOverflow": "hidden",
+          "label": "החדשים",
+          "labelEmoji": false,
+          "hovered": false
+        },
+        {
+          "href": "/category/restaurants-cafes",
+          "rect": {
+            "x": 145,
+            "y": 237.3,
+            "w": 278.5,
+            "h": 182
+          },
+          "radius": "12px",
+          "shadow": "none",
+          "border": "1px rgb(221, 221, 221)",
+          "transition": "box-shadow",
+          "img": {
+            "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fproducts%2Fbq-plate-3-600x600.webp&w=288&q=75",
+            "natural": 128,
+            "rect": {
+              "x": 220.25,
+              "y": 250.3,
+              "w": 128,
+              "h": 128
+            }
+          },
+          "fallback": false,
+          "mediaTransform": "none",
+          "mediaScale": "none",
+          "mediaOverflow": "hidden",
+          "label": "מסעדות ובתי קפה",
+          "labelEmoji": false,
+          "hovered": false
+        },
+        {
+          "href": "/category/beauty-health",
+          "rect": {
+            "x": 1016.5,
+            "y": 431.3,
+            "w": 278.5,
+            "h": 182
+          },
+          "radius": "12px",
+          "shadow": "none",
+          "border": "1px rgb(221, 221, 221)",
+          "transition": "box-shadow",
+          "img": {
+            "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fproducts%2Ffacial-small-600x600.webp&w=288&q=75",
+            "natural": 128,
+            "rect": {
+              "x": 1091.75,
+              "y": 444.3,
+              "w": 128,
+              "h": 128
+            }
+          },
+          "fallback": false,
+          "mediaTransform": "none",
+          "mediaScale": "none",
+          "mediaOverflow": "hidden",
+          "label": "טיפוח בריאות ויופי",
+          "labelEmoji": false,
+          "hovered": false
+        },
+        {
+          "href": "/category/phones-computers",
+          "rect": {
+            "x": 726,
+            "y": 431.3,
+            "w": 278.5,
+            "h": 182
+          },
+          "radius": "12px",
+          "shadow": "none",
+          "border": "1px rgb(221, 221, 221)",
+          "transition": "box-shadow",
+          "img": {
+            "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fproducts%2Fmaxresdefault-1-600x600.webp&w=288&q=75",
+            "natural": 128,
+            "rect": {
+              "x": 801.25,
+              "y": 444.3,
+              "w": 128,
+              "h": 128
+            }
+          },
+          "fallback": false,
+          "mediaTransform": "none",
+          "mediaScale": "none",
+          "mediaOverflow": "hidden",
+          "label": "טלפונים ואלקטרוניקה",
+          "labelEmoji": false,
+          "hovered": false
+        },
+        {
+          "href": "/category/baby-kids",
+          "rect": {
+            "x": 435.5,
+            "y": 431.3,
+            "w": 278.5,
+            "h": 182
+          },
+          "radius": "12px",
+          "shadow": "none",
+          "border": "1px rgb(221, 221, 221)",
+          "transition": "box-shadow",
+          "img": {
+            "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fhero%2Fcategory%2Fe-baby-d2.webp&w=288&q=75",
+            "natural": 128,
+            "rect": {
+              "x": 510.75,
+              "y": 444.3,
+              "w": 128,
+              "h": 128
+            }
+          },
+          "fallback": false,
+          "mediaTransform": "none",
+          "mediaScale": "none",
+          "mediaOverflow": "hidden",
+          "label": "תינוקות וילדים",
+          "labelEmoji": false,
+          "hovered": false
+        },
+        {
+          "href": "/category/vacation",
+          "rect": {
+            "x": 145,
+            "y": 431.3,
+            "w": 278.5,
+            "h": 182
+          },
+          "radius": "12px",
+          "shadow": "none",
+          "border": "1px rgb(221, 221, 221)",
+          "transition": "box-shadow",
+          "img": {
+            "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fhero%2Fcategory%2Fmaldives-2-600x488.webp&w=288&q=75",
+            "natural": 128,
+            "rect": {
+              "x": 220.25,
+              "y": 444.3,
+              "w": 128,
+              "h": 128
+            }
+          },
+          "fallback": false,
+          "mediaTransform": "none",
+          "mediaScale": "none",
+          "mediaOverflow": "hidden",
+          "label": "צימרים מלונות ונופש",
+          "labelEmoji": false,
+          "hovered": false
+        }
+      ]
+    },
+    "hoverFirst": {
+      "href": "/category/hot-deals",
+      "rect": {
+        "x": 1016.5,
+        "y": 237.3,
+        "w": 278.5,
+        "h": 182
+      },
+      "radius": "12px",
+      "shadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.12) 0px 4px 16px 0px",
+      "border": "1px rgb(221, 221, 221)",
+      "transition": "box-shadow",
+      "img": {
+        "src": "http://localhost:3346/_next/image?url=%2Fimages%2Fproducts%2Frm5-600x600.webp&w=288&q=75",
+        "natural": 128,
+        "rect": {
+          "x": 1088.55,
+          "y": 247.1,
+          "w": 134.4,
+          "h": 134.4
+        }
+      },
+      "fallback": false,
+      "mediaTransform": "none",
+      "mediaScale": "1.05",
+      "mediaOverflow": "hidden",
+      "label": "דיל חם",
+      "labelEmoji": false,
+      "hovered": true
+    },
+    "emojiLabels": [],
+    "fallbacks": []
+  }
+}

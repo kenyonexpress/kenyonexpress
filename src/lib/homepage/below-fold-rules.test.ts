@@ -1,3 +1,7 @@
+import { existsSync } from 'node:fs'
+import { join } from 'node:path'
+import { CATEGORY_TILE_IMAGES } from '@/lib/assets'
+import { KE_LIVE_CATEGORIES } from '@/lib/ke-live-hero-data'
 import { describe, expect, it } from 'vitest'
 import {
   firstImage,
@@ -5,6 +9,7 @@ import {
   pickCategoryTiles,
   pickDealOfTheDay,
   secondsUntilJerusalemMidnight,
+  tileLabel,
 } from './below-fold-rules'
 
 describe('pickCategoryTiles', () => {
@@ -39,6 +44,71 @@ describe('pickCategoryTiles', () => {
     }))
     expect(pickCategoryTiles(rows, {}, 8)).toHaveLength(8)
     expect(pickCategoryTiles(rows, {}, 8)[0]?.imageUrl).toBeNull()
+  })
+
+  it('prints the row name through tileLabel, so the live "דיל חם 🔥" tile reads "דיל חם"', () => {
+    const [tile] = pickCategoryTiles(
+      [{ slug: 'hot-deals', name_he: 'דיל חם 🔥', image_url: null }],
+      images,
+    )
+    expect(tile?.nameHe).toBe('דיל חם')
+  })
+})
+
+/**
+ * UX07 (14.10.2026): the tile is a photograph of the department, so the name
+ * beside it carries no second, font-dependent picture. The database rows keep
+ * their emoji (the hero panel prints live's "דילים חמים 🔥" as live does);
+ * this is the grid's rule only.
+ */
+describe('tileLabel', () => {
+  it('strips an emoji and the space it leaves', () => {
+    expect(tileLabel('דיל חם 🔥')).toBe('דיל חם')
+    expect(tileLabel('🔥 דיל חם')).toBe('דיל חם')
+    expect(tileLabel('דיל 🔥 חם')).toBe('דיל חם')
+  })
+
+  it('strips variation selectors, joiners and multi-codepoint sequences', () => {
+    expect(tileLabel('חדש ✨\uFE0F')).toBe('חדש')
+    expect(tileLabel('משפחה 👨\u200D👩\u200D👧')).toBe('משפחה')
+    expect(tileLabel('👍🏽 מומלץ')).toBe('מומלץ')
+  })
+
+  it('leaves a shekel price with its LTR isolate and no-break space intact', () => {
+    const under99 = 'עד \u206699\u00A0₪\u2069'
+    expect(tileLabel(under99)).toBe(under99)
+  })
+
+  it('leaves Latin, digits and punctuation alone', () => {
+    expect(tileLabel('קורסים Express – בקרוב . . .')).toBe('קורסים Express – בקרוב . . .')
+  })
+})
+
+/**
+ * Every live top-level department has a photograph, and the file is really
+ * there. Production's thirteen active top-level rows all carry a null
+ * `image_url`, so this map is the only picture a tile has; the slug list is
+ * live's own (KE_LIVE_CATEGORIES) plus `electronics`, which is in the table
+ * but not in live's menu. Eight of thirteen used to be mapped, which was
+ * exactly the grid's eight, so the other five were sorted to the back and
+ * dropped, and a menu reorder would have put a grey box on the home page.
+ */
+describe('CATEGORY_TILE_IMAGES', () => {
+  const liveSlugs = [...KE_LIVE_CATEGORIES.map((c) => c.slug), 'electronics']
+
+  it('maps every live top-level slug', () => {
+    for (const slug of liveSlugs) {
+      expect(CATEGORY_TILE_IMAGES[slug], `${slug} has no tile photograph`).toBeTruthy()
+    }
+  })
+
+  it('points every slug at a file under public/', () => {
+    for (const [slug, url] of Object.entries(CATEGORY_TILE_IMAGES)) {
+      expect(url.startsWith('/images/'), `${slug}: ${url} is not an ingested file`).toBe(true)
+      expect(existsSync(join(process.cwd(), 'public', url)), `${slug}: ${url} is missing`).toBe(
+        true,
+      )
+    }
   })
 })
 

@@ -42,18 +42,34 @@ export const CATEGORIES = HERO_CATEGORY_BANNERS
 /**
  * The home page's category tiles, keyed by the category SLUG in the database
  * (`categories.slug`), so `CategoryGrid` can photograph a row it read rather
- * than a constant. The same eight ingested files as HERO_CATEGORY_BANNERS; a
- * row's own `image_url` (an uploaded image) wins over this map when set.
+ * than a constant. A row's own `image_url` (an uploaded image) wins over this
+ * map when set.
+ *
+ * EVERY LIVE TOP-LEVEL SLUG IS HERE, AND THAT IS THE POINT (UX07, 14.10.2026).
+ * Production carries thirteen active top-level rows and `image_url` is null on
+ * all of them, so this map is the only photograph a tile has. It used to
+ * cover eight, which was exactly the grid's eight, so `hot-deals`, `new`,
+ * `electronics` and `professionals` were silently sorted to the back and
+ * dropped; an operator reordering the menu, or a ninth tile, would have shown
+ * the grey placeholder box. The four new ones are ingested live product
+ * photographs from the same folder HERO_CATEGORY_BANNERS reads, chosen for
+ * the department, not generated. `below-fold-rules.test.ts` pins that every
+ * slug in KE_LIVE_CATEGORIES has a file here and that each file exists.
  */
 export const CATEGORY_TILE_IMAGES: Readonly<Record<string, string>> = {
-  'baby-kids': HERO_CATEGORY_BANNERS.kids,
-  courses: HERO_CATEGORY_BANNERS.courses,
-  vacation: HERO_CATEGORY_BANNERS.hotels,
-  pets: HERO_CATEGORY_BANNERS.pets,
+  'hot-deals': '/images/products/rm5-600x600.webp',
   'under-99': HERO_CATEGORY_BANNERS.under99,
+  new: '/images/products/ice3-600x600.webp',
   'restaurants-cafes': HERO_CATEGORY_BANNERS.restaurants,
   'beauty-health': HERO_CATEGORY_BANNERS.beauty,
   'phones-computers': HERO_CATEGORY_BANNERS.phones,
+  'baby-kids': HERO_CATEGORY_BANNERS.kids,
+  vacation: HERO_CATEGORY_BANNERS.hotels,
+  pets: HERO_CATEGORY_BANNERS.pets,
+  electronics: '/images/products/sony3-600x600.webp',
+  professionals:
+    '/images/products/Free-Photo-_-Client-doing-hair-cut-at-a-barber-shop-salon-600x417.webp',
+  courses: HERO_CATEGORY_BANNERS.courses,
 }
 
 export const HERO_ICONS = {

@@ -68,11 +68,42 @@ export interface CategoryTile {
 }
 
 /**
+ * Pictographs and the joiners that dress them: the emoji blocks (Misc Symbols
+ * through Supplemental Symbols and Pictographs), the arrows/dingbats range
+ * the fire and star glyphs sit in, the text/emoji variation selectors, the
+ * zero-width joiner (the skin-tone modifiers sit inside the first block).
+ * Written as code points, not
+ * `\p{Extended_Pictographic}`: the project's TS target predates Unicode
+ * property escapes, and a `\p{}` that passes vitest fails type-check. The
+ * selectors and the joiner are alternations, not class members, because biome
+ * refuses a class that mixes a character with a combining one.
+ *
+ * NOT TOUCHED: the LTR isolates (U+2066..U+2069) and the no-break space that
+ * `shekelsRounded` wraps a price in, so "עד 99 ₪" keeps its direction. That
+ * is why the collapse below is ` {2,}` and not `\s+`: `\s` matches U+00A0.
+ */
+const PICTOGRAPHS =
+  /[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}]|\u{FE0E}|\u{FE0F}|\u{200D}/gu
+
+/**
+ * A category's name as the tile prints it: the row's Hebrew with any emoji
+ * (and the whitespace it left behind) removed. The tile already carries a
+ * photograph of the department; a glyph beside the name was a second,
+ * font-dependent picture, and on a phone it also wrapped the label. The
+ * database row keeps its emoji for the hero panel and the admin, which read
+ * `name_he` directly; this is the home grid's rule only.
+ */
+export function tileLabel(nameHe: string): string {
+  return nameHe.replace(PICTOGRAPHS, '').replace(/ {2,}/g, ' ').trim()
+}
+
+/**
  * The tiles to render, in menu order, with the ones that have a real image
  * first. A category's own `image_url` wins; otherwise the ingested file the
  * slug maps to in `CATEGORY_TILE_IMAGES`; otherwise the tile renders the
  * SmartImage fallback rather than being dropped, so a catalogue with fewer
- * than `limit` photographed categories still fills the grid.
+ * than `limit` photographed categories still fills the grid. Names go
+ * through `tileLabel`.
  */
 export function pickCategoryTiles(
   rows: readonly CategoryTileRow[],
@@ -83,7 +114,7 @@ export function pickCategoryTiles(
   const without: CategoryTile[] = []
   for (const row of rows) {
     const imageUrl = row.image_url || images[row.slug] || null
-    const tile = { slug: row.slug, nameHe: row.name_he, imageUrl }
+    const tile = { slug: row.slug, nameHe: tileLabel(row.name_he), imageUrl }
     if (imageUrl) withImage.push(tile)
     else without.push(tile)
   }

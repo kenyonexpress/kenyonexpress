@@ -11,6 +11,20 @@ import Link from 'next/link'
  * all below the header menu. This grid is the database's own list (menu order,
  * top level, active), photographed with the same ingested files the strip
  * uses, and it sits below the 2600px the parity gate scores.
+ *
+ * THE CARD (UX07, 14.10.2026), measured before on the build of HEAD at 380 /
+ * 768 / 1440 (logs/ux07/before.json): the corner was `rounded-lg`, which this
+ * theme resolves to `--radius-lg`, the 25px MODAL corner, so every tile had
+ * the radius of a dialog; now `rounded-elevated`, Electro's 12px elevated
+ * card (`--radius-elevated`, mirrored from ELECTRO.radius.elevated). The
+ * hover was Tailwind's stock `shadow-md`, a two-layer shadow nothing else on
+ * the site paints and one of the values tokens.css forbids ("the only two
+ * any component may use"); now `shadow-card-hover`, the Electro hover
+ * shadow every other card uses. The photograph zooms 5% on hover inside a
+ * box that clips at the same corner, so the zoom stays a zoom and does not
+ * grow the card. Every tile has a photograph: `CATEGORY_TILE_IMAGES` covers
+ * every live top-level slug, and a label never carries an emoji
+ * (`tileLabel`); the picture of the department is the picture.
  */
 export default async function CategoryGrid() {
   const tiles = await getHomeCategoryTiles()
@@ -30,16 +44,17 @@ export default async function CategoryGrid() {
           <li key={tile.slug}>
             <Link
               href={`/category/${tile.slug}`}
-              className="group flex min-h-11 flex-col items-center rounded-lg border border-border bg-white p-3 text-center transition-shadow hover:shadow-md"
+              data-category-tile={tile.slug}
+              className="group flex min-h-11 flex-col items-center rounded-elevated border border-border bg-white p-3 text-center transition-shadow duration-300 hover:shadow-card-hover"
             >
-              <div className="relative aspect-square w-full max-w-32">
+              <div className="relative aspect-square w-full max-w-32 overflow-hidden rounded-elevated">
                 <SmartImage
                   src={tile.imageUrl ?? ''}
                   alt=""
                   fill
                   sizes="(max-width: 767px) 45vw, 128px"
-                  className="object-contain transition-transform duration-300 group-hover:scale-105"
-                  fallbackClassName="absolute inset-0 rounded-md"
+                  className="object-contain transition-transform duration-300 group-hover:scale-105 motion-reduce:transition-none"
+                  fallbackClassName="absolute inset-0"
                 />
               </div>
               <span className="mt-2 block text-sm font-semibold text-heading">{tile.nameHe}</span>
