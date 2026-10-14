@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
   CATEGORY_PAGE_SIZE,
+  CATEGORY_SKELETON_CARDS,
+  SHOP_PAGE_SIZE,
   categoryMetaDescription,
   collectionFilter,
   collectionRule,
@@ -197,12 +199,17 @@ describe('categoryMetaDescription', () => {
 })
 
 /**
- * Eight cards a page is the listing contract (goal of 2026-09-16). The grid,
- * the skeleton, the result-count wording and the last-page arithmetic all
- * read this constant, so the number is pinned here rather than in four places.
+ * Twenty-four cards a page since the grid appends pages on scroll (closeout
+ * L10 row 4). The placeholder stays at eight: it is sized for the layout shift
+ * it was measured against, not for the page.
  */
 describe('CATEGORY_PAGE_SIZE', () => {
-  it('is eight', () => {
-    expect(CATEGORY_PAGE_SIZE).toBe(8)
+  it('is twenty-four, the same as the shop', () => {
+    expect(CATEGORY_PAGE_SIZE).toBe(24)
+    expect(CATEGORY_PAGE_SIZE).toBe(SHOP_PAGE_SIZE)
+  })
+
+  it('keeps the placeholder at eight cards', () => {
+    expect(CATEGORY_SKELETON_CARDS).toBe(8)
   })
 })

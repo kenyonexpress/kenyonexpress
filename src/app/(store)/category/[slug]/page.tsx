@@ -3,13 +3,16 @@ import CategoryBreadcrumb, { defaultHomeCrumb } from '@/components/category/Cate
 import CategoryControlBar from '@/components/category/CategoryControlBar'
 import CategoryFilterSidebar from '@/components/category/CategoryFilterSidebar'
 import CategoryGridSkeleton from '@/components/category/CategoryGridSkeleton'
-import CategoryProductCard, {
-  type CategoryProduct,
-} from '@/components/category/CategoryProductCard'
+import type { CategoryProduct } from '@/components/category/CategoryProductCard'
+import InfiniteProductGrid from '@/components/category/InfiniteProductGrid'
 import Pagination from '@/components/category/Pagination'
 import CityTags from '@/components/geo/CityTags'
+import { listingEndpoint } from '@/lib/catalogue/infinite-state'
+import { toListingCard } from '@/lib/catalogue/listing-page'
+import { resultCountText } from '@/lib/catalogue/result-count'
 import {
   CATEGORY_PAGE_SIZE,
+  CATEGORY_SKELETON_CARDS,
   type CollectionRule,
   type ProductTypeFilter,
   categoryMetaDescription,
@@ -43,13 +46,6 @@ function parsePrice(raw: string | string[] | undefined): number | undefined {
   if (typeof raw !== 'string') return undefined
   const n = Number.parseFloat(raw)
   return Number.isFinite(n) && n >= 0 ? n : undefined
-}
-
-/* Live WooCommerce result-count wording */
-function resultCountText(total: number, from: number, to: number): string {
-  if (total === 1) return 'מציג תוצאה יחידה'
-  if (to - from + 1 >= total) return `מציגים את כל ⁦${total}⁩ התוצאות`
-  return `מציג ${from}–${to} מתוך ${total} תוצאות`
 }
 
 /**
@@ -188,10 +184,13 @@ async function ResultGrid({
   args,
   pathname,
   linkParams,
+  endpoint,
 }: {
   args: QueryArgs
   pathname: string
   linkParams: Record<string, string | undefined>
+  /** The listing endpoint for this category and these filters, without `page`. */
+  endpoint: string
 }) {
   const { items, total } = await categoryPageOrLast(args)
 
@@ -207,27 +206,26 @@ async function ResultGrid({
     )
   }
 
-  const { totalPages, currentPage, from, to } = pageWindow(total, args.page)
+  const { totalPages, currentPage } = pageWindow(total, args.page)
 
+  // The first page is rendered here, on the server, and the numbered links
+  // are handed to the grid as its fallback. See InfiniteProductGrid.
   return (
-    <>
-      <ul className="category-products">
-        {ordered.map((product) => (
-          <li key={product.id} className="category-products__item">
-            <CategoryProductCard product={product as CategoryProduct} />
-          </li>
-        ))}
-      </ul>
+    <InfiniteProductGrid
+      initial={ordered.map((product) => toListingCard(product as CategoryProduct))}
+      startPage={currentPage}
+      totalPages={totalPages}
+      total={total}
+      pageSize={CATEGORY_PAGE_SIZE}
+      endpoint={endpoint}
+    >
       <Pagination
         pathname={pathname}
         params={linkParams}
         currentPage={currentPage}
         totalPages={totalPages}
       />
-      <p className="category-page__count category-page__count--bottom">
-        {resultCountText(total, from, to)}
-      </p>
-    </>
+    </InfiniteProductGrid>
   )
 }
 
@@ -271,7 +269,7 @@ function CategoryPageFallback() {
         <div className="category-control-bar" aria-hidden="true" />
         <div className="category-page__body">
           <div className="category-page__main">
-            <CategoryGridSkeleton count={CATEGORY_PAGE_SIZE} />
+            <CategoryGridSkeleton count={CATEGORY_SKELETON_CARDS} />
           </div>
           <div className="category-sidebar" aria-hidden="true" />
         </div>
@@ -405,8 +403,23 @@ async function CategoryPageBody({
 
         <div className="category-page__body">
           <div className="category-page__main">
-            <Suspense fallback={<CategoryGridSkeleton count={CATEGORY_PAGE_SIZE} />}>
-              <ResultGrid args={args} pathname={pathname} linkParams={linkParams} />
+            <Suspense fallback={<CategoryGridSkeleton count={CATEGORY_SKELETON_CARDS} />}>
+              <ResultGrid
+                args={args}
+                pathname={pathname}
+                linkParams={linkParams}
+                endpoint={listingEndpoint(
+                  'category',
+                  {
+                    ...linkParams,
+                    city,
+                    // The raw value, and only when it parsed: the endpoint
+                    // reads it with the same `parseNear`.
+                    near: near && typeof sp.near === 'string' ? sp.near : undefined,
+                  },
+                  category.slug,
+                )}
+              />
             </Suspense>
           </div>
 

@@ -831,6 +831,28 @@
   list-style: none;
 }
 
+/* The infinite grid's button: the same action as scrolling to the end, for a
+   keyboard and for a failed request. Sits in the pagination's own box. */
+.category-load-more {
+  padding: 0.5em 1.25em;
+  border: thin solid var(--cat-line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--cat-ink);
+  font: inherit;
+  cursor: pointer;
+}
+
+.category-load-more:hover:not(:disabled) {
+  color: var(--cat-link);
+  border-color: var(--cat-link);
+}
+
+.category-load-more:disabled {
+  color: var(--cat-muted);
+  cursor: progress;
+}
+
 .category-pagination a,
 .category-pagination span {
   display: inline-flex;

@@ -430,6 +430,22 @@ What follows from it:
 can reach. It does not resolve the fork, and it makes it deeper with every
 feature built on `main`. That cost is real and is Ofir's to weigh.
 
+### D-45. A category page holds twenty-four products, not eight ⚠️
+
+2026-10-14. The listing contract of 2026-09-16 was eight cards a page, pinned
+by `category-page.test.ts`. The L1 to L16 queue asks for infinite scroll at
+twenty-four. The queue is newer, so `CATEGORY_PAGE_SIZE` is 24, the same as
+`/products`, and the test pins the new number.
+
+- The numbered `?page=` links stay in the server response. They are what a
+  crawler follows; the grid hides them only once it can load pages itself.
+- The loading placeholder stays at eight cards (`CATEGORY_SKELETON_CARDS`).
+  It was measured at that size against layout shift, and most categories hold
+  fewer than ten products.
+
+**Why:** with pages appended on scroll, a page is a unit of loading and not a
+screen. Eight would cost a request every two rows.
+
 ---
 
 ## Superseded

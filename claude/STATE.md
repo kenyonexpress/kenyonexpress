@@ -4,7 +4,7 @@ Updated: 2026-10-14 (Asia/Bangkok). Queue: FINAL-CLOSEOUT L1 to L16, issued 14.1
 
 ## Current Position
 
-**המשך מ: שלב L10 (BUILD GAPS), שורה 4 (גלילה אינסופית), ואז 9, 10, 6, 8, 5. סגורות: 2, 18, 24, 28, 30, 29 (אדמין), 3 (חוץ מדירוג ופופולריות, ממתינות ל-235)**
+**המשך מ: שלב L10 (BUILD GAPS), שורה 5 (נצפו לאחרונה, פורט מפרוד + פס בדף הבית), ואז 9, 10, 6, 8. סגורות: 2, 4, 18, 24, 28, 30, 29 (אדמין), 3 (חוץ מדירוג ופופולריות, ממתינות ל-235)**
 
 The checklist with evidence is `docs/FINAL-CLOSEOUT.md`. Decisions taken alone
 are `docs/DECISIONS.md` D-42 onward.
@@ -50,7 +50,18 @@ Closed so far, each with type-check, lint, test green (510 files, 5949 passed):
   three thresholds, three categories. The tree's nesting is unit-tested only:
   all 13 live categories are roots. Meilisearch not exercised. The category
   pages did not get these facets.
-- Disk: the build died once with ENOSPC. 658 MB free after a clean rebuild.
+- Row 4, infinite scroll: both listings at 24 a page (D-45), next page
+  appended on scroll, Back restores the loaded pages and the offset. 515
+  files, 6041 tests, build 0. Chromium on a built server, `/products`: 24
+  then 46 cards, Back to the same offset, fresh visit at the top, numbered
+  links present without script. A category second page was not seen in a
+  browser: no live category has more than 24 products.
+- Row 4, a mistake caught by the build: an edit script deleted
+  `generateMetadata` and `generateStaticParams` from the category page. Tests,
+  type-check and lint all passed without them. Restored from git before
+  commit; every removed line of both pages was then read.
+- Disk: the build died once with ENOSPC. Later the temp directory was cleared
+  by something else and free space is 20 GB. 658 MB free after a clean rebuild.
   Nothing outside this checkout's own `.next` was removed. 1.6 GB sits in
   another session's temp directory (`3d900add...`), three desktop backups are
   0.8 GB each. The next build may fail the same way.
