@@ -114,3 +114,6 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-14 03:28 | home | 380 | 2.22% | PASS | `f10f9e166-dirty` | live side: frozen capture `refs/ke_live_380.png`; overall 4.44% (reference blank 1.14%, ours blank 1.08%) |
 | 2026-10-14 03:30 | home | 768 | 1.25% | PASS | `f10f9e166-dirty` | live side: frozen capture `refs/ke_live_768.png`; overall 5.23% (reference blank 2.83%, ours blank 1.15%) |
 | 2026-10-14 03:31 | home | 1440 | 1.16% | PASS | `f10f9e166-dirty` | live side: frozen capture `refs/ke_live_1440.png`; overall 10.97% (reference blank 8.54%, ours blank 1.27%) |
+| 2026-10-14 04:01 | home | 380 | 2.22% | PASS | `a6fb97765-dirty` | live side: frozen capture `refs/ke_live_380.png`; overall 4.44% (reference blank 1.14%, ours blank 1.08%) |
+| 2026-10-14 04:03 | home | 768 | 1.25% | PASS | `a6fb97765-dirty` | live side: frozen capture `refs/ke_live_768.png`; overall 5.23% (reference blank 2.83%, ours blank 1.15%) |
+| 2026-10-14 04:04 | home | 1440 | 1.16% | PASS | `a6fb97765-dirty` | live side: frozen capture `refs/ke_live_1440.png`; overall 10.97% (reference blank 8.54%, ours blank 1.27%) |

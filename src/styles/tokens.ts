@@ -88,6 +88,15 @@ export const SITE = {
     icon: '#515151',
     /** Large empty-state glyphs (empty cart, no results). */
     iconEmpty: '#cccccc',
+    /**
+     * The off-canvas drawer's own hairlines and type, read off live's
+     * `.off-canvas-navigation.light` rules (UX04, 14.10.2026): the panel's
+     * inner edge and every row rule are #e3e9ef, and the rows read #4b566b
+     * (`!important` on live, so the highlight rows too). Neither is the site
+     * border (#ddd) nor the heading (#333e48) the drawer used to borrow.
+     */
+    drawerBorder: '#e3e9ef',
+    drawerText: '#4b566b',
   },
   /**
    * Surfaces. `ink` and `surface` are the admin console's text/paper pair: they
@@ -112,6 +121,12 @@ export const SITE = {
      * the one-point-off-white is visible against the page behind it.
      */
     drawer: '#fdfcfc',
+    /**
+     * A drawer row under the pointer: live's `.off-canvas-navigation.light ul
+     * li a:hover{background-color:#ebebeb;color:#000}`. Two steps darker than
+     * the site's #f5f5f5 row tint, which is what the rows used to borrow.
+     */
+    drawerHover: '#ebebeb',
     /**
      * The hero slider's own ground, measured off refs/ke_live_home.html.
      *
@@ -278,6 +293,9 @@ export const SITE_CSS_VARS: Record<string, string> = {
   '--color-warning-surface': SITE.surface.warning,
   '--color-footer-bg': SITE.surface.footer,
   '--color-drawer-bg': SITE.surface.drawer,
+  '--color-drawer-hover': SITE.surface.drawerHover,
+  '--color-drawer-border': SITE.neutral.drawerBorder,
+  '--color-drawer-text': SITE.neutral.drawerText,
   '--color-hero-slider-bg': SITE.surface.heroSlider,
 
   '--color-promo-rose': SITE.promo.rose,

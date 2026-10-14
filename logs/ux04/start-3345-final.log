@@ -1,0 +1,54 @@
+Already up to date
+Done in 191ms using pnpm v11.1.2
+$ next start
+▲ Next.js 16.3.3
+- Local:         http://localhost:3345
+- Network:       http://100.84.130.122:3345
+✓ Ready in 114ms
+✓ Running next.config.ts took 379ms
+{"ts":"2026-10-14T04:09:50.268Z","level":"warn","event":"env.checks_skipped","request_id":null,"detail":"ALLOW_INCOMPLETE_ENV=true. Correct for a local `next start`; wrong anywhere a customer can reach."}
+{"ts":"2026-10-14T04:09:51.853Z","level":"info","event":"env.probe_ok","request_id":null,"checked":2}
+{"ts":"2026-10-14T04:09:54.975Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"v_banners_live","status":200,"duration_ms":312,"threshold_ms":300}
+{"ts":"2026-10-14T04:09:55.536Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"v_homepage_sections_live","status":200,"duration_ms":863,"threshold_ms":300}
+{"ts":"2026-10-14T04:09:55.586Z","level":"warn","event":"db.query_slow","request_id":"74786cb0-961b-447e-9b22-8d76415ea410","route":"action","method":"GET","target":"carts","status":200,"duration_ms":616,"threshold_ms":300}
+{"ts":"2026-10-14T04:09:55.722Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"v_banners_live","status":200,"duration_ms":625,"threshold_ms":300}
+{"ts":"2026-10-14T04:09:55.759Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"v_homepage_sections_live","status":200,"duration_ms":661,"threshold_ms":300}
+{"ts":"2026-10-14T04:09:56.218Z","level":"warn","event":"db.query_slow","request_id":"04d22972-8f80-48c5-80a0-da45de71be7f","route":"action","method":"GET","target":"carts","status":200,"duration_ms":1262,"threshold_ms":300}
+{"ts":"2026-10-14T04:09:57.099Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"v_banners_live","status":200,"duration_ms":2427,"threshold_ms":300}
+{"ts":"2026-10-14T04:09:57.634Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"products","status":206,"duration_ms":365,"threshold_ms":300}
+{"ts":"2026-10-14T04:09:57.966Z","level":"warn","event":"db.query_slow","request_id":"7d0f0e6a-8da5-49eb-8a20-84ba99954230","route":"action","method":"GET","target":"carts","status":200,"duration_ms":574,"threshold_ms":300}
+{"ts":"2026-10-14T04:09:58.631Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"price_history","status":200,"duration_ms":980,"threshold_ms":300}
+{"ts":"2026-10-14T04:09:59.692Z","level":"warn","event":"db.query_slow","request_id":"ed4db387-3f9b-48e0-8e73-abf7c8d9374f","route":"action","method":"GET","target":"carts","status":200,"duration_ms":4488,"threshold_ms":300}
+(node:42357) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+(Use `node --trace-warnings ...` to show where the warning was created)
+{"ts":"2026-10-14T04:10:00.348Z","level":"warn","event":"db.query_slow","request_id":"5b9e9cc3-94e4-4f01-9f47-e450357cfec4","route":"action","method":"GET","target":"carts","status":200,"duration_ms":386,"threshold_ms":300}
+{"ts":"2026-10-14T04:10:00.827Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"category_banners","status":404,"duration_ms":701,"threshold_ms":300}
+{"ts":"2026-10-14T04:10:00.828Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"products","status":200,"duration_ms":701,"threshold_ms":300}
+{"ts":"2026-10-14T04:10:00.828Z","level":"warn","event":"category_banners.schema_absent","request_id":null,"where":"category","hint":"migration 267 not applied"}
+(node:42357) ExperimentalWarning: The supports Web Crypto API method is an experimental feature and might change at any time
+(node:42357) ExperimentalWarning: The ML-DSA-44 Web Crypto API algorithm is an experimental feature and might change at any time
+{"ts":"2026-10-14T04:10:02.543Z","level":"warn","event":"db.query_slow","request_id":"cfb0be2e-ade6-4221-9f0c-aabb40404fe1","route":"action","method":"GET","target":"carts","status":200,"duration_ms":871,"threshold_ms":300}
+{"ts":"2026-10-14T04:10:04.621Z","level":"warn","event":"db.query_slow","request_id":null,"method":"POST","target":"rpc:available_stock","status":200,"duration_ms":945,"threshold_ms":300}
+{"ts":"2026-10-14T04:10:05.486Z","level":"warn","event":"db.query_slow","request_id":"79b685b9-49fb-40e9-976e-e20898159ce8","route":"action","method":"GET","target":"carts","status":200,"duration_ms":1828,"threshold_ms":300}
+{"ts":"2026-10-14T04:10:05.823Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"products","status":200,"duration_ms":2146,"threshold_ms":300}
+{"ts":"2026-10-14T04:10:06.407Z","level":"warn","event":"db.query_slow","request_id":"160e3cbc-7fb8-48d7-95ac-6fae83cd848f","route":"action","method":"GET","target":"carts","status":200,"duration_ms":2635,"threshold_ms":300}
+{"ts":"2026-10-14T04:10:08.525Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"v_homepage_sections_live","status":200,"duration_ms":1068,"threshold_ms":300}
+{"ts":"2026-10-14T04:10:08.526Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"v_banners_live","status":200,"duration_ms":1069,"threshold_ms":300}
+{"ts":"2026-10-14T04:10:08.527Z","level":"warn","event":"db.query_slow","request_id":"a6470572-1917-4a43-b0ef-965f3b2df2ed","route":"action","method":"GET","target":"carts","status":200,"duration_ms":961,"threshold_ms":300}
+{"ts":"2026-10-14T04:10:10.902Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"v_homepage_sections_live","status":200,"duration_ms":1384,"threshold_ms":300}
+{"ts":"2026-10-14T04:10:10.904Z","level":"warn","event":"db.query_slow","request_id":"a84bfd2d-a41c-425e-a57b-84c007ff3054","route":"action","method":"GET","target":"carts","status":200,"duration_ms":1264,"threshold_ms":300}
+{"ts":"2026-10-14T04:10:10.908Z","level":"warn","event":"db.query_slow","request_id":"5ab53c6c-84c1-4160-9d50-6d15faa1035f","route":"action","method":"GET","target":"carts","status":200,"duration_ms":1736,"threshold_ms":300}
+{"ts":"2026-10-14T04:10:12.039Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"v_banners_live","status":200,"duration_ms":2521,"threshold_ms":300}
+{"ts":"2026-10-14T04:10:12.634Z","level":"warn","event":"db.query_slow","request_id":"50864ca3-c2ee-4ac9-ae5e-47e9e45363ae","route":"action","method":"GET","target":"carts","status":200,"duration_ms":331,"threshold_ms":300}
+{"ts":"2026-10-14T04:10:13.145Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"v_banners_live","status":200,"duration_ms":952,"threshold_ms":300}
+{"ts":"2026-10-14T04:10:13.398Z","level":"error","event":"supabase.timeout","request_id":"2661bcaf-f1a1-4bcc-853e-bdc86d4797aa","route":"action","method":"cart.get","timeoutMs":10000,"url":"https://ixvwfbuvfxxsjiywhbbb.supabase.co/rest/v1/carts"}
+{"ts":"2026-10-14T04:10:13.663Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"v_homepage_sections_live","status":200,"duration_ms":1469,"threshold_ms":300}
+{"ts":"2026-10-14T04:10:15.795Z","level":"warn","event":"db.query_slow","request_id":"202f55c8-bdad-428d-b7b7-b82ee622c916","route":"action","method":"GET","target":"carts","status":200,"duration_ms":410,"threshold_ms":300}
+{"ts":"2026-10-14T04:10:17.432Z","level":"warn","event":"db.query_slow","request_id":"e7f65702-4f82-441d-b06a-f7afe6cbef4b","route":"action","method":"GET","target":"carts","status":200,"duration_ms":378,"threshold_ms":300}
+{"ts":"2026-10-14T04:10:50.388Z","level":"warn","event":"db.query_slow","request_id":"1fce5960-6f57-43f4-87c2-2edba45eb457","route":"action","method":"GET","target":"carts","status":200,"duration_ms":2679,"threshold_ms":300}
+{"ts":"2026-10-14T04:10:51.012Z","level":"warn","event":"db.query_slow","request_id":null,"method":"POST","target":"rpc:available_stock","status":200,"duration_ms":3397,"threshold_ms":300}
+{"ts":"2026-10-14T04:10:51.976Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"products","status":200,"duration_ms":4360,"threshold_ms":300}
+{"ts":"2026-10-14T04:10:52.596Z","level":"warn","event":"db.query_slow","request_id":"afc9b2ea-abfd-4272-9829-2523113f7755","route":"action","method":"GET","target":"carts","status":200,"duration_ms":5139,"threshold_ms":300}
+{"ts":"2026-10-14T04:10:54.155Z","level":"warn","event":"db.query_slow","request_id":"376dccc9-eddc-41e4-9b62-f949cd73774c","route":"action","method":"GET","target":"carts","status":200,"duration_ms":427,"threshold_ms":300}
+{"ts":"2026-10-14T04:10:54.295Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"v_homepage_sections_live","status":200,"duration_ms":679,"threshold_ms":300}
+[ELIFECYCLE] Command failed with exit code 143.

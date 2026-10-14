@@ -1,0 +1,36 @@
+Already up to date
+Done in 189ms using pnpm v11.1.2
+
+Running 30 tests using 2 workers
+
+[1A[2K[1/30] [chromium] › e2e/menu-drawer.spec.ts:89:9 › the drawer at 380 › the closed scrim is inert and out of the hit test
+[1A[2K[2/30] [chromium] › e2e/menu-drawer.spec.ts:100:9 › the drawer at 380 › the toggle is the heading colour and hovers to black
+[1A[2K[3/30] [chromium] › e2e/menu-drawer.spec.ts:113:9 › the drawer at 380 › opens a 280px panel on live's paper, hairline and motion
+[1A[2K[4/30] [chromium] › e2e/menu-drawer.spec.ts:140:9 › the drawer at 380 › the open scrim is 70% black over 200ms and is live in the hit test
+[1A[2K[5/30] [chromium] › e2e/menu-drawer.spec.ts:152:9 › the drawer at 380 › the rows are live's: 50px, 19.4px inset, #4b566b on #e3e9ef, hover #ebebeb + black
+[1A[2K[6/30] [chromium] › e2e/menu-drawer.spec.ts:191:9 › the drawer at 380 › the title row sits on the same hairline and the close button hovers to black
+[1A[2K[7/30] [chromium] › e2e/menu-drawer.spec.ts:89:9 › the drawer at 768 › the closed scrim is inert and out of the hit test
+[1A[2K[8/30] [chromium] › e2e/menu-drawer.spec.ts:100:9 › the drawer at 768 › the toggle is the heading colour and hovers to black
+[1A[2K[9/30] [chromium] › e2e/menu-drawer.spec.ts:113:9 › the drawer at 768 › opens a 350px panel on live's paper, hairline and motion
+[1A[2K[10/30] [chromium] › e2e/menu-drawer.spec.ts:140:9 › the drawer at 768 › the open scrim is 70% black over 200ms and is live in the hit test
+[1A[2K[11/30] [chromium] › e2e/menu-drawer.spec.ts:152:9 › the drawer at 768 › the rows are live's: 50px, 19.4px inset, #4b566b on #e3e9ef, hover #ebebeb + black
+[1A[2K[12/30] [chromium] › e2e/menu-drawer.spec.ts:191:9 › the drawer at 768 › the title row sits on the same hairline and the close button hovers to black
+[1A[2K[13/30] [chromium] › e2e/menu-drawer.spec.ts:221:7 › the category panel at 1440 › its nav is a named landmark distinct from the drawer's and the footer's
+[1A[2K[14/30] [chromium] › e2e/menu-drawer.spec.ts:233:7 › the category panel at 1440 › a row tints #f5f5f5 and goes bold under the pointer, as live's li:hover>a does
+[1A[2K[15/30] [chromium] › e2e/menu-drawer.spec.ts:246:7 › the category panel at 1440 › a focused row scrolled under the sticky header is brought out from under it (2.4.11)
+[1A[2K[16/30] [mobile-chrome] › e2e/menu-drawer.spec.ts:89:9 › the drawer at 380 › the closed scrim is inert and out of the hit test
+[1A[2K[17/30] [mobile-chrome] › e2e/menu-drawer.spec.ts:100:9 › the drawer at 380 › the toggle is the heading colour and hovers to black
+[1A[2K[18/30] [mobile-chrome] › e2e/menu-drawer.spec.ts:113:9 › the drawer at 380 › opens a 280px panel on live's paper, hairline and motion
+[1A[2K[19/30] [mobile-chrome] › e2e/menu-drawer.spec.ts:140:9 › the drawer at 380 › the open scrim is 70% black over 200ms and is live in the hit test
+[1A[2K[20/30] [mobile-chrome] › e2e/menu-drawer.spec.ts:152:9 › the drawer at 380 › the rows are live's: 50px, 19.4px inset, #4b566b on #e3e9ef, hover #ebebeb + black
+[1A[2K[21/30] [mobile-chrome] › e2e/menu-drawer.spec.ts:191:9 › the drawer at 380 › the title row sits on the same hairline and the close button hovers to black
+[1A[2K[22/30] [mobile-chrome] › e2e/menu-drawer.spec.ts:89:9 › the drawer at 768 › the closed scrim is inert and out of the hit test
+[1A[2K[23/30] [mobile-chrome] › e2e/menu-drawer.spec.ts:100:9 › the drawer at 768 › the toggle is the heading colour and hovers to black
+[1A[2K[24/30] [mobile-chrome] › e2e/menu-drawer.spec.ts:113:9 › the drawer at 768 › opens a 350px panel on live's paper, hairline and motion
+[1A[2K[25/30] [mobile-chrome] › e2e/menu-drawer.spec.ts:140:9 › the drawer at 768 › the open scrim is 70% black over 200ms and is live in the hit test
+[1A[2K[26/30] [mobile-chrome] › e2e/menu-drawer.spec.ts:152:9 › the drawer at 768 › the rows are live's: 50px, 19.4px inset, #4b566b on #e3e9ef, hover #ebebeb + black
+[1A[2K[27/30] [mobile-chrome] › e2e/menu-drawer.spec.ts:191:9 › the drawer at 768 › the title row sits on the same hairline and the close button hovers to black
+[1A[2K[28/30] [mobile-chrome] › e2e/menu-drawer.spec.ts:221:7 › the category panel at 1440 › its nav is a named landmark distinct from the drawer's and the footer's
+[1A[2K[29/30] [mobile-chrome] › e2e/menu-drawer.spec.ts:233:7 › the category panel at 1440 › a row tints #f5f5f5 and goes bold under the pointer, as live's li:hover>a does
+[1A[2K[30/30] [mobile-chrome] › e2e/menu-drawer.spec.ts:246:7 › the category panel at 1440 › a focused row scrolled under the sticky header is brought out from under it (2.4.11)
+[1A[2K  30 passed (32.0s)

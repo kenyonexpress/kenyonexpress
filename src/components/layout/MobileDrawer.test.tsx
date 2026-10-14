@@ -71,6 +71,23 @@ describe('MobileDrawer keyboard contract', () => {
     expect(dialog.contains(document.activeElement)).toBe(true)
   })
 
+  // UX04. The scrim is kept mounted at opacity 0 for the fade, and was still
+  // a full-viewport <button> in the tree and in the hit test while closed
+  // (touch-targets.spec read it as "covered"). It is inert exactly when the
+  // panel is, and live again the moment the drawer opens.
+  it('parks the scrim with inert while closed and frees it when open', () => {
+    render(<MobileDrawer />)
+    const scrimOf = () =>
+      screen
+        .getAllByRole('button', { name: 'סגירת התפריט', hidden: true })
+        .find((b) => b.className.includes('fixed')) as HTMLElement
+    expect(scrimOf().hasAttribute('inert')).toBe(true)
+    fireEvent.click(screen.getByRole('button', { name: 'תפריט קטגוריות' }))
+    expect(scrimOf().hasAttribute('inert')).toBe(false)
+    fireEvent.click(scrimOf())
+    expect(scrimOf().hasAttribute('inert')).toBe(true)
+  })
+
   it('wraps Tab from the last category back to the close button, and Shift+Tab the other way', () => {
     const { dialog } = open()
     const focusables = dialog.querySelectorAll<HTMLElement>('a[href], button:not([disabled])')

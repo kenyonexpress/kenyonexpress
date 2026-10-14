@@ -170,6 +170,25 @@ body {
    lands above the banner. It is zero when both strips are gone. */
 html {
   scroll-padding-bottom: calc(var(--reserve-consent) + var(--reserve-pwa));
+  /* ...and the sticky header at the top (UX04). WCAG 2.4.11 again, the other
+     edge: a category link that Tab reaches from below the fold is scrolled to
+     the top of the viewport by the browser, which is exactly where the sticky
+     header paints, so the focused control was under the header. The strip is
+     the header's own height: 49 + 1px border below xl, 109 + 1px from it
+     (tokens.css; the top bar above it is not sticky and does not count). */
+  scroll-padding-top: calc(var(--spacing-header-handheld) + 1px);
+}
+@media (min-width: 1280px) {
+  html {
+    scroll-padding-top: calc(var(--spacing-header-masthead) + 1px);
+  }
+}
+
+/* The off-canvas drawer's panel (MobileDrawer.tsx). Live's
+   `.off-canvas-navigation{scrollbar-width:thin}`; Tailwind has no utility
+   for it. Everything else about the panel is a utility on the element. */
+.drawer-panel {
+  scrollbar-width: thin;
 }
 
 /* Turbopack caches this file's compiled output by CONTENT hash, not mtime.

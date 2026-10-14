@@ -33,6 +33,13 @@ describe('HeroCategorySidebar', () => {
     expect(ul).toContain('bg-white')
   })
 
+  // UX04: the list is a navigation landmark, and the landmark list has to
+  // tell it from the drawer's nav and the footer's (a11y.spec).
+  it('names its nav landmark in Hebrew', () => {
+    const nav = html.match(/<nav[^>]*>/)?.[0] ?? ''
+    expect(nav).toMatch(/aria-label="[^"]*\p{Script=Hebrew}[^"]*"/u)
+  })
+
   it('keeps the 34.66px row: 6.5px padding around a 14px/1.5 line', () => {
     const link = html.match(/<a[^>]*href="\/category\/[^"]*"[^>]*>/)?.[0] ?? ''
     expect(link).toContain('padding:6.5px 5px 6.5px 0')

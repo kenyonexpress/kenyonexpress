@@ -49,6 +49,14 @@
    ============================================================================ */
 
 @theme {
+  /* --- Motion ---------------------------------------------------------------- */
+  /* The off-canvas drawer and its scrim: live's `.off-canvas-navigation
+     {transition:all .2s}` and `.off-canvas-bg-opacity .site-content::before
+     {transition:all .2s}` name no curve, so both run on the UA default
+     `ease`. Tailwind's own default is a different cubic-bezier; this keeps
+     the slide on live's curve (UX04). Duration is the built-in `duration-200`. */
+  --ease-drawer: ease;
+
   /* --- Brand identity -------------------------------------------------------- */
   --color-brand-primary: #fed700; /* CTAs, active state, badges */
   --color-brand-primary-hover: #fedd26; /* hover / pressed */
@@ -105,6 +113,12 @@
   --color-warning-surface: #fffbe6; /* inline warning banner */
   --color-footer-bg: #333e48; /* dark footer body (electro home-v7) */
   --color-drawer-bg: #fdfcfc; /* off-canvas drawer paper (live: rgb(253,252,252)) */
+  /* The rest of live's `.off-canvas-navigation.light` (UX04): the panel's
+     inner edge and the row rules, the row type, and the row under the
+     pointer. Read off refs/ke_live_home.html's stylesheet, not a picture. */
+  --color-drawer-border: #e3e9ef; /* `border-left:1px solid #e3e9ef`, `li a{border-color:#e3e9ef}` */
+  --color-drawer-text: #4b566b; /* `li a{color:#4b566b!important}` */
+  --color-drawer-hover: #ebebeb; /* `li a:hover{background-color:#ebebeb;color:#000}` */
   /* The hero slider's ground, measured off refs/ke_live_home.html. Was an
      inline backgroundColor fed by a `.ts` constant, which the hex gate could
      not see because it only read `.tsx`. */
@@ -360,6 +374,11 @@
   --spacing-drawer-mobile: 280px;
   --spacing-drawer-tablet: 350px;
   --spacing-drawer-row: 50px;
+  /* Live's row inset is `padding:0 1.387em` on 14px type = 19.4px (UX04).
+     Written in px on purpose: an em lifted from live scales off OUR body,
+     which is 16px where live's is 14 (see --text-topbar). The rows were
+     `px-gutter` (15), 4.4px tighter than live on both edges. */
+  --spacing-drawer-pad: 19.4px;
   /* WCAG 2.5.5 / the brief's 44px floor. Live's hamburger is 34x36, which is
      under it; ours keeps live's PAINTED size and pads the hit area out to 44,
      so the pixel comparison sees live's button and a thumb gets the target. */

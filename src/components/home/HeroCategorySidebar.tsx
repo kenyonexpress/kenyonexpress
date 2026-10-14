@@ -72,7 +72,11 @@ export default function HeroCategorySidebar() {
           <span className="title font-bold">קטגוריות</span>
         </div>
 
-        <nav className="min-h-0 flex-1">
+        {/* Named, because it is a landmark and the landmark list has to tell it
+            from the drawer's nav and the footer's (a11y.spec: every navigation
+            carries a Hebrew name). The aside is the "קטגוריות" region; the nav
+            inside it is the list. UX04. */}
+        <nav className="min-h-0 flex-1" aria-label="רשימת הקטגוריות">
           <ul
             className="dropdown-menu yamm m-0 list-none bg-white p-0"
             // paddingTop 7: measured on refs/ke_live_1440.png (UX01, 14.10).
@@ -103,7 +107,14 @@ export default function HeroCategorySidebar() {
                 >
                   <Link
                     href={href}
-                    className="block text-end transition-colors hover:bg-surface-hover hover:font-bold focus:bg-surface-hover focus:font-bold"
+                    // Live: `li:hover>a, li:focus>a{background-color:#f5f5f5;
+                    // font-weight:700}` -- the tint and the weight, on the
+                    // pointer and on the keyboard alike. Live names no
+                    // transition; the 150ms colour fade is ours, and the
+                    // weight snaps as it does there. Measured equal in
+                    // logs/ux04/before.json (UX04), so this is pinned, not
+                    // changed.
+                    className="block text-end transition-colors hover:bg-surface-hover hover:font-bold focus-visible:bg-surface-hover focus-visible:font-bold"
                     style={{
                       ...MENU_LINK_STYLE,
                       ...(isLast ? { borderBottom: 'none' } : {}),

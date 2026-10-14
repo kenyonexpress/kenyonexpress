@@ -1,0 +1,248 @@
+{
+  "380": {
+    "width": 380,
+    "hamburger": {
+      "x": 321,
+      "w": 44,
+      "h": 44,
+      "color": "rgb(81, 81, 81)",
+      "transition": "opacity",
+      "svgW": 20
+    },
+    "hamburgerHover": {
+      "color": "rgb(81, 81, 81)",
+      "opacity": "0.7"
+    },
+    "scrimClosed": {
+      "inert": false,
+      "ariaHidden": null,
+      "opacity": "0",
+      "pointer": "none",
+      "hitSelf": false,
+      "hit": "a.p_con__category"
+    },
+    "panel": {
+      "dialog": {
+        "x": 100,
+        "y": 0,
+        "w": 280,
+        "h": 900,
+        "background-color": "rgba(0, 0, 0, 0)",
+        "border-inline-start-width": "0px",
+        "border-inline-end-width": "0px",
+        "border-left-color": "rgb(26, 26, 26)",
+        "border-right-color": "rgb(26, 26, 26)",
+        "border-left-width": "0px",
+        "border-right-width": "0px",
+        "transition-duration": "0.3s",
+        "transition-timing-function": "cubic-bezier(0.4, 0, 0.2, 1)",
+        "transition-property": "transform, translate, scale, rotate",
+        "scrollbar-width": "auto",
+        "z-index": "50"
+      },
+      "scrim": {
+        "x": 0,
+        "y": 0,
+        "w": 380,
+        "h": 900,
+        "background-color": "oklab(0 0 0 / 0.5)",
+        "opacity": "1",
+        "transition-duration": "0.3s",
+        "transition-property": "opacity"
+      },
+      "titleRow": {
+        "x": 100,
+        "y": 0,
+        "w": 280,
+        "h": 50,
+        "border-bottom-color": "rgb(221, 221, 221)",
+        "border-bottom-width": "1px"
+      },
+      "title": {
+        "x": 268.8,
+        "y": 14.5,
+        "w": 96.2,
+        "h": 20,
+        "font-size": "14px",
+        "font-weight": "700",
+        "color": "rgb(51, 62, 72)"
+      },
+      "rows": 11,
+      "firstRow": {
+        "x": 100,
+        "y": 50,
+        "w": 280,
+        "h": 50,
+        "padding-left": "15px",
+        "padding-right": "15px",
+        "line-height": "20px",
+        "font-size": "14px",
+        "color": "rgb(51, 62, 72)",
+        "border-bottom-color": "rgb(221, 221, 221)",
+        "border-bottom-width": "1px",
+        "background-color": "rgba(0, 0, 0, 0)",
+        "transition-property": "color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, --tw-gradient-from, --tw-gradient-via, --tw-gradient-to"
+      }
+    },
+    "rowHover": {
+      "bg": "rgb(245, 245, 245)",
+      "color": "rgb(51, 62, 72)"
+    }
+  },
+  "768": {
+    "width": 768,
+    "hamburger": {
+      "x": 709,
+      "w": 44,
+      "h": 44,
+      "color": "rgb(81, 81, 81)",
+      "transition": "opacity",
+      "svgW": 20
+    },
+    "hamburgerHover": {
+      "color": "rgb(81, 81, 81)",
+      "opacity": "0.7"
+    },
+    "scrimClosed": {
+      "inert": false,
+      "ariaHidden": null,
+      "opacity": "0",
+      "pointer": "none",
+      "hitSelf": false,
+      "hit": "img.object-contain transition-transform dura"
+    },
+    "panel": {
+      "dialog": {
+        "x": 418,
+        "y": 0,
+        "w": 350,
+        "h": 900,
+        "background-color": "rgba(0, 0, 0, 0)",
+        "border-inline-start-width": "0px",
+        "border-inline-end-width": "0px",
+        "border-left-color": "rgb(26, 26, 26)",
+        "border-right-color": "rgb(26, 26, 26)",
+        "border-left-width": "0px",
+        "border-right-width": "0px",
+        "transition-duration": "0.3s",
+        "transition-timing-function": "cubic-bezier(0.4, 0, 0.2, 1)",
+        "transition-property": "transform, translate, scale, rotate",
+        "scrollbar-width": "auto",
+        "z-index": "50"
+      },
+      "scrim": {
+        "x": 0,
+        "y": 0,
+        "w": 768,
+        "h": 900,
+        "background-color": "oklab(0 0 0 / 0.5)",
+        "opacity": "1",
+        "transition-duration": "0.3s",
+        "transition-property": "opacity"
+      },
+      "titleRow": {
+        "x": 418,
+        "y": 0,
+        "w": 350,
+        "h": 50,
+        "border-bottom-color": "rgb(221, 221, 221)",
+        "border-bottom-width": "1px"
+      },
+      "title": {
+        "x": 656.8,
+        "y": 14.5,
+        "w": 96.2,
+        "h": 20,
+        "font-size": "14px",
+        "font-weight": "700",
+        "color": "rgb(51, 62, 72)"
+      },
+      "rows": 11,
+      "firstRow": {
+        "x": 418,
+        "y": 50,
+        "w": 350,
+        "h": 50,
+        "padding-left": "15px",
+        "padding-right": "15px",
+        "line-height": "20px",
+        "font-size": "14px",
+        "color": "rgb(51, 62, 72)",
+        "border-bottom-color": "rgb(221, 221, 221)",
+        "border-bottom-width": "1px",
+        "background-color": "rgb(245, 245, 245)",
+        "transition-property": "color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, --tw-gradient-from, --tw-gradient-via, --tw-gradient-to"
+      }
+    },
+    "rowHover": {
+      "bg": "rgb(245, 245, 245)",
+      "color": "rgb(51, 62, 72)"
+    }
+  },
+  "1440": {
+    "width": 1440,
+    "panel": {
+      "aside": {
+        "x": 1064,
+        "y": 148.3,
+        "w": 241,
+        "h": 444,
+        "width": "241px"
+      },
+      "bar": {
+        "x": 1064,
+        "y": 148.3,
+        "w": 241,
+        "h": 48,
+        "background-color": "rgb(254, 215, 0)",
+        "color": "rgb(26, 26, 26)",
+        "font-weight": "500",
+        "border-radius": "0px",
+        "padding-left": "20px",
+        "padding-right": "20px"
+      },
+      "barTitle": {
+        "x": 1223.5,
+        "y": 160.3,
+        "w": 61.5,
+        "h": 24,
+        "font-weight": "700",
+        "font-size": "16px"
+      },
+      "navName": null,
+      "rows": 11,
+      "firstRow": {
+        "x": 1049,
+        "y": 203.3,
+        "w": 242,
+        "h": 35,
+        "font-weight": "700",
+        "background-color": "rgba(0, 0, 0, 0)",
+        "color": "rgb(51, 62, 72)",
+        "transition-property": "color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, --tw-gradient-from, --tw-gradient-via, --tw-gradient-to",
+        "transition-duration": "0.15s",
+        "font-size": "14px"
+      },
+      "fourthRow": {
+        "x": 1049,
+        "y": 308.3,
+        "w": 242,
+        "h": 35,
+        "font-weight": "400",
+        "background-color": "rgba(0, 0, 0, 0)",
+        "color": "rgb(51, 62, 72)"
+      }
+    },
+    "rowHover": {
+      "bg": "rgb(245, 245, 245)",
+      "fontWeight": "700"
+    },
+    "focusObscured": {
+      "scrollPaddingTop": "auto",
+      "y": 349.3,
+      "hitSelf": true,
+      "hit": "a.block text-end transition-colors hover:b",
+      "scrollY": 204
+    }
+  }
+}

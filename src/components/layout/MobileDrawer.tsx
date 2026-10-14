@@ -44,6 +44,34 @@ import { useCallback, useEffect, useId, useRef, useState } from 'react'
  * 34x36, which is under the 44px touch floor the brief sets and which WCAG
  * 2.5.5 asks for. Padding the hit area rather than growing the icon keeps the
  * comparison honest -- the pixels match live, the thumb gets a real target.
+ *
+ * THE PANEL WAS TRANSPARENT (UX04, 14.10.2026). `bg-drawer` is not a utility
+ * this theme generates -- the token is `--color-drawer-bg`, so the class is
+ * `bg-drawer-bg` -- and the class silently resolved to nothing. Measured on
+ * the built home page at 380 and 768 (logs/ux04/before.json): the open
+ * dialog's background-color was rgba(0,0,0,0), and the screenshot shows the
+ * category rows drawn straight over the hero and the deals behind the scrim.
+ * Nothing in the suite read the colour, so nothing failed.
+ *
+ * THE REST OF THE DRAWER IS NOW LIVE'S `.off-canvas-navigation.light`, read
+ * off refs/ke_live_home.html's stylesheet rather than borrowed from the site
+ * palette:
+ *
+ *   panel    `transition:all .2s` (was 300ms on Tailwind's curve), a 1px
+ *            #e3e9ef hairline on the inner edge, `scrollbar-width:thin`
+ *   scrim    `rgba(0,0,0,.7)` over 200ms (was 50% over 300ms)
+ *   toggle   `.light .navbar-toggler{color:#333e48}`, `:hover{color:#000}`
+ *            (was the #515151 icon gray with an opacity fade)
+ *   rows     `padding:0 1.387em` = 19.4px (was the 15px gutter), `color:
+ *            #4b566b` (was the heading), rules #e3e9ef (were #ddd), hover
+ *            `#ebebeb` + `#000` (was the site's #f5f5f5 tint)
+ *
+ * THE CLOSED SCRIM IS `inert`. It is kept mounted for the fade, at
+ * `pointer-events:none` and opacity 0, but it was still a full-viewport
+ * <button> in the accessibility tree whose centre hit-tested to the page
+ * under it, which is how touch-targets.spec read it as "covered". The panel
+ * already takes itself out with `inert` while closed; the scrim does the
+ * same now, and hit testing, focus and the tree all agree it is not there.
  */
 
 const DRAWER_TITLE = 'תפריט קטגוריות'
@@ -146,7 +174,7 @@ export default function MobileDrawer() {
         aria-haspopup="dialog"
         // grid + place-items-center paints the 34x36 live box in the middle of
         // a 44px hit area rather than growing the icon.
-        className="grid size-touch-min shrink-0 place-items-center text-icon transition-opacity hover:opacity-70 xl:hidden"
+        className="grid size-touch-min shrink-0 place-items-center text-heading transition-colors hover:text-ink xl:hidden"
       >
         <Menu size={20} strokeWidth={2} aria-hidden="true" />
       </button>
@@ -160,8 +188,9 @@ export default function MobileDrawer() {
         type="button"
         onClick={close}
         tabIndex={open ? 0 : -1}
+        inert={!open}
         aria-label="סגירת התפריט"
-        className={`fixed inset-0 z-50 bg-black/50 transition-opacity duration-300 motion-reduce:transition-none xl:hidden ${
+        className={`fixed inset-0 z-50 bg-black/70 transition-opacity duration-200 ease-drawer motion-reduce:transition-none xl:hidden ${
           open ? 'opacity-100' : 'pointer-events-none opacity-0'
         }`}
       />
@@ -193,11 +222,13 @@ export default function MobileDrawer() {
         dir="rtl"
         // RTL: the drawer slides in from the right, so it is anchored right and
         // translated +100% when closed.
-        className={`safe-pt safe-pb fixed inset-y-0 right-0 z-50 w-drawer-mobile overflow-y-auto bg-drawer outline-none transition-transform duration-300 motion-reduce:transition-none md:w-drawer-tablet xl:hidden ${
+        // `border-e`: the panel is anchored to the right, so its inner edge
+        // (live's `border-left`) is the inline END in this RTL document.
+        className={`safe-pt safe-pb fixed inset-y-0 right-0 z-50 w-drawer-mobile overflow-y-auto border-e border-drawer-border bg-drawer-bg outline-none drawer-panel transition-transform duration-200 ease-drawer motion-reduce:transition-none md:w-drawer-tablet xl:hidden ${
           open ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
-        <div className="flex h-drawer-row items-center justify-between border-b border-border px-gutter">
+        <div className="flex h-drawer-row items-center justify-between border-b border-drawer-border px-drawer-pad">
           <h2 id={titleId} className="m-0 text-sm font-bold text-heading">
             {DRAWER_TITLE}
           </h2>
@@ -205,7 +236,7 @@ export default function MobileDrawer() {
             type="button"
             onClick={close}
             aria-label="סגירת התפריט"
-            className="-me-2 grid size-touch-min place-items-center text-icon transition-opacity hover:opacity-70"
+            className="-me-2 grid size-touch-min place-items-center text-heading transition-colors hover:text-ink"
           >
             <X size={20} strokeWidth={2} aria-hidden="true" />
           </button>
@@ -220,8 +251,11 @@ export default function MobileDrawer() {
                   // 50px is live's row height and clears the 44px touch floor
                   // on its own, so no padding trick is needed here.
                   onClick={close}
-                  className={`flex h-drawer-row items-center border-b border-border px-gutter text-sm transition-colors hover:bg-surface-hover ${
-                    category.highlight ? 'font-bold text-heading' : 'text-heading'
+                  // Live's row, in live's own colours: #4b566b type on a
+                  // #e3e9ef rule, #ebebeb + #000 under the pointer or the
+                  // keyboard. A highlight row is bold and nothing else.
+                  className={`flex h-drawer-row items-center border-b border-drawer-border px-drawer-pad text-sm text-drawer-text transition-colors hover:bg-drawer-hover hover:text-ink focus-visible:bg-drawer-hover focus-visible:text-ink ${
+                    category.highlight ? 'font-bold' : ''
                   }`}
                 >
                   {category.label}
