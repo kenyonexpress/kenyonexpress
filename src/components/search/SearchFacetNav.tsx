@@ -1,4 +1,5 @@
 import {
+  type FacetContext,
   type FacetSection,
   activeFacetChips,
   buildFacetSections,
@@ -25,11 +26,13 @@ import Link from 'next/link'
 type Props = {
   facets: FacetDistribution
   current: URLSearchParams
+  /** Names for the values that are ids or slugs. See `loadFacetContext`. */
+  context?: FacetContext
 }
 
-export default function SearchFacetNav({ facets, current }: Props) {
-  const sections = buildFacetSections(facets, current)
-  const chips = activeFacetChips(current)
+export default function SearchFacetNav({ facets, current, context = {} }: Props) {
+  const sections = buildFacetSections(facets, current, '/search', context)
+  const chips = activeFacetChips(current, '/search', context)
   if (sections.length === 0 && chips.length === 0) return null
 
   return (
@@ -79,7 +82,9 @@ function FacetSectionView({ section }: { section: FacetSection }) {
           <li key={option.value}>
             <Link
               href={option.href}
-              className={`search-facets__option${option.selected ? ' is-current' : ''}`}
+              className={`search-facets__option${option.selected ? ' is-current' : ''}${
+                option.depth > 0 ? ` search-facets__option--depth-${Math.min(option.depth, 2)}` : ''
+              }`}
               aria-current={option.selected ? 'true' : undefined}
             >
               <span className="search-facets__option-label">{option.label}</span>

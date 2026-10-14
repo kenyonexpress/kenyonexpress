@@ -42,7 +42,7 @@ what main has.
 | # | Feature | Seen on | main | prod | Effort | Route |
 |---|---|---|---|---|---|---|
 | 1 | Instant search, typo tolerance, Hebrew synonyms | Amazon, Zap, Wolt | PARTIAL | PARTIAL | 2 | build. Blocked by a product rule, see note A |
-| 2 | Facets: price, city, category tree, discount, supplier | Amazon, Zap, Booking | PARTIAL | PARTIAL | 3 | finish |
+| 2 | Facets: price, city, category tree, discount, supplier | Amazon, Zap, Booking | EXISTS | PARTIAL | 0 | closed 2026-10-14 on the search page |
 | 3 | Sort: relevance, price, discount, newest, rating | all | PARTIAL | PARTIAL | 1 | discount and search-page control closed 2026-10-14; rating needs pending 235 |
 | 4 | Infinite scroll, 24 per page, scroll restoration | TikTok Shop, Lazada, Wolt | MISSING | MISSING | 2 | build |
 | 5 | Recently viewed | Amazon, Booking | MISSING | PARTIAL | 1.5 | port, then add home rail. See note B |
@@ -129,6 +129,29 @@ facet, supplier facet (`supplier_id` is filterable in Meilisearch and not
 exposed), category tree (flat list only); the city filter runs after
 pagination, so counts are approximate. prod: filter chips on category pages
 (`src/components/category/FilterChips.tsx`), none on search.
+
+Closed on main, 2026-10-14, on `/search` and `/api/search/facets`:
+
+- Supplier: `?supplier=<id>`, validated as a uuid. The label is the supplier's
+  public name, read by `src/lib/search/facet-labels.ts`; a supplier with no
+  name is not offered.
+- Discount: `?discount_min=10|25|50`, "at least N% off", filtering on the
+  stored `discount_bp`. Thresholds nest, so a count is what the click shows.
+- Category tree: the facet lists parents before children with the subtree's
+  count, and choosing a parent filters its whole subtree (the engine expands
+  the slug through `categorySubtree`). Categories are labelled by name; they
+  were printed as slugs before.
+
+Verified on a built server against live data, database engine: for each of
+two suppliers, three thresholds and three categories the facet's count equals
+the filtered total; the sidebar prints supplier and category names; a bad
+supplier id is a 400. Not verified: the tree's nesting on real data, because
+all 13 live categories are roots (unit tests only), and Meilisearch, which
+needs its settings re-applied and a reindex before `discount_bp` filters; an
+older index is asked for the previous facet list instead of failing the
+search. Still open: the category pages keep their own sidebar and did not get
+these three facets, and the approximate city count there is unchanged. A test
+supplier and a test category are live and show up in the facets.
 
 **3. Sort.** main: `src/components/category/CategoryControlBar.tsx` writes
 `?sort=`. `price_asc`, `price_desc`, `newest`, `name` and, since 2026-10-14,
