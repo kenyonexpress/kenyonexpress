@@ -61,6 +61,7 @@ const NOINDEX_PAGES = [
   'voucher/[id]/page.tsx',
   'merchant/scan/page.tsx',
   'offline/page.tsx',
+  'status/page.tsx',
   '(main)/newsletter/confirm/page.tsx',
   '(main)/newsletter/unsubscribe/page.tsx',
   '(main)/wishlist-alerts/unsubscribe/page.tsx',

@@ -85,9 +85,12 @@ describe('the error pages exist where Next looks for them', () => {
 
   it('both boundaries are client components that report to Sentry', () => {
     for (const path of ['src/app/error.tsx', 'src/app/global-error.tsx']) {
-      const source = read(path)
-      expect(source.startsWith("'use client'")).toBe(true)
-      expect(source).toContain('Sentry.captureException(error)')
+      expect(read(path).startsWith("'use client'")).toBe(true)
+    }
+    // UX26: error.tsx renders the shared body, and the report lives there.
+    expect(read('src/app/error.tsx')).toContain('<ErrorBody')
+    for (const path of ['src/components/error/ErrorBody.tsx', 'src/app/global-error.tsx']) {
+      expect(read(path)).toContain('Sentry.captureException(error)')
     }
   })
 })

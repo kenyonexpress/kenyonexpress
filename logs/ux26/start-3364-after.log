@@ -1,0 +1,137 @@
+Already up to date
+Done in 194ms using pnpm v11.1.2
+$ next start
+▲ Next.js 16.3.3
+- Local:         http://localhost:3364
+- Network:       http://100.84.130.122:3364
+✓ Ready in 113ms
+✓ Running next.config.ts took 342ms
+{"ts":"2026-10-14T18:37:19.960Z","level":"warn","event":"env.checks_skipped","request_id":null,"detail":"ALLOW_INCOMPLETE_ENV=true. Correct for a local `next start`; wrong anywhere a customer can reach."}
+{"ts":"2026-10-14T18:37:21.142Z","level":"info","event":"env.probe_ok","request_id":null,"checked":2}
+⨯ Error: Sentry RSC-render check: debug-render-mv8gcg8i
+    at g (.next/server/chunks/ssr/[root-of-the-server]__0z3soac._.js:2:4116) {
+  digest: '1374574769'
+}
+⨯ Error: Sentry store-render check: debug-store-render-mv8gcga7
+    at g (.next/server/chunks/ssr/[root-of-the-server]__022fkx2._.js:2:5052) {
+  digest: '3222074561'
+}
+{"ts":"2026-10-14T18:37:27.192Z","level":"warn","event":"db.query_slow","request_id":"0376f2e6-548d-4249-92b7-0e3cc2ff0f27","route":"/api/ready","method":"POST","target":"rpc:check_rate_limit","status":200,"duration_ms":347,"threshold_ms":300}
+⨯ Error: Sentry RSC-render check: debug-render-mv8gchjw
+    at g (.next/server/chunks/ssr/[root-of-the-server]__0z3soac._.js:2:4116) {
+  digest: '3136572497'
+}
+(node:63919) ExperimentalWarning: The supports Web Crypto API method is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:63919) ExperimentalWarning: The ML-DSA-44 Web Crypto API algorithm is an experimental feature and might change at any time
+{"ts":"2026-10-14T18:37:28.892Z","level":"warn","event":"db.query_slow","request_id":"5777608f-40f5-4ddb-8d92-2050fbb59744","route":"/api/health","method":"HEAD","target":"categories","status":200,"duration_ms":320,"threshold_ms":300}
+(node:63919) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+(node:63919) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+⨯ Error: Sentry store-render check: debug-store-render-mv8gckjk
+    at g (.next/server/chunks/ssr/[root-of-the-server]__022fkx2._.js:2:5052) {
+  digest: '3223629153'
+}
+{"ts":"2026-10-14T18:37:32.719Z","level":"warn","event":"db.query_slow","request_id":"0e36d47a-f6fa-454a-a9cf-bbb34002feaa","route":"action","method":"GET","target":"carts","status":200,"duration_ms":348,"threshold_ms":300}
+(node:63919) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T18:37:33.101Z","level":"warn","event":"db.query_slow","request_id":"0e0049ca-fe32-48e3-8113-9b3385791218","route":"/api/health","method":"HEAD","target":"categories","status":200,"duration_ms":377,"threshold_ms":300}
+(node:63919) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T18:37:35.598Z","level":"warn","event":"db.query_slow","request_id":"ef9ae733-1b06-435a-9a44-7d21c4ee7200","route":"/api/ready","method":"HEAD","target":"categories","status":200,"duration_ms":389,"threshold_ms":300}
+{"ts":"2026-10-14T18:37:35.978Z","level":"warn","event":"db.query_slow","request_id":"ef9ae733-1b06-435a-9a44-7d21c4ee7200","route":"/api/ready","method":"POST","target":"rpc:check_rate_limit","status":200,"duration_ms":769,"threshold_ms":300}
+(node:63919) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+⨯ Error: Sentry RSC-render check: debug-render-mv8gcpfd
+    at g (.next/server/chunks/ssr/[root-of-the-server]__0z3soac._.js:2:4116) {
+  digest: '4193243057'
+}
+(node:63919) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+⨯ Error: Sentry store-render check: debug-store-render-mv8gcrb5
+    at g (.next/server/chunks/ssr/[root-of-the-server]__022fkx2._.js:2:5052) {
+  digest: '1350871617'
+}
+(node:63919) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T18:37:41.461Z","level":"warn","event":"db.query_slow","request_id":"d6e526cc-a57f-47ff-ad7c-e7bbe8980cd7","route":"action","method":"GET","target":"carts","status":200,"duration_ms":355,"threshold_ms":300}
+(node:63919) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T18:37:41.812Z","level":"warn","event":"db.query_slow","request_id":"9b9cd10b-8111-4317-86d0-47c6d2c38e7a","route":"/api/health","method":"HEAD","target":"categories","status":200,"duration_ms":409,"threshold_ms":300}
+{"ts":"2026-10-14T18:37:44.240Z","level":"warn","event":"db.query_slow","request_id":"e327b1f3-8b1f-4024-becf-08985fcb6f03","route":"/api/ready","method":"POST","target":"rpc:check_rate_limit","status":200,"duration_ms":313,"threshold_ms":300}
+⨯ Error: Sentry RSC-render check: debug-render-mv8gcvtp
+    at g (.next/server/chunks/ssr/[root-of-the-server]__0z3soac._.js:2:4116) {
+  digest: '505977137'
+}
+(node:63919) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T18:37:47.512Z","level":"warn","event":"db.query_slow","request_id":"95be0c42-ca79-4ea0-b311-d80c51c77c13","route":"/api/health","method":"HEAD","target":"categories","status":200,"duration_ms":513,"threshold_ms":300}
+⨯ Error: Sentry store-render check: debug-store-render-mv8gcxw9
+    at g (.next/server/chunks/ssr/[root-of-the-server]__022fkx2._.js:2:5052) {
+  digest: '1067223329'
+}
+(node:63919) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T18:37:49.991Z","level":"warn","event":"db.query_slow","request_id":"7285eabf-8db3-43ac-a123-d15b33603549","route":"action","method":"GET","target":"carts","status":200,"duration_ms":353,"threshold_ms":300}
+(node:63919) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T18:37:50.447Z","level":"warn","event":"db.query_slow","request_id":"00bb68e8-c13b-4c7f-9ae6-d1c48a914447","route":"/api/health","method":"HEAD","target":"categories","status":200,"duration_ms":508,"threshold_ms":300}
+(node:63919) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T18:37:52.888Z","level":"warn","event":"db.query_slow","request_id":"ed7ad600-bf4a-4100-a3b5-0923398c0d69","route":"/api/ready","method":"POST","target":"rpc:check_rate_limit","status":200,"duration_ms":320,"threshold_ms":300}
+(node:63919) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+(node:63919) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+⨯ Error: Sentry RSC-render check: debug-render-mv8geewo
+    at g (.next/server/chunks/ssr/[root-of-the-server]__0z3soac._.js:2:4116) {
+  digest: '888906513'
+}
+⨯ Error: Sentry RSC-render check: debug-render-mv8geexs
+    at g (.next/server/chunks/ssr/[root-of-the-server]__0z3soac._.js:2:4116) {
+  digest: '2682072689'
+}
+(node:63919) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T18:38:58.903Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"categories","status":200,"duration_ms":633,"threshold_ms":300}
+{"ts":"2026-10-14T18:38:58.961Z","level":"warn","event":"db.query_slow","request_id":"a6c3798a-2a15-4391-9fd6-5bd62cc7e2be","route":"/api/ready","method":"HEAD","target":"categories","status":200,"duration_ms":367,"threshold_ms":300}
+(node:63919) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T18:38:59.054Z","level":"warn","event":"db.query_slow","request_id":"a6c3798a-2a15-4391-9fd6-5bd62cc7e2be","route":"/api/ready","method":"POST","target":"rpc:check_rate_limit","status":200,"duration_ms":444,"threshold_ms":300}
+{"ts":"2026-10-14T18:38:59.057Z","level":"warn","event":"db.query_slow","request_id":"a6bc288f-d309-41ec-bd3b-8fc4025e050f","route":"/api/health","method":"HEAD","target":"categories","status":200,"duration_ms":387,"threshold_ms":300}
+(node:63919) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+⨯ Error: Sentry store-render check: debug-store-render-mv8gefyq
+    at g (.next/server/chunks/ssr/[root-of-the-server]__022fkx2._.js:2:5052) {
+  digest: '917227745'
+}
+⨯ Error: Sentry store-render check: debug-store-render-mv8geg08
+    at g (.next/server/chunks/ssr/[root-of-the-server]__022fkx2._.js:2:5052) {
+  digest: '3959755841'
+}
+(node:63919) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+(node:63919) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T18:39:00.949Z","level":"warn","event":"db.query_slow","request_id":"d0d2d33a-b5d6-4158-8386-ddde609aa02e","route":"/api/health","method":"HEAD","target":"categories","status":200,"duration_ms":704,"threshold_ms":300}
+{"ts":"2026-10-14T18:39:00.950Z","level":"warn","event":"db.query_slow","request_id":"17a7ba06-9df1-47ab-970f-6bacb7a9c03e","route":"action","method":"GET","target":"carts","status":200,"duration_ms":372,"threshold_ms":300}
+{"ts":"2026-10-14T18:39:00.950Z","level":"warn","event":"db.query_slow","request_id":"d540a918-0ed1-4d58-a747-7fba9c5dad01","route":"action","method":"GET","target":"carts","status":200,"duration_ms":1011,"threshold_ms":300}
+{"ts":"2026-10-14T18:39:01.286Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"products","status":200,"duration_ms":320,"threshold_ms":300}
+(node:63919) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T18:39:02.544Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":1,"ms":260,"query_length":4,"facets":[]}
+{"ts":"2026-10-14T18:39:02.658Z","level":"warn","event":"db.query_slow","request_id":"18211981-7c38-440f-ad45-1a1c3cf7266c","route":"action","method":"GET","target":"carts","status":200,"duration_ms":348,"threshold_ms":300}
+{"ts":"2026-10-14T18:39:02.731Z","level":"warn","event":"db.query_slow","request_id":null,"method":"GET","target":"categories","status":200,"duration_ms":336,"threshold_ms":300}
+{"ts":"2026-10-14T18:39:02.734Z","level":"warn","event":"db.query_slow","request_id":"b2a7807a-7b91-40de-897c-64248e24c1c0","route":"/api/search/suggest","method":"POST","target":"rpc:search_products","status":200,"duration_ms":411,"threshold_ms":300}
+{"ts":"2026-10-14T18:39:02.905Z","level":"warn","event":"category_banners.schema_absent","request_id":null,"where":"category","hint":"migration 267 not applied"}
+{"ts":"2026-10-14T18:39:02.958Z","level":"warn","event":"category_guides.schema_absent","request_id":null,"hint":"migration 268 not applied"}
+{"ts":"2026-10-14T18:39:03.064Z","level":"error","event":"supabase.rls_denied","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401}
+{"ts":"2026-10-14T18:39:03.065Z","level":"warn","event":"search.recent_record_failed","request_id":null,"reason":"permission denied for function fn_record_recent_search"}
+⨯ Error: Sentry RSC-render check: debug-render-mv8gejce
+    at g (.next/server/chunks/ssr/[root-of-the-server]__0z3soac._.js:2:4116) {
+  digest: '322577137'
+}
+⨯ Error: Sentry RSC-render check: debug-render-mv8gejdi
+    at g (.next/server/chunks/ssr/[root-of-the-server]__0z3soac._.js:2:4116) {
+  digest: '543510225'
+}
+(node:63919) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T18:39:04.573Z","level":"warn","event":"db.query_slow","request_id":"136630c9-18ef-4f5f-a734-93f32289c2f1","route":"/api/health","method":"HEAD","target":"categories","status":200,"duration_ms":338,"threshold_ms":300}
+⨯ Error: Sentry store-render check: debug-store-render-mv8gek03
+    at g (.next/server/chunks/ssr/[root-of-the-server]__022fkx2._.js:2:5052) {
+  digest: '778518625'
+}
+⨯ Error: Sentry store-render check: debug-store-render-mv8gek0p
+    at g (.next/server/chunks/ssr/[root-of-the-server]__022fkx2._.js:2:5052) {
+  digest: '1260019649'
+}
+{"ts":"2026-10-14T18:39:05.427Z","level":"warn","event":"db.query_slow","request_id":"054938bd-af4e-4e32-8f69-1e301867130a","route":"action","method":"GET","target":"carts","status":200,"duration_ms":302,"threshold_ms":300}
+(node:63919) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [ServerResponse]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+{"ts":"2026-10-14T18:39:06.673Z","level":"warn","event":"db.query_slow","request_id":"3bbed2fb-bedd-485d-8a43-57e354b8c179","route":"action","method":"GET","target":"carts","status":200,"duration_ms":777,"threshold_ms":300}
+{"ts":"2026-10-14T18:39:06.958Z","level":"info","event":"search.executed","request_id":null,"engine":"database","hits":1,"ms":281,"query_length":4,"facets":[]}
+{"ts":"2026-10-14T18:39:07.444Z","level":"warn","event":"db.query_slow","request_id":"72ff7487-09fb-43f9-b09b-4dfca6fb840b","route":"action","method":"GET","target":"carts","status":200,"duration_ms":333,"threshold_ms":300}
+{"ts":"2026-10-14T18:39:07.541Z","level":"warn","event":"db.query_slow","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401,"duration_ms":315,"threshold_ms":300}
+{"ts":"2026-10-14T18:39:07.542Z","level":"error","event":"supabase.rls_denied","request_id":null,"method":"POST","target":"rpc:fn_record_recent_search","status":401}
+{"ts":"2026-10-14T18:39:07.543Z","level":"warn","event":"search.recent_record_failed","request_id":null,"reason":"permission denied for function fn_record_recent_search"}
+[ELIFECYCLE] Command failed with exit code 143.

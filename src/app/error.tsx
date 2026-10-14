@@ -1,104 +1,28 @@
 'use client'
 
-import { markSessionBuggy } from '@/lib/analytics/replay-trigger'
-import { withSentry } from '@/lib/observability/sentry-browser'
-import Link from 'next/link'
-import { useEffect } from 'react'
+import ErrorBody, { type ErrorBoundaryProps } from '@/components/error/ErrorBody'
 
 /**
- * The 500 boundary for everything under the root layout.
+ * The 500 boundary for everything under the root layout, and the file every
+ * nested error falls back to when a route group's LAYOUT is what threw.
  *
- * There was none, so any thrown server component rendered Next's default error
- * screen: English, LTR, and in production a bare "Application error" with no
- * route back. Given how many money-path reads in this codebase have turned out
- * to throw on a renamed column, the page a customer hits when one does is worth
- * having.
+ * Until UX26 this file was the whole 500 page, and it rendered with no chrome
+ * for every error in the app, because no route group had an `error.tsx` of
+ * its own. Now the body is `components/error/ErrorBody` and every route group
+ * with a layout carries an `error.tsx` that renders it inside that layout
+ * (header, footer, the group's own `<main>`). This file is what remains for
+ * the one case no group can catch, a layout crash, so it supplies the `<main>`
+ * the layout would have, and nothing else: a client file cannot render the
+ * server-side shell.
  *
- * `reset()` is offered first because a good share of these are transient - a
- * dropped database connection, a cold start - and retrying in place keeps the
- * customer where they were instead of sending them to the homepage to start
- * over.
- *
- * The digest is shown deliberately. It is the only handle support has on which
- * server-side error a caller actually hit; without it a report is "the site
- * broke" and nothing more. It carries no detail of its own, so showing it
- * leaks nothing.
+ * Named AppError rather than Error: Next only cares that this file default
+ * exports the boundary, and calling it Error shadows the global inside its
+ * own props type.
  */
-
-// Named AppError rather than Error: Next only cares that this file default
-// exports the boundary, and calling it Error shadows the global inside its own
-// props type.
-export default function AppError({
-  error,
-  reset,
-}: {
-  error: Error & { digest?: string }
-  reset: () => void
-}) {
-  useEffect(() => {
-    // The plain SDK, not the helpers in lib/observability: those run on
-    // @sentry/node and tag everything area=payments, so importing them into a
-    // client boundary would both fail to bundle and mislabel every UI error as
-    // a money-path one. The SDK's global handlers never see this error either:
-    // a boundary CATCHES it, so nothing reaches window.onerror, and without
-    // this call a client-side render crash is invisible except to the one
-    // customer looking at this page. `withSentry` loads the SDK on demand
-    // (lib/observability/sentry-browser.ts): a static import here would put
-    // ~95 KB gzipped back on every route's first load, since this boundary is
-    // part of the root layout's client graph. `digest` is tagged because it is
-    // the only handle that ties the browser event to the server-side one
-    // onRequestError already reported.
-    withSentry((Sentry) => {
-      Sentry.withScope((scope) => {
-        scope.setTag('boundary', 'app-error')
-        if (error.digest) scope.setTag('digest', error.digest)
-        Sentry.captureException(error)
-      })
-    })
-
-    // Kept alongside, not replaced: lib/observability/log.ts reads its request
-    // id from node:async_hooks, which is a build error in a client bundle, so
-    // this stays a bare console line. It is also what still works when the
-    // DSN is unset and every Sentry call above is inert.
-    console.error('app error boundary:', error.digest ?? '', error)
-
-    // A boundary rendering is the clearest "this session is buggy" there is,
-    // and like the Sentry call above it is the ONLY signal: the boundary
-    // caught the error, so the recorder's window listeners never saw it.
-    markSessionBuggy('error_boundary')
-  }, [error])
-
+export default function AppError(props: ErrorBoundaryProps) {
   return (
-    <main dir="rtl" className="mx-auto flex max-w-lg flex-col items-center px-4 py-20 text-center">
-      <p className="text-5xl" aria-hidden="true">
-        ⚠️
-      </p>
-      <h1 className="mt-4 text-2xl font-bold text-gray-900">משהו השתבש אצלנו</h1>
-      <p className="mt-2 text-sm leading-relaxed text-gray-500">
-        התקלה נרשמה אצלנו ואנחנו מטפלים בה. אפשר לנסות לטעון את הדף מחדש.
-      </p>
-
-      <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-        <button
-          type="button"
-          onClick={reset}
-          className="rounded-xl bg-gray-900 px-6 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90"
-        >
-          נסו שוב
-        </button>
-        <Link
-          href="/"
-          className="rounded-xl border border-gray-300 px-6 py-3 text-sm font-bold text-gray-700 transition-colors hover:bg-gray-50"
-        >
-          לדף הבית
-        </Link>
-      </div>
-
-      {error.digest && (
-        <p dir="ltr" className="mt-8 font-mono text-xs text-gray-400">
-          {error.digest}
-        </p>
-      )}
+    <main id="main-content" dir="rtl" className="min-h-screen bg-white">
+      <ErrorBody {...props} segment="root" />
     </main>
   )
 }

@@ -1,0 +1,6 @@
+wrote /Users/ofir/kenyonexpress-autopilot/data/legacy/redirect-map.json
+wrote /Users/ofir/kenyonexpress-autopilot/migrations/applied/192_seed_seo_redirects.sql
+32 redirects (20 x 301, 12 x 410), 55 excluded
+  same_path_dead: 2
+  same_path_live: 43
+  source_is_live: 10

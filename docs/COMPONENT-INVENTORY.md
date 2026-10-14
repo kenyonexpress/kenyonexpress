@@ -138,6 +138,18 @@ Judgements are based on the actual file contents (with `file:line` references wh
 |---|---|---|---|---|---|
 | NotFoundBody | src/components/not-found/NotFoundBody.tsx | `{ compact?: boolean }` (async server component; `notFoundMetadata`, `NOT_FOUND_HEADING`, `NOT_FOUND_CATEGORY_COUNT`) | app/not-found (inside StoreShell) and every route group's not-found.tsx (UX25) | YES (tokens only: brand-primary, heading, muted, border, pill, elevated, touch-min) | YES (`dir="rtl"`, logical classes) |
 
+## src/components/error
+
+| Component | File | Props (key props / type) | Used in (where imported) | Tokens compliant? | RTL safe? |
+|---|---|---|---|---|---|
+| ErrorBody | src/components/error/ErrorBody.tsx | `{ error: Error & { digest? }, reset, segment }` (client; `ERROR_HEADING`, `ERROR_PAGE_TITLE`, `supportMessage`, `ErrorBoundaryProps`) | app/error.tsx (inside its own `<main>`) and every route group's error.tsx, bare (UX26) | YES (tokens only: brand-primary, heading, muted, border, surface, success, error, link, whatsapp, pill, elevated, touch-min) | YES (`dir="rtl"`, logical classes) |
+
+## src/components/status
+
+| Component | File | Props (key props / type) | Used in (where imported) | Tokens compliant? | RTL safe? |
+|---|---|---|---|---|---|
+| StatusPanel | src/components/status/StatusPanel.tsx | `{ refreshMs?: number }` (client; reads `/api/ready` from the browser after mount and every 30s; `STATUS_REFRESH_MS`) | app/status/page.tsx (UX26) | YES (tokens only) | YES (logical classes, `dir="ltr"` on the clock only) |
+
 ## src/components/storefront
 
 | Component | File | Props (key props / type) | Used in (where imported) | Tokens compliant? | RTL safe? |

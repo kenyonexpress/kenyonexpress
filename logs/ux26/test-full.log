@@ -1,0 +1,33 @@
+Already up to date
+Done in 188ms using pnpm v11.1.2
+$ vitest run
+
+ RUN  v4.1.11 /Users/ofir/kenyonexpress-autopilot
+
+Error: Not implemented: navigation (except hash changes)
+    at module.exports (/Users/ofir/kenyonexpress-autopilot/node_modules/.pnpm/jsdom@25.0.1/node_modules/jsdom/lib/jsdom/browser/not-implemented.js:9:17)
+    at navigateFetch (/Users/ofir/kenyonexpress-autopilot/node_modules/.pnpm/jsdom@25.0.1/node_modules/jsdom/lib/jsdom/living/window/navigation.js:77:3)
+    at exports.navigate (/Users/ofir/kenyonexpress-autopilot/node_modules/.pnpm/jsdom@25.0.1/node_modules/jsdom/lib/jsdom/living/window/navigation.js:55:3)
+    at Timeout._onTimeout (/Users/ofir/kenyonexpress-autopilot/node_modules/.pnpm/jsdom@25.0.1/node_modules/jsdom/lib/jsdom/living/nodes/HTMLHyperlinkElementUtils-impl.js:81:7)
+    at listOnTimeout (node:internal/timers:605:17)
+    at processTimers (node:internal/timers:541:7) undefined
+Error: Not implemented: navigation (except hash changes)
+    at module.exports (/Users/ofir/kenyonexpress-autopilot/node_modules/.pnpm/jsdom@25.0.1/node_modules/jsdom/lib/jsdom/browser/not-implemented.js:9:17)
+    at navigateFetch (/Users/ofir/kenyonexpress-autopilot/node_modules/.pnpm/jsdom@25.0.1/node_modules/jsdom/lib/jsdom/living/window/navigation.js:77:3)
+    at exports.navigate (/Users/ofir/kenyonexpress-autopilot/node_modules/.pnpm/jsdom@25.0.1/node_modules/jsdom/lib/jsdom/living/window/navigation.js:55:3)
+    at Timeout._onTimeout (/Users/ofir/kenyonexpress-autopilot/node_modules/.pnpm/jsdom@25.0.1/node_modules/jsdom/lib/jsdom/living/nodes/HTMLHyperlinkElementUtils-impl.js:81:7)
+    at listOnTimeout (node:internal/timers:605:17)
+    at processTimers (node:internal/timers:541:7) undefined
+Error: Not implemented: navigation (except hash changes)
+    at module.exports (/Users/ofir/kenyonexpress-autopilot/node_modules/.pnpm/jsdom@25.0.1/node_modules/jsdom/lib/jsdom/browser/not-implemented.js:9:17)
+    at navigateFetch (/Users/ofir/kenyonexpress-autopilot/node_modules/.pnpm/jsdom@25.0.1/node_modules/jsdom/lib/jsdom/living/window/navigation.js:77:3)
+    at exports.navigate (/Users/ofir/kenyonexpress-autopilot/node_modules/.pnpm/jsdom@25.0.1/node_modules/jsdom/lib/jsdom/living/window/navigation.js:55:3)
+    at Timeout._onTimeout (/Users/ofir/kenyonexpress-autopilot/node_modules/.pnpm/jsdom@25.0.1/node_modules/jsdom/lib/jsdom/living/nodes/HTMLHyperlinkElementUtils-impl.js:81:7)
+    at listOnTimeout (node:internal/timers:605:17)
+    at processTimers (node:internal/timers:541:7) undefined
+
+ Test Files  883 passed (883)
+      Tests  10169 passed | 12 skipped (10181)
+   Start at  01:42:17
+   Duration  187.50s (transform 25.05s, setup 89.76s, import 125.61s, tests 58.78s, environment 697.96s)
+

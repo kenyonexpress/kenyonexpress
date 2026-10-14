@@ -33,10 +33,11 @@ const rel = (path: string) => relative(SRC, path)
  * node:async_hooks, which cannot be in a client bundle.
  *
  * - `observability/log.ts` is the sink itself.
- * - `app/error.tsx` is a client error boundary. It runs in the browser, where
- *   there is no server request to correlate to.
+ * - `components/error/ErrorBody.tsx` is the client error boundary's body (every
+ *   `error.tsx` renders it, UX26). It runs in the browser, where there is no
+ *   server request to correlate to.
  */
-const ALLOWED_CONSOLE = new Set(['lib/observability/log.ts', 'app/error.tsx'])
+const ALLOWED_CONSOLE = new Set(['lib/observability/log.ts', 'components/error/ErrorBody.tsx'])
 
 describe('raw console in src/', () => {
   it('is confined to the sink and the client error boundary', () => {

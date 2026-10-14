@@ -343,6 +343,46 @@ export default function GlobalError({
 
 ---
 
+### 2.4 The error pages, as built (UX26, 15.10.2026)
+
+The boundaries above are the REPORTING side. What the shopper sees when one
+renders is `src/components/error/ErrorBody.tsx`, one client body shared by
+`src/app/error.tsx` and an `error.tsx` in each of the seven route groups that
+carry a layout (`(store)`, `(main)`, `(account)`, `(legal)`, `(admin)`,
+`(supplier)`, `(auth)`), because Next renders the NEAREST `error.tsx` inside
+the layouts above it: the group file paints under the group's own header and
+footer, and the root file is what a layout crash falls back to, with nothing
+but the root layout around it. Measured before (logs/ux26/before.json): every
+error in the app rendered the root file, chrome-less, with the home page's
+title still in the tab. `src/app/error-pages.test.tsx` enumerates the groups
+and fails on a new group without a file.
+
+The body, in order: the brand mark with a 500 pill; the heading; retry in
+place, then home; a STATUS CHECK, one round trip to `/api/health` after mount
+(8s timeout, aborted on unmount or on a new error) read into one sentence
+with four states, `checking` / `ok` ("just this page, try again") /
+`degraded` (503: "a general outage, we are on it") / `unknown` (the network
+failed before the server answered: "could not check", never "down"), plus a
+link to `/status`; a SUPPORT BUTTON, WhatsApp through `lib/whatsapp` with the
+page and the digest already in the message, and the contact form beside it;
+and the digest labelled "קוד תקלה לתמיכה". Reporting is in the body's effect:
+Sentry on demand (`withSentry`) tagged `boundary=app-error`, `segment=<group>`
+and `digest`, the bare console line, and `markSessionBuggy('error_boundary')`.
+`global-error.tsx` keeps its inline styles and offers home, `/status` and
+WhatsApp as plain links with no probe: the layout is gone, and a fetch from
+the last boundary is one more thing to fail.
+
+`/status` (`src/app/status/page.tsx`) is the public status page: a static
+shell under the root layout, outside every route group, with no server read
+at all, so it stands when the shell's category menu does not. `StatusPanel`
+asks `/api/ready` from the browser after mount and every 30 seconds, and
+lists the five readiness checks (`lib/health/public-status.ts` labels them
+from `READY_CHECK_NAMES` through the type, so a renamed check is a type error
+here). It is `noindex`. The two throw routes behind `SENTRY_DEBUG_ROUTES`
+now have a storefront twin, `/debug/sentry/store-render`, so the in-shell
+page can be opened on a built server and on a deploy without breaking a real
+page (docs/SENTRY-SETUP.md).
+
 ## 3. Vercel Analytics
 
 ```tsx

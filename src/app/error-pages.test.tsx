@@ -2,7 +2,7 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 /**
  * The three pages a customer sees when something is wrong, held to the two
@@ -12,6 +12,12 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
  * Next's defaults are English, LTR, and (in production) a bare "Application
  * error" with no route back. Nothing else in the test suite renders these
  * files, so a refactor that dropped `dir="rtl"` or the home link would ship.
+ *
+ * UX25 and UX26 turned the 404 and the 500 into one shared body each plus a
+ * file per route group, so this file also holds the COMPOSITION, which no
+ * render can see: Next inherits the nearest file into every nested layout, so
+ * a root file wrapped in the shell and a group without its own file is a
+ * header painted twice (404) or an error with no chrome at all (500).
  */
 
 const { withScope, captureException, setTag } = vi.hoisted(() => {
@@ -37,6 +43,7 @@ vi.mock('@sentry/nextjs', () => ({
   setUser: vi.fn(),
 }))
 
+import ErrorBody, { ERROR_HEADING } from '@/components/error/ErrorBody'
 import NotFoundBody, { notFoundMetadata } from '@/components/not-found/NotFoundBody'
 import StoreShell from '@/components/store/StoreShell'
 import { BUGGY_SESSION_STORAGE_KEY } from '@/lib/analytics/replay-trigger'
@@ -46,8 +53,18 @@ import NotFound, { metadata } from './not-found'
 
 afterEach(() => {
   vi.clearAllMocks()
+  vi.unstubAllGlobals()
   window.sessionStorage.removeItem(BUGGY_SESSION_STORAGE_KEY)
 })
+
+/** The route groups that carry a layout.tsx, and so must carry both error files. */
+function layoutGroups(): string[] {
+  const appDir = resolve(process.cwd(), 'src/app')
+  return readdirSync(appDir, { withFileTypes: true })
+    .filter((d) => d.isDirectory() && /^\(.*\)$/.test(d.name))
+    .filter((d) => existsSync(join(appDir, d.name, 'layout.tsx')))
+    .map((d) => d.name)
+}
 
 describe('not-found.tsx', () => {
   /**
@@ -72,10 +89,7 @@ describe('not-found.tsx', () => {
 
   it('every route group with a layout renders the bare body, never the shell', () => {
     const appDir = resolve(process.cwd(), 'src/app')
-    const groups = readdirSync(appDir, { withFileTypes: true })
-      .filter((d) => d.isDirectory() && /^\(.*\)$/.test(d.name))
-      .filter((d) => existsSync(join(appDir, d.name, 'layout.tsx')))
-      .map((d) => d.name)
+    const groups = layoutGroups()
     expect(groups.length).toBeGreaterThan(0)
     for (const group of groups) {
       const file = join(appDir, group, 'not-found.tsx')
@@ -104,43 +118,67 @@ describe('not-found.tsx', () => {
 })
 
 describe('error.tsx', () => {
-  const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
-
-  it('reports the error to Sentry tagged with the digest, once', async () => {
-    const error = Object.assign(new Error('boom'), { digest: 'abc123' })
-    render(<AppError error={error} reset={() => {}} />)
-
-    // The SDK is loaded on demand (lib/observability/sentry-browser.ts), so the
-    // report lands a microtask after render rather than inside it.
-    await waitFor(() => expect(captureException).toHaveBeenCalledWith(error))
-    expect(captureException).toHaveBeenCalledTimes(1)
-    expect(setTag).toHaveBeenCalledWith('boundary', 'app-error')
-    expect(setTag).toHaveBeenCalledWith('digest', 'abc123')
-    // The bare console line stays: it is what still works when the DSN is unset.
-    expect(consoleError).toHaveBeenCalled()
-    // And the session is flagged for replay: a boundary is the one error the
-    // recorder's window listeners never see.
-    expect(window.sessionStorage.getItem(BUGGY_SESSION_STORAGE_KEY)).toBe('error_boundary')
+  /**
+   * UX26: the root file is a <main> around the shared body (a layout crash
+   * has no other main), and every route group with a layout has an error.tsx
+   * that renders the body bare inside the group's own chrome. The body's own
+   * shape (the status check, the support button, the digest, the Sentry
+   * report) is components/error/ErrorBody.test.
+   */
+  beforeEach(() => {
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({ status: 200, json: async () => ({ ok: true }) })),
+    )
   })
 
-  it('offers retry in place before the homepage, and shows the digest for support', () => {
+  it('wraps the shared body in its own <main>, for the layout crash no group can catch', () => {
+    const tree = AppError({ error: new Error('boom'), reset: () => {} })
+    expect(tree.type).toBe('main')
+    expect(tree.props.dir).toBe('rtl')
+    expect(tree.props.children.type).toBe(ErrorBody)
+    expect(tree.props.children.props.segment).toBe('root')
+  })
+
+  it('renders Hebrew RTL with retry, home, the status check and the support button', async () => {
     const reset = vi.fn()
     const error = Object.assign(new Error('boom'), { digest: 'abc123' })
     render(<AppError error={error} reset={reset} />)
 
     expect(screen.getByRole('main')).toHaveAttribute('dir', 'rtl')
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('משהו השתבש אצלנו')
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(ERROR_HEADING)
     fireEvent.click(screen.getByRole('button', { name: 'נסו שוב' }))
     expect(reset).toHaveBeenCalledTimes(1)
     expect(screen.getByRole('link', { name: 'לדף הבית' })).toHaveAttribute('href', '/')
+    expect(screen.getByRole('link', { name: 'לדף מצב המערכת' })).toHaveAttribute('href', '/status')
+    expect(screen.getByRole('link', { name: /פנייה לתמיכה/ }).getAttribute('href')).toContain(
+      'wa.me',
+    )
     expect(screen.getByText('abc123')).toHaveAttribute('dir', 'ltr')
     // The digest is a handle, not a message: the error text itself never renders.
     expect(screen.queryByText('boom')).toBeNull()
+    await waitFor(() => expect(captureException).toHaveBeenCalledWith(error))
+    expect(setTag).toHaveBeenCalledWith('boundary', 'app-error')
+    expect(setTag).toHaveBeenCalledWith('segment', 'root')
+    expect(window.sessionStorage.getItem(BUGGY_SESSION_STORAGE_KEY)).toBe('error_boundary')
   })
 
-  it('renders without a digest', () => {
-    render(<AppError error={new Error('boom')} reset={() => {}} />)
-    expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
+  it('every route group with a layout renders the bare body with its own segment', () => {
+    const appDir = resolve(process.cwd(), 'src/app')
+    const groups = layoutGroups()
+    expect(groups.length).toBeGreaterThan(0)
+    for (const group of groups) {
+      const file = join(appDir, group, 'error.tsx')
+      expect(existsSync(file), `${group}/error.tsx exists`).toBe(true)
+      const source = readFileSync(file, 'utf8')
+      expect(source, `${group}/error.tsx is a client file`).toMatch(/^'use client'/)
+      expect(source, `${group}/error.tsx renders the body`).toContain('<ErrorBody')
+      expect(source, `${group}/error.tsx names its segment`).toContain(
+        `segment="${group.slice(1, -1)}"`,
+      )
+      expect(source, `${group}/error.tsx supplies no main of its own`).not.toContain('<main')
+    }
   })
 })
 
@@ -157,5 +195,15 @@ describe('global-error.tsx', () => {
     expect(html).not.toContain('boom')
     // No stylesheet dependency: a failure this deep may be the stylesheet.
     expect(html).not.toContain('class=')
+  })
+
+  it('offers home, the status page and WhatsApp as plain links that need no script', () => {
+    const html = renderToStaticMarkup(
+      <GlobalError error={Object.assign(new Error('boom'), { digest: 'd1' })} />,
+    )
+    expect(html).toMatch(/<a href="\/"[^>]*>לדף הבית<\/a>/)
+    expect(html).toMatch(/<a href="\/status"[^>]*>מצב המערכת<\/a>/)
+    expect(html).toMatch(/href="https:\/\/wa\.me\/972524635550\?text=[^"]*d1[^"]*"/)
+    expect(html).not.toContain('<button')
   })
 })

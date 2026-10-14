@@ -1,7 +1,9 @@
 'use client'
 
 import { markSessionBuggy } from '@/lib/analytics/replay-trigger'
+import { STATUS_PATH } from '@/lib/health/public-status'
 import { withSentry } from '@/lib/observability/sentry-browser'
+import { storeWhatsAppLink } from '@/lib/whatsapp'
 import { useEffect } from 'react'
 
 /**
@@ -16,6 +18,12 @@ import { useEffect } from 'react'
  *
  * Styles are inline for the same reason: a failure this deep may well be the
  * stylesheet not loading, so this page cannot depend on one.
+ *
+ * UX26: the two offers the full 500 page makes are here too, as plain links
+ * that need no JavaScript and no stylesheet: the status page (a static shell
+ * under the root layout, so it stands when this page is up) and WhatsApp
+ * with the digest already in the message. No health probe here: the layout
+ * is gone, and a fetch from the last boundary is one more thing to fail.
  */
 export default function GlobalError({
   error,
@@ -31,6 +39,10 @@ export default function GlobalError({
     // the shopper reaches in this tab records from its first paint.
     markSessionBuggy('global_error_boundary')
   }, [error])
+
+  const whatsapp = storeWhatsAppLink(
+    `שלום, נתקלתי בתקלה באתר קניון אקספרס.${error.digest ? `\nקוד תקלה: ${error.digest}` : ''}`,
+  )
 
   return (
     <html lang="he" dir="rtl">
@@ -55,23 +67,71 @@ export default function GlobalError({
             התקלה נרשמה ואנחנו מטפלים בה. אפשר לנסות שוב בעוד רגע.
           </p>
 
-          <button
-            type="button"
-            onClick={() => window.location.assign('/')}
+          <div
             style={{
               marginTop: '2rem',
-              borderRadius: '0.75rem',
-              border: 'none',
-              background: '#111',
-              color: '#fff',
-              padding: '0.75rem 1.5rem',
-              fontSize: '0.875rem',
-              fontWeight: 700,
-              cursor: 'pointer',
+              display: 'flex',
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+              gap: '0.75rem',
             }}
           >
-            לדף הבית
-          </button>
+            <a
+              href="/"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                minHeight: '44px',
+                borderRadius: '999px',
+                background: '#111',
+                color: '#fff',
+                padding: '0 1.5rem',
+                fontSize: '0.875rem',
+                fontWeight: 700,
+                textDecoration: 'none',
+              }}
+            >
+              לדף הבית
+            </a>
+            <a
+              href={STATUS_PATH}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                minHeight: '44px',
+                borderRadius: '999px',
+                border: '1px solid #ccc',
+                color: '#111',
+                padding: '0 1.5rem',
+                fontSize: '0.875rem',
+                fontWeight: 700,
+                textDecoration: 'none',
+              }}
+            >
+              מצב המערכת
+            </a>
+            {whatsapp ? (
+              <a
+                href={whatsapp}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  minHeight: '44px',
+                  borderRadius: '999px',
+                  background: '#25d366',
+                  color: '#fff',
+                  padding: '0 1.5rem',
+                  fontSize: '0.875rem',
+                  fontWeight: 700,
+                  textDecoration: 'none',
+                }}
+              >
+                פנייה לתמיכה בוואטסאפ
+              </a>
+            ) : null}
+          </div>
 
           {error.digest && (
             <p

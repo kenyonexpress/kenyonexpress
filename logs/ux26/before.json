@@ -1,0 +1,1304 @@
+{
+  "380": {
+    "rootThrow": {
+      "status": 200,
+      "url": "/debug/sentry/render",
+      "title": "קניון אקספרס | קופונים ומבצעים",
+      "htmlDir": "rtl",
+      "mainDir": "rtl",
+      "mains": 1,
+      "robots": null,
+      "header": false,
+      "footer": false,
+      "skipLink": false,
+      "h1": "משהו השתבש אצלנו",
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "משהו השתבש אצלנו",
+          "rect": {
+            "x": 82,
+            "y": 144,
+            "w": 215.9,
+            "h": 32
+          }
+        }
+      ],
+      "brandMark": false,
+      "statusRegion": null,
+      "statusLink": null,
+      "support": null,
+      "contactLink": null,
+      "homeLink": {
+        "href": "/",
+        "text": "לדף הבית",
+        "rect": {
+          "x": 82.8,
+          "y": 261.5,
+          "w": 107.7,
+          "h": 46
+        },
+        "target": null
+      },
+      "retryButton": {
+        "text": "נסו שוב",
+        "rect": {
+          "x": 202.5,
+          "y": 262.5,
+          "w": 94.7,
+          "h": 44
+        }
+      },
+      "digest": "2310063313",
+      "links": [
+        {
+          "href": "/",
+          "text": "לדף הבית",
+          "rect": {
+            "x": 82.8,
+            "y": 261.5,
+            "w": 107.7,
+            "h": 46
+          },
+          "target": null
+        }
+      ],
+      "buttons": [
+        {
+          "text": "נסו שוב",
+          "rect": {
+            "x": 202.5,
+            "y": 262.5,
+            "w": 94.7,
+            "h": 44
+          }
+        }
+      ],
+      "pageHeight": 900,
+      "scrollWidth": 380
+    },
+    "storeThrow": {
+      "status": 404,
+      "url": "/debug/sentry/store-render",
+      "title": "הדף לא נמצא | קניון אקספרס",
+      "htmlDir": "rtl",
+      "mainDir": null,
+      "mains": 1,
+      "robots": "noindex",
+      "header": true,
+      "footer": true,
+      "skipLink": true,
+      "h1": "הדף שחיפשתם לא נמצא",
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "הדף שחיפשתם לא נמצא",
+          "rect": {
+            "x": 61.3,
+            "y": 301.7,
+            "w": 257.5,
+            "h": 32
+          }
+        },
+        {
+          "tag": "H2",
+          "text": "קטגוריות פופולריות",
+          "rect": {
+            "x": 25,
+            "y": 649.9,
+            "w": 330,
+            "h": 33
+          }
+        }
+      ],
+      "brandMark": false,
+      "statusRegion": null,
+      "statusLink": null,
+      "support": null,
+      "contactLink": {
+        "href": "/contact",
+        "text": "צרו קשר",
+        "rect": {
+          "x": 148.4,
+          "y": 557.9,
+          "w": 83.2,
+          "h": 44
+        },
+        "target": null
+      },
+      "homeLink": {
+        "href": "/",
+        "text": "לדף הבית",
+        "rect": {
+          "x": 207.1,
+          "y": 501.9,
+          "w": 105.7,
+          "h": 44
+        },
+        "target": null
+      },
+      "retryButton": null,
+      "digest": null,
+      "links": [
+        {
+          "href": "/",
+          "text": "לדף הבית",
+          "rect": {
+            "x": 207.1,
+            "y": 501.9,
+            "w": 105.7,
+            "h": 44
+          },
+          "target": null
+        },
+        {
+          "href": "/products",
+          "text": "לכל המוצרים",
+          "rect": {
+            "x": 67.2,
+            "y": 501.9,
+            "w": 127.9,
+            "h": 44
+          },
+          "target": null
+        },
+        {
+          "href": "/contact",
+          "text": "צרו קשר",
+          "rect": {
+            "x": 148.4,
+            "y": 557.9,
+            "w": 83.2,
+            "h": 44
+          },
+          "target": null
+        },
+        {
+          "href": "/category/hot-deals",
+          "text": "דיל חם",
+          "rect": {
+            "x": 196,
+            "y": 698.9,
+            "w": 159,
+            "h": 166
+          },
+          "target": null
+        },
+        {
+          "href": "/category/under-99",
+          "text": "עד ⁦99 ₪⁩",
+          "rect": {
+            "x": 25,
+            "y": 698.9,
+            "w": 159,
+            "h": 166
+          },
+          "target": null
+        },
+        {
+          "href": "/category/new",
+          "text": "החדשים",
+          "rect": {
+            "x": 196,
+            "y": 876.9,
+            "w": 159,
+            "h": 166
+          },
+          "target": null
+        },
+        {
+          "href": "/category/restaurants-cafes",
+          "text": "מסעדות ובתי קפה",
+          "rect": {
+            "x": 25,
+            "y": 876.9,
+            "w": 159,
+            "h": 166
+          },
+          "target": null
+        },
+        {
+          "href": "/category/beauty-health",
+          "text": "טיפוח בריאות ויופי",
+          "rect": {
+            "x": 196,
+            "y": 1054.9,
+            "w": 159,
+            "h": 166
+          },
+          "target": null
+        },
+        {
+          "href": "/category/phones-computers",
+          "text": "טלפונים ואלקטרוניקה",
+          "rect": {
+            "x": 25,
+            "y": 1054.9,
+            "w": 159,
+            "h": 166
+          },
+          "target": null
+        }
+      ],
+      "buttons": [
+        {
+          "text": "חפש",
+          "rect": {
+            "x": 27,
+            "y": 435.9,
+            "w": 56,
+            "h": 40
+          }
+        }
+      ],
+      "pageHeight": 1687,
+      "scrollWidth": 380
+    },
+    "status": {
+      "status": 404,
+      "url": "/status",
+      "title": "הדף לא נמצא | קניון אקספרס",
+      "htmlDir": "rtl",
+      "mainDir": null,
+      "mains": 1,
+      "robots": "noindex",
+      "header": true,
+      "footer": true,
+      "skipLink": true,
+      "h1": "הדף שחיפשתם לא נמצא",
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "הדף שחיפשתם לא נמצא",
+          "rect": {
+            "x": 61.3,
+            "y": 301.7,
+            "w": 257.5,
+            "h": 32
+          }
+        },
+        {
+          "tag": "H2",
+          "text": "קטגוריות פופולריות",
+          "rect": {
+            "x": 25,
+            "y": 649.9,
+            "w": 330,
+            "h": 33
+          }
+        }
+      ],
+      "brandMark": false,
+      "statusRegion": null,
+      "statusLink": null,
+      "support": null,
+      "contactLink": {
+        "href": "/contact",
+        "text": "צרו קשר",
+        "rect": {
+          "x": 148.4,
+          "y": 557.9,
+          "w": 83.2,
+          "h": 44
+        },
+        "target": null
+      },
+      "homeLink": {
+        "href": "/",
+        "text": "לדף הבית",
+        "rect": {
+          "x": 207.1,
+          "y": 501.9,
+          "w": 105.7,
+          "h": 44
+        },
+        "target": null
+      },
+      "retryButton": null,
+      "digest": null,
+      "links": [
+        {
+          "href": "/",
+          "text": "לדף הבית",
+          "rect": {
+            "x": 207.1,
+            "y": 501.9,
+            "w": 105.7,
+            "h": 44
+          },
+          "target": null
+        },
+        {
+          "href": "/products",
+          "text": "לכל המוצרים",
+          "rect": {
+            "x": 67.2,
+            "y": 501.9,
+            "w": 127.9,
+            "h": 44
+          },
+          "target": null
+        },
+        {
+          "href": "/contact",
+          "text": "צרו קשר",
+          "rect": {
+            "x": 148.4,
+            "y": 557.9,
+            "w": 83.2,
+            "h": 44
+          },
+          "target": null
+        },
+        {
+          "href": "/category/hot-deals",
+          "text": "דיל חם",
+          "rect": {
+            "x": 196,
+            "y": 698.9,
+            "w": 159,
+            "h": 166
+          },
+          "target": null
+        },
+        {
+          "href": "/category/under-99",
+          "text": "עד ⁦99 ₪⁩",
+          "rect": {
+            "x": 25,
+            "y": 698.9,
+            "w": 159,
+            "h": 166
+          },
+          "target": null
+        },
+        {
+          "href": "/category/new",
+          "text": "החדשים",
+          "rect": {
+            "x": 196,
+            "y": 876.9,
+            "w": 159,
+            "h": 166
+          },
+          "target": null
+        },
+        {
+          "href": "/category/restaurants-cafes",
+          "text": "מסעדות ובתי קפה",
+          "rect": {
+            "x": 25,
+            "y": 876.9,
+            "w": 159,
+            "h": 166
+          },
+          "target": null
+        },
+        {
+          "href": "/category/beauty-health",
+          "text": "טיפוח בריאות ויופי",
+          "rect": {
+            "x": 196,
+            "y": 1054.9,
+            "w": 159,
+            "h": 166
+          },
+          "target": null
+        },
+        {
+          "href": "/category/phones-computers",
+          "text": "טלפונים ואלקטרוניקה",
+          "rect": {
+            "x": 25,
+            "y": 1054.9,
+            "w": 159,
+            "h": 166
+          },
+          "target": null
+        }
+      ],
+      "buttons": [
+        {
+          "text": "חפש",
+          "rect": {
+            "x": 27,
+            "y": 435.9,
+            "w": 56,
+            "h": 40
+          }
+        }
+      ],
+      "pageHeight": 1687,
+      "scrollWidth": 380
+    },
+    "pageErrors": []
+  },
+  "768": {
+    "rootThrow": {
+      "status": 200,
+      "url": "/debug/sentry/render",
+      "title": "קניון אקספרס | קופונים ומבצעים",
+      "htmlDir": "rtl",
+      "mainDir": "rtl",
+      "mains": 1,
+      "robots": null,
+      "header": false,
+      "footer": false,
+      "skipLink": false,
+      "h1": "משהו השתבש אצלנו",
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "משהו השתבש אצלנו",
+          "rect": {
+            "x": 276.1,
+            "y": 144,
+            "w": 215.9,
+            "h": 32
+          }
+        }
+      ],
+      "brandMark": false,
+      "statusRegion": null,
+      "statusLink": null,
+      "support": null,
+      "contactLink": null,
+      "homeLink": {
+        "href": "/",
+        "text": "לדף הבית",
+        "rect": {
+          "x": 276.8,
+          "y": 238.8,
+          "w": 107.7,
+          "h": 46
+        },
+        "target": null
+      },
+      "retryButton": {
+        "text": "נסו שוב",
+        "rect": {
+          "x": 396.5,
+          "y": 239.8,
+          "w": 94.7,
+          "h": 44
+        }
+      },
+      "digest": "3031302897",
+      "links": [
+        {
+          "href": "/",
+          "text": "לדף הבית",
+          "rect": {
+            "x": 276.8,
+            "y": 238.8,
+            "w": 107.7,
+            "h": 46
+          },
+          "target": null
+        }
+      ],
+      "buttons": [
+        {
+          "text": "נסו שוב",
+          "rect": {
+            "x": 396.5,
+            "y": 239.8,
+            "w": 94.7,
+            "h": 44
+          }
+        }
+      ],
+      "pageHeight": 900,
+      "scrollWidth": 768
+    },
+    "storeThrow": {
+      "status": 404,
+      "url": "/debug/sentry/store-render",
+      "title": "הדף לא נמצא | קניון אקספרס",
+      "htmlDir": "rtl",
+      "mainDir": null,
+      "mains": 1,
+      "robots": "noindex",
+      "header": true,
+      "footer": true,
+      "skipLink": true,
+      "h1": "הדף שחיפשתם לא נמצא",
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "הדף שחיפשתם לא נמצא",
+          "rect": {
+            "x": 223.1,
+            "y": 296.3,
+            "w": 321.8,
+            "h": 36
+          }
+        },
+        {
+          "tag": "H2",
+          "text": "קטגוריות פופולריות",
+          "rect": {
+            "x": 49,
+            "y": 618.3,
+            "w": 670,
+            "h": 33
+          }
+        }
+      ],
+      "brandMark": false,
+      "statusRegion": null,
+      "statusLink": null,
+      "support": null,
+      "contactLink": {
+        "href": "/contact",
+        "text": "צרו קשר",
+        "rect": {
+          "x": 213.6,
+          "y": 510.3,
+          "w": 83.2,
+          "h": 44
+        },
+        "target": null
+      },
+      "homeLink": {
+        "href": "/",
+        "text": "לדף הבית",
+        "rect": {
+          "x": 448.7,
+          "y": 510.3,
+          "w": 105.7,
+          "h": 44
+        },
+        "target": null
+      },
+      "retryButton": null,
+      "digest": null,
+      "links": [
+        {
+          "href": "/",
+          "text": "לדף הבית",
+          "rect": {
+            "x": 448.7,
+            "y": 510.3,
+            "w": 105.7,
+            "h": 44
+          },
+          "target": null
+        },
+        {
+          "href": "/products",
+          "text": "לכל המוצרים",
+          "rect": {
+            "x": 308.8,
+            "y": 510.3,
+            "w": 127.9,
+            "h": 44
+          },
+          "target": null
+        },
+        {
+          "href": "/contact",
+          "text": "צרו קשר",
+          "rect": {
+            "x": 213.6,
+            "y": 510.3,
+            "w": 83.2,
+            "h": 44
+          },
+          "target": null
+        },
+        {
+          "href": "/category/hot-deals",
+          "text": "דיל חם",
+          "rect": {
+            "x": 503.7,
+            "y": 667.3,
+            "w": 215.3,
+            "h": 166
+          },
+          "target": null
+        },
+        {
+          "href": "/category/under-99",
+          "text": "עד ⁦99 ₪⁩",
+          "rect": {
+            "x": 276.3,
+            "y": 667.3,
+            "w": 215.3,
+            "h": 166
+          },
+          "target": null
+        },
+        {
+          "href": "/category/new",
+          "text": "החדשים",
+          "rect": {
+            "x": 49,
+            "y": 667.3,
+            "w": 215.3,
+            "h": 166
+          },
+          "target": null
+        },
+        {
+          "href": "/category/restaurants-cafes",
+          "text": "מסעדות ובתי קפה",
+          "rect": {
+            "x": 503.7,
+            "y": 845.3,
+            "w": 215.3,
+            "h": 166
+          },
+          "target": null
+        },
+        {
+          "href": "/category/beauty-health",
+          "text": "טיפוח בריאות ויופי",
+          "rect": {
+            "x": 276.3,
+            "y": 845.3,
+            "w": 215.3,
+            "h": 166
+          },
+          "target": null
+        },
+        {
+          "href": "/category/phones-computers",
+          "text": "טלפונים ואלקטרוניקה",
+          "rect": {
+            "x": 49,
+            "y": 845.3,
+            "w": 215.3,
+            "h": 166
+          },
+          "target": null
+        }
+      ],
+      "buttons": [
+        {
+          "text": "חפש",
+          "rect": {
+            "x": 119,
+            "y": 444.3,
+            "w": 56,
+            "h": 40
+          }
+        }
+      ],
+      "pageHeight": 1494,
+      "scrollWidth": 768
+    },
+    "status": {
+      "status": 404,
+      "url": "/status",
+      "title": "הדף לא נמצא | קניון אקספרס",
+      "htmlDir": "rtl",
+      "mainDir": null,
+      "mains": 1,
+      "robots": "noindex",
+      "header": true,
+      "footer": true,
+      "skipLink": true,
+      "h1": "הדף שחיפשתם לא נמצא",
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "הדף שחיפשתם לא נמצא",
+          "rect": {
+            "x": 223.1,
+            "y": 296.3,
+            "w": 321.8,
+            "h": 36
+          }
+        },
+        {
+          "tag": "H2",
+          "text": "קטגוריות פופולריות",
+          "rect": {
+            "x": 49,
+            "y": 618.3,
+            "w": 670,
+            "h": 33
+          }
+        }
+      ],
+      "brandMark": false,
+      "statusRegion": null,
+      "statusLink": null,
+      "support": null,
+      "contactLink": {
+        "href": "/contact",
+        "text": "צרו קשר",
+        "rect": {
+          "x": 213.6,
+          "y": 510.3,
+          "w": 83.2,
+          "h": 44
+        },
+        "target": null
+      },
+      "homeLink": {
+        "href": "/",
+        "text": "לדף הבית",
+        "rect": {
+          "x": 448.7,
+          "y": 510.3,
+          "w": 105.7,
+          "h": 44
+        },
+        "target": null
+      },
+      "retryButton": null,
+      "digest": null,
+      "links": [
+        {
+          "href": "/",
+          "text": "לדף הבית",
+          "rect": {
+            "x": 448.7,
+            "y": 510.3,
+            "w": 105.7,
+            "h": 44
+          },
+          "target": null
+        },
+        {
+          "href": "/products",
+          "text": "לכל המוצרים",
+          "rect": {
+            "x": 308.8,
+            "y": 510.3,
+            "w": 127.9,
+            "h": 44
+          },
+          "target": null
+        },
+        {
+          "href": "/contact",
+          "text": "צרו קשר",
+          "rect": {
+            "x": 213.6,
+            "y": 510.3,
+            "w": 83.2,
+            "h": 44
+          },
+          "target": null
+        },
+        {
+          "href": "/category/hot-deals",
+          "text": "דיל חם",
+          "rect": {
+            "x": 503.7,
+            "y": 667.3,
+            "w": 215.3,
+            "h": 166
+          },
+          "target": null
+        },
+        {
+          "href": "/category/under-99",
+          "text": "עד ⁦99 ₪⁩",
+          "rect": {
+            "x": 276.3,
+            "y": 667.3,
+            "w": 215.3,
+            "h": 166
+          },
+          "target": null
+        },
+        {
+          "href": "/category/new",
+          "text": "החדשים",
+          "rect": {
+            "x": 49,
+            "y": 667.3,
+            "w": 215.3,
+            "h": 166
+          },
+          "target": null
+        },
+        {
+          "href": "/category/restaurants-cafes",
+          "text": "מסעדות ובתי קפה",
+          "rect": {
+            "x": 503.7,
+            "y": 845.3,
+            "w": 215.3,
+            "h": 166
+          },
+          "target": null
+        },
+        {
+          "href": "/category/beauty-health",
+          "text": "טיפוח בריאות ויופי",
+          "rect": {
+            "x": 276.3,
+            "y": 845.3,
+            "w": 215.3,
+            "h": 166
+          },
+          "target": null
+        },
+        {
+          "href": "/category/phones-computers",
+          "text": "טלפונים ואלקטרוניקה",
+          "rect": {
+            "x": 49,
+            "y": 845.3,
+            "w": 215.3,
+            "h": 166
+          },
+          "target": null
+        }
+      ],
+      "buttons": [
+        {
+          "text": "חפש",
+          "rect": {
+            "x": 119,
+            "y": 444.3,
+            "w": 56,
+            "h": 40
+          }
+        }
+      ],
+      "pageHeight": 1494,
+      "scrollWidth": 768
+    },
+    "pageErrors": []
+  },
+  "1440": {
+    "rootThrow": {
+      "status": 200,
+      "url": "/debug/sentry/render",
+      "title": "קניון אקספרס | קופונים ומבצעים",
+      "htmlDir": "rtl",
+      "mainDir": "rtl",
+      "mains": 1,
+      "robots": null,
+      "header": false,
+      "footer": false,
+      "skipLink": false,
+      "h1": "משהו השתבש אצלנו",
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "משהו השתבש אצלנו",
+          "rect": {
+            "x": 612.1,
+            "y": 144,
+            "w": 215.9,
+            "h": 32
+          }
+        }
+      ],
+      "brandMark": false,
+      "statusRegion": null,
+      "statusLink": null,
+      "support": null,
+      "contactLink": null,
+      "homeLink": {
+        "href": "/",
+        "text": "לדף הבית",
+        "rect": {
+          "x": 612.8,
+          "y": 238.8,
+          "w": 107.7,
+          "h": 46
+        },
+        "target": null
+      },
+      "retryButton": {
+        "text": "נסו שוב",
+        "rect": {
+          "x": 732.5,
+          "y": 239.8,
+          "w": 94.7,
+          "h": 44
+        }
+      },
+      "digest": "614408913",
+      "links": [
+        {
+          "href": "/",
+          "text": "לדף הבית",
+          "rect": {
+            "x": 612.8,
+            "y": 238.8,
+            "w": 107.7,
+            "h": 46
+          },
+          "target": null
+        }
+      ],
+      "buttons": [
+        {
+          "text": "נסו שוב",
+          "rect": {
+            "x": 732.5,
+            "y": 239.8,
+            "w": 94.7,
+            "h": 44
+          }
+        }
+      ],
+      "pageHeight": 900,
+      "scrollWidth": 1440
+    },
+    "storeThrow": {
+      "status": 404,
+      "url": "/debug/sentry/store-render",
+      "title": "הדף לא נמצא | קניון אקספרס",
+      "htmlDir": "rtl",
+      "mainDir": null,
+      "mains": 1,
+      "robots": "noindex",
+      "header": true,
+      "footer": true,
+      "skipLink": true,
+      "h1": "הדף שחיפשתם לא נמצא",
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "הדף שחיפשתם לא נמצא",
+          "rect": {
+            "x": 559.1,
+            "y": 356.3,
+            "w": 321.8,
+            "h": 36
+          }
+        },
+        {
+          "tag": "H2",
+          "text": "קטגוריות פופולריות",
+          "rect": {
+            "x": 145,
+            "y": 678.3,
+            "w": 1150,
+            "h": 33
+          }
+        }
+      ],
+      "brandMark": false,
+      "statusRegion": null,
+      "statusLink": null,
+      "support": null,
+      "contactLink": {
+        "href": "/contact",
+        "text": "צרו קשר",
+        "rect": {
+          "x": 549.6,
+          "y": 570.3,
+          "w": 83.2,
+          "h": 44
+        },
+        "target": null
+      },
+      "homeLink": {
+        "href": "/",
+        "text": "לדף הבית",
+        "rect": {
+          "x": 784.7,
+          "y": 570.3,
+          "w": 105.7,
+          "h": 44
+        },
+        "target": null
+      },
+      "retryButton": null,
+      "digest": null,
+      "links": [
+        {
+          "href": "/",
+          "text": "לדף הבית",
+          "rect": {
+            "x": 784.7,
+            "y": 570.3,
+            "w": 105.7,
+            "h": 44
+          },
+          "target": null
+        },
+        {
+          "href": "/products",
+          "text": "לכל המוצרים",
+          "rect": {
+            "x": 644.8,
+            "y": 570.3,
+            "w": 127.9,
+            "h": 44
+          },
+          "target": null
+        },
+        {
+          "href": "/contact",
+          "text": "צרו קשר",
+          "rect": {
+            "x": 549.6,
+            "y": 570.3,
+            "w": 83.2,
+            "h": 44
+          },
+          "target": null
+        },
+        {
+          "href": "/category/hot-deals",
+          "text": "דיל חם",
+          "rect": {
+            "x": 1113.3,
+            "y": 727.3,
+            "w": 181.7,
+            "h": 166
+          },
+          "target": null
+        },
+        {
+          "href": "/category/under-99",
+          "text": "עד ⁦99 ₪⁩",
+          "rect": {
+            "x": 919.7,
+            "y": 727.3,
+            "w": 181.7,
+            "h": 166
+          },
+          "target": null
+        },
+        {
+          "href": "/category/new",
+          "text": "החדשים",
+          "rect": {
+            "x": 726,
+            "y": 727.3,
+            "w": 181.7,
+            "h": 166
+          },
+          "target": null
+        },
+        {
+          "href": "/category/restaurants-cafes",
+          "text": "מסעדות ובתי קפה",
+          "rect": {
+            "x": 532.3,
+            "y": 727.3,
+            "w": 181.7,
+            "h": 166
+          },
+          "target": null
+        },
+        {
+          "href": "/category/beauty-health",
+          "text": "טיפוח בריאות ויופי",
+          "rect": {
+            "x": 338.7,
+            "y": 727.3,
+            "w": 181.7,
+            "h": 166
+          },
+          "target": null
+        },
+        {
+          "href": "/category/phones-computers",
+          "text": "טלפונים ואלקטרוניקה",
+          "rect": {
+            "x": 145,
+            "y": 727.3,
+            "w": 181.7,
+            "h": 166
+          },
+          "target": null
+        }
+      ],
+      "buttons": [
+        {
+          "text": "חפש",
+          "rect": {
+            "x": 455,
+            "y": 504.3,
+            "w": 56,
+            "h": 40
+          }
+        }
+      ],
+      "pageHeight": 1502,
+      "scrollWidth": 1440
+    },
+    "status": {
+      "status": 404,
+      "url": "/status",
+      "title": "הדף לא נמצא | קניון אקספרס",
+      "htmlDir": "rtl",
+      "mainDir": null,
+      "mains": 1,
+      "robots": "noindex",
+      "header": true,
+      "footer": true,
+      "skipLink": true,
+      "h1": "הדף שחיפשתם לא נמצא",
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "הדף שחיפשתם לא נמצא",
+          "rect": {
+            "x": 559.1,
+            "y": 356.3,
+            "w": 321.8,
+            "h": 36
+          }
+        },
+        {
+          "tag": "H2",
+          "text": "קטגוריות פופולריות",
+          "rect": {
+            "x": 145,
+            "y": 678.3,
+            "w": 1150,
+            "h": 33
+          }
+        }
+      ],
+      "brandMark": false,
+      "statusRegion": null,
+      "statusLink": null,
+      "support": null,
+      "contactLink": {
+        "href": "/contact",
+        "text": "צרו קשר",
+        "rect": {
+          "x": 549.6,
+          "y": 570.3,
+          "w": 83.2,
+          "h": 44
+        },
+        "target": null
+      },
+      "homeLink": {
+        "href": "/",
+        "text": "לדף הבית",
+        "rect": {
+          "x": 784.7,
+          "y": 570.3,
+          "w": 105.7,
+          "h": 44
+        },
+        "target": null
+      },
+      "retryButton": null,
+      "digest": null,
+      "links": [
+        {
+          "href": "/",
+          "text": "לדף הבית",
+          "rect": {
+            "x": 784.7,
+            "y": 570.3,
+            "w": 105.7,
+            "h": 44
+          },
+          "target": null
+        },
+        {
+          "href": "/products",
+          "text": "לכל המוצרים",
+          "rect": {
+            "x": 644.8,
+            "y": 570.3,
+            "w": 127.9,
+            "h": 44
+          },
+          "target": null
+        },
+        {
+          "href": "/contact",
+          "text": "צרו קשר",
+          "rect": {
+            "x": 549.6,
+            "y": 570.3,
+            "w": 83.2,
+            "h": 44
+          },
+          "target": null
+        },
+        {
+          "href": "/category/hot-deals",
+          "text": "דיל חם",
+          "rect": {
+            "x": 1113.3,
+            "y": 727.3,
+            "w": 181.7,
+            "h": 166
+          },
+          "target": null
+        },
+        {
+          "href": "/category/under-99",
+          "text": "עד ⁦99 ₪⁩",
+          "rect": {
+            "x": 919.7,
+            "y": 727.3,
+            "w": 181.7,
+            "h": 166
+          },
+          "target": null
+        },
+        {
+          "href": "/category/new",
+          "text": "החדשים",
+          "rect": {
+            "x": 726,
+            "y": 727.3,
+            "w": 181.7,
+            "h": 166
+          },
+          "target": null
+        },
+        {
+          "href": "/category/restaurants-cafes",
+          "text": "מסעדות ובתי קפה",
+          "rect": {
+            "x": 532.3,
+            "y": 727.3,
+            "w": 181.7,
+            "h": 166
+          },
+          "target": null
+        },
+        {
+          "href": "/category/beauty-health",
+          "text": "טיפוח בריאות ויופי",
+          "rect": {
+            "x": 338.7,
+            "y": 727.3,
+            "w": 181.7,
+            "h": 166
+          },
+          "target": null
+        },
+        {
+          "href": "/category/phones-computers",
+          "text": "טלפונים ואלקטרוניקה",
+          "rect": {
+            "x": 145,
+            "y": 727.3,
+            "w": 181.7,
+            "h": 166
+          },
+          "target": null
+        }
+      ],
+      "buttons": [
+        {
+          "text": "חפש",
+          "rect": {
+            "x": 455,
+            "y": 504.3,
+            "w": 56,
+            "h": 40
+          }
+        }
+      ],
+      "pageHeight": 1502,
+      "scrollWidth": 1440
+    },
+    "pageErrors": []
+  }
+}

@@ -61,6 +61,8 @@ const NOT_ON_FIRST_LOAD = [
 const MUST_NOT_IMPORT: Array<[file: string, packages: string[]]> = [
   ['instrumentation-client.ts', ['@sentry/nextjs']],
   ['src/app/error.tsx', ['@sentry/nextjs']],
+  // UX26: the root boundary's body, and every route group's; same first-load graph.
+  ['src/components/error/ErrorBody.tsx', ['@sentry/nextjs']],
   ['src/app/global-error.tsx', ['@sentry/nextjs']],
   ['src/components/observability/SentryUserSync.tsx', ['@sentry/nextjs']],
   // 61.7 KB raw / 14.5 KB gz of zod on the home route, via the tracker.
@@ -154,7 +156,8 @@ describe('the modules every first load carries without being a layout island', (
   })
 
   it('the boundaries still report, through the loader', () => {
-    for (const file of ['src/app/error.tsx', 'src/app/global-error.tsx']) {
+    // error.tsx renders components/error/ErrorBody (UX26); the report lives there.
+    for (const file of ['src/components/error/ErrorBody.tsx', 'src/app/global-error.tsx']) {
       const source = read(file)
       expect(source).toContain("from '@/lib/observability/sentry-browser'")
       expect(source).toContain('Sentry.captureException(error)')

@@ -56,6 +56,7 @@ SENTRY_DEBUG_ROUTES=i-know-what-this-does
 |---|---|
 | `/api/debug/sentry` | `route` |
 | `/debug/sentry/render` | `render` |
+| `/debug/sentry/store-render` | `render`, inside the store shell: opens `(store)/error.tsx`, the 500 page a shopper sees (UX26) |
 | `/debug/sentry` (submit the form) | `action` |
 
 Run against `pnpm start` on 21.08. All three reached Sentry —

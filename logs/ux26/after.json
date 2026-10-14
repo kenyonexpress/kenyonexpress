@@ -1,0 +1,1286 @@
+{
+  "380": {
+    "rootThrow": {
+      "status": 200,
+      "url": "/debug/sentry/render",
+      "title": "משהו השתבש | קניון אקספרס",
+      "htmlDir": "rtl",
+      "mainDir": "rtl",
+      "mains": 1,
+      "robots": null,
+      "header": false,
+      "footer": false,
+      "skipLink": false,
+      "h1": "משהו השתבש אצלנו",
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "משהו השתבש אצלנו",
+          "rect": {
+            "x": 82,
+            "y": 176,
+            "w": 215.9,
+            "h": 32
+          }
+        }
+      ],
+      "brandMark": true,
+      "statusRegion": {
+        "rect": {
+          "x": 25,
+          "y": 353.5,
+          "w": 330,
+          "h": 114
+        },
+        "role": null,
+        "live": null,
+        "state": "ok",
+        "text": "המערכת פעילה. נראה שזו תקלה נקודתית בדף הזה, ונסיון נוסף בדרך כלל מסדר אותה.לדף מצב המערכת"
+      },
+      "statusLink": {
+        "href": "/status",
+        "text": "לדף מצב המערכת",
+        "rect": {
+          "x": 136.7,
+          "y": 410.5,
+          "w": 106.6,
+          "h": 44
+        },
+        "target": null
+      },
+      "support": {
+        "tag": "A",
+        "href": "https://wa.me/972524635550?text=%D7%A9%D7%9C%D7%95%D7%9D%2C%20%D7%A0%D7%AA%D7%A7%D7%9C%D7%AA%D7%99%20%D7%91%D7%AA%D7%A7%D7%9C%D7%94%20%D7%91%D7%90%D7%AA%D7%A8%20%D7%A7%D7%A0%D7%99%D7%95%D7%9F%20%D7%90%D7%A7%D7%A1%D7%A4%D7%A8%D7%A1.%0A%D7%94%D7%93%D7%A3%3A%20%2Fdebug%2Fsentry%2Frender%0A%D7%A7%D7%95%D7%93%20%D7%AA%D7%A7%D7%9C%D7%94%3A%203136572497",
+        "text": "פנייה לתמיכה בוואטסאפ",
+        "rect": {
+          "x": 80.3,
+          "y": 491.5,
+          "w": 219.5,
+          "h": 44
+        }
+      },
+      "contactLink": {
+        "href": "/contact",
+        "text": "טופס יצירת קשר",
+        "rect": {
+          "x": 118.8,
+          "y": 547.5,
+          "w": 142.4,
+          "h": 44
+        },
+        "target": null
+      },
+      "homeLink": {
+        "href": "/",
+        "text": "לדף הבית",
+        "rect": {
+          "x": 82.8,
+          "y": 285.5,
+          "w": 107.7,
+          "h": 44
+        },
+        "target": null
+      },
+      "retryButton": {
+        "text": "נסו שוב",
+        "rect": {
+          "x": 202.5,
+          "y": 285.5,
+          "w": 94.7,
+          "h": 44
+        }
+      },
+      "digest": "קוד תקלה לתמיכה: 3136572497",
+      "links": [
+        {
+          "href": "/",
+          "text": "לדף הבית",
+          "rect": {
+            "x": 82.8,
+            "y": 285.5,
+            "w": 107.7,
+            "h": 44
+          },
+          "target": null
+        },
+        {
+          "href": "/status",
+          "text": "לדף מצב המערכת",
+          "rect": {
+            "x": 136.7,
+            "y": 410.5,
+            "w": 106.6,
+            "h": 44
+          },
+          "target": null
+        },
+        {
+          "href": "https://wa.me/972524635550?text=%D7%A9%D7%9C%D7%95%D7%9D%2C%20%D7%A0%D7%AA%D7%A7%D7%9C%D7%AA%D7%99%20%D7%91%D7%AA%D7%A7%D7%9C%D7%94%20%D7%91%D7%90%D7%AA%D7%A8%20%D7%A7%D7%A0%D7%99%D7%95%D7%9F%20%D7%90%D7%A7%D7%A1%D7%A4%D7%A8%D7%A1.%0A%D7%94%D7%93%D7%A3%3A%20%2Fdebug%2Fsentry%2Frender%0A%D7%A7%D7%95%D7%93%20%D7%AA%D7%A7%D7%9C%D7%94%3A%203136572497",
+          "text": "פנייה לתמיכה בוואטסאפ",
+          "rect": {
+            "x": 80.3,
+            "y": 491.5,
+            "w": 219.5,
+            "h": 44
+          },
+          "target": "_blank"
+        },
+        {
+          "href": "/contact",
+          "text": "טופס יצירת קשר",
+          "rect": {
+            "x": 118.8,
+            "y": 547.5,
+            "w": 142.4,
+            "h": 44
+          },
+          "target": null
+        }
+      ],
+      "buttons": [
+        {
+          "text": "נסו שוב",
+          "rect": {
+            "x": 202.5,
+            "y": 285.5,
+            "w": 94.7,
+            "h": 44
+          }
+        }
+      ],
+      "pageHeight": 900,
+      "scrollWidth": 380
+    },
+    "storeThrow": {
+      "status": 200,
+      "url": "/debug/sentry/store-render",
+      "title": "משהו השתבש | קניון אקספרס",
+      "htmlDir": "rtl",
+      "mainDir": null,
+      "mains": 1,
+      "robots": null,
+      "header": true,
+      "footer": true,
+      "skipLink": true,
+      "h1": "משהו השתבש אצלנו",
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "משהו השתבש אצלנו",
+          "rect": {
+            "x": 82,
+            "y": 301.7,
+            "w": 215.9,
+            "h": 32
+          }
+        }
+      ],
+      "brandMark": true,
+      "statusRegion": {
+        "rect": {
+          "x": 25,
+          "y": 479.2,
+          "w": 330,
+          "h": 114
+        },
+        "role": null,
+        "live": null,
+        "state": "ok",
+        "text": "המערכת פעילה. נראה שזו תקלה נקודתית בדף הזה, ונסיון נוסף בדרך כלל מסדר אותה.לדף מצב המערכת"
+      },
+      "statusLink": {
+        "href": "/status",
+        "text": "לדף מצב המערכת",
+        "rect": {
+          "x": 136.7,
+          "y": 536.2,
+          "w": 106.6,
+          "h": 44
+        },
+        "target": null
+      },
+      "support": {
+        "tag": "A",
+        "href": "https://wa.me/972524635550?text=%D7%A9%D7%9C%D7%95%D7%9D%2C%20%D7%A0%D7%AA%D7%A7%D7%9C%D7%AA%D7%99%20%D7%91%D7%AA%D7%A7%D7%9C%D7%94%20%D7%91%D7%90%D7%AA%D7%A8%20%D7%A7%D7%A0%D7%99%D7%95%D7%9F%20%D7%90%D7%A7%D7%A1%D7%A4%D7%A8%D7%A1.%0A%D7%94%D7%93%D7%A3%3A%20%2Fdebug%2Fsentry%2Fstore-render%0A%D7%A7%D7%95%D7%93%20%D7%AA%D7%A7%D7%9C%D7%94%3A%203223629153",
+        "text": "פנייה לתמיכה בוואטסאפ",
+        "rect": {
+          "x": 80.3,
+          "y": 617.2,
+          "w": 219.5,
+          "h": 44
+        }
+      },
+      "contactLink": {
+        "href": "/contact",
+        "text": "טופס יצירת קשר",
+        "rect": {
+          "x": 118.8,
+          "y": 673.2,
+          "w": 142.4,
+          "h": 44
+        },
+        "target": null
+      },
+      "homeLink": {
+        "href": "/",
+        "text": "לדף הבית",
+        "rect": {
+          "x": 82.8,
+          "y": 411.2,
+          "w": 107.7,
+          "h": 44
+        },
+        "target": null
+      },
+      "retryButton": {
+        "text": "נסו שוב",
+        "rect": {
+          "x": 202.5,
+          "y": 411.2,
+          "w": 94.7,
+          "h": 44
+        }
+      },
+      "digest": "קוד תקלה לתמיכה: 3223629153",
+      "links": [
+        {
+          "href": "/",
+          "text": "לדף הבית",
+          "rect": {
+            "x": 82.8,
+            "y": 411.2,
+            "w": 107.7,
+            "h": 44
+          },
+          "target": null
+        },
+        {
+          "href": "/status",
+          "text": "לדף מצב המערכת",
+          "rect": {
+            "x": 136.7,
+            "y": 536.2,
+            "w": 106.6,
+            "h": 44
+          },
+          "target": null
+        },
+        {
+          "href": "https://wa.me/972524635550?text=%D7%A9%D7%9C%D7%95%D7%9D%2C%20%D7%A0%D7%AA%D7%A7%D7%9C%D7%AA%D7%99%20%D7%91%D7%AA%D7%A7%D7%9C%D7%94%20%D7%91%D7%90%D7%AA%D7%A8%20%D7%A7%D7%A0%D7%99%D7%95%D7%9F%20%D7%90%D7%A7%D7%A1%D7%A4%D7%A8%D7%A1.%0A%D7%94%D7%93%D7%A3%3A%20%2Fdebug%2Fsentry%2Fstore-render%0A%D7%A7%D7%95%D7%93%20%D7%AA%D7%A7%D7%9C%D7%94%3A%203223629153",
+          "text": "פנייה לתמיכה בוואטסאפ",
+          "rect": {
+            "x": 80.3,
+            "y": 617.2,
+            "w": 219.5,
+            "h": 44
+          },
+          "target": "_blank"
+        },
+        {
+          "href": "/contact",
+          "text": "טופס יצירת קשר",
+          "rect": {
+            "x": 118.8,
+            "y": 673.2,
+            "w": 142.4,
+            "h": 44
+          },
+          "target": null
+        }
+      ],
+      "buttons": [
+        {
+          "text": "נסו שוב",
+          "rect": {
+            "x": 202.5,
+            "y": 411.2,
+            "w": 94.7,
+            "h": 44
+          }
+        }
+      ],
+      "pageHeight": 1224,
+      "scrollWidth": 380
+    },
+    "status": {
+      "status": 200,
+      "url": "/status",
+      "title": "מצב המערכת | קניון אקספרס",
+      "htmlDir": "rtl",
+      "mainDir": "rtl",
+      "mains": 1,
+      "robots": "noindex, nofollow",
+      "header": true,
+      "footer": false,
+      "skipLink": false,
+      "h1": "מצב המערכת",
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "מצב המערכת",
+          "rect": {
+            "x": 16,
+            "y": 104,
+            "w": 348,
+            "h": 32
+          }
+        }
+      ],
+      "brandMark": true,
+      "statusRegion": {
+        "rect": {
+          "x": 16,
+          "y": 236.3,
+          "w": 348,
+          "h": 362
+        },
+        "role": null,
+        "live": null,
+        "state": "ok",
+        "text": "כל השירותים פעיליםבדקו שובמסד הנתוניםפעילהגבלת קצבפעילחיפושלא מופעלתמונות וקבציםלא מופעלסליקהלא מופעלנבדק לאחרונה בשעה 21:37:36 (שעון ישראל). הבדיקה חוזרת כל חצ"
+      },
+      "statusLink": null,
+      "support": null,
+      "contactLink": {
+        "href": "/contact",
+        "text": "צרו קשר",
+        "rect": {
+          "x": 80.5,
+          "y": 630.3,
+          "w": 101.2,
+          "h": 44
+        },
+        "target": null
+      },
+      "homeLink": {
+        "href": "/",
+        "text": "קניון אקספרס",
+        "rect": {
+          "x": 117.5,
+          "y": 40,
+          "w": 145,
+          "h": 32
+        },
+        "target": null
+      },
+      "retryButton": null,
+      "digest": null,
+      "links": [
+        {
+          "href": "/",
+          "text": "קניון אקספרס",
+          "rect": {
+            "x": 117.5,
+            "y": 40,
+            "w": 145,
+            "h": 32
+          },
+          "target": null
+        },
+        {
+          "href": "/",
+          "text": "לדף הבית",
+          "rect": {
+            "x": 193.7,
+            "y": 630.3,
+            "w": 105.7,
+            "h": 44
+          },
+          "target": null
+        },
+        {
+          "href": "/contact",
+          "text": "צרו קשר",
+          "rect": {
+            "x": 80.5,
+            "y": 630.3,
+            "w": 101.2,
+            "h": 44
+          },
+          "target": null
+        },
+        {
+          "href": "https://wa.me/972524635550?text=%D7%A9%D7%9C%D7%95%D7%9D%2C%20%D7%90%D7%A0%D7%99%20%D7%A8%D7%95%D7%90%D7%94%20%D7%AA%D7%A7%D7%9C%D7%94%20%D7%91%D7%93%D7%A3%20%D7%9E%D7%A6%D7%91%20%D7%94%D7%9E%D7%A2%D7%A8%D7%9B%D7%AA%20%D7%A9%D7%9C%20%D7%A7%D7%A0%D7%99%D7%95%D7%9F%20%D7%90%D7%A7%D7%A1%D7%A4%D7%A8%D7%A1",
+          "text": "תמיכה בוואטסאפ052-463-5550",
+          "rect": {
+            "x": 37.4,
+            "y": 686.3,
+            "w": 305.2,
+            "h": 50
+          },
+          "target": "_blank"
+        }
+      ],
+      "buttons": [
+        {
+          "text": "בדקו שוב",
+          "rect": {
+            "x": 33,
+            "y": 253.3,
+            "w": 90.6,
+            "h": 44
+          }
+        }
+      ],
+      "pageHeight": 900,
+      "scrollWidth": 380
+    },
+    "pageErrors": []
+  },
+  "768": {
+    "rootThrow": {
+      "status": 200,
+      "url": "/debug/sentry/render",
+      "title": "משהו השתבש | קניון אקספרס",
+      "htmlDir": "rtl",
+      "mainDir": "rtl",
+      "mains": 1,
+      "robots": null,
+      "header": false,
+      "footer": false,
+      "skipLink": false,
+      "h1": "משהו השתבש אצלנו",
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "משהו השתבש אצלנו",
+          "rect": {
+            "x": 249.1,
+            "y": 208,
+            "w": 269.9,
+            "h": 36
+          }
+        }
+      ],
+      "brandMark": true,
+      "statusRegion": {
+        "rect": {
+          "x": 160,
+          "y": 396,
+          "w": 448,
+          "h": 114
+        },
+        "role": null,
+        "live": null,
+        "state": "ok",
+        "text": "המערכת פעילה. נראה שזו תקלה נקודתית בדף הזה, ונסיון נוסף בדרך כלל מסדר אותה.לדף מצב המערכת"
+      },
+      "statusLink": {
+        "href": "/status",
+        "text": "לדף מצב המערכת",
+        "rect": {
+          "x": 330.7,
+          "y": 453,
+          "w": 106.6,
+          "h": 44
+        },
+        "target": null
+      },
+      "support": {
+        "tag": "A",
+        "href": "https://wa.me/972524635550?text=%D7%A9%D7%9C%D7%95%D7%9D%2C%20%D7%A0%D7%AA%D7%A7%D7%9C%D7%AA%D7%99%20%D7%91%D7%AA%D7%A7%D7%9C%D7%94%20%D7%91%D7%90%D7%AA%D7%A8%20%D7%A7%D7%A0%D7%99%D7%95%D7%9F%20%D7%90%D7%A7%D7%A1%D7%A4%D7%A8%D7%A1.%0A%D7%94%D7%93%D7%A3%3A%20%2Fdebug%2Fsentry%2Frender%0A%D7%A7%D7%95%D7%93%20%D7%AA%D7%A7%D7%9C%D7%94%3A%204193243057",
+        "text": "פנייה לתמיכה בוואטסאפ",
+        "rect": {
+          "x": 351.5,
+          "y": 534,
+          "w": 219.5,
+          "h": 44
+        }
+      },
+      "contactLink": {
+        "href": "/contact",
+        "text": "טופס יצירת קשר",
+        "rect": {
+          "x": 197.1,
+          "y": 534,
+          "w": 142.4,
+          "h": 44
+        },
+        "target": null
+      },
+      "homeLink": {
+        "href": "/",
+        "text": "לדף הבית",
+        "rect": {
+          "x": 276.8,
+          "y": 328,
+          "w": 107.7,
+          "h": 44
+        },
+        "target": null
+      },
+      "retryButton": {
+        "text": "נסו שוב",
+        "rect": {
+          "x": 396.5,
+          "y": 328,
+          "w": 94.7,
+          "h": 44
+        }
+      },
+      "digest": "קוד תקלה לתמיכה: 4193243057",
+      "links": [
+        {
+          "href": "/",
+          "text": "לדף הבית",
+          "rect": {
+            "x": 276.8,
+            "y": 328,
+            "w": 107.7,
+            "h": 44
+          },
+          "target": null
+        },
+        {
+          "href": "/status",
+          "text": "לדף מצב המערכת",
+          "rect": {
+            "x": 330.7,
+            "y": 453,
+            "w": 106.6,
+            "h": 44
+          },
+          "target": null
+        },
+        {
+          "href": "https://wa.me/972524635550?text=%D7%A9%D7%9C%D7%95%D7%9D%2C%20%D7%A0%D7%AA%D7%A7%D7%9C%D7%AA%D7%99%20%D7%91%D7%AA%D7%A7%D7%9C%D7%94%20%D7%91%D7%90%D7%AA%D7%A8%20%D7%A7%D7%A0%D7%99%D7%95%D7%9F%20%D7%90%D7%A7%D7%A1%D7%A4%D7%A8%D7%A1.%0A%D7%94%D7%93%D7%A3%3A%20%2Fdebug%2Fsentry%2Frender%0A%D7%A7%D7%95%D7%93%20%D7%AA%D7%A7%D7%9C%D7%94%3A%204193243057",
+          "text": "פנייה לתמיכה בוואטסאפ",
+          "rect": {
+            "x": 351.5,
+            "y": 534,
+            "w": 219.5,
+            "h": 44
+          },
+          "target": "_blank"
+        },
+        {
+          "href": "/contact",
+          "text": "טופס יצירת קשר",
+          "rect": {
+            "x": 197.1,
+            "y": 534,
+            "w": 142.4,
+            "h": 44
+          },
+          "target": null
+        }
+      ],
+      "buttons": [
+        {
+          "text": "נסו שוב",
+          "rect": {
+            "x": 396.5,
+            "y": 328,
+            "w": 94.7,
+            "h": 44
+          }
+        }
+      ],
+      "pageHeight": 900,
+      "scrollWidth": 768
+    },
+    "storeThrow": {
+      "status": 200,
+      "url": "/debug/sentry/store-render",
+      "title": "משהו השתבש | קניון אקספרס",
+      "htmlDir": "rtl",
+      "mainDir": null,
+      "mains": 1,
+      "robots": null,
+      "header": true,
+      "footer": true,
+      "skipLink": true,
+      "h1": "משהו השתבש אצלנו",
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "משהו השתבש אצלנו",
+          "rect": {
+            "x": 249.1,
+            "y": 296.3,
+            "w": 269.9,
+            "h": 36
+          }
+        }
+      ],
+      "brandMark": true,
+      "statusRegion": {
+        "rect": {
+          "x": 160,
+          "y": 484.3,
+          "w": 448,
+          "h": 114
+        },
+        "role": null,
+        "live": null,
+        "state": "ok",
+        "text": "המערכת פעילה. נראה שזו תקלה נקודתית בדף הזה, ונסיון נוסף בדרך כלל מסדר אותה.לדף מצב המערכת"
+      },
+      "statusLink": {
+        "href": "/status",
+        "text": "לדף מצב המערכת",
+        "rect": {
+          "x": 330.7,
+          "y": 541.3,
+          "w": 106.6,
+          "h": 44
+        },
+        "target": null
+      },
+      "support": {
+        "tag": "A",
+        "href": "https://wa.me/972524635550?text=%D7%A9%D7%9C%D7%95%D7%9D%2C%20%D7%A0%D7%AA%D7%A7%D7%9C%D7%AA%D7%99%20%D7%91%D7%AA%D7%A7%D7%9C%D7%94%20%D7%91%D7%90%D7%AA%D7%A8%20%D7%A7%D7%A0%D7%99%D7%95%D7%9F%20%D7%90%D7%A7%D7%A1%D7%A4%D7%A8%D7%A1.%0A%D7%94%D7%93%D7%A3%3A%20%2Fdebug%2Fsentry%2Fstore-render%0A%D7%A7%D7%95%D7%93%20%D7%AA%D7%A7%D7%9C%D7%94%3A%201350871617",
+        "text": "פנייה לתמיכה בוואטסאפ",
+        "rect": {
+          "x": 351.5,
+          "y": 622.3,
+          "w": 219.5,
+          "h": 44
+        }
+      },
+      "contactLink": {
+        "href": "/contact",
+        "text": "טופס יצירת קשר",
+        "rect": {
+          "x": 197.1,
+          "y": 622.3,
+          "w": 142.4,
+          "h": 44
+        },
+        "target": null
+      },
+      "homeLink": {
+        "href": "/",
+        "text": "לדף הבית",
+        "rect": {
+          "x": 276.8,
+          "y": 416.3,
+          "w": 107.7,
+          "h": 44
+        },
+        "target": null
+      },
+      "retryButton": {
+        "text": "נסו שוב",
+        "rect": {
+          "x": 396.5,
+          "y": 416.3,
+          "w": 94.7,
+          "h": 44
+        }
+      },
+      "digest": "קוד תקלה לתמיכה: 1350871617",
+      "links": [
+        {
+          "href": "/",
+          "text": "לדף הבית",
+          "rect": {
+            "x": 276.8,
+            "y": 416.3,
+            "w": 107.7,
+            "h": 44
+          },
+          "target": null
+        },
+        {
+          "href": "/status",
+          "text": "לדף מצב המערכת",
+          "rect": {
+            "x": 330.7,
+            "y": 541.3,
+            "w": 106.6,
+            "h": 44
+          },
+          "target": null
+        },
+        {
+          "href": "https://wa.me/972524635550?text=%D7%A9%D7%9C%D7%95%D7%9D%2C%20%D7%A0%D7%AA%D7%A7%D7%9C%D7%AA%D7%99%20%D7%91%D7%AA%D7%A7%D7%9C%D7%94%20%D7%91%D7%90%D7%AA%D7%A8%20%D7%A7%D7%A0%D7%99%D7%95%D7%9F%20%D7%90%D7%A7%D7%A1%D7%A4%D7%A8%D7%A1.%0A%D7%94%D7%93%D7%A3%3A%20%2Fdebug%2Fsentry%2Fstore-render%0A%D7%A7%D7%95%D7%93%20%D7%AA%D7%A7%D7%9C%D7%94%3A%201350871617",
+          "text": "פנייה לתמיכה בוואטסאפ",
+          "rect": {
+            "x": 351.5,
+            "y": 622.3,
+            "w": 219.5,
+            "h": 44
+          },
+          "target": "_blank"
+        },
+        {
+          "href": "/contact",
+          "text": "טופס יצירת קשר",
+          "rect": {
+            "x": 197.1,
+            "y": 622.3,
+            "w": 142.4,
+            "h": 44
+          },
+          "target": null
+        }
+      ],
+      "buttons": [
+        {
+          "text": "נסו שוב",
+          "rect": {
+            "x": 396.5,
+            "y": 416.3,
+            "w": 94.7,
+            "h": 44
+          }
+        }
+      ],
+      "pageHeight": 1189,
+      "scrollWidth": 768
+    },
+    "status": {
+      "status": 200,
+      "url": "/status",
+      "title": "מצב המערכת | קניון אקספרס",
+      "htmlDir": "rtl",
+      "mainDir": "rtl",
+      "mains": 1,
+      "robots": "noindex, nofollow",
+      "header": true,
+      "footer": false,
+      "skipLink": false,
+      "h1": "מצב המערכת",
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "מצב המערכת",
+          "rect": {
+            "x": 64,
+            "y": 120,
+            "w": 640,
+            "h": 36
+          }
+        }
+      ],
+      "brandMark": true,
+      "statusRegion": {
+        "rect": {
+          "x": 64,
+          "y": 240,
+          "w": 640,
+          "h": 362
+        },
+        "role": null,
+        "live": null,
+        "state": "ok",
+        "text": "כל השירותים פעיליםבדקו שובמסד הנתוניםפעילהגבלת קצבפעילחיפושלא מופעלתמונות וקבציםלא מופעלסליקהלא מופעלנבדק לאחרונה בשעה 21:37:44 (שעון ישראל). הבדיקה חוזרת כל חצ"
+      },
+      "statusLink": null,
+      "support": null,
+      "contactLink": {
+        "href": "/contact",
+        "text": "צרו קשר",
+        "rect": {
+          "x": 433.2,
+          "y": 637,
+          "w": 101.2,
+          "h": 44
+        },
+        "target": null
+      },
+      "homeLink": {
+        "href": "/",
+        "text": "קניון אקספרס",
+        "rect": {
+          "x": 311.5,
+          "y": 56,
+          "w": 145,
+          "h": 32
+        },
+        "target": null
+      },
+      "retryButton": null,
+      "digest": null,
+      "links": [
+        {
+          "href": "/",
+          "text": "קניון אקספרס",
+          "rect": {
+            "x": 311.5,
+            "y": 56,
+            "w": 145,
+            "h": 32
+          },
+          "target": null
+        },
+        {
+          "href": "/",
+          "text": "לדף הבית",
+          "rect": {
+            "x": 546.3,
+            "y": 637,
+            "w": 105.7,
+            "h": 44
+          },
+          "target": null
+        },
+        {
+          "href": "/contact",
+          "text": "צרו קשר",
+          "rect": {
+            "x": 433.2,
+            "y": 637,
+            "w": 101.2,
+            "h": 44
+          },
+          "target": null
+        },
+        {
+          "href": "https://wa.me/972524635550?text=%D7%A9%D7%9C%D7%95%D7%9D%2C%20%D7%90%D7%A0%D7%99%20%D7%A8%D7%95%D7%90%D7%94%20%D7%AA%D7%A7%D7%9C%D7%94%20%D7%91%D7%93%D7%A3%20%D7%9E%D7%A6%D7%91%20%D7%94%D7%9E%D7%A2%D7%A8%D7%9B%D7%AA%20%D7%A9%D7%9C%20%D7%A7%D7%A0%D7%99%D7%95%D7%9F%20%D7%90%D7%A7%D7%A1%D7%A4%D7%A8%D7%A1",
+          "text": "תמיכה בוואטסאפ052-463-5550",
+          "rect": {
+            "x": 115.9,
+            "y": 634,
+            "w": 305.2,
+            "h": 50
+          },
+          "target": "_blank"
+        }
+      ],
+      "buttons": [
+        {
+          "text": "בדקו שוב",
+          "rect": {
+            "x": 89,
+            "y": 265,
+            "w": 90.6,
+            "h": 44
+          }
+        }
+      ],
+      "pageHeight": 900,
+      "scrollWidth": 768
+    },
+    "pageErrors": []
+  },
+  "1440": {
+    "rootThrow": {
+      "status": 200,
+      "url": "/debug/sentry/render",
+      "title": "משהו השתבש | קניון אקספרס",
+      "htmlDir": "rtl",
+      "mainDir": "rtl",
+      "mains": 1,
+      "robots": null,
+      "header": false,
+      "footer": false,
+      "skipLink": false,
+      "h1": "משהו השתבש אצלנו",
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "משהו השתבש אצלנו",
+          "rect": {
+            "x": 585.1,
+            "y": 208,
+            "w": 269.9,
+            "h": 36
+          }
+        }
+      ],
+      "brandMark": true,
+      "statusRegion": {
+        "rect": {
+          "x": 496,
+          "y": 396,
+          "w": 448,
+          "h": 114
+        },
+        "role": null,
+        "live": null,
+        "state": "ok",
+        "text": "המערכת פעילה. נראה שזו תקלה נקודתית בדף הזה, ונסיון נוסף בדרך כלל מסדר אותה.לדף מצב המערכת"
+      },
+      "statusLink": {
+        "href": "/status",
+        "text": "לדף מצב המערכת",
+        "rect": {
+          "x": 666.7,
+          "y": 453,
+          "w": 106.6,
+          "h": 44
+        },
+        "target": null
+      },
+      "support": {
+        "tag": "A",
+        "href": "https://wa.me/972524635550?text=%D7%A9%D7%9C%D7%95%D7%9D%2C%20%D7%A0%D7%AA%D7%A7%D7%9C%D7%AA%D7%99%20%D7%91%D7%AA%D7%A7%D7%9C%D7%94%20%D7%91%D7%90%D7%AA%D7%A8%20%D7%A7%D7%A0%D7%99%D7%95%D7%9F%20%D7%90%D7%A7%D7%A1%D7%A4%D7%A8%D7%A1.%0A%D7%94%D7%93%D7%A3%3A%20%2Fdebug%2Fsentry%2Frender%0A%D7%A7%D7%95%D7%93%20%D7%AA%D7%A7%D7%9C%D7%94%3A%20505977137",
+        "text": "פנייה לתמיכה בוואטסאפ",
+        "rect": {
+          "x": 687.5,
+          "y": 534,
+          "w": 219.5,
+          "h": 44
+        }
+      },
+      "contactLink": {
+        "href": "/contact",
+        "text": "טופס יצירת קשר",
+        "rect": {
+          "x": 533.1,
+          "y": 534,
+          "w": 142.4,
+          "h": 44
+        },
+        "target": null
+      },
+      "homeLink": {
+        "href": "/",
+        "text": "לדף הבית",
+        "rect": {
+          "x": 612.8,
+          "y": 328,
+          "w": 107.7,
+          "h": 44
+        },
+        "target": null
+      },
+      "retryButton": {
+        "text": "נסו שוב",
+        "rect": {
+          "x": 732.5,
+          "y": 328,
+          "w": 94.7,
+          "h": 44
+        }
+      },
+      "digest": "קוד תקלה לתמיכה: 505977137",
+      "links": [
+        {
+          "href": "/",
+          "text": "לדף הבית",
+          "rect": {
+            "x": 612.8,
+            "y": 328,
+            "w": 107.7,
+            "h": 44
+          },
+          "target": null
+        },
+        {
+          "href": "/status",
+          "text": "לדף מצב המערכת",
+          "rect": {
+            "x": 666.7,
+            "y": 453,
+            "w": 106.6,
+            "h": 44
+          },
+          "target": null
+        },
+        {
+          "href": "https://wa.me/972524635550?text=%D7%A9%D7%9C%D7%95%D7%9D%2C%20%D7%A0%D7%AA%D7%A7%D7%9C%D7%AA%D7%99%20%D7%91%D7%AA%D7%A7%D7%9C%D7%94%20%D7%91%D7%90%D7%AA%D7%A8%20%D7%A7%D7%A0%D7%99%D7%95%D7%9F%20%D7%90%D7%A7%D7%A1%D7%A4%D7%A8%D7%A1.%0A%D7%94%D7%93%D7%A3%3A%20%2Fdebug%2Fsentry%2Frender%0A%D7%A7%D7%95%D7%93%20%D7%AA%D7%A7%D7%9C%D7%94%3A%20505977137",
+          "text": "פנייה לתמיכה בוואטסאפ",
+          "rect": {
+            "x": 687.5,
+            "y": 534,
+            "w": 219.5,
+            "h": 44
+          },
+          "target": "_blank"
+        },
+        {
+          "href": "/contact",
+          "text": "טופס יצירת קשר",
+          "rect": {
+            "x": 533.1,
+            "y": 534,
+            "w": 142.4,
+            "h": 44
+          },
+          "target": null
+        }
+      ],
+      "buttons": [
+        {
+          "text": "נסו שוב",
+          "rect": {
+            "x": 732.5,
+            "y": 328,
+            "w": 94.7,
+            "h": 44
+          }
+        }
+      ],
+      "pageHeight": 900,
+      "scrollWidth": 1440
+    },
+    "storeThrow": {
+      "status": 200,
+      "url": "/debug/sentry/store-render",
+      "title": "משהו השתבש | קניון אקספרס",
+      "htmlDir": "rtl",
+      "mainDir": null,
+      "mains": 1,
+      "robots": null,
+      "header": true,
+      "footer": true,
+      "skipLink": true,
+      "h1": "משהו השתבש אצלנו",
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "משהו השתבש אצלנו",
+          "rect": {
+            "x": 585.1,
+            "y": 356.3,
+            "w": 269.9,
+            "h": 36
+          }
+        }
+      ],
+      "brandMark": true,
+      "statusRegion": {
+        "rect": {
+          "x": 496,
+          "y": 544.3,
+          "w": 448,
+          "h": 114
+        },
+        "role": null,
+        "live": null,
+        "state": "ok",
+        "text": "המערכת פעילה. נראה שזו תקלה נקודתית בדף הזה, ונסיון נוסף בדרך כלל מסדר אותה.לדף מצב המערכת"
+      },
+      "statusLink": {
+        "href": "/status",
+        "text": "לדף מצב המערכת",
+        "rect": {
+          "x": 666.7,
+          "y": 601.3,
+          "w": 106.6,
+          "h": 44
+        },
+        "target": null
+      },
+      "support": {
+        "tag": "A",
+        "href": "https://wa.me/972524635550?text=%D7%A9%D7%9C%D7%95%D7%9D%2C%20%D7%A0%D7%AA%D7%A7%D7%9C%D7%AA%D7%99%20%D7%91%D7%AA%D7%A7%D7%9C%D7%94%20%D7%91%D7%90%D7%AA%D7%A8%20%D7%A7%D7%A0%D7%99%D7%95%D7%9F%20%D7%90%D7%A7%D7%A1%D7%A4%D7%A8%D7%A1.%0A%D7%94%D7%93%D7%A3%3A%20%2Fdebug%2Fsentry%2Fstore-render%0A%D7%A7%D7%95%D7%93%20%D7%AA%D7%A7%D7%9C%D7%94%3A%201067223329",
+        "text": "פנייה לתמיכה בוואטסאפ",
+        "rect": {
+          "x": 687.5,
+          "y": 682.3,
+          "w": 219.5,
+          "h": 44
+        }
+      },
+      "contactLink": {
+        "href": "/contact",
+        "text": "טופס יצירת קשר",
+        "rect": {
+          "x": 533.1,
+          "y": 682.3,
+          "w": 142.4,
+          "h": 44
+        },
+        "target": null
+      },
+      "homeLink": {
+        "href": "/",
+        "text": "לדף הבית",
+        "rect": {
+          "x": 612.8,
+          "y": 476.3,
+          "w": 107.7,
+          "h": 44
+        },
+        "target": null
+      },
+      "retryButton": {
+        "text": "נסו שוב",
+        "rect": {
+          "x": 732.5,
+          "y": 476.3,
+          "w": 94.7,
+          "h": 44
+        }
+      },
+      "digest": "קוד תקלה לתמיכה: 1067223329",
+      "links": [
+        {
+          "href": "/",
+          "text": "לדף הבית",
+          "rect": {
+            "x": 612.8,
+            "y": 476.3,
+            "w": 107.7,
+            "h": 44
+          },
+          "target": null
+        },
+        {
+          "href": "/status",
+          "text": "לדף מצב המערכת",
+          "rect": {
+            "x": 666.7,
+            "y": 601.3,
+            "w": 106.6,
+            "h": 44
+          },
+          "target": null
+        },
+        {
+          "href": "https://wa.me/972524635550?text=%D7%A9%D7%9C%D7%95%D7%9D%2C%20%D7%A0%D7%AA%D7%A7%D7%9C%D7%AA%D7%99%20%D7%91%D7%AA%D7%A7%D7%9C%D7%94%20%D7%91%D7%90%D7%AA%D7%A8%20%D7%A7%D7%A0%D7%99%D7%95%D7%9F%20%D7%90%D7%A7%D7%A1%D7%A4%D7%A8%D7%A1.%0A%D7%94%D7%93%D7%A3%3A%20%2Fdebug%2Fsentry%2Fstore-render%0A%D7%A7%D7%95%D7%93%20%D7%AA%D7%A7%D7%9C%D7%94%3A%201067223329",
+          "text": "פנייה לתמיכה בוואטסאפ",
+          "rect": {
+            "x": 687.5,
+            "y": 682.3,
+            "w": 219.5,
+            "h": 44
+          },
+          "target": "_blank"
+        },
+        {
+          "href": "/contact",
+          "text": "טופס יצירת קשר",
+          "rect": {
+            "x": 533.1,
+            "y": 682.3,
+            "w": 142.4,
+            "h": 44
+          },
+          "target": null
+        }
+      ],
+      "buttons": [
+        {
+          "text": "נסו שוב",
+          "rect": {
+            "x": 732.5,
+            "y": 476.3,
+            "w": 94.7,
+            "h": 44
+          }
+        }
+      ],
+      "pageHeight": 1375,
+      "scrollWidth": 1440
+    },
+    "status": {
+      "status": 200,
+      "url": "/status",
+      "title": "מצב המערכת | קניון אקספרס",
+      "htmlDir": "rtl",
+      "mainDir": "rtl",
+      "mains": 1,
+      "robots": "noindex, nofollow",
+      "header": true,
+      "footer": false,
+      "skipLink": false,
+      "h1": "מצב המערכת",
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "מצב המערכת",
+          "rect": {
+            "x": 400,
+            "y": 120,
+            "w": 640,
+            "h": 36
+          }
+        }
+      ],
+      "brandMark": true,
+      "statusRegion": {
+        "rect": {
+          "x": 400,
+          "y": 240,
+          "w": 640,
+          "h": 362
+        },
+        "role": null,
+        "live": null,
+        "state": "ok",
+        "text": "כל השירותים פעיליםבדקו שובמסד הנתוניםפעילהגבלת קצבפעילחיפושלא מופעלתמונות וקבציםלא מופעלסליקהלא מופעלנבדק לאחרונה בשעה 21:37:53 (שעון ישראל). הבדיקה חוזרת כל חצ"
+      },
+      "statusLink": null,
+      "support": null,
+      "contactLink": {
+        "href": "/contact",
+        "text": "צרו קשר",
+        "rect": {
+          "x": 769.2,
+          "y": 637,
+          "w": 101.2,
+          "h": 44
+        },
+        "target": null
+      },
+      "homeLink": {
+        "href": "/",
+        "text": "קניון אקספרס",
+        "rect": {
+          "x": 647.5,
+          "y": 56,
+          "w": 145,
+          "h": 32
+        },
+        "target": null
+      },
+      "retryButton": null,
+      "digest": null,
+      "links": [
+        {
+          "href": "/",
+          "text": "קניון אקספרס",
+          "rect": {
+            "x": 647.5,
+            "y": 56,
+            "w": 145,
+            "h": 32
+          },
+          "target": null
+        },
+        {
+          "href": "/",
+          "text": "לדף הבית",
+          "rect": {
+            "x": 882.3,
+            "y": 637,
+            "w": 105.7,
+            "h": 44
+          },
+          "target": null
+        },
+        {
+          "href": "/contact",
+          "text": "צרו קשר",
+          "rect": {
+            "x": 769.2,
+            "y": 637,
+            "w": 101.2,
+            "h": 44
+          },
+          "target": null
+        },
+        {
+          "href": "https://wa.me/972524635550?text=%D7%A9%D7%9C%D7%95%D7%9D%2C%20%D7%90%D7%A0%D7%99%20%D7%A8%D7%95%D7%90%D7%94%20%D7%AA%D7%A7%D7%9C%D7%94%20%D7%91%D7%93%D7%A3%20%D7%9E%D7%A6%D7%91%20%D7%94%D7%9E%D7%A2%D7%A8%D7%9B%D7%AA%20%D7%A9%D7%9C%20%D7%A7%D7%A0%D7%99%D7%95%D7%9F%20%D7%90%D7%A7%D7%A1%D7%A4%D7%A8%D7%A1",
+          "text": "תמיכה בוואטסאפ052-463-5550",
+          "rect": {
+            "x": 451.9,
+            "y": 634,
+            "w": 305.2,
+            "h": 50
+          },
+          "target": "_blank"
+        }
+      ],
+      "buttons": [
+        {
+          "text": "בדקו שוב",
+          "rect": {
+            "x": 425,
+            "y": 265,
+            "w": 90.6,
+            "h": 44
+          }
+        }
+      ],
+      "pageHeight": 900,
+      "scrollWidth": 1440
+    },
+    "pageErrors": []
+  }
+}
