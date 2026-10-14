@@ -53,7 +53,7 @@ what main has.
 | 10 | Trust bar | Amazon, Booking | PARTIAL | PARTIAL | 0 | bar on product and cart closed 2026-10-14; support hours need the real hours from Ofir |
 | 11 | Saved cards (token only, no PAN) | Amazon, Wolt | EXISTS | EXISTS | 0 | none |
 | 12 | Apple and Google Wallet passes | Booking, Groupon | EXISTS | EXISTS | 0 | none. Needs certificates, a human item |
-| 13 | Offline redemption queue | Wolt (courier), Groupon Merchant | PARTIAL | PARTIAL | 3 | port queue, then IndexedDB and Background Sync |
+| 13 | Offline redemption queue | Wolt (courier), Groupon Merchant | PARTIAL | PARTIAL | 2 | queue ported 2026-10-14; IndexedDB and Background Sync still open |
 | 14 | Supplier onboarding wizard, six steps | Wolt, Lazada, TikTok Shop | PARTIAL | PARTIAL | 4 | port three steps, build three |
 | 15 | Admin KPI dashboard | all (seller centres) | EXISTS | EXISTS | 0 | ops KPIs ported, active vouchers and payouts due added, closed 2026-10-14 |
 | 16 | Product reviews | Amazon, Booking, Lazada | PARTIAL | PARTIAL | 3 | finish. See note C |
@@ -318,6 +318,19 @@ brand and expiry; `src/server/actions/payments/checkout.ts`,
 route. prod: `src/lib/vouchers/offline-queue.ts` queues up to 200 scans in
 localStorage and drains on the `online` event. Missing on both: IndexedDB and
 Background Sync.
+
+main, 2026-10-14: the queue is ported and wired into `/scan`. A lookup or a
+redeem that cannot reach the server is kept with the idempotency key it was
+minted with, a banner shows the pending count and says the scans are not yet
+checked, and the queue drains through the batch route on the `online` event
+or the button. Only a verdict about the voucher removes a scan; a failed
+batch removes nothing. Verified by unit tests, including five on the screen
+itself (kept on a failed lookup, drained with the original key, kept on a
+failed batch, removed when refused, same key when the redeem drops after the
+lookup). Not verified: a real till in a browser, which needs a supplier
+session and a live voucher to burn. Why the row stays PARTIAL: storage is
+still localStorage and draining needs the tab open; IndexedDB and Background
+Sync are not built.
 
 **14. Supplier wizard.** main: one-step lead form
 (`src/components/storefront/SupplierLeadForm.tsx`) and an admin checklist.

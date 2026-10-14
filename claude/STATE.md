@@ -4,7 +4,7 @@ Updated: 2026-10-14 (Asia/Bangkok). Queue: FINAL-CLOSEOUT L1 to L16, issued 14.1
 
 ## Current Position
 
-**המשך מ: שלב L10 (BUILD GAPS), השורות שנותרו: 1/27/29 (חיפוש בכותרת ומגה-מניו, סותרות כלל קיים), 13, 14, 16, 17, 21, 23, 25, 26, ואז מסלול הכסף (19, 20, 22) אחד לכל PR. הבא: 13 (תור מימוש אופליין, פורט). סגורות: 2, 4, 6, 8, 9, 15, 18, 24, 28, 30, 29 (אדמין), 3 (חוץ מדירוג ופופולריות), 5 (פר-דפדפן), 10 (חוץ משעות שירות)**
+**המשך מ: שלב L10 (BUILD GAPS), השורות שנותרו: 1/27/29 (חיפוש בכותרת ומגה-מניו, סותרות כלל קיים), 13 (IndexedDB + Background Sync), 14, 16, 17, 21, 23, 25, 26, ואז מסלול הכסף (19, 20, 22) אחד לכל PR. הבא: 16 (ביקורות) או 26 (השוואה). סגורות: 2, 4, 6, 8, 9, 15, 18, 24, 28, 30, 29 (אדמין), 3 (חוץ מדירוג ופופולריות), 5 (פר-דפדפן), 10 (חוץ משעות שירות)**
 
 The checklist with evidence is `docs/FINAL-CLOSEOUT.md`. Decisions taken alone
 are `docs/DECISIONS.md` D-42 onward.
@@ -88,6 +88,10 @@ Closed so far, each with type-check, lint, test green (510 files, 5949 passed):
   The loader's filters run read-only on live data: 19 issued / 4 redeemed /
   2 voided in 30 days, 18 active, 0 statements due. Page not opened in a
   browser (needs an admin session).
+- Row 13, offline queue: ported from prod and wired into `/scan`. 528 files,
+  6156 tests, build 0. Unit tests only, five of them on the screen. Not run
+  on a real till: that needs a supplier session and burns a live voucher.
+  Stays PARTIAL: localStorage, no IndexedDB, no Background Sync.
 - 14.10: other autopilot sessions (STEP 69, 70) run in
   `/Users/ofir/kenyonexpress-autopilot` on another branch. This checkout
   showed no foreign edits, so work continued.
