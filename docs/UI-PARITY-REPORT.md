@@ -99,3 +99,7 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-14 01:13 | home | 380 | 10.93% | PASS | `01d1210a4-dirty` | live side: frozen capture `refs/electro_v7_380.png`; overall 41.49% (reference blank 15.93%, ours blank 14.63%) |
 | 2026-10-14 01:15 | home | 768 | 10.61% | PASS | `01d1210a4-dirty` | live side: frozen capture `refs/electro_v7_768.png`; overall 39.53% (reference blank 17.38%, ours blank 11.54%) |
 | 2026-10-14 01:17 | home | 1440 | 7.81% | PASS | `01d1210a4-dirty` | live side: frozen capture `refs/electro_v7_1440.png`; overall 28.93% (reference blank 13.04%, ours blank 8.08%) |
+| 2026-10-14 01:38 | product | 380 | 4.30% | PASS | `e93162b16-dirty` | live side: frozen capture `refs/electro_product_380.png`; overall 27.42% (reference blank 15.24%, ours blank 7.88%) |
+| 2026-10-14 01:40 | product | 768 | 4.18% | PASS | `e93162b16-dirty` | live side: frozen capture `refs/electro_product_768.png`; overall 27.58% (reference blank 16.79%, ours blank 6.61%) |
+| 2026-10-14 01:42 | product | 1440 | 2.06% | PASS | `e93162b16-dirty` | live side: frozen capture `refs/electro_product_1440.png`; overall 17.43% (reference blank 9.49%, ours blank 5.88%) |
+| 2026-10-14 01:44 | cart | 380 | n/a | REFUSED | `e93162b16-dirty` | live side is our-build |

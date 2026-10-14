@@ -9,6 +9,7 @@ import RelatedProducts from '@/components/storefront/RelatedProducts'
 import ShippingInfo from '@/components/storefront/ShippingInfo'
 import StockScarcity from '@/components/storefront/StockScarcity'
 import SupplierInfo from '@/components/storefront/SupplierInfo'
+import TrustBar from '@/components/storefront/TrustBar'
 import { getCategoryIndex } from '@/lib/category-page'
 import { categoryAncestors } from '@/lib/category-tree'
 import {
@@ -378,6 +379,10 @@ export default async function ProductPage({ params }: Props) {
             the server and nothing for a first visit, so it costs this cached
             page no request-time read. See RecentlyViewedRail. */}
         <RecentlyViewedRail placement="product" productId={product.id} />
+
+        {/* Payment, cancellation and contact, at the foot of the page: below
+            everything the comparison gate measures, so nothing above moves. */}
+        <TrustBar />
       </div>
     </div>
   )

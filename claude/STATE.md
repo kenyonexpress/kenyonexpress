@@ -4,7 +4,7 @@ Updated: 2026-10-14 (Asia/Bangkok). Queue: FINAL-CLOSEOUT L1 to L16, issued 14.1
 
 ## Current Position
 
-**המשך מ: שלב L10 (BUILD GAPS), שורה 10 (פס אמון), ואז 6, 8. סגורות: 2, 4, 9, 18, 24, 28, 30, 29 (אדמין), 3 (חוץ מדירוג ופופולריות), 5 (פר-דפדפן)**
+**המשך מ: שלב L10 (BUILD GAPS), שורה 6 (לבבות wishlist, פורט מפרוד), ואז 8. סגורות: 2, 4, 9, 18, 24, 28, 30, 29 (אדמין), 3 (חוץ מדירוג ופופולריות), 5 (פר-דפדפן), 10 (חוץ משעות שירות)**
 
 The checklist with evidence is `docs/FINAL-CLOSEOUT.md`. Decisions taken alone
 are `docs/DECISIONS.md` D-42 onward.
@@ -70,6 +70,11 @@ Closed so far, each with type-check, lint, test green (510 files, 5949 passed):
   `offer_valid_until`. 519 files, 6067 tests, build 0. Unit tests only: no
   live product has a deadline, and the voucher pages need a signed-in
   customer with a coupon.
+- Row 10, trust bar: payment, cancellation policy and contact at the foot of
+  the product page and the cart. 520 files, 6070 tests, build 0. Chromium at
+  380 and 1440: present, no overflow. Product parity 4.30 / 4.18 / 2.06. The
+  cart gate has no reference and gave no number. Support hours are not
+  printed: none are recorded anywhere. Needs the real hours from Ofir.
 - 14.10: other autopilot sessions (STEP 69, 70) run in
   `/Users/ofir/kenyonexpress-autopilot` on another branch. This checkout
   showed no foreign edits, so work continued.

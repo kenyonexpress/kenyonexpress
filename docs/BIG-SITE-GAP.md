@@ -50,7 +50,7 @@ what main has.
 | 7 | Price-drop alerts | Zap, Amazon | EXISTS | PARTIAL | 0 | none on main |
 | 8 | Social proof | Groupon, Booking | MISSING | EXISTS | 1 | port, add a "today" window |
 | 9 | Urgency timers | Groupon, Booking, Lazada | EXISTS | PARTIAL | 0 | cards and issued voucher closed 2026-10-14, unit-tested only |
-| 10 | Trust bar | Amazon, Booking | PARTIAL | PARTIAL | 1 | build |
+| 10 | Trust bar | Amazon, Booking | PARTIAL | PARTIAL | 0 | bar on product and cart closed 2026-10-14; support hours need the real hours from Ofir |
 | 11 | Saved cards (token only, no PAN) | Amazon, Wolt | EXISTS | EXISTS | 0 | none |
 | 12 | Apple and Google Wallet passes | Booking, Groupon | EXISTS | EXISTS | 0 | none. Needs certificates, a human item |
 | 13 | Offline redemption queue | Wolt (courier), Groupon Merchant | PARTIAL | PARTIAL | 3 | port queue, then IndexedDB and Background Sync |
@@ -258,6 +258,17 @@ strip, checkout has one line naming Cardcom, the footer links the refund
 policy. Missing: secure-payment badge, support hours, refund policy in one
 bar, anything on product or cart. `src/components/layout/InfoBar.tsx` has no
 importer.
+
+main, 2026-10-14: `src/components/storefront/TrustBar.tsx` at the foot of the
+product page and of the cart. Three items: secure card payment through
+Cardcom (the checkout's own sentence), a link to the cancellation policy, a
+link to the contact page. A test fails on any digit in the bar. Verified in
+Chromium at 380 and 1440 on both pages: one bar, three items, two links, no
+horizontal overflow, above the footer. Product parity gate after the change:
+4.30 / 4.18 / 2.06 at 380 / 768 / 1440. The cart gate produced no number: it
+has no reference and refuses. Why the row stays PARTIAL: support hours are
+not printed, because no opening hours are recorded anywhere in the
+repository. That is one fact from Ofir and a one-line change.
 
 **11. Saved cards.** Both: `payment_tokens` holds the Cardcom token, last four,
 brand and expiry; `src/server/actions/payments/checkout.ts`,
