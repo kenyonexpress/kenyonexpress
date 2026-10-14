@@ -1,0 +1,55 @@
+Already up to date
+Done in 191ms using pnpm v11.1.2
+[STARTED] Backing up original state...
+[COMPLETED] Backed up original state in git stash (ef417b92b)
+[STARTED] Running tasks for staged files...
+[STARTED] .lintstagedrc.json — 47 files
+[STARTED] *.{ts,tsx,js,jsx,mjs,cjs,json,jsonc,css} — 15 files
+[STARTED] biome check --write --no-errors-on-unmatched
+[COMPLETED] biome check --write --no-errors-on-unmatched
+[COMPLETED] *.{ts,tsx,js,jsx,mjs,cjs,json,jsonc,css} — 15 files
+[COMPLETED] .lintstagedrc.json — 47 files
+[COMPLETED] Running tasks for staged files...
+[STARTED] Applying modifications from tasks...
+[COMPLETED] Applying modifications from tasks...
+[STARTED] Cleaning up temporary files...
+[COMPLETED] Cleaning up temporary files...
+[phase5/homepage-closeout 221c429c3] [autopilot] UX15 product page: hover zoom and a sideways thumbnail strip in the gallery, a labelled variant group, a minus/plus quantity stepper inside the measured 140x41 box, an announced add, and a buy bar that follows the shopper once the row scrolls off the top.
+ 47 files changed, 11220 insertions(+), 63 deletions(-)
+ create mode 100644 e2e/product-buy-row.spec.ts
+ create mode 100644 logs/ux15/after-1440.png
+ create mode 100644 logs/ux15/after-380.png
+ create mode 100644 logs/ux15/after-768.png
+ create mode 100644 logs/ux15/after-scrolled-1440.png
+ create mode 100644 logs/ux15/after-scrolled-380.png
+ create mode 100644 logs/ux15/after-scrolled-768.png
+ create mode 100644 logs/ux15/after.json
+ create mode 100644 logs/ux15/before-1440.png
+ create mode 100644 logs/ux15/before-380.png
+ create mode 100644 logs/ux15/before-768.png
+ create mode 100644 logs/ux15/before-scrolled-1440.png
+ create mode 100644 logs/ux15/before-scrolled-380.png
+ create mode 100644 logs/ux15/before-scrolled-768.png
+ create mode 100644 logs/ux15/before.json
+ create mode 100644 logs/ux15/build.log
+ create mode 100644 logs/ux15/build2.log
+ create mode 100644 logs/ux15/commit-msg.txt
+ create mode 100644 logs/ux15/compare.log
+ create mode 100644 logs/ux15/e2e-buy-row.log
+ create mode 100644 logs/ux15/e2e-neighbours.log
+ create mode 100644 logs/ux15/failing-titles.txt
+ create mode 100644 logs/ux15/hover-debug.mjs
+ create mode 100644 logs/ux15/hover-debug.png
+ create mode 100644 logs/ux15/lint.log
+ create mode 100644 logs/ux15/neighbours-diff.txt
+ create mode 100644 logs/ux15/probe-after.err
+ create mode 100644 logs/ux15/probe-before.err
+ create mode 100644 logs/ux15/probe.mjs
+ create mode 100644 logs/ux15/server.pid
+ create mode 100644 logs/ux15/start-3351-after.log
+ create mode 100644 logs/ux15/start-3351-after2.log
+ create mode 100644 logs/ux15/state-update.py
+ create mode 100644 logs/ux15/test-full.log
+ create mode 100644 src/components/storefront/PdpStickyBar.tsx
+ create mode 100644 src/components/storefront/ProductInfo.sticky.test.tsx
+ create mode 100644 src/lib/ui/use-scrolled-past.ts
