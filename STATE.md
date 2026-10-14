@@ -271,7 +271,7 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 
 **ריצה אמיתית.** ‏`--status --keychain`: ‏`replicas streaming: 0`, ‏`status: none`, ‏`metrics leg: read`, ‏`setup plan: region eu-north-1 (primary eu-north-1, same region), compute nano (no add-on), pitr false`. ‏`--lag --no-notify`: ‏`none`, ‏exit ‏0.
 
-**שערים.** ‏`pnpm test` ‏806 קבצים / ‏9,451 ירוקים; ‏`pnpm type-check` נקי; ‏`pnpm lint` על העץ המחויב ירוק בכל חמש הרגליים (‏biome על ‏2,307 קבצים מעוקבים, ‏tokens, ‏copy, ‏asset, ‏blur), ואדום רק כשסופרים את ‏`scripts/preview/` הלא-מעוקב של סשן אחר שעדיין חי (ראו החלטה ‏5); ‏`pnpm build` ירוק מ-`.next` נקי, ‏csp shell gate נקי (‏275 shells).
+**שערים.** ‏`pnpm test` ‏806 קבצים / ‏9,451 ירוקים; ‏`pnpm type-check` נקי; ‏`pnpm lint` על העץ המחויב ירוק בכל חמש הרגליים (‏biome על ‏2,307 קבצים מעוקבים, ‏tokens, ‏copy, ‏asset, ‏blur), ואדום רק כשסופרים את ‏`scripts/preview/` הלא-מעוקב של סשן אחר שעדיין חי (ראו החלטה ‏5); ב-08:55, אחרי שאותו סשן חייב ודחף את ‏STEP 70, ‏`pnpm lint` המלא ירוק (‏2,320 קבצים, חמש רגליים). ה-Supabase ‏MCP: אין אף כלי ‏`mcp__claude_ai_Supabase__*` בסשן הזה (‏ToolSearch ריק), ה-OAuth לא ניתן להשלמה בלי טרמינל, ולכן ה-API הניהולי הוא המסלול היחיד שנמדד; ‏`pnpm build` ירוק מ-`.next` נקי, ‏csp shell gate נקי (‏275 shells).
 
 **מה נשאר לאופיר.** ההקמה עצמה (‏`--setup --yes`), ואחריה ‏`SUPABASE_READ_REPLICA_URL=https://ixvwfbuvfxxsjiywhbbb-all.supabase.co` ב-Vercel ‏Production וכמשתנה ‏repo ל-workflow; סוד ‏`SUPABASE_METRICS_KEY` אם רוצים את רגל הרפליקה ולא רק את צד הראשי.
 
