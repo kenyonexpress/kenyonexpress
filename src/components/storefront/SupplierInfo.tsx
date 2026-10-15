@@ -1,8 +1,8 @@
+import { EcMapPointer, EcPhone } from '@/components/icons/electro-icons'
 import WhatsAppIcon from '@/components/shared/WhatsAppIcon'
 import type { StorefrontProductType } from '@/lib/commerce/product-type'
 import { type SupplierContactRow, buildSupplierContact } from '@/lib/supplier-contact'
 import { buildSupplierInquiryText } from '@/lib/whatsapp'
-import { MapPin, Navigation, Phone } from 'lucide-react'
 import Link from 'next/link'
 
 export type SupplierSummary = ({ id: string; name: string } & SupplierContactRow) | null
@@ -108,7 +108,7 @@ export default function SupplierInfo({
           {contact.addressLine && (
             <li className="flex flex-wrap items-center gap-x-2 gap-y-1">
               <span className="inline-flex items-center gap-1.5">
-                <MapPin size={15} aria-hidden="true" className="shrink-0" />
+                <EcMapPointer size={15} aria-hidden="true" className="shrink-0" />
                 <span className="font-medium">{contact.addressLine}</span>
               </span>
               {contact.wazeHref && (
@@ -118,7 +118,6 @@ export default function SupplierInfo({
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 font-semibold text-link hover:underline"
                 >
-                  <Navigation size={14} aria-hidden="true" />
                   ניווט ב-Waze
                 </a>
               )}
@@ -127,7 +126,7 @@ export default function SupplierInfo({
 
           {contact.telHref && (
             <li className="flex items-center gap-1.5">
-              <Phone size={15} aria-hidden="true" className="shrink-0" />
+              <EcPhone size={15} aria-hidden="true" className="shrink-0" />
               {/* The number is dialled as typed but WRITTEN ltr: a Hebrew
                   paragraph would otherwise flip 03-1234567 to 1234567-03. */}
               <a href={contact.telHref} dir="ltr" className="font-medium text-link hover:underline">

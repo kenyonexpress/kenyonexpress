@@ -198,3 +198,8 @@ F18: DONE (verified): Vercel NS live; DKIM resend._domainkey present; SPF v=spf1
 F19: PARTIAL. Existing: rate limits (login, signup, contact, begin_checkout), CSP + HSTS, env kill switches. Built: MAINTENANCE_MODE flag in proxy (503 + Retry-After, payments/webhooks/crons/admin/login exempt), Turnstile verify + widget on contact and signup (inert until TURNSTILE_SECRET_KEY and NEXT_PUBLIC_TURNSTILE_SITE_KEY are set; CSP allows challenges.cloudflare.com), gitleaks CI job (non-blocking at first).
 BLOCKED: F19 feature flags TABLE needs a migration and an admin writer; flags remain env switches (listed on /admin/feature-flags)
 המשך מ: F13.5 then F20
+F13.5: DONE (scoped). Electro v7 font glyphs (font-electro + Font Awesome Free 6.5.1 as served by Electro) extracted into src/components/icons/electro-icons.tsx and public/icons/electro/; every storefront lucide import replaced or removed (admin and supplier portals keep lucide); CitiesRow replaces the categories strip with 20 cities + generated flat-vector placeholders; /c and /c/<slug> pages; docs/ICON-AUDIT.md. Gate: home 1440 = 9.3% PASS, 380 = 30.24% (unchanged, KNOWN-ISSUES 3).
+PENDING_ASSET: refs/ke_live_singlefile.html and refs/ke_live_computed.json (not in this checkout; refs/electro-home-v7.html and refs/electro-home-v7_computed.json used instead)
+PENDING_ASSET: real city illustrations city-<slug>.svg for all 20 cities (generated placeholders in public/images/placeholder/)
+FINDING: https://kenyonexpress.co.il redirects to www and serves THIS app (Vercel); logo.webp, logo-footer.webp, products/*.webp and the five hero slides are already in public/images and src/components/home/HeroSlider.tsx. Nothing to scrape; no public/images/legacy copy made.
+המשך מ: F20

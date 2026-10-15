@@ -1,7 +1,7 @@
+import CitiesRow from '@/components/home/CitiesRow'
 import HeroCategorySidebar from '@/components/home/HeroCategorySidebar'
 import HeroPromoBanners from '@/components/home/HeroPromoBanners'
 import HeroSlider, { type HeroSlide } from '@/components/home/HeroSlider'
-import CategoryStrip from '@/components/store/CategoryStrip'
 import { HERO_SINGLEFILE_SLIDES } from '@/lib/hero-singlefile-data'
 
 /**
@@ -64,7 +64,7 @@ export default function HeroSection({
           <HeroSlider slides={slides} />
         </div>
         <div className="hidden md:block">
-          <CategoryStrip inHero />
+          <CitiesRow />
         </div>
       </div>
       <HeroPromoBanners />

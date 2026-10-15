@@ -1,5 +1,5 @@
 import CopyrightYear from '@/components/CopyrightYear'
-import { AtSign, Music2, Send, Share2 } from 'lucide-react'
+import { FaFacebook, FaInstagram } from '@/components/icons/electro-icons'
 
 type FooterLink = { label: string; href: string }
 
@@ -33,11 +33,9 @@ const columns: { title: string; links: FooterLink[] }[] = [
   },
 ]
 
-const socials: { label: string; href: string; Icon: typeof Share2 }[] = [
-  { label: 'פייסבוק', href: '#', Icon: Share2 },
-  { label: 'אינסטגרם', href: '#', Icon: AtSign },
-  { label: 'טיקטוק', href: '#', Icon: Music2 },
-  { label: 'ניוזלטר', href: '#', Icon: Send },
+const socials: { label: string; href: string; Icon: typeof FaFacebook }[] = [
+  { label: 'פייסבוק', href: '#', Icon: FaFacebook },
+  { label: 'אינסטגרם', href: '#', Icon: FaInstagram },
 ]
 
 export default function SiteFooter() {
@@ -75,7 +73,7 @@ export default function SiteFooter() {
                   aria-label={label}
                   className="w-9 h-9 rounded-full bg-gray-800 hover:bg-brand flex items-center justify-center transition-colors"
                 >
-                  <Icon size={18} strokeWidth={1.8} />
+                  <Icon size={18} />
                 </a>
               ))}
             </div>

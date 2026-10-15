@@ -24,6 +24,7 @@ everything it awaits is:
 | `lib/product-seo.ts` | the JSON-LD inputs for a product |
 | `lib/related-products.ts` | five siblings by category |
 | `lib/category-page.ts` | a category and its products |
+| `lib/city-page.ts` | the products of one city (`/c/<slug>`) |
 | `lib/coupon-deals.ts` | the coupon catalogue |
 | `lib/supplier-storefront.ts` | a supplier's public page |
 | `lib/feeds/catalogue.ts` | the Merchant and RSS feeds |
@@ -46,9 +47,9 @@ So "is `/product/x` cached?" is answered by reading `product-detail.ts`,
 ## 2. One lifetime and one tag, application-wide
 
 ```
-cacheLife('hours')        19
+cacheLife('hours')        20
 cacheLife('days')          1     CopyrightYear.tsx
-cacheTag(CATALOGUE_TAG)   19
+cacheTag(CATALOGUE_TAG)   20
 ```
 
 Every cached read in the product surface has the same one-hour life and the

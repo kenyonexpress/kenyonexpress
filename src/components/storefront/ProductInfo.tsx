@@ -2,6 +2,7 @@
 
 import { useCart } from '@/components/cart/CartProvider'
 import CityTag from '@/components/geo/CityTag'
+import { EcAddToCart } from '@/components/icons/electro-icons'
 import FacebookShareButton from '@/components/shared/FacebookShareButton'
 import WhatsAppShareButton from '@/components/shared/WhatsAppShareButton'
 import CouponPricing from '@/components/storefront/CouponPricing'
@@ -12,7 +13,6 @@ import { type RecurringOffer, describeRecurringPrice } from '@/lib/commerce/recu
 import { cityByName } from '@/lib/geo/cities'
 import { shekelsFromIls as sharedShekelsFromIls } from '@/lib/money-format'
 import { buildShareMessage } from '@/lib/share/message'
-import { Check, ShoppingCart } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { type ReactNode, useState } from 'react'
 
@@ -356,13 +356,10 @@ export default function ProductInfo({
           className="pdp-buy__atc"
         >
           {added ? (
-            <>
-              <Check size={18} />
-              נוסף לסל
-            </>
+            <>נוסף לסל</>
           ) : (
             <>
-              <ShoppingCart size={18} />
+              <EcAddToCart size={18} />
               {buyLabel}
             </>
           )}

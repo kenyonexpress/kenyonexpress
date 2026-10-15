@@ -1,11 +1,11 @@
 'use client'
 
 import { useCart } from '@/components/cart/CartProvider'
+import { FaMinus, FaPlus, FaTrashCan } from '@/components/icons/electro-icons'
 import SmartImage from '@/components/ui/SmartImage'
 import { lineQuantityCeiling, unavailableMessage } from '@/lib/cart/format'
 import type { CartViewItem } from '@/lib/cart/types'
 import { shekels } from '@/lib/money-format'
-import { Minus, Plus, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
@@ -104,7 +104,7 @@ export default function CartLineItem({ item }: { item: CartViewItem }) {
             aria-label={`הסר ${item.name_he} מהעגלה`}
             className="cart-line__remove"
           >
-            <Trash2 size={16} aria-hidden="true" />
+            <FaTrashCan size={16} aria-hidden="true" />
           </button>
 
           {/* Mobile-only labels for the stacked rows; aria-hidden because the
@@ -125,7 +125,7 @@ export default function CartLineItem({ item }: { item: CartViewItem }) {
               aria-label="הפחת כמות"
               className="cart-line__qty-btn"
             >
-              <Minus size={14} />
+              <FaMinus size={14} />
             </button>
             <span className="cart-line__qty-value tabular-nums">{localQty}</span>
             <button
@@ -135,7 +135,7 @@ export default function CartLineItem({ item }: { item: CartViewItem }) {
               aria-label="הוסף כמות"
               className="cart-line__qty-btn"
             >
-              <Plus size={14} />
+              <FaPlus size={14} />
             </button>
           </div>
         </div>

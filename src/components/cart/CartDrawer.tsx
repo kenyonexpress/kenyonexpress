@@ -2,11 +2,11 @@
 
 import CartCheckoutButton from '@/components/cart/CartCheckoutButton'
 import { useCart, useCartAuth } from '@/components/cart/CartProvider'
+import { EcCloseRemove, EcShoppingBag, FaMinus, FaPlus } from '@/components/icons/electro-icons'
 import SmartImage from '@/components/ui/SmartImage'
 import { lineQuantityCeiling, unavailableMessage } from '@/lib/cart/format'
 import type { CartViewItem } from '@/lib/cart/types'
 import { shekels } from '@/lib/money-format'
-import { Minus, Plus, ShoppingCart, X } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useRef } from 'react'
 
@@ -58,7 +58,7 @@ function DrawerLineItem({ item }: { item: CartViewItem }) {
               aria-label="הפחת כמות"
               className="cart-drawer__qty-btn"
             >
-              <Minus size={12} />
+              <FaMinus size={12} />
             </button>
             <span className="tabular-nums">{item.quantity}</span>
             <button
@@ -70,7 +70,7 @@ function DrawerLineItem({ item }: { item: CartViewItem }) {
               aria-label="הוסף כמות"
               className="cart-drawer__qty-btn"
             >
-              <Plus size={12} />
+              <FaPlus size={12} />
             </button>
           </div>
           <span className="cart-drawer__item-price tabular-nums">{shekels(item.line_total)}</span>
@@ -210,7 +210,7 @@ export default function CartDrawer() {
       <dialog ref={panelRef} open className="cart-drawer" aria-label="עגלת קניות">
         <header className="cart-drawer__header">
           <h2 className="cart-drawer__title">
-            <ShoppingCart size={20} aria-hidden="true" />
+            <EcShoppingBag size={20} aria-hidden="true" />
             סל הקניות
             {cart.item_count > 0 && <span className="cart-drawer__count">({cart.item_count})</span>}
           </h2>
@@ -220,14 +220,14 @@ export default function CartDrawer() {
             className="cart-drawer__close"
             aria-label="סגור"
           >
-            <X size={22} />
+            <EcCloseRemove size={22} />
           </button>
         </header>
 
         <div className={`cart-drawer__body ${isPending ? 'opacity-70' : ''}`}>
           {cart.items.length === 0 ? (
             <div className="cart-drawer__empty">
-              <ShoppingCart size={40} className="text-icon-empty" aria-hidden="true" />
+              <EcShoppingBag size={40} className="text-icon-empty" aria-hidden="true" />
               <p>העגלה ריקה</p>
               <button type="button" onClick={closeDrawer} className="cart-drawer__shop-link">
                 המשך לקניות

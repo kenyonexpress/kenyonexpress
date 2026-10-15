@@ -1,9 +1,9 @@
 'use client'
 
 import { useCart, useCartStoreApi } from '@/components/cart/CartProvider'
+import { EcShoppingBag } from '@/components/icons/electro-icons'
 import { displayItemCount } from '@/lib/cart/store'
 import { shekelsRounded } from '@/lib/money-format'
-import { ShoppingCart } from 'lucide-react'
 import { useStore } from 'zustand'
 
 const ICON = { size: 22, color: 'var(--color-icon)', strokeWidth: 1.8 } as const
@@ -32,7 +32,7 @@ export default function CartNavLink() {
       style={{ color: ICON.color }}
     >
       <span className="relative">
-        <ShoppingCart size={ICON.size} strokeWidth={ICON.strokeWidth} aria-hidden="true" />
+        <EcShoppingBag size={ICON.size} aria-hidden="true" />
         {itemCount > 0 && (
           <span
             className="absolute -top-1.5 -start-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-primary px-1 text-nano font-bold text-brand-dark"

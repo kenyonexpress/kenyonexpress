@@ -1,5 +1,5 @@
 import HeaderCart from '@/components/cart/HeaderCart'
-import { Heart } from 'lucide-react'
+import { EcFavorites } from '@/components/icons/electro-icons'
 import Link from 'next/link'
 
 const ICON = { size: 22, color: 'var(--color-icon)', strokeWidth: 1.8 } as const
@@ -49,7 +49,7 @@ export default function MastheadNav() {
           className="hit-44 -m-1 p-1 transition-opacity hover:opacity-70"
           style={{ color: ICON.color }}
         >
-          <Heart size={ICON.size} strokeWidth={ICON.strokeWidth} aria-hidden="true" />
+          <EcFavorites size={ICON.size} aria-hidden="true" />
         </Link>
 
         {/* THE ACCOUNT ICON IS NOT HERE, AND ITS ABSENCE IS THE RULE.

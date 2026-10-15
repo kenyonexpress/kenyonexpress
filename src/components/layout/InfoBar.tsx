@@ -11,31 +11,37 @@
  * quantified promise. Do not revive this file; if a second trust band is ever
  * needed, copy BenefitBar. **Safe to delete on Ofir's word.**
  */
-import { HandCoins, Headphones, Tag, ThumbsUp, Truck } from 'lucide-react'
+import {
+  EcCustomers,
+  EcPayment,
+  EcSupport,
+  EcTag,
+  EcTransport,
+} from '@/components/icons/electro-icons'
 
 const ITEMS = [
   {
-    Icon: Truck,
+    Icon: EcTransport,
     title: 'לכל חלקי הארץ',
     subtitle: 'משלוח מהיר',
   },
   {
-    Icon: ThumbsUp,
+    Icon: EcCustomers,
     title: 'קניה חכמה',
     subtitle: '99%',
   },
   {
-    Icon: Headphones,
+    Icon: EcSupport,
     title: 'שירות לקוחות',
     subtitle: 'זמינים תמיד',
   },
   {
-    Icon: HandCoins,
+    Icon: EcPayment,
     title: 'מחירים מנצחים',
     subtitle: 'הזולים בארץ',
   },
   {
-    Icon: Tag,
+    Icon: EcTag,
     title: 'מותגי יוקרה',
     subtitle: 'מובילים!',
   },
@@ -53,12 +59,7 @@ export default function InfoBar() {
                 i < ITEMS.length - 1 ? 'border-e border-border-alt' : ''
               }`}
             >
-              <item.Icon
-                size={28}
-                strokeWidth={1.5}
-                className="text-brand-secondary shrink-0"
-                aria-hidden="true"
-              />
+              <item.Icon size={28} className="text-brand-secondary shrink-0" aria-hidden="true" />
               <div>
                 <p className="text-xs font-bold text-ink leading-tight">{item.title}</p>
                 <p className="text-micro text-muted leading-tight mt-0.5">{item.subtitle}</p>

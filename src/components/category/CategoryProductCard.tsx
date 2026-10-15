@@ -1,11 +1,11 @@
 'use client'
 
 import AddToCartButton from '@/components/cart/AddToCartButton'
+import { EcMapPointer } from '@/components/icons/electro-icons'
 import LocationPin from '@/components/product/LocationPin'
 import { cityByName } from '@/lib/geo/cities'
 import { formatDistance } from '@/lib/geo/distance'
 import { shekelsFromIlsRounded } from '@/lib/money-format'
-import { MapPin } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -127,7 +127,7 @@ export default function CategoryProductCard({ product }: { product: CategoryProd
             appears only after the customer asked for "near me". */}
         {cityLabel && (
           <span className="category-card__city">
-            <MapPin size={11} aria-hidden="true" />
+            <EcMapPointer size={11} aria-hidden="true" />
             {cityLabel}
             {distanceLabel && <span className="category-card__distance"> · {distanceLabel}</span>}
           </span>

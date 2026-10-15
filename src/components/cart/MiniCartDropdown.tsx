@@ -2,10 +2,10 @@
 
 import CartCheckoutButton from '@/components/cart/CartCheckoutButton'
 import { useCart, useCartAuth } from '@/components/cart/CartProvider'
+import { EcCloseRemove, EcShoppingBag } from '@/components/icons/electro-icons'
 import SmartImage from '@/components/ui/SmartImage'
 import type { CartViewItem } from '@/lib/cart/types'
 import { shekels } from '@/lib/money-format'
-import { ShoppingCart, X } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useRef } from 'react'
@@ -67,7 +67,7 @@ function MiniCartLine({ item, onNavigate }: { item: CartViewItem; onNavigate: ()
           disabled={isPending}
           aria-label={`הסר ${item.name_he} מהעגלה`}
         >
-          <X size={14} aria-hidden="true" />
+          <EcCloseRemove size={14} aria-hidden="true" />
         </button>
       </div>
     </li>
@@ -163,7 +163,7 @@ export default function MiniCartDropdown() {
     >
       {isEmpty ? (
         <div className="mini-cart__empty">
-          <ShoppingCart size={32} aria-hidden="true" />
+          <EcShoppingBag size={32} aria-hidden="true" />
           <p>אין מוצרים בסל הקניות</p>
           <Link href="/products" className="mini-cart__empty-cta" onClick={closeDrawer}>
             המשך לקניות

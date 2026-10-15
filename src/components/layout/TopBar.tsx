@@ -1,4 +1,4 @@
-import { MapPin, ShoppingBag, Truck, User } from 'lucide-react'
+import { EcMapPointer, EcShoppingBag, EcTransport, EcUser } from '@/components/icons/electro-icons'
 import Link from 'next/link'
 
 /**
@@ -41,7 +41,7 @@ import Link from 'next/link'
  */
 
 type InfoItemProps = {
-  Icon: typeof User
+  Icon: typeof EcUser
   label: string
   /** Only the account item is a link on live; the other three are plain text. */
   href?: string
@@ -65,10 +65,10 @@ type InfoItemProps = {
  * shell's top-left and in exactly one place.
  */
 const INFO_ITEMS: readonly InfoItemProps[] = [
-  { Icon: MapPin, label: 'בפריסה ארצית' },
-  { Icon: Truck, label: 'משלוח מהיר חינם' },
-  { Icon: ShoppingBag, label: 'קניה בטוחה' },
-  { Icon: User, label: 'התחברות', href: '/login' },
+  { Icon: EcMapPointer, label: 'בפריסה ארצית' },
+  { Icon: EcTransport, label: 'משלוח מהיר חינם' },
+  { Icon: EcShoppingBag, label: 'קניה בטוחה' },
+  { Icon: EcUser, label: 'התחברות', href: '/login' },
 ]
 
 function InfoItem({ Icon, label, href }: InfoItemProps) {
@@ -78,7 +78,7 @@ function InfoItem({ Icon, label, href }: InfoItemProps) {
           and the computed `i` boxes are 16x16 at y=12 in a 37px row. The 6px
           `gap-1.5` is live's own `margin-left:6px` on the same rule, written as
           the logical gap it is. */}
-      <Icon size={16} strokeWidth={1.8} aria-hidden="true" />
+      <Icon size={16} aria-hidden="true" />
       {label}
     </>
   )

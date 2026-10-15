@@ -1,5 +1,5 @@
+import { EcMapPointer } from '@/components/icons/electro-icons'
 import { cityByName } from '@/lib/geo/cities'
-import { MapPin } from 'lucide-react'
 import Link from 'next/link'
 
 /**
@@ -38,7 +38,7 @@ export default function CityTag({
 
   const body = (
     <>
-      <MapPin size={12} aria-hidden="true" className="shrink-0" />
+      <EcMapPointer size={12} aria-hidden="true" className="shrink-0" />
       {known.name}
     </>
   )

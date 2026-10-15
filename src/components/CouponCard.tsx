@@ -1,5 +1,5 @@
+import { EcMapPointer, EcTag } from '@/components/icons/electro-icons'
 import { shekelsFromIls } from '@/lib/money-format'
-import { MapPin, Tag } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -60,7 +60,7 @@ export default function CouponCard({ coupon }: { coupon: Coupon }) {
           />
         ) : (
           <div className="flex items-center justify-center h-full text-gray-300">
-            <Tag size={36} />
+            <EcTag size={36} />
           </div>
         )}
         {discountPct != null && discountPct > 0 && (
@@ -84,7 +84,7 @@ export default function CouponCard({ coupon }: { coupon: Coupon }) {
         </p>
         {coupon.location_he && (
           <div className="flex items-center gap-1 text-xs text-gray-500">
-            <MapPin size={11} />
+            <EcMapPointer size={11} />
             {coupon.location_he}
           </div>
         )}

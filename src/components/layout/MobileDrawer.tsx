@@ -1,7 +1,7 @@
 'use client'
 
+import { EcCloseRemove, EcMenu } from '@/components/icons/electro-icons'
 import { KE_LIVE_CATEGORIES } from '@/lib/ke-live-hero-data'
-import { Menu, X } from 'lucide-react'
 import Link from 'next/link'
 import { useCallback, useEffect, useId, useRef, useState } from 'react'
 
@@ -98,7 +98,7 @@ export default function MobileDrawer() {
         // a 44px hit area rather than growing the icon.
         className="grid size-touch-min shrink-0 place-items-center text-icon transition-opacity hover:opacity-70 xl:hidden"
       >
-        <Menu size={20} strokeWidth={2} aria-hidden="true" />
+        <EcMenu size={20} aria-hidden="true" />
       </button>
 
       {/* The scrim, as a real <button> rather than a div with an onClick: the
@@ -148,7 +148,7 @@ export default function MobileDrawer() {
             aria-label="סגירת התפריט"
             className="-me-2 grid size-touch-min place-items-center text-icon transition-opacity hover:opacity-70"
           >
-            <X size={20} strokeWidth={2} aria-hidden="true" />
+            <EcCloseRemove size={20} aria-hidden="true" />
           </button>
         </div>
 

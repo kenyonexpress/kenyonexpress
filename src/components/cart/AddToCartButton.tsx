@@ -1,9 +1,9 @@
 'use client'
 
 import { useCart } from '@/components/cart/CartProvider'
+import { FaCircleNotch } from '@/components/icons/electro-icons'
 import { trackCommerce } from '@/lib/analytics/commerce-client'
 import { track } from '@/lib/analytics/tracker'
-import { LoaderCircle } from 'lucide-react'
 import { useState } from 'react'
 
 type Props = {
@@ -75,7 +75,7 @@ export default function AddToCartButton({
         aria-label={`הוסף ${productName} לעגלה`}
         className={className}
       >
-        {busy || isPending ? <LoaderCircle size={16} className="animate-spin" /> : children}
+        {busy || isPending ? <FaCircleNotch size={16} className="animate-spin" /> : children}
       </button>
     )
   }
@@ -89,7 +89,7 @@ export default function AddToCartButton({
     >
       {busy || isPending ? (
         <>
-          <LoaderCircle size={18} className="animate-spin" />
+          <FaCircleNotch size={18} className="animate-spin" />
           מוסיף...
         </>
       ) : (

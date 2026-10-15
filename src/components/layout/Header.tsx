@@ -1,10 +1,10 @@
 import HeaderCart from '@/components/cart/HeaderCart'
+import { EcFavorites } from '@/components/icons/electro-icons'
 import MastheadNav from '@/components/layout/MastheadNav'
 import MobileDrawer from '@/components/layout/MobileDrawer'
 import TopBar from '@/components/layout/TopBar'
 import SmartImage from '@/components/ui/SmartImage'
 import { LOGO } from '@/lib/assets'
-import { Heart } from 'lucide-react'
 import Link from 'next/link'
 
 /**
@@ -110,7 +110,7 @@ export default function SiteHeader() {
               aria-label="המועדפים שלי"
               className="grid size-touch-min place-items-center text-icon transition-opacity hover:opacity-70"
             >
-              <Heart size={22} strokeWidth={1.8} aria-hidden="true" />
+              <EcFavorites size={22} aria-hidden="true" />
             </Link>
             <HeaderCart />
           </div>

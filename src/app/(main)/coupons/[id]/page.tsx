@@ -1,6 +1,6 @@
+import { EcMapPointer, EcTag } from '@/components/icons/electro-icons'
 import { getActiveCouponDealIds, getCouponDeal } from '@/lib/coupon-deals'
 import { shekelsFromIls } from '@/lib/money-format'
-import { MapPin, Tag } from 'lucide-react'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
 
@@ -90,7 +90,7 @@ export default async function CouponDealPage({ params }: Props) {
             />
           ) : (
             <div className="flex items-center justify-center h-full text-gray-300">
-              <Tag size={48} />
+              <EcTag size={48} />
             </div>
           )}
           {/* start-3, logical: the same corner CouponCard pins its badge to,
@@ -110,7 +110,7 @@ export default async function CouponDealPage({ params }: Props) {
 
           {deal.location_he && (
             <div className="flex items-center gap-1.5 text-sm text-gray-500">
-              <MapPin size={14} />
+              <EcMapPointer size={14} />
               {deal.location_he}
             </div>
           )}
