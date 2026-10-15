@@ -157,3 +157,5 @@ BLOCKED: F02 home gate 1440=8.29% PASS, 380=30.26% and 768=29.00% FAIL, identica
 המשך מ: F03
 F03: DONE (verified existing): product route 200, wa.me + share + supplier inquiry present, no reviews, 40 tests green
 המשך מ: F04
+F04: DONE (existing + gap built): guest to Google at pay, tokens, order-page signed invoice existed; added invoice link to thank-you page
+המשך מ: F05

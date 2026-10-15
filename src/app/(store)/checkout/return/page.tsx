@@ -230,6 +230,12 @@ async function CheckoutReturnBody({ searchParams }: Props) {
           <p className="checkout-wallet-note">נוסף לארנק שלך: {shekels(cashbackAmount)} קאשבק</p>
         )}
 
+        <p style={{ marginTop: 16, fontSize: 14 }}>
+          <a href={`/account/orders/${order.id}/invoice`} style={{ fontWeight: 600 }}>
+            הורדת חשבונית מס
+          </a>
+        </p>
+
         {(() => {
           const storePhone = storeWhatsAppNumber()
           if (!storePhone) return null
