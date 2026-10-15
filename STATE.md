@@ -172,3 +172,8 @@ F08: DONE (verified existing + gap built): ToS, privacy, returns, accessibility,
 המשך מ: F09
 F09: DONE (existing + gap built): email delivery, recipient email, personal message existed; added scheduled delivery (date field, giftSendAt, outbox next_attempt_at hold, 4 tests). Migration 186 (orders.gift_send_at) in pending; until applied the gift sends immediately.
 המשך מ: F10
+F10: DONE (verified existing): enqueue_expiring_voucher_notices [7,1] in expire-vouchers cron, email + push (voucher_expiring is pushable), 55 tests green. Scheduler wiring is external (cron.yml needs CRON_SECRET parity, tracked in memory).
+המשך מ: F11
+F11: PARTIAL. Built: src/lib/club/tiers.ts (trailing-12-month paid spend, 4 tiers, agorot) + account overview card + 5 tests.
+BLOCKED: F11 admin-editable tier labels/benefits need a club_tiers table (migration + approval); benefits intentionally not listed because no checkout path grants one
+המשך מ: F12

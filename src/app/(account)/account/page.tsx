@@ -1,5 +1,6 @@
 import { formatIls, orderStatusLabel, orderStatusTone } from '@/lib/account/format'
 import { formatDate } from '@/lib/account/format'
+import { clubStanding, trailingSpend } from '@/lib/club/tiers'
 import { isCouponPresentable } from '@/lib/vouchers/coupon-view'
 import { getWalletSummary } from '@/server/queries/account'
 import { getMyOrders } from '@/server/queries/orders'
@@ -21,6 +22,7 @@ export default async function AccountOverviewPage() {
   // in the voucher_status enum at all: it was left over from coupon_codes and
   // could only ever be false.
   const activeCoupons = coupons.filter((c) => isCouponPresentable(c))
+  const standing = clubStanding(trailingSpend(orders, new Date()))
 
   return (
     <>
@@ -32,6 +34,17 @@ export default async function AccountOverviewPage() {
         <p className="wallet-balance__amount">{formatIls(wallet.balanceAgorot)}</p>
         <p className="wallet-balance__note">קרדיט לשימוש באתר בלבד. לא ניתן למשיכה.</p>
       </div>
+
+      <section className="account-card" aria-label="מועדון הלקוחות">
+        <h2 className="account-card__title">מועדון הלקוחות</h2>
+        <p className="account-row__title">דרגה: {standing.tier.labelHe}</p>
+        <p className="account-row__meta">
+          רכישות ב-12 החודשים האחרונים: {formatIls(standing.spendAgorot)}
+          {standing.next
+            ? ` · עוד ${formatIls(standing.toNextAgorot)} לדרגת ${standing.next.labelHe}`
+            : ' · הגעת לדרגה הגבוהה ביותר'}
+        </p>
+      </section>
 
       <div className="account-grid">
         <section className="account-card">
