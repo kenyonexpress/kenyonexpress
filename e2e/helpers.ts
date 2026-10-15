@@ -320,12 +320,32 @@ export async function paymentGateClosed(page: Page): Promise<boolean> {
  * sign-in and before the spec adds its product.
  */
 export async function emptyCart(page: Page): Promise<void> {
+  // The page cannot say what the cart holds until GET /api/cart has answered
+  // (CartBootstrap): a fresh context's mirror is empty, so the page settles on
+  // the empty state first and the lines appear when the server speaks. An
+  // instant isVisible() read that first state and skipped the press, and the
+  // checkout that followed carried 38 lines (measured 15.10.2026, WRETRY-XF04,
+  // "אין מספיק במלאי לאחד הפריטים" at the pay step).
+  // Waiting for a /api/cart response is not enough either: the page this
+  // was called from (the account page after sign-in) fires its own, and a
+  // waiter armed before the navigation resolved on that one while the cart
+  // page still showed its first, empty state (mobile-chrome, 42 lines at
+  // the pay step). The cart page's own fetch is the last request it makes,
+  // so the network going idle is the signal.
   await page.goto('/cart')
+  await page.waitForLoadState('networkidle')
   const clear = page.getByRole('button', { name: 'רוקן עגלה' })
-  if (await clear.isVisible().catch(() => false)) {
+  const empty = page.locator('.cart-empty')
+  await expect(clear.or(empty).first()).toBeVisible({ timeout: 15_000 })
+  if (await clear.isVisible()) {
     await clear.click()
-    await expect(clear).toBeHidden({ timeout: 15_000 })
+    await expect(empty).toBeVisible({ timeout: 20_000 })
   }
+  // The header badge is the store's count; zero there is the proof.
+  await expect(page.getByRole('button', { name: /^עגלת קניות/ }).first()).toHaveAccessibleName(
+    /עגלת קניות, (0 פריטים|ריקה)|עגלת קניות$/,
+    { timeout: 15_000 },
+  )
 }
 
 /**

@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import MobileDrawer from './MobileDrawer'
 
@@ -52,6 +52,16 @@ function tab(shift = false) {
     )
   })
 }
+
+describe('MobileDrawer and the top bar', () => {
+  it('marks the document while open, so the top bar can step under it', () => {
+    const { dialog } = open()
+    expect(document.documentElement.hasAttribute('data-drawer-open')).toBe(true)
+    fireEvent.click(within(dialog).getByRole('button', { name: 'סגירת התפריט' }))
+    expect(dialog).toHaveAttribute('inert')
+    expect(document.documentElement.hasAttribute('data-drawer-open')).toBe(false)
+  })
+})
 
 describe('MobileDrawer keyboard contract', () => {
   it('is inert while closed, so an off-screen panel is not in the tab order', () => {

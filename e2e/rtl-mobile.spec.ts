@@ -134,7 +134,10 @@ test.describe('no sideways scroll at 320px', () => {
     // Three steps at every width since UX17 (14.10.2026): the rail is on
     // screen, the first step is open, and the address and the pay button
     // wait behind their steps.
-    await expect(page.locator('.checkout-steps')).toBeVisible()
+    // nav, not the bare class: the Suspense shell's skeleton carries
+    // `.checkout-steps` too until React commits, and the strict locator saw
+    // both (measured 15.10.2026, XF04 post-fix run 1, mobile-chrome).
+    await expect(page.locator('nav.checkout-steps')).toBeVisible()
     await expect(page.locator('#co-first-name')).toBeVisible()
     await expect(page.locator('#co-city')).toBeHidden()
     await expect(page.locator('.checkout-pay-btn')).toBeHidden()

@@ -83,6 +83,24 @@ describe('checkCheckoutVelocity', () => {
     expect(rateLimitMock).toHaveBeenCalledTimes(2)
   })
 
+  it('scopes the email and phone buckets to the address in a local E2E build only', async () => {
+    await checkCheckoutVelocity(identity, { env: { E2E_MOCK_CHECKOUT: 'local-build' } })
+    expect(rateLimitMock.mock.calls.map((c) => c[1])).toEqual([
+      identity.ip,
+      'a@b.co:ip:203.0.113.9',
+      '0501234567:ip:203.0.113.9',
+    ])
+    rateLimitMock.mockClear()
+    await checkCheckoutVelocity(identity, {
+      env: { E2E_MOCK_CHECKOUT: 'local-build', VERCEL: '1' },
+    })
+    expect(rateLimitMock.mock.calls.map((c) => c[1])).toEqual([
+      identity.ip,
+      identity.email,
+      identity.phone,
+    ])
+  })
+
   it('passes nowMs through to the limiter', async () => {
     await checkCheckoutVelocity({ ip: '1.2.3.4', email: null, phone: null }, { nowMs: 1234 })
     expect(rateLimitMock).toHaveBeenCalledWith('checkout-velocity-ip', '1.2.3.4', { nowMs: 1234 })

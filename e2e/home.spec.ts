@@ -485,11 +485,18 @@ test.describe('homepage', () => {
     // like every other chunk's, so it is told apart by its content: a sheet
     // that is nothing but @font-face is the font's, and this test is about
     // the chunks the app's own imports produce.
+    // Besides the @font-face rules the chunk carries next/font's own two
+    // class rules (`.heebo_<hash>-module__<hash>__className { font-family }`
+    // and the `__variable` one), 173 bytes measured 15.10.2026 (WRETRY-XF04:
+    // the stricter filter counted the chunk as the app's and the test read 2).
     const sheets: string[] = []
     for (const href of hrefs) {
       const css = await (await request.get(href)).text()
-      const fontOnly = css.replace(/@font-face\s*\{[^}]*\}/g, '').trim() === ''
-      if (!fontOnly) sheets.push(href)
+      const residue = css
+        .replace(/@font-face\s*\{[^}]*\}/g, '')
+        .replace(/\.[\w-]+-module__[\w-]+\{[^}]*\}/g, '')
+        .trim()
+      if (residue !== '') sheets.push(href)
     }
 
     expect(sheets, `homepage stylesheets: ${sheets.join(', ')}`).toHaveLength(1)

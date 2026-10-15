@@ -2,6 +2,8 @@ import { listCouponSlugsForPrerender, loadProductBySlug } from '@/lib/product-de
 import { getProductSeoBySlug } from '@/lib/product-seo'
 import { isVoucherId } from '@/lib/vouchers/coupon-path'
 import type { Metadata } from 'next'
+import { redirect } from 'next/navigation'
+import { connection } from 'next/server'
 import { Suspense } from 'react'
 import CouponOfferPage, { couponOfferMetadata } from './CouponOfferPage'
 import VoucherPage from './VoucherPage'
@@ -62,5 +64,27 @@ export default async function CouponRoute(props: Props) {
   // before the status line the way the product page does it: an unknown slug
   // answers a real 404, not a 200 with a not-found body.
   const detail = await loadProductBySlug(segment)
+  if (detail && !detail.couponOffer) {
+    return (
+      <Suspense fallback={null}>
+        <RedirectToProduct slug={segment} />
+      </Suspense>
+    )
+  }
   return <CouponOfferPage slug={segment} detail={detail} />
+}
+
+/**
+ * A product with no coupon offer sends the visitor to its product page. The
+ * redirect used to be thrown from CouponOfferPage itself, in the static
+ * half of the render, and the response carried the Location header TWICE
+ * (the shell pass and the resume pass each wrote it): curl followed the
+ * first, a browser joined the two with a comma and landed on a 404
+ * (`/product/x, /product/x`; coupon-offer.spec, WRETRY-XF04, 15.10.2026).
+ * Behind a boundary and after `connection()` only the request-time pass
+ * runs it, the way the voucher half's sign-in redirect already does.
+ */
+async function RedirectToProduct({ slug }: { slug: string }): Promise<never> {
+  await connection()
+  return redirect(`/product/${encodeURIComponent(slug)}`)
 }

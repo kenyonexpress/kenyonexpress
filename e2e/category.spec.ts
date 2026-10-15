@@ -287,7 +287,13 @@ test.describe('category archive', () => {
     // The thumbs are lazy, so a page that has merely loaded has decoded none of
     // them. Bring the first one into view and wait for the bytes, or the decode
     // half of this test measures the scroll position instead of the image.
-    await thumbs.first().scrollIntoViewIfNeeded()
+    // The server-rendered card is replaced when the grid commits, and a
+    // scroll that resolved the old node answered "Element is not attached to
+    // the DOM" (15.10.2026, XF04 post-fix run 1, mobile-chrome); re-resolve
+    // until the scroll lands.
+    await expect(async () => {
+      await thumbs.first().scrollIntoViewIfNeeded()
+    }).toPass({ timeout: 15_000 })
     await expect
       .poll(() => thumbs.first().evaluate((el) => (el as HTMLImageElement).naturalWidth), {
         message: 'first catalog thumbnail never decoded',

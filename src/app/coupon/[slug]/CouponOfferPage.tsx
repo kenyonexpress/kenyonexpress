@@ -91,6 +91,10 @@ export default function CouponOfferPage({
   const { product, images, supplier, variants, galleryAssets, couponOffer, cashbackPercent } =
     detail
 
+  // A product without a coupon offer never reaches this component: the
+  // route redirects it to the product page from behind a boundary (page.tsx,
+  // RedirectToProduct). A redirect thrown here wrote the Location header
+  // twice. Kept as a backstop for a direct render.
   if (!couponOffer) redirect(`/product/${encodeURIComponent(slug)}`)
 
   const category = Array.isArray(product.categories)

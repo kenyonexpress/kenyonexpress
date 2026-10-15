@@ -13,6 +13,7 @@ import {
   paymentGateClosed,
   walkCheckoutToPayment,
 } from './helpers'
+import { serializeMoneyCases } from './money-lock'
 
 /**
  * A signed-in customer buys a PHYSICAL product (marathon step 10, journey b).
@@ -22,11 +23,12 @@ import {
  */
 
 test.describe('logged-in physical purchase @checkout @money', () => {
-  test.describe.configure({ timeout: 120_000 })
-
+  test.describe.configure({ timeout: 240_000 })
   test.beforeEach(() => {
     test.skip(!paidFlowEnabled(), 'paid flow credentials disabled (E2E_PAID_FLOW=0)')
   })
+  // After the skip: a case that does not run takes no lock.
+  serializeMoneyCases()
 
   test('signed-in customer → physical product → mock pay → order, no voucher', async ({
     browser,
@@ -48,7 +50,12 @@ test.describe('logged-in physical purchase @checkout @money', () => {
     await page.goto(`/product/${E2E_PHYSICAL_SLUG}`)
 
     await buy.click()
-    await expect(page.getByRole('button', { name: /נוסף לסל/ }).first()).toBeVisible()
+    // 20s and not the 5s default: cart.add on the hosted database runs a
+    // limiter RPC and five reads at 300-500ms each, and the confirmation
+    // arrived after the default had expired (WRETRY-XF04, 15.10.2026).
+    await expect(page.getByRole('button', { name: /נוסף לסל/ }).first()).toBeVisible({
+      timeout: 20_000,
+    })
 
     await page.goto('/checkout')
     await expect(page.getByRole('heading', { name: 'תשלום' })).toBeVisible({ timeout: 15_000 })

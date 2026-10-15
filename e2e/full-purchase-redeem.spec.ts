@@ -11,10 +11,12 @@ import {
 } from './auth-session'
 import {
   addOpenProductToCart,
+  emptyCart,
   expectHebrewRtl,
   paymentGateClosed,
   walkCheckoutToPayment,
 } from './helpers'
+import { serializeMoneyCases } from './money-lock'
 
 /**
  * End-to-end money path against Cardcom mock + seeded fixtures:
@@ -42,15 +44,31 @@ import {
  * with nothing to type, so each leg is conditional on its fields being on
  * screen; the continue button is the same "המשך" on both typed steps. */
 test.describe('full purchase to redeem @checkout @redeem @money', () => {
-  test.describe.configure({ timeout: 120_000 })
-
+  // Three sign-ins, a checkout, a voucher and a redeem on a hosted database
+  // whose every query is 300-500ms: the customer leg alone took 1.3 min
+  // (WRETRY-XF04, 15.10.2026), and 120s ended the test on the scan page.
+  test.describe.configure({ timeout: 240_000 })
   test.beforeEach(() => {
     test.skip(!paidFlowEnabled(), 'paid flow credentials disabled (E2E_PAID_FLOW=0)')
   })
+  // After the skip: a case that does not run takes no lock.
+  serializeMoneyCases()
 
   test('guest coupon cart → guest checkout → email sign-in at pay → mock pay → voucher → supplier redeem', async ({
     browser,
   }) => {
+    // The guest cart is merged into the account at pay, so whatever the
+    // account already holds is paid for too: 27 lines left by earlier runs
+    // once answered "אין מספיק במלאי" at the pay step (15.10.2026, XF04).
+    // Empty it first, as the signed-in money specs do, in a context of its
+    // own so the guest leg below starts anonymous. The cached session
+    // cookies make this free of a login.
+    const housekeeping = await browser.newContext({ locale: 'he-IL', timezoneId: 'Asia/Jerusalem' })
+    const housekeepingPage = await housekeeping.newPage()
+    await signInWithEmail(housekeepingPage, E2E_CUSTOMER_EMAIL, E2E_CUSTOMER_PASSWORD, '/cart')
+    await emptyCart(housekeepingPage)
+    await housekeeping.close()
+
     const customer = await browser.newContext({ locale: 'he-IL', timezoneId: 'Asia/Jerusalem' })
     const page = await customer.newPage()
 
@@ -119,7 +137,9 @@ test.describe('full purchase to redeem @checkout @redeem @money', () => {
     await expectHebrewRtl(scanPage)
 
     await scanPage.getByLabel('הקלדת קוד ידנית').fill(voucherCode)
-    await scanPage.getByRole('button', { name: 'המשך' }).click()
+    // The button reads "בדוק שובר" (ScanClient.tsx); "המשך" was never on this
+    // page and the click waited out the test (WRETRY-XF04, 15.10.2026).
+    await scanPage.getByRole('button', { name: 'בדוק שובר' }).click()
     await expect(scanPage.getByRole('button', { name: /אשר ומַמֵש|אשר וממש/ })).toBeVisible()
     await scanPage.getByRole('button', { name: /אשר ומַמֵש|אשר וממש/ }).click()
 

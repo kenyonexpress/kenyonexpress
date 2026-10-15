@@ -168,7 +168,8 @@ describe('the share button on the toolbar', () => {
     await renderPage(viewOf([FRIDGE]))
     const share = screen.getByRole('button', { name: 'שיתוף הרשימה' })
     expect(share).toHaveAttribute('data-share', 'unavailable')
-    expect(share).toHaveAttribute('aria-disabled', 'true')
+    expect(share).not.toHaveAttribute('aria-disabled')
+    expect(share).toHaveAttribute('title', 'שיתוף הרשימה עוד לא פתוח')
     await act(async () => {
       fireEvent.click(share)
     })

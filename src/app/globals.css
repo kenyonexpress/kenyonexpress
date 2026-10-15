@@ -278,6 +278,15 @@ html .ke-toaster [data-sonner-toast] [data-close-button]::after {
   inset: -13px;
 }
 
+/* ...and the painted box is 24px, not sonner's 20: WCAG 2.5.8 (axe
+   `target-size`) measures the element's own box and knows nothing of the
+   pseudo-element, so a toast on screen during a scan failed the cart panel
+   (mobile-chrome, WRETRY-XF04, 15.10.2026). The glyph inside stays 12px. */
+html .ke-toaster [data-sonner-toast] [data-close-button] {
+  width: 24px;
+  height: 24px;
+}
+
 /* A toast is a reaction and not a show: under reduced motion it appears and
    leaves without the 400ms slide. Sonner's own CSS carries the transition on
    the toast at (0,2,0). */
@@ -300,6 +309,15 @@ html .ke-toaster [data-sonner-toast] [data-close-button]::after {
    `[data-home]` marker; `:has()` does the rest. No client JS, no dynamic API. */
 body:has([data-home]) .topbar-greeting {
   display: flex;
+}
+
+/* The top bar is `relative z-50` for its sign-in link's hit box (TopBar.tsx).
+   The category drawer lives inside the sticky header's `z-40` stacking
+   context, so the raised bar painted over the open drawer's close button at
+   380 and 768 (menu-drawer.spec, 15.10.2026). While the drawer is open
+   (MobileDrawer.tsx marks <html data-drawer-open>) the bar steps down. */
+html[data-drawer-open] .topbar-shell {
+  z-index: auto;
 }
 
 /* THE TOP BAR SITS IN BOOTSTRAP'S CONTAINER, NOT THE PAGE CONTAINER.

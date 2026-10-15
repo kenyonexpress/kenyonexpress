@@ -1,6 +1,7 @@
 import { CacheControl } from '@/lib/cache/http'
 import { CART_SYNC_MAX_LINES, type CartSyncRejected, cartLineKey } from '@/lib/cart/sync-queue'
 import type { CartView } from '@/lib/cart/types'
+import { cartWriteIdentifier } from '@/lib/cart/write-limit-identifier'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { rateLimit, rateLimitHeaders } from '@/lib/rate-limit'
 import { createClient } from '@/lib/supabase/server'
@@ -68,7 +69,7 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  const identifier = user ? `user:${user.id}` : `ip:${await getClientIp()}`
+  const identifier = await cartWriteIdentifier(user?.id ?? null, getClientIp)
 
   const decision = await rateLimit('cart_write', identifier)
   if (!decision.allowed) {

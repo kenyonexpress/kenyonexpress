@@ -25,6 +25,7 @@ import {
 import { CART_SHIPPING_COOKIE, SHIPPING_COOKIE_MAX_AGE } from '@/lib/cart/shipping-cookie'
 import { parsePercentSnapshot } from '@/lib/cart/snapshot'
 import type { CartActionResult, CartStorageItem, CartView } from '@/lib/cart/types'
+import { cartWriteIdentifier } from '@/lib/cart/write-limit-identifier'
 import { isImplausibleDiscount } from '@/lib/commerce/implausible-discount'
 import { isValidUnitCode } from '@/lib/coupons/unit-codes'
 import { loadFlashHoldsForUser } from '@/lib/flash-sales/holds'
@@ -94,9 +95,8 @@ function expiresAt(): string {
 }
 
 async function checkCartWriteRateLimit(userId: string | null): Promise<boolean> {
-  if (userId) return checkRateLimit(`cart_write:user:${userId}`, 120, 3600)
-  const ip = await getClientIp()
-  return checkRateLimit(`cart_write:ip:${ip}`, 120, 3600)
+  const identifier = await cartWriteIdentifier(userId, getClientIp)
+  return checkRateLimit(`cart_write:${identifier}`, 120, 3600)
 }
 
 /**

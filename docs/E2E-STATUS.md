@@ -162,6 +162,139 @@ What run 1 proved, and what was fixed on top of it in the same commit:
   and the cart-write limiter state on this machine.
 
 
+### Diagnostic run (WRETRY-XF04, the build of 86077efdb, started 06:32:49)
+
+The retry's first run, on the build the previous item left behind (BUILD_ID
+`fdf4T7DEiGFTe08hNsYjI`, built 06:30 from the committed tree, nothing under
+`src/` or `e2e/` newer than it): **1,084 passed, 14 failed, 24 skipped** of
+1,122 in 21.0 min (ended 06:53:57). Not a measured pair: it is the run that
+found the eleven causes below, and the test-side fixes written while it ran
+were already on disk when the mobile-chrome worker started, so its second
+half ran newer spec code than its first. The pair that counts is the next
+section, on the rebuilt tree.
+
+| spec | failed | project |
+| --- | --- | --- |
+| admin-refund.spec.ts | 2 | chromium, mobile-chrome |
+| physical-purchase.spec.ts | 2 | chromium, mobile-chrome |
+| full-purchase-redeem.spec.ts | 1 | chromium |
+| home.spec.ts (one stylesheet) | 2 | chromium, mobile-chrome |
+| menu-drawer.spec.ts (close button hover, 380 and 768) | 2 | chromium |
+| wishlist-page.spec.ts (share button) | 2 | chromium, mobile-chrome |
+| a11y.spec.ts (cart panel) | 1 | mobile-chrome |
+| a11y.spec.ts (Tab walk on /login) | 1 | mobile-chrome |
+| coupon-offer.spec.ts (physical slug) | 1 | mobile-chrome |
+
+What each one was, measured on the running server and its own error context:
+
+- **The money specs, three causes stacked.** (1) `emptyCart()` read the cart
+  page the instant it loaded, before `GET /api/cart` had answered: a fresh
+  context's mirror is empty, so the page settles on the empty state first,
+  the clear button was not on it, and the press was skipped; the checkout
+  then carried 38, 39, 40, 42 and 43 lines across the five cases (the header
+  badge in every snapshot) and the pay step answered "אין מספיק במלאי לאחד
+  הפריטים". The helper now waits for the network to go idle on `/cart`,
+  presses the button when it is there, and proves the badge reads 0. A
+  waiter armed on the response alone resolved on the account page's own
+  fetch after sign-in (second attempt, mobile-chrome). (2) `run.sh` passed
+  no `VOUCHER_QR_SECRET`, so a coupon order could not sign its voucher: the
+  full-purchase snapshot carries the alert "VOUCHER_QR_SECRET is not set;
+  refusing to sign or verify voucher QR payloads". The script passes one.
+  (3) With the cart emptied by hand after the run, the physical add answered
+  nothing: badge "1 פריטים, 0 ₪", buy button disabled, no "נוסף לסל", clean
+  server log. The `cart_write` policy (120 an hour) is keyed on the user
+  alone for a signed-in shopper, the counters live in Postgres (no Upstash
+  locally) and outlive every server restart, and a day of runs had spent the
+  one seeded customer's hour. `cartWriteIdentifier()` (lib/cart) charges a
+  signed-in shopper per address as well, but only under the
+  `E2E_MOCK_CHECKOUT=local-build` allowance the payment gate already reads
+  (inert on Vercel); each run hands its workers a fresh /24 keyed on the
+  hour (`run.sh`), so a run starts with a shopper's budget. The three specs
+  also take a cross-worker lock (`e2e/money-lock.ts`): they share one account
+  and one cart row, and the chromium tail runs beside the mobile-chrome head.
+  full-purchase-redeem empties the account cart in a context of its own
+  before its guest leg, since the guest cart is merged into the account at
+  pay.
+- **home.spec, one stylesheet (both projects).** The font chunk is not only
+  `@font-face`: next/font adds its two class rules (`.heebo_<hash>-module__…`,
+  173 bytes measured), the filter counted the chunk as the app's and read 2.
+  The filter strips those rules too.
+- **menu-drawer, the close button at 380 and 768.** The top bar's `relative
+  z-50` (the touch-target fix of 4d61c6fb1) is in the root stacking context;
+  the drawer is `fixed z-50` INSIDE the sticky header, which is `z-40`, so
+  the bar painted over the open drawer and `hover()` retried 52 times on
+  "subtree intercepts pointer events" from the bar. The drawer marks `<html
+  data-drawer-open>` while open and the bar steps to `z-index: auto` under
+  it (globals.css); pinned in MobileDrawer.test.
+- **wishlist share (both projects).** The button carried
+  `aria-disabled="true"` while 248 is unapplied; Playwright treats that as
+  disabled and the click waited out the test. The attribute is gone (the
+  press still answers with the toast, which is what the test checks); the
+  title and `data-share` carry the state.
+- **a11y, the cart panel on mobile-chrome.** A toast was on screen during
+  the scan and its close button is sonner's 20x20 box: axe `target-size`
+  measures the element, not the 44px pseudo-element hit box UX28 added.
+  The button is 24x24 now.
+- **a11y, the Tab walk on /login (mobile-chrome).** The walk hit-tested the
+  stop in the same frame the browser scrolled it into view, and read the
+  email field under the consent banner once and above it the next time. The
+  walk waits two frames after each Tab.
+- **coupon-offer, a physical slug (mobile-chrome).** `redirect()` thrown
+  from CouponOfferPage, in the static half of the render, wrote the Location
+  header TWICE (`curl -sI` shows both); curl followed the first, the browser
+  joined them with a comma and landed on `/product/x, /product/x`, a 404.
+  The route redirects from behind a boundary after `connection()` now, the
+  way the voucher half's sign-in redirect already does, and that one was
+  measured single.
+  Measured on the rebuilt server: the URL answers 200 with the framework's
+  client redirect (`NEXT_REDIRECT` in the payload, a `<meta http-equiv=
+  "refresh">` fallback), and the browser lands on the product page; the
+  server-side 307 is gone with the duplicate.
+
+Two more were under those, found by a targeted run of the money specs on the
+rebuilt tree before the pair (the customer legs of both coupon specs passed
+there: vouchers were issued and listed under "הקופונים שלי"):
+
+- **full-purchase-redeem, the supplier leg.** `next.config.ts` carried
+  `/scan -> /supplier/scan` (permanent) while the app's page at
+  `/supplier/scan` redirects to `/scan`, where the screen lives: a signed-in
+  supplier bounced between the two forever (blank page, "navigated to
+  /supplier/scan" seven times in the call log). Signed out, the proxy's
+  login redirect answered first, which is why coupon-scan.spec never saw
+  it. The config alias is removed; the page's redirect is the alias.
+- **admin-refund, the admin leg.** The admin fixture on the hosted database
+  has no TOTP factor: `/admin-mfa` offers enrolment ("התחלת הגדרה" and a QR),
+  not the code challenge `completeAdminMfaIfAsked` answers, and enrolling a
+  factor from a test is a write to a real account's auth factors. The helper
+  skips the case with that reason on such a database; the admin leg stays
+  unproven here, and is recorded as such.
+
+Three more came out of the targeted reruns that followed, each on the
+rebuilt tree (three rebuilds in all for this item, each for a change in
+`src/` or `next.config.ts` that the measured pair had to carry):
+
+- **full-purchase-redeem, the scan page's button.** The spec pressed "המשך";
+  the page's button is "בדוק שובר" (ScanClient.tsx), so the press waited
+  out the test with the voucher code typed in the field. The spec names the
+  real button, and the journey's budget is 240s (three sign-ins, a checkout,
+  a voucher and a redeem on a database whose every query is 300-500ms: the
+  customer leg alone took 1.3 min).
+- **The add-to-cart confirmation at 5s.** `cart.add` on the hosted database
+  is a limiter RPC and five reads at 300-500ms each (2.5s measured end to
+  end in the server log), and the "נוסף לסל" state arrived after the
+  default expectation had expired. The two signed-in money specs wait 20s
+  for it.
+- **Order velocity, the third budget.** With the cart budget solved the pay
+  step answered "יותר מדי הזמנות בזמן קצר, נסו שוב מאוחר יותר": the fraud
+  velocity buckets (`src/lib/fraud/velocity.ts`) allow 15 new orders per
+  email and per phone a day, and the seeded customer had placed them across
+  the day's runs, each refusal also queueing a fraud review row for the
+  fixture. Under the same local-build allowance the email and phone buckets
+  carry the address too (`localE2eScope`, lib/rate-limit), the cart
+  identifier reads the same helper, and both stay the identity alone on
+  Vercel. Pinned in velocity.test, local-e2e-scope.test and
+  write-limit-identifier.test.
+
 ## How the suite got there
 
 The first measurement of the day, on the build as it stood, was **972 passed,

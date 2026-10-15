@@ -100,12 +100,21 @@ export default function MobileDrawer() {
 
   // The page behind a full-height overlay must not scroll. Restoring the
   // previous value rather than clearing it: another component may own it.
+  // `data-drawer-open` on <html> while it is open: the drawer is painted
+  // inside the sticky header's `z-40` stacking context, so anything at the
+  // root with a higher z-index covers it, and the top bar (`relative z-50`
+  // for its sign-in link's hit box) did exactly that: the close button at 380
+  // and 768 answered "subtree intercepts pointer events" from the top bar
+  // (menu-drawer.spec, WRETRY-XF04, 15.10.2026). The top bar reads the mark
+  // and steps down (globals.css, `.topbar-shell`).
   useEffect(() => {
     if (!open) return
     const previous = document.body.style.overflow
     document.body.style.overflow = 'hidden'
+    document.documentElement.setAttribute('data-drawer-open', '')
     return () => {
       document.body.style.overflow = previous
+      document.documentElement.removeAttribute('data-drawer-open')
     }
   }, [open])
 

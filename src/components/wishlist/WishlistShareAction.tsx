@@ -98,7 +98,10 @@ export default function WishlistShareAction({
       className={className}
       onClick={() => void run()}
       disabled={busy}
-      aria-disabled={unavailable ? 'true' : undefined}
+      // Not aria-disabled while unavailable: the press still answers (the
+      // toast below), and Playwright treats aria-disabled="true" as disabled,
+      // so a click on it waited out the whole test (15.10.2026, XF04 post-fix
+      // run 1, both projects). The title and data-share carry the state.
       title={unavailable ? 'שיתוף הרשימה עוד לא פתוח' : 'שיתוף הרשימה בקישור'}
       data-share={unavailable ? 'unavailable' : share.token && share.enabled ? 'live' : 'off'}
     >

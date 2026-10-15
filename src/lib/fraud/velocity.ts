@@ -1,4 +1,5 @@
 import { rateLimit } from '@/lib/rate-limit/limiter'
+import { localE2eScope } from '@/lib/rate-limit/local-e2e-scope'
 
 /**
  * Order-velocity limits, one bucket per identity DIMENSION rather than one per
@@ -61,20 +62,24 @@ export function normalizeVelocityPhone(raw: string | null | undefined): string |
  */
 export async function checkCheckoutVelocity(
   identity: VelocityIdentity,
-  options: { nowMs?: number } = {},
+  options: { nowMs?: number; env?: Record<string, string | undefined> } = {},
 ): Promise<VelocityDecision> {
   const opts = { nowMs: options.nowMs }
+  // The email and phone buckets are per address too in a local E2E build
+  // (lib/rate-limit/local-e2e-scope.ts says why: the suite's one customer
+  // spent its 15 orders a day across a day of runs); '' everywhere else.
+  const scope = localE2eScope(identity.ip, options.env)
 
   if (identity.ip) {
     const decision = await rateLimit('checkout-velocity-ip', identity.ip, opts)
     if (!decision.allowed) return { ok: false, dimension: 'ip' }
   }
   if (identity.email) {
-    const decision = await rateLimit('checkout-velocity-email', identity.email, opts)
+    const decision = await rateLimit('checkout-velocity-email', `${identity.email}${scope}`, opts)
     if (!decision.allowed) return { ok: false, dimension: 'email' }
   }
   if (identity.phone) {
-    const decision = await rateLimit('checkout-velocity-phone', identity.phone, opts)
+    const decision = await rateLimit('checkout-velocity-phone', `${identity.phone}${scope}`, opts)
     if (!decision.allowed) return { ok: false, dimension: 'phone' }
   }
 

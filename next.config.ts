@@ -131,9 +131,13 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
-      // Printed QR cards and older docs name /scan; the live screen is under
-      // the supplier portal. Keep the short path as a permanent alias.
-      { source: '/scan', destination: '/supplier/scan', permanent: true },
+      // NO `/scan -> /supplier/scan` here. The scan screen LIVES at /scan
+      // (app/(supplier)/scan/page.tsx) and /supplier/scan is the page that
+      // redirects to it, for printed cards and older QR codes. This list used
+      // to carry the opposite alias, so the two answered each other forever:
+      // a supplier signed in at /supplier/scan saw a blank page and Playwright
+      // logged "navigated to /supplier/scan" seven times
+      // (full-purchase-redeem.spec, WRETRY-XF04, 15.10.2026).
       // The cancellation policy is asked for at /cancellation-policy, and it
       // lives at /refund_returns. A redirect rather than a second page: the
       // WordPress URL is what existing links, the footer and any indexed search

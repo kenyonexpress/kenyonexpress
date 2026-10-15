@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { type BrowserContext, type Page, expect } from '@playwright/test'
+import { type BrowserContext, type Page, expect, test } from '@playwright/test'
 import { msUntilNextStep, totpCode } from '../scripts/seed/totp.mjs'
 
 /**
@@ -143,7 +143,27 @@ export async function signInWithEmail(
  * the submit never races the clock. No-op when the page is anywhere else.
  */
 export async function completeAdminMfaIfAsked(page: Page): Promise<void> {
-  if (!new URL(page.url()).pathname.startsWith('/admin-mfa')) return
+  // The login's own wait resolves on the first non-login URL, and the MFA
+  // page can be one client hop further: let the navigation settle before
+  // reading where the session landed.
+  await page.waitForLoadState('networkidle').catch(() => undefined)
+  const landed = new URL(page.url())
+  if (!landed.pathname.startsWith('/admin-mfa')) return
+  if (landed.searchParams.get('mode') === 'enrol') skipAdminEnrolment()
+  // ENROLMENT is not the challenge. The hosted database's admin fixture has
+  // no TOTP factor (the page offers "התחלת הגדרה" and a QR, not a code field;
+  // measured 15.10.2026, WRETRY-XF04), and enrolling one from a test is a
+  // write to a real account's auth factors. Such a database cannot prove the
+  // admin legs, so they skip with that reason instead of timing out on a
+  // heading 20s later.
+  if (
+    await page
+      .getByRole('button', { name: 'התחלת הגדרה' })
+      .isVisible()
+      .catch(() => false)
+  ) {
+    skipAdminEnrolment()
+  }
   const secret = adminTotpSecret()
   expect(
     secret,
@@ -153,6 +173,14 @@ export async function completeAdminMfaIfAsked(page: Page): Promise<void> {
   await page.locator('#mfa-code').fill(totpCode(secret as string))
   await page.getByRole('button', { name: 'אימות וכניסה' }).click()
   await page.waitForURL((url) => !url.pathname.startsWith('/admin-mfa'), { timeout: 20_000 })
+}
+
+export function skipAdminEnrolment(): never {
+  test.skip(
+    true,
+    'admin fixture has no TOTP factor on this database (the MFA page offers enrolment, not a challenge); run pnpm seed:test against a database that may be written',
+  )
+  throw new Error('unreachable: test.skip ends the test')
 }
 
 /** Password login for the admin fixture, then the MFA challenge it always meets. */

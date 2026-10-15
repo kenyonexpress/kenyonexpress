@@ -6,6 +6,7 @@ import {
   paidFlowEnabled,
   signInAsAdmin,
   signInWithEmail,
+  skipAdminEnrolment,
 } from './auth-session'
 import {
   BUY_BUTTON,
@@ -14,6 +15,7 @@ import {
   paymentGateClosed,
   walkCheckoutToPayment,
 } from './helpers'
+import { serializeMoneyCases } from './money-lock'
 
 /**
  * Admin cancel-and-refund, end to end (marathon step 10, journey d):
@@ -28,11 +30,12 @@ import {
  */
 
 test.describe('admin cancel and refund @money @admin', () => {
-  test.describe.configure({ timeout: 150_000 })
-
+  test.describe.configure({ timeout: 240_000 })
   test.beforeEach(() => {
     test.skip(!paidFlowEnabled(), 'paid flow credentials disabled (E2E_PAID_FLOW=0)')
   })
+  // After the skip: a case that does not run takes no lock.
+  serializeMoneyCases()
 
   test('a paid coupon order is refunded from the admin, and the voucher dies with it', async ({
     browser,
@@ -54,7 +57,12 @@ test.describe('admin cancel and refund @money @admin', () => {
     await page.goto(`/product/${E2E_COUPON_SLUG}`)
 
     await buy.click()
-    await expect(page.getByRole('button', { name: /נוסף לסל/ }).first()).toBeVisible()
+    // 20s and not the 5s default: cart.add on the hosted database runs a
+    // limiter RPC and five reads at 300-500ms each, and the confirmation
+    // arrived after the default had expired (WRETRY-XF04, 15.10.2026).
+    await expect(page.getByRole('button', { name: /נוסף לסל/ }).first()).toBeVisible({
+      timeout: 20_000,
+    })
     await page.goto('/checkout')
     await expect(page.getByRole('heading', { name: 'תשלום' })).toBeVisible({ timeout: 15_000 })
     test.skip(
@@ -82,6 +90,9 @@ test.describe('admin cancel and refund @money @admin', () => {
     // TOTP challenge with the factor `pnpm seed:test` enrolled.
     await signInAsAdmin(adminPage, `/admin/orders/${orderId}`)
     await adminPage.goto(`/admin/orders/${orderId}`)
+    // The admin tier bounces a factor-less admin to enrolment on every page;
+    // on a database whose fixture has no factor the leg cannot be proven.
+    if (new URL(adminPage.url()).pathname.startsWith('/admin-mfa')) skipAdminEnrolment()
     await expectHebrewRtl(adminPage)
     await expect(adminPage.getByRole('heading', { name: 'החזר לכרטיס' })).toBeVisible({
       timeout: 20_000,

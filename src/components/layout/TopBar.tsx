@@ -138,7 +138,7 @@ function ItemSeparator() {
 
 export default function TopBar() {
   return (
-    <div dir="rtl" className="relative z-50 w-full border-b border-border bg-white">
+    <div dir="rtl" className="topbar-shell relative z-50 w-full border-b border-border bg-white">
       {/*
         `relative z-50`: the sign-in link's hit box grows 6.67px DOWN past the
         37px row (`.tap-area--down`), into the sticky header below, which is
@@ -146,6 +146,10 @@ export default function TopBar() {
         and touch-targets.spec measured 72x38 on every route (post-fix run 1 of
         XF04, 15.10.2026). The bar sits above the header only in those pixels at
         scroll 0; once scrolled it is off-screen.
+        `topbar-shell`: while the category drawer is open (<html
+        data-drawer-open>, MobileDrawer.tsx) the bar gives that z-index up,
+        because the drawer is painted inside the header's own stacking
+        context and the raised bar covered its close button (globals.css).
       */}
       {/*
         NO handheld height below md: the rows wrap and the bar is as tall as

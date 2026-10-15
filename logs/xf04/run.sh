@@ -4,8 +4,10 @@
 # Usage: bash logs/xf04/run.sh <run-number>
 #
 # Starts `pnpm start` on 3454 with the same env the Playwright webServer block
-# would pass (mock Cardcom, the webhook secret, the app URL that matches the
-# base URL, checkout on), refuses to measure unless the listener on that port
+# would pass (mock Cardcom, the webhook secret, a voucher QR secret so a
+# coupon order can sign its voucher (without it the pay step answers
+# "VOUCHER_QR_SECRET is not set", measured 15.10.2026), the app URL that
+# matches the base URL, checkout on), refuses to measure unless the listener on that port
 # belongs to THIS checkout and serves THIS build, runs the whole suite (all
 # three projects) with the list and json reporters, and stops the server it
 # started. Raw artefacts go to /tmp/xf04 (the json reporter output is large
@@ -25,6 +27,7 @@ fi
 
 CARDCOM_USE_MOCK=true \
 CARDCOM_WEBHOOK_SECRET=mock-webhook-secret \
+VOUCHER_QR_SECRET=e2e-voucher-qr-secret-local-build-only-0123456789abcdef \
 NEXT_PUBLIC_APP_URL=http://localhost:$PORT \
 CHECKOUT_ENABLED=true \
 E2E_MOCK_CHECKOUT=local-build \
@@ -52,7 +55,7 @@ fi
 START=$(date +%s)
 E2E_BASE_URL="http://localhost:$PORT" \
 E2E_ADMIN_EMAIL=e2e-admin@kenyonexpress.co.il \
-E2E_FORWARDED_FOR_PREFIX="10.44.$N" \
+E2E_FORWARDED_FOR_PREFIX="10.$(date +%H).$N" \
 PLAYWRIGHT_JSON_OUTPUT_NAME="$OUT/run$N.json" \
 pnpm exec playwright test --reporter=list,json >"$OUT/run$N.log" 2>&1
 EXIT=$?

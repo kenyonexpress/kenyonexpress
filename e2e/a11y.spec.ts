@@ -652,7 +652,14 @@ async function walkFocus(page: Page) {
   let stops = 0
   for (let i = 0; i < 400; i++) {
     await page.keyboard.press('Tab')
-    const stop = await page.evaluate(() => {
+    const stop = await page.evaluate(async () => {
+      // Two frames: the browser scrolls the stop into view on focus and the
+      // hit test below read the frame before that scroll had painted (the
+      // /login email field, measured under the consent banner once and
+      // above it on the next run; WRETRY-XF04, 15.10.2026, mobile-chrome).
+      await new Promise<void>((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+      )
       const el = document.activeElement as HTMLElement | null
       if (!el || el === document.body) return { done: true as const }
       if (el.dataset.a11yWalked) return { done: true as const }
