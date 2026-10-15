@@ -203,3 +203,6 @@ PENDING_ASSET: refs/ke_live_singlefile.html and refs/ke_live_computed.json (not 
 PENDING_ASSET: real city illustrations city-<slug>.svg for all 20 cities (generated placeholders in public/images/placeholder/)
 FINDING: https://kenyonexpress.co.il redirects to www and serves THIS app (Vercel); logo.webp, logo-footer.webp, products/*.webp and the five hero slides are already in public/images and src/components/home/HeroSlider.tsx. Nothing to scrape; no public/images/legacy copy made.
 המשך מ: F20
+F20: PARTIAL. Built: docs/DR.md (restore order + honest channel table), supabase/tests/rls_enabled.test.sql (pgTAP, 10 tables, not run: no local Supabase stack here). Existing: docs/DR-RUNBOOK.md, tests/sql harnesses.
+BLOCKED: F20 R2 nightly DB dump + media: R2 is not enabled on the Cloudflare account, so no bucket or credentials exist
+המשך מ: F21
