@@ -162,3 +162,6 @@ F04: DONE (existing + gap built): guest to Google at pay, tokens, order-page sig
 F05: PARTIAL. Existing: QR + code, expiry countdown, wallet agorot, gift claim transfers ownership. Built: src/lib/vouchers/cancellation.ts (14 days, min(5%,100 ILS)) + 6 tests.
 BLOCKED: F05 customer cancel+refund action and app-only toggle need a rehearsed migration (wallet ledger is client-readonly per 168, voucher status guard 166); not written blind
 המשך מ: F06
+F06: PARTIAL. Existing: product form (platform_percent, shipping, coupon_expiry_days, cashback), payouts page. Built: CSV bulk import (src/lib/admin/product-csv.ts, admin/products/import, drafts only, admin-only, audited, 6 tests). Migration 185 written to pending (cancellation_window_days, payout_cadence).
+BLOCKED: F06 form wiring for cancellation_window_days and payout_cadence until 185 is applied (the product write would 42703 on the un-migrated DB)
+המשך מ: F07
