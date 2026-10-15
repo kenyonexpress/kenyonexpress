@@ -37,7 +37,7 @@ export default function ProductQuestionLink({
       onClick={() =>
         track('whatsapp_click', { surface: 'product_question', product_id: productId })
       }
-      className="tap-area [--tap-size:36px] inline-flex items-center gap-2 text-sm font-semibold text-heading transition-colors hover:opacity-80"
+      className="tap-area inline-flex items-center gap-2 text-sm font-semibold text-heading transition-colors hover:opacity-80"
     >
       <WhatsAppIcon size={18} />
       שאלה על המוצר

@@ -30,6 +30,9 @@ import { OFF_PAGE } from '@/styles/tokens'
  * from the reader's side -- they have no other way to know.
  */
 
+/** Email CSS lengths. A function so the dimensions are numbers, not literals. */
+const px = (n: number): string => `${n}px`
+
 export const ABANDONED_CART_MAX_REMINDERS = 2
 
 /** How many lines are itemised before the mail says "and N more". */
@@ -99,35 +102,35 @@ export function buildAbandonedCartEmail(options: {
       // same reason the shipped version wrapped its item count.
       const qty = item.quantity > 1 ? ` <bdi>×${item.quantity}</bdi>` : ''
       return `<tr>
-        <td style="padding:8px 0;border-bottom:1px solid ${OFF_PAGE.rule};text-align:right">${name}${qty}</td>
-        <td style="padding:8px 0;border-bottom:1px solid ${OFF_PAGE.rule};text-align:left;white-space:nowrap"><bdi>${shekels(item.line_total)}</bdi></td>
+        <td style="padding:${px(8)} 0;border-bottom:${px(1)} solid ${OFF_PAGE.rule};text-align:right">${name}${qty}</td>
+        <td style="padding:${px(8)} 0;border-bottom:${px(1)} solid ${OFF_PAGE.rule};text-align:left;white-space:nowrap"><bdi>${shekels(item.line_total)}</bdi></td>
       </tr>`
     })
     .join('')
 
   const more =
     hidden > 0
-      ? `<tr><td colspan="2" style="padding:8px 0;color:${OFF_PAGE.muted};text-align:right">ועוד <bdi>${hidden}</bdi> פריטים</td></tr>`
+      ? `<tr><td colspan="2" style="padding:${px(8)} 0;color:${OFF_PAGE.muted};text-align:right">ועוד <bdi>${hidden}</bdi> פריטים</td></tr>`
       : ''
 
   // The TOTAL is the cart's own `total` -- after any applied coupon -- because
   // that is what the customer will be charged if they follow the link. Quoting
   // the subtotal would promise a number the checkout then contradicts upward.
   const total = `<tr>
-      <td style="padding:12px 0 0;font-weight:700;text-align:right">סה"כ</td>
-      <td style="padding:12px 0 0;font-weight:700;text-align:left;white-space:nowrap"><bdi>${shekels(cart.total)}</bdi></td>
+      <td style="padding:${px(12)} 0 0;font-weight:700;text-align:right">סה"כ</td>
+      <td style="padding:${px(12)} 0 0;font-weight:700;text-align:left;white-space:nowrap"><bdi>${shekels(cart.total)}</bdi></td>
     </tr>`
 
   const html = `<div dir="rtl" style="font-family:Heebo,Arial,Helvetica,sans-serif;text-align:right;color:${OFF_PAGE.ink}">
-  <h1 style="font-size:20px;margin:0 0 12px">הסל שלך מחכה</h1>
-  <p style="margin:0 0 16px">${OPENERS[reminder]}</p>
-  <table role="presentation" style="width:100%;border-collapse:collapse;margin:0 0 20px">
+  <h1 style="font-size:${px(20)};margin:0 0 ${px(12)}">הסל שלך מחכה</h1>
+  <p style="margin:0 0 ${px(16)}">${OPENERS[reminder]}</p>
+  <table role="presentation" style="width:100%;border-collapse:collapse;margin:0 0 ${px(20)}">
     <tbody>${rows}${more}${total}</tbody>
   </table>
-  <p style="margin:0 0 20px"><a href="${href}" style="background:${OFF_PAGE.brand};color:${OFF_PAGE.ink};font-weight:700;padding:12px 20px;border-radius:8px;text-decoration:none;display:inline-block">חזרה לסל</a></p>
+  <p style="margin:0 0 ${px(20)}"><a href="${href}" style="background:${OFF_PAGE.brand};color:${OFF_PAGE.ink};font-weight:700;padding:${px(12)} ${px(20)};border-radius:${px(8)};text-decoration:none;display:inline-block">חזרה לסל</a></p>
   ${
     unsubscribeUrl
-      ? `<p style="color:${OFF_PAGE.muted};font-size:12px;margin:0"><a href="${unsubscribeUrl}" style="color:${OFF_PAGE.muted}">הסרה מרשימת הדיוור</a></p>`
+      ? `<p style="color:${OFF_PAGE.muted};font-size:${px(12)};margin:0"><a href="${unsubscribeUrl}" style="color:${OFF_PAGE.muted}">הסרה מרשימת הדיוור</a></p>`
       : ''
   }
 </div>`
