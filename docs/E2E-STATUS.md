@@ -10,17 +10,156 @@ the json reporter output of the two runs.
 
 ## Results
 
-**Status: NOT GREEN YET.** Three runs are recorded below: two pre-fix
-baselines on the build as it stood before any fix in this document, and one
-post-fix run on the build of 81527ead1. XF04 itself ran out of its
-3,600-second budget after the fixes were written (the loop recorded `rc=124`
-at 05:41), and the second baseline had died on a word-split `--reporter`
-argument in `run.sh` (`ist,json: command not found`, since corrected). The
-post-fix run cut the failures from 128 to 36 and found six more causes, five
-of them fixed in the commit that carries this paragraph. The green pair is
-queued as `WRETRY-XF04` at the head of `~/ke-goals/queue.txt`; it fills the
-final tables and the flake list from `/tmp/xf04/run1.json` and `run2.json`
-through `summarize.mjs`.
+**Status: NOT GREEN YET, by one flaky case.** The measured pair ran on the
+build of 6718a7f5a (BUILD_ID `MuW7j7T4WAlfxQ-nENRZq`, built 07:31 from the clean
+committed tree, the tree that carries every fix in this document) inside the
+XF05-RETRY item, because WRETRY-XF04 itself ran out of its 3,600-second
+budget eight minutes into run 1 (the loop recorded `rc=124` at 07:32; its
+fixes are in 6718a7f5a). Run 1: **1,097 passed / 0 failed / 25 skipped of 1,122 in 20:56**. Run 2: **1,097 passed / 1 failed / 24 skipped of 1,122 in 20:57**.
+Failed in both runs: **0**. Flaky, passed once and failed once:
+**1**, listed under the tables with the error. The tag
+`v1.0.0-mvp-ready-pending-cardcom` is therefore NOT written: the condition
+is two green runs, and run 2 is not one. The flaky case is fixed in the
+commit that carries this paragraph (a test defect, see below), the fix is
+queued as `WRETRY-flake` at the head of `~/ke-goals/queue.txt` to run the
+pair again, and `XF05-RETRY` follows it with the same tag text. The runs
+that led here stay below as the record of how the suite got from 128
+failures to one.
+
+### The measured pair (the build of 6718a7f5a, 15.10.2026, runs started 07:33:46 and 07:54:47)
+
+`bash logs/xf04/run.sh 1` then `bash logs/xf04/run.sh 2`, back-to-back on
+one server start each, port 3454, listener cwd and BUILD_ID verified before
+each run. Tables and lists are `node logs/xf04/summarize.mjs
+/tmp/xf04/run1.json /tmp/xf04/run2.json`, verbatim:
+
+| run | passed | failed | skipped | total | wall time | started |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | 1097 | 0 | 25 | 1122 | 20:56 | 2026-10-15 00:33:47Z |
+| 2 | 1097 | 1 | 24 | 1122 | 20:57 | 2026-10-15 00:54:48Z |
+
+| suite (spec file) | run 1 pass / fail / skip | run 1 time | run 2 pass / fail / skip | run 2 time |
+| --- | --- | --- | --- | --- |
+| a11y.spec.ts | 116 / 0 / 2 | 2:34 | 116 / 0 / 2 | 3:02 |
+| account-orders.spec.ts | 8 / 0 / 0 | 0:20 | 8 / 0 / 0 | 0:25 |
+| account-tabs.spec.ts | 8 / 0 / 0 | 0:35 | 8 / 0 / 0 | 0:34 |
+| admin-refund.spec.ts | 0 / 0 / 2 | 1:47 | 0 / 0 / 2 | 1:41 |
+| auth.spec.ts | 32 / 0 / 0 | 0:05 | 32 / 0 / 0 | 0:06 |
+| brands-row.spec.ts | 8 / 0 / 0 | 0:07 | 8 / 0 / 0 | 0:07 |
+| cart-page.spec.ts | 8 / 0 / 0 | 1:04 | 8 / 0 / 0 | 0:59 |
+| cart.spec.ts | 21 / 0 / 3 | 2:11 | 21 / 0 / 3 | 2:04 |
+| catalog-infinite-scroll.spec.ts | 6 / 0 / 0 | 0:10 | 6 / 0 / 0 | 0:09 |
+| category-grid.spec.ts | 5 / 0 / 1 | 0:05 | 5 / 0 / 1 | 0:07 |
+| category-seo.spec.ts | 10 / 0 / 0 | 1:30 | 10 / 0 / 0 | 1:32 |
+| category.spec.ts | 36 / 0 / 0 | 3:55 | 36 / 0 / 0 | 3:54 |
+| checkout-steps.spec.ts | 12 / 0 / 0 | 1:29 | 12 / 0 / 0 | 1:24 |
+| checkout.spec.ts | 14 / 0 / 0 | 0:32 | 14 / 0 / 0 | 0:30 |
+| city-page.spec.ts | 12 / 0 / 0 | 0:05 | 12 / 0 / 0 | 0:04 |
+| coupon-offer.spec.ts | 7 / 0 / 1 | 0:13 | 8 / 0 / 0 | 0:14 |
+| coupon-scan.spec.ts | 12 / 0 / 0 | 0:05 | 12 / 0 / 0 | 0:05 |
+| coupons.spec.ts | 10 / 0 / 0 | 0:05 | 10 / 0 / 0 | 0:06 |
+| deal-of-the-day.spec.ts | 6 / 0 / 0 | 0:16 | 6 / 0 / 0 | 0:16 |
+| deals-grid.spec.ts | 12 / 0 / 0 | 0:10 | 12 / 0 / 0 | 0:12 |
+| error-page.spec.ts | 2 / 0 / 4 | 0:05 | 2 / 0 / 4 | 0:05 |
+| footer.spec.ts | 7 / 0 / 1 | 0:05 | 7 / 0 / 1 | 0:06 |
+| full-purchase-redeem.spec.ts | 2 / 0 / 0 | 2:20 | 2 / 0 / 0 | 2:19 |
+| header.spec.ts | 24 / 0 / 0 | 0:21 | 24 / 0 / 0 | 0:23 |
+| hero-carousel.spec.ts | 10 / 0 / 0 | 0:35 | 10 / 0 / 0 | 0:34 |
+| hero-grid.spec.ts | 16 / 0 / 0 | 0:12 | 16 / 0 / 0 | 0:13 |
+| home-rtl.spec.ts | 6 / 0 / 0 | 0:05 | 6 / 0 / 0 | 0:05 |
+| home.spec.ts | 46 / 0 / 0 | 1:39 | 46 / 0 / 0 | 1:36 |
+| hot-coupons.spec.ts | 8 / 0 / 2 | 0:06 | 8 / 0 / 2 | 0:06 |
+| layout-stability.spec.ts | 38 / 0 / 0 | 2:34 | 38 / 0 / 0 | 2:26 |
+| listing-controls.spec.ts | 9 / 0 / 1 | 0:10 | 9 / 0 / 1 | 0:10 |
+| loading-skeletons.spec.ts | 8 / 0 / 0 | 0:30 | 7 / 1 / 0 | 0:26 |
+| login-dialog.spec.ts | 14 / 0 / 0 | 0:21 | 14 / 0 / 0 | 0:20 |
+| menu-drawer.spec.ts | 30 / 0 / 0 | 0:42 | 30 / 0 / 0 | 0:43 |
+| newsletter-form.spec.ts | 8 / 0 / 0 | 0:05 | 8 / 0 / 0 | 0:05 |
+| not-found.spec.ts | 8 / 0 / 0 | 0:06 | 8 / 0 / 0 | 0:06 |
+| physical-purchase.spec.ts | 2 / 0 / 0 | 1:35 | 2 / 0 / 0 | 1:38 |
+| price-bidi.spec.ts | 18 / 0 / 0 | 1:03 | 18 / 0 / 0 | 1:03 |
+| product-buy-row.spec.ts | 9 / 0 / 1 | 0:19 | 9 / 0 / 1 | 0:19 |
+| product.spec.ts | 20 / 0 / 2 | 0:21 | 20 / 0 / 2 | 0:18 |
+| production-smoke.spec.ts | 2 / 0 / 2 | 0:12 | 2 / 0 / 2 | 0:12 |
+| purchase-flow.spec.ts | 4 / 0 / 0 | 0:25 | 4 / 0 / 0 | 0:24 |
+| pwa.spec.ts | 8 / 0 / 0 | 0:03 | 8 / 0 / 0 | 0:03 |
+| region-menu.spec.ts | 12 / 0 / 0 | 0:13 | 12 / 0 / 0 | 0:16 |
+| register-dialog.spec.ts | 10 / 0 / 0 | 0:14 | 10 / 0 / 0 | 0:13 |
+| render-mode.spec.ts | 26 / 0 / 0 | 0:13 | 26 / 0 / 0 | 0:13 |
+| responsive.spec.ts | 124 / 0 / 0 | 1:58 | 124 / 0 / 0 | 1:59 |
+| rtl-mobile.spec.ts | 82 / 0 / 0 | 1:30 | 82 / 0 / 0 | 1:35 |
+| rtl-three-widths.spec.ts | 24 / 0 / 0 | 0:19 | 24 / 0 / 0 | 0:13 |
+| search-results.spec.ts | 15 / 0 / 1 | 0:33 | 15 / 0 / 1 | 0:33 |
+| search.spec.ts | 12 / 0 / 0 | 0:09 | 12 / 0 / 0 | 0:10 |
+| smoke-all-routes.spec.ts | 62 / 0 / 0 | 0:11 | 62 / 0 / 0 | 0:06 |
+| toasts.spec.ts | 6 / 0 / 2 | 0:55 | 6 / 0 / 2 | 0:56 |
+| topbar.spec.ts | 50 / 0 / 0 | 0:31 | 50 / 0 / 0 | 0:34 |
+| touch-targets.spec.ts | 18 / 0 / 0 | 0:32 | 18 / 0 / 0 | 0:35 |
+| visual.spec.ts | 6 / 0 / 0 | 0:19 | 6 / 0 / 0 | 0:17 |
+| wishlist-page.spec.ts | 8 / 0 / 0 | 1:22 | 8 / 0 / 0 | 1:20 |
+
+flaky (outcome differed between the runs): 1
+- loading-skeletons.spec.ts [chromium] account loading skeleton (UX27) › a tab press paints the column skeleton before the new page, and a direct load flushes it first: run 1 expected, run 2 unexpected; Error: expect(received).toContain(expected) // indexOf
+failed in both runs: 0
+
+skipped (same in both runs unless noted):
+- a11y.spec.ts [chromium] the category drawer keeps Tab inside, is inert when closed, and Escape returns to the trigger
+- a11y.spec.ts [mobile-chrome] the search combobox says which suggestion is selected
+- admin-refund.spec.ts [chromium] admin cancel and refund @money @admin › a paid coupon order is refunded from the admin, and the voucher dies with it
+- admin-refund.spec.ts [mobile-chrome] admin cancel and refund @money @admin › a paid coupon order is refunded from the admin, and the voucher dies with it
+- cart.spec.ts [mobile-chrome] shopping cart (guest) › adding to the cart opens the drawer, and the header badge reopens it
+- cart.spec.ts [chromium] the cart sheet and the keyboard › the phone sheet takes focus, keeps it, and gives it back on Escape
+- cart.spec.ts [mobile-chrome] the cart sheet and the keyboard › the desktop dropdown does not steal focus into a sheet nobody can see
+- category-grid.spec.ts [mobile-chrome] the category tile grid › hover lifts the card with the token shadow and zooms the photograph 5%
+- coupon-offer.spec.ts [chromium] coupon variant › similar coupons link to coupon pages and the product page links back (run 2: expected)
+- error-page.spec.ts [chromium] 500 page and /status (UX26) › a render error under the root boundary shows the status check, the status link and the support button
+- error-page.spec.ts [chromium] 500 page and /status (UX26) › a render error under the store boundary shows the status check, the status link and the support button
+- error-page.spec.ts [mobile-chrome] 500 page and /status (UX26) › a render error under the root boundary shows the status check, the status link and the support button
+- error-page.spec.ts [mobile-chrome] 500 page and /status (UX26) › a render error under the store boundary shows the status check, the status link and the support button
+- footer.spec.ts [chromium] site footer (UX13) › a row opens on a tap and shows its links
+- hot-coupons.spec.ts [chromium] hot coupons (UX10) › the copy button writes the code to the clipboard and confirms in place
+- hot-coupons.spec.ts [mobile-chrome] hot coupons (UX10) › the copy button writes the code to the clipboard and confirms in place
+- listing-controls.spec.ts [mobile-chrome] listing controls (UX14) › the view switcher lays the grid out as rows and remembers it
+- product-buy-row.spec.ts [mobile-chrome] product buy row and gallery (UX15) › a resting mouse magnifies the photo and leaving restores it
+- product.spec.ts [chromium] product page › the cashback line, when present, names a rate and a shekel amount
+- product.spec.ts [mobile-chrome] product page › the cashback line, when present, names a rate and a shekel amount
+- production-smoke.spec.ts [chromium] production smoke: guest cart to checkout › a coupon product shows the on-site portion separately
+- production-smoke.spec.ts [mobile-chrome] production smoke: guest cart to checkout › a coupon product shows the on-site portion separately
+- search-results.spec.ts [chromium] search results page (UX21) › on a phone the bar carries a filters link that opens the disclosure
+- toasts.spec.ts [chromium] toasts › the admin panel paints its toasts
+- toasts.spec.ts [mobile-chrome] toasts › the admin panel paints its toasts
+
+The skipped cases are the same set in both runs but one (the coupon-offer
+similar-coupons case skipped in run 1 for want of a coupon product and
+passed in run 2, when the sampled product had one), and each carries its
+reason as an annotation in the report: the admin leg of admin-refund and
+the admin toasts (the admin fixture on the hosted database has no TOTP
+factor, so `/admin-mfa` offers enrolment, not a challenge, and enrolling one
+is a write to a real account), the four error-page cases
+(`SENTRY_DEBUG_ROUTES` is off on this server, so the debug throw routes
+render not-found), the hot-coupons copy button (no coupon deal carries a
+code until pending migration 270), the coupon-offer similar strip and the
+smoke test's on-site portion (the live catalogue has no coupon-type
+product since 128 retired the demo rows), the cashback line (the sampled
+product earns none), and the per-project pairs where a surface exists on
+one breakpoint only (the category drawer and masthead search, the cart
+sheet and dropdown, hover cases on the phone project, the footer rows, the
+view switcher, the filters link).
+
+**The flaky case, measured.** `loading-skeletons.spec.ts`, "a tab press
+paints the column skeleton before the new page" on chromium: run 2 read
+`["האזור האישי", "ההזמנות שלי"]` and expected "skeleton" between them; run 1
+saw it. The test sampled the live tree inside a MutationObserver callback
+(`column.querySelector('[data-account-skeleton]')`), and when the orders page
+answers inside one observer batch the skeleton's insertion and its removal
+arrive in the same callback, so the sample sees only the page. The skeleton
+did paint (the direct-load half of the same case, which reads the streamed
+HTML, passed in both runs). The spec now reads the skeleton off the records'
+`addedNodes` and samples the tree after each batch, so a fast answer and a
+slow one record the same sequence. A test defect; nothing in `src/` changed.
+Because the spec was patched on disk while run 2 was still on its chromium
+half, the mobile-chrome half of run 2 loaded the patched file (the project
+starts the file fresh), the same caveat the diagnostic run carried.
 
 ### Pre-fix baseline (the build of a1d7af001, before the fixes below)
 

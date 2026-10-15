@@ -179,14 +179,29 @@ test.describe('account loading skeleton (UX27)', () => {
       window.__ux27 = seen
       const column = document.querySelector('.account-content')
       if (!column) throw new Error('no .account-content')
-      const note = () => {
-        const state = column.querySelector('[data-account-skeleton]')
-          ? 'skeleton'
-          : (document.querySelector('main h1')?.textContent?.trim() ?? 'none')
+      const push = (state: string) => {
         if (seen[seen.length - 1] !== state) seen.push(state)
       }
-      note()
-      new MutationObserver(note).observe(column, { childList: true, subtree: true })
+      const current = () =>
+        column.querySelector('[data-account-skeleton]')
+          ? 'skeleton'
+          : (document.querySelector('main h1')?.textContent?.trim() ?? 'none')
+      const bringsSkeleton = (node: Node) =>
+        node instanceof Element &&
+        (node.matches('[data-account-skeleton]') ||
+          node.querySelector('[data-account-skeleton]') !== null)
+      push(current())
+      // Read the skeleton off the records, not off the live tree: when the
+      // orders page answers inside one observer batch, its insertion and its
+      // removal arrive in the same callback and a sample of the tree sees
+      // only the page (measured 15.10.2026, run 2 of the XF04 pair: seen was
+      // ["האזור האישי", "ההזמנות שלי"] while run 1 saw the skeleton between).
+      new MutationObserver((records) => {
+        for (const record of records) {
+          for (const node of record.addedNodes) if (bringsSkeleton(node)) push('skeleton')
+        }
+        push(current())
+      }).observe(column, { childList: true, subtree: true })
     })
 
     const bar = page.getByRole('navigation', { name: 'אזורי החשבון' })
