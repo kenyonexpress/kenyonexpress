@@ -177,3 +177,5 @@ F10: DONE (verified existing): enqueue_expiring_voucher_notices [7,1] in expire-
 F11: PARTIAL. Built: src/lib/club/tiers.ts (trailing-12-month paid spend, 4 tiers, agorot) + account overview card + 5 tests.
 BLOCKED: F11 admin-editable tier labels/benefits need a club_tiers table (migration + approval); benefits intentionally not listed because no checkout path grants one
 המשך מ: F12
+BLOCKED: F12 affiliate campaigns, attribution and wallet payout need two new tables and a ledger RPC (money path); design written to docs/AFFILIATE-DESIGN.md, not built blind
+המשך מ: F13
