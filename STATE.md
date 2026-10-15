@@ -155,3 +155,5 @@ tag          v5.11.12
 
 **המשך מ: ‏STEP 21 — סבב תחזוקה 91.**
 המשך מ: F02
+BLOCKED: F02 home gate 1440=8.29% PASS, 380=30.26% and 768=29.00% FAIL, identical to 2026-09-08 (KNOWN-ISSUES 3: structural mobile divergence vs a reference that runs no JS; needs a layout project, not a tuning pass)
+המשך מ: F03
