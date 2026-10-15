@@ -344,4 +344,10 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
     state: 'pending',
     hasPreflight: true,
   },
+  {
+    number: '185',
+    file: '185_products_cancellation_window_payout_cadence.sql',
+    state: 'pending',
+    hasPreflight: true,
+  },
 ] as const

@@ -165,3 +165,6 @@ BLOCKED: F05 customer cancel+refund action and app-only toggle need a rehearsed 
 F06: PARTIAL. Existing: product form (platform_percent, shipping, coupon_expiry_days, cashback), payouts page. Built: CSV bulk import (src/lib/admin/product-csv.ts, admin/products/import, drafts only, admin-only, audited, 6 tests). Migration 185 written to pending (cancellation_window_days, payout_cadence).
 BLOCKED: F06 form wiring for cancellation_window_days and payout_cadence until 185 is applied (the product write would 42703 on the un-migrated DB)
 המשך מ: F07
+F07: PARTIAL. Existing: lead form + supplier_leads. Built: page title הצטרפו כעסקים, /supplier/apply redirect, click-wrap agreement (version + sha256 hash + timestamp + IP in immutable audit_log, stale-hash refused), 3 tests; migration 185 now has preflight, README row, inventory + manifest.
+BLOCKED: F07 1 ILS card verification at signup needs a tokenization/charge-and-void flow on the payment provider (mock-only here, and suppliers apply unauthenticated); needs a design for who holds the token
+המשך מ: F08

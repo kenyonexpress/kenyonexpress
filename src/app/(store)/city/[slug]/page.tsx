@@ -133,7 +133,7 @@ export default async function CityPage({ params }: Props) {
           href="/suppliers"
           className="inline-flex min-h-touch-min items-center rounded-md border border-border px-5 py-2 text-sm text-heading transition-colors hover:bg-surface-hover"
         >
-          הצטרפו כספקים
+          הצטרפו כעסקים
         </Link>
       </div>
     </div>

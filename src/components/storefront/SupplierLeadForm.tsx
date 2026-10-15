@@ -22,7 +22,15 @@ const LABEL = 'mb-1 block text-sm font-medium text-heading'
  * because the trick is old, and an off-screen field is still "visible" to them.
  * `tabIndex={-1}` and `autoComplete="off"` keep a human from ever reaching it.
  */
-export default function SupplierLeadForm() {
+export default function SupplierLeadForm({
+  agreementHash,
+  agreementVersion,
+  clauses,
+}: {
+  agreementHash: string
+  agreementVersion: string
+  clauses: readonly string[]
+}) {
   const [state, action, pending] = useActionState(submitSupplierLead, INITIAL)
 
   if (state.ok && state.message) {
@@ -164,6 +172,22 @@ export default function SupplierLeadForm() {
         <label htmlFor="lead-company">אל תמלאו שדה זה</label>
         <input id="lead-company" name="company" tabIndex={-1} autoComplete="off" />
       </div>
+
+      <fieldset className="rounded-lg border border-heading/15 p-4">
+        <legend className="px-1 text-sm font-semibold text-heading">
+          הסכם הצטרפות, גרסה {agreementVersion}
+        </legend>
+        <ol className="list-decimal space-y-1 ps-5 text-sm text-heading/80">
+          {clauses.map((clause) => (
+            <li key={clause}>{clause}</li>
+          ))}
+        </ol>
+        <input type="hidden" name="agreement_hash" value={agreementHash} />
+        <label className="mt-3 flex items-start gap-2 text-sm text-heading">
+          <input type="checkbox" name="agreement" required className="mt-1" />
+          <span>קראתי ואני מאשר את הסכם ההצטרפות</span>
+        </label>
+      </fieldset>
 
       <button
         type="submit"

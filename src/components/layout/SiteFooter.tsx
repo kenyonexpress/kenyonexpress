@@ -39,7 +39,7 @@ const SERVICE_LINKS: { label: string; href: string; built?: false }[] = [
   // Above the legal block on purpose: this is the one link in the footer aimed
   // at a business rather than a shopper, and burying it under four legal pages
   // is where it stops being found.
-  { label: 'הצטרפו כספקים', href: '/suppliers' },
+  { label: 'הצטרפו כעסקים', href: '/suppliers' },
   // The flag is gone from all five because the pages exist now ([58]). The two
   // long ones are the site's OWN published Hebrew text, migrated out of the
   // WordPress export rather than rewritten.

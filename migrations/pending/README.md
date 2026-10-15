@@ -15,6 +15,14 @@ migration, so the apply order across the two branches is undefined.
 Until the owner picks a mainline branch, **apply nothing from either side.**
 The full measured table is in `docs/MIGRATION-NUMBER-COLLISIONS.md`.
 
+## 2026-10-16: 185 added - per-product cancellation window and payout cadence
+
+`185_products_cancellation_window_payout_cadence.sql` adds two nullable columns
+to `products`: `cancellation_window_days` and `payout_cadence`. **Not applied.**
+NULL means the platform default, so applying it changes no behaviour; the admin
+form is wired to the columns only after it lands, because a product write that
+names a column the database lacks fails with 42703.
+
 ## 2026-09-08: 184 added — the cart uniqueness the code compensates for
 
 `184_carts_one_row_per_owner.sql` adds the two partial UNIQUE indexes that stop

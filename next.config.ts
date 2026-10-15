@@ -145,6 +145,10 @@ const nextConfig: NextConfig = {
       // Printed QR cards and older docs name /scan; the live screen is under
       // the supplier portal. Keep the short path as a permanent alias.
       { source: '/scan', destination: '/supplier/scan', permanent: true },
+      // The business-join page lives at /suppliers; /supplier/apply is the
+      // address the brief and outbound mail use, and /supplier/* is the
+      // login-gated portal.
+      { source: '/supplier/apply', destination: '/suppliers', permanent: true },
       // The cancellation policy is asked for at /cancellation-policy, and it
       // lives at /refund_returns. A redirect rather than a second page: the
       // WordPress URL is what existing links, the footer and any indexed search

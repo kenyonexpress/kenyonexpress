@@ -3,6 +3,7 @@
 import { isSmsCapableIsraeli, toE164Israeli } from '@/lib/auth/phone-otp'
 import { adminAlertRecipient } from '@/lib/email/admin-alerts'
 import { sendEmail } from '@/lib/email/resend'
+import { SUPPLIER_AGREEMENT_VERSION, supplierAgreementHash } from '@/lib/legal/supplier-agreement'
 import { withActionContext } from '@/lib/observability/action-context'
 import { log } from '@/lib/observability/log'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -38,6 +39,9 @@ const schema = z.object({
   category: z.string().trim().max(60).optional().default(''),
   website: z.string().trim().max(200).optional().default(''),
   message: z.string().trim().max(2000, 'ההודעה ארוכה מדי').optional().default(''),
+  // Click-wrap: the hash of the exact text on screen, and the tick.
+  agreement: z.literal('on', { message: 'יש לאשר את הסכם ההצטרפות' }),
+  agreement_hash: z.string(),
   // Bots fill every field. Humans leave this alone (hidden with CSS).
   company: z.string().optional().default(''),
 })
@@ -67,9 +71,17 @@ async function runSubmitSupplierLead(
     website: formData.get('website') ?? '',
     message: formData.get('message') ?? '',
     company: formData.get('company') ?? '',
+    agreement: formData.get('agreement'),
+    agreement_hash: formData.get('agreement_hash') ?? '',
   })
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? 'בדקו את הפרטים ונסו שוב.' }
+  }
+
+  // A form rendered before the text changed must not be recorded as consent to
+  // the new text.
+  if (parsed.data.agreement_hash !== supplierAgreementHash()) {
+    return { ok: false, error: 'נוסח ההסכם התעדכן. רעננו את הדף ואשרו מחדש.' }
   }
 
   // Honeypot hit: pretend success so the bot does not retry with a new shape.
@@ -89,21 +101,46 @@ async function runSubmitSupplierLead(
   const phone = toE164Israeli(parsed.data.phone) ?? parsed.data.phone
   const admin = createAdminClient()
 
-  const { error } = await admin.from('supplier_leads').insert({
-    business_name: parsed.data.business_name,
-    contact_name: parsed.data.contact_name,
-    email: parsed.data.email.toLowerCase(),
-    phone,
-    city: parsed.data.city || null,
-    category: parsed.data.category || null,
-    website: parsed.data.website || null,
-    message: parsed.data.message || null,
-  })
+  const { data: lead, error } = await admin
+    .from('supplier_leads')
+    .insert({
+      business_name: parsed.data.business_name,
+      contact_name: parsed.data.contact_name,
+      email: parsed.data.email.toLowerCase(),
+      phone,
+      city: parsed.data.city || null,
+      category: parsed.data.category || null,
+      website: parsed.data.website || null,
+      message: parsed.data.message || null,
+    })
+    .select('id')
+    .single()
 
   if (error) {
     log.error('supplier_lead.insert_failed', { reason: error.message })
     return { ok: false, error: 'לא הצלחנו לשמור את הפרטים. נסו שוב או פנו אלינו בוואטסאפ.' }
   }
+
+  // The acceptance record: version, hash, time and IP, in the immutable audit
+  // log. No supplier_leads column is needed, so this works before any migration.
+  const { error: acceptError } = await admin.from('audit_log').insert({
+    actor_id: null,
+    actor_role: 'anon',
+    action: 'created',
+    entity_type: 'supplier_agreement_acceptance',
+    entity_id: lead.id,
+    changes: {
+      new: {
+        version: SUPPLIER_AGREEMENT_VERSION,
+        hash: parsed.data.agreement_hash,
+        accepted_at: new Date().toISOString(),
+        email: parsed.data.email.toLowerCase(),
+      },
+    },
+    metadata: { source: 'supplier-lead-form' },
+    ip_address: /^[0-9a-fA-F.:]+$/.test(ip) ? ip : null,
+  })
+  if (acceptError) log.error('supplier_lead.acceptance_failed', { reason: acceptError.message })
 
   // The row is safe. From here on, a failure costs a notification and not a
   // lead, so it is logged and never shown to the business.

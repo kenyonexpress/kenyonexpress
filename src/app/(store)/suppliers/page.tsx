@@ -1,10 +1,15 @@
 import SupplierLeadForm from '@/components/storefront/SupplierLeadForm'
+import {
+  SUPPLIER_AGREEMENT_CLAUSES,
+  SUPPLIER_AGREEMENT_VERSION,
+  supplierAgreementHash,
+} from '@/lib/legal/supplier-agreement'
 import { alternatesFor } from '@/lib/seo/alternates'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'הצטרפו כספקים',
+  title: 'הצטרפו כעסקים',
   description:
     'בית עסק שרוצה למכור קופונים ומוצרים בקניון אקספרס: איך זה עובד, מה נדרש, ואיך משאירים פרטים.',
   alternates: alternatesFor('/suppliers'),
@@ -70,11 +75,11 @@ export default function SuppliersPage() {
         <span aria-hidden="true" className="mx-2">
           /
         </span>
-        <span className="text-heading">הצטרפו כספקים</span>
+        <span className="text-heading">הצטרפו כעסקים</span>
       </nav>
 
       <header className="mb-10 max-w-3xl">
-        <h1 className="text-3xl font-bold text-heading">הצטרפו כספקים</h1>
+        <h1 className="text-3xl font-bold text-heading">הצטרפו כעסקים</h1>
         <p className="mt-4 text-base leading-relaxed text-heading/80">
           קניון אקספרס מוכרת קופונים של בתי עסק ישראליים. הלקוח משלם כאן מקדמה, מגיע אליכם עם שובר
           שנסרק במקום, ואת היתרה משלם אצלכם. אנחנו מביאים את הלקוח, אתם נותנים את השירות.
@@ -115,7 +120,11 @@ export default function SuppliersPage() {
         <p className="mb-6 text-base leading-relaxed text-heading/80">
           העמלה נקבעת פר דיל ולא לפי טבלה אחידה, ולכן היא חלק מהשיחה ולא מספר שכתוב כאן.
         </p>
-        <SupplierLeadForm />
+        <SupplierLeadForm
+          agreementHash={supplierAgreementHash()}
+          agreementVersion={SUPPLIER_AGREEMENT_VERSION}
+          clauses={SUPPLIER_AGREEMENT_CLAUSES}
+        />
       </section>
     </main>
   )

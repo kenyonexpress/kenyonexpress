@@ -21,6 +21,7 @@ import { describe, expect, it } from 'vitest'
 
 const DIRECT_WRITERS = [
   { file: 'src/server/actions/payments/refund.ts', kind: 'human' },
+  { file: 'src/server/actions/supplier-lead.ts', kind: 'machine' },
   { file: 'src/server/payments/finalize.ts', kind: 'machine' },
   { file: 'src/app/api/payments/cardcom/webhook/route.ts', kind: 'machine' },
 ] as const
