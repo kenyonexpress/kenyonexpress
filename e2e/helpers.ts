@@ -268,6 +268,10 @@ export async function addOpenProductToCart(page: Page): Promise<void> {
  */
 export async function raiseInstallBanner(page: Page): Promise<Locator> {
   const banner = page.getByRole('region', { name: 'התקנת האפליקציה' })
+  // The offer is made only after a first purchase, and the flag is read when
+  // the component mounts, so it has to be there before a reload.
+  await page.evaluate(() => localStorage.setItem('ke:purchased', '1'))
+  await page.reload({ waitUntil: 'domcontentloaded' })
   const fire = () =>
     page.evaluate(() => {
       window.dispatchEvent(new Event('pointerdown'))

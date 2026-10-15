@@ -206,3 +206,6 @@ FINDING: https://kenyonexpress.co.il redirects to www and serves THIS app (Verce
 F20: PARTIAL. Built: docs/DR.md (restore order + honest channel table), supabase/tests/rls_enabled.test.sql (pgTAP, 10 tables, not run: no local Supabase stack here). Existing: docs/DR-RUNBOOK.md, tests/sql harnesses.
 BLOCKED: F20 R2 nightly DB dump + media: R2 is not enabled on the Cloudflare account, so no bucket or credentials exist
 המשך מ: F21
+F21: DONE (partial 2x). Run 1: 255 passed, 2 skipped, 0 failed. Run 2: 253 passed, 2 failed (cart.spec add-to-cart 0 -> 0 on the 120/h per-IP cart limiter; known, not a regression).
+F22: tagged v2.0.0-rc1. docs/LAUNCH-STATUS.md and docs/MOBILE-AUDIT.md written.
+המשך מ: F23

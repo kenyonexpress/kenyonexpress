@@ -183,8 +183,8 @@ export default function SupplierLeadForm({
           ))}
         </ol>
         <input type="hidden" name="agreement_hash" value={agreementHash} />
-        <label className="mt-3 flex items-start gap-2 text-sm text-heading">
-          <input type="checkbox" name="agreement" required className="mt-1" />
+        <label className="mt-3 flex min-h-11 items-center gap-3 text-sm text-heading">
+          <input type="checkbox" name="agreement" required className="h-6 w-6 shrink-0" />
           <span>קראתי ואני מאשר את הסכם ההצטרפות</span>
         </label>
       </fieldset>
