@@ -66,7 +66,6 @@ commit       90df81bf1
 tag          v5.11.11
 ```
 
-**המשך מ: ‏STEP 21 — סבב תחזוקה 90.**
 
 ---
 
@@ -153,7 +152,8 @@ commit       9fc2e5b22
 tag          v5.11.12
 ```
 
-**המשך מ: ‏STEP 21 — סבב תחזוקה 91.**
 המשך מ: F02
 BLOCKED: F02 home gate 1440=8.29% PASS, 380=30.26% and 768=29.00% FAIL, identical to 2026-09-08 (KNOWN-ISSUES 3: structural mobile divergence vs a reference that runs no JS; needs a layout project, not a tuning pass)
 המשך מ: F03
+F03: DONE (verified existing): product route 200, wa.me + share + supplier inquiry present, no reviews, 40 tests green
+המשך מ: F04
