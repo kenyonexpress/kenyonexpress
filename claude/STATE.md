@@ -4,7 +4,7 @@ Updated: 2026-10-14 (Asia/Bangkok). Queue: FINAL-CLOSEOUT L1 to L16, issued 14.1
 
 ## Current Position
 
-**המשך מ: שלב L10 (BUILD GAPS), השורות שנותרו: 1/27/29 (חיפוש בכותרת ומגה-מניו, סותרות כלל קיים), 13 (IndexedDB + Background Sync), 14, 16, 17, 23, 25, ואז מסלול הכסף (19, 20, 22) אחד לכל PR. הבא: 25 (עגלה נטושה). סגורות: 2, 4, 6, 8, 9, 15, 18, 21, 24, 26, 28, 30, 29 (אדמין), 3 (חוץ מדירוג ופופולריות), 5 (פר-דפדפן), 10 (חוץ משעות שירות)**
+**המשך מ: שלב L10 (BUILD GAPS), השורות שנותרו: 1/27/29 (חיפוש בכותרת ומגה-מניו, סותרות כלל קיים), 13 (IndexedDB + Background Sync), 14, 16, 17, 23, 25, ואז מסלול הכסף (19, 20, 22) אחד לכל PR. הבא: מסלול הכסף 19, 20 (22 הועברה) (14 ו-25 ממתינות ל-245/244, 17 חלקית, 16 מושהית) (חבילת contact), ואז מסלול הכסף. 16 נדחתה: סותרת מיגרציה 232 וכלל המודל העסקי, ממתינה לאישור. 25 (עגלה נטושה): קוד הועבר, ממתין למיגרציה 244 (BLOCKED-MIGRATION), בלי קופון. סגורות: 2, 4, 6, 8, 9, 15, 18, 21, 24, 26, 28, 30, 29 (אדמין), 3 (חוץ מדירוג ופופולריות), 5 (פר-דפדפן), 10 (חוץ משעות שירות)**
 
 The checklist with evidence is `docs/FINAL-CLOSEOUT.md`. Decisions taken alone
 are `docs/DECISIONS.md` D-42 onward.
@@ -112,6 +112,40 @@ Closed so far, each with type-check, lint, test green (510 files, 5949 passed):
   from a pending table (`243_club_tiers.sql`, not applied) with compiled
   fallback. 539 files, 6246 tests, build 0. Live `club_tiers` is PGRST205,
   so the fallback is what runs. No perks; card says so.
+- Row 25, abandoned cart: second reminder ported from prod (route, mail
+  builder, tests). 542 files, 6271 tests, type-check and lint clean, build 0
+  (needs the main checkout's env sourced; this worktree has no .env.local).
+  `244_abandoned_cart_second_reminder.sql` written to pending, NOT applied:
+  BLOCKED-MIGRATION. Degrades to one mail per cart until then. No coupon.
+  A goal line said "next L2"; the queue here has no L2 to L8, so the order in
+  this file was followed (D-decision, conservative).
+- Row 16, reviews: NOT built, decision taken alone (15.10). Migration 232
+  (applied) is headed "reviews are collected, not published" and records that
+  the business model shows no review content to visitors; a public list or a
+  star summary reverses it, and `claude/BUSINESS-MODEL-RULES.md` named in the
+  goal does not exist in this checkout to say otherwise. Owner edit needs an
+  UPDATE grant 232 also removed. Conservative reading: leave it, ask Ofir to
+  confirm the rule has changed before 247 (prod's anon SELECT grant) is ported.
+- Row 17, Q&A: only the zero-migration piece exists, prod's WhatsApp
+  `ProductQuestionLink`. It rides on a contact subsystem main lacks
+  (`lib/contact/channels`, `inquiry-links`, `no-outbound-whatsapp` test), so
+  it is a port of five files and a rule, not a component. Not started.
+  Next: row 14 (supplier wizard, three steps from prod, tables in 204).
+- Row 14, supplier wizard (16.10): three steps ported from prod, page at
+  `/suppliers/apply`. 546 files, 6308 tests, type-check and lint clean, build
+  0. `245_supplier_onboarding.sql` pending, NOT applied: BLOCKED-MIGRATION,
+  the page is dead until then. Two rate-limit keys added and documented. Not
+  seen in a browser. Products, hours and review steps not built.
+- Row 17, Q&A (16.10): click-to-chat product question link built natively
+  (prod's version needs an i18n layer and a contact subsystem main lacks, so
+  it was not ported). 547 files, 6309 tests, lint and type-check clean, build
+  0. Product parity gate REFUSED (no refs in this worktree): unmeasured. Stored
+  Q&A not built, same publishing question as row 16.
+- Row 22, referral payout (16.10, money path, own PR): `pay.ts` ported
+  without the mail, `complete.ts` follows `ready_to_pay`. 549 files green
+  locally, type-check clean. Mail to both sides open (needs outbox kind
+  migration written for main's own kind list, plus a builder). Not checked
+  that 098 is applied on the hosted project.
 - 14.10: other autopilot sessions (STEP 69, 70) run in
   `/Users/ofir/kenyonexpress-autopilot` on another branch. This checkout
   showed no foreign edits, so work continued.

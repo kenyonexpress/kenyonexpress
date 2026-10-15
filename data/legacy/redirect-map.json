@@ -212,6 +212,7 @@
       "/supplier/redemptions",
       "/supplier/scan",
       "/suppliers",
+      "/suppliers/apply",
       "/terms-and-conditions",
       "/wishlist-alerts/unsubscribe"
     ]

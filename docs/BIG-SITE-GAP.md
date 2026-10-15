@@ -54,15 +54,15 @@ what main has.
 | 11 | Saved cards (token only, no PAN) | Amazon, Wolt | EXISTS | EXISTS | 0 | none |
 | 12 | Apple and Google Wallet passes | Booking, Groupon | EXISTS | EXISTS | 0 | none. Needs certificates, a human item |
 | 13 | Offline redemption queue | Wolt (courier), Groupon Merchant | PARTIAL | PARTIAL | 2 | queue ported 2026-10-14; IndexedDB and Background Sync still open |
-| 14 | Supplier onboarding wizard, six steps | Wolt, Lazada, TikTok Shop | PARTIAL | PARTIAL | 4 | port three steps, build three |
+| 14 | Supplier onboarding wizard, six steps | Wolt, Lazada, TikTok Shop | PARTIAL | PARTIAL | 3 | three steps ported 2026-10-16 behind pending 245; products, opening hours and review still to build |
 | 15 | Admin KPI dashboard | all (seller centres) | EXISTS | EXISTS | 0 | ops KPIs ported, active vouchers and payouts due added, closed 2026-10-14 |
 | 16 | Product reviews | Amazon, Booking, Lazada | PARTIAL | PARTIAL | 3 | finish. See note C |
-| 17 | Q&A on product page | Amazon, Lazada | MISSING | MISSING | 3 | build |
+| 17 | Q&A on product page | Amazon, Lazada | MISSING | PARTIAL | 3 | WhatsApp question link built 2026-10-16; stored Q&A open |
 | 18 | Related products | all | EXISTS | PARTIAL | done | closed 2026-10-14 |
 | 19 | Bundle deals, N for X | Amazon, Lazada | MISSING | MISSING | 4 | build. Money path |
 | 20 | Flash sales | Lazada, TikTok Shop, Groupon | PARTIAL | PARTIAL | 1.5 | admin form, cancel and link ported 2026-10-14; end time, banner, countdown and a sub-daily cron still open. Money path |
 | 21 | Gift cards | Amazon, Wolt | EXISTS | PARTIAL | 0 | QR, guarded admin switch and wallet link closed 2026-10-14 |
-| 22 | Referral program | Wolt, Booking | PARTIAL | EXISTS | 1 | port automatic payout. Money path |
+| 22 | Referral program | Wolt, Booking | PARTIAL | EXISTS | 0.5 | automatic payout ported 2026-10-16, mail to both sides not (needs outbox kind and builder). Money path |
 | 23 | Loyalty tiers | Booking (Genius), Lazada | PARTIAL | PARTIAL | 1 | display ported 2026-10-14; perks and the order snapshot still open |
 | 24 | Push notifications | all | EXISTS | EXISTS | done | prompt wired 2026-10-14 |
 | 25 | Abandoned cart recovery | Amazon, Lazada | PARTIAL | PARTIAL | 2 | finish: second email, coupon code |
@@ -339,6 +339,15 @@ with address, bank, contract) and document upload; its tables exist only in
 `migrations/pending/204_supplier_onboarding.sql`. Missing on both: products,
 opening hours, review.
 
+Ported on main, 2026-10-16: `/suppliers/apply`, `SupplierApplyWizard`
+(business with address, bank, contract plus document upload), the
+`supplier-onboarding` action, and `lib/suppliers/{bank-account,company-id,contract}`
+with their tests. The bank account goes to the vault, never a column. Tables are
+`migrations/pending/245_supplier_onboarding.sql` (prod's 204), NOT applied
+(BLOCKED-MIGRATION): the page cannot load its application read without them.
+Not exercised in a browser; unit tests and a green build only. The page needs a
+signed-in session. Missing on both lines: products, opening hours, review.
+
 **15. Admin KPIs.** main: `/admin/dashboard` (today's orders, collected,
 vouchers, redemptions) and `/admin/analytics` (GMV, revenue, funnel, top
 products and suppliers). Missing: refund rate, active vouchers, payouts-due
@@ -364,6 +373,16 @@ with no sidebar link. Missing: public list (note C), owner edit, star summary
 
 **17. Q&A.** Both: nothing stored. prod has a WhatsApp deep link
 (`src/components/contact/ProductQuestionLink.tsx`).
+
+Partly built on main, 2026-10-16: the zero-migration half only. A
+click-to-chat link under the share row of the product page
+(`src/components/storefront/ProductQuestionLink.tsx`), a wa.me chat to the
+store number prefilled with the product name and page address, counted as
+`whatsapp_click` with surface `product_question`. Sends nothing itself. Stored,
+moderated Q&A (a table, an admin queue, a public list) is NOT built and needs a
+migration plus a decision on publishing customer text, like row 16. Not seen in
+a browser; the product parity gate refused in this worktree (no
+`refs/electro_product_*.png`), so the added line is unmeasured.
 
 **18. Related products.** main, closed 2026-10-14: `src/lib/related-products.ts`
 reads the 24 newest products in the category and `src/lib/related-ranking.ts`
@@ -427,6 +446,18 @@ nested `<main>` on the page was also replaced with a `<div>`.
 when an admin presses Approve. prod: `src/server/referrals/pay.ts` pays both
 sides automatically.
 
+main, 2026-10-16: `src/server/referrals/pay.ts` follows `ready_to_pay` from
+`fn_complete_referral` and calls `fn_pay_referral` with no approver, so a clean
+referral is paid when the referred person's first qualifying order is paid
+instead of waiting for an admin. Idempotent twice over (row lock plus the
+wallet transfer keys). Failure is logged, never thrown into the webhook. Held
+referrals and every refusal stay in the admin queue. Not ported: the mail to
+both people, which needs the `referral_bonus_credited` kind in
+`notification_outbox_kind_check` (prod's 229 lists the production line's
+kinds, so it cannot be copied) and a builder. Unit tests only; no referral
+completed against a database. Whether 098's functions are live on the hosted
+project was not checked; if not, the call logs `referrals.pay_failed`.
+
 **23. Loyalty tiers.** main: `src/lib/analytics/cashback-tier.ts`, an analytics
 property that says of itself it is not a loyalty programme. prod:
 `src/lib/club/tiers.ts`, four tiers from trailing-year spend, shown on
@@ -455,6 +486,15 @@ the notifications page, not a permission dialog.
 one email ever at three hours, newsletter subscribers only. Missing: second
 email, coupon code. prod: two reminders, the second needing a pending
 migration.
+
+Built on main, 2026-10-15. The route and the mail builder are ported from
+prod. Two reminders (T+2h, T+24h measured from the last mail), the second says
+it is the last, and the mail itemises the cart priced through `buildCartView`.
+Needs `migrations/pending/244_abandoned_cart_second_reminder.sql`, NOT applied
+(BLOCKED-MIGRATION): without it the route degrades to one mail per cart and
+the insert and the RPC call both fall back. No coupon code: that is money path
+and gets its own pull request. Not sent to a real inbox; unit tests only (83
+in the growth and cron folders). Row stays PARTIAL until 244 is applied.
 
 **26. Comparison.** Both: nothing.
 
