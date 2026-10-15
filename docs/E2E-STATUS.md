@@ -157,6 +157,8 @@ did paint (the direct-load half of the same case, which reads the streamed
 HTML, passed in both runs). The spec now reads the skeleton off the records'
 `addedNodes` and samples the tree after each batch, so a fast answer and a
 slow one record the same sequence. A test defect; nothing in `src/` changed.
+Verified after the pair on a fresh server start of the same build: the
+whole spec file passed 4 of 4 on chromium (08:17, 15.2s).
 Because the spec was patched on disk while run 2 was still on its chromium
 half, the mobile-chrome half of run 2 loaded the patched file (the project
 starts the file fresh), the same caveat the diagnostic run carried.
