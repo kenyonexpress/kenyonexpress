@@ -155,6 +155,14 @@ Closed so far, each with type-check, lint, test green (510 files, 5949 passed):
   evidence that measures nothing, so none was started and no tag was made.
   Needs the L11 to L16 text. Meanwhile L10 rows 19 and 20 wait on decisions
   (see BIG-SITE-GAP notes), row 16 on the publishing rule.
+- L15 (16.10): regression gates run on 83d9aed34 (row 22 branch, stacked on
+  row 25/14/17): type-check 0, lint 0, test 548 files / 6316 passed / 12
+  skipped, build 0 (BUILD_ID Lj26ZJGFC_PYnrH-EP-el). One test
+  (`invoices.test.ts`) failed only when the real `.env.local` was sourced,
+  because credentials exist there; it passes in a clean env. Tag
+  `v2.0.0-rc3` created LOCALLY, not pushed. It certifies the regression gates,
+  not a launch: L11 to L14 have no scope text and were not run. rc4 and rc5
+  wait for those.
 - 14.10: other autopilot sessions (STEP 69, 70) run in
   `/Users/ofir/kenyonexpress-autopilot` on another branch. This checkout
   showed no foreign edits, so work continued.

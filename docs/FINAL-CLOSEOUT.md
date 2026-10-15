@@ -17,7 +17,7 @@ live site unless it says so.
 | [ ] | L12 Hardening | |
 | [ ] | L13 Phase 2 behind flags | |
 | [ ] | L14 Launch gate | |
-| [ ] | L15 Regression and tag | |
+| [ ] | L15 Regression and tag | rc3 tagged locally 2026-10-16 on 83d9aed34 after the four gates; L11 to L14 not executed, so this is a regression tag and not a launch tag |
 | | L16 Maintenance | Never closes |
 
 ---
