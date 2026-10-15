@@ -36,6 +36,7 @@ function fireInstallPrompt() {
 
 beforeEach(() => {
   localStorage.clear()
+  localStorage.setItem('ke:purchased', '1')
   document.documentElement.removeAttribute('data-pwa-prompt')
   vi.stubGlobal('matchMedia', ((query: string) => ({
     matches: false,
@@ -53,6 +54,16 @@ describe('InstallPrompt', () => {
     fireInstallPrompt()
     expect(screen.queryByRole('region', { name: 'התקנת האפליקציה' })).toBeNull()
     expect(document.documentElement.hasAttribute('data-pwa-prompt')).toBe(false)
+  })
+
+  it('is never offered before a first purchase', () => {
+    localStorage.removeItem('ke:purchased')
+    render(<InstallPrompt />)
+    fireInstallPrompt()
+    act(() => {
+      window.dispatchEvent(new Event('scroll'))
+    })
+    expect(screen.queryByRole('region', { name: 'התקנת האפליקציה' })).toBeNull()
   })
 
   it('appears after an interaction, and reserves its own space', () => {

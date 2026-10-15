@@ -19,6 +19,14 @@ import { useEffect, useState } from 'react'
  */
 
 const DISMISSED_KEY = 'ke:pwa-install-dismissed'
+
+/**
+ * Written by PurchaseMarker on the order confirmation page. The install offer
+ * is made only after a first purchase: that is the moment the app is worth
+ * having (order status, coupons, QR at the counter), and asking earlier is
+ * asking a stranger.
+ */
+export const PURCHASED_KEY = 'ke:purchased'
 const HIDDEN_ON = ['/checkout', '/cart', '/account', '/supplier', '/admin', '/scan']
 
 /**
@@ -72,6 +80,7 @@ export default function InstallPrompt() {
     // case offering to install it is nonsense.
     if (window.matchMedia('(display-mode: standalone)').matches) return
     if (localStorage.getItem(DISMISSED_KEY) === '1') return
+    if (localStorage.getItem(PURCHASED_KEY) !== '1') return
     if (HIDDEN_ON.some((path) => window.location.pathname.startsWith(path))) return
 
     const onPrompt = (event: Event) => {

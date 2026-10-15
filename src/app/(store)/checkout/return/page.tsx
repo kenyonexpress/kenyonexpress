@@ -1,4 +1,5 @@
 import LocationPin from '@/components/product/LocationPin'
+import PurchaseMarker from '@/components/pwa/PurchaseMarker'
 import WhatsAppIcon from '@/components/shared/WhatsAppIcon'
 import {
   moneyColumnProbe,
@@ -150,6 +151,7 @@ async function CheckoutReturnBody({ searchParams }: Props) {
   return (
     <div className="checkout-page">
       <div className="checkout-success">
+        <PurchaseMarker />
         <h1 className="checkout-success__title">התשלום הצליח!</h1>
         <p className="checkout-success__sub">
           הזמנה {order.id.slice(0, 8).toUpperCase()} · שולם באתר{' '}

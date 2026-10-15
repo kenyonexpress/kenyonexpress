@@ -185,3 +185,6 @@ BLOCKED: F13 chips 'פתוח בסוף שבוע' and 'משלוח חינם' have n
 F03.5: DONE. LocationPin (waze ll= then q= fallback, city text only without a link) on product card, product page, order confirmation and voucher page; admin location fieldset with server-side Nominatim search; city required for non-draft physical; products city/latitude/longitude were already live so only full_address is migration 187 (pending, nothing selects it yet). No filter, no near-me, no consent prompt.
 PENDING_LOCATION: 66 physical products need city/address from Ofir (measured 2026-10-16, all 66 have city null)
 המשך מ: F14
+F14: PARTIAL. Existing: manifest, sw.js, offline shell, install prompt. Built: install prompt gated on a first purchase (PurchaseMarker on the confirmation page, 1 test).
+BLOCKED: F14 web push subscription needs VAPID keys, the web-push dependency and a push_subscriptions table (migration); only Expo tokens exist today
+המשך מ: F15
