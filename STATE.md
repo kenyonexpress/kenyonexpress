@@ -159,3 +159,6 @@ F03: DONE (verified existing): product route 200, wa.me + share + supplier inqui
 המשך מ: F04
 F04: DONE (existing + gap built): guest to Google at pay, tokens, order-page signed invoice existed; added invoice link to thank-you page
 המשך מ: F05
+F05: PARTIAL. Existing: QR + code, expiry countdown, wallet agorot, gift claim transfers ownership. Built: src/lib/vouchers/cancellation.ts (14 days, min(5%,100 ILS)) + 6 tests.
+BLOCKED: F05 customer cancel+refund action and app-only toggle need a rehearsed migration (wallet ledger is client-readonly per 168, voucher status guard 166); not written blind
+המשך מ: F06
