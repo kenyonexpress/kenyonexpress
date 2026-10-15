@@ -207,5 +207,5 @@ F20: PARTIAL. Built: docs/DR.md (restore order + honest channel table), supabase
 BLOCKED: F20 R2 nightly DB dump + media: R2 is not enabled on the Cloudflare account, so no bucket or credentials exist
 המשך מ: F21
 F21: DONE (partial 2x). Run 1: 255 passed, 2 skipped, 0 failed. Run 2: 253 passed, 2 failed (cart.spec add-to-cart 0 -> 0 on the 120/h per-IP cart limiter; known, not a regression).
-F22: tagged v2.0.0-rc1. docs/LAUNCH-STATUS.md and docs/MOBILE-AUDIT.md written.
+F22: v2.0.0-rc1, rc2 and rc3 already existed and were not moved; tagged v2.0.0-rc4. docs/LAUNCH-STATUS.md and docs/MOBILE-AUDIT.md written.
 המשך מ: F23

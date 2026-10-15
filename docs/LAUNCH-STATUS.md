@@ -1,6 +1,6 @@
 # Launch status
 
-Measured 2026-10-16 on branch closeout/v1-final, tagged v2.0.0-rc1.
+Measured 2026-10-16 on branch closeout/v1-final, tagged v2.0.0-rc4 (rc1 to rc3 already existed and were not moved).
 
 ## WORKS (verified green)
 
