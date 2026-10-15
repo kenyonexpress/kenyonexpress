@@ -146,3 +146,4 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-15 18:03 | home | 380 | 30.26% | **FAIL** | `e0d1c4552-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
 | 2026-10-15 18:05 | home | 768 | 29.00% | **FAIL** | `e0d1c4552-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
 | 2026-10-15 18:07 | home | 1440 | 8.29% | PASS | `e0d1c4552-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-15 22:04 | home | 1440 | 8.29% | PASS | `6a23a03d2-dirty` | ref 305 failed to load (226 script, 74 font, 4 stylesheet, 1 xhr) |

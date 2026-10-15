@@ -1,5 +1,4 @@
 import HeaderCart from '@/components/cart/HeaderCart'
-import RegionMenu from '@/components/layout/RegionMenu'
 import { Heart } from 'lucide-react'
 import Link from 'next/link'
 
@@ -40,8 +39,6 @@ const ICON = { size: 22, color: 'var(--color-icon)', strokeWidth: 1.8 } as const
 export default function MastheadNav() {
   return (
     <div className="flex min-w-0 flex-1 items-center justify-end ps-6">
-      <RegionMenu />
-
       <nav
         className="flex shrink-0 items-center gap-4 lg:gap-nav-gap"
         aria-label="פעולות חשבון ועגלה"

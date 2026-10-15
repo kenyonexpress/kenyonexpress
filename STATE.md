@@ -179,3 +179,6 @@ BLOCKED: F11 admin-editable tier labels/benefits need a club_tiers table (migrat
 המשך מ: F12
 BLOCKED: F12 affiliate campaigns, attribution and wallet payout need two new tables and a ledger RPC (money path); design written to docs/AFFILIATE-DESIGN.md, not built blind
 המשך מ: F13
+F13: PARTIAL. Built: location UI removed (RegionMenu, CityTags, near/city params on category page), 1440 gate 8.29% PASS after the change.
+BLOCKED: F13 chips 'פתוח בסוף שבוע' and 'משלוח חינם' have no data behind them (no shipping price column; supplier_branches.hours unused and empty); a chip without data would be a fake filter
+המשך מ: F03.5 then F14

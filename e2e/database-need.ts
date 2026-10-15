@@ -33,7 +33,6 @@ export const NO_DATABASE_SPECS = [
   'layout-stability.spec.ts',
   'price-bidi.spec.ts',
   'product.spec.ts',
-  'region-menu.spec.ts',
   'render-mode.spec.ts',
   'rtl-mobile.spec.ts',
   'rtl-three-widths.spec.ts',

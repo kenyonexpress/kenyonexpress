@@ -58,7 +58,6 @@ const HEADER_CHROME = [
   'src/components/layout/TopBar.tsx',
   'src/components/layout/MastheadNav.tsx',
   'src/components/layout/MobileDrawer.tsx',
-  'src/components/layout/RegionMenu.tsx',
 ]
 
 describe('the header icon cluster', () => {

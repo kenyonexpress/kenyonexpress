@@ -7,7 +7,6 @@ import CategoryProductCard, {
   type CategoryProduct,
 } from '@/components/category/CategoryProductCard'
 import Pagination from '@/components/category/Pagination'
-import CityTags from '@/components/geo/CityTags'
 import {
   CATEGORY_PAGE_SIZE,
   type CollectionRule,
@@ -19,11 +18,9 @@ import {
   getCategoryBySlug,
   getCategoryParent,
   getCategoryProductsCached,
-  parseCity,
   parseProductType,
 } from '@/lib/category-page'
 import { type SortValue, parseSort } from '@/lib/category-tokens'
-import { type Coordinates, parseNear, sortByDistance } from '@/lib/geo/distance'
 import { buildBreadcrumbJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
@@ -125,28 +122,12 @@ type QueryArgs = {
   priceMax?: number
   productType?: ProductTypeFilter
   city?: string
-  /**
-   * Nearest-first origin. NOT part of the cached query key: the cache is keyed
-   * by everything else and the distance sort is applied to the result, so two
-   * customers standing in different places share one cached page instead of
-   * minting a cache entry per coordinate.
-   */
-  near?: Coordinates | null
   /** The collection rule for this slug, if it is one of the three. */
   collection?: CollectionRule
 }
 
-/**
- * The cache key: everything except `near`.
- *
- * `near` is a per-customer coordinate. Letting it reach the cached read would
- * mint a separate cache entry for every distinct pair of coordinates on earth,
- * which is the same as having no cache at all. The distance sort is applied to
- * the cached result instead.
- */
 function cacheableArgs(args: QueryArgs) {
-  const { near: _near, ...rest } = args
-  return rest
+  return args
 }
 
 function pageWindow(total: number, page: number) {
@@ -196,9 +177,7 @@ async function ResultGrid({
 }) {
   const { items, total } = await categoryPageOrLast(args)
 
-  // Nearest first, applied after the cached read. `sortByDistance` returns the
-  // list unchanged when there is no origin, so the default page is untouched.
-  const ordered = args.near ? sortByDistance(items, args.near) : items
+  const ordered = items
 
   if (items.length === 0) {
     return (
@@ -325,8 +304,6 @@ async function CategoryPageBody({
   const priceMin = parsePrice(sp.min)
   const priceMax = parsePrice(sp.max)
   const productType = parseProductType(sp.type)
-  const city = parseCity(sp.city)
-  const near = parseNear(sp.near)
 
   // Cheap shell data only. The product query is deferred to the boundaries
   // below so the breadcrumb, title, control bar and sidebar can stream first.
@@ -343,8 +320,6 @@ async function CategoryPageBody({
     priceMin,
     priceMax,
     productType,
-    city,
-    near,
     // hot-deals / under-99 / new are collections, and nothing falls into a
     // collection on its own. Undefined for the nine taxonomies, which keep
     // matching on category_id alone.
@@ -410,20 +385,6 @@ async function CategoryPageBody({
               <ResultGrid args={args} pathname={pathname} linkParams={linkParams} />
             </Suspense>
           </div>
-
-          {/* The city picker. Same component as the row under the hero, so the
-              two cannot drift apart in behaviour or in what "one city" means.
-
-              BELOW THE GRID, for the reason category-page.css already gives for
-              the filter sidebar: live has zero gap between the control bar and
-              its first card, so anything inserted there pushes every row of the
-              page down against live's. Measured at 380 on 2026-09-03, this row
-              was ~100px of exactly that, and it sat ABOVE the grid while the
-              filters -- the same kind of control, with the same argument
-              written next to them -- sat below. It is one rule now. */}
-          <Suspense fallback={null}>
-            <CityTags className="mt-3" />
-          </Suspense>
 
           <CategoryFilterSidebar
             categories={allCategories}

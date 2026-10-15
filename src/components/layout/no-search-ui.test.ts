@@ -33,7 +33,6 @@ const SHELL = [
   'src/components/layout/MastheadNav.tsx',
   'src/components/layout/MobileDrawer.tsx',
   'src/components/layout/SiteFooter.tsx',
-  'src/components/layout/RegionMenu.tsx',
 ]
 
 /**
