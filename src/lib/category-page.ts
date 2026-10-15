@@ -375,7 +375,7 @@ export async function getCategoryProducts(opts: {
       // empty grid. That exact failure is why src/lib/supabase/optional-columns.ts
       // exists. Add the two columns to this string when 136 is applied;
       // `supplierLocation` already prefers them the moment they are present.
-      'id, slug, name_he, kenyon_price, full_price, images, stock_quantity, created_at, type, categories!products_category_id_fkey(name_he, slug), suppliers(city)',
+      'id, slug, name_he, kenyon_price, full_price, images, stock_quantity, created_at, type, city, latitude, longitude, categories!products_category_id_fkey(name_he, slug), suppliers(city)',
       { count: 'exact' },
     )
     .eq('status', 'active')

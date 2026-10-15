@@ -38,7 +38,7 @@ import { describe, expect, it } from 'vitest'
 const ADMIN_ACTIONS = join(process.cwd(), 'src/server/actions/admin')
 
 /** Modules that mutate nothing. Each is a read path or an upload helper. */
-const READ_ONLY = new Set(['quick-search.ts', 'upload.ts', 'images.ts'])
+const READ_ONLY = new Set(['quick-search.ts', 'upload.ts', 'images.ts', 'geocode.ts'])
 
 function actionFiles(): string[] {
   return readdirSync(ADMIN_ACTIONS)

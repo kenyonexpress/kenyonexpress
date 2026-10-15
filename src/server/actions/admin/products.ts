@@ -101,6 +101,9 @@ async function runUpsertProduct(
     seo_title: formData.get('seo_title') || null,
     seo_description: formData.get('seo_description') || null,
     seo_keywords: formData.get('seo_keywords') || null,
+    city: formData.get('city'),
+    latitude: formData.get('latitude'),
+    longitude: formData.get('longitude'),
   })
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'נתונים לא תקינים' }
 

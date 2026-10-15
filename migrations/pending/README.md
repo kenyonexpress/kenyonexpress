@@ -15,6 +15,13 @@ migration, so the apply order across the two branches is undefined.
 Until the owner picks a mainline branch, **apply nothing from either side.**
 The full measured table is in `docs/MIGRATION-NUMBER-COLLISIONS.md`.
 
+## 2026-10-16: 187 added - products.full_address
+
+`187_products_full_address.sql` adds nullable `products.full_address` for the
+Waze address fallback. **Not applied.** `city`, `latitude` and `longitude` are
+already live, so the pin and the admin fields work without it; nothing selects
+or writes `full_address` until this lands.
+
 ## 2026-10-16: 186 added - scheduled gift delivery
 
 `186_orders_gift_send_at.sql` adds nullable `orders.gift_send_at`. **Not

@@ -1,4 +1,5 @@
 import ViewTracker from '@/components/analytics/ViewTracker'
+import LocationPin from '@/components/product/LocationPin'
 import Reviews from '@/components/product/Reviews'
 import { CouponTerms } from '@/components/storefront/CouponPricing'
 import ProductGallery from '@/components/storefront/ProductGallery'
@@ -324,6 +325,14 @@ export default async function ProductPage({ params }: Props) {
           {/* Supplier details: rendered for every product (coupon and physical).
               The name is passed through so the WhatsApp message names the deal:
               a business selling forty of them cannot answer "יש פרטים?". */}
+          <LocationPin
+            className="mb-2"
+            location={{
+              city: product.city,
+              latitude: product.latitude,
+              longitude: product.longitude,
+            }}
+          />
           <SupplierInfo
             supplier={supplier}
             productType={productType}

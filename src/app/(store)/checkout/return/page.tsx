@@ -1,3 +1,4 @@
+import LocationPin from '@/components/product/LocationPin'
 import WhatsAppIcon from '@/components/shared/WhatsAppIcon'
 import {
   moneyColumnProbe,
@@ -112,7 +113,7 @@ async function CheckoutReturnBody({ searchParams }: Props) {
       .select(
         `id, code, qr_payload, expires_at,
          face_value_agorot, coupon_price_agorot, remaining_amount_due_agorot,
-         products(name_he)`,
+         products(name_he, city, latitude, longitude)`,
       )
       .eq('order_id', orderId)
       .order('issued_at', { ascending: true }),
@@ -133,6 +134,7 @@ async function CheckoutReturnBody({ searchParams }: Props) {
   const couponsWithQr = await Promise.all(
     (vouchers ?? []).map(async (voucher) => ({
       ...voucher,
+      ...productGeo(voucher.products),
       // Agorot all the way to the formatter now. This used to divide by 100
       // here and hand shekel floats to a PRIVATE `shekels()` defined at the top
       // of this file -- the same private-formatter-per-component pattern that
@@ -174,6 +176,13 @@ async function CheckoutReturnBody({ searchParams }: Props) {
                 <article className="coupon-card" key={coupon.id}>
                   <div>
                     {productName && <div className="coupon-card__collect">{productName}</div>}
+                    <LocationPin
+                      location={{
+                        city: coupon.productCity,
+                        latitude: coupon.productLatitude,
+                        longitude: coupon.productLongitude,
+                      }}
+                    />
                     <div className="coupon-card__code" dir="ltr">
                       {formatVoucherCode(coupon.code)}
                     </div>
@@ -274,4 +283,20 @@ async function CheckoutReturnBody({ searchParams }: Props) {
       </div>
     </div>
   )
+}
+
+type ProductGeo = { city?: string | null; latitude?: number | null; longitude?: number | null }
+
+/** `products` arrives as an object or a one-element array depending on the join. */
+function productGeo(products: unknown): {
+  productCity: string | null
+  productLatitude: number | null
+  productLongitude: number | null
+} {
+  const p = (Array.isArray(products) ? products[0] : products) as ProductGeo | null | undefined
+  return {
+    productCity: p?.city ?? null,
+    productLatitude: p?.latitude ?? null,
+    productLongitude: p?.longitude ?? null,
+  }
 }

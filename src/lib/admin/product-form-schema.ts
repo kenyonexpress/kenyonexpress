@@ -141,6 +141,27 @@ export const productSchema = z
     coupon_terms_he: z.string().nullable().optional(),
     redemption_instructions_he: z.string().nullable().optional(),
     min_purchase_ils: z.coerce.number().min(0).nullable().optional(),
+    // Where the business is (columns live since the geo migration; all null
+    // for a digital coupon). City is required for a physical product below.
+    city: z.preprocess(emptyToNull, z.string().trim().max(60).nullable().optional()),
+    latitude: z.preprocess(
+      emptyToNull,
+      z.coerce
+        .number()
+        .min(-90, 'קו רוחב לא תקין')
+        .max(90, 'קו רוחב לא תקין')
+        .nullable()
+        .optional(),
+    ),
+    longitude: z.preprocess(
+      emptyToNull,
+      z.coerce
+        .number()
+        .min(-180, 'קו אורך לא תקין')
+        .max(180, 'קו אורך לא תקין')
+        .nullable()
+        .optional(),
+    ),
     // SEO (048)
     seo_title: z.string().max(70, 'כותרת SEO עד 70 תווים').nullable().optional(),
     seo_description: z.string().max(170, 'תיאור SEO עד 170 תווים').nullable().optional(),
@@ -154,6 +175,26 @@ export const productSchema = z
         code: z.ZodIssueCode.custom,
         message: 'תוקף קופון בימים נדרש למוצר קופון',
         path: ['coupon_expiry_days'],
+      })
+    }
+    // A content draft may be saved without it; anything past draft may not.
+    if (
+      data.type === 'physical' &&
+      !data.is_coupon_enabled &&
+      data.status !== 'draft' &&
+      !data.city
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'עיר נדרשת למוצר פיזי',
+        path: ['city'],
+      })
+    }
+    if ((data.latitude == null) !== (data.longitude == null)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'יש להזין קו רוחב וקו אורך יחד',
+        path: ['latitude'],
       })
     }
     if (

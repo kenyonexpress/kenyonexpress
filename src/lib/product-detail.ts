@@ -63,6 +63,7 @@ export async function loadProductBySlug(slug: string) {
        requires_shipping, weight_grams, warranty_months,
        type, sku, images, stock_quantity, category_id, supplier_id,
        recurring_amount_agorot, billing_interval, billing_interval_count,
+       city, latitude, longitude,
        categories!products_category_id_fkey(id, name_he, slug)`,
       )
       .eq('slug', slug)

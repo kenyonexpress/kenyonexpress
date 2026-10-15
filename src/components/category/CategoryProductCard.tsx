@@ -1,6 +1,7 @@
 'use client'
 
 import AddToCartButton from '@/components/cart/AddToCartButton'
+import LocationPin from '@/components/product/LocationPin'
 import { cityByName } from '@/lib/geo/cities'
 import { formatDistance } from '@/lib/geo/distance'
 import { shekelsFromIlsRounded } from '@/lib/money-format'
@@ -47,6 +48,9 @@ export type CategoryProduct = {
   categories?: { name_he: string; slug: string }[]
   /** Normalised supplier join. Present once the query selects it. */
   supplier?: { city?: string | null } | null
+  city?: string | null
+  latitude?: number | null
+  longitude?: number | null
   /** Set by sortByDistance when the customer asked for "near me". */
   distanceKm?: number | null
 }
@@ -157,6 +161,14 @@ export default function CategoryProductCard({ product }: { product: CategoryProd
             ) : null}
           </span>
         </Link>
+        <LocationPin
+          className="category-card__pin"
+          location={{
+            city: product.city,
+            latitude: product.latitude,
+            longitude: product.longitude,
+          }}
+        />
       </div>
 
       {/* Measured live .product-loop-footer > .price-add-to-cart: the price is

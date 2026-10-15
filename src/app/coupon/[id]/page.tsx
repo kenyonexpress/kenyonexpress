@@ -1,4 +1,5 @@
 import WalletButtons from '@/components/coupon/WalletButtons'
+import LocationPin from '@/components/product/LocationPin'
 import { createClient } from '@/lib/supabase/server'
 import { buildSupplierContact } from '@/lib/supplier-contact'
 import {
@@ -101,6 +102,14 @@ async function CouponPageBody({ params }: Props) {
               {voucher.product?.name_he ?? 'שובר'}
             </h1>
             {contact.name && <p className="mt-0.5 text-sm text-gray-500">{contact.name}</p>}
+            <LocationPin
+              className="mt-1 text-gray-600"
+              location={{
+                city: voucher.product?.city,
+                latitude: voucher.product?.latitude,
+                longitude: voucher.product?.longitude,
+              }}
+            />
           </div>
           <span
             className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${COUPON_TONE_CLASS[status.tone]}`}

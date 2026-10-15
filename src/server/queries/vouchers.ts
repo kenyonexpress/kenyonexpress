@@ -20,7 +20,13 @@ export interface CustomerVoucher {
   expires_at: string
   issued_at: string
   redeemed_at: string | null
-  product: { name_he: string | null; slug: string | null } | null
+  product: {
+    name_he: string | null
+    slug: string | null
+    city?: string | null
+    latitude?: number | null
+    longitude?: number | null
+  } | null
   supplier: { name: string | null } | null
 }
 
@@ -119,7 +125,7 @@ export async function getCustomerVoucher(id: string): Promise<CustomerVoucherDet
         `id, code, qr_payload, status,
        face_value_agorot, coupon_price_agorot, remaining_amount_due_agorot,
        offer_valid_until, expires_at, issued_at, redeemed_at,
-       product:products(name_he, slug),
+       product:products(name_he, slug, city, latitude, longitude),
        supplier:suppliers(name, city, address, contact_phone, whatsapp)`,
       )
       .eq('id', id)

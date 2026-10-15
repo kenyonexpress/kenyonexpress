@@ -212,6 +212,7 @@ describe('the pending migration inventory', () => {
       '184_carts_one_row_per_owner.sql',
       '185_products_cancellation_window_payout_cadence.sql',
       '186_orders_gift_send_at.sql',
+      '187_products_full_address.sql',
       'preflight_162.sql',
       'preflight_169.sql',
       'preflight_170.sql',
@@ -225,6 +226,7 @@ describe('the pending migration inventory', () => {
       'preflight_184.sql',
       'preflight_185.sql',
       'preflight_186.sql',
+      'preflight_187.sql',
     ])
   })
 

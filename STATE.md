@@ -182,3 +182,6 @@ BLOCKED: F12 affiliate campaigns, attribution and wallet payout need two new tab
 F13: PARTIAL. Built: location UI removed (RegionMenu, CityTags, near/city params on category page), 1440 gate 8.29% PASS after the change.
 BLOCKED: F13 chips 'פתוח בסוף שבוע' and 'משלוח חינם' have no data behind them (no shipping price column; supplier_branches.hours unused and empty); a chip without data would be a fake filter
 המשך מ: F03.5 then F14
+F03.5: DONE. LocationPin (waze ll= then q= fallback, city text only without a link) on product card, product page, order confirmation and voucher page; admin location fieldset with server-side Nominatim search; city required for non-draft physical; products city/latitude/longitude were already live so only full_address is migration 187 (pending, nothing selects it yet). No filter, no near-me, no consent prompt.
+PENDING_LOCATION: 66 physical products need city/address from Ofir (measured 2026-10-16, all 66 have city null)
+המשך מ: F14
