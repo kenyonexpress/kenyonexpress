@@ -80,12 +80,12 @@ const IMG_SRC = [
  */
 const BASE_DIRECTIVES = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline'",
+  "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com",
   "style-src 'self' 'unsafe-inline'",
   IMG_SRC,
   "font-src 'self'",
   "connect-src 'self' https://*.supabase.co",
-  'frame-src https://secure.cardcom.solutions',
+  'frame-src https://secure.cardcom.solutions https://challenges.cloudflare.com',
   "base-uri 'self'",
   "form-action 'self' https://secure.cardcom.solutions",
   "object-src 'none'",

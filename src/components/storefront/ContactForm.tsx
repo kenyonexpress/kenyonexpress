@@ -1,5 +1,6 @@
 'use client'
 
+import TurnstileWidget from '@/components/shared/TurnstileWidget'
 import { type ContactState, submitContactForm } from '@/server/actions/contact'
 import { useActionState, useId } from 'react'
 
@@ -101,6 +102,7 @@ export default function ContactForm() {
       {state.message && (
         <output className="text-sm font-medium text-heading">{state.message}</output>
       )}
+      <TurnstileWidget />
     </form>
   )
 }

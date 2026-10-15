@@ -2,6 +2,7 @@
 
 import { withActionContext } from '@/lib/observability/action-context'
 import { log } from '@/lib/observability/log'
+import { TURNSTILE_FIELD, verifyTurnstile } from '@/lib/security/turnstile'
 
 import { passwordResetResult } from '@/lib/auth/password-reset'
 import { decidePhoneMerge } from '@/lib/auth/phone-merge'
@@ -184,6 +185,9 @@ async function runSignUpWithEmail(_: AuthState, formData: FormData): Promise<Aut
   const ip = await getClientIp()
   const allowed = await checkRateLimit(`signup:${ip}`, 5, 3600)
   if (!allowed) return { error: 'יותר מדי ניסיונות הרשמה — נסו שוב בעוד שעה' }
+  if (!(await verifyTurnstile(formData.get(TURNSTILE_FIELD), ip))) {
+    return { error: 'אימות האנושיות נכשל. נסו שוב.' }
+  }
 
   const parsed = signupSchema.safeParse({
     full_name: formData.get('full_name'),

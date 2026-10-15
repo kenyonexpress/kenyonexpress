@@ -206,6 +206,22 @@ jobs:
       - name: Repo-wide typecheck
         run: pnpm type-check
 
+  # Secret scan over the checked-out tree. Pinned container, no third-party
+  # action, no licence key. `continue-on-error` is deliberate for the first
+  # weeks: the finding list on a repo this old is unknown, and a gate that
+  # fails every push on day one gets deleted. Read the job's log; flip the flag
+  # to false once it has run clean.
+  secrets:
+    name: Secret scan (gitleaks)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v7
+      - name: gitleaks over the working tree
+        run: |
+          docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:v8.18.4 \
+            detect --no-git --source /repo --redact --no-banner --exit-code 1
+
   typecheck:
     name: Typecheck (changed files)
     runs-on: ubuntu-latest

@@ -4,6 +4,12 @@ import { REQUEST_ID_HEADER, resolveRequestId } from '@/lib/observability/request
 import { REFERRAL_QUERY_PARAM, normalizeReferralCode } from '@/lib/referrals/code'
 import { REFERRAL_COOKIE, referralCookieOptions } from '@/lib/referrals/cookie'
 import { isPaymentFramePath } from '@/lib/security/frame-policy'
+import {
+  MAINTENANCE_HTML,
+  MAINTENANCE_RETRY_AFTER_SECONDS,
+  isMaintenanceExempt,
+  maintenanceEnabled,
+} from '@/lib/security/maintenance'
 import { lookupRedirect } from '@/lib/seo/redirects'
 import { createServerClient } from '@supabase/ssr'
 import { type NextRequest, NextResponse } from 'next/server'
@@ -55,6 +61,22 @@ export async function proxy(request: NextRequest) {
   // Neither branch was wrong on its own, which is how the two of them produced
   // it.
   if (pathname.startsWith('/monitoring')) return forward(request, requestId)
+
+  // Maintenance mode (MAINTENANCE_MODE=1). Payments, webhooks, crons, admin and
+  // login are exempt; see lib/security/maintenance.ts for why.
+  if (maintenanceEnabled() && !isMaintenanceExempt(pathname)) {
+    return withRequestId(
+      new NextResponse(MAINTENANCE_HTML, {
+        status: 503,
+        headers: {
+          'content-type': 'text/html; charset=utf-8',
+          'retry-after': String(MAINTENANCE_RETRY_AFTER_SECONDS),
+          'cache-control': 'no-store',
+        },
+      }),
+      requestId,
+    )
+  }
 
   // Legacy WordPress URLs, resolved BEFORE the session refresh below.
   //

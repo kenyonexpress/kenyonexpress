@@ -188,3 +188,13 @@ PENDING_LOCATION: 66 physical products need city/address from Ofir (measured 202
 F14: PARTIAL. Existing: manifest, sw.js, offline shell, install prompt. Built: install prompt gated on a first purchase (PurchaseMarker on the confirmation page, 1 test).
 BLOCKED: F14 web push subscription needs VAPID keys, the web-push dependency and a push_subscriptions table (migration); only Expo tokens exist today
 המשך מ: F15
+BLOCKED: F15 passkey (WebAuthn) and WhatsApp OTP: no WebAuthn stack or credentials table exists, and WhatsApp OTP needs the Meta verification that is queued post-10-sales; email+password, Google and SMS OTP (flag-gated on a provider) exist
+F16: DONE (verified existing): /supplier/scan + redeem_voucher RPC + log_voucher_scan + voucher_redemptions
+המשך מ: F17
+F17: DONE (verified existing): sitemap.xml and robots.txt 200, JSON-LD Product/Offer/Organization/BreadcrumbList rendered on the product page, seo_redirects, Hebrew synonyms in search + meili settings (tests green)
+המשך מ: F18
+F18: DONE (verified): Vercel NS live; DKIM resend._domainkey present; SPF v=spf1 include:amazonses.com on send.kenyonexpress.co.il with MX to feedback-smtp.us-east-1.amazonses.com; DMARC present at p=none (observe-only, tighten after a clean report week); SENTRY_DSN, NEXT_PUBLIC_SENTRY_DSN, PostHog and RESEND keys set in Production; purchase, add_to_cart, view_item emitted in code. Apex has no MX or SPF by design (no inbound mail).
+המשך מ: F19
+F19: PARTIAL. Existing: rate limits (login, signup, contact, begin_checkout), CSP + HSTS, env kill switches. Built: MAINTENANCE_MODE flag in proxy (503 + Retry-After, payments/webhooks/crons/admin/login exempt), Turnstile verify + widget on contact and signup (inert until TURNSTILE_SECRET_KEY and NEXT_PUBLIC_TURNSTILE_SITE_KEY are set; CSP allows challenges.cloudflare.com), gitleaks CI job (non-blocking at first).
+BLOCKED: F19 feature flags TABLE needs a migration and an admin writer; flags remain env switches (listed on /admin/feature-flags)
+המשך מ: F13.5 then F20
