@@ -146,6 +146,15 @@ Closed so far, each with type-check, lint, test green (510 files, 5949 passed):
   locally, type-check clean. Mail to both sides open (needs outbox kind
   migration written for main's own kind list, plus a builder). Not checked
   that 098 is applied on the hosted project.
+- L11 to L16 (16.10): BLOCKED, no specification. `docs/FINAL-CLOSEOUT.md`
+  holds only the titles (Growth plumbing, Hardening, Phase 2 behind flags,
+  Launch gate, Regression and tag, Maintenance); the issuing prompt of 14.10
+  is not in the repo, `claude/BUSINESS-MODEL-RULES.md` does not exist, and
+  git history only has the unrelated autopilot L11/L12 of another queue.
+  Inventing scope for a launch gate and for tags rc3 to rc5 would produce
+  evidence that measures nothing, so none was started and no tag was made.
+  Needs the L11 to L16 text. Meanwhile L10 rows 19 and 20 wait on decisions
+  (see BIG-SITE-GAP notes), row 16 on the publishing rule.
 - 14.10: other autopilot sessions (STEP 69, 70) run in
   `/Users/ofir/kenyonexpress-autopilot` on another branch. This checkout
   showed no foreign edits, so work continued.
