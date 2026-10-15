@@ -64,7 +64,7 @@ Updated: 2026-10-15 08:18 (XF05-RETRY תיוג מותנה ‏`v1.0.0-mvp-ready-p
 
 1. **הזוג נמדד בתוך הפריט הזה.** ‏WRETRY-XF04 נהרג ב-07:32 על ידי ‏gtimeout שמונה דקות לתוך ריצה 1; ‏`run.sh 1` ואז ‏`run.sh 2` רצו כאן על ה-build הקיים של העץ הנקי.
 2. **התג לא נכתב.** התנאי דורש שתי ריצות ירוקות ברצף וריצה 2 אינה כזו (מקרה אחד, ‏loading-skeletons.spec.ts על ‏chromium, עבר בריצה 1 ונכשל בריצה 2: פגם דגימה של ‏MutationObserver בבדיקה, תוקן ב-e2e בלבד). ‏WRETRY-flake ואז ‏XF05-RETRY2 הוזרקו לראש ‏queue.txt.
-3. **‏pnpm build לא הורץ שוב**: השינוי הוא ‏docs ו-STATE בלבד.
+3. **‏pnpm build רץ אחרי ה-push, ירוק** (‏rc=0, ‏csp gate ‏278 shells, ‏08:18); השינוי בקוד הוא ‏spec אחד של ‏e2e, אפס קבצים תחת ‏src/. שורת ‏`db.query_failed` על ‏`/product/[slug]` ב-prerender קיימת גם בבניות הקודמות. אין תקציב בפריט לזוג ריצות נוסף (‏42 דקות); ‏WRETRY-flake מריץ אותו.
 
 ## החלטות שהתקבלו לבד (‏XF05, 2026-10-15 06:05, ‏Fable 5.1, ‏worktree ‏`kenyonexpress-autopilot`)
 
