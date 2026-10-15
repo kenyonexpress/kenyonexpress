@@ -57,7 +57,7 @@ what main has.
 | 14 | Supplier onboarding wizard, six steps | Wolt, Lazada, TikTok Shop | PARTIAL | PARTIAL | 3 | three steps ported 2026-10-16 behind pending 245; products, opening hours and review still to build |
 | 15 | Admin KPI dashboard | all (seller centres) | EXISTS | EXISTS | 0 | ops KPIs ported, active vouchers and payouts due added, closed 2026-10-14 |
 | 16 | Product reviews | Amazon, Booking, Lazada | PARTIAL | PARTIAL | 3 | finish. See note C |
-| 17 | Q&A on product page | Amazon, Lazada | MISSING | MISSING | 3 | build |
+| 17 | Q&A on product page | Amazon, Lazada | MISSING | PARTIAL | 3 | WhatsApp question link built 2026-10-16; stored Q&A open |
 | 18 | Related products | all | EXISTS | PARTIAL | done | closed 2026-10-14 |
 | 19 | Bundle deals, N for X | Amazon, Lazada | MISSING | MISSING | 4 | build. Money path |
 | 20 | Flash sales | Lazada, TikTok Shop, Groupon | PARTIAL | PARTIAL | 1.5 | admin form, cancel and link ported 2026-10-14; end time, banner, countdown and a sub-daily cron still open. Money path |
@@ -373,6 +373,16 @@ with no sidebar link. Missing: public list (note C), owner edit, star summary
 
 **17. Q&A.** Both: nothing stored. prod has a WhatsApp deep link
 (`src/components/contact/ProductQuestionLink.tsx`).
+
+Partly built on main, 2026-10-16: the zero-migration half only. A
+click-to-chat link under the share row of the product page
+(`src/components/storefront/ProductQuestionLink.tsx`), a wa.me chat to the
+store number prefilled with the product name and page address, counted as
+`whatsapp_click` with surface `product_question`. Sends nothing itself. Stored,
+moderated Q&A (a table, an admin queue, a public list) is NOT built and needs a
+migration plus a decision on publishing customer text, like row 16. Not seen in
+a browser; the product parity gate refused in this worktree (no
+`refs/electro_product_*.png`), so the added line is unmeasured.
 
 **18. Related products.** main, closed 2026-10-14: `src/lib/related-products.ts`
 reads the 24 newest products in the category and `src/lib/related-ranking.ts`

@@ -7,6 +7,7 @@ import FacebookShareButton from '@/components/shared/FacebookShareButton'
 import ShareButton from '@/components/shared/ShareButton'
 import WhatsAppShareButton from '@/components/shared/WhatsAppShareButton'
 import CouponPricing from '@/components/storefront/CouponPricing'
+import ProductQuestionLink from '@/components/storefront/ProductQuestionLink'
 import RatingStars, { type RatingSummary } from '@/components/storefront/RatingStars'
 import { productQuantityCeiling } from '@/lib/cart/format'
 import type { CouponOffer } from '@/lib/commerce/coupon-offer'
@@ -442,6 +443,7 @@ export default function ProductInfo({
             text={buildShareMessage({ name, priceIls: price, offer: couponOffer })}
           />
         </span>
+        <ProductQuestionLink productName={name} productId={productId} />
       </div>
     </div>
   )
