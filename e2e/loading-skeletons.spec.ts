@@ -204,9 +204,31 @@ test.describe('account loading skeleton (UX27)', () => {
       }).observe(column, { childList: true, subtree: true })
     })
 
+    // Hold the orders page's own answer back for a moment. The skeleton is
+    // the instant state for a page that takes its time (2.3-2.6s when UX27
+    // was measured), and React commits a new boundary's fallback only if the
+    // data has not arrived by then: on a warm database the page answered
+    // fast enough that no skeleton node ever entered the DOM (measured
+    // 15.10.2026, run 1 of the WRETRY-flake pair: the records-based observer
+    // below saw ["האזור האישי", "ההזמנות שלי"] and no addedNodes carrying
+    // the skeleton). A slow answer is the case this state exists for, so the
+    // test makes the answer slow. Prefetches (`Next-Router-Prefetch`) pass
+    // untouched: they carry the static shell, and the shell is what paints.
+    await page.route(
+      (url) => url.pathname === '/account/orders',
+      async (route) => {
+        const headers = route.request().headers()
+        if (headers.rsc === '1' && headers['next-router-prefetch'] !== '1') {
+          await new Promise((resolve) => setTimeout(resolve, 1500))
+        }
+        await route.continue()
+      },
+    )
+
     const bar = page.getByRole('navigation', { name: 'אזורי החשבון' })
     await bar.getByRole('link', { name: 'ההזמנות שלי' }).click()
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('ההזמנות שלי')
+    await page.unroute((url) => url.pathname === '/account/orders')
 
     const seen = await page.evaluate(() => window.__ux27 ?? [])
     expect(seen[0]).toBe('האזור האישי')

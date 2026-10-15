@@ -52,14 +52,25 @@ export default function CouponCardSkeleton() {
   )
 }
 
-/** The grid of them, in the same columns and gap as the real one. */
+export const COUPONS_LOADING_LABEL = 'טוען קופונים…'
+
+/**
+ * The grid of them, in the same columns and gap as the real one.
+ *
+ * `aria-busy` on the grid and one visually hidden sentence, the same surface
+ * as AccountContentSkeleton, and NOT `aria-label` on the div: a div has no
+ * role, and ARIA prohibits naming a role-less element, so axe reported
+ * `aria-prohibited-attr` on this grid whenever the a11y scan of /coupons
+ * caught the fallback before the real grid streamed in (measured once in
+ * 1,122 cases, the XF04 pair, 15.10.2026: the node had already left the DOM
+ * by the time axe serialised it, so the target read `:root`). Every ticket
+ * below is `aria-hidden`, so the label was the only text and it was never
+ * announced anyway; the sentence is.
+ */
 export function CouponsGridSkeleton({ count = 8 }: { count?: number }) {
   return (
-    <div
-      className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
-      aria-busy="true"
-      aria-label="טוען קופונים"
-    >
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3" aria-busy="true">
+      <p className="sr-only">{COUPONS_LOADING_LABEL}</p>
       {Array.from({ length: count }, (_, i) => (
         // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length placeholder, never reordered
         <CouponCardSkeleton key={i} />
