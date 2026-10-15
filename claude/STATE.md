@@ -163,6 +163,11 @@ Closed so far, each with type-check, lint, test green (510 files, 5949 passed):
   `v2.0.0-rc3` created LOCALLY, not pushed. It certifies the regression gates,
   not a launch: L11 to L14 have no scope text and were not run. rc4 and rc5
   wait for those.
+- L16 maintenance, 16.10 00:10: backup written to
+  `~/Desktop/kenyonexpress-backup-2026-10-16-0009.tar.gz` (853 MB, listing
+  verified), oldest of four pruned so three remain (pre-approved exception).
+  Sleep prevention live (two caffeinate processes, sleep 0). The loop script
+  was not checked by name: pgrep cannot see the inline `bash -c while`.
 - 14.10: other autopilot sessions (STEP 69, 70) run in
   `/Users/ofir/kenyonexpress-autopilot` on another branch. This checkout
   showed no foreign edits, so work continued.
