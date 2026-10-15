@@ -27,6 +27,22 @@ moved to `applied/`:
 
 `/api/health` answered `ok` with the database `ok` after the three.
 
+## 2026-10-15: 244 PENDING (second abandoned-cart reminder)
+
+`244_abandoned_cart_second_reminder.sql` is the production branch's 190,
+renumbered above 243. It adds `abandoned_cart_nudges.reminder_number` (1 or 2,
+CHECK-capped), swaps the UNIQUE on `cart_id` for one on `(cart_id,
+reminder_number)`, and recreates `fn_due_abandoned_carts` with a third
+parameter `p_second_after_hours` (default 24), spacing the second mail from the
+first rather than from the cart. The function is dropped and recreated, so the
+file restates the grants (`postgres`, `service_role` only). Until applied the
+route reads every row as reminder 1 and keeps today's one mail per cart; the
+call retries without the third argument on PGRST202/42883 and the insert
+retries without the column on 42703. No coupon is issued: that is money path
+and waits for its own pull request. Dry-run on production was done on the
+production branch (2026-09-09); not repeated from this line. Rollback is in
+the file header.
+
 ## 2026-10-14: 243 PENDING (club tier thresholds)
 
 `243_club_tiers.sql` adds `club_tiers`, four rows (member, silver, gold,

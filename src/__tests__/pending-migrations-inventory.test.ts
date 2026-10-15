@@ -392,6 +392,9 @@ describe('the pending migration inventory', () => {
       // 243: club tier thresholds, the table half of the production
       // branch's 251. The reader falls back to compiled defaults without it.
       '243_club_tiers.sql',
+      // 244: the second abandoned-cart reminder, the production branch's 190.
+      // The route degrades to one mail per cart without it.
+      '244_abandoned_cart_second_reminder.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

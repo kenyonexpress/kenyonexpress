@@ -456,6 +456,15 @@ one email ever at three hours, newsletter subscribers only. Missing: second
 email, coupon code. prod: two reminders, the second needing a pending
 migration.
 
+Built on main, 2026-10-15. The route and the mail builder are ported from
+prod. Two reminders (T+2h, T+24h measured from the last mail), the second says
+it is the last, and the mail itemises the cart priced through `buildCartView`.
+Needs `migrations/pending/244_abandoned_cart_second_reminder.sql`, NOT applied
+(BLOCKED-MIGRATION): without it the route degrades to one mail per cart and
+the insert and the RPC call both fall back. No coupon code: that is money path
+and gets its own pull request. Not sent to a real inbox; unit tests only (83
+in the growth and cron folders). Row stays PARTIAL until 244 is applied.
+
 **26. Comparison.** Both: nothing.
 
 Built on main, 2026-10-14. A scales toggle on each listing card picks up to
