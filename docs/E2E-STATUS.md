@@ -10,23 +10,183 @@ the json reporter output of the two runs.
 
 ## Results
 
-**Status: NOT GREEN YET, by one flaky case.** The measured pair ran on the
-build of 6718a7f5a (BUILD_ID `MuW7j7T4WAlfxQ-nENRZq`, built 07:31 from the clean
-committed tree, the tree that carries every fix in this document) inside the
-XF05-RETRY item, because WRETRY-XF04 itself ran out of its 3,600-second
-budget eight minutes into run 1 (the loop recorded `rc=124` at 07:32; its
-fixes are in 6718a7f5a). Run 1: **1,097 passed / 0 failed / 25 skipped of 1,122 in 20:56**. Run 2: **1,097 passed / 1 failed / 24 skipped of 1,122 in 20:57**.
-Failed in both runs: **0**. Flaky, passed once and failed once:
-**1**, listed under the tables with the error. The tag
-`v1.0.0-mvp-ready-pending-cardcom` is therefore NOT written: the condition
-is two green runs, and run 2 is not one. The flaky case is fixed in the
-commit that carries this paragraph (a test defect, see below), the fix is
-queued as `WRETRY-flake` at the head of `~/ke-goals/queue.txt` to run the
-pair again, and `XF05-RETRY` follows it with the same tag text. The runs
-that led here stay below as the record of how the suite got from 128
-failures to one.
+**Status: NOT GREEN YET, by two flaky cases in run 1.** The retried pair
+(WRETRY-flake) ran on the build of 7e4187152 (BUILD_ID `L6tbqtJcab0-6RdbAnqk9`,
+built 08:21 from the clean committed tree, newer than every file under `src/`
+and `e2e/`, so reused; the mock flag is read at request time, not baked).
+Run 1: **1,093 passed / 2 failed / 27 skipped of 1,122 in 21:01**. Run 2:
+**1,096 passed / 0 failed / 26 skipped of 1,122 in 21:07**. Failed in both
+runs: **0**. Flaky, failed once and passed once: **2**, listed under the
+tables with the error. The tag `v1.0.0-mvp-ready-pending-cardcom` is
+therefore NOT written: the condition is two green runs back-to-back, and
+run 1 is not one. Both causes are fixed in 64b9d3eeb (one a product a11y
+defect under `src/`, one a test defect, see below), the fix is queued as a
+fresh `WRETRY-flake` at the head of `~/ke-goals/queue.txt` to run the pair
+again on a build that carries it, and `XF05-RETRY2` follows with the same
+tag text. The pair of 07:33 and the runs before it stay below as the record
+of how the suite got from 128 failures to two.
 
-### The measured pair (the build of 6718a7f5a, 15.10.2026, runs started 07:33:46 and 07:54:47)
+### The measured pair (the build of 7e4187152, 15.10.2026, runs started 08:23:24 and 08:44:35)
+
+`bash logs/xf04/run.sh 1` then `bash logs/xf04/run.sh 2`, back-to-back on
+one server start each, port 3454, listener cwd and BUILD_ID verified before
+each run (`served_build_refs=1` both times). Tables and lists are
+`node logs/xf04/summarize.mjs /tmp/xf04/run1.json /tmp/xf04/run2.json`,
+verbatim:
+
+| run | passed | failed | skipped | total | wall time | started |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | 1093 | 2 | 27 | 1122 | 21:01 | 2026-10-15 01:23:25Z |
+| 2 | 1096 | 0 | 26 | 1122 | 21:07 | 2026-10-15 01:44:36Z |
+
+| suite (spec file) | run 1 pass / fail / skip | run 1 time | run 2 pass / fail / skip | run 2 time |
+| --- | --- | --- | --- | --- |
+| a11y.spec.ts | 115 / 1 / 2 | 2:42 | 116 / 0 / 2 | 2:55 |
+| account-orders.spec.ts | 8 / 0 / 0 | 0:23 | 8 / 0 / 0 | 0:24 |
+| account-tabs.spec.ts | 8 / 0 / 0 | 0:37 | 8 / 0 / 0 | 0:34 |
+| admin-refund.spec.ts | 0 / 0 / 2 | 1:55 | 0 / 0 / 2 | 1:45 |
+| auth.spec.ts | 32 / 0 / 0 | 0:05 | 32 / 0 / 0 | 0:05 |
+| brands-row.spec.ts | 8 / 0 / 0 | 0:07 | 8 / 0 / 0 | 0:07 |
+| cart-page.spec.ts | 8 / 0 / 0 | 1:04 | 8 / 0 / 0 | 1:02 |
+| cart.spec.ts | 21 / 0 / 3 | 2:17 | 21 / 0 / 3 | 2:13 |
+| catalog-infinite-scroll.spec.ts | 6 / 0 / 0 | 0:08 | 6 / 0 / 0 | 0:12 |
+| category-grid.spec.ts | 5 / 0 / 1 | 0:07 | 5 / 0 / 1 | 0:05 |
+| category-seo.spec.ts | 10 / 0 / 0 | 1:29 | 10 / 0 / 0 | 1:29 |
+| category.spec.ts | 36 / 0 / 0 | 3:55 | 36 / 0 / 0 | 3:55 |
+| checkout-steps.spec.ts | 12 / 0 / 0 | 1:26 | 12 / 0 / 0 | 1:26 |
+| checkout.spec.ts | 14 / 0 / 0 | 0:29 | 14 / 0 / 0 | 0:33 |
+| city-page.spec.ts | 12 / 0 / 0 | 0:06 | 12 / 0 / 0 | 0:04 |
+| coupon-offer.spec.ts | 5 / 0 / 3 | 0:10 | 6 / 0 / 2 | 0:11 |
+| coupon-scan.spec.ts | 12 / 0 / 0 | 0:05 | 12 / 0 / 0 | 0:05 |
+| coupons.spec.ts | 10 / 0 / 0 | 0:05 | 10 / 0 / 0 | 0:05 |
+| deal-of-the-day.spec.ts | 6 / 0 / 0 | 0:16 | 6 / 0 / 0 | 0:15 |
+| deals-grid.spec.ts | 12 / 0 / 0 | 0:10 | 12 / 0 / 0 | 0:11 |
+| error-page.spec.ts | 2 / 0 / 4 | 0:05 | 2 / 0 / 4 | 0:05 |
+| footer.spec.ts | 7 / 0 / 1 | 0:05 | 7 / 0 / 1 | 0:05 |
+| full-purchase-redeem.spec.ts | 2 / 0 / 0 | 2:09 | 2 / 0 / 0 | 2:13 |
+| header.spec.ts | 24 / 0 / 0 | 0:20 | 24 / 0 / 0 | 0:21 |
+| hero-carousel.spec.ts | 10 / 0 / 0 | 0:36 | 10 / 0 / 0 | 0:36 |
+| hero-grid.spec.ts | 16 / 0 / 0 | 0:11 | 16 / 0 / 0 | 0:12 |
+| home-rtl.spec.ts | 6 / 0 / 0 | 0:05 | 6 / 0 / 0 | 0:05 |
+| home.spec.ts | 46 / 0 / 0 | 1:36 | 46 / 0 / 0 | 1:36 |
+| hot-coupons.spec.ts | 8 / 0 / 2 | 0:06 | 8 / 0 / 2 | 0:06 |
+| layout-stability.spec.ts | 38 / 0 / 0 | 2:31 | 38 / 0 / 0 | 2:29 |
+| listing-controls.spec.ts | 9 / 0 / 1 | 0:10 | 9 / 0 / 1 | 0:10 |
+| loading-skeletons.spec.ts | 7 / 1 / 0 | 0:31 | 8 / 0 / 0 | 0:32 |
+| login-dialog.spec.ts | 14 / 0 / 0 | 0:21 | 14 / 0 / 0 | 0:22 |
+| menu-drawer.spec.ts | 30 / 0 / 0 | 0:43 | 30 / 0 / 0 | 0:45 |
+| newsletter-form.spec.ts | 8 / 0 / 0 | 0:06 | 8 / 0 / 0 | 0:06 |
+| not-found.spec.ts | 8 / 0 / 0 | 0:06 | 8 / 0 / 0 | 0:07 |
+| physical-purchase.spec.ts | 2 / 0 / 0 | 1:36 | 2 / 0 / 0 | 1:42 |
+| price-bidi.spec.ts | 18 / 0 / 0 | 0:59 | 18 / 0 / 0 | 1:07 |
+| product-buy-row.spec.ts | 9 / 0 / 1 | 0:22 | 9 / 0 / 1 | 0:20 |
+| product.spec.ts | 20 / 0 / 2 | 0:33 | 20 / 0 / 2 | 0:20 |
+| production-smoke.spec.ts | 2 / 0 / 2 | 0:12 | 2 / 0 / 2 | 0:13 |
+| purchase-flow.spec.ts | 4 / 0 / 0 | 0:25 | 4 / 0 / 0 | 0:26 |
+| pwa.spec.ts | 8 / 0 / 0 | 0:02 | 8 / 0 / 0 | 0:03 |
+| region-menu.spec.ts | 12 / 0 / 0 | 0:15 | 12 / 0 / 0 | 0:17 |
+| register-dialog.spec.ts | 10 / 0 / 0 | 0:12 | 10 / 0 / 0 | 0:13 |
+| render-mode.spec.ts | 26 / 0 / 0 | 0:12 | 26 / 0 / 0 | 0:15 |
+| responsive.spec.ts | 124 / 0 / 0 | 2:04 | 124 / 0 / 0 | 1:58 |
+| rtl-mobile.spec.ts | 82 / 0 / 0 | 1:29 | 82 / 0 / 0 | 1:33 |
+| rtl-three-widths.spec.ts | 24 / 0 / 0 | 0:14 | 24 / 0 / 0 | 0:14 |
+| search-results.spec.ts | 15 / 0 / 1 | 0:32 | 15 / 0 / 1 | 0:32 |
+| search.spec.ts | 12 / 0 / 0 | 0:10 | 12 / 0 / 0 | 0:08 |
+| smoke-all-routes.spec.ts | 62 / 0 / 0 | 0:06 | 62 / 0 / 0 | 0:07 |
+| toasts.spec.ts | 6 / 0 / 2 | 0:56 | 6 / 0 / 2 | 0:55 |
+| topbar.spec.ts | 50 / 0 / 0 | 0:32 | 50 / 0 / 0 | 0:33 |
+| touch-targets.spec.ts | 18 / 0 / 0 | 0:32 | 18 / 0 / 0 | 0:32 |
+| visual.spec.ts | 6 / 0 / 0 | 0:16 | 6 / 0 / 0 | 0:16 |
+| wishlist-page.spec.ts | 8 / 0 / 0 | 1:25 | 8 / 0 / 0 | 1:22 |
+
+flaky (outcome differed between the runs): 2
+- a11y.spec.ts [mobile-chrome] coupons has no WCAG A/AA violations: run 1 unexpected, run 2 expected; Error: 
+- loading-skeletons.spec.ts [chromium] account loading skeleton (UX27) › a tab press paints the column skeleton before the new page, and a direct load flushes it first: run 1 unexpected, run 2 expected; Error: expect(received).toContain(expected) // indexOf
+failed in both runs: 0
+
+skipped (same in both runs unless noted):
+- a11y.spec.ts [chromium] the category drawer keeps Tab inside, is inert when closed, and Escape returns to the trigger
+- a11y.spec.ts [mobile-chrome] the search combobox says which suggestion is selected
+- admin-refund.spec.ts [chromium] admin cancel and refund @money @admin › a paid coupon order is refunded from the admin, and the voucher dies with it
+- admin-refund.spec.ts [mobile-chrome] admin cancel and refund @money @admin › a paid coupon order is refunded from the admin, and the voucher dies with it
+- cart.spec.ts [mobile-chrome] shopping cart (guest) › adding to the cart opens the drawer, and the header badge reopens it
+- cart.spec.ts [chromium] the cart sheet and the keyboard › the phone sheet takes focus, keeps it, and gives it back on Escape
+- cart.spec.ts [mobile-chrome] the cart sheet and the keyboard › the desktop dropdown does not steal focus into a sheet nobody can see
+- category-grid.spec.ts [mobile-chrome] the category tile grid › hover lifts the card with the token shadow and zooms the photograph 5%
+- coupon-offer.spec.ts [chromium] coupon variant › similar coupons link to coupon pages and the product page links back
+- coupon-offer.spec.ts [mobile-chrome] coupon variant › renders the masked code, the terms accordion, the merchant section and no voucher QR (run 2: expected)
+- coupon-offer.spec.ts [mobile-chrome] coupon variant › similar coupons link to coupon pages and the product page links back (run 2: expected)
+- error-page.spec.ts [chromium] 500 page and /status (UX26) › a render error under the root boundary shows the status check, the status link and the support button
+- error-page.spec.ts [chromium] 500 page and /status (UX26) › a render error under the store boundary shows the status check, the status link and the support button
+- error-page.spec.ts [mobile-chrome] 500 page and /status (UX26) › a render error under the root boundary shows the status check, the status link and the support button
+- error-page.spec.ts [mobile-chrome] 500 page and /status (UX26) › a render error under the store boundary shows the status check, the status link and the support button
+- footer.spec.ts [chromium] site footer (UX13) › a row opens on a tap and shows its links
+- hot-coupons.spec.ts [chromium] hot coupons (UX10) › the copy button writes the code to the clipboard and confirms in place
+- hot-coupons.spec.ts [mobile-chrome] hot coupons (UX10) › the copy button writes the code to the clipboard and confirms in place
+- listing-controls.spec.ts [mobile-chrome] listing controls (UX14) › the view switcher lays the grid out as rows and remembers it
+- product-buy-row.spec.ts [mobile-chrome] product buy row and gallery (UX15) › a resting mouse magnifies the photo and leaving restores it
+- product.spec.ts [chromium] product page › the cashback line, when present, names a rate and a shekel amount
+- product.spec.ts [mobile-chrome] product page › the cashback line, when present, names a rate and a shekel amount
+- production-smoke.spec.ts [chromium] production smoke: guest cart to checkout › a coupon product shows the on-site portion separately
+- production-smoke.spec.ts [mobile-chrome] production smoke: guest cart to checkout › a coupon product shows the on-site portion separately
+- search-results.spec.ts [chromium] search results page (UX21) › on a phone the bar carries a filters link that opens the disclosure
+- toasts.spec.ts [chromium] toasts › the admin panel paints its toasts
+- toasts.spec.ts [mobile-chrome] toasts › the admin panel paints its toasts
+
+The skipped set is the same in both runs but for coupon-offer: run 1
+sampled a product with no coupon variant and skipped three of its cases,
+run 2 sampled one with and ran two of them (the third, the chromium
+similar-coupons case, skipped in both). Every other skip carries the same
+reason as in the earlier pair below.
+
+**Flaky case 1, measured: `a11y.spec.ts`, "coupons has no WCAG A/AA
+violations" on mobile-chrome.** axe reported `aria-prohibited-attr
+(serious) x1` with the target `:root`. That selector is axe-core's fallback
+for a node it can no longer walk up to the document, i.e. the element had
+left the DOM between the analysis and the serialisation of the result. The
+node is `CouponsGridSkeleton`, the Suspense fallback of `/coupons`: a div
+with `aria-label="טוען קופונים"` and no role, which ARIA prohibits, caught by
+a scan that ran at `domcontentloaded` before the grid streamed in. Four
+probes of the same page on a Pixel 5 viewport against the same server
+found nothing on `<html>` and no violation: the grid had streamed by the
+time axe ran, which is why 1,121 other cases and every earlier run passed
+it. Every ticket under the grid is `aria-hidden`, so the label was the only
+text and no screen reader ever heard it. A product a11y defect: the grid
+now carries `aria-busy` and one `sr-only` sentence, the
+`AccountContentSkeleton` pattern, pinned by
+`src/components/CouponCardSkeleton.test.tsx`. This fix is under `src/` and
+is NOT in the build the pair measured; run 2 passed the case because the
+grid streamed in time, not because of the fix.
+
+**Flaky case 2, measured: `loading-skeletons.spec.ts`, "a tab press paints
+the column skeleton before the new page" on chromium.** Run 1 read
+`["האזור האישי", "ההזמנות שלי"]` again, with the records-based observer
+from the earlier pair in place: no `addedNodes` carried the skeleton, so
+the fallback never entered the DOM. React commits a newly mounted
+boundary's fallback only if the data has not arrived by then, and on a
+warm database the orders page's RSC answer won the race; the skeleton is
+the instant state for a page that takes its time (2.3-2.6s when UX27 was
+measured), not a promise that every answer is slow. A test defect, the
+second in this case: the spec now holds the non-prefetch `RSC: 1` request
+to `/account/orders` back 1.5s through `page.route` (prefetches pass
+untouched; they carry the static shell, which is what paints) and the
+fallback has to paint. Verified 3 of 3 on chromium against the running
+build before run 2 (`--repeat-each=3`, 22.5s), and run 2 passed it at
+08:52:36. The patch landed on disk at 08:39, after run 1's chromium half
+had failed the case (08:31) and before its mobile-chrome half reached the
+file (08:39:57), so run 1's phone project and all of run 2 ran the patched
+spec; nothing under `src/` changed for this one.
+
+**What a green pair now needs.** Two runs on a build that carries
+64b9d3eeb (the coupons skeleton is server-rendered). That build exists:
+`CARDCOM_USE_MOCK=true pnpm build` of the tree after run 2 is green (rc=0,
+csp shell gate clean, 278 shells, BUILD_ID `5eryDW8kuvOl6zDfKLTVq`, 09:06),
+and it is newer than every file under `src/` and `e2e/`, so the queued
+pair reuses it. A full pair (42 minutes) did not fit this item's remaining
+hour.
+
+### The earlier pair (the build of 6718a7f5a, 15.10.2026, runs started 07:33:46 and 07:54:47)
+
 
 `bash logs/xf04/run.sh 1` then `bash logs/xf04/run.sh 2`, back-to-back on
 one server start each, port 3454, listener cwd and BUILD_ID verified before
