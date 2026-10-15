@@ -4,7 +4,7 @@ Updated: 2026-10-14 (Asia/Bangkok). Queue: FINAL-CLOSEOUT L1 to L16, issued 14.1
 
 ## Current Position
 
-**המשך מ: שלב L10 (BUILD GAPS), השורות שנותרו: 1/27/29 (חיפוש בכותרת ומגה-מניו, סותרות כלל קיים), 13 (IndexedDB + Background Sync), 14, 16, 17, 23, 25, ואז מסלול הכסף (19, 20, 22) אחד לכל PR. הבא: מסלול הכסף 19, 20, 22 (14 ו-25 ממתינות ל-245/244, 17 חלקית, 16 מושהית) (חבילת contact), ואז מסלול הכסף. 16 נדחתה: סותרת מיגרציה 232 וכלל המודל העסקי, ממתינה לאישור. 25 (עגלה נטושה): קוד הועבר, ממתין למיגרציה 244 (BLOCKED-MIGRATION), בלי קופון. סגורות: 2, 4, 6, 8, 9, 15, 18, 21, 24, 26, 28, 30, 29 (אדמין), 3 (חוץ מדירוג ופופולריות), 5 (פר-דפדפן), 10 (חוץ משעות שירות)**
+**המשך מ: שלב L10 (BUILD GAPS), השורות שנותרו: 1/27/29 (חיפוש בכותרת ומגה-מניו, סותרות כלל קיים), 13 (IndexedDB + Background Sync), 14, 16, 17, 23, 25, ואז מסלול הכסף (19, 20, 22) אחד לכל PR. הבא: מסלול הכסף 19, 20 (22 הועברה) (14 ו-25 ממתינות ל-245/244, 17 חלקית, 16 מושהית) (חבילת contact), ואז מסלול הכסף. 16 נדחתה: סותרת מיגרציה 232 וכלל המודל העסקי, ממתינה לאישור. 25 (עגלה נטושה): קוד הועבר, ממתין למיגרציה 244 (BLOCKED-MIGRATION), בלי קופון. סגורות: 2, 4, 6, 8, 9, 15, 18, 21, 24, 26, 28, 30, 29 (אדמין), 3 (חוץ מדירוג ופופולריות), 5 (פר-דפדפן), 10 (חוץ משעות שירות)**
 
 The checklist with evidence is `docs/FINAL-CLOSEOUT.md`. Decisions taken alone
 are `docs/DECISIONS.md` D-42 onward.
@@ -141,6 +141,11 @@ Closed so far, each with type-check, lint, test green (510 files, 5949 passed):
   it was not ported). 547 files, 6309 tests, lint and type-check clean, build
   0. Product parity gate REFUSED (no refs in this worktree): unmeasured. Stored
   Q&A not built, same publishing question as row 16.
+- Row 22, referral payout (16.10, money path, own PR): `pay.ts` ported
+  without the mail, `complete.ts` follows `ready_to_pay`. 549 files green
+  locally, type-check clean. Mail to both sides open (needs outbox kind
+  migration written for main's own kind list, plus a builder). Not checked
+  that 098 is applied on the hosted project.
 - 14.10: other autopilot sessions (STEP 69, 70) run in
   `/Users/ofir/kenyonexpress-autopilot` on another branch. This checkout
   showed no foreign edits, so work continued.

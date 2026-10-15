@@ -62,7 +62,7 @@ what main has.
 | 19 | Bundle deals, N for X | Amazon, Lazada | MISSING | MISSING | 4 | build. Money path |
 | 20 | Flash sales | Lazada, TikTok Shop, Groupon | PARTIAL | PARTIAL | 1.5 | admin form, cancel and link ported 2026-10-14; end time, banner, countdown and a sub-daily cron still open. Money path |
 | 21 | Gift cards | Amazon, Wolt | EXISTS | PARTIAL | 0 | QR, guarded admin switch and wallet link closed 2026-10-14 |
-| 22 | Referral program | Wolt, Booking | PARTIAL | EXISTS | 1 | port automatic payout. Money path |
+| 22 | Referral program | Wolt, Booking | PARTIAL | EXISTS | 0.5 | automatic payout ported 2026-10-16, mail to both sides not (needs outbox kind and builder). Money path |
 | 23 | Loyalty tiers | Booking (Genius), Lazada | PARTIAL | PARTIAL | 1 | display ported 2026-10-14; perks and the order snapshot still open |
 | 24 | Push notifications | all | EXISTS | EXISTS | done | prompt wired 2026-10-14 |
 | 25 | Abandoned cart recovery | Amazon, Lazada | PARTIAL | PARTIAL | 2 | finish: second email, coupon code |
@@ -445,6 +445,18 @@ nested `<main>` on the page was also replaced with a `<div>`.
 `src/server/referrals/complete.ts` on the first order. The bonus is paid only
 when an admin presses Approve. prod: `src/server/referrals/pay.ts` pays both
 sides automatically.
+
+main, 2026-10-16: `src/server/referrals/pay.ts` follows `ready_to_pay` from
+`fn_complete_referral` and calls `fn_pay_referral` with no approver, so a clean
+referral is paid when the referred person's first qualifying order is paid
+instead of waiting for an admin. Idempotent twice over (row lock plus the
+wallet transfer keys). Failure is logged, never thrown into the webhook. Held
+referrals and every refusal stay in the admin queue. Not ported: the mail to
+both people, which needs the `referral_bonus_credited` kind in
+`notification_outbox_kind_check` (prod's 229 lists the production line's
+kinds, so it cannot be copied) and a builder. Unit tests only; no referral
+completed against a database. Whether 098's functions are live on the hosted
+project was not checked; if not, the call logs `referrals.pay_failed`.
 
 **23. Loyalty tiers.** main: `src/lib/analytics/cashback-tier.ts`, an analytics
 property that says of itself it is not a loyalty programme. prod:
