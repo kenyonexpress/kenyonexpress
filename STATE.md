@@ -168,3 +168,5 @@ BLOCKED: F06 form wiring for cancellation_window_days and payout_cadence until 1
 F07: PARTIAL. Existing: lead form + supplier_leads. Built: page title הצטרפו כעסקים, /supplier/apply redirect, click-wrap agreement (version + sha256 hash + timestamp + IP in immutable audit_log, stale-hash refused), 3 tests; migration 185 now has preflight, README row, inventory + manifest.
 BLOCKED: F07 1 ILS card verification at signup needs a tokenization/charge-and-void flow on the payment provider (mock-only here, and suppliers apply unauthenticated); needs a design for who holds the token
 המשך מ: F08
+F08: DONE (verified existing + gap built): ToS, privacy, returns, accessibility, cookies all 200; added governing-law (Israeli law, Tel Aviv) section to the four that lacked it
+המשך מ: F09
