@@ -12,7 +12,7 @@ live site unless it says so.
 |---|---|---|
 | [x] | L1 Landmines verify | Closed 2026-10-14 |
 | [x] | L9 Big-site gap audit | Closed 2026-10-14 |
-| [ ] | L10 Build gaps | Next |
+| [ ] | L10 Build gaps | In progress. Rows 25 (second reminder) and 14 (three wizard steps) ported 2026-10-15/16, both behind pending 244 and 245. Row 16 held for a business-model decision. 17, 19, 20, 22 open |
 | [ ] | L11 Growth plumbing | |
 | [ ] | L12 Hardening | |
 | [ ] | L13 Phase 2 behind flags | |

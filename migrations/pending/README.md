@@ -27,6 +27,17 @@ moved to `applied/`:
 
 `/api/health` answered `ok` with the database `ok` after the three.
 
+## 2026-10-15: 245 PENDING (supplier onboarding wizard)
+
+`245_supplier_onboarding.sql` is the production branch's 204, renumbered above
+244: `supplier_applications`, `supplier_application_documents`,
+`supplier_contract_acceptances`, and a vault-backed `store_supplier_bank_secret`
+so a bank account is never a column (only code, branch and last four). RLS on,
+service role writes. `/suppliers/apply` reads the caller's own application
+through the service role, so without the tables the page cannot load: it is
+dead code until this is applied (BLOCKED-MIGRATION). Not dry-run from this
+line; the file's own header records the production-branch dry run.
+
 ## 2026-10-15: 244 PENDING (second abandoned-cart reminder)
 
 `244_abandoned_cart_second_reminder.sql` is the production branch's 190,

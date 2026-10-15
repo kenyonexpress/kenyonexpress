@@ -4,7 +4,7 @@ Updated: 2026-10-14 (Asia/Bangkok). Queue: FINAL-CLOSEOUT L1 to L16, issued 14.1
 
 ## Current Position
 
-**המשך מ: שלב L10 (BUILD GAPS), השורות שנותרו: 1/27/29 (חיפוש בכותרת ומגה-מניו, סותרות כלל קיים), 13 (IndexedDB + Background Sync), 14, 16, 17, 23, 25, ואז מסלול הכסף (19, 20, 22) אחד לכל PR. הבא: 14, ואז 17 (חבילת contact), ואז מסלול הכסף. 16 נדחתה: סותרת מיגרציה 232 וכלל המודל העסקי, ממתינה לאישור. 25 (עגלה נטושה): קוד הועבר, ממתין למיגרציה 244 (BLOCKED-MIGRATION), בלי קופון. סגורות: 2, 4, 6, 8, 9, 15, 18, 21, 24, 26, 28, 30, 29 (אדמין), 3 (חוץ מדירוג ופופולריות), 5 (פר-דפדפן), 10 (חוץ משעות שירות)**
+**המשך מ: שלב L10 (BUILD GAPS), השורות שנותרו: 1/27/29 (חיפוש בכותרת ומגה-מניו, סותרות כלל קיים), 13 (IndexedDB + Background Sync), 14, 16, 17, 23, 25, ואז מסלול הכסף (19, 20, 22) אחד לכל PR. הבא: 17 (14 הועברה, ממתינה ל-245) (חבילת contact), ואז מסלול הכסף. 16 נדחתה: סותרת מיגרציה 232 וכלל המודל העסקי, ממתינה לאישור. 25 (עגלה נטושה): קוד הועבר, ממתין למיגרציה 244 (BLOCKED-MIGRATION), בלי קופון. סגורות: 2, 4, 6, 8, 9, 15, 18, 21, 24, 26, 28, 30, 29 (אדמין), 3 (חוץ מדירוג ופופולריות), 5 (פר-דפדפן), 10 (חוץ משעות שירות)**
 
 The checklist with evidence is `docs/FINAL-CLOSEOUT.md`. Decisions taken alone
 are `docs/DECISIONS.md` D-42 onward.
@@ -131,6 +131,11 @@ Closed so far, each with type-check, lint, test green (510 files, 5949 passed):
   (`lib/contact/channels`, `inquiry-links`, `no-outbound-whatsapp` test), so
   it is a port of five files and a rule, not a component. Not started.
   Next: row 14 (supplier wizard, three steps from prod, tables in 204).
+- Row 14, supplier wizard (16.10): three steps ported from prod, page at
+  `/suppliers/apply`. 546 files, 6308 tests, type-check and lint clean, build
+  0. `245_supplier_onboarding.sql` pending, NOT applied: BLOCKED-MIGRATION,
+  the page is dead until then. Two rate-limit keys added and documented. Not
+  seen in a browser. Products, hours and review steps not built.
 - 14.10: other autopilot sessions (STEP 69, 70) run in
   `/Users/ofir/kenyonexpress-autopilot` on another branch. This checkout
   showed no foreign edits, so work continued.

@@ -65,6 +65,8 @@
 | `checkout-velocity-phone` | 15 | 24 h | new orders naming one delivery phone in a day, across accounts |
 | `referral-code` | 10 | 1 h | referral code mint, per user |
 | `review-submit` | 5 | 1 h | review spam, per user |
+| `supplier-apply` | 5 | 1 h | supplier applications, per user |
+| `supplier-doc-upload` | 30 | 1 h | presigned R2 PUT minting for onboarding documents, per user |
 | `wishlist-toggle` | 60 | 1 h | held-down heart, per user |
 | `wishlist-merge` | 10 | 1 h | guest list merge on sign-in, per user |
 | `redeem` | 60 | 1 h | customer-facing redeem page, per IP |

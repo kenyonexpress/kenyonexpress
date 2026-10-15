@@ -54,7 +54,7 @@ what main has.
 | 11 | Saved cards (token only, no PAN) | Amazon, Wolt | EXISTS | EXISTS | 0 | none |
 | 12 | Apple and Google Wallet passes | Booking, Groupon | EXISTS | EXISTS | 0 | none. Needs certificates, a human item |
 | 13 | Offline redemption queue | Wolt (courier), Groupon Merchant | PARTIAL | PARTIAL | 2 | queue ported 2026-10-14; IndexedDB and Background Sync still open |
-| 14 | Supplier onboarding wizard, six steps | Wolt, Lazada, TikTok Shop | PARTIAL | PARTIAL | 4 | port three steps, build three |
+| 14 | Supplier onboarding wizard, six steps | Wolt, Lazada, TikTok Shop | PARTIAL | PARTIAL | 3 | three steps ported 2026-10-16 behind pending 245; products, opening hours and review still to build |
 | 15 | Admin KPI dashboard | all (seller centres) | EXISTS | EXISTS | 0 | ops KPIs ported, active vouchers and payouts due added, closed 2026-10-14 |
 | 16 | Product reviews | Amazon, Booking, Lazada | PARTIAL | PARTIAL | 3 | finish. See note C |
 | 17 | Q&A on product page | Amazon, Lazada | MISSING | MISSING | 3 | build |
@@ -338,6 +338,15 @@ prod: `src/components/supplier/SupplierApplyWizard.tsx`, three steps (business
 with address, bank, contract) and document upload; its tables exist only in
 `migrations/pending/204_supplier_onboarding.sql`. Missing on both: products,
 opening hours, review.
+
+Ported on main, 2026-10-16: `/suppliers/apply`, `SupplierApplyWizard`
+(business with address, bank, contract plus document upload), the
+`supplier-onboarding` action, and `lib/suppliers/{bank-account,company-id,contract}`
+with their tests. The bank account goes to the vault, never a column. Tables are
+`migrations/pending/245_supplier_onboarding.sql` (prod's 204), NOT applied
+(BLOCKED-MIGRATION): the page cannot load its application read without them.
+Not exercised in a browser; unit tests and a green build only. The page needs a
+signed-in session. Missing on both lines: products, opening hours, review.
 
 **15. Admin KPIs.** main: `/admin/dashboard` (today's orders, collected,
 vouchers, redemptions) and `/admin/analytics` (GMV, revenue, funnel, top
