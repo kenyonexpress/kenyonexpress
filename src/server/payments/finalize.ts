@@ -854,6 +854,24 @@ export async function finalizeOrder(input: {
       .maybeSingle()
     const intent = giftRow ? readGiftIntent(giftRow as Record<string, string | null>) : null
     if (intent) {
+      // Its own read: 186 may not be applied, and a 42703 here must not take
+      // the gift itself down with it.
+      const { data: sendAtRow, error: sendAtError } = await admin
+        .from('orders')
+        .select('gift_send_at')
+        .eq('id', order.id)
+        .maybeSingle()
+      // 42703 is the un-migrated database and is expected; anything else is not.
+      if (sendAtError && sendAtError.code !== '42703') {
+        log.warn('finalize.gift_send_at_read_failed', {
+          orderId: order.id,
+          reason: sendAtError.message,
+        })
+      }
+      const raw = (sendAtRow as { gift_send_at?: string | null } | null)?.gift_send_at
+      intent.sendAt = raw ? new Date(raw) : null
+    }
+    if (intent) {
       const { data: buyer } = await admin
         .from('profiles')
         .select('full_name')

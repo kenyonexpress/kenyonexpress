@@ -16,6 +16,7 @@ import {
   buildOrderItemSnapshot,
   completeSplitPair,
 } from '@/lib/commerce/product-money'
+import { giftSendAt } from '@/lib/gifts/send-at'
 import { withActionContext } from '@/lib/observability/action-context'
 import { log } from '@/lib/observability/log'
 import { capturePaymentError } from '@/lib/observability/sentry'
@@ -616,6 +617,23 @@ async function runBeginCheckout(
     if (giftError) {
       log.warn('checkout.gift_not_recorded', { order_id: order.id, err: giftError.message })
     }
+
+    // Scheduled delivery (186), again in its own statement: before 186 is
+    // applied the column does not exist, the update fails, and the gift is sent
+    // immediately, which is the behaviour before scheduling existed.
+    const sendAt = giftSendAt(input.gift_send_date, now)
+    if (sendAt) {
+      const { error: sendAtError } = await admin
+        .from('orders')
+        .update({ gift_send_at: sendAt.toISOString() } as never)
+        .eq('id', order.id)
+      if (sendAtError) {
+        log.warn('checkout.gift_send_at_not_recorded', {
+          order_id: order.id,
+          err: sendAtError.message,
+        })
+      }
+    }
   }
 
   const itemGeneration = await resolveOrderItemGeneration(
@@ -1005,6 +1023,7 @@ async function runSubmitCheckout(
           gift_recipient_email: text('gift_recipient_email'),
           gift_recipient_name: text('gift_recipient_name') || undefined,
           gift_message: text('gift_message') || undefined,
+          gift_send_date: text('gift_send_date') || undefined,
         }
       : {}),
   })

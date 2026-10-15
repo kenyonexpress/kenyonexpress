@@ -350,4 +350,10 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
     state: 'pending',
     hasPreflight: true,
   },
+  {
+    number: '186',
+    file: '186_orders_gift_send_at.sql',
+    state: 'pending',
+    hasPreflight: true,
+  },
 ] as const

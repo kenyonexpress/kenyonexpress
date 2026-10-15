@@ -170,3 +170,5 @@ BLOCKED: F07 1 ILS card verification at signup needs a tokenization/charge-and-v
 המשך מ: F08
 F08: DONE (verified existing + gap built): ToS, privacy, returns, accessibility, cookies all 200; added governing-law (Israeli law, Tel Aviv) section to the four that lacked it
 המשך מ: F09
+F09: DONE (existing + gap built): email delivery, recipient email, personal message existed; added scheduled delivery (date field, giftSendAt, outbox next_attempt_at hold, 4 tests). Migration 186 (orders.gift_send_at) in pending; until applied the gift sends immediately.
+המשך מ: F10

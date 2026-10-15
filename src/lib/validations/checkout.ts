@@ -131,6 +131,8 @@ export const giftSchema = z.object({
     .optional(),
   gift_recipient_name: z.string().trim().max(80).optional(),
   gift_message: z.string().trim().max(500, 'הברכה ארוכה מדי').optional(),
+  // YYYY-MM-DD. Optional; see lib/gifts/send-at.ts for what a bad value does.
+  gift_send_date: z.string().trim().max(10).optional(),
 })
 
 /**

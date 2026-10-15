@@ -713,6 +713,10 @@ export default function CheckoutForm({
                           placeholder="מזל טוב! בקיצור, תיהנו."
                         />
                       </div>
+                      <div className="checkout-field">
+                        <label htmlFor="co-gift-date">מתי לשלוח? (אפשר להשאיר ריק)</label>
+                        <input id="co-gift-date" name="gift_send_date" type="date" dir="ltr" />
+                      </div>
                       <p className="checkout-privacy">
                         אחרי התשלום יישלח למקבל מייל עם קישור אישי לקבלת הקופון. עד שהוא ייאסף
                         הקופון נשאר בחשבון שלכם.

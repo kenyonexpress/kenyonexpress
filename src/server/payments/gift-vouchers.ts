@@ -38,6 +38,8 @@ export interface GiftIntent {
   recipientName: string | null
   recipientEmail: string
   message: string | null
+  /** Delivery time; null or past means now. Read from orders.gift_send_at (186). */
+  sendAt?: Date | null
 }
 
 /** Postgres: undefined_column, i.e. 108 has not been applied to this database. */
@@ -151,6 +153,9 @@ export async function sendOrderGifts(
           expires_at: voucher.expires_at,
         },
         dedupe_key: `gift:${voucher.id}`,
+        ...(input.intent.sendAt && input.intent.sendAt > now
+          ? { next_attempt_at: input.intent.sendAt.toISOString() }
+          : {}),
       } as never)
 
       if (queueError && !queueError.message.includes('duplicate')) {

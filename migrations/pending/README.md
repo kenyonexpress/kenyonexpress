@@ -15,6 +15,12 @@ migration, so the apply order across the two branches is undefined.
 Until the owner picks a mainline branch, **apply nothing from either side.**
 The full measured table is in `docs/MIGRATION-NUMBER-COLLISIONS.md`.
 
+## 2026-10-16: 186 added - scheduled gift delivery
+
+`186_orders_gift_send_at.sql` adds nullable `orders.gift_send_at`. **Not
+applied.** Until it is, the checkout's separate update fails quietly and the
+gift is sent immediately, as before.
+
 ## 2026-10-16: 185 added - per-product cancellation window and payout cadence
 
 `185_products_cancellation_window_payout_cadence.sql` adds two nullable columns
