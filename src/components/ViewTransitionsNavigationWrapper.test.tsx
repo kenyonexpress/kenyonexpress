@@ -3,44 +3,28 @@ import { useRouter } from 'next/navigation'
 import { describe, expect, it, vi } from 'vitest'
 import ViewTransitionsNavigationWrapper from './ViewTransitionsNavigationWrapper'
 
-// Mock next/navigation
 vi.mock('next/navigation', () => ({
   useRouter: vi.fn(),
 }))
 
 describe('ViewTransitionsNavigationWrapper', () => {
-  it('renders children', () => {
+  it('calls startViewTransition when router.push is called with view transitions supported', () => {
+    const originalPush = vi.fn()
     const mockRouter = {
-      push: vi.fn(),
+      push: originalPush,
       replace: vi.fn(),
       back: vi.fn(),
       forward: vi.fn(),
     }
     ;(useRouter as any).mockReturnValue(mockRouter)
 
-    const { container } = render(
-      <ViewTransitionsNavigationWrapper>
-        <div>Test content</div>
-      </ViewTransitionsNavigationWrapper>,
-    )
-
-    expect(container.textContent).toContain('Test content')
-  })
-
-  it('wraps router.push with view transition capability', () => {
-    const mockRouter = {
-      push: vi.fn(),
-      replace: vi.fn(),
-      back: vi.fn(),
-      forward: vi.fn(),
-    }
-    ;(useRouter as any).mockReturnValue(mockRouter)
-
-    // Mark document as supporting startViewTransition
+    const startViewTransitionMock = vi.fn((callback: () => void) => {
+      callback()
+      return Promise.resolve()
+    })
     Object.defineProperty(document, 'startViewTransition', {
-      value: vi.fn((cb) => {
-        cb()
-      }),
+      value: startViewTransitionMock,
+      writable: true,
       configurable: true,
     })
 
@@ -50,7 +34,67 @@ describe('ViewTransitionsNavigationWrapper', () => {
       </ViewTransitionsNavigationWrapper>,
     )
 
-    // The wrapper should have replaced router.push
-    expect(typeof mockRouter.push).toBe('function')
+    // Call the wrapped push
+    mockRouter.push('/test')
+
+    // Verify startViewTransition was called
+    expect(startViewTransitionMock).toHaveBeenCalled()
+  })
+
+  it('calls startViewTransition when router.back is called', () => {
+    const mockRouter = {
+      push: vi.fn(),
+      replace: vi.fn(),
+      back: vi.fn(),
+      forward: vi.fn(),
+    }
+    ;(useRouter as any).mockReturnValue(mockRouter)
+
+    const startViewTransitionMock = vi.fn((callback: () => void) => {
+      callback()
+      return Promise.resolve()
+    })
+    Object.defineProperty(document, 'startViewTransition', {
+      value: startViewTransitionMock,
+      writable: true,
+      configurable: true,
+    })
+
+    render(
+      <ViewTransitionsNavigationWrapper>
+        <div>Test</div>
+      </ViewTransitionsNavigationWrapper>,
+    )
+
+    mockRouter.back()
+
+    expect(startViewTransitionMock).toHaveBeenCalled()
+  })
+
+  it('handles navigation without view transitions API support', () => {
+    const mockPush = vi.fn()
+    const mockRouter = {
+      push: mockPush,
+      replace: vi.fn(),
+      back: vi.fn(),
+      forward: vi.fn(),
+    }
+    ;(useRouter as any).mockReturnValue(mockRouter)
+
+    Object.defineProperty(document, 'startViewTransition', {
+      value: undefined,
+      writable: true,
+      configurable: true,
+    })
+
+    render(
+      <ViewTransitionsNavigationWrapper>
+        <div>Test</div>
+      </ViewTransitionsNavigationWrapper>,
+    )
+
+    mockRouter.push('/test')
+
+    expect(mockPush).toHaveBeenCalled()
   })
 })
