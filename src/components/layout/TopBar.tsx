@@ -1,6 +1,13 @@
 import LoginLink from '@/components/auth/LoginLink'
 import { MapPin, ShoppingBag, User } from '@/components/icons'
-import { ThemeToggle } from '@/components/theme/ThemeToggle'
+import dynamic from 'next/dynamic'
+
+const ThemeToggle = dynamic(
+  () => import('@/components/theme/ThemeToggle').then((m) => ({ default: m.ThemeToggle })),
+  {
+    ssr: false,
+  },
+)
 
 const TOP_BAR_ITEMS: Array<{
   Icon: typeof User
