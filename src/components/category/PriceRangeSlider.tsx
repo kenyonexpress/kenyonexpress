@@ -81,8 +81,8 @@ export default function PriceRangeSlider({
         />
       </div>
       <div className="price-slider__values">
-        <span className="price-slider__value">₪{localMin}</span>
-        <span className="price-slider__value">₪{localMax}</span>
+        <span className="price-slider__value">₪{(localMin / 100).toFixed(0)}</span>
+        <span className="price-slider__value">₪{(localMax / 100).toFixed(0)}</span>
       </div>
       <button
         type="button"

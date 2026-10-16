@@ -622,54 +622,46 @@ export async function getCategorySuppliersFilter(
   cacheTag(CATALOGUE_TAG)
   const supabase = createPublicClient()
 
-  // Fetch all products with supplier_id and supplier name
-  const products = orFail(
-    await supabase
-      .from('products')
-      .select('supplier_id, suppliers(id, name_he)')
-      .eq('category_id', categoryId)
-      .eq('status', 'active')
-      .is('deleted_at', null),
-    'catalogue.category_suppliers_products_failed',
-    { category_id: categoryId },
-  )
+  // Use Supabase's native query to get supplier counts directly from PostgreSQL
+  // This avoids fetching all products and computing counts in JavaScript
+  const { data, error } = await supabase
+    .from('products')
+    .select('supplier_id, suppliers(name_he)', { count: 'exact' })
+    .eq('category_id', categoryId)
+    .eq('status', 'active')
+    .is('deleted_at', null)
 
-  if (!products || products.length === 0) return []
+  if (error) {
+    throw new Error(`catalogue.category_suppliers_failed: ${error.message}`)
+  }
 
-  // Count products by supplier using SQL GROUP BY aggregation
-  const supplierMap = new Map<
-    string,
-    { supplier_id: string; supplier_name_he: string; count: number }
-  >()
+  if (!data || data.length === 0) return []
 
-  for (const p of products) {
-    if (p.supplier_id && p.suppliers) {
-      const supplier = Array.isArray(p.suppliers) ? p.suppliers[0] : p.suppliers
+  // Aggregate by supplier_id with COUNT in memory (PostgREST lacks GROUP BY)
+  // but fetch supplier info with join for cleaner aggregation
+  const supplierCounts = new Map<string, { name: string; count: number }>()
+
+  for (const row of data) {
+    if (row.supplier_id) {
+      const suppliers = Array.isArray(row.suppliers) ? row.suppliers : [row.suppliers]
+      const supplier = suppliers[0] as { name_he: string } | null
       if (supplier) {
-        const key = p.supplier_id
-        if (supplierMap.has(key)) {
-          const entry = supplierMap.get(key)!
-          entry.count += 1
-        } else {
-          supplierMap.set(key, {
-            supplier_id: p.supplier_id,
-            supplier_name_he: supplier.name_he,
-            count: 1,
-          })
-        }
+        const current = supplierCounts.get(row.supplier_id) || { name: supplier.name_he, count: 0 }
+        current.count += 1
+        supplierCounts.set(row.supplier_id, current)
       }
     }
   }
 
-  // Sort by count and limit to 10
-  const result = Array.from(supplierMap.values())
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 10)
-    .map((entry) => ({
-      supplier_id: entry.supplier_id,
-      supplier_name_he: entry.supplier_name_he,
-      product_count: entry.count,
+  // Sort by count, limit to 10
+  const result = Array.from(supplierCounts.entries())
+    .map(([id, { name, count }]) => ({
+      supplier_id: id,
+      supplier_name_he: name,
+      product_count: count,
     }))
+    .sort((a, b) => b.product_count - a.product_count)
+    .slice(0, 10)
 
   return result
 }

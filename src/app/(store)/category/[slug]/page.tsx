@@ -110,15 +110,14 @@ export async function generateMetadata({ params, searchParams: spPromise }: Prop
   }
 
   const { total } = await getCategoryProductsCached(args)
-  const titleWithCount =
-    total > 0 ? `${total} מבצעים זמינים - ${category.name_he}` : category.name_he
+  const ogTitle = total > 0 ? `${total} מבצעים זמינים` : category.name_he
 
   return {
     title: category.name_he,
     description,
     alternates: alternatesFor(`/category/${encodeURIComponent(category.slug)}`),
     openGraph: {
-      title: titleWithCount,
+      title: ogTitle,
       description,
       url: `/category/${encodeURIComponent(category.slug)}`,
       type: 'website',
