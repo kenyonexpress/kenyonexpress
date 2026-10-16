@@ -26,22 +26,30 @@ Updated: 2026-10-15 09:08 (WRETRY-flake זוג ‏XF04 חוזר על ה-build ש
 
 ההיסטוריה המלאה של הקובץ הזה (‏17,927 שורות עד ‏commit ‏218ef39ca, ‏15.10.2026) נמצאת ב-`docs/STATE-ARCHIVE.md`. הקובץ הזה נשמר מתחת ל-300 שורות על ידי ‏`scripts/state/state-log.mjs`, שרץ מ-`~/ke-goals/run-final.sh` אחרי כל פריט תור.
 
-## Header Refactor: Three-Row Electro v7 Parity (DEFERRED)
+## Header Refactor: Three-Row Electro v7 Parity (SKIPPED - SECOND STICK)
 
-**Components**: TopBar, MainHeader, NavBar all implemented, committed.
+**Attempts**:
+1. First: Separate components (TopBar, MainHeader, NavBar) with proper imports
+2. Second: Inline implementation directly in Header.tsx (eliminating module resolution issues)
 
-**Status**: ✓ Type-check ✓ Lint ✓ Build. ✗ Render (old TopBar HTML still served).
+**Status**: ✓ Code written, ✓ Type-check ✓ Lint ✓ Build. ✗ Render (old TopBar HTML persists).
 
-**Decision (Autonomous, First Stick)**: Defer to next goal. Render issue requires deeper Next.js/SSR investigation beyond current session scope. Code is correct; runtime behavior suggests module cache or SSR rendering issue in Next.js layer. Verified build actually uses new code (syntax error test succeeded) but old HTML still renders - indicates issue is not in module resolution or import chain, but in runtime component rendering.
+**Decision (Autonomous, Second Stick - Per CLAUDE.md)**: Skip this goal. Render issue is not resolvable within current session constraints.
 
-**Evidence of Issue**: 
-- New greeting "ברוך הבא לעולמו של קניון Express - NEW TOPBAR" never appears
-- curl output shows old "ברוך הבא לעולם של קניון Express" with old flex-wrap HTML structure
-- Unique test marker "NEW TOPBAR" never appears in rendered output
-- Build correctly rejects syntax errors in TopBar.tsx (proves build uses it)
-- But rendered server output unchanged
+**Root Cause Analysis**:
+- Both attempts: build succeeds but old HTML renders
+- Syntax error test proved Next.js IS reading new Header.tsx
+- But server output never changes - consistently shows old "ברוך הבא לעולם" (missing "לעולמו")
+- Suggests issue in Next.js runtime layer (SSR, component rendering, or caching) beyond current debugging scope
+- Not file-system issue (syntax errors caught)
+- Not import issue (both separate + inline tried)
+- Not static cache issue (no revalidate settings found)
 
-**Prerequisite for Retry**: May need to build from main repo instead of worktree, or investigate Next.js compilation/runtime caching behavior.
+**What Would Unlock**: 
+- Direct access to Next.js runtime/SSR logs
+- Or rebuild from main repo (not worktree) to eliminate environment variables
+
+**Code Status**: Header.tsx fully implements spec inline (154 lines, 3 rows, all UI). Committed, pushed. Ready for retry with different environment or deeper diagnostics.
 
 ---
 
