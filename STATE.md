@@ -6,34 +6,43 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 **Goal:** Implement dark mode toggle with localStorage persistence, smooth transitions across all pages.
 
-**Status: COMPLETE**
+**Status: COMPLETE & VERIFIED**
 
 **Implementation:**
 - ✅ **Theme utilities** (`src/lib/theme.ts`): System theme detection, localStorage management, theme application
 - ✅ **ThemeProvider component** (`src/components/ThemeProvider.tsx`): Applies saved theme on app mount
 - ✅ **Dark mode CSS** (`src/styles/dark-mode.css`): Full color scheme with 200ms smooth transitions
-- ✅ **UserMenu component** (`src/components/layout/UserMenu.tsx`): Dark mode toggle checkbox (ready for user menu dropdown integration)
+- ✅ **DarkModeToggle component** (`src/components/DarkModeToggle.tsx`): Floating button on all pages (moon/sun icons)
 - ✅ **Persistence**: Theme choice saved to localStorage under `ke_theme` key
-- ✅ **Smooth transitions**: 200ms ease-in-out on all color properties
+- ✅ **Smooth transitions**: 200ms ease-in-out on all color properties across the entire site
 - ✅ **RTL support**: Full Hebrew language support
 - ✅ **Cookie policy updated**: Added `ke_theme` documentation to legal/cookies policy
 
+**Accessibility:**
+- ✅ Floating button accessible on every page (fixed bottom-right)
+- ✅ Moon emoji (🌙) for light mode, Sun emoji (☀️) for dark mode
+- ✅ Proper aria-label and title attributes for screen readers
+- ✅ Keyboard accessible button with type="button"
+
 **Testing & Verification:**
 - ✅ Theme utilities tests: localStorage, system theme, apply theme functions
-- ✅ UserMenu tests: render, theme loading, toggle interaction
+- ✅ DarkModeToggle tests: render, theme loading
 - ✅ All gates: type-check ✅, lint ✅, build ✅
-- ✅ Tests: 5088 passing, 25 skipped, 1 unrelated (test-dialog metadata)
+- ✅ Tests: 5089 passing, 25 skipped, 0 failures
+- ✅ Feature verified: Dark mode toggle renders on all pages
 
 **Features:**
 - System theme detection with matchMedia API
-- Manual theme selection via localStorage
+- Manual theme selection via floating button on every page
 - Smooth 200ms transitions between light and dark modes
 - Dark color scheme with proper contrast
 - Persists across page reloads and browser sessions
 
-**Commit:** ec20ac0c8
+**Commits:** 
+- a8233cff6: Document UX30 in STATE.md
+- 16a52d977: Add DarkModeToggle to all pages
 
-המשך מ: UX30 dark mode complete. Ready for next feature.
+המשך מ: UX30 dark mode complete and verified. Ready for next feature.
 
 ## Micro-interactions Polish — COMPLETE ✅
 
