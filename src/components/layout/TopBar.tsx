@@ -17,37 +17,35 @@ const INFO_ITEMS = [
 
 export default function TopBar() {
   return (
-    <div className="topbar-container px-gutter">
-      <div
-        dir="rtl"
-        className="flex h-11 items-center gap-0 text-topbar text-heading"
-        data-testid="topbar"
-      >
-        <span className="topbar-greeting hidden">ברוך הבא לעולם של קניון Express</span>
-        <div className="flex items-center gap-0">
-          {INFO_ITEMS.map((item, idx) => (
-            <div key={item.label} className="flex items-center gap-0">
-              {idx > 0 && (
-                <span className="mx-[1em] text-border" aria-hidden="true">
-                  |
-                </span>
-              )}
-              {item.href ? (
-                <LoginLink
-                  href={item.href}
-                  className="flex items-center gap-0 transition-colors hover:text-heading-hover"
-                >
-                  {item.label}
-                </LoginLink>
-              ) : (
-                <span className="flex items-center gap-0">{item.label}</span>
-              )}
-            </div>
-          ))}
-        </div>
-        <div className="me-touch-pad hidden xl:block">
-          <ThemeToggle />
-        </div>
+    <div
+      className="topbar-container flex h-11 items-center gap-0 px-gutter text-topbar text-heading"
+      dir="rtl"
+      data-testid="topbar"
+    >
+      <span className="topbar-greeting hidden">ברוך הבא לעולם של קניון Express</span>
+      <div className="flex items-center gap-0">
+        {INFO_ITEMS.map((item, idx) => (
+          <div key={item.label} className="flex items-center gap-0">
+            {idx > 0 && (
+              <span className="mx-[1em] text-border" aria-hidden="true">
+                |
+              </span>
+            )}
+            {item.href ? (
+              <LoginLink
+                href={item.href}
+                className="flex items-center gap-0 transition-colors hover:text-heading-hover"
+              >
+                {item.label}
+              </LoginLink>
+            ) : (
+              <span className="flex items-center gap-0">{item.label}</span>
+            )}
+          </div>
+        ))}
+      </div>
+      <div className="me-touch-pad hidden xl:block">
+        <ThemeToggle />
       </div>
     </div>
   )
