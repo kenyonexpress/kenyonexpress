@@ -3,10 +3,8 @@ import CategoryBreadcrumb, { defaultHomeCrumb } from '@/components/category/Cate
 import CategoryControlBar from '@/components/category/CategoryControlBar'
 import CategoryFilterSidebar from '@/components/category/CategoryFilterSidebar'
 import CategoryGridSkeleton from '@/components/category/CategoryGridSkeleton'
-import CategoryInfiniteScroll from '@/components/category/CategoryInfiniteScroll'
-import CategoryProductCard, {
-  type CategoryProduct,
-} from '@/components/category/CategoryProductCard'
+import CategoryGridWithInfiniteScroll from '@/components/category/CategoryGridWithInfiniteScroll'
+import type { CategoryProduct } from '@/components/category/CategoryProductCard'
 import {
   CATEGORY_PAGE_SIZE,
   type CollectionRule,
@@ -204,8 +202,6 @@ async function ResultGrid({
 }) {
   const { items, total } = await categoryPageOrLast(args)
 
-  const ordered = items
-
   if (items.length === 0) {
     return (
       <div className="category-page__empty">
@@ -215,27 +211,17 @@ async function ResultGrid({
   }
 
   const { totalPages, currentPage, from, to } = pageWindow(total, args.page)
-  const hasMore = currentPage < totalPages
 
   return (
     <>
-      <ul className="category-products">
-        {ordered.map((product) => (
-          <li key={product.id} className="category-products__item">
-            <CategoryProductCard product={product as CategoryProduct} />
-          </li>
-        ))}
-      </ul>
-      {hasMore && (
-        <CategoryInfiniteScroll
-          pathname={pathname}
-          linkParams={linkParams}
-          currentPage={currentPage}
-        />
-      )}
-      {!hasMore && (
-        <p className="category-page__empty">סיימנו! הראינו את כל המוצרים בקטגוריה זו.</p>
-      )}
+      <CategoryGridWithInfiniteScroll
+        initialItems={items as CategoryProduct[]}
+        totalCount={total}
+        currentPage={currentPage}
+        pageSize={CATEGORY_PAGE_SIZE}
+        categorySlug={args.category.slug}
+        params={linkParams}
+      />
       <p className="category-page__count category-page__count--bottom">
         {resultCountText(total, from, to)}
       </p>

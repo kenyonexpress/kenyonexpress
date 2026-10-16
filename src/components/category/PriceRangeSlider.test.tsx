@@ -17,8 +17,8 @@ describe('PriceRangeSlider', () => {
       <PriceRangeSlider min={100} max={5000} minValue={500} maxValue={2000} onApply={onApply} />,
     )
 
-    expect(screen.getByText('₪500')).toBeInTheDocument()
-    expect(screen.getByText('₪2000')).toBeInTheDocument()
+    expect(screen.getByText('₪5')).toBeInTheDocument()
+    expect(screen.getByText('₪20')).toBeInTheDocument()
   })
 
   it('updates min value when slider changes', () => {
@@ -30,7 +30,7 @@ describe('PriceRangeSlider', () => {
     const minInput = screen.getByLabelText('מחיר מינימלי') as HTMLInputElement
     fireEvent.change(minInput, { target: { value: '800' } })
 
-    expect(screen.getByText('₪800')).toBeInTheDocument()
+    expect(screen.getByText('₪8')).toBeInTheDocument()
   })
 
   it('updates max value when slider changes', () => {
@@ -42,7 +42,7 @@ describe('PriceRangeSlider', () => {
     const maxInput = screen.getByLabelText('מחיר מקסימלי') as HTMLInputElement
     fireEvent.change(maxInput, { target: { value: '3500' } })
 
-    expect(screen.getByText('₪3500')).toBeInTheDocument()
+    expect(screen.getByText('₪35')).toBeInTheDocument()
   })
 
   it('calls onApply when apply button is clicked', () => {
@@ -97,7 +97,7 @@ describe('PriceRangeSlider', () => {
     fireEvent.change(minInput, { target: { value: '3000' } })
 
     // Should not update beyond maxValue
-    expect(screen.getByText('₪500')).toBeInTheDocument()
+    expect(screen.getByText('₪5')).toBeInTheDocument()
   })
 
   it('renders track fill bar', () => {
