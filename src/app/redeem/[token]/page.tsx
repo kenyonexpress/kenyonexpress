@@ -228,12 +228,11 @@ async function RedeemTokenBody({ params }: Props) {
         codeDisplay={formatCode(voucher.code)}
         status={voucher.status}
         productName={voucher.productName}
-        customerName={voucher.customerName}
         faceValue={shekels(agorot(voucher.faceValueAgorot))}
         paidOnline={shekels(agorot(voucher.couponPriceAgorot))}
         toCollect={shekels(agorot(voucher.remainingAmountDueAgorot))}
         expiresAtLabel={formatDate(voucher.expiresAt)}
-        redeemedAtLabel={voucher.redeemedAt ? formatDate(voucher.redeemedAt) : null}
+        redeemedAtISO={voucher.redeemedAt}
         expired={new Date(voucher.expiresAt).getTime() <= Date.now()}
       />
     </main>

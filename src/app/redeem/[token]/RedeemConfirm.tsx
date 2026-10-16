@@ -19,12 +19,11 @@ type Props = {
   codeDisplay: string
   status: VoucherStatus
   productName: string | null
-  customerName: string | null
   faceValue: string
   paidOnline: string
   toCollect: string
   expiresAtLabel: string
-  redeemedAtLabel: string | null
+  redeemedAtISO: string | null
   expired: boolean
 }
 
@@ -59,7 +58,7 @@ export default function RedeemConfirm(props: Props) {
   const [message, setMessage] = useState<string | null>(
     alreadyClosed
       ? props.status === 'redeemed'
-        ? `כבר מומש${props.redeemedAtLabel ? ` ${props.redeemedAtLabel}` : ''}`
+        ? `כבר מומש${props.redeemedAtISO ? ` ${formatRedemptionTime(props.redeemedAtISO)}` : ''}`
         : props.expired && props.status === 'issued'
           ? 'תוקף השובר פג'
           : STATUS_LABEL[props.status]
@@ -114,16 +113,15 @@ export default function RedeemConfirm(props: Props) {
     }
   }
 
-  // Success screen with "הקופון הבא" button
+  // Success screen with "הקופון הבא" button (mobile-only)
   if (phase === 'done' && succeeded) {
     return (
-      <section className="flex flex-col items-center justify-center gap-6 rounded-2xl bg-gradient-to-b from-green-50 to-white p-6 text-center">
+      <section className="flex flex-col items-center justify-center gap-6 rounded-2xl bg-gradient-to-b from-green-50 to-white p-6 text-center md:hidden">
         <div className="text-6xl" aria-hidden="true">
           ✓
         </div>
         <div>
           <p className="text-lg font-bold text-green-900">{message}</p>
-          <p className="mt-2 text-sm text-gray-600">{props.productName ?? 'שובר'}</p>
         </div>
         <a
           href="/scan"
@@ -135,10 +133,10 @@ export default function RedeemConfirm(props: Props) {
     )
   }
 
-  // Failure or already-redeemed screen
+  // Failure or already-redeemed screen (mobile-only)
   if (phase === 'done' && !succeeded) {
     return (
-      <section className="flex flex-col items-center justify-center gap-6 rounded-2xl bg-gradient-to-b from-red-50 to-white p-6 text-center">
+      <section className="flex flex-col items-center justify-center gap-6 rounded-2xl bg-gradient-to-b from-red-50 to-white p-6 text-center md:hidden">
         <div className="text-5xl" aria-hidden="true">
           ⚠️
         </div>
@@ -155,9 +153,9 @@ export default function RedeemConfirm(props: Props) {
     )
   }
 
-  // Main redemption screen with 2-tap confirm
+  // Main redemption screen with 2-tap confirm (mobile-only)
   return (
-    <section className="flex flex-col gap-4 rounded-2xl bg-white p-6">
+    <section className="flex flex-col gap-4 rounded-2xl bg-white p-6 md:hidden">
       {/* Large status badge */}
       <div className={`rounded-xl px-4 py-3 text-center ${statusColor}`}>
         <p className="text-sm font-bold">{statusBadge}</p>
@@ -169,12 +167,9 @@ export default function RedeemConfirm(props: Props) {
         <p className="mt-1 text-xs font-medium text-gray-500">לגבות מהלקוח בקופה</p>
       </div>
 
-      {/* Product and code details */}
+      {/* Product and code details (no customer PII) */}
       <div className="rounded-xl bg-gray-50 p-4 text-center">
         <p className="font-bold text-gray-900">{props.productName ?? 'שובר'}</p>
-        {props.customerName && (
-          <p className="mt-0.5 text-sm text-gray-500">לקוח: {props.customerName}</p>
-        )}
         <p dir="ltr" className="mt-2 font-mono text-lg font-bold tracking-widest text-gray-700">
           {props.codeDisplay}
         </p>
