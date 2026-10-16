@@ -109,3 +109,25 @@ Updated: 2026-10-15 09:08 (WRETRY-flake זוג ‏XF04 חוזר על ה-build ש
 4. **הלולאה מבצעת ‏commit לשני הנתיבים בלבד** (‏`STATE.md`, ‏`docs/STATE-ARCHIVE.md`), לא ‏`-A`, ומדלגת על ‏commit/push על ‏main, ‏production ו-`audit/final-audit`. ‏`check_protected` היה מוגדר ולא נקרא מעולם; עכשיו הוא נקרא.
 5. **‏`run-final.sh` הופעל פעם אחת, על פריט אמיתי אחד, ונעצר.** הוא לא רץ קודם (סוף ‏final.log: ‏12.10) ו-`refill.sh` הוא הלולאה החיה. אחרי חזרה עם ‏claude מזויף בתיקיות זמניות, פריט קריאה-בלבד ‏`XF01V` הוכנס לראש ‏`final-queue.txt`, הלולאה האמיתית הורצה עם ‏`KE_REPO` על ה-worktree הזה ו-claude אמיתי (‏sonnet-5-5, ‏12 שניות), כתבה את הבלוק ‏`XF01V / RESULT: DONE` לראש הקובץ הזה (‏66 שורות), עשתה ‏commit ‏`620d4d654` לשני הנתיבים ודחפה, ואז נעצרה לפני ‏XF02 (אין ‏START XF02 ביומן). הלולאה **אינה** רצה עכשיו; הפעלה קבועה שלה היא לולאת סוכן שנייה על אותו ריפו.
 
+
+## החלטות שהתקבלו לבד (XF05-RETRY2, 2026-10-16T14:21+07:00)
+
+**התנאי לתיוג v1.0.0-mvp-ready-pending-cardcom לא מתקיים.** הותנה ב:
+1. ✓ XF01 PASS (אומת בקומיט 52f55fd34)
+2. ✓ XF03 PASS (אומת בקומיט 52f55fd34)
+3. ✗ **XF04 NOT PASS** — התנאי דורש שתי ריצות ירוקות ברצף, מתועדות ב-docs/E2E-STATUS.md
+4. ✓ ~/ke-goals/LAUNCH-READY.flag ABSENT (אומת)
+
+**מה ששבר את XF04: הזוג WRETRY-flake של 15.10.** הריצה על ה-build של 7e4187152 (BUILD_ID L6tbqtJcab0-6RdbAnqk9):
+- ריצה 1: **1,093 עברו / 2 נכשלו / 27 דולגו מתוך 1,122 ב-21:01**
+- ריצה 2: **1,096 עברו / 0 נכשלו / 26 דולגו מתוך 1,122 ב-21:07**
+- נכשלו בשתיהן: **0**
+- flaky (עברו פעם אחת, נכשלו פעם אחת): **2**
+
+ריצה 1 אינה ירוקה (שני כשלונות), לכן "שתי ריצות ירוקות ברצף" לא מתקיימות. התיעוד המלא ב-docs/E2E-STATUS.md, שורה 13: "Status: NOT GREEN YET, by two flaky cases in run 1". docs/E2E-STATUS.md מפרט את שני המקרים ה-flaky:
+1. a11y.spec.ts "coupons has no WCAG A/AA violations" על mobile-chrome — פגם נגישות ב-CouponsGridSkeleton
+2. loading-skeletons.spec.ts "a tab press paints the column skeleton" על chromium — פגם טסט
+
+שני הגורמים תוקנו ב-64b9d3eeb, ו-build טרי ממנו קיים (BUILD_ID 5eryDW8kuvOl6zDfKLTVq). WRETRY-flake פתוח בראש ~/ke-goals/queue.txt (אומת בקומיט bbbd9a690 ו-52f55fd34).
+
+**החלטה: התג לא נכתב.** תג שנכתב על תנאי שלא התקיים אינו ניתן להפיכה בשקט (הוא נדחף ו-Vercel קורא תגים). הצד השמרני הוא לא לתייג עד שהתנאי **מתקיים מול ראיות**. הריצה הבאה של WRETRY-flake תפעיל את XF05-RETRY2 עם אותו תנאי.
