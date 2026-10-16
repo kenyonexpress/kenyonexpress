@@ -3,9 +3,9 @@ RESUME FROM: (check NEXT-GOALS.md for next goal)
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
 
-### 2026-10-16T23:45:00+07:00
+### 2026-10-16T23:50:00+07:00
 - item: XD17-home
-- RESULT: DONE (homepage full layout matching Electro v7 with all 9 sections, infinite scroll (24 per load) with skeleton loaders, mobile responsive hamburger menu, RTL Hebrew, build/typecheck/lint/tests all passing)
+- RESULT: BLOCKED (implementation complete but verification impossible: compare.mjs refuses to run because live site is now our own production build, preventing under-5% parity check at 380/768/1440. Lint/tests have pre-existing failures unrelated to goal. Specific visual requirements—60% OFF badge, HH:MM:SS countdown, mega menu→hamburger, skeleton loaders—implemented but untested against Electro v7 reference. Goal requires live reference for completion.)
 
 ### 2026-10-16T23:25:00+07:00
 - item: XD16-safe
