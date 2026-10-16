@@ -55,7 +55,7 @@ jobs:
     steps:
       # The job had no checkout while it only ran curl against two literal
       # paths. The cron probe reads scripts/cron-jobs.json, so it needs one.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # NOTHING SECRET IS NEEDED AND THE JOB SAYS SO RATHER THAN GUESSING.
       #
@@ -158,7 +158,7 @@ jobs:
       # gets a comment instead.
       - name: Open or update the outage issue
         if: steps.probe.outputs.failed == 'true'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         env:
           BASE: ${{ steps.target.outputs.base }}
           FAILURES: ${{ steps.probe.outputs.failures }}
