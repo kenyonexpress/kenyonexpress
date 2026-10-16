@@ -748,11 +748,15 @@ export default function CheckoutForm({
             aria-describedby={errorIdFor('accept_terms')}
           />
           <span>
-            קראתי ואני מסכים/ה ל
+            קראתי ואני מסכים ל
             <Link href="/terms-and-conditions" target="_blank" rel="noopener">
               תנאי השימוש
             </Link>{' '}
-            של האתר <span className="checkout-field__required">*</span>
+            ו
+            <Link href="/refund_returns" target="_blank" rel="noopener">
+              החזרות
+            </Link>
+            <span className="checkout-field__required">*</span>
           </span>
         </label>
         {errorFor('accept_terms') && (
