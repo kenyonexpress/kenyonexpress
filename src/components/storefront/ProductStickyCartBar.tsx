@@ -8,7 +8,10 @@ interface ProductStickyCartBarProps {
   productId: string
 }
 
-export default function ProductStickyCartBar({ basePrice, _productId }: ProductStickyCartBarProps) {
+export default function ProductStickyCartBar({
+  basePrice,
+  productId: _productId,
+}: ProductStickyCartBarProps) {
   const [isLoading, setIsLoading] = useState(false)
 
   const handleAddToCart = useCallback(async () => {
