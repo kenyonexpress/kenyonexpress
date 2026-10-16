@@ -37,10 +37,10 @@ export default function TopBar() {
   return (
     <div
       dir="rtl"
-      className="sticky top-0 z-50 flex h-11 w-full items-center justify-between gap-4 border-b border-border bg-[#f5f5f5] px-gutter text-sm text-heading"
+      className="sticky top-0 z-50 flex h-11 w-full items-center justify-between gap-4 border-b border-border bg-track px-gutter text-sm text-heading"
       data-testid="new-topbar"
     >
-      <span>ברוך הבא לעולמו של קניון Express - NEW TOPBAR</span>
+      <span>ברוך הבא לעולמו של קניון אקספרס</span>
       <div className="flex items-center gap-6">
         {TOP_BAR_ITEMS.map((item) => (
           <TopBarItem key={item.label} {...item} />

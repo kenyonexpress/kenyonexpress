@@ -21,12 +21,12 @@ export default function NavBar() {
   return (
     <nav
       dir="rtl"
-      className="sticky bottom-0 z-40 flex h-11 w-full items-center gap-4 bg-[#fed700] px-gutter xl:bottom-auto xl:top-[11rem]"
+      className="sticky bottom-0 z-40 flex h-11 w-full items-center gap-4 bg-brand px-gutter xl:bottom-auto xl:top-[11rem]"
     >
       {/* Left side: Megamenu button */}
       <button
         type="button"
-        className="flex shrink-0 items-center gap-2 rounded bg-white px-4 py-2 font-medium text-[#fed700] transition-colors hover:bg-gray-100"
+        className="flex shrink-0 items-center gap-2 rounded bg-white px-4 py-2 font-medium text-brand transition-colors hover:bg-gray-100"
         aria-label="הכל במבצע"
       >
         <Menu size={18} />

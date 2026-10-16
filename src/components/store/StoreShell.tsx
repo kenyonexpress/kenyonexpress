@@ -6,6 +6,7 @@ import { MobileNavBar } from '@/components/mobile'
 import WhatsAppFloat from '@/components/shared/WhatsAppFloat'
 import DeferredStoreChrome from '@/components/store/DeferredStoreChrome'
 import { phoneAuthEnabled } from '@/lib/auth/phone-otp'
+import { Suspense } from 'react'
 
 /**
  * The storefront's chrome and providers, as one component.
@@ -45,7 +46,9 @@ export default function StoreShell({ children }: { children: React.ReactNode }) 
         </main>
         <SiteFooter />
       </div>
-      <MobileNavBar />
+      <Suspense fallback={null}>
+        <MobileNavBar />
+      </Suspense>
       <WhatsAppFloat />
       <DeferredStoreChrome phoneEnabled={phoneAuthEnabled()} />
     </CartProvider>
