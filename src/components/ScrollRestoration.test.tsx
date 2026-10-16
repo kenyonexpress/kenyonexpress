@@ -5,6 +5,7 @@ import ScrollRestoration from './ScrollRestoration'
 describe('ScrollRestoration', () => {
   beforeEach(() => {
     sessionStorage.clear()
+    window.scrollY = 0
   })
 
   it('renders without crashing', () => {
@@ -24,37 +25,80 @@ describe('ScrollRestoration', () => {
     }
   })
 
-  it('restores scroll position on pageshow event', () => {
-    // Set a stored scroll position
-    sessionStorage.setItem('scroll-position', '100')
+  it('saves scroll position on beforeunload', () => {
+    Object.defineProperty(window, 'scrollY', {
+      writable: true,
+      configurable: true,
+      value: 250,
+    })
 
     render(<ScrollRestoration />)
+    window.dispatchEvent(new Event('beforeunload'))
 
-    // Simulate pageshow event with persisted flag
+    expect(sessionStorage.getItem('scroll-y')).toBe('250')
+  })
+
+  it('restores scroll position on pageshow event', () => {
+    sessionStorage.setItem('scroll-y', '350')
+
+    const scrollToSpy = vi.spyOn(window, 'scrollTo')
+    render(<ScrollRestoration />)
+
     const event = new PageTransitionEvent('pageshow', { persisted: true })
     window.dispatchEvent(event)
 
-    // Check that scrollTo was attempted
-    expect(sessionStorage.getItem('scroll-position')).toBe('100')
+    expect(scrollToSpy).toHaveBeenCalledWith({
+      top: 350,
+      left: 0,
+      behavior: 'auto',
+    })
   })
 
-  it('handles missing scroll-position in sessionStorage', () => {
+  it('handles missing scroll-y in sessionStorage', () => {
+    const scrollToSpy = vi.spyOn(window, 'scrollTo')
     render(<ScrollRestoration />)
 
-    // Simulate pageshow without stored position
     const event = new PageTransitionEvent('pageshow', { persisted: true })
-    expect(() => window.dispatchEvent(event)).not.toThrow()
+    window.dispatchEvent(event)
+
+    expect(scrollToSpy).not.toHaveBeenCalled()
   })
 
   it('cleans up event listeners on unmount', () => {
     const { unmount } = render(<ScrollRestoration />)
-
     const removeEventListenerSpy = vi.spyOn(window, 'removeEventListener')
     unmount()
 
     expect(removeEventListenerSpy).toHaveBeenCalledWith('beforeunload', expect.any(Function))
     expect(removeEventListenerSpy).toHaveBeenCalledWith('pageshow', expect.any(Function))
-
     removeEventListenerSpy.mockRestore()
+  })
+
+  it('full flow: saves on beforeunload and restores on pageshow', () => {
+    Object.defineProperty(window, 'scrollY', {
+      writable: true,
+      configurable: true,
+      value: 500,
+    })
+
+    render(<ScrollRestoration />)
+    window.dispatchEvent(new Event('beforeunload'))
+    expect(sessionStorage.getItem('scroll-y')).toBe('500')
+
+    Object.defineProperty(window, 'scrollY', {
+      writable: true,
+      configurable: true,
+      value: 0,
+    })
+
+    const scrollToSpy = vi.spyOn(window, 'scrollTo')
+    const event = new PageTransitionEvent('pageshow', { persisted: true })
+    window.dispatchEvent(event)
+
+    expect(scrollToSpy).toHaveBeenCalledWith({
+      top: 500,
+      left: 0,
+      behavior: 'auto',
+    })
   })
 })
