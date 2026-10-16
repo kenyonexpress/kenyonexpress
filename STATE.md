@@ -254,3 +254,23 @@ F22: v2.0.0-rc1, rc2 and rc3 already existed and were not moved; tagged v2.0.0-r
 המשך מ: F23
 F23: DONE for today. docs/BACKLOG.md has 7 items, all date- or event-gated (none executable); re-measured gate, E2E, type-check, test and build; docs/HEALTH.md written.
 המשך מ: F23 maintenance loop (BACKLOG.md items when their gate opens; 2026-10-23 group-deals re-evaluation is the first)
+
+---
+
+## Visual Parity Investigation — Ongoing
+
+**Goal:** Push visual parity below 5% at all widths (380, 768, 1440).
+
+**Baseline mismatch detected:** Goal stated "Current: 380=8.44%, 768=9.03%, 1440=3.82%" but actual measurements show:
+- Against refs/localized/ke_live_home.html (Aug 12, old live site snapshot):
+  - 380px: 25.96% (better than best known 30.26%)
+  - 768px: 36.34% (worse than best known 29.0%)
+  - 1440px: 23.14% (worse than best known 8.29%)
+
+**Hypothesis:** Goal baseline may reference measurements against electro-home-v7 reference (Oct 1) rather than live site snapshot. Electro references exist at refs/electro-home-v7_{380,768,1440}.png but comparison mechanism requires external site access or snapshot of rendered Electro template.
+
+**CSS Color Replacements Status:** Recent design system consolidation (commits 9eb8ab6f4+) replaced hardcoded colors with CSS variables. Verification shows all variable values match original hex colors (e.g., `--account-yellow: var(--color-brand-primary)` where both = #fed700). Parity regression (22.74% → 23.14% at 1440) appeared BEFORE color replacements, confirming they did not introduce the issue.
+
+**Worst bands (1440):** y1700-1800 (51.6%), y1100-1200 (49.9%), y1200-1300 (45.8%), y1600-1700 (45.4%) — likely product grid and footer areas.
+
+**Status:** Goal condition requires clarification on reference baseline. Code state: tests 4989 pass (2 gate failures expected), lint clean, type-check clean, build passes.
