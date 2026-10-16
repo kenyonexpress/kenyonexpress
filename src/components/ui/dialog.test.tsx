@@ -106,7 +106,7 @@ describe('Dialog Component - UX29 Modal System', () => {
     it('should call onOpenChange when overlay is clicked', () => {
       const handleOpenChange = vi.fn()
       const TestComponent = () => {
-        const [open, setOpen] = React.useState(true)
+        const [open] = React.useState(true)
         return (
           <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogContent>

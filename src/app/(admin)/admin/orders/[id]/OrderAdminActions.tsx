@@ -1,5 +1,6 @@
 'use client'
 
+import { shekelsFromIls } from '@/lib/money-format'
 import { type OrderActionState, addOrderNote } from '@/server/actions/admin/orders'
 import { refundOrder } from '@/server/actions/payments/refund'
 import { refundOrderToWallet } from '@/server/actions/payments/refund-to-wallet'
@@ -56,9 +57,9 @@ export default function OrderAdminActions({ orderId, notes, refundBlockers }: Pr
           result.replay
             ? 'ההזמנה כבר זוכתה קודם. לא בוצעה פעולה נוספת.'
             : result.cancelOnly
-              ? `העסקה בוטלה לפני שידור לסליקה. ${result.refundedIls.toFixed(2)} ש״ח חוזרים במלואם, בלי דמי ביטול.`
-              : `ההחזר יצא לביצוע: ${result.refundedIls.toFixed(2)} ש״ח לכרטיס${
-                  result.feeIls > 0 ? `, אחרי ${result.feeIls.toFixed(2)} ש״ח דמי ביטול` : ''
+              ? `העסקה בוטלה לפני שידור לסליקה. ${shekelsFromIls(result.refundedIls)} חוזרים במלואם, בלי דמי ביטול.`
+              : `ההחזר יצא לביצוע: ${shekelsFromIls(result.refundedIls)} לכרטיס${
+                  result.feeIls > 0 ? `, אחרי ${shekelsFromIls(result.feeIls)} דמי ביטול` : ''
                 }.`,
         )
         setConfirming(false)

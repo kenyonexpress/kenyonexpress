@@ -1,5 +1,6 @@
 import { EcMapPointer, EcTag } from '@/components/icons/electro-icons'
 import { getActiveCouponDealIds, getCouponDeal } from '@/lib/coupon-deals'
+import { divRoundHalfUp } from '@/lib/money'
 import { shekelsFromIls } from '@/lib/money-format'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
@@ -63,12 +64,11 @@ export default async function CouponDealPage({ params }: Props) {
    * instead of being advertised at a number nobody set.
    */
   const platformPrice = deal.platform_price
-  const remaining =
-    platformPrice != null ? Math.round((deal.original_price - platformPrice) * 100) / 100 : null
+  const remaining = platformPrice != null ? deal.original_price - platformPrice : null
   const discountPct =
     deal.discount_percentage ??
     (platformPrice != null && deal.original_price > 0
-      ? Math.round((1 - platformPrice / deal.original_price) * 100)
+      ? divRoundHalfUp((deal.original_price - platformPrice) * 100, deal.original_price)
       : null)
 
   return (
