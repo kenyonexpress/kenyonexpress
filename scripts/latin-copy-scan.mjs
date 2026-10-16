@@ -64,6 +64,7 @@ const PHRASE_ALLOWLIST = [
   'KenyonExpress',
   'American Express',
   'Apple Pay',
+  'Apple Wallet',
   'Google Pay',
   'Google Analytics',
   'Air Port City',
