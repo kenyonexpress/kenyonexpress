@@ -28,6 +28,111 @@ This goal is stuck 3x. Will not attempt again.
 
 המשך מ: XD17-cat PERMANENTLY SKIPPED. Next goal from queue.
 
+## UX38 Form Input Variants Input Textarea Select Label — COMPLETE ✅
+
+**Goal:** Implement form input components (input, textarea, select, label) with semantic variants, sizes, and proper design token integration.
+
+**Status: COMPLETE & VERIFIED**
+
+**Implementation:**
+- ✅ **Input component variants:**
+  - default: White background with primary text color
+  - error: Error light background with error border
+  - success: Success light background with success border
+  - disabled: Gray background with reduced opacity
+
+- ✅ **Input component sizes:**
+  - sm: 8px height, 3px padding, xs text
+  - md: 10px height (default), 3px padding, sm text
+  - lg: 12px height, 4px padding, base text
+
+- ✅ **Textarea component:**
+  - Same variants as input (default, error, success, disabled)
+  - Sizes with minimum heights: sm (16px), md (20px), lg (24px)
+  - Vertical resize enabled by default
+  - Full design token integration
+
+- ✅ **Label component:**
+  - Variants: default, error, success, muted (secondary text)
+  - Sizes: sm (xs), md (sm), lg (base)
+  - Optional required indicator (red asterisk)
+  - Proper disabled state styling (peer-disabled)
+
+- ✅ **Select component (SelectTrigger):**
+  - Same variants and sizes as input
+  - SelectContent with token-based colors and shadows
+  - SelectItem with hover effects and focus styling
+  - SelectLabel and SelectSeparator with design tokens
+  - Proper icon styling and dropdown animations
+
+- ✅ **Design system integration:**
+  - All components use --electro-* CSS variables:
+    - border: --electro-border, --electro-error, --electro-success, --electro-border-alt
+    - background: --electro-white, --electro-error-light, --electro-success-light, --electro-gray-light
+    - text: --electro-text-primary, --electro-text-secondary, --electro-text-tertiary
+    - focus rings: --electro-info, --electro-error, --electro-success
+  - Smooth transitions via transition-colors class
+  - Proper focus ring styling for keyboard navigation
+  - Disabled state opacity and cursor handling
+
+- ✅ **HTML compatibility:**
+  - Input/Textarea/Select: Omit 'size' from HTML attributes to avoid conflicts
+  - Preserve all standard HTML attributes and event handlers
+  - Support for ref forwarding on all components
+  - Custom className support for styling overrides
+
+- ✅ **Comprehensive test coverage (85 tests):**
+  - Input component: 22 tests
+    - 4 variant tests (default, error, success, disabled)
+    - 3 size tests (sm, md, lg)
+    - Placeholder, focus, combinations, attributes tests
+  - Textarea component: 21 tests
+    - 4 variant tests
+    - 3 size tests with min-height validation
+    - Resize behavior and combinations tests
+  - Label component: 20 tests
+    - 4 variant tests (default, error, success, muted)
+    - 3 size tests
+    - Required indicator tests (with/without asterisk)
+    - Accessibility and htmlFor tests
+  - Select component: 22 tests
+    - SelectTrigger variant and size tests
+    - SelectContent and SelectItem styling
+    - Combination tests (sm error, lg success)
+    - Accessibility role verification
+
+**Verification:**
+- ✅ pnpm type-check: clean (TypeScript compilation successful)
+- ✅ pnpm lint: clean (tokens, copy, asset gates passing)
+- ✅ pnpm test: 5253 passing, 25 skipped, 0 failed
+- ✅ pnpm build: successful production build
+- ✅ All form components integrated with design tokens
+
+**Changed Files:**
+- src/components/ui/input.tsx: Updated with variants and sizes
+- src/components/ui/input.test.tsx: New test file (22 tests)
+- src/components/ui/textarea.tsx: Updated with variants and sizes
+- src/components/ui/textarea.test.tsx: New test file (21 tests)
+- src/components/ui/label.tsx: Updated with variants, sizes, and required indicator
+- src/components/ui/label.test.tsx: New test file (20 tests)
+- src/components/ui/select.tsx: Updated SelectTrigger with variants and sizes
+- src/components/ui/select.test.tsx: New test file (22 tests)
+
+**Commit:**
+- cc2575dc8: [autopilot] UX38: Form input variants - input, textarea, select, label with sizes and states
+
+**Features:**
+- Semantic variant names aligned with Electro v7 design system
+- Consistent sizing across all form components
+- Error and success states for form validation feedback
+- Disabled state styling with proper accessibility
+- Full RTL/LTR support (Hebrew language ready)
+- Smooth color transitions and focus effects
+- Accessible keyboard navigation with focus rings
+- Comprehensive error/success/disabled visual feedback
+
+המשך מ: UX38 COMPLETE. All form input components implemented with variants and sizes. Ready for next goal.
+
 ## UX37 Button Variants Primary Secondary Ghost Danger Link — COMPLETE ✅
 
 **Goal:** Implement button component with semantic variants (primary, secondary, ghost, danger, link), sizes (sm, md, lg), and loading state support.
