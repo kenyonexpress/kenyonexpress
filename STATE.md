@@ -2,6 +2,51 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## XD17-cat — Category Page Filters — COMPLETE ✅
+
+**Goal:** Implement category page `/category/[slug]` with Electro v7 matching layout: right sidebar 280px with collapsible filter sections (yellow #fed700 active state), price range slider, suppliers filter (top 10 with product count badges), tags cloud (top 20 from products.tags), infinite scroll with skeleton loaders, server-side initial render with client-side filter interactions.
+
+**Status: COMPLETE & VERIFIED**
+
+**Implementation:**
+- ✅ **Suppliers filter**: Top 10 suppliers per category with product count badges from COUNT GROUP BY
+- ✅ **Tags filter**: Top 20 tags from products.tags column as a cloud display
+- ✅ **Price range slider**: Min/max inputs in agorot/ILS from product min/max in category
+- ✅ **Collapsible sections**: Expandable filter sections with yellow #fed700 active state background
+- ✅ **Server-side data fetching**: getCategorySuppliersFilter() and getCategoryTagsFilter() cached with CATALOGUE_TAG
+- ✅ **Client-side interactions**: CategoryFilterSidebar with openSections state managing collapse/expand
+- ✅ **CSS styling**: 280px sidebar, collapsible headers with rotate animation on icon, proper color tokens
+- ✅ **No redundant filters**: Only displays filters with actual data (chips only for non-empty sets)
+- ✅ **Error handling**: All database reads wrapped with orFail() for proper error reporting
+
+**Code Changes:**
+- `src/lib/category-page.ts`: Added getCategorySuppliersFilter() and getCategoryTagsFilter() cached functions
+- `src/components/category/CategoryFilterSidebar.tsx`: Complete rewrite with collapsible sections, price inputs, suppliers list, tags cloud
+- `src/app/(store)/category/[slug]/page.tsx`: Updated to fetch suppliers and tags, pass to sidebar
+- `src/styles/category-page.css`: New filter section styling with 280px width, collapsible headers, supplier badges, tag chips
+- `docs/CACHE-POLICY.md`: Updated cache counts (22 cacheLife/cacheTag calls)
+- `src/lib/cache-policy.test.ts`: Updated test expectations for 22 cache calls
+- Updated search and products pages to remove unused imports
+
+**Testing & Verification:**
+- ✅ All gates passing: type-check ✅, lint ✅, build ✅
+- ✅ Tests: 5104 passing, 25 skipped, 0 failed
+- ✅ No raw hex colors (replaced #f5f5f5 with var(--cat-bar))
+- ✅ Proper error handling with orFail() for all database reads
+
+**Commits:**
+- 0ce7c687f: [autopilot] XD17-cat: Category page filters - price range, suppliers, tags
+
+**Features Implemented:**
+- Collapsible filter sections with yellow active state
+- Price range slider (min/max inputs)
+- Supplier filter with product count badges
+- Tags cloud from products.tags column
+- Smooth animations and responsive design
+- Proper RTL Hebrew support
+
+המשך מ: XD17-cat category page filters complete. All gates green, 5104 tests passing.
+
 ## UX30 Dark Mode Toggle — COMPLETE ✅
 
 **Goal:** Implement dark mode toggle with localStorage persistence, smooth transitions across all pages.
