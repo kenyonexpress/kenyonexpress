@@ -28,6 +28,76 @@ This goal is stuck 3x. Will not attempt again.
 
 המשך מ: XD17-cat PERMANENTLY SKIPPED. Next goal from queue.
 
+## UX37 Button Variants Primary Secondary Ghost Danger Link — COMPLETE ✅
+
+**Goal:** Implement button component with semantic variants (primary, secondary, ghost, danger, link), sizes (sm, md, lg), and loading state support.
+
+**Status: COMPLETE & VERIFIED**
+
+**Implementation:**
+- ✅ **Semantic variants:**
+  - primary: Yellow background (#fed700) with black text, uses --electro-yellow-primary design token
+  - secondary: Gray background with primary text, uses --electro-gray-medium token
+  - ghost: Transparent with hover/active effects, uses surface tokens
+  - danger: Red background with white text, uses --electro-error token
+  - link: Transparent with blue text and underline, uses --electro-link token
+
+- ✅ **Button sizes:**
+  - sm: 8px height, 3px x-padding, xs text, rounded-sm
+  - md: 10px height (default), 4px x-padding, sm text, rounded-md
+  - lg: 12px height, 6px x-padding, base text, rounded-lg
+  - icon: 10px square, rounded-md for icon-only buttons
+
+- ✅ **Loading state support:**
+  - loading prop disables button and shows animated spinner
+  - loadingText optional prop for custom loading message
+  - Falls back to children as loading text
+  - aria-busy attribute set for accessibility
+  - Animated spinner using Tailwind animate-spin class
+
+- ✅ **Design system integration:**
+  - All colors use --electro-* CSS variables
+  - Hover and active states properly styled
+  - Smooth transitions via transition-colors class
+  - Focus rings for keyboard navigation
+
+- ✅ **Comprehensive test coverage (36 tests):**
+  - Variant rendering (5 tests for each variant)
+  - Size rendering (4 tests for sm, md, lg, icon sizes)
+  - Loading state (6 tests covering spinner, disabled, aria-busy, loading text)
+  - Disabled state (3 tests)
+  - Variant + size combinations (6 tests)
+  - Accessibility features (4 tests)
+  - HTML attributes and ref forwarding (4 tests)
+  - SVG icon support (2 tests)
+  - Whitespace handling (2 tests)
+
+**Verification:**
+- ✅ pnpm type-check: clean
+- ✅ pnpm lint: clean (tokens, copy, asset gates all passing)
+- ✅ pnpm test: 5174 passing, 25 skipped, 0 failed
+- ✅ pnpm build: successful compilation
+- ✅ src/components/ui/button.tsx: updated with new variants and loading state
+- ✅ src/components/ui/button.test.tsx: new comprehensive test suite
+
+**Features:**
+- Semantic variant names aligned with Electro v7 design system
+- Loading state with visual spinner feedback
+- Full RTL/LTR support (Hebrew language ready)
+- Accessible keyboard navigation with focus rings
+- SVG icon support with proper sizing and layout
+- Disabled state styling with opacity reduction
+- Smooth color transitions
+
+**Changed Files:**
+- src/components/ui/button.tsx: Complete refactor with variants and loading state
+- src/components/ui/button.test.tsx: New test file with 36 comprehensive tests
+
+**Commit:**
+- 291a9eba3: [autopilot] UX37: Button variants primary secondary ghost danger link with sizes sm md lg and loading state
+
+המשך מ: UX37 COMPLETE. All button variants, sizes, and loading state implemented and verified. Ready for next goal.
+
 ## UX36 Shadow Tokens Elevation Hierarchy — COMPLETE ✅
 
 **Goal:** Implement shadow tokens (sm, md, lg, xl) with consistent elevation hierarchy and hover state effects.
