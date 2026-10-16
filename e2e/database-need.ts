@@ -31,7 +31,6 @@ export const NO_DATABASE_SPECS = [
   'coupons.spec.ts',
   'home.spec.ts',
   'layout-stability.spec.ts',
-  'mobile-gestures.spec.ts',
   'mobile-shell.spec.ts',
   'price-bidi.spec.ts',
   'product.spec.ts',
