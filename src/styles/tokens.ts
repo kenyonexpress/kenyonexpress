@@ -315,6 +315,30 @@ export const SITE_CSS_VARS: Record<string, string> = {
 }
 
 /**
+ * Typography scale: semantic combinations of font-size, line-height, and weight
+ * that define consistent text rendering throughout the application.
+ *
+ * Each entry combines size (pixels), line-height (pixels), and weight token reference
+ * for complete control over how text appears. Components use these instead of
+ * combining separate size and weight tokens, ensuring consistency.
+ */
+export const TYPOGRAPHY_SCALE = {
+  // Page headings and section titles
+  h1: { size: '39.998px', lineHeight: '47.9976px', weight: '--weight-medium' },
+  h2: { size: '25.004px', lineHeight: '40.0064px', weight: '--weight-medium' },
+  // Body text and descriptions
+  body: { size: '14px', lineHeight: '23.996px', weight: '--weight-regular' },
+  bodyBold: { size: '14px', lineHeight: '23.996px', weight: '--weight-bold' },
+  // Small text, captions, footer
+  caption: { size: '13px', lineHeight: '20px', weight: '--weight-regular' },
+  // Buttons and interactive elements
+  button: { size: '14px', lineHeight: '20px', weight: '--weight-bold' },
+  // Navigation and links
+  nav: { size: '14px', lineHeight: '20px', weight: '--weight-regular' },
+  navActive: { size: '14px', lineHeight: '20px', weight: '--weight-bold' },
+} as const
+
+/**
  * Non-colour tokens `tokens.css` must declare, and the value each carries.
  *
  * Only two kinds of number get in here: a size that MORE THAN ONE component
