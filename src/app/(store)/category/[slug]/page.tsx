@@ -121,6 +121,8 @@ type QueryArgs = {
   priceMax?: number
   productType?: ProductTypeFilter
   city?: string
+  supplierId?: string
+  tag?: string
   /** The collection rule for this slug, if it is one of the three. */
   collection?: CollectionRule
 }
@@ -302,6 +304,8 @@ async function CategoryPageBody({
   const priceMin = parsePrice(sp.min)
   const priceMax = parsePrice(sp.max)
   const productType = parseProductType(sp.type)
+  const supplierId = typeof sp.supplier === 'string' ? sp.supplier : undefined
+  const tag = typeof sp.tag === 'string' ? sp.tag : undefined
 
   // Cheap shell data only. The product query is deferred to the boundaries
   // below so the breadcrumb, title, control bar and sidebar can stream first.
@@ -319,9 +323,8 @@ async function CategoryPageBody({
     priceMin,
     priceMax,
     productType,
-    // hot-deals / under-99 / new are collections, and nothing falls into a
-    // collection on its own. Undefined for the nine taxonomies, which keep
-    // matching on category_id alone.
+    supplierId,
+    tag,
     collection: collectionRule(category.slug),
   }
 
@@ -331,6 +334,8 @@ async function CategoryPageBody({
     min: priceMin != null ? String(priceMin) : undefined,
     max: priceMax != null ? String(priceMax) : undefined,
     type: productType,
+    supplier: supplierId,
+    tag,
   }
 
   const crumbs = [

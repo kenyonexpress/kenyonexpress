@@ -355,14 +355,27 @@ export async function getCategoryProducts(opts: {
   productType?: ProductTypeFilter
   /** City slug. Part of the cache key, so two cities never share a page. */
   city?: string
+  supplierId?: string
+  tag?: string
   /** Set for the three collection slugs. See `collectionRule`. */
   collection?: CollectionRule
 }): Promise<{ items: CategoryProductRow[]; total: number }> {
   'use cache'
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
-  const { categoryId, category, sort, page, priceMin, priceMax, productType, city, collection } =
-    opts
+  const {
+    categoryId,
+    category,
+    sort,
+    page,
+    priceMin,
+    priceMax,
+    productType,
+    city,
+    supplierId,
+    tag,
+    collection,
+  } = opts
   const supabase = createPublicClient()
   const from = (page - 1) * CATEGORY_PAGE_SIZE
 
@@ -395,6 +408,8 @@ export async function getCategoryProducts(opts: {
 
   if (priceMin != null) query = query.gte('kenyon_price', priceMin)
   if (priceMax != null) query = query.lte('kenyon_price', priceMax)
+  if (supplierId) query = query.eq('supplier_id', supplierId)
+  if (tag) query = query.contains('tags', [tag])
   if (productType) {
     const facet = productTypeFilter(productType)
     query = facet.column === 'or' ? query.or(facet.value) : query.or(`and(${facet.value})`)
