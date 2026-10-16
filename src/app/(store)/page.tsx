@@ -4,18 +4,16 @@ import BrandsRow from '@/components/home/BrandsRow'
 import CategoryGrid from '@/components/home/CategoryGrid'
 import CmsHero from '@/components/home/CmsHero'
 import DealOfTheDay from '@/components/home/DealOfTheDay'
-import DealsOfTheDay from '@/components/home/DealsOfTheDay'
 import FlashSaleBanner from '@/components/home/FlashSaleBanner'
 import ForYouRow from '@/components/home/ForYouRow'
-import HeroSection from '@/components/home/HeroSection'
 import HomeNewsletter from '@/components/home/HomeNewsletter'
 import HotCoupons from '@/components/home/HotCoupons'
+import InfiniteDealsScroll from '@/components/home/InfiniteDealsScroll'
 import PopularSearches from '@/components/home/PopularSearches'
+import { KE_LIVE_DEALS } from '@/lib/ke-live-deals-data'
 import { buildSiteJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
 import { publicPageMetadata } from '@/lib/seo/page-metadata'
 import { Suspense } from 'react'
-// home-handheld.css is imported by the root layout (see the note there): as a
-// page-level import it was a 125-byte stylesheet costing a full round trip.
 
 export const metadata = publicPageMetadata({
   title: 'קניון EXPRESS — מסדרים לך בילוי',
@@ -23,152 +21,39 @@ export const metadata = publicPageMetadata({
   path: '/',
 })
 
-/**
- * refs/ke_live_singlefile.html section order: hero → categories → features →
- * product grid.
- *
- * THE HERO IS NOW CMS-BACKED, AND THE PAGE IS STILL STATIC. `readHomepageContent`
- * returns the authored constants whenever the CMS tables are absent, empty or
- * unreadable - which is every deployment until `migrations/pending/127` is
- * applied - so the prerendered output is byte-identical to what the comparison
- * gate measured. See lib/homepage/cms.ts for why an editor can change the
- * CONTENT of a slide and never its measured geometry.
- */
 export default function HomePage() {
-  // Organization and WebSite belong on the home page and nowhere else. Emitting
-  // them from the root layout would repeat the same two nodes on the checkout,
-  // the account area and every product, which says nothing new and dilutes the
-  // one page that should carry the site's identity.
   const siteLd = buildSiteJsonLd(process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il')
+  const initialProducts = KE_LIVE_DEALS.slice(0, 24)
 
   return (
     <>
-      {/*
-        THE MARKER THE TOP-BAR GREETING HANGS OFF. Live shows "ברוך הבא לעולם
-        של קניון Express" on this page and no other, which is worth one whole
-        top-bar row at 380 (113px here against 76px on an inner page). The
-        shared header cannot read the pathname without turning every route under
-        it dynamic, so it renders the greeting hidden and `globals.css` reveals
-        it with `body:has([data-home])`. Inert, unstyled, and never painted.
-      */}
       <div data-home hidden />
 
       {siteLd.map((node) => (
         <script
           key={node['@type'] as string}
           type="application/ld+json"
-          // The reason has to be ONE line: a biome-ignore suppresses the line
-          // that follows it, so a second `//` line consumes the suppression and
-          // the rule fires anyway, with nothing to see but a comment that reads
-          // like it works.
           // biome-ignore lint/security/noDangerouslySetInnerHtml: JSON-LD has no other insertion point; jsonLdScript escapes every angle bracket.
           dangerouslySetInnerHTML={{ __html: jsonLdScript(node) }}
         />
       ))}
-      {/*
-        The fallback is the AUTHORED hero, not a skeleton, and that is the
-        whole trick. The static shell therefore paints exactly the markup the
-        comparison gate measured - so a deployment with no CMS rows, which is
-        every deployment until `migrations/pending/127` is applied, is
-        byte-identical to before. The LCP element is never behind a spinner.
 
-        A configured hero streams in and replaces it. That is the only case
-        where anything moves, and it is the case an editor asked for.
-      */}
-      <Suspense fallback={<HeroSection />}>
+      <Suspense fallback={null}>
         <CmsHero />
       </Suspense>
-      {/* The city row sits directly under the hero, per the goal.
-          The Suspense boundary is REQUIRED, not decorative: CityTags calls
-          useSearchParams, and this page is statically prerendered. Without a
-          boundary the export fails outright - "Error occurred prerendering
-          page /" - because there are no search params at build time. The
-          fallback reserves nothing, so nothing below it shifts when it
-          hydrates. */}
-      {/*
-        THE CITY ROW IS NOT HERE, AND THAT IS A MEASURED DECISION.
 
-        The goal asked for a city tag row under the hero AND for
-        `compare.mjs --page=home` to stay under 11%. Measured on this build,
-        both numbers from the same server:
-
-          without the row   9.77%   (mine 1440x5577)
-          with the row     21.65%   (mine 1440x5627)
-
-        The two requirements are mutually exclusive. compare.mjs diffs against
-        the LIVE site, which has no city row, so a 50px element under the hero
-        shifts every band below it and roughly doubles the diff. No styling
-        fixes that: the row either occupies vertical space or it is not there.
-
-        The 11% gate is a locked project rule (CLAUDE.md), so it wins over a
-        placement preference. The row lives on the category page instead, which
-        is also the only page where it does anything: the homepage grid is the
-        static KE_LIVE_DEALS fixture and carries no supplier, so a city filter
-        there would have nothing to filter.
-
-        To put it back, restore <Suspense><CityTags/></Suspense> here and accept
-        ~21.65%. That is Ofir's call, not this session's.
-      */}
-      {/*
-        THE STANDALONE CATEGORY STRIP IS GONE, and the hero owns the only copy.
-
-        This rendered a second full-width strip below `lg`, on the reasoning
-        that the in-hero copy was desktop-only. Measured against
-        refs/ke_live_computed.json, live renders the strip INSIDE the hero
-        column at 768 (y426 h170) and does not render it AT ALL at 380
-        (`product-categories-list` is absent from that viewport). So this copy
-        was a duplicate at 768 and an invention at 380, and it was part of the
-        967px by which our product grid started too low on a phone.
-
-        The hero's own copy is now `hidden md:block`, which is live's rule.
-      */}
-      {/* STEP 66: the `no_benefit_bar` arm of the home_hero experiment
-          unmounts the strip in the browser; the server, control and the
-          parity gate render it exactly as before. */}
       <BenefitBarExperiment>
         <BenefitBar />
       </BenefitBarExperiment>
-      <DealsOfTheDay />
-      {/*
-        EVERYTHING FROM HERE DOWN IS BELOW THE GATE'S WINDOW, AND THAT IS WHY
-        IT IS HERE AND NOT HIGHER. `diff-bands.mjs` scores the first 2600px;
-        the 32-card grid above ends past that line at every width (31 rows at
-        380, 16 at 768, 8 at 1440). The city row (see above) was refused
-        because under the hero it moved every scored band; these four sections
-        move none. Their reads are `'use cache'` on the catalogue client, so
-        the page stays static and nothing streams in under the visitor.
-        `live-home-sections.test.ts` pins this order.
-      */}
-      {/*
-        THE FLASH-SALE BANNER (STEP 61) IS THE FIRST THING UNDER THE GRID, and
-        under it for the same reason as everything else here: the gate scores
-        the first 2600px against live, and live has no flash sale. The banner
-        is a cached read (two minutes, catalogue tag) that renders NOTHING for
-        most of the year; its countdown ticks on the device, so the cached
-        shell is never wrong about the clock. The sale page polls the live
-        unit count; the banner's figure is the cache's.
-      */}
+
+      <InfiniteDealsScroll initialProducts={initialProducts} />
+
       <FlashSaleBanner />
       <DealOfTheDay />
-      {/*
-        THE PERSONALISED ROW IS A CLIENT ISLAND THAT MOUNTS EMPTY. It reserves
-        nothing and asks `/api/recommendations/for-you` only for a visitor who
-        consented and has a view history, so the static shell, the gate's
-        window and every visitor without history are byte-identical to before.
-        See ForYouRow.tsx for why it is not a server component.
-      */}
       <ForYouRow />
       <CategoryGrid />
       <PopularSearches />
       <HotCoupons />
-      {/*
-        THE BRANDS ROW (UX11) IS THE MERCHANT DIRECTORY ON THE HOME PAGE, under
-        the coupons it sells and above the newsletter, for the same reason as
-        everything in this block: live has no brand strip (queue row 09), so
-        the gate's window must not see one. It is a cached read of the same
-        two queries /merchants makes, and renders nothing on a catalogue with
-        no merchant that has a product on sale.
-      */}
       <BrandsRow />
       <HomeNewsletter />
     </>

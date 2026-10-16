@@ -171,3 +171,4 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-14 19:29 | home | 380 | n/a | REFUSED | `37482ca67-dirty` | live side is our-build |
 | 2026-10-14 20:39 | home | 380 | n/a | REFUSED | `a1ee1c030-dirty` | live side is our-build |
 | 2026-10-16 08:04 | home | 380 | n/a | REFUSED | `b374a605f` | live side is our-build |
+| 2026-10-16 16:23 | home | 1440 | n/a | REFUSED | `c6c1d47a6` | live side is our-build |
