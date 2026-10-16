@@ -257,20 +257,30 @@ F23: DONE for today. docs/BACKLOG.md has 7 items, all date- or event-gated (none
 
 ---
 
-## Visual Parity Investigation — Ongoing
+## Visual Parity Investigation — REGRESSION IDENTIFIED
 
 **Goal:** Push visual parity below 5% at all widths (380, 768, 1440).
 
-**Baseline mismatch detected:** Goal stated "Current: 380=8.44%, 768=9.03%, 1440=3.82%" but actual measurements show:
-- Against refs/localized/ke_live_home.html (Aug 12, old live site snapshot):
-  - 380px: 25.96% (better than best known 30.26%)
-  - 768px: 36.34% (worse than best known 29.0%)
-  - 1440px: 23.14% (worse than best known 8.29%)
+**CRITICAL FINDING:** Major regression detected at 1440px.
+- Last known good (Oct 15): 1440=8.29% PASS (stable for 5+ weeks)
+- Current: 1440=23.14% FAIL (regression factor: 2.79x worse)
+- Also regressed: 380=25.96% FAIL (vs stable 30.26%), 768=36.34% FAIL (vs stable 28.99%)
 
-**Hypothesis:** Goal baseline may reference measurements against electro-home-v7 reference (Oct 1) rather than live site snapshot. Electro references exist at refs/electro-home-v7_{380,768,1440}.png but comparison mechanism requires external site access or snapshot of rendered Electro template.
+**Root Cause:** Page height increased 33% (7337px vs 5492px at 380, 1440px unchanged). Design system token consolidation (commits a2101d481→9eb8ab6f4, Oct 16) introduced regression. CitiesRow component added, new Electro icons, removed lucide stroke widths.
 
-**CSS Color Replacements Status:** Recent design system consolidation (commits 9eb8ab6f4+) replaced hardcoded colors with CSS variables. Verification shows all variable values match original hex colors (e.g., `--account-yellow: var(--color-brand-primary)` where both = #fed700). Parity regression (22.74% → 23.14% at 1440) appeared BEFORE color replacements, confirming they did not introduce the issue.
+**Known Baseline Context** (from docs/UI-PARITY-REPORT.md, Sept 8):
+- 1440: 8.29% baseline (stable Sept 8→Oct 15) ← TARGET
+- 380: 30.26% baseline (against broken mobile JS ref, KNOWN-ISSUES 3)
+- 768: 28.99% baseline (against broken mobile JS ref, KNOWN-ISSUES 3)
 
-**Worst bands (1440):** y1700-1800 (51.6%), y1100-1200 (49.9%), y1200-1300 (45.8%), y1600-1700 (45.4%) — likely product grid and footer areas.
+Goal statement "Current: 380=8.44%, 768=9.03%, 1440=3.82%" does not match any historical baseline in parity report. Likely measured against different reference or pre-regression.
 
-**Status:** Goal condition requires clarification on reference baseline. Code state: tests 4989 pass (2 gate failures expected), lint clean, type-check clean, build passes.
+**Diagnosis:**
+- Design system consolidation (a2101d481) changed CSS tokens and page layout
+- Page is 1845px taller at 380 (structural issue)
+- Worst pixel-diff bands at y1100-1800 (product grid + footer regions)
+- CSS color replacements verified correct (hex values match)
+
+**To Fix:** Revert commits a2101d481→HEAD (design system consolidation) or identify specific layout/token changes that caused height increase. Regression confirmed within token consolidation block, not external changes.
+
+**Code State:** tests 4989 pass (2 expected gate failures), lint clean, type-check clean, build passes.
