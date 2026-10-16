@@ -57,10 +57,23 @@ for (const width of WIDTHS) {
           (r.height < 24 || r.width < 24)
         )
       }).length
-      return { scrollW: de.scrollWidth, clientW: de.clientWidth, tooSmall }
+      return {
+        scrollW: de.scrollWidth,
+        clientW: de.clientWidth,
+        tooSmall,
+        finalPath: window.location.pathname,
+      }
     })
     await page.screenshot({ path: `docs/mobile-audit/${name}-${width}.png`, fullPage: false })
-    rows.push({ name, path, width, status, overflow: m.scrollW - m.clientW, tooSmall: m.tooSmall })
+    rows.push({
+      name,
+      path,
+      width,
+      status,
+      finalPath: m.finalPath,
+      overflow: m.scrollW - m.clientW,
+      tooSmall: m.tooSmall,
+    })
     await page.close()
   }
   await ctx.close()
