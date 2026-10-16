@@ -29,6 +29,7 @@ export const NO_DATABASE_SPECS = [
   'category.spec.ts',
   'checkout.spec.ts',
   'coupons.spec.ts',
+  'dialog-ux29.spec.ts',
   'home.spec.ts',
   'layout-stability.spec.ts',
   'mobile-gestures.spec.ts',

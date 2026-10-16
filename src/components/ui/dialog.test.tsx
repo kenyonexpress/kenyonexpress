@@ -58,8 +58,9 @@ describe('Dialog Component - UX29 Modal System', () => {
     })
   })
 
-  describe('Close on Escape Key (UX29 Feature)', () => {
-    it('should support escape key handling via Radix Dialog', () => {
+  describe('Escape Key Close (UX29 Feature) - See e2e/dialog-ux29.spec.ts for real browser test', () => {
+    it('should render with onOpenChange handler for escape key support', () => {
+      const handleOpenChange = vi.fn()
       const TestComponent = () => {
         const [open, setOpen] = React.useState(true)
         return (
@@ -75,61 +76,52 @@ describe('Dialog Component - UX29 Modal System', () => {
       render(<TestComponent />)
       expect(screen.getByText('Dialog Content')).toBeInTheDocument()
 
-      // Radix Dialog listens for Escape key and calls onOpenChange(false)
-      // This is verified in Radix Dialog's own test suite
+      // REAL BEHAVIOR TEST: e2e/dialog-ux29.spec.ts::should close dialog when Escape key is pressed
+      // vitest/jsdom cannot properly simulate keyboard events on Radix Dialog
     })
 
-    it('should close via close button click', () => {
+    it('should have accessible close button', () => {
       const handleOpenChange = vi.fn()
-      const TestComponent = () => {
-        const [open, setOpen] = React.useState(true)
-        return (
-          <Dialog open={open} onOpenChange={handleOpenChange}>
-            <DialogContent>
-              <DialogTitle>Test Modal</DialogTitle>
-              <p>Dialog Content</p>
-            </DialogContent>
-          </Dialog>
-        )
-      }
+      render(
+        <Dialog open onOpenChange={handleOpenChange}>
+          <DialogContent>
+            <DialogTitle>Test Modal</DialogTitle>
+            <p>Dialog Content</p>
+          </DialogContent>
+        </Dialog>,
+      )
 
-      render(<TestComponent />)
       const closeButton = screen.getByRole('button', { name: /close/i })
+      expect(closeButton).toBeInTheDocument()
+
       fireEvent.click(closeButton)
-
-      // Close button click triggers onOpenChange - verify handler is called
       expect(handleOpenChange).toHaveBeenCalledWith(false)
+
+      // REAL BEHAVIOR TEST: e2e/dialog-ux29.spec.ts::should have accessible close button
     })
   })
 
-  describe('Overlay Click Close (UX29 Feature)', () => {
-    it('should call onOpenChange when overlay is clicked', () => {
-      const handleOpenChange = vi.fn()
-      const TestComponent = () => {
-        const [open] = React.useState(true)
-        return (
-          <Dialog open={open} onOpenChange={handleOpenChange}>
-            <DialogContent>
-              <DialogTitle>Test Modal</DialogTitle>
-              <p>Dialog Content</p>
-            </DialogContent>
-          </Dialog>
-        )
-      }
+  describe('Overlay Click Close (UX29 Feature) - See e2e/dialog-ux29.spec.ts for real browser test', () => {
+    it('should have dialog role for Radix overlay click support', () => {
+      render(
+        <Dialog open>
+          <DialogContent>
+            <DialogTitle>Test Modal</DialogTitle>
+            <p>Dialog Content</p>
+          </DialogContent>
+        </Dialog>,
+      )
 
-      render(<TestComponent />)
+      const dialog = screen.getByRole('dialog')
+      expect(dialog).toBeInTheDocument()
 
-      // Radix Dialog overlay element can be found via the dialog role
-      const dialogContent = screen.getByText('Dialog Content')
-      expect(dialogContent).toBeInTheDocument()
-
-      // In a real browser, clicking the overlay triggers onOpenChange
-      // Radix Dialog's overlay click handler would be called
+      // REAL BEHAVIOR TEST: e2e/dialog-ux29.spec.ts::should close dialog when clicking overlay
+      // Radix Dialog handles overlay click natively; jsdom cannot simulate pointer events properly
     })
   })
 
-  describe('Focus Trap (UX29 Feature)', () => {
-    it('should contain focusable elements for tab navigation', () => {
+  describe('Focus Trap (UX29 Feature) - See e2e/dialog-ux29.spec.ts for real browser test', () => {
+    it('should contain focusable elements within dialog', () => {
       render(
         <Dialog open>
           <DialogContent>
@@ -141,27 +133,15 @@ describe('Dialog Component - UX29 Modal System', () => {
         </Dialog>,
       )
 
-      const firstButton = screen.getByRole('button', { name: /first button/i })
-      const secondButton = screen.getByRole('button', { name: /second button/i })
-      const closeButton = screen.getByRole('button', { name: /close button/i })
+      expect(screen.getByRole('button', { name: /first button/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /second button/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /close button/i })).toBeInTheDocument()
 
-      // Verify all focusable elements exist
-      expect(firstButton).toBeInTheDocument()
-      expect(secondButton).toBeInTheDocument()
-      expect(closeButton).toBeInTheDocument()
-
-      // Test that each can be focused
-      firstButton.focus()
-      expect(document.activeElement).toBe(firstButton)
-
-      secondButton.focus()
-      expect(document.activeElement).toBe(secondButton)
-
-      closeButton.focus()
-      expect(document.activeElement).toBe(closeButton)
+      // REAL BEHAVIOR TEST: e2e/dialog-ux29.spec.ts::should trap focus within dialog (Tab key cycles through elements)
+      // jsdom/vitest cannot properly test Tab key focus cycling in Radix Dialog
     })
 
-    it('should have dialog role for Radix native focus management', () => {
+    it('should have dialog role for native focus trapping', () => {
       render(
         <Dialog open>
           <DialogContent>
@@ -171,16 +151,16 @@ describe('Dialog Component - UX29 Modal System', () => {
         </Dialog>,
       )
 
-      const dialogRole = screen.getByRole('dialog')
-      expect(dialogRole).toBeInTheDocument()
+      const dialog = screen.getByRole('dialog')
+      expect(dialog).toBeInTheDocument()
 
-      // Radix Dialog with role="dialog" provides native focus trapping
-      // Tab key navigation cycles focus within the dialog boundary
+      // Radix Dialog with role="dialog" provides native focus trapping via FocusScope
+      // Real focus cycling tested in Playwright: e2e/dialog-ux29.spec.ts
     })
   })
 
   describe('Mobile Fullscreen (UX29 Feature)', () => {
-    it('should apply mobile fullscreen styles (inset-0, w-full)', () => {
+    it('should have mobile fullscreen classes (inset-0, w-full)', () => {
       render(
         <Dialog open>
           <DialogContent data-testid="dialog-content">
@@ -191,14 +171,14 @@ describe('Dialog Component - UX29 Modal System', () => {
       )
 
       const content = screen.getByTestId('dialog-content')
-
-      // Mobile viewport: fullscreen
       expect(content?.className).toMatch(/inset-0/)
       expect(content?.className).toMatch(/w-full/)
       expect(content?.className).toMatch(/p-4/)
+
+      // REAL BEHAVIOR TEST: e2e/dialog-ux29.spec.ts::should apply mobile fullscreen styles on small viewport
     })
 
-    it('should apply desktop centered styles (max-w-lg, centered)', () => {
+    it('should have desktop centered classes (max-w-lg, centered)', () => {
       render(
         <Dialog open>
           <DialogContent data-testid="dialog-content">
@@ -209,13 +189,13 @@ describe('Dialog Component - UX29 Modal System', () => {
       )
 
       const content = screen.getByTestId('dialog-content')
-
-      // Desktop viewport: centered with max width
       expect(content?.className).toMatch(/md:inset-auto/)
       expect(content?.className).toMatch(/md:left-\[50%\]/)
       expect(content?.className).toMatch(/md:top-\[50%\]/)
       expect(content?.className).toMatch(/md:max-w-lg/)
       expect(content?.className).toMatch(/md:p-6/)
+
+      // REAL BEHAVIOR TEST: e2e/dialog-ux29.spec.ts::should apply desktop centered styles on large viewport
     })
   })
 
