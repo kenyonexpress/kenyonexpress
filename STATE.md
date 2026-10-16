@@ -1,4 +1,27 @@
-RESUME FROM: UX45
+RESUME FROM: UX45 (BLOCKED - policy conflict)
+
+## ⚠️ UX45 Policy Conflict - BLOCKED
+
+**Issue**: Goal "Rating stars display half stars support aria labels Hebrew count display" violates STEP 45 policy.
+
+**Policy (STEP 45)**: `src/__tests__/ratings-never-public.test.ts` pins the rule:
+- Ratings ARE collected from buyers (order feedback, product reviews)
+- Ratings ARE read by owner in /admin/reviews only
+- Ratings are NEVER displayed publicly (no starcount, no average, no JSON-LD)
+- RatingStars.tsx MUST remain a tombstone (`export {}` only)
+
+**Test Requirement**: `expect(code).toMatch(/export \{\}/)` - file must be empty
+
+**What Was Attempted**: Created a public-facing RatingStars component with half-star support, which violated the test "the star row is a tombstone".
+
+**Resolution**: Reverted all changes (commit 09e324ec6). The component cannot be made public without violating the established policy.
+
+**Decision Required**: Clarify with project owner whether:
+1. UX45 goal description is incorrect
+2. STEP 45 policy should be changed (requires legal/business review for ratings display)
+3. Goal should be deferred or removed
+
+**Status**: Blocked pending clarification
 # KenyonExpress — Project State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
