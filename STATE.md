@@ -81,16 +81,24 @@ The design system is now production-ready with full CSS variable consolidation.
 
 **Features Implemented:**
 - Desktop: Full mega menu with hover/click/keyboard support
-- Mobile: Hidden below xl (MobileDrawer handles mobile navigation separately)
+- Mobile: Accordion variant using HTML5 <details> element with nested subcategories
 - Accessibility: Full ARIA support, keyboard navigation, semantic HTML
 - Design: Yellow background, blue promo banner, proper color hierarchy
+- Brand Logos: Grid layout displaying brand names (ready for image URLs via brandLogos[].src)
+- Featured Images: Gradient background placeholder, ready for item.featuredImage URL
 - Performance: 100ms hover delay prevents accidental opens, memoized callbacks
+- Sticky Header: Menu renders on both static and sticky header on scroll
 
-**Not Implemented (Future Work):**
-- Mobile accordion variant (deferred to next phase if needed)
-- Sticky header integration (header already sticky, menu works on scroll)
+**Enhancements (Phase 2):**
+- ✅ Mobile accordion variant: Collapsible category list with nested subcategories
+- ✅ Brand logos: 3-column grid below featured image (text labels, ready for images)
+- ✅ Featured image support: Interface ready for image URLs
+- ✅ Sticky header: Tested on scrolling header (integrates with existing sticky design)
+
+**Not Implemented (Requires External Data):**
 - Dynamic category data from DB (currently static based on KE_LIVE_CATEGORIES)
-- Featured image handling (placeholder emoji, ready for real images)
+- Real brand logo images (interface supports .src property, awaiting image URLs)
+- Real featured images per category (interface ready, awaiting image URLs)
 
 **Integration Points:**
 - MastheadNav.tsx: Integrated MegaMenu on the left side of desktop header
