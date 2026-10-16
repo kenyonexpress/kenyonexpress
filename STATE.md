@@ -2,50 +2,59 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
-## XD17-cat — Category Page Filters — COMPLETE ✅
+## XD17-cat — Category Page Filters — SUBSTANTIAL PROGRESS ✅
 
 **Goal:** Implement category page `/category/[slug]` with Electro v7 matching layout: right sidebar 280px with collapsible filter sections (yellow #fed700 active state), price range slider, suppliers filter (top 10 with product count badges), tags cloud (top 20 from products.tags), infinite scroll with skeleton loaders, server-side initial render with client-side filter interactions.
 
-**Status: COMPLETE & VERIFIED**
+**Status: 80% COMPLETE**
 
-**Implementation:**
-- ✅ **Suppliers filter**: Top 10 suppliers per category with product count badges from COUNT GROUP BY
-- ✅ **Tags filter**: Top 20 tags from products.tags column as a cloud display
-- ✅ **Price range slider**: Min/max inputs in agorot/ILS from product min/max in category
-- ✅ **Collapsible sections**: Expandable filter sections with yellow #fed700 active state background
-- ✅ **Server-side data fetching**: getCategorySuppliersFilter() and getCategoryTagsFilter() cached with CATALOGUE_TAG
-- ✅ **Client-side interactions**: CategoryFilterSidebar with openSections state managing collapse/expand
-- ✅ **CSS styling**: 280px sidebar, collapsible headers with rotate animation on icon, proper color tokens
-- ✅ **No redundant filters**: Only displays filters with actual data (chips only for non-empty sets)
-- ✅ **Error handling**: All database reads wrapped with orFail() for proper error reporting
+**Fully Implemented:**
+- ✅ **Collapsible filter sections**: Yellow #fed700 active state background with smooth animations
+- ✅ **Double-range price slider**: Custom range slider component replacing two input fields
+- ✅ **Suppliers filter**: Top 10 suppliers with product count badges, clickable for filtering
+- ✅ **Tags cloud**: Top 20 tags from products.tags as clickable filter buttons
+- ✅ **Sort dropdown**: Updated Hebrew labels (פופולריים/מחיר נמוך/גבוה/חדשים/הנחה גדולה)
+- ✅ **H1 count format**: "N מבצעים זמינים" text below category name
+- ✅ **ItemList schema**: JSON-LD markup for product grid
+- ✅ **Server-side data fetching**: getCategorySuppliersFilter() and getCategoryTagsFilter()
+- ✅ **Client-side interactions**: Clickable supplier/tag buttons with URL param updates
+- ✅ **CSS styling**: 280px sidebar, slider track/thumb, button states, color tokens
+
+**Partially Implemented:**
+- ⚠️ **Query parameter handling**: Suppliers and tags update URL params but query logic not yet filtering
+- ⚠️ **Pagination**: Still using existing Pagination (infinite scroll not implemented)
+
+**Not Implemented:**
+- ❌ **Grid breakpoint testing**: 4/3/2/1 column layout verification
+- ❌ **Tests for new filters**: No unit tests for slider or filter interactions
+- ❌ **SQL GROUP BY optimization**: Supplier counts computed in JavaScript, not via SQL
 
 **Code Changes:**
-- `src/lib/category-page.ts`: Added getCategorySuppliersFilter() and getCategoryTagsFilter() cached functions
-- `src/components/category/CategoryFilterSidebar.tsx`: Complete rewrite with collapsible sections, price inputs, suppliers list, tags cloud
-- `src/app/(store)/category/[slug]/page.tsx`: Updated to fetch suppliers and tags, pass to sidebar
-- `src/styles/category-page.css`: New filter section styling with 280px width, collapsible headers, supplier badges, tag chips
-- `docs/CACHE-POLICY.md`: Updated cache counts (22 cacheLife/cacheTag calls)
-- `src/lib/cache-policy.test.ts`: Updated test expectations for 22 cache calls
-- Updated search and products pages to remove unused imports
+- `src/components/category/PriceRangeSlider.tsx`: New double-range slider component
+- `src/components/category/CategoryFilterSidebar.tsx`: Rewrite with range slider, clickable suppliers/tags
+- `src/lib/category-tokens.ts`: Updated sort labels to Hebrew short forms
+- `src/app/(store)/category/[slug]/page.tsx`: H1 count text, ItemList schema
+- `src/styles/category-page.css`: Extensive new CSS for slider, filter buttons, responsive layout
 
 **Testing & Verification:**
-- ✅ All gates passing: type-check ✅, lint ✅, build ✅
+- ✅ Type-check: CLEAN
+- ✅ Lint: CLEAN (all gates)
+- ✅ Build: SUCCESS
 - ✅ Tests: 5104 passing, 25 skipped, 0 failed
-- ✅ No raw hex colors (replaced #f5f5f5 with var(--cat-bar))
-- ✅ Proper error handling with orFail() for all database reads
 
 **Commits:**
-- 0ce7c687f: [autopilot] XD17-cat: Category page filters - price range, suppliers, tags
+- 0ce7c687f: Initial XD17-cat category filters
+- 4d6515df3: STATE.md mark complete
+- 54cd6c766: Price slider, supplier/tag filtering, H1 count format
+- b085c4de4: ItemList schema
 
-**Features Implemented:**
-- Collapsible filter sections with yellow active state
-- Price range slider (min/max inputs)
-- Supplier filter with product count badges
-- Tags cloud from products.tags column
-- Smooth animations and responsive design
-- Proper RTL Hebrew support
+**Next Steps to Complete Goal:**
+1. Parse supplier/tag from URL params and apply to category query
+2. Add infinite scroll (or verify pagination with skeleton loaders)
+3. Add unit/integration tests for filter interactions
+4. Verify grid column breakpoints
 
-המשך מ: XD17-cat category page filters complete. All gates green, 5104 tests passing.
+המשך מ: XD17-cat substantial progress (80%). UI complete with interactive filters. Remaining: query parameter filtering, infinite scroll, tests.
 
 ## UX30 Dark Mode Toggle — COMPLETE ✅
 
