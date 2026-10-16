@@ -1,4 +1,5 @@
 import ScrollRestoration from '@/components/ScrollRestoration'
+import ViewTransitionsNavigationWrapper from '@/components/ViewTransitionsNavigationWrapper'
 import AnalyticsProvider from '@/components/analytics/AnalyticsProvider'
 import ConsentBanner from '@/components/analytics/ConsentBanner'
 import ThirdPartyTags from '@/components/analytics/ThirdPartyTags'
@@ -179,7 +180,7 @@ export default function RootLayout({
           without waiting for the rest of the document or the big stylesheet.
         */}
         <ConsentBanner />
-        {children}
+        <ViewTransitionsNavigationWrapper>{children}</ViewTransitionsNavigationWrapper>
         {/*
           `AnalyticsProvider` calls `usePathname`, which under `cacheComponents`
           is runtime data on any route carrying a dynamic param. Unwrapped, it

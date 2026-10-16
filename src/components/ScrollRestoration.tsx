@@ -5,8 +5,8 @@ import { useEffect } from 'react'
 /**
  * Restores scroll position on back navigation and enables smooth scroll behavior.
  *
- * Ensures that when users navigate back, they return to their previous scroll position.
- * Also enables smooth scroll behavior for anchor links via CSS scroll-behavior.
+ * Tracks scroll position in sessionStorage and restores it on navigation,
+ * handles both back button and bfcache restoration.
  */
 export default function ScrollRestoration() {
   useEffect(() => {
@@ -15,31 +15,41 @@ export default function ScrollRestoration() {
       window.history.scrollRestoration = 'auto'
     }
 
-    // Restore scroll position when page loads (for browser back button)
-    const handlePageShow = (event: PageTransitionEvent) => {
-      if (event.persisted) {
-        // Browser restored the page from bfcache - scroll is auto-restored
+    // Store current scroll position before navigation
+    const handleBeforeUnload = () => {
+      sessionStorage.setItem('scroll-y', window.scrollY.toString())
+    }
+
+    // Restore scroll on pageshow (covers both back button and bfcache)
+    const handlePageShow = () => {
+      const scrollY = sessionStorage.getItem('scroll-y')
+      if (scrollY) {
+        const y = Number.parseInt(scrollY, 10)
         window.scrollTo({
-          top: sessionStorage.getItem('scroll-position')
-            ? JSON.parse(sessionStorage.getItem('scroll-position') || '0')
-            : 0,
+          top: y,
           left: 0,
           behavior: 'auto',
         })
       }
     }
 
-    // Store scroll position on page hide (for browser back)
-    const handlePageHide = () => {
-      sessionStorage.setItem('scroll-position', JSON.stringify(window.scrollY))
+    // Also restore immediately on load if coming from back button
+    const scrollY = sessionStorage.getItem('scroll-y')
+    if (scrollY && window.scrollY === 0) {
+      const y = Number.parseInt(scrollY, 10)
+      window.scrollTo({
+        top: y,
+        left: 0,
+        behavior: 'auto',
+      })
     }
 
+    window.addEventListener('beforeunload', handleBeforeUnload)
     window.addEventListener('pageshow', handlePageShow as EventListener)
-    window.addEventListener('pagehide', handlePageHide)
 
     return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload)
       window.removeEventListener('pageshow', handlePageShow as EventListener)
-      window.removeEventListener('pagehide', handlePageHide)
     }
   }, [])
 
