@@ -3,10 +3,10 @@ import CategoryBreadcrumb, { defaultHomeCrumb } from '@/components/category/Cate
 import CategoryControlBar from '@/components/category/CategoryControlBar'
 import CategoryFilterSidebar from '@/components/category/CategoryFilterSidebar'
 import CategoryGridSkeleton from '@/components/category/CategoryGridSkeleton'
+import CategoryInfiniteScroll from '@/components/category/CategoryInfiniteScroll'
 import CategoryProductCard, {
   type CategoryProduct,
 } from '@/components/category/CategoryProductCard'
-import Pagination from '@/components/category/Pagination'
 import {
   CATEGORY_PAGE_SIZE,
   type CollectionRule,
@@ -216,6 +216,7 @@ async function ResultGrid({
   }
 
   const { totalPages, currentPage, from, to } = pageWindow(total, args.page)
+  const hasMore = currentPage < totalPages
 
   return (
     <>
@@ -226,12 +227,16 @@ async function ResultGrid({
           </li>
         ))}
       </ul>
-      <Pagination
-        pathname={pathname}
-        params={linkParams}
-        currentPage={currentPage}
-        totalPages={totalPages}
-      />
+      {hasMore && (
+        <CategoryInfiniteScroll
+          pathname={pathname}
+          linkParams={linkParams}
+          currentPage={currentPage}
+        />
+      )}
+      {!hasMore && (
+        <p className="category-page__empty">סיימנו! הראינו את כל המוצרים בקטגוריה זו.</p>
+      )}
       <p className="category-page__count category-page__count--bottom">
         {resultCountText(total, from, to)}
       </p>

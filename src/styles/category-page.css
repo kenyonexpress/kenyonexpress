@@ -1109,3 +1109,27 @@
   color: var(--cat-muted);
   opacity: 0.75;
 }
+
+/* Infinite scroll loader: sentinel element for detecting when to load more. */
+.infinite-scroll-loader {
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 40px;
+}
+
+.infinite-scroll-loader__spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--cat-bar);
+  border-top-color: var(--cat-brand);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
