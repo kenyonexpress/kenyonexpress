@@ -101,4 +101,46 @@ describe('ScrollRestoration', () => {
       behavior: 'auto',
     })
   })
+
+  it('simulates back navigation: user scrolls → navigates away → returns to page with scroll restored', () => {
+    // Step 1: User scrolls down
+    Object.defineProperty(window, 'scrollY', {
+      writable: true,
+      configurable: true,
+      value: 750,
+    })
+
+    const { unmount } = render(<ScrollRestoration />)
+
+    // Step 2: User navigates away (beforeunload fires)
+    window.dispatchEvent(new Event('beforeunload'))
+    expect(sessionStorage.getItem('scroll-y')).toBe('750')
+
+    // Step 3: Component unmounts (page leaves)
+    unmount()
+
+    // Step 4: User hits back button (new page instance, bfcache restores)
+    // Reset scrollY to simulate new page load at top
+    Object.defineProperty(window, 'scrollY', {
+      writable: true,
+      configurable: true,
+      value: 0,
+    })
+
+    const scrollToSpy = vi.spyOn(window, 'scrollTo')
+
+    // Step 5: New component instance with stored position
+    render(<ScrollRestoration />)
+
+    // Step 6: Browser fires pageshow with persisted=true (back navigation)
+    const backNavEvent = new PageTransitionEvent('pageshow', { persisted: true })
+    window.dispatchEvent(backNavEvent)
+
+    // Step 7: Scroll restored to saved position
+    expect(scrollToSpy).toHaveBeenCalledWith({
+      top: 750,
+      left: 0,
+      behavior: 'auto',
+    })
+  })
 })
