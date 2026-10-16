@@ -43,7 +43,9 @@ export default function StoreShell({ children }: { children: React.ReactNode }) 
             leaves focus on the link, so the next Tab goes back into the header
             and the skip does nothing for keyboard users. */}
         <main id="main-content" tabIndex={-1} className="w-full focus:outline-none pb-14 md:pb-0">
-          <MobileContentWrapper>{children}</MobileContentWrapper>
+          <Suspense fallback={children}>
+            <MobileContentWrapper>{children}</MobileContentWrapper>
+          </Suspense>
         </main>
         <SiteFooter />
       </div>
