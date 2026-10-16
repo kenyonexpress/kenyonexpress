@@ -23,7 +23,7 @@ describe('PriceRangeSlider', () => {
 
   it('updates min value when slider changes', () => {
     const onApply = vi.fn()
-    const { rerender } = render(
+    render(
       <PriceRangeSlider min={100} max={5000} minValue={500} maxValue={2000} onApply={onApply} />,
     )
 
