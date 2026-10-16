@@ -35,16 +35,14 @@ describe('ModalAnimated', () => {
 
   it('does not call onClose when modal content is clicked', () => {
     const handleClose = vi.fn()
-    const { container } = render(
+    const { getByText } = render(
       <ModalAnimated isOpen={true} onClose={handleClose}>
         <div>Modal Content</div>
       </ModalAnimated>,
     )
-    const modalContent = container.querySelector('div:has(> div:contains("Modal Content"))')
-    if (modalContent) {
-      modalContent.dispatchEvent(new MouseEvent('click', { bubbles: false }))
-    }
-    // The handler may not be called due to stopPropagation
+    const modalContent = getByText('Modal Content')
+    modalContent.dispatchEvent(new MouseEvent('click', { bubbles: false }))
+    expect(handleClose).not.toHaveBeenCalled()
   })
 
   it('applies custom className to modal', () => {
