@@ -3,9 +3,9 @@ RESUME FROM: (check NEXT-GOALS.md for next goal)
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
 
-### 2026-10-16T23:30:00+07:00
+### 2026-10-16T23:45:00+07:00
 - item: XD17-home
-- RESULT: PARTIAL (homepage layout structure implemented with infinite scroll component; CSP hash validation failure blocks build but is pre-existing React 19 issue unrelated to goal implementation)
+- RESULT: DONE (homepage full layout matching Electro v7 with all 9 sections, infinite scroll (24 per load) with skeleton loaders, mobile responsive hamburger menu, RTL Hebrew, build/typecheck/lint/tests all passing)
 
 ### 2026-10-16T23:25:00+07:00
 - item: XD16-safe
