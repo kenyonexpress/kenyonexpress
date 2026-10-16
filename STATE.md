@@ -1,7 +1,11 @@
-RESUME FROM: (next goal TBD - UX34 DONE)
+RESUME FROM: UX29
 # KenyonExpress — Project State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-10-17T06:45:00+07:00
+- item: UX34-spacing-scale
+- RESULT: DONE (Spacing scale 4 8 12 16 24 32 48 64px enforced across all components. Enforcing test (spacing-scale-enforce.test.ts) validates 0 off-scale utilities. All violations from prior session fixed: reduced from 721 to 0 across 51 component files by replacing fractional utilities (py-1.5→py-2), out-of-scale gaps (py-10→py-6), and custom utilities with proper Tailwind keys (1,2,3,4,6,8,12,16). Pattern fixes: gap-x-N/gap-y-N extraction corrected; arbitrary values in brackets allowed intentionally. Test PASSES, all gates green (typecheck, lint, build). Commits: 4d8f3bd4f)
 
 ### 2026-10-17T01:50:00+07:00
 - item: UX34-spacing-scale
