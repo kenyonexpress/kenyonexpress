@@ -756,3 +756,42 @@ Bisect commits 6a23a03d2..3906e67bc to isolate regression. Likely candidates:
 - 7f59dd5da: Cleanup of NO_DATABASE_SPECS list
 
 המשך מ: Mobile shell work complete. Move to next goal in queue.
+
+## XD14 Supplier Redemption UX Redesign — COMPLETE ✅
+
+**Goal:** Redesign supplier voucher redemption page UX per XD14 requirements. REUSE existing `/redeem/[token]` route (no new `/supplier/redeem` path). Single yellow "אשר מימוש" button with 2-tap confirmation. Success screen with "הקופון הבא" button. Idempotent handling showing "כבר מומש DD/MM/YY HH:MM". Mobile-only optimized. Read from existing voucher_redemptions table via existing API route.
+
+**Status: COMPLETE & VERIFIED**
+
+**Implementation:**
+- ✅ **Large status badge**: Shows "קופון תקף" (valid) or "קופון לא תקף" (invalid) with proper colors
+- ✅ **Large voucher value**: 5xl bold text displaying amount to collect
+- ✅ **2-tap confirmation**: 
+  - First tap arms button (changes to "הקש שוב לאישור")
+  - Second tap commits redemption via POST to existing API
+  - Network errors allow safe retry with same idempotency key
+- ✅ **Success screen**: Checkmark icon, success message, "הקופון הבא" button to `/scan`
+- ✅ **Failure/Already-redeemed**: Warning icon, error message, "הקופון הבא" button
+- ✅ **Idempotent replay**: Shows "כבר מומש DD/MM/YY HH:MM" with full timestamp from API
+- ✅ **Mobile optimization**: Full-width responsive layout optimized for on-device scanning
+- ✅ **Accessibility**: Proper contrast ratios (WCAG AA), disabled state handling
+- ✅ **Existing route**: Uses src/app/redeem/[token] (no new /supplier/redeem path)
+- ✅ **Existing data**: Reads from voucher_redemptions table via POST /api/supplier/vouchers/redeem
+- ✅ **Documentation**: Created docs/REDEMPTION-FLOW.md with full flow documentation
+
+**Verification:**
+- ✅ pnpm type-check: clean
+- ✅ pnpm lint: clean (tokens, copy, asset gates)
+- ✅ pnpm build: successful
+- ✅ pnpm test: 5089 passing, 25 skipped, 0 failed
+- ✅ Contrast test: passed (WCAG AA on brand yellow buttons with dark text)
+
+**Commits:**
+- b2348d5f2: XD14 redesign - 2-tap confirmation, status badge, success/failure screens
+- 6a82f8ca4: XD14 documentation - REDEMPTION-FLOW.md with full architecture
+
+**Changed Files:**
+- src/app/redeem/[token]/RedeemConfirm.tsx: Complete redesign (138 insertions, 91 deletions)
+- docs/REDEMPTION-FLOW.md: New documentation file (125 lines)
+
+המשך מ: XD14 complete. All autonomous code work finished. Further items require external approvals (migrations 170/171/172/169 batch) or credentials (162 prod URL, SUPABASE_SECRET_KEY rotation).
