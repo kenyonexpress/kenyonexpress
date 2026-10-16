@@ -41,8 +41,25 @@ export const REACT_RENDER_TIMING_SCRIPT =
   'requestAnimationFrame(function(){$RT=performance.now()});'
 export const REACT_RENDER_TIMING_SCRIPT_HASH = 'sha256-7mu4H06fwDCjmnxxr/xNHyuQC6pLTHr4M2E4jXw5WZs='
 
+/**
+ * React 19 Fizz streaming scripts. These are generated during the build by React's
+ * streaming runtime and must be whitelisted by hash in the CSP policy.
+ * Each React/Next upgrade may introduce new script hashes here.
+ */
+export const REACT_STREAMING_SCRIPT_HASHES = Object.freeze([
+  'sha256-9V7dm2iwdgPjaoJbaySXkJmq4pxKa/XT8ym8nD2hrNE=',
+  'sha256-fk0hq8vVCEr/mxFfq2UBOsX/0g+NyYZ3M0/b0lAh0gs=',
+  'sha256-T/7zYwglk2GtiMuIrytx7hcVWICLmk7P3i+Hf/F59ow=',
+  'sha256-w4pUXS9jb2sAuVmk7s+ATwD4PheVuMnEjHN+zkcgphY=',
+  'sha256-mRqoW35/hUt6IBePH3HXlN57umWH+G3oj/2eC4tOWeQ=',
+  'sha256-P474TMB+UhYEjz53cp6dWHUHryu6ZXlvKlUWx7Oy0Vk=',
+  'sha256-rimaae54utIpqXy4SfzTCYOBzW44nNmADdqfIGg1pkE=',
+  'sha256-Dg/gjlPqSTWzjJugJdXkv3DqTtnEdcJgA+xG1tOtA2Q=',
+])
+
 /** Every hash the document policy carries, in the order it emits them. */
 export const SHELL_INLINE_SCRIPT_HASHES = Object.freeze([
   CONSENT_PREPAINT_SCRIPT_HASH,
   REACT_RENDER_TIMING_SCRIPT_HASH,
+  ...REACT_STREAMING_SCRIPT_HASHES,
 ])
