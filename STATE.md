@@ -216,7 +216,31 @@ The following items are identified as next in priority but are currently blocked
 
 **Test suite status:** 5076 passing, 25 skipped, 0 failing. All gates green.
 
-המשך מ: Awaiting migration approval batch before proceeding to analytics integration, product listing cleanup, or additional feature work.
+## Money Handling Audit and Float Arithmetic Fixes — COMPLETE ✅
+
+**Goal:** Audit codebase for money handling compliance with rule "כסף = אגורות, integer בלבד" (Money = agorot, integer only).
+
+**Status: COMPLETE**
+
+**Work Done:**
+- ✅ Audited all src/ for unsafe money operations
+- ✅ Found 2 files with float-based calculations violating money rules:
+  1. `src/app/(main)/coupons/[id]/page.tsx` - Math.round with float division on money values
+  2. `src/app/(admin)/admin/orders/[id]/OrderAdminActions.tsx` - `.toFixed(2)` calls
+- ✅ Fixed both files to use proper integer arithmetic via money.ts utilities
+- ✅ All gates remain green after changes
+
+**Autonomous Decision Log:**
+While awaiting migration batch approval for the next major features (analytics, product visibility, funnel events), identified and fixed code quality issue violating money handling rules. This is high-value security work that doesn't require external approvals or migrations.
+
+**Verification:**
+- ✅ type-check: clean
+- ✅ lint: clean (all gates)
+- ✅ build: Compiled successfully
+- ✅ test: 433 passed | 1 skipped (5075 tests)
+- ✅ Commit: 515fbc7d2
+
+המשך מ: Awaiting migration approval batch before proceeding to analytics integration, product listing cleanup, or additional feature work. Code quality baseline now solid with money handling compliance verified.
 
 
 ## ‏STEP 21 — סבב תחזוקה 89: היועצים שטוחים, והנימוק במיגרציה ‏177 היה שגוי
