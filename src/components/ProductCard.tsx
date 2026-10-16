@@ -1,7 +1,7 @@
 'use client'
 
+import PriceDisplay from '@/components/PriceDisplay'
 import AddToCartButton from '@/components/cart/AddToCartButton'
-import { shekelsFromIlsRounded } from '@/lib/money-format'
 import Image from 'next/image'
 import Link from 'next/link'
 // product-card-deals.css is imported by the root layout. See the note there.
@@ -79,10 +79,6 @@ const DEAL_IMAGE_SIZES = [
   `(max-width: ${DEAL_SIZE_STOPS.wide}px) 46vw`,
   `${DEAL_SIZE_STOPS.desktopPaint}px`,
 ].join(', ')
-
-function shekelsFromIls(value: number): string {
-  return shekelsFromIlsRounded(value)
-}
 
 function CartPlusIcon() {
   return (
@@ -206,16 +202,15 @@ function DealsProductCard({ product }: { product: Product }) {
       </div>
 
       <div className="p_con__footer">
-        {hasDiscount && old != null ? (
+        {product.kenyon_price != null && (
           <div className="p_con__prices">
-            <span className="p_con__strike">{shekelsFromIls(old)}</span>
-            <span className="p_con__sale">{shekelsFromIls(price)}</span>
-          </div>
-        ) : (
-          <div className="p_con__prices">
-            {product.kenyon_price != null && (
-              <span className="p_con__single-price">{shekelsFromIls(price)}</span>
-            )}
+            <PriceDisplay
+              price={price}
+              originalPrice={hasDiscount ? old : undefined}
+              showSavingsBadge={false}
+              allowHebrewNumerals={false}
+              className="w-full"
+            />
           </div>
         )}
 
@@ -332,20 +327,14 @@ function DefaultProductCard({ product }: { product: Product }) {
         </Link>
 
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex flex-wrap items-baseline gap-2">
-            {hasDiscount && old != null && (
-              <span className="text-sm text-deal-price line-through">{shekelsFromIls(old)}</span>
-            )}
-            <span
-              className={
-                hasDiscount
-                  ? 'text-base font-bold text-price'
-                  : 'text-base font-bold text-deal-price'
-              }
-            >
-              {shekelsFromIls(price)}
-            </span>
-          </div>
+          <PriceDisplay
+            price={price}
+            originalPrice={hasDiscount ? old : undefined}
+            showSavingsBadge={hasDiscount}
+            allowHebrewNumerals={true}
+            className=""
+            priceClassName="text-base font-bold text-price"
+          />
 
           {canAdd && (
             <AddToCartButton
