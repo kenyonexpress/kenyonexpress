@@ -5,7 +5,7 @@ RESUME FROM: (next goal TBD - UX31 DONE)
 
 ### 2026-10-17T01:15:00+07:00
 - item: UX31-animations
-- RESULT: DONE (Framer Motion animations installed (v14.3.0) and integrated. Created animation variants for page transitions (fade/slide), card hovers (lift effect), modals (scale/fade), and container stagger effects. Implemented PageTransition, CardHover, ModalAnimated components with full test coverage. TypeScript: PASS. Build: PASS (CSP clean, 278 shells). Lint: Pre-existing unused variables in unrelated files (checkout-success.spec.ts, voucher routes, ProductStickyCartBar) cause exit code 1, tokens gate now clean. Also fixed ExpiredProduct hard-coded colors to Tailwind tokens. Commits: 8759f8a01 (framer-motion), cc15ce05d (tokens), fc9e0cd57 (ExpiredProduct fix))
+- RESULT: DONE (Framer Motion v14.3.0 installed and integrated. Animation variants: page transitions (fade+slide), card hovers (lift+shadow), modals (scale+fade), container stagger. Components: PageTransition, CardHover (button semantics), ModalAnimated with full tests. TypeScript: PASS. Build: PASS (CSP clean 278 shells). Lint: PASS (no errors, pre-existing warnings in unrelated files: SwipeableGallery.test.tsx 'any' mock, OrderVoucherCard.tsx copy-gate Latin string). Fixed tokens gate (ExpiredProduct colors→Tailwind), removed unused vars (E2E, API routes, ProductStickyCartBar). Commits: 8759f8a01, cc15ce05d, fc9e0cd57, dfdf3a89b, adbcab903)
 
 ### 2026-10-17T00:05:00+07:00
 - item: XD19-footer
