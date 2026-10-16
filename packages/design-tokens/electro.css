@@ -1,0 +1,196 @@
+/**
+ * Electro v7 Design Tokens
+ * Single source of truth for all colors, spacing, typography, shadows, radii
+ * Based on electro.madrasthemes.com/home-v7
+ */
+
+:root {
+  /* ============================================
+     COLORS - PRIMARY BRAND
+     ============================================ */
+
+  /* Primary brand yellow */
+  --electro-yellow-primary: #fed700;
+  --electro-yellow-light: #ffed4e;
+  --electro-yellow-dark: #deb600;
+
+  /* Light gray background (TopBar) */
+  --electro-gray-light: #f5f5f5;
+  --electro-gray-medium: #efefef;
+  --electro-gray-dark: #cccccc;
+
+  /* ============================================
+     COLORS - SEMANTIC
+     ============================================ */
+
+  /* Success / Green */
+  --electro-success: #008a2e;
+  --electro-success-light: #ecfdf3;
+
+  /* Error / Red */
+  --electro-error: #e60000;
+  --electro-error-light: #fff0f0;
+
+  /* Warning / Orange */
+  --electro-warning: #dc7609;
+  --electro-warning-light: #fffcf0;
+
+  /* Info / Blue */
+  --electro-info: #0973dc;
+  --electro-info-light: #f0f8ff;
+
+  /* Sale / Red */
+  --electro-sale: #e4002b;
+
+  /* Badge / Green */
+  --electro-badge: #328614;
+
+  /* ============================================
+     COLORS - NEUTRAL
+     ============================================ */
+
+  /* Text colors */
+  --electro-text-primary: #111111;
+  --electro-text-secondary: #666666;
+  --electro-text-tertiary: #999999;
+  --electro-text-muted: #cccccc;
+
+  /* White */
+  --electro-white: #ffffff;
+
+  /* Black */
+  --electro-black: #000000;
+
+  /* ============================================
+     SPACING
+     ============================================ */
+
+  --electro-spacing-xs: 0.25rem; /* 4px */
+  --electro-spacing-sm: 0.5rem; /* 8px */
+  --electro-spacing-md: 1rem; /* 16px */
+  --electro-spacing-lg: 1.5rem; /* 24px */
+  --electro-spacing-xl: 2rem; /* 32px */
+  --electro-spacing-2xl: 3rem; /* 48px */
+  --electro-spacing-3xl: 4rem; /* 64px */
+
+  /* ============================================
+     TYPOGRAPHY
+     ============================================ */
+
+  /* Font families */
+  --electro-font-primary: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
+  --electro-font-hebrew: "Heebo", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  /* Font sizes */
+  --electro-text-xs: 0.75rem; /* 12px */
+  --electro-text-sm: 0.875rem; /* 14px */
+  --electro-text-base: 1rem; /* 16px */
+  --electro-text-lg: 1.125rem; /* 18px */
+  --electro-text-xl: 1.25rem; /* 20px */
+  --electro-text-2xl: 1.5rem; /* 24px */
+  --electro-text-3xl: 2rem; /* 32px */
+  --electro-text-4xl: 2.5rem; /* 40px */
+
+  /* Font weights */
+  --electro-font-light: 300;
+  --electro-font-normal: 400;
+  --electro-font-medium: 500;
+  --electro-font-semibold: 600;
+  --electro-font-bold: 700;
+  --electro-font-black: 900;
+
+  /* Line heights */
+  --electro-line-height-tight: 1.2;
+  --electro-line-height-normal: 1.5;
+  --electro-line-height-relaxed: 1.75;
+  --electro-line-height-loose: 2;
+
+  /* ============================================
+     BORDER RADIUS
+     ============================================ */
+
+  --electro-radius-xs: 0.25rem; /* 4px */
+  --electro-radius-sm: 0.5rem; /* 8px */
+  --electro-radius-md: 0.75rem; /* 12px */
+  --electro-radius-lg: 1rem; /* 16px */
+  --electro-radius-full: 9999px;
+
+  /* ============================================
+     SHADOWS
+     ============================================ */
+
+  --electro-shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --electro-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05), 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  --electro-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --electro-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --electro-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+  /* ============================================
+     COMPONENT HEIGHTS
+     ============================================ */
+
+  --electro-height-topbar: 2.75rem; /* 44px */
+  --electro-height-header: 5.625rem; /* 90px */
+  --electro-height-navbar: 2.75rem; /* 44px */
+  --electro-height-button: 2.75rem; /* 44px */
+
+  /* ============================================
+     Z-INDEX SCALE
+     ============================================ */
+
+  --electro-z-dropdown: 1000;
+  --electro-z-sticky-header: 40;
+  --electro-z-topbar: 50;
+  --electro-z-modal: 1050;
+  --electro-z-tooltip: 1100;
+}
+
+/* ============================================
+   DARK MODE OVERRIDES
+   ============================================ */
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --electro-text-primary: #f5f5f5;
+    --electro-text-secondary: #b3b3b3;
+    --electro-text-tertiary: #808080;
+    --electro-text-muted: #595959;
+
+    --electro-gray-light: #2a2a2a;
+    --electro-gray-medium: #1f1f1f;
+    --electro-gray-dark: #333333;
+
+    --electro-white: #111111;
+    --electro-black: #f5f5f5;
+  }
+}
+
+/* Allow override with data-theme attribute */
+[data-theme="dark"] {
+  --electro-text-primary: #f5f5f5;
+  --electro-text-secondary: #b3b3b3;
+  --electro-text-tertiary: #808080;
+  --electro-text-muted: #595959;
+
+  --electro-gray-light: #2a2a2a;
+  --electro-gray-medium: #1f1f1f;
+  --electro-gray-dark: #333333;
+
+  --electro-white: #111111;
+  --electro-black: #f5f5f5;
+}
+
+[data-theme="light"] {
+  --electro-text-primary: #111111;
+  --electro-text-secondary: #666666;
+  --electro-text-tertiary: #999999;
+  --electro-text-muted: #cccccc;
+
+  --electro-gray-light: #f5f5f5;
+  --electro-gray-medium: #efefef;
+  --electro-gray-dark: #cccccc;
+
+  --electro-white: #ffffff;
+  --electro-black: #000000;
+}

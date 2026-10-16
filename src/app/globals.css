@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Electro v7 design system tokens - single source of truth */
+@import "../../packages/design-tokens/electro.css";
+
 /* The design tokens: every colour, type size, radius, space and breakpoint the
    app may use, with the provenance of each. Split out of this file on
    2026-09-03; it was 184 of the 343 lines here and it is not page CSS.
