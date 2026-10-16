@@ -25,12 +25,11 @@ export const CATEGORY_TOKENS = {
     resultCountTemplate: (total: number) => `מציגים את כל ⁦${total}⁩ התוצאות`,
   },
   sortOptions: [
-    { value: 'menu_order', label: 'סידור ברירת מחדל' },
-    { value: 'popularity', label: 'למיין לפי פופולריות' },
-    { value: 'rating', label: 'למיין לפי דירוג ממוצע' },
-    { value: 'date', label: 'למיין לפי המעודכן ביותר' },
-    { value: 'price', label: 'למיין מהזול ליקר' },
-    { value: 'price-desc', label: 'למיין מהיקר לזול' },
+    { value: 'menu_order', label: 'פופולריים' },
+    { value: 'price', label: 'מחיר נמוך' },
+    { value: 'price-desc', label: 'מחיר גבוה' },
+    { value: 'date', label: 'חדשים' },
+    { value: 'rating', label: 'הנחה גדולה' },
   ] as const,
   grid: {
     cardWidth: 234,

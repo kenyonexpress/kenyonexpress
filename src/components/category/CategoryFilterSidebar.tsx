@@ -1,5 +1,6 @@
 'use client'
 
+import PriceRangeSlider from '@/components/category/PriceRangeSlider'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useState, useTransition } from 'react'
 
@@ -17,8 +18,6 @@ export default function CategoryFilterSidebar({ priceMin, priceMax, suppliers, t
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const [isPending, startTransition] = useTransition()
-  const [min, setMin] = useState(priceMin != null ? String(priceMin) : '')
-  const [max, setMax] = useState(priceMax != null ? String(priceMax) : '')
   const [openSections, setOpenSections] = useState({
     price: true,
     suppliers: true,
@@ -35,12 +34,11 @@ export default function CategoryFilterSidebar({ priceMin, priceMax, suppliers, t
     })
   }
 
-  function applyPrice(e: React.FormEvent) {
-    e.preventDefault()
+  function applyPrice(minVal: number, maxVal: number) {
     pushWith((params) => {
-      if (min && Number(min) >= 0) params.set('min', min)
+      if (minVal >= 0) params.set('min', String(minVal))
       else params.delete('min')
-      if (max && Number(max) >= 0) params.set('max', max)
+      if (maxVal >= 0) params.set('max', String(maxVal))
       else params.delete('max')
     })
   }
@@ -68,40 +66,14 @@ export default function CategoryFilterSidebar({ priceMin, priceMax, suppliers, t
           </button>
           {openSections.price && (
             <div className="category-sidebar__filter-content">
-              <form className="category-sidebar__price-form" onSubmit={applyPrice}>
-                <div className="category-sidebar__price-row">
-                  <label className="sr-only" htmlFor="price-min">
-                    מחיר מינימלי
-                  </label>
-                  <input
-                    id="price-min"
-                    className="category-sidebar__price-input"
-                    type="number"
-                    inputMode="numeric"
-                    min={0}
-                    placeholder="מ- ₪"
-                    value={min}
-                    onChange={(e) => setMin(e.target.value)}
-                  />
-                  <span className="category-sidebar__price-separator">-</span>
-                  <label className="sr-only" htmlFor="price-max">
-                    מחיר מקסימלי
-                  </label>
-                  <input
-                    id="price-max"
-                    className="category-sidebar__price-input"
-                    type="number"
-                    inputMode="numeric"
-                    min={0}
-                    placeholder="עד ₪"
-                    value={max}
-                    onChange={(e) => setMax(e.target.value)}
-                  />
-                </div>
-                <button type="submit" className="category-sidebar__price-btn" disabled={isPending}>
-                  סינון
-                </button>
-              </form>
+              <PriceRangeSlider
+                min={0}
+                max={1000}
+                minValue={priceMin}
+                maxValue={priceMax}
+                onApply={applyPrice}
+                isPending={isPending}
+              />
             </div>
           )}
         </div>
@@ -123,9 +95,24 @@ export default function CategoryFilterSidebar({ priceMin, priceMax, suppliers, t
                 <ul className="category-sidebar__suppliers-list">
                   {suppliers.map((supplier) => (
                     <li key={supplier.supplier_id} className="category-sidebar__supplier-item">
-                      <span className="category-sidebar__supplier-name">
-                        {supplier.supplier_name_he}
-                      </span>
+                      <button
+                        type="button"
+                        className="category-sidebar__supplier-filter-btn"
+                        onClick={() => {
+                          const params = new URLSearchParams(searchParams)
+                          params.set('supplier', supplier.supplier_id)
+                          params.delete('page')
+                          const qs = params.toString()
+                          startTransition(() => {
+                            router.push(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
+                          })
+                        }}
+                        disabled={isPending}
+                      >
+                        <span className="category-sidebar__supplier-name">
+                          {supplier.supplier_name_he}
+                        </span>
+                      </button>
                       <span className="category-sidebar__supplier-badge">
                         {supplier.product_count}
                       </span>
@@ -153,13 +140,24 @@ export default function CategoryFilterSidebar({ priceMin, priceMax, suppliers, t
               <div className="category-sidebar__filter-content">
                 <div className="category-sidebar__tags-cloud">
                   {tags.map((tag) => (
-                    <span
+                    <button
                       key={tag.tag}
+                      type="button"
                       className="category-sidebar__tag-chip"
                       title={`${tag.product_count} מוצרים`}
+                      onClick={() => {
+                        const params = new URLSearchParams(searchParams)
+                        params.set('tag', tag.tag)
+                        params.delete('page')
+                        const qs = params.toString()
+                        startTransition(() => {
+                          router.push(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
+                        })
+                      }}
+                      disabled={isPending}
                     >
                       {tag.tag}
-                    </span>
+                    </button>
                   ))}
                 </div>
               </div>

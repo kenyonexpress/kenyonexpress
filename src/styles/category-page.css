@@ -141,6 +141,16 @@
   font-weight: 500;
   line-height: var(--cat-title-line);
   color: var(--cat-ink);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.category-page__title-count {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: var(--cat-body-line);
+  color: var(--cat-muted);
 }
 
 /*
@@ -687,6 +697,94 @@
   padding: 12px 0;
 }
 
+/* Price range slider */
+.category-sidebar__price-slider {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.price-slider__track {
+  position: relative;
+  height: 4px;
+  background: var(--cat-line);
+  border-radius: 2px;
+  margin-top: 8px;
+}
+
+.price-slider__track-fill {
+  position: absolute;
+  height: 100%;
+  background: var(--cat-brand);
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+.price-slider__inputs {
+  position: relative;
+  height: 0;
+  margin: -10px 0;
+}
+
+.price-slider__input {
+  position: absolute;
+  width: 100%;
+  height: 10px;
+  top: 0;
+  left: 0;
+  appearance: none;
+  background: none;
+  border: none;
+  padding: 0;
+  pointer-events: none;
+  z-index: 5;
+  cursor: pointer;
+}
+
+.price-slider__input::-webkit-slider-thumb {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--cat-brand);
+  cursor: pointer;
+  border: 2px solid var(--cat-surface);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  pointer-events: auto;
+}
+
+.price-slider__input::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--cat-brand);
+  cursor: pointer;
+  border: 2px solid var(--cat-surface);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  pointer-events: auto;
+}
+
+.price-slider__input--min {
+  z-index: 6;
+}
+
+.price-slider__input[disabled] {
+  opacity: 0.6;
+}
+
+.price-slider__values {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--cat-ink);
+}
+
+.price-slider__value {
+  flex: 1;
+  text-align: center;
+}
+
 /* Price filter styles */
 .category-sidebar__price-form {
   display: flex;
@@ -754,13 +852,34 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 8px;
+}
+
+.category-sidebar__supplier-filter-btn {
+  flex: 1;
+  display: block;
   padding: 8px 0;
+  background: none;
+  border: none;
+  font: inherit;
   font-size: 13px;
   color: var(--cat-ink);
+  text-align: start;
+  cursor: pointer;
+  transition: color 200ms ease-out;
+}
+
+.category-sidebar__supplier-filter-btn:hover:not([disabled]) {
+  color: var(--cat-link);
+}
+
+.category-sidebar__supplier-filter-btn[disabled] {
+  opacity: 0.6;
+  cursor: progress;
 }
 
 .category-sidebar__supplier-name {
-  flex: 1;
+  display: block;
 }
 
 .category-sidebar__supplier-badge {
@@ -775,6 +894,7 @@
   border-radius: 12px;
   font-size: 12px;
   font-weight: 600;
+  flex-shrink: 0;
 }
 
 /* Tags cloud */
@@ -793,12 +913,18 @@
   font-size: 13px;
   border: 1px solid var(--cat-line);
   transition: background-color 200ms ease-out, color 200ms ease-out;
-  cursor: default;
+  cursor: pointer;
+  font-family: inherit;
 }
 
-.category-sidebar__tag-chip:hover {
+.category-sidebar__tag-chip:hover:not([disabled]) {
   background-color: var(--cat-brand);
   border-color: var(--cat-brand);
+}
+
+.category-sidebar__tag-chip[disabled] {
+  opacity: 0.6;
+  cursor: progress;
 }
 
 /* Pagination - Electro yellow (var(--cat-brand) measured site-wide accent) */

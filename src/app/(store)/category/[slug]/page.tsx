@@ -88,8 +88,6 @@ export async function generateMetadata({ params }: Props) {
   return {
     title: category.name_he,
     description,
-    // The same category is reachable with sort, page, price and city query
-    // strings, and without a canonical each of those competes as its own page.
     alternates: alternatesFor(`/category/${encodeURIComponent(category.slug)}`),
     openGraph: {
       title: category.name_he,
@@ -159,12 +157,11 @@ async function categoryPageOrLast(args: QueryArgs) {
     : getCategoryProductsCached(cacheableArgs({ ...args, page: lastPage }))
 }
 
-/** Header count. Shares one query with the grid via getCategoryProductsCached. */
-async function ResultCount({ args }: { args: QueryArgs }) {
+/** Header count for H1 - returns just the total in "N מבצעים זמינים" format */
+async function ResultCountText({ args }: { args: QueryArgs }) {
   const { total } = await categoryPageOrLast(args)
   if (total === 0) return null
-  const { from, to } = pageWindow(total, args.page)
-  return <p className="category-page__count">{resultCountText(total, from, to)}</p>
+  return <>{total} מבצעים זמינים</>
 }
 
 async function ResultGrid({
@@ -366,17 +363,14 @@ async function CategoryPageBody({
         <CategoryBreadcrumb items={crumbs} />
 
         <header className="category-page__header">
-          <h1 className="category-page__title">{category.name_he}</h1>
-          {/* The count's box, held open while it streams. See the note on the
-              same boundary in search/page.tsx: a null fallback inserts a line
-              into the header on resolve and moves everything below it. */}
-          <Suspense
-            fallback={
-              <div className="category-page__count category-page__count--pending" aria-hidden />
-            }
-          >
-            <ResultCount args={args} />
-          </Suspense>
+          <h1 className="category-page__title">
+            {category.name_he}
+            <span className="category-page__title-count">
+              <Suspense fallback=" ...">
+                <ResultCountText args={args} />
+              </Suspense>
+            </span>
+          </h1>
         </header>
 
         <CategoryControlBar value={sort} />
