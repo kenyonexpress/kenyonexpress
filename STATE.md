@@ -1,7 +1,11 @@
-RESUME FROM: (next goal TBD - XD19 skipped)
+RESUME FROM: (next goal TBD - UX31 DONE)
 # KenyonExpress — Project State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-10-17T01:15:00+07:00
+- item: UX31-animations
+- RESULT: DONE (Framer Motion animations installed and integrated. Created animation variants for page transitions (fade/slide), card hovers (lift), modals (scale/fade), and container stagger effects. Implemented PageTransition, CardHover, and ModalAnimated components. All TypeScript checks pass, build succeeds with clean CSP shell gate (278 shells). Commits: 8759f8a01, cc15ce05d)
 
 ### 2026-10-17T00:05:00+07:00
 - item: XD19-footer
