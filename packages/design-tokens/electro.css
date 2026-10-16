@@ -202,14 +202,29 @@
   --electro-radius-full: 9999px;
 
   /* ============================================
-     SHADOWS
+     SHADOWS - ELEVATION HIERARCHY
      ============================================ */
 
+  /* Base shadow tokens (sm, md, lg, xl) */
   --electro-shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --electro-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05), 0 1px 3px 0 rgba(0, 0, 0, 0.1);
   --electro-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   --electro-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   --electro-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+  /* Hover state elevation shadows (one level up) */
+  --electro-shadow-sm-hover: var(--electro-shadow-md);
+  --electro-shadow-md-hover: var(--electro-shadow-lg);
+  --electro-shadow-lg-hover: var(--electro-shadow-xl);
+  --electro-shadow-xl-hover: 0 30px 40px -10px rgba(0, 0, 0, 0.15);
+
+  /* Component-specific elevation levels */
+  --electro-elevation-base: var(--electro-shadow-sm); /* Base card level */
+  --electro-elevation-card: var(--electro-shadow-sm); /* Product cards, list items */
+  --electro-elevation-panel: var(--electro-shadow-md); /* Panels, sections */
+  --electro-elevation-modal: var(--electro-shadow-lg); /* Modal dialogs */
+  --electro-elevation-dropdown: var(--electro-shadow-lg); /* Dropdowns, tooltips */
+  --electro-elevation-float: var(--electro-shadow-xl); /* Floating buttons, floating action panels */
 
   /* ============================================
      COMPONENT HEIGHTS
@@ -229,6 +244,100 @@
   --electro-z-topbar: 50;
   --electro-z-modal: 1050;
   --electro-z-tooltip: 1100;
+
+  /* ============================================
+     TRANSITIONS
+     ============================================ */
+
+  --electro-transition-base: 200ms ease-in-out;
+  --electro-transition-fast: 100ms ease-in-out;
+  --electro-transition-slow: 300ms ease-in-out;
+}
+
+/* ============================================
+   ELEVATION UTILITY CLASSES
+   ============================================ */
+
+/* Elevation level sm - base cards */
+.elevation-sm {
+  box-shadow: var(--electro-shadow-sm);
+}
+
+.elevation-sm:hover {
+  box-shadow: var(--electro-shadow-sm-hover);
+  transition: box-shadow var(--electro-transition-base);
+}
+
+/* Elevation level md - panels */
+.elevation-md {
+  box-shadow: var(--electro-shadow-md);
+}
+
+.elevation-md:hover {
+  box-shadow: var(--electro-shadow-md-hover);
+  transition: box-shadow var(--electro-transition-base);
+}
+
+/* Elevation level lg - modals, dropdowns */
+.elevation-lg {
+  box-shadow: var(--electro-shadow-lg);
+}
+
+.elevation-lg:hover {
+  box-shadow: var(--electro-shadow-lg-hover);
+  transition: box-shadow var(--electro-transition-base);
+}
+
+/* Elevation level xl - floating elements */
+.elevation-xl {
+  box-shadow: var(--electro-shadow-xl);
+}
+
+.elevation-xl:hover {
+  box-shadow: var(--electro-shadow-xl-hover);
+  transition: box-shadow var(--electro-transition-base);
+}
+
+/* Component-specific elevation classes */
+
+/* Card elevation - typical product cards, list items */
+.card-elevation {
+  box-shadow: var(--electro-elevation-card);
+}
+
+.card-elevation:hover {
+  box-shadow: var(--electro-shadow-sm-hover);
+  transition: box-shadow var(--electro-transition-base);
+}
+
+/* Panel elevation - sections, panels */
+.panel-elevation {
+  box-shadow: var(--electro-elevation-panel);
+}
+
+.panel-elevation:hover {
+  box-shadow: var(--electro-shadow-md-hover);
+  transition: box-shadow var(--electro-transition-base);
+}
+
+/* Modal elevation - dialogs, modals */
+.modal-elevation {
+  box-shadow: var(--electro-elevation-modal);
+}
+
+/* Dropdown elevation - dropdowns, menus, tooltips */
+.dropdown-elevation {
+  box-shadow: var(--electro-elevation-dropdown);
+}
+
+/* Floating element elevation - floating buttons, action panels */
+.floating-elevation {
+  box-shadow: var(--electro-elevation-float);
+}
+
+.floating-elevation:hover {
+  box-shadow: var(--electro-shadow-xl-hover);
+  transition: box-shadow var(--electro-transition-base);
 }
 
 /* ============================================
