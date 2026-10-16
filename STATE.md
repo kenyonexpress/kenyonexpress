@@ -1,7 +1,11 @@
-RESUME FROM: (next goal after XD15 - check NEXT-GOALS.md)
+RESUME FROM: (next goal after XD16 - check NEXT-GOALS.md)
 # KenyonExpress — Project State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-10-16T23:00:00+07:00
+- item: XD16-safe
+- RESULT: DONE (implementation staged, awaits migration to add 'expired' to product_status enum)
 
 ### 2026-10-16T22:30:00+07:00
 - item: XD15
