@@ -158,8 +158,8 @@ describe('RedeemConfirm (XD14)', () => {
 
       await waitFor(() => {
         const message = screen.getByText(/כבר מומש/)
-        // Verify timestamp format DD.MM.YY, HH:MM (he-IL locale)
-        expect(message.textContent).toMatch(/כבר מומש \d{2}\.\d{2}\.\d{2}, \d{2}:\d{2}/)
+        // Verify timestamp format DD/MM/YY HH:MM (slash-separated)
+        expect(message.textContent).toMatch(/כבר מומש \d{2}\/\d{2}\/\d{2} \d{2}:\d{2}/)
       })
     })
 
@@ -168,8 +168,8 @@ describe('RedeemConfirm (XD14)', () => {
         <RedeemConfirm {...defaultProps} status="redeemed" redeemedAtISO="2026-10-15T10:00:00Z" />,
       )
       const message = screen.getByText(/כבר מומש/)
-      // Verify timestamp is in format DD.MM.YY, HH:MM
-      expect(message.textContent).toMatch(/כבר מומש \d{2}\.\d{2}\.\d{2}, \d{2}:\d{2}/)
+      // Verify timestamp is in format DD/MM/YY HH:MM (slash-separated)
+      expect(message.textContent).toMatch(/כבר מומש \d{2}\/\d{2}\/\d{2} \d{2}:\d{2}/)
       expect(screen.queryByRole('button')).not.toBeInTheDocument()
     })
   })

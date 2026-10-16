@@ -43,13 +43,20 @@ function newIdempotencyKey(): string {
 
 function formatRedemptionTime(iso: string): string {
   const date = new Date(iso)
-  return date.toLocaleDateString('he-IL', {
-    day: '2-digit',
-    month: '2-digit',
-    year: '2-digit',
+  const parts = date
+    .toLocaleDateString('he-IL', {
+      day: '2-digit',
+      month: '2-digit',
+      year: '2-digit',
+    })
+    .split('.')
+  const time = date.toLocaleTimeString('he-IL', {
     hour: '2-digit',
     minute: '2-digit',
+    hour12: false,
   })
+  // Format: DD/MM/YY HH:MM (slashes, not periods)
+  return `${parts[0]}/${parts[1]}/${parts[2]} ${time}`
 }
 
 export default function RedeemConfirm(props: Props) {
