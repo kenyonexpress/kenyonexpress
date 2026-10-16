@@ -7,13 +7,22 @@ import { useState, useTransition } from 'react'
 type Props = {
   priceMin?: number
   priceMax?: number
+  categoryMinPrice?: number
+  categoryMaxPrice?: number
   productType?: 'coupon' | 'physical'
   suppliers?: { supplier_id: string; supplier_name_he: string; product_count: number }[]
   tags?: { tag: string; product_count: number }[]
   categoryId?: string
 }
 
-export default function CategoryFilterSidebar({ priceMin, priceMax, suppliers, tags }: Props) {
+export default function CategoryFilterSidebar({
+  priceMin,
+  priceMax,
+  categoryMinPrice = 0,
+  categoryMaxPrice = 100000,
+  suppliers,
+  tags,
+}: Props) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -67,8 +76,8 @@ export default function CategoryFilterSidebar({ priceMin, priceMax, suppliers, t
           {openSections.price && (
             <div className="category-sidebar__filter-content">
               <PriceRangeSlider
-                min={0}
-                max={1000}
+                min={categoryMinPrice}
+                max={categoryMaxPrice}
                 minValue={priceMin}
                 maxValue={priceMax}
                 onApply={applyPrice}

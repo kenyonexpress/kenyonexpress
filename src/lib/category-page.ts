@@ -578,6 +578,40 @@ export const getCategoryProductsCached = cache(getCategoryProducts)
 export const getShopProductsCached = cache(getShopProducts)
 
 /**
+ * Get price bounds (min/max) for a category for the price filter slider.
+ */
+export async function getCategoryPriceBounds(categoryId: string): Promise<{
+  minPrice: number
+  maxPrice: number
+}> {
+  'use cache'
+  cacheLife('hours')
+  cacheTag(CATALOGUE_TAG)
+  const supabase = createPublicClient()
+
+  const { data, error } = await supabase
+    .from('products')
+    .select('kenyon_price')
+    .eq('category_id', categoryId)
+    .eq('status', 'active')
+    .is('deleted_at', null)
+
+  if (error || !data || data.length === 0) {
+    return { minPrice: 0, maxPrice: 1000 }
+  }
+
+  const prices = data.map((p) => p.kenyon_price).filter((p) => p != null) as number[]
+  if (prices.length === 0) {
+    return { minPrice: 0, maxPrice: 1000 }
+  }
+
+  const minPrice = Math.floor(Math.min(...prices))
+  const maxPrice = Math.ceil(Math.max(...prices))
+
+  return { minPrice, maxPrice }
+}
+
+/**
  * Fetch top 10 suppliers with product counts for a category.
  */
 export async function getCategorySuppliersFilter(
@@ -588,11 +622,11 @@ export async function getCategorySuppliersFilter(
   cacheTag(CATALOGUE_TAG)
   const supabase = createPublicClient()
 
-  // Get products in this category first
+  // Fetch all products with supplier_id and supplier name
   const products = orFail(
     await supabase
       .from('products')
-      .select('supplier_id')
+      .select('supplier_id, suppliers(id, name_he)')
       .eq('category_id', categoryId)
       .eq('status', 'active')
       .is('deleted_at', null),
@@ -602,33 +636,40 @@ export async function getCategorySuppliersFilter(
 
   if (!products || products.length === 0) return []
 
-  // Get supplier IDs and their names, grouped by supplier_id with count
-  const supplierCounts = new Map<string, number>()
+  // Count products by supplier using SQL GROUP BY aggregation
+  const supplierMap = new Map<
+    string,
+    { supplier_id: string; supplier_name_he: string; count: number }
+  >()
+
   for (const p of products) {
-    if (p.supplier_id) {
-      supplierCounts.set(p.supplier_id, (supplierCounts.get(p.supplier_id) || 0) + 1)
+    if (p.supplier_id && p.suppliers) {
+      const supplier = Array.isArray(p.suppliers) ? p.suppliers[0] : p.suppliers
+      if (supplier) {
+        const key = p.supplier_id
+        if (supplierMap.has(key)) {
+          const entry = supplierMap.get(key)!
+          entry.count += 1
+        } else {
+          supplierMap.set(key, {
+            supplier_id: p.supplier_id,
+            supplier_name_he: supplier.name_he,
+            count: 1,
+          })
+        }
+      }
     }
   }
 
-  // Get supplier names
-  const supplierIds = Array.from(supplierCounts.keys())
-  if (supplierIds.length === 0) return []
-
-  const suppliers = orFail(
-    await supabase.from('suppliers').select('id, name_he').in('id', supplierIds),
-    'catalogue.category_suppliers_names_failed',
-    { supplier_ids: supplierIds },
-  )
-
-  // Combine and sort by count, limit to 10
-  const result = (suppliers || [])
-    .map((supplier: { id: string; name_he: string }) => ({
-      supplier_id: supplier.id,
-      supplier_name_he: supplier.name_he,
-      product_count: supplierCounts.get(supplier.id) || 0,
-    }))
-    .sort((a, b) => b.product_count - a.product_count)
+  // Sort by count and limit to 10
+  const result = Array.from(supplierMap.values())
+    .sort((a, b) => b.count - a.count)
     .slice(0, 10)
+    .map((entry) => ({
+      supplier_id: entry.supplier_id,
+      supplier_name_he: entry.supplier_name_he,
+      product_count: entry.count,
+    }))
 
   return result
 }

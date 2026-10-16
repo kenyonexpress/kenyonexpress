@@ -16,6 +16,7 @@ import {
   getAllCategorySlugs,
   getCategoryBySlug,
   getCategoryParent,
+  getCategoryPriceBounds,
   getCategoryProductsCached,
   getCategorySuppliersFilter,
   getCategoryTagsFilter,
@@ -62,8 +63,9 @@ function resultCountText(total: number, from: number, to: number): string {
  * these exact two columns behind the same `is_active` filter, so this is the
  * same answer off the same cache entry the body below reads.
  */
-export async function generateMetadata({ params }: Props) {
+export async function generateMetadata({ params, searchParams: spPromise }: Props) {
   const { slug } = await params
+  const sp = await spPromise
   const category = await getCategoryBySlug(slug)
 
   // A slug nobody has: the body calls notFound(), which emits noindex through
@@ -85,12 +87,38 @@ export async function generateMetadata({ params }: Props) {
   // the page already shows, rather than invented marketing copy.
   const description = category.description_he?.trim() || categoryMetaDescription(category.name_he)
 
+  // Fetch product count for og:title to match H1 format: "N מבצעים זמינים"
+  const sort = parseSort(sp.sort)
+  const page = parsePage(sp.page)
+  const priceMin = parsePrice(sp.min)
+  const priceMax = parsePrice(sp.max)
+  const productType = parseProductType(sp.type)
+  const supplierId = typeof sp.supplier === 'string' ? sp.supplier : undefined
+  const tag = typeof sp.tag === 'string' ? sp.tag : undefined
+
+  const args: QueryArgs = {
+    categoryId: category.id,
+    category: { name_he: category.name_he, slug: category.slug },
+    sort,
+    page,
+    priceMin,
+    priceMax,
+    productType,
+    supplierId,
+    tag,
+    collection: collectionRule(category.slug),
+  }
+
+  const { total } = await getCategoryProductsCached(args)
+  const titleWithCount =
+    total > 0 ? `${total} מבצעים זמינים - ${category.name_he}` : category.name_he
+
   return {
     title: category.name_he,
     description,
     alternates: alternatesFor(`/category/${encodeURIComponent(category.slug)}`),
     openGraph: {
-      title: category.name_he,
+      title: titleWithCount,
       description,
       url: `/category/${encodeURIComponent(category.slug)}`,
       type: 'website',
@@ -309,10 +337,11 @@ async function CategoryPageBody({
 
   // Cheap shell data only. The product query is deferred to the boundaries
   // below so the breadcrumb, title, control bar and sidebar can stream first.
-  const [parent, suppliers, tags] = await Promise.all([
+  const [parent, suppliers, tags, priceBounds] = await Promise.all([
     category.parent_id ? getCategoryParent(category.parent_id) : Promise.resolve(null),
     getCategorySuppliersFilter(category.id),
     getCategoryTagsFilter(category.id),
+    getCategoryPriceBounds(category.id),
   ])
 
   const args: QueryArgs = {
@@ -403,6 +432,8 @@ async function CategoryPageBody({
           <CategoryFilterSidebar
             priceMin={priceMin}
             priceMax={priceMax}
+            categoryMinPrice={priceBounds.minPrice}
+            categoryMaxPrice={priceBounds.maxPrice}
             productType={productType}
             suppliers={suppliers}
             tags={tags}
