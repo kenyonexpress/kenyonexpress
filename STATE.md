@@ -1,7 +1,11 @@
-RESUME FROM: UX36
+RESUME FROM: UX43
 # KenyonExpress — Project State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-10-16T22:16:00+00:00
+- item: UX42-pull-to-refresh
+- RESULT: DONE (Pull-to-refresh gesture for category product listings implemented with Framer Motion. Touch events trigger visual indicator animation as user pulls down. When pull threshold (100px) exceeded, page refetches products via /api/catalog/page and reloads. Component: src/components/category/PullToRefresh.tsx with motion-driven gesture detection, opacity/scale transforms based on pull distance. CSS: .pull-to-refresh__indicator positioned fixed at top with animated spinner icon. Tests: PullToRefresh.test.tsx (6 specs covering rendering, props, indicator visibility). Integration: wrapped CategoryPageBody in category/[slug]/page.tsx, passed categorySlug prop. Accessibility: Hebrew localization for aria-label and SVG title. All gates pass: typecheck✓ lint✓ build✓ (278 shells, CSP clean). Commits: 05708a035)
 
 ### 2026-10-17T10:51:00+07:00
 - item: UX35-border-radius
