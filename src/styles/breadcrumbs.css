@@ -88,6 +88,13 @@
   text-align: center;
 }
 
+/* Hide ellipsis on desktop, show middle items instead */
+@media (min-width: 768px) {
+  .breadcrumbs__ellipsis {
+    display: none;
+  }
+}
+
 /* Semantic current page marker */
 .breadcrumbs__item[aria-current="page"] .breadcrumbs__text {
   color: #333e48;

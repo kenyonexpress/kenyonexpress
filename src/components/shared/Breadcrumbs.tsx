@@ -24,6 +24,7 @@ export default function Breadcrumbs({ items, className = '', showEllipsis = true
           // On mobile (< 768px), show only first and last items with ellipsis
           const isHidden = shouldTruncate && index > 0 && index < items.length - 1
           const isLastItem = index === items.length - 1
+          const isFirstItem = index === 0
 
           return (
             <li
@@ -31,13 +32,6 @@ export default function Breadcrumbs({ items, className = '', showEllipsis = true
               className={`breadcrumbs__item ${isHidden ? 'breadcrumbs__item--hidden-mobile' : ''} ${isLastItem ? 'breadcrumbs__item--current' : ''}`}
               aria-current={isLastItem ? 'page' : undefined}
             >
-              {/* Show ellipsis only once before the middle items on mobile */}
-              {shouldTruncate && index === 1 && (
-                <span className="breadcrumbs__ellipsis" aria-hidden="true">
-                  …
-                </span>
-              )}
-
               {item.href ? (
                 <Link href={item.href} className="breadcrumbs__link">
                   {item.label}
@@ -46,9 +40,17 @@ export default function Breadcrumbs({ items, className = '', showEllipsis = true
                 <span className="breadcrumbs__text">{item.label}</span>
               )}
 
+              {/* Separator after item (not after last item) */}
               {!isLastItem && (
                 <span className="breadcrumbs__sep" aria-hidden="true">
                   /
+                </span>
+              )}
+
+              {/* Ellipsis: shown on mobile between first and last item when truncating */}
+              {shouldTruncate && isFirstItem && (
+                <span className="breadcrumbs__ellipsis" aria-hidden="true">
+                  …
                 </span>
               )}
             </li>

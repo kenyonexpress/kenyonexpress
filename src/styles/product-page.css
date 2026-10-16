@@ -133,6 +133,37 @@
   color: var(--pdp-line);
 }
 
+/* Product page breadcrumbs component styling */
+.pdp .breadcrumbs {
+  padding: 0;
+  min-height: var(--pdp-crumb-phone-h);
+  font-size: var(--pdp-body-size);
+  line-height: var(--pdp-body-line);
+  color: var(--pdp-ink);
+}
+
+@media (min-width: 768px) {
+  .pdp .breadcrumbs {
+    min-height: var(--pdp-crumb-h);
+  }
+}
+
+.pdp .breadcrumbs__link {
+  color: var(--pdp-ink);
+}
+
+.pdp .breadcrumbs__link:hover {
+  color: var(--pdp-sale);
+}
+
+.pdp .breadcrumbs__sep {
+  color: var(--pdp-line);
+}
+
+.pdp .breadcrumbs__text {
+  color: var(--pdp-ink);
+}
+
 /* Gallery first so RTL puts it on the right, where live has it. */
 .pdp__columns {
   display: grid;

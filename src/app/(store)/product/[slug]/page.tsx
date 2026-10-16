@@ -1,6 +1,7 @@
 import ViewTracker from '@/components/analytics/ViewTracker'
 import ExpiredProduct from '@/components/product/ExpiredProduct'
 import Reviews from '@/components/product/Reviews'
+import Breadcrumbs from '@/components/shared/Breadcrumbs'
 import BundleOffer from '@/components/storefront/BundleOffer'
 import { CouponTerms } from '@/components/storefront/CouponPricing'
 import CouponQrExpiry from '@/components/storefront/CouponQrExpiry'
@@ -25,7 +26,6 @@ import { buildBreadcrumbJsonLd, buildProductJsonLd, jsonLdScript } from '@/lib/s
 import { publicPageMetadata } from '@/lib/seo/page-metadata'
 import { readWhatsAppEnabled } from '@/lib/supplier-contact'
 import '@/styles/product-page.css'
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 
@@ -256,25 +256,14 @@ export default async function ProductPage({ params }: Props) {
           }}
         />
 
-        {/* Breadcrumb. The row is 84px on live, and that height is what puts
-            the columns block below it on y250. */}
-        <nav className="pdp-breadcrumb" aria-label="נתיב ניווט">
-          {/* tap-area: "בית" paints 22x24 and the 24px floor of 2.5.8 is
-              measured on the hit box (touch-targets.spec, 15.10.2026). */}
-          <Link href="/" className="tap-area">
-            בית
-          </Link>
-          {category && (
-            <>
-              <span className="pdp-breadcrumb__sep">/</span>
-              <Link href={`/category/${category.slug}`} className="tap-area">
-                {category.name_he}
-              </Link>
-            </>
-          )}
-          <span className="pdp-breadcrumb__sep">/</span>
-          <span>{product.name_he}</span>
-        </nav>
+        {/* Breadcrumb: Home > Category > Product with mobile truncation */}
+        <Breadcrumbs
+          items={[
+            { label: 'בית', href: '/' },
+            ...(category ? [{ label: category.name_he, href: `/category/${category.slug}` }] : []),
+            { label: product.name_he },
+          ]}
+        />
 
         {/* Two columns: gallery (right in RTL, 470px) + summary (left, 670px).
             No card wrapper: live puts both straight on the page, and the
