@@ -257,30 +257,37 @@ F23: DONE for today. docs/BACKLOG.md has 7 items, all date- or event-gated (none
 
 ---
 
-## Visual Parity Investigation — REGRESSION IDENTIFIED
+## Visual Parity Investigation — ROOT CAUSE NARROWED
 
 **Goal:** Push visual parity below 5% at all widths (380, 768, 1440).
 
-**CRITICAL FINDING:** Major regression detected at 1440px.
-- Last known good (Oct 15): 1440=8.29% PASS (stable for 5+ weeks)
-- Current: 1440=23.14% FAIL (regression factor: 2.79x worse)
-- Also regressed: 380=25.96% FAIL (vs stable 30.26%), 768=36.34% FAIL (vs stable 28.99%)
+**REGRESSION TIMELINE:**
+- Sept 8 → Oct 15: 1440=8.29% PASS (baseline stable 5+ weeks)
+- Oct 15 22:04 (F13, 6a23a03d2): LAST KNOWN GOOD 8.29%
+- Oct 15 → Oct 16: Regression occurs between F13 and current state
+- Current (post-Oct 16 consolidation): 1440=23.14% FAIL (2.79x worse)
+- TESTED: Regression persists at F19 (3906e67bc) = 23.14%, confirming issue introduced before F19
 
-**Root Cause:** Page height increased 33% (7337px vs 5492px at 380, 1440px unchanged). Design system token consolidation (commits a2101d481→9eb8ab6f4, Oct 16) introduced regression. CitiesRow component added, new Electro icons, removed lucide stroke widths.
+**Regression Commits Under Investigation** (between F13 @ 6a23a03d2 and F19 @ 3906e67bc):
+- 47e7995e6: F13 remove location UI
+- 2a436fd64: F03.5 location pin + Waze
+- 53129fcc2: F14 install prompt gating
+- 3906e67bc: F19 maintenance mode + Turnstile
 
-**Known Baseline Context** (from docs/UI-PARITY-REPORT.md, Sept 8):
-- 1440: 8.29% baseline (stable Sept 8→Oct 15) ← TARGET
-- 380: 30.26% baseline (against broken mobile JS ref, KNOWN-ISSUES 3)
-- 768: 28.99% baseline (against broken mobile JS ref, KNOWN-ISSUES 3)
+**Symptoms:**
+- Page height: 7337px vs ref 5492px (33% increase at 380px width)
+- Worst bands: y1100-1800 (product grid region), 45-50% pixel diff
+- Affects all widths: 380=25.96%, 768=36.34%, 1440=23.14%
 
-Goal statement "Current: 380=8.44%, 768=9.03%, 1440=3.82%" does not match any historical baseline in parity report. Likely measured against different reference or pre-regression.
+**Red Herrings Eliminated:**
+- Design system consolidation (a2101d481→080e7761c) NOT the cause (still 23.14% at eb83ed820)
+- CSS color replacements verified correct (all hex values match)
+- Page height increase suggests layout/component change, not CSS color issue
 
-**Diagnosis:**
-- Design system consolidation (a2101d481) changed CSS tokens and page layout
-- Page is 1845px taller at 380 (structural issue)
-- Worst pixel-diff bands at y1100-1800 (product grid + footer regions)
-- CSS color replacements verified correct (hex values match)
+**Next Steps for Fix:**
+Bisect commits 6a23a03d2..3906e67bc to isolate regression. Likely candidates:
+1. Location pin/Waze integration (2a436fd64) - added layout changes
+2. Install prompt changes (53129fcc2) - might affect card/grid spacing
+3. Maintenance mode (3906e67bc) - CSS proxy rules
 
-**To Fix:** Revert commits a2101d481→HEAD (design system consolidation) or identify specific layout/token changes that caused height increase. Regression confirmed within token consolidation block, not external changes.
-
-**Code State:** tests 4989 pass (2 expected gate failures), lint clean, type-check clean, build passes.
+**Code State:** tests 4989 pass, lint clean, type-check clean, build passes.
