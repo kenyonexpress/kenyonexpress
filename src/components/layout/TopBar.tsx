@@ -1,5 +1,7 @@
 import { EcMapPointer, EcShoppingBag, EcTransport } from '@/components/icons/electro-icons'
+import UserMenuDropdown from '@/components/layout/UserMenuDropdown'
 import Link from 'next/link'
+import { Suspense } from 'react'
 
 /**
  * COMPONENT 01 OF `docs/COMPONENT-QUEUE.md`: kenyonexpress.co.il's top bar.
@@ -48,13 +50,13 @@ type InfoItemProps = {
 }
 
 /**
- * The top bar's four items, in LIVE'S DOM ORDER, which is not reading order.
+ * The top bar's three items, in LIVE'S DOM ORDER, which is not reading order.
+ * The account/menu item is now rendered via UserMenuDropdown.
  */
 const INFO_ITEMS: readonly InfoItemProps[] = [
   { Icon: EcMapPointer, label: 'בפריסה ארצית' },
   { Icon: EcTransport, label: 'משלוח מהיר חינם' },
   { Icon: EcShoppingBag, label: 'קניה בטוחה' },
-  { Icon: EcMapPointer, label: 'התחברות', href: '/login' },
 ]
 
 function InfoItem({ Icon, label, href }: InfoItemProps) {
@@ -139,6 +141,10 @@ export default function TopBar() {
               <InfoItem {...item} />
             </div>
           ))}
+          <ItemSeparator />
+          <Suspense fallback={null}>
+            <UserMenuDropdown />
+          </Suspense>
         </div>
       </div>
     </div>

@@ -56,6 +56,7 @@ const HEADER_CHROME = [
   'src/app/layout.tsx',
   'src/components/layout/Header.tsx',
   'src/components/layout/TopBar.tsx',
+  'src/components/layout/UserMenuDropdown.tsx',
   'src/components/layout/MastheadNav.tsx',
   'src/components/layout/MobileDrawer.tsx',
 ]
@@ -82,10 +83,10 @@ describe('the header icon cluster', () => {
 })
 
 describe('the account entry point', () => {
-  it('exists in exactly one place in the header chrome, and it is the top bar', () => {
+  it('exists in exactly one place in the header chrome, and it is the user menu', () => {
     const hits = HEADER_CHROME.filter((f) => /["']\/login["']/.test(code(read(f))))
-    expect(hits, 'exactly one account entry point, in the shell top-left').toEqual([
-      'src/components/layout/TopBar.tsx',
+    expect(hits, 'exactly one account entry point, in the user menu dropdown').toEqual([
+      'src/components/layout/UserMenuDropdown.tsx',
     ])
   })
 })
