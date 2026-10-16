@@ -96,7 +96,7 @@
 
 .p_con__category {
   font-size: 12px;
-  font-weight: 400;
+  font-weight: var(--weight-regular);
   line-height: 24px; /* live: category row is 24px tall */
   color: var(--color-muted-2);
 }
@@ -165,7 +165,7 @@
   justify-content: center;
   font-size: 0.857em;
   line-height: 2em;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
 }
 
 /*
@@ -233,7 +233,7 @@
 .p_con__strike {
   color: var(--color-deal-price);
   font-size: 14px;
-  font-weight: 400;
+  font-weight: var(--weight-regular);
   text-decoration: line-through;
   flex-grow: 1;
 }
@@ -241,14 +241,14 @@
 .p_con__sale {
   color: var(--color-deal-sale);
   font-size: 16px;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   flex-grow: 1;
 }
 
 .p_con__single-price {
   color: var(--color-deal-price);
   font-size: 16px;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
 }
 
 .p_con .atc {

@@ -71,7 +71,7 @@
 .cart-page__title {
   margin: 22px 0 40px;
   font-size: 39.998px;
-  font-weight: 500;
+  font-weight: var(--weight-medium);
   line-height: 1.2;
   color: var(--color-heading);
 }
@@ -135,7 +135,7 @@
 
 .cart-line__name {
   font-size: 16.996px;
-  font-weight: 400;
+  font-weight: var(--weight-regular);
   color: var(--color-heading);
   line-height: 1.4;
   transition: color 0.15s;
@@ -148,7 +148,7 @@
 .cart-line__warning {
   font-size: 0.8125rem;
   color: var(--util-dc3545);
-  font-weight: 600;
+  font-weight: var(--weight-bold);
 }
 
 .cart-line__coupon-note {
@@ -202,13 +202,13 @@
 .cart-line__qty-value {
   width: 2.5rem;
   text-align: center;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   color: var(--color-heading);
 }
 
 .cart-line__price {
   font-size: 16.996px;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   /* The price is the one thing on the row that has to be findable at a glance,
      and on Electro it is the accent red rather than the body slate. */
   color: var(--cart-price-red);
@@ -353,7 +353,7 @@
 
 .cart-sidebar__title {
   font-size: 25.004px;
-  font-weight: 500;
+  font-weight: var(--weight-medium);
   color: var(--color-heading);
   margin-bottom: 1.25rem;
   padding-bottom: 0.75rem;
@@ -387,13 +387,13 @@
   padding: 1rem 0;
   border-top: 2px solid #333e48;
   font-size: 1rem;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   color: var(--color-heading);
 }
 
 .cart-sidebar__total strong {
   font-size: 1.5rem;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   color: var(--color-heading);
 }
 
@@ -430,7 +430,7 @@
   background: var(--color-brand-primary);
   color: var(--color-heading);
   font-size: 14px;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   border-radius: 21.994px;
   border: none;
   cursor: pointer;
@@ -455,7 +455,7 @@
   background: var(--color-brand-primary);
   color: var(--color-heading);
   font-size: 49px;
-  font-weight: 300;
+  font-weight: var(--weight-light);
   line-height: 1.4;
   text-align: center;
   padding: 49px 79.282px;
@@ -479,7 +479,7 @@
   padding: 9.504px 48px;
   background: var(--util-efecec);
   color: var(--color-heading);
-  font-weight: 400;
+  font-weight: var(--weight-regular);
   font-size: 14px;
   border-radius: 50px;
   transition: background 0.15s;
@@ -513,7 +513,7 @@
   margin: 0;
   color: var(--util-dc3545);
   font-size: 14px;
-  font-weight: 600;
+  font-weight: var(--weight-bold);
 }
 
 .cart-page__blocked-action {
@@ -526,7 +526,7 @@
   background: var(--util-dc3545);
   color: var(--color-surface);
   font-size: 14px;
-  font-weight: 600;
+  font-weight: var(--weight-bold);
   transition: background 0.15s;
 }
 
@@ -656,7 +656,7 @@
   background: var(--color-brand-primary);
   color: var(--color-heading);
   font-size: 14px;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   cursor: pointer;
   white-space: nowrap;
   transition: background 0.15s;
@@ -707,7 +707,7 @@
 
 .cart-sidebar__row--discount {
   color: var(--color-sale-badge);
-  font-weight: 700;
+  font-weight: var(--weight-bold);
 }
 
 /* ===========================================================================

@@ -9,7 +9,7 @@
 }
 .ke-newsletter__label {
   font-size: 0.875rem;
-  font-weight: 600;
+  font-weight: var(--weight-bold);
 }
 .ke-newsletter__row {
   display: flex;
@@ -31,7 +31,7 @@
   padding-block: 0.5rem;
   padding-inline: 1.25rem;
   font-size: 0.875rem;
-  font-weight: 500;
+  font-weight: var(--weight-medium);
   white-space: nowrap;
 }
 .ke-newsletter__button:disabled {

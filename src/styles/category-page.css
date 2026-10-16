@@ -138,7 +138,7 @@
 .category-page__title {
   margin: 0;
   font-size: var(--cat-title-size);
-  font-weight: 500;
+  font-weight: var(--weight-medium);
   line-height: var(--cat-title-line);
   color: var(--cat-ink);
   display: flex;
@@ -148,7 +148,7 @@
 
 .category-page__title-count {
   font-size: 14px;
-  font-weight: 400;
+  font-weight: var(--weight-regular);
   line-height: var(--cat-body-line);
   color: var(--cat-muted);
 }
@@ -464,13 +464,13 @@
   color: var(--cat-muted);
   font-size: var(--cat-price-del-size);
   text-decoration: line-through;
-  font-weight: 400;
+  font-weight: var(--weight-regular);
 }
 
 .category-card__price ins {
   color: var(--cat-sale);
   text-decoration: none;
-  font-weight: 400;
+  font-weight: var(--weight-regular);
   margin-inline-end: 0.25em;
 }
 
@@ -483,7 +483,7 @@
 .category-card__title {
   margin: 0 0 8px;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   line-height: var(--cat-ptitle-line);
   color: var(--cat-link);
 }
@@ -555,7 +555,7 @@
   background-color: var(--cat-badge);
   color: var(--cat-surface);
   font-size: var(--cat-eyebrow-size);
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   padding: 2px 10px;
   border-radius: 4px;
   line-height: 2;
@@ -683,7 +683,7 @@
   cursor: pointer;
   color: var(--cat-ink);
   font-size: 14px;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   text-align: start;
   transition: background-color 200ms ease-out;
 }
@@ -843,7 +843,7 @@
   background: var(--cat-brand);
   color: var(--cat-ink);
   font-size: 14px;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   cursor: pointer;
   transition: background-color 200ms ease-out;
 }
@@ -912,7 +912,7 @@
   color: var(--cat-ink);
   border-radius: 12px;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: var(--weight-bold);
   flex-shrink: 0;
 }
 
@@ -980,7 +980,7 @@
 .category-pagination .is-current {
   background: var(--cat-brand);
   border-color: var(--cat-brand);
-  font-weight: 700;
+  font-weight: var(--weight-bold);
 }
 
 .category-pagination .is-disabled {
@@ -1020,7 +1020,7 @@
   margin: 0;
   padding-bottom: var(--cat-carousel-pad);
   font-size: var(--cat-carousel-size);
-  font-weight: 400;
+  font-weight: var(--weight-regular);
   line-height: var(--cat-carousel-line);
   color: var(--cat-ink);
   border-bottom: 2px solid var(--cat-brand);
@@ -1086,7 +1086,7 @@
 /* Filter disclosure: closed it is one row, so the footer stays near live's. */
 .category-sidebar__summary {
   cursor: pointer;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   font-size: 14px;
   color: var(--cat-ink);
   list-style: none;

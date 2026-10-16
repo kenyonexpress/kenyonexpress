@@ -79,12 +79,12 @@
   align-items: center;
   gap: 0.5rem;
   font-size: 1.125rem;
-  font-weight: 800;
+  font-weight: var(--weight-black);
   color: var(--color-link);
 }
 
 .cart-drawer__count {
-  font-weight: 600;
+  font-weight: var(--weight-bold);
   color: var(--util-666);
   font-size: 0.9375rem;
 }
@@ -142,7 +142,7 @@
 
 .cart-drawer__item-name {
   font-size: 0.875rem;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   color: var(--color-link);
   line-height: 1.35;
   display: -webkit-box;
@@ -157,7 +157,7 @@
 .cart-drawer__item-warning {
   display: block;
   font-size: 0.75rem;
-  font-weight: 600;
+  font-weight: var(--weight-bold);
   color: var(--util-dc3545);
   line-height: 1.35;
 }
@@ -192,7 +192,7 @@
 }
 
 .cart-drawer__item-price {
-  font-weight: 800;
+  font-weight: var(--weight-black);
   color: var(--color-price);
   font-size: 0.9375rem;
 }
@@ -213,7 +213,7 @@
   padding: 0.5rem 1.25rem;
   background: var(--color-brand-primary);
   color: var(--color-heading);
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   border-radius: 0.375rem;
 }
 
@@ -233,7 +233,7 @@
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   color: var(--color-heading);
 }
 
@@ -257,7 +257,7 @@
   min-height: 2.75rem;
   background: var(--color-brand-primary);
   color: var(--color-heading);
-  font-weight: 800;
+  font-weight: var(--weight-black);
   border-radius: 0.375rem;
   transition: background 0.15s;
 }
@@ -391,7 +391,7 @@
 
 .mini-cart__item-name {
   font-size: 13px;
-  font-weight: 600;
+  font-weight: var(--weight-bold);
   line-height: 1.35;
   color: var(--color-heading);
   display: -webkit-box;
@@ -423,7 +423,7 @@
 
 .mini-cart__item-price {
   font-size: 14px;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   color: var(--cart-price-red);
   white-space: nowrap;
 }
@@ -460,7 +460,7 @@
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
 }
 
 .mini-cart__subtotal strong {
@@ -489,7 +489,7 @@
   min-height: var(--cart-touch);
   border-radius: 22px;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   text-align: center;
   transition: background 0.15s;
 }
@@ -538,7 +538,7 @@
   align-items: center;
   background: var(--color-brand-primary);
   color: var(--color-heading);
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   border-radius: 22px;
 }
 

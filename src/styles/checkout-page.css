@@ -60,7 +60,7 @@
 .checkout-page__title {
   font-size: 39.998px;
   line-height: 47.9976px;
-  font-weight: 500;
+  font-weight: var(--weight-medium);
   color: var(--color-heading);
   /* 22px above (the gap under the 380 breadcrumb band, 201 -> 223) and 40px
      below (h1 ends 271, entry-content starts 311). From 768 the breadcrumb's
@@ -104,7 +104,7 @@
   border: none;
   padding: 0;
   font: inherit;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   color: var(--color-heading);
   text-decoration: underline;
   cursor: pointer;
@@ -143,7 +143,7 @@
 .checkout-section__title {
   font-size: 25.004px;
   line-height: 40.0064px;
-  font-weight: 500;
+  font-weight: var(--weight-medium);
   color: var(--color-heading);
   margin: 0 0 34.0054px;
   padding: 0;
@@ -276,7 +276,7 @@
 
 .checkout-review__table th {
   text-align: start;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   padding-bottom: 12px;
   border-bottom: 1px solid #ddd;
   height: 48px;
@@ -315,7 +315,7 @@
   height: auto;
   border-bottom: 1px solid #ddd;
   padding-block: 12px;
-  font-weight: 400;
+  font-weight: var(--weight-regular);
 }
 
 .checkout-review__row td {
@@ -324,7 +324,7 @@
 
 .checkout-review__row--total th,
 .checkout-review__row--total td {
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   font-size: 16.996px;
 }
 
@@ -422,7 +422,7 @@
   color: var(--color-heading);
   font-size: 19.418px;
   line-height: 33.2824px;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   border-radius: 50px;
   border: 1px solid #fed700;
   cursor: pointer;
@@ -447,7 +447,7 @@
 .checkout-cards__legend {
   padding: 0;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: var(--weight-bold);
   color: var(--color-heading, #333e48);
 }
 
@@ -474,7 +474,7 @@
 
 .checkout-success__title {
   font-size: 39.998px;
-  font-weight: 500;
+  font-weight: var(--weight-medium);
   color: var(--color-heading);
   margin-bottom: 8px;
 }
@@ -500,7 +500,7 @@
 
 .coupon-card__code {
   font-size: 25.004px;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   letter-spacing: 0.2em;
   color: var(--color-heading);
   direction: ltr;
@@ -520,7 +520,7 @@
 .coupon-card__collect {
   font-size: 14px;
   color: var(--color-heading);
-  font-weight: 700;
+  font-weight: var(--weight-bold);
 }
 
 .checkout-wallet-note {
@@ -530,7 +530,7 @@
   border-radius: 21.994px;
   padding: 10px 20px;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   margin-top: 8px;
 }
 
@@ -577,7 +577,7 @@
 
 .checkout-frame__title {
   font-size: 19.418px;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
 }
 
 .checkout-frame__order {
@@ -643,7 +643,7 @@
      the step row wherever it sits. */
   color: var(--util-616161);
   font-size: 14px;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   border: none;
   /* The state line sits on the bottom edge, which is the side the eye tracks
      along a row of steps. Colour alone would not survive a greyscale print or
@@ -741,7 +741,7 @@
   background: var(--color-brand-primary);
   color: var(--color-heading);
   font-size: 15px;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   border: 1px solid #fed700;
   border-radius: 50px;
   cursor: pointer;
@@ -764,7 +764,7 @@
   background: transparent;
   color: var(--color-heading);
   font-size: 14px;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   border: 1px solid #ddd;
   border-radius: 50px;
   cursor: pointer;
@@ -791,7 +791,7 @@
   background: var(--color-brand-primary);
   color: var(--color-heading);
   font-size: 14px;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   border: 1px solid #fed700;
   border-radius: 50px;
   cursor: pointer;

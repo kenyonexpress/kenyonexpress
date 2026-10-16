@@ -115,7 +115,7 @@
   background-color: var(--pdp-sale);
   color: var(--pdp-surface);
   font-size: 12px;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   padding: 2px 10px;
   border-radius: 4px;
 }
@@ -205,7 +205,7 @@
   margin: 12px 0 0;
   font-size: var(--pdp-title-size);
   line-height: var(--pdp-title-line);
-  font-weight: 500;
+  font-weight: var(--weight-medium);
   color: var(--pdp-ink);
 }
 
@@ -251,7 +251,7 @@
 .pdp-summary__stock--low {
   margin-top: 4px;
   min-height: 0;
-  font-weight: 600;
+  font-weight: var(--weight-bold);
   color: var(--color-price);
 }
 
@@ -302,7 +302,7 @@
 .pdp-summary__badge {
   font-size: var(--pdp-body-size);
   line-height: var(--pdp-body-line);
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   color: var(--pdp-surface);
   background-color: var(--pdp-sale);
   padding-inline: 8px;
@@ -315,7 +315,7 @@
 
 .pdp-summary__variants > p {
   margin: 0 0 8px;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
 }
 
 /* Buy controls. Live: quantity 140x45 on the inline-START of the row (x665
@@ -375,7 +375,7 @@
 .pdp-buy__count {
   flex: 1;
   text-align: center;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   font-variant-numeric: tabular-nums;
 }
 
@@ -388,7 +388,7 @@
   max-width: 100%;
   height: var(--pdp-atc-h);
   border-radius: 999px;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   color: var(--pdp-ink);
   background-color: var(--pdp-brand);
   transition: background-color 0.15s;
@@ -411,7 +411,7 @@
   height: var(--pdp-buy-h);
   margin-top: 10px;
   border-radius: 999px;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   color: var(--pdp-surface);
   background-color: var(--pdp-buy);
   transition: background-color 0.15s;
@@ -458,7 +458,7 @@
   margin: 0 0 4px;
   font-size: var(--pdp-body-size);
   line-height: var(--pdp-body-line);
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   color: var(--pdp-ink);
 }
 
@@ -508,7 +508,7 @@
   padding-bottom: 10px;
   font-size: var(--pdp-related-size);
   line-height: var(--pdp-related-line);
-  font-weight: 500;
+  font-weight: var(--weight-medium);
   color: var(--pdp-ink);
   border-bottom: 1px solid var(--pdp-line);
 }
