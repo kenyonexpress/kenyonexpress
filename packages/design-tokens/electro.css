@@ -108,6 +108,44 @@
   --electro-whatsapp-ink-hover: #043c36;
   --electro-facebook: #166fe5;
 
+  /* Utility colors (site-wide use cases) */
+  --util-000: #000;
+  --util-666: #666;
+  --util-999: #999;
+  --util-bbb: #bbb;
+  --util-ccc: #ccc;
+  --util-eee: #eee;
+  --util-15803d: #15803d;
+  --util-2c7a13: #2c7a13;
+  --util-2f7d18: #2f7d18;
+  --util-495057: #495057;
+  --util-5d7184: #5d7184;
+  --util-616161: #616161;
+  --util-8a6100: #8a6100;
+  --util-9a6b00: #9a6b00;
+  --util-9b0020: #9b0020;
+  --util-a7a7a7: #a7a7a7;
+  --util-b8401f: #b8401f;
+  --util-b91c1c: #b91c1c;
+  --util-c22e3d: #c22e3d;
+  --util-c94b28: #c94b28;
+  --util-cccfd1: #cccfd1;
+  --util-dc3545: #dc3545;
+  --util-e2dede: #e2dede;
+  --util-e4e4e4: #e4e4e4;
+  --util-e8f7e2: #e8f7e2;
+  --util-ececec: #ececec;
+  --util-efecec: #efecec;
+  --util-eefbe8: #eefbe8;
+  --util-f7f6f6: #f7f6f6;
+  --util-fdf2f3: #fdf2f3;
+  --util-fdeaee: #fdeaee;
+  --util-fef2f2: #fef2f2;
+  --util-fff4d6: #fff4d6;
+  --util-f7f7f7: #f7f7f7;
+  --util-f1f1f1: #f1f1f1;
+  --util-fafafa: #fafafa;
+
   /* ============================================
      SPACING
      ============================================ */

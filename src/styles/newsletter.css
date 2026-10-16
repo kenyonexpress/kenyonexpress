@@ -26,7 +26,7 @@
 }
 .ke-newsletter__button {
   border-radius: 0.5rem;
-  background: #000;
+  background: var(--util-000);
   color: var(--color-surface);
   padding-block: 0.5rem;
   padding-inline: 1.25rem;
@@ -39,15 +39,15 @@
 }
 .ke-newsletter__consent {
   font-size: 0.75rem;
-  color: #666;
+  color: var(--util-666);
   line-height: 1.5;
 }
 .ke-newsletter__error {
   font-size: 0.75rem;
-  color: #b91c1c;
+  color: var(--util-b91c1c);
 }
 .ke-newsletter__success {
   display: block;
   font-size: 0.75rem;
-  color: #15803d;
+  color: var(--util-15803d);
 }

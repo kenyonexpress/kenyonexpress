@@ -2,13 +2,13 @@
    container 1320px, primary #fed700. RTL is the default direction. */
 
 .account-page {
-  --account-yellow: #fed700;
-  --account-ink: #333e48;
-  --account-muted: #657888;
-  --account-line: #e4e4e4;
-  --account-blue: #0062bd;
-  --account-red: #e4002b;
-  --account-green: #328614;
+  --account-yellow: var(--color-brand-primary);
+  --account-ink: var(--color-heading);
+  --account-muted: var(--color-muted-2);
+  --account-line: var(--util-e4e4e4);
+  --account-blue: var(--color-link);
+  --account-red: var(--color-price);
+  --account-green: var(--color-sale-badge);
 
   width: 100%;
   padding-block: 24px 56px;
@@ -77,7 +77,7 @@
 }
 
 .account-nav__head {
-  background: #f7f7f7;
+  background: var(--util-f7f7f7);
   padding: 16px 20px;
   border-bottom: 1px solid var(--account-line);
 }
@@ -94,7 +94,7 @@
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
-  background: #eee;
+  background: var(--util-eee);
 }
 
 .account-nav__name {
@@ -168,7 +168,7 @@
 }
 
 .account-nav__link:hover {
-  background: #fffbe6;
+  background: var(--color-warning-surface);
 }
 
 .account-nav__link.is-active {
@@ -264,7 +264,7 @@
 
 .wallet-ledger th {
   font-weight: 700;
-  background: #f7f7f7;
+  background: var(--util-f7f7f7);
   white-space: nowrap;
 }
 
@@ -338,7 +338,7 @@
 }
 
 .account-btn:hover {
-  background: #f7f7f7;
+  background: var(--util-f7f7f7);
 }
 
 .account-btn--primary {
@@ -352,7 +352,7 @@
 }
 
 .account-btn--danger:hover {
-  background: #fdeaee;
+  background: var(--util-fdeaee);
   border-color: var(--account-red);
   color: var(--account-red);
 }
@@ -401,7 +401,7 @@
 }
 
 .account-field__input:disabled {
-  background: #f7f7f7;
+  background: var(--util-f7f7f7);
   color: var(--account-muted);
 }
 
@@ -423,17 +423,17 @@
 }
 
 .account-chip--ok {
-  background: #e8f7e2;
-  color: #2c7a13;
+  background: var(--util-e8f7e2);
+  color: var(--util-2c7a13);
 }
 
 .account-chip--warn {
-  background: #fff4d6;
-  color: #8a6100;
+  background: var(--util-fff4d6);
+  color: var(--util-8a6100);
 }
 
 .account-chip--dead {
-  background: #f1f1f1;
+  background: var(--util-f1f1f1);
   color: var(--account-muted);
 }
 
@@ -451,13 +451,13 @@
 }
 
 .account-alert--error {
-  background: #fdeaee;
-  color: #9b0020;
+  background: var(--util-fdeaee);
+  color: var(--util-9b0020);
 }
 
 .account-alert--success {
-  background: #e8f7e2;
-  color: #2c7a13;
+  background: var(--util-e8f7e2);
+  color: var(--util-2c7a13);
 }
 
 .account-empty {
@@ -643,7 +643,7 @@
   padding: 12px;
   border: 1px dashed var(--account-line);
   border-radius: 4px;
-  background: #fafafa;
+  background: var(--util-fafafa);
 }
 
 .referral-share__actions {
@@ -669,7 +669,7 @@
   font-size: 13px;
   direction: ltr;
   unicode-bidi: isolate;
-  background: #fafafa;
+  background: var(--util-fafafa);
   color: var(--account-ink);
 }
 
@@ -682,7 +682,7 @@
 }
 
 .referral-status--warn {
-  color: #9a6b00;
+  color: var(--util-9a6b00);
 }
 
 .referral-status--dead {
