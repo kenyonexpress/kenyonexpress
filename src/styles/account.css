@@ -237,13 +237,14 @@
 .account-nav__link {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
+  gap: 12px;
   padding: 12px 20px;
   font-size: 14px;
   color: var(--account-ink);
   text-decoration: none;
   border-bottom: 1px solid var(--account-line);
+  border-right: 3px solid transparent;
+  transition: all 200ms ease;
 }
 
 .account-nav__list li:last-child .account-nav__link {
@@ -257,11 +258,28 @@
 .account-nav__link.is-active {
   background: var(--account-yellow);
   font-weight: 700;
+  border-right-color: var(--account-yellow);
+}
+
+.account-nav__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  color: currentColor;
+}
+
+.account-nav__label {
+  flex: 1;
 }
 
 .account-nav__badge {
   font-size: 12px;
   color: var(--account-muted);
+  flex-shrink: 0;
+  margin-inline-start: 8px;
 }
 
 .account-nav__link.is-active .account-nav__badge {
@@ -1815,4 +1833,149 @@
   height: 36px;
   width: 140px;
   border-radius: 4px;
+}
+
+/* Dashboard: Stat tiles */
+.dashboard-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 30px;
+}
+
+.stat-tile {
+  background: #f7f7f7;
+  border: 1px solid var(--account-line);
+  border-radius: 4px;
+  padding: 20px;
+  text-align: center;
+}
+
+.stat-label {
+  font-size: 13px;
+  color: var(--account-muted);
+  margin: 0 0 8px;
+  font-weight: 500;
+}
+
+.stat-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--account-ink);
+  margin: 0 0 4px;
+  line-height: 1.2;
+}
+
+.stat-meta {
+  font-size: 12px;
+  color: var(--account-muted);
+  margin: 0;
+}
+
+/* Orders table */
+.orders-table-wrapper {
+  overflow-x: auto;
+  margin-bottom: 16px;
+}
+
+.orders-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.orders-table th,
+.orders-table td {
+  padding: 12px 10px;
+  text-align: start;
+  border-bottom: 1px solid var(--account-line);
+}
+
+.orders-table th {
+  background: #f7f7f7;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.orders-table tbody tr:hover {
+  background: #fafafa;
+}
+
+.orders-table .order-id {
+  font-weight: 700;
+  color: var(--account-blue);
+}
+
+.orders-table .order-total {
+  font-weight: 700;
+}
+
+.orders-table .order-action {
+  white-space: nowrap;
+}
+
+.orders-table .order-action .account-btn {
+  padding: 0 12px;
+  min-height: 32px;
+  font-size: 12px;
+}
+
+/* Coupons grid */
+.coupons-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.coupon-card {
+  border: 2px dashed var(--account-line);
+  border-radius: 4px;
+  background: #fafafa;
+  padding: 12px;
+  text-align: center;
+  transition: all 200ms ease;
+}
+
+.coupon-card:hover {
+  border-color: var(--account-yellow);
+  background: #fffbe6;
+}
+
+.coupon-header {
+  margin-bottom: 8px;
+}
+
+.coupon-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--account-ink);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.coupon-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.coupon-discount {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--account-green);
+  margin: 0;
+}
+
+.coupon-code {
+  font-size: 11px;
+  font-family: "Courier New", monospace;
+  color: var(--account-muted);
+  margin: 0;
+  padding: 4px;
+  background: #fff;
+  border-radius: 2px;
+  border: 1px solid var(--account-line);
 }
