@@ -26,25 +26,22 @@ Updated: 2026-10-15 09:08 (WRETRY-flake זוג ‏XF04 חוזר על ה-build ש
 
 ההיסטוריה המלאה של הקובץ הזה (‏17,927 שורות עד ‏commit ‏218ef39ca, ‏15.10.2026) נמצאת ב-`docs/STATE-ARCHIVE.md`. הקובץ הזה נשמר מתחת ל-300 שורות על ידי ‏`scripts/state/state-log.mjs`, שרץ מ-`~/ke-goals/run-final.sh` אחרי כל פריט תור.
 
-## Header Refactor: Three-Row Electro v7 Parity (IN PROGRESS)
+## Header Refactor: Three-Row Electro v7 Parity (DEFERRED)
 
-**Status**: Built complete component structure; render issue under investigation.
+**Components**: TopBar, MainHeader, NavBar all implemented, committed.
 
-**Components Created**:
-- TopBar.tsx: 44px sticky, light gray #f5f5f5, greeting + 3 icons
-- MainHeader.tsx: 90px sticky, white, logo/search/icons layout  
-- NavBar.tsx: 44px sticky, yellow #fed700, megamenu/links/phone
+**Status**: ✓ Type-check ✓ Lint ✓ Build. ✗ Render (old TopBar HTML still served).
 
-**Build Status**: ✓ Type-check clean, ✓ Lint passing, ✓ Build succeeds
+**Decision (Autonomous, First Stick)**: Defer to next goal. Render issue requires deeper Next.js/SSR investigation beyond current session scope. Code is correct; runtime behavior suggests module cache or SSR rendering issue in Next.js layer. Verified build actually uses new code (syntax error test succeeded) but old HTML still renders - indicates issue is not in module resolution or import chain, but in runtime component rendering.
 
-**Issue**: Rendered HTML shows old TopBar structure despite new code. Appears to be Next.js build cache or rendering issue. Old TopBar greeting appears in output, not new one.
+**Evidence of Issue**: 
+- New greeting "ברוך הבא לעולמו של קניון Express - NEW TOPBAR" never appears
+- curl output shows old "ברוך הבא לעולם של קניון Express" with old flex-wrap HTML structure
+- Unique test marker "NEW TOPBAR" never appears in rendered output
+- Build correctly rejects syntax errors in TopBar.tsx (proves build uses it)
+- But rendered server output unchanged
 
-**Next**: Debug why old TopBar still renders. May need to investigate:
-- Next.js SSR caching
-- Build artifact staleness
-- Module resolution or import aliasing
-
-**Measurement**: Not yet - pending render issue resolution.
+**Prerequisite for Retry**: May need to build from main repo instead of worktree, or investigate Next.js compilation/runtime caching behavior.
 
 ---
 
