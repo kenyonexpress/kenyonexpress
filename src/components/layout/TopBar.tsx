@@ -1,5 +1,7 @@
 import LoginLink from '@/components/auth/LoginLink'
+import { ThemeToggle } from '@/components/theme/ThemeToggle'
 import { MapPin, ShoppingBag, User } from 'lucide-react'
+import { Suspense } from 'react'
 
 const TOP_BAR_ITEMS: Array<{
   Icon: typeof User
@@ -45,6 +47,9 @@ export default function TopBar() {
         {TOP_BAR_ITEMS.map((item) => (
           <TopBarItem key={item.label} {...item} />
         ))}
+        <Suspense fallback={null}>
+          <ThemeToggle />
+        </Suspense>
       </div>
     </div>
   )

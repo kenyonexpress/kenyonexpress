@@ -655,3 +655,126 @@
   --breakpoint-tablet: 768px; /* compare.mjs middle; equals Tailwind md */
   --breakpoint-desktop: 1440px; /* compare.mjs wide; the reference viewport */
 }
+
+/* Dark mode color overrides. Applied when data-theme="dark" on the html element. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    /* Brand identity */
+    --color-brand-primary: #ffd700;
+    --color-brand-primary-hover: #ffed4e;
+    --color-brand-primary-focus: #ffff99;
+    --color-brand-dark: #e8e8e8;
+    --color-brand-accent: #1a3a42;
+
+    /* Functional colors */
+    --color-price: #ff6b6b;
+    --color-price-strike: #a0a0a0;
+    --color-deal-price: #d0d0d0;
+    --color-deal-sale: #ff5252;
+    --color-deal-badge: #ff4444;
+    --color-success: #66bb6a;
+    --color-error: #ff5252;
+    --color-link: #4da6ff;
+    --color-heading: #e8e8e8;
+    --color-heading-hover: #ffffff;
+    --color-sale-badge: #4caf50;
+
+    /* Neutrals / borders / muted text */
+    --color-border: #444444;
+    --color-border-alt: #3a3a3a;
+    --color-rule: #333333;
+    --color-muted: #a0a0a0;
+    --color-muted-2: #909090;
+    --color-icon: #c0c0c0;
+    --color-icon-empty: #666666;
+
+    /* Surfaces */
+    --color-surface: #1a1a1a;
+    --color-ink: #ffffff;
+    --color-surface-hover: #2a2a2a;
+    --color-track: #2a2a2a;
+    --color-bottom-bar: #0d0d0d;
+    --color-warning-surface: #332200;
+    --color-footer-bg: #0d0d0d;
+    --color-drawer-bg: #1e1e1e;
+    --color-drawer-border: #3a3a3a;
+    --color-drawer-text: #c0c0c0;
+    --color-drawer-hover: #333333;
+    --color-hero-slider-bg: #252a2f;
+
+    /* Promo tints */
+    --color-promo-rose: #3a1f1f;
+    --color-promo-violet: #1f1f3a;
+    --color-promo-sky: #1f2a3a;
+    --color-promo-flame: #ff7722;
+
+    /* WhatsApp */
+    --color-whatsapp: #35d366;
+    --color-whatsapp-ink: #0db85c;
+    --color-whatsapp-ink-hover: #0d9945;
+
+    /* Shadows */
+    --shadow-card: 0px 2px 8px rgba(0, 0, 0, 0.3);
+    --shadow-card-hover: 0px 4px 16px rgba(0, 0, 0, 0.5);
+  }
+}
+
+html[data-theme="dark"] {
+  /* Brand identity */
+  --color-brand-primary: #ffd700;
+  --color-brand-primary-hover: #ffed4e;
+  --color-brand-primary-focus: #ffff99;
+  --color-brand-dark: #e8e8e8;
+  --color-brand-accent: #1a3a42;
+
+  /* Functional colors */
+  --color-price: #ff6b6b;
+  --color-price-strike: #a0a0a0;
+  --color-deal-price: #d0d0d0;
+  --color-deal-sale: #ff5252;
+  --color-deal-badge: #ff4444;
+  --color-success: #66bb6a;
+  --color-error: #ff5252;
+  --color-link: #4da6ff;
+  --color-heading: #e8e8e8;
+  --color-heading-hover: #ffffff;
+  --color-sale-badge: #4caf50;
+
+  /* Neutrals / borders / muted text */
+  --color-border: #444444;
+  --color-border-alt: #3a3a3a;
+  --color-rule: #333333;
+  --color-muted: #a0a0a0;
+  --color-muted-2: #909090;
+  --color-icon: #c0c0c0;
+  --color-icon-empty: #666666;
+
+  /* Surfaces */
+  --color-surface: #1a1a1a;
+  --color-ink: #ffffff;
+  --color-surface-hover: #2a2a2a;
+  --color-track: #2a2a2a;
+  --color-bottom-bar: #0d0d0d;
+  --color-warning-surface: #332200;
+  --color-footer-bg: #0d0d0d;
+  --color-drawer-bg: #1e1e1e;
+  --color-drawer-border: #3a3a3a;
+  --color-drawer-text: #c0c0c0;
+  --color-drawer-hover: #333333;
+  --color-hero-slider-bg: #252a2f;
+
+  /* Promo tints */
+  --color-promo-rose: #3a1f1f;
+  --color-promo-violet: #1f1f3a;
+  --color-promo-sky: #1f2a3a;
+  --color-promo-flame: #ff7722;
+
+  /* WhatsApp */
+  --color-whatsapp: #35d366;
+  --color-whatsapp-ink: #0db85c;
+  --color-whatsapp-ink-hover: #0d9945;
+
+  /* Shadows */
+  --shadow-card: 0px 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-card-hover: 0px 4px 16px rgba(0, 0, 0, 0.5);
+}
