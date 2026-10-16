@@ -26,6 +26,28 @@ Updated: 2026-10-15 09:08 (WRETRY-flake זוג ‏XF04 חוזר על ה-build ש
 
 ההיסטוריה המלאה של הקובץ הזה (‏17,927 שורות עד ‏commit ‏218ef39ca, ‏15.10.2026) נמצאת ב-`docs/STATE-ARCHIVE.md`. הקובץ הזה נשמר מתחת ל-300 שורות על ידי ‏`scripts/state/state-log.mjs`, שרץ מ-`~/ke-goals/run-final.sh` אחרי כל פריט תור.
 
+## Header Refactor: Three-Row Electro v7 Parity (IN PROGRESS)
+
+**Status**: Built complete component structure; render issue under investigation.
+
+**Components Created**:
+- TopBar.tsx: 44px sticky, light gray #f5f5f5, greeting + 3 icons
+- MainHeader.tsx: 90px sticky, white, logo/search/icons layout  
+- NavBar.tsx: 44px sticky, yellow #fed700, megamenu/links/phone
+
+**Build Status**: ✓ Type-check clean, ✓ Lint passing, ✓ Build succeeds
+
+**Issue**: Rendered HTML shows old TopBar structure despite new code. Appears to be Next.js build cache or rendering issue. Old TopBar greeting appears in output, not new one.
+
+**Next**: Debug why old TopBar still renders. May need to investigate:
+- Next.js SSR caching
+- Build artifact staleness
+- Module resolution or import aliasing
+
+**Measurement**: Not yet - pending render issue resolution.
+
+---
+
 ## המשך מ: איחוד ‏`phase5/homepage-closeout` עם ‏`audit/final-audit` (רק כשאין סוכן חי על הריפו)
 
 ### ‏14.10 ‏08:25: ‏STEP 71 רפליקות קריאה (‏Fable 5.1, ‏worktree ‏`kenyonexpress-autopilot`, הקומיט הנושא את הרשומה הזו)
