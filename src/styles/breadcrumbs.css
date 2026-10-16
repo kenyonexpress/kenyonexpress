@@ -1,0 +1,95 @@
+/* Breadcrumbs component styling
+   Mobile-first: shows Home ... Product
+   Desktop: shows all items in full path
+*/
+
+.breadcrumbs {
+  font-size: 14px;
+  line-height: 24px;
+  color: #333e48;
+  padding: 9px 0;
+  direction: rtl;
+}
+
+@media (min-width: 768px) {
+  .breadcrumbs {
+    padding: 25.004px 0 22.4px;
+  }
+}
+
+.breadcrumbs__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0;
+}
+
+.breadcrumbs__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Hide middle items on mobile, show only home and product with ellipsis */
+@media (max-width: 767px) {
+  .breadcrumbs__item--hidden-mobile {
+    display: none;
+  }
+}
+
+/* Desktop: show all items */
+@media (min-width: 768px) {
+  .breadcrumbs__item--hidden-mobile {
+    display: flex;
+  }
+}
+
+.breadcrumbs__item--current {
+  font-weight: 500;
+}
+
+.breadcrumbs__link {
+  color: #333e48;
+  text-decoration: none;
+  position: relative;
+  padding-block: 1px;
+  line-height: 24px;
+}
+
+.breadcrumbs__link:hover {
+  color: #0062bd;
+}
+
+.breadcrumbs__link:focus {
+  outline: 2px solid #fed700;
+  outline-offset: 2px;
+}
+
+.breadcrumbs__text {
+  color: #333e48;
+  font-weight: 500;
+}
+
+.breadcrumbs__sep {
+  color: #333e48;
+  margin-inline: 0;
+  line-height: 24px;
+}
+
+.breadcrumbs__ellipsis {
+  color: #333e48;
+  margin-inline: 0;
+  line-height: 24px;
+  display: inline-block;
+  min-width: 8px;
+  text-align: center;
+}
+
+/* Semantic current page marker */
+.breadcrumbs__item[aria-current="page"] .breadcrumbs__text {
+  color: #333e48;
+  font-weight: 500;
+}
