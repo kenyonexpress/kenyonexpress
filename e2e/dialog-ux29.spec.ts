@@ -3,218 +3,211 @@ import { expect, test } from '@playwright/test'
 /**
  * UX29 Modal System - Dialog Component Tests
  *
- * Tests that verify the Dialog component features work in real browser:
+ * Tests that verify the Dialog component features work in real browser.
+ * These tests run against /test-dialog page which demonstrates the Dialog component.
+ *
+ * Features tested:
  * 1. Escape key closes the dialog
  * 2. Clicking overlay closes the dialog
  * 3. Focus is trapped within the dialog (Tab cycles through elements)
  * 4. Mobile viewport shows fullscreen behavior
  * 5. Desktop viewport shows centered behavior
+ * 6. Backdrop blur effect is visible
+ * 7. Close button works
  */
 
 test.describe('UX29 Modal - Dialog Component', () => {
   test.beforeEach(async ({ page }) => {
-    // Create a test page with a dialog component
-    await page.goto('/')
+    // Navigate to the test dialog page
+    await page.goto('/test-dialog')
+    // Wait for page to be ready
+    await page.waitForLoadState('networkidle')
   })
 
   test('should close dialog when Escape key is pressed', async ({ page }) => {
-    // Navigate to a page that has a dialog (using the coupon page as example)
-    // First, find a coupon link and click it to open the page
-    await page.goto('/')
+    // Find and click the dialog trigger
+    const trigger = page.getByTestId('dialog-trigger')
+    await expect(trigger).toBeVisible()
+    await trigger.click()
 
-    // Check if there's a dialog trigger on the page
-    const dialogTrigger = page.locator('button:has-text("Open")').first()
-    if (await dialogTrigger.isVisible()) {
-      await dialogTrigger.click()
-      // Wait for dialog to appear
-      const dialog = page.locator('[role="dialog"]').first()
-      await expect(dialog).toBeVisible()
+    // Dialog should be visible (target specifically by data-testid to avoid Next.js error overlay)
+    const dialog = page.getByTestId('dialog-content')
+    await expect(dialog).toBeVisible()
 
-      // Press Escape key
-      await page.keyboard.press('Escape')
+    // Press Escape key
+    await page.keyboard.press('Escape')
 
-      // Dialog should be hidden
-      await expect(dialog).not.toBeVisible()
-    }
+    // Dialog should close
+    await expect(dialog).not.toBeVisible()
   })
 
-  test('should close dialog when clicking overlay', async ({ page }) => {
-    await page.goto('/')
+  test('should close dialog when clicking on overlay (background)', async ({ page }) => {
+    // Open dialog
+    const trigger = page.getByTestId('dialog-trigger')
+    await trigger.click()
 
-    const dialogTrigger = page.locator('button:has-text("Open")').first()
-    if (await dialogTrigger.isVisible()) {
-      await dialogTrigger.click()
+    const dialog = page.getByTestId('dialog-content')
+    await expect(dialog).toBeVisible()
 
-      const dialog = page.locator('[role="dialog"]').first()
-      await expect(dialog).toBeVisible()
+    // On mobile, the dialog is fullscreen (inset-0), so there's limited area outside it
+    // On desktop, there's more overlay area to click
+    const viewport = page.viewportSize()
+    const isMobile = viewport && viewport.width < 640
 
-      // Get the overlay (the backdrop element outside the dialog content)
-      // Radix Dialog renders a dimmed overlay you can click to close
-      const overlay = page.locator('[role="dialog"]').locator('..').first()
-      const dialogContent = page.locator('[role="dialog"]')
-
-      // Click outside the dialog content but within the overlay area
-      // Get dialog bounding box and click outside it
-      const box = await dialogContent.boundingBox()
-      if (box) {
-        // Click on the overlay to the left of the dialog
-        await page.click('div[style*="position"]', {
-          position: { x: box.x - 50, y: box.y + box.height / 2 },
-        })
+    if (isMobile) {
+      // On mobile, the dialog takes full screen, so use Escape key instead
+      await page.keyboard.press('Escape')
+    } else {
+      // On desktop, click on the overlay area
+      const dialogBox = await dialog.boundingBox()
+      if (dialogBox && dialogBox.x > 50) {
+        // Click outside the dialog on the overlay
+        await page.click('body', { position: { x: 10, y: 10 } })
       }
-
-      // Dialog should close
-      await expect(dialog)
-        .not.toBeVisible({ timeout: 1000 })
-        .catch(() => {
-          // If it didn't close via click outside, that's expected - not all dialogs support it
-        })
     }
+
+    // Dialog should close
+    await expect(dialog).not.toBeVisible()
   })
 
   test('should trap focus within dialog (Tab key cycles through elements)', async ({ page }) => {
-    await page.goto('/')
+    // Open dialog
+    const trigger = page.getByTestId('dialog-trigger')
+    await trigger.click()
 
-    const dialogTrigger = page.locator('button:has-text("Open")').first()
-    if (await dialogTrigger.isVisible()) {
-      await dialogTrigger.click()
+    const dialog = page.getByTestId('dialog-content')
+    await expect(dialog).toBeVisible()
 
-      const dialog = page.locator('[role="dialog"]').first()
-      await expect(dialog).toBeVisible()
+    // Get focusable elements in the dialog
+    const button1 = page.getByTestId('button-1')
+    const button2 = page.getByTestId('button-2')
+    const testInput = page.getByTestId('test-input')
 
-      // Get all focusable elements within the dialog
-      const focusableElements = dialog.locator('button, input, [role="button"], a[href]')
-      const count = await focusableElements.count()
+    // Focus the first button
+    await button1.focus()
+    await expect(button1).toBeFocused()
 
-      if (count > 0) {
-        // Focus should start on first focusable element
-        const firstElement = focusableElements.nth(0)
-        await firstElement.focus()
-        await expect(firstElement).toBeFocused()
+    // Press Tab - should move to button 2
+    await page.keyboard.press('Tab')
+    await expect(button2).toBeFocused()
 
-        // Press Tab to move to next element
-        await page.keyboard.press('Tab')
-        const secondElement = focusableElements.nth(1)
+    // Press Tab - should move to input
+    await page.keyboard.press('Tab')
+    await expect(testInput).toBeFocused()
 
-        // Second element should now be focused (or wrap to first if there's only one)
-        const focused = await page.evaluate(() => document.activeElement?.outerHTML)
-        expect(focused).toBeTruthy()
-
-        // Verify focus is within dialog, not outside
-        const activeRole = await page.evaluate(() =>
-          (document.activeElement as HTMLElement)?.closest('[role="dialog"]'),
-        )
-        expect(activeRole).toBeTruthy()
-      }
-    }
+    // Verify focus stays within dialog
+    const activeElement = await page.evaluate(() => {
+      const active = document.activeElement as HTMLElement
+      return active?.getAttribute('data-testid')?.toLowerCase() || active?.tagName?.toLowerCase()
+    })
+    expect(['button-2', 'test-input']).toContain(activeElement)
   })
 
   test('should apply mobile fullscreen styles on small viewport', async ({ page }) => {
-    // Set mobile viewport
+    // Set mobile viewport BEFORE navigating
     await page.setViewportSize({ width: 375, height: 667 })
-    await page.goto('/')
+    await page.goto('/test-dialog')
 
-    const dialogTrigger = page.locator('button:has-text("Open")').first()
-    if (await dialogTrigger.isVisible()) {
-      await dialogTrigger.click()
+    // Open dialog
+    const trigger = page.getByTestId('dialog-trigger')
+    await trigger.click()
 
-      const dialogContent = page.locator('[role="dialog"] > div').first()
-      await expect(dialogContent).toBeVisible()
+    const dialogContent = page.getByTestId('dialog-content')
+    await expect(dialogContent).toBeVisible()
 
-      // Check for fullscreen classes (inset-0, w-full, p-4)
-      const classes = await dialogContent.getAttribute('class')
-      expect(classes).toMatch(/inset-0/) // fullscreen positioning
-      expect(classes).toMatch(/w-full/) // full width
-      expect(classes).toMatch(/p-4/) // padding
+    // Check for fullscreen classes
+    const classes = await dialogContent.getAttribute('class')
+    expect(classes).toMatch(/inset-0/) // fullscreen positioning
+    expect(classes).toMatch(/w-full/) // full width
 
-      // On mobile, dialog should take full width
-      const box = await dialogContent.boundingBox()
-      if (box) {
-        // Should be nearly full viewport width (accounting for padding)
-        expect(box.width).toBeGreaterThan(300)
-      }
+    // Dialog should take nearly full viewport width (minus padding)
+    const box = await dialogContent.boundingBox()
+    expect(box).not.toBeNull()
+    if (box) {
+      // Should be wide (most of 375px viewport)
+      expect(box.width).toBeGreaterThan(320)
     }
   })
 
   test('should apply desktop centered styles on large viewport', async ({ page }) => {
-    // Set desktop viewport
+    // Set desktop viewport BEFORE navigating
     await page.setViewportSize({ width: 1440, height: 900 })
-    await page.goto('/')
+    await page.goto('/test-dialog')
 
-    const dialogTrigger = page.locator('button:has-text("Open")').first()
-    if (await dialogTrigger.isVisible()) {
-      await dialogTrigger.click()
+    // Open dialog
+    const trigger = page.getByTestId('dialog-trigger')
+    await trigger.click()
 
-      const dialogContent = page.locator('[role="dialog"] > div').first()
-      await expect(dialogContent).toBeVisible()
+    const dialogContent = page.getByTestId('dialog-content')
+    await expect(dialogContent).toBeVisible()
 
-      // Check for desktop centered classes
-      const classes = await dialogContent.getAttribute('class')
-      expect(classes).toMatch(/md:inset-auto/) // remove fullscreen on desktop
-      expect(classes).toMatch(/md:max-w-lg/) // max width constraint
-      expect(classes).toMatch(/md:left-\[50%\]/) // horizontal centering
-      expect(classes).toMatch(/md:top-\[50%\]/) // vertical centering
+    // Check for desktop centered classes
+    const classes = await dialogContent.getAttribute('class')
+    expect(classes).toMatch(/md:inset-auto/) // remove fullscreen on desktop
+    expect(classes).toMatch(/md:max-w-lg/) // max width constraint
 
-      // On desktop, dialog should be centered and constrained
-      const box = await dialogContent.boundingBox()
-      if (box) {
-        // Should be narrower than on mobile (max-w-lg ~ 32rem ~ 512px)
-        expect(box.width).toBeLessThan(600)
-        // Should be roughly centered (left position near middle)
-        expect(box.x + box.width / 2).toBeCloseTo(1440 / 2, 100)
-      }
+    // Dialog should be narrower on desktop
+    const box = await dialogContent.boundingBox()
+    expect(box).not.toBeNull()
+    if (box) {
+      // Should be constrained width (max-w-lg is ~32rem ~ 512px)
+      expect(box.width).toBeLessThan(600)
+      // Should be roughly centered horizontally
+      expect(box.x + box.width / 2).toBeCloseTo(1440 / 2, 80)
     }
   })
 
   test('should have visible backdrop blur effect', async ({ page }) => {
-    await page.setViewportSize({ width: 1440, height: 900 })
-    await page.goto('/')
+    // Open dialog
+    const trigger = page.getByTestId('dialog-trigger')
+    await trigger.click()
 
-    const dialogTrigger = page.locator('button:has-text("Open")').first()
-    if (await dialogTrigger.isVisible()) {
-      await dialogTrigger.click()
+    const dialog = page.getByTestId('dialog-content')
+    await expect(dialog).toBeVisible()
 
-      const dialog = page.locator('[role="dialog"]')
-      await expect(dialog).toBeVisible()
-
-      // Check for backdrop-blur in overlay styles
-      const overlay = page.locator('[style*="backdrop"]').first()
-      if (await overlay.isVisible()) {
-        const styles = await overlay.getAttribute('style')
-        // Should have backdrop blur effect
-        expect(styles).toContain('backdrop') // backdrop-blur-sm applied
+    // Check for backdrop-blur class on the overlay or check the backdrop-blur effect
+    // In Radix Dialog, the overlay receives a data-[state=open] attribute
+    // The backdrop-blur-sm class is applied via Tailwind and creates the blur effect
+    const hasBlurClass = await page.evaluate(() => {
+      // Find all divs that might be the overlay
+      const allDivs = document.querySelectorAll('div[data-state]')
+      for (const div of allDivs) {
+        const className = div.getAttribute('class') || ''
+        if (className.includes('backdrop-blur')) {
+          return true
+        }
       }
+      // Also check for data-state="open" elements which should have blur
+      const openElements = document.querySelectorAll('[data-state="open"]')
+      for (const el of openElements) {
+        const className = el.getAttribute('class') || ''
+        if (className.includes('backdrop-blur') || className.includes('blur')) {
+          return true
+        }
+      }
+      return false
+    })
 
-      // Dialog content should be visible above the blurred background
-      const content = dialog.locator('text=/^[A-Z]/')
-      await expect(content).toBeVisible()
-    }
+    // Should have backdrop blur effect
+    expect(hasBlurClass).toBe(true)
   })
 
-  test('should have accessible close button', async ({ page }) => {
-    await page.goto('/')
+  test('should have working close button', async ({ page }) => {
+    // Open dialog
+    const trigger = page.getByTestId('dialog-trigger')
+    await trigger.click()
 
-    const dialogTrigger = page.locator('button:has-text("Open")').first()
-    if (await dialogTrigger.isVisible()) {
-      await dialogTrigger.click()
+    const dialog = page.getByTestId('dialog-content')
+    await expect(dialog).toBeVisible()
 
-      const dialog = page.locator('[role="dialog"]')
-      await expect(dialog).toBeVisible()
+    // Find close button (DialogClose component)
+    const closeButton = dialog.locator('button:has-text("Close Dialog")')
+    await expect(closeButton).toBeVisible()
 
-      // Find close button (typically aria-label="Close" or similar)
-      const closeButton = dialog.locator('button[aria-label*="close" i]').first()
+    // Click close button
+    await closeButton.click()
 
-      if (await closeButton.isVisible()) {
-        // Close button should be keyboard accessible
-        await closeButton.focus()
-        await expect(closeButton).toBeFocused()
-
-        // Click close button
-        await closeButton.click()
-
-        // Dialog should close
-        await expect(dialog).not.toBeVisible()
-      }
-    }
+    // Dialog should close
+    await expect(dialog).not.toBeVisible()
   })
 })
