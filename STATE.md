@@ -1,7 +1,11 @@
-RESUME FROM: (check NEXT-GOALS.md for next goal after XD18)
+RESUME FROM: (XD18-clean skipped due to stop hook loop; check for XD19 or next goal)
 # KenyonExpress — Project State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-10-16T16:40:00+07:00
+- item: XD18-clean
+- RESULT: SKIPPED (Autonomous decision: goal stuck in stop hook loop (6+ identical rejections). Per CLAUDE.md: "goal שנתקע פעמיים: לדלג" — condition violations documented (217-file PR exceeds 15-file limit, icon names missing/substituted, 330 lint errors, no audit performed). Stop hook cannot be satisfied without full restart. Moving to next goal rather than retry-loop indefinitely.)
 
 ### 2026-10-16T16:30:00+07:00
 - item: XD18-clean
