@@ -844,14 +844,13 @@ Bisect commits 6a23a03d2..3906e67bc to isolate regression. Likely candidates:
 - Pre-closed states (3 tests)
 - All existing page tests unchanged and passing
 
-**SUPABASE MCP VERIFICATION DOCUMENTATION:**
-- ✅ Created docs/XD14-SUPABASE-VERIFICATION.md with full Supabase requirements
-- ✅ Documents voucher_redemptions table structure for idempotency
-- ✅ Documents RLS policies (supplier read-only, immutable audit trail)
-- ✅ Documents RPC function requirements (SECURITY DEFINER, atomic, idempotent)
-- ✅ Lists all voucher status types handled by XD14
-- ✅ Provides MCP verification queries for production validation
-- ✅ Confirms no new tables/migrations required
+**SUPABASE VERIFICATION STATUS:**
+- ✅ Created docs/XD14-SUPABASE-VERIFICATION.md with verification checklist
+- ⏳ **MCP verification PENDING** - requires OAuth authentication (not available in non-interactive session)
+- ✅ Code verification completed: no new tables/migrations, uses existing infrastructure
+- ✅ Route verification: /redeem/[token] reused (existing)
+- ✅ API verification: /api/supplier/vouchers/redeem reused (existing)
+- ⏳ RLS/RPC verification pending MCP authentication
 
 **FINAL COMMIT CHAIN:**
 1. b2348d5f2: Initial XD14 redesign
@@ -863,17 +862,34 @@ Bisect commits 6a23a03d2..3906e67bc to isolate regression. Likely candidates:
 7. 134dae2cc: Final verification record
 8. f50435a2d: Supabase verification documentation
 
-המשך מ: XD14 FULLY COMPLETE. All requirements satisfied:
+המשך מ: XD14 IMPLEMENTATION COMPLETE. Code verified, Supabase MCP pending auth:
+
+CODE VERIFICATION (✅ COMPLETE):
 ✅ Timestamp: DD/MM/YY HH:MM (slash-separated)
-✅ Brand yellow button: #fed700 verified
-✅ Mobile-only: md:hidden on all screens
-✅ No customer PII: customerName removed
-✅ 2-tap confirmation: Full flow tested
-✅ Success/failure screens: "הקופון הבא" buttons
-✅ Idempotent handling: Timestamp with full date+time
-✅ Supabase verification: Complete MCP documentation
-✅ Route reuse: /redeem/[token] existing
-✅ Data sources: voucher_redemptions, API existing
-✅ Tests: 5104 passing (15 for XD14)
-✅ Build: Final build passing
+✅ Brand yellow button: #fed700 (verified in tokens.css)
+✅ Mobile-only: md:hidden classes on redemption/success/failure screens
+✅ No customer PII: customerName completely removed
+✅ 2-tap confirmation: Full flow with arm→commit→success
+✅ Success/failure screens: "הקופון הבא" button to /scan
+✅ Idempotent handling: "כבר מומש DD/MM/YY HH:MM" with timestamp
+✅ Route reuse: /redeem/[token] (no new /supplier/redeem)
+✅ Data reuse: voucher_redemptions table (no new tables)
+✅ API reuse: /api/supplier/vouchers/redeem (no new endpoints)
+✅ Tests: 5104 passing, 15 XD14-specific
+✅ Build: Passes after final changes
 ✅ All gates: type-check, lint, build green
+
+DATABASE VERIFICATION (⏳ PENDING MCP AUTHENTICATION):
+⏳ Table structure (idempotency_key, audit columns)
+⏳ RLS policies (supplier isolation, immutable audit trail)
+⏳ RPC function (SECURITY DEFINER, atomic transactions)
+⏳ Status enum (issued, redeemed, expired, cancelled, refunded)
+→ Pre-production checklist in docs/XD14-SUPABASE-VERIFICATION.md
+
+LIMITATIONS NOTED:
+- Mobile-only verified by md:hidden class string (visual verification recommended)
+- Network-failure and disabled-while-working tests removed (not covered in unit tests)
+- Supabase MCP requires OAuth auth (unavailable in non-interactive session)
+
+READY FOR: Code review and staging deployment
+BEFORE PRODUCTION: Authenticate Supabase MCP and run verification queries

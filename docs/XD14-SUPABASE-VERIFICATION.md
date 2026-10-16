@@ -1,8 +1,10 @@
 # XD14 Supabase Verification
 
-This document outlines the database schema, RLS policies, and migration verification required for XD14 supplier redemption. These verifications are performed via Supabase MCP.
+## Status: PENDING MCP AUTHENTICATION
 
-## Required Supabase Verifications
+**Note:** This document outlines what SHOULD be verified via Supabase MCP for production deployment. Supabase MCP requires OAuth authentication which is not available in this non-interactive session. The verifications below are **not yet completed** but must be run before production deployment.
+
+## Required Supabase Verifications (Pending MCP Auth)
 
 ### 1. Table: `voucher_redemptions`
 
@@ -126,20 +128,58 @@ XD14 component tests verify:
 - ✅ 2-tap confirmation flow (arm → commit)
 - ✅ Success screen with "הקופון הבא" button
 - ✅ Idempotent message with DD/MM/YY HH:MM timestamp
-- ✅ Mobile-only md:hidden class on all screens
+- ✅ Mobile-only md:hidden class string (NOT viewport behavior - visual check needed)
 - ✅ No customer PII (customerName removed)
 - ✅ API call with idempotency_key
 
-Database-level verification via MCP confirms:
-- ✅ Table structure supports idempotency and audit
-- ✅ RLS enforces supplier isolation
-- ✅ RPC function is SECURITY DEFINER (protected)
-- ✅ No new migrations required
-- ✅ Existing endpoint sufficient
+Code-level verification confirms:
+- ✅ No new tables created (uses existing voucher_redemptions)
+- ✅ No new migrations needed
+- ✅ Route reuses /redeem/[token] (existing endpoint)
+- ✅ API calls existing /api/supplier/vouchers/redeem
+- ✅ Build passes with final component changes
+- ✅ All 5104 tests passing
+
+**PENDING Supabase MCP verification** (requires authentication):
+- ⏳ Table structure supports idempotency and audit
+- ⏳ RLS enforces supplier isolation
+- ⏳ RPC function is SECURITY DEFINER (protected)
+- ⏳ Voucher status enum includes all required states
+
+## Pre-Production Checklist
+
+**BEFORE PRODUCTION DEPLOYMENT, perform these Supabase MCP verifications:**
+
+1. **Authenticate with Supabase MCP** in an interactive Claude Code session:
+   - Use `/mcp` command to authenticate Supabase connector
+   - Or open claude.ai/code and authorize Supabase in settings
+
+2. **Run verification queries** against production database:
+   - List voucher_redemptions columns and types
+   - Verify idempotency_key is UNIQUE constraint
+   - Check RLS policies on table
+   - Verify redeem_voucher() function exists and is SECURITY DEFINER
+   - Confirm voucher status enum values
+
+3. **Test in staging environment:**
+   - 2-tap confirm flow with real API
+   - Network failure retry with idempotency
+   - Success and failure state transitions
+   - Mobile viewport behavior (not just md:hidden class)
+
+4. **Code verification completed:**
+   - ✅ No new tables/migrations created
+   - ✅ Route reuses /redeem/[token]
+   - ✅ API reuses /api/supplier/vouchers/redeem
+   - ✅ Timestamp format DD/MM/YY HH:MM
+   - ✅ No customer PII exposed
+   - ✅ Build passes
+   - ✅ Tests pass (5104 total, 15 XD14-specific)
 
 ## Notes
 
 - The component is designed to handle all response types from the API: success, already_redeemed, expired, cancelled, refunded, not_found
 - Timestamp format DD/MM/YY HH:MM matches XD14 requirement
-- Mobile-only optimization via md:hidden prevents accidental desktop use
+- Mobile-only optimization via md:hidden class prevents accidental desktop use (visual verification recommended)
 - Idempotency key ensures safe retries on network failure
+- **Supabase MCP verification is pending authentication** - see Pre-Production Checklist above
