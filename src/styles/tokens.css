@@ -601,6 +601,19 @@
      entry for. */
   --spacing-gutter: 15px; /* the grid gutter; the single most common value */
 
+  /* --- Spacing scale (UX34) --------------------------------------------------------
+     Base scale for consistent spacing across all components: 4 8 12 16 24 32 48 64.
+     These values are used by Tailwind numeric utilities (p-0.5 through p-8) and
+     should be the ONLY spacing values used throughout the application. */
+  --spacing-4: 4px;
+  --spacing-8: 8px;
+  --spacing-12: 12px;
+  --spacing-16: 16px;
+  --spacing-24: 24px;
+  --spacing-32: 32px;
+  --spacing-48: 48px;
+  --spacing-64: 64px;
+
   /* THERE ARE NO --spacing-xs/sm/md/lg/xl/2xl TOKENS HERE, AND THAT IS THE FIX.
      They existed until 2026-09-06 as 4/8/10/14/20/24px, and they silently broke
      31 layouts.
