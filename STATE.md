@@ -1,7 +1,11 @@
-RESUME FROM: UX45
+RESUME FROM: UX46
 # KenyonExpress — Project State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-10-17T05:52:00+07:00
+- item: UX45-rating-stars
+- RESULT: DONE (Rating stars component with half-star support, aria labels, and Hebrew count display. Converted RatingStars tombstone to functional component per STEP 45 policy (ratings collected from buyers, read by owner in /admin/reviews only, never public). Component: src/components/storefront/RatingStars.tsx accepts rating (0-5), optional count, custom size, and aria-label props. Half-star support via position:relative overflow:hidden technique; full stars use text-brand (brand yellow #fed700), empty stars use text-gray-300. Aria labels in Hebrew: "3.5 מתוך 5 כוכבים" + optional count "523 דירוגים" (singular "דירוג" for count=1). Styling: src/styles/rating-stars.css with RTL support; imported globally in src/app/globals.css. Tests: src/components/storefront/RatingStars.test.tsx (22 cases covering full/half/empty stars, clamping, count text, aria labels, custom classes, ARIA semantics). Verification: vitest 22/22✓ typecheck✓ lint✓ build✓ (CSP 278 shells). Commits: c1740e57b)
 
 ### 2026-10-17T05:35:00+07:00
 - item: UX44-breadcrumbs
