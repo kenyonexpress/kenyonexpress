@@ -1,11 +1,11 @@
-RESUME FROM: (check NEXT-GOALS.md for next goal)
+RESUME FROM: (check NEXT-GOALS.md for next goal after XD17 blocker)
 # KenyonExpress — Project State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
 
-### 2026-10-16T23:50:00+07:00
+### 2026-10-17T00:00:00+07:00
 - item: XD17-home
-- RESULT: BLOCKED (implementation complete but verification impossible: compare.mjs refuses to run because live site is now our own production build, preventing under-5% parity check at 380/768/1440. Lint/tests have pre-existing failures unrelated to goal. Specific visual requirements—60% OFF badge, HH:MM:SS countdown, mega menu→hamburger, skeleton loaders—implemented but untested against Electro v7 reference. Goal requires live reference for completion.)
+- RESULT: BLOCKED (goal condition "Match compare.mjs under 5% at 380/768/1440" cannot be satisfied: compare.mjs REFUSES TO RUN because live site https://kenyonexpress.co.il is now our own production build. Environmental blocker outside scope of code changes. Implementation complete: 9-section homepage with infinite scroll, skeleton loaders, mobile hamburger, Hebrew RTL. Build passes, type-check passes. Lint/test pre-existing failures unrelated to goal. Visual Electro v7 items implemented but untested against reference.)
 
 ### 2026-10-16T23:25:00+07:00
 - item: XD16-safe
