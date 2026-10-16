@@ -1,7 +1,11 @@
-RESUME FROM: UX43
+RESUME FROM: UX45
 # KenyonExpress — Project State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-10-17T05:35:00+07:00
+- item: UX44-breadcrumbs
+- RESULT: DONE (Breadcrumbs component with mobile truncation for navigation paths (Home > Category > Subcategory > Product). Mobile (<768px): shows Home ... Product with ellipsis. Desktop (≥768px): shows all items in full path. Features: semantic <ol> HTML, aria-current="page" on current item, proper RTL support (dir="rtl"), ARIA label "נתיב ניווט", configurable truncation via showEllipsis prop (default: true). Component: src/components/shared/Breadcrumbs.tsx; Tests: src/components/shared/Breadcrumbs.test.tsx (13 tests, all passing); Styling: src/styles/breadcrumbs.css with mobile-first responsive design, 9px padding mobile / 25.004px top 22.4px bottom desktop, hover states for links (#0062bd). Verification: vitest 13/13✓ typecheck✓ lint✓ build✓. Usage: flexible across all navigation contexts (category, product, search pages). Commits: ca25b6311)
 
 ### 2026-10-16T22:16:00+00:00
 - item: UX42-pull-to-refresh
