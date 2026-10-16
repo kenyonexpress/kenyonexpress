@@ -52,13 +52,13 @@ export default function SupplierForm({ supplier, productCount }: Props) {
       {supplier && <input type="hidden" name="id" value={supplier.id} />}
       <input type="hidden" name="logo_url" value={logoUrl[0] ?? ''} />
 
-      {error && <div className="bg-red-50 text-red-700 text-sm rounded-lg px-4 py-2">{error}</div>}
+      {error && <div className="bg-red-50 text-red-700 text-sm rounded-md px-4 py-2">{error}</div>}
       {success && (
-        <div className="bg-green-50 text-green-700 text-sm rounded-lg px-4 py-2">{success}</div>
+        <div className="bg-green-50 text-green-700 text-sm rounded-md px-4 py-2">{success}</div>
       )}
 
       <div
-        className={`flex items-start gap-2 text-sm rounded-lg px-4 py-3 ${
+        className={`flex items-start gap-2 text-sm rounded-md px-4 py-3 ${
           readiness.ready ? 'bg-green-50 text-green-800' : 'bg-amber-50 text-amber-900'
         }`}
       >
@@ -102,7 +102,7 @@ export default function SupplierForm({ supplier, productCount }: Props) {
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             />
           </div>
           <div>
@@ -116,7 +116,7 @@ export default function SupplierForm({ supplier, productCount }: Props) {
               onChange={(e) => setPhone(e.target.value)}
               dir="ltr"
               placeholder="050-1234567"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             />
             <p className="mt-1 text-xs text-gray-500">נפתח כוואטסאפ בעמוד המוצר</p>
           </div>
@@ -129,7 +129,7 @@ export default function SupplierForm({ supplier, productCount }: Props) {
               name="address"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             />
             <p className="mt-1 text-xs text-gray-500">נפתח ב-Waze בעמוד המוצר</p>
           </div>
@@ -198,7 +198,7 @@ export default function SupplierForm({ supplier, productCount }: Props) {
               name="status"
               value={status}
               onChange={(e) => setStatus(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             >
               {SUPPLIER_STATUSES.map((s) => (
                 <option key={s} value={s}>
@@ -217,7 +217,7 @@ export default function SupplierForm({ supplier, productCount }: Props) {
             name="notes"
             defaultValue={supplier?.notes ?? ''}
             rows={3}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand resize-none"
+            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand resize-none"
           />
         </div>
       </section>
@@ -226,7 +226,7 @@ export default function SupplierForm({ supplier, productCount }: Props) {
         <button
           type="submit"
           disabled={pending}
-          className="bg-brand hover:bg-brand-primary-hover disabled:opacity-60 text-brand-dark font-semibold rounded-lg px-6 py-2 text-sm transition-colors"
+          className="bg-brand hover:bg-brand-primary-hover disabled:opacity-60 text-brand-dark font-semibold rounded-md px-6 py-2 text-sm transition-colors"
         >
           {pending ? 'שומר...' : supplier ? 'עדכון ספק' : 'יצירת ספק'}
         </button>
@@ -267,7 +267,7 @@ function Field({
         defaultValue={defaultValue ?? ''}
         placeholder={placeholder}
         dir={ltr ? 'ltr' : undefined}
-        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
       />
     </div>
   )

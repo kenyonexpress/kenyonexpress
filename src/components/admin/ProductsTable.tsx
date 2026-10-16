@@ -50,7 +50,7 @@ interface Props {
 }
 
 const bulkBtn =
-  'rounded-lg px-3 py-2 text-xs font-medium border border-black/10 transition-colors disabled:opacity-50'
+  'rounded-md px-3 py-2 text-xs font-medium border border-black/10 transition-colors disabled:opacity-50'
 
 export default function ProductsTable({ products, categories, hidePricing = false }: Props) {
   const router = useRouter()
@@ -303,7 +303,7 @@ export default function ProductsTable({ products, categories, hidePricing = fals
             value={bulkCategory}
             onChange={(e) => setBulkCategory(e.target.value)}
             aria-label="בחירת קטגוריה לשיוך"
-            className="rounded-lg border border-black/10 bg-white px-2 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-brand"
+            className="rounded-md border border-black/10 bg-white px-2 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-brand"
           >
             <option value="">בחרו קטגוריה...</option>
             <option value="__none__">ללא קטגוריה</option>
@@ -335,7 +335,7 @@ export default function ProductsTable({ products, categories, hidePricing = fals
                 value={priceMode}
                 onChange={(e) => setPriceMode(e.target.value as 'percent' | 'set')}
                 aria-label="סוג עדכון מחיר"
-                className="rounded-lg border border-black/10 bg-white px-2 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-brand"
+                className="rounded-md border border-black/10 bg-white px-2 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-brand"
               >
                 <option value="percent">שינוי באחוזים</option>
                 <option value="set">קביעת מחיר (₪)</option>
@@ -348,7 +348,7 @@ export default function ProductsTable({ products, categories, hidePricing = fals
                 placeholder={priceMode === 'percent' ? 'למשל: -10' : 'למשל: 99.90'}
                 aria-label="ערך עדכון מחיר"
                 dir="ltr"
-                className="w-28 rounded-lg border border-black/10 bg-white px-2 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-brand"
+                className="w-28 rounded-md border border-black/10 bg-white px-2 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-brand"
               />
               <button
                 type="button"

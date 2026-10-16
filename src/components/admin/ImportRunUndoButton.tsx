@@ -44,7 +44,7 @@ export default function ImportRunUndoButton({ runId, label }: { runId: string; l
         type="button"
         onClick={undo}
         disabled={pending || message?.tone === 'ok'}
-        className="inline-flex items-center gap-2 rounded-lg border border-black/10 bg-white px-3 py-2 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+        className="inline-flex items-center gap-2 rounded-md border border-black/10 bg-white px-3 py-2 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
       >
         <Undo2 className="h-3.5 w-3.5" aria-hidden />
         {pending ? 'מבטל...' : 'ביטול הייבוא'}

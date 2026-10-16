@@ -52,9 +52,9 @@ const SAMPLE_SCAN_ROWS = 20
 type Stage = 'idle' | 'mapping' | 'checking' | 'ready' | 'importing' | 'done'
 
 const btn =
-  'inline-flex items-center gap-2 rounded-lg border border-black/10 bg-brand px-4 py-2 text-sm font-semibold text-brand-dark transition-colors hover:bg-brand-primary-hover disabled:cursor-not-allowed disabled:opacity-50'
+  'inline-flex items-center gap-2 rounded-md border border-black/10 bg-brand px-4 py-2 text-sm font-semibold text-brand-dark transition-colors hover:bg-brand-primary-hover disabled:cursor-not-allowed disabled:opacity-50'
 const btnGhost =
-  'inline-flex items-center gap-2 rounded-lg border border-black/10 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50'
+  'inline-flex items-center gap-2 rounded-md border border-black/10 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50'
 
 function downloadCsv(fileName: string, content: string) {
   const blob = new Blob([content], { type: 'text/csv;charset=utf-8' })
@@ -398,10 +398,10 @@ export default function ProductImportClient() {
           כטיוטה: פרסום נעשה מתוך עמוד המוצר, אחרי שיוך ספק.
         </p>
         {fatal ? (
-          <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{fatal}</p>
+          <p className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">{fatal}</p>
         ) : null}
         {fileWarnings.length > 0 ? (
-          <ul className="rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800 space-y-1">
+          <ul className="rounded-md bg-amber-50 px-4 py-3 text-sm text-amber-800 space-y-1">
             {fileWarnings.map((w) => (
               <li key={w}>{w}</li>
             ))}
@@ -437,7 +437,7 @@ export default function ProductImportClient() {
                     <td className="max-w-48 truncate py-2 pe-4 text-gray-600">{sampleFor(col)}</td>
                     <td className="py-2">
                       <select
-                        className="rounded-lg border border-black/10 bg-white px-2 py-2 text-sm"
+                        className="rounded-md border border-black/10 bg-white px-2 py-2 text-sm"
                         value={selections[col] ?? ''}
                         onChange={(e) => {
                           const next = [...selections]
@@ -460,13 +460,13 @@ export default function ProductImportClient() {
             </table>
           </div>
           {duplicateKeys.length > 0 ? (
-            <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+            <p className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">
               שדה יעד נבחר יותר מפעם אחת:{' '}
               {duplicateKeys.map((k) => COLUMN_LABEL.get(k) ?? k).join(', ')}
             </p>
           ) : null}
           {missingRequired.length > 0 ? (
-            <p className="rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            <p className="rounded-md bg-amber-50 px-4 py-3 text-sm text-amber-800">
               עמודות חובה שטרם מופו: {missingRequired.map((c) => c.label).join(', ')}
             </p>
           ) : null}
@@ -523,23 +523,23 @@ export default function ProductImportClient() {
           {stage === 'done' &&
           importResults.some((r) => r.errors.length > 0) &&
           applied.inserted + applied.updated > 0 ? (
-            <p className="rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            <p className="rounded-md bg-amber-50 px-4 py-3 text-sm text-amber-800">
               הייבוא נעצר באמצע: הקבוצות שכבר נשמרו נשארו במערכת, וכל קבוצה שנכשלה בוטלה במלואה.
               אפשר לבטל את כל מה שנקלט בריצה הזו בכפתור השחזור.
             </p>
           ) : null}
           {runError ? (
-            <p className="rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            <p className="rounded-md bg-amber-50 px-4 py-3 text-sm text-amber-800">
               הייבוא הושלם, אך רישום הריצה בהיסטוריה נכשל: {runError}
             </p>
           ) : null}
           {undo.state === 'done' ? (
-            <p className="rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+            <p className="rounded-md bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
               הייבוא בוטל: {undo.message}
             </p>
           ) : null}
           {undo.state === 'failed' ? (
-            <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+            <p className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">
               ביטול הייבוא נכשל: {undo.message}
             </p>
           ) : null}

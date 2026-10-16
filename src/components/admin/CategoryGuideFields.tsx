@@ -41,7 +41,7 @@ export default function CategoryGuideFields({
 
       {!guide.tableExists && (
         <p
-          className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800"
+          className="rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-800"
           data-testid="guide-migration-pending"
         >
           טבלת מדריכי הקנייה עוד לא הוחלה (מיגרציה 268). הטקסט המובנה מוצג באתר; עריכה תישמר רק אחרי
@@ -64,7 +64,7 @@ export default function CategoryGuideFields({
           defaultValue={guide.draft.title_he ?? ''}
           maxLength={GUIDE_TITLE_MAX}
           placeholder={categoryName ? `מדריך קנייה: ${categoryName}` : 'מדריך קנייה'}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
         />
       </div>
 
@@ -88,7 +88,7 @@ export default function CategoryGuideFields({
           value={body}
           onChange={(event) => setBody(event.target.value)}
           rows={14}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-brand"
+          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-brand"
         />
       </div>
 

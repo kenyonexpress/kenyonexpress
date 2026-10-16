@@ -6,7 +6,7 @@ import { useActionState } from 'react'
 const INITIAL: SupplierLeadState = { ok: false }
 
 const FIELD =
-  'w-full rounded-lg border border-heading/20 px-3 py-2 text-base text-heading placeholder:text-heading/40 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/40'
+  'w-full rounded-md border border-heading/20 px-3 py-2 text-base text-heading placeholder:text-heading/40 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/40'
 const LABEL = 'mb-1 block text-sm font-medium text-heading'
 
 /**
@@ -39,7 +39,7 @@ export default function SupplierLeadForm() {
   return (
     <form action={action} className="space-y-4">
       {state.error && (
-        <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{state.error}</p>
+        <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-600">{state.error}</p>
       )}
 
       <div className="grid gap-4 sm:grid-cols-2">
@@ -168,7 +168,7 @@ export default function SupplierLeadForm() {
       <button
         type="submit"
         disabled={pending}
-        className="w-full rounded-lg bg-brand px-6 py-3 text-base font-semibold text-heading transition-opacity disabled:opacity-60 sm:w-auto"
+        className="w-full rounded-md bg-brand px-6 py-3 text-base font-semibold text-heading transition-opacity disabled:opacity-60 sm:w-auto"
       >
         {pending ? 'שולח...' : 'שליחת פרטים'}
       </button>

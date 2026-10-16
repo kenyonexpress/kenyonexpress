@@ -54,10 +54,10 @@ export default function SubscriptionList({
   return (
     <div className="space-y-3">
       {state && 'error' in state && (
-        <div className="rounded-lg bg-red-50 px-4 py-2 text-sm text-red-700">{state.error}</div>
+        <div className="rounded-md bg-red-50 px-4 py-2 text-sm text-red-700">{state.error}</div>
       )}
       {state && 'success' in state && (
-        <div className="rounded-lg bg-green-50 px-4 py-2 text-sm text-green-700">
+        <div className="rounded-md bg-green-50 px-4 py-2 text-sm text-green-700">
           {state.success}
         </div>
       )}
@@ -87,7 +87,7 @@ export default function SubscriptionList({
           </div>
 
           {sub.needsAttention && (
-            <p className="mt-3 flex items-start gap-2 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-900">
+            <p className="mt-3 flex items-start gap-2 rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-900">
               <AlertTriangle size={14} className="mt-0.5 shrink-0" />
               <span>
                 החיוב האחרון נכשל שלוש פעמים ולא ינוסה שוב. יש לעדכן את אמצעי התשלום ב
@@ -120,7 +120,7 @@ export default function SubscriptionList({
 
           {sub.status !== 'canceled' &&
             (confirming === sub.id ? (
-              <form action={action} className="mt-4 rounded-lg bg-gray-50 p-3">
+              <form action={action} className="mt-4 rounded-md bg-gray-50 p-3">
                 <input type="hidden" name="id" value={sub.id} />
                 <p className="text-xs text-gray-700">{cancellationNotice(sub.nextChargeAt)}</p>
                 <label htmlFor={`reason-${sub.id}`} className="mt-2 block text-xs text-gray-500">
@@ -130,13 +130,13 @@ export default function SubscriptionList({
                   id={`reason-${sub.id}`}
                   name="reason"
                   maxLength={500}
-                  className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                  className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
                 />
                 <div className="mt-3 flex items-center gap-3">
                   <button
                     type="submit"
                     disabled={pending}
-                    className="rounded-lg bg-red-600 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-red-700 disabled:opacity-60"
+                    className="rounded-md bg-red-600 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-red-700 disabled:opacity-60"
                   >
                     {pending ? 'מבטל...' : 'אישור ביטול'}
                   </button>

@@ -19,7 +19,7 @@ import { useActionState, useState } from 'react'
  */
 
 const EMPTY: FlashSaleActionState = { ok: false }
-const INPUT = 'w-full rounded-lg border px-3 py-2 text-sm'
+const INPUT = 'w-full rounded-md border px-3 py-2 text-sm'
 
 const toIls = (agorot: number | null | undefined) =>
   agorot === null || agorot === undefined ? '' : String(agorot / 100)
@@ -100,12 +100,12 @@ export default function FlashSaleForm({
       {initial?.id && <input type="hidden" name="id" value={initial.id} />}
 
       {state.error && (
-        <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-800">
+        <p role="alert" className="rounded-md bg-red-50 p-3 text-sm text-red-800">
           {state.error}
         </p>
       )}
       {state.ok && (
-        <output className="block rounded-lg bg-green-50 p-3 text-sm text-green-800">
+        <output className="block rounded-md bg-green-50 p-3 text-sm text-green-800">
           המבצע נשמר.
         </output>
       )}
@@ -291,7 +291,7 @@ export default function FlashSaleForm({
       <button
         type="submit"
         disabled={pending || !productId}
-        className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+        className="rounded-md bg-black px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
       >
         {pending ? 'שומר…' : 'שמירה'}
       </button>

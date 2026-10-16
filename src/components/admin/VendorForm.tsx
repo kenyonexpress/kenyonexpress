@@ -27,9 +27,9 @@ export default function VendorForm({ vendor, profiles = [] }: Props) {
       {vendor && <input type="hidden" name="profile_id" value={vendor.profile_id ?? ''} />}
       <input type="hidden" name="logo_url" value={logoUrl[0] ?? ''} />
 
-      {error && <div className="bg-red-50 text-red-700 text-sm rounded-lg px-4 py-2">{error}</div>}
+      {error && <div className="bg-red-50 text-red-700 text-sm rounded-md px-4 py-2">{error}</div>}
       {success && (
-        <div className="bg-green-50 text-green-700 text-sm rounded-lg px-4 py-2">{success}</div>
+        <div className="bg-green-50 text-green-700 text-sm rounded-md px-4 py-2">{success}</div>
       )}
 
       {!vendor && (
@@ -44,7 +44,7 @@ export default function VendorForm({ vendor, profiles = [] }: Props) {
               name="profile_id"
               required
               defaultValue=""
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             >
               <option value="" disabled>
                 {profiles.length ? 'בחרו משתמש...' : 'אין משתמשים זמינים לקישור'}
@@ -161,7 +161,7 @@ export default function VendorForm({ vendor, profiles = [] }: Props) {
               id="vendor-status"
               name="status"
               defaultValue={vendor?.status ?? 'pending'}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             >
               <option value="pending">ממתין לאישור</option>
               <option value="active">פעיל</option>
@@ -190,7 +190,7 @@ export default function VendorForm({ vendor, profiles = [] }: Props) {
         <button
           type="submit"
           disabled={pending}
-          className="bg-brand hover:bg-brand-primary-hover disabled:opacity-60 text-brand-dark font-semibold rounded-lg px-6 py-2 text-sm transition-colors"
+          className="bg-brand hover:bg-brand-primary-hover disabled:opacity-60 text-brand-dark font-semibold rounded-md px-6 py-2 text-sm transition-colors"
         >
           {pending ? 'שומר...' : vendor ? 'עדכון ספק' : 'יצירת ספק'}
         </button>
@@ -229,7 +229,7 @@ function Field({
         defaultValue={defaultValue ?? ''}
         required={required}
         dir={type === 'email' ? 'ltr' : undefined}
-        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
       />
     </div>
   )

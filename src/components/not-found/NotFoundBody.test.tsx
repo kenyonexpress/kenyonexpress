@@ -80,7 +80,7 @@ describe('NotFoundBody', () => {
     if (!first) throw new Error('no tile rendered')
     expect(first).toHaveTextContent('קטגוריה 1')
     // The home grid's card: the 12px corner, the token hover shadow, a photograph.
-    expect(first.className).toContain('rounded-elevated')
+    expect(first.className).toContain('rounded-md')
     expect(first.className).toContain('hover:shadow-card-hover')
     const img = within(first).getByRole('presentation', { hidden: true })
     expect(decodeURIComponent(img.getAttribute('src') ?? '')).toContain('/images/categories/1.webp')

@@ -252,7 +252,7 @@ export default function ProductForm({
       <input type="hidden" name="images" value={JSON.stringify(images)} />
       <input type="hidden" name="variants" value={variantsJson} />
 
-      {error && <div className="bg-red-50 text-red-700 text-sm rounded-lg px-4 py-2">{error}</div>}
+      {error && <div className="bg-red-50 text-red-700 text-sm rounded-md px-4 py-2">{error}</div>}
 
       {/* Names */}
       <div className="grid grid-cols-2 gap-4">
@@ -266,7 +266,7 @@ export default function ProductForm({
             value={nameHe}
             onChange={(e) => handleNameHe(e.target.value)}
             required
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
           />
         </div>
         <div>
@@ -278,7 +278,7 @@ export default function ProductForm({
             name="name_en"
             defaultValue={product?.name_en ?? ''}
             dir="ltr"
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
           />
         </div>
       </div>
@@ -296,7 +296,7 @@ export default function ProductForm({
             onChange={(e) => setSlugVal(e.target.value)}
             required
             dir="ltr"
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand"
+            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand"
           />
         </div>
         <div>
@@ -308,7 +308,7 @@ export default function ProductForm({
             name="sku"
             defaultValue={product?.sku ?? ''}
             dir="ltr"
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand"
+            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand"
           />
         </div>
       </div>
@@ -323,7 +323,7 @@ export default function ProductForm({
           name="description_he"
           defaultValue={product?.description_he ?? ''}
           rows={4}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand resize-none"
+          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand resize-none"
         />
       </div>
 
@@ -336,7 +336,7 @@ export default function ProductForm({
           id="category_id"
           name="category_id"
           defaultValue={product?.category_id ?? ''}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
         >
           <option value="">ללא קטגוריה</option>
           {categories.map((c) => (
@@ -359,7 +359,7 @@ export default function ProductForm({
             value={productType}
             onChange={(e) => setProductType(e.target.value as ProductMoneyType)}
             required
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
           >
             <option value="coupon">קופון</option>
             <option value="physical">פיצול הזמנה (פיזי)</option>
@@ -382,7 +382,7 @@ export default function ProductForm({
               <input type="hidden" name="status" value="draft" />
               <p
                 id="prod-status"
-                className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700"
+                className="rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700"
               >
                 {product?.status === 'active'
                   ? 'פעיל (רק מנהל משנה פרסום)'
@@ -401,7 +401,7 @@ export default function ProductForm({
               name="status"
               defaultValue={product?.status ?? 'draft'}
               required
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             >
               <option value="draft">טיוטה</option>
               <option value="active">פעיל</option>
@@ -424,7 +424,7 @@ export default function ProductForm({
             name="supplier_id"
             value={supplierId}
             onChange={(e) => setSupplierId(e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
           >
             <option value="">ללא ספק</option>
             {suppliers.map((s) => (
@@ -455,7 +455,7 @@ export default function ProductForm({
       {hidePricing ? (
         <div className="space-y-4 border-t border-gray-100 pt-5">
           <p className="text-sm font-semibold text-gray-700">מחירים ועמלות</p>
-          <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+          <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
             מחירים ועמלות נשמרים למנהל. אפשר לערוך תוכן, תמונות וקטגוריה. פרסום למוצר פעיל דורש
             מנהל.
           </p>
@@ -474,7 +474,7 @@ export default function ProductForm({
               step="1"
               defaultValue={product?.stock_quantity ?? ''}
               dir="ltr"
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             />
           </div>
           {isCouponProduct ? (
@@ -493,7 +493,7 @@ export default function ProductForm({
                 step="1"
                 defaultValue={product?.coupon_expiry_days ?? ''}
                 dir="ltr"
-                className="w-full max-w-xs rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                className="w-full max-w-xs rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
               />
             </div>
           ) : null}
@@ -532,7 +532,7 @@ export default function ProductForm({
                 onChange={(e) => setKenyonPrice(e.target.value)}
                 required
                 dir="ltr"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
               />
               <p className="mt-1 text-xs text-gray-500">מחיר המחירון של בית העסק</p>
             </div>
@@ -548,7 +548,7 @@ export default function ProductForm({
                 step="0.01"
                 defaultValue={product?.full_price ?? ''}
                 dir="ltr"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
               />
               <p className="mt-1 text-xs text-gray-500">מוצג מחוק בעמוד המוצר</p>
             </div>
@@ -567,7 +567,7 @@ export default function ProductForm({
                 step="1"
                 defaultValue={product?.stock_quantity ?? ''}
                 dir="ltr"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
               />
             </div>
           </div>
@@ -591,7 +591,7 @@ export default function ProductForm({
                 onChange={(e) => handlePlatformPercent(e.target.value)}
                 required
                 dir="ltr"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
               />
             </div>
             <div>
@@ -611,7 +611,7 @@ export default function ProductForm({
                 value={supplierSplit}
                 onChange={(e) => handleSupplierSplit(e.target.value)}
                 dir="ltr"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
               />
             </div>
           </div>
@@ -640,7 +640,7 @@ export default function ProductForm({
                   value={couponPrice}
                   onChange={(e) => setCouponPrice(e.target.value)}
                   dir="ltr"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
                 />
                 <p className="mt-1 text-xs text-gray-500">סכום מוחלט, לא אחוז</p>
               </div>
@@ -659,7 +659,7 @@ export default function ProductForm({
                   step="1"
                   defaultValue={product?.coupon_expiry_days ?? ''}
                   dir="ltr"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
                 />
                 <p className="mt-1 text-xs text-gray-500">מיום הרכישה</p>
               </div>
@@ -667,7 +667,7 @@ export default function ProductForm({
                 <span className="block text-xs font-medium text-gray-700 mb-1">
                   אחוז ההנחה לתצוגה
                 </span>
-                <div className="w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600">
+                <div className="w-full border border-gray-200 bg-gray-50 rounded-md px-3 py-2 text-sm text-gray-600">
                   {couponBadgePercent === null ? '-' : `${couponBadgePercent}%`}
                 </div>
                 <p className="mt-1 text-xs text-gray-500">מחושב מהמחירים, לא נקבע ידנית</p>
@@ -693,7 +693,7 @@ export default function ProductForm({
                     onChange={(e) => setRecurringAmount(e.target.value)}
                     required
                     dir="ltr"
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
                   />
                   <p className="mt-1 text-xs text-gray-500">נגבה בכל מחזור, לא סכום חד פעמי</p>
                 </div>
@@ -710,7 +710,7 @@ export default function ProductForm({
                     value={billingInterval}
                     onChange={(e) => setBillingInterval(e.target.value as BillingInterval)}
                     required
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
                   >
                     {BILLING_INTERVALS.map((interval) => (
                       <option key={interval} value={interval}>
@@ -735,7 +735,7 @@ export default function ProductForm({
                     value={billingIntervalCount}
                     onChange={(e) => setBillingIntervalCount(e.target.value)}
                     dir="ltr"
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
                   />
                   <p className="mt-1 text-xs text-gray-500">
                     {cadenceLabel(
@@ -746,7 +746,7 @@ export default function ProductForm({
                 </div>
               </div>
 
-              <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-xs text-amber-900">
+              <div className="rounded-md bg-amber-50 border border-amber-200 p-3 text-xs text-amber-900">
                 <p className="font-medium">איך החיוב החוזר עובד</p>
                 <p className="mt-1 leading-relaxed">
                   בקנייה הראשונה הכרטיס מאושר ונשמר כטוקן של Cardcom. מהמחזור השני והלאה החיוב מתבצע
@@ -756,7 +756,7 @@ export default function ProductForm({
               </div>
 
               {recurringPreview && (
-                <div className="rounded-lg bg-gray-50 border border-gray-200 p-4">
+                <div className="rounded-md bg-gray-50 border border-gray-200 p-4">
                   <p className="text-xs font-semibold text-gray-700 mb-2">
                     מה הלקוח משלם, {recurringPreview.cadenceLabel}
                   </p>
@@ -791,7 +791,7 @@ export default function ProductForm({
                   value={discountPercent}
                   onChange={(e) => setDiscountPercent(e.target.value)}
                   dir="ltr"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
                 />
                 <p className="mt-1 text-xs text-gray-500">מקטין בפועל את הסכום שנגבה באתר</p>
               </div>
@@ -808,7 +808,7 @@ export default function ProductForm({
                   type="date"
                   defaultValue={product?.offer_valid_until?.slice(0, 10) ?? ''}
                   dir="ltr"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
                 />
               </div>
             </div>
@@ -828,7 +828,7 @@ export default function ProductForm({
                 type="date"
                 defaultValue={product?.offer_valid_until?.slice(0, 10) ?? ''}
                 dir="ltr"
-                className="w-full max-w-xs border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                className="w-full max-w-xs border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
               />
             </div>
           )}
@@ -838,7 +838,7 @@ export default function ProductForm({
             second box quoting "one unit" of a subscription would say nothing
             the first did not. */}
           <div
-            className={`rounded-lg bg-gray-50 border border-gray-200 p-4 ${isRecurring ? 'hidden' : ''}`}
+            className={`rounded-md bg-gray-50 border border-gray-200 p-4 ${isRecurring ? 'hidden' : ''}`}
           >
             <p className="text-xs font-semibold text-gray-700 mb-2">מה יקרה בפועל ליחידה אחת</p>
             {preview === null ? (
@@ -939,7 +939,7 @@ export default function ProductForm({
             defaultValue={product?.short_description_he ?? ''}
             rows={2}
             maxLength={300}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand resize-none"
+            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand resize-none"
           />
         </div>
         <div>
@@ -953,7 +953,7 @@ export default function ProductForm({
               Array.isArray(product?.highlights) ? (product.highlights as string[]).join('\n') : ''
             }
             rows={3}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand resize-none"
+            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand resize-none"
           />
         </div>
         <div className="grid grid-cols-3 gap-4">
@@ -965,7 +965,7 @@ export default function ProductForm({
               id="brand"
               name="brand"
               defaultValue={product?.brand ?? ''}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             />
           </div>
           <div>
@@ -978,7 +978,7 @@ export default function ProductForm({
               type="url"
               defaultValue={product?.video_url ?? ''}
               dir="ltr"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             />
           </div>
           <div>
@@ -990,7 +990,7 @@ export default function ProductForm({
               name="barcode"
               defaultValue={product?.barcode ?? ''}
               dir="ltr"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand"
             />
           </div>
         </div>
@@ -1014,7 +1014,7 @@ export default function ProductForm({
               name="coupon_terms_he"
               defaultValue={product?.coupon_terms_he ?? ''}
               rows={3}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand resize-none"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand resize-none"
             />
           </div>
           <div>
@@ -1029,7 +1029,7 @@ export default function ProductForm({
               name="redemption_instructions_he"
               defaultValue={product?.redemption_instructions_he ?? ''}
               rows={3}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand resize-none"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand resize-none"
             />
           </div>
         </div>
@@ -1050,7 +1050,7 @@ export default function ProductForm({
               defaultValue={product?.coupon_expiry_days ?? ''}
               required={isCouponProduct}
               dir="ltr"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             />
             <p className="mt-1 text-xs text-gray-500">
               נספר מרגע הרכישה. אין ברירת מחדל. בפקיעה בלי מימוש הסכום ששולם נזקף לארנק הלקוח
@@ -1071,7 +1071,7 @@ export default function ProductForm({
               step="0.01"
               defaultValue={product?.min_purchase_ils ?? ''}
               dir="ltr"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             />
           </div>
         </div>
@@ -1096,7 +1096,7 @@ export default function ProductForm({
               step="1"
               defaultValue={product?.low_stock_threshold ?? 5}
               dir="ltr"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             />
           </div>
           <div>
@@ -1111,7 +1111,7 @@ export default function ProductForm({
               step="1"
               defaultValue={product?.max_per_order ?? ''}
               dir="ltr"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             />
           </div>
           <div>
@@ -1122,7 +1122,7 @@ export default function ProductForm({
               id="condition"
               name="condition"
               defaultValue={product?.condition ?? ''}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             >
               <option value="">לא צוין</option>
               <option value="new">חדש</option>
@@ -1202,7 +1202,7 @@ export default function ProductForm({
               type="text"
               defaultValue={readTags(product).join(', ')}
               placeholder="מבצע, חורף, מתנה"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             />
             <p className="text-xs text-gray-500 mt-1">
               מופרדות בפסיק. משמשות להתאמת "אולי יעניין אותך" ולקידום, ואינן קטגוריה.
@@ -1222,7 +1222,7 @@ export default function ProductForm({
               step="1"
               defaultValue={product?.weight_grams ?? ''}
               dir="ltr"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             />
           </div>
           <div>
@@ -1237,7 +1237,7 @@ export default function ProductForm({
               step="1"
               defaultValue={readDimensionMm(product, 'length') ?? ''}
               dir="ltr"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             />
           </div>
           <div>
@@ -1252,7 +1252,7 @@ export default function ProductForm({
               step="1"
               defaultValue={readDimensionMm(product, 'width') ?? ''}
               dir="ltr"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             />
           </div>
           <div>
@@ -1267,7 +1267,7 @@ export default function ProductForm({
               step="1"
               defaultValue={readDimensionMm(product, 'height') ?? ''}
               dir="ltr"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             />
           </div>
           <div>
@@ -1285,7 +1285,7 @@ export default function ProductForm({
               step="1"
               defaultValue={product?.warranty_months ?? ''}
               dir="ltr"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             />
           </div>
         </div>
@@ -1304,7 +1304,7 @@ export default function ProductForm({
               name="seo_title"
               maxLength={70}
               defaultValue={product?.seo_title ?? ''}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             />
           </div>
           <div>
@@ -1315,7 +1315,7 @@ export default function ProductForm({
               id="seo_keywords"
               name="seo_keywords"
               defaultValue={product?.seo_keywords ?? ''}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             />
           </div>
         </div>
@@ -1329,7 +1329,7 @@ export default function ProductForm({
             defaultValue={product?.seo_description ?? ''}
             rows={2}
             maxLength={170}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand resize-none"
+            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand resize-none"
           />
         </div>
       </div>
@@ -1445,7 +1445,7 @@ export default function ProductForm({
         <button
           type="submit"
           disabled={pending}
-          className="bg-brand hover:bg-brand-primary-hover disabled:opacity-60 text-brand-dark font-semibold rounded-lg px-6 py-2 text-sm transition-colors"
+          className="bg-brand hover:bg-brand-primary-hover disabled:opacity-60 text-brand-dark font-semibold rounded-md px-6 py-2 text-sm transition-colors"
         >
           {pending ? 'שומר...' : product ? 'עדכון מוצר' : 'יצירת מוצר'}
         </button>

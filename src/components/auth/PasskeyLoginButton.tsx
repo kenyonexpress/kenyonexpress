@@ -66,7 +66,7 @@ export default function PasskeyLoginButton({
         type="button"
         onClick={signIn}
         disabled={pending}
-        className="w-full flex min-h-touch-min items-center justify-center gap-2 border border-gray-300 rounded-lg py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-60"
+        className="w-full flex min-h-touch-min items-center justify-center gap-2 border border-gray-300 rounded-md py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-60"
       >
         <svg
           aria-hidden="true"
@@ -85,7 +85,7 @@ export default function PasskeyLoginButton({
         </svg>
         {pending ? 'מאמתים...' : 'כניסה עם טביעת אצבע או Face ID'}
       </button>
-      {error && <p className="mt-2 text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
+      {error && <p className="mt-2 text-sm text-red-600 bg-red-50 rounded-md px-3 py-2">{error}</p>}
     </div>
   )
 }

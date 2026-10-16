@@ -30,23 +30,27 @@ import { describe, expect, it } from 'vitest'
  *   rounded-none = rounded-none
  */
 
-// Valid border-radius scale keys (UX35 standard scale only)
+// Valid border-radius scale keys for UX35
 const VALID_RADIUS_KEYS = new Set([
   'xs', // 4px
   'sm', // 8px (buttons)
   'md', // 12px (cards)
   'lg', // 16px (modals)
   'xl', // 24px
+  'full', // 50% (circular: avatars, badges, icons - semantic)
+  'pill', // 22px (search bars, tags - semantic)
   'none', // 0px (explicit no rounding)
 ])
 
-// Custom CSS variable radius tokens - strict to UX35 scale only
+// Custom CSS variable radius tokens - UX35 semantic scale
 const CUSTOM_RADIUS_TOKENS = new Set([
   'xs', // 4px
   'sm', // 8px (buttons)
   'md', // 12px (cards)
   'lg', // 16px (modals)
   'xl', // 24px
+  'full', // 50% (avatars, circular badges)
+  'pill', // 22px (search bars, tags)
   'none', // 0px
 ])
 

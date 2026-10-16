@@ -32,7 +32,7 @@ export default function OrderHelpCard({ orderRef }: { orderRef: string }) {
                 href={link.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex min-h-11 items-center rounded-lg border border-heading/20 bg-white px-4 py-2 text-sm font-medium text-heading hover:border-heading/40"
+                className="inline-flex min-h-11 items-center rounded-md border border-heading/20 bg-white px-4 py-2 text-sm font-medium text-heading hover:border-heading/40"
               >
                 {link.label}
               </a>
@@ -41,7 +41,7 @@ export default function OrderHelpCard({ orderRef }: { orderRef: string }) {
             <li key={link.href}>
               <Link
                 href={link.href}
-                className="inline-flex min-h-11 items-center rounded-lg border border-heading/20 bg-white px-4 py-2 text-sm font-medium text-heading hover:border-heading/40"
+                className="inline-flex min-h-11 items-center rounded-md border border-heading/20 bg-white px-4 py-2 text-sm font-medium text-heading hover:border-heading/40"
               >
                 {link.label}
               </Link>

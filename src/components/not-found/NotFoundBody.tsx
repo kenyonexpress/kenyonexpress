@@ -155,9 +155,9 @@ export default async function NotFoundBody({ compact = false }: Props = {}) {
                 <Link
                   href={`/category/${tile.slug}`}
                   data-category-tile={tile.slug}
-                  className="group flex min-h-touch-min flex-col items-center rounded-elevated border border-border bg-white p-3 text-center transition-shadow duration-300 hover:shadow-card-hover"
+                  className="group flex min-h-touch-min flex-col items-center rounded-md border border-border bg-white p-3 text-center transition-shadow duration-300 hover:shadow-card-hover"
                 >
-                  <div className="relative aspect-square w-full max-w-28 overflow-hidden rounded-elevated">
+                  <div className="relative aspect-square w-full max-w-28 overflow-hidden rounded-md">
                     <SmartImage
                       src={tile.imageUrl ?? ''}
                       alt=""

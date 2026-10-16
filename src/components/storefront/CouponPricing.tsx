@@ -16,7 +16,7 @@ import { shekelsFromIls } from '@/lib/commerce/coupon-offer'
 export default function CouponPricing({ offer }: { offer: CouponOffer }) {
   if (!offer.sellable) {
     return (
-      <div className="rounded-lg border border-border bg-surface-hover p-4">
+      <div className="rounded-md border border-border bg-surface-hover p-4">
         <p className="text-base font-bold text-heading">
           {offer.reason === 'expired' ? 'המבצע הסתיים' : 'הקופון אינו זמין לרכישה'}
         </p>
@@ -59,7 +59,7 @@ export default function CouponPricing({ offer }: { offer: CouponOffer }) {
       </div>
 
       {/* The split. Not on live; required by the final business rules. */}
-      <dl className="rounded-lg border border-border bg-surface-hover p-4 text-sm">
+      <dl className="rounded-md border border-border bg-surface-hover p-4 text-sm">
         <div className="flex items-baseline justify-between gap-4">
           <dt className="text-muted">לתשלום באתר עכשיו</dt>
           <dd className="font-bold text-heading tabular-nums">
@@ -104,7 +104,7 @@ export function CouponTerms({
   return (
     <section
       aria-label="תנאי מימוש ותוקף"
-      className="rounded-lg border border-border bg-white p-4 lg:p-6"
+      className="rounded-md border border-border bg-white p-4 lg:p-6"
     >
       <h2 className="text-base font-bold text-heading">תנאי מימוש ותוקף</h2>
 

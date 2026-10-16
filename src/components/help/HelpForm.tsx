@@ -7,7 +7,7 @@ import { useActionState, useId } from 'react'
 const EMPTY: HelpState = { ok: false }
 
 const fieldClass =
-  'w-full min-h-11 rounded-lg border border-border bg-white px-3 py-2 text-sm text-heading focus:outline-none focus:ring-2 focus:ring-brand-primary/40'
+  'w-full min-h-11 rounded-md border border-border bg-white px-3 py-2 text-sm text-heading focus:outline-none focus:ring-2 focus:ring-brand-primary/40'
 
 /**
  * The help-centre form (STEP 50). The contact form plus a topic and an order
@@ -141,7 +141,7 @@ export default function HelpForm({
       <button
         type="submit"
         disabled={pending}
-        className="min-h-11 rounded-lg bg-brand-secondary px-4 py-2 text-sm font-bold text-heading transition-opacity hover:opacity-90 disabled:opacity-60"
+        className="min-h-11 rounded-md bg-brand-secondary px-4 py-2 text-sm font-bold text-heading transition-opacity hover:opacity-90 disabled:opacity-60"
       >
         {pending ? 'שולח...' : 'שליחת פנייה'}
       </button>

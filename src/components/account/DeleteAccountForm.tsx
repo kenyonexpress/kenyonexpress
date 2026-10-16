@@ -40,7 +40,7 @@ export default function DeleteAccountForm() {
       <button
         type="submit"
         disabled={pending}
-        className="min-h-11 rounded-lg border border-red-600 px-4 py-2 text-sm font-bold text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
+        className="min-h-11 rounded-md border border-red-600 px-4 py-2 text-sm font-bold text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
       >
         {pending ? 'מוחק את החשבון...' : 'מחיקת החשבון לצמיתות'}
       </button>

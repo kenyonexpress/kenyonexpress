@@ -46,7 +46,7 @@ export default function CouponDealForm({ deal, vendors }: Props) {
           <input type="hidden" name="image_url" value={imageUrl[0] ?? ''} />
 
           {error && (
-            <div className="bg-red-50 text-red-700 text-sm rounded-lg px-4 py-2">{error}</div>
+            <div className="bg-red-50 text-red-700 text-sm rounded-md px-4 py-2">{error}</div>
           )}
 
           <div className="grid grid-cols-2 gap-4">
@@ -60,7 +60,7 @@ export default function CouponDealForm({ deal, vendors }: Props) {
                 value={titleHe}
                 onChange={(e) => setTitleHe(e.target.value)}
                 required
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
               />
             </div>
             <div>
@@ -73,7 +73,7 @@ export default function CouponDealForm({ deal, vendors }: Props) {
                 value={businessName}
                 onChange={(e) => setBusinessName(e.target.value)}
                 required
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
               />
             </div>
           </div>
@@ -93,7 +93,7 @@ export default function CouponDealForm({ deal, vendors }: Props) {
                 onChange={(e) => setOriginalPrice(Number(e.target.value))}
                 required
                 dir="ltr"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
               />
             </div>
             <div>
@@ -112,7 +112,7 @@ export default function CouponDealForm({ deal, vendors }: Props) {
                 max={originalPrice || undefined}
                 value={platformPrice || ''}
                 onChange={(e) => setPlatformPrice(Number(e.target.value))}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
               />
               <p className="mt-1 text-xs text-gray-500">
                 הסכום שהלקוח משלם באתר. היתרה נגבית בבית העסק.
@@ -120,7 +120,7 @@ export default function CouponDealForm({ deal, vendors }: Props) {
             </div>
             <div>
               <p className="block text-xs font-medium text-gray-700 mb-1">הנחה</p>
-              <div className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 text-green-700 font-bold">
+              <div className="border border-gray-200 rounded-md px-3 py-2 text-sm bg-gray-50 text-green-700 font-bold">
                 {discountPct}%
               </div>
             </div>
@@ -138,7 +138,7 @@ export default function CouponDealForm({ deal, vendors }: Props) {
                 defaultValue={deal?.valid_from?.slice(0, 10) ?? todayStr}
                 required
                 dir="ltr"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
               />
             </div>
             <div>
@@ -151,7 +151,7 @@ export default function CouponDealForm({ deal, vendors }: Props) {
                 type="date"
                 defaultValue={deal?.valid_until?.slice(0, 10) ?? ''}
                 dir="ltr"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
               />
             </div>
           </div>
@@ -175,7 +175,7 @@ export default function CouponDealForm({ deal, vendors }: Props) {
               placeholder="SPA90"
               defaultValue={(deal as { code?: string | null } | undefined)?.code ?? ''}
               dir="ltr"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono tracking-wider focus:outline-none focus:ring-2 focus:ring-brand"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm font-mono tracking-wider focus:outline-none focus:ring-2 focus:ring-brand"
             />
             <p className="mt-1 text-xs text-gray-500">
               מוצג על הכרטיס עם כפתור העתקה. דורש את מיגרציה 270 (ממתינה); בלי קוד הכרטיס מציג קישור
@@ -196,7 +196,7 @@ export default function CouponDealForm({ deal, vendors }: Props) {
                 defaultValue={deal?.max_uses ?? ''}
                 dir="ltr"
                 placeholder="ללא הגבלה"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
               />
             </div>
             <div>
@@ -210,7 +210,7 @@ export default function CouponDealForm({ deal, vendors }: Props) {
                 min="1"
                 defaultValue={deal?.max_uses_per_user ?? 1}
                 dir="ltr"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
               />
             </div>
           </div>
@@ -224,7 +224,7 @@ export default function CouponDealForm({ deal, vendors }: Props) {
               name="terms_he"
               defaultValue={deal?.terms_he ?? ''}
               rows={3}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand resize-none"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand resize-none"
             />
           </div>
 
@@ -239,7 +239,7 @@ export default function CouponDealForm({ deal, vendors }: Props) {
                 value={locationHe}
                 onChange={(e) => setLocationHe(e.target.value)}
                 placeholder="תל אביב, דיזנגוף"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
               />
             </div>
             <div>
@@ -253,7 +253,7 @@ export default function CouponDealForm({ deal, vendors }: Props) {
                 step="any"
                 defaultValue={deal?.lat ?? ''}
                 dir="ltr"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
               />
             </div>
             <div>
@@ -267,7 +267,7 @@ export default function CouponDealForm({ deal, vendors }: Props) {
                 step="any"
                 defaultValue={deal?.lng ?? ''}
                 dir="ltr"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
               />
             </div>
           </div>
@@ -281,7 +281,7 @@ export default function CouponDealForm({ deal, vendors }: Props) {
                 id="cd-vendor"
                 name="vendor_id"
                 defaultValue={deal?.vendor_id ?? ''}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
               >
                 <option value="">ללא ספק</option>
                 {vendors.map((v) => (
@@ -299,7 +299,7 @@ export default function CouponDealForm({ deal, vendors }: Props) {
                 id="cd-status"
                 name="status"
                 defaultValue={deal?.status ?? 'draft'}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
               >
                 <option value="draft">טיוטה</option>
                 <option value="active">פעיל</option>
@@ -326,7 +326,7 @@ export default function CouponDealForm({ deal, vendors }: Props) {
             <button
               type="submit"
               disabled={pending}
-              className="bg-brand hover:bg-brand-primary-hover disabled:opacity-60 text-brand-dark font-semibold rounded-lg px-6 py-2 text-sm transition-colors"
+              className="bg-brand hover:bg-brand-primary-hover disabled:opacity-60 text-brand-dark font-semibold rounded-md px-6 py-2 text-sm transition-colors"
             >
               {pending ? 'שומר...' : deal ? 'עדכון עסקה' : 'יצירת עסקה'}
             </button>
@@ -376,7 +376,7 @@ function CouponPreviewCard({
   return (
     <div
       dir="rtl"
-      className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm max-w-xs"
+      className="bg-white border border-gray-200 rounded-md overflow-hidden shadow-sm max-w-xs"
     >
       <div className="relative h-40 bg-gray-100">
         {imageUrl ? (
@@ -386,7 +386,7 @@ function CouponPreviewCard({
             <Tag size={40} />
           </div>
         )}
-        <div className="absolute top-2 right-2 bg-brand text-brand-dark text-xs font-bold px-2 py-1 rounded-lg">
+        <div className="absolute top-2 right-2 bg-brand text-brand-dark text-xs font-bold px-2 py-1 rounded-md">
           {discountPct}% הנחה
         </div>
       </div>

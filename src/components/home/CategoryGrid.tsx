@@ -15,7 +15,7 @@ import Link from 'next/link'
  * THE CARD (UX07, 14.10.2026), measured before on the build of HEAD at 380 /
  * 768 / 1440 (logs/ux07/before.json): the corner was `rounded-lg`, which this
  * theme resolves to `--radius-lg`, the 25px MODAL corner, so every tile had
- * the radius of a dialog; now `rounded-elevated`, Electro's 12px elevated
+ * the radius of a dialog; now `rounded-md`, Electro's 12px elevated
  * card (`--radius-elevated`, mirrored from ELECTRO.radius.elevated). The
  * hover was Tailwind's stock `shadow-md`, a two-layer shadow nothing else on
  * the site paints and one of the values tokens.css forbids ("the only two
@@ -45,9 +45,9 @@ export default async function CategoryGrid() {
             <Link
               href={`/category/${tile.slug}`}
               data-category-tile={tile.slug}
-              className="group flex min-h-11 flex-col items-center rounded-elevated border border-border bg-white p-3 text-center transition-shadow duration-300 hover:shadow-card-hover"
+              className="group flex min-h-11 flex-col items-center rounded-md border border-border bg-white p-3 text-center transition-shadow duration-300 hover:shadow-card-hover"
             >
-              <div className="relative aspect-square w-full max-w-32 overflow-hidden rounded-elevated">
+              <div className="relative aspect-square w-full max-w-32 overflow-hidden rounded-md">
                 <SmartImage
                   src={tile.imageUrl ?? ''}
                   alt=""

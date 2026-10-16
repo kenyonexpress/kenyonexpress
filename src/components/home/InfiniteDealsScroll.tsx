@@ -84,7 +84,7 @@ export default function InfiniteDealsScroll({ initialProducts }: { initialProduc
             >
               {['skeleton-1', 'skeleton-2', 'skeleton-3', 'skeleton-4'].map((id) => (
                 <div key={id} className="jet-listing-grid-deals__item" data-skeleton>
-                  <div className="ke-skeleton aspect-square rounded-elevated" />
+                  <div className="ke-skeleton aspect-square rounded-md" />
                   <div className="mt-3 space-y-2">
                     <div className="ke-skeleton h-4 w-3/4" />
                     <div className="ke-skeleton h-3 w-1/2" />

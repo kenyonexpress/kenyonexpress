@@ -35,7 +35,7 @@ export default function StatsCard({
         >
           {label}
         </CardTitle>
-        <div className={cn('rounded-lg p-2', isAdmin ? 'bg-brand-primary/30' : 'bg-brand-light')}>
+        <div className={cn('rounded-md p-2', isAdmin ? 'bg-brand-primary/30' : 'bg-brand-light')}>
           <Icon
             size={18}
             className={cn(isAdmin ? 'text-heading' : 'text-brand')}

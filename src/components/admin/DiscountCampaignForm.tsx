@@ -37,7 +37,7 @@ const toIls = (agorot: number | null | undefined) =>
 /** timestamptz to the value a datetime-local input accepts. */
 const toLocal = (iso: string | null | undefined) => (iso ? iso.slice(0, 16) : '')
 
-const INPUT = 'w-full rounded-lg border px-3 py-2 text-sm'
+const INPUT = 'w-full rounded-md border px-3 py-2 text-sm'
 
 /**
  * Label and control associated explicitly by id, not by wrapping.
@@ -95,12 +95,12 @@ export default function DiscountCampaignForm({ initial = {} }: { initial?: Initi
       {initial.id && <input type="hidden" name="id" value={initial.id} />}
 
       {state.error && (
-        <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-800">
+        <p role="alert" className="rounded-md bg-red-50 p-3 text-sm text-red-800">
           {state.error}
         </p>
       )}
       {state.ok && (
-        <output className="block rounded-lg bg-green-50 p-3 text-sm text-green-800">
+        <output className="block rounded-md bg-green-50 p-3 text-sm text-green-800">
           הקמפיין נשמר.
         </output>
       )}
@@ -152,7 +152,7 @@ export default function DiscountCampaignForm({ initial = {} }: { initial?: Initi
         />
       </Field>
 
-      <fieldset className="space-y-4 rounded-lg border p-4">
+      <fieldset className="space-y-4 rounded-md border p-4">
         <legend className="px-2 text-sm font-medium">ההנחה</legend>
 
         <div className="flex gap-4">
@@ -242,7 +242,7 @@ export default function DiscountCampaignForm({ initial = {} }: { initial?: Initi
         </Field>
       </fieldset>
 
-      <fieldset className="space-y-4 rounded-lg border p-4">
+      <fieldset className="space-y-4 rounded-md border p-4">
         <legend className="px-2 text-sm font-medium">חלון ומגבלות</legend>
 
         <div className="grid gap-4 sm:grid-cols-2">
@@ -323,7 +323,7 @@ export default function DiscountCampaignForm({ initial = {} }: { initial?: Initi
         </div>
       </fieldset>
 
-      <div className="space-y-3 rounded-lg border p-4">
+      <div className="space-y-3 rounded-md border p-4">
         <label htmlFor="allow_stacking" className="flex items-start gap-3 text-sm">
           <input
             id="allow_stacking"
@@ -354,7 +354,7 @@ export default function DiscountCampaignForm({ initial = {} }: { initial?: Initi
       <button
         type="submit"
         disabled={pending}
-        className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+        className="rounded-md bg-black px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
       >
         {pending ? 'שומר...' : 'שמירה'}
       </button>

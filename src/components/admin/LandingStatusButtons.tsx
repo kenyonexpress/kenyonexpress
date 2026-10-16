@@ -40,7 +40,7 @@ export default function LandingStatusButtons({
               } else setError(result.error ?? 'העדכון נכשל.')
             })
           }
-          className={`rounded-lg border px-3 py-1 ${
+          className={`rounded-md border px-3 py-1 ${
             next === current ? 'border-black bg-black text-white' : 'border-gray-300 bg-white'
           } disabled:opacity-60`}
         >

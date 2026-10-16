@@ -81,7 +81,7 @@ export default function StatusPanel({ refreshMs = STATUS_REFRESH_MS }: { refresh
     <div
       data-status-panel
       data-state={state}
-      className="rounded-elevated border border-border bg-surface p-4 text-heading md:p-6"
+      className="rounded-md border border-border bg-surface p-4 text-heading md:p-6"
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <output aria-live="polite" className="flex items-center gap-2 font-bold">

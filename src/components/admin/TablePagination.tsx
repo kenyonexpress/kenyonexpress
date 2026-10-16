@@ -51,7 +51,7 @@ export default function TablePagination({
               href={href(p)}
               aria-current={p === page ? 'page' : undefined}
               className={cn(
-                'min-w-8 rounded-lg px-2 py-2 text-center transition-colors',
+                'min-w-8 rounded-md px-2 py-2 text-center transition-colors',
                 p === page
                   ? 'bg-brand-primary font-bold text-heading'
                   : 'text-black/60 hover:bg-black/[0.04]',
@@ -82,7 +82,7 @@ function PageLink({
 }) {
   if (disabled) {
     return (
-      <span className="rounded-lg p-2 text-black/20" aria-hidden>
+      <span className="rounded-md p-2 text-black/20" aria-hidden>
         {children}
       </span>
     )
@@ -91,7 +91,7 @@ function PageLink({
     <Link
       href={href}
       aria-label={label}
-      className="rounded-lg p-2 text-black/60 transition-colors hover:bg-black/[0.04]"
+      className="rounded-md p-2 text-black/60 transition-colors hover:bg-black/[0.04]"
     >
       {children}
     </Link>

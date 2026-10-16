@@ -24,7 +24,7 @@ import { useActionState, useState } from 'react'
  */
 
 const EMPTY: CategoryBannerActionState = { ok: false }
-const INPUT = 'w-full rounded-lg border px-3 py-2 text-sm'
+const INPUT = 'w-full rounded-md border px-3 py-2 text-sm'
 
 /** An ISO instant to the `datetime-local` value in the admin's own zone. */
 export function toLocalInput(iso: string | null | undefined): string {
@@ -99,12 +99,12 @@ export default function CategoryBannerForm({
       <input type="hidden" name="image_url" value={image} />
 
       {state.error && (
-        <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-800">
+        <p role="alert" className="rounded-md bg-red-50 p-3 text-sm text-red-800">
           {state.error}
         </p>
       )}
       {state.ok && (
-        <output className="block rounded-lg bg-green-50 p-3 text-sm text-green-800">
+        <output className="block rounded-md bg-green-50 p-3 text-sm text-green-800">
           הבאנר נשמר.
         </output>
       )}
@@ -301,7 +301,7 @@ export default function CategoryBannerForm({
         <span className="block text-sm font-medium">תצוגה מקדימה</span>
         <div
           data-testid="banner-preview"
-          className="relative h-44 overflow-hidden rounded-lg bg-gray-200"
+          className="relative h-44 overflow-hidden rounded-md bg-gray-200"
         >
           {image && <Image src={image} alt="" fill unoptimized className="object-cover" />}
           {theme === 'light' && (
@@ -333,7 +333,7 @@ export default function CategoryBannerForm({
       <button
         type="submit"
         disabled={pending || !image}
-        className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+        className="rounded-md bg-black px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
       >
         {pending ? 'שומר…' : 'שמירה'}
       </button>

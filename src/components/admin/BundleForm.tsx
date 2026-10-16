@@ -23,7 +23,7 @@ import { useActionState, useId, useMemo, useState } from 'react'
 type Row = { product_id: string; quantity: number }
 
 const EMPTY: BundleActionState = { ok: false }
-const INPUT = 'w-full rounded-lg border px-3 py-2 text-sm'
+const INPUT = 'w-full rounded-md border px-3 py-2 text-sm'
 
 const toIls = (agorot: number | null | undefined) =>
   agorot === null || agorot === undefined ? '' : String(agorot / 100)
@@ -112,12 +112,12 @@ export default function BundleForm({
       <input type="hidden" name="items_json" value={JSON.stringify(rows)} />
 
       {state.error && (
-        <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-800">
+        <p role="alert" className="rounded-md bg-red-50 p-3 text-sm text-red-800">
           {state.error}
         </p>
       )}
       {state.ok && (
-        <output className="block rounded-lg bg-green-50 p-3 text-sm text-green-800">
+        <output className="block rounded-md bg-green-50 p-3 text-sm text-green-800">
           החבילה נשמרה.
         </output>
       )}
@@ -195,7 +195,7 @@ export default function BundleForm({
         </Field>
       </div>
 
-      <fieldset className="space-y-3 rounded-lg border p-4">
+      <fieldset className="space-y-3 rounded-md border p-4">
         <legend className="px-1 text-sm font-medium">המוצרים בחבילה</legend>
 
         {rows.length === 0 ? (
@@ -225,7 +225,7 @@ export default function BundleForm({
                     max={99}
                     value={row.quantity}
                     onChange={(e) => setQuantity(row.product_id, Number(e.target.value))}
-                    className="w-20 rounded-lg border px-2 py-1 text-sm"
+                    className="w-20 rounded-md border px-2 py-1 text-sm"
                     dir="ltr"
                   />
                   <button
@@ -297,7 +297,7 @@ export default function BundleForm({
       <button
         type="submit"
         disabled={pending || rows.length === 0}
-        className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+        className="rounded-md bg-black px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
       >
         {pending ? 'שומר...' : 'שמירה'}
       </button>

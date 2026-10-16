@@ -36,7 +36,7 @@ export default function ReferralQueueRow({
 
   if (done) {
     return (
-      <li className="rounded-lg border bg-gray-50 p-4 text-sm text-gray-600">
+      <li className="rounded-md border bg-gray-50 p-4 text-sm text-gray-600">
         {referredEmail} — {done === 'approved' ? 'אושר ושולם' : 'נדחה'}
       </li>
     )
@@ -51,7 +51,7 @@ export default function ReferralQueueRow({
     })
 
   return (
-    <li className="space-y-3 rounded-lg border p-4">
+    <li className="space-y-3 rounded-md border p-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="space-y-1 text-sm">
           <p>

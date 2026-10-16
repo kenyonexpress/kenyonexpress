@@ -81,9 +81,9 @@ const KIND_LABEL: Record<BulkOperationKind, string> = {
 }
 
 const input =
-  'rounded-lg border border-black/10 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand'
+  'rounded-md border border-black/10 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand'
 const btn =
-  'inline-flex items-center gap-2 rounded-lg border border-black/10 px-4 py-2 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50'
+  'inline-flex items-center gap-2 rounded-md border border-black/10 px-4 py-2 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50'
 const btnPrimary = `${btn} bg-brand text-brand-dark hover:bg-brand-primary-hover`
 const btnGhost = `${btn} bg-white text-gray-700 hover:bg-gray-50`
 
@@ -387,7 +387,7 @@ export default function ProductBulkEditClient({ categories, hidePricing, r2Confi
               key={k}
               type="button"
               onClick={() => edit(setKind)(k)}
-              className={`rounded-lg px-3 py-2 text-xs font-medium transition-colors ${
+              className={`rounded-md px-3 py-2 text-xs font-medium transition-colors ${
                 kind === k
                   ? 'bg-brand-primary text-ink'
                   : 'border border-black/10 text-black/60 hover:bg-brand-primary/30 hover:text-ink'
@@ -548,7 +548,7 @@ export default function ProductBulkEditClient({ categories, hidePricing, r2Confi
               לעומת - לא משנים.
             </p>
             {!r2Configured ? (
-              <p className="w-full rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">
+              <p className="w-full rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-800">
                 אחסון R2 לא מוגדר בסביבה הזו; הבדיקה תיכשל עד שיוגדרו R2_ACCOUNT_ID,
                 R2_ACCESS_KEY_ID ו-R2_SECRET_ACCESS_KEY.
               </p>
@@ -651,12 +651,12 @@ export default function ProductBulkEditClient({ categories, hidePricing, r2Confi
             {preview.summary.r2Keys !== undefined ? ` · ${preview.summary.r2Keys} קבצים ב-R2` : ''}
           </p>
           {preview.summary.scopeTruncated ? (
-            <p className="mb-3 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">
+            <p className="mb-3 rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-800">
               הסינון תפס יותר מדי מוצרים ורק הראשונים נבדקו; יש לצמצם את הסינון.
             </p>
           ) : null}
           {preview.summary.r2Truncated ? (
-            <p className="mb-3 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">
+            <p className="mb-3 rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-800">
               בתיקייה ב-R2 יש יותר קבצים ממה שנקרא; יש להזין קידומת מצומצמת יותר.
             </p>
           ) : null}

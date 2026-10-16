@@ -90,7 +90,7 @@ export default async function ConsentSettings() {
         <div>
           <button
             type="submit"
-            className="min-h-11 rounded-lg bg-brand-primary px-4 py-2 text-sm font-bold text-heading transition-opacity hover:opacity-90"
+            className="min-h-11 rounded-md bg-brand-primary px-4 py-2 text-sm font-bold text-heading transition-opacity hover:opacity-90"
           >
             שמירת הבחירה
           </button>
@@ -102,7 +102,7 @@ export default async function ConsentSettings() {
           <input type="hidden" name="decision" value="denied" />
           <button
             type="submit"
-            className="min-h-11 rounded-lg border border-black/15 px-4 py-2 text-sm font-medium text-black/70 transition-colors hover:bg-black/[0.04]"
+            className="min-h-11 rounded-md border border-black/15 px-4 py-2 text-sm font-medium text-black/70 transition-colors hover:bg-black/[0.04]"
           >
             ביטול ההסכמה כולה
           </button>

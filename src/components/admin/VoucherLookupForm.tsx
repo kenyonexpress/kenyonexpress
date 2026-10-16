@@ -36,7 +36,7 @@ export default function VoucherLookupForm({ canRedeem }: { canRedeem: boolean })
           name="code"
           dir="ltr"
           autoComplete="off"
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+          className="w-full rounded-md border border-gray-300 px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-brand"
         />
         {lookup && 'error' in lookup ? (
           <p className="text-sm text-red-600">{lookup.error}</p>
@@ -44,7 +44,7 @@ export default function VoucherLookupForm({ canRedeem }: { canRedeem: boolean })
         <button
           type="submit"
           disabled={lookupPending}
-          className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-dark hover:bg-brand-primary-hover disabled:opacity-60"
+          className="rounded-md bg-brand px-4 py-2 text-sm font-semibold text-brand-dark hover:bg-brand-primary-hover disabled:opacity-60"
         >
           {lookupPending ? 'בודק...' : 'איתור'}
         </button>
@@ -93,7 +93,7 @@ export default function VoucherLookupForm({ canRedeem }: { canRedeem: boolean })
                 name="reason"
                 required
                 minLength={3}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
               />
               {redeem && 'error' in redeem ? (
                 <p className="text-sm text-red-600">{redeem.error}</p>
@@ -104,7 +104,7 @@ export default function VoucherLookupForm({ canRedeem }: { canRedeem: boolean })
               <button
                 type="submit"
                 disabled={redeemPending}
-                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-60"
+                className="rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-60"
               >
                 {redeemPending ? 'ממש...' : 'מימוש ידני'}
               </button>

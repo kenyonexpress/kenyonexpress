@@ -38,7 +38,7 @@ import Link from 'next/link'
  *              every add. Product name and photograph still link to the page.
  *   corners    the card and the photograph were `rounded-lg`, this theme's
  *              25px MODAL radius (UX07 found the same on the category tiles).
- *              Now `rounded-elevated`, 12px.
+ *              Now `rounded-md`, 12px.
  *
  * Money is integer agorot end to end: the two prices come off the `_agorot`
  * columns and are formatted by `shekels`; the percentage is basis points from
@@ -74,7 +74,7 @@ export default async function DealOfTheDay() {
     >
       <div
         data-deal-of-the-day
-        className="flex flex-col gap-4 rounded-elevated border border-border bg-white p-4 md:flex-row md:items-center md:gap-8"
+        className="flex flex-col gap-4 rounded-md border border-border bg-white p-4 md:flex-row md:items-center md:gap-8"
       >
         <div className="flex min-w-0 flex-1 flex-col gap-3">
           {/* Electro's header: the title with the countdown pill 30px after it
@@ -127,7 +127,7 @@ export default async function DealOfTheDay() {
           href={href}
           prefetch={false}
           aria-label={`${deal.nameHe} - לעמוד המוצר`}
-          className="relative block aspect-square w-full shrink-0 overflow-hidden rounded-elevated bg-surface md:w-64"
+          className="relative block aspect-square w-full shrink-0 overflow-hidden rounded-md bg-surface md:w-64"
         >
           <SmartImage
             src={deal.imageUrl}

@@ -14,10 +14,10 @@ const EMPTY_BALANCE: GiftCardBalanceState = { ok: false }
 const EMPTY_REDEEM: GiftCardRedeemState = { ok: false }
 
 const fieldClass =
-  'w-full min-h-11 rounded-lg border border-border bg-white px-3 py-2 text-sm text-heading focus:outline-none focus:ring-2 focus:ring-brand-primary/40'
+  'w-full min-h-11 rounded-md border border-border bg-white px-3 py-2 text-sm text-heading focus:outline-none focus:ring-2 focus:ring-brand-primary/40'
 
 const buttonClass =
-  'min-h-11 rounded-lg bg-brand-primary px-4 text-sm font-semibold text-heading disabled:opacity-60'
+  'min-h-11 rounded-md bg-brand-primary px-4 text-sm font-semibold text-heading disabled:opacity-60'
 
 function formatIls(agorot: number): string {
   return `₪${(agorot / 100).toLocaleString('he-IL', {
@@ -44,7 +44,7 @@ function BalanceResult({ state }: { state: GiftCardBalanceState }) {
       })
     : null
   return (
-    <output className="mt-4 block rounded-lg border border-border bg-white p-4 text-sm">
+    <output className="mt-4 block rounded-md border border-border bg-white p-4 text-sm">
       <p className="font-semibold text-heading">מצב הכרטיס: {label}</p>
       <p className="mt-1 text-heading">
         יתרה: <span className="font-bold">{formatIls(state.balanceAgorot ?? 0)}</span>
@@ -72,7 +72,7 @@ export default function GiftCardRedeemForm({ signedIn }: { signedIn: boolean }) 
 
   if (redeem.ok) {
     return (
-      <output className="block max-w-lg rounded-lg border border-border bg-white p-6">
+      <output className="block max-w-lg rounded-md border border-border bg-white p-6">
         <p className="text-lg font-bold text-heading">
           הקוד מומש! {formatIls(redeem.creditedAgorot ?? 0)} נטענו לארנק שלך.
         </p>
@@ -132,7 +132,7 @@ export default function GiftCardRedeemForm({ signedIn }: { signedIn: boolean }) 
             type="submit"
             formAction={balanceAction}
             disabled={pending}
-            className="min-h-11 rounded-lg border border-border bg-white px-4 text-sm font-semibold text-heading disabled:opacity-60"
+            className="min-h-11 rounded-md border border-border bg-white px-4 text-sm font-semibold text-heading disabled:opacity-60"
           >
             {balancePending ? 'בודק...' : 'בדיקת יתרה'}
           </button>

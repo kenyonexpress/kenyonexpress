@@ -169,12 +169,12 @@ export default function ImageUploader({
                 src={url}
                 alt="תמונת מוצר"
                 fill
-                className="object-cover rounded-lg border border-gray-200"
+                className="object-cover rounded-md border border-gray-200"
               />
               <button
                 type="button"
                 onClick={() => onChange(value.filter((u) => u !== url))}
-                className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-md opacity-0 group-hover:opacity-100 transition-opacity"
                 aria-label="מחיקת תמונה"
               >
                 <Trash2 size={16} className="text-white" />
@@ -185,7 +185,7 @@ export default function ImageUploader({
       )}
 
       {staged.length > 0 && (
-        <div className="space-y-2 border border-gray-200 rounded-lg p-3 bg-gray-50">
+        <div className="space-y-2 border border-gray-200 rounded-md p-3 bg-gray-50">
           <p className="text-xs font-medium text-gray-600">
             לפני ההעלאה: טקסט חלופי בעברית לכל תמונה (נדרש לנגישות ולקידום). ההצעה נגזרת מהשם שהוזן
             בטופס, וכדאי לתאר מה רואים בתמונה.
@@ -204,7 +204,7 @@ export default function ImageUploader({
                   onChange={(e) => setAlt(s.key, e.target.value)}
                   placeholder="טקסט חלופי בעברית, למשל: אוזניות אלחוטיות שחורות"
                   aria-label={`טקסט חלופי עבור ${s.file.name}`}
-                  className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand ${
+                  className={`w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand ${
                     s.alt && !isValidHebrewAlt(s.alt) ? 'border-red-400' : 'border-gray-300'
                   }`}
                 />
@@ -228,7 +228,7 @@ export default function ImageUploader({
             type="button"
             onClick={() => void uploadStaged()}
             disabled={!allAltsValid || uploading}
-            className="inline-flex items-center gap-2 bg-brand hover:bg-brand-primary-hover disabled:opacity-50 text-brand-dark font-semibold rounded-lg px-4 py-2 text-sm transition-colors"
+            className="inline-flex items-center gap-2 bg-brand hover:bg-brand-primary-hover disabled:opacity-50 text-brand-dark font-semibold rounded-md px-4 py-2 text-sm transition-colors"
           >
             <Upload size={14} />
             {uploading ? 'מעבד ומעלה...' : `העלאת ${staged.length} תמונות`}
@@ -246,7 +246,7 @@ export default function ImageUploader({
           onDrop={onDrop}
           disabled={uploading}
           aria-label="גרירת תמונות לכאן או לחיצה לבחירה"
-          className={`flex w-full flex-col items-center gap-2 px-4 py-6 border-2 border-dashed rounded-lg text-sm transition-colors disabled:opacity-60 ${
+          className={`flex w-full flex-col items-center gap-2 px-4 py-6 border-2 border-dashed rounded-md text-sm transition-colors disabled:opacity-60 ${
             isDragging
               ? 'border-brand bg-brand/5 text-brand'
               : 'border-gray-300 text-gray-500 hover:border-brand hover:text-brand'

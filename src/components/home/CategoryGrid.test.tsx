@@ -15,7 +15,7 @@ vi.mock('@/lib/homepage/below-fold', () => ({
  * build of HEAD at 380 / 768 / 1440 (logs/ux07/before.json) and changed:
  *
  *   corner   `rounded-lg` resolved to --radius-lg, the 25px modal corner;
- *            now `rounded-elevated` (12px, ELECTRO.radius.elevated)
+ *            now `rounded-md` (12px, ELECTRO.radius.elevated)
  *   hover    Tailwind's stock `shadow-md`, a value tokens.css forbids;
  *            now `shadow-card-hover`, the one Electro hover shadow
  *   zoom     the photograph scales 5% on hover inside a box clipped at the
@@ -42,7 +42,7 @@ describe('CategoryGrid', () => {
     const cards = html.match(/<a [^>]*data-category-tile="[^"]*"[^>]*>/g) ?? []
     expect(cards).toHaveLength(2)
     for (const card of cards) {
-      expect(card).toMatch(/\brounded-elevated\b/)
+      expect(card).toMatch(/\brounded-md\b/)
       expect(card).toMatch(/\bhover:shadow-card-hover\b/)
       expect(card).toMatch(/\btransition-shadow\b/)
       expect(card).not.toMatch(/\bshadow-(sm|md|lg|xl)\b/)
@@ -53,7 +53,7 @@ describe('CategoryGrid', () => {
     expect(boxes).toHaveLength(2)
     for (const box of boxes) {
       expect(box).toMatch(/\boverflow-hidden\b/)
-      expect(box).toMatch(/\brounded-elevated\b/)
+      expect(box).toMatch(/\brounded-md\b/)
     }
     const imgs = html.match(/<img [^>]*>/g) ?? []
     expect(imgs).toHaveLength(2)

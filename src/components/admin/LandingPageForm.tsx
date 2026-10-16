@@ -7,7 +7,7 @@ import { type LandingActionState, saveLandingPage } from '@/server/actions/admin
 import { useActionState } from 'react'
 
 const EMPTY: LandingActionState = { ok: false }
-const INPUT = 'w-full rounded-lg border px-3 py-2 text-sm'
+const INPUT = 'w-full rounded-md border px-3 py-2 text-sm'
 
 /** timestamptz to the value a datetime-local input accepts. */
 const toLocal = (iso: string | null | undefined) => (iso ? iso.slice(0, 16) : '')
@@ -127,12 +127,12 @@ export default function LandingPageForm({ initial }: { initial?: LandingPage }) 
       {isRow && <input type="hidden" name="id" value={initial.id} />}
 
       {state.error && (
-        <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-800">
+        <p role="alert" className="rounded-md bg-red-50 p-3 text-sm text-red-800">
           {state.error}
         </p>
       )}
       {state.ok && (
-        <output className="block rounded-lg bg-green-50 p-3 text-sm text-green-800">
+        <output className="block rounded-md bg-green-50 p-3 text-sm text-green-800">
           הדף נשמר.{' '}
           {slugForPreview && (
             <a
@@ -147,7 +147,7 @@ export default function LandingPageForm({ initial }: { initial?: LandingPage }) 
         </output>
       )}
       {initial && !isRow && (
-        <p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-900">
+        <p className="rounded-md bg-amber-50 p-3 text-sm text-amber-900">
           זהו דף מובנה בקוד (מיגרציה 262 עוד לא הוחלה). שמירה תיצור שורה חדשה באותה כתובת כשהטבלה
           תהיה קיימת.
         </p>
@@ -347,7 +347,7 @@ export default function LandingPageForm({ initial }: { initial?: LandingPage }) 
       <button
         type="submit"
         disabled={pending}
-        className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+        className="rounded-md bg-black px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
       >
         {pending ? 'שומר…' : 'שמירה'}
       </button>

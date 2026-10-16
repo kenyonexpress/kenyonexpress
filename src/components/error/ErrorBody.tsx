@@ -225,7 +225,7 @@ export default function ErrorBody({ error, reset, segment }: Props) {
         <div
           data-error-status
           data-state={health}
-          className="mt-6 flex w-full max-w-md flex-col items-center gap-1 rounded-elevated border border-border bg-surface px-4 py-3 text-sm text-heading"
+          className="mt-6 flex w-full max-w-md flex-col items-center gap-1 rounded-md border border-border bg-surface px-4 py-3 text-sm text-heading"
         >
           {/* <output>, not a <p role="status">: the same implicit role, as the
               cart line and the contact form do it. */}

@@ -92,7 +92,7 @@ describe('DealOfTheDay (UX08)', () => {
       expect(badge.classList.contains(cls), cls).toBe(true)
     // The picture box clips it to the same 12px corner it has itself.
     expect(picture.classList.contains('overflow-hidden')).toBe(true)
-    expect(picture.classList.contains('rounded-elevated')).toBe(true)
+    expect(picture.classList.contains('rounded-md')).toBe(true)
     // Spoken, not seen: the percentage stays in the price row for a screen reader.
     const sr = [...root.querySelectorAll('.sr-only')].map((el) => el.textContent)
     expect(sr).toContain('50% הנחה')
@@ -157,7 +157,7 @@ describe('DealOfTheDay (UX08)', () => {
   it('wears the 12px elevated corner, not the 25px modal radius, on the card and the photograph', async () => {
     const root = await dom(DEAL)
     const card = root.querySelector('[data-deal-of-the-day]') as HTMLElement
-    expect(card.classList.contains('rounded-elevated')).toBe(true)
+    expect(card.classList.contains('rounded-md')).toBe(true)
     expect(root.innerHTML).not.toMatch(/rounded-lg/)
   })
 
