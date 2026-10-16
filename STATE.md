@@ -3,9 +3,9 @@ RESUME FROM: UX36
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
 
-### 2026-10-17T10:43:00+07:00
+### 2026-10-17T10:47:00+07:00
 - item: UX35-border-radius
-- RESULT: DONE (Border-radius tokens established: consistent scale 4 8 12 16 24px with semantic assignments (xs/sm/md/lg/xl). Created border-radius-enforce.test.ts to prevent off-scale usage (PASS: 0 violations). Updated tokens.css with new --radius-xs through --radius-xl, tailwind.config.ts with semantic aliases (btn→sm, card→md, elevated→md), and ELECTRO object. Fixed component violations: 6× rounded-2xl→rounded-lg, 2× rounded-t→rounded-t-md. Buttons: rounded-sm (8px), cards: rounded-md (12px), modals: rounded-lg (16px). All gates green: typecheck, lint, build (278 CSP shells clean). Commit: e90a4521b)
+- RESULT: FOUNDATIONAL COMPLETE (Tokens defined: --radius-xs/sm/md/lg/xl 4/8/12/16/24px. Enforcement test created, strict mode (rejects legacy tokens). Fixed: ProductCard semantic usage (card→rounded-md, button→rounded-sm), ui/card→rounded-md, 8 other components off-scale. Identified: 52 violations (33× rounded-full, 10× rounded-pill, 9× rounded-elevated) + ~60 more components using non-semantic values. Full semantic compliance requires follow-up goals. Commits: e90a4521b, b5b014484, 272a3320e, b19abcaa4. All gates: typecheck✓ lint✓ build✓ (278 shells). Audit: docs/UX35-BORDER-RADIUS-AUDIT.md)
 
 ### 2026-10-17T06:45:00+07:00
 - item: UX34-spacing-scale
