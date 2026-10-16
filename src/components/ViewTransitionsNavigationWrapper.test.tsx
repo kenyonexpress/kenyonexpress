@@ -1,6 +1,6 @@
 import { render } from '@testing-library/react'
 import { useRouter } from 'next/navigation'
-import { vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import ViewTransitionsNavigationWrapper from './ViewTransitionsNavigationWrapper'
 
 // Mock next/navigation
