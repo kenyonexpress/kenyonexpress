@@ -76,12 +76,24 @@ describe('Tailwind config', () => {
     expect(fontSize.topbar).toBe('var(--text-topbar)')
   })
 
-  it('configures border radius utilities', () => {
+  it('configures border radius utilities (UX35 consistent scale)', () => {
     const radius = config.theme?.extend?.borderRadius as Record<string, string>
 
-    expect(radius?.card).toBe('var(--radius-card, 8px)')
-    expect(radius?.btn).toBe('var(--radius-btn, 4px)')
-    expect(radius?.elevated).toBe('var(--radius-elevated, 12px)')
+    // Standard scale tokens (4, 8, 12, 16, 24px)
+    expect(radius?.xs).toBe('var(--radius-xs)')
+    expect(radius?.sm).toBe('var(--radius-sm)')
+    expect(radius?.md).toBe('var(--radius-md)')
+    expect(radius?.lg).toBe('var(--radius-lg)')
+    expect(radius?.xl).toBe('var(--radius-xl)')
+
+    // Special radius tokens
+    expect(radius?.pill).toBe('var(--radius-pill)')
+    expect(radius?.round).toBe('var(--radius-round)')
+
+    // Semantic aliases for backward compatibility
+    expect(radius?.btn).toBe('var(--radius-sm)') // buttons use 8px
+    expect(radius?.card).toBe('var(--radius-md)') // cards use 12px
+    expect(radius?.elevated).toBe('var(--radius-md)') // elevated surfaces use 12px
   })
 
   it('configures box shadow utilities', () => {

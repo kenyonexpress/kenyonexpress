@@ -154,7 +154,7 @@ export default function InstallPrompt() {
       style={{
         insetBlockEnd: 'calc(0.75rem + var(--reserve-consent) + env(safe-area-inset-bottom, 0px))',
       }}
-      className="fixed inset-x-3 z-40 flex items-center gap-3 rounded-2xl border border-gray-200 bg-white p-3 shadow-lg sm:inset-x-auto sm:end-4 sm:max-w-sm"
+      className="fixed inset-x-3 z-40 flex items-center gap-3 rounded-lg border border-gray-200 bg-white p-3 shadow-lg sm:inset-x-auto sm:end-4 sm:max-w-sm"
     >
       <img src="/icons/icon-192.png" alt="" width={40} height={40} className="rounded-xl" />
       <div className="min-w-0 flex-1">

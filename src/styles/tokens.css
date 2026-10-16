@@ -569,24 +569,29 @@
   --color-overlay-ink: rgba(0, 0, 0, 0.7);
   --shadow-consent-banner: 0 -4px 16px rgba(0, 0, 0, 0.08);
 
-  /* --- Radii (measured off refs/ke_live_computed.json) -----------------------
-     Counted across all seven templates at all three widths. The live site is
-     overwhelmingly square: 11863 elements carry `border-radius: 0px` against
-     519 that carry anything at all. These five are every rounded value that
-     appears more than ten times, so a component that needs a corner has a
-     token for it and does not invent a sixth. */
-  --radius-none: 0px; /* the default on live, stated so it can be named */
-  --radius-sm: 4px; /* 127 elements: buttons, inputs, small chips */
-  --radius-md: 7px; /* 28 elements: cards, dropdown panels */
-  --radius-lg: 25px; /* 14 elements: modal + large panel corners */
-  /* NOT off live: the category tile grid under the deals (CategoryGrid) sits
-     below the 2600px the gate scores and live has no such row, so there is
-     nothing to measure. 12px is Electro's elevated-card corner
-     (ELECTRO.radius.elevated in tokens.ts); it was `rounded-lg`, i.e. the
-     25px modal corner above, until UX07 (14.10.2026). */
-  --radius-elevated: 12px;
-  --radius-pill: 22px; /* 188 elements: the search/newsletter pill and tags */
-  --radius-round: 200px; /* 96 elements: avatars and icon buttons */
+  /* --- Radii (UX35: consistent scale 4 8 12 16 24) ---------------------------
+     Standardized border-radius scale for consistency across all components:
+     - 4px (--radius-xs): smallest corners, minimal rounding
+     - 8px (--radius-sm): buttons, form inputs, small interactive elements
+     - 12px (--radius-md): cards, elevated surfaces, component containers
+     - 16px (--radius-lg): modals, large dialogs, prominent panels
+     - 24px (--radius-xl): extra large radius for special components
+
+     Semantic tokens (named by use case):
+     - pill: 22px (search bar, badges, tags) - kept from live's 188 elements
+     - round: 200px (avatars, circular icons) - kept from live's 96 elements
+     - none: 0px (explicit no rounding, the default on live) */
+  --radius-none: 0px;
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-pill: 22px;
+  --radius-round: 200px;
+
+  /* Legacy aliases for backward compatibility (mapped to new scale) */
+  --radius-elevated: 12px; /* maps to --radius-md */
 
   /* --- Spacing scale (measured) ---------------------------------------------
      The live site's real rhythm, by frequency of every non-zero padding across

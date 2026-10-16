@@ -67,7 +67,7 @@ export default function PostPurchasePushPrompt() {
     <section
       dir="rtl"
       aria-label="הצעה להפעלת התראות"
-      className="mx-auto mt-6 flex max-w-xl items-center gap-3 rounded-2xl border border-gray-200 bg-white p-4 text-start"
+      className="mx-auto mt-6 flex max-w-xl items-center gap-3 rounded-lg border border-gray-200 bg-white p-4 text-start"
     >
       <span aria-hidden="true" className="text-2xl">
         🔔

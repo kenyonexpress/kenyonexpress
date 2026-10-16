@@ -43,7 +43,7 @@ function LandingBlockView({ block, campaign }: { block: LandingBlock; campaign: 
       return (
         <section
           data-block="hero"
-          className="grid items-center gap-6 rounded-2xl border border-heading/10 bg-brand-accent/40 p-6 sm:p-6 md:grid-cols-[3fr_2fr]"
+          className="grid items-center gap-6 rounded-lg border border-heading/10 bg-brand-accent/40 p-6 sm:p-6 md:grid-cols-[3fr_2fr]"
         >
           <div>
             <h1 className="text-3xl font-bold leading-tight text-heading sm:text-4xl">

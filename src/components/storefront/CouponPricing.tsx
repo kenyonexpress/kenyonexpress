@@ -104,7 +104,7 @@ export function CouponTerms({
   return (
     <section
       aria-label="תנאי מימוש ותוקף"
-      className="rounded-2xl border border-border bg-white p-4 lg:p-6"
+      className="rounded-lg border border-border bg-white p-4 lg:p-6"
     >
       <h2 className="text-base font-bold text-heading">תנאי מימוש ותוקף</h2>
 

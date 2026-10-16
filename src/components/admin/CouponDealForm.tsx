@@ -376,7 +376,7 @@ function CouponPreviewCard({
   return (
     <div
       dir="rtl"
-      className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm max-w-xs"
+      className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm max-w-xs"
     >
       <div className="relative h-40 bg-gray-100">
         {imageUrl ? (

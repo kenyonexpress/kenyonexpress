@@ -57,10 +57,10 @@ export default function BarSeries({
           <div
             key={point.key}
             title={`${point.label}: ${formatValue(point.value)}`}
-            className="flex h-full flex-1 flex-col justify-end rounded-t bg-track"
+            className="flex h-full flex-1 flex-col justify-end rounded-t-md bg-track"
           >
             <div
-              className="w-full rounded-t bg-heading/80"
+              className="w-full rounded-t-md bg-heading/80"
               style={{
                 height:
                   max > 0
