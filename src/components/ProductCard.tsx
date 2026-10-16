@@ -243,7 +243,7 @@ function DefaultProductCard({ product }: { product: Product }) {
   const canAdd = product.kenyon_price != null && !outOfStock
 
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-100 bg-white">
+    <div className="product-card overflow-hidden rounded-xl border border-gray-100 bg-white">
       <div className="space-y-2 p-3">
         {product.category && (
           <Link

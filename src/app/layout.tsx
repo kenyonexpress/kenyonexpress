@@ -1,3 +1,4 @@
+import ScrollRestoration from '@/components/ScrollRestoration'
 import AnalyticsProvider from '@/components/analytics/AnalyticsProvider'
 import ConsentBanner from '@/components/analytics/ConsentBanner'
 import ThirdPartyTags from '@/components/analytics/ThirdPartyTags'
@@ -34,6 +35,7 @@ import '@/styles/mini-cart.css'
 import '@/styles/cart-page.css'
 import '@/styles/home-handheld.css'
 import '@/styles/product-card-deals.css'
+import '@/styles/micro-interactions.css'
 
 const heebo = Heebo({
   variable: '--font-heebo',
@@ -210,6 +212,7 @@ export default function RootLayout({
           reports nothing.
         */}
         <ThirdPartyTags config={validatedConfig(readThirdPartyConfig())} />
+        <ScrollRestoration />
         {/*
           Vercel's own two. First-party by design - they are served from this
           origin through Vercel's rewrite, so no third-party request leaves the

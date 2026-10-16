@@ -1,0 +1,55 @@
+/**
+ * Micro-interactions: smooth scroll, view transitions, hover effects.
+ */
+
+/* Smooth scroll behavior for anchor links */
+html {
+  scroll-behavior: smooth;
+}
+
+/* View Transitions API: enable for page navigation when supported */
+@supports (view-transition-name: auto) {
+  ::view-transition {
+    animation-duration: 0.3s;
+    animation-timing-function: ease-out;
+  }
+
+  ::view-transition-group(*) {
+    animation-duration: 0.3s;
+  }
+
+  ::view-transition-new(*) {
+    animation-name: view-transition-fade-in;
+    animation-duration: 0.3s;
+    animation-timing-function: ease-out;
+  }
+
+  @keyframes view-transition-fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+/* Product card hover effect: scale 1.02 with 200ms ease-out */
+.product-card {
+  transition: transform 200ms ease-out, box-shadow 200ms ease-out;
+}
+
+.product-card:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Prevent scale on skeletons and disabled states */
+.category-card--skeleton,
+.product-card--skeleton,
+[aria-hidden="true"] {
+  transform: none !important;
+  pointer-events: none;
+}

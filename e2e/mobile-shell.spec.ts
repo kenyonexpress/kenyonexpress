@@ -122,4 +122,114 @@ test.describe('Mobile Shell', () => {
       expect(classes).toContain('md:hidden')
     })
   })
+
+  test.describe('Desktop Hiding - Computed Display Values', () => {
+    test('MobileNavBar not displayed at 768px (computed)', async ({ page }) => {
+      await page.setViewportSize({ width: 768, height: 1024 })
+      const navBar = page.locator('[data-mobile-nav]')
+      const display = await navBar.evaluate((el) => {
+        return window.getComputedStyle(el).display
+      })
+      expect(display).toBe('none')
+    })
+
+    test('MobileNavBar not displayed at 1440px (computed)', async ({ page }) => {
+      await page.setViewportSize({ width: 1440, height: 900 })
+      const navBar = page.locator('[data-mobile-nav]')
+      const display = await navBar.evaluate((el) => {
+        return window.getComputedStyle(el).display
+      })
+      expect(display).toBe('none')
+    })
+
+    test('SwipeableGallery not displayed at 768px (computed)', async ({ page }) => {
+      await page.goto('/product/e2e-test-physical')
+      await page.setViewportSize({ width: 768, height: 1024 })
+      const gallery = page.locator('[data-swipeable-gallery]').first()
+      const display = await gallery.evaluate((el) => {
+        return window.getComputedStyle(el).display
+      })
+      expect(display).toBe('none')
+    })
+
+    test('SwipeableGallery not displayed at 1440px (computed)', async ({ page }) => {
+      await page.goto('/product/e2e-test-physical')
+      await page.setViewportSize({ width: 1440, height: 900 })
+      const gallery = page.locator('[data-swipeable-gallery]').first()
+      const display = await gallery.evaluate((el) => {
+        return window.getComputedStyle(el).display
+      })
+      expect(display).toBe('none')
+    })
+
+    test('StickyCartBar not displayed at 768px (computed)', async ({ page }) => {
+      await page.goto('/product/e2e-test-physical')
+      await page.setViewportSize({ width: 768, height: 1024 })
+      const cartBar = page.locator('[data-sticky-cart-bar]')
+      const display = await cartBar.evaluate((el) => {
+        return window.getComputedStyle(el).display
+      })
+      expect(display).toBe('none')
+    })
+
+    test('StickyCartBar not displayed at 1440px (computed)', async ({ page }) => {
+      await page.goto('/product/e2e-test-physical')
+      await page.setViewportSize({ width: 1440, height: 900 })
+      const cartBar = page.locator('[data-sticky-cart-bar]')
+      const display = await cartBar.evaluate((el) => {
+        return window.getComputedStyle(el).display
+      })
+      expect(display).toBe('none')
+    })
+  })
+
+  test.describe('StickyCartBar Interaction', () => {
+    test('sticky cart bar button is enabled and clickable', async ({ page }) => {
+      await page.setViewportSize({ width: 375, height: 667 })
+      await page.goto('/product/e2e-test-physical')
+
+      const cartBar = page.locator('[data-sticky-cart-bar]')
+      await expect(cartBar).toBeVisible()
+
+      const button = cartBar.locator('button')
+      await expect(button).toBeEnabled()
+
+      // Dismiss consent banner if present to unblock clicks
+      const consentBanner = page.locator('[data-consent-banner]')
+      const bannerVisible = await consentBanner.isVisible().catch(() => false)
+      if (bannerVisible) {
+        const acceptButton = consentBanner.locator('button:first-child')
+        if (await acceptButton.isVisible().catch(() => false)) {
+          await acceptButton.click()
+          await page.waitForTimeout(200)
+        }
+      }
+
+      // Now click the sticky cart bar button
+      await button.click()
+
+      // Wait a brief moment for action to process
+      await page.waitForTimeout(300)
+
+      // Verify button is still enabled after click
+      await expect(button).toBeEnabled()
+
+      // Verify the sticky cart bar is still visible
+      await expect(cartBar).toBeVisible()
+    })
+
+    test('sticky cart bar displays correct price format', async ({ page }) => {
+      await page.setViewportSize({ width: 375, height: 667 })
+      await page.goto('/product/e2e-test-physical')
+
+      const cartBar = page.locator('[data-sticky-cart-bar]')
+      const priceText = await cartBar.textContent()
+
+      // Price should contain shekel symbol
+      expect(priceText).toContain('₪')
+
+      // Should have Hebrew button text
+      expect(priceText).toContain('הוסף לעגלה')
+    })
+  })
 })
