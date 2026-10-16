@@ -37,6 +37,11 @@ import Link from 'next/link'
 const THUMB_MAX_PX = 186
 const THUMB_SIZES = `(max-width: 497px) calc(50vw - 63px), ${THUMB_MAX_PX}px`
 
+export type GalleryAsset = {
+  alt: string | null
+  blurDataURL: string | null
+}
+
 export type CategoryProduct = {
   id: string
   slug: string
@@ -53,6 +58,8 @@ export type CategoryProduct = {
   longitude?: number | null
   /** Set by sortByDistance when the customer asked for "near me". */
   distanceKm?: number | null
+  /** Gallery assets (blur placeholders + alts) keyed by image URL. Optional. */
+  assets?: Record<string, GalleryAsset>
 }
 
 function formatPrice(value: number): string {
@@ -84,6 +91,8 @@ export default function CategoryProductCard({ product }: { product: CategoryProd
     Array.isArray(product.images) && typeof product.images[0] === 'string'
       ? (product.images[0] as string)
       : null
+
+  const asset = thumb && product.assets ? product.assets[thumb] : null
 
   const price = product.kenyon_price != null ? Number(product.kenyon_price) : null
   const old = product.full_price != null ? Number(product.full_price) : null
@@ -152,11 +161,14 @@ export default function CategoryProductCard({ product }: { product: CategoryProd
               // that takes its height from the image drops to 0.
               <Image
                 src={thumb}
-                alt={product.name_he}
+                alt={asset?.alt ?? product.name_he}
                 width={186}
                 height={186}
                 sizes={THUMB_SIZES}
                 loading="lazy"
+                {...(asset?.blurDataURL
+                  ? { placeholder: 'blur' as const, blurDataURL: asset.blurDataURL }
+                  : {})}
               />
             ) : null}
           </span>

@@ -6,6 +6,11 @@ import Image from 'next/image'
 import Link from 'next/link'
 // product-card-deals.css is imported by the root layout. See the note there.
 
+export type GalleryAsset = {
+  alt: string | null
+  blurDataURL: string | null
+}
+
 export type Product = {
   id: string
   slug: string
@@ -15,6 +20,8 @@ export type Product = {
   stock_quantity: number | null
   full_price?: number | null
   category?: { name_he: string; slug: string } | null
+  /** Gallery assets (blur placeholders + alts) keyed by image URL. Optional. */
+  assets?: Record<string, GalleryAsset>
 }
 
 /**
@@ -96,6 +103,8 @@ function DealsProductCard({ product }: { product: Product }) {
       ? (product.images[0] as string)
       : null
 
+  const asset = thumb && product.assets ? product.assets[thumb] : null
+
   const price = Number(product.kenyon_price ?? 0)
   const old = product.full_price != null ? Number(product.full_price) : null
   const hasDiscount = old != null && old > price
@@ -168,12 +177,15 @@ function DealsProductCard({ product }: { product: Product }) {
           {thumb ? (
             <Image
               src={thumb}
-              alt={product.name_he}
+              alt={asset?.alt ?? product.name_he}
               width={400}
               height={245}
               sizes={DEAL_IMAGE_SIZES}
               quality={50}
               className="p_con__image"
+              {...(asset?.blurDataURL
+                ? { placeholder: 'blur' as const, blurDataURL: asset.blurDataURL }
+                : {})}
             />
           ) : null}
         </Link>
@@ -236,6 +248,8 @@ function DefaultProductCard({ product }: { product: Product }) {
       ? (product.images[0] as string)
       : null
 
+  const asset = thumb && product.assets ? product.assets[thumb] : null
+
   const price = Number(product.kenyon_price ?? 0)
   const old = product.full_price != null ? Number(product.full_price) : null
   const hasDiscount = old != null && old > price
@@ -272,7 +286,7 @@ function DefaultProductCard({ product }: { product: Product }) {
           {thumb ? (
             <Image
               src={thumb}
-              alt={product.name_he}
+              alt={asset?.alt ?? product.name_he}
               fill
               /**
                * MEASURED, not declared. The only live consumer of this variant
@@ -301,6 +315,9 @@ function DefaultProductCard({ product }: { product: Product }) {
                */
               sizes="(max-width: 639px) calc(50vw - 47px), (max-width: 1023px) calc(33.33vw - 44px), 204px"
               className="object-cover"
+              {...(asset?.blurDataURL
+                ? { placeholder: 'blur' as const, blurDataURL: asset.blurDataURL }
+                : {})}
             />
           ) : (
             <span className="text-5xl">📦</span>

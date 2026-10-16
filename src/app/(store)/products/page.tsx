@@ -13,6 +13,7 @@ import {
   parseProductType,
 } from '@/lib/category-page'
 import { type SortValue, parseSort } from '@/lib/category-tokens'
+import { loadGalleryAssetsForProducts } from '@/lib/images/gallery-assets'
 import { Suspense } from 'react'
 import '@/styles/category-page.css'
 import { alternatesFor } from '@/lib/seo/alternates'
@@ -143,6 +144,7 @@ async function ResultGrid({
   linkParams: Record<string, string | undefined>
 }) {
   const { items, total } = await shopPageOrLast(args)
+  const assets = await loadGalleryAssetsForProducts(items)
 
   if (items.length === 0) {
     return (
@@ -159,7 +161,7 @@ async function ResultGrid({
       <ul className="category-products">
         {items.map((product) => (
           <li key={product.id} className="category-products__item">
-            <CategoryProductCard product={product as CategoryProduct} />
+            <CategoryProductCard product={{ ...(product as CategoryProduct), assets }} />
           </li>
         ))}
       </ul>

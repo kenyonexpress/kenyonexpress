@@ -53,7 +53,7 @@ export default function CategoryGridWithInfiniteScroll({
       const { items: nextItems } = (await response.json()) as { items: CategoryProduct[] }
       setItems((prevItems) => [...prevItems, ...nextItems])
       setPage(nextPage)
-    } catch (err) {
+    } catch (_err) {
       // Silently fail on pagination; server will retry on next scroll
     } finally {
       setIsLoading(false)
