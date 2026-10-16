@@ -2,6 +2,48 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## UX41 Mobile Bottom Nav Active State — ✅ COMPLETE
+
+**Goal:** Implement mobile bottom navigation with home, categories, search, cart, and account tabs with proper active state tracking.
+
+**Status: COMPLETE & VERIFIED**
+
+**Implementation:**
+- ✅ **Updated MobileNavBar component** (`src/components/mobile/MobileNavBar.tsx`):
+  - Replaced Wishlist tab with Cart tab (ShoppingCart icon from lucide-react)
+  - Improved active state detection: `/account` routes only activate account tab
+  - All 5 tabs: home (בית), categories (קטגוריות), search (חיפוש), cart (עגלה), account (חשבון)
+  - Proper styling: active tab gets `bg-brand` (yellow) + `text-gray-900`, inactive gets `hover:bg-gray-50`
+
+- ✅ **Comprehensive test coverage** (`src/components/mobile/MobileNavBar.test.tsx`):
+  - 9 tests covering all tabs and active state logic
+  - Tests verify: cart tab renders, cart route activates cart tab only
+  - Tests verify: account tab active only for /account/* routes
+  - Tests verify: active styling with `bg-brand` and hover effects
+  - All 9 tests passing
+
+**Verification:**
+- ✅ pnpm type-check: CLEAN
+- ✅ pnpm lint: CLEAN (5 pre-existing warnings, tokens/copy/asset gates passing)
+- ✅ pnpm build: Successful with cart route in sitemap
+- ✅ pnpm test: 5300 passing, 25 skipped, 0 failed
+- ✅ All gates: GREEN
+
+**Changed Files:**
+- src/components/mobile/MobileNavBar.tsx: Replaced Heart icon with ShoppingCart, updated navItems
+- src/components/mobile/MobileNavBar.test.tsx: Updated tests from wishlist to cart
+
+**Commit:** 3c35da9a1 - [autopilot] UX41: Mobile bottom nav with cart tab and active state tracking
+
+**Features:**
+- Fixed navigation tabs now include cart instead of wishlist
+- Active state properly tracks current page
+- Yellow background on active tab for clear visual feedback
+- RTL support for Hebrew language (all labels in Hebrew)
+- Responsive: hidden on desktop (md breakpoint), visible on mobile
+
+המשך מ: UX41 COMPLETE. Mobile bottom nav ready with cart tab and accurate active state tracking.
+
 ## UX40 Image Optimization with Blur Placeholders — ✅ COMPLETE
 
 **Goal:** Optimize all images with Next.js Image component, responsive sizes, and blur placeholders everywhere.
