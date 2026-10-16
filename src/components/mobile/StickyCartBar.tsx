@@ -29,7 +29,7 @@ export default function StickyCartBar({
         type="button"
         onClick={onAddToCart}
         disabled={isLoading}
-        className="flex-1 bg-brand hover:bg-brand/90 disabled:opacity-50 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors"
+        className="flex-1 bg-brand hover:bg-brand/90 disabled:opacity-50 text-gray-900 font-bold py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors"
       >
         <ShoppingCart size={20} />
         <span>הוסף לעגלה</span>

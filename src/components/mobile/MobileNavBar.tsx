@@ -34,7 +34,7 @@ export default function MobileNavBar() {
             data-testid={testId}
             aria-current={active ? 'page' : undefined}
             className={`flex flex-col items-center justify-center flex-1 h-full gap-1 transition-colors ${
-              active ? 'bg-brand text-white' : 'text-foreground hover:bg-gray-50'
+              active ? 'bg-brand text-gray-900' : 'text-foreground hover:bg-gray-50'
             }`}
           >
             <Icon size={24} />

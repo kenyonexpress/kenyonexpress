@@ -65,7 +65,7 @@ export default function PullToRefresh({ onRefresh, children }: PullToRefreshProp
     <div ref={containerRef} data-pull-to-refresh className="relative w-full">
       {pullDistance > 0 && (
         <div
-          className="flex justify-center items-center h-12 bg-brand text-white transition-transform"
+          className="flex justify-center items-center h-12 bg-brand text-gray-900 transition-transform"
           style={{ transform: `translateY(${pullDistance}px)` }}
         >
           <RefreshCw size={20} className={isLoading ? 'animate-spin' : ''} />
