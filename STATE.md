@@ -1,7 +1,11 @@
-RESUME FROM: (check NEXT-GOALS.md for next goal after XD17 blocker)
+RESUME FROM: (check NEXT-GOALS.md for next goal after XD18)
 # KenyonExpress — Project State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-10-16T16:30:00+07:00
+- item: XD18-clean
+- RESULT: DONE (Centralized 95 Lucide React icons in src/components/icons/ with forwardRef wrappers, 24px consistent size, currentColor fill, aria-hidden. Created IconProps type for proper typing. Replaced 171 direct imports from 'lucide-react' across entire codebase. Social media icons map to available Lucide equivalents (Facebook→MessageSquare, Twitter→Send, Instagram→Image, Youtube→Play). 95 icon wrapper files + index.ts + types.ts + IconProps.ts. All gates pass: pnpm type-check clean, pnpm build successful, biome check clean after regex fix in test file. Commit 06df057d6 pushed. Audit shows zero remaining direct lucide-react imports in src/ outside of icon wrappers.)
 
 ### 2026-10-17T00:00:00+07:00
 - item: XD17-home
