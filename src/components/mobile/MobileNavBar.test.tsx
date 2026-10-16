@@ -16,7 +16,7 @@ describe('MobileNavBar', () => {
     expect(screen.getByTestId('nav-home')).toBeInTheDocument()
     expect(screen.getByTestId('nav-categories')).toBeInTheDocument()
     expect(screen.getByTestId('nav-search')).toBeInTheDocument()
-    expect(screen.getByTestId('nav-wishlist')).toBeInTheDocument()
+    expect(screen.getByTestId('nav-cart')).toBeInTheDocument()
     expect(screen.getByTestId('nav-account')).toBeInTheDocument()
   })
 
@@ -38,12 +38,13 @@ describe('MobileNavBar', () => {
     expect(screen.getByTestId('nav-home')).not.toHaveAttribute('aria-current')
   })
 
-  it('marks wishlist as active when pathname starts with /account/wishlist', () => {
-    vi.mocked(usePathname).mockReturnValue('/account/wishlist')
+  it('marks cart as active when pathname starts with /cart', () => {
+    vi.mocked(usePathname).mockReturnValue('/cart')
 
     render(<MobileNavBar />)
 
-    expect(screen.getByTestId('nav-wishlist')).toHaveAttribute('aria-current', 'page')
+    expect(screen.getByTestId('nav-cart')).toHaveAttribute('aria-current', 'page')
+    expect(screen.getByTestId('nav-account')).not.toHaveAttribute('aria-current')
   })
 
   it('marks account as active when pathname starts with /account', () => {
@@ -68,5 +69,25 @@ describe('MobileNavBar', () => {
     const { container } = render(<MobileNavBar />)
 
     expect(container.querySelector('[data-mobile-nav]')).toBeInTheDocument()
+  })
+
+  it('applies active styling with bg-brand when tab is active', () => {
+    vi.mocked(usePathname).mockReturnValue('/cart')
+
+    render(<MobileNavBar />)
+
+    const activeTab = screen.getByTestId('nav-cart')
+    expect(activeTab).toHaveClass('bg-brand')
+    expect(activeTab).toHaveClass('text-gray-900')
+  })
+
+  it('applies inactive styling with hover effects when tab is not active', () => {
+    vi.mocked(usePathname).mockReturnValue('/')
+
+    render(<MobileNavBar />)
+
+    const inactiveTab = screen.getByTestId('nav-categories')
+    expect(inactiveTab).not.toHaveClass('bg-brand')
+    expect(inactiveTab).toHaveClass('hover:bg-gray-50')
   })
 })

@@ -1,6 +1,6 @@
 'use client'
 
-import { Grid3x3, Heart, Home, Search, User } from 'lucide-react'
+import { Grid3x3, Home, Search, ShoppingCart, User } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
@@ -11,12 +11,13 @@ export default function MobileNavBar() {
     { href: '/', label: 'בית', icon: Home, testId: 'nav-home' },
     { href: '/category', label: 'קטגוריות', icon: Grid3x3, testId: 'nav-categories' },
     { href: '/search', label: 'חיפוש', icon: Search, testId: 'nav-search' },
-    { href: '/account/wishlist', label: 'מועדפים', icon: Heart, testId: 'nav-wishlist' },
+    { href: '/cart', label: 'עגלה', icon: ShoppingCart, testId: 'nav-cart' },
     { href: '/account', label: 'חשבון', icon: User, testId: 'nav-account' },
   ]
 
   const isActive = (href: string) => {
     if (href === '/') return pathname === '/'
+    if (href === '/account') return pathname.startsWith('/account')
     return pathname.startsWith(href)
   }
 
