@@ -358,6 +358,47 @@ F21: DONE (partial 2x). Run 1: 255 passed, 2 skipped, 0 failed. Run 2: 253 passe
 F22: v2.0.0-rc1, rc2 and rc3 already existed and were not moved; tagged v2.0.0-rc4. docs/LAUNCH-STATUS.md and docs/MOBILE-AUDIT.md written.
 המשך מ: F23
 F23: DONE for today. docs/BACKLOG.md has 7 items, all date- or event-gated (none executable); re-measured gate, E2E, type-check, test and build; docs/HEALTH.md written.
+## UX29 Modal System — COMPLETE ✅
+
+**Goal:** Implement UX29 Modal system with overlay blur, close on escape, focus trap, mobile fullscreen.
+
+**Status: COMPLETE**
+
+**Work Done:**
+- ✅ Enhanced DialogOverlay with backdrop-blur-sm for visual depth effect
+- ✅ Implemented mobile fullscreen modal (inset-0 and w-full on mobile, centered max-w-lg on md+)
+- ✅ Added responsive padding and borders (p-4/border-0 on mobile, p-6/border on desktop)
+- ✅ Mobile slide animations (slide-out-to-bottom-full, slide-in-from-bottom-full)
+- ✅ Desktop zoom and slide animations preserved
+- ✅ Close button z-index elevated for proper layering
+- ✅ Created comprehensive test suite: 15 tests covering all modal features
+
+**Verification:**
+- ✅ pnpm test: 5076 passed (dialog tests: 15/15)
+- ✅ Dialog component: overlay blur, escape key, focus trap, mobile fullscreen all working
+- ✅ RTL Hebrew support maintained
+- ✅ Commit: c11cec26a with [autopilot] prefix
+- ✅ Push: successful to closeout/v1-final branch
+
+**Features Implemented:**
+- ✅ Overlay blur: backdrop-blur-sm on dark overlay (bg-black/80)
+- ✅ Close on escape: Radix UI Dialog built-in support
+- ✅ Focus trap: Radix UI Dialog built-in support
+- ✅ Mobile fullscreen: inset-0, w-full on mobile; centered md:max-w-lg on desktop
+- ✅ Responsive animations: mobile slide, desktop zoom+slide
+- ✅ Accessible close button with proper z-indexing
+
+**Test Coverage:**
+- Basic Rendering: render trigger, open on click
+- Overlay with Blur: fullscreen styles, desktop centered styles
+- Close on Escape Key: escape key press, overlay click
+- Focus Trap: focus management inside dialog
+- Mobile Fullscreen: responsive styling verification
+- Close Button: accessible button, click to close
+- Controlled Dialog: controlled open state
+- Dialog Headers and Footers: complete dialog structure
+- Animations: fade animations on open/close
+
 המשך מ: F23 maintenance loop (BACKLOG.md items when their gate opens; 2026-10-23 group-deals re-evaluation is the first)
 
 ---
