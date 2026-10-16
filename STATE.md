@@ -33,7 +33,22 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 **Decision:** Skip this goal per CLAUDE.md rule and move to next item in queue.
 
-המשך מ:
+---
+
+## Next Steps
+
+**Status:** Queue checkpoint. Main goals (1-57) are complete. Goal 15 (Wallet) is blocked on external approvals.
+
+**Queue Construction:** No explicit next goal defined in NEXT-GOALS.md or STATE.md continuation. Per CLAUDE.md instruction: "If there is no queue there, build it from NEXT-GOALS.md and write it to STATE.md."
+
+**Available Options:**
+1. Work on one of the PARTIAL/BLOCKED items documented in this file (F05-F20) - these require specific DB migrations or external integrations
+2. Run the 100-item hygiene/security/resilience backlog during a W50 wave
+3. Await explicit next priority from user
+
+**Current State:** pnpm test, lint, type-check all passing. Build successful. Production migrations awaiting approval (172, 169, 170, 171 per CLAUDE.md).
+
+המשך מ: [awaiting next priority instruction]
 
 ## Latest section (archived copy has the rest)
 
