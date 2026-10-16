@@ -30,34 +30,24 @@ import { describe, expect, it } from 'vitest'
  *   rounded-none = rounded-none
  */
 
-// Valid border-radius scale keys
+// Valid border-radius scale keys (UX35 standard scale only)
 const VALID_RADIUS_KEYS = new Set([
-  '', // bare 'rounded' is Tailwind default (0.25rem)
-  'xs',
-  'sm',
-  'md',
-  'lg',
-  'xl',
-  'pill',
-  'round',
-  'full', // alias for rounded (circular/50%)
-  'none',
+  'xs', // 4px
+  'sm', // 8px (buttons)
+  'md', // 12px (cards)
+  'lg', // 16px (modals)
+  'xl', // 24px
+  'none', // 0px (explicit no rounding)
 ])
 
-// Custom CSS variable radius tokens (defined in src/styles/tokens.css)
+// Custom CSS variable radius tokens - strict to UX35 scale only
 const CUSTOM_RADIUS_TOKENS = new Set([
-  'xs',
-  'sm',
-  'md',
-  'lg',
-  'xl',
-  'pill',
-  'round',
-  'full',
-  'none',
-  'btn',
-  'card',
-  'elevated',
+  'xs', // 4px
+  'sm', // 8px (buttons)
+  'md', // 12px (cards)
+  'lg', // 16px (modals)
+  'xl', // 24px
+  'none', // 0px
 ])
 
 function walkComponents(dir: string): string[] {
@@ -146,17 +136,18 @@ describe('border-radius scale enforcement (UX35)', () => {
           .slice(0, 20)
           .map(([util, count]) => `  ${util}: ${count} instance(s)`),
         '',
-        'Valid scale keys: xs sm md lg xl pill round none',
-        'Pixel values: 4 8 12 16 24 22 200 0',
+        'Valid scale keys: xs sm md lg xl none',
+        'Pixel values: 4 8 12 16 24 0',
         '',
-        'Use only: rounded-xs rounded-sm rounded-md rounded-lg rounded-xl',
-        '    rounded-pill rounded-round rounded-none',
-        '',
-        'Component guidance:',
+        'Required semantic usage (UX35):',
         '  - Buttons: rounded-sm (8px)',
         '  - Cards: rounded-md (12px)',
-        '  - Modals: rounded-lg (16px)',
-        '  - Avatar/icons: rounded-round (200px)',
+        '  - Modals/Dialogs: rounded-lg (16px)',
+        '  - Small elements: rounded-xs (4px)',
+        '  - Large elements: rounded-xl (24px)',
+        '',
+        'Note: Legacy tokens (pill, round, elevated, full) are deprecated.',
+        'Use the standard scale for all new code.',
       ].join('\n')
 
       expect.fail(message)
