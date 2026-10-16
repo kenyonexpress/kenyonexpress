@@ -41,7 +41,10 @@ describe('<OrderFeedbackForm>', () => {
       />,
     )
     expect(html).toContain('data-state="sent"')
-    expect(html).toContain('★★★★☆')
+    // RatingStars component renders SVG stars with data-star-state attributes (4 full + 1 empty)
+    expect((html.match(/data-star-state="full"/g) ?? []).length).toBe(4)
+    expect((html.match(/data-star-state="empty"/g) ?? []).length).toBe(1)
+    expect(html).toContain('4 מתוך 5')
     expect(html).toContain('טוב')
     expect(html).toContain('נשלח ב-01.10.2026')
     expect(html).toContain('הגיע מהר')

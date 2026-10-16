@@ -1,6 +1,7 @@
 'use client'
 
-import { FEEDBACK_BODY_MAX, feedbackRatingLabel, feedbackStars } from '@/lib/orders/feedback'
+import { RatingStars } from '@/components/shared/RatingStars'
+import { FEEDBACK_BODY_MAX, feedbackRatingLabel } from '@/lib/orders/feedback'
 import { submitOrderFeedback } from '@/server/actions/order-feedback'
 import { useState, useTransition } from 'react'
 import type { FormEvent } from 'react'
@@ -41,10 +42,13 @@ export default function OrderFeedbackForm({
     return (
       <div className="account-feedback" data-state="sent">
         <output className="account-feedback__sent">
-          <span className="account-feedback__stars" aria-hidden="true">
-            {feedbackStars(stored.rating)}
-          </span>
-          <span className="sr-only">{stored.rating} מתוך 5</span>
+          <RatingStars
+            rating={stored.rating}
+            showCount={false}
+            size={16}
+            className="inline-flex"
+            ariaLabel={`${stored.rating} מתוך 5 - ${feedbackRatingLabel(stored.rating)}`}
+          />
           <span>
             {' '}
             {feedbackRatingLabel(stored.rating)}
