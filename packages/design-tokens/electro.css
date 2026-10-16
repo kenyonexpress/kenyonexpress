@@ -62,6 +62,53 @@
   --electro-black: #000000;
 
   /* ============================================
+     EXTENDED SITE PALETTE (mirrored from tokens.ts SITE_CSS_VARS)
+     ============================================ */
+
+  /* Functional colors (prices, states, links) */
+  --electro-price: #e4002b;
+  --electro-price-strike: #6f6f6f;
+  --electro-deal-price: #2d2d2d;
+  --electro-deal-sale: #c93636;
+  --electro-deal-badge: #ee0000;
+  --electro-success-alt: #5cb85c;
+  --electro-link: #0062bd;
+  --electro-heading: #333e48;
+  --electro-sale-badge: #328614;
+
+  /* Neutral colors (borders, text, icons) */
+  --electro-border: #dddddd;
+  --electro-border-alt: #e7e7e7;
+  --electro-rule: #ededed;
+  --electro-muted: #6f6f6f;
+  --electro-muted-2: #657888;
+  --electro-icon: #515151;
+  --electro-icon-empty: #cccccc;
+
+  /* Surface colors (pages, hover, panels) */
+  --electro-page: #ffffff;
+  --electro-ink: #000000;
+  --electro-surface-hover: #f5f5f5;
+  --electro-track: #f1f2f4;
+  --electro-bottom-bar: #eaeaea;
+  --electro-warning-surface: #fffbe6;
+  --electro-footer-bg: #333e48;
+  --electro-drawer-bg: #fdfcfc;
+  --electro-hero-slider-bg: #eef4f7;
+
+  /* Promo colors (campaign backgrounds) */
+  --electro-promo-rose: #fff5f5;
+  --electro-promo-violet: #f5f5ff;
+  --electro-promo-sky: #f0f7ff;
+  --electro-promo-flame: #c24d00;
+
+  /* Third-party brand colors (WhatsApp, Facebook) */
+  --electro-whatsapp: #25d366;
+  --electro-whatsapp-ink: #075e54;
+  --electro-whatsapp-ink-hover: #043c36;
+  --electro-facebook: #166fe5;
+
+  /* ============================================
      SPACING
      ============================================ */
 
