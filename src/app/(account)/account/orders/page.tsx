@@ -1,10 +1,12 @@
+import { OrderRowsListSkeleton } from '@/components/OrderRowSkeleton'
 import { formatDate, formatIls, orderStatusLabel, orderStatusTone } from '@/lib/account/format'
 import { getMyOrders } from '@/server/queries/orders'
 import Link from 'next/link'
+import { Suspense } from 'react'
 
 export const metadata = { title: 'ההזמנות שלי' }
 
-export default async function OrdersPage() {
+async function OrdersList() {
   const orders = await getMyOrders()
 
   return (
@@ -42,5 +44,13 @@ export default async function OrdersPage() {
         )}
       </section>
     </>
+  )
+}
+
+export default function OrdersPage() {
+  return (
+    <Suspense fallback={<OrderRowsListSkeleton count={5} />}>
+      <OrdersList />
+    </Suspense>
   )
 }
