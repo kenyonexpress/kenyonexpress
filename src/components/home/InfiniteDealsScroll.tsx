@@ -75,16 +75,26 @@ export default function InfiniteDealsScroll({ initialProducts }: { initialProduc
       </div>
 
       {hasMore && (
-        <div
-          ref={observerTarget}
-          className="flex justify-center py-12"
-          aria-live="polite"
-          aria-label="טוען עוד מוצרים"
-        >
+        <>
           {isLoading && (
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-border border-t-brand-primary" />
+            <div
+              className="jet-listing-grid-deals bg-white"
+              aria-busy="true"
+              aria-label="טוען עוד מוצרים"
+            >
+              {['skeleton-1', 'skeleton-2', 'skeleton-3', 'skeleton-4'].map((id) => (
+                <div key={id} className="jet-listing-grid-deals__item" data-skeleton>
+                  <div className="ke-skeleton aspect-square rounded-elevated" />
+                  <div className="mt-3 space-y-2">
+                    <div className="ke-skeleton h-4 w-3/4" />
+                    <div className="ke-skeleton h-3 w-1/2" />
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
-        </div>
+          <div ref={observerTarget} className="h-4" />
+        </>
       )}
 
       {!hasMore && products.length > 0 && (
