@@ -13,6 +13,7 @@ import CategoryProductCard, {
   type CategoryProduct,
 } from '@/components/category/CategoryProductCard'
 import Pagination from '@/components/category/Pagination'
+import PullToRefresh from '@/components/category/PullToRefresh'
 import { ABOVE_FOLD_CARD_COUNT } from '@/components/category/above-fold'
 import CityTags from '@/components/geo/CityTags'
 import { pageWindow, parsePage, parsePrice, resultCountText } from '@/lib/catalog-archive'
@@ -435,57 +436,58 @@ async function CategoryPageBody({
   )
 
   return (
-    <div className="category-page">
-      <script
-        type="application/ld+json"
-        // biome-ignore lint/security/noDangerouslySetInnerHtml: JSON-LD has no other insertion point, and jsonLdScript escapes every angle bracket.
-        dangerouslySetInnerHTML={{ __html: jsonLdScript(breadcrumbLd) }}
-      />
-      <ViewTracker event="view_category" props={{ category_id: category.id }} />
-      <div className="category-page__inner">
-        <CategoryBreadcrumb items={crumbs} />
+    <PullToRefresh categorySlug={category.slug}>
+      <div className="category-page">
+        <script
+          type="application/ld+json"
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: JSON-LD has no other insertion point, and jsonLdScript escapes every angle bracket.
+          dangerouslySetInnerHTML={{ __html: jsonLdScript(breadcrumbLd) }}
+        />
+        <ViewTracker event="view_category" props={{ category_id: category.id }} />
+        <div className="category-page__inner">
+          <CategoryBreadcrumb items={crumbs} />
 
-        {/* The scheduled hero (STEP 62). Null when the category has no live
+          {/* The scheduled hero (STEP 62). Null when the category has no live
             banner, which is every category today and keeps the page's
             geometry exactly what the parity gate measured. The read is the
             anon client under the category's cache tag; the choice among the
             cached rows is made with this request's clock. */}
-        <Suspense fallback={null}>
-          <CategoryHeroBanner categoryId={category.id} />
-        </Suspense>
+          <Suspense fallback={null}>
+            <CategoryHeroBanner categoryId={category.id} />
+          </Suspense>
 
-        <header className="category-page__header">
-          <h1 className="category-page__title">{category.name_he}</h1>
-          {/* The count's box, held open while it streams. See the note on the
+          <header className="category-page__header">
+            <h1 className="category-page__title">{category.name_he}</h1>
+            {/* The count's box, held open while it streams. See the note on the
               same boundary in search/page.tsx: a null fallback inserts a line
               into the header on resolve and moves everything below it. */}
-          <Suspense
-            fallback={
-              <div className="category-page__count category-page__count--pending" aria-hidden />
-            }
-          >
-            <ResultCount args={args} />
-          </Suspense>
-        </header>
+            <Suspense
+              fallback={
+                <div className="category-page__count category-page__count--pending" aria-hidden />
+              }
+            >
+              <ResultCount args={args} />
+            </Suspense>
+          </header>
 
-        {/* The grid / list preference (UX14): one client context around the
+          {/* The grid / list preference (UX14): one client context around the
             bar that sets it, the body that carries it as `data-view` and the
             cards that read it. The fallback shell above keeps its plain div. */}
-        <CatalogViewProvider>
-          <CategoryControlBar value={sort} activeFilterCount={activeFilterCount(linkParams)} />
+          <CatalogViewProvider>
+            <CategoryControlBar value={sort} activeFilterCount={activeFilterCount(linkParams)} />
 
-          {/* Null on an unfiltered page, so the zero gap between the bar and
+            {/* Null on an unfiltered page, so the zero gap between the bar and
               the first card that the parity gate measured is kept. */}
-          <CategoryActiveFilters pathname={pathname} params={linkParams} />
+            <CategoryActiveFilters pathname={pathname} params={linkParams} />
 
-          <CatalogViewBody>
-            <div className="category-page__main">
-              <Suspense fallback={<CategoryGridSkeleton count={CATEGORY_PAGE_SIZE} />}>
-                <ResultGrid args={args} pathname={pathname} linkParams={linkParams} />
-              </Suspense>
-            </div>
+            <CatalogViewBody>
+              <div className="category-page__main">
+                <Suspense fallback={<CategoryGridSkeleton count={CATEGORY_PAGE_SIZE} />}>
+                  <ResultGrid args={args} pathname={pathname} linkParams={linkParams} />
+                </Suspense>
+              </div>
 
-            {/* The city picker. Same component as the row under the hero, so the
+              {/* The city picker. Same component as the row under the hero, so the
               two cannot drift apart in behaviour or in what "one city" means.
 
               BELOW THE GRID, for the reason category-page.css already gives for
@@ -495,35 +497,36 @@ async function CategoryPageBody({
               was ~100px of exactly that, and it sat ABOVE the grid while the
               filters -- the same kind of control, with the same argument
               written next to them -- sat below. It is one rule now. */}
-            <Suspense fallback={null}>
-              <CityTags className="mt-3" />
-            </Suspense>
+              <Suspense fallback={null}>
+                <CityTags className="mt-3" />
+              </Suspense>
 
-            <CategoryFilterSidebar
-              categories={allCategories}
-              currentSlug={category.slug}
-              priceMin={priceMin}
-              priceMax={priceMax}
-              productType={productType}
-              brands={brands}
-              brand={brand}
-              minDiscount={minDiscount}
-              activeCount={activeFilterCount(linkParams)}
-            />
-          </CatalogViewBody>
-        </CatalogViewProvider>
+              <CategoryFilterSidebar
+                categories={allCategories}
+                currentSlug={category.slug}
+                priceMin={priceMin}
+                priceMax={priceMax}
+                productType={productType}
+                brands={brands}
+                brand={brand}
+                minDiscount={minDiscount}
+                activeCount={activeFilterCount(linkParams)}
+              />
+            </CatalogViewBody>
+          </CatalogViewProvider>
 
-        {/* The buyer guide (STEP 65): a few hundred indexable words on how to
+          {/* The buyer guide (STEP 65): a few hundred indexable words on how to
             choose in this category, under the grid and the filters where it
             costs the parity gate nothing. The row on the anon key under the
             category's tag, else the authored text for the slug, else
             nothing. */}
-        <Suspense fallback={null}>
-          <CategoryBuyerGuide
-            category={{ id: category.id, slug: category.slug, name_he: category.name_he }}
-          />
-        </Suspense>
+          <Suspense fallback={null}>
+            <CategoryBuyerGuide
+              category={{ id: category.id, slug: category.slug, name_he: category.name_he }}
+            />
+          </Suspense>
+        </div>
       </div>
-    </div>
+    </PullToRefresh>
   )
 }

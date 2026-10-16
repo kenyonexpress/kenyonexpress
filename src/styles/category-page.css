@@ -1632,3 +1632,22 @@
   border-color: var(--cat-brand);
   font-weight: 700;
 }
+
+/* Pull to refresh indicator: positioned absolutely at the top of the page,
+   hidden until the user pulls down. */
+.pull-to-refresh__indicator {
+  position: fixed;
+  top: 20px;
+  inset-inline-start: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--cat-brand);
+  color: var(--cat-ink);
+  pointer-events: none;
+}
