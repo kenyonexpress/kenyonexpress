@@ -1,5 +1,6 @@
 import { getCategoryBySlug, getCategoryProductsCached, parseProductType } from '@/lib/category-page'
 import { parseSort } from '@/lib/category-tokens'
+import { loadGalleryAssetsForProducts } from '@/lib/images/gallery-assets'
 import { notFound } from 'next/navigation'
 
 function parsePrice(raw: string | null): number | undefined {
@@ -43,5 +44,11 @@ export async function GET(request: Request, { params }: { params: Promise<{ slug
     tag,
   })
 
-  return Response.json({ items })
+  // Load blur placeholders for all product images
+  const assets = await loadGalleryAssetsForProducts(items)
+
+  // Add assets to items for infinite scroll client
+  const itemsWithAssets = items.map((item) => ({ ...item, assets }))
+
+  return Response.json({ items: itemsWithAssets })
 }
