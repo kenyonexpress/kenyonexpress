@@ -73,7 +73,7 @@ describe('Dialog Component - UX29 Modal System', () => {
   })
 
   describe('Close on Escape Key (Radix UI built-in)', () => {
-    it('should render dialog with escape/overlay click support (Radix UI native)', () => {
+    it('should render dialog that opens on trigger click', () => {
       render(
         <Dialog>
           <DialogTrigger>Open Modal</DialogTrigger>
@@ -86,12 +86,9 @@ describe('Dialog Component - UX29 Modal System', () => {
 
       fireEvent.click(screen.getByRole('button', { name: /open modal/i }))
       expect(screen.getByText('Dialog Content')).toBeInTheDocument()
-
-      // Escape key close and overlay click close are Radix UI Dialog built-in features
-      // verified in Radix UI's own test suite. Here we verify the dialog opens correctly.
     })
 
-    it('should render proper dialog trigger', () => {
+    it('should have accessible close button for user interaction', () => {
       render(
         <Dialog>
           <DialogTrigger>Open Modal</DialogTrigger>
@@ -102,15 +99,14 @@ describe('Dialog Component - UX29 Modal System', () => {
         </Dialog>,
       )
 
-      const trigger = screen.getByRole('button', { name: /open modal/i })
-      expect(trigger).toBeInTheDocument()
-      fireEvent.click(trigger)
-      expect(screen.getByText('Dialog Content')).toBeInTheDocument()
+      fireEvent.click(screen.getByRole('button', { name: /open modal/i }))
+      const closeButton = screen.getByRole('button', { name: /close/i })
+      expect(closeButton).toBeInTheDocument()
     })
   })
 
   describe('Focus Trap', () => {
-    it('should trap focus inside dialog', () => {
+    it('should contain focusable elements in dialog', () => {
       render(
         <Dialog>
           <DialogTrigger>Open Modal</DialogTrigger>
@@ -129,9 +125,12 @@ describe('Dialog Component - UX29 Modal System', () => {
       const secondButton = screen.getByRole('button', { name: /second button/i })
       const closeButton = screen.getByRole('button', { name: /close button/i })
 
+      expect(firstButton).toBeInTheDocument()
+      expect(secondButton).toBeInTheDocument()
+      expect(closeButton).toBeInTheDocument()
+
       firstButton.focus()
       expect(document.activeElement).toBe(firstButton)
-      expect([secondButton, closeButton, firstButton]).toBeTruthy()
     })
 
     it('should focus on dialog content when opened', () => {
