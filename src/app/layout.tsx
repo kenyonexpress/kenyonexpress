@@ -140,109 +140,107 @@ export default function RootLayout({
   return (
     <html lang="he" dir="rtl" className={`${heebo.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        <ThemeProvider>
-          {/*
-            First thing in the body, not next/script, and not next to the banner
-            it governs. It has to run BEFORE the parser reaches the banner markup
-            at the end of the body, or a visitor who already decided sees it flash;
-            a plain inline script is the only form with that ordering guarantee.
-            `beforeInteractive` is about running before Next's own modules, which
-            is a different and later moment. It sits in the static shell, so it
-            cannot carry the request nonce; the CSP allows it BY HASH
-            (src/lib/security/shell-script-hashes.mjs), which is why its text
-            must stay a constant: a byte of request data in it is a blocked
-            script and a banner that flashes.
-          */}
-          {/* biome-ignore lint/security/noDangerouslySetInnerHtml: fixed string built from two module constants, no input reaches it */}
-          <script dangerouslySetInnerHTML={{ __html: CONSENT_PREPAINT_SCRIPT }} />
-          {/*
-            The decision lives in a cookie that only script can read, so with
-            script off nobody can be identified as having answered and the banner
-            would show on every page with two buttons that do nothing. There is
-            also nothing to consent TO: the analytics it gates is itself script.
-            Caught by the E2E run, not by reading - the JS-disabled test asserted
-            the opposite and failed.
-          */}
-          <noscript>
-            <style>{'[data-consent-banner]{display:none}'}</style>
-          </noscript>
-          {/*
-            Before `{children}` on purpose ([24]): the banner is the phone LCP
-            element and used to ship after the whole homepage HTML. With inline
-            fixed positioning it can paint as soon as the parser reaches it,
-            without waiting for the rest of the document or the big stylesheet.
-          */}
-          {/*
-            The skip link lives HERE, ahead of the banner, and nowhere else.
-            The banner is first in the document for the paint reason above, and
-            its two buttons were therefore the first two Tab stops on every page
-            for a first-time visitor: measured 15.10.2026 (XF04), the first Tab
-            on /, /products, /coupons and /legal/privacy landed on the consent
-            button and the skip link was the third stop. One link in the root
-            keeps 2.4.1 ahead of everything, including the banner; every route
-            group's <main> carries id="main-content" tabIndex={-1} for it.
-          */}
-          <SkipLink />
-          <ConsentBanner />
-          {children}
-          {/*
-            `AnalyticsProvider` calls `usePathname`, which under `cacheComponents`
-            is runtime data on any route carrying a dynamic param. Unwrapped, it
-            pulls /product/[slug], /category/[slug] and every [id] route in the
-            admin and account areas out of the static shell - from the root
-            layout, so there is no route it does not reach.
+        {/*
+          First thing in the body, not next/script, and not next to the banner
+          it governs. It has to run BEFORE the parser reaches the banner markup
+          at the end of the body, or a visitor who already decided sees it flash;
+          a plain inline script is the only form with that ordering guarantee.
+          `beforeInteractive` is about running before Next's own modules, which
+          is a different and later moment. It sits in the static shell, so it
+          cannot carry the request nonce; the CSP allows it BY HASH
+          (src/lib/security/shell-script-hashes.mjs), which is why its text
+          must stay a constant: a byte of request data in it is a blocked
+          script and a banner that flashes.
+        */}
+        {/* biome-ignore lint/security/noDangerouslySetInnerHtml: fixed string built from two module constants, no input reaches it */}
+        <script dangerouslySetInnerHTML={{ __html: CONSENT_PREPAINT_SCRIPT }} />
+        {/*
+          The decision lives in a cookie that only script can read, so with
+          script off nobody can be identified as having answered and the banner
+          would show on every page with two buttons that do nothing. There is
+          also nothing to consent TO: the analytics it gates is itself script.
+          Caught by the E2E run, not by reading - the JS-disabled test asserted
+          the opposite and failed.
+        */}
+        <noscript>
+          <style>{'[data-consent-banner]{display:none}'}</style>
+        </noscript>
+        {/*
+          Before `{children}` on purpose ([24]): the banner is the phone LCP
+          element and used to ship after the whole homepage HTML. With inline
+          fixed positioning it can paint as soon as the parser reaches it,
+          without waiting for the rest of the document or the big stylesheet.
+        */}
+        {/*
+          The skip link lives HERE, ahead of the banner, and nowhere else.
+          The banner is first in the document for the paint reason above, and
+          its two buttons were therefore the first two Tab stops on every page
+          for a first-time visitor: measured 15.10.2026 (XF04), the first Tab
+          on /, /products, /coupons and /legal/privacy landed on the consent
+          button and the skip link was the third stop. One link in the root
+          keeps 2.4.1 ahead of everything, including the banner; every route
+          group's <main> carries id="main-content" tabIndex={-1} for it.
+        */}
+        <SkipLink />
+        <ConsentBanner />
+        <ThemeProvider>{children}</ThemeProvider>
+        {/*
+          `AnalyticsProvider` calls `usePathname`, which under `cacheComponents`
+          is runtime data on any route carrying a dynamic param. Unwrapped, it
+          pulls /product/[slug], /category/[slug] and every [id] route in the
+          admin and account areas out of the static shell - from the root
+          layout, so there is no route it does not reach.
 
-            It renders null, so the fallback is exact rather than approximate.
-          */}
-          <Suspense fallback={null}>
-            <AnalyticsProvider />
-          </Suspense>
-          {/*
-            Both are client components that render nothing until the browser
-            says so, and both are last in the body for the same reason the
-            analytics provider is: nothing here may compete with the LCP paint
-            that [15]-[21] spent five goals recovering.
-          */}
-          <ServiceWorkerRegistrar />
-          <InstallPrompt />
-          {/*
-            Sentry's user tag, id only. Renders null, subscribes to the auth
-            state Supabase already holds in memory, and makes no request of its
-            own - see the component for why it sits outside the consent gate.
-          */}
-          <SentryUserSync />
-          {/*
-            GA4 and the Meta Pixel, and they render NOTHING until the visitor has
-            agreed - no script tag, no stub, no consent-mode-denied bootstrap. See
-            `lib/analytics/third-party.ts` for why that is stricter than Google's
-            own recommended pattern and why the stricter version is the one that
-            can be checked in a network log.
+          It renders null, so the fallback is exact rather than approximate.
+        */}
+        <Suspense fallback={null}>
+          <AnalyticsProvider />
+        </Suspense>
+        {/*
+          Both are client components that render nothing until the browser
+          says so, and both are last in the body for the same reason the
+          analytics provider is: nothing here may compete with the LCP paint
+          that [15]-[21] spent five goals recovering.
+        */}
+        <ServiceWorkerRegistrar />
+        <InstallPrompt />
+        {/*
+          Sentry's user tag, id only. Renders null, subscribes to the auth
+          state Supabase already holds in memory, and makes no request of its
+          own - see the component for why it sits outside the consent gate.
+        */}
+        <SentryUserSync />
+        {/*
+          GA4 and the Meta Pixel, and they render NOTHING until the visitor has
+          agreed - no script tag, no stub, no consent-mode-denied bootstrap. See
+          `lib/analytics/third-party.ts` for why that is stricter than Google's
+          own recommended pattern and why the stricter version is the one that
+          can be checked in a network log.
 
-            Behind a Suspense boundary because the wrapper reads the request
-            (the CSP nonce the vendor bootstraps need), and that read is also
-            what keeps every page on the resume path under the nonce policy.
-            `components/security/PerRequestScripts.tsx` explains both; do not
-            hoist it out of the boundary or replace it with the tags directly.
-          */}
-          <Suspense fallback={null}>
-            <PerRequestScripts />
-          </Suspense>
-          {/*
-            Session replay for support debugging. Same consent gate as the tags
-            above; without NEXT_PUBLIC_POSTHOG_KEY or before Accept it downloads
-            nothing at all. Event capture stays on the SDK-free fetch path in
-            lib/observability/posthog.ts; this mounts only the DOM recorder.
-          */}
-          <PostHogReplay />
-          {/*
-            Vercel's own two. First-party by design - they are served from this
-            origin through Vercel's rewrite, so no third-party request leaves the
-            page and no cookie is set, which is why they sit outside the consent
-            gate that GA4 and Meta are behind.
-          */}
-          <VercelAnalytics />
-          <SpeedInsights />
-        </ThemeProvider>
+          Behind a Suspense boundary because the wrapper reads the request
+          (the CSP nonce the vendor bootstraps need), and that read is also
+          what keeps every page on the resume path under the nonce policy.
+          `components/security/PerRequestScripts.tsx` explains both; do not
+          hoist it out of the boundary or replace it with the tags directly.
+        */}
+        <Suspense fallback={null}>
+          <PerRequestScripts />
+        </Suspense>
+        {/*
+          Session replay for support debugging. Same consent gate as the tags
+          above; without NEXT_PUBLIC_POSTHOG_KEY or before Accept it downloads
+          nothing at all. Event capture stays on the SDK-free fetch path in
+          lib/observability/posthog.ts; this mounts only the DOM recorder.
+        */}
+        <PostHogReplay />
+        {/*
+          Vercel's own two. First-party by design - they are served from this
+          origin through Vercel's rewrite, so no third-party request leaves the
+          page and no cookie is set, which is why they sit outside the consent
+          gate that GA4 and Meta are behind.
+        */}
+        <VercelAnalytics />
+        <SpeedInsights />
       </body>
     </html>
   )

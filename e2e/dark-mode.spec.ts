@@ -12,8 +12,8 @@ const PAGES = [
 test.describe('Dark mode support', () => {
   test('theme toggle button exists in topbar', async ({ page }) => {
     await page.goto('/')
-    const themeToggle = page.locator('button[aria-label*="Switch to"]')
-    await expect(themeToggle).toBeVisible()
+    const themeToggle = page.locator('button[aria-label*="עבור"]')
+    await expect(themeToggle).toBeVisible({ timeout: 5000 })
   })
 
   test('light mode is default', async ({ page }) => {
@@ -25,7 +25,8 @@ test.describe('Dark mode support', () => {
 
   test('clicking toggle switches to dark mode', async ({ page }) => {
     await page.goto('/')
-    const themeToggle = page.locator('button[aria-label*="Switch to dark"]')
+    const themeToggle = page.locator('button[aria-label="עבור למצב כהה"]')
+    await expect(themeToggle).toBeVisible({ timeout: 5000 })
     await themeToggle.click()
 
     const html = page.locator('html')
@@ -35,7 +36,8 @@ test.describe('Dark mode support', () => {
 
   test('theme persists in localStorage', async ({ page }) => {
     await page.goto('/')
-    const themeToggle = page.locator('button[aria-label*="Switch to dark"]')
+    const themeToggle = page.locator('button[aria-label="עבור למצב כהה"]')
+    await expect(themeToggle).toBeVisible({ timeout: 5000 })
     await themeToggle.click()
 
     const theme = await page.evaluate(() => localStorage.getItem('ke-theme'))
@@ -94,13 +96,13 @@ test.describe('Dark mode support', () => {
   test('theme toggle changes icon and label', async ({ page }) => {
     await page.goto('/')
 
-    let button = page.locator('button[aria-label*="Switch to dark"]')
-    await expect(button).toHaveText('כהה')
+    let button = page.locator('button[aria-label="עבור למצב כהה"]')
+    await expect(button).toHaveText('כהה', { timeout: 5000 })
 
     await button.click()
 
-    button = page.locator('button[aria-label*="Switch to light"]')
-    await expect(button).toHaveText('בהיר')
+    button = page.locator('button[aria-label="עבור למצב בהיר"]')
+    await expect(button).toHaveText('בהיר', { timeout: 5000 })
   })
 
   test('theme preference respects prefers-color-scheme', async ({ browser }) => {
@@ -111,7 +113,10 @@ test.describe('Dark mode support', () => {
 
     await page.goto('/')
 
-    // Initial theme should be dark due to prefers-color-scheme
+    // Wait for page to load
+    await page.waitForLoadState('networkidle')
+
+    // Initial theme should respect prefers-color-scheme
     const html = page.locator('html')
     const dataTheme = await html.getAttribute('data-theme')
     expect(['dark', 'light']).toContain(dataTheme)
@@ -127,7 +132,8 @@ test.describe('Dark mode support', () => {
     const lightBgColor = await body.evaluate((el) => getComputedStyle(el).backgroundColor)
 
     // Switch to dark mode
-    const themeToggle = page.locator('button[aria-label*="Switch to dark"]')
+    const themeToggle = page.locator('button[aria-label="עבור למצב כהה"]')
+    await expect(themeToggle).toBeVisible({ timeout: 5000 })
     await themeToggle.click()
 
     // Get dark mode background color

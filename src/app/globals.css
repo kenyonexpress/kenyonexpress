@@ -31,6 +31,19 @@ body {
   direction: rtl;
 }
 
+/* Dark mode image filters to improve contrast and visibility */
+html[data-theme="dark"] img {
+  /* Slight brightness increase for images in dark mode */
+  filter: brightness(1.05) contrast(1.05);
+}
+
+/* Keep logos at normal brightness */
+html[data-theme="dark"] img[alt*="logo"],
+html[data-theme="dark"] img[src*="logo"],
+html[data-theme="dark"] img[src*="brand"] {
+  filter: none;
+}
+
 /* THE TRUST BAR'S FIVE ITEMS DO NOT FIT ONE ROW ON THE NARROWEST PHONES.
  *
  * Each item is a fifth of the row with a 36px icon beside a two-line label, and

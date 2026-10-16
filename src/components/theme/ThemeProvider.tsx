@@ -24,10 +24,8 @@ function getInitialTheme(): Theme {
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(() => getInitialTheme())
-  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    setMounted(true)
     document.documentElement.setAttribute('data-theme', theme)
   }, [theme])
 
