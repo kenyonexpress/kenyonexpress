@@ -58,72 +58,25 @@ export default function ExpiredProduct({ product, similarProducts }: ExpiredProd
         </nav>
 
         {/* Expired product hero section */}
-        <div
-          className="expired-product-hero"
-          style={{ position: 'relative', marginBottom: '2rem' }}
-        >
+        <div className="expired-product-hero relative mb-8">
           {/* Grayed out image with ribbon */}
-          <div
-            style={{
-              position: 'relative',
-              opacity: 0.6,
-              backgroundColor: '#f0f0f0',
-              aspectRatio: '1',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderRadius: '0.5rem',
-              overflow: 'hidden',
-            }}
-          >
+          <div className="relative opacity-60 bg-gray-100 aspect-square flex items-center justify-center rounded-lg overflow-hidden">
             {firstImage && (
-              <img
-                src={firstImage}
-                alt={product.name_he}
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              />
+              <img src={firstImage} alt={product.name_he} className="w-full h-full object-cover" />
             )}
             {/* "המבצע הסתיים" ribbon */}
-            <div
-              style={{
-                position: 'absolute',
-                top: '1rem',
-                insetInlineEnd: '-2rem',
-                backgroundColor: '#d32f2f',
-                color: 'white',
-                padding: '0.5rem 3rem',
-                transform: 'rotate(45deg)',
-                fontSize: '0.875rem',
-                fontWeight: 'bold',
-                width: '12rem',
-                textAlign: 'center',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-              }}
-            >
+            <div className="absolute top-4 -end-8 bg-red-600 text-white px-12 py-2 rotate-45 text-sm font-bold w-48 text-center shadow-md">
               המבצע הסתיים
             </div>
           </div>
 
           {/* Product info */}
-          <div style={{ marginTop: '1rem' }}>
-            <h1 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', marginTop: 0 }}>
-              {product.name_he}
-            </h1>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                marginBottom: '1rem',
-              }}
-            >
-              <span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>
-                ₪{basePrice.toFixed(2)}
-              </span>
+          <div className="mt-4">
+            <h1 className="text-2xl mb-2 mt-0">{product.name_he}</h1>
+            <div className="flex items-center gap-2 mb-4">
+              <span className="text-xl font-bold">₪{basePrice.toFixed(2)}</span>
               {oldPrice && (
-                <span style={{ fontSize: '1rem', color: '#999', textDecoration: 'line-through' }}>
-                  ₪{oldPrice.toFixed(2)}
-                </span>
+                <span className="text-base text-gray-500 line-through">₪{oldPrice.toFixed(2)}</span>
               )}
             </div>
           </div>
@@ -131,20 +84,11 @@ export default function ExpiredProduct({ product, similarProducts }: ExpiredProd
 
         {/* Similar products section */}
         {similarProducts.length > 0 && (
-          <div style={{ marginBottom: '3rem' }}>
-            <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', marginTop: '2rem' }}>
-              המבצע הזה כבר לא זמין, הנה 3 מבצעים דומים:
-            </h2>
+          <div className="mb-12">
+            <h2 className="text-xl mb-6 mt-8">המבצע הזה כבר לא זמין, הנה 3 מבצעים דומים:</h2>
 
             {/* Similar products grid */}
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                gap: '1.5rem',
-                marginBottom: '2rem',
-              }}
-            >
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
               {similarProducts.map((similar) => (
                 <ProductCard key={similar.id} product={similar} />
               ))}
@@ -154,15 +98,7 @@ export default function ExpiredProduct({ product, similarProducts }: ExpiredProd
             {product.category && (
               <Link
                 href={`/category/${product.category.slug}`}
-                style={{
-                  display: 'inline-block',
-                  padding: '0.75rem 1.5rem',
-                  backgroundColor: '#007bff',
-                  color: 'white',
-                  textDecoration: 'none',
-                  borderRadius: '0.25rem',
-                  fontWeight: 'bold',
-                }}
+                className="inline-block px-6 py-3 bg-blue-500 text-white no-underline rounded font-bold hover:bg-blue-600 transition-colors"
               >
                 לכל המבצעים ב{product.category.name_he}
               </Link>
