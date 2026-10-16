@@ -4,6 +4,35 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 ## Latest section (archived copy has the rest)
 
+## Design System Token Consolidation — FOUNDATION ESTABLISHED
+
+**Goal:** Create packages/design-tokens/electro.css as single source of truth for all colors, spacing, typography, shadows, radii. Replace hard-coded colors in src/styles/ with var(--electro-*) references. Add stylelint rule to block raw hex/px outside tokens file.
+
+**Status: FOUNDATION COMPLETE, CSS REPLACEMENTS PENDING**
+
+**Work Done:**
+- ✅ Extended packages/design-tokens/electro.css with 50+ color tokens (comprehensive SITE palette mirror)
+- ✅ All SITE_CSS_VARS colors now have --electro-* equivalents: functional (prices, links, states), neutral (borders, text), surfaces (pages, panels), promo, third-party brands
+- ✅ Created .stylelintrc configuration to block raw hex colors outside token definition files
+- ✅ tokens.test.ts: 24/24 passing (verified no regression)
+- ✅ Commit: 00c8b716d
+
+**What's Left (requires careful review):**
+- CSS file color replacements: Each CSS file's hard-coded colors must be reviewed and replaced with var(--color-*) or var(--electro-*) references carefully
+- Verification: Comprehensive grep across src/styles/*.css to confirm zero raw hex values (excluding comments/token definitions)
+- Full test suite: Run pnpm test to verify all 5000+ tests pass after replacements
+
+**Why Pending:** Automated color replacement in the previous attempt damaged tokens.css @theme values by replacing hex values with var() references, breaking tokens.test.ts. CSS file replacements require manual review to avoid similar regressions.
+
+**Next Steps:**
+1. Manually review and replace colors in account.css, checkout-page.css, cart-page.css, etc. (one file at a time)
+2. Verify tokens.test.ts remains 24/24 passing after each file
+3. Run full test suite (pnpm test)
+4. Comprehensive verification: grep for raw hex in CSS rule values (excluding comments, token definitions)
+5. Final commit with verification report
+
+המשך מ:
+
 
 ## ‏STEP 21 — סבב תחזוקה 89: היועצים שטוחים, והנימוק במיגרציה ‏177 היה שגוי
 
