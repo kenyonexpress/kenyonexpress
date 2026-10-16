@@ -1,4 +1,4 @@
-RESUME FROM: XF02
+RESUME FROM: XD12 (in progress - checkout UI complete, testing CSP build issue)
 # KenyonExpress — Project State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
@@ -50,6 +50,34 @@ Updated: 2026-10-15 09:08 (WRETRY-flake זוג ‏XF04 חוזר על ה-build ש
 Implement complete three-row Electro v7 header with ALL spec requirements. Run full test suite. Measure to <5% parity. ONLY then mark complete and proceed to next goal. No shortcuts.
 
 ---
+
+## XD12 Checkout Design Status (2026-10-16)
+
+**Completed:**
+- ✓ save_address toggle with label "שמור כתובת זו להזמנות הבאות" + tooltip
+- ✓ save_card toggle with label "שמור כרטיס לרכישות עתידיות..." + tooltip  
+- ✓ Legal checkbox with links to both terms and returns pages
+- ✓ All checkout unit tests passing (31 files, 408 tests)
+- ✓ Success page with coupon QR and invoice download already implemented
+- ✓ Code changes committed and pushed
+
+**Blockers:**
+- CSP shell script hash issue: React 19 streaming scripts generate hashes not in whitelist
+  - 8 new hashes detected from streaming runtime changes
+  - Blocks `pnpm build` but unit tests pass
+  - Need to: register new hashes OR investigate if page structure issue exists
+
+**Not yet verified (blocked by build):**
+- Mobile sticky bottom summary bar
+- Color scheme #fed700 verification
+- E2E tests for guest/returning user/address autofill flows
+- compare.mjs visual parity measurement at 380/768/1440
+
+**Next steps:**
+1. Fix CSP build issue (extract/register React streaming hashes)
+2. Verify mobile layout styling
+3. Add/update E2E tests
+4. Measure visual parity
 
 ## המשך מ: איחוד ‏`phase5/homepage-closeout` עם ‏`audit/final-audit` (רק כשאין סוכן חי על הריפו)
 
