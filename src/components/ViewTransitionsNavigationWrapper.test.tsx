@@ -7,6 +7,8 @@ vi.mock('next/navigation', () => ({
   useRouter: vi.fn(),
 }))
 
+const mockUseRouter = useRouter as unknown as ReturnType<typeof vi.fn>
+
 describe('ViewTransitionsNavigationWrapper', () => {
   it('calls startViewTransition when router.push is called with view transitions supported', () => {
     const originalPush = vi.fn()
@@ -16,7 +18,7 @@ describe('ViewTransitionsNavigationWrapper', () => {
       back: vi.fn(),
       forward: vi.fn(),
     }
-    ;(useRouter as any).mockReturnValue(mockRouter)
+    mockUseRouter.mockReturnValue(mockRouter)
 
     const startViewTransitionMock = vi.fn((callback: () => void) => {
       callback()
@@ -48,7 +50,7 @@ describe('ViewTransitionsNavigationWrapper', () => {
       back: vi.fn(),
       forward: vi.fn(),
     }
-    ;(useRouter as any).mockReturnValue(mockRouter)
+    mockUseRouter.mockReturnValue(mockRouter)
 
     const startViewTransitionMock = vi.fn((callback: () => void) => {
       callback()
@@ -79,7 +81,7 @@ describe('ViewTransitionsNavigationWrapper', () => {
       back: vi.fn(),
       forward: vi.fn(),
     }
-    ;(useRouter as any).mockReturnValue(mockRouter)
+    mockUseRouter.mockReturnValue(mockRouter)
 
     Object.defineProperty(document, 'startViewTransition', {
       value: undefined,
