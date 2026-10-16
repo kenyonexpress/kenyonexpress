@@ -380,9 +380,13 @@ F23: DONE for today. docs/BACKLOG.md has 7 items, all date- or event-gated (none
 - ✅ pnpm test: 433 test files passed, 5076 tests passed, 25 skipped
 - ✅ Dialog component: overlay blur, escape key, focus trap, mobile fullscreen all working
 - ✅ RTL Hebrew support maintained
-- ✅ Commits: c11cec26a (UX29 implementation) + 557a0cd87 (STATE.md) + f6d045b33 (type/lint fixes)
+- ✅ Commits: c11cec26a (implementation) + 557a0cd87 (STATE.md) + f6d045b33 (type/lint fixes) + bf800e740 (test fixes)
 - ✅ Push: successful to closeout/v1-final branch
-- ✅ All gates: GREEN
+- ✅ All gates: VERIFIED GREEN
+  - pnpm type-check: CLEAN
+  - pnpm lint src/: CLEAN (tokens/copy/asset gates)
+  - pnpm build: Compiled successfully
+  - pnpm test: 5076 passed, 25 skipped, 0 failed
 
 **Features Implemented:**
 - ✅ Overlay blur: backdrop-blur-sm on dark overlay (bg-black/80)
