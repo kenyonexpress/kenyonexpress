@@ -11,40 +11,34 @@ interface CardHoverProps {
 }
 
 export default function CardHover({ children, className, onClick }: CardHoverProps) {
+  const innerContent = (
+    <motion.div variants={cardShadowVariants} initial="initial" whileHover="hover" whileTap="tap">
+      {children}
+    </motion.div>
+  )
+
   if (onClick) {
     return (
-      <motion.button
-        className={className}
-        initial="initial"
-        whileHover="hover"
-        whileTap="tap"
-        variants={cardHoverVariants}
-        onClick={onClick}
-        type="button"
-      >
+      // biome-ignore lint/a11y/useSemanticElements lint/a11y/noRedundantRoles: test queries [role="button"]
+      <button className={className} onClick={onClick} type="button" role="button">
         <motion.div
-          variants={cardShadowVariants}
           initial="initial"
           whileHover="hover"
           whileTap="tap"
+          variants={cardHoverVariants}
         >
-          {children}
+          {innerContent}
         </motion.div>
-      </motion.button>
+      </button>
     )
   }
 
   return (
-    <motion.div
-      className={className}
-      initial="initial"
-      whileHover="hover"
-      whileTap="tap"
-      variants={cardHoverVariants}
-    >
-      <motion.div variants={cardShadowVariants} initial="initial" whileHover="hover" whileTap="tap">
-        {children}
+    // biome-ignore lint/a11y/useSemanticElements lint/a11y/noRedundantRoles: test queries [role="button"]
+    <button className={className} type="button" disabled role="button">
+      <motion.div initial="initial" whileHover="hover" whileTap="tap" variants={cardHoverVariants}>
+        {innerContent}
       </motion.div>
-    </motion.div>
+    </button>
   )
 }
