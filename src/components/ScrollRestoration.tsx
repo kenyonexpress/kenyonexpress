@@ -10,18 +10,37 @@ import { useEffect } from 'react'
  */
 export default function ScrollRestoration() {
   useEffect(() => {
-    // Enable scroll restoration via history API
+    // Enable native scroll restoration
     if ('scrollRestoration' in window.history) {
       window.history.scrollRestoration = 'auto'
     }
 
-    // Store scroll position before page unload
-    const handleBeforeUnload = () => {
+    // Restore scroll position when page loads (for browser back button)
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) {
+        // Browser restored the page from bfcache - scroll is auto-restored
+        window.scrollTo({
+          top: sessionStorage.getItem('scroll-position')
+            ? JSON.parse(sessionStorage.getItem('scroll-position') || '0')
+            : 0,
+          left: 0,
+          behavior: 'auto',
+        })
+      }
+    }
+
+    // Store scroll position on page hide (for browser back)
+    const handlePageHide = () => {
       sessionStorage.setItem('scroll-position', JSON.stringify(window.scrollY))
     }
 
-    window.addEventListener('beforeunload', handleBeforeUnload)
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+    window.addEventListener('pageshow', handlePageShow as EventListener)
+    window.addEventListener('pagehide', handlePageHide)
+
+    return () => {
+      window.removeEventListener('pageshow', handlePageShow as EventListener)
+      window.removeEventListener('pagehide', handlePageHide)
+    }
   }, [])
 
   return null
