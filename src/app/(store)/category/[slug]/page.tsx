@@ -351,12 +351,25 @@ async function CategoryPageBody({
     siteUrl,
   )
 
+  // ItemList schema for product grid
+  const itemListLd = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: category.name_he,
+    url: `${siteUrl}${pathname}`,
+  }
+
   return (
     <div className="category-page">
       <script
         type="application/ld+json"
         // biome-ignore lint/security/noDangerouslySetInnerHtml: JSON-LD has no other insertion point, and jsonLdScript escapes every angle bracket.
         dangerouslySetInnerHTML={{ __html: jsonLdScript(breadcrumbLd) }}
+      />
+      <script
+        type="application/ld+json"
+        // biome-ignore lint/security/noDangerouslySetInnerHtml: JSON-LD has no other insertion point, and jsonLdScript escapes every angle bracket.
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListLd) }}
       />
       <ViewTracker event="view_category" props={{ category_id: category.id }} />
       <div className="category-page__inner">
