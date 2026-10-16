@@ -175,6 +175,13 @@
   --leading-pdp-title: 32.0051px;
   --leading-pdp-body: 23.996px;
 
+  /* --- Font weights (Heebo 300, 400, 500, 700, 900) ------------------------- */
+  --weight-light: 300;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-bold: 700;
+  --weight-black: 900;
+
   /* --- Layout ---------------------------------------------------------------- */
   --header-height: 70px;
   /* Single source of truth for page container width -> generates `max-w-page`.

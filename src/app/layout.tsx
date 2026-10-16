@@ -43,6 +43,7 @@ import '@/styles/dark-mode.css'
 const heebo = Heebo({
   variable: '--font-heebo',
   subsets: ['latin', 'hebrew'],
+  weight: ['300', '400', '500', '700', '900'],
   display: 'swap',
   // LCP paragraph is Arial on purpose ([24]); do not preload Heebo onto that path.
   preload: false,

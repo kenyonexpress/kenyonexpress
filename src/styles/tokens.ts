@@ -340,6 +340,12 @@ export const SITE_CSS_METRICS: Record<string, string> = {
   '--leading-pdp-title': '32.0051px',
   '--leading-pdp-body': '23.996px',
 
+  '--weight-light': '300',
+  '--weight-regular': '400',
+  '--weight-medium': '500',
+  '--weight-bold': '700',
+  '--weight-black': '900',
+
   '--header-height': '70px',
   '--container-page': '1320px',
   '--container-hero-row': '1170px',
