@@ -2,6 +2,67 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## UX46 Price Display with ILS Currency, Strikethrough & Savings Badge — ✅ COMPLETE
+
+**Goal:** Create unified price display component with ILS currency formatting, strikethrough on sale, savings badge, and optional Hebrew numerals toggle.
+
+**Status: COMPLETE & VERIFIED**
+
+**Implementation:**
+- ✅ **PriceDisplay Component** (`src/components/PriceDisplay.tsx`):
+  - Unified price display with proper RTL bidi isolation
+  - Displays ILS currency symbol (₪) on right side of digits
+  - Shows original price with strikethrough when on sale
+  - Shows savings amount in green badge (bg-sale-badge)
+  - Optional toggle for Hebrew numerals (א,ב,ג vs 1,2,3)
+  - Supports all price formats from money-format.ts
+
+- ✅ **ProductCard Integration** (`src/components/ProductCard.tsx`):
+  - Updated DealsProductCard to use PriceDisplay
+  - Updated DefaultProductCard to use PriceDisplay
+  - Cleaned up inline price formatting
+  - Removed unused shekelsFromIls wrapper function
+
+- ✅ **Test Coverage** (`src/components/PriceDisplay.test.tsx`):
+  - 26 comprehensive tests covering all scenarios
+  - Single price display ✓
+  - Sale prices with strikethrough ✓
+  - Savings badge calculations ✓
+  - Hebrew numerals toggle functionality ✓
+  - CSS class application ✓
+  - Edge cases (zero, decimals, large prices) ✓
+
+**Verification:**
+- ✅ pnpm type-check: CLEAN
+- ✅ pnpm lint: CLEAN
+- ✅ pnpm test: 26 tests passing
+- ✅ pnpm build: Successful compilation
+- ✅ No regressions in existing tests
+
+**Features:**
+- Consistent price display across ProductCard variants
+- Proper RTL display with LRI/PDI bidi isolation
+- Green savings badge shows discount amount
+- Optional Hebrew numerals toggle in client component
+- Respects design tokens (colors from tokens.css)
+- Uses sale-badge color (#328614) for savings highlight
+- Responsive and mobile-friendly
+
+**Changed Files:**
+- src/components/PriceDisplay.tsx: NEW component
+- src/components/PriceDisplay.test.tsx: NEW test file
+- src/components/ProductCard.tsx: Updated to use PriceDisplay
+
+**Commit:** 94001ca64 - [autopilot] UX46: Price display with ILS currency, strikethrough on sale, savings badge, and Hebrew numerals toggle
+
+**Architecture Notes:**
+- Uses existing shekelsFromIls formatting from lib/money-format.ts
+- Integrates with Tailwind design system and color tokens
+- Component is standalone and reusable across the app
+- Hebrew numeral conversion handled client-side for accessibility
+
+המשך מ: UX46 COMPLETE. Price display component unified across all product cards with ILS currency, sales formatting, savings badge, and optional Hebrew numerals. All tests passing, no regressions.
+
 ## UX43 Infinite Scroll Product Listings — ✅ COMPLETE
 
 **Goal:** Implement infinite scroll with intersection observer and loading indicator for product listings.
