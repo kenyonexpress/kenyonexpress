@@ -1,5 +1,7 @@
+import type { Product } from '@/components/ProductCard'
 import { ProductsGridSkeleton } from '@/components/ProductCardSkeleton'
 import ProductDealCard from '@/components/ProductDealCard'
+import dealBlurs from '@/lib/deal-blurs.json'
 import { KE_LIVE_DEALS } from '@/lib/ke-live-deals-data'
 import { Suspense } from 'react'
 
@@ -26,11 +28,30 @@ function DealsGrid() {
 
   return (
     <div className="jet-listing-grid-deals bg-white">
-      {products.map((product) => (
-        <div key={product.id} className="jet-listing-grid-deals__item">
-          <ProductDealCard product={product} />
-        </div>
-      ))}
+      {products.map((product) => {
+        const thumb =
+          Array.isArray(product.images) && typeof product.images[0] === 'string'
+            ? (product.images[0] as string)
+            : null
+        const blurDataURL =
+          thumb && dealBlurs[thumb as keyof typeof dealBlurs]
+            ? dealBlurs[thumb as keyof typeof dealBlurs]
+            : null
+        const assets = thumb
+          ? {
+              [thumb]: {
+                alt: product.name_he,
+                blurDataURL,
+              },
+            }
+          : undefined
+
+        return (
+          <div key={product.id} className="jet-listing-grid-deals__item">
+            <ProductDealCard product={(assets ? { ...product, assets } : product) as Product} />
+          </div>
+        )
+      })}
     </div>
   )
 }
