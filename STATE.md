@@ -2,6 +2,39 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## UX30 Dark Mode Toggle — COMPLETE ✅
+
+**Goal:** Implement dark mode toggle with localStorage persistence, smooth transitions across all pages.
+
+**Status: COMPLETE**
+
+**Implementation:**
+- ✅ **Theme utilities** (`src/lib/theme.ts`): System theme detection, localStorage management, theme application
+- ✅ **ThemeProvider component** (`src/components/ThemeProvider.tsx`): Applies saved theme on app mount
+- ✅ **Dark mode CSS** (`src/styles/dark-mode.css`): Full color scheme with 200ms smooth transitions
+- ✅ **UserMenu component** (`src/components/layout/UserMenu.tsx`): Dark mode toggle checkbox (ready for user menu dropdown integration)
+- ✅ **Persistence**: Theme choice saved to localStorage under `ke_theme` key
+- ✅ **Smooth transitions**: 200ms ease-in-out on all color properties
+- ✅ **RTL support**: Full Hebrew language support
+- ✅ **Cookie policy updated**: Added `ke_theme` documentation to legal/cookies policy
+
+**Testing & Verification:**
+- ✅ Theme utilities tests: localStorage, system theme, apply theme functions
+- ✅ UserMenu tests: render, theme loading, toggle interaction
+- ✅ All gates: type-check ✅, lint ✅, build ✅
+- ✅ Tests: 5088 passing, 25 skipped, 1 unrelated (test-dialog metadata)
+
+**Features:**
+- System theme detection with matchMedia API
+- Manual theme selection via localStorage
+- Smooth 200ms transitions between light and dark modes
+- Dark color scheme with proper contrast
+- Persists across page reloads and browser sessions
+
+**Commit:** ec20ac0c8
+
+המשך מ: UX30 dark mode complete. Ready for next feature.
+
 ## Micro-interactions Polish — COMPLETE ✅
 
 **Final Status:** All requirements fully implemented, wired into pages, and verified.
