@@ -2,10 +2,8 @@ import CategoryBreadcrumb, { defaultHomeCrumb } from '@/components/category/Cate
 import CategoryControlBar from '@/components/category/CategoryControlBar'
 import CategoryFilterSidebar from '@/components/category/CategoryFilterSidebar'
 import CategoryGridSkeleton from '@/components/category/CategoryGridSkeleton'
-import CategoryProductCard, {
-  type CategoryProduct,
-} from '@/components/category/CategoryProductCard'
-import Pagination from '@/components/category/Pagination'
+import type { CategoryProduct } from '@/components/category/CategoryProductCard'
+import ShopGridWithInfiniteScroll from '@/components/shop/ShopGridWithInfiniteScroll'
 import {
   type ProductTypeFilter,
   SHOP_PAGE_SIZE,
@@ -37,37 +35,23 @@ type Props = {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
-function parsePage(raw: string | string[] | undefined): number {
-  const n = typeof raw === 'string' ? Number.parseInt(raw, 10) : 1
-  return Number.isFinite(n) && n >= 1 ? n : 1
-}
-
 function parsePrice(raw: string | string[] | undefined): number | undefined {
   if (typeof raw !== 'string') return undefined
   const n = Number.parseFloat(raw)
   return Number.isFinite(n) && n >= 0 ? n : undefined
 }
 
-function resultCountText(total: number, from: number, to: number): string {
+function resultCountText(total: number): string {
+  if (total === 0) return 'לא נמצאו מוצרים'
   if (total === 1) return 'מציג תוצאה יחידה'
-  if (to - from + 1 >= total) return `מציגים את כל ⁦${total}⁩ התוצאות`
-  return `מציג ${from}–${to} מתוך ${total} תוצאות`
+  return `מציגים ⁦${total}⁩ תוצאות`
 }
 
 type QueryArgs = {
   sort: SortValue
-  page: number
   priceMin?: number
   priceMax?: number
   productType?: ProductTypeFilter
-}
-
-function pageWindow(total: number, page: number) {
-  const totalPages = Math.max(1, Math.ceil(total / SHOP_PAGE_SIZE))
-  const currentPage = Math.min(page, totalPages)
-  const from = (currentPage - 1) * SHOP_PAGE_SIZE + 1
-  const to = Math.min(currentPage * SHOP_PAGE_SIZE, total)
-  return { totalPages, currentPage, from, to }
 }
 
 /**
@@ -86,7 +70,6 @@ async function shopArgs(searchParams: Props['searchParams']) {
   const sort = parseSort(sp.sort)
   const args: QueryArgs = {
     sort,
-    page: parsePage(sp.page),
     priceMin: parsePrice(sp.min),
     priceMax: parsePrice(sp.max),
     productType: parseProductType(sp.type),
@@ -100,40 +83,14 @@ async function shopArgs(searchParams: Props['searchParams']) {
   return { args, linkParams }
 }
 
-/**
- * A PAGE PAST THE END IS NOT AN EMPTY FILTER, AND IT USED TO SAY IT WAS.
- *
- * `?page=9999` offsets past the last row. The grid came back empty and printed
- * "nothing matches your selection", blaming filters the shopper never set, and
- * the header printed nothing at all.
- *
- * The header printing nothing is the tell, and it is why the obvious clamp does
- * not work: PostgREST answers an out-of-range `range()` with no rows AND NO
- * COUNT, so `total` comes back 0 and cannot tell "past the end" from "nothing
- * matched". A second read of page 1 is what recovers the real total, and it
- * only ever runs on a page that already had nothing to show.
- *
- * Both boundaries call this rather than the query, so the count and the grid
- * agree about which page they are describing. `cache` makes the repeat a
- * pointer copy within the request.
- */
-async function shopPageOrLast(args: QueryArgs) {
-  const first = await getShopProductsCached(args)
-  if (first.items.length > 0 || args.page <= 1) return first
-
-  const head = await getShopProductsCached({ ...args, page: 1 })
-  if (head.total === 0) return first
-
-  const lastPage = Math.max(1, Math.ceil(head.total / SHOP_PAGE_SIZE))
-  return lastPage === 1 ? head : getShopProductsCached({ ...args, page: lastPage })
-}
-
-/** Header count. Shares one query with the grid via getShopProductsCached. */
+/** Header count. */
 async function ResultCount({ args }: { args: QueryArgs }) {
-  const { total } = await shopPageOrLast(args)
+  const { total } = await getShopProductsCached({
+    ...args,
+    page: 1,
+  })
   if (total === 0) return null
-  const { from, to } = pageWindow(total, args.page)
-  return <p className="category-page__count">{resultCountText(total, from, to)}</p>
+  return <p className="category-page__count">{resultCountText(total)}</p>
 }
 
 async function ResultGrid({
@@ -143,7 +100,10 @@ async function ResultGrid({
   args: QueryArgs
   linkParams: Record<string, string | undefined>
 }) {
-  const { items, total } = await shopPageOrLast(args)
+  const { items, total } = await getShopProductsCached({
+    ...args,
+    page: 1,
+  })
   const assets = await loadGalleryAssetsForProducts(items)
 
   if (items.length === 0) {
@@ -154,27 +114,15 @@ async function ResultGrid({
     )
   }
 
-  const { totalPages, currentPage, from, to } = pageWindow(total, args.page)
+  const itemsWithAssets = items.map((item) => ({ ...(item as CategoryProduct), assets }))
 
   return (
-    <>
-      <ul className="category-products">
-        {items.map((product) => (
-          <li key={product.id} className="category-products__item">
-            <CategoryProductCard product={{ ...(product as CategoryProduct), assets }} />
-          </li>
-        ))}
-      </ul>
-      <Pagination
-        pathname="/products"
-        params={linkParams}
-        currentPage={currentPage}
-        totalPages={totalPages}
-      />
-      <p className="category-page__count category-page__count--bottom">
-        {resultCountText(total, from, to)}
-      </p>
-    </>
+    <ShopGridWithInfiniteScroll
+      initialItems={itemsWithAssets}
+      totalCount={total}
+      pageSize={SHOP_PAGE_SIZE}
+      params={linkParams}
+    />
   )
 }
 
