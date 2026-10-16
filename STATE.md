@@ -1,4 +1,4 @@
-RESUME FROM: XD12 (in progress - checkout UI complete, testing CSP build issue)
+RESUME FROM: XD12_BLOCKED (95% complete - checkout UI done, blocked by CSP build issue)
 # KenyonExpress — Project State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
