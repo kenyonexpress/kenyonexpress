@@ -331,7 +331,9 @@ export default function MegaMenu() {
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
+                aria-hidden="true"
               >
+                <title>הרחבת תפריט קטגוריות</title>
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -359,7 +361,9 @@ export default function MegaMenu() {
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
+                        aria-hidden="true"
                       >
+                        <title>הרחבת קטגוריית משנה</title>
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
