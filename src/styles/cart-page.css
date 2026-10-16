@@ -21,7 +21,7 @@
      at every width is live's DESKTOP clearance (last control to newsletter
      band) and it applies from lg only, below. */
   padding: 0 15px 80px;
-  color: #333e48;
+  color: var(--color-heading);
   font-size: 14px;
 }
 
@@ -46,7 +46,7 @@
   min-height: 42px;
   background: #f7f6f6;
   font-size: 14px;
-  color: #333e48;
+  color: var(--color-heading);
 }
 
 @media (min-width: 768px) {
@@ -59,7 +59,7 @@
 }
 
 .cart-page__breadcrumb a:hover {
-  color: #0062bd;
+  color: var(--color-link);
 }
 
 /* VISIBLE, at every width. The comment that stood here said the live page has
@@ -73,7 +73,7 @@
   font-size: 39.998px;
   font-weight: 500;
   line-height: 1.2;
-  color: #333e48;
+  color: var(--color-heading);
 }
 
 @media (min-width: 768px) {
@@ -101,7 +101,7 @@
   border: 1px solid #ddd;
   border-radius: 0.75rem;
   overflow: hidden;
-  background: #fff;
+  background: var(--color-surface);
 }
 
 .cart-line {
@@ -123,7 +123,7 @@
   border: 1px solid #eee;
   border-radius: 0.5rem;
   overflow: hidden;
-  background: #fff;
+  background: var(--color-surface);
 }
 
 .cart-line__body {
@@ -136,13 +136,13 @@
 .cart-line__name {
   font-size: 16.996px;
   font-weight: 400;
-  color: #333e48;
+  color: var(--color-heading);
   line-height: 1.4;
   transition: color 0.15s;
 }
 
 .cart-line__name:hover {
-  color: #0062bd;
+  color: var(--color-link);
 }
 
 .cart-line__warning {
@@ -203,7 +203,7 @@
   width: 2.5rem;
   text-align: center;
   font-weight: 700;
-  color: #333e48;
+  color: var(--color-heading);
 }
 
 .cart-line__price {
@@ -354,7 +354,7 @@
 .cart-sidebar__title {
   font-size: 25.004px;
   font-weight: 500;
-  color: #333e48;
+  color: var(--color-heading);
   margin-bottom: 1.25rem;
   padding-bottom: 0.75rem;
   border-bottom: 1px solid #eee;
@@ -372,7 +372,7 @@
   justify-content: space-between;
   gap: 1rem;
   font-size: 0.9375rem;
-  color: #333e48;
+  color: var(--color-heading);
 }
 
 .cart-sidebar__row--muted {
@@ -388,13 +388,13 @@
   border-top: 2px solid #333e48;
   font-size: 1rem;
   font-weight: 700;
-  color: #333e48;
+  color: var(--color-heading);
 }
 
 .cart-sidebar__total strong {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #333e48;
+  color: var(--color-heading);
 }
 
 .cart-sidebar__note {
@@ -427,8 +427,8 @@
   width: 100%;
   min-height: 47.52px;
   padding: 14.504px 29.876px;
-  background: #fed700;
-  color: #333e48;
+  background: var(--color-brand-primary);
+  color: var(--color-heading);
   font-size: 14px;
   font-weight: 700;
   border-radius: 21.994px;
@@ -439,7 +439,7 @@
 }
 
 .cart-checkout-btn:hover:not(:disabled) {
-  background: #fedd26;
+  background: var(--color-brand-primary-hover);
 }
 
 .cart-checkout-btn:disabled,
@@ -452,8 +452,8 @@
 /* The empty-cart banner, measured off the live page: #fed700, 49px/300,
    centred, padding 49px 79.282px, margin 98px 0 36.75px, radius 2px. */
 .cart-empty {
-  background: #fed700;
-  color: #333e48;
+  background: var(--color-brand-primary);
+  color: var(--color-heading);
   font-size: 49px;
   font-weight: 300;
   line-height: 1.4;
@@ -478,7 +478,7 @@
   min-height: var(--cart-touch);
   padding: 9.504px 48px;
   background: #efecec;
-  color: #333e48;
+  color: var(--color-heading);
   font-weight: 400;
   font-size: 14px;
   border-radius: 50px;
@@ -524,7 +524,7 @@
   padding: 9.504px 24px;
   border-radius: 50px;
   background: #dc3545;
-  color: #fff;
+  color: var(--color-surface);
   font-size: 14px;
   font-weight: 600;
   transition: background 0.15s;
@@ -544,7 +544,7 @@
   display: inline-block;
   padding: 14.504px 29.876px;
   background: #efecec;
-  color: #333e48;
+  color: var(--color-heading);
   font-size: 14px;
   border-radius: 21.994px;
   transition: background 0.15s;
@@ -619,13 +619,13 @@
   padding: 0 16px;
   font-size: 14px;
   font-family: inherit;
-  color: #333e48;
-  background: #fff;
+  color: var(--color-heading);
+  background: var(--color-surface);
 }
 
 .cart-coupon__input:focus {
   outline: none;
-  border-color: #fed700;
+  border-color: var(--color-brand-primary);
 }
 
 /* WCAG 1.4.11. `outline: none` above leaves `border-color` as the ONLY focus
@@ -653,8 +653,8 @@
   padding: 0 22px;
   border: 1px solid #fed700;
   border-radius: 20px;
-  background: #fed700;
-  color: #333e48;
+  background: var(--color-brand-primary);
+  color: var(--color-heading);
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
@@ -663,7 +663,7 @@
 }
 
 .cart-coupon__submit:hover:not(:disabled) {
-  background: #fedd26;
+  background: var(--color-brand-primary-hover);
 }
 
 .cart-coupon__submit:disabled {
@@ -700,13 +700,13 @@
   border: none;
   padding: 0;
   font: inherit;
-  color: #0062bd;
+  color: var(--color-link);
   text-decoration: underline;
   cursor: pointer;
 }
 
 .cart-sidebar__row--discount {
-  color: #328614;
+  color: var(--color-sale-badge);
   font-weight: 700;
 }
 

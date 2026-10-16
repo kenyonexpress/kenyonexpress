@@ -20,7 +20,7 @@
      every width (y159 at 380, y165 at 1440). The 24px that used to sit here
      pushed the whole page down against the reference. */
   padding: 0 15px 3rem;
-  color: #333e48;
+  color: var(--color-heading);
   font-size: 14px;
   line-height: 23.996px;
 }
@@ -41,7 +41,7 @@
   min-height: 42px;
   background: #f7f6f6;
   font-size: 14px;
-  color: #333e48;
+  color: var(--color-heading);
 }
 
 @media (min-width: 768px) {
@@ -54,14 +54,14 @@
 }
 
 .checkout-page__breadcrumb a:hover {
-  color: #0062bd;
+  color: var(--color-link);
 }
 
 .checkout-page__title {
   font-size: 39.998px;
   line-height: 47.9976px;
   font-weight: 500;
-  color: #333e48;
+  color: var(--color-heading);
   /* 22px above (the gap under the 380 breadcrumb band, 201 -> 223) and 40px
      below (h1 ends 271, entry-content starts 311). From 768 the breadcrumb's
      own 22.4px bottom padding closes the top gap (192 -> 193). */
@@ -91,8 +91,8 @@
   align-items: center;
   gap: 6px;
   flex-wrap: wrap;
-  background: #fed700;
-  color: #333e48;
+  background: var(--color-brand-primary);
+  color: var(--color-heading);
   font-size: 14px;
   border-radius: 5px;
   padding: 14px 20px;
@@ -105,7 +105,7 @@
   padding: 0;
   font: inherit;
   font-weight: 700;
-  color: #333e48;
+  color: var(--color-heading);
   text-decoration: underline;
   cursor: pointer;
 }
@@ -144,7 +144,7 @@
   font-size: 25.004px;
   line-height: 40.0064px;
   font-weight: 500;
-  color: #333e48;
+  color: var(--color-heading);
   margin: 0 0 34.0054px;
   padding: 0;
   border-bottom: 1px solid #ddd;
@@ -179,7 +179,7 @@
 .checkout-field label {
   font-size: 14px;
   line-height: 24px;
-  color: #333e48;
+  color: var(--color-heading);
 }
 
 .checkout-field__required {
@@ -194,8 +194,8 @@
   padding: 9.504px 16px;
   font-size: 14px;
   font-family: inherit;
-  color: #333e48;
-  background: #fff;
+  color: var(--color-heading);
+  background: var(--color-surface);
   width: 100%;
 }
 
@@ -208,7 +208,7 @@
 .checkout-field input:focus,
 .checkout-field textarea:focus {
   outline: none;
-  border-color: #fed700;
+  border-color: var(--color-brand-primary);
 }
 
 /* WCAG 1.4.11. `outline: none` above leaves `border-color` as the ONLY focus
@@ -253,7 +253,7 @@
   height: 45px;
   border: 1px solid #ddd;
   border-radius: 22px;
-  background: #fff;
+  background: var(--color-surface);
 }
 
 .checkout-skeleton__nav {
@@ -295,7 +295,7 @@
 }
 
 .checkout-item__name {
-  color: #333e48;
+  color: var(--color-heading);
   font-size: 14px;
 }
 
@@ -346,7 +346,7 @@
   align-items: center;
   gap: 8px;
   font-size: 14px;
-  color: #333e48;
+  color: var(--color-heading);
   padding-block: 12px;
   cursor: pointer;
 }
@@ -377,8 +377,8 @@
   border-radius: 22px;
   padding: 9.504px 16px;
   font-size: 14px;
-  background: #fff;
-  color: #333e48;
+  background: var(--color-surface);
+  color: var(--color-heading);
 }
 
 .checkout-terms {
@@ -397,7 +397,7 @@
 .checkout-privacy {
   font-size: 14px;
   line-height: 23.996px;
-  color: #333e48;
+  color: var(--color-heading);
   margin: 0 0 8px;
 }
 
@@ -418,8 +418,8 @@
   width: 100%;
   height: 64px;
   padding: 14.512px 16px;
-  background: #fed700;
-  color: #333e48;
+  background: var(--color-brand-primary);
+  color: var(--color-heading);
   font-size: 19.418px;
   line-height: 33.2824px;
   font-weight: 700;
@@ -430,7 +430,7 @@
 }
 
 .checkout-pay-btn:hover:not(:disabled) {
-  background: #fedd26;
+  background: var(--color-brand-primary-hover);
 }
 
 .checkout-pay-btn:disabled {
@@ -462,7 +462,7 @@
 }
 
 .checkout-cards__option input {
-  accent-color: #0062bd;
+  accent-color: var(--color-link);
 }
 
 /* Success (return) page */
@@ -475,7 +475,7 @@
 .checkout-success__title {
   font-size: 39.998px;
   font-weight: 500;
-  color: #333e48;
+  color: var(--color-heading);
   margin-bottom: 8px;
 }
 
@@ -494,7 +494,7 @@
   border-radius: 9px;
   padding: 18px 20px;
   margin-bottom: 16px;
-  background: #fff;
+  background: var(--color-surface);
   text-align: start;
 }
 
@@ -502,7 +502,7 @@
   font-size: 25.004px;
   font-weight: 700;
   letter-spacing: 0.2em;
-  color: #333e48;
+  color: var(--color-heading);
   direction: ltr;
 }
 
@@ -519,7 +519,7 @@
 
 .coupon-card__collect {
   font-size: 14px;
-  color: #333e48;
+  color: var(--color-heading);
   font-weight: 700;
 }
 
@@ -537,7 +537,7 @@
 .checkout-pending {
   text-align: center;
   padding-block: 60px;
-  color: #333e48;
+  color: var(--color-heading);
 }
 
 /* Shown when the reconcile loop runs out of budget, in place of the spinner.
@@ -572,7 +572,7 @@
   justify-content: space-between;
   gap: 16px;
   width: min(560px, 100%);
-  color: #fff;
+  color: var(--color-surface);
 }
 
 .checkout-frame__title {
@@ -591,13 +591,13 @@
   height: min(680px, 80vh);
   border: 0;
   border-radius: 10px;
-  background: #fff;
+  background: var(--color-surface);
 }
 
 .checkout-frame__note {
   width: min(560px, 100%);
   margin: 0;
-  color: #fff;
+  color: var(--color-surface);
   font-size: 12px;
   line-height: 18px;
   text-align: center;
@@ -680,25 +680,25 @@
 }
 
 .checkout-steps__item[data-state="current"] .checkout-steps__btn {
-  background: #fff;
-  color: #333e48;
-  border-bottom-color: #fed700;
+  background: var(--color-surface);
+  color: var(--color-heading);
+  border-bottom-color: var(--color-brand-primary);
 }
 
 .checkout-steps__item[data-state="current"] .checkout-steps__index {
-  background: #fed700;
-  color: #333e48;
+  background: var(--color-brand-primary);
+  color: var(--color-heading);
 }
 
 .checkout-steps__item[data-state="done"] .checkout-steps__btn {
-  background: #fff;
-  color: #333e48;
+  background: var(--color-surface);
+  color: var(--color-heading);
   border-bottom-color: #e4e4e4;
 }
 
 .checkout-steps__item[data-state="done"] .checkout-steps__index {
-  background: #333e48;
-  color: #fff;
+  background: var(--color-heading);
+  color: var(--color-surface);
 }
 
 /* Under 560px the three labels cannot share a row without truncating to
@@ -738,8 +738,8 @@
   min-height: var(--cart-touch, 44px);
   padding: 12px 38px;
   margin-inline-start: auto;
-  background: #fed700;
-  color: #333e48;
+  background: var(--color-brand-primary);
+  color: var(--color-heading);
   font-size: 15px;
   font-weight: 700;
   border: 1px solid #fed700;
@@ -749,7 +749,7 @@
 }
 
 .checkout-nav__next:hover:not(:disabled) {
-  background: #fedd26;
+  background: var(--color-brand-primary-hover);
 }
 
 .checkout-nav__next:disabled,
@@ -762,7 +762,7 @@
   min-height: var(--cart-touch, 44px);
   padding: 12px 26px;
   background: transparent;
-  color: #333e48;
+  color: var(--color-heading);
   font-size: 14px;
   font-weight: 700;
   border: 1px solid #ddd;
@@ -772,7 +772,7 @@
 }
 
 .checkout-nav__back:hover:not(:disabled) {
-  border-color: #333e48;
+  border-color: var(--color-heading);
 }
 
 .checkout-nav__back--review {
@@ -788,8 +788,8 @@
   min-height: var(--cart-touch, 44px);
   margin-top: 10px;
   padding: 10px 28px;
-  background: #fed700;
-  color: #333e48;
+  background: var(--color-brand-primary);
+  color: var(--color-heading);
   font-size: 14px;
   font-weight: 700;
   border: 1px solid #fed700;
@@ -799,7 +799,7 @@
 }
 
 .checkout-error__retry:hover:not(:disabled) {
-  background: #fedd26;
+  background: var(--color-brand-primary-hover);
 }
 
 .checkout-error__retry:disabled {
