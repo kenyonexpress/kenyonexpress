@@ -91,7 +91,7 @@ export default function FooterNewsletterForm() {
           <button
             type="submit"
             disabled={f.pending}
-            className="shrink-0 bg-footer-bg px-7 text-sm font-normal text-white transition-colors hover:bg-black disabled:opacity-70"
+            className="shrink-0 bg-footer-bg px-8 text-sm font-normal text-white transition-colors hover:bg-black disabled:opacity-70"
           >
             {f.pending ? NEWSLETTER_FORM_COPY.pending : 'הירשם'}
           </button>

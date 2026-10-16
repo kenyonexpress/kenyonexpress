@@ -95,7 +95,7 @@ export default function SupplierInfo({
       <h2 className="pdp-details__title">פרטי הספק</h2>
 
       {hasAnyVisible ? (
-        <ul className="pdp-details__list space-y-1.5">
+        <ul className="pdp-details__list space-y-2">
           {contact.name && supplier && (
             <li>
               <span className="pdp-details__label">ספק: </span>
@@ -107,7 +107,7 @@ export default function SupplierInfo({
 
           {contact.addressLine && (
             <li className="flex flex-wrap items-center gap-x-2 gap-y-1">
-              <span className="inline-flex items-center gap-1.5">
+              <span className="inline-flex items-center gap-2">
                 <MapPin size={15} aria-hidden="true" className="shrink-0" />
                 <span className="font-medium">{contact.addressLine}</span>
               </span>
@@ -126,7 +126,7 @@ export default function SupplierInfo({
           )}
 
           {contact.telHref && (
-            <li className="flex items-center gap-1.5">
+            <li className="flex items-center gap-2">
               <Phone size={15} aria-hidden="true" className="shrink-0" />
               {/* The number is dialled as typed but WRITTEN ltr: a Hebrew
                   paragraph would otherwise flip 03-1234567 to 1234567-03. */}
@@ -148,7 +148,7 @@ export default function SupplierInfo({
                 href={contact.whatsappHref}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 font-semibold text-whatsapp-ink hover:text-whatsapp-ink-hover"
+                className="inline-flex items-center gap-2 font-semibold text-whatsapp-ink hover:text-whatsapp-ink-hover"
               >
                 <WhatsAppIcon size={16} />
                 שליחת הודעה בוואטסאפ

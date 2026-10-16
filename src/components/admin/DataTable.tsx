@@ -91,7 +91,7 @@ export default function DataTable<T>({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={searchPlaceholder}
-              className="border-black/10 bg-white ps-9 text-black focus-visible:ring-brand-primary"
+              className="border-black/10 bg-white ps-8 text-black focus-visible:ring-brand-primary"
             />
           </div>
         )}
@@ -145,7 +145,7 @@ export default function DataTable<T>({
               <tr>
                 <td
                   colSpan={columns.length}
-                  className="px-4 py-10 text-center text-sm text-black/40"
+                  className="px-4 py-12 text-center text-sm text-black/40"
                 >
                   {emptyMessage}
                 </td>

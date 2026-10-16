@@ -26,7 +26,7 @@ export default function LandingBlocks({
   campaign: CampaignParams
 }) {
   return (
-    <div className="space-y-10">
+    <div className="space-y-12">
       {blocks.map((block, index) => (
         <LandingBlockView key={`${block.kind}-${index}`} block={block} campaign={campaign} />
       ))}

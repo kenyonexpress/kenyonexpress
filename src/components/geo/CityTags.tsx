@@ -107,7 +107,7 @@ export default function CityTags({ className = '' }: { className?: string }) {
               <Link
                 href={hrefForCity(city.slug)}
                 aria-current={isActive ? 'true' : undefined}
-                className={`inline-flex items-center gap-1 rounded-full border px-3 py-1.5 text-sm transition-colors ${
+                className={`inline-flex items-center gap-1 rounded-full border px-3 py-2 text-sm transition-colors ${
                   isActive
                     ? 'border-brand bg-brand text-brand-dark font-semibold'
                     : 'border-gray-300 bg-white text-gray-700 hover:border-brand hover:text-brand-dark'
@@ -125,7 +125,7 @@ export default function CityTags({ className = '' }: { className?: string }) {
             onClick={handleNearMe}
             disabled={locating}
             aria-pressed={nearActive}
-            className={`inline-flex items-center gap-1 rounded-full border px-3 py-1.5 text-sm transition-colors disabled:opacity-60 ${
+            className={`inline-flex items-center gap-1 rounded-full border px-3 py-2 text-sm transition-colors disabled:opacity-60 ${
               nearActive
                 ? 'border-brand bg-brand text-brand-dark font-semibold'
                 : 'border-gray-300 bg-white text-gray-700 hover:border-brand hover:text-brand-dark'

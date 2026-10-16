@@ -38,7 +38,7 @@ export default function AboutPress({
               </a>
               <p className="text-sm text-heading/75">
                 {mention.outlet}
-                <span aria-hidden="true" className="mx-0.5">
+                <span aria-hidden="true" className="mx-1">
                   ·
                 </span>
                 <time dateTime={mention.publishedAt}>

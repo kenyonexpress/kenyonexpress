@@ -81,7 +81,7 @@ const KIND_LABEL: Record<BulkOperationKind, string> = {
 }
 
 const input =
-  'rounded-lg border border-black/10 bg-white px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand'
+  'rounded-lg border border-black/10 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand'
 const btn =
   'inline-flex items-center gap-2 rounded-lg border border-black/10 px-4 py-2 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50'
 const btnPrimary = `${btn} bg-brand text-brand-dark hover:bg-brand-primary-hover`
@@ -107,7 +107,7 @@ function Diff({ row }: { row: BulkPreviewRow }) {
   // price_ils mirrors kenyon_price; showing both is noise.
   const keys = Object.keys(after).filter((k) => k !== 'price_ils')
   return (
-    <ul className="space-y-0.5 text-xs">
+    <ul className="space-y-1 text-xs">
       {keys.map((key) => (
         <li key={key} className="text-gray-700">
           <span className="text-gray-500">{FIELD_LABEL[key] ?? key}:</span>{' '}
@@ -387,7 +387,7 @@ export default function ProductBulkEditClient({ categories, hidePricing, r2Confi
               key={k}
               type="button"
               onClick={() => edit(setKind)(k)}
-              className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+              className={`rounded-lg px-3 py-2 text-xs font-medium transition-colors ${
                 kind === k
                   ? 'bg-brand-primary text-ink'
                   : 'border border-black/10 text-black/60 hover:bg-brand-primary/30 hover:text-ink'
@@ -605,7 +605,7 @@ export default function ProductBulkEditClient({ categories, hidePricing, r2Confi
           {failures.length > 0 ? (
             <details className="mt-2 text-xs">
               <summary className="cursor-pointer text-gray-600">פירוט ({failures.length})</summary>
-              <ul className="mt-1 space-y-0.5">
+              <ul className="mt-1 space-y-1">
                 {failures.slice(0, 100).map((f) => (
                   <li key={f.id} className="text-gray-700">
                     <span className="font-mono" dir="ltr">
@@ -693,7 +693,7 @@ export default function ProductBulkEditClient({ categories, hidePricing, r2Confi
                       </td>
                       <td className="px-3 py-2">
                         <span
-                          className={`inline-flex rounded px-2 py-0.5 text-xs font-medium ${
+                          className={`inline-flex rounded px-2 py-1 text-xs font-medium ${
                             row.status === 'change'
                               ? 'bg-emerald-100 text-emerald-800'
                               : row.status === 'skip'

@@ -187,7 +187,7 @@ export default function RegionMenu() {
                 href={regionHref(region)}
                 data-region-item=""
                 onClick={close}
-                className="block px-4 py-1.5 text-sm text-heading transition-colors hover:bg-surface-hover"
+                className="block px-4 py-2 text-sm text-heading transition-colors hover:bg-surface-hover"
               >
                 {region.name}
               </Link>

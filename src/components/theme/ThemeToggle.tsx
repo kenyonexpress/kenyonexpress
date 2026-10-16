@@ -16,7 +16,7 @@ export function ThemeToggle() {
     <button
       type="button"
       onClick={toggleTheme}
-      className="flex items-center gap-1.5 transition-colors hover:text-heading-hover"
+      className="flex items-center gap-2 transition-colors hover:text-heading-hover"
       aria-label={label}
       title={label}
     >

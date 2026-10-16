@@ -20,7 +20,7 @@ export default function StatusBadge({ label, variant, className }: Props) {
   return (
     <span
       className={cn(
-        'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium',
+        'inline-flex items-center px-2 py-1 rounded-full text-xs font-medium',
         VARIANTS[variant],
         className,
       )}

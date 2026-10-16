@@ -760,7 +760,7 @@ export default function ProductForm({
                   <p className="text-xs font-semibold text-gray-700 mb-2">
                     מה הלקוח משלם, {recurringPreview.cadenceLabel}
                   </p>
-                  <dl className="grid grid-cols-2 gap-x-6 gap-y-1.5 text-xs">
+                  <dl className="grid grid-cols-2 gap-x-6 gap-y-2 text-xs">
                     <Row label="בכל מחזור" value={recurringPreview.chargeIls} />
                     <Row label="בשנה" value={recurringPreview.annualIls} />
                     <Row
@@ -846,7 +846,7 @@ export default function ProductForm({
                 השלימו מחיר, עמלה{isCouponProduct ? ' ומחיר קופון' : ''} כדי לראות את החלוקה.
               </p>
             ) : (
-              <dl className="grid grid-cols-2 gap-x-6 gap-y-1.5 text-xs">
+              <dl className="grid grid-cols-2 gap-x-6 gap-y-2 text-xs">
                 <Row label="הלקוח משלם באתר" value={preview.paidOnlineIls} />
                 {isCouponProduct && (
                   <Row label="הלקוח משלים בבית העסק" value={preview.balanceAtBusinessIls} />

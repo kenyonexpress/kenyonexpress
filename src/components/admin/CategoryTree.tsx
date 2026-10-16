@@ -211,7 +211,7 @@ export default function CategoryTree({ categories }: Props) {
 
       <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
         {tree.length === 0 ? (
-          <div className="px-4 py-10 text-center text-gray-400 text-sm">אין קטגוריות עדיין</div>
+          <div className="px-4 py-12 text-center text-gray-400 text-sm">אין קטגוריות עדיין</div>
         ) : (
           tree.map((node) => (
             <CategoryNode

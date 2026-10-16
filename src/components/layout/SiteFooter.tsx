@@ -116,7 +116,7 @@ function FooterLinkColumn({ title, links }: { title: string; links: FooterLink[]
           className="shrink-0 transition-transform group-open:rotate-180 lg:hidden"
         />
       </summary>
-      <ul className="space-y-2.5 pb-4 lg:pb-0">
+      <ul className="space-y-3 pb-4 lg:pb-0">
         {links.map((link) => (
           <li key={link.href}>
             <Link
@@ -307,7 +307,7 @@ export default function SiteFooter() {
         so a phone does not simply lose it.
       */}
       <div className="bg-footer-bg text-white lg:hidden">
-        <div className="mx-auto flex max-w-store-footer flex-col items-center gap-0.5 px-gutter py-4 text-center">
+        <div className="mx-auto flex max-w-store-footer flex-col items-center gap-1 px-gutter py-4 text-center">
           <SmartImage
             src={LOGO_FOOTER}
             alt="קניון EXPRESS"

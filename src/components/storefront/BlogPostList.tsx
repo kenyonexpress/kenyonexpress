@@ -36,7 +36,7 @@ export default function BlogPostList({
               {category ? (
                 <Link
                   href={`/blog/category/${category.slug}`}
-                  className="inline-block rounded-full bg-heading/5 px-2 py-0.5 text-xs font-semibold text-heading hover:bg-heading/10"
+                  className="inline-block rounded-full bg-heading/5 px-2 py-1 text-xs font-semibold text-heading hover:bg-heading/10"
                 >
                   {category.name}
                 </Link>

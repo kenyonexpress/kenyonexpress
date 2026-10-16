@@ -82,7 +82,7 @@ function BrandMark() {
         <path d="M28 33a4 4 0 1 1 6 3.5c-1.3.8-2 1.6-2 3" />
         <circle cx="32" cy="45" r="0.5" fill="currentColor" />
       </svg>
-      <span className="absolute -bottom-2 rounded-pill border-2 border-white bg-heading px-3 py-0.5 text-sm font-black tracking-wider text-white">
+      <span className="absolute -bottom-2 rounded-pill border-2 border-white bg-heading px-3 py-1 text-sm font-black tracking-wider text-white">
         404
       </span>
     </div>
@@ -96,7 +96,7 @@ export default async function NotFoundBody({ compact = false }: Props = {}) {
     <div
       data-not-found
       dir="rtl"
-      className="mx-auto w-full max-w-deals px-deals-pad py-10 font-sans md:px-deals-pad-md md:py-14 xl:px-0"
+      className="mx-auto w-full max-w-deals px-deals-pad py-12 font-sans md:px-deals-pad-md md:py-14 xl:px-0"
     >
       <section className="mx-auto flex max-w-2xl flex-col items-center text-center">
         <BrandMark />

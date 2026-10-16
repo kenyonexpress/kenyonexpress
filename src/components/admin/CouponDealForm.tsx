@@ -41,7 +41,7 @@ export default function CouponDealForm({ deal, vendors }: Props) {
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* Form */}
       <div className="lg:col-span-2">
-        <form action={action} className="space-y-5 bg-white border border-gray-200 rounded-xl p-6">
+        <form action={action} className="space-y-6 bg-white border border-gray-200 rounded-xl p-6">
           {deal && <input type="hidden" name="id" value={deal.id} />}
           <input type="hidden" name="image_url" value={imageUrl[0] ?? ''} />
 

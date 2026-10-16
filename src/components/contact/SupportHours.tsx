@@ -32,7 +32,7 @@ export default function SupportHours() {
       </dl>
 
       <h3 className="mt-6 text-base font-bold text-heading">מתי נחזור אליכם</h3>
-      <ul className="mt-2 space-y-1.5 text-base leading-relaxed text-heading/85">
+      <ul className="mt-2 space-y-2 text-base leading-relaxed text-heading/85">
         <li>{SUPPORT_RESPONSE.whatsapp}</li>
         <li>{SUPPORT_RESPONSE.form}</li>
         <li>{SUPPORT_RESPONSE.afterHours}</li>

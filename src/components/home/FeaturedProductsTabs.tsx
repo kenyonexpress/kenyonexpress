@@ -39,7 +39,7 @@ export default function FeaturedProductsTabs({ products }: { products: Product[]
               type="button"
               onClick={() => setActive(t.id)}
               aria-pressed={active === t.id}
-              className={`rounded-md px-3 py-1.5 text-sm font-semibold transition-colors ${
+              className={`rounded-md px-3 py-2 text-sm font-semibold transition-colors ${
                 active === t.id ? 'bg-brand-primary text-heading' : 'text-muted hover:text-heading'
               }`}
             >
@@ -58,7 +58,7 @@ export default function FeaturedProductsTabs({ products }: { products: Product[]
           ))}
         </div>
       ) : (
-        <p className="py-10 text-center text-sm text-muted">אין מוצרים להצגה</p>
+        <p className="py-12 text-center text-sm text-muted">אין מוצרים להצגה</p>
       )}
     </div>
   )

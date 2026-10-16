@@ -1,8 +1,13 @@
 import { render, screen } from '@testing-library/react'
 import SwipeableGallery from './SwipeableGallery'
 
+interface MockImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
+  src: string
+  alt?: string
+}
+
 vi.mock('next/image', () => ({
-  default: (props: any) => {
+  default: (props: MockImageProps) => {
     // biome-ignore lint/a11y/useAltText: Mock component for testing
     return <img {...props} />
   },

@@ -437,7 +437,7 @@ export default function ProductImportClient() {
                     <td className="max-w-48 truncate py-2 pe-4 text-gray-600">{sampleFor(col)}</td>
                     <td className="py-2">
                       <select
-                        className="rounded-lg border border-black/10 bg-white px-2 py-1.5 text-sm"
+                        className="rounded-lg border border-black/10 bg-white px-2 py-2 text-sm"
                         value={selections[col] ?? ''}
                         onChange={(e) => {
                           const next = [...selections]

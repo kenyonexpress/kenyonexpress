@@ -35,7 +35,7 @@ export default function AboutContact({ email }: { email: string }) {
       </div>
 
       <h3 className="mt-6 text-base font-bold text-heading">שעות מענה, לפי שעון ישראל</h3>
-      <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-6 gap-y-1.5 text-base text-heading/85">
+      <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-base text-heading/85">
         {SUPPORT_HOURS_ROWS.map((row) => (
           <div key={row.label} className="contents">
             <dt className="font-medium text-heading">{row.label}</dt>

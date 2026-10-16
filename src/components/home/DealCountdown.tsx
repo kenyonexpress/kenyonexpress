@@ -39,7 +39,7 @@ export default function DealCountdown() {
   return (
     <p
       data-deal-countdown
-      className="m-0 inline-flex min-h-deal-countdown max-w-full items-center gap-2.5 rounded-full bg-brand-primary px-deal-countdown-pad py-1 text-body-lg font-bold text-heading"
+      className="m-0 inline-flex min-h-deal-countdown max-w-full items-center gap-2 rounded-full bg-brand-primary px-deal-countdown-pad py-1 text-body-lg font-bold text-heading"
     >
       <span>מסתיים בעוד:</span>
       <output dir="ltr" aria-live="off" className="tabular-nums">

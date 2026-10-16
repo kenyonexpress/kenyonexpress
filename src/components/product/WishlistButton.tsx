@@ -113,7 +113,7 @@ export default function WishlistButton({
         className={
           className ??
           (variant === 'inline'
-            ? 'tap-area tap-area--36 inline-flex items-center gap-1.5 text-sm font-semibold text-heading transition-colors hover:text-price disabled:opacity-50'
+            ? 'tap-area tap-area--36 inline-flex items-center gap-2 text-sm font-semibold text-heading transition-colors hover:text-price disabled:opacity-50'
             : 'inline-flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-xl transition-colors hover:border-price disabled:opacity-50')
         }
       >

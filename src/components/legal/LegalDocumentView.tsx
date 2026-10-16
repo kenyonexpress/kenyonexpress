@@ -27,12 +27,12 @@ export default function LegalDocumentView({
   })
 
   return (
-    <main className="mx-auto w-full max-w-page px-4 py-10">
+    <main className="mx-auto w-full max-w-page px-4 py-12">
       <nav aria-label="נתיב ניווט" className="mb-6 text-sm text-heading/80">
         <Link href="/" className="hover:text-heading">
           בית
         </Link>
-        <span aria-hidden="true" className="mx-0.5">
+        <span aria-hidden="true" className="mx-1">
           /
         </span>
         <span className="text-heading">{breadcrumb}</span>

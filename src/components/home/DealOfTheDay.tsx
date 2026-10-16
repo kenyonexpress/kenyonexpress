@@ -79,7 +79,7 @@ export default async function DealOfTheDay() {
         <div className="flex min-w-0 flex-1 flex-col gap-3">
           {/* Electro's header: the title with the countdown pill 30px after it
               on the same line, wrapping under it where the line is short. */}
-          <div className="flex flex-wrap items-center gap-x-7.5 gap-y-2">
+          <div className="flex flex-wrap items-center gap-x-8 gap-y-2">
             <h2
               id="deal-of-the-day-title"
               className="m-0 text-section-title font-bold text-heading"
@@ -140,7 +140,7 @@ export default async function DealOfTheDay() {
             <span
               data-deal-badge
               aria-hidden="true"
-              className="absolute end-0 top-0 z-10 rounded-sm bg-deal-badge px-2 py-0.5 text-badge font-bold leading-6 text-white"
+              className="absolute end-0 top-0 z-10 rounded-sm bg-deal-badge px-2 py-1 text-badge font-bold leading-6 text-white"
             >
               {/* `end-0` resolves against the element's OWN direction, so the
                   ltr that keeps "-50%" from reading "50%-" goes on an inner

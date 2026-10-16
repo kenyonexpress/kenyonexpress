@@ -55,7 +55,7 @@ export default function LeftSidebar() {
             </p>
             <button
               type="button"
-              className="mt-2.5 w-full text-white text-xs font-bold py-1.5 rounded-full transition-colors hover:opacity-90"
+              className="mt-2.5 w-full text-white text-xs font-bold py-2 rounded-full transition-colors hover:opacity-90"
               style={{ background: 'var(--color-promo-flame)' }}
             >
               לרכישה ←

@@ -100,7 +100,7 @@ export default function ServerDataTable<T>({
             <tr>
               <td
                 colSpan={columns.length + (selectable ? 1 : 0)}
-                className="px-4 py-10 text-center text-sm text-black/40"
+                className="px-4 py-12 text-center text-sm text-black/40"
               >
                 {emptyMessage}
               </td>

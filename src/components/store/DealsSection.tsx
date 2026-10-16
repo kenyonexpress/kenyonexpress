@@ -62,7 +62,7 @@ export default function DealsSection({ products }: { products: Product[] }) {
             ))}
           </div>
         ) : (
-          <p className="py-10 text-center text-sm text-gray-500">אין דילים להצגה כרגע</p>
+          <p className="py-12 text-center text-sm text-gray-500">אין דילים להצגה כרגע</p>
         )}
       </div>
     </section>

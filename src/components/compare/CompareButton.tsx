@@ -100,7 +100,7 @@ export default function CompareButton({
       data-compared={active ? 'true' : 'false'}
       className={
         className ??
-        'tap-area tap-area--36 inline-flex items-center gap-1.5 text-sm font-semibold text-heading transition-colors hover:text-price data-[compared=true]:text-price'
+        'tap-area tap-area--36 inline-flex items-center gap-2 text-sm font-semibold text-heading transition-colors hover:text-price data-[compared=true]:text-price'
       }
     >
       <Scale size={18} strokeWidth={2} aria-hidden="true" />

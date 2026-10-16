@@ -204,7 +204,7 @@ export default function ImageUploader({
                   onChange={(e) => setAlt(s.key, e.target.value)}
                   placeholder="טקסט חלופי בעברית, למשל: אוזניות אלחוטיות שחורות"
                   aria-label={`טקסט חלופי עבור ${s.file.name}`}
-                  className={`w-full border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand ${
+                  className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand ${
                     s.alt && !isValidHebrewAlt(s.alt) ? 'border-red-400' : 'border-gray-300'
                   }`}
                 />
@@ -246,7 +246,7 @@ export default function ImageUploader({
           onDrop={onDrop}
           disabled={uploading}
           aria-label="גרירת תמונות לכאן או לחיצה לבחירה"
-          className={`flex w-full flex-col items-center gap-1.5 px-4 py-6 border-2 border-dashed rounded-lg text-sm transition-colors disabled:opacity-60 ${
+          className={`flex w-full flex-col items-center gap-2 px-4 py-6 border-2 border-dashed rounded-lg text-sm transition-colors disabled:opacity-60 ${
             isDragging
               ? 'border-brand bg-brand/5 text-brand'
               : 'border-gray-300 text-gray-500 hover:border-brand hover:text-brand'

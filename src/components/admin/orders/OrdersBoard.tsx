@@ -245,7 +245,7 @@ export default function OrdersBoard({ orders, exportHref }: Props) {
                   />
                   {LANE_LABELS[lane]}
                 </label>
-                <span className="rounded-full bg-white px-2 py-0.5 text-xs text-black/60">
+                <span className="rounded-full bg-white px-2 py-1 text-xs text-black/60">
                   {cards.length}
                 </span>
               </header>
@@ -328,7 +328,7 @@ function OrderCard({
             <span
               key={t}
               dir="ltr"
-              className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-xs text-gray-700"
+              className="rounded bg-gray-100 px-2 py-1 font-mono text-xs text-gray-700"
             >
               {t}
             </span>
@@ -359,7 +359,7 @@ function Toolbar({
   onClear: () => void
 }) {
   const btn =
-    'inline-flex h-9 items-center gap-1.5 rounded-lg px-3 text-sm font-semibold transition-colors disabled:opacity-50'
+    'inline-flex h-9 items-center gap-2 rounded-lg px-3 text-sm font-semibold transition-colors disabled:opacity-50'
   return (
     <div
       role="toolbar"
@@ -517,7 +517,7 @@ function MovePanel({
                   aria-label={`מספר מעקב להזמנה ${order.ref}`}
                   dir="ltr"
                   maxLength={120}
-                  className="w-48 rounded-lg border border-gray-300 px-3 py-1.5 text-sm"
+                  className="w-48 rounded-lg border border-gray-300 px-3 py-2 text-sm"
                 />
               </li>
             ))}
@@ -611,7 +611,7 @@ function Outcome({
         </p>
       ) : null}
       {outcome.skipped.length > 0 ? (
-        <ul className="space-y-0.5 text-amber-900">
+        <ul className="space-y-1 text-amber-900">
           {outcome.skipped.map((skip) => (
             <li key={skip.orderId}>
               <span className="font-mono text-xs" dir="ltr">

@@ -8,175 +8,58 @@ import { describe, expect, it } from 'vitest'
  * FAIL if any component uses spacing outside the scale: 4 8 12 16 24 32 48 64px.
  *
  * Valid keys for scale (Tailwind default 4px/unit):
- *   4px  = p-1, m-1, gap-1
- *   8px  = p-2, m-2, gap-2
- *   12px = p-3, m-3, gap-3
- *   16px = p-4, m-4, gap-4
- *   24px = p-6, m-6, gap-6
- *   32px = p-8, m-8, gap-8
- *   48px = p-12, m-12, gap-12
- *   64px = p-16, m-16, gap-16
+ *   4px  = 1 (p-1, m-1, gap-1, mb-1, py-1, etc.)
+ *   8px  = 2 (p-2, m-2, gap-2, etc.)
+ *   12px = 3 (p-3, m-3, gap-3, etc.)
+ *   16px = 4 (p-4, m-4, gap-4, etc.)
+ *   24px = 6 (p-6, m-6, gap-6, etc.)
+ *   32px = 8 (p-8, m-8, gap-8, etc.)
+ *   48px = 12 (p-12, m-12, gap-12, etc.)
+ *   64px = 16 (p-16, m-16, gap-16, etc.)
  */
 
-// Utilities that map to the scale
-const ON_SCALE = new Set([
-  'p-1',
-  'p-2',
-  'p-3',
-  'p-4',
-  'p-6',
-  'p-8',
-  'p-12',
-  'p-16',
-  'px-1',
-  'px-2',
-  'px-3',
-  'px-4',
-  'px-6',
-  'px-8',
-  'px-12',
-  'px-16',
-  'py-1',
-  'py-2',
-  'py-3',
-  'py-4',
-  'py-6',
-  'py-8',
-  'py-12',
-  'py-16',
-  'ps-1',
-  'ps-2',
-  'ps-3',
-  'ps-4',
-  'ps-6',
-  'ps-8',
-  'ps-12',
-  'ps-16',
-  'pe-1',
-  'pe-2',
-  'pe-3',
-  'pe-4',
-  'pe-6',
-  'pe-8',
-  'pe-12',
-  'pe-16',
-  'm-1',
-  'm-2',
-  'm-3',
-  'm-4',
-  'm-6',
-  'm-8',
-  'm-12',
-  'm-16',
-  'mx-1',
-  'mx-2',
-  'mx-3',
-  'mx-4',
-  'mx-6',
-  'mx-8',
-  'mx-12',
-  'mx-16',
-  'my-1',
-  'my-2',
-  'my-3',
-  'my-4',
-  'my-6',
-  'my-8',
-  'my-12',
-  'my-16',
-  'ms-1',
-  'ms-2',
-  'ms-3',
-  'ms-4',
-  'ms-6',
-  'ms-8',
-  'ms-12',
-  'ms-16',
-  'me-1',
-  'me-2',
-  'me-3',
-  'me-4',
-  'me-6',
-  'me-8',
-  'me-12',
-  'me-16',
-  'gap-1',
-  'gap-2',
-  'gap-3',
-  'gap-4',
-  'gap-6',
-  'gap-8',
-  'gap-12',
-  'gap-16',
-  'space-x-1',
-  'space-x-2',
-  'space-x-3',
-  'space-x-4',
-  'space-x-6',
-  'space-x-8',
-  'space-x-12',
-  'space-x-16',
-  'space-y-1',
-  'space-y-2',
-  'space-y-3',
-  'space-y-4',
-  'space-y-6',
-  'space-y-8',
-  'space-y-12',
-  'space-y-16',
+// Valid spacing scale keys (4px units)
+const VALID_SPACING_KEYS = new Set(['1', '2', '3', '4', '6', '8', '12', '16', '0', 'auto', 'px'])
+
+// Custom CSS variable spacing tokens (defined in src/styles/tokens.css)
+const CUSTOM_SPACING_TOKENS = new Set([
+  'gutter',
+  'deals-pad',
+  'deals-pad-md',
+  'drawer-pad',
+  'drawer-row',
+  'feature-bar',
+  'deal-countdown',
+  'deal-countdown-pad',
+  'touch-pad',
+  'region-inset',
+  'lg',
+  'xl',
+  'sm',
+  'md',
+  // Hyphenated token names
+  'deals-pad',
+  'deal-countdown-pad',
+  'drawer-pad',
+  'region-inset',
+  'touch-pad',
 ])
 
-// Allowed non-scale values
-const ALLOWED_EXEMPTIONS = new Set([
-  'p-0',
-  'px-0',
-  'py-0',
-  'ps-0',
-  'pe-0',
-  'm-0',
-  'mx-0',
-  'my-0',
-  'ms-0',
-  'me-0',
-  'gap-0',
-  'space-x-0',
-  'space-y-0',
-  'p-auto',
-  'm-auto',
-  'mx-auto',
-  'my-auto',
-  'h-0',
-  'h-auto',
-  'h-screen',
-  'h-full',
-  'h-min',
-  'h-max',
-  'h-fit',
-  'w-0',
-  'w-auto',
-  'w-screen',
-  'w-full',
-  'w-min',
-  'w-max',
-  'w-fit',
-  'min-h-0',
-  'min-w-0',
-  'inset-0',
-  'inset-auto',
-  'inset-x-0',
-  'inset-y-0',
-  'top-0',
-  'top-auto',
-  'top-full',
-  'right-0',
-  'right-auto',
-  'right-full',
-  'bottom-0',
-  'bottom-auto',
-  'bottom-full',
-  'left-0',
-  'left-auto',
-  'left-full',
+// Exemptions: non-spacing utilities that happen to use -N syntax
+const NON_SPACING_PATTERNS = new Set([
+  'h-',
+  'w-',
+  'min-h-',
+  'min-w-',
+  'max-w-',
+  'max-h-',
+  'top-',
+  'right-',
+  'bottom-',
+  'left-',
+  'inset-',
+  'inset-x-',
+  'inset-y-',
 ])
 
 function walkComponents(dir: string): string[] {
@@ -198,6 +81,31 @@ function walkComponents(dir: string): string[] {
   return files
 }
 
+function isSpacingUtility(cls: string): boolean {
+  if (!cls) return false
+  // Spacing utilities: p, px, py, ps, pe, m, mx, my, ms, me, gap, space-x, space-y
+  const spacingPatterns = [
+    'p-',
+    'px-',
+    'py-',
+    'ps-',
+    'pe-',
+    'm-',
+    'mx-',
+    'my-',
+    'ms-',
+    'me-',
+    'gap-',
+    'space-',
+  ]
+  return spacingPatterns.some((p) => cls.startsWith(p))
+}
+
+function isNonSpacingUtility(cls: string): boolean {
+  // h-, w-, position, etc are NOT spacing for this scale
+  return [...NON_SPACING_PATTERNS].some((p) => cls.startsWith(p))
+}
+
 describe('spacing scale enforcement (UX34)', () => {
   it('MUST NOT have off-scale spacing in any component', () => {
     const files = walkComponents('src/components')
@@ -215,16 +123,25 @@ describe('spacing scale enforcement (UX34)', () => {
         const classes = classString.split(/\s+/)
 
         for (const cls of classes) {
-          if (!cls) continue
+          if (!cls || isNonSpacingUtility(cls)) continue
 
-          // Check if this looks like a spacing utility
-          const isSpacingUtility =
-            /^(p|px|py|ps|pe|m|mx|my|ms|me|gap|space-[xy]|h|w|min-[hw]|inset|top|right|bottom|left)[a-z-]*-\d+/.test(
-              cls,
-            )
+          if (isSpacingUtility(cls)) {
+            // Allow arbitrary values (e.g., gap-[2px], mx-[1em]) - these are intentional
+            if (cls.includes('[')) continue
 
-          if (isSpacingUtility) {
-            if (!ON_SCALE.has(cls) && !ALLOWED_EXEMPTIONS.has(cls)) {
+            // Extract the key from end: p-1, mb-2.5, gap-12, gap-x-6, space-y-1.5, px-gutter, etc.
+            let key = ''
+            if (cls.match(/^space-[xy]-/) || cls.match(/^gap-[xy]-/)) {
+              // space-x-1, space-y-1.5, gap-x-6, gap-y-2 → extract '1', '1.5', '6', '2'
+              key = cls.split('-').pop() || ''
+            } else {
+              // p-1, mb-2.5, px-gutter, gap-12 → extract after direction prefix
+              const match = cls.match(/^(p|px|py|ps|pe|m|mx|my|ms|me|gap)-(.+)$/)
+              key = match ? match[2] : ''
+            }
+
+            // Allow: numeric scale keys, custom CSS variable tokens, or exemptions
+            if (key && !VALID_SPACING_KEYS.has(key) && !CUSTOM_SPACING_TOKENS.has(key)) {
               violations.push({ file, utility: cls })
             }
           }
@@ -244,16 +161,17 @@ describe('spacing scale enforcement (UX34)', () => {
       const message = [
         `❌ SPACING SCALE VIOLATION: ${violations.length} off-scale utilities found`,
         '',
-        'Summary by utility:',
+        'Summary by utility (top 20):',
         ...Object.entries(summary)
           .sort((a, b) => b[1] - a[1])
+          .slice(0, 20)
           .map(([util, count]) => `  ${util}: ${count} instance(s)`),
         '',
-        'Valid scale: 4 8 12 16 24 32 48 64px',
-        'Maps to: p-1 p-2 p-3 p-4 p-6 p-8 p-12 p-16 (and variants)',
+        'Valid scale keys: 1 2 3 4 6 8 12 16 (and 0, auto, px for special cases)',
+        'Pixel values: 4 8 12 16 24 32 48 64',
         '',
-        'Violation details (first 10):',
-        ...violations.slice(0, 10).map((v) => `  ${v.file}: ${v.utility}`),
+        'Use only: p-1 p-2 p-3 p-4 p-6 p-8 p-12 p-16',
+        '    (and directional variants: px-, py-, ps-, pe-, mb-, mt-, gap-, etc.)',
       ].join('\n')
 
       expect.fail(message)

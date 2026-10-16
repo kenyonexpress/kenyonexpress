@@ -84,7 +84,7 @@ describe('DealOfTheDay (UX08)', () => {
       'rounded-sm',
       'bg-deal-badge',
       'px-2',
-      'py-0.5',
+      'py-1',
       'text-badge',
       'font-bold',
       'text-white',

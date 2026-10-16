@@ -124,7 +124,7 @@ function BrandMark() {
         <path d="M32 31v9" />
         <circle cx="32" cy="46" r="0.5" fill="currentColor" />
       </svg>
-      <span className="absolute -bottom-2 rounded-pill border-2 border-white bg-heading px-3 py-0.5 text-sm font-black tracking-wider text-white">
+      <span className="absolute -bottom-2 rounded-pill border-2 border-white bg-heading px-3 py-1 text-sm font-black tracking-wider text-white">
         500
       </span>
     </div>
@@ -194,7 +194,7 @@ export default function ErrorBody({ error, reset, segment }: Props) {
     <div
       data-error
       dir="rtl"
-      className="mx-auto w-full max-w-deals px-deals-pad py-10 font-sans md:px-deals-pad-md md:py-14 xl:px-0"
+      className="mx-auto w-full max-w-deals px-deals-pad py-12 font-sans md:px-deals-pad-md md:py-14 xl:px-0"
     >
       <section className="mx-auto flex max-w-2xl flex-col items-center text-center">
         <BrandMark />
@@ -269,10 +269,7 @@ export default function ErrorBody({ error, reset, segment }: Props) {
         {error.digest ? (
           <p data-error-digest className="mt-6 text-xs text-muted">
             קוד תקלה לתמיכה:{' '}
-            <code
-              dir="ltr"
-              className="rounded bg-surface-hover px-1.5 py-0.5 font-mono text-heading"
-            >
+            <code dir="ltr" className="rounded bg-surface-hover px-2 py-1 font-mono text-heading">
               {error.digest}
             </code>
           </p>

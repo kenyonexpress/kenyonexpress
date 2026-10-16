@@ -22,15 +22,15 @@ export default function SiteHeader() {
       >
         <span>ברוך הבא לעולמו של קניון Express</span>
         <div className="flex items-center gap-6">
-          <span className="flex items-center gap-1.5">
+          <span className="flex items-center gap-2">
             <MapPin size={16} />
             בפריסה ארצית
           </span>
-          <span className="flex items-center gap-1.5">
+          <span className="flex items-center gap-2">
             <ShoppingBag size={16} />
             קניה בטוחה
           </span>
-          <Link href="/login" className="flex items-center gap-1.5 hover:opacity-80">
+          <Link href="/login" className="flex items-center gap-2 hover:opacity-80">
             <User size={16} />
             התחברות / הרשמה
           </Link>

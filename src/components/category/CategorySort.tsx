@@ -39,7 +39,7 @@ export default function CategorySort({ value }: { value: SortValue }) {
         value={value}
         onChange={handleChange}
         disabled={isPending}
-        className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-start text-sm text-gray-800 outline-none transition-colors hover:border-gray-300 focus:border-brand-primary disabled:opacity-60"
+        className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-start text-sm text-gray-800 outline-none transition-colors hover:border-gray-300 focus:border-brand-primary disabled:opacity-60"
         aria-label="מיון מוצרים"
       >
         {SORT_OPTIONS.map((opt) => (

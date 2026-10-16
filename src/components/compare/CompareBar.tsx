@@ -35,7 +35,7 @@ export default function CompareBar() {
     <section
       aria-label="השוואת מוצרים"
       dir="rtl"
-      className="fixed start-4 bottom-[calc(4.25rem+0.75rem)] z-40 flex items-center gap-2 rounded-full border border-border-alt bg-white py-1.5 ps-3 pe-1.5 text-sm shadow-lg shadow-black/15 md:bottom-5"
+      className="fixed start-4 bottom-[calc(4.25rem+0.75rem)] z-40 flex items-center gap-2 rounded-full border border-border-alt bg-white py-2 ps-3 pe-2 text-sm shadow-lg shadow-black/15 md:bottom-5"
     >
       <Scale size={18} strokeWidth={2} aria-hidden="true" className="text-price" />
       <Link href="/compare" className="font-bold text-heading hover:text-price">

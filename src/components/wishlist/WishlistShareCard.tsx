@@ -148,7 +148,7 @@ export default function WishlistShareCard({
               type="button"
               onClick={() => run('rotate')}
               disabled={isPending}
-              className="inline-flex items-center gap-1.5 font-semibold text-heading underline-offset-2 hover:underline disabled:opacity-50"
+              className="inline-flex items-center gap-2 font-semibold text-heading underline-offset-2 hover:underline disabled:opacity-50"
             >
               <RefreshCw size={14} aria-hidden="true" />
               קישור חדש (הישן יפסיק לעבוד)

@@ -51,7 +51,7 @@ export default function CouponPricing({ offer }: { offer: CouponOffer }) {
             {shekelsFromIls(offer.paidOnlineIls)}
           </span>
           {offer.discountPercent > 0 && (
-            <span className="rounded-md bg-price px-2 py-0.5 text-sm font-bold text-white">
+            <span className="rounded-md bg-price px-2 py-1 text-sm font-bold text-white">
               {offer.discountPercent}%-
             </span>
           )}
@@ -109,7 +109,7 @@ export function CouponTerms({
       <h2 className="text-base font-bold text-heading">תנאי מימוש ותוקף</h2>
 
       {(validUntil || expiryDays !== null) && (
-        <ul className="mt-3 space-y-1.5 text-sm text-heading">
+        <ul className="mt-3 space-y-2 text-sm text-heading">
           {validUntil && (
             <li>
               <span className="text-muted">בתוקף עד: </span>

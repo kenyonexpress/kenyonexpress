@@ -58,14 +58,14 @@ export default function UsersTable({ users, callerRole, callerId, canEdit = true
       sortable: true,
       accessor: (u) => u.role,
       cell: (u) => (
-        <span className="inline-flex items-center gap-1.5">
+        <span className="inline-flex items-center gap-2">
           <span
-            className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${ROLE_BADGE[u.role] ?? 'bg-black/5 text-black/60'}`}
+            className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${ROLE_BADGE[u.role] ?? 'bg-black/5 text-black/60'}`}
           >
             {ROLE_LABELS[u.role] ?? u.role}
           </span>
           {u.banned && (
-            <span className="inline-flex rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800">
+            <span className="inline-flex rounded-full bg-red-100 px-2 py-1 text-xs font-medium text-red-800">
               חסום
             </span>
           )}

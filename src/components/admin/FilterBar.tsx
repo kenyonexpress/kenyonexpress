@@ -44,7 +44,7 @@ export default function FilterBar({
           name="q"
           defaultValue={defaultQuery}
           placeholder={searchPlaceholder}
-          className="h-9 w-full rounded-md border border-black/10 bg-surface ps-9 pe-3 text-sm text-ink outline-none focus-visible:ring-2 focus-visible:ring-brand-primary"
+          className="h-9 w-full rounded-md border border-black/10 bg-surface ps-8 pe-3 text-sm text-ink outline-none focus-visible:ring-2 focus-visible:ring-brand-primary"
         />
       </div>
       {children}

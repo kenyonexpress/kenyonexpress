@@ -260,7 +260,7 @@ export default function CartLineItem({ item }: { item: CartViewItem }) {
           {/* The line is priced from a flash-sale hold (STEP 61); the
               shopper should see why this price is not the catalogue's. */}
           {item.flash_sale_id && (
-            <span className="rounded bg-brand px-2 py-0.5 text-xs font-bold text-heading">
+            <span className="rounded bg-brand px-2 py-1 text-xs font-bold text-heading">
               מחיר בזק
             </span>
           )}

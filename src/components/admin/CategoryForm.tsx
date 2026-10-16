@@ -28,7 +28,7 @@ export default function CategoryForm({ category, parentOptions, guide }: Props) 
   const error = state && 'error' in state ? state.error : null
 
   return (
-    <form action={action} className="space-y-5 bg-white border border-gray-200 rounded-xl p-6">
+    <form action={action} className="space-y-6 bg-white border border-gray-200 rounded-xl p-6">
       {category && <input type="hidden" name="id" value={category.id} />}
       <input type="hidden" name="icon_url" value={iconUrl[0] ?? ''} />
 
