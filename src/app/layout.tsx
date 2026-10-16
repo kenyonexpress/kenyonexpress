@@ -1,4 +1,5 @@
 import ScrollRestoration from '@/components/ScrollRestoration'
+import ThemeProvider from '@/components/ThemeProvider'
 import ViewTransitionsNavigationWrapper from '@/components/ViewTransitionsNavigationWrapper'
 import AnalyticsProvider from '@/components/analytics/AnalyticsProvider'
 import ConsentBanner from '@/components/analytics/ConsentBanner'
@@ -37,6 +38,7 @@ import '@/styles/cart-page.css'
 import '@/styles/home-handheld.css'
 import '@/styles/product-card-deals.css'
 import '@/styles/micro-interactions.css'
+import '@/styles/dark-mode.css'
 
 const heebo = Heebo({
   variable: '--font-heebo',
@@ -151,36 +153,38 @@ export default function RootLayout({
   return (
     <html lang="he" dir="rtl" className={`${heebo.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        {/*
-          First thing in the body, not next/script, and not next to the banner
-          it governs. It has to run BEFORE the parser reaches the banner markup
-          at the end of the body, or a visitor who already decided sees it flash;
-          a plain inline script is the only form with that ordering guarantee.
-          `beforeInteractive` is about running before Next's own modules, which
-          is a different and later moment. Allowed by CSP: script-src carries
-          'unsafe-inline' (src/lib/security/frame-policy.ts).
-        */}
-        {/* biome-ignore lint/security/noDangerouslySetInnerHtml: fixed string built from two module constants, no input reaches it */}
-        <script dangerouslySetInnerHTML={{ __html: CONSENT_PREPAINT_SCRIPT }} />
-        {/*
-          The decision lives in a cookie that only script can read, so with
-          script off nobody can be identified as having answered and the banner
-          would show on every page with two buttons that do nothing. There is
-          also nothing to consent TO: the analytics it gates is itself script.
-          Caught by the E2E run, not by reading - the JS-disabled test asserted
-          the opposite and failed.
-        */}
-        <noscript>
-          <style>{'[data-consent-banner]{display:none}'}</style>
-        </noscript>
-        {/*
-          Before `{children}` on purpose ([24]): the banner is the phone LCP
-          element and used to ship after the whole homepage HTML. With inline
-          fixed positioning it can paint as soon as the parser reaches it,
-          without waiting for the rest of the document or the big stylesheet.
-        */}
-        <ConsentBanner />
-        <ViewTransitionsNavigationWrapper>{children}</ViewTransitionsNavigationWrapper>
+        <ThemeProvider>
+          {/*
+            First thing in the body, not next/script, and not next to the banner
+            it governs. It has to run BEFORE the parser reaches the banner markup
+            at the end of the body, or a visitor who already decided sees it flash;
+            a plain inline script is the only form with that ordering guarantee.
+            `beforeInteractive` is about running before Next's own modules, which
+            is a different and later moment. Allowed by CSP: script-src carries
+            'unsafe-inline' (src/lib/security/frame-policy.ts).
+          */}
+          {/* biome-ignore lint/security/noDangerouslySetInnerHtml: fixed string built from two module constants, no input reaches it */}
+          <script dangerouslySetInnerHTML={{ __html: CONSENT_PREPAINT_SCRIPT }} />
+          {/*
+            The decision lives in a cookie that only script can read, so with
+            script off nobody can be identified as having answered and the banner
+            would show on every page with two buttons that do nothing. There is
+            also nothing to consent TO: the analytics it gates is itself script.
+            Caught by the E2E run, not by reading - the JS-disabled test asserted
+            the opposite and failed.
+          */}
+          <noscript>
+            <style>{'[data-consent-banner]{display:none}'}</style>
+          </noscript>
+          {/*
+            Before `{children}` on purpose ([24]): the banner is the phone LCP
+            element and used to ship after the whole homepage HTML. With inline
+            fixed positioning it can paint as soon as the parser reaches it,
+            without waiting for the rest of the document or the big stylesheet.
+          */}
+          <ConsentBanner />
+          <ViewTransitionsNavigationWrapper>{children}</ViewTransitionsNavigationWrapper>
+        </ThemeProvider>
         {/*
           `AnalyticsProvider` calls `usePathname`, which under `cacheComponents`
           is runtime data on any route carrying a dynamic param. Unwrapped, it

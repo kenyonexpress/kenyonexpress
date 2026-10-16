@@ -25,7 +25,7 @@ import type { LegalDoc } from './types'
  * this document can be trusted a month from now.
  *
  * Every category, lifetime and httpOnly claim below was read out of the
- * defining module on 2026-09-08:
+ * defining module:
  *   ke_session_id      cart/guest-session-cookie.ts   30d, httpOnly
  *   ke_consent         analytics/consent.ts           365d, browser-readable
  *   ke_attr            analytics/attribution.ts       30d
@@ -35,6 +35,7 @@ import type { LegalDoc } from './types'
  *   ke_cart_mirror_v1  cart/store.ts                  localStorage
  *   ke_ph_distinct_id  observability/posthog.ts       localStorage
  *   ke_a_session       analytics/session.ts           sessionStorage, 30min idle
+ *   ke_theme           lib/theme.ts                   localStorage
  */
 export const cookiesDoc: LegalDoc = {
   slug: 'cookies',
@@ -119,6 +120,12 @@ export const cookiesDoc: LegalDoc = {
               'עוגייה',
               'שומרות את מצב ההתחברות לחשבון בין עמודים ובין ביקורים',
               'לפי מדיניות ספק ההזדהות, ועד להתנתקות',
+            ],
+            [
+              'ke_theme',
+              'אחסון מקומי',
+              'שומר את ההעדפה שלכם לגבי מצב בהיר או כהה בעמודי האתר. שומר ערך בלבד (light/dark), אינו נשלח לשרת',
+              'עד למחיקה בדפדפן',
             ],
           ],
         },

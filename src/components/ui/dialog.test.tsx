@@ -60,7 +60,6 @@ describe('Dialog Component - UX29 Modal System', () => {
 
   describe('Escape Key Close (UX29 Feature) - See e2e/dialog-ux29.spec.ts for real browser test', () => {
     it('should render with onOpenChange handler for escape key support', () => {
-      const handleOpenChange = vi.fn()
       const TestComponent = () => {
         const [open, setOpen] = React.useState(true)
         return (

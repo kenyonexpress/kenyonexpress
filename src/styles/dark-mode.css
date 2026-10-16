@@ -1,0 +1,82 @@
+/* Dark mode color scheme with smooth transitions */
+
+html {
+  color-scheme: light;
+  transition: background-color 300ms ease-in-out, color 300ms ease-in-out;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+html.dark {
+  --color-background: #0a0a0a;
+  --color-foreground: #fafafa;
+  --color-card: #1a1a1a;
+  --color-primary: #fedd26;
+  --color-secondary: #0062bd;
+  --color-border: #333333;
+  --color-input: #1a1a1a;
+  --color-muted: #666666;
+  --color-muted-foreground: #a0a0a0;
+  --color-accent: #fedd26;
+  --color-accent-foreground: #000000;
+  --color-destructive: #ff4444;
+  --color-destructive-foreground: #ffffff;
+  --color-ring: #fedd26;
+}
+
+html.dark body {
+  background-color: #0a0a0a;
+  color: #fafafa;
+}
+
+html.dark .bg-white,
+html.dark [class*="bg-background"] {
+  background-color: #0a0a0a;
+}
+
+html.dark .text-heading {
+  color: #fafafa;
+}
+
+html.dark .border-border {
+  border-color: #333333;
+}
+
+html.dark .text-foreground {
+  color: #fafafa;
+}
+
+html.dark .bg-popover {
+  background-color: #1a1a1a;
+  color: #fafafa;
+}
+
+html.dark .text-popover-foreground {
+  color: #fafafa;
+}
+
+html.dark button:not([disabled]):hover {
+  opacity: 0.9;
+}
+
+html.dark .bg-accent {
+  background-color: #fedd26;
+}
+
+html.dark .text-accent {
+  color: #fedd26;
+}
+
+/* Smooth transitions for all color properties across the app */
+* {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-duration: 200ms;
+  transition-timing-function: ease-in-out;
+}
+
+/* Exclude animations from transition smoothing */
+*[class*="animate"] {
+  transition: none;
+}

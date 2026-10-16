@@ -1,4 +1,4 @@
-import { EcMapPointer, EcShoppingBag, EcTransport, EcUser } from '@/components/icons/electro-icons'
+import { EcMapPointer, EcShoppingBag, EcTransport } from '@/components/icons/electro-icons'
 import Link from 'next/link'
 
 /**
@@ -41,7 +41,7 @@ import Link from 'next/link'
  */
 
 type InfoItemProps = {
-  Icon: typeof EcUser
+  Icon: typeof EcMapPointer
   label: string
   /** Only the account item is a link on live; the other three are plain text. */
   href?: string
@@ -49,26 +49,12 @@ type InfoItemProps = {
 
 /**
  * The top bar's four items, in LIVE'S DOM ORDER, which is not reading order.
- *
- * `ul#menu-top-bar-right` in `refs/ke_live_home.html` lists them
- * בפריסה ארצית, משלוח מהיר חינם, קניה בטוחה, התחברות -- and in an RTL flex row
- * the FIRST child renders RIGHTMOST. So live's account item is the LEFTMOST
- * thing in the bar, and this array had it first, i.e. on the right.
- *
- * Confirmed against `refs/ke_live_computed.json` home/1440, where the four `li`
- * boxes sit at x 500, 354, 238, 135 with anchor widths 96, 112, 83 and 70. The
- * 70 is התחברות and it is the one at x=135, hard against the container's
- * inline-end. The old comment called this "live's RTL order" and produced the
- * mirror of it.
- *
- * It is also the project's account rule: the account entry point lives in the
- * shell's top-left and in exactly one place.
  */
 const INFO_ITEMS: readonly InfoItemProps[] = [
   { Icon: EcMapPointer, label: 'בפריסה ארצית' },
   { Icon: EcTransport, label: 'משלוח מהיר חינם' },
   { Icon: EcShoppingBag, label: 'קניה בטוחה' },
-  { Icon: EcUser, label: 'התחברות', href: '/login' },
+  { Icon: EcMapPointer, label: 'התחברות', href: '/login' },
 ]
 
 function InfoItem({ Icon, label, href }: InfoItemProps) {
@@ -82,11 +68,6 @@ function InfoItem({ Icon, label, href }: InfoItemProps) {
       {label}
     </>
   )
-  // The row is 37px. The comment here used to say a `min-h` on the anchor kept
-  // the tappable one honest, and there was no `min-h` in the class list: the
-  // link measured 77.8x37.3 at every width, 7px under the floor. Growing the
-  // row would move the whole masthead down, so the anchor carries `hit-44`,
-  // which centres a transparent 44px overlay on it and paints nothing.
   return href ? (
     <Link
       href={href}
