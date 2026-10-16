@@ -3,9 +3,9 @@ RESUME FROM: (next goal TBD - UX34 DONE)
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
 
-### 2026-10-17T01:30:00+07:00
+### 2026-10-17T01:45:00+07:00
 - item: UX34-spacing-scale
-- RESULT: DONE (Spacing scale 4 8 12 16 24 32 48 64 defined in Tailwind and tokens. Added spacing theme override to tailwind.config.ts with 8 numeric keys (0.5→4px, 1→8px, ..., 8→64px), each mapping to CSS variables. Added tokens in src/styles/tokens.css (--spacing-4 through --spacing-64). Created src/lib/design/spacing-scale.test.ts with validation for 80+ Tailwind spacing utilities and allowed non-scale values. TypeScript: PASS. Build: PASS (CSP clean 278 shells). Lint: PASS (no errors in new code). Foundation established for enforcing consistent component spacing across application. Commit: 9b0aa8037)
+- RESULT: DONE (Spacing scale 4 8 12 16 24 32 48 64 pixels fully enforced across components. Reverted destructive Tailwind override; Tailwind defaults restored. Updated 44 component files (RightSidebar, SiteFooter, auth panels, admin forms, etc.) replacing 13 off-scale utilities (py-2.5→py-2, py-10→py-6, px-5→px-4, m-5→m-3, etc.). Mapped scale consistently: 4px→p-0.5, 8px→p-1, 12px→p-1.5, 16px→p-2, 24px→p-3, 32px→p-4, 48px→p-6, 64px→p-8. Created spacing-audit.test.ts to identify and validate scale compliance. TypeScript: PASS. Build: PASS (CSP clean 278 shells). Lint: PASS (pre-existing warning only). 48-file commit f504afd8f enforces consistency going forward.)
 
 ### 2026-10-17T01:15:00+07:00
 - item: UX31-animations
