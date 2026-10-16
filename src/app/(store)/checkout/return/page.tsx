@@ -22,6 +22,7 @@ import {
 import { reconcileOrderReturn } from '@/server/actions/payments/checkout'
 import { formatVoucherCode } from '@/server/domain/vouchers/code'
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { Suspense } from 'react'
@@ -223,7 +224,13 @@ async function CheckoutReturnBody({ searchParams }: Props) {
                   </div>
                   {coupon.qrDataUrl && (
                     <div className="coupon-card__qr">
-                      <img src={coupon.qrDataUrl} alt={`קוד QR לקופון ${coupon.code}`} />
+                      <Image
+                        src={coupon.qrDataUrl}
+                        alt={`קוד QR לקופון ${coupon.code}`}
+                        width={200}
+                        height={200}
+                        unoptimized
+                      />
                     </div>
                   )}
                 </article>

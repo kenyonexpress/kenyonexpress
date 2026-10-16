@@ -2,11 +2,11 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
-## UX40 Image Optimization with Blur Placeholders — COMPLETE ✅
+## UX40 Image Optimization with Blur Placeholders — PARTIAL ⏸️
 
 **Goal:** Optimize all images with Next.js Image component, responsive sizes, and blur placeholders.
 
-**Status: COMPLETE & VERIFIED**
+**Status: PARTIAL (infrastructure done, implementation incomplete)**
 
 **Implementation:**
 - ✅ **Gallery assets utility** (`src/lib/images/gallery-assets.ts`):
@@ -48,17 +48,50 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 - Backward compatible: gracefully degrades for products without blur data
 - Works with existing SmartImage wrapper for error handling
 
-**Graceful Degradation:**
-Products without blur data in media_assets table still render correctly but without the blur effect. Static images (KE_LIVE_DEALS) render without blur since they're not in the pipeline. This maintains full backward compatibility while enabling blur placeholders for all uploaded product images.
+**What Still Needs to Be Done (BLOCKERS):**
 
-**Commit:** 86e954b78 - [autopilot] UX40: Image optimization - blur placeholders for all Image components
+1. **Convert remaining `<img>` tags to Next Image** (6 instances):
+   - `src/app/(account)/account/security/SecurityClient.tsx`: QR code (data URL)
+   - `src/app/(account)/account/details/page.tsx`: Google avatar
+   - `src/app/(account)/account/wishlist/page.tsx`: Product images in wishlist
+   - `src/app/(store)/checkout/return/page.tsx`: Coupon QR codes (data URLs)
+   - `src/components/admin/CategoryTree.tsx`: Category icon URLs
+   - `src/components/pwa/InstallPrompt.tsx`: Static icon
 
-**Next Steps:**
-- Generate blur data for static images if desired (requires blur data generation at build time)
-- Monitor mobile performance with blur placeholders enabled
-- Consider preloading priority for LCP images
+2. **Static images (KE_LIVE_DEALS)**: Currently have no blur data
+   - Need to either generate blur placeholders at build time or load from media_assets
 
-המשך מ: UX40 COMPLETE. Image optimization infrastructure in place. All Image components support blur placeholders with graceful degradation.
+3. **Category grid infinite scroll**: Not wired to blur assets
+   - CategoryGridWithInfiniteScroll loads products from API but doesn't pass assets
+   - Infinite scroll products won't have blur placeholders
+
+4. **Tests missing**: No unit tests added for blur placeholder behavior
+   - Should test: blur data rendering, alt text selection, graceful degradation
+
+5. **Lint**: Pre-existing test file issues (2 unrelated test lint errors remain from before this work)
+
+**Commits:** 86e954b78, 0efb3a20b
+
+**Gap Analysis:**
+- "Everywhere" requirement: UNMET (6 raw img tags remain, static images not optimized, infinite scroll not connected)
+- Tests: UNMET (no new tests added)
+- Lint: UNMET (5 warnings, 2 of which are pre-existing test issues)
+
+**What Works:**
+- Core infrastructure complete: loadGalleryAssets utilities functional
+- ProductCard blur placeholders: ✅ working when assets provided
+- CategoryProductCard blur placeholders: ✅ working when assets provided
+- Shop products page: ✅ loads and passes assets
+- Responsive sizes: ✅ preserved and working
+
+**Critical Path to Complete:**
+1. Convert 6 img tags (CategoryTree icon, details avatar, InstallPrompt icon, wishlist images, QR codes)
+2. Load blur data for KE_LIVE_DEALS (generate at build time or populate media_assets)
+3. Wire infinite scroll to pass assets (API endpoint or client-side loading)
+4. Add unit tests for blur placeholder rendering
+5. Verify all gates pass
+
+המשך מ: UX40 PARTIAL - Infrastructure complete but implementation incomplete. Main blockers: remaining img tag conversions, static image blur data, infinite scroll wiring, test coverage.
 
 ## XD17-cat — Category Page Filters — SKIPPED (3x stuck) ⏭️
 

@@ -1,6 +1,7 @@
 'use client'
 
 import { createClient } from '@/lib/supabase/client'
+import Image from 'next/image'
 import { useCallback, useEffect, useState, useTransition } from 'react'
 
 type Factor = { id: string; status: string; friendly_name?: string | null }
@@ -118,7 +119,13 @@ export default function SecurityClient({ isStaff }: { isStaff: boolean }) {
               סרוק את הקוד באפליקציית אימות (Google Authenticator, 1Password וכו') והזן את הקוד:
             </p>
             {/* The QR arrives as an SVG data URL from Supabase itself. */}
-            <img src={qr} alt="קוד QR להרשמת אימות דו-שלבי" width={176} height={176} />
+            <Image
+              src={qr}
+              alt="קוד QR להרשמת אימות דו-שלבי"
+              width={176}
+              height={176}
+              unoptimized
+            />
             <div className="flex gap-2">
               <input
                 value={code}

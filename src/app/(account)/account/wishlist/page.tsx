@@ -1,5 +1,6 @@
 import { shekelsFromIlsRounded } from '@/lib/money-format'
 import { getMyWishlist } from '@/server/queries/wishlist'
+import Image from 'next/image'
 import Link from 'next/link'
 
 export const metadata = { title: 'רשימת המשאלות שלי' }
@@ -38,8 +39,13 @@ export default async function WishlistPage() {
             const body = (
               <span className="flex items-center gap-3">
                 {image ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={image} alt="" className="h-16 w-16 rounded-lg object-cover" />
+                  <Image
+                    src={image}
+                    alt=""
+                    width={64}
+                    height={64}
+                    className="h-16 w-16 rounded-lg object-cover"
+                  />
                 ) : (
                   <span aria-hidden="true" className="h-16 w-16 rounded-lg bg-surface-hover" />
                 )}
