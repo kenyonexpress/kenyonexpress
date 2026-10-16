@@ -23,7 +23,6 @@
 @import "../styles/home-handheld.css";
 @import "../styles/newsletter.css";
 @import "../styles/product-card-deals.css";
-@import "../styles/rating-stars.css";
 
 body {
   background-color: var(--color-background);
