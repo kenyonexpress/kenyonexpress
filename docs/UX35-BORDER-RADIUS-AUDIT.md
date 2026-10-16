@@ -1,13 +1,17 @@
-# UX35 Border-Radius Scale Audit & Verification
+# UX35 Border-Radius Scale: Tokens & Foundation
 
 **Objective**: Establish consistent border-radius tokens (4, 8, 12, 16, 24px) with semantic assignments:
 - Buttons: `rounded-sm` (8px)
 - Cards: `rounded-md` (12px)
 - Modals/Dialogs: `rounded-lg` (16px)
 
-**Status**: ✅ COMPLETE
+**Status**: 🟡 FOUNDATIONAL COMPLETE, SEMANTIC MIGRATION IN PROGRESS
 
-## Token Definitions
+This goal establishes the token scale and enforcement infrastructure. Full semantic compliance across all components requires follow-up work (estimated 60+ components need updating).
+
+---
+
+## Token Definitions ✅
 
 Defined in `src/styles/tokens.css`:
 ```css
@@ -20,7 +24,7 @@ Defined in `src/styles/tokens.css`:
 --radius-round: 200px; /* avatars, circular icons (legacy) */
 ```
 
-## Tailwind Configuration
+## Tailwind Configuration ✅
 
 Configured in `tailwind.config.ts`:
 ```typescript
@@ -38,67 +42,102 @@ borderRadius: {
 }
 ```
 
-## Semantic Implementation Audit
+## Semantic Implementation Status
 
-### Buttons: `rounded-sm` (8px) ✅
-- UI form inputs: `src/components/ui/input.tsx` → `rounded-md` (12px - intentional for larger touch targets)
-- Dialog close button: `src/components/ui/dialog.tsx` → `rounded-sm` (8px) ✅
-- Textarea: `src/components/ui/textarea.tsx` → `rounded-md` (12px - consistent with inputs)
+### ✅ Fixed in UX35 (Semantic Compliant)
+1. **Base UI Components**:
+   - `src/components/ui/card.tsx` → `rounded-md` (12px - cards) ✅
+   - `src/components/ui/dialog.tsx` → `rounded-sm` (close button) + `sm:rounded-lg` (modal) ✅
+   - `src/components/ui/input.tsx` → `rounded-md` (12px - form inputs) ✅
+   - `src/components/ui/textarea.tsx` → `rounded-md` (12px - form inputs) ✅
 
-### Cards: `rounded-md` (12px) ✅
-- Base card component: `src/components/ui/card.tsx` → `rounded-md` ✅ (fixed from `rounded-lg`)
-- Category grid cards: `src/components/home/CategoryGrid.tsx` → `rounded-md` ✅
-- Product cards: `src/components/ProductCard.tsx` → `rounded-xl` (intentional for prominent display)
+2. **Customer-Facing Components**:
+   - `src/components/ProductCard.tsx`:
+     - Card container: `rounded-xl` → **`rounded-md` (12px)** ✅
+     - Add-to-cart button: `rounded-lg` → **`rounded-sm` (8px)** ✅
 
-### Modals/Dialogs: `rounded-lg` (16px) ✅
-- Dialog content: `src/components/ui/dialog.tsx` → `sm:rounded-lg` ✅
-- Modal animated: `src/components/animations/ModalAnimated.tsx` → uses className prop (up to caller)
-- Login dialog: properly styled with rounded-lg
+### 🟠 Remaining Work (52 violations found)
+Full codebase semantic migration needed:
 
-## Enforcement
+**Legacy tokens still in use** (52 instances):
+- `rounded-full` (33 instances) - circular badges, avatars, icons - may keep
+- `rounded-pill` (10 instances) - legacy for search bars, badges
+- `rounded-elevated` (9 instances) - legacy alias
 
-Created `src/lib/design/border-radius-enforce.test.ts`:
-- ✅ Validates no off-scale border-radius utilities in components
-- ✅ Allows legitimate uses: side-specific variants (rounded-t-md, rounded-b-lg, etc.)
-- ✅ Allows legacy tokens: rounded-pill, rounded-round, rounded-full, rounded-elevated
-- ✅ Test passes: 0 violations
+**Non-semantic scale values** (additional ~60+ components):
+- Components using `rounded-lg`, `rounded-xl` when semantics require `rounded-sm` (8px for buttons) or `rounded-md` (12px for cards)
 
-## Component Fixes Applied
+**Components needing updates** (scope for follow-up goals):
+- Admin dashboard: forms, tables, dialogs (20+ components)
+- Auth flows: all modals and forms
+- Account & checkout flows: forms and cards
+- Product pages: forms and special dialogs
+- Footer & navigation: contact forms, etc.
+
+---
+
+## Enforcement ✅
+
+Created `src/lib/design/border-radius-enforce.test.ts` with STRICT enforcement:
+- ✅ Validates only standard scale: `xs`, `sm`, `md`, `lg`, `xl`, `none`
+- ✅ Rejects legacy tokens: `rounded-full`, `rounded-pill`, `rounded-elevated`
+- ✅ Allows side-specific variants: `rounded-t-md`, `rounded-b-lg`, etc.
+- ✅ Current violations: 52 (pre-existing legacy tokens + non-semantic uses)
+
+**Test output shows clear violations**:
+```
+❌ BORDER-RADIUS SCALE VIOLATION: 52 off-scale utilities found
+  rounded-full: 33 instance(s)
+  rounded-pill: 10 instance(s)
+  rounded-elevated: 9 instance(s)
+```
+
+---
+
+## Component Fixes Applied in UX35
 
 | Component | Before | After | Reason |
 |-----------|--------|-------|--------|
-| LandingBlocks.tsx | rounded-2xl | rounded-lg | Standardize to scale |
-| CouponPricing.tsx | rounded-2xl | rounded-lg | Standardize to scale |
-| CategoryDialog.tsx | rounded-2xl | rounded-lg | Standardize to scale |
-| CouponDealForm.tsx | rounded-2xl | rounded-lg | Standardize to scale |
-| InstallPrompt.tsx | rounded-2xl | rounded-lg | Standardize to scale |
-| PostPurchasePushPrompt.tsx | rounded-2xl | rounded-lg | Standardize to scale |
-| BarSeries.tsx (line 60) | rounded-t | rounded-t-md | Specify radius value |
-| BarSeries.tsx (line 63) | rounded-t | rounded-t-md | Specify radius value |
-| card.tsx | rounded-lg | rounded-md | Fix semantic usage |
+| ProductCard.tsx (card) | rounded-xl | rounded-md | Semantic: cards use 12px |
+| ProductCard.tsx (button) | rounded-lg | rounded-sm | Semantic: buttons use 8px |
+| card.tsx | rounded-lg | rounded-md | Semantic: base cards use 12px |
+| BarSeries.tsx (x2) | rounded-t | rounded-t-md | Specify explicit radius |
+| 6× dialogs/modals | rounded-2xl | rounded-lg | Standardize to scale |
+
+---
 
 ## Test Results
 
-✅ All gates passing:
+✅ **Gates passing**:
 - `pnpm type-check`: PASS
 - `pnpm lint`: PASS (no errors)
-- `pnpm test -- border-radius-enforce`: PASS (0 violations)
-- `pnpm build`: PASS (278 CSP shells, no errors)
+- `pnpm build`: PASS (278 CSP shells clean)
 
-## Implementation Notes
+🟠 **Enforcement test**: 
+- Currently fails with 52 violations (pre-existing legacy tokens)
+- Will pass when semantic migration completes
 
-1. **Why rounded-sm for buttons**: 8px provides subtle rounding that improves touch targets on mobile without appearing too prominent. Consistent with common UI patterns.
+✅ **Pre-existing test failures**: 30 baseline failures (unrelated to UX35)
 
-2. **Why rounded-md for cards**: 12px creates clear visual distinction between cards and background, improving scanability. Not as rounded as modals, maintaining visual hierarchy.
-
-3. **Why rounded-lg for modals**: 16px provides strong visual prominence for dialogs and modals, signaling they are primary interface elements requiring user interaction.
-
-4. **Legacy tokens preserved**: `--radius-pill` (22px) and `--radius-round` (200px) maintained for search bars, badges, and avatars where the original measurements remain appropriate.
-
-5. **Side-specific variants allowed**: Components can use `rounded-t-md`, `rounded-b-lg`, etc. for directional rounding without violating the scale.
+---
 
 ## Commits
 
 - `e90a4521b`: [autopilot] UX35: Border radius tokens 4 8 12 16 24px consistent scale
 - `ea89a7468`: [autopilot] STATE.md: UX35 DONE
-- `b5b014484`: [autopilot] UX35: Fix card semantic radius - use rounded-md (12px) not rounded-lg
+- `b5b014484`: [autopilot] UX35: Fix card semantic radius
+- `dbebe1271`: [autopilot] UX35: Add comprehensive audit documentation
+- `272a3320e`: [autopilot] UX35: Fix semantic usage in ProductCard; stricter enforcement
+
+---
+
+## Next Steps
+
+**For full semantic compliance**, follow-up goals should:
+1. Migrate remaining admin components (dialogs, forms, tables)
+2. Update all buttons to use `rounded-sm` (8px)
+3. Update non-elevated cards to use `rounded-md` (12px)
+4. Update all modals/dialogs to use `rounded-lg` (16px)
+5. Phase out legacy tokens (`rounded-pill`, `rounded-elevated`, `rounded-full`)
+
+**Scope estimation**: ~5-10 follow-up goals to reach 100% compliance
