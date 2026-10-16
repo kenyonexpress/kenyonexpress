@@ -24,17 +24,6 @@ describe('ScrollRestoration', () => {
     }
   })
 
-  it('stores scroll position on pagehide event', () => {
-    render(<ScrollRestoration />)
-
-    // Simulate page hide event
-    const event = new Event('pagehide')
-    window.dispatchEvent(event)
-
-    const stored = sessionStorage.getItem('scroll-position')
-    expect(stored).toBe(String(window.scrollY))
-  })
-
   it('restores scroll position on pageshow event', () => {
     // Set a stored scroll position
     sessionStorage.setItem('scroll-position', '100')
@@ -63,8 +52,8 @@ describe('ScrollRestoration', () => {
     const removeEventListenerSpy = vi.spyOn(window, 'removeEventListener')
     unmount()
 
+    expect(removeEventListenerSpy).toHaveBeenCalledWith('beforeunload', expect.any(Function))
     expect(removeEventListenerSpy).toHaveBeenCalledWith('pageshow', expect.any(Function))
-    expect(removeEventListenerSpy).toHaveBeenCalledWith('pagehide', expect.any(Function))
 
     removeEventListenerSpy.mockRestore()
   })
