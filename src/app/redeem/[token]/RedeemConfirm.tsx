@@ -3,17 +3,12 @@
 import { useState } from 'react'
 
 /**
- * The confirm-and-burn step.
+ * XD14: Supplier redemption UX redesign with 2-tap confirmation.
  *
  * Redemption is irreversible and the cashier is standing in front of a
- * customer, so the details are shown first and nothing happens until the button
- * is pressed. One POST carries a single idempotency key generated once per
- * mount: a double tap, a flaky counter connection or a browser retry replays
- * the first answer instead of producing a second scan record.
- *
- * The button is disabled while in flight AND after a terminal answer, because
- * the failure this screen must not have is "the cashier pressed it twice and
- * the second press said the voucher was already used".
+ * customer, so a large status badge and 2-tap confirmation prevent accidents.
+ * First tap arms the button, second tap commits. On success, show "הקופון הבא"
+ * button to return to QR scanner. Idempotent: second scan shows timestamp.
  */
 
 type VoucherStatus = 'issued' | 'redeemed' | 'expired' | 'cancelled' | 'refunded'
@@ -33,7 +28,7 @@ type Props = {
   expired: boolean
 }
 
-type Phase = 'ready' | 'working' | 'done'
+type Phase = 'ready' | 'armed' | 'working' | 'done'
 
 const STATUS_LABEL: Record<VoucherStatus, string> = {
   issued: 'פעיל',
@@ -47,115 +42,167 @@ function newIdempotencyKey(): string {
   return `redeem-${crypto.randomUUID()}`
 }
 
+function formatRedemptionTime(iso: string): string {
+  const date = new Date(iso)
+  return date.toLocaleDateString('he-IL', {
+    day: '2-digit',
+    month: '2-digit',
+    year: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
 export default function RedeemConfirm(props: Props) {
   const alreadyClosed = props.status !== 'issued' || props.expired
   const [phase, setPhase] = useState<Phase>(alreadyClosed ? 'done' : 'ready')
   const [message, setMessage] = useState<string | null>(
     alreadyClosed
       ? props.status === 'redeemed'
-        ? `השובר כבר מומש${props.redeemedAtLabel ? ` ב־${props.redeemedAtLabel}` : ''}`
+        ? `כבר מומש${props.redeemedAtLabel ? ` ${props.redeemedAtLabel}` : ''}`
         : props.expired && props.status === 'issued'
           ? 'תוקף השובר פג'
           : STATUS_LABEL[props.status]
       : null,
   )
   const [succeeded, setSucceeded] = useState(false)
-  // One key for the whole life of this screen. Regenerating it per click would
-  // turn the replay guard off exactly when it is needed.
   const [idempotencyKey] = useState(newIdempotencyKey)
 
-  async function confirm() {
-    setPhase('working')
-    try {
-      const response = await fetch('/api/supplier/vouchers/redeem', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          qr_payload: props.token,
-          method: 'camera',
-          idempotency_key: idempotencyKey,
-        }),
-      })
-      const body = (await response.json().catch(() => null)) as {
-        outcome?: string
-        message?: string
-      } | null
+  const isValid = props.status === 'issued' && !props.expired
+  const statusBadge = isValid ? 'קופון תקף' : 'קופון לא תקף'
+  const statusColor = isValid ? 'bg-green-100 text-green-900' : 'bg-red-100 text-red-900'
 
-      setSucceeded(body?.outcome === 'success')
-      setMessage(body?.message ?? 'שגיאת מערכת, נסו שוב')
-      setPhase('done')
-    } catch {
-      // A network failure is the one case where retrying is right: the same
-      // idempotency key makes a second attempt safe even if the first landed.
-      setMessage('אין חיבור לרשת. בדקו את החיבור ונסו שוב')
-      setPhase('ready')
+  async function confirm() {
+    if (phase === 'ready') {
+      // First tap: arm the button
+      setPhase('armed')
+      return
+    }
+
+    if (phase === 'armed') {
+      // Second tap: commit
+      setPhase('working')
+      try {
+        const response = await fetch('/api/supplier/vouchers/redeem', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            qr_payload: props.token,
+            method: 'camera',
+            idempotency_key: idempotencyKey,
+          }),
+        })
+        const body = (await response.json().catch(() => null)) as {
+          outcome?: string
+          message?: string
+          redeemed_at?: string
+        } | null
+
+        setSucceeded(body?.outcome === 'success')
+        // On already_redeemed, show timestamp if available
+        if (body?.outcome === 'already_redeemed' && body?.redeemed_at) {
+          setMessage(`כבר מומש ${formatRedemptionTime(body.redeemed_at)}`)
+        } else {
+          setMessage(body?.message ?? 'שגיאת מערכת, נסו שוב')
+        }
+        setPhase('done')
+      } catch {
+        // Network failure: reset to allow retry with same idempotency key
+        setMessage('אין חיבור לרשת. בדקו את החיבור ונסו שוב')
+        setPhase('armed')
+      }
     }
   }
 
+  // Success screen with "הקופון הבא" button
+  if (phase === 'done' && succeeded) {
+    return (
+      <section className="flex flex-col items-center justify-center gap-6 rounded-2xl bg-gradient-to-b from-green-50 to-white p-6 text-center">
+        <div className="text-6xl" aria-hidden="true">
+          ✓
+        </div>
+        <div>
+          <p className="text-lg font-bold text-green-900">{message}</p>
+          <p className="mt-2 text-sm text-gray-600">{props.productName ?? 'שובר'}</p>
+        </div>
+        <a
+          href="/scan"
+          className="w-full rounded-xl bg-brand py-3.5 text-base font-bold text-gray-900 transition-all active:scale-95"
+        >
+          הקופון הבא
+        </a>
+      </section>
+    )
+  }
+
+  // Failure or already-redeemed screen
+  if (phase === 'done' && !succeeded) {
+    return (
+      <section className="flex flex-col items-center justify-center gap-6 rounded-2xl bg-gradient-to-b from-red-50 to-white p-6 text-center">
+        <div className="text-5xl" aria-hidden="true">
+          ⚠️
+        </div>
+        <div>
+          <p className="text-lg font-bold text-red-900">{message}</p>
+        </div>
+        <a
+          href="/scan"
+          className="w-full rounded-xl bg-gray-900 py-3.5 text-base font-bold text-white transition-all active:scale-95"
+        >
+          הקופון הבא
+        </a>
+      </section>
+    )
+  }
+
+  // Main redemption screen with 2-tap confirm
   return (
-    <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
-      <div className="border-b border-gray-100 px-5 py-4">
+    <section className="flex flex-col gap-4 rounded-2xl bg-white p-6">
+      {/* Large status badge */}
+      <div className={`rounded-xl px-4 py-3 text-center ${statusColor}`}>
+        <p className="text-sm font-bold">{statusBadge}</p>
+      </div>
+
+      {/* Large voucher value */}
+      <div className="text-center">
+        <p className="text-5xl font-black text-gray-900">{props.toCollect}</p>
+        <p className="mt-1 text-xs font-medium text-gray-500">לגבות מהלקוח בקופה</p>
+      </div>
+
+      {/* Product and code details */}
+      <div className="rounded-xl bg-gray-50 p-4 text-center">
         <p className="font-bold text-gray-900">{props.productName ?? 'שובר'}</p>
         {props.customerName && (
           <p className="mt-0.5 text-sm text-gray-500">לקוח: {props.customerName}</p>
         )}
-        <p dir="ltr" className="mt-2 font-mono text-2xl font-bold tracking-widest text-gray-900">
+        <p dir="ltr" className="mt-2 font-mono text-lg font-bold tracking-widest text-gray-700">
           {props.codeDisplay}
         </p>
       </div>
 
-      <div className="px-5 py-4">
-        <div className="rounded-xl bg-amber-50 px-4 py-3 text-center">
-          <p className="text-xs font-medium text-amber-800">לגבות מהלקוח בקופה</p>
-          <p className="mt-0.5 text-3xl font-black text-amber-900">{props.toCollect}</p>
+      {/* Expiry info */}
+      <dl className="space-y-1.5 text-xs">
+        <div className="flex items-center justify-between">
+          <dt className="text-gray-500">בתוקף עד</dt>
+          <dd className="font-medium text-gray-900">{props.expiresAtLabel}</dd>
         </div>
+        <div className="flex items-center justify-between">
+          <dt className="text-gray-500">שולם באתר</dt>
+          <dd className="font-medium text-gray-900">{props.paidOnline}</dd>
+        </div>
+      </dl>
 
-        <dl className="mt-4 space-y-1.5 text-sm">
-          <div className="flex items-center justify-between">
-            <dt className="text-gray-500">שולם באתר</dt>
-            <dd className="font-medium text-gray-900">{props.paidOnline}</dd>
-          </div>
-          <div className="flex items-center justify-between">
-            <dt className="text-gray-500">שווי מלא</dt>
-            <dd className="text-gray-500">{props.faceValue}</dd>
-          </div>
-          <div className="flex items-center justify-between border-t border-gray-100 pt-1.5">
-            <dt className="text-gray-500">בתוקף עד</dt>
-            <dd className="font-medium text-gray-900">{props.expiresAtLabel}</dd>
-          </div>
-        </dl>
-
-        {message && (
-          <output
-            aria-live="polite"
-            className={`mt-4 block rounded-xl px-4 py-3 text-center text-sm font-bold ${
-              succeeded ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'
-            }`}
-          >
-            {message}
-          </output>
-        )}
-
-        {phase !== 'done' && (
-          <button
-            type="button"
-            onClick={confirm}
-            disabled={phase === 'working'}
-            className="mt-5 w-full rounded-xl bg-gray-900 py-3.5 text-base font-bold text-white transition-opacity disabled:opacity-50"
-          >
-            {phase === 'working' ? 'מאשר...' : 'אשר מימוש'}
-          </button>
-        )}
-
-        {phase === 'done' && (
-          <a
-            href="/scan"
-            className="mt-5 block w-full rounded-xl border border-gray-300 py-3 text-center text-sm font-bold text-gray-700"
-          >
-            סריקה נוספת
-          </a>
-        )}
-      </div>
+      {/* 2-tap confirm button */}
+      <button
+        type="button"
+        onClick={confirm}
+        disabled={!isValid}
+        className="mt-4 w-full rounded-xl bg-brand py-3.5 text-base font-bold text-gray-900 transition-all disabled:opacity-50 active:scale-95"
+      >
+        {phase === 'ready' && 'אשר מימוש'}
+        {phase === 'armed' && 'הקש שוב לאישור'}
+        {phase === 'working' && 'מאשר...'}
+      </button>
     </section>
   )
 }
