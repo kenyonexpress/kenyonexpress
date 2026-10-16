@@ -1,7 +1,11 @@
-RESUME FROM: UX29
+RESUME FROM: UX36
 # KenyonExpress — Project State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-10-17T10:43:00+07:00
+- item: UX35-border-radius
+- RESULT: DONE (Border-radius tokens established: consistent scale 4 8 12 16 24px with semantic assignments (xs/sm/md/lg/xl). Created border-radius-enforce.test.ts to prevent off-scale usage (PASS: 0 violations). Updated tokens.css with new --radius-xs through --radius-xl, tailwind.config.ts with semantic aliases (btn→sm, card→md, elevated→md), and ELECTRO object. Fixed component violations: 6× rounded-2xl→rounded-lg, 2× rounded-t→rounded-t-md. Buttons: rounded-sm (8px), cards: rounded-md (12px), modals: rounded-lg (16px). All gates green: typecheck, lint, build (278 CSP shells clean). Commit: e90a4521b)
 
 ### 2026-10-17T06:45:00+07:00
 - item: UX34-spacing-scale
