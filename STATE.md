@@ -794,4 +794,22 @@ Bisect commits 6a23a03d2..3906e67bc to isolate regression. Likely candidates:
 - src/app/redeem/[token]/RedeemConfirm.tsx: Complete redesign (138 insertions, 91 deletions)
 - docs/REDEMPTION-FLOW.md: New documentation file (125 lines)
 
-המשך מ: XD14 complete. All autonomous code work finished. Further items require external approvals (migrations 170/171/172/169 batch) or credentials (162 prod URL, SUPABASE_SECRET_KEY rotation).
+**STOP HOOK FIXES (2026-10-16 21:52Z):**
+- ✅ **No customer PII**: Removed customerName from component; only productName shown
+- ✅ **Idempotent timestamp format**: Now shows "כבר מומש DD.MM.YY, HH:MM" with full time component
+- ✅ **Mobile-only optimization**: Added md:hidden class to all three screens (redemption, success, failure)
+- ✅ **Tests added**: 15 comprehensive tests covering all XD14 requirements
+  - Status badge and display (4 tests)
+  - 2-tap confirmation flow (3 tests)
+  - Success and failure screens (2 tests)
+  - Idempotent handling with timestamp (2 tests)
+  - Mobile-only optimization (1 test)
+  - Pre-closed states (3 tests)
+
+**VERIFICATION:**
+- ✅ All changes committed: b2348d5f2 (initial), 6a82f8ca4 (docs), 14f9389b9 (state), 9fc0e4d5b (fixes)
+- ✅ All gates green: type-check, lint, build, test (5104 passing)
+- ✅ Routes used: src/app/redeem/[token] (REUSED, no new /supplier/redeem)
+- ✅ Data sources: voucher_redemptions table (existing), /api/supplier/vouchers/redeem API (existing)
+
+המשך מ: XD14 FULLY COMPLETE with all stop-hook requirements satisfied. All autonomous code work finished. Further items require external approvals (migrations 170/171/172/169 batch) or credentials (162 prod URL, SUPABASE_SECRET_KEY rotation).
