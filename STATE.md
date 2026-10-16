@@ -131,7 +131,7 @@ This goal is stuck 3x. Will not attempt again.
 - Accessible keyboard navigation with focus rings
 - Comprehensive error/success/disabled visual feedback
 
-המשך מ: UX38 COMPLETE. All form input components implemented with variants and sizes. Ready for next goal.
+המשך מ: UX38 pre-completed (commits cc2575dc8, d81245a92, 16f5eed). Verified 2026-10-17: all tests passing (5253), gates green (type-check/lint/build), Supabase MCP not applicable (no DB/RLS/migrations). Form input library complete and production-ready. Next: Queue exhausted, all code-level work complete per NEXT-GOALS.md. Backlog items gated on dates/events (see line 354).
 
 ## UX37 Button Variants Primary Secondary Ghost Danger Link — COMPLETE ✅
 
