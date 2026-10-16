@@ -28,6 +28,51 @@ This goal is stuck 3x. Will not attempt again.
 
 המשך מ: XD17-cat PERMANENTLY SKIPPED. Next goal from queue.
 
+## UX36 Shadow Tokens Elevation Hierarchy — COMPLETE ✅
+
+**Goal:** Implement shadow tokens (sm, md, lg, xl) with consistent elevation hierarchy and hover state effects.
+
+**Status: COMPLETE & VERIFIED**
+
+**Implementation:**
+- ✅ **Base shadow tokens** (packages/design-tokens/electro.css): xs, sm, md, lg, xl with rgba values
+- ✅ **Hover state elevations**: Each level elevates to next level on hover (sm→md, md→lg, lg→xl, xl→extra)
+- ✅ **Component elevation mapping**:
+  - card/base: --electro-shadow-sm
+  - panel: --electro-shadow-md
+  - modal/dropdown: --electro-shadow-lg
+  - floating: --electro-shadow-xl
+- ✅ **Transition timing variables**: base (200ms), fast (100ms), slow (300ms) for consistent animations
+- ✅ **CSS utility classes**:
+  - Elevation levels: .elevation-sm, .elevation-md, .elevation-lg, .elevation-xl
+  - Component-specific: .card-elevation, .panel-elevation, .modal-elevation, .dropdown-elevation, .floating-elevation
+- ✅ **Hover effects**: All interactive elevation classes transition smoothly on hover
+- ✅ **Dark mode compatible**: Shadows inherit correctly in dark mode
+
+**Tests:**
+- ✅ Created src/styles/shadows.test.ts with 10 comprehensive tests
+- ✅ Verify all shadow tokens defined
+- ✅ Verify hover state tokens map correctly
+- ✅ Verify elevation component tokens
+- ✅ Verify transition variables
+- ✅ Verify CSS utility classes exist
+- ✅ Verify hierarchy: elevation levels map to shadow levels
+- ✅ Verify hover states elevate correctly
+- ✅ Verify pseudo-classes with transitions
+
+**Verification:**
+- ✅ pnpm type-check: clean
+- ✅ pnpm lint: clean (6 unrelated warnings, 0 errors)
+- ✅ pnpm build: successful
+- ✅ pnpm test: 5138 passing, 25 skipped, 0 failed
+
+**Commits:**
+- 011b48c28: [autopilot] UX36: Shadow tokens elevation hierarchy with hover states
+
+**Next Steps:** UX design system refinements or feature implementation from NEXT-GOALS queue.
+
+המשך מ: UX36 complete, verified. Shadow elevation system provides semantic elevation hierarchy for all components with smooth hover transitions.
+
 ## UX30 Dark Mode Toggle — COMPLETE ✅
 
 **Goal:** Implement dark mode toggle with localStorage persistence, smooth transitions across all pages.
