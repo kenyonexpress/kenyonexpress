@@ -14,5 +14,9 @@
  * The file remains because deleting files is a stop-and-ask action in this
  * project, and the tombstone is the answer to "where did RatingStars go".
  * src/__tests__/ratings-never-public.test.ts pins that it stays empty.
+ *
+ * The working RatingStars component lives in src/components/shared/RatingStars.tsx
+ * and is used for internal contexts (admin, order feedback) where STEP 45
+ * policy is respected: storefront code never imports from it.
  */
 export {}
