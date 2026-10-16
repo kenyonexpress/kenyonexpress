@@ -14,18 +14,6 @@ import type { Config } from 'tailwindcss'
 
 export default {
   theme: {
-    spacing: {
-      0: '0',
-      px: '1px',
-      0.5: 'var(--spacing-4)',
-      1: 'var(--spacing-8)',
-      1.5: 'var(--spacing-12)',
-      2: 'var(--spacing-16)',
-      3: 'var(--spacing-24)',
-      4: 'var(--spacing-32)',
-      6: 'var(--spacing-48)',
-      8: 'var(--spacing-64)',
-    },
     extend: {
       colors: {
         brand: {

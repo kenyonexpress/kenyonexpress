@@ -35,7 +35,7 @@ export default function BarSeries({
 
   if (points.length === 0) {
     return (
-      <section className="rounded-xl border border-gray-200 bg-white p-5">
+      <section className="rounded-xl border border-gray-200 bg-white p-4">
         <h2 className="text-sm font-bold text-heading">{title}</h2>
         <p className="mt-3 text-sm text-black/50">אין נתונים בטווח הזה.</p>
       </section>
@@ -43,7 +43,7 @@ export default function BarSeries({
   }
 
   return (
-    <section className="rounded-xl border border-gray-200 bg-white p-5">
+    <section className="rounded-xl border border-gray-200 bg-white p-4">
       <h2 className="text-sm font-bold text-heading">{title}</h2>
       {caption && <p className="mt-1 text-xs text-black/50">{caption}</p>}
 

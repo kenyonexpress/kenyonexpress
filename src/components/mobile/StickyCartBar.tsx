@@ -42,7 +42,7 @@ export default function StickyCartBar({
           onClick={handleClick}
           disabled={isLoading}
           className={`
-            flex items-center justify-center gap-2 px-6 py-2.5 h-12 rounded-lg
+            flex items-center justify-center gap-2 px-6 py-2 h-12 rounded-lg
             font-semibold text-white transition-all duration-200
             whitespace-nowrap
             ${

@@ -52,7 +52,7 @@ export default function BlogPostFooter({ slug }: { slug: string }) {
       {author ? (
         <section
           aria-labelledby="blog-author-heading"
-          className="mt-8 rounded-xl border border-heading/10 p-5"
+          className="mt-8 rounded-xl border border-heading/10 p-4"
           data-testid="blog-author"
         >
           <h2 id="blog-author-heading" className="text-sm text-heading/75">

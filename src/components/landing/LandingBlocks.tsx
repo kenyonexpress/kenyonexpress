@@ -43,7 +43,7 @@ function LandingBlockView({ block, campaign }: { block: LandingBlock; campaign: 
       return (
         <section
           data-block="hero"
-          className="grid items-center gap-6 rounded-2xl border border-heading/10 bg-brand-accent/40 p-6 sm:p-10 md:grid-cols-[3fr_2fr]"
+          className="grid items-center gap-6 rounded-2xl border border-heading/10 bg-brand-accent/40 p-6 sm:p-6 md:grid-cols-[3fr_2fr]"
         >
           <div>
             <h1 className="text-3xl font-bold leading-tight text-heading sm:text-4xl">
@@ -96,7 +96,7 @@ function LandingBlockView({ block, campaign }: { block: LandingBlock; campaign: 
           )}
           <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {block.items.map((item) => (
-              <li key={item.title} className="rounded-xl border border-heading/10 bg-white p-5">
+              <li key={item.title} className="rounded-xl border border-heading/10 bg-white p-4">
                 <h3 className="text-base font-semibold text-heading">{item.title}</h3>
                 {item.text && (
                   <p className="mt-2 text-sm leading-relaxed text-heading/80">{item.text}</p>
@@ -131,7 +131,7 @@ function LandingBlockView({ block, campaign }: { block: LandingBlock; campaign: 
       return (
         <section
           data-block="countdown"
-          className="rounded-xl border border-heading/10 bg-white px-5 py-4"
+          className="rounded-xl border border-heading/10 bg-white px-4 py-4"
         >
           <LandingCountdown label={block.label} endsAt={block.endsAt} />
         </section>

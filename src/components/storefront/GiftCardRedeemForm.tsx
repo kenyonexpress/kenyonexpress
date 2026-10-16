@@ -17,7 +17,7 @@ const fieldClass =
   'w-full min-h-11 rounded-lg border border-border bg-white px-3 py-2 text-sm text-heading focus:outline-none focus:ring-2 focus:ring-brand-primary/40'
 
 const buttonClass =
-  'min-h-11 rounded-lg bg-brand-primary px-5 text-sm font-semibold text-heading disabled:opacity-60'
+  'min-h-11 rounded-lg bg-brand-primary px-4 text-sm font-semibold text-heading disabled:opacity-60'
 
 function formatIls(agorot: number): string {
   return `₪${(agorot / 100).toLocaleString('he-IL', {
@@ -132,7 +132,7 @@ export default function GiftCardRedeemForm({ signedIn }: { signedIn: boolean }) 
             type="submit"
             formAction={balanceAction}
             disabled={pending}
-            className="min-h-11 rounded-lg border border-border bg-white px-5 text-sm font-semibold text-heading disabled:opacity-60"
+            className="min-h-11 rounded-lg border border-border bg-white px-4 text-sm font-semibold text-heading disabled:opacity-60"
           >
             {balancePending ? 'בודק...' : 'בדיקת יתרה'}
           </button>

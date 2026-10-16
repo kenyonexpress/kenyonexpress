@@ -18,7 +18,7 @@ export default function AboutContact({ email }: { email: string }) {
   return (
     <section
       aria-labelledby="about-contact"
-      className="rounded-xl border border-heading/15 bg-heading/5 p-5"
+      className="rounded-xl border border-heading/15 bg-heading/5 p-4"
     >
       <h2 id="about-contact" className="text-lg font-bold text-heading">
         איך מגיעים אלינו
@@ -28,7 +28,7 @@ export default function AboutContact({ email }: { email: string }) {
         <a
           href={`mailto:${email}`}
           dir="ltr"
-          className="inline-flex min-h-12 items-center rounded-xl border border-heading/20 bg-white px-5 py-3 text-base font-medium text-heading hover:border-heading/40"
+          className="inline-flex min-h-12 items-center rounded-xl border border-heading/20 bg-white px-4 py-3 text-base font-medium text-heading hover:border-heading/40"
         >
           {email}
         </a>

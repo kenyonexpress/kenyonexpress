@@ -13,7 +13,7 @@ export default function OrderHelpCard({ orderRef }: { orderRef: string }) {
     <section
       aria-labelledby="order-help"
       data-testid="order-help"
-      className="mb-8 max-w-3xl rounded-xl border border-heading/15 bg-heading/5 p-5"
+      className="mb-8 max-w-3xl rounded-xl border border-heading/15 bg-heading/5 p-4"
     >
       <h2 id="order-help" className="text-lg font-bold text-heading">
         עזרה עם הזמנה{' '}

@@ -72,7 +72,7 @@ export default async function CategoryHeroBanner({
         )}
       </div>
       <div
-        className={`absolute inset-0 flex flex-col items-start justify-center gap-2 p-5 md:gap-3 md:p-10 ${
+        className={`absolute inset-0 flex flex-col items-start justify-center gap-2 p-4 md:gap-3 md:p-6 ${
           light ? 'text-white' : 'text-heading'
         }`}
       >
@@ -87,7 +87,7 @@ export default async function CategoryHeroBanner({
             href={banner.cta_href}
             prefetch={false}
             data-testid="category-hero-cta"
-            className={`mt-1 inline-flex min-h-11 items-center rounded px-5 py-2 text-sm font-bold md:text-base ${
+            className={`mt-1 inline-flex min-h-11 items-center rounded px-4 py-2 text-sm font-bold md:text-base ${
               light ? CTA_ON_LIGHT_TEXT : CTA_ON_DARK_TEXT
             }`}
           >

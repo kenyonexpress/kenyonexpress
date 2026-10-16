@@ -161,7 +161,7 @@ export default function Footer() {
       </div>
 
       <div className="border-t border-white/10">
-        <div className="max-w-footer mx-auto px-4 py-5 flex flex-col md:flex-row items-center justify-between gap-3">
+        <div className="max-w-footer mx-auto px-4 py-4 flex flex-col md:flex-row items-center justify-between gap-3">
           <p className="text-footer-note text-white/60">© קניון Express · כל הזכויות שמורות</p>
           <p className="text-footer-note text-white/60">ויזה · ביט · Visa · Mastercard · PayPal</p>
         </div>

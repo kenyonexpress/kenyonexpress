@@ -71,7 +71,7 @@ export default function PhoneOtpForm({
           placeholder="050-1234567"
           value={phone}
           onChange={(event) => setPhone(event.target.value)}
-          className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-start placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
+          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-start placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
         />
         {getError(sendState) && (
           <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">
@@ -81,7 +81,7 @@ export default function PhoneOtpForm({
         <button
           type="submit"
           disabled={sendPending}
-          className="w-full min-h-touch-min border border-brand text-heading hover:bg-brand/5 disabled:opacity-60 font-semibold rounded-lg py-2.5 text-sm transition-colors"
+          className="w-full min-h-touch-min border border-brand text-heading hover:bg-brand/5 disabled:opacity-60 font-semibold rounded-lg py-2 text-sm transition-colors"
         >
           {sendPending ? 'שולחים קוד...' : 'שליחת קוד ב-SMS'}
         </button>
@@ -111,7 +111,7 @@ export default function PhoneOtpForm({
         autoComplete="one-time-code"
         maxLength={10}
         placeholder="123456"
-        className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-center text-lg tracking-[0.4em] placeholder:tracking-normal placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
+        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-center text-lg tracking-[0.4em] placeholder:tracking-normal placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
       />
 
       {getError(verifyState) && (
@@ -123,7 +123,7 @@ export default function PhoneOtpForm({
       <button
         type="submit"
         disabled={verifyPending}
-        className="w-full min-h-touch-min bg-brand text-heading hover:bg-brand-dark hover:text-white disabled:opacity-60 font-semibold rounded-lg py-2.5 text-sm transition-colors"
+        className="w-full min-h-touch-min bg-brand text-heading hover:bg-brand-dark hover:text-white disabled:opacity-60 font-semibold rounded-lg py-2 text-sm transition-colors"
       >
         {verifyPending ? 'מאמתים...' : 'כניסה'}
       </button>

@@ -156,7 +156,7 @@ export default function AdminSidebar({ role }: { role: UserRole }) {
                 <Link
                   href={href}
                   className={cn(
-                    'flex items-center gap-3 px-4 py-2.5 text-sm font-medium transition-colors',
+                    'flex items-center gap-3 px-4 py-2 text-sm font-medium transition-colors',
                     quickAdd && 'flex-1',
                     active
                       ? 'bg-brand-primary/40 text-heading'

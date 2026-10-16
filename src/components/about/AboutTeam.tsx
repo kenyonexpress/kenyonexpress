@@ -17,7 +17,7 @@ export default function AboutTeam({ members }: { members: readonly TeamMember[] 
           <li
             key={member.name}
             data-testid="team-member"
-            className="rounded-xl border border-heading/10 bg-white p-5"
+            className="rounded-xl border border-heading/10 bg-white p-4"
           >
             <p className="text-lg font-bold text-heading">{member.name}</p>
             <p className="text-sm text-heading/75">{member.role}</p>

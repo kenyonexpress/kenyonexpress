@@ -31,12 +31,12 @@ export default function BlogPostList({
         const category = findCategory(post.category)
         const author = findAuthor(post.author)
         return (
-          <li key={post.slug} className="py-5" data-testid="blog-post-card">
+          <li key={post.slug} className="py-4" data-testid="blog-post-card">
             <article>
               {category ? (
                 <Link
                   href={`/blog/category/${category.slug}`}
-                  className="inline-block rounded-full bg-heading/5 px-2.5 py-0.5 text-xs font-semibold text-heading hover:bg-heading/10"
+                  className="inline-block rounded-full bg-heading/5 px-2 py-0.5 text-xs font-semibold text-heading hover:bg-heading/10"
                 >
                   {category.name}
                 </Link>

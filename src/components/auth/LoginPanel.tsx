@@ -65,15 +65,15 @@ function isRtl(el: HTMLElement): boolean {
 }
 
 const FIELD =
-  'w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent'
+  'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent'
 const CODE_FIELD =
-  'w-full rounded-lg border border-gray-300 px-3 py-2.5 text-center text-lg tracking-[0.4em] placeholder:tracking-normal placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent'
+  'w-full rounded-lg border border-gray-300 px-3 py-2 text-center text-lg tracking-[0.4em] placeholder:tracking-normal placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent'
 const SECONDARY_BUTTON =
-  'w-full flex min-h-touch-min items-center justify-center gap-2 border border-gray-300 rounded-lg py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-60'
+  'w-full flex min-h-touch-min items-center justify-center gap-2 border border-gray-300 rounded-lg py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-60'
 const PRIMARY_BUTTON =
-  'w-full min-h-touch-min bg-brand text-heading hover:bg-brand-dark hover:text-white disabled:opacity-60 font-semibold rounded-lg py-2.5 text-sm transition-colors'
+  'w-full min-h-touch-min bg-brand text-heading hover:bg-brand-dark hover:text-white disabled:opacity-60 font-semibold rounded-lg py-2 text-sm transition-colors'
 const OUTLINE_BUTTON =
-  'w-full min-h-touch-min border border-brand text-heading hover:bg-brand/5 disabled:opacity-60 font-semibold rounded-lg py-2.5 text-sm transition-colors'
+  'w-full min-h-touch-min border border-brand text-heading hover:bg-brand/5 disabled:opacity-60 font-semibold rounded-lg py-2 text-sm transition-colors'
 const ERROR = 'text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2'
 const SUCCESS = 'text-sm text-green-700 bg-green-50 rounded-lg px-3 py-2'
 
@@ -212,7 +212,7 @@ export default function LoginPanel({
       */}
       <PasskeyLoginButton next={next} onFallback={openMagicFallback} />
 
-      <div className="my-5 flex items-center gap-3">
+      <div className="my-4 flex items-center gap-3">
         <div className="flex-1 border-t border-gray-200" />
         <span className="text-xs text-gray-500">או</span>
         <div className="flex-1 border-t border-gray-200" />

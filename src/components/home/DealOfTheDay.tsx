@@ -140,7 +140,7 @@ export default async function DealOfTheDay() {
             <span
               data-deal-badge
               aria-hidden="true"
-              className="absolute end-0 top-0 z-10 rounded-sm bg-deal-badge px-2.5 py-0.5 text-badge font-bold leading-6 text-white"
+              className="absolute end-0 top-0 z-10 rounded-sm bg-deal-badge px-2 py-0.5 text-badge font-bold leading-6 text-white"
             >
               {/* `end-0` resolves against the element's OWN direction, so the
                   ltr that keeps "-50%" from reading "50%-" goes on an inner

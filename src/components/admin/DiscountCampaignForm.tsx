@@ -354,7 +354,7 @@ export default function DiscountCampaignForm({ initial = {} }: { initial?: Initi
       <button
         type="submit"
         disabled={pending}
-        className="rounded-lg bg-black px-5 py-2.5 text-sm font-medium text-white disabled:opacity-50"
+        className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
       >
         {pending ? 'שומר...' : 'שמירה'}
       </button>

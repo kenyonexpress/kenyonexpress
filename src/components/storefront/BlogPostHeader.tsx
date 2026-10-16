@@ -52,7 +52,7 @@ export default function BlogPostHeader({ slug }: { slug: string }) {
         <Link href="/" className="hover:text-heading">
           בית
         </Link>
-        <span aria-hidden="true" className="mx-2">
+        <span aria-hidden="true" className="mx-0.5">
           /
         </span>
         <Link href="/blog" className="hover:text-heading">
@@ -60,7 +60,7 @@ export default function BlogPostHeader({ slug }: { slug: string }) {
         </Link>
         {category ? (
           <>
-            <span aria-hidden="true" className="mx-2">
+            <span aria-hidden="true" className="mx-0.5">
               /
             </span>
             <Link href={`/blog/category/${category.slug}`} className="hover:text-heading">
@@ -68,7 +68,7 @@ export default function BlogPostHeader({ slug }: { slug: string }) {
             </Link>
           </>
         ) : null}
-        <span aria-hidden="true" className="mx-2">
+        <span aria-hidden="true" className="mx-0.5">
           /
         </span>
         <span className="text-heading">{post.title}</span>
@@ -100,7 +100,7 @@ export default function BlogPostHeader({ slug }: { slug: string }) {
             <li key={tag.slug}>
               <Link
                 href={`/blog/tag/${tag.slug}`}
-                className="inline-block rounded-full bg-heading/5 px-2.5 py-0.5 text-xs font-semibold text-heading hover:bg-heading/10"
+                className="inline-block rounded-full bg-heading/5 px-2 py-0.5 text-xs font-semibold text-heading hover:bg-heading/10"
               >
                 {tag.label}
               </Link>

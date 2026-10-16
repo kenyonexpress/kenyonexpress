@@ -86,7 +86,7 @@ export default function FooterNewsletterForm() {
             readOnly={f.pending}
             onBlur={f.onBlur}
             onChange={f.onChange}
-            className="min-w-0 flex-1 border-0 bg-white px-5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-inset focus:ring-black/40 aria-invalid:ring-2 aria-invalid:ring-inset aria-invalid:ring-error"
+            className="min-w-0 flex-1 border-0 bg-white px-4 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-inset focus:ring-black/40 aria-invalid:ring-2 aria-invalid:ring-inset aria-invalid:ring-error"
           />
           <button
             type="submit"

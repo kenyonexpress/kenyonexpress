@@ -311,7 +311,7 @@ export default function CategoryBannerForm({
             />
           )}
           <div
-            className={`absolute inset-0 flex flex-col items-start justify-center gap-2 p-5 ${
+            className={`absolute inset-0 flex flex-col items-start justify-center gap-2 p-4 ${
               theme === 'light' ? 'text-white' : 'text-gray-900'
             }`}
           >

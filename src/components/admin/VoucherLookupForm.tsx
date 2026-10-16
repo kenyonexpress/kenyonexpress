@@ -26,7 +26,7 @@ export default function VoucherLookupForm({ canRedeem }: { canRedeem: boolean })
     <div className="space-y-6">
       <form
         action={lookupAction}
-        className="max-w-md space-y-3 rounded-xl border border-gray-200 bg-white p-5"
+        className="max-w-md space-y-3 rounded-xl border border-gray-200 bg-white p-4"
       >
         <label htmlFor="voucher-code" className="block text-sm font-medium text-gray-800">
           קוד שובר
@@ -51,7 +51,7 @@ export default function VoucherLookupForm({ canRedeem }: { canRedeem: boolean })
       </form>
 
       {voucher ? (
-        <section className="max-w-xl space-y-4 rounded-xl border border-gray-200 bg-white p-5">
+        <section className="max-w-xl space-y-4 rounded-xl border border-gray-200 bg-white p-4">
           <h2 className="font-semibold text-gray-900">
             <span dir="ltr">{formatVoucherCode(voucher.code)}</span>
           </h2>

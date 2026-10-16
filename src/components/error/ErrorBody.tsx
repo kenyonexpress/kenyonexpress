@@ -251,7 +251,7 @@ export default function ErrorBody({ error, reset, segment }: Props) {
               href={whatsapp}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex min-h-touch-min items-center gap-2 rounded-pill bg-whatsapp px-5 text-sm font-bold text-white transition-opacity hover:opacity-90"
+              className="inline-flex min-h-touch-min items-center gap-2 rounded-pill bg-whatsapp px-4 text-sm font-bold text-white transition-opacity hover:opacity-90"
             >
               <WhatsAppIcon size={22} />
               פנייה לתמיכה בוואטסאפ
@@ -260,7 +260,7 @@ export default function ErrorBody({ error, reset, segment }: Props) {
           <Link
             href="/contact"
             {...(whatsapp ? {} : { 'data-error-support': true })}
-            className="inline-flex min-h-touch-min items-center rounded-pill border border-border px-5 text-sm font-bold text-heading transition-colors hover:bg-surface-hover"
+            className="inline-flex min-h-touch-min items-center rounded-pill border border-border px-4 text-sm font-bold text-heading transition-colors hover:bg-surface-hover"
           >
             טופס יצירת קשר
           </Link>

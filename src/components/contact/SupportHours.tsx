@@ -13,7 +13,7 @@ export default function SupportHours() {
   return (
     <section
       aria-labelledby="support-hours"
-      className="rounded-xl border border-heading/15 bg-heading/5 p-5"
+      className="rounded-xl border border-heading/15 bg-heading/5 p-4"
     >
       <h2 id="support-hours" className="text-lg font-bold text-heading">
         שעות מענה

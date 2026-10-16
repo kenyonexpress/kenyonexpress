@@ -63,7 +63,7 @@ export default function SubscriptionList({
       )}
 
       {subscriptions.map((sub) => (
-        <div key={sub.id} className="rounded-xl border border-gray-200 bg-white p-5">
+        <div key={sub.id} className="rounded-xl border border-gray-200 bg-white p-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <p className="font-semibold text-gray-900">
@@ -80,7 +80,7 @@ export default function SubscriptionList({
               </p>
             </div>
             <span
-              className={`rounded-full border px-2.5 py-0.5 text-xs font-medium ${STATUS_CLASSES[sub.status]}`}
+              className={`rounded-full border px-2 py-0.5 text-xs font-medium ${STATUS_CLASSES[sub.status]}`}
             >
               {STATUS_LABELS[sub.status]}
             </span>

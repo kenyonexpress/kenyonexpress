@@ -6,7 +6,7 @@ import { useActionState } from 'react'
 const INITIAL: SupplierLeadState = { ok: false }
 
 const FIELD =
-  'w-full rounded-lg border border-heading/20 px-3 py-2.5 text-base text-heading placeholder:text-heading/40 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/40'
+  'w-full rounded-lg border border-heading/20 px-3 py-2 text-base text-heading placeholder:text-heading/40 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/40'
 const LABEL = 'mb-1 block text-sm font-medium text-heading'
 
 /**

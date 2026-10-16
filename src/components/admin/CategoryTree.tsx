@@ -71,7 +71,7 @@ function CategoryNode({ node, allFlat, depth, onEdit, onAddChild }: NodeProps) {
   return (
     <div>
       <div
-        className={`flex items-center gap-2 px-4 py-2.5 hover:bg-gray-50 transition-colors group border-b border-gray-100 ${depth > 0 ? 'bg-gray-50/30' : ''}`}
+        className={`flex items-center gap-2 px-4 py-2 hover:bg-gray-50 transition-colors group border-b border-gray-100 ${depth > 0 ? 'bg-gray-50/30' : ''}`}
         style={{ paddingRight: `${1.25 + depth * 1.5}rem` }}
       >
         <button
@@ -211,7 +211,7 @@ export default function CategoryTree({ categories }: Props) {
 
       <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
         {tree.length === 0 ? (
-          <div className="px-5 py-10 text-center text-gray-400 text-sm">אין קטגוריות עדיין</div>
+          <div className="px-4 py-10 text-center text-gray-400 text-sm">אין קטגוריות עדיין</div>
         ) : (
           tree.map((node) => (
             <CategoryNode

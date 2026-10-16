@@ -32,7 +32,7 @@ export default function LegalDocumentView({
         <Link href="/" className="hover:text-heading">
           בית
         </Link>
-        <span aria-hidden="true" className="mx-2">
+        <span aria-hidden="true" className="mx-0.5">
           /
         </span>
         <span className="text-heading">{breadcrumb}</span>

@@ -298,7 +298,7 @@ export default function ProductsTable({ products, categories, hidePricing = fals
           </button>
 
           {/* Category assignment */}
-          <span className="mx-1 h-5 w-px bg-black/10" aria-hidden />
+          <span className="mx-0.5 h-5 w-px bg-black/10" aria-hidden />
           <select
             value={bulkCategory}
             onChange={(e) => setBulkCategory(e.target.value)}
@@ -330,7 +330,7 @@ export default function ProductsTable({ products, categories, hidePricing = fals
           {/* Price adjustment */}
           {!hidePricing && (
             <>
-              <span className="mx-1 h-5 w-px bg-black/10" aria-hidden />
+              <span className="mx-0.5 h-5 w-px bg-black/10" aria-hidden />
               <select
                 value={priceMode}
                 onChange={(e) => setPriceMode(e.target.value as 'percent' | 'set')}
@@ -362,7 +362,7 @@ export default function ProductsTable({ products, categories, hidePricing = fals
           )}
 
           {/* Soft delete */}
-          <span className="mx-1 h-5 w-px bg-black/10" aria-hidden />
+          <span className="mx-0.5 h-5 w-px bg-black/10" aria-hidden />
           <button
             type="button"
             disabled={busy}

@@ -39,7 +39,7 @@ export default function CartNavLink() {
       aria-haspopup="dialog"
       aria-expanded={drawerOpen}
       data-mini-cart-trigger=""
-      className={`tap-area -m-1 flex items-center gap-1.5 p-1 text-icon transition-colors hover:text-heading-hover ${isPending ? 'opacity-70' : ''}`}
+      className={`tap-area -m-0.5 flex items-center gap-1.5 p-1 text-icon transition-colors hover:text-heading-hover ${isPending ? 'opacity-70' : ''}`}
     >
       <span className="relative">
         <ShoppingCart size={ICON.size} strokeWidth={ICON.strokeWidth} aria-hidden="true" />
