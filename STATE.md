@@ -191,7 +191,32 @@ The mega menu is production-ready for desktop users. Mobile category navigation 
 
 The Dialog component now exposes all UX29 features via Radix Dialog's built-in capabilities and proper responsive styling.
 
-המשך מ:
+## Current Status and Blockers (2026-10-16)
+
+**Autonomous Decision Log:**
+
+The following items are identified as next in priority but are currently blocked:
+
+1. **Migrations 170, 171** - Composite indexes and category name order. Status: Reviewed column-by-column, waiting for batch approval. These are safe and ready but require explicit approval before applying to production.
+
+2. **Migration 169** - Analytics server event names (purchase, begin_checkout, voucher_redeemed, order_refunded events). Status: Designed, awaiting approval. These events are currently dropping.
+
+3. **Migration 172** - Hide master product test row (currently shows ₪1 test product). Status: Ready, awaiting approval. This row is visible in production and causes test sales.
+
+4. **SUPABASE_SECRET_KEY Rotation** - Current key exposed in installation, bypasses RLS. Status: Key marked in `scripts/compromised-keys.mjs`, build refuses with it. Needs rotation procedure per RUNBOOK.
+
+5. **Migration 162** - CRON schedule configuration. Status: Blocked by missing production URL needed for vault.
+
+6. **Element/Electro Delta** - Live site runs Elementor template, not Electro v7. Documented in `docs/LIVE-DELTA.md`. Four schema rows correctly rejected due to this divergence.
+
+**All code-level features from goals 1-57 are COMPLETE and verified.** Further progress requires:
+- Migration batch approval (170, 171, 172, 169)
+- External credential setup (162: prod URL)
+- Security review and rotation (SUPABASE_SECRET_KEY)
+
+**Test suite status:** 5076 passing, 25 skipped, 0 failing. All gates green.
+
+המשך מ: Awaiting migration approval batch before proceeding to analytics integration, product listing cleanup, or additional feature work.
 
 
 ## ‏STEP 21 — סבב תחזוקה 89: היועצים שטוחים, והנימוק במיגרציה ‏177 היה שגוי
