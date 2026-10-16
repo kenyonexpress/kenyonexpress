@@ -2,6 +2,7 @@
 
 import WishlistAlertPrefsCard from '@/components/account/WishlistAlertPrefs'
 import { useCart } from '@/components/cart/CartProvider'
+import { Heart, ShoppingCart } from '@/components/icons'
 import WishlistCard, { type WishlistCardOutcome } from '@/components/wishlist/WishlistCard'
 import WishlistShareAction from '@/components/wishlist/WishlistShareAction'
 import WishlistShareCard from '@/components/wishlist/WishlistShareCard'
@@ -24,7 +25,6 @@ import {
   type WishlistViewState,
   getMyWishlistView,
 } from '@/server/actions/wishlist'
-import { Heart, ShoppingCart } from 'lucide-react'
 import Link from 'next/link'
 import { type Dispatch, type SetStateAction, useEffect, useState } from 'react'
 

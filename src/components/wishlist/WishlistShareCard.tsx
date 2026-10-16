@@ -1,12 +1,12 @@
 'use client'
 
+import { Check, Link2, RefreshCw, Share2 } from '@/components/icons'
 import { sharedWishlistPath } from '@/lib/wishlist/share-token'
 import {
   type WishlistShareCommand,
   type WishlistShareState,
   setWishlistShare,
 } from '@/server/actions/wishlist'
-import { Check, Link2, RefreshCw, Share2 } from 'lucide-react'
 import { useEffect, useState, useTransition } from 'react'
 
 /**

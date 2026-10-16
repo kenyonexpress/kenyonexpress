@@ -1,7 +1,7 @@
+import { MapPin, Tag } from '@/components/icons'
 import { getActiveCouponDealIds, getCouponDeal } from '@/lib/coupon-deals'
 import { shekelsFromIls } from '@/lib/money-format'
 import { publicPageMetadata } from '@/lib/seo/page-metadata'
-import { MapPin, Tag } from 'lucide-react'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
 

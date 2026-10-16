@@ -1,10 +1,10 @@
 'use client'
 
 import { useCart, useCartStoreApi } from '@/components/cart/CartProvider'
+import { ShoppingCart } from '@/components/icons'
 import HeaderBadge from '@/components/layout/HeaderBadge'
 import { displayItemCount } from '@/lib/cart/store'
 import { shekelsRounded } from '@/lib/money-format'
-import { ShoppingCart } from 'lucide-react'
 import { useStore } from 'zustand'
 
 /**

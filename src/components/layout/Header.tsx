@@ -1,11 +1,11 @@
 'use client'
 
 import HeaderCart from '@/components/cart/HeaderCart'
+import { Heart, MapPin, Menu, Phone, ShoppingBag, User } from '@/components/icons'
 import SiteSearch from '@/components/search/SiteSearch'
 import WishlistNavCount from '@/components/wishlist/WishlistNavCount'
 import { LOGO } from '@/lib/assets'
 import { storeWhatsAppNumber } from '@/lib/whatsapp'
-import { Heart, MapPin, Menu, Phone, ShoppingBag, User } from 'lucide-react'
 import Link from 'next/link'
 import SmartImage from '../ui/SmartImage'
 import MobileDrawer from './MobileDrawer'

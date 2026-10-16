@@ -1,5 +1,5 @@
 import CopyrightYear from '@/components/CopyrightYear'
-import { AtSign, Music2, Send, Share2 } from 'lucide-react'
+import { AtSign, Music2, Send, Share2 } from '@/components/icons'
 
 type FooterLink = { label: string; href: string }
 

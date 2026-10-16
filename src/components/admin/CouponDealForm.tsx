@@ -1,10 +1,10 @@
 'use client'
 
 import ImageUploader from '@/components/admin/ImageUploader'
+import { MapPin, Tag } from '@/components/icons'
 import { shekelsFromIls } from '@/lib/money-format'
 import { type CouponDealFormState, upsertCouponDeal } from '@/server/actions/admin/coupon-deals'
 import type { CouponDeal, Vendor } from '@/types/database'
-import { MapPin, Tag } from 'lucide-react'
 import Image from 'next/image'
 import { useActionState, useState } from 'react'
 

@@ -2,6 +2,7 @@ import CategoryGridSkeleton from '@/components/category/CategoryGridSkeleton'
 import CategoryProductCard from '@/components/category/CategoryProductCard'
 import Pagination from '@/components/category/Pagination'
 import { ABOVE_FOLD_CARD_COUNT } from '@/components/category/above-fold'
+import { MapPin, Store, Tag } from '@/components/icons'
 import {
   CITY_PAGE_SIZE,
   type CityDeals,
@@ -24,7 +25,6 @@ import {
   jsonLdScript,
 } from '@/lib/seo/json-ld'
 import { publicPageMetadata } from '@/lib/seo/page-metadata'
-import { MapPin, Store, Tag } from 'lucide-react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'

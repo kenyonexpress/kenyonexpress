@@ -1,5 +1,6 @@
 'use client'
 
+import { Share2 } from '@/components/icons'
 import { notify } from '@/lib/ui/toast'
 import {
   LINK_COPIED,
@@ -12,7 +13,6 @@ import {
   type WishlistShareState,
   setWishlistShare,
 } from '@/server/actions/wishlist'
-import { Share2 } from 'lucide-react'
 import { useState } from 'react'
 
 /**

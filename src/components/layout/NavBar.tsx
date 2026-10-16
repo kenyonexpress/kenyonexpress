@@ -1,7 +1,7 @@
 'use client'
 
+import { Menu, Phone } from '@/components/icons'
 import { storeWhatsAppNumber } from '@/lib/whatsapp'
-import { Menu, Phone } from 'lucide-react'
 import Link from 'next/link'
 
 const NAV_LINKS = [

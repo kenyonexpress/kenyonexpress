@@ -1,10 +1,10 @@
 'use client'
 
+import { ImagePlus, Trash2, Upload } from '@/components/icons'
 import { type AltSubjectKind, suggestAltHe } from '@/lib/images/alt-text'
 import { compressImageFile, validateStagedFile } from '@/lib/images/client-compress'
 import { MAX_ORIGINAL_BYTES, isValidHebrewAlt } from '@/lib/images/validate'
 import { processAndUploadImage } from '@/server/actions/admin/images'
-import { ImagePlus, Trash2, Upload } from 'lucide-react'
 import Image from 'next/image'
 import { type DragEvent, useRef, useState } from 'react'
 

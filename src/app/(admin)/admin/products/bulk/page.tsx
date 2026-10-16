@@ -1,9 +1,9 @@
 import ProductBulkEditClient from '@/components/admin/ProductBulkEditClient'
+import { History } from '@/components/icons'
 import { canSeeMoney } from '@/lib/admin/permissions'
 import { requireAdminPage } from '@/lib/admin/rbac'
 import { isR2StorageConfigured } from '@/lib/storage/r2-service'
 import { createClient } from '@/lib/supabase/server'
-import { History } from 'lucide-react'
 import Link from 'next/link'
 
 export const metadata = { title: 'עריכה קבוצתית של מוצרים' }

@@ -1,8 +1,8 @@
 'use client'
 
+import { Play } from '@/components/icons'
 import { notify } from '@/lib/ui/toast'
 import { generatePayoutStatement } from '@/server/actions/admin/payouts'
-import { Play } from 'lucide-react'
 import { useState, useTransition } from 'react'
 
 interface Props {

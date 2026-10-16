@@ -1,6 +1,6 @@
+import { Store } from '@/components/icons'
 import { requireSupplierMember } from '@/lib/supplier/rbac'
 import { ROLE_LABEL_HE } from '@/lib/supplier/roles'
-import { Store } from 'lucide-react'
 import { Suspense } from 'react'
 import MerchantSignOut from './MerchantSignOut'
 

@@ -1,6 +1,15 @@
 import StatsCard from '@/components/admin/StatsCard'
 import BarSeries, { type BarPoint } from '@/components/admin/analytics/BarSeries'
 import FunnelBars from '@/components/admin/analytics/FunnelBars'
+import {
+  Coins,
+  Receipt,
+  ShoppingCart,
+  Ticket,
+  TrendingUp,
+  UserPlus,
+  Wallet,
+} from '@/components/icons'
 import { requireAdminPage } from '@/lib/admin/rbac'
 import {
   type Period,
@@ -37,7 +46,6 @@ import {
   loadSignups,
 } from '@/server/analytics/dashboard'
 import { loadFunnel, loadSalesLines } from '@/server/analytics/queries'
-import { Coins, Receipt, ShoppingCart, Ticket, TrendingUp, UserPlus, Wallet } from 'lucide-react'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 

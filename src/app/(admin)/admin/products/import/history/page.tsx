@@ -1,4 +1,5 @@
 import ImportRunUndoButton from '@/components/admin/ImportRunUndoButton'
+import { ArrowRight } from '@/components/icons'
 import { formatDateTime } from '@/lib/account/format'
 import {
   IMPORT_RUN_STATUS_LABEL,
@@ -9,7 +10,6 @@ import {
 import { requireAdminPage } from '@/lib/admin/rbac'
 import { createClient } from '@/lib/supabase/server'
 import { listProductImportRuns } from '@/server/queries/product-import-history'
-import { ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 
 export const metadata = { title: 'היסטוריית ייבוא מוצרים' }

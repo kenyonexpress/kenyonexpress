@@ -1,5 +1,6 @@
 'use client'
 
+import { AlertTriangle, CheckCircle2, Circle } from '@/components/icons'
 import {
   MEMBER_ROLES,
   MEMBER_ROLE_LABELS,
@@ -7,7 +8,6 @@ import {
   type OnboardingSummary,
 } from '@/lib/admin/supplier-onboarding'
 import { addSupplierMember, deactivateSupplierMember } from '@/server/actions/admin/suppliers'
-import { AlertTriangle, CheckCircle2, Circle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
 

@@ -1,10 +1,10 @@
 'use client'
 
+import { Clock } from '@/components/icons'
 import {
   type CouponCountdown as Shape,
   describeCouponCountdown,
 } from '@/lib/homepage/coupon-countdown'
-import { Clock } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 /**

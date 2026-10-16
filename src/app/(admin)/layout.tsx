@@ -1,10 +1,10 @@
 import AdminSidebar from '@/components/admin/AdminSidebar'
 import CommandPalette from '@/components/admin/CommandPalette'
+import { LogOut } from '@/components/icons'
 import DeferredToaster from '@/components/ui/DeferredToaster'
 import { adminLandingPath } from '@/lib/admin/nav'
 import { ROLE_LABELS, requirePanelSession } from '@/lib/admin/rbac'
 import { signOut } from '@/server/actions/auth'
-import { LogOut } from 'lucide-react'
 import Link from 'next/link'
 import { Suspense } from 'react'
 

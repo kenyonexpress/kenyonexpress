@@ -1,7 +1,7 @@
 'use client'
 
+import { CircleCheck, Info, OctagonX, TriangleAlert } from '@/components/icons'
 import { MAX_VISIBLE_TOASTS, TOAST_DURATION_MS } from '@/lib/ui/toast'
-import { CircleCheck, Info, OctagonX, TriangleAlert } from 'lucide-react'
 import { Toaster as Sonner } from 'sonner'
 
 type ToasterProps = React.ComponentProps<typeof Sonner>

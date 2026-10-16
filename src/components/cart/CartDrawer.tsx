@@ -3,11 +3,11 @@
 import CartCheckoutButton from '@/components/cart/CartCheckoutButton'
 import { CartOfflineNotice } from '@/components/cart/CartOfflineNotice'
 import { useCart, useCartAuth } from '@/components/cart/CartProvider'
+import { Minus, Plus, ShoppingCart, X } from '@/components/icons'
 import SmartImage from '@/components/ui/SmartImage'
 import { lineQuantityCeiling, unavailableMessage } from '@/lib/cart/format'
 import type { CartViewItem } from '@/lib/cart/types'
 import { shekels } from '@/lib/money-format'
-import { Minus, Plus, ShoppingCart, X } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useRef } from 'react'
 

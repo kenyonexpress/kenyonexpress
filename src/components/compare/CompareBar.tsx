@@ -1,8 +1,8 @@
 'use client'
 
+import { Scale, X } from '@/components/icons'
 import { rehydrateCompareOnce, useCompareStore } from '@/lib/compare/client-store'
 import { COMPARE_LIMIT } from '@/lib/compare/limit'
-import { Scale, X } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect } from 'react'

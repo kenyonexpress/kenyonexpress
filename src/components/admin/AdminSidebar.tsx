@@ -1,8 +1,5 @@
 'use client'
 
-import { type AdminSection, canReadSection } from '@/lib/admin/permissions'
-import type { UserRole } from '@/lib/admin/roles'
-import { cn } from '@/lib/utils'
 import {
   AlertTriangle,
   BadgeCheck,
@@ -35,7 +32,10 @@ import {
   Undo2,
   Users,
   Zap,
-} from 'lucide-react'
+} from '@/components/icons'
+import { type AdminSection, canReadSection } from '@/lib/admin/permissions'
+import type { UserRole } from '@/lib/admin/roles'
+import { cn } from '@/lib/utils'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 

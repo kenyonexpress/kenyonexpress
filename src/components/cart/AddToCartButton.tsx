@@ -1,9 +1,9 @@
 'use client'
 
 import { useCart } from '@/components/cart/CartProvider'
+import { Check, LoaderCircle } from '@/components/icons'
 import { trackCommerce } from '@/lib/analytics/commerce-client'
 import { track } from '@/lib/analytics/tracker'
-import { Check, LoaderCircle } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 
 /**

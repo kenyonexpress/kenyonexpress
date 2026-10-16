@@ -1,8 +1,8 @@
 'use client'
 
+import { LogOut } from '@/components/icons'
 import { clearQueue, readQueue } from '@/lib/vouchers/merchant-scan-queue'
 import { signOut } from '@/server/actions/auth'
-import { LogOut } from 'lucide-react'
 
 /**
  * Sign-out for the till. The queue is cleared on the way out, as the native

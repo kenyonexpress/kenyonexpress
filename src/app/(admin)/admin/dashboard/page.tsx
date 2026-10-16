@@ -1,4 +1,5 @@
 import StatsCard from '@/components/admin/StatsCard'
+import { Coins, FileText, Package, QrCode, ShoppingCart, Star, UserPlus } from '@/components/icons'
 import { AUDIT_ACTION_LABELS, PENDING_QUEUE_LABELS, labelFor } from '@/lib/admin/labels'
 import { canSeeMoney } from '@/lib/admin/permissions'
 import { requireSection } from '@/lib/admin/rbac'
@@ -6,7 +7,6 @@ import { shekelsFromIlsRounded } from '@/lib/money-format'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { LOW_RATING_MAX, readRatingsTile } from '@/server/queries/ratings-admin'
-import { Coins, FileText, Package, QrCode, ShoppingCart, Star, UserPlus } from 'lucide-react'
 import Link from 'next/link'
 
 export const metadata = { title: 'לוח בקרה' }

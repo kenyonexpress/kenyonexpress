@@ -1,8 +1,8 @@
 'use client'
 
 import LoginLink from '@/components/auth/LoginLink'
+import { Bookmark, BookmarkCheck } from '@/components/icons'
 import { deleteSavedSearch, saveSearch } from '@/server/actions/saved-searches'
-import { Bookmark, BookmarkCheck } from 'lucide-react'
 import { useState, useTransition } from 'react'
 
 /**

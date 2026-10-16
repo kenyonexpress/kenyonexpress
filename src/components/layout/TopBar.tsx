@@ -1,6 +1,6 @@
 import LoginLink from '@/components/auth/LoginLink'
+import { MapPin, ShoppingBag, User } from '@/components/icons'
 import { ThemeToggle } from '@/components/theme/ThemeToggle'
-import { MapPin, ShoppingBag, User } from 'lucide-react'
 
 const TOP_BAR_ITEMS: Array<{
   Icon: typeof User

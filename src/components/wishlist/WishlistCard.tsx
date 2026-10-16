@@ -1,5 +1,6 @@
 'use client'
 
+import { ShoppingCart, Trash2 } from '@/components/icons'
 import { discountPercent } from '@/lib/discount-percent'
 import { shekelsFromIlsRounded } from '@/lib/money-format'
 import {
@@ -8,7 +9,6 @@ import {
   savedAgoLabel,
 } from '@/lib/wishlist/page-view'
 import type { WishlistViewItem } from '@/server/actions/wishlist'
-import { ShoppingCart, Trash2 } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'

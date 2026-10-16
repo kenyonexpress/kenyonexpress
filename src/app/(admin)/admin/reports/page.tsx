@@ -1,5 +1,6 @@
 import StatsCard from '@/components/admin/StatsCard'
 import SalesChart, { type SalesPoint } from '@/components/admin/reports/SalesChart'
+import { Coins, Download, HandCoins, Receipt, RotateCcw, TrendingUp } from '@/components/icons'
 import { requireSection } from '@/lib/admin/rbac'
 import { agorot, agorotToIls } from '@/lib/commerce/money'
 import { shekels, shekelsFromIlsRounded } from '@/lib/money-format'
@@ -14,7 +15,6 @@ import {
   todayInIsrael,
 } from '@/server/domain/reports/settlement-report'
 import { loadReportEvents } from '@/server/queries/reports'
-import { Coins, Download, HandCoins, Receipt, RotateCcw, TrendingUp } from 'lucide-react'
 import Link from 'next/link'
 
 /**

@@ -2,9 +2,9 @@
 
 import CartCheckoutButton from '@/components/cart/CartCheckoutButton'
 import { useCart, useCartAuth, useCartStoreApi } from '@/components/cart/CartProvider'
+import { ShoppingCart } from '@/components/icons'
 import { displayItemCount } from '@/lib/cart/store'
 import { shekelsRounded } from '@/lib/money-format'
-import { ShoppingCart } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import { useEffect } from 'react'
 import { useStore } from 'zustand'

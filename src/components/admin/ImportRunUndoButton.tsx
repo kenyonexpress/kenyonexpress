@@ -1,7 +1,7 @@
 'use client'
 
+import { Undo2 } from '@/components/icons'
 import { rollbackProductImportRun } from '@/server/actions/admin/product-import'
-import { Undo2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
 

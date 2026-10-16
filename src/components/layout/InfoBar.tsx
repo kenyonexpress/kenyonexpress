@@ -11,7 +11,7 @@
  * quantified promise. Do not revive this file; if a second trust band is ever
  * needed, copy BenefitBar. **Safe to delete on Ofir's word.**
  */
-import { HandCoins, Headphones, Tag, ThumbsUp, Truck } from 'lucide-react'
+import { HandCoins, Headphones, Tag, ThumbsUp, Truck } from '@/components/icons'
 
 const ITEMS = [
   {

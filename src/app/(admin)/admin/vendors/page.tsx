@@ -1,8 +1,8 @@
 import StatusBadge, { vendorStatusBadge } from '@/components/admin/StatusBadge'
+import { Plus } from '@/components/icons'
 import { requireAdminPage } from '@/lib/admin/rbac'
 import { createClient } from '@/lib/supabase/server'
 import { likeContains } from '@/lib/utils/search-escape'
-import { Plus } from 'lucide-react'
 import Link from 'next/link'
 
 export const metadata = { title: 'ספקים' }

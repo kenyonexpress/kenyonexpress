@@ -1,6 +1,6 @@
+import { ChevronLeft, ChevronRight } from '@/components/icons'
 import { buildListQuery } from '@/lib/admin/list-params'
 import { cn } from '@/lib/utils'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 
 interface TablePaginationProps {

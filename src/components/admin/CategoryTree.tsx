@@ -2,10 +2,10 @@
 
 import CategoryDialog from '@/components/admin/CategoryDialog'
 import StatusBadge from '@/components/admin/StatusBadge'
+import { ChevronDown, ChevronRight, Edit2, Plus, Trash2 } from '@/components/icons'
 import { notify } from '@/lib/ui/toast'
 import { softDeleteCategory, updateCategorySortOrder } from '@/server/actions/admin/categories'
 import type { Category } from '@/types/database'
-import { ChevronDown, ChevronRight, Edit2, Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 
 interface CatWithChildren extends Category {

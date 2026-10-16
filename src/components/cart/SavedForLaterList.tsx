@@ -2,10 +2,10 @@
 
 import { useCart } from '@/components/cart/CartProvider'
 import { useSavedForLater } from '@/components/cart/SavedForLaterProvider'
+import { Trash2 } from '@/components/icons'
 import SmartImage from '@/components/ui/SmartImage'
 import type { SavedItem } from '@/lib/cart/saved-for-later'
 import { shekels } from '@/lib/money-format'
-import { Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
 

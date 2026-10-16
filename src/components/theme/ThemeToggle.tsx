@@ -1,7 +1,7 @@
 'use client'
 
+import { Moon, Sun } from '@/components/icons'
 import { useTheme } from '@/lib/theme/theme-context'
-import { Moon, Sun } from 'lucide-react'
 
 const LABELS = {
   light: 'עבור למצב כהה',

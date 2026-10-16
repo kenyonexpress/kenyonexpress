@@ -1,5 +1,6 @@
 'use client'
 
+import { Bell } from '@/components/icons'
 import { BELL_PANEL_SIZE, type BellRow } from '@/lib/notifications/bell'
 import {
   CATEGORIES,
@@ -15,7 +16,6 @@ import { loadBell } from '@/server/actions/bell'
 import { markNotificationRead } from '@/server/actions/notifications'
 import { realtimeCredentials } from '@/server/actions/session'
 import type { RealtimeChannel } from '@supabase/supabase-js'
-import { Bell } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 

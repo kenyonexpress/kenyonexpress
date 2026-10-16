@@ -2,12 +2,12 @@
 
 import { useCart } from '@/components/cart/CartProvider'
 import { useSavedForLaterStoreApi } from '@/components/cart/SavedForLaterProvider'
+import { Bookmark, Minus, Plus, Trash2 } from '@/components/icons'
 import SmartImage from '@/components/ui/SmartImage'
 import { lineQuantityCeiling, unavailableMessage } from '@/lib/cart/format'
 import { savedItemFromLine } from '@/lib/cart/saved-for-later'
 import type { CartViewItem } from '@/lib/cart/types'
 import { shekels } from '@/lib/money-format'
-import { Bookmark, Minus, Plus, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import { type AnimationEvent, useEffect, useId, useRef, useState } from 'react'
 

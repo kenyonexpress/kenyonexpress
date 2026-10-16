@@ -1,7 +1,7 @@
 'use client'
 
+import { Search } from '@/components/icons'
 import { shekelsFromIlsRounded } from '@/lib/money-format'
-import { Search } from 'lucide-react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'

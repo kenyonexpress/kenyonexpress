@@ -1,8 +1,8 @@
 import CopyCouponCode from '@/components/coupon/CopyCouponCode'
 import CouponCountdown from '@/components/coupon/CouponCountdown'
+import { MapPin, TicketPercent } from '@/components/icons'
 import { countdownDeadline } from '@/lib/homepage/coupon-countdown'
 import { shekelsFromIls } from '@/lib/money-format'
-import { MapPin, TicketPercent } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 

@@ -1,10 +1,10 @@
 import StatusBadge from '@/components/admin/StatusBadge'
+import { AlertTriangle, CheckCircle2, Plus } from '@/components/icons'
 import { requireSection } from '@/lib/admin/rbac'
 import { supplierReadiness } from '@/lib/admin/supplier-form'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { likeContains } from '@/lib/utils/search-escape'
 import type { Supplier } from '@/types/database'
-import { AlertTriangle, CheckCircle2, Plus } from 'lucide-react'
 import Link from 'next/link'
 
 export const metadata = { title: 'ספקים' }

@@ -1,5 +1,5 @@
+import { MapPin } from '@/components/icons'
 import { cityByName } from '@/lib/geo/cities'
-import { MapPin } from 'lucide-react'
 import Link from 'next/link'
 
 /**

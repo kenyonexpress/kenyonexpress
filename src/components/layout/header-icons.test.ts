@@ -81,7 +81,7 @@ describe('the header icon cluster', () => {
   it.each(CLUSTERS)('carries no account icon in %s', (file) => {
     const src = code(read(file))
     expect(src, 'the account entry point is TopBar, not the cluster').not.toMatch(/<User\b/)
-    expect(src).not.toMatch(/\bUser\b\s*[,}].*from 'lucide-react'/)
+    expect(src).not.toMatch(/\bUser\b\s*[,}].*from ['"]@\/components\/icons['"]$/)
   })
 })
 

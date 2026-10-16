@@ -1,8 +1,8 @@
 'use client'
 
+import { AlertTriangle } from '@/components/icons'
 import { type OrderActionState, addOrderNote } from '@/server/actions/admin/orders'
 import { refundOrder } from '@/server/actions/payments/refund'
-import { AlertTriangle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useActionState, useState, useTransition } from 'react'
 

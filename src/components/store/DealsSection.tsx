@@ -1,7 +1,7 @@
 'use client'
 
 import ProductCard, { type Product } from '@/components/ProductCard'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft } from '@/components/icons'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 

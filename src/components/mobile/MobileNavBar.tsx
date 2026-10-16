@@ -1,6 +1,6 @@
 'use client'
 
-import { Grid3x3, Heart, Home, Search, User } from 'lucide-react'
+import { Grid3x3, Heart, Home, Search, User } from '@/components/icons'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 

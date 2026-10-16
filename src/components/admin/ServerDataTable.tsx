@@ -1,6 +1,6 @@
+import { ArrowDown, ArrowUp, ArrowUpDown } from '@/components/icons'
 import { buildListQuery } from '@/lib/admin/list-params'
 import { cn } from '@/lib/utils'
-import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react'
 import Link from 'next/link'
 
 // RSC-first data table: pagination, sorting and filtering are URL state

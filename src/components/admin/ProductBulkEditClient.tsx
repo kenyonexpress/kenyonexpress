@@ -1,5 +1,6 @@
 'use client'
 
+import { Play, Search, Undo2 } from '@/components/icons'
 import {
   type BulkOperationKind,
   REPLACE_FIELDS,
@@ -19,7 +20,6 @@ import {
   finishProductImportRun,
   rollbackProductImportRun,
 } from '@/server/actions/admin/product-import'
-import { Play, Search, Undo2 } from 'lucide-react'
 import { useState } from 'react'
 
 /**

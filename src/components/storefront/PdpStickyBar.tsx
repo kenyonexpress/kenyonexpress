@@ -1,6 +1,6 @@
 'use client'
 
-import { Check, ShoppingCart } from 'lucide-react'
+import { Check, ShoppingCart } from '@/components/icons'
 import { useEffect } from 'react'
 
 /**

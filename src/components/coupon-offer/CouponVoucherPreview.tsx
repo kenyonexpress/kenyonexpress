@@ -1,7 +1,7 @@
+import { Lock } from '@/components/icons'
 import type { CouponOffer } from '@/lib/commerce/coupon-offer'
 import { shekelsFromIls } from '@/lib/money-format'
 import { maskedVoucherCode } from '@/lib/vouchers/coupon-view'
-import { Lock } from 'lucide-react'
 
 /**
  * What the buyer will hold up at the counter, shown before they have bought it.

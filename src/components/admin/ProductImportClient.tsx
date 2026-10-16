@@ -1,5 +1,6 @@
 'use client'
 
+import { ArrowRight, Download, FileUp, History, Undo2, Upload } from '@/components/icons'
 import {
   type HeaderMapping,
   IMPORT_COLUMNS,
@@ -21,7 +22,6 @@ import {
   rollbackProductImportRun,
   startProductImportRun,
 } from '@/server/actions/admin/product-import'
-import { ArrowRight, Download, FileUp, History, Undo2, Upload } from 'lucide-react'
 import Link from 'next/link'
 import { useRef, useState } from 'react'
 

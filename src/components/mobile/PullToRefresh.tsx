@@ -1,6 +1,6 @@
 'use client'
 
-import { RefreshCw } from 'lucide-react'
+import { RefreshCw } from '@/components/icons'
 import { useEffect, useRef, useState } from 'react'
 
 interface PullToRefreshProps {

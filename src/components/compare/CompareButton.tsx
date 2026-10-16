@@ -1,10 +1,10 @@
 'use client'
 
+import { Scale } from '@/components/icons'
 import { rehydrateCompareOnce, useCompareStore, useIsCompared } from '@/lib/compare/client-store'
 import { isCompareId } from '@/lib/compare/ids'
 import { COMPARE_LIMIT } from '@/lib/compare/limit'
 import { notify } from '@/lib/ui/toast'
-import { Scale } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 

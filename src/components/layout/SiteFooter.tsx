@@ -1,9 +1,9 @@
+import { ChevronDown, Headphones } from '@/components/icons'
 import FooterNewsletterForm from '@/components/layout/FooterNewsletterForm'
 import PaymentLogos from '@/components/layout/PaymentLogos'
 import SmartImage from '@/components/ui/SmartImage'
 import { LOGO_FOOTER } from '@/lib/assets'
 import { storeWhatsAppLink } from '@/lib/whatsapp'
-import { ChevronDown, Headphones } from 'lucide-react'
 import Link from 'next/link'
 
 /**

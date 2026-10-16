@@ -1,8 +1,8 @@
+import { LogOut, Store } from '@/components/icons'
 import SupplierNav from '@/components/supplier/SupplierNav'
 import { requireSupplierMember } from '@/lib/supplier/rbac'
 import { ROLE_LABEL_HE } from '@/lib/supplier/roles'
 import { signOut } from '@/server/actions/auth'
-import { LogOut, Store } from 'lucide-react'
 import { Suspense } from 'react'
 
 export const metadata = {

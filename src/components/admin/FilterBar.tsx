@@ -1,4 +1,4 @@
-import { Search } from 'lucide-react'
+import { Search } from '@/components/icons'
 
 // GET-form filter bar: submits straight into searchParams, zero client JS.
 // Children are extra <select name=...> / hidden inputs specific to the page.

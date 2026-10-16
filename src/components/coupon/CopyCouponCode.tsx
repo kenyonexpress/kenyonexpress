@@ -1,6 +1,6 @@
 'use client'
 
-import { Check, Copy } from 'lucide-react'
+import { Check, Copy } from '@/components/icons'
 import { useEffect, useRef, useState } from 'react'
 
 /** How long the button reads "הקוד הועתק" before it offers to copy again. */

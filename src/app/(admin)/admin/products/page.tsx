@@ -1,10 +1,10 @@
 import ProductsTable, { type ProductRow } from '@/components/admin/ProductsTable'
+import { FileUp, Layers, Plus } from '@/components/icons'
 import { productListParamsSchema } from '@/lib/admin/page-params'
 import { canSeeMoney } from '@/lib/admin/permissions'
 import { requireSection } from '@/lib/admin/rbac'
 import { createClient } from '@/lib/supabase/server'
 import { likeContains } from '@/lib/utils/search-escape'
-import { FileUp, Layers, Plus } from 'lucide-react'
 import Link from 'next/link'
 
 export const metadata = { title: 'מוצרים' }

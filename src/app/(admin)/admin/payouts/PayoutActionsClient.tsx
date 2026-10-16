@@ -1,5 +1,6 @@
 'use client'
 
+import { BadgeCheck, Ban, Banknote } from '@/components/icons'
 import { canApprove, canCancel, canMarkPaid, isHeld } from '@/lib/admin/payouts'
 import { notify } from '@/lib/ui/toast'
 import {
@@ -7,7 +8,6 @@ import {
   cancelPayoutStatement,
   markPayoutStatementPaid,
 } from '@/server/actions/admin/payouts'
-import { BadgeCheck, Ban, Banknote } from 'lucide-react'
 import { useState, useTransition } from 'react'
 
 interface Props {

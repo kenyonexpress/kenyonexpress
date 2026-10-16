@@ -1,8 +1,8 @@
 'use client'
 
+import { Phone, Send, Share2 } from '@/components/icons'
 import { UNDER_99_LABEL } from '@/lib/ke-live-hero-data'
 import { formatIsraeliPhoneDisplay, storeWhatsAppNumber } from '@/lib/whatsapp'
-import { Phone, Send, Share2 } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 

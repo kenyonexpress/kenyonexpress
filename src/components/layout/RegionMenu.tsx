@@ -1,7 +1,7 @@
 'use client'
 
+import { ChevronDown } from '@/components/icons'
 import { REGIONS, regionHref } from '@/lib/regions'
-import { ChevronDown } from 'lucide-react'
 import Link from 'next/link'
 import { useCallback, useEffect, useId, useRef, useState } from 'react'
 

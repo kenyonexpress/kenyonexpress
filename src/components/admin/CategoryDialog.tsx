@@ -1,11 +1,11 @@
 'use client'
 
 import ImageUploader from '@/components/admin/ImageUploader'
+import { X } from '@/components/icons'
 import { slugify } from '@/lib/utils/slugify'
 import { type CategoryFormState, upsertCategory } from '@/server/actions/admin/categories'
 import type { Category } from '@/types/database'
 import * as Dialog from '@radix-ui/react-dialog'
-import { X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useActionState } from 'react'
 

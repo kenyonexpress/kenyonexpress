@@ -1,9 +1,9 @@
 import CouponForm from '@/components/admin/CouponForm'
 import CouponsTable, { type CouponRow } from '@/components/admin/CouponsTable'
+import { Plus } from '@/components/icons'
 import { couponListParamsSchema } from '@/lib/admin/page-params'
 import { requireAdminPage } from '@/lib/admin/rbac'
 import { createClient } from '@/lib/supabase/server'
-import { Plus } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 

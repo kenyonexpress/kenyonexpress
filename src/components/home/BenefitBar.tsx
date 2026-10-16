@@ -1,5 +1,5 @@
+import { BadgePercent, HandCoins, Headphones, Tag, Truck } from '@/components/icons'
 import { ELECTRO_HERO } from '@/lib/electro-hero-tokens'
-import { BadgePercent, HandCoins, Headphones, Tag, Truck } from 'lucide-react'
 
 const USP = ELECTRO_HERO.uspBar
 

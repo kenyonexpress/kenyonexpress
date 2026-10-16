@@ -1,4 +1,5 @@
 import StatusBadge from '@/components/admin/StatusBadge'
+import { AlertTriangle } from '@/components/icons'
 import { requireSection } from '@/lib/admin/rbac'
 import {
   VOUCHER_STATUS_LABELS,
@@ -10,7 +11,6 @@ import {
 } from '@/lib/admin/voucher-view'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { voucherQrDataUrl } from '@/lib/vouchers/qr-image'
-import { AlertTriangle } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'

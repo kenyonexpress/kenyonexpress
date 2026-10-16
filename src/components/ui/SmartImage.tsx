@@ -1,6 +1,6 @@
 'use client'
 
-import { ImageIcon } from 'lucide-react'
+import { ImageIcon } from '@/components/icons'
 import Image, { type ImageProps } from 'next/image'
 import { useState } from 'react'
 

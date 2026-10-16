@@ -1,6 +1,7 @@
 'use client'
 
 import ImageUploader from '@/components/admin/ImageUploader'
+import { AlertTriangle, Plus, Trash2 } from '@/components/icons'
 import { readDimensionMm, readTags, readVatExempt } from '@/lib/admin/product-fields'
 import { supplierReadiness } from '@/lib/admin/supplier-form'
 import {
@@ -26,7 +27,6 @@ import { readWhatsAppEnabled } from '@/lib/supplier-contact'
 import { slugify } from '@/lib/utils/slugify'
 import { type ProductFormState, upsertProduct } from '@/server/actions/admin/products'
 import type { Category, Product, ProductVariant } from '@/types/database'
-import { AlertTriangle, Plus, Trash2 } from 'lucide-react'
 import { useActionState, useState } from 'react'
 
 /** Only the identity fields the publish gate and the product page need. */

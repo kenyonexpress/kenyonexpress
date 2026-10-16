@@ -1,3 +1,4 @@
+import { MapPin, Store, Tag } from '@/components/icons'
 import { cityByName } from '@/lib/geo/cities'
 import {
   type MerchantDirectoryEntry,
@@ -6,7 +7,6 @@ import {
 } from '@/lib/merchant-directory'
 import { buildBreadcrumbJsonLd, buildItemListJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
 import { publicPageMetadata } from '@/lib/seo/page-metadata'
-import { MapPin, Store, Tag } from 'lucide-react'
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'

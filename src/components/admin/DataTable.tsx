@@ -1,8 +1,8 @@
 'use client'
 
+import { ArrowDown, ArrowUp, ArrowUpDown, Search } from '@/components/icons'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
-import { ArrowDown, ArrowUp, ArrowUpDown, Search } from 'lucide-react'
 import { useMemo, useState } from 'react'
 
 export type DataTableColumn<T> = {

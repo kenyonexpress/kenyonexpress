@@ -1,7 +1,7 @@
 'use client'
 
+import { Search, X } from '@/components/icons'
 import SiteSearch from '@/components/search/SiteSearch'
-import { Search, X } from 'lucide-react'
 import { useCallback, useRef, useState } from 'react'
 
 /**

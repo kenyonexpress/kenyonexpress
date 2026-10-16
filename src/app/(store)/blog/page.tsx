@@ -1,3 +1,4 @@
+import { Rss } from '@/components/icons'
 import BlogPostList from '@/components/storefront/BlogPostList'
 import {
   BLOG_FEED_PATH,
@@ -10,7 +11,6 @@ import {
 import { buildBlogJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
 import { publicPageMetadata } from '@/lib/seo/page-metadata'
 import { siteUrl } from '@/lib/site-url'
-import { Rss } from 'lucide-react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 

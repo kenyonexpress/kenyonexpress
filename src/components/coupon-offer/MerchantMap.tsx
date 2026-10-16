@@ -1,7 +1,7 @@
+import { MapPin, Navigation } from '@/components/icons'
 import type { SupplierLocation } from '@/lib/geo/distance'
 import { buildMerchantMap } from '@/lib/geo/merchant-map'
 import type { SupplierContactView } from '@/lib/supplier-contact'
-import { MapPin, Navigation } from 'lucide-react'
 
 /**
  * Where the coupon is redeemed, on a map.

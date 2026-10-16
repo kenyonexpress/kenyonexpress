@@ -1,5 +1,5 @@
+import { ArrowLeft } from '@/components/icons'
 import { getHomePopularSearches } from '@/lib/homepage/below-fold'
-import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 
 /**

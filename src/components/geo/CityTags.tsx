@@ -1,8 +1,8 @@
 'use client'
 
+import { MapPin, Navigation } from '@/components/icons'
 import { HERO_CITIES } from '@/lib/geo/cities'
 import { type Coordinates, isValidCoordinates } from '@/lib/geo/distance'
-import { MapPin, Navigation } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useState } from 'react'

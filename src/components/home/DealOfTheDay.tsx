@@ -1,10 +1,10 @@
 import AddToCartButton from '@/components/cart/AddToCartButton'
 import DealCountdown from '@/components/home/DealCountdown'
+import { ShoppingCart } from '@/components/icons'
 import SmartImage from '@/components/ui/SmartImage'
 import { getDealOfTheDay } from '@/lib/homepage/below-fold'
 import { type Agorot, agorot } from '@/lib/money'
 import { shekels } from '@/lib/money-format'
-import { ShoppingCart } from 'lucide-react'
 import Link from 'next/link'
 
 /**

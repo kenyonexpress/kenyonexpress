@@ -1,6 +1,7 @@
 'use client'
 
 import StatusBadge, { orderStatusBadge } from '@/components/admin/StatusBadge'
+import { Download, Package, Truck, X } from '@/components/icons'
 import { type Agorot, agorot } from '@/lib/money'
 import { shekels } from '@/lib/money-format'
 import { CARRIER_IDS, CARRIER_REGISTRY } from '@/lib/shipping/carrier-registry'
@@ -19,7 +20,6 @@ import {
   movesForLanes,
 } from '@/server/domain/orders/fulfillment-lanes'
 import type { BoardOrder } from '@/server/queries/fulfillment-board'
-import { Download, Package, Truck, X } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { type DragEvent, useMemo, useState, useTransition } from 'react'

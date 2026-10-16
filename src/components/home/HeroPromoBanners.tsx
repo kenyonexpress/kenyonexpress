@@ -1,6 +1,6 @@
+import { ChevronLeft } from '@/components/icons'
 import BrandPlaceholder from '@/components/ui/BrandPlaceholder'
 import { ELECTRO_HERO } from '@/lib/electro-hero-tokens'
-import { ChevronLeft } from 'lucide-react'
 import Link from 'next/link'
 
 const SB = ELECTRO_HERO.sideBanners

@@ -1,8 +1,8 @@
 'use client'
 
+import { X } from '@/components/icons'
 import type { AuthDialogMode } from '@/lib/auth/login-dialog'
 import { currentUserId } from '@/server/actions/session'
-import { X } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'

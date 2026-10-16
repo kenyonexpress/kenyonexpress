@@ -1,6 +1,7 @@
 'use client'
 
 import ImageUploader from '@/components/admin/ImageUploader'
+import { AlertTriangle, CheckCircle2 } from '@/components/icons'
 import {
   SUPPLIER_STATUSES,
   SUPPLIER_STATUS_LABELS,
@@ -8,7 +9,6 @@ import {
 } from '@/lib/admin/supplier-form'
 import { type SupplierActionState, upsertSupplier } from '@/server/actions/admin/suppliers'
 import type { Supplier } from '@/types/database'
-import { AlertTriangle, CheckCircle2 } from 'lucide-react'
 import { useActionState, useState } from 'react'
 
 interface Props {

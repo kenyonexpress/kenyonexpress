@@ -1,11 +1,11 @@
 'use client'
 
+import { Heart } from '@/components/icons'
 import {
   loginHrefForWishlist,
   useIsWishlisted,
   useWishlistStore,
 } from '@/lib/wishlist/client-store'
-import { Heart } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState, useTransition } from 'react'
 

@@ -1,5 +1,5 @@
+import { ArrowLeft } from '@/components/icons'
 import { getHomeBrands } from '@/lib/homepage/below-fold'
-import { ArrowLeft } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 

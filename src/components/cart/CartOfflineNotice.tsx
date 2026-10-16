@@ -1,6 +1,6 @@
 'use client'
 
-import { WifiOff } from 'lucide-react'
+import { WifiOff } from '@/components/icons'
 
 /**
  * The one sentence every cart surface shows while the cart on screen came

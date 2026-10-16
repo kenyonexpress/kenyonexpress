@@ -1,11 +1,11 @@
 'use client'
 
+import { AlertTriangle } from '@/components/icons'
 import { formatIls } from '@/lib/account/format'
 import { cancellationNotice } from '@/lib/commerce/recurring'
 import type { Agorot } from '@/lib/money'
 import { cancelSubscription } from '@/server/actions/subscriptions'
 import type { AccountSubscription } from '@/server/queries/subscriptions'
-import { AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
 import { useActionState, useState } from 'react'
 

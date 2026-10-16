@@ -1,8 +1,8 @@
+import { MapPin, Navigation, Phone } from '@/components/icons'
 import WhatsAppIcon from '@/components/shared/WhatsAppIcon'
 import type { StorefrontProductType } from '@/lib/commerce/product-type'
 import { type SupplierContactRow, buildSupplierContact } from '@/lib/supplier-contact'
 import { buildSupplierInquiryText } from '@/lib/whatsapp'
-import { MapPin, Navigation, Phone } from 'lucide-react'
 import Link from 'next/link'
 
 export type SupplierSummary = ({ id: string; name: string } & SupplierContactRow) | null

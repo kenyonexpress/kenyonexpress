@@ -1,6 +1,6 @@
 'use client'
 
-import { ShoppingCart } from 'lucide-react'
+import { ShoppingCart } from '@/components/icons'
 import { useCallback } from 'react'
 
 interface StickyCartBarProps {

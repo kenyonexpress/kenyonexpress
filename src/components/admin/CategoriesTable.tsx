@@ -4,6 +4,7 @@ import CategoryForm from '@/components/admin/CategoryForm'
 import DataTable, { type DataTableColumn } from '@/components/admin/DataTable'
 import DeleteButton from '@/components/admin/DeleteButton'
 import StatusBadge from '@/components/admin/StatusBadge'
+import { Plus } from '@/components/icons'
 import {
   Dialog,
   DialogContent,
@@ -14,7 +15,6 @@ import {
 import type { AdminCategoryGuide } from '@/lib/category-guides/admin-read'
 import { softDeleteCategory } from '@/server/actions/admin/categories'
 import type { Category } from '@/types/database'
-import { Plus } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
 

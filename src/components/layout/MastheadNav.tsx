@@ -1,8 +1,8 @@
 import HeaderCart from '@/components/cart/HeaderCart'
+import { Heart } from '@/components/icons'
 import RegionMenu from '@/components/layout/RegionMenu'
 import SiteSearch from '@/components/search/SiteSearch'
 import WishlistNavCount from '@/components/wishlist/WishlistNavCount'
-import { Heart } from 'lucide-react'
 import Link from 'next/link'
 
 /** Class-driven colour (text-icon), not inline, so the hover utility can win. UX03. */

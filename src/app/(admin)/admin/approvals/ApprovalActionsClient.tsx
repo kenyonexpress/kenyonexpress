@@ -1,8 +1,8 @@
 'use client'
 
+import { Check, X } from '@/components/icons'
 import { notify } from '@/lib/ui/toast'
 import { approveProduct, rejectProduct } from '@/server/actions/admin/approvals'
-import { Check, X } from 'lucide-react'
 import { useState, useTransition } from 'react'
 
 interface Props {

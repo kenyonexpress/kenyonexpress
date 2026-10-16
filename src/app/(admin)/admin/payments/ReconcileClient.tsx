@@ -1,9 +1,9 @@
 'use client'
 
+import { AlertTriangle, CheckCircle2 } from '@/components/icons'
 import { type Reconciled, VERDICT_LABELS } from '@/lib/admin/payment-reconciliation'
 import { shekelsFromIls } from '@/lib/money-format'
 import { retryFinalizePayment } from '@/server/actions/admin/payments'
-import { AlertTriangle, CheckCircle2 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
