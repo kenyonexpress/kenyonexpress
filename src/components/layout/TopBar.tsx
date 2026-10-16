@@ -1,5 +1,4 @@
 import LoginLink from '@/components/auth/LoginLink'
-import { MapPin, ShoppingBag, User } from '@/components/icons'
 import dynamic from 'next/dynamic'
 
 const ThemeToggle = dynamic(
@@ -9,51 +8,46 @@ const ThemeToggle = dynamic(
   },
 )
 
-const TOP_BAR_ITEMS: Array<{
-  Icon: typeof User
-  label: string
-  href?: string
-}> = [
-  { Icon: MapPin, label: 'בפריסה ארצית' },
-  { Icon: ShoppingBag, label: 'קניה בטוחה' },
-  { Icon: User, label: 'התחברות / הרשמה', href: '/login' },
+const INFO_ITEMS = [
+  { label: 'בפריסה ארצית' },
+  { label: 'משלוח מהיר חינם' },
+  { label: 'קניה בטוחה' },
+  { label: 'התחברות', href: '/login' },
 ]
-
-function TopBarItem({ Icon, label, href }: (typeof TOP_BAR_ITEMS)[number]) {
-  const content = (
-    <>
-      <Icon size={16} strokeWidth={1.8} aria-hidden="true" />
-      <span>{label}</span>
-    </>
-  )
-
-  if (href) {
-    return (
-      <LoginLink
-        href={href}
-        className="flex items-center gap-1.5 transition-colors hover:text-heading-hover"
-      >
-        {content}
-      </LoginLink>
-    )
-  }
-
-  return <span className="flex items-center gap-1.5">{content}</span>
-}
 
 export default function TopBar() {
   return (
-    <div
-      dir="rtl"
-      className="sticky top-0 z-50 flex h-11 w-full items-center justify-between gap-4 border-b border-border bg-track px-gutter text-sm text-heading"
-      data-testid="new-topbar"
-    >
-      <span>ברוך הבא לעולמו של קניון אקספרס</span>
-      <div className="flex items-center gap-6">
-        {TOP_BAR_ITEMS.map((item) => (
-          <TopBarItem key={item.label} {...item} />
-        ))}
-        <ThemeToggle />
+    <div className="topbar-container px-gutter">
+      <div
+        dir="rtl"
+        className="flex h-11 items-center gap-0 text-topbar text-heading"
+        data-testid="topbar"
+      >
+        <span className="topbar-greeting hidden">ברוך הבא לעולם של קניון Express</span>
+        <div className="flex items-center gap-0">
+          {INFO_ITEMS.map((item, idx) => (
+            <div key={item.label} className="flex items-center gap-0">
+              {idx > 0 && (
+                <span className="mx-[1em] text-border" aria-hidden="true">
+                  |
+                </span>
+              )}
+              {item.href ? (
+                <LoginLink
+                  href={item.href}
+                  className="flex items-center gap-0 transition-colors hover:text-heading-hover"
+                >
+                  {item.label}
+                </LoginLink>
+              ) : (
+                <span className="flex items-center gap-0">{item.label}</span>
+              )}
+            </div>
+          ))}
+        </div>
+        <div className="me-touch-pad hidden xl:block">
+          <ThemeToggle />
+        </div>
       </div>
     </div>
   )
