@@ -2,6 +2,7 @@ import CartBootstrap from '@/components/cart/CartBootstrap'
 import { CartProvider } from '@/components/cart/CartProvider'
 import SiteFooter from '@/components/layout/SiteFooter'
 import SiteHeader from '@/components/layout/SiteHeader'
+import { MobileNavBar } from '@/components/mobile'
 import WhatsAppFloat from '@/components/shared/WhatsAppFloat'
 import DeferredStoreChrome from '@/components/store/DeferredStoreChrome'
 import { phoneAuthEnabled } from '@/lib/auth/phone-otp'
@@ -39,11 +40,12 @@ export default function StoreShell({ children }: { children: React.ReactNode }) 
         {/* tabIndex={-1} is load-bearing: without it the browser scrolls but
             leaves focus on the link, so the next Tab goes back into the header
             and the skip does nothing for keyboard users. */}
-        <main id="main-content" tabIndex={-1} className="w-full focus:outline-none">
+        <main id="main-content" tabIndex={-1} className="w-full focus:outline-none pb-14 md:pb-0">
           {children}
         </main>
         <SiteFooter />
       </div>
+      <MobileNavBar />
       <WhatsAppFloat />
       <DeferredStoreChrome phoneEnabled={phoneAuthEnabled()} />
     </CartProvider>
