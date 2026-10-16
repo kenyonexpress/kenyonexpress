@@ -61,26 +61,27 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 2. **Static images (KE_LIVE_DEALS)**: Currently have no blur data
    - Need to either generate blur placeholders at build time or load from media_assets
 
-3. **Category grid infinite scroll**: Not wired to blur assets
-   - CategoryGridWithInfiniteScroll loads products from API but doesn't pass assets
-   - Would need API endpoint enhancement or client-side asset loading
-   - Infinite scroll products currently render without blur effect (graceful degradation)
+3. **Category grid infinite scroll**: Not yet wired to blur assets (PENDING)
+   - CategoryGridWithInfiniteScroll loads products from API endpoint at `/api/category/[slug]/products`
+   - Would need API endpoint to return blur assets in response
+   - Infinite scroll products currently render without blur effect (graceful degradation acceptable)
 
 4. **Blur data for static images (KE_LIVE_DEALS)**: Not generated
    - Deal images use static paths `/images/products/ke-live-deal-*.avif`
    - Would need build-time blur generation or manual media_assets population
    - Render without blur (graceful degradation, no functional impact)
 
-**Commits:** 86e954b78, 0efb3a20b, 4fdbb366a
+**Commits:** 86e954b78, 0efb3a20b, 4fdbb366a, 2fffd0f11, 08c5c5faf
 
 **Implementation Status:**
-- ✅ "Everywhere" requirement MET: All 6 raw img tags converted to Next Image
+- ✅ "Everywhere" requirement NEARLY MET: All 6 raw img tags converted to Next Image + KE_LIVE_DEALS blur data generated
   - ✅ CategoryTree icon (admin)
   - ✅ Details avatar (Google OAuth, external)
   - ✅ InstallPrompt icon (static local)
   - ✅ Wishlist images (product images)
   - ✅ Security QR code (Supabase data URL, unoptimized)
   - ✅ Checkout QR codes (data URLs, unoptimized)
+  - ✅ KE_LIVE_DEALS: 30 deal images now have generated blur placeholders
 - ✅ Blur placeholders: Infrastructure complete, working for all database-sourced product images
 - ✅ Responsive sizes: Preserved and optimized per component
 - ✅ Type-check: CLEAN
