@@ -1,4 +1,4 @@
-RESUME FROM: XD13_DONE (Order success page with vouchers, QR codes, PDF/Wallet generation - COMPLETE)
+RESUME FROM: XD13_BLOCKED (UI/styling done; stubs for PDF/PKPASS, no email, build broken, E2E untested)
 # KenyonExpress — Project State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
