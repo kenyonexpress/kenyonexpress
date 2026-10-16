@@ -764,7 +764,15 @@ export default function CheckoutForm({
         {!usingSavedCard && (
           <label className="checkout-terms">
             <input type="checkbox" name="save_card" defaultChecked />
-            <span>שמירת כרטיס לתשלום מהיר בפעם הבאה</span>
+            <span>
+              שמור כרטיס לרכישות עתידיות (רק הטוקן נשמר, לא פרטי הכרטיס)
+              <span
+                className="checkout-field__hint"
+                style={{ display: 'block', marginTop: '4px', fontSize: '0.875rem' }}
+              >
+                ניתן לשינוי בכל עת באזור האישי
+              </span>
+            </span>
           </label>
         )}
       </div>
@@ -1153,6 +1161,24 @@ export default function CheckoutForm({
                     </div>
                     <div />
                   </div>
+
+                  {/* Save address toggle for first order - default unchecked, user must opt-in */}
+                  {!address.id && (
+                    <div className="checkout-field">
+                      <label className="checkout-terms">
+                        <input type="checkbox" name="save_address" />
+                        <span>
+                          שמור כתובת זו להזמנות הבאות
+                          <span
+                            className="checkout-field__hint"
+                            style={{ display: 'block', marginTop: '4px', fontSize: '0.875rem' }}
+                          >
+                            ניתן לשינוי בכל עת באזור האישי
+                          </span>
+                        </span>
+                      </label>
+                    </div>
+                  )}
                 </>
               )}
 
