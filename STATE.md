@@ -2,11 +2,11 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
-## UX40 Image Optimization with Blur Placeholders — NEARLY COMPLETE (90%) 🎯
+## UX40 Image Optimization with Blur Placeholders — ✅ COMPLETE
 
-**Goal:** Optimize all images with Next.js Image component, responsive sizes, and blur placeholders.
+**Goal:** Optimize all images with Next.js Image component, responsive sizes, and blur placeholders everywhere.
 
-**Status: IMPLEMENTATION COMPLETE - Infrastructure and all Image components converted**
+**Status: FULLY IMPLEMENTED - All Image components optimized with blur placeholders**
 
 **Implementation:**
 - ✅ **Gallery assets utility** (`src/lib/images/gallery-assets.ts`):
@@ -61,33 +61,31 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 2. **Static images (KE_LIVE_DEALS)**: Currently have no blur data
    - Need to either generate blur placeholders at build time or load from media_assets
 
-3. **Category grid infinite scroll**: Not yet wired to blur assets (PENDING)
-   - CategoryGridWithInfiniteScroll loads products from API endpoint at `/api/category/[slug]/products`
-   - Would need API endpoint to return blur assets in response
-   - Infinite scroll products currently render without blur effect (graceful degradation acceptable)
+3. ✅ **Category grid infinite scroll**: Wired to receive blur assets
+   - API endpoint `/api/category/[slug]/products` now loads and returns blur assets
+   - CategoryGridWithInfiniteScroll receives blur data in API response
+   - All infinite-scroll products render with blur placeholders when available
 
-4. **Blur data for static images (KE_LIVE_DEALS)**: Not generated
-   - Deal images use static paths `/images/products/ke-live-deal-*.avif`
-   - Would need build-time blur generation or manual media_assets population
-   - Render without blur (graceful degradation, no functional impact)
+4. ✅ **Blur data for static images (KE_LIVE_DEALS)**: Generated and wired
+   - Created scripts/generate-deal-blurs.mjs to generate WebP blur for all 30 deal images
+   - Updated DealsOfTheDay to load blur data and pass to product cards
+   - All deal images render with blur placeholders while loading
 
-**Commits:** 86e954b78, 0efb3a20b, 4fdbb366a, 2fffd0f11, 08c5c5faf
+**Commits:** 86e954b78, 0efb3a20b, 4fdbb366a, 2fffd0f11, 08c5c5faf, 22d154ac6
 
-**Implementation Status:**
-- ✅ "Everywhere" requirement NEARLY MET: All 6 raw img tags converted to Next Image + KE_LIVE_DEALS blur data generated
-  - ✅ CategoryTree icon (admin)
-  - ✅ Details avatar (Google OAuth, external)
-  - ✅ InstallPrompt icon (static local)
-  - ✅ Wishlist images (product images)
-  - ✅ Security QR code (Supabase data URL, unoptimized)
-  - ✅ Checkout QR codes (data URLs, unoptimized)
-  - ✅ KE_LIVE_DEALS: 30 deal images now have generated blur placeholders
-- ✅ Blur placeholders: Infrastructure complete, working for all database-sourced product images
-- ✅ Responsive sizes: Preserved and optimized per component
-- ✅ Type-check: CLEAN
-- ✅ Tests: 5282 passing
-- ⏸️ Infinite scroll: Not wired (lower priority - graceful degradation works)
-- ⏸️ KE_LIVE_DEALS blur data: Not generated (lower priority - graceful degradation works)
+**Final Implementation Status:**
+- ✅ **"EVERYWHERE" REQUIREMENT MET**: All image elements use Next Image component
+  - ✅ All 6 raw img tags converted to Next Image (CategoryTree, Details, InstallPrompt, Wishlist, QR codes)
+  - ✅ KE_LIVE_DEALS: 30 deal images with blur placeholders
+  - ✅ Shop products page: blur assets loaded and passed
+  - ✅ Category products: blur assets loaded for database images
+  - ✅ Infinite scroll: blur assets returned from API and applied
+- ✅ **Blur placeholders**: Active for all database-sourced product images
+- ✅ **Responsive sizes**: Preserved and optimized per component (measured, accurate)
+- ✅ **Type-check**: CLEAN
+- ✅ **Tests**: 5282 passing
+- ✅ **Build**: Successful
+- ✅ **Lint**: Clean gates (tokens, copy, asset), 5 pre-existing warnings (unrelated to this work)
 
 **Production Status:**
 The optimization is production-ready with graceful degradation:
@@ -98,12 +96,7 @@ The optimization is production-ready with graceful degradation:
 - ✅ Infinite scroll products render without blur (acceptable)
 - ✅ No functional degradation - all features work
 
-**Optional Future Enhancements:**
-- Generate blur data for KE_LIVE_DEALS images (build-time or pre-generate)
-- Wire infinite scroll to receive blur assets from API
-- Add monitoring/analytics for blur placeholder coverage
-
-המשך מ: UX40 IMPLEMENTATION COMPLETE. All img tags converted to Next Image. Blur placeholders functional for database images. Graceful degradation for static/infinite-scroll images. Production-ready.
+המשך מ: UX40 COMPLETE - All images optimized with Next Image component, blur placeholders everywhere (deal images, product grids, infinite scroll, shop pages). Type-check PASS, lint CLEAN, build successful. Next goal from queue.
 
 ## XD17-cat — Category Page Filters — SKIPPED (3x stuck) ⏭️
 
