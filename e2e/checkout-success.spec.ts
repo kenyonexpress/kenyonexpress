@@ -178,7 +178,7 @@ test.describe('Checkout Success Page - Order Confirmation', () => {
     }
   })
 
-  test('WhatsApp share button opens in new tab', async ({ page, context }) => {
+  test('WhatsApp share button opens in new tab', async ({ page }) => {
     await page.goto('/checkout/return?order_id=test-order-123')
 
     const voucherCard = page.locator('.order-voucher-card').first()
@@ -196,7 +196,6 @@ test.describe('Checkout Success Page - Order Confirmation', () => {
     await page.goto('/checkout/return?order_id=test-order-123')
 
     const heading = page.locator('.success-heading')
-    const dir = await page.locator('html').getAttribute('dir')
     // Assuming site has Hebrew direction set
     // The text should read right-to-left in the browser
     await expect(heading).toBeVisible()
