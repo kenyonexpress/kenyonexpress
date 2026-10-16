@@ -1,3 +1,4 @@
+import DarkModeToggle from '@/components/DarkModeToggle'
 import ScrollRestoration from '@/components/ScrollRestoration'
 import ThemeProvider from '@/components/ThemeProvider'
 import ViewTransitionsNavigationWrapper from '@/components/ViewTransitionsNavigationWrapper'
@@ -226,6 +227,7 @@ export default function RootLayout({
         */}
         <VercelAnalytics />
         <SpeedInsights />
+        <DarkModeToggle />
       </body>
     </html>
   )
