@@ -51,7 +51,7 @@ export default function SwipeableGallery({ images, alt }: SwipeableGalleryProps)
   }, [handleTouchStart, handleTouchEnd])
 
   return (
-    <div ref={containerRef} data-swipeable-gallery className="w-full">
+    <div ref={containerRef} data-swipeable-gallery className="w-full md:hidden">
       <div className="relative w-full bg-gray-100 overflow-hidden rounded-lg">
         <div className="flex transition-opacity duration-300">
           {images.map((image, index) => (
