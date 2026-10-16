@@ -1,7 +1,11 @@
-RESUME FROM: XD13_BLOCKED (UI/styling done; stubs for PDF/PKPASS, no email, build broken, E2E untested)
+RESUME FROM: (next goal after XD15 - check NEXT-GOALS.md)
 # KenyonExpress — Project State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-10-16T22:30:00+07:00
+- item: XD15
+- RESULT: DONE
 
 ### 2026-10-15T04:08:36+07:00
 - item: XF01V
