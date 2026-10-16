@@ -2,6 +2,54 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## Micro-interactions Polish — COMPLETE ✅
+
+**Goal:** Add skeleton loaders for product/order grids, view transitions API for page navigation, hover scale 1.02 on cards (200ms ease-out), smooth scroll behavior on anchor links, scroll restoration on back navigation.
+
+**Status: COMPLETE**
+
+**Work Done:**
+- ✅ ProductCardSkeleton: Matches DefaultProductCard layout for streaming fallback
+- ✅ OrderRowSkeleton: Matches CartLineItem layout for cart/order pages
+- ✅ Grid wrappers: ProductsGridSkeleton (count-based) and OrderRowsListSkeleton
+- ✅ View Transitions API: CSS @supports rule with 0.3s fade-in + 8px translateY animation
+- ✅ Hover scale 1.02 on product cards: Added to .p_con (deals) and .product-card (default)
+- ✅ Hover scale 1.02 on category cards: Added to .category-card with box-shadow
+- ✅ Smooth scroll: html scroll-behavior: smooth for anchor links
+- ✅ Scroll restoration: ScrollRestoration component preserves scroll on back nav
+- ✅ Updated product-card-deals.css: .p_con:hover with transform scale(1.02)
+- ✅ Updated category-page.css: .category-card:hover with transform scale(1.02)
+- ✅ Created micro-interactions.css: centralized view transitions and skeleton prevention rules
+- ✅ Imported micro-interactions.css in root layout
+- ✅ Added ScrollRestoration component to root layout
+
+**Verification:**
+- ✅ pnpm type-check: PASS
+- ✅ pnpm lint: PASS (clean gates: tokens, copy, asset)
+- ✅ Commits: 74941eeb5 with [autopilot] prefix
+- ✅ Push: successful to closeout/v1-final
+
+**Files Created:**
+- src/components/ProductCardSkeleton.tsx (8 exports)
+- src/components/ScrollRestoration.tsx
+- src/components/cart/OrderRowSkeleton.tsx
+- src/styles/micro-interactions.css
+
+**Files Modified:**
+- src/app/layout.tsx: import micro-interactions.css and ScrollRestoration
+- src/components/ProductCard.tsx: added product-card class to DefaultProductCard wrapper
+- src/styles/product-card-deals.css: added hover scale to .p_con
+- src/styles/category-page.css: added hover scale to .category-card
+
+**Notes:**
+- Skeleton components use aria-hidden="true" to prevent announcements
+- View transitions gracefully degrade in unsupported browsers via @supports
+- Hover effects use 200ms ease-out timing for perceived fluidity
+- All RTL-compatible; no language-specific styling
+- ScrollRestoration uses sessionStorage for position tracking
+
+המשך מ: Ready for next goal in queue.
+
 ## Latest section (archived copy has the rest)
 
 ## Design System Token Consolidation — FULLY COMPLETE ✅✅
