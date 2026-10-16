@@ -3,7 +3,9 @@ import LocationPin from '@/components/product/LocationPin'
 import Reviews from '@/components/product/Reviews'
 import { CouponTerms } from '@/components/storefront/CouponPricing'
 import ProductGallery from '@/components/storefront/ProductGallery'
+import ProductGalleryMobile from '@/components/storefront/ProductGalleryMobile'
 import ProductInfo from '@/components/storefront/ProductInfo'
+import ProductStickyCartBar from '@/components/storefront/ProductStickyCartBar'
 import RelatedProducts from '@/components/storefront/RelatedProducts'
 import ShippingInfo from '@/components/storefront/ShippingInfo'
 import StockScarcity from '@/components/storefront/StockScarcity'
@@ -252,6 +254,7 @@ export default async function ProductPage({ params }: Props) {
             price={basePrice}
             oldPrice={oldPrice}
           />
+          <ProductGalleryMobile images={images} name={product.name_he} />
           <ProductInfo
             productId={product.id}
             name={product.name_he}
@@ -350,6 +353,9 @@ export default async function ProductPage({ params }: Props) {
 
         {/* Related products */}
         <RelatedProducts categoryId={product.category_id} excludeId={product.id} />
+
+        {/* Mobile-only sticky cart bar */}
+        <ProductStickyCartBar basePrice={basePrice} productId={product.id} />
       </div>
     </div>
   )

@@ -3,8 +3,11 @@ import CartBootstrap from '@/components/cart/CartBootstrap'
 import { CartProvider } from '@/components/cart/CartProvider'
 import SiteFooter from '@/components/layout/SiteFooter'
 import SiteHeader from '@/components/layout/SiteHeader'
+import { MobileNavBar } from '@/components/mobile'
 import WhatsAppFloat from '@/components/shared/WhatsAppFloat'
 import DeferredStoreChrome from '@/components/store/DeferredStoreChrome'
+import MobileContentWrapper from '@/components/store/MobileContentWrapper'
+import { Suspense } from 'react'
 // cart-page.css is imported by the root layout, one request for the whole
 // site. See the note there before moving it back down here.
 
@@ -44,11 +47,16 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
         {/* tabIndex={-1} is load-bearing: without it the browser scrolls but
             leaves focus on the link, so the next Tab goes back into the header
             and the skip does nothing for keyboard users. */}
-        <main id="main-content" tabIndex={-1} className="w-full focus:outline-none">
-          {children}
+        <main id="main-content" tabIndex={-1} className="w-full focus:outline-none pb-14 md:pb-0">
+          <Suspense fallback={children}>
+            <MobileContentWrapper>{children}</MobileContentWrapper>
+          </Suspense>
         </main>
         <SiteFooter />
       </div>
+      <Suspense fallback={null}>
+        <MobileNavBar />
+      </Suspense>
       <WhatsAppFloat />
       <DeferredStoreChrome />
     </CartProvider>
