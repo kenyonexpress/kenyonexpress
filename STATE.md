@@ -3,9 +3,9 @@ RESUME FROM: (next goal after XD16 - check NEXT-GOALS.md)
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
 
-### 2026-10-16T23:15:00+07:00
+### 2026-10-16T23:25:00+07:00
 - item: XD16-safe
-- RESULT: DONE (live: archived status -> expired page, 4 tests, PostHog tracking, type/lint/test pass)
+- RESULT: BLOCKED (task requires status='expired' enum value which does not exist; adding it requires migration, forbidden by "NO MIGRATION" constraint — unsolvable conflict)
 
 ### 2026-10-16T22:30:00+07:00
 - item: XD15
