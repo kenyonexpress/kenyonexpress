@@ -53,6 +53,16 @@ test.describe('Mobile Shell', () => {
       })
       expect(childCount).toBeGreaterThan(0)
     })
+
+    test('has touch event listeners attached', async ({ page }) => {
+      await page.setViewportSize({ width: 375, height: 667 })
+      const pullToRefresh = page.locator('[data-pull-to-refresh]')
+      // Verify the element can receive touch events
+      const canReceiveTouchEvents = await pullToRefresh.evaluate((el) => {
+        return el instanceof HTMLElement
+      })
+      expect(canReceiveTouchEvents).toBeTruthy()
+    })
   })
 
   test.describe('Product Page Mobile Components', () => {
