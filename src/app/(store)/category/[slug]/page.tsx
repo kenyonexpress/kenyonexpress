@@ -13,11 +13,12 @@ import {
   type ProductTypeFilter,
   categoryMetaDescription,
   collectionRule,
-  getAllCategories,
   getAllCategorySlugs,
   getCategoryBySlug,
   getCategoryParent,
   getCategoryProductsCached,
+  getCategorySuppliersFilter,
+  getCategoryTagsFilter,
   parseProductType,
 } from '@/lib/category-page'
 import { type SortValue, parseSort } from '@/lib/category-tokens'
@@ -307,9 +308,10 @@ async function CategoryPageBody({
 
   // Cheap shell data only. The product query is deferred to the boundaries
   // below so the breadcrumb, title, control bar and sidebar can stream first.
-  const [parent, allCategories] = await Promise.all([
+  const [parent, suppliers, tags] = await Promise.all([
     category.parent_id ? getCategoryParent(category.parent_id) : Promise.resolve(null),
-    getAllCategories(),
+    getCategorySuppliersFilter(category.id),
+    getCategoryTagsFilter(category.id),
   ])
 
   const args: QueryArgs = {
@@ -387,11 +389,12 @@ async function CategoryPageBody({
           </div>
 
           <CategoryFilterSidebar
-            categories={allCategories}
-            currentSlug={category.slug}
             priceMin={priceMin}
             priceMax={priceMax}
             productType={productType}
+            suppliers={suppliers}
+            tags={tags}
+            categoryId={category.id}
           />
         </div>
       </div>

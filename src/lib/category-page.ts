@@ -561,3 +561,106 @@ export async function getShopProducts(opts: {
  */
 export const getCategoryProductsCached = cache(getCategoryProducts)
 export const getShopProductsCached = cache(getShopProducts)
+
+/**
+ * Fetch top 10 suppliers with product counts for a category.
+ */
+export async function getCategorySuppliersFilter(
+  categoryId: string,
+): Promise<{ supplier_id: string; supplier_name_he: string; product_count: number }[]> {
+  'use cache'
+  cacheLife('hours')
+  cacheTag(CATALOGUE_TAG)
+  const supabase = createPublicClient()
+
+  // Get products in this category first
+  const products = orFail(
+    await supabase
+      .from('products')
+      .select('supplier_id')
+      .eq('category_id', categoryId)
+      .eq('status', 'active')
+      .is('deleted_at', null),
+    'catalogue.category_suppliers_products_failed',
+    { category_id: categoryId },
+  )
+
+  if (!products || products.length === 0) return []
+
+  // Get supplier IDs and their names, grouped by supplier_id with count
+  const supplierCounts = new Map<string, number>()
+  for (const p of products) {
+    if (p.supplier_id) {
+      supplierCounts.set(p.supplier_id, (supplierCounts.get(p.supplier_id) || 0) + 1)
+    }
+  }
+
+  // Get supplier names
+  const supplierIds = Array.from(supplierCounts.keys())
+  if (supplierIds.length === 0) return []
+
+  const suppliers = orFail(
+    await supabase.from('suppliers').select('id, name_he').in('id', supplierIds),
+    'catalogue.category_suppliers_names_failed',
+    { supplier_ids: supplierIds },
+  )
+
+  // Combine and sort by count, limit to 10
+  const result = (suppliers || [])
+    .map((supplier: { id: string; name_he: string }) => ({
+      supplier_id: supplier.id,
+      supplier_name_he: supplier.name_he,
+      product_count: supplierCounts.get(supplier.id) || 0,
+    }))
+    .sort((a, b) => b.product_count - a.product_count)
+    .slice(0, 10)
+
+  return result
+}
+
+/**
+ * Fetch top 20 tags for a category.
+ */
+export async function getCategoryTagsFilter(
+  categoryId: string,
+): Promise<{ tag: string; product_count: number }[]> {
+  'use cache'
+  cacheLife('hours')
+  cacheTag(CATALOGUE_TAG)
+  const supabase = createPublicClient()
+
+  // Get products in this category with their tags
+  const products = orFail(
+    await supabase
+      .from('products')
+      .select('tags')
+      .eq('category_id', categoryId)
+      .eq('status', 'active')
+      .is('deleted_at', null),
+    'catalogue.category_tags_products_failed',
+    { category_id: categoryId },
+  )
+
+  if (!products || products.length === 0) return []
+
+  // Count occurrences of each tag
+  const tagCounts = new Map<string, number>()
+  for (const p of products) {
+    if (p.tags && Array.isArray(p.tags)) {
+      for (const tag of p.tags) {
+        tagCounts.set(tag, (tagCounts.get(tag) || 0) + 1)
+      }
+    }
+  }
+
+  // Convert to array, sort by count, limit to 20
+  const result = Array.from(tagCounts.entries())
+    .map(([tag, count]) => ({
+      tag,
+      product_count: count,
+    }))
+    .sort((a, b) => b.product_count - a.product_count)
+    .slice(0, 20)
+
+  return result
+}

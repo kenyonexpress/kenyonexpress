@@ -9,7 +9,6 @@ import Pagination from '@/components/category/Pagination'
 import {
   type ProductTypeFilter,
   SHOP_PAGE_SIZE,
-  getAllCategories,
   getShopProductsCached,
   parseProductType,
 } from '@/lib/category-page'
@@ -193,10 +192,9 @@ async function ShopGrid({ searchParams }: Props) {
 }
 
 async function ShopSidebar({ searchParams }: Props) {
-  const [{ args }, allCategories] = await Promise.all([shopArgs(searchParams), getAllCategories()])
+  const { args } = await shopArgs(searchParams)
   return (
     <CategoryFilterSidebar
-      categories={allCategories}
       priceMin={args.priceMin}
       priceMax={args.priceMax}
       productType={args.productType}

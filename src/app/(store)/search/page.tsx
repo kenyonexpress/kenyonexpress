@@ -4,7 +4,7 @@ import CategoryGridSkeleton from '@/components/category/CategoryGridSkeleton'
 import CategoryProductCard, {
   type CategoryProduct,
 } from '@/components/category/CategoryProductCard'
-import { type ProductTypeFilter, getAllCategories, parseProductType } from '@/lib/category-page'
+import { type ProductTypeFilter, parseProductType } from '@/lib/category-page'
 import { searchProductsCached } from '@/lib/search-server'
 import { recordRecentSearch, recordSearchTerm } from '@/lib/search/record'
 import { createClient } from '@/lib/supabase/server'
@@ -192,9 +192,6 @@ async function SearchPageBody({ searchParams }: Props) {
   const q = firstStr(sp.q).trim()
   const productType = parseProductType(sp.type)
 
-  // Shell only. The search itself streams in behind the boundaries below.
-  const allCategories = await getAllCategories()
-
   return (
     <div className="category-page">
       <div className="category-page__inner">
@@ -234,7 +231,6 @@ async function SearchPageBody({ searchParams }: Props) {
           </div>
 
           <CategoryFilterSidebar
-            categories={allCategories}
             priceMin={undefined}
             priceMax={undefined}
             productType={productType}

@@ -621,90 +621,73 @@
   }
 }
 
-/* Filter sidebar: one card column wide, on inline-end (left) */
+/* Filter sidebar: 280px wide, on inline-end (left) */
 .category-sidebar {
   display: block;
   width: 100%;
+  max-width: 280px;
   padding-top: 32px;
   margin-top: 32px;
   border-top: 1px solid var(--cat-line);
   box-sizing: border-box;
 }
 
-/* Filters read as a row of widgets once they are full width. */
-.category-sidebar__widgets {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 24px;
-  align-items: start;
+/* XD17-cat: Collapsible filter sections */
+.category-sidebar__filters {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
 
-.category-sidebar__widget {
-  margin-bottom: 28px;
+.category-sidebar__filter-section {
+  border-bottom: 1px solid var(--cat-line);
 }
 
-.category-sidebar__title {
-  margin: 0 0 14px;
-  font-size: 16.002px;
-  font-weight: 700;
-  color: var(--cat-ink);
-}
-
-.category-sidebar__list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.category-sidebar__list li {
-  padding-block: 4px;
-}
-
-.category-sidebar__list a {
-  color: var(--cat-ink);
-  font-size: 14px;
-  text-decoration: none;
-}
-
-.category-sidebar__list a:hover {
-  color: var(--cat-link);
-}
-
-.category-sidebar__list a.is-current {
-  color: var(--cat-link);
-  font-weight: 700;
-}
-
-/* Type filter: a button, because it toggles a query param rather than
-   navigating to a new resource. Styled to read exactly like the category
-   links above it so the sidebar stays one visual list. */
-.category-sidebar__filter-btn {
-  display: block;
+.category-sidebar__filter-header {
+  display: flex;
   width: 100%;
-  padding: 0;
-  border: 0;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
   background: none;
-  font: inherit;
-  font-size: 14px;
-  color: var(--cat-ink);
-  text-align: start;
+  border: none;
   cursor: pointer;
-}
-
-.category-sidebar__filter-btn:hover {
-  color: var(--cat-link);
-}
-
-.category-sidebar__filter-btn.is-current {
-  color: var(--cat-link);
+  color: var(--cat-ink);
+  font-size: 14px;
   font-weight: 700;
+  text-align: start;
+  transition: background-color 200ms ease-out;
 }
 
-.category-sidebar__filter-btn[disabled] {
-  opacity: 0.6;
-  cursor: progress;
+.category-sidebar__filter-header:hover {
+  background-color: rgba(254, 215, 0, 0.1);
 }
 
+.category-sidebar__filter-header.is-open {
+  background-color: var(--cat-brand);
+  color: var(--cat-ink);
+}
+
+.category-sidebar__filter-title {
+  flex: 1;
+}
+
+.category-sidebar__filter-icon {
+  display: inline-block;
+  font-size: 12px;
+  transition: transform 200ms ease-out;
+  transform: rotate(-90deg);
+}
+
+.category-sidebar__filter-header.is-open .category-sidebar__filter-icon {
+  transform: rotate(0deg);
+}
+
+.category-sidebar__filter-content {
+  padding: 12px 0;
+}
+
+/* Price filter styles */
 .category-sidebar__price-form {
   display: flex;
   flex-direction: column;
@@ -714,36 +697,108 @@
 .category-sidebar__price-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
 }
 
 .category-sidebar__price-input {
   width: 0;
   flex: 1 1 auto;
-  height: var(--cat-select-h);
+  height: 34px;
   border: 1px solid var(--cat-line);
-  border-radius: var(--cat-price-size);
-  padding: var(--cat-select-pad-y) 12px;
+  border-radius: 17px;
+  padding: 4px 12px;
   font-size: 14px;
   color: var(--cat-ink);
   background: var(--cat-surface);
 }
 
+.category-sidebar__price-separator {
+  padding: 0 2px;
+  color: var(--cat-muted);
+}
+
 .category-sidebar__price-btn {
   align-self: flex-start;
-  height: var(--cat-select-h);
+  height: 34px;
   padding: 0 20px;
   border: 0;
-  border-radius: var(--cat-price-size);
+  border-radius: 17px;
   background: var(--cat-brand);
   color: var(--cat-ink);
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
+  transition: background-color 200ms ease-out;
 }
 
 .category-sidebar__price-btn:hover {
   background: var(--cat-brand-hover);
+}
+
+.category-sidebar__price-btn[disabled] {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+/* Suppliers list */
+.category-sidebar__suppliers-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.category-sidebar__supplier-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  font-size: 13px;
+  color: var(--cat-ink);
+}
+
+.category-sidebar__supplier-name {
+  flex: 1;
+}
+
+.category-sidebar__supplier-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
+  background-color: var(--cat-brand);
+  color: var(--cat-ink);
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Tags cloud */
+.category-sidebar__tags-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.category-sidebar__tag-chip {
+  display: inline-block;
+  padding: 6px 12px;
+  background-color: var(--cat-bar);
+  color: var(--cat-ink);
+  border-radius: 16px;
+  font-size: 13px;
+  border: 1px solid var(--cat-line);
+  transition: background-color 200ms ease-out, color 200ms ease-out;
+  cursor: default;
+}
+
+.category-sidebar__tag-chip:hover {
+  background-color: var(--cat-brand);
+  border-color: var(--cat-brand);
 }
 
 /* Pagination - Electro yellow (var(--cat-brand) measured site-wide accent) */
