@@ -1,7 +1,11 @@
-RESUME FROM: (next goal TBD - UX31 DONE)
+RESUME FROM: (next goal TBD - UX34 DONE)
 # KenyonExpress — Project State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-10-17T01:30:00+07:00
+- item: UX34-spacing-scale
+- RESULT: DONE (Spacing scale 4 8 12 16 24 32 48 64 defined in Tailwind and tokens. Added spacing theme override to tailwind.config.ts with 8 numeric keys (0.5→4px, 1→8px, ..., 8→64px), each mapping to CSS variables. Added tokens in src/styles/tokens.css (--spacing-4 through --spacing-64). Created src/lib/design/spacing-scale.test.ts with validation for 80+ Tailwind spacing utilities and allowed non-scale values. TypeScript: PASS. Build: PASS (CSP clean 278 shells). Lint: PASS (no errors in new code). Foundation established for enforcing consistent component spacing across application. Commit: 9b0aa8037)
 
 ### 2026-10-17T01:15:00+07:00
 - item: UX31-animations
