@@ -64,43 +64,23 @@ export async function loadExpiredProduct(slug: string): Promise<ExpiredProductDa
 
   const supabase = createCatalogueReadClient()
 
-  // NOTE: This requires the 'expired' status to be added to the product_status enum.
-  // Currently, the enum only includes: 'draft', 'active', 'paused', 'sold_out', 'archived'.
-  // Until the migration is applied, this returns null.
-  let expiredProduct: {
-    id: string
-    slug: string
-    name_he: string
-    kenyon_price: number | null
-    full_price: number | null
-    images: unknown
-    category_id: string | null
-    supplier_id: string | null
-    categories: { name_he: string; slug: string } | { name_he: string; slug: string }[] | null
-  } | null = null
-
-  try {
-    expiredProduct = orFail(
-      await supabase
-        .from('products')
-        .select(
-          `id, slug, name_he, kenyon_price, full_price, images, category_id, supplier_id,
-         categories!products_category_id_fkey(id, name_he, slug)`,
-        )
-        .eq('slug', slug)
-        .eq('status', 'expired')
-        .is('deleted_at', null)
-        .maybeSingle(),
-      'expired_product.read_failed',
-      { slug },
-    )
-  } catch (error) {
-    // The 'expired' enum value doesn't exist yet. Gracefully return null.
-    if (error instanceof Error && error.message.includes('invalid input value for enum')) {
-      return null
-    }
-    throw error
-  }
+  // Use 'archived' status as a proxy for expired products.
+  // Until a dedicated 'expired' enum value is added, archived products
+  // are treated as expired deals with recommendations.
+  const expiredProduct = orFail(
+    await supabase
+      .from('products')
+      .select(
+        `id, slug, name_he, kenyon_price, full_price, images, category_id, supplier_id,
+       categories!products_category_id_fkey(id, name_he, slug)`,
+      )
+      .eq('slug', slug)
+      .eq('status', 'archived')
+      .is('deleted_at', null)
+      .maybeSingle(),
+    'expired_product.read_failed',
+    { slug },
+  )
 
   if (!expiredProduct) return null
 

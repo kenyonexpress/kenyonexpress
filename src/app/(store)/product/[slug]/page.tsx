@@ -1,4 +1,5 @@
 import ViewTracker from '@/components/analytics/ViewTracker'
+import ExpiredProduct from '@/components/product/ExpiredProduct'
 import Reviews from '@/components/product/Reviews'
 import BundleOffer from '@/components/storefront/BundleOffer'
 import { CouponTerms } from '@/components/storefront/CouponPricing'
@@ -15,6 +16,7 @@ import {
   resolveStorefrontProductType,
   storefrontProductTypeLabel,
 } from '@/lib/commerce/product-type'
+import { loadExpiredProduct } from '@/lib/expired-product'
 import { productLocation } from '@/lib/geo/distance'
 import { loadPriceSummaries } from '@/lib/pricing/price-history-read'
 import { listProductSlugsForPrerender, loadProductBySlug } from '@/lib/product-detail'
@@ -121,14 +123,13 @@ export default async function ProductPage({ params }: Props) {
   const { slug: rawSlug } = await params
   const slug = decodeURIComponent(rawSlug)
 
-  // TODO: Check for expired product first (requires 'expired' status in product_status enum)
-  // Pending migration to add 'expired' to the product_status enum.
-  // const expiredData = await loadExpiredProduct(slug)
-  // if (expiredData) {
-  //   return (
-  //     <ExpiredProduct product={expiredData.product} similarProducts={expiredData.similarProducts} />
-  //   )
-  // }
+  // Check for archived product first (proxy for expired deals)
+  const expiredData = await loadExpiredProduct(slug)
+  if (expiredData) {
+    return (
+      <ExpiredProduct product={expiredData.product} similarProducts={expiredData.similarProducts} />
+    )
+  }
 
   // One cached call instead of four per-request queries. See product-detail.ts
   // for why: none of this is per-shopper, and reading it through the
