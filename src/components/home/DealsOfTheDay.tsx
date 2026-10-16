@@ -1,5 +1,7 @@
+import { ProductsGridSkeleton } from '@/components/ProductCardSkeleton'
 import ProductDealCard from '@/components/ProductDealCard'
 import { KE_LIVE_DEALS } from '@/lib/ke-live-deals-data'
+import { Suspense } from 'react'
 
 /**
  * refs/ke_live_home.html — jet-listing-grid faf8583. No section title.
@@ -19,23 +21,29 @@ import { KE_LIVE_DEALS } from '@/lib/ke-live-deals-data'
  * `xl:px-0` hands it back to the cap. The column count itself lives in
  * src/styles/product-card-deals.css, which carries the measurement table.
  */
-export default async function DealsOfTheDay() {
-  // Pixel parity: all 32 cards from the reference only, no DB merge (different
-  // images/order = a content difference wearing a fidelity number).
+function DealsGrid() {
   const products = KE_LIVE_DEALS
 
+  return (
+    <div className="jet-listing-grid-deals bg-white">
+      {products.map((product) => (
+        <div key={product.id} className="jet-listing-grid-deals__item">
+          <ProductDealCard product={product} />
+        </div>
+      ))}
+    </div>
+  )
+}
+
+export default function DealsOfTheDay() {
   return (
     <section
       aria-label="מוצרים מובילים"
       className="mx-auto w-full max-w-deals px-deals-pad pt-deals-top pb-deals-footer-gap md:px-deals-pad-md xl:px-0"
     >
-      <div className="jet-listing-grid-deals bg-white">
-        {products.map((product) => (
-          <div key={product.id} className="jet-listing-grid-deals__item">
-            <ProductDealCard product={product} />
-          </div>
-        ))}
-      </div>
+      <Suspense fallback={<ProductsGridSkeleton count={KE_LIVE_DEALS.length} />}>
+        <DealsGrid />
+      </Suspense>
     </section>
   )
 }
