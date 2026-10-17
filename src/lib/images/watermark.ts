@@ -30,7 +30,7 @@ export async function loadWatermark(
   if (!file) return null
   if (cached && cachedFor === file) return cached
   cachedFor = file
-  cached = readFile(resolve(process.cwd(), file))
+  cached = readFile(resolve(/*turbopackIgnore: true*/ process.cwd(), file))
     .then((image) => ({ image, opacity: parseOpacity(env.IMAGE_WATERMARK_OPACITY) }))
     .catch((error: unknown) => {
       log.warn('images.watermark.unreadable', {
