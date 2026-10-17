@@ -97,7 +97,19 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 3. Monitor MRR delta for >20% changes (automatic alert)
 4. Analyze trends in historical data (docs/COST-HISTORY.json)
 
-**המשך מ:** Monthly cost review fully complete with measured infrastructure, 28 tests validating all logic, real API integration with fallbacks, and delta alerts active. Baseline $63.75 MRR established. Ready for monthly automation.
+**המשך מ:** DEFERRED — Monthly cost review cannot complete without Supabase MCP auth (unavailable non-interactive). Framework skeleton exists with tests and API stubs, but costs unverified and alert untested on real data. Prerequisites: OAuth tokens for Supabase, Vercel, Cloudflare, Resend, Twilio.
+
+---
+
+## 📋 Goal Queue Status
+
+**Current:** None queued. Previous goal (monthly cost review) DEFERRED.
+
+**Completed goals (9-20):** All marked ✅ in NEXT-GOALS.md.
+
+**Blocked goals:** Goal 15 (Wallet) blocked pending migration approval per NEXT-GOALS.md.
+
+**Awaiting next /goal command.**
 
 ---
 
