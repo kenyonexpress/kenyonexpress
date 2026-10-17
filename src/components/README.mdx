@@ -1,0 +1,346 @@
+# KenyonExpress Design System
+
+Welcome to the KenyonExpress component library. This guide documents all reusable UI components, their usage patterns, and design principles.
+
+## Overview
+
+The design system is built with:
+- **React 19** with TypeScript
+- **Tailwind CSS v4** for styling
+- **Class Variance Authority** for component variants
+- **Radix UI** for accessible primitives
+- **Next.js 16** App Router
+
+## Design Principles
+
+### 1. Hebrew RTL Support
+All components support right-to-left (RTL) text direction with logical CSS properties:
+- Use `start`/`end` instead of `left`/`right`
+- Use `ms-`/`me-` for margins
+- Use `ps-`/`pe-` for padding
+- All components render correctly with `dir="rtl"` on the root
+
+### 2. Accessibility
+Components follow WCAG 2.1 AA standards:
+- Proper ARIA labels and descriptions
+- Keyboard navigation support
+- Color contrast ratios ≥ 4.5:1 for text
+- Focus indicators visible on all interactive elements
+- Semantic HTML structure
+
+### 3. Currency & Money
+All money values use **integer agorot** (1/100 of a shekel):
+- `price: 9999` = ₪99.99
+- Use `money.ts` utilities for all calculations
+- Display via `PriceDisplay` component for consistency
+- Never use floating-point for financial calculations
+
+### 4. Consistency
+- Use design tokens for colors, spacing, and typography
+- Follow the Electro design system variant naming
+- Maintain visual hierarchy through size and weight
+- Consistent spacing with Tailwind scale
+
+## Core Components
+
+### Buttons
+
+The `Button` component is the primary action element.
+
+```tsx
+import { Button } from '@/components/ui/button'
+
+<Button variant="primary" size="md">
+  צריך עזרה?
+</Button>
+```
+
+**Variants:**
+- `primary` - Yellow (Electro yellow) - Main CTAs
+- `secondary` - Gray - Secondary actions
+- `ghost` - Transparent - Minimal emphasis
+- `danger` - Red - Destructive actions
+- `link` - Text only - Navigation/tertiary actions
+
+**Sizes:**
+- `sm` - Small (8px)
+- `md` - Medium (10px) - Default
+- `lg` - Large (12px)
+- `icon` - Square icon button
+
+**States:**
+- `loading` - Shows spinner
+- `disabled` - Disabled state
+- `loadingText` - Custom text during loading
+
+### Form Inputs
+
+#### Input
+
+```tsx
+import { Input } from '@/components/ui/input'
+
+<Input 
+  placeholder="הזן טקסט..."
+  variant="default"
+  size="md"
+  type="text"
+/>
+```
+
+**Variants:**
+- `default` - Standard white input
+- `error` - Red error state
+- `success` - Green success state
+- `disabled` - Disabled state
+
+**Sizes:** `sm`, `md`, `lg`
+
+#### Label
+
+```tsx
+import { Label } from '@/components/ui/label'
+
+<Label htmlFor="input-id" required>
+  דוא"ל
+</Label>
+```
+
+**Props:**
+- `required` - Shows red asterisk
+- `variant` - default, error, success, muted
+- `size` - sm, md, lg
+
+### Cards
+
+Composable card component for organizing content:
+
+```tsx
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+
+<Card>
+  <CardHeader>
+    <CardTitle>כותרת</CardTitle>
+  </CardHeader>
+  <CardContent>
+    תוכן הכרטיס
+  </CardContent>
+</Card>
+```
+
+**Subcomponents:**
+- `Card` - Container
+- `CardHeader` - Top section with padding
+- `CardTitle` - Large title
+- `CardDescription` - Subtitle/description
+- `CardContent` - Main content area
+- `CardFooter` - Bottom section for actions
+
+### Price Display
+
+Specialized component for displaying ILS prices:
+
+```tsx
+import PriceDisplay from '@/components/PriceDisplay'
+
+<PriceDisplay 
+  price={4999}
+  originalPrice={9999}
+  showSavingsBadge={true}
+  allowHebrewNumerals={true}
+/>
+```
+
+**Features:**
+- Displays prices in format: ₪99.99
+- Shows original price with strikethrough when on sale
+- Green savings badge with discount amount
+- Optional Hebrew numeral toggle
+- Full RTL support
+
+## Feature Components
+
+### Product Card
+
+Display products with image, price, and add-to-cart:
+
+```tsx
+import ProductCard from '@/components/ProductCard'
+
+<ProductCard product={product} variant="default" />
+```
+
+### Coupon Card
+
+Display coupons with location, discount, and face value:
+
+```tsx
+import CouponCard from '@/components/CouponCard'
+
+<CouponCard coupon={coupon} />
+```
+
+### Price Display
+
+Already covered above - use this everywhere prices are shown.
+
+## Theming
+
+### Dark Mode
+
+The app supports light and dark modes via `next-themes`:
+
+```tsx
+import { ThemeProvider } from 'next-themes'
+
+<ThemeProvider attribute="class" defaultTheme="light">
+  <YourApp />
+</ThemeProvider>
+```
+
+### Design Tokens
+
+All colors are defined in `src/styles/tokens.css`:
+
+```css
+--electro-yellow-primary: #fed700;
+--electro-yellow-dark: #fedd26;
+--electro-error: #c41e3a;
+--electro-success: #328614;
+--electro-info: #0066cc;
+--electro-text-primary: #1a1a1a;
+--electro-text-secondary: #666666;
+--electro-text-tertiary: #999999;
+```
+
+Use via Tailwind classes or CSS custom properties.
+
+## Typography
+
+### Font Stack
+
+- **Hebrew:** Heebo (Hebrew supporting font)
+- **Fallback:** system-ui fonts
+- **Display:** 'swap' for optimal LCP
+
+### Sizes
+
+- **xs:** 12px
+- **sm:** 14px
+- **base:** 16px
+- **lg:** 18px
+- **xl:** 20px
+- **2xl:** 24px
+
+## Spacing
+
+Uses standard Tailwind scale (4px base):
+- Multiples of 4px: 4, 8, 12, 16, 20, 24, 32, 40, 48, 56, 64, 80, 96
+
+## Best Practices
+
+### 1. Money Handling
+Always use the `money.ts` utilities:
+```tsx
+import { shekelsFromIls } from '@/lib/money-format'
+const display = shekelsFromIls(9999) // "₪99.99"
+```
+
+### 2. Images
+Use Next.js `<Image>` with optimization:
+```tsx
+import Image from 'next/image'
+
+<Image
+  src="/image.jpg"
+  alt="תיאור בעברית"
+  width={400}
+  height={300}
+  loading="lazy"
+  sizes="(max-width: 640px) 100vw, 50vw"
+/>
+```
+
+### 3. Forms
+Always pair inputs with labels:
+```tsx
+<div className="space-y-2">
+  <Label htmlFor="email" required>דוא"ל</Label>
+  <Input id="email" type="email" />
+</div>
+```
+
+### 4. RTL Awareness
+- Don't use `flex-row-reverse` for layout control
+- Use logical properties (start/end)
+- Test with `dir="rtl"` on root
+- Mirror directional icons with `rtl:scale-x-[-1]`
+
+### 5. Performance
+- Use `loading="lazy"` for below-fold images
+- Lazy load components with `dynamic()` and `ssr: false`
+- Implement Suspense boundaries for async content
+- Use `<picture>` for art direction
+
+## Component Stories
+
+All components have Storybook stories with:
+- Multiple variants
+- Usage examples
+- Props documentation
+- RTL preview
+- Accessibility notes
+
+Run Storybook:
+```bash
+pnpm storybook
+```
+
+## Testing
+
+### Unit Tests
+
+Components have Vitest tests covering:
+- Basic rendering
+- Prop variations
+- User interactions
+- Accessibility
+
+### E2E Tests
+
+Playwright tests verify:
+- Real-world user flows
+- Cross-browser compatibility
+- Mobile responsiveness
+- Performance
+
+## Accessibility Checklist
+
+- [ ] Buttons have accessible labels
+- [ ] Form inputs have associated labels
+- [ ] Color is not the only indicator
+- [ ] Focus indicators are visible
+- [ ] Content is keyboard accessible
+- [ ] Images have alt text
+- [ ] ARIA attributes are used correctly
+- [ ] Contrast ratio is sufficient (4.5:1 for text)
+
+## Contributing
+
+When adding new components:
+
+1. **Create component file** with TypeScript types
+2. **Add Storybook stories** with multiple variants
+3. **Write unit tests** with Vitest
+4. **Document props** with JSDoc comments
+5. **Test RTL** rendering
+6. **Add to this README** with usage examples
+7. **Ensure accessibility** with axe testing
+
+## Resources
+
+- [Tailwind CSS Docs](https://tailwindcss.com)
+- [Radix UI Docs](https://www.radix-ui.com)
+- [WCAG 2.1 Guidelines](https://www.w3.org/WAI/WCAG21/quickref)
+- [Storybook Docs](https://storybook.js.org)
+- [Next.js Docs](https://nextjs.org/docs)
