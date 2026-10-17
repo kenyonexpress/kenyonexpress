@@ -16,8 +16,8 @@ async function runTest(name, test) {
 }
 
 async function main() {
-  const browser = await chromium.launch()
-  const context = await browser.createContext()
+  const browser = await chromium.launch({ headless: true })
+  const context = await browser.newContext()
   let passed = 0
   let failed = 0
 
