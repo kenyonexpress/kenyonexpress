@@ -84,4 +84,19 @@ describe('TopBar, component 01', () => {
     const row = html.match(/<div class="flex flex-wrap items-center[^"]*"/)?.[0] ?? ''
     expect(row).not.toMatch(/gap-x-/)
   })
+
+  it('applies smooth hover transitions with color change, not just opacity', () => {
+    // Hover state improved from simple opacity-70 to smooth color transition
+    expect(html).toContain('transition-colors duration-200 hover:text-heading')
+    // Old opacity-only hover should not exist
+    expect(html).not.toMatch(/hover:opacity-70/)
+  })
+
+  it('prevents icon flex shrinking for exact sizing at all breakpoints', () => {
+    // Icons should have shrink-0 class to prevent flex shrinking and maintain exact sizing
+    expect(html).toContain('shrink-0')
+    // Verify all svg/icon elements have aria-hidden
+    const ariaHiddenIcons = [...html.matchAll(/aria-hidden="true"/g)]
+    expect(ariaHiddenIcons.length).toBeGreaterThanOrEqual(4) // 3 info items + 1 user menu
+  })
 })
