@@ -45,6 +45,10 @@ export const REACT_RENDER_TIMING_SCRIPT_HASH = 'sha256-7mu4H06fwDCjmnxxr/xNHyuQC
  * React 19 Fizz streaming scripts. These are generated during the build by React's
  * streaming runtime and must be whitelisted by hash in the CSP policy.
  * Each React/Next upgrade may introduce new script hashes here.
+ *
+ * Note: Turbopack chunk loader scripts (Next.js 16.4+) change their hash with each
+ * build due to varying chunk names. These hashes may need updating after builds
+ * if the csp-shell-gate reports new blocked scripts.
  */
 export const REACT_STREAMING_SCRIPT_HASHES = Object.freeze([
   'sha256-9V7dm2iwdgPjaoJbaySXkJmq4pxKa/XT8ym8nD2hrNE=',
@@ -58,6 +62,8 @@ export const REACT_STREAMING_SCRIPT_HASHES = Object.freeze([
   'sha256-NDWPU7P2kxYORIDs+YPoKGb/r8ePBkLxwjnJHfCHaJo=',
   'sha256-WXZE1yuUPmR87n1G2LBx23Wu78FgtUxqSH7eKZH5pJ4=',
   'sha256-HW9xHbWewtKLcte8PfhJJcte0U53pFbUYm3p14FEpiI=',
+  'sha256-yA7VLd8QHjVOqhUs4hXCjYIInsU3swQ15a4I8lnMMGI=', // Turbopack (prior build)
+  'sha256-hyxaJHwapGA2mumJo1yvrGAcXV0vzo6lxuVetkJ6K+I=', // Turbopack (current build)
 ])
 
 /** Every hash the document policy carries, in the order it emits them. */
