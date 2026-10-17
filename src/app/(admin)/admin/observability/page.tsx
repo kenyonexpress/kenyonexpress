@@ -3,7 +3,7 @@ import { fetchUnifiedObservability } from '@/lib/observability/integrations'
 import { getEndpointMetrics, getUnresolvedAlerts } from '@/lib/observability/metrics'
 import { AlertCircle, BarChart3, Zap } from 'lucide-react'
 
-export const metadata = { title: 'Observability Dashboard' }
+export const metadata = { title: 'לוח בקרה - תפעול' }
 
 /**
  * Server-rendered observability dashboard combining all integration data
@@ -42,11 +42,11 @@ export default async function ObservabilityPage() {
         <div className="mx-auto max-w-7xl px-6 py-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold">Observability Dashboard</h1>
-              <p className="mt-1 text-gray-400">Unified system health & SLA monitoring</p>
+              <h1 className="text-3xl font-bold">לוח בקרה - תפעול</h1>
+              <p className="mt-1 text-gray-400">בריאות המערכת ומעקב SLA</p>
             </div>
             <div className="text-sm text-gray-400">
-              Last updated: {new Date().toLocaleTimeString('en-IL', { timeZone: 'Asia/Jerusalem' })}
+              עודכן: {new Date().toLocaleTimeString('he-IL', { timeZone: 'Asia/Jerusalem' })}
             </div>
           </div>
         </div>
@@ -56,25 +56,25 @@ export default async function ObservabilityPage() {
         {/* Health Summary Cards */}
         <div className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-4">
           <SummaryCard
-            label="Healthy Endpoints"
+            label="נקודות קצה בריאות"
             value={healthyCount}
             color="green"
             total={metrics.length}
           />
           <SummaryCard
-            label="Degraded Endpoints"
+            label="נקודות קצה מופחתות"
             value={degradedCount}
             color="yellow"
             total={metrics.length}
           />
           <SummaryCard
-            label="Down Endpoints"
+            label="נקודות קצה כושלות"
             value={downCount}
             color="red"
             total={metrics.length}
           />
           <SummaryCard
-            label="Critical Alerts"
+            label="התראות קריטיות"
             value={criticalAlerts}
             color={criticalAlerts > 0 ? 'red' : 'green'}
             total={alerts.length}
@@ -85,7 +85,7 @@ export default async function ObservabilityPage() {
         {criticalAlerts > 0 && (
           <section className="mb-8 rounded-lg border border-red-700 bg-red-900 bg-opacity-20 p-6">
             <h2 className="mb-4 flex items-center gap-2 text-xl font-bold">
-              <span className="text-2xl">🔴</span> Critical Alerts ({criticalAlerts})
+              <span className="text-2xl">🔴</span> התראות קריטיות ({criticalAlerts})
             </h2>
             <div className="space-y-3">
               {alerts
@@ -101,18 +101,18 @@ export default async function ObservabilityPage() {
         {/* Integrations Grid */}
         <section className="mb-8">
           <h2 className="mb-4 flex items-center gap-2 text-xl font-bold">
-            <span className="text-2xl">🔗</span> Integration Status
+            <span className="text-2xl">🔗</span> מצב האינטגרציות
           </h2>
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             <IntegrationCard
-              name="Endpoint Metrics"
+              name="מדדי נקודות קצה"
               value={metrics.length}
               icon="📊"
               status={metrics.length > 0 ? 'connected' : 'pending'}
             />
             {integrations.sentry && (
               <IntegrationCard
-                name="Sentry Errors"
+                name="שגיאות Sentry"
                 value={integrations.sentry.totalEvents}
                 icon="🚨"
                 status={integrations.sentry.totalEvents > 0 ? 'connected' : 'configured'}
@@ -120,7 +120,7 @@ export default async function ObservabilityPage() {
             )}
             {integrations.posthog && (
               <IntegrationCard
-                name="PostHog Events"
+                name="אירועי PostHog"
                 value={integrations.posthog.eventVolume}
                 icon="📈"
                 status={integrations.posthog.eventVolume > 0 ? 'connected' : 'configured'}
@@ -128,7 +128,7 @@ export default async function ObservabilityPage() {
             )}
             {integrations.vercel && (
               <IntegrationCard
-                name="Vercel Analytics"
+                name="ניתוח Vercel"
                 value={integrations.vercel.deployments}
                 icon="▲"
                 status={integrations.vercel.deployments > 0 ? 'connected' : 'configured'}
@@ -143,13 +143,13 @@ export default async function ObservabilityPage() {
           <section>
             <h2 className="mb-4 flex items-center gap-2 text-xl font-bold">
               <Zap className="h-5 w-5" />
-              Slowest Endpoints (P95)
+              נקודות הקצה הכי איטיות (P95)
             </h2>
             <div className="space-y-3">
               {worstEndpoints.length > 0 ? (
                 worstEndpoints.map((metric) => <EndpointCard key={metric.id} metric={metric} />)
               ) : (
-                <p className="text-gray-400">No endpoints tracked yet</p>
+                <p className="text-gray-400">טרם נעקבו נקודות קצה</p>
               )}
             </div>
           </section>
@@ -158,13 +158,13 @@ export default async function ObservabilityPage() {
           <section>
             <h2 className="mb-4 flex items-center gap-2 text-xl font-bold">
               <AlertCircle className="h-5 w-5" />
-              Highest Error Rates
+              שיעורי שגיאה גבוהים ביותר
             </h2>
             <div className="space-y-3">
               {highestErrors.length > 0 ? (
                 highestErrors.map((metric) => <EndpointCard key={metric.id} metric={metric} />)
               ) : (
-                <p className="text-gray-400">All endpoints performing well</p>
+                <p className="text-gray-400">כל נקודות הקצה עובדות כראוי</p>
               )}
             </div>
           </section>
@@ -174,18 +174,18 @@ export default async function ObservabilityPage() {
         <section className="mb-8">
           <h2 className="mb-4 flex items-center gap-2 text-xl font-bold">
             <BarChart3 className="h-5 w-5" />
-            All Endpoint Metrics
+            כל מדדי נקודות הקצה
           </h2>
           <div className="overflow-x-auto rounded-lg border border-gray-700 bg-gray-800">
             <table className="w-full text-sm">
               <thead className="border-b border-gray-700 bg-gray-900">
                 <tr>
-                  <th className="px-4 py-3 text-left font-semibold">Endpoint</th>
-                  <th className="px-4 py-3 text-left font-semibold">Method</th>
+                  <th className="px-4 py-3 text-left font-semibold">נקודת קצה</th>
+                  <th className="px-4 py-3 text-left font-semibold">שיטה</th>
                   <th className="px-4 py-3 text-right font-semibold">P95 (ms)</th>
-                  <th className="px-4 py-3 text-right font-semibold">Requests</th>
-                  <th className="px-4 py-3 text-right font-semibold">Error Rate</th>
-                  <th className="px-4 py-3 text-left font-semibold">Status</th>
+                  <th className="px-4 py-3 text-right font-semibold">בקשות</th>
+                  <th className="px-4 py-3 text-right font-semibold">שיעור שגיאה</th>
+                  <th className="px-4 py-3 text-left font-semibold">מצב</th>
                   <th className="px-4 py-3 text-left font-semibold">SLA</th>
                 </tr>
               </thead>
@@ -254,15 +254,15 @@ export default async function ObservabilityPage() {
 
         {/* Integration Details */}
         <section className="rounded-lg border border-gray-700 bg-gray-800 p-6">
-          <h2 className="mb-6 text-xl font-bold">Integration Details</h2>
+          <h2 className="mb-6 text-xl font-bold">פרטי האינטגרציה</h2>
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             {integrations.sentry && (
               <IntegrationDetail
                 name="Sentry"
                 data={{
-                  'Total Events': integrations.sentry.totalEvents,
-                  'Error Rate': `${integrations.sentry.errorRate.toFixed(2)}%`,
-                  'Critical Errors': integrations.sentry.criticalErrors,
+                  'סה"כ אירועים': integrations.sentry.totalEvents,
+                  'שיעור שגיאה': `${integrations.sentry.errorRate.toFixed(2)}%`,
+                  'שגיאות קריטיות': integrations.sentry.criticalErrors,
                 }}
               />
             )}
@@ -270,9 +270,9 @@ export default async function ObservabilityPage() {
               <IntegrationDetail
                 name="PostHog"
                 data={{
-                  'Active Users': integrations.posthog.activeUsers,
-                  'Conversion Rate': `${integrations.posthog.conversionRate.toFixed(2)}%`,
-                  'Event Volume': integrations.posthog.eventVolume,
+                  'משתמשים פעילים': integrations.posthog.activeUsers,
+                  'שיעור המרה': `${integrations.posthog.conversionRate.toFixed(2)}%`,
+                  'כמות אירועים': integrations.posthog.eventVolume,
                 }}
               />
             )}
@@ -280,9 +280,9 @@ export default async function ObservabilityPage() {
               <IntegrationDetail
                 name="Axiom Logs"
                 data={{
-                  'Log Volume': integrations.axiom.logVolume,
-                  'Avg Latency': `${integrations.axiom.avgLogLatency.toFixed(0)}ms`,
-                  'Error Logs': integrations.axiom.errorLogs,
+                  'כמות לוגים': integrations.axiom.logVolume,
+                  'זמן תגובה ממוצע': `${integrations.axiom.avgLogLatency.toFixed(0)}ms`,
+                  'לוגי שגיאה': integrations.axiom.errorLogs,
                 }}
               />
             )}
@@ -290,9 +290,9 @@ export default async function ObservabilityPage() {
               <IntegrationDetail
                 name="Vercel Analytics"
                 data={{
-                  Deployments: integrations.vercel.deployments,
-                  'Avg Response': `${integrations.vercel.avgResponseTime.toFixed(0)}ms`,
-                  Bandwidth: `${(integrations.vercel.bandwidth / 1024 / 1024).toFixed(2)}GB`,
+                  פריסות: integrations.vercel.deployments,
+                  'זמן תגובה ממוצע': `${integrations.vercel.avgResponseTime.toFixed(0)}ms`,
+                  'רוחב פס': `${(integrations.vercel.bandwidth / 1024 / 1024).toFixed(2)}GB`,
                 }}
               />
             )}
@@ -335,7 +335,7 @@ function SummaryCard({
     <div className={`rounded-lg border border-gray-700 p-6 ${bgColor}`}>
       <p className="mb-2 text-sm text-gray-400">{label}</p>
       <p className={`text-3xl font-bold ${textColor}`}>{value}</p>
-      <p className="mt-1 text-xs text-gray-500">{percentage}% of endpoints</p>
+      <p className="mt-1 text-xs text-gray-500">{percentage}% מנקודות הקצה</p>
     </div>
   )
 }
@@ -378,13 +378,13 @@ function EndpointCard({
 
       <div className="grid grid-cols-2 gap-4 text-sm">
         <div>
-          <p className="text-xs text-gray-400">P95 Response Time</p>
+          <p className="text-xs text-gray-400">זמן תגובה P95</p>
           <p className={metric.p95_ms > 300 ? 'font-semibold text-red-400' : 'text-green-400'}>
             {metric.p95_ms}ms
           </p>
         </div>
         <div>
-          <p className="text-xs text-gray-400">Error Rate</p>
+          <p className="text-xs text-gray-400">שיעור שגיאה</p>
           <p
             className={
               metric.error_rate_percent > 0.1 ? 'font-semibold text-red-400' : 'text-green-400'

@@ -12,13 +12,23 @@ vi.mock('../category/CategoryGridSkeleton', () => ({
 }))
 
 vi.mock('../category/CategoryProductCard', () => ({
-  default: ({ product }: { product: any }) => (
-    <div data-testid={`product-${product.id}`}>{product.name_he}</div>
+  default: ({ product }: { product: Record<string, unknown> }) => (
+    <div data-testid={`product-${(product as unknown as { id: string }).id}`}>
+      {(product as unknown as { name_he: string }).name_he}
+    </div>
   ),
 }))
 
 vi.mock('../category/InfiniteScrollLoader', () => ({
-  default: ({ onLoadMore, isLoading, hasMore }: any) => {
+  default: ({
+    onLoadMore,
+    isLoading,
+    hasMore,
+  }: {
+    onLoadMore: () => void
+    isLoading: boolean
+    hasMore: boolean
+  }) => {
     if (!hasMore) return null
     return (
       <button
@@ -79,7 +89,7 @@ describe('ShopGridWithInfiniteScroll', () => {
     vi.mocked(fetchWithTimeout).mockResolvedValueOnce({
       ok: true,
       json: async () => ({ items: [mockProducts[0]] }),
-    } as any)
+    } as unknown as Response)
 
     render(
       <ShopGridWithInfiniteScroll
@@ -127,7 +137,7 @@ describe('ShopGridWithInfiniteScroll', () => {
     vi.mocked(fetchWithTimeout).mockResolvedValueOnce({
       ok: true,
       json: async () => ({ items: [mockProducts[0]] }),
-    } as any)
+    } as unknown as Response)
 
     render(
       <ShopGridWithInfiniteScroll
@@ -161,7 +171,7 @@ describe('ShopGridWithInfiniteScroll', () => {
     vi.mocked(fetchWithTimeout).mockResolvedValueOnce({
       ok: true,
       json: async () => ({ items: [newProduct] }),
-    } as any)
+    } as unknown as Response)
 
     render(
       <ShopGridWithInfiniteScroll
