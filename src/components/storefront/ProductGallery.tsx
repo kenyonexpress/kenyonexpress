@@ -132,6 +132,7 @@ export default function ProductGallery({
                 src={url}
                 alt=""
                 fill
+                loading="lazy"
                 sizes="64px"
                 className="object-contain"
                 {...(assets[url]?.blurDataURL

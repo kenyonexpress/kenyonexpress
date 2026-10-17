@@ -55,6 +55,7 @@ export default function CouponCard({ coupon }: { coupon: Coupon }) {
             src={coupon.image_url}
             alt={coupon.title_he}
             fill
+            loading="lazy"
             sizes="(max-width: 767px) calc(50vw - 22px), (max-width: 1023px) calc(33.33vw - 18.67px), (max-width: 1279px) calc(33.33vw - 179.33px), 248px"
             className="object-cover"
           />
