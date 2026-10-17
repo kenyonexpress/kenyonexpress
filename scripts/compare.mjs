@@ -7,12 +7,12 @@ import { chromium } from '@playwright/test'
 import { loadShortfall } from './load-shortfall.mjs'
 import { appendParityFailure } from './parity-log.mjs'
 
-// Usage: node scripts/compare.mjs [--page=home|product|category|products|search|cart|checkout]
+// Usage: node scripts/compare.mjs [--page=home|product|category|products|search|cart|checkout|coupon]
 //                                 [--live=<url>] [--mine=<url>]
 // home     : live = refs/ke_live_singlefile.html    mine = http://localhost:3000/
 // product  : live = live kenyonexpress product page mine = http://localhost:3000/product/<slug>
 // category : live = live product-category archive   mine = http://localhost:3000/category/<slug>
-// coupon   : live coupon PDP vs local coupon product (QR customer page needs auth; PDP is the public surface)
+// coupon   : local coupon customer page (no live equivalent; WordPress had no coupon feature)
 // account  : live WP /my-account/ vs local /account (set COMPARE_STORAGE_STATE for an authed session)
 // Writes refs/live.png + refs/mine.png (consumed by diff-bands.mjs), plus
 // page-suffixed copies refs/live-<page>.png / refs/mine-<page>.png for reference.
@@ -230,9 +230,14 @@ if (page === 'home') {
   // local add-to-cart is blocked by the stock Supabase demo key.
   liveUrl ??= REFERENCE('ke_live_cart.html', LIVE_CART)
   mineUrl ??= `${LOCAL}/cart`
+} else if (page === 'coupon') {
+  // Coupons are a new feature; WordPress never had them. No live reference exists.
+  // Measure local coupon page only. The coupon ID is discovered from /account/vouchers.
+  mineUrl ??= `${LOCAL}/coupon/discover`
+  liveUrl = null
 } else {
   console.error(
-    `unknown --page=${page} (use home, product, category, products, search, cart or checkout)`,
+    `unknown --page=${page} (use home, product, category, products, search, cart, checkout or coupon)`,
   )
   process.exit(2)
 }
@@ -926,7 +931,7 @@ const runShot = (side) => `refs/.run-${process.pid}-${side}.png`
 // dead runs on 2026-09-08 left six PASS rows from the day before standing as
 // the gate's latest word. See appendParityFailure in parity-log.mjs.
 try {
-  await shoot(liveUrl, runShot('live'), 'live')
+  if (liveUrl) await shoot(liveUrl, runShot('live'), 'live')
   await shoot(mineUrl, runShot('mine'), 'mine')
 } catch (err) {
   appendParityFailure({
@@ -935,6 +940,12 @@ try {
     reason: `screenshot failed: ${err?.message ?? err}`,
   })
   throw err
+}
+
+// Coupon pages have no live equivalent (WordPress feature parity). Skip comparison.
+if (!liveUrl) {
+  console.log(`${page}: local-only page (no live reference). Skipping comparison.`)
+  process.exit(0)
 }
 
 // Two carts in different states are not a comparison. This is the same rule as
