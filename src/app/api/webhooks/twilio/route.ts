@@ -26,7 +26,7 @@ async function handlePOST(request: Request): Promise<Response> {
       return Response.json({ error: 'Webhook not configured' }, { status: 403 })
     }
 
-    const isValid = await verifyTwilioWebhook(url, data, signature, authToken || '')
+    const isValid = await verifyTwilioWebhook(url, data, signature, authToken)
 
     if (!isValid) {
       log.warn('twilio.webhook.signature_invalid', { signature, messageId: data.MessageSid })
