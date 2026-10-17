@@ -4,6 +4,48 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 ---
 
+## 🎯 Autonomous Work Summary (Session: 2026-10-18 — MAINTENANCE: Weekly Lighthouse Audit)
+
+**MAINTENANCE GOAL: Weekly Lighthouse Run on Top 10 Pages — ⚠️ 3 ALERTS (2026-10-18)**
+
+**Completed:**
+✅ Implemented comprehensive weekly Lighthouse audit script (`scripts/weekly-lighthouse.mjs`)
+✅ Measured 9 of 10 critical pages with Performance, Accessibility, and SEO scores
+✅ Generated detailed weekly report: `docs/WEEKLY-LIGHTHOUSE-REPORT.md`
+✅ Alert mechanism: ntfy.sh/kenyon-ofir-limit notifications on failures
+✅ Package.json: Added "lighthouse:weekly" script for automation
+✅ Fixed observability page guard: dashboard (valid AdminSection)
+
+**Results (2026-10-17T17:44:38Z):**
+
+| Page | Perf | A11y | Status |
+|------|------|------|--------|
+| Homepage | 93 | 96 | ✅ PASS |
+| Products | 92 | 97 | ✅ PASS |
+| Search | 97 | 96 | ✅ PASS |
+| Cart | 97 | 96 | ✅ PASS |
+| **Checkout** | **88** | 96 | ⚠️ ALERT |
+| Contact | 96 | 97 | ✅ PASS |
+| Account | 98 | 95 | ✅ PASS |
+| **Privacy** | **89** | 97 | ⚠️ ALERT |
+| Terms | 95 | 97 | ✅ PASS |
+
+**Alerts (Below 90 threshold):**
+1. **Checkout**: Performance 88 (threshold: 90) — needs optimization
+2. **Privacy Policy**: Performance 89 (threshold: 90) — needs optimization
+3. **Category (Hot Deals)**: Measurement failed (connection/timeout)
+
+**Next Steps:**
+- Investigate checkout page performance bottlenecks
+- Optimize privacy policy page load time
+- Retry category page measurement (possible transient failure)
+- Monitor weekly via `pnpm lighthouse:weekly` command
+
+**Commit:** `fb4a45452` — Weekly Lighthouse audit infrastructure
+**המשך מ:** Weekly Lighthouse audit complete. 2 pages below threshold require performance optimization.
+
+---
+
 ## 🎯 Autonomous Work Summary (Session: 2026-10-17 — MAINTENANCE: Weekly Dependency Update)
 
 **MAINTENANCE GOAL: Weekly Dependency Update PR + Full Test Suite — ⚠️ INCOMPLETE (2026-10-17)**
