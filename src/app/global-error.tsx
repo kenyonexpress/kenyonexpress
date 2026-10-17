@@ -24,6 +24,9 @@ import { useEffect } from 'react'
  * under the root layout, so it stands when this page is up) and WhatsApp
  * with the digest already in the message. No health probe here: the layout
  * is gone, and a fetch from the last boundary is one more thing to fail.
+ *
+ * STRINGS EXTRACTED: Hardcoded Hebrew strings documented in messages/{he,en}.json
+ * under 'globalError' namespace. Cannot use i18n here due to error context.
  */
 export default function GlobalError({
   error,

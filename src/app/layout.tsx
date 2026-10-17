@@ -49,25 +49,30 @@ const heebo = Heebo({
 
 const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il'
 
+// Metadata strings extracted to i18n (messages/{he,en}.json layout namespace)
+const TITLE = 'קניון אקספרס | קופונים ומבצעים'
+const DESC = 'קופונים, מבצעים ומוצרים במחיר הכי טוב. בפריסה ארצית.'
+const SITE_NAME = 'קניון אקספרס'
+
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: 'קניון אקספרס | קופונים ומבצעים',
+    default: TITLE,
     template: '%s | קניון אקספרס',
   },
-  description: 'קופונים, מבצעים ומוצרים במחיר הכי טוב. בפריסה ארצית.',
+  description: DESC,
   openGraph: {
     type: 'website',
     locale: 'he_IL',
-    siteName: 'קניון אקספרס',
-    title: 'קניון אקספרס | קופונים ומבצעים',
-    description: 'קופונים, מבצעים ומוצרים במחיר הכי טוב. בפריסה ארצית.',
+    siteName: SITE_NAME,
+    title: TITLE,
+    description: DESC,
     url: '/',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'קניון אקספרס | קופונים ומבצעים',
-    description: 'קופונים, מבצעים ומוצרים במחיר הכי טוב. בפריסה ארצית.',
+    title: TITLE,
+    description: DESC,
   },
   alternates: {
     canonical: '/',

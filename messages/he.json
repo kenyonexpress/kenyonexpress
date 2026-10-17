@@ -138,7 +138,18 @@
     "homeLink": "לדף הבית",
     "statusLink": "מצב המערכת",
     "whatsappLink": "פנייה לתמיכה בוואטסאפ",
-    "whatsappMessage": "שלום, נתקלתי בתקלה באתר {appName}.{errorCode}"
+    "whatsappMessage": "שלום, נתקלתי בתקלה באתר {appName}.{errorCode}",
+    "errorIcon": "⚠️",
+    "errorCodeLabel": "קוד תקלה:"
+  },
+  "layout": {
+    "welcomeMessage": "ברוך הבא לעולומו של קניון Express",
+    "nationalShipping": "בפריסה ארצית",
+    "secureShopping": "קניה בטוחה",
+    "loginSignup": "התחברות / הרשמה",
+    "title": "קניון אקספרס | קופונים ומבצעים",
+    "description": "קופונים, מבצעים ומוצרים במחיר הכי טוב. בפריסה ארצית.",
+    "siteName": "קניון אקספרס"
   },
   "settings": {
     "pageTitle": "הגדרות",

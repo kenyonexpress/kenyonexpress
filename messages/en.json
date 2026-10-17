@@ -138,7 +138,18 @@
     "homeLink": "Back to Home",
     "statusLink": "System Status",
     "whatsappLink": "Contact Support via WhatsApp",
-    "whatsappMessage": "Hello, I encountered an error on {appName}.{errorCode}"
+    "whatsappMessage": "Hello, I encountered an error on {appName}.{errorCode}",
+    "errorIcon": "⚠️",
+    "errorCodeLabel": "Error Code:"
+  },
+  "layout": {
+    "welcomeMessage": "Welcome to Kenyon Express",
+    "nationalShipping": "Nationwide delivery",
+    "secureShopping": "Secure shopping",
+    "loginSignup": "Login / Sign Up",
+    "title": "Kenyon Express | Coupons and Deals",
+    "description": "Coupons, deals and products at the best price. Nationwide delivery.",
+    "siteName": "Kenyon Express"
   },
   "settings": {
     "pageTitle": "Settings",
