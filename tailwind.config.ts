@@ -16,6 +16,17 @@ export default {
   darkMode: 'selector',
   theme: {
     extend: {
+      spacing: {
+        'handheld-logo-w': '100px',
+        'handheld-logo-h': '26px',
+        'logo-h': '79px',
+        'logo-w': '300px',
+        'nav-gap': '38px',
+        'touch-pad': '11px',
+        'touch-min': '44px',
+        'badge-handheld': '20px',
+        'badge-masthead': '21px',
+      },
       colors: {
         brand: {
           DEFAULT: 'var(--color-brand-primary)',

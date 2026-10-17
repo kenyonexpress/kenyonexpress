@@ -1,3 +1,5 @@
+'use client'
+
 import LoginLink from '@/components/auth/LoginLink'
 import dynamic from 'next/dynamic'
 

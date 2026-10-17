@@ -1,5 +1,5 @@
 import HeaderCart from '@/components/cart/HeaderCart'
-import { Heart, User } from '@/components/icons'
+import { Heart } from '@/components/icons'
 import SiteSearch from '@/components/search/SiteSearch'
 import WishlistNavCount from '@/components/wishlist/WishlistNavCount'
 import { LOGO } from '@/lib/assets'
@@ -10,9 +10,9 @@ import MobileDrawer from './MobileDrawer'
 export default function MainHeader() {
   return (
     <header dir="rtl" className="sticky top-11 z-40 w-full border-b border-border bg-white">
-      <div className="mx-auto flex h-[5.625rem] max-w-page items-center justify-between gap-4 px-gutter">
+      <div className="mx-auto flex max-w-page items-center justify-between gap-4 px-gutter xl:h-[6.875rem]">
         {/* Mobile hamburger + logo + cart */}
-        <div className="flex w-full items-center justify-between gap-2 xl:hidden">
+        <div className="flex w-full items-center justify-between gap-2 xl:hidden h-[5.625rem]">
           <MobileDrawer />
           <Link href="/" aria-label="קניון אקספרס, לדף הבית" className="tap-area shrink-0">
             <SmartImage
@@ -20,14 +20,11 @@ export default function MainHeader() {
               alt="קניון EXPRESS"
               width={300}
               height={79}
-              className="aspect-[19/5] h-auto w-[6.25rem] object-contain"
-              fallbackClassName="h-6 w-[6.25rem] rounded-md"
+              className="aspect-[19/5] h-auto w-handheld-logo-w object-contain"
+              fallbackClassName="h-handheld-logo-h w-handheld-logo-w rounded-md"
               priority
             />
           </Link>
-          <div className="grid size-11 place-items-center">
-            <HeaderCart />
-          </div>
         </div>
 
         {/* Desktop layout */}
@@ -39,8 +36,8 @@ export default function MainHeader() {
               alt="קניון EXPRESS"
               width={300}
               height={79}
-              className="aspect-[19/5] h-auto w-[10rem] object-contain"
-              fallbackClassName="h-[4.9375rem] w-[10rem] rounded-md"
+              className="aspect-[19/5] h-auto w-auto xl:h-logo-h xl:w-logo-w object-contain"
+              fallbackClassName="h-logo-h w-logo-w rounded-md"
               priority
             />
           </Link>
@@ -51,27 +48,24 @@ export default function MainHeader() {
           </div>
 
           {/* Left side icons */}
-          <div className="flex shrink-0 items-center gap-4">
+          <nav className="flex shrink-0 items-center gap-4 lg:gap-nav-gap">
             <Link
               href="/wishlist"
               aria-label="המועדפים שלי"
-              className="grid size-11 place-items-center text-icon transition-colors hover:text-heading-hover"
+              className="-m-0.5 p-1 text-icon transition-colors hover:text-heading-hover"
             >
-              <span className="relative">
+              <span className="relative block">
                 <Heart size={22} strokeWidth={1.8} aria-hidden="true" />
                 <WishlistNavCount />
               </span>
             </Link>
-            <Link
-              href="/account"
-              aria-label="החשבון שלי"
-              className="grid size-11 place-items-center text-icon transition-colors hover:text-heading-hover"
-            >
-              <User size={22} strokeWidth={1.8} aria-hidden="true" />
-            </Link>
-            <div className="grid size-11 place-items-center">
-              <HeaderCart />
-            </div>
+          </nav>
+        </div>
+
+        {/* Cart - shared for mobile and desktop */}
+        <div className="-me-touch-pad flex items-center gap-0 xl:hidden">
+          <div className="grid size-touch-min place-items-center">
+            <HeaderCart />
           </div>
         </div>
       </div>

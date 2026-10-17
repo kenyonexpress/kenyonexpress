@@ -55,7 +55,7 @@ export default function MastheadNav() {
         <Link
           href="/wishlist"
           aria-label="המועדפים שלי"
-          className="-m-0.5 p-1 text-icon transition-colors hover:text-heading-hover"
+          className="-m-0.5 p-1 text-icon transition-colors hover:text-heading-hover shrink-0"
         >
           <span className="relative block">
             <Heart size={ICON.size} strokeWidth={ICON.strokeWidth} aria-hidden="true" />
