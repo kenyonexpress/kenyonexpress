@@ -1,7 +1,11 @@
-RESUME FROM: STEP 86-next-goal
+RESUME FROM: STEP 87-next-goal
 # KenyonExpress — Project State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-10-17T15:28:00+07:00
+- item: STEP 86-dark-mode
+- RESULT: DONE (Dark mode implementation complete with system preference detection, manual toggle, comprehensive component testing, and zero hard-coded colors. Deliverables: (1) ThemeProvider with localStorage persistence and system preference detection via matchMedia, (2) ThemeToggle button with Hebrew labels, (3) dark mode CSS variables in tokens.css with prefers-color-scheme and data-theme attribute support, (4) Tailwind dark mode enabled with selector strategy, (5) Dark mode support in global-error boundary with system preference fallback, (6) All hard-coded colors replaced with design tokens: SiteFooter, RightSidebar, CouponCardSkeleton, ProductDealCard updated to use CSS variables, (7) Comprehensive test coverage: ThemeProvider tests for toggle/persistence/system-preference, ThemeToggle tests for button state, (8) RTL support maintained in dark mode. Local gates: lint✓, type-check✓, build✓ SUCCESS (289/289 pages, 278 shells, CSP clean, no new errors). Zero hard-coded colors in any component. Commits: 54c308515)
 
 ### 2026-10-17T14:52:00+07:00
 - item: STEP 85-localization-ready
