@@ -1,6 +1,6 @@
 RESUME FROM: STEP 97
 
-## ✅ STEP 96: MAINTENANCE — Customer Support Inbox Classification Bot — COMPLETE (2026-10-18 04:45-05:00)
+## ⏳ STEP 96: MAINTENANCE — Customer Support Inbox Classification Bot — CODE COMPLETE, DEPLOYMENT BLOCKED (2026-10-18 04:45-05:25)
 
 **Goal**: Build classification bot to automatically process customer support messages, respond to simple inquiries, and route complex issues to owner via WhatsApp.
 
@@ -29,11 +29,13 @@ RESUME FROM: STEP 97
 - Contact form integration: auto-stores messages in support_messages table
 - Existing WhatsApp forwardInboundToOwner used for complex routing
 
-✅ **Quality Gates**:
-- ✅ pnpm type-check: CLEAN
-- ✅ pnpm lint: CLEAN (biome)
+**Quality Gates** (My Code Only):
+- ✅ pnpm type-check: CLEAN (tsc --noEmit)
+- ⚠️ pnpm lint: 5 warnings (no errors in my files)
 - ✅ pnpm test: 32/32 PASSING (classify.test.ts + process.test.ts)
-- ✅ pnpm build: Ready (migration pending application)
+- ❌ pnpm build: FAILED (pre-existing issue: coupon page prerendering timeout)
+  - Unrelated to my code (coupon routes not touched)
+  - Build failure exists in main branch (not introduced by STEP 96)
 
 **Architectural Decisions**:
 - Simple heuristic classification (no ML) for fast, deterministic routing
@@ -42,10 +44,21 @@ RESUME FROM: STEP 97
 - Batch processing every 5-10 minutes (configurable)
 - Complexity thresholds per category allow fine-tuning
 
-**Known Blockers**:
-- Migration 274 requires Supabase MCP application (external, STEP 95 blocker)
-- Cron scheduling requires Vercel dashboard or GitHub Actions setup
-- WhatsApp integration uses existing infrastructure (Twilio configured)
+**CRITICAL BLOCKERS** (Bot Cannot Operate):
+1. **Migration 274 not applied** → support_messages table doesn't exist
+   - Cause: Supabase MCP requires OAuth auth (unavailable in non-interactive session)
+   - Workaround: Requires manual application via Supabase CLI or management API
+   - Impact: Contact form stores messages, but bot cannot read/process them
+   
+2. **Cron job not scheduled** → bot runs 0 times continuously
+   - Requires: Vercel dashboard access OR GitHub Actions workflow
+   - Not available in this session
+
+**Why the goal is incomplete**:
+- Goal: "continuously respond to customer support inbox"
+- Reality: bot code exists but cannot respond (no DB tables, no cron trigger)
+- Evidence: `support_messages` table doesn't exist; no rows can be inserted/read
+- Result: Bot is non-functional despite being code-complete
 
 **Commits**:
 - de06b7d37: [autopilot] STEP 96: Customer support inbox classification bot
