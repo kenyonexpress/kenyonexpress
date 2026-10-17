@@ -4,6 +4,94 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 ---
 
+## 🎯 Autonomous Work Summary (Session: 2026-10-17 — STEP 89 RELEASE ENGINEERING COMPLETE)
+
+**STEP 89: Release Engineering — ✅ COMPLETE (2026-10-17)**
+
+Implemented complete release engineering pipeline with semantic versioning, conventional commits, GitHub releases, Vercel promotions, rollbacks, and automated smoke tests.
+
+**Deliverables:**
+
+1. **Conventional Changelog Generator** (`scripts/conventional-changelog.mjs`)
+   - Parses git commits in conventional format (feat, fix, perf, docs, refactor, test, ci, chore)
+   - Groups commits by type
+   - Generates markdown release notes
+   - Auto-calculates semantic versions (major/minor/patch)
+
+2. **GitHub Release Creator** (`scripts/create-release.mjs`)
+   - Creates semantic version tags
+   - Pushes tags to remote
+   - Creates GitHub releases with formatted changelog
+   - Supports draft and prerelease versions
+   - Records version in `.last-release` file
+
+3. **Vercel Promotion Script** (`scripts/promote.mjs`)
+   - Fetches latest READY deployment
+   - Runs smoke tests before promotion:
+     - Homepage loads (HTTP 200)
+     - API health check (/api/health)
+     - Sitemap accessible
+     - Robots.txt accessible
+   - Aborts if smoke tests fail
+   - Records promotion data in `.last-promotion` file
+
+4. **Rollback Script** (`scripts/rollback.mjs`)
+   - Lists available deployments
+   - Validates previous deployment with smoke tests
+   - Promotes previous deployment to production
+   - Records rollback history in `.last-rollback` file
+
+5. **Smoke Test Suite** (`scripts/smoke-test.mjs`)
+   - Browser-based testing via Playwright
+   - 10 comprehensive tests:
+     ✅ Homepage loads and renders
+     ✅ Navigation works
+     ✅ Product pages load
+     ✅ Search input visible
+     ✅ Cart button visible
+     ✅ API health endpoint
+     ✅ Sitemap and robots.txt exist
+     ✅ No console errors
+     ✅ Responsive design (mobile viewport)
+     ✅ Page rendering complete
+
+6. **Release Documentation** (`docs/RELEASE.md`)
+   - 300+ line comprehensive guide
+   - Commit convention standards
+   - All script usage and examples
+   - Environment setup instructions
+   - CI/CD integration patterns
+   - Troubleshooting guide
+   - Best practices
+
+7. **Package.json Updates**: 5 new release scripts
+   - `pnpm release:changelog` — View changelog for next release
+   - `pnpm release:create` — Create GitHub release with tag
+   - `pnpm release:promote` — Promote to production with smoke tests
+   - `pnpm release:rollback` — Rollback to previous deployment
+   - `pnpm release:smoke` — Run smoke test suite
+
+**Code Quality:**
+- ✅ All scripts lint-clean (biome check)
+- ✅ All scripts type-safe
+- ✅ Full build succeeds (290 pages)
+- ✅ Type-check clean
+- ✅ Follows Node.js import protocol (node:*)
+
+**Environment Variables Required:**
+- `GITHUB_TOKEN` — For creating releases
+- `VERCEL_TOKEN` — For promotions/rollbacks
+- `VERCEL_ORG_ID` — Vercel organization ID
+- `VERCEL_PROJECT_ID` — Vercel project ID
+- `SMOKE_TEST_URL` — Base URL for smoke tests (optional, defaults to localhost:3000)
+
+**Commit:** 8935bbd49
+**Status:** ✅ COMPLETE — Full release engineering infrastructure ready for deployment automation
+
+**המשך מ:** STEP 89 COMPLETE. Complete release engineering pipeline implemented with semantic versioning, conventional commits, GitHub releases, Vercel promotions/rollbacks, and smoke tests. All infrastructure ready for automated release workflows.
+
+---
+
 ## 🎯 Autonomous Work Summary (Session: 2026-10-17 — STEP 88 AUDIT COMPLETE)
 
 **STEP 88: Pre-Launch Audit — ✅ COMPLETE WITH NOT READY VERDICT (2026-10-17)**
