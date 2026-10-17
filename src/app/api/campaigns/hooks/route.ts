@@ -1,5 +1,5 @@
 import { withRequestLog } from '@/lib/observability/with-request-log'
-import type { CustomerSegmentType } from '@/lib/rfm-analysis'
+import type { CustomerSegmentType, UserSegmentInfo } from '@/lib/rfm-analysis'
 import { CAMPAIGN_DESCRIPTIONS, SEGMENT_LABELS } from '@/lib/rfm-analysis'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
@@ -68,15 +68,15 @@ async function handleGET(req: NextRequest): Promise<Response> {
     }
 
     // Build campaign hooks for user's segments
-    const campaigns: CampaignHook[] = (userSegments || []).map((segment) => {
-      const segmentType = (segment as unknown as UserSegmentInfo).segment_type
+    const campaigns: CampaignHook[] = (userSegments || []).map((segment: unknown) => {
+      const info = segment as UserSegmentInfo
       return {
-        segment_type: segmentType,
-        name_he: (segment as unknown as UserSegmentInfo).name_he,
-        name_en: (segment as unknown as UserSegmentInfo).name_en,
-        description_he: CAMPAIGN_DESCRIPTIONS[segmentType]?.he,
-        description_en: CAMPAIGN_DESCRIPTIONS[segmentType]?.en,
-        enabled: (segment as unknown as UserSegmentInfo).campaign_hook_enabled,
+        segment_type: info.segment_type,
+        name_he: info.name_he,
+        name_en: info.name_en,
+        description_he: CAMPAIGN_DESCRIPTIONS[info.segment_type]?.he,
+        description_en: CAMPAIGN_DESCRIPTIONS[info.segment_type]?.en,
+        enabled: info.campaign_hook_enabled,
       }
     })
 
