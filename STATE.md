@@ -1,6 +1,6 @@
 RESUME FROM: STEP 96
 
-## ⚠️ STOP HOOK: STEP 95 — Partially Complete (External Blockers)
+## ❌ DEFERRED: STEP 95 — Supabase MCP Unavailable (External Blocker)
 
 **Goal Condition**: Continuously monitor abandoned carts hourly, trigger recovery email at +1h and +24h with escalating discount. Use Supabase MCP for DB/RLS/migrations. Schedule hourly monitoring.
 
