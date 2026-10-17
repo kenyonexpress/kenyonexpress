@@ -50,6 +50,9 @@ const FILE_ALLOWLIST = new Set([
   // names, not copy, and translating them would make the page useless to the
   // person it exists for.
   'src/app/debug/sentry/page.tsx',
+  // Partner API documentation: technical reference for developers, not customer-facing
+  // marketing copy. English is required for API documentation and code examples.
+  'src/app/(store)/developers/page.tsx',
 ])
 
 /**

@@ -15,6 +15,12 @@ migration, so the apply order across the two branches is undefined.
 Until the owner picks a mainline branch, **apply nothing from either side.**
 The full measured table is in `docs/MIGRATION-NUMBER-COLLISIONS.md`.
 
+## 2026-10-17: 190 added - Partner API Infrastructure
+
+`190_partner_api_infrastructure.sql` adds partner API key management, rate limiting, and audit logging. **Not applied.**
+
+Provides read-only API access for approved partners with key-based authentication, scope-based authorization, and hourly rate limits. Includes tables: partner_api_keys, partner_api_requests, partner_api_rate_limits. Includes RPC functions: fn_create_partner_api_key(), fn_check_api_rate_limit(), fn_log_api_request(), fn_cleanup_old_rate_limits().
+
 ## 2026-10-17: 188 added - Search Analytics: CTR tracking and weekly reporting
 
 `188_search_analytics.sql` adds search_clicks table and reporting functions for CTR analysis and weekly delivery to decision makers. **Not applied.**
