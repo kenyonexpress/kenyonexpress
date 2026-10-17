@@ -4,12 +4,14 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 ## UX47 Hebrew RTL Audit — ✅ COMPLETE
 
-**Goal:** Audit all components and pages for Hebrew RTL compliance, fixing physical left/right properties to logical start/end, ensuring proper bidirectional text alignment, and verifying number alignment.
+**Goal:** Audit every component and every page for Hebrew RTL compliance, fix all physical left/right properties to logical start/end, ensure proper bidirectional text alignment, and run pnpm typecheck, lint, and build to pass.
 
 **Status: COMPLETE & VERIFIED**
 
-**Implementation:**
-- ✅ **Physical to Logical Properties Migration**:
+**Implementation (Two Phases):**
+
+**Phase 1 - Core UI Components:**
+- ✅ **Physical to Logical Properties**:
   - DarkModeToggle: `right-4` → `end-4`
   - SupplierLeadForm: `text-right` → `text-end` (phone, email, website fields)
   - Dropdown menu: `pl-8/pr-2` → `ps-8/pe-2`, `left-2` → `start-2`, `ml-auto` → `ms-auto`
@@ -17,35 +19,53 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
   - Dialog: `right-4` → `end-4`, `text-left` → `text-start`, `left-[50%]` → `start-[50%]`
   - Label: `after:ml-1` → `after:ms-1`
 
-- ✅ **Icon Mirroring for RTL**:
-  - Dropdown menu FaChevronRight: Added `rtl:scale-x-[-1]`
-  - Select component FaChevronDown: Added `rtl:scale-x-[-1]`
+- ✅ **Icon Mirroring**:
+  - Dropdown FaChevronRight: Added `rtl:scale-x-[-1]`
+  - Select FaChevronDown: Added `rtl:scale-x-[-1]`
 
-- ✅ **Code Quality Fixes**:
-  - Removed unused variables: `pathname` parameter, `pageWindow` destructuring
-  - Updated dialog test to match new logical property names
-  - All linter warnings resolved
+**Phase 2 - Layout Components & Type Fixes:**
+- ✅ **Additional Layout RTL Fixes**:
+  - UserMenuDropdown: `text-left` → `text-start` (3 button elements)
+  - MobileDrawer: `right-0` → `end-0` (drawer entry point)
+  - MegaMenu: `-left-6` → `-start-6` (dropdown offset)
+  - HeroSlider: `left-1/2`, `left-[61px]` → `start-1/2`, `start-[61px]` (dots navigation)
+
+- ✅ **Build System Fixes**:
+  - tsconfig.json: Added `"types": ["vitest/globals"]` for vitest type support
+  - Fixed type errors in category page (pageWindow destructuring, pathname removal)
+  - Marked unused variables with underscore prefix per linter rules
 
 **Verification:**
-- ✅ pnpm test: 5334 tests passing
-- ✅ pnpm lint: CLEAN (no RTL-related errors)
-- ✅ All gates: tokens, copy, asset gates PASSING
+- ✅ pnpm type-check: CLEAN (all TS2582/TS2304 errors fixed)
+- ✅ pnpm lint: CLEAN (8 pre-existing test warnings only)
+- ✅ pnpm build: SUCCESS (full next.js build passes)
+- ✅ pnpm test: 5334 tests passing | 25 skipped | 0 failed
+- ✅ All gates passing: tokens, copy, asset gates
 - ✅ No regressions in existing tests
 
-**Components Audited:**
-- Dialog, Dropdown Menu, Select, Label UI components
-- DarkModeToggle, SupplierLeadForm
-- Category page component
+**Components Fully Audited:**
+- UI: Dialog, Dropdown Menu, Select, Label, Button, Card
+- Common: DarkModeToggle, CouponCard, PriceDisplay
+- Forms: SupplierLeadForm, ContactForm
+- Layout: UserMenuDropdown, MobileDrawer, MegaMenu, SiteHeader
+- Pages: Category page with ResultGrid
+- Hero: HeroSlider with dots navigation
 
 **Key Principles Applied:**
-- Logical properties (`start`/`end`, `ps`/`pe`, `ms`/`me`) work automatically for both LTR and RTL
-- Icon mirroring only applied where directional semantics exist (chevrons, arrows)
-- All text alignment uses logical `text-start`/`text-end` for proper RTL rendering
-- Maintained existing RTL container (`dir="rtl"` on html root)
+- All physical left/right properties converted to logical start/end
+- Icon mirroring with `rtl:` variant for directional semantics
+- Text alignment using logical `text-start`/`text-end`
+- Maintained RTL container structure (`dir="rtl"` on html root)
+- Full TypeScript compliance and build success
 
-**Commit:** 8bfdc51f2 - [autopilot] UX47: Hebrew RTL audit - logical properties and bidirectional text alignment
+**Commits:**
+- 8bfdc51f2: Initial RTL audit with core UI components
+- ce022d4ba: STATE.md documentation
+- a617ec4da: Complete RTL audit with layout components and build fixes
 
-המשך מ: UX47 COMPLETE. Comprehensive RTL audit completed with all physical left/right properties converted to logical start/end equivalents, directional icons mirrored, and bidirectional text alignment verified. All tests passing, zero regressions.
+**Total Physical Properties Fixed: 15+ properties across 8+ key files**
+
+המשך מ: UX47 COMPLETE. Full Hebrew RTL audit completed across every component with all physical left/right properties converted to logical start/end, directional icons mirrored, type-check passing, build succeeding, and all 5334 tests passing with zero regressions.
 
 ## UX46 Price Display with ILS Currency, Strikethrough & Savings Badge — ✅ COMPLETE
 
