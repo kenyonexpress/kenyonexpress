@@ -25,24 +25,25 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
   - Test files: Properly typed mock components and responses
   - API routes: Added biome-ignore for Supabase RPC dynamic typing
 
-**Results (2026-10-17T17:44:38Z):**
+**Results (2026-10-17T17:55:08Z) — Corrected URL, All 10 Pages Measured:**
 
 | Page | Perf | A11y | Status |
 |------|------|------|--------|
-| Homepage | 93 | 96 | ✅ PASS |
-| Products | 92 | 97 | ✅ PASS |
-| Search | 97 | 96 | ✅ PASS |
-| Cart | 97 | 96 | ✅ PASS |
-| **Checkout** | **88** | 96 | ⚠️ ALERT |
+| Homepage | 94 | 96 | ✅ PASS |
+| Products | 98 | 97 | ✅ PASS |
+| Category (Hot Deals) | 96 | 96 | ✅ PASS |
+| Search | 98 | 96 | ✅ PASS |
+| Cart | 96 | 96 | ✅ PASS |
+| **Checkout** | **87** | 96 | ⚠️ ALERT |
 | Contact | 96 | 97 | ✅ PASS |
 | Account | 98 | 95 | ✅ PASS |
-| **Privacy** | **89** | 97 | ⚠️ ALERT |
+| Privacy | 95 | 97 | ✅ PASS |
 | Terms | 95 | 97 | ✅ PASS |
 
 **Alerts (Below 90 threshold):**
-1. **Checkout**: Performance 88 (threshold: 90) — needs optimization
-2. **Privacy Policy**: Performance 89 (threshold: 90) — needs optimization
-3. **Category (Hot Deals)**: Measurement failed (connection/timeout)
+- **Checkout**: Performance 87 (threshold: 90) — needs optimization
+
+**Note:** Category route was incorrect in first run (`/c/hot-deals` → 404). Fixed to `/category/hot-deals` (correct route). Rerun shows Category performs at 96.
 
 **Next Steps:**
 - Investigate checkout page performance bottlenecks
