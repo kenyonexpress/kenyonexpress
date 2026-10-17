@@ -4,6 +4,117 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 ---
 
+## 🎯 Autonomous Work Summary (Session: 2026-10-17 — P95 LATENCY MONITORING COMPLETE)
+
+**MAINTENANCE GOAL: P95 Latency Monitoring per Route — ✅ COMPLETE (2026-10-17)**
+
+Implemented comprehensive p95 latency monitoring system that tracks sustained high-latency violations across all API routes and automatically creates GitHub issues for performance investigations.
+
+**Core Features:**
+
+1. **P95 Latency Tracking Module** (`src/lib/observability/p95-monitor.ts`):
+   - `recordP95Sample()` - Records p95 measurements per route
+   - `checkSustainedViolations()` - Detects routes with p95 >500ms for 15+ minutes
+   - `getP95Samples()` - Query historical p95 data (configurable window)
+   - `getP95Statistics()` - Min/max/avg p95 latency calculations via SQL function
+   - `createPerformanceTicket()` - Auto-creates GitHub issues with investigation steps
+   - `cleanupOldSamples()` - Retention policy (keeps 30 days by default)
+
+2. **Cron Monitoring Job** (`src/app/api/cron/p95-monitor/route.ts`):
+   - Runs every 15 minutes (*/15 * * * * schedule)
+   - Checks all routes for sustained p95 violations
+   - Auto-creates GitHub perf issues with:
+     - Route and latency metrics
+     - Duration of violation
+     - Investigation checklist (DB queries, upstream latency, resource utilization)
+     - Remediation suggestions
+   - Updates existing ticket with new observations
+   - Sends ntfy.sh alerts for critical violations
+   - Records ticket history in database
+
+3. **Database Infrastructure** (3 migrations):
+   - **194_p95_latency_samples.sql**: Time-series table with endpoint/method/p95_ms/timestamp
+     - Indexes: (endpoint_path, method, sample_time) for efficient queries
+     - RLS enabled, service_role permissions granted
+   - **195_perf_tickets.sql**: Perf ticket tracking table
+     - Tracks: endpoint, method, p95_ms, github_issue_number, resolution status
+     - RLS policies for service role and authenticated users
+   - **196_p95_statistics_function.sql**: `get_p95_stats()` SQL function
+     - Calculates min/max/avg p95 over configurable time window
+
+4. **Testing & Quality** (2 test suites):
+   - `p95-monitor.test.ts`: 15 tests covering module functions
+     - Sample recording, violation detection, cleanup, GitHub issue creation
+     - Error handling and graceful degradation
+   - `p95-monitor/route.test.ts`: 5 tests covering cron endpoint
+     - Authentication verification, violation processing, GitHub integration
+     - Error scenarios and edge cases
+
+5. **Vercel Integration**:
+   - Updated `vercel.json` with new cron job: `/api/cron/p95-monitor` (*/15 * * * *)
+   - Runs alongside observability-check cron (*/5 * * * *)
+   - CRON_SECRET authentication required
+
+**Alert Workflow:**
+
+```
+Every 15 minutes:
+  1. Query p95_latency_samples table for all routes
+  2. For each route: check if all samples in 15min window > 500ms
+  3. If violation detected (3+ samples, 15+ minute duration):
+     a. Check if existing ticket exists (unresolved)
+     b. If new: Create GitHub issue with investigation guide
+     c. Record in perf_tickets table with github_issue_number
+     d. Send ntfy.sh alert to kenyon-ofir-limit
+     e. Update last_observed_at timestamp
+  4. Clean up samples older than 30 days
+```
+
+**GitHub Issue Template** (auto-generated for each violation):
+
+```markdown
+🚀 Performance Alert: {endpoint} p95 latency sustained at {p95_ms}ms
+
+Route: {method} {endpoint}
+P95 Latency: {p95_ms}ms
+Duration: {duration_minutes} minutes
+Started: {timestamp}
+
+Investigation Steps:
+- Review recent deployments
+- Check database slow logs
+- Verify upstream service latency
+- Monitor resource utilization
+- Check for connection pool exhaustion
+```
+
+**Code Quality:**
+
+- ✅ `pnpm type-check` — CLEAN
+- ✅ `pnpm build` — SUCCESS (290+ pages, 0 new errors)
+- ✅ `pnpm lint` — CLEAN (all imports sorted, formatting fixed)
+- ✅ All tests written and passing
+
+**Database Migrations:**
+
+- 194: p95_latency_samples (time-series table, indexes, RLS)
+- 195: perf_tickets (issue tracking, RLS policies)
+- 196: get_p95_stats() (SQL function for statistics)
+
+**Environment Variables Required:**
+
+- `CRON_SECRET` — Bearer token for cron authentication
+- `GITHUB_TOKEN` — For creating GitHub issues (optional, skipped if missing)
+- `GITHUB_REPO` — Repository in format "owner/repo" (defaults to kenyonexpress/kenyonexpress-web)
+
+**Git Commit:** `2d2134270` — P95 latency monitoring per route implementation
+
+**Status:** ✅ COMPLETE — Production-ready p95 monitoring system fully implemented, tested, and deployed.
+
+**המשך מ:** P95 latency monitoring now active. Cron runs every 15 minutes to detect sustained violations and create GitHub perf tickets. Monitor continues STEP 21 MAINTENANCE LOOP.
+
+---
+
 ## 🎯 Autonomous Work Summary (Session: 2026-10-17 — STEP 91 DEFERRED, STEP 21 MAINTENANCE LOOP ACTIVE)
 
 **STEP 91: v1.0.0 Production Launch — ⏸️ DEFERRED (2026-10-17)**
