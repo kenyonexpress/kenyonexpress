@@ -378,7 +378,7 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
     number: '189',
     file: '189_affiliate_program.sql',
     state: 'pending',
-    hasPreflight: false,
+    hasPreflight: true,
   },
   {
     number: '190',
