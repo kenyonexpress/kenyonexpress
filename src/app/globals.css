@@ -10,6 +10,14 @@
    `src/styles/tokens.ts`. */
 @import "../styles/tokens.css";
 
+/* Match live site body font size. Live renders at 14px effective size.
+   Setting root font-size to 0.875rem scales everything down proportionally,
+   which matches the live rendering and improves pixel parity.
+   See: em-values-lifted-from-live-css-scale-off-16px-body.md */
+html {
+  font-size: 0.875rem;
+}
+
 body {
   background-color: var(--color-background);
   color: var(--color-foreground);
