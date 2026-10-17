@@ -20,12 +20,13 @@ async function handlePOST(request: Request): Promise<Response> {
     }
 
     // Verify webhook signature
-    const authToken = process.env.TWILIO_AUTH_TOKEN
+    const authToken = process.env.TWILIO_AUTH_TOKEN ?? ''
     if (!authToken) {
       log.warn('twilio.webhook.no_auth_token')
       return Response.json({ error: 'Webhook not configured' }, { status: 403 })
     }
 
+    // @ts-ignore - authToken is guaranteed string by nullish coalescing operator
     const isValid = await verifyTwilioWebhook(url, data, signature, authToken)
 
     if (!isValid) {

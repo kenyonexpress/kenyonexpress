@@ -8,12 +8,8 @@ export async function verifyTwilioWebhook(
   url: string,
   data: Record<string, string>,
   signature: string,
-  authToken: string | undefined,
+  authToken: string,
 ): Promise<boolean> {
-  if (!authToken) {
-    return false
-  }
-  const token: string = authToken
 
   try {
     // Build the string to sign: URL + sorted POST parameters
@@ -26,7 +22,7 @@ export async function verifyTwilioWebhook(
     }
 
     // Compute HMAC-SHA1
-    const expectedSignature = createHmac('sha1', token).update(stringToSign).digest('base64')
+    const expectedSignature = createHmac('sha1', authToken).update(stringToSign).digest('base64')
 
     // Use timing-safe comparison to prevent timing attacks
     return timingSafeEqual(Buffer.from(expectedSignature), Buffer.from(signature))
