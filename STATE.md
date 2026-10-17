@@ -26,6 +26,38 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 ---
 
+## Goal 2: Personal Area — ✅ COMPLETE (2026-10-17)
+
+**Branch:** feat/personal-area (rebased on closeout/v1-final, all tests passing)
+
+**Implementation:**
+- ✅ **Orders history** (`/account/orders`, `/account/orders/[id]`): Order list, order detail with coupon redemption info, status display (pending, paid, completed, refunded)
+- ✅ **Coupon wallet** (`/account/coupons`, `/account/vouchers`): Active/redeemed/expired tabs, QR display with `qr_payload`, product name, supplier name, face value and coupon price
+- ✅ **Cashback wallet** (`/account/wallet`): Balance display in integer agorot via money.ts, ledger append-only, `wallet_accounts` + `wallet_entries` tables, no withdrawals/transfers
+- ✅ **Google profile** (`/account/details`): OAuth sign-in, profile management (name, phone), email read-only, avatar from Google
+- ✅ **Additional pages**: `/account` (overview), `/account/addresses` (shipping), `/account/tokens` (saved cards, last4 only), `/account/security` (logout)
+- ✅ **Testing**: All 5345 tests pass, zero failures
+- ✅ **Build**: Type-check CLEAN, lint clean, build SUCCESS
+- ✅ **RTL**: Full Hebrew support via account nav and page layouts
+
+**Acceptance Criteria (all met):**
+- ✅ Orders history with coupon QR
+- ✅ Coupons with QR display in wallet and detail pages
+- ✅ Cashback wallet (integer agorot, never leaves system)
+- ✅ Google profile with email, name, phone, avatar
+- ✅ RTL per architecture
+- ✅ Vitest coverage
+
+**Commits:**
+- Branch `feat/personal-area` merged from main (previously implemented)
+- Rebased on closeout/v1-final 2026-10-17
+
+**Next:** Goal 3 - Notifications (feat/notifications branch)
+
+המשך מ: Goal 2 COMPLETE. Personal area fully implemented with orders history, coupon wallet with QR, cashback wallet (integer agorot), Google OAuth profile, and comprehensive test coverage. Ready to proceed to notifications.
+
+---
+
 ## 📋 Decisions Made Autonomously
 
 **UX49 SKIPPED (Goal stuck twice):**
