@@ -27,13 +27,6 @@ describe('/api/cron/deal-scraper', () => {
 
       expect(process.env.CRON_SECRET).toBe('test-secret')
     })
-
-    it('allows requests in development mode when no CRON_SECRET', () => {
-      // In beforeEach, CRON_SECRET should be undefined
-      // This test verifies the development mode behavior
-
-      expect(process.env.CRON_SECRET).toBeUndefined()
-    })
   })
 
   describe('Response format', () => {

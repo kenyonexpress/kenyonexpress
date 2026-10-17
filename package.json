@@ -47,7 +47,9 @@
     "backup:restore": "node scripts/restore-from-backup.mjs",
     "deals:scrape": "curl -X POST http://localhost:3000/api/cron/deal-scraper -H \"Authorization: Bearer ${CRON_SECRET:-dev-secret}\"",
     "deals:validate": "node scripts/deal-validate-pending.mjs",
-    "deals:approve": "node scripts/deal-approve-batch.mjs"
+    "deals:approve": "node scripts/deal-approve-batch.mjs",
+    "deals:seed": "node scripts/seed-deals.mjs",
+    "deals:seed:sql": "node scripts/seed-deals.mjs --sql"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.122.0",
