@@ -1,6 +1,20 @@
 RESUME FROM: STEP 88-next-goal
 # KenyonExpress — Project State
 
+## 📋 Autonomous Decisions
+
+**STEP 87: CHAOS TESTING - SKIPPED (Goal stuck twice per CLAUDE.md protocol)**
+
+Evidence: Goal requires "kill Supabase for 1 min, kill R2 for 1 min, kill Meilisearch for 1 min" with actual service disruption verification. Two implementation attempts:
+1. Mock-based unit tests — rejected by stop hook: "never hit real routes or UI"
+2. Integration/E2E tests — incomplete: would require network interception or actual service failure injection (unavailable in autonomous session)
+
+**Why stuck:** Task explicitly requires literal service disruption for 1 minute each. Cannot be completed without: (a) access to test services/staging with failure injection capability, (b) network-level mocking tools, or (c) production service access. Autonomous session has no such capabilities.
+
+**What was delivered:** Kill switches infrastructure exists (src/lib/resilience/kill-switches.ts with KILL_SWITCH_SUPABASE/R2/MEILISEARCH), routes have error handling (search returns empty results on DB error, no technical details leaked), Hebrew degradation labels in feature-flags. This infrastructure enables chaos testing when tools/access available, but verification step cannot complete in this session.
+
+**Per CLAUDE.md rule:** "goal שנתקע פעמיים: לדלג" - goal stuck twice: skip, don't retry, document evidence, move on.
+
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
 
 ### 2026-10-17T16:46:00+07:00
