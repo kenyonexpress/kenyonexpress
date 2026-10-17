@@ -55,6 +55,7 @@ export const REACT_STREAMING_SCRIPT_HASHES = Object.freeze([
   'sha256-P474TMB+UhYEjz53cp6dWHUHryu6ZXlvKlUWx7Oy0Vk=',
   'sha256-rimaae54utIpqXy4SfzTCYOBzW44nNmADdqfIGg1pkE=',
   'sha256-Dg/gjlPqSTWzjJugJdXkv3DqTtnEdcJgA+xG1tOtA2Q=',
+  'sha256-NDWPU7P2kxYORIDs+YPoKGb/r8ePBkLxwjnJHfCHaJo=',
 ])
 
 /** Every hash the document policy carries, in the order it emits them. */
