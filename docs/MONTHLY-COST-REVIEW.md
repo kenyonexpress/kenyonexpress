@@ -9,15 +9,15 @@
 | R2 (Storage) | $0.00 | |
 | Meilisearch | $0.00 | |
 | Resend (Email API) | $1.00 | |
-| Twilio (SMS) | $5.63 | |
+| Twilio (SMS) | $4.75 | |
 
-**Total MRR:** $64.63
+**Total MRR:** $63.75
 
 ## Service Breakdown
 
 ### Vercel
 - **Base (Pro):** $20.00
-- **Web Analytics:** $13.00
+- **Web Analytics:** $0.00
 - **Total:** $33.00
 
 ### Supabase
@@ -44,13 +44,13 @@
 - **SMS rate (in/out):** $0.01/SMS
 - **Phone number:** $1.00/month
 - **Estimated volume:** 500 SMS/month
-- **Total:** $5.63
+- **Total:** $4.75
 
 ## Month-over-Month Analysis
 
 | Metric | Previous | Current | Change |
 |--------|----------|---------|--------|
-| **Total MRR** | $64.63 | $64.63 | ➡️ No change
+| **Total MRR** | $63.75 | $63.75 | ➡️ No change
 | | | | |
 
 ## Recommendations & Notes

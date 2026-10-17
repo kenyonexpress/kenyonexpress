@@ -9,12 +9,12 @@
         "R2 (Storage)": 0,
         "Meilisearch": 0,
         "Resend (Email API)": 1,
-        "Twilio (SMS)": 5.63
+        "Twilio (SMS)": 4.75
       },
-      "total": 64.63,
+      "total": 63.75,
       "breakdown": {
         "variable": 0,
-        "recurring": 64.63
+        "recurring": 63.75
       }
     }
   ]

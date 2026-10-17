@@ -16,6 +16,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { fetchAllCosts } from './lib/cost-apis.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const docsDir = path.join(__dirname, '..', 'docs')
@@ -60,8 +61,8 @@ const PRICING = {
     sms_outbound: 0.0075, // Per outbound SMS
     phone_number: 1.0, // Per phone number per month
     estimated_sms: 500, // Estimated monthly SMS
-    subtotal: 5.63, // (500 × $0.0075) + $1.00 phone
-    description: '~500 SMS × $0.0075 + $1.00 phone number = $5.63',
+    subtotal: 4.75, // (500 × $0.0075) + $1.00 phone
+    description: '~500 SMS × $0.0075 + $1.00 phone number = $4.75',
   },
 }
 
@@ -240,6 +241,34 @@ async function main() {
   console.log('📊 Monthly Cost Review for KenyonExpress')
   console.log(`📅 Month: ${MONTH}`)
   console.log(`📍 Date: ${TODAY}\n`)
+
+  console.log('🔍 Fetching real costs from vendor APIs...')
+  const apiCosts = await fetchAllCosts()
+
+  // Override hardcoded pricing with measured data
+  if (apiCosts.vercel) {
+    PRICING.vercel.hosting = apiCosts.vercel.base || 20
+    PRICING.vercel.analytics = apiCosts.vercel.analytics || 0
+    PRICING.vercel.subtotal = apiCosts.vercel.monthly
+  }
+
+  if (apiCosts.supabase) {
+    PRICING.supabase.pro_base = apiCosts.supabase.monthly
+    PRICING.supabase.pitr_addon = apiCosts.supabase.pitr_cost || 0
+    PRICING.supabase.subtotal = apiCosts.supabase.total || apiCosts.supabase.monthly
+  }
+
+  if (apiCosts.r2) {
+    PRICING.r2.monthly = apiCosts.r2.monthly_cost
+  }
+
+  if (apiCosts.resend) {
+    PRICING.resend.subtotal = apiCosts.resend.monthly_cost
+  }
+
+  if (apiCosts.twilio) {
+    PRICING.twilio.subtotal = apiCosts.twilio.monthly_cost
+  }
 
   // Load history
   const history = loadHistoryData()
