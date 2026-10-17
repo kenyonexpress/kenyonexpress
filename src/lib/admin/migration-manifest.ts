@@ -70,6 +70,12 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
   },
   {
     number: '132',
+    file: '132_sms_marketing.sql',
+    state: 'pending',
+    hasPreflight: false,
+  },
+  {
+    number: '132',
     file: '132_search_index_outbox.sql',
     state: 'applied',
     hasPreflight: false,
@@ -367,5 +373,23 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
     file: '188_search_analytics.sql',
     state: 'pending',
     hasPreflight: true,
+  },
+  {
+    number: '189',
+    file: '189_affiliate_program.sql',
+    state: 'pending',
+    hasPreflight: false,
+  },
+  {
+    number: '190',
+    file: '190_partner_api_infrastructure.sql',
+    state: 'pending',
+    hasPreflight: true,
+  },
+  {
+    number: '192',
+    file: '192_notification_history.sql',
+    state: 'pending',
+    hasPreflight: false,
   },
 ] as const

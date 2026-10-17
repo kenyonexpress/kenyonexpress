@@ -55,7 +55,7 @@ export default function AffiliateSignupPage() {
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white" dir="rtl">
       <div className="max-w-4xl mx-auto px-4 py-12">
         <div className="bg-white rounded-lg shadow-lg p-8 md:p-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">תוכנית שותפים - קנyon Express</h1>
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">תוכנית שותפים - קניון אקספרס</h1>
 
           <p className="text-lg text-gray-600 mb-8">
             הצטרף לתוכנית השותפים שלנו וירוויח עמלות על כל הזמנה שתגיע דרך הקישור הייחודי שלך.
