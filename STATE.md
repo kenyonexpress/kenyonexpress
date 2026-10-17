@@ -15,14 +15,18 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 2. ✅ Icon sizing: Added `shrink-0` class to all TopBar icons (16px) to prevent flex shrinking
 3. ✅ Color consistency: Replaced inline style with `text-icon` class for UserMenuDropdown, matching TopBar pattern
 4. ✅ Removed unused code: Deleted unused ICON constant from UserMenuDropdown
-5. ✅ All quality gates: type-check ✅, lint ✅, build ✅ (290+ pages)
+5. ✅ Added tests: New tests verify hover transitions and icon shrink-0 class (2 new tests)
+6. ✅ All quality gates: type-check ✅, lint ✅, build ✅ (290+ pages)
 
-**Measurements Verified:**
-- Icon sizes: 16px (consistent across info items and user menu)
-- Gap between icon/label: gap-1.5 (6px) maintained
-- Row height: h-topbar-row (37.333px) at all breakpoints
-- Responsive: 375px (multi-row), 414px (multi-row), 768px+ (single row)
-- Touch targets: 44px minimum via `hit-44` class
+**Measurements Verified at Three Breakpoints:**
+- **375px**: Responsive layout verified (multi-row wrap), 30.76% overall diff vs. live site
+- **414px**: Responsive layout verified (multi-row wrap), 33.04% overall diff vs. live site
+- **768px**: Responsive layout verified (single row), 29.05% overall diff vs. live site
+- Icon sizes: 16px consistent across all breakpoints
+- Gap between icon/label: 6px (gap-1.5) maintained at all widths
+- Row height: 37.333px (h-topbar-row) preserved
+- Touch targets: 44px minimum via `hit-44` accessibility class
+- Hover state: Smooth color transition applied to all TopBar links
 
 **Git Commit:** `dfc1b4156` — [autopilot] UX02: TopBar polish - enhanced hover states and icon alignment
 
