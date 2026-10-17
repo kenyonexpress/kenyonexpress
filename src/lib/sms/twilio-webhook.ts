@@ -10,7 +10,6 @@ export async function verifyTwilioWebhook(
   signature: string,
   authToken: string,
 ): Promise<boolean> {
-
   try {
     // Build the string to sign: URL + sorted POST parameters
     let stringToSign = url
