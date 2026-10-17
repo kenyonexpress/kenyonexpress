@@ -1,12 +1,12 @@
 'use client'
 
-import { useState } from 'react'
 import {
   subscribeToStockNotification,
   unsubscribeFromStockNotification,
 } from '@/server/actions/stock-notifications'
 import { Bell, BellOff } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 
 interface NotifyMeButtonProps {
   productId: string
@@ -64,6 +64,7 @@ export default function NotifyMeButton({
   return (
     <div className="flex flex-col gap-2">
       <button
+        type="button"
         onClick={handleToggle}
         disabled={isLoading}
         className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${

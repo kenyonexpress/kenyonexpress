@@ -8,8 +8,8 @@ import ProductInfo from '@/components/storefront/ProductInfo'
 import ProductStickyCartBar from '@/components/storefront/ProductStickyCartBar'
 import RelatedProducts from '@/components/storefront/RelatedProducts'
 import ShippingInfo from '@/components/storefront/ShippingInfo'
-import StockScarcity from '@/components/storefront/StockScarcity'
 import StockNotificationWrapper from '@/components/storefront/StockNotificationWrapper'
+import StockScarcity from '@/components/storefront/StockScarcity'
 import SupplierInfo from '@/components/storefront/SupplierInfo'
 import {
   resolveStorefrontProductType,

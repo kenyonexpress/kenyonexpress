@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { updateTag } from 'next/cache'
+
 import { log } from '@/lib/observability/log'
 
 export async function subscribeToStockNotification(
@@ -56,7 +57,7 @@ export async function subscribeToStockNotification(
       return { success: false, error: 'Failed to subscribe' }
     }
 
-    updateTag('product_' + productId)
+    updateTag(`product_${productId}`)
     return { success: true }
   } catch (error) {
     log.error('stock.subscribe_error', {
