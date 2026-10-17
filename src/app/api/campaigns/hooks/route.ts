@@ -176,10 +176,8 @@ async function handlePOST(req: NextRequest): Promise<Response> {
       throw new Error(`Failed to verify segment: ${segmentError.message}`)
     }
 
-    // biome-ignore lint/suspicious/noExplicitAny: Supabase RPC returns dynamic data
-    const isInSegment = ((userSegments as any) || []).some(
-      (s: any) => s.segment_type === segment_type,
-    )
+    const segments = (userSegments || []) as UserSegmentInfo[]
+    const isInSegment = segments.some((s: UserSegmentInfo) => s.segment_type === segment_type)
 
     if (!isInSegment) {
       return Response.json(

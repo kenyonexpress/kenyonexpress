@@ -33,12 +33,16 @@ describe('GET /api/mobile/products/[slug]', () => {
       eq: vi.fn().mockReturnValue(mockChain),
     }
 
-    const mockClient = {
+    type MockClient = {
+      from: ReturnType<typeof vi.fn>
+    }
+    const mockClient: MockClient = {
       from: vi.fn().mockReturnValue({
         select: vi.fn().mockReturnValue(mockSelect),
       }),
     }
 
+    // biome-ignore lint/suspicious/noExplicitAny: Mock type compatibility in tests
     vi.mocked(createPublicClient).mockReturnValue(mockClient as any)
 
     const request = new NextRequest('http://localhost/api/mobile/products/test-product')
@@ -63,12 +67,16 @@ describe('GET /api/mobile/products/[slug]', () => {
       eq: vi.fn().mockReturnValue(mockChain),
     }
 
-    const mockClient = {
+    type MockClient = {
+      from: ReturnType<typeof vi.fn>
+    }
+    const mockClient: MockClient = {
       from: vi.fn().mockReturnValue({
         select: vi.fn().mockReturnValue(mockSelect),
       }),
     }
 
+    // biome-ignore lint/suspicious/noExplicitAny: Mock type compatibility in tests
     vi.mocked(createPublicClient).mockReturnValue(mockClient as any)
 
     const request = new NextRequest('http://localhost/api/mobile/products/nonexistent')
@@ -107,12 +115,16 @@ describe('GET /api/mobile/products/[slug]', () => {
       eq: vi.fn().mockReturnValue(mockChain),
     }
 
-    const mockClient = {
+    type MockClient = {
+      from: ReturnType<typeof vi.fn>
+    }
+    const mockClient: MockClient = {
       from: vi.fn().mockReturnValue({
         select: vi.fn().mockReturnValue(mockSelect),
       }),
     }
 
+    // biome-ignore lint/suspicious/noExplicitAny: Mock type compatibility in tests
     vi.mocked(createPublicClient).mockReturnValue(mockClient as any)
 
     const request = new NextRequest('http://localhost/api/mobile/products/test-product')

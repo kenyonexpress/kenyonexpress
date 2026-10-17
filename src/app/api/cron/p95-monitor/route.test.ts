@@ -70,7 +70,7 @@ describe('P95 Monitor Cron', () => {
       vi.mocked(p95Monitor.checkSustainedViolations).mockResolvedValueOnce(mockViolations)
       vi.mocked(p95Monitor.createPerformanceTicket).mockResolvedValueOnce('#123')
       vi.mocked(p95Monitor.cleanupOldSamples).mockResolvedValueOnce(true)
-      vi.mocked(ntfyAlert.sendNtfyAlert).mockResolvedValueOnce(true as any)
+      vi.mocked(ntfyAlert.sendNtfyAlert).mockResolvedValueOnce(true)
 
       const mockAdmin = {
         from: vi.fn().mockReturnValue({
