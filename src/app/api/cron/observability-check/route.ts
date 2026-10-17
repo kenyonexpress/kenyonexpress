@@ -212,13 +212,15 @@ async function handleGET(request: NextRequest) {
           .limit(1)
 
         if (alertRecord.data && alertRecord.data.length > 0) {
-          await admin
-            .from('observability.sla_alerts')
-            .update({
-              notified_at: new Date().toISOString(),
-              notification_sent: true,
-            })
-            .eq('id', alertRecord.data[0].id)
+          if (alertRecord.data?.[0]?.id) {
+            await admin
+              .from('observability.sla_alerts')
+              .update({
+                notified_at: new Date().toISOString(),
+                notification_sent: true,
+              })
+              .eq('id', alertRecord.data[0].id)
+          }
         }
       }
     }

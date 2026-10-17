@@ -66,7 +66,6 @@ export async function checkSustainedViolations(): Promise<P95Violation[]> {
       .from('observability.p95_latency_samples')
       .select('endpoint_path, method')
       .gte('sample_time', new Date(Date.now() - 15 * 60 * 1000).toISOString())
-      .distinct()
 
     if (routesError) {
       console.error('[p95-monitor] Failed to fetch routes:', routesError)
@@ -99,19 +98,26 @@ export async function checkSustainedViolations(): Promise<P95Violation[]> {
 
         if (allViolated && samples.length >= 3) {
           // At least 3 samples over 15 minutes indicates sustained condition
-          const firstSample = new Date(samples[0].sample_time)
-          const lastSample = new Date(samples[samples.length - 1].sample_time)
-          const durationMinutes = Math.round((lastSample.getTime() - firstSample.getTime()) / 60000)
+          const firstSampleTime = samples[0]?.sample_time
+          const lastSampleTime = samples[samples.length - 1]?.sample_time
 
-          if (durationMinutes >= 15) {
-            violations.push({
-              endpoint_path: route.endpoint_path,
-              method: route.method,
-              p95_ms: Math.round(samples.reduce((sum, s) => sum + s.p95_ms, 0) / samples.length),
-              duration_minutes: durationMinutes,
-              started_at: samples[0].sample_time,
-              sustained: true,
-            })
+          if (firstSampleTime && lastSampleTime) {
+            const firstSample = new Date(firstSampleTime)
+            const lastSample = new Date(lastSampleTime)
+            const durationMinutes = Math.round(
+              (lastSample.getTime() - firstSample.getTime()) / 60000,
+            )
+
+            if (durationMinutes >= 15) {
+              violations.push({
+                endpoint_path: route.endpoint_path,
+                method: route.method,
+                p95_ms: Math.round(samples.reduce((sum, s) => sum + s.p95_ms, 0) / samples.length),
+                duration_minutes: durationMinutes,
+                started_at: firstSampleTime,
+                sustained: true,
+              })
+            }
           }
         }
       }

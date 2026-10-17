@@ -191,7 +191,7 @@ describe('P95 Monitor', () => {
       const samples = await getP95Samples('/api/products', 'GET')
 
       expect(samples.length).toBe(1)
-      expect(samples[0].p95_ms).toBe(250)
+      expect(samples[0]?.p95_ms).toBe(250)
     })
   })
 

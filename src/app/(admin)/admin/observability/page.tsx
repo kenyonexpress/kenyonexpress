@@ -104,24 +104,30 @@ export default async function ObservabilityPage() {
               icon="📊"
               status={metrics.length > 0 ? 'connected' : 'pending'}
             />
-            <IntegrationCard
-              name="Sentry Errors"
-              value={integrations.sentry.totalEvents}
-              icon="🚨"
-              status={integrations.sentry.totalEvents > 0 ? 'connected' : 'configured'}
-            />
-            <IntegrationCard
-              name="PostHog Events"
-              value={integrations.posthog.eventVolume}
-              icon="📈"
-              status={integrations.posthog.eventVolume > 0 ? 'connected' : 'configured'}
-            />
-            <IntegrationCard
-              name="Vercel Analytics"
-              value={integrations.vercel.deployments}
-              icon="▲"
-              status={integrations.vercel.deployments > 0 ? 'connected' : 'configured'}
-            />
+            {integrations.sentry && (
+              <IntegrationCard
+                name="Sentry Errors"
+                value={integrations.sentry.totalEvents}
+                icon="🚨"
+                status={integrations.sentry.totalEvents > 0 ? 'connected' : 'configured'}
+              />
+            )}
+            {integrations.posthog && (
+              <IntegrationCard
+                name="PostHog Events"
+                value={integrations.posthog.eventVolume}
+                icon="📈"
+                status={integrations.posthog.eventVolume > 0 ? 'connected' : 'configured'}
+              />
+            )}
+            {integrations.vercel && (
+              <IntegrationCard
+                name="Vercel Analytics"
+                value={integrations.vercel.deployments}
+                icon="▲"
+                status={integrations.vercel.deployments > 0 ? 'connected' : 'configured'}
+              />
+            )}
           </div>
         </section>
 
@@ -244,38 +250,46 @@ export default async function ObservabilityPage() {
         <section className="rounded-lg border border-gray-700 bg-gray-800 p-6">
           <h2 className="mb-6 text-xl font-bold">Integration Details</h2>
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            <IntegrationDetail
-              name="Sentry"
-              data={{
-                'Total Events': integrations.sentry.totalEvents,
-                'Error Rate': `${integrations.sentry.errorRate.toFixed(2)}%`,
-                'Critical Errors': integrations.sentry.criticalErrors,
-              }}
-            />
-            <IntegrationDetail
-              name="PostHog"
-              data={{
-                'Active Users': integrations.posthog.activeUsers,
-                'Conversion Rate': `${integrations.posthog.conversionRate.toFixed(2)}%`,
-                'Event Volume': integrations.posthog.eventVolume,
-              }}
-            />
-            <IntegrationDetail
-              name="Axiom Logs"
-              data={{
-                'Log Volume': integrations.axiom.logVolume,
-                'Avg Latency': `${integrations.axiom.avgLogLatency.toFixed(0)}ms`,
-                'Error Logs': integrations.axiom.errorLogs,
-              }}
-            />
-            <IntegrationDetail
-              name="Vercel Analytics"
-              data={{
-                Deployments: integrations.vercel.deployments,
-                'Avg Response': `${integrations.vercel.avgResponseTime.toFixed(0)}ms`,
-                Bandwidth: `${(integrations.vercel.bandwidth / 1024 / 1024).toFixed(2)}GB`,
-              }}
-            />
+            {integrations.sentry && (
+              <IntegrationDetail
+                name="Sentry"
+                data={{
+                  'Total Events': integrations.sentry.totalEvents,
+                  'Error Rate': `${integrations.sentry.errorRate.toFixed(2)}%`,
+                  'Critical Errors': integrations.sentry.criticalErrors,
+                }}
+              />
+            )}
+            {integrations.posthog && (
+              <IntegrationDetail
+                name="PostHog"
+                data={{
+                  'Active Users': integrations.posthog.activeUsers,
+                  'Conversion Rate': `${integrations.posthog.conversionRate.toFixed(2)}%`,
+                  'Event Volume': integrations.posthog.eventVolume,
+                }}
+              />
+            )}
+            {integrations.axiom && (
+              <IntegrationDetail
+                name="Axiom Logs"
+                data={{
+                  'Log Volume': integrations.axiom.logVolume,
+                  'Avg Latency': `${integrations.axiom.avgLogLatency.toFixed(0)}ms`,
+                  'Error Logs': integrations.axiom.errorLogs,
+                }}
+              />
+            )}
+            {integrations.vercel && (
+              <IntegrationDetail
+                name="Vercel Analytics"
+                data={{
+                  Deployments: integrations.vercel.deployments,
+                  'Avg Response': `${integrations.vercel.avgResponseTime.toFixed(0)}ms`,
+                  Bandwidth: `${(integrations.vercel.bandwidth / 1024 / 1024).toFixed(2)}GB`,
+                }}
+              />
+            )}
           </div>
         </section>
       </main>
@@ -406,12 +420,12 @@ function AlertItem({
     critical: 'bg-red-900',
   }[alert.severity]
 
-  const typeEmoji =
-    {
-      p95_exceeded: '⚡',
-      error_rate_high: '⚠️',
-      downtime: '🔴',
-    }[alert.alert_type as keyof typeof typeEmoji] || '❓'
+  const emojiMap = {
+    p95_exceeded: '⚡',
+    error_rate_high: '⚠️',
+    downtime: '🔴',
+  } as const
+  const typeEmoji = emojiMap[alert.alert_type as keyof typeof emojiMap] || '❓'
 
   return (
     <div className={`rounded-lg border border-gray-700 p-4 ${severityColor} bg-opacity-30`}>

@@ -125,8 +125,11 @@ describe('observability/ntfy-alert', () => {
       await sendNtfyAlert(payload)
 
       const callArgs = mockFetch.mock.calls[0]
-      const headers = callArgs[1]?.headers as Record<string, string>
-      expect(headers.Priority).toBe('high')
+      expect(callArgs).toBeDefined()
+      if (callArgs) {
+        const headers = callArgs[1]?.headers as Record<string, string>
+        expect(headers.Priority).toBe('high')
+      }
     })
   })
 
@@ -206,7 +209,7 @@ describe('observability/ntfy-alert', () => {
       const summary = buildHealthSummary(10, 0, 0)
       expect(summary.severity).toBe('info')
       expect(summary.endpoint).toBe('System Health')
-      expect(summary.alert_type).toBe('error_rate_high')
+      expect(summary.alertType).toBe('error_rate_high')
     })
 
     it('should build yellow summary when endpoints degraded', () => {
@@ -221,9 +224,9 @@ describe('observability/ntfy-alert', () => {
 
     it('should include correct status in metric value', () => {
       const summary = buildHealthSummary(5, 3, 2)
-      expect(summary.metric_value).toContain('5 healthy')
-      expect(summary.metric_value).toContain('3 degraded')
-      expect(summary.metric_value).toContain('2 down')
+      expect(summary.metricValue).toContain('5 healthy')
+      expect(summary.metricValue).toContain('3 degraded')
+      expect(summary.metricValue).toContain('2 down')
     })
   })
 })
