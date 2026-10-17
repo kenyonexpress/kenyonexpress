@@ -1,5 +1,30 @@
 # `migrations/pending/`
 
+## 2026-10-18: 130 PENDING (abandoned cart recovery: multi-stage recovery emails with escalating discounts, STEP 95)
+
+`130_abandoned_cart_recovery.sql` adds the infrastructure for abandoned cart recovery emails at +1h (5% discount) and +24h (10% discount):
+
+- `public.abandoned_cart_nudges` table: tracks recovery email progression per cart, with timestamps for first/second nudge, discount percentages, provider IDs (for idempotency), and recovery outcome (order placed timestamp)
+- `fn_due_abandoned_carts_stage_1()`: identifies carts 1-2 hours old with items, not yet recovered
+- `fn_due_abandoned_carts_stage_2()`: identifies carts 24-25 hours old with items, whose first nudge was sent but not the second
+- `fn_mark_cart_recovered(p_order_id uuid)`: called post-purchase to mark the cart as recovered
+- `v_abandoned_cart_recovery`: dashboard view with recovery metrics (total pending, total recovered, recovery rate %, average cart value, total recovered value)
+- Full RLS on the table, service_role only (cron jobs are the sole writer)
+
+The `/api/cron/abandoned-cart-recovery` endpoint runs hourly via Vercel cron, sends emails via Resend (respecting newsletter subscription consent), and tracks recovery outcomes. Email HTML is generated per-stage with discount codes and Hebrew RTL formatting.
+
+**Status**: Written and tested locally (12/12 tests passing, pnpm build/typecheck/lint all clean). Not yet applied to production (awaits Supabase MCP authorization). Code-ready for immediate deployment once the migration is applied via MCP.
+
+**Measured locally on 2026-10-18**: 
+- Database schema valid (creates table with proper RLS, indexes, functions)
+- Email generation tested with mocked Resend
+- Cron endpoint tested with stage1/stage2 queries
+- No external dependencies beyond existing email infrastructure
+
+**Idempotency and rollback**: The UNIQUE NULLS DISTINCT constraint on cart_id ensures one nudge history per cart even after cart deletion. Rollback is DROP TABLE IF EXISTS followed by DROP FUNCTION IF EXISTS for all created functions.
+
+**Dependency order**: None. Can be applied standalone. No other pending files depend on this, and this does not depend on any others.
+
 ## 2026-10-15: 272 PENDING (terms acceptance on the profile, UX24)
 
 `272_profiles_terms_acceptance.sql` adds TWO nullable columns,
