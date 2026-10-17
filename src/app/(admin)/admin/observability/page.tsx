@@ -1,12 +1,18 @@
+import { requireSection } from '@/lib/admin/rbac'
 import { fetchUnifiedObservability } from '@/lib/observability/integrations'
 import { getEndpointMetrics, getUnresolvedAlerts } from '@/lib/observability/metrics'
 import { AlertCircle, BarChart3, Zap } from 'lucide-react'
+
+export const metadata = { title: 'Observability Dashboard' }
 
 /**
  * Server-rendered observability dashboard combining all integration data
  * Displays endpoint metrics, SLA status, and alerts with real-time data
  */
 export default async function ObservabilityPage() {
+  // Guard: require admin access to observability dashboard
+  await requireSection('observability')
+
   // Fetch all data in parallel
   const [metrics, alerts, integrations] = await Promise.all([
     getEndpointMetrics(),
