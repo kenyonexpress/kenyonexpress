@@ -18,6 +18,7 @@ allowBuilds:
   # Transitive via @lhci/cli. Its postinstall only rewrites a version stamp.
   protobufjs: false
   sharp: true
+  snyk: set this to true or false
 
 # One sharp for the whole tree.
 #

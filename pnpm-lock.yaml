@@ -217,6 +217,9 @@ importers:
       lint-staged:
         specifier: ^15.3.0
         version: 15.5.2
+      snyk:
+        specifier: ^1.1308.1
+        version: 1.1308.1
       tailwindcss:
         specifier: ^4
         version: 4.3.0
@@ -5785,6 +5788,15 @@ packages:
     resolution: {integrity: sha512-rVwroHPZcnH1xPYUwwkw89epxToW3bm2Qwo6EtcSjGQ17MD9mnLAoGvN1PcKbJSLDwNeMGcG26SdvFsOEbfIFA==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24.0.0, npm: '>=10'}
     hasBin: true
+
+  snyk@1.1308.1:
+    resolution: {integrity: sha512-uXfDnZ9ixMyg+Zc4QEDZ/tJI/BpQdPAigUqg/gQuaW8dD7shHBaaiSRmHJ7jF0HyVYp58LoJRhpkTq4RLzgDsg==}
+    engines: {node: '>=12'}
+    hasBin: true
+    bundledDependencies:
+      - global-agent
+      - roarr
+      - boolean
 
   socks-proxy-agent@8.0.5:
     resolution: {integrity: sha512-HehCEsotFqbPW9sJ8WVYB6UbmIMv7kUUORIF2Nncq4VQvBfNBLibW9YZR5dlYCSUhwcD628pRllm7n+E+YTzJw==}
@@ -12517,6 +12529,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
     optional: true
+
+  snyk@1.1308.1:
+    dependencies:
+      '@sentry/node': 7.120.4
 
   socks-proxy-agent@8.0.5:
     dependencies:
