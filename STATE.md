@@ -1,6 +1,4 @@
 RESUME FROM: STEP 86-next-goal
-
-המשך מ: STEP 85 (10-17 15:11)
 # KenyonExpress — Project State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
