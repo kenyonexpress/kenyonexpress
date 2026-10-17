@@ -1,7 +1,11 @@
-RESUME FROM: STEP 79-affiliate-program
+RESUME FROM: STEP 82-next-goal
 # KenyonExpress — Project State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-10-17T13:31:00+07:00
+- item: STEP 81-mobile-app-foundation
+- RESULT: DONE (PWA hardening and Capacitor setup for native iOS/Android App Store submission. Capacitor 8.5.3 configured with brand yellow splash screen, HTTPS enforcement, status bar & push notification plugins. Build scripts: mobile:build:web, mobile:sync, mobile:ios:build/open, mobile:android:build/open, mobile:verify. Comprehensive documentation: docs/MOBILE-APP-SETUP.md (32KB with project structure, build workflow, PWA security, testing checklist), docs/CODE-SIGNING.md (28KB with iOS provisioning profiles/certificates, Android keystore, compliance). Verification script (scripts/mobile/verify-build-config.mjs) validates config, dependencies, PWA setup, system requirements with clear error reporting. Test suite (20+ cases) covers Capacitor config, security settings, brand colors, PWA integration. All gates pass: pnpm test ✓, type-check ✓, lint ✓ (2824 files), build ✓ (278 CSP shells). Commit: 979962255)
 
 ### 2026-10-17T12:05:00+07:00
 - item: STEP 78-sms-marketing
