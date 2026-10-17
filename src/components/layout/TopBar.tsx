@@ -66,14 +66,14 @@ function InfoItem({ Icon, label, href }: InfoItemProps) {
           and the computed `i` boxes are 16x16 at y=12 in a 37px row. The 6px
           `gap-1.5` is live's own `margin-left:6px` on the same rule, written as
           the logical gap it is. */}
-      <Icon size={16} aria-hidden="true" />
+      <Icon size={16} aria-hidden="true" className="shrink-0" />
       {label}
     </>
   )
   return href ? (
     <Link
       href={href}
-      className="hit-44 flex h-topbar-row items-center gap-1.5 transition-opacity hover:opacity-70"
+      className="hit-44 flex h-topbar-row items-center gap-1.5 transition-colors duration-200 hover:text-heading"
     >
       {body}
     </Link>
