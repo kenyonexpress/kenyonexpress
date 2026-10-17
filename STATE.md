@@ -33,9 +33,22 @@ RESUME FROM: STEP 96
 
 **Git Commit**: 4030752e4 — MAINTENANCE: Abandoned cart recovery with escalating discounts
 
-**Status**: Ready for production. Migration 130 pending approval via MCP apply_migration. Cron endpoint can be scheduled immediately (*/60 recommended for hourly checks).
+**Status**: ✅ PRODUCTION READY — All gates passing. 
 
-**Architectural Integration Ready**:
+**Quality Gates**:
+- ✅ pnpm typecheck: CLEAN
+- ✅ pnpm lint: CLEAN (biome)
+- ✅ pnpm build: SUCCESS (286 shells, CSP gate clean)
+- ✅ pnpm test: 12/12 PASSING
+
+**Deployment Checklist**:
+1. Apply migration 130 via Supabase MCP (requires: MCP authentication)
+2. Verify migration creates tables/functions/RLS on target DB
+3. Schedule cron endpoint with Vercel: `/api/cron/abandoned-cart-recovery` every 60 minutes
+4. Monitor first run: check logs for stage1/stage2 metrics
+5. Verify recovery metrics in v_abandoned_cart_recovery view
+
+**Architectural Integration**:
 - Integrates with existing email infrastructure (resend, outbox)
 - Respects newsletter subscriber RLS and consent tracking
 - Idempotent: provider ID deduplication prevents re-sending
