@@ -123,6 +123,14 @@ describe('Cache Purge API Route', () => {
   })
 
   describe('GET /api/cache/purge', () => {
+    beforeEach(() => {
+      process.env.VERCEL_CDN_REGIONS = undefined
+    })
+
+    afterEach(() => {
+      process.env.VERCEL_CDN_REGIONS = undefined
+    })
+
     it('returns health status without cron header', async () => {
       const request = new NextRequest('http://localhost:3000/api/cache/purge', {
         method: 'GET',

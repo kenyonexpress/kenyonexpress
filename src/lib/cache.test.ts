@@ -83,10 +83,14 @@ describe('cache utilities', () => {
   describe('sendCachePurgeRequest', () => {
     beforeEach(() => {
       vi.stubGlobal('fetch', vi.fn())
+      process.env.VERCEL_TOKEN = undefined
+      process.env.VERCEL_PROJECT_ID = undefined
     })
 
     afterEach(() => {
       vi.unstubAllGlobals()
+      process.env.VERCEL_TOKEN = undefined
+      process.env.VERCEL_PROJECT_ID = undefined
     })
 
     it('sends cache purge request with valid tokens', async () => {
@@ -113,14 +117,9 @@ describe('cache utilities', () => {
           }),
         }),
       )
-
-      vi.clearAllMocks()
-      process.env.VERCEL_TOKEN = undefined
-      process.env.VERCEL_PROJECT_ID = undefined
     })
 
     it('skips purge if VERCEL_TOKEN not set', async () => {
-      process.env.VERCEL_TOKEN = undefined
       process.env.VERCEL_PROJECT_ID = 'test-project'
 
       const mockFetch = vi.fn()
@@ -134,7 +133,6 @@ describe('cache utilities', () => {
 
     it('skips purge if VERCEL_PROJECT_ID not set', async () => {
       process.env.VERCEL_TOKEN = 'test-token'
-      process.env.VERCEL_PROJECT_ID = undefined
 
       const mockFetch = vi.fn()
       vi.stubGlobal('fetch', mockFetch)
