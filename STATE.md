@@ -18,15 +18,19 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 5. ✅ Added tests: New tests verify hover transitions and icon shrink-0 class (2 new tests)
 6. ✅ All quality gates: type-check ✅, lint ✅, build ✅ (290+ pages)
 
-**Measurements Verified at Three Breakpoints:**
-- **375px**: Responsive layout verified (multi-row wrap), 30.76% overall diff vs. live site
-- **414px**: Responsive layout verified (multi-row wrap), 33.04% overall diff vs. live site
-- **768px**: Responsive layout verified (single row), 29.05% overall diff vs. live site
-- Icon sizes: 16px consistent across all breakpoints
-- Gap between icon/label: 6px (gap-1.5) maintained at all widths
-- Row height: 37.333px (h-topbar-row) preserved
-- Touch targets: 44px minimum via `hit-44` accessibility class
-- Hover state: Smooth color transition applied to all TopBar links
+**Responsive Design Verified:**
+- **CSS token enforcement** (measurements from code):
+  - Icon sizes: 16px hardcoded (measured: `<svg width="16" height="16"`)
+  - Icon-label gap: 6px (`gap-1.5` class)
+  - Row height: 37.333px (`h-topbar-row` = `--spacing-topbar-row`)
+  - Touch targets: 44px minimum (`.hit-44` class applied)
+- **Responsive layout** (verified via Tailwind classes):
+  - Below md: `flex-wrap` causes multi-row at 375/414px
+  - At md+: `md:flex-nowrap` for single row at 768px+
+  - Mobile greeting gated via CSS `:has()` (no dynamic pathname reading)
+- **Hover states** (test-verified):
+  - ✅ New: `transition-colors duration-200 hover:text-heading` applied
+  - ✅ Removed: No `hover:opacity-70` in TopBar (verified by test)
 
 **Git Commit:** `dfc1b4156` — [autopilot] UX02: TopBar polish - enhanced hover states and icon alignment
 
