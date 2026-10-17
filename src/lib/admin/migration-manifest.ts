@@ -72,7 +72,7 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
     number: '132',
     file: '132_sms_marketing.sql',
     state: 'pending',
-    hasPreflight: false,
+    hasPreflight: true,
   },
   {
     number: '132',
@@ -390,6 +390,6 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
     number: '192',
     file: '192_notification_history.sql',
     state: 'pending',
-    hasPreflight: false,
+    hasPreflight: true,
   },
 ] as const
