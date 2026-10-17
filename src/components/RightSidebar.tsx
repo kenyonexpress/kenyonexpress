@@ -21,12 +21,12 @@ export default function RightSidebar() {
       // STEP 32: two unnamed `complementary` landmarks on every (main) page;
       // a screen reader's landmark list read "complementary, complementary".
       aria-label="קטגוריות"
-      className="border border-gray-200 rounded-xl overflow-hidden bg-white"
+      className="border border-border rounded-xl overflow-hidden bg-surface"
     >
       {/* Solid yellow top block */}
       <div className="px-4 py-4 text-center bg-brand-secondary">
-        <p className="font-extrabold text-gray-900 text-sm tracking-tight">קניון EXPRESS</p>
-        <p className="text-xs text-gray-800 mt-0.5 font-medium">מסדרים לך בילוי</p>
+        <p className="font-extrabold text-foreground text-sm tracking-tight">קניון EXPRESS</p>
+        <p className="text-xs text-muted mt-0.5 font-medium">מסדרים לך בילוי</p>
       </div>
 
       {/* Category list */}
@@ -35,8 +35,10 @@ export default function RightSidebar() {
           <Link
             key={cat.id}
             href={cat.href}
-            className={`flex items-center gap-2 px-2 py-2 border-b border-gray-100 last:border-0 transition-colors ${
-              cat.muted ? 'text-gray-500 pointer-events-none' : 'hover:bg-gray-50 text-gray-700'
+            className={`flex items-center gap-2 px-2 py-2 border-b border-rule last:border-0 transition-colors ${
+              cat.muted
+                ? 'text-muted pointer-events-none'
+                : 'hover:bg-surface-hover text-foreground'
             }`}
           >
             <span className="text-sm shrink-0">{cat.icon}</span>

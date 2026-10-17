@@ -4,7 +4,7 @@ import { markSessionBuggy } from '@/lib/analytics/replay-trigger'
 import { STATUS_PATH } from '@/lib/health/public-status'
 import { withSentry } from '@/lib/observability/sentry-browser'
 import { storeWhatsAppLink } from '@/lib/whatsapp'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 /**
  * The last boundary. Catches errors thrown in the ROOT LAYOUT itself, which
@@ -33,7 +33,27 @@ export default function GlobalError({
 }: {
   error: Error & { digest?: string }
 }) {
+  const [isDark, setIsDark] = useState(false)
+
   useEffect(() => {
+    // Detect dark mode from system preference or localStorage
+    try {
+      const stored = localStorage.getItem('ke-theme')
+      if (stored === 'dark') {
+        setIsDark(true)
+      } else if (stored === 'light') {
+        setIsDark(false)
+      } else {
+        // Check system preference
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+        setIsDark(prefersDark)
+      }
+    } catch {
+      // Fallback to system preference if localStorage fails
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+      setIsDark(prefersDark)
+    }
+
     // On demand, like error.tsx: the SDK is not in the first-load graph and a
     // layout crash is exactly when it is worth one more request.
     withSentry((Sentry) => Sentry.captureException(error))
@@ -47,8 +67,15 @@ export default function GlobalError({
     `שלום, נתקלתי בתקלה באתר ${process.env.NEXT_PUBLIC_APP_URL || 'קניון אקספרס'}.${error.digest ? `\nקוד תקלה: ${error.digest}` : ''}`,
   )
 
+  const bgColor = isDark ? '#1a1a1a' : '#fff'
+  const textColor = isDark ? '#e8e8e8' : '#111'
+  const mutedColor = isDark ? '#a0a0a0' : '#666'
+  const borderColor = isDark ? '#444' : '#ccc'
+  const buttonBg = isDark ? '#e8e8e8' : '#111'
+  const buttonText = isDark ? '#111' : '#fff'
+
   return (
-    <html lang="he" dir="rtl">
+    <html lang="he" dir="rtl" data-theme={isDark ? 'dark' : 'light'}>
       <body
         style={{
           margin: 0,
@@ -57,8 +84,9 @@ export default function GlobalError({
           alignItems: 'center',
           justifyContent: 'center',
           fontFamily: 'system-ui, -apple-system, sans-serif',
-          background: '#fff',
-          color: '#111',
+          background: bgColor,
+          color: textColor,
+          transition: 'background 0.2s, color 0.2s',
         }}
       >
         <main style={{ maxWidth: '32rem', padding: '2rem', textAlign: 'center' }}>
@@ -66,7 +94,7 @@ export default function GlobalError({
             ⚠️
           </p>
           <h1 style={{ fontSize: '1.5rem', margin: '1rem 0 0.5rem' }}>משהו השתבש אצלנו</h1>
-          <p style={{ color: '#666', fontSize: '0.9rem', lineHeight: 1.6, margin: 0 }}>
+          <p style={{ color: mutedColor, fontSize: '0.9rem', lineHeight: 1.6, margin: 0 }}>
             התקלה נרשמה ואנחנו מטפלים בה. אפשר לנסות שוב בעוד רגע.
           </p>
 
@@ -86,8 +114,8 @@ export default function GlobalError({
                 alignItems: 'center',
                 minHeight: '44px',
                 borderRadius: '999px',
-                background: '#111',
-                color: '#fff',
+                background: buttonBg,
+                color: buttonText,
                 padding: '0 1.5rem',
                 fontSize: '0.875rem',
                 fontWeight: 700,
@@ -103,8 +131,8 @@ export default function GlobalError({
                 alignItems: 'center',
                 minHeight: '44px',
                 borderRadius: '999px',
-                border: '1px solid #ccc',
-                color: '#111',
+                border: `1px solid ${borderColor}`,
+                color: textColor,
                 padding: '0 1.5rem',
                 fontSize: '0.875rem',
                 fontWeight: 700,
@@ -123,7 +151,7 @@ export default function GlobalError({
                   alignItems: 'center',
                   minHeight: '44px',
                   borderRadius: '999px',
-                  background: '#25d366',
+                  background: '#0db85c',
                   color: '#fff',
                   padding: '0 1.5rem',
                   fontSize: '0.875rem',
@@ -143,7 +171,7 @@ export default function GlobalError({
                 marginTop: '2rem',
                 fontFamily: 'ui-monospace, monospace',
                 fontSize: '0.75rem',
-                color: '#999',
+                color: mutedColor,
               }}
             >
               {error.digest}

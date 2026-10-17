@@ -28,23 +28,23 @@ export default function CouponCardSkeleton() {
         <div className="coupon-ticket__stub" />
         <div className="coupon-ticket__body">
           <p className="coupon-ticket__business">
-            <span className="block h-3 w-2/5 rounded bg-gray-100" />
+            <span className="block h-3 w-2/5 rounded bg-track" />
           </p>
           <p className="coupon-ticket__title">
-            <span className="block h-4 w-full rounded bg-gray-100" />
+            <span className="block h-4 w-full rounded bg-track" />
           </p>
           <p className="coupon-ticket__location">
-            <span className="block h-3 w-1/3 rounded bg-gray-100" />
+            <span className="block h-3 w-1/3 rounded bg-track" />
           </p>
           <div className="coupon-ticket__price">
-            <span className="block h-5 w-16 rounded bg-gray-100" />
-            <span className="block h-3 w-10 rounded bg-gray-100" />
+            <span className="block h-5 w-16 rounded bg-track" />
+            <span className="block h-3 w-10 rounded bg-track" />
           </div>
           <p className="coupon-ticket__split">
-            <span className="block h-3 w-3/4 rounded bg-gray-100" />
+            <span className="block h-3 w-3/4 rounded bg-track" />
           </p>
           <div className="coupon-ticket__footer">
-            <span className="block h-11 w-28 rounded bg-gray-100" />
+            <span className="block h-11 w-28 rounded bg-track" />
           </div>
         </div>
       </div>

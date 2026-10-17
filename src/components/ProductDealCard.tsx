@@ -225,8 +225,8 @@ export default function ProductDealCard({
         )}
 
         {outOfStock && (
-          <div className="absolute inset-0 flex items-center justify-center bg-white/70">
-            <span className="rounded-full border bg-white px-2 py-1 text-xs font-semibold text-gray-500">
+          <div className="absolute inset-0 flex items-center justify-center bg-surface/70 dark:bg-surface/50">
+            <span className="rounded-full border border-border bg-surface px-2 py-1 text-xs font-semibold text-muted">
               אזל המלאי
             </span>
           </div>

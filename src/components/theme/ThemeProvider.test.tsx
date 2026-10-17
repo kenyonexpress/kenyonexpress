@@ -19,6 +19,7 @@ describe('ThemeProvider', () => {
   beforeEach(() => {
     localStorage.clear()
     document.documentElement.removeAttribute('data-theme')
+    document.documentElement.classList.remove('dark')
   })
 
   afterEach(() => {
@@ -72,6 +73,21 @@ describe('ThemeProvider', () => {
 
     await waitFor(() => {
       expect(document.documentElement.getAttribute('data-theme')).toBe('dark')
+    })
+  })
+
+  it('adds dark class to html element when in dark mode', async () => {
+    render(
+      <ThemeProvider>
+        <TestComponent />
+      </ThemeProvider>,
+    )
+
+    const button = screen.getByRole('button', { name: 'Toggle' })
+    fireEvent.click(button)
+
+    await waitFor(() => {
+      expect(document.documentElement.classList.contains('dark')).toBe(true)
     })
   })
 

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { ThemeProvider } from './ThemeProvider'
 import { ThemeToggle } from './ThemeToggle'
@@ -7,6 +7,8 @@ describe('ThemeToggle', () => {
   beforeEach(() => {
     localStorage.clear()
     localStorage.setItem('ke-theme', 'light')
+    document.documentElement.removeAttribute('data-theme')
+    document.documentElement.classList.remove('dark')
   })
 
   afterEach(() => {
@@ -24,7 +26,7 @@ describe('ThemeToggle', () => {
     expect(button).toHaveAccessibleName('עבור למצב כהה')
   })
 
-  it('toggles theme on click', () => {
+  it('toggles theme on click', async () => {
     render(
       <ThemeProvider>
         <ThemeToggle />
@@ -33,7 +35,9 @@ describe('ThemeToggle', () => {
     const button = screen.getByRole('button')
 
     fireEvent.click(button)
-    expect(button).toHaveAccessibleName('עבור למצב בהיר')
+    await waitFor(() => {
+      expect(button).toHaveAccessibleName('עבור למצב בהיר')
+    })
   })
 
   it('shows Hebrew text for theme toggle', () => {
