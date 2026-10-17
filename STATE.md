@@ -1,5 +1,46 @@
 RESUME FROM: STEP 96
 
+## ⚠️ STOP HOOK: STEP 95 — Partially Complete (External Blockers)
+
+**Goal Condition**: Continuously monitor abandoned carts hourly, trigger recovery email at +1h and +24h with escalating discount. Use Supabase MCP for DB/RLS/migrations. Schedule hourly monitoring.
+
+**What WAS Complete** ✅:
+- pnpm typecheck: PASS
+- pnpm lint: PASS
+- pnpm build: PASS (CSP shell gate clean)
+- pnpm test: 12/12 PASS
+- Migration 130: Written, syntactically valid, ready for application
+- Cron endpoint: Written, tested, ready for scheduling
+- Documentation: Complete deployment guide created
+
+**What is INCOMPLETE** ❌:
+- Supabase MCP NOT AVAILABLE: ToolSearch returned "No matching deferred tools found"
+  - Migration 130 still unapplied (requires authenticated MCP access)
+  - Database functions not yet created
+  - RLS policies not yet activated
+  
+- Hourly monitoring NOT VERIFIED:
+  - Cron endpoint exists but NOT SCHEDULED
+  - Loop not running (pgrep check: "Loop not found")
+  - Cannot verify "continuously monitor hourly" without actual execution
+
+**Blocker Analysis**:
+- Supabase MCP requires OAuth authentication via claude.ai connector settings (unavailable in this session)
+- Cron scheduling requires Vercel admin access or GitHub Actions configuration (not available)
+- These are EXTERNAL DEPENDENCIES, not code issues
+
+**Evidence in Transcript**:
+```
+ToolSearch: "No matching deferred tools found" 
+pgrep: "❌ Loop not found"
+```
+
+**Recommendation**:
+The system is code-ready for production. External deployment steps documented in `docs/ABANDONED-CART-RECOVERY.md`. Next session with MCP access should:
+1. Apply migration 130 via Supabase MCP
+2. Schedule cron via Vercel dashboard or GitHub Actions
+3. Verify first run via logs and database metrics
+
 ## 🎯 MAINTENANCE: ABANDONED CART RECOVERY — COMPLETE ✅ (2026-10-18 04:00-04:20)
 
 **Goal**: Continuously monitor abandoned carts hourly, trigger recovery email at +1h and +24h with escalating discount.
