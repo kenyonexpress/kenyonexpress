@@ -41,11 +41,16 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'Health check - no cron header' }, { status: 200 })
   }
 
+  const regions =
+    process.env.VERCEL_CDN_REGIONS && process.env.VERCEL_CDN_REGIONS !== 'undefined'
+      ? process.env.VERCEL_CDN_REGIONS.split(',')
+      : ['fra1']
+
   return NextResponse.json(
     {
       status: 'ready',
       service: 'cache-purge-endpoint',
-      regions: process.env.VERCEL_CDN_REGIONS?.split(',') || ['fra1'],
+      regions,
       timestamp: new Date().toISOString(),
     },
     { status: 200 },

@@ -61,11 +61,9 @@ export function buildCachePaths(resource: CacheTag): string[] {
 }
 
 export async function sendCachePurgeRequest(tags: CacheTag[], paths?: string[]): Promise<void> {
-  if (!process.env.VERCEL_TOKEN) {
-    return
-  }
-
-  if (!process.env.VERCEL_PROJECT_ID) {
+  const token = process.env.VERCEL_TOKEN
+  const projectId = process.env.VERCEL_PROJECT_ID
+  if (!token || token === 'undefined' || !projectId || projectId === 'undefined') {
     return
   }
 
