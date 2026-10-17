@@ -44,7 +44,10 @@
     "release:rollback": "node scripts/rollback.mjs",
     "release:smoke": "node scripts/smoke-test.mjs",
     "backup:health": "node scripts/backup-health-check.mjs",
-    "backup:restore": "node scripts/restore-from-backup.mjs"
+    "backup:restore": "node scripts/restore-from-backup.mjs",
+    "deals:scrape": "curl -X POST http://localhost:3000/api/cron/deal-scraper -H \"Authorization: Bearer ${CRON_SECRET:-dev-secret}\"",
+    "deals:validate": "node scripts/deal-validate-pending.mjs",
+    "deals:approve": "node scripts/deal-approve-batch.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.122.0",
