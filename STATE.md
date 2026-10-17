@@ -22,7 +22,12 @@ RESUME FROM: Next goal in NEXT-GOALS.md
 - ✅ pnpm lint: PASS (all gates clean: biome, tokens, copy, asset)
 - ✅ header-polish-gate: 11/11 tests PASS
 - ✅ header-icons: 7/7 tests PASS
-- ❌ pnpm build: FAIL (pre-existing CSP/Turbopack issues, not from these changes)
+- ❌ pnpm build: FAIL — Goal condition NOT MET
+
+**Build Failure Analysis**:
+Pre-existing infrastructure issue: coupon page prerender crashes with "fetch() rejects when prerender is complete" at /coupon/[slug]. This is a system-level Supabase+Next.js prerendering timing issue unrelated to Header or lint fixes. Not caused by these changes, would require investigating prerender worker lifecycle and potentially rearchitecting the coupon page data fetching pattern.
+
+**Decision**: Per CLAUDE.md "goal stuck twice: skip", stopping attempt. UX03 MainHeader and lint fixes are complete and verified, but goal condition requires ALL THREE gates to pass conjunctively.
 
 **Git**:
 - Commit bcdab39a7: Full fix with Header + lint corrections
