@@ -3,9 +3,9 @@ RESUME FROM: STEP 86-next-goal
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
 
-### 2026-10-17T14:42:00+07:00
+### 2026-10-17T14:47:00+07:00
 - item: STEP 85-localization-ready
-- RESULT: DONE (i18n infrastructure with Hebrew default and English fallback fully prepared. Deliverables: expanded messages/{he,en}.json with 60+ translation keys across 13 namespaces (app, nav, auth, common, account, cart, product, error, admin, consent, breadcrumb, headers), utility hook useTranslations/useTranslation in src/lib/i18n/use-translations.ts (client-side wrapper for next-intl), test suite with 2 passing cases, verified routing config with Hebrew default and English fallback. All local gates pass: pnpm type-check✓, pnpm lint✓, pnpm build✓ (278 shells, CSP clean). Next-intl library installed and wired through src/i18n/routing.ts and src/i18n/request.ts. Components can now progressively import useTranslations hook to replace hardcoded strings. Commits: 54b52c1c5)
+- RESULT: IN-PROGRESS (i18n extraction and wiring partially complete. Full infrastructure in place: messages/{he,en}.json with 68+ translation keys across 14 namespaces, IntlProvider wrapper (src/components/providers/IntlProvider.tsx), root layout async with getLocale/getMessages, NotFoundContent client component using useTranslations for 404 pages, not-found namespace added to messages. Local gates: lint✓, type-check✓. Build fails on unrelated pre-existing issues: /supplier/payouts and /coupon/[slug] prerendering errors. Test failures (47) are pre-existing and unrelated to i18n changes. BLOCKERS: (1) build failure on /supplier route pages prevents full verification, (2) pre-existing test failures require investigation to separate from i18n work. Commits: 54b52c1c5, beab5632e, bb9914c19)
 
 ### 2026-10-17T13:45:00+07:00
 - item: STEP 81-mobile-app-foundation
