@@ -7,9 +7,9 @@ import { type NextRequest, NextResponse } from 'next/server'
  */
 export async function GET(
   _request: NextRequest,
-  { params }: { params: { slug: string } },
-): Promise<NextResponse> {
-  const slug = params.slug
+  { params }: { params: Promise<{ slug: string }> },
+) {
+  const { slug } = await params
 
   if (!slug || typeof slug !== 'string') {
     return NextResponse.json({ error: 'Invalid slug' }, { status: 400 })
