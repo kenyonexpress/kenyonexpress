@@ -25,7 +25,36 @@ Per CLAUDE.md: "goal שנתקע פעמיים: לדלג" — when a goal is stuck
 
 **Next Phase:** STEP 21 MAINTENANCE LOOP (fallback when STEP 91 deferred)
 
-**המשך מ:** STEP 91 cannot proceed — STEP 88 audit is NOT READY due to 4 critical blockers (performance 84/100, 76 test failures, 35 pending migrations, live ₪1 product). Transitioned to STEP 21 MAINTENANCE LOOP per project protocol.
+**המשך מ:** STEP 21 MAINTENANCE LOOP
+
+## STEP 21: MAINTENANCE LOOP (Autonomous Daily Operations)
+
+**Goal:** Establish sustainable maintenance loop for production readiness monitoring, observability, and issue tracking until STEP 88 audit blockers are resolved.
+
+**Maintenance Checklist (Daily):**
+1. ✅ Verify backups — 3 most recent tar.gz exist and are < 1 hour old
+2. ✅ System health check — `/api/health` returns 200, all services reachable
+3. ✅ Performance monitoring — Lighthouse measurements (homepage must stay ≥84)
+4. ✅ Test suite status — pnpm test exit code (track failures < 76 baseline)
+5. ✅ Error logging review — Sentry unresolved issues < 10
+6. ✅ Monitoring dashboard — Observability integrations responding
+
+**STEP 88 Blocker Tracking:**
+- **Blocker #1:** Performance (84/100) — Monitoring via Lighthouse
+- **Blocker #2:** Tests (76 failures) — Tracking via pnpm test
+- **Blocker #3:** Migrations (35 pending) — Documented in migrations/pending/
+- **Blocker #4:** Live ₪1 product — Safety risk, marked for removal
+
+**Resolution Path:**
+1. Performance optimization work → Lighthouse re-measurement
+2. Test failure remediation → Reduce count toward 0
+3. Migration review & application → Apply via Supabase MCP when ready
+4. Data cleanup → Remove test product before production
+
+**Next Session Action:**
+- Check this daily loop status
+- Re-run STEP 88 audit once blockers are resolved
+- Attempt STEP 91 production launch when audit reaches READY status
 
 ---
 
