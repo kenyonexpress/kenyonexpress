@@ -39,7 +39,7 @@ export default function SiteHeader() {
           <MobileDrawer />
 
           {/* Icons: handheld 3-cell cluster (handheld), desktop nav (xl) */}
-          <nav className="-me-touch-pad flex items-center gap-0 xl:hidden xl:gap-nav-gap xl:gap-4">
+          <nav className="-me-touch-pad flex items-center gap-0 xl:hidden">
             <Link
               href="/wishlist"
               aria-label="המועדפים שלי"
