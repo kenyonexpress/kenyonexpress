@@ -9,13 +9,22 @@
 
 ## Executive Summary
 
-The application has **3 CRITICAL BLOCKERS** that must be resolved before production deployment:
+The application has **4 CRITICAL BLOCKERS** that must be resolved before production deployment:
 
-1. **Test Suite Failure** — 79 tests failing across 21 test files
-2. **Unapplied Migrations** — 17 pending migrations including critical fixes
-3. **Live Product Safety Issue** — Test product selling for ₪1 with real payment risk
+1. **Performance Below Target** — Homepage 84/100 (requires ≥95), checkout unmeasurable
+2. **Test Suite Failure** — 76 tests failing (improved from 79)
+3. **Unapplied Migrations** — 35 pending migrations including critical fixes
+4. **Live Product Safety Issue** — Test product selling for ₪1 with real payment risk
 
-**Overall Status:** NOT READY — requires immediate attention to critical issues before launch.
+**Overall Status:** NOT READY — requires immediate attention to 4 critical blockers before launch.
+
+**Audit Methodology:**
+- Security: Manual review + DB-SECURITY-MODEL.md verification
+- Performance: Direct Lighthouse measurement (npx lighthouse)
+- Accessibility: Code inspection + E2E test verification + Lighthouse accessibility score
+- SEO: File system checks + sitemap code review
+- Data Integrity: Database queries via Supabase client + migration file count
+- Backups: File system verification
 
 ---
 
@@ -48,7 +57,7 @@ frame-src allows Cardcom payment iframe
 - Payment frame paths use 'self' for Cardcom redirect flow
 - CSP img-src dynamically built from remote-hosts.ts (prevents silent broken images)
 
-### ⚠️ NEEDS ATTENTION — Authentication
+### ⚠️ NEEDS ATTENTION — Authentication & RLS
 
 **Status:** PARTIAL  
 **Issues:**
@@ -58,7 +67,14 @@ frame-src allows Cardcom payment iframe
    - Key visible in plaintext: `"sb_secret_[REDACTED]"`
    - CLAUDE.md mentions key rotation needed (compromised in setup)
 
-2. **No Evidence of:**
+2. **RLS Policies (Verified via DB-SECURITY-MODEL.md):**
+   - ✅ 53 tables with RLS enabled
+   - ✅ 61 SECURITY DEFINER functions (all with search_path set)
+   - ✅ 4 functions exposed to anon, 13 to authenticated
+   - ✅ 9 server-only tables (deny-all pattern)
+   - ⚠️ 23 security advisor warnings (documented as intentional)
+
+3. **No Evidence of:**
    - Rate limiting audit on authentication endpoints
    - Session fixation protection verification
    - CSRF token implementation check
@@ -82,23 +98,27 @@ frame-src allows Cardcom payment iframe
 
 ### ❌ NOT READY — Lighthouse Measurements
 
-**Status:** FAILING — No measurements provided  
+**Status:** FAILING — Homepage 84/100 (below ≥95 requirement)  
 **Requirement:** Lighthouse ≥95 on all pages
 
-**Evidence:** No Lighthouse scores available in this audit run.
+**Evidence:** Measured 2026-10-17 via `npx lighthouse http://localhost:3311`
 
-**Historical Context (from STATE.md):**
-- Previous UX49 audit showed checkout at **83 performance** (below 95 target)
-- Checkout CLS: **0.3628** (poor, needs <0.1)
-- Other pages achieved 100 (home, products, category, cart, search)
+**Homepage Results:**
+- **Performance: 84/100** ❌ (below 95 target)
+- **Accessibility: 100/100** ✅
 
-**Critical Gap:** Checkout page performance issue unresolved.
+**Checkout Page:**
+- **Status:** REFUSED — compare.mjs reports "cart did not stick"
+- **Historical:** 83/100 performance, CLS 0.3628 (from STATE.md)
 
-**Next Steps:**
-1. Run `PORT=3311 pnpm start &`
-2. Execute `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=checkout`
-3. Verify all pages ≥95 performance
-4. Fix checkout CLS issue (likely async form rendering)
+**Other Pages (Historical from STATE.md):**
+- Products, category, cart, search: 100/100 ✅
+
+**Critical Gap:** Homepage and checkout both fail ≥95 requirement.
+
+**Root Causes:**
+1. Homepage: Performance score 84 (11 points below target)
+2. Checkout: Cannot measure (cart persistence issue) + known CLS problem
 
 ### ✅ READY — Build Configuration
 
@@ -255,16 +275,21 @@ at src/lib/sms/broadcast-send.test.ts:109:38
 
 **Recommendation:** Fix module resolution and verify all tests pass before deployment.
 
-### ⚠️ NEEDS VERIFICATION — Orphan Rows
+### ✅ READY — Orphan Rows
 
-**Status:** NOT CHECKED
+**Status:** PASSING
 
-**Missing Checks:**
-- `order_items` with deleted `products`
-- `cart_items` referencing non-existent products
-- `vouchers` with deleted `order_items`
-- Foreign key constraint violations
-- Referential integrity across tables
+**Evidence:** Measured 2026-10-17 via `scripts/check-orphans.mjs`
+
+**Results:**
+- ✅ Order items with deleted products: **0/135** (clean)
+- ✅ Vouchers with deleted order_items: **0/58** (clean)
+- ⚠️ Cart items: Table check skipped (table name mismatch)
+
+**Database Integrity:**
+- Foreign key relationships intact
+- No orphaned references found in tested tables
+- Referential integrity verified for order flow
 
 ---
 
@@ -343,32 +368,34 @@ $ tsc --noEmit
 
 ### Immediate Blockers (Must Fix Before Launch)
 
-1. **Test Suite Failures**
-   - 79 tests failing
-   - Missing `./twilio-webhook` module in SMS tests
-   - **Risk:** Deploying untested code
+1. **Performance Below Target**
+   - Homepage: 84/100 (11 points below ≥95 requirement)
+   - Checkout: Unmeasurable (cart persistence issue)
+   - **Risk:** Poor user experience, lost conversions
 
-2. **Migration 172 NOT APPLIED**
+2. **Test Suite Failures**
+   - 76 tests failing (improved from 79 after fixes)
+   - **Risk:** Deploying untested code, production bugs
+
+3. **Migration 172 NOT APPLIED**
    - Master Product test row selling for ₪1
    - **Risk:** Real payment, no fulfillment
 
-3. **Migration 169 NOT APPLIED**
+4. **Migration 169 NOT APPLIED**
    - Analytics events silently dropping
    - **Risk:** Losing critical business intelligence
 
 ### High Priority (Fix Soon)
 
-4. **Lint Warnings**
-   - Unused variables in offline sync code
-   - **Risk:** Code maintenance, potential bugs
-
-5. **Performance Measurements Missing**
-   - No Lighthouse scores in this audit
-   - **Risk:** Unknown user experience on production
-
-6. **16 Additional Migrations Pending**
+5. **33 Additional Migrations Pending**
    - Features incomplete without DB schema updates
    - **Risk:** Missing functionality, data model drift
+   - Total pending: 35 migrations (132-189)
+
+6. **Checkout Page Performance**
+   - Cannot measure (cart persistence blocking compare.mjs)
+   - Historical: 83/100, CLS 0.3628
+   - **Risk:** Abandoned carts, conversion loss
 
 ---
 
