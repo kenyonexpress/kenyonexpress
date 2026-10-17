@@ -599,6 +599,21 @@ async function runBeginCheckout(
     return { ok: false, error: `יצירת הזמנה נכשלה: ${orderError?.message}`, code: 'INTERNAL' }
   }
 
+  // Attribute order to affiliate (fire-and-forget, does not block checkout)
+  const sessionId = input.affiliate_session_id
+  if (sessionId) {
+    fetch(
+      `${process.env.NEXT_PUBLIC_APP_URL || 'https://kenyonexpress.co.il'}/api/affiliate/attribute-order`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ order_id: order.id, session_id: sessionId }),
+      },
+    ).catch((err) => {
+      log.warn('checkout.affiliate_attribution_failed', { order_id: order.id, error: err.message })
+    })
+  }
+
   // The gift intent (108), written in its OWN statement and not added to the
   // insert above. This whole module exists because naming a column the hosted
   // database does not have failed the entire orders INSERT with 42703, and NO

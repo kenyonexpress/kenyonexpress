@@ -157,6 +157,7 @@ export const beginCheckoutInputSchema = checkoutPaymentSchema
     z.object({
       address_id: uuid.nullable().default(null),
       channel: checkoutChannelSchema,
+      affiliate_session_id: z.string().optional(), // For affiliate attribution
     }),
   )
   .merge(giftSchema)
