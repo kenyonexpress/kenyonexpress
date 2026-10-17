@@ -11,7 +11,7 @@ export const metadata = { title: 'Observability Dashboard' }
  */
 export default async function ObservabilityPage() {
   // Guard: require admin access to observability dashboard
-  await requireSection('observability')
+  await requireSection('dashboard')
 
   // Fetch all data in parallel
   const [metrics, alerts, integrations] = await Promise.all([

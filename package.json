@@ -31,6 +31,7 @@
     "db:types": "supabase gen types typescript --linked --schema public > src/types/database.ts",
     "analyze": "next experimental-analyze",
     "lighthouse:smoke": "node scripts/lighthouse-smoke.mjs",
+    "lighthouse:weekly": "node scripts/weekly-lighthouse.mjs",
     "sentry:verify": "node scripts/sentry-verify.mjs",
     "sentry:verify:ci": "node scripts/sentry-verify.mjs --ci --dry",
     "prepare": "husky || true",
