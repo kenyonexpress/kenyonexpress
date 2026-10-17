@@ -1,8 +1,10 @@
 import { log } from '@/lib/observability/log'
+import { withRequestLog } from '@/lib/observability/with-request-log'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
+import { checkRateLimit } from '@/lib/utils/rate-limit'
 
-export async function POST(request: Request): Promise<Response> {
+async function handlePOST(request: Request): Promise<Response> {
   try {
     const body = (await request.json()) as Partial<{
       segmentName: string | null
@@ -20,6 +22,14 @@ export async function POST(request: Request): Promise<Response> {
 
     if (user) {
       userId = user.id
+
+      // Rate limit unsubscribe requests per user
+      if (!(await checkRateLimit(`sms-unsubscribe:${user.id}`, 5, 3600))) {
+        return Response.json(
+          { error: 'Too many unsubscribe requests. Please try again later.' },
+          { status: 429 },
+        )
+      }
     } else {
       // Try service role with authorization header
       const authHeader = request.headers.get('authorization')
@@ -72,3 +82,5 @@ export async function POST(request: Request): Promise<Response> {
     return Response.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
+
+export const POST = withRequestLog('/api/sms/unsubscribe', handlePOST)

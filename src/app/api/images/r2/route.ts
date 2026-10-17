@@ -10,9 +10,10 @@
  */
 
 import { R2_CONFIG, isR2Enabled } from '@/lib/images/optimizer'
+import { withRequestLog } from '@/lib/observability/with-request-log'
 import { type NextRequest, NextResponse } from 'next/server'
 
-export async function GET(request: NextRequest) {
+async function handleGET(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Extract the image path from the route:
@@ -82,7 +83,7 @@ export async function GET(request: NextRequest) {
  *
  * GET /api/images/r2/public/products/sku123.jpg
  */
-export async function HEAD(request: NextRequest) {
+async function handleHEAD(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   if (!isR2Enabled()) {
@@ -104,3 +105,6 @@ export async function HEAD(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to check image' }, { status: 500 })
   }
 }
+
+export const GET = withRequestLog('/api/images/r2', handleGET)
+export const HEAD = withRequestLog('/api/images/r2', handleHEAD)

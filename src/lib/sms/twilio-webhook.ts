@@ -1,4 +1,4 @@
-import { createHmac } from 'node:crypto'
+import { createHmac, timingSafeEqual } from 'node:crypto'
 
 /**
  * Verify Twilio webhook signature using HMAC-SHA1.
@@ -8,7 +8,7 @@ export async function verifyTwilioWebhook(
   url: string,
   data: Record<string, string>,
   signature: string,
-  authToken: string,
+  authToken: string | undefined,
 ): Promise<boolean> {
   if (!authToken) {
     return false
@@ -28,7 +28,7 @@ export async function verifyTwilioWebhook(
     const expectedSignature = createHmac('sha1', authToken).update(stringToSign).digest('base64')
 
     // Use timing-safe comparison to prevent timing attacks
-    return expectedSignature === signature
+    return timingSafeEqual(Buffer.from(expectedSignature), Buffer.from(signature))
   } catch {
     return false
   }

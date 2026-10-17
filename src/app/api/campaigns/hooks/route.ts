@@ -1,6 +1,7 @@
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import type { CustomerSegmentType, UserSegmentInfo } from '@/lib/rfm-analysis'
 import { CAMPAIGN_DESCRIPTIONS, SEGMENT_LABELS } from '@/lib/rfm-analysis'
+import { checkRateLimit } from '@/lib/utils/rate-limit'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import type { NextRequest } from 'next/server'
@@ -129,6 +130,14 @@ async function handlePOST(req: NextRequest): Promise<Response> {
 
     if (authError || !user) {
       return Response.json({ status: 'error', message: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Rate limit by user ID
+    if (!(await checkRateLimit(`campaign-trigger:${user.id}`, 5, 3600))) {
+      return Response.json(
+        { status: 'error', message: 'Too many campaign triggers. Please try again later.' },
+        { status: 429 },
+      )
     }
 
     // Parse request body

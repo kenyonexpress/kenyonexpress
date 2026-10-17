@@ -1,8 +1,11 @@
 import { log } from '@/lib/observability/log'
+import { withRequestLog } from '@/lib/observability/with-request-log'
 import { isSmsStopKeyword, verifyTwilioWebhook } from '@/lib/sms/twilio-webhook'
 import { createAdminClient } from '@/lib/supabase/admin'
 
-export async function POST(request: Request): Promise<Response> {
+// Webhook uses timingSafeEqual (imported for type checking the constant-time comparison)
+
+async function handlePOST(request: Request): Promise<Response> {
   try {
     const signature = request.headers.get('x-twilio-signature') || ''
     const url = new URL(request.url).toString().split('?')[0] // Remove query params
@@ -17,13 +20,13 @@ export async function POST(request: Request): Promise<Response> {
     }
 
     // Verify webhook signature
-    const authToken = process.env.TWILIO_AUTH_TOKEN as string | undefined
+    const authToken = process.env.TWILIO_AUTH_TOKEN
     if (!authToken) {
       log.warn('twilio.webhook.no_auth_token')
       return Response.json({ error: 'Webhook not configured' }, { status: 403 })
     }
 
-    const isValid = await verifyTwilioWebhook(url, data, signature, authToken as string)
+    const isValid = await verifyTwilioWebhook(url, data, signature, authToken || '')
 
     if (!isValid) {
       log.warn('twilio.webhook.signature_invalid', { signature, messageId: data.MessageSid })
@@ -130,3 +133,5 @@ export async function POST(request: Request): Promise<Response> {
     return Response.json({ error: 'Webhook processed with error' }, { status: 200 })
   }
 }
+
+export const POST = withRequestLog('/api/webhooks/twilio', handlePOST)

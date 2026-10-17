@@ -1,5 +1,7 @@
 import { log } from '@/lib/observability/log'
+import { withRequestLog } from '@/lib/observability/with-request-log'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { checkRateLimit } from '@/lib/utils/rate-limit'
 import { validateAdminRequest } from '@/server/auth/admin-check'
 
 export interface SmsBroadcastDetailResponse {
@@ -31,7 +33,7 @@ export interface SmsBroadcastDetailResponse {
   }
 }
 
-export async function GET(
+async function handleGET(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ): Promise<Response> {
@@ -109,7 +111,7 @@ export async function GET(
   }
 }
 
-export async function PATCH(
+async function handlePATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ): Promise<Response> {
@@ -117,6 +119,14 @@ export async function PATCH(
     const user = await validateAdminRequest(request)
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Rate limit broadcast updates per admin user
+    if (!(await checkRateLimit(`sms-broadcast-update:${user.id}`, 20, 3600))) {
+      return Response.json(
+        { error: 'Too many broadcast update requests. Please try again later.' },
+        { status: 429 },
+      )
     }
 
     const { id } = await params
@@ -193,3 +203,6 @@ export async function PATCH(
     return Response.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
+
+export const GET = withRequestLog('/api/sms/broadcasts/[id]', handleGET)
+export const PATCH = withRequestLog('/api/sms/broadcasts/[id]', handlePATCH)

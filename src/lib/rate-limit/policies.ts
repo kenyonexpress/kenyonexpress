@@ -91,6 +91,7 @@ export const RATE_LIMIT_POLICIES = {
   // -- Read paths. Large, because they are cheap and a human browsing hits them.
   search: { limit: 120, windowSeconds: 300, reason: 'search queries hit Meilisearch' },
   'search-suggest': { limit: 300, windowSeconds: 300, reason: 'typeahead fires per keystroke' },
+  'search-click': { limit: 600, windowSeconds: 300, reason: 'search result clicks, per IP' },
   analytics: { limit: 120, windowSeconds: 60, reason: 'beacon endpoint, per IP' },
 
   // -- Public write forms. Five an hour, because these reach a human inbox.
@@ -114,6 +115,24 @@ export const RATE_LIMIT_POLICIES = {
   // -- Mobile app surfaces (`apps/mobile` is a second caller of these routes).
   'app-session': { limit: 30, windowSeconds: 600, reason: 'app session exchange, per IP' },
   'push-register': { limit: 60, windowSeconds: 3600, reason: 'push token registration' },
+
+  // -- Marketing and campaigns.
+  'campaign-trigger': { limit: 5, windowSeconds: 3600, reason: 'campaign hook trigger, per user' },
+  'sms-broadcast-create': {
+    limit: 10,
+    windowSeconds: 3600,
+    reason: 'SMS broadcast creation, per admin',
+  },
+  'sms-broadcast-update': {
+    limit: 20,
+    windowSeconds: 3600,
+    reason: 'SMS broadcast updates, per admin',
+  },
+  'sms-unsubscribe': {
+    limit: 5,
+    windowSeconds: 3600,
+    reason: 'SMS unsubscribe requests, per user',
+  },
 } as const satisfies Record<string, RateLimitPolicy>
 
 export type RateLimitPolicyName = keyof typeof RATE_LIMIT_POLICIES

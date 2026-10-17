@@ -4,6 +4,7 @@ import { type NextRequest, NextResponse } from 'next/server'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { formatSearchReport, generateSearchReport } from '@/lib/search/report'
+import { bearerMatches } from '@/lib/security/constant-time'
 
 async function handleGET(_request: NextRequest) {
   try {
@@ -15,7 +16,7 @@ async function handleGET(_request: NextRequest) {
       return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
     }
 
-    if (!authHeader?.startsWith('Bearer ') || authHeader.substring(7) !== cronSecret) {
+    if (!bearerMatches(authHeader, cronSecret)) {
       log.warn('search.report_unauthorized')
       return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
     }

@@ -1,5 +1,7 @@
 import { log } from '@/lib/observability/log'
+import { withRequestLog } from '@/lib/observability/with-request-log'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { checkRateLimit } from '@/lib/utils/rate-limit'
 import { validateAdminRequest } from '@/server/auth/admin-check'
 
 export interface SmsBroadcastResponse {
@@ -25,11 +27,19 @@ export interface SmsBroadcastResponse {
   quietHoursTz: string
 }
 
-export async function POST(request: Request): Promise<Response> {
+async function handlePOST(request: Request): Promise<Response> {
   try {
     const user = await validateAdminRequest(request)
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Rate limit broadcast creation per admin user
+    if (!(await checkRateLimit(`sms-broadcast-create:${user.id}`, 10, 3600))) {
+      return Response.json(
+        { error: 'Too many broadcast creation requests. Please try again later.' },
+        { status: 429 },
+      )
     }
 
     const body = (await request.json()) as Partial<{
@@ -89,7 +99,7 @@ export async function POST(request: Request): Promise<Response> {
   }
 }
 
-export async function GET(request: Request): Promise<Response> {
+async function handleGET(request: Request): Promise<Response> {
   try {
     const user = await validateAdminRequest(request)
     if (!user) {
@@ -153,3 +163,6 @@ export async function GET(request: Request): Promise<Response> {
     return Response.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
+
+export const POST = withRequestLog('/api/sms/broadcasts', handlePOST)
+export const GET = withRequestLog('/api/sms/broadcasts', handleGET)
