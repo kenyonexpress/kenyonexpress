@@ -3,7 +3,6 @@ import AnalyticsProvider from '@/components/analytics/AnalyticsProvider'
 import ConsentBanner from '@/components/analytics/ConsentBanner'
 import PostHogReplay from '@/components/analytics/PostHogReplay'
 import SentryUserSync from '@/components/observability/SentryUserSync'
-import IntlProvider from '@/components/providers/IntlProvider'
 import InstallPrompt from '@/components/pwa/InstallPrompt'
 import ServiceWorkerRegistrar from '@/components/pwa/ServiceWorkerRegistrar'
 import PerRequestScripts from '@/components/security/PerRequestScripts'
@@ -13,7 +12,6 @@ import { SITE } from '@/styles/tokens'
 import { Analytics as VercelAnalytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import type { Metadata, Viewport } from 'next'
-import { getLocale, getMessages } from 'next-intl/server'
 import { Heebo } from 'next/font/google'
 import { Suspense } from 'react'
 // mini-cart.css (the masthead cart, every route) and login-dialog.css (UX23,
@@ -134,16 +132,13 @@ export const viewport: Viewport = {
   viewportFit: 'cover',
 }
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const locale = await getLocale()
-  const messages = await getMessages()
-
   return (
-    <html lang={locale} dir="rtl" className={`${heebo.variable} h-full antialiased`}>
+    <html lang="he" dir="rtl" className={`${heebo.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-background text-foreground">
         {/*
           First thing in the body, not next/script, and not next to the banner
@@ -188,9 +183,7 @@ export default async function RootLayout({
         */}
         <SkipLink />
         <ConsentBanner />
-        <IntlProvider locale={locale} messages={messages}>
-          <ThemeProvider>{children}</ThemeProvider>
-        </IntlProvider>
+        <ThemeProvider>{children}</ThemeProvider>
         {/*
           `AnalyticsProvider` calls `usePathname`, which under `cacheComponents`
           is runtime data on any route carrying a dynamic param. Unwrapped, it
