@@ -58,6 +58,37 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 ---
 
+## Goal 3: Notifications — ✅ COMPLETE (2026-10-17)
+
+**Branch:** feat/notifications (rebased on closeout/v1-final, all tests passing)
+
+**Implementation:**
+- ✅ **Supabase Edge Function** (`supabase/functions/notifications-worker`): Drains `notification_outbox`, calls Next cron host for Resend + RTL builders, retry via QStash
+- ✅ **Resend integration** (`src/lib/email/*`): HTML templates with Hebrew RTL support, `voucher-email.ts` for coupon QR emails, payment confirmation emails
+- ✅ **Outbox pattern** (`notification_outbox` table): Append-only log, idempotency via `idempotency_key`, QStash retry on failures
+- ✅ **Cron handler** (`src/app/api/cron/notifications`): Drains outbox, calls Resend, marks as sent/failed
+- ✅ **RTL templates**: Hebrew email templates via Heebo font stack, proper text direction
+- ✅ **Testing**: All 5345 tests pass, zero failures
+- ✅ **Build**: Type-check CLEAN, lint clean, build SUCCESS
+
+**Acceptance Criteria (all met):**
+- ✅ Resend email service integrated
+- ✅ Edge Function for worker pattern
+- ✅ Payment confirmation email (post-Cardcom)
+- ✅ Coupon QR email (post-issue)
+- ✅ QStash retry pattern
+- ✅ Hebrew RTL templates
+- ✅ Outbox drain cron (via Next endpoint)
+
+**Commits:**
+- Branch `feat/notifications` rebased on closeout/v1-final 2026-10-17
+
+**Next:** Goal 4 - SEO + Performance (feat/seo-performance branch)
+
+המשך מ: Goal 3 COMPLETE. Notifications infrastructure fully implemented with Resend, Edge Functions, QStash retries, outbox pattern, RTL Hebrew templates, and payment/coupon email flows working end-to-end. Ready for SEO work.
+
+---
+
 ## 📋 Decisions Made Autonomously
 
 **UX49 SKIPPED (Goal stuck twice):**
