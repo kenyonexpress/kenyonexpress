@@ -4,6 +4,80 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 ---
 
+## 🎯 Autonomous Work Summary (Session: 2026-10-18 — MAINTENANCE: Stock Monitoring & Auto-Hide)
+
+**MAINTENANCE GOAL: Continuously monitor stock levels, auto-hide out-of-stock products from listings, keep on product page with notify-me — ✅ COMPLETE (2026-10-18)**
+
+**Status:** Production-ready stock monitoring infrastructure implemented with user notifications.
+
+**What Was Built:**
+
+✅ **Database Infrastructure** (Migration 276):
+- `stock_notifications` table tracks user subscriptions for back-in-stock alerts
+- RLS policies for users to manage their own subscriptions
+- Service role access for cron jobs to process notifications
+- Unique constraint: one notification per user/product combo
+- Indexes on product_id, email, created_at for efficient querying
+- Soft delete via unsubscribed_at column
+
+✅ **Product Listing Filtering**:
+- Updated `getCategoryProducts()`: Filter stock_quantity > 0
+- Updated `getShopProducts()`: Filter stock_quantity > 0
+- Products with zero stock automatically hidden from browse/search
+- Improves user experience by showing only available items
+
+✅ **User Notification System**:
+- Server action: `subscribeToStockNotification()` - Register for alerts
+- Server action: `unsubscribeFromStockNotification()` - Opt out
+- Server action: `getStockNotifications()` - Check subscription status
+- All protected with authentication and error handling
+
+✅ **Client Components**:
+- `NotifyMeButton.tsx`: Client component for subscribe/unsubscribe UI
+- `StockNotificationWrapper.tsx`: Server component wrapper for product pages
+- Shows notify button only when product is out of stock
+- Displays subscription status and handles async actions
+
+✅ **Cron Job** (`/api/cron/stock-notifications`):
+- Runs hourly via Vercel cron scheduler
+- Validates CRON_SECRET authorization
+- Finds products that returned to stock with pending notifications
+- Sends emails via Resend API to all subscribed users
+- Marks notifications as sent and invalidates product cache
+- Sends ntfy.sh alerts for operational monitoring
+- Logs errors via observability system
+
+✅ **Production Integration**:
+- Registered cron job in vercel.json: `0 * * * *` (hourly)
+- Proper error handling with graceful fallbacks
+- Uses project's standard logging and alerting patterns
+- Follows RLS security model with service role isolation
+- TypeScript strict mode, Hebrew RTL support
+
+✅ **Quality Assurance**:
+- Test suite for server actions (5 test functions)
+- Comprehensive error scenarios covered
+- Type-safe with full TypeScript compilation
+- Code formatted with Biome (template literals, import sorting)
+- Follows project conventions: cache invalidation, integer agorot handling
+
+**Files Modified/Created:**
+- `migrations/pending/276_stock_notifications.sql` - Database schema
+- `src/server/actions/stock-notifications.ts` - Server actions
+- `src/server/actions/stock-notifications.test.ts` - Tests
+- `src/components/storefront/NotifyMeButton.tsx` - Button UI
+- `src/components/storefront/StockNotificationWrapper.tsx` - Product page wrapper
+- `src/app/api/cron/stock-notifications/route.ts` - Cron handler
+- `src/lib/category-page.ts` - Added stock filtering
+- `src/app/(store)/product/[slug]/page.tsx` - Product page integration
+- `vercel.json` - Cron registration
+
+**Git Commit:** `8000c9f4d` — MAINTENANCE: Stock monitoring with auto-hide and notify-me
+
+**המשך מ:** Stock monitoring complete. Migration 276 awaiting approval for production. Cron infrastructure ready and integrated. Next: Monitor stock levels in production and track user engagement with notifications.
+
+---
+
 ## 🎯 Autonomous Work Summary (Session: 2026-10-18 — MAINTENANCE: Continuous Deal Seeding)
 
 **MAINTENANCE GOAL: Continuously seed new deals into DB from approved sources — ✅ COMPLETE (2026-10-18)**
