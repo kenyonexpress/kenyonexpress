@@ -169,9 +169,7 @@ export default async function AccountOverviewPage() {
                   </p>
                 )}
                 {paymentsSummary.primaryExpired && (
-                  <p className="account-row__meta" style={{ color: '#d32f2f' }}>
-                    פג תוקף
-                  </p>
+                  <p className="account-row__meta text-red-600">פג תוקף</p>
                 )}
               </>
             )}
