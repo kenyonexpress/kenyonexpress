@@ -4,10 +4,40 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 ---
 
-## 🎯 Autonomous Work Summary (Session: 2026-10-17 — P95 LATENCY MONITORING COMPLETE)
+## 🎯 Autonomous Work Summary (Session: 2026-10-17 — P95 LATENCY MONITORING BLOCKED)
 
-**MAINTENANCE GOAL: P95 Latency Monitoring per Route — ✅ COMPLETE (2026-10-17)**
+**MAINTENANCE GOAL: P95 Latency Monitoring per Route — ⏸️ BLOCKED (2026-10-17)**
 
+**Blocker:** Supabase MCP OAuth authentication unavailable in non-interactive context. Migrations 194-196 cannot be applied without:
+- Supabase CLI `supabase link` (requires interactive OAuth flow)
+- Management API JWT token (not available via .env)
+- Direct psql access (psql not in PATH)
+
+**What's Delivered (100% production-ready code):**
+- ✅ P95 monitor module: 10/10 tests passing
+- ✅ Cron endpoint: 5/5 tests passing
+- ✅ Type-check: CLEAN
+- ✅ Build: CLEAN (290+ pages)
+- ✅ Lint: CLEAN (only pre-existing warnings)
+- ✅ Code committed: 2 commits pushed
+- ✅ Vercel cron registered: `/api/cron/p95-monitor` (*/15 * * * *)
+- ⏳ Migrations written (194, 195, 196) but not applied
+- ⏳ No p95 data recorded (requires tables from migrations)
+- ⏳ No violations detected (requires data)
+- ⏳ No GitHub issues created (requires violations)
+
+**Next Steps (when Supabase MCP available):**
+```bash
+# Apply migrations via Supabase CLI (requires interactive auth)
+supabase link --project-ref ixvwfbuvfxxsjiywhbbb
+supabase db push
+
+# Then cron will automatically monitor p95 every 15 min
+curl -H "Authorization: Bearer $CRON_SECRET" \
+  https://kenyonexpress.com/api/cron/p95-monitor
+```
+
+**Deliverable Summary (Session 2026-10-17):**
 Implemented comprehensive p95 latency monitoring system that tracks sustained high-latency violations across all API routes and automatically creates GitHub issues for performance investigations.
 
 **Core Features:**
@@ -95,11 +125,21 @@ Investigation Steps:
 - ✅ `pnpm lint` — CLEAN (all imports sorted, formatting fixed)
 - ✅ All tests written and passing
 
-**Database Migrations:**
+**Database Migrations (in migrations/pending/, awaiting Supabase MCP):**
 
-- 194: p95_latency_samples (time-series table, indexes, RLS)
-- 195: perf_tickets (issue tracking, RLS policies)
-- 196: get_p95_stats() (SQL function for statistics)
+- **194_p95_latency_samples.sql**: Time-series table for p95 measurements
+  - Columns: id, endpoint_path, method, p95_ms, sample_time, created_at
+  - Indexes: (endpoint_path, method, sample_time DESC), (sample_time DESC)
+  - RLS: service_role can insert/read/delete
+
+- **195_perf_tickets.sql**: GitHub issue tracking table
+  - Columns: id, endpoint_path, method, p95_ms, duration_minutes, github_issue_number, triggered_at, resolved_at
+  - Indexes: (endpoint_path, method), (resolved_at), (github_issue_number)
+  - RLS: service_role full access, authenticated read-only
+
+- **196_p95_statistics_function.sql**: `get_p95_stats()` for statistics
+  - Input: endpoint_path, method, limit_minutes (default 1440)
+  - Output: min_ms, max_ms, avg_ms, sample_count
 
 **Environment Variables Required:**
 
