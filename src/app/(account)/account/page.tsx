@@ -1,9 +1,18 @@
 import { formatIls, orderStatusLabel, orderStatusTone } from '@/lib/account/format'
 import { formatDate } from '@/lib/account/format'
+import {
+  addressLine,
+  cardLabel,
+  expiryLabel,
+  summarizeAddresses,
+  summarizePaymentMethods,
+  summarizePreferences,
+} from '@/lib/account/overview'
 import { isCouponPresentable } from '@/lib/vouchers/coupon-view'
-import { getWalletSummary } from '@/server/queries/account'
+import { getMyAddresses, getMyPaymentTokens, getWalletSummary } from '@/server/queries/account'
 import { getCashbackTracker } from '@/server/queries/cashback'
 import { getMyLoyalty } from '@/server/queries/loyalty'
+import { loadPreferences } from '@/server/queries/notifications'
 import { getMyOrders } from '@/server/queries/orders'
 import { getCustomerVouchers } from '@/server/queries/vouchers'
 import Link from 'next/link'
@@ -21,15 +30,22 @@ export const metadata = { title: 'האזור האישי' }
  * selects the Cardcom token (src/lib/account/saved-cards.test.ts).
  */
 export default async function AccountOverviewPage() {
-  const [wallet, orders, coupons, cashback, loyalty] = await Promise.all([
-    getWalletSummary(),
-    getMyOrders(),
-    getCustomerVouchers(),
-    getCashbackTracker(),
-    getMyLoyalty(),
-  ])
+  const [wallet, orders, coupons, cashback, loyalty, addresses, tokens, preferences] =
+    await Promise.all([
+      getWalletSummary(),
+      getMyOrders(),
+      getCustomerVouchers(),
+      getCashbackTracker(),
+      getMyLoyalty(),
+      getMyAddresses(),
+      getMyPaymentTokens(),
+      loadPreferences(),
+    ])
 
   const activeCoupons = coupons.filter((c) => isCouponPresentable(c))
+  const addressesSummary = summarizeAddresses(addresses)
+  const paymentsSummary = summarizePaymentMethods(tokens)
+  const preferencesSummary = summarizePreferences(preferences)
 
   return (
     <>
@@ -37,17 +53,17 @@ export default async function AccountOverviewPage() {
       <p className="account-subtitle">סקירה מהירה של החשבון שלך</p>
 
       <div className="dashboard-stats">
-        <div className="stat-tile">
+        <Link href="/account/wallet" className="stat-tile">
           <p className="stat-label">יתרת הארנק</p>
           <p className="stat-value">{formatIls(wallet.balanceAgorot)}</p>
           <p className="stat-meta">קרדיט בחשבון</p>
-        </div>
+        </Link>
 
-        <div className="stat-tile">
+        <Link href="/account/cashback" className="stat-tile">
           <p className="stat-label">קאשבק זמין</p>
           <p className="stat-value">{formatIls(cashback.overview.liveAgorot)}</p>
           <p className="stat-meta">ניתן להשתמש בקנייות</p>
-        </div>
+        </Link>
 
         <div className="stat-tile">
           <p className="stat-label">קופונים פעילים</p>
@@ -136,6 +152,87 @@ export default async function AccountOverviewPage() {
           )}
         </section>
       )}
+
+      <div className="account-grid">
+        {paymentsSummary.count > 0 && (
+          <section className="account-card">
+            <h2 className="account-card__title">אמצעי תשלום</h2>
+            {paymentsSummary.primary && (
+              <>
+                <p className="account-row__meta">{cardLabel(paymentsSummary.primary)}</p>
+                {paymentsSummary.primary.expiryMonth && paymentsSummary.primary.expiryYear && (
+                  <p className="account-row__meta">
+                    {expiryLabel(
+                      paymentsSummary.primary.expiryMonth,
+                      paymentsSummary.primary.expiryYear,
+                    )}
+                  </p>
+                )}
+                {paymentsSummary.primaryExpired && (
+                  <p className="account-row__meta" style={{ color: '#d32f2f' }}>
+                    פג תוקף
+                  </p>
+                )}
+              </>
+            )}
+            {paymentsSummary.live < paymentsSummary.count && (
+              <p className="account-row__meta">
+                {paymentsSummary.count - paymentsSummary.live} כרטיסים פגי תוקף
+              </p>
+            )}
+            <p style={{ marginTop: 12 }}>
+              <Link className="account-btn" href="/account/tokens">
+                לאמצעי התשלום
+              </Link>
+            </p>
+          </section>
+        )}
+
+        {addressesSummary.count > 0 && (
+          <section className="account-card">
+            <h2 className="account-card__title">כתובות משלוח</h2>
+            {addressesSummary.primary && (
+              <p className="account-row__meta">{addressLine(addressesSummary.primary)}</p>
+            )}
+            {addressesSummary.count > 1 && (
+              <p className="account-row__meta">{addressesSummary.count} כתובות</p>
+            )}
+            <p style={{ marginTop: 12 }}>
+              <Link className="account-btn" href="/account/addresses">
+                לכתובות המשלוח
+              </Link>
+            </p>
+          </section>
+        )}
+
+        <section className="account-card">
+          <h2 className="account-card__title">התראות</h2>
+          <p className="account-row__meta">
+            {preferencesSummary.off === 0
+              ? 'כל ההתראות פועלות'
+              : preferencesSummary.off === 1
+                ? 'התראה אחת כבויה'
+                : `${preferencesSummary.off} התראות כבויות`}
+          </p>
+          <p style={{ marginTop: 12 }}>
+            <Link className="account-btn" href="/account/notifications">
+              להעדפות ההתראות
+            </Link>
+          </p>
+        </section>
+
+        <section className="account-card">
+          <h2 className="account-card__title">פרטיות ונתונים</h2>
+          <p className="account-row__meta">
+            הורדת כל המידע שנשמר עליכם, ניהול ההסכמה לעוגיות, ומחיקת החשבון לצמיתות.
+          </p>
+          <p style={{ marginTop: 12 }}>
+            <Link className="account-btn" href="/account/privacy">
+              לפרטיות ומחיקת החשבון
+            </Link>
+          </p>
+        </section>
+      </div>
     </>
   )
 }

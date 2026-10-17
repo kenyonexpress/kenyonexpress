@@ -16,7 +16,6 @@ const ITEMS = [
   { href: '/account/tokens', label: 'אמצעי תשלום', icon: 'credit-card' },
   { href: '/account/notifications', label: 'התראות', icon: 'bell' },
   { href: '/account/security', label: 'אבטחה', icon: 'lock' },
-  { href: '/account/details', label: 'פרטים אישיים', icon: 'user' },
   { href: '/account/wishlist', label: 'מועדפים', icon: 'heart' },
   { href: '/account/loyalty', label: 'תוכנית חברים', icon: 'crown' },
   { href: '/account/referrals', label: 'הפניות של חברים', icon: 'gift' },
@@ -34,7 +33,6 @@ const ICON_LABELS: Record<IconType, string> = {
   'credit-card': 'אמצעי תשלום',
   bell: 'התראות',
   lock: 'אבטחה',
-  user: 'פרטים אישיים',
   heart: 'מועדפים',
   crown: 'תוכנית חברים',
   gift: 'הפניות של חברים',
@@ -156,20 +154,6 @@ function IconComponent({ icon }: { icon: IconType }) {
         <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
         <path d="M7 11V7a5 5 0 0 1 10 0v4" />
         <circle cx="12" cy="16" r="1" />
-      </svg>
-    ),
-    user: (
-      <svg
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-      >
-        <title>{ICON_LABELS.user}</title>
-        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-        <circle cx="12" cy="7" r="4" />
       </svg>
     ),
     heart: (
