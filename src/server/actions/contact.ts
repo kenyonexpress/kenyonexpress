@@ -4,6 +4,7 @@ import { contactEmail } from '@/lib/contact-address'
 import { sendEmail } from '@/lib/email/resend'
 import { withActionContext } from '@/lib/observability/action-context'
 import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
+import { createClient } from '@supabase/supabase-js'
 import { z } from 'zod'
 
 /**
@@ -63,6 +64,28 @@ async function runSubmitContactForm(
   const safeName = escapeHtml(name)
   const safeEmail = escapeHtml(email)
   const safeMessage = escapeHtml(message).replaceAll('\n', '<br/>')
+
+  // Store in support_messages table for classification bot to process
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+    process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+  )
+
+  const { error: dbError } = await supabase.from('support_messages').insert({
+    customer_email: email,
+    customer_name: name,
+    message_body: message,
+    source: 'contact_form',
+    status: 'new',
+    category: 'unknown',
+    is_complex: false,
+    complexity_score: 0,
+  })
+
+  if (dbError) {
+    // Log but don't fail - still send email to ensure message is received
+    console.error('Failed to store support message:', dbError)
+  }
 
   const result = await sendEmail({
     to: contactTo(),
