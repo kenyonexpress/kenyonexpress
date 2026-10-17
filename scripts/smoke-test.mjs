@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { chromium } from 'playwright'
+import { chromium } from '@playwright/test'
 
 const BASE_URL = process.env.SMOKE_TEST_URL || 'http://localhost:3000'
 
