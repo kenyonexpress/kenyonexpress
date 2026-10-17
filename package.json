@@ -92,12 +92,12 @@
     "node-forge": "^1.4.0",
     "pdf-lib": "^1.17.1",
     "postgres": "^3.4.9",
-    "posthog-js": "^1.427.2",
+    "posthog-js": "^1.438.12",
     "qrcode": "^1.5.4",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "recharts": "^3.10.1",
-    "sharp": "^0.35.4",
+    "sharp": "^0.35.5",
     "sonner": "^2.0.7",
     "tailwind-merge": "^2.6.0",
     "web-push": "^3.6.7",
@@ -105,7 +105,16 @@
     "zustand": "^5.0.14"
   },
   "pnpm": {
-    "onlyBuiltDependencies": ["@biomejs/biome", "@parcel/watcher", "@swc/core", "esbuild", "sharp"]
+    "onlyBuiltDependencies": ["@biomejs/biome", "@parcel/watcher", "@swc/core", "esbuild", "sharp"],
+    "overrides": {
+      "tmp": ">=0.2.6",
+      "extract-zip": ">=2.0.2",
+      "brace-expansion": ">=5.0.11",
+      "braces": ">=3.0.4",
+      "source-map-js": ">=1.2.2",
+      "basic-ftp": ">=6.2.1",
+      "pdfjs-dist": ">=4.1.393"
+    }
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.12.1",
@@ -115,7 +124,7 @@
     "@capacitor/core": "^8.5.3",
     "@capacitor/ios": "^8.5.3",
     "@lhci/cli": "0.15.1",
-    "@percy/cli": "1.32.9",
+    "@percy/cli": "1.32.11",
     "@percy/playwright": "1.1.2",
     "@playwright/test": "^1.50.1",
     "@tailwindcss/postcss": "^4",
@@ -133,7 +142,7 @@
     "fast-xml-parser": "^5.10.1",
     "husky": "^9.1.7",
     "jsdom": "^25.0.1",
-    "lighthouse": "^13.4.1",
+    "lighthouse": "^13.5.0",
     "lint-staged": "^15.3.0",
     "tailwindcss": "^4",
     "typescript": "^5",
