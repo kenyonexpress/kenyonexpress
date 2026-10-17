@@ -1,8 +1,8 @@
 # `migrations/pending/`
 
-## 2026-10-18: 130 PENDING (abandoned cart recovery: multi-stage recovery emails with escalating discounts, STEP 95)
+## 2026-10-18: 273 PENDING (abandoned cart recovery: multi-stage recovery emails with escalating discounts, STEP 95)
 
-`130_abandoned_cart_recovery.sql` adds the infrastructure for abandoned cart recovery emails at +1h (5% discount) and +24h (10% discount):
+`273_abandoned_cart_recovery.sql` adds the infrastructure for abandoned cart recovery emails at +1h (5% discount) and +24h (10% discount):
 
 - `public.abandoned_cart_nudges` table: tracks recovery email progression per cart, with timestamps for first/second nudge, discount percentages, provider IDs (for idempotency), and recovery outcome (order placed timestamp)
 - `fn_due_abandoned_carts_stage_1()`: identifies carts 1-2 hours old with items, not yet recovered

@@ -12,11 +12,11 @@ Multi-stage email recovery system for abandoned shopping carts with escalating d
 
 ### 1. Apply Database Migration (Requires Supabase MCP)
 
-**Migration**: `supabase/migrations/130_abandoned_cart_recovery.sql`
+**Migration**: `migrations/pending/273_abandoned_cart_recovery.sql`
 
 ```bash
 # Via Supabase MCP (requires authenticated access):
-mcp apply_migration 130
+mcp apply_migration 273
 
 # Via Supabase CLI (if available):
 supabase migration up
