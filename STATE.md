@@ -1,4 +1,63 @@
-RESUME FROM: STEP 96
+RESUME FROM: STEP 97
+
+## ✅ STEP 96: MAINTENANCE — Customer Support Inbox Classification Bot — COMPLETE (2026-10-18 04:45-05:00)
+
+**Goal**: Build classification bot to automatically process customer support messages, respond to simple inquiries, and route complex issues to owner via WhatsApp.
+
+**Results**:
+
+✅ **Database Schema (Migration 274)**:
+- support_messages: Stores customer inquiries with classification metadata
+- support_auto_responses: Templated responses for each category
+- support_classification_logs: Audit trail for classification changes
+- Metrics views: v_support_pending, v_support_metrics for dashboards
+
+✅ **Classification Service** (classify.ts):
+- Pattern-based keyword matching for 7 categories
+- Complexity scoring (0-100) with configurable threshold (70 = complex)
+- Hebrew + English pattern support
+- 32 tests covering all categories and edge cases
+
+✅ **Message Processing** (process.ts):
+- Auto-respond to simple messages using templated Hebrew responses
+- Route complex issues to owner via existing WhatsApp + email infrastructure
+- Batch processing with error handling and retry logic
+- Idempotent: tracks provider_id to prevent duplicate sends
+
+✅ **API Integration**:
+- /api/cron/support-classification: Protected endpoint (CRON_SECRET)
+- Contact form integration: auto-stores messages in support_messages table
+- Existing WhatsApp forwardInboundToOwner used for complex routing
+
+✅ **Quality Gates**:
+- ✅ pnpm type-check: CLEAN
+- ✅ pnpm lint: CLEAN (biome)
+- ✅ pnpm test: 32/32 PASSING (classify.test.ts + process.test.ts)
+- ✅ pnpm build: Ready (migration pending application)
+
+**Architectural Decisions**:
+- Simple heuristic classification (no ML) for fast, deterministic routing
+- Templates in database allow dynamic updates without redeployment
+- RLS policies ensure authenticated access only
+- Batch processing every 5-10 minutes (configurable)
+- Complexity thresholds per category allow fine-tuning
+
+**Known Blockers**:
+- Migration 274 requires Supabase MCP application (external, STEP 95 blocker)
+- Cron scheduling requires Vercel dashboard or GitHub Actions setup
+- WhatsApp integration uses existing infrastructure (Twilio configured)
+
+**Commits**:
+- de06b7d37: [autopilot] STEP 96: Customer support inbox classification bot
+
+**Next Steps**:
+1. Apply migration 274 via Supabase MCP (when available)
+2. Verify auto-responses send correctly
+3. Test complex message routing via WhatsApp
+4. Monitor classification accuracy via v_support_metrics dashboard
+5. Fine-tune complexity_threshold per category based on real data
+
+---
 
 ## ❌ DEFERRED: STEP 95 — Supabase MCP Unavailable (External Blocker)
 
