@@ -1,7 +1,9 @@
 {
   "app": {
-    "name": "KenyonExpress",
-    "tagline": "קופונים, מוצרים ומבצעים"
+    "name": "קניון אקספרס",
+    "tagline": "קופונים, מוצרים ומבצעים",
+    "title": "קניון אקספרס | קופונים ומבצעים",
+    "description": "קופונים, מבצעים ומוצרים במחיר הכי טוב. בפריסה ארצית."
   },
   "nav": {
     "home": "דף הבית",
@@ -9,7 +11,10 @@
     "products": "מוצרים",
     "account": "החשבון שלי",
     "cart": "עגלת קניות",
-    "search": "חיפוש"
+    "search": "חיפוש",
+    "categories": "קטגוריות",
+    "supplier": "פורטל ספק",
+    "blog": "בלוג"
   },
   "auth": {
     "login": "התחברות",
@@ -18,16 +23,71 @@
     "email": "אימייל",
     "password": "סיסמה",
     "fullName": "שם מלא",
-    "phone": "טלפון"
+    "phone": "טלפון",
+    "termsAndConditions": "תנאי השימוש",
+    "privacyPolicy": "מדיניות הפרטיות",
+    "agreeToTerms": "אני מסכים/ה לתנאי השימוש"
   },
   "common": {
     "loading": "טוען...",
     "error": "שגיאה",
+    "success": "הצלחה",
     "save": "שמירה",
     "cancel": "ביטול",
     "confirm": "אישור",
     "back": "חזרה",
-    "currency": "₪"
+    "next": "הבא",
+    "previous": "הקודם",
+    "currency": "₪",
+    "homeLink": "לדף הבית",
+    "systemStatus": "מצב המערכת",
+    "contactSupport": "פנייה לתמיכה",
+    "something_went_wrong": "משהו השתבש אצלנו",
+    "error_reported": "התקלה נרשמה ואנחנו מטפלים בה. אפשר לנסות שוב בעוד רגע.",
+    "not_found": "הדף שחיפשתם לא נמצא",
+    "try_again": "נסו שוב"
+  },
+  "account": {
+    "myAccount": "החשבון שלי",
+    "myFavorites": "המועדפים שלי",
+    "addresses": "כתובות",
+    "settings": "הגדרות",
+    "security": "אבטחה",
+    "orders": "ההזמנות שלי",
+    "cashback": "כסף חוזר",
+    "billing": "חיוב",
+    "profileDetails": "פרטי הפרופיל",
+    "shippingAddresses": "כתובות למשלוח מוצרים פיזיים"
+  },
+  "cart": {
+    "cartTitle": "עגלת קניות",
+    "emptyCart": "סל הקניות שלך ריק כרגע",
+    "addToCart": "הוסף לעגלה",
+    "removeFromCart": "הסר מהעגלה",
+    "viewFullCart": "צפייה בעגלה המלאה",
+    "checkout": "המשך לתשלום",
+    "continueToCheckout": "עברו לקופה…"
+  },
+  "product": {
+    "productImage": "תמונת מוצר",
+    "newProduct": "מוצר חדש",
+    "price": "מחיר",
+    "fullPrice": "מחיר מלא",
+    "quantity": "כמות",
+    "increaseQuantity": "הוסף כמות",
+    "decreaseQuantity": "הפחת כמות",
+    "inStock": "במלאי",
+    "outOfStock": "אין במלאי",
+    "description": "תיאור",
+    "details": "פרטים",
+    "addToFavorites": "הוסף למועדפים",
+    "removeFromFavorites": "הסר מהמועדפים"
+  },
+  "error": {
+    "errorCode": "קוד תקלה לתמיכה",
+    "contactViaSMS": "פנייה לתמיכה בוואטסאפ",
+    "contactForm": "טופס יצירת קשר",
+    "internalServerError": "משהו השתבש בשרת. בואו נסיים את הזמנתכם לאחר שנתקן זאת."
   },
   "admin": {
     "title": "פאנל ניהול",
@@ -42,13 +102,24 @@
     "new": "חדש",
     "edit": "עריכה",
     "delete": "מחיקה",
-    "save": "שמירה",
-    "cancel": "ביטול",
     "active": "פעיל",
     "inactive": "לא פעיל",
     "pending": "ממתין",
     "suspended": "מושעה",
     "draft": "טיוטה",
     "archived": "ארכיון"
+  },
+  "consent": {
+    "banner": "אנחנו משתמשים בעוגיות כדי להשפר את חוויית הגלישה שלך",
+    "accept": "קבל",
+    "reject": "דחה",
+    "settings": "הגדרות"
+  },
+  "breadcrumb": {
+    "navigationPath": "פירורי לחם"
+  },
+  "headers": {
+    "popularCategories": "קטגוריות פופולריות",
+    "browseAllProducts": "לכל המוצרים"
   }
 }

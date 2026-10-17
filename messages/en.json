@@ -1,7 +1,9 @@
 {
   "app": {
-    "name": "KenyonExpress",
-    "tagline": "Coupons, products and deals"
+    "name": "Kenyon Express",
+    "tagline": "Coupons, products and deals",
+    "title": "Kenyon Express | Coupons and Deals",
+    "description": "Coupons, deals and products at the best price. Nationwide delivery."
   },
   "nav": {
     "home": "Home",
@@ -9,7 +11,10 @@
     "products": "Products",
     "account": "My Account",
     "cart": "Cart",
-    "search": "Search"
+    "search": "Search",
+    "categories": "Categories",
+    "supplier": "Supplier Portal",
+    "blog": "Blog"
   },
   "auth": {
     "login": "Login",
@@ -18,16 +23,71 @@
     "email": "Email",
     "password": "Password",
     "fullName": "Full Name",
-    "phone": "Phone"
+    "phone": "Phone",
+    "termsAndConditions": "Terms of Service",
+    "privacyPolicy": "Privacy Policy",
+    "agreeToTerms": "I agree to the Terms of Service"
   },
   "common": {
     "loading": "Loading...",
     "error": "Error",
+    "success": "Success",
     "save": "Save",
     "cancel": "Cancel",
     "confirm": "Confirm",
     "back": "Back",
-    "currency": "₪"
+    "next": "Next",
+    "previous": "Previous",
+    "currency": "₪",
+    "homeLink": "Back to Home",
+    "systemStatus": "System Status",
+    "contactSupport": "Contact Support",
+    "something_went_wrong": "Something went wrong",
+    "error_reported": "The error has been reported and we are working on it. You can try again in a moment.",
+    "not_found": "The page you are looking for was not found",
+    "try_again": "Try Again"
+  },
+  "account": {
+    "myAccount": "My Account",
+    "myFavorites": "My Favorites",
+    "addresses": "Addresses",
+    "settings": "Settings",
+    "security": "Security",
+    "orders": "My Orders",
+    "cashback": "Cashback",
+    "billing": "Billing",
+    "profileDetails": "Profile Details",
+    "shippingAddresses": "Shipping addresses for physical products"
+  },
+  "cart": {
+    "cartTitle": "Shopping Cart",
+    "emptyCart": "Your shopping cart is empty",
+    "addToCart": "Add to Cart",
+    "removeFromCart": "Remove from Cart",
+    "viewFullCart": "View Full Cart",
+    "checkout": "Proceed to Checkout",
+    "continueToCheckout": "Going to checkout…"
+  },
+  "product": {
+    "productImage": "Product image",
+    "newProduct": "New Product",
+    "price": "Price",
+    "fullPrice": "Full Price",
+    "quantity": "Quantity",
+    "increaseQuantity": "Increase Quantity",
+    "decreaseQuantity": "Decrease Quantity",
+    "inStock": "In Stock",
+    "outOfStock": "Out of Stock",
+    "description": "Description",
+    "details": "Details",
+    "addToFavorites": "Add to Favorites",
+    "removeFromFavorites": "Remove from Favorites"
+  },
+  "error": {
+    "errorCode": "Error Code for Support",
+    "contactViaSMS": "Contact Support via WhatsApp",
+    "contactForm": "Contact Form",
+    "internalServerError": "Something went wrong on the server. Let us finish your order once we fix this."
   },
   "admin": {
     "title": "Admin Panel",
@@ -42,13 +102,24 @@
     "new": "New",
     "edit": "Edit",
     "delete": "Delete",
-    "save": "Save",
-    "cancel": "Cancel",
     "active": "Active",
     "inactive": "Inactive",
     "pending": "Pending",
     "suspended": "Suspended",
     "draft": "Draft",
     "archived": "Archived"
+  },
+  "consent": {
+    "banner": "We use cookies to improve your browsing experience",
+    "accept": "Accept",
+    "reject": "Reject",
+    "settings": "Settings"
+  },
+  "breadcrumb": {
+    "navigationPath": "Breadcrumb navigation"
+  },
+  "headers": {
+    "popularCategories": "Popular Categories",
+    "browseAllProducts": "Browse All Products"
   }
 }
