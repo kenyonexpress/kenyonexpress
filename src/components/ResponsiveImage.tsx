@@ -50,7 +50,7 @@ function generateSizes(
   }
 
   // Default sizes for different image types
-  const defaults: Record<string, string> = {
+  const defaults: Record<keyof typeof PRODUCT_IMAGE_SPECS, string> = {
     dealCard: '(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw',
     productPage: '(max-width: 640px) 100vw, (max-width: 1024px) 80vw, 60vw',
     gallery: '(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 70vw',

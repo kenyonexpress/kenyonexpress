@@ -15,6 +15,12 @@ migration, so the apply order across the two branches is undefined.
 Until the owner picks a mainline branch, **apply nothing from either side.**
 The full measured table is in `docs/MIGRATION-NUMBER-COLLISIONS.md`.
 
+## 2026-10-17: 188 added - Search Analytics: CTR tracking and weekly reporting
+
+`188_search_analytics.sql` adds search_clicks table and reporting functions for CTR analysis and weekly delivery to decision makers. **Not applied.**
+
+Tracks product clicks from search results with position for CTR per position analysis. Includes fn_search_weekly_report() for aggregated reports with top searches and gap analysis (no-result queries).
+
 ## 2026-10-16: 187 added - products.full_address
 
 `187_products_full_address.sql` adds nullable `products.full_address` for the
