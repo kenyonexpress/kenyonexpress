@@ -2,6 +2,30 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## Goal 1: Coupon Redemption + QR — ✅ COMPLETE (2026-10-17)
+
+**Branch:** feat/coupon-redemption (rebased on closeout/v1-final, all tests passing)
+
+**Implementation:**
+- ✅ **Supplier scan page** (`/supplier/scan`): RTL Hebrew, BarcodeDetector API + manual input, two-stage flow, Hebrew error messages, 44px+ CTA
+- ✅ **Coupon detail page** (`/coupon/[id]`): QR display, status (active/redeemed/expired), Hebrew product names
+- ✅ **Redemption API** (`POST /api/supplier/vouchers/redeem`): Atomic RPC, idempotency key, order_items settlement_status → `redeemed`
+- ✅ **Testing**: qr.test.ts, issue.test.ts, redemption.test.ts, mark-order-item-redeemed.test.ts, all 5345 tests pass
+- ✅ **compare.mjs**: Coupon page added as local-only measurement (no live WP equivalent)
+- ✅ **Build**: Type-check CLEAN, lint clean, build SUCCESS
+
+**Acceptance Criteria (all met):**
+- ✅ Scan RTL, CTA 44px+, יתרה בולטת בהצלחה
+- ✅ QR visible in `/coupon/[id]` and `/account/vouchers`
+- ✅ Second scan rejected in Hebrew
+- ✅ `order_items.settlement_status` set to `redeemed`
+- ✅ Vitest coverage (qr, issue, redemption, mark-order-item)
+- ✅ compare.mjs integration
+
+המשך מ: Goal 1 COMPLETE. Coupon redemption fully implemented, tested, and verified. Next: Goal 2 - Personal Area.
+
+---
+
 ## 📋 Decisions Made Autonomously
 
 **UX49 SKIPPED (Goal stuck twice):**
