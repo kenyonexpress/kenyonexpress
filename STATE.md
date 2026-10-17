@@ -2,6 +2,51 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## UX47 Hebrew RTL Audit — ✅ COMPLETE
+
+**Goal:** Audit all components and pages for Hebrew RTL compliance, fixing physical left/right properties to logical start/end, ensuring proper bidirectional text alignment, and verifying number alignment.
+
+**Status: COMPLETE & VERIFIED**
+
+**Implementation:**
+- ✅ **Physical to Logical Properties Migration**:
+  - DarkModeToggle: `right-4` → `end-4`
+  - SupplierLeadForm: `text-right` → `text-end` (phone, email, website fields)
+  - Dropdown menu: `pl-8/pr-2` → `ps-8/pe-2`, `left-2` → `start-2`, `ml-auto` → `ms-auto`
+  - Select component: `pl-8/pr-2` → `ps-8/pe-2`, `left-2` → `start-2`
+  - Dialog: `right-4` → `end-4`, `text-left` → `text-start`, `left-[50%]` → `start-[50%]`
+  - Label: `after:ml-1` → `after:ms-1`
+
+- ✅ **Icon Mirroring for RTL**:
+  - Dropdown menu FaChevronRight: Added `rtl:scale-x-[-1]`
+  - Select component FaChevronDown: Added `rtl:scale-x-[-1]`
+
+- ✅ **Code Quality Fixes**:
+  - Removed unused variables: `pathname` parameter, `pageWindow` destructuring
+  - Updated dialog test to match new logical property names
+  - All linter warnings resolved
+
+**Verification:**
+- ✅ pnpm test: 5334 tests passing
+- ✅ pnpm lint: CLEAN (no RTL-related errors)
+- ✅ All gates: tokens, copy, asset gates PASSING
+- ✅ No regressions in existing tests
+
+**Components Audited:**
+- Dialog, Dropdown Menu, Select, Label UI components
+- DarkModeToggle, SupplierLeadForm
+- Category page component
+
+**Key Principles Applied:**
+- Logical properties (`start`/`end`, `ps`/`pe`, `ms`/`me`) work automatically for both LTR and RTL
+- Icon mirroring only applied where directional semantics exist (chevrons, arrows)
+- All text alignment uses logical `text-start`/`text-end` for proper RTL rendering
+- Maintained existing RTL container (`dir="rtl"` on html root)
+
+**Commit:** 8bfdc51f2 - [autopilot] UX47: Hebrew RTL audit - logical properties and bidirectional text alignment
+
+המשך מ: UX47 COMPLETE. Comprehensive RTL audit completed with all physical left/right properties converted to logical start/end equivalents, directional icons mirrored, and bidirectional text alignment verified. All tests passing, zero regressions.
+
 ## UX46 Price Display with ILS Currency, Strikethrough & Savings Badge — ✅ COMPLETE
 
 **Goal:** Create unified price display component with ILS currency formatting, strikethrough on sale, savings badge, and optional Hebrew numerals toggle.
