@@ -76,13 +76,7 @@
     "zustand": "^5.0.15"
   },
   "pnpm": {
-    "onlyBuiltDependencies": [
-      "@biomejs/biome",
-      "@parcel/watcher",
-      "@swc/core",
-      "esbuild",
-      "sharp"
-    ]
+    "onlyBuiltDependencies": ["@biomejs/biome", "@parcel/watcher", "@swc/core", "esbuild", "sharp"]
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",

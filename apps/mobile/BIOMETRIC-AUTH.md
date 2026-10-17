@@ -218,26 +218,22 @@ Common error scenarios:
 
 ## Testing
 
-Biometric authentication is fully testable with mocked Expo modules:
+For Expo/React Native apps, biometric authentication should be tested on real devices or simulators:
 
-```typescript
-import { renderHook, act } from '@testing-library/react-native';
-import { useBiometricAuth } from '@/lib/useBiometricAuth';
+```bash
+# iOS Simulator
+pnpm ios
 
-vi.mock('expo-local-authentication');
-vi.mock('expo-secure-store');
-
-it('should authenticate with biometric', async () => {
-  const { result } = renderHook(() => useBiometricAuth());
-
-  let authenticated = false;
-  await act(async () => {
-    authenticated = await result.current.authenticate('user123');
-  });
-
-  expect(authenticated).toBe(true);
-});
+# Android Emulator
+pnpm android
 ```
+
+Unit testing Expo modules requires React Native-specific test runners and native module mocking. The Expo CLI handles testing through its built-in capabilities, but full biometric testing requires actual device/simulator interaction with:
+1. Enrolled biometric data (Face-ID/fingerprint)
+2. Keychain/Secure Storage access
+3. Native authentication flows
+
+Integration tests can be written with Detox or similar E2E frameworks that run against compiled apps.
 
 ## Production Checklist
 

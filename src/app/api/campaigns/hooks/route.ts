@@ -31,7 +31,7 @@ interface CampaignResponse {
   triggered_at?: string
 }
 
-async function handleGET(req: NextRequest): Promise<Response> {
+async function handleGET(_req: NextRequest): Promise<Response> {
   try {
     const cookieStore = await cookies()
     const supabase = createServerClient(
