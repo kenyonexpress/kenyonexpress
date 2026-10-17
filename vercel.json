@@ -8,5 +8,11 @@
   "env": {
     "VERCEL_CDN_REGIONS": "fra1,dub1",
     "VERCEL_EDGE_HEBREW": "true"
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/observability-check",
+      "schedule": "*/5 * * * *"
+    }
+  ]
 }

@@ -1,46 +1,18 @@
-'use client'
-
+import { fetchUnifiedObservability } from '@/lib/observability/integrations'
 import { getEndpointMetrics, getUnresolvedAlerts } from '@/lib/observability/metrics'
-import type { EndpointMetric, SLAAlert } from '@/lib/observability/metrics'
-import { useEffect, useState } from 'react'
+import { AlertCircle, BarChart3, Zap } from 'lucide-react'
 
 /**
- * Unified observability dashboard combining:
- * - Endpoint performance metrics (p95, p99, error rates)
- * - SLA alert status and history
- * - Health status aggregation
- * - Integration placeholders for Sentry, PostHog, Axiom, Vercel
+ * Server-rendered observability dashboard combining all integration data
+ * Displays endpoint metrics, SLA status, and alerts with real-time data
  */
-export default function ObservabilityPage() {
-  const [metrics, setMetrics] = useState<EndpointMetric[]>([])
-  const [alerts, setAlerts] = useState<SLAAlert[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    loadData()
-    const interval = setInterval(loadData, 30000) // Refresh every 30s
-    return () => clearInterval(interval)
-  }, [])
-
-  async function loadData() {
-    try {
-      setError(null)
-      const [metricsData, alertsData] = await Promise.all([
-        getEndpointMetrics(),
-        getUnresolvedAlerts(),
-      ])
-
-      setMetrics(metricsData)
-      setAlerts(alertsData)
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to load observability data'
-      setError(message)
-      console.error('[dashboard] Error:', err)
-    } finally {
-      setLoading(false)
-    }
-  }
+export default async function ObservabilityPage() {
+  // Fetch all data in parallel
+  const [metrics, alerts, integrations] = await Promise.all([
+    getEndpointMetrics(),
+    getUnresolvedAlerts(),
+    fetchUnifiedObservability(),
+  ])
 
   // Calculate health summary
   const healthyCount = metrics.filter((m) => m.status === 'ok').length
@@ -57,50 +29,26 @@ export default function ObservabilityPage() {
     .sort((a, b) => b.error_rate_percent - a.error_rate_percent)
     .slice(0, 5)
 
-  if (loading && metrics.length === 0 && alerts.length === 0) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4" />
-          <p className="text-gray-600">Loading observability dashboard...</p>
-        </div>
-      </div>
-    )
-  }
-
   return (
     <div dir="ltr" className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 text-white">
       {/* Header */}
-      <header className="bg-black bg-opacity-50 border-b border-gray-700 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-6 py-6">
+      <header className="border-b border-gray-700 bg-black bg-opacity-50 sticky top-0 z-10">
+        <div className="mx-auto max-w-7xl px-6 py-6">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold">Observability Dashboard</h1>
-              <p className="text-gray-400 mt-1">Real-time system health & SLA monitoring</p>
+              <p className="mt-1 text-gray-400">Unified system health & SLA monitoring</p>
             </div>
-            <button
-              type="button"
-              onClick={loadData}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg font-medium transition"
-              disabled={loading}
-            >
-              {loading ? 'Refreshing...' : 'Refresh'}
-            </button>
+            <div className="text-sm text-gray-400">
+              Last updated: {new Date().toLocaleTimeString('en-IL', { timeZone: 'Asia/Jerusalem' })}
+            </div>
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-6 py-8">
-        {/* Error Alert */}
-        {error && (
-          <div className="mb-6 p-4 bg-red-900 bg-opacity-50 border border-red-700 rounded-lg">
-            <p className="font-semibold">Error loading dashboard</p>
-            <p className="text-sm text-gray-300 mt-1">{error}</p>
-          </div>
-        )}
-
-        {/* Health Summary */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <main className="mx-auto max-w-7xl px-6 py-8">
+        {/* Health Summary Cards */}
+        <div className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-4">
           <SummaryCard
             label="Healthy Endpoints"
             value={healthyCount}
@@ -129,8 +77,8 @@ export default function ObservabilityPage() {
 
         {/* Critical Alerts Section */}
         {criticalAlerts > 0 && (
-          <section className="mb-8 p-6 bg-red-900 bg-opacity-20 border border-red-700 rounded-lg">
-            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+          <section className="mb-8 rounded-lg border border-red-700 bg-red-900 bg-opacity-20 p-6">
+            <h2 className="mb-4 flex items-center gap-2 text-xl font-bold">
               <span className="text-2xl">🔴</span> Critical Alerts ({criticalAlerts})
             </h2>
             <div className="space-y-3">
@@ -144,12 +92,46 @@ export default function ObservabilityPage() {
           </section>
         )}
 
-        {/* Two-column layout for metrics */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          {/* Worst Performing Endpoints */}
+        {/* Integrations Grid */}
+        <section className="mb-8">
+          <h2 className="mb-4 flex items-center gap-2 text-xl font-bold">
+            <span className="text-2xl">🔗</span> Integration Status
+          </h2>
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+            <IntegrationCard
+              name="Endpoint Metrics"
+              value={metrics.length}
+              icon="📊"
+              status={metrics.length > 0 ? 'connected' : 'pending'}
+            />
+            <IntegrationCard
+              name="Sentry Errors"
+              value={integrations.sentry.totalEvents}
+              icon="🚨"
+              status={integrations.sentry.totalEvents > 0 ? 'connected' : 'configured'}
+            />
+            <IntegrationCard
+              name="PostHog Events"
+              value={integrations.posthog.eventVolume}
+              icon="📈"
+              status={integrations.posthog.eventVolume > 0 ? 'connected' : 'configured'}
+            />
+            <IntegrationCard
+              name="Vercel Analytics"
+              value={integrations.vercel.deployments}
+              icon="▲"
+              status={integrations.vercel.deployments > 0 ? 'connected' : 'configured'}
+            />
+          </div>
+        </section>
+
+        {/* Metrics Two-Column */}
+        <div className="mb-8 grid grid-cols-1 gap-8 lg:grid-cols-2">
+          {/* Slowest Endpoints */}
           <section>
-            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-              <span className="text-2xl">⚡</span> Slowest Endpoints (P95)
+            <h2 className="mb-4 flex items-center gap-2 text-xl font-bold">
+              <Zap className="h-5 w-5" />
+              Slowest Endpoints (P95)
             </h2>
             <div className="space-y-3">
               {worstEndpoints.length > 0 ? (
@@ -160,10 +142,11 @@ export default function ObservabilityPage() {
             </div>
           </section>
 
-          {/* Highest Error Rates */}
+          {/* Error Rates */}
           <section>
-            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-              <span className="text-2xl">⚠️</span> Highest Error Rates
+            <h2 className="mb-4 flex items-center gap-2 text-xl font-bold">
+              <AlertCircle className="h-5 w-5" />
+              Highest Error Rates
             </h2>
             <div className="space-y-3">
               {highestErrors.length > 0 ? (
@@ -175,12 +158,15 @@ export default function ObservabilityPage() {
           </section>
         </div>
 
-        {/* All Metrics Table */}
+        {/* Metrics Table */}
         <section className="mb-8">
-          <h2 className="text-xl font-bold mb-4">All Endpoint Metrics</h2>
-          <div className="overflow-x-auto bg-gray-800 rounded-lg border border-gray-700">
+          <h2 className="mb-4 flex items-center gap-2 text-xl font-bold">
+            <BarChart3 className="h-5 w-5" />
+            All Endpoint Metrics
+          </h2>
+          <div className="overflow-x-auto rounded-lg border border-gray-700 bg-gray-800">
             <table className="w-full text-sm">
-              <thead className="bg-gray-900 border-b border-gray-700">
+              <thead className="border-b border-gray-700 bg-gray-900">
                 <tr>
                   <th className="px-4 py-3 text-left font-semibold">Endpoint</th>
                   <th className="px-4 py-3 text-left font-semibold">Method</th>
@@ -197,14 +183,14 @@ export default function ObservabilityPage() {
                     <tr key={metric.id} className="border-b border-gray-700 hover:bg-gray-700">
                       <td className="px-4 py-3 font-mono text-xs">{metric.endpoint_path}</td>
                       <td className="px-4 py-3">
-                        <span className="inline-block px-2 py-1 bg-blue-900 rounded text-xs font-semibold">
+                        <span className="inline-block rounded bg-blue-900 px-2 py-1 text-xs font-semibold">
                           {metric.method}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-right">
                         <span
                           className={
-                            metric.p95_ms > 300 ? 'text-red-400 font-semibold' : 'text-green-400'
+                            metric.p95_ms > 300 ? 'font-semibold text-red-400' : 'text-green-400'
                           }
                         >
                           {metric.p95_ms}
@@ -215,7 +201,7 @@ export default function ObservabilityPage() {
                         <span
                           className={
                             metric.error_rate_percent > 0.1
-                              ? 'text-red-400 font-semibold'
+                              ? 'font-semibold text-red-400'
                               : 'text-green-400'
                           }
                         >
@@ -224,7 +210,7 @@ export default function ObservabilityPage() {
                       </td>
                       <td className="px-4 py-3">
                         <span
-                          className={`inline-block px-2 py-1 rounded text-xs font-semibold ${
+                          className={`inline-block rounded px-2 py-1 text-xs font-semibold ${
                             metric.status === 'ok'
                               ? 'bg-green-900 text-green-300'
                               : metric.status === 'degraded'
@@ -254,26 +240,42 @@ export default function ObservabilityPage() {
           </div>
         </section>
 
-        {/* Alert History */}
-        {alerts.length > 0 && (
-          <section>
-            <h2 className="text-xl font-bold mb-4">Recent Alerts ({alerts.length})</h2>
-            <div className="space-y-3">
-              {alerts.slice(0, 10).map((alert) => (
-                <AlertItem key={alert.id} alert={alert} />
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Integration Status */}
-        <section className="mt-12 p-6 bg-gray-800 rounded-lg border border-gray-700">
-          <h2 className="text-xl font-bold mb-4">External Integrations</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <IntegrationStatus name="Sentry" status="connected" info="Error tracking active" />
-            <IntegrationStatus name="PostHog" status="connected" info="Event analytics active" />
-            <IntegrationStatus name="Axiom" status="configured" info="Structured logging" />
-            <IntegrationStatus name="Vercel Analytics" status="connected" info="Performance data" />
+        {/* Integration Details */}
+        <section className="rounded-lg border border-gray-700 bg-gray-800 p-6">
+          <h2 className="mb-6 text-xl font-bold">Integration Details</h2>
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <IntegrationDetail
+              name="Sentry"
+              data={{
+                'Total Events': integrations.sentry.totalEvents,
+                'Error Rate': `${integrations.sentry.errorRate.toFixed(2)}%`,
+                'Critical Errors': integrations.sentry.criticalErrors,
+              }}
+            />
+            <IntegrationDetail
+              name="PostHog"
+              data={{
+                'Active Users': integrations.posthog.activeUsers,
+                'Conversion Rate': `${integrations.posthog.conversionRate.toFixed(2)}%`,
+                'Event Volume': integrations.posthog.eventVolume,
+              }}
+            />
+            <IntegrationDetail
+              name="Axiom Logs"
+              data={{
+                'Log Volume': integrations.axiom.logVolume,
+                'Avg Latency': `${integrations.axiom.avgLogLatency.toFixed(0)}ms`,
+                'Error Logs': integrations.axiom.errorLogs,
+              }}
+            />
+            <IntegrationDetail
+              name="Vercel Analytics"
+              data={{
+                Deployments: integrations.vercel.deployments,
+                'Avg Response': `${integrations.vercel.avgResponseTime.toFixed(0)}ms`,
+                Bandwidth: `${(integrations.vercel.bandwidth / 1024 / 1024).toFixed(2)}GB`,
+              }}
+            />
           </div>
         </section>
       </main>
@@ -282,7 +284,7 @@ export default function ObservabilityPage() {
 }
 
 /**
- * Summary card component
+ * Summary Card Component
  */
 function SummaryCard({
   label,
@@ -310,27 +312,39 @@ function SummaryCard({
   }[color]
 
   return (
-    <div className={`p-6 rounded-lg border border-gray-700 ${bgColor}`}>
-      <p className="text-sm text-gray-400 mb-2">{label}</p>
+    <div className={`rounded-lg border border-gray-700 p-6 ${bgColor}`}>
+      <p className="mb-2 text-sm text-gray-400">{label}</p>
       <p className={`text-3xl font-bold ${textColor}`}>{value}</p>
-      <p className="text-xs text-gray-500 mt-1">{percentage}% of endpoints</p>
+      <p className="mt-1 text-xs text-gray-500">{percentage}% of endpoints</p>
     </div>
   )
 }
 
 /**
- * Endpoint metric card component
+ * Endpoint Metric Card
  */
-function EndpointCard({ metric }: { metric: EndpointMetric }) {
+function EndpointCard({
+  metric,
+}: {
+  metric: {
+    id: string
+    endpoint_path: string
+    method: string
+    p95_ms: number
+    error_rate_percent: number
+    status: string
+    last_error_message: string | null
+  }
+}) {
   return (
-    <div className="p-4 bg-gray-800 rounded-lg border border-gray-700 hover:border-gray-600 transition">
-      <div className="flex items-start justify-between mb-3">
+    <div className="rounded-lg border border-gray-700 bg-gray-800 p-4 hover:border-gray-600 transition">
+      <div className="mb-3 flex items-start justify-between">
         <div className="flex-1">
-          <p className="font-mono text-xs text-gray-400 mb-1">{metric.endpoint_path}</p>
+          <p className="mb-1 font-mono text-xs text-gray-400">{metric.endpoint_path}</p>
           <p className="text-sm font-semibold">{metric.method}</p>
         </div>
         <span
-          className={`inline-block px-2 py-1 rounded text-xs font-semibold ${
+          className={`inline-block rounded px-2 py-1 text-xs font-semibold ${
             metric.status === 'ok'
               ? 'bg-green-900 text-green-300'
               : metric.status === 'degraded'
@@ -344,16 +358,16 @@ function EndpointCard({ metric }: { metric: EndpointMetric }) {
 
       <div className="grid grid-cols-2 gap-4 text-sm">
         <div>
-          <p className="text-gray-400 text-xs">P95 Response Time</p>
-          <p className={metric.p95_ms > 300 ? 'text-red-400 font-semibold' : 'text-green-400'}>
+          <p className="text-xs text-gray-400">P95 Response Time</p>
+          <p className={metric.p95_ms > 300 ? 'font-semibold text-red-400' : 'text-green-400'}>
             {metric.p95_ms}ms
           </p>
         </div>
         <div>
-          <p className="text-gray-400 text-xs">Error Rate</p>
+          <p className="text-xs text-gray-400">Error Rate</p>
           <p
             className={
-              metric.error_rate_percent > 0.1 ? 'text-red-400 font-semibold' : 'text-green-400'
+              metric.error_rate_percent > 0.1 ? 'font-semibold text-red-400' : 'text-green-400'
             }
           >
             {metric.error_rate_percent.toFixed(3)}%
@@ -362,7 +376,7 @@ function EndpointCard({ metric }: { metric: EndpointMetric }) {
       </div>
 
       {metric.last_error_message && (
-        <p className="text-xs text-red-400 mt-3 pt-3 border-t border-gray-700">
+        <p className="border-t border-gray-700 pt-3 text-xs text-red-400 mt-3">
           Last error: {metric.last_error_message}
         </p>
       )}
@@ -371,25 +385,38 @@ function EndpointCard({ metric }: { metric: EndpointMetric }) {
 }
 
 /**
- * Alert item component
+ * Alert Item
  */
-function AlertItem({ alert }: { alert: SLAAlert }) {
+function AlertItem({
+  alert,
+}: {
+  alert: {
+    id: string
+    alert_type: string
+    severity: string
+    metric_value: number | string
+    threshold_value: number | string
+    triggered_at: string
+    resolved_at: string | null
+  }
+}) {
   const severityColor = {
     info: 'bg-blue-900',
     warning: 'bg-yellow-900',
     critical: 'bg-red-900',
   }[alert.severity]
 
-  const typeEmoji = {
-    p95_exceeded: '⚡',
-    error_rate_high: '⚠️',
-    downtime: '🔴',
-  }[alert.alert_type]
+  const typeEmoji =
+    {
+      p95_exceeded: '⚡',
+      error_rate_high: '⚠️',
+      downtime: '🔴',
+    }[alert.alert_type as keyof typeof typeEmoji] || '❓'
 
   return (
-    <div className={`p-4 rounded-lg border border-gray-700 ${severityColor} bg-opacity-30`}>
-      <div className="flex items-start justify-between mb-2">
-        <p className="font-semibold flex items-center gap-2">
+    <div className={`rounded-lg border border-gray-700 p-4 ${severityColor} bg-opacity-30`}>
+      <div className="mb-2 flex items-start justify-between">
+        <p className="flex items-center gap-2 font-semibold">
           <span>{typeEmoji}</span>
           {alert.alert_type.replace(/_/g, ' ').toUpperCase()}
         </p>
@@ -404,23 +431,25 @@ function AlertItem({ alert }: { alert: SLAAlert }) {
         <span className="font-semibold">{alert.threshold_value}</span>
       </p>
       {alert.resolved_at && (
-        <p className="text-xs text-green-400 mt-2">✅ Resolved at {alert.resolved_at}</p>
+        <p className="mt-2 text-xs text-green-400">✅ Resolved at {alert.resolved_at}</p>
       )}
     </div>
   )
 }
 
 /**
- * External integration status component
+ * Integration Card
  */
-function IntegrationStatus({
+function IntegrationCard({
   name,
+  value,
+  icon,
   status,
-  info,
 }: {
   name: string
+  value: number
+  icon: string
   status: 'connected' | 'configured' | 'pending'
-  info: string
 }) {
   const statusColor = {
     connected: 'text-green-400',
@@ -428,19 +457,45 @@ function IntegrationStatus({
     pending: 'text-yellow-400',
   }[status]
 
-  const statusIcon = {
-    connected: '✅',
-    configured: '⚙️',
-    pending: '⏳',
+  const bgColor = {
+    connected: 'bg-green-900 bg-opacity-20',
+    configured: 'bg-blue-900 bg-opacity-20',
+    pending: 'bg-yellow-900 bg-opacity-20',
   }[status]
 
   return (
-    <div className="p-3 bg-gray-700 rounded border border-gray-600">
-      <p className="font-semibold flex items-center gap-2">
-        <span className={statusColor}>{statusIcon}</span>
-        {name}
+    <div className={`rounded-lg border border-gray-700 p-4 ${bgColor}`}>
+      <p className="flex items-center gap-2 font-semibold">
+        <span className="text-2xl">{icon}</span>
       </p>
-      <p className="text-xs text-gray-400 mt-1">{info}</p>
+      <p className="mt-2 text-xs text-gray-400">{name}</p>
+      <p className={`mt-1 text-lg font-bold ${statusColor}`}>{value.toLocaleString()}</p>
+      <p className={`text-xs font-semibold ${statusColor}`}>● {status}</p>
+    </div>
+  )
+}
+
+/**
+ * Integration Detail Panel
+ */
+function IntegrationDetail({
+  name,
+  data,
+}: {
+  name: string
+  data: Record<string, number | string>
+}) {
+  return (
+    <div>
+      <h3 className="mb-3 font-semibold">{name}</h3>
+      <div className="space-y-2">
+        {Object.entries(data).map(([key, value]) => (
+          <div key={key} className="flex items-center justify-between text-sm">
+            <span className="text-gray-400">{key}</span>
+            <span className="font-semibold">{value}</span>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
