@@ -35,7 +35,12 @@ export const REMOTE_IMAGE_PATTERNS: readonly RemoteImagePattern[] = [
   // Seed/demo product images (024_seed_demo_products). Without this host in the
   // allowlist, next/image throws and every demo product page 500s.
   { protocol: 'https', hostname: 'picsum.photos' },
-  // R2 public CDN (image pipeline renditions)
+  // R2 public CDN - Cloudflare Image Resizing (cdn.kenyonexpress.co.il)
+  // When R2 is enabled, product images are served through:
+  // https://cdn.kenyonexpress.co.il/cdn-cgi/image/[options]/[path]
+  // This provides AVIF/WebP format negotiation and responsive sizing.
+  { protocol: 'https', hostname: 'cdn.kenyonexpress.co.il' },
+  // Wildcard for custom subdomains (www.kenyonexpress.co.il, other regions, etc)
   { protocol: 'https', hostname: '*.kenyonexpress.co.il' },
   // The APEX host, listed separately because `*.kenyonexpress.co.il` does NOT
   // match it - the wildcard consumes exactly one label, so it covers
@@ -56,6 +61,7 @@ export const REMOTE_IMAGE_PATTERNS: readonly RemoteImagePattern[] = [
   // own images again. It no longer licenses a legacy wp-content URL, and
   // `scripts/audit-product-images.mjs` is what catches one if it comes back.
   { protocol: 'https', hostname: 'kenyonexpress.co.il' },
+  // R2.dev - Cloudflare R2 public buckets (for direct R2 object storage)
   { protocol: 'https', hostname: '*.r2.dev' },
 ] as const
 
