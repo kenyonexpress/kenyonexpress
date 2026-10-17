@@ -2,6 +2,54 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## UX49 Performance - Lighthouse 95+ All Pages, Core Web Vitals Green, Lazy Load — 🔄 IN PROGRESS
+
+**Goal:** Achieve Lighthouse 95+ performance on all pages, ensure all pages have Core Web Vitals green, implement lazy loading for images and components.
+
+**Status: IN PROGRESS**
+
+**Current State (from 2026-08-19 measurements):**
+- Home: Performance 68 (LCP: 4149ms, TBT: 696.5ms) → Target: 95
+- Search: Performance 54 (LCP: 2399ms, CLS: 0.40, TBT: 1345ms) → Target: 95
+- Products: Performance 92 → Target: 95+
+- Category: Performance 99 (exceeds target)
+- Product pages: Performance 94-98 (mostly exceeds target)
+- Checkout: Performance 91 → Target: 95
+- Cart: Performance 97 (exceeds target)
+
+**Implementation:**
+- ✅ **Lazy Loading Images:**
+  - ProductDealCard: Added `loading="lazy"` to Image component
+  - ProductCard: Added `loading="lazy"` to both variants (deals and default)
+  - CategoryProductCard: Already had lazy loading implemented
+  - HeroSlider: Keeps `loading="eager"` for above-the-fold content (correct)
+  
+- ✅ **Verified Optimizations:**
+  - `cacheComponents: true` enabled in next.config.ts
+  - Font optimization: Heebo with `display: 'swap'` and `preload: false`
+  - Polyfill optimization: pointing to modern-polyfill.js (skips unused Array/Object methods)
+  - Image sizes: Custom imageSizes including 288px for optimal sizing
+  - Animated WebP removed from hero (was 777KB, caused LCP of 10.1s on mobile)
+  - CSS bundling: Root-level imports reduce render-blocking requests
+
+**Testing & Verification:**
+- ✅ pnpm test: 5345 tests passing | 25 skipped | 0 failed
+- ✅ pnpm type-check: CLEAN
+- ✅ pnpm lint: CLEAN (8 pre-existing warnings only)
+- ✅ pnpm build: SUCCESS
+- ✅ No regressions in existing tests
+
+**Commits:**
+- 708946638: [autopilot] UX49: Add lazy loading to product card images
+
+**Remaining Work:**
+- Lighthouse measurement and optimization for search page (TBT and CLS)
+- LCP optimization for home page
+- Verify Core Web Vitals on all pages
+- Final Lighthouse measurements to confirm 95+ on all pages
+
+המשך מ: UX49 IN PROGRESS - Lazy loading implemented for product cards. Next: Measure performance and optimize remaining bottlenecks.
+
 ## UX48 Accessibility WCAG AA - Keyboard Navigation, Screen Reader, Hebrew Focus — ✅ COMPLETE
 
 **Goal:** Implement WCAG AA accessibility with keyboard navigation, screen reader support, and Hebrew RTL focus indicators.
