@@ -3,7 +3,7 @@ import { withRequestLog } from '@/lib/observability/with-request-log'
 import { isSmsConfigured, sendSmsBroadcast } from '@/lib/sms/broadcast-send'
 import { createAdminClient } from '@/lib/supabase/admin'
 
-async function handleGET(request: Request): Promise<Response> {
+async function handleGET(_request: Request): Promise<Response> {
   try {
     // Check if SMS is configured
     if (!isSmsConfigured()) {

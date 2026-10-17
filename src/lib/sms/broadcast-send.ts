@@ -1,15 +1,7 @@
 import { log } from '@/lib/observability/log'
 import { createAdminClient } from '@/lib/supabase/admin'
+import twilio from 'twilio'
 import { isWithinQuietHours } from './twilio-webhook'
-
-/**
- * Lazy load twilio to avoid import error when not configured
- */
-async function getTwilioClient() {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const twilio = require('twilio')
-  return twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
-}
 
 /**
  * Send SMS broadcast to a segment of users
@@ -21,7 +13,7 @@ export async function sendSmsBroadcast(broadcastId: string): Promise<{
   skipped: number
 }> {
   const db = createAdminClient()
-  const twilioClient = await getTwilioClient()
+  const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
 
   // Fetch broadcast details
   const { data: broadcast, error: broadcastError } = await db

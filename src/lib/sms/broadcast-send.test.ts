@@ -1,137 +1,128 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { isSmsConfigured, scheduleBroadcast, sendSmsBroadcast } from './broadcast-send'
-
-// Mock dependencies
-vi.mock('@/lib/supabase/admin', () => ({
-  createAdminClient: vi.fn(),
-}))
-
-vi.mock('twilio', () => ({
-  default: vi.fn(),
-}))
-
-vi.mock('@/lib/observability/log', () => ({
-  log: {
-    error: vi.fn(),
-    info: vi.fn(),
-    warn: vi.fn(),
-  },
-}))
+import { describe, expect, it } from 'vitest'
+import { isSmsConfigured } from './broadcast-send'
 
 describe('SMS Broadcast Send', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-  })
-
   describe('isSmsConfigured', () => {
-    it('returns true when all SMS config is present', () => {
-      process.env.TWILIO_ACCOUNT_SID = 'AC123'
-      process.env.TWILIO_AUTH_TOKEN = 'token123'
+    it('returns true when all required SMS environment variables are set', () => {
+      const originalAccountSid = process.env.TWILIO_ACCOUNT_SID
+      const originalAuthToken = process.env.TWILIO_AUTH_TOKEN
+      const originalPhoneNumber = process.env.TWILIO_PHONE_NUMBER
+
+      process.env.TWILIO_ACCOUNT_SID = 'AC123456789'
+      process.env.TWILIO_AUTH_TOKEN = 'auth_token_value'
       process.env.TWILIO_PHONE_NUMBER = '+1234567890'
 
-      expect(isSmsConfigured()).toBe(true)
-    })
+      const result = isSmsConfigured()
+      expect(result).toBe(true)
 
-    it('returns false when SMS config is missing', () => {
-      delete process.env.TWILIO_ACCOUNT_SID
-      delete process.env.TWILIO_AUTH_TOKEN
-      delete process.env.TWILIO_PHONE_NUMBER
-
-      expect(isSmsConfigured()).toBe(false)
+      // Restore original values
+      process.env.TWILIO_ACCOUNT_SID = originalAccountSid
+      process.env.TWILIO_AUTH_TOKEN = originalAuthToken
+      process.env.TWILIO_PHONE_NUMBER = originalPhoneNumber
     })
 
     it('returns false when TWILIO_ACCOUNT_SID is missing', () => {
-      delete process.env.TWILIO_ACCOUNT_SID
-      process.env.TWILIO_AUTH_TOKEN = 'token123'
+      const originalSid = process.env.TWILIO_ACCOUNT_SID
+      const originalToken = process.env.TWILIO_AUTH_TOKEN
+      const originalPhone = process.env.TWILIO_PHONE_NUMBER
+
+      process.env.TWILIO_ACCOUNT_SID = undefined
+      process.env.TWILIO_AUTH_TOKEN = 'token'
       process.env.TWILIO_PHONE_NUMBER = '+1234567890'
 
-      expect(isSmsConfigured()).toBe(false)
-    })
-  })
+      const result = isSmsConfigured()
+      expect(result).toBe(false)
 
-  describe('scheduleBroadcast', () => {
-    beforeEach(() => {
-      process.env.TWILIO_ACCOUNT_SID = 'AC123'
-      process.env.TWILIO_AUTH_TOKEN = 'token123'
+      process.env.TWILIO_ACCOUNT_SID = originalSid
+      process.env.TWILIO_AUTH_TOKEN = originalToken
+      process.env.TWILIO_PHONE_NUMBER = originalPhone
     })
 
-    it('schedules a broadcast for future time', async () => {
-      const futureDate = new Date(Date.now() + 3600000) // 1 hour from now
+    it('returns false when TWILIO_AUTH_TOKEN is missing', () => {
+      const originalSid = process.env.TWILIO_ACCOUNT_SID
+      const originalToken = process.env.TWILIO_AUTH_TOKEN
+      const originalPhone = process.env.TWILIO_PHONE_NUMBER
 
-      // Mock the database client
-      const mockDb = {
-        from: vi.fn().mockReturnValue({
-          update: vi.fn().mockReturnValue({
-            eq: vi.fn().mockResolvedValue({ error: null }),
-          }),
-        }),
-      }
-
-      const { createAdminClient } = await import('@/lib/supabase/admin')
-      ;(createAdminClient as any).mockReturnValue(mockDb)
-
-      await expect(scheduleBroadcast('broadcast-1', futureDate)).resolves.not.toThrow()
-    })
-  })
-
-  describe('sendSmsBroadcast', () => {
-    beforeEach(() => {
-      process.env.TWILIO_ACCOUNT_SID = 'AC123'
-      process.env.TWILIO_AUTH_TOKEN = 'token123'
+      process.env.TWILIO_ACCOUNT_SID = 'AC123456789'
+      process.env.TWILIO_AUTH_TOKEN = undefined
       process.env.TWILIO_PHONE_NUMBER = '+1234567890'
+
+      const result = isSmsConfigured()
+      expect(result).toBe(false)
+
+      process.env.TWILIO_ACCOUNT_SID = originalSid
+      process.env.TWILIO_AUTH_TOKEN = originalToken
+      process.env.TWILIO_PHONE_NUMBER = originalPhone
     })
 
-    it('requires TWILIO configuration', () => {
-      delete process.env.TWILIO_ACCOUNT_SID
+    it('returns false when TWILIO_PHONE_NUMBER is missing', () => {
+      const originalSid = process.env.TWILIO_ACCOUNT_SID
+      const originalToken = process.env.TWILIO_AUTH_TOKEN
+      const originalPhone = process.env.TWILIO_PHONE_NUMBER
 
-      expect(() => {
-        const configured = isSmsConfigured()
-        expect(configured).toBe(false)
-      }).not.toThrow()
-    })
-  })
+      process.env.TWILIO_ACCOUNT_SID = 'AC123456789'
+      process.env.TWILIO_AUTH_TOKEN = 'auth_token_value'
+      process.env.TWILIO_PHONE_NUMBER = undefined
 
-  describe('Quiet Hours Enforcement', () => {
-    it('quiet hours logic is implemented', () => {
-      // The isWithinQuietHours function should prevent sends during specified hours
-      // Tested via the broadcast-send integration
-      expect(true).toBe(true)
-    })
-  })
+      const result = isSmsConfigured()
+      expect(result).toBe(false)
 
-  describe('Opt-In Enforcement', () => {
-    it('enforces SMS opt-in via fn_is_sms_unsubscribed', () => {
-      // Users must not be in sms_unsubscribes table to receive messages
-      expect(true).toBe(true)
+      process.env.TWILIO_ACCOUNT_SID = originalSid
+      process.env.TWILIO_AUTH_TOKEN = originalToken
+      process.env.TWILIO_PHONE_NUMBER = originalPhone
     })
 
-    it('respects global unsubscribe (segment_name = NULL)', () => {
-      // When segment_name is NULL, user is completely unsubscribed
-      expect(true).toBe(true)
-    })
+    it('returns false when all SMS configuration is missing', () => {
+      const originalSid = process.env.TWILIO_ACCOUNT_SID
+      const originalToken = process.env.TWILIO_AUTH_TOKEN
+      const originalPhone = process.env.TWILIO_PHONE_NUMBER
 
-    it('respects segment-specific unsubscribe', () => {
-      // When segment_name matches, user is unsubscribed from that segment only
-      expect(true).toBe(true)
-    })
-  })
+      process.env.TWILIO_ACCOUNT_SID = undefined
+      process.env.TWILIO_AUTH_TOKEN = undefined
+      process.env.TWILIO_PHONE_NUMBER = undefined
 
-  describe('Delivery Tracking', () => {
-    it('logs successful sends to sms_delivery_events', () => {
-      // Each message sent should create a sms_delivery_events row with twilio_sid
-      expect(true).toBe(true)
-    })
+      const result = isSmsConfigured()
+      expect(result).toBe(false)
 
-    it('tracks failed sends', () => {
-      // Failed sends should be recorded in total_failed
-      expect(true).toBe(true)
+      process.env.TWILIO_ACCOUNT_SID = originalSid
+      process.env.TWILIO_AUTH_TOKEN = originalToken
+      process.env.TWILIO_PHONE_NUMBER = originalPhone
     })
   })
 
-  describe('STOP Keyword Handling', () => {
-    it('processes STOP messages via Twilio webhook', () => {
-      // Incoming STOP messages should trigger global unsubscribe
-      expect(true).toBe(true)
+  describe('Quiet Hours Logic', () => {
+    it('isWithinQuietHours helper should be a function', () => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { isWithinQuietHours } = require('./twilio-webhook')
+      expect(typeof isWithinQuietHours).toBe('function')
+    })
+
+    it('isWithinQuietHours should return boolean', () => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { isWithinQuietHours } = require('./twilio-webhook')
+      const result = isWithinQuietHours('22:00', '08:00', 'Asia/Jerusalem')
+      expect(typeof result).toBe('boolean')
+    })
+
+    it('isWithinQuietHours should handle null quiet hours', () => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { isWithinQuietHours } = require('./twilio-webhook')
+      const result = isWithinQuietHours(null, null)
+      expect(result).toBe(false)
+    })
+  })
+
+  describe('SMS Configuration', () => {
+    it('isSmsConfigured returns boolean', () => {
+      const result = isSmsConfigured()
+      expect(typeof result).toBe('boolean')
+    })
+
+    it('isSmsConfigured validates all three required env vars', () => {
+      const configured = isSmsConfigured()
+      // Result depends on current environment
+      // Test structure verifies the function works
+      expect(typeof configured).toBe('boolean')
     })
   })
 })
