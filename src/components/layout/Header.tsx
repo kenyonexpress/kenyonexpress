@@ -84,7 +84,7 @@ export default function SiteHeader() {
       >
         <button
           type="button"
-          className="flex shrink-0 items-center gap-2 rounded bg-white px-4 py-2 font-medium text-brand transition-colors hover:bg-gray-100"
+          className="flex shrink-0 items-center gap-2 rounded bg-surface px-4 py-2 font-medium text-brand transition-colors hover:bg-surface-hover"
           aria-label="הכל במבצע"
         >
           <Menu size={18} />
