@@ -1,44 +1,38 @@
 # Weekly Lighthouse Audit Report
 
 **Date:** 2026-10-17
-**Generated:** 2026-10-17T17:44:38.892Z
+**Generated:** 2026-10-17T17:55:08.654Z
 
 ## Summary
 
-- **Pages Measured:** 9/10
-- **Failures:** 3
+- **Pages Measured:** 10/10
+- **Failures:** 1
 - **Threshold:** Performance ≥ 90, Accessibility ≥ 90
 
 ## Results
 
 | Page | Performance | Accessibility | SEO | Status |
 |------|-------------|----------------|-----|--------|
-| Homepage | 93 ✅ | 96 ✅ | 100 | ✅ PASS |
-| Products Catalog | 92 ✅ | 97 ✅ | 100 | ✅ PASS |
-| Search Results | 97 ✅ | 96 ✅ | 92 | ✅ PASS |
-| Shopping Cart | 97 ✅ | 96 ✅ | 69 | ✅ PASS |
-| Checkout | 88 ❌ | 96 ✅ | 69 | ⚠️ ALERT |
+| Homepage | 94 ✅ | 96 ✅ | 100 | ✅ PASS |
+| Products Catalog | 98 ✅ | 97 ✅ | 100 | ✅ PASS |
+| Category (Hot Deals) | 96 ✅ | 96 ✅ | 92 | ✅ PASS |
+| Search Results | 98 ✅ | 96 ✅ | 92 | ✅ PASS |
+| Shopping Cart | 96 ✅ | 96 ✅ | 69 | ✅ PASS |
+| Checkout | 87 ❌ | 96 ✅ | 69 | ⚠️ ALERT |
 | Contact Form | 96 ✅ | 97 ✅ | 100 | ✅ PASS |
 | User Account | 98 ✅ | 95 ✅ | 100 | ✅ PASS |
-| Privacy Policy | 89 ❌ | 97 ✅ | 100 | ⚠️ ALERT |
+| Privacy Policy | 95 ✅ | 97 ✅ | 100 | ✅ PASS |
 | Terms & Conditions | 95 ✅ | 97 ✅ | 100 | ✅ PASS |
 
 ## Alert Details
 
-### 🚨 3 Critical Alerts
+### 🚨 1 Critical Alerts
 
-- **Category (Hot Deals)**: Lighthouse measurement failed
 - **Checkout**
   - URL: `/checkout`
-  - Performance: 88 (threshold: 90)
+  - Performance: 87 (threshold: 90)
   - Accessibility: 96 (threshold: 90)
   - SEO: 69
-
-- **Privacy Policy**
-  - URL: `/privacy-policy`
-  - Performance: 89 (threshold: 90)
-  - Accessibility: 97 (threshold: 90)
-  - SEO: 100
 
 ## Raw Data
 
@@ -47,42 +41,50 @@
   {
     "page": "Homepage",
     "url": "/",
-    "performance": 93,
+    "performance": 94,
     "accessibility": 96,
     "seo": 100,
-    "timestamp": "2026-10-17T17:42:29.513Z"
+    "timestamp": "2026-10-17T17:53:22.479Z"
   },
   {
     "page": "Products Catalog",
     "url": "/products",
-    "performance": 92,
+    "performance": 98,
     "accessibility": 97,
     "seo": 100,
-    "timestamp": "2026-10-17T17:42:42.955Z"
+    "timestamp": "2026-10-17T17:53:34.752Z"
+  },
+  {
+    "page": "Category (Hot Deals)",
+    "url": "/category/hot-deals",
+    "performance": 96,
+    "accessibility": 96,
+    "seo": 92,
+    "timestamp": "2026-10-17T17:53:46.395Z"
   },
   {
     "page": "Search Results",
     "url": "/search?q=אוזניות",
-    "performance": 97,
+    "performance": 98,
     "accessibility": 96,
     "seo": 92,
-    "timestamp": "2026-10-17T17:43:27.616Z"
+    "timestamp": "2026-10-17T17:53:58.311Z"
   },
   {
     "page": "Shopping Cart",
     "url": "/cart",
-    "performance": 97,
+    "performance": 96,
     "accessibility": 96,
     "seo": 69,
-    "timestamp": "2026-10-17T17:43:38.113Z"
+    "timestamp": "2026-10-17T17:54:09.738Z"
   },
   {
     "page": "Checkout",
     "url": "/checkout",
-    "performance": 88,
+    "performance": 87,
     "accessibility": 96,
     "seo": 69,
-    "timestamp": "2026-10-17T17:43:50.272Z"
+    "timestamp": "2026-10-17T17:54:22.376Z"
   },
   {
     "page": "Contact Form",
@@ -90,7 +92,7 @@
     "performance": 96,
     "accessibility": 97,
     "seo": 100,
-    "timestamp": "2026-10-17T17:44:01.683Z"
+    "timestamp": "2026-10-17T17:54:33.787Z"
   },
   {
     "page": "User Account",
@@ -98,15 +100,15 @@
     "performance": 98,
     "accessibility": 95,
     "seo": 100,
-    "timestamp": "2026-10-17T17:44:12.870Z"
+    "timestamp": "2026-10-17T17:54:45.025Z"
   },
   {
     "page": "Privacy Policy",
     "url": "/privacy-policy",
-    "performance": 89,
+    "performance": 95,
     "accessibility": 97,
     "seo": 100,
-    "timestamp": "2026-10-17T17:44:25.278Z"
+    "timestamp": "2026-10-17T17:54:56.868Z"
   },
   {
     "page": "Terms & Conditions",
@@ -114,7 +116,7 @@
     "performance": 95,
     "accessibility": 97,
     "seo": 100,
-    "timestamp": "2026-10-17T17:44:38.891Z"
+    "timestamp": "2026-10-17T17:55:08.654Z"
   }
 ]
 ```

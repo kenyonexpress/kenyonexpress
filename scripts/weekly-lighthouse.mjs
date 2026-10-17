@@ -25,7 +25,7 @@ const LOCAL = process.env.LOCAL_BASE ?? 'http://localhost:3000'
 const TOP_10_PAGES = [
   { name: 'home', url: '/', label: 'Homepage' },
   { name: 'products', url: '/products', label: 'Products Catalog' },
-  { name: 'category', url: '/c/hot-deals', label: 'Category (Hot Deals)' },
+  { name: 'category', url: '/category/hot-deals', label: 'Category (Hot Deals)' },
   { name: 'search', url: '/search?q=אוזניות', label: 'Search Results' },
   { name: 'cart', url: '/cart', label: 'Shopping Cart' },
   { name: 'checkout', url: '/checkout', label: 'Checkout' },
