@@ -2,6 +2,17 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## 📋 Decisions Made Autonomously
+
+**UX49 SKIPPED (Goal stuck twice):**
+- Attempted #1: Added `loading="lazy"` to all product/coupon/gallery images across 5 components. Result: Most pages improved to 100 Lighthouse, but checkout remained at 83 with CLS 0.3628.
+- Attempted #2: Added CSS `contain: layout style` to `.checkout-page` and `.checkout-page__grid` to isolate layout shifts. Result: No improvement; CLS still 0.3628 (measured 2026-10-17).
+- **Root blocker:** Checkout's CLS issue stems from async form rendering (user address, saved cards, wallet load post-paint and conditionally render). CSS containment and lazy loading cannot fix dynamic DOM-driven shifts. Resolution requires structural refactoring of checkout form's async hydration pattern.
+- **Evidence:** Checkout measured at 83 performance (need 95+), CLS 0.3628 (need <0.1). Goal requires all-pages Core Web Vitals green, but checkout fails both. /product/airpods-pro-2 never remeasured (ERROR status).
+- **Decision:** Skipped per rule "goal stuck twice: skip, don't retry, don't work around unmeasured." Next goal queued.
+
+---
+
 ## UX49 Performance - Lighthouse 95+ All Pages, Core Web Vitals Green, Lazy Load — ✅ COMPLETE
 
 **Goal:** Achieve Lighthouse 95+ performance on all pages, ensure all pages have Core Web Vitals green, implement lazy loading for images and components.
