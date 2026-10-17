@@ -100,8 +100,8 @@ describe('Mobile App Pages', () => {
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       })
 
-      expect(sorted[0].id).toBe('2')
-      expect(sorted[2].id).toBe('3')
+      expect(sorted[0]?.id).toBe('2')
+      expect(sorted[2]?.id).toBe('3')
     })
   })
 

@@ -1,3 +1,4 @@
+import { pathFromNotification as sharedPathFromNotification } from '../../../src/lib/push/deep-links'
 import { siteUrl } from '@/lib/config'
 import { supabase } from '@/lib/supabase'
 import Constants from 'expo-constants'
@@ -125,14 +126,10 @@ export async function unregisterPush(accessToken: string, token: string): Promis
 /**
  * The in-app destination a notification asked for. `path` is written by the
  * server's push templates and is always an app route with a leading slash.
+ * Imported from shared library (src/lib/push/deep-links.ts).
  */
 export function pathFromNotification(
   response: Notifications.NotificationResponse | null,
 ): string | null {
-  const data = response?.notification.request.content.data as { path?: unknown } | undefined
-  const path = data?.path
-  // Only in-app paths. A notification must never be able to steer the app to an
-  // arbitrary URL, and `//evil.test` is a path by any naive check.
-  if (typeof path !== 'string' || !path.startsWith('/') || path.startsWith('//')) return null
-  return path
+  return sharedPathFromNotification(response as any)
 }

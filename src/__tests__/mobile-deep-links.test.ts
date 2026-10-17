@@ -1,4 +1,5 @@
 import { APP_PATHS } from '@/lib/app/deep-links'
+import { pathFromNotification } from '@/lib/push/deep-links'
 import { describe, expect, it } from 'vitest'
 
 type NotificationResponse = {
@@ -9,19 +10,6 @@ type NotificationResponse = {
       }
     }
   }
-}
-
-// pathFromNotification is in apps/mobile/src/lib/push.ts
-// This implementation is tested here to verify the deep-link extraction logic
-// that both web and mobile sides depend on. The mobile app independently tests
-// the actual implementation in apps/mobile/src/lib/push.ts.
-function pathFromNotification(response: NotificationResponse | null): string | null {
-  const data = response?.notification.request.content.data as { path?: unknown } | undefined
-  const path = data?.path
-  // Only in-app paths. A notification must never be able to steer the app to an
-  // arbitrary URL, and `//evil.test` is a path by any naive check.
-  if (typeof path !== 'string' || !path.startsWith('/') || path.startsWith('//')) return null
-  return path
 }
 
 const APP_SCHEME = 'kenyonexpress'
