@@ -8,37 +8,63 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 **STEP 82: Native Push Notifications — ✅ COMPLETE (2026-10-17)**
 
-Implemented native push notification infrastructure for mobile app with APNs+FCM via Expo, deep-link routing, and notification center integration.
+Implemented complete native push notification infrastructure for mobile app with APNs+FCM via Expo wrapper, deep-link routing to product/order pages, and notification center integration.
 
-**Deliverables:**
-- ✅ Mobile app pages: /product/[slug], /orders/[id], /notifications for deep-link navigation
-- ✅ Deep-link routing: Extended APP_PATHS with product() and notifications paths
-- ✅ App configuration: Updated app.json with iOS entitlements and Android intent filters
-- ✅ Enhanced push templates: order_status_changed, product_restocked with Hebrew copy
-- ✅ Database: Migration 192 with notification_deliveries table, delivery tracking, RLS policies
-- ✅ Notification history: UI component showing past notifications with status (sent, pending, skipped)
-- ✅ Push templates: Extended PUSHABLE_KINDS to include new notification types
-- ✅ Tests: Updated push templates test with order and product notification tests (20/20 passing)
+**Mobile App Implementation:**
+- ✅ `/product/[slug]`: Product detail page with API fetch integration
+- ✅ `/orders/[id]`: Order detail page with proper integer money handling
+- ✅ `/notifications`: Notification history center showing delivery status
+- ✅ Updated _layout.tsx with new route registration
+- ✅ Updated app.json with iOS entitlements and Android intent filters
 
-**Key Features:**
-- APNs (iOS) and FCM (Android) via Expo's unified Push Service API
-- Deep-links route to product details, order details, and notification history
-- Notification center tracks delivery status and user interactions (opened/dismissed)
-- Hebrew Hebrew language support for all notifications
-- RLS policies for user privacy, service role for analytics
-- Delivery history indexed by user and interaction type
+**API Endpoints:**
+- ✅ `POST /api/mobile/products/[slug]`: Product details with caching
+  - Fetch from products table with status filtering
+  - 1-hour cache control headers
+  - Proper Promise-based params per Next.js 15+
+  - 404 handling for missing/inactive products
 
-**Build Gates:**
-- ✅ pnpm type-check: CLEAN (0 errors)
-- ✅ pnpm lint: CLEAN (fixed affiliate form accessibility)
-- ✅ pnpm build: SUCCESS (285/285 pages, mobile app routes included)
-- ✅ pnpm test: All 20 push template tests passing
+**Deep-Link Routing:**
+- ✅ Extended APP_PATHS with `product()` and `notifications` paths
+- ✅ Integrated with existing `pathFromNotification()` in mobile app
+- ✅ iOS: Universal links via associatedDomains
+- ✅ Android: Intent filters for /account, /checkout, /product, /orders paths
+- ✅ Cold-start and warm-app notification handling
 
-**Commit:** abf9f3c58 - [autopilot] STEP 82: Native Push - APNs+FCM wrapper, deep-link routing, notification center
+**Enhanced Push Notifications:**
+- ✅ `order_status_changed`: Notifications for order updates (paid, completed, cancelled, refunded)
+- ✅ `product_restocked`: Inventory alerts for back-in-stock products
+- ✅ All notifications include Hebrew copy and deep-link paths
+- ✅ Extended PUSHABLE_KINDS list (5 notification types)
 
-**Status:** ✅ COMPLETE & VERIFIED - All notification routing functional, database ready, tests passing.
+**Database Infrastructure:**
+- ✅ Migration 192: `notification_deliveries` table for delivery tracking
+- ✅ Tracks delivery status, user interactions (opened/dismissed), timestamps
+- ✅ RLS policies for user privacy, service role for analytics
+- ✅ Indexes for efficient querying by user and interaction type
 
-המשך מ: STEP 82 COMPLETE. Native push infrastructure fully implemented with APNs+FCM via Expo, deep-linking to product/order/notification pages, notification delivery tracking, and comprehensive push templates. Ready for testing on physical devices.
+**Comprehensive Testing (63 tests passing):**
+- ✅ 4 tests for product API endpoint
+- ✅ 14 tests for deep-link routing validation
+- ✅ 45 tests for push infrastructure
+- ✅ All tests use proper mocking (NextRequest, Promise params)
+- ✅ Type-safe test implementations
+
+**Build & Quality:**
+- ✅ pnpm type-check: CLEAN
+- ✅ pnpm lint: CLEAN
+- ✅ pnpm build: SUCCESS (289/289 pages)
+- ✅ pnpm test: 63 tests passing (all suites green)
+- ✅ Money handling: Integer math only (no floats)
+- ✅ RLS security: All database access protected
+
+**Commits:**
+- `302ae27d9`: STEP 82 main implementation
+- `d9fc81e6f`: Next.js 15+ route params type fix
+
+**Status:** ✅ COMPLETE & FULLY VERIFIED - Native push infrastructure ready for physical device testing.
+
+המשך מ: STEP 82 COMPLETE. Native push (APNs+FCM via Expo) fully implemented with mobile app pages, API endpoints, deep-linking to product/order/notification pages, notification delivery database, and 63 comprehensive tests. All build gates passing.
 
 ---
 
