@@ -25,6 +25,27 @@ describe('Marketing Email System', () => {
       process.env.RESEND_WEBHOOK_SECRET = originalEnv
     })
 
+    it('should test webhook verification with actual calculation', async () => {
+      const crypto = await import('node:crypto')
+      const secret = 'my_webhook_secret'
+      const timestamp = Math.floor(Date.now() / 1000).toString()
+      const testPayload = JSON.stringify({
+        type: 'email.delivered',
+        data: { email_id: 'test123', to: 'user@example.com' },
+      })
+
+      const signed = `${timestamp}.${testPayload}`
+      const expectedSig = crypto.createHmac('sha256', secret).update(signed).digest('hex')
+      const signature = `ts=${timestamp},sig1=${expectedSig}`
+
+      process.env.RESEND_WEBHOOK_SECRET = secret
+
+      const isValid = await verifyResendWebhook(testPayload, signature)
+      expect(isValid).toBe(true)
+
+      process.env.RESEND_WEBHOOK_SECRET = undefined
+    })
+
     it('should reject an invalid Resend webhook signature', async () => {
       const originalEnv = process.env.RESEND_WEBHOOK_SECRET
       process.env.RESEND_WEBHOOK_SECRET = 'test_secret_key'
@@ -201,20 +222,37 @@ describe('Marketing Email System', () => {
         spfVerified: true,
         dkimVerified: true,
         dmarcVerified: true,
+        mxVerified: true,
       }
 
-      const allVerified = domain.spfVerified && domain.dkimVerified && domain.dmarcVerified
+      const allVerified =
+        domain.spfVerified && domain.dkimVerified && domain.dmarcVerified && domain.mxVerified
       expect(allVerified).toBe(true)
     })
 
-    it('should flag incomplete authentication', () => {
+    it('should flag incomplete authentication when SPF fails', () => {
+      const domain = {
+        spfVerified: false,
+        dkimVerified: true,
+        dmarcVerified: true,
+        mxVerified: true,
+      }
+
+      const allVerified =
+        domain.spfVerified && domain.dkimVerified && domain.dmarcVerified && domain.mxVerified
+      expect(allVerified).toBe(false)
+    })
+
+    it('should flag incomplete authentication when any check fails', () => {
       const domain = {
         spfVerified: true,
         dkimVerified: false,
         dmarcVerified: true,
+        mxVerified: true,
       }
 
-      const allVerified = domain.spfVerified && domain.dkimVerified && domain.dmarcVerified
+      const allVerified =
+        domain.spfVerified && domain.dkimVerified && domain.dmarcVerified && domain.mxVerified
       expect(allVerified).toBe(false)
     })
 
