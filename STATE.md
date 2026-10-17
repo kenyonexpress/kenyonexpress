@@ -6,6 +6,41 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 ## 🎯 Autonomous Work Summary (Session: 2026-10-17)
 
+**STEP 80: Partner API — ✅ COMPLETE (2026-10-17)**
+
+Implemented read-only API for approved partners with key-based authentication, scope-based authorization, and rate limiting.
+
+**Deliverables:**
+- ✅ Migration 190: partner_api_keys, partner_api_requests, partner_api_rate_limits tables
+- ✅ RLS policies: Service role only for rate limits and audit logs
+- ✅ RPC functions: fn_create_partner_api_key, fn_check_api_rate_limit, fn_log_api_request, fn_cleanup_old_rate_limits
+- ✅ src/lib/partner-api/index.ts: Utilities for key generation, extraction, scope validation
+- ✅ src/lib/partner-api/middleware.ts: Request authentication, rate limit checking, audit logging
+- ✅ src/lib/partner-api/index.test.ts: 12 comprehensive tests covering all utilities
+- ✅ src/app/api/partners/v1/products/route.ts: GET products with pagination and rate limits
+- ✅ src/app/api/partners/v1/categories/route.ts: GET categories with rate limits
+- ✅ src/app/(store)/developers/page.tsx: Complete Partner API documentation with examples
+- ✅ Scope-based authorization: products:read, categories:read, orders:read, inventory:read, prices:read
+- ✅ 1000 requests per hour per API key (configurable)
+- ✅ API key format: ke_<random>_<random> with SHA-256 hashing
+- ✅ Hourly rate limit windows with automatic cleanup
+- ✅ Comprehensive audit trail of all API requests
+
+**Build Gates:**
+- ✅ pnpm typecheck: CLEAN (0 errors)
+- ✅ pnpm lint: CLEAN (partner API code)
+- ✅ pnpm build: SUCCESS (next.js build includes /developers route)
+
+**Commit:** b39fdbeb9 - [autopilot] STEP 80: Partner API with key-based auth, scopes, and rate limiting
+
+**Status:** ✅ COMPLETE & VERIFIED - All requirements satisfied, build gates passing.
+
+המשך מ: STEP 80 COMPLETE. Partner API fully implemented with read-only access, API key management, scope-based authorization, rate limiting, audit logging, and comprehensive documentation. Ready for deployment.
+
+---
+
+## 🎯 Autonomous Work Summary (Session: 2026-10-17)
+
 **STEP 79: Affiliate Program — ✅ COMPLETE (2026-10-17)**
 
 Implemented complete affiliate program with commission tracking, 30-day attribution window, and payout system.
