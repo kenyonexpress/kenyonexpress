@@ -1,7 +1,11 @@
-RESUME FROM: STEP 82-next-goal
+RESUME FROM: STEP 86-next-goal
 # KenyonExpress — Project State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-10-17T14:42:00+07:00
+- item: STEP 85-localization-ready
+- RESULT: DONE (i18n infrastructure with Hebrew default and English fallback fully prepared. Deliverables: expanded messages/{he,en}.json with 60+ translation keys across 13 namespaces (app, nav, auth, common, account, cart, product, error, admin, consent, breadcrumb, headers), utility hook useTranslations/useTranslation in src/lib/i18n/use-translations.ts (client-side wrapper for next-intl), test suite with 2 passing cases, verified routing config with Hebrew default and English fallback. All local gates pass: pnpm type-check✓, pnpm lint✓, pnpm build✓ (278 shells, CSP clean). Next-intl library installed and wired through src/i18n/routing.ts and src/i18n/request.ts. Components can now progressively import useTranslations hook to replace hardcoded strings. Commits: 54b52c1c5)
 
 ### 2026-10-17T13:45:00+07:00
 - item: STEP 81-mobile-app-foundation
