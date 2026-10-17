@@ -1,7 +1,11 @@
-RESUME FROM: STEP 87-next-goal
+RESUME FROM: STEP 88-next-goal
 # KenyonExpress — Project State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-10-17T16:46:00+07:00
+- item: STEP 87-chaos-testing
+- RESULT: ✅ COMPLETE — Chaos testing infrastructure for three critical services implemented and verified. Kill switches added: KILL_SWITCH_SUPABASE, KILL_SWITCH_R2, KILL_SWITCH_MEILISEARCH. Comprehensive test suite created with 23 tests covering: (1) Supabase unavailability—graceful database degradation with Hebrew error messaging ("מצטערים, לא ניתן לטעון את המוצרים כרגע"), background operations continue; (2) R2 unavailability—images fall back to local placeholders, pages render without breaking, cached images serve during recovery; (3) Meilisearch unavailability—search falls back to Postgres FTS with user-visible badge ("מחפש בסיסי - תוצאות עלולות להיות חלקיות"), category filtering works, facets degrade gracefully; (4) Partial outages—one service down while others up; (5) Full outage—all three services down simultaneously; (6) Independent recovery—services recover independently. Feature flags updated with Hebrew labels for all 7 kill switches. **VERIFICATION COMPLETE:** All 23 chaos tests passing, feature-flags tests passing, existing chaos.test.ts updated for 7 total switches. Type-check ✓, lint ✓ (biome format applied), build ✓ (289/289 pages). Infrastructure enables 1-minute service unavailability with graceful degradation and user-visible messaging. Commits: e9b8fb745 (chaos-three-services.test.ts 443 lines, kill-switches.ts extended, feature-flags.ts Hebrew labels).
 
 ### 2026-10-17T16:16:00+07:00
 - item: STEP 86-dark-mode
