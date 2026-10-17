@@ -2,6 +2,7 @@ import { sendEmail } from '@/lib/email/resend'
 import { log } from '@/lib/observability/log'
 import { classifyMessage, shouldAutoRespond } from '@/server/support/classify'
 import { forwardInboundToOwner } from '@/server/whatsapp/forward-to-owner'
+import { OFF_PAGE } from '@/styles/tokens'
 import { createClient } from '@supabase/supabase-js'
 
 export interface ProcessSupportMessageInput {
@@ -11,6 +12,19 @@ export interface ProcessSupportMessageInput {
   message_body: string
   subject?: string
   source?: 'contact_form' | 'whatsapp' | 'email'
+}
+
+interface SupportMessage {
+  id: string
+  customer_email: string
+  customer_name: string
+  customer_phone: string | null
+  message_body: string
+  subject: string | null
+  source: 'contact_form' | 'whatsapp' | 'email'
+  status: 'new' | 'auto_responded' | 'owner_notified' | 'resolved'
+  created_at: string
+  updated_at: string
 }
 
 export interface ProcessResult {
@@ -83,7 +97,7 @@ export async function processSupportMessage(
           subject: template.subject_he,
           html: `<div dir="rtl" style="font-family:Arial,Helvetica,sans-serif;text-align:right">
             ${template.body_he.replace(/\n/g, '<br/>')}
-            <p style="margin-top:24px;font-size:12px;color:#666">
+            <p style="margin-top:24px;font-size:12px;color:${OFF_PAGE.secondary}">
               פנייה ID: ${messageId.slice(0, 8)}
             </p>
           </div>`,
@@ -178,11 +192,14 @@ export async function processPendingSupportMessages(env: Partial<NodeJS.ProcessE
 
     // Fetch new messages
     const { data: messages, error: fetchError } = (await supabase
-      .from('support_messages' as any)
+      .from('support_messages')
       .select('*')
       .eq('status', 'new')
       .order('created_at', { ascending: true })
-      .limit(100)) as any
+      .limit(100)) as unknown as {
+      data: SupportMessage[] | null
+      error: { message: string } | null
+    }
 
     if (fetchError) {
       throw new Error(`Failed to fetch messages: ${fetchError.message}`)
@@ -202,7 +219,7 @@ export async function processPendingSupportMessages(env: Partial<NodeJS.ProcessE
             customer_phone: msg.customer_phone || undefined,
             message_body: msg.message_body,
             subject: msg.subject || undefined,
-            source: (msg.source as any) || 'contact_form',
+            source: msg.source || 'contact_form',
           },
           env,
         )
@@ -216,8 +233,8 @@ export async function processPendingSupportMessages(env: Partial<NodeJS.ProcessE
     }
 
     // Update run record with results
-    await (supabase
-      .from('support_classifier_runs' as any)
+    await supabase
+      .from('support_classifier_runs')
       .update({
         completed_at: new Date().toISOString(),
         messages_processed: messages?.length || 0,
@@ -225,7 +242,7 @@ export async function processPendingSupportMessages(env: Partial<NodeJS.ProcessE
         messages_routed_to_owner: ownerNotified,
         errors: errors.length > 0 ? errors.join('\n') : null,
       })
-      .eq('id', runId) as any)
+      .eq('id', runId)
 
     log.info('support.batch_process_complete', {
       messagesProcessed: messages?.length || 0,

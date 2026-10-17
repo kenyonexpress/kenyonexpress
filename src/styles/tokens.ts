@@ -261,6 +261,8 @@ export const OFF_PAGE = {
   ink: SITE.brand.dark,
   /** Secondary text in an email. Tailwind's gray-500; email chrome has no live counterpart to measure. */
   muted: '#6b7280',
+  /** Tertiary text for less prominent details like message IDs. */
+  secondary: '#666666',
   /** Hairlines and table rules in an email. Tailwind's gray-200. */
   rule: '#e5e7eb',
   /** Tinted panel behind a total or a code. Tailwind's gray-50. */
@@ -269,6 +271,12 @@ export const OFF_PAGE = {
   paper: '#ffffff',
   /** A second, warmer panel: the voucher code block. */
   panelWarm: '#f5f5f5',
+  /** Light green panel for success messaging in abandoned cart recovery email. */
+  panelGreen: '#e8f5e9',
+  /** Divider color for horizontal rules in emails. */
+  divider: '#e0e0e0',
+  /** Light shadow for card styling in emails. */
+  shadowLight: 'rgba(0,0,0,0.1)',
   /**
    * THE BRAND RED, AND IT IS DELIBERATELY NOT `SITE.functional.price`.
    *

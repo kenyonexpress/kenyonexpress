@@ -96,10 +96,12 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
     const brandColor = OFF_PAGE.brand
     const textColor = OFF_PAGE.ink
     const mutedColor = OFF_PAGE.muted
+    const panelColor = OFF_PAGE.panelWarm
+    const shadowColor = OFF_PAGE.shadowLight
 
     return `
-<div dir="rtl" style="font-family: Heebo, Arial, Helvetica, sans-serif; text-align: right; background: #f5f5f5; padding: 20px; color: ${textColor};">
-  <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 8px; padding: 40px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+<div dir="rtl" style="font-family: Heebo, Arial, Helvetica, sans-serif; text-align: right; background: ${panelColor}; padding: 20px; color: ${textColor};">
+  <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 8px; padding: 40px; box-shadow: 0 2px 4px ${shadowColor};">
 
     <h1 style="font-size: 24px; font-weight: 700; margin: 0 0 24px; color: ${brandColor};">
       ${stageConfig.headline}
@@ -109,7 +111,7 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
       יש לך <bdi>${itemCount}</bdi> פריטים בסל בקניון אקספרס שממתינים לך.
     </p>
 
-    <div style="background: #e8f5e9; border-left: 4px solid ${brandColor}; padding: 16px; margin: 24px 0; border-radius: 4px;">
+    <div style="background: ${OFF_PAGE.panelGreen}; border-left: 4px solid ${brandColor}; padding: 16px; margin: 24px 0; border-radius: 4px;">
       <p style="margin: 0; font-size: 14px; color: ${mutedColor};">קוד הנחה בלעדי:</p>
       <p style="margin: 8px 0 0; font-size: 20px; font-weight: 700; font-family: monospace; color: ${brandColor};">
         ${discountCode}
@@ -130,7 +132,7 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
       חזרה לסל שלי
     </a>
 
-    <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 32px 0;" />
+    <hr style="border: none; border-top: 1px solid ${OFF_PAGE.divider}; margin: 32px 0;" />
 
     <p style="font-size: 12px; color: ${mutedColor}; margin: 16px 0 0;">
       קניון אקספרס — קופונים ודילים לכל המשפחה

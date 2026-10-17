@@ -162,7 +162,7 @@ export const BLOG_POSTS: readonly BlogPost[] = [
   },
   {
     slug: 'coupon-vs-competitors',
-    title: 'השוואת מחירים: קניון EXPRESS vs. מתחרים',
+    title: 'השוואת מחירים: קניון EXPRESS מול מתחרים',
     description:
       'מעוניין לדעת איך קניון EXPRESS משתווה לאתרי קופונים אחרים? בדוק את הדילים היחידים, המחירים והאיכות של שלנו.',
     publishedAt: '2026-10-14',
