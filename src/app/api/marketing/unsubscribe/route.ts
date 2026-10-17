@@ -1,4 +1,5 @@
 import { log } from '@/lib/observability/log'
+import { rateLimit } from '@/lib/rate-limit'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/client'
 
@@ -32,6 +33,14 @@ export async function POST(request: Request): Promise<Response> {
 
     if (!userId) {
       return Response.json({ error: 'User ID required' }, { status: 400 })
+    }
+
+    const limiter = await rateLimit('admin-unsubscribe', userId)
+    if (!limiter.allowed) {
+      return Response.json(
+        { error: 'Rate limited' },
+        { status: 429, headers: { 'Retry-After': '3600' } },
+      )
     }
 
     const body = (await request.json()) as UnsubscribeRequest

@@ -1,4 +1,5 @@
 import { log } from '@/lib/observability/log'
+import { rateLimit } from '@/lib/rate-limit'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { validateAdminRequest } from '@/server/auth/admin-check'
 
@@ -116,6 +117,14 @@ export async function PATCH(
     const user = await validateAdminRequest(request)
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const limiter = await rateLimit('admin-broadcast', user.id)
+    if (!limiter.allowed) {
+      return Response.json(
+        { error: 'Rate limited' },
+        { status: 429, headers: { 'Retry-After': '3600' } },
+      )
     }
 
     const { id } = await params

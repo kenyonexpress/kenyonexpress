@@ -1,5 +1,6 @@
 import { verifyResendWebhook } from '@/lib/email/resend-webhook'
 import { log } from '@/lib/observability/log'
+import { rateLimit } from '@/lib/rate-limit'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 /**
@@ -44,6 +45,12 @@ export async function POST(request: Request): Promise<Response> {
     if (!isValid) {
       log.warn('resend_webhook.invalid_signature', { signature: signature.slice(0, 20) })
       return Response.json({ error: 'Invalid signature' }, { status: 401 })
+    }
+
+    const limiter = await rateLimit('resend-webhook', 'resend')
+    if (!limiter.allowed) {
+      log.warn('resend_webhook.rate_limited')
+      return Response.json({ error: 'Rate limited' }, { status: 429 })
     }
 
     const payload = JSON.parse(body) as ResendWebhookPayload

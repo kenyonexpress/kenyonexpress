@@ -302,6 +302,32 @@ export const RATE_LIMIT_POLICIES = {
     windowSeconds: 600,
     reason: 'personalised home row, one PostHog query per call, per IP',
   },
+  // -- Marketing broadcasts (admin-only operations)
+  'admin-broadcast': {
+    limit: 100,
+    windowSeconds: 3600,
+    reason: 'broadcast creation/update, per admin user',
+  },
+  'admin-broadcast-send': {
+    limit: 50,
+    windowSeconds: 3600,
+    reason: 'broadcast dispatch scheduling, per admin user',
+  },
+  'admin-domain-auth': {
+    limit: 50,
+    windowSeconds: 3600,
+    reason: 'domain authentication verification, per admin user',
+  },
+  'admin-unsubscribe': {
+    limit: 100,
+    windowSeconds: 3600,
+    reason: 'subscription management/unsubscribe, per admin user',
+  },
+  'resend-webhook': {
+    limit: 1000,
+    windowSeconds: 60,
+    reason: 'Resend delivery webhook callbacks, signature-verified',
+  },
 } as const satisfies Record<string, RateLimitPolicy>
 
 export type RateLimitPolicyName = keyof typeof RATE_LIMIT_POLICIES
