@@ -90,6 +90,12 @@
         {
           "cameraPermission": "המצלמה משמשת לסריקת קודי QR של שוברים בעמדת הקופה."
         }
+      ],
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "זיהוי הפנים משמש להתחברות מאובטחת לחשבונך."
+        }
       ]
     ],
     "experiments": {
