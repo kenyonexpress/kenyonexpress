@@ -1,35 +1,40 @@
-import { describe, expect, it, vi } from 'vitest'
+import { APP_PATHS } from '@/lib/app/deep-links'
+import { describe, expect, it } from 'vitest'
 
 /**
- * Mobile app page component tests.
- * Note: Full E2E testing requires Expo environment; these are smoke tests.
+ * Mobile app integration tests.
+ * Tests real app paths and utilities that mobile app depends on.
  */
 
 describe('Mobile App Pages', () => {
   describe('Product detail page', () => {
-    it('should handle product slug from params', () => {
-      const slug = 'test-product'
-      expect(slug).toBeDefined()
-      expect(typeof slug).toBe('string')
+    it('should have product path in APP_PATHS', () => {
+      expect(APP_PATHS.product).toBeDefined()
+      expect(typeof APP_PATHS.product).toBe('function')
     })
 
-    it('should construct correct API endpoint for products', () => {
+    it('should construct correct product path', () => {
       const slug = 'barbecue-grill'
-      const endpoint = `https://kenyonexpress.co.il/api/mobile/products/${slug}`
-      expect(endpoint).toBe('https://kenyonexpress.co.il/api/mobile/products/barbecue-grill')
+      const path = APP_PATHS.product(slug)
+      expect(path).toBe('/product/barbecue-grill')
     })
 
-    it('should handle API errors gracefully', () => {
-      const mockFetch = vi.fn().mockRejectedValue(new Error('Network error'))
-      expect(mockFetch()).rejects.toThrow('Network error')
+    it('should handle various product slugs', () => {
+      expect(APP_PATHS.product('test-product')).toBe('/product/test-product')
+      expect(APP_PATHS.product('e2e-test-physical')).toBe('/product/e2e-test-physical')
     })
   })
 
   describe('Order detail page', () => {
-    it('should handle order ID from params', () => {
+    it('should have order path in APP_PATHS', () => {
+      expect(APP_PATHS.order).toBeDefined()
+      expect(typeof APP_PATHS.order).toBe('function')
+    })
+
+    it('should construct correct order path', () => {
       const orderId = 'o123'
-      expect(orderId).toBeDefined()
-      expect(typeof orderId).toBe('string')
+      const path = APP_PATHS.order(orderId)
+      expect(path).toBe('/orders/o123')
     })
 
     it('should format money as integer math (no floats)', () => {
@@ -38,6 +43,7 @@ describe('Mobile App Pages', () => {
       const fraction = totalAgorot % 100
       const formatted = `₪${whole}.${String(fraction).padStart(2, '0')}`
       expect(formatted).toBe('₪123.45')
+      expect(typeof formatted).toBe('string')
     })
 
     it('should handle zero fraction cents', () => {
@@ -49,44 +55,33 @@ describe('Mobile App Pages', () => {
       expect(formatted).toBe('₪123')
     })
 
-    it('should never use float division', () => {
+    it('should never use float division in money calculations', () => {
       const totalAgorot = 12345
-      // WRONG: totalAgorot / 100 = 123.45 (float)
-      // RIGHT: Math.floor(totalAgorot / 100) + '%' + (totalAgorot % 100)
-      const wrongWay = totalAgorot / 100
-      const rightWay = `${Math.floor(totalAgorot / 100)}.${String(totalAgorot % 100).padStart(2, '0')}`
-      expect(wrongWay).toBe(123.45)
-      expect(rightWay).toBe('123.45')
-      expect(typeof rightWay).toBe('string')
+      const whole = Math.floor(totalAgorot / 100)
+      const fraction = totalAgorot % 100
+      expect(whole).toBe(123)
+      expect(fraction).toBe(45)
+      expect(Number.isInteger(whole)).toBe(true)
+      expect(Number.isInteger(fraction)).toBe(true)
     })
   })
 
   describe('Notifications page', () => {
-    it('should map notification kinds to Hebrew labels', () => {
-      const kindMap: Record<string, string> = {
-        voucher_issued: 'קופון חדש',
-        voucher_expiring: 'קופון פוקע',
-        cashback_credited: 'קאשבק',
-        order_status_changed: 'עדכון הזמנה',
-        product_restocked: 'מוצר חזר למלאי',
-      }
-
-      expect(kindMap.voucher_issued).toBe('קופון חדש')
-      expect(kindMap.order_status_changed).toBe('עדכון הזמנה')
-      expect(kindMap.product_restocked).toBe('מוצר חזר למלאי')
+    it('should have notifications path in APP_PATHS', () => {
+      expect(APP_PATHS.notifications).toBe('/notifications')
+      expect(typeof APP_PATHS.notifications).toBe('string')
     })
 
-    it('should map delivery status to labels', () => {
-      const statusMap: Record<string, string> = {
-        pending: 'בהמתנה',
-        sent: 'נשלח',
-        none: 'לא שלח',
-        skipped: 'דילוג',
-        dead: 'כשל',
-      }
+    it('should define all required app paths', () => {
+      expect(APP_PATHS.home).toBe('/')
+      expect(APP_PATHS.coupons).toBe('/coupons')
+      expect(APP_PATHS.wallet).toBe('/wallet')
+      expect(APP_PATHS.notifications).toBe('/notifications')
+    })
 
-      expect(statusMap.sent).toBe('נשלח')
-      expect(statusMap.dead).toBe('כשל')
+    it('should support coupon paths', () => {
+      expect(APP_PATHS.coupon).toBeDefined()
+      expect(APP_PATHS.coupon('v123')).toBe('/coupons/v123')
     })
 
     it('should sort notifications by creation date', () => {
@@ -105,27 +100,18 @@ describe('Mobile App Pages', () => {
     })
   })
 
-  describe('Deep-link integration', () => {
-    it('should define all required app paths', () => {
-      const paths = {
-        home: '/',
-        coupons: '/coupons',
-        wallet: '/wallet',
-        notifications: '/notifications',
+  describe('Deep-link integration with APP_PATHS', () => {
+    it('should have all required paths for notifications', () => {
+      const requiredPaths = ['home', 'coupons', 'wallet', 'notifications', 'checkoutReturn']
+      for (const pathKey of requiredPaths) {
+        expect(APP_PATHS[pathKey as keyof typeof APP_PATHS]).toBeDefined()
       }
-
-      expect(paths.home).toBe('/')
-      expect(paths.notifications).toBeDefined()
     })
 
-    it('should support dynamic paths', () => {
-      const couponId = 'v123'
-      const orderId = 'o456'
-      const productSlug = 'test-product'
-
-      expect(`/coupons/${couponId}`).toBe('/coupons/v123')
-      expect(`/orders/${orderId}`).toBe('/orders/o456')
-      expect(`/product/${productSlug}`).toBe('/product/test-product')
+    it('should support dynamic item paths', () => {
+      expect(APP_PATHS.product('slug')).toBe('/product/slug')
+      expect(APP_PATHS.order('id')).toBe('/orders/id')
+      expect(APP_PATHS.coupon('id')).toBe('/coupons/id')
     })
   })
 })

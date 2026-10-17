@@ -71,6 +71,7 @@ export interface SegmentUser {
  * Must be run as admin or via authenticated RPC
  */
 export async function calculateRFMScores(supabase: SupabaseClient) {
+  // biome-ignore lint/suspicious/noExplicitAny: Supabase SDK rpc() lacks generic overloads
   const { data, error } = await (supabase as any).rpc('fn_calculate_rfm_scores')
 
   if (error) {
@@ -90,6 +91,7 @@ export async function calculateRFMScores(supabase: SupabaseClient) {
  * Assigns users to their best-matching segment
  */
 export async function segmentUsers(supabase: SupabaseClient) {
+  // biome-ignore lint/suspicious/noExplicitAny: Supabase SDK rpc() lacks generic overloads
   const { data, error } = await (supabase as any).rpc('fn_segment_users')
 
   if (error) {
@@ -106,6 +108,7 @@ export async function segmentUsers(supabase: SupabaseClient) {
  * Get segments for the current authenticated user
  */
 export async function getUserSegments(supabase: SupabaseClient) {
+  // biome-ignore lint/suspicious/noExplicitAny: Supabase SDK rpc() lacks generic overloads
   const { data, error } = await (supabase as any).rpc('fn_get_user_segments')
 
   if (error) {
@@ -119,6 +122,7 @@ export async function getUserSegments(supabase: SupabaseClient) {
  * Get all users in a specific segment (admin only)
  */
 export async function getSegmentUsers(supabase: SupabaseClient, segmentType: CustomerSegmentType) {
+  // biome-ignore lint/suspicious/noExplicitAny: Supabase SDK rpc() lacks generic overloads
   const { data, error } = await (supabase as any).rpc('fn_get_segment_users', {
     p_segment_type: segmentType,
   })

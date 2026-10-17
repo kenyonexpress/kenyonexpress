@@ -1,95 +1,95 @@
-'use client';
+'use client'
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/hooks/useAuth';
-import { AffiliateStats } from '@/lib/types/affiliate';
-import { shekels } from '@/lib/money-format';
-import { agorot } from '@/lib/money';
+import { useAuth } from '@/hooks/useAuth'
+import { agorot } from '@/lib/money'
+import { shekels } from '@/lib/money-format'
+import type { AffiliateStats } from '@/lib/types/affiliate'
+import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
 export default function AffiliateDashboardPage() {
-  const router = useRouter();
-  const { user } = useAuth();
-  const [stats, setStats] = useState<AffiliateStats | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [payoutAmount, setPayoutAmount] = useState<string>('');
-  const [requestingPayout, setRequestingPayout] = useState(false);
-  const [payoutSuccess, setPayoutSuccess] = useState(false);
+  const router = useRouter()
+  const { user } = useAuth()
+  const [stats, setStats] = useState<AffiliateStats | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [payoutAmount, setPayoutAmount] = useState<string>('')
+  const [requestingPayout, setRequestingPayout] = useState(false)
+  const [payoutSuccess, setPayoutSuccess] = useState(false)
 
   useEffect(() => {
     if (!user) {
-      router.push('/auth/login');
+      router.push('/auth/login')
     }
-  }, [user, router]);
+  }, [user, router])
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await fetch('/api/affiliate/stats');
-        const result = await response.json();
+        const response = await fetch('/api/affiliate/stats')
+        const result = await response.json()
 
         if (!response.ok) {
           // User might not have affiliate account yet
-          setStats(null);
-          return;
+          setStats(null)
+          return
         }
 
-        setStats(result.data);
+        setStats(result.data)
       } catch (err) {
-        setError('Failed to load affiliate stats');
-        console.error('Stats error:', err);
+        setError('Failed to load affiliate stats')
+        console.error('Stats error:', err)
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
     if (user) {
-      fetchStats();
+      fetchStats()
     }
-  }, [user]);
+  }, [user])
 
   const handlePayoutRequest = async () => {
-    const amount = parseInt(payoutAmount, 10);
+    const amount = Number.parseInt(payoutAmount, 10)
 
     if (!amount || amount <= 0) {
-      setError('Invalid payout amount');
-      return;
+      setError('Invalid payout amount')
+      return
     }
 
-    setRequestingPayout(true);
-    setError(null);
+    setRequestingPayout(true)
+    setError(null)
 
     try {
       const response = await fetch('/api/affiliate/payout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ amount }),
-      });
+      })
 
-      const result = await response.json();
+      const result = await response.json()
 
       if (!response.ok) {
-        setError(result.error || 'Failed to request payout');
-        return;
+        setError(result.error || 'Failed to request payout')
+        return
       }
 
-      setPayoutSuccess(true);
-      setPayoutAmount('');
+      setPayoutSuccess(true)
+      setPayoutAmount('')
       // Refresh stats after successful payout
       setTimeout(() => {
-        window.location.reload();
-      }, 2000);
+        window.location.reload()
+      }, 2000)
     } catch (err) {
-      setError('An error occurred. Please try again.');
-      console.error('Payout error:', err);
+      setError('An error occurred. Please try again.')
+      console.error('Payout error:', err)
     } finally {
-      setRequestingPayout(false);
+      setRequestingPayout(false)
     }
-  };
+  }
 
   if (!user) {
-    return null;
+    return null
   }
 
   if (loading) {
@@ -97,7 +97,7 @@ export default function AffiliateDashboardPage() {
       <div className="min-h-screen flex items-center justify-center">
         <p className="text-gray-600">טוען...</p>
       </div>
-    );
+    )
   }
 
   if (!stats) {
@@ -120,7 +120,7 @@ export default function AffiliateDashboardPage() {
           </div>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -144,12 +144,8 @@ export default function AffiliateDashboardPage() {
         <div className="bg-white rounded-lg shadow p-6 mb-6">
           <h2 className="text-xl font-bold text-gray-900 mb-4">קוד השותף שלך</h2>
           <div className="bg-gray-50 border-2 border-gray-200 rounded-lg p-4">
-            <p className="text-4xl font-mono font-bold text-gray-900">
-              {stats.affiliate_code}
-            </p>
-            <p className="text-gray-600 mt-2">
-              שתף קוד זה כדי להביא לקוחות חדשים
-            </p>
+            <p className="text-4xl font-mono font-bold text-gray-900">{stats.affiliate_code}</p>
+            <p className="text-gray-600 mt-2">שתף קוד זה כדי להביא לקוחות חדשים</p>
           </div>
         </div>
 
@@ -171,9 +167,7 @@ export default function AffiliateDashboardPage() {
 
           <div className="bg-white rounded-lg shadow p-6">
             <p className="text-gray-600 text-sm mb-2">שיעור המרה</p>
-            <p className="text-3xl font-bold text-gray-900">
-              {stats.conversion_rate.toFixed(2)}%
-            </p>
+            <p className="text-3xl font-bold text-gray-900">{stats.conversion_rate.toFixed(2)}%</p>
           </div>
 
           <div className="bg-white rounded-lg shadow p-6">
@@ -214,10 +208,14 @@ export default function AffiliateDashboardPage() {
             <h2 className="text-xl font-bold text-gray-900 mb-4">בקש הוצאה</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="payout-amount"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   סכום להוצאה (₪)
                 </label>
                 <input
+                  id="payout-amount"
                   type="number"
                   value={payoutAmount}
                   onChange={(e) => setPayoutAmount(e.target.value)}
@@ -232,6 +230,7 @@ export default function AffiliateDashboardPage() {
                 </p>
               </div>
               <button
+                type="button"
                 onClick={handlePayoutRequest}
                 disabled={requestingPayout || !payoutAmount}
                 className="bg-green-500 hover:bg-green-600 disabled:bg-gray-300 text-white font-bold py-3 px-6 rounded-lg transition-colors"
@@ -249,5 +248,5 @@ export default function AffiliateDashboardPage() {
         )}
       </div>
     </div>
-  );
+  )
 }

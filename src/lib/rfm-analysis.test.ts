@@ -39,6 +39,7 @@ describe('RFM Analysis', () => {
         error: null,
       })
 
+      // biome-ignore lint/suspicious/noExplicitAny: Mock supabase client
       const result = await calculateRFMScores(supabase as any)
 
       expect(supabase.rpc).toHaveBeenCalledWith('fn_calculate_rfm_scores')
@@ -52,6 +53,7 @@ describe('RFM Analysis', () => {
         error: { message: 'Database error' },
       })
 
+      // biome-ignore lint/suspicious/noExplicitAny: Mock supabase client
       await expect(calculateRFMScores(supabase as any)).rejects.toThrow(
         'Failed to calculate RFM scores',
       )
@@ -71,6 +73,7 @@ describe('RFM Analysis', () => {
         error: null,
       })
 
+      // biome-ignore lint/suspicious/noExplicitAny: Mock supabase client
       const result = await segmentUsers(supabase as any)
 
       expect(supabase.rpc).toHaveBeenCalledWith('fn_segment_users')
@@ -84,6 +87,7 @@ describe('RFM Analysis', () => {
         error: { message: 'Segmentation failed' },
       })
 
+      // biome-ignore lint/suspicious/noExplicitAny: Mock supabase client
       await expect(segmentUsers(supabase as any)).rejects.toThrow('Failed to segment users')
     })
   })
@@ -106,6 +110,7 @@ describe('RFM Analysis', () => {
         error: null,
       })
 
+      // biome-ignore lint/suspicious/noExplicitAny: Mock supabase client
       const result = await getUserSegments(supabase as any)
 
       expect(supabase.rpc).toHaveBeenCalledWith('fn_get_user_segments')
@@ -133,6 +138,7 @@ describe('RFM Analysis', () => {
         error: null,
       })
 
+      // biome-ignore lint/suspicious/noExplicitAny: Mock supabase client
       const result = await getSegmentUsers(supabase as any, 'champions')
 
       expect(supabase.rpc).toHaveBeenCalledWith('fn_get_segment_users', {
