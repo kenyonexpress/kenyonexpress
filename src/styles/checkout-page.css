@@ -23,6 +23,8 @@
   color: var(--color-heading);
   font-size: 14px;
   line-height: 23.996px;
+  /* Layout containment prevents form element shifts from cascading. Reduces CLS. */
+  contain: layout style;
 }
 
 /* Measured off the live /checkout/, and identical to the cart's: 14px, padding
@@ -113,6 +115,8 @@
 .checkout-page__grid {
   display: grid;
   gap: 34px;
+  /* Layout containment isolates form element shifts. Reduces CLS. */
+  contain: layout style;
 }
 
 /* 665 + 466 + 34 = 1165, the measured container width. In RTL the first track
