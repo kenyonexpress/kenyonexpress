@@ -9,6 +9,7 @@ import ProductStickyCartBar from '@/components/storefront/ProductStickyCartBar'
 import RelatedProducts from '@/components/storefront/RelatedProducts'
 import ShippingInfo from '@/components/storefront/ShippingInfo'
 import StockScarcity from '@/components/storefront/StockScarcity'
+import StockNotificationWrapper from '@/components/storefront/StockNotificationWrapper'
 import SupplierInfo from '@/components/storefront/SupplierInfo'
 import {
   resolveStorefrontProductType,
@@ -287,6 +288,11 @@ export default async function ProductPage({ params }: Props) {
             isCoupon={isCoupon}
             couponOffer={couponOffer}
             recurringOffer={recurringOffer}
+          />
+          <StockNotificationWrapper
+            productId={product.id}
+            productName={product.name_he}
+            isOutOfStock={product.stock_quantity === 0}
           />
         </div>
 

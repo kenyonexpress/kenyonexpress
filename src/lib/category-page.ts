@@ -410,6 +410,7 @@ export async function getCategoryProducts(opts: {
   if (priceMax != null) query = query.lte('kenyon_price', priceMax)
   if (supplierId) query = query.eq('supplier_id', supplierId)
   if (tag) query = query.contains('tags', [tag])
+  query = query.gt('stock_quantity', 0)
   if (productType) {
     const facet = productTypeFilter(productType)
     query = facet.column === 'or' ? query.or(facet.value) : query.or(`and(${facet.value})`)
@@ -521,6 +522,7 @@ export async function getShopProducts(opts: {
     )
     .eq('status', 'active')
     .is('deleted_at', null)
+    .gt('stock_quantity', 0)
 
   if (priceMin != null) query = query.gte('kenyon_price', priceMin)
   if (priceMax != null) query = query.lte('kenyon_price', priceMax)
