@@ -4,13 +4,16 @@ import { listFeatureFlags } from './feature-flags'
 describe('listFeatureFlags', () => {
   it('reports every switch off when the env is empty', () => {
     const flags = listFeatureFlags({} as NodeJS.ProcessEnv)
-    expect(flags).toHaveLength(4)
+    expect(flags).toHaveLength(7)
     expect(flags.every((flag) => flag.on === false)).toBe(true)
     expect(flags.map((flag) => flag.envName)).toEqual([
       'KILL_SWITCH_CACHE',
       'KILL_SWITCH_SEARCH',
       'KILL_SWITCH_RECS',
       'KILL_SWITCH_NOTIFICATIONS',
+      'KILL_SWITCH_SUPABASE',
+      'KILL_SWITCH_R2',
+      'KILL_SWITCH_MEILISEARCH',
     ])
   })
 

@@ -166,12 +166,15 @@ describe('chaos: a subsystem is switched off', () => {
     expect(degraded).not.toHaveBeenCalled()
   })
 
-  it('reports every switch, so the health endpoint can show all four', () => {
+  it('reports every switch, so the health endpoint can show all seven', () => {
     expect(killSwitchReport({ KILL_SWITCH_RECS: '1' } as unknown as NodeJS.ProcessEnv)).toEqual({
       cache: false,
       search: false,
       recs: true,
       notifications: false,
+      supabase: false,
+      r2: false,
+      meilisearch: false,
     })
   })
 })

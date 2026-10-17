@@ -45,6 +45,20 @@ export const KILL_SWITCHES = {
    * only the send is skipped, so nothing is lost that cannot be resent.
    */
   notifications: 'KILL_SWITCH_NOTIFICATIONS',
+  /**
+   * Simulate Supabase unavailability. The database is down and all queries fail.
+   * Responses degrade to error states with user-visible messaging.
+   */
+  supabase: 'KILL_SWITCH_SUPABASE',
+  /**
+   * Simulate R2 (Cloudflare) image storage unavailability. Images fall back to
+   * placeholders or fail silently without breaking the page.
+   */
+  r2: 'KILL_SWITCH_R2',
+  /**
+   * Simulate Meilisearch unavailability. Search falls back to Postgres FTS.
+   */
+  meilisearch: 'KILL_SWITCH_MEILISEARCH',
 } as const
 
 export type Subsystem = keyof typeof KILL_SWITCHES
@@ -96,5 +110,8 @@ export function killSwitchReport(env: NodeJS.ProcessEnv = process.env): Record<S
     search: isOn(env[KILL_SWITCHES.search]),
     recs: isOn(env[KILL_SWITCHES.recs]),
     notifications: isOn(env[KILL_SWITCHES.notifications]),
+    supabase: isOn(env[KILL_SWITCHES.supabase]),
+    r2: isOn(env[KILL_SWITCHES.r2]),
+    meilisearch: isOn(env[KILL_SWITCHES.meilisearch]),
   }
 }

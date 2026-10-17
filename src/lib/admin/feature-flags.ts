@@ -25,6 +25,18 @@ const LABELS: Record<Subsystem, { labelHe: string; degradedHe: string }> = {
     labelHe: 'התראות יוצאות',
     degradedHe: 'מייל ודחיפה מדלגים. האירוע עצמו נשמר.',
   },
+  supabase: {
+    labelHe: 'Supabase (מסד הנתונים)',
+    degradedHe: 'שגיאה בחיבור למסד הנתונים. התוכן עשוי להיות בלתי זמין. אנא נסו שוב בעוד דקה.',
+  },
+  r2: {
+    labelHe: 'R2 (אחסון תמונות)',
+    degradedHe: 'תמונות טוענות מהמטמון. עלולות להיות חסרות או בעיכוב.',
+  },
+  meilisearch: {
+    labelHe: 'Meilisearch (חיפוש)',
+    degradedHe: 'חיפוש בסיסי ב-Postgres. עלולות להיות תוצאות חלקיות, ללא תיקונים או הצעות.',
+  },
 }
 
 /**
