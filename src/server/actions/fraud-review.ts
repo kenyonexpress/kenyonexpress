@@ -23,10 +23,11 @@ export async function getFlaggedOrders(
   }
 
   // Verify user is an admin
-  // biome-ignore lint/suspicious/noExplicitAny: Fraud tables don't exist in current types
-  const { data: flags, error } = await (
-    client.from('fraud_flags' as any).select(
-      `
+  const { data: flags, error } =
+    await // biome-ignore lint/suspicious/noExplicitAny: Fraud tables don't exist in current types
+    (
+      client.from('fraud_flags' as any).select(
+        `
       id,
       order_id,
       profile_id,
@@ -39,11 +40,11 @@ export async function getFlaggedOrders(
       orders!inner(id, amount_ils, created_at),
       fraud_signals!inner(id, signal_type, severity, metadata)
     `,
-    ) as any
-  )
-    .eq('status', status)
-    .order('created_at', { ascending: false })
-    .range(offset, offset + limit - 1)
+      ) as any
+    )
+      .eq('status', status)
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1)
 
   if (error) {
     return { error: `Failed to fetch flagged orders: ${error.message}` }
@@ -67,10 +68,11 @@ export async function getFlaggedOrderDetails(flagId: string) {
     return { error: 'Not authenticated' }
   }
 
-  // biome-ignore lint/suspicious/noExplicitAny: Fraud tables don't exist in current types
-  const { data: flag, error } = await (
-    client.from('fraud_flags' as any).select(
-      `
+  const { data: flag, error } =
+    await // biome-ignore lint/suspicious/noExplicitAny: Fraud tables don't exist in current types
+    (
+      client.from('fraud_flags' as any).select(
+        `
       id,
       order_id,
       profile_id,
@@ -102,10 +104,10 @@ export async function getFlaggedOrderDetails(flagId: string) {
         detected_at
       )
     `,
-    ) as any
-  )
-    .eq('id', flagId)
-    .single()
+      ) as any
+    )
+      .eq('id', flagId)
+      .single()
 
   if (error) {
     return { error: `Failed to fetch flag details: ${error.message}` }
@@ -129,8 +131,8 @@ export async function approveFlaggedOrder(flagId: string, notes = '') {
     return { error: 'Not authenticated' }
   }
 
-  // biome-ignore lint/suspicious/noExplicitAny: Fraud tables don't exist in current types
   const { data: flag, error: updateError } = await (client
+    // biome-ignore lint/suspicious/noExplicitAny: Fraud tables don't exist in current types
     .from('fraud_flags' as any)
     .update({
       status: 'approved',
@@ -169,8 +171,8 @@ export async function rejectFlaggedOrder(
     return { error: 'Not authenticated' }
   }
 
-  // biome-ignore lint/suspicious/noExplicitAny: Fraud tables don't exist in current types
   const { data: flag, error: updateError } = await (client
+    // biome-ignore lint/suspicious/noExplicitAny: Fraud tables don't exist in current types
     .from('fraud_flags' as any)
     .update({
       status: 'rejected',
@@ -222,8 +224,8 @@ export async function requestManualReview(flagId: string, notes = '') {
     return { error: 'Not authenticated' }
   }
 
-  // biome-ignore lint/suspicious/noExplicitAny: Fraud tables don't exist in current types
   const { data: flag, error: updateError } = await (client
+    // biome-ignore lint/suspicious/noExplicitAny: Fraud tables don't exist in current types
     .from('fraud_flags' as any)
     .update({
       status: 'manual_review',
