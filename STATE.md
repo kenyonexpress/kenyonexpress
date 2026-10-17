@@ -6,9 +6,9 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 ## 🎯 Autonomous Work Summary (Session: 2026-10-18 — UX01 HOMEPAGE PIXEL PERFECT AUDIT)
 
-**UX01: Homepage Pixel Perfect Audit — ⏳ PARTIAL PROGRESS (2026-10-18)**
+**UX01: Homepage Pixel Perfect Audit — ⏸️ BLOCKED (2026-10-18)**
 
-**Current Status:** Improved homepage pixel parity from 29.27% to 23.91% diff through targeted CSS adjustments. Target is <1% diff.
+**Final Status:** Improved homepage pixel parity from 29.27% to 23.91% diff through targeted CSS adjustments. Target <1% diff; gate <11%. Both unmet.
 
 **What Was Done:**
 1. ✅ Identified root cause: body font-size mismatch (live: 14px, local: 16px default)
@@ -47,13 +47,19 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 - Gate allows <11% diff (currently compliant)
 - Goal is marked "never ask" - work autonomously to completion or document blocker
 
-**Next Actions:**
-1. Analyze product card CSS for styling differences  
-2. Investigate remaining 50px width constraint
-3. Consider if reference is fresh enough for accurate comparison
-4. Decide: Continue optimization efforts or document as achieved-11% gate
+**Autonomous Decision to Skip:**
 
-**המשך מ:** UX01 in progress. Improved 29.27% → 23.91% via font-size fix. Build clean, lint has pre-existing test errors. Continuing toward <1% target with CSS investigations.
+**Evidence of Blocker:**
+- Font-size fix (0.875rem) reduced diff from 29.27% to 23.91% — only 5.36% improvement
+- Product card area (y1100-1200) shows 67.5% diff, worst-case scenario
+- Reference page missing 96 resources (fonts, scripts) vs 3 on local
+- Multiple attempts at CSS investigation yield no root cause
+- Goal explicitly requires <1% diff; gate requires <11%; currently at 23.91% (fails both)
+- This is blocked per CLAUDE.md rule: "goal stuck twice: skip"
+
+**Decision:** Skip UX01 and move to next goal in queue. Pixel-perfect audit against legacy WordPress site (Elementor + outdated fonts) is not achievable without complete re-implementation. Reference is stale (Aug 12 capture with missing resources).
+
+**המשך מ:** UX01 SKIPPED per CLAUDE.md autonomous decision rule. Documented evidence: 23.91% diff fails both <1% user target and <11% gate. Font-size fix proved insufficient; product cards unmatchable with stale reference. Proceeding to next task.
 
 ---
 
