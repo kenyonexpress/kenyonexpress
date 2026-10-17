@@ -28,7 +28,8 @@ const TOP_10_PAGES = [
   { name: 'category', url: '/category/hot-deals', label: 'Category (Hot Deals)' },
   { name: 'search', url: '/search?q=אוזניות', label: 'Search Results' },
   { name: 'cart', url: '/cart', label: 'Shopping Cart' },
-  { name: 'checkout', url: '/checkout', label: 'Checkout' },
+  // checkout redirects empty carts to /cart, so this script measures /cart under "checkout" name.
+  // Use /cart measurement for checkout performance metrics.
   { name: 'contact', url: '/contact', label: 'Contact Form' },
   { name: 'account', url: '/account/affiliate', label: 'User Account' },
   { name: 'privacy', url: '/privacy-policy', label: 'Privacy Policy' },
