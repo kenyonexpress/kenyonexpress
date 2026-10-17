@@ -28,13 +28,11 @@ vi.mock('@supabase/ssr', () => ({ createServerClient }))
 import { proxy } from './proxy'
 
 /** The cookie adapter the proxy handed to the library on its last run. */
-// biome-ignore lint/suspicious/noExplicitAny: the adapter is captured untyped
 let cookies: any
 
 beforeEach(() => {
   vi.clearAllMocks()
   getUser.mockResolvedValue({ data: { user: null } })
-  // biome-ignore lint/suspicious/noExplicitAny: capturing the adapter the proxy passes to the library
   createServerClient.mockImplementation((_url: string, _key: string, options: any) => {
     cookies = options.cookies
     return { auth: { getUser } }

@@ -47,7 +47,6 @@ export function planMarkOrderItemRedeemed(input: {
  * generics cannot blow up the redeem route's typecheck.
  */
 export type MarkRedeemedAdmin = {
-  // biome-ignore lint/suspicious/noExplicitAny: the linter here is biome, not eslint, and Supabase's query builder generics recurse deep enough to blow the redeem route's typecheck.
   from: (table: 'order_items') => any
 }
 

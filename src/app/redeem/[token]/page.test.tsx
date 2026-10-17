@@ -65,7 +65,6 @@ const TOKEN = 'KEV1.ZmFrZQ.bm90LWEtc2lnbmF0dXJl'
  * props. A children-only walk returns the empty string and every assertion
  * about the words on the screen passes vacuously.
  */
-// biome-ignore lint/suspicious/noExplicitAny: walking an untyped element tree
 function text(node: any): string {
   if (node === null || node === undefined || typeof node === 'boolean') return ''
   if (typeof node === 'string' || typeof node === 'number') return String(node)
@@ -78,7 +77,6 @@ function text(node: any): string {
 
 async function renderBody(token = TOKEN): Promise<unknown> {
   const params = Promise.resolve({ token })
-  // biome-ignore lint/suspicious/noExplicitAny: reaching the Suspense child
   const shell = RedeemTokenPage({ params }) as any
   return await shell.props.children.type({ params })
 }

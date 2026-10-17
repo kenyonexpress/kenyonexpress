@@ -193,7 +193,7 @@ export async function detectNewProfileHighValue(
  * In production, this would integrate with a GeoIP/reputation service
  */
 export async function detectVpnProxyUsage(
-  order: OrderData,
+  _order: OrderData,
   _userLocationCountry?: string,
 ): Promise<FraudSignal | null> {
   // Placeholder for VPN detection - would integrate with IP reputation service
@@ -211,7 +211,6 @@ export async function detectFraudSignals(order: OrderData): Promise<FraudSignal[
   let profile: ProfileData | null = null
   if (order.profileId) {
     const client = getSupabaseClient()!
-    // biome-ignore lint/suspicious/noExplicitAny: Profiles table is valid but not in fraud context
     const { data } = await (client
       .from('profiles')
       .select('id, created_at')
@@ -231,7 +230,6 @@ export async function detectFraudSignals(order: OrderData): Promise<FraudSignal[
   if (order.profileId) {
     try {
       const client = getSupabaseClient()!
-      // biome-ignore lint/suspicious/noExplicitAny: RPC functions don't exist in generated types
       const count = await ((client as any).rpc('fn_profile_order_velocity', {
         p_profile_id: order.profileId,
         p_hours: 24,
@@ -249,7 +247,6 @@ export async function detectFraudSignals(order: OrderData): Promise<FraudSignal[
   if (order.profileId) {
     try {
       const client = getSupabaseClient()!
-      // biome-ignore lint/suspicious/noExplicitAny: RPC functions don't exist in generated types
       const count = await ((client as any).rpc('fn_profile_recent_chargebacks', {
         p_profile_id: order.profileId,
         p_days: 90,

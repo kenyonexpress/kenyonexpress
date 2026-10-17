@@ -23,11 +23,9 @@ export async function getFlaggedOrders(
   }
 
   // Verify user is an admin
-  const { data: flags, error } =
-    await // biome-ignore lint/suspicious/noExplicitAny: Fraud tables don't exist in current types
-    (
-      client.from('fraud_flags' as any).select(
-        `
+  const { data: flags, error } = (
+    client.from('fraud_flags' as any).select(
+      `
       id,
       order_id,
       profile_id,
@@ -40,11 +38,11 @@ export async function getFlaggedOrders(
       orders!inner(id, amount_ils, created_at),
       fraud_signals!inner(id, signal_type, severity, metadata)
     `,
-      ) as any
-    )
-      .eq('status', status)
-      .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1)
+    ) as any
+  )
+    .eq('status', status)
+    .order('created_at', { ascending: false })
+    .range(offset, offset + limit - 1)
 
   if (error) {
     return { error: `Failed to fetch flagged orders: ${error.message}` }
@@ -68,11 +66,9 @@ export async function getFlaggedOrderDetails(flagId: string) {
     return { error: 'Not authenticated' }
   }
 
-  const { data: flag, error } =
-    await // biome-ignore lint/suspicious/noExplicitAny: Fraud tables don't exist in current types
-    (
-      client.from('fraud_flags' as any).select(
-        `
+  const { data: flag, error } = (
+    client.from('fraud_flags' as any).select(
+      `
       id,
       order_id,
       profile_id,
@@ -104,10 +100,10 @@ export async function getFlaggedOrderDetails(flagId: string) {
         detected_at
       )
     `,
-      ) as any
-    )
-      .eq('id', flagId)
-      .single()
+    ) as any
+  )
+    .eq('id', flagId)
+    .single()
 
   if (error) {
     return { error: `Failed to fetch flag details: ${error.message}` }
@@ -132,7 +128,6 @@ export async function approveFlaggedOrder(flagId: string, notes = '') {
   }
 
   const { data: flag, error: updateError } = await (client
-    // biome-ignore lint/suspicious/noExplicitAny: Fraud tables don't exist in current types
     .from('fraud_flags' as any)
     .update({
       status: 'approved',
@@ -172,7 +167,6 @@ export async function rejectFlaggedOrder(
   }
 
   const { data: flag, error: updateError } = await (client
-    // biome-ignore lint/suspicious/noExplicitAny: Fraud tables don't exist in current types
     .from('fraud_flags' as any)
     .update({
       status: 'rejected',
@@ -225,7 +219,6 @@ export async function requestManualReview(flagId: string, notes = '') {
   }
 
   const { data: flag, error: updateError } = await (client
-    // biome-ignore lint/suspicious/noExplicitAny: Fraud tables don't exist in current types
     .from('fraud_flags' as any)
     .update({
       status: 'manual_review',
@@ -261,21 +254,18 @@ export async function getFraudStatistics() {
   const last24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
 
   // Get counts by status
-  // biome-ignore lint/suspicious/noExplicitAny: Fraud tables don't exist in current types
   const { data: statusCounts, error: statusError } = await (client
     .from('fraud_flags' as any)
     .select('status', { count: 'exact' })
     .gt('created_at', last24h) as any)
 
   // Get counts by risk level
-  // biome-ignore lint/suspicious/noExplicitAny: Fraud tables don't exist in current types
   const { data: riskCounts, error: riskError } = await (client
     .from('fraud_flags' as any)
     .select('risk_level', { count: 'exact' })
     .gt('created_at', last24h) as any)
 
   // Get top signal types
-  // biome-ignore lint/suspicious/noExplicitAny: Fraud tables don't exist in current types
   const { data: topSignals, error: signalsError } = await (client
     .from('fraud_signals' as any)
     .select('signal_type', { count: 'exact' })
@@ -311,7 +301,6 @@ export async function getProfileChargebackHistory(profileId: string) {
     return { error: 'Not authenticated' }
   }
 
-  // biome-ignore lint/suspicious/noExplicitAny: Fraud tables don't exist in current types
   const { data: chargebacks, error } = await (client
     .from('chargeback_history' as any)
     .select('*')

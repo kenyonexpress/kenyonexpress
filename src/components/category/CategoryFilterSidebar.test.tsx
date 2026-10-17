@@ -15,11 +15,8 @@ describe('CategoryFilterSidebar', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    // biome-ignore lint/suspicious/noExplicitAny: test mocks require any casting
     ;(useRouter as any).mockReturnValue({ push: mockPush })
-    // biome-ignore lint/suspicious/noExplicitAny: test mocks require any casting
     ;(usePathname as any).mockReturnValue('/category/test')
-    // biome-ignore lint/suspicious/noExplicitAny: test mocks require any casting
     ;(useSearchParams as any).mockReturnValue(mockSearchParams)
   })
 

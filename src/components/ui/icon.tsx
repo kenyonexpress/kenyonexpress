@@ -88,7 +88,6 @@ export const Icon = forwardRef<SVGSVGElement, IconProps>(
       componentProps.role = role
     }
 
-    // biome-ignore lint/suspicious/noExplicitAny: Lucide component props are dynamic
     return <Component {...(componentProps as any)} />
   },
 )

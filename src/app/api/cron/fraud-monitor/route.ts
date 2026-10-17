@@ -43,7 +43,6 @@ export async function POST(request: Request): Promise<Response> {
     const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString()
 
     const client = getSupabaseClient()
-    // biome-ignore lint/suspicious/noExplicitAny: Tables exist in database but not in generated types
     const { data: orders, error: ordersError } = await (client
       .from('orders')
       .select('id, profile_id, amount_ils, created_at')
@@ -72,7 +71,6 @@ export async function POST(request: Request): Promise<Response> {
     for (const order of orders || []) {
       try {
         // Check if order already has flags
-        // biome-ignore lint/suspicious/noExplicitAny: Tables exist in database but not in generated types
         const { data: existingFlag } = await (client
           .from('fraud_flags' as any)
           .select('id')
@@ -81,7 +79,6 @@ export async function POST(request: Request): Promise<Response> {
 
         if (existingFlag) {
           // Already flagged, skip
-          continue
         }
 
         // Detect fraud signals for this order
@@ -100,7 +97,6 @@ export async function POST(request: Request): Promise<Response> {
 
         // Record all signals in fraud_signals table
         for (const signal of signals) {
-          // biome-ignore lint/suspicious/noExplicitAny: Tables exist in database but not in generated types
           const signalPayload: any = {
             order_id: signal.orderId,
             profile_id: signal.profileId,
@@ -115,8 +111,9 @@ export async function POST(request: Request): Promise<Response> {
             metadata: signal.metadata || {},
             auto_flagged: shouldAutoFlag(signals),
           }
-          // biome-ignore lint/suspicious/noExplicitAny: Tables exist in database but not in generated types
-          const { error: signalError } = await ((client as any).from('fraud_signals').insert(signalPayload))
+          const { error: signalError } = await (client as any)
+            .from('fraud_signals')
+            .insert(signalPayload)
 
           if (signalError) {
             console.error(`Failed to record signal for order ${order.id}:`, signalError)
@@ -130,7 +127,6 @@ export async function POST(request: Request): Promise<Response> {
           const combinedScore = calculateCombinedRiskScore(signals)
           const primarySignals = signals.map((s) => s.signalType)
 
-          // biome-ignore lint/suspicious/noExplicitAny: Tables exist in database but not in generated types
           const flagPayload: any = {
             order_id: order.id,
             profile_id: order.profile_id,
@@ -141,8 +137,7 @@ export async function POST(request: Request): Promise<Response> {
             status: 'pending',
             auto_flagged: true,
           }
-          // biome-ignore lint/suspicious/noExplicitAny: Tables exist in database but not in generated types
-          const { error: flagError } = await ((client as any).from('fraud_flags').insert(flagPayload))
+          const { error: flagError } = await (client as any).from('fraud_flags').insert(flagPayload)
 
           if (flagError) {
             console.error(`Failed to flag order ${order.id}:`, flagError)
@@ -165,7 +160,6 @@ export async function POST(request: Request): Promise<Response> {
         }
       } catch (orderError) {
         console.error(`Error processing order ${order.id}:`, orderError)
-        continue
       }
     }
 

@@ -18,7 +18,7 @@ interface NotifyMeButtonProps {
 
 export default function NotifyMeButton({
   productId,
-  productName,
+  productName: _productName,
   isSubscribed: initialSubscribed = false,
   notificationId,
   onSubscribeChange,
@@ -54,7 +54,7 @@ export default function NotifyMeButton({
           }
         }
       }
-    } catch (err) {
+    } catch {
       setError('An error occurred')
     } finally {
       setIsLoading(false)

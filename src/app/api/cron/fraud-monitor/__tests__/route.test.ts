@@ -68,7 +68,7 @@ describe('/api/cron/fraud-monitor', () => {
       })
 
       // Mock successful response
-      const mockResponse = {
+      const _mockResponse = {
         status: 200,
         json: async () => ({
           success: true,
