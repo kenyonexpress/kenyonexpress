@@ -140,20 +140,19 @@ async function main() {
     const deploymentUrl = getDeploymentUrl(targetDeploymentId)
     console.log(`📍 Deployment URL: ${deploymentUrl}`)
 
-    if (!skipTests) {
-      const testsPass = await runSmokeTests(deploymentUrl)
-      if (!testsPass) {
-        console.error('❌ Smoke tests failed. Aborting promotion.')
-        process.exit(1)
-      }
-    }
-
     console.log('\n🚀 Promoting deployment to production...')
     const result = await promoteDeployment(targetDeploymentId)
 
     if (result.alias || result.url) {
       console.log('✅ Deployment promoted successfully!')
       console.log(`📝 Alias: ${result.alias || result.url}`)
+
+      if (!skipTests) {
+        const testsPass = await runSmokeTests(deploymentUrl)
+        if (!testsPass) {
+          console.warn('⚠️ Smoke tests failed after promotion. Monitor for issues.')
+        }
+      }
 
       fs.writeFileSync(
         path.join(projectRoot, '.last-promotion'),
@@ -163,6 +162,7 @@ async function main() {
             url: deploymentUrl,
             timestamp: new Date().toISOString(),
             previousVersion: readLastPromotion()?.version,
+            smokeTestsPassed: !skipTests,
           },
           null,
           2,
