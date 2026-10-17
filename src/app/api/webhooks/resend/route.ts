@@ -2,8 +2,6 @@ import { verifyResendWebhook } from '@/lib/email/resend-webhook'
 import { log } from '@/lib/observability/log'
 import { createAdminClient } from '@/lib/supabase/admin'
 
-export const dynamic = 'force-dynamic'
-
 /**
  * Webhook endpoint for Resend delivery events (opens, clicks, bounces, complaints).
  * Resend sends signed webhooks; we verify the signature before processing.

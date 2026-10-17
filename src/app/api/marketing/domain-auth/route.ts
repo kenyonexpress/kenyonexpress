@@ -1,8 +1,7 @@
+import { verifyDomainAuthentication } from '@/lib/email/domain-verification'
 import { log } from '@/lib/observability/log'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { validateAdminRequest } from '@/server/auth/admin-check'
-
-export const dynamic = 'force-dynamic'
 
 export interface DomainAuthStatus {
   domain: string
@@ -121,16 +120,41 @@ export async function POST(request: Request): Promise<Response> {
 
     const db = createAdminClient()
 
+    // Verify DNS records if not explicitly provided
+    let verificationResult = {
+      spfVerified: body.spfVerified || false,
+      dkimVerified: body.dkimVerified || false,
+      dmarcVerified: body.dmarcVerified || false,
+    }
+
+    // If no explicit verification provided, perform DNS lookup
+    if (!body.spfVerified && !body.dkimVerified && !body.dmarcVerified) {
+      const verification = await verifyDomainAuthentication(body.domain)
+      verificationResult = {
+        spfVerified: verification.spfVerified,
+        dkimVerified: verification.dkimVerified,
+        dmarcVerified: verification.dmarcVerified,
+      }
+
+      log.info('domain_auth.verified', {
+        domain: body.domain,
+        results: verificationResult,
+      })
+    }
+
     const { data, error } = await db
       .from('email_domain_auth')
       .upsert({
         domain: body.domain,
         spf_record: body.spfRecord || null,
-        spf_verified: body.spfVerified || false,
+        spf_verified: verificationResult.spfVerified,
+        spf_verified_at: verificationResult.spfVerified ? new Date().toISOString() : null,
         dkim_record: body.dkimRecord || null,
-        dkim_verified: body.dkimVerified || false,
+        dkim_verified: verificationResult.dkimVerified,
+        dkim_verified_at: verificationResult.dkimVerified ? new Date().toISOString() : null,
         dmarc_record: body.dmarcRecord || null,
-        dmarc_verified: body.dmarcVerified || false,
+        dmarc_verified: verificationResult.dmarcVerified,
+        dmarc_verified_at: verificationResult.dmarcVerified ? new Date().toISOString() : null,
         resend_domain_id: body.resendDomainId || null,
         updated_at: new Date().toISOString(),
       })

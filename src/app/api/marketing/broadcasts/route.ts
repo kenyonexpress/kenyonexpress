@@ -2,8 +2,6 @@ import { log } from '@/lib/observability/log'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { validateAdminRequest } from '@/server/auth/admin-check'
 
-export const dynamic = 'force-dynamic'
-
 export interface CreateBroadcastRequest {
   name: string
   description?: string

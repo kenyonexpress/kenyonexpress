@@ -219,7 +219,6 @@ describe('Marketing Email System', () => {
     })
 
     it('should identify required DNS records for SPF', () => {
-      const domain = 'txn.kenyonexpress.co.il'
       const expectedRecords = ['v=spf1 include:resend.com ~all']
 
       expect(expectedRecords).toContain(expectedRecords[0])

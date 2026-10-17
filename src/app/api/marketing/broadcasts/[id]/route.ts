@@ -2,8 +2,6 @@ import { log } from '@/lib/observability/log'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { validateAdminRequest } from '@/server/auth/admin-check'
 
-export const dynamic = 'force-dynamic'
-
 export interface BroadcastDetailResponse {
   id: number
   name: string
@@ -36,7 +34,7 @@ export interface BroadcastDetailResponse {
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ): Promise<Response> {
   try {
     const user = await validateAdminRequest(request)
@@ -44,7 +42,8 @@ export async function GET(
       return Response.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const broadcastId = Number.parseInt(params.id)
+    const { id } = await params
+    const broadcastId = Number.parseInt(id)
     if (!broadcastId) {
       return Response.json({ error: 'Invalid broadcast ID' }, { status: 400 })
     }
@@ -111,7 +110,7 @@ export async function GET(
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ): Promise<Response> {
   try {
     const user = await validateAdminRequest(request)
@@ -119,7 +118,8 @@ export async function PATCH(
       return Response.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const broadcastId = Number.parseInt(params.id)
+    const { id } = await params
+    const broadcastId = Number.parseInt(id)
     if (!broadcastId) {
       return Response.json({ error: 'Invalid broadcast ID' }, { status: 400 })
     }

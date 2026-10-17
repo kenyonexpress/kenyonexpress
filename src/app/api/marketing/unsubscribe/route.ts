@@ -2,8 +2,6 @@ import { log } from '@/lib/observability/log'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/client'
 
-export const dynamic = 'force-dynamic'
-
 export interface UnsubscribeRequest {
   segmentName?: string
 }
