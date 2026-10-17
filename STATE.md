@@ -67,37 +67,38 @@ Lazy loading implemented across all customer-visible product image components. T
 - All image optimizations respect HTML `sizes` attribute for responsive images
 - Blur placeholders preserved for visual stability
 
-**Lighthouse Performance Measurements (2026-10-17):**
-Measured with `--throttling-method=provided` on unthrottled localhost (actual network unthrottled, CPU simulation for modeling):
+**Lighthouse Performance Measurements (2026-10-17) - COMPLETE AUDIT:**
 
-| Page | August Baseline | Post-Lazy-Load | Improvement | Status |
-|------|-----------------|----------------|-------------|--------|
-| Home (/) | 68 | **100** | +32 | ✅ EXCEEDS 95+ |
-| Products (/products) | 92 | **100** | +8 | ✅ EXCEEDS 95+ |
-| Category (/category/hot-deals) | 99 | **100** | +1 | ✅ EXCEEDS 95+ |
-| Cart (/cart) | 97 | **100** | +3 | ✅ EXCEEDS 95+ |
-| Coupons (/coupons) | N/A | **100** | N/A | ✅ EXCEEDS 95+ |
+Measured with `--throttling-method=provided` on unthrottled localhost:
 
-**All pages now achieve 100/100 on Lighthouse Performance metric.**
+| Page | August Baseline | Current | Performance | CLS | TBT | Status |
+|------|---|---|---|---|---|---|
+| Home (/) | 68 | 100 | 100 | 0.0000 | 0ms | ✅ 95+ |
+| Products | 92 | 100 | 100 | - | - | ✅ 95+ |
+| Category | 99 | 100 | 100 | - | - | ✅ 95+ |
+| Cart | 97 | 100 | 100 | - | - | ✅ 95+ |
+| Coupons | - | 100 | 100 | - | - | ✅ 95+ |
+| **Search** | **54** | **100** | **100** | **0.0003** ✅ | **0ms** ✅ | ✅ 95+ |
+| **Checkout** | **91** | **83** | **83** | **0.3628** ❌ | **0ms** | ❌ FAILS |
+| Product (barbecue) | - | - | 100 | 0.0003 ✅ | 0ms | ✅ 95+ |
+| Login | - | - | 100 | 0.0007 ✅ | - | ✅ 95+ |
+| Suppliers | - | - | 100 | 0.0000 ✅ | - | ✅ 95+ |
+| Account | - | - | 100 | 0.0007 ✅ | - | ✅ 95+ |
 
-Additional Scores (full measurement):
-- Home: Performance 100, Accessibility 100, Best Practices 96, SEO 100
-- Products: Performance 100, Accessibility 97, Best Practices 96, SEO 100
-- Category: Performance 100, Accessibility 95, Best Practices 96, SEO 91
+**CRITICAL FINDING - Goal NOT Met:**
+- **Checkout page scores 83 (below 95+ target)**
+- **Checkout page CLS is 0.3628 (poor, should be <0.1 for green)**
+- Search page dramatically improved: 54→100, CLS 0.40→0.0003, TBT 1345ms→0ms
+- Lazy loading successfully fixed most pages
+- BUT: Checkout still has layout shift issues unresolved by lazy loading
 
-**Core Web Vitals Status:**
-All pages show excellent metrics with lazy loading implementation:
-- LCP (Largest Contentful Paint): 0.4-0.8s (excellent, <2.5s target)
-- FCP (First Contentful Paint): 0.4s (excellent)
-- Speed Index: 0.4s (excellent)
-- All below-fold images deferred with `loading="lazy"`
+**Core Web Vitals by Page:**
+✅ Home, Search, Products, Category, Cart, Product, Login, Suppliers, Account: All GREEN
+❌ Checkout: POOR (CLS 0.36)
 
-**Goal Achievement Summary:**
-✅ **Lighthouse 95+ on all pages: ACHIEVED** (all pages score 100)
-✅ **Core Web Vitals green on all pages: ACHIEVED** (all metrics well within green zones)
-✅ **Lazy loading implemented: ACHIEVED** (all below-fold images deferred)
+**Issue:** Lazy loading fixes below-fold images but doesn't resolve dynamic layout shifts on checkout form (form fields, buttons, conditionally rendered elements likely causing CLS).
 
-המשך מ: UX49 COMPLETE & VERIFIED. All Lighthouse measurements exceed 95+ target, Core Web Vitals green on all pages, lazy loading fully implemented and measured.
+המשך מ: UX49 PARTIAL - Lazy loading improved 10+ pages to 100 performance and green CLS. But checkout remains 83 with CLS 0.36. Goal "Lighthouse 95+ on ALL pages" NOT achieved. Need additional optimization for checkout CLS.
 
 ## UX48 Accessibility WCAG AA - Keyboard Navigation, Screen Reader, Hebrew Focus — ✅ COMPLETE
 
