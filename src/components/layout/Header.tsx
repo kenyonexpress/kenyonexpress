@@ -1,7 +1,7 @@
 'use client'
 
 import HeaderCart from '@/components/cart/HeaderCart'
-import { Heart, MapPin, Menu, Phone, ShoppingBag, User } from '@/components/icons'
+import { Heart, Menu, Phone } from '@/components/icons'
 import SiteSearch from '@/components/search/SiteSearch'
 import WishlistNavCount from '@/components/wishlist/WishlistNavCount'
 import { LOGO } from '@/lib/assets'
@@ -9,6 +9,7 @@ import { storeWhatsAppNumber } from '@/lib/whatsapp'
 import Link from 'next/link'
 import SmartImage from '../ui/SmartImage'
 import MobileDrawer from './MobileDrawer'
+import TopBar from './TopBar'
 
 export default function SiteHeader() {
   const storePhone = storeWhatsAppNumber()
@@ -16,31 +17,12 @@ export default function SiteHeader() {
   return (
     <>
       {/* ROW A: TopBar */}
-      <div
-        dir="rtl"
-        className="sticky top-0 z-50 flex h-11 w-full items-center justify-between gap-4 border-b border-border bg-track px-gutter text-sm text-heading"
-      >
-        <span>ברוך הבא לעולמו של קניון Express</span>
-        <div className="flex items-center gap-6">
-          <span className="flex items-center gap-2">
-            <MapPin size={16} />
-            בפריסה ארצית
-          </span>
-          <span className="flex items-center gap-2">
-            <ShoppingBag size={16} />
-            קניה בטוחה
-          </span>
-          <Link href="/login" className="flex items-center gap-2 hover:opacity-80">
-            <User size={16} />
-            התחברות / הרשמה
-          </Link>
-        </div>
-      </div>
+      <TopBar />
 
       {/* ROW B: MainHeader */}
       <header dir="rtl" className="sticky top-11 z-40 w-full border-b border-border bg-white">
         <div className="mx-auto flex h-[5.625rem] max-w-page items-center justify-between gap-4 px-gutter">
-          {/* Mobile: hamburger + logo + cart */}
+          {/* Mobile: hamburger + logo */}
           <div className="flex w-full items-center justify-between gap-2 xl:hidden">
             <MobileDrawer />
             <Link href="/" aria-label="קניון אקספרס, לדף הבית" className="tap-area shrink-0">
@@ -54,9 +36,6 @@ export default function SiteHeader() {
                 priority
               />
             </Link>
-            <div className="grid size-11 place-items-center">
-              <HeaderCart />
-            </div>
           </div>
 
           {/* Desktop layout */}
@@ -88,17 +67,12 @@ export default function SiteHeader() {
                   <WishlistNavCount />
                 </span>
               </Link>
-              <Link
-                href="/account"
-                aria-label="החשבון שלי"
-                className="grid size-11 place-items-center text-icon transition-colors hover:text-heading-hover"
-              >
-                <User size={22} strokeWidth={1.8} aria-hidden="true" />
-              </Link>
-              <div className="grid size-11 place-items-center">
-                <HeaderCart />
-              </div>
             </div>
+          </div>
+
+          {/* Cart - shared for mobile and desktop */}
+          <div className="grid size-11 place-items-center">
+            <HeaderCart />
           </div>
         </div>
       </header>
@@ -138,9 +112,6 @@ export default function SiteHeader() {
           </Link>
           <Link href="/contact" className="text-sm font-medium text-heading hover:opacity-80">
             צור קשר
-          </Link>
-          <Link href="/account" className="text-sm font-medium text-heading hover:opacity-80">
-            חשבון
           </Link>
         </div>
 
