@@ -1,0 +1,73 @@
+import { publicPageMetadata } from '@/lib/seo/page-metadata'
+import BlogPostHeader from '@/components/storefront/BlogPostHeader'
+import BlogPostFooter from '@/components/storefront/BlogPostFooter'
+import { findPost } from '@/content/blog'
+
+export const post = findPost('business-guide-getting-started')
+
+export const metadata = publicPageMetadata({
+  title: post.title,
+  description: post.description,
+  path: '/blog/business-guide-getting-started',
+  type: 'article',
+  publishedTime: post.publishedAt,
+  modifiedTime: post.updatedAt,
+})
+
+<BlogPostHeader slug="business-guide-getting-started" />
+
+בעלי חנויות ובתי עסק: קניון EXPRESS היא דרך נוספת לקבל לקוחות חדשים. הנה איך להתחיל.
+
+## שלב 1: הירשם כספק
+
+1. עבור ל[עמוד הספקים שלנו](/suppliers)
+2. מלא את פרטי הבית / העסק שלך
+3. מתן פרטי יצירת קשר בעלים
+4. אנחנו נחזור אליך תוך 24–48 שעות
+
+## שלב 2: הצע דיל
+
+**בחר:**
+- קטגוריה (מסעדה, יופי, אלקטרוניקה, וכו')
+- סוג דיל (קופון, הנחה, חבילה)
+- מחיר דיל וכמות
+
+**הגדר:**
+- ערך: מה הלקוח משלם
+- יתרה: כמה עלויות בחנות שלך
+- תוקף: תאריך סיום
+
+**דוגמה:**
+- מסעדה: קופון ל-₪50 (לקוח משלם ₪50, בחנות שלך קום ₪70 ערך נוכחי)
+
+## שלב 3: פחתן קופונים ודוגמים
+
+קניון EXPRESS:
+- מנפיק קופונים דיגיטליים (קודי QR)
+- תמונות מוצר / לוגו מאתרך
+- קרדיט מיידי לאחר סריקה בחנות
+
+## שלב 4: קבל תשלומים
+
+**מתי:**
+- **בחנות שלך:** ברגע שלקוח סורק קוד QR
+- **דרך קניון EXPRESS:** הרויית משכנתא קבועה לחשבון הבנקאות שלך
+
+**כמה:**
+- **יתרה:** משלמים בעצמך בחנות (מכלל הדיל)
+- **קניון EXPRESS עמלה:** ~10–15% (תלוי בהסכם)
+
+## שלב 5: ניתוח תוצאות
+
+לאחר חודש לראשונה:
+- **חדשים לקוחות:** כמה מוקדים חדשים שלמו
+- **עלות תכניה:** כמה קניון EXPRESS קבל (שנתי)
+- **ערך נוכחי:** תיקום מחדש
+
+אם זה מה רוצה להמשיך? הצע דיל חדש בתחום הבא או בחודש הבא.
+
+---
+
+**שאלה לבתי עסק?** [צור קשר עם צוות ספקים שלנו](/suppliers) או [קרא עוד בבלוג שלנו](/blog/category/businesses).
+
+<BlogPostFooter slug="business-guide-getting-started" />

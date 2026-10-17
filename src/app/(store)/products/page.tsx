@@ -32,8 +32,9 @@ const PAGE_TITLE = 'חנות'
 // Canonical on the bare path: sort, page, price and type are query strings on
 // the same archive, and without it each filtered view competes as its own page.
 export const metadata = publicPageMetadata({
-  title: PAGE_TITLE,
-  description: 'כל המוצרים, הדילים והקופונים של קניון Express במקום אחד.',
+  title: `${PAGE_TITLE} — קופונים ודילים בקניון EXPRESS`,
+  description:
+    'גלה מעל 45,000 מוצרים, דילים בעלות נמוכה וקופונים בנויים. חפש, סנן ומיין לפי מחיר, קטגוריה וסרגל מחירים בקניון Express.',
   path: '/products',
 })
 

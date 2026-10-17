@@ -138,6 +138,94 @@ export const BLOG_POSTS: readonly BlogPost[] = [
     tags: ['businesses', 'payouts', 'redemption'],
     author: 'ofir',
   },
+  {
+    slug: 'top-deals-october-2026',
+    title: '5 דילים חמים בקניון EXPRESS — אוקטובר 2026',
+    description:
+      'גלה את הדילים השחקים ביותר החודש: הנחות גדולות, קופונים בעלות נמוכה וקטגוריות עם חיסכון מקסימלי. עדכן היום עם המובילים שלנו.',
+    publishedAt: '2026-10-18',
+    readingMinutes: 3,
+    category: 'guides',
+    tags: ['coupons', 'guide'],
+    author: 'ofir',
+  },
+  {
+    slug: 'maximize-coupon-value',
+    title: 'איך להגדיל את ערך הקופון שלך',
+    description:
+      'טיפים חכמים להצמדת קופונים בשימוש חכם: שפר את הזמן שלך, תוקף, יתרות וחסום אובדן. מקסימום ערך עם טרמינים מינימליים.',
+    publishedAt: '2026-10-16',
+    readingMinutes: 4,
+    category: 'guides',
+    tags: ['coupons', 'guide'],
+    author: 'ofir',
+  },
+  {
+    slug: 'coupon-vs-competitors',
+    title: 'השוואת מחירים: קניון EXPRESS vs. מתחרים',
+    description:
+      'מעוניין לדעת איך קניון EXPRESS משתווה לאתרי קופונים אחרים? בדוק את הדילים היחידים, המחירים והאיכות של שלנו.',
+    publishedAt: '2026-10-14',
+    readingMinutes: 5,
+    category: 'guides',
+    tags: ['coupons', 'guide'],
+    author: 'ofir',
+  },
+  {
+    slug: 'digital-coupon-complete-guide',
+    title: 'מדריך שלם לקופונים דיגיטליים בקניון EXPRESS',
+    description:
+      'הכל שצריך לדעת על קופונים דיגיטליים: אמת, רישום, מימוש, תוקף, ביטול והחזר כסף. תשובות לשאלות הנפוצות ביותר.',
+    publishedAt: '2026-10-12',
+    readingMinutes: 6,
+    category: 'guides',
+    tags: ['coupons', 'guide', 'redemption'],
+    author: 'ofir',
+  },
+  {
+    slug: 'holiday-shopping-tips',
+    title: 'טיפים לקניות חכמות בחגים עם קניון EXPRESS',
+    description:
+      'הכן את עצמך לחג: גלה מחירים אופטימליים, דילים לפי קטגוריה ואופציות מתנה. שמור זמן וכסף עם דילים שלנו.',
+    publishedAt: '2026-10-10',
+    readingMinutes: 4,
+    category: 'guides',
+    tags: ['coupons', 'guide'],
+    author: 'ofir',
+  },
+  {
+    slug: 'shipping-delivery-guide',
+    title: 'כל מה שצריך לדעת על משלוח ודיוור בקניון EXPRESS',
+    description:
+      'הסבר מלא על אפשרויות משלוח, זמנים, דיוור וחזרות. הזמנה חכמה עם אפשרויות יעילות וזמנים מדויקים.',
+    publishedAt: '2026-10-08',
+    readingMinutes: 5,
+    category: 'guides',
+    tags: ['guide', 'redemption'],
+    author: 'ofir',
+  },
+  {
+    slug: 'business-guide-getting-started',
+    title: 'לבתי עסק: מדריך להתחלה בקניון EXPRESS',
+    description:
+      'הדרך הטובה ביותר להתחיל עם קניון EXPRESS: הירשם, הצע דיל, תקבל קופונים מיידיים וסקור את התוצאות שלך.',
+    publishedAt: '2026-10-06',
+    readingMinutes: 4,
+    category: 'businesses',
+    tags: ['businesses', 'guide'],
+    author: 'ofir',
+  },
+  {
+    slug: 'coupon-refund-policy',
+    title: 'מדיניות ביטול והחזר כסף לקופונים בקניון EXPRESS',
+    description:
+      'הבן את זכויותיך: תנאיי ביטול, החזר כסף, תשלומים וסדרי גודל של יום. הכל בעיון וברור.',
+    publishedAt: '2026-10-04',
+    readingMinutes: 3,
+    category: 'guides',
+    tags: ['refunds', 'guide'],
+    author: 'ofir',
+  },
 ] as const
 
 /** Newest first. The order the index and the sitemap both use. */

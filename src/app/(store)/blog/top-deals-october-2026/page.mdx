@@ -1,0 +1,55 @@
+import { publicPageMetadata } from '@/lib/seo/page-metadata'
+import BlogPostHeader from '@/components/storefront/BlogPostHeader'
+import BlogPostFooter from '@/components/storefront/BlogPostFooter'
+import { findPost } from '@/content/blog'
+
+export const post = findPost('top-deals-october-2026')
+
+export const metadata = publicPageMetadata({
+  title: post.title,
+  description: post.description,
+  path: '/blog/top-deals-october-2026',
+  type: 'article',
+  publishedTime: post.publishedAt,
+  modifiedTime: post.updatedAt,
+})
+
+<BlogPostHeader slug="top-deals-october-2026" />
+
+אוקטובר זה חודש של דילים חמים בקניון EXPRESS! הגלינו עבורכם את הקופונים והמוצרים בעלות הנמוכה ביותר החודש. מוכנים לחסוך?
+
+## 1. רסטורנטים — עד 40% הנחה
+
+דילים חמים ממסעדות מובילות ברחבי הארץ. מנות, קבוצות וקוד קופון עד סוף החודש.
+
+**דוגמה:** קופון לרסטורן פופולרי בעיר שלך ב-₪50 (בהנחה של 30% מהמחיר הרגיל).
+
+## 2. חנויות אלקטרוניקה — מחירים חדשים
+
+טלוויזיות, אוזניות וציוד בית ספר בהנחות משמעותיות. קופונים תקפים עד סוף החודש.
+
+**דוגמה:** אוזניות אלחוטיות ב-₪150 (מחיר מלא ₪300).
+
+## 3. ספא וטיפולי יופי — רלקס בהנחה
+
+מסאז', טיפולי פנים וטיפולים בעור. דילים לזוגות ופרטים.
+
+**דוגמה:** טיפול פנים משך שעה ב-₪80 (מחיר מלא ₪120).
+
+## 4. ספוג ובגדים — מחירים טובים
+
+בגדים חדשים מחנויות אפנה מובילות. קופונים תקפים לחודש שלם.
+
+**דוגמה:** חולצות וחצאיות בהנחה של 25%.
+
+## 5. חנויות צעצועים — מושלם לילדים
+
+צעצועים חדשים, אפליקציות חינוכיות ומשחקים. מחירים נמוכים לפני בחזרה לבית הספר.
+
+---
+
+**טיפ:** כל הקופונים תקפים אוקטובר עד סוף החודש. בדוק את הזמינות לפי קטגוריה או אזור בשאלתך בדף הבית.
+
+רוצה לעקוב אחרי דילים חדשים? [הצטרף לרשימת הדיוור שלנו](/blog) או עקוב אחרינו ברשתות החברתיות.
+
+<BlogPostFooter slug="top-deals-october-2026" />

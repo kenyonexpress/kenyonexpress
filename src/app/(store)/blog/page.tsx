@@ -15,8 +15,9 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = publicPageMetadata({
-  title: 'הבלוג',
-  description: 'מדריכים והסברים על קופונים, מימוש בבתי עסק, תוקף, ביטולים והזמנות.',
+  title: 'בלוג קניון EXPRESS — מדריכים וטיפים על קופונים ודילים',
+  description:
+    'קרא מדריכים על קופונים דיגיטליים, דילים חמים, מימוש בחנויות, תוקף, ביטול הזמנות ותוכניות חברות בקניון EXPRESS.',
   path: '/blog',
 })
 

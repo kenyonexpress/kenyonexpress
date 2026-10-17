@@ -1,0 +1,67 @@
+import { publicPageMetadata } from '@/lib/seo/page-metadata'
+import BlogPostHeader from '@/components/storefront/BlogPostHeader'
+import BlogPostFooter from '@/components/storefront/BlogPostFooter'
+import { findPost } from '@/content/blog'
+
+export const post = findPost('holiday-shopping-tips')
+
+export const metadata = publicPageMetadata({
+  title: post.title,
+  description: post.description,
+  path: '/blog/holiday-shopping-tips',
+  type: 'article',
+  publishedTime: post.publishedAt,
+  modifiedTime: post.updatedAt,
+})
+
+<BlogPostHeader slug="holiday-shopping-tips" />
+
+החגים קרבים, וקניון EXPRESS יעזור לך לחסוך זמן וכסף. הנה שישה טיפים לקניות חכמות עם קופונים ודילים.
+
+## 1. בדוק את ההנחות בקטגוריות שלך
+
+עבור לקטגוריות המובילות שלך ובדוק:
+- מתנות אלקטרוניות (טלוויזיות, אוזניות, מצלמות)
+- מתנות אישיות (ביוטי, טיפולי ספא)
+- מתנות משפחה (מסעדות, אירוח, טיולים)
+
+## 2. זמן הקניות בחכמה
+
+**זמני עלייה דילים:**
+- ראשון-ראשון בבוקר (עד 9 בבוקר): דילים חדשים משחקים
+- אחה"צ (13:00-15:00): דילים בהנחה משתנים
+- ערב (19:00-21:00): קופונים אחרונים אחרי יום עבודה
+
+## 3. השתמש במחסום המנויים
+
+**כנס לקטגוריות חדשות דרך:**
+- מחפש חדש: "/products?sort=menu_order"
+- דילים הכי חדשים: "/products?sort=newest"
+- הנחות הכי גבוהות: "/products?sort=discount"
+
+## 4. ערוך רשימת מתנות
+
+בקניון EXPRESS:
+1. בדוק קופונים לאנשים חשובים
+2. בחר את המחיר הטוב ביותר
+3. שלח קופון כמתנה ישירה לחברים / משפחה
+
+## 5. זימון חופשות של תשלום
+
+אם יש משהו יקר:
+- בדוק תשלום בדרישה (בחנות)
+- השתמש בביטוח רכישה לדברים יקרים
+- בדוק החזר כסף זמינות
+
+## 6. תזכורות בלאי סיום
+
+לא השגת קופון לפני סיום הדיל? זה בסדר!
+- זכוכית מוזרת חוזרת לארנק שלך בתוך 30 ימים
+- קח קופון אחר בעלות זהה
+- זכרון: אין מחסן מוגבל בארנק!
+
+---
+
+טיפים נוספים בבלוג שלנו ו[קטגוריות בעלות נמוכה](/products).
+
+<BlogPostFooter slug="holiday-shopping-tips" />

@@ -16,8 +16,9 @@ import { publicPageMetadata } from '@/lib/seo/page-metadata'
 import { Suspense } from 'react'
 
 export const metadata = publicPageMetadata({
-  title: 'קניון EXPRESS — מסדרים לך בילוי',
-  description: 'קופונים, דילים ומוצרים במחיר הכי טוב. בפריסה ארצית.',
+  title: 'קניון EXPRESS — קופונים ודילים בהנחות גדולות',
+  description:
+    'קניון EXPRESS — המקום הטוב ביותר לקופונים בנויים, דילים חמים ומוצרים במחיר הכי טוב בישראל.',
   path: '/',
 })
 
