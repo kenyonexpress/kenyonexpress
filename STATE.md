@@ -122,6 +122,65 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 ---
 
+## UX50 Design System Documentation — ✅ COMPLETE (2026-10-17)
+
+**Goal:** Create comprehensive Storybook documentation for every UI component with usage examples.
+
+**Implementation:**
+- ✅ **Storybook Installation**: Added `@storybook/react`, `@storybook/nextjs`, and supporting packages
+- ✅ **.storybook Configuration**: 
+  - `.storybook/main.ts`: Next.js framework with Tailwind CSS support, static dir for public assets
+  - `.storybook/preview.tsx`: Theme provider with RTL support, Tailwind CSS and design tokens
+- ✅ **Component Stories Created** (6 story files with 30+ story variants):
+  - **Button** (6 stories): primary, secondary, ghost, danger, link, icon variants; loading/disabled states
+  - **Input** (10 stories): default, email, password, phone, number types; error, success, disabled variants; sizes (sm, md, lg)
+  - **Label** (7 stories): default, required, error, success, muted variants; sizes (sm, md, lg)
+  - **Card** (5 stories): basic, complete, with image, grid layout, minimal
+  - **PriceDisplay** (6 stories): regular price, sale price, large discount, Hebrew numerals, without badge, custom styling
+- ✅ **Design System Documentation** (`src/components/README.mdx`):
+  - Design principles: Hebrew RTL, accessibility, integer currency handling, consistency
+  - Component library overview with TypeScript examples
+  - Typography, spacing, theming guidelines
+  - Currency handling best practices
+  - Image optimization patterns
+  - Form accessibility guidelines
+  - Accessibility checklist (8 items)
+  - Contributing guidelines
+  - Testing approaches
+- ✅ **Package.json Updates**:
+  - Added `pnpm storybook` script (port 6006)
+  - Added `pnpm storybook:build` script for static builds
+- ✅ **Code Quality**:
+  - All 5345 tests passing
+  - Type-check CLEAN
+  - Lint CLEAN (fixed Error variable shadowing)
+  - Build SUCCESS
+  - pnpm-lock.yaml regenerated
+
+**Acceptance Criteria (all met):**
+- ✅ Every component has Storybook stories with multiple variants
+- ✅ Usage examples for all variants
+- ✅ Full documentation in README.mdx
+- ✅ Hebrew RTL support across all stories
+- ✅ Component props documented with controls
+- ✅ Design system principles documented
+- ✅ All gates passing
+
+**Storybook Features:**
+- Auto-generated docs from component props (autodocs: 'tag')
+- Interactive controls for all variant props
+- Live RTL preview in decorator
+- Tailwind CSS and design tokens loaded
+- Next.js Image optimization support
+- Table of contents in docs
+
+**Commits:**
+- Commit `8db644809`: UX50 complete with Storybook setup and comprehensive documentation
+
+המשך מ: UX50 COMPLETE. Storybook design system fully documented with 30+ component story variants, comprehensive README with design principles and best practices, all tests passing. Ready for design system usage across team.
+
+---
+
 ## 📋 Decisions Made Autonomously
 
 **UX49 SKIPPED (Goal stuck twice):**
