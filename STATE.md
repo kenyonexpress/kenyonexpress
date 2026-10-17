@@ -1,4 +1,22 @@
-RESUME FROM: STEP 97
+RESUME FROM: UX04 or next goal in NEXT-GOALS.md
+
+## 🎯 COMPLETED: UX03 MainHeader Polish (2026-10-18 06:05-06:30)
+
+**Final Status:** ✅ COMPLETE — MainHeader enhanced with measured logo sizing, icon alignment, cart badge animation
+
+**What Was Done:**
+- Added Tailwind spacing utilities for all header measurements
+- Updated Header component with proper CSS classes (w-handheld-logo-w, h-logo-h, etc.)
+- Fixed handheld icon cluster: -me-touch-pad flex items-center gap-0
+- Changed icon hover from opacity-70 to hover:text-heading-hover with transition-colors
+- Ensured CartNavLink properly uses HeaderBadge for badge animation
+- Made TopBar client component for Next.js 16 compatibility
+
+**Quality Gates:** ✅ type-check, ✅ header-polish-gate tests, ✅ all color/hover requirements met
+
+**Git:** Commit `4404d99a2`, pushed to phase5/homepage-closeout
+
+---
 
 ## ⏳ STEP 96: MAINTENANCE — Customer Support Inbox Classification Bot — CODE COMPLETE, DEPLOYMENT BLOCKED (2026-10-18 04:45-05:25)
 
