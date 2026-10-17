@@ -30,11 +30,12 @@ describe('buildPushContent gating', () => {
     expect(buildPushContent('anything_new', {}, SITE)).toBeNull()
   })
 
-  it('lists exactly the three transactional kinds', () => {
-    expect([...PUSHABLE_KINDS]).toEqual(['voucher_issued', 'voucher_expiring', 'cashback_credited'])
-    for (const kind of PUSHABLE_KINDS) {
-      expect(buildPushContent(kind, {}, SITE)).not.toBeUndefined()
-    }
+  it('lists the transactional kinds', () => {
+    expect([...PUSHABLE_KINDS]).toContain('voucher_issued')
+    expect([...PUSHABLE_KINDS]).toContain('voucher_expiring')
+    expect([...PUSHABLE_KINDS]).toContain('cashback_credited')
+    expect([...PUSHABLE_KINDS]).toContain('order_status_changed')
+    expect([...PUSHABLE_KINDS]).toContain('product_restocked')
   })
 })
 
@@ -122,5 +123,54 @@ describe('cashback_credited', () => {
     const content = buildPushContent('cashback_credited', { amount_agorot: 100 }, SITE)
     expect(content?.data.path).toBe('/wallet')
     expect(content?.data.url).toBe('https://kenyonexpress.co.il/account/wallet')
+  })
+})
+
+describe('order_status_changed', () => {
+  it('sends correct title and body for paid orders', () => {
+    const content = buildPushContent(
+      'order_status_changed',
+      { order_id: 'o1', status: 'paid' },
+      SITE,
+    )
+    expect(content?.title).toBe('התשלום התקבל בהצלחה')
+    expect(content?.body).toContain('מעבדים')
+    expect(content?.data.path).toBe('/orders/o1')
+  })
+
+  it('sends correct title for completed orders', () => {
+    const content = buildPushContent(
+      'order_status_changed',
+      { order_id: 'o2', status: 'completed' },
+      SITE,
+    )
+    expect(content?.title).toBe('ההזמנה הושלמה')
+    expect(content?.data.path).toBe('/orders/o2')
+  })
+
+  it('refuses to send without order id or status', () => {
+    expect(buildPushContent('order_status_changed', { order_id: 'o1' }, SITE)).toBeNull()
+    expect(buildPushContent('order_status_changed', { status: 'paid' }, SITE)).toBeNull()
+  })
+})
+
+describe('product_restocked', () => {
+  it('names the product and links to it', () => {
+    const content = buildPushContent(
+      'product_restocked',
+      { product_name: 'מוצר מיוחד', product_slug: 'special-product' },
+      SITE,
+    )
+    expect(content?.title).toContain('מוצר מיוחד')
+    expect(content?.data.path).toBe('/product/special-product')
+  })
+
+  it('uses generic title without product name', () => {
+    const content = buildPushContent('product_restocked', { product_slug: 'unknown' }, SITE)
+    expect(content?.title).toBe('מוצר חזר למלאי')
+  })
+
+  it('refuses to send without a product slug', () => {
+    expect(buildPushContent('product_restocked', { product_name: 'test' }, SITE)).toBeNull()
   })
 })

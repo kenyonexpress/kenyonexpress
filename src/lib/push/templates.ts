@@ -140,6 +140,55 @@ function cashbackCredited(payload: Record<string, unknown>, siteUrl: string): Pu
   }
 }
 
+function orderStatusChanged(payload: Record<string, unknown>, siteUrl: string): PushContent | null {
+  const orderId = text(payload, 'order_id')
+  const status = text(payload, 'status')
+  if (!orderId || !status) return null
+
+  const titleMap: Record<string, string> = {
+    paid: 'התשלום התקבל בהצלחה',
+    completed: 'ההזמנה הושלמה',
+    cancelled: 'ההזמנה בוטלה',
+    refunded: 'ההזמנה הוחזרה',
+  }
+
+  const bodyMap: Record<string, string> = {
+    paid: 'אנחנו מעבדים את הזמנתך.',
+    completed: 'ההזמנה שלך מוכנה למסירה או אחסון.',
+    cancelled: 'ההזמנה שלך בוטלה. תוכל לראות את הפרטים בחשבון שלך.',
+    refunded: 'ההזמנה שלך הוחזרה ותקבל החזר כספי.',
+  }
+
+  return {
+    title: titleMap[status] || 'עדכון הזמנה',
+    body: bodyMap[status] || `סטטוס הזמנה שינה ל-${status}`,
+    data: {
+      kind: 'order_status_changed',
+      path: APP_PATHS.order(orderId),
+      url: universalLink(siteUrl, `/account/orders/${orderId}`),
+      order_id: orderId,
+      status,
+    },
+  }
+}
+
+function productRestocked(payload: Record<string, unknown>, siteUrl: string): PushContent | null {
+  const productName = text(payload, 'product_name')
+  const slug = text(payload, 'product_slug')
+  if (!slug) return null
+
+  return {
+    title: productName ? `${productName} חזר למלאי` : 'מוצר חזר למלאי',
+    body: 'המוצר שחיפשת זמין שוב. בואו לראות אותו.',
+    data: {
+      kind: 'product_restocked',
+      path: APP_PATHS.product(slug),
+      url: universalLink(siteUrl, `/product/${slug}`),
+      product_slug: slug,
+    },
+  }
+}
+
 /**
  * Returns `null` for every kind that owes no push. The caller must treat that
  * as a settled state, not as a failure to retry.
@@ -156,10 +205,20 @@ export function buildPushContent(
       return couponExpiring(payload, siteUrl)
     case 'cashback_credited':
       return cashbackCredited(payload, siteUrl)
+    case 'order_status_changed':
+      return orderStatusChanged(payload, siteUrl)
+    case 'product_restocked':
+      return productRestocked(payload, siteUrl)
     default:
       return null
   }
 }
 
 /** The kinds that can ever produce a push. Exported so tests can assert the set. */
-export const PUSHABLE_KINDS = ['voucher_issued', 'voucher_expiring', 'cashback_credited'] as const
+export const PUSHABLE_KINDS = [
+  'voucher_issued',
+  'voucher_expiring',
+  'cashback_credited',
+  'order_status_changed',
+  'product_restocked',
+] as const

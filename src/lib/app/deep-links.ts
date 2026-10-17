@@ -29,8 +29,10 @@ export const APP_PATHS = {
   coupons: '/coupons',
   coupon: (voucherId: string) => `/coupons/${voucherId}`,
   order: (orderId: string) => `/orders/${orderId}`,
+  product: (slug: string) => `/product/${slug}`,
   wallet: '/wallet',
   checkoutReturn: '/checkout/return',
+  notifications: '/notifications',
 } as const
 
 export type CheckoutReturnStatus = 'success' | 'failed' | 'cancelled'
