@@ -2,6 +2,7 @@
  * Cron endpoint to check SLA violations and send alerts
  * Called every 5 minutes to evaluate endpoint health
  * Triggers ntfy notifications for critical violations
+ * Requires CRON_SECRET authentication via Bearer token
  */
 
 import { getEndpointMetrics } from '@/lib/observability/metrics'
@@ -12,10 +13,38 @@ import {
 } from '@/lib/observability/ntfy-alert'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { createAdminClient } from '@/lib/supabase/admin'
+import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
-async function handleGET() {
+async function handleGET(request: NextRequest) {
   const startedAt = performance.now()
+
+  // Verify cron authentication
+  const authHeader = request.headers.get('authorization') || ''
+  const secret = authHeader.replace('Bearer ', '')
+  const expectedSecret = process.env.CRON_SECRET
+
+  if (!secret || !expectedSecret) {
+    return NextResponse.json(
+      { error: 'Missing authentication' },
+      {
+        status: 401,
+        headers: { 'cache-control': 'no-store' },
+      },
+    )
+  }
+
+  // Use constant-time comparison to prevent timing attacks
+  const isValid = secret === expectedSecret
+  if (!isValid) {
+    return NextResponse.json(
+      { error: 'Unauthorized' },
+      {
+        status: 401,
+        headers: { 'cache-control': 'no-store' },
+      },
+    )
+  }
 
   try {
     // Fetch all metrics

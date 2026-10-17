@@ -1,66 +1,94 @@
 /**
- * Unified integration layer for Sentry, PostHog, Axiom, and Vercel Analytics
- * Aggregates data from all sources for dashboard display
+ * Real integration layer for Sentry, PostHog, Axiom, and Vercel Analytics
+ * Fetches actual observability data from external APIs
  */
 
 export interface SentryStats {
   totalEvents: number
   errorRate: number
   criticalErrors: number
-  recentErrors: Array<{
-    message: string
-    count: number
-    level: string
-  }>
 }
 
 export interface PostHogStats {
   activeUsers: number
   conversionRate: number
   eventVolume: number
-  topEvents: Array<{
-    name: string
-    count: number
-  }>
 }
 
 export interface AxiomStats {
   logVolume: number
   avgLogLatency: number
   errorLogs: number
-  recentErrors: string[]
 }
 
 export interface VercelStats {
   deployments: number
   avgResponseTime: number
-  serverlessDuration: number
   bandwidth: number
 }
 
 export interface UnifiedObservability {
-  sentry: SentryStats
-  posthog: PostHogStats
-  axiom: AxiomStats
-  vercel: VercelStats
-  lastUpdated: string
+  sentry: SentryStats | null
+  posthog: PostHogStats | null
+  axiom: AxiomStats | null
+  vercel: VercelStats | null
 }
 
 /**
- * Fetch Sentry error statistics
+ * Fetch Sentry error statistics via Sentry API
+ * Requires: SENTRY_AUTH_TOKEN environment variable
  */
 export async function fetchSentryStats(): Promise<SentryStats | null> {
   try {
-    const sentryDsn = process.env.NEXT_PUBLIC_SENTRY_DSN
-    if (!sentryDsn) return null
+    const sentryToken = process.env.SENTRY_AUTH_TOKEN
+    const sentryOrg = process.env.NEXT_PUBLIC_SENTRY_ORG || 'kenyonexpress'
+    const sentryProject = process.env.NEXT_PUBLIC_SENTRY_PROJECT || 'kenyonexpress'
 
-    // In production, this would fetch from Sentry API
-    // For now, return mock data with proper structure
+    if (!sentryToken) {
+      console.warn('[integrations] SENTRY_AUTH_TOKEN not configured, skipping')
+      return null
+    }
+
+    // Fetch from Sentry API: stats for last 24 hours
+    const response = await fetch(
+      `https://sentry.io/api/0/projects/${sentryOrg}/${sentryProject}/stats/`,
+      {
+        headers: { Authorization: `Bearer ${sentryToken}` },
+      },
+    )
+
+    if (!response.ok) {
+      console.error(`[integrations] Sentry API error: ${response.status}`)
+      return null
+    }
+
+    // Parse stats (Sentry returns array of [timestamp, count] pairs)
+    const data = (await response.json()) as Array<[number, number]>
+    const totalEvents = data.reduce((sum, [, count]) => sum + count, 0)
+
+    // Fetch error rate from issues
+    const issuesResponse = await fetch(
+      `https://sentry.io/api/0/projects/${sentryOrg}/${sentryProject}/issues/`,
+      {
+        headers: { Authorization: `Bearer ${sentryToken}` },
+      },
+    )
+
+    if (!issuesResponse.ok) {
+      return {
+        totalEvents,
+        errorRate: 0,
+        criticalErrors: 0,
+      }
+    }
+
+    const issues = (await issuesResponse.json()) as Array<{ id: string; level?: string }>
+    const criticalCount = issues.filter((i) => i.level === 'fatal' || i.level === 'error').length
+
     return {
-      totalEvents: 0,
-      errorRate: 0,
-      criticalErrors: 0,
-      recentErrors: [],
+      totalEvents,
+      errorRate: totalEvents > 0 ? (criticalCount / totalEvents) * 100 : 0,
+      criticalErrors: criticalCount,
     }
   } catch (err) {
     console.error('[integrations] Failed to fetch Sentry stats:', err)
@@ -69,19 +97,59 @@ export async function fetchSentryStats(): Promise<SentryStats | null> {
 }
 
 /**
- * Fetch PostHog analytics
+ * Fetch PostHog analytics via PostHog API
+ * Requires: POSTHOG_API_TOKEN environment variable
  */
 export async function fetchPostHogStats(): Promise<PostHogStats | null> {
   try {
-    const phToken = process.env.NEXT_PUBLIC_POSTHOG_KEY
-    if (!phToken) return null
+    const phToken = process.env.POSTHOG_API_TOKEN
+    const phHost = process.env.POSTHOG_HOST || 'https://us.posthog.com'
 
-    // In production, this would fetch from PostHog API
+    if (!phToken) {
+      console.warn('[integrations] POSTHOG_API_TOKEN not configured, skipping')
+      return null
+    }
+
+    // Fetch insights from PostHog
+    const response = await fetch(`${phHost}/api/projects/current/insights/?limit=10`, {
+      headers: {
+        Authorization: `Bearer ${phToken}`,
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (!response.ok) {
+      console.error(`[integrations] PostHog API error: ${response.status}`)
+      return null
+    }
+
+    const data = (await response.json()) as {
+      results?: Array<{ name?: string; result?: Array<{ data?: number }> }>
+    }
+    const results = data.results || []
+
+    // Extract metrics from insights
+    let eventVolume = 0
+    let activeUsers = 0
+
+    for (const insight of results) {
+      if (insight.name?.toLowerCase().includes('events')) {
+        const result = insight.result?.[0]?.data
+        if (result) eventVolume += result
+      }
+      if (
+        insight.name?.toLowerCase().includes('users') ||
+        insight.name?.toLowerCase().includes('active')
+      ) {
+        const result = insight.result?.[0]?.data
+        if (result) activeUsers += result
+      }
+    }
+
     return {
-      activeUsers: 0,
-      conversionRate: 0,
-      eventVolume: 0,
-      topEvents: [],
+      activeUsers,
+      conversionRate: eventVolume > 0 ? (activeUsers / eventVolume) * 100 : 0,
+      eventVolume,
     }
   } catch (err) {
     console.error('[integrations] Failed to fetch PostHog stats:', err)
@@ -90,19 +158,53 @@ export async function fetchPostHogStats(): Promise<PostHogStats | null> {
 }
 
 /**
- * Fetch Axiom structured logs
+ * Fetch Axiom structured logs via Axiom API
+ * Requires: AXIOM_TOKEN and AXIOM_DATASET environment variables
  */
 export async function fetchAxiomStats(): Promise<AxiomStats | null> {
   try {
     const axiomToken = process.env.AXIOM_TOKEN
-    if (!axiomToken) return null
+    const axiomDataset = process.env.AXIOM_DATASET
 
-    // In production, query Axiom API for log statistics
+    if (!axiomToken || !axiomDataset) {
+      console.warn('[integrations] AXIOM_TOKEN or AXIOM_DATASET not configured, skipping')
+      return null
+    }
+
+    // Query Axiom for error logs in last hour
+    const response = await fetch('https://api.axiom.co/v1/datasets/query', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${axiomToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        apl: `[${axiomDataset}] | where severity == "error" or severity == "fatal" | stats count() as error_count, avg(_time) as avg_latency`,
+        startTime: new Date(Date.now() - 3600000).toISOString(),
+        endTime: new Date().toISOString(),
+      }),
+    })
+
+    if (!response.ok) {
+      console.error(`[integrations] Axiom API error: ${response.status}`)
+      return null
+    }
+
+    const data = (await response.json()) as {
+      matches?: Array<{ _time?: number; error_count?: number; avg_latency?: number }>
+    }
+    const matches = data.matches || []
+
+    const errorLogs = matches.reduce((sum, m) => sum + (m.error_count || 0), 0)
+    const avgLatency =
+      matches.length > 0
+        ? matches.reduce((sum, m) => sum + (m.avg_latency || 0), 0) / matches.length
+        : 0
+
     return {
-      logVolume: 0,
-      avgLogLatency: 0,
-      errorLogs: 0,
-      recentErrors: [],
+      logVolume: matches.length,
+      avgLogLatency: Math.round(avgLatency),
+      errorLogs,
     }
   } catch (err) {
     console.error('[integrations] Failed to fetch Axiom stats:', err)
@@ -111,36 +213,70 @@ export async function fetchAxiomStats(): Promise<AxiomStats | null> {
 }
 
 /**
- * Fetch Vercel deployment analytics
+ * Fetch Vercel deployment analytics via Vercel API
+ * Requires: VERCEL_TOKEN, VERCEL_PROJECT_ID environment variables
  */
 export async function fetchVercelStats(): Promise<VercelStats | null> {
   try {
     const vercelToken = process.env.VERCEL_TOKEN
     const vercelProjectId = process.env.VERCEL_PROJECT_ID
-    if (!vercelToken || !vercelProjectId) return null
 
-    // Fetch from Vercel API
-    const response = await fetch(
-      `https://api.vercel.com/v6/projects/${vercelProjectId}/analytics`,
+    if (!vercelToken || !vercelProjectId) {
+      console.warn('[integrations] VERCEL_TOKEN or VERCEL_PROJECT_ID not configured, skipping')
+      return null
+    }
+
+    // Fetch deployments
+    const deploymentsResponse = await fetch(
+      `https://api.vercel.com/v6/deployments?projectId=${vercelProjectId}&limit=10`,
       {
         headers: { Authorization: `Bearer ${vercelToken}` },
       },
     )
 
-    if (!response.ok) {
+    if (!deploymentsResponse.ok) {
+      console.error(`[integrations] Vercel deployments API error: ${deploymentsResponse.status}`)
+      return null
+    }
+
+    const deploymentsData = (await deploymentsResponse.json()) as {
+      deployments?: Array<{ id: string }>
+    }
+    const deploymentCount = deploymentsData.deployments?.length || 0
+
+    // Fetch analytics
+    const analyticsResponse = await fetch(
+      `https://api.vercel.com/v1/projects/${vercelProjectId}/analytics?since=3600`,
+      {
+        headers: { Authorization: `Bearer ${vercelToken}` },
+      },
+    )
+
+    if (!analyticsResponse.ok) {
       return {
-        deployments: 0,
+        deployments: deploymentCount,
         avgResponseTime: 0,
-        serverlessDuration: 0,
         bandwidth: 0,
       }
     }
 
+    const analyticsData = (await analyticsResponse.json()) as {
+      pagesFunctionDuration?: Array<{ duration: number }>
+      bandwidth?: number
+    }
+
+    const avgResponseTime =
+      analyticsData.pagesFunctionDuration && analyticsData.pagesFunctionDuration.length > 0
+        ? Math.round(
+            analyticsData.pagesFunctionDuration.reduce((sum, d) => sum + d.duration, 0) /
+              analyticsData.pagesFunctionDuration.length,
+          )
+        : 0
+
     return {
-      deployments: 0,
-      avgResponseTime: 0,
-      serverlessDuration: 0,
-      bandwidth: 0,
+      deployments: deploymentCount,
+      avgResponseTime,
+      bandwidth: analyticsData.bandwidth || 0,
     }
   } catch (err) {
     console.error('[integrations] Failed to fetch Vercel stats:', err)
@@ -160,30 +296,9 @@ export async function fetchUnifiedObservability(): Promise<UnifiedObservability>
   ])
 
   return {
-    sentry: sentry || {
-      totalEvents: 0,
-      errorRate: 0,
-      criticalErrors: 0,
-      recentErrors: [],
-    },
-    posthog: posthog || {
-      activeUsers: 0,
-      conversionRate: 0,
-      eventVolume: 0,
-      topEvents: [],
-    },
-    axiom: axiom || {
-      logVolume: 0,
-      avgLogLatency: 0,
-      errorLogs: 0,
-      recentErrors: [],
-    },
-    vercel: vercel || {
-      deployments: 0,
-      avgResponseTime: 0,
-      serverlessDuration: 0,
-      bandwidth: 0,
-    },
-    lastUpdated: new Date().toISOString(),
+    sentry,
+    posthog,
+    axiom,
+    vercel,
   }
 }
