@@ -73,6 +73,8 @@ export default function GlobalError({
   const borderColor = isDark ? '#444' : '#ccc'
   const buttonBg = isDark ? '#e8e8e8' : '#111'
   const buttonText = isDark ? '#111' : '#fff'
+  const whatsappBg = isDark ? '#0d9945' : '#0db85c'
+  const whatsappText = '#fff'
 
   return (
     <html lang="he" dir="rtl" data-theme={isDark ? 'dark' : 'light'}>
@@ -151,8 +153,8 @@ export default function GlobalError({
                   alignItems: 'center',
                   minHeight: '44px',
                   borderRadius: '999px',
-                  background: '#0db85c',
-                  color: '#fff',
+                  background: whatsappBg,
+                  color: whatsappText,
                   padding: '0 1.5rem',
                   fontSize: '0.875rem',
                   fontWeight: 700,
