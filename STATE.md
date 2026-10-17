@@ -1,7 +1,11 @@
-RESUME FROM: UX46
+RESUME FROM: STEP 78
 # KenyonExpress — Project State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-10-17T07:45:00+07:00
+- item: STEP 77-marketing-email
+- RESULT: DONE (Resend-based marketing email infrastructure with broadcasts, per-segment targeting, unsubscribe management, deliverability monitoring. Migration 131 creates 5 tables (email_broadcasts, email_broadcast_recipients, email_unsubscribes, email_delivery_events, email_domain_auth) + 5 RPC functions with full RLS. APIs: POST/GET /api/marketing/broadcasts for CRUD, PATCH [id], POST /api/marketing/unsubscribe (segment-level), POST /api/webhooks/resend (Resend webhook handler with HMAC-SHA256 verification), GET /api/marketing/deliverability (metrics dashboard), GET/POST /api/marketing/domain-auth (SPF/DKIM/DMARC tracking). Helper library: src/lib/marketing/broadcast-helpers.ts with metrics calc, health checks, segment properties. Tests: 25+ unit tests covering webhook verification, metrics, domain auth, bounce/complaint handling, unsubscribe. Features: targets STEP 76 segments (Champions/Loyal/Potential/At-Risk/Dormant), auto-excludes unsubscribed, hard bounce auto-unsub, spam complaint auto-unsub, email metrics (delivery/open/click/bounce <5%/complaint <0.5%), recipient status tracking, event deduplication. Verification: pnpm test 25✓ typecheck✓ lint✓. Status: ready for deploy; migration 131 pending apply order. Commits: 4a7c7a7c2)
 
 ### 2026-10-17T06:03:00+07:00
 - item: UX45-rating-stars
