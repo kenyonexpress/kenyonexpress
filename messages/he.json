@@ -121,5 +121,15 @@
   "headers": {
     "popularCategories": "קטגוריות פופולריות",
     "browseAllProducts": "לכל המוצרים"
+  },
+  "notFound": {
+    "title": "הדף לא נמצא",
+    "heading": "הדף שחיפשתם לא נמצא",
+    "description": "ייתכן שהקישור ישן, שהמוצר כבר לא במלאי, או שנפלה שגיאת הקלדה בכתובת. אפשר לחפש את מה שרציתם, או להמשיך מאחת הקטגוריות.",
+    "navigationLabel": "דרכים להמשיך",
+    "homeLink": "לדף הבית",
+    "productsLink": "לכל המוצרים",
+    "contactLink": "צרו קשר",
+    "categoriesTitle": "קטגוריות פופולריות"
   }
 }

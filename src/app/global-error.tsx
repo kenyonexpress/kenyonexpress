@@ -41,7 +41,7 @@ export default function GlobalError({
   }, [error])
 
   const whatsapp = storeWhatsAppLink(
-    `שלום, נתקלתי בתקלה באתר קניון אקספרס.${error.digest ? `\nקוד תקלה: ${error.digest}` : ''}`,
+    `שלום, נתקלתי בתקלה באתר ${process.env.NEXT_PUBLIC_APP_URL || 'קניון אקספרס'}.${error.digest ? `\nקוד תקלה: ${error.digest}` : ''}`,
   )
 
   return (

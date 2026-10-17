@@ -121,5 +121,15 @@
   "headers": {
     "popularCategories": "Popular Categories",
     "browseAllProducts": "Browse All Products"
+  },
+  "notFound": {
+    "title": "Page Not Found",
+    "heading": "The page you are looking for was not found",
+    "description": "The link might be old, the product might be out of stock, or there might be a typo in the address. You can search for what you're looking for or continue from one of the categories.",
+    "navigationLabel": "Ways to Continue",
+    "homeLink": "Back to Home",
+    "productsLink": "Browse All Products",
+    "contactLink": "Contact Us",
+    "categoriesTitle": "Popular Categories"
   }
 }
