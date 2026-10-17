@@ -131,5 +131,34 @@
     "productsLink": "Browse All Products",
     "contactLink": "Contact Us",
     "categoriesTitle": "Popular Categories"
+  },
+  "globalError": {
+    "heading": "Something went wrong",
+    "description": "The error has been reported and we are working on it. Please try again in a moment.",
+    "homeLink": "Back to Home",
+    "statusLink": "System Status",
+    "whatsappLink": "Contact Support via WhatsApp",
+    "whatsappMessage": "Hello, I encountered an error on {appName}.{errorCode}"
+  },
+  "settings": {
+    "pageTitle": "Settings",
+    "pageSubtitle": "Your details, notifications, security, payment methods and privacy",
+    "profileSectionTitle": "My Profile",
+    "googleAvatarLabel": "Google Account profile picture",
+    "profileFormHelper": "Name and phone for use in orders. Email comes from your Google account.",
+    "notificationsSectionTitle": "Notifications",
+    "notificationsDescription": "Which messages to receive by email and browser. Payment, coupon and refund notifications are always sent.",
+    "notificationsLink": "Notification preferences",
+    "securitySectionTitle": "Security and Login",
+    "securityDescription": "Password, login keys, two-factor authentication and devices connected to your account.",
+    "securityLink": "Account security",
+    "paymentSectionTitle": "Payment Methods",
+    "paymentDescription": "Saved credit cards for quick payment. Only the last 4 digits are stored.",
+    "paymentLink": "Payment methods",
+    "privacySectionTitle": "Privacy and Data",
+    "privacyDescription": "Download all information stored about you, manage cookie consent, and permanently delete your account.",
+    "privacyLink": "Privacy and account deletion",
+    "signOutSectionTitle": "Sign Out",
+    "signOutButton": "Logout"
   }
 }

@@ -131,5 +131,34 @@
     "productsLink": "לכל המוצרים",
     "contactLink": "צרו קשר",
     "categoriesTitle": "קטגוריות פופולריות"
+  },
+  "globalError": {
+    "heading": "משהו השתבש אצלנו",
+    "description": "התקלה נרשמה ואנחנו מטפלים בה. אפשר לנסות שוב בעוד רגע.",
+    "homeLink": "לדף הבית",
+    "statusLink": "מצב המערכת",
+    "whatsappLink": "פנייה לתמיכה בוואטסאפ",
+    "whatsappMessage": "שלום, נתקלתי בתקלה באתר {appName}.{errorCode}"
+  },
+  "settings": {
+    "pageTitle": "הגדרות",
+    "pageSubtitle": "הפרטים שלך, התראות, אבטחה, אמצעי תשלום ופרטיות",
+    "profileSectionTitle": "הפרטים שלי",
+    "googleAvatarLabel": "תמונת הפרופיל מחשבון Google",
+    "profileFormHelper": "שם וטלפון לשימוש בהזמנות. האימייל מגיע מחשבון Google.",
+    "notificationsSectionTitle": "התראות",
+    "notificationsDescription": "אילו הודעות לקבל במייל ובדפדפן. הודעות על תשלום, שובר והחזר נשלחות תמיד.",
+    "notificationsLink": "להעדפות ההתראות",
+    "securitySectionTitle": "אבטחה וכניסה",
+    "securityDescription": "סיסמה, מפתחות כניסה, אימות דו-שלבי והמכשירים שמחוברים לחשבון.",
+    "securityLink": "לאבטחת החשבון",
+    "paymentSectionTitle": "אמצעי תשלום",
+    "paymentDescription": "הכרטיסים השמורים לתשלום מהיר. נשמרות רק 4 הספרות האחרונות.",
+    "paymentLink": "לאמצעי התשלום",
+    "privacySectionTitle": "פרטיות ונתונים",
+    "privacyDescription": "הורדת כל המידע שנשמר עליכם, ניהול ההסכמה לעוגיות, ומחיקת החשבון לצמיתות.",
+    "privacyLink": "לפרטיות ומחיקת החשבון",
+    "signOutSectionTitle": "יציאה מהחשבון",
+    "signOutButton": "התנתקות"
   }
 }
