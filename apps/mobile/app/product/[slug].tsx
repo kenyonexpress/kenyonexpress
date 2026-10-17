@@ -13,9 +13,12 @@ export default function ProductDetailPage() {
   useEffect(() => {
     if (!slug) return
 
-    // Fetch product data from the web API
-    fetch(`https://kenyonexpress.co.il/api/products/${slug}`)
-      .then((res) => res.json())
+    // Fetch product data from the mobile API endpoint
+    fetch(`https://kenyonexpress.co.il/api/mobile/products/${slug}`)
+      .then((res) => {
+        if (!res.ok) throw new Error(`${res.status}`)
+        return res.json()
+      })
       .then((data) => {
         setProduct(data)
         setLoading(false)

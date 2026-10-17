@@ -1,12 +1,25 @@
 import { APP_PATHS } from '@/lib/app/deep-links'
 import { describe, expect, it } from 'vitest'
 
-// pathFromNotification is in apps/mobile/src/lib/push.ts, replicated here for testing
-function pathFromNotification(
-  response: { notification: { request: { content: { data?: Record<string, unknown> } } } } | null,
-): string | null {
+type NotificationResponse = {
+  notification: {
+    request: {
+      content: {
+        data?: Record<string, unknown>
+      }
+    }
+  }
+}
+
+// pathFromNotification is in apps/mobile/src/lib/push.ts
+// This implementation is tested here to verify the deep-link extraction logic
+// that both web and mobile sides depend on. The mobile app independently tests
+// the actual implementation in apps/mobile/src/lib/push.ts.
+function pathFromNotification(response: NotificationResponse | null): string | null {
   const data = response?.notification.request.content.data as { path?: unknown } | undefined
   const path = data?.path
+  // Only in-app paths. A notification must never be able to steer the app to an
+  // arbitrary URL, and `//evil.test` is a path by any naive check.
   if (typeof path !== 'string' || !path.startsWith('/') || path.startsWith('//')) return null
   return path
 }
@@ -24,7 +37,7 @@ describe('Mobile Deep-Link Routing', () => {
             },
           },
         },
-      } as any
+      } as NotificationResponse
 
       expect(pathFromNotification(notification)).toBe('/coupons')
     })
@@ -38,7 +51,7 @@ describe('Mobile Deep-Link Routing', () => {
             },
           },
         },
-      } as any
+      } as NotificationResponse
 
       expect(pathFromNotification(notification)).toBe('/coupons/v1')
     })
@@ -52,7 +65,7 @@ describe('Mobile Deep-Link Routing', () => {
             },
           },
         },
-      } as any
+      } as NotificationResponse
 
       expect(pathFromNotification(notification)).toBe('/orders/o1')
     })
@@ -66,7 +79,7 @@ describe('Mobile Deep-Link Routing', () => {
             },
           },
         },
-      } as any
+      } as NotificationResponse
 
       expect(pathFromNotification(notification)).toBe('/product/test-product')
     })
@@ -80,7 +93,7 @@ describe('Mobile Deep-Link Routing', () => {
             },
           },
         },
-      } as any
+      } as NotificationResponse
 
       expect(pathFromNotification(notification)).toBe('/wallet')
     })
@@ -94,7 +107,7 @@ describe('Mobile Deep-Link Routing', () => {
             },
           },
         },
-      } as any
+      } as NotificationResponse
 
       expect(pathFromNotification(notification)).toBe('/notifications')
     })
@@ -112,7 +125,7 @@ describe('Mobile Deep-Link Routing', () => {
             },
           },
         },
-      } as any
+      } as NotificationResponse
 
       expect(pathFromNotification(notification)).toBeNull()
     })
@@ -126,7 +139,7 @@ describe('Mobile Deep-Link Routing', () => {
             },
           },
         },
-      } as any
+      } as NotificationResponse
 
       expect(pathFromNotification(notification)).toBeNull()
     })
@@ -140,7 +153,7 @@ describe('Mobile Deep-Link Routing', () => {
             },
           },
         },
-      } as any
+      } as NotificationResponse
 
       expect(pathFromNotification(notification)).toBeNull()
     })
@@ -151,7 +164,7 @@ describe('Mobile Deep-Link Routing', () => {
           notification: {
             request: { content: { data: { path: '/' } } },
           },
-        } as any),
+        } as NotificationResponse),
       ).toBe('/')
 
       expect(
@@ -159,7 +172,7 @@ describe('Mobile Deep-Link Routing', () => {
           notification: {
             request: { content: { data: { path: '/checkout/return' } } },
           },
-        } as any),
+        } as NotificationResponse),
       ).toBe('/checkout/return')
     })
   })
