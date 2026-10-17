@@ -154,6 +154,7 @@ export default function ProductDealCard({ product }: { product: Product }) {
               height={245}
               sizes={DEAL_IMAGE_SIZES}
               quality={50}
+              loading="lazy"
               // `.p_con__image` pins the height to 245px and leaves the width
               // auto, which is live's aspect. No inline style: see the note in
               // ProductCard.tsx - an inline `height:auto` beats the class and

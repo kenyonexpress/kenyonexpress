@@ -178,6 +178,7 @@ function DealsProductCard({ product }: { product: Product }) {
               height={245}
               sizes={DEAL_IMAGE_SIZES}
               quality={50}
+              loading="lazy"
               className="p_con__image"
               {...(asset?.blurDataURL
                 ? { placeholder: 'blur' as const, blurDataURL: asset.blurDataURL }
@@ -283,6 +284,7 @@ function DefaultProductCard({ product }: { product: Product }) {
               src={thumb}
               alt={asset?.alt ?? product.name_he}
               fill
+              loading="lazy"
               /**
                * MEASURED, not declared. The only live consumer of this variant
                * is `RelatedProducts` on the product page, whose grid is
