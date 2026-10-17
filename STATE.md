@@ -191,16 +191,35 @@ All numbered items [1-60] are complete (with UX49 appropriately skipped due to a
 
 ---
 
-## Maintenance Loop: Item A (2026-10-17)
+## Maintenance Loop: Item A — Business Rules Compliance Audit (2026-10-17)
 
 **Task:** Verify code compliance with foundational rules and prove via tests
 
 **Rules to verify:**
-1. Read and validate against: `BUSINESS-MODEL-RULES.md`, `docs/PRODUCT-TYPES.md`, `docs/DB-SECURITY-MODEL.md`
-2. Prove in tests that code still matches every rule
-3. Fix any drift
+1. `BUSINESS-RULES.md` (lines 1-100+): Money handling, VAT, conservation constraints
+2. `ARCHITECTURE-PRODUCT-TYPES.md`: Product classification and type system rules
+3. `DB-SECURITY-MODEL.md`: RLS policies, SECURITY DEFINER functions, role-based access
 
-**Status:** Starting...
+**Progress - Phase 1: Initial Analysis**
+
+✅ Located and reviewed rule documents:
+- **BUSINESS-RULES.md** - Money is always integer agorot (never float); rates are basis points; VAT = 1800bp; conservation constraints enforced via CHECK constraints
+- **DB-SECURITY-MODEL.md** - 53 tables with RLS; 61 SECURITY DEFINER functions; 0 policies on 4 server-only tables (deny-all pattern)
+- **ARCHITECTURE-PRODUCT-TYPES.md** - Product type system and classification rules
+
+✅ Initial code review shows awareness of rules:
+- No active float multiplications on money path
+- Comments acknowledge prior violations (refund.ts, coupon-offer.ts) now using basis points
+- Refund rule changed from `Math.round(chargedAgorot * 0.05)` to `applyBp(..., bp(500))`
+
+**Next Steps for Item A:**
+1. Create test suite for money rules (integer agorot, basis points, VAT extraction, conservation)
+2. Audit all money calculations for float usage
+3. Verify RLS policies match documented model
+4. Test SECURITY DEFINER function access controls
+5. Validate product type enforcement
+
+**Status:** Analysis phase complete, test suite creation pending
 
 ---
 
