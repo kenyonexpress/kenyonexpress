@@ -34,6 +34,7 @@
     "lighthouse:weekly": "node scripts/weekly-lighthouse.mjs",
     "sentry:verify": "node scripts/sentry-verify.mjs",
     "sentry:verify:ci": "node scripts/sentry-verify.mjs --ci --dry",
+    "sentry:review": "node scripts/sentry-monthly-review.mjs",
     "prepare": "husky || true",
     "deploy:preflight": "node scripts/deploy-preflight.mjs",
     "test:e2e:nodb": "node scripts/e2e-no-database.mjs",
