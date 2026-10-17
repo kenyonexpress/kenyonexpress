@@ -125,7 +125,7 @@ describe('Offline Mode Integration', () => {
       expect(queueBefore).toHaveLength(2)
 
       // Simulate reconnect
-      const syncResult = await syncManager.syncQueuedChanges()
+      const _syncResult = await syncManager.syncQueuedChanges()
 
       // Check that items were processed (moved from queue)
       const queueAfter = await db.getSyncQueue()

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { isSmsConfigured } from './broadcast-send'
+import { isWithinQuietHours } from './twilio-webhook'
 
 describe('SMS Broadcast Send', () => {
   describe('isSmsConfigured', () => {
@@ -92,21 +93,15 @@ describe('SMS Broadcast Send', () => {
 
   describe('Quiet Hours Logic', () => {
     it('isWithinQuietHours helper should be a function', () => {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const { isWithinQuietHours } = require('./twilio-webhook')
       expect(typeof isWithinQuietHours).toBe('function')
     })
 
     it('isWithinQuietHours should return boolean', () => {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const { isWithinQuietHours } = require('./twilio-webhook')
       const result = isWithinQuietHours('22:00', '08:00', 'Asia/Jerusalem')
       expect(typeof result).toBe('boolean')
     })
 
     it('isWithinQuietHours should handle null quiet hours', () => {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const { isWithinQuietHours } = require('./twilio-webhook')
       const result = isWithinQuietHours(null, null)
       expect(result).toBe(false)
     })

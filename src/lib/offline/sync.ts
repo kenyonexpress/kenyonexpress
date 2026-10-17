@@ -112,8 +112,8 @@ export class SyncManager {
 
   async resolveConflict(action: string, local: unknown, remote: unknown): Promise<SyncConflict> {
     // Last-write-wins strategy with timestamp-based resolution
-    const localTime = (local as Record<string, unknown>)?.timestamp ?? 0
-    const remoteTime = (remote as Record<string, unknown>)?.timestamp ?? 0
+    const _localTime = (local as Record<string, unknown>)?.timestamp ?? 0
+    const _remoteTime = (remote as Record<string, unknown>)?.timestamp ?? 0
 
     return {
       action,
