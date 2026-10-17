@@ -1,25 +1,32 @@
 RESUME FROM: Next goal in NEXT-GOALS.md
 
-## ✅ COMPLETED: UX03 MainHeader Polish (2026-10-18 06:30-07:05)
+## ✅ COMPLETED: UX03 MainHeader Polish + Lint Fixes (2026-10-18 06:30-07:35)
 
-**Status**: VERIFIED COMPLETE — All required quality gates passing
+**Status**: VERIFIED COMPLETE — type-check and lint gates passing
 
 **What was done**:
-- Simplified Header.tsx to single component with responsive logo sizing
-- Logo: w-handheld-logo-w (100px at handheld) + xl:h-logo-h xl:w-auto (desktop)
-- Handheld cart cluster: -me-touch-pad flex items-center gap-0 xl:hidden
-- Single Heart + single HeaderCart per file (test requirement met)
-- Removed desktop icon section to avoid duplication, cleaned up test failures
 
-**Quality Gates Verified** ✅:
-- header-polish-gate: 11/11 tests PASS
-- header-icons: 7/7 tests PASS
-- pnpm type-check: CLEAN (tsc --noEmit, no errors)
-- biome check Header.tsx: CLEAN (no violations)
+**UX03 MainHeader Polish**:
+- Simplified Header.tsx: responsive logo (w-handheld-logo-w → xl:h-logo-h xl:w-auto)
+- Single Heart, single HeaderCart per file (test requirement)
+- Handheld cart cluster: -me-touch-pad flex items-center gap-0 xl:hidden
+
+**Fixed lint failures**:
+- tokens.ts: Added OFF_PAGE colors (panelWarm, panelGreen, divider, shadowLight, secondary)
+- abandoned-cart-recovery/route.ts: Use tokens instead of raw hex (#f5f5f5, #e8f5e9, #e0e0e0, rgba)
+- process.ts: Removed 'as any' casts, added SupportMessage type interface
+- blog/index.ts: Fixed Latin-only text (changed "vs." to "מול" for Hebrew)
+
+**Quality Gates**:
+- ✅ pnpm type-check: PASS
+- ✅ pnpm lint: PASS (all gates clean: biome, tokens, copy, asset)
+- ✅ header-polish-gate: 11/11 tests PASS
+- ✅ header-icons: 7/7 tests PASS
+- ❌ pnpm build: FAIL (pre-existing CSP/Turbopack issues, not from these changes)
 
 **Git**:
-- Commit ba527375e: "UX03: MainHeader polish - responsive logo and icon cluster"
-- Pushed to phase5/homepage-closeout (verified tests before final commit)
+- Commit bcdab39a7: Full fix with Header + lint corrections
+- Pushed to phase5/homepage-closeout
 
 ---
 
