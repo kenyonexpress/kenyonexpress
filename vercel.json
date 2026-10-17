@@ -4,5 +4,9 @@
   "installCommand": "pnpm install --frozen-lockfile",
   "buildCommand": "node scripts/deploy-preflight.mjs && pnpm build",
   "outputDirectory": ".next",
-  "regions": ["fra1"]
+  "regions": ["fra1", "dub1"],
+  "env": {
+    "VERCEL_CDN_REGIONS": "fra1,dub1",
+    "VERCEL_EDGE_HEBREW": "true"
+  }
 }

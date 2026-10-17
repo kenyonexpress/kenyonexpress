@@ -45,6 +45,8 @@ const ALLOWED: Record<string, string> = {
     'AbortSignal.timeout(4000) on the Meilisearch stats read that the drift check compares against.',
   'lib/env-probe.ts':
     'AbortController driven by its own timeoutMs argument, because the caller decides how long a preflight may take.',
+  'lib/cache.ts':
+    'AbortController with 5000ms timeout to Vercel cache API. Purge failure is non-blocking and silent.',
   'app/api/cron/health/route.ts':
     'AbortSignal.timeout(5000) on the ntfy push. A cron that hangs on its own notification never reports the health it measured.',
 
