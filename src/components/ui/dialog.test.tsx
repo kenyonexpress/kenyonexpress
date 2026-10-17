@@ -189,7 +189,7 @@ describe('Dialog Component - UX29 Modal System', () => {
 
       const content = screen.getByTestId('dialog-content')
       expect(content?.className).toMatch(/md:inset-auto/)
-      expect(content?.className).toMatch(/md:left-\[50%\]/)
+      expect(content?.className).toMatch(/md:start-\[50%\]/)
       expect(content?.className).toMatch(/md:top-\[50%\]/)
       expect(content?.className).toMatch(/md:max-w-lg/)
       expect(content?.className).toMatch(/md:p-6/)

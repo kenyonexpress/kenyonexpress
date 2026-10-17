@@ -193,11 +193,9 @@ async function ResultCountText({ args }: { args: QueryArgs }) {
 
 async function ResultGrid({
   args,
-  pathname,
   linkParams,
 }: {
   args: QueryArgs
-  pathname: string
   linkParams: Record<string, string | undefined>
 }) {
   const { items, total } = await categoryPageOrLast(args)
@@ -210,7 +208,7 @@ async function ResultGrid({
     )
   }
 
-  const { totalPages, currentPage, from, to } = pageWindow(total, args.page)
+  const { currentPage } = pageWindow(total, args.page)
 
   return (
     <>

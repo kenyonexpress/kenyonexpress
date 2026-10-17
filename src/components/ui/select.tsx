@@ -59,7 +59,7 @@ const SelectTrigger = React.forwardRef<
     >
       {children}
       <SelectPrimitive.Icon asChild>
-        <FaChevronDown className="h-4 w-4 opacity-50" />
+        <FaChevronDown className="h-4 w-4 opacity-50 rtl:scale-x-[-1]" />
       </SelectPrimitive.Icon>
     </SelectPrimitive.Trigger>
   )
@@ -133,7 +133,7 @@ const SelectLabel = React.forwardRef<
   <SelectPrimitive.Label
     ref={ref}
     className={cn(
-      'py-2 pl-8 pr-2 text-sm font-semibold text-[--electro-text-secondary]',
+      'py-2 ps-8 pe-2 text-sm font-semibold text-[--electro-text-secondary]',
       className,
     )}
     {...props}
@@ -148,12 +148,12 @@ const SelectItem = React.forwardRef<
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
-      'relative flex w-full cursor-default select-none items-center rounded-sm py-2 pl-8 pr-2 text-sm outline-none transition-colors focus:bg-[--electro-surface-hover] focus:text-[--electro-text-primary] data-[disabled]:pointer-events-none data-[disabled]:opacity-50 hover:bg-[--electro-surface-hover]',
+      'relative flex w-full cursor-default select-none items-center rounded-sm py-2 ps-8 pe-2 text-sm outline-none transition-colors focus:bg-[--electro-surface-hover] focus:text-[--electro-text-primary] data-[disabled]:pointer-events-none data-[disabled]:opacity-50 hover:bg-[--electro-surface-hover]',
       className,
     )}
     {...props}
   >
-    <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center text-[--electro-info]">
+    <span className="absolute start-2 flex h-3.5 w-3.5 items-center justify-center text-[--electro-info]">
       <SelectPrimitive.ItemIndicator />
     </span>
 

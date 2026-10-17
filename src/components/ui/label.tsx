@@ -22,7 +22,7 @@ const labelVariants = cva(
         lg: 'text-base',
       },
       required: {
-        true: "after:content-['*'] after:ml-1 after:text-[--electro-error]",
+        true: "after:content-['*'] after:ms-1 after:text-[--electro-error]",
         false: '',
       },
     },

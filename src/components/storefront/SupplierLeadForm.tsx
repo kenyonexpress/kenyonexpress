@@ -90,7 +90,7 @@ export default function SupplierLeadForm({
             inputMode="tel"
             autoComplete="tel"
             placeholder="050-1234567"
-            className={`${FIELD} text-right`}
+            className={`${FIELD} text-end`}
           />
         </div>
         <div>
@@ -105,7 +105,7 @@ export default function SupplierLeadForm({
             dir="ltr"
             inputMode="email"
             autoComplete="email"
-            className={`${FIELD} text-right`}
+            className={`${FIELD} text-end`}
           />
         </div>
         <div>
@@ -145,7 +145,7 @@ export default function SupplierLeadForm({
           inputMode="url"
           maxLength={200}
           placeholder="https://"
-          className={`${FIELD} text-right`}
+          className={`${FIELD} text-end`}
         />
       </div>
 

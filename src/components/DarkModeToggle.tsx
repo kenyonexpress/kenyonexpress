@@ -25,7 +25,7 @@ export default function DarkModeToggle() {
     <button
       type="button"
       onClick={toggleTheme}
-      className="fixed bottom-4 right-4 z-50 p-2 rounded-lg bg-card border border-border hover:bg-accent transition-colors"
+      className="fixed bottom-4 end-4 z-50 p-2 rounded-lg bg-card border border-border hover:bg-accent transition-colors"
       aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
       title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
     >
