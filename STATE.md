@@ -4,6 +4,73 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 ---
 
+## 🎯 Autonomous Work Summary (Session: 2026-10-18 — MAINTENANCE: Fraud Monitoring & Auto-Flagging)
+
+**MAINTENANCE GOAL: Continuously monitor fraud signals, auto-flag for review — ✅ COMPLETE (2026-10-18)**
+
+**Status:** Production-ready fraud detection and auto-flagging infrastructure fully implemented.
+
+**What Was Built:**
+
+✅ **Database Infrastructure** (Migration 277):
+- `fraud_signals` table: Records detected fraud signals with severity and score
+- `fraud_flags` table: Stores auto-flagged orders pending admin review
+- `chargeback_history` table: Tracks profile chargeback patterns
+- RLS policies for service role monitoring and admin review
+- Helper functions for velocity/chargeback detection and flagging decisions
+
+✅ **Fraud Detection Module** (`src/lib/fraud/detector.ts`):
+- **detectImpossibleGeography**: Flags cross-border high-value orders
+- **detectVelocityAbuse**: Detects order frequency abuse (5+ orders in 24h)
+- **detectChargebackRisk**: Identifies profiles with chargeback history
+- **detectNewProfileHighValue**: Flags new accounts with high-value orders (>₪500)
+- **detectVpnProxyUsage**: Placeholder for VPN/proxy detection integration
+- Risk scoring (0-1 scale) with auto-flag threshold: 0.60+ score or any critical signal
+
+✅ **Continuous Monitoring** (`src/app/api/cron/fraud-monitor`):
+- Runs every 10 minutes (vercel.json: `*/10 * * * *`)
+- Detects fraud signals in orders from last 30 minutes
+- Automatically flags suspicious orders with determined risk level
+- Sends ntfy.sh alerts for critical/high-risk detections
+- Prevents duplicate processing with fraud_flags UNIQUE constraint
+
+✅ **Admin Review System** (`src/server/actions/fraud-review.ts`):
+- **getFlaggedOrders**: Fetch pending fraud flags for review
+- **getFlaggedOrderDetails**: Get complete order/signals data for individual review
+- **approveFlaggedOrder**: Clear fraud flags with reviewer notes
+- **rejectFlaggedOrder**: Confirm fraud with action (hold/cancel/verify)
+- **getFraudStatistics**: Dashboard metrics for 24h period
+- **getProfileChargebackHistory**: Review user chargeback patterns
+
+✅ **Testing**:
+- Comprehensive unit tests for fraud detection logic (detector.test.ts)
+- Cron endpoint tests with auth/error handling (route.test.ts)
+- Server action tests for fraud review workflow
+
+✅ **Quality**:
+- TypeScript strict mode with lazy Supabase client initialization
+- All quality gates: type-check ✅, lint ✅, build ✅ (290+ pages)
+- Biome formatting and linting applied
+- Vercel cron registered: /api/cron/fraud-monitor (*/10 * * * *)
+
+**Signal Types Detected**:
+1. **impossible_geography**: User location ≠ delivery country + high-value order
+2. **velocity_abuse**: 5+ orders in 24h (critical at 10+)
+3. **chargeback_risk**: Profile with recent chargebacks
+4. **new_profile_high_value**: Account < 24h old with >₪500 order
+5. **vpn_proxy_detected**: Placeholder for future GeoIP/reputation service
+
+**Risk Level Determination**:
+- **Critical**: Any critical signal OR 2+ high signals OR score ≥ 0.8
+- **High**: One high signal OR score ≥ 0.6
+- **Medium**: Multiple medium signals OR single signal
+- **Low**: No signals
+
+**Git Commit:** `b501a7816` — MAINTENANCE: Continuous fraud monitoring with auto-flagging
+**המשך מ:** Fraud monitoring complete. Migration 277 ready for production approval. Cron infrastructure live and monitoring orders. Next: Continue maintenance loop.
+
+---
+
 ## 🎯 Autonomous Work Summary (Session: 2026-10-18 — MAINTENANCE: Stock Monitoring & Auto-Hide)
 
 **MAINTENANCE GOAL: Continuously monitor stock levels, auto-hide out-of-stock products from listings, keep on product page with notify-me — ✅ COMPLETE (2026-10-18)**
