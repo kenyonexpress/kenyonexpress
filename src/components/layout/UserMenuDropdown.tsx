@@ -56,7 +56,7 @@ export default function UserMenuDropdown() {
         <Link href="/account" className="block">
           <button
             type="button"
-            className="w-full text-left px-2 py-1.5 text-sm hover:bg-accent rounded"
+            className="w-full text-start px-2 py-1.5 text-sm hover:bg-accent rounded"
           >
             סקירה
           </button>
@@ -64,7 +64,7 @@ export default function UserMenuDropdown() {
         <Link href="/account/orders" className="block">
           <button
             type="button"
-            className="w-full text-left px-2 py-1.5 text-sm hover:bg-accent rounded"
+            className="w-full text-start px-2 py-1.5 text-sm hover:bg-accent rounded"
           >
             ההזמנות שלי
           </button>
@@ -85,7 +85,7 @@ export default function UserMenuDropdown() {
         <Link href="/api/auth/logout" className="block">
           <button
             type="button"
-            className="w-full text-left px-2 py-1.5 text-sm text-destructive hover:bg-accent rounded"
+            className="w-full text-start px-2 py-1.5 text-sm text-destructive hover:bg-accent rounded"
           >
             התנתק
           </button>

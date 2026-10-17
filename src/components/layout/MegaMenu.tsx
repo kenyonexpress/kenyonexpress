@@ -210,7 +210,7 @@ export default function MegaMenu() {
               {openIndex === index && (
                 <div
                   id={`${panelIdPrefix}-${index}`}
-                  className="absolute top-full -left-6 mt-0 w-screen md:max-w-4xl bg-[var(--electro-yellow-primary)] shadow-xl z-50 p-8 rounded-b-lg"
+                  className="absolute top-full -start-6 mt-0 w-screen md:max-w-4xl bg-[var(--electro-yellow-primary)] shadow-xl z-50 p-8 rounded-b-lg"
                   role="menu"
                 >
                   <div className="grid grid-cols-3 gap-8">

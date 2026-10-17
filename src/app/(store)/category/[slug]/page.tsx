@@ -208,7 +208,7 @@ async function ResultGrid({
     )
   }
 
-  const { currentPage } = pageWindow(total, args.page)
+  const { totalPages: _totalPages, currentPage, from, to } = pageWindow(total, args.page)
 
   return (
     <>
@@ -413,7 +413,7 @@ async function CategoryPageBody({
         <div className="category-page__body">
           <div className="category-page__main">
             <Suspense fallback={<CategoryGridSkeleton count={CATEGORY_PAGE_SIZE} />}>
-              <ResultGrid args={args} pathname={pathname} linkParams={linkParams} />
+              <ResultGrid args={args} linkParams={linkParams} />
             </Suspense>
           </div>
 
