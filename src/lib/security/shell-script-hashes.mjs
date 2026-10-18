@@ -65,9 +65,10 @@ export const REACT_STREAMING_SCRIPT_HASHES = Object.freeze([
   'sha256-yA7VLd8QHjVOqhUs4hXCjYIInsU3swQ15a4I8lnMMGI=', // Turbopack (prior build)
   'sha256-hyxaJHwapGA2mumJo1yvrGAcXV0vzo6lxuVetkJ6K+I=', // Turbopack (prior)
   'sha256-afeknX27uf/S4OOzgkviZLGBGU6659po6SYZoHEd+cs=', // Turbopack (prior)
-  'sha256-9wBzszLx7afgG7BGDs9n9AXxF9knvjeuQtrXCaC+TGo=', // Turbopack (prior)
-  'sha256-PvFFSiSPcnvX2aNaahqtOXRWgigeZIVLrt4JkQAkJXU=', // Turbopack (prior)
-  'sha256-YBsdXQLoWx+J4NAA1FcCsLR92bwt2N5y88VGgA/L8Ps=', // Turbopack (current build)
+  'sha256-9wBzszLx7afgG7BGDs9n9AXxF9knvjeuQtrXCaC+TGo=', // Turbopack chunk loader
+  'sha256-PvFFSiSPcnvX2aNaahqtOXRWgigeZIVLrt4JkQAkJXU=', // Turbopack chunk loader
+  'sha256-YBsdXQLoWx+J4NAA1FcCsLR92bwt2N5y88VGgA/L8Ps=', // Turbopack chunk loader
+  'sha256-zVIl8e3WT1C3Tvs0zEc4QNaO37KqHUFUzXC/2Qemfxs=', // Turbopack chunk loader (current)
 ])
 
 /** Every hash the document policy carries, in the order it emits them. */
