@@ -5,24 +5,35 @@ import LoginModal from './LoginModal'
 
 // Mock server actions
 vi.mock('@/server/actions/auth', () => ({
-  signInWithEmail: vi.fn(),
-  signInWithGoogle: vi.fn(),
-  sendMagicLink: vi.fn(),
-  sendPhoneOtp: vi.fn(),
-  verifyPhoneOtp: vi.fn(),
+  signInWithEmail: vi.fn(async () => null),
+  signInWithGoogle: vi.fn(async () => null),
+  sendMagicLink: vi.fn(async () => null),
+  sendPhoneOtp: vi.fn(async () => null),
+  verifyPhoneOtp: vi.fn(async () => null),
 }))
 
-vi.mock('@/components/auth/PasskeySignIn', () => ({
-  default: () => <div data-testid="passkey-signin">Passkey SignIn</div>,
-}))
+vi.mock('@/components/auth/PasskeySignIn', () => {
+  const React = require('react')
+  return {
+    default: () =>
+      React.createElement('div', { 'data-testid': 'passkey-signin' }, 'Passkey SignIn'),
+  }
+})
 
-vi.mock('@/components/auth/WhatsappOtpForm', () => ({
-  default: () => <div data-testid="whatsapp-form">WhatsApp OTP Form</div>,
-}))
+vi.mock('@/components/auth/WhatsappOtpForm', () => {
+  const React = require('react')
+  return {
+    default: () =>
+      React.createElement('div', { 'data-testid': 'whatsapp-form' }, 'WhatsApp OTP Form'),
+  }
+})
 
-vi.mock('@/components/shared/GoogleLogo', () => ({
-  GoogleLogo: () => <div data-testid="google-logo">Google Logo</div>,
-}))
+vi.mock('@/components/shared/GoogleLogo', () => {
+  const React = require('react')
+  return {
+    GoogleLogo: () => React.createElement('div', { 'data-testid': 'google-logo' }, 'Google Logo'),
+  }
+})
 
 describe('LoginModal', () => {
   it('renders the login modal with all tabs', () => {
@@ -38,7 +49,8 @@ describe('LoginModal', () => {
   it('renders email tab content by default', () => {
     render(<LoginModal phoneEnabled={true} />)
 
-    expect(screen.getByLabelText(/אימייל/)).toBeInTheDocument()
+    const emailInputs = screen.getAllByLabelText(/אימייל/)
+    expect(emailInputs.length).toBeGreaterThan(0)
     expect(screen.getByLabelText(/סיסמה/)).toBeInTheDocument()
   })
 
@@ -60,8 +72,12 @@ describe('LoginModal', () => {
     expect(screen.getByRole('button', { name: /כניסה עם Google/i })).toBeInTheDocument()
   })
 
-  it('renders passkey signin component', () => {
+  it('renders passkey signin component in passkey tab', async () => {
+    const user = userEvent.setup()
     render(<LoginModal phoneEnabled={true} />)
+
+    const passkeyTab = screen.getByRole('tab', { name: /Passkey/i })
+    await user.click(passkeyTab)
 
     expect(screen.getByTestId('passkey-signin')).toBeInTheDocument()
   })
@@ -78,11 +94,12 @@ describe('LoginModal', () => {
     expect(screen.getByRole('link', { name: /הרשמה/i })).toBeInTheDocument()
   })
 
-  it('renders magic link tab with email input', () => {
+  it('renders magic link tab with email input', async () => {
+    const user = userEvent.setup()
     render(<LoginModal phoneEnabled={true} />)
 
     const magicTab = screen.getByRole('tab', { name: /קישור/i })
-    userEvent.click(magicTab)
+    await user.click(magicTab)
 
     expect(screen.getByLabelText(/אימייל לקישור כניסה/)).toBeInTheDocument()
   })

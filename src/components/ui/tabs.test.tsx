@@ -89,12 +89,12 @@ describe('Tabs component', () => {
       </Tabs>,
     )
 
-    const content = container.querySelector('[data-value="tab1"]')
+    const content = container.querySelector('[role="tabpanel"]')
     expect(content).toHaveClass('custom-class')
   })
 
   it('applies custom className to TabsTrigger', () => {
-    const { container } = render(
+    render(
       <Tabs defaultValue="tab1">
         <TabsList>
           <TabsTrigger value="tab1" className="custom-trigger">
@@ -105,7 +105,7 @@ describe('Tabs component', () => {
       </Tabs>,
     )
 
-    const trigger = container.querySelector('[role="tab"]')
+    const trigger = screen.getByRole('tab', { name: 'Tab 1' })
     expect(trigger).toHaveClass('custom-trigger')
   })
 
