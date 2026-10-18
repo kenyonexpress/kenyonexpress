@@ -48,6 +48,10 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 **Git Commit:** `4b8544a67` — [autopilot] UX15: Product detail page image gallery zoom hover, sticky cart bar on all screens
 
+**Bug Fixes:**
+- ProductStickyCartBar: Fixed button text search to handle both "הוסף לסל" and "הוסף לעגלה"
+  * Critical fix: sticky cart now correctly clicks the ProductInfo add-to-cart button
+
 **Test Coverage Added:**
 - ProductGallery.test.tsx: 11 comprehensive tests
   * Zoom effect on hover (scale-125 with 300ms transition)
@@ -55,23 +59,42 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
   * Thumbnail selection and main image swapping
   * Discount badge calculation
   * Empty state handling
-- StickyCartBar.test.tsx: Updated with 10 tests
+
+- StickyCartBar.test.tsx: 10 tests (updated for responsive behavior)
   * Responsive positioning (mobile: bottom-0, desktop: top-0)
   * Visibility on all screens (no md:hidden)
   * Price formatting and currency display
   * Button states and interactions
 
+- ProductInfo.test.tsx: 14 tests for core UX15 components
+  * **Variant Selector:** rendering, selection, disabling out-of-stock, stock adjustments
+  * **Quantity Input:** rendering with label, default value 1, change handling, max ceiling enforcement
+  * **Add-to-Cart Button:** rendering, success state, price display
+  
+**Total Test Coverage: 35/35 PASSING**
+- ProductGallery: 11 tests (zoom, thumbnails, pricing)
+- StickyCartBar: 10 tests (responsive positioning)
+- ProductInfo: 14 tests (variant selector, quantity input, add-to-cart)
+
 **All Quality Gates Passing:**
 - ✅ `pnpm type-check`: CLEAN
-- ✅ `pnpm lint`: CLEAN (6187 files checked)
+- ✅ `pnpm lint`: CLEAN (6187+ files checked)
 - ✅ `pnpm build`: SUCCESS (290+ pages)
-- ✅ Tests: 21/21 passing (ProductGallery + StickyCartBar)
+- ✅ Tests: 35/35 PASSING (comprehensive coverage)
 
-**המשך מ:** UX15 COMPLETE with full test coverage. Product detail page now features:
-- Image gallery with smooth hover zoom (scale 1.25x)
-- Sticky cart bar visible on both mobile and desktop
-- Comprehensive test suite validating all changes
-- All quality gates passing (type-check ✓, lint ✓, build ✓, tests ✓)
+**UX15 Feature Completeness:**
+✅ Image gallery with hover zoom (scale 1.25x)
+✅ Variant selector with stock management
+✅ Quantity input with ceiling enforcement
+✅ Add-to-cart button (sticky + inline)
+✅ Sticky cart bar (all screen sizes)
+✅ Full test coverage for all components
+
+**המשך מ:** UX15 COMPLETE with full implementation and test coverage. All requirements met:
+- Code edits: Gallery zoom, sticky cart, variant/quantity components
+- Test coverage: 35 comprehensive tests (all passing)
+- Quality gates: All green (type-check, lint, build, tests)
+- Bug fixes: Sticky cart button text matching
 - Ready for next UX goal or feature work.
 
 ---
