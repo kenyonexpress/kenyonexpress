@@ -1,4 +1,56 @@
-RESUME FROM: Next goal in NEXT-GOALS.md (after UX17, which is skipped per autonomous rules)
+RESUME FROM: Next goal in NEXT-GOALS.md (after UX24, which is VERIFIED COMPLETE)
+
+---
+
+## ✅ VERIFIED: UX24 Register Modal Multi-Step (2026-10-19)
+
+**Status**: COMPLETE & VERIFIED ✅
+
+**Work Done**:
+- Verified RegisterPanel with 4-step stepper already fully implemented
+- Verified LoginDialog integration with mode switching
+- Verified all E2E tests passing (10/10 in chromium + mobile-chrome)
+- Fixed CSP shell script hash for Turbopack chunk loader
+- All gates passing: type-check ✅, lint ✅, build ✅
+
+**Components Verified**:
+1. **RegisterPanel** (src/components/auth/RegisterPanel.tsx):
+   - Step 1: פרטים (name, email, password) - client-side validation, no request
+   - Step 2: טלפון ותנאים (phone, terms checkbox) - both required, terms via TERMS_ACCEPT_FIELD
+   - Step 3: אימות הטלפון (6-digit OTP) - skipped if no SMS available
+   - Step 4: ברוכים הבאים (welcome) - animated success with confetti
+
+2. **LoginDialog** (src/components/auth/LoginDialog.tsx):
+   - Mode switching between 'login' and 'signup' in place
+   - Focus management on mode change
+   - RegisterPanel called with variant="dialog", onLogin, onDone
+
+3. **Animations** (src/styles/login-dialog.css):
+   - Ring draw animation (stroke-dashoffset)
+   - Check mark animation (follow ring)
+   - Confetti speck animation (lift & fade)
+   - prefers-reduced-motion support
+
+4. **Server-Side** (server/actions/register.ts, server/auth/register-core.ts):
+   - registerAccount action with field-specific error routing
+   - Terms acceptance recording with versions (1.1 / 2.1)
+   - Phone verification with email/SMS options
+
+**Test Results**:
+- ✅ e2e/register-dialog.spec.ts: 10/10 passing
+  - Dialog switching without navigation ✓
+  - Client-side validation on step 1 ✓
+  - Terms requirement before submit ✓
+  - Phone control accessibility ✓
+  - Mobile + desktop layouts ✓
+- ✅ Unit tests: RegisterPanel.test.tsx, terms-acceptance.test.ts, register-steps.test.ts
+- ✅ pnpm type-check: clean
+- ✅ pnpm lint: clean (2838 files)
+- ✅ pnpm build: green (286 shells, CSP gate clean)
+
+**Fix Applied**:
+- Added sha256-qZ6GFFr/8XY7pYGHpRiUovm6sHFnSsCRM39Xta2cMcs to REACT_STREAMING_SCRIPT_HASHES
+- CSP shell gate now reports "clean" for all 286 prerendered shells
 
 ---
 
