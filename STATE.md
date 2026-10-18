@@ -26,7 +26,9 @@
 - ✅ `pnpm type-check`: CLEAN (0 errors)
 - ✅ `pnpm lint`: CLEAN (2849 files checked, no UX31 violations)
 - ✅ `pnpm test src/components/motion/ src/lib/motion/`: 29/29 PASSED
+- ✅ `pnpm build`: SUCCESS (304/304 pages compiled, CSP gate clean)
 - ✅ Token gate allowlist updated for animation shadow values
+- ✅ CSP shell script hashes registered (Turbopack chunk loader sha256-GTUzPFak8FpFFOg2vwjnFoZG8rNjgba0Q0n3JegY8hY=)
 - ✅ Biome formatting applied and verified
 
 **Animation Specifications**:
