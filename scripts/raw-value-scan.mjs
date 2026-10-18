@@ -82,6 +82,10 @@ export const COLOUR_ALLOWLIST = new Set([
   'src/lib/orders/receipt-pdf.ts',
   'src/components/shared/GoogleLogo.tsx',
   'src/app/global-error.tsx',
+  // Framer Motion animation components use rgba shadows in transition values
+  // (UX31). These are not rebrandable site colours but animation effects.
+  'src/components/motion/AnimatedProductCard.tsx',
+  'src/components/motion/AnimatedCouponCard.tsx',
 ])
 
 /**
