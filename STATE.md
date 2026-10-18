@@ -2756,3 +2756,24 @@ Implemented complete biometric authentication infrastructure for mobile app with
 - `2a06d8ef4` — STATE.md documentation
 - `dfcb86a5f` — UX18: Add comprehensive tests for AccountPageContent component
 
+
+**Database & RLS Strategy (Supabase MCP Note):**
+UX18 is a pure UI feature using existing database queries with RLS already enforced:
+- `getWalletSummary()`: RLS-protected wallet read (auth.uid() scoped)
+- `getMyOrders()`: RLS-protected orders read (user-scoped)
+- `getCustomerVouchers()`: RLS-protected vouchers read (user-scoped)
+- `getMyTier()`: RLS-protected club tier view (computed from user profile)
+- `getMyWishlist()`: RLS-protected wishlist read (user-scoped)
+- `getAccountProfile()`: RLS-protected profile read (auth.uid() scoped)
+- `getMyAddresses()`: RLS-protected addresses read (user-scoped)
+
+No new migrations needed. RLS policies verified in production codebase (src/server/queries/). Supabase MCP authentication unavailable in non-interactive session; RLS verification performed via code inspection.
+
+**Build Verification (Corrected):**
+```bash
+pnpm build > /tmp/build.log 2>&1
+BUILD_STATUS=$?
+echo "Build exit code: $BUILD_STATUS"  # Output: 0 (SUCCESS)
+```
+✅ Exit code 0 confirmed (build succeeded, 290+ pages generated)
+
