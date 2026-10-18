@@ -4,6 +4,7 @@ import { writeAuditLog } from '@/lib/admin/audit'
 import { catalogueIlsToAgorot, scaleCatalogueIls } from '@/lib/admin/bulk-price'
 import { canSeeMoney } from '@/lib/admin/permissions'
 import { productSchema as schema, variantSchema } from '@/lib/admin/product-form-schema'
+import { parseLogisticsFields } from '@/lib/admin/product-logistics-fields'
 import { variantIdsToRemove } from '@/lib/admin/product-variants'
 import { type AdminSessionInfo, requireSection } from '@/lib/admin/rbac'
 import { applyUploaderPolicy } from '@/lib/admin/uploader-policy'
@@ -106,6 +107,18 @@ async function runUpsertProduct(
     longitude: formData.get('longitude'),
   })
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'נתונים לא תקינים' }
+
+  // Migrations 185/187/278: only the keys this form carries (see the module).
+  const logistics = parseLogisticsFields(formData)
+  if (!logistics.ok) return { error: logistics.error }
+  const { shipping_price_agorot: shippingAgorot, ...logisticsCopy } = logistics.fields
+  // The shipping price is money: a role that cannot see pricing cannot set it.
+  const logisticsWrite: Record<string, unknown> = {
+    ...logisticsCopy,
+    ...(shippingAgorot !== undefined && !hidePricing
+      ? { shipping_price_agorot: shippingAgorot }
+      : {}),
+  }
 
   const supabase = await createClient()
   const {
@@ -324,6 +337,7 @@ async function runUpsertProduct(
         .from('products')
         .update({
           ...writeFields,
+          ...logisticsWrite,
           ...moneyWrite,
           ...extra,
           images,
@@ -347,6 +361,7 @@ async function runUpsertProduct(
         .from('products')
         .insert({
           ...writeFields,
+          ...logisticsWrite,
           ...moneyWrite,
           ...extra,
           images,

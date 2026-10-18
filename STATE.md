@@ -6,7 +6,7 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 ## rc5 run (FINAL-CLOSEOUT-v2-rc5, 2026-10-18)
 
-המשך מ: F06 CSV bulk import
+המשך מ: F07 supplier 1 ILS card verification
 
 Worktree `/Users/ofir/kenyonexpress-web/ke-rc5` on local branch `work/rc5`, pushed to
 `origin closeout/v1-final`. The Haiku refill loop was committing into the main checkout on
@@ -19,6 +19,7 @@ inherited from autopilot commits. Fixed under F15.
 | Item | Status | Note |
 |---|---|---|
 | F01 migrations | DONE | 185, 186, 187, 278 applied via MCP apply_migration, docs/MIGRATIONS-APPLIED.md |
+| F06 CSV import | DONE | new columns + lat/lng and payout_cadence_days aliases, per-row validation, dry-run preview then commit, docs/CSV-TEMPLATE.csv |
 | F05 cancel+refund | DONE | /account/orders/[id]/cancel + done page, 6-line email, per-product window (185), /account/notifications toggle -> user_consents (280 applied) |
 | F04 city default | DONE | 279 applied: 66 physical rows -> כל הארץ; /admin/products/missing-location sets a real city |
 | F03 mobile gate 380 | BLOCKED | spec layout shipped; gate 38.69 -> 39.51 -> 37.44% after two passes, target 11 |

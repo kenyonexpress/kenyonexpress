@@ -1,3 +1,5 @@
+import { cadenceFromDays, parseLogisticsFields } from './product-logistics-fields'
+
 /**
  * CSV bulk import for the admin catalogue.
  *
@@ -28,7 +30,21 @@ export const PRODUCT_CSV_COLUMNS = [
   'description_he',
   'brand',
   'requires_shipping',
+  // rc5 F06: migrations 185, 187, 278 and the live geo columns.
+  'cancellation_window_days',
+  'payout_cadence',
+  'payout_cadence_days',
+  'shipping_price_agorot',
+  'city',
+  'full_address',
+  'lat',
+  'lng',
+  'latitude',
+  'longitude',
 ] as const
+
+/** CSV spellings stored under another form field name. */
+const COLUMN_ALIASES: Record<string, string> = { lat: 'latitude', lng: 'longitude' }
 
 export type ProductCsvColumn = (typeof PRODUCT_CSV_COLUMNS)[number]
 
@@ -98,16 +114,75 @@ export function mapCsvToForms(csv: ParsedCsv): CsvMapResult {
   const rows = csv.rows.map((cells, index): CsvRowResult => {
     const line = index + 2
     const form = new FormData()
+    let cadenceError: string | null = null
     csv.header.forEach((name, col) => {
       if (!known.has(name)) return
       const value = (cells[col] ?? '').trim()
-      if (value !== '') form.set(name, value)
+      if (value === '') return
+      if (name === 'payout_cadence_days') {
+        const cadence = cadenceFromDays(value)
+        if (cadence) form.set('payout_cadence', cadence)
+        else cadenceError = 'payout_cadence_days חייב להיות 7, 14 או 30'
+        return
+      }
+      form.set(COLUMN_ALIASES[name] ?? name, value)
     })
     form.set('status', 'draft')
     const bad = (['slug', 'name_he', 'type', 'kenyon_price'] as const).find((k) => !form.get(k))
     if (bad) return { ok: false, line, error: `שורה ${line}: חסר ${bad}` }
+    const invalid = cadenceError ?? validateRow(form)
+    if (invalid) return { ok: false, line, error: `שורה ${line}: ${invalid}` }
     return { ok: true, line, form }
   })
 
   return { ok: true, rows, unknownColumns }
+}
+
+/**
+ * Checks a mapped row before anything is written, so the dry-run preview shows
+ * every problem and a commit never half-imports a file on a typo. The product
+ * schema re-checks on write; this is the early, per-row answer.
+ */
+export function validateRow(form: FormData): string | null {
+  const logistics = parseLogisticsFields(form)
+  if (!logistics.ok) return logistics.error
+
+  const lat = form.get('latitude')
+  const lng = form.get('longitude')
+  if ((lat == null) !== (lng == null)) return 'יש להזין lat ו-lng יחד'
+  if (lat != null && lng != null) {
+    const la = Number(lat)
+    const lo = Number(lng)
+    if (!Number.isFinite(la) || la < -90 || la > 90) return 'lat לא תקין'
+    if (!Number.isFinite(lo) || lo < -180 || lo > 180) return 'lng לא תקין'
+  }
+  const city = form.get('city')
+  if (typeof city === 'string' && city.length > 60) return 'שם עיר עד 60 תווים'
+  const percent = form.get('platform_percent')
+  if (percent != null) {
+    const p = Number(percent)
+    if (!Number.isFinite(p) || p < 0 || p > 100) return 'platform_percent בין 0 ל-100'
+  }
+  return null
+}
+
+/** The fields the dry-run preview shows for a row. */
+export function previewRow(form: FormData): Record<string, string> {
+  const pick = [
+    'slug',
+    'name_he',
+    'type',
+    'kenyon_price',
+    'platform_percent',
+    'city',
+    'shipping_price_agorot',
+    'cancellation_window_days',
+    'payout_cadence',
+  ]
+  const out: Record<string, string> = {}
+  for (const key of pick) {
+    const v = form.get(key)
+    if (typeof v === 'string') out[key] = v
+  }
+  return out
 }

@@ -1,7 +1,7 @@
 'use server'
 
 import { writeAuditLog } from '@/lib/admin/audit'
-import { mapCsvToForms, parseCsv } from '@/lib/admin/product-csv'
+import { mapCsvToForms, parseCsv, previewRow } from '@/lib/admin/product-csv'
 import { requireAdminSession } from '@/lib/admin/rbac'
 import { withActionContext } from '@/lib/observability/action-context'
 import { upsertProduct } from './products'
@@ -11,6 +11,9 @@ export type ProductImportState = {
   imported?: number
   failures?: { line: number; error: string }[]
   unknownColumns?: string[]
+  /** Dry run: what would be imported, nothing written. */
+  preview?: { line: number; fields: Record<string, string> }[]
+  dryRun?: boolean
 } | null
 
 /**
@@ -36,6 +39,19 @@ async function runImport(formData: FormData): Promise<ProductImportState> {
 
   const mapped = mapCsvToForms(parseCsv(await file.text()))
   if (!mapped.ok) return { error: mapped.error }
+
+  // DRY RUN FIRST. The form posts mode=preview, shows every row and every
+  // problem, and only a second submit with mode=commit writes anything.
+  if (formData.get('mode') !== 'commit') {
+    return {
+      dryRun: true,
+      unknownColumns: mapped.unknownColumns,
+      failures: mapped.rows.flatMap((r) => (r.ok ? [] : [{ line: r.line, error: r.error }])),
+      preview: mapped.rows.flatMap((r) =>
+        r.ok ? [{ line: r.line, fields: previewRow(r.form) }] : [],
+      ),
+    }
+  }
 
   const failures: { line: number; error: string }[] = []
   let imported = 0
