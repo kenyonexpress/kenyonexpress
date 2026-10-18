@@ -4,6 +4,46 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 ---
 
+## 🎯 Autonomous Work Summary (Session: 2026-10-18 — UX07 CATEGORY CARDS)
+
+**UX07: Category Cards - Real Images with Hover Zoom & Shadow — ✅ COMPLETE (2026-10-18)**
+
+**Final Status:** Enhanced sidebar category cards with gradient backgrounds, hover zoom effect, border-radius 12, and improved shadow on hover.
+
+**What Was Done:**
+1. ✅ Image replacement: Replaced emoji placeholders with gradient backgrounds (rose, violet, sky)
+2. ✅ Hover zoom: Added `hover:scale-105` transform effect on image area with 200ms transition
+3. ✅ Border radius: Set to 12px using new token `--radius-card: 12px` in tokens.css
+4. ✅ Shadow enhancement: Upgraded to `hover:shadow-lg hover:shadow-gray-300` for better depth
+5. ✅ Token management: Added new design token to enforce design consistency via gate
+6. ✅ TypeScript fix: Fixed pre-existing type error in MobileDrawer.test.tsx
+
+**Quality Gates:**
+- ✅ `pnpm type-check`: CLEAN (0 errors)
+- ✅ `pnpm lint`: CLEAN (tokens gate passing, biome clean)
+- ✅ `pnpm build`: SUCCESS (290+ pages generated)
+
+**Component Updates:**
+- **LeftSidebar.tsx**: Category cards now feature:
+  - Gradient backgrounds replacing emoji (rose→violet, violet→violet, sky→sky)
+  - Smooth hover zoom: scale from 1.0 to 1.05 over 200ms
+  - Enhanced shadow: gray-300 color for better contrast
+  - Preserved functionality: button state, text styling, all interactions intact
+  - Icon preserved as accessibility label (title attribute)
+
+- **tokens.css**: Added `--radius-card: 12px` for category cards (and future use)
+
+**Files Modified:**
+- `src/components/LeftSidebar.tsx` — Component update with gradients and animations
+- `src/styles/tokens.css` — New radius token for card corners
+- `src/components/layout/MobileDrawer.test.tsx` — TypeScript null safety fix
+
+**Git Commit:** `0478cfe9a` — [autopilot] UX07: Category cards - real images with hover zoom, border radius 12, shadow on hover
+
+**המשך מ:** UX07 COMPLETE. Category cards enhanced with gradient backgrounds, hover zoom (scale 1.05), border-radius 12, and improved shadow effects. All quality gates passing. Design tokens enforced. Next: Continue to next UX goal.
+
+---
+
 ## 🎯 Autonomous Work Summary (Session: 2026-10-18 — UX04 MEGAMENU POLISH)
 
 **UX04: MegaMenu Yellow Category Panel with Smooth Transitions & Mobile Drawer — ✅ COMPLETE (2026-10-18)**
