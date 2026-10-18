@@ -2650,3 +2650,89 @@ Implemented complete biometric authentication infrastructure for mobile app with
 - Lint errors are pre-existing and outside UX01 scope
 - Goal is partially satisfied (achieved 5.36% improvement but not <1% target)
 
+
+---
+
+## 🎯 Autonomous Work Summary (Session: 2026-10-19 — UX18 USER ACCOUNT PAGE TABS)
+
+**UX18: User account page tabs (orders, wishlist, addresses, settings) with Hebrew labels — ✅ COMPLETE (2026-10-19)**
+
+**Final Status:** Implemented fully functional tabbed interface on the account page with five tabs covering overview, orders, wishlist, addresses, and account settings.
+
+**What Was Done:**
+
+1. ✅ Created AccountPageContent.tsx - Main client component
+   - Manages tab state with useState hook
+   - Five tabs: Overview (סקירה), Orders (ההזמנות שלי), Wishlist (רשימת המשאלות), Addresses (כתובות), Settings (הגדרות)
+   - Renders tab content based on active tab
+   - All tab labels in Hebrew with proper RTL support
+
+2. ✅ Implemented tab navigation UI
+   - Horizontal tab bar with smooth transitions
+   - Active tab styling with yellow highlight (brand primary color)
+   - Hover states with color transitions
+   - Proper ARIA attributes: aria-pressed, aria-current, aria-label
+
+3. ✅ Integrated all account sections
+   - Overview tab: wallet balance, club tier info, last order, coupons, order count
+   - Orders tab: full order history with status badges and item counts
+   - Wishlist tab: saved products with prices and images
+   - Addresses tab: integrated with existing AddressManager component
+   - Settings tab: profile details form, passkey management, security client, sign-out button
+
+4. ✅ Updated main account page (/account)
+   - Fetches all data in parallel: wallet, orders, vouchers, tier, wishlist, profile, addresses
+   - Determines staff status for settings tab
+   - Passes data to AccountPageContent component
+
+5. ✅ Added CSS styling
+   - .account-tabs: container with margin and layout
+   - .account-tabs__header: horizontal scrollable tab bar
+   - .account-tabs__button: individual tab buttons with hover/active states
+   - .account-tabs__content: fade-in animation for smooth transitions
+   - Responsive design for mobile with adjusted padding and font sizes
+
+6. ✅ Created AccountPageTabs.tsx component
+   - Reusable tab navigation component with configurable tabs
+   - Generic TabId type system for type safety
+   - Available for future use in other parts of the application
+
+**Code Quality Gates:**
+- ✅ `pnpm type-check`: CLEAN (0 errors)
+- ✅ `pnpm lint`: CLEAN (all gates passing - biome, tokens, copy, assets)
+- ✅ `pnpm build`: SUCCESS (290+ pages generated)
+
+**Files Created:**
+- ✅ src/components/account/AccountPageContent.tsx (450+ lines) - Main tabbed interface component
+- ✅ src/components/account/AccountPageTabs.tsx (45 lines) - Reusable tab navigation component
+
+**Files Modified:**
+- ✅ src/app/(account)/account/page.tsx - Updated to use new AccountPageContent component
+- ✅ src/styles/account.css - Added tab styling and animations
+
+**Git Commit:**
+- `3f4928ee9` — [autopilot] UX18: User account page tabs with Hebrew labels
+
+**Hebrew Localization:**
+- סקירה (Overview)
+- ההזמנות שלי (My Orders)
+- רשימת המשאלות (My Wishlist)
+- כתובות (Addresses)
+- הגדרות (Settings)
+- טבים בתחום האזור האישי (Account area tabs - aria-label)
+
+**Accessibility Features:**
+- Proper semantic HTML with button elements for tabs
+- aria-pressed attribute indicates active tab
+- aria-current="page" on active tab for screen readers
+- aria-label on nav element for context
+- Full RTL Hebrew support throughout
+
+**Performance:**
+- Client-side tab switching (no network calls for navigation)
+- Server-side data fetching with parallel promises
+- All account data fetched once on page load
+- Smooth CSS fade transitions for tab content
+
+**המשך מ:** UX18 COMPLETE. User account page enhanced with functional tabbed interface featuring orders, wishlist, addresses, and settings tabs, all with Hebrew labels and proper RTL/accessibility support. All quality gates passing: type-check ✓, lint ✓, build ✓. Code ready for production. Committed and pushed to closeout/v1-final branch.
+
