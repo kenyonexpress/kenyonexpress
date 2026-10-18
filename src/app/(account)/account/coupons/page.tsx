@@ -1,3 +1,4 @@
+import CouponListSkeleton from '@/components/account/CouponListSkeleton'
 import {
   COUPON_TONE_CHIP,
   couponMoneyView,
@@ -8,6 +9,7 @@ import {
 } from '@/lib/vouchers/coupon-view'
 import { getCustomerVouchers } from '@/server/queries/vouchers'
 import Link from 'next/link'
+import { Suspense } from 'react'
 
 /**
  * The customer's coupons. One list, and the only one.
@@ -37,61 +39,68 @@ import Link from 'next/link'
 
 export const metadata = { title: 'הקופונים שלי' }
 
-export default async function CouponsPage() {
+async function CouponsContent() {
   const vouchers = await getCustomerVouchers()
 
+  return (
+    <section className="account-card">
+      {vouchers.length === 0 ? (
+        <p className="account-empty">עדיין לא רכשת קופונים.</p>
+      ) : (
+        vouchers.map((voucher) => {
+          const status = couponStatusView(voucher)
+          const money = couponMoneyView(voucher)
+          return (
+            <div className="account-row" key={voucher.id}>
+              <div className="account-row__main">
+                <p className="coupon-card__code" dir="ltr">
+                  {formatCouponCode(voucher.code)}
+                </p>
+                <p className="account-row__title">{voucher.product?.name_he ?? 'קופון'}</p>
+                <p className="account-row__meta">
+                  <span className={`account-chip account-chip--${COUPON_TONE_CHIP[status.tone]}`}>
+                    {status.label}
+                  </span>
+                  {voucher.status === 'redeemed'
+                    ? ` · מומש ב-${formatCouponDate(voucher.redeemed_at)}`
+                    : ` · בתוקף עד ${formatCouponDate(voucher.expires_at)}`}
+                  {voucher.supplier?.name ? ` · ${voucher.supplier.name}` : ''}
+                </p>
+                <p className="account-row__meta">
+                  שולם באתר {formatAgorot(money.paidOnlineAgorot)}
+                  {money.dueAtBusinessAgorot > 0
+                    ? ` · לתשלום בבית העסק ${formatAgorot(money.dueAtBusinessAgorot)}`
+                    : ''}
+                </p>
+                {status.presentable && status.expiringSoon && (
+                  <p className="account-row__meta">
+                    {status.daysLeft === 0
+                      ? 'הקופון פג היום'
+                      : `נותרו ${status.daysLeft} ימים לניצול הקופון`}
+                  </p>
+                )}
+              </div>
+              <div className="account-row__actions">
+                <Link className="account-btn" href={`/coupon/${voucher.id}`}>
+                  {status.presentable ? 'הצגת הקופון ו-QR' : 'פרטי הקופון'}
+                </Link>
+              </div>
+            </div>
+          )
+        })
+      )}
+    </section>
+  )
+}
+
+export default function CouponsPage() {
   return (
     <>
       <h1 className="account-title">הקופונים שלי</h1>
       <p className="account-subtitle">הצגת הקוד או ה-QR בבית העסק. היתרה משולמת שם בזמן הסריקה.</p>
-
-      <section className="account-card">
-        {vouchers.length === 0 ? (
-          <p className="account-empty">עדיין לא רכשת קופונים.</p>
-        ) : (
-          vouchers.map((voucher) => {
-            const status = couponStatusView(voucher)
-            const money = couponMoneyView(voucher)
-            return (
-              <div className="account-row" key={voucher.id}>
-                <div className="account-row__main">
-                  <p className="coupon-card__code" dir="ltr">
-                    {formatCouponCode(voucher.code)}
-                  </p>
-                  <p className="account-row__title">{voucher.product?.name_he ?? 'קופון'}</p>
-                  <p className="account-row__meta">
-                    <span className={`account-chip account-chip--${COUPON_TONE_CHIP[status.tone]}`}>
-                      {status.label}
-                    </span>
-                    {voucher.status === 'redeemed'
-                      ? ` · מומש ב-${formatCouponDate(voucher.redeemed_at)}`
-                      : ` · בתוקף עד ${formatCouponDate(voucher.expires_at)}`}
-                    {voucher.supplier?.name ? ` · ${voucher.supplier.name}` : ''}
-                  </p>
-                  <p className="account-row__meta">
-                    שולם באתר {formatAgorot(money.paidOnlineAgorot)}
-                    {money.dueAtBusinessAgorot > 0
-                      ? ` · לתשלום בבית העסק ${formatAgorot(money.dueAtBusinessAgorot)}`
-                      : ''}
-                  </p>
-                  {status.presentable && status.expiringSoon && (
-                    <p className="account-row__meta">
-                      {status.daysLeft === 0
-                        ? 'הקופון פג היום'
-                        : `נותרו ${status.daysLeft} ימים לניצול הקופון`}
-                    </p>
-                  )}
-                </div>
-                <div className="account-row__actions">
-                  <Link className="account-btn" href={`/coupon/${voucher.id}`}>
-                    {status.presentable ? 'הצגת הקופון ו-QR' : 'פרטי הקופון'}
-                  </Link>
-                </div>
-              </div>
-            )
-          })
-        )}
-      </section>
+      <Suspense fallback={<CouponListSkeleton count={3} />}>
+        <CouponsContent />
+      </Suspense>
     </>
   )
 }

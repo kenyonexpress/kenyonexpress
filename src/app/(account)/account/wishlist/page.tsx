@@ -1,15 +1,16 @@
+import { WishlistGridSkeleton } from '@/components/account/WishlistGridSkeleton'
 import { getMyWishlist } from '@/server/queries/wishlist'
 import Link from 'next/link'
+import { Suspense } from 'react'
 import WishlistPageClient from './wishlist-client'
 
 export const metadata = { title: 'רשימת המשאלות שלי' }
 
-export default async function WishlistPage() {
+async function WishlistContent() {
   const entries = await getMyWishlist()
 
   return (
     <>
-      <h1 className="account-title">רשימת המשאלות שלי</h1>
       {entries.length === 0 ? (
         <p className="text-muted">
           עוד לא שמרת מוצרים. לחיצה על הלב בעמוד מוצר שומרת אותו כאן.{' '}
@@ -20,6 +21,17 @@ export default async function WishlistPage() {
       ) : (
         <WishlistPageClient initialEntries={entries} />
       )}
+    </>
+  )
+}
+
+export default function WishlistPage() {
+  return (
+    <>
+      <h1 className="account-title">רשימת המשאלות שלי</h1>
+      <Suspense fallback={<WishlistGridSkeleton count={4} />}>
+        <WishlistContent />
+      </Suspense>
     </>
   )
 }
