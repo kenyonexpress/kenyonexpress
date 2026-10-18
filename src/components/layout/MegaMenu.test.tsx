@@ -103,4 +103,76 @@ describe('MegaMenu', () => {
     expect(button).toHaveAttribute('aria-expanded', 'false')
     expect(button).toHaveAttribute('aria-haspopup', 'true')
   })
+
+  it('applies smooth transition animations to menu panel', async () => {
+    render(<MegaMenu />)
+    const button = screen.getByRole('button', { name: /דילים חמים/ })
+
+    fireEvent.click(button)
+    await waitFor(() => {
+      const panel = screen.getByRole('menu')
+      expect(panel).toHaveClass('animate-in', 'fade-in', 'slide-in-from-top-2', 'duration-300')
+    })
+  })
+
+  it('applies motion-reduce class for accessibility', async () => {
+    render(<MegaMenu />)
+    const button = screen.getByRole('button', { name: /דילים חמים/ })
+
+    fireEvent.click(button)
+    await waitFor(() => {
+      const panel = screen.getByRole('menu')
+      expect(panel).toHaveClass('motion-reduce:animate-none')
+    })
+  })
+
+  it('applies smooth transitions to button hover states', () => {
+    render(<MegaMenu />)
+    const button = screen.getByRole('button', { name: /דילים חמים/ })
+
+    expect(button).toHaveClass('transition-all', 'duration-200')
+  })
+
+  it('applies animations to subcategories on menu open', async () => {
+    render(<MegaMenu />)
+    const button = screen.getByRole('button', { name: /מסעדות ובתי קפה/ })
+
+    fireEvent.click(button)
+    const menu = await screen.findByRole('menu', {}, { timeout: 200 })
+    const subcategoryList = menu.querySelector('ul')
+
+    expect(subcategoryList).toHaveClass(
+      'animate-in',
+      'fade-in',
+      'slide-in-from-left-2',
+      'duration-300',
+    )
+  })
+
+  it('applies animations to promo banner', async () => {
+    render(<MegaMenu />)
+    const button = screen.getByRole('button', { name: /דילים חמים/ })
+
+    fireEvent.click(button)
+    const panel = await screen.findByRole('menu')
+    const promoBanner = panel.querySelector('[role="complementary"]')
+
+    expect(promoBanner).toHaveClass(
+      'animate-in',
+      'fade-in',
+      'slide-in-from-right-2',
+      'duration-300',
+    )
+  })
+
+  it('button shows active state styling when menu is open', async () => {
+    render(<MegaMenu />)
+    const button = screen.getByRole('button', { name: /דילים חמים/ })
+
+    fireEvent.click(button)
+    await waitFor(() => {
+      expect(button).toHaveAttribute('aria-expanded', 'true')
+      expect(button).toHaveClass('bg-[color:var(--electro-surface-hover)]', 'shadow-sm')
+    })
+  })
 })
