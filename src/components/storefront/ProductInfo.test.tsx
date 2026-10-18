@@ -134,6 +134,33 @@ describe('ProductInfo - Variant Selector & Quantity Input', () => {
     expect(greenButton).toBeDisabled()
   })
 
+  it('auto-selects single variant on render', () => {
+    const singleVariant = {
+      ...defaultProps,
+      variants: [
+        { id: 'v1', name_he: 'Red', price: null, price_modifier: 0, stock_quantity: 10, sku: null },
+      ],
+    }
+    render(<ProductInfo {...singleVariant} />)
+    const button = screen.getByRole('button', { name: 'Red' })
+    expect(button).toHaveClass('bg-brand-dark')
+  })
+
+  it('allows variant selection by clicking button', () => {
+    const variantsProps = {
+      ...defaultProps,
+      variants: [
+        { id: 'v1', name_he: 'Red', price: null, price_modifier: 0, stock_quantity: 10, sku: null },
+        { id: 'v2', name_he: 'Blue', price: null, price_modifier: 0, stock_quantity: 5, sku: null },
+      ],
+    }
+    render(<ProductInfo {...variantsProps} />)
+    const blueButton = screen.getByRole('button', { name: 'Blue' })
+
+    fireEvent.click(blueButton)
+    expect(blueButton).toHaveClass('bg-brand-dark')
+  })
+
   it('adjusts quantity ceiling when variant stock changes', () => {
     const variantsProps = {
       ...defaultProps,
