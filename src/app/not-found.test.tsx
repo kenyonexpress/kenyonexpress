@@ -16,13 +16,13 @@ vi.mock('@/lib/category-page', () => ({
 
 describe('NotFound Page', () => {
   it('renders 404 heading', async () => {
-    const { container } = render(await NotFound())
+    render(await NotFound())
     const heading = screen.getByRole('heading', { name: /הדף שחיפשתם לא נמצא/ })
     expect(heading).toBeInTheDocument()
   })
 
   it('displays 404 text', async () => {
-    const { container } = render(await NotFound())
+    render(await NotFound())
     const text = screen.getByText(/404/, { selector: '[aria-hidden="true"]' })
     expect(text).toBeInTheDocument()
   })

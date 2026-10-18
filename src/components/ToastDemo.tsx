@@ -58,7 +58,7 @@ export function ToastDemo() {
   return (
     <div className="space-y-4 p-6">
       <div className="rounded-lg border border-border bg-background p-6">
-        <h2 className="mb-4 text-lg font-semibold">Toast Notification Demo</h2>
+        <h2 className="mb-4 text-lg font-semibold">הדגמת התראות Toast</h2>
         <p className="mb-6 text-sm text-muted-foreground">
           Click any button below to see the toast notification in action.
         </p>
