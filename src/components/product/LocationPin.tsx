@@ -1,4 +1,5 @@
 import { EcMapPointer } from '@/components/icons/electro-icons'
+import { isNationwide } from '@/lib/geo/nationwide'
 import { type PinLocation, locationPinHref } from '@/lib/waze-pin'
 
 /**
@@ -16,7 +17,9 @@ export default function LocationPin({
   className?: string
 }) {
   const city = location.city?.trim()
-  if (!city) return null
+  // Nationwide is not a place to navigate to, and the location line above the
+  // title already says it (migration 279).
+  if (!city || isNationwide(city)) return null
   const href = locationPinHref(location)
   const inner = (
     <>

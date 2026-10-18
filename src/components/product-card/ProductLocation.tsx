@@ -1,7 +1,7 @@
 import LocationPin from '@/components/icons/LocationPin'
+import { NATIONWIDE_LABEL } from '@/lib/geo/nationwide'
 
-/** What a product with no city shows: the deal is valid anywhere. */
-export const NATIONWIDE_LABEL = 'כל הארץ'
+export { NATIONWIDE_LABEL }
 
 /** The label for a product's location: its city, or nationwide when unset. */
 export function productLocationLabel(city: string | null | undefined): string {

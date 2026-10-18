@@ -6,7 +6,7 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 ## rc5 run (FINAL-CLOSEOUT-v2-rc5, 2026-10-18)
 
-המשך מ: F04 seed city defaults + missing-location admin
+המשך מ: F05 cancel+refund
 
 Worktree `/Users/ofir/kenyonexpress-web/ke-rc5` on local branch `work/rc5`, pushed to
 `origin closeout/v1-final`. The Haiku refill loop was committing into the main checkout on
@@ -19,6 +19,7 @@ inherited from autopilot commits. Fixed under F15.
 | Item | Status | Note |
 |---|---|---|
 | F01 migrations | DONE | 185, 186, 187, 278 applied via MCP apply_migration, docs/MIGRATIONS-APPLIED.md |
+| F04 city default | DONE | 279 applied: 66 physical rows -> כל הארץ; /admin/products/missing-location sets a real city |
 | F03 mobile gate 380 | BLOCKED | spec layout shipped; gate 38.69 -> 39.51 -> 37.44% after two passes, target 11 |
 | F02 location label | DONE | pin + city (or כל הארץ) above the title on all four card renderers and the PDP eyebrow |
 

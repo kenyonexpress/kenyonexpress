@@ -29,6 +29,7 @@ const UPLOADER_WRITABLE = new Set([
   'categories.ts',
   'images.ts',
   'products.ts',
+  'product-location.ts', // a product's city and street address: catalogue copy
   'reviews.ts',
   'upload.ts',
   'vouchers.ts', // its catalog half; the redeem half gates on 'orders'

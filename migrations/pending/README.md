@@ -15,6 +15,15 @@ migration, so the apply order across the two branches is undefined.
 Until the owner picks a mainline branch, **apply nothing from either side.**
 The full measured table is in `docs/MIGRATION-NUMBER-COLLISIONS.md`.
 
+## 2026-10-18: 279 APPLIED - nationwide city default (rc5 F04)
+
+`279_products_nationwide_city_default.sql` is a data-only update: 66 physical
+products with `city` NULL now read `כל הארץ`; 16 coupons keep NULL. Applied
+through MCP `apply_migration` (ledger name
+`products_nationwide_city_default_279`) after a rolled-back rehearsal that
+touched exactly 66 rows. The admin page `/admin/products/missing-location`
+lists those rows for a real city.
+
 ## 2026-10-18: 185, 186, 187 and 278 APPLIED to production (rc5 F01)
 
 Applied one at a time through the Supabase MCP `apply_migration` tool, after a
