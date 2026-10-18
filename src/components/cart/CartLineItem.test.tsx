@@ -22,6 +22,9 @@ const mockItem: CartViewItem = {
   type: 'physical',
   max_quantity: 10,
   platform_percent_bp: 2000,
+  platform_percent_snapshot: 20,
+  coupon_price_unit: null,
+  unavailable_reason: null,
 }
 
 const mockCart: CartView = {
