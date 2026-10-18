@@ -4,6 +4,86 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 ---
 
+## 🎯 Autonomous Work Summary (Session: 2026-10-19 — UX19 ORDER HISTORY EXPANDABLE CARDS)
+
+**UX19: Order history page order cards status badges expand details reorder button — ✅ COMPLETE (2026-10-19)**
+
+**Final Status:** Order history page enhanced with expandable order cards, status badges, and quick reorder functionality.
+
+**What Was Done:**
+
+1. ✅ Created OrderCard client component (src/components/account/OrderCard.tsx)
+   - Expandable/collapsible order rows showing inline details
+   - Smooth expand/collapse animations with chevron indicator
+   - Status badges with proper styling (ok/warn/dead tones)
+   - Reorder button in expanded state
+   - Success/error messages for user feedback
+   - Full Hebrew RTL and accessibility support
+
+2. ✅ Implemented reorder server action (src/server/actions/reorder.ts)
+   - Fetches order details and adds all items to cart
+   - Graceful error handling for deleted/unavailable products
+   - Returns success/failure counts with error details
+   - Supports partial reorders (some items may fail)
+   - Integrated with existing addToCart action
+
+3. ✅ Updated orders list page (src/app/(account)/account/orders/page.tsx)
+   - Replaced static row rendering with OrderCard component
+   - Maintains existing layout and styling
+   - Preserves all order information display
+
+4. ✅ Added CSS styling (src/styles/account.css)
+   - `.account-row--expandable`: Expandable row layout with chevron
+   - `.account-row__expand-btn`: Button styling with rotation animation
+   - `.account-row__expanded`: Expanded content with slide-down animation
+   - `.account-expanded__actions`: Action button container
+   - `.account-expanded__message`: Success/error message styling
+   - Responsive design for mobile/tablet/desktop
+
+5. ✅ Comprehensive test coverage
+   - OrderCard.test.tsx: 14 tests for component functionality
+     * Render verification (price, status, date, voucher indicator)
+     * Expand/collapse behavior
+     * Reorder button interaction
+     * Success/error message display
+     * Loading state handling
+   - reorder.test.ts: 5 tests for server action
+     * Order not found handling
+     * Multi-item reorder success
+     * Missing product ID handling
+     * Partial failure scenarios
+     * Error message limiting
+
+**Code Quality Gates:**
+- ✅ `pnpm type-check`: CLEAN (0 errors)
+- ✅ `pnpm lint`: CLEAN (6197 files checked, 0 fixes applied)
+- ✅ `pnpm build`: SUCCESS (exit code 0)
+- ✅ Tests: 19 tests passing (14 OrderCard + 5 reorder action)
+
+**Files Modified/Created:**
+- ✅ src/components/account/OrderCard.tsx (NEW) — Expandable order card component
+- ✅ src/components/account/OrderCard.test.tsx (NEW) — Component tests (14 tests)
+- ✅ src/server/actions/reorder.ts (NEW) — Reorder server action
+- ✅ src/server/actions/reorder.test.ts (NEW) — Action tests (5 tests)
+- ✅ src/app/(account)/account/orders/page.tsx (MODIFIED) — Integrated OrderCard
+- ✅ src/styles/account.css (MODIFIED) — Added expandable styling and animations
+
+**Git Commit:**
+- `bca614aec` — [autopilot] UX19: Order history expandable cards with status badges and reorder button
+
+**המשך מ:** UX19 COMPLETE. Order history page enhanced with:
+- ✅ Expandable order cards with smooth animations
+- ✅ Status badges with proper visual hierarchy
+- ✅ Quick reorder functionality (adds all items to cart)
+- ✅ Success/error feedback for user actions
+- ✅ Full Hebrew RTL and accessibility support
+- ✅ Comprehensive test coverage (19 tests)
+- ✅ All quality gates passing (type-check ✓, lint ✓, build ✓)
+
+Ready for next goal in queue.
+
+---
+
 ## 🎯 Autonomous Work Summary (Session: 2026-10-18 — UX16 SHOPPING CART PAGE POLISH)
 
 **UX16: Shopping cart page item cards quantity controls remove animation totals breakdown — ✅ COMPLETE (2026-10-18)**
