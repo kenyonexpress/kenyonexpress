@@ -90,12 +90,21 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 ✅ Sticky cart bar (all screen sizes)
 ✅ Full test coverage for all components
 
-**המשך מ:** UX15 COMPLETE with full implementation and test coverage. All requirements met:
-- Code edits: Gallery zoom, sticky cart, variant/quantity components
-- Test coverage: 35 comprehensive tests (all passing)
-- Quality gates: All green (type-check, lint, build, tests)
-- Bug fixes: Sticky cart button text matching
-- Ready for next UX goal or feature work.
+**המשך מ:** UX15 COMPLETE (2026-10-18 23:00 UTC). Final commit: bf096ddac [autopilot] UX15 COMPLETE
+
+**Completion Summary:**
+- ✅ ProductGallery: 11 tests (zoom on hover, thumbnail selection, discount badge)
+- ✅ StickyCartBar: 10 tests (responsive positioning, visibility on all screens)
+- ✅ ProductInfo: 16 tests (variant selection, quantity input, add-to-cart)
+- ✅ ProductStickyCartBar: 4 tests (button text matching, click path)
+- ✅ Total: 41 tests PASSING
+- ✅ Build: SUCCESS
+- ✅ Type-check: CLEAN
+- ✅ Lint: CLEAN (6189 files)
+- ✅ Variant selection tests restored with bg-brand-dark assertion
+- ✅ Price rendering tests fixed with regex matcher for currency format
+
+**Next Goal:** Check NEXT-GOALS.md queue or create new work item. Current branch closeout/v1-final is production-ready with all UX requirements met.
 
 ---
 
