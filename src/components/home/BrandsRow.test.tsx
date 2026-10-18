@@ -21,8 +21,9 @@ describe('BrandsRow', () => {
   it('renders brands when provided', () => {
     render(<BrandsRow brands={mockBrands} />)
 
-    expect(screen.getByText('מותג אחד')).toBeInTheDocument()
-    expect(screen.getByText('מותג שניים')).toBeInTheDocument()
+    // Check for aria-label on links (screen reader text)
+    expect(screen.getByLabelText('מותג אחד products')).toBeInTheDocument()
+    expect(screen.getByLabelText('מותג שניים products')).toBeInTheDocument()
   })
 
   it('renders nothing when brands list is empty', () => {
