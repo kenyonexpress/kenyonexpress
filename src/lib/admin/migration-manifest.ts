@@ -458,4 +458,10 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
     state: 'applied',
     hasPreflight: false,
   },
+  {
+    number: '281',
+    file: '281_supplier_card_verification.sql',
+    state: 'applied',
+    hasPreflight: false,
+  },
 ] as const

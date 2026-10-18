@@ -117,6 +117,7 @@ describe('the pending migration inventory', () => {
       '279_products_nationwide_city_default.sql',
       '280_user_consents.sql',
       '281_supplier_card_verification.sql',
+      '282_club_tiers.sql',
     ])
   })
 

@@ -1,8 +1,8 @@
 import { formatIls, orderStatusLabel, orderStatusTone } from '@/lib/account/format'
 import { formatDate } from '@/lib/account/format'
-import { clubStanding, trailingSpend } from '@/lib/club/tiers'
 import { isCouponPresentable } from '@/lib/vouchers/coupon-view'
 import { getWalletSummary } from '@/server/queries/account'
+import { getMyTier } from '@/server/queries/club'
 import { getMyOrders } from '@/server/queries/orders'
 import { getCustomerVouchers } from '@/server/queries/vouchers'
 import Link from 'next/link'
@@ -10,10 +10,11 @@ import Link from 'next/link'
 export const metadata = { title: 'האזור האישי' }
 
 export default async function AccountOverviewPage() {
-  const [wallet, orders, coupons] = await Promise.all([
+  const [wallet, orders, coupons, tier] = await Promise.all([
     getWalletSummary(),
     getMyOrders(),
     getCustomerVouchers(),
+    getMyTier(),
   ])
 
   const lastOrder = orders[0] ?? null
@@ -22,7 +23,6 @@ export default async function AccountOverviewPage() {
   // in the voucher_status enum at all: it was left over from coupon_codes and
   // could only ever be false.
   const activeCoupons = coupons.filter((c) => isCouponPresentable(c))
-  const standing = clubStanding(trailingSpend(orders, new Date()))
 
   return (
     <>
@@ -35,16 +35,25 @@ export default async function AccountOverviewPage() {
         <p className="wallet-balance__note">קרדיט לשימוש באתר בלבד. לא ניתן למשיכה.</p>
       </div>
 
-      <section className="account-card" aria-label="מועדון הלקוחות">
-        <h2 className="account-card__title">מועדון הלקוחות</h2>
-        <p className="account-row__title">דרגה: {standing.tier.labelHe}</p>
-        <p className="account-row__meta">
-          רכישות ב-12 החודשים האחרונים: {formatIls(standing.spendAgorot)}
-          {standing.next
-            ? ` · עוד ${formatIls(standing.toNextAgorot)} לדרגת ${standing.next.labelHe}`
-            : ' · הגעת לדרגה הגבוהה ביותר'}
-        </p>
-      </section>
+      {tier && (
+        <section className="account-card" aria-label="מועדון הלקוחות">
+          <h2 className="account-card__title">מועדון הלקוחות</h2>
+          <p className="account-row__title">דרגה: {tier.tierNameHe}</p>
+          <p className="account-row__meta">
+            רכישות ב-12 החודשים האחרונים: {formatIls(tier.spendAgorot)}
+            {tier.nextTierNameHe
+              ? ` · עוד ${formatIls(tier.toNextAgorot)} לדרגת ${tier.nextTierNameHe}`
+              : ' · הגעת לדרגה הגבוהה ביותר'}
+          </p>
+          {tier.benefits.length > 0 && (
+            <ul className="mt-2 list-disc ps-5">
+              {tier.benefits.map((b) => (
+                <li key={b}>{b}</li>
+              ))}
+            </ul>
+          )}
+        </section>
+      )}
 
       <div className="account-grid">
         <section className="account-card">

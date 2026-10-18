@@ -15,6 +15,13 @@ migration, so the apply order across the two branches is undefined.
 Until the owner picks a mainline branch, **apply nothing from either side.**
 The full measured table is in `docs/MIGRATION-NUMBER-COLLISIONS.md`.
 
+## 2026-10-18: 282 APPLIED - club tiers (rc5 F11)
+
+`282_club_tiers.sql` creates `club_tiers` (seeded bronze 0, silver 50000,
+gold 200000, platinum 500000 agorot; benefits empty) and the security-invoker
+view `v_user_tier`. Rehearsed with a customer's JWT: the view returned that
+customer's row only. Applied through MCP `apply_migration` (`club_tiers_282`).
+
 ## 2026-10-18: 281 APPLIED - supplier card verification (rc5 F07)
 
 `281_supplier_card_verification.sql` creates `supplier_card_verifications`

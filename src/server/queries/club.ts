@@ -1,0 +1,92 @@
+import 'server-only'
+
+import { type Agorot, agorot } from '@/lib/commerce/money'
+import { log } from '@/lib/observability/log'
+import { createClient } from '@/lib/supabase/server'
+
+export interface ClubTierRow {
+  id: number
+  key: string
+  name_he: string
+  min_spend_agorot: number
+  benefits_json: unknown
+  active: boolean
+  sort_order: number
+}
+
+export interface MyTier {
+  tierNameHe: string
+  benefits: string[]
+  spendAgorot: Agorot
+  nextTierNameHe: string | null
+  toNextAgorot: Agorot
+}
+
+function benefitList(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((b): b is string => typeof b === 'string') : []
+}
+
+/**
+ * The signed-in customer's tier, from v_user_tier (migration 282). No row
+ * there means no paid spend yet: the customer sits on the lowest active tier,
+ * read from club_tiers so a renamed tier shows its new name.
+ */
+export async function getMyTier(): Promise<MyTier | null> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return null
+
+  const [{ data: row, error: rowError }, { data: tiers, error: tiersError }] = await Promise.all([
+    supabase
+      .from('v_user_tier' as never)
+      .select('spend_agorot, tier_name_he, tier_benefits_json, next_tier_name_he, to_next_agorot')
+      .eq('user_id', user.id)
+      .maybeSingle(),
+    supabase
+      .from('club_tiers' as never)
+      .select('name_he, min_spend_agorot, benefits_json, sort_order')
+      .order('min_spend_agorot', { ascending: true })
+      .limit(2),
+  ])
+  if (rowError || tiersError) {
+    log.warn('club.tier_read_failed', {
+      reason: rowError?.message ?? tiersError?.message ?? 'unknown',
+    })
+    return null
+  }
+
+  const r = row as {
+    spend_agorot: number
+    tier_name_he: string | null
+    tier_benefits_json: unknown
+    next_tier_name_he: string | null
+    to_next_agorot: number
+  } | null
+  const list = (tiers ?? []) as {
+    name_he: string
+    min_spend_agorot: number
+    benefits_json: unknown
+  }[]
+
+  if (r?.tier_name_he) {
+    return {
+      tierNameHe: r.tier_name_he,
+      benefits: benefitList(r.tier_benefits_json),
+      spendAgorot: agorot(Number(r.spend_agorot)),
+      nextTierNameHe: r.next_tier_name_he,
+      toNextAgorot: agorot(Number(r.to_next_agorot)),
+    }
+  }
+  const lowest = list[0]
+  if (!lowest) return null
+  const next = list[1] ?? null
+  return {
+    tierNameHe: lowest.name_he,
+    benefits: benefitList(lowest.benefits_json),
+    spendAgorot: agorot(0),
+    nextTierNameHe: next?.name_he ?? null,
+    toNextAgorot: agorot(next ? Number(next.min_spend_agorot) : 0),
+  }
+}
