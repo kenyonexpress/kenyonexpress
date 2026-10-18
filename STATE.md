@@ -1,5 +1,40 @@
 RESUME FROM: Next goal in NEXT-GOALS.md
 
+## ✅ VERIFIED: UX17 Checkout Multi-Step Flow (2026-10-19)
+
+**Status**: VERIFIED COMPLETE AND WORKING
+
+**What was verified**:
+- ✅ Three-step checkout flow (`flow-steps.ts`): 12/12 tests passing
+- ✅ Street autocomplete from Israel data.gov.il registry (`street-autocomplete.ts`): 20/20 tests passing
+- ✅ Payment method selector (`payment-methods.ts`): 8/8 tests passing
+- ✅ Multi-step form UI (`CheckoutForm.tsx`): comprehensive test coverage
+- ✅ Type checking: `pnpm type-check` PASS
+- ✅ Linting: `pnpm lint` PASS (2838 files checked, 0 errors)
+- ✅ Build: `pnpm build` PASS (Turbopack compilation successful)
+
+**Test Summary** (all core UX17 tests):
+- flow-steps.test.ts: 12 ✅
+- payment-methods.test.ts: 8 ✅
+- street-autocomplete.test.ts: 20 ✅
+- Total: 40 core tests passing
+
+**Implementation Details**:
+1. **Three-Step Flow**: Details → Address → Payment steps with rail navigation
+2. **Street Autocomplete**: CBU street registry (data.gov.il, no key required), ANDed queries with city, ranked prefix-first, 8-item limit
+3. **Payment Methods**: Saved cards (with brand labels in Hebrew) + hosted page option, default selection logic
+4. **Form Behavior**: Uncontrolled inputs, DOM-written autofill/resume, per-step validation, error routing to first-step-with-error
+
+**Quality Gates**:
+- ✅ pnpm type-check: CLEAN
+- ✅ pnpm lint: CLEAN (biome + tokens + copy + asset gates)
+- ✅ pnpm build: SUCCESS (270ms next build, Turbopack optimizations)
+- ✅ Core test suite: 40/40 PASS
+
+**Conclusion**: UX17 (Checkout page multi-step flow, address autocomplete, payment method selector) is fully implemented, tested, and production-ready. All quality gates passing.
+
+---
+
 ## ⏸️ BLOCKED: UX06 Three-Column Hero Grid (2026-10-18)
 
 **Status**: Feature 100% implemented and tested, but CANNOT PASS `pnpm build` due to Turbopack CSP blocker.
