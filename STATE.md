@@ -55,6 +55,7 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 - ✅ `pnpm type-check`: CLEAN
 - ✅ `pnpm lint`: CLEAN
 - ✅ `pnpm build`: SUCCESS (compiled in ~81s, 290+ pages)
+- ✅ `pnpm test`: **22/22 PASSED** (7 Tabs tests + 15 LoginModal tests)
 - ✅ `git status`: clean after commit
 
 **Files Changed/Created:**
