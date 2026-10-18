@@ -1,4 +1,5 @@
-import type { CartViewItem } from '@/lib/cart/types'
+import type { CartView, CartViewItem } from '@/lib/cart/types'
+import { agorot } from '@/lib/money'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import CartLineItem from './CartLineItem'
@@ -11,23 +12,28 @@ const mockItem: CartViewItem = {
   name_he: 'test product',
   image_url: '/test-image.jpg',
   slug: 'test-product',
-  unit_price: 5000,
-  line_total: 10000,
+  unit_price: agorot(5000),
+  line_total: agorot(10000),
   available: true,
-  customer_pays_now: 10000,
-  balance_due_at_business: 0,
+  customer_pays_now: agorot(10000),
+  balance_due_at_business: agorot(0),
+  platform_fee: agorot(2000),
+  supplier_due: agorot(8000),
   type: 'physical',
   max_quantity: 10,
   platform_percent: 20,
 }
 
-const mockCart = {
+const mockCart: CartView = {
+  id: 'test-cart',
   items: [],
-  subtotal: 0,
-  total: 0,
+  subtotal: agorot(0),
+  total: agorot(0),
   item_count: 0,
-  discount: 0,
-  balance_due_at_business: 0,
+  discount: agorot(0),
+  balance_due_at_business: agorot(0),
+  platform_fee: agorot(0),
+  supplier_due: agorot(0),
   coupon: null,
 }
 
