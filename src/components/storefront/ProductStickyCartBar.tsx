@@ -14,9 +14,12 @@ export default function ProductStickyCartBar({ basePrice }: ProductStickyCartBar
   const handleAddToCart = useCallback(async () => {
     setIsLoading(true)
     try {
-      // Find the add-to-cart button by searching for the Hebrew text "הוסף לעגלה"
+      // Find the add-to-cart button by searching for either button text variant
       const buttons = Array.from(document.querySelectorAll('button'))
-      const addButton = buttons.find((btn) => btn.textContent?.includes('הוסף לעגלה'))
+      const addButton = buttons.find((btn) => {
+        const text = btn.textContent || ''
+        return text.includes('הוסף לסל') || text.includes('הוסף לעגלה')
+      })
       if (addButton) {
         addButton.click()
       }
