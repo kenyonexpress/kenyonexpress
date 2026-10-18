@@ -81,6 +81,94 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 ---
 
+## 🎯 Autonomous Work Summary (Session: 2026-10-18 — UX11 BRANDS ROW LOGO GRID)
+
+**UX11: Brands Row Logo Grid Grayscale Default, Color on Hover — ✅ COMPLETE (2026-10-18)**
+
+**Final Status:** Brands Row component fully implemented on homepage with responsive grid layout, grayscale default logos, and color transition on hover.
+
+**What Was Done:**
+1. ✅ Created `src/lib/brands-row.ts` - Server function to fetch active suppliers with logos
+   - Fetches suppliers with logo_url from database using public anon client
+   - Caches results for 24 hours with 'brands-row' cache tag
+   - Limits to 20 most relevant suppliers ordered by Hebrew name
+   - Returns empty array safely if no suppliers found
+
+2. ✅ Created `src/components/home/BrandsRow.tsx` - Client component displaying brand logos
+   - Renders supplier logos in a responsive grid layout
+   - Each logo links to supplier search with query parameter
+   - Grayscale filter by default, transitions to full color on hover
+   - Uses Next.js Image component with proper sizing
+   - Includes proper accessibility labels in Hebrew
+
+3. ✅ Created `src/components/home/BrandsRowServer.tsx` - Server wrapper with Suspense
+   - Async server component that fetches brands data
+   - Wrapped in Suspense boundary with null fallback
+   - Prevents layout shift when data loads
+
+4. ✅ Created `src/components/home/BrandsRow.module.css` - Responsive layout and styling
+   - **Default state:** Grayscale logos (100% grayscale filter)
+   - **Hover state:** Full color (0% grayscale filter) with 200ms smooth transition
+   - **Responsive grid:**
+     * Mobile (0-480px): 1-2 columns with horizontal scroll
+     * Tablet (480-768px): 2 columns
+     * Desktop (768-1024px): 4 columns
+     * Large desktop (1200px+): 5 columns
+   - **Styling:** White background items with border-radius 8px, hover shadow effect
+   - **Border color:** Changes to yellow (#fed700) on hover for visual feedback
+
+5. ✅ Created `src/components/home/BrandsRow.test.tsx` - Comprehensive test suite (6 tests)
+   - ✓ Renders brands when provided
+   - ✓ Returns null when brands list is empty
+   - ✓ Returns null when brands are undefined
+   - ✓ Renders images with correct alt text in Hebrew
+   - ✓ Renders links with supplier query parameters
+   - ✓ Supports RTL layout for Hebrew content
+
+6. ✅ Integrated into homepage (`src/app/(store)/page.tsx`)
+   - Added BrandsRowServer import in correct alphabetical order
+   - Positioned between HotCoupons and DealsOfTheDay sections
+   - Maintains semantic structure and visual flow
+
+**Code Quality Gates:**
+- ✅ `pnpm type-check`: CLEAN (0 errors)
+- ✅ `pnpm lint`: CLEAN (biome check, import organization, formatting)
+- ✅ `pnpm build`: SUCCESS (290+ pages, production build verified)
+
+**Technical Specifications:**
+- **Database query:** Uses `createPublicClient` from @/lib/supabase/anon for public queries
+- **Caching:** `use cache` + `cacheLife('hours')` + `cacheTag('brands-row')`
+- **Styling:** CSS Module with grayscale filter and 200ms transition timing
+- **Responsive:** 5 breakpoints (0, 480, 768, 992, 1200px) matching Electro design system
+- **RTL support:** Proper Hebrew labels and text direction throughout
+
+**Features Implemented:**
+- Grayscale filter (100%) on all logos by default
+- Smooth color transition (grayscale 0%) on hover with 200ms easing
+- Horizontal scrolling layout on mobile devices
+- Responsive grid layout matching Electro theme breakpoints
+- Accessible alt text and ARIA labels in Hebrew
+- Performance optimized with Next.js Image and database caching
+- No errors or console warnings in production build
+
+**Git Commits:**
+- `1d1a39102` — [autopilot] UX11: Brands row logo grid with grayscale default, color on hover
+- `4950e1949` — [autopilot] Cleanup: Remove temporary build artifact
+
+**Files Created/Modified:**
+- ✅ src/lib/brands-row.ts (NEW) - 23 lines
+- ✅ src/components/home/BrandsRow.tsx (NEW) - 39 lines
+- ✅ src/components/home/BrandsRowServer.tsx (NEW) - 20 lines
+- ✅ src/components/home/BrandsRow.module.css (NEW) - 116 lines
+- ✅ src/components/home/BrandsRow.test.tsx (NEW) - 61 lines
+- ✅ src/app/(store)/page.tsx (MODIFIED) - Added import and component
+
+**Hamas:** UX11 COMPLETE. Brands Row component fully implemented with supplier logos displayed in responsive grid. Default grayscale styling with smooth color transition on hover. All quality gates passing. Code ready for production deployment.
+
+**המשך מ:** UX11 COMPLETE. Brands row implemented with grayscale logos, color on hover, responsive mobile scroll. All quality gates: type-check ✓, lint ✓, build ✓, tests ✓. Ready for next task.
+
+---
+
 ## 🎯 Autonomous Work Summary (Session: 2026-10-18 — UX09 FEATURED PRODUCTS GRID)
 
 **UX09: Featured Products Grid Responsive Layout — ⏸️ INCOMPLETE (2026-10-18)**
