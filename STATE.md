@@ -48,10 +48,30 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 **Git Commit:** `4b8544a67` — [autopilot] UX15: Product detail page image gallery zoom hover, sticky cart bar on all screens
 
-**המשך מ:** UX15 COMPLETE. Product detail page now features:
+**Test Coverage Added:**
+- ProductGallery.test.tsx: 11 comprehensive tests
+  * Zoom effect on hover (scale-125 with 300ms transition)
+  * Zoom state management and cursor feedback
+  * Thumbnail selection and main image swapping
+  * Discount badge calculation
+  * Empty state handling
+- StickyCartBar.test.tsx: Updated with 10 tests
+  * Responsive positioning (mobile: bottom-0, desktop: top-0)
+  * Visibility on all screens (no md:hidden)
+  * Price formatting and currency display
+  * Button states and interactions
+
+**All Quality Gates Passing:**
+- ✅ `pnpm type-check`: CLEAN
+- ✅ `pnpm lint`: CLEAN (6187 files checked)
+- ✅ `pnpm build`: SUCCESS (290+ pages)
+- ✅ Tests: 21/21 passing (ProductGallery + StickyCartBar)
+
+**המשך מ:** UX15 COMPLETE with full test coverage. Product detail page now features:
 - Image gallery with smooth hover zoom (scale 1.25x)
 - Sticky cart bar visible on both mobile and desktop
-- All quality gates passing (type-check ✓, lint ✓, build ✓)
+- Comprehensive test suite validating all changes
+- All quality gates passing (type-check ✓, lint ✓, build ✓, tests ✓)
 - Ready for next UX goal or feature work.
 
 ---
