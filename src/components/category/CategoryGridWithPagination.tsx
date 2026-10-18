@@ -24,8 +24,6 @@ export default function CategoryGridWithPagination({
   params,
   viewMode = '4-col',
 }: Props) {
-  const searchParams = useSearchParams()
-
   return (
     <>
       <ul className={`category-products category-products--${viewMode}`}>
