@@ -1,4 +1,18 @@
-RESUME FROM: Next goal in NEXT-GOALS.md (after UX24, which is VERIFIED COMPLETE)
+RESUME FROM: Next goal in NEXT-GOALS.md (after UX26, which is SKIPPED - test failures)
+
+---
+
+## ⏭️ SKIPPED: UX26 500 Error Page (2026-10-19)
+
+**Decision**: Skipped per CLAUDE.md "goal stuck twice: skip it" rule.
+
+**Reason**: Test suite blockage prevents gate verification
+- **pnpm test result**: 32 failed | 10526 passed (21 test files failed)
+- **Failures**: Pre-existing failures in rate-limit coverage and admin-env allowlist (unrelated to UX26)
+- **Blocker**: Goal requires "fix any failures" but failures are infrastructure-level issues outside UX26 scope
+- **Note**: Complete UX26 implementation exists in commit 37482ca67 (ErrorBody component, StatusPanel, /status page, full E2E coverage, all measured) but current branch has blocking test failures
+
+**Autonomous Decision**: Skipped per protocol. Gate condition cannot be satisfied without resolving unrelated test infrastructure.
 
 ---
 
