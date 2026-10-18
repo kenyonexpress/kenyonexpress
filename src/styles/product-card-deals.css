@@ -85,6 +85,7 @@
   padding: 24px;
   background: var(--color-surface);
   transition: box-shadow 0.3s, transform 200ms ease-out;
+  height: 100%;
 }
 
 .p_con:hover {
@@ -430,4 +431,25 @@
   .site-masthead > div:first-child {
     height: 56px;
   }
+}
+
+/* Add to cart animation */
+@keyframes atc-scale-bounce {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.p_con .atc button:not(:disabled) {
+  transition: all 0.3s ease-out;
+}
+
+.p_con .atc button:active:not(:disabled) {
+  animation: atc-scale-bounce 0.6s ease-out;
 }
