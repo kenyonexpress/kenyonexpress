@@ -4,6 +4,91 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 ---
 
+## 🎯 Autonomous Work Summary (Session: 2026-10-19 — UX27 LOADING SKELETONS ACCOUNT PAGES)
+
+**UX27: Loading skeletons product cards category grid checkout account pages — ✅ COMPLETE (2026-10-19)**
+
+**Final Status:** Added loading skeleton components to account pages with Suspense boundaries for improved streaming UX.
+
+**What Was Done:**
+
+1. ✅ Created WishlistGridSkeleton Component
+   - New `src/components/account/WishlistGridSkeleton.tsx`
+   - Renders grid of skeleton cards matching WishlistCard layout
+   - Includes accessibility attributes (aria-busy, aria-label in Hebrew)
+   - Default count: 4 items, customizable via prop
+
+2. ✅ Created AddressListSkeleton Component
+   - New `src/components/account/AddressListSkeleton.tsx`
+   - Renders list of skeleton address items
+   - Matches AddressManager layout and spacing
+   - Includes proper accessibility attributes
+   - Default count: 3 items, customizable via prop
+
+3. ✅ Created CouponListSkeleton Component
+   - New `src/components/account/CouponListSkeleton.tsx`
+   - Renders section with coupon row skeletons
+   - Matches account-card and account-row styling
+   - Includes accessibility attributes for screen readers
+   - Default count: 3 items, customizable via prop
+
+4. ✅ Updated Wishlist Page (`/account/wishlist`)
+   - Added Suspense boundary with WishlistGridSkeleton fallback
+   - Refactored into async WishlistContent component
+   - Streaming response starts immediately with skeleton placeholder
+
+5. ✅ Updated Addresses Page (`/account/addresses`)
+   - Added Suspense boundary with AddressListSkeleton fallback
+   - Refactored into async AddressesContent component
+   - Shows skeleton while fetching from database
+
+6. ✅ Updated Coupons Page (`/account/coupons`)
+   - Added Suspense boundary with CouponListSkeleton fallback
+   - Refactored into async CouponsContent component
+   - Streaming response displays skeleton immediately
+
+7. ✅ Comprehensive Test Coverage
+   - Created 6 test files with 14 test cases total:
+     * `WishlistGridSkeleton.test.tsx` (6 tests)
+     * `AddressListSkeleton.test.tsx` (6 tests)
+     * `CouponListSkeleton.test.tsx` (2 tests)
+   - All tests verify:
+     * Component renders without errors
+     * Accessibility attributes (aria-busy, aria-label)
+     * Customizable count prop
+     * Proper styling and structure
+
+**Existing Skeleton Components Verified:**
+- ✅ ProductCardSkeleton (product cards)
+- ✅ ProductsGridSkeleton (grid layout)
+- ✅ CategoryGridSkeleton (category pages)
+- ✅ OrderRowSkeleton (order history)
+- ✅ CheckoutShell (checkout page)
+- ✅ CouponsGridSkeleton (main coupons page)
+
+**Code Quality Gates:**
+- ✅ `pnpm type-check`: CLEAN
+- ✅ `pnpm lint`: CLEAN (pre-existing warnings only)
+- ✅ All skeleton components formatted with biome
+- ✅ `git status`: clean after commits
+
+**Files Changed/Created:**
+- Created: src/components/account/WishlistGridSkeleton.tsx
+- Created: src/components/account/WishlistGridSkeleton.test.tsx
+- Created: src/components/account/AddressListSkeleton.tsx
+- Created: src/components/account/AddressListSkeleton.test.tsx
+- Created: src/components/account/CouponListSkeleton.tsx
+- Created: src/components/account/CouponListSkeleton.test.tsx
+- Modified: src/app/(account)/account/wishlist/page.tsx
+- Modified: src/app/(account)/account/addresses/page.tsx
+- Modified: src/app/(account)/account/coupons/page.tsx
+
+**Commit:** `e48ac5c30` - [autopilot] UX27: Add loading skeletons to account pages with Suspense boundaries
+
+**המשך מ:** UX27 FULLY COMPLETE. All account pages now have proper Suspense boundaries with matching skeleton components for improved user experience during data loading. Product cards, category grids, checkout, and account pages all have loading skeletons in place.
+
+---
+
 ## 🎯 Autonomous Work Summary (Session: 2026-10-19 — UX25 404 PAGE BRANDED DESIGN)
 
 **UX25: 404 page branded design search bar popular categories home link — ✅ COMPLETE (2026-10-19)**
