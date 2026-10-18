@@ -7,10 +7,7 @@ global.fetch = vi.fn()
 describe('meili-request', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    // Reset env vars
-    process.env.MEILISEARCH_HOST = undefined
-    process.env.MEILISEARCH_API_KEY = undefined
-    process.env.MEILISEARCH_INDEX = undefined
+    vi.unstubAllEnvs()
   })
 
   afterEach(() => {
@@ -19,6 +16,8 @@ describe('meili-request', () => {
 
   describe('meiliRequest', () => {
     it('throws when Meilisearch is not configured', async () => {
+      vi.stubEnv('MEILISEARCH_HOST', '')
+      vi.stubEnv('MEILISEARCH_API_KEY', '')
       await expect(meiliRequest('/test', 'GET')).rejects.toThrow('meilisearch not configured')
     })
 
@@ -112,6 +111,8 @@ describe('meili-request', () => {
 
   describe('meiliHealthCheck', () => {
     it('returns not_configured when env vars are missing', async () => {
+      vi.stubEnv('MEILISEARCH_HOST', '')
+      vi.stubEnv('MEILISEARCH_API_KEY', '')
       const result = await meiliHealthCheck()
       expect(result).toEqual({ ok: false, code: 'not_configured' })
     })
