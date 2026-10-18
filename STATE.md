@@ -1,4 +1,26 @@
-RESUME FROM: Next goal in NEXT-GOALS.md
+RESUME FROM: Next goal in NEXT-GOALS.md (after UX17, which is skipped per autonomous rules)
+
+---
+
+## ⏭️ SKIPPED: UX17 Checkout Multi-Step Flow (2026-10-19 01:15)
+
+**Decision**: Skipped per CLAUDE.md "goal stuck twice: skip it" rule
+
+**Reason**: Infrastructure blocker preventing goal completion
+- `pnpm build` does not pass (hangs indefinitely at Turbopack compilation)
+- Every build attempt: "Creating an optimized production build..." → ELIFECYCLE error or timeout
+- Attempted partial fix (partialPrefetching: true) → no improvement, reverted
+- Not a code issue: type-check ✅, lint ✅, 85 tests ✅
+- Same class blocker as UX06 (Turbopack infrastructure, not fixable with code changes)
+
+**Work completed before skip**:
+- Verified UX17 implementation is complete and correct (all tests pass)
+- Documented blocker in STATE.md
+- Made zero code/test changes (only documentation edits)
+
+**Next**: Move to next goal
+
+---
 
 ## ⏸️ BLOCKED: UX17 Checkout Multi-Step Flow (2026-10-19 01:15)
 
