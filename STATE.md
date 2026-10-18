@@ -6,7 +6,7 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 ## rc5 run (FINAL-CLOSEOUT-v2-rc5, 2026-10-18)
 
-המשך מ: F03 mobile gate 380
+המשך מ: F04 seed city defaults + missing-location admin
 
 Worktree `/Users/ofir/kenyonexpress-web/ke-rc5` on local branch `work/rc5`, pushed to
 `origin closeout/v1-final`. The Haiku refill loop was committing into the main checkout on
@@ -19,7 +19,22 @@ inherited from autopilot commits. Fixed under F15.
 | Item | Status | Note |
 |---|---|---|
 | F01 migrations | DONE | 185, 186, 187, 278 applied via MCP apply_migration, docs/MIGRATIONS-APPLIED.md |
+| F03 mobile gate 380 | BLOCKED | spec layout shipped; gate 38.69 -> 39.51 -> 37.44% after two passes, target 11 |
 | F02 location label | DONE | pin + city (or כל הארץ) above the title on all four card renderers and the PDP eyebrow |
+
+### BLOCKED F03 mobile gate 380 (rc5)
+
+BLOCKED F03 home@380 stays above 11% vs refs/electro-home-v7.html after two measured passes.
+The gate is a per-pixel diff (tolerance 24/channel) over the first 2600px. Electro's 380
+capture is 20.3% non-white, so an all-white page already scores about 20%; under 11% needs our
+photos and colour blocks on the same pixels as Electro's banners and demo products. The ref
+itself loads with 13 images pending (blank hero). Shipped anyway, because it is the goal's
+spec: top bar tablet-up only, 56px brand-yellow masthead on phones, hero slot
+clamp(240px,55vw,320px), category strip shown as a sideways scroll row, deals 2 columns with a
+12px gap, title clamp(13px,3.6vw,16px), 24px section padding. Phone page 18652px -> 6184px.
+Other widths with the same build: 768 34.68% (height ratio 1.74x), 1440 27.66%.
+Found, inherited: at 1440 the header nav overflows 46px to the left (scrollWidth 1490), present
+before F03. Fix under F14.
 
 ### החלטות שהתקבלו אוטומטית (rc5)
 

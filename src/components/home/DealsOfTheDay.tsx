@@ -60,7 +60,7 @@ export default function DealsOfTheDay() {
   return (
     <section
       aria-label="מוצרים מובילים"
-      className="mx-auto w-full max-w-deals px-deals-pad pt-deals-top pb-deals-footer-gap md:px-deals-pad-md xl:px-0"
+      className="home-deals mx-auto w-full max-w-deals px-deals-pad pt-deals-top pb-deals-footer-gap md:px-deals-pad-md xl:px-0"
     >
       <Suspense fallback={<ProductsGridSkeleton count={KE_LIVE_DEALS.length} />}>
         <DealsGrid />

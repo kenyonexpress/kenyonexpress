@@ -53,9 +53,17 @@ import Link from 'next/link'
 export default function SiteHeader() {
   return (
     <>
-      <TopBar />
+      {/* rc5 F03: the info strip is tablet-up. Electro's phone header is the
+          single masthead bar, and the strip's three lines are repeated in the
+          benefit bar under the hero. */}
+      <div className="hidden md:block">
+        <TopBar />
+      </div>
 
-      <header dir="rtl" className="sticky top-0 z-40 w-full border-b border-border bg-white">
+      <header
+        dir="rtl"
+        className="site-masthead sticky top-0 z-40 w-full border-b border-border bg-white"
+      >
         {/*
           h-header-handheld (83) below xl, h-header-masthead (109) from xl up:
           live's 84 and 110 less their 1px border. `xl` and not `lg` because

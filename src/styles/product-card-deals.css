@@ -362,3 +362,72 @@
 .location-pin__dot {
   fill: var(--color-muted);
 }
+
+/* rc5 F03: the phone layout follows Electro's mobile home, not the retired
+   live site's one-card-per-row list. Everything here is below 768px only, so
+   the tablet and desktop geometry the gate measured is untouched.
+   - hero slot: clamp(240px, 55vw, 320px), full width
+   - category strip: one row, scrolls sideways (CitiesRow already nowrap)
+   - deals: two columns with a 12px gap, compact cards
+   - sections: 24px vertical padding */
+@media (max-width: 767px) {
+  .hero-mobile-slot {
+    flex: none;
+    height: clamp(240px, 55vw, 320px);
+  }
+
+  .home-deals {
+    padding-block: 24px;
+    padding-inline: 12px;
+  }
+
+  .jet-listing-grid-deals {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .jet-listing-grid-deals__item {
+    padding: 0;
+    max-width: none;
+    min-width: 0;
+  }
+
+  .jet-listing-grid-deals__item .p_con {
+    padding: 8px;
+    gap: 6px;
+  }
+
+  .p_con__title-wrap {
+    min-height: 0;
+  }
+
+  .p_con__title,
+  .jet-listing-grid-deals h2.p_con__title {
+    font-size: clamp(13px, 3.6vw, 16px);
+    line-height: 1.35;
+  }
+
+  .p_con__image {
+    width: 100%;
+    height: clamp(120px, 38vw, 180px);
+  }
+
+  .p_con__footer {
+    gap: 6px;
+    margin-top: 4px;
+  }
+}
+
+/* rc5 F03 pass 2: on a phone the masthead is Electro's handheld bar, a solid
+   brand-yellow strip 56px tall. --color-brand-primary is the same #fed700. */
+@media (max-width: 767px) {
+  .site-masthead {
+    background: var(--color-brand-primary);
+    border-bottom-color: var(--color-brand-primary);
+  }
+
+  .site-masthead > div:first-child {
+    height: 56px;
+  }
+}
