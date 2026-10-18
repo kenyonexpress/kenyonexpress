@@ -865,3 +865,132 @@
     height: 18px;
   }
 }
+
+/* Wishlist card */
+.wishlist-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.wishlist-card__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.wishlist-card__link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: inherit;
+  text-decoration: none;
+  transition: color 200ms ease-out;
+}
+
+.wishlist-card__link:hover {
+  color: var(--account-blue);
+}
+
+.wishlist-card__no-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.wishlist-card__image-wrapper {
+  flex-shrink: 0;
+}
+
+.wishlist-card__details {
+  flex: 1;
+  min-width: 0;
+}
+
+.wishlist-card__actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.wishlist-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 4px;
+  border: 1px solid var(--account-line);
+  background: var(--color-surface);
+  color: var(--account-ink);
+  font-size: 13px;
+  font-weight: var(--weight-bold);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.wishlist-btn:hover {
+  background: var(--util-f7f7f7);
+}
+
+.wishlist-btn--primary {
+  background: var(--account-yellow);
+  border-color: var(--account-yellow);
+}
+
+.wishlist-btn--primary:hover {
+  filter: brightness(0.95);
+}
+
+.wishlist-btn--secondary {
+  min-width: 32px;
+  padding: 0;
+}
+
+.wishlist-btn[disabled] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.wishlist-card__message {
+  font-size: 13px;
+  margin-top: 8px;
+  padding: 6px 8px;
+  border-radius: 4px;
+}
+
+.wishlist-card__message--success {
+  background: var(--util-e8f7e2);
+  color: var(--util-2c7a13);
+}
+
+.wishlist-card__message--error {
+  background: var(--util-fdeaee);
+  color: var(--account-red);
+}
+
+@media (max-width: 768px) {
+  .wishlist-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .wishlist-card__content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .wishlist-card__link {
+    flex: 1;
+  }
+
+  .wishlist-card__actions {
+    width: 100%;
+    gap: 8px;
+  }
+
+  .wishlist-btn--primary {
+    flex: 1;
+  }
+}
