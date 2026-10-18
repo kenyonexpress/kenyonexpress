@@ -10,6 +10,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useTransition } from 'react'
 
 export type { SortValue }
+export type { PaginationMode }
 
 type ViewMode = '4-col' | '3-col' | '2-col' | 'list'
 
@@ -18,6 +19,13 @@ const VIEW_MODES: Array<{ mode: ViewMode; label: string }> = [
   { mode: '3-col', label: '3 עמודות' },
   { mode: '2-col', label: '2 עמודות' },
   { mode: 'list', label: 'רשימה' },
+]
+
+type PaginationMode = 'infinite' | 'pagination'
+
+const PAGINATION_MODES: Array<{ mode: PaginationMode; label: string }> = [
+  { mode: 'infinite', label: 'גלילה אינסופית' },
+  { mode: 'pagination', label: 'עמודים' },
 ]
 
 function ViewSwitcher() {
@@ -77,6 +85,53 @@ function ViewSwitcher() {
   )
 }
 
+function PaginationModeSwitcher() {
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const [isPending, startTransition] = useTransition()
+
+  const currentMode = (
+    searchParams.get('paginate') === '1' ? 'pagination' : 'infinite'
+  ) as PaginationMode
+
+  function handleModeChange(mode: PaginationMode) {
+    const params = new URLSearchParams(searchParams)
+    if (mode === 'infinite') {
+      params.delete('paginate')
+    } else {
+      params.set('paginate', '1')
+    }
+    params.delete('page')
+    const qs = params.toString()
+    startTransition(() => {
+      router.push(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
+    })
+  }
+
+  return (
+    <div className="category-pagination-mode-switcher" aria-label="בחר אופן ניווט">
+      {PAGINATION_MODES.map(({ mode, label }) => {
+        const isActive = currentMode === mode
+        return (
+          <button
+            key={mode}
+            type="button"
+            className={`category-pagination-mode-btn${isActive ? ' is-active' : ''}`}
+            onClick={() => handleModeChange(mode)}
+            disabled={isPending}
+            aria-label={label}
+            aria-pressed={isActive}
+            title={label}
+          >
+            {label}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
 export default function CategoryControlBar({ value }: { value: SortValue }) {
   const router = useRouter()
   const pathname = usePathname()
@@ -119,6 +174,7 @@ export default function CategoryControlBar({ value }: { value: SortValue }) {
         סינון
       </a>
       <ViewSwitcher />
+      <PaginationModeSwitcher />
       <div className="category-control-bar__sort">
         <label className="sr-only" htmlFor="category-orderby">
           מיון מוצרים

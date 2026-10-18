@@ -4,6 +4,8 @@ import CategoryControlBar from '@/components/category/CategoryControlBar'
 import CategoryFilterSidebar from '@/components/category/CategoryFilterSidebar'
 import CategoryGridSkeleton from '@/components/category/CategoryGridSkeleton'
 import CategoryGridWithInfiniteScroll from '@/components/category/CategoryGridWithInfiniteScroll'
+import CategoryGridWithPagination from '@/components/category/CategoryGridWithPagination'
+import CategoryHeroBanner from '@/components/category/CategoryHeroBanner'
 import type { CategoryProduct } from '@/components/category/CategoryProductCard'
 import {
   CATEGORY_PAGE_SIZE,
@@ -194,9 +196,11 @@ async function ResultCountText({ args }: { args: QueryArgs }) {
 async function ResultGrid({
   args,
   linkParams,
+  usePagination,
 }: {
   args: QueryArgs
   linkParams: Record<string, string | undefined>
+  usePagination?: boolean
 }) {
   const { items, total } = await categoryPageOrLast(args)
 
@@ -208,7 +212,25 @@ async function ResultGrid({
     )
   }
 
-  const { totalPages: _totalPages, currentPage, from, to } = pageWindow(total, args.page)
+  const { totalPages, currentPage, from, to } = pageWindow(total, args.page)
+
+  if (usePagination) {
+    return (
+      <>
+        <CategoryGridWithPagination
+          items={items as CategoryProduct[]}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          pageSize={CATEGORY_PAGE_SIZE}
+          categorySlug={args.category.slug}
+          params={linkParams}
+        />
+        <p className="category-page__count category-page__count--bottom">
+          {resultCountText(total, from, to)}
+        </p>
+      </>
+    )
+  }
 
   return (
     <>
@@ -322,6 +344,7 @@ async function CategoryPageBody({
   const productType = parseProductType(sp.type)
   const supplierId = typeof sp.supplier === 'string' ? sp.supplier : undefined
   const tag = typeof sp.tag === 'string' ? sp.tag : undefined
+  const usePagination = sp.paginate === '1'
 
   // Cheap shell data only. The product query is deferred to the boundaries
   // below so the breadcrumb, title, control bar and sidebar can stream first.
@@ -396,6 +419,7 @@ async function CategoryPageBody({
       <ViewTracker event="view_category" props={{ category_id: category.id }} />
       <div className="category-page__inner">
         <CategoryBreadcrumb items={crumbs} />
+        <CategoryHeroBanner imageUrl={category.image_url} categoryName={category.name_he} />
 
         <header className="category-page__header">
           <h1 className="category-page__title">
@@ -413,7 +437,7 @@ async function CategoryPageBody({
         <div className="category-page__body">
           <div className="category-page__main">
             <Suspense fallback={<CategoryGridSkeleton count={CATEGORY_PAGE_SIZE} />}>
-              <ResultGrid args={args} linkParams={linkParams} />
+              <ResultGrid args={args} linkParams={linkParams} usePagination={usePagination} />
             </Suspense>
           </div>
 

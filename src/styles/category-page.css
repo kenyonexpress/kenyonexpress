@@ -111,6 +111,29 @@
   color: var(--cat-ink);
 }
 
+/* Category hero banner */
+.category-hero-banner {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  margin-bottom: 20px;
+  overflow: hidden;
+  border-radius: 8px;
+  aspect-ratio: 16 / 9;
+}
+
+@media (min-width: 768px) {
+  .category-hero-banner {
+    margin-bottom: 24px;
+    aspect-ratio: 16 / 6;
+  }
+}
+
+.category-hero-banner__image {
+  object-fit: cover;
+  object-position: center;
+}
+
 /* Header row: h1 on inline-start (right), result count on inline-end (left).
    Measured: h1 25.004px / 500 / 40.0064px line-height, margin-bottom 14px. */
 /* LIVE STACKS THE COUNT UNDER THE TITLE ON A PHONE, and this was side by side.
@@ -271,6 +294,44 @@
 .category-view-switcher__btn.is-active,
 .category-view-switcher__btn:hover {
   color: var(--cat-ink);
+}
+
+/* Pagination mode switcher */
+.category-pagination-mode-switcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 4px;
+  background: var(--cat-bar);
+  padding: 2px;
+}
+
+.category-pagination-mode-btn {
+  padding: 6px 10px;
+  border: 0;
+  background: transparent;
+  color: var(--cat-muted);
+  font-size: 12px;
+  cursor: pointer;
+  border-radius: 3px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.category-pagination-mode-btn.is-active {
+  background: var(--cat-surface);
+  color: var(--cat-ink);
+  font-weight: 500;
+}
+
+.category-pagination-mode-btn:hover:not(.is-active) {
+  color: var(--cat-ink);
+}
+
+@media (max-width: 767px) {
+  .category-pagination-mode-switcher {
+    display: none;
+  }
 }
 
 /* Body: measured live grid.rect = x135-1305 (full 1170 container), and

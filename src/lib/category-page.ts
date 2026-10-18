@@ -74,6 +74,7 @@ export type CategoryRow = {
   name_he: string
   description_he: string | null
   parent_id: string | null
+  image_url: string | null
 }
 
 export type CategoryProductRow = {
@@ -125,7 +126,7 @@ export async function getCategoryBySlug(slug: string): Promise<CategoryRow | nul
   const data = orFail(
     await supabase
       .from('categories')
-      .select('id, slug, name_he, description_he, parent_id')
+      .select('id, slug, name_he, description_he, parent_id, image_url')
       .eq('slug', slug)
       .eq('is_active', true)
       .single(),
