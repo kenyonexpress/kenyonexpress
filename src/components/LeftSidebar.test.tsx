@@ -25,11 +25,18 @@ describe('LeftSidebar - Category Cards', () => {
     }
   })
 
-  it('renders SVG icons instead of emoji', () => {
+  it('renders real product images instead of emoji', () => {
     const { container } = render(<LeftSidebar />)
-    // Check for SVG elements (lucide-react icons)
-    const svgs = container.querySelectorAll('svg')
-    expect(svgs.length).toBeGreaterThanOrEqual(3)
+    // Check for img elements (Next.js Image component renders img tags)
+    const images = container.querySelectorAll('img')
+    expect(images.length).toBeGreaterThanOrEqual(3)
+  })
+
+  it('renders images with correct alt text', () => {
+    render(<LeftSidebar />)
+    expect(screen.getByAltText('דילים חמים - תמונת מוצר')).toBeInTheDocument()
+    expect(screen.getByAltText('צימרים ומלונות - תמונת מוצר')).toBeInTheDocument()
+    expect(screen.getByAltText('מסעדות - תמונת מוצר')).toBeInTheDocument()
   })
 
   it('applies border-radius token via inline style', () => {
@@ -38,12 +45,6 @@ describe('LeftSidebar - Category Cards', () => {
     for (const card of cards) {
       expect(card).toHaveStyle('border-radius: var(--radius-card)')
     }
-  })
-
-  it('applies gradient background classes to image areas', () => {
-    const { container } = render(<LeftSidebar />)
-    const imageAreas = container.querySelectorAll('[class*="bg-gradient"]')
-    expect(imageAreas.length).toBeGreaterThanOrEqual(3)
   })
 
   it('applies hover shadow classes to cards', () => {
@@ -70,11 +71,11 @@ describe('LeftSidebar - Category Cards', () => {
     }
   })
 
-  it('applies white text to SVG icons for visibility on gradient', () => {
+  it('applies object-cover to images for proper display', () => {
     const { container } = render(<LeftSidebar />)
-    const icons = container.querySelectorAll('svg')
-    for (const icon of icons) {
-      expect(icon.className.baseVal).toContain('text-white')
+    const images = container.querySelectorAll('img')
+    for (const image of images) {
+      expect(image.className).toContain('object-cover')
     }
   })
 
@@ -99,25 +100,29 @@ describe('LeftSidebar - Category Cards', () => {
     }
   })
 
-  it('has correct accessibility attributes', () => {
-    render(<LeftSidebar />)
-    const cards = screen.getAllByRole('article')
-    expect(cards[0]).toHaveAttribute('aria-label', 'דילים חמים')
-    expect(cards[1]).toHaveAttribute('aria-label', 'צימרים ובתי מלון')
-    expect(cards[2]).toHaveAttribute('aria-label', 'מסעדות ובתי קפה')
-  })
-
   it('maintains spacing between cards', () => {
     const { container } = render(<LeftSidebar />)
     const aside = container.querySelector('aside')
     expect(aside).toHaveClass('space-y-3')
   })
 
-  it('cards have cursor pointer on hover', () => {
+  it('cards have cursor pointer for interactivity', () => {
     const { container } = render(<LeftSidebar />)
     const cards = container.querySelectorAll('article')
     for (const card of cards) {
       expect(card.className).toContain('cursor-pointer')
     }
+  })
+
+  it('image containers have correct height', () => {
+    const { container } = render(<LeftSidebar />)
+    const imageContainers = container.querySelectorAll('[class*="h-24"]')
+    expect(imageContainers.length).toBeGreaterThanOrEqual(3)
+  })
+
+  it('image containers have overflow-hidden for zoom effect', () => {
+    const { container } = render(<LeftSidebar />)
+    const imageContainers = container.querySelectorAll('[class*="overflow-hidden"]')
+    expect(imageContainers.length).toBeGreaterThanOrEqual(3)
   })
 })
