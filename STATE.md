@@ -8,7 +8,7 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 **UX25: 404 page branded design search bar popular categories home link — ✅ COMPLETE (2026-10-19)**
 
-**Final Status:** 404 page redesigned with branded colors, popular categories grid, and improved navigation.
+**Final Status:** 404 page redesigned with branded colors, search bar, popular categories grid, comprehensive tests, and improved navigation.
 
 **What Was Done:**
 
@@ -18,40 +18,59 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
    - Improved visual hierarchy with larger 404 text (text-8xl)
    - Better spacing and layout using Tailwind utilities
 
-2. ✅ Added Popular Categories Section
+2. ✅ Added Search Bar
+   - Form element submitting to `/search` with GET method
+   - Search input with placeholder "חפשו מוצר..." (Search for product...)
+   - Search button with brand-primary yellow color and hover state
+   - RTL-aware form with proper text direction
+   - Name parameter "q" for query submission to search results page
+
+3. ✅ Added Popular Categories Section
    - Displays first 8 categories from database as navigable grid
    - Responsive grid: 2 cols (mobile), 3 cols (tablet), 4 cols (desktop)
    - Each category card includes:
-     * Link to category page
+     * Link to category page via `/category/{slug}`
      * Category name display
      * Gradient background with hover effects
      * Hover state with shadow and color transition
 
-3. ✅ Improved Navigation Options
-   - Button to browse all products
-   - Button to browse categories
-   - Home link button
+4. ✅ Improved Navigation Options
+   - Button to browse all products (`/products`)
+   - Button to browse categories (`/products?view=categories`)
+   - Home link button (`/`)
    - Used async/await to fetch categories server-side
-   - Integrated with existing getAllCategories() function
+   - Integrated with existing `getAllCategories()` function
 
-4. ✅ Branded Color Scheme
-   - Primary action buttons use brand-dark background
-   - Home button uses brand-primary (yellow) background
-   - Accent background for hero section
-   - Consistent use of Tailwind design tokens
+5. ✅ Comprehensive Test Suite (12 tests)
+   - Created `src/app/not-found.test.tsx` with full coverage
+   - Tests cover:
+     * 404 heading and message display
+     * Search bar form existence and attributes
+     * Search button submit behavior
+     * Action buttons validation and href values
+     * Popular categories grid rendering (8 categories)
+     * Category links with correct href format
+     * RTL direction attribute
+     * Metadata for SEO (title, robots directives)
+   - All tests passing: 12/12 ✓
 
 **Code Quality Gates:**
 - ✅ `pnpm type-check`: CLEAN
-- ✅ `pnpm lint`: CLEAN (biome check passed)
-- ✅ `pnpm build`: SUCCESS (compiled in ~2.4s, 304/304 pages)
-- ✅ `git status`: clean after commit
+- ✅ `pnpm lint`: CLEAN (2 warnings, no errors)
+- ✅ `pnpm test src/app/not-found.test.tsx --run`: 12/12 PASSED
+- ✅ `pnpm build`: SUCCESS (compiled in ~4.5s, 304/304 pages)
+- ✅ `git status`: clean after commits
 
-**Files Changed:**
-- Modified: src/app/not-found.tsx (70 insertions, 33 deletions)
+**Files Changed/Created:**
+- Modified: src/app/not-found.tsx (added search bar form, refined layout)
+- Created: src/app/not-found.test.tsx (124 lines, 12 comprehensive tests)
 
-**Commit:** `7e9f531fe` - [autopilot] UX25: Branded 404 page with popular categories, search navigation, home link
+**Commits:**
+- `e6c051160` - [autopilot] UX25: Add search bar and comprehensive tests to 404 page
+- `30d208796` - [autopilot] STATE.md: UX25 COMPLETE - Branded 404 page with popular categories and improved navigation
+- `7e9f531fe` - [autopilot] UX25: Branded 404 page with popular categories, search navigation, home link
 
-**המשך מ:** UX25 COMPLETE. 404 page now features branded design with popular categories grid, improved navigation, and home link. All code quality gates passing.
+**המשך מ:** UX25 FULLY COMPLETE. 404 page now features branded design, search bar form, popular categories grid, comprehensive test coverage, and improved navigation. All code quality gates and tests passing.
 
 ---
 
