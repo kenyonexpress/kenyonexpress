@@ -34,6 +34,7 @@ import {
   resolvePaymentMoneySchema,
 } from '@/lib/payments/payment-money-columns'
 import { isCardTokenExpired } from '@/lib/payments/token-expiry'
+import { TURNSTILE_FIELD, verifyTurnstile } from '@/lib/security/turnstile'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { readWalletAccountAgorot } from '@/lib/supabase/optional-columns'
 import { createClient } from '@/lib/supabase/server'
@@ -52,7 +53,7 @@ import {
 } from '@/server/analytics/track'
 import { type SettlementLineInput, calculateSettlement } from '@/server/domain/orders/settlement'
 import { finalizeOrder } from '@/server/payments/finalize'
-import { cookies } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 
 const ORDER_EXPIRY_MINUTES = 30
@@ -966,6 +967,12 @@ async function runSubmitCheckout(
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) return { error: 'יש להתחבר לפני התשלום' }
+
+  // rc5 F19: Turnstile, a no-op until TURNSTILE_SECRET_KEY is set.
+  const forwarded = (await headers()).get('x-forwarded-for')?.split(',')[0]?.trim()
+  if (!(await verifyTurnstile(formData.get(TURNSTILE_FIELD), forwarded))) {
+    return { error: 'אימות האבטחה נכשל. רעננו את הדף ונסו שוב.' }
+  }
 
   const text = (name: string) => {
     const v = formData.get(name)

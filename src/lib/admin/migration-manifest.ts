@@ -482,4 +482,10 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
     state: 'applied',
     hasPreflight: false,
   },
+  {
+    number: '285',
+    file: '285_auth_wa_otps.sql',
+    state: 'applied',
+    hasPreflight: false,
+  },
 ] as const

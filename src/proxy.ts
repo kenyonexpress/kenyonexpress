@@ -11,6 +11,7 @@ import {
   isMaintenanceExempt,
   maintenanceEnabled,
 } from '@/lib/security/maintenance'
+import { maintenanceFlagOn } from '@/lib/security/maintenance-flag'
 import { lookupRedirect } from '@/lib/seo/redirects'
 import { recordAffiliateClick } from '@/server/affiliate/clicks'
 import { createServerClient } from '@supabase/ssr'
@@ -66,7 +67,21 @@ export async function proxy(request: NextRequest, event?: NextFetchEvent) {
 
   // Maintenance mode (MAINTENANCE_MODE=1). Payments, webhooks, crons, admin and
   // login are exempt; see lib/security/maintenance.ts for why.
-  if (maintenanceEnabled() && !isMaintenanceExempt(pathname)) {
+  // rc5 F19: also the feature_flags row (cached 30s, fails open). Page visits
+  // go to /maintenance; everything else gets the 503 below.
+  if (
+    pathname !== '/maintenance' &&
+    !isMaintenanceExempt(pathname) &&
+    (maintenanceEnabled() || (await maintenanceFlagOn()))
+  ) {
+    const wantsPage =
+      request.method === 'GET' && (request.headers.get('accept') ?? '').includes('text/html')
+    if (wantsPage) {
+      return withRequestId(
+        NextResponse.redirect(new URL('/maintenance', request.url), 307),
+        requestId,
+      )
+    }
     return withRequestId(
       new NextResponse(MAINTENANCE_HTML, {
         status: 503,

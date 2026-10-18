@@ -3,6 +3,7 @@
 import { isSmsCapableIsraeli, toE164Israeli } from '@/lib/auth/phone-otp'
 import { supplierAgreementHash } from '@/lib/legal/supplier-agreement'
 import { withActionContext } from '@/lib/observability/action-context'
+import { TURNSTILE_FIELD, verifyTurnstile } from '@/lib/security/turnstile'
 import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
 import { startSupplierCardVerification } from '@/server/supplier/card-verification'
 import { headers } from 'next/headers'
@@ -91,6 +92,10 @@ async function runSubmitSupplierLead(
   const ip = await getClientIp()
   if (!(await checkRateLimit(`supplier-lead:${ip}`, 5, 3600))) {
     return { ok: false, error: 'יותר מדי ניסיונות. נסו שוב מאוחר יותר.' }
+  }
+  // rc5 F19: Turnstile, a no-op until TURNSTILE_SECRET_KEY is set.
+  if (!(await verifyTurnstile(formData.get(TURNSTILE_FIELD), ip))) {
+    return { ok: false, error: 'אימות האבטחה נכשל. רעננו את הדף ונסו שוב.' }
   }
 
   const phone = toE164Israeli(parsed.data.phone) ?? parsed.data.phone

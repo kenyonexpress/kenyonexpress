@@ -1,5 +1,7 @@
 'use client'
 
+import TurnstileWidget from '@/components/shared/TurnstileWidget'
+import { resetTurnstile } from '@/lib/security/turnstile-client'
 import { type SupplierLeadState, submitSupplierLead } from '@/server/actions/supplier-lead'
 import { useActionState, useEffect } from 'react'
 
@@ -36,6 +38,7 @@ export default function SupplierLeadForm({
   // The ₪1 card verification happens on Cardcom's hosted page.
   useEffect(() => {
     if (state.ok && state.redirectUrl) window.location.assign(state.redirectUrl)
+    if (state.error) resetTurnstile()
   }, [state])
 
   if (state.ok && state.message) {
@@ -194,6 +197,7 @@ export default function SupplierLeadForm({
         </label>
       </fieldset>
 
+      <TurnstileWidget />
       <button
         type="submit"
         disabled={pending}

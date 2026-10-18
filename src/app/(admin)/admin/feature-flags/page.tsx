@@ -1,5 +1,7 @@
 import { listCapabilities, listFeatureFlags, listOperationalFlags } from '@/lib/admin/feature-flags'
 import { requireSection } from '@/lib/admin/rbac'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { setMaintenanceMode } from '@/server/actions/admin/feature-flags'
 
 export const metadata = { title: 'דגלי מערכת' }
 
@@ -8,6 +10,37 @@ export const metadata = { title: 'דגלי מערכת' }
  * in docs/RUNBOOK.md. This page does not write anything: there is no flags
  * table, and this repository does not apply migrations from an agent.
  */
+async function MaintenanceToggle() {
+  const { data } = await createAdminClient()
+    .from('feature_flags' as never)
+    .select('bool_value, updated_at')
+    .eq('key', 'maintenance_mode')
+    .maybeSingle()
+  const on = (data as { bool_value?: boolean } | null)?.bool_value === true
+  return (
+    <form
+      action={setMaintenanceMode}
+      className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gray-200 bg-white p-4"
+    >
+      <div>
+        <h2 className="font-semibold text-gray-900">מצב תחזוקה</h2>
+        <p className="text-sm text-gray-600">
+          כרגע: <strong>{on ? 'פעיל, החנות סגורה ללקוחות' : 'כבוי'}</strong>. ניהול, תשלומים,
+          וובהוקים וקרונים ממשיכים לעבוד. השינוי חל תוך 30 שניות.
+        </p>
+      </div>
+      <input type="hidden" name="maintenance_mode" value={on ? 'off' : 'on'} />
+      <button
+        type="submit"
+        aria-label={on ? 'פתיחת האתר' : 'הפעלת מצב תחזוקה'}
+        className={`rounded-lg px-4 py-2 text-sm font-bold ${on ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}`}
+      >
+        {on ? 'פתיחת האתר' : 'הפעלת מצב תחזוקה'}
+      </button>
+    </form>
+  )
+}
+
 export default async function AdminFeatureFlagsPage() {
   await requireSection('analytics')
   const flags = listFeatureFlags()
@@ -25,6 +58,8 @@ export default async function AdminFeatureFlagsPage() {
           <span dir="ltr">docs/RUNBOOK.md</span>.
         </p>
       </header>
+
+      <MaintenanceToggle />
 
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
         <table className="w-full text-start text-sm">

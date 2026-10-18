@@ -57,6 +57,7 @@ export default function PasskeySignIn({ next }: { next?: string }) {
         type="button"
         onClick={signIn}
         disabled={pending}
+        aria-label="כניסה עם מפתח גישה"
         className="w-full flex items-center justify-center gap-2 border border-gray-300 rounded-lg py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-60"
       >
         {pending ? 'מאמתים...' : 'כניסה עם מפתח גישה'}

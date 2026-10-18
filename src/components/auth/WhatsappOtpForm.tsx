@@ -86,7 +86,12 @@ export default function WhatsappOtpForm({ next }: { next?: string }) {
           {error}
         </p>
       )}
-      <button type="submit" disabled={pending} className="account-btn w-full">
+      <button
+        type="submit"
+        disabled={pending}
+        className="account-btn w-full"
+        aria-label="שליחת קוד בוואטסאפ"
+      >
         {pending ? 'שולחים...' : 'שליחת קוד בוואטסאפ'}
       </button>
     </form>
@@ -126,7 +131,12 @@ export default function WhatsappOtpForm({ next }: { next?: string }) {
           {error}
         </p>
       )}
-      <button type="submit" disabled={pending} className="account-btn w-full">
+      <button
+        type="submit"
+        disabled={pending}
+        className="account-btn w-full"
+        aria-label="כניסה עם הקוד"
+      >
         {pending ? 'בודקים...' : 'כניסה'}
       </button>
     </form>

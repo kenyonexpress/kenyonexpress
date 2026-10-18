@@ -121,6 +121,7 @@ describe('the pending migration inventory', () => {
       '283_affiliate_campaigns.sql',
       '284_products_weekend_only.sql',
       '285_auth_wa_otps.sql',
+      '286_feature_flags.sql',
     ])
   })
 

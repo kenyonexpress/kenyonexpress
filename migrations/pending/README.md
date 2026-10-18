@@ -15,6 +15,14 @@ migration, so the apply order across the two branches is undefined.
 Until the owner picks a mainline branch, **apply nothing from either side.**
 The full measured table is in `docs/MIGRATION-NUMBER-COLLISIONS.md`.
 
+## 2026-10-18: 286 APPLIED - feature_flags (rc5 F19)
+
+`286_feature_flags.sql` creates world-readable `feature_flags` (no secrets by
+design) seeded with `maintenance_mode = false`; writes are the service role's.
+The proxy reads it, cached 30 seconds and failing open, next to the
+`MAINTENANCE_MODE` env switch. Applied through MCP `apply_migration`
+(`feature_flags_286`).
+
 ## 2026-10-18: 285 APPLIED - WhatsApp sign-in codes (rc5 F15)
 
 `285_auth_wa_otps.sql` stores HMACs of six-digit sign-in codes (10 minutes,

@@ -61,7 +61,12 @@ export default function CancelOrderForm({ orderId }: { orderId: string }) {
           {error}
         </p>
       )}
-      <button type="submit" className="account-btn" disabled={!confirmed || pending}>
+      <button
+        type="submit"
+        className="account-btn"
+        disabled={!confirmed || pending}
+        aria-label="ביטול ההזמנה"
+      >
         {pending ? 'שולח...' : 'ביטול ההזמנה'}
       </button>
     </form>
