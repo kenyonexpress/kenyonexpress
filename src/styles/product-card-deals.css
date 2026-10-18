@@ -326,3 +326,39 @@
 .p_con:hover .atc button {
   background: var(--color-brand-primary) !important;
 }
+
+/* rc5 F02: the location line that replaced the category label above the
+   title. Same 24px row and type as the category line it replaced, so the card
+   keeps its height and the parity gate sees the same box. */
+.product-location {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: var(--weight-regular);
+  line-height: 24px;
+  color: var(--color-muted-2);
+  min-width: 0;
+}
+
+.product-location__text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.location-pin {
+  flex-shrink: 0;
+}
+
+.location-pin__tile {
+  fill: var(--color-surface-hover);
+}
+
+.location-pin__glyph {
+  stroke: var(--color-muted);
+}
+
+.location-pin__dot {
+  fill: var(--color-muted);
+}

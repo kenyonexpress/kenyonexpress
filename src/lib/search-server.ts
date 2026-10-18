@@ -31,6 +31,7 @@ type MeiliHit = {
   images?: unknown
   stock_quantity: number | null
   category?: { name_he: string; slug: string } | null
+  city?: string | null
 }
 
 async function searchMeili(
@@ -67,6 +68,7 @@ async function searchMeili(
       full_price: h.full_price,
       images: h.images ?? [],
       stock_quantity: h.stock_quantity,
+      city: h.city ?? null,
       category: h.category ?? null,
     }))
     return { results, total: data.estimatedTotalHits ?? results.length, engine: 'meilisearch' }
@@ -135,7 +137,7 @@ async function searchDb(
   let query = supabase
     .from('products')
     .select(
-      'id, slug, name_he, kenyon_price, full_price, images, stock_quantity, categories!products_category_id_fkey(name_he, slug)',
+      'id, slug, name_he, kenyon_price, full_price, images, stock_quantity, city, categories!products_category_id_fkey(name_he, slug)',
       { count: 'exact' },
     )
     .eq('status', 'active')
@@ -214,6 +216,7 @@ async function searchDb(
       full_price: p.full_price,
       images: p.images,
       stock_quantity: p.stock_quantity,
+      city: p.city ?? null,
       category: cat,
     }
   })

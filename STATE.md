@@ -6,7 +6,7 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 ## rc5 run (FINAL-CLOSEOUT-v2-rc5, 2026-10-18)
 
-המשך מ: F02 UX location-replaces-category
+המשך מ: F03 mobile gate 380
 
 Worktree `/Users/ofir/kenyonexpress-web/ke-rc5` on local branch `work/rc5`, pushed to
 `origin closeout/v1-final`. The Haiku refill loop was committing into the main checkout on
@@ -19,6 +19,7 @@ inherited from autopilot commits. Fixed under F15.
 | Item | Status | Note |
 |---|---|---|
 | F01 migrations | DONE | 185, 186, 187, 278 applied via MCP apply_migration, docs/MIGRATIONS-APPLIED.md |
+| F02 location label | DONE | pin + city (or כל הארץ) above the title on all four card renderers and the PDP eyebrow |
 
 ### החלטות שהתקבלו אוטומטית (rc5)
 

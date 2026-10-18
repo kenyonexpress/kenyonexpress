@@ -1,7 +1,7 @@
 'use client'
 
 import AddToCartButton from '@/components/cart/AddToCartButton'
-import { EcMapPointer } from '@/components/icons/electro-icons'
+import ProductLocation from '@/components/product-card/ProductLocation'
 import LocationPin from '@/components/product/LocationPin'
 import { cityByName } from '@/lib/geo/cities'
 import { formatDistance } from '@/lib/geo/distance'
@@ -101,8 +101,8 @@ export default function CategoryProductCard({ product }: { product: CategoryProd
   const outOfStock = product.stock_quantity === 0
   const canAdd = price != null && !outOfStock
 
-  const categoryTags = product.categories ?? []
-  const cityLabel = cityByName(product.supplier?.city)?.name ?? null
+  const ownCity = product.city?.trim() || null
+  const locationCity = ownCity ?? cityByName(product.supplier?.city)?.name ?? null
   const distanceLabel =
     typeof product.distanceKm === 'number' ? formatDistance(product.distanceKm) : null
 
@@ -119,28 +119,14 @@ export default function CategoryProductCard({ product }: { product: CategoryProd
   return (
     <article className="category-card">
       <div className="category-card__header">
-        {categoryTags.length > 0 && (
-          <span className="category-card__categories">
-            {categoryTags.map((cat, i) => (
-              <span key={cat.slug}>
-                {i > 0 && ', '}
-                <Link href={`/category/${cat.slug}`}>{cat.name_he}</Link>
-              </span>
-            ))}
-          </span>
-        )}
-
-        {/* Where the business is. Shown only when the city is one this
-            project knows - cityByName returns null rather than guessing, so a
-            business is never labelled with a city it is not in. The distance
-            appears only after the customer asked for "near me". */}
-        {cityLabel && (
-          <span className="category-card__city">
-            <EcMapPointer size={11} aria-hidden="true" />
-            {cityLabel}
-            {distanceLabel && <span className="category-card__distance"> · {distanceLabel}</span>}
-          </span>
-        )}
+        {/* rc5 F02: location above the title instead of the category tags.
+            The product's own city first, then the supplier's when the city
+            table recognises it, else nationwide. The distance appears only
+            after the customer asked for "near me". */}
+        <span className="category-card__categories">
+          <ProductLocation city={locationCity} />
+          {distanceLabel && <span className="category-card__distance"> · {distanceLabel}</span>}
+        </span>
 
         {priceBlock && <span className="category-card__price">{priceBlock}</span>}
 

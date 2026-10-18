@@ -1,8 +1,8 @@
 'use client'
 
 import { useCart } from '@/components/cart/CartProvider'
-import CityTag from '@/components/geo/CityTag'
 import { EcAddToCart } from '@/components/icons/electro-icons'
+import ProductLocation from '@/components/product-card/ProductLocation'
 import FacebookShareButton from '@/components/shared/FacebookShareButton'
 import WhatsAppShareButton from '@/components/shared/WhatsAppShareButton'
 import CouponPricing from '@/components/storefront/CouponPricing'
@@ -13,6 +13,7 @@ import { type RecurringOffer, describeRecurringPrice } from '@/lib/commerce/recu
 import { cityByName } from '@/lib/geo/cities'
 import { shekelsFromIls as sharedShekelsFromIls } from '@/lib/money-format'
 import { buildShareMessage } from '@/lib/share/message'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { type ReactNode, useState } from 'react'
 
@@ -200,21 +201,22 @@ export default function ProductInfo({
 
   return (
     <div data-pdp="summary" className="pdp-summary">
-      {categoryName && <p className="pdp-summary__eyebrow">{categoryName}</p>}
+      {/* rc5 F02: the eyebrow above the title is the deal's location, not its
+          category (the category stays in the breadcrumb and the attributes).
+          A city the city table recognises links into the city-filtered
+          catalogue; free text it does not know prints as written; no city at
+          all reads as nationwide. */}
+      <p className="pdp-summary__eyebrow">
+        {knownCity ? (
+          <Link href={`/products?city=${knownCity.slug}`} className="hover:underline">
+            <ProductLocation city={knownCity.name} />
+          </Link>
+        ) : (
+          <ProductLocation city={city} />
+        )}
+      </p>
 
       <h1 className="pdp-summary__title">{name}</h1>
-
-      {/* Where the deal is, directly under the title, so it is answered before
-          the price rather than at the bottom of the page next to the supplier
-          block. It links into the city-filtered catalogue: a customer who cares
-          which city this is in is the customer who wants the others in it.
-          `knownCity` is null for free text the city table does not recognise,
-          and the whole line disappears rather than printing it raw. */}
-      {knownCity && (
-        <p className="pdp-summary__city">
-          <CityTag city={knownCity.name} href={`/products?city=${knownCity.slug}`} />
-        </p>
-      )}
 
       <p className="pdp-summary__meta" dir={effectiveSku ? 'rtl' : 'ltr'}>
         {effectiveSku ? (

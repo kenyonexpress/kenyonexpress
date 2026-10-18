@@ -2,6 +2,7 @@
 
 import PriceDisplay from '@/components/PriceDisplay'
 import AddToCartButton from '@/components/cart/AddToCartButton'
+import ProductLocation from '@/components/product-card/ProductLocation'
 import Image from 'next/image'
 import Link from 'next/link'
 // product-card-deals.css is imported by the root layout. See the note there.
@@ -20,6 +21,8 @@ export type Product = {
   stock_quantity: number | null
   full_price?: number | null
   category?: { name_he: string; slug: string } | null
+  /** products.city; NULL renders as nationwide. */
+  city?: string | null
   /** Gallery assets (blur placeholders + alts) keyed by image URL. Optional. */
   assets?: Record<string, GalleryAsset>
 }
@@ -110,11 +113,7 @@ function DealsProductCard({ product }: { product: Product }) {
 
   return (
     <article className="p_con">
-      {product.category && (
-        <Link href={`/category/${product.category.slug}`} className="p_con__category">
-          {product.category.name_he}
-        </Link>
-      )}
+      <ProductLocation city={product.city} className="p_con__category" />
 
       <div className="p_con__title-wrap">
         <Link href={`/product/${product.slug}`} className="hover:underline">
@@ -255,14 +254,7 @@ function DefaultProductCard({ product }: { product: Product }) {
   return (
     <div className="product-card overflow-hidden rounded-xl border border-gray-100 bg-white">
       <div className="space-y-2 p-3">
-        {product.category && (
-          <Link
-            href={`/category/${product.category.slug}`}
-            className="block text-xs text-muted-2 hover:text-heading line-clamp-1"
-          >
-            {product.category.name_he}
-          </Link>
-        )}
+        <ProductLocation city={product.city} className="flex text-xs" />
 
         <Link
           href={`/product/${product.slug}`}
