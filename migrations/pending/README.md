@@ -15,6 +15,16 @@ migration, so the apply order across the two branches is undefined.
 Until the owner picks a mainline branch, **apply nothing from either side.**
 The full measured table is in `docs/MIGRATION-NUMBER-COLLISIONS.md`.
 
+## 2026-10-18: 283 APPLIED - affiliate campaigns (rc5 F12)
+
+`283_affiliate_campaigns.sql` adds `affiliate_campaigns`, `affiliate_links`,
+`affiliate_clicks`, `affiliate_attributions` and `affiliate_payouts` on top of
+the live `affiliates` table; server-only writes, owner-only reads. The seeded
+campaign `כללי` is INACTIVE until the owner sets its rate. Applied through MCP
+`apply_migration` (`affiliate_campaigns_283`). **`189_affiliate_program.sql`
+is superseded and must not be applied**: it re-creates `affiliates`, which
+already exists.
+
 ## 2026-10-18: 282 APPLIED - club tiers (rc5 F11)
 
 `282_club_tiers.sql` creates `club_tiers` (seeded bronze 0, silver 50000,

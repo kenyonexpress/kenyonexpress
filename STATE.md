@@ -67,7 +67,7 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 ## rc5 run (FINAL-CLOSEOUT-v2-rc5, 2026-10-18)
 
-המשך מ: F09 affiliate (F12)
+המשך מ: F10 chips real data (F13)
 
 Worktree `/Users/ofir/kenyonexpress-web/ke-rc5` on local branch `work/rc5`, pushed to
 `origin closeout/v1-final`. The Haiku refill loop was committing into the main checkout on
@@ -80,6 +80,7 @@ inherited from autopilot commits. Fixed under F15.
 | Item | Status | Note |
 |---|---|---|
 | F01 migrations | DONE | 185, 186, 187, 278 applied via MCP apply_migration, docs/MIGRATIONS-APPLIED.md |
+| F09 affiliate | DONE | 283 applied; ?ref=af... cookie in proxy, click dedupe, rate snapshot at checkout, daily cron pays wallet after 14 days via fn_wallet_transfer; /account/affiliate, /admin/affiliates/campaigns |
 | F08 club tiers | DONE | club_tiers + security-invoker v_user_tier (282 applied, RLS-probed as a customer); /admin/club-tiers edits names, thresholds, benefits; /account reads the view |
 | F07 supplier card check | DONE | ₪1 ChargeAndCreateToken on Cardcom hosted page, GetLpResult verdict, token in supplier_card_tokens, void, lead only after verify; 281 applied |
 | F06 CSV import | DONE | new columns + lat/lng and payout_cadence_days aliases, per-row validation, dry-run preview then commit, docs/CSV-TEMPLATE.csv |
@@ -103,6 +104,12 @@ Found, inherited: at 1440 the header nav overflows 46px to the left (scrollWidth
 before F03. Fix under F14.
 
 ### החלטות שהתקבלו אוטומטית (rc5)
+
+- F09 removed six autopilot routes under /api/affiliate and lib/affiliate-tracking.ts: every
+  one called an RPC that does not exist in production, and attribute-order was an
+  unauthenticated service-role POST. 189_affiliate_program.sql is superseded by 283 (it
+  re-creates the live `affiliates`). The seeded campaign is INACTIVE until Ofir sets a rate.
+  The proxy is src/proxy.ts (Next 16), not src/middleware.ts.
 
 - F07: there is no /supplier/apply page; the application form is on /suppliers, so the check
   lives there. With no Cardcom credentials (production today) the attempt is recorded as

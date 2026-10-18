@@ -80,6 +80,10 @@ export const RATE_LIMIT_POLICIES = {
   // harmless; this only bounds a script.
   'refund-request': { limit: 5, windowSeconds: 3600, reason: 'cancellation notice, per user' },
 
+  // rc5 F12. Keyed on the user: both act only on the caller's own affiliate row.
+  'affiliate-join': { limit: 5, windowSeconds: 3600, reason: 'affiliate application, per user' },
+  'affiliate-link': { limit: 30, windowSeconds: 3600, reason: 'affiliate link creation, per user' },
+
   // -- Vouchers and the supplier till. Keyed on the supplier user, never on IP:
   // a shop floor is one NAT address and would share one bucket.
   redeem: { limit: 60, windowSeconds: 3600, reason: 'customer-facing redeem page, per IP' },

@@ -86,6 +86,7 @@ export const WALLET_REASON_LABELS: Record<string, string> = {
   order_spend: 'שימוש בארנק',
   order_refund: 'החזר על ביטול',
   refund_to_wallet: 'זיכוי לארנק',
+  affiliate_commission: 'עמלת שותפים',
   admin_credit: 'זיכוי ידני',
   // Written by fn_pay_referral and by credit_expired_vouchers, in the DATABASE.
   // Both were missing here until 2026-09-07 and both are reachable by a

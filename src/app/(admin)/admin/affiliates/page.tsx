@@ -209,7 +209,12 @@ export default async function AdminAffiliatesPage(props: {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-bold text-gray-900">שותפים והפניות</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-bold text-gray-900">שותפים והפניות</h1>
+        <Link href="/admin/affiliates/campaigns" className="text-sm text-link hover:underline">
+          קמפיינים ועמלות
+        </Link>
+      </div>
 
       <div className="flex flex-wrap items-center gap-2">
         <Link

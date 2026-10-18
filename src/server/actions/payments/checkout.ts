@@ -1,5 +1,6 @@
 'use server'
 
+import { AFFILIATE_COOKIE } from '@/lib/affiliate/rules'
 import { appReturnUrl } from '@/lib/app/deep-links'
 import { checkOptionalIsraeliPostalCode } from '@/lib/checkout/israeli-postal-code'
 import { validateCartView } from '@/lib/checkout/validate-cart'
@@ -43,6 +44,7 @@ import {
   beginCheckoutInputSchema,
 } from '@/lib/validations/checkout'
 import { getCart, resolveCheckoutDiscountAgorot } from '@/server/actions/cart'
+import { attributeOrder } from '@/server/affiliate/attribution'
 import {
   linkAnalyticsIdentity,
   stampOrderAttribution,
@@ -50,6 +52,7 @@ import {
 } from '@/server/analytics/track'
 import { type SettlementLineInput, calculateSettlement } from '@/server/domain/orders/settlement'
 import { finalizeOrder } from '@/server/payments/finalize'
+import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
 const ORDER_EXPIRY_MINUTES = 30
@@ -599,18 +602,21 @@ async function runBeginCheckout(
     return { ok: false, error: `יצירת הזמנה נכשלה: ${orderError?.message}`, code: 'INTERNAL' }
   }
 
-  // Attribute order to affiliate (fire-and-forget, does not block checkout)
-  const sessionId = input.affiliate_session_id
-  if (sessionId) {
-    fetch(
-      `${process.env.NEXT_PUBLIC_APP_URL || 'https://kenyonexpress.co.il'}/api/affiliate/attribute-order`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ order_id: order.id, session_id: sessionId }),
-      },
-    ).catch((err) => {
-      log.warn('checkout.affiliate_attribution_failed', { order_id: order.id, error: err.message })
+  // rc5 F12: the affiliate link that brought this visit (cookie set by the
+  // proxy from `?ref=`), with the campaign rate snapshotted. Best effort and
+  // awaited inside its own try: it can never fail or delay the order.
+  try {
+    const jar = await cookies()
+    await attributeOrder({
+      orderId: order.id,
+      buyerUserId: user?.id ?? null,
+      linkCode: jar.get(AFFILIATE_COOKIE)?.value,
+      now,
+    })
+  } catch (err) {
+    log.warn('checkout.affiliate_attribution_failed', {
+      order_id: order.id,
+      error: err instanceof Error ? err.message : String(err),
     })
   }
 

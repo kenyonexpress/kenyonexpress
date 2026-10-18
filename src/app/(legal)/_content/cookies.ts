@@ -30,6 +30,7 @@ import type { LegalDoc } from './types'
  *   ke_consent         analytics/consent.ts           365d, browser-readable
  *   ke_attr            analytics/attribution.ts       30d
  *   ke_ref             referrals/cookie.ts            30d, httpOnly
+ *   ke_aff             affiliate/rules.ts             30d, httpOnly
  *   ke_cart_coupon     server/actions/cart.ts         30d
  *   ke_ph_id           observability/posthog.ts       30d, NOT httpOnly by design
  *   ke_cart_mirror_v1  cart/store.ts                  localStorage
@@ -107,6 +108,12 @@ export const cookiesDoc: LegalDoc = {
               'ke_ref',
               'עוגייה',
               'נושאת קוד הפניה של חבר מדף הנחיתה ועד להשלמת ההרשמה. חסומה לקריאה על ידי סקריפטים בדפדפן (httpOnly)',
+              '30 יום',
+            ],
+            [
+              'ke_aff',
+              'עוגייה',
+              'נושאת את קוד הקישור של שותף שהביא אתכם לאתר, כדי לזקוף לו עמלה על הזמנה. חסומה לקריאה על ידי סקריפטים בדפדפן (httpOnly)',
               '30 יום',
             ],
             [

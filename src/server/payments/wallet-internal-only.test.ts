@@ -24,6 +24,7 @@ import { WITHDRAWAL_RULE } from './wallet-topup'
  *   finalize.ts        order_cashback     reserve  -> user
  *   finalize.ts        order_spend        user     -> platform
  *   refund-to-wallet   refund_to_wallet   house    -> user
+ *   affiliate/settle   affiliate_commission house  -> user   (rc5 F12)
  *
  * A fourth call site, a new reason, or a module that pairs a wallet move with a
  * provider payout are the three ways the property dies. Each fails here.
@@ -53,12 +54,18 @@ describe('the only primitive that moves wallet money has a known, closed set of 
   it('is called from exactly the three known modules', () => {
     expect(movers.map((f) => f.path).sort()).toEqual([
       'server/actions/payments/refund-to-wallet.ts',
+      'server/affiliate/settle.ts',
       'server/payments/finalize.ts',
     ])
   })
 
   it('every move states an internal reason', () => {
-    const INTERNAL_REASONS = ['order_cashback', 'order_spend', 'refund_to_wallet']
+    const INTERNAL_REASONS = [
+      'affiliate_commission',
+      'order_cashback',
+      'order_spend',
+      'refund_to_wallet',
+    ]
     const reasons = movers
       .flatMap((f) => [...f.text.matchAll(/p_reason:\s*'([a-z_]+)'/g)].map((m) => m[1]))
       .sort()

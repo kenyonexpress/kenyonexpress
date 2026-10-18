@@ -58,6 +58,7 @@ describe('the scheduled job inventory', () => {
       'expire-vouchers',
       'retention',
       'weekly-digest',
+      'affiliate-payouts',
     ])
   })
 

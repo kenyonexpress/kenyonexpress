@@ -13,6 +13,7 @@ const ITEMS = [
   { href: '/account/wishlist', label: 'רשימת המשאלות' },
   { href: '/account/wallet', label: 'הארנק שלי' },
   { href: '/account/referrals', label: 'חבר מביא חבר' },
+  { href: '/account/affiliate', label: 'תוכנית שותפים' },
   { href: '/account/subscriptions', label: 'המנויים שלי' },
   { href: '/account/addresses', label: 'כתובות' },
   { href: '/account/tokens', label: 'אמצעי תשלום' },

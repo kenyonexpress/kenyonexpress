@@ -61,6 +61,11 @@
       "name": "weekly-digest",
       "path": "/api/cron/weekly-digest",
       "cron": "0 4 * * 5"
+    },
+    {
+      "name": "affiliate-payouts",
+      "path": "/api/cron/affiliate-payouts",
+      "cron": "40 3 * * *"
     }
   ]
 }

@@ -464,4 +464,10 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
     state: 'applied',
     hasPreflight: false,
   },
+  {
+    number: '282',
+    file: '282_club_tiers.sql',
+    state: 'applied',
+    hasPreflight: false,
+  },
 ] as const

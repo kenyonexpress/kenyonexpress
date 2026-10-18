@@ -1,3 +1,4 @@
+import { AFFILIATE_COOKIE, AFFILIATE_COOKIE_MAX_AGE_S, isLinkCode } from '@/lib/affiliate/rules'
 import { loginRedirectUrl } from '@/lib/auth/login-redirect'
 import { GUEST_SESSION_COOKIE, guestSessionCookieOptions } from '@/lib/cart/guest-session-cookie'
 import { REQUEST_ID_HEADER, resolveRequestId } from '@/lib/observability/request-id'
@@ -11,8 +12,9 @@ import {
   maintenanceEnabled,
 } from '@/lib/security/maintenance'
 import { lookupRedirect } from '@/lib/seo/redirects'
+import { recordAffiliateClick } from '@/server/affiliate/clicks'
 import { createServerClient } from '@supabase/ssr'
-import { type NextRequest, NextResponse } from 'next/server'
+import { type NextFetchEvent, type NextRequest, NextResponse } from 'next/server'
 
 // Next.js 16: middleware.ts is deprecated — this file replaces it.
 // The exported function must be named `proxy` (not `middleware`).
@@ -40,7 +42,7 @@ function withRequestId<T extends Response>(response: T, requestId: string): T {
   return response
 }
 
-export async function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest, event?: NextFetchEvent) {
   const { pathname } = request.nextUrl
 
   // Minted here and nowhere else, so one visitor request is one id no matter
@@ -246,6 +248,31 @@ export async function proxy(request: NextRequest) {
   // it would be avoiding is already handled: the root layout declares
   // `alternates.canonical`, so `/?ref=ABC12345` is canonical to `/`.
   if (request.method === 'GET') {
+    // rc5 F12: the same `?ref=` carries affiliate link codes, which are a
+    // different shape (`af` + 10 lowercase) and never match the referral
+    // alphabet. Last touch, 30 days, server-read only; the click is counted
+    // after the response so the landing never waits on it.
+    const affiliateCode = request.nextUrl.searchParams.get(REFERRAL_QUERY_PARAM)
+    if (isLinkCode(affiliateCode)) {
+      supabaseResponse.cookies.set(AFFILIATE_COOKIE, affiliateCode, {
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: (request.headers.get('x-forwarded-proto') ?? request.nextUrl.protocol).startsWith(
+          'https',
+        ),
+        maxAge: AFFILIATE_COOKIE_MAX_AGE_S,
+        path: '/',
+      })
+      event?.waitUntil(
+        recordAffiliateClick({
+          code: affiliateCode,
+          ip: request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? null,
+          landingPath: request.nextUrl.pathname,
+          referer: request.headers.get('referer'),
+        }).catch(() => undefined),
+      )
+    }
+
     const code = normalizeReferralCode(request.nextUrl.searchParams.get(REFERRAL_QUERY_PARAM))
     if (code && request.cookies.get(REFERRAL_COOKIE)?.value !== code) {
       supabaseResponse.cookies.set(
