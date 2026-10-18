@@ -221,7 +221,6 @@ async function ResultGrid({
           items={items as CategoryProduct[]}
           currentPage={currentPage}
           totalPages={totalPages}
-          pageSize={CATEGORY_PAGE_SIZE}
           categorySlug={args.category.slug}
           params={linkParams}
         />

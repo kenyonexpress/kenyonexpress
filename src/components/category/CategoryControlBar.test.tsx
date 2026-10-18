@@ -126,4 +126,74 @@ describe('CategoryControlBar', () => {
     const select = screen.getByLabelText('מיון מוצרים') as HTMLSelectElement
     expect(select).not.toBeDisabled()
   })
+
+  it('renders pagination mode switcher', () => {
+    render(<CategoryControlBar value="newest" />)
+    const switcher = screen.getByLabelText('בחר אופן ניווט')
+    expect(switcher).toBeInTheDocument()
+  })
+
+  it('renders pagination mode buttons', () => {
+    render(<CategoryControlBar value="newest" />)
+    expect(screen.getByTitle('גלילה אינסופית')).toBeInTheDocument()
+    expect(screen.getByTitle('עמודים')).toBeInTheDocument()
+  })
+
+  it('defaults to infinite scroll mode', () => {
+    render(<CategoryControlBar value="newest" />)
+    const infiniteButton = screen.getByTitle('גלילה אינסופית')
+    expect(infiniteButton).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  it('switches to pagination mode when paginate=1', () => {
+    ;(useSearchParams as any).mockReturnValue(new URLSearchParams('paginate=1'))
+    render(<CategoryControlBar value="newest" />)
+    const paginationButton = screen.getByTitle('עמודים')
+    expect(paginationButton).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  it('sets paginate query param when switching to pagination', () => {
+    render(<CategoryControlBar value="newest" />)
+    const paginationButton = screen.getByTitle('עמודים')
+    fireEvent.click(paginationButton)
+
+    expect(mockPush).toHaveBeenCalled()
+    const callArgs = mockPush.mock.calls[0]?.[0]
+    expect(String(callArgs)).toContain('paginate=1')
+  })
+
+  it('removes paginate query param when switching back to infinite scroll', () => {
+    ;(useSearchParams as any).mockReturnValue(new URLSearchParams('paginate=1'))
+    render(<CategoryControlBar value="newest" />)
+    const infiniteButton = screen.getByTitle('גלילה אינסופית')
+    fireEvent.click(infiniteButton)
+
+    expect(mockPush).toHaveBeenCalled()
+    const callArgs = mockPush.mock.calls[0]?.[0]
+    expect(String(callArgs)).not.toContain('paginate=')
+  })
+
+  it('removes page param when changing pagination mode', () => {
+    ;(useSearchParams as any).mockReturnValue(new URLSearchParams('page=3&paginate=1'))
+    render(<CategoryControlBar value="newest" />)
+    const infiniteButton = screen.getByTitle('גלילה אינסופית')
+    fireEvent.click(infiniteButton)
+
+    expect(mockPush).toHaveBeenCalled()
+    const callArgs = mockPush.mock.calls[0]?.[0]
+    expect(String(callArgs)).not.toContain('page=')
+  })
+
+  it('preserves other query parameters when changing pagination mode', () => {
+    ;(useSearchParams as any).mockReturnValue(new URLSearchParams('sort=price_asc&min=100'))
+    render(<CategoryControlBar value="newest" />)
+    const paginationButton = screen.getByTitle('עמודים')
+    fireEvent.click(paginationButton)
+
+    expect(mockPush).toHaveBeenCalled()
+    const callArgs = mockPush.mock.calls[0]?.[0]
+    expect(String(callArgs)).toContain('sort=price_asc')
+    expect(String(callArgs)).toContain('min=100')
+    expect(String(callArgs)).toContain('paginate=1')
+  })
 })
