@@ -4,7 +4,7 @@ import { render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 describe('HotCouponCard', () => {
-  const mockCoupon: HotCoupon = {
+  const mockCoupon = {
     id: '12345678-90ab-cdef-ghij-klmnopqrstuv',
     name_he: 'קופון מסעדה',
     price_ils: 200,
@@ -12,27 +12,11 @@ describe('HotCouponCard', () => {
     coupon_expiry_days: 30,
     offer_valid_until: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
     is_coupon_enabled: true,
-    status: 'active',
-    deleted_at: null,
-    type: 'coupon',
-    slug: 'coupon-restaurant',
-    images: [],
-    description_he: 'קופון לארוחה',
-    supplier_id: 'supplier-1',
     supplier: {
       name: 'המסעדה שלנו',
       logo_url: null,
     },
-    platform_percent: 10,
-    commission_type: 'percent',
-    commission_percent: 15,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    seo_slug: 'coupon-restaurant',
-    seo_title: 'קופון מסעדה',
-    seo_description: 'קופון זול למסעדה',
-    seo_keywords: 'מסעדה קופון',
-  }
+  } as unknown as HotCoupon
 
   beforeEach(() => {
     vi.useFakeTimers()
