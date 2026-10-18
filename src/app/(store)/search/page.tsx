@@ -8,6 +8,7 @@ import { type ProductTypeFilter, parseProductType } from '@/lib/category-page'
 import { searchProductsCached } from '@/lib/search-server'
 import { recordRecentSearch, recordSearchTerm } from '@/lib/search/record'
 import { createClient } from '@/lib/supabase/server'
+import { SITE } from '@/styles/tokens'
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import '@/styles/category-page.css'
@@ -61,11 +62,21 @@ async function ResultCount({ q, productType }: { q: string; productType?: Produc
   await recordSearchTerm(q, total)
   await recordRecentSearch(await createClient(), q)
 
+  const filterLabel =
+    productType === 'coupon' ? 'קופונים' : productType === 'physical' ? 'מוצרים פיזיים' : null
+
   return (
-    <p className="category-page__count">
-      נמצאו {total} מוצרים
-      {engine === 'meilisearch' && ' · Meilisearch'}
-    </p>
+    <div>
+      <p className="category-page__count">
+        נמצאו {total} מוצרים
+        {engine === 'meilisearch' && ' · Meilisearch'}
+      </p>
+      {filterLabel && (
+        <p style={{ fontSize: '0.875rem', color: SITE.neutral.muted, marginTop: '0.25rem' }}>
+          מסנן פעיל: {filterLabel}
+        </p>
+      )}
+    </div>
   )
 }
 
@@ -76,7 +87,20 @@ async function ResultGrid({ q, productType }: { q: string; productType?: Product
     return (
       <div className="category-page__empty">
         <p>לא נמצאו מוצרים עבור "{q}".</p>
-        <p>נסו מילת חיפוש אחרת.</p>
+        <p>נסו:</p>
+        <ul style={{ marginTop: '1rem', textAlign: 'right', paddingRight: '1.5rem' }}>
+          <li>מילת חיפוש שונה או קצרה יותר</li>
+          <li>בדוק את התיקיה הנבחרת בסינון</li>
+          <li>
+            עברו לעמוד{' '}
+            <a
+              href="/products"
+              style={{ color: SITE.functional.price, textDecoration: 'underline' }}
+            >
+              כל המוצרים
+            </a>
+          </li>
+        </ul>
       </div>
     )
   }
