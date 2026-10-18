@@ -1,4 +1,5 @@
 import LocationPin from '@/components/product/LocationPin'
+import PushPrompt from '@/components/push/PushPrompt'
 import PurchaseMarker from '@/components/pwa/PurchaseMarker'
 import WhatsAppIcon from '@/components/shared/WhatsAppIcon'
 import {
@@ -154,6 +155,7 @@ async function CheckoutReturnBody({ searchParams }: Props) {
       <div className="checkout-success">
         <PurchaseMarker />
         <h1 className="checkout-success__title">התשלום הצליח!</h1>
+        <PushPrompt />
         <p className="checkout-success__sub">
           הזמנה {order.id.slice(0, 8).toUpperCase()} · שולם באתר{' '}
           {shekels(agorot(orderMoney.totalAgorot))}

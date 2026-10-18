@@ -37,6 +37,7 @@ import type { LegalDoc } from './types'
  *   ke_ph_distinct_id  observability/posthog.ts       localStorage
  *   ke_a_session       analytics/session.ts           sessionStorage, 30min idle
  *   ke_theme           lib/theme.ts                   localStorage
+ *   ke_push_prompt_dismissed  components/push/PushPrompt.tsx  localStorage
  */
 export const cookiesDoc: LegalDoc = {
   slug: 'cookies',
@@ -132,6 +133,12 @@ export const cookiesDoc: LegalDoc = {
               'ke_theme',
               'אחסון מקומי',
               'שומר את ההעדפה שלכם לגבי מצב בהיר או כהה בעמודי האתר. שומר ערך בלבד (light/dark), אינו נשלח לשרת',
+              'עד למחיקה בדפדפן',
+            ],
+            [
+              'ke_push_prompt_dismissed',
+              'אחסון מקומי',
+              'זוכר שבחרתם "לא עכשיו" בהצעה להפעיל התראות, כדי שלא תוצג שוב. שומר ערך בלבד, אינו נשלח לשרת',
               'עד למחיקה בדפדפן',
             ],
           ],

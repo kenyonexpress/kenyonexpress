@@ -127,3 +127,48 @@ self.addEventListener('fetch', (event) => {
     )
   }
 })
+
+// ---- Push (rc5 F14) -------------------------------------------------------
+// The server sends { title, body, url, tag } (src/lib/push/web-push.ts). The
+// tag makes a re-sent reminder replace the earlier one instead of stacking.
+self.addEventListener('push', (event) => {
+  let data = {}
+  try {
+    data = event.data ? event.data.json() : {}
+  } catch {
+    data = { title: 'KenyonExpress', body: event.data ? event.data.text() : '' }
+  }
+  const title = typeof data.title === 'string' && data.title ? data.title : 'KenyonExpress'
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body: typeof data.body === 'string' ? data.body : '',
+      icon: '/icons/icon-192.png',
+      badge: '/icons/icon-192.png',
+      dir: 'rtl',
+      lang: 'he',
+      tag: typeof data.tag === 'string' ? data.tag : undefined,
+      data: { url: typeof data.url === 'string' ? data.url : '/' },
+    }),
+  )
+})
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close()
+  const raw = event.notification.data?.url
+  // Same-origin only: a push payload must not be able to open another site.
+  let target = '/'
+  try {
+    const url = new URL(raw || '/', self.location.origin)
+    if (url.origin === self.location.origin) target = url.pathname + url.search
+  } catch {
+    target = '/'
+  }
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windows) => {
+      for (const w of windows) {
+        if (new URL(w.url).pathname === target && 'focus' in w) return w.focus()
+      }
+      return self.clients.openWindow(target)
+    }),
+  )
+})

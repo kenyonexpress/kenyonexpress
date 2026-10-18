@@ -83,6 +83,8 @@ export const RATE_LIMIT_POLICIES = {
   // rc5 F12. Keyed on the user: both act only on the caller's own affiliate row.
   'affiliate-join': { limit: 5, windowSeconds: 3600, reason: 'affiliate application, per user' },
   'affiliate-link': { limit: 30, windowSeconds: 3600, reason: 'affiliate link creation, per user' },
+  // rc5 F14. A browser re-subscribes when its keys rotate; 20 an hour is ample.
+  'push-subscribe': { limit: 20, windowSeconds: 3600, reason: 'browser push subscribe, per user' },
 
   // -- Vouchers and the supplier till. Keyed on the supplier user, never on IP:
   // a shop floor is one NAT address and would share one bucket.

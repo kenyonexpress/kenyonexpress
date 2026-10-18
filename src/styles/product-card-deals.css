@@ -481,3 +481,31 @@
   background: var(--color-brand-primary);
   border-color: var(--color-brand-primary);
 }
+
+/* rc5 F14: the post-purchase push opt-in. */
+.push-prompt {
+  max-width: 640px;
+  margin: 16px auto;
+  padding: 12px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-surface);
+  text-align: start;
+}
+
+.push-prompt__actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.push-prompt__actions button {
+  border-radius: 999px;
+  padding: 6px 14px;
+  border: 1px solid var(--color-border);
+}
+
+.push-prompt__actions button:first-child {
+  background: var(--color-brand-primary);
+  border-color: var(--color-brand-primary);
+}

@@ -1,5 +1,6 @@
 import { type ExpoPushMessage, isExpoPushToken, sendExpoPush } from '@/lib/push/expo'
 import { type PushContent, buildPushContent } from '@/lib/push/templates'
+import { type BrowserSubscription, sendWebPush } from '@/lib/push/web-push'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 /**
@@ -97,20 +98,27 @@ export async function pushOutboxRow(
   const content = buildPushContent(row.kind, row.payload ?? {}, siteUrl)
   if (!content) return { outcome: 'none' }
 
+  // rc5 F14: the browser leg, first and best effort. It never asks for a
+  // retry on its own; when the app leg does, the notification `tag` makes the
+  // browser replace a re-sent copy instead of stacking a second one.
+  const browserSent = await pushToBrowsers(admin, row, content)
+  const settledByBrowser = (reason: string): PushLegResult =>
+    browserSent > 0 ? { outcome: 'sent', recipients: browserSent } : { outcome: 'skipped', reason }
+
   const targets = await loadPushTargets(admin, row.user_id, row.recipient_email)
   // A token column holding a device id or an emulator placeholder would make
   // Expo reject the WHOLE chunk, taking every valid token in it down with it.
   const tokens = targets.map((t) => t.expo_token).filter(isExpoPushToken)
-  if (tokens.length === 0) return { outcome: 'skipped', reason: 'no registered device' }
+  if (tokens.length === 0) return settledByBrowser('no registered device')
 
   const result = await sendExpoPush(toPushMessages(tokens, content))
 
-  if (!result.ok && result.skipped) return { outcome: 'skipped', reason: result.reason }
+  if (!result.ok && result.skipped) return settledByBrowser(result.reason)
   if (!result.ok) return { outcome: 'retry', reason: result.reason }
 
   await disableDeadTokens(admin, result.invalidTokens)
 
-  const accepted = result.tickets.filter((t) => t.status === 'ok').length
+  const accepted = result.tickets.filter((t) => t.status === 'ok').length + browserSent
   if (accepted > 0) return { outcome: 'sent', recipients: accepted }
 
   // Every ticket errored. If they all errored because the devices are gone,
@@ -123,5 +131,38 @@ export async function pushOutboxRow(
   return {
     outcome: 'retry',
     reason: first && first.status === 'error' ? first.message : 'no ticket accepted',
+  }
+}
+
+/**
+ * Sends `content` to every browser the row's user subscribed, deletes the
+ * subscriptions the push service reports gone, and returns how many accepted.
+ * Never throws: a broken browser leg must not cost the app or the email leg.
+ */
+export async function pushToBrowsers(
+  admin: SupabaseClient,
+  row: { kind: string; payload: Record<string, unknown> | null; user_id: string | null },
+  content: PushContent,
+): Promise<number> {
+  if (!row.user_id) return 0
+  try {
+    const { data, error } = await admin
+      .from('push_subscriptions')
+      .select('endpoint, p256dh, auth')
+      .eq('user_id', row.user_id)
+    if (error || !data || data.length === 0) return 0
+    const ref = row.payload?.voucher_id ?? row.payload?.order_id ?? ''
+    const result = await sendWebPush(
+      data as BrowserSubscription[],
+      content,
+      `${row.kind}:${String(ref)}`,
+    )
+    if (!result.ok) return 0
+    if (result.deadEndpoints.length > 0) {
+      await admin.from('push_subscriptions').delete().in('endpoint', result.deadEndpoints)
+    }
+    return result.sent
+  } catch {
+    return 0
   }
 }

@@ -67,7 +67,7 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 ## rc5 run (FINAL-CLOSEOUT-v2-rc5, 2026-10-18)
 
-המשך מ: F11 web push (F14)
+המשך מ: F12 passkeys + WA-OTP (F15)
 
 Worktree `/Users/ofir/kenyonexpress-web/ke-rc5` on local branch `work/rc5`, pushed to
 `origin closeout/v1-final`. The Haiku refill loop was committing into the main checkout on
@@ -80,6 +80,7 @@ inherited from autopilot commits. Fixed under F15.
 | Item | Status | Note |
 |---|---|---|
 | F01 migrations | DONE | 185, 186, 187, 278 applied via MCP apply_migration, docs/MIGRATIONS-APPLIED.md |
+| F11 web push | DONE | sw.js push+click handlers, /api/push/subscribe into existing push_subscriptions, browser leg in the outbox drain (T-7/T-1 voucher_expiring already queued by expire-vouchers), opt-in after purchase; needs VAPID env |
 | F10 chips | DONE | 284 applied (weekend_only); ?weekend=1 / ?free_shipping=1 on /c/[city] (client filter) and /products (query); home chips open /products filtered |
 | F09 affiliate | DONE | 283 applied; ?ref=af... cookie in proxy, click dedupe, rate snapshot at checkout, daily cron pays wallet after 14 days via fn_wallet_transfer; /account/affiliate, /admin/affiliates/campaigns |
 | F08 club tiers | DONE | club_tiers + security-invoker v_user_tier (282 applied, RLS-probed as a customer); /admin/club-tiers edits names, thresholds, benefits; /account reads the view |
@@ -105,6 +106,11 @@ Found, inherited: at 1440 the header nav overflows 46px to the left (scrollWidth
 before F03. Fix under F14.
 
 ### החלטות שהתקבלו אוטומטית (rc5)
+
+- F11: no migration 199. Production already has push_subscriptions with exactly the asked
+  columns (endpoint, p256dh, auth, user_id). There is no expiry-reminder pg_cron job; the T-7
+  and T-1 reminders are enqueue_expiring_voucher_notices([7,1]) called by the expire-vouchers
+  cron into notification_outbox, so the browser push is a third leg of that drain.
 
 - F10: the home grid is the fixed KE_LIVE_DEALS selection with no weekend or shipping data, so
   the home chips link into /products with the parameters instead of filtering it. No "בחר
