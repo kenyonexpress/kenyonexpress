@@ -4,14 +4,21 @@ RESUME FROM: Next goal in NEXT-GOALS.md (after UX24, which is VERIFIED COMPLETE)
 
 ## ✅ VERIFIED: UX24 Register Modal Multi-Step (2026-10-19)
 
-**Status**: COMPLETE & VERIFIED ✅
+**Status**: COMPLETE & VERIFIED ✅ — All gates passing, tests reliably stable
 
 **Work Done**:
 - Verified RegisterPanel with 4-step stepper already fully implemented
 - Verified LoginDialog integration with mode switching
-- Verified all E2E tests passing (10/10 in chromium + mobile-chrome)
+- **Fixed flaky e2e tests**: Filtered React dev-mode debug endpoint `__nextjs_original-stack-frames` from test request tracking
+- Verified all E2E tests passing reliably (10/10 in chromium + mobile-chrome, 3 consecutive runs)
 - Fixed CSP shell script hash for Turbopack chunk loader
-- All gates passing: type-check ✅, lint ✅, build ✅
+- All gates passing: type-check ✅, lint ✅, build ✅, e2e tests ✅✅✅
+
+**E2E Test Fix**:
+- Issue: Tests 60 and 91 (mobile-chrome) failed intermittently with unexpected POST to `__nextjs_original-stack-frames`
+- Root cause: React dev-mode debug endpoint making unsolicited POST requests in mobile simulation
+- Solution: Filter out `__nextjs_original-stack-frames` from test request tracking (not part of form submission)
+- Result: Tests now pass reliably in all 3 consecutive runs
 
 **Components Verified**:
 1. **RegisterPanel** (src/components/auth/RegisterPanel.tsx):
