@@ -4,6 +4,109 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 ---
 
+## 🎯 Autonomous Work Summary (Session: 2026-10-18 — UX12 NEWSLETTER SIGNUP)
+
+**UX12: Newsletter signup inline form success error states Hebrew RTL validation — ✅ COMPLETE (2026-10-18)**
+
+**Final Status:** Newsletter signup form fully enhanced with success/error states, comprehensive accessibility, Hebrew RTL support, and extensive test coverage.
+
+**What Was Done:**
+1. ✅ Enhanced visual feedback
+   - Success state button styling with checkmark icon (✓ הושלמה)
+   - Error state input highlighting with red border (has-error class)
+   - Animated slide-in transitions for messages (200ms ease-out)
+   - Loading state management ("שולח..." button text)
+   - Form disabling after successful submission
+
+2. ✅ Improved accessibility
+   - Proper aria-invalid attribute (true/false based on error state)
+   - Dynamic aria-describedby with error ID inclusion
+   - Alert role on error messages for screen reader announcement
+   - Output element for success messages with implicit status role
+   - Focus management with useRef on input and button
+
+3. ✅ Hebrew RTL support
+   - Full RTL form layout with dir="rtl"
+   - LTR email input field for proper caret placement (dir="ltr")
+   - Proper text direction inheritance throughout
+   - Hebrew copy in all UI states
+   - RTL-friendly CSS with logical properties
+
+4. ✅ Input validation and error handling
+   - Email format validation with Hebrew error message
+   - Rate limiting detection ("יותר מדי ניסיונות")
+   - Suppression list checking (same answer pattern)
+   - Success message display ("אם הכתובת תקינה, שלחנו אליה מייל לאישור ההרשמה")
+   - Error icon (⚠) and success icon (✓) in messages
+
+5. ✅ Enhanced styling (src/styles/newsletter.css)
+   - Button hover states with smooth transitions (duration-200)
+   - Input focus styling with shadow effect
+   - Error state visual indicators
+   - Success state button color (var(--util-15803d))
+   - Keyframe animation for message slide-in
+
+6. ✅ Component refactoring (src/components/growth/NewsletterSignup.tsx)
+   - Added useRef for input and button control
+   - Added useEffect for post-submission focus blur
+   - Enhanced disabled state logic (pending OR success)
+   - Improved aria-describedby concatenation
+   - Dynamic button text based on state
+
+7. ✅ Comprehensive test coverage
+   - **NewsletterSignup.test.tsx** (17 tests, 100% PASSING):
+     * ✓ Renders form with label and input
+     * ✓ Renders Hebrew consent text
+     * ✓ Applies RTL direction to form
+     * ✓ Applies LTR direction to email input
+     * ✓ Displays error message on validation failure
+     * ✓ Displays error with warning icon
+     * ✓ Displays success message on success
+     * ✓ Shows loading state while submitting
+     * ✓ Disables form while pending
+     * ✓ Sets aria-invalid when error exists
+     * ✓ Provides proper aria-describedby
+     * ✓ Includes error message in aria-describedby
+     * ✓ Has alert role on error message
+     * ✓ Applies error styling to input
+     * ✓ Passes source prop to form data
+     * ✓ Shows success button state after submission
+     * ✓ Disables input after successful submission
+
+   - **newsletter.test.ts** (13 tests, 100% PASSING):
+     * ✓ Validates email format
+     * ✓ Validates email max length
+     * ✓ Checks rate limit
+     * ✓ Returns same answer for suppressed emails
+     * ✓ Returns same answer for already subscribed emails
+     * ✓ Returns error message when email not provided
+     * ✓ Trims and lowercases email
+     * ✓ Returns error when confirmation token is empty
+     * ✓ Returns error when token is invalid
+     * ✓ Confirms newsletter subscription
+     * ✓ Returns error when unsubscribe fails
+     * ✓ Unsubscribes user by token
+     * ✓ Syncs unsubscribe to Resend
+
+**Code Quality Gates:**
+- ✅ `pnpm type-check`: CLEAN (0 errors)
+- ✅ `pnpm lint`: CLEAN (biome + tokens + copy + asset gates)
+- ✅ `pnpm build`: SUCCESS (290+ pages)
+- ✅ `pnpm test`: NewsletterSignup (17/17) + newsletter.test (13/13) = 30/30 PASSING
+
+**Files Created/Modified:**
+- ✅ src/components/growth/NewsletterSignup.tsx (MODIFIED) - Enhanced component with state management and accessibility
+- ✅ src/components/growth/NewsletterSignup.test.tsx (NEW) - 17 comprehensive component tests
+- ✅ src/server/actions/newsletter.test.ts (NEW) - 13 action flow tests
+- ✅ src/styles/newsletter.css (MODIFIED) - Enhanced styling with animations and states
+
+**Git Commit:**
+- `54f0f94c5` — [autopilot] UX12: Newsletter signup inline form success error states Hebrew RTL validation
+
+**HashMap:** UX12 COMPLETE. Newsletter form fully enhanced with success/error visual states, comprehensive accessibility features, Hebrew RTL support, and 30/30 tests passing. All quality gates passing. Code ready for production deployment.
+
+---
+
 ## 🎯 Autonomous Work Summary (Session: 2026-10-18 — UX10 HOT COUPONS SECTION)
 
 **UX10: Hot Coupons Section with Coupon Card Design — ✅ COMPLETE (2026-10-18)**
