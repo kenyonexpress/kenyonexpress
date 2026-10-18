@@ -1,6 +1,12 @@
 import type { Product } from '@/components/ProductCard'
+import { CartProvider } from '@/components/cart/CartProvider'
 import { fireEvent, render, screen } from '@testing-library/react'
+import type React from 'react'
 import FeaturedProductsTabs from './FeaturedProductsTabs'
+
+const renderWithProviders = (component: React.ReactElement) => {
+  return render(<CartProvider>{component}</CartProvider>)
+}
 
 const mockProducts: Product[] = [
   {
@@ -97,27 +103,29 @@ const mockProducts: Product[] = [
 
 describe('FeaturedProductsTabs', () => {
   it('renders the section with correct title and tabs', () => {
-    render(<FeaturedProductsTabs products={mockProducts} />)
+    renderWithProviders(<FeaturedProductsTabs products={mockProducts} />)
 
     const title = screen.getByText('מוצרים מומלצים')
     expect(title).toBeInTheDocument()
 
-    const tabs = screen.getAllByRole('button')
-    expect(tabs).toHaveLength(3)
-    expect(tabs[0]).toHaveTextContent('מומלצים')
-    expect(tabs[1]).toHaveTextContent('במבצע')
-    expect(tabs[2]).toHaveTextContent('במלאי')
+    const recommendedTab = screen.getByRole('button', { name: 'מומלצים' })
+    const saleTab = screen.getByRole('button', { name: 'במבצע' })
+    const instockTab = screen.getByRole('button', { name: 'במלאי' })
+
+    expect(recommendedTab).toBeInTheDocument()
+    expect(saleTab).toBeInTheDocument()
+    expect(instockTab).toBeInTheDocument()
   })
 
   it('displays 8 products from recommended tab by default', () => {
-    render(<FeaturedProductsTabs products={mockProducts} />)
+    renderWithProviders(<FeaturedProductsTabs products={mockProducts} />)
 
     const products = screen.getAllByRole('article')
     expect(products).toHaveLength(8)
   })
 
   it('uses responsive grid layout with correct Tailwind classes', () => {
-    const { container } = render(<FeaturedProductsTabs products={mockProducts} />)
+    const { container } = renderWithProviders(<FeaturedProductsTabs products={mockProducts} />)
 
     const grid = container.querySelector('.grid')
     expect(grid).toBeInTheDocument()
@@ -128,7 +136,7 @@ describe('FeaturedProductsTabs', () => {
   })
 
   it('applies h-full class to wrapper divs for consistent card heights', () => {
-    const { container } = render(<FeaturedProductsTabs products={mockProducts} />)
+    const { container } = renderWithProviders(<FeaturedProductsTabs products={mockProducts} />)
 
     const wrapperDivs = container.querySelectorAll('.grid > div')
     for (const div of wrapperDivs) {
@@ -137,14 +145,14 @@ describe('FeaturedProductsTabs', () => {
   })
 
   it('has correct gap spacing on grid', () => {
-    const { container } = render(<FeaturedProductsTabs products={mockProducts} />)
+    const { container } = renderWithProviders(<FeaturedProductsTabs products={mockProducts} />)
 
     const grid = container.querySelector('.grid')
     expect(grid).toHaveClass('gap-2')
   })
 
   it('filters sale products when sale tab is clicked', () => {
-    render(<FeaturedProductsTabs products={mockProducts} />)
+    renderWithProviders(<FeaturedProductsTabs products={mockProducts} />)
 
     const saleTab = screen.getByRole('button', { name: 'במבצע' })
     fireEvent.click(saleTab)
@@ -156,7 +164,7 @@ describe('FeaturedProductsTabs', () => {
   })
 
   it('filters in-stock products when instock tab is clicked', () => {
-    render(<FeaturedProductsTabs products={mockProducts} />)
+    renderWithProviders(<FeaturedProductsTabs products={mockProducts} />)
 
     const instockTab = screen.getByRole('button', { name: 'במלאי' })
     fireEvent.click(instockTab)
@@ -169,14 +177,14 @@ describe('FeaturedProductsTabs', () => {
 
   it('shows message when no products match filter', () => {
     const emptyProducts: Product[] = []
-    render(<FeaturedProductsTabs products={emptyProducts} />)
+    renderWithProviders(<FeaturedProductsTabs products={emptyProducts} />)
 
     const emptyMessage = screen.getByText('אין מוצרים להצגה')
     expect(emptyMessage).toBeInTheDocument()
   })
 
   it('highlights active tab correctly', () => {
-    render(<FeaturedProductsTabs products={mockProducts} />)
+    renderWithProviders(<FeaturedProductsTabs products={mockProducts} />)
 
     const recommendedTab = screen.getByRole('button', { name: 'מומלצים' })
     expect(recommendedTab).toHaveAttribute('aria-pressed', 'true')
@@ -186,7 +194,7 @@ describe('FeaturedProductsTabs', () => {
   })
 
   it('updates aria-pressed when tab is clicked', () => {
-    render(<FeaturedProductsTabs products={mockProducts} />)
+    renderWithProviders(<FeaturedProductsTabs products={mockProducts} />)
 
     const saleTab = screen.getByRole('button', { name: 'במבצע' })
     fireEvent.click(saleTab)
