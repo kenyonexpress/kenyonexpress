@@ -4,6 +4,69 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 ---
 
+## 🎯 Autonomous Work Summary (Session: 2026-10-19 — UX22 CATEGORY PAGE ENHANCEMENTS)
+
+**UX22: Category page breadcrumbs hero banner product grid pagination infinite scroll toggle — ✅ COMPLETE (2026-10-19)**
+
+**Final Status:** Category page now features hero banner with category images, pagination/infinite scroll toggle, comprehensive breadcrumbs, and full product grid navigation.
+
+**What Was Done:**
+
+1. ✅ Extended database schema integration
+   - Updated `CategoryRow` type to include `image_url` field
+   - Modified `getCategoryBySlug()` to fetch `image_url` from database
+   - No migrations needed; field already exists in categories table
+
+2. ✅ Created CategoryHeroBanner component
+   - Responsive image banner using Next.js Image component
+   - Responsive aspect ratios: 16:9 on mobile, 16:6 on desktop
+   - Graceful fallback when image_url is null
+   - Priority loading for above-the-fold image
+
+3. ✅ Implemented Pagination/Infinite Scroll Toggle
+   - Created PaginationModeSwitcher in CategoryControlBar
+   - Added CategoryGridWithPagination component for paginated view
+   - Toggle switches between infinite scroll (default) and pagination modes
+   - Query parameter 'paginate=1' controls mode persistence
+   - Both modes preserve other search parameters (filters, sort, etc.)
+
+4. ✅ Updated Category Page Layout
+   - Hero banner renders immediately after breadcrumb
+   - Conditional rendering of pagination vs infinite scroll grid
+   - Maintained existing breadcrumb, control bar, and filter sidebar
+
+5. ✅ Styling and UX
+   - Hero banner CSS with responsive sizing
+   - Pagination mode switcher styled as a toggle group
+   - Desktop-only pagination toggle (hidden on mobile)
+   - All text in Hebrew with RTL support
+
+**Features Already Present (verified):**
+- ✅ Breadcrumbs via CategoryBreadcrumb component
+- ✅ Product grid with infinite scroll (CategoryGridWithInfiniteScroll)
+- ✅ Pagination component (now exposed via toggle)
+- ✅ Product filters and sort controls
+
+**Code Quality Gates:**
+- ✅ `pnpm type-check`: CLEAN
+- ✅ `pnpm lint`: CLEAN (2 info gates passing)
+- ✅ `pnpm build`: SUCCESS (compiled in 81s, 290+ pages)
+- ✅ `git status`: clean after commit
+
+**Files Changed:**
+- Modified: src/app/(store)/category/[slug]/page.tsx
+- Modified: src/components/category/CategoryControlBar.tsx
+- Modified: src/lib/category-page.ts
+- Modified: src/styles/category-page.css
+- Created: src/components/category/CategoryHeroBanner.tsx
+- Created: src/components/category/CategoryGridWithPagination.tsx
+
+**Commit:** `17b08e2be` - [autopilot] UX22: Category page hero banner, pagination/infinite scroll toggle
+
+**המשך מ:** UX22 COMPLETE. Category page fully enhanced with hero banners, breadcrumbs, product grid, and navigation mode toggle. All code quality gates passing.
+
+---
+
 ## 🎯 Autonomous Work Summary (Session: 2026-10-19 — UX21 MEILISEARCH INTEGRATION)
 
 **UX21: Search results page Meilisearch integration UI filters no results empty state — ✅ COMPLETE (2026-10-19)**
