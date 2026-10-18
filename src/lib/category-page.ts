@@ -506,11 +506,13 @@ export async function getShopProducts(opts: {
   priceMin?: number
   priceMax?: number
   productType?: ProductTypeFilter
+  weekend?: boolean
+  freeShipping?: boolean
 }): Promise<{ items: CategoryProductRow[]; total: number }> {
   'use cache'
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
-  const { sort, page, priceMin, priceMax, productType } = opts
+  const { sort, page, priceMin, priceMax, productType, weekend, freeShipping } = opts
   const supabase = createPublicClient()
   const from = (page - 1) * SHOP_PAGE_SIZE
 
@@ -530,6 +532,9 @@ export async function getShopProducts(opts: {
     const facet = productTypeFilter(productType)
     query = facet.column === 'or' ? query.or(facet.value) : query.or(`and(${facet.value})`)
   }
+  // rc5 F13 chips (migrations 284 and 278).
+  if (weekend) query = query.eq('weekend_only' as never, true as never)
+  if (freeShipping) query = query.eq('shipping_price_agorot' as never, 0 as never)
 
   switch (sort) {
     case 'price_asc':

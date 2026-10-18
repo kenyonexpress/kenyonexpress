@@ -119,6 +119,7 @@ describe('the pending migration inventory', () => {
       '281_supplier_card_verification.sql',
       '282_club_tiers.sql',
       '283_affiliate_campaigns.sql',
+      '284_products_weekend_only.sql',
     ])
   })
 

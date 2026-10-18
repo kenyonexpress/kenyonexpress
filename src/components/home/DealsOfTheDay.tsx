@@ -1,6 +1,7 @@
 import type { Product } from '@/components/ProductCard'
 import { ProductsGridSkeleton } from '@/components/ProductCardSkeleton'
 import ProductDealCard from '@/components/ProductDealCard'
+import DealChips from '@/components/catalog/DealChips'
 import dealBlurs from '@/lib/deal-blurs.json'
 import { KE_LIVE_DEALS } from '@/lib/ke-live-deals-data'
 import { Suspense } from 'react'
@@ -62,6 +63,11 @@ export default function DealsOfTheDay() {
       aria-label="מוצרים מובילים"
       className="home-deals mx-auto w-full max-w-deals px-deals-pad pt-deals-top pb-deals-footer-gap md:px-deals-pad-md xl:px-0"
     >
+      {/* rc5 F13: the home grid is a fixed selection, so the chips open the
+          filtered catalogue rather than filtering this grid. */}
+      <Suspense fallback={null}>
+        <DealChips basePath="/products" />
+      </Suspense>
       <Suspense fallback={<ProductsGridSkeleton count={KE_LIVE_DEALS.length} />}>
         <DealsGrid />
       </Suspense>

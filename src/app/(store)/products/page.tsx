@@ -1,9 +1,11 @@
+import DealChips from '@/components/catalog/DealChips'
 import CategoryBreadcrumb, { defaultHomeCrumb } from '@/components/category/CategoryBreadcrumb'
 import CategoryControlBar from '@/components/category/CategoryControlBar'
 import CategoryFilterSidebar from '@/components/category/CategoryFilterSidebar'
 import CategoryGridSkeleton from '@/components/category/CategoryGridSkeleton'
 import type { CategoryProduct } from '@/components/category/CategoryProductCard'
 import ShopGridWithInfiniteScroll from '@/components/shop/ShopGridWithInfiniteScroll'
+import { parseDealChips } from '@/lib/catalog/deal-chips'
 import {
   type ProductTypeFilter,
   SHOP_PAGE_SIZE,
@@ -52,6 +54,8 @@ type QueryArgs = {
   priceMin?: number
   priceMax?: number
   productType?: ProductTypeFilter
+  weekend?: boolean
+  freeShipping?: boolean
 }
 
 /**
@@ -73,12 +77,18 @@ async function shopArgs(searchParams: Props['searchParams']) {
     priceMin: parsePrice(sp.min),
     priceMax: parsePrice(sp.max),
     productType: parseProductType(sp.type),
+    ...(() => {
+      const chips = parseDealChips(sp)
+      return { weekend: chips.weekend, freeShipping: chips.freeShipping }
+    })(),
   }
   const linkParams = {
     sort: sort === 'menu_order' ? undefined : sort,
     min: args.priceMin != null ? String(args.priceMin) : undefined,
     max: args.priceMax != null ? String(args.priceMax) : undefined,
     type: args.productType,
+    weekend: args.weekend ? '1' : undefined,
+    free_shipping: args.freeShipping ? '1' : undefined,
   }
   return { args, linkParams }
 }
@@ -191,6 +201,9 @@ export default function ProductsPage({ searchParams }: Props) {
             instead type-checks and then fails the build. */}
         <Suspense fallback={<div className="category-control-bar" aria-hidden="true" />}>
           <ShopControlBar searchParams={searchParams} />
+        </Suspense>
+        <Suspense fallback={null}>
+          <DealChips />
         </Suspense>
 
         <div className="category-page__body">

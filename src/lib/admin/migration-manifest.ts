@@ -470,4 +470,10 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
     state: 'applied',
     hasPreflight: false,
   },
+  {
+    number: '283',
+    file: '283_affiliate_campaigns.sql',
+    state: 'applied',
+    hasPreflight: false,
+  },
 ] as const

@@ -67,7 +67,7 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 ## rc5 run (FINAL-CLOSEOUT-v2-rc5, 2026-10-18)
 
-המשך מ: F10 chips real data (F13)
+המשך מ: F11 web push (F14)
 
 Worktree `/Users/ofir/kenyonexpress-web/ke-rc5` on local branch `work/rc5`, pushed to
 `origin closeout/v1-final`. The Haiku refill loop was committing into the main checkout on
@@ -80,6 +80,7 @@ inherited from autopilot commits. Fixed under F15.
 | Item | Status | Note |
 |---|---|---|
 | F01 migrations | DONE | 185, 186, 187, 278 applied via MCP apply_migration, docs/MIGRATIONS-APPLIED.md |
+| F10 chips | DONE | 284 applied (weekend_only); ?weekend=1 / ?free_shipping=1 on /c/[city] (client filter) and /products (query); home chips open /products filtered |
 | F09 affiliate | DONE | 283 applied; ?ref=af... cookie in proxy, click dedupe, rate snapshot at checkout, daily cron pays wallet after 14 days via fn_wallet_transfer; /account/affiliate, /admin/affiliates/campaigns |
 | F08 club tiers | DONE | club_tiers + security-invoker v_user_tier (282 applied, RLS-probed as a customer); /admin/club-tiers edits names, thresholds, benefits; /account reads the view |
 | F07 supplier card check | DONE | ₪1 ChargeAndCreateToken on Cardcom hosted page, GetLpResult verdict, token in supplier_card_tokens, void, lead only after verify; 281 applied |
@@ -104,6 +105,12 @@ Found, inherited: at 1440 the header nav overflows 46px to the left (scrollWidth
 before F03. Fix under F14.
 
 ### החלטות שהתקבלו אוטומטית (rc5)
+
+- F10: the home grid is the fixed KE_LIVE_DEALS selection with no weekend or shipping data, so
+  the home chips link into /products with the parameters instead of filtering it. No "בחר
+  אזור" code exists on this branch (RegionMenu lives only on main); /city/[slug] region pages
+  are live URLs and stay. KNOWN ISSUE found: /products infinite scroll fetches
+  /api/shop/products, which does not exist on this branch, so page 2+ never loads.
 
 - F09 removed six autopilot routes under /api/affiliate and lib/affiliate-tracking.ts: every
   one called an RPC that does not exist in production, and attribute-order was an

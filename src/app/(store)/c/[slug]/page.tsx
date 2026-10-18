@@ -1,12 +1,16 @@
+import ChipFilteredCityGrid from '@/components/catalog/ChipFilteredCityGrid'
+import DealChips from '@/components/catalog/DealChips'
 import CategoryBreadcrumb from '@/components/category/CategoryBreadcrumb'
 import CategoryProductCard, {
   type CategoryProduct,
 } from '@/components/category/CategoryProductCard'
 import { CITIES, cityBySlugName } from '@/data/cities'
+import type { ChipFilterable } from '@/lib/catalog/deal-chips'
 import { getCityProducts } from '@/lib/city-page'
 import { alternatesFor } from '@/lib/seo/alternates'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import { Suspense } from 'react'
 import '@/styles/category-page.css'
 
 type Props = { params: Promise<{ slug: string }> }
@@ -42,19 +46,25 @@ export default async function CityDealsPage({ params }: Props) {
         <header className="category-page__header">
           <h1 className="category-page__title">דילים ב{city.name}</h1>
         </header>
-        {products.length === 0 ? (
-          <div className="category-page__empty">
-            <p>עדיין אין דילים ב{city.name}.</p>
-          </div>
-        ) : (
-          <ul className="category-products">
-            {products.map((product) => (
-              <li key={product.id} className="category-products__item">
-                <CategoryProductCard product={product as unknown as CategoryProduct} />
-              </li>
-            ))}
-          </ul>
-        )}
+        <Suspense fallback={null}>
+          <DealChips />
+        </Suspense>
+        <Suspense
+          fallback={
+            <ul className="category-products">
+              {products.map((product) => (
+                <li key={product.id} className="category-products__item">
+                  <CategoryProductCard product={product as unknown as CategoryProduct} />
+                </li>
+              ))}
+            </ul>
+          }
+        >
+          <ChipFilteredCityGrid
+            products={products as unknown as (CategoryProduct & ChipFilterable)[]}
+            cityName={city.name}
+          />
+        </Suspense>
       </div>
     </div>
   )

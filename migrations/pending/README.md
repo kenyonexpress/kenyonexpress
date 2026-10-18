@@ -15,6 +15,13 @@ migration, so the apply order across the two branches is undefined.
 Until the owner picks a mainline branch, **apply nothing from either side.**
 The full measured table is in `docs/MIGRATION-NUMBER-COLLISIONS.md`.
 
+## 2026-10-18: 284 APPLIED - products.weekend_only (rc5 F13)
+
+`284_products_weekend_only.sql` adds `weekend_only boolean not null default
+false` for the weekend chip; the free-shipping chip reads
+`shipping_price_agorot = 0` (278). Applied through MCP `apply_migration`
+(`products_weekend_only_284`); all 82 rows read false after it.
+
 ## 2026-10-18: 283 APPLIED - affiliate campaigns (rc5 F12)
 
 `283_affiliate_campaigns.sql` adds `affiliate_campaigns`, `affiliate_links`,
