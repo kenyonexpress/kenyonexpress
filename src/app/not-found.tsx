@@ -39,6 +39,27 @@ export default async function NotFound() {
           </p>
         </div>
 
+        {/* Search bar */}
+        <div className="mb-12">
+          <form action="/search" method="GET" className="mx-auto max-w-xl">
+            <div className="relative">
+              <input
+                type="text"
+                name="q"
+                placeholder="חפשו מוצר..."
+                className="w-full rounded-lg border border-border bg-white px-4 py-3 text-right text-base placeholder-muted focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/20"
+                autoComplete="off"
+              />
+              <button
+                type="submit"
+                className="absolute inset-y-0 left-0 flex items-center rounded-r-lg bg-brand-primary px-4 font-bold text-brand-dark transition-opacity hover:opacity-90"
+              >
+                חיפוש
+              </button>
+            </div>
+          </form>
+        </div>
+
         {/* Action buttons */}
         <div className="mb-16 flex flex-wrap items-center justify-center gap-4">
           <Link
