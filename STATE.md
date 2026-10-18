@@ -6,60 +6,66 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 ## 🎯 Autonomous Work Summary (Session: 2026-10-18 — UX07 CATEGORY CARDS)
 
-**UX07: Category Cards - Real SVG Images with Hover Zoom & Shadow — ✅ COMPLETE (2026-10-18)**
+**UX07: Category Cards - Real Product Images with Hover Zoom & Shadow — ✅ COMPLETE (2026-10-18)**
 
-**Final Status:** Enhanced sidebar category cards with real SVG icons, hover zoom effect, border-radius 12, enhanced shadow, and comprehensive test suite.
+**Final Status:** Enhanced sidebar category cards with real product images from catalog, hover zoom effect, border-radius 12, enhanced shadow, and comprehensive test suite.
 
 **What Was Done:**
-1. ✅ Real image replacement: Replaced emoji with real SVG icons from lucide-react:
-   - 🔥 → `Flame` icon (hot deals)
-   - 🏨 → `Building2` icon (hotels/vacation)
-   - 🍽️ → `UtensilsCrossed` icon (restaurants)
-2. ✅ Icon styling: 48x48px white icons with drop-shadow on gradient backgrounds
-3. ✅ Semantic HTML: Changed from `div` with `role="article"` to actual `<article>` element
-4. ✅ Hover zoom: Added `hover:scale-105` transform effect on image area with 200ms transition
-5. ✅ Border radius: Set to 12px using token `--radius-card: 12px` in tokens.css
-6. ✅ Shadow enhancement: Applied `hover:shadow-lg hover:shadow-gray-300` for depth perception
-7. ✅ Comprehensive tests: Created `LeftSidebar.test.tsx` with 18 tests covering:
-   - Rendering (cards, headings, buttons, SVG icons)
-   - Styling (gradients, transitions, shadows, scales)
-   - Accessibility (aria-label, semantic elements)
-   - Visual effects (zoom, shadow, spacing)
-8. ✅ TypeScript fix: Fixed pre-existing null safety error in MobileDrawer.test.tsx
+1. ✅ Real image replacement: Replaced emoji with actual product images from `/images/products`:
+   - 🔥 Hot deals → `ke-live-deal-1.avif` (real product image)
+   - 🏨 Vacation → `ke-live-deal-10.avif` (real product image)
+   - 🍽️ Restaurants → `ke-live-deal-26.avif` (real product image)
+2. ✅ Image component: Implemented Next.js Image component with:
+   - Responsive sizes: `(max-width: 768px) 100vw, 320px`
+   - `object-cover` for consistent display
+   - Proper alt text in Hebrew for accessibility
+3. ✅ Hover zoom: Added `hover:scale-105` transform effect on image area with 200ms transition
+4. ✅ Border radius: Set to 12px using token `--radius-card: 12px` in tokens.css
+5. ✅ Shadow enhancement: Applied `hover:shadow-lg hover:shadow-gray-300` for depth perception
+6. ✅ Updated tests: Modified `LeftSidebar.test.tsx` with 15 tests covering:
+   - Real image rendering (img elements, alt text)
+   - Image styling (object-cover, height, overflow)
+   - Card styling (shadows, hover effects, border-radius)
+   - Accessibility (alt text, semantic elements)
+   - Visual effects (zoom, spacing, interactivity)
+7. ✅ TypeScript fix: Fixed pre-existing null safety error in MobileDrawer.test.tsx
 
 **Quality Gates:**
 - ✅ `pnpm type-check`: CLEAN (0 errors)
 - ✅ `pnpm lint`: CLEAN (all gates, biome, import organization)
 - ✅ `pnpm build`: SUCCESS (290+ pages generated)
+- ✅ `pnpm test`: Tests run and passing (verified execution)
 
 **Component Updates:**
 - **LeftSidebar.tsx**: 
-  - Replaced emoji with lucide-react SVG icons (Flame, Building2, UtensilsCrossed)
-  - Added 'use client' directive for dynamic icon rendering
-  - Changed to semantic `<article>` element for proper a11y
-  - Icons: 48x48px white with `drop-shadow-lg` for visibility
+  - Replaced emoji with real product images from catalog
+  - Uses Next.js Image component with responsive sizing
+  - Images use `object-cover` for consistent display
+  - Semantic `<article>` elements with proper alt text
   - Maintained hover effects: scale-105, shadow-lg, transitions
   - All original styling and interactions preserved
 
-- **LeftSidebar.test.tsx** (NEW):
-  - 18 comprehensive tests covering all styling and functionality
-  - Tests for: rendering, SVG icons, gradients, shadows, scales, accessibility
-  - All assertions on CSS classes and element properties
+- **LeftSidebar.test.tsx** (UPDATED):
+  - 15 comprehensive tests for real image implementation
+  - Tests for: image rendering, alt text, object-cover, responsive sizing
+  - Tests for: card styling, shadows, hover effects, accessibility
+  - All assertions verified against real image elements
 
 - **tokens.css**: Added `--radius-card: 12px` for category cards
 
 - **MobileDrawer.test.tsx**: Fixed TypeScript null safety (HTMLElement | undefined)
 
 **Files Modified/Created:**
-- `src/components/LeftSidebar.tsx` — Replaced emoji with real SVG icons
-- `src/components/LeftSidebar.test.tsx` — NEW: 18 comprehensive tests
-- `src/styles/tokens.css` — Added `--radius-card: 12px` token
-- `src/components/layout/MobileDrawer.test.tsx` — Fixed type error
+- `src/components/LeftSidebar.tsx` — Real product images + Next.js Image component
+- `src/components/LeftSidebar.test.tsx` — 15 tests for real image validation
+- `src/styles/tokens.css` — `--radius-card: 12px` token
+- `src/components/layout/MobileDrawer.test.tsx` — TypeScript null safety fix
 
 **Git Commits:**
-- `cfc8e79ff` — [autopilot] UX07 CORRECTED: Category cards with real SVG icons, hover zoom, border radius 12, shadow, and tests
+- `67bb2fcb9` — [autopilot] UX07 FINAL: Replace emoji with real product images + updated tests
+- Previous: `5e4a37d75` (STATE.md), `cfc8e79ff` (SVG icons attempt)
 
-**המשך מ:** UX07 COMPLETE. Category cards now render real SVG icons (Flame, Building2, UtensilsCrossed) instead of emoji, with hover zoom (scale 1.05), border-radius 12 via token, and enhanced shadow effects. Full test coverage (18 tests). All quality gates passing. Next: Continue to next UX goal.
+**המשך מ:** UX07 COMPLETE. Category cards now display real product images from catalog (ke-live-deal-1/10/26.avif), with hover zoom (scale 1.05), border-radius 12 via --radius-card token, and enhanced shadow effects. Image component properly configured with responsive sizing and alt text. Test suite updated and verified (pnpm test executed). All quality gates passing. Next: Continue to next UX goal.
 
 ---
 
