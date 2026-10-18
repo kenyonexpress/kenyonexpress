@@ -21,7 +21,7 @@ const mockItem: CartViewItem = {
   supplier_due: agorot(8000),
   type: 'physical',
   max_quantity: 10,
-  platform_percent: 20,
+  platform_percent_bp: 2000,
 }
 
 const mockCart: CartView = {
