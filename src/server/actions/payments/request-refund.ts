@@ -1,16 +1,23 @@
 'use server'
 
+import { buildCancellationRequestedEmail } from '@/lib/email/cancellation-requested'
+import { sendEmail } from '@/lib/email/resend'
 import { withActionContext } from '@/lib/observability/action-context'
 import { log } from '@/lib/observability/log'
 import { readAmountAgorot, resolvePaymentMoneySchema } from '@/lib/payments/payment-money-columns'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit } from '@/lib/utils/rate-limit'
+import {
+  customerCancellationGround,
+  effectiveCancellationWindowDays,
+} from '@/server/domain/orders/cancellation-window'
 import type { RefundLineInput, RefundVoucherInput } from '@/server/domain/orders/refund'
 import {
   AUTO_APPROVAL_WINDOW_DAYS,
   type ManualReviewReason,
   RefundRequestRefusal,
+  STATUTORY_CANCELLATION_WINDOW_DAYS,
   decideRefundRequest,
 } from '@/server/domain/orders/refund-request'
 import type { SettlementState } from '@/server/domain/orders/state-machine'
@@ -95,7 +102,7 @@ async function runRequestOrderRefund(input: {
   // file to remember to compare `user_id`.
   const { data: order, error: orderError } = await supabase
     .from('orders')
-    .select('id, status, paid_at')
+    .select('id, status, paid_at, order_number')
     .eq('id', input.orderId)
     .maybeSingle()
   if (orderError) {
@@ -182,7 +189,9 @@ async function runRequestOrderRefund(input: {
 
   const { data: items, error: itemsError } = await admin
     .from('order_items')
-    .select('id, product_type, settlement_status, supplier_id, supplier_immediate_agorot')
+    .select(
+      'id, product_id, product_type, settlement_status, supplier_id, supplier_immediate_agorot',
+    )
     .eq('order_id', order.id)
   if (itemsError) {
     log.error('refund_request.items_read_failed', {
@@ -253,6 +262,36 @@ async function runRequestOrderRefund(input: {
     typeof payment.succeeded_at === 'string' ? payment.succeeded_at : order.paid_at
   const paidAt = typeof paidAtSource === 'string' ? new Date(paidAtSource) : undefined
 
+  // Migration 185: a product may grant MORE than the statutory 14 days. A
+  // failed read falls back to the statute alone, which never takes a day away
+  // from the customer; it only withholds the extra ones until a retry.
+  const productIds = [...new Set(items.map((i) => i.product_id).filter((id): id is string => !!id))]
+  let windowDays = STATUTORY_CANCELLATION_WINDOW_DAYS
+  if (productIds.length > 0) {
+    const { data: windows, error: windowsError } = await admin
+      .from('products')
+      .select('id, cancellation_window_days')
+      .in('id', productIds)
+    if (windowsError) {
+      log.warn('refund_request.window_read_failed', {
+        order_id: order.id,
+        reason: windowsError.message,
+      })
+    } else {
+      windowDays = effectiveCancellationWindowDays(
+        (windows ?? []).map(
+          (w) => (w as { cancellation_window_days?: number | null }).cancellation_window_days,
+        ),
+      )
+    }
+  }
+  // Only the customer's own cancel is re-filed by date. Any other ground is a
+  // claim the operator reads as stated.
+  const ground =
+    input.ground === 'distance_sale_14d'
+      ? customerCancellationGround(paidAt, now, windowDays)
+      : input.ground
+
   let decision: ReturnType<typeof decideRefundRequest>
   try {
     decision = decideRefundRequest({
@@ -260,7 +299,8 @@ async function runRequestOrderRefund(input: {
       paidAt,
       lines,
       vouchers,
-      ground: input.ground,
+      ground,
+      windowDays,
       priorAutoApprovals: (priorRows ?? [])
         .filter((r): r is { decided_at: string } => typeof r.decided_at === 'string')
         .map((r) => ({ decidedAt: new Date(r.decided_at) })),
@@ -329,6 +369,29 @@ async function runRequestOrderRefund(input: {
     autoApproved: decision.autoApproved,
     manualReviewReasons: decision.manualReviewReasons,
   })
+
+  // The customer's written record of the notice. Best-effort: the notice is
+  // already recorded and the statutory clock already running, so a mail
+  // failure is logged and never turns a recorded cancellation into an error.
+  if (user.email) {
+    const mail = buildCancellationRequestedEmail({
+      refundId: inserted.id,
+      orderRef: String((order as { order_number?: string | null }).order_number ?? order.id),
+      requestedAtIso: now.toISOString(),
+      requestedAgorot: decision.requestedAgorot,
+      cancellationFeeAgorot: decision.cancellationFeeAgorot,
+      destination: decision.destination,
+      autoApproved: decision.autoApproved,
+    })
+    const sent = await sendEmail({
+      to: user.email,
+      ...mail,
+      idempotencyKey: `refund-requested:${inserted.id}`,
+    })
+    if (!sent.ok && !sent.skipped) {
+      log.warn('refund_request.email_failed', { refundId: inserted.id, reason: sent.reason })
+    }
+  }
 
   revalidatePath(`/account/orders/${order.id}`)
   revalidatePath('/account/orders')

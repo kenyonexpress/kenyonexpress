@@ -150,10 +150,15 @@ export default async function OrderDetailPage({ params }: Props) {
         ))}
       </section>
 
-      <p>
+      <p className="flex flex-wrap gap-3">
         <Link className="account-btn" href="/account/orders">
           חזרה להזמנות
         </Link>
+        {order.status === 'paid' && (
+          <Link className="account-btn" href={`/account/orders/${order.id}/cancel`}>
+            ביטול הזמנה
+          </Link>
+        )}
       </p>
     </>
   )

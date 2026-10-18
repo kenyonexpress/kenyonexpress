@@ -6,7 +6,7 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 ## rc5 run (FINAL-CLOSEOUT-v2-rc5, 2026-10-18)
 
-המשך מ: F05 cancel+refund
+המשך מ: F06 CSV bulk import
 
 Worktree `/Users/ofir/kenyonexpress-web/ke-rc5` on local branch `work/rc5`, pushed to
 `origin closeout/v1-final`. The Haiku refill loop was committing into the main checkout on
@@ -19,6 +19,7 @@ inherited from autopilot commits. Fixed under F15.
 | Item | Status | Note |
 |---|---|---|
 | F01 migrations | DONE | 185, 186, 187, 278 applied via MCP apply_migration, docs/MIGRATIONS-APPLIED.md |
+| F05 cancel+refund | DONE | /account/orders/[id]/cancel + done page, 6-line email, per-product window (185), /account/notifications toggle -> user_consents (280 applied) |
 | F04 city default | DONE | 279 applied: 66 physical rows -> כל הארץ; /admin/products/missing-location sets a real city |
 | F03 mobile gate 380 | BLOCKED | spec layout shipped; gate 38.69 -> 39.51 -> 37.44% after two passes, target 11 |
 | F02 location label | DONE | pin + city (or כל הארץ) above the title on all four card renderers and the PDP eyebrow |
@@ -38,6 +39,14 @@ Found, inherited: at 1440 the header nav overflows 46px to the left (scrollWidth
 before F03. Fix under F14.
 
 ### החלטות שהתקבלו אוטומטית (rc5)
+
+- F05 keeps the law's direction, not the goal text's. Section 14ה: inside 14 days the
+  customer gets the money back to the CARD less min(5%, 100 ILS); a statutory refund cannot
+  be paid as wallet credit. The goal had it inverted (100% inside, fee outside). The 185
+  per-product window now EXTENDS past 14 days: inside that extension the refund is 100%, no
+  fee, to the wallet (ground extended_window). The customer button still moves no money and
+  no mock provider was wired: an approved notice waits for the operator's refund action,
+  as request-refund.ts was designed. The page is page.tsx + server action, not route.ts.
 
 - STATE lives in root `STATE.md`, not a new `claude/STATE.md`: every loop and CLAUDE.md read this one.
 - Goal migration numbers 193-200 are taken in the repo; new files use 278 upward.

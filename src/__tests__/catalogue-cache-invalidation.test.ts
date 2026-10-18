@@ -42,6 +42,8 @@ const NO_INVALIDATION_NEEDED: Record<string, string> = {
     'reads products and variants for live pricing and stock; every write it makes is to carts',
   'payments/checkout.ts':
     'reads products for the settlement snapshot and suppliers for the identity copied onto the order; every write it makes is to orders, order_items, payments and addresses',
+  'payments/request-refund.ts':
+    'reads products.cancellation_window_days to date the notice (migration 185); its only write is the refunds row',
 }
 
 function walk(dir: string, out: string[] = []): string[] {

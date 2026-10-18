@@ -446,4 +446,10 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
     state: 'applied',
     hasPreflight: false,
   },
+  {
+    number: '279',
+    file: '279_products_nationwide_city_default.sql',
+    state: 'applied',
+    hasPreflight: false,
+  },
 ] as const

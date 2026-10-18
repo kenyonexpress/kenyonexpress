@@ -15,6 +15,13 @@ migration, so the apply order across the two branches is undefined.
 Until the owner picks a mainline branch, **apply nothing from either side.**
 The full measured table is in `docs/MIGRATION-NUMBER-COLLISIONS.md`.
 
+## 2026-10-18: 280 APPLIED - user_consents (rc5 F05)
+
+`280_user_consents.sql` creates an append-only consent log: RLS on, customers
+read their own rows, anon has nothing, writes are service-role only. Applied
+through MCP `apply_migration` (`user_consents_280`) after a rolled-back
+rehearsal. First consumer: the toggle on `/account/notifications`.
+
 ## 2026-10-18: 279 APPLIED - nationwide city default (rc5 F04)
 
 `279_products_nationwide_city_default.sql` is a data-only update: 66 physical

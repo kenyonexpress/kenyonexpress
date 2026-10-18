@@ -115,6 +115,7 @@ describe('the pending migration inventory', () => {
       '187_products_full_address.sql',
       '278_products_shipping_price_agorot.sql',
       '279_products_nationwide_city_default.sql',
+      '280_user_consents.sql',
     ])
   })
 

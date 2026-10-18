@@ -91,6 +91,12 @@ export interface RefundRequestInput {
   /** Refunds already decided by machine for THIS customer inside the window. */
   priorAutoApprovals: readonly { decidedAt: Date }[]
   now: Date
+  /**
+   * The order's own cancellation window in days (migration 185, see
+   * cancellation-window.ts). Only `extended_window` is dated against it; the
+   * statutory ground is always dated against the statute's 14.
+   */
+  windowDays?: number
 }
 
 export interface RefundRequestDecision {
@@ -134,6 +140,15 @@ export class RefundRequestRefusal extends Error {
  * statutory claim on a date we do not hold would be the one error here with a
  * legal cost, and the conservative direction is obvious.
  */
+export function isInsideWindow(paidAt: Date, now: Date, windowDays?: number): boolean {
+  const days =
+    typeof windowDays === 'number' && windowDays > STATUTORY_CANCELLATION_WINDOW_DAYS
+      ? windowDays
+      : STATUTORY_CANCELLATION_WINDOW_DAYS
+  const elapsedDays = (now.getTime() - paidAt.getTime()) / MS_PER_DAY
+  return elapsedDays >= 0 && elapsedDays <= days
+}
+
 export function isInsideStatutoryWindow(paidAt: Date, now: Date): boolean {
   const elapsedDays = (now.getTime() - paidAt.getTime()) / MS_PER_DAY
   return elapsedDays >= 0 && elapsedDays <= STATUTORY_CANCELLATION_WINDOW_DAYS
@@ -215,20 +230,33 @@ export function decideRefundRequest(input: RefundRequestInput): RefundRequestDec
   // `service_not_provided` are both assertions the server cannot check, and
   // both zero or reshape the fee, so both go to a person. `duplicate_charge` is
   // checkable but the check is against the clearing file, not this table.
-  if (input.ground !== 'distance_sale_14d') reasons.push('unverifiable_claim')
-
-  if (!input.paidAt || !isInsideStatutoryWindow(input.paidAt, input.now)) {
-    reasons.push('window_closed')
+  //
+  // `extended_window` is the exception: it is a claim about dates, which the
+  // server holds, so it is checked against the order's own window instead.
+  if (input.ground !== 'distance_sale_14d' && input.ground !== 'extended_window') {
+    reasons.push('unverifiable_claim')
   }
+
+  const insideWindow =
+    input.ground === 'extended_window'
+      ? input.paidAt != null && isInsideWindow(input.paidAt, input.now, input.windowDays)
+      : input.paidAt != null && isInsideStatutoryWindow(input.paidAt, input.now)
+  if (!insideWindow) reasons.push('window_closed')
 
   if (countRecentAutoApprovals(input.priorAutoApprovals, input.now) >= AUTO_APPROVAL_LIMIT) {
     reasons.push('auto_approval_limit_reached')
   }
 
   const requestedAgorot = agorot(Math.max(0, Math.trunc(input.cardChargedAgorot)))
+  // The statutory fee belongs to the statutory cancellation. Days we grant on
+  // top of the statute (`extended_window`) and concessions (`goodwill`) are
+  // given whole, which is what a product's longer window advertises.
   const cancellationFeeAgorot = computeCancellationFee(
     requestedAgorot,
-    input.ground === 'defect' || input.ground === 'duplicate_charge',
+    input.ground === 'defect' ||
+      input.ground === 'duplicate_charge' ||
+      input.ground === 'extended_window' ||
+      input.ground === 'goodwill',
   )
 
   const autoApproved = reasons.length === 0
@@ -242,7 +270,9 @@ export function decideRefundRequest(input: RefundRequestInput): RefundRequestDec
     autoApproved,
     manualReviewReasons: reasons,
     messageHe: autoApproved
-      ? 'בקשת הביטול אושרה. הזיכוי יוחזר לאמצעי התשלום המקורי תוך 14 ימים.'
+      ? refundDestinationFor(input.ground) === 'wallet'
+        ? 'בקשת הביטול אושרה. מלוא הסכום יזוכה לארנק שלך באתר.'
+        : 'בקשת הביטול אושרה. הזיכוי יוחזר לאמצעי התשלום המקורי תוך 14 ימים.'
       : 'בקשת הביטול התקבלה ונמצאת בבדיקה. נחזור אליך עם תשובה תוך 14 ימים.',
   }
 }
