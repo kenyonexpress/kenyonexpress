@@ -1,3 +1,4 @@
+import CardVerifyNotice from '@/components/storefront/CardVerifyNotice'
 import SupplierLeadForm from '@/components/storefront/SupplierLeadForm'
 import {
   SUPPLIER_AGREEMENT_CLAUSES,
@@ -7,6 +8,7 @@ import {
 import { alternatesFor } from '@/lib/seo/alternates'
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { Suspense } from 'react'
 
 export const metadata: Metadata = {
   title: 'הצטרפו כעסקים',
@@ -120,6 +122,13 @@ export default function SuppliersPage() {
         <p className="mb-6 text-base leading-relaxed text-heading/80">
           העמלה נקבעת פר דיל ולא לפי טבלה אחידה, ולכן היא חלק מהשיחה ולא מספר שכתוב כאן.
         </p>
+        <p className="mb-6 text-sm leading-relaxed text-heading/75">
+          בשליחת הטופס תועברו לדף התשלום המאובטח של קארדקום לאימות כרטיס בחיוב של 1 ש&quot;ח, שמבוטל
+          מיד. פרטי הכרטיס לא נשמרים אצלנו.
+        </p>
+        <Suspense fallback={null}>
+          <CardVerifyNotice />
+        </Suspense>
         <SupplierLeadForm
           agreementHash={supplierAgreementHash()}
           agreementVersion={SUPPLIER_AGREEMENT_VERSION}

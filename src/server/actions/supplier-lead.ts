@@ -1,13 +1,11 @@
 'use server'
 
 import { isSmsCapableIsraeli, toE164Israeli } from '@/lib/auth/phone-otp'
-import { adminAlertRecipient } from '@/lib/email/admin-alerts'
-import { sendEmail } from '@/lib/email/resend'
-import { SUPPLIER_AGREEMENT_VERSION, supplierAgreementHash } from '@/lib/legal/supplier-agreement'
+import { supplierAgreementHash } from '@/lib/legal/supplier-agreement'
 import { withActionContext } from '@/lib/observability/action-context'
-import { log } from '@/lib/observability/log'
-import { createAdminClient } from '@/lib/supabase/admin'
 import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
+import { startSupplierCardVerification } from '@/server/supplier/card-verification'
+import { headers } from 'next/headers'
 import { z } from 'zod'
 
 /**
@@ -46,15 +44,12 @@ const schema = z.object({
   company: z.string().optional().default(''),
 })
 
-export type SupplierLeadState = { ok: boolean; message?: string; error?: string }
-
-function escapeHtml(value: string): string {
-  return value
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#39;')
+export type SupplierLeadState = {
+  ok: boolean
+  message?: string
+  error?: string
+  /** Cardcom's hosted card page, for the ₪1 verification. */
+  redirectUrl?: string
 }
 
 async function runSubmitSupplierLead(
@@ -99,78 +94,44 @@ async function runSubmitSupplierLead(
   }
 
   const phone = toE164Israeli(parsed.data.phone) ?? parsed.data.phone
-  const admin = createAdminClient()
+  const h = await headers()
 
-  const { data: lead, error } = await admin
-    .from('supplier_leads')
-    .insert({
+  // rc5 F07: no lead without a verified card. The application waits on the
+  // verification row and becomes a lead only when Cardcom confirms the card.
+  const outcome = await startSupplierCardVerification({
+    payload: {
       business_name: parsed.data.business_name,
       contact_name: parsed.data.contact_name,
-      email: parsed.data.email.toLowerCase(),
+      email: parsed.data.email,
       phone,
-      city: parsed.data.city || null,
-      category: parsed.data.category || null,
-      website: parsed.data.website || null,
-      message: parsed.data.message || null,
-    })
-    .select('id')
-    .single()
-
-  if (error) {
-    log.error('supplier_lead.insert_failed', { reason: error.message })
-    return { ok: false, error: 'לא הצלחנו לשמור את הפרטים. נסו שוב או פנו אלינו בוואטסאפ.' }
-  }
-
-  // The acceptance record: version, hash, time and IP, in the immutable audit
-  // log. No supplier_leads column is needed, so this works before any migration.
-  const { error: acceptError } = await admin.from('audit_log').insert({
-    actor_id: null,
-    actor_role: 'anon',
-    action: 'created',
-    entity_type: 'supplier_agreement_acceptance',
-    entity_id: lead.id,
-    changes: {
-      new: {
-        version: SUPPLIER_AGREEMENT_VERSION,
-        hash: parsed.data.agreement_hash,
-        accepted_at: new Date().toISOString(),
-        email: parsed.data.email.toLowerCase(),
-      },
+      city: parsed.data.city,
+      category: parsed.data.category,
+      website: parsed.data.website,
+      message: parsed.data.message,
+      agreement_hash: parsed.data.agreement_hash,
     },
-    metadata: { source: 'supplier-lead-form' },
-    ip_address: /^[0-9a-fA-F.:]+$/.test(ip) ? ip : null,
+    ip,
+    userAgent: h.get('user-agent'),
   })
-  if (acceptError) log.error('supplier_lead.acceptance_failed', { reason: acceptError.message })
 
-  // The row is safe. From here on, a failure costs a notification and not a
-  // lead, so it is logged and never shown to the business.
-  const lines = [
-    `עסק: ${parsed.data.business_name}`,
-    `איש קשר: ${parsed.data.contact_name}`,
-    `מייל: ${parsed.data.email}`,
-    `טלפון: ${phone}`,
-    parsed.data.city ? `עיר: ${parsed.data.city}` : '',
-    parsed.data.category ? `תחום: ${parsed.data.category}` : '',
-    parsed.data.website ? `אתר: ${parsed.data.website}` : '',
-    parsed.data.message ? `\n${parsed.data.message}` : '',
-  ].filter(Boolean)
-
-  const result = await sendEmail({
-    to: adminAlertRecipient(),
-    subject: `ליד ספק חדש: ${parsed.data.business_name}`,
-    text: lines.join('\n'),
-    html: `<div dir="rtl" style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:2">${lines
-      .map((line) => escapeHtml(line))
-      .join('<br>')}</div>`,
-    // Replying to the alert reaches the business, which is what an operator
-    // will try to do first.
-    replyTo: parsed.data.email,
-  })
-  if (!result.ok && !result.skipped) {
-    log.warn('supplier_lead.alert_failed', { reason: result.reason })
+  switch (outcome.kind) {
+    case 'redirect':
+      return { ok: true, redirectUrl: outcome.url }
+    case 'done':
+      return outcome.status === 'verified'
+        ? { ok: true, message: 'הכרטיס אומת. תודה, קיבלנו את הפרטים ונחזור אליכם בהקדם.' }
+        : { ok: false, error: 'אימות הכרטיס נכשל. בדקו את פרטי הכרטיס ונסו שוב.' }
+    case 'unavailable':
+      return {
+        ok: false,
+        error: 'אימות הכרטיס אינו זמין כרגע. העברנו את הפרטים לצוות ונחזור אליכם.',
+      }
+    default:
+      return {
+        ok: false,
+        error: 'לא הצלחנו להתחיל את אימות הכרטיס. נסו שוב או פנו אלינו בוואטסאפ.',
+      }
   }
-
-  return { ok: true, message: 'תודה, קיבלנו את הפרטים ונחזור אליכם בהקדם.' }
 }
 
 export async function submitSupplierLead(

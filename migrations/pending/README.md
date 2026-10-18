@@ -15,6 +15,15 @@ migration, so the apply order across the two branches is undefined.
 Until the owner picks a mainline branch, **apply nothing from either side.**
 The full measured table is in `docs/MIGRATION-NUMBER-COLLISIONS.md`.
 
+## 2026-10-18: 281 APPLIED - supplier card verification (rc5 F07)
+
+`281_supplier_card_verification.sql` creates `supplier_card_verifications`
+(one row per attempt, holding the application until the card verifies) and
+`supplier_card_tokens` (Cardcom token, last four digits, expiry; never card
+data). Both server-only: RLS on, no policies, nothing granted to anon or
+authenticated. Applied through MCP `apply_migration`
+(`supplier_card_verification_281`) after a rolled-back rehearsal.
+
 ## 2026-10-18: 280 APPLIED - user_consents (rc5 F05)
 
 `280_user_consents.sql` creates an append-only consent log: RLS on, customers

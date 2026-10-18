@@ -452,4 +452,10 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
     state: 'applied',
     hasPreflight: false,
   },
+  {
+    number: '280',
+    file: '280_user_consents.sql',
+    state: 'applied',
+    hasPreflight: false,
+  },
 ] as const

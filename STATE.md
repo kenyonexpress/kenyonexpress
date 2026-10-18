@@ -6,7 +6,7 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 ## rc5 run (FINAL-CLOSEOUT-v2-rc5, 2026-10-18)
 
-המשך מ: F07 supplier 1 ILS card verification
+המשך מ: F08 club tiers (F11)
 
 Worktree `/Users/ofir/kenyonexpress-web/ke-rc5` on local branch `work/rc5`, pushed to
 `origin closeout/v1-final`. The Haiku refill loop was committing into the main checkout on
@@ -19,6 +19,7 @@ inherited from autopilot commits. Fixed under F15.
 | Item | Status | Note |
 |---|---|---|
 | F01 migrations | DONE | 185, 186, 187, 278 applied via MCP apply_migration, docs/MIGRATIONS-APPLIED.md |
+| F07 supplier card check | DONE | ₪1 ChargeAndCreateToken on Cardcom hosted page, GetLpResult verdict, token in supplier_card_tokens, void, lead only after verify; 281 applied |
 | F06 CSV import | DONE | new columns + lat/lng and payout_cadence_days aliases, per-row validation, dry-run preview then commit, docs/CSV-TEMPLATE.csv |
 | F05 cancel+refund | DONE | /account/orders/[id]/cancel + done page, 6-line email, per-product window (185), /account/notifications toggle -> user_consents (280 applied) |
 | F04 city default | DONE | 279 applied: 66 physical rows -> כל הארץ; /admin/products/missing-location sets a real city |
@@ -40,6 +41,12 @@ Found, inherited: at 1440 the header nav overflows 46px to the left (scrollWidth
 before F03. Fix under F14.
 
 ### החלטות שהתקבלו אוטומטית (rc5)
+
+- F07: there is no /supplier/apply page; the application form is on /suppliers, so the check
+  lives there. With no Cardcom credentials (production today) the attempt is recorded as
+  `unavailable` and the team gets the application by mail; no supplier_leads row is created.
+  The return route is /api/supplier-apply/card-verify (GET only; /api/supplier is the guarded
+  portal namespace).
 
 - F05 keeps the law's direction, not the goal text's. Section 14ה: inside 14 days the
   customer gets the money back to the CARD less min(5%, 100 ILS); a statutory refund cannot

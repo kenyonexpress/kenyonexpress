@@ -1,7 +1,7 @@
 'use client'
 
 import { type SupplierLeadState, submitSupplierLead } from '@/server/actions/supplier-lead'
-import { useActionState } from 'react'
+import { useActionState, useEffect } from 'react'
 
 const INITIAL: SupplierLeadState = { ok: false }
 
@@ -32,6 +32,11 @@ export default function SupplierLeadForm({
   clauses: readonly string[]
 }) {
   const [state, action, pending] = useActionState(submitSupplierLead, INITIAL)
+
+  // The ₪1 card verification happens on Cardcom's hosted page.
+  useEffect(() => {
+    if (state.ok && state.redirectUrl) window.location.assign(state.redirectUrl)
+  }, [state])
 
   if (state.ok && state.message) {
     return (
