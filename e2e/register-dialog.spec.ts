@@ -64,7 +64,11 @@ test.describe('register dialog (UX24)', () => {
     const dialog = await openRegister(page)
     const posts: string[] = []
     page.on('request', (request) => {
-      if (request.method() === 'POST') posts.push(request.url())
+      // Exclude React dev-mode debug endpoints that aren't part of the form submission
+      const url = request.url()
+      if (request.method() === 'POST' && !url.includes('__nextjs_original-stack-frames')) {
+        posts.push(url)
+      }
     })
     await dialog.getByRole('button', { name: 'המשך' }).click()
     await expect(dialog.getByText('שם מלא חייב להכיל לפחות 2 תווים')).toBeVisible()
@@ -99,7 +103,11 @@ test.describe('register dialog (UX24)', () => {
     await dialog.getByRole('button', { name: 'המשך' }).click()
     const posts: string[] = []
     page.on('request', (request) => {
-      if (request.method() === 'POST') posts.push(request.url())
+      // Exclude React dev-mode debug endpoints that aren't part of the form submission
+      const url = request.url()
+      if (request.method() === 'POST' && !url.includes('__nextjs_original-stack-frames')) {
+        posts.push(url)
+      }
     })
     await dialog.getByLabel('טלפון נייד').fill('0501234567')
     await expect(dialog.getByRole('link', { name: 'תנאי השימוש' })).toHaveAttribute(
