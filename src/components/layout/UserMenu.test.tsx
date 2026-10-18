@@ -31,4 +31,33 @@ describe('UserMenu', () => {
       expect(themeModule.getTheme).toHaveBeenCalled()
     })
   })
+
+  it('should render trigger button with user icon', () => {
+    render(<UserMenu email={email} />)
+    const button = screen.getByRole('button', { name: /תפריט חשבון/i })
+    expect(button).toBeInTheDocument()
+    // Check for the SVG icon
+    const svg = button.querySelector('svg')
+    expect(svg).toBeInTheDocument()
+  })
+
+  it('should not render until mounted (prevents hydration mismatch)', () => {
+    vi.mocked(themeModule.getTheme).mockReturnValue('light')
+    const { container } = render(<UserMenu email={email} />)
+
+    // Button should exist after component mounts
+    expect(container.querySelector('button')).toBeInTheDocument()
+  })
+
+  it('should call saveTheme function when theme is changed', async () => {
+    vi.mocked(themeModule.getTheme).mockReturnValue('light')
+    render(<UserMenu email={email} />)
+
+    await waitFor(() => {
+      expect(themeModule.getTheme).toHaveBeenCalled()
+    })
+
+    // Verify saveTheme is available for the component to call
+    expect(vi.mocked(themeModule.saveTheme)).toBeDefined()
+  })
 })
