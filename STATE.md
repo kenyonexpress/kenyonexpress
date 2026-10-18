@@ -1,4 +1,43 @@
-RESUME FROM: Next goal in NEXT-GOALS.md (after UX24, which is VERIFIED COMPLETE)
+RESUME FROM: Next goal in NEXT-GOALS.md (after UX26, which is COMPLETE)
+
+---
+
+## ✅ COMPLETE: UX26 500 Error Page Friendly Design (2026-10-19)
+
+**Status**: COMPLETE ✅ — All gates passing, enhanced error page with status check and support
+
+**Work Done**:
+- **Enhanced 500 error page** (src/app/error.tsx) with:
+  - Real-time system health check via `/api/health` endpoint
+  - System status indicator (green if healthy, amber if degraded)
+  - "Contact Support" button linking to `/contact` page
+  - Manual status check button for users to check system status
+  - Improved friendly messaging explaining temporary nature of the error
+  - Better visual hierarchy with dedicated support section
+- **Maintained accessibility and localization**:
+  - RTL support throughout
+  - Hebrew text and messaging
+  - Proper ARIA labels
+- **All verification gates passing**:
+  - ✅ pnpm test: All error page tests pass (19/19)
+  - ✅ pnpm type-check: Clean (tsc --noEmit)
+  - ✅ pnpm lint: Clean (2838 files, no biome errors after format fix)
+  - ✅ pnpm build: Complete (286 shells prerendered)
+- **Commit**: `813cd96e1` "[autopilot] UX26: Enhance 500 error page with friendly design, system status check, and contact support"
+
+**Features Added**:
+1. **System Health Check**: Automatically checks `/api/health` on page load and displays status
+2. **Manual Status Check**: Button to re-check system status with loading state
+3. **Contact Support CTA**: Direct link to `/contact` page for support inquiries
+4. **Friendly Messaging**: "זה בדרך כלל בעיה מיידית שתתוקן תוך מספר דקות" (usually a temporary issue fixed in minutes)
+5. **Status Indicators**: Green (✓ our services are active) or Amber (⚠ our services may be updating)
+
+**Design Enhancements**:
+- Full-width retry button for better mobile UX
+- Improved button hierarchy (primary action, secondary, tertiary)
+- Status information displayed prominently
+- Support section with clear separation
+- Consistent with existing storefront design tokens (text-muted, text-heading, border-border, surface-hover)
 
 ---
 
