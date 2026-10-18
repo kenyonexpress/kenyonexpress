@@ -12,6 +12,7 @@ import { useEffect, useState } from 'react'
 export default function CartLineItem({ item }: { item: CartViewItem }) {
   const { updateQuantity, removeItem, isPending } = useCart()
   const [localQty, setLocalQty] = useState(item.quantity)
+  const [isRemoving, setIsRemoving] = useState(false)
 
   useEffect(() => {
     setLocalQty(item.quantity)
@@ -40,11 +41,12 @@ export default function CartLineItem({ item }: { item: CartViewItem }) {
   }
 
   const remove = () => {
+    setIsRemoving(true)
     void removeItem(item.product_id, item.variant_id)
   }
 
   return (
-    <article className="cart-line">
+    <article className={`cart-line${isRemoving ? ' cart-line--removing' : ''}`}>
       <Link href={`/product/${item.slug}`} className="cart-line__thumb">
         {item.image_url ? (
           <SmartImage
