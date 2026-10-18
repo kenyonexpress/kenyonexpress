@@ -84,7 +84,6 @@ describe('CategoryGridWithPagination', () => {
         items={mockProducts}
         currentPage={1}
         totalPages={2}
-        pageSize={12}
         categorySlug="category"
         params={{}}
         viewMode="3-col"
@@ -116,7 +115,6 @@ describe('CategoryGridWithPagination', () => {
         items={[]}
         currentPage={1}
         totalPages={1}
-        pageSize={12}
         categorySlug="category"
         params={{}}
       />,
@@ -132,7 +130,6 @@ describe('CategoryGridWithPagination', () => {
         items={mockProducts}
         currentPage={2}
         totalPages={5}
-        pageSize={12}
         categorySlug="test-category"
         params={{ sort: 'price', min: '100' }}
       />,
@@ -147,7 +144,6 @@ describe('CategoryGridWithPagination', () => {
         items={mockProducts}
         currentPage={1}
         totalPages={1}
-        pageSize={12}
         categorySlug="category"
         params={{}}
       />,
