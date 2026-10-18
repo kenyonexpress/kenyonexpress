@@ -226,4 +226,63 @@ describe('ShopGridWithInfiniteScroll', () => {
       expect(screen.getByTestId('product-1')).toBeInTheDocument()
     })
   })
+
+  it('applies 4-col view mode class by default', () => {
+    const { container } = render(
+      <ShopGridWithInfiniteScroll
+        initialItems={mockProducts}
+        totalCount={100}
+        pageSize={24}
+        params={{}}
+      />,
+    )
+
+    const grid = container.querySelector('.category-products--4-col')
+    expect(grid).toBeInTheDocument()
+  })
+
+  it('applies correct view mode class for 3-col', () => {
+    const { container } = render(
+      <ShopGridWithInfiniteScroll
+        initialItems={mockProducts}
+        totalCount={100}
+        pageSize={24}
+        params={{}}
+        viewMode="3-col"
+      />,
+    )
+
+    const grid = container.querySelector('.category-products--3-col')
+    expect(grid).toBeInTheDocument()
+  })
+
+  it('applies correct view mode class for 2-col', () => {
+    const { container } = render(
+      <ShopGridWithInfiniteScroll
+        initialItems={mockProducts}
+        totalCount={100}
+        pageSize={24}
+        params={{}}
+        viewMode="2-col"
+      />,
+    )
+
+    const grid = container.querySelector('.category-products--2-col')
+    expect(grid).toBeInTheDocument()
+  })
+
+  it('applies correct view mode class for list', () => {
+    const { container } = render(
+      <ShopGridWithInfiniteScroll
+        initialItems={mockProducts}
+        totalCount={100}
+        pageSize={24}
+        params={{}}
+        viewMode="list"
+      />,
+    )
+
+    const grid = container.querySelector('.category-products--list')
+    expect(grid).toBeInTheDocument()
+  })
 })

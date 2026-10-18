@@ -412,6 +412,85 @@
   }
 }
 
+/* View mode: 4 columns (default) */
+.category-products--4-col .category-products__item {
+  width: calc(25% - 12px);
+  flex: 0 0 calc(25% - 12px);
+}
+@media (max-width: 1099px) {
+  .category-products--4-col .category-products__item {
+    width: calc(33.333% - 11px);
+    flex: 0 0 calc(33.333% - 11px);
+  }
+}
+@media (max-width: 767px) {
+  .category-products--4-col .category-products__item {
+    width: calc(50% - 8px);
+    flex: 0 0 calc(50% - 8px);
+  }
+}
+@media (max-width: 575px) {
+  .category-products--4-col .category-products__item {
+    width: 100%;
+    flex: 0 0 100%;
+  }
+}
+
+/* View mode: 3 columns */
+.category-products--3-col .category-products__item {
+  width: calc(33.333% - 11px);
+  flex: 0 0 calc(33.333% - 11px);
+}
+@media (max-width: 1099px) {
+  .category-products--3-col .category-products__item {
+    width: calc(50% - 8px);
+    flex: 0 0 calc(50% - 8px);
+  }
+}
+@media (max-width: 767px) {
+  .category-products--3-col .category-products__item {
+    width: calc(50% - 8px);
+    flex: 0 0 calc(50% - 8px);
+  }
+}
+@media (max-width: 575px) {
+  .category-products--3-col .category-products__item {
+    width: 100%;
+    flex: 0 0 100%;
+  }
+}
+
+/* View mode: 2 columns */
+.category-products--2-col .category-products__item {
+  width: calc(50% - 8px);
+  flex: 0 0 calc(50% - 8px);
+}
+@media (max-width: 767px) {
+  .category-products--2-col .category-products__item {
+    width: calc(50% - 8px);
+    flex: 0 0 calc(50% - 8px);
+  }
+}
+@media (max-width: 575px) {
+  .category-products--2-col .category-products__item {
+    width: 100%;
+    flex: 0 0 100%;
+  }
+}
+
+/* View mode: list */
+.category-products--list {
+  display: block;
+}
+.category-products--list .category-products__item {
+  width: 100%;
+  flex: none;
+  margin-bottom: 12px;
+}
+.category-products--list .category-products__item:last-child {
+  margin-bottom: 0;
+}
+
 /* Card: measured .product-inner padding 20.006px top / 14px bottom, content
    box 186px inside the 234px column (24px each side). */
 .category-card {

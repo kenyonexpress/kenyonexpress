@@ -37,10 +37,19 @@ type Props = {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
+type ViewMode = '4-col' | '3-col' | '2-col' | 'list'
+
 function parsePrice(raw: string | string[] | undefined): number | undefined {
   if (typeof raw !== 'string') return undefined
   const n = Number.parseFloat(raw)
   return Number.isFinite(n) && n >= 0 ? n : undefined
+}
+
+function parseViewMode(raw: string | string[] | undefined): ViewMode {
+  if (typeof raw === 'string' && ['3-col', '2-col', 'list'].includes(raw)) {
+    return raw as ViewMode
+  }
+  return '4-col'
 }
 
 function resultCountText(total: number): string {
@@ -72,6 +81,7 @@ type QueryArgs = {
 async function shopArgs(searchParams: Props['searchParams']) {
   const sp = await searchParams
   const sort = parseSort(sp.sort)
+  const viewMode = parseViewMode(sp.view)
   const args: QueryArgs = {
     sort,
     priceMin: parsePrice(sp.min),
@@ -90,7 +100,7 @@ async function shopArgs(searchParams: Props['searchParams']) {
     weekend: args.weekend ? '1' : undefined,
     free_shipping: args.freeShipping ? '1' : undefined,
   }
-  return { args, linkParams }
+  return { args, linkParams, viewMode }
 }
 
 /** Header count. */
@@ -106,9 +116,11 @@ async function ResultCount({ args }: { args: QueryArgs }) {
 async function ResultGrid({
   args,
   linkParams,
+  viewMode,
 }: {
   args: QueryArgs
   linkParams: Record<string, string | undefined>
+  viewMode: ViewMode
 }) {
   const { items, total } = await getShopProductsCached({
     ...args,
@@ -132,6 +144,7 @@ async function ResultGrid({
       totalCount={total}
       pageSize={SHOP_PAGE_SIZE}
       params={linkParams}
+      viewMode={viewMode}
     />
   )
 }
@@ -147,8 +160,8 @@ async function ShopControlBar({ searchParams }: Props) {
 }
 
 async function ShopGrid({ searchParams }: Props) {
-  const { args, linkParams } = await shopArgs(searchParams)
-  return <ResultGrid args={args} linkParams={linkParams} />
+  const { args, linkParams, viewMode } = await shopArgs(searchParams)
+  return <ResultGrid args={args} linkParams={linkParams} viewMode={viewMode} />
 }
 
 async function ShopSidebar({ searchParams }: Props) {

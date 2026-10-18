@@ -6,11 +6,14 @@ import CategoryGridSkeleton from '../category/CategoryGridSkeleton'
 import CategoryProductCard, { type CategoryProduct } from '../category/CategoryProductCard'
 import InfiniteScrollLoader from '../category/InfiniteScrollLoader'
 
+type ViewMode = '4-col' | '3-col' | '2-col' | 'list'
+
 type Props = {
   initialItems: CategoryProduct[]
   totalCount: number
   pageSize: number
   params: Record<string, string | undefined>
+  viewMode?: ViewMode
 }
 
 export default function ShopGridWithInfiniteScroll({
@@ -18,6 +21,7 @@ export default function ShopGridWithInfiniteScroll({
   totalCount,
   pageSize,
   params,
+  viewMode = '4-col',
 }: Props) {
   const [items, setItems] = useState<CategoryProduct[]>(initialItems)
   const [page, setPage] = useState(1)
@@ -56,7 +60,7 @@ export default function ShopGridWithInfiniteScroll({
 
   return (
     <>
-      <ul className="category-products">
+      <ul className={`category-products category-products--${viewMode}`}>
         {items.map((product) => (
           <li key={product.id} className="category-products__item">
             <CategoryProductCard product={product} />

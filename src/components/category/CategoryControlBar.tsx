@@ -11,27 +11,68 @@ import { useTransition } from 'react'
 
 export type { SortValue }
 
-/* Live control bar (measured): grid/list view switcher on the inline-start
-   side, orderby select on the inline-end side. Switcher is visual only. */
+type ViewMode = '4-col' | '3-col' | '2-col' | 'list'
+
+const VIEW_MODES: Array<{ mode: ViewMode; label: string }> = [
+  { mode: '4-col', label: '4 עמודות' },
+  { mode: '3-col', label: '3 עמודות' },
+  { mode: '2-col', label: '2 עמודות' },
+  { mode: 'list', label: 'רשימה' },
+]
+
 function ViewSwitcher() {
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const [isPending, startTransition] = useTransition()
+
   const icons = [
     'M1 1h3v3H1zM5 1h3v3H5zM9 1h3v3H9zM13 1h3v3h-3zM1 5h3v3H1zM5 5h3v3H5zM9 5h3v3H9zM13 5h3v3h-3zM1 9h3v3H1zM5 9h3v3H5zM9 9h3v3H9zM13 9h3v3h-3zM1 13h3v3H1zM5 13h3v3H5zM9 13h3v3H9zM13 13h3v3h-3z',
     'M1 1h4v4H1zM6 1h4v4H6zM11 1h4v4h-4zM1 6h4v4H1zM6 6h4v4H6zM11 6h4v4h-4zM1 11h4v4H1zM6 11h4v4H6zM11 11h4v4h-4z',
     'M1 2h3v3H1zM5 3h11v1H5zM1 7h3v3H1zM5 8h11v1H5zM1 12h3v3H1zM5 13h11v1H5z',
     'M1 1h5v5H1zM7 2h9v1H7zM7 4h9v1H7zM1 10h5v5H1zM7 11h9v1H7zM7 13h9v1H7z',
   ]
+
+  const currentView = (searchParams.get('view') as ViewMode | null) || '4-col'
+
+  function handleViewChange(view: ViewMode) {
+    const params = new URLSearchParams(searchParams)
+    if (view === '4-col') {
+      params.delete('view')
+    } else {
+      params.set('view', view)
+    }
+    params.delete('page')
+    const qs = params.toString()
+    startTransition(() => {
+      router.push(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
+    })
+  }
+
   return (
-    <div className="category-view-switcher" aria-hidden="true">
-      {icons.map((d, i) => (
-        <span
-          key={d.slice(0, 8)}
-          className={`category-view-switcher__btn${i === 0 ? ' is-active' : ''}`}
-        >
-          <svg viewBox="0 0 17 17" width={16} height={16} fill="currentColor" aria-hidden="true">
-            <path d={d} />
-          </svg>
-        </span>
-      ))}
+    <div className="category-view-switcher" aria-label="בחר תצוגה">
+      {icons.map((d, i) => {
+        const viewMode = VIEW_MODES[i]
+        if (!viewMode) return null
+        const { mode: view, label } = viewMode
+        const isActive = currentView === view
+        return (
+          <button
+            key={view}
+            type="button"
+            className={`category-view-switcher__btn${isActive ? ' is-active' : ''}`}
+            onClick={() => handleViewChange(view)}
+            disabled={isPending}
+            aria-label={label}
+            aria-pressed={isActive}
+            title={label}
+          >
+            <svg viewBox="0 0 17 17" width={16} height={16} fill="currentColor" aria-hidden="true">
+              <path d={d} />
+            </svg>
+          </button>
+        )
+      })}
     </div>
   )
 }
