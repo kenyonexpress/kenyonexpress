@@ -96,9 +96,9 @@ export default function MobileDrawer() {
         aria-haspopup="dialog"
         // grid + place-items-center paints the 34x36 live box in the middle of
         // a 44px hit area rather than growing the icon.
-        className="grid size-touch-min shrink-0 place-items-center text-icon transition-opacity hover:opacity-70 xl:hidden"
+        className="grid size-touch-min shrink-0 place-items-center text-icon transition-all duration-200 hover:opacity-70 active:scale-95 xl:hidden"
       >
-        <EcMenu size={20} aria-hidden="true" />
+        <EcMenu size={20} aria-hidden="true" className="transition-transform duration-300" />
       </button>
 
       {/* The scrim, as a real <button> rather than a div with an onClick: the
@@ -138,7 +138,7 @@ export default function MobileDrawer() {
           open ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
-        <div className="flex h-drawer-row items-center justify-between border-b border-border px-gutter">
+        <div className="flex h-drawer-row items-center justify-between border-b border-border px-gutter animate-in fade-in slide-in-from-top duration-300 motion-reduce:animate-none">
           <h2 id={titleId} className="m-0 text-sm font-bold text-heading">
             {DRAWER_TITLE}
           </h2>
@@ -146,22 +146,33 @@ export default function MobileDrawer() {
             type="button"
             onClick={close}
             aria-label="סגירת התפריט"
-            className="-me-2 grid size-touch-min place-items-center text-icon transition-opacity hover:opacity-70"
+            className="-me-2 grid size-touch-min place-items-center text-icon transition-all duration-200 hover:opacity-70 active:scale-95"
           >
-            <EcCloseRemove size={20} aria-hidden="true" />
+            <EcCloseRemove
+              size={20}
+              aria-hidden="true"
+              className="transition-transform duration-300 hover:rotate-90"
+            />
           </button>
         </div>
 
         <nav aria-label={DRAWER_TITLE}>
           <ul className="m-0 list-none p-0">
-            {KE_LIVE_CATEGORIES.map((category) => (
-              <li key={category.slug}>
+            {KE_LIVE_CATEGORIES.map((category, index) => (
+              <li
+                key={category.slug}
+                className="animate-in fade-in slide-in-from-right-4 duration-300 motion-reduce:animate-none"
+                style={{
+                  animationDelay: `${index * 30}ms`,
+                  animationFillMode: 'both',
+                }}
+              >
                 <Link
                   href={category.href ?? `/category/${category.slug}`}
                   // 50px is live's row height and clears the 44px touch floor
                   // on its own, so no padding trick is needed here.
                   onClick={close}
-                  className={`flex h-drawer-row items-center border-b border-border px-gutter text-sm transition-colors hover:bg-surface-hover ${
+                  className={`flex h-drawer-row items-center border-b border-border px-gutter text-sm transition-all duration-200 hover:bg-surface-hover hover:ps-[calc(var(--gutter)+4px)] ${
                     category.highlight ? 'font-bold text-heading' : 'text-heading'
                   }`}
                 >

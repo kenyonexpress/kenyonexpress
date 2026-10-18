@@ -198,10 +198,10 @@ export default function MegaMenu() {
                 aria-expanded={openIndex === index}
                 aria-haspopup="true"
                 aria-controls={openIndex === index ? `${panelIdPrefix}-${index}` : undefined}
-                className={`px-3 py-2 text-sm font-medium transition-colors duration-150 whitespace-nowrap ${
+                className={`px-3 py-2 text-sm font-medium transition-all duration-200 whitespace-nowrap ease-out ${
                   openIndex === index
-                    ? 'text-[color:var(--electro-text-primary)] bg-[color:var(--electro-surface-hover)]'
-                    : 'text-[color:var(--electro-text-secondary)] hover:text-[color:var(--electro-text-primary)] hover:bg-[color:var(--electro-page)]'
+                    ? 'text-[color:var(--electro-text-primary)] bg-[color:var(--electro-surface-hover)] shadow-sm'
+                    : 'text-[color:var(--electro-text-secondary)] hover:text-[color:var(--electro-text-primary)] hover:bg-[color:var(--electro-surface-hover)]'
                 }`}
               >
                 {item.label}
@@ -210,22 +210,24 @@ export default function MegaMenu() {
               {openIndex === index && (
                 <div
                   id={`${panelIdPrefix}-${index}`}
-                  className="absolute top-full -start-6 mt-0 w-screen md:max-w-4xl bg-[var(--electro-yellow-primary)] shadow-xl z-50 p-8 rounded-b-lg"
+                  className="absolute top-full -start-6 mt-0 w-screen md:max-w-4xl bg-[var(--electro-yellow-primary)] shadow-xl z-50 p-8 rounded-b-lg animate-in fade-in slide-in-from-top-2 duration-300 motion-reduce:animate-none"
                   role="menu"
                 >
                   <div className="grid grid-cols-3 gap-8">
                     {/* Featured Image - Left Column */}
-                    <div className="col-span-1">
-                      <div className="bg-gradient-to-br from-[color:var(--electro-page)] to-[color:var(--electro-surface-hover)] rounded-lg overflow-hidden aspect-square shadow-sm flex flex-col items-center justify-between p-4">
+                    <div className="col-span-1 animate-in fade-in slide-in-from-left-4 duration-300 motion-reduce:animate-none">
+                      <div className="bg-gradient-to-br from-[color:var(--electro-page)] to-[color:var(--electro-surface-hover)] rounded-lg overflow-hidden aspect-square shadow-sm flex flex-col items-center justify-between p-4 transition-transform duration-300">
                         {item.featuredImage ? (
                           <img
                             src={item.featuredImage}
                             alt={item.label}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover transition-transform duration-300"
                           />
                         ) : (
                           <>
-                            <div className="text-4xl">📦</div>
+                            <div className="text-4xl animate-in zoom-in duration-300 motion-reduce:animate-none">
+                              📦
+                            </div>
                             <span className="text-xs text-[color:var(--electro-muted)] text-center">
                               {item.label}
                             </span>
@@ -234,7 +236,7 @@ export default function MegaMenu() {
                       </div>
                       {/* Brand Logos */}
                       {item.brandLogos && item.brandLogos.length > 0 && (
-                        <div className="mt-3 grid grid-cols-3 gap-2">
+                        <div className="mt-3 grid grid-cols-3 gap-2 animate-in fade-in delay-100 duration-300 motion-reduce:animate-none">
                           {item.brandLogos.map((brand, brandIndex) => (
                             <div
                               key={`${brand.name}-${brandIndex}`}
@@ -266,11 +268,11 @@ export default function MegaMenu() {
                             {item.label}
                           </h3>
                           {item.subcategories && item.subcategories.length > 0 ? (
-                            <ul className="space-y-2">
+                            <ul className="space-y-2 animate-in fade-in slide-in-from-left-2 duration-300 motion-reduce:animate-none">
                               <li>
                                 <Link
                                   href={item.href}
-                                  className="text-[color:var(--electro-text-primary)] hover:text-[color:var(--electro-text-primary)] font-semibold text-sm"
+                                  className="text-[color:var(--electro-text-primary)] hover:text-[color:var(--electro-text-primary)] font-semibold text-sm transition-colors duration-200"
                                 >
                                   כל {item.label}
                                 </Link>
@@ -279,7 +281,7 @@ export default function MegaMenu() {
                                 <li key={`${sub.href}-${subIndex}`}>
                                   <Link
                                     href={sub.href}
-                                    className="text-[color:var(--electro-text-secondary)] hover:text-[color:var(--electro-text-primary)] hover:underline text-sm transition-colors"
+                                    className="text-[color:var(--electro-text-secondary)] hover:text-[color:var(--electro-text-primary)] hover:underline text-sm transition-colors duration-200"
                                   >
                                     {sub.label}
                                   </Link>
@@ -287,7 +289,7 @@ export default function MegaMenu() {
                               ))}
                             </ul>
                           ) : (
-                            <p className="text-[color:var(--electro-muted)] text-sm">
+                            <p className="text-[color:var(--electro-muted)] text-sm animate-in fade-in duration-300 motion-reduce:animate-none">
                               כל המוצרים בקטגוריה
                             </p>
                           )}
@@ -295,7 +297,7 @@ export default function MegaMenu() {
 
                         {/* Promo Banner */}
                         <div
-                          className="bg-[color:var(--electro-info)] text-[color:var(--electro-white)] rounded-lg p-6 flex flex-col justify-center shadow-md"
+                          className="bg-[color:var(--electro-info)] text-[color:var(--electro-white)] rounded-lg p-6 flex flex-col justify-center shadow-md animate-in fade-in slide-in-from-right-2 duration-300 motion-reduce:animate-none"
                           role="complementary"
                         >
                           <p className="font-bold text-lg mb-2 leading-tight">{item.promoText}</p>
@@ -304,10 +306,12 @@ export default function MegaMenu() {
                           </p>
                           <Link
                             href={item.href}
-                            className="inline-flex items-center mt-4 text-[color:var(--electro-white)] font-medium hover:underline text-sm"
+                            className="inline-flex items-center mt-4 text-[color:var(--electro-white)] font-medium hover:underline text-sm transition-all duration-200"
                           >
                             <span>לחצו כאן</span>
-                            <span className="ms-2">→</span>
+                            <span className="ms-2 transition-transform duration-200 group-hover:translate-x-1">
+                              →
+                            </span>
                           </Link>
                         </div>
                       </div>
