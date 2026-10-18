@@ -55,6 +55,14 @@ const RAW_ENV_READERS: Record<string, { because: string; mustContain: string }> 
     because: 'passkey store reads the key pair directly (178 lifecycle)',
     mustContain: 'SUPABASE_SERVICE_ROLE_KEY',
   },
+  'src/server/actions/contact.ts': {
+    because: 'contact form submission reads the key to instantiate admin client for email relay',
+    mustContain: 'process.env.SUPABASE_SERVICE_ROLE_KEY',
+  },
+  'src/server/support/process.ts': {
+    because: 'support classification reads the key for database access to process support tickets',
+    mustContain: 'SUPABASE_SERVICE_ROLE_KEY',
+  },
 }
 
 const ENV_NAMES = /SUPABASE_SERVICE_ROLE_KEY|SUPABASE_SECRET_KEY/

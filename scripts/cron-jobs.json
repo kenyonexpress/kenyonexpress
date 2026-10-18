@@ -28,6 +28,11 @@
       "cron": "*/10 * * * *"
     },
     {
+      "name": "support-classification",
+      "path": "/api/cron/support-classification",
+      "cron": "*/30 * * * *"
+    },
+    {
       "name": "webhook-dlq",
       "path": "/api/cron/webhook-dlq",
       "cron": "*/10 * * * *"
@@ -41,6 +46,11 @@
       "name": "abandoned-cart",
       "path": "/api/cron/abandoned-cart",
       "cron": "0 * * * *"
+    },
+    {
+      "name": "abandoned-cart-recovery",
+      "path": "/api/cron/abandoned-cart-recovery",
+      "cron": "30 * * * *"
     },
     {
       "name": "subscriptions",
