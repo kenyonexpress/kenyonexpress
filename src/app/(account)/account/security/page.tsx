@@ -1,3 +1,4 @@
+import PasskeyManager from '@/components/auth/PasskeyManager'
 import { isStaffRole } from '@/lib/admin/roles'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
@@ -24,6 +25,7 @@ export default async function SecurityPage() {
   return (
     <>
       <h1 className="account-title">אבטחת החשבון</h1>
+      <PasskeyManager />
       <SecurityClient isStaff={isStaff} />
     </>
   )

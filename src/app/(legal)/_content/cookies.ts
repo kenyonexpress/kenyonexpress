@@ -31,6 +31,7 @@ import type { LegalDoc } from './types'
  *   ke_attr            analytics/attribution.ts       30d
  *   ke_ref             referrals/cookie.ts            30d, httpOnly
  *   ke_aff             affiliate/rules.ts             30d, httpOnly
+ *   ke_wa_chal         auth/challenge-cookie.ts       5min, httpOnly
  *   ke_cart_coupon     server/actions/cart.ts         30d
  *   ke_ph_id           observability/posthog.ts       30d, NOT httpOnly by design
  *   ke_cart_mirror_v1  cart/store.ts                  localStorage
@@ -116,6 +117,12 @@ export const cookiesDoc: LegalDoc = {
               'עוגייה',
               'נושאת את קוד הקישור של שותף שהביא אתכם לאתר, כדי לזקוף לו עמלה על הזמנה. חסומה לקריאה על ידי סקריפטים בדפדפן (httpOnly)',
               '30 יום',
+            ],
+            [
+              'ke_wa_chal',
+              'עוגייה',
+              'מחזיקה את אתגר האבטחה בזמן הוספה של מפתח גישה או כניסה בעזרתו. חתומה, חסומה לקריאה על ידי סקריפטים (httpOnly) ונמחקת בסיום',
+              '5 דקות',
             ],
             [
               'ke_cart_mirror_v1',

@@ -1,0 +1,93 @@
+import { toE164Israeli } from '@/lib/auth/phone-otp'
+import { withRequestLog } from '@/lib/observability/with-request-log'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { createClient } from '@/lib/supabase/server'
+import { checkRateLimit } from '@/lib/utils/rate-limit'
+import { mintSessionFor } from '@/server/auth/mint-session'
+import { WA_OTP_MAX_ATTEMPTS, otpMatches } from '@/server/auth/wa-otp'
+import { type NextRequest, NextResponse } from 'next/server'
+
+/**
+ * Checks a WhatsApp sign-in code and signs the account in (rc5 F15). Only the
+ * newest live code for the number counts; five wrong guesses burn it. With
+ * `email` instead of `phone`, it verifies the email fallback code through
+ * Supabase.
+ */
+async function handlePOST(request: NextRequest): Promise<NextResponse> {
+  const body = (await request.json().catch(() => null)) as {
+    phone?: unknown
+    email?: unknown
+    code?: unknown
+  } | null
+  const code = typeof body?.code === 'string' ? body.code.trim() : ''
+  if (!/^[0-9]{6}$/.test(code)) {
+    return NextResponse.json({ ok: false, error: 'invalid_code' }, { status: 400 })
+  }
+
+  if (typeof body?.email === 'string') {
+    const email = body.email.trim().toLowerCase()
+    if (!(await checkRateLimit(`wa-otp-verify:${email}`, 10, 3600))) {
+      return NextResponse.json({ ok: false, error: 'rate_limited' }, { status: 429 })
+    }
+    const supabase = await createClient()
+    const { error } = await supabase.auth.verifyOtp({ email, token: code, type: 'email' })
+    return error
+      ? NextResponse.json({ ok: false, error: 'wrong_code' }, { status: 400 })
+      : NextResponse.json({ ok: true })
+  }
+
+  const phone = typeof body?.phone === 'string' ? toE164Israeli(body.phone) : null
+  if (!phone) return NextResponse.json({ ok: false, error: 'invalid_phone' }, { status: 400 })
+  if (!(await checkRateLimit(`wa-otp-verify:${phone}`, 10, 3600))) {
+    return NextResponse.json({ ok: false, error: 'rate_limited' }, { status: 429 })
+  }
+
+  const admin = createAdminClient()
+  const { data } = await admin
+    .from('auth_wa_otps' as never)
+    .select('id, user_id, code_hash, attempts, expires_at')
+    .eq('phone_e164', phone)
+    .is('consumed_at', null)
+    .gt('expires_at', new Date().toISOString())
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+  const row = data as {
+    id: string
+    user_id: string
+    code_hash: string
+    attempts: number
+  } | null
+  if (!row || row.attempts >= WA_OTP_MAX_ATTEMPTS) {
+    return NextResponse.json({ ok: false, error: 'expired' }, { status: 400 })
+  }
+
+  if (!otpMatches(phone, code, row.code_hash)) {
+    await admin
+      .from('auth_wa_otps' as never)
+      .update({ attempts: row.attempts + 1 } as never)
+      .eq('id', row.id)
+    return NextResponse.json({ ok: false, error: 'wrong_code' }, { status: 400 })
+  }
+
+  // Consume first, conditionally, so two concurrent right answers sign in once.
+  const { data: consumed } = await admin
+    .from('auth_wa_otps' as never)
+    .update({ consumed_at: new Date().toISOString() } as never)
+    .eq('id', row.id)
+    .is('consumed_at', null)
+    .select('id')
+    .maybeSingle()
+  if (!consumed) return NextResponse.json({ ok: false, error: 'expired' }, { status: 400 })
+
+  const session = await mintSessionFor(row.user_id)
+  if (!session.ok) {
+    return NextResponse.json(
+      { ok: false, error: session.reason === 'no_email' ? 'no_email' : 'session_failed' },
+      { status: session.reason === 'no_email' ? 409 : 500 },
+    )
+  }
+  return NextResponse.json({ ok: true })
+}
+
+export const POST = withRequestLog('/api/auth/wa-otp/verify', handlePOST)

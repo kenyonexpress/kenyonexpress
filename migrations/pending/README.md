@@ -15,6 +15,14 @@ migration, so the apply order across the two branches is undefined.
 Until the owner picks a mainline branch, **apply nothing from either side.**
 The full measured table is in `docs/MIGRATION-NUMBER-COLLISIONS.md`.
 
+## 2026-10-18: 285 APPLIED - WhatsApp sign-in codes (rc5 F15)
+
+`285_auth_wa_otps.sql` stores HMACs of six-digit sign-in codes (10 minutes,
+five attempts, single use); server-only with RLS on and no grants. Applied
+through MCP `apply_migration` (`auth_wa_otps_285`). Passkeys need no
+migration: `public.webauthn_credentials` already exists in the
+@simplewebauthn shape.
+
 ## 2026-10-18: 284 APPLIED - products.weekend_only (rc5 F13)
 
 `284_products_weekend_only.sql` adds `weekend_only boolean not null default

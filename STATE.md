@@ -144,7 +144,7 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 ## rc5 run (FINAL-CLOSEOUT-v2-rc5, 2026-10-18)
 
-המשך מ: F12 passkeys + WA-OTP (F15)
+המשך מ: F13 maintenance flag + Turnstile (F19)
 
 Worktree `/Users/ofir/kenyonexpress-web/ke-rc5` on local branch `work/rc5`, pushed to
 `origin closeout/v1-final`. The Haiku refill loop was committing into the main checkout on
@@ -157,6 +157,7 @@ inherited from autopilot commits. Fixed under F15.
 | Item | Status | Note |
 |---|---|---|
 | F01 migrations | DONE | 185, 186, 187, 278 applied via MCP apply_migration, docs/MIGRATIONS-APPLIED.md |
+| F12 passkeys + WA-OTP | DONE | @simplewebauthn 13.3 on public.webauthn_credentials; /api/auth/passkey/{register,authenticate}, /api/auth/wa-otp/{send,verify} (285 applied); session minted server-side via admin magic-link token; UI on /login and /account/security; Meta WABA env needed, email fallback |
 | F11 web push | DONE | sw.js push+click handlers, /api/push/subscribe into existing push_subscriptions, browser leg in the outbox drain (T-7/T-1 voucher_expiring already queued by expire-vouchers), opt-in after purchase; needs VAPID env |
 | F10 chips | DONE | 284 applied (weekend_only); ?weekend=1 / ?free_shipping=1 on /c/[city] (client filter) and /products (query); home chips open /products filtered |
 | F09 affiliate | DONE | 283 applied; ?ref=af... cookie in proxy, click dedupe, rate snapshot at checkout, daily cron pays wallet after 14 days via fn_wallet_transfer; /account/affiliate, /admin/affiliates/campaigns |
@@ -183,6 +184,12 @@ Found, inherited: at 1440 the header nav overflows 46px to the left (scrollWidth
 before F03. Fix under F14.
 
 ### החלטות שהתקבלו אוטומטית (rc5)
+
+- F12: @simplewebauthn pinned to 13.3 (14.x is three weeks old). Passkey and WhatsApp sign-in
+  create the session by minting a single-use magic-link token with the admin API and redeeming
+  it on the server, so an account with no email cannot use either (answered `no_email`; SMS
+  OTP still works). No profile has a phone today, so WhatsApp sign-in matches nobody yet.
+  The login page is src/app/(auth)/login (no src/app/login).
 
 - F11: no migration 199. Production already has push_subscriptions with exactly the asked
   columns (endpoint, p256dh, auth, user_id). There is no expiry-reminder pg_cron job; the T-7

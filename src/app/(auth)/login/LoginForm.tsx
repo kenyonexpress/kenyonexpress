@@ -1,5 +1,7 @@
 'use client'
 
+import PasskeySignIn from '@/components/auth/PasskeySignIn'
+import WhatsappOtpForm from '@/components/auth/WhatsappOtpForm'
 import { GoogleLogo } from '@/components/shared/GoogleLogo'
 import {
   type AuthState,
@@ -34,6 +36,7 @@ interface Props {
 export default function LoginForm({ next, callbackError, magic, phoneEnabled = false }: Props) {
   const [showMagic, setShowMagic] = useState(false)
   const [showPhone, setShowPhone] = useState(false)
+  const [showWhatsapp, setShowWhatsapp] = useState(false)
 
   const [emailState, emailAction, emailPending] = useActionState<AuthState, FormData>(
     signInWithEmail,
@@ -99,6 +102,22 @@ export default function LoginForm({ next, callbackError, magic, phoneEnabled = f
           )}
         </div>
       )}
+
+      <PasskeySignIn next={next} />
+
+      <div className="mt-3">
+        {!showWhatsapp ? (
+          <button
+            type="button"
+            onClick={() => setShowWhatsapp(true)}
+            className="w-full flex items-center justify-center gap-2 border border-gray-300 rounded-lg py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+          >
+            כניסה עם קוד בוואטסאפ
+          </button>
+        ) : (
+          <WhatsappOtpForm next={next} />
+        )}
+      </div>
 
       <div className="my-5 flex items-center gap-3">
         <div className="flex-1 border-t border-gray-200" />

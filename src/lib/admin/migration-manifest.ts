@@ -476,4 +476,10 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
     state: 'applied',
     hasPreflight: false,
   },
+  {
+    number: '284',
+    file: '284_products_weekend_only.sql',
+    state: 'applied',
+    hasPreflight: false,
+  },
 ] as const
