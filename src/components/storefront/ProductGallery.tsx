@@ -55,6 +55,7 @@ export default function ProductGallery({
   oldPrice = null,
 }: Props) {
   const [active, setActive] = useState(0)
+  const [isZoomed, setIsZoomed] = useState(false)
 
   // A badge is drawn only when there is a real reduction to state. Guarding on
   // `> 0` and not just on presence keeps a mispriced row from painting "-0%"
@@ -78,7 +79,11 @@ export default function ProductGallery({
       {/* Main image. Live's frame is 470px square with no border or radius, so
           neither is drawn here: an outline where live has bare photo is a
           contour the pixel comparison sees on every edge. */}
-      <div className="pdp-gallery__frame">
+      <div
+        className={`pdp-gallery__frame ${isZoomed ? 'pdp-gallery__frame--zoomed' : ''}`}
+        onMouseEnter={() => setIsZoomed(true)}
+        onMouseLeave={() => setIsZoomed(false)}
+      >
         {pct > 0 && (
           <span className="pdp-gallery__badge">
             -<span className="percentage">{pct}%</span>
@@ -109,7 +114,7 @@ export default function ProductGallery({
           fill
           priority={active === 0}
           sizes="(max-width: 768px) 100vw, 40vw"
-          className="object-contain"
+          className={`object-contain ${isZoomed ? 'scale-125' : 'scale-100'} transition-transform duration-300`}
           {...(activeAsset?.blurDataURL
             ? { placeholder: 'blur' as const, blurDataURL: activeAsset.blurDataURL }
             : {})}

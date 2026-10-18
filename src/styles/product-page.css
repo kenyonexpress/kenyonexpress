@@ -154,6 +154,11 @@
   aspect-ratio: 1 / 1;
   overflow: hidden;
   background-color: var(--pdp-surface);
+  cursor: zoom-in;
+}
+
+.pdp-gallery__frame--zoomed {
+  cursor: zoom-out;
 }
 
 .pdp-gallery__frame--empty {

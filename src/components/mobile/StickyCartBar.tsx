@@ -22,7 +22,7 @@ export default function StickyCartBar({
   return (
     <div
       data-sticky-cart-bar
-      className="md:hidden fixed bottom-14 left-0 right-0 bg-white border-t border-border p-3 flex items-center justify-between gap-2 z-30"
+      className="fixed bottom-0 left-0 right-0 bg-white border-t border-border p-3 flex items-center justify-between gap-2 z-30 md:bottom-auto md:top-0"
     >
       <div className="text-lg font-bold text-foreground">{formatter.format(price / 100)}</div>
       <button
