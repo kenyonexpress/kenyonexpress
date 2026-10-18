@@ -15,6 +15,23 @@ migration, so the apply order across the two branches is undefined.
 Until the owner picks a mainline branch, **apply nothing from either side.**
 The full measured table is in `docs/MIGRATION-NUMBER-COLLISIONS.md`.
 
+## 2026-10-18: 185, 186, 187 and 278 APPLIED to production (rc5 F01)
+
+Applied one at a time through the Supabase MCP `apply_migration` tool, after a
+BEGIN/ROLLBACK rehearsal of all four together left no column behind. The
+production ledger rows are `products_cancellation_window_payout_cadence_185`,
+`orders_gift_send_at_186`, `products_full_address_187` and
+`products_shipping_price_agorot_278` (versions 20261018012122 to
+20261018012137). The files and their preflights moved to `migrations/applied/`.
+Verification per table is in `docs/MIGRATIONS-APPLIED.md`.
+
+`278_products_shipping_price_agorot.sql` is new: the rc5 goal listed
+`shipping_price_agorot` under 185, but 185 was already reviewed without it, so
+it took the next free number instead of an edit to a reviewed file. The goal
+also asked for `payout_cadence_days`; 185 ships `payout_cadence` as a
+weekly/biweekly/monthly text column, and a second integer twin of the same
+fact was not added.
+
 ## 2026-10-17: 190 added - Partner API Infrastructure
 
 `190_partner_api_infrastructure.sql` adds partner API key management, rate limiting, and audit logging. **Not applied.**
@@ -30,20 +47,19 @@ Tracks product clicks from search results with position for CTR per position ana
 ## 2026-10-16: 187 added - products.full_address
 
 `187_products_full_address.sql` adds nullable `products.full_address` for the
-Waze address fallback. **Not applied.** `city`, `latitude` and `longitude` are
+Waze address fallback. **APPLIED 2026-10-18.** `city`, `latitude` and `longitude` are
 already live, so the pin and the admin fields work without it; nothing selects
 or writes `full_address` until this lands.
 
 ## 2026-10-16: 186 added - scheduled gift delivery
 
-`186_orders_gift_send_at.sql` adds nullable `orders.gift_send_at`. **Not
-applied.** Until it is, the checkout's separate update fails quietly and the
+`186_orders_gift_send_at.sql` adds nullable `orders.gift_send_at`. **APPLIED 2026-10-18.** Until it is, the checkout's separate update fails quietly and the
 gift is sent immediately, as before.
 
 ## 2026-10-16: 185 added - per-product cancellation window and payout cadence
 
 `185_products_cancellation_window_payout_cadence.sql` adds two nullable columns
-to `products`: `cancellation_window_days` and `payout_cadence`. **Not applied.**
+to `products`: `cancellation_window_days` and `payout_cadence`. **APPLIED 2026-10-18.**
 NULL means the platform default, so applying it changes no behaviour; the admin
 form is wired to the columns only after it lands, because a product write that
 names a column the database lacks fails with 42703.

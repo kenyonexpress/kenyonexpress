@@ -4,6 +4,30 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 ---
 
+## rc5 run (FINAL-CLOSEOUT-v2-rc5, 2026-10-18)
+
+המשך מ: F02 UX location-replaces-category
+
+Worktree `/Users/ofir/kenyonexpress-web/ke-rc5` on local branch `work/rc5`, pushed to
+`origin closeout/v1-final`. The Haiku refill loop was committing into the main checkout on
+the same branch; Ofir stopped the loops at 08:20 and its uncommitted UX08 files are still in
+the main checkout, untouched.
+
+Baseline before F01: type-check and lint clean, `pnpm test` 119 failed in 27 files, all
+inherited from autopilot commits. Fixed under F15.
+
+| Item | Status | Note |
+|---|---|---|
+| F01 migrations | DONE | 185, 186, 187, 278 applied via MCP apply_migration, docs/MIGRATIONS-APPLIED.md |
+
+### החלטות שהתקבלו אוטומטית (rc5)
+
+- STATE lives in root `STATE.md`, not a new `claude/STATE.md`: every loop and CLAUDE.md read this one.
+- Goal migration numbers 193-200 are taken in the repo; new files use 278 upward.
+- `shipping_price_agorot` became 278 instead of an edit to the reviewed 185; no `payout_cadence_days` twin.
+
+---
+
 ## 🎯 Autonomous Work Summary (Session: 2026-10-18 — UX07 CATEGORY CARDS)
 
 **UX07: Category Cards - Real Product Images with Hover Zoom & Shadow — ✅ COMPLETE (2026-10-18)**

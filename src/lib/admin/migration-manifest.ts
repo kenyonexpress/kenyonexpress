@@ -353,19 +353,19 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
   {
     number: '185',
     file: '185_products_cancellation_window_payout_cadence.sql',
-    state: 'pending',
+    state: 'applied',
     hasPreflight: true,
   },
   {
     number: '186',
     file: '186_orders_gift_send_at.sql',
-    state: 'pending',
+    state: 'applied',
     hasPreflight: true,
   },
   {
     number: '187',
     file: '187_products_full_address.sql',
-    state: 'pending',
+    state: 'applied',
     hasPreflight: true,
   },
   {
@@ -389,6 +389,54 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
   {
     number: '192',
     file: '192_notification_history.sql',
+    state: 'pending',
+    hasPreflight: true,
+  },
+  {
+    number: '192',
+    file: '192_observability_schema.sql',
+    state: 'pending',
+    hasPreflight: true,
+  },
+  {
+    number: '193',
+    file: '193_observability_endpoint_metrics.sql',
+    state: 'pending',
+    hasPreflight: false,
+  },
+  {
+    number: '194',
+    file: '194_p95_latency_samples.sql',
+    state: 'pending',
+    hasPreflight: false,
+  },
+  {
+    number: '195',
+    file: '195_perf_tickets.sql',
+    state: 'pending',
+    hasPreflight: false,
+  },
+  {
+    number: '196',
+    file: '196_p95_statistics_function.sql',
+    state: 'pending',
+    hasPreflight: false,
+  },
+  {
+    number: '200',
+    file: '200_deal_seeding_infrastructure.sql',
+    state: 'pending',
+    hasPreflight: false,
+  },
+  {
+    number: '276',
+    file: '276_stock_notifications.sql',
+    state: 'pending',
+    hasPreflight: false,
+  },
+  {
+    number: '277',
+    file: '277_fraud_monitoring.sql',
     state: 'pending',
     hasPreflight: true,
   },

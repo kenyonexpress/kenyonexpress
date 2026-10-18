@@ -110,6 +110,10 @@ describe('the pending migration inventory', () => {
       '166_voucher_transition_guard.sql',
       '167_order_items_money_constraints.sql',
       '168_wallet_ledger_client_readonly.sql',
+      '185_products_cancellation_window_payout_cadence.sql',
+      '186_orders_gift_send_at.sql',
+      '187_products_full_address.sql',
+      '278_products_shipping_price_agorot.sql',
     ])
   })
 
@@ -210,9 +214,6 @@ describe('the pending migration inventory', () => {
       '176_supplier_pin_rate_limit_per_staff.sql',
       '177_set_updated_at_search_path.sql',
       '184_carts_one_row_per_owner.sql',
-      '185_products_cancellation_window_payout_cadence.sql',
-      '186_orders_gift_send_at.sql',
-      '187_products_full_address.sql',
       '188_search_analytics.sql',
       'preflight_162.sql',
       'preflight_169.sql',
@@ -225,9 +226,6 @@ describe('the pending migration inventory', () => {
       'preflight_176.sql',
       'preflight_177.sql',
       'preflight_184.sql',
-      'preflight_185.sql',
-      'preflight_186.sql',
-      'preflight_187.sql',
       'preflight_188.sql',
     ])
   })
