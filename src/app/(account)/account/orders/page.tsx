@@ -1,7 +1,6 @@
 import { OrderRowsListSkeleton } from '@/components/OrderRowSkeleton'
-import { formatDate, formatIls, orderStatusLabel, orderStatusTone } from '@/lib/account/format'
+import OrderCard from '@/components/account/OrderCard'
 import { getMyOrders } from '@/server/queries/orders'
-import Link from 'next/link'
 import { Suspense } from 'react'
 
 export const metadata = { title: 'ההזמנות שלי' }
@@ -18,29 +17,7 @@ async function OrdersList() {
         {orders.length === 0 ? (
           <p className="account-empty">עוד לא ביצעת הזמנות.</p>
         ) : (
-          orders.map((order) => (
-            <div className="account-row" key={order.id}>
-              <div className="account-row__main">
-                <p className="account-row__title">
-                  {formatIls(order.totalAgorot)}{' '}
-                  <span
-                    className={`account-chip account-chip--${orderStatusTone(order.settlementStatus)}`}
-                  >
-                    {orderStatusLabel(order.settlementStatus)}
-                  </span>
-                </p>
-                <p className="account-row__meta">
-                  {formatDate(order.createdAt)} · {order.itemCount} פריטים
-                  {order.hasVouchers ? ' · כולל קופונים' : ''}
-                </p>
-              </div>
-              <div className="account-row__actions">
-                <Link className="account-btn" href={`/account/orders/${order.id}`}>
-                  פרטים
-                </Link>
-              </div>
-            </div>
-          ))
+          orders.map((order) => <OrderCard key={order.id} order={order} />)
         )}
       </section>
     </>

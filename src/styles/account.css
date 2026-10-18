@@ -767,3 +767,101 @@
     font-size: 13px;
   }
 }
+
+/* Expandable order rows */
+.account-row--expandable {
+  cursor: pointer;
+  position: relative;
+  padding-inline-start: 40px;
+}
+
+.account-row__expand-btn {
+  position: absolute;
+  inset-inline-start: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  color: var(--account-ink);
+  transition: transform 200ms ease-out;
+}
+
+.account-row__expand-icon {
+  width: 20px;
+  height: 20px;
+  transition: transform 200ms ease-out;
+}
+
+.account-row__expand-btn[aria-expanded="true"] .account-row__expand-icon {
+  transform: rotate(-180deg);
+}
+
+.account-row__expanded {
+  border-top: 1px solid var(--account-line);
+  padding: 16px 0;
+  margin-top: -1px;
+  animation: slide-down 200ms ease-out;
+}
+
+.account-expanded__content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.account-expanded__actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.account-expanded__message {
+  font-size: 14px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  margin: 0;
+}
+
+.account-expanded__message--success {
+  background: var(--util-e8f7e2);
+  color: var(--util-2c7a13);
+}
+
+.account-expanded__message--error {
+  background: var(--util-fdeaee);
+  color: var(--account-red);
+}
+
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 500px;
+  }
+}
+
+@media (max-width: 600px) {
+  .account-row--expandable {
+    padding-inline-start: 36px;
+  }
+
+  .account-row__expand-btn {
+    width: 28px;
+    height: 28px;
+  }
+
+  .account-row__expand-icon {
+    width: 18px;
+    height: 18px;
+  }
+}
