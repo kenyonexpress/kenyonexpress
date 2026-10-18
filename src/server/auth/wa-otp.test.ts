@@ -2,7 +2,9 @@ import { describe, expect, it, vi } from 'vitest'
 
 vi.mock('server-only', () => ({}))
 const { hashOtp, newOtpCode, otpMatches } = await import('./wa-otp')
-const env = { SUPABASE_SECRET_KEY: 'sb_secret_test_key_long_enough' } as unknown as NodeJS.ProcessEnv
+const env = {
+  SUPABASE_SECRET_KEY: 'sb_secret_test_key_long_enough',
+} as unknown as NodeJS.ProcessEnv
 
 describe('WhatsApp sign-in codes', () => {
   it('are six digits', () => {

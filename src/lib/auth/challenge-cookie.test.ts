@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { openChallenge, sealChallenge } from './challenge-cookie'
 
-const env = { SUPABASE_SECRET_KEY: 'sb_secret_test_key_long_enough' } as unknown as NodeJS.ProcessEnv
+const env = {
+  SUPABASE_SECRET_KEY: 'sb_secret_test_key_long_enough',
+} as unknown as NodeJS.ProcessEnv
 const now = 1_760_000_000_000
 
 describe('challenge cookie', () => {
