@@ -1,4 +1,5 @@
 import BenefitBar from '@/components/home/BenefitBar'
+import BrandsRowServer from '@/components/home/BrandsRowServer'
 import CmsHero from '@/components/home/CmsHero'
 import DealsOfTheDay from '@/components/home/DealsOfTheDay'
 import HeroSection from '@/components/home/HeroSection'
@@ -117,6 +118,7 @@ export default function HomePage() {
       */}
       <BenefitBar />
       <HotCoupons />
+      <BrandsRowServer />
       <DealsOfTheDay />
     </>
   )
