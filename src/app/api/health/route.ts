@@ -1,12 +1,13 @@
 import { withRequestLog } from '@/lib/observability/with-request-log'
+import { meiliHealthCheck } from '@/lib/search/meili-request'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { NextResponse } from 'next/server'
 
 /**
- * Liveness plus one real dependency check, for an uptime monitor.
+ * Liveness plus real dependency checks, for an uptime monitor.
  *
  * WHAT IT DELIBERATELY DOES NOT DO. It reports no version, no commit, no env
- * var names and no error strings from the database. This route is
+ * var names and no error strings from dependencies. This route is
  * unauthenticated by necessity -- a monitor cannot hold a session -- so
  * everything it returns is public, and the useful shape of a health endpoint
  * for an attacker is a free inventory of what you run and what is currently
@@ -18,6 +19,9 @@ import { NextResponse } from 'next/server'
  * It goes through the admin client on purpose -- an anon read would be
  * measuring RLS as much as reachability, and a policy change would then look
  * like an outage.
+ *
+ * The Meilisearch probe runs a real search to verify both connectivity and a
+ * working index, not just a ping.
  *
  * Never cached: a cached health check is a lie with a timestamp.
  */
@@ -34,12 +38,25 @@ async function handleGET() {
     database = 'down'
   }
 
-  const ok = database === 'ok'
+  const meiliCheck = await meiliHealthCheck()
+  const search = meiliCheck.ok ? 'ok' : ('down' as const)
+
+  const ok = database === 'ok' && search === 'ok'
+
+  const response: Record<string, unknown> = {
+    ok,
+    database,
+    search,
+  }
+
+  // Include the Meilisearch error code if search is down, for debugging
+  if (search === 'down' && meiliCheck.code) {
+    response.search_detail = meiliCheck.code
+  }
 
   return NextResponse.json(
     {
-      ok,
-      database,
+      ...response,
       // Round to whole milliseconds. Sub-millisecond precision on a public
       // endpoint is a timing side channel for no operational gain.
       latency_ms: Math.round(performance.now() - startedAt),

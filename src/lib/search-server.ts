@@ -4,8 +4,8 @@
 
 import 'server-only'
 import type { Product } from '@/components/ProductCard'
-import { fetchWithTimeout } from '@/lib/http/fetch-with-timeout'
 import { expandQueryWord } from '@/lib/search/db-expansion'
+import { meiliSearch } from '@/lib/search/meili-request'
 import { createClient } from '@/lib/supabase/server'
 import { sanitizeOrTerm } from '@/lib/utils/search-escape'
 import { cache } from 'react'
@@ -39,42 +39,33 @@ async function searchMeili(
   limit: number,
   productType?: 'coupon' | 'physical',
 ): Promise<SearchOutcome | null> {
-  try {
-    const host = (process.env.MEILISEARCH_HOST as string).replace(/\/$/, '')
-    const index = process.env.MEILISEARCH_INDEX ?? 'products'
-    const res = await fetchWithTimeout(`${host}/indexes/${index}/search`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${process.env.MEILISEARCH_API_KEY}`,
-      },
+  const index = process.env.MEILISEARCH_INDEX ?? 'products'
+  const data = await meiliSearch<{ hits: MeiliHit[]; estimatedTotalHits?: number }>(
+    `/indexes/${index}/search`,
+    'POST',
+    {
+      q,
+      limit,
       // `type` is a filterable attribute (see lib/search/meili-settings.ts), so
       // the facet is applied in the engine and estimatedTotalHits stays truthful.
-      body: JSON.stringify({
-        q,
-        limit,
-        ...(productType ? { filter: `type = ${productType}` } : {}),
-      }),
-      // Search is request-time; do not cache across queries.
-      cache: 'no-store',
-    })
-    if (!res.ok) return null
-    const data = (await res.json()) as { hits: MeiliHit[]; estimatedTotalHits?: number }
-    const results: Product[] = (data.hits ?? []).map((h) => ({
-      id: h.id,
-      slug: h.slug,
-      name_he: h.name_he,
-      kenyon_price: h.kenyon_price,
-      full_price: h.full_price,
-      images: h.images ?? [],
-      stock_quantity: h.stock_quantity,
-      city: h.city ?? null,
-      category: h.category ?? null,
-    }))
-    return { results, total: data.estimatedTotalHits ?? results.length, engine: 'meilisearch' }
-  } catch {
-    return null
-  }
+      ...(productType ? { filter: `type = ${productType}` } : {}),
+    },
+  )
+
+  if (!data) return null
+
+  const results: Product[] = (data.hits ?? []).map((h) => ({
+    id: h.id,
+    slug: h.slug,
+    name_he: h.name_he,
+    kenyon_price: h.kenyon_price,
+    full_price: h.full_price,
+    images: h.images ?? [],
+    stock_quantity: h.stock_quantity,
+    city: h.city ?? null,
+    category: h.category ?? null,
+  }))
+  return { results, total: data.estimatedTotalHits ?? results.length, engine: 'meilisearch' }
 }
 
 /**
