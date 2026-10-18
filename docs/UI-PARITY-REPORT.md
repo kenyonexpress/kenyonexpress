@@ -166,3 +166,10 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-17 22:08 | home | 1440 | 29.30% | **FAIL** | `37b2a55e7-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
 | 2026-10-17 22:10 | home | 1440 | 23.91% | **FAIL** | `37b2a55e7-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
 | 2026-10-17 22:12 | home | 1440 | 23.91% | **FAIL** | `37b2a55e7-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-17 22:29 | home | 1440 | 23.91% | **FAIL** | `157ce36f2` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 141 failed to load (101 script, 37 font, 2 stylesheet, 1 xhr) |
+| 2026-10-17 22:33 | home | 1440 | 23.91% | **FAIL** | `157ce36f2-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-17 22:39 | home | 1440 | 23.91% | **FAIL** | `d085ddeb5-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-17 22:45 | home | 1440 | 23.91% | **FAIL** | `a8787a5d1-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-17 22:47 | home | 375 | 30.76% | **FAIL** | `a8787a5d1-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-17 22:49 | home | 414 | 33.04% | **FAIL** | `a8787a5d1-dirty` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
+| 2026-10-17 22:51 | home | 768 | 29.05% | **FAIL** | `aa0722dbe-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |

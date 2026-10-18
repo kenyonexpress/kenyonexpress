@@ -138,8 +138,8 @@ describe('MobileDrawer', () => {
     })
 
     const categoryLinks = screen.getAllByRole('link')
-    if (categoryLinks.length > 0) {
-      fireEvent.click(categoryLinks[0])
+    if (categoryLinks.length > 0 && categoryLinks[0]) {
+      fireEvent.click(categoryLinks[0] as HTMLElement)
       await waitFor(() => {
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
       })

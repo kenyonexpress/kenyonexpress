@@ -475,6 +475,7 @@
   --radius-none: 0px; /* the default on live, stated so it can be named */
   --radius-sm: 4px; /* 127 elements: buttons, inputs, small chips */
   --radius-md: 7px; /* 28 elements: cards, dropdown panels */
+  --radius-card: 12px; /* category cards with elevated border radius */
   --radius-lg: 25px; /* 14 elements: modal + large panel corners */
   --radius-pill: 22px; /* 188 elements: the search/newsletter pill and tags */
   --radius-round: 200px; /* 96 elements: avatars and icon buttons */
