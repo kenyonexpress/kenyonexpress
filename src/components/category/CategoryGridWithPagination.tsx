@@ -9,7 +9,6 @@ type Props = {
   items: CategoryProduct[]
   currentPage: number
   totalPages: number
-  pageSize: number
   categorySlug: string
   params: Record<string, string | undefined>
   viewMode?: ViewMode
@@ -19,7 +18,6 @@ export default function CategoryGridWithPagination({
   items,
   currentPage,
   totalPages,
-  pageSize,
   categorySlug,
   params,
   viewMode = '4-col',
