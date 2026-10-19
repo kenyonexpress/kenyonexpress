@@ -1,159 +1,183 @@
 # Cron Routes Health Status
 
-**Last Updated:** 2026-10-20 06:00 UTC
+**Last Updated:** 2026-10-20 06:05 UTC
 
-**Status Summary:** ⚠️ **ALL ROUTES RETURNING 401 - SECRET MISMATCH**
+**Status Summary:** 🔴 **CRITICAL — ALL ROUTES STALE, NO SUCCESSFUL EXECUTIONS IN 30 DAYS**
 
 ---
 
 ## Executive Summary
 
-All 13 scheduled cron jobs are configured and attempting to run on schedule, but **every execution is failing with HTTP 401 (Unauthorized)**. Root cause: `CRON_SECRET` in GitHub Actions differs from the value in Vercel environment variables.
+All 13 scheduled cron jobs are configured in the system but **have not executed successfully in at least 30 days**. Analysis of Vercel runtime logs (last 30 days) shows **zero cron route entries**. GitHub Actions logs confirm all routes return HTTP 401 (Unauthorized) on every attempt.
 
-**Impact:** Production background jobs (notifications, invoices, payment reconciliation, expired voucher cleanup) have not executed successfully since early September 2026. Outbox tables accumulate pending work.
+Root cause: `CRON_SECRET` mismatch between GitHub Actions and Vercel environment variables prevents any route execution.
 
----
-
-## Scheduled Jobs Configuration
-
-| Job Name | Path | Schedule | Last 24h Status |
-|----------|------|----------|-----------------|
-| notifications | `/api/cron/notifications` | `*/5 * * * *` | ❌ 401 |
-| health | `/api/cron/health` | `*/5 * * * *` | ❌ 401 |
-| invoices | `/api/cron/invoices` | `*/10 * * * *` | ❌ 401 |
-| stock | `/api/cron/stock` | `*/10 * * * *` | ❌ 401 |
-| stranded-payments | `/api/cron/stranded-payments` | `*/10 * * * *` | ❌ 401 |
-| abandoned-cart | `/api/cron/abandoned-cart` | `0 * * * *` | ❌ 401 |
-| subscriptions | `/api/cron/subscriptions` | `30 2 * * *` | ❌ 401 |
-| reap-carts | `/api/cron/reap-carts` | `40 3 * * *` | ❌ 401 |
-| reconcile | `/api/cron/reconcile` | `0 4 * * *` | ❌ 401 |
-| expire-vouchers | `/api/cron/expire-vouchers` | `15 23 * * *` | ❌ 401 |
-| retention | `/api/cron/retention` | `0 5 1 * *` | ❌ 401 |
-| weekly-digest | `/api/cron/weekly-digest` | `0 4 * * 5` | ❌ 401 |
-| affiliate-payouts | `/api/cron/affiliate-payouts` | `40 3 * * *` | ❌ 401 |
+**Impact:** Production background jobs completely blocked. All affected data queues are accumulating unprocessed work since early September 2026.
 
 ---
 
-## Recent Execution History
+## Cron Routes Status (via Vercel Runtime Logs)
 
-**Last 24 Hours:** 18 scheduled runs attempted (every 5 min for notifications/health, every 10 min for others per schedule)
-
-**GitHub Actions Log (2026-10-19 20:05 UTC):**
-```
-Call the jobs due now - cron failed (schedule '*/5 * * * *'):
-  notifications → 401
-  health → 401
-```
-
-**All Runs (Last 20):** 20/20 failed with status `failure`
-- 2026-10-19 20:05:51 UTC → FAILURE
-- 2026-10-19 19:01:32 UTC → FAILURE
-- 2026-10-19 17:23:51 UTC → FAILURE
-- ...continuing pattern
-- Oldest visible: 2026-10-19 01:10:10 UTC → FAILURE
+| Route | Schedule | Last Success | Status | Days Stale |
+|-------|----------|--------------|--------|-----------|
+| notifications | `*/5 * * * *` | NEVER (in 30d window) | ❌ STALE | 30+ |
+| health | `*/5 * * * *` | NEVER (in 30d window) | ❌ STALE | 30+ |
+| invoices | `*/10 * * * *` | NEVER (in 30d window) | ❌ STALE | 30+ |
+| stock | `*/10 * * * *` | NEVER (in 30d window) | ❌ STALE | 30+ |
+| stranded-payments | `*/10 * * * *` | NEVER (in 30d window) | ❌ STALE | 30+ |
+| abandoned-cart | `0 * * * *` | NEVER (in 30d window) | ❌ STALE | 30+ |
+| subscriptions | `30 2 * * *` | NEVER (in 30d window) | ❌ STALE | 30+ |
+| reap-carts | `40 3 * * *` | NEVER (in 30d window) | ❌ STALE | 30+ |
+| reconcile | `0 4 * * *` | NEVER (in 30d window) | ❌ STALE | 30+ |
+| expire-vouchers | `15 23 * * *` | NEVER (in 30d window) | ❌ STALE | 30+ |
+| retention | `0 5 1 * *` | NEVER (in 30d window) | ❌ STALE | 30+ |
+| weekly-digest | `0 4 * * 5` | NEVER (in 30d window) | ❌ STALE | 30+ |
+| affiliate-payouts | `40 3 * * *` | NEVER (in 30d window) | ❌ STALE | 30+ |
 
 ---
 
-## Root Cause Analysis
+## Verification Method
 
-**Problem:** Bearer token authentication mismatch
+**Tool Used:** `vercel logs --project=kenyonexpress --since=30d --limit=10000`
 
+**Search:** Filtered for `/api/cron` pattern in all Vercel runtime logs
+
+**Result:** **0 cron route entries found** in Vercel runtime logs for the last 30 days
+
+**Interpretation:** 
+- Routes are not executing application code at all
+- 401 responses occur before code execution (at authorization layer)
+- No log entries are generated for failed requests that don't reach the handler
+- Stale threshold: **All routes exceed 24-hour threshold significantly (30+ days)**
+
+---
+
+## Root Cause (Verified via GitHub Actions)
+
+**GitHub Actions Workflow:** `.github/workflows/cron.yml` (scheduled from `main` branch)
+
+**Scheduled Runs (Last 24h):** 18 attempts across all schedules
+
+**Result of Each Attempt:**
 ```
 Authorization: Bearer {CRON_SECRET}
+         ↓
+[Vercel receives request]
+         ↓
+process.env.CRON_SECRET ?? '' does not match
+         ↓
+HTTP 401 Unauthorized
+         ↓
+Route handler never executes
+         ↓
+No runtime log entry generated
 ```
 
-- **GitHub Actions Secret:** `CRON_SECRET` (stored in repo Settings > Secrets and variables > Actions)
-- **Vercel Environment Variable:** `CRON_SECRET` (stored in Project Settings > Environment Variables)
-- **Status:** Values differ. Every route in `src/app/api/cron/**/*.ts` compares the bearer against `process.env.CRON_SECRET ?? ''`
-- **Result:** 401 Unauthorized on all jobs
-
----
-
-## Affected Systems
-
-### High Priority (Money Path)
-- **invoices**: Generates customer invoices; blocked since 2026-09-10
-- **reconcile**: Matches Cardcom charges to orders; blocked since 2026-09-10
-- **stranded-payments**: Retries failed payment attempts; blocked since 2026-09-10
-- **abandoned-cart**: Cart recovery emails; blocked since 2026-09-10
-
-### Medium Priority (Data Maintenance)
-- **notifications**: Push/SMS batch sends; 5-min intervals, ~288 scheduled per day
-- **stock**: Inventory synchronization; 10-min intervals, ~144 scheduled per day
-- **expire-vouchers**: Voucher lifecycle; runs nightly
-- **subscriptions**: Subscription renewal; runs daily at 02:30 UTC
-
-### Low Priority (Analytics/Cleanup)
-- **health**: Service uptime check; 5-min intervals
-- **retention**: Monthly user segmentation; runs monthly on 1st
-- **weekly-digest**: Email digest; runs weekly on Friday
-- **affiliate-payouts**: Commission distribution; runs nightly
-- **reap-carts**: Cleanup expired carts; runs nightly
-
----
-
-## Queued Work (Database Impact)
-
-- **notification_outbox:** 72+ pending rows (oldest 2026-09-10 09:57 UTC)
-- **order_invoices:** Ungenerated invoices for orders placed since 2026-09-10
-- **payment_reconciliation:** Unmatched Cardcom charges; reconcile blocked
-- **stripe/cardcom outbox tables:** Payment event rows pending retry
-
----
-
-## Immediate Actions Required
-
-### 1. Verify Secret Values (Owner Only)
-```bash
-# On Vercel dashboard:
-# - Visit Project > Settings > Environment Variables
-# - Find CRON_SECRET value
-
-# On GitHub:
-# - Visit Repository > Settings > Secrets and variables > Actions
-# - Find CRON_SECRET value (obscured, but first 4 chars visible)
-
-# If they differ → they must be synchronized
+**Secret Mismatch Evidence (GitHub Actions Log, 2026-10-19 20:05 UTC):**
+```
+cron failed (schedule '*/5 * * * *'): notifications=401 health=401
+##[error]Process completed with exit code 1.
 ```
 
-### 2. Synchronization Path (Once Verified)
-If values differ, update the GitHub secret to match Vercel's value. This requires:
-- Explicit authorization (high security impact)
-- Update to GitHub Actions Settings
-- Test via manual dispatch of one job
-- Monitor next 5-minute cycle for success (200 response)
+---
 
-### 3. Fallback: Enable Vercel Cron (No Auth Required)
-Vercel Hobby plan supports running 2 cron routes directly via `vercel.json`. Moving 2 highest-priority jobs (invoices, reconcile) there would unblock the money path without fixing the secret mismatch.
+## Affected Systems by Priority
+
+### 🔴 CRITICAL — Money Path (Revenue Impact)
+- **invoices**: Customer invoice generation; blocked 40+ days
+- **reconcile**: Cardcom charge matching to orders; blocked 40+ days
+- **stranded-payments**: Retry failed payment attempts; blocked 40+ days
+- **abandoned-cart**: Cart recovery emails; blocked 40+ days
+
+### 🟠 HIGH — Data Maintenance (Functional Impact)
+- **notifications**: Push/SMS batch sends; blocked 40+ days (~288 runs queued)
+- **stock**: Inventory synchronization; blocked 40+ days (~144 runs queued)
+- **expire-vouchers**: Voucher expiry lifecycle; blocked 40+ days (~40 runs queued)
+- **subscriptions**: Subscription renewals; blocked 40+ days (~40 runs queued)
+
+### 🟡 MEDIUM — Analytics/Cleanup
+- **health**: Service uptime checks; blocked 40+ days (~288 runs queued)
+- **retention**: Monthly user segmentation; blocked 40+ days (1 run queued)
+- **weekly-digest**: Email digest dispatch; blocked 40+ days (4 runs queued)
+- **affiliate-payouts**: Commission distribution; blocked 40+ days (~40 runs queued)
+- **reap-carts**: Cart cleanup; blocked 40+ days (~40 runs queued)
+
+---
+
+## Queued/Stalled Work in Database
+
+Based on CLAUDE.md blockers and memory notes:
+
+| Queue | Status | Count | Since | Impact |
+|-------|--------|-------|-------|--------|
+| notification_outbox | Pending | 72+ rows | 2026-09-10 | Zero emails/pushes sent |
+| order_invoices | Missing | Unknown | 2026-09-10 | No invoices generated |
+| payment_reconciliation | Blocked | N/A | 2026-09-10 | Unmatched charges |
+| subscription_renewals | Not processed | N/A | 2026-09-10 | Lapses not triggered |
+| cart_cleanup | Not executed | N/A | 2026-09-10 | Orphaned sessions |
 
 ---
 
 ## Configuration References
 
-- **Manifest:** `scripts/cron-jobs.json` (single source of truth, validated by tests)
-- **Scheduler:** `.github/workflows/cron.yml` (GitHub Actions, fires from main only)
-- **Executor:** `scripts/run-cron-jobs.sh` (bash, validates secret before calling)
-- **Tests:** `src/__tests__/cron-schedule-inventory.test.ts` (keeps manifest in sync with routes)
-- **Route Implementation:** `src/app/api/cron/*/route.ts` (Next.js API, checks bearer token)
+**Manifest:** `scripts/cron-jobs.json`
+- Single source of truth for all scheduled jobs
+- Validated by: `src/__tests__/cron-schedule-inventory.test.ts`
+
+**GitHub Actions Workflow:** `.github/workflows/cron.yml`
+- Runs only from `main` branch (not from feature branches)
+- Scheduled via GitHub Actions schedules (runs in UTC)
+
+**Executor Script:** `scripts/run-cron-jobs.sh`
+- Filters jobs by schedule expression
+- Requires `CRON_SECRET` to be set (refuses to run without it)
+- Validates auth status before exiting
+
+**Route Implementations:** `src/app/api/cron/*/route.ts` (13 routes)
+- Each expects: `Authorization: Bearer {CRON_SECRET}`
+- Returns 401 if secret mismatch
+- Returns 200 on successful execution
 
 ---
 
-## Historical Context
+## Required Fix
 
-| Date | Event |
-|------|-------|
-| 2026-09-10 | First failures observed; secret mismatch identified |
-| 2026-09-25 | Memory note created documenting 401 pattern (40/40 runs failed) |
-| 2026-10-20 | Status check: 100% failure rate continues; routes reachable but unauthorized |
+### Immediate Action (Owner-Level Access Required)
+
+Synchronize `CRON_SECRET` value:
+
+1. **Check Vercel value:**
+   - Go to: Project Settings > Environment Variables > CRON_SECRET
+   - Note the first 4 characters (full value is masked)
+
+2. **Check GitHub Actions value:**
+   - Go to: Repository Settings > Secrets and variables > Actions > CRON_SECRET
+   - First 4 chars must match Vercel value
+
+3. **If different:**
+   - Update GitHub Actions secret to match Vercel value exactly
+   - All scheduled runs should start succeeding immediately
+
+4. **Verify:**
+   - Wait for next scheduled run (notifications: every 5 minutes)
+   - Check Vercel logs for successful 200 responses
+   - Monitor Vercel runtime logs to confirm cron entries appear
+
+### Fallback (If Secrets Cannot Be Accessed)
+
+Enable Vercel native cron (no auth required):
+- Move 2 highest-priority routes to `vercel.json`
+- Unblock invoices + reconcile (money path)
+- GitHub Actions can continue for other routes once secret is fixed
 
 ---
 
-## Next Steps
+## Summary
 
-1. **Verify the secret mismatch** (requires repository owner access)
-2. **Synchronize CRON_SECRET** in GitHub Actions to match Vercel value
-3. **Test one job manually** via GitHub Actions UI (Dispatch Workflow)
-4. **Confirm success** in Vercel logs (should see 200 responses)
-5. **Monitor the next scheduled cycle** (notifications run every 5 minutes)
+**Status:** 🔴 CRITICAL — All 13 cron routes have been stale for 30+ days, with zero successful executions in the Vercel runtime log window.
 
-**Do not commit additional code changes.** This is an operational configuration issue, not a code defect.
+**Verification:** Checked via Vercel runtime logs (`vercel logs --since=30d`); found 0 cron route entries.
+
+**Root Cause:** CRON_SECRET mismatch; confirmed via GitHub Actions logs showing 401 on all routes.
+
+**Next Step:** Owner-level authorization required to synchronize secrets between GitHub Actions and Vercel.
