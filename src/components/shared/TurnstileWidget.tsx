@@ -1,17 +1,42 @@
-import Script from 'next/script'
+'use client'
+
+import { Turnstile } from '@marsidev/react-turnstile'
 
 /**
- * The Turnstile challenge. Renders nothing until NEXT_PUBLIC_TURNSTILE_SITE_KEY
- * is set, so an unconfigured deployment shows the same forms as before. The
- * widget writes `cf-turnstile-response` into the enclosing form on its own.
+ * Cloudflare Turnstile widget. Renders nothing until NEXT_PUBLIC_TURNSTILE_SITE_KEY
+ * is set, so an unconfigured deployment shows the same forms as before. The widget
+ * writes the token to the form as `cf-turnstile-response` and can be verified
+ * server-side via verifyTurnstile().
  */
 export default function TurnstileWidget() {
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
   if (!siteKey) return null
+
   return (
-    <>
-      <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js" strategy="lazyOnload" />
-      <div className="cf-turnstile" data-sitekey={siteKey} data-language="he" />
-    </>
+    <Turnstile
+      siteKey={siteKey}
+      onSuccess={(token) => {
+        const form = document.querySelector('form')
+        if (form) {
+          const input = document.createElement('input')
+          input.type = 'hidden'
+          input.name = 'cf-turnstile-response'
+          input.value = token
+          form.appendChild(input)
+        }
+      }}
+      onError={() => {
+        const form = document.querySelector('form')
+        if (form) {
+          const input = form.querySelector('input[name="cf-turnstile-response"]')
+          if (input) input.remove()
+        }
+      }}
+      options={{
+        language: 'he',
+        theme: 'light',
+        size: 'normal',
+      }}
+    />
   )
 }
