@@ -36,16 +36,19 @@ export default async function CategoryGrid() {
       dir="rtl"
       className="mx-auto w-full max-w-deals px-deals-pad pb-10 font-sans md:px-deals-pad-md xl:px-0"
     >
-      <h2 id="home-categories-title" className="mb-4 text-section-title font-bold text-heading">
+      <h2
+        id="home-categories-title"
+        className="mb-space-lg text-section-title font-bold text-heading"
+      >
         קטגוריות
       </h2>
-      <ul className="m-0 grid list-none grid-cols-2 gap-3 p-0 md:grid-cols-4">
+      <ul className="m-0 grid list-none grid-cols-2 gap-space-md p-0 md:grid-cols-4">
         {tiles.map((tile) => (
           <li key={tile.slug}>
             <Link
               href={`/category/${tile.slug}`}
               data-category-tile={tile.slug}
-              className="group flex min-h-11 flex-col items-center rounded-md border border-border bg-white p-3 text-center transition-shadow duration-300 hover:shadow-card-hover"
+              className="group flex min-h-11 flex-col items-center rounded-md border border-border bg-white p-space-md text-center transition-shadow duration-300 hover:shadow-card-hover"
             >
               <div className="relative aspect-square w-full max-w-32 overflow-hidden rounded-md">
                 <SmartImage
@@ -57,7 +60,9 @@ export default async function CategoryGrid() {
                   fallbackClassName="absolute inset-0"
                 />
               </div>
-              <span className="mt-2 block text-sm font-semibold text-heading">{tile.nameHe}</span>
+              <span className="mt-space-sm block text-sm font-semibold text-heading">
+                {tile.nameHe}
+              </span>
             </Link>
           </li>
         ))}

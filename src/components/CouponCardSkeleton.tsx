@@ -69,7 +69,7 @@ export const COUPONS_LOADING_LABEL = 'טוען קופונים…'
  */
 export function CouponsGridSkeleton({ count = 8 }: { count?: number }) {
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3" aria-busy="true">
+    <div className="grid grid-cols-1 gap-space-md sm:grid-cols-2 lg:grid-cols-3" aria-busy="true">
       <p className="sr-only">{COUPONS_LOADING_LABEL}</p>
       {Array.from({ length: count }, (_, i) => (
         // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length placeholder, never reordered

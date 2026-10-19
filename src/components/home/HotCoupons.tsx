@@ -26,13 +26,13 @@ export default async function HotCoupons() {
       dir="rtl"
       className="mx-auto w-full max-w-deals px-deals-pad pb-10 font-sans md:px-deals-pad-md xl:px-0"
     >
-      <div className="mb-4 flex items-center justify-between gap-3">
+      <div className="mb-space-lg flex items-center justify-between gap-space-md">
         <h2 id="hot-coupons-title" className="m-0 text-section-title font-bold text-heading">
           קופונים חמים
         </h2>
         <Link
           href="/coupons"
-          className="flex min-h-11 items-center gap-1 whitespace-nowrap text-sm text-heading transition-opacity hover:opacity-70"
+          className="flex min-h-11 items-center gap-space-xs whitespace-nowrap text-sm text-heading transition-opacity hover:opacity-70"
         >
           לכל הקופונים
           <ArrowLeft size={16} aria-hidden="true" />

@@ -289,11 +289,11 @@ function DefaultProductCard({
 
   return (
     <div className="overflow-hidden rounded-md border border-gray-100 bg-white">
-      <div className="space-y-2 p-3">
+      <div className="space-y-space-sm p-space-md">
         {product.category && (
           <Link
             href={`/category/${product.category.slug}`}
-            className="-mt-1 block min-h-6 py-1 text-xs text-muted-2 hover:text-heading line-clamp-1"
+            className="-mt-1 block min-h-6 py-space-xs text-xs text-muted-2 hover:text-heading line-clamp-1"
           >
             {product.category.name_he}
           </Link>
@@ -355,7 +355,7 @@ function DefaultProductCard({
             )}
             {outOfStock && (
               <div className="absolute inset-0 flex items-center justify-center bg-white/70">
-                <span className="rounded-full border bg-white px-2 py-1 text-xs font-semibold text-gray-500">
+                <span className="rounded-full border bg-white px-space-sm py-space-xs text-xs font-semibold text-gray-500">
                   אזל המלאי
                 </span>
               </div>
@@ -364,8 +364,8 @@ function DefaultProductCard({
           <PriceSignalBadge product={product} price={price} />
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex flex-wrap items-baseline gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-space-sm">
+          <div className="flex flex-wrap items-baseline gap-space-sm">
             {hasDiscount && old != null && (
               <span className="text-sm text-deal-price line-through">{shekelsFromIls(old)}</span>
             )}
@@ -385,7 +385,7 @@ function DefaultProductCard({
               productId={product.id}
               productName={product.name_he}
               priceAgorot={Math.round(Number(product.kenyon_price ?? 0) * 100)}
-              className="tap-area rounded-sm bg-brand-primary px-3 py-2 text-xs font-bold text-brand-dark hover:bg-brand-primary-hover transition-colors"
+              className="tap-area rounded-sm bg-brand-primary px-space-md py-space-sm text-xs font-bold text-brand-dark hover:bg-brand-primary-hover transition-colors"
             >
               הוסף לסל
             </AddToCartButton>

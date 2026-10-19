@@ -42,17 +42,17 @@ const socials: { label: string; href: string; Icon: typeof Share2 }[] = [
 
 export default function SiteFooter() {
   return (
-    <footer className="bg-footer-bg text-muted mt-8">
+    <footer className="bg-footer-bg text-muted mt-space-2xl">
       <div className="max-w-7xl mx-auto px-4 py-6">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-space-2xl">
           {columns.map((col) => (
             <div key={col.title}>
               {/* h2, not h4. The only heading above this footer on /coupons is the
                   page's h1, so h4 skipped two levels and Lighthouse reported
                   heading-order there. The size is a class; the LEVEL is the
                   document outline a screen reader navigates by. */}
-              <h2 className="text-foreground font-bold mb-3 text-sm">{col.title}</h2>
-              <ul className="space-y-2">
+              <h2 className="text-foreground font-bold mb-space-md text-sm">{col.title}</h2>
+              <ul className="space-y-space-sm">
                 {col.links.map((link) => (
                   <li key={link.label}>
                     <a href={link.href} className="text-sm hover:text-foreground transition-colors">
@@ -66,8 +66,8 @@ export default function SiteFooter() {
 
           {/* Social */}
           <div>
-            <h2 className="text-foreground font-bold mb-3 text-sm">עקבו אחרינו</h2>
-            <div className="flex items-center gap-3">
+            <h2 className="text-foreground font-bold mb-space-md text-sm">עקבו אחרינו</h2>
+            <div className="flex items-center gap-space-md">
               {socials.map(({ label, href, Icon }) => (
                 <a
                   key={label}
@@ -82,7 +82,7 @@ export default function SiteFooter() {
           </div>
         </div>
 
-        <div className="border-t border-border mt-8 pt-4 text-center text-xs text-muted">
+        <div className="border-t border-border mt-space-2xl pt-space-lg text-center text-xs text-muted">
           © <CopyrightYear /> קניון EXPRESS. כל הזכויות שמורות.
         </div>
       </div>
