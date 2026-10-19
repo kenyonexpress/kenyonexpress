@@ -5,8 +5,7 @@ import { withRequestLog } from '@/lib/observability/with-request-log'
 import { getPaymentProvider, loadCardcomEnv } from '@/lib/payments'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
-import type { NextRequest } from 'next/server'
-import { NextResponse } from 'next/server'
+import { type NextRequest, NextResponse } from 'next/server'
 
 const VERIFICATION_AMOUNT_AGOROT = agorot(1)
 
@@ -22,6 +21,7 @@ async function handlePOST(_request: NextRequest): Promise<NextResponse> {
 
   const admin = createAdminClient()
 
+  // Create a card verification record
   const { data: verification, error: insertError } = await admin
     .from('payment_card_verifications')
     .insert({
@@ -56,7 +56,7 @@ async function handlePOST(_request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'payment_provider_unavailable' }, { status: 503 })
   }
 
-  const callbackUrl = `${appUrl}/api/payments/verify-card/callback?v=${id}`
+  const back = `${appUrl}/api/payments/verify-card/callback?v=${id}`
   try {
     const lp = await provider.createLowProfile({
       paymentId: id,
@@ -64,9 +64,9 @@ async function handlePOST(_request: NextRequest): Promise<NextResponse> {
       orderNumber: `VER-${id.slice(0, 8)}`,
       amountAgorot: VERIFICATION_AMOUNT_AGOROT,
       saveToken: true,
-      successRedirectUrl: callbackUrl,
-      failedRedirectUrl: `${callbackUrl}&failed=1`,
-      webhookUrl: callbackUrl,
+      successRedirectUrl: back,
+      failedRedirectUrl: `${back}&failed=1`,
+      webhookUrl: back,
       description: 'אימות כרטיס אשראי בסך אגורה אחת שתוחזר מיד',
     })
 
@@ -75,10 +75,14 @@ async function handlePOST(_request: NextRequest): Promise<NextResponse> {
       .update({ low_profile_code: lp.lowProfileId })
       .eq('id', id)
 
+    // Mock provider handles verification in same request
     if (provider.name === 'mock') {
       const status = await completeCardVerification(id)
       if (status === 'verified') {
-        return NextResponse.json({ status: 'verified', message: 'Card verified successfully' })
+        return NextResponse.json({
+          status: 'verified',
+          message: 'Card verified successfully',
+        })
       }
       return NextResponse.json({ error: 'verification_failed', status }, { status: 400 })
     }
@@ -102,24 +106,7 @@ async function handlePOST(_request: NextRequest): Promise<NextResponse> {
   }
 }
 
-async function handleGET(request: NextRequest): Promise<NextResponse> {
-  const verificationId = request.nextUrl.searchParams.get('v')
-  if (!verificationId) {
-    return NextResponse.json({ error: 'missing_verification_id' }, { status: 400 })
-  }
-
-  const status = await completeCardVerification(verificationId)
-  if (status === 'verified') {
-    return NextResponse.json({ status: 'verified', message: 'Card verified successfully' })
-  }
-  if (status === 'failed') {
-    return NextResponse.json({ error: 'verification_failed', status }, { status: 400 })
-  }
-  return NextResponse.json({ error: 'verification_pending', status }, { status: 202 })
-}
-
 export const POST = withRequestLog('/api/payments/verify-card', handlePOST)
-export const GET = withRequestLog('/api/payments/verify-card', handleGET)
 
 type Row = {
   id: string
@@ -129,7 +116,7 @@ type Row = {
   amount_agorot: number
 }
 
-export async function completeCardVerification(
+async function completeCardVerification(
   id: string,
   opts: { reportedFailure?: boolean } = {},
 ): Promise<'verified' | 'failed' | 'pending'> {
@@ -198,6 +185,7 @@ export async function completeCardVerification(
   if (result.amountAgorot !== row.amount_agorot) return fail('amount_mismatch')
   if (!result.token) return fail('no_token')
 
+  // Save token to payment_tokens table
   const { data: paymentToken, error: tokenError } = await admin
     .from('payment_tokens')
     .insert({
@@ -221,6 +209,7 @@ export async function completeCardVerification(
     return fail('token_store_failed')
   }
 
+  // Save saved_payment_method to profiles
   const tokenInfo = {
     token_id: (paymentToken as { id: string }).id,
     last_4: result.token.last4,
@@ -230,7 +219,7 @@ export async function completeCardVerification(
   }
 
   const { error: profileError } = await admin
-    .from('auth.users')
+    .from('profiles')
     .update({ saved_payment_method: tokenInfo })
     .eq('id', row.profile_id)
 
@@ -239,8 +228,10 @@ export async function completeCardVerification(
       verification_id: id,
       reason: profileError.message,
     })
+    // Continue - we already saved the token
   }
 
+  // Refund immediately
   let voided = false
   if (result.transactionId) {
     const refund = await provider
@@ -253,6 +244,7 @@ export async function completeCardVerification(
       .catch(() => null)
     voided = refund?.success === true
     if (!voided) {
+      // Log to Sentry but allow verification to succeed
       log.warn('verify_card.refund_failed', { verification_id: id })
       try {
         await capturePaymentAlarm('card verification refund failed', {
@@ -263,7 +255,7 @@ export async function completeCardVerification(
           },
         })
       } catch {
-        // continue
+        // Sentry capture failed, but continue
       }
     }
   }
@@ -281,3 +273,21 @@ export async function completeCardVerification(
 
   return 'verified'
 }
+
+async function handleGET(request: NextRequest): Promise<NextResponse> {
+  const verificationId = request.nextUrl.searchParams.get('v')
+  if (!verificationId) {
+    return NextResponse.json({ error: 'missing_verification_id' }, { status: 400 })
+  }
+
+  const status = await completeCardVerification(verificationId)
+  if (status === 'verified') {
+    return NextResponse.json({ status: 'verified', message: 'Card verified successfully' })
+  }
+  if (status === 'failed') {
+    return NextResponse.json({ error: 'verification_failed', status }, { status: 400 })
+  }
+  return NextResponse.json({ error: 'verification_pending', status }, { status: 202 })
+}
+
+export const GET = withRequestLog('/api/payments/verify-card', handleGET)

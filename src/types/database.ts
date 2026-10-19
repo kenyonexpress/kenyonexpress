@@ -2387,6 +2387,7 @@ export type Database = {
           deleted_at: string | null
           description_he: string | null
           discount_percent: number | null
+          free_shipping: boolean
           full_price: number | null
           full_price_agorot: number | null
           height_cm: number | null
@@ -2436,6 +2437,7 @@ export type Database = {
           video_url: string | null
           warranty_months: number | null
           weight_grams: number | null
+          weekend_only: boolean
           whatsapp_enabled: boolean
           width_cm: number | null
           width_mm: number | null
@@ -2475,6 +2477,7 @@ export type Database = {
           deleted_at?: string | null
           description_he?: string | null
           discount_percent?: number | null
+          free_shipping?: boolean
           full_price?: number | null
           full_price_agorot?: number | null
           height_cm?: number | null
@@ -2524,6 +2527,7 @@ export type Database = {
           video_url?: string | null
           warranty_months?: number | null
           weight_grams?: number | null
+          weekend_only?: boolean
           whatsapp_enabled?: boolean
           width_cm?: number | null
           width_mm?: number | null
@@ -2563,6 +2567,7 @@ export type Database = {
           deleted_at?: string | null
           description_he?: string | null
           discount_percent?: number | null
+          free_shipping?: boolean
           full_price?: number | null
           full_price_agorot?: number | null
           height_cm?: number | null
@@ -2612,6 +2617,7 @@ export type Database = {
           video_url?: string | null
           warranty_months?: number | null
           weight_grams?: number | null
+          weekend_only?: boolean
           whatsapp_enabled?: boolean
           width_cm?: number | null
           width_mm?: number | null

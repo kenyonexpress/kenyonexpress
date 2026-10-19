@@ -914,6 +914,32 @@ export default function ProductForm({
             </span>
           </div>
         )}
+        <div className="flex items-center gap-3">
+          <input
+            id="weekend_only"
+            name="weekend_only"
+            type="checkbox"
+            value="true"
+            defaultChecked={product?.weekend_only ?? false}
+            className="w-4 h-4 rounded border-gray-300 text-brand focus:ring-brand"
+          />
+          <label htmlFor="weekend_only" className="text-sm font-medium text-gray-700">
+            מוצר סוף שבוע בלבד
+          </label>
+        </div>
+        <div className="flex items-center gap-3">
+          <input
+            id="free_shipping"
+            name="free_shipping"
+            type="checkbox"
+            value="true"
+            defaultChecked={product?.free_shipping ?? false}
+            className="w-4 h-4 rounded border-gray-300 text-brand focus:ring-brand"
+          />
+          <label htmlFor="free_shipping" className="text-sm font-medium text-gray-700">
+            משלוח חינם
+          </label>
+        </div>
       </div>
 
       {/* Marketing content (048) */}

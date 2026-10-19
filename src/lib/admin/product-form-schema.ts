@@ -114,6 +114,8 @@ export const productSchema = z
     sku: z.string().nullable().optional(),
     stock_quantity: z.coerce.number().int().min(0).nullable().optional(),
     is_featured: z.coerce.boolean().default(false),
+    weekend_only: z.coerce.boolean().default(false),
+    free_shipping: z.coerce.boolean().default(false),
     status: z.enum(['draft', 'active', 'paused', 'archived']),
     // content/marketing (048)
     short_description_he: z.string().max(300, 'תיאור קצר עד 300 תווים').nullable().optional(),

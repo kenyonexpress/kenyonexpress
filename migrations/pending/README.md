@@ -48,6 +48,13 @@ campaign `כללי` is INACTIVE until the owner sets its rate. Applied through M
 is superseded and must not be applied**: it re-creates `affiliates`, which
 already exists.
 
+## 2026-10-19: 287 PENDING - cashback bonus per club tier (F11 extension)
+
+`287_club_tiers_add_cashback_bonus.sql` adds `cashback_bonus_percent numeric(5,2)`
+to `club_tiers` for per-tier cashback bonuses. Admin UI updated at `/admin/club-tiers`
+to display and edit the field. Account page displays the cashback bonus percentage
+and a progress bar toward the next tier. Awaiting rehearsal and approval.
+
 ## 2026-10-18: 282 APPLIED - club tiers (rc5 F11)
 
 `282_club_tiers.sql` creates `club_tiers` (seeded bronze 0, silver 50000,
