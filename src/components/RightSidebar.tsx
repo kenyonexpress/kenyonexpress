@@ -35,7 +35,7 @@ export default function RightSidebar() {
           <Link
             key={cat.id}
             href={cat.href}
-            className={`flex items-center gap-space-sm px-space-md py-space-md border-b border-rule last:border-0 transition-colors ${
+            className={`flex items-center gap-space-sm px-space-md py-space-md min-h-6 border-b border-rule last:border-0 transition-colors ${
               cat.muted
                 ? 'text-gray-600 pointer-events-none'
                 : 'hover:bg-surface-hover text-foreground'

@@ -91,6 +91,7 @@ export const REACT_STREAMING_SCRIPT_HASHES = Object.freeze([
   'sha256-zgYKFpoB4UYlL0EuAbnNoymMI413PDF6Ll3IXgE7Ub4=', // Turbopack chunk loader (UX48 accessibility)
   'sha256-w92w/Eh5PW65PJ1gCpkhEioWU7kkdPACwUngiy22EwY=', // Turbopack chunk loader (UX48 hero slider dots)
   'sha256-EU3iKFCWIvRwQ4zq/3AcynwCQJ0Zd8plrhnQOL+Xw6k=', // Turbopack chunk loader (UX48 RightSidebar contrast fix)
+  'sha256-Lp3wKXsxenwxkf+061BcueWy/DcWemS6BpSWXKbcjxo=', // Turbopack chunk loader (UX48 SiteFooter link contrast fix)
 ])
 
 /** Every hash the document policy carries, in the order it emits them. */
