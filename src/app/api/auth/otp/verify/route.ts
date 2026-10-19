@@ -31,8 +31,8 @@ async function handlePOST(req: NextRequest) {
 
     const normalizedPhone = normalizeTelephoneNumber(phone)
 
-    // Rate limit: 20 attempts per phone per hour
-    const decision = await rateLimit('phone-verify', normalizedPhone)
+    // Rate limit: 5 attempts per phone per hour (phone-otp-number policy)
+    const decision = await rateLimit('phone-otp-number', normalizedPhone)
     if (!decision.allowed) {
       return tooManyRequests(decision)
     }
@@ -85,7 +85,7 @@ async function handlePOST(req: NextRequest) {
       return NextResponse.json({ error: 'Failed to verify OTP' }, { status: 500 })
     }
 
-    // Get or create user - for registration flow
+    // Get authenticated user to update metadata
     const { data: user, error: userError } = await supabase.auth.getUser()
 
     if (!user?.user && !userError) {
@@ -98,19 +98,27 @@ async function handlePOST(req: NextRequest) {
     }
 
     if (user?.user) {
-      // Update user's verified_phone in profiles
-      const { error: profileError } = await supabase
+      // Update user's verified_phone in auth.users via user_metadata
+      const { error: updateAuthError } = await supabase.auth.updateUser({
+        data: {
+          verified_phone: normalizedPhone,
+          verified_phone_at: new Date().toISOString(),
+        },
+      })
+
+      if (updateAuthError) {
+        console.error('Failed to update auth user:', updateAuthError)
+        return NextResponse.json({ error: 'Failed to update user metadata' }, { status: 500 })
+      }
+
+      // Also update profiles for backward compatibility
+      await supabase
         .from('profiles')
         .update({
           verified_phone: normalizedPhone,
           verified_phone_at: new Date().toISOString(),
         })
         .eq('id', user.user.id)
-
-      if (profileError) {
-        console.error('Failed to update profile:', profileError)
-        return NextResponse.json({ error: 'Failed to update user profile' }, { status: 500 })
-      }
     }
 
     return NextResponse.json({
