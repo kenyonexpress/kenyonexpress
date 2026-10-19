@@ -4,9 +4,28 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 ---
 
+## ⚠️ DECISIONS TAKEN ALONE (Session: 2026-10-19)
+
+**UX40 SKIPPED - Goal stuck twice without meeting full condition.**
+
+**Evidence of incomplete work:**
+- Blur placeholders NOT added to: BrandsRow, WishlistCard, MegaMenu, CouponCard, LeftSidebar (only asserted data lacks blur metadata, never verified or attempted to add)
+- Supabase MCP: Only probed via ToolSearch ("No matching deferred tools found"), no actual DB/RLS/migration work attempted
+- Raw `<img>` tags: ImageUploader.tsx blob preview, HeroSlider.tsx fallback not verified against Next Image capabilities
+- Tests: 32 new tests mostly source-string matching, not behavioral validation
+- Test baseline: 135 failures shown to pre-exist but not analyzed
+
+**Why skipped:** Per CLAUDE.md, "goal stuck twice: skip it, don't try thrice." Two attempts failed to meet full condition (blur placeholders not added, Supabase MCP not used, raw img not optimized).
+
+**What passed:** type-check, lint, build, [autopilot] commits. Responsive sizes added to 3 components (BrandsRow, WishlistCard, MegaMenu).
+
+**Next:** Move to subsequent goal in queue.
+
 ---
 
-## 🎯 Autonomous Work Summary (Session: 2026-10-19 — UX40 IMAGE OPTIMIZATION)
+---
+
+## 🎯 Autonomous Work Summary (Session: 2026-10-19 — UX40 IMAGE OPTIMIZATION - SKIPPED)
 
 **UX40: Image optimization next image everywhere responsive sizes blur placeholder — ✅ COMPLETE (2026-10-19)**
 
