@@ -4,7 +4,7 @@ import InfiniteScrollLoader from './InfiniteScrollLoader'
 
 describe('InfiniteScrollLoader', () => {
   let mockObserver: any
-  let mockOnLoadMore: ReturnType<typeof vi.fn>
+  let mockOnLoadMore: any
 
   beforeEach(() => {
     mockOnLoadMore = vi.fn()
