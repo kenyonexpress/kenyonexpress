@@ -4,28 +4,48 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 ---
 
-## ✅ MAINTENANCE_LOOP_6 (Session: 2026-10-20) — COMPLETE
+## 🚫 MAINTENANCE_LOOP_6 (Session: 2026-10-20) — BLOCKED
 
-**Goal:** Recheck Mobile Gate score via scripts/compare.mjs. If above 11% requeue mobile fix goal at head of queue.
+**Goal:** Recheck Mobile Gate score via scripts/compare.mjs. If above 11% requeue mobile fix goal.
 
-**Result:** COMPLETE — Mobile gate FAIL condition triggered, goal requeued
+**Result:** BLOCKED — Measurement infrastructure unrecoverable (Attempt 1 of 2)
 
-**Mobile Gate Finding:**
-- Last measured score (380px): **37.44%** (2026-10-18 01:44 UTC) = **FAIL**
-- Threshold: 11% | Gap: +26.44% above acceptable
-- Measurement infrastructure: Broken (refs resource loading failures)
+**What Was Attempted:**
+1. ✅ Built app: `pnpm build` — SUCCESS (310 pages)
+2. ✅ Started server: PORT=9000 on localhost:9000 — SUCCESS (verified via curl)
+3. ❌ Ran measurement: `scripts/compare.mjs --page=home --widths=380` — FAILED
 
-**Work Completed:**
-- ✅ Analyzed parity report (UI-PARITY-REPORT.md)
-- ✅ Created docs/GATE-STATUS.md with findings
-- ✅ Commit `9401e9c41` pushed to origin/autopilot
+**Failure Details:**
+```
+Error: refs/localized/ke_live_home.html is missing
+```
+
+**Root Cause (Unrecoverable):**
+- `refs/ke_live_*.html` (original WordPress snapshots): **MISSING, never committed**
+- `refs/live-assets/` (crawled assets for baseline): **MISSING, never committed**
+- Cannot rebuild: Production now serves THIS app (not original WordPress)
+- Cannot measure against live: Would compare app to itself (meaningless)
+
+**Quality Gates (Passed):**
+- ✅ `pnpm type-check`: CLEAN
+- ✅ `pnpm lint`: CLEAN (all gates: biome, tokens, copy, asset)
+- ✅ No code changes, documentation only
+
+**Commits:**
+- `73b14a4a5` - [autopilot] chore qa mobile gate check - blocked
 
 **Autonomous Decision:**
-Mobile gate > 11% → **Mobile fix goal REQUEUED at head of work queue** (condition met per goal spec)
+- **Cannot satisfy goal requirement** — Fresh measurement via compare.mjs impossible
+- **Infrastructure blocker** — Baseline files lost, production conflict prevents rebuild
+- **Attempt 1 of 2** — Will try again per "goal stuck twice: skip" rule
 
-**Quality Gates:** N/A (measurement/documentation task, no code changes)
+**To Unblock (For Future Session):**
+1. Restore `refs/ke_live_*.html` from external backup/archive
+2. Restore `refs/live-assets/` from external backup
+3. Run `scripts/localize-live-refs.mjs` to rebuild `refs/localized/`
+4. Re-run `scripts/compare.mjs` for fresh measurement
 
-**המשך מ:** MAINTENANCE_LOOP_6 COMPLETE. Mobile UI parity 37.44% (FAIL). Mobile fix goal requeued.
+**המשך מ:** MAINTENANCE_LOOP_6 BLOCKED. Measurement infrastructure unrecoverable (baseline source files missing). Awaiting restoration of refs files or alternative baseline strategy.
 
 ---
 
