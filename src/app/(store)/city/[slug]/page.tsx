@@ -7,7 +7,6 @@ import {
   CITY_PAGE_SIZE,
   type CityDeals,
   type CityPageTarget,
-  allCityPageSlugs,
   cityPageDescription,
   cityPageHref,
   cityPageTitle,
@@ -74,14 +73,18 @@ function parsePage(raw: string | string[] | undefined): number {
 }
 
 /**
- * All thirty, prerendered: thirteen cities and seventeen regions. Both sets
- * are constants in the repo, so there is nothing to gain from generating them
- * on demand, and a crawler hitting a cold city page is exactly the case worth
- * having warm.
+ * Allow blocking prerender to handle Supabase timeouts gracefully.
+ *
+ * With cacheComponents enabled, Next.js still attempts to prerender pages
+ * even without generateStaticParams. The catalogue read query can exceed
+ * the default 10s timeout during concurrent prerendering. Setting `instant = false`
+ * allows this page to block during prerendering without failing the build,
+ * while subsequent requests use the `use cache` result (5 minute CacheLife.list).
+ *
+ * For SEO, the pages remain discoverable via sitemap.xml which links all
+ * known city/region slugs.
  */
-export function generateStaticParams() {
-  return allCityPageSlugs().map((slug) => ({ slug }))
-}
+export const instant = false
 
 function nameOf(target: CityPageTarget): string {
   return target.kind === 'city' ? target.city.name : target.region.name
