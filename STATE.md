@@ -41,13 +41,33 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 - Or run against pre-built server to reduce startup time
 - Or investigate environment resource constraints
 
-**עומד נוכחי:**
+**עומד נוכחי (2026-10-20):**
 - ✅ Goals 1-14, 16-20: COMPLETE
 - ⛔ Goal 15 (Wallet): BLOCKED (pending approval of money integer migration)
-- ⏭️ MAINTENANCE_LOOP_4: SKIPPED (E2E suite infrastructure blocker)
-- Future tracks available: BI (50 items), Launch Readiness (50 items), Ops (50 items), Deep Maintenance (50 items)
+- 🔄 MAINTENANCE_LOOP_4: IN PROGRESS - Full E2E test suite running (serial mode)
+  - Test progress: 169/682 (25% complete) 
+  - Current results: 247 tests analyzed, 4 passed, 243 failed
+  - Root causes documented in docs/E2E-STATUS.md
+  - Critical blocker: Product discovery on /products page (50+ tests blocked)
+  - ETA: ~8 hours for full completion
 
-**המשך מ:** All sequential work complete/blocked. No new goals assigned. Ready for next directive.
+**Quality Gates Status:**
+- ✅ pnpm type-check: CLEAN
+- ✅ pnpm lint: CLEAN  
+- ✅ pnpm build: SUCCESS (307 pages)
+
+**Next Session Instructions:**
+1. Monitor E2E test completion (running in /tmp/e2e-serial.log)
+2. Extract final pass/fail counts once [682/682] reached
+3. Fix root causes documented in docs/E2E-STATUS.md:
+   - Priority 1: Product discovery on /products (blocks 50+ tests)
+   - Priority 2: Dark mode class application (blocks 4 tests)
+   - Priority 3: Hebrew copy rendering (blocks 6 tests)
+   - Priority 4: Mobile responsive classes (blocks 4 tests)
+4. Re-run full E2E suite after fixes to verify improvements
+5. Commit fixes and finalize MAINTENANCE_LOOP_4
+
+**המשך מ:** MAINTENANCE_LOOP_4 ongoing. Full E2E suite ~25% complete (169/682). Serial mode stable. Continue monitoring + fix identified blockers when current run finishes.
 
 ---
 
