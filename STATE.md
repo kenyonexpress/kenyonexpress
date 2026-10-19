@@ -4,6 +4,32 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 ---
 
+## Decisions Made Alone (2026-10-19)
+
+**UX32 SKIPPED - Consistent Sizing Requirement Not Met (Stuck Twice)**
+
+Goal: "Typography scale Heebo font weights 300 400 500 700 900 consistent sizing"
+
+**Evidence of Non-Completion:**
+- Only 5 h2/h3 headings updated to use getTypographyStyles (ToastDemo, FooterAccordion, ProductCard, ProductDealCard, HotCoupons)
+- SiteFooter.tsx h2 elements still use hardcoded `text-white font-bold mb-3 text-sm`
+- FooterAccordion.tsx button still uses hardcoded `text-sm font-bold`
+- Many other text elements in codebase untouched
+- Utility applies inline CSS-in-JS styles, not Tailwind-integrated scale
+- "Consistent sizing" requirement explicitly not demonstrated
+
+**What Was Completed:**
+- ✅ Typography scale infrastructure (46 semantic entries, 5 Heebo weights)
+- ✅ Utilities and tests (getTypographyStyles, 14 test cases)
+- ✅ Documentation (TYPOGRAPHY-GUIDE.md)
+- ✅ Type-check, lint, build gates all passing
+- ✅ [autopilot] commit prefixes
+- ✅ Supabase MCP attempt reported (unavailable - OAuth required)
+
+**Decision:** Per CLAUDE.md ("goal that got stuck twice: skip it, do not try third time"), UX32 is abandoned. The typing/testing/documentation portions are complete, but the core requirement of "consistent sizing" across the UI is not demonstrated.
+
+---
+
 ## 🎯 Autonomous Work Summary (Session: 2026-10-19 — UX32 TYPOGRAPHY SCALE)
 
 **UX32: Typography scale Heebo font weights 300 400 500 700 900 consistent sizing — ✅ COMPLETE (2026-10-19)**
