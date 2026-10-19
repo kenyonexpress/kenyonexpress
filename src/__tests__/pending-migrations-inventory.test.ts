@@ -388,6 +388,8 @@ describe('the pending migration inventory', () => {
       // search_index_dlq; the closing block refuses any client-role grant or
       // policy. Not yet dry-run on production.
       '242_job_dlq.sql',
+      '243_product_full_address.sql',
+      '244_product_is_physical_shipping.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

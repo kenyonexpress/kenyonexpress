@@ -130,7 +130,7 @@ export default function ProductForm({
   )
   const [supplierId, setSupplierId] = useState(product?.supplier_id ?? '')
   const [isPhysicalShipping, setIsPhysicalShipping] = useState(
-    product?.is_physical_shipping ?? false,
+    Boolean(product?.is_physical_shipping),
   )
   const [city, setCity] = useState(product?.city ?? '')
   const [fullAddress, setFullAddress] = useState(product?.full_address ?? '')

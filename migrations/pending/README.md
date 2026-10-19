@@ -1,5 +1,24 @@
 # `migrations/pending/`
 
+## 2026-10-19: 243 + 244 PENDING (product shipping location)
+
+`243_product_full_address.sql` adds `products.full_address`, a text column for
+storing the complete street address (e.g., "רוטשילד 15 תל אביב"). Displayed on
+the product page detail view only, not on product cards. Nullable, defaults to
+NULL. Rollback is one DROP COLUMN IF EXISTS.
+
+`244_product_is_physical_shipping.sql` adds `products.is_physical_shipping`, a
+boolean column indicating whether a product ships to the entire country (true)
+or only to a specific city (false). When true, the city field is disabled in the
+admin form and displays "כל הארץ" (entire country) in the UI. When false, city
+becomes required. Defaults to false. Rollback is one DROP COLUMN IF EXISTS.
+
+These two migrations support the admin product form enhancement to allow marking
+products as shipping nationwide while optionally providing a full address. The
+product card and page display logic is updated to show "כל הארץ" for nationwide
+products and the specific city name otherwise, with a fallback to "כל הארץ" if
+neither is set.
+
 ## 2026-09-17: 242 PENDING (job queue dead letters)
 
 `242_job_dlq.sql` adds `job_dlq`, the dead-letter table for the general job
