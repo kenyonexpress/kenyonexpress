@@ -361,6 +361,7 @@ describe('the pending migration inventory', () => {
     expect(sqlFilesIn(PENDING_DIR)).toEqual([
       '162_cron_schedule.sql',
       '184_orders_monthly_partitioning.sql',
+      '189_passkeys_webauthn.sql',
       '211_whatsapp_selfservice.sql',
       // 236 is PENDING (2026-09-16): where the cart's shipping-method pick
       // lands on the order. `orders.shipping_method` (checked text, NULL means
