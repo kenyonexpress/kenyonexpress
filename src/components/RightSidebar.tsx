@@ -26,7 +26,7 @@ export default function RightSidebar() {
       {/* Solid yellow top block */}
       <div className="px-space-lg py-space-lg text-center bg-brand-secondary">
         <p className="font-extrabold text-foreground text-sm tracking-tight">קניון EXPRESS</p>
-        <p className="text-xs text-muted mt-0.5 font-medium">מסדרים לך בילוי</p>
+        <p className="text-xs text-gray-700 mt-0.5 font-medium">מסדרים לך בילוי</p>
       </div>
 
       {/* Category list */}
@@ -35,9 +35,9 @@ export default function RightSidebar() {
           <Link
             key={cat.id}
             href={cat.href}
-            className={`flex items-center gap-space-sm px-space-sm py-space-sm border-b border-rule last:border-0 transition-colors ${
+            className={`flex items-center gap-space-sm px-space-md py-space-md border-b border-rule last:border-0 transition-colors ${
               cat.muted
-                ? 'text-muted pointer-events-none'
+                ? 'text-gray-600 pointer-events-none'
                 : 'hover:bg-surface-hover text-foreground'
             }`}
           >
