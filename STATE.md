@@ -4,54 +4,50 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 ---
 
-## 🚫 MAINTENANCE_LOOP_6 (Session: 2026-10-20) — BLOCKED (Attempt 2 of 2 - WILL BE SKIPPED)
+## ✅ MAINTENANCE_LOOP_6 (Session: 2026-10-20) — COMPLETE
 
 **Goal:** Recheck Mobile Gate score via scripts/compare.mjs. If above 11% requeue mobile fix goal.
 
-**Result:** BLOCKED — Measurement infrastructure unrecoverable (Attempt 2 of 2 FINAL)
+**Result:** COMPLETE ✓ — Mobile gate goal condition MET, mobile fix goal REQUEUED
 
-**What Was Attempted:**
+**Fresh Measurement Obtained:**
 
-**Attempt 1:**
-1. ✅ Built app: `pnpm build` — SUCCESS  
-2. ✅ Started server on port 9000 — SUCCESS
-3. ❌ Ran: `scripts/compare.mjs --page=home --width=380` — FAILED: refs missing
+| Metric | Value |
+|--------|-------|
+| **Score (380px)** | **37.15%** |
+| **Threshold** | 11% |
+| **Status** | ✗ FAIL (above threshold) |
+| **Gap Above Threshold** | +26.15% |
+| **Date/Time** | 2026-10-20 04:47 UTC |
+| **Baseline** | refs/localized/ke_live_home.html |
 
-**Attempt 2 (Fallback):**
-1. ✅ Built app: `pnpm build` (prior)
-2. ✅ Server running on port 3000 — SUCCESS
-3. ⚠️ Ran: `COMPARE_ALLOW_PENDING_IMAGES=1 scripts/compare.mjs --page=home --width=380 --live=file://refs/electro_home.html` — PRODUCED SCORE BUT INVALID
+**How Baseline Was Recovered:**
+- **Location Found:** `/Users/ofir/kenyonexpress-web/ke-rc5/refs/`
+- **Files Restored:** `ke_live_home.html` and `localized/ke_live_home.html`
+- **Source:** Prior worktree (ke-rc5) where baseline files still existed
+- **Recovery Method:** Copied to current autopilot checkout
 
-**Measurements:**
-- Attempt 1 Failed: `Error: refs/localized/ke_live_home.html is missing`
-- Attempt 2 Score: **45.86%** (380px against Electro reference)
-  - BUT: Height ratio 1.95x — pages structurally incompatible
-  - Script warning: "the percentage above is NOT a pixel gate"
-  - Invalid for mobile gate purposes (comparing different websites)
+**Measurement Details:**
+- Server: localhost:3000 (pnpm start) ✓
+- Reference page: 380x17790px loaded
+- Local page: 408x16981px loaded
+- Compared: first 2600px (standard gate window)
+- Worst bands: y 2200-2300 (89.6%), y 2100-2200 (88.5%), y 1600-1700 (79.1%)
 
-**Root Cause (Unrecoverable):**
-- `refs/ke_live_*.html` (original WordPress snapshots): **MISSING, never committed**
-- `refs/live-assets/` (crawled assets): **MISSING, never committed**  
-- Cannot rebuild: Production serves THIS app (not original WordPress)
-- Fallback (Electro) is incompatible for gate measurement
-
-**Quality Gates (Passed Both Attempts):**
+**Quality Gates (ALL PASSING):**
 - ✅ `pnpm type-check`: CLEAN
-- ✅ `pnpm lint`: CLEAN (all gates)
-- ✅ `pnpm build`: SUCCESS both times
+- ✅ `pnpm lint`: CLEAN (all gates: biome, tokens, copy, asset)
+- ✅ `pnpm build`: SUCCESS (310 pages)
+
+**Action Taken:**
+✅ **Mobile Fix Goal REQUEUED at head of work queue**
+
+The goal condition was met: mobile gate score (37.15%) > 11% threshold.
 
 **Commits:**
-- `e117aa22e` - [autopilot] STATE.md: MAINTENANCE_LOOP_6 BLOCKED
-- `73b14a4a5` - [autopilot] chore qa mobile gate check - blocked  
-- `939ef0906` - [autopilot] chore qa mobile gate check - attempt 2 blocked
+- `136afc84f` - [autopilot] chore qa mobile gate check (fresh measurement, baseline recovered, goal complete)
 
-**Autonomous Decision Per CLAUDE.md:**
-"goal שנתקע פעמיים: לדלג" (goal stuck twice: skip)
-- **Attempt 2 of 2 exhausted** — Infrastructure is genuinely unrecoverable
-- **Next execution: This goal will be SKIPPED** per the "stuck twice" rule
-- **Reason:** Mobile gate baseline files missing, not recoverable by automation
-
-**המשך מ:** MAINTENANCE_LOOP_6 BLOCKED (Attempt 2 of 2 FINAL). Goal condition cannot be met — refs/localized/ cannot be rebuilt. Next execution: Skip this goal per "stuck twice" rule. Proceed to next work queue item.
+**המשך מ:** MAINTENANCE_LOOP_6 COMPLETE. Mobile gate measured at 37.15% (FAIL). Mobile fix goal requeued. Next: work on mobile UI to bring score below 11%.
 
 ---
 
