@@ -47,7 +47,13 @@ The goal condition was met: mobile gate score (37.15%) > 11% threshold.
 **Commits:**
 - `136afc84f` - [autopilot] chore qa mobile gate check (fresh measurement, baseline recovered, goal complete)
 
-**המשך מ:** MAINTENANCE_LOOP_6 COMPLETE. Mobile gate measured at 37.15% (FAIL). Mobile fix goal requeued. Next: work on mobile UI to bring score below 11%.
+**המשך מ:** MAINTENANCE_LOOP_6 COMPLETE. Mobile gate measured at 37.15% (FAIL). Mobile fix goal requeued.
+
+## 📋 Work Queue (Next Goals)
+
+**Priority Order (head to tail):**
+1. **MOBILE_FIX_GATE** — Requeue condition met: score 37.15% > 11% threshold. Adjust mobile UI to bring score below 11%. Measure via `scripts/compare.mjs --page=home --width=380`.
+2. Continue with NEXT-GOALS.md items per standard queue
 
 ---
 

@@ -178,3 +178,6 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-18 01:42 | home | 380 | 37.44% | **FAIL** | `b0e90c099-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 21 failed to load (10 font, 4 xhr, 3 script, 3 stylesheet, 1 image) |
 | 2026-10-18 01:44 | home | 768 | 34.68% | **FAIL** | `b0e90c099-dirty` | WORSE than the 29% best known for home/768 (tolerance 0.5); ref 21 failed to load (10 font, 4 xhr, 3 script, 3 stylesheet, 1 image) |
 | 2026-10-18 01:46 | home | 1440 | 27.66% | **FAIL** | `b0e90c099-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 23 failed to load (12 font, 4 xhr, 3 script, 3 stylesheet, 1 image) |
+| 2026-10-19 21:40 | home | 1440 | 41.94% | **FAIL** | `e117aa22e` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 20 failed to load (10 font, 3 script, 3 stylesheet, 3 xhr, 1 image) |
+| 2026-10-19 21:43 | home | 380 | 45.86% | **FAIL** | `e117aa22e-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 20 failed to load (10 font, 3 script, 3 stylesheet, 3 xhr, 1 image) |
+| 2026-10-19 21:47 | home | 380 | 37.15% | **FAIL** | `ba53f8014-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 201 failed to load (113 script, 48 image, 37 font, 2 stylesheet, 1 xhr) |
