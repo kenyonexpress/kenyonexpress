@@ -1,72 +1,23 @@
 # `migrations/pending/`
 
-## 2026-10-15: 240, 241 AND 235 APPLIED (approved by Ofir in session)
+## 2026-10-19: 243 + 244 PENDING (product shipping location)
 
-Applied to production in that order through the Supabase MCP
-`apply_migration`, each verified with `execute_sql` before the next, and
-moved to `applied/`:
+`243_product_full_address.sql` adds `products.full_address`, a text column for
+storing the complete street address (e.g., "רוטשילד 15 תל אביב"). Displayed on
+the product page detail view only, not on product cards. Nullable, defaults to
+NULL. Rollback is one DROP COLUMN IF EXISTS.
 
-- `240_perf_fk_indexes_and_cart_uniqueness.sql` as
-  `perf_fk_indexes_and_cart_uniqueness_240` (`20261014205117`). Before: none
-  of the ten indexes existed, 0 accounts held two carts (1801 carts). After:
-  all ten present, `carts_profile_id_uidx` partial on `profile_id IS NOT NULL`.
-  The production branch's cart merge does not check the INSERT error, so a
-  racing second login now loses that guest cart's lines once instead of
-  leaving the account with two rows that fail every later read.
-- `241_rls_initplan_policies.sql` as `rls_initplan_policies_241`
-  (`20261014205130`). The six live quals were re-read first and matched the
-  file's text except for the wrapping. After: six policies, the MFA one still
-  RESTRICTIVE, every `auth.uid()` / `current_user_role()` in the
-  `( SELECT ... )` form.
-- `235_product_live_and_rating.sql` as `product_live_and_rating_235`
-  (`20261014205145`), with its own `BEGIN;` / `COMMIT;` lines left out
-  because `apply_migration` runs the body in one transaction. All three
-  preconditions held. After: `products_broadcast_live` trigger enabled,
-  `anon` can execute `product_rating_summary` (returns `null / 0`; there
-  are 0 approved reviews) and cannot execute the trigger function.
+`244_product_is_physical_shipping.sql` adds `products.is_physical_shipping`, a
+boolean column indicating whether a product ships to the entire country (true)
+or only to a specific city (false). When true, the city field is disabled in the
+admin form and displays "כל הארץ" (entire country) in the UI. When false, city
+becomes required. Defaults to false. Rollback is one DROP COLUMN IF EXISTS.
 
-`/api/health` answered `ok` with the database `ok` after the three.
-
-## 2026-10-15: 245 PENDING (supplier onboarding wizard)
-
-`245_supplier_onboarding.sql` is the production branch's 204, renumbered above
-244: `supplier_applications`, `supplier_application_documents`,
-`supplier_contract_acceptances`, and a vault-backed `store_supplier_bank_secret`
-so a bank account is never a column (only code, branch and last four). RLS on,
-service role writes. `/suppliers/apply` reads the caller's own application
-through the service role, so without the tables the page cannot load: it is
-dead code until this is applied (BLOCKED-MIGRATION). Not dry-run from this
-line; the file's own header records the production-branch dry run.
-
-## 2026-10-15: 244 PENDING (second abandoned-cart reminder)
-
-`244_abandoned_cart_second_reminder.sql` is the production branch's 190,
-renumbered above 243. It adds `abandoned_cart_nudges.reminder_number` (1 or 2,
-CHECK-capped), swaps the UNIQUE on `cart_id` for one on `(cart_id,
-reminder_number)`, and recreates `fn_due_abandoned_carts` with a third
-parameter `p_second_after_hours` (default 24), spacing the second mail from the
-first rather than from the cart. The function is dropped and recreated, so the
-file restates the grants (`postgres`, `service_role` only). Until applied the
-route reads every row as reminder 1 and keeps today's one mail per cart; the
-call retries without the third argument on PGRST202/42883 and the insert
-retries without the column on 42703. No coupon is issued: that is money path
-and waits for its own pull request. Dry-run on production was done on the
-production branch (2026-09-09); not repeated from this line. Rollback is in
-the file header.
-
-## 2026-10-14: 243 PENDING (club tier thresholds)
-
-`243_club_tiers.sql` adds `club_tiers`, four rows (member, silver, gold,
-platinum) holding the twelve-month paid spend in agorot from which each tier
-applies, seeded with the constants `src/lib/club/tiers.ts` already uses
-(0 / 100000 / 300000 / 1000000). It is the first half of the production
-branch's club-tier migration (its number there is 251), renumbered above 242; the half that adds
-`orders.club_tier` and `orders.club_spend_agorot` is left out because this
-line has no checkout code that writes them. Readable by `authenticated`,
-writable by the service role only, nothing for `anon`. Until applied,
-`src/lib/club/tiers-config.ts` answers PGRST205 with the compiled defaults
-and logs `club.tiers_table_missing` once, so `/account` shows the same tiers
-either way. Rollback is one DROP TABLE. Not yet dry-run on production.
+These two migrations support the admin product form enhancement to allow marking
+products as shipping nationwide while optionally providing a full address. The
+product card and page display logic is updated to show "כל הארץ" for nationwide
+products and the specific city name otherwise, with a fallback to "כל הארץ" if
+neither is set.
 
 ## 2026-09-17: 242 PENDING (job queue dead letters)
 
