@@ -98,7 +98,8 @@
     "overrides": {
       "brace-expansion": "5.0.12",
       "webpack-dev-middleware": "8.4.0",
-      "fast-uri": "3.1.8"
+      "fast-uri": "3.1.8",
+      "braces": "3.0.4"
     }
   },
   "devDependencies": {
