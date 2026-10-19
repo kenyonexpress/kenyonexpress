@@ -88,3 +88,7 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-19 07:24 | home | 380 | 37.74% | **FAIL** | `55724e56d-dirty` |  |
 | 2026-10-19 07:27 | home | 380 | 37.74% | **FAIL** | `55724e56d-dirty` |  |
 | 2026-10-19 07:29 | home | 380 | 35.96% | **FAIL** | `55724e56d-dirty` |  |
+| 2026-10-19 07:34 | home | 768 | 35.11% | **FAIL** | `ec5035cda` |  |
+| 2026-10-19 07:37 | home | 380 | 35.96% | **FAIL** | `ec5035cda-dirty` |  |
+| 2026-10-19 07:39 | home | 768 | 25.96% | **FAIL** | `ec5035cda-dirty` |  |
+| 2026-10-19 07:41 | home | 1440 | 28.20% | **FAIL** | `ec5035cda-dirty` |  |
