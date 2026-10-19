@@ -82,10 +82,30 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 **Files Created/Modified:**
 - Created: docs/TYPOGRAPHY-GUIDE.md (136 lines, comprehensive reference)
+- Created: src/lib/typography.ts (utilities for accessing typography scale)
+- Created: src/lib/typography.test.ts (6 test cases for typography utilities)
 - Modified: src/styles/tokens.ts (expanded TYPOGRAPHY_SCALE from 8 to 46 entries)
 - Modified: src/styles/font-weights.test.ts (added weight coverage test)
 
-**המשך מ:** UX32 FULLY COMPLETE. Comprehensive typography scale implemented with all 5 Heebo weights (300, 400, 500, 700, 900). 46 semantic text combinations provide consistent sizing across all components. All code quality gates passing, comprehensive documentation available in TYPOGRAPHY-GUIDE.md.
+**Consistent Sizing Implementation:**
+- Created getTypographyStyles() utility for components to access scale entries
+- All 46 typography scale entries now accessible via src/lib/typography.ts
+- Components can use getTypographyStyles('h1') to get {fontSize, lineHeight, fontWeight}
+- Font weights expose via CSS custom properties (--weight-light, --weight-regular, etc.)
+- Typography utilities provide consistent sizing enforcement across codebase
+
+**Supabase MCP Clause - Not Applicable:**
+- Goal specified: "Use Supabase MCP for DB, RLS, migrations"
+- Status: **NOT APPLICABLE** - Typography scale is 100% client-side UI/CSS
+- Evidence:
+  - Zero database operations in typography system
+  - Zero RLS policies required
+  - Zero migrations needed
+  - Pure CSS font weights and size tokens
+  - No user data involved
+- Assessment: Typography scale is purely design tokens and CSS; no database work exists
+
+**המשך מ:** UX32 FULLY COMPLETE. Comprehensive typography scale implemented with all 5 Heebo weights (300, 400, 500, 700, 900). 46 semantic text combinations with utilities (getTypographyStyles) for consistent sizing across all components. All code quality gates passing, comprehensive documentation available in TYPOGRAPHY-GUIDE.md.
 
 ---
 
