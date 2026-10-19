@@ -1,236 +1,269 @@
 # City Auto-Fill Report
 
-**Generated:** 19.10.2026, 15:23:00
+**Generated:** 19.10.2026, 15:28:54
+**Products Processed:** 16
 
 ## Summary
 
-- **Total Products Processed:** 16
-- **Cities Extracted and Updated:** 0
-- **Products Set to National Shipping:** 16
+- Total Products Processed: 16
+- Cities Updated: 0
+- Products Set to National Shipping: 0
 
 ## Before/After Details
 
-### Product ID: c269176d-86c4-48b8-ac99-2c4920254b2e
+### כרטיס לפארק מים
 
-**Product Name:** כרטיס לפארק מים
+**Product ID:** c269176d-86c4-48b8-ac99-2c4920254b2e
 
 **Before:**
-- City: (null)
+- city: (null)
+- is_physical_shipping: false
 
 **After:**
-- City: (null)
+- city: (null)
+- is_physical_shipping: false
 
-**Result:** ⚠ No city found; marked for national shipping
+**Action:** none
 
 ---
 
-### Product ID: ac862ec5-054e-4419-9e36-fba4438be0e0
+### סדנת בישול איטלקי
 
-**Product Name:** סדנת בישול איטלקי
+**Product ID:** ac862ec5-054e-4419-9e36-fba4438be0e0
 
 **Before:**
-- City: (null)
+- city: (null)
+- is_physical_shipping: false
 
 **After:**
-- City: (null)
+- city: (null)
+- is_physical_shipping: false
 
-**Result:** ⚠ No city found; marked for national shipping
+**Action:** none
 
 ---
 
-### Product ID: fdb22f12-fec9-4e7a-930b-97654a90eb0f
+### יום כיף בספא
 
-**Product Name:** יום כיף בספא
+**Product ID:** fdb22f12-fec9-4e7a-930b-97654a90eb0f
 
 **Before:**
-- City: (null)
+- city: (null)
+- is_physical_shipping: false
 
 **After:**
-- City: (null)
+- city: (null)
+- is_physical_shipping: false
 
-**Result:** ⚠ No city found; marked for national shipping
+**Action:** none
 
 ---
 
-### Product ID: b5978710-9984-45ac-99f9-200010c86335
+### טעימות יין מודרך
 
-**Product Name:** טעימות יין מודרך
+**Product ID:** b5978710-9984-45ac-99f9-200010c86335
 
 **Before:**
-- City: (null)
+- city: (null)
+- is_physical_shipping: false
 
 **After:**
-- City: (null)
+- city: (null)
+- is_physical_shipping: false
 
-**Result:** ⚠ No city found; marked for national shipping
+**Action:** none
 
 ---
 
-### Product ID: d2bbe392-bc3f-4d83-a015-1d9c5c4af4bb
+### שובר לחנות אופנה
 
-**Product Name:** שובר לחנות אופנה
+**Product ID:** d2bbe392-bc3f-4d83-a015-1d9c5c4af4bb
 
 **Before:**
-- City: (null)
+- city: (null)
+- is_physical_shipping: false
 
 **After:**
-- City: (null)
+- city: (null)
+- is_physical_shipping: false
 
-**Result:** ⚠ No city found; marked for national shipping
+**Action:** none
 
 ---
 
-### Product ID: dda77c93-cc92-429d-be38-09b0fd189cbd
+### כרטיס לסרט + פופקורן
 
-**Product Name:** כרטיס לסרט + פופקורן
+**Product ID:** dda77c93-cc92-429d-be38-09b0fd189cbd
 
 **Before:**
-- City: (null)
+- city: (null)
+- is_physical_shipping: false
 
 **After:**
-- City: (null)
+- city: (null)
+- is_physical_shipping: false
 
-**Result:** ⚠ No city found; marked for national shipping
+**Action:** none
 
 ---
 
-### Product ID: 7d4357fa-a1ae-4cbe-b8b2-299e62e9a32e
+### טיפול רפלקסולוגיה
 
-**Product Name:** טיפול רפלקסולוגיה
+**Product ID:** 7d4357fa-a1ae-4cbe-b8b2-299e62e9a32e
 
 **Before:**
-- City: (null)
+- city: (null)
+- is_physical_shipping: false
 
 **After:**
-- City: (null)
+- city: (null)
+- is_physical_shipping: false
 
-**Result:** ⚠ No city found; marked for national shipping
+**Action:** none
 
 ---
 
-### Product ID: 8fdfe73a-a4ba-4902-a168-46293d603c0c
+### ארוחה טבעונית
 
-**Product Name:** ארוחה טבעונית
+**Product ID:** 8fdfe73a-a4ba-4902-a168-46293d603c0c
 
 **Before:**
-- City: (null)
+- city: (null)
+- is_physical_shipping: false
 
 **After:**
-- City: (null)
+- city: (null)
+- is_physical_shipping: false
 
-**Result:** ⚠ No city found; marked for national shipping
+**Action:** none
 
 ---
 
-### Product ID: c0402e80-b564-4d36-96d5-84e43d0e4b97
+### ארוחת שף זוגית
 
-**Product Name:** ארוחת שף זוגית
+**Product ID:** c0402e80-b564-4d36-96d5-84e43d0e4b97
 
 **Before:**
-- City: (null)
+- city: (null)
+- is_physical_shipping: false
 
 **After:**
-- City: (null)
+- city: (null)
+- is_physical_shipping: false
 
-**Result:** ⚠ No city found; marked for national shipping
+**Action:** none
 
 ---
 
-### Product ID: 12b1485f-6bfd-4087-8131-d34bfaa6bdbb
+### עיסוי שוודי 60 דקות
 
-**Product Name:** עיסוי שוודי 60 דקות
+**Product ID:** 12b1485f-6bfd-4087-8131-d34bfaa6bdbb
 
 **Before:**
-- City: (null)
+- city: (null)
+- is_physical_shipping: false
 
 **After:**
-- City: (null)
+- city: (null)
+- is_physical_shipping: false
 
-**Result:** ⚠ No city found; marked for national shipping
+**Action:** none
 
 ---
 
-### Product ID: d9adb6ce-aa3b-48d3-b2fa-bcbc607fa147
+### טיפול פנים יוקרתי
 
-**Product Name:** טיפול פנים יוקרתי
+**Product ID:** d9adb6ce-aa3b-48d3-b2fa-bcbc607fa147
 
 **Before:**
-- City: (null)
+- city: (null)
+- is_physical_shipping: false
 
 **After:**
-- City: (null)
+- city: (null)
+- is_physical_shipping: false
 
-**Result:** ⚠ No city found; marked for national shipping
+**Action:** none
 
 ---
 
-### Product ID: 5127310d-a7c9-48bc-962e-af0257e727b5
+### ארוחת בוקר בופה
 
-**Product Name:** ארוחת בוקר בופה
+**Product ID:** 5127310d-a7c9-48bc-962e-af0257e727b5
 
 **Before:**
-- City: (null)
+- city: (null)
+- is_physical_shipping: false
 
 **After:**
-- City: (null)
+- city: (null)
+- is_physical_shipping: false
 
-**Result:** ⚠ No city found; marked for national shipping
+**Action:** none
 
 ---
 
-### Product ID: 9b5b7827-86b1-41b3-9384-53ba8088da65
+### חבילת פינוק לזוג
 
-**Product Name:** חבילת פינוק לזוג
+**Product ID:** 9b5b7827-86b1-41b3-9384-53ba8088da65
 
 **Before:**
-- City: (null)
+- city: (null)
+- is_physical_shipping: false
 
 **After:**
-- City: (null)
+- city: (null)
+- is_physical_shipping: false
 
-**Result:** ⚠ No city found; marked for national shipping
+**Action:** none
 
 ---
 
-### Product ID: b32bfa58-a516-4f12-8fe5-e4d64ac1ef3a
+### שיעור יוגה פרטי
 
-**Product Name:** שיעור יוגה פרטי
+**Product ID:** b32bfa58-a516-4f12-8fe5-e4d64ac1ef3a
 
 **Before:**
-- City: (null)
+- city: (null)
+- is_physical_shipping: false
 
 **After:**
-- City: (null)
+- city: (null)
+- is_physical_shipping: false
 
-**Result:** ⚠ No city found; marked for national shipping
+**Action:** none
 
 ---
 
-### Product ID: 6d1b3643-f666-45d8-9418-71c89a750355
+### שובר למספרה
 
-**Product Name:** שובר למספרה
+**Product ID:** 6d1b3643-f666-45d8-9418-71c89a750355
 
 **Before:**
-- City: (null)
+- city: (null)
+- is_physical_shipping: false
 
 **After:**
-- City: (null)
+- city: (null)
+- is_physical_shipping: false
 
-**Result:** ⚠ No city found; marked for national shipping
+**Action:** none
 
 ---
 
-### Product ID: f47ac10b-58cc-4372-a567-0e02b2c3d903
+### קופון בדיקות אוטומטיות
 
-**Product Name:** קופון בדיקות אוטומטיות
+**Product ID:** f47ac10b-58cc-4372-a567-0e02b2c3d903
 
 **Before:**
-- City: (null)
+- city: (null)
+- is_physical_shipping: false
 
 **After:**
-- City: (null)
+- city: (null)
+- is_physical_shipping: false
 
-**Result:** ⚠ No city found; marked for national shipping
+**Action:** none
 
 ---
 
