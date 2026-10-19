@@ -1,24 +1,32 @@
 'use client'
 
 import { useCart } from '@/components/cart/CartProvider'
+import CompareButton from '@/components/compare/CompareButton'
 import CityTag from '@/components/geo/CityTag'
+import { Check, MapPin, Minus, Plus, ShoppingCart } from '@/components/icons'
 import WishlistButton from '@/components/product/WishlistButton'
 import FacebookShareButton from '@/components/shared/FacebookShareButton'
 import ShareButton from '@/components/shared/ShareButton'
 import WhatsAppShareButton from '@/components/shared/WhatsAppShareButton'
 import CouponPricing from '@/components/storefront/CouponPricing'
-import RatingStars, { type RatingSummary } from '@/components/storefront/RatingStars'
+import PdpStickyBar from '@/components/storefront/PdpStickyBar'
+import StockAlertForm from '@/components/storefront/StockAlertForm'
+import { ctaCopy } from '@/lib/analytics/cta-copy'
+import { CTA_COPY_EXPERIMENT } from '@/lib/analytics/experiments'
+import { useExperimentVariant } from '@/lib/analytics/use-experiment-variant'
 import { productQuantityCeiling } from '@/lib/cart/format'
+import { cashbackPreview } from '@/lib/cashback/preview'
 import type { CouponOffer } from '@/lib/commerce/coupon-offer'
 import { isImplausibleDiscount } from '@/lib/commerce/implausible-discount'
 import { type RecurringOffer, describeRecurringPrice } from '@/lib/commerce/recurring'
 import { cityByName } from '@/lib/geo/cities'
-import { shekelsFromIls as sharedShekelsFromIls } from '@/lib/money-format'
+import { shekelsFromIls as sharedShekelsFromIls, shekels } from '@/lib/money-format'
+import { type HistorySummary, priceSignal } from '@/lib/pricing/price-history'
 import { useProductLive } from '@/lib/product-live/use-product-live'
 import { buildShareMessage } from '@/lib/share/message'
-import { Check, ShoppingCart } from 'lucide-react'
+import { useScrolledPast } from '@/lib/ui/use-scrolled-past'
 import { useRouter } from 'next/navigation'
-import { type ReactNode, useState } from 'react'
+import { type ReactNode, useRef, useState } from 'react'
 
 interface Variant {
   id: string
@@ -72,11 +80,17 @@ interface Props {
    */
   recurringOffer?: RecurringOffer | null
   /**
-   * Average and count over APPROVED reviews, read through
-   * `product_rating_summary` (235). Null until the function exists or the
-   * first review is approved; the slot then carries the identifiers instead.
+   * The product's cached `price_history` summary (STEP 59), compared here
+   * against the price actually rendered (the live one, once it arrives), so
+   * the "lowest ever" and "dropped" marks follow the number beside them.
    */
-  rating?: RatingSummary | null
+  priceHistory?: HistorySummary | null
+  /**
+   * `products.cashback_percent` (or `cashback_bp` / 100 after 059), as a
+   * percent. Read inside the product cache from whichever column exists, the
+   * way the cart reads it. Zero or absent means the line is not rendered.
+   */
+  cashbackPercent?: number | null
 }
 
 /**
@@ -114,7 +128,8 @@ export default function ProductInfo({
   isCoupon,
   couponOffer,
   recurringOffer = null,
-  rating = null,
+  cashbackPercent = null,
+  priceHistory = null,
 }: Props) {
   const { addToCart, isPending } = useCart()
 
@@ -136,12 +151,22 @@ export default function ProductInfo({
   // slug and the tag needs the canonical name, and resolving twice invites the
   // two to disagree.
   const knownCity = cityByName(city)
+  const displayCity = city ?? 'כל הארץ'
   const router = useRouter()
   const [selected, setSelected] = useState<string | null>(
     variants.length === 1 ? (variants[0]?.id ?? null) : null,
   )
   const [qty, setQty] = useState(1)
+  // The field's text while it is EMPTY. A controlled number input whose value
+  // is always the number could not be cleared: select-all, backspace, and the
+  // old number came straight back, so a shopper typing "3" over "1" got 13.
+  // Null means "show the number"; '' means "the shopper is mid-edit".
+  const [draft, setDraft] = useState<string | null>(null)
   const [added, setAdded] = useState(false)
+  // The buy row, watched by the sticky bar below (UX15): the bar exists only
+  // while this row is above the viewport.
+  const buyRowRef = useRef<HTMLDivElement>(null)
+  const buyRowPassed = useScrolledPast(buyRowRef)
 
   const variant = variants.find((v) => v.id === selected) ?? null
   const price =
@@ -177,6 +202,8 @@ export default function ProductInfo({
 
   const hasDiscount = oldPrice != null && oldPrice > price
   const discountPct = hasDiscount ? Math.round((1 - price / oldPrice) * 100) : 0
+  // Agorot once, the same rounding the page uses for the vendor payload.
+  const historySignal = priceSignal(priceHistory, Math.round(price * 100))
   // Not `stock ?? 99`. The schema stops a cart line at 99 whatever the shelf
   // holds, and /product/demo-coupon-1 rendered `max="100"` against it -
   // measured on a built server. `CART_LINE_MAX_QUANTITY` exists precisely so
@@ -215,6 +242,27 @@ export default function ProductInfo({
     router.push('/checkout')
   }
 
+  // Cashback is earned on what is PAID NOW, which is what commission.ts
+  // snapshots: the coupon's online charge, or the unit price of everything
+  // else. A subscription is charged per cycle by the renewal worker, and this
+  // page does not quote a cycle's reward for the same reason it does not quote
+  // a one-off price for it. A line the button refuses to sell earns nothing.
+  const cashbackBasisIls = recurringOffer
+    ? null
+    : couponOffer
+      ? couponOffer.sellable
+        ? couponOffer.paidOnlineIls
+        : null
+      : price
+  const cashback =
+    withdrawn || priceImplausible ? null : cashbackPreview(cashbackPercent, cashbackBasisIls)
+
+  // STEP 66: the `cta_copy` experiment changes these three strings and
+  // nothing else (lib/analytics/cta-copy.ts). Control is the live wording,
+  // rendered on the server and at first paint.
+  const ctaVariant = useExperimentVariant(CTA_COPY_EXPERIMENT)
+  const cta = ctaCopy(ctaVariant)
+
   const buyLabel = outOfStock
     ? 'אזל מהמלאי'
     : withdrawn || couponUnsellable || priceUnsellable
@@ -222,32 +270,48 @@ export default function ProductInfo({
       : recurringOffer
         ? 'הצטרף למנוי'
         : isCoupon
-          ? 'קנה עכשיו'
-          : 'הוסף לסל'
+          ? cta.buyCoupon
+          : cta.addToCart
 
   return (
-    <div data-pdp="summary" className="pdp-summary">
-      {categoryName && <p className="pdp-summary__eyebrow">{categoryName}</p>}
+    <div
+      data-pdp="summary"
+      data-cta-variant={ctaVariant === 'control' ? undefined : ctaVariant}
+      className="pdp-summary"
+    >
+      <p className="pdp-summary__eyebrow">
+        <span className="inline-flex items-center gap-2">
+          <span className="flex items-center justify-center w-8 h-8 rounded-full bg-neutral-100">
+            <MapPin size={14} className="text-black" aria-hidden="true" />
+          </span>
+          {displayCity}
+        </span>
+      </p>
 
       <h1 className="pdp-summary__title">{name}</h1>
 
       {/* Where the deal is, directly under the title, so it is answered before
           the price rather than at the bottom of the page next to the supplier
-          block. It links into the city-filtered catalogue: a customer who cares
-          which city this is in is the customer who wants the others in it.
-          `knownCity` is null for free text the city table does not recognise,
-          and the whole line disappears rather than printing it raw. */}
+          block. It links to the city's landing page (STEP 64): a customer who
+          cares which city this is in is the customer who wants the others in
+          it, and the page that aggregates them is the one worth the link.
+          The href is built inline because this is a client component and
+          `lib/city-page` reads the catalogue; the slug is ASCII, so it needs
+          no encoding. `knownCity` is null for free text the city table does
+          not recognise, and the whole line disappears rather than printing it
+          raw. */}
       {knownCity && (
         <p className="pdp-summary__city">
-          <CityTag city={knownCity.name} href={`/products?city=${knownCity.slug}`} />
+          <CityTag city={knownCity.name} href={`/city/${knownCity.slug}`} />
         </p>
       )}
 
-      {/* Live's rating slot. Stars only once a review has been approved
-          (`rating` is null otherwise); the identifiers keep the line's height
-          either way, which is what the rhythm below depends on. */}
+      {/* Live's rating slot carries the identifiers only. No star row: per
+          the business rule (STEP 45) ratings are read by the owner in
+          /admin/reviews and never displayed to a visitor, not even as an
+          average. The line keeps its height either way, which is what the
+          rhythm below depends on. */}
       <p className="pdp-summary__meta" dir={effectiveSku ? 'rtl' : 'ltr'}>
-        <RatingStars rating={rating} />
         {effectiveSku ? (
           <>
             מק"ט: <span dir="ltr">{effectiveSku}</span>
@@ -330,61 +394,163 @@ export default function ProductInfo({
               </>
             )}
           </p>
+          {/* The history marks (STEP 59). "Lowest ever" outranks "dropped":
+              a product at its all-time low has, by definition, also just
+              dropped or held, and two badges on one price is a shout. */}
+          {historySignal?.allTimeLow ? (
+            <p
+              className="pdp-summary__signal"
+              data-signal="all-time-low"
+              data-testid="pdp-price-signal"
+            >
+              המחיר הנמוך ביותר אי פעם
+            </p>
+          ) : historySignal?.drop ? (
+            <p className="pdp-summary__signal" data-signal="drop" data-testid="pdp-price-signal">
+              ירד ב-{historySignal.drop.percent}% לעומת המחיר הקודם
+            </p>
+          ) : null}
         </>
       )}
 
-      {variants.length > 0 && (
-        <div className="pdp-summary__variants">
-          <p>בחר גרסה</p>
-          <div className="flex flex-wrap gap-2">
-            {variants.map((v) => (
-              <button
-                type="button"
-                key={v.id}
-                onClick={() => {
-                  setSelected(v.id)
-                  // The ceiling belongs to the SELECTION, so switching selection
-                  // has to move the number under it. Picking a 50-in-stock
-                  // variant, typing 20, then switching to one with 3 left left
-                  // `20` sitting in an input whose `max` had just become 3 --
-                  // and the add went out at 20, for the server to refuse. That
-                  // is the same drift `productQuantityCeiling` exists to stop,
-                  // one state update further along.
-                  setQty((current) =>
-                    Math.min(current, productQuantityCeiling(v.stock_quantity ?? live.stock)),
-                  )
-                }}
-                disabled={v.stock_quantity === 0}
-                className={`px-4 py-2 rounded-lg text-sm border transition-colors ${
-                  selected === v.id
-                    ? 'bg-brand-dark text-white border-brand-dark'
-                    : 'bg-white text-gray-700 border-gray-300 hover:border-brand-dark'
-                } ${v.stock_quantity === 0 ? 'opacity-40 cursor-not-allowed' : ''}`}
-              >
-                {v.name_he}
-              </button>
-            ))}
-          </div>
-        </div>
+      {/* The perk, under whichever price block rendered above. The percent is
+          the product's own rate and the amount is what this one unit earns
+          on what is paid now; see lib/cashback/preview.ts for why those are
+          the two numbers and not the sticker price. Hidden entirely at 0. */}
+      {cashback && (
+        <p className="pdp-summary__cashback" data-testid="pdp-cashback" dir="rtl">
+          <span className="pdp-summary__cashback-rate">{cashback.percent}% קאשבק</span>{' '}
+          <span className="pdp-summary__cashback-note">
+            {shekels(cashback.unitAgorot)} חוזרים לארנק שלכם אחרי הקנייה
+          </span>
+        </p>
       )}
 
-      <div className="pdp-buy">
-        {/* Live has no +/- stepper: a single 140x41 number input with the
-            spinner suppressed. Measured 2026-07-28. */}
-        <input
-          type="number"
-          className="pdp-buy__qty"
-          value={qty}
-          min={1}
-          max={maxQty}
-          disabled={outOfStock}
-          aria-label="כמות"
-          onChange={(e) => {
-            const next = Number.parseInt(e.target.value, 10)
-            if (!Number.isFinite(next)) return
-            setQty(Math.min(Math.max(next, 1), maxQty))
-          }}
-        />
+      {/* The variant picker (UX15): one labelled group of toggle buttons. The
+          label names the choice once made ("גרסה: אדום") so the selection is
+          read back next to the price it changed; a variant priced apart from
+          the base carries its own price in the button, a sold-out one stays
+          in the row, disabled and marked, rather than vanishing and leaving
+          the shopper to wonder whether the size exists at all. */}
+      {variants.length > 0 && (
+        <fieldset className="pdp-summary__variants" data-pdp="variants">
+          <legend id="pdp-variants-label">
+            {variant ? `גרסה: ${variant.name_he}` : 'בחרו גרסה'}
+          </legend>
+          <div className="pdp-summary__variant-list">
+            {variants.map((v) => {
+              const soldOut = v.stock_quantity === 0
+              const variantPrice = v.price ?? live.price + v.price_modifier
+              return (
+                <button
+                  type="button"
+                  key={v.id}
+                  onClick={() => {
+                    setSelected(v.id)
+                    setDraft(null)
+                    // The ceiling belongs to the SELECTION, so switching selection
+                    // has to move the number under it. Picking a 50-in-stock
+                    // variant, typing 20, then switching to one with 3 left left
+                    // `20` sitting in an input whose `max` had just become 3 --
+                    // and the add went out at 20, for the server to refuse. That
+                    // is the same drift `productQuantityCeiling` exists to stop,
+                    // one state update further along.
+                    setQty((current) =>
+                      Math.min(current, productQuantityCeiling(v.stock_quantity ?? live.stock)),
+                    )
+                  }}
+                  disabled={soldOut}
+                  aria-pressed={selected === v.id}
+                  aria-describedby={soldOut ? 'pdp-variant-soldout' : undefined}
+                  className="pdp-summary__variant"
+                  data-sold-out={soldOut ? 'true' : undefined}
+                >
+                  <span>{v.name_he}</span>
+                  {!soldOut && variantPrice !== live.price && (
+                    <span className="pdp-summary__variant-price">
+                      {shekelsFromIls(variantPrice)}
+                    </span>
+                  )}
+                  {soldOut && (
+                    <span className="pdp-summary__variant-note" aria-hidden="true">
+                      אזל
+                    </span>
+                  )}
+                </button>
+              )
+            })}
+          </div>
+          {variants.some((v) => v.stock_quantity === 0) && (
+            <span id="pdp-variant-soldout" hidden>
+              אזל מהמלאי
+            </span>
+          )}
+          {needsVariant && (
+            <p className="pdp-summary__variant-hint" data-testid="pdp-variant-hint">
+              בחרו גרסה כדי להוסיף לסל
+            </p>
+          )}
+        </fieldset>
+      )}
+
+      <div className="pdp-buy" ref={buyRowRef}>
+        {/* The quantity control (UX15): live's 140x41 box, kept to the pixel,
+            with a minus and a plus inside it and the number between them.
+            The bare number field it replaces had no way to change the count
+            without a keyboard, and on a phone the native spinner it hid is
+            the only stepper there is. The two buttons read the same ceiling
+            as the field's `max` and disable at the ends. */}
+        <fieldset className="pdp-buy__qty-group">
+          <legend className="sr-only">בחירת כמות</legend>
+          <button
+            type="button"
+            className="pdp-buy__step"
+            aria-label="הפחת כמות"
+            disabled={outOfStock || qty <= 1}
+            onClick={() => {
+              setDraft(null)
+              setQty((current) => Math.max(1, current - 1))
+            }}
+          >
+            <Minus size={16} aria-hidden="true" />
+          </button>
+          <input
+            type="number"
+            inputMode="numeric"
+            className="pdp-buy__qty"
+            value={draft ?? qty}
+            min={1}
+            max={maxQty}
+            disabled={outOfStock}
+            aria-label="כמות"
+            onChange={(e) => {
+              const raw = e.target.value
+              if (raw === '') {
+                setDraft('')
+                return
+              }
+              const next = Number.parseInt(raw, 10)
+              if (!Number.isFinite(next)) return
+              setDraft(null)
+              setQty(Math.min(Math.max(next, 1), maxQty))
+            }}
+            // An emptied field goes back to the number it held: the add
+            // button beside it never sends a blank.
+            onBlur={() => setDraft(null)}
+          />
+          <button
+            type="button"
+            className="pdp-buy__step"
+            aria-label="הוסף כמות"
+            disabled={outOfStock || qty >= maxQty}
+            onClick={() => {
+              setDraft(null)
+              setQty((current) => Math.min(maxQty, current + 1))
+            }}
+          >
+            <Plus size={16} aria-hidden="true" />
+          </button>
+        </fieldset>
 
         <button
           type="button"
@@ -404,6 +570,12 @@ export default function ProductInfo({
             </>
           )}
         </button>
+
+        {/* Announced, not only painted: the button's own text changing to
+            "נוסף לסל" for two seconds is visible and silent. */}
+        <output className="sr-only" aria-live="polite">
+          {added ? `${name} נוסף לסל` : ''}
+        </output>
       </div>
 
       <button
@@ -412,8 +584,16 @@ export default function ProductInfo({
         disabled={blocked}
         className="pdp-buy__now"
       >
-        {outOfStock ? 'אזל מהמלאי' : 'קנה עכשיו'}
+        {outOfStock ? 'אזל מהמלאי' : cta.buyNow}
       </button>
+
+      {/* "Tell me when it is back" (STEP 58). Only under a sold-out buy row,
+          and not for a withdrawn product: a product off sale is not coming
+          back to a shelf. Follows the selected variant, so a request made
+          with "M" chosen is honoured when M returns, not when S does. */}
+      {outOfStock && !withdrawn ? (
+        <StockAlertForm productId={productId} variantId={selected} />
+      ) : null}
 
       <div className="pdp-summary__tags">
         <span>
@@ -427,6 +607,7 @@ export default function ProductInfo({
             beside it quotes at ₪80. See lib/share/message.ts. */}
         <span className="inline-flex flex-wrap items-center gap-4">
           <WishlistButton productId={productId} variant="inline" />
+          <CompareButton productId={productId} variant="inline" />
           <WhatsAppShareButton
             productId={productId}
             message={buildShareMessage({ name, priceIls: price, offer: couponOffer })}
@@ -439,6 +620,30 @@ export default function ProductInfo({
           />
         </span>
       </div>
+
+      {/* The bar that follows the shopper (UX15): mounted only once the buy
+          row above has scrolled off the top, and only for a product the row
+          itself would sell. A sold-out or withdrawn product has nothing to
+          follow anyone with; a coupon's price is the voucher's, so the bar
+          quotes the offer's online charge where the pricing block does. */}
+      {buyRowPassed && !withdrawn && !outOfStock && !couponUnsellable && !priceUnsellable && (
+        <PdpStickyBar
+          name={name}
+          priceLabel={
+            recurringOffer
+              ? describeRecurringPrice(recurringOffer)
+              : couponOffer?.sellable
+                ? shekelsFromIls(couponOffer.paidOnlineIls)
+                : shekelsFromIls(price)
+          }
+          variantName={variant?.name_he ?? null}
+          qty={qty}
+          label={buyLabel}
+          disabled={blocked}
+          added={added}
+          onAdd={() => void handleAddToCart()}
+        />
+      )}
     </div>
   )
 }
