@@ -52,31 +52,31 @@ describe('Button component', () => {
     it('renders sm size with small height and padding', () => {
       render(<Button size="sm">Small Button</Button>)
       const button = screen.getByRole('button')
-      expect(button).toHaveClass('h-8', 'px-3', 'py-1', 'text-xs', 'rounded-sm')
+      expect(button).toHaveClass('h-8', 'px-3', 'py-1', 'text-xs')
     })
 
     it('renders md size with medium height and padding', () => {
       render(<Button size="md">Medium Button</Button>)
       const button = screen.getByRole('button')
-      expect(button).toHaveClass('h-10', 'px-4', 'py-2', 'text-sm', 'rounded-md')
+      expect(button).toHaveClass('h-10', 'px-4', 'py-2', 'text-sm')
     })
 
     it('renders lg size with large height and padding', () => {
       render(<Button size="lg">Large Button</Button>)
       const button = screen.getByRole('button')
-      expect(button).toHaveClass('h-12', 'px-6', 'py-3', 'text-base', 'rounded-lg')
+      expect(button).toHaveClass('h-12', 'px-6', 'py-3', 'text-base')
     })
 
     it('renders icon size as square button', () => {
       render(<Button size="icon">🔍</Button>)
       const button = screen.getByRole('button')
-      expect(button).toHaveClass('h-10', 'w-10', 'rounded-md')
+      expect(button).toHaveClass('h-10', 'w-10')
     })
 
     it('renders md size by default', () => {
       render(<Button>Default Size</Button>)
       const button = screen.getByRole('button')
-      expect(button).toHaveClass('h-10', 'px-4', 'py-2', 'text-sm', 'rounded-md')
+      expect(button).toHaveClass('h-10', 'px-4', 'py-2', 'text-sm')
     })
   })
 
@@ -150,6 +150,7 @@ describe('Button component', () => {
       )
       const button = screen.getByRole('button')
       expect(button).toHaveClass('bg-[--electro-yellow-primary]', 'h-8', 'px-3')
+      expect(button).toHaveClass('[border-radius:var(--radius-button)]')
     })
 
     it('renders danger lg button', () => {
@@ -160,6 +161,7 @@ describe('Button component', () => {
       )
       const button = screen.getByRole('button')
       expect(button).toHaveClass('bg-[--electro-error]', 'h-12', 'px-6')
+      expect(button).toHaveClass('[border-radius:var(--radius-button)]')
     })
 
     it('renders loading secondary md button', () => {
@@ -170,6 +172,7 @@ describe('Button component', () => {
       )
       const button = screen.getByRole('button')
       expect(button).toHaveClass('bg-[--electro-gray-medium]', 'h-10', 'px-4')
+      expect(button).toHaveClass('[border-radius:var(--radius-button)]')
       expect(button).toBeDisabled()
       expect(button).toHaveAttribute('aria-busy', 'true')
     })
@@ -182,6 +185,7 @@ describe('Button component', () => {
       )
       const button = screen.getByRole('button')
       expect(button).toHaveClass('text-[--electro-link]', 'h-8', 'px-3')
+      expect(button).toHaveClass('[border-radius:var(--radius-button)]')
     })
 
     it('renders ghost lg button with loading state', () => {
@@ -192,6 +196,7 @@ describe('Button component', () => {
       )
       const button = screen.getByRole('button')
       expect(button).toHaveClass('bg-transparent', 'h-12', 'px-6')
+      expect(button).toHaveClass('[border-radius:var(--radius-button)]')
       expect(screen.getByText('Processing...')).toBeInTheDocument()
     })
   })
