@@ -1,12 +1,7 @@
 'use client'
 
 import AddToCartButton from '@/components/cart/AddToCartButton'
-import CompareButton from '@/components/compare/CompareButton'
-import { MapPin } from '@/components/icons'
-import WishlistButton from '@/components/product/WishlistButton'
-import { cityByName } from '@/lib/geo/cities'
 import { shekelsFromIlsRounded } from '@/lib/money-format'
-import { type HistorySummary, priceSignal } from '@/lib/pricing/price-history'
 import Image from 'next/image'
 import Link from 'next/link'
 // product-card-deals.css is imported by the root layout. See the note there.
@@ -20,51 +15,6 @@ export type Product = {
   stock_quantity: number | null
   full_price?: number | null
   category?: { name_he: string; slug: string } | null
-  /** Product's own city, overrides supplier city. Null means use supplier city. */
-  city?: string | null
-  /** Supplier location info for fallback city. */
-  supplier?: { city?: string | null } | null
-  /** Cached `price_history` summary (STEP 59), attached by `attachPriceHistory`; absent on grids that do not carry it. */
-  priceHistory?: HistorySummary | null
-}
-
-/**
- * The price-history mark on a tile (STEP 59): "lowest ever" or "dropped N%",
- * never both, from the same rule the product page applies. Renders nothing
- * without a summary, so the home page, which attaches none, is untouched.
- */
-function PriceSignalBadge({ product, price }: { product: Product; price: number }) {
-  const signal = priceSignal(product.priceHistory, Math.round(price * 100))
-  if (!signal) return null
-  if (signal.allTimeLow) {
-    return (
-      <span className="p_con__signal" data-signal="all-time-low">
-        המחיר הנמוך ביותר
-      </span>
-    )
-  }
-  if (signal.drop) {
-    return (
-      <span className="p_con__signal" data-signal="drop">
-        ירד ב-{signal.drop.percent}%
-      </span>
-    )
-  }
-  return null
-}
-
-function LocationLabel({ product }: { product: Product }) {
-  const city = product.city ? cityByName(product.city) : null
-  const cityName = city?.name ?? (product.city || 'כל הארץ')
-
-  return (
-    <span className="inline-flex items-center gap-1">
-      <span className="flex items-center justify-center w-8 h-8 rounded-full bg-neutral-100">
-        <MapPin size={14} className="text-black" aria-hidden="true" />
-      </span>
-      {cityName}
-    </span>
-  )
 }
 
 /**
@@ -155,10 +105,11 @@ function DealsProductCard({ product }: { product: Product }) {
 
   return (
     <article className="p_con">
-      {/* The location row with city label and icon. */}
-      <p className="p_con__category">
-        <LocationLabel product={product} />
-      </p>
+      {product.category && (
+        <Link href={`/category/${product.category.slug}`} className="p_con__category">
+          {product.category.name_he}
+        </Link>
+      )}
 
       <div className="p_con__title-wrap">
         <Link href={`/product/${product.slug}`} className="hover:underline">
@@ -166,9 +117,7 @@ function DealsProductCard({ product }: { product: Product }) {
         </Link>
       </div>
 
-      <div className="p_con__image-wrap group relative">
-        <WishlistButton productId={product.id} variant="overlay" />
-        <CompareButton productId={product.id} variant="overlay" />
+      <div className="p_con__image-wrap relative">
         {/* aria-label, not just the img alt: a product with no thumbnail renders
             this link with NO children at all, and an empty link has no
             accessible name. Lighthouse flags exactly one on the homepage today,
@@ -234,7 +183,6 @@ function DealsProductCard({ product }: { product: Product }) {
             <span className="discount_per">-{discountPct}%</span>
           </div>
         )}
-        <PriceSignalBadge product={product} price={price} />
 
         {outOfStock && (
           <div className="absolute inset-0 flex items-center justify-center bg-white/70">
@@ -267,12 +215,12 @@ function DealsProductCard({ product }: { product: Product }) {
               priceAgorot={Math.round(Number(product.kenyon_price ?? 0) * 100)}
               disabled={outOfStock}
               variant="icon"
-              className="tap-area flex h-full w-full items-center justify-center"
+              className="flex h-full w-full items-center justify-center"
             >
               <CartPlusIcon />
             </AddToCartButton>
           ) : (
-            <Link href={`/product/${product.slug}`} aria-label="צפה במוצר" className="tap-area">
+            <Link href={`/product/${product.slug}`} aria-label="צפה במוצר">
               <CartPlusIcon />
             </Link>
           )}
@@ -282,13 +230,7 @@ function DealsProductCard({ product }: { product: Product }) {
   )
 }
 
-function DefaultProductCard({
-  product,
-  blurDataURL,
-}: {
-  product: Product
-  blurDataURL?: string
-}) {
+function DefaultProductCard({ product }: { product: Product }) {
   const thumb =
     Array.isArray(product.images) && typeof product.images[0] === 'string'
       ? (product.images[0] as string)
@@ -301,11 +243,16 @@ function DefaultProductCard({
   const canAdd = product.kenyon_price != null && !outOfStock
 
   return (
-    <div className="overflow-hidden rounded-md border border-gray-100 bg-white">
-      <div className="space-y-space-sm p-space-md">
-        <div className="-mt-1 block min-h-6 py-space-xs text-xs text-muted-2 line-clamp-1">
-          <LocationLabel product={product} />
-        </div>
+    <div className="overflow-hidden rounded-xl border border-gray-100 bg-white">
+      <div className="space-y-2 p-3">
+        {product.category && (
+          <Link
+            href={`/category/${product.category.slug}`}
+            className="block text-xs text-muted-2 hover:text-heading line-clamp-1"
+          >
+            {product.category.name_he}
+          </Link>
+        )}
 
         <Link
           href={`/product/${product.slug}`}
@@ -314,66 +261,61 @@ function DefaultProductCard({
           {product.name_he}
         </Link>
 
-        <div className="group relative">
-          <WishlistButton productId={product.id} variant="overlay" />
-          <Link
-            href={`/product/${product.slug}`}
-            className="relative flex aspect-square items-center justify-center overflow-hidden bg-gray-50"
-          >
-            {/* next/image here and not on the deals card: this wrapper reserves
+        <Link
+          href={`/product/${product.slug}`}
+          className="relative flex aspect-square items-center justify-center overflow-hidden bg-gray-50"
+        >
+          {/* next/image here and not on the deals card: this wrapper reserves
               the box itself with aspect-square, so `fill` cannot shift the
               layout. `sizes` is what stops the browser fetching a full-width
               image for a card that is at most a third of the row. */}
-            {thumb ? (
-              <Image
-                src={thumb}
-                alt={product.name_he}
-                fill
-                /**
-                 * MEASURED, not declared. The only live consumer of this variant
-                 * is `RelatedProducts` on the product page, whose grid is
-                 * `.pdp-related__grid`: 2 columns below 640, 3 below 1024, then 5
-                 * fixed 230px cards. The painted image width was read at 14
-                 * viewport widths and each branch is an exact linear fit on 5 or
-                 * more of them, residual 0:
-                 *
-                 *   360 -> 133   390 -> 148   412 -> 159   480 -> 193   600 -> 253
-                 *   640 -> 169.33   768 -> 212   900 -> 256   1023 -> 297
-                 *   1024 and up -> 204, fixed
-                 *
-                 * The old value claimed 50vw / 33vw / 25vw, which is the GRID
-                 * COLUMN and not the image: it ignored the page gutter, the 12px
-                 * grid gap and the card's own 12px padding. At 412/dpr1.75 that
-                 * asked for 384 where 288 covers the 278 device pixels the box
-                 * actually has (11028 bytes against 7530 on a 600x600 source),
-                 * and at 1440 it asked for 384 to paint 204.
-                 *
-                 * `calc()` is deliberate, and it also widens the srcset: next only
-                 * matches a bare `NNvw` token when it follows whitespace or the
-                 * start of the string (get-img-props.js:54), so `calc(50vw - 47px)`
-                 * matches nothing and the whole size ramp stays available instead
-                 * of being floored at 640 * smallest-ratio.
-                 */
-                sizes="(max-width: 639px) calc(50vw - 47px), (max-width: 1023px) calc(33.33vw - 44px), 204px"
-                className="object-cover"
-                {...(blurDataURL ? { placeholder: 'blur' as const, blurDataURL } : {})}
-              />
-            ) : (
-              <span className="text-5xl">📦</span>
-            )}
-            {outOfStock && (
-              <div className="absolute inset-0 flex items-center justify-center bg-white/70">
-                <span className="rounded-full border bg-white px-space-sm py-space-xs text-xs font-semibold text-gray-500">
-                  אזל המלאי
-                </span>
-              </div>
-            )}
-          </Link>
-          <PriceSignalBadge product={product} price={price} />
-        </div>
+          {thumb ? (
+            <Image
+              src={thumb}
+              alt={product.name_he}
+              fill
+              /**
+               * MEASURED, not declared. The only live consumer of this variant
+               * is `RelatedProducts` on the product page, whose grid is
+               * `.pdp-related__grid`: 2 columns below 640, 3 below 1024, then 5
+               * fixed 230px cards. The painted image width was read at 14
+               * viewport widths and each branch is an exact linear fit on 5 or
+               * more of them, residual 0:
+               *
+               *   360 -> 133   390 -> 148   412 -> 159   480 -> 193   600 -> 253
+               *   640 -> 169.33   768 -> 212   900 -> 256   1023 -> 297
+               *   1024 and up -> 204, fixed
+               *
+               * The old value claimed 50vw / 33vw / 25vw, which is the GRID
+               * COLUMN and not the image: it ignored the page gutter, the 12px
+               * grid gap and the card's own 12px padding. At 412/dpr1.75 that
+               * asked for 384 where 288 covers the 278 device pixels the box
+               * actually has (11028 bytes against 7530 on a 600x600 source),
+               * and at 1440 it asked for 384 to paint 204.
+               *
+               * `calc()` is deliberate, and it also widens the srcset: next only
+               * matches a bare `NNvw` token when it follows whitespace or the
+               * start of the string (get-img-props.js:54), so `calc(50vw - 47px)`
+               * matches nothing and the whole size ramp stays available instead
+               * of being floored at 640 * smallest-ratio.
+               */
+              sizes="(max-width: 639px) calc(50vw - 47px), (max-width: 1023px) calc(33.33vw - 44px), 204px"
+              className="object-cover"
+            />
+          ) : (
+            <span className="text-5xl">📦</span>
+          )}
+          {outOfStock && (
+            <div className="absolute inset-0 flex items-center justify-center bg-white/70">
+              <span className="rounded-full border bg-white px-2 py-1 text-xs font-semibold text-gray-500">
+                אזל המלאי
+              </span>
+            </div>
+          )}
+        </Link>
 
-        <div className="flex flex-wrap items-center justify-between gap-space-sm">
-          <div className="flex flex-wrap items-baseline gap-space-sm">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-wrap items-baseline gap-2">
             {hasDiscount && old != null && (
               <span className="text-sm text-deal-price line-through">{shekelsFromIls(old)}</span>
             )}
@@ -393,7 +335,7 @@ function DefaultProductCard({
               productId={product.id}
               productName={product.name_he}
               priceAgorot={Math.round(Number(product.kenyon_price ?? 0) * 100)}
-              className="tap-area rounded-sm bg-brand-primary px-space-md py-space-md min-h-6 min-w-6 text-xs font-bold text-brand-dark hover:bg-brand-primary-hover transition-colors"
+              className="rounded-lg bg-brand-primary px-3 py-1.5 text-xs font-bold text-brand-dark hover:bg-brand-primary-hover transition-colors"
             >
               הוסף לסל
             </AddToCartButton>
@@ -407,19 +349,12 @@ function DefaultProductCard({
 export default function ProductCard({
   product,
   variant = 'default',
-  blurDataURL,
 }: {
   product: Product
   variant?: 'default' | 'deals'
-  /**
-   * Tiny WebP data URL for the thumb, looked up by the server caller through
-   * `src/lib/images/blur.ts`. Default variant only: the deals variant's image
-   * is a fixed-height line box that paints the wrapper's grey until load.
-   */
-  blurDataURL?: string
 }) {
   if (variant === 'deals') {
     return <DealsProductCard product={product} />
   }
-  return <DefaultProductCard product={product} blurDataURL={blurDataURL} />
+  return <DefaultProductCard product={product} />
 }
