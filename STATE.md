@@ -1,7 +1,23 @@
-RESUME FROM: M08-c113
-Updated: 2026-10-06 (סשן `audit/final-audit`, פריט M07-c113 DONE: סריקת TODO/FIXME, שני `TODO(cardcom)` בלבד, כבר ב-BACKLOG, אפס חדשים)
+RESUME FROM: M09-c113
+Updated: 2026-10-19 (סשן אחר, `kenyonexpress-c5`, לפי הוראה מפורשת של אופיר בצ'אט, לא לולאת האוטופיילוט של `audit/final-audit`; פריט M08-c113 DONE: ח.פ 033798513 בשורת המוכר, PR #89 ממתין למיזוג אופיר)
 
 ## המשך מ:
+
+**M08-c113 - DONE (19.10.2026): סגר חוסם 9. `purchaseConfirmation.sellerName` ב-`messages/he.json` כולל עכשיו ח.פ 033798513; אין שינוי קוד אחר.**
+משימת המקור: לא `final-queue.txt` (ראו "החלטה שהתקבלה לבד" למטה) — הוראה מפורשת של אופיר בצ'אט, כולל המספר עצמו.
+**החלטה שהתקבלה לבד:** `~/ke-goals/final-queue.txt` כבר לא מחזיק את תור ה-M, הוא הוחלף בחזרה לרשימת F01-F40 הישנה (40 שורות, MVP-מאפס) — אי אפשר
+לקרוא "הפריט הבא" ממנו יותר. לא ניסיתי לשחזר את התור; הפריט הבא (M09-c113) צריך להגיע מרשימת "חוסמים פתוחים" כאן או מאופיר, לא מהקובץ.
+עבדתי ב-worktree נקי חדש `wt-audit-final-audit` (detached על `origin/audit/final-audit`@`1e84df0e5`, לא על העץ הראשי של `closeout/v1-final`);
+`refs/`, `supabase/.temp` ו-`.env.local` הועתקו מהעץ הראשי (שלושתם ב-gitignore, לא קיימים ב-worktree נקי).
+**שערים**: type-check **0**; test **640/640, 7674 עברו, 12 דולגו**; `rm -rf .next` ואז build עם `CARDCOM_USE_MOCK=true`: **0**, אפס `Invalid API key`,
+`BUILD_ID` `ftJKu0L9eG_KNHglEI0Wo`; lint: שאר השערים נקיים, docs-path-audit נכשל רק על 7 נתיבי `refs/` שלא קיימים גם בעץ הראשי (ישן, לא drift מהשינוי הזה).
+**שינוי מהותי בתהליך, לא שלי:** דחיפה ישירה (`fast-forward`) ל-`origin/audit/final-audit` **נדחתה** — הענף הפך מוגן ב-GitHub (PR + אישור אדם אחד),
+לא רק `main`. נפתח PR #89 מענף `fix/seller-registration-number` לבסיס `audit/final-audit`. CI על ה-PR: Typecheck ו-E2E ירוקים; `Migration dry-run`
+אדום (65 קבצים ב-`migrations/pending/`, 5 hard + 99 soft, לא קשור לשינוי כאן); `Diff-scoped lint gates` אדום (אותו docs-path-audit, ~84 נתיבים —
+ל-CI אין את `refs/` המקומי כלל, אז הוא רואה את הרשימה המלאה; זה יכשל על כל PR לענף הזה כרגע, לא ספציפי ל-PR הזה). Build/Bundle/Lighthouse/E2E-full
+דולגו בגלל הכשלים למעלה. **אופיר ממזג בעצמו** (required_approving_review_count: 1, אין לסוכן הרשאה לעקוף).
+**ממצא נוסף, לא שלי לתקן:** שלוש שרשראות ענפים חיות במקביל על הריפו הזה — `closeout/v1-final` (686 commits ש-`main` לא), `main` (256 commits עם
+מיגרציות 235/240/241 שסומנו "הוחלו בפרודקשן" ש-`closeout` לא), ו-`audit/final-audit` (זה, מה שבאמת פרוס). לא בוצע מיזוג בין אף שניים מהם.
 
 **M07-c113 - DONE (06.10.2026): סריקת TODO/FIXME/HACK/XXX ב-HEAD `6ae2b05de`: שני סמנים אמיתיים בלבד, שניהם כבר ב-`docs/BACKLOG.md` סעיף 6; אפס חדשים, אין שינוי קוד.**
 משימת התור: "Scan TODO FIXME older than 7 days resolve or file in docs/BACKLOG.md". HEAD `6ae2b05de` = `origin/audit/final-audit` (אחרי `git fetch`).
@@ -153,8 +169,10 @@ SHOWABLE: no, ראו "חוסמים
    ואינם ניתנים לקריאה, ואין אישור אמיתי או סנדבוקס במכונה. עד שאופיר יזין
    ערכים אמיתיים ויבצע הזמנת ₪1 וזיכוי, סליקה אמיתית אינה מוכחת
    (BACKLOG סעיף 6; השמות הישנים `API_KEY`/`CLIENT_ID`/`MERCHANT_ID`, סעיף 19).
-9. **מספר עוסק/ח.פ לשורת המוכר** באישור הרכישה (Q09): אינו קיים בריפו.
-   עריכה אחת ב-`messages/he.json`, `purchaseConfirmation.sellerName`.
+9. **סגור, M08-c113 (19.10.2026).** מספר עוסק/ח.פ לשורת המוכר באישור הרכישה
+   (Q09): אופיר מסר את המספר (033798513) בצ'אט; `purchaseConfirmation.sellerName`
+   ב-`messages/he.json` עודכן ל-"קניון אקספרס (KenyonExpress) ח.פ 033798513".
+   PR #89 נגד `audit/final-audit`, מיזוג בידי אופיר.
 10. **המתזמן מתוזמן ונדחה** (Q24, נמדד שוב L09 05.10): `cron.yml` על `main`
     נכשל בכל ריצה, האחרונה 04.10 19:11 UTC (`abandoned-cart -> 401`), כל 21
     הנתיבים עונים 401 גם לסוד המקומי; סוד Vercel הוא Sensitive ולא נקרא.
