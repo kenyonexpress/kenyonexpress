@@ -1,0 +1,180 @@
+/* Typography utility classes based on TYPOGRAPHY_SCALE
+   These classes ensure consistent sizing across all components.
+   Classes use CSS variables from tokens.css for font weights. */
+
+@layer components {
+  /* Headings */
+  .text-h1 {
+    @apply text-[39.998px] leading-[47.9976px];
+    font-weight: var(--weight-black);
+  }
+
+  .text-h2 {
+    @apply text-[25.004px] leading-[40.0064px];
+    font-weight: var(--weight-bold);
+  }
+
+  .text-h3 {
+    @apply text-[22px] leading-[32px];
+    font-weight: var(--weight-bold);
+  }
+
+  .text-h4 {
+    @apply text-[20.006px] leading-[28.0084px];
+    font-weight: var(--weight-bold);
+  }
+
+  .text-h5 {
+    @apply text-[16px] leading-[24px];
+    font-weight: var(--weight-bold);
+  }
+
+  .text-h6 {
+    @apply text-[14px] leading-[20px];
+    font-weight: var(--weight-bold);
+  }
+
+  /* Subtitles */
+  .text-subtitle {
+    @apply text-[18px] leading-[28px];
+    font-weight: var(--weight-medium);
+  }
+
+  .text-subtitle-small {
+    @apply text-[14px] leading-[21px];
+    font-weight: var(--weight-medium);
+  }
+
+  /* Body text variants */
+  .text-body {
+    @apply text-[14px] leading-[23.996px];
+    font-weight: var(--weight-regular);
+  }
+
+  .text-body-bold {
+    @apply text-[14px] leading-[23.996px];
+    font-weight: var(--weight-bold);
+  }
+
+  .text-body-medium {
+    @apply text-[14px] leading-[23.996px];
+    font-weight: var(--weight-medium);
+  }
+
+  .text-body-light {
+    @apply text-[14px] leading-[23.996px];
+    font-weight: var(--weight-light);
+  }
+
+  /* Small text and captions */
+  .text-small {
+    @apply text-[13px] leading-[20px];
+    font-weight: var(--weight-regular);
+  }
+
+  .text-small-bold {
+    @apply text-[13px] leading-[20px];
+    font-weight: var(--weight-bold);
+  }
+
+  .text-caption {
+    @apply text-[13px] leading-[20px];
+    font-weight: var(--weight-regular);
+  }
+
+  .text-caption-small {
+    @apply text-[11.998px] leading-[18px];
+    font-weight: var(--weight-regular);
+  }
+
+  /* Buttons and interactive */
+  .text-button {
+    @apply text-[14px] leading-[20px];
+    font-weight: var(--weight-bold);
+  }
+
+  .text-button-small {
+    @apply text-[12px] leading-[18px];
+    font-weight: var(--weight-bold);
+  }
+
+  .text-button-large {
+    @apply text-[16px] leading-[24px];
+    font-weight: var(--weight-bold);
+  }
+
+  /* Navigation */
+  .text-nav {
+    @apply text-[14px] leading-[20px];
+    font-weight: var(--weight-regular);
+  }
+
+  .text-nav-active {
+    @apply text-[14px] leading-[20px];
+    font-weight: var(--weight-bold);
+  }
+
+  .text-nav-small {
+    @apply text-[12px] leading-[18px];
+    font-weight: var(--weight-regular);
+  }
+
+  .text-nav-small-active {
+    @apply text-[12px] leading-[18px];
+    font-weight: var(--weight-bold);
+  }
+
+  /* Labels */
+  .text-label {
+    @apply text-[14px] leading-[20px];
+    font-weight: var(--weight-medium);
+  }
+
+  .text-label-small {
+    @apply text-[12px] leading-[18px];
+    font-weight: var(--weight-medium);
+  }
+
+  /* Product-specific */
+  .text-product-title {
+    @apply text-[25.004px] leading-[32.0051px];
+    font-weight: var(--weight-bold);
+  }
+
+  .text-product-price {
+    @apply text-[20.006px] leading-[28.0084px];
+    font-weight: var(--weight-bold);
+  }
+
+  .text-product-description {
+    @apply text-[14px] leading-[23.996px];
+    font-weight: var(--weight-regular);
+  }
+
+  /* Footer */
+  .text-footer {
+    @apply text-[13px] leading-[20px];
+    font-weight: var(--weight-regular);
+  }
+
+  .text-footer-link {
+    @apply text-[14px] leading-[21px];
+    font-weight: var(--weight-regular);
+  }
+
+  .text-footer-heading {
+    @apply text-[16px] leading-[24px];
+    font-weight: var(--weight-bold);
+  }
+
+  /* Special text */
+  .text-overline {
+    @apply text-[11.998px] leading-[18px];
+    font-weight: var(--weight-bold);
+  }
+
+  .text-eyebrow {
+    @apply text-[11.998px] leading-[12.5979px];
+    font-weight: var(--weight-regular);
+  }
+}

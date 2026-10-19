@@ -1,8 +1,10 @@
 import BenefitBar from '@/components/home/BenefitBar'
+import BrandsRowServer from '@/components/home/BrandsRowServer'
 import CmsHero from '@/components/home/CmsHero'
 import DealsOfTheDay from '@/components/home/DealsOfTheDay'
 import HeroSection from '@/components/home/HeroSection'
-import RecentlyViewedRail from '@/components/storefront/RecentlyViewedRail'
+import HotCoupons from '@/components/home/HotCoupons'
+import { alternatesFor } from '@/lib/seo/alternates'
 import { buildSiteJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
 import { Suspense } from 'react'
 // home-handheld.css is imported by the root layout (see the note there): as a
@@ -11,7 +13,7 @@ import { Suspense } from 'react'
 export const metadata = {
   title: 'קניון EXPRESS — מסדרים לך בילוי',
   description: 'קופונים, דילים ומוצרים במחיר הכי טוב. בפריסה ארצית.',
-  alternates: { canonical: '/' },
+  alternates: alternatesFor('/'),
 }
 
 /**
@@ -20,8 +22,9 @@ export const metadata = {
  *
  * THE HERO IS NOW CMS-BACKED, AND THE PAGE IS STILL STATIC. `readHomepageContent`
  * returns the authored constants whenever the CMS tables are absent, empty or
- * unreadable - which is every deployment until `migrations/pending/127` is
- * applied - so the prerendered output is byte-identical to what the comparison
+ * unreadable - which is still every deployment, because 127 is applied
+ * (`homepage_sections` is live in production, measured 2026-09-07) and holds no
+ * rows - so the prerendered output is byte-identical to what the comparison
  * gate measured. See lib/homepage/cms.ts for why an editor can change the
  * CONTENT of a slide and never its measured geometry.
  */
@@ -60,7 +63,7 @@ export default function HomePage() {
         The fallback is the AUTHORED hero, not a skeleton, and that is the
         whole trick. The static shell therefore paints exactly the markup the
         comparison gate measured - so a deployment with no CMS rows, which is
-        every deployment until `migrations/pending/127` is applied, is
+        every deployment while `homepage_sections` is empty, is
         byte-identical to before. The LCP element is never behind a spinner.
 
         A configured hero streams in and replaces it. That is the only case
@@ -114,6 +117,8 @@ export default function HomePage() {
         The hero's own copy is now `hidden md:block`, which is live's rule.
       */}
       <BenefitBar />
+      <HotCoupons />
+      <BrandsRowServer />
       <DealsOfTheDay />
       {/* Below the grid on purpose. It renders nothing on the server and
           nothing for a browser with no history, which is every run of the

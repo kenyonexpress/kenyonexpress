@@ -1,3 +1,5 @@
+import CategoryTileSkeleton from './CategoryTileSkeleton'
+
 /**
  * Streaming fallback for the archive grid.
  *
@@ -12,13 +14,7 @@ export default function CategoryGridSkeleton({ count = 8 }: { count?: number }) 
       {Array.from({ length: count }, (_, i) => (
         // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length placeholder, never reordered
         <li key={i} className="category-products__item">
-          <div className="category-card category-card--skeleton">
-            <span className="category-skeleton category-skeleton--eyebrow" />
-            <span className="category-skeleton category-skeleton--price" />
-            <span className="category-skeleton category-skeleton--title" />
-            <span className="category-skeleton category-skeleton--thumb" />
-            <span className="category-skeleton category-skeleton--footer" />
-          </div>
+          <CategoryTileSkeleton />
         </li>
       ))}
     </ul>

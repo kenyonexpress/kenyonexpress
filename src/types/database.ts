@@ -1722,6 +1722,7 @@ export type Database = {
           gift_message: string | null
           gift_recipient_email: string | null
           gift_recipient_name: string | null
+          gift_send_at: string | null
           id: string
           invoice_number: string | null
           notes: string | null
@@ -1751,6 +1752,7 @@ export type Database = {
           gift_message?: string | null
           gift_recipient_email?: string | null
           gift_recipient_name?: string | null
+          gift_send_at?: string | null
           id?: string
           invoice_number?: string | null
           notes?: string | null
@@ -1780,6 +1782,7 @@ export type Database = {
           gift_message?: string | null
           gift_recipient_email?: string | null
           gift_recipient_name?: string | null
+          gift_send_at?: string | null
           id?: string
           invoice_number?: string | null
           notes?: string | null
@@ -2363,6 +2366,10 @@ export type Database = {
           cashback_percent: number
           category_id: string | null
           city: string | null
+          cancellation_window_days: number | null
+          full_address: string | null
+          payout_cadence: string | null
+          shipping_price_agorot: number | null
           commission_percent: number
           commission_type: Database['public']['Enums']['commission_type']
           compare_at_price: number | null
@@ -2447,6 +2454,10 @@ export type Database = {
           cashback_percent?: number
           category_id?: string | null
           city?: string | null
+          cancellation_window_days?: number | null
+          full_address?: string | null
+          payout_cadence?: string | null
+          shipping_price_agorot?: number | null
           commission_percent: number
           commission_type: Database['public']['Enums']['commission_type']
           compare_at_price?: number | null
@@ -2531,6 +2542,10 @@ export type Database = {
           cashback_percent?: number
           category_id?: string | null
           city?: string | null
+          cancellation_window_days?: number | null
+          full_address?: string | null
+          payout_cadence?: string | null
+          shipping_price_agorot?: number | null
           commission_percent?: number
           commission_type?: Database['public']['Enums']['commission_type']
           compare_at_price?: number | null
@@ -5384,6 +5399,25 @@ export type Database = {
       fn_record_search: {
         Args: { p_hits: number; p_term: string }
         Returns: undefined
+      }
+      fn_record_search_click: {
+        Args: { p_term: string; p_product_id: string; p_position: number }
+        Returns: undefined
+      }
+      fn_search_weekly_report: {
+        Args: never
+        Returns: Array<{
+          week_start: string
+          week_end: string
+          total_searches: number
+          no_result_searches: number
+          no_result_percentage: number
+          total_clicks: number
+          avg_ctr: number
+          top_searches: Json
+          top_no_result_searches: Json
+          ctr_by_position: Json
+        }>
       }
       fn_referral_fraud_signals: {
         Args: { p_referred_id: string; p_referrer_id: string }

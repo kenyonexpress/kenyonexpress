@@ -23,7 +23,7 @@ const TABS = [
   { key: 'reconcile', label: 'התאמה' },
   { key: 'payments', label: 'תשלומים' },
   { key: 'webhooks', label: 'אירועי Webhook' },
-  { key: 'escrow', label: 'נאמנות (Escrow)' },
+  { key: 'escrow', label: 'החזקות היסטוריות' },
   { key: 'splits', label: 'פיצולים לספקים' },
 ] as const
 
@@ -55,6 +55,8 @@ export default async function AdminPaymentsPage(props: {
 
   const urlParams = { tab: params.tab, per: params.per, page: params.page }
   let table: React.ReactNode = null
+  // Shown above the table when the tab needs a sentence the columns cannot say.
+  let notice: React.ReactNode = null
   let total = 0
 
   if (params.tab === 'reconcile') {
@@ -247,9 +249,19 @@ export default async function AdminPaymentsPage(props: {
           </Link>
         ),
       },
-      { id: 'held', header: 'מוחזק', cell: (h) => agorot(h.held_agorot) },
+      { id: 'held', header: 'הוחזק אז', cell: (h) => agorot(h.held_agorot) },
       { id: 'commission', header: 'עמלה', cell: (h) => agorot(h.commission_agorot) },
-      { id: 'release', header: 'לשחרור', cell: (h) => agorot(h.release_agorot) },
+      // NOT "לשחרור". Nothing here is going to be released, and a future-tense
+      // header on a column of real shekels is a promise the product cannot
+      // keep. Measured against production 2026-09-08: two rows, both `held`,
+      // both against coupon codes, created 2026-07-21 - seven days before
+      // migration 085 abolished the mechanism - and this column reads 3420
+      // agorot. The supplier portal carried the identical bug and was fixed in
+      // src/server/queries/supplier.ts, where the note says adding `held` "told
+      // a supplier they were owed money that was never going to arrive". This
+      // is the same sentence told to the operator who would answer that
+      // supplier.
+      { id: 'release', header: 'תוכנן לשחרור (בוטל)', cell: (h) => agorot(h.release_agorot) },
       {
         id: 'status',
         header: 'סטטוס',
@@ -276,8 +288,17 @@ export default async function AdminPaymentsPage(props: {
         rowKey={(h) => h.id}
         basePath="/admin/payments"
         params={urlParams}
-        emptyMessage="אין החזקות נאמנות"
+        emptyMessage="אין רשומות היסטוריות"
       />
+    )
+    notice = (
+      <p className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">
+        <strong className="font-bold">המנגנון הזה בוטל ב-28.07.2026.</strong> הפלטפורמה אינה מחזיקה
+        כסף עבור ספקים: תשלום על שובר הוא של הפלטפורמה מרגע התשלום, והיתרה נגבית במזומן בבית העסק.
+        הרשומות כאן הן היסטוריה בלבד, הן קדמו לביטול, ו
+        <strong className="font-bold">שום סכום בטבלה הזאת לא ישוחרר</strong>. תנאי השימוש אינם
+        מזכירים נאמנות, ובצדק.
+      </p>
     )
   } else {
     const { data, count } = await supabase
@@ -341,6 +362,8 @@ export default async function AdminPaymentsPage(props: {
           </Link>
         ))}
       </div>
+
+      {notice}
 
       {table}
 

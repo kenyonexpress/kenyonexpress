@@ -11,6 +11,7 @@ import {
   ClipboardList,
   Coins,
   CreditCard,
+  Database,
   FileSpreadsheet,
   FileText,
   Flag,
@@ -80,6 +81,7 @@ const NAV_ITEMS: NavItem[] = [
   // never applied to this database).
   { href: '/admin/reports', label: 'דוחות כספיים', icon: FileSpreadsheet, section: 'payments' },
   { href: '/admin/affiliates', label: 'שותפים והפניות', icon: Share2, section: 'affiliates' },
+  { href: '/admin/club-tiers', label: 'דרגות מועדון', icon: Share2, section: 'discounts' },
   { href: '/admin/analytics', label: 'אנליטיקה', icon: BarChart3, section: 'analytics' },
   { href: '/admin/analytics/cohorts', label: 'קוהורטות הכנסה', icon: Users, section: 'analytics' },
   { href: '/admin/experiments', label: 'ניסויי A/B', icon: FlaskConical, section: 'analytics' },
@@ -87,7 +89,9 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/admin/queues', label: 'תורים תקועים', icon: AlertTriangle, section: 'analytics' },
   { href: '/admin/feature-flags', label: 'דגלי מערכת', icon: Flag, section: 'analytics' },
   { href: '/admin/audit-log', label: 'לוג פעילות', icon: ClipboardList, section: 'audit-log' },
-  { href: '/admin/settings', label: 'הגדרות חנות', icon: Settings, section: 'settings' },
+  // Same gate as the audit log: a schema change is the same class of fact, and
+  // the page is a read of the repository with no apply button on it.
+  { href: '/admin/migrations', label: 'מיגרציות', icon: Database, section: 'audit-log' },
 ]
 
 export default function AdminSidebar({ role }: { role: UserRole }) {

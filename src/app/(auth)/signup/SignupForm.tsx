@@ -1,6 +1,7 @@
 'use client'
 
 import { GoogleLogo } from '@/components/shared/GoogleLogo'
+import TurnstileWidget from '@/components/shared/TurnstileWidget'
 import { type AuthState, signInWithGoogle, signUpWithEmail } from '@/server/actions/auth'
 import Link from 'next/link'
 import { useActionState, useState } from 'react'
@@ -168,6 +169,8 @@ export default function SignupForm({ next }: Props) {
         {getError(state) && (
           <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{getError(state)}</p>
         )}
+
+        <TurnstileWidget />
 
         <button
           type="submit"

@@ -1,36 +1,38 @@
-# מצב השקה, 12.10.2026
+# Launch status
 
-נמדד בסשן הזה, מול `origin/main` ברגע `b6846d716` ועם PR 53 פתוח.
-כל שורה מסומנת במה שנמדד בפועל ובמה שלא.
+Measured 2026-10-16 on branch closeout/v1-final, tagged v2.0.0-rc4 (rc1 to rc3 already existed and were not moved).
 
-## PASS: עובד ונמדד
+## WORKS (verified green)
 
-- **ענפים:** PR 52 מוזג. PR 49 נסגר. הענף הישן נשמר מקומית כ-`archive/feat-products-sort-infinite-scroll-2026-10-12`.
-- **לולאות רקע:** `com.kenyon.final-loop`, `com.ke.final-guard`, `com.kenyonexpress.auto-merger`, `com.kenyonexpress.main-auto-pull` ו-`com.ke.notify-ofir` הועברו ל-`.disabled.2026-10-12`. אין תהליך ריצה תואם.
-- **build נקי מ-main:** `pnpm install --frozen-lockfile` ו-`pnpm build` יצאו עם 0. ראו TODO על שבירות ה-build.
-- **בריאות API (נמדד על `pnpm start`, פורט 3311):**
-  - `/api/health` 200, מסד נתונים תקין.
-  - `/api/ready` 200: מסד נתונים, redis ו-cardcom תקינים.
-  - `/api/cart`, `/api/search`, `/api/search/suggest`, `/api/search/facets`, `/api/search/quick-links` מחזירים 200 עם JSON.
-  - `/api/cron/health` מחזיר 401 בלי סוד, כמתוכנן.
-- **באג אמיתי שנמצא ותוקן (PR 53):** בעמוד `/cart` ה-sidebar הדביק החליק מעל כפתור "המשך לתשלום" אחרי גלילה, ושורת הקופון חטפה את הלחיצה. נמדד: הבדיקה נכשלה דטרמיניסטית בשני הפרויקטים לפני התיקון, ועברה אחריו.
-- **שער מעבר אורח:** `e2e/checkout.spec.ts` עבר 13 מתוך 14 בריצה מלאה אחרי התיקון, ובדיקת ה-CTA שנכשלה עברה בנפרד על שני הפרויקטים. לא הושגו שתי ריצות מלאות ירוקות ברצף, בגלל איטיות Supabase (ראו TODO).
+- Unit and integration tests: `pnpm test` passes, 394 files, 4692 tests (25 skipped for missing DB env).
+- Type-check: no error in `src/` (the only errors are in the git-ignored `.next/types`).
+- Production build: `pnpm build` compiles.
+- Browser suite without a database: 255 of 257 passed on one full run (2 skipped); a second full run passed 253 and failed only the two guest-cart specs on the per-IP cart write limiter (120 per hour), which a second run from one address exhausts.
+- Parity gate, home at 1440: 9.3% against the localized reference (gate 11%).
+- Mobile: 14 pages at 380, 390 and 430, all HTTP 200 with zero sideways scroll (`docs/MOBILE-AUDIT.md`).
+- Storefront icons come from Electro v7's own font files (`docs/ICON-AUDIT.md`).
+- Business-join page with a click-wrap agreement; hash, time and IP stored in the audit log.
+- Consumer cancellation fee and window (pure, tested); scheduled gift delivery; CSV bulk product import; club tier standing; location pin with Waze link; cities row and `/c/<city>` pages.
+- Maintenance mode flag, Turnstile on contact and signup (inert until keys are set), gitleaks CI job (non-blocking at first).
+- DNS: Vercel nameservers, Resend DKIM present, SPF on the send subdomain, DMARC at p=none.
 
-## BLOCKED: דורש את אופיר
+## NOT DONE (needs a decision, a migration approval, or an external account)
 
-1. **Preview ב-Vercel לא נבנה.** ל-scope של Preview בפרויקט `kenyonexpress-prod` לא היה אף משתנה. הוספתי רק את שני המשתנים הציבוריים (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`). ה-build עכשיו נופל על `SUPABASE_SECRET_KEY`, שהוא מפתח service-role של פרודקשן שעוקף RLS. לא העתקתי אותו ל-Preview, כי אז כל PR preview מחזיק אותו. החלטה: פרויקט Supabase נפרד ל-preview, או אישור מפורש להעתיק.
-2. **בדיקות תשלום מלאות לא רצו.** `purchase-flow`, `full-purchase-redeem`, `physical-purchase` ו-`admin-refund` יוצרות הזמנות, שוברים ומיילים אמיתיים, ודורשות משתמשי `E2E_*`. מסד הנתונים היחיד שמחובר ל-`.env.local` הוא פרודקשן. נדרש מסד לא-פרודקשן או אישור מפורש להריץ מול פרודקשן.
-3. **זרימת השקה מלאה (אורח, תשלום, קופון עם QR, מייל) לא נמדדה.** `full-purchase-redeem.spec.ts` כבר מכסה אותה מול מוק Cardcom. תלוי ב-(2).
-4. **`/api/ready` מדווח `meilisearch` ו-`r2` כ-`not_configured`.** החיפוש עובד במסלול הגיבוי (תוצאות ריקות בשאילתת בדיקה), ותמונות לא עוברות דרך R2.
-5. **פרטי Cardcom לפרודקשן, DNS ו-DKIM של Resend:** לא נבדקו בסשן הזה. הרשומות הקודמות ב-`STATE.md` ובזיכרון הפרויקט הן המקור, ולא אומתו מחדש.
+- Home at 380 is 30.24% against the WordPress reference (gate 11%): a mobile layout project (KNOWN-ISSUES 3).
+- Bottom navigation bar and sticky add-to-cart on mobile: not built.
+- F05 customer cancel and refund action, app-only notification toggle: need a rehearsed migration.
+- F06 form fields for cancellation window and payout cadence: wait for migration 185.
+- F07 one-shekel card verification at signup.
+- F12 affiliate campaigns and payouts: design in `docs/AFFILIATE-DESIGN.md`.
+- F13 weekend and free-shipping chips: no data behind them.
+- F14 web push subscription; F15 passkeys and WhatsApp OTP.
+- F19 feature flags table; F20 R2 nightly backup (R2 not enabled).
+- Pending migrations 185, 186, 187 are written, not applied.
+- 66 physical products have no city (PENDING_LOCATION).
 
-## TODO POST-LAUNCH
+## REQUIRES-OFIR
 
-- **עמוד המוצרים, מיון וגלילה אינסופית:** יעבור כ-PR ממוקד מעל main. ה-PR הישן נסגר.
-- **`main` המקומי התפצל:** 193 קומיטים מקומיים בלבד, 114 מאחור. נשמר כ-`archive/local-main-diverged-2026-10-12`. לא אופס. העבודה בסשן הזה נעשתה מענפים על `origin/main`.
-- **stash שנשמר:** שינויי `SiteFooter.tsx` ו-`UI-PARITY-REPORT.md` מהענף הישן. נקרא "pre-main-checkout 2026-10-12". קשור לשדה הניוזלטר ב-footer.
-- **שבירות ה-build:** `pnpm build` מרנדר 272 עמודים מול מסד הפרודקשן, עם timeout של 10 שניות. שתיים מתוך ארבע ריצות נכשלו על `fetch failed` או timeout זמני. מומלץ לעבור על נתוני build מקומיים או ל-retry.
-- **בדיקות E2E מול מסד איטי:** בזמן הריצות Supabase ענה בין 0.7 ל-2 שניות לבקשה, ובדיקות סל נכשלו לסירוגין. ראו שורת `playwright.config.ts` על `E2E_WORKERS`.
-- **`refs/ke_live_*.png`:** לא הועברו. הקבצים לא במעקב git, והסקריפטים `scripts/compare.mjs` ו-`scripts/shoot-mine.mjs` קוראים אותם.
-- **`com.ke.notify`:** נשאר טעון, כי הוא שונה מ-`com.ke.notify-ofir` שהתבקש.
-- **קטלוג חי:** 25 ממצאים על 44 מוצרים פעילים. ראו `supabase/catalogue-known-issues.json`.
+- Cardcom production credentials.
+- DNS nameservers at box.co.il, if not Vercel.
+- Meta WhatsApp business verification.
+- Israeli lawyer review after the first 10 sales.

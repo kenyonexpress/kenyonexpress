@@ -1,3 +1,6 @@
+import ScrollRestoration from '@/components/ScrollRestoration'
+import ThemeProvider from '@/components/ThemeProvider'
+import ViewTransitionsNavigationWrapper from '@/components/ViewTransitionsNavigationWrapper'
 import AnalyticsProvider from '@/components/analytics/AnalyticsProvider'
 import ConsentBanner from '@/components/analytics/ConsentBanner'
 import PostHogReplay from '@/components/analytics/PostHogReplay'
@@ -36,10 +39,13 @@ import '@/styles/mini-cart.css'
 import '@/styles/cart-page.css'
 import '@/styles/home-handheld.css'
 import '@/styles/product-card-deals.css'
+import '@/styles/micro-interactions.css'
+import '@/styles/dark-mode.css'
 
 const heebo = Heebo({
   variable: '--font-heebo',
   subsets: ['latin', 'hebrew'],
+  weight: ['300', '400', '500', '700', '900'],
   display: 'swap',
   // LCP paragraph is Arial on purpose ([24]); do not preload Heebo onto that path.
   preload: false,
@@ -69,6 +75,22 @@ export const metadata: Metadata = {
   },
   alternates: {
     canonical: '/',
+    /**
+     * Self-referencing, and that is all it can honestly be: the site exists in
+     * one language. Google requires a self-reference from any page that carries
+     * hreflang at all, so a single `he-IL` entry is the correct shape rather
+     * than a stub for a translation that does not exist. It states the language
+     * AND the region, which is the part `<html lang="he">` alone leaves open --
+     * Hebrew is spoken in one country but a search engine still has to be told
+     * which market this catalogue prices for, and every price on it is in ILS.
+     *
+     * It does NOT create alternates. The day a second language exists, this map
+     * gains a row per language and an `x-default`; until then adding either
+     * would point at a page that answers in Hebrew.
+     */
+    languages: {
+      'he-IL': '/',
+    },
     // How a reader finds the feed at all. `robots.txt` advertises the sitemap
     // and has no field for a feed, and nothing on the page links to one, so
     // without this tag `/feed.xml` exists and is undiscoverable. Deliberately
@@ -100,6 +122,28 @@ export const metadata: Metadata = {
  * --color-brand-primary. If the three drift, the splash screen flashes one
  * colour and the browser chrome settles on another.
  */
+/**
+ * NO `viewportFit`, AND THAT IS WHY THERE IS NO `env(safe-area-inset-*)`
+ * ANYWHERE. The two go together, and only together.
+ *
+ * STEP 09 asks for safe-area handling. Checked 2026-09-08: this project has
+ * zero `safe-area-inset` declarations, and that is correct rather than missing.
+ * Without `viewport-fit=cover` a browser uses `contain`, which letterboxes the
+ * viewport so `position: fixed; inset: 0` already stops at the safe area. The
+ * notch and the home indicator are avoided by the browser, and padding them
+ * again would push content away from an edge it never reached.
+ *
+ * THE TRAP IS ADDING ONE WITHOUT THE OTHER. `viewportFit: 'cover'` is the
+ * ordinary thing to reach for when a PWA should render edge to edge, and the
+ * moment it appears the two fixed elements in this app land in the unsafe area:
+ * the consent banner is `fixed bottom-0` with its two buttons at the bottom
+ * edge - globals.css already records a Pixel 5 measurement where it made a
+ * control unclickable - and `.checkout-frame` is `inset: 0` with 24px of
+ * padding, which is less than the ~47px notch.
+ *
+ * `src/__tests__/safe-area-pairing.test.ts` fails if `cover` is ever added
+ * without the insets, so the pair cannot come apart.
+ */
 export const viewport: Viewport = {
   themeColor: SITE.brand.primary,
 }
@@ -112,36 +156,38 @@ export default function RootLayout({
   return (
     <html lang="he" dir="rtl" className={`${heebo.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        {/*
-          First thing in the body, not next/script, and not next to the banner
-          it governs. It has to run BEFORE the parser reaches the banner markup
-          at the end of the body, or a visitor who already decided sees it flash;
-          a plain inline script is the only form with that ordering guarantee.
-          `beforeInteractive` is about running before Next's own modules, which
-          is a different and later moment. Allowed by CSP: script-src carries
-          'unsafe-inline' (src/lib/security/frame-policy.ts).
-        */}
-        {/* biome-ignore lint/security/noDangerouslySetInnerHtml: fixed string built from two module constants, no input reaches it */}
-        <script dangerouslySetInnerHTML={{ __html: CONSENT_PREPAINT_SCRIPT }} />
-        {/*
-          The decision lives in a cookie that only script can read, so with
-          script off nobody can be identified as having answered and the banner
-          would show on every page with two buttons that do nothing. There is
-          also nothing to consent TO: the analytics it gates is itself script.
-          Caught by the E2E run, not by reading - the JS-disabled test asserted
-          the opposite and failed.
-        */}
-        <noscript>
-          <style>{'[data-consent-banner]{display:none}'}</style>
-        </noscript>
-        {/*
-          Before `{children}` on purpose ([24]): the banner is the phone LCP
-          element and used to ship after the whole homepage HTML. With inline
-          fixed positioning it can paint as soon as the parser reaches it,
-          without waiting for the rest of the document or the big stylesheet.
-        */}
-        <ConsentBanner />
-        {children}
+        <ThemeProvider>
+          {/*
+            First thing in the body, not next/script, and not next to the banner
+            it governs. It has to run BEFORE the parser reaches the banner markup
+            at the end of the body, or a visitor who already decided sees it flash;
+            a plain inline script is the only form with that ordering guarantee.
+            `beforeInteractive` is about running before Next's own modules, which
+            is a different and later moment. Allowed by CSP: script-src carries
+            'unsafe-inline' (src/lib/security/frame-policy.ts).
+          */}
+          {/* biome-ignore lint/security/noDangerouslySetInnerHtml: fixed string built from two module constants, no input reaches it */}
+          <script dangerouslySetInnerHTML={{ __html: CONSENT_PREPAINT_SCRIPT }} />
+          {/*
+            The decision lives in a cookie that only script can read, so with
+            script off nobody can be identified as having answered and the banner
+            would show on every page with two buttons that do nothing. There is
+            also nothing to consent TO: the analytics it gates is itself script.
+            Caught by the E2E run, not by reading - the JS-disabled test asserted
+            the opposite and failed.
+          */}
+          <noscript>
+            <style>{'[data-consent-banner]{display:none}'}</style>
+          </noscript>
+          {/*
+            Before `{children}` on purpose ([24]): the banner is the phone LCP
+            element and used to ship after the whole homepage HTML. With inline
+            fixed positioning it can paint as soon as the parser reaches it,
+            without waiting for the rest of the document or the big stylesheet.
+          */}
+          <ConsentBanner />
+          <ViewTransitionsNavigationWrapper>{children}</ViewTransitionsNavigationWrapper>
+        </ThemeProvider>
         {/*
           `AnalyticsProvider` calls `usePathname`, which under `cacheComponents`
           is runtime data on any route carrying a dynamic param. Unwrapped, it
@@ -180,6 +226,7 @@ export default function RootLayout({
           reports nothing.
         */}
         <ThirdPartyTags config={validatedConfig(readThirdPartyConfig())} />
+        <ScrollRestoration />
         {/*
           Session replay for support debugging. Same consent gate as the tags
           above; without NEXT_PUBLIC_POSTHOG_KEY or before Accept it downloads

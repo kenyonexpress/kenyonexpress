@@ -104,12 +104,13 @@ function trimmed(value: string | null | undefined): string | null {
  * Whether this product offers a WhatsApp link, read off a row that may not have
  * the column.
  *
- * `products.whatsapp_enabled` arrives with
- * `migrations/pending/123_products_whatsapp_enabled.sql`, which has NOT been
- * applied. `src/types/database.ts` is generated from production, so `Product`
- * genuinely does not carry the field and neither does the row at runtime.
- * Reading defensively states that; casting the row to a wider type would make
- * the compiler agree with a schema that does not exist.
+ * `products.whatsapp_enabled` arrived with 123, which IS applied: the column
+ * is live in production and `src/types/database.ts`, generated from it, now
+ * carries the field. This read stays defensive anyway, for the reason it was
+ * always shaped this way rather than for the one it was written for -- it takes
+ * `unknown`, and several callers hand it a row from a query that does not select
+ * the column. `undefined === true` is `false`, which is the same answer as an
+ * absent column and the right one.
  *
  * THE DEFAULT WHEN THE COLUMN IS ABSENT IS `false`, and that is the whole point
  * of the feature. Defaulting to true "until the migration lands" would switch
@@ -118,8 +119,8 @@ function trimmed(value: string | null | undefined): string | null {
  * exists to prevent. An unmigrated database therefore shows no button anywhere,
  * and that is correct, not degraded.
  *
- * Delete this and read the generated type directly once 123 is applied and the
- * types are regenerated.
+ * A caller that selects `whatsapp_enabled` explicitly may read the typed field
+ * directly; this exists for the ones that do not.
  */
 export function readWhatsAppEnabled(row: unknown): boolean {
   if (row === null || typeof row !== 'object') return false

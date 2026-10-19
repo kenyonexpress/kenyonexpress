@@ -2,7 +2,7 @@
 
 import * as Sentry from '@sentry/nextjs'
 import Link from 'next/link'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 /**
  * The 500 boundary for everything under the root layout.
@@ -34,6 +34,9 @@ export default function AppError({
   error: Error & { digest?: string }
   reset: () => void
 }) {
+  const [systemHealthy, setSystemHealthy] = useState<boolean | null>(null)
+  const [checkingHealth, setCheckingHealth] = useState(false)
+
   useEffect(() => {
     // The plain SDK, not the helpers in lib/observability: those run on
     // @sentry/node and tag everything area=payments, so importing them into a
@@ -56,36 +59,109 @@ export default function AppError({
     // this stays a bare console line. It is also what still works when the
     // DSN is unset and every Sentry call above is inert.
     console.error('app error boundary:', error.digest ?? '', error)
+
+    // Check system health on mount
+    const checkHealth = async () => {
+      setCheckingHealth(true)
+      try {
+        const response = await fetch('/api/health', { cache: 'no-store' })
+        setSystemHealthy(response.ok)
+      } catch {
+        setSystemHealthy(false)
+      } finally {
+        setCheckingHealth(false)
+      }
+    }
+    checkHealth()
   }, [error])
 
   return (
     <main dir="rtl" className="mx-auto flex max-w-lg flex-col items-center px-4 py-20 text-center">
-      <p className="text-5xl" aria-hidden="true">
-        ⚠️
+      {/* 500 in the brand yellow, matching not-found.tsx's 404. The two error
+          pages used to look like they came from different sites: the 404 painted
+          its numeral brand-primary while this one led with a grey emoji. A
+          customer who hits both in one session sees one storefront. */}
+      <p className="text-6xl font-black text-brand-primary" aria-hidden="true">
+        500
       </p>
-      <h1 className="mt-4 text-2xl font-bold text-gray-900">משהו השתבש אצלנו</h1>
-      <p className="mt-2 text-sm leading-relaxed text-gray-500">
-        התקלה נרשמה אצלנו ואנחנו מטפלים בה. אפשר לנסות לטעון את הדף מחדש.
+      <h1 className="mt-4 text-2xl font-bold text-heading">משהו השתבש אצלנו</h1>
+      <p className="mt-2 text-sm leading-relaxed text-muted">
+        תקלה זמנית מנעה מאיתנו להציג את הדף. זה בדרך כלל בעיה מיידית שתתוקן תוך מספר דקות.
       </p>
 
-      <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+      {/* System health status */}
+      {systemHealthy !== null && (
+        <div
+          className={`mt-4 rounded-lg px-4 py-3 text-sm ${
+            systemHealthy
+              ? 'bg-green-50 text-green-800 border border-green-200'
+              : 'bg-amber-50 text-amber-800 border border-amber-200'
+          }`}
+        >
+          {systemHealthy
+            ? '✓ השירותים שלנו פעילים. אנא נסו לטעון את הדף מחדש.'
+            : '⚠ השירותים שלנו עשויים להיות בעדכון. אנא נסו שוב בעוד כמה דקות.'}
+        </div>
+      )}
+      {checkingHealth && <div className="mt-4 text-sm text-muted">בדיקת מצב השירותים...</div>}
+
+      <div className="mt-8 flex flex-col gap-3 w-full">
         <button
           type="button"
           onClick={reset}
-          className="rounded-xl bg-gray-900 px-6 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90"
+          className="rounded-xl bg-gray-900 px-6 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90 w-full"
         >
           נסו שוב
         </button>
-        <Link
-          href="/"
-          className="rounded-xl border border-gray-300 px-6 py-3 text-sm font-bold text-gray-700 transition-colors hover:bg-gray-50"
-        >
-          לדף הבית
-        </Link>
+        <div className="flex flex-wrap gap-3 justify-center">
+          <Link
+            href="/products"
+            className="rounded-xl border border-border px-6 py-3 text-sm font-bold text-heading transition-colors hover:bg-surface-hover"
+          >
+            לכל המוצרים
+          </Link>
+          <Link
+            href="/"
+            className="rounded-xl px-6 py-3 text-sm font-bold text-muted transition-colors hover:text-heading"
+          >
+            לדף הבית
+          </Link>
+        </div>
+      </div>
+
+      {/* Support options */}
+      <div className="mt-8 border-t border-border pt-8 w-full">
+        <p className="text-xs text-muted mb-4">צריכים עזרה נוספת?</p>
+        <div className="flex flex-col gap-2">
+          <Link
+            href="/contact"
+            className="rounded-lg bg-brand-primary px-4 py-2 text-sm font-semibold text-heading transition-opacity hover:opacity-90"
+          >
+            צרו קשר עם התמיכה שלנו
+          </Link>
+          <button
+            type="button"
+            onClick={async () => {
+              setCheckingHealth(true)
+              try {
+                const response = await fetch('/api/health', { cache: 'no-store' })
+                setSystemHealthy(response.ok)
+              } catch {
+                setSystemHealthy(false)
+              } finally {
+                setCheckingHealth(false)
+              }
+            }}
+            className="rounded-lg border border-muted px-4 py-2 text-sm font-semibold text-muted transition-colors hover:text-heading hover:border-heading"
+            disabled={checkingHealth}
+          >
+            {checkingHealth ? 'בודקים...' : 'בדקו את מצב השירותים'}
+          </button>
+        </div>
       </div>
 
       {error.digest && (
-        <p dir="ltr" className="mt-8 font-mono text-xs text-gray-400">
+        <p dir="ltr" className="mt-8 font-mono text-xs text-muted">
           {error.digest}
         </p>
       )}

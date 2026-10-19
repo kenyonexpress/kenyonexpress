@@ -7,7 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
  * `auth.uid()`. 098 revoked it from PUBLIC and anon and NOT from
  * `authenticated`, so for as long as that grant stands, any signed-in customer
  * holding somebody else's uuid can read (and mint) that person's referral code
- * straight off `/rest/v1/rpc/`. `migrations/pending/143` carries the REVOKE and
+ * straight off `/rest/v1/rpc/`. 143 carried the REVOKE, is applied, and
  * is waiting on approval.
  *
  * That makes the shape of this action the mitigation and not a detail: it takes

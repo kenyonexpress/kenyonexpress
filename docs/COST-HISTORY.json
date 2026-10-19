@@ -1,0 +1,21 @@
+{
+  "entries": [
+    {
+      "month": "2026-10",
+      "date": "2026-10-17",
+      "services": {
+        "Vercel (Hosting)": 33,
+        "Supabase (Pro)": 25,
+        "R2 (Storage)": 0,
+        "Meilisearch": 0,
+        "Resend (Email API)": 1,
+        "Twilio (SMS)": 4.75
+      },
+      "total": 63.75,
+      "breakdown": {
+        "variable": 0,
+        "recurring": 63.75
+      }
+    }
+  ]
+}

@@ -56,15 +56,15 @@ const HEADER_CHROME = [
   'src/app/layout.tsx',
   'src/components/layout/Header.tsx',
   'src/components/layout/TopBar.tsx',
+  'src/components/layout/UserMenuDropdown.tsx',
   'src/components/layout/MastheadNav.tsx',
   'src/components/layout/MobileDrawer.tsx',
-  'src/components/layout/RegionMenu.tsx',
 ]
 
 describe('the header icon cluster', () => {
   it.each(CLUSTERS)('renders a heart and a cart in %s, and nothing else', (file) => {
     const src = code(read(file))
-    expect(src.match(/<Heart\b/g) ?? [], 'the wishlist heart').toHaveLength(1)
+    expect(src.match(/<EcFavorites\b/g) ?? [], 'the wishlist heart').toHaveLength(1)
     expect(src.match(/<HeaderCart\b/g) ?? [], 'the cart').toHaveLength(1)
   })
 
@@ -72,21 +72,21 @@ describe('the header icon cluster', () => {
     const src = code(read(file))
     // RTL: first child renders rightmost, so heart-first is what puts the cart
     // on the left where live measures it.
-    expect(src.indexOf('<Heart')).toBeLessThan(src.indexOf('<HeaderCart'))
+    expect(src.indexOf('<EcFavorites')).toBeLessThan(src.indexOf('<HeaderCart'))
   })
 
   it.each(CLUSTERS)('carries no account icon in %s', (file) => {
     const src = code(read(file))
-    expect(src, 'the account entry point is TopBar, not the cluster').not.toMatch(/<User\b/)
+    expect(src, 'the account entry point is TopBar, not the cluster').not.toMatch(/<EcUser\b/)
     expect(src).not.toMatch(/\bUser\b\s*[,}].*from 'lucide-react'/)
   })
 })
 
 describe('the account entry point', () => {
-  it('exists in exactly one place in the header chrome, and it is the top bar', () => {
+  it('exists in exactly one place in the header chrome, and it is the user menu', () => {
     const hits = HEADER_CHROME.filter((f) => /["']\/login["']/.test(code(read(f))))
-    expect(hits, 'exactly one account entry point, in the shell top-left').toEqual([
-      'src/components/layout/TopBar.tsx',
+    expect(hits, 'exactly one account entry point, in the user menu dropdown').toEqual([
+      'src/components/layout/UserMenuDropdown.tsx',
     ])
   })
 })

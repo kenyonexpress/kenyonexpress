@@ -126,55 +126,18 @@ describe('the pending migration inventory', () => {
       '166_voucher_transition_guard.sql',
       '167_order_items_money_constraints.sql',
       '168_wallet_ledger_client_readonly.sql',
-      '169_analytics_server_event_names.sql',
-      '169_audit_full_coverage.sql',
-      '170_reporting_tables.sql',
-      '171_search_fts.sql',
-      '172_hide_master_product_test_row.sql',
-      '172_rls_zero_policy_tables.sql',
-      '173_whatsapp_flow.sql',
-      '177_cashback_ledger.sql',
-      '178_webauthn_credentials.sql',
-      '179_push_subscriptions.sql',
-      '180_analytics_server_event_names.sql',
-      '181a_read_only_enum.sql',
-      '181b_admin_rbac_hardening.sql',
-      '182_coupon_qr_batches.sql',
-      '183_order_shipped_notification.sql',
-      '185_soft_delete_user_facing_remainder.sql',
-      '186_composite_indexes_top_queries.sql',
-      '187_category_name_shekel_order.sql',
-      '192_seed_seo_redirects.sql',
-      '193_price_history.sql',
-      '194_discount_claim_caps.sql',
-      '195_stock_waitlist.sql',
-      '196_shipped_notification_carries_tracking.sql',
-      '197_shipping_zones_and_pickup.sql',
-      '198_in_app_notifications.sql',
-      '199_review_replies_and_reports.sql',
-      '200_wishlist_alert_kinds.sql',
-      '201_scheduled_price_changes.sql',
-      '210_media_ingest_queue.sql',
-      '212_rbac_truncate_and_search_path.sql',
-      '215_cashback_expiry.sql',
-      '217_coupon_qr_redemption.sql',
-      '223_restock_on_refund.sql',
-      '224_post059_price_cashback_twins.sql',
-      '226_fraud_controls.sql',
-      '227_discount_claim_wiring.sql',
-      '228_invoice_sequences.sql',
-      '231_bell_fanout.sql',
-      '232_reviews_admin_moderation_only.sql',
-      '233_wishlist_alerts.sql',
-      '234_gift_cards.sql',
-      // 235, 240 and 241 ARE applied (2026-10-15, approved in session):
-      // `product_live_and_rating_235`, `perf_fk_indexes_and_cart_uniqueness_240`
-      // and `rls_initplan_policies_241`, through MCP apply_migration in the
-      // order 240, 241, 235, each verified object-by-object before the next.
-      // README carries the before/after measurements.
-      '235_product_live_and_rating.sql',
-      '240_perf_fk_indexes_and_cart_uniqueness.sql',
-      '241_rls_initplan_policies.sql',
+      '185_products_cancellation_window_payout_cadence.sql',
+      '186_orders_gift_send_at.sql',
+      '187_products_full_address.sql',
+      '278_products_shipping_price_agorot.sql',
+      '279_products_nationwide_city_default.sql',
+      '280_user_consents.sql',
+      '281_supplier_card_verification.sql',
+      '282_club_tiers.sql',
+      '283_affiliate_campaigns.sql',
+      '284_products_weekend_only.sql',
+      '285_auth_wa_otps.sql',
+      '286_feature_flags.sql',
     ])
   })
 
@@ -217,13 +180,44 @@ describe('the pending migration inventory', () => {
 
   // ---- what is actually unapplied right now -------------------------------
   it('holds exactly the migrations still awaiting approval', () => {
-    // WHAT IS ACTUALLY UNAPPLIED, read off production on 2026-09-09 rather
-    // than inferred from the directory. Every file below was probed for the
-    // objects it creates and production has none of them:
+    // EIGHT pending migrations as of the 2026-09-07 closeout
+    // (docs/MIGRATION-AUDIT-162-172.md), each with its preflight beside it (a
+    // CLOSEOUT §5 requirement: no migration file without the execute_sql audit
+    // that has to pass before it). 171 and 172 got theirs on 2026-09-07; the
+    // pairing is now asserted below rather than only listed here.
     //
-    //   162_cron_schedule                approved (CLOSEOUT §7), blocked on vault
-    //                                    seeding -- see "## חסמים לאופיר" in STATE.md
-    //   184_orders_monthly_partitioning  orders_flat, orders_invoice_numbers: absent
+    //   162_cron_schedule.sql               approved (CLOSEOUT §7), blocked on vault
+    //                                       seeding -- see "## חסמים לאופיר" in STATE.md
+    //   169, 170, 171, 172                  audited against production, ready,
+    //                                       awaiting approval
+    //   173                                 written in the closeout split-engine
+    //                                       audit; repairs the retired
+    //                                       commission_percent column and the
+    //                                       nineteen half-filled split pairs
+    //   174                                 wallet top-ups. payments.order_id is
+    //                                       NOT NULL and payment_kind has no
+    //                                       top-up value, so a card top-up has
+    //                                       nowhere to be recorded today
+    //   175                                 the referral settings singleton. The
+    //                                       engine is built and wired and every
+    //                                       claim returns program_inactive,
+    //                                       because the table holds no row
+
+    //   176                                 verify_supplier_staff_pin DELETEs
+    //                                       its rate-limit row on success, and
+    //                                       the key is per caller, so one known
+    //                                       PIN buys unlimited guesses at the
+    //                                       others. Found by the Supabase audit
+    //                                       queue item 5; active_staff is 0 in
+    //                                       production, so it is unreachable
+    //                                       today and must land before the
+    //                                       first supplier onboards staff
+
+    //   177                                 set_updated_at has no search_path
+    //                                       and 52 triggers use it. Found by
+    //                                       the advisor; round 1 of the audit
+    //                                       missed it because it counted only
+    //                                       SECURITY DEFINER functions
     //
     // 184 IS NOT APPLIED AND THAT IS THE DECISION, not a pending question.
     // It rebuilds the table every order lives in, and the project recorded it
@@ -360,42 +354,47 @@ describe('the pending migration inventory', () => {
     // zero rows) and filed here as the record like 217/223/224/226-233.
     expect(sqlFilesIn(PENDING_DIR)).toEqual([
       '162_cron_schedule.sql',
-      '184_orders_monthly_partitioning.sql',
-      '189_passkeys_webauthn.sql',
-      '190_whatsapp_otp.sql',
-      '211_whatsapp_selfservice.sql',
-      // 236 is PENDING (2026-09-16): where the cart's shipping-method pick
-      // lands on the order. `orders.shipping_method` (checked text, NULL means
-      // the supplier delivers) and `orders.shipping_agorot` (bigint, default 0,
-      // every registered rate is zero). Checkout already writes the method in
-      // its own UPDATE and logs `checkout.shipping_method_not_recorded` while
-      // the column is missing; no reader names the column until it exists.
-      // Additive, idempotent, rollback is two DROP COLUMN IF EXISTS.
-      '236_orders_shipping_method.sql',
-      // 237 is PENDING (2026-09-17): the panel's record of a user ban
-      // (profiles.banned_at / ban_reason / banned_by, guarded by their own
-      // BEFORE UPDATE trigger; the lock itself is auth.users.banned_until,
-      // set through the Auth admin API) and the `store_settings` singleton
-      // the admin settings page writes and lib/store-settings/load.ts reads
-      // with compiled defaults as fallback. Dry-run rolled back on
-      // production; README carries the measurement.
-      '237_user_ban_and_store_settings.sql',
-      '238_search_events_daily.sql',
-      // 239 is PENDING (2026-09-17): push_deliveries, sms_messages and
-      // sms_opt_outs, the notification stack's three missing tables. Filed as
-      // a second 237 by a parallel session and renumbered to the next free
-      // slot; README carries the reasoning and the preconditions.
-      '239_push_deliveries_sms_log_opt_outs.sql',
-      // 242 is PENDING (2026-09-17): `job_dlq`, the dead-letter table for the
-      // general job queue (src/lib/jobs). Server-only like 069's
-      // search_index_dlq; the closing block refuses any client-role grant or
-      // policy. Not yet dry-run on production.
-      '242_job_dlq.sql',
-      '243_product_full_address.sql',
-      '244_product_is_physical_shipping.sql',
+      '169_analytics_server_event_names.sql',
+      '170_composite_indexes_top_queries.sql',
+      '171_category_name_shekel_order.sql',
+      '172_hide_master_product_test_row.sql',
+      '173_products_retired_commission_percent.sql',
+      '174_wallet_topups.sql',
+      '175_referral_program_settings.sql',
+      '176_supplier_pin_rate_limit_per_staff.sql',
+      '177_set_updated_at_search_path.sql',
+      '184_carts_one_row_per_owner.sql',
+      '188_search_analytics.sql',
       'preflight_162.sql',
+      'preflight_169.sql',
+      'preflight_170.sql',
+      'preflight_171.sql',
+      'preflight_172.sql',
+      'preflight_173.sql',
+      'preflight_174.sql',
+      'preflight_175.sql',
+      'preflight_176.sql',
+      'preflight_177.sql',
       'preflight_184.sql',
+      'preflight_188.sql',
     ])
+  })
+
+  it('gives every pending migration a preflight to run first', () => {
+    // The list above is an inventory: it goes stale the moment a file lands
+    // and says nothing about what the file is missing. This is the rule
+    // itself, so a sixth pending migration written without its execute_sql
+    // audit fails here the moment it is added, not at the next hand audit.
+    const migrations = sqlFilesIn(PENDING_DIR, (n) => !n.startsWith('preflight_'))
+    const preflights = new Set(sqlFilesIn(PENDING_DIR, (n) => n.startsWith('preflight_')))
+    const unaudited = migrations.filter((name) => {
+      const number = name.match(/^(\d+)_/)?.[1]
+      return !number || !preflights.has(`preflight_${number}.sql`)
+    })
+    expect(
+      unaudited,
+      `these pending migrations have no preflight_<n>.sql beside them: ${unaudited.join(', ')}`,
+    ).toEqual([])
   })
 
   it('keeps the cancelled revoke where nobody will apply it', () => {

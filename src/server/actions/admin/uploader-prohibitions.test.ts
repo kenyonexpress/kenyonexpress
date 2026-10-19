@@ -1,5 +1,6 @@
 import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
+import { stripComments } from '@/lib/source-scan/strip-comments.mjs'
 import { describe, expect, it } from 'vitest'
 
 /**
@@ -28,6 +29,7 @@ const UPLOADER_WRITABLE = new Set([
   'categories.ts',
   'images.ts',
   'products.ts',
+  'product-location.ts', // a product's city and street address: catalogue copy
   'reviews.ts',
   'upload.ts',
   'vouchers.ts', // its catalog half; the redeem half gates on 'orders'
@@ -41,13 +43,7 @@ function actionFiles(): string[] {
     .sort()
 }
 
-function codeOnly(text: string): string {
-  return text
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .split('\n')
-    .filter((line) => !line.trim().startsWith('//') && !line.trim().startsWith('*'))
-    .join('\n')
-}
+const codeOnly = stripComments
 
 describe('content_uploader prohibitions', () => {
   const files = actionFiles()

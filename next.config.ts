@@ -62,8 +62,28 @@ const headersWithPolicy = (
   permissions: string,
 ) => [
   { key: 'Content-Security-Policy', value: csp },
-  ...(REPORTING_ENDPOINTS ? [{ key: 'Reporting-Endpoints', value: REPORTING_ENDPOINTS }] : []),
-  { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
+  /*
+   * `preload` REMOVED 2026-09-08, and this is not a downgrade of the policy.
+   *
+   * `max-age` and `includeSubDomains` are unchanged and still enforce
+   * HTTPS-only for two years. What is gone is the REQUEST to be added to the
+   * browsers' preload list, and the reason is measured: on 2026-09-08 the apex
+   * and www both answered `no peer certificate available` on :443, while
+   * `http://kenyonexpress.co.il` 308-redirected into that same dead endpoint.
+   * DNS is already pointed at Vercel.
+   *
+   * Being on the preload list means a browser refuses plain HTTP for the
+   * domain BEFORE it has ever contacted it, and leaving that list takes
+   * months. Asking to be added while the certificate does not exist is asking
+   * to be locked out of our own domain for every new visitor, permanently
+   * rather than until the cert is fixed.
+   *
+   * Put it back once the certificate has served cleanly for two weeks. Until
+   * then the header still hardens every browser that reaches us over TLS; it
+   * just no longer volunteers us for a list we cannot currently satisfy.
+   * See docs/incidents/2026-09-08-production-tls-down.md section 5.1.
+   */
+  { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains' },
   // Moves in step with frame-ancestors. Browsers that honour both enforce both,
   // so a DENY left behind on a framable path blocks the frame anyway.
   { key: 'X-Frame-Options', value: frameOptions },
@@ -101,38 +121,97 @@ const nextConfig: NextConfig = {
     const framable = PAYMENT_FRAME_PATHS.map((path) => path.replace(/^\//, '')).join('|')
     // Anchored so `scan` does not swallow a future /scanner-esque route.
     const cameraSources = CAMERA_PATHS.map((path) => `${path.replace(/^\//, '')}(?:$|/)`).join('|')
+
+    // Cache-Control headers for Vercel Edge Caching per route. Immutable assets
+    // cache for 1 year; static content for 1 hour; dynamic pages use no-store.
+    // Hebrew content (lang=he) is cached at geographic edges.
+    const cacheHeaders = (maxAge: number, sMaxAge?: number) => [
+      { key: 'Cache-Control', value: `public, max-age=${maxAge}, s-maxage=${sMaxAge ?? maxAge}` },
+      { key: 'X-Cache-Status', value: 'miss' },
+    ]
+
     return [
+      // Immutable assets (images, fonts) - cache for 1 year in CDN and browser
+      {
+        source: '/(_next/static|public)/(.*)',
+        headers: cacheHeaders(31536000, 31536000),
+      },
+      // Dynamic pages - no cache on CDN, but allow browser cache for revalidation
+      {
+        source: '/checkout/:path*',
+        headers: [
+          ...headersWithPolicy(contentSecurityPolicyFor('/'), 'DENY', permissionsPolicyFor('/')),
+          { key: 'Cache-Control', value: 'no-store, must-revalidate' },
+          { key: 'X-Cache-Status', value: 'dynamic' },
+        ],
+      },
+      // API routes - vary by user, minimal cache
+      {
+        source: '/api/:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'private, max-age=0, s-maxage=0' },
+          { key: 'X-Cache-Status', value: 'private' },
+        ],
+      },
+      // Product pages - cache for 1 hour (product data changes infrequently)
+      {
+        source: '/product/:slug',
+        headers: cacheHeaders(3600, 3600),
+      },
+      // Category pages - cache for 1 hour
+      {
+        source: '/shop/:path*',
+        headers: cacheHeaders(3600, 3600),
+      },
+      // Static content pages (about, terms, privacy) - cache for 24 hours
+      {
+        source: '/(about|terms-and-conditions|privacy-policy|refund_returns)/:path*',
+        headers: cacheHeaders(86400, 86400),
+      },
+      // Home page - cache for 30 minutes (frequently updated with deals)
+      {
+        source: '/',
+        headers: cacheHeaders(1800, 1800),
+      },
       {
         source: `/((?!${framable}|${cameraSources}).*)`,
-        headers: headersWithPolicy(
-          contentSecurityPolicyFor('/', { reportUri: CSP_REPORT_URI }),
-          'DENY',
-          permissionsPolicyFor('/'),
-        ),
+        headers: [
+          ...headersWithPolicy(contentSecurityPolicyFor('/'), 'DENY', permissionsPolicyFor('/')),
+          { key: 'Cache-Control', value: 'public, max-age=3600, s-maxage=3600' },
+          { key: 'X-Cache-Status', value: 'hit' },
+        ],
       },
       ...PAYMENT_FRAME_PATHS.map((path) => ({
         source: `${path}/:path*`,
-        headers: headersWithPolicy(
-          contentSecurityPolicyFor(path, { reportUri: CSP_REPORT_URI }),
-          'SAMEORIGIN',
-          permissionsPolicyFor(path),
-        ),
+        headers: [
+          ...headersWithPolicy(
+            contentSecurityPolicyFor(path),
+            'SAMEORIGIN',
+            permissionsPolicyFor(path),
+          ),
+          { key: 'Cache-Control', value: 'no-store, must-revalidate' },
+          { key: 'X-Cache-Status', value: 'dynamic' },
+        ],
       })),
       ...CAMERA_PATHS.map((path) => ({
         source: `${path}{/:path}?`,
-        headers: headersWithPolicy(
-          contentSecurityPolicyFor(path, { reportUri: CSP_REPORT_URI }),
-          'DENY',
-          permissionsPolicyFor(path),
-        ),
+        headers: [
+          ...headersWithPolicy(contentSecurityPolicyFor(path), 'DENY', permissionsPolicyFor(path)),
+          { key: 'Cache-Control', value: 'public, max-age=3600, s-maxage=3600' },
+          { key: 'X-Cache-Status', value: 'hit' },
+        ],
       })),
       ...PAYMENT_FRAME_PATHS.map((path) => ({
         source: path,
-        headers: headersWithPolicy(
-          contentSecurityPolicyFor(path, { reportUri: CSP_REPORT_URI }),
-          'SAMEORIGIN',
-          permissionsPolicyFor(path),
-        ),
+        headers: [
+          ...headersWithPolicy(
+            contentSecurityPolicyFor(path),
+            'SAMEORIGIN',
+            permissionsPolicyFor(path),
+          ),
+          { key: 'Cache-Control', value: 'no-store, must-revalidate' },
+          { key: 'X-Cache-Status', value: 'dynamic' },
+        ],
       })),
     ]
   },
@@ -141,6 +220,10 @@ const nextConfig: NextConfig = {
       // Printed QR cards and older docs name /scan; the live screen is under
       // the supplier portal. Keep the short path as a permanent alias.
       { source: '/scan', destination: '/supplier/scan', permanent: true },
+      // The business-join page lives at /suppliers; /supplier/apply is the
+      // address the brief and outbound mail use, and /supplier/* is the
+      // login-gated portal.
+      { source: '/supplier/apply', destination: '/suppliers', permanent: true },
       // The cancellation policy is asked for at /cancellation-policy, and it
       // lives at /refund_returns. A redirect rather than a second page: the
       // WordPress URL is what existing links, the footer and any indexed search

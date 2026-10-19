@@ -1,4 +1,5 @@
 import { ABOUT_UPDATED_AT, aboutIntro, aboutSections } from '@/content/about'
+import { alternatesFor } from '@/lib/seo/alternates'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
@@ -6,7 +7,7 @@ export const metadata: Metadata = {
   title: 'אודות',
   description:
     'מי אנחנו וכיצד עובדת רכישת קופון בקניון אקספרס: תשלום מקדים, שובר עם QR, יתרה בבית העסק, תוקף וזיכוי אוטומטי בפקיעה.',
-  alternates: { canonical: '/about' },
+  alternates: alternatesFor('/about'),
 }
 
 /**
@@ -32,7 +33,7 @@ export default function AboutPage() {
   return (
     <main className="mx-auto w-full max-w-page px-4 py-10">
       <nav aria-label="נתיב ניווט" className="mb-6 text-sm text-heading/80">
-        <Link href="/" className="hover:text-heading">
+        <Link href="/" className="hit-44 hover:text-heading">
           בית
         </Link>
         <span aria-hidden="true" className="mx-2">

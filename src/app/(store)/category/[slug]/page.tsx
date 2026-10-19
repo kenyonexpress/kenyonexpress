@@ -3,13 +3,10 @@ import CategoryBreadcrumb, { defaultHomeCrumb } from '@/components/category/Cate
 import CategoryControlBar from '@/components/category/CategoryControlBar'
 import CategoryFilterSidebar from '@/components/category/CategoryFilterSidebar'
 import CategoryGridSkeleton from '@/components/category/CategoryGridSkeleton'
+import CategoryGridWithInfiniteScroll from '@/components/category/CategoryGridWithInfiniteScroll'
+import CategoryGridWithPagination from '@/components/category/CategoryGridWithPagination'
+import CategoryHeroBanner from '@/components/category/CategoryHeroBanner'
 import type { CategoryProduct } from '@/components/category/CategoryProductCard'
-import InfiniteProductGrid from '@/components/category/InfiniteProductGrid'
-import Pagination from '@/components/category/Pagination'
-import CityTags from '@/components/geo/CityTags'
-import { listingEndpoint } from '@/lib/catalogue/infinite-state'
-import { toListingCard } from '@/lib/catalogue/listing-page'
-import { resultCountText } from '@/lib/catalogue/result-count'
 import {
   CATEGORY_PAGE_SIZE,
   CATEGORY_SKELETON_CARDS,
@@ -17,20 +14,21 @@ import {
   type ProductTypeFilter,
   categoryMetaDescription,
   collectionRule,
-  getAllCategories,
   getAllCategorySlugs,
   getCategoryBySlug,
   getCategoryParent,
+  getCategoryPriceBounds,
   getCategoryProductsCached,
-  parseCity,
+  getCategorySuppliersFilter,
+  getCategoryTagsFilter,
   parseProductType,
 } from '@/lib/category-page'
 import { type SortValue, parseSort } from '@/lib/category-tokens'
-import { type Coordinates, parseNear, sortByDistance } from '@/lib/geo/distance'
 import { buildBreadcrumbJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import '@/styles/category-page.css'
+import { alternatesFor } from '@/lib/seo/alternates'
 
 type Props = {
   params: Promise<{ slug: string }>
@@ -59,8 +57,9 @@ function parsePrice(raw: string | string[] | undefined): number | undefined {
  * these exact two columns behind the same `is_active` filter, so this is the
  * same answer off the same cache entry the body below reads.
  */
-export async function generateMetadata({ params }: Props) {
+export async function generateMetadata({ params, searchParams: spPromise }: Props) {
   const { slug } = await params
+  const sp = await spPromise
   const category = await getCategoryBySlug(slug)
 
   // A slug nobody has: the body calls notFound(), which emits noindex through
@@ -82,14 +81,37 @@ export async function generateMetadata({ params }: Props) {
   // the page already shows, rather than invented marketing copy.
   const description = category.description_he?.trim() || categoryMetaDescription(category.name_he)
 
+  // Fetch product count for og:title to match H1 format: "N מבצעים זמינים"
+  const sort = parseSort(sp.sort)
+  const page = parsePage(sp.page)
+  const priceMin = parsePrice(sp.min)
+  const priceMax = parsePrice(sp.max)
+  const productType = parseProductType(sp.type)
+  const supplierId = typeof sp.supplier === 'string' ? sp.supplier : undefined
+  const tag = typeof sp.tag === 'string' ? sp.tag : undefined
+
+  const args: QueryArgs = {
+    categoryId: category.id,
+    category: { name_he: category.name_he, slug: category.slug },
+    sort,
+    page,
+    priceMin,
+    priceMax,
+    productType,
+    supplierId,
+    tag,
+    collection: collectionRule(category.slug),
+  }
+
+  const { total } = await getCategoryProductsCached(args)
+  const ogTitle = total > 0 ? `${total} מבצעים זמינים` : category.name_he
+
   return {
     title: category.name_he,
     description,
-    // The same category is reachable with sort, page, price and city query
-    // strings, and without a canonical each of those competes as its own page.
-    alternates: { canonical: `/category/${encodeURIComponent(category.slug)}` },
+    alternates: alternatesFor(`/category/${encodeURIComponent(category.slug)}`),
     openGraph: {
-      title: category.name_he,
+      title: ogTitle,
       description,
       url: `/category/${encodeURIComponent(category.slug)}`,
       type: 'website',
@@ -120,28 +142,14 @@ type QueryArgs = {
   priceMax?: number
   productType?: ProductTypeFilter
   city?: string
-  /**
-   * Nearest-first origin. NOT part of the cached query key: the cache is keyed
-   * by everything else and the distance sort is applied to the result, so two
-   * customers standing in different places share one cached page instead of
-   * minting a cache entry per coordinate.
-   */
-  near?: Coordinates | null
+  supplierId?: string
+  tag?: string
   /** The collection rule for this slug, if it is one of the three. */
   collection?: CollectionRule
 }
 
-/**
- * The cache key: everything except `near`.
- *
- * `near` is a per-customer coordinate. Letting it reach the cached read would
- * mint a separate cache entry for every distinct pair of coordinates on earth,
- * which is the same as having no cache at all. The distance sort is applied to
- * the cached result instead.
- */
 function cacheableArgs(args: QueryArgs) {
-  const { near: _near, ...rest } = args
-  return rest
+  return args
 }
 
 function pageWindow(total: number, page: number) {
@@ -172,31 +180,23 @@ async function categoryPageOrLast(args: QueryArgs) {
     : getCategoryProductsCached(cacheableArgs({ ...args, page: lastPage }))
 }
 
-/** Header count. Shares one query with the grid via getCategoryProductsCached. */
-async function ResultCount({ args }: { args: QueryArgs }) {
+/** Header count for H1 - returns just the total in "N מבצעים זמינים" format */
+async function ResultCountText({ args }: { args: QueryArgs }) {
   const { total } = await categoryPageOrLast(args)
   if (total === 0) return null
-  const { from, to } = pageWindow(total, args.page)
-  return <p className="category-page__count">{resultCountText(total, from, to)}</p>
+  return <>{total} מבצעים זמינים</>
 }
 
 async function ResultGrid({
   args,
-  pathname,
   linkParams,
-  endpoint,
+  usePagination,
 }: {
   args: QueryArgs
-  pathname: string
   linkParams: Record<string, string | undefined>
-  /** The listing endpoint for this category and these filters, without `page`. */
-  endpoint: string
+  usePagination?: boolean
 }) {
   const { items, total } = await categoryPageOrLast(args)
-
-  // Nearest first, applied after the cached read. `sortByDistance` returns the
-  // list unchanged when there is no origin, so the default page is untouched.
-  const ordered = args.near ? sortByDistance(items, args.near) : items
 
   if (items.length === 0) {
     return (
@@ -208,22 +208,32 @@ async function ResultGrid({
 
   const { totalPages, currentPage } = pageWindow(total, args.page)
 
-  // The first page is rendered here, on the server, and the numbered links
-  // are handed to the grid as its fallback. See InfiniteProductGrid.
+  if (usePagination) {
+    return (
+      <>
+        <CategoryGridWithPagination
+          items={items as CategoryProduct[]}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          categorySlug={args.category.slug}
+          params={linkParams}
+        />
+        <p className="category-page__count category-page__count--bottom">
+          {resultCountText(total, from, to)}
+        </p>
+      </>
+    )
+  }
+
   return (
-    <InfiniteProductGrid
-      initial={ordered.map((product) => toListingCard(product as CategoryProduct))}
-      startPage={currentPage}
-      totalPages={totalPages}
-      total={total}
-      pageSize={CATEGORY_PAGE_SIZE}
-      endpoint={endpoint}
-    >
-      <Pagination
-        pathname={pathname}
-        params={linkParams}
+    <>
+      <CategoryGridWithInfiniteScroll
+        initialItems={items as CategoryProduct[]}
+        totalCount={total}
         currentPage={currentPage}
-        totalPages={totalPages}
+        pageSize={CATEGORY_PAGE_SIZE}
+        categorySlug={args.category.slug}
+        params={linkParams}
       />
     </InfiniteProductGrid>
   )
@@ -322,14 +332,17 @@ async function CategoryPageBody({
   const priceMin = parsePrice(sp.min)
   const priceMax = parsePrice(sp.max)
   const productType = parseProductType(sp.type)
-  const city = parseCity(sp.city)
-  const near = parseNear(sp.near)
+  const supplierId = typeof sp.supplier === 'string' ? sp.supplier : undefined
+  const tag = typeof sp.tag === 'string' ? sp.tag : undefined
+  const usePagination = sp.paginate === '1'
 
   // Cheap shell data only. The product query is deferred to the boundaries
   // below so the breadcrumb, title, control bar and sidebar can stream first.
-  const [parent, allCategories] = await Promise.all([
+  const [parent, suppliers, tags, priceBounds] = await Promise.all([
     category.parent_id ? getCategoryParent(category.parent_id) : Promise.resolve(null),
-    getAllCategories(),
+    getCategorySuppliersFilter(category.id),
+    getCategoryTagsFilter(category.id),
+    getCategoryPriceBounds(category.id),
   ])
 
   const args: QueryArgs = {
@@ -340,11 +353,8 @@ async function CategoryPageBody({
     priceMin,
     priceMax,
     productType,
-    city,
-    near,
-    // hot-deals / under-99 / new are collections, and nothing falls into a
-    // collection on its own. Undefined for the nine taxonomies, which keep
-    // matching on category_id alone.
+    supplierId,
+    tag,
     collection: collectionRule(category.slug),
   }
 
@@ -354,6 +364,8 @@ async function CategoryPageBody({
     min: priceMin != null ? String(priceMin) : undefined,
     max: priceMax != null ? String(priceMax) : undefined,
     type: productType,
+    supplier: supplierId,
+    tag,
   }
 
   const crumbs = [
@@ -374,6 +386,14 @@ async function CategoryPageBody({
     siteUrl,
   )
 
+  // ItemList schema for product grid
+  const itemListLd = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: category.name_he,
+    url: `${siteUrl}${pathname}`,
+  }
+
   return (
     <div className="category-page">
       <script
@@ -381,68 +401,45 @@ async function CategoryPageBody({
         // biome-ignore lint/security/noDangerouslySetInnerHtml: JSON-LD has no other insertion point, and jsonLdScript escapes every angle bracket.
         dangerouslySetInnerHTML={{ __html: jsonLdScript(breadcrumbLd) }}
       />
+      <script
+        type="application/ld+json"
+        // biome-ignore lint/security/noDangerouslySetInnerHtml: JSON-LD has no other insertion point, and jsonLdScript escapes every angle bracket.
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListLd) }}
+      />
       <ViewTracker event="view_category" props={{ category_id: category.id }} />
       <div className="category-page__inner">
         <CategoryBreadcrumb items={crumbs} />
+        <CategoryHeroBanner imageUrl={category.image_url} categoryName={category.name_he} />
 
         <header className="category-page__header">
-          <h1 className="category-page__title">{category.name_he}</h1>
-          {/* The count's box, held open while it streams. See the note on the
-              same boundary in search/page.tsx: a null fallback inserts a line
-              into the header on resolve and moves everything below it. */}
-          <Suspense
-            fallback={
-              <div className="category-page__count category-page__count--pending" aria-hidden />
-            }
-          >
-            <ResultCount args={args} />
-          </Suspense>
+          <h1 className="category-page__title">
+            {category.name_he}
+            <span className="category-page__title-count">
+              <Suspense fallback=" ...">
+                <ResultCountText args={args} />
+              </Suspense>
+            </span>
+          </h1>
         </header>
 
         <CategoryControlBar value={sort} />
 
         <div className="category-page__body">
           <div className="category-page__main">
-            <Suspense fallback={<CategoryGridSkeleton count={CATEGORY_SKELETON_CARDS} />}>
-              <ResultGrid
-                args={args}
-                pathname={pathname}
-                linkParams={linkParams}
-                endpoint={listingEndpoint(
-                  'category',
-                  {
-                    ...linkParams,
-                    city,
-                    // The raw value, and only when it parsed: the endpoint
-                    // reads it with the same `parseNear`.
-                    near: near && typeof sp.near === 'string' ? sp.near : undefined,
-                  },
-                  category.slug,
-                )}
-              />
+            <Suspense fallback={<CategoryGridSkeleton count={CATEGORY_PAGE_SIZE} />}>
+              <ResultGrid args={args} linkParams={linkParams} usePagination={usePagination} />
             </Suspense>
           </div>
 
-          {/* The city picker. Same component as the row under the hero, so the
-              two cannot drift apart in behaviour or in what "one city" means.
-
-              BELOW THE GRID, for the reason category-page.css already gives for
-              the filter sidebar: live has zero gap between the control bar and
-              its first card, so anything inserted there pushes every row of the
-              page down against live's. Measured at 380 on 2026-09-03, this row
-              was ~100px of exactly that, and it sat ABOVE the grid while the
-              filters -- the same kind of control, with the same argument
-              written next to them -- sat below. It is one rule now. */}
-          <Suspense fallback={null}>
-            <CityTags className="mt-3" />
-          </Suspense>
-
           <CategoryFilterSidebar
-            categories={allCategories}
-            currentSlug={category.slug}
             priceMin={priceMin}
             priceMax={priceMax}
+            categoryMinPrice={priceBounds.minPrice}
+            categoryMaxPrice={priceBounds.maxPrice}
             productType={productType}
+            suppliers={suppliers}
+            tags={tags}
+            categoryId={category.id}
           />
         </div>
       </div>

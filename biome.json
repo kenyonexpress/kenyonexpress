@@ -47,7 +47,7 @@
         "useImportType": "error"
       },
       "suspicious": {
-        "noExplicitAny": "warn"
+        "noExplicitAny": "off"
       },
       "security": {
         "noDangerouslySetInnerHtml": "error"

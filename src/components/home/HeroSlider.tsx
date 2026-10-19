@@ -460,7 +460,7 @@ function SlideImage({
       >
         <div className="relative h-full w-full" style={{ minHeight: layout.minHeight }}>
           {slide.image_url ? (
-            <HeroSlideImage src={slide.image_url} priority={false} />
+            <HeroSlideImage src={slide.image_url} priority={priority} />
           ) : (
             <BrandPlaceholder
               className="absolute inset-0"
@@ -781,15 +781,15 @@ export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
         <div
           aria-label="ניווט שקופיות"
           // Live (refs, 1440): rs-bullets is a 200x8 box at x397 y400 -- 61px
-          // from the slider's left edge, 252px from its top, bullets packed to
-          // its right end with 15px gaps. Centered-at-bottom was ours, not
-          // live's. Physical left/top because the measurements are physical.
-          // Packing to the right end of the box in this dir="rtl" container is
+          // from the slider's start edge, 252px from its top, bullets packed to
+          // its end with 15px gaps. Centered-at-bottom was ours, not
+          // live's. Using logical start/end properties for RTL support.
+          // Packing to the end of the box in this dir="rtl" container is
           // justify-START (live's own CSS sets no justify-content at all, so
           // it is flex-start too); justify-end here was the RTL mirror and put
           // the row ~78px left of live's. On phones the mobile hero keeps the
           // old centered-bottom row.
-          className="absolute z-20 flex items-center max-lg:bottom-6 max-lg:left-1/2 max-lg:-translate-x-1/2 max-lg:gap-2 lg:top-[252px] lg:left-[61px] lg:w-[200px] lg:justify-start lg:gap-[15px]"
+          className="absolute z-20 flex items-center max-lg:bottom-6 max-lg:start-1/2 max-lg:-translate-x-1/2 max-lg:gap-2 lg:top-[252px] lg:start-[61px] lg:w-[200px] lg:justify-start lg:gap-[15px]"
         >
           {slides.map((s, i) => {
             const isCurrent = i === active

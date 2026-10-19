@@ -375,6 +375,12 @@ Wallet JWT, ‏/api/wallet/apple/[id], כפתורים שמסתירים עצמם 
 (‏redeemed_by_user_id/redeemed_by_supplier_id). תפקיד ‏user_roles חדש
 בשם ‏coupon_partner היה fork של ‏enum פרוס ושל מודל חי.
 
+**‏07.09.2026, הוכרע רשמית כ-D-001 ב-`docs/DECISION-LOG.md`:** התפקיד הוא
+‏`vendor`, וההרשאה נגזרת מחברות ב-`supplier_members`. נמדד: מתוך ‏146
+מדיניויות בפרודקשן, ‏`coupon_partner` מופיע ב-אפס ואינו ב-enum כלל,
+ו-`vendor` מופיע גם הוא ב-אפס, כלומר הוא תווית והחברות היא הגישה.
+‏`docs/ROLE-MATRIX.md` היא הטבלה המחייבת.
+
 **נדחה כמוקדם:** ‏(א) ‏supplier_locations רב-סניפי — לספקים יש lat/lng
 יחיד (‏136 pending) ואין בקטלוג ספק מרובה-סניפים אחד; ‏(ב) אנליטיקות
 פר-סניף/פר-עובד — אין נפח; סיכומי היום/30 יום (‏STEP 19) הם הרזולוציה

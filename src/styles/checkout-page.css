@@ -20,9 +20,11 @@
      every width (y159 at 380, y165 at 1440). The 24px that used to sit here
      pushed the whole page down against the reference. */
   padding: 0 15px 3rem;
-  color: #333e48;
+  color: var(--color-heading);
   font-size: 14px;
   line-height: 23.996px;
+  /* Layout containment prevents form element shifts from cascading. Reduces CLS. */
+  contain: layout style;
 }
 
 /* Measured off the live /checkout/, and identical to the cart's: 14px, padding
@@ -39,9 +41,9 @@
   margin-inline: -15px;
   padding: 9px 15px;
   min-height: 42px;
-  background: #f7f6f6;
+  background: var(--util-f7f6f6);
   font-size: 14px;
-  color: #333e48;
+  color: var(--color-heading);
 }
 
 @media (min-width: 768px) {
@@ -54,14 +56,14 @@
 }
 
 .checkout-page__breadcrumb a:hover {
-  color: #0062bd;
+  color: var(--color-link);
 }
 
 .checkout-page__title {
   font-size: 39.998px;
   line-height: 47.9976px;
-  font-weight: 500;
-  color: #333e48;
+  font-weight: var(--weight-medium);
+  color: var(--color-heading);
   /* 22px above (the gap under the 380 breadcrumb band, 201 -> 223) and 40px
      below (h1 ends 271, entry-content starts 311). From 768 the breadcrumb's
      own 22.4px bottom padding closes the top gap (192 -> 193). */
@@ -91,8 +93,8 @@
   align-items: center;
   gap: 6px;
   flex-wrap: wrap;
-  background: #fed700;
-  color: #333e48;
+  background: var(--color-brand-primary);
+  color: var(--color-heading);
   font-size: 14px;
   border-radius: 5px;
   padding: 14px 20px;
@@ -104,8 +106,8 @@
   border: none;
   padding: 0;
   font: inherit;
-  font-weight: 700;
-  color: #333e48;
+  font-weight: var(--weight-bold);
+  color: var(--color-heading);
   text-decoration: underline;
   cursor: pointer;
 }
@@ -113,6 +115,8 @@
 .checkout-page__grid {
   display: grid;
   gap: 34px;
+  /* Layout containment isolates form element shifts. Reduces CLS. */
+  contain: layout style;
 }
 
 /* 665 + 466 + 34 = 1165, the measured container width. In RTL the first track
@@ -143,8 +147,8 @@
 .checkout-section__title {
   font-size: 25.004px;
   line-height: 40.0064px;
-  font-weight: 500;
-  color: #333e48;
+  font-weight: var(--weight-medium);
+  color: var(--color-heading);
   margin: 0 0 34.0054px;
   padding: 0;
   border-bottom: 1px solid #ddd;
@@ -179,11 +183,11 @@
 .checkout-field label {
   font-size: 14px;
   line-height: 24px;
-  color: #333e48;
+  color: var(--color-heading);
 }
 
 .checkout-field__required {
-  color: #dc3545;
+  color: var(--util-dc3545);
 }
 
 .checkout-field input,
@@ -194,8 +198,8 @@
   padding: 9.504px 16px;
   font-size: 14px;
   font-family: inherit;
-  color: #333e48;
-  background: #fff;
+  color: var(--color-heading);
+  background: var(--color-surface);
   width: 100%;
 }
 
@@ -208,17 +212,34 @@
 .checkout-field input:focus,
 .checkout-field textarea:focus {
   outline: none;
-  border-color: #fed700;
+  border-color: var(--color-brand-primary);
+}
+
+/* WCAG 1.4.11. `outline: none` above leaves `border-color` as the ONLY focus
+   indicator, and that border is #fed700 on a white field: 1.41:1, where the
+   focus-indicator floor is 3:1. The border it replaces is #ddd at 1.36, so the
+   change a keyboard user is meant to notice is a shift between two values that
+   are both invisible against white. The brand dark is 10.6:1 on white and is
+   what makes the ring actually visible.
+
+   `:focus-visible` rather than `:focus`, and placed AFTER the rule above so
+   source order wins: a mouse click keeps the quiet yellow border, and only
+   keyboard focus draws the ring. That is the behaviour `outline: none` was
+   reaching for, done in the way that does not cost the keyboard user. */
+.checkout-field input:focus-visible,
+.checkout-field textarea:focus-visible {
+  outline: 2px solid #333e48;
+  outline-offset: 2px;
 }
 
 .checkout-field input[aria-invalid="true"] {
-  border-color: #dc3545;
+  border-color: var(--util-dc3545);
 }
 
 .checkout-field__error {
   font-size: 12px;
   line-height: 18px;
-  color: #dc3545;
+  color: var(--util-dc3545);
 }
 
 /* The autofill note under the postal code: same size as an error, muted
@@ -244,7 +265,7 @@
   height: 45px;
   border: 1px solid #ddd;
   border-radius: 22px;
-  background: #fff;
+  background: var(--color-surface);
 }
 
 .checkout-skeleton__nav {
@@ -254,7 +275,7 @@
 
 /* Order panel: #f5f5f5, radius 10, padding 25/15/15/15, measured 466x893. */
 .checkout-review {
-  background: #f5f5f5;
+  background: var(--color-surface-hover);
   border-radius: 10px;
   padding: 25px 15px 15px;
 }
@@ -267,7 +288,7 @@
 
 .checkout-review__table th {
   text-align: start;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   padding-bottom: 12px;
   border-bottom: 1px solid #ddd;
   height: 48px;
@@ -286,13 +307,13 @@
 }
 
 .checkout-item__name {
-  color: #333e48;
+  color: var(--color-heading);
   font-size: 14px;
 }
 
 .checkout-item__meta {
   display: block;
-  color: #657888;
+  color: var(--color-muted-2);
   font-size: 12px;
   line-height: 18px;
   margin-top: 4px;
@@ -306,7 +327,7 @@
   height: auto;
   border-bottom: 1px solid #ddd;
   padding-block: 12px;
-  font-weight: 400;
+  font-weight: var(--weight-regular);
 }
 
 .checkout-review__row td {
@@ -315,13 +336,13 @@
 
 .checkout-review__row--total th,
 .checkout-review__row--total td {
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   font-size: 16.996px;
 }
 
 .checkout-review__row--muted th,
 .checkout-review__row--muted td {
-  color: #657888;
+  color: var(--color-muted-2);
   font-size: 12px;
 }
 
@@ -337,17 +358,17 @@
   align-items: center;
   gap: 8px;
   font-size: 14px;
-  color: #333e48;
+  color: var(--color-heading);
   padding-block: 12px;
   cursor: pointer;
 }
 
 .checkout-payment__note {
-  background: #ececec;
+  background: var(--util-ececec);
   border-radius: 5px;
   padding: 16px 20px;
   font-size: 14px;
-  color: #515151;
+  color: var(--color-icon);
   margin-bottom: 16px;
 }
 
@@ -368,8 +389,8 @@
   border-radius: 22px;
   padding: 9.504px 16px;
   font-size: 14px;
-  background: #fff;
-  color: #333e48;
+  background: var(--color-surface);
+  color: var(--color-heading);
 }
 
 .checkout-terms {
@@ -388,13 +409,13 @@
 .checkout-privacy {
   font-size: 14px;
   line-height: 23.996px;
-  color: #333e48;
+  color: var(--color-heading);
   margin: 0 0 8px;
 }
 
 .checkout-error {
-  background: #fef2f2;
-  color: #dc3545;
+  background: var(--util-fef2f2);
+  color: var(--util-dc3545);
   border-radius: 9px;
   padding: 10px 14px;
   margin-bottom: 14px;
@@ -409,11 +430,11 @@
   width: 100%;
   height: 64px;
   padding: 14.512px 16px;
-  background: #fed700;
-  color: #333e48;
+  background: var(--color-brand-primary);
+  color: var(--color-heading);
   font-size: 19.418px;
   line-height: 33.2824px;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   border-radius: 50px;
   border: 1px solid #fed700;
   cursor: pointer;
@@ -421,7 +442,7 @@
 }
 
 .checkout-pay-btn:hover:not(:disabled) {
-  background: #fedd26;
+  background: var(--color-brand-primary-hover);
 }
 
 .checkout-pay-btn:disabled {
@@ -438,7 +459,7 @@
 .checkout-cards__legend {
   padding: 0;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: var(--weight-bold);
   color: var(--color-heading, #333e48);
 }
 
@@ -453,7 +474,7 @@
 }
 
 .checkout-cards__option input {
-  accent-color: #0062bd;
+  accent-color: var(--color-link);
 }
 
 /* Success (return) page */
@@ -465,13 +486,13 @@
 
 .checkout-success__title {
   font-size: 39.998px;
-  font-weight: 500;
-  color: #333e48;
+  font-weight: var(--weight-medium);
+  color: var(--color-heading);
   margin-bottom: 8px;
 }
 
 .checkout-success__sub {
-  color: #657888;
+  color: var(--color-muted-2);
   margin-bottom: 28px;
 }
 
@@ -485,15 +506,15 @@
   border-radius: 9px;
   padding: 18px 20px;
   margin-bottom: 16px;
-  background: #fff;
+  background: var(--color-surface);
   text-align: start;
 }
 
 .coupon-card__code {
   font-size: 25.004px;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   letter-spacing: 0.2em;
-  color: #333e48;
+  color: var(--color-heading);
   direction: ltr;
 }
 
@@ -505,30 +526,30 @@
 
 .coupon-card__note {
   font-size: 14px;
-  color: #657888;
+  color: var(--color-muted-2);
 }
 
 .coupon-card__collect {
   font-size: 14px;
-  color: #333e48;
-  font-weight: 700;
+  color: var(--color-heading);
+  font-weight: var(--weight-bold);
 }
 
 .checkout-wallet-note {
   display: inline-block;
-  background: #eefbe8;
-  color: #2f7d18;
+  background: var(--util-eefbe8);
+  color: var(--util-2f7d18);
   border-radius: 21.994px;
   padding: 10px 20px;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   margin-top: 8px;
 }
 
 .checkout-pending {
   text-align: center;
   padding-block: 60px;
-  color: #333e48;
+  color: var(--color-heading);
 }
 
 /* Shown when the reconcile loop runs out of budget, in place of the spinner.
@@ -563,12 +584,12 @@
   justify-content: space-between;
   gap: 16px;
   width: min(560px, 100%);
-  color: #fff;
+  color: var(--color-surface);
 }
 
 .checkout-frame__title {
   font-size: 19.418px;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
 }
 
 .checkout-frame__order {
@@ -582,13 +603,13 @@
   height: min(680px, 80vh);
   border: 0;
   border-radius: 10px;
-  background: #fff;
+  background: var(--color-surface);
 }
 
 .checkout-frame__note {
   width: min(560px, 100%);
   margin: 0;
-  color: #fff;
+  color: var(--color-surface);
   font-size: 12px;
   line-height: 18px;
   text-align: center;
@@ -626,15 +647,15 @@
   width: 100%;
   min-height: var(--cart-touch, 44px);
   padding: 10px 12px;
-  background: #f7f7f7;
+  background: var(--util-f7f7f7);
   /* Darkened from #7a7a7a for WCAG AA. It painted the step labels at 14px bold
      on #f7f7f7 for 4.01:1, and the numeral badge on #e4e4e4 for 3.38:1, both
      under the 4.5 that 14px demands - 14pt BOLD is 18.66px, and these are not
      that. #616161 is 5.78 and 4.87 on those two surfaces, so one value covers
      the step row wherever it sits. */
-  color: #616161;
+  color: var(--util-616161);
   font-size: 14px;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   border: none;
   /* The state line sits on the bottom edge, which is the side the eye tracks
      along a row of steps. Colour alone would not survive a greyscale print or
@@ -658,8 +679,8 @@
   height: 26px;
   flex: 0 0 26px;
   border-radius: 50%;
-  background: #e4e4e4;
-  color: #616161;
+  background: var(--util-e4e4e4);
+  color: var(--util-616161);
   font-size: 13px;
   line-height: 1;
 }
@@ -671,25 +692,25 @@
 }
 
 .checkout-steps__item[data-state="current"] .checkout-steps__btn {
-  background: #fff;
-  color: #333e48;
-  border-bottom-color: #fed700;
+  background: var(--color-surface);
+  color: var(--color-heading);
+  border-bottom-color: var(--color-brand-primary);
 }
 
 .checkout-steps__item[data-state="current"] .checkout-steps__index {
-  background: #fed700;
-  color: #333e48;
+  background: var(--color-brand-primary);
+  color: var(--color-heading);
 }
 
 .checkout-steps__item[data-state="done"] .checkout-steps__btn {
-  background: #fff;
-  color: #333e48;
-  border-bottom-color: #e4e4e4;
+  background: var(--color-surface);
+  color: var(--color-heading);
+  border-bottom-color: var(--util-e4e4e4);
 }
 
 .checkout-steps__item[data-state="done"] .checkout-steps__index {
-  background: #333e48;
-  color: #fff;
+  background: var(--color-heading);
+  color: var(--color-surface);
 }
 
 /* Under 560px the three labels cannot share a row without truncating to
@@ -729,10 +750,10 @@
   min-height: var(--cart-touch, 44px);
   padding: 12px 38px;
   margin-inline-start: auto;
-  background: #fed700;
-  color: #333e48;
+  background: var(--color-brand-primary);
+  color: var(--color-heading);
   font-size: 15px;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   border: 1px solid #fed700;
   border-radius: 50px;
   cursor: pointer;
@@ -740,7 +761,7 @@
 }
 
 .checkout-nav__next:hover:not(:disabled) {
-  background: #fedd26;
+  background: var(--color-brand-primary-hover);
 }
 
 .checkout-nav__next:disabled,
@@ -753,9 +774,9 @@
   min-height: var(--cart-touch, 44px);
   padding: 12px 26px;
   background: transparent;
-  color: #333e48;
+  color: var(--color-heading);
   font-size: 14px;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   border: 1px solid #ddd;
   border-radius: 50px;
   cursor: pointer;
@@ -763,7 +784,7 @@
 }
 
 .checkout-nav__back:hover:not(:disabled) {
-  border-color: #333e48;
+  border-color: var(--color-heading);
 }
 
 .checkout-nav__back--review {
@@ -779,10 +800,10 @@
   min-height: var(--cart-touch, 44px);
   margin-top: 10px;
   padding: 10px 28px;
-  background: #fed700;
-  color: #333e48;
+  background: var(--color-brand-primary);
+  color: var(--color-heading);
   font-size: 14px;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   border: 1px solid #fed700;
   border-radius: 50px;
   cursor: pointer;
@@ -790,7 +811,7 @@
 }
 
 .checkout-error__retry:hover:not(:disabled) {
-  background: #fedd26;
+  background: var(--color-brand-primary-hover);
 }
 
 .checkout-error__retry:disabled {
@@ -809,12 +830,12 @@
   padding: 0;
   list-style: none;
   font-size: 13px;
-  color: #616161;
+  color: var(--util-616161);
 }
 
 .checkout-confirm__sections li {
   padding: 4px 12px;
-  background: #f7f7f7;
+  background: var(--util-f7f7f7);
   border-radius: 50px;
 }
 

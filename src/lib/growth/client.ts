@@ -44,37 +44,26 @@ export type DiscountCampaignPerformance = {
   last_redeemed_at: string | null
 }
 
-export type CouponQrBatchRow = {
-  id: string
-  campaign_id: string
-  label: string
-  quantity: number
-  created_by: string | null
-  created_at: string
-  updated_at: string
+type GrowthError = { message: string; code?: string }
+
+type Result<T> = Promise<{ data: T | null; error: GrowthError | null }>
+
+/**
+ * The PostgREST builder, narrowed to the calls below. `createAdminClient()` is
+ * typed from `database.ts`, which does not know these two tables, so `.from()`
+ * on it rejects their names outright. This is the shape we actually use, and
+ * the cast to it happens once (`growthClient`) instead of at every call site.
+ */
+type GrowthQuery<Row> = Result<Row[]> & {
+  select(columns: string): GrowthQuery<Row>
+  order(column: string, options: { ascending: boolean; nullsFirst?: boolean }): GrowthQuery<Row>
+  eq(column: string, value: string): GrowthQuery<Row>
+  is(column: string, value: null): GrowthQuery<Row>
+  single(): Result<Row>
+  maybeSingle(): Result<Row>
 }
 
-export type CouponQrCodeRow = {
-  id: string
-  batch_id: string
-  campaign_id: string
-  code: string
-  redeemed_at: string | null
-  redeemed_order_id: string | null
-  expires_at: string | null
-  expired_at: string | null
-  created_at: string
-}
-
-/** What redeem_coupon_qr (217) answers. reason is present on every refusal. */
-export type CouponQrRedeemResult = {
-  ok: boolean
-  reason?: string
-  campaign_id?: string
-  amount_agorot?: number
-}
-
-type Result<T> = Promise<{ data: T | null; error: { message: string; code?: string } | null }>
+type GrowthDb = { from<Row>(table: string): GrowthQuery<Row> }
 
 /** Only the calls this feature makes. Anything else goes through the real client. */
 type GrowthClient = {
@@ -117,24 +106,28 @@ type GrowthClient = {
 export function growthClient(): GrowthClient {
   const admin = createAdminClient()
   // One cast, one reason: the generated types do not know these tables yet.
-  // biome-ignore lint/suspicious/noExplicitAny: see the module comment
-  const db = admin as any
+  const db = admin as unknown as GrowthDb
 
   return {
     campaigns: () => ({
       list: () =>
         db
-          .from('v_discount_campaign_performance')
+          .from<DiscountCampaignPerformance>('v_discount_campaign_performance')
           .select('*')
           .order('last_redeemed_at', { ascending: false, nullsFirst: false }),
       byId: (id: string) =>
-        db.from('discount_campaigns').select('*').eq('id', id).is('deleted_at', null).single(),
+        db
+          .from<DiscountCampaignRow>('discount_campaigns')
+          .select('*')
+          .eq('id', id)
+          .is('deleted_at', null)
+          .single(),
       // The lookup the cart makes. Codes are stored already normalised, so this
       // is an equality on an indexed column and not an ILIKE, which could not
       // use the index.
       byCode: (code: string) =>
         db
-          .from('discount_campaigns')
+          .from<DiscountCampaignRow>('discount_campaigns')
           .select('*')
           .eq('code', code)
           .is('deleted_at', null)

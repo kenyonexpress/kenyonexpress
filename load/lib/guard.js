@@ -21,8 +21,24 @@ export const BASE = (__ENV.LOAD_BASE ?? 'http://localhost:3000').replace(/\/+$/,
  * Deliberately not read from the environment: an allowlist that the caller can
  * edit is not a guard. `NEXT_PUBLIC_APP_URL` defaults to the first of these in
  * src/app/sitemap.ts, which is what makes it the live storefront.
+ *
+ * `kenyonexpress.vercel.app` ADDED 2026-09-08, and it was a real hole. The list
+ * named the two custom domains, and the platform alias serves the same
+ * deployment: measured that day, `/api/health` answers 200 on all three and the
+ * cron scheduler drives production traffic through the vercel.app one, because
+ * `CRON_BASE_URL` is empty and `run-cron-jobs.sh` falls back to it. So the host
+ * that production actually runs on was the one host this gate did not name.
+ *
+ * The wildcard is deliberately NOT `.vercel.app`. Preview deployments live
+ * there too - they carry a branch or hash in the subdomain - and a preview is
+ * the target this suite is FOR. Blocking the whole apex would turn the gate
+ * into something people work around, which is worse than a gate with a gap.
  */
-const PRODUCTION_HOSTS = ['kenyonexpress.co.il', 'www.kenyonexpress.co.il']
+const PRODUCTION_HOSTS = [
+  'kenyonexpress.co.il',
+  'www.kenyonexpress.co.il',
+  'kenyonexpress.vercel.app',
+]
 
 function hostOf(url) {
   const match = /^https?:\/\/([^/:]+)/.exec(url)

@@ -1,3 +1,4 @@
+import { fetchWithTimeout } from '@/lib/http/fetch-with-timeout'
 import { PRODUCTS_INDEX, toProductDocument } from '@/lib/search/meili-settings'
 import type { SearchIndexJob } from '@/lib/search/pipeline-contracts'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -36,7 +37,7 @@ export function isMeilisearchConfigured(): boolean {
 async function meiliRequest(path: string, method: string, body?: unknown): Promise<void> {
   const env = meiliEnv()
   if (!env) return
-  const res = await fetch(`${env.host}${path}`, {
+  const res = await fetchWithTimeout(`${env.host}${path}`, {
     method,
     headers: {
       'Content-Type': 'application/json',

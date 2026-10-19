@@ -1,6 +1,5 @@
 'use client'
 
-import { CHECKOUT_VARIANT_PROPERTY, cachedCheckoutVariant } from '@/lib/analytics/checkout-variant'
 import { CONSENT_COOKIE, isTrackingAllowed } from '@/lib/analytics/consent'
 import {
   type CommerceEventInput,
@@ -70,13 +69,8 @@ function fbq(): Fbq | null {
   return typeof fn === 'function' ? fn : null
 }
 
-/**
- * The banner's decision, read from the cookie it writes. Denied unless granted.
- * Exported because every OTHER client-side PostHog call site (the pageview in
- * AnalyticsProvider, the referral landing, the replay recorder) needs exactly
- * this gate, and a second implementation is a second place to get it wrong.
- */
-export function trackingAllowed(): boolean {
+/** The banner's decision, read from the cookie it writes. Denied unless granted. */
+function trackingAllowed(): boolean {
   if (typeof document === 'undefined') return false
   const match = document.cookie.match(new RegExp(`(?:^|; )${CONSENT_COOKIE}=([^;]*)`))
   return isTrackingAllowed(match ? decodeURIComponent(match[1] ?? '') : null)
@@ -89,7 +83,7 @@ export function trackingAllowed(): boolean {
  * is where the catalogue questions are answered.
  */
 function postHogProperties(input: CommerceEventInput): Record<string, string | number | null> {
-  const properties: Record<string, string | number | null> = {
+  return {
     currency: CURRENCY_CODE,
     // Shekels, converted once, by the same helper both vendors use. The agorot
     // integer is the source and stays the source.
@@ -99,13 +93,6 @@ function postHogProperties(input: CommerceEventInput): Record<string, string | n
     transaction_id: input.transactionId ?? null,
     coupon: input.coupon ?? null,
   }
-  // Stamped from the session cache only, synchronously: an event must never
-  // wait on a flag fetch, and an event that fires before the checkout page
-  // resolved the flag honestly carries nothing. PostHog's experiment analysis
-  // reads the `$feature/<flag>` name natively.
-  const variant = cachedCheckoutVariant()
-  if (variant !== null) properties[CHECKOUT_VARIANT_PROPERTY] = variant
-  return properties
 }
 
 const CURRENCY_CODE = 'ILS'

@@ -81,22 +81,7 @@ export default function ProductGallery({
   oldPrice = null,
 }: Props) {
   const [active, setActive] = useState(0)
-  const [zoomed, setZoomed] = useState(false)
-  const [origin, setOrigin] = useState({ x: 50, y: 50 })
-  const gesture = useRef<{ id: number; x: number; y: number } | null>(null)
-
-  const count = images.length
-  const go = useCallback(
-    (index: number) => {
-      if (count === 0) return
-      // Wraps, so the last photo's "next" is the first: a swipe past the end
-      // that does nothing reads as a broken gesture.
-      const next = ((index % count) + count) % count
-      setActive(next)
-      setZoomed(false)
-    },
-    [count],
-  )
+  const [isZoomed, setIsZoomed] = useState(false)
 
   // A badge is drawn only when there is a real reduction to state. Guarding on
   // `> 0` and not just on presence keeps a mispriced row from painting "-0%"
@@ -179,21 +164,10 @@ export default function ProductGallery({
       {/* Main image. Live's frame is 470px square with no border or radius, so
           neither is drawn here: an outline where live has bare photo is a
           contour the pixel comparison sees on every edge. */}
-      <section
-        className="pdp-gallery__frame"
-        data-zoomed={zoomed ? 'true' : undefined}
-        aria-roledescription="גלריה"
-        aria-label={`תמונות המוצר, תמונה ${active + 1} מתוך ${count}`}
-        // The frame IS the keyboard target: arrows move, Enter zooms, Escape
-        // restores. A carousel region that cannot take focus cannot be
-        // operated without a pointer, and a button cannot wrap the arrows.
-        // biome-ignore lint/a11y/noNoninteractiveTabindex: keyboard-operated carousel region, handlers on the element itself.
-        tabIndex={0}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={onPointerCancel}
-        onKeyDown={onKeyDown}
+      <div
+        className={`pdp-gallery__frame ${isZoomed ? 'pdp-gallery__frame--zoomed' : ''}`}
+        onMouseEnter={() => setIsZoomed(true)}
+        onMouseLeave={() => setIsZoomed(false)}
       >
         {pct > 0 && (
           <span className="pdp-gallery__badge">
@@ -226,36 +200,32 @@ export default function ProductGallery({
           />
         </div>
 
-        {count > 1 && (
-          <>
-            {/* Screen-direction arrows: the one on the left goes to the next
-                photo, matching ArrowLeft and a leftward swipe. */}
-            <button
-              type="button"
-              className="pdp-gallery__nav pdp-gallery__nav--next"
-              aria-label="התמונה הבאה"
-              onPointerDown={(e) => e.stopPropagation()}
-              onPointerUp={(e) => e.stopPropagation()}
-              onClick={() => go(active + 1)}
-            >
-              <ChevronLeft size={22} aria-hidden="true" />
-            </button>
-            <button
-              type="button"
-              className="pdp-gallery__nav pdp-gallery__nav--prev"
-              aria-label="התמונה הקודמת"
-              onPointerDown={(e) => e.stopPropagation()}
-              onPointerUp={(e) => e.stopPropagation()}
-              onClick={() => go(active - 1)}
-            >
-              <ChevronRight size={22} aria-hidden="true" />
-            </button>
-            <output className="pdp-gallery__counter" aria-live="polite" dir="rtl">
-              {active + 1} / {count}
-            </output>
-          </>
-        )}
-      </section>
+              fetchpriority=high should be applied ............ false
+              Request is discoverable in initial document ..... false
+              LCP resources should not use loading=lazy ....... false
+
+            with `resourceLoadDelay` at 1313ms. This is a client component, so
+            without the hint the browser only learns about the main photo after
+            the bundle runs, and the largest element on the page starts loading
+            more than a second late. `priority` emits fetchpriority="high",
+            drops loading="lazy" and preloads it from the document.
+
+            Gated on `active === 0` so it applies to the image that is actually
+            painted first. Once a shopper picks a thumbnail the LCP has already
+            happened, and marking every swapped-in image high-priority would
+            just contend with whatever else is loading. */}
+        <Image
+          src={activeUrl}
+          alt={activeAsset?.alt ?? name}
+          fill
+          priority={active === 0}
+          sizes="(max-width: 768px) 100vw, 40vw"
+          className={`object-contain ${isZoomed ? 'scale-125' : 'scale-100'} transition-transform duration-300`}
+          {...(activeAsset?.blurDataURL
+            ? { placeholder: 'blur' as const, blurDataURL: activeAsset.blurDataURL }
+            : {})}
+        />
+      </div>
 
       {/* Thumbnails */}
       {count > 1 && (
@@ -273,6 +243,7 @@ export default function ProductGallery({
                 src={url}
                 alt=""
                 fill
+                loading="lazy"
                 sizes="64px"
                 className="object-contain"
                 {...(assets[url]?.blurDataURL

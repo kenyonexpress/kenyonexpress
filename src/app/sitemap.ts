@@ -1,3 +1,4 @@
+import { getLegalDoc } from '@/app/(legal)/_content'
 import { sortedPosts } from '@/content/blog'
 import { LEGAL_PAGE_SLUGS, getLegalPage } from '@/content/legal'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
@@ -67,7 +68,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [productsRead, categoriesRead, suppliersRead] = await Promise.all([
     supabase
       .from('products')
-      .select('slug, updated_at')
+      // `category_id` costs nothing here and saves a second query: it is what
+      // lets the category entries below drop the archives that have no products.
+      .select('slug, updated_at, category_id')
       .eq('status', 'active')
       .is('deleted_at', null)
       .not('slug', 'is', null)
@@ -76,7 +79,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .limit(45_000),
     supabase
       .from('categories')
-      .select('slug, updated_at')
+      .select('id, slug, updated_at')
       .eq('is_active', true)
       .not('slug', 'is', null),
     supabase
@@ -90,12 +93,36 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const categories = orFail(categoriesRead, 'sitemap.categories_read_failed')
   const suppliers = orFail(suppliersRead, 'sitemap.suppliers_read_failed')
 
-  const categoryEntries: MetadataRoute.Sitemap = (categories ?? []).map((c) => ({
-    url: `${base}/category/${c.slug}`,
-    lastModified: c.updated_at ? new Date(c.updated_at) : now,
-    changeFrequency: 'daily' as const,
-    priority: 0.8,
-  }))
+  /**
+   * EMPTY ARCHIVES ARE NOT ADVERTISED.
+   *
+   * A category with no active products still answers 200: the page renders
+   * "לא נמצאו מוצרים התואמים את הבחירה שלך" rather than calling notFound(),
+   * which is right for a filter that matched nothing and wrong for a URL a
+   * sitemap is pushing at Google as priority 0.8, changing daily.
+   *
+   * Measured 2026-09-08: 5 of 12 active categories have zero active products -
+   * `electronics`, `under-99`, `new`, `pets`, and `courses`, the last of which
+   * is literally named "קורסים Express בקרוב". Five soft-404s were being
+   * submitted as high-priority daily content.
+   *
+   * This EXCLUDES them from the sitemap; it does not hide them. They stay
+   * reachable, crawlable and linkable, and the moment a product lands in one it
+   * returns here on the next revalidation. `notFound()` would be the wrong tool:
+   * an empty shelf is not a missing aisle, and a category the merchandiser is
+   * about to fill should not 404 in the meantime.
+   */
+  const categoriesWithProducts = new Set(
+    (products ?? []).map((p) => p.category_id).filter((id): id is string => Boolean(id)),
+  )
+  const categoryEntries: MetadataRoute.Sitemap = (categories ?? [])
+    .filter((c) => categoriesWithProducts.has(c.id))
+    .map((c) => ({
+      url: `${base}/category/${c.slug}`,
+      lastModified: c.updated_at ? new Date(c.updated_at) : now,
+      changeFrequency: 'daily' as const,
+      priority: 0.8,
+    }))
 
   const productEntries: MetadataRoute.Sitemap = (products ?? []).map((p) => ({
     url: `${base}/product/${p.slug}`,
@@ -167,6 +194,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'yearly' as const,
       priority: 0.3,
     })),
+    // The cookie policy, listed from the OTHER legal registry.
+    //
+    // This site serves two sets of legal documents - the state
+    // `legal-duplication.test.ts` records and deliberately does not fail the
+    // build over, because choosing which text binds is a decision with counsel
+    // and a red CI does not make it arrive sooner. `LEGAL_PAGE_SLUGS` above is
+    // the `src/content/legal` set; the cookie policy is the newer
+    // `(legal)/_content` set, which has no entry there.
+    //
+    // Listing it explicitly rather than adding it to that map keeps the two
+    // registries separate until somebody unifies them, and is better than the
+    // alternative that was in force until now: a live, linked, indexable legal
+    // page absent from the sitemap entirely.
+    {
+      url: `${base}/cookie-policy`,
+      lastModified: new Date(getLegalDoc('cookies').updatedAt),
+      changeFrequency: 'yearly' as const,
+      priority: 0.3,
+    },
   ]
 
   return [...staticEntries, ...categoryEntries, ...productEntries, ...supplierEntries]

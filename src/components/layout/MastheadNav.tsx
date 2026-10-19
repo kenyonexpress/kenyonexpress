@@ -1,13 +1,12 @@
 import HeaderCart from '@/components/cart/HeaderCart'
-import RegionMenu from '@/components/layout/RegionMenu'
-import { Heart } from 'lucide-react'
+import { EcFavorites } from '@/components/icons/electro-icons'
+import MegaMenu from '@/components/layout/MegaMenu'
 import Link from 'next/link'
 
 const ICON = { size: 22, color: 'var(--color-icon)', strokeWidth: 1.8 } as const
 
 /**
- * The masthead's left-hand group (RTL): the region selector and the two-icon
- * cluster -- favorites then cart, which is the whole cluster.
+ * The masthead's navigation structure (RTL): mega menu on the left, icons on the right.
  *
  * Geometry from refs/ke_live_computed.json at 1440, 2026-09-02, x from left:
  *
@@ -18,41 +17,25 @@ const ICON = { size: 22, color: 'var(--color-icon)', strokeWidth: 1.8 } as const
  * breakpoint; phones get gap-4 so 320px keeps zero sideways scroll). gap-nav-gap is that
  * measurement, not a taste.
  *
- * The heart is BACK (it was removed in [28] because there was no wishlist
- * route and a 404 icon is worse than a geometry gap). The 1:1 instruction of
- * 2026-09-02 overrides the gap half of that; the 404 half is avoided by
- * sending it to the wishlist, which exists now (154 + /account/wishlist).
- *
- * The region selector matches live's secondary-nav (96x45, 14px/500 with a
- * chevron). It is now a real dropdown -- see RegionMenu.tsx. It used to be a
- * flat link to /suppliers, which is the join-us-as-a-supplier marketing page:
- * a control labelled "choose a region" whose target has no regions on it. The
- * seventeen regions it now opens are live's own, read off the rendered page.
- *
- * NO SEARCH FIELD. Live's masthead carries a 534px search form at x456..x990
- * and this component used to render <DeferredHeaderSearch/> in that slot. The
- * standing project rule is that there is no search UI anywhere, so the slot is
- * gone rather than hidden: a CSS-hidden field is still in the DOM, still in the
- * tab order, and still ships its client chunk. `justify-end` closes the gap it
- * left, which is the one place this component knowingly departs from the
- * measured layout. The pixel cost is recorded in STATE.md.
+ * The mega menu displays category items with hover-based dropdowns showing
+ * featured content, subcategories, and promo banners. Yellow background per Electro v7.
  */
 export default function MastheadNav() {
   return (
-    <div className="flex min-w-0 flex-1 items-center justify-end ps-6">
-      <RegionMenu />
+    <div className="flex min-w-0 flex-1 items-center justify-between">
+      <MegaMenu />
 
       <nav
-        className="flex shrink-0 items-center gap-4 lg:gap-nav-gap"
-        aria-label="פעולות חשבון ועגלה"
+        className="flex shrink-0 items-center gap-4 lg:gap-nav-gap ps-6"
+        aria-label="פעולות חשבון"
       >
         <Link
           href="/account/wishlist"
           aria-label="המועדפים שלי"
-          className="-m-1 p-1 transition-opacity hover:opacity-70"
+          className="hit-44 -m-1 p-1 transition-opacity hover:opacity-70"
           style={{ color: ICON.color }}
         >
-          <Heart size={ICON.size} strokeWidth={ICON.strokeWidth} aria-hidden="true" />
+          <EcFavorites size={ICON.size} aria-hidden="true" />
         </Link>
 
         {/* THE ACCOUNT ICON IS NOT HERE, AND ITS ABSENCE IS THE RULE.

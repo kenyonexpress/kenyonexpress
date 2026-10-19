@@ -12,6 +12,8 @@ import 'server-only'
  * and a missing key never takes down a checkout that happens to trigger a send.
  */
 
+import { fetchWithTimeout } from '@/lib/http/fetch-with-timeout'
+
 const API = 'https://api.resend.com'
 
 export type SendResult =
@@ -28,7 +30,7 @@ export function isResendConfigured(): boolean {
 }
 
 async function call(path: string, init: RequestInit): Promise<Response> {
-  return fetch(`${API}${path}`, {
+  return fetchWithTimeout(`${API}${path}`, {
     ...init,
     headers: {
       Authorization: `Bearer ${key()}`,

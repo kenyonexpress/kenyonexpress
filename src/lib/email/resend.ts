@@ -1,3 +1,4 @@
+import { fetchWithTimeout } from '@/lib/http/fetch-with-timeout'
 import { log } from '@/lib/observability/log'
 /**
  * Outbound email through Resend.
@@ -59,7 +60,7 @@ export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult>
     }
     if (input.idempotencyKey) headers['idempotency-key'] = input.idempotencyKey
 
-    const response = await fetch(RESEND_ENDPOINT, {
+    const response = await fetchWithTimeout(RESEND_ENDPOINT, {
       method: 'POST',
       headers,
       body: JSON.stringify({

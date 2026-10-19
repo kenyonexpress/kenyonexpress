@@ -1,6 +1,5 @@
 'use client'
 
-import { ImageIcon } from 'lucide-react'
 import Image, { type ImageProps } from 'next/image'
 import { useState } from 'react'
 
@@ -31,9 +30,7 @@ export default function SmartImage({
       <div
         {...a11y}
         className={`flex items-center justify-center bg-slate-100 ${fallbackClassName}`}
-      >
-        <ImageIcon aria-hidden="true" size={iconSize} className="text-slate-400" />
-      </div>
+      />
     )
   }
 

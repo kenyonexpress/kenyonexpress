@@ -1,3 +1,4 @@
+import { AFFILIATE_COOKIE, AFFILIATE_COOKIE_MAX_AGE_S, isLinkCode } from '@/lib/affiliate/rules'
 import { loginRedirectUrl } from '@/lib/auth/login-redirect'
 import { GUEST_SESSION_COOKIE, guestSessionCookieOptions } from '@/lib/cart/guest-session-cookie'
 import { REQUEST_ID_HEADER, resolveRequestId } from '@/lib/observability/request-id'
@@ -7,11 +8,17 @@ import { tooManyRequests } from '@/lib/rate-limit/headers'
 import { REFERRAL_QUERY_PARAM, normalizeReferralCode } from '@/lib/referrals/code'
 import { REFERRAL_COOKIE, referralCookieOptions } from '@/lib/referrals/cookie'
 import { isPaymentFramePath } from '@/lib/security/frame-policy'
-import { CROSS_SITE_REJECTION, isCrossSiteApiMutation } from '@/lib/security/same-origin'
+import {
+  MAINTENANCE_HTML,
+  MAINTENANCE_RETRY_AFTER_SECONDS,
+  isMaintenanceExempt,
+  maintenanceEnabled,
+} from '@/lib/security/maintenance'
+import { maintenanceFlagOn } from '@/lib/security/maintenance-flag'
 import { lookupRedirect } from '@/lib/seo/redirects'
-import { requireAnonKey } from '@/lib/supabase/anon-key'
+import { recordAffiliateClick } from '@/server/affiliate/clicks'
 import { createServerClient } from '@supabase/ssr'
-import { type NextRequest, NextResponse } from 'next/server'
+import { type NextFetchEvent, type NextRequest, NextResponse } from 'next/server'
 
 // Next.js 16: middleware.ts is deprecated — this file replaces it.
 // The exported function must be named `proxy` (not `middleware`).
@@ -39,7 +46,7 @@ function withRequestId<T extends Response>(response: T, requestId: string): T {
   return response
 }
 
-export async function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest, event?: NextFetchEvent) {
   const { pathname } = request.nextUrl
 
   // Minted here and nowhere else, so one visitor request is one id no matter
@@ -61,39 +68,34 @@ export async function proxy(request: NextRequest) {
   // it.
   if (pathname.startsWith('/monitoring')) return forward(request, requestId)
 
-  // The CSRF gate for route handlers. A state-changing call to /api/* that a
-  // browser says came from another site is refused here, before the session
-  // refresh below has spent a token round trip on it. Server Actions are not
-  // affected (Next checks their Origin itself), and server-to-server callers
-  // (Cardcom, QStash, the till app, the uptime monitor) send no browser
-  // headers and pass. The decision itself lives in lib/security/same-origin.
-  if (isCrossSiteApiMutation(request)) {
-    return withRequestId(NextResponse.json(CROSS_SITE_REJECTION, { status: 403 }), requestId)
-  }
-
-  // The graduated shield over /api/*, keyed on the client address, before the
-  // session refresh below so a refused request costs no Supabase round trip.
-  // Three windows per address and a cooldown that doubles per refusal
-  // (lib/rate-limit/graduated.ts); machine callers that prove themselves with
-  // a secret are routed around it (lib/rate-limit/edge-shield.ts). Upstash
-  // only: unconfigured or down, the decision is open and the per-route table
-  // underneath keeps holding.
-  const shieldPolicy = edgeShieldPolicyFor(pathname)
-  if (shieldPolicy) {
-    const address = edgeClientAddress(request.headers)
-    if (address) {
-      const decision = await graduatedRateLimit(shieldPolicy, address)
-      if (!decision.allowed) {
-        return withRequestId(
-          tooManyRequests(decision.tier, {
-            error: 'יותר מדי בקשות. נסו שוב בעוד כמה דקות.',
-            refused_by: decision.refusedBy,
-            retry_after_seconds: decision.retryAfterSeconds,
-          }),
-          requestId,
-        )
-      }
+  // Maintenance mode (MAINTENANCE_MODE=1). Payments, webhooks, crons, admin and
+  // login are exempt; see lib/security/maintenance.ts for why.
+  // rc5 F19: also the feature_flags row (cached 30s, fails open). Page visits
+  // go to /maintenance; everything else gets the 503 below.
+  if (
+    pathname !== '/maintenance' &&
+    !isMaintenanceExempt(pathname) &&
+    (maintenanceEnabled() || (await maintenanceFlagOn()))
+  ) {
+    const wantsPage =
+      request.method === 'GET' && (request.headers.get('accept') ?? '').includes('text/html')
+    if (wantsPage) {
+      return withRequestId(
+        NextResponse.redirect(new URL('/maintenance', request.url), 307),
+        requestId,
+      )
     }
+    return withRequestId(
+      new NextResponse(MAINTENANCE_HTML, {
+        status: 503,
+        headers: {
+          'content-type': 'text/html; charset=utf-8',
+          'retry-after': String(MAINTENANCE_RETRY_AFTER_SECONDS),
+          'cache-control': 'no-store',
+        },
+      }),
+      requestId,
+    )
   }
 
   // Legacy WordPress URLs, resolved BEFORE the session refresh below.
@@ -127,16 +129,34 @@ export async function proxy(request: NextRequest) {
 
   let supabaseResponse = forward(request, requestId)
 
-  const supabase = createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, requireAnonKey(), {
-    cookies: {
-      getAll() {
-        return request.cookies.getAll()
-      },
-      setAll(cookiesToSet) {
-        for (const { name, value } of cookiesToSet) request.cookies.set(name, value)
-        supabaseResponse = forward(request, requestId)
-        for (const { name, value, options } of cookiesToSet)
-          supabaseResponse.cookies.set(name, value, options)
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll()
+        },
+        // `headers` is the SECOND argument and it is not decoration. A response
+        // that carries a rotated session cookie must not be stored by a CDN or
+        // a reverse proxy: a cached one is served to the next visitor, session
+        // token included. @supabase/ssr 0.12 passes
+        // `Cache-Control: private, no-cache, no-store, must-revalidate,
+        // max-age=0` plus `Expires` and `Pragma` here, and an adapter that
+        // takes one parameter drops them silently - ours did, and so did the
+        // example in every version of this file before 0.12.
+        //
+        // Only on the FIRST cookie write per client, by the library's design;
+        // the object is empty afterwards. That is fine here because the proxy
+        // builds a client per request.
+        setAll(cookiesToSet, headers) {
+          for (const { name, value } of cookiesToSet) request.cookies.set(name, value)
+          supabaseResponse = forward(request, requestId)
+          for (const { name, value, options } of cookiesToSet)
+            supabaseResponse.cookies.set(name, value, options)
+          for (const [key, value] of Object.entries(headers ?? {}))
+            supabaseResponse.headers.set(key, value)
+        },
       },
     },
   })
@@ -172,11 +192,28 @@ export async function proxy(request: NextRequest) {
   // which is the whole point of the paragraph above, and the second would catch
   // `/checkout/frame-return` and put a login form inside Cardcom's iframe.
   const supplierPublic = pathname === '/supplier/login' || pathname === '/supplier/access-denied'
+
+  // THE PORTAL IS `/supplier` AND `/supplier/...`, NOT EVERY PATH THAT STARTS
+  // WITH THOSE EIGHT LETTERS.
+  //
+  // This was `pathname.startsWith('/supplier')`, which also matches
+  // `/suppliers` - the PUBLIC join-us page with the lead form. Measured: it
+  // answered 307 to /login. That page is linked from SiteFooter as the one
+  // entry aimed at a business rather than a shopper, and sitemap.ts lists it at
+  // priority 0.7 with the note "a business is worth more than a session". So
+  // the single page whose job is to win new suppliers demanded a login from
+  // every prospect, and Googlebot was sent to a login form for a URL we asked
+  // it to index.
+  //
+  // Exactly the failure the paragraph above already describes for `/checkout`,
+  // in the neighbouring clause, made with the same operator.
+  const isPortalPath = pathname === '/supplier' || pathname.startsWith('/supplier/')
+
   const needsAuth =
     pathname.startsWith('/account') ||
     pathname.startsWith('/coupon/') ||
     (pathname.startsWith('/checkout/') && !isPaymentFramePath(pathname)) ||
-    (pathname.startsWith('/supplier') && !supplierPublic)
+    (isPortalPath && !supplierPublic)
 
   if (needsAuth && !user) {
     return withRequestId(NextResponse.redirect(loginRedirectUrl(request.nextUrl)), requestId)
@@ -231,6 +268,31 @@ export async function proxy(request: NextRequest) {
   // it would be avoiding is already handled: the root layout declares
   // `alternates.canonical`, so `/?ref=ABC12345` is canonical to `/`.
   if (request.method === 'GET') {
+    // rc5 F12: the same `?ref=` carries affiliate link codes, which are a
+    // different shape (`af` + 10 lowercase) and never match the referral
+    // alphabet. Last touch, 30 days, server-read only; the click is counted
+    // after the response so the landing never waits on it.
+    const affiliateCode = request.nextUrl.searchParams.get(REFERRAL_QUERY_PARAM)
+    if (isLinkCode(affiliateCode)) {
+      supabaseResponse.cookies.set(AFFILIATE_COOKIE, affiliateCode, {
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: (request.headers.get('x-forwarded-proto') ?? request.nextUrl.protocol).startsWith(
+          'https',
+        ),
+        maxAge: AFFILIATE_COOKIE_MAX_AGE_S,
+        path: '/',
+      })
+      event?.waitUntil(
+        recordAffiliateClick({
+          code: affiliateCode,
+          ip: request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? null,
+          landingPath: request.nextUrl.pathname,
+          referer: request.headers.get('referer'),
+        }).catch(() => undefined),
+      )
+    }
+
     const code = normalizeReferralCode(request.nextUrl.searchParams.get(REFERRAL_QUERY_PARAM))
     if (code && request.cookies.get(REFERRAL_COOKIE)?.value !== code) {
       supabaseResponse.cookies.set(

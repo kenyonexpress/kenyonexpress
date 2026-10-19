@@ -1,12 +1,12 @@
 'use server'
 
 import { isSmsCapableIsraeli, toE164Israeli } from '@/lib/auth/phone-otp'
-import { adminAlertRecipient } from '@/lib/email/admin-alerts'
-import { sendEmail } from '@/lib/email/resend'
+import { supplierAgreementHash } from '@/lib/legal/supplier-agreement'
 import { withActionContext } from '@/lib/observability/action-context'
-import { log } from '@/lib/observability/log'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { TURNSTILE_FIELD, verifyTurnstile } from '@/lib/security/turnstile'
 import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
+import { startSupplierCardVerification } from '@/server/supplier/card-verification'
+import { headers } from 'next/headers'
 import { z } from 'zod'
 
 /**
@@ -38,19 +38,19 @@ const schema = z.object({
   category: z.string().trim().max(60).optional().default(''),
   website: z.string().trim().max(200).optional().default(''),
   message: z.string().trim().max(2000, 'ההודעה ארוכה מדי').optional().default(''),
+  // Click-wrap: the hash of the exact text on screen, and the tick.
+  agreement: z.literal('on', { message: 'יש לאשר את הסכם ההצטרפות' }),
+  agreement_hash: z.string(),
   // Bots fill every field. Humans leave this alone (hidden with CSS).
   company: z.string().optional().default(''),
 })
 
-export type SupplierLeadState = { ok: boolean; message?: string; error?: string }
-
-function escapeHtml(value: string): string {
-  return value
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#39;')
+export type SupplierLeadState = {
+  ok: boolean
+  message?: string
+  error?: string
+  /** Cardcom's hosted card page, for the ₪1 verification. */
+  redirectUrl?: string
 }
 
 async function runSubmitSupplierLead(
@@ -67,9 +67,17 @@ async function runSubmitSupplierLead(
     website: formData.get('website') ?? '',
     message: formData.get('message') ?? '',
     company: formData.get('company') ?? '',
+    agreement: formData.get('agreement'),
+    agreement_hash: formData.get('agreement_hash') ?? '',
   })
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? 'בדקו את הפרטים ונסו שוב.' }
+  }
+
+  // A form rendered before the text changed must not be recorded as consent to
+  // the new text.
+  if (parsed.data.agreement_hash !== supplierAgreementHash()) {
+    return { ok: false, error: 'נוסח ההסכם התעדכן. רעננו את הדף ואשרו מחדש.' }
   }
 
   // Honeypot hit: pretend success so the bot does not retry with a new shape.
@@ -85,55 +93,50 @@ async function runSubmitSupplierLead(
   if (!(await checkRateLimit(`supplier-lead:${ip}`, 5, 3600))) {
     return { ok: false, error: 'יותר מדי ניסיונות. נסו שוב מאוחר יותר.' }
   }
+  // rc5 F19: Turnstile, a no-op until TURNSTILE_SECRET_KEY is set.
+  if (!(await verifyTurnstile(formData.get(TURNSTILE_FIELD), ip))) {
+    return { ok: false, error: 'אימות האבטחה נכשל. רעננו את הדף ונסו שוב.' }
+  }
 
   const phone = toE164Israeli(parsed.data.phone) ?? parsed.data.phone
-  const admin = createAdminClient()
+  const h = await headers()
 
-  const { error } = await admin.from('supplier_leads').insert({
-    business_name: parsed.data.business_name,
-    contact_name: parsed.data.contact_name,
-    email: parsed.data.email.toLowerCase(),
-    phone,
-    city: parsed.data.city || null,
-    category: parsed.data.category || null,
-    website: parsed.data.website || null,
-    message: parsed.data.message || null,
+  // rc5 F07: no lead without a verified card. The application waits on the
+  // verification row and becomes a lead only when Cardcom confirms the card.
+  const outcome = await startSupplierCardVerification({
+    payload: {
+      business_name: parsed.data.business_name,
+      contact_name: parsed.data.contact_name,
+      email: parsed.data.email,
+      phone,
+      city: parsed.data.city,
+      category: parsed.data.category,
+      website: parsed.data.website,
+      message: parsed.data.message,
+      agreement_hash: parsed.data.agreement_hash,
+    },
+    ip,
+    userAgent: h.get('user-agent'),
   })
 
-  if (error) {
-    log.error('supplier_lead.insert_failed', { reason: error.message })
-    return { ok: false, error: 'לא הצלחנו לשמור את הפרטים. נסו שוב או פנו אלינו בוואטסאפ.' }
+  switch (outcome.kind) {
+    case 'redirect':
+      return { ok: true, redirectUrl: outcome.url }
+    case 'done':
+      return outcome.status === 'verified'
+        ? { ok: true, message: 'הכרטיס אומת. תודה, קיבלנו את הפרטים ונחזור אליכם בהקדם.' }
+        : { ok: false, error: 'אימות הכרטיס נכשל. בדקו את פרטי הכרטיס ונסו שוב.' }
+    case 'unavailable':
+      return {
+        ok: false,
+        error: 'אימות הכרטיס אינו זמין כרגע. העברנו את הפרטים לצוות ונחזור אליכם.',
+      }
+    default:
+      return {
+        ok: false,
+        error: 'לא הצלחנו להתחיל את אימות הכרטיס. נסו שוב או פנו אלינו בוואטסאפ.',
+      }
   }
-
-  // The row is safe. From here on, a failure costs a notification and not a
-  // lead, so it is logged and never shown to the business.
-  const lines = [
-    `עסק: ${parsed.data.business_name}`,
-    `איש קשר: ${parsed.data.contact_name}`,
-    `מייל: ${parsed.data.email}`,
-    `טלפון: ${phone}`,
-    parsed.data.city ? `עיר: ${parsed.data.city}` : '',
-    parsed.data.category ? `תחום: ${parsed.data.category}` : '',
-    parsed.data.website ? `אתר: ${parsed.data.website}` : '',
-    parsed.data.message ? `\n${parsed.data.message}` : '',
-  ].filter(Boolean)
-
-  const result = await sendEmail({
-    to: adminAlertRecipient(),
-    subject: `ליד ספק חדש: ${parsed.data.business_name}`,
-    text: lines.join('\n'),
-    html: `<div dir="rtl" style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:2">${lines
-      .map((line) => escapeHtml(line))
-      .join('<br>')}</div>`,
-    // Replying to the alert reaches the business, which is what an operator
-    // will try to do first.
-    replyTo: parsed.data.email,
-  })
-  if (!result.ok && !result.skipped) {
-    log.warn('supplier_lead.alert_failed', { reason: result.reason })
-  }
-
-  return { ok: true, message: 'תודה, קיבלנו את הפרטים ונחזור אליכם בהקדם.' }
 }
 
 export async function submitSupplierLead(

@@ -20,7 +20,7 @@
 export default function CouponCardSkeleton() {
   return (
     <div
-      className="block bg-white rounded-xl border border-gray-100 overflow-hidden"
+      className="block bg-white border border-gray-100 overflow-hidden [border-radius:var(--radius-card)]"
       aria-hidden="true"
     >
       <div className="relative h-32 bg-gray-100" />

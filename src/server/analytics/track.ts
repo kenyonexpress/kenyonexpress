@@ -93,41 +93,23 @@ export async function trackServerEvent(input: ServerEventInput): Promise<void> {
     // supplier's till through an API route with no browser of ours in it. So
     // PostHog's funnel ended at `checkout_step` and had nothing to convert to.
     //
+    // This is also the half that works TODAY. The Supabase write below is
+    // discarded in production by the `fn_ingest_analytics_events` whitelist
+    // until 169 is approved, and 169 needs an approval this cannot wait on.
+    // PostHog needs no migration.
+    //
     // Fired before the awaited RPC rather than after it, because `trackEvent`
     // returns synchronously and a slow or failing database round trip must not
     // decide whether the funnel event was sent.
-    const distinctId = serverDistinctId(cookieStore.get(POSTHOG_ID_COOKIE)?.value, {
-      anonymousId,
-      userId: input.userId,
-    })
     if (isPostHogEnabled()) {
-      trackEvent(input.eventName, postHogProps(input), { distinctId })
+      trackEvent(input.eventName, postHogProps(input), {
+        distinctId: serverDistinctId(cookieStore.get(POSTHOG_ID_COOKIE)?.value, {
+          anonymousId,
+          userId: input.userId,
+        }),
+      })
     }
 
-    // `analytics_events.session_id` IS NOT NULL, AND A SERVER EVENT OFTEN HAS
-    // NO SESSION TO NAME.
-    //
-    // `session_id: anonymousId` sent NULL whenever the guest cookie was absent,
-    // and `fn_ingest_analytics_events` inserts it straight through. MEASURED
-    // against production 2026-09-09, in a transaction that was rolled back:
-    // the insert raises 23502 and the whole RPC fails, which arrives here as
-    // `{ error }`, is logged as `analytics.track_failed`, and loses the event.
-    //
-    // WHICH EVENTS THAT IS: exactly the ones with no browser of ours in the
-    // request. `voucher_redeemed` fires on a supplier's till through an API
-    // route, `purchase` fires from finalize behind the Cardcom return, and
-    // `order_refunded` fires from an admin action. `begin_checkout` is the one
-    // that had a guest cookie and therefore the one that worked. So three of
-    // the four money events could not land, for a reason unrelated to the
-    // whitelist that 180 fixed.
-    //
-    // The fallback is per EVENT and not per user: a marker keyed on the user
-    // would collapse months of unrelated server events into one "session".
-    // `server:` prefixed so nobody reads it as a real browsing session, and
-    // `anonymous_id` stays honestly null. Nothing groups by `session_id` today
-    // -- no view or matview in production reads this table at all -- so this
-    // cannot skew an existing query.
-    const eventId = crypto.randomUUID()
     const admin = createAdminClient()
     const { data: accepted, error } = await admin.rpc('fn_ingest_analytics_events', {
       p_events: [

@@ -1,12 +1,16 @@
 'use client'
 
+import PriceDisplay from '@/components/PriceDisplay'
 import AddToCartButton from '@/components/cart/AddToCartButton'
-import { cityByName } from '@/lib/geo/cities'
-import { shekelsFromIlsRounded } from '@/lib/money-format'
-import { MapPin } from 'lucide-react'
+import ProductLocation from '@/components/product-card/ProductLocation'
 import Image from 'next/image'
 import Link from 'next/link'
 // product-card-deals.css is imported by the root layout. See the note there.
+
+export type GalleryAsset = {
+  alt: string | null
+  blurDataURL: string | null
+}
 
 export type Product = {
   id: string
@@ -17,8 +21,10 @@ export type Product = {
   stock_quantity: number | null
   full_price?: number | null
   category?: { name_he: string; slug: string } | null
+  /** products.city; NULL renders as nationwide. */
   city?: string | null
-  is_physical_shipping?: boolean
+  /** Gallery assets (blur placeholders + alts) keyed by image URL. Optional. */
+  assets?: Record<string, GalleryAsset>
 }
 
 /**
@@ -77,10 +83,6 @@ const DEAL_IMAGE_SIZES = [
   `${DEAL_SIZE_STOPS.desktopPaint}px`,
 ].join(', ')
 
-function shekelsFromIls(value: number): string {
-  return shekelsFromIlsRounded(value)
-}
-
 function CartPlusIcon() {
   return (
     <svg
@@ -120,6 +122,8 @@ function DealsProductCard({ product }: { product: Product }) {
       ? (product.images[0] as string)
       : null
 
+  const asset = thumb && product.assets ? product.assets[thumb] : null
+
   const price = Number(product.kenyon_price ?? 0)
   const old = product.full_price != null ? Number(product.full_price) : null
   const hasDiscount = old != null && old > price
@@ -129,13 +133,11 @@ function DealsProductCard({ product }: { product: Product }) {
 
   return (
     <article className="p_con">
-      <p className="p_con__category">
-        <LocationLabel product={product} />
-      </p>
+      <ProductLocation city={product.city} className="p_con__category" />
 
       <div className="p_con__title-wrap">
         <Link href={`/product/${product.slug}`} className="hover:underline">
-          <h2 className="p_con__title">{product.name_he}</h2>
+          <h2 className="p_con__title text-product-title">{product.name_he}</h2>
         </Link>
       </div>
 
@@ -193,12 +195,16 @@ function DealsProductCard({ product }: { product: Product }) {
           {thumb ? (
             <Image
               src={thumb}
-              alt={product.name_he}
+              alt={asset?.alt ?? product.name_he}
               width={400}
               height={245}
               sizes={DEAL_IMAGE_SIZES}
               quality={50}
+              loading="lazy"
               className="p_con__image"
+              {...(asset?.blurDataURL
+                ? { placeholder: 'blur' as const, blurDataURL: asset.blurDataURL }
+                : {})}
             />
           ) : null}
         </Link>
@@ -219,16 +225,15 @@ function DealsProductCard({ product }: { product: Product }) {
       </div>
 
       <div className="p_con__footer">
-        {hasDiscount && old != null ? (
+        {product.kenyon_price != null && (
           <div className="p_con__prices">
-            <span className="p_con__strike">{shekelsFromIls(old)}</span>
-            <span className="p_con__sale">{shekelsFromIls(price)}</span>
-          </div>
-        ) : (
-          <div className="p_con__prices">
-            {product.kenyon_price != null && (
-              <span className="p_con__single-price">{shekelsFromIls(price)}</span>
-            )}
+            <PriceDisplay
+              price={price}
+              originalPrice={hasDiscount ? old : undefined}
+              showSavingsBadge={false}
+              allowHebrewNumerals={false}
+              className="w-full"
+            />
           </div>
         )}
 
@@ -261,6 +266,8 @@ function DefaultProductCard({ product }: { product: Product }) {
       ? (product.images[0] as string)
       : null
 
+  const asset = thumb && product.assets ? product.assets[thumb] : null
+
   const price = Number(product.kenyon_price ?? 0)
   const old = product.full_price != null ? Number(product.full_price) : null
   const hasDiscount = old != null && old > price
@@ -268,11 +275,9 @@ function DefaultProductCard({ product }: { product: Product }) {
   const canAdd = product.kenyon_price != null && !outOfStock
 
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-100 bg-white">
+    <div className="product-card overflow-hidden border border-gray-100 bg-white [border-radius:var(--radius-card)]">
       <div className="space-y-2 p-3">
-        <div className="block text-xs text-muted-2 line-clamp-1">
-          <LocationLabel product={product} />
-        </div>
+        <ProductLocation city={product.city} className="flex text-xs" />
 
         <Link
           href={`/product/${product.slug}`}
@@ -292,8 +297,9 @@ function DefaultProductCard({ product }: { product: Product }) {
           {thumb ? (
             <Image
               src={thumb}
-              alt={product.name_he}
+              alt={asset?.alt ?? product.name_he}
               fill
+              loading="lazy"
               /**
                * MEASURED, not declared. The only live consumer of this variant
                * is `RelatedProducts` on the product page, whose grid is
@@ -321,6 +327,9 @@ function DefaultProductCard({ product }: { product: Product }) {
                */
               sizes="(max-width: 639px) calc(50vw - 47px), (max-width: 1023px) calc(33.33vw - 44px), 204px"
               className="object-cover"
+              {...(asset?.blurDataURL
+                ? { placeholder: 'blur' as const, blurDataURL: asset.blurDataURL }
+                : {})}
             />
           ) : (
             <span className="text-5xl">📦</span>
@@ -335,27 +344,21 @@ function DefaultProductCard({ product }: { product: Product }) {
         </Link>
 
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex flex-wrap items-baseline gap-2">
-            {hasDiscount && old != null && (
-              <span className="text-sm text-deal-price line-through">{shekelsFromIls(old)}</span>
-            )}
-            <span
-              className={
-                hasDiscount
-                  ? 'text-base font-bold text-price'
-                  : 'text-base font-bold text-deal-price'
-              }
-            >
-              {shekelsFromIls(price)}
-            </span>
-          </div>
+          <PriceDisplay
+            price={price}
+            originalPrice={hasDiscount ? old : undefined}
+            showSavingsBadge={hasDiscount}
+            allowHebrewNumerals={true}
+            className=""
+            priceClassName="text-base font-bold text-price"
+          />
 
           {canAdd && (
             <AddToCartButton
               productId={product.id}
               productName={product.name_he}
               priceAgorot={Math.round(Number(product.kenyon_price ?? 0) * 100)}
-              className="rounded-lg bg-brand-primary px-3 py-1.5 text-xs font-bold text-brand-dark hover:bg-brand-primary-hover transition-colors"
+              className="bg-brand-primary px-3 py-1.5 text-xs font-bold text-brand-dark hover:bg-brand-primary-hover transition-colors [border-radius:var(--radius-button)]"
             >
               הוסף לסל
             </AddToCartButton>

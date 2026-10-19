@@ -1,6 +1,6 @@
 'use client'
 
-import { CardVerificationStep } from '@/components/checkout/CardVerificationStep'
+import TurnstileWidget from '@/components/shared/TurnstileWidget'
 import { trackCommerce } from '@/lib/analytics/commerce-client'
 import { getCheckoutVariant } from '@/lib/analytics/feature-flags'
 import { track } from '@/lib/analytics/tracker'
@@ -23,6 +23,7 @@ import {
 import { clampWalletIls } from '@/lib/checkout/wallet-input'
 import { type Agorot, parseIls, sumAgorot } from '@/lib/money'
 import { shekels } from '@/lib/money-format'
+import { resetTurnstile } from '@/lib/security/turnstile-client'
 import { type AuthState, signInWithGoogle } from '@/server/actions/auth'
 import { type CheckoutFormState, submitCheckout } from '@/server/actions/payments/checkout'
 import { useActionState, useEffect, useRef, useState } from 'react'
@@ -148,6 +149,10 @@ export default function CheckoutForm({
     submitCheckout,
     null,
   )
+  // A failed submit spent the Turnstile token; give the retry a fresh one.
+  useEffect(() => {
+    if (state && 'error' in state) resetTurnstile()
+  }, [state])
   const [googleState, googleAction, googlePending] = useActionState<AuthState, FormData>(
     signInWithGoogle,
     null,
@@ -821,6 +826,10 @@ export default function CheckoutForm({
                           placeholder="מזל טוב! בקיצור, תיהנו."
                         />
                       </div>
+                      <div className="checkout-field">
+                        <label htmlFor="co-gift-date">מתי לשלוח? (אפשר להשאיר ריק)</label>
+                        <input id="co-gift-date" name="gift_send_date" type="date" dir="ltr" />
+                      </div>
                       <p className="checkout-privacy">
                         אחרי התשלום יישלח למקבל מייל עם קישור אישי לקבלת הקופון. עד שהוא ייאסף
                         הקופון נשאר בחשבון שלכם.
@@ -1068,6 +1077,9 @@ export default function CheckoutForm({
                     {authError}
                   </div>
                 )}
+
+                {/* rc5 F19: bot check; renders nothing without a site key. */}
+                <TurnstileWidget />
 
                 <button type="submit" className="checkout-pay-btn" disabled={busy}>
                   {busy

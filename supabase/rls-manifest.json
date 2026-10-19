@@ -6,27 +6,33 @@
     "Re-measure with `node scripts/check-rls.mjs`, or with the SQL in docs/AUTH-MODEL.md.",
     "src/lib/auth/rls-manifest.test.ts is the CI gate that reads this file."
   ],
-  "measured_at": "2026-08-19",
-  "reverified_at": "2026-08-20",
-  "$reverified_comment": "Re-measured against the same production project on 2026-08-20 via a read-only pg_class/pg_policy query. 53 tables both sides, zero drift in rls_enabled or policy_count, and the eight zero-policy tables still match service_role_only exactly.",
+  "measured_at": "2026-09-07",
+  "reverified_at": "2026-09-07",
+  "$reverified_comment": [
+    "Re-measured against production on 2026-09-07 through the Supabase MCP, read only,",
+    "with the query scripts/check-rls.mjs --sql prints. 53 tables became 71: eighteen",
+    "arrived with migrations applied since 2026-08-19 (refunds, reviews, wishlists,",
+    "subscriptions and its charges, the four report_* rollups, supplier_branches,",
+    "search_index_outbox, payout_statements and its lines, and the rest).",
+    "RLS is on for all 71 and every one of them now has at least one policy.",
+    "",
+    "THE EIGHT ZERO-POLICY TABLES ARE NO LONGER ZERO-POLICY, and that is 122 landing,",
+    "not a loosening: seven carry `deny_all_client_roles`, RESTRICTIVE, ALL commands,",
+    "anon+authenticated, USING false WITH CHECK false. Deny-by-default is now stated",
+    "instead of implied, so `client_locked` below records the LOCK rather than a count.",
+    "",
+    "payment_webhook_events is the one real change: it now carries a PERMISSIVE SELECT",
+    "for authenticated where is_admin(), so an admin can read the webhook journal. It",
+    "is therefore not client-locked any more and has moved out of the list."
+  ],
   "project_ref": "ixvwfbuvfxxsjiywhbbb",
   "schema": "public",
   "service_role_only": {
     "$comment": [
-      "RLS on with zero policies is not a gap. Postgres denies every row to every",
-      "non-superuser role when a table has RLS and no policy matches, so these tables",
-      "are reachable only by the service key and by SECURITY DEFINER functions.",
-      "That is deny-by-default and it is the intent. Adding policies here to satisfy",
-      "the advisor's rls_enabled_no_policy INFO would LOOSEN them."
-    ],
-    "legacy_percent_archive_112": "frozen pre-112 commission snapshot; nobody reads it at runtime",
-    "payment_webhook_events": "Cardcom webhook journal; written by the webhook route on the service key",
-    "rate_limits": "counters, reached only through the SECURITY DEFINER check_rate_limit()",
-    "referral_signals": "raw attribution signals; aggregated into referrals before anyone sees them",
-    "search_index_dlq": "failed index jobs; drained by the cron route on CRON_SECRET",
-    "settlement_events": "money ledger; written by settlement code, never by a browser",
-    "stock_reservations": "held by the checkout server path and reaped by cron",
-    "user_rate_limits": "per-user counters for check_user_rate_limit(), which is not granted to authenticated"
+      "SUPERSEDED on 2026-09-07 by client_locked, which records the lock and not a",
+      "policy count. Kept as an empty map rather than deleted so a reader who",
+      "remembers the old key finds this note instead of a stale list."
+    ]
   },
   "tables": [
     {
@@ -40,9 +46,24 @@
       "policy_count": 4
     },
     {
+      "table_name": "ai_usage",
+      "rls_enabled": true,
+      "policy_count": 1
+    },
+    {
+      "table_name": "analytics_events",
+      "rls_enabled": true,
+      "policy_count": 1
+    },
+    {
       "table_name": "audit_log",
       "rls_enabled": true,
       "policy_count": 4
+    },
+    {
+      "table_name": "banners",
+      "rls_enabled": true,
+      "policy_count": 2
     },
     {
       "table_name": "carts",
@@ -95,6 +116,11 @@
       "policy_count": 1
     },
     {
+      "table_name": "homepage_sections",
+      "rls_enabled": true,
+      "policy_count": 2
+    },
+    {
       "table_name": "invoices",
       "rls_enabled": true,
       "policy_count": 1
@@ -102,7 +128,7 @@
     {
       "table_name": "legacy_percent_archive_112",
       "rls_enabled": true,
-      "policy_count": 0
+      "policy_count": 1
     },
     {
       "table_name": "media_assets",
@@ -130,6 +156,11 @@
       "policy_count": 4
     },
     {
+      "table_name": "payment_events",
+      "rls_enabled": true,
+      "policy_count": 2
+    },
+    {
       "table_name": "payment_tokens",
       "rls_enabled": true,
       "policy_count": 3
@@ -137,12 +168,22 @@
     {
       "table_name": "payment_webhook_events",
       "rls_enabled": true,
-      "policy_count": 0
+      "policy_count": 1
     },
     {
       "table_name": "payments",
       "rls_enabled": true,
       "policy_count": 1
+    },
+    {
+      "table_name": "payout_statement_lines",
+      "rls_enabled": true,
+      "policy_count": 2
+    },
+    {
+      "table_name": "payout_statements",
+      "rls_enabled": true,
+      "policy_count": 2
     },
     {
       "table_name": "popular_searches",
@@ -177,7 +218,7 @@
     {
       "table_name": "rate_limits",
       "rls_enabled": true,
-      "policy_count": 0
+      "policy_count": 1
     },
     {
       "table_name": "referral_program_settings",
@@ -187,10 +228,40 @@
     {
       "table_name": "referral_signals",
       "rls_enabled": true,
-      "policy_count": 0
+      "policy_count": 1
     },
     {
       "table_name": "referrals",
+      "rls_enabled": true,
+      "policy_count": 4
+    },
+    {
+      "table_name": "refunds",
+      "rls_enabled": true,
+      "policy_count": 2
+    },
+    {
+      "table_name": "report_cohort_retention",
+      "rls_enabled": true,
+      "policy_count": 1
+    },
+    {
+      "table_name": "report_orders_daily",
+      "rls_enabled": true,
+      "policy_count": 1
+    },
+    {
+      "table_name": "report_revenue_daily",
+      "rls_enabled": true,
+      "policy_count": 1
+    },
+    {
+      "table_name": "report_top_products",
+      "rls_enabled": true,
+      "policy_count": 1
+    },
+    {
+      "table_name": "reviews",
       "rls_enabled": true,
       "policy_count": 4
     },
@@ -202,7 +273,12 @@
     {
       "table_name": "search_index_dlq",
       "rls_enabled": true,
-      "policy_count": 0
+      "policy_count": 1
+    },
+    {
+      "table_name": "search_index_outbox",
+      "rls_enabled": true,
+      "policy_count": 1
     },
     {
       "table_name": "seo_redirects",
@@ -212,7 +288,7 @@
     {
       "table_name": "settlement_events",
       "rls_enabled": true,
-      "policy_count": 0
+      "policy_count": 1
     },
     {
       "table_name": "split_executions",
@@ -222,7 +298,22 @@
     {
       "table_name": "stock_reservations",
       "rls_enabled": true,
-      "policy_count": 0
+      "policy_count": 1
+    },
+    {
+      "table_name": "subscription_charges",
+      "rls_enabled": true,
+      "policy_count": 1
+    },
+    {
+      "table_name": "subscriptions",
+      "rls_enabled": true,
+      "policy_count": 2
+    },
+    {
+      "table_name": "supplier_branches",
+      "rls_enabled": true,
+      "policy_count": 3
     },
     {
       "table_name": "supplier_leads",
@@ -252,7 +343,7 @@
     {
       "table_name": "user_rate_limits",
       "rls_enabled": true,
-      "policy_count": 0
+      "policy_count": 1
     },
     {
       "table_name": "user_recent_searches",
@@ -282,7 +373,7 @@
     {
       "table_name": "wallet_balances",
       "rls_enabled": true,
-      "policy_count": 4
+      "policy_count": 1
     },
     {
       "table_name": "wallet_entries",
@@ -292,18 +383,25 @@
     {
       "table_name": "wallet_transactions",
       "rls_enabled": true,
-      "policy_count": 4
+      "policy_count": 1
+    },
+    {
+      "table_name": "wishlists",
+      "rls_enabled": true,
+      "policy_count": 1
     }
   ],
   "write_policies": {
     "$what": "Every policy in public whose cmd is not SELECT, measured against production.",
     "$why": "rls-manifest.json counts policies. A count cannot say whether a ledger or an audit trail can be REWRITTEN through PostgREST, which is the question the voucher redemption trail, order_items and the wallet ledger each turn on.",
-    "$measured_at": "2026-08-19",
+    "$measured_at": "2026-09-07",
     "$project_ref": "ixvwfbuvfxxsjiywhbbb",
     "$how": "node scripts/check-rls.mjs --sql-writes | run through Supabase MCP | node scripts/check-rls.mjs --writes --from rows.json",
     "$no_write_policy_means": "RLS is on and no policy grants the command, so Postgres denies it for every non-superuser role. Writes reach these tables only through the service role or a SECURITY DEFINER function. That is the tightest state available, not a gap.",
     "no_write_policy": [
       "abandoned_cart_nudges",
+      "ai_usage",
+      "analytics_events",
       "coupon_codes",
       "coupons",
       "discount_campaigns",
@@ -311,26 +409,28 @@
       "email_suppressions",
       "escrow_holds",
       "invoices",
-      "legacy_percent_archive_112",
       "newsletter_subscribers",
       "notification_outbox",
+      "payment_events",
       "payment_webhook_events",
       "payments",
-      "rate_limits",
       "referral_program_settings",
-      "referral_signals",
+      "refunds",
+      "report_cohort_retention",
+      "report_orders_daily",
+      "report_revenue_daily",
+      "report_top_products",
       "search_events",
-      "search_index_dlq",
       "seo_redirects",
-      "settlement_events",
       "split_executions",
-      "stock_reservations",
+      "subscription_charges",
       "supplier_staff",
-      "user_rate_limits",
       "voucher_redemptions",
       "vouchers",
       "wallet_accounts",
-      "wallet_entries"
+      "wallet_balances",
+      "wallet_entries",
+      "wallet_transactions"
     ],
     "policies": [
       {
@@ -374,6 +474,13 @@
         "cmd": "UPDATE",
         "qual": "false",
         "with_check": ""
+      },
+      {
+        "tablename": "banners",
+        "policyname": "banners: staff write",
+        "cmd": "ALL",
+        "qual": "has_role('admin'::text)",
+        "with_check": "has_role('admin'::text)"
       },
       {
         "tablename": "carts",
@@ -444,6 +551,20 @@
         "cmd": "UPDATE",
         "qual": "is_admin()",
         "with_check": "is_admin()"
+      },
+      {
+        "tablename": "homepage_sections",
+        "policyname": "homepage_sections: staff write",
+        "cmd": "ALL",
+        "qual": "has_role('admin'::text)",
+        "with_check": "has_role('admin'::text)"
+      },
+      {
+        "cmd": "ALL",
+        "qual": "false",
+        "with_check": "false",
+        "policyname": "deny_all_client_roles",
+        "tablename": "legacy_percent_archive_112"
       },
       {
         "tablename": "media_assets",
@@ -521,6 +642,20 @@
         "cmd": "UPDATE",
         "qual": "(profile_id = ( SELECT auth.uid() AS uid))",
         "with_check": "(profile_id = ( SELECT auth.uid() AS uid))"
+      },
+      {
+        "tablename": "payout_statement_lines",
+        "policyname": "payout_lines: admin all",
+        "cmd": "ALL",
+        "qual": "is_admin()",
+        "with_check": "is_admin()"
+      },
+      {
+        "tablename": "payout_statements",
+        "policyname": "payout_statements: admin all",
+        "cmd": "ALL",
+        "qual": "is_admin()",
+        "with_check": "is_admin()"
       },
       {
         "tablename": "popular_searches",
@@ -635,6 +770,20 @@
         "with_check": "(user_id = ( SELECT auth.uid() AS uid))"
       },
       {
+        "cmd": "ALL",
+        "qual": "false",
+        "with_check": "false",
+        "policyname": "deny_all_client_roles",
+        "tablename": "rate_limits"
+      },
+      {
+        "cmd": "ALL",
+        "qual": "false",
+        "with_check": "false",
+        "policyname": "deny_all_client_roles",
+        "tablename": "referral_signals"
+      },
+      {
         "tablename": "referrals",
         "policyname": "referrals_delete_unified",
         "cmd": "DELETE",
@@ -654,6 +803,69 @@
         "cmd": "UPDATE",
         "qual": "is_admin()",
         "with_check": "is_admin()"
+      },
+      {
+        "tablename": "reviews",
+        "policyname": "reviews_owner_delete",
+        "cmd": "DELETE",
+        "qual": "(user_id = ( SELECT auth.uid() AS uid))",
+        "with_check": ""
+      },
+      {
+        "tablename": "reviews",
+        "policyname": "reviews_owner_insert_verified",
+        "cmd": "INSERT",
+        "qual": "",
+        "with_check": "((user_id = ( SELECT auth.uid() AS uid)) AND (status = 'pending'::text) AND (EXISTS ( SELECT 1\n   FROM (order_items oi\n     JOIN orders o ON ((o.id = oi.order_id)))\n  WHERE ((oi.id = reviews.order_item_id) AND (oi.product_id = reviews.product_id) AND (o.user_id = ( SELECT auth.uid() AS uid)) AND (o.status = ANY (ARRAY['paid'::order_status, 'partially_fulfilled'::order_status, 'fulfilled'::order_status, 'platform_settled'::order_status]))))))"
+      },
+      {
+        "cmd": "ALL",
+        "qual": "false",
+        "with_check": "false",
+        "policyname": "deny_all_client_roles",
+        "tablename": "search_index_dlq"
+      },
+      {
+        "cmd": "ALL",
+        "qual": "false",
+        "with_check": "false",
+        "policyname": "deny_all_client_roles",
+        "tablename": "search_index_outbox"
+      },
+      {
+        "cmd": "ALL",
+        "qual": "false",
+        "with_check": "false",
+        "policyname": "deny_all_client_roles",
+        "tablename": "settlement_events"
+      },
+      {
+        "cmd": "ALL",
+        "qual": "false",
+        "with_check": "false",
+        "policyname": "deny_all_client_roles",
+        "tablename": "stock_reservations"
+      },
+      {
+        "tablename": "subscriptions",
+        "policyname": "subscriptions_owner_update",
+        "cmd": "UPDATE",
+        "qual": "((user_id = ( SELECT auth.uid() AS uid)) OR is_admin())",
+        "with_check": "((user_id = ( SELECT auth.uid() AS uid)) OR is_admin())"
+      },
+      {
+        "tablename": "supplier_branches",
+        "policyname": "supplier_branches_admin_all",
+        "cmd": "ALL",
+        "qual": "(current_user_role() = ANY (ARRAY['admin'::user_role, 'super_admin'::user_role]))",
+        "with_check": "(current_user_role() = ANY (ARRAY['admin'::user_role, 'super_admin'::user_role]))"
+      },
+      {
+        "tablename": "supplier_branches",
+        "policyname": "supplier_branches_member_write",
+        "cmd": "ALL",
+        "qual": "(EXISTS ( SELECT 1\n   FROM supplier_members m\n  WHERE ((m.supplier_id = supplier_branches.supplier_id) AND (m.user_id = ( SELECT auth.uid() AS uid)) AND m.is_active AND (m.member_role = ANY (ARRAY['owner'::supplier_member_role, 'manager'::supplier_member_role])))))",
+        "with_check": "(EXISTS ( SELECT 1\n   FROM supplier_members m\n  WHERE ((m.supplier_id = supplier_branches.supplier_id) AND (m.user_id = ( SELECT auth.uid() AS uid)) AND m.is_active AND (m.member_role = ANY (ARRAY['owner'::supplier_member_role, 'manager'::supplier_member_role])))))"
       },
       {
         "tablename": "supplier_leads",
@@ -726,6 +938,13 @@
         "with_check": "(is_admin() OR (user_id = ( SELECT auth.uid() AS uid)))"
       },
       {
+        "cmd": "ALL",
+        "qual": "false",
+        "with_check": "false",
+        "policyname": "deny_all_client_roles",
+        "tablename": "user_rate_limits"
+      },
+      {
         "tablename": "user_recent_searches",
         "policyname": "user_recent_searches: own delete",
         "cmd": "DELETE",
@@ -754,47 +973,61 @@
         "with_check": "(current_user_role() = 'super_admin'::user_role)"
       },
       {
-        "tablename": "wallet_balances",
-        "policyname": "wallet_balances_delete_unified",
-        "cmd": "DELETE",
-        "qual": "is_admin()",
-        "with_check": ""
-      },
-      {
-        "tablename": "wallet_balances",
-        "policyname": "wallet_balances_insert_unified",
-        "cmd": "INSERT",
-        "qual": "",
-        "with_check": "is_admin()"
-      },
-      {
-        "tablename": "wallet_balances",
-        "policyname": "wallet_balances_update_unified",
-        "cmd": "UPDATE",
-        "qual": "is_admin()",
-        "with_check": "is_admin()"
-      },
-      {
-        "tablename": "wallet_transactions",
-        "policyname": "wallet_transactions_delete_unified",
-        "cmd": "DELETE",
-        "qual": "is_admin()",
-        "with_check": ""
-      },
-      {
-        "tablename": "wallet_transactions",
-        "policyname": "wallet_transactions_insert_unified",
-        "cmd": "INSERT",
-        "qual": "",
-        "with_check": "is_admin()"
-      },
-      {
-        "tablename": "wallet_transactions",
-        "policyname": "wallet_transactions_update_unified",
-        "cmd": "UPDATE",
-        "qual": "is_admin()",
-        "with_check": "is_admin()"
+        "tablename": "wishlists",
+        "policyname": "wishlists_owner_all",
+        "cmd": "ALL",
+        "qual": "(user_id = ( SELECT auth.uid() AS uid))",
+        "with_check": "(user_id = ( SELECT auth.uid() AS uid))"
       }
+    ],
+    "$comment": [
+      "Every non-SELECT policy in public, measured 2026-09-07 through the Supabase MCP",
+      "with the query `scripts/check-rls.mjs --sql-writes` prints. A policy COUNT cannot",
+      "say whether a ledger can be rewritten through PostgREST; these predicates can.",
+      "",
+      "Two tables LOST their write policies since 2026-08-19 and that is a tightening,",
+      "not a gap: wallet_balances and wallet_transactions became client read-only with",
+      "migration 168, so no client role can write the wallet ledger at all any more.",
+      "Sixteen gained them, most of which are 122's explicit deny_all_client_roles on",
+      "the server-only tables, plus the feature tables added since (reviews, wishlists,",
+      "subscriptions, supplier_branches, the payout statements, search_index_outbox)."
     ]
+  },
+  "client_locked": {
+    "$comment": [
+      "Tables no client role can read or write. The lock is either NO POLICY AT ALL",
+      "(RLS on with nothing matching denies everyone) or an explicit RESTRICTIVE",
+      "deny_all_client_roles. Both are the tightest state available; the second one",
+      "says so out loud, which is why 122 added it.",
+      "Each entry carries the lock as measured on 2026-09-07 and the reason it holds."
+    ],
+    "legacy_percent_archive_112": {
+      "lock": "deny_all_client_roles",
+      "reason": "The pre-112 percent archive. It exists to answer \"what did this row say before the split was unified\"; nothing on the site reads it and nobody outside an incident should."
+    },
+    "rate_limits": {
+      "lock": "deny_all_client_roles",
+      "reason": "The IP-keyed rate limit counters. A client that could read them learns the window and the remaining budget; one that could write them turns the limiter off for itself."
+    },
+    "user_rate_limits": {
+      "lock": "deny_all_client_roles",
+      "reason": "The per-user counters behind check_user_rate_limit, including the voucher scan budget. Same reasoning as rate_limits, and this one gates money-adjacent scanning."
+    },
+    "referral_signals": {
+      "lock": "deny_all_client_roles",
+      "reason": "The device and IP fingerprints the referral fraud guard matches on. Readable by a client, they are a map of how to avoid the guard."
+    },
+    "search_index_dlq": {
+      "lock": "deny_all_client_roles",
+      "reason": "Failed search index jobs, replayed by a cron route under the service role. No client has a reason to see the queue or a way to be trusted with editing it."
+    },
+    "settlement_events": {
+      "lock": "deny_all_client_roles",
+      "reason": "The money ledger the platform settles from. Append-only through the service role; a client write here is a claim about money that nothing else would contradict."
+    },
+    "stock_reservations": {
+      "lock": "deny_all_client_roles",
+      "reason": "Held stock during checkout. A client that could write these could reserve the whole catalogue, and one that could read them can see other shoppers carts."
+    }
   }
 }

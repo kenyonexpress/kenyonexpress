@@ -1,3 +1,4 @@
+import { getAllCategories } from '@/lib/category-page'
 import Link from 'next/link'
 
 /**
@@ -19,42 +20,99 @@ export const metadata = {
   robots: { index: false, follow: true },
 }
 
-export default function NotFound() {
-  return (
-    <main dir="rtl" className="mx-auto flex max-w-lg flex-col items-center px-4 py-20 text-center">
-      <p className="text-6xl font-black text-brand-primary" aria-hidden="true">
-        404
-      </p>
-      <h1 className="mt-4 text-2xl font-bold text-gray-900">הדף שחיפשתם לא נמצא</h1>
-      <p className="mt-2 text-sm leading-relaxed text-gray-500">
-        ייתכן שהקישור ישן, שהמוצר כבר לא במלאי, או שנפלה שגיאת הקלדה בכתובת.
-      </p>
+export default async function NotFound() {
+  const allCategories = await getAllCategories()
+  // Show first 8 categories as "popular"
+  const popularCategories = allCategories.slice(0, 8)
 
-      <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-        <Link
-          href="/products"
-          className="rounded-xl bg-gray-900 px-6 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90"
-        >
-          לכל המוצרים
-        </Link>
-        {/* Was a "חיפוש באתר" link to /search. The standing project rule is
-            that there is no search UI anywhere, and after the D3 sweep took the
-            field out of the header this 404 was the last entry point to it left
-            in the storefront. The categories page is the honest destination for
-            "I could not find the thing I wanted". */}
-        <Link
-          href="/products?view=categories"
-          className="rounded-xl border border-border px-6 py-3 text-sm font-bold text-heading transition-colors hover:bg-surface-hover"
-        >
-          עיון בקטגוריות
-        </Link>
-        <Link
-          href="/"
-          className="rounded-xl px-6 py-3 text-sm font-bold text-gray-500 transition-colors hover:text-gray-900"
-        >
-          לדף הבית
-        </Link>
+  return (
+    <main dir="rtl" className="w-full bg-brand-accent">
+      {/* Header section with 404 message */}
+      <div className="mx-auto max-w-7xl px-4 py-16 sm:py-24">
+        <div className="mb-12 text-center">
+          <p className="text-8xl font-black text-brand-primary" aria-hidden="true">
+            404
+          </p>
+          <h1 className="mt-6 text-4xl font-bold text-heading">הדף שחיפשתם לא נמצא</h1>
+          <p className="mt-4 text-lg leading-relaxed text-muted">
+            ייתכן שהקישור ישן, שהמוצר כבר לא במלאי, או שנפלה שגיאת הקלדה בכתובת.
+          </p>
+        </div>
+
+        {/* Search bar */}
+        <div className="mb-12">
+          <form action="/search" method="GET" className="mx-auto max-w-xl">
+            <div className="relative">
+              <input
+                type="text"
+                name="q"
+                placeholder="חפשו מוצר..."
+                className="w-full rounded-lg border border-border bg-white px-4 py-3 text-right text-base placeholder-muted focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/20"
+                autoComplete="off"
+              />
+              <button
+                type="submit"
+                className="absolute inset-y-0 left-0 flex items-center rounded-r-lg bg-brand-primary px-4 font-bold text-brand-dark transition-opacity hover:opacity-90"
+              >
+                חיפוש
+              </button>
+            </div>
+          </form>
+        </div>
+
+        {/* Action buttons */}
+        <div className="mb-16 flex flex-wrap items-center justify-center gap-4">
+          <Link
+            href="/products"
+            className="inline-block rounded-lg bg-brand-dark px-8 py-3 text-base font-bold text-white transition-transform hover:scale-105"
+          >
+            לכל המוצרים
+          </Link>
+          <Link
+            href="/products?view=categories"
+            className="inline-block rounded-lg border-2 border-brand-dark px-8 py-3 text-base font-bold text-brand-dark transition-colors hover:bg-brand-dark hover:text-white"
+          >
+            עיון בקטגוריות
+          </Link>
+          <Link
+            href="/"
+            className="inline-block rounded-lg bg-brand-primary px-8 py-3 text-base font-bold text-brand-dark transition-transform hover:scale-105"
+          >
+            לדף הבית
+          </Link>
+        </div>
       </div>
+
+      {/* Popular categories section */}
+      {popularCategories.length > 0 && (
+        <div className="bg-white">
+          <div className="mx-auto max-w-7xl px-4 py-16 sm:py-24">
+            <h2 className="mb-12 text-center text-3xl font-bold text-heading">
+              קטגוריות פופולריות
+            </h2>
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+              {popularCategories.map((category) => (
+                <Link
+                  key={category.slug}
+                  href={`/category/${category.slug}`}
+                  className="group relative flex flex-col overflow-hidden rounded-lg border border-border bg-surface transition-all hover:shadow-lg"
+                >
+                  <div className="relative aspect-square w-full overflow-hidden bg-surface-hover">
+                    <div className="flex h-full items-center justify-center bg-gradient-to-br from-brand-accent to-brand-accent/50">
+                      <span className="text-sm font-semibold text-heading">{category.name_he}</span>
+                    </div>
+                  </div>
+                  <div className="p-4 text-center">
+                    <h3 className="transition-colors font-semibold text-heading group-hover:text-brand-primary">
+                      {category.name_he}
+                    </h3>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   )
 }

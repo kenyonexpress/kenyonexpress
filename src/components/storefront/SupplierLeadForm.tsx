@@ -1,12 +1,14 @@
 'use client'
 
+import TurnstileWidget from '@/components/shared/TurnstileWidget'
+import { resetTurnstile } from '@/lib/security/turnstile-client'
 import { type SupplierLeadState, submitSupplierLead } from '@/server/actions/supplier-lead'
-import { useActionState } from 'react'
+import { useActionState, useEffect } from 'react'
 
 const INITIAL: SupplierLeadState = { ok: false }
 
 const FIELD =
-  'w-full rounded-lg border border-heading/20 px-3 py-2.5 text-base text-heading placeholder:text-heading/40 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/40'
+  'w-full rounded-lg border border-heading/20 px-3 py-2.5 text-base text-heading placeholder:text-heading/75 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/40'
 const LABEL = 'mb-1 block text-sm font-medium text-heading'
 
 /**
@@ -22,8 +24,22 @@ const LABEL = 'mb-1 block text-sm font-medium text-heading'
  * because the trick is old, and an off-screen field is still "visible" to them.
  * `tabIndex={-1}` and `autoComplete="off"` keep a human from ever reaching it.
  */
-export default function SupplierLeadForm() {
+export default function SupplierLeadForm({
+  agreementHash,
+  agreementVersion,
+  clauses,
+}: {
+  agreementHash: string
+  agreementVersion: string
+  clauses: readonly string[]
+}) {
   const [state, action, pending] = useActionState(submitSupplierLead, INITIAL)
+
+  // The ₪1 card verification happens on Cardcom's hosted page.
+  useEffect(() => {
+    if (state.ok && state.redirectUrl) window.location.assign(state.redirectUrl)
+    if (state.error) resetTurnstile()
+  }, [state])
 
   if (state.ok && state.message) {
     return (
@@ -82,7 +98,7 @@ export default function SupplierLeadForm() {
             inputMode="tel"
             autoComplete="tel"
             placeholder="050-1234567"
-            className={`${FIELD} text-right`}
+            className={`${FIELD} text-end`}
           />
         </div>
         <div>
@@ -97,7 +113,7 @@ export default function SupplierLeadForm() {
             dir="ltr"
             inputMode="email"
             autoComplete="email"
-            className={`${FIELD} text-right`}
+            className={`${FIELD} text-end`}
           />
         </div>
         <div>
@@ -137,7 +153,7 @@ export default function SupplierLeadForm() {
           inputMode="url"
           maxLength={200}
           placeholder="https://"
-          className={`${FIELD} text-right`}
+          className={`${FIELD} text-end`}
         />
       </div>
 
@@ -165,6 +181,23 @@ export default function SupplierLeadForm() {
         <input id="lead-company" name="company" tabIndex={-1} autoComplete="off" />
       </div>
 
+      <fieldset className="rounded-lg border border-heading/15 p-4">
+        <legend className="px-1 text-sm font-semibold text-heading">
+          הסכם הצטרפות, גרסה {agreementVersion}
+        </legend>
+        <ol className="list-decimal space-y-1 ps-5 text-sm text-heading/80">
+          {clauses.map((clause) => (
+            <li key={clause}>{clause}</li>
+          ))}
+        </ol>
+        <input type="hidden" name="agreement_hash" value={agreementHash} />
+        <label className="mt-3 flex min-h-11 items-center gap-3 text-sm text-heading">
+          <input type="checkbox" name="agreement" required className="h-6 w-6 shrink-0" />
+          <span>קראתי ואני מאשר את הסכם ההצטרפות</span>
+        </label>
+      </fieldset>
+
+      <TurnstileWidget />
       <button
         type="submit"
         disabled={pending}
@@ -173,7 +206,7 @@ export default function SupplierLeadForm() {
         {pending ? 'שולח...' : 'שליחת פרטים'}
       </button>
 
-      <p className="text-xs text-heading/60">הפרטים משמשים ליצירת קשר בנוגע להצטרפות בלבד.</p>
+      <p className="text-xs text-heading/75">הפרטים משמשים ליצירת קשר בנוגע להצטרפות בלבד.</p>
     </form>
   )
 }

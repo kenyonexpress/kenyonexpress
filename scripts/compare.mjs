@@ -2,10 +2,10 @@ import { spawn } from 'node:child_process'
 import { copyFileSync, existsSync, readFileSync, rmSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { resolve } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { chromium } from '@playwright/test'
-import { REFERENCE, classifyReference, refusalMessage } from './live-reference.mjs'
-import { defaultBaselineFor, recaptureHint } from './parity-baseline.mjs'
-import { GATE_CEILING, appendParityRefusal } from './parity-log.mjs'
+import { loadShortfall } from './load-shortfall.mjs'
+import { appendParityFailure } from './parity-log.mjs'
 
 // Usage: node scripts/compare.mjs [--page=home|product|category|products|search|cart|checkout]
 //                                 [--live=<url>] [--mine=<url>]
@@ -206,22 +206,82 @@ const LIVE_CART = 'https://kenyonexpress.co.il/cart/'
 // the same id refs/checkout-measured.json was measured against, so the order
 // panel holds one line on both runs.
 const LIVE_ATC_ID = process.env.LIVE_ATC_ID ?? '6166'
-// EVERY LIVE_* ABOVE NAMES A HOST THAT IS NOW OUR OWN DEPLOYMENT.
+// THE LIVE REFERENCE NO LONGER EXISTS, AND THE CONSTANTS ABOVE ARE NOW ARCHIVE
+// LABELS RATHER THAN FETCH TARGETS.
 //
-// Measured 2026-09-09: kenyonexpress.co.il resolves to our Vercel build (0
-// woocommerce markers, 125 `_next` references, our Hebrew title). None of these
-// constants points at the reference any more, and no run against them can
-// produce a fidelity number. They are left in place, unchanged, because the
-// guard in enforceReference() reads what they return and refuses on it, and
-// because they are the addresses to restore if the old site ever answers again.
+// kenyonexpress.co.il stopped serving WordPress: the DNS was cut to Vercel and
+// the host now serves THIS app. Measured 2026-09-08 - zero `wp-content`
+// markers, 158 `_next/static` ones, and every /wp-content/uploads/ path
+// answering 403. Left pointing at the network, this gate compared our local
+// build against our own production deployment and still printed a percentage:
+// 39.76% at 380px, with the height-ratio guard firing at 1.80x.
 //
-// The escape hatch this comment used to offer -- "pass --live=<file url> to use
-// refs/ke_live_singlefile.html" -- names a file that does not exist: not in the
-// tree, not under $HOME, not in the recent backups. The archives that DO exist
-// (refs/ke_live_*.html) pass the identity guard and still cannot be used: their
-// URLs were saved protocol-relative, so 143 subresources fail under file:, and
-// their one stylesheet answers 403. The measurements, and what it would take to
-// have a reference again, are in docs/PARITY-REFERENCE.md.
+// A fidelity score against yourself is worse than no score, so the default is
+// now the snapshot taken while the site WAS live, localized by
+// scripts/localize-live-refs.mjs so its imagery resolves from refs/live-assets/
+// instead of from a host that 403s.
+//
+// `--live=<url>` still overrides, and `COMPARE_USE_NETWORK=1` restores the old
+// behaviour for the day the reference is hosted somewhere again.
+//
+// THE SNAPSHOT IS DEGRADED, AND THE NUMBER IT PRODUCES IS NOT THE OLD NUMBER.
+// Measured 2026-09-08 by loading refs/localized/ke_live_home.html in Chromium:
+// 49 images, ZERO broken - the localizer did its job on imagery - but 96 failed
+// requests. `localize-live-refs.mjs` rewrites only `IMAGE_EXT`, so everything
+// else still resolves to kenyonexpress.co.il/wp-content/, which is gone.
+//
+// CORRECTED 2026-09-08, same day, by counting them instead of describing them.
+// This block said all 96 were fonts. The count was right and the attribution
+// was not. Deterministic over four runs at 380 and 1440:
+//
+//   37  font        Open Sans and two Font Awesome families
+//   57  script      Elementor Pro element-handlers, Electro's theme bundles,
+//                   handlebars, typeahead, iziModal, the minified cache bundles
+//    1  stylesheet  the cached Google-Fonts CSS
+//    1  xhr
+//
+// So the reference does not merely render in fallback type: IT RUNS NONE OF THE
+// THEME'S JAVASCRIPT. Carousels, tabs, the mega-menu and the sticky header
+// never initialise, and the body measures 18146px at 380 against 5492px at
+// 1440. A layout difference read off this snapshot is partly OUR layout and
+// partly a page that never finished becoming itself, and nothing here can say
+// how the two divide. Every run now prints the shortfall next to its
+// percentage, and writes it into the report row, so the figure cannot be
+// quoted bare.
+//
+// Three numbers exist for home at 380 and none of them is interchangeable:
+//   10.68%  historical, against the real WordPress site while it was live
+//   39.76%  network mode today: our build against our own production
+//   30.26%  this snapshot: our build against a reference missing its fonts
+// Read the third as a floor on the diff, not as the gate's 11%.
+const localizedRef = (name) => {
+  const file = resolve(`refs/localized/${name}`)
+  return existsSync(file) ? pathToFileURL(file).href : null
+}
+
+// NO SILENT FALLBACK TO THE NETWORK. `?? networkUrl` was the first shape of this
+// and it re-created the exact bug the block above describes: refs/ is gitignored
+// in its entirety, so refs/localized/ cannot exist on a CI runner, and the
+// fallback would have quietly pointed the gate back at kenyonexpress.co.il -
+// which serves THIS app - and printed a fidelity score against ourselves.
+//
+// That was not hypothetical. The pixel-gate job skips today only because
+// CI_SUPABASE_URL is unset, and setting it is an open MANUAL item. The trap was
+// armed to spring on the day someone did the thing they are being asked to do.
+const REFERENCE = (name, networkUrl) => {
+  if (process.env.COMPARE_USE_NETWORK === '1') return networkUrl
+  const local = localizedRef(name)
+  if (local) return local
+  // One template literal, not concatenated pieces: joining them with `+` is a
+  // recorded way to lose text in this repo.
+  throw new Error(
+    `compare: refs/localized/${name} is missing, so there is nothing to compare against.
+refs/ is gitignored, so this is the expected state on a fresh checkout or a CI runner.
+Rebuild it with scripts/localize-live-refs.mjs, or pass --live=<url> explicitly.
+COMPARE_USE_NETWORK=1 restores the old behaviour, but ${networkUrl} now serves THIS app,
+so that measures the build against its own deployment and the percentage is meaningless.`,
+  )
+}
 
 if (!process.env.PLAYWRIGHT_BROWSERS_PATH) {
   const cache = resolve(homedir(), 'Library/Caches/ms-playwright')
@@ -271,10 +331,10 @@ let liveUrl = argOf('live', null)
 let mineUrl = argOf('mine', null)
 
 if (page === 'home') {
-  liveUrl ??= LIVE_HOME
+  liveUrl ??= REFERENCE('ke_live_home.html', LIVE_HOME)
   mineUrl ??= `${LOCAL}/`
 } else if (page === 'product') {
-  liveUrl ??= LIVE_PRODUCT
+  liveUrl ??= REFERENCE('ke_live_product.html', LIVE_PRODUCT)
   if (!mineUrl) {
     const probe = await ctx.newPage()
     // Pin the local product, the way the category run pins its slug. Falling
@@ -306,7 +366,7 @@ if (page === 'home') {
     await probe.close()
   }
 } else if (page === 'category') {
-  liveUrl ??= LIVE_CATEGORY
+  liveUrl ??= REFERENCE('ke_live_category.html', LIVE_CATEGORY)
   if (!mineUrl) {
     // hot-deals is the live archive's slug and does not exist in the local
     // database, whose categories are baby-kids / vacation / pets / ... . Hard
@@ -329,10 +389,10 @@ if (page === 'home') {
     await probe.close()
   }
 } else if (page === 'products') {
-  liveUrl ??= LIVE_PRODUCTS
+  liveUrl ??= REFERENCE('ke_live_products.html', LIVE_PRODUCTS)
   mineUrl ??= `${LOCAL}/products`
 } else if (page === 'search') {
-  liveUrl ??= LIVE_SEARCH
+  liveUrl ??= REFERENCE('ke_live_search.html', LIVE_SEARCH)
   mineUrl ??= `${LOCAL}/search?q=${encodeURIComponent(COMPARE_QUERY)}`
 } else if (page === 'checkout') {
   // Both checkouts redirect an empty cart away, so neither side can be
@@ -340,7 +400,7 @@ if (page === 'home') {
   // below refuses anything that did not land on /checkout: a picture of the
   // cart scored against a picture of the cart is a low number and no
   // measurement.
-  liveUrl ??= LIVE_CHECKOUT
+  liveUrl ??= REFERENCE('ke_live_checkout.html', LIVE_CHECKOUT)
   mineUrl ??= `${LOCAL}/checkout`
 } else if (page === 'cart') {
   // Unlike checkout, neither cart REDIRECTS when it is empty: both render an
@@ -350,7 +410,7 @@ if (page === 'home') {
   // to score the two states against each other. COMPARE_CART_EMPTY=1 measures
   // the empty state on purpose, which is the only run available while the
   // local add-to-cart is blocked by the stock Supabase demo key.
-  liveUrl ??= LIVE_CART
+  liveUrl ??= REFERENCE('ke_live_cart.html', LIVE_CART)
   mineUrl ??= `${LOCAL}/cart`
 } else {
   console.error(
@@ -411,97 +471,34 @@ const seedCart = async (target) => {
   }
 }
 
-/** A `file:` archive or the old host: the two shapes the reference has ever had. */
-const isExternal = (url) => url.startsWith('file:') || url.includes('kenyonexpress.co.il')
-// WHICH SIDE A PAGE IS ON IS DECIDED BY THE CALLER, NOT BY ITS HOSTNAME.
-//
-// shoot() used to derive the side from isExternal(url), which worked only while
-// the right-hand side was always localhost. Measured 05.10.2026 (L07): running
-// the gate with the right-hand side on https://www.kenyonexpress.co.il/ -- the
-// deployed build, against the frozen August capture -- classified OUR side as
-// the reference by hostname, ran enforceReference() on it and refused with exit
-// 5 ("is not the reference"). It is not the reference; it was never meant to be.
-// It is the page under test, and the hostname says nothing about that. The
-// reference guard, the shorter settle, and every per-side bookkeeping slot
-// (cartEmptiness, heroImages, pendingImages, heroStability, gridCounts) now key
-// off the side the caller names, and isExternal() is left for the one question
-// it answers well: does this URL point at the old host or an archive.
-
 /**
- * Read in the page. Kept as one function so the pre-seeding probe and the shot
- * itself cannot drift into asking two different questions.
+ * What each side FAILED to load while it was being photographed.
+ *
+ * Filled by `shoot` and printed with the percentage, because a fidelity score
+ * against a reference that did not finish rendering is not the number it looks
+ * like, and the caveat has to travel with the figure rather than live in a
+ * comment nobody reads at the moment of quoting.
+ *
+ * MEASURED 2026-09-08, and it corrects the note above. The reference drops 96
+ * requests, which that note recorded correctly and then described as "every one
+ * a font". Deterministic across four runs at two widths: 37 fonts, 57 SCRIPTS,
+ * 1 stylesheet, 1 xhr. Elementor Pro's element handlers and the Electro theme's
+ * bundles are among the 57, so the reference renders with none of the theme's
+ * JavaScript - carousels, tabs and the sticky header never initialise. That is
+ * a much larger degradation than missing type, and it is the reason the mobile
+ * figure cannot be attributed to our layout on this evidence alone.
  */
-const READ_REFERENCE_MARKERS = () => {
-  const urlsOf = (sel, attr) =>
-    Array.from(document.querySelectorAll(sel))
-      .map((el) => el.getAttribute(attr) ?? '')
-      .filter(Boolean)
-  // Stylesheets and scripts only. Our own catalogue still serves product photos
-  // from wp-content paths, so counting IMAGES here would classify our own build
-  // as the reference -- the exact miss this guard exists to prevent.
-  const wpAssets = [
-    ...urlsOf('link[rel~="stylesheet"][href]', 'href'),
-    ...urlsOf('script[src]', 'src'),
-  ].filter((u) => /wp-content|wp-includes/i.test(u))
-  const nextAssets = [...urlsOf('script[src]', 'src'), ...urlsOf('link[href]', 'href')].filter(
-    (u) => u.includes('/_next/'),
-  )
-  return {
-    wpStyleOrScript: wpAssets.length,
-    wooBodyClass: /woocommerce|wordpress/i.test(document.body?.className ?? ''),
-    generator: document.querySelector('meta[name="generator"]')?.getAttribute('content') ?? null,
-    nextAssets: nextAssets.length,
-    nextRuntime: Boolean(
-      document.querySelector('#__next, next-route-announcer, script#__NEXT_DATA__'),
-    ),
-  }
-}
+const missedLoads = { live: [], mine: [] }
 
-/**
- * EVERY OTHER REFUSAL IN THIS FILE CATCHES A NUMBER THAT WOULD COME OUT TOO
- * HIGH. A 404, two catalogues, a carousel mid-spin: all of them score badly and
- * a bad score gets investigated. This one catches the opposite, and that is why
- * it matters more than the rest of them put together.
- *
- * Measured 2026-09-09. `https://kenyonexpress.co.il/cart/` follows to
- * `www.kenyonexpress.co.il/cart` and answers 200 with ZERO woocommerce markers,
- * 125 `_next` references and our own Hebrew title. DNS was cut over to Vercel,
- * so every `LIVE_*` constant at the top of this file now names OUR build. A run
- * against it photographs this project twice and reports a near-zero diff, and
- * nobody investigates a pass. `scripts/live-reference.mjs` holds the rule and
- * the wording; `docs/PARITY-REFERENCE.md` holds what it costs and what would
- * lift it.
- *
- * THIS GUARD ANSWERS IDENTITY AND NOTHING ELSE, ON PURPOSE. The obvious next
- * question -- does the reference still RENDER -- was written here first and
- * removed, because the version that inferred it from `document.styleSheets`
- * passed `refs/ke_live_home.html`, which does not render. Measured 2026-09-09
- * at 380px: 143 subresources failed, every one of them to
- * `file://kenyonexpress.co.il/...`, because the capture saved its URLs
- * protocol-relative and `//host/x` under `file:` is a host called
- * kenyonexpress.co.il; its one real stylesheet answers 403; and Chromium keeps
- * the failed sheet in `document.styleSheets` anyway, so the probe read it as
- * loaded. An inference that green-lights a page with no images on it is worse
- * than no check. What such an archive costs is written down in
- * docs/PARITY-REFERENCE.md instead, where it can be read before somebody points
- * `--live=` at one.
- *
- * @param {string} url
- * @param {object} markers  from READ_REFERENCE_MARKERS
- */
-const enforceReference = async (url, markers) => {
-  const verdict = classifyReference(markers)
-  if (verdict.kind !== REFERENCE) {
-    console.error(refusalMessage({ url, ...verdict }))
-    appendParityRefusal({ page, width: VIEW.width, reason: `live side is ${verdict.kind}` })
-    await b.close()
-    process.exit(5)
-  }
-  console.log(`  reference ok: ${verdict.why}`)
-}
-
-const shoot = async (url, out, side = isExternal(url) ? 'live' : 'mine') => {
+const shoot = async (url, out, side = null) => {
   const p = await ctx.newPage()
+  if (side) {
+    const note = (type, url) => missedLoads[side]?.push({ type, url })
+    p.on('requestfailed', (r) => note(r.resourceType(), r.url()))
+    p.on('response', (r) => {
+      if (r.status() >= 400) note(r.request().resourceType(), r.url())
+    })
+  }
   // The live host intermittently drops a navigation into chrome-error, which
   // used to abort the whole run after the seeding had already been paid for.
   // A transport flake is not a measurement failure; a page that will not load
@@ -1193,49 +1190,25 @@ const probeCaptureWidth = async (file) => {
 
 const runShot = (side) => `refs/.run-${process.pid}-${side}.png`
 
-if (LIVE_PNG) {
-  // The capture is the reference, so the identity guard has nothing to classify
-  // and no navigation happens on the live side at all. Two things are checked
-  // instead, and both refuse rather than warn.
-  if (!existsSync(LIVE_PNG)) {
-    console.error(`REFUSING to measure: --live-png=${LIVE_PNG} does not exist.`)
-    const hint = recaptureHint(LIVE_PNG)
-    if (hint)
-      console.error(`refs/ is not tracked, so a fresh checkout has no capture. Make one: ${hint}`)
-    appendParityRefusal({ page, width: VIEW.width, reason: 'frozen capture not found' })
-    await b.close()
-    process.exit(5)
-  }
-  // WIDTH IS NOT COSMETIC HERE. diff-bands compares `Math.min(live.width,
-  // mine.width)` columns, so handing it a 380px capture on a 1440px run would
-  // silently score the leftmost 380px of our page against the whole of live's
-  // and report the result as a full-width gate number -- a pass built out of
-  // one narrow strip. Refuse on the mismatch instead of trusting the caller to
-  // pair the file with the flag.
-  const capture = await probeCaptureWidth(LIVE_PNG)
-  if (capture.width !== VIEW.width) {
-    console.error(
-      `REFUSING to measure: ${LIVE_PNG} is ${capture.width}px wide and this run is at ${VIEW.width}px.`,
-    )
-    console.error(
-      'diff-bands scores the narrower of the two images, so a mismatch here reports a strip as if it were the page. Pass the capture that matches --width.',
-    )
-    appendParityRefusal({
-      page,
-      width: VIEW.width,
-      reason: `capture is ${capture.width}px, run is ${VIEW.width}px`,
-    })
-    await b.close()
-    process.exit(5)
-  }
-  copyFileSync(LIVE_PNG, runShot('live'))
-  console.log(
-    `  reference: frozen capture ${LIVE_PNG} (${capture.width}x${capture.height}), no live navigation`,
-  )
-} else {
+// A RUN THAT CANNOT SHOOT IS A RESULT, AND IT GETS RECORDED LIKE ONE.
+//
+// Everything below this point assumes two screenshots exist. When the live
+// reference refuses the connection, `shoot` throws here and the process dies
+// with a stack trace, having written nothing to the report. The newest row in
+// docs/UI-PARITY-REPORT.md then stays whatever last succeeded, which is how two
+// dead runs on 2026-09-08 left six PASS rows from the day before standing as
+// the gate's latest word. See appendParityFailure in parity-log.mjs.
+try {
   await shoot(liveUrl, runShot('live'), 'live')
+  await shoot(mineUrl, runShot('mine'), 'mine')
+} catch (err) {
+  appendParityFailure({
+    page,
+    width: VIEW.width,
+    reason: `screenshot failed: ${err?.message ?? err}`,
+  })
+  throw err
 }
-await shoot(mineUrl, runShot('mine'), 'mine')
 
 // Two carts in different states are not a comparison. This is the same rule as
 // the not-found and the checkout-redirect guards: refuse rather than print a
@@ -1414,7 +1387,19 @@ for (const side of ['live', 'mine']) {
 
 await b.close()
 
+/**
+ * One line per side, naming what did not load while it was photographed.
+ *
+ * A percentage is only a fidelity score if both sides finished rendering, and
+ * the reference does not: it is a snapshot of a host that no longer exists, so
+ * every absolute URL in it now 404s. Printing the shortfall next to the figure
+ * is the same rule measure-live-vitals follows for its build bracket - the
+ * caveat travels with the number, because a number quoted without it reads as
+ * "our layout differs by this much" when part of it is the reference failing.
+ */
 console.log(`=== compare --page=${page} ===`)
+console.log(`  reference: ${loadShortfall(missedLoads.live)}`)
+console.log(`  ours     : ${loadShortfall(missedLoads.mine)}`)
 await new Promise((resolvePromise, reject) => {
   const child = spawn(process.execPath, [resolve('scripts/diff-bands.mjs')], {
     stdio: 'inherit',
@@ -1436,6 +1421,13 @@ await new Promise((resolvePromise, reject) => {
       // whatever refs/live.png happens to hold by the time the child starts.
       COMPARE_LIVE_PNG: runShot('live'),
       COMPARE_MINE_PNG: runShot('mine'),
+      // The reference's shortfall rides into docs/UI-PARITY-REPORT.md with the
+      // row, after a caller's own note rather than instead of it. A row saying
+      // 30.26% with nothing beside it has been read as our layout's divergence
+      // before, and the reference was missing 57 scripts at the time.
+      COMPARE_NOTES: [process.env.COMPARE_NOTES, `ref ${loadShortfall(missedLoads.live)}`]
+        .filter(Boolean)
+        .join('; '),
     },
   })
   child.on('exit', (code) =>

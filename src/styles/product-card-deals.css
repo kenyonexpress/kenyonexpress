@@ -88,18 +88,20 @@
   gap: 16px;
   padding: 24px;
   background: var(--color-surface);
-  transition: box-shadow 0.3s;
+  transition: box-shadow 0.3s, transform 200ms ease-out;
+  height: 100%;
 }
 
 .p_con:hover {
   position: relative;
   z-index: 999;
+  transform: scale(1.02);
   box-shadow: 0 3px 16px 0 rgba(0, 0, 0, 0.1);
 }
 
 .p_con__category {
   font-size: 12px;
-  font-weight: 400;
+  font-weight: var(--weight-regular);
   line-height: 24px; /* live: category row is 24px tall */
   color: var(--color-muted-2);
 }
@@ -168,7 +170,7 @@
   justify-content: center;
   font-size: 0.857em;
   line-height: 2em;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
 }
 
 /*
@@ -236,7 +238,7 @@
 .p_con__strike {
   color: var(--color-deal-price);
   font-size: 14px;
-  font-weight: 400;
+  font-weight: var(--weight-regular);
   text-decoration: line-through;
   flex-grow: 1;
 }
@@ -244,14 +246,14 @@
 .p_con__sale {
   color: var(--color-deal-sale);
   font-size: 16px;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   flex-grow: 1;
 }
 
 .p_con__single-price {
   color: var(--color-deal-price);
   font-size: 16px;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
 }
 
 .p_con .atc {
@@ -288,6 +290,36 @@
   appearance: none;
 }
 
+/* A 44px THUMB TARGET ON A 40px CIRCLE.
+ *
+ * The 40px width above is not arbitrary: it is what kenyonexpress.co.il paints,
+ * measured, and the pixel gate compares that geometry. WCAG 2.5.8 asks for 44.
+ * Those conflict only if the layout box has to grow, and it does not - the
+ * requirement is on the TARGET.
+ *
+ * Same technique as `.hit-44` in globals.css, whose caveat is that the overlay
+ * must not cover a neighbouring control. Satisfied here: this circle sits in
+ * `.p_con__footer` opposite the price, which is text.
+ *
+ * `position: relative` goes on the control itself rather than `.atc`, because
+ * the overlay has to be centred on the circle and `.atc` is a wrapper that can
+ * be wider than it. */
+.p_con .atc a,
+.p_con .atc button {
+  position: relative;
+}
+
+.p_con .atc a::after,
+.p_con .atc button::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  inline-size: max(100%, 44px);
+  block-size: max(100%, 44px);
+}
+
 .p_con .atc a svg,
 .p_con .atc button svg {
   width: 20px;
@@ -298,4 +330,186 @@
 .p_con:hover .atc a,
 .p_con:hover .atc button {
   background: var(--color-brand-primary) !important;
+}
+
+/* rc5 F02: the location line that replaced the category label above the
+   title. Same 24px row and type as the category line it replaced, so the card
+   keeps its height and the parity gate sees the same box. */
+.product-location {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: var(--weight-regular);
+  line-height: 24px;
+  color: var(--color-muted-2);
+  min-width: 0;
+}
+
+.product-location__text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.location-pin {
+  flex-shrink: 0;
+}
+
+.location-pin__tile {
+  fill: var(--color-surface-hover);
+}
+
+.location-pin__glyph {
+  stroke: var(--color-muted);
+}
+
+.location-pin__dot {
+  fill: var(--color-muted);
+}
+
+/* rc5 F03: the phone layout follows Electro's mobile home, not the retired
+   live site's one-card-per-row list. Everything here is below 768px only, so
+   the tablet and desktop geometry the gate measured is untouched.
+   - hero slot: clamp(240px, 55vw, 320px), full width
+   - category strip: one row, scrolls sideways (CitiesRow already nowrap)
+   - deals: two columns with a 12px gap, compact cards
+   - sections: 24px vertical padding */
+@media (max-width: 767px) {
+  .hero-mobile-slot {
+    flex: none;
+    height: clamp(240px, 55vw, 320px);
+  }
+
+  .home-deals {
+    padding-block: 24px;
+    padding-inline: 12px;
+  }
+
+  .jet-listing-grid-deals {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .jet-listing-grid-deals__item {
+    padding: 0;
+    max-width: none;
+    min-width: 0;
+  }
+
+  .jet-listing-grid-deals__item .p_con {
+    padding: 8px;
+    gap: 6px;
+  }
+
+  .p_con__title-wrap {
+    min-height: 0;
+  }
+
+  .p_con__title,
+  .jet-listing-grid-deals h2.p_con__title {
+    font-size: clamp(13px, 3.6vw, 16px);
+    line-height: 1.35;
+  }
+
+  .p_con__image {
+    width: 100%;
+    height: clamp(120px, 38vw, 180px);
+  }
+
+  .p_con__footer {
+    gap: 6px;
+    margin-top: 4px;
+  }
+}
+
+/* rc5 F03 pass 2: on a phone the masthead is Electro's handheld bar, a solid
+   brand-yellow strip 56px tall. --color-brand-primary is the same #fed700. */
+@media (max-width: 767px) {
+  .site-masthead {
+    background: var(--color-brand-primary);
+    border-bottom-color: var(--color-brand-primary);
+  }
+
+  .site-masthead > div:first-child {
+    height: 56px;
+  }
+}
+
+/* Add to cart animation */
+@keyframes atc-scale-bounce {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.p_con .atc button:not(:disabled) {
+  transition: all 0.3s ease-out;
+}
+
+.p_con .atc button:active:not(:disabled) {
+  animation: atc-scale-bounce 0.6s ease-out;
+}
+
+/* rc5 F13: the deal chips. One row; on a phone it scrolls sideways rather
+   than wrapping. Off is an outlined pill, on is the brand fill. */
+.deal-chips {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-block: 12px;
+}
+
+.deal-chips__chip {
+  flex: none;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--color-heading);
+  background: var(--color-surface);
+  white-space: nowrap;
+}
+
+.deal-chips__chip--on {
+  background: var(--color-brand-primary);
+  border-color: var(--color-brand-primary);
+}
+
+/* rc5 F14: the post-purchase push opt-in. */
+.push-prompt {
+  max-width: 640px;
+  margin: 16px auto;
+  padding: 12px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-surface);
+  text-align: start;
+}
+
+.push-prompt__actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.push-prompt__actions button {
+  border-radius: 999px;
+  padding: 6px 14px;
+  border: 1px solid var(--color-border);
+}
+
+.push-prompt__actions button:first-child {
+  background: var(--color-brand-primary);
+  border-color: var(--color-brand-primary);
 }

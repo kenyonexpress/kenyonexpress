@@ -56,7 +56,12 @@
   --color-brand-accent: #eaf4f6; /* tinted backgrounds, soft surfaces */
 
   /* --- Functional colors ----------------------------------------------------- */
-  --color-price: #dc3545; /* current price (live measured) */
+  /* 2026-09-08: the brief's #E4002B, for the same expired-reference reason as
+     --container-page above. Contrast is not a regression: #E4002B on white is
+     4.85:1 against #dc3545's 4.53:1, so this moves AA further clear, not
+     closer. The archive refs/ke_live_home.html still records #dc3545 as what
+     WooCommerce painted. */
+  --color-price: #e4002b; /* current price (2026 brief) */
   /* Darkened from #9ca3af for WCAG AA. At 2.53:1 on white it was the worst
      text pairing left on the site after the brand-yellow sweep, and it paints
      the coupon product page's "regular price". #6f6f6f is 5.02. */
@@ -170,6 +175,13 @@
   --leading-pdp-title: 32.0051px;
   --leading-pdp-body: 23.996px;
 
+  /* --- Font weights (Heebo 300, 400, 500, 700, 900) ------------------------- */
+  --weight-light: 300;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-bold: 700;
+  --weight-black: 900;
+
   /* --- Layout ---------------------------------------------------------------- */
   --header-height: 70px;
   /* Single source of truth for page container width -> generates `max-w-page`.
@@ -182,7 +194,33 @@
      scoped exception's reason. The audit the old comment asked for
      ("widen the audit before widening the fix") is docs/HEADER-1TO1-2026-09-02:
      every above-fold element was measured against refs/ke_live_computed.json. */
-  --container-page: 1200px;
+  /* 2026-09-08: RESTORED TO THE BRIEF'S 1320. The note above kept 1200 because
+     "the gate that closes every UI step is compare.mjs against this same
+     reference, so adopting either brief value would raise the pixel difference
+     it is scored on". That reason has expired: kenyonexpress.co.il no longer
+     serves the WooCommerce reference, it serves THIS app, so compare.mjs is
+     scoring us against a stale deploy of ourselves and 1200 buys no fidelity
+     against anything. The brief has named 1320 three times; it is now the only
+     live source for this value. docs/HEADER-1TO1-2026-09-02 remains the record
+     of what live measured while live existed.
+
+     2026-09-09, MEASURED, because "RESTORED TO THE BRIEF'S 1320" above claims
+     more reach than the token has. Only cart-page.css and checkout-page.css
+     read this property, and both already carried 1320 as their var() fallback,
+     so the token and the fallback disagreed until now. The home page does not
+     consume it at all. It also cannot bind below 1200px of viewport. So the
+     change is visible on exactly two routes above 1200px wide, and the A/B is:
+
+       cart 1440   1200px -> 16.34%   1320px -> 16.29%   (1320 is better)
+       cart  768   1200px -> 26.67%   1320px -> 26.67%   (identical, no bind)
+       home 1440   8.29% either way   (does not read the token)
+       checkout    refuses to measure: the reference is a static snapshot and
+                   the gate's "cart did not stick" guard fires on it
+
+     Those percentages are against the degraded localized snapshot, not the
+     11% gate, and only the DELTA between the two columns is meaningful here.
+     Read the delta: 1320 does not cost fidelity, it buys 0.05pp. */
+  --container-page: 1320px;
   /* Measured on live: the footer and the deals grid do NOT share the page
      container, they run wider and narrower respectively. */
   --container-footer: 1430px;
@@ -444,18 +482,34 @@
   --color-overlay-ink: rgba(0, 0, 0, 0.7);
   --shadow-consent-banner: 0 -4px 16px rgba(0, 0, 0, 0.08);
 
-  /* --- Radii (measured off refs/ke_live_computed.json) -----------------------
-     Counted across all seven templates at all three widths. The live site is
-     overwhelmingly square: 11863 elements carry `border-radius: 0px` against
-     519 that carry anything at all. These five are every rounded value that
-     appears more than ten times, so a component that needs a corner has a
-     token for it and does not invent a sixth. */
-  --radius-none: 0px; /* the default on live, stated so it can be named */
-  --radius-sm: 4px; /* 127 elements: buttons, inputs, small chips */
-  --radius-md: 7px; /* 28 elements: cards, dropdown panels */
-  --radius-lg: 25px; /* 14 elements: modal + large panel corners */
-  --radius-pill: 22px; /* 188 elements: the search/newsletter pill and tags */
-  --radius-round: 200px; /* 96 elements: avatars and icon buttons */
+  /* --- Radii (consistent design scale 4 8 12 16 24) ---------------------------
+     UX35: Implemented semantic border-radius scale with consistent application:
+     - 4px: smallest elements (chips, badges)
+     - 8px: buttons, inputs, small interactive elements
+     - 12px: cards, panels, content containers
+     - 16px: modals, large dialogs, primary containers
+     - 24px: large components, accents
+
+     Legacy tokens preserved for backward compatibility with measured values:
+     - pill (22px): search bar, newsletter field, tags
+     - round (200px): circular avatars and icon buttons
+     - cta (10px): special call-to-action buttons
+
+     These measured from refs/ke_live_computed.json (11863 square elements vs
+     519 rounded); kept as they represent live site's consistent patterns. */
+  --radius-none: 0px; /* the default; stated so it can be named */
+  --radius-xs: 4px; /* 4px: smallest elements, chips, badges */
+  --radius-sm: 8px; /* 8px: buttons, inputs, small interactive elements */
+  --radius-md: 12px; /* 12px: cards, panels, content containers */
+  --radius-lg: 16px; /* 16px: modals, large dialogs, primary containers */
+  --radius-xl: 24px; /* 24px: large components, accents */
+  --radius-pill: 22px; /* 22px: pill-shaped elements (search, newsletter, tags) */
+  --radius-round: 200px; /* 200px: circular avatars and icon buttons */
+
+  /* Semantic aliases for backward compatibility */
+  --radius-card: var(--radius-md); /* category cards, now using --radius-md (12px) */
+  --radius-button: var(--radius-sm); /* buttons, now using --radius-sm (8px) */
+  --radius-modal: var(--radius-lg); /* modals, now using --radius-lg (16px) */
 
   /* --- Spacing scale (measured) ---------------------------------------------
      The live site's real rhythm, by frequency of every non-zero padding across

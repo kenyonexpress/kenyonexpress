@@ -12,16 +12,64 @@ import { expect, test } from '@playwright/test'
  * them; icon-only controls are exactly the ones that must pass.
  */
 
-const ROUTES = ['/', '/products', '/cart']
+// STEP 09 asks for a 380px audit of EVERY route, and this list was three.
+// Swept on 2026-09-08 at 380: thirteen sub-24px controls on twelve routes,
+// none of them on the three that were covered. The breadcrumb "בית" link was
+// 20x21 on ten pages and the login form's two secondary controls were 16px and
+// 20px tall.
+const ROUTES = [
+  '/',
+  '/about',
+  '/accessibility',
+  '/blog',
+  '/cart',
+  '/checkout',
+  '/contact',
+  '/cookie-policy',
+  '/coupons',
+  '/faq',
+  '/forgot-password',
+  '/login',
+  '/mfa',
+  '/offline',
+  '/privacy-policy',
+  '/products',
+  '/refund_returns',
+  '/reset-password',
+  '/search',
+  '/signup',
+  '/signup/confirm',
+  '/supplier/access-denied',
+  '/supplier/login',
+  '/suppliers',
+  '/terms-and-conditions',
+]
 const MIN_ANY = 24
 const MIN_PRIMARY = 40
 
-test.use({ viewport: { width: 390, height: 844 } })
+// 380, not 390. That is the width the brief names and the width the pixel gate
+// measures, and the ten pixels matter: they are where a row wraps.
+test.use({ viewport: { width: 380, height: 844 } })
 
 for (const route of ROUTES) {
   test(`interactive targets on ${route} are thumb-sized`, async ({ page }) => {
     await page.goto(route)
     await page.waitForLoadState('networkidle')
+
+    // WHERE WE ACTUALLY LANDED, not where we asked to go.
+    //
+    // /checkout redirects to /cart when the cart is empty, and this loop seeds
+    // nothing. Reporting the result under the requested path is precisely how
+    // scripts/_touch-targets.mjs once published "90 violations at 380px" for
+    // checkout while counting the cart's controls, and how a 0.357 CLS became a
+    // high-severity checkout risk that belonged to the cart. The first sweep
+    // behind this very change made the same mistake and
+    // src/__tests__/checkout-bounce-guard.test.ts caught it.
+    //
+    // Checkout's own controls are covered by the seeded purchase journeys,
+    // which reach it with a cart. Here the row measures whatever it reached and
+    // says so.
+    const finalPath = new URL(page.url()).pathname
 
     const offenders = await page.evaluate(
       ({ minAny }) => {
@@ -38,7 +86,20 @@ for (const route of ROUTES) {
           if (style.visibility === 'hidden' || style.display === 'none') continue
           // 2.5.8 exempts inline links in prose.
           if (el.tagName === 'A' && style.display === 'inline' && el.closest('p, li, td')) continue
-          const short = Math.min(rect.width, rect.height)
+          // THE ELEMENT'S OWN BOX IS NOT THE TAP TARGET WHEN `.hit-44` IS ON IT.
+          //
+          // That utility (globals.css) leaves layout alone and paints a
+          // centred `::after` of `max(100%, 44px)`, so the control really is
+          // 44x44 to a thumb while `getBoundingClientRect()` still returns the
+          // text box. Measured 2026-09-08: the breadcrumb link reads 20x21 with
+          // a 44px overlay. A rect-only probe would call that a violation and
+          // send someone to "fix" a control that is already right.
+          const after = getComputedStyle(el, '::after')
+          const overlay =
+            after.content !== 'none' && after.position === 'absolute'
+              ? Math.min(Number.parseFloat(after.width) || 0, Number.parseFloat(after.height) || 0)
+              : 0
+          const short = Math.max(Math.min(rect.width, rect.height), overlay)
           if (short < minAny) {
             out.push(
               `${el.tagName.toLowerCase()}[${(el.getAttribute('aria-label') ?? el.textContent ?? '').trim().slice(0, 30)}] ${Math.round(rect.width)}x${Math.round(rect.height)}`,
@@ -49,7 +110,8 @@ for (const route of ROUTES) {
       },
       { minAny: MIN_ANY },
     )
-    expect(offenders, `sub-${MIN_ANY}px targets on ${route}`).toEqual([])
+    const measured = finalPath === route ? route : `${route} -> ${finalPath}`
+    expect(offenders, `sub-${MIN_ANY}px targets on ${measured}`).toEqual([])
   })
 }
 

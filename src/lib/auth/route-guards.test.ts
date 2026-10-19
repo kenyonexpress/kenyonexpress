@@ -1,5 +1,6 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { join, relative, resolve } from 'node:path'
+import { stripComments } from '@/lib/source-scan/strip-comments.mjs'
 import { describe, expect, it } from 'vitest'
 
 /**
@@ -88,16 +89,7 @@ function routeFiles(): string[] {
 }
 
 /** Comments name guards constantly. Only real code counts as calling one. */
-function codeOnly(text: string): string {
-  return text
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .split('\n')
-    .filter((line) => {
-      const t = line.trim()
-      return !t.startsWith('//') && !t.startsWith('*')
-    })
-    .join('\n')
-}
+const codeOnly = stripComments
 
 describe('privileged routes are guarded', () => {
   const files = routeFiles()

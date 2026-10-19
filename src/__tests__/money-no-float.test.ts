@@ -1,5 +1,6 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { join, relative, resolve } from 'node:path'
+import { stripComments } from '@/lib/source-scan/strip-comments.mjs'
 import { describe, expect, it } from 'vitest'
 
 /**
@@ -140,13 +141,7 @@ function moneyFiles(): string[] {
 }
 
 /** Strips comments so a rule quoted while being explained does not trip the scan. */
-function codeOnly(text: string): string {
-  return text
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .split('\n')
-    .filter((line) => !line.trim().startsWith('//'))
-    .join('\n')
-}
+const codeOnly = stripComments
 
 describe('zero floats on the money path', () => {
   const files = moneyFiles()

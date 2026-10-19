@@ -22,6 +22,46 @@ concurrency:
 env:
   NODE_VERSION: '22'
 
+# ACTION PINS, BUMPED OFF THE NODE 20 RUNTIME ON 2026-09-09.
+#
+# Every job here was printing the same annotation: "the following actions target
+# Node.js 20 but are being FORCED to run on Node.js 24". The pins still declared
+# `runs.using: node20` and the runner was overriding them, by announcement and
+# temporarily. The day that override ends, every gate in this repo fails at once
+# on nothing this code did.
+#
+# The majors are not a blind `@latest`. Four changelogs claim a breaking change
+# and each was checked against what this repo actually writes:
+#
+#   setup-node v6  "Limit automatic caching to npm" - reads worse than it is.
+#                  It changes the DEFAULT when no `cache:` input is given; pnpm
+#                  and yarn stop being auto-detected. All ten setup-node steps
+#                  here pass `cache: pnpm` explicitly, so none of them relied on
+#                  the default that went away.
+#   checkout v7    Blocks checking out a fork PR under `pull_request_target` and
+#                  `workflow_run`. The only `pull_request_target` workflow is
+#                  dependabot-auto-merge.yml, and it checks nothing out.
+#   checkout v6    Persists credentials to a separate file. The one manual
+#                  `git fetch origin` below (the default-branch audit) would be
+#                  the thing to break; this repository is public, so that fetch
+#                  needs no credential either way.
+#   github-script  v9 removes `require('@actions/github')` and injects
+#                  `getOctokit`. Neither script here requires it or declares a
+#                  binding by that name.
+#   download-artifact v8  A digest mismatch is now fatal instead of a warning,
+#                  and non-zipped downloads are no longer unzipped. The first is
+#                  a hardening we want; the second only applies to uploads that
+#                  set `archive: false`, and none here do.
+#
+# Not fixed by this, and worth being clear about: the `FinalizeArtifact: (403)`
+# flake that took CI red twice on 2026-09-08 is GitHub's blob storage, not the
+# action. `continue-on-error` on the diagnostic uploads is still what contains
+# it, and `next-build` is still fatal on purpose because four jobs read it.
+#
+# `src/__tests__/ci-action-versions.test.ts` refuses a HALF-finished bump: it
+# asserts every workflow pins each action to the same ref, which is the state
+# load.yml was already in (checkout@v5 against v4 everywhere else).
+
 jobs:
   # Diff-scoped gates. Default range is HEAD~1..HEAD (tip commit only).
   # Repo-wide lint debt and docs/hardcoded-audit.md hits do not block;
@@ -30,11 +70,11 @@ jobs:
     name: Diff-scoped lint gates
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
@@ -166,15 +206,31 @@ jobs:
       - name: Repo-wide typecheck
         run: pnpm type-check
 
+  # Secret scan over the checked-out tree. Pinned container, no third-party
+  # action, no licence key. `continue-on-error` is deliberate for the first
+  # weeks: the finding list on a repo this old is unknown, and a gate that
+  # fails every push on day one gets deleted. Read the job's log; flip the flag
+  # to false once it has run clean.
+  secrets:
+    name: Secret scan (gitleaks)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v7
+      - name: gitleaks over the working tree
+        run: |
+          docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:v8.18.4 \
+            detect --no-git --source /repo --redact --no-banner --exit-code 1
+
   typecheck:
     name: Typecheck (changed files)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
@@ -191,17 +247,59 @@ jobs:
   test:
     name: Unit tests + money coverage floors
     runs-on: ubuntu-latest
+    env:
+      # THE 25 SKIPPED TESTS ARE ALL DATABASE AUTHORIZATION TESTS, AND THEY SKIP
+      # HERE TOO. Measured 2026-09-08: rls-role-boundaries (13 of 13),
+      # anon-catalog (8 of 9) and wallet-rls (4 of 5) are the only skips in the
+      # whole suite, and every one of them gates on
+      # `SUPABASE_URL ?? NEXT_PUBLIC_SUPABASE_URL`. This job passed neither, so
+      # STEP 17's "OWASP: RLS bypass" had no automated coverage anywhere, while
+      # the suite reported green.
+      #
+      # STATE.md said on 2026-09-03 that anon-catalog "runs in CI with
+      # SUPABASE_URL+ANON_KEY". It never did. The variables were never added to
+      # this job.
+      #
+      # WHY `vars` AND NOT `secrets`. The anon key is PUBLIC by construction -
+      # it is compiled into the client bundle of every page and anyone can read
+      # it out of the served JavaScript. Putting it in a repo variable leaks
+      # nothing that is not already published.
+      #
+      # WHY THIS DOES NOT REOPEN THE E2E SEEDING PROBLEM. `secrets.CI_SUPABASE_*`
+      # stays unset on purpose, because setting it un-skips the E2E job whose
+      # first step writes fixtures to the only database that exists. These three
+      # suites do the opposite: they sign in as nobody and READ, asserting that
+      # anon cannot reach what it must not reach. They create nothing.
+      #
+      # DELIBERATELY NEW NAMES, not the PUBLIC_SUPABASE_* pair the build job
+      # uses - those are the Supabase DEMO project (see the note in `build`),
+      # and pointing an RLS assertion at a different schema would be worse than
+      # skipping it.
+      #
+      # UNSET TODAY, so `describe.skipIf(!configured)` still skips and nothing
+      # changes until somebody sets the two repository variables. That is the
+      # MANUAL step, and it is one paste of already-public values.
+      SUPABASE_URL: ${{ vars.RLS_SUPABASE_URL }}
+      SUPABASE_ANON_KEY: ${{ vars.RLS_SUPABASE_ANON_KEY }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: Run unit tests with per-file coverage floors
         run: pnpm test:coverage
-      - uses: actions/upload-artifact@v4
+      # A DIAGNOSTIC ARTIFACT MUST NOT DECIDE THE PIPELINE. `next-build` is
+      # downloaded by four jobs and its failure is fatal on purpose; this one is
+      # read by a human afterwards. On 2026-09-08 the coverage upload hit
+      # `FinalizeArtifact: (403) Forbidden` from GitHub's blob storage AFTER the
+      # tests had passed, which failed the job, skipped `build`, and with it the
+      # bundle gate, pixel parity and both E2E jobs. The verdict is in the test
+      # step; this is a convenience.
+      - uses: actions/upload-artifact@v7
+        continue-on-error: true
         if: always()
         with:
           name: coverage
@@ -276,13 +374,13 @@ jobs:
       SENTRY_RELEASE: ${{ github.sha }}
       NEXT_PUBLIC_SENTRY_RELEASE: ${{ github.sha }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           # The Sentry plugin reads git history to associate commits with the
           # release; a shallow clone gives it one commit and no association.
           fetch-depth: 0
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
@@ -303,7 +401,7 @@ jobs:
       # Playwright served a server built from an older commit for four cycles.
       # Only `.next/cache/` is restored.
       - name: Restore Turbopack build cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: .next/cache
           key: next-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('src/**', 'next.config.ts') }}
@@ -312,31 +410,261 @@ jobs:
             next-${{ runner.os }}-
 
       - run: pnpm build
-
-      # Alert rules are code (scripts/sentry-alert-rules.mjs), applied by
-      # upsert after a green build and only from main: a PR editing the rules
-      # must not rewrite live alerting before it merges. Without the auth
-      # token the script prints one line and exits 0, same posture as the
-      # source-map upload above.
-      - name: Apply Sentry alert rules
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: node scripts/sentry-alert-rules.mjs --ci
-
-      # Same contract for the Axiom side: dataset retention, dashboards and
-      # the 5xx/slow-query monitors (scripts/axiom/), upserted only from main.
-      # Without the secrets the script prints one line and exits 0.
-      - name: Apply Axiom dataset, dashboards and monitors
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        env:
-          AXIOM_TOKEN: ${{ secrets.AXIOM_TOKEN }}
-          AXIOM_DATASET: ${{ vars.AXIOM_DATASET }}
-        run: node scripts/axiom/setup.mjs --ci
-
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: next-build
           path: .next/
           retention-days: 3
+          # `.next` IS A HIDDEN DIRECTORY, AND v4 EXCLUDES THOSE BY DEFAULT.
+          #
+          # Without this the step logs
+          #   "No files were found with the provided path: .next/.
+          #    No artifacts will be uploaded."
+          # and then SUCCEEDS, because `if-no-files-found` defaults to `warn`.
+          # Measured on run 34193528439: the Build job was green, its upload step
+          # was green, and the run produced exactly one artifact - `coverage`.
+          #
+          # Nothing noticed for as long as it has been true, because the only
+          # consumer was `pixel-gate`, whose download is guarded by a
+          # credentials check that is currently false - so it skipped the
+          # download and every step after it and reported success. The pixel
+          # gate has been passing without comparing anything.
+          include-hidden-files: true
+          # An empty upload must be a failure, not a warning. That default is
+          # what let this hide: the producer was green and the consumer was
+          # skipped, so the only symptom was a gate that never ran.
+          if-no-files-found: error
+
+  # The pixel gate. compare.mjs screenshots this build and the live site at the
+  # same width and reports the diff over the first 2600px; the ceiling is 11%.
+  #
+  # THREE THINGS MAKE THIS DIFFERENT FROM THE OTHER JOBS, and each one is why a
+  # line below looks the way it does.
+  #
+  # It needs a BOOTED server, not just a build, and `src/lib/env.ts` refuses to
+  # boot without SUPABASE_SECRET_KEY of at least 20 characters. Measured on
+  # 2026-09-07: the build passes and `next start` dies in the instrumentation
+  # hook. So this job carries the same credential guard as e2e.
+  #
+  # It compares against kenyonexpress.co.il, which is a third party from CI's
+  # point of view. A gate that fails because someone else's site is down is a
+  # gate people learn to re-run rather than read, so an unreachable reference
+  # WARNS and the job passes; only a measured number over the ceiling fails it.
+  #
+  # It runs at all three design widths because a regression is usually at one.
+  # 380 is the one that has historically sat closest to the ceiling: 10.68%
+  # against a limit of 11.
+  gates:
+    name: Bundle budget and migration lint
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      # THREE GATES THAT EXISTED AND NOTHING RAN.
+      #
+      # scripts/bundle-gate.mjs, scripts/migration-lint.mjs and
+      # scripts/lighthouse-smoke.mjs are all in the repo, all runnable, and were
+      # named in no workflow. Measured 2026-09-08: zero occurrences of
+      # "bundle-gate", "migration" or "lighthouse" anywhere under
+      # .github/workflows/. A ratchet nothing pulls is a number in a file.
+      #
+      # The bundle one matters most: it holds the shared first-load JS at a
+      # measured 255.6 KB baseline, and without a gate that figure can only
+      # drift upward, one unnoticed import at a time.
+      #
+      # Lighthouse is deliberately NOT here. It needs a booted server and its
+      # numbers on a shared runner are noise against a 95 threshold - see
+      # docs/PERF-REPORT.md on why localhost LCP is a simulation. Running it as
+      # a required check would teach everyone to ignore a red one. It stays a
+      # manual `pnpm lighthouse:smoke`.
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          # `env.NODE_VERSION`, not a literal. This job named its own `22` and
+          # agreed with the top of the file by coincidence; the guard test only
+          # reads `NODE_VERSION`, so a bump there would have left this job
+          # behind silently.
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      # Needs no build: it reads migrations/pending/ from the checkout.
+      - name: Secrets audit (tracked files)
+        # STEP 18 names a secrets audit and there was none. `compromised-keys`
+        # checks the ENVIRONMENT at deploy for keys already known to be exposed;
+        # nothing looked at what is committed. A service_role JWT reached
+        # `.env.test` once already and did no harm only because it belonged to a
+        # different project and had expired.
+        run: node scripts/audit-secrets.mjs
+
+      - name: Migration lint (pending migrations)
+        run: node scripts/migration-lint.mjs
+
+      # WHAT THE PLATFORM READS FROM THE DEFAULT BRANCH, WHICH IS NOT THIS ONE.
+      #
+      # Dependabot's config, the cron job list, and the scripts a `schedule:`
+      # trigger executes are all read from the default branch. An edit to any of
+      # them on a feature branch is correct in the file, passes review, passes
+      # every job here, and does nothing. Two fixes from this loop were inert
+      # for exactly that reason before anything noticed.
+      #
+      # IT RUNS HERE AND NOT IN THE NIGHTLY on purpose: the nightly is itself a
+      # scheduled workflow, so it executes the default branch's copy of
+      # everything and could never report this about a feature branch.
+      #
+      # REPORT-ONLY, and not because the finding is unimportant. On a pull
+      # request this drift is EXPECTED - the branch is ahead, that is what a
+      # branch is - so failing on it would fail every PR that touches one of
+      # these files. Printed, it tells the author the one thing they cannot see
+      # in their own diff: this takes effect on merge, not now.
+      # Explicit refspec. actions/checkout@v7 narrows `remote.origin.fetch` to the
+      # single ref it checked out, so a bare `git fetch origin main` lands in
+      # FETCH_HEAD and never creates `origin/main` - and the audit would then
+      # refuse, correctly but uselessly, on every run.
+      - name: Fetch the default branch to compare against
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          git fetch --depth=1 origin \
+            "+refs/heads/${DEFAULT_BRANCH}:refs/remotes/origin/${DEFAULT_BRANCH}"
+      - name: Config the platform reads from the default branch
+        run: node scripts/audit-default-branch-config.mjs || true
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: next-build
+          path: .next/
+
+      # The ratchet, not the spec target. 180 KB is where this should end up and
+      # 255.8 KB is where it is; gating at the aspiration would fail every run
+      # and gate at nothing. This fails only on a REGRESSION, which is the job.
+      - name: Bundle budget (shared first-load JS)
+        run: node scripts/bundle-gate.mjs 260
+
+      # THE SHARED GATE ABOVE CANNOT SEE MOST OF THE BUNDLE, and until
+      # 2026-09-08 nothing else did either. It sums rootMainFiles + polyfills,
+      # because Turbopack emits no app-build-manifest.json and per-route sums
+      # are not available from any manifest. So a heavy client import added to
+      # ONE route lands in that route's own chunk, never in rootMainFiles, and
+      # this job stays green while the page grows without limit. Measured that
+      # day: shared floor 255.8 KB, `/` 323.4 KB. The 68 KB in between had no
+      # gate on it at all.
+      #
+      # Unlike Lighthouse two steps up, this belongs in CI: it reads the
+      # prerendered HTML in .next/server/app/, needs no booted server and no
+      # browser, and gzip of a fixed byte string is the same number on every
+      # runner. It is a measurement, not a timing.
+      - name: Bundle budget (per route, first load)
+        run: node scripts/route-bundle-gate.mjs
+
+  pixel-gate:
+    name: Pixel parity (380 / 768 / 1440)
+    needs: [build]
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.CI_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.CI_SUPABASE_ANON_KEY }}
+      SUPABASE_SECRET_KEY: ${{ secrets.CI_SUPABASE_SECRET_KEY }}
+      NEXT_PUBLIC_APP_URL: http://localhost:3311
+      LOCAL_BASE: http://localhost:3311
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Check whether Supabase credentials are configured
+        id: creds
+        run: |
+          if [ -n "${{ secrets.CI_SUPABASE_URL }}" ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::warning title=Pixel gate skipped::CI_SUPABASE_URL is not set, so the built server cannot boot. Add the CI_SUPABASE_* repository secrets to enable it."
+            # A GREEN JOB THAT COMPARED NOTHING IS INDISTINGUISHABLE FROM A PASS.
+            #
+            # Every step below is `if: steps.creds.outputs.present == 'true'`, so
+            # when the secret is absent they all skip and the JOB still reports
+            # success. Measured on run 34194328403: checkout and this check ran,
+            # the other eight steps skipped, and the job was green.
+            #
+            # The status cannot be made honest at the job level - GitHub does not
+            # expose `secrets` to `jobs.<id>.if`, only `github`, `needs`, `vars`
+            # and `inputs`. So the next best thing is to say so where a human
+            # actually looks: the run summary, not just an annotation.
+            {
+              echo "## Pixel parity: SKIPPED"
+              echo
+              echo "**No comparison was performed.** \`CI_SUPABASE_URL\` is unset, so"
+              echo "the built server cannot boot and every step below the guard was"
+              echo "skipped. This job being green means it did not run, not that the"
+              echo "pages matched."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - uses: pnpm/action-setup@v6
+        if: steps.creds.outputs.present == 'true'
+      - uses: actions/setup-node@v7
+        if: steps.creds.outputs.present == 'true'
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+        if: steps.creds.outputs.present == 'true'
+
+      - uses: actions/download-artifact@v8
+        if: steps.creds.outputs.present == 'true'
+        with:
+          name: next-build
+          path: .next/
+
+      - name: Install the browser compare.mjs drives
+        if: steps.creds.outputs.present == 'true'
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Start the built server
+        if: steps.creds.outputs.present == 'true'
+        run: |
+          PORT=3311 pnpm start &
+          for i in $(seq 1 60); do
+            if curl -sf -o /dev/null http://localhost:3311/; then
+              echo "server up after ${i}s"; exit 0
+            fi
+            sleep 1
+          done
+          echo "::error title=Pixel gate::the built server never answered on 3311"
+          exit 1
+
+      - name: Compare against the live site at three widths
+        if: steps.creds.outputs.present == 'true'
+        run: |
+          # `|| true` on the reachability probe only. A live site that is down
+          # must not fail this job; a measured regression must.
+          if ! curl -sf -o /dev/null --max-time 20 https://kenyonexpress.co.il/; then
+            echo "::warning title=Pixel gate skipped::the reference site did not answer, so there is nothing to compare against"
+            exit 0
+          fi
+          fail=0
+          for width in 380 768 1440; do
+            if ! node scripts/compare.mjs --page=home --width="$width"; then
+              echo "::error title=Pixel gate::home at ${width}px is over the 11% ceiling"
+              fail=1
+            fi
+          done
+          exit "$fail"
+
+      - name: Publish the parity report
+        if: steps.creds.outputs.present == 'true' && always()
+        # A DIAGNOSTIC ARTIFACT MUST NOT DECIDE THE PIPELINE. `next-build` is
+        # downloaded by four jobs and its failure is fatal on purpose; this one is
+        # read by a human afterwards. On 2026-09-08 the coverage upload hit
+        # `FinalizeArtifact: (403) Forbidden` from GitHub's blob storage AFTER the
+        # tests had passed, which failed the job, skipped `build`, and with it the
+        # bundle gate, pixel parity and both E2E jobs. The verdict is in the test
+        # step; this is a convenience.
+        continue-on-error: true
+        uses: actions/upload-artifact@v7
+        with:
+          name: ui-parity-report
+          path: docs/UI-PARITY-REPORT.md
+          retention-days: 7
 
   # E2E drives a real browser against a real database, so it needs a Supabase
   # project. Until CI_SUPABASE_URL exists as a repository secret this job skips
@@ -364,7 +692,7 @@ jobs:
       E2E_SUPPLIER_EMAIL: e2e-supplier@test.kenyonexpress.local
       E2E_SUPPLIER_PASSWORD: E2eSupplier!pass1
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Check whether Supabase credentials are configured
         id: creds
@@ -376,9 +704,9 @@ jobs:
             echo "::warning title=E2E skipped::CI_SUPABASE_URL is not set, so the E2E job cannot reach a database. Add the CI_SUPABASE_* repository secrets to enable it."
           fi
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         if: steps.creds.outputs.present == 'true'
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         if: steps.creds.outputs.present == 'true'
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -386,7 +714,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
         if: steps.creds.outputs.present == 'true'
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         if: steps.creds.outputs.present == 'true'
         with:
           name: next-build
@@ -404,10 +732,82 @@ jobs:
         if: steps.creds.outputs.present == 'true'
         run: pnpm exec playwright test
 
-      - uses: actions/upload-artifact@v4
+      # A DIAGNOSTIC ARTIFACT MUST NOT DECIDE THE PIPELINE. `next-build` is
+      # downloaded by four jobs and its failure is fatal on purpose; this one is
+      # read by a human afterwards. On 2026-09-08 the coverage upload hit
+      # `FinalizeArtifact: (403) Forbidden` from GitHub's blob storage AFTER the
+      # tests had passed, which failed the job, skipped `build`, and with it the
+      # bundle gate, pixel parity and both E2E jobs. The verdict is in the test
+      # step; this is a convenience.
+      - uses: actions/upload-artifact@v7
+        continue-on-error: true
         if: always() && steps.creds.outputs.present == 'true'
         with:
           name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+
+  # THE BROWSER TESTS THAT NEED NO DATABASE, WHICH IS MOST OF THEM.
+  #
+  # The `e2e` job above has never executed a single test. Its guard is right -
+  # its first step writes fixture rows, and the only database CI can reach is
+  # production - but the conclusion drawn from it was that no browser test can
+  # run here, and that was never measured. It is now: 261 specs pass against a
+  # production build whose every Supabase read fails with `Invalid API key`,
+  # which is exactly what the public demo key below produces. They render pages,
+  # check RTL at three widths and run axe. None of them writes.
+  #
+  # So this job takes the same env as `build` - public names, demo key,
+  # ALLOW_INCOMPLETE_ENV - and runs the list in e2e/database-need.ts. It needs
+  # no secret and asks nothing of anyone. `e2e` keeps its guard and keeps
+  # skipping until CI_SUPABASE_URL exists.
+  e2e-no-database:
+    name: E2E without a database
+    needs: [build]
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ vars.PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.PUBLIC_SUPABASE_ANON_KEY }}
+      SUPABASE_SECRET_KEY: ${{ vars.CI_BUILD_SUPABASE_DEMO_SECRET_KEY }}
+      ALLOW_INCOMPLETE_ENV: 'true'
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      # The production build, for the same reason the other job uses it: dev and
+      # prod differ on RTL, caching and server actions.
+      E2E_WEB_COMMAND: pnpm start
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: next-build
+          path: .next/
+
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run the specs that need no database
+        run: pnpm test:e2e:nodb
+
+      # A DIAGNOSTIC ARTIFACT MUST NOT DECIDE THE PIPELINE. `next-build` is
+      # downloaded by four jobs and its failure is fatal on purpose; this one is
+      # read by a human afterwards. On 2026-09-08 the coverage upload hit
+      # `FinalizeArtifact: (403) Forbidden` from GitHub's blob storage AFTER the
+      # tests had passed, which failed the job, skipped `build`, and with it the
+      # bundle gate, pixel parity and both E2E jobs. The verdict is in the test
+      # step; this is a convenience.
+      - uses: actions/upload-artifact@v7
+        continue-on-error: true
+        if: always()
+        with:
+          name: playwright-report-no-database
           path: |
             playwright-report/
             test-results/
@@ -480,7 +880,7 @@ jobs:
       - name: Wait for the Vercel preview deployment
         id: preview
         if: steps.gate.outputs.run == 'true'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const sha = context.payload.pull_request.head.sha
@@ -512,11 +912,11 @@ jobs:
             }
             core.setFailed(`No successful preview deployment appeared for ${sha} within 12 minutes.`)
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         if: steps.gate.outputs.run == 'true'
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         if: steps.gate.outputs.run == 'true'
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         if: steps.gate.outputs.run == 'true'
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -549,7 +949,15 @@ jobs:
             e2e/category.spec.ts \
             e2e/render-mode.spec.ts
 
-      - uses: actions/upload-artifact@v4
+      # A DIAGNOSTIC ARTIFACT MUST NOT DECIDE THE PIPELINE. `next-build` is
+      # downloaded by four jobs and its failure is fatal on purpose; this one is
+      # read by a human afterwards. On 2026-09-08 the coverage upload hit
+      # `FinalizeArtifact: (403) Forbidden` from GitHub's blob storage AFTER the
+      # tests had passed, which failed the job, skipped `build`, and with it the
+      # bundle gate, pixel parity and both E2E jobs. The verdict is in the test
+      # step; this is a convenience.
+      - uses: actions/upload-artifact@v7
+        continue-on-error: true
         if: always() && steps.gate.outputs.run == 'true'
         with:
           name: playwright-report-preview

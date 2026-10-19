@@ -54,9 +54,68 @@ describe('money', () => {
     }
   })
 
-  it('round trips every value through agorot and back', () => {
+  it('round trips every value through agorot and back, EXACTLY', () => {
+    // `toBeCloseTo(x, 2)` was here, and it is the one matcher that would hide
+    // the bug this module exists to prevent: it passes for any error under
+    // 0.005, which is half an agora. A round trip through an integer
+    // representation is not approximately correct, it is correct, so the
+    // assertion is now equality and the tolerance is gone.
     for (const value of ['0', '0.01', '9.99', '99.99', '100.00', '-5.50', '12345.67']) {
-      expect(agorotToIls(ilsToAgorot(value))).toBeCloseTo(Number(value), 2)
+      expect(agorotToIls(ilsToAgorot(value))).toBe(Number(value))
+    }
+  })
+
+  it('is exact on the values IEEE-754 addition gets wrong', () => {
+    // WHERE THE SAFETY ACTUALLY COMES FROM, measured rather than assumed.
+    //
+    // I first wrote this claiming the integer split (`whole * 100 + fraction`)
+    // is what prevents float error, then substituted `Math.round(Number(s) *
+    // 100)` into money.ts to prove it. All 25 tests passed. The two forms are
+    // equivalent for every input the regex admits, because float error at two
+    // decimal places is ~1e-13 and rounding absorbs it.
+    //
+    // So the guard is the REGEX, not the arithmetic. `/^(-?)(\d+)(?:\.(\d{1,2}))?$/`
+    // is what refuses a third decimal, a comma, an exponent and a bare dot, and
+    // the integer split is defence in depth behind it. Asserting the regex is
+    // therefore the assertion that matters, and it is the one below.
+    expect(0.1 + 0.2).not.toBe(0.3) // the float this module exists to avoid
+    expect(ilsToAgorot('0.10') + ilsToAgorot('0.20')).toBe(ilsToAgorot('0.30'))
+    expect(ilsToAgorot('0.07') * 3).toBe(21)
+
+    // 1.005 is stored as 1.00499999999999989, so `(1.005).toFixed(2)` is
+    // "1.00" and a cent vanishes. Passing the number through toFixed first is
+    // therefore lossy; passing the STRING is refused outright, which is the
+    // behaviour that keeps the loss from being silent.
+    expect((1.005).toFixed(2)).toBe('1.00')
+    expect(() => ilsToAgorot('1.005')).toThrow(TypeError)
+  })
+
+  it('refuses every shape that is not a two-decimal amount', () => {
+    // The real boundary. Each of these is a way a price reaches the money path
+    // from somewhere it should not have: an exponent from JSON, a comma from a
+    // Hebrew locale input, a third decimal from a percentage calculation.
+    for (const bad of ['1e2', '1,50', '.5', '5.', '', ' ', 'NaN', 'Infinity', '0x10', '1.2.3']) {
+      expect(() => ilsToAgorot(bad), `should reject ${JSON.stringify(bad)}`).toThrow(TypeError)
+    }
+  })
+
+  it('stays exact at a scale where a float has already lost the agora', () => {
+    // 2^53 agorot is about 90 trillion shekels, so this is far outside any real
+    // order. The point is the boundary: the guard is a safe-integer assert, and
+    // a value just inside it must survive the round trip byte for byte rather
+    // than being silently rounded.
+    const big = '90071992547.40'
+    expect(agorotToIls(ilsToAgorot(big))).toBe(Number(big))
+    expect(ilsToAgorot(big)).toBe(9_007_199_254_740)
+  })
+
+  it('rejects a third decimal rather than rounding it away', () => {
+    // The dangerous direction. Accepting 1.005 and rounding it would mean a
+    // price the customer was never quoted, decided by a rounding rule nobody
+    // chose. It throws instead, at the boundary, where the caller still has
+    // the original string.
+    for (const bad of ['1.005', '0.001', '10.999', '5.1234']) {
+      expect(() => ilsToAgorot(bad), bad).toThrow(TypeError)
     }
   })
 

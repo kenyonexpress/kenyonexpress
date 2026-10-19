@@ -78,7 +78,7 @@ describe('contentSecurityPolicyFor', () => {
 
   it('still allows Cardcom to be framed by us, which is the other half', () => {
     expect(contentSecurityPolicyFor('/checkout')).toContain(
-      'frame-src https://secure.cardcom.solutions',
+      'frame-src https://secure.cardcom.solutions https://challenges.cloudflare.com',
     )
   })
 

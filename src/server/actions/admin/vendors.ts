@@ -129,6 +129,18 @@ async function runUpdateVendorStatus(
 
   revalidatePath('/admin/vendors')
   revalidatePath(`/admin/vendors/${id}`)
+  // Suspending a vendor takes their whole catalogue off the storefront. It was
+  // the one vendor mutation with no audit row, and the file-level coverage test
+  // could not see that because `runUpsertVendor` above satisfies it for the
+  // whole module.
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: 'updated',
+    entityType: 'vendors',
+    entityId: id,
+    changes: { old: null, new: { status: parsed.data } },
+  })
   return { success: 'סטטוס עודכן' }
 }
 
@@ -160,9 +172,10 @@ async function runSoftDeleteVendor(id: string): Promise<{ error?: string }> {
   }
 
   const supabase = await createClient()
+  const deletedAt = new Date().toISOString()
   const { error } = await supabase
     .from('vendors')
-    .update({ deleted_at: new Date().toISOString(), status: 'suspended' })
+    .update({ deleted_at: deletedAt, status: 'suspended' })
     .eq('id', id)
   if (error) return { error: error.message }
 
@@ -176,6 +189,15 @@ async function runSoftDeleteVendor(id: string): Promise<{ error?: string }> {
   })
 
   revalidatePath('/admin/vendors')
+  // A delete is the mutation an audit row exists for. This one had none.
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: 'deleted',
+    entityType: 'vendors',
+    entityId: id,
+    changes: { old: null, new: { deleted_at: deletedAt, status: 'suspended' } },
+  })
   return {}
 }
 

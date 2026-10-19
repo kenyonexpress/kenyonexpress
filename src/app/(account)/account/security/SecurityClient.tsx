@@ -1,7 +1,8 @@
 'use client'
 
 import { createClient } from '@/lib/supabase/client'
-import { useEffect, useState, useTransition } from 'react'
+import Image from 'next/image'
+import { useCallback, useEffect, useState, useTransition } from 'react'
 
 type Factor = { id: string; status: string; friendly_name?: string | null }
 
@@ -19,15 +20,14 @@ export default function SecurityClient({ isStaff }: { isStaff: boolean }) {
   const [message, setMessage] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
-  async function refresh() {
+  const refresh = useCallback(async () => {
     const supabase = createClient()
     const { data } = await supabase.auth.mfa.listFactors()
     setFactors((data?.totp ?? []) as Factor[])
-  }
-  // biome-ignore lint/correctness/useExhaustiveDependencies: mount-only load; refresh is recreated per render, so listing it would re-fetch MFA factors on every render
+  }, [])
   useEffect(() => {
     void refresh()
-  }, [])
+  }, [refresh])
 
   function beginEnroll() {
     setMessage(null)
@@ -119,7 +119,13 @@ export default function SecurityClient({ isStaff }: { isStaff: boolean }) {
               סרוק את הקוד באפליקציית אימות (Google Authenticator, 1Password וכו') והזן את הקוד:
             </p>
             {/* The QR arrives as an SVG data URL from Supabase itself. */}
-            <img src={qr} alt="קוד QR להרשמת אימות דו-שלבי" width={176} height={176} />
+            <Image
+              src={qr}
+              alt="קוד QR להרשמת אימות דו-שלבי"
+              width={176}
+              height={176}
+              unoptimized
+            />
             <div className="flex gap-2">
               <input
                 value={code}

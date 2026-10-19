@@ -1,5 +1,6 @@
 'use client'
 
+import { fetchWithTimeout } from '@/lib/http/fetch-with-timeout'
 import { formatAgorot, formatCouponCode, formatCouponDate } from '@/lib/vouchers/coupon-view'
 import {
   type DrainResult,
@@ -28,16 +29,11 @@ import { useCallback, useEffect, useRef, useState } from 'react'
  * a wrong code, a spent voucher or a lapsed one is caught while it still costs
  * nothing to be wrong.
  *
- * Redemption itself is one POST to /api/supplier/vouchers/redeem carrying a
- * fresh idempotency_key, so a double tap on a flaky till connection cannot
- * redeem twice.
- *
- * WHEN THE CONNECTION IS DOWN THE SCAN IS KEPT, NOT LOST (closeout L10, row
- * 13, ported from the production branch). A failed lookup or a failed redeem
- * goes into `lib/vouchers/offline-queue.ts` with the key it was minted with,
- * and the queue drains through `/api/supplier/vouchers/redeem-batch` on the
- * browser's `online` event or the button. A queued scan has NOT been checked:
- * the screen says so, and the verdicts arrive with the drain.
+ * Redemption itself is one POST to /api/supplier/redeem carrying a fresh
+ * idempotency_key, so a double tap on a flaky till connection cannot redeem
+ * twice. That path is the documented alias; it re-exports the handler in
+ * /api/supplier/vouchers/redeem and adds nothing, so the guards are the same
+ * ones either address reaches.
  */
 
 type Stage = 'input' | 'confirm' | 'result'
@@ -85,6 +81,15 @@ type BarcodeDetectorCtor = (new (opts?: { formats?: string[] }) => BarcodeDetect
   getSupportedFormats?: () => Promise<string[]>
 }
 
+/** `crypto.randomUUID` where it exists, and a time-plus-random string where it
+ * does not. A till browser without it is old, not hostile: the key only has to
+ * be unique among this user's recent scans for the database to tell them apart.
+ */
+function newIdempotencyKey(): string {
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) return crypto.randomUUID()
+  return `${Date.now()}-${Math.round(Math.random() * 1e9)}`
+}
+
 export default function ScanClient({ supplierName }: { supplierName: string }) {
   const [stage, setStage] = useState<Stage>('input')
   const [rawInput, setRawInput] = useState('')
@@ -96,6 +101,24 @@ export default function ScanClient({ supplierName }: { supplierName: string }) {
   const [error, setError] = useState<string | null>(null)
   const [lookup, setLookup] = useState<LookupResponse | null>(null)
   const [result, setResult] = useState<RedeemResponse | null>(null)
+  /**
+   * One key per SCANNED VOUCHER, not one per tap on the button.
+   *
+   * This used to be minted inside `redeem()`, which defeated the guard it was
+   * written for. `redeem_voucher` dedupes on `idempotency_key`: a repeat with
+   * the same key returns the FIRST answer, success payload and all. A fresh key
+   * on every tap is a new request to the database, so the second tap fell
+   * through to the atomic single-use UPDATE, matched nothing, and came back
+   * `already_redeemed` with a 409.
+   *
+   * The money was never at risk -- the UPDATE is the real single-use guard and
+   * it held. What broke was the sentence on the till screen: a cashier who
+   * double-tapped, or whose connection dropped and pressed again, was told
+   * "השובר כבר מומש" about the voucher they were in the middle of redeeming,
+   * with no balance to collect shown. That reads as "this customer already
+   * used it", and the customer is standing there.
+   */
+  const [redeemKey, setRedeemKey] = useState<string | null>(null)
 
   const [queue, setQueue] = useState<QueuedScan[]>([])
   const [draining, setDraining] = useState(false)
@@ -178,11 +201,19 @@ export default function ScanClient({ supplierName }: { supplierName: string }) {
       setPendingCode(code)
       setPendingToken(token)
       setMethod(scanMethod)
+      // Minted here, once, for the voucher about to be confirmed. Every attempt
+      // to redeem THIS voucher carries it, so a retry is a replay the database
+      // recognises rather than a second request it has to refuse.
+      setRedeemKey(newIdempotencyKey())
       setError(null)
       setChecking(true)
       try {
-        const res = await fetch('/api/supplier/vouchers/lookup', {
+        // Bounded, unlike the redeem call below, because a lookup READS. A
+        // counter staring at a spinner learns nothing; an error it can act on
+        // is strictly better, and repeating a read costs nothing.
+        const res = await fetchWithTimeout('/api/supplier/vouchers/lookup', {
           method: 'POST',
+          timeoutMs: 15_000,
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify({
             code: token ? undefined : code,
@@ -287,12 +318,20 @@ export default function ScanClient({ supplierName }: { supplierName: string }) {
   const redeem = async () => {
     setSubmitting(true)
     setError(null)
-    // MINTED ONCE PER ATTEMPT AND REUSED IF IT HAS TO BE QUEUED. `redeem_voucher`
-    // keys its whole effect on this, so one key sent five times burns one
-    // voucher and reports `already_redeemed` for the rest. A key regenerated on
-    // retry would make each retry a fresh redemption request.
-    const idempotencyKey = newIdempotencyKey()
+    // Falls back to a fresh key only if the flow was entered without one, which
+    // no path does today; it is here so a future entry point cannot send null.
+    const idempotencyKey = redeemKey ?? newIdempotencyKey()
     try {
+      // DELIBERATELY UNBOUNDED, and the reason is the same one cardcom.ts
+      // gives for refusing to retry a charge. This POST BURNS a voucher. A
+      // timeout here does not cancel it -- the request may have arrived and
+      // only the response may be lost -- so the timeout's only effect is to
+      // hand the counter an error next to a voucher that may already be spent.
+      // Within one scan a retry is safe, because `redeemKey` is fixed at scan
+      // time and the route is idempotent on it; but a reset clears that key
+      // (see setRedeemKey(null) below), so the retry a visible error invites is
+      // the one that can burn twice. Bounding this needs a server-side
+      // idempotency window that survives the reset, not a client timer.
       const res = await fetch('/api/supplier/redeem', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
@@ -338,6 +377,11 @@ export default function ScanClient({ supplierName }: { supplierName: string }) {
     setLookup(null)
     setResult(null)
     setError(null)
+    // The next voucher is a different request and must not inherit this key: a
+    // reused key with a different code is refused outright by redeem_voucher
+    // (`invalid_request`), which is the correct answer to a client that has
+    // confused two vouchers, and not something to make it say.
+    setRedeemKey(null)
   }
 
   if (stage === 'confirm' && lookup) {
@@ -534,7 +578,7 @@ export default function ScanClient({ supplierName }: { supplierName: string }) {
           autoComplete="off"
           placeholder="XXXXX-XXXXX"
           dir="ltr"
-          className="w-full rounded-xl border border-gray-300 px-4 py-3 text-center font-mono text-lg tracking-widest text-gray-900 placeholder:text-gray-300 focus:border-gray-900 focus:outline-none"
+          className="w-full rounded-xl border border-gray-300 px-4 py-3 text-center font-mono text-lg tracking-widest text-gray-900 placeholder:text-gray-300 focus:border-gray-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2"
         />
         {error && <p className="text-center text-sm text-red-600">{error}</p>}
         <button

@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { BUY_BUTTON } from './helpers'
+import { BUY_BUTTON, expectHebrewRtl } from './helpers'
 
 /**
  * The whole customer journey in one pass: search -> product -> cart -> the
@@ -18,6 +18,44 @@ import { BUY_BUTTON } from './helpers'
 const DISCOVERY_TIMEOUT = 15_000
 
 test.describe('search to checkout', () => {
+  /**
+   * THE HOMEPAGE IS THE ENTRY POINT, AND IT WAS THE ONE SURFACE THIS SPEC
+   * SKIPPED.
+   *
+   * The journey used to open at `/products`. That is not where a shopper
+   * arrives, and it is not the same code: the homepage renders deal cards
+   * built by `lib/ke-live-deals` and the homepage CMS, while `/products` is
+   * the catalogue grid. A homepage that renders zero linked products - the
+   * exact failure the catalogue-cache bug caused twice, where a failed read
+   * was cached AS an empty shop - passed this spec completely, because the
+   * spec started on the page after it.
+   *
+   * So the run starts at `/` and requires the homepage to hand out at least
+   * one working product link before anything else is asserted.
+   */
+  test('the homepage offers a real product to open', async ({ page }) => {
+    await page.goto('/')
+    await expectHebrewRtl(page)
+
+    const deals = page.locator('a[href^="/product/"]')
+    await expect(deals.first()).toBeVisible({ timeout: DISCOVERY_TIMEOUT })
+
+    // Not just present: the link has to lead to a page that renders. An href
+    // built from a null slug gives `/product/` or `/product/undefined`, which
+    // is a 404 the card itself cannot show.
+    const href = await deals.first().getAttribute('href')
+    expect(href, 'homepage deal card has no href').toBeTruthy()
+    expect(href, 'homepage deal card links to an empty slug').not.toMatch(
+      /^\/product\/(undefined|null)?$/,
+    )
+
+    await deals.first().click()
+    await page.waitForURL(/\/product\//)
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible({
+      timeout: DISCOVERY_TIMEOUT,
+    })
+  })
+
   test('a shopper can find a product, add it, and reach checkout', async ({ page }) => {
     // 1. Find something to buy. The search box takes the first word of a real
     //    product name, so the query is guaranteed to have a match.

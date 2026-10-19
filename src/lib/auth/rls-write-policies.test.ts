@@ -133,6 +133,10 @@ describe('the write side of RLS', () => {
       split_executions: 'the executed money split, per order item. Immutable once written.',
       escrow_holds:
         'abolished model, two historical rows. Nothing may write here again, by any path.',
+      wallet_transactions:
+        'the superseded single-entry wallet from migration 006. It used to be admin-writable, and migration 168 closed it: no client role has any write path to it now. Zero rows, no writer in the code, and the only reader left is the admin user page. Re-measured 2026-09-07.',
+      wallet_balances:
+        'the balance view of that same superseded wallet, closed by the same migration 168 and for the same reason. A balance a client could write is not a balance, it is a claim. Re-measured 2026-09-07.',
       wallet_entries:
         'the live cashback ledger, and the one step (19) calls append-only. Double-entry: every row names a debit_account and a credit_account, so a balance is the sum of its entries and nothing else. An UPDATE path would let a corrected row silently restate a balance that was already shown to a customer; the correction a ledger allows is a second, compensating entry. Written only by the service role, from the checkout return path.',
     }
@@ -174,14 +178,14 @@ describe('the write side of RLS', () => {
     /**
      * Admin-gated, deliberately: an operator has to be able to fix a bad row.
      *
-     * `wallet_transactions` and `wallet_balances` are here for a narrower
-     * reason than the other two, and it is worth not misreading them as the
-     * wallet. They are the superseded single-entry wallet from migration 006.
-     * Both hold 0 rows, no code writes to either, and the only reader left is
-     * the admin user page. The ledger the site actually runs on is
-     * `wallet_entries`, which is asserted above to have no write policy at all.
+     * `wallet_transactions` and `wallet_balances` USED TO BE HERE, as the
+     * superseded single-entry wallet from migration 006 that an admin could
+     * still repair. The 2026-09-07 re-measurement found they have no write
+     * policy at all any more: migration 168 made them client read-only. That is
+     * strictly tighter, so they moved up into the immutable list rather than
+     * being relaxed back into this one.
      */
-    const ADMIN_ONLY = ['order_items', 'orders', 'wallet_transactions', 'wallet_balances']
+    const ADMIN_ONLY = ['order_items', 'orders']
 
     it.each(ADMIN_ONLY)('%s is writable only behind is_admin()', (table) => {
       const policies = writes.policies.filter((p) => p.tablename === table)

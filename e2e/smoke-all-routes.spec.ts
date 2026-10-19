@@ -70,3 +70,50 @@ test.describe('smoke: every static route answers', () => {
     })
   }
 })
+
+/**
+ * A MISSING PRODUCT MUST SAY 404 IN THE STATUS LINE, NOT ONLY IN THE BODY.
+ *
+ * Measured 2026-09-08 against `pnpm start`: every one of these already answers
+ * with a real 404, and nothing held them there. The reason that is worth a test
+ * rather than an assumption is `cacheComponents`.
+ *
+ * Under it, an uncached read at the top of a page fails the BUILD unless it sits
+ * inside `<Suspense>`. Push the read in, and `notFound()` now fires after the
+ * shell has flushed - so the response is 200 with the not-found UI streamed into
+ * it. `/debug/sentry` and `/debug/sentry/render` are exactly that shape today,
+ * deliberately: `connection()` inside a boundary is what keeps
+ * SENTRY_DEBUG_ROUTES toggleable on an already-built deploy, and the pages
+ * argue for the trade in their own comments. The body served is the 404 page,
+ * so the gate holds; only the status line is soft.
+ *
+ * Wrapping a product page's data read in a boundary is an ordinary PPR
+ * optimisation, and it would turn every missing product into a soft 404 across
+ * the whole catalogue with no other symptom. Search engines treat those as a
+ * quality problem, and this repo already reasons about status semantics - see
+ * the 410-not-404 decision in src/proxy.ts.
+ */
+test.describe('missing pages answer with a real status code', () => {
+  const MISSING = [
+    '/product/no-such-product-xyz',
+    '/category/no-such-category-xyz',
+    '/blog/no-such-post-xyz',
+    '/totally-unknown-path-xyz',
+  ]
+
+  for (const route of MISSING) {
+    test(`404 status for ${route}`, async ({ request }) => {
+      const response = await request.get(route, { maxRedirects: 0 })
+      expect(response.status(), `${route} must be a hard 404, not a 200 carrying 404 markup`).toBe(
+        404,
+      )
+    })
+  }
+
+  test('the API debug endpoint 404s by status while the flag is unset', async ({ request }) => {
+    // A Route Handler can set the status itself, so this half has no excuse and
+    // is held to it.
+    const response = await request.get('/api/debug/sentry', { maxRedirects: 0 })
+    expect(response.status()).toBe(404)
+  })
+})

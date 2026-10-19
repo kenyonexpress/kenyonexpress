@@ -1,602 +1,294 @@
 # `migrations/pending/`
 
-## 2026-10-19: 189 PENDING (WebAuthn passkey registration and authentication)
-
-`189_passkeys_webauthn.sql` creates the `passkeys` table to store user
-credentials for WebAuthn authentication (Face ID, Touch ID, FIDO2 keys).
-Each row holds a credential_id, public_key, counter for replay protection,
-and transport list. RLS is enabled with per-user read/write/update/delete
-policies. The table is indexed by user_id and credential_id for fast lookups.
-Rollback is one DROP TABLE IF EXISTS.
-
-
-## 2026-10-19: 190 PENDING (WhatsApp OTP verification via Twilio)
-
-`190_whatsapp_otp.sql` adds WhatsApp-based OTP verification for first-time
-user registration. It creates the `otp_sessions` table to store temporary OTP
-codes with rate limiting (5 attempts per phone number per hour), and adds
-`verified_phone` and `verified_phone_at` columns to `profiles` to track which
-phone numbers have been verified. OTP codes are 6 digits, valid for 10 minutes,
-and delivered via Twilio's WhatsApp Business API with the message template
-"קוד האימות שלך לקניון אקספרס X X X X X X". The table is RLS-enabled with
-read access for authenticated users and system inserts/updates. Rollback drops
-both columns from `profiles` and the `otp_sessions` table.
-
-Three API endpoints support this: `/api/auth/otp/send` (rate limited by phone
-number), `/api/auth/otp/verify` (rate limited by phone for code guessing), and
-WhatsApp OTP form UI integrated into the registration flow with phone number
-validation, OTP input, and resend capability.
-
-
-## 2026-10-19: 243 + 244 PENDING (product shipping location)
-
-`243_product_full_address.sql` adds `products.full_address`, a text column for
-storing the complete street address (e.g., "רוטשילד 15 תל אביב"). Displayed on
-the product page detail view only, not on product cards. Nullable, defaults to
-NULL. Rollback is one DROP COLUMN IF EXISTS.
-
-`244_product_is_physical_shipping.sql` adds `products.is_physical_shipping`, a
-boolean column indicating whether a product ships to the entire country (true)
-or only to a specific city (false). When true, the city field is disabled in the
-admin form and displays "כל הארץ" (entire country) in the UI. When false, city
-becomes required. Defaults to false. Rollback is one DROP COLUMN IF EXISTS.
-
-These two migrations support the admin product form enhancement to allow marking
-products as shipping nationwide while optionally providing a full address. The
-product card and page display logic is updated to show "כל הארץ" for nationwide
-products and the specific city name otherwise, with a fallback to "כל הארץ" if
-neither is set.
-
-## 2026-09-17: 242 PENDING (job queue dead letters)
-
-`242_job_dlq.sql` adds `job_dlq`, the dead-letter table for the general job
-queue in `src/lib/jobs` (one envelope, one worker at `/api/jobs/run`, one
-QStash failure callback at `/api/jobs/dlq`, one replay cron at
-`/api/cron/job-dlq`). Same shape as 069's `search_index_dlq` plus `job_type`
-lifted out of the envelope and `replayed_at` next to `resolved_at`; status
-is one of dead / replayed / exhausted / discarded, and the cron stamps a row
-`exhausted` after three replays rather than looping it. Server-only: RLS on,
-no policy, anon and authenticated revoked, service_role the only writer, and
-the closing DO block raises on any client grant or any policy. Rollback is
-one DROP TABLE. Until applied, the callback route answers 500 (QStash keeps
-the message and retries the callback) and the cron replays nothing;
-`src/lib/supabase/pending-jobs.ts` is the one cast that names the table and
-is deleted when `database.ts` is regenerated. Not yet dry-run on production.
-
-## 2026-09-17: 240 + 241 PENDING (performance: FK indexes, one cart per account, RLS initplan)
-
-`240_perf_fk_indexes_and_cart_uniqueness.sql` is the index half of the
-performance goal. Section 1 adds covering indexes for the nine foreign keys
-Supabase's performance advisor listed as unindexed on 2026-09-17
-(cashback_ledger x2, coupon_qr_batches, coupon_redemptions, gift_cards,
-pickup_points, stock_waitlist, support_tickets, whatsapp_contacts), the same
-shape as 160 and 163. Section 2 adds `carts_profile_id_uidx`, a partial
-unique index on `carts(profile_id) where profile_id is not null`: the
-"no unique index on profile_id" that `cartRowOrFail` in
-src/server/actions/cart.ts has documented since 08-20 as the way an account
-ends up owning two carts. A guard block refuses the file if any account
-already holds two rows (measured 0 across 2763 carts on 09-17), and
-`runMergeGuestCart` now treats the 23505 the index will raise on a racing
-login as "retry at next login" rather than a crash. Not what it does:
-nothing about the storefront's read path, which is where the seq scans the
-advisor also shows live (categories 642K, profiles 435K scans, both on tables
-of 12-13 rows where a seq scan is the planner's correct choice).
-
-`241_rls_initplan_policies.sql` rewrites the six policies lint
-0003_auth_rls_initplan flags (profiles_super_admin_mfa,
-webauthn_credentials_{select,delete}_own, push_subscriptions_{select,delete}_own,
-cashback_ledger_owner_select) so `auth.uid()` / `current_user_role()` is a
-scalar subquery evaluated once per statement instead of once per row. Each
-policy was read off `pg_policies` on 09-17 and is restated with the same
-name, mode, role, command and qual, changed only by the `(select ...)`
-wrap; the file's closing block re-reads all six and refuses if any still
-carries a bare per-row call or if the RESTRICTIVE one came back permissive.
-Both files dry-run on production the same day in rolled-back DO blocks;
-the probe output is in APPLY-ORDER.md.
-
-## 2026-09-17: 239 PENDING (push delivery log, SMS log, SMS opt-outs)
-
-`239_push_deliveries_sms_log_opt_outs.sql` adds the three tables the
-notification stack writes to and production does not have: `push_deliveries`
-(one row per browser subscription per notification, so a 410 on one phone is
-not collapsed into the outbox's single `push_error`), `sms_messages` (the SMS
-log with its cost) and `sms_opt_outs`, plus a widened CHECK on
-`notification_preferences` so a customer can switch SMS off on its own. Every
-table is RLS-enabled with owner and admin SELECT only; the service role is the
-only writer, and the file's closing DO block raises if a client role holds DML.
-
-Numbering: written as 237 on the same day `237_user_ban_and_store_settings`
-was filed by another session. Two pending files with one number is an
-apply-order ambiguity, so this one moved to 239, the next free number. It does
-not restate `public.set_updated_at()`: the live function is pinned and a
-CREATE OR REPLACE would un-pin it for every table that uses it (the 188 trap).
-Preconditions asserted in the file: 095/179/198 applied, `set_updated_at`
-present. Not yet dry-run on production.
-
-## 2026-09-17: 238 PENDING (search events by day)
-
-`238_search_events_daily.sql` gives search analytics a day axis. `search_events`
-(118) is an all-time aggregate per term, so the admin page's zero-result rate
-cannot say whether a gap is closing. The file adds `search_events_daily`, keyed
-by (UTC day, normalised term) with the same two counters, and restates
-`fn_record_search` as 118 wrote it plus one upsert into the new table, so both
-are written in the same statement. No user, no IP, no session: 118's privacy
-contract is unchanged. Reads are staff-only through the same `has_role('admin')`
-policy; the function stays `service_role`-only, as production has it (158/159).
-
-The live function body was read off production on 2026-09-17 and matches 118's
-file byte for byte, so the CREATE OR REPLACE is 118 plus one INSERT and not a
-stale copy over a drifted body. Dry-run on production the same day in a
-rolled-back DO block: table, index, policy, grants, and one recorded search
-landing in both tables with matching counters; re-read after: 0 tables, so the
-rollback held.
-
-The admin page (`src/app/(admin)/admin/search`) shows the all-time figures and
-no trend section until this is applied; `src/lib/supabase/pending-search-daily.ts`
-is the one cast that names the table and is deleted when `database.ts` is
-regenerated.
-
-## 2026-09-17: 237 PENDING (user ban record + store settings)
-
-`237_user_ban_and_store_settings.sql` gives the admin panel two places to
-write that it did not have.
-
-**The ban record.** The lock itself is `auth.users.banned_until`, set by the
-new `banUser` action through the Auth admin API; GoTrue then refuses the
-user's token refresh and `proxy.ts` calls `auth.getUser()` on every request,
-so a live session dies on its next page load with no column of ours
-involved. This file adds the panel's record of the fact on `profiles`:
-`banned_at`, `ban_reason` (500 chars) and `banned_by`, plus a partial index
-for the "banned" filter. A separate BEFORE UPDATE trigger,
-`enforce_profile_ban_columns`, refuses a non-admin change to the three
-columns, because `profiles_update_unified` lets an owner update their own
-row. It is a second trigger and not an edit to 181b's
-`enforce_profile_privilege_columns` on purpose: that live body was read off
-production on 2026-09-17 and differs from 090's file in this repo.
-
-**Store settings.** `store_settings` is a singleton (`CHECK (id = 1)`) of
-operator knobs: name, support email and phones (stored as 972 digits, the
-form normalises), address, `min_order_agorot` and
-`free_shipping_threshold_agorot` (bigint agorot, non-negative),
-`checkout_enabled`, `maintenance_mode` and a message. Reads are granted to
-the panel tiers through `is_support()`; there are zero write policies and
-the settings action writes with the service role after
-`requireSection('settings', 'write')`. The storefront reads it through
-`src/lib/store-settings/load.ts`, which returns the compiled defaults on
-42P01 or any read error, so nothing renders differently until this is
-applied. One behavioural consumer: `beginCheckout` refuses with
-`CHECKOUT_DISABLED` when `checkout_enabled` is false, after the env kill
-switch, failing open on a read error like the fraud rail beside it.
-
-Dry-run on production 2026-09-17 in a rolled-back DO block: all three
-columns, the trigger, the table with its seed row, one SELECT policy and
-`authenticated:SELECT` as the only client grant; the action's upsert path
-ran and a second row was refused by the CHECK. Re-read after: 0 ban
-columns, 0 `store_settings` tables, so the rollback held. Idempotent;
-rollback is in the file header.
-
-**Directory drift found while measuring, NOT acted on here:**
-`supabase_migrations.schema_migrations` records `coupon_qr_redemption_217`
-(2026-09-09), `reviews_admin_moderation_only_232`, `wishlist_alerts_233` and
-`gift_cards_234` (all 2026-09-10) as applied, while their files still sit in
-this directory. The inventory test cannot see production and so cannot
-catch this. Moving them to `applied/` needs the checksum file regenerated
-and the inventory list edited in the same commit; recorded in STATE.md for
-that pass.
-
-## 2026-09-16: 236 PENDING (orders: shipping method)
-
-`236_orders_shipping_method.sql` gives the shopper's shipping choice a place
-to land. The cart now offers two methods from a code registry
-(`src/lib/shipping/methods.ts`): delivery by the supplier, which is what every
-order has meant so far, and self pickup at the supplier. The pick is held in
-the `ke_cart_shipping` cookie, validated against the registry on every read,
-and priced into `CartView.shipping`. At checkout it has nowhere to go:
-`orders` records an address and no fulfilment method.
-
-Two additive columns: `shipping_method text` with a CHECK on the two
-registry ids (NULL means supplier delivery, so every existing row keeps its
-meaning), and `shipping_agorot bigint NOT NULL DEFAULT 0` for the rate.
-Every registered rate is zero and `src/lib/shipping/methods.test.ts` pins it
-there: the settlement engine does not add shipping to the card charge, and a
-non-zero rate before it does would make the cart total and the charged amount
-disagree.
-
-Checkout already writes the method, in its own UPDATE after the orders
-INSERT and only for a non-default pick, logging
-`checkout.shipping_method_not_recorded` while the column is missing (see the
-gift pattern beside it in `checkout.ts`). No reader names the column yet; the
-supplier and admin order pages gain it once this is applied. Idempotent, no
-dry-run against production yet; rollback is two `DROP COLUMN IF EXISTS`.
-
-## 2026-09-16: 235 PENDING (product live channel + rating summary)
-
-`235_product_live_and_rating.sql` gives the product page the two things it
-cannot get from its hour-long cache: a per-product broadcast topic and a
-rating it is allowed to show.
-
-**The live channel** is an AFTER UPDATE trigger on `products` (stock,
-price, compare-at, status, deleted_at) that calls `realtime.send` on the
-public topic `product:<id>` with exactly six catalogue fields plus the
-reservation-aware `available_stock`. Broadcast, not `postgres_changes`:
-a row-change feed ships the whole row, and `anon` holds column SELECT on
-all 93 columns of `products` today (measured 2026-09-16; `cost_ils`,
-`platform_percent` and `supplier_split_percent` included, a pre-existing
-exposure filed in STATE.md and NOT widened here). The trigger body swallows
-every error, because it fires inside the same transaction as finalize's
-stock decrement and a broadcast must never roll a paid order back. Reader:
-`src/lib/product-live/use-product-live.ts`; proof against production:
-`scripts/verify-product-live.mjs`.
-
-**The rating summary** is `product_rating_summary(p_product_id)`, SECURITY
-DEFINER over the rows 232 closed to `anon`, returning the one-decimal
-average and the count of APPROVED, undeleted reviews and nothing else.
-Reader: `loadRatingSummary` in `src/lib/product-detail.ts`, which treats
-PGRST202 (function absent, i.e. 235 not applied) as "no rating" and renders
-the identifiers in the slot as before.
-
-Dry-run on production 2026-09-16 in a rolled-back DO block: both functions
-and the trigger created, `anon` can execute the summary (returned
-`null / 0` for a product with no reviews), an UPDATE of `stock_quantity`
-fired the trigger without raising. The broadcast row itself did NOT land:
-`realtime.messages` had partitions only through `messages_2026_09_13`, so
-`realtime.send` hit "no partition of relation messages found for row" and
-swallowed it exactly as designed. The Realtime service creates those
-partitions when a tenant is connected; a subscribed client is what wakes it.
-That is what the verify script checks, and until it passes the feature is
-a no-op page, not a broken one.
-
-## 2026-09-10: 234 APPLIED (gift cards)
-
-`234_gift_cards.sql` is the stored-value instrument: `gift_cards` (hashed
-bearer code, integer agorot face value, five-year statutory expiry stamped
-at issuance), `products.is_gift_card`, the `gift_card_issued` outbox kind,
-and `redeem_gift_card(p_code_hash, p_user_id)`, which redeems IN FULL into
-the holder's wallet through `fn_wallet_transfer` (idempotency
-`gift_card:<id>:redeem`, debit `platform:revenue`). Recorded in production
-as `gift_cards_234` (20260910032757) and verified object-by-object after
-the fact: the table, the flag column, all five indexes (including the
-partial `gift_cards_issue_dedupe` on `(order_item_id, unit_index)`), the
-owner-only SELECT policy and the widened kind check are all present, with
-zero rows. Clients write nothing; issuance and redemption are service-role
-paths (finalize's `gift-card-issue.ts` and the `gift-cards.ts` actions).
-
-## 2026-09-10: 233 APPLIED (wishlist alerts)
-
-`233_wishlist_alerts.sql` is the state behind the wishlist alerts of 200:
-`wishlist_alert_prefs` (per-user toggles; absent row = drops on, restocks
-on, weekly digest OFF, because the digest is marketing and must be an
-explicit yes) and `wishlist_stock_state` (the last in-stock flag the cron
-saw per product, because a restock is a transition and nothing else records
-one). Owner-only policies on the prefs, the 195 RESTRICTIVE deny-all shape
-on the state table, and the 226 lesson kept: `set_updated_at` is created
-only if missing, never restated. The producer is
-`/api/cron/wishlist-alerts` (drops, restocks, waitlist drain, and the daily
-`price_history` snapshot 193 promised), plus `/api/cron/wishlist-digest`
-(Friday summary to opted-in users); the signed unsubscribe link writes here
-with the service role (`src/server/wishlist/unsubscribe.ts`).
-
-Applied as `wishlist_alerts_233` (version 20260910025004) under the
-2026-09-10 wishlist-alerts /goal, which names Supabase MCP as the migration
-route (the 217 protocol). Full body dry-run first in a rolled-back
-transaction with functional probes: defaults landed true/true/false, the
-unsubscribe upsert cleared exactly the named flags, `authenticated` without
-a uid saw zero rows and could not write the state table (42501), 3+1
-policies, grants as declared. Identical body then went through
-`apply_migration`; post-apply measurement in one SELECT matched on every
-point, 0 rows in both tables. Filed here as the record like
-217/223/224/226/227/228/231/232.
-
-## 2026-09-10: 232 APPLIED (reviews: admin moderation only)
-
-`232_reviews_admin_moderation_only.sql` closes the review model to what the
-business actually does: a verified buyer writes a review, the admin reads it
-in moderation, and no review is ever displayed or supplier-edited. It drops
-`reviews_supplier_reply` (199's UPDATE policy; the reply UI was never built,
-so the policy guarded a write nothing performs) and
-`reviews_public_read_approved` (154's world-read of approved rows), revokes
-199's per-column UPDATE grant on the three `supplier_reply` columns -- a
-grant invisible to `role_table_grants`, which is how "authenticated has no
-UPDATE" read as true while it sat there -- and revokes anon SELECT entirely.
-What remains is owner-plus-admin: 154's three owner policies untouched, and
-moderation on the service role. Applied as
-`reviews_admin_moderation_only_232` under the 2026-09-10 reviews /goal,
-which names Supabase MCP as the migration route (the 217 protocol).
-
-Proven live first, both directions: before apply, `SET LOCAL ROLE anon`
-could SELECT the table and `SET LOCAL ROLE authenticated` could UPDATE
-`supplier_reply` (both in rolled-back transactions); after apply, both
-answer 42501, while the authenticated owner-scoped SELECT still passes. The
-same commit removes the code half -- the product page's approved list and
-its JSON-LD aggregateRating -- and
-`reviews-moderation-migration-guards.test.ts` pins the file's shape.
-
-## 2026-09-10: 231 APPLIED (bell fanout)
-
-`231_bell_fanout.sql` is the writer behind the in-app bell: an AFTER INSERT
-trigger on `notification_outbox` (`outbox_bell_fanout` ->
-`tg_outbox_bell()`) that composes the customer's Hebrew -- title, body,
-account-relative href -- into 198's `public.notifications`, in the same
-transaction as the event. One choke point instead of a dozen call sites:
-every notification the platform owes a customer already passes through that
-one INSERT, `fn_enqueue_notification` already stamps `user_id` on it, and
-the outbox's dedupe (`ON CONFLICT DO NOTHING`) means a replayed enqueue can
-never ring twice. Operator kinds (`supplier_sale`, `invoice_dead`,
-`low_stock`, `reconciliation_gap`) and `account_deleted` fall through the
-ELSE: a kind without Hebrew here gets no bell row, the same gate push
-templates state. `fn_bell_agorot` formats agorot for display with integer
-arithmetic only. Applied as `bell_fanout_231` under the 2026-09-10
-notifications /goal, which names Supabase MCP as the migration route.
-Numbered 231 because 229/230 are taken by pending files on other branches.
-
-Proven first in a rolled-back DO block over production: five kinds
-exercised through the real `fn_enqueue_notification`, correct Hebrew and
-hrefs back, operator kind produced no row, and the probe caught a real bug
-before apply (`array_to_string` over an empty array returns `''` and not
-NULL, so the Hebrew fallback never fired; fixed with `nullif`, pinned in
-`bell-fanout-migration-guards.test.ts`). After apply, the realtime path was
-proven live end to end by `scripts/verify-bell-realtime.mjs`: a probe user
-signed in with the anon key, subscribed to `postgres_changes` filtered on
-its uid, received the INSERT the trigger produced, marked it read through
-the authenticated client (198's `UPDATE (read_at)` column grant held), and
-received its own UPDATE event back with old and new values (REPLICA
-IDENTITY FULL doing its job). All probe artifacts (auth user, profile,
-outbox row, bell row) were removed; residue measured 0.
-
-## 2026-09-10: 228 APPLIED (invoice sequences)
-
-`228_invoice_sequences.sql` gives the platform its own sequential document
-numbering, per terminal and per document type: `invoice_counters` (one row
-per `<cardcom account id>:<document type>` series), `fn_next_invoice_number`
-(a single atomic upsert, so two concurrent issues serialize on the row and
-can never print the same number), and `invoices.series` /
-`invoices.internal_number` with a partial unique index over the pair. The
-number feeds the platform's own Hebrew PDF (`src/lib/invoices/pdf.ts`),
-rendered and mirrored into R2 when the provider returns a document number
-without a fetchable PDF. Applied as `invoice_sequences_228` under the
-2026-09-10 invoicing /goal, which names Supabase MCP as the migration route
-(the 217 protocol).
-
-Proven first in a rolled-back DO block over production: three consecutive
-allocations answered 1, 2, 3, an independent series answered 1, and the
-function ACL held `postgres` and `service_role` only (anon and authenticated
-revoked, RLS on with zero policies on the counter table). Post-apply: RLS on,
-0 counter rows, both columns present, unique index present, ACL unchanged.
-Numbering only ever moves at issue time and only after the provider has
-issued, so a failed attempt burns no number.
-
-## 2026-09-10: 227 APPLIED (discount claim wiring)
-
-`227_discount_claim_wiring.sql` is the wiring 194 built and nothing ever
-called: `beginCheckout` now claims the applied code under the row lock
-(step 4c) before any charge, so `coupons.used_count` and
-`discount_campaigns.used_count` finally move and `max_uses=1` refuses the
-second order instead of the second million. The file also fixes what the
-first rolled-back probe measured: a REPLAY of an order that already held the
-claim answered `exhausted` (the limit check ran before the replay check, the
-exact defect `fn_claim_discount`'s header describes), and the
-`discount_redemptions_amount_positive` CHECK (`> 0`) killed every QR till
-redemption whose route-side `amount_agorot` defaulted to 0. New:
-`release_expired_order_discounts()` (claims of pending/cancelled orders past
-`expires_at` hand the use back, QR units un-redeem; runs from
-`/api/cron/stock`) and `consume_order_discount()` (a stranded payment that
-outlived the sweep puts the use back at finalize). Applied as
-`discount_claim_wiring_227` under the 2026-09-10 inventory /goal, which names
-Supabase MCP as the migration route (the 217 protocol). Proof, rolled back:
-claim ok / replay ok / second order `exhausted` / sweep 1 / consume 1 /
-consume replay 0 / zero-amount claim ok.
-
-## 2026-09-10: 226 APPLIED (fraud controls)
-
-`226_fraud_controls.sql` creates the two server-only tables behind the
-checkout fraud rail: `fraud_flags` (a live chargeback or manual flag blocks
-`beginCheckout` for that customer) and `fraud_review_queue` (what the velocity
-and coupon-stacking detectors file for a human). Applied as
-`fraud_controls_226` (`20260909192241`) under the 2026-09-10 fraud-abuse
-/goal, which names Supabase MCP as the migration route (the 217 protocol).
-Numbered 226 because 225 is taken by a supplier-contact-requests pending file
-on another branch (not on disk here, so it is deliberately not named in this
-manifest).
-
-Proven first in a rolled-back DO block over production: the pending-dedupe
-partial unique index refused a second `(user, kind)` pending row and allowed a
-new one after the first resolved, both CHECK lists refused an unknown kind,
-the blocking-flag read shape returned exactly the probe row, `authenticated`
-had no SELECT, and RLS was on. The deliberate RAISE at the end rolled all of
-it back; the identical file then went through `apply_migration`. Post-apply:
-2 tables, 4 indexes, RLS on with zero policies, `anon`/`authenticated` fully
-revoked, `service_role` writable, trigger present, 0 rows.
-
-The file does NOT restate `set_updated_at` (the 183 lesson): the live body
-pins `search_path TO 'public'`, so the file creates the function only if it
-is missing.
-
-## 2026-09-09: 183 APPLIED, and the preflight is the whole story
-
-`183_order_shipped_notification.sql` enqueues `kind=order_shipped` when an
-order transitions INTO `fulfilled`. A trigger and not application code because
-`fulfilled` has at least three writers, and an enqueue in one of them silently
-skips the others.
-
-**The file would have broken account deletion if applied verbatim.** It restated
-`notification_outbox_kind_check` in full, the style 121 established, from a
-twelve-name list plus `order_shipped`. Read off production 2026-09-09, the live
-constraint already carried **fourteen** names, including `account_deleted` from
-150's lineage. `DROP CONSTRAINT` + `ADD CONSTRAINT` with the shorter list would
-have dropped `account_deleted` and turned every account-deletion notification
-into a 23514. `account_deleted` was added to the file before it was applied, and
-the live constraint still carries all fourteen. **A restated list is only ever as
-current as the day it was written**, which is exactly what 155 already knew: it
-carries a `RAISE EXCEPTION` refusing to run if the check has no `account_deleted`
-yet. 183 had no such guard.
-
-**Applied** as `order_shipped_notification_183`, then proven in a transaction
-that was rolled back (`notification_outbox` reads 0 rows before and after,
-orders still `cancelled=2, paid=2`):
-
-```
-paid -> fulfilled                   1 row enqueued
-UPDATE on an already-fulfilled row  still 1
-bounce out and back                 refused by the 137 guard anyway
-                                    (fulfilled -> partially_fulfilled illegal),
-                                    count held at 1
-dedupe_key    order-shipped:<order uuid>
-payload       order_id, order_ref D3A5AA99, item_count 1, fulfilled_at,
-              customer_name (Hebrew, resolved from profiles)
-```
-
-**A second finding, recorded rather than fixed.** The constraint accepts
-`account_deleted` and **no builder renders it** — there is no
-`buildAccountDeletedEmail`, so `buildNotification` returns null and the drain
-would park such a row forever. Nothing enqueues it today
-(`src/server/actions/account.ts` deliberately sends no goodbye mail), so it is a
-loaded gun on the shelf rather than a fire. It is now tracked as
-`CHECK_ACCEPTS_BUT_RENDERS_NOTHING` in `src/lib/email/outbox-kinds.test.ts`, with
-an inverted assertion so the list cannot rot: write the builder and the test goes
-red asking for the name to be moved. The stale comment in `account.ts` — which
-said the constraint was what blocked the goodbye mail — now says what actually
-blocks it.
-
-
-## 2026-09-09: 181 APPLIED, as 181a + 181b
-
-**181 was the only security file left in the queue and it was NOT applied**,
-which took reading a comment to establish. Both functions it touches,
-`is_support()` and `enforce_profile_privilege_columns()`, already exist in
-production from the 053/090 lineage, so a probe that asks "does the name exist"
-calls 181 applied and drops a live hardening out of the queue. What settled it
-is the comment production reported on the trigger function (still the pre-181
-text) and the absence of the `profiles_super_admin_mfa` policy.
-
-**The hole was real and was read off production, not inferred.** The deployed
-`enforce_profile_privilege_columns` body was literally
-`IF public.is_admin() THEN RETURN NEW; END IF;` with nothing between it and the
-return, so any admin could grant themselves or anyone else `super_admin`
-through the user client. The "only super_admin grants admin roles" rule existed
-only in application code on the service-role path.
-
-**Split in two on the way in**, the shape production already recorded for 135
-(`135a` the enum, `135b` everything using it):
-
-| File | Applied as | What |
-| --- | --- | --- |
-| `181a_read_only_enum.sql` | `read_only_enum_181a` | `ALTER TYPE public.user_role ADD VALUE IF NOT EXISTS 'read_only'`, alone |
-| `181b_admin_rbac_hardening.sql` | `admin_rbac_hardening_181b` | `is_support()` learns the new value; the admin-tier ladder on the guard; the RESTRICTIVE `profiles_super_admin_mfa` policy |
-
-An enum member is permanent — PostgreSQL cannot drop one — so the split buys a
-safe stopping point: 181a on its own is inert, referenced by no policy and no
-function until 181b lands. It also removes the same-transaction hazard entirely
-rather than dodging it with `role::text` comparisons.
-
-**PROVEN in a transaction that was then rolled back**, so production kept no
-probe rows (`profiles` reads 9 customer + 1 super_admin before and after).
-Acting as the real super_admin with an `aal1` claim, which is that account's
-actual session shape today:
-
-```
-self role change              -> cannot change your own role
-grant admin from aal1         -> admin-tier role changes require an
-                                 MFA-verified session (aal2)
-service-role path (uid NULL)  -> succeeded, and assigned 'read_only',
-                                 which also proves 181a's member is usable
-```
-
-**THE ONE THING 181 DID NOT KNOW, and the operator should.** Production holds
-exactly one super_admin and it has **no verified MFA factor** (zero rows in
-`auth.mfa_factors` with `status = 'verified'`). So the file's claim that "a
-super_admin's session is aal2 in practice" was not true: it is aal1, because no
-factor exists at all. Until that account enrols TOTP it cannot UPDATE its own
-`profiles` row through the user client — `updateProfile` in
-`src/server/actions/account.ts` (full_name, phone) is the only such path.
-
-That was checked for a deadlock and there is none: enrolment runs entirely
-through `supabase.auth.mfa.enroll/challenge/verify` and writes to
-`auth.mfa_factors`, never to `profiles`, so the policy cannot block the ceremony
-that lifts it. And `enforceSuperAdminMfa` in `src/lib/admin/rbac.ts` already
-redirects that account away from every admin page to `/admin-mfa?mode=enrol`,
-so this adds no lockout that was not already there.
-
-**No recursion, checked rather than assumed.** The RESTRICTIVE policy on
-`profiles` calls `current_user_role()`, which selects FROM `profiles` — the
-shape 077 had to undo. It is safe only because the deployed function is
-SECURITY DEFINER (`prosecdef = true`, read off production), so its own read
-bypasses RLS and never re-enters the policy. If anyone makes it INVOKER, this
-policy deadlocks every authenticated `profiles` UPDATE.
-
-**Follow-up, not blocking:** `src/types/database.ts` is now stale on
-`user_role` — production has `read_only` and the generated type does not.
-`src/lib/admin/roles.ts` carries `AppRole = UserRole | 'read_only'`, which is
-still load-bearing and self-healing: regenerate the types and the union
-collapses to `UserRole` with no type error.
-
-
-## 2026-09-09: the numbering was a tangle, and it was measured, not guessed
-
-**`pending/` held two 170s and two 171s.** Two sessions that could not see each
-other each picked the next free number, and one of each pair had already been
-applied to production five days earlier. "Apply 170" was an ambiguous
-instruction, which is the worst thing a migration number can be. Every pending
-file was therefore probed against production for the objects it creates, and
-the directory was rearranged to match the answer rather than the other way
-round.
-
-| File | Probe against production | Verdict |
-| --- | --- | --- |
-| `169_audit_full_coverage.sql` | `audit_log_trigger_fn`, `idx_audit_log_request_id`, trigger `audit_orders` all present; `audit_full_coverage_169` (`20260904001341`) | applied → moved to `applied/` |
-| `170_reporting_tables.sql` | the 4 `report_*` tables + all 6 RPCs present; `reporting_tables_170` (`20260904003703`) | applied → moved to `applied/` |
-| `171_search_fts.sql` | `products_search_vector_gin` + `coupon_deals_search_vector_gin`, `search_products`, `fts_prefix_query`, `fts_unaccent`, `fts_join` present; `search_fts_171` (`20260904005239`) | applied → moved to `applied/` |
-| `172_rls_zero_policy_tables.sql` | all ten policies present, and zero public tables now carry RLS with no policy; `rls_zero_policy_tables_172` (`20260904010757`) | applied → moved to `applied/` |
-| `182_coupon_qr_batches.sql` | `coupon_qr_batches` + `coupon_qr_codes` present; `coupon_qr_batches_182` (`20260907163213`) | applied → moved to `applied/` |
-| `186_composite_indexes_top_queries.sql` (was 170) | 0 of its 10 index names existed | **not applied** → renumbered **186**, then applied (below) |
-| `187_category_name_shekel_order.sql` (was 171) | `categories.name_he` for `under-99` still read `עד ₪99` (codepoints `1506,1491,32,8362,57,57`) | **not applied** → renumbered **187**, then applied (below) |
-| `184_orders_monthly_partitioning.sql` (was 148) | `orders_flat`, `orders_invoice_numbers` absent | not applied → renumbered **184** |
-| `185_soft_delete_user_facing_remainder.sql` (was 149) | none of its 4 `deleted_at` indexes exist | not applied → renumbered **185** |
-| `173`, `177`, `178`, `179`, `183` | every table, function and trigger they create is absent | not applied, numbers unchanged |
-| `181_admin_rbac_hardening` (now `181a`+`181b`) | `profiles_super_admin_mfa` absent, and `enforce_profile_privilege_columns` still carries its **pre-181** comment | not applied at the time, number unchanged; **applied later the same day**, see the top of this file |
-
-**181 is why the probe reads comments and not just names.** Both functions it
-touches (`is_support`, `enforce_profile_privilege_columns`) exist in production
-already, from the 053/090 lineage. A probe that asked only "does the name
-exist" would have called 181 applied and moved a live security hardening out of
-the queue. What settles it is the function's own comment, which production
-still reports without the admin-tier ladder 181 adds, and the RESTRICTIVE
-policy it creates, which is absent.
-
-**Why the unapplied file is always the one that moves.** A number production
-has spent cannot be reclaimed by renaming a file — `supabase_migrations.schema_migrations`
-already means something by it. So 148, 149, 170 and 171 stayed with their
-applied owners and the four squatters became 184, 185, 186 and 187. Their
-headers carry the rename and the reason.
-
-**The test that should have caught this now exists.** The only numbering
-assertion in `src/__tests__/pending-migrations-inventory.test.ts` compared
-`pending/` + `applied/` against `supabase/migrations/` and never compared the
-two named directories against each other, so a collision in the exact place the
-file is named after went unseen for five days. `lets no unapplied migration
-squat on a number production has spent` closes it. Duplicates *inside*
-`applied/` stay legal and are documented: production genuinely spent 169 twice
-and 172 twice.
-
-## 2026-09-09: 186 and 187 APPLIED
-
-**`186_composite_indexes_top_queries.sql`** applied via MCP as
-`composite_indexes_top_queries_186`. `preflight_186.sql` ran first against
-production and all four blocks passed: none of the ten index names existed, all
-fourteen columns were present with the expected types, `product_status` carried
-`active`, and no existing index already covered a pattern. All ten indexes were
-read back afterwards and every `indexdef` matches the file. Expand-only —
-`CREATE INDEX IF NOT EXISTS` and nothing else, no drops, no data changes.
-
-**`187_category_name_shekel_order.sql`** applied via MCP as
-`category_name_shekel_order_187`. One row, one text column, matched on the exact
-broken string. Before: `1506,1491,32,8362,57,57` (sign before digits, no
-isolate). After: `1506,1491,32,8294,57,57,160,8362,8297` — `עד ` then
-U+2066 LRI, `99`, NBSP, `₪`, U+2069 PDI, which is exactly what `isolate()` in
-`src/lib/money-format.ts` emits for every other price on the site. No other
-`categories` row still matches the broken shape. `repairPriceOrder` rewrites
-only `₪<digits>`, so it now leaves this name untouched and the datum and the
-render agree. Rollback is at the foot of the file.
+## 2026-09-08: READ docs/MIGRATION-NUMBER-COLLISIONS.md BEFORE APPLYING ANYTHING
+
+`origin/main` has been numbering migrations from the same counter as this
+branch, without either side seeing the other. **Seven numbers name two
+unrelated schema changes, and four of `main`'s are already applied to
+production** (`audit_full_coverage_169`, `reporting_tables_170`,
+`search_fts_171`, `rls_zero_policy_tables_172`, plus `coupon_qr_batches_182`).
 
+This branch's 169-172 are still genuinely unapplied - the applied rows with
+those numbers are `main`'s files. But "apply 170" no longer identifies a
+migration, so the apply order across the two branches is undefined.
+
+Until the owner picks a mainline branch, **apply nothing from either side.**
+The full measured table is in `docs/MIGRATION-NUMBER-COLLISIONS.md`.
+
+## 2026-10-18: 286 APPLIED - feature_flags (rc5 F19)
+
+`286_feature_flags.sql` creates world-readable `feature_flags` (no secrets by
+design) seeded with `maintenance_mode = false`; writes are the service role's.
+The proxy reads it, cached 30 seconds and failing open, next to the
+`MAINTENANCE_MODE` env switch. Applied through MCP `apply_migration`
+(`feature_flags_286`).
+
+## 2026-10-18: 285 APPLIED - WhatsApp sign-in codes (rc5 F15)
+
+`285_auth_wa_otps.sql` stores HMACs of six-digit sign-in codes (10 minutes,
+five attempts, single use); server-only with RLS on and no grants. Applied
+through MCP `apply_migration` (`auth_wa_otps_285`). Passkeys need no
+migration: `public.webauthn_credentials` already exists in the
+@simplewebauthn shape.
+
+## 2026-10-18: 284 APPLIED - products.weekend_only (rc5 F13)
+
+`284_products_weekend_only.sql` adds `weekend_only boolean not null default
+false` for the weekend chip; the free-shipping chip reads
+`shipping_price_agorot = 0` (278). Applied through MCP `apply_migration`
+(`products_weekend_only_284`); all 82 rows read false after it.
+
+## 2026-10-18: 283 APPLIED - affiliate campaigns (rc5 F12)
+
+`283_affiliate_campaigns.sql` adds `affiliate_campaigns`, `affiliate_links`,
+`affiliate_clicks`, `affiliate_attributions` and `affiliate_payouts` on top of
+the live `affiliates` table; server-only writes, owner-only reads. The seeded
+campaign `כללי` is INACTIVE until the owner sets its rate. Applied through MCP
+`apply_migration` (`affiliate_campaigns_283`). **`189_affiliate_program.sql`
+is superseded and must not be applied**: it re-creates `affiliates`, which
+already exists.
+
+## 2026-10-18: 282 APPLIED - club tiers (rc5 F11)
+
+`282_club_tiers.sql` creates `club_tiers` (seeded bronze 0, silver 50000,
+gold 200000, platinum 500000 agorot; benefits empty) and the security-invoker
+view `v_user_tier`. Rehearsed with a customer's JWT: the view returned that
+customer's row only. Applied through MCP `apply_migration` (`club_tiers_282`).
+
+## 2026-10-18: 281 APPLIED - supplier card verification (rc5 F07)
+
+`281_supplier_card_verification.sql` creates `supplier_card_verifications`
+(one row per attempt, holding the application until the card verifies) and
+`supplier_card_tokens` (Cardcom token, last four digits, expiry; never card
+data). Both server-only: RLS on, no policies, nothing granted to anon or
+authenticated. Applied through MCP `apply_migration`
+(`supplier_card_verification_281`) after a rolled-back rehearsal.
+
+## 2026-10-18: 280 APPLIED - user_consents (rc5 F05)
+
+`280_user_consents.sql` creates an append-only consent log: RLS on, customers
+read their own rows, anon has nothing, writes are service-role only. Applied
+through MCP `apply_migration` (`user_consents_280`) after a rolled-back
+rehearsal. First consumer: the toggle on `/account/notifications`.
+
+## 2026-10-18: 279 APPLIED - nationwide city default (rc5 F04)
+
+`279_products_nationwide_city_default.sql` is a data-only update: 66 physical
+products with `city` NULL now read `כל הארץ`; 16 coupons keep NULL. Applied
+through MCP `apply_migration` (ledger name
+`products_nationwide_city_default_279`) after a rolled-back rehearsal that
+touched exactly 66 rows. The admin page `/admin/products/missing-location`
+lists those rows for a real city.
+
+## 2026-10-18: 185, 186, 187 and 278 APPLIED to production (rc5 F01)
+
+Applied one at a time through the Supabase MCP `apply_migration` tool, after a
+BEGIN/ROLLBACK rehearsal of all four together left no column behind. The
+production ledger rows are `products_cancellation_window_payout_cadence_185`,
+`orders_gift_send_at_186`, `products_full_address_187` and
+`products_shipping_price_agorot_278` (versions 20261018012122 to
+20261018012137). The files and their preflights moved to `migrations/applied/`.
+Verification per table is in `docs/MIGRATIONS-APPLIED.md`.
+
+`278_products_shipping_price_agorot.sql` is new: the rc5 goal listed
+`shipping_price_agorot` under 185, but 185 was already reviewed without it, so
+it took the next free number instead of an edit to a reviewed file. The goal
+also asked for `payout_cadence_days`; 185 ships `payout_cadence` as a
+weekly/biweekly/monthly text column, and a second integer twin of the same
+fact was not added.
+
+## 2026-10-17: 190 added - Partner API Infrastructure
+
+`190_partner_api_infrastructure.sql` adds partner API key management, rate limiting, and audit logging. **Not applied.**
+
+Provides read-only API access for approved partners with key-based authentication, scope-based authorization, and hourly rate limits. Includes tables: partner_api_keys, partner_api_requests, partner_api_rate_limits. Includes RPC functions: fn_create_partner_api_key(), fn_check_api_rate_limit(), fn_log_api_request(), fn_cleanup_old_rate_limits().
+
+## 2026-10-17: 188 added - Search Analytics: CTR tracking and weekly reporting
+
+`188_search_analytics.sql` adds search_clicks table and reporting functions for CTR analysis and weekly delivery to decision makers. **Not applied.**
+
+Tracks product clicks from search results with position for CTR per position analysis. Includes fn_search_weekly_report() for aggregated reports with top searches and gap analysis (no-result queries).
+
+## 2026-10-16: 187 added - products.full_address
+
+`187_products_full_address.sql` adds nullable `products.full_address` for the
+Waze address fallback. **APPLIED 2026-10-18.** `city`, `latitude` and `longitude` are
+already live, so the pin and the admin fields work without it; nothing selects
+or writes `full_address` until this lands.
+
+## 2026-10-16: 186 added - scheduled gift delivery
+
+`186_orders_gift_send_at.sql` adds nullable `orders.gift_send_at`. **APPLIED 2026-10-18.** Until it is, the checkout's separate update fails quietly and the
+gift is sent immediately, as before.
+
+## 2026-10-16: 185 added - per-product cancellation window and payout cadence
+
+`185_products_cancellation_window_payout_cadence.sql` adds two nullable columns
+to `products`: `cancellation_window_days` and `payout_cadence`. **APPLIED 2026-10-18.**
+NULL means the platform default, so applying it changes no behaviour; the admin
+form is wired to the columns only after it lands, because a product write that
+names a column the database lacks fails with 42703.
+
+## 2026-09-08: 184 added — the cart uniqueness the code compensates for
+
+`184_carts_one_row_per_owner.sql` adds the two partial UNIQUE indexes that stop
+a shopper ever having two cart rows. **Not applied.**
+
+Found while triaging Sentry. `src/server/actions/cart.ts` carries a long comment
+about the 2026-08-20 incident: a duplicate cart row made postgrest synthesise
+PGRST116, that error was discarded as "no cart", the cart showed empty on every
+request, and every write inserted yet another row. The application half of that
+is fixed — `cartRowOrFail` throws instead of discarding.
+
+The database half was never done. Measured against production 2026-09-08:
+`carts` has four indexes and only `carts_pkey` is unique, so the second row can
+still be created. The code now turns that into a loud error rather than silent
+corruption, which is the right order, but the shopper's cart is still broken
+until somebody deletes a row by hand.
+
+Safe to apply as measured: 2129 rows, **zero** duplicate groups on either arm,
+all rows guest-owned. If duplicates exist by the time this is applied the CREATE
+fails and rolls back, which is correct — that needs a human decision, not a
+merge chosen by a migration.
+
+Note for whoever applies it: the unique partial index on the guest arm serves
+the same read as entry (9) of `170_composite_indexes_top_queries.sql`, which may
+then be dropped. 170 is deliberately not edited, having already been audited.
+
+## 2026-09-08: 177 added — the one advisor finding my own audit missed
+
+`177_set_updated_at_search_path.sql` sets `search_path` on
+`public.set_updated_at`, which 52 triggers use. **Not applied.**
+
+Found by the Supabase security advisor, and it is worth saying why the audit
+in `docs/ADVISORS-LOG.md` round 1 did not find it. That round asked "how many
+SECURITY DEFINER functions lack a pinned search_path" and answered zero, which
+is true. `set_updated_at` is `prosecdef = false`, so it was never in the set
+being counted, and the summary line read as a clean bill of health for
+search_path generally when it was a clean bill for definer functions only.
+
+Severity is lower than the lint name suggests and the file says so. The
+dangerous form is a DEFINER function with a mutable path, because it runs as
+its owner. This one runs as the caller, so a hijacked name resolution grants
+the attacker only what they already had. It is worth fixing because 52 triggers
+is the widest blast radius of any function in the schema, and because an
+advisor that keeps reporting trains people to skim.
+
+`SET search_path = pg_catalog`, not `''`: the body calls `now()`, which lives
+there. An empty path would raise `function now() does not exist` on the next
+write to any of those 52 tables.
+
+## 2026-09-07: 176 added — one known PIN buys unlimited guesses at the others
+
+`176_supplier_pin_rate_limit_per_staff.sql` replaces
+`verify_supplier_staff_pin`. Found by item 5 of the Supabase audit queue,
+recorded in `docs/ADVISORS-LOG.md` finding 5a. **Not applied.**
+
+The function limits PIN attempts to five per fifteen minutes on the key
+`supplier_pin:<uid>`, and on a SUCCESSFUL verification it runs
+`DELETE FROM public.rate_limits WHERE key = v_key`. The key is per caller, not
+per staff member, so an active supplier member who knows one valid staff PIN
+can clear the counter whenever they like: four guesses, one known-good PIN,
+four more guesses. The lockout is fully defeated against a space of 10,000.
+176 replaces the delete with a decrement that leaves the window in place, and
+scopes the key to the supplier.
+
+What it buys an attacker is another employee's PIN, and therefore the wrong
+name in `voucher_redemptions.staff_id`, which is the column a disputed scan is
+settled with. It is an audit-integrity defect, not a route to money, and it
+needs the attacker to already be a member of that business.
+
+Measured by `preflight_176.sql` on 2026-09-07, all six blocks against
+production: the defect is present, there is exactly one overload with the
+signature 176 replaces, `rate_limits` carries two unique indexes so
+`ON CONFLICT (key)` resolves, there are zero live `supplier_pin:` windows, and
+**`active_staff` is 0**. With no active staff row the function cannot succeed
+at all, so the free-reset path is unreachable today. This is a fix to land
+before the first supplier onboards staff, not an incident, and it cannot be
+exercised against production until staff exist.
+
+## 2026-09-07: 175 added — the referral engine is off because a row is missing
+
+`175_referral_program_settings.sql` inserts the settings singleton the referral
+programme reads. **Not applied**, and it inserts the row with `is_active =
+false`: configured and off. Turning it on is a separate one-line UPDATE at the
+foot of the file, because applying a migration should never be the same act as
+starting to spend money.
+
+Measured on 2026-09-07: `referral_program_settings` 0 rows, `referrals` 0,
+`referral_signals` 0, profiles with a code 0. `fn_claim_referral` returns
+`program_inactive` when that row is absent, so every claim fails and
+`fn_complete_referral` never has a referral to complete. The code, the capture
+in the proxy, the claim at signup, the fraud guard, the two wallet credits and
+the admin queue are all built and all inert.
+
+The three amounts are NOT NULL with no default, which is the schema saying they
+are a decision. The file proposes ₪20 / ₪20 / ₪100 minimum and says why; they
+are Ofir's to change before approval.
+
+## 2026-09-07: 174 added — a customer cannot put money into their own wallet
+
+`174_wallet_topups.sql` creates `public.wallet_topups`: the row a card top-up
+needs and does not have. **Not applied.** `preflight_174.sql` was run block by
+block against production on 2026-09-07 and every block answered as its EXPECT
+says.
+
+Why a new table rather than an `ALTER`: `payments.order_id` is `NOT NULL` and
+`payment_kind` is exactly `charge, refund` (measured). A top-up has no order,
+and making `order_id` nullable would put an order-less row in front of every
+reader on the money path that finds a charge by `order_id` — the refund action,
+reconciliation, the invoice queue. The new table leaves that invariant alone.
+
+Shape copied from `refunds`: RLS on, SELECT for the owner and for staff, no
+write policy for any client role, so writes are service-role only. Money is
+`amount_agorot bigint` with no numeric twin, bounded by CHECK to 20–5,000
+shekels.
+
+It does not make the balance withdrawable, and nothing here weakens the floor
+that keeps a user account at or above zero. The decision half of the feature —
+bounds, state machine, idempotency key — is already written and tested in
+`src/server/payments/wallet-topup.ts`; the action and the callback branch are
+what wait on this file.
+
+## 2026-09-07: 173 added — the retired commission column disagrees on all 80 products
+
+`173_products_retired_commission_percent.sql` makes `products.commission_percent`
+equal `products.platform_percent`, and fills `supplier_split_percent` on the
+nineteen products that carry only half the split pair. **Not applied.**
+`preflight_173.sql` beside it was run block by block against production on
+2026-09-07 and every block answered as its EXPECT says.
+
+Measured, not assumed: 80 products, `platform_percent` 15 / 25 / 30 and never
+null, `commission_percent` **5.00 on 65 rows and 10.00 on 15 — disagreeing with
+the real split on every single row**. That is migration 047's `DEFAULT 5`,
+never overwritten, on a column C2 retired as the split knob and 050 unified onto
+`platform_percent`. The app writes the two equal on every product save, so a
+product edited since is repaired and one untouched since 047 is not.
+
+Nothing reads it: no `pg_proc` body in `public` mentions it, no generated
+column or default derives from it, and in the repo it appears only in writes.
+So this is not a live money bug — it is a number that will be true the moment
+somebody exports it.
+
+The price is in the header of the file and is the reason it should be applied in
+the same window as another catalogue-wide write: `set_updated_at` is
+unconditional, so all 80 `updated_at` values move to the apply date and every
+product lastmod in `sitemap.ts` moves with them.
+
+## 2026-09-07: audited, and 171/172 now have preflights
+
+`docs/MIGRATION-AUDIT-162-172.md` (closeout §2) covers all five pending files
+against production. `preflight_171.sql` and `preflight_172.sql` were written
+with it, so the "no preflight — one row, one column" note under 171 and 172
+below is superseded: both now have one, and both were run read-only against
+production. 172's preflight also records the two limits the audit found — the
+row is already unbuyable (implausible-discount refuses it three times over),
+and zero stock does not delist it, because `products_select_anon` has no stock
+term.
+
+172 keeps its UPDATE ungated. See the audit for why gating it on
+`app.env = 'development'` would have been backwards; the dev fixture lives in
+`seeds/dev_only_172.sql`.
 
 ## 2026-09-04: 172 added — a test row is on sale for one shekel
 

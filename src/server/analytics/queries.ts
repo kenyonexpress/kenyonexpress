@@ -175,103 +175,78 @@ export async function loadFunnel(days: number): Promise<FunnelLoad> {
   return { available: true, row, days }
 }
 
-export type OpsLoad =
-  | { available: true; vouchers: VoucherCounts; refunds: RefundCounts; standing: StandingCounts }
-  | { available: false; reason: string }
-
-/** A numeric shekel column as integer agorot, or -1 so the caller's sum skips it. */
-function ilsColumnToAgorot(value: string | number | null): number {
-  if (value === null) return 0
-  try {
-    return parseIls(typeof value === 'number' ? value.toFixed(2) : value)
-  } catch {
-    return -1
-  }
+/**
+ * The counts behind the two rate tiles.
+ *
+ * Six `head: true` counts rather than one join: PostgREST cannot express
+ * "count rows grouped by status" in a single call without a view, and six
+ * indexed counts on a catalogue this size cost less than the view would cost to
+ * maintain. Each one returns a number and no rows.
+ *
+ * WINDOWED ON DIFFERENT COLUMNS ON PURPOSE. Orders are windowed on `paid_at`,
+ * because an order enters the refund denominator when it is paid. Vouchers are
+ * windowed on `issued_at`, because a voucher enters the redemption denominator
+ * when it is issued. Using one column for both would put a voucher issued last
+ * month and redeemed today on the wrong side of the boundary.
+ */
+export interface RateCounts {
+  paidOrders: number
+  refundedOrders: number
+  vouchersIssued: number
+  vouchersRedeemed: number
+  vouchersCancelled: number
+  vouchersRefunded: number
 }
 
-/**
- * Redemption and refund counts for the window, for `computeOpsKpis`, plus the
- * two standing figures.
- *
- * Vouchers are counted by `created_at`, refunds by `requested_at`: both are
- * "what was opened in this window", which is the population the sales KPIs
- * on the same page describe. A voucher issued last month and redeemed today is
- * not in a 30-day redemption rate, on purpose: that rate answers "of what we
- * sold recently, how much has been used".
- *
- * Active vouchers and payouts due ignore the window. They are what is
- * outstanding now, and a tile that shrank when the admin picked "7 days"
- * would be reporting the filter, not the liability.
- *
- * Counts with `head: true` cost no rows, and PostgREST has no GROUP BY, so
- * this is several small reads rather than one aggregate.
- */
-export async function loadOpsKpis(days: number, now: Date = new Date()): Promise<OpsLoad> {
+export async function loadRateCounts(days: number): Promise<RateCounts> {
   const admin = createAdminClient()
-  const since = windowStart(days, now)
+  const since = windowStart(days)
 
-  const count = (status?: string[]) => {
-    let q = admin
-      .from('vouchers')
+  // Written out rather than built by a helper: a generic that returns a
+  // PostgREST builder makes tsc give up with TS2589 (type instantiation
+  // excessively deep), and six plain statements are clearer than the generic
+  // that would have saved four lines.
+  const paidOrders = () =>
+    admin
+      .from('orders')
       .select('id', { count: 'exact', head: true })
-      .gte('created_at', since)
-    if (status) q = q.in('status', status as never)
-    return q
-  }
+      .is('deleted_at', null)
+      .not('paid_at', 'is', null)
+      .gte('paid_at', since)
+  const vouchers = () =>
+    admin.from('vouchers').select('id', { count: 'exact', head: true }).gte('issued_at', since)
 
-  const [issued, redeemed, voided, refundRows, active, payouts] = await Promise.all([
-    count(),
-    count(['redeemed']),
-    count(['cancelled', 'refunded']),
-    admin.from('refunds').select('state, granted_agorot').gte('requested_at', since),
-    admin
-      .from('vouchers')
-      .select('id', { count: 'exact', head: true })
-      .eq('status', 'issued' as never)
-      .gt('expires_at', now.toISOString()),
-    admin
-      .from('payout_statements')
-      .select('status, rolled_over, total_payout_ils')
-      .in('status', [...PAYOUT_DUE_STATUSES] as never),
+  const [paid, refunded, issued, redeemed, cancelled, vRefunded] = await Promise.all([
+    paidOrders(),
+    paidOrders().eq('status', 'refunded'),
+    vouchers(),
+    vouchers().not('redeemed_at', 'is', null),
+    vouchers().eq('status', 'cancelled'),
+    vouchers().eq('status', 'refunded'),
   ])
 
-  const failed = [issued, redeemed, voided, refundRows, active, payouts].find((r) => r.error)
-  if (failed?.error) {
-    log.warn('analytics.ops_kpis_failed', { reason: failed.error.message })
-    return { available: false, reason: failed.error.message }
+  // A failed count is reported as zero and logged, never as a confident
+  // number: `loadRateCounts` feeding 0 into a denominator makes the rate null,
+  // which renders as a dash. That is the honest outcome for a count that did
+  // not happen.
+  for (const [name, result] of [
+    ['paid', paid],
+    ['refunded', refunded],
+    ['issued', issued],
+    ['redeemed', redeemed],
+    ['cancelled', cancelled],
+    ['voucher_refunded', vRefunded],
+  ] as const) {
+    if (result.error)
+      log.error('analytics.rate_count_failed', { count: name, reason: result.error.message })
   }
-
-  let completed = 0
-  let granted = 0
-  for (const row of refundRows.data ?? []) {
-    if (row.state !== 'completed') continue
-    completed += 1
-    granted += Number(row.granted_agorot ?? 0)
-  }
-
-  const due = sumPayoutsDue(
-    (payouts.data ?? []).map((row) => ({
-      status: row.status as string,
-      amountAgorot: ilsColumnToAgorot(row.total_payout_ils as string | number | null),
-    })),
-  )
 
   return {
-    available: true,
-    vouchers: {
-      issued: issued.count ?? 0,
-      redeemed: redeemed.count ?? 0,
-      voided: voided.count ?? 0,
-    },
-    refunds: {
-      requested: (refundRows.data ?? []).length,
-      completed,
-      grantedAgorot: agorot(granted),
-    },
-    standing: {
-      activeVouchers: active.count ?? 0,
-      payoutsDue: due.count,
-      payoutsDueAgorot: due.totalAgorot,
-    },
+    paidOrders: paid.count ?? 0,
+    refundedOrders: refunded.count ?? 0,
+    vouchersIssued: issued.count ?? 0,
+    vouchersRedeemed: redeemed.count ?? 0,
+    vouchersCancelled: cancelled.count ?? 0,
+    vouchersRefunded: vRefunded.count ?? 0,
   }
 }

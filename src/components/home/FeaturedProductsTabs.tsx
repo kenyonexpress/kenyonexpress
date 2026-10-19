@@ -50,9 +50,9 @@ export default function FeaturedProductsTabs({ products }: { products: Product[]
       </header>
 
       {visible.length > 0 ? (
-        <div className="jet-listing-grid-deals bg-white">
+        <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-4">
           {visible.map((product) => (
-            <div key={product.id} className="jet-listing-grid-deals__item">
+            <div key={product.id} className="h-full">
               <ProductCard product={product} variant="deals" />
             </div>
           ))}

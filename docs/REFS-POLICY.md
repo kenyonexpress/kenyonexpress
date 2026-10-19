@@ -86,3 +86,89 @@ where hand-authored things live and leave `refs/` purely generated.
 
 **Not done here**, because it is a rename touching paths that tests and docs
 reference, and this document was asked to recommend rather than to act.
+
+---
+
+## 2026-09-08: the reference the gate compares against no longer exists
+
+Added in maintenance pass 42, after measuring rather than reasoning.
+
+`kenyonexpress.co.il` stopped serving WordPress. The DNS was cut to Vercel and
+the host serves **this application**. So `compare.mjs`, left pointing at the
+network, measured the local build against our own production deployment and
+still printed a percentage: **39.76% at 380px**, with the height-ratio guard
+firing at 1.80x. A fidelity score against yourself is worse than no score,
+because it looks like a score.
+
+### The snapshot is not a replacement, and the shortfall is fonts
+
+The default is now `refs/localized/*.html`, snapshots taken while the site was
+live, rewritten by `scripts/localize-live-refs.mjs` to resolve imagery from
+`refs/live-assets/`. Loading the localized home page in Chromium:
+
+```
+49 images, 0 broken          <- the localizer works
+96 failed requests           <- every one a font
+```
+
+Open Sans and two Font Awesome families still point at
+`kenyonexpress.co.il/wp-content/`, which 403s. **They cannot be recovered.**
+`refs/live-assets/` contains no `.woff`, `.woff2` or `.ttf` at all - the archive
+captured imagery and not typefaces - and the origin that served them is gone.
+The reference renders in fallback type with tofu where the icons were.
+
+Three figures now exist for home at 380 and none is interchangeable with
+another:
+
+| figure | what it compared |
+| --- | --- |
+| 10.68% | the real WordPress site, while it was live |
+| 39.76% | our build against our own production |
+| 30.26% | our build against a snapshot missing its fonts |
+
+**The 11% gate in `CLAUDE.md` refers to the first.**
+
+### How much the missing fonts actually cost: about one point (pass 59)
+
+The paragraph that used to sit here said 30.26% should be read as a floor
+"rather than as a failure against that ceiling", which implied the font loss
+explained a large part of it. **Measured across all three widths on one build,
+it does not.**
+
+```
+width   localized reference   historical, live site   delta
+ 380          30.26%                 10.68%           +19.6
+ 768          28.99%                 -                 -
+1440           8.29%                  7.08%            +1.2
+```
+
+`1440` is the one width where a historical figure exists for home, and the
+degraded reference costs **1.2 points** there. A reference that costs one point
+at desktop cannot be costing twenty at mobile.
+
+So the mobile numbers are very largely REAL divergence, and it is already
+recorded: KNOWN-ISSUES #3, "mobile layouts diverge structurally from live, a
+layout project, not a tuning pass". The snapshot is not what makes 380 read 30%.
+
+**And 1440 passes the gate at 8.29%** - on a reference known to be missing its
+fonts, which makes it a conservative pass rather than a generous one.
+
+### The trap that was armed, and is now disarmed
+
+The first version of the snapshot default ended `?? networkUrl`. `refs/` is
+gitignored in full, so `refs/localized/` cannot exist on a CI runner, and that
+fallback would have quietly sent the gate back to the network. The `pixel-gate`
+job skips today only because `CI_SUPABASE_URL` is unset - and setting it is an
+open MANUAL item. The trap was set to spring on the day someone did the thing
+they are being asked to do.
+
+`REFERENCE()` now throws with the reason instead. `COMPARE_USE_NETWORK=1` still
+opts in explicitly, for the day the reference is hosted somewhere real.
+
+### What the owner could decide
+
+Nine files under `refs/` are already tracked past the ignore rule, so
+force-adding `refs/localized/` is possible: 2.7 MB of HTML, which would let the
+gate run on a runner. `refs/live-assets/` is another 13 MB and would be needed
+with it. That is a deliberate exception to this document's own rule that `refs/`
+is generated, so it is recorded here as an option and not taken.

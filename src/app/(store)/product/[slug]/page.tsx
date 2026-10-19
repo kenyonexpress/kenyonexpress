@@ -1,13 +1,16 @@
 import ViewTracker from '@/components/analytics/ViewTracker'
+import LocationPin from '@/components/product/LocationPin'
 import Reviews from '@/components/product/Reviews'
 import BoughtThisWeek from '@/components/storefront/BoughtThisWeek'
 import { CouponTerms } from '@/components/storefront/CouponPricing'
 import CouponQrExpiry from '@/components/storefront/CouponQrExpiry'
 import ProductGallery from '@/components/storefront/ProductGallery'
+import ProductGalleryMobile from '@/components/storefront/ProductGalleryMobile'
 import ProductInfo from '@/components/storefront/ProductInfo'
-import RecentlyViewedRail from '@/components/storefront/RecentlyViewedRail'
+import ProductStickyCartBar from '@/components/storefront/ProductStickyCartBar'
 import RelatedProducts from '@/components/storefront/RelatedProducts'
 import ShippingInfo from '@/components/storefront/ShippingInfo'
+import StockNotificationWrapper from '@/components/storefront/StockNotificationWrapper'
 import StockScarcity from '@/components/storefront/StockScarcity'
 import SupplierInfo from '@/components/storefront/SupplierInfo'
 import TrustBar from '@/components/storefront/TrustBar'
@@ -23,6 +26,7 @@ import { getProductSeoBySlug } from '@/lib/product-seo'
 import { buildBreadcrumbJsonLd, buildProductJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
 import { readWhatsAppEnabled } from '@/lib/supplier-contact'
 import '@/styles/product-page.css'
+import { alternatesFor } from '@/lib/seo/alternates'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
@@ -76,7 +80,7 @@ export async function generateMetadata({ params }: Props) {
   return {
     title,
     description,
-    alternates: { canonical: path },
+    alternates: alternatesFor(path),
     openGraph: {
       title,
       description,
@@ -277,6 +281,7 @@ export default async function ProductPage({ params }: Props) {
             price={basePrice}
             oldPrice={oldPrice}
           />
+          <ProductGalleryMobile images={images} name={product.name_he} />
           <ProductInfo
             productId={product.id}
             name={product.name_he}
@@ -317,6 +322,11 @@ export default async function ProductPage({ params }: Props) {
             couponOffer={couponOffer}
             recurringOffer={recurringOffer}
             rating={rating}
+          />
+          <StockNotificationWrapper
+            productId={product.id}
+            productName={product.name_he}
+            isOutOfStock={product.stock_quantity === 0}
           />
         </div>
 
@@ -364,6 +374,14 @@ export default async function ProductPage({ params }: Props) {
           {/* Supplier details: rendered for every product (coupon and physical).
               The name is passed through so the WhatsApp message names the deal:
               a business selling forty of them cannot answer "יש פרטים?". */}
+          <LocationPin
+            className="mb-2"
+            location={{
+              city: product.city,
+              latitude: product.latitude,
+              longitude: product.longitude,
+            }}
+          />
           <SupplierInfo
             supplier={supplier}
             productType={productType}
@@ -383,14 +401,8 @@ export default async function ProductPage({ params }: Props) {
         {/* Related products */}
         <RelatedProducts categoryId={product.category_id} excludeId={product.id} />
 
-        {/* The shopper's own history, from their browser. Renders nothing on
-            the server and nothing for a first visit, so it costs this cached
-            page no request-time read. See RecentlyViewedRail. */}
-        <RecentlyViewedRail placement="product" productId={product.id} />
-
-        {/* Payment, cancellation and contact, at the foot of the page: below
-            everything the comparison gate measures, so nothing above moves. */}
-        <TrustBar />
+        {/* Mobile-only sticky cart bar */}
+        <ProductStickyCartBar basePrice={basePrice} productId={product.id} />
       </div>
     </div>
   )

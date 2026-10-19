@@ -3,6 +3,7 @@
 import { contactEmail } from '@/lib/contact-address'
 import { sendEmail } from '@/lib/email/resend'
 import { withActionContext } from '@/lib/observability/action-context'
+import { TURNSTILE_FIELD, verifyTurnstile } from '@/lib/security/turnstile'
 import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
 import { z } from 'zod'
 
@@ -55,6 +56,9 @@ async function runSubmitContactForm(
   }
 
   const ip = await getClientIp()
+  if (!(await verifyTurnstile(formData.get(TURNSTILE_FIELD), ip))) {
+    return { ok: false, error: 'אימות האנושיות נכשל. נסו שוב.' }
+  }
   if (!(await checkRateLimit(`contact:${ip}`, 5, 3600))) {
     return { ok: false, error: 'יותר מדי ניסיונות. נסו שוב מאוחר יותר.' }
   }

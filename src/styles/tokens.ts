@@ -29,7 +29,31 @@ export const SITE = {
   },
   /** Colours that carry meaning: price, state, links, headings. */
   functional: {
-    price: '#dc3545',
+    /**
+     * THE PRICE RED, AND THE CANONICAL NOTE THE OTHER THREE POINT AT.
+     *
+     * #dc3545 until 2026-09-08. That was a measurement, not a preference: the
+     * 2026 brief named #E4002B, getComputedStyle on live returned #dc3545 on
+     * 456 elements, #E4002B appeared in `refs/` zero times, and the measured
+     * value won because `compare.mjs` scored every UI step against live.
+     *
+     * The reference that argument stands on is gone. kenyonexpress.co.il does
+     * not serve the WooCommerce page any more, it serves this app, so the gate
+     * compares us to a stale deploy of ourselves and #dc3545 buys fidelity
+     * against nothing. The brief is now the only live source for this value,
+     * and it names #E4002B.
+     *
+     * Not a contrast regression, which was checked before it moved rather than
+     * after: #E4002B on white is 4.85:1 where #dc3545 was 4.53:1, so it moves
+     * further clear of AA. `refs/ke_live_home.html` remains the record of what
+     * WooCommerce painted.
+     *
+     * `CATALOG.color.sale`, `PDP.color.sale` and `--cat-sale`/`--pdp-sale` all
+     * track this; `tokens.test.ts` asserts each one. `dealSale` (#c93636) and
+     * `dealBadge` (#ee0000) deliberately do NOT -- they are separate measured
+     * reds on the home grid, and no brief line replaces them.
+     */
+    price: '#e4002b',
     /**
      * Crossed-out original price. Darkened from #9ca3af for WCAG AA: at 2.53:1
      * on white it was the worst text pairing left on the site after the
@@ -202,16 +226,17 @@ export const OFF_PAGE = {
   /** A second, warmer panel: the voucher code block. */
   panelWarm: '#f5f5f5',
   /**
-   * THE BRAND RED, AND IT IS DELIBERATELY NOT `SITE.functional.price`.
+   * THE BRAND RED. It used to be deliberately NOT `SITE.functional.price`:
+   * the brief named #E4002B, live measured #dc3545 on 456 elements, and the
+   * on-page red stayed measured because `compare.mjs` scored against live. A
+   * wallet pass is not on the page and no pixel gate scores it, so it was the
+   * one surface where the brief's red was the right red.
    *
-   * The 2026 brief names #E4002B. The live site measures #dc3545 (456
-   * elements) and #E4002B appears nowhere in `refs/`, so the on-page price red
-   * stays measured -- `compare.mjs` scores against live and the brief's red
-   * would cost fidelity on every listing.
-   *
-   * A wallet pass is not on the page and is not scored by any pixel gate. It is
-   * the one surface where the brief's red is the right red, so it is named here
-   * rather than being a literal nobody can grep for. `pass-model.ts` used to
+   * Since 2026-09-08 the on-page red is #E4002B too, so the two agree by
+   * outcome rather than by rule. This stays a separate constant: its reason for
+   * being the brief's red (nothing measures a wallet pass) is not the page's
+   * reason (nothing measures the page any more either), and collapsing them
+   * would make a future page-side change silently repaint the pass. `pass-model.ts` used to
    * carry it twice, once as hex and once as rgb(), with a comment claiming it
    * was "the brand red the whole site is measured against" -- which was the
    * opposite of true.
@@ -290,6 +315,72 @@ export const SITE_CSS_VARS: Record<string, string> = {
 }
 
 /**
+ * Typography scale: semantic combinations of font-size, line-height, and weight
+ * that define consistent text rendering throughout the application.
+ *
+ * Each entry combines size (pixels), line-height (pixels), and weight token reference
+ * for complete control over how text appears. Components use these instead of
+ * combining separate size and weight tokens, ensuring consistency.
+ *
+ * Heebo font is available in weights: 300 (light), 400 (regular), 500 (medium),
+ * 700 (bold), 900 (black). These are referenced via --weight-* tokens.
+ */
+export const TYPOGRAPHY_SCALE = {
+  // Page headings and section titles
+  h1: { size: '39.998px', lineHeight: '47.9976px', weight: '--weight-black' },
+  h2: { size: '25.004px', lineHeight: '40.0064px', weight: '--weight-bold' },
+  h3: { size: '22px', lineHeight: '32px', weight: '--weight-bold' },
+  h4: { size: '20.006px', lineHeight: '28.0084px', weight: '--weight-bold' },
+  h5: { size: '16px', lineHeight: '24px', weight: '--weight-bold' },
+  h6: { size: '14px', lineHeight: '20px', weight: '--weight-bold' },
+
+  // Subtitle and secondary headings
+  subtitle: { size: '18px', lineHeight: '28px', weight: '--weight-medium' },
+  subtitleSmall: { size: '14px', lineHeight: '21px', weight: '--weight-medium' },
+
+  // Body text and descriptions
+  body: { size: '14px', lineHeight: '23.996px', weight: '--weight-regular' },
+  bodyBold: { size: '14px', lineHeight: '23.996px', weight: '--weight-bold' },
+  bodyMedium: { size: '14px', lineHeight: '23.996px', weight: '--weight-medium' },
+  bodyLight: { size: '14px', lineHeight: '23.996px', weight: '--weight-light' },
+
+  // Small text and captions
+  small: { size: '13px', lineHeight: '20px', weight: '--weight-regular' },
+  smallBold: { size: '13px', lineHeight: '20px', weight: '--weight-bold' },
+  caption: { size: '13px', lineHeight: '20px', weight: '--weight-regular' },
+  captionSmall: { size: '11.998px', lineHeight: '18px', weight: '--weight-regular' },
+
+  // Buttons and interactive elements
+  button: { size: '14px', lineHeight: '20px', weight: '--weight-bold' },
+  buttonSmall: { size: '12px', lineHeight: '18px', weight: '--weight-bold' },
+  buttonLarge: { size: '16px', lineHeight: '24px', weight: '--weight-bold' },
+
+  // Navigation and links
+  nav: { size: '14px', lineHeight: '20px', weight: '--weight-regular' },
+  navActive: { size: '14px', lineHeight: '20px', weight: '--weight-bold' },
+  navSmall: { size: '12px', lineHeight: '18px', weight: '--weight-regular' },
+  navSmallActive: { size: '12px', lineHeight: '18px', weight: '--weight-bold' },
+
+  // Labels and form text
+  label: { size: '14px', lineHeight: '20px', weight: '--weight-medium' },
+  labelSmall: { size: '12px', lineHeight: '18px', weight: '--weight-medium' },
+
+  // Product-specific typography
+  productTitle: { size: '25.004px', lineHeight: '32.0051px', weight: '--weight-bold' },
+  productPrice: { size: '20.006px', lineHeight: '28.0084px', weight: '--weight-bold' },
+  productDescription: { size: '14px', lineHeight: '23.996px', weight: '--weight-regular' },
+
+  // Footer and metadata
+  footer: { size: '13px', lineHeight: '20px', weight: '--weight-regular' },
+  footerLink: { size: '14px', lineHeight: '21px', weight: '--weight-regular' },
+  footerHeading: { size: '16px', lineHeight: '24px', weight: '--weight-bold' },
+
+  // Eyebrow / overline text
+  overline: { size: '11.998px', lineHeight: '18px', weight: '--weight-bold' },
+  eyebrow: { size: '11.998px', lineHeight: '12.5979px', weight: '--weight-regular' },
+} as const
+
+/**
  * Non-colour tokens `tokens.css` must declare, and the value each carries.
  *
  * Only two kinds of number get in here: a size that MORE THAN ONE component
@@ -315,8 +406,14 @@ export const SITE_CSS_METRICS: Record<string, string> = {
   '--leading-pdp-title': '32.0051px',
   '--leading-pdp-body': '23.996px',
 
+  '--weight-light': '300',
+  '--weight-regular': '400',
+  '--weight-medium': '500',
+  '--weight-bold': '700',
+  '--weight-black': '900',
+
   '--header-height': '70px',
-  '--container-page': '1200px',
+  '--container-page': '1320px',
   '--container-hero-row': '1170px',
   '--container-footer': '1430px',
   '--container-store-footer': '1200px',
@@ -360,11 +457,13 @@ export const SITE_CSS_METRICS: Record<string, string> = {
  * from a design spec. Where the two disagree the measured value wins, because
  * the pixel comparison runs against live:
  *
- *   - sale price is #dc3545. The brief says #E4002B. Checked BOTH sources the
- *     brief names: getComputedStyle on the live archive returns #dc3545, and
- *     grepping refs/ke_live_singlefile.html (the file the brief designates as
- *     the source of truth) finds #dc3545 twice and #E4002B zero times. The
- *     brief's red does not exist anywhere in the reference.
+ *   - sale price WAS #dc3545 on that principle: getComputedStyle on the live
+ *     archive returned it, and grepping refs/ke_live_singlefile.html found
+ *     #dc3545 twice and #E4002B zero times. It is the brief's #E4002B since
+ *     2026-09-08, because the reference the principle depends on is gone --
+ *     kenyonexpress.co.il serves this app now, so compare.mjs scores us against
+ *     a stale deploy of ourselves and the measured red defends nothing. The
+ *     archive still records what WooCommerce painted. See `SITE.functional.price`.
  *   - the view switcher is #495057 on live, not the #b6bfc8 we had.
  *
  * `brandHover` (#fedd26) is the one value kept purely on the brief's word: it
@@ -383,8 +482,12 @@ export const CATALOG = {
     link: '#0062bd',
     /** struck-through original price, category eyebrow */
     muted: '#657888',
-    /** sale price. Measured on live; NOT the #E4002B in the brief. */
-    sale: '#dc3545',
+    /**
+     * Sale price. #E4002B, the brief's red, since 2026-09-08 -- see the note on
+     * `SITE.functional.price`. It was the measured #dc3545 for as long as there
+     * was a live WooCommerce page to measure.
+     */
+    sale: '#e4002b',
     /** discount badge background */
     badge: '#328614',
     /** control bar background */
@@ -524,8 +627,8 @@ export const PDP = {
     muted: '#657888',
     /** secondary actions (the stock line sits where live puts its wishlist) */
     action: '#5d7184',
-    /** sale price */
-    sale: '#dc3545',
+    /** sale price. Tracks `SITE.functional.price`; `tokens.test.ts` asserts it. */
+    sale: '#e4002b',
     /**
      * Struck-through original price next to the sale price. Darkened from the
      * live #848484 for WCAG AA: it paints at 21px normal weight, which is below

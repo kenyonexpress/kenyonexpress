@@ -1,23 +1,22 @@
+import DealChips from '@/components/catalog/DealChips'
 import CategoryBreadcrumb, { defaultHomeCrumb } from '@/components/category/CategoryBreadcrumb'
 import CategoryControlBar from '@/components/category/CategoryControlBar'
 import CategoryFilterSidebar from '@/components/category/CategoryFilterSidebar'
 import CategoryGridSkeleton from '@/components/category/CategoryGridSkeleton'
 import type { CategoryProduct } from '@/components/category/CategoryProductCard'
-import InfiniteProductGrid from '@/components/category/InfiniteProductGrid'
-import Pagination from '@/components/category/Pagination'
-import { listingEndpoint } from '@/lib/catalogue/infinite-state'
-import { toListingCard } from '@/lib/catalogue/listing-page'
-import { resultCountText } from '@/lib/catalogue/result-count'
+import ShopGridWithInfiniteScroll from '@/components/shop/ShopGridWithInfiniteScroll'
+import { parseDealChips } from '@/lib/catalog/deal-chips'
 import {
   type ProductTypeFilter,
   SHOP_PAGE_SIZE,
-  getAllCategories,
   getShopProductsCached,
   parseProductType,
 } from '@/lib/category-page'
 import { type SortValue, parseSort } from '@/lib/category-tokens'
+import { loadGalleryAssetsForProducts } from '@/lib/images/gallery-assets'
 import { Suspense } from 'react'
 import '@/styles/category-page.css'
+import { alternatesFor } from '@/lib/seo/alternates'
 
 /* Live equivalent: kenyonexpress.co.il/shop/ - h1 "חנות", 24 per page */
 const PAGE_TITLE = 'חנות'
@@ -25,16 +24,20 @@ const PAGE_TITLE = 'חנות'
 export const metadata = {
   title: PAGE_TITLE,
   description: 'כל המוצרים, הדילים והקופונים של קניון Express במקום אחד.',
+  // Same reasoning as the category route, and this page had it missing. The
+  // shop is reachable with sort, page and type query strings, and without a
+  // canonical every permutation competes as its own page: `?sort=price&page=3`
+  // and `?sort=new&page=3` are the same catalogue in a different order, not two
+  // documents. Static rather than computed, because the canonical is `/products`
+  // whatever the query says, which is the whole point of declaring it.
+  alternates: alternatesFor('/products'),
 }
 
 type Props = {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
-function parsePage(raw: string | string[] | undefined): number {
-  const n = typeof raw === 'string' ? Number.parseInt(raw, 10) : 1
-  return Number.isFinite(n) && n >= 1 ? n : 1
-}
+type ViewMode = '4-col' | '3-col' | '2-col' | 'list'
 
 function parsePrice(raw: string | string[] | undefined): number | undefined {
   if (typeof raw !== 'string') return undefined
@@ -42,20 +45,26 @@ function parsePrice(raw: string | string[] | undefined): number | undefined {
   return Number.isFinite(n) && n >= 0 ? n : undefined
 }
 
+function parseViewMode(raw: string | string[] | undefined): ViewMode {
+  if (typeof raw === 'string' && ['3-col', '2-col', 'list'].includes(raw)) {
+    return raw as ViewMode
+  }
+  return '4-col'
+}
+
+function resultCountText(total: number): string {
+  if (total === 0) return 'לא נמצאו מוצרים'
+  if (total === 1) return 'מציג תוצאה יחידה'
+  return `מציגים ⁦${total}⁩ תוצאות`
+}
+
 type QueryArgs = {
   sort: SortValue
-  page: number
   priceMin?: number
   priceMax?: number
   productType?: ProductTypeFilter
-}
-
-function pageWindow(total: number, page: number) {
-  const totalPages = Math.max(1, Math.ceil(total / SHOP_PAGE_SIZE))
-  const currentPage = Math.min(page, totalPages)
-  const from = (currentPage - 1) * SHOP_PAGE_SIZE + 1
-  const to = Math.min(currentPage * SHOP_PAGE_SIZE, total)
-  return { totalPages, currentPage, from, to }
+  weekend?: boolean
+  freeShipping?: boolean
 }
 
 /**
@@ -72,66 +81,52 @@ function pageWindow(total: number, page: number) {
 async function shopArgs(searchParams: Props['searchParams']) {
   const sp = await searchParams
   const sort = parseSort(sp.sort)
+  const viewMode = parseViewMode(sp.view)
   const args: QueryArgs = {
     sort,
-    page: parsePage(sp.page),
     priceMin: parsePrice(sp.min),
     priceMax: parsePrice(sp.max),
     productType: parseProductType(sp.type),
+    ...(() => {
+      const chips = parseDealChips(sp)
+      return { weekend: chips.weekend, freeShipping: chips.freeShipping }
+    })(),
   }
   const linkParams = {
     sort: sort === 'menu_order' ? undefined : sort,
     min: args.priceMin != null ? String(args.priceMin) : undefined,
     max: args.priceMax != null ? String(args.priceMax) : undefined,
     type: args.productType,
+    weekend: args.weekend ? '1' : undefined,
+    free_shipping: args.freeShipping ? '1' : undefined,
   }
-  return { args, linkParams }
+  return { args, linkParams, viewMode }
 }
 
-/**
- * A PAGE PAST THE END IS NOT AN EMPTY FILTER, AND IT USED TO SAY IT WAS.
- *
- * `?page=9999` offsets past the last row. The grid came back empty and printed
- * "nothing matches your selection", blaming filters the shopper never set, and
- * the header printed nothing at all.
- *
- * The header printing nothing is the tell, and it is why the obvious clamp does
- * not work: PostgREST answers an out-of-range `range()` with no rows AND NO
- * COUNT, so `total` comes back 0 and cannot tell "past the end" from "nothing
- * matched". A second read of page 1 is what recovers the real total, and it
- * only ever runs on a page that already had nothing to show.
- *
- * Both boundaries call this rather than the query, so the count and the grid
- * agree about which page they are describing. `cache` makes the repeat a
- * pointer copy within the request.
- */
-async function shopPageOrLast(args: QueryArgs) {
-  const first = await getShopProductsCached(args)
-  if (first.items.length > 0 || args.page <= 1) return first
-
-  const head = await getShopProductsCached({ ...args, page: 1 })
-  if (head.total === 0) return first
-
-  const lastPage = Math.max(1, Math.ceil(head.total / SHOP_PAGE_SIZE))
-  return lastPage === 1 ? head : getShopProductsCached({ ...args, page: lastPage })
-}
-
-/** Header count. Shares one query with the grid via getShopProductsCached. */
+/** Header count. */
 async function ResultCount({ args }: { args: QueryArgs }) {
-  const { total } = await shopPageOrLast(args)
+  const { total } = await getShopProductsCached({
+    ...args,
+    page: 1,
+  })
   if (total === 0) return null
-  const { from, to } = pageWindow(total, args.page)
-  return <p className="category-page__count">{resultCountText(total, from, to)}</p>
+  return <p className="category-page__count">{resultCountText(total)}</p>
 }
 
 async function ResultGrid({
   args,
   linkParams,
+  viewMode,
 }: {
   args: QueryArgs
   linkParams: Record<string, string | undefined>
+  viewMode: ViewMode
 }) {
-  const { items, total } = await shopPageOrLast(args)
+  const { items, total } = await getShopProductsCached({
+    ...args,
+    page: 1,
+  })
+  const assets = await loadGalleryAssetsForProducts(items)
 
   if (items.length === 0) {
     return (
@@ -141,26 +136,18 @@ async function ResultGrid({
     )
   }
 
-  const { totalPages, currentPage } = pageWindow(total, args.page)
+  const itemsWithAssets = items.map((item) => ({ ...(item as CategoryProduct), assets }))
 
   // The first page is rendered here, on the server, and the numbered links
   // are handed to the grid as its fallback. See InfiniteProductGrid.
   return (
-    <InfiniteProductGrid
-      initial={items.map((product) => toListingCard(product as CategoryProduct))}
-      startPage={currentPage}
-      totalPages={totalPages}
-      total={total}
+    <ShopGridWithInfiniteScroll
+      initialItems={itemsWithAssets}
+      totalCount={total}
       pageSize={SHOP_PAGE_SIZE}
-      endpoint={listingEndpoint('shop', linkParams)}
-    >
-      <Pagination
-        pathname="/products"
-        params={linkParams}
-        currentPage={currentPage}
-        totalPages={totalPages}
-      />
-    </InfiniteProductGrid>
+      params={linkParams}
+      viewMode={viewMode}
+    />
   )
 }
 
@@ -175,15 +162,14 @@ async function ShopControlBar({ searchParams }: Props) {
 }
 
 async function ShopGrid({ searchParams }: Props) {
-  const { args, linkParams } = await shopArgs(searchParams)
-  return <ResultGrid args={args} linkParams={linkParams} />
+  const { args, linkParams, viewMode } = await shopArgs(searchParams)
+  return <ResultGrid args={args} linkParams={linkParams} viewMode={viewMode} />
 }
 
 async function ShopSidebar({ searchParams }: Props) {
-  const [{ args }, allCategories] = await Promise.all([shopArgs(searchParams), getAllCategories()])
+  const { args } = await shopArgs(searchParams)
   return (
     <CategoryFilterSidebar
-      categories={allCategories}
       priceMin={args.priceMin}
       priceMax={args.priceMax}
       productType={args.productType}
@@ -230,6 +216,9 @@ export default function ProductsPage({ searchParams }: Props) {
             instead type-checks and then fails the build. */}
         <Suspense fallback={<div className="category-control-bar" aria-hidden="true" />}>
           <ShopControlBar searchParams={searchParams} />
+        </Suspense>
+        <Suspense fallback={null}>
+          <DealChips />
         </Suspense>
 
         <div className="category-page__body">

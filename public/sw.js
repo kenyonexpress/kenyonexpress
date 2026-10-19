@@ -226,50 +226,47 @@ self.addEventListener('fetch', (event) => {
   }
 })
 
+// ---- Push (rc5 F14) -------------------------------------------------------
+// The server sends { title, body, url, tag } (src/lib/push/web-push.ts). The
+// tag makes a re-sent reminder replace the earlier one instead of stacking.
 self.addEventListener('push', (event) => {
-  if (!event.data) return
-  let payload
+  let data = {}
   try {
-    payload = event.data.json()
+    data = event.data ? event.data.json() : {}
   } catch {
-    return
+    data = { title: 'KenyonExpress', body: event.data ? event.data.text() : '' }
   }
-  if (!payload || typeof payload.title !== 'string' || payload.title === '') return
-
-  // Same-origin path or nothing: see the header.
-  const url =
-    typeof payload.url === 'string' && payload.url.startsWith('/') && !payload.url.startsWith('//')
-      ? payload.url
-      : '/'
-
+  const title = typeof data.title === 'string' && data.title ? data.title : 'KenyonExpress'
   event.waitUntil(
-    self.registration.showNotification(payload.title, {
-      body: typeof payload.body === 'string' ? payload.body : '',
+    self.registration.showNotification(title, {
+      body: typeof data.body === 'string' ? data.body : '',
       icon: '/icons/icon-192.png',
       badge: '/icons/icon-192.png',
       dir: 'rtl',
       lang: 'he',
-      // A stable tag collapses re-sends of the same event into one
-      // notification instead of a stack.
-      tag: typeof payload.tag === 'string' && payload.tag !== '' ? payload.tag : undefined,
-      data: { url },
+      tag: typeof data.tag === 'string' ? data.tag : undefined,
+      data: { url: typeof data.url === 'string' ? data.url : '/' },
     }),
   )
 })
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close()
-  const url =
-    event.notification.data && typeof event.notification.data.url === 'string'
-      ? event.notification.data.url
-      : '/'
-
+  const raw = event.notification.data?.url
+  // Same-origin only: a push payload must not be able to open another site.
+  let target = '/'
+  try {
+    const url = new URL(raw || '/', self.location.origin)
+    if (url.origin === self.location.origin) target = url.pathname + url.search
+  } catch {
+    target = '/'
+  }
   event.waitUntil(
-    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
-      for (const client of clients) {
-        if (new URL(client.url).pathname === url && 'focus' in client) return client.focus()
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windows) => {
+      for (const w of windows) {
+        if (new URL(w.url).pathname === target && 'focus' in w) return w.focus()
       }
-      return self.clients.openWindow(url)
+      return self.clients.openWindow(target)
     }),
   )
 })

@@ -7,15 +7,8 @@
 
 import 'server-only'
 import type { Product } from '@/components/ProductCard'
-import { log } from '@/lib/observability/log'
-import { escapeMeiliFilterValue } from '@/lib/search/faceted'
-import { localesParam } from '@/lib/search/query-locale'
-import {
-  type PendingSearchProductRow,
-  type SearchProductsArgs,
-  callSearchProductsRpc,
-  pendingSearchRpc,
-} from '@/lib/supabase/pending-search'
+import { expandQueryWord } from '@/lib/search/db-expansion'
+import { meiliSearch } from '@/lib/search/meili-request'
 import { createClient } from '@/lib/supabase/server'
 import { sanitizeOrTerm } from '@/lib/utils/search-escape'
 import { cache } from 'react'
@@ -41,6 +34,7 @@ type MeiliHit = {
   images?: unknown
   stock_quantity: number | null
   category?: { name_he: string; slug: string } | null
+  city?: string | null
 }
 
 async function searchMeili(
@@ -49,50 +43,33 @@ async function searchMeili(
   productType?: 'coupon' | 'physical',
   categorySlug?: string,
 ): Promise<SearchOutcome | null> {
-  try {
-    const host = (process.env.MEILISEARCH_HOST as string).replace(/\/$/, '')
-    const index = process.env.MEILISEARCH_INDEX ?? 'products'
-    // Both are filterable attributes (lib/search/meili-settings.ts) and both
-    // go through the same quoting the faceted route uses, so a slug can only
-    // ever be a value in the expression, never a second clause.
-    const filter: string[] = []
-    if (productType) filter.push(`type = ${productType}`)
-    if (categorySlug) filter.push(`category_slug = ${escapeMeiliFilterValue(categorySlug)}`)
-    const res = await fetch(`${host}/indexes/${index}/search`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${process.env.MEILISEARCH_API_KEY}`,
-      },
+  const index = process.env.MEILISEARCH_INDEX ?? 'products'
+  const data = await meiliSearch<{ hits: MeiliHit[]; estimatedTotalHits?: number }>(
+    `/indexes/${index}/search`,
+    'POST',
+    {
+      q,
+      limit,
       // `type` is a filterable attribute (see lib/search/meili-settings.ts), so
       // the facet is applied in the engine and estimatedTotalHits stays truthful.
-      body: JSON.stringify({
-        q,
-        limit,
-        ...(filter.length ? { filter } : {}),
-        // Pins the query tokenizer to the script(s) actually typed, the same
-        // way the index settings pin the document side (query-locale.ts).
-        ...localesParam(q),
-      }),
-      // Search is request-time; do not cache across queries.
-      cache: 'no-store',
-    })
-    if (!res.ok) return null
-    const data = (await res.json()) as { hits: MeiliHit[]; estimatedTotalHits?: number }
-    const results: Product[] = (data.hits ?? []).map((h) => ({
-      id: h.id,
-      slug: h.slug,
-      name_he: h.name_he,
-      kenyon_price: h.kenyon_price,
-      full_price: h.full_price,
-      images: h.images ?? [],
-      stock_quantity: h.stock_quantity,
-      category: h.category ?? null,
-    }))
-    return { results, total: data.estimatedTotalHits ?? results.length, engine: 'meilisearch' }
-  } catch {
-    return null
-  }
+      ...(productType ? { filter: `type = ${productType}` } : {}),
+    },
+  )
+
+  if (!data) return null
+
+  const results: Product[] = (data.hits ?? []).map((h) => ({
+    id: h.id,
+    slug: h.slug,
+    name_he: h.name_he,
+    kenyon_price: h.kenyon_price,
+    full_price: h.full_price,
+    images: h.images ?? [],
+    stock_quantity: h.stock_quantity,
+    city: h.city ?? null,
+    category: h.category ?? null,
+  }))
+  return { results, total: data.estimatedTotalHits ?? results.length, engine: 'meilisearch' }
 }
 
 /**
@@ -132,6 +109,15 @@ function queryWords(q: string): string[] {
  * assumed, since supabase-js appends a repeated `or=` key: one group returned
  * "צימר שוויץ בצפון" and "! צימר מאסטר", the two groups returned the first
  * alone.
+ *
+ * SYNONYMS APPLY HERE NOW, NOT ONLY IN MEILISEARCH. `hebrew-synonyms.ts` was
+ * imported by `meili-settings.ts` and by tests, and by nothing else - so the
+ * golden query set was green in CI against an engine that is not configured
+ * (`MEILISEARCH_HOST` appears nowhere outside `.env.example`) while every real
+ * shopper hit this function, which had no synonyms and no morphology.
+ * `expandQueryWord` closes that: same declared groups, adapted to substring
+ * matching. Measured against production, `המסעדה` went from 0 rows to the
+ * restaurant group.
  *
  * This is still the stage-1 ILIKE fallback and is not trying to be a search
  * engine: no stemming, no ranking, no typo tolerance. Meilisearch is stage 3
@@ -210,16 +196,68 @@ async function searchDb(
     : 'categories!products_category_id_fkey(name_he, slug)'
   let query = supabase
     .from('products')
-    .select(`id, slug, name_he, kenyon_price, full_price, images, stock_quantity, ${embed}`, {
-      count: 'exact',
-    })
+    .select(
+      'id, slug, name_he, kenyon_price, full_price, images, stock_quantity, city, categories!products_category_id_fkey(name_he, slug)',
+      { count: 'exact' },
+    )
     .eq('status', 'active')
     .is('deleted_at', null)
 
-  if (categorySlug) query = query.eq('categories.slug', categorySlug)
-
+  // Each word becomes ONE or= group listing every spelling it can match, and
+  // PostgREST ANDs the groups. So "עיסוי זוגי" still requires both concepts,
+  // but either may appear as any member of its synonym group.
+  //
+  // expandQueryWord always returns the typed word first, so this can only ever
+  // widen a result set, never narrow one. See db-expansion.ts.
+  // CITY IS SEARCHED HERE BECAUSE IT IS SEARCHED IN THE ENGINE WE DO NOT RUN.
+  //
+  // `meili-settings.ts` puts `city` in SEARCHABLE_ATTRIBUTES above the
+  // descriptions, and says why in a comment: a place-and-thing query is a real
+  // shopper shape and a city hit means more than the same word buried in
+  // marketing copy. This path read `name_he` and `description_he` only, so the
+  // signal the engine ranks second could not be matched at all.
+  //
+  // Measured 2026-09-08 by running the golden set through this path's own
+  // semantics: eight of the nine canonical journeys passed and
+  // `קפה תל אביב -> coffee-tlv` returned nothing. The deal is named
+  // "בית קפה — מאפה ושתייה" and sits in תל אביב, so `קפה` matched the name and
+  // neither `תל` nor `אביב` could match anywhere. The words are ANDed, so the
+  // shopper got zero results. golden-queries-db.test.ts holds that journey now.
+  // WHY THREE COLUMNS AND NOT THE NINE MEILISEARCH INDEXES.
+  //
+  // `meili-settings.ts` declares nine searchable attributes: name_he, name_en,
+  // brand, category_name_he, city, tags, supplier_name, short_description_he,
+  // description_he. This path reads three. That gap was examined on 2026-09-08
+  // rather than left implicit, and it is smaller than the count suggests.
+  //
+  //   short_description_he  NOT NEEDED, and this was the hypothesis that
+  //     failed. The golden fixture puts "אימונים ללא הגבלה" there, so a shopper
+  //     typing אימונים looked like it would miss - and it does not, because
+  //     `expandQueryWord` maps אימונים onto כושר through the shipped synonym
+  //     map and כושר is in the name. The expansion is doing the work the extra
+  //     column would.
+  //   name_en, brand         Plain columns, cheap to add, and NO golden journey
+  //     fails without them. Pass 44 added `city` because a canonical journey
+  //     returned zero; adding a column on a hunch is the opposite of that, and
+  //     "FitCenter finds nothing" is a query nobody has said a shopper types.
+  //   tags                   An array column. ILIKE does not apply to it the
+  //     way it applies to text, so this is a different query shape, not a
+  //     longer clause list.
+  //   category_name_he, supplier_name
+  //     Live on joined tables. PostgREST `or=` across an embedded resource
+  //     changes what the whole query returns, so this is a rewrite rather than
+  //     an addition.
+  //
+  // The column list is pinned by search-server.test.ts, including a check that
+  // no PostgREST syntax escapes a clause, so a fourth column is a deliberate
+  // edit in two places rather than a quiet widening.
   for (const word of queryWords(q)) {
-    query = query.or(`name_he.ilike.%${word}%,description_he.ilike.%${word}%`)
+    const clauses = expandQueryWord(word).flatMap((spelling) => [
+      `name_he.ilike.%${spelling}%`,
+      `description_he.ilike.%${spelling}%`,
+      `city.ilike.%${spelling}%`,
+    ])
+    if (clauses.length > 0) query = query.or(clauses.join(','))
   }
 
   // Same coupon/physical facet the archives expose, applied in the query so the
@@ -238,6 +276,7 @@ async function searchDb(
       full_price: p.full_price,
       images: p.images,
       stock_quantity: p.stock_quantity,
+      city: p.city ?? null,
       category: cat,
     }
   })

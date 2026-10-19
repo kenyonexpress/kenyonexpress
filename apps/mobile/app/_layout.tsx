@@ -88,6 +88,9 @@ export default function RootLayout() {
           }}
         />
         <Stack.Screen name="supplier/history" options={{ title: 'סריקות היום' }} />
+        <Stack.Screen name="product/[slug]" options={{ title: 'מוצר' }} />
+        <Stack.Screen name="orders/[id]" options={{ title: 'הזמנה' }} />
+        <Stack.Screen name="notifications" options={{ title: 'התראות' }} />
       </Stack>
     </>
   )

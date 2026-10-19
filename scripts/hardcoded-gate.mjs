@@ -21,6 +21,7 @@
 
 import { existsSync, readFileSync } from 'node:fs'
 import { extname } from 'node:path'
+import { blankCommentLines, hasBlockComments } from '../src/lib/source-scan/strip-comments.mjs'
 import { changedFiles, git, resolveRange } from './ci-diff-files.mjs'
 import { baselineFromBaseTree, leftOf, parseLedger, scanContent } from './hardcoded-gate-lib.mjs'
 
@@ -37,12 +38,56 @@ const ADVISORY_FILES = new Set([
 
 const isAdvisory = (file) => ADVISORY_FILES.has(file)
 
+/**
+ * Comment text removed, LINE NUMBERING KEPT, because this gate prints file:line.
+ *
+ * Was a per-line classifier, which cannot see that a line sits inside a block
+ * that opened earlier: a literal on a continuation line not beginning with a
+ * star was reported as hardcoded code. Shared with every other scanner here,
+ * after eight guards had each matched their own prose - see the module header.
+ */
+const scannableLines = (file, content) =>
+  blankCommentLines(content.split(/\r?\n/).join('\n'), { block: hasBlockComments(file) })
+
+function collectMatches(re, line) {
+  const out = []
+  re.lastIndex = 0
+  let m = re.exec(line)
+  while (m !== null) {
+    out.push(m[0])
+    m = re.exec(line)
+  }
+  return out
+}
+
 function scanFile(file) {
   try {
     return scanContent(readFileSync(file, 'utf8'))
   } catch {
     return []
   }
+  const hits = []
+  const lines = scannableLines(file, content)
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]
+    for (const value of collectMatches(HEX_RE, line)) hits.push({ line: i + 1, value })
+    for (const value of collectMatches(PX_RE, line)) hits.push({ line: i + 1, value })
+  }
+  return hits
+}
+
+function parseLedger(text) {
+  const counts = {}
+  for (const line of text.split(/\r?\n/)) {
+    if (!line.startsWith('|')) continue
+    const cells = line.split('|').map((c) => c.trim())
+    if (cells.length < 5) continue
+    const file = cells[1]
+    if (!file || file === 'File' || /^-+$/.test(file)) continue
+    if (!Number.parseInt(cells[2], 10) && cells[2] !== '0') continue
+    counts[file] = (counts[file] ?? 0) + 1
+  }
+  return counts
 }
 
 function loadBaseline(range) {

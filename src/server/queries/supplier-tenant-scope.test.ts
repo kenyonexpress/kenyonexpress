@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { stripComments } from '@/lib/source-scan/strip-comments.mjs'
 import { describe, expect, it } from 'vitest'
 
 /**
@@ -32,13 +33,7 @@ function source(): string {
 }
 
 /** Comments discuss supplier_id at length; only real code counts. */
-function codeOnly(text: string): string {
-  return text
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .split('\n')
-    .filter((line) => !line.trim().startsWith('//') && !line.trim().startsWith('*'))
-    .join('\n')
-}
+const codeOnly = stripComments
 
 /**
  * Split the file at each exported query, so one function's filter cannot vouch

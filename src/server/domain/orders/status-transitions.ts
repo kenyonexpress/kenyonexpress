@@ -6,7 +6,7 @@
  * under the no-escrow rule; it does not admit `escrow_held`, `escrow_released`
  * or `platform_settled` at all, because no new row should enter them.
  *
- * `migrations/pending/137_order_transition_guard.sql` has a different job. It
+ * `migrations/applied/137_order_transition_guard.sql` has a different job. It
  * runs against rows written years ago under rules that no longer apply, and two
  * `order_items` rows sit in `escrow_held` in production right now. A guard that
  * refuses to let a legacy row move does not enforce the rule, it strands the

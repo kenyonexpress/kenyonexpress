@@ -1,5 +1,6 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { join, relative, resolve } from 'node:path'
+import { stripComments } from '@/lib/source-scan/strip-comments.mjs'
 import { describe, expect, it } from 'vitest'
 
 /**
@@ -82,16 +83,7 @@ function cronRouteFiles(): string[] {
 }
 
 /** Comments quote `bearerMatches` while explaining it. Only real code counts. */
-function codeOnly(text: string): string {
-  return text
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .split('\n')
-    .filter((line) => {
-      const t = line.trim()
-      return !t.startsWith('//') && !t.startsWith('*')
-    })
-    .join('\n')
-}
+const codeOnly = stripComments
 
 describe('scheduled routes authenticate', () => {
   const files = [...cronRouteFiles(), ...ALSO_MACHINE_DRIVEN]
@@ -133,12 +125,7 @@ describe('scheduled routes authenticate', () => {
     // list is the record of what runs on a schedule with admin credentials.
     expect(cronRouteFiles()).toEqual([
       'src/app/api/cron/abandoned-cart/route.ts',
-      'src/app/api/cron/backup/route.ts',
-      'src/app/api/cron/cashback-settlement/route.ts',
-      'src/app/api/cron/daily-deals/route.ts',
-      'src/app/api/cron/email-retry/route.ts',
-      'src/app/api/cron/expire-cashback/route.ts',
-      'src/app/api/cron/expire-coupons/route.ts',
+      'src/app/api/cron/affiliate-payouts/route.ts',
       'src/app/api/cron/expire-vouchers/route.ts',
       'src/app/api/cron/health/route.ts',
       'src/app/api/cron/invoices/route.ts',
@@ -147,8 +134,8 @@ describe('scheduled routes authenticate', () => {
       'src/app/api/cron/reap-carts/route.ts',
       'src/app/api/cron/reconcile/route.ts',
       'src/app/api/cron/retention/route.ts',
-      'src/app/api/cron/search-outbox/route.ts',
-      'src/app/api/cron/search-reindex/route.ts',
+      'src/app/api/cron/rfm-segmentation/route.ts',
+      'src/app/api/cron/search-report/route.ts',
       'src/app/api/cron/stock/route.ts',
       'src/app/api/cron/stranded-payments/route.ts',
       'src/app/api/cron/subscriptions/route.ts',

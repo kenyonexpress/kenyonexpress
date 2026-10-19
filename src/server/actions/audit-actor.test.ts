@@ -21,6 +21,7 @@ import { describe, expect, it } from 'vitest'
 
 const DIRECT_WRITERS = [
   { file: 'src/server/actions/payments/refund.ts', kind: 'human' },
+  { file: 'src/server/supplier/lead-create.ts', kind: 'machine' },
   { file: 'src/server/payments/finalize.ts', kind: 'machine' },
   { file: 'src/app/api/payments/cardcom/webhook/route.ts', kind: 'machine' },
   // The deletion proof row: the account owner erasing their own account is

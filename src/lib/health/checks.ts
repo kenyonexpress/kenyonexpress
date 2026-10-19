@@ -214,18 +214,41 @@ function checkCardcom(env: NodeJS.ProcessEnv): DependencyReport {
   }
 }
 
-/** Email delivery. Without it the outbox drains into nothing. */
+/**
+ * Email delivery. Without it the outbox drains into nothing.
+ *
+ * Configuration-only. A key that is PRESENT is not a key that WORKS - the one
+ * in .env.local answers `API key is invalid`, recorded in STATE.md - so the
+ * detail states what was checked.
+ */
 function checkEmail(env: NodeJS.ProcessEnv): DependencyReport {
   const configured = Boolean(env.RESEND_API_KEY)
   return {
     name: 'email',
     status: configured ? 'ok' : 'not_configured',
     latencyMs: null,
-    detail: configured ? 'Resend מוגדר' : 'אין מפתח Resend; אף מייל לא יישלח',
+    detail: configured ? 'מפתח Resend קיים; לא אומת' : 'אין מפתח Resend; אף מייל לא יישלח',
   }
 }
 
-/** Object storage for the image pipeline and the invoice PDFs. */
+/**
+ * Object storage for the image pipeline and the invoice PDFs.
+ *
+ * CONFIGURATION-ONLY, and unlike Cardcom this one has a measured reason to say
+ * so loudly. On 2026-09-08 the Cloudflare ACCOUNT API - authenticated as the
+ * account owner, with no R2 keys involved at all - answered
+ * `403 {"code":10042,"message":"Please enable R2 through the Cloudflare
+ * Dashboard."}` to a plain bucket list. R2 has never been switched on for this
+ * account.
+ *
+ * So the two states this check cannot tell apart are not hypothetical here:
+ * the day somebody pastes the four variables in, this returns `ok` while every
+ * single upload 403s. That is why the detail says what was actually verified
+ * rather than naming the vendor.
+ *
+ * Not probed for the same reason Cardcom is not: a HeadBucket on every call to
+ * an UNAUTHENTICATED readiness route is an outbound request anyone can trigger.
+ */
 function checkStorage(env: NodeJS.ProcessEnv): DependencyReport {
   const configured = Boolean(
     env.R2_ACCOUNT_ID && env.R2_ACCESS_KEY_ID && env.R2_SECRET_ACCESS_KEY && env.R2_BUCKET,
@@ -234,76 +257,15 @@ function checkStorage(env: NodeJS.ProcessEnv): DependencyReport {
     name: 'storage',
     status: configured ? 'ok' : 'not_configured',
     latencyMs: null,
-    detail: configured ? 'Cloudflare R2' : 'R2 לא מוגדר; נופלים ל-Supabase Storage',
+    detail: configured ? 'R2 מוגדר; נגישות לא נבדקה' : 'R2 לא מוגדר; נופלים ל-Supabase Storage',
   }
 }
 
 /**
- * The read replica, if one is configured at all. The same HEAD count as the
- * primary check, through an ANON client bound to the replica endpoint: that is
- * the client the catalogue actually reads with, so a replica that answers the
- * service role but refuses anon would still be reported truthfully as down.
+ * The cron secret. Without it every scheduled job answers 401 and nothing runs.
+ *
+ * Configuration-only: this compares nothing against what the scheduler sends.
  */
-async function checkReadReplica(env: NodeJS.ProcessEnv): Promise<DependencyReport> {
-  const url = readReplicaUrl(env)
-  if (!url) {
-    return {
-      name: 'read_replica',
-      status: 'not_configured',
-      latencyMs: null,
-      detail: 'אין רפליקת קריאה; הקטלוג נקרא מהראשי',
-    }
-  }
-  const { value, ms } = await timed(async () => {
-    const key = env.SUPABASE_ANON_KEY || env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    if (!key) return 'down'
-    const client = createClient(url, key, {
-      auth: { persistSession: false, autoRefreshToken: false },
-    })
-    const { error } = await client.from('categories').select('id', { count: 'exact', head: true })
-    return error ? 'down' : 'ok'
-  })
-  const status: DependencyStatus = value === 'ok' ? 'ok' : 'down'
-  return {
-    name: 'read_replica',
-    status,
-    latencyMs: ms,
-    detail:
-      status === 'ok'
-        ? 'רפליקת קריאה עונה; הקטלוג נקרא ממנה'
-        : 'רפליקת הקריאה מוגדרת אך אינה עונה; הקטלוג ממשיך מהראשי',
-  }
-}
-
-/** The Cloudflare async-offload Worker, if configured. `/health` needs no auth and does nothing. */
-async function checkAsyncOffload(env: NodeJS.ProcessEnv): Promise<DependencyReport> {
-  const config = offloadConfig(env)
-  if (!config) {
-    return {
-      name: 'async_offload',
-      status: 'not_configured',
-      latencyMs: null,
-      detail: 'ה-Worker לא מוגדר; עבודות רקע רצות בתור או inline',
-    }
-  }
-  const { value, ms } = await timed(async () => {
-    const response = await fetch(`${config.url}/health`, {
-      signal: AbortSignal.timeout(4000),
-      cache: 'no-store',
-    })
-    return response.ok ? 'ok' : 'down'
-  })
-  const status: DependencyStatus = value === 'ok' ? 'ok' : 'down'
-  return {
-    name: 'async_offload',
-    status,
-    latencyMs: ms,
-    detail:
-      status === 'ok' ? 'Cloudflare Worker עונה' : 'ה-Worker מוגדר אך אינו עונה; נופלים ל-inline',
-  }
-}
-
-/** The cron secret. Without it every scheduled job answers 401 and nothing runs. */
 function checkScheduler(env: NodeJS.ProcessEnv): DependencyReport {
   const configured = Boolean(env.CRON_SECRET)
   return {

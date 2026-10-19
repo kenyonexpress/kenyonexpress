@@ -763,7 +763,18 @@ export async function finalizeOrder(input: {
       return { ok: false, error: `order update failed: ${orderError.message}`, code: 'INTERNAL' }
     }
 
-    await admin.from('audit_log').insert({
+    // BEST EFFORT, BUT NOT SILENT. The card is already charged by this point,
+    // so a failed audit row must not turn a successful payment into an error an
+    // operator retries. What it must not do either is vanish: this is the row
+    // that records a customer's order becoming `paid`, and `audit_log` is
+    // append-only since migration 149, so a future constraint or policy change
+    // could start rejecting the insert with nothing anywhere to say so.
+    //
+    // `writeAuditLog` in lib/admin/audit.ts has logged this since it was
+    // written. The two raw inserts in the money path - here and in
+    // actions/payments/refund.ts - did not, which is the wrong way round: these
+    // are the two rows that matter most.
+    const { error: auditError } = await admin.from('audit_log').insert({
       actor_id: null,
       actor_role: null,
       action: 'status_change',
@@ -772,6 +783,13 @@ export async function finalizeOrder(input: {
       changes: { status: { from: 'pending', to: 'paid' } } as unknown as Json,
       metadata: { source: 'checkout_finalize', payment_id: input.paymentId } as unknown as Json,
     })
+    if (auditError) {
+      log.error('finalize.audit_write_failed', {
+        order_id: order.id,
+        payment_id: input.paymentId,
+        reason: auditError.message,
+      })
+    }
 
     // The funnel's conversion event, emitted server-side ON PURPOSE: a browser
     // purchase is lost every time a tab closes on the payment redirect, and
@@ -846,6 +864,24 @@ export async function finalizeOrder(input: {
       .eq('id', order.id)
       .maybeSingle()
     const intent = giftRow ? readGiftIntent(giftRow as Record<string, string | null>) : null
+    if (intent) {
+      // Its own read: 186 may not be applied, and a 42703 here must not take
+      // the gift itself down with it.
+      const { data: sendAtRow, error: sendAtError } = await admin
+        .from('orders')
+        .select('gift_send_at')
+        .eq('id', order.id)
+        .maybeSingle()
+      // 42703 is the un-migrated database and is expected; anything else is not.
+      if (sendAtError && sendAtError.code !== '42703') {
+        log.warn('finalize.gift_send_at_read_failed', {
+          orderId: order.id,
+          reason: sendAtError.message,
+        })
+      }
+      const raw = (sendAtRow as { gift_send_at?: string | null } | null)?.gift_send_at
+      intent.sendAt = raw ? new Date(raw) : null
+    }
     if (intent) {
       const { data: buyer } = await admin
         .from('profiles')

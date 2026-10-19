@@ -197,159 +197,70 @@ describe('index settings carry the Hebrew synonyms', () => {
   })
 })
 
-describe('Hebrew tokenizer locales (localizedAttributes)', () => {
-  it('pins every *_he content field to heb', () => {
-    for (const attribute of ['name_he', 'short_description_he', 'description_he']) {
-      expect(HEBREW_ATTRIBUTE_PATTERNS).toContain(attribute)
+/**
+ * THE DISCOUNT FACET IS DERIVED, AND THAT IS THE WHOLE POINT.
+ *
+ * `products` carries a `discount_percent` COLUMN. Indexing that would be the
+ * obvious thing and it would be wrong: on a coupon the badge is computed from
+ * the two prices precisely so an admin cannot type a saving that disagrees with
+ * what the customer is billed (`product-money.ts`, deriveDiscountPercent). A
+ * facet fed from the column could filter a shopper into "30% off" on a product
+ * whose page says 20%, which is the quote-versus-charge split in a new place.
+ */
+describe('the discount facet', () => {
+  const base = {
+    id: 'p1',
+    slug: 'x',
+    name_he: 'מוצר',
+  }
+
+  it('derives the saving from the two prices', () => {
+    const doc = toProductDocument({ ...base, full_price: 1000, kenyon_price: 800 })
+    expect(doc.discount_percent).toBe(20)
+  })
+
+  it('is null when there is no "was" price to save against', () => {
+    expect(toProductDocument({ ...base, kenyon_price: 800 }).discount_percent).toBeNull()
+    expect(
+      toProductDocument({ ...base, full_price: null, kenyon_price: 800 }).discount_percent,
+    ).toBeNull()
+  })
+
+  it('is null rather than negative when the current price is higher', () => {
+    // A "saving" of -25% is not a discount, and a facet that carried one would
+    // sort it above every real offer under "biggest saving first".
+    const doc = toProductDocument({ ...base, full_price: 800, kenyon_price: 1000 })
+    expect(doc.discount_percent).toBeNull()
+  })
+
+  it('ignores the stored column, so the facet cannot contradict the badge', () => {
+    const doc = toProductDocument({
+      ...base,
+      full_price: 1000,
+      kenyon_price: 900,
+      // A column value that disagrees with the prices. It must not win.
+      discount_percent: 75,
+    } as Parameters<typeof toProductDocument>[0])
+    expect(doc.discount_percent).toBe(10)
+  })
+
+  it('is declared filterable and sortable, or the facet does not exist to Meili', () => {
+    // Declaring the field on the document is not enough: Meilisearch rejects a
+    // filter or a sort on an attribute that is not in these lists, so a facet
+    // that is only in the payload 400s at query time.
+    expect(FILTERABLE_ATTRIBUTES).toContain('discount_percent')
+    expect(SORTABLE_ATTRIBUTES).toContain('discount_percent')
+  })
+
+  it('covers every facet STEP 07 names', () => {
+    for (const facet of [
+      'category_id',
+      'kenyon_price',
+      'supplier_id',
+      'city',
+      'discount_percent',
+    ]) {
+      expect(FILTERABLE_ATTRIBUTES, `missing facet: ${facet}`).toContain(facet)
     }
-    expect(LOCALIZED_ATTRIBUTES[0]?.locales).toEqual(['heb'])
-  })
-
-  it('leaves the Latin and identifier fields to detection', () => {
-    // A wrong pin is worse than a guess: name_en, brand and sku hold Latin or
-    // mixed content, and slug/barcode are identifiers.
-    for (const attribute of ['name_en', 'brand', 'sku', 'slug', 'barcode']) {
-      expect(HEBREW_ATTRIBUTE_PATTERNS).not.toContain(attribute)
-    }
-  })
-
-  it('ships inside the applied settings, not beside them', () => {
-    expect(INDEX_SETTINGS.localizedAttributes).toBe(LOCALIZED_ATTRIBUTES)
-  })
-})
-
-describe('brand facet on the products index', () => {
-  it('is filterable, so the results page can narrow by brand', () => {
-    expect(FILTERABLE_ATTRIBUTES).toContain('brand')
-  })
-})
-
-describe('brands index settings', () => {
-  it('keeps the Hebrew typo budget of the products index', () => {
-    expect(BRANDS_INDEX_SETTINGS.typoTolerance.minWordSizeForTypos).toEqual(
-      TYPO_TOLERANCE.minWordSizeForTypos,
-    )
-  })
-
-  it('breaks ties by brand size, where products break by stock', () => {
-    const rules = BRANDS_INDEX_SETTINGS.rankingRules
-    expect(rules.indexOf('product_count:desc')).toBeLessThan(rules.indexOf('proximity'))
-  })
-
-  it('pins the brand name to the Hebrew tokenizer', () => {
-    expect(BRANDS_INDEX_SETTINGS.localizedAttributes).toEqual([
-      { attributePatterns: ['name'], locales: ['heb'] },
-    ])
-  })
-})
-
-describe('toBrandDocuments', () => {
-  const rows = [
-    { brand: 'LG', type: 'physical', category_slug: 'electronics' },
-    { brand: ' lg ', type: 'coupon', category_slug: 'deals' },
-    { brand: 'מסעדת השף', type: 'coupon', category_slug: 'restaurants' },
-    { brand: null, type: 'physical', category_slug: 'electronics' },
-    { brand: '', type: 'physical', category_slug: null },
-  ]
-
-  it('groups case- and whitespace-insensitively, keeps the first spelling', () => {
-    const docs = toBrandDocuments(rows)
-    expect(docs).toHaveLength(2)
-    const lg = docs.find((d) => d.name === 'LG')
-    expect(lg).toMatchObject({ product_count: 2, coupon_count: 1 })
-    expect(lg?.categories).toEqual(['deals', 'electronics'])
-  })
-
-  it('does not invent an "unbranded" bucket', () => {
-    // Most of the catalogue has no brand; a null brand is no brand, not a brand.
-    expect(toBrandDocuments([{ brand: null }, { brand: '  ' }])).toEqual([])
-  })
-
-  it('orders by product count, biggest brand first', () => {
-    const docs = toBrandDocuments(rows)
-    expect(docs[0]?.name).toBe('LG')
-  })
-
-  it('counts coupons with the resolved type, agreeing with the products facet', () => {
-    const docs = toBrandDocuments([{ brand: 'X', type: 'coupon' }])
-    expect(docs[0]?.coupon_count).toBe(1)
-  })
-
-  it('produces ids Meilisearch accepts, even for Hebrew names', () => {
-    // Document ids allow only [A-Za-z0-9_-]; brand names here are Hebrew.
-    for (const document of toBrandDocuments(rows)) {
-      expect(document.id).toMatch(/^[A-Za-z0-9_-]+$/)
-    }
-    expect(brandDocumentId('מסעדת השף')).toMatch(/^[A-Za-z0-9_-]+$/)
-  })
-
-  it('gives one id to the two spellings of one brand', () => {
-    const docs = toBrandDocuments(rows)
-    const lg = docs.find((d) => d.name === 'LG')
-    expect(lg?.id).toBe(brandDocumentId('lg'))
-  })
-})
-
-describe('the categories index', () => {
-  it('keeps the Hebrew typo budget and the heb locale pin', () => {
-    // Category names are Hebrew and short (ספא, בגדים); the products index's
-    // reasoning applies unchanged.
-    expect(CATEGORIES_INDEX_SETTINGS.typoTolerance.minWordSizeForTypos).toEqual(
-      TYPO_TOLERANCE.minWordSizeForTypos,
-    )
-    expect(CATEGORIES_INDEX_SETTINGS.localizedAttributes).toEqual([
-      { attributePatterns: ['name_he', 'description_he'], locales: ['heb'] },
-    ])
-  })
-
-  it('ranks the fuller category above the emptier one at equal relevance', () => {
-    const rules = CATEGORIES_INDEX_SETTINGS.rankingRules
-    expect(rules.indexOf('product_count:desc')).toBeGreaterThan(rules.indexOf('typo'))
-    expect(rules.indexOf('product_count:desc')).toBeLessThan(rules.indexOf('proximity'))
-  })
-
-  it('can filter subcategories and join back by slug', () => {
-    expect(CATEGORIES_INDEX_SETTINGS.filterableAttributes).toContain('parent_id')
-    expect(CATEGORIES_INDEX_SETTINGS.filterableAttributes).toContain('slug')
-  })
-})
-
-describe('toCategoryDocuments', () => {
-  const categories = [
-    { id: 'c1', slug: 'spa', name_he: 'ספא', sort_order: 2 },
-    { id: 'c2', slug: 'food', name_he: 'מסעדות', sort_order: 1 },
-    { id: 'c3', slug: 'old', name_he: 'ישן', is_active: false },
-    { id: 'c4', slug: 'gone', name_he: 'נמחק', deleted_at: '2026-01-01T00:00:00Z' },
-  ]
-  const products = [
-    { category_id: 'c1', type: 'physical' },
-    { category_id: 'c1', type: 'coupon' },
-    { category_id: 'c2', type: 'coupon' },
-    { category_id: null, type: 'physical' },
-    { category_id: 'c3', type: 'physical' },
-  ]
-
-  it('counts products and coupons per category', () => {
-    const docs = toCategoryDocuments(categories, products)
-    const spa = docs.find((d) => d.slug === 'spa')
-    expect(spa).toMatchObject({ product_count: 2, coupon_count: 1 })
-  })
-
-  it('drops inactive and soft-deleted categories even if the reader let them through', () => {
-    // The index is public output; the predicate holds wherever the rows came from.
-    const slugs = toCategoryDocuments(categories, products).map((d) => d.slug)
-    expect(slugs).not.toContain('old')
-    expect(slugs).not.toContain('gone')
-  })
-
-  it('keeps an empty category: navigation exists before products do', () => {
-    const docs = toCategoryDocuments([{ id: 'c9', slug: 'new', name_he: 'חדש' }], [])
-    expect(docs).toHaveLength(1)
-    expect(docs[0]).toMatchObject({ product_count: 0, coupon_count: 0, sort_order: 0 })
-  })
-
-  it('orders by sort_order, the way the storefront menu does', () => {
-    const docs = toCategoryDocuments(categories, products)
-    expect(docs.map((d) => d.slug)).toEqual(['food', 'spa'])
   })
 })

@@ -5,7 +5,6 @@ import { cancellationNotice } from '@/lib/commerce/recurring'
 import type { Agorot } from '@/lib/money'
 import { cancelSubscription } from '@/server/actions/subscriptions'
 import type { AccountSubscription } from '@/server/queries/subscriptions'
-import { AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
 import { useActionState, useState } from 'react'
 
@@ -88,7 +87,6 @@ export default function SubscriptionList({
 
           {sub.needsAttention && (
             <p className="mt-3 flex items-start gap-1.5 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-900">
-              <AlertTriangle size={14} className="mt-0.5 shrink-0" />
               <span>
                 החיוב האחרון נכשל שלוש פעמים ולא ינוסה שוב. יש לעדכן את אמצעי התשלום ב
                 <Link href="/account/tokens" className="underline">

@@ -1,0 +1,12 @@
+{
+  "note": "Best-known parity per page and width, for the widths where the 11% gate is UNREACHABLE against this reference and a bare FAIL therefore says nothing. Measured 2026-09-08 on next 16.3.4, reproduced to the hundredth across separate builds. The gate verdict is unchanged and still scores against 11%; these add the question a permanent FAIL cannot answer, which is whether today is worse than the best this reference has ever allowed. Raise a number here only with a line in STATE.md saying what regressed and why it was accepted.",
+  "why-unreachable": "The reference is a snapshot of a host that no longer exists. It drops 96 requests: 37 fonts, 57 scripts, 1 stylesheet, 1 xhr. refs/live-assets/ captured ZERO .woff/.woff2/.ttf and ZERO .js, and the origin answers 403, so neither the theme's JavaScript nor its icon fonts can be recovered by any means available here. The reference therefore never initialises its slider, tabs, mega-menu or sticky header, and its body measures 18146px at 380 against 5492px at 1440.",
+  "tolerance": 0.5,
+  "pages": {
+    "home": {
+      "380": 30.26,
+      "768": 29.0,
+      "1440": 8.29
+    }
+  }
+}

@@ -80,8 +80,8 @@ type Orderable<T> = { order(column: string, opts: { ascending: boolean }): T }
  * a UNIQUE constraint on `sort_order`, deliberately: `CategoryTree` reorders
  * by swapping two rows in two separate `updateCategorySortOrder` calls, and a
  * unique index would fail the first of them and break the admin's reordering.
- * `migrations/pending/124_categories_sort_order.sql` renumbers the data; this
- * is what holds regardless of the data.
+ * 124 renumbered the data and is applied (`categories.sort_order` is live in
+ * production, measured 2026-09-07); this is what holds regardless of the data.
  */
 export function orderedByMenu<T extends Orderable<T>>(query: T): T {
   return query.order('sort_order', { ascending: true }).order('slug', { ascending: true })
@@ -93,6 +93,7 @@ export type CategoryRow = {
   name_he: string
   description_he: string | null
   parent_id: string | null
+  image_url: string | null
 }
 
 export type CategoryProductRow = {
@@ -146,7 +147,7 @@ export async function getCategoryBySlug(slug: string): Promise<CategoryRow | nul
   const data = orFail(
     await supabase
       .from('categories')
-      .select('id, slug, name_he, description_he, parent_id')
+      .select('id, slug, name_he, description_he, parent_id, image_url')
       .eq('slug', slug)
       .eq('is_active', true)
       .single(),
@@ -431,15 +432,28 @@ export async function getCategoryProducts(opts: {
   productType?: ProductTypeFilter
   /** City slug. Part of the cache key, so two cities never share a page. */
   city?: string
+  supplierId?: string
+  tag?: string
   /** Set for the three collection slugs. See `collectionRule`. */
   collection?: CollectionRule
 }): Promise<{ items: CategoryProductRow[]; total: number }> {
   'use cache'
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
-  const { categoryId, category, sort, page, priceMin, priceMax, productType, city, collection } =
-    opts
-  const supabase = createCatalogueReadClient()
+  const {
+    categoryId,
+    category,
+    sort,
+    page,
+    priceMin,
+    priceMax,
+    productType,
+    city,
+    supplierId,
+    tag,
+    collection,
+  } = opts
+  const supabase = createPublicClient()
   const from = (page - 1) * CATEGORY_PAGE_SIZE
 
   let query = supabase
@@ -451,7 +465,7 @@ export async function getCategoryProducts(opts: {
       // empty grid. That exact failure is why src/lib/supabase/optional-columns.ts
       // exists. Add the two columns to this string when 136 is applied;
       // `supplierLocation` already prefers them the moment they are present.
-      'id, slug, name_he, kenyon_price, full_price, images, stock_quantity, created_at, type, offer_valid_until, categories!products_category_id_fkey(name_he, slug), suppliers(city)',
+      'id, slug, name_he, kenyon_price, full_price, images, stock_quantity, created_at, type, city, latitude, longitude, categories!products_category_id_fkey(name_he, slug), suppliers(city)',
       { count: 'exact' },
     )
     .eq('status', 'active')
@@ -471,6 +485,9 @@ export async function getCategoryProducts(opts: {
 
   if (priceMin != null) query = query.gte('kenyon_price', priceMin)
   if (priceMax != null) query = query.lte('kenyon_price', priceMax)
+  if (supplierId) query = query.eq('supplier_id', supplierId)
+  if (tag) query = query.contains('tags', [tag])
+  query = query.gt('stock_quantity', 0)
   if (productType) {
     const facet = productTypeFilter(productType)
     query = facet.column === 'or' ? query.or(facet.value) : query.or(`and(${facet.value})`)
@@ -569,22 +586,25 @@ export async function getShopProducts(opts: {
   priceMin?: number
   priceMax?: number
   productType?: ProductTypeFilter
+  weekend?: boolean
+  freeShipping?: boolean
 }): Promise<{ items: CategoryProductRow[]; total: number }> {
   'use cache'
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
-  const { sort, page, priceMin, priceMax, productType } = opts
-  const supabase = createCatalogueReadClient()
+  const { sort, page, priceMin, priceMax, productType, weekend, freeShipping } = opts
+  const supabase = createPublicClient()
   const from = (page - 1) * SHOP_PAGE_SIZE
 
   let query = supabase
     .from('products')
     .select(
-      'id, slug, name_he, kenyon_price, full_price, images, stock_quantity, created_at, type, offer_valid_until, categories!products_category_id_fkey(name_he, slug)',
+      'id, slug, name_he, kenyon_price, full_price, images, stock_quantity, created_at, type, city, categories!products_category_id_fkey(name_he, slug)',
       { count: 'exact' },
     )
     .eq('status', 'active')
     .is('deleted_at', null)
+    .gt('stock_quantity', 0)
 
   if (priceMin != null) query = query.gte('kenyon_price', priceMin)
   if (priceMax != null) query = query.lte('kenyon_price', priceMax)
@@ -592,6 +612,9 @@ export async function getShopProducts(opts: {
     const facet = productTypeFilter(productType)
     query = facet.column === 'or' ? query.or(facet.value) : query.or(`and(${facet.value})`)
   }
+  // rc5 F13 chips (migrations 284 and 278).
+  if (weekend) query = query.eq('weekend_only' as never, true as never)
+  if (freeShipping) query = query.eq('shipping_price_agorot' as never, 0 as never)
 
   switch (sort) {
     case 'price_asc':
@@ -644,3 +667,139 @@ export async function getShopProducts(opts: {
  */
 export const getCategoryProductsCached = cache(getCategoryProducts)
 export const getShopProductsCached = cache(getShopProducts)
+
+/**
+ * Get price bounds (min/max) for a category for the price filter slider.
+ */
+export async function getCategoryPriceBounds(categoryId: string): Promise<{
+  minPrice: number
+  maxPrice: number
+}> {
+  'use cache'
+  cacheLife('hours')
+  cacheTag(CATALOGUE_TAG)
+  const supabase = createPublicClient()
+
+  const { data, error } = await supabase
+    .from('products')
+    .select('kenyon_price')
+    .eq('category_id', categoryId)
+    .eq('status', 'active')
+    .is('deleted_at', null)
+
+  if (error || !data || data.length === 0) {
+    return { minPrice: 0, maxPrice: 1000 }
+  }
+
+  const prices = data.map((p) => p.kenyon_price).filter((p) => p != null) as number[]
+  if (prices.length === 0) {
+    return { minPrice: 0, maxPrice: 1000 }
+  }
+
+  const minPrice = Math.floor(Math.min(...prices))
+  const maxPrice = Math.ceil(Math.max(...prices))
+
+  return { minPrice, maxPrice }
+}
+
+/**
+ * Fetch top 10 suppliers with product counts for a category.
+ */
+export async function getCategorySuppliersFilter(
+  categoryId: string,
+): Promise<{ supplier_id: string; supplier_name_he: string; product_count: number }[]> {
+  'use cache'
+  cacheLife('hours')
+  cacheTag(CATALOGUE_TAG)
+  const supabase = createPublicClient()
+
+  // Use Supabase's native query to get supplier counts directly from PostgreSQL
+  // This avoids fetching all products and computing counts in JavaScript
+  const { data, error } = await supabase
+    .from('products')
+    .select('supplier_id, suppliers(name_he)', { count: 'exact' })
+    .eq('category_id', categoryId)
+    .eq('status', 'active')
+    .is('deleted_at', null)
+
+  if (error) {
+    throw new Error(`catalogue.category_suppliers_failed: ${error.message}`)
+  }
+
+  if (!data || data.length === 0) return []
+
+  // Aggregate by supplier_id with COUNT in memory (PostgREST lacks GROUP BY)
+  // but fetch supplier info with join for cleaner aggregation
+  const supplierCounts = new Map<string, { name: string; count: number }>()
+
+  for (const row of data) {
+    if (row.supplier_id) {
+      const suppliers = Array.isArray(row.suppliers) ? row.suppliers : [row.suppliers]
+      const supplier = suppliers[0] as { name_he: string } | null
+      if (supplier) {
+        const current = supplierCounts.get(row.supplier_id) || { name: supplier.name_he, count: 0 }
+        current.count += 1
+        supplierCounts.set(row.supplier_id, current)
+      }
+    }
+  }
+
+  // Sort by count, limit to 10
+  const result = Array.from(supplierCounts.entries())
+    .map(([id, { name, count }]) => ({
+      supplier_id: id,
+      supplier_name_he: name,
+      product_count: count,
+    }))
+    .sort((a, b) => b.product_count - a.product_count)
+    .slice(0, 10)
+
+  return result
+}
+
+/**
+ * Fetch top 20 tags for a category.
+ */
+export async function getCategoryTagsFilter(
+  categoryId: string,
+): Promise<{ tag: string; product_count: number }[]> {
+  'use cache'
+  cacheLife('hours')
+  cacheTag(CATALOGUE_TAG)
+  const supabase = createPublicClient()
+
+  // Get products in this category with their tags
+  const products = orFail(
+    await supabase
+      .from('products')
+      .select('tags')
+      .eq('category_id', categoryId)
+      .eq('status', 'active')
+      .is('deleted_at', null),
+    'catalogue.category_tags_products_failed',
+    { category_id: categoryId },
+  )
+
+  if (!products || products.length === 0) return []
+
+  // Count occurrences of each tag
+  const tagCounts = new Map<string, number>()
+  for (const p of products) {
+    if (p.tags && Array.isArray(p.tags)) {
+      for (const tag of p.tags) {
+        tagCounts.set(tag, (tagCounts.get(tag) || 0) + 1)
+      }
+    }
+  }
+
+  // Convert to array, sort by count, limit to 20
+  const result = Array.from(tagCounts.entries())
+    .map(([tag, count]) => ({
+      tag,
+      product_count: count,
+    }))
+    .sort((a, b) => b.product_count - a.product_count)
+    .slice(0, 20)
+
+  return result
+}

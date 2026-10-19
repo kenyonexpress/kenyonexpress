@@ -1,5 +1,6 @@
 'use server'
 
+import { AFFILIATE_COOKIE } from '@/lib/affiliate/rules'
 import { appReturnUrl } from '@/lib/app/deep-links'
 import { checkOptionalIsraeliPostalCode } from '@/lib/checkout/israeli-postal-code'
 import { validateCartView } from '@/lib/checkout/validate-cart'
@@ -16,14 +17,7 @@ import {
   buildOrderItemSnapshot,
   completeSplitPair,
 } from '@/lib/commerce/product-money'
-import { isValidUnitCode } from '@/lib/coupons/unit-codes'
-import { couponStackingViolations } from '@/lib/fraud/coupon-stacking'
-import { enqueueFraudReview, hasBlockingFraudFlag } from '@/lib/fraud/review-queue'
-import {
-  checkCheckoutVelocity,
-  normalizeVelocityEmail,
-  normalizeVelocityPhone,
-} from '@/lib/fraud/velocity'
+import { giftSendAt } from '@/lib/gifts/send-at'
 import { withActionContext } from '@/lib/observability/action-context'
 import { log } from '@/lib/observability/log'
 import { capturePaymentError } from '@/lib/observability/sentry'
@@ -41,7 +35,7 @@ import {
 } from '@/lib/payments/payment-money-columns'
 import { isThreeDSChallengeRequired } from '@/lib/payments/threeds'
 import { isCardTokenExpired } from '@/lib/payments/token-expiry'
-import { DEFAULT_SHIPPING_METHOD_ID } from '@/lib/shipping/methods'
+import { TURNSTILE_FIELD, verifyTurnstile } from '@/lib/security/turnstile'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { readWalletAccountAgorot } from '@/lib/supabase/optional-columns'
 import { createClient } from '@/lib/supabase/server'
@@ -52,6 +46,8 @@ import {
   beginCheckoutInputSchema,
 } from '@/lib/validations/checkout'
 import { getCart, resolveCheckoutDiscountAgorot } from '@/server/actions/cart'
+import { attributeOrder } from '@/server/affiliate/attribution'
+import { attributeOrderToAffiliate } from '@/server/affiliate/attribution-clicks'
 import {
   linkAnalyticsIdentity,
   stampOrderAttribution,
@@ -59,7 +55,7 @@ import {
 } from '@/server/analytics/track'
 import { type SettlementLineInput, calculateSettlement } from '@/server/domain/orders/settlement'
 import { finalizeOrder } from '@/server/payments/finalize'
-import { recordPaymentEvent } from '@/server/payments/payment-events'
+import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 
 const ORDER_EXPIRY_MINUTES = 30
@@ -757,6 +753,38 @@ async function runBeginCheckout(
     return { ok: false, error: `יצירת הזמנה נכשלה: ${orderError?.message}`, code: 'INTERNAL' }
   }
 
+  // rc5 F12: the affiliate link that brought this visit (cookie set by the
+  // proxy from `?ref=`), with the campaign rate snapshotted. Best effort and
+  // awaited inside its own try: it can never fail or delay the order.
+  try {
+    const jar = await cookies()
+    const affiliateCode = jar.get(AFFILIATE_COOKIE)?.value
+
+    // Attribute to old system (with links and codes)
+    await attributeOrder({
+      orderId: order.id,
+      buyerUserId: user?.id ?? null,
+      linkCode: affiliateCode,
+      now,
+    })
+
+    // Attribute to new system (with campaigns and click tracking)
+    if (affiliateCode) {
+      await attributeOrderToAffiliate({
+        orderId: order.id,
+        campaignSlug: affiliateCode,
+        userId: user?.id ?? null,
+        orderTotalAgorot: settlement.paidOnSite,
+        now,
+      })
+    }
+  } catch (err) {
+    log.warn('checkout.affiliate_attribution_failed', {
+      order_id: order.id,
+      error: err instanceof Error ? err.message : String(err),
+    })
+  }
+
   // The gift intent (108), written in its OWN statement and not added to the
   // insert above. This whole module exists because naming a column the hosted
   // database does not have failed the entire orders INSERT with 42703, and NO
@@ -774,6 +802,23 @@ async function runBeginCheckout(
       .eq('id', order.id)
     if (giftError) {
       log.warn('checkout.gift_not_recorded', { order_id: order.id, err: giftError.message })
+    }
+
+    // Scheduled delivery (186), again in its own statement: before 186 is
+    // applied the column does not exist, the update fails, and the gift is sent
+    // immediately, which is the behaviour before scheduling existed.
+    const sendAt = giftSendAt(input.gift_send_date, now)
+    if (sendAt) {
+      const { error: sendAtError } = await admin
+        .from('orders')
+        .update({ gift_send_at: sendAt.toISOString() } as never)
+        .eq('id', order.id)
+      if (sendAtError) {
+        log.warn('checkout.gift_send_at_not_recorded', {
+          order_id: order.id,
+          err: sendAtError.message,
+        })
+      }
     }
   }
 
@@ -1215,6 +1260,12 @@ async function runSubmitCheckout(
   } = await supabase.auth.getUser()
   if (!user) return { error: 'יש להתחבר לפני התשלום' }
 
+  // rc5 F19: Turnstile, a no-op until TURNSTILE_SECRET_KEY is set.
+  const forwarded = (await headers()).get('x-forwarded-for')?.split(',')[0]?.trim()
+  if (!(await verifyTurnstile(formData.get(TURNSTILE_FIELD), forwarded))) {
+    return { error: 'אימות האבטחה נכשל. רעננו את הדף ונסו שוב.' }
+  }
+
   const text = (name: string) => {
     const v = formData.get(name)
     return typeof v === 'string' ? v.trim() : ''
@@ -1292,6 +1343,7 @@ async function runSubmitCheckout(
           gift_recipient_email: text('gift_recipient_email'),
           gift_recipient_name: text('gift_recipient_name') || undefined,
           gift_message: text('gift_message') || undefined,
+          gift_send_date: text('gift_send_date') || undefined,
         }
       : {}),
   })

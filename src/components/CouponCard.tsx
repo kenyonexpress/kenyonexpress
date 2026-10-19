@@ -1,5 +1,5 @@
+import { EcMapPointer, EcTag } from '@/components/icons/electro-icons'
 import { shekelsFromIls } from '@/lib/money-format'
-import { MapPin, Tag } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -31,7 +31,7 @@ export default function CouponCard({ coupon }: { coupon: Coupon }) {
   return (
     <Link
       href={`/coupons/${coupon.id}`}
-      className="block bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-md transition-shadow"
+      className="block bg-white border border-gray-100 overflow-hidden hover:shadow-md transition-shadow [border-radius:var(--radius-card)]"
     >
       <div className="relative h-32 bg-gray-100">
         {coupon.image_url ? (
@@ -55,12 +55,13 @@ export default function CouponCard({ coupon }: { coupon: Coupon }) {
             src={coupon.image_url}
             alt={coupon.title_he}
             fill
+            loading="lazy"
             sizes="(max-width: 767px) calc(50vw - 22px), (max-width: 1023px) calc(33.33vw - 18.67px), (max-width: 1279px) calc(33.33vw - 179.33px), 248px"
             className="object-cover"
           />
         ) : (
           <div className="flex items-center justify-center h-full text-gray-300">
-            <Tag size={36} />
+            <EcTag size={36} />
           </div>
         )}
         {discountPct != null && discountPct > 0 && (
@@ -71,7 +72,7 @@ export default function CouponCard({ coupon }: { coupon: Coupon }) {
             // the measured .category-card__badge uses for grid cards, and the
             // corner the coupon DETAIL page pins the same badge to. This card
             // had it on the opposite corner from its own detail page.
-            className="absolute top-2 start-2 bg-brand text-heading text-xs font-bold px-2 py-1 rounded-lg"
+            className="absolute top-2 start-2 bg-brand text-heading text-xs font-bold px-2 py-1 [border-radius:var(--radius-button)]"
           >
             {discountPct}% הנחה
           </div>
@@ -84,7 +85,7 @@ export default function CouponCard({ coupon }: { coupon: Coupon }) {
         </p>
         {coupon.location_he && (
           <div className="flex items-center gap-1 text-xs text-gray-500">
-            <MapPin size={11} />
+            <EcMapPointer size={11} />
             {coupon.location_he}
           </div>
         )}

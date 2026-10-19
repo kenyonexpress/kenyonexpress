@@ -13,9 +13,12 @@ import { type NextRequest, NextResponse } from 'next/server'
  *      2026-07-28: a coupon's whole prepayment is the platform's at payment,
  *      the supplier is due nothing from us on it, and no hold is ever written.
  *      The function in production still carries that refund block; it matches
- *      nothing, because every escrow_holds row has voucher_id NULL, and
- *      migrations/pending/125 removes it. See 085, which cut the identical
- *      dead branch out of redeem_voucher() and missed this one.
+ *      nothing, because every escrow_holds row has voucher_id NULL. 125 cut
+ *      it out and IS APPLIED: read off pg_proc on 2026-09-07, neither
+ *      expire_vouchers() nor credit_expired_vouchers() mentions escrow at all.
+ *      The file is migrations/applied/125_expire_vouchers_no_escrow.sql. See
+ *      085, which cut the identical dead branch out of redeem_voucher() and
+ *      missed this one.
  *   2. `credit_expired_vouchers()` credits the customer's wallet with what they
  *      paid online for each expired voucher (C6: expiry is not forfeiture).
  *
@@ -73,8 +76,31 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
     { p_buckets: [7, 1] },
   )
   if (reminderError) {
+    // 200 IS RIGHT AND THE BARE `reminders: 0` WAS NOT.
+    //
+    // Answering 200 is deliberate and argued in the tests: a retry would re-run
+    // two money legs to recover a mailer. But this body used to be
+    // `{ ok: true, expired, credited, reminders: 0 }`, which is byte-identical
+    // to a healthy run on a night when no voucher was within seven days of
+    // expiry - and the suite pinned BOTH shapes to that same object, so the
+    // collision was asserted rather than noticed. A cron dashboard reading this
+    // JSON could not tell "nobody needed reminding" from "the reminder call
+    // failed", and the T-7/T-1 notices could stop for good while every run
+    // reported success.
+    //
+    // The leg directly above already does this correctly: the credit failure
+    // returns `credited: 0` AND `error`. This now follows that convention.
+    // `reminders` stays 0 rather than becoming null, because
+    // "reports zero rather than null" is its own deliberate decision one test
+    // below; the discriminator is added beside it, not in place of it.
     log.error('vouchers.expiry_reminders_failed', { reason: reminderError.message })
-    return NextResponse.json({ ok: true, expired, credited, reminders: 0 })
+    return NextResponse.json({
+      ok: true,
+      expired,
+      credited,
+      reminders: 0,
+      reminders_error: reminderError.message,
+    })
   }
 
   return NextResponse.json({ ok: true, expired, credited, reminders: reminders ?? 0 })

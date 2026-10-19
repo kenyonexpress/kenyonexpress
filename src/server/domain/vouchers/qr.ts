@@ -102,6 +102,64 @@ export function verifyVoucherQrPayload(token: string): VoucherQrPayload | null {
   return parsed
 }
 
+/** A token is one of exactly three things, and two of them are not the same. */
+export type VoucherQrCheck =
+  | { status: 'verified'; payload: VoucherQrPayload }
+  | { status: 'forged' }
+  | { status: 'unverifiable'; error: VoucherQrSecretMissingError }
+
+/**
+ * The three-way answer, for callers that must tell a bad token from a broken
+ * verifier.
+ *
+ * WHY THIS EXISTS RATHER THAN A TRY/CATCH AT EACH CALL SITE. `forged` and
+ * `unverifiable` look alike and must never be handled alike:
+ *
+ *   forged        a permanent property of the token. The till DISCARDS it -
+ *                 `drainQueue` clears anything not returned as an error,
+ *                 because "a signature does not become valid later".
+ *   unverifiable  a property of THIS SERVER, right now, with no secret
+ *                 configured. It becomes valid the moment an operator sets
+ *                 VOUCHER_QR_SECRET.
+ *
+ * Conflating them destroys money: a queue of genuine offline redemptions,
+ * scanned at a till while the deployment was missing its secret, would each be
+ * marked an invalid signature and dropped, and the customers had already paid.
+ *
+ * MEASURED, 2026-09-08, 28 events over seven days: `verifyVoucherQrPayload`
+ * throws on any well-formed-looking token when the secret is absent, and both
+ * call sites let it escape - so a cashier scanning a real voucher got a crash
+ * page, and any bot walking /redeem/<junk> raised a server exception. Note that
+ * a token with the wrong shape returns null before the secret is read, so this
+ * only bites the tokens that look real.
+ */
+export function classifyVoucherQrPayload(token: string): VoucherQrCheck {
+  try {
+    const payload = verifyVoucherQrPayload(token)
+    return payload ? { status: 'verified', payload } : { status: 'forged' }
+  } catch (error) {
+    if (error instanceof VoucherQrSecretMissingError) return { status: 'unverifiable', error }
+    throw error
+  }
+}
+
+/**
+ * Whether this server can verify a QR token at all.
+ *
+ * For the batch route, which decides ONCE for a whole queue: it must refuse the
+ * request before the loop touches the database, the same way its rate limit
+ * does, so a batch is never half-burned.
+ */
+export function canVerifyVoucherQr(): boolean {
+  try {
+    primarySecret()
+    return true
+  } catch (error) {
+    if (error instanceof VoucherQrSecretMissingError) return false
+    throw error
+  }
+}
+
 function isWellFormed(value: unknown): value is VoucherQrPayload {
   if (typeof value !== 'object' || value === null) return false
   const p = value as Record<string, unknown>

@@ -36,19 +36,51 @@ async function runDecideConsent(formData: FormData): Promise<void> {
     secure: process.env.NODE_ENV === 'production',
   })
 
+  redirect(await backToWhereTheyWere())
+}
+
+/** The page the visitor was on, or the homepage if the header is unusable. */
+async function backToWhereTheyWere(): Promise<string> {
   const referer = (await headers()).get('referer')
-  let path = '/'
-  if (referer) {
-    try {
-      const url = new URL(referer)
-      path = `${url.pathname}${url.search}`
-    } catch {
-      path = '/'
-    }
+  if (!referer) return '/'
+  try {
+    const url = new URL(referer)
+    return `${url.pathname}${url.search}`
+  } catch {
+    return '/'
   }
-  redirect(path)
+}
+
+/**
+ * WITHDRAW A DECISION ALREADY MADE, WHICH WAS PROMISED AND NOT POSSIBLE.
+ *
+ * `docs`-side, the cookie policy says measurement cookies are "written only
+ * after you consent in the banner, and YOU MAY WITHDRAW AT ANY TIME", and names
+ * the mechanism: "changing the consent decision: through the consent banner on
+ * the site".
+ *
+ * The banner cannot be reached that way. It is rendered unconditionally in the
+ * root layout and hidden before paint by the attribute
+ * `CONSENT_PREPAINT_SCRIPT` puts on `<html>` as soon as the cookie exists, and
+ * nothing anywhere re-opened it - searched 2026-09-08: `ConsentBanner` appears
+ * in the layout and nowhere else, and the footer links the policy text only.
+ * So the first click was final, and the document promised otherwise.
+ *
+ * Clearing the cookie is the whole fix: the pre-paint script stops hiding the
+ * banner, and the next response asks again. No new UI state, no client
+ * JavaScript, and the banner keeps being the one place a decision is made -
+ * which is what the policy already says.
+ */
+async function runResetConsent(): Promise<void> {
+  const jar = await cookies()
+  jar.delete(CONSENT_COOKIE)
+  redirect(await backToWhereTheyWere())
 }
 
 export async function decideConsent(formData: FormData): Promise<void> {
   return withActionContext('consent.decide', () => runDecideConsent(formData))
+}
+
+export async function resetConsent(): Promise<void> {
+  return withActionContext('consent.reset', () => runResetConsent())
 }

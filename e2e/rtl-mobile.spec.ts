@@ -133,8 +133,22 @@ test.describe('no sideways scroll at 320px', () => {
 
     // The mobile layout really is the single page: the stepper is gone and
     // the fields of steps 1, 2 and 4 are all visible with nothing clicked.
-    await expect(page.locator('.checkout-steps')).toBeHidden()
+    //
+    // THE FORM IS AWAITED FIRST, AND THAT ORDER IS THE FIX FOR A RACE. Two
+    // elements carry `.checkout-steps`: the streaming skeleton in
+    // CheckoutShell, which is aria-hidden scenery, and the real one in
+    // CheckoutForm. While the form is replacing the skeleton BOTH are in the
+    // document, and a bare `.checkout-steps` then resolves to two elements -
+    // which strict mode raises immediately rather than retrying, so the
+    // assertion fails on timing rather than on layout. Caught in CI on the
+    // first run of this suite: "resolved to 2 elements", green on retry.
+    //
+    // Asserting that none is VISIBLE also states the actual requirement. The
+    // claim was never "exactly one stepper exists"; it is "no stepper is on
+    // screen at this width", which stays true however many the layer above
+    // renders while loading.
     await expect(page.locator('#co-first-name')).toBeVisible()
+    await expect(page.locator('.checkout-steps:visible')).toHaveCount(0)
     await expect(page.locator('#co-city')).toBeVisible()
     await expect(page.locator('.checkout-pay-btn')).toBeVisible()
 

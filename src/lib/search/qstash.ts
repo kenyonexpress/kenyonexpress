@@ -1,4 +1,5 @@
 import { createHash, createHmac, timingSafeEqual } from 'node:crypto'
+import { fetchWithTimeout } from '@/lib/http/fetch-with-timeout'
 import type { SearchIndexJob } from '@/lib/search/pipeline-contracts'
 
 /**
@@ -48,7 +49,7 @@ export async function enqueueSearchIndexJob(
   }
 
   const target = `${appUrl()}/api/search/index-job`
-  const res = await fetch(`${QSTASH_URL}/v2/publish/${target}`, {
+  const res = await fetchWithTimeout(`${QSTASH_URL}/v2/publish/${target}`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${token}`,

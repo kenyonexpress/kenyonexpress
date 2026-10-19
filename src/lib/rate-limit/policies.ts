@@ -21,7 +21,7 @@
  * and trusts nothing: `check_rate_limit` used to be reachable by anyone with
  * the publishable key, so `phone-otp-number:<victim>` five times locked that
  * person out of signing in. That hole is closed in `utils/rate-limit.ts` and by
- * `migrations/pending/145`; the table does not reopen it, because Upstash is
+ * 145, which is applied; the table does not reopen it, because Upstash is
  * reachable only from the server.
  */
 
@@ -176,6 +176,26 @@ export const RATE_LIMIT_POLICIES = {
     reason: 'guest list merge on sign-in, per user',
   },
 
+  // Keyed on the user, never on IP, and deliberately generous rather than tight:
+  // this is a STATUTORY notice under Consumer Protection Law 14ה, and a limit
+  // that turns away a genuine cancellation is worse than one that lets a few
+  // duplicates through. `refunds_one_open_per_order` already makes the duplicate
+  // harmless; this only bounds a script.
+  'refund-request': { limit: 5, windowSeconds: 3600, reason: 'cancellation notice, per user' },
+
+  // rc5 F12. Keyed on the user: both act only on the caller's own affiliate row.
+  'affiliate-join': { limit: 5, windowSeconds: 3600, reason: 'affiliate application, per user' },
+  'affiliate-link': { limit: 30, windowSeconds: 3600, reason: 'affiliate link creation, per user' },
+  // rc5 F14. A browser re-subscribes when its keys rotate; 20 an hour is ample.
+  'push-subscribe': { limit: 20, windowSeconds: 3600, reason: 'browser push subscribe, per user' },
+  // rc5 F15. Sign-in factors: per phone and per IP for sending, per phone for
+  // guessing, per IP for passkey assertions.
+  'wa-otp-send': { limit: 5, windowSeconds: 3600, reason: 'WhatsApp code send, per phone' },
+  'wa-otp-send-ip': { limit: 20, windowSeconds: 3600, reason: 'WhatsApp code send, per IP' },
+  'wa-otp-verify': { limit: 10, windowSeconds: 3600, reason: 'WhatsApp code guesses, per phone' },
+  'passkey-register': { limit: 20, windowSeconds: 3600, reason: 'passkey enrolment, per user' },
+  'passkey-auth': { limit: 30, windowSeconds: 600, reason: 'passkey sign-in, per IP' },
+
   // -- Vouchers and the supplier till. Keyed on the supplier user, never on IP:
   // a shop floor is one NAT address and would share one bucket.
   redeem: { limit: 60, windowSeconds: 3600, reason: 'customer-facing redeem page, per IP' },
@@ -187,12 +207,7 @@ export const RATE_LIMIT_POLICIES = {
   // -- Read paths. Large, because they are cheap and a human browsing hits them.
   search: { limit: 120, windowSeconds: 300, reason: 'search queries hit Meilisearch' },
   'search-suggest': { limit: 300, windowSeconds: 300, reason: 'typeahead fires per keystroke' },
-  'search-facets': { limit: 60, windowSeconds: 300, reason: 'faceted search, filters + counts' },
-  'catalogue-listing': {
-    limit: 240,
-    windowSeconds: 300,
-    reason: 'listing pages appended by the infinite grid, one per scroll',
-  },
+  'search-click': { limit: 600, windowSeconds: 300, reason: 'search result clicks, per IP' },
   analytics: { limit: 120, windowSeconds: 60, reason: 'beacon endpoint, per IP' },
 
   // -- Public write forms. Five an hour, because these reach a human inbox.
@@ -230,6 +245,24 @@ export const RATE_LIMIT_POLICIES = {
   // -- Mobile app surfaces (`apps/mobile` is a second caller of these routes).
   'app-session': { limit: 30, windowSeconds: 600, reason: 'app session exchange, per IP' },
   'push-register': { limit: 60, windowSeconds: 3600, reason: 'push token registration' },
+
+  // -- Marketing and campaigns.
+  'campaign-trigger': { limit: 5, windowSeconds: 3600, reason: 'campaign hook trigger, per user' },
+  'sms-broadcast-create': {
+    limit: 10,
+    windowSeconds: 3600,
+    reason: 'SMS broadcast creation, per admin',
+  },
+  'sms-broadcast-update': {
+    limit: 20,
+    windowSeconds: 3600,
+    reason: 'SMS broadcast updates, per admin',
+  },
+  'sms-unsubscribe': {
+    limit: 5,
+    windowSeconds: 3600,
+    reason: 'SMS unsubscribe requests, per user',
+  },
 } as const satisfies Record<string, RateLimitPolicy>
 
 export type RateLimitPolicyName = keyof typeof RATE_LIMIT_POLICIES

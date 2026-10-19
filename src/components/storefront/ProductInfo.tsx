@@ -1,8 +1,8 @@
 'use client'
 
 import { useCart } from '@/components/cart/CartProvider'
-import CityTag from '@/components/geo/CityTag'
-import WishlistButton from '@/components/product/WishlistButton'
+import { EcAddToCart } from '@/components/icons/electro-icons'
+import ProductLocation from '@/components/product-card/ProductLocation'
 import FacebookShareButton from '@/components/shared/FacebookShareButton'
 import ShareButton from '@/components/shared/ShareButton'
 import WhatsAppShareButton from '@/components/shared/WhatsAppShareButton'
@@ -17,7 +17,7 @@ import { cityByName } from '@/lib/geo/cities'
 import { shekelsFromIls as sharedShekelsFromIls } from '@/lib/money-format'
 import { useProductLive } from '@/lib/product-live/use-product-live'
 import { buildShareMessage } from '@/lib/share/message'
-import { Check, MapPin, ShoppingCart } from 'lucide-react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { type ReactNode, useState } from 'react'
 
@@ -231,32 +231,23 @@ export default function ProductInfo({
 
   return (
     <div data-pdp="summary" className="pdp-summary">
+      {/* rc5 F02: the eyebrow above the title is the deal's location, not its
+          category (the category stays in the breadcrumb and the attributes).
+          A city the city table recognises links into the city-filtered
+          catalogue; free text it does not know prints as written; no city at
+          all reads as nationwide. */}
       <p className="pdp-summary__eyebrow">
-        <span className="inline-flex items-center gap-2">
-          <span className="flex items-center justify-center w-8 h-8 rounded-full bg-neutral-100">
-            <MapPin size={14} className="text-black" />
-          </span>
-          {city || 'כל הארץ'}
-        </span>
+        {knownCity ? (
+          <Link href={`/products?city=${knownCity.slug}`} className="hover:underline">
+            <ProductLocation city={knownCity.name} />
+          </Link>
+        ) : (
+          <ProductLocation city={city} />
+        )}
       </p>
 
       <h1 className="pdp-summary__title">{name}</h1>
 
-      {/* Where the deal is, directly under the title, so it is answered before
-          the price rather than at the bottom of the page next to the supplier
-          block. It links into the city-filtered catalogue: a customer who cares
-          which city this is in is the customer who wants the others in it.
-          `knownCity` is null for free text the city table does not recognise,
-          and the whole line disappears rather than printing it raw. */}
-      {knownCity && (
-        <p className="pdp-summary__city">
-          <CityTag city={knownCity.name} href={`/products?city=${knownCity.slug}`} />
-        </p>
-      )}
-
-      {/* Live's rating slot. Stars only once a review has been approved
-          (`rating` is null otherwise); the identifiers keep the line's height
-          either way, which is what the rhythm below depends on. */}
       <p className="pdp-summary__meta" dir={effectiveSku ? 'rtl' : 'ltr'}>
         <RatingStars rating={rating} />
         {effectiveSku ? (
@@ -405,13 +396,10 @@ export default function ProductInfo({
           className="pdp-buy__atc"
         >
           {added ? (
-            <>
-              <Check size={18} />
-              נוסף לסל
-            </>
+            <>נוסף לסל</>
           ) : (
             <>
-              <ShoppingCart size={18} />
+              <EcAddToCart size={18} />
               {buyLabel}
             </>
           )}

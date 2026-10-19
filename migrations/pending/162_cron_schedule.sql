@@ -10,8 +10,8 @@
 --
 -- SECRETS ARE NOT INLINED. Each job command looks the secret and the base URL
 -- up from vault at RUN time:
---   (select decrypted_secret from vault.decrypted_secrets where name = 'cron_secret')
---   (select decrypted_secret from vault.decrypted_secrets where name = 'app_url')
+--   (select decrypted_secret from vault.decrypted_secrets where name = 'CRON_SECRET')
+--   (select decrypted_secret from vault.decrypted_secrets where name = 'APP_BASE_URL')
 -- so `cron.job.command` never stores either value, rotating the secret needs
 -- no re-migration, and a missing vault row makes the job fail loudly instead
 -- of calling with an empty bearer. `app_url` is the *.vercel.app production
@@ -28,11 +28,11 @@ declare
   job record;
 begin
   -- Refuse to schedule jobs that would call with a missing secret or URL.
-  if not exists (select 1 from vault.decrypted_secrets where name = 'cron_secret') then
-    raise exception '162: vault secret cron_secret missing; seed it first (CLOSEOUT §8a)';
+  if not exists (select 1 from vault.decrypted_secrets where name = 'CRON_SECRET') then
+    raise exception '162: vault secret CRON_SECRET missing; seed it first (CLOSEOUT §8a)';
   end if;
-  if not exists (select 1 from vault.decrypted_secrets where name = 'app_url') then
-    raise exception '162: vault secret app_url missing; seed it first (CLOSEOUT §8a)';
+  if not exists (select 1 from vault.decrypted_secrets where name = 'APP_BASE_URL') then
+    raise exception '162: vault secret APP_BASE_URL missing; seed it first (CLOSEOUT §8a)';
   end if;
 
   for job in
@@ -57,10 +57,10 @@ begin
       format(
         $cmd$
         select net.http_post(
-          url := (select decrypted_secret from vault.decrypted_secrets where name = 'app_url') || %L,
+          url := (select decrypted_secret from vault.decrypted_secrets where name = 'APP_BASE_URL') || %L,
           headers := jsonb_build_object(
             'Authorization',
-            'Bearer ' || (select decrypted_secret from vault.decrypted_secrets where name = 'cron_secret'),
+            'Bearer ' || (select decrypted_secret from vault.decrypted_secrets where name = 'CRON_SECRET'),
             'Content-Type', 'application/json'
           ),
           body := '{}'::jsonb,

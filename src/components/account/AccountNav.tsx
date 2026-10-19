@@ -14,12 +14,12 @@ const ITEMS = [
   { href: '/account/wallet', label: 'הארנק שלי' },
   { href: '/account/cashback', label: 'הקאשבק שלי' },
   { href: '/account/referrals', label: 'חבר מביא חבר' },
+  { href: '/account/affiliate', label: 'תוכנית שותפים' },
   { href: '/account/subscriptions', label: 'המנויים שלי' },
   { href: '/account/addresses', label: 'כתובות' },
   { href: '/account/tokens', label: 'אמצעי תשלום' },
   { href: '/account/notifications', label: 'התראות' },
-  { href: '/account/security', label: 'אבטחה וכניסה' },
-  { href: '/account/privacy', label: 'פרטיות ונתונים' },
+  { href: '/account/security', label: 'אבטחה' },
 ] as const
 
 // This file carried its OWN copy of `formatIls`, a second

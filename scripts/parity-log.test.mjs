@@ -2,108 +2,103 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { GATE_CEILING, appendParityRefusal, appendParityRow } from './parity-log.mjs'
+import { GATE_CEILING, appendParityFailure, appendParityRow } from './parity-log.mjs'
 
-// appendParityRow resolves docs/UI-PARITY-REPORT.md against process.cwd(), and
-// that is deliberate: there is no path parameter to point a run at some other
-// file and leave the real report empty. So the test moves the cwd rather than
-// the target, and puts it back.
-let cwd
-let dir
+/**
+ * The report writer, tested where it writes: a temporary cwd, so a test can
+ * never append a fabricated measurement to the real docs/UI-PARITY-REPORT.md.
+ */
+let dir = ''
+let cwd = ''
 
 beforeEach(() => {
   cwd = process.cwd()
   dir = mkdtempSync(join(tmpdir(), 'parity-log-'))
-  mkdirSync(join(dir, 'docs'))
+  // The writer creates the report from its header, but not the directory.
+  mkdirSync(join(dir, 'docs'), { recursive: true })
   process.chdir(dir)
 })
 
 afterEach(() => {
   process.chdir(cwd)
   rmSync(dir, { recursive: true, force: true })
+  // biome-ignore lint/performance/noDelete: unsetting an env var - assignment stores the string "undefined"
+  delete process.env.COMPARE_NOTES
 })
 
 const report = () => readFileSync(join(dir, 'docs/UI-PARITY-REPORT.md'), 'utf8')
-const rows = () =>
-  report()
-    .split('\n')
-    .filter((l) => l.startsWith('| 2026-'))
 
 describe('appendParityRow', () => {
-  it('writes the header when the report does not exist yet', () => {
-    appendParityRow({ page: 'home', width: 380, pct: 9.5, when: '2026-09-09 04:00', commit: 'abc' })
-    expect(report()).toContain('| when (UTC) | page | width | diff | verdict | commit | notes |')
+  it('scores at or below the ceiling as PASS, and above it as FAIL', () => {
+    appendParityRow({ page: 'home', width: 1440, pct: GATE_CEILING })
+    appendParityRow({ page: 'home', width: 380, pct: GATE_CEILING + 0.01 })
+    const rows = report().trim().split('\n').slice(-2)
+    expect(rows[0]).toContain('PASS')
+    expect(rows[1]).toContain('**FAIL**')
   })
 
-  it('scores at or below the ceiling as PASS and above it as FAIL', () => {
-    appendParityRow({
-      page: 'home',
-      width: 380,
-      pct: GATE_CEILING,
-      when: '2026-09-09 04:00',
-      commit: 'abc',
-    })
-    appendParityRow({
-      page: 'home',
-      width: 380,
-      pct: GATE_CEILING + 0.01,
-      when: '2026-09-09 04:01',
-      commit: 'abc',
-    })
-    const [pass, fail] = rows()
-    expect(pass).toContain('| PASS |')
-    expect(fail).toContain('| **FAIL** |')
+  // The column the header calls the place "the cause belongs" was unreachable:
+  // `notes` had no caller, so every row ever written left it empty.
+  it('fills the notes column from COMPARE_NOTES', () => {
+    process.env.COMPARE_NOTES = 'next 16.3.4'
+    appendParityRow({ page: 'home', width: 1440, pct: 8.29 })
+    expect(report()).toContain('| next 16.3.4 |')
+  })
+
+  it('lets an explicit note win over the environment', () => {
+    process.env.COMPARE_NOTES = 'from the environment'
+    appendParityRow({ page: 'home', width: 1440, pct: 8.29, notes: 'from the caller' })
+    expect(report()).toContain('from the caller')
+    expect(report()).not.toContain('from the environment')
+  })
+
+  // THE REGRESSION. diff-bands.mjs passes `notes: process.env.COMPARE_NOTES ??
+  // ''`, so this function is handed an empty string on every single run. A `??`
+  // fallback is unreachable behind it, which is exactly how the first version of
+  // this feature shipped inert and wrote five more blank rows.
+  it('reads the environment even when the caller passes an empty note', () => {
+    process.env.COMPARE_NOTES = 'next 16.3.4'
+    appendParityRow({ page: 'home', width: 1440, pct: 8.29, notes: '' })
+    expect(report()).toContain('next 16.3.4')
+  })
+
+  it('is not fooled by a note that is only whitespace', () => {
+    process.env.COMPARE_NOTES = 'the real note'
+    appendParityRow({ page: 'home', width: 1440, pct: 8.29, notes: '   ' })
+    expect(report()).toContain('the real note')
+  })
+
+  // A pipe or a newline in a note silently breaks the table it is written into.
+  it('cannot break the table with a pipe or a newline', () => {
+    process.env.COMPARE_NOTES = 'next 16.3.4 | rebuilt\nand restarted'
+    appendParityRow({ page: 'home', width: 1440, pct: 8.29 })
+    const row = report().trim().split('\n').at(-1) ?? ''
+    expect(row.split('|')).toHaveLength(9)
+    expect(row).toContain('next 16.3.4 / rebuilt and restarted')
+  })
+
+  // `process.env.X = undefined` stores the STRING "undefined" in node, so this
+  // deletes instead - the state a machine that never set the variable is in.
+  it('writes no note when none is set, rather than the string undefined', () => {
+    // biome-ignore lint/performance/noDelete: unsetting an env var, which is the state under test
+    delete process.env.COMPARE_NOTES
+    appendParityRow({ page: 'home', width: 1440, pct: 8.29 })
+    expect(report()).not.toContain('undefined')
   })
 })
 
-describe('appendParityRefusal', () => {
-  it('records the run instead of leaving a gap in the table', () => {
-    appendParityRefusal({
-      page: 'cart',
-      width: 1440,
-      reason: 'live side is our-build',
-      when: '2026-09-09 04:02',
-      commit: 'abc',
-    })
-    expect(rows()).toHaveLength(1)
-    expect(rows()[0]).toContain('| cart | 1440 | n/a | REFUSED |')
-    expect(rows()[0]).toContain('live side is our-build')
+describe('appendParityFailure', () => {
+  it('records the run as UNMEASURED and invents no percentage', () => {
+    appendParityFailure({ page: 'home', width: 380, reason: 'screenshot failed' })
+    const row = report().trim().split('\n').at(-1) ?? ''
+    expect(row).toContain('**UNMEASURED**')
+    expect(row).toContain('n/a')
+    expect(row).not.toMatch(/\d+\.\d+%/)
   })
 
-  it('does not invent a percentage, and is neither PASS nor FAIL', () => {
-    appendParityRefusal({
-      page: 'home',
-      width: 380,
-      reason: 'reference rendered unstyled',
-      when: '2026-09-09 04:03',
-      commit: 'abc',
-    })
-    const row = rows()[0]
-    expect(row).not.toMatch(/\d+\.\d\d%/)
-    expect(row).not.toContain('PASS')
-    expect(row).not.toContain('FAIL')
-  })
-
-  it('writes the header first when it is the very first run', () => {
-    appendParityRefusal({
-      page: 'home',
-      width: 768,
-      reason: 'live side is unknown',
-      when: '2026-09-09 04:04',
-      commit: 'abc',
-    })
-    expect(report()).toContain('| when (UTC) | page | width | diff | verdict | commit | notes |')
-    expect(report()).toContain('REFUSED')
-  })
-
-  it('carries the commit, the same as a measured row', () => {
-    appendParityRefusal({
-      page: 'product',
-      width: 1440,
-      reason: 'live side is our-build',
-      when: '2026-09-09 04:05',
-      commit: 'deadbee-dirty',
-    })
-    expect(rows()[0]).toContain('`deadbee-dirty`')
+  it('carries the note alongside the reason', () => {
+    process.env.COMPARE_NOTES = 'next 16.3.4'
+    appendParityFailure({ page: 'home', width: 380, reason: 'screenshot failed' })
+    expect(report()).toContain('screenshot failed -- next 16.3.4')
   })
 })

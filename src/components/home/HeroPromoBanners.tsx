@@ -1,6 +1,6 @@
+import { FaChevronLeft } from '@/components/icons/electro-icons'
 import BrandPlaceholder from '@/components/ui/BrandPlaceholder'
 import { ELECTRO_HERO } from '@/lib/electro-hero-tokens'
-import { ChevronLeft } from 'lucide-react'
 import Link from 'next/link'
 
 const SB = ELECTRO_HERO.sideBanners
@@ -97,7 +97,7 @@ function ShopNowButton() {
         }}
         className="flex shrink-0 items-center justify-center rounded-full bg-brand-secondary text-brand-dark"
       >
-        <ChevronLeft className="h-3.5 w-3.5" strokeWidth={2.5} />
+        <FaChevronLeft className="h-3.5 w-3.5" />
       </span>
       לרכישה
     </span>

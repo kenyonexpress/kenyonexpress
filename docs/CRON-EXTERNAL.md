@@ -116,6 +116,7 @@ file is in a repository.
 10b https://kenyonexpress.vercel.app/api/cron/expire-cashback    GET  15 23 * * *   Authorization: Bearer <CRON_SECRET>
 10c https://kenyonexpress.vercel.app/api/cron/expire-coupons     GET  15 23 * * *   Authorization: Bearer <CRON_SECRET>
 11 https://kenyonexpress.vercel.app/api/cron/retention           GET  0 5 1 * *     Authorization: Bearer <CRON_SECRET>
+13 https://kenyonexpress.vercel.app/api/cron/affiliate-payouts   GET  40 3 * * *    Authorization: Bearer <CRON_SECRET>
 12 https://kenyonexpress.vercel.app/api/cron/weekly-digest       GET  0 4 * * 5     Authorization: Bearer <CRON_SECRET>
 13 https://kenyonexpress.vercel.app/api/cron/backup              GET  20 2 * * *    Authorization: Bearer <CRON_SECRET>
 14 https://kenyonexpress.vercel.app/api/cron/wishlist-alerts     GET  45 4 * * *    Authorization: Bearer <CRON_SECRET>
@@ -152,18 +153,9 @@ deliberate and harmless: both are sweeps with a wide window, not appointments.
 | 8 | 03:40 daily | `40 3 * * *` | `https://kenyonexpress.vercel.app/api/cron/reap-carts` |
 | 9 | 04:00 daily | `0 4 * * *` | `https://kenyonexpress.vercel.app/api/cron/reconcile` |
 | 10 | 23:15 daily | `15 23 * * *` | `https://kenyonexpress.vercel.app/api/cron/expire-vouchers` |
-| 11 | every 5 min | `*/5 * * * *` | `https://kenyonexpress.vercel.app/api/cron/whatsapp` |
-| 12 | every 10 min | `*/10 * * * *` | `https://kenyonexpress.vercel.app/api/cron/webhook-dlq` |
-| 12b | every 10 min | `*/10 * * * *` | `https://kenyonexpress.vercel.app/api/cron/job-dlq` |
-| 13 | every 10 min | `*/10 * * * *` | `https://kenyonexpress.vercel.app/api/cron/search-outbox` |
-| 13b | hourly | `0 * * * *` | `https://kenyonexpress.vercel.app/api/cron/search-reindex` |
-| 14 | 23:15 daily | `15 23 * * *` | `https://kenyonexpress.vercel.app/api/cron/expire-coupons` |
-| 15 | 02:20 daily | `20 2 * * *` | `https://kenyonexpress.vercel.app/api/cron/backup` |
-| 16 | 04:45 daily | `45 4 * * *` | `https://kenyonexpress.vercel.app/api/cron/wishlist-alerts` |
-| 17 | Friday 05:00 | `0 5 * * 5` | `https://kenyonexpress.vercel.app/api/cron/wishlist-digest` |
-| 18 | 03:00 daily | `0 3 * * *` | `https://kenyonexpress.vercel.app/api/cron/daily-deals` |
-| 19 | every 6 h at :30 | `30 */6 * * *` | `https://kenyonexpress.vercel.app/api/cron/email-retry` |
-| 20 | 23:45 daily | `45 23 * * *` | `https://kenyonexpress.vercel.app/api/cron/cashback-settlement` |
+| 11 | 05:00 ב-1 לחודש | `0 5 1 * *` | `https://kenyonexpress.vercel.app/api/cron/retention` |
+| 13 | 03:40 daily | `40 3 * * *` | `https://kenyonexpress.vercel.app/api/cron/affiliate-payouts` |
+| 12 | שישי ~06:00 ישראל | `0 4 * * 5` | `https://kenyonexpress.vercel.app/api/cron/weekly-digest` |
 
 Those are the schedules `vercel.json` carried, kept exactly, so nothing about
 timing changes with the scheduler.
@@ -197,6 +189,7 @@ timing changes with the scheduler.
 - **`abandoned-cart`** queues the recovery nudge.
 - **`subscriptions`** bills the recurring plans.
 - **`reap-carts`** deletes expired guest carts.
+- **`affiliate-payouts`** pays matured affiliate commissions into wallets (migration 283).
 - **`expire-vouchers`** marks vouchers past their date as expired.
 - **`expire-coupons`** stamps printed QR coupon codes (migration 182/217) whose
   own date passed or whose campaign ended. No money moves; redemption re-checks

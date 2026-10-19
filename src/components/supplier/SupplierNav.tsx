@@ -18,6 +18,9 @@ const LINKS: Array<{
   { href: '/supplier/orders', label: 'הזמנות', minRole: 'manager' },
   { href: '/supplier/products', label: 'המוצרים שלי', minRole: 'manager' },
   { href: '/supplier/payouts', label: 'תשלומים', minRole: 'owner' },
+  // owner: three of the four fields that gate publishing live here, and they
+  // are the business's public contact details. A till phone does not edit them.
+  { href: '/supplier/profile', label: 'פרטי העסק', minRole: 'owner' },
 ]
 
 export default function SupplierNav({ memberRole }: { memberRole: SupplierMemberRole }) {

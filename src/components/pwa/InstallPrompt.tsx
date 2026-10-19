@@ -1,6 +1,6 @@
 'use client'
 
-import { detectInstallSurface, readInstallEnvironment } from '@/lib/pwa/install-surface'
+import Image from 'next/image'
 import { useEffect, useState } from 'react'
 
 /**
@@ -27,6 +27,14 @@ import { useEffect, useState } from 'react'
  */
 
 const DISMISSED_KEY = 'ke:pwa-install-dismissed'
+
+/**
+ * Written by PurchaseMarker on the order confirmation page. The install offer
+ * is made only after a first purchase: that is the moment the app is worth
+ * having (order status, coupons, QR at the counter), and asking earlier is
+ * asking a stranger.
+ */
+export const PURCHASED_KEY = 'ke:purchased'
 const HIDDEN_ON = ['/checkout', '/cart', '/account', '/supplier', '/admin', '/scan']
 
 /**
@@ -84,6 +92,7 @@ export default function InstallPrompt() {
 
   useEffect(() => {
     if (localStorage.getItem(DISMISSED_KEY) === '1') return
+    if (localStorage.getItem(PURCHASED_KEY) !== '1') return
     if (HIDDEN_ON.some((path) => window.location.pathname.startsWith(path))) return
 
     // `matchMedia` and `navigator.standalone` rather than a userAgent test for
@@ -154,7 +163,7 @@ export default function InstallPrompt() {
       style={{ insetBlockEnd: 'calc(0.75rem + var(--reserve-consent))' }}
       className="fixed inset-x-3 z-40 flex items-center gap-3 rounded-2xl border border-gray-200 bg-white p-3 shadow-lg sm:inset-x-auto sm:end-4 sm:max-w-sm"
     >
-      <img src="/icons/icon-192.png" alt="" width={40} height={40} className="rounded-xl" />
+      <Image src="/icons/icon-192.png" alt="" width={40} height={40} className="rounded-xl" />
       <div className="min-w-0 flex-1">
         <p className="font-bold text-heading text-sm">התקינו את KenyonExpress</p>
         {offer.kind === 'ios' ? (

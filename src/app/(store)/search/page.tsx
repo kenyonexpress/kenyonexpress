@@ -4,15 +4,11 @@ import CategoryGridSkeleton from '@/components/category/CategoryGridSkeleton'
 import CategoryProductCard, {
   type CategoryProduct,
 } from '@/components/category/CategoryProductCard'
-import SearchFacetNav from '@/components/search/SearchFacetNav'
-import SearchSortNav from '@/components/search/SearchSortNav'
-import { getAllCategories, parseProductType } from '@/lib/category-page'
-import { loadFacetContext } from '@/lib/search/facet-labels'
-import { hasActiveFacets, toFacetSearchParams } from '@/lib/search/facet-links'
-import { parseFacetedParams } from '@/lib/search/faceted'
-import { type FacetHit, facetedSearchCached } from '@/lib/search/faceted-server'
+import { type ProductTypeFilter, parseProductType } from '@/lib/category-page'
+import { searchProductsCached } from '@/lib/search-server'
 import { recordRecentSearch, recordSearchTerm } from '@/lib/search/record'
 import { createClient } from '@/lib/supabase/server'
+import { SITE } from '@/styles/tokens'
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import '@/styles/category-page.css'
@@ -84,11 +80,21 @@ async function ResultCount({ params }: { params: URLSearchParams }) {
     await recordRecentSearch(await createClient(), q)
   }
 
+  const filterLabel =
+    productType === 'coupon' ? 'קופונים' : productType === 'physical' ? 'מוצרים פיזיים' : null
+
   return (
-    <p className="category-page__count">
-      נמצאו {total} מוצרים
-      {engine === 'meilisearch' && ' · Meilisearch'}
-    </p>
+    <div>
+      <p className="category-page__count">
+        נמצאו {total} מוצרים
+        {engine === 'meilisearch' && ' · Meilisearch'}
+      </p>
+      {filterLabel && (
+        <p style={{ fontSize: '0.875rem', color: SITE.neutral.muted, marginTop: '0.25rem' }}>
+          מסנן פעיל: {filterLabel}
+        </p>
+      )}
+    </div>
   )
 }
 
@@ -118,7 +124,20 @@ async function ResultGrid({ params }: { params: URLSearchParams }) {
     return (
       <div className="category-page__empty">
         <p>לא נמצאו מוצרים עבור "{q}".</p>
-        <p>{narrowed ? 'נסו להסיר סינון או מילת חיפוש אחרת.' : 'נסו מילת חיפוש אחרת.'}</p>
+        <p>נסו:</p>
+        <ul style={{ marginTop: '1rem', textAlign: 'right', paddingRight: '1.5rem' }}>
+          <li>מילת חיפוש שונה או קצרה יותר</li>
+          <li>בדוק את התיקיה הנבחרת בסינון</li>
+          <li>
+            עברו לעמוד{' '}
+            <a
+              href="/products"
+              style={{ color: SITE.functional.price, textDecoration: 'underline' }}
+            >
+              כל המוצרים
+            </a>
+          </li>
+        </ul>
       </div>
     )
   }
@@ -244,9 +263,6 @@ async function SearchPageBody({ searchParams }: Props) {
   const params = toFacetSearchParams(sp)
   const canSearch = q.length >= MIN_QUERY
 
-  // Shell only. The search itself streams in behind the boundaries below.
-  const allCategories = await getAllCategories()
-
   return (
     <div className="category-page">
       <div className="category-page__inner">
@@ -299,7 +315,6 @@ async function SearchPageBody({ searchParams }: Props) {
           )}
 
           <CategoryFilterSidebar
-            categories={allCategories}
             priceMin={undefined}
             priceMax={undefined}
             productType={productType}

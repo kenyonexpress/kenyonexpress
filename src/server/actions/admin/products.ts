@@ -4,6 +4,7 @@ import { writeAuditLog } from '@/lib/admin/audit'
 import { catalogueIlsToAgorot, scaleCatalogueIls } from '@/lib/admin/bulk-price'
 import { canSeeMoney } from '@/lib/admin/permissions'
 import { productSchema as schema, variantSchema } from '@/lib/admin/product-form-schema'
+import { parseLogisticsFields } from '@/lib/admin/product-logistics-fields'
 import { variantIdsToRemove } from '@/lib/admin/product-variants'
 import { requireStaffSession } from '@/lib/admin/rbac'
 import { applyUploaderPolicy } from '@/lib/admin/uploader-policy'
@@ -100,8 +101,23 @@ async function runUpsertProduct(
     seo_title: formData.get('seo_title') || null,
     seo_description: formData.get('seo_description') || null,
     seo_keywords: formData.get('seo_keywords') || null,
+    city: formData.get('city'),
+    latitude: formData.get('latitude'),
+    longitude: formData.get('longitude'),
   })
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'נתונים לא תקינים' }
+
+  // Migrations 185/187/278: only the keys this form carries (see the module).
+  const logistics = parseLogisticsFields(formData)
+  if (!logistics.ok) return { error: logistics.error }
+  const { shipping_price_agorot: shippingAgorot, ...logisticsCopy } = logistics.fields
+  // The shipping price is money: a role that cannot see pricing cannot set it.
+  const logisticsWrite: Record<string, unknown> = {
+    ...logisticsCopy,
+    ...(shippingAgorot !== undefined && !hidePricing
+      ? { shipping_price_agorot: shippingAgorot }
+      : {}),
+  }
 
   const supabase = await createClient()
   const {
@@ -195,8 +211,10 @@ async function runUpsertProduct(
    * The row always carries `whatsapp_enabled`; the WRITE drops it if the column
    * turns out not to exist yet.
    *
-   * The column arrives with `migrations/pending/123_products_whatsapp_enabled
-   * .sql`, which is not applied. Three cheaper-looking options were rejected:
+   * The column arrived with `123_products_whatsapp_enabled.sql`, which IS
+   * applied in production (measured 2026-09-07), so the fallback below is dead
+   * weight there and alive on any database taken before it -- a branch, a fresh
+   * local stack, an old restore. Three cheaper-looking options were rejected:
    *
    *  - Always send it. PostgREST answers PGRST204 for EVERY product an admin
    *    edits: the whole admin broken by a feature nobody switched on.
@@ -329,6 +347,7 @@ async function runUpsertProduct(
         .from('products')
         .update({
           ...writeFields,
+          ...logisticsWrite,
           ...moneyWrite,
           ...extra,
           images,
@@ -360,6 +379,7 @@ async function runUpsertProduct(
         .from('products')
         .insert({
           ...writeFields,
+          ...logisticsWrite,
           ...moneyWrite,
           ...extra,
           images,

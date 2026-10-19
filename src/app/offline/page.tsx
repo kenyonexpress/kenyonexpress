@@ -2,14 +2,30 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 /**
- * `noindex`: this document is reachable at /offline while online, and a
- * crawler that finds it would index a page whose only content is "no
- * connection". It is not in the sitemap either, but robots directives are the
- * layer that survives a stray link.
+ * NOINDEX, AND DELIBERATELY NOT A robots.txt DISALLOW.
+ *
+ * This document's entire content is "there is no connection". Indexed, it is a
+ * thin page competing for the brand's own name, and it was indexable: the file
+ * set a title and nothing else, while `/cart` and `/checkout` are both excluded
+ * by this project's own convention and `/redeem/[token]` carries the same
+ * directive.
+ *
+ * `follow: true` rather than checkout's `follow: false`: the only link on the
+ * page goes to the homepage, so a crawler that lands here should be allowed to
+ * leave through it.
+ *
+ * The disallow is omitted ON PURPOSE. A path blocked in robots.txt is never
+ * fetched, so its `noindex` is never read - and a blocked URL that something
+ * links to can still be listed, now permanently, because the one instruction
+ * that would remove it is the one the crawler is forbidden to see. Blocking and
+ * de-indexing are opposites here, and de-indexing is what this page wants.
+ *
+ * The service worker is unaffected either way: it fetches same-origin from the
+ * cache and robots.txt has no bearing on it.
  */
-export const metadata: Metadata = {
+export const metadata = {
   title: 'אין חיבור',
-  robots: { index: false, follow: false },
+  robots: { index: false, follow: true },
 }
 
 /**

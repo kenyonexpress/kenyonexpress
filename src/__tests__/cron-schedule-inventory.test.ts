@@ -67,13 +67,7 @@ describe('the scheduled job inventory', () => {
       'search-reindex',
       'retention',
       'weekly-digest',
-      'expire-coupons',
-      'backup',
-      'wishlist-alerts',
-      'wishlist-digest',
-      'daily-deals',
-      'email-retry',
-      'cashback-settlement',
+      'affiliate-payouts',
     ])
   })
 

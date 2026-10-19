@@ -1,4 +1,5 @@
 import { sortedPosts } from '@/content/blog'
+import { alternatesFor } from '@/lib/seo/alternates'
 import { jsonLdScript } from '@/lib/seo/json-ld'
 import { siteUrl } from '@/lib/site-url'
 import type { Metadata } from 'next'
@@ -7,7 +8,7 @@ import Link from 'next/link'
 export const metadata: Metadata = {
   title: 'הבלוג',
   description: 'מדריכים והסברים על קופונים, מימוש בבתי עסק, תוקף, ביטולים והזמנות.',
-  alternates: { canonical: '/blog' },
+  alternates: alternatesFor('/blog'),
 }
 
 function hebrewDate(iso: string): string {
@@ -53,7 +54,7 @@ export default function BlogIndexPage() {
       />
 
       <nav aria-label="נתיב ניווט" className="mb-6 text-sm text-heading/80">
-        <Link href="/" className="hover:text-heading">
+        <Link href="/" className="hit-44 hover:text-heading">
           בית
         </Link>
         <span aria-hidden="true" className="mx-2">
@@ -82,7 +83,7 @@ export default function BlogIndexPage() {
                 <p className="mt-1.5 text-base leading-relaxed text-heading/80">
                   {post.description}
                 </p>
-                <p className="mt-2 text-sm text-heading/60">
+                <p className="mt-2 text-sm text-heading/75">
                   {hebrewDate(post.publishedAt)} · {post.readingMinutes} דקות קריאה
                 </p>
               </Link>

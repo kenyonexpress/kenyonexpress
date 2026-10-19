@@ -14,6 +14,21 @@
  * here is a relative signal across routes and a way to catch render-blocking,
  * unused JS and server-response regressions -- not a field score.
  *
+ * EVERY ROW RECORDS THE URL LIGHTHOUSE ENDED ON, NOT THE ONE IT WAS GIVEN.
+ * Added 2026-09-08 after this sweep produced a wrong number that reached two
+ * documents. `/checkout` redirects to `/cart` when the cart is empty, which it
+ * always is for an unseeded sweep, so the `checkout` row carried the CART's
+ * metrics under checkout's name. CLS 0.357 was written up as "the one real
+ * defect, on the page where money changes hands" and ranked a high-severity
+ * launch risk. It was the cart's number, and the real checkout is covered by a
+ * SEEDED test in `e2e/layout-stability.spec.ts` that asserts the URL did not
+ * bounce before it asserts the budget.
+ *
+ * A route that redirects is not an error here - `/checkout` empty-bouncing is
+ * what a visitor with an empty cart actually sees, and measuring it is
+ * legitimate. What is not legitimate is filing the result under the requested
+ * path with nothing to say otherwise. `redirected` and `finalPath` say so.
+ *
  * Usage: BASE=http://localhost:3455 node scripts/lighthouse-sweep.mjs [--only=home,cart]
  */
 import { spawnSync } from 'node:child_process'
@@ -83,9 +98,15 @@ for (const [name, path] of targets) {
   const pct = (c) =>
     r.categories[c]?.score == null ? null : Math.round(r.categories[c].score * 100)
   const audit = (id) => r.audits[id]
+  // Lighthouse follows redirects silently. `finalDisplayedUrl` is what it
+  // actually measured; the legacy key is kept for older report shapes.
+  const finalUrl = r.finalDisplayedUrl ?? r.finalUrl ?? url
+  const finalPath = finalUrl.startsWith(BASE) ? finalUrl.slice(BASE.length) || '/' : finalUrl
   const row = {
     name,
     path,
+    finalPath,
+    redirected: finalPath !== path,
     status: r.audits['network-requests']?.details?.items?.[0]?.statusCode ?? null,
     perf: pct('performance'),
     a11y: pct('accessibility'),
@@ -112,9 +133,18 @@ for (const [name, path] of targets) {
   }
   rows.push(row)
   console.log(
-    `${String(row.perf).padStart(3)} ${String(row.a11y).padStart(3)} ${String(row.bp).padStart(3)} ${String(row.seo).padStart(3)}  ${name}`,
+    `${String(row.perf).padStart(3)} ${String(row.a11y).padStart(3)} ${String(row.bp).padStart(3)} ${String(row.seo).padStart(3)}  ${name}${
+      row.redirected ? `  -> MEASURED ${finalPath}, NOT ${path}` : ''
+    }`,
   )
 }
 
 writeFileSync(resolve('refs/lighthouse-sweep.json'), JSON.stringify(rows, null, 2))
 console.log(`\nwrote refs/lighthouse-sweep.json (${rows.length} routes, reports in ${outDir})`)
+
+const bounced = rows.filter((r) => r.redirected)
+if (bounced.length) {
+  console.log(`\n${bounced.length} route(s) redirected. Their numbers belong to the FINAL path:`)
+  for (const r of bounced) console.log(`  ${r.path}  ->  ${r.finalPath}   (row "${r.name}")`)
+  console.log('Do not quote these under the requested path. See the header note.')
+}

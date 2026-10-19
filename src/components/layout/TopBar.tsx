@@ -1,5 +1,7 @@
-import { MapPin, ShoppingBag, Truck, User } from 'lucide-react'
+import { EcMapPointer, EcShoppingBag, EcTransport } from '@/components/icons/electro-icons'
+import UserMenuDropdown from '@/components/layout/UserMenuDropdown'
 import Link from 'next/link'
+import { Suspense } from 'react'
 
 /**
  * COMPONENT 01 OF `docs/COMPONENT-QUEUE.md`: kenyonexpress.co.il's top bar.
@@ -41,34 +43,20 @@ import Link from 'next/link'
  */
 
 type InfoItemProps = {
-  Icon: typeof User
+  Icon: typeof EcMapPointer
   label: string
   /** Only the account item is a link on live; the other three are plain text. */
   href?: string
 }
 
 /**
- * The top bar's four items, in LIVE'S DOM ORDER, which is not reading order.
- *
- * `ul#menu-top-bar-right` in `refs/ke_live_home.html` lists them
- * בפריסה ארצית, משלוח מהיר חינם, קניה בטוחה, התחברות -- and in an RTL flex row
- * the FIRST child renders RIGHTMOST. So live's account item is the LEFTMOST
- * thing in the bar, and this array had it first, i.e. on the right.
- *
- * Confirmed against `refs/ke_live_computed.json` home/1440, where the four `li`
- * boxes sit at x 500, 354, 238, 135 with anchor widths 96, 112, 83 and 70. The
- * 70 is התחברות and it is the one at x=135, hard against the container's
- * inline-end. The old comment called this "live's RTL order" and produced the
- * mirror of it.
- *
- * It is also the project's account rule: the account entry point lives in the
- * shell's top-left and in exactly one place.
+ * The top bar's three items, in LIVE'S DOM ORDER, which is not reading order.
+ * The account/menu item is now rendered via UserMenuDropdown.
  */
 const INFO_ITEMS: readonly InfoItemProps[] = [
-  { Icon: MapPin, label: 'בפריסה ארצית' },
-  { Icon: Truck, label: 'משלוח מהיר חינם' },
-  { Icon: ShoppingBag, label: 'קניה בטוחה' },
-  { Icon: User, label: 'התחברות', href: '/login' },
+  { Icon: EcMapPointer, label: 'בפריסה ארצית' },
+  { Icon: EcTransport, label: 'משלוח מהיר חינם' },
+  { Icon: EcShoppingBag, label: 'קניה בטוחה' },
 ]
 
 function InfoItem({ Icon, label, href }: InfoItemProps) {
@@ -78,16 +66,14 @@ function InfoItem({ Icon, label, href }: InfoItemProps) {
           and the computed `i` boxes are 16x16 at y=12 in a 37px row. The 6px
           `gap-1.5` is live's own `margin-left:6px` on the same rule, written as
           the logical gap it is. */}
-      <Icon size={16} strokeWidth={1.8} aria-hidden="true" />
+      <Icon size={16} aria-hidden="true" className="shrink-0" />
       {label}
     </>
   )
-  // The row is 37px, which already clears the 44px floor only for the link;
-  // `min-h` on the anchor keeps the tappable one honest at any type size.
   return href ? (
     <Link
       href={href}
-      className="flex h-topbar-row items-center gap-1.5 transition-opacity hover:opacity-70"
+      className="hit-44 flex h-topbar-row items-center gap-1.5 transition-colors duration-200 hover:text-heading"
     >
       {body}
     </Link>
@@ -155,6 +141,10 @@ export default function TopBar() {
               <InfoItem {...item} />
             </div>
           ))}
+          <ItemSeparator />
+          <Suspense fallback={null}>
+            <UserMenuDropdown />
+          </Suspense>
         </div>
       </div>
     </div>

@@ -1,4 +1,5 @@
 import { FAQ_UPDATED_AT, faqEntries } from '@/content/legal/faq'
+import { alternatesFor } from '@/lib/seo/alternates'
 import { jsonLdScript } from '@/lib/seo/json-ld'
 import type { Metadata } from 'next'
 import Link from 'next/link'
@@ -7,7 +8,7 @@ export const metadata: Metadata = {
   title: 'שאלות נפוצות',
   description:
     'שאלות נפוצות על קניון אקספרס: איך עובד קופון, מה משלמים בבית העסק, תוקף, ביטולים, החזרים, ארנק וחשבוניות.',
-  alternates: { canonical: '/faq' },
+  alternates: alternatesFor('/faq'),
 }
 
 /**
@@ -45,7 +46,7 @@ export default function FaqPage() {
       />
 
       <nav aria-label="נתיב ניווט" className="mb-6 text-sm text-heading/80">
-        <Link href="/" className="hover:text-heading">
+        <Link href="/" className="hit-44 hover:text-heading">
           בית
         </Link>
         <span aria-hidden="true" className="mx-2">
@@ -73,7 +74,7 @@ export default function FaqPage() {
           // survives the page being read before any script runs.
           <details key={entry.question} className="group py-4">
             <summary className="cursor-pointer list-none text-base font-semibold text-heading marker:content-none">
-              <span className="inline-block w-5 text-heading/60 transition-transform group-open:rotate-90">
+              <span className="inline-block w-5 text-heading/75 transition-transform group-open:rotate-90">
                 ‹
               </span>
               {entry.question}

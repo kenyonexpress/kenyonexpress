@@ -88,10 +88,12 @@ describe('catalog colour tokens', () => {
     expect(offenders, `measured values hardcoded in rules: ${offenders.join(', ')}`).toHaveLength(0)
   })
 
-  it('keeps the sale colour on the live value, not the brief', () => {
-    // The brief says #E4002B. getComputedStyle on the live archive says
-    // #dc3545, and the pixel comparison runs against live.
-    expect(CATALOG_CSS_VARS['--cat-sale']).toBe('#dc3545')
+  it('keeps the sale colour on the one price red the site has', () => {
+    // Was pinned to the measured #dc3545 while a live WooCommerce page existed
+    // to measure. It is the brief's #E4002B since 2026-09-08, and the point of
+    // the pin is unchanged: the archive grid and the home grid paint the same
+    // red, so one of the two cannot drift alone.
+    expect(CATALOG_CSS_VARS['--cat-sale']).toBe(SITE.functional.price)
   })
 })
 

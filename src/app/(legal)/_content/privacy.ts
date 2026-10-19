@@ -8,12 +8,26 @@ import type { LegalDoc } from './types'
  *
  * WHAT IS SAID HERE IS WHAT THE CODE DOES.
  *  - Login is Google OAuth. The Google password never reaches this system.
- *  - Card numbers are never stored here. `src/lib/payments` sends the customer
- *    to Cardcom and keeps a token; the PAN lives at the processor.
+ *  - Card numbers and CVVs are never stored here. `src/lib/payments` sends the
+ *    customer to Cardcom and keeps a token; the PAN lives at the processor.
+ *    CORRECTED 2026-09-08: this section used to list the card's EXPIRY among
+ *    the things kept "at the clearing company only", and `payment_tokens`
+ *    stores `expiry_month` and `expiry_year` - written by
+ *    `server/payments/finalize.ts` and read by the checkout to avoid offering a
+ *    saved card that has already expired. Also `last_4` and `card_brand`. The
+ *    claim was false about three columns while being true about the PAN, which
+ *    is exactly the failure the paragraph below warns about.
  *  - GA4 and the Meta Pixel are not loaded at all before consent, not even as a
  *    denied-mode stub (`src/lib/analytics/third-party.ts` explains why), so the
  *    cookie section can state that and be checkable in a network log.
  *  - The cookie names listed are the literal constants in `src/lib`.
+ *  - EVERY PROCESSOR THAT RECEIVES PERSONAL DATA IS IN THE TABLE. Upstash was
+ *    added 2026-09-08: the rate limiter keys are `login:<ip>`,
+ *    `cart_write:user:<uuid>` and the like, so an IP address and a user
+ *    identifier reach a third party, and the table listed ten vendors and not
+ *    that one. The table has no catch-all row, so its shape claims to be
+ *    exhaustive. `privacy-processors.test.ts` derives the vendor list from
+ *    `src/lib/env.ts` and fails when a named vendor is missing here.
  *
  * A claim here that the code does not honour is worse than a missing sentence:
  * it is the sentence a regulator quotes back.
@@ -116,14 +130,14 @@ export const privacyDoc: LegalDoc = {
         {
           type: 'unordered',
           items: [
-            'מספר כרטיס אשראי מלא, תוקף הכרטיס וקוד האבטחה שבגבו. פרטים אלה נמסרים ישירות לחברת הסליקה ונשמרים אצלה בלבד. במערכות האתר נשמר אסימון (טוקן) המאפשר חיוב חוזר בהסכמתכם, ולא מספר הכרטיס.',
+            'מספר כרטיס אשראי מלא וקוד האבטחה שבגבו (CVV). פרטים אלה נמסרים ישירות לחברת הסליקה, נשמרים אצלה בלבד, ואינם מגיעים למערכות האתר בשום שלב.',
             'סיסמת חשבון Google שלכם. ההתחברות מתבצעת מול Google, ואנחנו מקבלים ממנה אישור זהות ופרטי פרופיל בסיסיים בלבד.',
             'מידע רגיש כהגדרתו בחוק, כגון מצב בריאותי, דעות פוליטיות או אמונה דתית. אין לכלול מידע כזה בפניות אלינו.',
           ],
         },
         {
           type: 'note',
-          text: 'הפלטפורמה אינה שומרת מספרי כרטיס אשראי. חיוב חוזר, ככל שאישרתם אותו, מתבצע באמצעות אסימון המוחזק אצל חברת הסליקה.',
+          text: 'הפלטפורמה אינה שומרת מספרי כרטיס אשראי ואינה שומרת את קוד האבטחה. חיוב חוזר, ככל שאישרתם אותו, מתבצע באמצעות אסימון המוחזק אצל חברת הסליקה. על כרטיס ששמרתם נשמרים אצלנו ארבע הספרות האחרונות, סוג הכרטיס וחודש ושנת התוקף — כדי שנוכל להציג לכם איזה כרטיס זה ולא להציע בקופה כרטיס שכבר פג. אין באלה כדי לחייב כרטיס.',
         },
       ],
     },
@@ -159,7 +173,11 @@ export const privacyDoc: LegalDoc = {
             ['ke_session_id', 'הכרחית', 'זיהוי עגלת קניות של מבקר שאינו מחובר לחשבון'],
             ['ke_consent', 'הכרחית', 'שמירת החלטת ההסכמה שלכם לעוגיות, כדי שלא נשאל שוב'],
             ['ke_attr', 'מדידה', 'מקור ההגעה לאתר, לצורך מדידת ערוצי שיווק'],
-            ['ke_cart_mirror_v1', 'הכרחית', 'שמירת תוכן העגלה בדפדפן בין ביקורים'],
+            [
+              'ke_cart_mirror_v1',
+              'הכרחית',
+              'שמירת מונה הפריטים המוצג על סמל העגלה. מונה בלבד, לא תוכן העגלה',
+            ],
             [
               'עוגיות התחברות של Supabase',
               'הכרחית',
@@ -175,6 +193,10 @@ export const privacyDoc: LegalDoc = {
         {
           type: 'paragraph',
           text: 'סקריפטים של צד שלישי אינם נטענים לפני הסכמה, ולא כטעינה מושתקת. משמעות הדבר היא שלפני הסכמה לא נשלחת אליהם כל בקשה מהדפדפן שלכם. ניתן לשנות את החלטת ההסכמה בכל עת דרך הבאנר, וכן למחוק עוגיות ולחסום אותן בהגדרות הדפדפן. חסימת עוגיות הכרחיות עלולה לפגוע בפעולת האתר.',
+        },
+        {
+          type: 'note',
+          text: 'הטבלה שלמעלה מציגה את העוגיות המרכזיות. הפירוט המלא, ובכלל זה משך השמירה של כל אחת ואחת וקבצי האחסון המקומי בדפדפן, מופיע במדיניות העוגיות בעמוד נפרד.',
         },
       ],
     },
@@ -206,6 +228,11 @@ export const privacyDoc: LegalDoc = {
               'אחסון מאובטח והפעלת האתר',
             ],
             [
+              'ספק אחסון קבצים ורשת הפצה (Cloudflare R2)',
+              'תמונות המוצרים, וכשהאחסון מופעל גם עותק של חשבונית העסקה הנושאת את שמכם וסכום הרכישה',
+              'הגשת תמונות במהירות ושמירת עותק נגיש של החשבונית בעמוד ההזמנה',
+            ],
+            [
               'ספק אירוח האתר (Vercel)',
               'נתוני בקשה טכניים, לרבות כתובת IP',
               'הגשת האתר, ביצועים ואבטחה',
@@ -214,6 +241,31 @@ export const privacyDoc: LegalDoc = {
               'ספק דיוור (Resend)',
               'כתובת הדואר האלקטרוני ותוכן ההודעה',
               'שליחת אישורי הזמנה, קופונים והודעות שירות',
+            ],
+            [
+              'ספק ניתוח מוצר (PostHog)',
+              'מזהה אנונימי, אירועי שימוש, ואירועי רכישה, מימוש שובר והחזר עם מזהה ההזמנה. סכומי כסף אינם נשלחים',
+              'מדידת משפך הרכישה. כפוף להסכמה בצד הדפדפן',
+            ],
+            [
+              'ספק ניטור תקלות (Sentry)',
+              'הודעת השגיאה, מסלול הדף וזיהוי הבקשה. כותרות, עוגיות ואסימוני שוברים נמחקים לפני השליחה',
+              'איתור ותיקון תקלות',
+            ],
+            [
+              'ספק ריכוז יומנים (Axiom)',
+              'שורות יומן מובנות של השרת אחרי סינון שדות רגישים',
+              'תפעול, חקירת תקלות ובקרת אבטחה',
+            ],
+            [
+              'ספק הגבלת קצב (Upstash)',
+              'מונה בקשות לפי כתובת IP או מזהה משתמש. תוכן הבקשה עצמה אינו נשלח',
+              'מניעת ניצול לרעה והגבלת קצב על התחברות, קודי אימות וטפסים ציבוריים',
+            ],
+            [
+              'ספק הודעות (Twilio)',
+              'מספר הטלפון ותוכן ההודעה',
+              'שליחת קודי אימות והודעות שירות, בכפוף להסכמה',
             ],
             [
               'Google',
@@ -331,6 +383,16 @@ export const privacyDoc: LegalDoc = {
         {
           type: 'paragraph',
           text: 'אנו רשאים לעדכן מדיניות זו מעת לעת, למשל בעקבות שינוי בשירות, בספקי המשנה או בדין. תאריך העדכון האחרון מוצג בראש העמוד, ושינוי מהותי יובא לידיעתכם באמצעים סבירים, לרבות הודעה באתר או בדואר אלקטרוני.',
+        },
+      ],
+    },
+    {
+      id: 'governing-law',
+      title: 'דין חל וסמכות שיפוט',
+      blocks: [
+        {
+          type: 'paragraph',
+          text: 'על מסמך זה ועל השימוש באתר יחול הדין הישראלי בלבד. סמכות השיפוט הייחודית נתונה לבתי המשפט המוסמכים במחוז תל אביב, ואולם צרכן רשאי להגיש תביעה גם לבית המשפט שבאזור מגוריו, ככל שהדין מקנה לו זכות זו.',
         },
       ],
     },

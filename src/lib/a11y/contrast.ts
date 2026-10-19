@@ -45,6 +45,31 @@ export function contrastRatio(a: string, b: string): number {
 }
 
 /**
+ * The colour an alpha-composited foreground ACTUALLY paints.
+ *
+ * A Tailwind opacity modifier - `text-heading/60` - does not draw the token. It
+ * draws the token blended with whatever is behind it, and only the blend is
+ * what a reader sees. `--color-heading` is #333e48 and passes AA at 10.92:1;
+ * the same token at 60% over white is #858b91 and fails at 3.44:1, so checking
+ * the token alone certifies a colour that never appears on screen.
+ *
+ * Straight source-over compositing, which is what a browser does for a solid
+ * background: result = fg * a + bg * (1 - a).
+ *
+ * `bg` is required and has no default. A default would have been white, which
+ * is both a raw hex the token gate forbids in src/ and a silent assumption
+ * about the surface - the thing this function exists to stop being assumed.
+ */
+export function flattenAlpha(fg: string, alpha: number, bg: string): string {
+  const f = hexToRgb(fg)
+  const b = hexToRgb(bg)
+  const mix = (x: number, y: number) => Math.round(x * alpha + y * (1 - alpha))
+  return `#${[mix(f.r, b.r), mix(f.g, b.g), mix(f.b, b.b)]
+    .map((v) => v.toString(16).padStart(2, '0'))
+    .join('')}`
+}
+
+/**
  * The AA thresholds.
  *
  * `large` is 18pt (24px), or 14pt (18.66px) when bold. `ui` is WCAG 2.1's rule

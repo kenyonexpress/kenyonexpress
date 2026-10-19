@@ -1,4 +1,6 @@
-import PostPurchasePushPrompt from '@/components/pwa/PostPurchasePushPrompt'
+import LocationPin from '@/components/product/LocationPin'
+import PushPrompt from '@/components/push/PushPrompt'
+import PurchaseMarker from '@/components/pwa/PurchaseMarker'
 import WhatsAppIcon from '@/components/shared/WhatsAppIcon'
 import {
   moneyColumnProbe,
@@ -21,6 +23,7 @@ import {
 import { reconcileOrderReturn } from '@/server/actions/payments/checkout'
 import { formatVoucherCode } from '@/server/domain/vouchers/code'
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { Suspense } from 'react'
@@ -29,6 +32,12 @@ import '@/styles/checkout-page.css'
 
 export const metadata: Metadata = {
   title: 'אישור הזמנה',
+  // The one on this list that matters most: this URL carries `order_id` and
+  // renders "התשלום הצליח". An indexed confirmation URL puts somebody's order
+  // id in a search result. robots.txt disallows the path, and a disallow stops
+  // the crawl rather than the indexing, so the meta is the half that actually
+  // says "not this one".
+  robots: { index: false, follow: false },
 }
 
 type Props = {
@@ -107,7 +116,7 @@ async function CheckoutReturnBody({ searchParams }: Props) {
       .select(
         `id, code, qr_payload, expires_at,
          face_value_agorot, coupon_price_agorot, remaining_amount_due_agorot,
-         products(name_he)`,
+         products(name_he, city, latitude, longitude)`,
       )
       .eq('order_id', orderId)
       .order('issued_at', { ascending: true }),
@@ -128,6 +137,7 @@ async function CheckoutReturnBody({ searchParams }: Props) {
   const couponsWithQr = await Promise.all(
     (vouchers ?? []).map(async (voucher) => ({
       ...voucher,
+      ...productGeo(voucher.products),
       // Agorot all the way to the formatter now. This used to divide by 100
       // here and hand shekel floats to a PRIVATE `shekels()` defined at the top
       // of this file -- the same private-formatter-per-component pattern that
@@ -143,7 +153,9 @@ async function CheckoutReturnBody({ searchParams }: Props) {
   return (
     <div className="checkout-page">
       <div className="checkout-success">
+        <PurchaseMarker />
         <h1 className="checkout-success__title">התשלום הצליח!</h1>
+        <PushPrompt />
         <p className="checkout-success__sub">
           הזמנה {order.id.slice(0, 8).toUpperCase()} · שולם באתר{' '}
           {shekels(agorot(orderMoney.totalAgorot))}
@@ -173,6 +185,13 @@ async function CheckoutReturnBody({ searchParams }: Props) {
                 <article className="coupon-card" key={coupon.id}>
                   <div>
                     {productName && <div className="coupon-card__collect">{productName}</div>}
+                    <LocationPin
+                      location={{
+                        city: coupon.productCity,
+                        latitude: coupon.productLatitude,
+                        longitude: coupon.productLongitude,
+                      }}
+                    />
                     <div className="coupon-card__code" dir="ltr">
                       {formatVoucherCode(coupon.code)}
                     </div>
@@ -211,7 +230,13 @@ async function CheckoutReturnBody({ searchParams }: Props) {
                   </div>
                   {coupon.qrDataUrl && (
                     <div className="coupon-card__qr">
-                      <img src={coupon.qrDataUrl} alt={`קוד QR לקופון ${coupon.code}`} />
+                      <Image
+                        src={coupon.qrDataUrl}
+                        alt={`קוד QR לקופון ${coupon.code}`}
+                        width={200}
+                        height={200}
+                        unoptimized
+                      />
                     </div>
                   )}
                 </article>
@@ -229,11 +254,9 @@ async function CheckoutReturnBody({ searchParams }: Props) {
           <p className="checkout-wallet-note">נוסף לארנק שלך: {shekels(cashbackAmount)} קאשבק</p>
         )}
 
-        {/* A plain anchor, not a Link: the target is a PDF, and the route
-            re-checks the session and the owner before rendering it. */}
         <p style={{ marginTop: 16, fontSize: 14 }}>
-          <a href={`/account/orders/${order.id}/receipt`} style={{ fontWeight: 600 }}>
-            הורדת אישור הזמנה (PDF)
+          <a href={`/account/orders/${order.id}/invoice`} style={{ fontWeight: 600 }}>
+            הורדת חשבונית מס
           </a>
         </p>
 
@@ -275,4 +298,20 @@ async function CheckoutReturnBody({ searchParams }: Props) {
       </div>
     </div>
   )
+}
+
+type ProductGeo = { city?: string | null; latitude?: number | null; longitude?: number | null }
+
+/** `products` arrives as an object or a one-element array depending on the join. */
+function productGeo(products: unknown): {
+  productCity: string | null
+  productLatitude: number | null
+  productLongitude: number | null
+} {
+  const p = (Array.isArray(products) ? products[0] : products) as ProductGeo | null | undefined
+  return {
+    productCity: p?.city ?? null,
+    productLatitude: p?.latitude ?? null,
+    productLongitude: p?.longitude ?? null,
+  }
 }

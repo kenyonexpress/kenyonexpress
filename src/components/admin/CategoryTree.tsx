@@ -5,6 +5,7 @@ import StatusBadge from '@/components/admin/StatusBadge'
 import { softDeleteCategory, updateCategorySortOrder } from '@/server/actions/admin/categories'
 import type { Category } from '@/types/database'
 import { ChevronDown, ChevronRight, Edit2, Plus, Trash2 } from 'lucide-react'
+import Image from 'next/image'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
@@ -91,8 +92,13 @@ function CategoryNode({ node, allFlat, depth, onEdit, onAddChild }: NodeProps) {
         </button>
 
         {node.icon_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={node.icon_url} alt="" className="w-6 h-6 rounded object-cover shrink-0" />
+          <Image
+            src={node.icon_url}
+            alt=""
+            width={24}
+            height={24}
+            className="w-6 h-6 rounded object-cover shrink-0"
+          />
         ) : (
           <span className="w-6 h-6 rounded bg-gray-200 shrink-0" />
         )}

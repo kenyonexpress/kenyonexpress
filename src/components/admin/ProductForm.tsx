@@ -1,6 +1,7 @@
 'use client'
 
 import ImageUploader from '@/components/admin/ImageUploader'
+import ProductLocationFields from '@/components/admin/ProductLocationFields'
 import { readDimensionMm, readTags, readVatExempt } from '@/lib/admin/product-fields'
 import { supplierReadiness } from '@/lib/admin/supplier-form'
 import {
@@ -1123,6 +1124,16 @@ export default function ProductForm({
             </select>
           </div>
         </div>
+        {productType !== 'recurring' && (
+          <ProductLocationFields
+            required={productType === 'physical'}
+            defaults={{
+              city: product?.city ?? null,
+              latitude: product?.latitude ?? null,
+              longitude: product?.longitude ?? null,
+            }}
+          />
+        )}
         <div className="flex items-center gap-3">
           <input
             id="requires_shipping"

@@ -26,18 +26,26 @@ const RULES = CSS.replace(/\/\*[\s\S]*?\*\//g, '')
 describe('checkout brand tokens', () => {
   it('pays on the brand yellow the live button actually uses', () => {
     // Measured on kenyonexpress.co.il/checkout/: #place_order is
-    // rgb(254, 215, 0), which is #fed700 exactly.
-    expect(RULES).toMatch(/\.checkout-pay-btn\s*\{[^}]*background:\s*#fed700/)
+    // rgb(254, 215, 0), which is #fed700 exactly. Now referenced via CSS variable.
+    expect(RULES).toMatch(/\.checkout-pay-btn\s*\{[^}]*background:\s*var\(--color-brand-primary\)/)
   })
 
   it('hovers to #fedd26', () => {
-    expect(RULES).toMatch(/\.checkout-pay-btn:hover[^{]*\{[^}]*background:\s*#fedd26/)
+    expect(RULES).toMatch(
+      /\.checkout-pay-btn:hover[^{]*\{[^}]*background:\s*var\(--color-brand-primary-hover\)/,
+    )
   })
 
   it('uses the same yellow for the step and retry controls', () => {
-    expect(RULES).toMatch(/\.checkout-nav__next\s*\{[^}]*background:\s*#fed700/)
-    expect(RULES).toMatch(/\.checkout-nav__next:hover[^{]*\{[^}]*background:\s*#fedd26/)
-    expect(RULES).toMatch(/\.checkout-error__retry\s*\{[^}]*background:\s*#fed700/)
+    expect(RULES).toMatch(
+      /\.checkout-nav__next\s*\{[^}]*background:\s*var\(--color-brand-primary\)/,
+    )
+    expect(RULES).toMatch(
+      /\.checkout-nav__next:hover[^{]*\{[^}]*background:\s*var\(--color-brand-primary-hover\)/,
+    )
+    expect(RULES).toMatch(
+      /\.checkout-error__retry\s*\{[^}]*background:\s*var\(--color-brand-primary\)/,
+    )
   })
 })
 

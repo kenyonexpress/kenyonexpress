@@ -1,5 +1,11 @@
+import {
+  EcCustomers,
+  EcPayment,
+  EcSupport,
+  EcTag,
+  EcTransport,
+} from '@/components/icons/electro-icons'
 import { ELECTRO_HERO } from '@/lib/electro-hero-tokens'
-import { BadgePercent, HandCoins, Headphones, Tag, Truck } from 'lucide-react'
 
 const USP = ELECTRO_HERO.uspBar
 
@@ -44,11 +50,11 @@ const benefits = [
   // "קניה חכמה" is SECOND today, not last. The note above recorded it last from
   // an earlier capture; the reference moved, which is what a live third-party
   // site does. The icon is live's ec-customers (a percent badge), not a thumb.
-  { icon: Truck, title: 'לכל חלקי', subtitle: 'הארץ' },
-  { icon: BadgePercent, title: 'קניה', subtitle: 'חכמה' },
-  { icon: Headphones, title: 'שירות', subtitle: 'לקוחות' },
-  { icon: HandCoins, title: 'מחירים', subtitle: 'מנצחים' },
-  { icon: Tag, title: 'מותגי יוקרה', subtitle: 'מובילים !' },
+  { icon: EcTransport, title: 'לכל חלקי', subtitle: 'הארץ' },
+  { icon: EcCustomers, title: 'קניה', subtitle: 'חכמה' },
+  { icon: EcSupport, title: 'שירות', subtitle: 'לקוחות' },
+  { icon: EcPayment, title: 'מחירים', subtitle: 'מנצחים' },
+  { icon: EcTag, title: 'מותגי יוקרה', subtitle: 'מובילים !' },
 ]
 
 // All colours and sizes come from ELECTRO_HERO.uspBar (the measured token
@@ -113,7 +119,6 @@ export default function BenefitBar() {
               >
                 <Icon
                   className="flex-shrink-0"
-                  strokeWidth={USP.icon.strokeWidth}
                   style={{ width: USP.icon.size, height: USP.icon.size, color: USP.icon.color }}
                 />
                 <div className="text-center">

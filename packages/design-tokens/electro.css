@@ -1,0 +1,390 @@
+/**
+ * Electro v7 Design Tokens
+ * Single source of truth for all colors, spacing, typography, shadows, radii
+ * Based on electro.madrasthemes.com/home-v7
+ */
+
+:root {
+  /* ============================================
+     COLORS - PRIMARY BRAND
+     ============================================ */
+
+  /* Primary brand yellow */
+  --electro-yellow-primary: #fed700;
+  --electro-yellow-light: #ffed4e;
+  --electro-yellow-dark: #deb600;
+
+  /* Light gray background (TopBar) */
+  --electro-gray-light: #f5f5f5;
+  --electro-gray-medium: #efefef;
+  --electro-gray-dark: #cccccc;
+
+  /* ============================================
+     COLORS - SEMANTIC
+     ============================================ */
+
+  /* Success / Green */
+  --electro-success: #008a2e;
+  --electro-success-light: #ecfdf3;
+
+  /* Error / Red */
+  --electro-error: #e60000;
+  --electro-error-light: #fff0f0;
+
+  /* Warning / Orange */
+  --electro-warning: #dc7609;
+  --electro-warning-light: #fffcf0;
+
+  /* Info / Blue */
+  --electro-info: #0973dc;
+  --electro-info-light: #f0f8ff;
+
+  /* Sale / Red */
+  --electro-sale: #e4002b;
+
+  /* Badge / Green */
+  --electro-badge: #328614;
+
+  /* ============================================
+     COLORS - NEUTRAL
+     ============================================ */
+
+  /* Text colors */
+  --electro-text-primary: #111111;
+  --electro-text-secondary: #666666;
+  --electro-text-tertiary: #999999;
+  --electro-text-muted: #cccccc;
+
+  /* White */
+  --electro-white: #ffffff;
+
+  /* Black */
+  --electro-black: #000000;
+
+  /* ============================================
+     EXTENDED SITE PALETTE (mirrored from tokens.ts SITE_CSS_VARS)
+     ============================================ */
+
+  /* Functional colors (prices, states, links) */
+  --electro-price: #e4002b;
+  --electro-price-strike: #6f6f6f;
+  --electro-deal-price: #2d2d2d;
+  --electro-deal-sale: #c93636;
+  --electro-deal-badge: #ee0000;
+  --electro-success-alt: #5cb85c;
+  --electro-link: #0062bd;
+  --electro-heading: #333e48;
+  --electro-sale-badge: #328614;
+
+  /* Neutral colors (borders, text, icons) */
+  --electro-border: #dddddd;
+  --electro-border-alt: #e7e7e7;
+  --electro-rule: #ededed;
+  --electro-muted: #6f6f6f;
+  --electro-muted-2: #657888;
+  --electro-icon: #515151;
+  --electro-icon-empty: #cccccc;
+
+  /* Surface colors (pages, hover, panels) */
+  --electro-page: #ffffff;
+  --electro-ink: #000000;
+  --electro-surface-hover: #f5f5f5;
+  --electro-track: #f1f2f4;
+  --electro-bottom-bar: #eaeaea;
+  --electro-warning-surface: #fffbe6;
+  --electro-footer-bg: #333e48;
+  --electro-drawer-bg: #fdfcfc;
+  --electro-hero-slider-bg: #eef4f7;
+
+  /* Promo colors (campaign backgrounds) */
+  --electro-promo-rose: #fff5f5;
+  --electro-promo-violet: #f5f5ff;
+  --electro-promo-sky: #f0f7ff;
+  --electro-promo-flame: #c24d00;
+
+  /* Third-party brand colors (WhatsApp, Facebook) */
+  --electro-whatsapp: #25d366;
+  --electro-whatsapp-ink: #075e54;
+  --electro-whatsapp-ink-hover: #043c36;
+  --electro-facebook: #166fe5;
+
+  /* Utility colors (site-wide use cases) */
+  --util-000: #000;
+  --util-666: #666;
+  --util-999: #999;
+  --util-bbb: #bbb;
+  --util-ccc: #ccc;
+  --util-eee: #eee;
+  --util-15803d: #15803d;
+  --util-2c7a13: #2c7a13;
+  --util-2f7d18: #2f7d18;
+  --util-495057: #495057;
+  --util-5d7184: #5d7184;
+  --util-616161: #616161;
+  --util-8a6100: #8a6100;
+  --util-9a6b00: #9a6b00;
+  --util-9b0020: #9b0020;
+  --util-a7a7a7: #a7a7a7;
+  --util-b8401f: #b8401f;
+  --util-b91c1c: #b91c1c;
+  --util-c22e3d: #c22e3d;
+  --util-c94b28: #c94b28;
+  --util-cccfd1: #cccfd1;
+  --util-dc3545: #dc3545;
+  --util-e2dede: #e2dede;
+  --util-e4e4e4: #e4e4e4;
+  --util-e8f7e2: #e8f7e2;
+  --util-ececec: #ececec;
+  --util-efecec: #efecec;
+  --util-eefbe8: #eefbe8;
+  --util-f7f6f6: #f7f6f6;
+  --util-fdf2f3: #fdf2f3;
+  --util-fdeaee: #fdeaee;
+  --util-fef2f2: #fef2f2;
+  --util-fff4d6: #fff4d6;
+  --util-f7f7f7: #f7f7f7;
+  --util-f1f1f1: #f1f1f1;
+  --util-fafafa: #fafafa;
+
+  /* ============================================
+     SPACING
+     ============================================ */
+
+  --electro-spacing-xs: 0.25rem; /* 4px */
+  --electro-spacing-sm: 0.5rem; /* 8px */
+  --electro-spacing-md: 1rem; /* 16px */
+  --electro-spacing-lg: 1.5rem; /* 24px */
+  --electro-spacing-xl: 2rem; /* 32px */
+  --electro-spacing-2xl: 3rem; /* 48px */
+  --electro-spacing-3xl: 4rem; /* 64px */
+
+  /* ============================================
+     TYPOGRAPHY
+     ============================================ */
+
+  /* Font families */
+  --electro-font-primary: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
+  --electro-font-hebrew: "Heebo", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  /* Font sizes */
+  --electro-text-xs: 0.75rem; /* 12px */
+  --electro-text-sm: 0.875rem; /* 14px */
+  --electro-text-base: 1rem; /* 16px */
+  --electro-text-lg: 1.125rem; /* 18px */
+  --electro-text-xl: 1.25rem; /* 20px */
+  --electro-text-2xl: 1.5rem; /* 24px */
+  --electro-text-3xl: 2rem; /* 32px */
+  --electro-text-4xl: 2.5rem; /* 40px */
+
+  /* Font weights */
+  --electro-font-light: 300;
+  --electro-font-normal: 400;
+  --electro-font-medium: 500;
+  --electro-font-semibold: 600;
+  --electro-font-bold: 700;
+  --electro-font-black: 900;
+
+  /* Line heights */
+  --electro-line-height-tight: 1.2;
+  --electro-line-height-normal: 1.5;
+  --electro-line-height-relaxed: 1.75;
+  --electro-line-height-loose: 2;
+
+  /* ============================================
+     BORDER RADIUS
+     ============================================ */
+
+  --electro-radius-xs: 0.25rem; /* 4px */
+  --electro-radius-sm: 0.5rem; /* 8px */
+  --electro-radius-md: 0.75rem; /* 12px */
+  --electro-radius-lg: 1rem; /* 16px */
+  --electro-radius-full: 9999px;
+
+  /* ============================================
+     SHADOWS - ELEVATION HIERARCHY
+     ============================================ */
+
+  /* Base shadow tokens (sm, md, lg, xl) */
+  --electro-shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --electro-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05), 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  --electro-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --electro-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --electro-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+  /* Hover state elevation shadows (one level up) */
+  --electro-shadow-sm-hover: var(--electro-shadow-md);
+  --electro-shadow-md-hover: var(--electro-shadow-lg);
+  --electro-shadow-lg-hover: var(--electro-shadow-xl);
+  --electro-shadow-xl-hover: 0 30px 40px -10px rgba(0, 0, 0, 0.15);
+
+  /* Component-specific elevation levels */
+  --electro-elevation-base: var(--electro-shadow-sm); /* Base card level */
+  --electro-elevation-card: var(--electro-shadow-sm); /* Product cards, list items */
+  --electro-elevation-panel: var(--electro-shadow-md); /* Panels, sections */
+  --electro-elevation-modal: var(--electro-shadow-lg); /* Modal dialogs */
+  --electro-elevation-dropdown: var(--electro-shadow-lg); /* Dropdowns, tooltips */
+  --electro-elevation-float: var(--electro-shadow-xl); /* Floating buttons, floating action panels */
+
+  /* ============================================
+     COMPONENT HEIGHTS
+     ============================================ */
+
+  --electro-height-topbar: 2.75rem; /* 44px */
+  --electro-height-header: 5.625rem; /* 90px */
+  --electro-height-navbar: 2.75rem; /* 44px */
+  --electro-height-button: 2.75rem; /* 44px */
+
+  /* ============================================
+     Z-INDEX SCALE
+     ============================================ */
+
+  --electro-z-dropdown: 1000;
+  --electro-z-sticky-header: 40;
+  --electro-z-topbar: 50;
+  --electro-z-modal: 1050;
+  --electro-z-tooltip: 1100;
+
+  /* ============================================
+     TRANSITIONS
+     ============================================ */
+
+  --electro-transition-base: 200ms ease-in-out;
+  --electro-transition-fast: 100ms ease-in-out;
+  --electro-transition-slow: 300ms ease-in-out;
+}
+
+/* ============================================
+   ELEVATION UTILITY CLASSES
+   ============================================ */
+
+/* Elevation level sm - base cards */
+.elevation-sm {
+  box-shadow: var(--electro-shadow-sm);
+}
+
+.elevation-sm:hover {
+  box-shadow: var(--electro-shadow-sm-hover);
+  transition: box-shadow var(--electro-transition-base);
+}
+
+/* Elevation level md - panels */
+.elevation-md {
+  box-shadow: var(--electro-shadow-md);
+}
+
+.elevation-md:hover {
+  box-shadow: var(--electro-shadow-md-hover);
+  transition: box-shadow var(--electro-transition-base);
+}
+
+/* Elevation level lg - modals, dropdowns */
+.elevation-lg {
+  box-shadow: var(--electro-shadow-lg);
+}
+
+.elevation-lg:hover {
+  box-shadow: var(--electro-shadow-lg-hover);
+  transition: box-shadow var(--electro-transition-base);
+}
+
+/* Elevation level xl - floating elements */
+.elevation-xl {
+  box-shadow: var(--electro-shadow-xl);
+}
+
+.elevation-xl:hover {
+  box-shadow: var(--electro-shadow-xl-hover);
+  transition: box-shadow var(--electro-transition-base);
+}
+
+/* Component-specific elevation classes */
+
+/* Card elevation - typical product cards, list items */
+.card-elevation {
+  box-shadow: var(--electro-elevation-card);
+}
+
+.card-elevation:hover {
+  box-shadow: var(--electro-shadow-sm-hover);
+  transition: box-shadow var(--electro-transition-base);
+}
+
+/* Panel elevation - sections, panels */
+.panel-elevation {
+  box-shadow: var(--electro-elevation-panel);
+}
+
+.panel-elevation:hover {
+  box-shadow: var(--electro-shadow-md-hover);
+  transition: box-shadow var(--electro-transition-base);
+}
+
+/* Modal elevation - dialogs, modals */
+.modal-elevation {
+  box-shadow: var(--electro-elevation-modal);
+}
+
+/* Dropdown elevation - dropdowns, menus, tooltips */
+.dropdown-elevation {
+  box-shadow: var(--electro-elevation-dropdown);
+}
+
+/* Floating element elevation - floating buttons, action panels */
+.floating-elevation {
+  box-shadow: var(--electro-elevation-float);
+}
+
+.floating-elevation:hover {
+  box-shadow: var(--electro-shadow-xl-hover);
+  transition: box-shadow var(--electro-transition-base);
+}
+
+/* ============================================
+   DARK MODE OVERRIDES
+   ============================================ */
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --electro-text-primary: #f5f5f5;
+    --electro-text-secondary: #b3b3b3;
+    --electro-text-tertiary: #808080;
+    --electro-text-muted: #595959;
+
+    --electro-gray-light: #2a2a2a;
+    --electro-gray-medium: #1f1f1f;
+    --electro-gray-dark: #333333;
+
+    --electro-white: #111111;
+    --electro-black: #f5f5f5;
+  }
+}
+
+/* Allow override with data-theme attribute */
+[data-theme="dark"] {
+  --electro-text-primary: #f5f5f5;
+  --electro-text-secondary: #b3b3b3;
+  --electro-text-tertiary: #808080;
+  --electro-text-muted: #595959;
+
+  --electro-gray-light: #2a2a2a;
+  --electro-gray-medium: #1f1f1f;
+  --electro-gray-dark: #333333;
+
+  --electro-white: #111111;
+  --electro-black: #f5f5f5;
+}
+
+[data-theme="light"] {
+  --electro-text-primary: #111111;
+  --electro-text-secondary: #666666;
+  --electro-text-tertiary: #999999;
+  --electro-text-muted: #cccccc;
+
+  --electro-gray-light: #f5f5f5;
+  --electro-gray-medium: #efefef;
+  --electro-gray-dark: #cccccc;
+
+  --electro-white: #ffffff;
+  --electro-black: #000000;
+}

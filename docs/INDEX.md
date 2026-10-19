@@ -210,6 +210,7 @@ The live import tables are in the **`wp_import` schema**, 14 of them, and
 | Document | Status | What it is |
 |---|---|---|
 | [MIGRATION-BACKLOG.md](MIGRATION-BACKLOG.md) | ⚠️ | Which migrations applied and which did not. Read the banner: the backlog is empty, 137 included. |
+| [MIGRATIONS-APPLIED.md](MIGRATIONS-APPLIED.md) | ✅ | The rc5 run: 185, 186, 187 and 278 applied on 18.10, with the verification SELECTs. |
 | [DB-DRIFT-AUDIT.md](DB-DRIFT-AUDIT.md) | ⚠️ | The repo-versus-production drift. Phantom names here are the subject. |
 | [DB-SCHEMA.md](DB-SCHEMA.md) | ⚠️ | Schema reference; superseded by `DATA-MODEL.md`. |
 | [DDL-FIXES.md](DDL-FIXES.md) | 🕯️ | A DDL remediation pass. |

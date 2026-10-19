@@ -1,86 +1,123 @@
+import {
+  CHALLENGE_COOKIE,
+  CHALLENGE_TTL_S,
+  openChallenge,
+  sealChallenge,
+} from '@/lib/auth/challenge-cookie'
+import { relyingParty } from '@/lib/auth/webauthn-config'
+import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
-import { rateLimit, tooManyRequests } from '@/lib/rate-limit'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
+import { checkRateLimit } from '@/lib/utils/rate-limit'
 import { generateRegistrationOptions, verifyRegistrationResponse } from '@simplewebauthn/server'
+import type { RegistrationResponseJSON } from '@simplewebauthn/server'
+import { isoBase64URL, isoUint8Array } from '@simplewebauthn/server/helpers'
 import { type NextRequest, NextResponse } from 'next/server'
 
-const RP_ID = process.env.NEXT_PUBLIC_APP_URL?.split('://')[1]?.split(':')[0] || 'localhost'
-const RP_NAME = 'Kenyon Express'
-const ORIGIN = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-
-async function handlePOST(req: NextRequest) {
+/**
+ * Adds a passkey to the signed-in account (rc5 F15). Two steps on one route:
+ * `options` issues a challenge in a signed cookie, `verify` checks the
+ * browser's attestation against it and stores the credential in
+ * public.webauthn_credentials (service role: the table lets a user read and
+ * delete their own rows, not insert).
+ */
+async function handlePOST(request: NextRequest): Promise<NextResponse> {
   const supabase = await createClient()
-  const { data: userData } = await supabase.auth.getUser()
-
-  if (!userData.user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 })
+  if (!(await checkRateLimit(`passkey-register:${user.id}`, 20, 3600))) {
+    return NextResponse.json({ ok: false, error: 'rate_limited' }, { status: 429 })
   }
 
-  // Rate limit: 10 passkey registrations per hour per user
-  const decision = await rateLimit('passkey-register', userData.user.id)
-  if (!decision.allowed) {
-    return tooManyRequests(decision)
-  }
+  const body = (await request.json().catch(() => null)) as {
+    step?: string
+    response?: unknown
+    name?: unknown
+  } | null
+  const { rpID, rpName, origin } = relyingParty()
+  const admin = createAdminClient()
 
-  const body = await req.json()
-  const { step, credential, challengeFromSession } = body
-
-  if (step === 'options') {
+  if (body?.step === 'options') {
+    const { data: existing } = await admin
+      .from('webauthn_credentials')
+      .select('id, transports')
+      .eq('user_id', user.id)
     const options = await generateRegistrationOptions({
-      rpID: RP_ID,
-      rpName: RP_NAME,
-      userID: Buffer.from(userData.user.id),
-      userName: userData.user.email || userData.user.user_metadata?.email || 'user',
-      userDisplayName: userData.user.user_metadata?.name || userData.user.email || 'User',
-      attestationType: 'direct',
-      authenticatorSelection: {
-        authenticatorAttachment: 'platform',
-        residentKey: 'preferred',
-      },
+      rpName,
+      rpID,
+      userName: user.email ?? user.phone ?? user.id,
+      userID: isoUint8Array.fromUTF8String(user.id),
+      attestationType: 'none',
+      excludeCredentials: (existing ?? []).map((c) => ({
+        id: c.id as string,
+        transports: (c.transports ?? []) as AuthenticatorTransport[],
+      })),
+      authenticatorSelection: { residentKey: 'required', userVerification: 'preferred' },
     })
-
-    return NextResponse.json(options)
+    const sealed = sealChallenge({ c: options.challenge, p: 'register', u: user.id })
+    if (!sealed) return NextResponse.json({ ok: false, error: 'unavailable' }, { status: 503 })
+    const res = NextResponse.json({ ok: true, options })
+    res.cookies.set(CHALLENGE_COOKIE, sealed, {
+      httpOnly: true,
+      sameSite: 'strict',
+      secure: origin.startsWith('https'),
+      maxAge: CHALLENGE_TTL_S,
+      path: '/api/auth/passkey',
+    })
+    return res
   }
 
-  if (step === 'verify') {
-    try {
-      const verification = await verifyRegistrationResponse({
-        response: credential,
-        expectedChallenge: challengeFromSession,
-        expectedOrigin: ORIGIN,
-        expectedRPID: RP_ID,
-      })
-
-      if (!verification.verified || !verification.registrationInfo) {
-        return NextResponse.json({ error: 'Registration failed' }, { status: 400 })
-      }
-
-      const { credential: cred } = verification.registrationInfo
-      const transports = credential.response?.transports || []
-
-      const { error } = await supabase.from('passkeys').insert([
-        {
-          user_id: userData.user.id,
-          credential_id: cred.id,
-          public_key: Buffer.from(cred.publicKey).toString('base64url'),
-          counter: cred.counter,
-          transports: transports,
-        },
-      ])
-
-      if (error) {
-        console.error('Error storing passkey:', error)
-        return NextResponse.json({ error: 'Failed to store passkey' }, { status: 500 })
-      }
-
-      return NextResponse.json({ verified: true })
-    } catch (error) {
-      console.error('Registration verification error:', error)
-      return NextResponse.json({ error: 'Verification failed' }, { status: 400 })
-    }
+  if (body?.step !== 'verify') {
+    return NextResponse.json({ ok: false, error: 'invalid_step' }, { status: 400 })
+  }
+  const claims = openChallenge(request.cookies.get(CHALLENGE_COOKIE)?.value, 'register')
+  if (!claims || claims.u !== user.id) {
+    return NextResponse.json({ ok: false, error: 'challenge_expired' }, { status: 400 })
   }
 
-  return NextResponse.json({ error: 'Invalid step' }, { status: 400 })
+  let verification: Awaited<ReturnType<typeof verifyRegistrationResponse>>
+  try {
+    verification = await verifyRegistrationResponse({
+      // The library validates the JSON shape itself and throws on a bad one.
+      response: body.response as unknown as RegistrationResponseJSON,
+      expectedChallenge: claims.c,
+      expectedOrigin: origin,
+      expectedRPID: rpID,
+      requireUserVerification: false,
+    })
+  } catch (err) {
+    log.warn('passkey.register_verify_failed', {
+      reason: err instanceof Error ? err.message : String(err),
+    })
+    return NextResponse.json({ ok: false, error: 'verification_failed' }, { status: 400 })
+  }
+  if (!verification.verified || !verification.registrationInfo) {
+    return NextResponse.json({ ok: false, error: 'verification_failed' }, { status: 400 })
+  }
+
+  const info = verification.registrationInfo
+  const name =
+    typeof body.name === 'string' && body.name.trim() ? body.name.trim().slice(0, 60) : null
+  const { error } = await admin.from('webauthn_credentials').insert({
+    id: info.credential.id,
+    user_id: user.id,
+    public_key: isoBase64URL.fromBuffer(info.credential.publicKey),
+    counter: info.credential.counter,
+    transports: info.credential.transports ?? [],
+    device_type: info.credentialDeviceType,
+    backed_up: info.credentialBackedUp,
+    friendly_name: name,
+  })
+  if (error) {
+    log.error('passkey.store_failed', { reason: error.message })
+    return NextResponse.json({ ok: false, error: 'store_failed' }, { status: 500 })
+  }
+  const res = NextResponse.json({ ok: true })
+  res.cookies.delete({ name: CHALLENGE_COOKIE, path: '/api/auth/passkey' })
+  return res
 }
 
 export const POST = withRequestLog('/api/auth/passkey/register', handlePOST)

@@ -1,6 +1,4 @@
-import ChangePasswordForm from '@/components/account/ChangePasswordForm'
-import PasskeyManager from '@/components/account/PasskeyManager'
-import ReplayOptInToggle from '@/components/account/ReplayOptInToggle'
+import PasskeyManager from '@/components/auth/PasskeyManager'
 import { isStaffRole } from '@/lib/admin/roles'
 import { log } from '@/lib/observability/log'
 import { createClient } from '@/lib/supabase/server'
@@ -41,31 +39,8 @@ export default async function SecurityPage() {
 
   return (
     <>
-      <h1 className="account-title">אבטחה וכניסה</h1>
-      <p className="account-subtitle">ניהול הדרכים להתחבר לחשבון שלך</p>
-
-      <section className="account-card">
-        <h2 className="account-card__title">שינוי סיסמה</h2>
-        <ChangePasswordForm />
-      </section>
-
-      {available ? (
-        <PasskeyManager initial={initial} />
-      ) : (
-        <section className="account-card">
-          <h2 className="account-card__title">מפתחות כניסה (Passkeys)</h2>
-          <p className="account-row__meta">
-            כניסה עם טביעת אצבע או Face ID עדיין לא זמינה בחשבון הזה. בינתיים אפשר להתחבר עם סיסמה,
-            עם קישור לאימייל או עם קוד ב-SMS.
-          </p>
-        </section>
-      )}
-
-      {/*
-        TOTP enrolment against Supabase's native MFA. The component existed
-        with no page rendering it, so a staff account had no way to enrol and
-        the aal2 gate in lib/auth/mfa.ts guarded nobody.
-      */}
+      <h1 className="account-title">אבטחת החשבון</h1>
+      <PasskeyManager />
       <SecurityClient isStaff={isStaff} />
 
       <ReplayOptInToggle />

@@ -8,31 +8,23 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
  * per-item ceiling is checked before anything burns, and order is preserved.
  */
 
-const { identityScopedClient, rateLimit, verifyVoucherQrPayload, rpc } = vi.hoisted(() => ({
-  identityScopedClient: vi.fn(),
-  rateLimit: vi.fn(),
-  verifyVoucherQrPayload: vi.fn(),
-  rpc: vi.fn(),
-}))
+const { identityScopedClient, checkRateLimit, verifyVoucherQrPayload, canVerifyVoucherQr, rpc } =
+  vi.hoisted(() => ({
+    identityScopedClient: vi.fn(),
+    checkRateLimit: vi.fn(),
+    verifyVoucherQrPayload: vi.fn(),
+    canVerifyVoucherQr: vi.fn(),
+    rpc: vi.fn(),
+  }))
 
 /** `rateLimitHeaders` stays real, so a mocked 429 cannot fake its headers. */
 vi.mock('@/lib/supabase/bearer', () => ({ identityScopedClient }))
-vi.mock('@/lib/rate-limit', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/lib/rate-limit')>()),
-  rateLimit,
+vi.mock('@/lib/utils/rate-limit', () => ({ checkRateLimit }))
+vi.mock('@/server/domain/vouchers/qr', () => ({
+  verifyVoucherQrPayload,
+  canVerifyVoucherQr,
+  VoucherQrSecretMissingError: class extends Error {},
 }))
-
-function decision(allowed: boolean) {
-  return {
-    allowed,
-    limit: 40,
-    windowSeconds: 3600,
-    remaining: allowed ? 39 : 0,
-    resetAtMs: Date.now() + 3_600_000,
-    backend: 'upstash' as const,
-  }
-}
-vi.mock('@/server/domain/vouchers/qr', () => ({ verifyVoucherQrPayload }))
 
 import { POST } from './route'
 
@@ -56,6 +48,8 @@ describe('redeem-batch route', () => {
     identityScopedClient.mockReset()
     rateLimit.mockReset()
     verifyVoucherQrPayload.mockReset()
+    canVerifyVoucherQr.mockReset()
+    canVerifyVoucherQr.mockReturnValue(true)
     rpc.mockReset()
     identityScopedClient.mockResolvedValue({
       client: { rpc },
@@ -207,5 +201,55 @@ describe('redeem-batch route', () => {
       // The failed item stays queued; the good one is cleared.
       expect(body.settled).toEqual(['key-0002'])
     })
+  })
+})
+
+/**
+ * A server that cannot verify signatures is not a queue full of forgeries.
+ *
+ * `drainQueue` deletes every item the server settles, and an `invalid_signature`
+ * is settled - correctly, since a signature does not become valid later. But a
+ * MISSING SECRET does become valid later, the moment an operator sets one, and
+ * the items in the queue are redemptions a customer has already paid for. So
+ * the whole batch is refused before the loop, exactly as the ceiling is.
+ */
+describe('when this server has no signing secret', () => {
+  const qrItem = (key: string) => ({ qr_payload: 'KEV1.body.mac', idempotency_key: key })
+
+  beforeEach(() => {
+    canVerifyVoucherQr.mockReturnValue(false)
+  })
+
+  it('answers 503 and settles nothing', async () => {
+    const response = await POST(request({ items: [qrItem('key-9001'), qrItem('key-9002')] }))
+    expect(response.status).toBe(503)
+    const body = await response.json()
+    expect(body.ok).toBe(false)
+    expect(body.error).toBe('qr_verification_unavailable')
+    expect(body.settled).toEqual([])
+  })
+
+  it('never reports the items as invalid_signature, which the till would delete', async () => {
+    const response = await POST(request({ items: [qrItem('key-9001')] }))
+    const body = await response.json()
+    expect(JSON.stringify(body)).not.toContain('invalid_signature')
+    expect(body.results ?? []).toEqual([])
+  })
+
+  // Asserted on THIS batch's keys rather than on the bare call count: the
+  // logging path resolves after the response, so a count leaks across tests.
+  it('redeems nothing and does not even compute a signature', async () => {
+    await POST(request({ items: [qrItem('key-9001')] }))
+    const redeemed = rpc.mock.calls.filter((call) => JSON.stringify(call).includes('key-9001'))
+    expect(redeemed).toEqual([])
+    expect(verifyVoucherQrPayload).not.toHaveBeenCalled()
+  })
+
+  // Manually keyed items carry no signature, so a missing secret is irrelevant
+  // to them and refusing them would be an outage invented out of nothing.
+  it('still drains a batch of hand-typed codes', async () => {
+    const response = await POST(request({ items: [item('key-9003')] }))
+    expect(response.status).toBe(200)
+    expect(rpc).toHaveBeenCalled()
   })
 })

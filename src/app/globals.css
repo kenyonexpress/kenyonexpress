@@ -1,11 +1,25 @@
 @import "tailwindcss";
 
+/* Electro v7 design system tokens - single source of truth */
+@import "../../packages/design-tokens/electro.css";
+
 /* The design tokens: every colour, type size, radius, space and breakpoint the
    app may use, with the provenance of each. Split out of this file on
    2026-09-03; it was 184 of the 343 lines here and it is not page CSS.
    `src/styles/tokens.test.ts` reads it directly and asserts it against
    `src/styles/tokens.ts`. */
 @import "../styles/tokens.css";
+
+/* Typography utility classes based on TYPOGRAPHY_SCALE for consistent sizing */
+@import "../styles/typography.css";
+
+/* Match live site body font size. Live renders at 14px effective size.
+   Setting root font-size to 0.875rem scales everything down proportionally,
+   which matches the live rendering and improves pixel parity.
+   See: em-values-lifted-from-live-css-scale-off-16px-body.md */
+html {
+  font-size: 0.875rem;
+}
 
 body {
   background-color: var(--color-background);
@@ -420,4 +434,56 @@ body:has([data-home]) .topbar-greeting {
   block-size: 0;
   inline-size: 0;
   overflow: hidden;
+}
+
+/* A 44px HIT AREA THAT PAINTS NOTHING AND MOVES NOTHING.
+ *
+ * The standing rule is a 44px minimum touch target. The obvious fix, growing
+ * the control, is not available here: every visual step is scored against an
+ * 11% pixel gate whose real margin is about a third of a percent, so making a
+ * 30px control 44px spends the entire budget on one icon.
+ *
+ * So the control keeps its painted size and gets a transparent overlay that is
+ * at least 44px square, centred on it. `content-box` geometry is untouched, no
+ * sibling moves, and the diff against the reference is unchanged, because the
+ * overlay has no background, no border and no text.
+ *
+ * `top`/`left` with `translate` rather than `inset-inline`: the overlay is
+ * centred, so it needs no direction awareness, and physical centring is correct
+ * in both RTL and LTR. `max()` and not a flat 44px, so a control that is
+ * already larger than 44 in one axis is not shrunk in that axis.
+ *
+ * WHERE NOT TO USE IT. The overlay extends past the control and sits above
+ * whatever is next to it, so on controls packed closer than 44px apart the
+ * later sibling in the DOM captures the overlap. Use it on isolated controls;
+ * for a tight row, space the row first.
+ *
+ * ALL FOUR USES WERE CHECKED AGAINST THAT CAVEAT ON 2026-09-08, and the margin
+ * in the tightest one is 2px:
+ *
+ *   MastheadNav heart + CartNavLink cart   icon 22 + p-1 = 30px box, so the
+ *     44px overlay extends 7px each side, 14px combined, into `gap-4` = 16px.
+ *     CLEARANCE 2px below `lg`. At `lg` the gap is --spacing-nav-gap = 38px.
+ *   SiteFooter social row   box is size-touch-min = 44px, so the overlay adds
+ *     nothing at all; at `lg` the box is 40px and the overlay adds 2px a side
+ *     into `gap-3` = 12px. CLEARANCE 8px.
+ *   TopBar anchor   isolated.
+ *
+ * So dropping the masthead cluster to `gap-3`, removing `p-1`, or adding a
+ * third icon to it makes the earlier icon partly untappable - and it would
+ * still MEASURE as 44x44, because a probe that looks at one element at a time
+ * cannot see a neighbour's overlay on top of it. `scripts/_touch-targets.mjs`
+ * reports `overlayCollisions` per page for exactly this. */
+.hit-44 {
+  position: relative;
+}
+
+.hit-44::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  inline-size: max(100%, 44px);
+  block-size: max(100%, 44px);
 }

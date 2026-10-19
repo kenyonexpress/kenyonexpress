@@ -68,6 +68,18 @@ describe('every transition, legal and illegal', () => {
   it('always allows a state to itself, so an unrelated column update is not blocked', () => {
     for (const s of ALL_STATES) expect(isLegalWalletRefundTransition(s, s)).toBe(true)
   })
+
+  it('refuses a state the transition map has never heard of', () => {
+    // The `?? []` fallback, which nothing reached. It is not dead code: the
+    // `from` value arrives from `refunds.state` in the database, and if that
+    // enum ever gains a value before this map does, the lookup returns
+    // undefined. Without the fallback that is a TypeError on the money path;
+    // with it the answer is "no transition is legal from a state I do not
+    // know", which is the safe direction.
+    expect(isLegalWalletRefundTransition('a_state_from_a_newer_enum' as never, 'completed')).toBe(
+      false,
+    )
+  })
 })
 
 describe('terminal states', () => {

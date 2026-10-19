@@ -141,6 +141,22 @@ describe('sendOrderGifts', () => {
     expect(new Set(tokens).size).toBe(2)
   })
 
+  it('holds the email until the scheduled time, and omits the hold for a past one', async () => {
+    const now = new Date('2026-10-16T10:00:00Z')
+    scriptTwoVouchers()
+    await sendOrderGifts(adminClient as never, {
+      orderId: ORDER_ID,
+      buyerUserId: 'buyer',
+      intent: { ...intent, sendAt: new Date('2026-11-01T06:00:00Z') },
+      now,
+    })
+    for (const call of findAll('notification_outbox', 'insert')) {
+      expect((call.payload as { next_attempt_at?: string }).next_attempt_at).toBe(
+        '2026-11-01T06:00:00.000Z',
+      )
+    }
+  })
+
   it('guards the update on gift_sent_at IS NULL so a replayed finalize sends once', async () => {
     scriptTwoVouchers()
     await sendOrderGifts(adminClient as never, {

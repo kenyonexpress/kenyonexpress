@@ -20,6 +20,7 @@ function base(overrides: Partial<Record<keyof ProductInput, unknown>> = {}) {
     slug: 'deal-1',
     name_he: 'מוצר בדיקה',
     type: 'physical',
+    city: 'תל אביב',
     kenyon_price: 100,
     platform_percent: 10,
     status: 'draft',
@@ -139,5 +140,30 @@ describe('productSchema: the split pair, in every mode', () => {
       expect(result.data.platform_percent ?? null).toBeNull()
       expect(result.data.kenyon_price ?? null).toBeNull()
     }
+  })
+})
+
+describe('productSchema: business location', () => {
+  it('requires a city for a physical product', () => {
+    expect(errorsAt(base({ city: '', status: 'active' }), 'city')).toContain('עיר נדרשת למוצר פיזי')
+  })
+  it('lets a physical draft be saved before the location is known', () => {
+    expect(productSchema.safeParse(base({ city: '' })).success).toBe(true)
+  })
+  it('leaves a coupon free of a location', () => {
+    expect(
+      productSchema.safeParse(base({ type: 'coupon', coupon_expiry_days: 30, city: '' })).success,
+    ).toBe(true)
+  })
+  it('wants latitude and longitude together, and in range', () => {
+    expect(errorsAt(base({ latitude: '32.08' }), 'latitude')).toContain(
+      'יש להזין קו רוחב וקו אורך יחד',
+    )
+    expect(errorsAt(base({ latitude: '95', longitude: '34' }), 'latitude')).toContain(
+      'קו רוחב לא תקין',
+    )
+    expect(productSchema.safeParse(base({ latitude: '32.08', longitude: '34.78' })).success).toBe(
+      true,
+    )
   })
 })

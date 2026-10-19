@@ -1,4 +1,5 @@
 import { createSign } from 'node:crypto'
+import { fetchWithTimeout } from '@/lib/http/fetch-with-timeout'
 import { log } from '@/lib/observability/log'
 import type { GoogleWalletConfig } from './config'
 
@@ -99,7 +100,7 @@ async function accessToken(config: GoogleWalletConfig, now: Date): Promise<strin
     config.privateKeyPem,
   )
 
-  const response = await fetch(TOKEN_URL, {
+  const response = await fetchWithTimeout(TOKEN_URL, {
     method: 'POST',
     headers: { 'content-type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({
@@ -153,14 +154,17 @@ export async function pushGoogleObjectState(
     const token = await accessToken(config, now)
     if (!token) return { outcome: 'failed', reason: 'no_access_token' }
 
-    const response = await fetch(`${WALLET_API}/genericObject/${encodeURIComponent(objectId)}`, {
-      method: 'PATCH',
-      headers: {
-        authorization: `Bearer ${token}`,
-        'content-type': 'application/json',
+    const response = await fetchWithTimeout(
+      `${WALLET_API}/genericObject/${encodeURIComponent(objectId)}`,
+      {
+        method: 'PATCH',
+        headers: {
+          authorization: `Bearer ${token}`,
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify(patch),
       },
-      body: JSON.stringify(patch),
-    })
+    )
     // 404 is expected and not an error: the customer never saved the pass, so
     // there is no object to move. Treated as done rather than as a failure,
     // because retrying it would never succeed.

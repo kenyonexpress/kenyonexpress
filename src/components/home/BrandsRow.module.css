@@ -1,0 +1,122 @@
+.container {
+  width: 100%;
+  background-color: #f9f9f9;
+  padding: 24px 0;
+  margin: 24px 0;
+}
+
+.scrollWrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+.scrollWrapper::-webkit-scrollbar {
+  height: 6px;
+}
+
+.scrollWrapper::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.scrollWrapper::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 3px;
+}
+
+.scrollWrapper::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 16px;
+  padding: 0 16px;
+  max-width: 1320px;
+  margin: 0 auto;
+  min-width: min-content;
+}
+
+@media (min-width: 480px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    padding: 0 20px;
+  }
+}
+
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    padding: 0 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 80px;
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 12px;
+  transition: all 200ms ease-out;
+  border: 1px solid #e0e0e0;
+}
+
+.item:hover {
+  border-color: #fed700;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  text-decoration: none;
+}
+
+.imageWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.image {
+  filter: grayscale(100%);
+  transition: filter 200ms ease-out;
+  object-fit: contain;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.item:hover .image {
+  filter: grayscale(0%);
+}
+
+/* Mobile horizontal scroll on small screens */
+@media (max-width: 480px) {
+  .grid {
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    padding: 0 12px;
+  }
+
+  .scrollWrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}

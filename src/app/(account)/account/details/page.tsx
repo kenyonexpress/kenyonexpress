@@ -1,6 +1,7 @@
 import ProfileDetailsForm from '@/components/account/ProfileDetailsForm'
 import { signOut } from '@/server/actions/auth'
 import { getAccountProfile } from '@/server/queries/account'
+import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import DeleteAccountSection from './DeleteAccountSection'
 
@@ -17,8 +18,14 @@ export default async function DetailsPage() {
 
       {profile.avatarUrl ? (
         <div className="account-profile-avatar">
-          {/* eslint-disable-next-line @next/next/no-img-element -- Google avatar URL */}
-          <img src={profile.avatarUrl} alt="" width={64} height={64} referrerPolicy="no-referrer" />
+          <Image
+            src={profile.avatarUrl}
+            alt=""
+            width={64}
+            height={64}
+            unoptimized
+            referrerPolicy="no-referrer"
+          />
           <p className="account-row__meta">תמונת הפרופיל מחשבון Google</p>
         </div>
       ) : null}

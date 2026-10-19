@@ -1,100 +1,112 @@
+import {
+  CHALLENGE_COOKIE,
+  CHALLENGE_TTL_S,
+  openChallenge,
+  sealChallenge,
+} from '@/lib/auth/challenge-cookie'
+import { relyingParty } from '@/lib/auth/webauthn-config'
+import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
-import { rateLimit, tooManyRequests } from '@/lib/rate-limit'
-import { createClient } from '@/lib/supabase/server'
-import { getClientIp } from '@/lib/utils/rate-limit'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
+import { mintSessionFor } from '@/server/auth/mint-session'
 import { generateAuthenticationOptions, verifyAuthenticationResponse } from '@simplewebauthn/server'
+import type { AuthenticationResponseJSON } from '@simplewebauthn/server'
+import { isoBase64URL } from '@simplewebauthn/server/helpers'
 import { type NextRequest, NextResponse } from 'next/server'
 
-const RP_ID = process.env.NEXT_PUBLIC_APP_URL?.split('://')[1]?.split(':')[0] || 'localhost'
-const ORIGIN = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+/**
+ * Signs in with a passkey (rc5 F15). `options` issues a discoverable-credential
+ * challenge in a signed cookie; `verify` finds the credential the browser
+ * used, checks the assertion and the signature counter, and signs that
+ * credential's owner in on this response.
+ */
+async function handlePOST(request: NextRequest): Promise<NextResponse> {
+  const ip = await getClientIp()
+  if (!(await checkRateLimit(`passkey-auth:${ip}`, 30, 600))) {
+    return NextResponse.json({ ok: false, error: 'rate_limited' }, { status: 429 })
+  }
+  const body = (await request.json().catch(() => null)) as {
+    step?: string
+    response?: { id?: unknown }
+  } | null
+  const { rpID, origin } = relyingParty()
 
-async function handlePOST(req: NextRequest) {
-  const clientIp = await getClientIp()
-  const body = await req.json()
-  const { step, credential, challengeFromSession } = body
-
-  if (step === 'options') {
-    // Rate limit: 30 challenge issuances per hour per IP
-    const decision = await rateLimit('passkey-login', clientIp)
-    if (!decision.allowed) {
-      return tooManyRequests(decision)
-    }
-
-    const options = await generateAuthenticationOptions({
-      rpID: RP_ID,
-      timeout: 60000,
-      allowCredentials: [],
-      userVerification: 'preferred',
+  if (body?.step === 'options') {
+    const options = await generateAuthenticationOptions({ rpID, userVerification: 'preferred' })
+    const sealed = sealChallenge({ c: options.challenge, p: 'authenticate', u: null })
+    if (!sealed) return NextResponse.json({ ok: false, error: 'unavailable' }, { status: 503 })
+    const res = NextResponse.json({ ok: true, options })
+    res.cookies.set(CHALLENGE_COOKIE, sealed, {
+      httpOnly: true,
+      sameSite: 'strict',
+      secure: origin.startsWith('https'),
+      maxAge: CHALLENGE_TTL_S,
+      path: '/api/auth/passkey',
     })
-
-    return NextResponse.json(options)
+    return res
   }
 
-  if (step === 'verify') {
-    // Rate limit: 20 assertion verifications per hour per IP
-    const decision = await rateLimit('passkey-login-finish', clientIp)
-    if (!decision.allowed) {
-      return tooManyRequests(decision)
-    }
+  if (body?.step !== 'verify' || typeof body.response?.id !== 'string') {
+    return NextResponse.json({ ok: false, error: 'invalid_step' }, { status: 400 })
+  }
+  const claims = openChallenge(request.cookies.get(CHALLENGE_COOKIE)?.value, 'authenticate')
+  if (!claims) return NextResponse.json({ ok: false, error: 'challenge_expired' }, { status: 400 })
 
-    const supabase = await createClient()
-
-    try {
-      const { data: passkeys, error: dbError } = await supabase
-        .from('passkeys')
-        .select('*')
-        .eq('credential_id', credential.id)
-        .limit(1)
-        .single()
-
-      if (dbError || !passkeys) {
-        return NextResponse.json({ error: 'Passkey not found' }, { status: 404 })
-      }
-
-      const verification = await verifyAuthenticationResponse({
-        response: credential,
-        expectedChallenge: challengeFromSession,
-        expectedOrigin: ORIGIN,
-        expectedRPID: RP_ID,
-        credential: {
-          id: passkeys.credential_id,
-          publicKey: new Uint8Array(Buffer.from(passkeys.public_key, 'base64url')),
-          counter: passkeys.counter,
-          transports: passkeys.transports,
-        },
-      })
-
-      if (!verification.verified) {
-        // Fallback to magic link on authentication failure
-        return NextResponse.json(
-          {
-            error: 'Authentication failed',
-            fallbackToMagicLink: true,
-          },
-          { status: 401 },
-        )
-      }
-
-      const { error: updateError } = await supabase
-        .from('passkeys')
-        .update({ counter: verification.authenticationInfo.newCounter })
-        .eq('id', passkeys.id)
-
-      if (updateError) {
-        console.error('Error updating counter:', updateError)
-      }
-
-      return NextResponse.json({
-        verified: true,
-        userId: passkeys.user_id,
-      })
-    } catch (error) {
-      console.error('Authentication verification error:', error)
-      return NextResponse.json({ error: 'Verification failed' }, { status: 400 })
-    }
+  const admin = createAdminClient()
+  const { data: credential } = await admin
+    .from('webauthn_credentials')
+    .select('id, user_id, public_key, counter, transports')
+    .eq('id', body.response.id)
+    .maybeSingle()
+  if (!credential) {
+    return NextResponse.json({ ok: false, error: 'unknown_passkey' }, { status: 400 })
   }
 
-  return NextResponse.json({ error: 'Invalid step' }, { status: 400 })
+  let verification: Awaited<ReturnType<typeof verifyAuthenticationResponse>>
+  try {
+    verification = await verifyAuthenticationResponse({
+      // The library validates the JSON shape itself and throws on a bad one.
+      response: body.response as unknown as AuthenticationResponseJSON,
+      expectedChallenge: claims.c,
+      expectedOrigin: origin,
+      expectedRPID: rpID,
+      requireUserVerification: false,
+      credential: {
+        id: credential.id as string,
+        publicKey: isoBase64URL.toBuffer(credential.public_key as string),
+        counter: Number(credential.counter),
+        transports: (credential.transports ?? []) as AuthenticatorTransport[],
+      },
+    })
+  } catch (err) {
+    log.warn('passkey.auth_verify_failed', {
+      reason: err instanceof Error ? err.message : String(err),
+    })
+    return NextResponse.json({ ok: false, error: 'verification_failed' }, { status: 400 })
+  }
+  if (!verification.verified) {
+    return NextResponse.json({ ok: false, error: 'verification_failed' }, { status: 400 })
+  }
+
+  await admin
+    .from('webauthn_credentials')
+    .update({
+      counter: verification.authenticationInfo.newCounter,
+      last_used_at: new Date().toISOString(),
+    })
+    .eq('id', credential.id)
+
+  const session = await mintSessionFor(credential.user_id as string)
+  if (!session.ok) {
+    return NextResponse.json(
+      { ok: false, error: session.reason === 'no_email' ? 'no_email' : 'session_failed' },
+      { status: session.reason === 'no_email' ? 409 : 500 },
+    )
+  }
+  const res = NextResponse.json({ ok: true })
+  res.cookies.delete({ name: CHALLENGE_COOKIE, path: '/api/auth/passkey' })
+  return res
 }
 
 export const POST = withRequestLog('/api/auth/passkey/authenticate', handlePOST)

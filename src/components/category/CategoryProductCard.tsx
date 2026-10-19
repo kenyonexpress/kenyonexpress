@@ -1,13 +1,11 @@
 'use client'
 
 import AddToCartButton from '@/components/cart/AddToCartButton'
-import CardOfferDeadline from '@/components/category/CardOfferDeadline'
-import CompareToggle from '@/components/compare/CompareToggle'
-import WishlistHeart from '@/components/wishlist/WishlistHeart'
+import ProductLocation from '@/components/product-card/ProductLocation'
+import LocationPin from '@/components/product/LocationPin'
 import { cityByName } from '@/lib/geo/cities'
 import { formatDistance } from '@/lib/geo/distance'
 import { shekelsFromIlsRounded } from '@/lib/money-format'
-import { MapPin } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -39,6 +37,11 @@ import Link from 'next/link'
 const THUMB_MAX_PX = 186
 const THUMB_SIZES = `(max-width: 497px) calc(50vw - 63px), ${THUMB_MAX_PX}px`
 
+export type GalleryAsset = {
+  alt: string | null
+  blurDataURL: string | null
+}
+
 export type CategoryProduct = {
   id: string
   slug: string
@@ -52,10 +55,13 @@ export type CategoryProduct = {
   city?: string | null
   /** Normalised supplier join. Present once the query selects it. */
   supplier?: { city?: string | null } | null
+  city?: string | null
+  latitude?: number | null
+  longitude?: number | null
   /** Set by sortByDistance when the customer asked for "near me". */
   distanceKm?: number | null
-  /** `products.offer_valid_until`, ISO. Present once the query selects it. */
-  offer_valid_until?: string | null
+  /** Gallery assets (blur placeholders + alts) keyed by image URL. Optional. */
+  assets?: Record<string, GalleryAsset>
 }
 
 function formatPrice(value: number): string {
@@ -88,6 +94,8 @@ export default function CategoryProductCard({ product }: { product: CategoryProd
       ? (product.images[0] as string)
       : null
 
+  const asset = thumb && product.assets ? product.assets[thumb] : null
+
   const price = product.kenyon_price != null ? Number(product.kenyon_price) : null
   const old = product.full_price != null ? Number(product.full_price) : null
   const hasDiscount = price != null && old != null && old > price
@@ -95,7 +103,8 @@ export default function CategoryProductCard({ product }: { product: CategoryProd
   const outOfStock = product.stock_quantity === 0
   const canAdd = price != null && !outOfStock
 
-  const cityName = product.city ? (cityByName(product.city)?.name ?? product.city) : 'כל הארץ'
+  const ownCity = product.city?.trim() || null
+  const locationCity = ownCity ?? cityByName(product.supplier?.city)?.name ?? null
   const distanceLabel =
     typeof product.distanceKm === 'number' ? formatDistance(product.distanceKm) : null
 
@@ -112,16 +121,13 @@ export default function CategoryProductCard({ product }: { product: CategoryProd
   return (
     <article className="category-card">
       <div className="category-card__header">
+        {/* rc5 F02: location above the title instead of the category tags.
+            The product's own city first, then the supplier's when the city
+            table recognises it, else nationwide. The distance appears only
+            after the customer asked for "near me". */}
         <span className="category-card__categories">
-          <span className="inline-flex items-center gap-1">
-            <span className="flex items-center justify-center w-6 h-6 rounded-full bg-neutral-100">
-              <MapPin size={10} className="text-black" />
-            </span>
-            <span>
-              {cityName}
-              {distanceLabel && <span className="category-card__distance"> · {distanceLabel}</span>}
-            </span>
-          </span>
+          <ProductLocation city={locationCity} />
+          {distanceLabel && <span className="category-card__distance"> · {distanceLabel}</span>}
         </span>
 
         {priceBlock && <span className="category-card__price">{priceBlock}</span>}
@@ -146,28 +152,25 @@ export default function CategoryProductCard({ product }: { product: CategoryProd
               // that takes its height from the image drops to 0.
               <Image
                 src={thumb}
-                alt={product.name_he}
+                alt={asset?.alt ?? product.name_he}
                 width={186}
                 height={186}
                 sizes={THUMB_SIZES}
                 loading="lazy"
+                {...(asset?.blurDataURL
+                  ? { placeholder: 'blur' as const, blurDataURL: asset.blurDataURL }
+                  : {})}
               />
             ) : null}
           </span>
         </Link>
-        {/* Outside the link, so a press saves instead of navigating, and an
-            overlay, so it takes no space. The discount badge and the deadline
-            sit on the image's bottom edge; this is the header's top corner. */}
-        <WishlistHeart
-          productId={product.id}
-          productName={product.name_he}
-          className="category-card__heart"
-        />
-        {/* The other top corner of the image. */}
-        <CompareToggle
-          productId={product.id}
-          productName={product.name_he}
-          className="category-card__compare"
+        <LocationPin
+          className="category-card__pin"
+          location={{
+            city: product.city,
+            latitude: product.latitude,
+            longitude: product.longitude,
+          }}
         />
       </div>
 

@@ -93,10 +93,12 @@ export default async function AdminProductsPage({ searchParams }: Props) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold text-ink">מוצרים</h1>
-        <div className="flex items-center gap-2">
-          <Link href="/admin/products/import" className={adminBtnGhost}>
-            <FileUp size={15} />
-            ייבוא מקובץ
+        <div className="flex items-center gap-3">
+          <Link
+            href="/admin/products/missing-location"
+            className="text-sm text-link hover:underline"
+          >
+            מוצרים בלי מיקום
           </Link>
           <Link href="/admin/products/new" className={adminBtn}>
             <Plus size={15} />

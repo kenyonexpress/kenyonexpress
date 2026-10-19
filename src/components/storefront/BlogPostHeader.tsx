@@ -51,13 +51,13 @@ export default function BlogPostHeader({ slug }: { slug: string }) {
       />
 
       <nav aria-label="נתיב ניווט" className="mb-6 text-sm text-heading/80">
-        <Link href="/" className="hover:text-heading">
+        <Link href="/" className="hit-44 hover:text-heading">
           בית
         </Link>
         <span aria-hidden="true" className="mx-2">
           /
         </span>
-        <Link href="/blog" className="hover:text-heading">
+        <Link href="/blog" className="hit-44 hover:text-heading">
           הבלוג
         </Link>
         <span aria-hidden="true" className="mx-2">
@@ -67,7 +67,7 @@ export default function BlogPostHeader({ slug }: { slug: string }) {
       </nav>
 
       <h1 className="text-3xl font-bold text-heading">{post.title}</h1>
-      <p className="mt-2 text-sm text-heading/60">
+      <p className="mt-2 text-sm text-heading/75">
         {published} · {post.readingMinutes} דקות קריאה
       </p>
     </>

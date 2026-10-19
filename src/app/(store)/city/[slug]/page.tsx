@@ -1,5 +1,6 @@
 import { cityBySlug } from '@/lib/geo/cities'
 import { REGIONS, findRegion } from '@/lib/regions'
+import { alternatesFor } from '@/lib/seo/alternates'
 import { buildBreadcrumbJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
 import type { Metadata } from 'next'
 import Link from 'next/link'
@@ -50,7 +51,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `דילים ב${region.name}`,
     description: `קופונים ומבצעים מבתי עסק ב${region.name}. כל שובר נסרק פעם אחת, והתוקף מוצג לפני הרכישה.`,
-    alternates: { canonical: `/city/${encodeURIComponent(region.slug)}` },
+    alternates: alternatesFor(`/city/${encodeURIComponent(region.slug)}`),
   }
 }
 
@@ -132,7 +133,7 @@ export default async function CityPage({ params }: Props) {
           href="/suppliers"
           className="inline-flex min-h-touch-min items-center rounded-md border border-border px-5 py-2 text-sm text-heading transition-colors hover:bg-surface-hover"
         >
-          הצטרפו כספקים
+          הצטרפו כעסקים
         </Link>
       </div>
     </div>

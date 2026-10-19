@@ -1,42 +1,38 @@
 'use client'
 
-import CategoryAutocomplete from '@/components/category/CategoryAutocomplete'
-import Link from 'next/link'
+import PriceRangeSlider from '@/components/category/PriceRangeSlider'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useState, useTransition } from 'react'
 
-export type SidebarCategory = { slug: string; name_he: string }
-
 type Props = {
-  categories: SidebarCategory[]
-  currentSlug?: string
   priceMin?: number
   priceMax?: number
+  categoryMinPrice?: number
+  categoryMaxPrice?: number
   productType?: 'coupon' | 'physical'
+  suppliers?: { supplier_id: string; supplier_name_he: string; product_count: number }[]
+  tags?: { tag: string; product_count: number }[]
+  categoryId?: string
 }
 
-const TYPE_OPTIONS = [
-  { value: undefined, label: 'הכל' },
-  { value: 'coupon' as const, label: 'קופונים' },
-  { value: 'physical' as const, label: 'מוצרים פיזיים' },
-]
-
 export default function CategoryFilterSidebar({
-  categories,
-  currentSlug,
   priceMin,
   priceMax,
-  productType,
+  categoryMinPrice = 0,
+  categoryMaxPrice = 100000,
+  suppliers,
+  tags,
 }: Props) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const [isPending, startTransition] = useTransition()
-  const [min, setMin] = useState(priceMin != null ? String(priceMin) : '')
-  const [max, setMax] = useState(priceMax != null ? String(priceMax) : '')
-  const current = currentSlug ? categories.find((c) => c.slug === currentSlug) : undefined
+  const [openSections, setOpenSections] = useState({
+    price: true,
+    suppliers: true,
+    tags: true,
+  })
 
-  /** Any filter change resets paging: page 3 of the old result set is meaningless. */
   function pushWith(mutate: (params: URLSearchParams) => void) {
     const params = new URLSearchParams(searchParams)
     mutate(params)
@@ -47,117 +43,137 @@ export default function CategoryFilterSidebar({
     })
   }
 
-  function applyPrice(e: React.FormEvent) {
-    e.preventDefault()
+  function applyPrice(minVal: number, maxVal: number) {
     pushWith((params) => {
-      if (min && Number(min) >= 0) params.set('min', min)
+      if (minVal >= 0) params.set('min', String(minVal))
       else params.delete('min')
-      if (max && Number(max) >= 0) params.set('max', max)
+      if (maxVal >= 0) params.set('max', String(maxVal))
       else params.delete('max')
     })
   }
 
-  function applyType(value: 'coupon' | 'physical' | undefined) {
-    pushWith((params) => {
-      if (value) params.set('type', value)
-      else params.delete('type')
-    })
+  function toggleSection(section: keyof typeof openSections) {
+    setOpenSections((prev) => ({ ...prev, [section]: !prev[section] }))
   }
+
+  const hasSuppliers = suppliers && suppliers.length > 0
+  const hasTags = tags && tags.length > 0
 
   return (
     <aside id="category-filters" className="category-sidebar" aria-label="סינון מוצרים">
-      {/* Collapsed by default. The live archive has no filter UI at all, so an
-          always-open panel would push our footer far below live's (y871) and
-          cost more in the comparison than the column ever did. Closed, it is a
-          single row; open, it is the full filter set. */}
-      <details className="category-sidebar__disclosure">
-        <summary className="category-sidebar__summary">סינון מוצרים</summary>
-        <div className="category-sidebar__widgets">
-          {/* The site's one typing field, scoped to this archive. See the
-              note at the top of CategoryAutocomplete.tsx and the exemption in
-              layout/no-search-ui.test.ts. Absent on /products, which has no
-              category to scope to. */}
-          {current ? (
-            <div className="category-sidebar__widget">
-              <CategoryAutocomplete categorySlug={current.slug} categoryName={current.name_he} />
+      <div className="category-sidebar__filters">
+        {/* Price filter */}
+        <div className="category-sidebar__filter-section">
+          <button
+            type="button"
+            className={`category-sidebar__filter-header ${openSections.price ? 'is-open' : ''}`}
+            onClick={() => toggleSection('price')}
+            aria-expanded={openSections.price}
+          >
+            <span className="category-sidebar__filter-title">טווח מחירים</span>
+            <span className="category-sidebar__filter-icon">▼</span>
+          </button>
+          {openSections.price && (
+            <div className="category-sidebar__filter-content">
+              <PriceRangeSlider
+                min={categoryMinPrice}
+                max={categoryMaxPrice}
+                minValue={priceMin}
+                maxValue={priceMax}
+                onApply={applyPrice}
+                isPending={isPending}
+              />
             </div>
-          ) : null}
-
-          <div className="category-sidebar__widget">
-            <h3 className="category-sidebar__title">קטגוריות</h3>
-            <ul className="category-sidebar__list">
-              {categories.map((cat) => (
-                <li key={cat.slug}>
-                  <Link
-                    href={`/category/${cat.slug}`}
-                    className={cat.slug === currentSlug ? 'is-current' : undefined}
-                  >
-                    {cat.name_he}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="category-sidebar__widget">
-            <h3 className="category-sidebar__title">סוג מוצר</h3>
-            <ul className="category-sidebar__list">
-              {TYPE_OPTIONS.map((option) => (
-                <li key={option.label}>
-                  <button
-                    type="button"
-                    className={`category-sidebar__filter-btn${
-                      productType === option.value ? ' is-current' : ''
-                    }`}
-                    onClick={() => applyType(option.value)}
-                    disabled={isPending}
-                    aria-pressed={productType === option.value}
-                  >
-                    {option.label}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="category-sidebar__widget">
-            <h3 className="category-sidebar__title">סינון לפי מחיר</h3>
-            <form className="category-sidebar__price-form" onSubmit={applyPrice}>
-              <div className="category-sidebar__price-row">
-                <label className="sr-only" htmlFor="price-min">
-                  מחיר מינימלי
-                </label>
-                <input
-                  id="price-min"
-                  className="category-sidebar__price-input"
-                  type="number"
-                  inputMode="numeric"
-                  min={0}
-                  placeholder="מ- ₪"
-                  value={min}
-                  onChange={(e) => setMin(e.target.value)}
-                />
-                <label className="sr-only" htmlFor="price-max">
-                  מחיר מקסימלי
-                </label>
-                <input
-                  id="price-max"
-                  className="category-sidebar__price-input"
-                  type="number"
-                  inputMode="numeric"
-                  min={0}
-                  placeholder="עד ₪"
-                  value={max}
-                  onChange={(e) => setMax(e.target.value)}
-                />
-              </div>
-              <button type="submit" className="category-sidebar__price-btn" disabled={isPending}>
-                סינון
-              </button>
-            </form>
-          </div>
+          )}
         </div>
-      </details>
+
+        {/* Suppliers filter */}
+        {hasSuppliers && (
+          <div className="category-sidebar__filter-section">
+            <button
+              type="button"
+              className={`category-sidebar__filter-header ${openSections.suppliers ? 'is-open' : ''}`}
+              onClick={() => toggleSection('suppliers')}
+              aria-expanded={openSections.suppliers}
+            >
+              <span className="category-sidebar__filter-title">ספקים</span>
+              <span className="category-sidebar__filter-icon">▼</span>
+            </button>
+            {openSections.suppliers && (
+              <div className="category-sidebar__filter-content">
+                <ul className="category-sidebar__suppliers-list">
+                  {suppliers.map((supplier) => (
+                    <li key={supplier.supplier_id} className="category-sidebar__supplier-item">
+                      <button
+                        type="button"
+                        className="category-sidebar__supplier-filter-btn"
+                        onClick={() => {
+                          const params = new URLSearchParams(searchParams)
+                          params.set('supplier', supplier.supplier_id)
+                          params.delete('page')
+                          const qs = params.toString()
+                          startTransition(() => {
+                            router.push(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
+                          })
+                        }}
+                        disabled={isPending}
+                      >
+                        <span className="category-sidebar__supplier-name">
+                          {supplier.supplier_name_he}
+                        </span>
+                      </button>
+                      <span className="category-sidebar__supplier-badge">
+                        {supplier.product_count}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Tags filter */}
+        {hasTags && (
+          <div className="category-sidebar__filter-section">
+            <button
+              type="button"
+              className={`category-sidebar__filter-header ${openSections.tags ? 'is-open' : ''}`}
+              onClick={() => toggleSection('tags')}
+              aria-expanded={openSections.tags}
+            >
+              <span className="category-sidebar__filter-title">תגיות</span>
+              <span className="category-sidebar__filter-icon">▼</span>
+            </button>
+            {openSections.tags && (
+              <div className="category-sidebar__filter-content">
+                <div className="category-sidebar__tags-cloud">
+                  {tags.map((tag) => (
+                    <button
+                      key={tag.tag}
+                      type="button"
+                      className="category-sidebar__tag-chip"
+                      title={`${tag.product_count} מוצרים`}
+                      onClick={() => {
+                        const params = new URLSearchParams(searchParams)
+                        params.set('tag', tag.tag)
+                        params.delete('page')
+                        const qs = params.toString()
+                        startTransition(() => {
+                          router.push(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
+                        })
+                      }}
+                      disabled={isPending}
+                    >
+                      {tag.tag}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </aside>
   )
 }

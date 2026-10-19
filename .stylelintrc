@@ -1,0 +1,22 @@
+{
+  "extends": ["stylelint-config-standard"],
+  "rules": {
+    "color-no-hex": [
+      true,
+      {
+        "severity": "error"
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": [
+        "packages/design-tokens/**/*.css",
+        "src/styles/tokens.css"
+      ],
+      "rules": {
+        "color-no-hex": null
+      }
+    }
+  ]
+}

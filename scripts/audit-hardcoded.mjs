@@ -7,6 +7,7 @@
 import { mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
 import { dirname, extname, join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { blankCommentLines, hasBlockComments } from '../src/lib/source-scan/strip-comments.mjs'
 
 const __filename = fileURLToPath(import.meta.url)
 const REPO_ROOT = join(dirname(__filename), '..')
@@ -53,14 +54,16 @@ function suggestPx(value) {
   return PX_TOKENS[key] || NONE
 }
 
-// Returns true when the line is a trivial full-line comment (JS // or CSS /* */ only).
-function isTrivialComment(line) {
-  const t = line.trim()
-  if (t.startsWith('//')) return true
-  if (t.startsWith('*')) return true // JSDoc continuation
-  if (t.startsWith('/*') && t.endsWith('*/')) return true
-  return false
-}
+/**
+ * Comment text removed, LINE NUMBERING KEPT, because this gate prints file:line.
+ *
+ * Was a per-line classifier, which cannot see that a line sits inside a block
+ * that opened earlier: a literal on a continuation line not beginning with a
+ * star was reported as hardcoded code. Shared with every other scanner here,
+ * after eight guards had each matched their own prose - see the module header.
+ */
+const scannableLines = (file, content) =>
+  blankCommentLines(content.split(/\r?\n/).join('\n'), { block: hasBlockComments(file) })
 
 function walk(dir, files) {
   let entries
@@ -117,10 +120,9 @@ for (const file of files) {
     continue
   }
   const rel = relative(REPO_ROOT, file)
-  const lines = content.split(/\r?\n/)
+  const lines = scannableLines(file, content)
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i]
-    if (isTrivialComment(line)) continue
     const lineNo = i + 1
 
     for (const value of collectMatches(HEX_RE, line)) {
