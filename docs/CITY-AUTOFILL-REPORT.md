@@ -1,15 +1,15 @@
 # City Auto-Fill Report
 
-**Generated:** 19.10.2026, 15:27:21
+**Generated:** 19.10.2026, 15:28:54
+**Products Processed:** 16
 
 ## Summary
 
-- **Total Products Processed:** 16
-- **Cities Updated:** 0
-- **Products Set to National Shipping:** 16
+- Total Products Processed: 16
+- Cities Updated: 0
+- Products Set to National Shipping: 0
 
-## Before/After for Each Product
-
+## Before/After Details
 
 ### כרטיס לפארק מים
 
@@ -17,13 +17,15 @@
 
 **Before:**
 - city: (null)
+- is_physical_shipping: false
 
 **After:**
 - city: (null)
-- is_physical_shipping: true
+- is_physical_shipping: false
+
+**Action:** none
 
 ---
-
 
 ### סדנת בישול איטלקי
 
@@ -31,13 +33,15 @@
 
 **Before:**
 - city: (null)
+- is_physical_shipping: false
 
 **After:**
 - city: (null)
-- is_physical_shipping: true
+- is_physical_shipping: false
+
+**Action:** none
 
 ---
-
 
 ### יום כיף בספא
 
@@ -45,13 +49,15 @@
 
 **Before:**
 - city: (null)
+- is_physical_shipping: false
 
 **After:**
 - city: (null)
-- is_physical_shipping: true
+- is_physical_shipping: false
+
+**Action:** none
 
 ---
-
 
 ### טעימות יין מודרך
 
@@ -59,13 +65,15 @@
 
 **Before:**
 - city: (null)
+- is_physical_shipping: false
 
 **After:**
 - city: (null)
-- is_physical_shipping: true
+- is_physical_shipping: false
+
+**Action:** none
 
 ---
-
 
 ### שובר לחנות אופנה
 
@@ -73,13 +81,15 @@
 
 **Before:**
 - city: (null)
+- is_physical_shipping: false
 
 **After:**
 - city: (null)
-- is_physical_shipping: true
+- is_physical_shipping: false
+
+**Action:** none
 
 ---
-
 
 ### כרטיס לסרט + פופקורן
 
@@ -87,13 +97,15 @@
 
 **Before:**
 - city: (null)
+- is_physical_shipping: false
 
 **After:**
 - city: (null)
-- is_physical_shipping: true
+- is_physical_shipping: false
+
+**Action:** none
 
 ---
-
 
 ### טיפול רפלקסולוגיה
 
@@ -101,13 +113,15 @@
 
 **Before:**
 - city: (null)
+- is_physical_shipping: false
 
 **After:**
 - city: (null)
-- is_physical_shipping: true
+- is_physical_shipping: false
+
+**Action:** none
 
 ---
-
 
 ### ארוחה טבעונית
 
@@ -115,13 +129,15 @@
 
 **Before:**
 - city: (null)
+- is_physical_shipping: false
 
 **After:**
 - city: (null)
-- is_physical_shipping: true
+- is_physical_shipping: false
+
+**Action:** none
 
 ---
-
 
 ### ארוחת שף זוגית
 
@@ -129,13 +145,15 @@
 
 **Before:**
 - city: (null)
+- is_physical_shipping: false
 
 **After:**
 - city: (null)
-- is_physical_shipping: true
+- is_physical_shipping: false
+
+**Action:** none
 
 ---
-
 
 ### עיסוי שוודי 60 דקות
 
@@ -143,13 +161,15 @@
 
 **Before:**
 - city: (null)
+- is_physical_shipping: false
 
 **After:**
 - city: (null)
-- is_physical_shipping: true
+- is_physical_shipping: false
+
+**Action:** none
 
 ---
-
 
 ### טיפול פנים יוקרתי
 
@@ -157,13 +177,15 @@
 
 **Before:**
 - city: (null)
+- is_physical_shipping: false
 
 **After:**
 - city: (null)
-- is_physical_shipping: true
+- is_physical_shipping: false
+
+**Action:** none
 
 ---
-
 
 ### ארוחת בוקר בופה
 
@@ -171,13 +193,15 @@
 
 **Before:**
 - city: (null)
+- is_physical_shipping: false
 
 **After:**
 - city: (null)
-- is_physical_shipping: true
+- is_physical_shipping: false
+
+**Action:** none
 
 ---
-
 
 ### חבילת פינוק לזוג
 
@@ -185,13 +209,15 @@
 
 **Before:**
 - city: (null)
+- is_physical_shipping: false
 
 **After:**
 - city: (null)
-- is_physical_shipping: true
+- is_physical_shipping: false
+
+**Action:** none
 
 ---
-
 
 ### שיעור יוגה פרטי
 
@@ -199,13 +225,15 @@
 
 **Before:**
 - city: (null)
+- is_physical_shipping: false
 
 **After:**
 - city: (null)
-- is_physical_shipping: true
+- is_physical_shipping: false
+
+**Action:** none
 
 ---
-
 
 ### שובר למספרה
 
@@ -213,13 +241,15 @@
 
 **Before:**
 - city: (null)
+- is_physical_shipping: false
 
 **After:**
 - city: (null)
-- is_physical_shipping: true
+- is_physical_shipping: false
+
+**Action:** none
 
 ---
-
 
 ### קופון בדיקות אוטומטיות
 
@@ -227,10 +257,13 @@
 
 **Before:**
 - city: (null)
+- is_physical_shipping: false
 
 **After:**
 - city: (null)
-- is_physical_shipping: true
+- is_physical_shipping: false
+
+**Action:** none
 
 ---
 
