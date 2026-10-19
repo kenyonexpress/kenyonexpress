@@ -1,113 +1,210 @@
-# UX39: Icon System with Lucide React
+# Icon System Documentation
 
 ## Overview
 
-The Icon system provides a consistent, themeable wrapper around Lucide React icons with design token integration for size and color variants.
+The KenyonExpress icon system provides a consistent, accessible way to use icons throughout the application. It's built on:
 
-## Components
-
-### Icon Component (`src/components/ui/icon.tsx`)
-
-A React forwardRef component that wraps Lucide React icons with design tokens.
-
-**Props:**
-- `as`: The Lucide icon component to render (required for icon to display)
-- `size`: Icon size token - `'xs' | 'sm' | 'md' | 'lg' | 'xl'` (default: `'md'`)
-- `variant`: Color variant - `'default' | 'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'info' | 'muted'` (default: `'default'`)
-- `className`: Additional CSS classes
-- `title`: Tooltip text (accessibility)
-- `aria-label`: Aria label for screen readers
-- `role`: ARIA role attribute
-- `data-testid`: Test ID for testing
+- **Lucide React** - A modern icon library with 300+ icons
+- **Custom size tokens** - 5 predefined sizes (xs, sm, md, lg, xl)
+- **Color variants** - 8 semantic color variants for different UI states
+- **Accessibility** - Full support for ARIA labels and semantic HTML
 
 ## Size Tokens
 
-Icons use consistent pixel sizes:
-- `xs`: 16px
-- `sm`: 20px
-- `md`: 24px (default)
-- `lg`: 32px
-- `xl`: 48px
+The icon system defines 5 consistent size tokens:
+
+| Token | Size | Use Case |
+|-------|------|----------|
+| `xs` | 16px | Inline badges, small UI elements, decorative icons |
+| `sm` | 20px | Form inputs, navigation icons, action buttons |
+| `md` | 24px | Default size for most UI components (default) |
+| `lg` | 32px | Emphasis, prominent buttons, section headers |
+| `xl` | 48px | Hero sections, large displays, featured content |
 
 ## Color Variants
 
-All variants use CSS variables from the design system:
-- `default`: currentColor (inherits text color)
-- `primary`: `--electro-yellow-primary` (yellow brand color)
-- `secondary`: `--electro-gray-medium` (medium gray)
-- `danger`: `--electro-error` (red for errors/warnings)
-- `success`: `--electro-success` (green for success)
-- `warning`: `--electro-warning` (orange for warnings)
-- `info`: `--electro-info` (blue for information)
-- `muted`: `--electro-text-tertiary` (subtle gray text)
+The icon system provides 8 semantic color variants:
 
-## Usage Examples
+| Variant | Color Variable | Use Case |
+|---------|----------------|----------|
+| `default` | `currentColor` | Inherits text color for flexible styling |
+| `primary` | `--electro-yellow-primary` | Primary actions, brand highlighting |
+| `secondary` | `--electro-gray-medium` | Secondary actions, neutral elements |
+| `danger` | `--electro-error` | Destructive actions, errors, alerts |
+| `success` | `--electro-success` | Completed states, confirmations |
+| `warning` | `--electro-warning` | Warning states, cautions |
+| `info` | `--electro-info` | Informational content, help |
+| `muted` | `--electro-text-tertiary` | Disabled states, de-emphasized content |
+
+## Installation
+
+The Icon component is already installed and ready to use:
+
+```bash
+npm list lucide-react
+# or
+pnpm list lucide-react
+```
+
+## Usage
+
+### Basic Usage
 
 ```tsx
 import { Icon } from '@/components/ui/icon'
-import { Check, AlertCircle, Search } from 'lucide-react'
+import { Search } from 'lucide-react'
 
-// Basic usage
-<Icon as={Search} />
-
-// With size
-<Icon as={Check} size="lg" />
-
-// With color variant
-<Icon as={AlertCircle} variant="danger" size="md" />
-
-// With accessibility
-<Icon as={Search} title="Search items" aria-label="Search" />
-
-// With custom className
-<Icon as={Check} variant="success" className="animate-spin" />
+export function SearchIcon() {
+  return <Icon as={Search} />
+}
 ```
 
-## Design System Integration
+### With Size Token
 
-All color variants use CSS variables from `packages/design-tokens/electro.css`, ensuring consistency across the design system and automatic support for:
-- Dark mode transitions
-- Brand color changes
-- Semantic color updates
+```tsx
+<Icon as={Search} size="lg" />
+```
+
+### With Color Variant
+
+```tsx
+<Icon as={Check} variant="success" />
+```
+
+### Combined Size and Variant
+
+```tsx
+<Icon as={ShoppingCart} size="md" variant="primary" />
+```
+
+## Accessibility
+
+### ARIA Labels
+
+Always provide `aria-label` when icons are meaningful to users:
+
+```tsx
+<Icon 
+  as={Heart} 
+  size="md"
+  aria-label="Add to favorites"
+/>
+```
+
+### Title Attribute
+
+Use `title` for tooltip text:
+
+```tsx
+<Icon 
+  as={Download} 
+  title="Download invoice"
+/>
+```
+
+### Combined Accessibility
+
+```tsx
+<Icon 
+  as={AlertCircle}
+  size="lg"
+  variant="danger"
+  aria-label="Error: Invalid input"
+  title="Invalid email address"
+  role="img"
+/>
+```
+
+## Component Props
+
+```typescript
+type IconSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl'
+type IconVariant = 
+  | 'default' 
+  | 'primary' 
+  | 'secondary' 
+  | 'danger' 
+  | 'success' 
+  | 'warning' 
+  | 'info' 
+  | 'muted'
+
+interface IconProps {
+  as?: LucideIcon                    // Icon component from lucide-react
+  size?: IconSize                    // Size token (default: 'md')
+  variant?: IconVariant              // Color variant (default: 'default')
+  className?: string                 // Custom CSS classes
+  title?: string                     // Tooltip text
+  'aria-label'?: string             // Accessibility label
+  role?: React.AriaRole             // ARIA role
+  'data-testid'?: string            // Testing attribute
+  // ... plus all standard SVG attributes
+}
+```
+
+## Real-World Examples
+
+### Button with Icon
+
+```tsx
+import { Icon } from '@/components/ui/icon'
+import { ShoppingCart } from 'lucide-react'
+
+export function AddToCartButton() {
+  return (
+    <button className="bg-primary text-white px-4 py-2 rounded flex items-center gap-2">
+      <Icon as={ShoppingCart} size="sm" className="text-white" />
+      Add to Cart
+    </button>
+  )
+}
+```
+
+### Icon Status Indicator
+
+```tsx
+export function OrderStatus({ status }: { status: 'pending' | 'confirmed' | 'shipped' | 'error' }) {
+  const variants = {
+    pending: 'warning',
+    confirmed: 'success',
+    shipped: 'info',
+    error: 'danger',
+  } as const
+  
+  return (
+    <Icon 
+      as={statusIcon[status]} 
+      size="lg"
+      variant={variants[status]}
+    />
+  )
+}
+```
 
 ## Testing
 
-Comprehensive test suite in `src/components/ui/icon.test.tsx` covers:
-- All size tokens (xs, sm, md, lg, xl)
-- All color variants (default, primary, secondary, danger, success, warning, info, muted)
-- Size + variant combinations
-- Accessibility attributes (title, aria-label)
-- Ref forwarding
-- Custom className support
-- All Lucide icon types
-- HTML attributes pass-through
+The Icon component includes comprehensive test coverage:
 
-**Run tests:**
 ```bash
 pnpm test src/components/ui/icon.test.tsx
 ```
 
+Tests cover:
+- All size tokens (xs, sm, md, lg, xl)
+- All color variants (default, primary, secondary, danger, success, warning, info, muted)
+- Size and variant combinations
+- Accessibility features (aria-label, title)
+- Ref forwarding
+- Custom className support
+
+## Demo Page
+
+View all icons and variants at `/test-icons` (development only, not indexed)
+
 ## Browser Support
 
-The Icon component supports all browsers that Lucide React supports:
-- Chrome/Edge (latest)
-- Firefox (latest)
-- Safari (latest)
-- Mobile browsers
-
-## Accessibility
-
-The Icon component is:
-- Accessible with optional `aria-label` for screen readers
-- Supports `title` attribute for tooltips
-- Properly handles `role` attribute
-- Inherits text color by default for semantic color meaning
-- Supports all Lucide icon styles
-
-## Future Enhancements
-
-Potential improvements:
-- Icon button wrapper component with built-in size/variant handling
-- Icon library presets for common use cases
-- Animation variants (spin, pulse, bounce)
-- Advanced customization via CSS variable overrides
+The Icon component supports all modern browsers that support:
+- ES2020+
+- CSS Custom Properties (CSS Variables)
+- SVG rendering
+- React 19+

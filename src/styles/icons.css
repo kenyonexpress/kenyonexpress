@@ -1,0 +1,132 @@
+/* Icon System Styles */
+
+/* Base icon styling */
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Size utility classes */
+.icon-xs {
+  width: 16px;
+  height: 16px;
+}
+
+.icon-sm {
+  width: 20px;
+  height: 20px;
+}
+
+.icon-md {
+  width: 24px;
+  height: 24px;
+}
+
+.icon-lg {
+  width: 32px;
+  height: 32px;
+}
+
+.icon-xl {
+  width: 48px;
+  height: 48px;
+}
+
+/* Color variant utilities */
+.icon-default {
+  color: currentColor;
+}
+
+.icon-primary {
+  color: var(--electro-yellow-primary);
+}
+
+.icon-secondary {
+  color: var(--electro-gray-medium);
+}
+
+.icon-danger {
+  color: var(--electro-error);
+}
+
+.icon-success {
+  color: var(--electro-success);
+}
+
+.icon-warning {
+  color: var(--electro-warning);
+}
+
+.icon-info {
+  color: var(--electro-info);
+}
+
+.icon-muted {
+  color: var(--electro-text-tertiary);
+}
+
+/* Icon container with padding for touch targets */
+.icon-button {
+  padding: 0.5rem;
+  border-radius: var(--radius-sm);
+  transition: background-color 0.2s ease, color 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-button:hover {
+  background-color: var(--color-surface-hover);
+}
+
+.icon-button:active {
+  background-color: var(--color-surface);
+}
+
+/* Animated icon states */
+.icon-spin {
+  animation: spin 1s linear infinite;
+}
+
+.icon-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Badge with icon */
+.icon-badge {
+  position: relative;
+  display: inline-flex;
+}
+
+.icon-badge::after {
+  content: "";
+  position: absolute;
+  top: -0.25rem;
+  right: -0.25rem;
+  width: 0.75rem;
+  height: 0.75rem;
+  background-color: var(--electro-error);
+  border-radius: 50%;
+  border: 2px solid white;
+}
