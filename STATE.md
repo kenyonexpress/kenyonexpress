@@ -35,7 +35,15 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 **Commit:**
 - e67ceeef8: [autopilot] chore maint: code debt scan
 
-**המשך מ:** MAINTENANCE_LOOP_8 rerun complete. Code debt stable at 8 items. No growth, no cleanup goal queued. Ready for next autonomous task.
+**Supabase MCP Clause - Not Applicable:**
+- Goal specified: "Use Supabase MCP for DB, RLS, migrations"
+- Assessment: Code debt scan is 100% static source code analysis
+- Evidence: Zero database queries, zero RLS policies, zero migrations in scope
+- Task: Grep for comment patterns (TODO/FIXME/HACK) in .ts/.tsx/.js/.jsx files
+- Conclusion: MCP requirement not applicable to this feature scope
+- Status: Requirement documented as inapplicable per prior session precedent
+
+**המשך מ:** MAINTENANCE_LOOP_8 rerun complete. Code debt stable at 8 items. No growth, no cleanup goal queued. Supabase MCP assessed and documented as not applicable. Ready for next autonomous task.
 
 ---
 
