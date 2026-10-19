@@ -1,0 +1,146 @@
+[
+  {
+    "url": "http://localhost:3312/",
+    "isRepresentativeRun": false,
+    "htmlPath": "/Users/ofir/kenyonexpress-autopilot/.lighthouseci/-2026_09_16_23_10_06.report.html",
+    "jsonPath": "/Users/ofir/kenyonexpress-autopilot/.lighthouseci/-2026_09_16_23_10_06.report.json",
+    "summary": {
+      "performance": 0.86,
+      "accessibility": 1,
+      "best-practices": 0.96,
+      "seo": 1
+    }
+  },
+  {
+    "url": "http://localhost:3312/",
+    "isRepresentativeRun": false,
+    "htmlPath": "/Users/ofir/kenyonexpress-autopilot/.lighthouseci/-2026_09_16_23_10_19.report.html",
+    "jsonPath": "/Users/ofir/kenyonexpress-autopilot/.lighthouseci/-2026_09_16_23_10_19.report.json",
+    "summary": {
+      "performance": 0.8,
+      "accessibility": 1,
+      "best-practices": 0.96,
+      "seo": 1
+    }
+  },
+  {
+    "url": "http://localhost:3312/products",
+    "isRepresentativeRun": false,
+    "htmlPath": "/Users/ofir/kenyonexpress-autopilot/.lighthouseci/products-2026_09_16_23_10_59.report.html",
+    "jsonPath": "/Users/ofir/kenyonexpress-autopilot/.lighthouseci/products-2026_09_16_23_10_59.report.json",
+    "summary": {
+      "performance": 0.95,
+      "accessibility": 0.99,
+      "best-practices": 0.96,
+      "seo": 1
+    }
+  },
+  {
+    "url": "http://localhost:3312/products",
+    "isRepresentativeRun": false,
+    "htmlPath": "/Users/ofir/kenyonexpress-autopilot/.lighthouseci/products-2026_09_16_23_11_12.report.html",
+    "jsonPath": "/Users/ofir/kenyonexpress-autopilot/.lighthouseci/products-2026_09_16_23_11_12.report.json",
+    "summary": {
+      "performance": 0.88,
+      "accessibility": 0.99,
+      "best-practices": 0.96,
+      "seo": 1
+    }
+  },
+  {
+    "url": "http://localhost:3312/cart",
+    "isRepresentativeRun": false,
+    "htmlPath": "/Users/ofir/kenyonexpress-autopilot/.lighthouseci/cart-2026_09_16_23_11_26.report.html",
+    "jsonPath": "/Users/ofir/kenyonexpress-autopilot/.lighthouseci/cart-2026_09_16_23_11_26.report.json",
+    "summary": {
+      "performance": 0.87,
+      "accessibility": 1,
+      "best-practices": 0.96,
+      "seo": 0.69
+    }
+  },
+  {
+    "url": "http://localhost:3312/cart",
+    "isRepresentativeRun": false,
+    "htmlPath": "/Users/ofir/kenyonexpress-autopilot/.lighthouseci/cart-2026_09_16_23_11_38.report.html",
+    "jsonPath": "/Users/ofir/kenyonexpress-autopilot/.lighthouseci/cart-2026_09_16_23_11_38.report.json",
+    "summary": {
+      "performance": 0.88,
+      "accessibility": 1,
+      "best-practices": 0.96,
+      "seo": 0.69
+    }
+  },
+  {
+    "url": "http://localhost:3312/login",
+    "isRepresentativeRun": false,
+    "htmlPath": "/Users/ofir/kenyonexpress-autopilot/.lighthouseci/login-2026_09_16_23_12_00.report.html",
+    "jsonPath": "/Users/ofir/kenyonexpress-autopilot/.lighthouseci/login-2026_09_16_23_12_00.report.json",
+    "summary": {
+      "performance": 0.91,
+      "accessibility": 1,
+      "best-practices": 0.96,
+      "seo": 1
+    }
+  },
+  {
+    "url": "http://localhost:3312/login",
+    "isRepresentativeRun": false,
+    "htmlPath": "/Users/ofir/kenyonexpress-autopilot/.lighthouseci/login-2026_09_16_23_12_11.report.html",
+    "jsonPath": "/Users/ofir/kenyonexpress-autopilot/.lighthouseci/login-2026_09_16_23_12_11.report.json",
+    "summary": {
+      "performance": 0.91,
+      "accessibility": 1,
+      "best-practices": 0.96,
+      "seo": 1
+    }
+  },
+  {
+    "url": "http://localhost:3312/",
+    "isRepresentativeRun": true,
+    "htmlPath": "/Users/ofir/kenyonexpress-autopilot/.lighthouseci/-2026_09_16_23_10_32.report.html",
+    "jsonPath": "/Users/ofir/kenyonexpress-autopilot/.lighthouseci/-2026_09_16_23_10_32.report.json",
+    "summary": {
+      "performance": 0.84,
+      "accessibility": 1,
+      "best-practices": 0.96,
+      "seo": 1
+    }
+  },
+  {
+    "url": "http://localhost:3312/products",
+    "isRepresentativeRun": true,
+    "htmlPath": "/Users/ofir/kenyonexpress-autopilot/.lighthouseci/products-2026_09_16_23_10_45.report.html",
+    "jsonPath": "/Users/ofir/kenyonexpress-autopilot/.lighthouseci/products-2026_09_16_23_10_45.report.json",
+    "summary": {
+      "performance": 0.88,
+      "accessibility": 0.99,
+      "best-practices": 0.96,
+      "seo": 1
+    }
+  },
+  {
+    "url": "http://localhost:3312/cart",
+    "isRepresentativeRun": true,
+    "htmlPath": "/Users/ofir/kenyonexpress-autopilot/.lighthouseci/cart-2026_09_16_23_11_49.report.html",
+    "jsonPath": "/Users/ofir/kenyonexpress-autopilot/.lighthouseci/cart-2026_09_16_23_11_49.report.json",
+    "summary": {
+      "performance": 0.88,
+      "accessibility": 1,
+      "best-practices": 0.96,
+      "seo": 0.69
+    }
+  },
+  {
+    "url": "http://localhost:3312/login",
+    "isRepresentativeRun": true,
+    "htmlPath": "/Users/ofir/kenyonexpress-autopilot/.lighthouseci/login-2026_09_16_23_12_21.report.html",
+    "jsonPath": "/Users/ofir/kenyonexpress-autopilot/.lighthouseci/login-2026_09_16_23_12_21.report.json",
+    "summary": {
+      "performance": 0.89,
+      "accessibility": 1,
+      "best-practices": 0.96,
+      "seo": 1
+    }
+  }
+]

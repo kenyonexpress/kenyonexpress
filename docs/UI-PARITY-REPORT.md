@@ -83,3 +83,8 @@ the tree had uncommitted changes when it was measured.
 | 2026-09-16 13:47 | home | 380 | 47.84% | **FAIL** | `bfd12b3d6-dirty` | HOME-PAGE: handheld header 84->50, feature strip one nowrap row below lg, shot with consent decided; mine vs 09-04 archived live capture (ke-arch/refs) |
 | 2026-09-16 13:49 | home | 768 | 48.65% | **FAIL** | `bfd12b3d6-dirty` | HOME-PAGE: handheld header 84->50, feature strip one nowrap row below lg, shot with consent decided; mine vs 09-04 archived live capture (ke-arch/refs) |
 | 2026-09-16 13:50 | home | 1440 | 45.83% | **FAIL** | `bfd12b3d6-dirty` | HOME-PAGE: handheld header 84->50, feature strip one nowrap row below lg, shot with consent decided; mine vs 09-04 archived live capture (ke-arch/refs) |
+| 2026-10-19 07:17 | home | 380 | n/a | REFUSED | `55724e56d-dirty` | live side is our-build |
+| 2026-10-19 07:20 | home | 380 | 37.74% | **FAIL** | `55724e56d-dirty` |  |
+| 2026-10-19 07:24 | home | 380 | 37.74% | **FAIL** | `55724e56d-dirty` |  |
+| 2026-10-19 07:27 | home | 380 | 37.74% | **FAIL** | `55724e56d-dirty` |  |
+| 2026-10-19 07:29 | home | 380 | 35.96% | **FAIL** | `55724e56d-dirty` |  |
