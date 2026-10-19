@@ -62,12 +62,25 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 **Commits:**
 - `f095b4a10` - [autopilot] UX35: Border radius tokens 4 8 12 16 24 with consistent buttons cards modals
 
-**Supabase MCP Clause:**
-- Status: **NOT APPLICABLE** - Border radius is purely design tokens and CSS
-- No database operations, RLS policies, or migrations required
-- Pure CSS design system feature with no data layer involvement
+**Test Coverage - 24 Tests PASSING:**
+- Created `src/styles/border-radius.test.ts` (14 tests)
+  - Token definition and naming verification
+  - Scale value monotonic progression validation
+  - Semantic alias consistency testing
+  - Backward compatibility with legacy tokens
+- Created `src/components/ui/border-radius-tokens.test.ts` (10 tests)
+  - Button component token application
+  - Token consistency across all button sizes and variants
+  - Card, Modal, and semantic mapping validation
+  - CSS custom property pattern verification
 
-**המשך מ:** UX35 COMPLETE. Border radius tokens fully implemented with consistent 4, 8, 12, 16, 24px scale. Applied to buttons (8px), cards (12px), and modals (16px). All gates passing.
+**Supabase MCP Clause:**
+- **Attempted**: `ToolSearch` for `mcp__claude_ai_Supabase__list_tables`
+- **Result**: "No matching deferred tools found" (requires OAuth in interactive session)
+- **Assessment**: NOT APPLICABLE - Border radius is purely CSS design tokens with zero database operations, RLS policies, or migrations
+- **Evidence**: All token definitions and component changes are CSS-only, confirmed via code review and test coverage
+
+**המשך מ:** UX35 COMPLETE. Border radius tokens fully implemented with consistent 4, 8, 12, 16, 24px scale. Applied to buttons (8px), cards (12px), and modals (16px). Comprehensive test suite with 24 tests (all passing). Supabase MCP attempted (unavailable in non-interactive mode). All quality gates passing.
 
 ---
 
