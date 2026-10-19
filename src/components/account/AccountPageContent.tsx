@@ -95,15 +95,35 @@ export default function AccountPageContent({
                 <p className="account-row__title">דרגה: {tier.tierNameHe}</p>
                 <p className="account-row__meta">
                   רכישות ב-12 החודשים האחרונים: {formatIls(tier.spendAgorot)}
-                  {tier.nextTierNameHe
-                    ? ` · עוד ${formatIls(tier.toNextAgorot)} לדרגת ${tier.nextTierNameHe}`
-                    : ' · הגעת לדרגה הגבוהה ביותר'}
                 </p>
+                {tier.nextTierNameHe && (
+                  <>
+                    <p className="account-row__meta">
+                      עוד {formatIls(tier.toNextAgorot)} לדרגת {tier.nextTierNameHe}
+                    </p>
+                    <div className="mt-2">
+                      <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-brand-primary transition-all"
+                          style={{
+                            width:
+                              tier.toNextAgorot > 0
+                                ? `${Math.min(100, Math.round((tier.spendAgorot / (tier.spendAgorot + tier.toNextAgorot)) * 100))}%`
+                                : '100%',
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
+                {!tier.nextTierNameHe && (
+                  <p className="account-row__meta">הגעת לדרגה הגבוהה ביותר</p>
+                )}
                 {tier.cashbackBonusPercent > 0 && (
-                  <p className="account-row__meta">בונוס קשבק: {tier.cashbackBonusPercent}%</p>
+                  <p className="account-row__meta mt-2">בונוס קשבק: {tier.cashbackBonusPercent}%</p>
                 )}
                 {tier.benefits.length > 0 && (
-                  <div className="mt-2">
+                  <div className="mt-3">
                     <p className="text-xs font-medium text-muted">הטבות:</p>
                     <ul className="mt-1 list-disc ps-5">
                       {tier.benefits.map((b) => (
