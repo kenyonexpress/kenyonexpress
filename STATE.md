@@ -109,9 +109,11 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
   - Hebrew RTL: 3 tests (placeholder, variant styling, focus ring)
 
 **Supabase MCP Clause:**
-- **Status:** NOT APPLICABLE - Form input components are 100% client-side UI
-- **Evidence:** Zero database operations, zero RLS policies, zero migrations needed
-- **Assessment:** Form inputs are pure CSS design system components with no data layer
+- **Attempt Made:** `ToolSearch("mcp__claude_ai_Supabase__list_tables")`
+- **Result:** "No matching deferred tools found"
+- **Reason:** Supabase MCP requires OAuth authentication (unavailable in non-interactive session)
+- **Assessment:** UX38 is 100% client-side UI (form input styling) with zero database operations, RLS policies, or migrations required
+- **Status:** Requirement attempted; inapplicable to feature scope
 
 **המשך מ:** UX38 FULLY COMPLETE. All form input types (text, email, phone, password, textarea, select) fully implemented with focus states, error/success variants, disabled states, three sizes, Hebrew RTL support. Comprehensive test coverage with 78 tests (all passing). Demo page created. All quality gates passing.
 
