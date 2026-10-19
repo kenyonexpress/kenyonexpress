@@ -385,7 +385,7 @@ function DefaultProductCard({
               productId={product.id}
               productName={product.name_he}
               priceAgorot={Math.round(Number(product.kenyon_price ?? 0) * 100)}
-              className="tap-area rounded-sm bg-brand-primary px-space-md py-space-sm text-xs font-bold text-brand-dark hover:bg-brand-primary-hover transition-colors"
+              className="tap-area rounded-sm bg-brand-primary px-space-md py-space-md min-h-6 min-w-6 text-xs font-bold text-brand-dark hover:bg-brand-primary-hover transition-colors"
             >
               הוסף לסל
             </AddToCartButton>
