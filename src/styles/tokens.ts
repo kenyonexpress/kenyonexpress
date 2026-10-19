@@ -302,6 +302,92 @@ export function offPageRgb(hex: string): string {
 }
 
 /**
+ * Color palette shades for primary fed700 and semantic colors.
+ * Generated to provide comprehensive tints and shades for component theming.
+ * Each palette includes 11 shades from 50 (lightest) to 950 (darkest).
+ */
+export const COLOR_PALETTE = {
+  primary: {
+    50: '#fffbf0',
+    100: '#fffaf0',
+    200: '#ffef80',
+    300: '#ffe650',
+    400: '#fedd26',
+    500: '#fed700',
+    600: '#ffcc00',
+    700: '#f5b900',
+    800: '#daa500',
+    900: '#b8860b',
+    950: '#8b6600',
+  },
+  success: {
+    50: '#f0fdf4',
+    100: '#dcfce7',
+    200: '#bbf7d0',
+    300: '#86efac',
+    400: '#4ade80',
+    500: '#22c55e',
+    600: '#16a34a',
+    700: '#15803d',
+    800: '#166534',
+    900: '#145231',
+    950: '#0d3d1f',
+  },
+  error: {
+    50: '#fef2f2',
+    100: '#fee2e2',
+    200: '#fecaca',
+    300: '#fca5a5',
+    400: '#f87171',
+    500: '#ef4444',
+    600: '#dc2626',
+    700: '#b91c1c',
+    800: '#991b1b',
+    900: '#7f1d1d',
+    950: '#4c0519',
+  },
+  warning: {
+    50: '#fffbeb',
+    100: '#fef3c7',
+    200: '#fde68a',
+    300: '#fcd34d',
+    400: '#fbbf24',
+    500: '#f59e0b',
+    600: '#d97706',
+    700: '#b45309',
+    800: '#92400e',
+    900: '#78350f',
+    950: '#451a03',
+  },
+  info: {
+    50: '#eff6ff',
+    100: '#dbeafe',
+    200: '#bfdbfe',
+    300: '#93c5fd',
+    400: '#60a5fa',
+    500: '#3b82f6',
+    600: '#2563eb',
+    700: '#1d4ed8',
+    800: '#1e40af',
+    900: '#1e3a8a',
+    950: '#0c2340',
+  },
+  neutral: {
+    50: '#f9fafb',
+    100: '#f3f4f6',
+    200: '#e5e7eb',
+    300: '#d1d5db',
+    400: '#9ca3af',
+    500: '#6b7280',
+    600: '#4b5563',
+    700: '#374151',
+    800: '#1f2937',
+    900: '#111827',
+    950: '#030712',
+  },
+} as const
+
+/**
  * Every custom property `tokens.css` must declare in its `@theme` block, and
  * the value it must carry. `tokens.test.ts` asserts the stylesheet agrees with
  * this map, so a colour can only be changed here.
@@ -368,6 +454,84 @@ export const SITE_CSS_VARS: Record<string, string> = {
   '--color-payment-isracard': SITE.payment.isracard,
   '--color-payment-diners': SITE.payment.diners,
   '--color-payment-badge': SITE.payment.badge,
+
+  // Color palette shades - Primary (fed700)
+  '--color-primary-50': COLOR_PALETTE.primary[50],
+  '--color-primary-100': COLOR_PALETTE.primary[100],
+  '--color-primary-200': COLOR_PALETTE.primary[200],
+  '--color-primary-300': COLOR_PALETTE.primary[300],
+  '--color-primary-400': COLOR_PALETTE.primary[400],
+  '--color-primary-500': COLOR_PALETTE.primary[500],
+  '--color-primary-600': COLOR_PALETTE.primary[600],
+  '--color-primary-700': COLOR_PALETTE.primary[700],
+  '--color-primary-800': COLOR_PALETTE.primary[800],
+  '--color-primary-900': COLOR_PALETTE.primary[900],
+  '--color-primary-950': COLOR_PALETTE.primary[950],
+
+  // Color palette shades - Success
+  '--color-success-50': COLOR_PALETTE.success[50],
+  '--color-success-100': COLOR_PALETTE.success[100],
+  '--color-success-200': COLOR_PALETTE.success[200],
+  '--color-success-300': COLOR_PALETTE.success[300],
+  '--color-success-400': COLOR_PALETTE.success[400],
+  '--color-success-500': COLOR_PALETTE.success[500],
+  '--color-success-600': COLOR_PALETTE.success[600],
+  '--color-success-700': COLOR_PALETTE.success[700],
+  '--color-success-800': COLOR_PALETTE.success[800],
+  '--color-success-900': COLOR_PALETTE.success[900],
+  '--color-success-950': COLOR_PALETTE.success[950],
+
+  // Color palette shades - Error
+  '--color-error-50': COLOR_PALETTE.error[50],
+  '--color-error-100': COLOR_PALETTE.error[100],
+  '--color-error-200': COLOR_PALETTE.error[200],
+  '--color-error-300': COLOR_PALETTE.error[300],
+  '--color-error-400': COLOR_PALETTE.error[400],
+  '--color-error-500': COLOR_PALETTE.error[500],
+  '--color-error-600': COLOR_PALETTE.error[600],
+  '--color-error-700': COLOR_PALETTE.error[700],
+  '--color-error-800': COLOR_PALETTE.error[800],
+  '--color-error-900': COLOR_PALETTE.error[900],
+  '--color-error-950': COLOR_PALETTE.error[950],
+
+  // Color palette shades - Warning
+  '--color-warning-50': COLOR_PALETTE.warning[50],
+  '--color-warning-100': COLOR_PALETTE.warning[100],
+  '--color-warning-200': COLOR_PALETTE.warning[200],
+  '--color-warning-300': COLOR_PALETTE.warning[300],
+  '--color-warning-400': COLOR_PALETTE.warning[400],
+  '--color-warning-500': COLOR_PALETTE.warning[500],
+  '--color-warning-600': COLOR_PALETTE.warning[600],
+  '--color-warning-700': COLOR_PALETTE.warning[700],
+  '--color-warning-800': COLOR_PALETTE.warning[800],
+  '--color-warning-900': COLOR_PALETTE.warning[900],
+  '--color-warning-950': COLOR_PALETTE.warning[950],
+
+  // Color palette shades - Info
+  '--color-info-50': COLOR_PALETTE.info[50],
+  '--color-info-100': COLOR_PALETTE.info[100],
+  '--color-info-200': COLOR_PALETTE.info[200],
+  '--color-info-300': COLOR_PALETTE.info[300],
+  '--color-info-400': COLOR_PALETTE.info[400],
+  '--color-info-500': COLOR_PALETTE.info[500],
+  '--color-info-600': COLOR_PALETTE.info[600],
+  '--color-info-700': COLOR_PALETTE.info[700],
+  '--color-info-800': COLOR_PALETTE.info[800],
+  '--color-info-900': COLOR_PALETTE.info[900],
+  '--color-info-950': COLOR_PALETTE.info[950],
+
+  // Color palette shades - Neutral
+  '--color-neutral-50': COLOR_PALETTE.neutral[50],
+  '--color-neutral-100': COLOR_PALETTE.neutral[100],
+  '--color-neutral-200': COLOR_PALETTE.neutral[200],
+  '--color-neutral-300': COLOR_PALETTE.neutral[300],
+  '--color-neutral-400': COLOR_PALETTE.neutral[400],
+  '--color-neutral-500': COLOR_PALETTE.neutral[500],
+  '--color-neutral-600': COLOR_PALETTE.neutral[600],
+  '--color-neutral-700': COLOR_PALETTE.neutral[700],
+  '--color-neutral-800': COLOR_PALETTE.neutral[800],
+  '--color-neutral-900': COLOR_PALETTE.neutral[900],
+  '--color-neutral-950': COLOR_PALETTE.neutral[950],
 
   // Semantic + backward-compat aliases.
   '--color-background': SITE.surface.page,
