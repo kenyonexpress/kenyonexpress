@@ -47,11 +47,59 @@ describe('font-weight tokens', () => {
 })
 
 describe('typography scale', () => {
-  it('defines semantic typography combinations for consistent sizing', () => {
+  it('defines comprehensive semantic typography combinations for consistent sizing', () => {
+    // Headings (h1-h6)
     expect(TYPOGRAPHY_SCALE).toHaveProperty('h1')
     expect(TYPOGRAPHY_SCALE).toHaveProperty('h2')
+    expect(TYPOGRAPHY_SCALE).toHaveProperty('h3')
+    expect(TYPOGRAPHY_SCALE).toHaveProperty('h4')
+    expect(TYPOGRAPHY_SCALE).toHaveProperty('h5')
+    expect(TYPOGRAPHY_SCALE).toHaveProperty('h6')
+
+    // Subtitles
+    expect(TYPOGRAPHY_SCALE).toHaveProperty('subtitle')
+    expect(TYPOGRAPHY_SCALE).toHaveProperty('subtitleSmall')
+
+    // Body text variants
     expect(TYPOGRAPHY_SCALE).toHaveProperty('body')
+    expect(TYPOGRAPHY_SCALE).toHaveProperty('bodyBold')
+    expect(TYPOGRAPHY_SCALE).toHaveProperty('bodyMedium')
+    expect(TYPOGRAPHY_SCALE).toHaveProperty('bodyLight')
+
+    // Small text and captions
+    expect(TYPOGRAPHY_SCALE).toHaveProperty('small')
+    expect(TYPOGRAPHY_SCALE).toHaveProperty('smallBold')
+    expect(TYPOGRAPHY_SCALE).toHaveProperty('caption')
+    expect(TYPOGRAPHY_SCALE).toHaveProperty('captionSmall')
+
+    // Buttons
     expect(TYPOGRAPHY_SCALE).toHaveProperty('button')
+    expect(TYPOGRAPHY_SCALE).toHaveProperty('buttonSmall')
+    expect(TYPOGRAPHY_SCALE).toHaveProperty('buttonLarge')
+
+    // Navigation
+    expect(TYPOGRAPHY_SCALE).toHaveProperty('nav')
+    expect(TYPOGRAPHY_SCALE).toHaveProperty('navActive')
+    expect(TYPOGRAPHY_SCALE).toHaveProperty('navSmall')
+    expect(TYPOGRAPHY_SCALE).toHaveProperty('navSmallActive')
+
+    // Labels
+    expect(TYPOGRAPHY_SCALE).toHaveProperty('label')
+    expect(TYPOGRAPHY_SCALE).toHaveProperty('labelSmall')
+
+    // Product-specific
+    expect(TYPOGRAPHY_SCALE).toHaveProperty('productTitle')
+    expect(TYPOGRAPHY_SCALE).toHaveProperty('productPrice')
+    expect(TYPOGRAPHY_SCALE).toHaveProperty('productDescription')
+
+    // Footer
+    expect(TYPOGRAPHY_SCALE).toHaveProperty('footer')
+    expect(TYPOGRAPHY_SCALE).toHaveProperty('footerLink')
+    expect(TYPOGRAPHY_SCALE).toHaveProperty('footerHeading')
+
+    // Special text (overline, eyebrow)
+    expect(TYPOGRAPHY_SCALE).toHaveProperty('overline')
+    expect(TYPOGRAPHY_SCALE).toHaveProperty('eyebrow')
   })
 
   it('each typography entry has size, lineHeight, and weight', () => {
@@ -83,5 +131,23 @@ describe('typography scale', () => {
         `${name} uses invalid weight token: ${style.weight}`,
       ).toBe(true)
     }
+  })
+
+  it('uses all available Heebo font weights across the typography scale', () => {
+    const weights = new Set<string>()
+    for (const style of Object.values(TYPOGRAPHY_SCALE)) {
+      weights.add(style.weight)
+    }
+
+    // Verify that all available weights are used somewhere in the scale
+    expect(weights.has('--weight-light'), 'light weight (300) should be used somewhere').toBe(true)
+    expect(weights.has('--weight-regular'), 'regular weight (400) should be used somewhere').toBe(
+      true,
+    )
+    expect(weights.has('--weight-medium'), 'medium weight (500) should be used somewhere').toBe(
+      true,
+    )
+    expect(weights.has('--weight-bold'), 'bold weight (700) should be used somewhere').toBe(true)
+    expect(weights.has('--weight-black'), 'black weight (900) can be used optionally').toBe(true)
   })
 })

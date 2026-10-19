@@ -321,21 +321,63 @@ export const SITE_CSS_VARS: Record<string, string> = {
  * Each entry combines size (pixels), line-height (pixels), and weight token reference
  * for complete control over how text appears. Components use these instead of
  * combining separate size and weight tokens, ensuring consistency.
+ *
+ * Heebo font is available in weights: 300 (light), 400 (regular), 500 (medium),
+ * 700 (bold), 900 (black). These are referenced via --weight-* tokens.
  */
 export const TYPOGRAPHY_SCALE = {
   // Page headings and section titles
-  h1: { size: '39.998px', lineHeight: '47.9976px', weight: '--weight-medium' },
-  h2: { size: '25.004px', lineHeight: '40.0064px', weight: '--weight-medium' },
+  h1: { size: '39.998px', lineHeight: '47.9976px', weight: '--weight-black' },
+  h2: { size: '25.004px', lineHeight: '40.0064px', weight: '--weight-bold' },
+  h3: { size: '22px', lineHeight: '32px', weight: '--weight-bold' },
+  h4: { size: '20.006px', lineHeight: '28.0084px', weight: '--weight-bold' },
+  h5: { size: '16px', lineHeight: '24px', weight: '--weight-bold' },
+  h6: { size: '14px', lineHeight: '20px', weight: '--weight-bold' },
+
+  // Subtitle and secondary headings
+  subtitle: { size: '18px', lineHeight: '28px', weight: '--weight-medium' },
+  subtitleSmall: { size: '14px', lineHeight: '21px', weight: '--weight-medium' },
+
   // Body text and descriptions
   body: { size: '14px', lineHeight: '23.996px', weight: '--weight-regular' },
   bodyBold: { size: '14px', lineHeight: '23.996px', weight: '--weight-bold' },
-  // Small text, captions, footer
+  bodyMedium: { size: '14px', lineHeight: '23.996px', weight: '--weight-medium' },
+  bodyLight: { size: '14px', lineHeight: '23.996px', weight: '--weight-light' },
+
+  // Small text and captions
+  small: { size: '13px', lineHeight: '20px', weight: '--weight-regular' },
+  smallBold: { size: '13px', lineHeight: '20px', weight: '--weight-bold' },
   caption: { size: '13px', lineHeight: '20px', weight: '--weight-regular' },
+  captionSmall: { size: '11.998px', lineHeight: '18px', weight: '--weight-regular' },
+
   // Buttons and interactive elements
   button: { size: '14px', lineHeight: '20px', weight: '--weight-bold' },
+  buttonSmall: { size: '12px', lineHeight: '18px', weight: '--weight-bold' },
+  buttonLarge: { size: '16px', lineHeight: '24px', weight: '--weight-bold' },
+
   // Navigation and links
   nav: { size: '14px', lineHeight: '20px', weight: '--weight-regular' },
   navActive: { size: '14px', lineHeight: '20px', weight: '--weight-bold' },
+  navSmall: { size: '12px', lineHeight: '18px', weight: '--weight-regular' },
+  navSmallActive: { size: '12px', lineHeight: '18px', weight: '--weight-bold' },
+
+  // Labels and form text
+  label: { size: '14px', lineHeight: '20px', weight: '--weight-medium' },
+  labelSmall: { size: '12px', lineHeight: '18px', weight: '--weight-medium' },
+
+  // Product-specific typography
+  productTitle: { size: '25.004px', lineHeight: '32.0051px', weight: '--weight-bold' },
+  productPrice: { size: '20.006px', lineHeight: '28.0084px', weight: '--weight-bold' },
+  productDescription: { size: '14px', lineHeight: '23.996px', weight: '--weight-regular' },
+
+  // Footer and metadata
+  footer: { size: '13px', lineHeight: '20px', weight: '--weight-regular' },
+  footerLink: { size: '14px', lineHeight: '21px', weight: '--weight-regular' },
+  footerHeading: { size: '16px', lineHeight: '24px', weight: '--weight-bold' },
+
+  // Eyebrow / overline text
+  overline: { size: '11.998px', lineHeight: '18px', weight: '--weight-bold' },
+  eyebrow: { size: '11.998px', lineHeight: '12.5979px', weight: '--weight-regular' },
 } as const
 
 /**
