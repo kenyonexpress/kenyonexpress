@@ -3,6 +3,7 @@
 import PriceDisplay from '@/components/PriceDisplay'
 import AddToCartButton from '@/components/cart/AddToCartButton'
 import ProductLocation from '@/components/product-card/ProductLocation'
+import { getTypographyStyles } from '@/lib/typography'
 import Image from 'next/image'
 import Link from 'next/link'
 // product-card-deals.css is imported by the root layout. See the note there.
@@ -117,7 +118,9 @@ function DealsProductCard({ product }: { product: Product }) {
 
       <div className="p_con__title-wrap">
         <Link href={`/product/${product.slug}`} className="hover:underline">
-          <h2 className="p_con__title">{product.name_he}</h2>
+          <h2 style={getTypographyStyles('productTitle')} className="p_con__title">
+            {product.name_he}
+          </h2>
         </Link>
       </div>
 

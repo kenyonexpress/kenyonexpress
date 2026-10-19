@@ -1,6 +1,7 @@
 import AddToCartButton from '@/components/cart/AddToCartButton'
 import ProductLocation from '@/components/product-card/ProductLocation'
 import { shekelsFromIlsRounded } from '@/lib/money-format'
+import { getTypographyStyles } from '@/lib/typography'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -106,7 +107,9 @@ export default function ProductDealCard({ product }: { product: Product }) {
       */}
       <div className="p_con__title-wrap">
         <Link href={`/product/${product.slug}`} className="hover:underline" prefetch={false}>
-          <h2 className="p_con__title">{product.name_he}</h2>
+          <h2 style={getTypographyStyles('productTitle')} className="p_con__title">
+            {product.name_he}
+          </h2>
         </Link>
       </div>
 
