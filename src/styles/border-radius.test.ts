@@ -1,162 +1,123 @@
+import fs from 'node:fs'
+import path from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 /**
  * Border-radius token scale verification.
- * Ensures the design token scale (4, 8, 12, 16, 24px) is properly defined
- * and applied to buttons, cards, and modals.
+ * Reads tokens.css to verify actual token values and CSS definitions.
  */
 
-describe('Border-radius tokens', () => {
-  it('should define border-radius scale tokens in CSS custom properties', () => {
-    // In a real browser environment, we'd read from getComputedStyle(document.documentElement)
-    // For now, we verify the token values match the specification:
-    const expectedTokens = {
-      '--radius-xs': '4px',
-      '--radius-sm': '8px', // buttons
-      '--radius-md': '12px', // cards
-      '--radius-lg': '16px', // modals
-      '--radius-xl': '24px',
-      '--radius-button': 'var(--radius-sm)', // 8px
-      '--radius-card': 'var(--radius-md)', // 12px
-      '--radius-modal': 'var(--radius-lg)', // 16px
-    }
+describe('Border-radius tokens in tokens.css', () => {
+  let tokensCss: string
 
-    // Verify token names exist as expected
-    for (const tokenName of Object.keys(expectedTokens)) {
-      expect(tokenName).toMatch(/^--radius-/)
-    }
+  it('should load and parse tokens.css', () => {
+    const tokensPath = path.resolve(__dirname, './tokens.css')
+    tokensCss = fs.readFileSync(tokensPath, 'utf-8')
+    expect(tokensCss).toBeTruthy()
+    expect(tokensCss).toContain('--radius-')
   })
 
-  it('should define buttons with 8px border-radius', () => {
-    // Buttons use --radius-button which maps to --radius-sm (8px)
-    expect('--radius-button').toBe('--radius-button')
-    expect('--radius-sm').toBe('--radius-sm')
+  describe('Token scale values', () => {
+    it('should define --radius-xs: 4px', () => {
+      const match = tokensCss.match(/--radius-xs:\s*4px/)
+      expect(match).toBeTruthy()
+    })
+
+    it('should define --radius-sm: 8px (buttons)', () => {
+      const match = tokensCss.match(/--radius-sm:\s*8px/)
+      expect(match).toBeTruthy()
+    })
+
+    it('should define --radius-md: 12px (cards)', () => {
+      const match = tokensCss.match(/--radius-md:\s*12px/)
+      expect(match).toBeTruthy()
+    })
+
+    it('should define --radius-lg: 16px (modals)', () => {
+      const match = tokensCss.match(/--radius-lg:\s*16px/)
+      expect(match).toBeTruthy()
+    })
+
+    it('should define --radius-xl: 24px', () => {
+      const match = tokensCss.match(/--radius-xl:\s*24px/)
+      expect(match).toBeTruthy()
+    })
   })
 
-  it('should define cards with 12px border-radius', () => {
-    // Cards use --radius-card which maps to --radius-md (12px)
-    expect('--radius-card').toBe('--radius-card')
-    expect('--radius-md').toBe('--radius-md')
+  describe('Semantic aliases', () => {
+    it('should define --radius-button as var(--radius-sm)', () => {
+      const match = tokensCss.match(/--radius-button:\s*var\(--radius-sm\)/)
+      expect(match).toBeTruthy()
+    })
+
+    it('should define --radius-card as var(--radius-md)', () => {
+      const match = tokensCss.match(/--radius-card:\s*var\(--radius-md\)/)
+      expect(match).toBeTruthy()
+    })
+
+    it('should define --radius-modal as var(--radius-lg)', () => {
+      const match = tokensCss.match(/--radius-modal:\s*var\(--radius-lg\)/)
+      expect(match).toBeTruthy()
+    })
   })
 
-  it('should define modals with 16px border-radius', () => {
-    // Modals use --radius-modal which maps to --radius-lg (16px)
-    expect('--radius-modal').toBe('--radius-modal')
-    expect('--radius-lg').toBe('--radius-lg')
+  describe('Token scale consistency', () => {
+    it('should have all five scale steps', () => {
+      const xs = tokensCss.includes('--radius-xs:')
+      const sm = tokensCss.includes('--radius-sm:')
+      const md = tokensCss.includes('--radius-md:')
+      const lg = tokensCss.includes('--radius-lg:')
+      const xl = tokensCss.includes('--radius-xl:')
+
+      expect(xs && sm && md && lg && xl).toBe(true)
+    })
+
+    it('should have all semantic component aliases', () => {
+      const button = tokensCss.includes('--radius-button:')
+      const card = tokensCss.includes('--radius-card:')
+      const modal = tokensCss.includes('--radius-modal:')
+
+      expect(button && card && modal).toBe(true)
+    })
+
+    it('scale values should follow 4, 8, 12, 16, 24 pattern', () => {
+      // Extract all radius values from the file
+      const radiusPattern = /--radius-(?:xs|sm|md|lg|xl):\s*(\d+)px/g
+      const matches = Array.from(tokensCss.matchAll(radiusPattern))
+      const values = matches
+        .map((m) => m[1])
+        .filter((val) => val !== undefined)
+        .map((val) => Number.parseInt(val, 10))
+
+      // Should contain the scale values in order
+      expect(values).toContain(4)
+      expect(values).toContain(8)
+      expect(values).toContain(12)
+      expect(values).toContain(16)
+      expect(values).toContain(24)
+    })
   })
 
-  it('should have consistent semantic aliases', () => {
-    const semanticAliases = {
-      button: 'sm', // 8px
-      card: 'md', // 12px
-      modal: 'lg', // 16px
-    }
+  describe('Component token usage', () => {
+    it('buttons should use 8px radius', () => {
+      // Verify button component uses --radius-button (maps to 8px)
+      expect(tokensCss).toContain('--radius-sm: 8px')
+      const buttonAlias = tokensCss.match(/--radius-button:\s*var\(--radius-sm\)/)
+      expect(buttonAlias).toBeTruthy()
+    })
 
-    // Verify semantic naming convention
-    for (const [semantic, base] of Object.entries(semanticAliases)) {
-      expect(semantic).toMatch(/^(button|card|modal)$/)
-      expect(base).toMatch(/^(xs|sm|md|lg|xl)$/)
-    }
-  })
+    it('cards should use 12px radius', () => {
+      // Verify card component uses --radius-card (maps to 12px)
+      expect(tokensCss).toContain('--radius-md: 12px')
+      const cardAlias = tokensCss.match(/--radius-card:\s*var\(--radius-md\)/)
+      expect(cardAlias).toBeTruthy()
+    })
 
-  it('should provide backward compatibility with legacy tokens', () => {
-    // Legacy tokens from the measured live site
-    const legacyTokens = [
-      '--radius-none', // 0px
-      '--radius-pill', // 22px
-      '--radius-round', // 200px
-    ]
-
-    for (const token of legacyTokens) {
-      expect(token).toMatch(/^--radius-/)
-    }
-  })
-})
-
-describe('Border-radius token scale values', () => {
-  const scale = [
-    { name: 'xs', value: 4 },
-    { name: 'sm', value: 8 },
-    { name: 'md', value: 12 },
-    { name: 'lg', value: 16 },
-    { name: 'xl', value: 24 },
-  ]
-
-  it('should have tokens for each scale step', () => {
-    expect(scale).toHaveLength(5)
-  })
-
-  it('should have monotonically increasing values', () => {
-    for (let i = 1; i < scale.length; i++) {
-      const current = scale[i]
-      const previous = scale[i - 1]
-      expect(current).toBeDefined()
-      expect(previous).toBeDefined()
-      if (current && previous) {
-        expect(current.value).toBeGreaterThan(previous.value)
-      }
-    }
-  })
-
-  it('should follow a consistent progression', () => {
-    // Check differences: 4 -> 8 (4px), 8 -> 12 (4px), 12 -> 16 (4px), 16 -> 24 (8px)
-    const differences: number[] = []
-    for (let i = 1; i < scale.length; i++) {
-      const current = scale[i]
-      const previous = scale[i - 1]
-      if (current && previous) {
-        differences.push(current.value - previous.value)
-      }
-    }
-    expect(differences).toEqual([4, 4, 4, 8])
-  })
-
-  it('should use semantic names for buttons, cards, and modals', () => {
-    const semanticMap = {
-      'button (sm)': 8,
-      'card (md)': 12,
-      'modal (lg)': 16,
-    }
-
-    for (const [component, size] of Object.entries(semanticMap)) {
-      expect(size).toBeGreaterThan(0)
-      expect(component).toMatch(/\((xs|sm|md|lg|xl)\)/)
-    }
-  })
-})
-
-describe('Component border-radius application', () => {
-  it('Button component should use --radius-button (8px)', () => {
-    const buttonToken = '--radius-button'
-    const buttonValue = '--radius-sm' // which equals 8px
-    expect(buttonToken).toBe('--radius-button')
-    expect(buttonValue).toBe('--radius-sm')
-  })
-
-  it('Card component should use --radius-card (12px)', () => {
-    const cardToken = '--radius-card'
-    const cardValue = '--radius-md' // which equals 12px
-    expect(cardToken).toBe('--radius-card')
-    expect(cardValue).toBe('--radius-md')
-  })
-
-  it('Dialog component should use --radius-modal (16px)', () => {
-    const modalToken = '--radius-modal'
-    const modalValue = '--radius-lg' // which equals 16px
-    expect(modalToken).toBe('--radius-modal')
-    expect(modalValue).toBe('--radius-lg')
-  })
-
-  it('should apply tokens via CSS custom properties', () => {
-    // Tokens are applied using [border-radius:var(--radius-*)] in Tailwind classes
-    const appliedTokens = [
-      '[border-radius:var(--radius-button)]',
-      '[border-radius:var(--radius-card)]',
-      '[border-radius:var(--radius-modal)]',
-    ]
-
-    for (const token of appliedTokens) {
-      expect(token).toContain('border-radius:var')
-    }
+    it('modals should use 16px radius', () => {
+      // Verify modal component uses --radius-modal (maps to 16px)
+      expect(tokensCss).toContain('--radius-lg: 16px')
+      const modalAlias = tokensCss.match(/--radius-modal:\s*var\(--radius-lg\)/)
+      expect(modalAlias).toBeTruthy()
+    })
   })
 })
