@@ -10,6 +10,7 @@ export interface ClubTierRow {
   name_he: string
   min_spend_agorot: number
   benefits_json: unknown
+  cashback_bonus_percent: number
   active: boolean
   sort_order: number
 }
@@ -20,6 +21,7 @@ export interface MyTier {
   spendAgorot: Agorot
   nextTierNameHe: string | null
   toNextAgorot: Agorot
+  cashbackBonusPercent: number
 }
 
 function benefitList(value: unknown): string[] {
@@ -46,7 +48,7 @@ export async function getMyTier(): Promise<MyTier | null> {
       .maybeSingle(),
     supabase
       .from('club_tiers' as never)
-      .select('name_he, min_spend_agorot, benefits_json, sort_order')
+      .select('name_he, min_spend_agorot, benefits_json, cashback_bonus_percent, sort_order')
       .order('min_spend_agorot', { ascending: true })
       .limit(2),
   ])
@@ -68,15 +70,18 @@ export async function getMyTier(): Promise<MyTier | null> {
     name_he: string
     min_spend_agorot: number
     benefits_json: unknown
+    cashback_bonus_percent: number
   }[]
 
   if (r?.tier_name_he) {
+    const currentTier = list.find((t) => t.name_he === r.tier_name_he)
     return {
       tierNameHe: r.tier_name_he,
       benefits: benefitList(r.tier_benefits_json),
       spendAgorot: agorot(Number(r.spend_agorot)),
       nextTierNameHe: r.next_tier_name_he,
       toNextAgorot: agorot(Number(r.to_next_agorot)),
+      cashbackBonusPercent: currentTier?.cashback_bonus_percent ?? 0,
     }
   }
   const lowest = list[0]
@@ -88,5 +93,6 @@ export async function getMyTier(): Promise<MyTier | null> {
     spendAgorot: agorot(0),
     nextTierNameHe: next?.name_he ?? null,
     toNextAgorot: agorot(next ? Number(next.min_spend_agorot) : 0),
+    cashbackBonusPercent: lowest.cashback_bonus_percent ?? 0,
   }
 }

@@ -99,12 +99,18 @@ export default function AccountPageContent({
                     ? ` · עוד ${formatIls(tier.toNextAgorot)} לדרגת ${tier.nextTierNameHe}`
                     : ' · הגעת לדרגה הגבוהה ביותר'}
                 </p>
+                {tier.cashbackBonusPercent > 0 && (
+                  <p className="account-row__meta">בונוס קשבק: {tier.cashbackBonusPercent}%</p>
+                )}
                 {tier.benefits.length > 0 && (
-                  <ul className="mt-2 list-disc ps-5">
-                    {tier.benefits.map((b) => (
-                      <li key={b}>{b}</li>
-                    ))}
-                  </ul>
+                  <div className="mt-2">
+                    <p className="text-xs font-medium text-muted">הטבות:</p>
+                    <ul className="mt-1 list-disc ps-5">
+                      {tier.benefits.map((b) => (
+                        <li key={b}>{b}</li>
+                      ))}
+                    </ul>
+                  </div>
                 )}
               </section>
             )}
