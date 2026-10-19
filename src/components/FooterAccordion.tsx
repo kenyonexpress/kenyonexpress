@@ -1,6 +1,7 @@
 'use client'
 
 import { FaFacebook, FaInstagram } from '@/components/icons/electro-icons'
+import { getTypographyStyles } from '@/lib/typography'
 import { useState } from 'react'
 
 type FooterLink = { label: string; href: string }
@@ -58,7 +59,9 @@ export default function FooterAccordion({
 
       {/* Mobile Social & Payment */}
       <div className="border-b border-gray-800 px-4 py-4">
-        <h2 className="text-white font-bold mb-4 text-sm">עקבו אחרינו</h2>
+        <h2 style={getTypographyStyles('footerHeading')} className="text-white mb-4">
+          עקבו אחרינו
+        </h2>
         <div className="flex items-center justify-center gap-4 mb-4">
           {socials.map(({ label, href }) => {
             const Icon = label === 'פייסבוק' ? FaFacebook : FaInstagram
@@ -79,7 +82,9 @@ export default function FooterAccordion({
       </div>
 
       <div className="px-4 py-4">
-        <h2 className="text-white font-bold mb-3 text-sm">אמצעי תשלום</h2>
+        <h2 style={getTypographyStyles('footerHeading')} className="text-white mb-3">
+          אמצעי תשלום
+        </h2>
         <div className="flex items-center justify-center gap-2 flex-wrap">
           <div className="bg-gray-600 px-3 py-2 rounded text-xs text-gray-300">💳 כרטיס אשראי</div>
           <div className="bg-gray-600 px-3 py-2 rounded text-xs text-gray-300">🏦 העברה בנקאית</div>

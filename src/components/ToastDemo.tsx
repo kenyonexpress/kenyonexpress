@@ -1,5 +1,6 @@
 'use client'
 
+import { getTypographyStyles } from '@/lib/typography'
 import { useToast } from '@/lib/useToast'
 import { useState } from 'react'
 
@@ -58,7 +59,9 @@ export function ToastDemo() {
   return (
     <div className="space-y-4 p-6">
       <div className="rounded-lg border border-border bg-background p-6">
-        <h2 className="mb-4 text-lg font-semibold">הדגמת התראות Toast</h2>
+        <h2 style={getTypographyStyles('h5')} className="mb-4">
+          הדגמת התראות Toast
+        </h2>
         <p className="mb-6 text-sm text-muted-foreground">
           Click any button below to see the toast notification in action.
         </p>
@@ -116,7 +119,9 @@ export function ToastDemo() {
       </div>
 
       <div className="rounded-lg border border-border bg-muted p-6">
-        <h3 className="mb-3 font-semibold">Features</h3>
+        <h3 style={getTypographyStyles('h6')} className="mb-3">
+          Features
+        </h3>
         <ul className="space-y-2 text-sm">
           <li>✓ Four variants: success, error, info, warning</li>
           <li>✓ Auto-dismiss with configurable durations</li>
