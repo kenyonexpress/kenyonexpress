@@ -52,8 +52,32 @@ The goal condition was met: mobile gate score (37.15%) > 11% threshold.
 ## 📋 Work Queue (Next Goals)
 
 **Priority Order (head to tail):**
-1. **MOBILE_FIX_GATE** — Requeue condition met: score 37.15% > 11% threshold. Adjust mobile UI to bring score below 11%. Measure via `scripts/compare.mjs --page=home --width=380`.
-2. Continue with NEXT-GOALS.md items per standard queue
+1. **BEST_PRACTICES_OPTIMIZATION** — Homepage Best Practices 89 < 90 threshold. Fix via Lighthouse audit findings and commit. Measure via `pnpm lhci:autorun` to verify >= 90.
+2. **MOBILE_FIX_GATE** — Requeue condition met: score 37.15% > 11% threshold. Adjust mobile UI to bring score below 11%. Measure via `scripts/compare.mjs --page=home --width=380`.
+3. Continue with NEXT-GOALS.md items per standard queue
+
+---
+
+## ✅ MAINTENANCE_LOOP_7 (Session: 2026-10-20) — COMPLETE (Fresh Run)
+
+**Lighthouse CI Check — 2026-10-20 10:20 UTC**
+
+**Measurement Results:**
+- Homepage: Performance 100, Accessibility 96, Best Practices 89, SEO 100
+- Products: Performance 100, Accessibility 96, Best Practices 96, SEO 100
+
+**Goals Queued (per "if any score below 90" rule):**
+1. **Best Practices Optimization Goal** — Homepage Best Practices 89 < 90 threshold
+
+**Quality Gates (All Passing):**
+- ✅ pnpm type-check: CLEAN
+- ✅ pnpm lint: CLEAN (1699 files)
+- ✅ pnpm build: SUCCESS (310+ pages)
+
+**Commits:**
+- `58d71a189` - [autopilot] chore qa lighthouse check
+
+**המשך מ:** MAINTENANCE_LOOP_7 COMPLETE. Fresh measurement shows Best Practices below threshold on homepage (89 < 90). Optimization goal QUEUED at head of work queue. Ready to proceed with Best Practices fix.
 
 ---
 
@@ -148,9 +172,9 @@ Per CLAUDE.md section "goal שנתקע פעמיים: לדלג" (goal stuck 2x �
 
 ---
 
-## ✅ MAINTENANCE_LOOP_7 (Session: 2026-10-20)
+## ✅ MAINTENANCE_LOOP_7 (Session: 2026-10-20) — COMPLETE
 
-**Lighthouse CI Check Complete — All Scores Passing**
+**Lighthouse CI Check Completed — Best Practices Optimization Goal Queued**
 
 **Execution:**
 - Command: `pnpm lhci:autorun` ✅ SUCCESSFUL

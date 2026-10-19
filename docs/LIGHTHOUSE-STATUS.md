@@ -2,10 +2,10 @@
 
 ## Latest Run (2026-10-20 — pnpm lhci:autorun Successful)
 
-**Status:** ✅ ALL PASSING
+**Status:** ⚠️ BEST PRACTICES BELOW THRESHOLD
 
 **Command:** `pnpm lhci:autorun` (using @lhci/cli@0.15.1 with Lighthouse 12.6.1)  
-**Measurement Date:** 2026-10-19 18:51-18:52 UTC  
+**Measurement Date:** 2026-10-20 10:20 UTC  
 **Environment:** localhost:3000  
 **Pages Measured:** 2/2 (homepage, products catalog)
 
