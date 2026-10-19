@@ -1,4 +1,5 @@
 import { withRequestLog } from '@/lib/observability/with-request-log'
+import { rateLimit, tooManyRequests } from '@/lib/rate-limit'
 import { createClient } from '@/lib/supabase/server'
 import { generateRegistrationOptions, verifyRegistrationResponse } from '@simplewebauthn/server'
 import { type NextRequest, NextResponse } from 'next/server'
@@ -13,6 +14,12 @@ async function handlePOST(req: NextRequest) {
 
   if (!userData.user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  // Rate limit: 10 passkey registrations per hour per user
+  const decision = await rateLimit('passkey-register', userData.user.id)
+  if (!decision.allowed) {
+    return tooManyRequests(decision)
   }
 
   const body = await req.json()
