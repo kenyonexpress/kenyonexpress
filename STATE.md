@@ -10068,6 +10068,23 @@ Updated: 2026-08-11 בוקר (goal-65: product_type selector)
 ‏v1.3.0. ‏(7) ✅ ‏(8) ✅ ‏(9) ✅ ‏(10) חלקי.
 ‏(11) ✅ ‏(12) ✅ ‏(13) ✅.
 
+## המשך מ: F08 (next goal)
+
+## סיום F07: One shekel card verification via Cardcom
+
+**19.10.2026 עבודה אוטונומית**
+
+- ✅ Migration 191: `payment_card_verifications` table + `saved_payment_method` column on profiles
+- ✅ `/api/payments/verify-card` endpoint: creates Low Profile, charges 1 agora, verifies, saves token
+- ✅ Token persistence: saves to both `payment_tokens` and `profiles.saved_payment_method`
+- ✅ Refund: immediate refund after verification (allows token save even if refund fails)
+- ✅ Sentry logging: refund failures logged but don't block token save
+- ✅ UI Component: `CardVerificationStep.tsx` for checkout integration
+- ✅ All tests pass: pnpm type-check, pnpm lint, pnpm build
+- ✅ Commit e8a8ff3c2 pushed to origin/autopilot
+
+עצי סיום: F07 תוקן, commit וpush, מנתיקות לתור הבא.
+
 ## המשך מ: תור המרתון (20 שלבים), שלב 5
 
 <!-- שוחזר מ-feat/supplier-portal במיזוג 19.08: תוכן שלא קיים ב-phase5/homepage.
