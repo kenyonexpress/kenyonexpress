@@ -3,6 +3,10 @@
 import { writeAuditLog } from '@/lib/admin/audit'
 import { requireSection } from '@/lib/admin/rbac'
 import { withActionContext } from '@/lib/observability/action-context'
+import {
+  triggerOrderDeliveredNotification,
+  triggerOrderShippedNotification,
+} from '@/lib/push/trigger-notifications'
 import { type ShippingVerb, planTransition } from '@/lib/shipping/transitions'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
@@ -42,7 +46,7 @@ async function runMarkItem(
   const admin = createAdminClient()
   const { data: item, error: readError } = await admin
     .from('order_items')
-    .select('id, item_status, product_type, order_id, orders!inner(status)')
+    .select('id, item_status, product_type, order_id, orders!inner(status, user_id)')
     .eq('id', itemId)
     .maybeSingle()
   if (readError || !item) return { ok: false, error: 'השורה לא נמצאה.' }
@@ -101,6 +105,18 @@ async function runMarkItem(
     entityId: itemId,
     changes: { item_status: { from: item.item_status, to: verdict.nextStatus }, ...tracking },
   })
+
+  // Trigger push notifications for order status changes
+  const orderData = item.orders as unknown as { user_id: string }
+  if (verdict.nextStatus === 'shipped') {
+    triggerOrderShippedNotification(orderData.user_id, item.order_id).catch((err) => {
+      console.error('Failed to send order shipped notification:', err)
+    })
+  } else if (verdict.nextStatus === 'delivered') {
+    triggerOrderDeliveredNotification(orderData.user_id, item.order_id).catch((err) => {
+      console.error('Failed to send order delivered notification:', err)
+    })
+  }
 
   revalidatePath(`/admin/orders/${item.order_id}`)
   return {
