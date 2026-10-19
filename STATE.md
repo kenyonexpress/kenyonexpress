@@ -42,18 +42,20 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 - ✅ pnpm build: SUCCESS (310+ pages)
 
 **Assessment:**
-- All critical scores (Performance ≥ 90, Accessibility ≥ 90) passing
-- **No optimization goal queued** — All scores above threshold
-- Upgraded @lhci/cli@0.11.1 → 0.15.1 to fix 500 errors on /products
+- Critical scores (Performance ≥ 90, Accessibility ≥ 90) passing ✅
+- **Optimization goals QUEUED (per "if any score below 90" rule):**
+  1. **Best Practices** — lhci:autorun Homepage 89 < 90 ❌
+  2. **SEO** — 9-page audit: Search Results 83 < 90, Shopping Cart 69 < 90 ❌
+- Upgraded @lhci/cli@0.11.1 → 0.15.1 to fix Lighthouse 9.6.8 compatibility
 - Status report saved to docs/LIGHTHOUSE-STATUS.md
-- Commit d6c83e5b2: [autopilot] MAINTENANCE_LOOP_7 corrected: pnpm lhci:autorun now successful
 
 **Next Actions (in order):**
-1. Mobile UI parity fix (from MAINTENANCE_LOOP_6)
-2. Repeat MAINTENANCE_LOOP_7 every 6 hours
-3. Continue with other queued maintenance goals
+1. **Best Practices Optimization Goal** — Fix homepage Best Practices 89 → 90+
+2. **SEO Optimization Goal** — Fix structured data on search/cart pages (83, 69 → 90+)
+3. Mobile UI parity fix (from MAINTENANCE_LOOP_6)
+4. Repeat MAINTENANCE_LOOP_7 every 6 hours
 
-**המשך מ:** MAINTENANCE_LOOP_7 complete. pnpm lhci:autorun succeeded. All Lighthouse scores >= 90. No optimization goal queued.
+**המשך מ:** MAINTENANCE_LOOP_7 complete. Both Best Practices and SEO optimization goals queued per requirements.
 
 ---
 
