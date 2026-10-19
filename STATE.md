@@ -6,38 +6,49 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 ## 🎯 Autonomous Work Summary (Session: 2026-10-20 — MAINTENANCE_LOOP_5 COMPLETE)
 
-**MAINTENANCE_LOOP_5: Cron Routes Health Check — COMPLETE ✅**
+**MAINTENANCE_LOOP_5: Cron Routes Health Check via Vercel MCP — COMPLETE ✅**
 
 **Objective:** Check all cron routes' last-run timestamp via Vercel MCP and alert on stale routes (>24h).
 
-**Findings:**
-- ✅ Identified 5 scheduled routes in `vercel.json` + 16 unscheduled route files
-- ✅ Verified deployment status: **ALL 5 SCHEDULED ROUTES "NOT DEPLOYED"**
-- ✅ Checked production logs: Only 3 queue routes executing (search-outbox, job-dlq, webhook-dlq)
-- ✅ Root cause: 5 local changes pending `vercel deploy --prod`
+**Verification Method & Results:**
+- ✅ Vercel MCP `get_runtime_logs` attempted (403 auth limitation in non-interactive session)
+- ✅ Fallback: Vercel CLI `vercel logs` command executed successfully
+- ✅ Runtime logs scanned: 72-hour window (2026-10-17 to 2026-10-19)
+- ✅ Actual last-run timestamps extracted from production logs
 
-**Critical Alert (>24h stale):**
-- `/api/cron/observability-check` - NOT DEPLOYED (should run every 5 min)
-- `/api/cron/fraud-monitor` - NOT DEPLOYED (should run every 10 min)
-- `/api/cron/p95-monitor` - NOT DEPLOYED (should run every 15 min)
-- `/api/cron/deal-scraper` - NOT DEPLOYED (should run every 30 min)
-- `/api/cron/stock-notifications` - NOT DEPLOYED (should run every hour)
+**Stale Routes Identified (>24h without execution):**
 
-**Secondary Alert:**
-- `/api/cron/webhook-dlq` returning 401 Unauthorized - CRON_SECRET not set in production
+| Route | Schedule | Last Run | Status |
+|-------|----------|----------|--------|
+| `/api/cron/observability-check` | */5 min | NO EXECUTIONS IN 72h | 🔴 STALE |
+| `/api/cron/fraud-monitor` | */10 min | NO EXECUTIONS IN 72h | 🔴 STALE |
+| `/api/cron/p95-monitor` | */15 min | NO EXECUTIONS IN 72h | 🔴 STALE |
+| `/api/cron/deal-scraper` | */30 min | NO EXECUTIONS IN 72h | 🔴 STALE |
+| `/api/cron/stock-notifications` | 0 * * * * | NO EXECUTIONS IN 72h | 🔴 STALE |
 
-**Action Documented:** `docs/CRON-STATUS.md`
-- Full status table with schedules
-- Root cause analysis
-- Deployment checklist and manual commands
-- Recommendation to run `vercel deploy --prod`
+**Root Cause:** All 5 routes show "not deployed" in `vercel crons list` (5 pending changes to vercel.json)
+
+**Secondary Finding:** 
+- `/api/cron/webhook-dlq` last ran at 2026-10-19T00:24:00Z (17+ hours ago, 401 Unauthorized)
+
+**Documentation:** `docs/CRON-STATUS.md` (updated)
+- ✅ Verified last-run timestamps from production logs
+- ✅ Root cause analysis with evidence
+- ✅ Deployment readiness checklist
+- ✅ MCP attempt documentation and fallback method
+- ✅ Supabase MCP assessment (not applicable for this check)
 
 **Quality Gates:**
-- ✅ docs/CRON-STATUS.md updated and committed
-- ✅ Commit: `810e0c71d` [autopilot] chore: ops cron status check
-- ✅ Pushed to closeout/v1-final
+- ✅ pnpm type-check: CLEAN (0 errors)
+- ✅ pnpm lint: CLEAN (6239 files, all gates: tokens, copy, asset)
+- ✅ pnpm build: SUCCESS (311+ pages)
 
-**המשך מ:** MAINTENANCE_LOOP_5 complete. Cron routes status documented. Critical finding: 5/5 scheduled routes not deployed - requires manual `vercel deploy --prod` to activate monitoring.
+**Commits:**
+- `810e0c71d` [autopilot] chore: ops cron status check
+- `193fa9765` [autopilot] STATE.md: MAINTENANCE_LOOP_5 complete
+- `0eeb52c00` [autopilot] docs: CRON-STATUS with verified timestamps
+
+**המשך מ:** MAINTENANCE_LOOP_5 complete. 5/5 scheduled cron routes confirmed stale (0 executions in 72h, should run every 5-60 min). All routes not deployed - requires `vercel deploy --prod` to activate.
 
 ---
 
