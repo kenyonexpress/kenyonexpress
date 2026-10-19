@@ -3,63 +3,63 @@
 **Date:** 2026-10-20  
 **Session:** MAINTENANCE_LOOP_4  
 **Branch:** autopilot  
-**Run Mode:** Playwright serial (single worker for stability)
+**Run Mode:** Playwright 2 workers
 
 ## Test Execution Summary
 
-**Status:** Full E2E test suite RUNNING (serial mode for stability)
+**Status:** ✅ Full E2E test suite COMPLETE (682/682 tests)
 
-### Current Progress
+### Final Results
 
 | Metric | Value |
 |--------|-------|
-| Tests Passed | 4 |
-| Tests Failed | 243 |
-| Tests Total (so far) | 247 / 682 |
-| Completion % | 36.2% |
-| Run Mode | Single worker (--workers=1) |
+| Tests Passed | 361 |
+| Tests Failed | 312 |
+| Tests Skipped | 9 |
+| Tests Total | 682 |
+| Pass Rate | 52.9% |
+| Runtime | 27.7 minutes |
+| Browsers Tested | Chromium, Mobile-Chrome, Firefox, WebKit |
 
 ### Failures by Category
 
-**Top Failing Test Suites:**
-1. Cart tests - 8+ failures (product discovery, quantity updates, cart state)
-2. Dark mode tests - 4+ failures (class application, persistence)
-3. Auth tests - 6+ failures (Hebrew copy rendering, form fields)
-4. Mobile shell tests - 4+ failures (responsive classes, fixed positioning)
-5. RTL tests - 3+ failures (sideways scroll, text direction)
-6. Product page tests - 5+ failures (document title, metadata)
-7. Accessibility tests - 8+ failures (consent banner, interactive controls)
-8. Checkout tests - 4+ failures (guest redirect, route guarding)
+**Top Failure Patterns (312 total failures):**
+1. **toBeVisible() failed - 137 occurrences** 
+   - Main blockers: product links, category images, Hebrew headings, form fields
+   - Root cause: Element rendering failures or missing page content
+   
+2. **toBe() equality checks - 16 occurrences**
+   - CSS class mismatches, computed style mismatches
+   - Examples: dark mode class application, fixed positioning
 
-### Root Causes (From Partial Analysis)
+3. **toEqual() deep equality - 14 occurrences**
+   - Arrays/objects not matching expected structure
+   - Examples: accessibility violations, aria attributes
 
-1. **Missing Product Links** - `/products` page not returning product links
-   - Tests: cart, category, product page discovery
-   - Pattern: `locator('a[href^="/product/"]').first()` → not found
-   - Impact: All tests that depend on product discovery
+4. **toContain() substring checks - 10 occurrences**
+   - CSS class presence checks (e.g., `md:hidden`)
+   - Text content matching
 
-2. **Dark Mode Class Not Applied** - HTML element missing 'dark' class
-   - Tests: dark-mode-ux30, theme persistence
-   - Evidence: `expect(classes).toContain("dark")` fails
-   - Impact: Theme toggle functionality
+### Root Causes (From Full Run Analysis)
 
-3. **Hebrew Copy Not Rendering** - Signup/auth pages missing Hebrew text
-   - Tests: auth.spec.ts signup page
-   - Pattern: `getByRole('heading', { name: 'יצירת חשבון' })` → not found
-   - Impact: Signup and auth flows
+1. **Page Content Not Loading (137 toBeVisible failures)** - Critical blocker
+   - Tests affected: cart, category, product discovery, auth, checkout, etc.
+   - Pattern: `locator('a[href^="/product/"]')`, `.category-card__thumb img`, Hebrew headings → not found
+   - Root cause: Page rendering failures, likely data-fetch or hydration issues in test environment
+   - Impacts: ~40% of all failures
 
-4. **Mobile Responsive Classes Missing** - Desktop breakpoint hiding classes not applied
-   - Tests: mobile-shell.spec.ts
-   - Examples: SwipeableGallery, StickyCartBar missing `md:hidden`
-   - Impact: Mobile/desktop responsiveness
+2. **CSS Class/Style Mismatches (16 toBe failures)** 
+   - Examples: dark mode `classList.contains('dark')`, fixed positioning, responsive visibility
+   - Fixed: StickyCartBar `md:hidden` class added (commit b7a38036c)
+   - Remaining: Dark mode hydration timing, other responsive classes
 
-5. **RTL/LTR Direction Issues** - Text direction not properly set
-   - Tests: rtl.spec.ts (multiple widths and device types)
-   - Impact: Hebrew right-to-left layout
-
-6. **Focus/Accessibility** - Interactive controls not keyboard accessible
-   - Tests: a11y.spec.ts (keyboard reachability, consent banner)
-   - Impact: WCAG compliance
+3. **Accessibility/Structure Mismatches (14 toEqual failures)**
+   - ARIA attributes, violation patterns
+   - Tests: a11y.spec.ts, consent banner structure
+   
+4. **Text Content/HTML Attribute Mismatches (10 toContain failures)**
+   - Hebrew text rendering, CSS classes, form field attributes
+   - Tests: auth.spec.ts, mobile-shell.spec.ts
 
 ## Flaky Tests Observed
 
@@ -77,27 +77,32 @@ From partial run, potential flaky patterns:
 
 ## Recommended Fixes (Priority Order)
 
-### CRITICAL (Blocks many tests)
-1. **Fix /products page product link discovery**
-   - Verify product cards/links rendering on `/products` route
-   - May be empty state issue or query/filter problem
-   - Unblocks: ~50+ tests in cart, product, category specs
+### CRITICAL (Blocks 137+ tests - 44% of failures)
+1. **Diagnose Page Content Loading Failures**
+   - Issue: Product links, category images, auth headings not found in test environment
+   - Tests affected: cart, category, checkout, auth, product discovery specs
+   - Investigation needed:
+     - Check if pages are actually rendering in test environment
+     - Verify data fetching/API calls complete before assertions
+     - Check for timing issues with dynamic content loading
+     - Review test setup (e.g., baseURL, environment vars, mock APIs)
+   - Estimated impact: Fixing this would resolve ~40% of all failures
 
-### HIGH (Feature-level failures)
-2. **Fix dark mode class application**
-   - Verify CSS variable application in dark mode
-   - Check theme provider initialization
-   - Unblocks: Dark mode UX tests
+### APPLIED FIXES ✅
+- StickyCartBar: Added `md:hidden` class (commit b7a38036c)
 
-3. **Fix Hebrew copy rendering in auth**
-   - Verify signup page Hebrew translations
-   - Check copy gate and i18n setup
-   - Unblocks: Auth/signup tests
+### HIGH (Feature-level failures - 70+ tests)
+2. **Dark mode class hydration timing**
+   - Issue: `classList.contains('dark')` fails intermittently
+   - Cause: ThemeProvider useEffect may not apply class before test assertions
+   - Fix: Ensure dark class applied during SSR or earlier in hydration
 
-4. **Fix mobile responsive classes**
-   - Add `md:hidden` to SwipeableGallery
-   - Add `md:hidden` to StickyCartBar
-   - Fix fixed positioning on mobile
+3. **Hebrew i18n rendering**
+   - Issue: Hebrew headings/form labels not rendering
+   - May be related to page content loading issue (CRITICAL #1)
+   
+4. **ARIA/Accessibility attributes**
+   - Verify proper ARIA structure after page rendering fixes
    - Unblocks: Mobile shell/responsive tests
 
 5. **Fix RTL direction attribute**
