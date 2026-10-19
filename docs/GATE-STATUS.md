@@ -1,53 +1,62 @@
-# Mobile Gate Status — Measurement Attempt 2026-10-20
+# Mobile Gate Status — Measurement Attempts 2026-10-20
 
-## Current Status: BLOCKED — Measurement Infrastructure Broken
+## Summary Status: BLOCKED (Attempt 2 of 2)
 
-**Attempted:** 2026-10-20 04:35 UTC  
-**Result:** FAILED — Cannot complete measurement
+The mobile gate baseline (`refs/localized/ke_live_home.html`) is missing and unrecoverable. Two measurement approaches attempted:
 
-## Measurement Failure Analysis
+1. **Attempt 1:** Use `refs/localized/` (missing) → Failed with "refs/localized/ke_live_home.html is missing"
+2. **Attempt 2:** Fallback to Electro reference → Produced score but invalid for gate purposes
 
-### What Happened
-- ✅ Server built successfully (pnpm build)
-- ✅ Server started on localhost:9000 (verified via curl)
-- ❌ `scripts/compare.mjs --page=home --widths=380` failed at reference load
+## Measurement Infrastructure Failure
 
-### Root Cause
+### Missing Baseline Files (Unrecoverable)
 ```
-Error: refs/localized/ke_live_home.html is missing, so there is nothing to compare against
+refs/ke_live_*.html        ❌ MISSING (original WordPress snapshots)
+refs/live-assets/          ❌ MISSING (crawled asset cache)  
+refs/localized/            ❌ CANNOT BE REBUILT
 ```
 
-The measurement system requires:
-1. `refs/ke_live_*.html` — Original WordPress HTML snapshots (MISSING)
-2. `refs/live-assets/` — Crawled image assets for substitution (MISSING)
-3. `refs/localized/` — Built comparison baselines (MISSING)
+**Why Unrecoverable:**
+- Files are `.gitignore`'d (never committed to git)
+- Source files lost (not in backups, not in codebase)
+- Production now serves our app (cannot recapture from live)
+- No external archive available
 
-### Why Baseline is Lost
-- Files are `.gitignore`'d (not in version control)
-- Original sources (`refs/ke_live_*.html`, `refs/live-assets/`) were never committed
-- Cannot be rebuilt: live production now serves THIS app, not original WordPress
-- No backup archives found in expected locations
+### Fallback Attempt: Electro Measurement
 
-### Previous Measurements (from UI-PARITY-REPORT.md)
-Last recorded mobile score: **37.44%** (2026-10-18 01:44 UTC) — but had same resource loading failures
+**Score (380px):** 45.86%  
+**Against:** refs/electro_home.html (design template)  
+**Height Ratio:** 1.95x (structurally incompatible pages)
+
+**Why This Score is Invalid:**
+- Electro is a different website (design template, not storefront)
+- Script warning: "HEIGHT RATIO 1.95x — the percentage above is NOT a pixel gate"
+- Pages are "structurally different, not the same page styled differently"
+- Does NOT represent actual mobile gate fidelity
+
+**The mobile gate measures against the original WordPress site.**  
+Electro measurement is a workaround, not a valid gate result.
+
+## Previous Measurement (Historical)
+**Last valid measurement:** 37.44% (2026-10-18 01:44 UTC) — but refs had resource failures even then
 
 ## Autonomous Decision
 
-**Infrastructure is unrecoverable in current state:**
-- ✓ Can build the app
-- ✓ Can start the server  
-- ✗ Cannot generate comparison baseline (source files gone, prod serves our app)
-- ✗ Cannot measure against live (meaningless: comparing app to itself)
+**Goal condition cannot be satisfied:**
+- ✓ Can measure against arbitrary baseline (45.86%)
+- ✗ Cannot measure against the actual mobile gate baseline (WordPress)
+- ✗ Baseline infrastructure is unrecoverable without external intervention
 
-**Blocked:** True measurement impossible without:
-1. Restoring `refs/ke_live_*.html` from external backup, OR
-2. Re-capturing baseline from archived WordPress site (not available), OR
-3. Implementing new measurement strategy (out of scope for this goal)
+**Marked as BLOCKED — Attempt 2 of 2**
 
-## Next Steps for Unblocking
+Per CLAUDE.md "goal stuck twice: skip" rule, this goal will be skipped on next execution.
 
-To restore measurement capability:
-1. Check backups for `refs/ke_live_*.html` and `refs/live-assets/`
-2. If unavailable, capture new WordPress baseline from archive service
-3. Run `scripts/localize-live-refs.mjs` to rebuild `refs/localized/`
-4. Re-run `scripts/compare.mjs` for fresh mobile gate score
+## Unblocking Requirements
+
+To measure the actual mobile gate:
+1. **Restore refs/ke_live_*.html** from external backup (original WordPress snapshots)
+2. **Restore refs/live-assets/** from external backup (image asset cache)
+3. **Run** `scripts/localize-live-refs.mjs` to rebuild `refs/localized/`
+4. **Re-run** `scripts/compare.mjs --page=home --width=380`
+
+Without these files, measurement is impossible.
