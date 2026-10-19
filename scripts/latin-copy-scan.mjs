@@ -70,6 +70,8 @@ const PHRASE_ALLOWLIST = [
   'Air Port City',
   'Tel Aviv',
   'Service Worker',
+  'Intel Core i9',
+  'NVIDIA RTX',
 ]
 
 const COPY_KEYS =
