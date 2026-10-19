@@ -1,3 +1,82 @@
+## ✅ COMPLETED: UX36 Shadow Tokens sm md lg xl Elevation Hierarchy (2026-10-19 08:16-08:22)
+
+**Status**: COMPLETE ✅ — UX36 comprehensive shadow system fully implemented with elevation hierarchy and hover states
+
+**Implementation** (commit 4df939527):
+
+**Shadow System Created**:
+- Added `ELECTRO.shadow` object in `src/styles/tokens.ts` with 8 semantic shadow values
+  - sm: 0px 1px 2px (opacity 0.05), lg: 0px 4px 16px (opacity 0.08)
+  - md: 0px 2px 8px (opacity 0.08), md-hover: 0px 4px 16px (opacity 0.12)
+  - lg: 0px 4px 16px (opacity 0.12), lg-hover: 0px 8px 24px (opacity 0.16)
+  - xl: 0px 8px 24px (opacity 0.16), xl-hover: 0px 12px 32px (opacity 0.20)
+  - Legacy aliases: card (→ md), hover (→ md-hover) for backward compatibility
+
+**CSS Custom Properties Integration**:
+- Declared all 8 shadow tokens in `src/styles/tokens.css` (@theme block)
+  - `--shadow-sm` through `--shadow-xl-hover` CSS variables
+  - Dark mode variants with increased opacity (0.2, 0.3, 0.4, 0.5, 0.6 progression)
+  - Available for use in any box-shadow context
+
+**Tailwind Configuration**:
+- Extended `tailwind.config.ts` boxShadow with semantic utilities
+  - `shadow-sm` through `shadow-xl-hover` classes for all shadow properties
+  - Legacy utilities: `shadow-card` and `shadow-card-hover` maintained
+  - Provides semantic naming for consistent elevation across UI
+
+**CSP Security Updates**:
+- Registered new Turbopack chunk loader hash in `src/lib/security/shell-script-hashes.mjs`
+  - Hash: `sha256-jBv5YD+pwHGOFLMzs9fcKz+OSV6Bso0YMiPgHqqvJks=`
+  - Generated due to shadow token system affecting build bundle
+
+**Code Quality Gates - ALL PASSING**:
+- ✅ `pnpm type-check`: CLEAN (0 errors)
+- ✅ `pnpm lint`: CLEAN (2852 files checked, all gates clean)
+- ✅ `pnpm build`: SUCCESS (304/304 pages compiled, CSP gate clean with 286 shells)
+- ✅ `pnpm test src/styles/shadows.test.ts`: 16/16 PASSED
+
+**Comprehensive Test Suite** (src/styles/shadows.test.ts):
+- 16 test cases validating shadow system integrity
+- Tests verify:
+  - ✅ All 8 shadow values defined (sm, smHover, md, mdHover, lg, lgHover, xl, xlHover)
+  - ✅ Correct shadow format (0px Y-offset BLUR rgba(0,0,0,opacity))
+  - ✅ Elevation hierarchy order: sm < md < lg < xl
+  - ✅ Hover variants larger than base variants
+  - ✅ Opacity progression: base (0.05, 0.08, 0.12, 0.16), hover (0.08, 0.12, 0.16, 0.20)
+  - ✅ Blur radius progression: 1px, 2px, 4px, 8px
+  - ✅ Spread radius progression: 2px, 8px, 16px, 24px
+  - ✅ Legacy aliases properly mapped (card → md, hover → mdHover)
+  - ✅ Total of exactly 10 shadow values (8 new + 2 legacy)
+
+**Dark Mode Support**:
+- All 8 shadow tokens updated with increased opacity for dark mode
+- Light theme: 0.05, 0.08, 0.12, 0.16 (base), 0.08, 0.12, 0.16, 0.20 (hover)
+- Dark theme: 0.2, 0.3, 0.4, 0.5 (base), 0.3, 0.4, 0.5, 0.6 (hover)
+- Consistent elevation perception across both themes
+
+**Elevation Hierarchy Achieved**:
+- ✅ Semantic shadow utilities (shadow-sm through shadow-xl-hover) fully defined
+- ✅ Consistent elevation levels for cards, modals, floating elements, and subtle elements
+- ✅ Hover states provide visual feedback for interactive elements
+- ✅ Type-check, lint, build, and tests all passing
+- ✅ CSP security hashes updated for shadow token bundle changes
+
+**Usage Examples**:
+- Subtle feedback: `shadow-sm hover:shadow-sm-hover` (small interactive elements)
+- Standard cards: `shadow-md hover:shadow-md-hover` (product cards, lists)
+- Prominent cards: `shadow-lg hover:shadow-lg-hover` (feature cards, important sections)
+- Floating/Modal: `shadow-xl hover:shadow-xl-hover` (dropdowns, modals, overlays)
+
+**Supabase/GitHub MCP Determination**:
+- **Not Applicable**: UX36 shadow tokens are 100% design tokens and CSS
+  - Zero database operations, RLS policies, or migrations required
+  - Pure client-side styling system with no backend dependencies
+  - No GitHub PR automation needed (token work, not application feature)
+
+**המשך מ:** UX36 FULLY COMPLETE. Shadow tokens sm md lg xl implemented with consistent elevation hierarchy and hover states. All code quality gates passing with 286 clean CSP shells.
+
+---
+
 ## ✅ COMPLETED: UX34 Spacing Scale 4 8 12 16 24 32 48 64 Consistent (2026-10-19)
 
 **Status**: COMPLETE ✅ — UX34 spacing scale fully implemented, applied consistently across multiple components, and tested
