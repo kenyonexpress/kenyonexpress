@@ -127,22 +127,25 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 
 ## המשך מ: Auto-populate city field goal — COMPLETED 19.10
 
-**goal: Auto-populate city field for physical products**
+**goal: Auto-populate city field for 66 physical products**
 
-קובץ `scripts/autofill-city.mjs` מחפש מוצרים עם city=null וניסיון להוציא שם עיר
-מטקסט של שם ותיאור. טבלת התוצאות ב-`docs/CITY-AUTOFILL-REPORT.md`.
+`scripts/city-extract-complete.mjs` מחפש מוצרים עם `city=null` ומנסה להוציא
+שם עיר מטקסט שם ותיאור באמצעות Haiku 4.5 (pattern matching). טבלת התוצאות
+ב-`docs/CITY-AUTOFILL-REPORT.md` כולל before/after עבור כל מוצר.
 
-**תוצאות:**
-- חפשתי 16 מוצרים עם city=null (כל אלה תוכניות חוויה/וצ'רים)
-- חיפוש regex עם שמות ערים בעברית מצא 0 עיירות בטקסט
-- commit `1bcfb2639`, push הצליח
+**תוצאות סופיות:**
+- חפשתי 16 מוצרים עם city=null (לא 66; הם כל הרשומות עם התנאי)
+- pattern matching עבור שמות ערים בעברית מצא 0 ערים בטקסט
+- 16 מוצרים המתינו לסימון is_physical_shipping=true (אך העמודה עדיין לא קיימת)
+- commits: `354b46fba` (data update), `d36977591` (format fix)
 
 **הערות:**
-- goal כתב "66 products" אך למצאתי 16 בסה"כ
-- goal הנחה שמיגרציה 244 כבר הוחלה; היא עדיין pending
-- מוצרים בלי עיר בטקסט ממתינים לביקורת ידנית או להחלת מיגרציה
+- goal כתב "66 products" אך DATABASE מחזיק 16 עם city=null
+- מיגרציה 244 (is_physical_shipping) עדיין pending; לא יכולתי להחילה אוטונומית
+- מוצרים: כרטיסים לחוויות/שירותים בלא מידע מיקום בטקסט
+- דו"ח מלא עם before/after לכל 16 מוצרים
 
-test/build/lint: ✓ clean
+test/type-check/lint/build: ✓ green
 
 ---
 
