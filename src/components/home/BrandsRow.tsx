@@ -38,6 +38,8 @@ export default function BrandsRow({ brands }: BrandsRowProps) {
                     width={120}
                     height={80}
                     className={styles.image}
+                    sizes="(max-width: 640px) 90px, (max-width: 1024px) 110px, 120px"
+                    loading="lazy"
                   />
                 </div>
               </Link>

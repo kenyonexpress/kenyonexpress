@@ -76,6 +76,8 @@ export default function WishlistCard({ entry, onRemove }: WishlistCardProps) {
                     width={80}
                     height={80}
                     className="h-20 w-20 rounded-lg object-cover"
+                    sizes="(max-width: 640px) 60px, (max-width: 1024px) 70px, 80px"
+                    loading="lazy"
                   />
                 ) : (
                   <span aria-hidden="true" className="h-20 w-20 rounded-lg bg-surface-hover" />
@@ -98,6 +100,8 @@ export default function WishlistCard({ entry, onRemove }: WishlistCardProps) {
                     width={80}
                     height={80}
                     className="h-20 w-20 rounded-lg object-cover"
+                    sizes="(max-width: 640px) 60px, (max-width: 1024px) 70px, 80px"
+                    loading="lazy"
                   />
                 ) : (
                   <span aria-hidden="true" className="h-20 w-20 rounded-lg bg-surface-hover" />
