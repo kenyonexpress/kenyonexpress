@@ -4,48 +4,54 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 ---
 
-## 🚫 MAINTENANCE_LOOP_6 (Session: 2026-10-20) — BLOCKED
+## 🚫 MAINTENANCE_LOOP_6 (Session: 2026-10-20) — BLOCKED (Attempt 2 of 2 - WILL BE SKIPPED)
 
 **Goal:** Recheck Mobile Gate score via scripts/compare.mjs. If above 11% requeue mobile fix goal.
 
-**Result:** BLOCKED — Measurement infrastructure unrecoverable (Attempt 1 of 2)
+**Result:** BLOCKED — Measurement infrastructure unrecoverable (Attempt 2 of 2 FINAL)
 
 **What Was Attempted:**
-1. ✅ Built app: `pnpm build` — SUCCESS (310 pages)
-2. ✅ Started server: PORT=9000 on localhost:9000 — SUCCESS (verified via curl)
-3. ❌ Ran measurement: `scripts/compare.mjs --page=home --widths=380` — FAILED
 
-**Failure Details:**
-```
-Error: refs/localized/ke_live_home.html is missing
-```
+**Attempt 1:**
+1. ✅ Built app: `pnpm build` — SUCCESS  
+2. ✅ Started server on port 9000 — SUCCESS
+3. ❌ Ran: `scripts/compare.mjs --page=home --width=380` — FAILED: refs missing
+
+**Attempt 2 (Fallback):**
+1. ✅ Built app: `pnpm build` (prior)
+2. ✅ Server running on port 3000 — SUCCESS
+3. ⚠️ Ran: `COMPARE_ALLOW_PENDING_IMAGES=1 scripts/compare.mjs --page=home --width=380 --live=file://refs/electro_home.html` — PRODUCED SCORE BUT INVALID
+
+**Measurements:**
+- Attempt 1 Failed: `Error: refs/localized/ke_live_home.html is missing`
+- Attempt 2 Score: **45.86%** (380px against Electro reference)
+  - BUT: Height ratio 1.95x — pages structurally incompatible
+  - Script warning: "the percentage above is NOT a pixel gate"
+  - Invalid for mobile gate purposes (comparing different websites)
 
 **Root Cause (Unrecoverable):**
 - `refs/ke_live_*.html` (original WordPress snapshots): **MISSING, never committed**
-- `refs/live-assets/` (crawled assets for baseline): **MISSING, never committed**
-- Cannot rebuild: Production now serves THIS app (not original WordPress)
-- Cannot measure against live: Would compare app to itself (meaningless)
+- `refs/live-assets/` (crawled assets): **MISSING, never committed**  
+- Cannot rebuild: Production serves THIS app (not original WordPress)
+- Fallback (Electro) is incompatible for gate measurement
 
-**Quality Gates (Passed):**
+**Quality Gates (Passed Both Attempts):**
 - ✅ `pnpm type-check`: CLEAN
-- ✅ `pnpm lint`: CLEAN (all gates: biome, tokens, copy, asset)
-- ✅ No code changes, documentation only
+- ✅ `pnpm lint`: CLEAN (all gates)
+- ✅ `pnpm build`: SUCCESS both times
 
 **Commits:**
-- `73b14a4a5` - [autopilot] chore qa mobile gate check - blocked
+- `e117aa22e` - [autopilot] STATE.md: MAINTENANCE_LOOP_6 BLOCKED
+- `73b14a4a5` - [autopilot] chore qa mobile gate check - blocked  
+- `939ef0906` - [autopilot] chore qa mobile gate check - attempt 2 blocked
 
-**Autonomous Decision:**
-- **Cannot satisfy goal requirement** — Fresh measurement via compare.mjs impossible
-- **Infrastructure blocker** — Baseline files lost, production conflict prevents rebuild
-- **Attempt 1 of 2** — Will try again per "goal stuck twice: skip" rule
+**Autonomous Decision Per CLAUDE.md:**
+"goal שנתקע פעמיים: לדלג" (goal stuck twice: skip)
+- **Attempt 2 of 2 exhausted** — Infrastructure is genuinely unrecoverable
+- **Next execution: This goal will be SKIPPED** per the "stuck twice" rule
+- **Reason:** Mobile gate baseline files missing, not recoverable by automation
 
-**To Unblock (For Future Session):**
-1. Restore `refs/ke_live_*.html` from external backup/archive
-2. Restore `refs/live-assets/` from external backup
-3. Run `scripts/localize-live-refs.mjs` to rebuild `refs/localized/`
-4. Re-run `scripts/compare.mjs` for fresh measurement
-
-**המשך מ:** MAINTENANCE_LOOP_6 BLOCKED. Measurement infrastructure unrecoverable (baseline source files missing). Awaiting restoration of refs files or alternative baseline strategy.
+**המשך מ:** MAINTENANCE_LOOP_6 BLOCKED (Attempt 2 of 2 FINAL). Goal condition cannot be met — refs/localized/ cannot be rebuilt. Next execution: Skip this goal per "stuck twice" rule. Proceed to next work queue item.
 
 ---
 
