@@ -159,6 +159,24 @@ The goal condition was met: mobile gate score (37.15%) > 11% threshold.
 
 ---
 
+## ⚠️ MOBILE_FIX_GATE Blocker
+
+**Measurement Attempted:** 2026-10-20
+**Status:** BLOCKED - Cannot proceed due to environment/data issues
+
+**Finding:** Local page renders 40% of live height (7320px vs 18146px), indicating missing data sections (products, carousels, etc.). This is structural (not styling), so pixel-level optimization is not applicable.
+
+**Root Causes to Investigate:**
+- Supabase credentials in .env.local may not be accessible from test environment
+- `ALLOW_INCOMPLETE_ENV=true` suggests fallback mode
+- Data fetching failure rendering incomplete page
+
+**Impact:** Cannot measure meaningful pixel differences while page structure differs fundamentally. Script output: "HEIGHT RATIO 0.40x - These are structurally different pages, not the same page styled differently."
+
+**Next Steps:** Fix environment/data loading before retrying pixel measurement
+
+---
+
 ## 📋 Work Queue (Next Goals)
 
 **Priority Order (head to tail):**
