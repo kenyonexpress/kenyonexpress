@@ -1,5 +1,33 @@
 # `migrations/pending/`
 
+## 2026-10-19: 189 PENDING (WebAuthn passkey registration and authentication)
+
+`189_passkeys_webauthn.sql` creates the `passkeys` table to store user
+credentials for WebAuthn authentication (Face ID, Touch ID, FIDO2 keys).
+Each row holds a credential_id, public_key, counter for replay protection,
+and transport list. RLS is enabled with per-user read/write/update/delete
+policies. The table is indexed by user_id and credential_id for fast lookups.
+Rollback is one DROP TABLE IF EXISTS.
+
+
+## 2026-10-19: 190 PENDING (WhatsApp OTP verification via Twilio)
+
+`190_whatsapp_otp.sql` adds WhatsApp-based OTP verification for first-time
+user registration. It creates the `otp_sessions` table to store temporary OTP
+codes with rate limiting (5 attempts per phone number per hour), and adds
+`verified_phone` and `verified_phone_at` columns to `profiles` to track which
+phone numbers have been verified. OTP codes are 6 digits, valid for 10 minutes,
+and delivered via Twilio's WhatsApp Business API with the message template
+"קוד האימות שלך לקניון אקספרס X X X X X X". The table is RLS-enabled with
+read access for authenticated users and system inserts/updates. Rollback drops
+both columns from `profiles` and the `otp_sessions` table.
+
+Three API endpoints support this: `/api/auth/otp/send` (rate limited by phone
+number), `/api/auth/otp/verify` (rate limited by phone for code guessing), and
+WhatsApp OTP form UI integrated into the registration flow with phone number
+validation, OTP input, and resend capability.
+
+
 ## 2026-10-19: 243 + 244 PENDING (product shipping location)
 
 `243_product_full_address.sql` adds `products.full_address`, a text column for

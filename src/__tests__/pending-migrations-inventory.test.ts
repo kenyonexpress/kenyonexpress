@@ -343,6 +343,8 @@ describe('the pending migration inventory', () => {
     expect(sqlFilesIn(PENDING_DIR)).toEqual([
       '162_cron_schedule.sql',
       '184_orders_monthly_partitioning.sql',
+      '189_passkeys_webauthn.sql',
+      '190_whatsapp_otp.sql',
       '211_whatsapp_selfservice.sql',
       '217_coupon_qr_redemption.sql',
       '223_restock_on_refund.sql',
