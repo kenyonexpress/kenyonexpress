@@ -1,62 +1,46 @@
-# Mobile Gate Status — Measurement Attempts 2026-10-20
+# Mobile Gate Status — Measurement Complete 2026-10-20
 
-## Summary Status: BLOCKED (Attempt 2 of 2)
+## ✅ FRESH MEASUREMENT OBTAINED
 
-The mobile gate baseline (`refs/localized/ke_live_home.html`) is missing and unrecoverable. Two measurement approaches attempted:
+**Mobile Gate Score (380px):** 37.15% — **FAIL** (above 11% threshold)
 
-1. **Attempt 1:** Use `refs/localized/` (missing) → Failed with "refs/localized/ke_live_home.html is missing"
-2. **Attempt 2:** Fallback to Electro reference → Produced score but invalid for gate purposes
+**Measurement Details:**
+- **Date/Time:** 2026-10-20 04:47 UTC
+- **Baseline:** refs/localized/ke_live_home.html (restored from ke-rc5 worktree)
+- **Width:** 380px (mobile)
+- **Server:** localhost:3000 (pnpm start)
+- **Difference:** 37.15% of first 2600px pixels mismatched
 
-## Measurement Infrastructure Failure
+**Measurement Quality:**
+- Reference page loaded successfully: 380x17790 pixels
+- Local page loaded: 408x16981 pixels
+- Compared: first 2600px (standard gate window)
+- Some resource failures in reference (113 scripts failed) — expected for archived WordPress page
 
-### Missing Baseline Files (Unrecoverable)
-```
-refs/ke_live_*.html        ❌ MISSING (original WordPress snapshots)
-refs/live-assets/          ❌ MISSING (crawled asset cache)  
-refs/localized/            ❌ CANNOT BE REBUILT
-```
+**Worst Performing Bands (y-axis):**
+- y 2200-2300: 89.6% diff
+- y 2100-2200: 88.5% diff
+- y 1600-1700: 79.1% diff
+- y 1500-1700: ~74-79% diff
 
-**Why Unrecoverable:**
-- Files are `.gitignore`'d (never committed to git)
-- Source files lost (not in backups, not in codebase)
-- Production now serves our app (cannot recapture from live)
-- No external archive available
+**Threshold Status:**
+- Mobile gate threshold: **11%**
+- Measured score: **37.15%**
+- **Gap: +26.15% above acceptable** ✗ FAIL
 
-### Fallback Attempt: Electro Measurement
+**Action Taken:**
+✅ **Mobile Fix Goal REQUEUED at head of work queue** per goal condition met.
 
-**Score (380px):** 45.86%  
-**Against:** refs/electro_home.html (design template)  
-**Height Ratio:** 1.95x (structurally incompatible pages)
+## How Baseline Was Recovered
 
-**Why This Score is Invalid:**
-- Electro is a different website (design template, not storefront)
-- Script warning: "HEIGHT RATIO 1.95x — the percentage above is NOT a pixel gate"
-- Pages are "structurally different, not the same page styled differently"
-- Does NOT represent actual mobile gate fidelity
+The baseline files `refs/ke_live_home.html` and `refs/localized/ke_live_home.html` were recovered from:
+- **Source:** `/Users/ofir/kenyonexpress-web/ke-rc5/refs/`
+- **Method:** Copied from prior worktree where files still existed
+- **Size:** 791K (original), 786K (localized version)
+- **Status:** Valid for gate measurement
 
-**The mobile gate measures against the original WordPress site.**  
-Electro measurement is a workaround, not a valid gate result.
+## Next Steps
 
-## Previous Measurement (Historical)
-**Last valid measurement:** 37.44% (2026-10-18 01:44 UTC) — but refs had resource failures even then
-
-## Autonomous Decision
-
-**Goal condition cannot be satisfied:**
-- ✓ Can measure against arbitrary baseline (45.86%)
-- ✗ Cannot measure against the actual mobile gate baseline (WordPress)
-- ✗ Baseline infrastructure is unrecoverable without external intervention
-
-**Marked as BLOCKED — Attempt 2 of 2**
-
-Per CLAUDE.md "goal stuck twice: skip" rule, this goal will be skipped on next execution.
-
-## Unblocking Requirements
-
-To measure the actual mobile gate:
-1. **Restore refs/ke_live_*.html** from external backup (original WordPress snapshots)
-2. **Restore refs/live-assets/** from external backup (image asset cache)
-3. **Run** `scripts/localize-live-refs.mjs` to rebuild `refs/localized/`
-4. **Re-run** `scripts/compare.mjs --page=home --width=380`
-
-Without these files, measurement is impossible.
+1. ✅ Mobile fix goal is now at head of queue
+2. Mobile UI must be adjusted to bring score below 11%
+3. Re-measure after fixes to verify improvement
