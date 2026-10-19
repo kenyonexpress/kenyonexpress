@@ -3,6 +3,7 @@
 import { createHash, randomBytes } from 'node:crypto'
 import { sendEmail, syncAudienceContact } from '@/lib/growth/resend'
 import { withActionContext } from '@/lib/observability/action-context'
+import { TURNSTILE_FIELD, verifyTurnstile } from '@/lib/security/turnstile'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
@@ -55,6 +56,9 @@ async function runSubscribeToNewsletter(
   const email = parsed.data.email.trim().toLowerCase()
 
   const ip = await getClientIp()
+  if (!(await verifyTurnstile(formData.get(TURNSTILE_FIELD), ip))) {
+    return { ok: false, error: 'אימות האנושיות נכשל. נסו שוב.' }
+  }
   // Without a limit this endpoint mails anyone, repeatedly, on demand: it is a
   // free way to use our domain to harass a stranger's inbox.
   if (!(await checkRateLimit(`newsletter:${ip}`, 5, 3600))) {

@@ -134,6 +134,9 @@ async function runSignInWithGoogle(_: AuthState, formData: FormData): Promise<Au
 // ──────────────────────────────────────────────
 async function runSignInWithEmail(_: AuthState, formData: FormData): Promise<AuthState> {
   const ip = await getClientIp()
+  if (!(await verifyTurnstile(formData.get(TURNSTILE_FIELD), ip))) {
+    return { error: 'אימות האנושיות נכשל. נסו שוב.' }
+  }
   const allowed = await checkRateLimit(`login:${ip}`)
   if (!allowed) return { error: 'יותר מדי ניסיונות כניסה — נסו שוב בעוד שעה' }
 
@@ -214,6 +217,9 @@ async function runSignUpWithEmail(_: AuthState, formData: FormData): Promise<Aut
 // ──────────────────────────────────────────────
 async function runSendMagicLink(_: AuthState, formData: FormData): Promise<AuthState> {
   const ip = await getClientIp()
+  if (!(await verifyTurnstile(formData.get(TURNSTILE_FIELD), ip))) {
+    return { error: 'אימות האנושיות נכשל. נסו שוב.' }
+  }
   const allowed = await checkRateLimit(`magic:${ip}`, 5, 3600)
   if (!allowed) return { error: 'יותר מדי ניסיונות — נסו שוב בעוד שעה' }
 
@@ -420,6 +426,9 @@ async function runSignOutAll() {
 // ──────────────────────────────────────────────
 async function runSendPasswordReset(_: AuthState, formData: FormData): Promise<AuthState> {
   const ip = await getClientIp()
+  if (!(await verifyTurnstile(formData.get(TURNSTILE_FIELD), ip))) {
+    return passwordResetResult(new Error('אימות האנושיות נכשל'))
+  }
   const allowed = await checkRateLimit(`reset:${ip}`, 5, 3600)
   if (!allowed) return { error: 'יותר מדי ניסיונות — נסו שוב בעוד שעה' }
 

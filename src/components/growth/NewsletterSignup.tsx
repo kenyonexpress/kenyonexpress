@@ -1,5 +1,6 @@
 'use client'
 
+import TurnstileWidget from '@/components/shared/TurnstileWidget'
 import { type NewsletterState, subscribeToNewsletter } from '@/server/actions/newsletter'
 import { useActionState, useEffect, useId, useRef } from 'react'
 
@@ -72,6 +73,8 @@ export default function NewsletterSignup({ source = 'footer' }: { source?: strin
       <p id={`${id}-consent`} className="ke-newsletter__consent">
         בלחיצה על הרשמה אני מאשר קבלת דיוור פרסומי. אפשר להסיר את ההרשמה בכל מייל.
       </p>
+
+      <TurnstileWidget />
 
       {state.error && (
         <p id={`${id}-error`} role="alert" className="ke-newsletter__error">

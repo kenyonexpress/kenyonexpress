@@ -3,6 +3,7 @@
 import PasskeySignIn from '@/components/auth/PasskeySignIn'
 import WhatsappOtpForm from '@/components/auth/WhatsappOtpForm'
 import { GoogleLogo } from '@/components/shared/GoogleLogo'
+import TurnstileWidget from '@/components/shared/TurnstileWidget'
 import {
   type AuthState,
   sendMagicLink,
@@ -179,6 +180,8 @@ export default function LoginForm({ next, callbackError, magic, phoneEnabled = f
           </p>
         )}
 
+        <TurnstileWidget />
+
         <button
           type="submit"
           disabled={emailPending}
@@ -223,6 +226,7 @@ export default function LoginForm({ next, callbackError, magic, phoneEnabled = f
                 {getError(magicState)}
               </p>
             )}
+            <TurnstileWidget />
             <button
               type="submit"
               disabled={magicPending}
