@@ -455,7 +455,7 @@ function SlideImage({
       >
         <div className="relative h-full w-full" style={{ minHeight: layout.minHeight }}>
           {slide.image_url ? (
-            <HeroSlideImage src={slide.image_url} priority={false} />
+            <HeroSlideImage src={slide.image_url} priority={priority} />
           ) : (
             <BrandPlaceholder
               className="absolute inset-0"
