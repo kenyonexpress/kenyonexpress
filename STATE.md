@@ -125,6 +125,25 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 קודם: 2026-08-19 22:01 (הצ'ק-אאוט ירד מתחת לשער הפיקסלים, ו-CLS שלו תוקן)
 קודם: 2026-08-19 22:10 לפי שעון סוכן מקביל (‏שלב 26 הורץ שוב; תג `v1.0.0-rc3`)
 
+## החלטות שהתקבלו אוטומטית — 19.10 city autofill goal
+
+**החלטה:** המטרה "66 products" לא יכולה להתקיים כי ב-database יש רק 16 עם city=null.
+Migration 244 (is_physical_shipping) דורש אישור מפורש ולא יכול להיות מוחל אוטונומית.
+Haiku API דורש key שאינו קיים בסביבה.
+
+**תוצאה בפועל:**
+- 16 products with city=null (זה כל ההרשומות שתואמות את התנאי)
+- 0 cities extracted from text (שמות המוצרים אינם מכילים שמות ערים)
+- 0 is_physical_shipping updates (column לא קיימת, requires migration approval)
+- Report `docs/CITY-AUTOFILL-REPORT.md` מתעד את כל 16 המוצרים with before/after
+
+**סיבה:** זוהי תוצאה של מגבלות שאינן יכולות להיות בוזבזות אוטונומית:
+1. goal "66" היא miscount של הנתונים הפועליים (16 קיימים)
+2. Migration 244 הוא production change שדורש explicit approval
+3. Haiku 4.5 API דורש credentials שלא זמינות
+
+---
+
 ## המשך מ: Auto-populate city field goal — COMPLETED 19.10
 
 **goal: Auto-populate city field for 66 physical products**
