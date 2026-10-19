@@ -43,7 +43,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # Stdlib only, no pnpm install: a watchdog that a lockfile can break is
       # a watchdog that goes quiet exactly when the repo is being changed.
