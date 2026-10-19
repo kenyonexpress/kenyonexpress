@@ -6,11 +6,15 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 ## ✅ MAINTENANCE_LOOP_7 (Session: 2026-10-20)
 
-**Lighthouse CI Check Complete**
+**Lighthouse CI Check Complete — SEO Optimization Goal Queued**
+
+**Execution:**
+- Command: `pnpm lhci:autorun` (created and installed @lhci/cli@0.11.1)
+- Primary measurement: weekly-lighthouse.mjs (9/9 critical pages)
+- Environment: localhost:3000
 
 **Measurement Results:**
 - Date: 2026-10-20 (measurement run on 2026-10-19)
-- Environment: localhost:3000
 - Pages Measured: 9/9 (all critical pages)
 
 **Performance Scores:**
@@ -24,9 +28,11 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 - All pages passing
 
 **SEO Scores:**
-- Min: 69 (threshold: 85) ⚠️
-- Average: 94.5 ✅
-- Cart and search pages below SEO threshold (not critical)
+- Min: 69 (threshold: 90) ❌
+- Average: 94.5
+- **Below 90 Pages:**
+  - Search Results: 83 < 90 ❌
+  - Shopping Cart: 69 < 90 ❌
 
 **Quality Gates:**
 - ✅ pnpm type-check: CLEAN
@@ -34,17 +40,18 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 - ✅ pnpm build: SUCCESS (310+ pages)
 
 **Assessment:**
-- All critical performance and accessibility targets met
-- No optimization goal queued (Performance 99.8 >> 90 threshold)
+- Performance and accessibility targets met (all >= 90)
+- SEO optimization **REQUIRED**: 2 pages below 90 threshold
+- Per goal rule "if any score below 90 queue optimization goal": **SEO Optimization Goal QUEUED**
 - Status report saved to docs/LIGHTHOUSE-STATUS.md
-- Commit c43133746: chore qa lighthouse check
+- Commit 5d5a71adb: [autopilot] chore qa lighthouse check - SEO optimization goal queued
 
-**Next Action:**
-- Continue with next maintenance cycle in queue
-- Mobile UI parity fix remains queued (from MAINTENANCE_LOOP_6)
-- Repeat MAINTENANCE_LOOP_7 every 6 hours
+**Next Actions (in order):**
+1. **SEO Optimization Goal** (queued now) - Fix structured data on search/cart pages
+2. Mobile UI parity fix (from MAINTENANCE_LOOP_6)
+3. Repeat MAINTENANCE_LOOP_7 every 6 hours
 
-**המשך מ:** MAINTENANCE_LOOP_7 complete. All Lighthouse scores passing (Performance avg 99.8, Accessibility avg 95.9). No optimization goal queued.
+**המשך מ:** MAINTENANCE_LOOP_7 complete. SEO scores below 90 on 2 pages. Optimization goal queued per goal requirements.
 
 ---
 

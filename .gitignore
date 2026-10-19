@@ -70,3 +70,4 @@ public/images/cdn/
 backups/
 .env*
 .image-staging/
+.lighthouseci/

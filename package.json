@@ -32,6 +32,7 @@
     "analyze": "next experimental-analyze",
     "lighthouse:smoke": "node scripts/lighthouse-smoke.mjs",
     "lighthouse:weekly": "node scripts/weekly-lighthouse.mjs",
+    "lhci:autorun": "pnpm exec lhci autorun",
     "sentry:verify": "node scripts/sentry-verify.mjs",
     "sentry:verify:ci": "node scripts/sentry-verify.mjs --ci --dry",
     "sentry:review": "node scripts/sentry-monthly-review.mjs",
@@ -106,7 +107,8 @@
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",
     "@biomejs/biome": "^1.9.4",
-    "@playwright/test": "^1.64.1",
+    "@lhci/cli": "0.11.1",
+    "@playwright/test": "^1.63.0",
     "@storybook/blocks": "^8.6.14",
     "@storybook/nextjs": "^10.6.2",
     "@storybook/react": "^10.6.2",
