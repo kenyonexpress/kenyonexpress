@@ -54,7 +54,7 @@ function FooterSection({
 }) {
   return (
     <div>
-      <h2 className="text-white font-bold mb-3 text-sm">{title}</h2>
+      <h2 className="text-white text-footer-heading mb-3">{title}</h2>
       <ul className="space-y-2">
         {links.map((link) => (
           <li key={link.label}>
@@ -84,7 +84,7 @@ export default function SiteFooter() {
 
             {/* Social Column */}
             <div>
-              <h2 className="text-white font-bold mb-4 text-sm">עקבו אחרינו</h2>
+              <h2 className="text-white text-footer-heading mb-4">עקבו אחרינו</h2>
               <div className="flex items-center gap-3 mb-6">
                 {socials.map(({ label, href }) => {
                   const Icon = label === 'פייסבוק' ? FaFacebook : FaInstagram

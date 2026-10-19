@@ -10,6 +10,9 @@
    `src/styles/tokens.ts`. */
 @import "../styles/tokens.css";
 
+/* Typography utility classes based on TYPOGRAPHY_SCALE for consistent sizing */
+@import "../styles/typography.css";
+
 /* Match live site body font size. Live renders at 14px effective size.
    Setting root font-size to 0.875rem scales everything down proportionally,
    which matches the live rendering and improves pixel parity.

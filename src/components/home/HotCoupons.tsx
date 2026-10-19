@@ -1,6 +1,5 @@
 import HotCouponCard from '@/components/home/HotCouponCard'
 import { getHotCoupons } from '@/lib/hot-coupons'
-import { getTypographyStyles } from '@/lib/typography'
 import { Suspense } from 'react'
 
 async function HotCouponsGrid() {
@@ -33,9 +32,7 @@ export default function HotCoupons() {
       className="mx-auto w-full max-w-6xl px-4 py-8 md:px-6 lg:py-12"
     >
       <div className="mb-8">
-        <h2 style={getTypographyStyles('h2')} className="text-gray-900 mb-2">
-          ✨ קופונים חמים
-        </h2>
+        <h2 className="text-h2 text-gray-900 mb-2">✨ קופונים חמים</h2>
         <p className="text-gray-600">קופונים בהנחה גדולה - שלם אונליין וקנה בחנות</p>
       </div>
 
