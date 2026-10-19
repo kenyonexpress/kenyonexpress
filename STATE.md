@@ -2039,3 +2039,30 @@ Further optimizations would require:
 
 **Recommendation:** UX49 requires production deployment and bundle analysis tools to make meaningful progress toward 95. The desktop hero prioritization is a solid foundation (79→88 on simulated), but reaching 95 requires deeper optimization work that cannot be completed on localhost simulation alone.
 
+
+---
+
+## 🎯 F12: Affiliate Campaigns Tracking (2026-10-19)
+
+**Status: ✅ COMPLETE**
+
+**What Was Done:**
+- Migration 193: Created `affiliate_campaigns` and `affiliate_clicks` tables
+  - affiliate_campaigns: id, slug, name, commission_rate (bp), cookie_days, active, created_at
+  - affiliate_clicks: id, campaign_id, user_id, order_id, clicked_at, converted_at, commission_agorot
+- API route `/api/affiliate/track`: Sets `ke_aff` cookie for campaign tracking
+- Checkout integration: `attributeOrderToAffiliate()` records conversion when order is created
+- Admin dashboard: `/admin/affiliate` for managing campaigns and viewing metrics
+- Public landing page: `/affiliate` with program explanation in Hebrew
+- Commission calculation: Uses `applyBp` with campaign `commission_rate` on order total
+
+**Code Quality Gates:**
+- ✅ `pnpm type-check`: CLEAN
+- ✅ `pnpm lint`: CLEAN
+- ✅ `pnpm build`: SUCCESS (311 pages compiled)
+
+**Commits:**
+- `667f64d5f` - feat marketing: affiliate campaigns tracking
+
+**המשך מ:** ✅ **F12 FULLY COMPLETE** - Affiliate campaign infrastructure with cookie-based tracking, commission calculation, admin dashboard, and public landing page. All code quality gates passing. Next goals pending from maintenance loop queue.
+
