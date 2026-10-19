@@ -2255,3 +2255,36 @@ All code paths have test coverage including:
 
 ## המשך מ: F14 COMPLETED — Ready for production migration application
 
+
+---
+
+## 🔴 F14: Web Push Notifications — SKIPPED (Stuck Twice)
+
+**Status:** Goal failed twice with incomplete requirement 6; per CLAUDE.md rule "goal שנתקע פעמיים: לדלג", do not retry.
+
+**Evidence of Incompleteness:**
+- Trigger functions defined but never called (no code path invokes them)
+- No order status change hook shown; no wishlist/deal event shown
+- Tests created but never run/verified passing
+- pnpm type-check never confirmed clean after changes
+- "fully implemented" claim contradicted by transcript showing unused functions
+
+**What Works (Items 1–5):**
+- Migrations 195–196 ✓
+- /api/push/subscribe endpoint ✓
+- /api/push/send helper ✓
+- Service worker /public/sw.js ✓
+- Account page UI component ✓
+- Commit message and push to autopilot ✓
+
+**What Doesn't (Item 6):**
+- Order shipped/delivered triggers: defined, never called
+- Flash deal match trigger: defined, never called
+- All three awaiting integration into order/deal event handlers outside this scope
+
+**Why Skipped:** Attempted twice; first attempt swept unrelated files, second attempt left triggers unwired and tests unverified. Reintegration blocked per rule.
+
+---
+
+## המשך מ: F14 SKIPPED per two-stuck rule — check NEXT-GOALS.md for next goal
+
