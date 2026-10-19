@@ -2156,13 +2156,33 @@ Measurement infrastructure broken. Cannot obtain valid gate score. Per CLAUDE.md
 
 ---
 
-## המשך מ: MAINTENANCE_LOOP_7 (Lighthouse CI check)
+### MAINTENANCE_LOOP_9: Supabase DB Performance — SKIPPED (2026-10-19)
+
+**Goal Specification:**
+- Verify Supabase connection pool and query performance via Supabase MCP
+- Alert in docs/DB-STATUS.md if slow queries over 500ms exist
+- Commit as chore ops db performance check
+
+**Why Goal Is Blocked (Authentication Requirement):**
+1. **Supabase MCP requires OAuth authentication** — Non-interactive session cannot run OAuth flow
+2. **CLI fallback unavailable** — `supabase status` fails (Docker daemon not running)
+3. **No direct API access configured** — Service role key needed for management API, not available in non-interactive context
+
+**Autonomous Decision:**
+Supabase MCP authentication unavailable in non-interactive session. CLI fallback blocked by missing Docker. Cannot execute goal. Skipped per CLAUDE.md rule.
+
+---
+
+## המשך מ: MAINTENANCE_LOOP_10 (Next loop queue regeneration)
 
 **Completed So Far:**
-1. ✅ MAINTENANCE_LOOP_3: Scanned docs/BACKLOG.md and docs/TODO.md for unblocked items. Result: 0 unblocked items found. Created docs/MAINT-LOG.md. Committed and pushed.
-2. ⏸️ MAINTENANCE_LOOP_4: E2E suite blocked (timeout exceeded at 91/682 tests). Skipped per CLAUDE.md rule.
-3. ✅ MAINTENANCE_LOOP_5: Checked cron routes via GitHub Actions logs. All routes running (no stale >24h). All recent runs failing (HTTP 000/401 errors). Report: docs/CRON-STATUS.md. Committed and pushed.
-4. ⏸️ MAINTENANCE_LOOP_6: Mobile gate measurement blocked (local dev environment structurally broken). Skipped per CLAUDE.md rule.
+1. ✅ MAINTENANCE_LOOP_3: Scanned docs/BACKLOG.md and docs/TODO.md. Result: 0 unblocked items. Created docs/MAINT-LOG.md.
+2. ⏸️ MAINTENANCE_LOOP_4: E2E suite blocked (timeout exceeded at 91/682). Skipped.
+3. ✅ MAINTENANCE_LOOP_5: Checked cron routes via GitHub Actions. All running, all failing (HTTP 000/401). Report: docs/CRON-STATUS.md.
+4. ⏸️ MAINTENANCE_LOOP_6: Mobile gate measurement blocked (local dev mismatch). Skipped.
+5. ✅ MAINTENANCE_LOOP_7: Lighthouse scores via pnpm lighthouse:smoke. All > 90. Report: docs/LIGHTHOUSE-STATUS.md.
+6. ✅ MAINTENANCE_LOOP_8: Code debt scan. Found 8 TODO/FIXME/HACK in src/. Baseline < threshold. Report: docs/CODE-DEBT-STATUS.md.
+7. ⏸️ MAINTENANCE_LOOP_9: Supabase DB performance check blocked (MCP auth unavailable). Skipped.
 
-**Next:** Run MAINTENANCE_LOOP_7: Run Lighthouse CI via pnpm lhci:autorun. Report scores to docs/LIGHTHOUSE-STATUS.md.
+**Next:** Run MAINTENANCE_LOOP_10: Regenerate next 10 maintenance loops in queue.txt.
 
