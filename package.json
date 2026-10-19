@@ -5,6 +5,8 @@
   "packageManager": "pnpm@11.1.2",
   "scripts": {
     "dev": "next dev",
+    "storybook": "storybook dev -p 6006",
+    "build:storybook": "storybook build",
     "build": "next build && node scripts/security/csp-shell-gate.mjs",
     "start": "next start",
     "lint": "biome check . && node scripts/tokens-gate.mjs && node scripts/copy-gate.mjs && node scripts/asset-gate.mjs && node scripts/media-ingest/blur-manifest.mjs --check",
@@ -127,6 +129,11 @@
     "@percy/cli": "1.32.11",
     "@percy/playwright": "1.1.2",
     "@playwright/test": "^1.50.1",
+    "@storybook/addon-a11y": "^10.6.2",
+    "@storybook/addon-controls": "^9.0.8",
+    "@storybook/addon-docs": "^10.6.2",
+    "@storybook/addon-essentials": "^8.6.14",
+    "@storybook/nextjs": "10.6.2",
     "@storybook/react": "^10.6.2",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.6.3",
@@ -146,6 +153,7 @@
     "lighthouse": "^13.5.0",
     "lint-staged": "^15.3.0",
     "snyk": "^1.1308.1",
+    "storybook": "^10.6.2",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^4.1.11"
