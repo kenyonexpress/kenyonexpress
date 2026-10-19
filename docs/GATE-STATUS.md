@@ -1,47 +1,53 @@
-# Mobile Gate Status — Latest Measurement Report
+# Mobile Gate Status — Measurement Attempt 2026-10-20
 
-## Current Status: RECHECK REQUIRED (Infrastructure Issue)
+## Current Status: BLOCKED — Measurement Infrastructure Broken
 
-**Last Recorded Mobile Gate Score (380px):** 37.44% — **FAIL** (above 11% threshold)
-- **Date:** 2026-10-18 01:44 UTC
-- **Commit:** b0e90c099-dirty
-- **Issue:** Reference resources failed to load during measurement
+**Attempted:** 2026-10-20 04:35 UTC  
+**Result:** FAILED — Cannot complete measurement
 
-## Measurement Infrastructure Status
+## Measurement Failure Analysis
 
-The measurement system (`scripts/compare.mjs`) requires reference HTML files in `refs/localized/` to compare against. The latest measurements show resource loading failures:
+### What Happened
+- ✅ Server built successfully (pnpm build)
+- ✅ Server started on localhost:9000 (verified via curl)
+- ❌ `scripts/compare.mjs --page=home --widths=380` failed at reference load
 
+### Root Cause
 ```
-ref 21 failed to load (10 font, 4 xhr, 3 script, 3 stylesheet, 1 image)
+Error: refs/localized/ke_live_home.html is missing, so there is nothing to compare against
 ```
 
-This indicates the reference baseline is corrupted or incomplete.
+The measurement system requires:
+1. `refs/ke_live_*.html` — Original WordPress HTML snapshots (MISSING)
+2. `refs/live-assets/` — Crawled image assets for substitution (MISSING)
+3. `refs/localized/` — Built comparison baselines (MISSING)
 
-## Analysis
+### Why Baseline is Lost
+- Files are `.gitignore`'d (not in version control)
+- Original sources (`refs/ke_live_*.html`, `refs/live-assets/`) were never committed
+- Cannot be rebuilt: live production now serves THIS app, not original WordPress
+- No backup archives found in expected locations
 
-1. **Mobile Gate Score (380px):** 37.44% ✗ FAIL
-   - **Threshold:** 11%
-   - **Gap:** +26.44% above acceptable
-   - **Action:** Requeue mobile fix goal (condition met)
+### Previous Measurements (from UI-PARITY-REPORT.md)
+Last recorded mobile score: **37.44%** (2026-10-18 01:44 UTC) — but had same resource loading failures
 
-2. **Reference State:** Broken
-   - Resource loading failures in refs
-   - Live site comparison unavailable (production serves this app)
-   - Cannot rebuild baseline from network without corrupting measurement
+## Autonomous Decision
 
-3. **Prior Session Data** (from UI-PARITY-REPORT.md):
-   - 2026-10-18 01:46: home/1440: 27.66% FAIL
-   - 2026-10-18 01:44: home/768: 34.68% FAIL
-   - 2026-10-18 01:44: home/380: 37.44% FAIL
+**Infrastructure is unrecoverable in current state:**
+- ✓ Can build the app
+- ✓ Can start the server  
+- ✗ Cannot generate comparison baseline (source files gone, prod serves our app)
+- ✗ Cannot measure against live (meaningless: comparing app to itself)
 
-## Decision
+**Blocked:** True measurement impossible without:
+1. Restoring `refs/ke_live_*.html` from external backup, OR
+2. Re-capturing baseline from archived WordPress site (not available), OR
+3. Implementing new measurement strategy (out of scope for this goal)
 
-**Mobile fix goal REQUEUED** per MAINTENANCE_LOOP_6 condition:
-- Last known score: 37.44% (above 11% threshold)
-- Status: FAIL — Mobile UI parity not met
+## Next Steps for Unblocking
 
-## Next Steps
-
-1. Fix mobile UI parity to bring score below 11%
-2. Rebuild measurement baseline once refs infrastructure is restored
-3. Re-run MAINTENANCE_LOOP_6 to verify improvement
+To restore measurement capability:
+1. Check backups for `refs/ke_live_*.html` and `refs/live-assets/`
+2. If unavailable, capture new WordPress baseline from archive service
+3. Run `scripts/localize-live-refs.mjs` to rebuild `refs/localized/`
+4. Re-run `scripts/compare.mjs` for fresh mobile gate score
