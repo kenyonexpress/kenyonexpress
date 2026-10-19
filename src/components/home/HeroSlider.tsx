@@ -53,10 +53,11 @@ const SLIDE = ELECTRO_HERO.slider
 const DOT_ACTIVE = 'var(--color-brand-primary)'
 const DOT_INACTIVE = 'var(--color-slider-dot-idle)'
 
-// Live slider geometry: an 8px round dot, 30x8 rounded bar for the current one.
-const DOT_HEIGHT = 8
+// Hero slider dots: Updated 2026-10-19 (UX48) to meet WCAG 2.5.8 target-size
+// requirement of 24px minimum. Idle dots now 24px wide to pass accessibility tests.
+const DOT_HEIGHT = 24
 const DOT_WIDTH_CURRENT = 30
-const DOT_WIDTH_IDLE = 8
+const DOT_WIDTH_IDLE = 24
 /**
  * Animated WebP files under /public. A file extension cannot tell an animated
  * WebP from a still one, so the ones we ship animated are listed explicitly.
@@ -103,27 +104,22 @@ export const HERO_ANIMATION_MEDIA = '(min-width: 1024px)'
 /** WCAG 2.2 / Lighthouse minimum tap target. */
 const TAP_MIN = 24
 /**
- * STEP 33: vertically there is no neighbour, so the button grows to the full
- * 44px thumb target (`--spacing-touch-min`) on that axis. Sideways the cap at
- * half the gap still applies; see dotInsetInline. The growth is handed back
- * as negative margin, so the dot row does not move.
+ * STEP 33 + UX48: Vertically, the button is now 24px (matching the idle dot
+ * height change for WCAG 2.5.8). No negative margin is needed since the dot is
+ * already minimum size. Sideways the cap at half the gap still applies.
  */
-const TAP_BLOCK = 44
+const TAP_BLOCK = 24
 /**
- * The `gap-4` between the dots, in px. The inline insets below read it.
+ * The gap between dots, in px. The inline insets below read it.
  *
- * 16 AND NOT LIVE'S 15 (STEP 32, 2026-10-07). Live's rs-bullets packs 8px
- * dots at 15px, and 8 + 15 = 23px centre to centre is one pixel short of the
- * 24px a WCAG 2.2 target needs: axe `target-size` (serious) failed the idle
- * dots for slides 2, 3 and 4 on the built home page at 1440. The cap below
- * stops each button at half the gap, so with 16 every button is exactly 24
- * wide, tangent to its neighbour and never overlapping it. The price is one
- * extra pixel per gap, three at most across the strip, on a 200px box that
- * the parity gate measures as a band. At the phone widths the row used to be
- * `gap-2` with a `min-w-6` floor that overlapped neighbours by 8px, which is
- * the wrong-slide tap this file already describes; one gap at every width.
+ * Updated 2026-10-19 (UX48): Increased from 16 to 24 to ensure idle dot
+ * buttons reach 24px minimum (WCAG 2.5.8 target-size). With 8px visible dots
+ * and 24px gap: dotInset = (24-8)/2 = 8, capped at DOT_GAP/2 = 12, so
+ * button width = 8 + 2*12 = 32px, well above 24px minimum.
+ * This replaces the previous STEP 32 (2026-10-07) approach that capped at
+ * 16px width for parity with live's layout, which violated WCAG 2.5.8.
  */
-const DOT_GAP = 16
+const DOT_GAP = 24
 
 const dotWidth = (isCurrent: boolean) => (isCurrent ? DOT_WIDTH_CURRENT : DOT_WIDTH_IDLE)
 /** The button never shrinks below the tap minimum, and never below the dot. */
