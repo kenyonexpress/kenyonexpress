@@ -48,6 +48,8 @@ export type CategoryProduct = {
   images: unknown
   stock_quantity?: number | null
   categories?: { name_he: string; slug: string }[]
+  /** Product's own city. */
+  city?: string | null
   /** Normalised supplier join. Present once the query selects it. */
   supplier?: { city?: string | null } | null
   /** Set by sortByDistance when the customer asked for "near me". */
@@ -93,8 +95,7 @@ export default function CategoryProductCard({ product }: { product: CategoryProd
   const outOfStock = product.stock_quantity === 0
   const canAdd = price != null && !outOfStock
 
-  const categoryTags = product.categories ?? []
-  const cityLabel = cityByName(product.supplier?.city)?.name ?? null
+  const cityName = product.city ? (cityByName(product.city)?.name ?? product.city) : 'כל הארץ'
   const distanceLabel =
     typeof product.distanceKm === 'number' ? formatDistance(product.distanceKm) : null
 
@@ -111,28 +112,17 @@ export default function CategoryProductCard({ product }: { product: CategoryProd
   return (
     <article className="category-card">
       <div className="category-card__header">
-        {categoryTags.length > 0 && (
-          <span className="category-card__categories">
-            {categoryTags.map((cat, i) => (
-              <span key={cat.slug}>
-                {i > 0 && ', '}
-                <Link href={`/category/${cat.slug}`}>{cat.name_he}</Link>
-              </span>
-            ))}
+        <span className="category-card__categories">
+          <span className="inline-flex items-center gap-1">
+            <span className="flex items-center justify-center w-6 h-6 rounded-full bg-neutral-100">
+              <MapPin size={10} className="text-black" />
+            </span>
+            <span>
+              {cityName}
+              {distanceLabel && <span className="category-card__distance"> · {distanceLabel}</span>}
+            </span>
           </span>
-        )}
-
-        {/* Where the business is. Shown only when the city is one this
-            project knows - cityByName returns null rather than guessing, so a
-            business is never labelled with a city it is not in. The distance
-            appears only after the customer asked for "near me". */}
-        {cityLabel && (
-          <span className="category-card__city">
-            <MapPin size={11} aria-hidden="true" />
-            {cityLabel}
-            {distanceLabel && <span className="category-card__distance"> · {distanceLabel}</span>}
-          </span>
-        )}
+        </span>
 
         {priceBlock && <span className="category-card__price">{priceBlock}</span>}
 
