@@ -2,7 +2,9 @@
 
 import AddToCartButton from '@/components/cart/AddToCartButton'
 import CompareButton from '@/components/compare/CompareButton'
+import { MapPin } from '@/components/icons'
 import WishlistButton from '@/components/product/WishlistButton'
+import { cityByName } from '@/lib/geo/cities'
 import { shekelsFromIlsRounded } from '@/lib/money-format'
 import { type HistorySummary, priceSignal } from '@/lib/pricing/price-history'
 import Image from 'next/image'
@@ -18,6 +20,10 @@ export type Product = {
   stock_quantity: number | null
   full_price?: number | null
   category?: { name_he: string; slug: string } | null
+  /** Product's own city, overrides supplier city. Null means use supplier city. */
+  city?: string | null
+  /** Supplier location info for fallback city. */
+  supplier?: { city?: string | null } | null
   /** Cached `price_history` summary (STEP 59), attached by `attachPriceHistory`; absent on grids that do not carry it. */
   priceHistory?: HistorySummary | null
 }
@@ -45,6 +51,21 @@ function PriceSignalBadge({ product, price }: { product: Product; price: number 
     )
   }
   return null
+}
+
+function LocationLabel({ product }: { product: Product }) {
+  const effectiveCity = product.city ?? product.supplier?.city ?? null
+  const city = effectiveCity ? cityByName(effectiveCity) : null
+  const cityName = city?.name ?? effectiveCity ?? 'כל הארץ'
+
+  return (
+    <span className="inline-flex items-center gap-1">
+      <span className="flex items-center justify-center w-8 h-8 rounded-full bg-neutral-100">
+        <MapPin size={14} className="text-black" aria-hidden="true" />
+      </span>
+      {cityName}
+    </span>
+  )
 }
 
 /**
@@ -135,17 +156,10 @@ function DealsProductCard({ product }: { product: Product }) {
 
   return (
     <article className="p_con">
-      {/* The department row is a reserved slot, not a conditional (UX09): a
-          card with no category rendered nothing here and came out 40px shorter
-          than its neighbours (24px row + the 16px column gap). The empty span
-          holds the row through `.p_con__category { min-height: 24px }`. */}
-      {product.category ? (
-        <Link href={`/category/${product.category.slug}`} className="p_con__category">
-          {product.category.name_he}
-        </Link>
-      ) : (
-        <span className="p_con__category" aria-hidden="true" data-empty-slot="category" />
-      )}
+      {/* The location row with city label and icon. */}
+      <p className="p_con__category">
+        <LocationLabel product={product} />
+      </p>
 
       <div className="p_con__title-wrap">
         <Link href={`/product/${product.slug}`} className="hover:underline">
@@ -290,14 +304,9 @@ function DefaultProductCard({
   return (
     <div className="overflow-hidden rounded-md border border-gray-100 bg-white">
       <div className="space-y-space-sm p-space-md">
-        {product.category && (
-          <Link
-            href={`/category/${product.category.slug}`}
-            className="-mt-1 block min-h-6 py-space-xs text-xs text-muted-2 hover:text-heading line-clamp-1"
-          >
-            {product.category.name_he}
-          </Link>
-        )}
+        <div className="-mt-1 block min-h-6 py-space-xs text-xs text-muted-2 line-clamp-1">
+          <LocationLabel product={product} />
+        </div>
 
         <Link
           href={`/product/${product.slug}`}

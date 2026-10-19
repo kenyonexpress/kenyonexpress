@@ -146,8 +146,8 @@ export default function CategoryProductCard({
   // The history mark (STEP 59), from the same rule as the product page.
   const signal = price == null ? null : priceSignal(product.priceHistory, Math.round(price * 100))
 
-  const categoryTags = product.categories ?? []
-  const cityLabel = cityByName(product.supplier?.city)?.name ?? null
+  const effectiveCity = product.supplier?.city
+  const cityLabel = cityByName(effectiveCity)?.name ?? effectiveCity ?? 'כל הארץ'
   const distanceLabel =
     typeof product.distanceKm === 'number' ? formatDistance(product.distanceKm) : null
   const description = list ? product.short_description_he?.trim() || null : null
@@ -162,28 +162,21 @@ export default function CategoryProductCard({
       <span>{formatPrice(price)}</span>
     )
 
-  const eyebrow = categoryTags.length > 0 && (
+  const eyebrow = (
     <span className="category-card__categories">
-      {categoryTags.map((cat, i) => (
-        <span key={cat.slug}>
-          {i > 0 && ', '}
-          <Link href={`/category/${cat.slug}`}>{cat.name_he}</Link>
+      <span className="inline-flex items-center gap-1">
+        <span className="flex items-center justify-center w-6 h-6 rounded-full bg-neutral-100">
+          <MapPin size={10} className="text-black" aria-hidden="true" />
         </span>
-      ))}
+        <span>
+          {cityLabel}
+          {distanceLabel && <span className="category-card__distance"> · {distanceLabel}</span>}
+        </span>
+      </span>
     </span>
   )
 
-  // Where the business is. Shown only when the city is one this project knows
-  // - cityByName returns null rather than guessing, so a business is never
-  // labelled with a city it is not in. The distance appears only after the
-  // customer asked for "near me".
-  const cityRow = cityLabel && (
-    <span className="category-card__city">
-      <MapPin size={11} aria-hidden="true" />
-      {cityLabel}
-      {distanceLabel && <span className="category-card__distance"> · {distanceLabel}</span>}
-    </span>
-  )
+  const cityRow = null
 
   const thumbBox = (
     <span className="category-card__thumb">

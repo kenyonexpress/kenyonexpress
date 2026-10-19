@@ -3,7 +3,7 @@
 import { useCart } from '@/components/cart/CartProvider'
 import CompareButton from '@/components/compare/CompareButton'
 import CityTag from '@/components/geo/CityTag'
-import { Check, Minus, Plus, ShoppingCart } from '@/components/icons'
+import { Check, MapPin, Minus, Plus, ShoppingCart } from '@/components/icons'
 import WishlistButton from '@/components/product/WishlistButton'
 import FacebookShareButton from '@/components/shared/FacebookShareButton'
 import ShareButton from '@/components/shared/ShareButton'
@@ -151,6 +151,7 @@ export default function ProductInfo({
   // slug and the tag needs the canonical name, and resolving twice invites the
   // two to disagree.
   const knownCity = cityByName(city)
+  const displayCity = city ?? 'כל הארץ'
   const router = useRouter()
   const [selected, setSelected] = useState<string | null>(
     variants.length === 1 ? (variants[0]?.id ?? null) : null,
@@ -278,7 +279,14 @@ export default function ProductInfo({
       data-cta-variant={ctaVariant === 'control' ? undefined : ctaVariant}
       className="pdp-summary"
     >
-      {categoryName && <p className="pdp-summary__eyebrow">{categoryName}</p>}
+      <p className="pdp-summary__eyebrow">
+        <span className="inline-flex items-center gap-2">
+          <span className="flex items-center justify-center w-8 h-8 rounded-full bg-neutral-100">
+            <MapPin size={14} className="text-black" aria-hidden="true" />
+          </span>
+          {displayCity}
+        </span>
+      </p>
 
       <h1 className="pdp-summary__title">{name}</h1>
 
