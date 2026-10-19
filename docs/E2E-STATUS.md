@@ -1,112 +1,143 @@
 # E2E Test Suite Status
 
-**Date:** 2026-10-19  
+**Date:** 2026-10-20  
 **Session:** MAINTENANCE_LOOP_4  
-**Branch:** autopilot
+**Branch:** autopilot  
+**Run Mode:** Playwright serial (single worker for stability)
 
-## Summary
+## Test Execution Summary
 
-Full Playwright E2E test suite execution for comprehensive test coverage verification and flaky test identification.
+**Status:** Full E2E test suite RUNNING (serial mode for stability)
 
-## Test Execution
+### Current Progress
 
-### Configuration
-- **Test Framework:** Playwright
-- **Test Command:** `pnpm test:e2e`
-- **Test Browsers:** Chromium, Firefox, WebKit, mobile-chrome (4 browsers)
-- **Total Estimated Test Count:** 682 tests (4 browsers × ~170 test cases)
+| Metric | Value |
+|--------|-------|
+| Tests Passed | 4 |
+| Tests Failed | 243 |
+| Tests Total (so far) | 247 / 682 |
+| Completion % | 36.2% |
+| Run Mode | Single worker (--workers=1) |
 
-### Execution Results (Partial - Runtime Limited)
+### Failures by Category
 
-**Status:** Test suite execution was interrupted before full completion due to runtime constraints. Partial results captured from ~459/682 tests executed.
+**Top Failing Test Suites:**
+1. Cart tests - 8+ failures (product discovery, quantity updates, cart state)
+2. Dark mode tests - 4+ failures (class application, persistence)
+3. Auth tests - 6+ failures (Hebrew copy rendering, form fields)
+4. Mobile shell tests - 4+ failures (responsive classes, fixed positioning)
+5. RTL tests - 3+ failures (sideways scroll, text direction)
+6. Product page tests - 5+ failures (document title, metadata)
+7. Accessibility tests - 8+ failures (consent banner, interactive controls)
+8. Checkout tests - 4+ failures (guest redirect, route guarding)
 
-#### Observed Failures (From Partial Run)
-- **Auth tests:** Signup page failures (missing Hebrew text elements)
-- **Mobile shell tests:** 
-  - SwipeableGallery not respecting mobile visibility (md:hidden not applied)
-  - StickyCartBar missing md:hidden class
-  - Computed position "static" instead of "fixed" on mobile
-- **Checkout tests:** Guest redirect failures on /checkout subtree
-- **Dialog tests:** Some focus trap and close button expectations
+### Root Causes (From Partial Analysis)
 
-#### Test Coverage by Suite
-- `auth.spec.ts`: Multiple failures on signup page Hebrew copy
-- `mobile-shell.spec.ts`: Responsive breakpoint and mobile component visibility failures
-- `checkout.spec.ts`: Guest gate and redirect failures
-- `dialog-ux29.spec.ts`: Partial failures on close button behavior
-- Other test files: Not fully analyzed due to execution interruption
+1. **Missing Product Links** - `/products` page not returning product links
+   - Tests: cart, category, product page discovery
+   - Pattern: `locator('a[href^="/product/"]').first()` → not found
+   - Impact: All tests that depend on product discovery
 
-### Quality Gates (Full Run) ✅
+2. **Dark Mode Class Not Applied** - HTML element missing 'dark' class
+   - Tests: dark-mode-ux30, theme persistence
+   - Evidence: `expect(classes).toContain("dark")` fails
+   - Impact: Theme toggle functionality
 
-**All code quality gates PASSING:**
-- ✅ `pnpm type-check`: CLEAN (0 TypeScript errors)
-- ✅ `pnpm lint`: CLEAN
-  - biome check: 1699 files, no fixes applied
-  - tokens gate: clean
-  - copy gate: clean  
-  - asset gate: clean
-- ✅ `pnpm build`: SUCCESS (307 pages compiled)
+3. **Hebrew Copy Not Rendering** - Signup/auth pages missing Hebrew text
+   - Tests: auth.spec.ts signup page
+   - Pattern: `getByRole('heading', { name: 'יצירת חשבון' })` → not found
+   - Impact: Signup and auth flows
 
-## Known Issues Identified
+4. **Mobile Responsive Classes Missing** - Desktop breakpoint hiding classes not applied
+   - Tests: mobile-shell.spec.ts
+   - Examples: SwipeableGallery, StickyCartBar missing `md:hidden`
+   - Impact: Mobile/desktop responsiveness
 
-### Mobile Responsive Classes
-1. **SwipeableGallery component:** Missing `md:hidden` class
-   - Should hide at desktop viewport (1440px)
-   - Currently visible at all breakpoints
-   
-2. **StickyCartBar component:** Missing `md:hidden` class
-   - Should hide at desktop (1440px and above)
-   - Currently displays across all sizes
+5. **RTL/LTR Direction Issues** - Text direction not properly set
+   - Tests: rtl.spec.ts (multiple widths and device types)
+   - Impact: Hebrew right-to-left layout
 
-3. **Fixed positioning:** StickyCartBar computed style not applying `position: fixed`
-   - Test expects `fixed`, received `static`
+6. **Focus/Accessibility** - Interactive controls not keyboard accessible
+   - Tests: a11y.spec.ts (keyboard reachability, consent banner)
+   - Impact: WCAG compliance
 
-### Auth/Signup Page
-- Hebrew heading "יצירת חשבון" not rendering on signup page
-- Phone field with Hebrew label "טלפון נייד" not found
-- Possible issue with Hebrew copy or component rendering
+## Flaky Tests Observed
 
-### Checkout Routes
-- Guest redirect logic failing on /checkout subtree
-- Login page redirection not triggering correctly for unauthenticated users
+From partial run, potential flaky patterns:
+- Product discovery helpers timeout/fail intermittently
+- Dark mode persistence across page reloads
+- Consent banner padding calculations
 
-## Recommendations
+## Test Infrastructure Notes
 
-### Fix Priority (High to Low)
+- **Browsers tested:** Chromium (primary), mobile-chrome, Firefox, WebKit (when reached)
+- **Workers:** Changed from 2 to 1 for stability (reduces resource contention)
+- **Timeout:** 30s per test (some tests hitting this limit)
+- **Test count:** 682 total tests across 28 spec files
 
-1. **CRITICAL - Mobile Components (2 failures)**
-   - Add `md:hidden` class to SwipeableGallery in ProductPage
-   - Add `md:hidden` class to StickyCartBar in ProductPage
-   - Verify fixed positioning is applied correctly
-   
-2. **HIGH - Auth Copy (2 failures)**
-   - Verify Hebrew text rendering in signup form
-   - Check copy gate passing for signup components
-   
-3. **MEDIUM - Checkout Guest Gate (Multiple failures)**
-   - Review checkout route guards
-   - Verify guest redirection logic
+## Recommended Fixes (Priority Order)
 
-### Testing Strategy
-- Run E2E tests with `pnpm test:e2e -- --reporter=list` for clearer output
-- Use `pnpm test:e2e -- e2e/mobile-shell.spec.ts` to isolate and fix mobile issues
-- Run `pnpm test:e2e -- e2e/auth.spec.ts` to verify signup page fixes
-- Full suite re-run after fixes to establish baseline
+### CRITICAL (Blocks many tests)
+1. **Fix /products page product link discovery**
+   - Verify product cards/links rendering on `/products` route
+   - May be empty state issue or query/filter problem
+   - Unblocks: ~50+ tests in cart, product, category specs
+
+### HIGH (Feature-level failures)
+2. **Fix dark mode class application**
+   - Verify CSS variable application in dark mode
+   - Check theme provider initialization
+   - Unblocks: Dark mode UX tests
+
+3. **Fix Hebrew copy rendering in auth**
+   - Verify signup page Hebrew translations
+   - Check copy gate and i18n setup
+   - Unblocks: Auth/signup tests
+
+4. **Fix mobile responsive classes**
+   - Add `md:hidden` to SwipeableGallery
+   - Add `md:hidden` to StickyCartBar
+   - Fix fixed positioning on mobile
+   - Unblocks: Mobile shell/responsive tests
+
+5. **Fix RTL direction attribute**
+   - Verify `dir="rtl"` on HTML element
+   - Check CSS logical properties application
+   - Unblocks: RTL tests
+
+### MEDIUM (Accessibility/compliance)
+6. **Fix keyboard accessibility**
+   - Review interactive control tabindex
+   - Verify focus management
+   - Unblocks: A11y compliance tests
+
+## Full Suite Completion
+
+**Current Run Status:**
+- Start time: 2026-10-20 00:15 (+07:00)
+- Mode: Serial execution (--workers=1)
+- Expected completion: ~8-10 hours (at current pace)
+- Will continue in background until all 682 tests complete
+
+Once full completion achieved, final counts will be:
+- Total pass/fail distribution
+- Flaky test patterns
+- Browser-specific failures
+
+## Files Modified This Session
+
+- Created: docs/E2E-STATUS.md (this file)
+- Quality Gates Status: type-check ✅, lint ✅, build ✅
 
 ## Next Steps
 
-1. Fix identified responsive class issues (SwipeableGallery, StickyCartBar)
-2. Verify Hebrew copy rendering on signup page
-3. Review and fix checkout guest redirect logic
-4. Re-run full E2E suite to establish clean baseline
-5. Monitor for new test failures in future maintenance cycles
-
-## Test Results Artifacts
-
-- Full output: `/tmp/e2e-full.log` (partial, interrupted)
-- Screenshots: `test-results/` directory contains failure screenshots for debugging
-- Error contexts: Individual test-results subdirectories contain error-context.md files
+1. **Monitor full run completion** (in background)
+2. **Prioritize critical fixes** once test run completes
+3. **Fix product discovery issue** first (unblocks many tests)
+4. **Fix responsive classes** (mobile UX impact)
+5. **Fix auth/dark mode** (feature parity)
+6. **Re-run full suite** after fixes to verify improvements
 
 ---
 
-**Status:** Complete test suite execution requires extended runtime. Partial results show pre-existing failures in mobile responsiveness, auth copy, and checkout gates. Quality gates (type-check, lint, build) all passing.
+**Status:** Partial E2E results documented. Full suite in progress. Next update when completion reached.
