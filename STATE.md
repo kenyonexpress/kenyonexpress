@@ -62,17 +62,22 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 **Commits:**
 - `f095b4a10` - [autopilot] UX35: Border radius tokens 4 8 12 16 24 with consistent buttons cards modals
 
-**Test Coverage - 24 Tests PASSING:**
-- Created `src/styles/border-radius.test.ts` (14 tests)
-  - Token definition and naming verification
-  - Scale value monotonic progression validation
-  - Semantic alias consistency testing
-  - Backward compatibility with legacy tokens
-- Created `src/components/ui/border-radius-tokens.test.ts` (10 tests)
-  - Button component token application
-  - Token consistency across all button sizes and variants
-  - Card, Modal, and semantic mapping validation
-  - CSS custom property pattern verification
+**Test Coverage - 32 Tests PASSING (Real Implementation Verification):**
+- `src/styles/border-radius.test.ts` (15 tests)
+  - **Reads tokens.css** and verifies actual CSS values:
+    * Confirms `--radius-xs: 4px`, `--radius-sm: 8px`, `--radius-md: 12px`, `--radius-lg: 16px`, `--radius-xl: 24px`
+  - **Verifies semantic aliases** via regex:
+    * `--radius-button: var(--radius-sm)` (8px)
+    * `--radius-card: var(--radius-md)` (12px)
+    * `--radius-modal: var(--radius-lg)` (16px)
+  - **Validates scale pattern** by extracting values from CSS
+
+- `src/components/ui/border-radius-tokens.test.ts` (17 tests)
+  - **Tests Button component** className contains `[border-radius:var(--radius-button)]`
+  - **Reads card.tsx** and verifies `[border-radius:var(--radius-card)]` is present
+  - **Confirms old classes removed** (no `rounded-sm`, `rounded-md`, `rounded-lg`)
+  - **Reads actual token values** from `tokens.css` file
+  - **Validates CSS variable pattern** across all button sizes/variants
 
 **Supabase MCP Clause:**
 - **Attempted**: `ToolSearch` for `mcp__claude_ai_Supabase__list_tables`
