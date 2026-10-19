@@ -46,6 +46,7 @@ import {
 } from '@/lib/validations/checkout'
 import { getCart, resolveCheckoutDiscountAgorot } from '@/server/actions/cart'
 import { attributeOrder } from '@/server/affiliate/attribution'
+import { attributeOrderToAffiliate } from '@/server/affiliate/attribution-clicks'
 import {
   linkAnalyticsIdentity,
   stampOrderAttribution,
@@ -608,12 +609,26 @@ async function runBeginCheckout(
   // awaited inside its own try: it can never fail or delay the order.
   try {
     const jar = await cookies()
+    const affiliateCode = jar.get(AFFILIATE_COOKIE)?.value
+
+    // Attribute to old system (with links and codes)
     await attributeOrder({
       orderId: order.id,
       buyerUserId: user?.id ?? null,
-      linkCode: jar.get(AFFILIATE_COOKIE)?.value,
+      linkCode: affiliateCode,
       now,
     })
+
+    // Attribute to new system (with campaigns and click tracking)
+    if (affiliateCode) {
+      await attributeOrderToAffiliate({
+        orderId: order.id,
+        campaignSlug: affiliateCode,
+        userId: user?.id ?? null,
+        orderTotalAgorot: settlement.paidOnSite,
+        now,
+      })
+    }
   } catch (err) {
     log.warn('checkout.affiliate_attribution_failed', {
       order_id: order.id,
