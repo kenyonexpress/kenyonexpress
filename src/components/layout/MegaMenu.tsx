@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { useCallback, useEffect, useId, useRef, useState } from 'react'
 
@@ -218,9 +219,11 @@ export default function MegaMenu() {
                     <div className="col-span-1 animate-in fade-in slide-in-from-left-4 duration-300 motion-reduce:animate-none">
                       <div className="bg-gradient-to-br from-[color:var(--electro-page)] to-[color:var(--electro-surface-hover)] rounded-lg overflow-hidden aspect-square shadow-sm flex flex-col items-center justify-between p-4 transition-transform duration-300">
                         {item.featuredImage ? (
-                          <img
+                          <Image
                             src={item.featuredImage}
                             alt={item.label}
+                            fill
+                            sizes="(max-width: 768px) 200px, 300px"
                             className="w-full h-full object-cover transition-transform duration-300"
                           />
                         ) : (
@@ -243,10 +246,14 @@ export default function MegaMenu() {
                               className="bg-[color:var(--electro-white)] rounded p-2 flex items-center justify-center min-h-10 text-xs text-[color:var(--electro-text-secondary)]"
                             >
                               {brand.src ? (
-                                <img
+                                <Image
                                   src={brand.src}
                                   alt={brand.name}
+                                  width={100}
+                                  height={40}
+                                  sizes="40px"
                                   className="max-h-full max-w-full object-contain"
+                                  loading="lazy"
                                 />
                               ) : (
                                 <span className="text-center text-[0.7em] font-medium">
