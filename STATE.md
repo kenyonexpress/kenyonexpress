@@ -48,10 +48,11 @@
 - ✅ `pnpm test src/components/category/PullToRefresh.test.tsx --run`: 12/12 PASSED
 
 **Critical Fixes Applied**:
-1. **Build Gate Failure**: Added missing Turbopack chunk loader hash to CSP whitelist
-   - Hash: `sha256-A8hJ6vEul3VKDU3yOCRkURSKVUZRH+DqGhJn51EEWCo=`
+1. **Build Gate Failures**: Added Turbopack chunk loader hashes to CSP whitelist
+   - Hash 1: `sha256-A8hJ6vEul3VKDU3yOCRkURSKVUZRH+DqGhJn51EEWCo=` (initial build)
+   - Hash 2: `sha256-GU6Slzx7qfPAwV1s9Fvl6oRZXcYpJ0KD+JTrHqBq/VU=` (clean build)
    - File: `src/lib/security/shell-script-hashes.mjs`
-   - Fixed: Exit code 1 CSP shell script gate failure → Build now passes with exit code 0
+   - Evidence: Clean build with `rm -rf .next && pnpm build` → Exit code 0, "✓ Compiled successfully in 25.7s"
    
 2. **Test Assertion Issues**: Removed setTimeout callbacks that ran after test completion
    - Problem: Assertions inside `setTimeout` cannot fail tests (execute after completion)
