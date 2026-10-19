@@ -14,6 +14,17 @@ export const ELECTRO = {
     card: '8px',
     elevated: '12px',
   },
+  // UX34: consistent spacing scale (4, 8, 12, 16, 24, 32, 48, 64px)
+  spacing: {
+    xs: '4px',
+    sm: '8px',
+    md: '12px',
+    lg: '16px',
+    xl: '24px',
+    '2xl': '32px',
+    '3xl': '48px',
+    '4xl': '64px',
+  },
   shadow: { card: '0px 2px 8px rgba(0,0,0,0.08)', hover: '0px 4px 16px rgba(0,0,0,0.12)' },
   transition: { card: 'box-shadow 300ms ease-in-out' },
 }

@@ -17,6 +17,16 @@ export default {
   theme: {
     extend: {
       spacing: {
+        // UX34: Consistent spacing scale (4, 8, 12, 16, 24, 32, 48, 64px)
+        'space-xs': 'var(--space-xs)',
+        'space-sm': 'var(--space-sm)',
+        'space-md': 'var(--space-md)',
+        'space-lg': 'var(--space-lg)',
+        'space-xl': 'var(--space-xl)',
+        'space-2xl': 'var(--space-2xl)',
+        'space-3xl': 'var(--space-3xl)',
+        'space-4xl': 'var(--space-4xl)',
+        // Legacy custom spacing (component-specific)
         'handheld-logo-w': '100px',
         'handheld-logo-h': '26px',
         'logo-h': '79px',

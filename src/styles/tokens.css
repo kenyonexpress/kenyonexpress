@@ -49,6 +49,19 @@
    ============================================================================ */
 
 @theme {
+  /* --- Spacing scale (UX34) --------------------------------------------------- */
+  /* Consistent spacing scale 4 8 12 16 24 32 48 64px used across components.
+     Generates space-xs through space-4xl Tailwind utilities for padding, margin,
+     gap, and height/width. */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 24px;
+  --space-2xl: 32px;
+  --space-3xl: 48px;
+  --space-4xl: 64px;
+
   /* --- Motion ---------------------------------------------------------------- */
   /* The off-canvas drawer and its scrim: live's `.off-canvas-navigation
      {transition:all .2s}` and `.off-canvas-bg-opacity .site-content::before
