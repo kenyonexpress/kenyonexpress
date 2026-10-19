@@ -18,6 +18,7 @@ export type Product = {
   full_price?: number | null
   category?: { name_he: string; slug: string } | null
   city?: string | null
+  is_physical_shipping?: boolean
 }
 
 /**
@@ -94,14 +95,21 @@ function CartPlusIcon() {
 }
 
 function LocationLabel({ product }: { product: Product }) {
-  const city = product.city ? cityByName(product.city) : null
-  const cityName = city?.name ?? (product.city || 'כל הארץ')
+  let cityName: string
+  if (product.is_physical_shipping) {
+    cityName = 'כל הארץ'
+  } else if (product.city) {
+    const city = cityByName(product.city)
+    cityName = city?.name ?? product.city
+  } else {
+    cityName = 'כל הארץ'
+  }
   return (
     <span className="inline-flex items-center gap-1">
       <span className="flex items-center justify-center w-8 h-8 rounded-full bg-neutral-100">
         <MapPin size={14} className="text-black" aria-hidden="true" />
       </span>
-      {cityName}
+      📍 {cityName}
     </span>
   )
 }
