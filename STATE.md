@@ -4,6 +4,41 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 ---
 
+## ✅ MAINTENANCE_LOOP_8 RERUN (Session: 2026-10-20 — Autonomous Scan)
+
+**Code Debt Scan (Repeat Verification)**
+
+**Scan Results:**
+- Date: 2026-10-20 15:30 UTC
+- Scope: src/ (*.ts, *.tsx, *.js, *.jsx)
+- Current TODO/FIXME/HACK count: 8
+- Previous count: 8 (2026-10-20 02:15 UTC)
+- Delta: 0 (stable, no growth)
+
+**Status:**
+✅ No growth detected — count remains at baseline (8 items)
+✅ No cleanup goal triggered (threshold: >10 items)
+✅ All 8 items confirmed unchanged:
+- src/app/api/cron/stock-notifications/route.ts (1)
+- src/lib/whatsapp.test.ts (1)
+- src/lib/payments/cardcom.ts (2)
+- src/lib/images/r2-migration.ts (4)
+
+**Quality Gates:**
+- ✅ pnpm type-check: CLEAN
+- ✅ pnpm lint: CLEAN (6239 files)
+- ✅ pnpm build: SUCCESS (308 pages in 2.2s)
+
+**Report Updated:**
+- docs/CODE-DEBT-STATUS.md: Scan date and results confirmed
+
+**Commit:**
+- e67ceeef8: [autopilot] chore maint: code debt scan
+
+**המשך מ:** MAINTENANCE_LOOP_8 rerun complete. Code debt stable at 8 items. No growth, no cleanup goal queued. Ready for next autonomous task.
+
+---
+
 ## ✅ MAINTENANCE_LOOP_9 (Session: 2026-10-20)
 
 **Supabase Connection Pool & Query Performance Check**
