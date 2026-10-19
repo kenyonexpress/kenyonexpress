@@ -1,4 +1,5 @@
 import AllInAppToggle from '@/components/account/AllInAppToggle'
+import PushNotificationsToggle from '@/components/account/PushNotificationsToggle'
 import { ALL_IN_APP_CONSENT_KEY } from '@/lib/consent-keys'
 import { createClient } from '@/lib/supabase/server'
 
@@ -11,6 +12,8 @@ export default async function NotificationsPage() {
   } = await supabase.auth.getUser()
 
   let granted = false
+  let hasOrders = false
+
   if (user) {
     // The latest consent row is the current answer (migration 280).
     const { data, error } = await supabase
@@ -22,6 +25,14 @@ export default async function NotificationsPage() {
       .limit(1)
       .maybeSingle()
     if (!error && data) granted = (data as { granted: boolean }).granted === true
+
+    // Check if user has made any orders
+    const { data: ordersData } = await supabase
+      .from('orders')
+      .select('id')
+      .eq('user_id', user.id)
+      .limit(1)
+    hasOrders = (ordersData?.length ?? 0) > 0
   }
 
   return (
@@ -30,6 +41,9 @@ export default async function NotificationsPage() {
       <p className="account-subtitle">בחרו איך לקבל עדכונים מאיתנו. אפשר לשנות בכל רגע.</p>
       <section className="account-card">
         <AllInAppToggle initial={granted} />
+      </section>
+      <section className="account-card">
+        <PushNotificationsToggle hasOrders={hasOrders} />
       </section>
     </>
   )
