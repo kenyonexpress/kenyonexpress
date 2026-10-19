@@ -4,6 +4,54 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 ---
 
+## ✅ MAINTENANCE_LOOP_8 (Session: 2026-10-20)
+
+**Code Debt Scan Complete**
+
+**Scan Results:**
+- Date: 2026-10-20 02:15 UTC
+- Scope: src/ (*.ts, *.tsx, *.js, *.jsx)
+- Current TODO/FIXME/HACK count: 8
+- Previous count: 8 (2026-10-19)
+- Delta: 0 (no growth detected)
+
+**Code Debt Breakdown:**
+1. `src/app/api/cron/stock-notifications/route.ts` (1)
+   - TODO: revalidateTag may require different API in Next.js 16
+
+2. `src/lib/whatsapp.test.ts` (1)
+   - TODO: placeholder value in test
+
+3. `src/lib/payments/cardcom.ts` (2)
+   - TODO: confirm legacy refund endpoint + field names
+   - TODO: confirm endpoint + field names
+
+4. `src/lib/images/r2-migration.ts` (4)
+   - TODO: Query database for all product images
+   - TODO: Batch upload to R2
+   - TODO: Update product.images URLs to point to R2
+   - TODO: Verify uploads and delete from source
+
+**Quality Gates:**
+- ✅ pnpm type-check: CLEAN
+- ✅ pnpm lint: CLEAN (6239 files)
+- ✅ pnpm build: SUCCESS (307 pages in 3.0s)
+
+**Assessment:**
+- Count stable (no growth from baseline)
+- No cleanup goal queued (threshold: queue if > 10 items)
+- All code debt items tracked and documented
+- Status report updated: docs/CODE-DEBT-STATUS.md
+- Commit 6ee4d4ed0: [autopilot] chore maint: code debt scan
+
+**Cleanup Criterion:**
+- Will queue cleanup goal if count exceeds 10 items on next scan
+- Current threshold maintains stability
+
+**המשך מ:** MAINTENANCE_LOOP_8 complete. Code debt scan shows 8 items (stable). No cleanup goal queued. Ready for next maintenance cycle.
+
+---
+
 ## ✅ MAINTENANCE_LOOP_6 (Session: 2026-10-20)
 
 **Mobile Gate Recheck Complete**
