@@ -6,6 +6,71 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 ---
 
+## 🎯 Autonomous Work Summary (Session: 2026-10-19 — UX35 BORDER RADIUS TOKENS)
+
+**UX35: Border radius tokens 4 8 12 16 24 consistent buttons cards modals — ✅ COMPLETE (2026-10-19)**
+
+**Final Status:** Consistent border-radius design scale fully implemented with semantic tokens applied across buttons, cards, and modals.
+
+**What Was Done:**
+
+1. ✅ Established Border-Radius Token Scale in src/styles/tokens.css
+   - Created standardized tokens: 4px, 8px, 12px, 16px, 24px
+   - --radius-xs: 4px (smallest elements, chips, badges)
+   - --radius-sm: 8px (buttons, inputs, small interactive elements)
+   - --radius-md: 12px (cards, panels, content containers)
+   - --radius-lg: 16px (modals, large dialogs, primary containers)
+   - --radius-xl: 24px (large components, accents)
+
+2. ✅ Semantic Aliases for Application
+   - --radius-button: 8px (buttons and button-like elements)
+   - --radius-card: 12px (card containers and panels)
+   - --radius-modal: 16px (modal dialogs)
+   - Backward compatibility aliases for measured live values preserved
+
+3. ✅ Applied Tokens to Key Components
+   - Button component: All button sizes now use --radius-button (8px)
+   - Card component: Uses --radius-card (12px) via semantic alias
+   - Dialog component: Desktop view uses --radius-modal (16px) via md: breakpoint
+   - ProductCard.tsx: Applied to card container and action buttons
+   - CouponCard.tsx: Applied to card container and discount badge
+   - ProductCardSkeleton.tsx: Applied to skeleton card matching real card
+   - CouponCardSkeleton.tsx: Applied to skeleton card matching real card
+
+4. ✅ Preserved Backward Compatibility
+   - Legacy tokens still available (pill, round, cta)
+   - New tokens work alongside measured live values
+   - No breaking changes to existing components
+
+**Code Quality Gates - ALL PASSING:**
+- ✅ `pnpm type-check`: CLEAN (0 TypeScript errors)
+- ✅ `pnpm lint`: CLEAN (6229 files checked, no fixes applied)
+- ✅ `pnpm build`: SUCCESS (304/304 pages compiled)
+- ✅ `git status`: clean after commit
+- ✅ `git push`: successful to closeout/v1-final
+
+**Files Modified:**
+- src/styles/tokens.css (expanded radii section with new scale)
+- src/components/ui/button.tsx (applied --radius-button token)
+- src/components/ui/card.tsx (applied --radius-card token)
+- src/components/ui/dialog.tsx (applied --radius-modal token)
+- src/components/ProductCard.tsx (applied consistent tokens)
+- src/components/CouponCard.tsx (applied consistent tokens)
+- src/components/ProductCardSkeleton.tsx (applied --radius-card)
+- src/components/CouponCardSkeleton.tsx (applied --radius-card)
+
+**Commits:**
+- `f095b4a10` - [autopilot] UX35: Border radius tokens 4 8 12 16 24 with consistent buttons cards modals
+
+**Supabase MCP Clause:**
+- Status: **NOT APPLICABLE** - Border radius is purely design tokens and CSS
+- No database operations, RLS policies, or migrations required
+- Pure CSS design system feature with no data layer involvement
+
+**המשך מ:** UX35 COMPLETE. Border radius tokens fully implemented with consistent 4, 8, 12, 16, 24px scale. Applied to buttons (8px), cards (12px), and modals (16px). All gates passing.
+
+---
+
 ## 🎯 Autonomous Work Summary (Session: 2026-10-19 — UX32 TYPOGRAPHY SCALE)
 
 **UX32: Typography scale Heebo font weights 300 400 500 700 900 consistent sizing — ✅ COMPLETE (2026-10-19)**
