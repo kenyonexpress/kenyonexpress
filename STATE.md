@@ -1,3 +1,82 @@
+## 🚀 IN PROGRESS: UX50 Design System Storybook Documentation (2026-10-19 13:45-14:30)
+
+**Status**: PARTIAL COMPLETION — Core Storybook setup complete with initial component stories
+
+**Scope**: Create comprehensive design system documentation with Storybook, documenting every component with usage examples, interactive variants, and accessibility verification.
+
+**Work Completed**:
+
+**(1) Storybook Installation & Configuration**
+- ✅ Installed Storybook 10.6.2 with @storybook/nextjs for Next.js 16 compatibility
+- ✅ Added full addon suite: @storybook/addon-essentials, addon-controls, addon-docs, addon-a11y
+- ✅ Created .storybook/main.ts: Story discovery, addon configuration
+- ✅ Created .storybook/preview.tsx: Global parameters, accessibility rules
+- ✅ Added pnpm storybook (dev) and pnpm build:storybook scripts
+
+**(2) Design System Documentation**
+- ✅ Created comprehensive design-system.stories.mdx (single source of truth):
+  * Design Principles: Hebrew-first, accessibility-first, performance-optimized
+  * Color System: Primary brand yellow (#fed700) with semantic colors (success, error, warning, info, neutral)
+  * Typography: Heebo font family with 8-level scale (Display → Caption)
+  * Spacing Scale: 4-64px semantic tokens (xs, sm, md, lg, xl, 2xl, 3xl, 4xl)
+  * Shadow System: Elevation hierarchy with sm/md/lg/xl variants and hover states
+  * Accessibility: WCAG 2.1 AA compliance checklist (keyboard, screen reader, color contrast, focus, targets, etc.)
+  * Animations: Motion principles, duration/easing specs, GPU-acceleration, reduced-motion support
+  * Hebrew & RTL: Comprehensive right-to-left language support documentation
+  * Contributing Guide: Instructions for designers and developers
+
+**(3) Initial Component Stories**
+- ✅ UI/Card component: 4 story variants
+  * Basic: Simple card with header/content/footer
+  * ProductCard (renamed from Product to avoid shadowing): E-commerce use case
+  * Minimal: Reduced visual emphasis variant
+  * WithSections: Multi-section order summary layout
+- ✅ UI/Input component: 8 story variants
+  * Default: Text input
+  * Email: Email-validated input
+  * Password: Masked password input
+  * Disabled: Disabled state
+  * NumericInput (renamed from Number to avoid shadowing): Numeric input with min/max
+  * Search: Hebrew placeholder example
+  * FormExample: Interactive form with 3 fields, proper label associations
+  * WithError: Error state with aria-invalid
+
+**Code Quality Gates - ALL PASSING**:
+- ✅ `pnpm type-check`: CLEAN (0 TypeScript errors)
+- ✅ `pnpm lint`: CLEAN (all accessible files pass biome check)
+- ✅ Git commit: Successful push to phase5/homepage-closeout
+
+**Accessibility Compliance in Stories**:
+- ✅ All <label> elements have htmlFor attributes linked to inputs
+- ✅ All <button> elements have explicit type="button" (not submit)
+- ✅ Interactive examples include aria-invalid for error states
+- ✅ Form examples demonstrate proper label associations
+- ✅ Hebrew content examples for RTL testing
+
+**GitHub MCP & Supabase MCP Status**:
+- **Not Applicable**: Storybook setup is 100% frontend documentation/tooling
+- No database schema changes
+- No RLS policy modifications
+- No migrations required
+
+**What Remains for Full UX50**:
+- Additional component story files (delayed due to accessibility linting issues):
+  * Button.stories.tsx (11 variants with type="button" fixes needed)
+  * CouponCard.stories.tsx (4 variants)
+  * ProductCard.stories.tsx (5 product display variants)
+  * Dialog.stories.tsx (4 modal/dialog examples)
+- More shared component stories: Breadcrumbs, RatingStars, Header, Footer, etc.
+- Design token documentation pages
+- Build and deploy Storybook instance (pnpm build:storybook)
+- Create Chromatic deployment for visual regression testing
+
+**Commit**:
+- 2135162f0: [autopilot] UX50: Storybook design system documentation setup
+
+**המשך מ**: UX50 PARTIAL - Core Storybook infrastructure complete. Initial UI/Card and UI/Input stories documented with full accessibility. Remaining work: complete all component stories and deploy Storybook instance.
+
+---
+
 ## ✅ COMPLETED: UX48 Accessibility WCAG AA Keyboard Navigation Screen Reader Hebrew Focus Indicators (2026-10-19 11:16-11:35)
 
 **Status**: COMPLETE ✅ — Accessibility improvements implemented and verified through actual test execution. WCAG 2.1/2.2 AA compliance confirmed via axe-core Playwright tests.
