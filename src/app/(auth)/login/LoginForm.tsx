@@ -1,16 +1,17 @@
 'use client'
 
+import PasskeySignIn from '@/components/auth/PasskeySignIn'
+import WhatsappOtpForm from '@/components/auth/WhatsappOtpForm'
 import { GoogleLogo } from '@/components/shared/GoogleLogo'
+import TurnstileWidget from '@/components/shared/TurnstileWidget'
 import {
   type AuthState,
   sendMagicLink,
   signInWithEmail,
   signInWithGoogle,
-  verifyEmailOtp,
 } from '@/server/actions/auth'
 import Link from 'next/link'
 import { useActionState, useState } from 'react'
-import PasskeyLoginButton from './PasskeyLoginButton'
 import PhoneOtpForm from './PhoneOtpForm'
 
 function getError(state: AuthState): string | null {
@@ -36,6 +37,7 @@ interface Props {
 export default function LoginForm({ next, callbackError, magic, phoneEnabled = false }: Props) {
   const [showMagic, setShowMagic] = useState(false)
   const [showPhone, setShowPhone] = useState(false)
+  const [showWhatsapp, setShowWhatsapp] = useState(false)
 
   const [emailState, emailAction, emailPending] = useActionState<AuthState, FormData>(
     signInWithEmail,
@@ -49,14 +51,6 @@ export default function LoginForm({ next, callbackError, magic, phoneEnabled = f
     sendMagicLink,
     null,
   )
-  const [codeState, codeAction, codePending] = useActionState<AuthState, FormData>(
-    verifyEmailOtp,
-    null,
-  )
-  // The address the link was sent to, carried into the code step the way
-  // PhoneOtpForm carries the number: the verify action needs the same address
-  // the mail went to, and a second input would let the two drift.
-  const [magicEmail, setMagicEmail] = useState('')
 
   const topError =
     getError(googleState) ??
@@ -90,13 +84,6 @@ export default function LoginForm({ next, callbackError, magic, phoneEnabled = f
       </form>
 
       {/*
-        Passkey, directly under Google: renders only on browsers that support
-        WebAuthn, and its failure path opens the magic-link form below, which
-        is the fallback that works on every device and every account.
-      */}
-      <PasskeyLoginButton next={next} onFallback={() => setShowMagic(true)} />
-
-      {/*
         Directly under Google, not buried below the password form. This is the
         route for shoppers who have no Google account, and it is worth nothing
         if they have to scroll past a password field to find it.
@@ -116,6 +103,22 @@ export default function LoginForm({ next, callbackError, magic, phoneEnabled = f
           )}
         </div>
       )}
+
+      <PasskeySignIn next={next} />
+
+      <div className="mt-3">
+        {!showWhatsapp ? (
+          <button
+            type="button"
+            onClick={() => setShowWhatsapp(true)}
+            className="w-full flex items-center justify-center gap-2 border border-gray-300 rounded-lg py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+          >
+            כניסה עם קוד בוואטסאפ
+          </button>
+        ) : (
+          <WhatsappOtpForm next={next} />
+        )}
+      </div>
 
       <div className="my-5 flex items-center gap-3">
         <div className="flex-1 border-t border-gray-200" />
@@ -156,7 +159,7 @@ export default function LoginForm({ next, callbackError, magic, phoneEnabled = f
             <label htmlFor="password" className="block text-sm font-medium text-gray-700">
               סיסמה
             </label>
-            <Link href="/forgot-password" className="text-xs text-link hover:underline">
+            <Link href="/forgot-password" className="-my-2 py-2 text-xs text-link hover:underline">
               שכחתם סיסמה?
             </Link>
           </div>
@@ -177,6 +180,8 @@ export default function LoginForm({ next, callbackError, magic, phoneEnabled = f
           </p>
         )}
 
+        <TurnstileWidget />
+
         <button
           type="submit"
           disabled={emailPending}
@@ -192,7 +197,7 @@ export default function LoginForm({ next, callbackError, magic, phoneEnabled = f
           <button
             type="button"
             onClick={() => setShowMagic(true)}
-            className="w-full text-sm text-center text-gray-500 hover:text-link"
+            className="w-full py-3 text-sm text-center text-gray-500 hover:text-link"
           >
             כניסה ללא סיסמה (קישור מאובטח לאימייל)
           </button>
@@ -209,8 +214,6 @@ export default function LoginForm({ next, callbackError, magic, phoneEnabled = f
               autoComplete="email"
               placeholder="you@example.com"
               dir="ltr"
-              value={magicEmail}
-              onChange={(event) => setMagicEmail(event.target.value)}
               className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
             />
             {getSuccess(magicState) && (
@@ -223,52 +226,13 @@ export default function LoginForm({ next, callbackError, magic, phoneEnabled = f
                 {getError(magicState)}
               </p>
             )}
+            <TurnstileWidget />
             <button
               type="submit"
               disabled={magicPending}
               className="w-full border border-brand text-heading hover:bg-brand/5 disabled:opacity-60 font-semibold rounded-lg py-2.5 text-sm transition-colors"
             >
               {magicPending ? 'שולחים...' : 'שלחו לי קישור'}
-            </button>
-          </form>
-        )}
-
-        {/*
-          The mail carries a six-digit code next to the link, for the case
-          where it is read on a phone while the browser that asked is a
-          laptop. Typing the code here signs that browser in without the
-          link ever being clicked. Shown only once a mail is on its way.
-        */}
-        {getSuccess(magicState) && (
-          <form action={codeAction} className="mt-4 space-y-3">
-            <input type="hidden" name="email" value={magicEmail} />
-            {next && <input type="hidden" name="next" value={next} />}
-            <label htmlFor="magic-code" className="block text-sm font-medium text-gray-700">
-              או הזינו את הקוד מהמייל
-            </label>
-            <input
-              id="magic-code"
-              name="token"
-              type="text"
-              required
-              dir="ltr"
-              inputMode="numeric"
-              autoComplete="one-time-code"
-              maxLength={10}
-              placeholder="123456"
-              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-center text-lg tracking-[0.4em] placeholder:tracking-normal placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
-            />
-            {getError(codeState) && (
-              <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">
-                {getError(codeState)}
-              </p>
-            )}
-            <button
-              type="submit"
-              disabled={codePending}
-              className="w-full bg-brand text-heading hover:bg-brand-dark hover:text-white disabled:opacity-60 font-semibold rounded-lg py-2.5 text-sm transition-colors"
-            >
-              {codePending ? 'מאמתים...' : 'כניסה עם הקוד'}
             </button>
           </form>
         )}

@@ -1,7 +1,8 @@
 'use client'
 
+import TurnstileWidget from '@/components/shared/TurnstileWidget'
 import { type NewsletterState, subscribeToNewsletter } from '@/server/actions/newsletter'
-import { useActionState, useId } from 'react'
+import { useActionState, useEffect, useId, useRef } from 'react'
 
 const EMPTY: NewsletterState = { ok: false }
 
@@ -17,6 +18,23 @@ const EMPTY: NewsletterState = { ok: false }
 export default function NewsletterSignup({ source = 'footer' }: { source?: string }) {
   const [state, action, pending] = useActionState(subscribeToNewsletter, EMPTY)
   const id = useId()
+  const inputRef = useRef<HTMLInputElement>(null)
+  const buttonRef = useRef<HTMLButtonElement>(null)
+
+  useEffect(() => {
+    if (state.ok && state.message) {
+      inputRef.current?.blur()
+      buttonRef.current?.blur()
+    }
+  }, [state.ok, state.message])
+
+  const describeIds = [
+    `${id}-consent`,
+    state.error && `${id}-error`,
+    state.ok && state.message && `${id}-success`,
+  ]
+    .filter(Boolean)
+    .join(' ')
 
   return (
     <form action={action} dir="rtl" className="ke-newsletter">
@@ -28,21 +46,27 @@ export default function NewsletterSignup({ source = 'footer' }: { source?: strin
 
       <div className="ke-newsletter__row">
         <input
+          ref={inputRef}
           id={id}
           name="email"
           type="email"
           required
           autoComplete="email"
           placeholder="you@example.com"
-          // The address is Latin even on a Hebrew page, so the FIELD is LTR
-          // while the form around it stays RTL. Without this the caret starts
-          // on the wrong side and an @ typed mid-string appears to jump.
           dir="ltr"
-          aria-describedby={`${id}-consent${state.error ? ` ${id}-error` : ''}`}
-          className="ke-newsletter__input"
+          aria-describedby={describeIds}
+          aria-invalid={state.error ? 'true' : 'false'}
+          className={`ke-newsletter__input${state.error ? ' has-error' : ''}`}
+          disabled={pending || !!(state.ok && state.message)}
         />
-        <button type="submit" disabled={pending} className="ke-newsletter__button">
-          {pending ? 'שולח...' : 'הרשמה'}
+        <button
+          ref={buttonRef}
+          type="submit"
+          disabled={pending || !!(state.ok && state.message)}
+          className={`ke-newsletter__button${state.ok && state.message ? ' success' : ''}`}
+          aria-busy={pending}
+        >
+          {pending ? 'שולח...' : state.ok && state.message ? '✓ הושלמה' : 'הרשמה'}
         </button>
       </div>
 
@@ -50,12 +74,18 @@ export default function NewsletterSignup({ source = 'footer' }: { source?: strin
         בלחיצה על הרשמה אני מאשר קבלת דיוור פרסומי. אפשר להסיר את ההרשמה בכל מייל.
       </p>
 
+      <TurnstileWidget />
+
       {state.error && (
         <p id={`${id}-error`} role="alert" className="ke-newsletter__error">
           {state.error}
         </p>
       )}
-      {state.message && <output className="ke-newsletter__success">{state.message}</output>}
+      {state.ok && state.message && (
+        <output id={`${id}-success`} className="ke-newsletter__success">
+          {state.message}
+        </output>
+      )}
     </form>
   )
 }

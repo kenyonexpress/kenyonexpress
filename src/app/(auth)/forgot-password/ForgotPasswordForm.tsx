@@ -1,5 +1,6 @@
 'use client'
 
+import TurnstileWidget from '@/components/shared/TurnstileWidget'
 import { type AuthState, sendPasswordReset } from '@/server/actions/auth'
 import Link from 'next/link'
 import { useActionState } from 'react'
@@ -43,6 +44,8 @@ export default function ForgotPasswordForm() {
           </div>
 
           {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
+
+          <TurnstileWidget />
 
           <button
             type="submit"

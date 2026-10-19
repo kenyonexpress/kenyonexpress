@@ -1,5 +1,6 @@
 'use client'
 
+import TurnstileWidget from '@/components/shared/TurnstileWidget'
 import { type AuthState, updatePassword } from '@/server/actions/auth'
 import Link from 'next/link'
 import { useActionState } from 'react'
@@ -67,6 +68,8 @@ export default function ResetPasswordForm() {
             </Link>
           </div>
         )}
+
+        <TurnstileWidget />
 
         <button
           type="submit"
