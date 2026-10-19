@@ -98,10 +98,9 @@
   "pnpm": {
     "onlyBuiltDependencies": ["@biomejs/biome", "@parcel/watcher", "@swc/core", "esbuild", "sharp"],
     "overrides": {
-      "webpack-dev-middleware": "8.4.0",
       "brace-expansion": "5.0.12",
-      "braces": "3.0.3",
-      "source-map-js": "1.2.2"
+      "webpack-dev-middleware": "8.4.0",
+      "fast-uri": "3.1.8"
     }
   },
   "devDependencies": {
@@ -122,17 +121,17 @@
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@types/web-push": "3.6.4",
-    "@vitejs/plugin-react": "^4.7.0",
+    "@vitejs/plugin-react": "^4.3.4",
     "@vitest/coverage-v8": "^5.0.5",
     "drizzle-kit": "^0.31.11",
     "fast-xml-parser": "^5.11.2",
     "husky": "^9.1.7",
     "jsdom": "^25.0.1",
-    "lighthouse": "^13.5.0",
+    "lighthouse": "^13.4.1",
     "lint-staged": "^17.6.0",
     "storybook": "^10.6.2",
     "tailwindcss": "^4.3.3",
-    "typescript": "^5.9.3",
+    "typescript": "^5",
     "vitest": "^5.0.5"
   },
   "engines": {
