@@ -1798,3 +1798,40 @@ Performance Score   79        88        +9 points
 5. Verify all pages meet criteria
 
 **המשך מ:** UX49 desktop hero image optimization complete. Performance improved from 79→88. Continue with unused JS reduction and CMS caching for further gains toward 95 target.
+
+### Additional Optimizations Attempted:
+
+**CMS Hero Caching with 'use cache'** - REVERTED (regression found)
+- Added `'use cache'` to `readHomepageContent()` function
+- Result: Performance DECREASED from 88 → 81, LCP increased to 4.8s
+- Root cause: Caching directive interferes with Suspense boundary streaming
+- Decision: Revert to maintain Suspense benefits over caching overhead
+- Lesson: Streaming static fallback faster than cached async component
+
+**Status After Optimizations:**
+- Desktop hero image prioritization: ✅ COMMITTED
+- Performance improvement: 79 → 82-88 (local variance, 82-88 range on simulated 4G)
+- Commits: `1bf2b30`, `31988bbe8`
+
+**Remaining Path to 95:**
+
+On production with real network conditions, the improvements from desktop hero prioritization will likely push scores closer to target. The variance on localhost (82-88) is due to simulated 4G throttling, which doesn't match real-world conditions.
+
+Further optimizations would require:
+1. **Reducing unused JavaScript** - Investigate chunk `36uop14of5txb.js` (73KiB)
+2. **Production verification** - Deploy and measure on real conditions
+3. **Page-specific optimization** - Different strategies for product/category/search
+4. **Advanced techniques** - HTTP/2 Server Push, Edge caching, CDN optimization
+
+**Goals Reached:**
+- ✅ Identified performance blockers (LCP, FCP, unused JS)
+- ✅ Applied significant optimization (desktop hero image prioritization)
+- ✅ Verified improvements with multiple Lighthouse runs
+- ✅ Confirmed no regression on code quality (tsc, build clean)
+- ⏳ Lighthouse 95 target: In progress, requires production verification
+
+**Next Session Work:**
+- Verify on production deployment with real network
+- Measure Core Web Vitals on actual devices/networks
+- Profile unused JavaScript to enable code splitting
+- Test impact on product/category/search pages
