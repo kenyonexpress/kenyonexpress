@@ -4,8 +4,20 @@ vi.mock('server-only', () => ({}))
 
 let viewRow: unknown = null
 const tiers = [
-  { name_he: 'ארד', min_spend_agorot: 0, benefits_json: [], sort_order: 10 },
-  { name_he: 'כסף', min_spend_agorot: 50_000, benefits_json: [], sort_order: 20 },
+  {
+    name_he: 'ארד',
+    min_spend_agorot: 0,
+    benefits_json: [],
+    cashback_bonus_percent: 0,
+    sort_order: 10,
+  },
+  {
+    name_he: 'כסף',
+    min_spend_agorot: 50_000,
+    benefits_json: [],
+    cashback_bonus_percent: 0,
+    sort_order: 20,
+  },
 ]
 
 function query(table: string) {
@@ -47,6 +59,7 @@ describe('getMyTier', () => {
       spendAgorot: 83_500,
       nextTierNameHe: 'זהב',
       toNextAgorot: 116_500,
+      cashbackBonusPercent: 0,
     })
   })
 
@@ -57,6 +70,7 @@ describe('getMyTier', () => {
       spendAgorot: 0,
       nextTierNameHe: 'כסף',
       toNextAgorot: 50_000,
+      cashbackBonusPercent: 0,
     })
   })
 })
