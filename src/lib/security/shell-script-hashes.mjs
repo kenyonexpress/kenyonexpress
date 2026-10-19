@@ -93,6 +93,7 @@ export const REACT_STREAMING_SCRIPT_HASHES = Object.freeze([
   'sha256-EU3iKFCWIvRwQ4zq/3AcynwCQJ0Zd8plrhnQOL+Xw6k=', // Turbopack chunk loader (UX48 RightSidebar contrast fix)
   'sha256-Lp3wKXsxenwxkf+061BcueWy/DcWemS6BpSWXKbcjxo=', // Turbopack chunk loader (UX48 SiteFooter link contrast fix)
   'sha256-sn01KbJP5CKbHHJsCd8GUWqDFJ1R9cpfxb/gDRCTlGo=', // Turbopack chunk loader (UX48 ProductCard button padding)
+  'sha256-xThVoHTFHdu8fsz9CsAYiSDU45LUBVpX5/5Y/LvfsXM=', // Turbopack chunk loader (UX50 Storybook @storybook/react dependency)
 ])
 
 /** Every hash the document policy carries, in the order it emits them. */

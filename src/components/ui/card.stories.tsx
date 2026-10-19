@@ -21,15 +21,15 @@ export const Basic: Story = {
   render: () => (
     <Card className="w-96">
       <CardHeader>
-        <CardTitle>Card Title</CardTitle>
-        <CardDescription>Card description</CardDescription>
+        <CardTitle>כותרת כרטיס</CardTitle>
+        <CardDescription>תיאור הכרטיס</CardDescription>
       </CardHeader>
       <CardContent>
-        <p>Card content goes here. This area holds the main content of the card.</p>
+        <p>תוכן הכרטיס מופיע כאן. אזור זה מכיל את התוכן הראשי של הכרטיס.</p>
       </CardContent>
       <CardFooter>
         <button type="button" className="text-sm text-brand hover:text-brand-600">
-          Learn more
+          קרא עוד
         </button>
       </CardFooter>
     </Card>
@@ -43,20 +43,20 @@ export const ProductCardStory: Story = {
   render: () => (
     <Card className="w-80 overflow-hidden">
       <div className="bg-gray-100 h-48 flex items-center justify-center">
-        <span className="text-gray-400">Product Image</span>
+        <span className="text-gray-400">תמונת מוצר</span>
       </div>
       <CardHeader>
-        <CardTitle className="text-lg">Wireless Headphones</CardTitle>
-        <CardDescription>High-quality audio device</CardDescription>
+        <CardTitle className="text-lg">אוזניות אלחוטיות</CardTitle>
+        <CardDescription>מכשיר אודיו באיכות גבוהה</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600">Price</span>
+            <span className="text-sm text-gray-600">מחיר</span>
             <span className="text-2xl font-bold text-brand">₪299</span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600">Rating</span>
+            <span className="text-sm text-gray-600">דירוג</span>
             <span className="text-sm">★★★★★ (148)</span>
           </div>
         </div>
@@ -66,7 +66,7 @@ export const ProductCardStory: Story = {
           type="button"
           className="w-full bg-brand text-white py-2 rounded hover:bg-brand-600"
         >
-          Add to Cart
+          הוסף לעגלה
         </button>
       </CardFooter>
     </Card>
@@ -81,7 +81,7 @@ export const Minimal: Story = {
     <Card className="w-80 border-0 shadow-sm">
       <CardContent className="pt-6">
         <p className="text-sm text-gray-700">
-          This is a minimal card with reduced visual emphasis, useful for subtle UI elements.
+          זה כרטיס מינימלי עם דגש חזותי מופחת, שימושי לאלמנטים ממשק עדינים.
         </p>
       </CardContent>
     </Card>
@@ -95,29 +95,29 @@ export const WithSections: Story = {
   render: () => (
     <Card className="w-96">
       <CardHeader>
-        <CardTitle>Order Summary</CardTitle>
+        <CardTitle>סיכום הזמנה</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="border-b pb-4">
-          <h4 className="font-semibold mb-2">Items</h4>
+          <h4 className="font-semibold mb-2">פריטים</h4>
           <ul className="text-sm space-y-1 text-gray-700">
-            <li>• Product 1: ₪100</li>
-            <li>• Product 2: ₪150</li>
+            <li>• מוצר 1: ₪100</li>
+            <li>• מוצר 2: ₪150</li>
           </ul>
         </div>
         <div>
-          <h4 className="font-semibold mb-2">Pricing</h4>
+          <h4 className="font-semibold mb-2">תמחור</h4>
           <div className="text-sm space-y-1 text-gray-700">
             <div className="flex justify-between">
-              <span>Subtotal:</span>
+              <span>סכום ביניים:</span>
               <span>₪250</span>
             </div>
             <div className="flex justify-between">
-              <span>Shipping:</span>
+              <span>משלוח:</span>
               <span>₪30</span>
             </div>
             <div className="flex justify-between font-bold pt-1 border-t">
-              <span>Total:</span>
+              <span>סה״כ:</span>
               <span className="text-brand">₪280</span>
             </div>
           </div>
@@ -128,7 +128,7 @@ export const WithSections: Story = {
           type="button"
           className="w-full bg-brand text-white py-2 rounded hover:bg-brand-600"
         >
-          Proceed to Checkout
+          המשך לתשלום
         </button>
       </CardFooter>
     </Card>

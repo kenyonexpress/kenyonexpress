@@ -31,7 +31,7 @@ type Story = StoryObj<typeof meta>
  */
 export const Default: Story = {
   args: {
-    placeholder: 'Enter your text here',
+    placeholder: 'הכנס את הטקסט שלך כאן',
     type: 'text',
   },
 }
@@ -41,7 +41,7 @@ export const Default: Story = {
  */
 export const Email: Story = {
   args: {
-    placeholder: 'Enter your email',
+    placeholder: 'הכנס את דוא״ל שלך',
     type: 'email',
   },
 }
@@ -51,7 +51,7 @@ export const Email: Story = {
  */
 export const Password: Story = {
   args: {
-    placeholder: 'Enter your password',
+    placeholder: 'הכנס את הסיסמה שלך',
     type: 'password',
   },
 }
@@ -61,7 +61,7 @@ export const Password: Story = {
  */
 export const Disabled: Story = {
   args: {
-    placeholder: 'This input is disabled',
+    placeholder: 'שדה זה מבוטל',
     disabled: true,
     type: 'text',
   },
@@ -105,11 +105,11 @@ export const FormExample: Story = {
       <form className="w-96 space-y-4">
         <div>
           <label htmlFor="fullName" className="block text-sm font-medium mb-1">
-            Full Name
+            שם מלא
           </label>
           <Input
             id="fullName"
-            placeholder="John Doe"
+            placeholder="יוחנן כהן"
             type="text"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -117,7 +117,7 @@ export const FormExample: Story = {
         </div>
         <div>
           <label htmlFor="email" className="block text-sm font-medium mb-1">
-            Email
+            דוא״ל
           </label>
           <Input
             id="email"
@@ -129,7 +129,7 @@ export const FormExample: Story = {
         </div>
         <div>
           <label htmlFor="phone" className="block text-sm font-medium mb-1">
-            Phone
+            טלפון
           </label>
           <Input
             id="phone"
@@ -147,7 +147,7 @@ export const FormExample: Story = {
             alert(JSON.stringify(formData, null, 2))
           }}
         >
-          Submit
+          שלח
         </button>
       </form>
     )
@@ -161,15 +161,15 @@ export const WithError: Story = {
   render: () => (
     <div className="w-96">
       <label htmlFor="username" className="block text-sm font-medium mb-1">
-        Username
+        שם משתמש
       </label>
       <Input
         id="username"
-        placeholder="Enter username"
+        placeholder="הכנס שם משתמש"
         aria-invalid="true"
         className="border-red-500"
       />
-      <p className="text-red-600 text-sm mt-1">Username must be at least 3 characters</p>
+      <p className="text-red-600 text-sm mt-1">שם המשתמש חייב להכיל לפחות 3 תווים</p>
     </div>
   ),
 }

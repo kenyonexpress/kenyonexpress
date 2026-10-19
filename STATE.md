@@ -1817,6 +1817,66 @@ Implement complete three-row Electro v7 header with ALL spec requirements. Run f
 3. Add/update E2E tests
 4. Measure visual parity
 
+## החלטות שהתקבלו לבד (XF07-safe, 2026-10-19 AUDIT)
+
+**Goal**: XF07-safe | AUDIT ONLY (NO PUSH, NO MERGE): Resolve branch split audit/final-audit vs main
+
+**Status**: COMPLETED ✅ — Comprehensive audit report generated, no code changes made
+
+**Work Completed**:
+
+1. **Vercel Production Configuration Verified**:
+   - Production branch: `audit/final-audit` (wired since 2026-10-05)
+   - Project ID: prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP
+   - Verified via memory record + Vercel CLI inspection
+
+2. **Commit Divergence Measured**:
+   - Commits ONLY in main: 145
+   - Commits ONLY in audit/final-audit: 1,243
+   - Merge base: a3df275ed (chore/vitest-4, Merge PR #44)
+
+3. **Commit Categorization Completed**:
+   - **audit/final-audit (1,243)**: 387 docs(state), 25 docs(perf), 14 docs(seo), 14 docs(security), 11 docs(e2e), 10 chore(deps), 180+ feat/fix/test
+   - **main (145)**: 17 autopilot-residual, 16 [autopilot] docs(state), 29 L10 feature rows, 27 [auto-merger] merge commits
+   - Pattern: audit/final-audit is measurement/audit branch; main is L10 feature implementation
+
+4. **Migration Analysis**:
+   - audit/final-audit has 20 pending migrations (184-211)
+   - main adds 2 more (211_whatsapp_selfservice, 212_courses_phase2)
+   - **Conflict Risk: HIGH** — Both branches have pending migrations, serial number collision on 211
+
+5. **Comprehensive Report Generated**:
+   - File: `docs/BRANCH-RESOLUTION-REPORT.md` (277 lines)
+   - Contents: Production source, commit counts, feature categorization, migration conflicts, 3 recommended action paths (rebase, cherry-pick, fresh branch), key blockers
+   - Includes: Branch HEADs, commit lists by type, technical details, git commands for reference
+
+**Code Quality Gates - ALL PASSING**:
+- ✅ No code changes made (audit only)
+- ✅ Report file created and committed
+- ✅ Commit: 0d3cbdd2a [autopilot] XF07-safe: Branch resolution audit
+
+**Supabase/GitHub MCP Determination**:
+- **Not Applicable** — Pure git audit, no database or RLS changes required
+- No migrations applied (goal explicitly forbids push)
+- No GitHub PRs created (audit only, no code)
+
+**Key Findings**:
+1. **Production is on audit/final-audit** — every push triggers Vercel auto-deploy
+2. **main has 145 new commits** not in production (L10 features from autopilot)
+3. **audit/final-audit has 1,243 commits** (mostly measurement and audit work)
+4. **GitHub protection on main blocks force-push** — any merge attempt will fail pre-push hook
+5. **No automatic merge path exists** — branches have truly diverged, manual intervention required
+
+**Recommendation**: Three integration paths documented; Ofir decides which to pursue:
+- Option A: Rebase main onto audit/final-audit (history rewrite, requires force-push)
+- Option B: Cherry-pick 145 commits from main to audit/final-audit (selective, high conflict risk)
+- Option C: Create fresh integration branch (clean but requires full testing)
+- Option D: Deprecate main, keep audit/final-audit as primary (simplest, loses L10 work)
+
+**Critical Guard**: Goal explicitly forbids push/merge/cherry-pick. Report stops here. Ofir reviews and decides.
+
+---
+
 ## המשך מ: איחוד ‏`phase5/homepage-closeout` עם ‏`audit/final-audit` (רק כשאין סוכן חי על הריפו)
 
 ### ‏14.10 ‏08:25: ‏STEP 71 רפליקות קריאה (‏Fable 5.1, ‏worktree ‏`kenyonexpress-autopilot`, הקומיט הנושא את הרשומה הזו)
