@@ -64,6 +64,8 @@ async function runUpsertProduct(
     sku: formData.get('sku') || null,
     stock_quantity: formData.get('stock_quantity') || null,
     is_featured: formData.get('is_featured') === 'true',
+    weekend_only: formData.get('weekend_only') === 'true',
+    free_shipping: formData.get('free_shipping') === 'true',
     status: formData.get('status'),
     short_description_he: formData.get('short_description_he') || null,
     brand: formData.get('brand') || null,

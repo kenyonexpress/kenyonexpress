@@ -25,6 +25,8 @@ export type Product = {
   city?: string | null
   /** Gallery assets (blur placeholders + alts) keyed by image URL. Optional. */
   assets?: Record<string, GalleryAsset>
+  weekend_only?: boolean | null
+  free_shipping?: boolean | null
 }
 
 /**
@@ -192,6 +194,21 @@ function DealsProductCard({ product }: { product: Product }) {
           </div>
         )}
 
+        {(product.weekend_only || product.free_shipping) && (
+          <div className="absolute top-2 end-2 flex flex-col gap-1">
+            {product.weekend_only && (
+              <div className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs font-semibold">
+                סוף ש
+              </div>
+            )}
+            {product.free_shipping && (
+              <div className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-semibold">
+                משלוח חינם
+              </div>
+            )}
+          </div>
+        )}
+
         {outOfStock && (
           <div className="absolute inset-0 flex items-center justify-center bg-white/70">
             <span className="rounded-full border bg-white px-2 py-1 text-xs font-semibold text-gray-500">
@@ -310,6 +327,20 @@ function DefaultProductCard({ product }: { product: Product }) {
             />
           ) : (
             <span className="text-5xl">📦</span>
+          )}
+          {(product.weekend_only || product.free_shipping) && (
+            <div className="absolute top-2 end-2 flex flex-col gap-1">
+              {product.weekend_only && (
+                <div className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs font-semibold">
+                  סוף ש
+                </div>
+              )}
+              {product.free_shipping && (
+                <div className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-semibold">
+                  משלוח חינם
+                </div>
+              )}
+            </div>
           )}
           {outOfStock && (
             <div className="absolute inset-0 flex items-center justify-center bg-white/70">

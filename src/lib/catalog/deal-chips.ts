@@ -33,12 +33,14 @@ export function anyChip(chips: DealChips): boolean {
 
 export interface ChipFilterable {
   weekend_only?: boolean | null
+  free_shipping?: boolean | null
   shipping_price_agorot?: number | null
 }
 
 export function matchesChips(product: ChipFilterable, chips: DealChips): boolean {
   if (chips.weekend && product.weekend_only !== true) return false
-  if (chips.freeShipping && product.shipping_price_agorot !== 0) return false
+  if (chips.freeShipping && product.free_shipping !== true && product.shipping_price_agorot !== 0)
+    return false
   return true
 }
 
