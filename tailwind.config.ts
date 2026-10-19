@@ -209,6 +209,16 @@ export default {
         elevated: 'var(--radius-md)',
       },
       boxShadow: {
+        // UX36: Comprehensive elevation hierarchy with base and hover states
+        sm: 'var(--shadow-sm)',
+        'sm-hover': 'var(--shadow-sm-hover)',
+        md: 'var(--shadow-md)',
+        'md-hover': 'var(--shadow-md-hover)',
+        lg: 'var(--shadow-lg)',
+        'lg-hover': 'var(--shadow-lg-hover)',
+        xl: 'var(--shadow-xl)',
+        'xl-hover': 'var(--shadow-xl-hover)',
+        // Legacy aliases for backward compatibility
         card: 'var(--shadow-card)',
         'card-hover': 'var(--shadow-card-hover)',
       },

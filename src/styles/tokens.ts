@@ -25,7 +25,20 @@ export const ELECTRO = {
     '3xl': '48px',
     '4xl': '64px',
   },
-  shadow: { card: '0px 2px 8px rgba(0,0,0,0.08)', hover: '0px 4px 16px rgba(0,0,0,0.12)' },
+  // UX36: comprehensive elevation hierarchy (sm, md, lg, xl) with base and hover variants
+  shadow: {
+    sm: '0px 1px 2px rgba(0,0,0,0.05)',
+    smHover: '0px 2px 4px rgba(0,0,0,0.08)',
+    md: '0px 2px 8px rgba(0,0,0,0.08)',
+    mdHover: '0px 4px 16px rgba(0,0,0,0.12)',
+    lg: '0px 4px 16px rgba(0,0,0,0.12)',
+    lgHover: '0px 8px 24px rgba(0,0,0,0.16)',
+    xl: '0px 8px 24px rgba(0,0,0,0.16)',
+    xlHover: '0px 12px 32px rgba(0,0,0,0.20)',
+    // Legacy aliases for backward compatibility
+    card: '0px 2px 8px rgba(0,0,0,0.08)',
+    hover: '0px 4px 16px rgba(0,0,0,0.12)',
+  },
   transition: { card: 'box-shadow 300ms ease-in-out' },
 }
 

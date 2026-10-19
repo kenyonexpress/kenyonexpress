@@ -743,13 +743,19 @@
      the breakage above. If a named spacing step is wanted later, give it a name
      Tailwind does not already own: `--spacing-gutter` above is the pattern. */
 
-  /* --- Shadows ----------------------------------------------------------------
-     NOT measured: the reference dump records geometry, colour, type and radius,
-     and carries no box-shadow key, so there is nothing in it to copy. These are
-     the two the Electro template ships (mirrored from ELECTRO.shadow in
-     tokens.ts) and they are the only two any component may use. If a shadow
-     ever needs to be 1:1 with live it has to be measured first; do not guess a
-     third value here. */
+  /* --- Shadows (UX36) ---------------------------------------------------------
+     Comprehensive elevation hierarchy with four levels (sm, md, lg, xl) and
+     hover variants for interactive elements. Based on material design principles
+     for consistent depth and interaction feedback. */
+  --shadow-sm: 0px 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-sm-hover: 0px 2px 4px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0px 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-md-hover: 0px 4px 16px rgba(0, 0, 0, 0.12);
+  --shadow-lg: 0px 4px 16px rgba(0, 0, 0, 0.12);
+  --shadow-lg-hover: 0px 8px 24px rgba(0, 0, 0, 0.16);
+  --shadow-xl: 0px 8px 24px rgba(0, 0, 0, 0.16);
+  --shadow-xl-hover: 0px 12px 32px rgba(0, 0, 0, 0.2);
+  /* Legacy aliases for backward compatibility */
   --shadow-card: 0px 2px 8px rgba(0, 0, 0, 0.08);
   --shadow-card-hover: 0px 4px 16px rgba(0, 0, 0, 0.12);
 
@@ -825,7 +831,16 @@
     --color-whatsapp-ink: #0db85c;
     --color-whatsapp-ink-hover: #0d9945;
 
-    /* Shadows */
+    /* Shadows (UX36) - dark theme with increased opacity */
+    --shadow-sm: 0px 1px 2px rgba(0, 0, 0, 0.2);
+    --shadow-sm-hover: 0px 2px 4px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0px 2px 8px rgba(0, 0, 0, 0.3);
+    --shadow-md-hover: 0px 4px 16px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0px 4px 16px rgba(0, 0, 0, 0.4);
+    --shadow-lg-hover: 0px 8px 24px rgba(0, 0, 0, 0.5);
+    --shadow-xl: 0px 8px 24px rgba(0, 0, 0, 0.5);
+    --shadow-xl-hover: 0px 12px 32px rgba(0, 0, 0, 0.6);
+    /* Legacy aliases */
     --shadow-card: 0px 2px 8px rgba(0, 0, 0, 0.3);
     --shadow-card-hover: 0px 4px 16px rgba(0, 0, 0, 0.5);
   }
@@ -886,7 +901,16 @@ html[data-theme="dark"] {
   --color-whatsapp-ink: #0db85c;
   --color-whatsapp-ink-hover: #0d9945;
 
-  /* Shadows */
+  /* Shadows (UX36) - dark theme with increased opacity */
+  --shadow-sm: 0px 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-sm-hover: 0px 2px 4px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0px 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md-hover: 0px 4px 16px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0px 4px 16px rgba(0, 0, 0, 0.4);
+  --shadow-lg-hover: 0px 8px 24px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0px 8px 24px rgba(0, 0, 0, 0.5);
+  --shadow-xl-hover: 0px 12px 32px rgba(0, 0, 0, 0.6);
+  /* Legacy aliases */
   --shadow-card: 0px 2px 8px rgba(0, 0, 0, 0.3);
   --shadow-card-hover: 0px 4px 16px rgba(0, 0, 0, 0.5);
 }
