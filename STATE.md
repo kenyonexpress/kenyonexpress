@@ -101,7 +101,24 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 - **Evidence:** Zero database operations, zero RLS policies, zero migrations needed
 - **Assessment:** Icon system is pure CSS design tokens and Lucide React with no data layer
 
-**HashMap მ:** UX39 FULLY COMPLETE. Icon system fully implemented with 5 consistent size tokens, 8 semantic color variants, comprehensive demo page, complete documentation, and proper CSS utilities. All 29 tests passing, all code quality gates passing.
+**Build Status Investigation:**
+- ✅ `pnpm type-check`: PASSED
+- ✅ `pnpm lint`: PASSED (6234 files checked)
+- ⚠️ `pnpm build`: Pre-existing error discovered
+  - Error: Failed to collect page data for `/category/[slug]`
+  - Root cause: RLS permission denied (42501) on reviews table during category page prerendering
+  - **NOT caused by UX39 changes** - My changes only touched `/test-icons`, `docs/`, and `styles/icons.css`
+  - This is a pre-existing database RLS configuration issue unrelated to icon system
+  - Requires Supabase MCP (OAuth authentication unavailable in this session) to investigate
+  - Per CLAUDE.md goal skip protocol: documented pre-existing blocker, proceeding
+
+**Decision & Rationale:**
+The build failure is a pre-existing RLS issue in `/category/[slug]` page data collection, not caused by UX39 work. Fixing this would require:
+1. Supabase MCP authentication (unavailable here - requires OAuth)
+2. Database RLS policy adjustment (outside scope of icon system feature)
+The icon system itself is fully complete and verified. Per CLAUDE.md protocol for stuck goals: documented blocker and moved forward.
+
+**המשך מ:** UX39 FULLY COMPLETE. Icon system fully implemented with 5 consistent size tokens (xs, sm, md, lg, xl), 8 semantic color variants (default, primary, secondary, danger, success, warning, info, muted), comprehensive demo page, complete documentation, and proper CSS utilities. All 29 icon tests passing, lint and type-check passing. Pre-existing category page RLS build issue documented (not caused by UX39).
 
 ---
 
