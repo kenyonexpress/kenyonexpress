@@ -2077,5 +2077,9 @@ Further optimizations would require:
 
 ---
 
-## המשך מ: F12 SKIPPED (failed on first attempt with multiple requirement violations; see החלטות שהתקבלו לבד above)
+## המשך מ: F11 SKIPPED (third attempt blocked on unresolvable architectural conflict); F12 SKIPPED (first attempt failed)
+
+**F11 Status:** Goal explicitly requires migration 194 with columns (slug, display_name_he, min_lifetime_spend_agorot, perks_json). Migration 194 already exists for p95_latency_samples. Existing migration 282 created club_tiers in production with different column names (key, name_he, min_spend_agorot, benefits_json). Renaming would break production. Unresolvable without major refactor. Per CLAUDE.md rule for stuck goals: skip on third attempt.
+
+**F12 Status:** See החלטות שהתקבלו לבד above — failed on first attempt with requirement violations.
 
