@@ -38,7 +38,7 @@ const banners = [
 
 export default function LeftSidebar() {
   return (
-    <aside aria-label="מבצעים מומלצים" className="space-y-3">
+    <aside aria-label="מבצעים מומלצים" className="space-y-space-md">
       {banners.map((b) => (
         <div
           key={b.id}
@@ -49,13 +49,13 @@ export default function LeftSidebar() {
             <span className="text-5xl select-none">{b.emoji}</span>
           </div>
           {/* Text + button */}
-          <div className="p-3">
+          <div className="p-space-md">
             <p className="font-extrabold text-xs text-gray-900 leading-snug tracking-tight">
               {b.heading}
             </p>
             <button
               type="button"
-              className="mt-2.5 w-full text-white text-xs font-bold py-2 rounded-full transition-colors hover:opacity-90"
+              className="mt-space-sm w-full text-white text-xs font-bold py-space-sm rounded-full transition-colors hover:opacity-90"
               style={{ background: 'var(--color-promo-flame)' }}
             >
               לרכישה ←

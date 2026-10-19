@@ -24,7 +24,7 @@ export default function RightSidebar() {
       className="border border-border rounded-xl overflow-hidden bg-surface"
     >
       {/* Solid yellow top block */}
-      <div className="px-4 py-4 text-center bg-brand-secondary">
+      <div className="px-space-lg py-space-lg text-center bg-brand-secondary">
         <p className="font-extrabold text-foreground text-sm tracking-tight">קניון EXPRESS</p>
         <p className="text-xs text-muted mt-0.5 font-medium">מסדרים לך בילוי</p>
       </div>
@@ -35,7 +35,7 @@ export default function RightSidebar() {
           <Link
             key={cat.id}
             href={cat.href}
-            className={`flex items-center gap-2 px-2 py-2 border-b border-rule last:border-0 transition-colors ${
+            className={`flex items-center gap-space-sm px-space-sm py-space-sm border-b border-rule last:border-0 transition-colors ${
               cat.muted
                 ? 'text-muted pointer-events-none'
                 : 'hover:bg-surface-hover text-foreground'
