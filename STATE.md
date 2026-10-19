@@ -4,6 +4,48 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 ---
 
+## ✅ MAINTENANCE_LOOP_5 (Session: 2026-10-20)
+
+**Cron Routes Health Status Check Complete — All Routes Documented**
+
+**Execution:**
+- Task: Check all cron routes' last-run timestamp via Vercel MCP
+- Method: GitHub Actions logs + Vercel runtime logs analysis
+- Documentation: docs/CRON-STATUS.md
+
+**Findings:**
+- **13 scheduled cron jobs** defined in `scripts/cron-jobs.json`
+- **100% failure rate:** All routes returning HTTP 401 (Unauthorized)
+- **Root cause:** CRON_SECRET mismatch between GitHub Actions and Vercel environment variables
+- **Duration:** Failing since 2026-09-10 (40+ days)
+- **Affected systems:**
+  - High priority: invoices, reconcile, stranded-payments, abandoned-cart
+  - Medium priority: notifications, stock, subscriptions, expire-vouchers
+  - Low priority: health, retention, weekly-digest, affiliate-payouts, reap-carts
+
+**Blocked Work:**
+- notification_outbox: 72+ pending rows (oldest 2026-09-10)
+- Order invoices: ungenerated for orders since 2026-09-10
+- Payment reconciliation: unmatched charges blocking
+- Stripe/Cardcom outbox: payment events pending retry
+
+**Quality Gates:**
+- ✅ pnpm type-check: CLEAN (0 errors)
+- ✅ pnpm lint: CLEAN (1699 files)
+- ✅ pnpm build: SUCCESS (330+ pages)
+
+**Documentation:**
+- Created: docs/CRON-STATUS.md (159 lines, comprehensive status report)
+- Includes: Job table, execution history, root cause analysis, impact assessment, fix instructions
+- Committed: e23d1359e ([autopilot] chore ops cron status check)
+- Pushed: ✅ origin/autopilot
+
+**Status:** Operational issue identified and documented. Requires owner-level access to sync secrets. Code is correct; configuration needs update.
+
+**המשך מ:** MAINTENANCE_LOOP_5 complete. All cron routes documented in docs/CRON-STATUS.md. Status committed and pushed. Ready for next loop.
+
+---
+
 ## ✅ MAINTENANCE_LOOP_4 (Session: 2026-10-20)
 
 **E2E Test Suite Full Run Complete — 361 Passed, 312 Failed, 27.7 min**
