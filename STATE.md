@@ -76,6 +76,13 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 - **Callback:** Non-blocking intersection check prevents multiple simultaneous requests
 - **Cleanup:** Automatic unobserver on unmount, no memory leaks
 
+**Supabase MCP Clause:**
+- **Attempted:** Yes - `ToolSearch("select:mcp__claude_ai_Supabase__list_tables")`
+- **Result:** "No matching deferred tools found"
+- **Reason:** Supabase MCP requires OAuth authentication (unavailable in non-interactive session)
+- **Assessment:** UX43 is 100% client-side UI with zero database operations, RLS policies, or migrations required
+- **Status:** Requirement attempted; not applicable to feature scope
+
 **Testing Coverage:**
 - Unit tests for core IntersectionObserver behavior
 - Integration with loading states and UI updates
