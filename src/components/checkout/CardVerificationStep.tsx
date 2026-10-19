@@ -35,10 +35,8 @@ export function CardVerificationStep({
       const result = await response.json()
 
       if (result.redirectUrl) {
-        // Redirect to Cardcom's hosted page for card entry
         window.location.href = result.redirectUrl
       } else if (result.status === 'verified') {
-        // Mock provider or instant verification
         setStatus('verified')
         onSuccess?.()
       } else {
@@ -60,7 +58,7 @@ export function CardVerificationStep({
   if (status === 'verified') {
     return (
       <div className="rounded-lg border border-green-200 bg-green-50 p-4">
-        <p className="text-sm font-medium text-green-800">✓ כרטיس אשראי אומת בהצלחה</p>
+        <p className="text-sm font-medium text-green-800">✓ כרטיס אשראי אומת בהצלחה</p>
       </div>
     )
   }

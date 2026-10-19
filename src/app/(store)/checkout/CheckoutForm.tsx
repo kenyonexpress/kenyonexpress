@@ -1,5 +1,6 @@
 'use client'
 
+import { CardVerificationStep } from '@/components/checkout/CardVerificationStep'
 import { trackCommerce } from '@/lib/analytics/commerce-client'
 import { getCheckoutVariant } from '@/lib/analytics/feature-flags'
 import { track } from '@/lib/analytics/tracker'
@@ -163,6 +164,7 @@ export default function CheckoutForm({
 
   const [step, setStep] = useState<CheckoutStep>('details')
   const [stepErrors, setStepErrors] = useState<StepErrors>({})
+  const [cardVerified, setCardVerified] = useState(false)
 
   /**
    * A saved address is submitted by id, so its fields are never rendered. With
@@ -1023,6 +1025,14 @@ export default function CheckoutForm({
                   <span id="co-err-accept-terms" className="checkout-field__error" role="alert">
                     {errorFor('accept_terms')}
                   </span>
+                )}
+
+                {!usingSavedCard && !cardVerified && (
+                  <CardVerificationStep
+                    onSuccess={() => setCardVerified(true)}
+                    onError={() => setCardVerificationRequired(true)}
+                    disabled={busy}
+                  />
                 )}
 
                 {!usingSavedCard && (
