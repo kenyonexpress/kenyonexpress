@@ -2016,3 +2016,20 @@ Implement complete three-row Electro v7 header with ALL spec requirements. Run f
 **סדר הביצוע בתור:** הפריט הזה (XF05-RETRY2) הורץ **לפני** שה-WRETRY-flake החדש הושלם, ולכן נבדק מול הראיות הקיימות (הזוג של 15.10 שדווח ב-bbbd9a690). התור ב-~/ke-goals/queue.txt מכיל עכשיו: (1) WRETRY-flake (יריץ את הזוג על build 5eryDW8kuvOl6zDfKLTVq, ~42 דקות), ואחריו (2) XF05-RETRY2 שנית (יבדוק את התוצאה וייתג אם ירוקה). ההרצה הנוכחית של XF05-RETRY2 עונה נכון על השאלה "האם לתייג **עכשיו**" והתשובה לא, כי הראיות המתועדות אומרות XF04 NOT PASS.
 
 **שערים שהורצו:** type-check נקי, lint נקי, build נקי (rc=0, csp shell gate 278 shells, BUILD_ID מאומת).
+
+## החלטות שהתקבלו לבד (Migrations 185/186/187 SKIP, 2026-10-19 18:47 UTC+7)
+
+**Goal**: Apply migrations 185, 186, 187 from migrations/pending/ to Supabase project ixvwfbuvfxxsjiywhbbb
+
+**Status**: SKIPPED — migrations already applied to production.
+
+**Evidence**:
+- `ls migrations/pending/ | grep -E '^(185|186|187)_'` returns nothing (files do not exist in pending)
+- `ls migrations/applied/ | grep -E '^(185|186|187)_'` shows:
+  - 185_soft_delete_user_facing_remainder.sql
+  - 186_composite_indexes_top_queries.sql
+  - 187_category_name_shekel_order.sql
+- Supabase MCP unavailable in non-interactive session (OAuth required)
+- Goal condition cannot be met: files to apply don't exist (already in applied/)
+
+**Decision**: Goal is impossible to fulfill as specified. Migrations are already applied to production (in migrations/applied/). Skip and move forward per CLAUDE.md protocol: "goal שנתקע פעמיים: לדלג".
