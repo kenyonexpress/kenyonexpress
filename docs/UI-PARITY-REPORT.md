@@ -92,3 +92,6 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-19 07:37 | home | 380 | 35.96% | **FAIL** | `ec5035cda-dirty` |  |
 | 2026-10-19 07:39 | home | 768 | 25.96% | **FAIL** | `ec5035cda-dirty` |  |
 | 2026-10-19 07:41 | home | 1440 | 28.20% | **FAIL** | `ec5035cda-dirty` |  |
+| 2026-10-19 07:44 | home | 380 | 36.35% | **FAIL** | `091a3487b-dirty` |  |
+| 2026-10-19 07:47 | home | 380 | 35.96% | **FAIL** | `091a3487b-dirty` |  |
+| 2026-10-19 07:53 | home | 380 | 36.17% | **FAIL** | `091a3487b-dirty` |  |
