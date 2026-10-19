@@ -16,7 +16,7 @@ import { cityByName } from '@/lib/geo/cities'
 import { shekelsFromIls as sharedShekelsFromIls } from '@/lib/money-format'
 import { useProductLive } from '@/lib/product-live/use-product-live'
 import { buildShareMessage } from '@/lib/share/message'
-import { Check, ShoppingCart } from 'lucide-react'
+import { Check, MapPin, ShoppingCart } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { type ReactNode, useState } from 'react'
 
@@ -227,7 +227,14 @@ export default function ProductInfo({
 
   return (
     <div data-pdp="summary" className="pdp-summary">
-      {categoryName && <p className="pdp-summary__eyebrow">{categoryName}</p>}
+      <p className="pdp-summary__eyebrow">
+        <span className="inline-flex items-center gap-2">
+          <span className="flex items-center justify-center w-8 h-8 rounded-full bg-neutral-100">
+            <MapPin size={14} className="text-black" />
+          </span>
+          {city || 'כל הארץ'}
+        </span>
+      </p>
 
       <h1 className="pdp-summary__title">{name}</h1>
 

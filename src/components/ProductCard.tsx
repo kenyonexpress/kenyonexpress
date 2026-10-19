@@ -1,7 +1,9 @@
 'use client'
 
 import AddToCartButton from '@/components/cart/AddToCartButton'
+import { cityByName } from '@/lib/geo/cities'
 import { shekelsFromIlsRounded } from '@/lib/money-format'
+import { MapPin } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 // product-card-deals.css is imported by the root layout. See the note there.
@@ -15,6 +17,7 @@ export type Product = {
   stock_quantity: number | null
   full_price?: number | null
   category?: { name_he: string; slug: string } | null
+  city?: string | null
 }
 
 /**
@@ -90,6 +93,19 @@ function CartPlusIcon() {
   )
 }
 
+function LocationLabel({ product }: { product: Product }) {
+  const city = product.city ? cityByName(product.city) : null
+  const cityName = city?.name ?? (product.city || 'כל הארץ')
+  return (
+    <span className="inline-flex items-center gap-1">
+      <span className="flex items-center justify-center w-8 h-8 rounded-full bg-neutral-100">
+        <MapPin size={14} className="text-black" aria-hidden="true" />
+      </span>
+      {cityName}
+    </span>
+  )
+}
+
 function DealsProductCard({ product }: { product: Product }) {
   const thumb =
     Array.isArray(product.images) && typeof product.images[0] === 'string'
@@ -105,11 +121,9 @@ function DealsProductCard({ product }: { product: Product }) {
 
   return (
     <article className="p_con">
-      {product.category && (
-        <Link href={`/category/${product.category.slug}`} className="p_con__category">
-          {product.category.name_he}
-        </Link>
-      )}
+      <p className="p_con__category">
+        <LocationLabel product={product} />
+      </p>
 
       <div className="p_con__title-wrap">
         <Link href={`/product/${product.slug}`} className="hover:underline">
@@ -245,14 +259,9 @@ function DefaultProductCard({ product }: { product: Product }) {
   return (
     <div className="overflow-hidden rounded-xl border border-gray-100 bg-white">
       <div className="space-y-2 p-3">
-        {product.category && (
-          <Link
-            href={`/category/${product.category.slug}`}
-            className="block text-xs text-muted-2 hover:text-heading line-clamp-1"
-          >
-            {product.category.name_he}
-          </Link>
-        )}
+        <div className="block text-xs text-muted-2 line-clamp-1">
+          <LocationLabel product={product} />
+        </div>
 
         <Link
           href={`/product/${product.slug}`}
