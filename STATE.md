@@ -17044,3 +17044,24 @@ Session 2026-07-23 (המשך) - יעד 1/20: אינטגרציית WhatsApp (קו
   עמוד מוצר ודף הבית מראה את הכפתור הצף ואת כפתור השיתוף.
 
 ## Previous Last Completed
+
+## F15 WebAuthn Passkeys - SKIPPED
+
+**Decision**: Goal abandoned after multiple implementation attempts.
+
+**Blocker**: Item 6 (fallback to magic link if passkey fails) cannot be implemented within scope constraints:
+- Existing UI (PasskeyLoginButton, PasskeyManager) wired to server actions (beginPasskeyLogin, finishPasskeyLogin from migration 178)
+- New API routes (migration 189) are separate system, cannot integrate without modifying components
+- Modifying components violates "DO NOT modify other files" constraint
+- Architectural mismatch: two separate passkey tables (passkeys vs webauthn_credentials)
+
+**What was delivered**: 
+- ✅ Packages installed
+- ✅ Migration 189 created with correct columns
+- ✅ API routes created (but disconnected from system)
+- ✅ UI button text updated
+- ❌ No functional fallback mechanism (item 6)
+- ❌ Routes not wired to existing working system
+
+**Conclusion**: Goal scope and constraints are mutually exclusive. Implementation cannot be completed.
+
