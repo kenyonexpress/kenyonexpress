@@ -51,7 +51,11 @@ interface VariantDraft {
 }
 
 interface Props {
-  product?: Product
+  product?: Product & {
+    is_physical_shipping?: boolean
+    city?: string | null
+    full_address?: string | null
+  }
   variants?: ProductVariant[]
   categories: Pick<Category, 'id' | 'name_he'>[]
   suppliers?: SupplierOption[]
@@ -125,6 +129,11 @@ export default function ProductForm({
     product?.discount_percent != null ? String(product.discount_percent) : '',
   )
   const [supplierId, setSupplierId] = useState(product?.supplier_id ?? '')
+  const [isPhysicalShipping, setIsPhysicalShipping] = useState(
+    product?.is_physical_shipping ?? false,
+  )
+  const [city, setCity] = useState(product?.city ?? '')
+  const [fullAddress, setFullAddress] = useState(product?.full_address ?? '')
 
   const error = state && 'error' in state ? state.error : null
 
@@ -251,6 +260,13 @@ export default function ProductForm({
       {product && <input type="hidden" name="id" value={product.id} />}
       <input type="hidden" name="images" value={JSON.stringify(images)} />
       <input type="hidden" name="variants" value={variantsJson} />
+      <input
+        type="hidden"
+        name="is_physical_shipping"
+        value={isPhysicalShipping ? 'true' : 'false'}
+      />
+      <input type="hidden" name="city" value={isPhysicalShipping ? '' : city} />
+      <input type="hidden" name="full_address" value={fullAddress} />
 
       {error && <div className="bg-red-50 text-red-700 text-sm rounded-lg px-4 py-2">{error}</div>}
 
@@ -1119,6 +1135,50 @@ export default function ProductForm({
           <label htmlFor="requires_shipping" className="text-sm font-medium text-gray-700">
             דורש משלוח פיזי
           </label>
+        </div>
+        <div className="flex items-center gap-3">
+          <input
+            id="is_physical_shipping"
+            type="checkbox"
+            checked={isPhysicalShipping}
+            onChange={(e) => {
+              setIsPhysicalShipping(e.target.checked)
+              if (e.target.checked) setCity('')
+            }}
+            className="w-4 h-4 rounded border-gray-300 text-brand focus:ring-brand"
+          />
+          <label htmlFor="is_physical_shipping" className="text-sm font-medium text-gray-700">
+            מוצר פיזי שנשלח הביתה
+          </label>
+        </div>
+        <div>
+          <label htmlFor="city" className="block text-xs font-medium text-gray-700 mb-1">
+            עיר {!isPhysicalShipping && '*'}
+          </label>
+          <input
+            id="city"
+            type="text"
+            value={isPhysicalShipping ? 'כל הארץ' : city}
+            onChange={(e) => !isPhysicalShipping && setCity(e.target.value)}
+            disabled={isPhysicalShipping}
+            required={!isPhysicalShipping}
+            placeholder="תל אביב, ירושלים..."
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand disabled:bg-gray-50 disabled:text-gray-500"
+          />
+        </div>
+        <div>
+          <label htmlFor="full_address" className="block text-xs font-medium text-gray-700 mb-1">
+            כתובת מלאה
+          </label>
+          <input
+            id="full_address"
+            type="text"
+            value={fullAddress}
+            onChange={(e) => setFullAddress(e.target.value)}
+            placeholder="רוטשילד 15 תל אביב"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+          />
+          <p className="mt-1 text-xs text-gray-500">מוצג בדף פרטי המוצר בלבד, לא בקלפים</p>
         </div>
         {/* The WhatsApp opt-in. Default false and no fallback to true: ticking
             this publishes a link that opens a chat with a real business, so it
