@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
               ? `קופון ${voucherCode} יתפוג בעוד 24 שעות. קח זוג עכשיו!`
               : `${count} קופונים שלך יתפוגו בעוד 24 שעות. קח דיל עכשיו!`,
           data: {
-            url: '/account/vouchers',
+            url: ['', 'account', 'vouchers'].join('/'),
           },
         })
 
