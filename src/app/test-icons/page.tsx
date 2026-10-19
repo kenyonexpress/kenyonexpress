@@ -20,7 +20,7 @@ import type { Metadata } from 'next'
 import { Icon } from '@/components/ui/icon'
 
 export const metadata: Metadata = {
-  title: 'Icon System Demo',
+  title: 'הדגמת מערכת הסמלים',
   robots: { index: false, follow: false },
 }
 
@@ -58,12 +58,12 @@ export default function TestIconsPage() {
       <div className="max-w-7xl mx-auto">
         <h1 className="text-4xl font-bold mb-2">מערכת הסמלים</h1>
         <p className="text-gray-600 mb-12">
-          Icon System Demo - Lucide React with Consistent Sizes &amp; Variants
+          הדגמת מערכת הסמלים - Lucide React עם גדלים וגרסאות עקביות
         </p>
 
         {/* Size Tokens Section */}
         <section className="mb-16">
-          <h2 className="text-2xl font-bold mb-6">Size Tokens</h2>
+          <h2 className="text-2xl font-bold mb-6">טוקנים גודל</h2>
           <div className="bg-gray-50 p-8 rounded-lg">
             <div className="grid grid-cols-5 gap-8">
               {sizes.map((size) => (
@@ -89,7 +89,7 @@ export default function TestIconsPage() {
 
         {/* Color Variants Section */}
         <section className="mb-16">
-          <h2 className="text-2xl font-bold mb-6">Color Variants</h2>
+          <h2 className="text-2xl font-bold mb-6">גרסאות צבע</h2>
           <div className="space-y-6">
             {variants.map((variant) => (
               <div key={variant} className="bg-gray-50 p-6 rounded-lg">
@@ -117,7 +117,7 @@ export default function TestIconsPage() {
 
         {/* Size + Variant Combinations */}
         <section className="mb-16">
-          <h2 className="text-2xl font-bold mb-6">Size & Variant Combinations</h2>
+          <h2 className="text-2xl font-bold mb-6">שילובי גודל וגרסה</h2>
           <div className="grid grid-cols-1 gap-8">
             {variants.map((variant) => (
               <div key={variant} className="bg-gray-50 p-6 rounded-lg">
@@ -139,7 +139,7 @@ export default function TestIconsPage() {
 
         {/* Icon Library */}
         <section className="mb-16">
-          <h2 className="text-2xl font-bold mb-6">Icon Library (Lucide React)</h2>
+          <h2 className="text-2xl font-bold mb-6">ספריית סמלים (Lucide React)</h2>
           <div className="grid grid-cols-7 gap-4">
             {icons.map(({ name, component }) => (
               <div key={name} className="flex flex-col items-center gap-2 p-4 bg-gray-50 rounded">
@@ -154,10 +154,10 @@ export default function TestIconsPage() {
 
         {/* Usage Guidelines */}
         <section className="mb-16">
-          <h2 className="text-2xl font-bold mb-6">Usage Guidelines</h2>
+          <h2 className="text-2xl font-bold mb-6">הנחיות שימוש</h2>
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 space-y-4">
             <div>
-              <h3 className="font-semibold text-lg mb-2">Size Tokens</h3>
+              <h3 className="font-semibold text-lg mb-2">טוקנים גודל</h3>
               <ul className="list-disc list-inside space-y-1 text-gray-700">
                 <li>
                   <code className="bg-white px-2 py-1 rounded text-sm">xs</code>
@@ -182,7 +182,7 @@ export default function TestIconsPage() {
               </ul>
             </div>
             <div>
-              <h3 className="font-semibold text-lg mb-2">Color Variants</h3>
+              <h3 className="font-semibold text-lg mb-2">גרסאות צבע</h3>
               <ul className="list-disc list-inside space-y-1 text-gray-700">
                 <li>
                   <code className="bg-white px-2 py-1 rounded text-sm">default</code>
@@ -219,7 +219,7 @@ export default function TestIconsPage() {
               </ul>
             </div>
             <div>
-              <h3 className="font-semibold text-lg mb-2">Example Usage</h3>
+              <h3 className="font-semibold text-lg mb-2">דוגמת שימוש</h3>
               <pre className="bg-white p-4 rounded text-sm font-mono overflow-x-auto">
                 {`import { Icon } from '@/components/ui/icon'
 import { Search } from 'lucide-react'
@@ -239,35 +239,33 @@ export function SearchButton() {
 
         {/* Accessibility Features */}
         <section>
-          <h2 className="text-2xl font-bold mb-6">Accessibility Features</h2>
+          <h2 className="text-2xl font-bold mb-6">תכונות נגישות</h2>
           <div className="bg-green-50 border border-green-200 rounded-lg p-6 space-y-4">
             <div>
-              <h3 className="font-semibold text-lg mb-2">Built-in Accessibility</h3>
+              <h3 className="font-semibold text-lg mb-2">נגישות מובנית</h3>
               <ul className="list-disc list-inside space-y-1 text-gray-700">
                 <li>
-                  Support for <code className="text-xs font-mono">aria-label</code> for screen
-                  readers
+                  תמיכה ב-<code className="text-xs font-mono">aria-label</code> לקוראי מסך
                 </li>
                 <li>
-                  Support for <code className="text-xs font-mono">title</code> attribute for
-                  tooltips
+                  תמיכה בתכונת <code className="text-xs font-mono">title</code> עבור רמזים
                 </li>
                 <li>
-                  Support for custom <code className="text-xs font-mono">role</code> attributes
+                  תמיכה בתכונות <code className="text-xs font-mono">role</code> מותאמות אישית
                 </li>
-                <li>Ref forwarding for programmatic access</li>
-                <li>Custom className support for additional styling</li>
+                <li>העברת ref לגישה פרוגרמטית</li>
+                <li>תמיכה ב-className מותאם אישית לעיצוב נוסף</li>
               </ul>
             </div>
             <div>
-              <h3 className="font-semibold text-lg mb-2">Example with ARIA</h3>
+              <h3 className="font-semibold text-lg mb-2">דוגמה עם ARIA</h3>
               <pre className="bg-white p-4 rounded text-sm font-mono overflow-x-auto">
                 {`<Icon
   as={Heart}
   size="lg"
   variant="danger"
-  aria-label="Add to favorites"
-  title="Add to favorites"
+  aria-label="הוסף למועדפים"
+  title="הוסף למועדפים"
 />`}
               </pre>
             </div>
