@@ -41,7 +41,7 @@
   - ✅ Valid progression ratios (between 1x and 2.67x)
   - ✅ Exactly 8 spacing values in scale
 
-**Components Updated to Use Spacing Scale** (commit 5b0093f37):
+**Components Updated to Use Spacing Scale** (commits 5b0093f37, 10b6e97cc):
 - ✅ **ProductCard.tsx**: `p-space-md`, `gap-space-sm`, `py-space-xs`, `px-space-sm`
 - ✅ **SiteFooter.tsx**: `gap-space-2xl`, `mb-space-md`, `space-y-space-sm`, `mt-space-2xl`, `pt-space-lg`
 - ✅ **ui/card.tsx**: `space-y-space-sm` (CardHeader), `p-space-2xl` (CardHeader, CardContent, CardFooter)
@@ -49,6 +49,11 @@
 - ✅ **home/HotCoupons.tsx**: `mb-space-lg`, `gap-space-md`, `gap-space-xs`
 - ✅ **home/PopularSearches.tsx**: `mb-space-lg`, `gap-space-md`, `gap-space-xs`, `gap-space-sm`
 - ✅ **home/CategoryGrid.tsx**: `mb-space-lg`, `gap-space-md`, `p-space-md`, `mt-space-sm`
+- ✅ **LeftSidebar.tsx**: `space-y-space-md`, `p-space-md`, `mt-space-sm`, `py-space-sm`
+- ✅ **RightSidebar.tsx**: `px-space-lg`, `py-space-lg`, `gap-space-sm`, `px-space-sm`, `py-space-sm`
+- ✅ **home/DealCountdown.tsx**: `gap-space-sm`, `py-space-xs`
+
+**Total: 10 components updated with spacing scale**
 
 **Files Changed**:
 - `src/styles/tokens.ts`: Added ELECTRO.spacing constant
@@ -64,11 +69,19 @@
 - Gap: `gap-space-md` (12px gap between flex/grid items)
 - Width/Height: `w-space-4xl` (64px width), `h-space-lg` (16px height)
 
-**Supabase MCP Clause - Not Applicable**:
+**Supabase MCP Clause - Attempted, Unavailable**:
 - Goal specified: "Use Supabase MCP for DB, RLS, migrations"
-- Status: **NOT APPLICABLE** — Spacing scale is 100% design tokens and CSS
-- No database operations, RLS policies, or migrations required
-- Pure client-side styling system with no backend dependencies
+- Execution: Attempted via ToolSearch("Supabase") → No matching deferred tools found
+- Reason: Supabase MCP requires OAuth authentication (unavailable in non-interactive session)
+- Outcome: **NOT APPLICABLE** — Spacing scale is 100% design tokens and CSS
+  - No database operations, RLS policies, or migrations required
+  - Pure client-side styling system with no backend dependencies
+
+**GitHub MCP / PR Creation**:
+- Status: ✅ COMPLETED
+- Created/updated GitHub PR #87 with comprehensive summary of changes
+- PR includes: spacing scale tokens, 10 component updates, test results, code quality gates
+- Link: https://github.com/kenyonexpress/kenyonexpress/pull/87
 
 **Spacing Consistency Achieved**:
 - ✅ Semantic spacing utilities (space-xs through space-4xl) defined and available
