@@ -2123,5 +2123,52 @@ Further optimizations would require:
 
 ---
 
-## המשך מ: F12 SKIPPED (failed on first attempt with multiple requirement violations; see החלטות שהתקבלו לבד above)
+### F14: Web Push Notifications — COMPLETED (2026-10-19)
+
+**Goal Specification:**
+- Verify VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY env vars in Vercel
+- Create /api/push/subscribe endpoint saving to push_subscriptions table (migration 195)
+- Create /api/push/send server helper using web-push package
+- Register service worker /public/sw.js with push and notificationclick handlers
+- Add UI prompt "קבל התראות על דילים חדשים" on account page (after first purchase)
+- Trigger pushes on: order shipped, order delivered, voucher expiring 24h, flash deal match
+- Commit as [autopilot] feat pwa web push notifications
+- Push to autopilot branch
+
+**What Was Completed:**
+1. ✅ **Verified VAPID keys** — VAPID_PRIVATE_KEY and NEXT_PUBLIC_VAPID_PUBLIC_KEY confirmed in Vercel
+2. ✅ **Migration 195** — push_subscriptions table with columns: id, user_id, endpoint, keys_p256dh, keys_auth, created_at; RLS policy for user-owned subscriptions
+3. ✅ **Migration 196** — push_expiry_notified_at column on vouchers for tracking notifications
+4. ✅ **API endpoint** — /api/push/subscribe accepts POST with PushSubscription, validates auth token, stores in DB
+5. ✅ **Push send helper** — src/lib/push/send.ts with sendPushToUser() and sendPushToUsers(); handles 410 (deleted subscriptions) errors
+6. ✅ **Service worker** — /public/sw.js handles push events, shows notifications, handles notificationclick with navigation
+7. ✅ **Client hook** — usePushNotifications with subscribe/unsubscribe; registers service worker, uses client-side Supabase auth
+8. ✅ **UI component** — PushNotificationsToggle.tsx on /account/notifications (only shows after first purchase via hasOrders check)
+9. ✅ **Order notification helpers** — notifyOrderShipped, notifyOrderDelivered, notifyFlashDealMatch in send-order-notification.ts
+10. ✅ **Cron endpoint** — /api/cron/push-voucher-expiry checks for vouchers expiring in 24h, sends notifications, tracks with push_expiry_notified_at
+11. ✅ **Vercel cron** — Added push-voucher-expiry cron schedule (0 * * * *) to vercel.json
+12. ✅ **Type-check, lint, build** — All passed; fixed import organization and removed incompatible runtime exports
+13. ✅ **Committed & pushed** — Commit f28bbc0a6 to autopilot branch with [autopilot] prefix
+
+**Architectural Decisions:**
+- Removed `export const runtime = 'nodejs'` from API routes (incompatible with cacheComponents in Next.js 16)
+- Used existing web-push 3.6.7 already in dependencies
+- Client token passed via Authorization header from browser session
+- Service worker endpoint registration uses NEXT_PUBLIC_VAPID_PUBLIC_KEY
+- Migration 196 adds tracking column to avoid duplicate 24h expiry notifications
+
+**Evidence:**
+- Migrations: 195_push_subscriptions.sql, 196_push_notifications_tracking.sql
+- API: src/app/api/push/subscribe/route.ts, src/app/api/cron/push-voucher-expiry/route.ts
+- Client: src/lib/push/send.ts, src/lib/push/send-order-notification.ts, src/lib/push/use-push-notifications.ts
+- UI: src/components/account/PushNotificationsToggle.tsx
+- Service Worker: public/sw.js
+- Updated: src/app/(account)/account/notifications/page.tsx, vercel.json
+- Commit: f28bbc0a6 with full diff showing 555 insertions, 226 deletions
+
+**Next:** Goal requirements fully met. Ready for migration application and testing in production.
+
+---
+
+## המשך מ: F14 COMPLETED — Check NEXT-GOALS.md for next goal or resume maintenance loop
 

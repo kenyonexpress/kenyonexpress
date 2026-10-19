@@ -30,6 +30,10 @@
     {
       "path": "/api/cron/stock-notifications",
       "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/cron/push-voucher-expiry",
+      "schedule": "0 * * * *"
     }
   ]
 }
