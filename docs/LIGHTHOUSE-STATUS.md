@@ -54,13 +54,13 @@
 
 ✅ Performance: All pages >= 90  
 ✅ Accessibility: All pages >= 90  
-⚠️ SEO: 2 pages below threshold (not critical)
+❌ SEO: 2 pages below 90 threshold (OPTIMIZATION GOAL QUEUED)
 
 ## Notes
 
-- All critical performance and accessibility targets met
-- SEO gaps on cart (69) and search (83) pages are below threshold but not blocking (SEO threshold: 85)
-- No optimization goal queued (all critical scores passing)
+- All critical performance and accessibility targets met (min 93 and 99 respectively)
+- SEO optimization required: Search Results 83 < 90, Shopping Cart 69 < 90
+- **SEO Optimization Goal Queued:** Fix structured data, schema.org markup, and metadata on funnel pages
 - Next scheduled measurement: Every 6 hours (MAINTENANCE_LOOP_7 recurring)
 
 ## Historical Baseline

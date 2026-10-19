@@ -63,3 +63,4 @@ wp_import/
 backups/
 .env*
 .image-staging/
+.lighthouseci/
