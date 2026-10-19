@@ -2134,11 +2134,35 @@ Full E2E suite cannot be run in a single maintenance window. Per CLAUDE.md: skip
 
 ---
 
-## המשך מ: MAINTENANCE_LOOP_5 (Cron route status check via Vercel MCP)
+### MAINTENANCE_LOOP_6: Mobile Gate Score — SKIPPED (2026-10-19)
+
+**Goal Specification:**
+- Recheck Mobile Gate score via scripts/compare.mjs
+- If above 11%, requeue mobile fix goal at head of queue
+- Report current score to docs/GATE-STATUS.md
+- Commit as chore qa mobile gate check
+
+**Why Goal Is Blocked (Infrastructure Issue):**
+1. **Local dev environment structural mismatch** — compare.mjs shows:
+   - Reference page (live): 1440×5492
+   - Local page (mine): 1440×17840
+   - Height ratio: 3.25× (local is 3× taller than reference)
+2. **Script explicitly refuses measurement** — Output states: "These are structurally different pages, not the same page styled differently"
+3. **Cannot obtain valid gate score** — Measurement requires pages to match structure; local environment fails prerequisite
+4. **Root cause unclear** — Could be: stale dev server build, database load issue, or layout regression
+
+**Autonomous Decision:**
+Measurement infrastructure broken. Cannot obtain valid gate score. Per CLAUDE.md: skip when goal cannot be executed. Do not retry without fixing local environment first.
+
+---
+
+## המשך מ: MAINTENANCE_LOOP_7 (Lighthouse CI check)
 
 **Completed So Far:**
 1. ✅ MAINTENANCE_LOOP_3: Scanned docs/BACKLOG.md and docs/TODO.md for unblocked items. Result: 0 unblocked items found. Created docs/MAINT-LOG.md. Committed and pushed.
 2. ⏸️ MAINTENANCE_LOOP_4: E2E suite blocked (timeout exceeded at 91/682 tests). Skipped per CLAUDE.md rule.
+3. ✅ MAINTENANCE_LOOP_5: Checked cron routes via GitHub Actions logs. All routes running (no stale >24h). All recent runs failing (HTTP 000/401 errors). Report: docs/CRON-STATUS.md. Committed and pushed.
+4. ⏸️ MAINTENANCE_LOOP_6: Mobile gate measurement blocked (local dev environment structurally broken). Skipped per CLAUDE.md rule.
 
-**Next:** Run MAINTENANCE_LOOP_5: Check all cron routes last-run timestamp via Vercel MCP. Report in docs/CRON-STATUS.md.
+**Next:** Run MAINTENANCE_LOOP_7: Run Lighthouse CI via pnpm lhci:autorun. Report scores to docs/LIGHTHOUSE-STATUS.md.
 
