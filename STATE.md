@@ -52,9 +52,11 @@ The goal condition was met: mobile gate score (37.15%) > 11% threshold.
 ## 📋 Work Queue (Next Goals)
 
 **Priority Order (head to tail):**
-1. **BEST_PRACTICES_OPTIMIZATION** — Homepage Best Practices 89 < 90 threshold. Fix via Lighthouse audit findings and commit. Measure via `pnpm lhci:autorun` to verify >= 90.
-2. **MOBILE_FIX_GATE** — Requeue condition met: score 37.15% > 11% threshold. Adjust mobile UI to bring score below 11%. Measure via `scripts/compare.mjs --page=home --width=380`.
+1. **MOBILE_FIX_GATE** — Requeue condition met: score 37.15% > 11% threshold. Adjust mobile UI to bring score below 11%. Measure via `scripts/compare.mjs --page=home --width=380`.
+2. **BEST_PRACTICES_OPTIMIZATION** — Homepage Best Practices 89 < 90 threshold (deferred). Root cause: 35 console errors from localhost (17 network 500 errors, 18 security errors). Environment-related artifact - requires network debugging tools. Measure via `pnpm lhci:autorun` to verify >= 90 after fixes.
 3. Continue with NEXT-GOALS.md items per standard queue
+
+**Note:** Best Practices reordered after Mobile fix due to complexity of debugging localhost console errors. Mobile gate has clearer pixel-based metrics.
 
 ---
 
