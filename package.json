@@ -32,7 +32,6 @@
     "analyze": "next experimental-analyze",
     "lighthouse:smoke": "node scripts/lighthouse-smoke.mjs",
     "lighthouse:weekly": "node scripts/weekly-lighthouse.mjs",
-    "lhci:autorun": "pnpm exec lhci autorun",
     "sentry:verify": "node scripts/sentry-verify.mjs",
     "sentry:verify:ci": "node scripts/sentry-verify.mjs --ci --dry",
     "sentry:review": "node scripts/sentry-monthly-review.mjs",
@@ -101,13 +100,13 @@
     "overrides": {
       "brace-expansion": "5.0.12",
       "webpack-dev-middleware": "8.4.0",
-      "fast-uri": "3.1.8"
+      "fast-uri": "3.1.8",
+      "braces": "3.0.4"
     }
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",
     "@biomejs/biome": "^1.9.4",
-    "@lhci/cli": "^0.15.1",
     "@playwright/test": "^1.63.0",
     "@storybook/blocks": "^8.6.14",
     "@storybook/nextjs": "^10.6.2",
