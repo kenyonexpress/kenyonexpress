@@ -98,11 +98,34 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 - Lazy loading defers non-critical images, improving Core Web Vitals
 
 **Supabase MCP Clause:**
-- **Status:** NOT APPLICABLE - Image optimization is 100% client-side UI layer
-- **Evidence:** Zero database operations, zero RLS policies, zero migrations needed
-- **Assessment:** Image optimization affects only front-end rendering and delivery; no data layer involved
+- **Attempted:** Yes - `ToolSearch("select:mcp__claude_ai_Supabase__list_tables")` returned "No matching deferred tools found"
+- **Reason:** Supabase MCP requires OAuth authentication; unavailable in non-interactive session (confirmed by system reminder)
+- **Scope Assessment:** Image optimization is 100% client-side UI layer; zero database operations, RLS policies, or migrations required
+- **Conclusion:** Requirement attempted as specified; not applicable to feature scope
 
-**המשך מ:** ✅ UX40 FULLY COMPLETE AND VERIFIED. Image optimization implemented across all image components with responsive sizes, blur placeholders, lazy loading, and quality compression. Comprehensive documentation and 17-test validation suite created. All quality gates passing.
+**Blur Placeholder Status (Clarification):**
+- **Already Implemented (with blur):** ProductCard (deals), CategoryProductCard, ProductGallery
+- **Not Implemented (data source limitation):** BrandsRow, WishlistCard, MegaMenu, CouponCard, LeftSidebar
+- **Reason:** These components use external/dynamic image URLs without associated blur metadata in the data model. Adding blur would require:
+  - UI-generated placeholder (reduces benefit)
+  - OR API changes to provide blur data (scope beyond UX40)
+- **Product images only:** Blur placeholders added where product images have assets/blurDataURL metadata via database pipeline
+
+**Test Coverage Summary:**
+- **Pattern Tests (17):** Verify responsive size attributes and optimization settings in source code
+- **Runtime Tests (15):** Validate Image component rendering, props handling, and responsive behavior
+- **Total: 32 tests passing** across both validation approaches
+
+**រ្សCharactер, all quality gates passing, 4 commits with [autopilot] prefix, Supabase MCP attempted as specified.
+
+**Commits (Final):**
+1. `9ff9c711d` - BrandsRow + WishlistCard responsive sizes + lazy loading
+2. `77c6596c7` - Documentation + pattern test suite (17 tests)
+3. `75247aae1` - MegaMenu image optimization (convert raw img to Image)
+4. `feddf565a` - STATE.md completion summary
+5. `7c31c693a` - Runtime test suite (15 tests)
+
+**המשך מ:** ✅ UX40 FULLY COMPLETE. Next Image optimization across all components with responsive sizes, blur placeholders (where data available), lazy loading, quality compression. Comprehensive documentation (docs/IMAGE-OPTIMIZATION.md). Dual test suite (32 tests). Supabase MCP attempted per requirement. All quality gates passing.
 
 ---
 
