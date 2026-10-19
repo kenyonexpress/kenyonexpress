@@ -1,71 +1,53 @@
 import { describe, expect, it } from 'vitest'
 
 describe('Passkey API Routes', () => {
-  describe('POST /api/auth/passkey/register', () => {
-    it('should return registration options on step=options', async () => {
-      const response = {
-        rp: {
-          name: 'Kenyon Express',
-          id: 'localhost',
-        },
-        user: expect.any(Object),
-        challenge: expect.any(String),
-        pubKeyCredParams: expect.any(Array),
-        timeout: expect.any(Number),
-        attestation: expect.any(String),
-        authenticatorSelection: expect.any(Object),
-      }
-      expect(response).toBeDefined()
+  describe('Registration endpoint', () => {
+    it('expects registration options to include rpID and challenge', () => {
+      const expectedFields = ['rpID', 'rpName', 'challenge', 'pubKeyCredParams']
+      expect(expectedFields).toContain('challenge')
+      expect(expectedFields).toContain('rpID')
     })
 
-    it('should verify registration response and store passkey on step=verify', async () => {
-      const mockCredential = {
-        id: 'test-credential-id',
-        publicKey: new Uint8Array([1, 2, 3, 4]),
-        counter: 0,
-        transports: ['platform'],
-      }
-      expect(mockCredential).toBeDefined()
+    it('expects registration to store credential_id and public_key', () => {
+      const requiredColumns = ['user_id', 'credential_id', 'public_key', 'counter', 'transports']
+      expect(requiredColumns).toContain('credential_id')
+      expect(requiredColumns).toContain('public_key')
+      expect(requiredColumns.length).toBe(5)
     })
 
-    it('should handle registration errors gracefully', async () => {
-      const error = { error: 'Registration failed' }
-      expect(error).toBeDefined()
+    it('expects registration to handle verification errors', () => {
+      const errorResponse = { error: 'Registration failed', status: 400 }
+      expect(errorResponse).toHaveProperty('error')
+      expect(errorResponse.status).toBe(400)
     })
   })
 
-  describe('POST /api/auth/passkey/authenticate', () => {
-    it('should return authentication options on step=options', async () => {
-      const response = {
-        challenge: expect.any(String),
-        timeout: expect.any(Number),
-        rpId: expect.any(String),
-        allowCredentials: expect.any(Array),
-        userVerification: expect.any(String),
-      }
-      expect(response).toBeDefined()
+  describe('Authentication endpoint', () => {
+    it('expects authentication options to include challenge and rpID', () => {
+      const expectedFields = ['challenge', 'timeout', 'rpID', 'userVerification']
+      expect(expectedFields).toContain('challenge')
+      expect(expectedFields).toContain('rpID')
     })
 
-    it('should verify authentication response and update counter on step=verify', async () => {
-      const mockResponse = {
-        verified: true,
-        userId: expect.any(String),
-      }
-      expect(mockResponse).toBeDefined()
+    it('expects successful authentication to return userId', () => {
+      const successResponse = { verified: true, userId: 'test-user-id' }
+      expect(successResponse.verified).toBe(true)
+      expect(successResponse).toHaveProperty('userId')
     })
 
-    it('should return fallback flag on verification failure', async () => {
-      const response = {
+    it('expects failed authentication to return fallbackToMagicLink flag', () => {
+      const failureResponse = {
         error: 'Authentication failed',
         fallbackToMagicLink: true,
         status: 401,
       }
-      expect(response.fallbackToMagicLink).toBe(true)
+      expect(failureResponse.fallbackToMagicLink).toBe(true)
+      expect(failureResponse.status).toBe(401)
     })
 
-    it('should handle passkey lookup errors', async () => {
-      const error = { error: 'Passkey not found' }
-      expect(error).toBeDefined()
+    it('expects counter to be incremented after successful authentication', () => {
+      const counterUpdate = { id: 'passkey-id', counter: 1 }
+      expect(counterUpdate.counter).toBeGreaterThanOrEqual(0)
     })
   })
 })

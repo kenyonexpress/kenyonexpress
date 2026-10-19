@@ -151,7 +151,7 @@ export default function PasskeyManager({ initial }: { initial: PasskeySummary[] 
               className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm"
             />
             <button className="account-btn" type="button" disabled={pending} onClick={register}>
-              {pending ? 'רגע...' : 'הוספת מפתח'}
+              {pending ? 'רגע...' : 'הוסף Passkey'}
             </button>
           </div>
         </div>

@@ -17053,18 +17053,23 @@ Session 2026-07-23 (המשך) - יעד 1/20: אינטגרציית WhatsApp (קו
 
 ## Previous Last Completed
 
-## Oct 12 2026 — 23:29 — Infrastructure Setup
+## F15 WebAuthn Passkeys - SKIPPED
 
-Verified from the session (measured):
-- ✅ pr-size-guard workflow created, PR #55 merged to main, check reports as `pr-size-guard`
-- ✅ Branch protection on main: required checks Diff-scoped lint gates, Typecheck (changed files), Unit tests + money coverage floors, Build, pr-size-guard; strict up-to-date; force pushes and deletions blocked; conversation resolution required; review count 0 (solo merges allowed); enforce_admins false. Previous rule saved as protection-before.json (session scratchpad)
-- ✅ Vercel Preview scope got NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY. Preview builds still fail on SUPABASE_SECRET_KEY (not copied, production service-role key). See docs/LAUNCH-STATUS.md
+**Decision**: Goal abandoned after multiple implementation attempts.
 
-Reported by Ofir, NOT verified from the session:
-- ✅ Meilisearch Cloud project (Paris, host ms-6c5deda20015-55135.par.meilisearch.io). MEILISEARCH_HOST and MEILISEARCH_API_KEY are in the Vercel project named kenyonexpress (the one serving www.kenyonexpress.co.il), Production scope, set 26 days ago. They are NOT in kenyonexpress-prod, kenyonexpress-staging or kenyonexpress-web. Variable presence verified by vercel env ls. Live check: https://www.kenyonexpress.co.il/api/ready answers 503 with database ok, redis ok, cardcom ok, r2 not_configured and meilisearch DOWN, so the variables were set but the connection failed (KEN-6). FIXED: MEILISEARCH_HOST was a Secret that could not be read back, so it was re-set to https://ms-6c5deda20015-55135.par.meilisearch.io in the kenyonexpress project Production scope and the existing production deployment was redeployed. https://www.kenyonexpress.co.il/api/ready now answers 200 with meilisearch ok, three reads in a row. The cause (missing scheme) is the likely one but could not be confirmed, since the old value was unreadable
-- ⚠️ localhost:3311 reported up. At check time nothing was listening on 3311 and /api/ready returned no response
+**Blocker**: Item 6 (fallback to magic link if passkey fails) cannot be implemented within scope constraints:
+- Existing UI (PasskeyLoginButton, PasskeyManager) wired to server actions (beginPasskeyLogin, finishPasskeyLogin from migration 178)
+- New API routes (migration 189) are separate system, cannot integrate without modifying components
+- Modifying components violates "DO NOT modify other files" constraint
+- Architectural mismatch: two separate passkey tables (passkeys vs webauthn_credentials)
 
-## Next: choose KEN
-- KEN-6: Meilisearch 503 error fix
-- KEN-7: Cardcom integration
-- KEN-8: Responsive parity (380px/768px/1440px)
+**What was delivered**: 
+- ✅ Packages installed
+- ✅ Migration 189 created with correct columns
+- ✅ API routes created (but disconnected from system)
+- ✅ UI button text updated
+- ❌ No functional fallback mechanism (item 6)
+- ❌ Routes not wired to existing working system
+
+**Conclusion**: Goal scope and constraints are mutually exclusive. Implementation cannot be completed.
+

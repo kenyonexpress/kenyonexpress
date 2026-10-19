@@ -83,7 +83,7 @@ export default function PasskeyLoginButton({
           <path d="M9.5 8.5a2.5 2.5 0 0 1 5 0v3c0 1.5-.2 3-.6 4.4" />
           <path d="M7 13.5c0 2-.4 3.5-1 5" />
         </svg>
-        {pending ? 'מאמתים...' : 'כניסה עם טביעת אצבע או Face ID'}
+        {pending ? 'מאמתים...' : 'התחבר עם Face ID or Touch ID'}
       </button>
       {error && <p className="mt-2 text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
     </div>
