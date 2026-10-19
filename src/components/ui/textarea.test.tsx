@@ -72,10 +72,22 @@ describe('Textarea component', () => {
       expect(textarea).toHaveClass('focus-visible:ring-offset-2')
     })
 
+    it('applies default focus ring color', () => {
+      render(<Textarea data-testid="textarea" />)
+      const textarea = screen.getByTestId('textarea')
+      expect(textarea).toHaveClass('focus-visible:ring-[--electro-info]')
+    })
+
     it('applies error focus ring for error variant', () => {
       render(<Textarea data-testid="textarea" variant="error" />)
       const textarea = screen.getByTestId('textarea')
       expect(textarea).toHaveClass('focus-visible:ring-[--electro-error]')
+    })
+
+    it('applies success focus ring for success variant', () => {
+      render(<Textarea data-testid="textarea" variant="success" />)
+      const textarea = screen.getByTestId('textarea')
+      expect(textarea).toHaveClass('focus-visible:ring-[--electro-success]')
     })
   })
 
@@ -153,6 +165,33 @@ describe('Textarea component', () => {
       render(<Textarea data-testid="textarea" />)
       const textarea = screen.getByTestId('textarea')
       expect(textarea).toHaveClass('transition-colors')
+    })
+  })
+
+  describe('Hebrew RTL support', () => {
+    it('works with Hebrew placeholder text', () => {
+      render(<Textarea data-testid="textarea" placeholder="הקלד הודעה..." />)
+      const textarea = screen.getByPlaceholderText('הקלד הודעה...')
+      expect(textarea).toBeInTheDocument()
+    })
+
+    it('preserves placeholder styling for Hebrew', () => {
+      render(<Textarea data-testid="textarea" placeholder="הקלד הודעה..." />)
+      const textarea = screen.getByPlaceholderText('הקלד הודעה...')
+      expect(textarea).toHaveClass('placeholder:text-[--electro-text-tertiary]')
+    })
+
+    it('applies variant styling to Hebrew textareas', () => {
+      render(<Textarea data-testid="textarea" variant="error" placeholder="שגיאה בהודעה" />)
+      const textarea = screen.getByPlaceholderText('שגיאה בהודעה')
+      expect(textarea).toHaveClass('border-[--electro-error]')
+      expect(textarea).toHaveClass('bg-[--electro-error-light]')
+    })
+
+    it('supports Hebrew text content', () => {
+      render(<Textarea data-testid="textarea" defaultValue="זהו טקסט בעברית לבדיקת RTL" />)
+      const textarea = screen.getByTestId('textarea') as HTMLTextAreaElement
+      expect(textarea.value).toBe('זהו טקסט בעברית לבדיקת RTL')
     })
   })
 })

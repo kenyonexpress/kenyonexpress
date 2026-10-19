@@ -135,7 +135,7 @@ describe('Select component', () => {
       expect(trigger).toHaveClass('transition-colors')
     })
 
-    it('applies focus ring styling', () => {
+    it('applies focus-visible ring styling', () => {
       render(
         <Select>
           <SelectTrigger data-testid="trigger">
@@ -144,7 +144,7 @@ describe('Select component', () => {
         </Select>,
       )
       const trigger = screen.getByTestId('trigger')
-      expect(trigger).toHaveClass('focus:ring-2', 'focus:ring-offset-2')
+      expect(trigger).toHaveClass('focus-visible:ring-2', 'focus-visible:ring-offset-2')
     })
   })
 
@@ -315,6 +315,49 @@ describe('Select component', () => {
       // Basic structure validation
       const trigger = screen.getByRole('combobox')
       expect(trigger).toBeInTheDocument()
+    })
+  })
+
+  describe('Hebrew RTL support', () => {
+    it('supports Hebrew placeholder text', () => {
+      render(
+        <Select>
+          <SelectTrigger data-testid="trigger">
+            <SelectValue placeholder="בחר אפשרות..." />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="1">אפשרות 1</SelectItem>
+            <SelectItem value="2">אפשרות 2</SelectItem>
+          </SelectContent>
+        </Select>,
+      )
+      const trigger = screen.getByTestId('trigger')
+      expect(trigger).toBeInTheDocument()
+    })
+
+    it('applies styling to Hebrew select options', () => {
+      render(
+        <Select>
+          <SelectTrigger data-testid="trigger" variant="error">
+            <SelectValue placeholder="בחר אפשרות..." />
+          </SelectTrigger>
+        </Select>,
+      )
+      const trigger = screen.getByTestId('trigger')
+      expect(trigger).toHaveClass('border-[--electro-error]')
+      expect(trigger).toHaveClass('bg-[--electro-error-light]')
+    })
+
+    it('maintains focus ring for Hebrew inputs', () => {
+      render(
+        <Select>
+          <SelectTrigger data-testid="trigger">
+            <SelectValue placeholder="בחר אפשרות..." />
+          </SelectTrigger>
+        </Select>,
+      )
+      const trigger = screen.getByTestId('trigger')
+      expect(trigger).toHaveClass('focus-visible:ring-2')
     })
   })
 })

@@ -14,16 +14,16 @@ const SelectGroup = SelectPrimitive.Group
 const SelectValue = SelectPrimitive.Value
 
 const selectTriggerVariants = cva(
-  'flex w-full items-center justify-between rounded-md border transition-colors data-[placeholder]:text-[--electro-text-tertiary] focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1',
+  'flex w-full items-center justify-between rounded-md border transition-colors data-[placeholder]:text-[--electro-text-tertiary] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1',
   {
     variants: {
       variant: {
         default:
-          'border-[--electro-border] bg-[--electro-white] text-[--electro-text-primary] focus:ring-[--electro-info]',
+          'border-[--electro-border] bg-[--electro-white] text-[--electro-text-primary] focus-visible:ring-[--electro-info]',
         error:
-          'border-[--electro-error] bg-[--electro-error-light] text-[--electro-text-primary] focus:ring-[--electro-error]',
+          'border-[--electro-error] bg-[--electro-error-light] text-[--electro-text-primary] focus-visible:ring-[--electro-error]',
         success:
-          'border-[--electro-success] bg-[--electro-success-light] text-[--electro-text-primary] focus:ring-[--electro-success]',
+          'border-[--electro-success] bg-[--electro-success-light] text-[--electro-text-primary] focus-visible:ring-[--electro-success]',
         disabled:
           'border-[--electro-border-alt] bg-[--electro-gray-light] text-[--electro-text-tertiary] cursor-not-allowed opacity-60',
       },

@@ -72,10 +72,28 @@ describe('Input component', () => {
       expect(input).toHaveClass('focus-visible:ring-offset-2')
     })
 
+    it('applies default focus ring color', () => {
+      render(<Input data-testid="input" />)
+      const input = screen.getByTestId('input')
+      expect(input).toHaveClass('focus-visible:ring-[--electro-info]')
+    })
+
     it('applies error focus ring for error variant', () => {
       render(<Input data-testid="input" variant="error" />)
       const input = screen.getByTestId('input')
       expect(input).toHaveClass('focus-visible:ring-[--electro-error]')
+    })
+
+    it('applies success focus ring for success variant', () => {
+      render(<Input data-testid="input" variant="success" />)
+      const input = screen.getByTestId('input')
+      expect(input).toHaveClass('focus-visible:ring-[--electro-success]')
+    })
+
+    it('uses focus-visible for keyboard accessibility', () => {
+      render(<Input data-testid="input" type="email" />)
+      const input = screen.getByTestId('input')
+      expect(input).toHaveClass('focus-visible:outline-none')
     })
   })
 
@@ -143,6 +161,53 @@ describe('Input component', () => {
       render(<Input data-testid="input" />)
       const input = screen.getByTestId('input')
       expect(input).toHaveClass('transition-colors')
+    })
+  })
+
+  describe('Input types', () => {
+    it('supports text input type', () => {
+      render(<Input data-testid="input" type="text" />)
+      const input = screen.getByTestId('input') as HTMLInputElement
+      expect(input.type).toBe('text')
+    })
+
+    it('supports email input type', () => {
+      render(<Input data-testid="input" type="email" />)
+      const input = screen.getByTestId('input') as HTMLInputElement
+      expect(input.type).toBe('email')
+    })
+
+    it('supports phone input type', () => {
+      render(<Input data-testid="input" type="tel" />)
+      const input = screen.getByTestId('input') as HTMLInputElement
+      expect(input.type).toBe('tel')
+    })
+
+    it('supports password input type', () => {
+      render(<Input data-testid="input" type="password" />)
+      const input = screen.getByTestId('input') as HTMLInputElement
+      expect(input.type).toBe('password')
+    })
+  })
+
+  describe('Hebrew RTL support', () => {
+    it('works with Hebrew placeholder text', () => {
+      render(<Input data-testid="input" placeholder="הקלד טקסט..." />)
+      const input = screen.getByPlaceholderText('הקלד טקסט...')
+      expect(input).toBeInTheDocument()
+    })
+
+    it('preserves placeholder styling for Hebrew', () => {
+      render(<Input data-testid="input" placeholder="הקלד טקסט..." />)
+      const input = screen.getByPlaceholderText('הקלד טקסט...')
+      expect(input).toHaveClass('placeholder:text-[--electro-text-tertiary]')
+    })
+
+    it('applies variant styling to Hebrew inputs', () => {
+      render(<Input data-testid="input" variant="error" placeholder="שגיאה" />)
+      const input = screen.getByPlaceholderText('שגיאה')
+      expect(input).toHaveClass('border-[--electro-error]')
+      expect(input).toHaveClass('bg-[--electro-error-light]')
     })
   })
 })
