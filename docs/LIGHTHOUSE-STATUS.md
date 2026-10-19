@@ -51,9 +51,13 @@
 ## Assessment
 
 - **Critical scores (Performance ≥ 90, Accessibility ≥ 90) passing** ✅
-- **Best Practices optimization goal QUEUED** — Homepage score 89 below 90 threshold
-- Per goal rule "if any score below 90 queue optimization goal": Goal is queued
-- Issues to address: Best Practices improvements on homepage
+- **Optimization goals QUEUED:**
+  1. **Best Practices (lhci:autorun):** Homepage 89 < 90 threshold
+  2. **SEO (9-page audit via weekly-lighthouse.mjs):** Search Results 83 < 90, Shopping Cart 69 < 90
+- Per goal rule "if any score below 90 queue optimization goal": Multiple goals queued
+- Issues to address:
+  - Best Practices improvements on homepage
+  - SEO/structured data improvements on funnel pages (search, cart)
 - Lighthouse CI command execution: **SUCCESSFUL**
 - Reports: Google Cloud Storage (links in .lighthouseci/links.json)
 

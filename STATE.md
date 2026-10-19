@@ -43,17 +43,19 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 **Assessment:**
 - Critical scores (Performance ≥ 90, Accessibility ≥ 90) passing ✅
-- **Best Practices optimization goal QUEUED** — Homepage 89 < 90 threshold ❌
-- Per goal rule "if any score below 90 queue optimization goal": **Goal queued**
+- **Optimization goals QUEUED (per "if any score below 90" rule):**
+  1. **Best Practices** — lhci:autorun Homepage 89 < 90 ❌
+  2. **SEO** — 9-page audit: Search Results 83 < 90, Shopping Cart 69 < 90 ❌
 - Upgraded @lhci/cli@0.11.1 → 0.15.1 to fix Lighthouse 9.6.8 compatibility
 - Status report saved to docs/LIGHTHOUSE-STATUS.md
 
 **Next Actions (in order):**
-1. **Best Practices Optimization Goal** (queued now) - Fix homepage Best Practices 89 → 90+
-2. Mobile UI parity fix (from MAINTENANCE_LOOP_6)
-3. Repeat MAINTENANCE_LOOP_7 every 6 hours
+1. **Best Practices Optimization Goal** — Fix homepage Best Practices 89 → 90+
+2. **SEO Optimization Goal** — Fix structured data on search/cart pages (83, 69 → 90+)
+3. Mobile UI parity fix (from MAINTENANCE_LOOP_6)
+4. Repeat MAINTENANCE_LOOP_7 every 6 hours
 
-**המשך מ:** MAINTENANCE_LOOP_7 complete. pnpm lhci:autorun succeeded. Best Practices 89 on homepage triggers optimization goal per requirements.
+**המשך מ:** MAINTENANCE_LOOP_7 complete. Both Best Practices and SEO optimization goals queued per requirements.
 
 ---
 
