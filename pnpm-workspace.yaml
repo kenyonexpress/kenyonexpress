@@ -10,6 +10,7 @@ allowBuilds:
   # Arrived with posthog-js (session replay). Its postinstall only prints the
   # funding banner; nothing needs it to run.
   core-js: false
+  core-js-pure: set this to true or false
   esbuild: true
   sharp: true
 
