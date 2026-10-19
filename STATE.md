@@ -28,6 +28,17 @@ Goal: "Typography scale Heebo font weights 300 400 500 700 900 consistent sizing
 
 **Decision:** Per CLAUDE.md ("goal that got stuck twice: skip it, do not try third time"), UX32 is abandoned. The typing/testing/documentation portions are complete, but the core requirement of "consistent sizing" across the UI is not demonstrated.
 
+**Next Goal:** 
+CLAUDE.md lists open work in priority order (dated 06.09.2026):
+1. Migration 172 - Master Product display (noted as fixed 08.09)
+2. Migration 169 - Analytics funnel events 
+3. SUPABASE_SECRET_KEY rotation
+4. Migrations 170, 171 - pending approval
+5. Migration 162 - blocked on Vercel URL
+6. Elementor vs Electro delta resolution
+
+No NEXT-GOALS.md file exists. Previous queue was UX19-UX32 (UI/UX features). Next work should align with CLAUDE.md blockers or await new goal directive. Awaiting next /goal command or queue definition.
+
 ---
 
 ## 🎯 Autonomous Work Summary (Session: 2026-10-19 — UX32 TYPOGRAPHY SCALE)
