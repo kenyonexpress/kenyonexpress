@@ -31,7 +31,15 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 - Performance optimization required after fix
 - Continued maintenance loop in 6 hours
 
-**המשך מ:** MAINTENANCE_LOOP_6 complete. Gate above threshold confirmed, all gates passing, push successful.
+**Next Goal Queued at Head of Queue:**
+```
+MOBILE_UI_PARITY_FIX: Fix home page compare.mjs scores below 11%
+- 1440px: 31.77% (target: <11%)  
+- 380px: 40.57% (target: <11%)
+- Fix pixel difference bands, especially y 1600-2400 (74-79% diff)
+```
+
+**המשך מ:** MAINTENANCE_LOOP_6 complete. Both mobile measurements confirm gate above threshold (31.77% at 1440px, 40.57% at 380px). Mobile UI Parity Fix goal REQUEUED at head of queue.
 
 ---
 

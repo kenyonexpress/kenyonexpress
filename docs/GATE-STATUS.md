@@ -6,11 +6,13 @@
 ## Gate Threshold
 All compare.mjs measurements must remain below **11%** deviation from the live reference.
 
-## Current Status: ⚠️ ABOVE THRESHOLD
+## Current Status: ⚠️ ABOVE THRESHOLD - BOTH WIDTHS MEASURED
 
 ### Home Page (Latest Measurements)
 - **1440px: 31.77%** ❌ EXCEEDS 11% by 20.77 points
-- **380px: TIMEOUT** (measurement in progress, unable to complete within time limit)
+- **380px: 40.57%** ❌ EXCEEDS 11% by 29.57 points
+  - Height mismatch detected: Reference 17790px vs Local 7320px (0.41x ratio)
+  - Warning: Pages structurally different (older reference may lack JavaScript initialization)
 
 ### Comparison Details
 - Live reference: refs/localized/ke_live_home.html (snapshot from live site)
