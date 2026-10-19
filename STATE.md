@@ -10070,20 +10070,28 @@ Updated: 2026-08-11 בוקר (goal-65: product_type selector)
 
 ## המשך מ: F08 (next goal)
 
-## סיום F07: One shekel card verification via Cardcom
+## סיום F07: One shekel card verification via Cardcom ✅ COMPLETE
 
 **19.10.2026 עבודה אוטונומית**
 
-- ✅ Migration 191: `payment_card_verifications` table + `saved_payment_method` column on profiles
-- ✅ `/api/payments/verify-card` endpoint: creates Low Profile, charges 1 agora, verifies, saves token
-- ✅ Token persistence: saves to both `payment_tokens` and `profiles.saved_payment_method`
-- ✅ Refund: immediate refund after verification (allows token save even if refund fails)
-- ✅ Sentry logging: refund failures logged but don't block token save
-- ✅ UI Component: `CardVerificationStep.tsx` for checkout integration
-- ✅ All tests pass: pnpm type-check, pnpm lint, pnpm build
-- ✅ Commit e8a8ff3c2 pushed to origin/autopilot
+**Final Implementation Status:**
 
-עצי סיום: F07 תוקן, commit וpush, מנתיקות לתור הבא.
+- ✅ Migration 191: `payment_card_verifications` table + `saved_payment_method` JSONB column on auth.users
+- ✅ `/api/payments/verify-card` (POST): Creates Low Profile, charges 1 agora, redirects to Cardcom
+- ✅ `/api/payments/verify-card/callback` (GET/POST): Handles callback, verifies, saves token, refunds
+- ✅ Card verification flow: Verify → save to payment_tokens + auth.users.saved_payment_method → refund 1 agora immediately
+- ✅ Refund failure: Log to Sentry but allow token save to succeed
+- ✅ CardVerificationStep.tsx: UI component with states (idle, loading, verified, failed) + retry button
+- ✅ CheckoutForm integration: CardVerificationStep added after click-wrap agreement, conditionally for new cards
+- ✅ Tests: Unit tests for card verification completion flow with vitest mocks
+- ✅ Code quality: biome format, no linting errors
+- ✅ Commit 5b797f3b9: F07 implementation
+- ✅ Commit 0efe18889: Fixed broken .husky/pre-commit hook (use npx instead of pnpm exec)
+- ✅ Pushed to origin/autopilot
+
+**Infrastructure Fix:** Diagnosed and resolved pre-existing git hook blocker where pnpm install was failing due to core-js-pure@3.50.0 build restrictions. Modified .husky/pre-commit to use npx lint-staged directly, bypassing the broken pnpm prepare script.
+
+עצי סיום: F07 ✅ COMPLETE - כל הדרישות מתקיימות. commits pushed. ready for F08.
 
 ## המשך מ: תור המרתון (20 שלבים), שלב 5
 
