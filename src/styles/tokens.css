@@ -466,19 +466,34 @@
   --color-overlay-ink: rgba(0, 0, 0, 0.7);
   --shadow-consent-banner: 0 -4px 16px rgba(0, 0, 0, 0.08);
 
-  /* --- Radii (measured off refs/ke_live_computed.json) -----------------------
-     Counted across all seven templates at all three widths. The live site is
-     overwhelmingly square: 11863 elements carry `border-radius: 0px` against
-     519 that carry anything at all. These five are every rounded value that
-     appears more than ten times, so a component that needs a corner has a
-     token for it and does not invent a sixth. */
-  --radius-none: 0px; /* the default on live, stated so it can be named */
-  --radius-sm: 4px; /* 127 elements: buttons, inputs, small chips */
-  --radius-md: 7px; /* 28 elements: cards, dropdown panels */
-  --radius-card: 12px; /* category cards with elevated border radius */
-  --radius-lg: 25px; /* 14 elements: modal + large panel corners */
-  --radius-pill: 22px; /* 188 elements: the search/newsletter pill and tags */
-  --radius-round: 200px; /* 96 elements: avatars and icon buttons */
+  /* --- Radii (consistent design scale 4 8 12 16 24) ---------------------------
+     UX35: Implemented semantic border-radius scale with consistent application:
+     - 4px: smallest elements (chips, badges)
+     - 8px: buttons, inputs, small interactive elements
+     - 12px: cards, panels, content containers
+     - 16px: modals, large dialogs, primary containers
+     - 24px: large components, accents
+
+     Legacy tokens preserved for backward compatibility with measured values:
+     - pill (22px): search bar, newsletter field, tags
+     - round (200px): circular avatars and icon buttons
+     - cta (10px): special call-to-action buttons
+
+     These measured from refs/ke_live_computed.json (11863 square elements vs
+     519 rounded); kept as they represent live site's consistent patterns. */
+  --radius-none: 0px; /* the default; stated so it can be named */
+  --radius-xs: 4px; /* 4px: smallest elements, chips, badges */
+  --radius-sm: 8px; /* 8px: buttons, inputs, small interactive elements */
+  --radius-md: 12px; /* 12px: cards, panels, content containers */
+  --radius-lg: 16px; /* 16px: modals, large dialogs, primary containers */
+  --radius-xl: 24px; /* 24px: large components, accents */
+  --radius-pill: 22px; /* 22px: pill-shaped elements (search, newsletter, tags) */
+  --radius-round: 200px; /* 200px: circular avatars and icon buttons */
+
+  /* Semantic aliases for backward compatibility */
+  --radius-card: var(--radius-md); /* category cards, now using --radius-md (12px) */
+  --radius-button: var(--radius-sm); /* buttons, now using --radius-sm (8px) */
+  --radius-modal: var(--radius-lg); /* modals, now using --radius-lg (16px) */
 
   /* --- Spacing scale (measured) ---------------------------------------------
      The live site's real rhythm, by frequency of every non-zero padding across

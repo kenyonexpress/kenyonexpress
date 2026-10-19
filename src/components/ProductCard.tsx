@@ -252,7 +252,7 @@ function DefaultProductCard({ product }: { product: Product }) {
   const canAdd = product.kenyon_price != null && !outOfStock
 
   return (
-    <div className="product-card overflow-hidden rounded-xl border border-gray-100 bg-white">
+    <div className="product-card overflow-hidden border border-gray-100 bg-white [border-radius:var(--radius-card)]">
       <div className="space-y-2 p-3">
         <ProductLocation city={product.city} className="flex text-xs" />
 
@@ -335,7 +335,7 @@ function DefaultProductCard({ product }: { product: Product }) {
               productId={product.id}
               productName={product.name_he}
               priceAgorot={Math.round(Number(product.kenyon_price ?? 0) * 100)}
-              className="rounded-lg bg-brand-primary px-3 py-1.5 text-xs font-bold text-brand-dark hover:bg-brand-primary-hover transition-colors"
+              className="bg-brand-primary px-3 py-1.5 text-xs font-bold text-brand-dark hover:bg-brand-primary-hover transition-colors [border-radius:var(--radius-button)]"
             >
               הוסף לסל
             </AddToCartButton>

@@ -31,7 +31,7 @@ export default function CouponCard({ coupon }: { coupon: Coupon }) {
   return (
     <Link
       href={`/coupons/${coupon.id}`}
-      className="block bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-md transition-shadow"
+      className="block bg-white border border-gray-100 overflow-hidden hover:shadow-md transition-shadow [border-radius:var(--radius-card)]"
     >
       <div className="relative h-32 bg-gray-100">
         {coupon.image_url ? (
@@ -72,7 +72,7 @@ export default function CouponCard({ coupon }: { coupon: Coupon }) {
             // the measured .category-card__badge uses for grid cards, and the
             // corner the coupon DETAIL page pins the same badge to. This card
             // had it on the opposite corner from its own detail page.
-            className="absolute top-2 start-2 bg-brand text-heading text-xs font-bold px-2 py-1 rounded-lg"
+            className="absolute top-2 start-2 bg-brand text-heading text-xs font-bold px-2 py-1 [border-radius:var(--radius-button)]"
           >
             {discountPct}% הנחה
           </div>

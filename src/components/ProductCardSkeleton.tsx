@@ -7,7 +7,10 @@
  */
 export default function ProductCardSkeleton() {
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-100 bg-white" aria-hidden="true">
+    <div
+      className="overflow-hidden border border-gray-100 bg-white [border-radius:var(--radius-card)]"
+      aria-hidden="true"
+    >
       <div className="space-y-2 p-3">
         <p>
           <span className="block h-3 w-1/3 rounded bg-gray-100" />
@@ -24,7 +27,7 @@ export default function ProductCardSkeleton() {
             <span className="block h-5 w-12 rounded bg-gray-100" />
           </div>
 
-          <span className="block h-9 w-20 rounded-lg bg-gray-100" />
+          <span className="block h-9 w-20 [border-radius:var(--radius-button)] bg-gray-100" />
         </div>
       </div>
     </div>
