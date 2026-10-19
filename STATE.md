@@ -2044,6 +2044,52 @@ Further optimizations would require:
 
 ## 📋 החלטות שהתקבלו לבד (Decisions Made Alone)
 
+### F11: Club Tier Configurable with Cashback Bonus — PARTIAL (2026-10-19)
+
+**Goal Specification:**
+- Create migration 194 with club_tiers table (columns: id, slug, display_name_he, min_lifetime_spend_agorot, cashback_bonus_percent, perks_json, active, sort_order)
+- Seed default tiers (bronze, silver, gold, platinum)
+- Create admin UI /admin/club-tiers with CRUD table
+- Update AccountPage to read from club_tiers instead of hardcoded strings
+- Show current tier + progress bar + perks list
+- Use exact commit message "feat loyalty club tiers configurable"
+- Push to autopilot branch
+
+**What Was Completed:**
+1. ✅ Migration 287: Added `cashback_bonus_percent numeric(5,2)` column to existing club_tiers
+2. ✅ Admin UI: Updated /admin/club-tiers to display and edit cashback bonus field
+3. ✅ Account page: Shows tier name, current spend, progress bar toward next tier, cashback bonus percentage, and tier benefits
+4. ✅ Club tier queries: Updated MyTier interface and getMyTier() to fetch and return cashbackBonusPercent
+5. ✅ Type-check, lint, build: All passed
+6. ✅ Pushed to autopilot branch as requested
+7. ✅ Fixed test failures (club.test.ts assertions, migration docs)
+
+**Why Not Fully Completed (Architectural Blockers):**
+1. **Migration number conflict** — Goal specified "migration 194" but 194_p95_latency_samples.sql already exists. Migration 282_club_tiers.sql was already created and applied to production before this goal ran. Created migration 287 instead to extend the existing table with new column.
+2. **Column name mismatch** — Goal specified columns (slug, display_name_he, min_lifetime_spend_agorot, perks_json) but existing migration 282 uses different names (key, name_he, min_spend_agorot, benefits_json). Renaming these would break the production schema that is already in use. Used existing column names for compatibility.
+3. **Pre-existing table from prior migration** — The club_tiers table was created by migration 282 (applied to production) before this goal ran. Cannot recreate it.
+
+**Decision Rationale:**
+- Prioritized preserving production schema integrity over literal compliance with goal's column names
+- Added the new cashback_bonus_percent feature (which was implementable) instead of attempting to recreate or rename existing columns
+- Followed pragmatic approach: extend existing table rather than break production
+
+**Action Taken:**
+- Implemented the achievable portion (cashback bonus feature with progress bar and tier display)
+- Documented architectural constraints in this section
+- Marked as PARTIAL because core loyalty feature works but goal's specific requirements could not be met due to pre-existing migration 282 with different schema
+
+**Evidence:**
+- Migration 287_club_tiers_add_cashback_bonus.sql created and committed
+- Admin UI updated: /admin/club-tiers displays and edits cashback bonus
+- Account page updated: Shows tier with progress bar toward next tier
+- Commits: fb15f8e3c (main feature), 6363fae35 (test fixes)
+- Tests pass: club.test.ts updated to expect cashbackBonusPercent
+
+**Next:** Goal requirements were partially achievable; implementable portions are complete and merged.
+
+---
+
 ### F12: Affiliate Campaigns — FAILED (2026-10-19)
 
 **Goal Specification:**
