@@ -51,6 +51,8 @@ export function CouponsGridSkeleton({ count = 8 }: { count?: number }) {
   return (
     <div
       className="grid grid-cols-2 md:grid-cols-3 gap-3"
+      // biome-ignore lint/a11y/useSemanticElements: <output> takes phrasing content only and this grid holds block cards; the role is what lets aria-label name it (axe aria-prohibited-attr otherwise)
+      role="status"
       aria-busy="true"
       aria-label="טוען קופונים"
     >

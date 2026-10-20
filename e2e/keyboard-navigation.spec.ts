@@ -210,16 +210,23 @@ test.describe('Keyboard Navigation - Hebrew RTL', () => {
     await page.goto('/')
     await page.waitForLoadState('domcontentloaded')
 
-    // Find a clickable button
-    const buttons = page.locator('button[type="button"]')
+    // Find a clickable button, and focus and check it in ONE evaluate.
+    // The page is still streaming at domcontentloaded, and a locator
+    // re-resolves on every call: measured 2026-10-20, `first()` was the
+    // category tab "דילים חמים" for focus() and the header "תפריט" button
+    // for the activeElement check a few ms later, so the comparison was
+    // between two different nodes and failed once in three runs. Visible
+    // only, because focus() on a display:none button is a silent no-op.
+    const buttons = page.locator('button[type="button"]:visible')
     if ((await buttons.count()) > 0) {
       const button = buttons.first()
+      await button.waitFor({ state: 'visible' })
 
-      // Focus the button
-      await button.focus()
-
-      // Verify button is focused
-      const isFocused = await button.evaluate((el) => el === document.activeElement)
+      // Focus the button and verify it took, on the same node
+      const isFocused = await button.evaluate((el) => {
+        el.focus()
+        return el === document.activeElement
+      })
 
       expect(isFocused).toBe(true)
 

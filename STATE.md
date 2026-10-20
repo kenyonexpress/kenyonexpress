@@ -2,6 +2,21 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_4 (Session: 2026-10-20 16:40-17:10 UTC, full Playwright suite, second cycle)
+
+**Goal:** Run the full Playwright suite with `pnpm test:e2e`, report pass/fail/flaky counts to docs/E2E-STATUS.md, fix any new flaky tests, commit as chore test e2e maintenance, push.
+
+**Result:** COMPLETE. Run 4 on 36a9a8ae2 against a `CARDCOM_USE_MOCK=true` build on port 3417, two workers, `--retries=1`, per-worker `x-forwarded-for` prefix 10.44.77: **682 total, 614 passed, 59 failed, 2 flaky, 7 skipped, 16.4 min** (JSON reporter). Down from 91 failed in run 2 of the morning: the cart limiter class (14) never fired with the fresh address prefix, and sideways scroll at 1440, touch targets on three routes, the mobile timeouts and the deal-thumb case all pass now. No new failure class and no new flaky case. The two flaky cases were both in the morning's table and are fixed: `CouponsGridSkeleton` gets `role="status"` so its `aria-label` is permitted (axe `aria-prohibited-attr`; the same case was a hard failure on mobile-chrome), and the keyboard "Enter key is focusable" spec focuses and checks in one `evaluate`, because a locator re-resolving mid-stream compared two different buttons (probe: 1 in 8 loads). Verified against the rebuild: 6 of 6 and 16 of 16. The 59 failures are 12 classes already documented, the largest being 12 sign-in cases blocked on missing `E2E_*` fixture passwords in `.env.local`.
+
+**Gates:** `pnpm typecheck` clean, `pnpm lint` clean (biome 1697 files, tokens, copy and asset gates clean), `CARDCOM_USE_MOCK=true pnpm build` exit 0.
+
+**החלטות שהתקבלו לבד:**
+- The first fix attempt for the keyboard flake (a `:visible` selector) still failed 1 in 3, so it was not kept as the explanation; the atomic focus-and-check version is the one shipped, with the measured cause in the spec comment.
+- `role="status"` with a biome suppression rather than `<output>`: the grid holds block cards and `<output>` takes phrasing content only.
+- Full-suite results JSON stays outside the repo (`/tmp/ke-e2e/results.json`); the doc records the counts and the recipe to regenerate them.
+
+**המשך מ:** MAINTENANCE_LOOP_5 (head of `~/ke-goals/queue.txt`): cron routes last-run timestamps via Vercel runtime logs, report to docs/CRON-STATUS.md.
+
 ## ✅ MAINTENANCE_LOOP_3 (Session: 2026-10-20 16:37-16:50 UTC, backlog scan, third run)
 
 **Goal:** Scan docs/BACKLOG.md and docs/TODO.md for unblocked items, queue any found to `~/ke-goals/queue.txt`, report the count in docs/MAINT-LOG.md, commit as chore maint scan backlog, push.
