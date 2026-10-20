@@ -2,6 +2,21 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_6 (Session: 2026-10-20 23:36-23:45 UTC, mobile gate recheck, fourth pass, MEASURED, PASS)
+
+**Goal:** Recheck the mobile gate via scripts/compare.mjs, requeue the mobile fix goal at the head of the queue if above 11 percent, report the score to docs/GATE-STATUS.md, commit as chore qa mobile gate check, push.
+
+**Result:** COMPLETE, PASS at all three widths, no requeue. home 380 8.51%, 768 9.80%, 1440 8.10%, identical to the hundredth to the 22:27-22:31 run on the same source tree (no `src/` commit since `450762eda`). Fresh `pnpm build` (BUILD_ID Rp9lmnsd8jwIYocjAn-di), `pnpm start` on 3342 (pid 81152, cwd verified, no other listener or build), three sequential compare.mjs runs, server stopped by its own pid. Reference shortfall 153/154 at every width this time instead of 96; scores unchanged, so the extra failures are re-issued requests to the dead wp-content origin. Three ledger rows appended to docs/UI-PARITY-REPORT.md by the script.
+
+**Gates:** `pnpm type-check` exit 0, `pnpm lint` exit 0 (biome 1700 files, tokens, copy, asset gates clean), `pnpm build` exit 0 first attempt. Nothing to fix.
+
+**החלטות שהתקבלו לבד:**
+- No tests were added: the change is a measurement report in docs/ plus the script's own ledger rows, with no code path to cover.
+- The newer build already on disk (KVV9UYDPAgFoSjftVMmr5, written by another session one minute after HEAD) was not reused; a fresh build is cheaper than arguing about its provenance.
+- The local-origin reference serve (the gate's open item) was again not attempted inside a check goal; four runs agreeing at 380 make it ledger noise, not a gate risk.
+
+**המשך מ:** MAINTENANCE_LOOP_7 (head of `~/ke-goals/queue.txt`): run Lighthouse CI via pnpm lhci:autorun, queue an optimization goal if any score is below 90, report scores to docs/LIGHTHOUSE-STATUS.md, commit as chore perf lighthouse check, push.
+
 ## ✅ MAINTENANCE_LOOP_5 (Session: 2026-10-20 23:27-23:40 UTC, cron status check, fifth run today, MEASURED)
 
 **Goal:** Check all cron routes' last-run timestamp via Vercel MCP `get_runtime_logs`, alert in `docs/CRON-STATUS.md` if any route is stale over 24h, commit as chore ops cron status check, push.
