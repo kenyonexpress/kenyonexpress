@@ -2,6 +2,28 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_6 (Session: 2026-10-20 13:57 UTC, Mobile Gate Recheck, repeat, MEASURED)
+
+**Goal:** Recheck Mobile Gate score via scripts/compare.mjs. If above 11 percent requeue mobile fix goal at head of queue. Report current score to docs/GATE-STATUS.md. Commit as chore qa mobile gate check. Push.
+
+**Result:** COMPLETE. home/380 = **47.23%** (FAIL, 36.23 over), home/768 = 42.02%, home/1440 = 31.28%. The 380 run was repeated on the same server and returned the identical 47.23% with the same band profile, so it is deterministic. Report in docs/GATE-STATUS.md, three ledger rows plus one repeat in docs/UI-PARITY-REPORT.md, commit 869562694. MOBILE_FIX_GATE inserted at the head of ~/ke-goals/queue.txt with the three measured causes as its work list.
+
+**Measured, not assumed:**
+1. This worktree had no `refs/live-assets/`, so every gate row since 01:21 UTC carried "48 image" in the reference shortfall. Copied the 13 MB folder from the main checkout (refs/ is gitignored). The reference now loads at its known 96-resource baseline (57 scripts, 37 fonts, 1 stylesheet, 1 xhr). With the images present the score went UP (380: 20.46 to 47.23, 1440: 19.04 to 31.28), so the earlier reports in GATE-STATUS.md were flattered by blank reference areas.
+2. This branch's compare.mjs takes a single `--width=N`; `--widths=380,768,1440` is silently ignored and only the 1440 default runs. Ran the three widths as separate invocations.
+3. Causes read off the two 380 screenshots: live renders one full-width product card per row (page 17790px), ours renders two per row (6199px); live's hero is one slider image where ours is a text hero plus two category tiles; the consent sheet sits fixed inside the 2600px compared window because compare.mjs presets no `ke_consent` cookie.
+
+**Gates:** `pnpm type-check` clean, `pnpm lint` clean (biome 1691 files, tokens, copy, asset gates), `pnpm build` exit 0 (BUILD_ID j4Kvd8AZpO9Zug38pSfjz). Listener on 3341 verified by pid and cwd before measuring, killed by pid afterwards.
+
+**החלטות שהתקבלו לבד:**
+- Did not touch src/. The goal is a status check; the fix is the requeued MOBILE_FIX_GATE goal, and its work list now names the three measured causes instead of band numbers alone.
+- Did not add `--widths` fan-out to compare.mjs on this branch. One-line note left in STATE.md and GATE-STATUS.md instead, since a script change is outside a chore commit.
+- `pnpm test` not re-run: the 148 pre-existing failures are documented under MAINTENANCE_LOOP_2 and nothing under test changed in this commit.
+
+**המשך מ:** MAINTENANCE_LOOP_6 COMPLETE. Gate failing at 47.23% on 380. Next goal is the head of ~/ke-goals/queue.txt: MOBILE_FIX_GATE (one-column grid at 380, hero band, consent cookie in the local capture), then MAINTENANCE_LOOP_7 (Lighthouse).
+
+---
+
 ## ✅ MAINTENANCE_LOOP_5 (Session: 2026-10-20 13:15 UTC, Cron Routes Check, repeat, MEASURED)
 
 **Goal:** Check all cron routes last-run timestamp via Vercel MCP get_runtime_logs. Alert in docs/CRON-STATUS.md if any route stale over 24h. Commit as chore ops cron status check. Push.
