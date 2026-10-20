@@ -1,7 +1,7 @@
 # Database Status Report: Connection Pool and Query Performance
 
-**Last Updated:** 2026-10-20 21:24 UTC (MAINTENANCE_LOOP_9 third measured pass, through the Supabase MCP)
-**Previous Run:** 2026-10-20 18:21 UTC (second measured pass; 16:24 UTC was the first, and the 13:23 UTC report before it was code analysis only)
+**Last Updated:** 2026-10-20 22:45 UTC (MAINTENANCE_LOOP_9 fourth measured pass, through the Supabase MCP)
+**Previous Run:** 2026-10-20 21:24 UTC (third measured pass; 18:21 UTC was the second, 16:24 UTC the first, and the 13:23 UTC report before it was code analysis only)
 **Scope:** Supabase connection pool, pooler configuration, pg_stat_statements, performance advisors
 **Evidence:** `logs/maint9/result.json` (every probe row), `logs/maint9/pooler.json`, `logs/maint9/pgbouncer.json`
 **Probe:** `scripts/db-mcp-probe.mjs` (the official `@supabase/mcp-server-supabase` run locally in `--read-only` mode; see the header comment for the token recipe)
@@ -14,9 +14,9 @@
 **Query performance:** no application statement averages over 500 ms. Six statements do average over 500 ms, and all six are Supabase platform traffic (dashboard, pg-meta introspection, this report's own probes). Six application statements have a single recorded spike over 500 ms with single-digit or double-digit millisecond means.
 **Alert status:** no alert for application queries. See section 4 for the platform rows and the spikes.
 
-What changed since the previous report (three hours earlier): nothing material. The pool is the same 14 of 60 backends, the same four clients. pg_stat_statements grew by 1 statement and 41,781 calls, all of them under the line: the 6 platform rows over 500 ms by mean and the 6 application spikes are the identical rows with the identical max values, so no new spike happened in the window. Advisor counts are unchanged (1 WARN initplan, 14 WARN multiple-permissive, 9 unindexed FKs, 157 unused indexes). Database size moved from 43 MB to 44 MB (carts grew by 138 live rows). Pooler configuration re-read from the management API: byte-identical.
+What changed since the previous report (81 minutes earlier): nothing material. The pool is the same 14 of 60 backends, the same four clients, the same 13 idle plus the probe itself. pg_stat_statements has the same 4,870 distinct statements and grew by 31,074 calls and 10.4 s of execution time, all of it under the line: the 6 platform rows over 500 ms by mean and the 6 application spikes are the identical rows with the identical max values, so no new spike happened in the window. Advisor counts are unchanged (1 WARN initplan, 14 WARN multiple-permissive, 9 unindexed FKs, 157 unused indexes). Database size still 44 MB (carts grew by 97 live rows, 3,683 now). Temp files grew by 156, all from this report's own pg_stat_statements probes (39 MB per set, section 2). Pooler and pgbouncer configuration re-read from the management API: byte-identical to the 16:24 UTC read.
 
-Across the three measured passes (16:24, 18:21, 21:24 UTC) the application spike maxima have not moved by a single millisecond while the call counts behind them keep growing, which is the evidence that they are historical outliers and not a recurring slow path.
+Across the four measured passes (16:24, 18:21, 21:24, 22:45 UTC) the application spike maxima have not moved by a single millisecond while the call counts behind them keep growing, which is the evidence that they are historical outliers and not a recurring slow path.
 
 The 13:23 UTC report's pool figures (max 20, 18 available, "0 to 8 active") were assumptions from the plan tier and were wrong; the instance runs `max_connections = 60`.
 
@@ -63,7 +63,7 @@ The application does not use the pooler port. Every application statement arrive
 
 Totals: 14 client backends of 60 (23.3%), `numbackends` 16 including platform workers. Lock waits: 0. Statements older than 500 ms still running: 0. Deadlocks: 0. Buffer cache hit: 100.00%.
 
-Transactions since the database stats were created: 8,546,933 commits and 617,485 rollbacks (6.7%). The rollback share is dominated by read-only wrappers that end in ROLLBACK by design (the MCP `--read-only` mode and the management-API rehearsals in `docs/RUNBOOK.md`), not by failed application writes.
+Transactions since the database stats were created: 8,563,953 commits and 622,383 rollbacks (6.8%); since the 21:24 UTC pass, 17,020 commits and 4,898 rollbacks. The rollback share is dominated by read-only wrappers that end in ROLLBACK by design (the MCP `--read-only` mode and the management-API rehearsals in `docs/RUNBOOK.md`), not by failed application writes.
 
 ### Auth server
 
@@ -78,20 +78,20 @@ Statistics window: since the reset on 2026-07-16 19:10 UTC (96 days).
 | Metric | Value |
 |---|---|
 | Distinct statements tracked | 4,870 |
-| Total calls | 7,290,579 |
-| Total execution time | 2,985,850 ms (49.8 minutes over 96 days) |
+| Total calls | 7,321,653 (+31,074 since 21:24 UTC) |
+| Total execution time | 2,996,209 ms (49.9 minutes over 96 days) |
 | Statements with mean over 500 ms | 6 (0 application) |
 | Statements with max over 500 ms | 19 (6 application, 13 platform) |
-| Temp files written (pg_stat_database) | 165,256, of which 6.27 GB belongs to one pg-meta functions listing |
+| Temp files written (pg_stat_database) | 165,412, of which 6.27 GB belongs to one pg-meta functions listing; the 156 new since 21:24 UTC are this probe's own pg_stat_statements scans (39 MB per set, 9 sets so far) |
 
 ### Application statements by total time
 
 | Calls | Mean ms | Total ms | Statement |
 |---|---|---|---|
-| 43,789 | 4.0 | 173,500 | `seo_redirects` lookup by source_path (proxy redirect check) |
-| 19,268 | 5.4 | 104,054 | rpc `available_stock(p_product_id)` (`src/lib/commerce/stock-live.ts`) |
-| 9,203 | 10.7 | 98,274 | rpc rate limiter (`p_key, p_max_attempts, p_window_seconds`) |
-| 163,397 | 0.2 | 36,732 | `products` select by slug |
+| 43,911 | 4.0 | 174,097 | `seo_redirects` lookup by source_path (proxy redirect check) |
+| 19,481 | 5.4 | 105,560 | rpc `available_stock(p_product_id)` (`src/lib/commerce/stock-live.ts`) |
+| 9,383 | 10.6 | 99,702 | rpc rate limiter (`p_key, p_max_attempts, p_window_seconds`) |
+| 163,405 | 0.2 | 36,735 | `products` select by slug |
 | 2,055 | 16.4 | 33,789 | `analytics_events` select by event_name and occurred_at |
 | 365 | 90.9 | 33,196 | rpc `release_expired_orders` (cron) |
 | 887 | 46.3 | 41,108 | rpc `search_products(q, max_results)` |
@@ -121,14 +121,14 @@ Action: none in the application. The functions listing spilling 6.27 GB to temp 
 
 | Calls | Mean ms | Max ms | Stddev ms | Statement |
 |---|---|---|---|---|
-| 1,335 | 3.6 | 1,159.2 | 32.0 | `carts` UPDATE (expires_at, items) |
-| 19,268 | 5.4 | 1,013.8 | 16.1 | rpc `available_stock` |
-| 6,153 | 5.1 | 883.6 | 17.5 | `carts` INSERT |
+| 1,364 | 3.8 | 1,159.2 | 32.0 | `carts` UPDATE (expires_at, items) |
+| 19,481 | 5.4 | 1,013.8 | 16.1 | rpc `available_stock` |
+| 6,250 | 5.2 | 883.6 | 17.5 | `carts` INSERT |
 | 887 | 46.3 | 857.1 | 66.0 | rpc `search_products` |
-| 1,842 | 14.4 | 525.3 | 20.7 | rpc `fn_record_search` (`src/lib/search/record.ts`) |
+| 1,866 | 14.5 | 525.3 | 20.7 | rpc `fn_record_search` (`src/lib/search/record.ts`) |
 | 2,055 | 16.4 | 515.6 | 34.9 | `analytics_events` select |
 
-Each is a single outlier in a 96-day window with a mean under 50 ms and a standard deviation an order of magnitude below the max. The shape matches cold cache after a compute pause or a plan re-prepare, not a missing index: `carts` has 109,305 index scans against 59 sequential scans, and `analytics_events` 4,755 against 24. The max values did not move across the 16:24, 18:21 and 21:24 runs while the call counts did (since 18:21: carts UPDATE +18, `available_stock` +278, carts INSERT +137, `fn_record_search` +42), so the spikes are historical, not recurring. No alert.
+Each is a single outlier in a 96-day window with a mean under 50 ms and a standard deviation an order of magnitude below the max. The shape matches cold cache after a compute pause or a plan re-prepare, not a missing index: `carts` has 110,429 index scans against 59 sequential scans, and `analytics_events` 4,755 against 24. The max values did not move across the 16:24, 18:21, 21:24 and 22:45 runs while the call counts did (since 21:24: carts UPDATE +29, `available_stock` +213, carts INSERT +97, `fn_record_search` +24; `search_products` and the `analytics_events` select were not called at all in the window), so the spikes are historical, not recurring. No alert.
 
 The `search_products` RPC is the one worth watching: a 46 ms mean with 66 ms stddev is the widest spread in the application set. It is the Postgres fallback that production uses because Meilisearch is off (`docs/` UX21 notes); it does not get faster until the engine is switched.
 
@@ -152,16 +152,16 @@ None of these is a slow-query cause today. The two WARN rows are the only ones t
 
 | Item | Value |
 |---|---|
-| Database size | 44 MB (43 MB at 18:21 UTC) |
+| Database size | 44 MB (unchanged since 21:24 UTC; 43 MB at 18:21 UTC) |
 | Largest table | audit_log, 5,824 kB, 2,391 live rows |
-| carts | 2,104 kB, 3,586 live rows, autovacuum 2026-10-16 |
+| carts | 2,104 kB, 3,683 live rows (156 dead), autovacuum 2026-10-16 |
 | analytics_events | 1,960 kB, 2,685 live rows |
 | products | 752 kB, 82 live rows, 66 dead rows, autovacuum 2026-10-18 |
 | Replication slots | none (the application does not use Realtime; the `wal->>` poller rows in pg_stat_statements are historical platform traffic) |
 
 ---
 
-## 7. Verification Checklist (2026-10-20 21:24 UTC)
+## 7. Verification Checklist (2026-10-20 22:45 UTC)
 
 - [x] Supabase MCP reached (official server over stdio, `--read-only`, 13 tools listed)
 - [x] Pool measured from pg_stat_activity, not inferred from the plan tier
@@ -194,6 +194,6 @@ node -e 'const r=require("./logs/maint9/result.json"); console.log(JSON.stringif
 
 ---
 
-**Report Status:** COMPLETE (measured 2026-10-20 21:24 UTC; third measured pass, no delta beyond call counts and 1 MB of growth)
+**Report Status:** COMPLETE (measured 2026-10-20 22:45 UTC; fourth measured pass, no delta beyond call counts and 97 cart rows)
 **Next Review:** MAINTENANCE_LOOP cycle, or after any migration in the pending batch is applied
 **Escalation:** none required

@@ -1,5 +1,5 @@
 {
-  "ts": "2026-10-20T21:23:52.822Z",
+  "ts": "2026-10-20T22:45:12.892Z",
   "projectRef": "ixvwfbuvfxxsjiywhbbb",
   "probes": {
     "settings": [
@@ -44,7 +44,7 @@
         "state": "idle",
         "wait_event_type": "Client",
         "n": 13,
-        "max_age_s": 4597030
+        "max_age_s": 4601910
       },
       {
         "state": "active",
@@ -87,10 +87,10 @@
       {
         "datname": "postgres",
         "numbackends": 16,
-        "xact_commit": 8546933,
-        "xact_rollback": 617485,
+        "xact_commit": 8563953,
+        "xact_rollback": 622383,
         "deadlocks": 0,
-        "temp_files": 165256,
+        "temp_files": 165412,
         "cache_hit_pct": "100.00",
         "stats_reset": null
       }
@@ -114,8 +114,8 @@
     "pgss_summary": [
       {
         "statements": 4870,
-        "calls": 7290579,
-        "total_ms": "2985850",
+        "calls": 7321653,
+        "total_ms": "2996209",
         "over_500_mean": 6,
         "over_500_max": 19
       }
@@ -172,14 +172,14 @@
     ],
     "slow_max": [
       {
-        "calls": 1335,
-        "mean_ms": "3.6",
+        "calls": 1364,
+        "mean_ms": "3.8",
         "max_ms": "1159.2",
-        "stddev_ms": "32.0",
+        "stddev_ms": "32.1",
         "query": "WITH pgrst_source AS (UPDATE \"public\".\"carts\" SET \"expires_at\" = \"pgrst_body\".\"expires_at\", \"items\" = \"pgrst_body\".\"items\" FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"expires_at\", \"items\" FROM json_to_record(pgrst_payload.json_data) AS _(\"expires_at\" timestamp with time zone, \"items\" jsonb) ) pgrst_body  WHERE  \"public\".\"carts\".\"id\" = $2 RETURNING \"public\".\"carts\".\"id\", \"public\".\"carts\".\"items\") SEL"
       },
       {
-        "calls": 19268,
+        "calls": 19481,
         "mean_ms": "5.4",
         "max_ms": "1013.8",
         "stddev_ms": "16.1",
@@ -193,10 +193,10 @@
         "query": "SELECT\n    tbl.schemaname,\n    tbl.tablename,\n    tbl.quoted_name,\n    tbl.is_table,\n    json_agg(a) as columns\n  FROM\n    (\n      SELECT\n        n.nspname as schemaname,\n        c.relname as tablename,\n        (quote_ident(n.nspname) || $1 || quote_ident(c.relname)) as quoted_name,\n        $2 as is_table\n      FROM\n        pg_catalog.pg_class c\n        JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace\n      W"
       },
       {
-        "calls": 6153,
-        "mean_ms": "5.1",
+        "calls": 6250,
+        "mean_ms": "5.2",
         "max_ms": "883.6",
-        "stddev_ms": "17.5",
+        "stddev_ms": "17.6",
         "query": "WITH pgrst_source AS (INSERT INTO \"public\".\"carts\"(\"expires_at\", \"items\", \"session_id\") SELECT \"pgrst_body\".\"expires_at\", \"pgrst_body\".\"items\", \"pgrst_body\".\"session_id\" FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"expires_at\", \"items\", \"session_id\" FROM json_to_record(pgrst_payload.json_data) AS _(\"expires_at\" timestamp with time zone, \"items\" jsonb, \"session_id\" text) ) pgrst_body  RETURNING \"publi"
       },
       {
@@ -242,17 +242,17 @@
         "query": "select\n      m->>$1 as version,\n      m->>$2 as name,\n      case\n        when pg_catalog.jsonb_typeof(m->$3) = $4\n        then array(select pg_catalog.jsonb_array_elements_text(m->$5))\n        else $6\n      end as statements\n    from pg_catalog.jsonb_array_elements(\n      coalesce(\n        nullif(pg_catalog.current_setting($7, $8), $9)::pg_catalog.jsonb,\n        $10::pg_catalog.jsonb\n      )\n    ) as m\n    order by m"
       },
       {
-        "calls": 1842,
-        "mean_ms": "14.4",
+        "calls": 1866,
+        "mean_ms": "14.5",
         "max_ms": "525.3",
         "stddev_ms": "20.7",
         "query": "WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"p_term\", \"p_hits\" FROM json_to_record(pgrst_payload.json_data) AS _(\"p_term\" text, \"p_hits\" integer) LIMIT $4) pgrst_body , LATERAL (SELECT \"public\".\"fn_record_search\"(\"p_term\" := pgrst_body.\"p_term\", \"p_hits\" := pgrst_body.\"p_hits\") pgrst_scalar) pgrst_call) SELECT $5::bigint AS total_result_set, $6 AS "
       },
       {
-        "calls": 96,
-        "mean_ms": "204.0",
+        "calls": 97,
+        "mean_ms": "204.9",
         "max_ms": "520.8",
-        "stddev_ms": "91.2",
+        "stddev_ms": "91.1",
         "query": "SELECT case when pg_is_in_recovery() then $2 else (pg_walfile_name_offset(lsn)).file_name end, lsn::text, pg_is_in_recovery() FROM pg_backup_start($1, $3) lsn"
       },
       {
@@ -283,9 +283,9 @@
         "query": "with f as (\n      \n-- CTE with sane arg_modes, arg_names, and arg_types.\n-- All three are always of the same length.\n-- All three include all args, including OU"
       },
       {
-        "calls": 43789,
+        "calls": 43911,
         "mean_ms": "4.0",
-        "total_ms": "173500",
+        "total_ms": "174097",
         "query": "WITH pgrst_source AS ( SELECT \"public\".\"seo_redirects\".\"source_path\", \"public\".\"seo_redirects\".\"target_path\", \"public\".\"seo_redirects\".\"status_code\" FROM \"publi"
       },
       {
@@ -295,21 +295,21 @@
         "query": "SELECT\n    tbl.schemaname,\n    tbl.tablename,\n    tbl.quoted_name,\n    tbl.is_table,\n    json_agg(a) as columns\n  FROM\n    (\n      SELECT\n        n.nspname as s"
       },
       {
-        "calls": 19268,
+        "calls": 19481,
         "mean_ms": "5.4",
-        "total_ms": "104054",
+        "total_ms": "105560",
         "query": "WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"p_product_id\" FROM json_to_record(pgrst_paylo"
       },
       {
-        "calls": 9203,
-        "mean_ms": "10.7",
-        "total_ms": "98274",
+        "calls": 9383,
+        "mean_ms": "10.6",
+        "total_ms": "99702",
         "query": "WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"p_key\", \"p_max_attempts\", \"p_window_seconds\" "
       },
       {
-        "calls": 2069960,
+        "calls": 2083899,
         "mean_ms": "0.0",
-        "total_ms": "86346",
+        "total_ms": "86953",
         "query": "select set_config('search_path', $1, true), set_config($2, $3, true), set_config('role', $4, true), set_config('request.jwt.claims', $5, true), set_config('requ"
       },
       {
@@ -331,9 +331,9 @@
         "query": "SELECT\n  e.name,\n  n.nspname AS schema,\n  e.default_version,\n  x.extversion AS installed_version,\n  e.comment,\n  ev.schema AS default_version_schema\nFROM\n  pg_a"
       },
       {
-        "calls": 163397,
+        "calls": 163405,
         "mean_ms": "0.2",
-        "total_ms": "36732",
+        "total_ms": "36735",
         "query": "WITH pgrst_source AS ( SELECT \"public\".\"products\".\"id\", \"public\".\"products\".\"slug\", \"public\".\"products\".\"name_he\", \"public\".\"products\".\"kenyon_price\", \"public\"."
       },
       {
@@ -349,60 +349,60 @@
         "query": "WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT \"public\".\"release_expired_order_discounts\"() pgrst_scalar) pgrst_call) SELECT $3::bigint AS to"
       },
       {
-        "calls": 6153,
-        "mean_ms": "5.1",
-        "total_ms": "31539",
+        "calls": 6250,
+        "mean_ms": "5.2",
+        "total_ms": "32399",
         "query": "WITH pgrst_source AS (INSERT INTO \"public\".\"carts\"(\"expires_at\", \"items\", \"session_id\") SELECT \"pgrst_body\".\"expires_at\", \"pgrst_body\".\"items\", \"pgrst_body\".\"se"
       }
     ],
     "top_calls": [
       {
-        "calls": 2069960,
+        "calls": 2083899,
         "mean_ms": "0.0",
         "query": "select set_config('search_path', $1, true), set_config($2, $3, true), set_config('role', $4, true), set_config('request.jwt.claims', $5, true), set_config('requ"
       },
       {
-        "calls": 310165,
+        "calls": 310608,
         "mean_ms": "0.0",
         "query": "SELECT mfa_factors.created_at, mfa_factors.factor_type, mfa_factors.friendly_name, mfa_factors.id, mfa_factors.last_challenged_at, mfa_factors.last_webauthn_cha"
       },
       {
-        "calls": 310165,
+        "calls": 310608,
         "mean_ms": "0.0",
         "query": "SELECT identities.created_at, identities.email, identities.id, identities.identity_data, identities.last_sign_in_at, identities.provider, identities.provider_id"
       },
       {
-        "calls": 310135,
+        "calls": 310578,
         "mean_ms": "0.0",
         "query": "SELECT mfa_amr_claims.authentication_method, mfa_amr_claims.created_at, mfa_amr_claims.id, mfa_amr_claims.session_id, mfa_amr_claims.updated_at FROM mfa_amr_cla"
       },
       {
-        "calls": 310135,
+        "calls": 310578,
         "mean_ms": "0.0",
         "query": "SELECT sessions.aal, sessions.created_at, sessions.factor_id, sessions.id, sessions.ip, sessions.not_after, sessions.oauth_client_id, sessions.refresh_token_cou"
       },
       {
-        "calls": 309594,
+        "calls": 310029,
         "mean_ms": "0.0",
         "query": "SELECT users.aud, users.banned_until, users.confirmation_sent_at, users.confirmation_token, users.confirmed_at, users.created_at, users.deleted_at, users.email,"
       },
       {
-        "calls": 279917,
+        "calls": 281853,
         "mean_ms": "0.1",
         "query": "select set_config('search_path', $1, true), set_config('role', $2, true), set_config('request.jwt.claims', $3, true), set_config('request.method', $4, true), se"
       },
       {
-        "calls": 211920,
+        "calls": 212287,
         "mean_ms": "0.0",
         "query": "SET client_min_messages TO WARNING"
       },
       {
-        "calls": 211920,
+        "calls": 212287,
         "mean_ms": "0.0",
         "query": "SET client_encoding = 'UTF8'"
       },
       {
-        "calls": 208729,
+        "calls": 209096,
         "mean_ms": "0.0",
         "query": "BEGIN ISOLATION LEVEL READ COMMITTED READ ONLY"
       }
@@ -416,31 +416,31 @@
         "query": "with f as (\n      \n-- CTE with sane arg_modes, arg_names, and arg_types.\n-- All three are always of the same length.\n-- All three include all args, including OU"
       },
       {
-        "calls": 8,
-        "mean_ms": "27.4",
-        "temp_blks_written": 4386,
-        "temp_written": "34 MB",
+        "calls": 9,
+        "mean_ms": "28.1",
+        "temp_blks_written": 4935,
+        "temp_written": "39 MB",
         "query": "select count(*)::int as statements, sum(calls)::bigint as calls, round(sum(total_exec_time)::numeric,$1) as total_ms, count(*) filter (where mean_exec_time>$2):"
       },
       {
-        "calls": 8,
-        "mean_ms": "75.0",
-        "temp_blks_written": 4386,
-        "temp_written": "34 MB",
+        "calls": 9,
+        "mean_ms": "75.7",
+        "temp_blks_written": 4935,
+        "temp_written": "39 MB",
         "query": "select calls, round(mean_exec_time::numeric,$1) as mean_ms, round(total_exec_time::numeric,$2) as total_ms, left(query,$3) as query from extensions.pg_stat_stat"
       },
       {
-        "calls": 8,
-        "mean_ms": "87.2",
-        "temp_blks_written": 4386,
-        "temp_written": "34 MB",
+        "calls": 9,
+        "mean_ms": "85.8",
+        "temp_blks_written": 4935,
+        "temp_written": "39 MB",
         "query": "select calls, round(mean_exec_time::numeric,$1) as mean_ms, left(query,$2) as query from extensions.pg_stat_statements where query not ilike $3 order by calls d"
       },
       {
-        "calls": 8,
-        "mean_ms": "27.2",
-        "temp_blks_written": 4385,
-        "temp_written": "34 MB",
+        "calls": 9,
+        "mean_ms": "27.5",
+        "temp_blks_written": 4934,
+        "temp_written": "39 MB",
         "query": "select calls, round(mean_exec_time::numeric,$1) as mean_ms, round(max_exec_time::numeric,$2) as max_ms, round(total_exec_time::numeric,$3) as total_ms, rows, le"
       },
       {
@@ -451,17 +451,17 @@
         "query": "select calls, round(mean_exec_time::numeric,$1) as mean_ms, round(max_exec_time::numeric,$2) as max_ms, left(query,$3) as query from extensions.pg_stat_statemen"
       },
       {
-        "calls": 3,
-        "mean_ms": "19.7",
-        "temp_blks_written": 1646,
-        "temp_written": "13 MB",
+        "calls": 4,
+        "mean_ms": "23.4",
+        "temp_blks_written": 2195,
+        "temp_written": "17 MB",
         "query": "select calls, round(mean_exec_time::numeric,$1) as mean_ms, round(max_exec_time::numeric,$2) as max_ms, round(stddev_exec_time::numeric,$3) as stddev_ms, left(q"
       },
       {
-        "calls": 3,
-        "mean_ms": "18.8",
-        "temp_blks_written": 1645,
-        "temp_written": "13 MB",
+        "calls": 4,
+        "mean_ms": "18.6",
+        "temp_blks_written": 2194,
+        "temp_written": "17 MB",
         "query": "select calls, round(mean_exec_time::numeric,$1) as mean_ms, temp_blks_written, pg_size_pretty(temp_blks_written*$2) as temp_written, left(query,$3) as query fro"
       },
       {
@@ -484,8 +484,8 @@
         "relname": "carts",
         "seq_scan": 59,
         "seq_tup_read": 76097,
-        "idx_scan": 109305,
-        "n_live_tup": 3586
+        "idx_scan": 110429,
+        "n_live_tup": 3683
       },
       {
         "relname": "audit_log",
@@ -605,8 +605,8 @@
       },
       {
         "relname": "carts",
-        "n_live_tup": 3586,
-        "n_dead_tup": 119,
+        "n_live_tup": 3683,
+        "n_dead_tup": 156,
         "total": "2104 kB",
         "last_autovacuum": "2026-10-16"
       },
@@ -633,7 +633,7 @@
       },
       {
         "relname": "refresh_tokens",
-        "n_live_tup": 582,
+        "n_live_tup": 590,
         "n_dead_tup": 41,
         "total": "344 kB",
         "last_autovacuum": null
@@ -654,15 +654,15 @@
       },
       {
         "relname": "rate_limits",
-        "n_live_tup": 605,
-        "n_dead_tup": 93,
+        "n_live_tup": 610,
+        "n_dead_tup": 135,
         "total": "272 kB",
         "last_autovacuum": "2026-10-15"
       },
       {
         "relname": "users",
         "n_live_tup": 14,
-        "n_dead_tup": 2,
+        "n_dead_tup": 10,
         "total": "264 kB",
         "last_autovacuum": "2026-10-20"
       }
@@ -710,7 +710,7 @@
                 "fkey_name": "affiliate_attributions_affiliate_id_fkey",
                 "fkey_columns": [3]
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Table \\`public.affiliate_attributions\\` has a foreign key \\`affiliate_attributions_campaign_id_fkey\\` without a covering index. This can lead to suboptimal query performance.",
@@ -721,7 +721,7 @@
                 "fkey_name": "affiliate_attributions_campaign_id_fkey",
                 "fkey_columns": [4]
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Table \\`public.affiliate_attributions\\` has a foreign key \\`affiliate_attributions_link_id_fkey\\` without a covering index. This can lead to suboptimal query performance.",
@@ -732,7 +732,7 @@
                 "fkey_name": "affiliate_attributions_link_id_fkey",
                 "fkey_columns": [5]
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Table \\`public.affiliate_links\\` has a foreign key \\`affiliate_links_campaign_id_fkey\\` without a covering index. This can lead to suboptimal query performance.",
@@ -743,7 +743,7 @@
                 "fkey_name": "affiliate_links_campaign_id_fkey",
                 "fkey_columns": [3]
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Table \\`public.affiliate_payouts\\` has a foreign key \\`affiliate_payouts_affiliate_id_fkey\\` without a covering index. This can lead to suboptimal query performance.",
@@ -754,7 +754,7 @@
                 "fkey_name": "affiliate_payouts_affiliate_id_fkey",
                 "fkey_columns": [2]
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Table \\`public.auth_wa_otps\\` has a foreign key \\`auth_wa_otps_user_id_fkey\\` without a covering index. This can lead to suboptimal query performance.",
@@ -765,7 +765,7 @@
                 "fkey_name": "auth_wa_otps_user_id_fkey",
                 "fkey_columns": [3]
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Table \\`public.supplier_card_tokens\\` has a foreign key \\`supplier_card_tokens_supplier_id_fkey\\` without a covering index. This can lead to suboptimal query performance.",
@@ -776,7 +776,7 @@
                 "fkey_name": "supplier_card_tokens_supplier_id_fkey",
                 "fkey_columns": [4]
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Table \\`public.supplier_card_tokens\\` has a foreign key \\`supplier_card_tokens_supplier_lead_id_fkey\\` without a covering index. This can lead to suboptimal query performance.",
@@ -787,7 +787,7 @@
                 "fkey_name": "supplier_card_tokens_supplier_lead_id_fkey",
                 "fkey_columns": [3]
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Table \\`public.supplier_card_verifications\\` has a foreign key \\`supplier_card_verifications_supplier_lead_id_fkey\\` without a covering index. This can lead to suboptimal query performance.",
@@ -798,7 +798,7 @@
                 "fkey_name": "supplier_card_verifications_supplier_lead_id_fkey",
                 "fkey_columns": [10]
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             }
           ]
         },
@@ -819,7 +819,7 @@
                 "name": "profiles",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             }
           ]
         },
@@ -840,7 +840,7 @@
                 "name": "suppliers",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`suppliers_city_idx\\` on table \\`public.suppliers\\` has not been used",
@@ -849,7 +849,7 @@
                 "name": "suppliers",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`coupon_qr_batches_campaign_idx\\` on table \\`public.coupon_qr_batches\\` has not been used",
@@ -858,7 +858,7 @@
                 "name": "coupon_qr_batches",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`categories_created_by_idx\\` on table \\`public.categories\\` has not been used",
@@ -867,7 +867,7 @@
                 "name": "categories",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`coupon_qr_codes_batch_idx\\` on table \\`public.coupon_qr_codes\\` has not been used",
@@ -876,7 +876,7 @@
                 "name": "coupon_qr_codes",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_audit_log_action\\` on table \\`public.audit_log\\` has not been used",
@@ -885,7 +885,7 @@
                 "name": "audit_log",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`coupon_qr_codes_campaign_idx\\` on table \\`public.coupon_qr_codes\\` has not been used",
@@ -894,7 +894,7 @@
                 "name": "coupon_qr_codes",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`payment_events_payment_idx\\` on table \\`public.payment_events\\` has not been used",
@@ -903,7 +903,7 @@
                 "name": "payment_events",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`payment_events_failures_idx\\` on table \\`public.payment_events\\` has not been used",
@@ -912,7 +912,7 @@
                 "name": "payment_events",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`payment_events_low_profile_idx\\` on table \\`public.payment_events\\` has not been used",
@@ -921,7 +921,7 @@
                 "name": "payment_events",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`payment_events_stage_idx\\` on table \\`public.payment_events\\` has not been used",
@@ -930,7 +930,7 @@
                 "name": "payment_events",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`wp_migration_log_batch_idx\\` on table \\`wp_import.migration_log\\` has not been used",
@@ -939,7 +939,7 @@
                 "name": "migration_log",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`wp_migration_log_entity_idx\\` on table \\`wp_import.migration_log\\` has not been used",
@@ -948,7 +948,7 @@
                 "name": "migration_log",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`wp_migration_log_external_idx\\` on table \\`wp_import.migration_log\\` has not been used",
@@ -957,7 +957,7 @@
                 "name": "migration_log",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`wp_migration_log_failed_idx\\` on table \\`wp_import.migration_log\\` has not been used",
@@ -966,7 +966,7 @@
                 "name": "migration_log",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`wp_migration_log_applied_insert_idx\\` on table \\`wp_import.migration_log\\` has not been used",
@@ -975,7 +975,7 @@
                 "name": "migration_log",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_affiliates_code\\` on table \\`public.affiliates\\` has not been used",
@@ -984,7 +984,7 @@
                 "name": "affiliates",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_affiliates_status\\` on table \\`public.affiliates\\` has not been used",
@@ -993,7 +993,7 @@
                 "name": "affiliates",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_referrals_code\\` on table \\`public.referrals\\` has not been used",
@@ -1002,7 +1002,7 @@
                 "name": "referrals",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`escrow_holds_status_supplier_idx\\` on table \\`public.escrow_holds\\` has not been used",
@@ -1011,7 +1011,7 @@
                 "name": "escrow_holds",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`wp_validation_reports_batch_idx\\` on table \\`wp_import.validation_reports\\` has not been used",
@@ -1020,7 +1020,7 @@
                 "name": "validation_reports",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`wp_validation_reports_failed_idx\\` on table \\`wp_import.validation_reports\\` has not been used",
@@ -1029,7 +1029,7 @@
                 "name": "validation_reports",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`wp_media_storage_path_idx\\` on table \\`wp_import.media\\` has not been used",
@@ -1038,7 +1038,7 @@
                 "name": "media",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`payment_tokens_cardcom_account_idx\\` on table \\`public.payment_tokens\\` has not been used",
@@ -1047,7 +1047,7 @@
                 "name": "payment_tokens",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`payments_cardcom_account_idx\\` on table \\`public.payments\\` has not been used",
@@ -1056,7 +1056,7 @@
                 "name": "payments",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`settlement_events_supplier_idx\\` on table \\`public.settlement_events\\` has not been used",
@@ -1065,7 +1065,7 @@
                 "name": "settlement_events",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_coupon_codes_product_id\\` on table \\`public.coupon_codes\\` has not been used",
@@ -1074,7 +1074,7 @@
                 "name": "coupon_codes",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`settlement_events_order_idx\\` on table \\`public.settlement_events\\` has not been used",
@@ -1083,7 +1083,7 @@
                 "name": "settlement_events",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`settlement_events_item_idx\\` on table \\`public.settlement_events\\` has not been used",
@@ -1092,7 +1092,7 @@
                 "name": "settlement_events",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_cashback_rules_category_id\\` on table \\`public.cashback_rules\\` has not been used",
@@ -1101,7 +1101,7 @@
                 "name": "cashback_rules",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_abandoned_cart_nudges_recovered_order_id\\` on table \\`public.abandoned_cart_nudges\\` has not been used",
@@ -1110,7 +1110,7 @@
                 "name": "abandoned_cart_nudges",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_discount_redemptions_user_id\\` on table \\`public.discount_redemptions\\` has not been used",
@@ -1119,7 +1119,7 @@
                 "name": "discount_redemptions",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_escrow_holds_voucher_id\\` on table \\`public.escrow_holds\\` has not been used",
@@ -1128,7 +1128,7 @@
                 "name": "escrow_holds",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_escrow_holds_order_item_id\\` on table \\`public.escrow_holds\\` has not been used",
@@ -1137,7 +1137,7 @@
                 "name": "escrow_holds",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_invoices_payment_id\\` on table \\`public.invoices\\` has not been used",
@@ -1146,7 +1146,7 @@
                 "name": "invoices",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`id_map_batch_idx\\` on table \\`wp_import.id_map\\` has not been used",
@@ -1155,7 +1155,7 @@
                 "name": "id_map",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`refunds_due_idx\\` on table \\`public.refunds\\` has not been used",
@@ -1164,7 +1164,7 @@
                 "name": "refunds",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`wp_products_parent_idx\\` on table \\`wp_import.products\\` has not been used",
@@ -1173,7 +1173,7 @@
                 "name": "products",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`wp_products_status_idx\\` on table \\`wp_import.products\\` has not been used",
@@ -1182,7 +1182,7 @@
                 "name": "products",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`user_addresses_user_default_created_idx\\` on table \\`public.user_addresses\\` has not been used",
@@ -1191,7 +1191,7 @@
                 "name": "user_addresses",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`wp_customers_email_idx\\` on table \\`wp_import.customers\\` has not been used",
@@ -1200,7 +1200,7 @@
                 "name": "customers",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`media_assets_base_path_idx\\` on table \\`public.media_assets\\` has not been used",
@@ -1209,7 +1209,7 @@
                 "name": "media_assets",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`wp_products_slug_idx\\` on table \\`wp_import.products\\` has not been used",
@@ -1218,7 +1218,7 @@
                 "name": "products",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`wp_orders_customer_idx\\` on table \\`wp_import.orders\\` has not been used",
@@ -1227,7 +1227,7 @@
                 "name": "orders",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`wp_orders_status_idx\\` on table \\`wp_import.orders\\` has not been used",
@@ -1236,7 +1236,7 @@
                 "name": "orders",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`wp_orders_email_idx\\` on table \\`wp_import.orders\\` has not been used",
@@ -1245,7 +1245,7 @@
                 "name": "orders",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_cashback_rules_active\\` on table \\`public.cashback_rules\\` has not been used",
@@ -1254,7 +1254,7 @@
                 "name": "cashback_rules",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`wp_order_items_order_idx\\` on table \\`wp_import.order_items\\` has not been used",
@@ -1263,7 +1263,7 @@
                 "name": "order_items",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`wp_order_items_product_idx\\` on table \\`wp_import.order_items\\` has not been used",
@@ -1272,7 +1272,7 @@
                 "name": "order_items",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`wp_vouchers_open_idx\\` on table \\`wp_import.vouchers\\` has not been used",
@@ -1281,7 +1281,7 @@
                 "name": "vouchers",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_user_addresses_user_active\\` on table \\`public.user_addresses\\` has not been used",
@@ -1290,7 +1290,7 @@
                 "name": "user_addresses",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`supplier_branches_city_idx\\` on table \\`public.supplier_branches\\` has not been used",
@@ -1299,7 +1299,7 @@
                 "name": "supplier_branches",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`wp_media_sha256_idx\\` on table \\`wp_import.media\\` has not been used",
@@ -1308,7 +1308,7 @@
                 "name": "media",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`wp_media_status_idx\\` on table \\`wp_import.media\\` has not been used",
@@ -1317,7 +1317,7 @@
                 "name": "media",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`vendors_status_idx\\` on table \\`public.vendors\\` has not been used",
@@ -1326,7 +1326,7 @@
                 "name": "vendors",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`review_reports_open\\` on table \\`public.review_reports\\` has not been used",
@@ -1335,7 +1335,7 @@
                 "name": "review_reports",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`payment_discrepancies_open\\` on table \\`public.payment_discrepancies\\` has not been used",
@@ -1344,7 +1344,7 @@
                 "name": "payment_discrepancies",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`wp_url_inventory_undecided_idx\\` on table \\`wp_import.url_inventory\\` has not been used",
@@ -1353,7 +1353,7 @@
                 "name": "url_inventory",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`wp_issues_severity_idx\\` on table \\`wp_import.issues\\` has not been used",
@@ -1362,7 +1362,7 @@
                 "name": "issues",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`subscriptions_supplier_idx\\` on table \\`public.subscriptions\\` has not been used",
@@ -1371,7 +1371,7 @@
                 "name": "subscriptions",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`vouchers_redeemed_by_supplier_idx\\` on table \\`public.vouchers\\` has not been used",
@@ -1380,7 +1380,7 @@
                 "name": "vouchers",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`subscription_charges_subscription_idx\\` on table \\`public.subscription_charges\\` has not been used",
@@ -1389,7 +1389,7 @@
                 "name": "subscription_charges",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`voucher_redemptions_supplier_idx\\` on table \\`public.voucher_redemptions\\` has not been used",
@@ -1398,7 +1398,7 @@
                 "name": "voucher_redemptions",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`voucher_redemptions_scanner_idx\\` on table \\`public.voucher_redemptions\\` has not been used",
@@ -1407,7 +1407,7 @@
                 "name": "voucher_redemptions",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`seo_redirects_active_source_idx\\` on table \\`public.seo_redirects\\` has not been used",
@@ -1416,7 +1416,7 @@
                 "name": "seo_redirects",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`seo_redirects_wp_id_idx\\` on table \\`public.seo_redirects\\` has not been used",
@@ -1425,7 +1425,7 @@
                 "name": "seo_redirects",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`discount_campaigns_active_idx\\` on table \\`public.discount_campaigns\\` has not been used",
@@ -1434,7 +1434,7 @@
                 "name": "discount_campaigns",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`discount_campaigns_window_idx\\` on table \\`public.discount_campaigns\\` has not been used",
@@ -1443,7 +1443,7 @@
                 "name": "discount_campaigns",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`search_events_popular_idx\\` on table \\`public.search_events\\` has not been used",
@@ -1452,7 +1452,7 @@
                 "name": "search_events",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_payments_refund_of\\` on table \\`public.payments\\` has not been used",
@@ -1461,7 +1461,7 @@
                 "name": "payments",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`referral_signals_lookup_idx\\` on table \\`public.referral_signals\\` has not been used",
@@ -1470,7 +1470,7 @@
                 "name": "referral_signals",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`newsletter_user_idx\\` on table \\`public.newsletter_subscribers\\` has not been used",
@@ -1479,7 +1479,7 @@
                 "name": "newsletter_subscribers",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_newsletter_subscribers_user_id\\` on table \\`public.newsletter_subscribers\\` has not been used",
@@ -1488,7 +1488,7 @@
                 "name": "newsletter_subscribers",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`abandoned_cart_sent_idx\\` on table \\`public.abandoned_cart_nudges\\` has not been used",
@@ -1497,7 +1497,7 @@
                 "name": "abandoned_cart_nudges",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`user_recent_searches_recent_idx\\` on table \\`public.user_recent_searches\\` has not been used",
@@ -1506,7 +1506,7 @@
                 "name": "user_recent_searches",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_payment_webhook_events_payment_id\\` on table \\`public.payment_webhook_events\\` has not been used",
@@ -1515,7 +1515,7 @@
                 "name": "payment_webhook_events",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`search_index_dlq_status_created_idx\\` on table \\`public.search_index_dlq\\` has not been used",
@@ -1524,7 +1524,7 @@
                 "name": "search_index_dlq",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_invoices_order\\` on table \\`public.invoices\\` has not been used",
@@ -1533,7 +1533,7 @@
                 "name": "invoices",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`support_tickets_phone_open_idx\\` on table \\`public.support_tickets\\` has not been used",
@@ -1542,7 +1542,7 @@
                 "name": "support_tickets",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`scheduled_price_changes_by_product\\` on table \\`public.scheduled_price_changes\\` has not been used",
@@ -1551,7 +1551,7 @@
                 "name": "scheduled_price_changes",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`support_ticket_messages_ticket_idx\\` on table \\`public.support_ticket_messages\\` has not been used",
@@ -1560,7 +1560,7 @@
                 "name": "support_ticket_messages",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`product_images_deleted_at_idx\\` on table \\`public.product_images\\` has not been used",
@@ -1569,7 +1569,7 @@
                 "name": "product_images",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`push_tokens_user_enabled_idx\\` on table \\`public.push_tokens\\` has not been used",
@@ -1578,7 +1578,7 @@
                 "name": "push_tokens",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`push_tokens_device_idx\\` on table \\`public.push_tokens\\` has not been used",
@@ -1587,7 +1587,7 @@
                 "name": "push_tokens",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`voucher_redemptions_staff_idx\\` on table \\`public.voucher_redemptions\\` has not been used",
@@ -1596,7 +1596,7 @@
                 "name": "voucher_redemptions",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`user_consents_user_key_created_idx\\` on table \\`public.user_consents\\` has not been used",
@@ -1605,7 +1605,7 @@
                 "name": "user_consents",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`supplier_leads_status_idx\\` on table \\`public.supplier_leads\\` has not been used",
@@ -1614,7 +1614,7 @@
                 "name": "supplier_leads",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`payout_statements_supplier_idx\\` on table \\`public.payout_statements\\` has not been used",
@@ -1623,7 +1623,7 @@
                 "name": "payout_statements",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`payout_statement_lines_order_item_idx\\` on table \\`public.payout_statement_lines\\` has not been used",
@@ -1632,7 +1632,7 @@
                 "name": "payout_statement_lines",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`payout_statement_lines_coupon_idx\\` on table \\`public.payout_statement_lines\\` has not been used",
@@ -1641,7 +1641,7 @@
                 "name": "payout_statement_lines",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`payout_statement_lines_voucher_idx\\` on table \\`public.payout_statement_lines\\` has not been used",
@@ -1650,7 +1650,7 @@
                 "name": "payout_statement_lines",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_push_tokens_user_id\\` on table \\`public.push_tokens\\` has not been used",
@@ -1659,7 +1659,7 @@
                 "name": "push_tokens",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_split_executions_payment_id\\` on table \\`public.split_executions\\` has not been used",
@@ -1668,7 +1668,7 @@
                 "name": "split_executions",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_stock_reservations_product_id\\` on table \\`public.stock_reservations\\` has not been used",
@@ -1677,7 +1677,7 @@
                 "name": "stock_reservations",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_stock_reservations_variant_id\\` on table \\`public.stock_reservations\\` has not been used",
@@ -1686,7 +1686,7 @@
                 "name": "stock_reservations",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_supplier_leads_handled_by\\` on table \\`public.supplier_leads\\` has not been used",
@@ -1695,7 +1695,7 @@
                 "name": "supplier_leads",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_supplier_members_invited_by\\` on table \\`public.supplier_members\\` has not been used",
@@ -1704,7 +1704,7 @@
                 "name": "supplier_members",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_supplier_members_user_id\\` on table \\`public.supplier_members\\` has not been used",
@@ -1713,7 +1713,7 @@
                 "name": "supplier_members",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_supplier_staff_supplier_id\\` on table \\`public.supplier_staff\\` has not been used",
@@ -1722,7 +1722,7 @@
                 "name": "supplier_staff",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_vendors_profile_id\\` on table \\`public.vendors\\` has not been used",
@@ -1731,7 +1731,7 @@
                 "name": "vendors",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_voucher_redemptions_staff_id\\` on table \\`public.voucher_redemptions\\` has not been used",
@@ -1740,7 +1740,7 @@
                 "name": "voucher_redemptions",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_vouchers_gifted_by_user_id\\` on table \\`public.vouchers\\` has not been used",
@@ -1749,7 +1749,7 @@
                 "name": "vouchers",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_vouchers_redeemed_by_supplier_id\\` on table \\`public.vouchers\\` has not been used",
@@ -1758,7 +1758,7 @@
                 "name": "vouchers",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_vouchers_redeemed_by_user_id\\` on table \\`public.vouchers\\` has not been used",
@@ -1767,7 +1767,7 @@
                 "name": "vouchers",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_categories_batch_id\\` on table \\`wp_import.categories\\` has not been used",
@@ -1776,7 +1776,7 @@
                 "name": "categories",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_coupons_batch_id\\` on table \\`wp_import.coupons\\` has not been used",
@@ -1785,7 +1785,7 @@
                 "name": "coupons",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_customers_batch_id\\` on table \\`wp_import.customers\\` has not been used",
@@ -1794,7 +1794,7 @@
                 "name": "customers",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_issues_batch_id\\` on table \\`wp_import.issues\\` has not been used",
@@ -1803,7 +1803,7 @@
                 "name": "issues",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_media_batch_id\\` on table \\`wp_import.media\\` has not been used",
@@ -1812,7 +1812,7 @@
                 "name": "media",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_order_items_batch_id\\` on table \\`wp_import.order_items\\` has not been used",
@@ -1821,7 +1821,7 @@
                 "name": "order_items",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_orders_batch_id\\` on table \\`wp_import.orders\\` has not been used",
@@ -1830,7 +1830,7 @@
                 "name": "orders",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_products_batch_id\\` on table \\`wp_import.products\\` has not been used",
@@ -1839,7 +1839,7 @@
                 "name": "products",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_url_inventory_batch_id\\` on table \\`wp_import.url_inventory\\` has not been used",
@@ -1848,7 +1848,7 @@
                 "name": "url_inventory",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_vouchers_batch_id\\` on table \\`wp_import.vouchers\\` has not been used",
@@ -1857,7 +1857,7 @@
                 "name": "vouchers",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_vouchers_wp_order_id\\` on table \\`wp_import.vouchers\\` has not been used",
@@ -1866,7 +1866,7 @@
                 "name": "vouchers",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_wallet_entries_order_id\\` on table \\`public.wallet_entries\\` has not been used",
@@ -1875,7 +1875,7 @@
                 "name": "wallet_entries",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`ai_usage_agent_time_idx\\` on table \\`public.ai_usage\\` has not been used",
@@ -1884,7 +1884,7 @@
                 "name": "ai_usage",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`ai_usage_month_idx\\` on table \\`public.ai_usage\\` has not been used",
@@ -1893,7 +1893,7 @@
                 "name": "ai_usage",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_referrals_referred_first_order_id\\` on table \\`public.referrals\\` has not been used",
@@ -1902,7 +1902,7 @@
                 "name": "referrals",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`media_ingest_queue_sha256_idx\\` on table \\`public.media_ingest_queue\\` has not been used",
@@ -1911,7 +1911,7 @@
                 "name": "media_ingest_queue",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`media_ingest_queue_status_idx\\` on table \\`public.media_ingest_queue\\` has not been used",
@@ -1920,7 +1920,7 @@
                 "name": "media_ingest_queue",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`supplier_card_verifications_created_idx\\` on table \\`public.supplier_card_verifications\\` has not been used",
@@ -1929,7 +1929,7 @@
                 "name": "supplier_card_verifications",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`refunds_payment_id_idx\\` on table \\`public.refunds\\` has not been used",
@@ -1938,7 +1938,7 @@
                 "name": "refunds",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`subscriptions_origin_order_id_idx\\` on table \\`public.subscriptions\\` has not been used",
@@ -1947,7 +1947,7 @@
                 "name": "subscriptions",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`subscriptions_payment_token_id_idx\\` on table \\`public.subscriptions\\` has not been used",
@@ -1956,7 +1956,7 @@
                 "name": "subscriptions",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`affiliate_attributions_pending_idx\\` on table \\`public.affiliate_attributions\\` has not been used",
@@ -1965,7 +1965,7 @@
                 "name": "affiliate_attributions",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_orders_user_status\\` on table \\`public.orders\\` has not been used",
@@ -1974,7 +1974,7 @@
                 "name": "orders",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_orders_invoice_number\\` on table \\`public.orders\\` has not been used",
@@ -1983,7 +1983,7 @@
                 "name": "orders",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`order_items_created_at_idx\\` on table \\`public.order_items\\` has not been used",
@@ -1992,7 +1992,7 @@
                 "name": "order_items",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_order_items_settlement_status\\` on table \\`public.order_items\\` has not been used",
@@ -2001,7 +2001,7 @@
                 "name": "order_items",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_order_items_variant_id\\` on table \\`public.order_items\\` has not been used",
@@ -2010,7 +2010,7 @@
                 "name": "order_items",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`order_items_delivered_at_idx\\` on table \\`public.order_items\\` has not been used",
@@ -2019,7 +2019,7 @@
                 "name": "order_items",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_payments_low_profile\\` on table \\`public.payments\\` has not been used",
@@ -2028,7 +2028,7 @@
                 "name": "payments",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_audit_log_request_id\\` on table \\`public.audit_log\\` has not been used",
@@ -2037,7 +2037,7 @@
                 "name": "audit_log",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_wallet_transactions_wallet_id\\` on table \\`public.wallet_transactions\\` has not been used",
@@ -2046,7 +2046,7 @@
                 "name": "wallet_transactions",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_wallet_transactions_created_at\\` on table \\`public.wallet_transactions\\` has not been used",
@@ -2055,7 +2055,7 @@
                 "name": "wallet_transactions",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_profiles_affiliate_code\\` on table \\`public.profiles\\` has not been used",
@@ -2064,7 +2064,7 @@
                 "name": "profiles",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`discount_redemptions_by_user\\` on table \\`public.discount_redemptions\\` has not been used",
@@ -2073,7 +2073,7 @@
                 "name": "discount_redemptions",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`products_offer_valid_until_idx\\` on table \\`public.products\\` has not been used",
@@ -2082,7 +2082,7 @@
                 "name": "products",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`products_tags_gin\\` on table \\`public.products\\` has not been used",
@@ -2091,7 +2091,7 @@
                 "name": "products",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`products_whatsapp_enabled_idx\\` on table \\`public.products\\` has not been used",
@@ -2100,7 +2100,7 @@
                 "name": "products",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`coupon_deals_search_vector_gin\\` on table \\`public.coupon_deals\\` has not been used",
@@ -2109,7 +2109,7 @@
                 "name": "coupon_deals",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_coupons_vendor_id\\` on table \\`public.coupons\\` has not been used",
@@ -2118,7 +2118,7 @@
                 "name": "coupons",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`fraud_flags_order_idx\\` on table \\`public.fraud_flags\\` has not been used",
@@ -2127,7 +2127,7 @@
                 "name": "fraud_flags",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`coupon_deals_status_idx\\` on table \\`public.coupon_deals\\` has not been used",
@@ -2136,7 +2136,7 @@
                 "name": "coupon_deals",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`coupon_deals_vendor_id_idx\\` on table \\`public.coupon_deals\\` has not been used",
@@ -2145,7 +2145,7 @@
                 "name": "coupon_deals",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`coupon_deals_valid_idx\\` on table \\`public.coupon_deals\\` has not been used",
@@ -2154,7 +2154,7 @@
                 "name": "coupon_deals",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`idx_coupon_deals_created_by\\` on table \\`public.coupon_deals\\` has not been used",
@@ -2163,7 +2163,7 @@
                 "name": "coupon_deals",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`fraud_review_queue_status_idx\\` on table \\`public.fraud_review_queue\\` has not been used",
@@ -2172,7 +2172,7 @@
                 "name": "fraud_review_queue",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`cashback_ledger_created_by_idx\\` on table \\`public.cashback_ledger\\` has not been used",
@@ -2181,7 +2181,7 @@
                 "name": "cashback_ledger",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`cashback_ledger_wallet_entry_id_idx\\` on table \\`public.cashback_ledger\\` has not been used",
@@ -2190,7 +2190,7 @@
                 "name": "cashback_ledger",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`coupon_qr_batches_created_by_idx\\` on table \\`public.coupon_qr_batches\\` has not been used",
@@ -2199,7 +2199,7 @@
                 "name": "coupon_qr_batches",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`gift_cards_order_id_idx\\` on table \\`public.gift_cards\\` has not been used",
@@ -2208,7 +2208,7 @@
                 "name": "gift_cards",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`pickup_points_zone_id_idx\\` on table \\`public.pickup_points\\` has not been used",
@@ -2217,7 +2217,7 @@
                 "name": "pickup_points",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`stock_waitlist_variant_id_idx\\` on table \\`public.stock_waitlist\\` has not been used",
@@ -2226,7 +2226,7 @@
                 "name": "stock_waitlist",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`support_tickets_user_id_idx\\` on table \\`public.support_tickets\\` has not been used",
@@ -2235,7 +2235,7 @@
                 "name": "support_tickets",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Index \\`whatsapp_contacts_user_id_idx\\` on table \\`public.whatsapp_contacts\\` has not been used",
@@ -2244,7 +2244,7 @@
                 "name": "whatsapp_contacts",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             }
           ]
         },
@@ -2265,7 +2265,7 @@
                 "name": "banners",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Table \\`public.cashback_ledger\\` has multiple permissive policies for role \\`authenticated\\` for action \\`SELECT\\`. Policies include \\`{cashback_ledger_admin_select,cashback_ledger_owner_select}\\`",
@@ -2274,7 +2274,7 @@
                 "name": "cashback_ledger",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Table \\`public.homepage_sections\\` has multiple permissive policies for role \\`authenticated\\` for action \\`SELECT\\`. Policies include \\`{\"homepage_sections: public read\",\"homepage_sections: staff write\"}\\`",
@@ -2283,7 +2283,7 @@
                 "name": "homepage_sections",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Table \\`public.payment_events\\` has multiple permissive policies for role \\`authenticated\\` for action \\`SELECT\\`. Policies include \\`{payment_events_admin_read,payment_events_owner_read}\\`",
@@ -2292,7 +2292,7 @@
                 "name": "payment_events",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Table \\`public.payout_statement_lines\\` has multiple permissive policies for role \\`authenticated\\` for action \\`SELECT\\`. Policies include \\`{\"payout_lines: admin all\",\"payout_lines: member select\"}\\`",
@@ -2301,7 +2301,7 @@
                 "name": "payout_statement_lines",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Table \\`public.payout_statements\\` has multiple permissive policies for role \\`authenticated\\` for action \\`SELECT\\`. Policies include \\`{\"payout_statements: admin all\",\"payout_statements: member select\"}\\`",
@@ -2310,7 +2310,7 @@
                 "name": "payout_statements",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Table \\`public.refunds\\` has multiple permissive policies for role \\`authenticated\\` for action \\`SELECT\\`. Policies include \\`{refunds_owner_read,refunds_staff_read}\\`",
@@ -2319,7 +2319,7 @@
                 "name": "refunds",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Table \\`public.supplier_branches\\` has multiple permissive policies for role \\`authenticated\\` for action \\`DELETE\\`. Policies include \\`{supplier_branches_admin_all,supplier_branches_member_write}\\`",
@@ -2328,7 +2328,7 @@
                 "name": "supplier_branches",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Table \\`public.supplier_branches\\` has multiple permissive policies for role \\`authenticated\\` for action \\`INSERT\\`. Policies include \\`{supplier_branches_admin_all,supplier_branches_member_write}\\`",
@@ -2337,7 +2337,7 @@
                 "name": "supplier_branches",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Table \\`public.supplier_branches\\` has multiple permissive policies for role \\`authenticated\\` for action \\`SELECT\\`. Policies include \\`{supplier_branches_admin_all,supplier_branches_member_write,supplier_branches_public_read}\\`",
@@ -2346,7 +2346,7 @@
                 "name": "supplier_branches",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Table \\`public.supplier_branches\\` has multiple permissive policies for role \\`authenticated\\` for action \\`UPDATE\\`. Policies include \\`{supplier_branches_admin_all,supplier_branches_member_write}\\`",
@@ -2355,7 +2355,7 @@
                 "name": "supplier_branches",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Table \\`public.support_ticket_messages\\` has multiple permissive policies for role \\`authenticated\\` for action \\`SELECT\\`. Policies include \\`{support_ticket_messages_own_read,support_ticket_messages_staff_read}\\`",
@@ -2364,7 +2364,7 @@
                 "name": "support_ticket_messages",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Table \\`public.support_tickets\\` has multiple permissive policies for role \\`authenticated\\` for action \\`SELECT\\`. Policies include \\`{support_tickets_own_read,support_tickets_staff_read}\\`",
@@ -2373,7 +2373,7 @@
                 "name": "support_tickets",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             },
             {
               "detail": "Table \\`public.whatsapp_contacts\\` has multiple permissive policies for role \\`authenticated\\` for action \\`SELECT\\`. Policies include \\`{whatsapp_contacts_admin_read,whatsapp_contacts_own_read}\\`",
@@ -2382,7 +2382,7 @@
                 "name": "whatsapp_contacts",
                 "type": "table"
               },
-              "observed_at": "2026-10-20T21:24:31.121Z"
+              "observed_at": "2026-10-20T22:45:55.968Z"
             }
           ]
         },
@@ -2443,8 +2443,8 @@
     },
     "statements": {
       "statements": 4870,
-      "calls": 7290579,
-      "total_ms": "2985850",
+      "calls": 7321653,
+      "total_ms": "2996209",
       "over_500_mean": 6,
       "over_500_max": 19,
       "since": "2026-07-16 19:10:08.475715+00",
@@ -2506,15 +2506,15 @@
       ],
       "slowMax": [
         {
-          "calls": 1335,
-          "mean_ms": "3.6",
+          "calls": 1364,
+          "mean_ms": "3.8",
           "max_ms": "1159.2",
-          "stddev_ms": "32.0",
+          "stddev_ms": "32.1",
           "query": "WITH pgrst_source AS (UPDATE \"public\".\"carts\" SET \"expires_at\" = \"pgrst_body\".\"expires_at\", \"items\" = \"pgrst_body\".\"items\" FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"expires_at\", \"items\" FROM json_to_record(pgrst_payload.json_data) AS _(\"expires_at\" timestamp with time zone, \"items\" jsonb) ) pgrst_body  WHERE  \"public\".\"carts\".\"id\" = $2 RETURNING \"public\".\"carts\".\"id\", \"public\".\"carts\".\"items\") SEL",
           "who": "app"
         },
         {
-          "calls": 19268,
+          "calls": 19481,
           "mean_ms": "5.4",
           "max_ms": "1013.8",
           "stddev_ms": "16.1",
@@ -2530,10 +2530,10 @@
           "who": "platform"
         },
         {
-          "calls": 6153,
-          "mean_ms": "5.1",
+          "calls": 6250,
+          "mean_ms": "5.2",
           "max_ms": "883.6",
-          "stddev_ms": "17.5",
+          "stddev_ms": "17.6",
           "query": "WITH pgrst_source AS (INSERT INTO \"public\".\"carts\"(\"expires_at\", \"items\", \"session_id\") SELECT \"pgrst_body\".\"expires_at\", \"pgrst_body\".\"items\", \"pgrst_body\".\"session_id\" FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"expires_at\", \"items\", \"session_id\" FROM json_to_record(pgrst_payload.json_data) AS _(\"expires_at\" timestamp with time zone, \"items\" jsonb, \"session_id\" text) ) pgrst_body  RETURNING \"publi",
           "who": "app"
         },
@@ -2586,18 +2586,18 @@
           "who": "other"
         },
         {
-          "calls": 1842,
-          "mean_ms": "14.4",
+          "calls": 1866,
+          "mean_ms": "14.5",
           "max_ms": "525.3",
           "stddev_ms": "20.7",
           "query": "WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"p_term\", \"p_hits\" FROM json_to_record(pgrst_payload.json_data) AS _(\"p_term\" text, \"p_hits\" integer) LIMIT $4) pgrst_body , LATERAL (SELECT \"public\".\"fn_record_search\"(\"p_term\" := pgrst_body.\"p_term\", \"p_hits\" := pgrst_body.\"p_hits\") pgrst_scalar) pgrst_call) SELECT $5::bigint AS total_result_set, $6 AS ",
           "who": "app"
         },
         {
-          "calls": 96,
-          "mean_ms": "204.0",
+          "calls": 97,
+          "mean_ms": "204.9",
           "max_ms": "520.8",
-          "stddev_ms": "91.2",
+          "stddev_ms": "91.1",
           "query": "SELECT case when pg_is_in_recovery() then $2 else (pg_walfile_name_offset(lsn)).file_name end, lsn::text, pg_is_in_recovery() FROM pg_backup_start($1, $3) lsn",
           "who": "platform"
         },
@@ -2613,15 +2613,15 @@
       "appSlowMean": [],
       "appSpikes": [
         {
-          "calls": 1335,
-          "mean_ms": "3.6",
+          "calls": 1364,
+          "mean_ms": "3.8",
           "max_ms": "1159.2",
-          "stddev_ms": "32.0",
+          "stddev_ms": "32.1",
           "query": "WITH pgrst_source AS (UPDATE \"public\".\"carts\" SET \"expires_at\" = \"pgrst_body\".\"expires_at\", \"items\" = \"pgrst_body\".\"items\" FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"expires_at\", \"items\" FROM json_to_record(pgrst_payload.json_data) AS _(\"expires_at\" timestamp with time zone, \"items\" jsonb) ) pgrst_body  WHERE  \"public\".\"carts\".\"id\" = $2 RETURNING \"public\".\"carts\".\"id\", \"public\".\"carts\".\"items\") SEL",
           "who": "app"
         },
         {
-          "calls": 19268,
+          "calls": 19481,
           "mean_ms": "5.4",
           "max_ms": "1013.8",
           "stddev_ms": "16.1",
@@ -2629,10 +2629,10 @@
           "who": "app"
         },
         {
-          "calls": 6153,
-          "mean_ms": "5.1",
+          "calls": 6250,
+          "mean_ms": "5.2",
           "max_ms": "883.6",
-          "stddev_ms": "17.5",
+          "stddev_ms": "17.6",
           "query": "WITH pgrst_source AS (INSERT INTO \"public\".\"carts\"(\"expires_at\", \"items\", \"session_id\") SELECT \"pgrst_body\".\"expires_at\", \"pgrst_body\".\"items\", \"pgrst_body\".\"session_id\" FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"expires_at\", \"items\", \"session_id\" FROM json_to_record(pgrst_payload.json_data) AS _(\"expires_at\" timestamp with time zone, \"items\" jsonb, \"session_id\" text) ) pgrst_body  RETURNING \"publi",
           "who": "app"
         },
@@ -2645,8 +2645,8 @@
           "who": "app"
         },
         {
-          "calls": 1842,
-          "mean_ms": "14.4",
+          "calls": 1866,
+          "mean_ms": "14.5",
           "max_ms": "525.3",
           "stddev_ms": "20.7",
           "query": "WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"p_term\", \"p_hits\" FROM json_to_record(pgrst_payload.json_data) AS _(\"p_term\" text, \"p_hits\" integer) LIMIT $4) pgrst_body , LATERAL (SELECT \"public\".\"fn_record_search\"(\"p_term\" := pgrst_body.\"p_term\", \"p_hits\" := pgrst_body.\"p_hits\") pgrst_scalar) pgrst_call) SELECT $5::bigint AS total_result_set, $6 AS ",
