@@ -1,9 +1,7 @@
 import BenefitBar from '@/components/home/BenefitBar'
-import BrandsRowServer from '@/components/home/BrandsRowServer'
 import CmsHero from '@/components/home/CmsHero'
 import DealsOfTheDay from '@/components/home/DealsOfTheDay'
 import HeroSection from '@/components/home/HeroSection'
-import HotCoupons from '@/components/home/HotCoupons'
 import { alternatesFor } from '@/lib/seo/alternates'
 import { buildSiteJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
 import { Suspense } from 'react'
@@ -117,8 +115,6 @@ export default function HomePage() {
         The hero's own copy is now `hidden md:block`, which is live's rule.
       */}
       <BenefitBar />
-      <HotCoupons />
-      <BrandsRowServer />
       <DealsOfTheDay />
       {/* Below the grid on purpose. It renders nothing on the server and
           nothing for a browser with no history, which is every run of the
