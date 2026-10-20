@@ -2,6 +2,16 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_10 (Session: 2026-10-20 21:29 UTC, queue refill, third pass, DONE)
+
+**Goal:** Append MAINTENANCE_LOOP_1 through MAINTENANCE_LOOP_10 to `~/ke-goals/queue.txt` again by reading them from that same file, so the maintenance loop never drains.
+
+**Result:** COMPLETE. The first ten lines of `~/ke-goals/queue.txt` were appended to its tail (20 lines to 30). A `diff` of lines 1-10 against lines 21-30 is empty, so the copies are byte-identical. The queue file is outside the repo, so no code, test, or build changed; this block is the only repo edit. Nothing else was touched, per the goal's "ONLY do what is explicitly requested".
+
+**Gates:** not re-run; no source file changed since `90d19086c`, whose gates were all clean.
+
+**המשך מ:** MAINTENANCE_LOOP_1 (head of `~/ke-goals/queue.txt`): pnpm audit, fix critical and high, commit each fix as chore security audit fix PACKAGE, push to autopilot.
+
 ## ✅ MAINTENANCE_LOOP_9 (Session: 2026-10-20 21:23-21:32 UTC, Supabase pool and slow-query check, third measured pass, MEASURED, no alert)
 
 **Goal:** Verify Supabase connection pool and query performance via the Supabase MCP, alert in docs/DB-STATUS.md if slow queries over 500 ms exist, commit as chore ops db performance check, push.
