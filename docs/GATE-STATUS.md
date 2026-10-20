@@ -1,19 +1,20 @@
 # Gate Status Report
 
 ## Measurement Date
-2026-10-20 07:47 UTC (Session: MAINTENANCE_LOOP_6)
+2026-10-20 11:24 UTC (Session: MAINTENANCE_LOOP_6 RE-CHECK)
 
 ## Gate Threshold
 All compare.mjs measurements must remain below **11%** deviation from the live reference.
 
 ## Current Status: ⚠️ ABOVE THRESHOLD - MOBILE GATE EXCEEDS 11%
 
-### Home Page (Fresh Measurement — 2026-10-20 07:47 UTC)
-- **380px (mobile): 31.77%** ❌ EXCEEDS 11% by 20.77 points ← CONDITION MET, REQUEUE MOBILE FIX
-  - Measurement complete, gates usable (pages structurally similar)
-  - Height ratio improved: 1490x6291 (local) vs 1440x5492 (live) = 1.145x (was 3.25x in prior session)
-  - Worst bands: y 2400-2500 (65%), y 1900-2000 (61.9%), y 1100-1200 (58.6%)
-- **1440px: 31.77%** (from prior measurement, still exceeds threshold)
+### Home Page (Fresh Measurement — 2026-10-20 11:24 UTC)
+- **380px (mobile): 20.46%** ❌ EXCEEDS 11% by 9.46 points ← CONDITION MET, MOBILE FIX REMAINS QUEUED
+  - **⚠️ HEIGHT RATIO WARNING: 0.41x** — Live: 380x17790, Mine: 380x7320
+  - Script reports: "NOT a pixel gate — structurally different pages"
+  - Possible causes: Stale server, failed data load, or missing content
+  - Worst bands: y 2100-2200 (77%), y 1800-1900 (64.5%), y 0-100 (58.6%)
+- **1440px: 16.48%** (from MOBILE_FIX_GATE investigation 08:35Z, exceeds by 5.48 points)
 
 ### Comparison Details (Fresh Run)
 - Live reference: refs/localized/ke_live_home.html (snapshot from live site)
@@ -29,15 +30,18 @@ All compare.mjs measurements must remain below **11%** deviation from the live r
 3. **CSS/styling**: Multiple band areas above 50% difference (y:1100-1200 = 58.6%, y:2400-2500 = 65%)
 
 ### Assessment
-- **Mobile gate score**: Unable to measure (380px timeout - measurement took >120s)
-- **Overall gate status**: RED - Home page at 31.77% is 188% over tolerance
-- **Action required**: Mobile fix goal should be requeued at head of queue
+- **Mobile gate score**: 20.46% at 380px (86% over tolerance)
+- **Height ratio issue**: 0.41x indicates structural page differences
+- **Overall gate status**: RED - Both mobile (20.46%) and desktop (16.48%) exceed 11%
+- **Action required**: Investigate height mismatch before pursuing CSS fixes
+- **MOBILE_FIX_GATE**: Already queued at head of ~/ke-goals/queue.txt
 
 ### Next Steps
-1. Investigate why compare script takes >120s at 380px viewport
-2. Profile layout shifts on mobile viewport
-3. Identify and fix CSS/styling discrepancies
-4. Re-measure after fixes to verify below 11%
+1. **Verify server build freshness**: Server started 11:18:11, BUILD_ID modified 10:59:46 (server is current)
+2. **Investigate height mismatch**: Why is local page 7320px vs live 17790px at 380px width?
+3. **Check for data loading failures**: Server logs may show Supabase errors or missing content
+4. **Compare content structure**: Count product cards, sections, and major layout blocks
+5. **Re-measure after resolving structural issues**: Valid gate comparison requires similar page heights
 
 ---
 

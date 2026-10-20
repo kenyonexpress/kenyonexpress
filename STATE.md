@@ -4,6 +4,45 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 ---
 
+## ✅ MAINTENANCE_LOOP_6 RE-CHECK (Session: 2026-10-20 11:24 — Mobile Gate Measurement)
+
+**Goal:** Recheck Mobile Gate score via scripts/compare.mjs. If above 11%, requeue mobile fix goal at head of queue. Report current score to docs/GATE-STATUS.md. Commit as chore qa mobile gate check. Push.
+
+**Result:** COMPLETE ✓ — Mobile Gate Still Above Threshold
+
+**Fresh Measurement (2026-10-20 11:24 UTC):**
+- **Score: 20.46%** at 380px (mobile viewport)
+- **Threshold: 11%** 
+- **Status: EXCEEDS by 9.46 points** ✓ Condition met
+- **⚠️ Height Ratio Warning: 0.41x** (local 7320px vs live 17790px)
+- **Script Assessment:** "NOT a pixel gate — structurally different pages"
+
+**Key Findings:**
+1. **Score improved from 31.77% to 20.46%** but still exceeds threshold
+2. **Height mismatch detected:** Local page is less than half the height of live reference
+3. **Possible causes:** Stale server (ruled out - server newer than build), data loading failure, or missing content
+4. **Worst bands:** y 2100-2200 (77%), y 1800-1900 (64.5%), y 0-100 (58.6%)
+
+**Actions Taken:**
+1. ✅ Ran compare.mjs with --page=home --width=380 against port 3311 server
+2. ✅ Updated docs/GATE-STATUS.md with fresh measurement and height warning
+3. ✅ Updated MOBILE_FIX_GATE queue entry with new score and structural issue notes
+4. ✅ All code quality gates passed (type-check, lint, build)
+
+**Commit:**
+- `d48725e1c` - [autopilot] chore: qa mobile gate check
+
+**Execution:**
+- Server already running on port 3311 (PID 27095, started 11:18:11, newer than BUILD_ID 10:59:46)
+- Measurement completed in <180s (previous runs had timeout issues)
+- Updated docs/GATE-STATUS.md, docs/UI-PARITY-REPORT.md (auto-written by compare.mjs)
+- Updated ~/ke-goals/queue.txt MOBILE_FIX_GATE entry with height ratio warning
+- Committed and pushed to autopilot
+
+**המשך מ:** MAINTENANCE_LOOP_6 RE-CHECK COMPLETE. Mobile gate measured at 20.46% (improved from 31.77% but still exceeds 11%). Height ratio 0.41x suggests structural issue requiring investigation. MOBILE_FIX_GATE remains queued at head. Next: Continue with next goal in queue.
+
+---
+
 ## ✅ MAINTENANCE_LOOP_4 (Session: 2026-10-20 — E2E Test Maintenance)
 
 **Goal:** Run full Playwright test suite with pnpm test:e2e. Report pass/fail/flaky counts to docs/E2E-STATUS.md. Fix any new flaky tests. Commit as chore test e2e maintenance. Push. Run pnpm typecheck, pnpm lint, pnpm build. Fix any failures. Commit with [autopilot] prefix. Push.
