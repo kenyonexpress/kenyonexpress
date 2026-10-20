@@ -228,3 +228,7 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-20 10:27 | home | 1440 | n/a | **UNMEASURED** | `de881e40e` | screenshot failed: page.waitForTimeout: Target page, context or browser has been closed |
 | 2026-10-20 10:27 | home | 1440 | 19.04% | **FAIL** | `de881e40e-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 144 failed to load (57 script, 48 image, 37 font, 1 stylesheet, 1 xhr) |
 | 2026-10-20 10:30 | home | 1440 | 19.04% | **FAIL** | `de881e40e-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 201 failed to load (113 script, 48 image, 37 font, 2 stylesheet, 1 xhr) |
+| 2026-10-20 13:53 | home | 1440 | 31.28% | **FAIL** | `f90f38679` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
+| 2026-10-20 13:56 | home | 380 | 47.23% | **FAIL** | `f90f38679-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-20 13:57 | home | 768 | 42.02% | **FAIL** | `f90f38679-dirty` | WORSE than the 29% best known for home/768 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-20 14:00 | home | 380 | 47.23% | **FAIL** | `f90f38679-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
