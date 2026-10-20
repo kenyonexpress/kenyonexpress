@@ -11,6 +11,22 @@ const PORT = process.env.E2E_PORT ?? '3000'
 const BASE_URL = process.env.E2E_BASE_URL ?? `http://localhost:${PORT}`
 const WEB_COMMAND = process.env.E2E_WEB_COMMAND ?? 'pnpm dev'
 
+/**
+ * Every cart write is limited to 120/hour per client IP, and the counter is
+ * DB-backed (`check_rate_limit`), so it survives a server restart. Two full
+ * runs from one laptop inside an hour exhaust it, and from then on every add
+ * fails as "the header badge went 0 -> 0" with a clean server log: measured
+ * 2026-10-20, 15 mobile-chrome failures in the second run of the day, none in
+ * the first. `getClientIp()` reads x-forwarded-for first, so a fresh address
+ * is a fresh bucket. Set E2E_FORWARDED_FOR=10.44.0.7 for one address, or
+ * E2E_FORWARDED_FOR_PREFIX=10.44.<run> to give each worker its own
+ * (Playwright re-evaluates this file inside every worker with
+ * TEST_PARALLEL_INDEX set). Local only: Vercel overwrites the header.
+ */
+const FORWARDED_FOR = process.env.E2E_FORWARDED_FOR_PREFIX
+  ? `${process.env.E2E_FORWARDED_FOR_PREFIX}.${Number(process.env.TEST_PARALLEL_INDEX ?? 0) + 1}`
+  : process.env.E2E_FORWARDED_FOR
+
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
@@ -69,12 +85,15 @@ export default defineConfig({
      * With the variable unset the object is empty and nothing about a local or
      * localhost run changes.
      */
-    extraHTTPHeaders: process.env.VERCEL_AUTOMATION_BYPASS_SECRET
-      ? {
-          'x-vercel-protection-bypass': process.env.VERCEL_AUTOMATION_BYPASS_SECRET,
-          'x-vercel-set-bypass-cookie': 'true',
-        }
-      : {},
+    extraHTTPHeaders: {
+      ...(process.env.VERCEL_AUTOMATION_BYPASS_SECRET
+        ? {
+            'x-vercel-protection-bypass': process.env.VERCEL_AUTOMATION_BYPASS_SECRET,
+            'x-vercel-set-bypass-cookie': 'true',
+          }
+        : {}),
+      ...(FORWARDED_FOR ? { 'x-forwarded-for': FORWARDED_FOR } : {}),
+    },
   },
   projects: [
     {
