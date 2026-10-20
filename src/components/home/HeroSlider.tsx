@@ -100,9 +100,6 @@ export const HERO_ANIMATION_MEDIA = '(min-width: 1024px)'
 
 /** WCAG 2.2 / Lighthouse minimum tap target. */
 const TAP_MIN = 24
-/** The `gap-2` between the dots, in px. The inline insets below read it. */
-const DOT_GAP = 8
-
 const dotWidth = (isCurrent: boolean) => (isCurrent ? DOT_WIDTH_CURRENT : DOT_WIDTH_IDLE)
 /** The button never shrinks below the tap minimum, and never below the dot. */
 const dotButtonSize = (visible: number) => Math.max(TAP_MIN, visible)
@@ -110,36 +107,32 @@ const dotButtonSize = (visible: number) => Math.max(TAP_MIN, visible)
 const dotInset = (visible: number) => (dotButtonSize(visible) - visible) / 2
 
 /**
- * THE SIDEWAYS GROWTH IS CAPPED, AND THE VERTICAL GROWTH IS NOT.
+ * THE GAP IS WHAT THE HIT BOXES NEED, NOT WHAT THE LIVE SLIDER PAINTS.
  *
  * Growing an 8px dot to a 24px button and handing the growth back as negative
  * margin keeps the layout still, but sideways it also walks the button into its
- * neighbour: 8px of inset on each side against an 8px gap left adjacent hit
- * areas overlapping by 8px, and hit testing gives an overlap to whichever
- * button comes later in the DOM. Measured on the home page 2026-08-19 (stage 8
- * Lighthouse, `target-size`): the buttons for slides 2 and 3 both claimed
- * x199..207, which is the left half of the VISIBLE dot for slide 2 — tapping
- * that dot opened slide 3.
+ * neighbour, and hit testing gives an overlap to whichever button comes later
+ * in the DOM. Measured on the home page 2026-08-19 (stage 8 Lighthouse,
+ * `target-size`): the buttons for slides 2 and 3 both claimed x199..207, which
+ * is the left half of the VISIBLE dot for slide 2 — tapping that dot opened
+ * slide 3.
  *
- * A neighbour can therefore only be met halfway. Capping each inline inset at
- * half the gap makes the hit areas touch and never overlap, and because the
- * button still gives back exactly what it grew, every dot stays where it was.
- *
- * That caps the idle dot at 16x24 rather than 24x24, so `target-size` still
- * reports it: 8px dots spaced 8px apart cannot host 24px targets without moving
- * them, and the spacing is measured off the live slider. WCAG 2.2's 2.5.8 is
- * outside the WCAG 2.1 AA set this project gates on (`e2e/a11y.spec.ts`), and
- * moving the dots is a pixel-fidelity decision for Ofir, recorded in
- * docs/LIGHTHOUSE-AUDIT.md. The wrong-slide tap is a defect either way, and it
- * is what this fixes. Vertically there is no neighbour, so the full 24px
- * stands.
+ * The first fix capped the inline inset at half the gap, so the boxes touched
+ * and never overlapped, but it left the idle dot at 16x24 and Lighthouse kept
+ * reporting it (2026-10-20, /, four dots). The `target-size` rule passes on
+ * SIZE alone when the 24x24 box is not overlapped by another target, so the
+ * only way to clear it is a gap that hosts two half-insets: 2 * 8 = 16px, on
+ * both breakpoints. The live slider paints 15px on desktop and the phone row
+ * already used a 24px min-width, so the dots move by at most 1px per gap on
+ * desktop and the row still gives back exactly what it grew. The arithmetic is
+ * pinned in hero-dot-target.test.ts. Vertically there is no neighbour.
  */
-const dotInsetInline = (visible: number) => Math.min(dotInset(visible), DOT_GAP / 2)
-export const dotButtonWidth = (visible: number) => visible + 2 * dotInsetInline(visible)
+const DOT_GAP = 2 * dotInset(DOT_WIDTH_IDLE)
+export const dotButtonWidth = (visible: number) => visible + 2 * dotInset(visible)
 export const dotHitBox = (visible: number) => ({
   width: dotButtonWidth(visible),
   height: dotButtonSize(DOT_HEIGHT),
-  marginInline: -dotInsetInline(visible),
+  marginInline: -dotInset(visible),
   marginBlock: -dotInset(DOT_HEIGHT),
 })
 export const HERO_DOT_GEOMETRY = {
@@ -789,7 +782,12 @@ export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
           // it is flex-start too); justify-end here was the RTL mirror and put
           // the row ~78px left of live's. On phones the mobile hero keeps the
           // old centered-bottom row.
-          className="absolute z-20 flex items-center max-lg:bottom-6 max-lg:start-1/2 max-lg:-translate-x-1/2 max-lg:gap-2 lg:top-[252px] lg:start-[61px] lg:w-[200px] lg:justify-start lg:gap-[15px]"
+          // The gap is DOT_GAP, inline and in px: the 16px that two 8px hit-box
+          // insets need so the 24x24 buttons touch and never overlap (see
+          // dotHitBox). Not a gap-* utility: the spacing unit here is 3.5px, so
+          // gap-4 is 14px and measured the boxes overlapping by 2px.
+          style={{ gap: DOT_GAP }}
+          className="absolute z-20 flex items-center max-lg:bottom-6 max-lg:start-1/2 max-lg:-translate-x-1/2 lg:top-[252px] lg:start-[61px] lg:w-[200px] lg:justify-start"
         >
           {slides.map((s, i) => {
             const isCurrent = i === active
@@ -804,13 +802,12 @@ export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
                   // The dot is 8px because that is what the live slider renders.
                   // The button around it grows to the tap minimum and hands the
                   // growth back as negative margin, so the hit area grows while
-                  // the visible dot and every neighbour stay where they were and
-                  // the pixel diff against live does not move. Sideways the
-                  // growth stops at half the gap; see dotInsetInline.
+                  // the visible dot stays where it was; the gap is sized so the
+                  // neighbouring boxes touch and never overlap, see dotHitBox.
                   ...dotHitBox(dotWidth(isCurrent)),
                   background: 'transparent',
                 }}
-                className="flex shrink-0 items-center justify-center border-0 p-0 max-lg:min-w-6"
+                className="flex shrink-0 items-center justify-center border-0 p-0"
               >
                 <span
                   aria-hidden="true"
