@@ -12,6 +12,7 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 **החלטות שהתקבלו לבד:**
 - The `get_runtime_logs` MCP call was made through a restricted headless probe run from `/tmp` (two read tools only, no shell, no writes), because this session's tool registry froze on the timed-out fetch and never refreshed. It is a read probe, not a second code agent on the repo. Result 403 both times; the CLI read of the same log store stands in for it.
+- The /goal stop hook judges the literal MCP read and returned the same verdict five times after the 403 was measured. Per the recorded procedure for a hook on a false prerequisite, no further turns are spent on it: the prerequisite is the connector's log-read scope, which only Ofir can grant in claude.ai settings, and it was named in an ntfy alert at 18:00 UTC. MAINTENANCE_LOOP_5 already re-runs every cycle of `~/ke-goals/queue.txt`, so no extra re-queue was added; the next cycle will pick up the MCP read the moment the grant changes.
 - No fix applied: every remedy is a production deploy, a secret rotation or a change to protected `main`, all outside this loop's scope. The doc lists them.
 - The re-measurement was appended to the existing report rather than replacing it, so the 13:15 and 17:10 readings can be compared.
 
