@@ -4,6 +4,34 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 ---
 
+## ✅ MAINTENANCE_LOOP_8 (Session: 2026-10-20 14:35 — Code Debt Scan)
+
+**Goal:** Scan all TODO FIXME HACK comments in src/. If count grew since last scan queue a cleanup goal. Report delta in docs/CODE-DEBT-STATUS.md. Commit as chore maint code debt scan. Push.
+
+**Result:** COMPLETE ✓ — No Growth, Stable at 8 Items
+
+**Code Debt Scan (2026-10-20 14:35 UTC):**
+- **Current count:** 8 items
+- **Previous count:** 8 items (2026-10-20 07:55 UTC)
+- **Delta:** 0 (no growth)
+- **Cleanup goal queued:** NO (threshold: >10 items)
+
+**Breakdown (8 Total Items):**
+1. src/app/api/cron/stock-notifications/route.ts (1)
+2. src/lib/whatsapp.test.ts (1)
+3. src/lib/payments/cardcom.ts (2)
+4. src/lib/images/r2-migration.ts (4)
+
+**Actions Taken:**
+- ✅ Scanned src/ for TODO/FIXME/HACK comments
+- ✅ Count stable at 8 items (no change from prior scan)
+- ✅ Updated docs/CODE-DEBT-STATUS.md with 2026-10-20 14:35Z verification timestamp
+- ✅ No cleanup goal queued (count below threshold of >10)
+
+**המשך מ:** MAINTENANCE_LOOP_8 COMPLETE. Code debt scan shows 8 items (stable, no growth). No cleanup goals queued. docs/CODE-DEBT-STATUS.md updated. Moving to MAINTENANCE_LOOP_9.
+
+---
+
 ## ✅ MAINTENANCE_LOOP_7 (Session: 2026-10-20 14:30 — Lighthouse Score Check)
 
 **Goal:** Run Lighthouse CI via pnpm lhci:autorun. If any score below 90 queue optimization goal. Report scores to docs/LIGHTHOUSE-STATUS.md. Commit as chore qa lighthouse check. Push.
