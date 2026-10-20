@@ -2,6 +2,20 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_10 (Session: 2026-10-20 18:28-18:35 UTC, queue regeneration, fifth pass)
+
+**Goal:** Append the ten MAINTENANCE_LOOP goals to `~/ke-goals/queue.txt` again by reading MAINTENANCE_LOOP_1 through MAINTENANCE_LOOP_10 from that file. This is the infinite-loop step. Only what is requested.
+
+**Result:** COMPLETE. Queue grew from 21 to 31 non-empty lines; lines 22 to 31 are MAINTENANCE_LOOP_1 through MAINTENANCE_LOOP_10 in order, verified with `diff` against lines 12 to 21 (the clean copies from the fourth pass): identical. Trailing newline preserved. Backup written beside the file as `queue.txt.bak-<epoch>` before the append. No repository file changed except this entry.
+
+**Gates:** `pnpm typecheck` clean, `pnpm lint` clean (biome 1697 files, tokens, copy and asset gates clean), `pnpm build` run after this entry (STATE.md-only change).
+
+**החלטות שהתקבלו לבד:**
+- Lines 1 to 11 of the queue still carry the old `grep -n` number prefixes from earlier cycles (three or four tab-separated numbers before `MAINTENANCE_LOOP_N`). They were left untouched: the goal says append only, and `refill.sh` consumes them whole, so they drain on their own within one cycle.
+- The ten lines were extracted per number with `grep -oE "MAINTENANCE_LOOP_N .*" | head -1`, taking the first file-order match, which is the real LOOP_N line and not the "MAINTENANCE_LOOP_1 through" substring inside the LOOP_10 text. The diff above is the proof.
+
+**המשך מ:** MAINTENANCE_LOOP_1 (head of `~/ke-goals/queue.txt`): pnpm audit, fix critical and high vulnerabilities, one commit per fix.
+
 ## ✅ MAINTENANCE_LOOP_9 (Session: 2026-10-20 18:20-18:30 UTC, Supabase pool and slow-query check, second measured pass, MEASURED, no alert)
 
 **Goal:** Verify Supabase connection pool and query performance via the Supabase MCP, alert in docs/DB-STATUS.md if slow queries over 500 ms exist, commit as chore ops db performance check, push.
