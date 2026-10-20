@@ -2,11 +2,12 @@ import { describe, expect, it } from 'vitest'
 import { HERO_DOT_GEOMETRY, dotHitBox } from './HeroSlider'
 
 /**
- * The hero dots are 8px wide with an 8px gap, both measured off the live
- * slider, and each one carries a bigger invisible button so a finger has
- * something to hit. Grown naively that button reaches 8px into the dot beside
- * it, and the browser hands an overlap to whichever button comes later in the
- * DOM.
+ * The hero dots are 8px wide, measured off the live slider, and each one
+ * carries a bigger invisible button so a finger has something to hit. Grown
+ * naively that button reaches 8px into the dot beside it, and the browser hands
+ * an overlap to whichever button comes later in the DOM. The gap between the
+ * dots is therefore derived from the button, not measured: 16px, the two
+ * half-insets a pair of 24px boxes needs to touch without overlapping.
  *
  * Measured on the home page 2026-08-19 (Lighthouse `target-size`, stage 8): the
  * buttons for slides 2 and 3 both owned x199..207 -- the left half of the
@@ -43,11 +44,20 @@ describe('hero dot tap targets', () => {
     expect(overlap).toBeLessThanOrEqual(0)
   })
 
-  it('still grows the hit area well past the 8px dot', () => {
-    const box = dotHitBox(idle)
-    expect(box.width).toBeGreaterThan(idle)
-    // Vertically there is no neighbour to collide with, so the full tap
-    // minimum stands and must not be traded away with the horizontal cap.
-    expect(box.height).toBe(24)
+  it('gives every dot the full 24x24 Lighthouse target-size box', () => {
+    // Lighthouse `target-size` (2026-10-20) reported the idle dot at 16x24
+    // while the inline inset was capped at half an 8px gap. The rule passes on
+    // size alone only when the box is 24x24 and no neighbour overlaps it.
+    for (const visible of [idle, current]) {
+      const box = dotHitBox(visible)
+      expect(box.width).toBeGreaterThanOrEqual(24)
+      expect(box.height).toBe(24)
+    }
+  })
+
+  it('sizes the gap so two idle hit boxes touch exactly', () => {
+    const idleBox = dotHitBox(idle)
+    expect(gap).toBe(2 * -idleBox.marginInline)
+    expect(gap).toBe(16)
   })
 })

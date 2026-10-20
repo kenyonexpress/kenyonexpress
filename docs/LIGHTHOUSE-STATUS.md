@@ -1,16 +1,46 @@
 # Lighthouse CI Status Report
 
-**Last Updated:** 2026-10-20 15:46 UTC (MAINTENANCE_LOOP_7, second pass)
+**Last Updated:** 2026-10-20 16:03 UTC (A11Y_FIX_PRODUCTS_LIGHTHOUSE)
 **Measurement Method:** `LHCI_BASE_URL=http://localhost:3361 COMPARE_PRODUCT_SLUG=<slug> pnpm lhci:autorun`
 (`@lhci/cli` 0.15.1 via `pnpm dlx`, Lighthouse 12.6.1, `desktop` preset, 3 runs per URL, lhci median)
-**Build:** commit `10d74a69f`, BUILD_ID `U8MWokhCrYHaPNAUaxa9d`, served by `pnpm start` from this worktree on port 3361 (listener pid and cwd verified before the run)
+**Build:** the A11Y_FIX_PRODUCTS_LIGHTHOUSE tree on top of `84b18715d`, BUILD_ID `p1WRLxM6-YqBY2AbC5N4V`, served by `pnpm start` from this worktree on port 3361 (listener pid 28425, cwd verified as this checkout before the run)
 **Reports:** `.lighthouseci/reports/` (git-ignored, nothing uploaded)
 
 ## Summary
 
-✅ **Performance 99-100 on all three URLs** (target ≥ 90)
-⚠️ **1 of 3 URLs FAILS Accessibility**: `/products` scores **87** (target ≥ 90)
+✅ **Accessibility 100 on all three URLs, in all nine runs** (target ≥ 90; was 87 on `/products` and 96 on `/`)
+✅ **Performance 98-99 on all three URLs** (target ≥ 90)
 ✅ Best Practices 96 and SEO 100 everywhere
+
+| URL | Performance | Accessibility | Best Practices | SEO | FCP | LCP | TBT | CLS | Status |
+|-----|-------------|---------------|----------------|-----|-----|-----|-----|-----|--------|
+| `/` | 98 (98, 99, 98) | 100 (100, 100, 100) | 96 | 100 | 0.4 s | 1.1 s | 0 ms | 0.023 | ✅ PASS |
+| `/products` | 99 (98, 99, 99) | 100 (100, 100, 100) | 96 | 100 | 0.4 s | 1.0 s | 0 ms | 0.008 | ✅ PASS |
+| `/product/אוזניות-איירפודס-3` | 98 (98, 98, 98) | 100 (100, 100, 100) | 96 | 100 | 0.4 s | 1.1 s | 0 ms | 0.010 | ✅ PASS |
+
+No accessibility audit fails on any URL. The 1-2 point Performance drop against the 15:46 pass is LCP 0.7-0.9 s to 1.0-1.1 s on the same laptop with the same preset, inside the localhost run-to-run band documented in `docs/PERFORMANCE-BUDGET.md`; nothing on the render path changed.
+
+## What was fixed (A11Y_FIX_PRODUCTS_LIGHTHOUSE, 2026-10-20)
+
+| Audit | Fix | Measured after |
+|-------|-----|----------------|
+| `aria-allowed-attr` | `DealChips.tsx`: the two filter links carry `aria-current="true"` when applied instead of `aria-pressed`, which the link role does not allow. The `--on` class still paints the state. | Attribute absent on the off chips, audit passes. |
+| `color-contrast` | `category-page.css`: `.category-pagination-mode-btn` reads `--cat-switcher` (#495057, 7.11:1 on the #efefef bar) instead of `--cat-muted` (#657888, 3.97:1). Same token as the view switcher beside it. | Computed colour rgb(73, 80, 87) on the idle button; audit passes. |
+| `target-size` (`/products`) | `category-page.css`: the two stacked `input[type=range]` are 24px tall and centred on the 4px track (`top: -16px` against the wrapper that sits 2px under the track). They stay `pointer-events: none` with only the thumbs live, and axe does not count a `pointer-events: none` sibling as obscuring. | Both inputs 280x24; audit passes. |
+| `image-redundant-alt` | `CategoryProductCard.tsx`: the thumbnail inside the titled link has `alt=""`. The link's accessible name is the `h2` beside the image. | Audit passes on all 10 cards. |
+| `target-size` (`/`) | `HeroSlider.tsx`: the dot gap is derived from the hit box (`DOT_GAP = 2 * inset = 16px`, inline) so every 24x24 button touches its neighbour and never overlaps it. `gap-4` could not be used: the spacing unit is 3.5px, so it is 14px and measured a 2px overlap. Visible dots move 1px per gap on desktop (15 to 16) and the phone row keeps its 24px pitch. | All five buttons 24x24 at 1350 and at 380; audit passes. `hero-dot-target.test.ts` pins the arithmetic. |
+
+Pixel-parity gate after the change, `scripts/compare.mjs --page=home` against the same server (ledger rows in `docs/UI-PARITY-REPORT.md`):
+
+| Width | Before | After |
+|-------|--------|-------|
+| 380 | 8.50% | 8.51% PASS |
+| 768 | 9.80% | 9.80% PASS |
+| 1440 | 8.10% | 8.10% PASS |
+
+## Previous pass (2026-10-20 15:46 UTC, MAINTENANCE_LOOP_7, second pass)
+
+Build: commit `10d74a69f`, BUILD_ID `U8MWokhCrYHaPNAUaxa9d`.
 
 | URL | Performance | Accessibility | Best Practices | SEO | FCP | LCP | TBT | CLS | Status |
 |-----|-------------|---------------|----------------|-----|-----|-----|-----|-----|--------|
@@ -18,9 +48,7 @@
 | `/products` | 99 (100, 99, 99) | **87** (87, 87, 87) | 96 | 100 | 0.4 s | 0.9 s | 0 ms | 0.019 | ⚠️ FAIL (a11y) |
 | `/product/אוזניות-איירפודס-3` | 99 (99, 99, 99) | 100 | 96 | 100 | 0.4 s | 0.9 s | 0 ms | 0.021 | ✅ PASS |
 
-Accessibility on `/products` is deterministic: 87 in all three runs.
-
-## Failing audits (measured, representative run)
+Accessibility on `/products` was deterministic: 87 in all three runs. The audits it reported, now fixed, were:
 
 ### `/products` Accessibility 87, four audits
 
