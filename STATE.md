@@ -4168,3 +4168,10 @@ Supabase MCP authentication unavailable in non-interactive session. CLI fallback
 - Gates: type-check exit 0, lint exit 0 (run at nice 19 during the suite), build exit 0 (the mock build above; no source changed). Backup 2026-10-21-0201 present, three kept; caffeinate alive, SleepDisabled 1.
 
 **המשך מ:** MAINTENANCE_LOOP_5 (head of ~/ke-goals/queue.txt).
+
+## MAINTENANCE_LOOP_7 sixth pass (2026-10-20 23:50 UTC, commit d40dcc729)
+- `pnpm lhci:autorun` (lhci 0.15.1, Lighthouse 12.6.1, desktop preset, 3 runs per URL) against a fresh `pnpm build` of d40dcc729 (BUILD_ID 1GOAUu-1wqcwPGGvPXG2q) served by `pnpm start` on 3361 (listener pid 86255, cwd verified as this worktree, killed by pid afterwards). Representative runs: `/` perf 98, `/products` 99, product page 99; accessibility 100, best practices 96, SEO 100 on all three; nine of nine runs at or above 90. The only weighted audit under 0.9 is errors-in-console, the same five localhost items as every pass. No optimisation goal queued, queue untouched.
+- `git diff dea5b5d6a d40dcc729 -- src package.json next.config.ts` is empty, so the one-point moves against the fifth pass (home 99 to 98, product 98 to 99) are the localhost band, not code. docs/LIGHTHOUSE-STATUS.md gained the sixth-pass header, table and the demoted fifth-pass section. lhci's edits to the tracked .lighthouseci/lhr-* and assertion-results.json were reverted with git checkout, as in earlier passes.
+- Gates: type-check exit 0, lint exit 0 (biome 1700 files + 3 gates), build exit 0. Backup 2026-10-21-0201 present, three kept; caffeinate alive, SleepDisabled 1.
+
+**המשך מ:** MAINTENANCE_LOOP_8 (head of ~/ke-goals/queue.txt).
