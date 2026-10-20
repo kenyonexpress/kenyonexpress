@@ -252,3 +252,7 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-20 16:04 | home | 380 | 8.51% | PASS | `84b18715d-dirty` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
 | 2026-10-20 16:06 | home | 768 | 9.80% | PASS | `84b18715d-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
 | 2026-10-20 16:07 | home | 1440 | 8.10% | PASS | `84b18715d-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-20 17:53 | home | 380 | 8.51% | PASS | `6cccd8359` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
+| 2026-10-20 18:01 | home | 768 | n/a | **UNMEASURED** | `6cccd8359-dirty` | screenshot failed: page.goto: Timeout 60000ms exceeded. Call log: [2m - navigating to "file:///Users/ofir/kenyonexpress-autopilot/refs/localized/ke_live_home.h |
+| 2026-10-20 18:02 | home | 1440 | 8.53% | PASS | `6cccd8359-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-20 18:05 | home | 768 | 10.33% | PASS | `6cccd8359-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |

@@ -2,6 +2,21 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_6 (Session: 2026-10-20 17:45-18:10 UTC, mobile gate recheck, MEASURED, PASS)
+
+**Goal:** Recheck the mobile gate score via `scripts/compare.mjs`, requeue the mobile fix goal at the head of the queue if above 11%, report the score to docs/GATE-STATUS.md, commit as chore qa mobile gate check, push.
+
+**Result:** COMPLETE, all three widths PASS, nothing requeued. Fresh `pnpm build` on `6cccd8359` (BUILD_ID blsRNnREasLamyPVlhaHX), `pnpm start` on 3341 from this worktree (listener pid and cwd verified, no other node listener on the machine), refs/live-assets complete (107 files, same as the main checkout). home/380 **8.51%** (15:36 was 8.50%), home/1440 **8.53%** (was 8.10%), home/768 **10.33%** (was 9.80%). The first 768 run was UNMEASURED on a 60s `page.goto` timeout loading the reference archive and the immediate retry measured normally; the UNMEASURED row stays in the ledger as written. The 768 margin is now 0.67 points: the only home-page change measured for the first time is f7d8e9c90 (HeroSlider dot targets, DealChips, CategoryProductCard, category-page.css), and 380 did not move while 768 and 1440 both rose about half a point, so the drift is in the slider or chip layout at the wider widths. Not isolated band by band; the loop is a check, not a fix. docs/GATE-STATUS.md header and table rewritten with the four ledger rows and a recheck-notes section; the history sections below it are untouched.
+
+**Gates:** `pnpm type-check` clean, `pnpm lint` clean (biome 1697 files, tokens, copy and asset gates clean), `pnpm build` exit 0, `scripts/parity-log.test.mjs` and `scripts/compare-reference.test.mjs` 21 of 21.
+
+**החלטות שהתקבלו לבד:**
+- Rebuilt instead of reusing the 00:50 `.next` even though it postdated the last src commit, because a reused build has baked stale CSS and CSP here before (memory). Cost: one build, no other build was in flight.
+- Measured 768 and 1440 as well as 380. The goal names the mobile gate, but GATE-STATUS.md carries all three rows and a 380-only update would have left two stale PASS rows on an older commit beside a fresh one.
+- The 768 drift to 10.33% was not chased. It is under the gate, the goal's branch is "above 11 percent, requeue", and a fix without a band-level probe would be an unmeasured change. If the next recheck crosses 11%, f7d8e9c90 is the first suspect.
+
+**המשך מ:** MAINTENANCE_LOOP_7 (head of `~/ke-goals/queue.txt`): Lighthouse CI via `pnpm lhci:autorun`, queue an optimisation goal if any score is below 90, report to docs/LIGHTHOUSE-STATUS.md, commit as chore qa lighthouse check, push.
+
 ## ✅ MAINTENANCE_LOOP_5 (Session: 2026-10-20 17:05-17:25 UTC, cron status check, re-run)
 
 **Goal:** Check all cron routes' last-run timestamp via Vercel MCP get_runtime_logs, alert in docs/CRON-STATUS.md if any route is stale over 24h, commit as chore ops cron status check, push.
