@@ -2,6 +2,42 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## 🔄 MOBILE_FIX_GATE_FAILOVER (Session: 2026-10-20 22:30 UTC — Gate regression 19.04% → target <11%)
+
+**Goal:** Fix mobile gate regression from 19.04% back to < 11%. Gate failing on home/1440 due to large layout shifts in bands 1100-2600px.
+
+**Progress:** IN PROGRESS (Down to 23.91%, identified root cause)
+
+**What Was Done:**
+1. ✅ Identified root cause: padding on .jet-listing-grid-deals__item was 72px (added in autopilot residual commit 8acd8aab9)
+2. ✅ Reverted padding 72px → 8px (matching Sept 8 passing state commit 07da1523f)
+3. ✅ Removed height: 100% constraint from .jet-listing-grid-deals__item .p_con
+4. ✅ Verified measurement improved: 35.78% → 23.91% (from HEIGHT RATIO 8.46x → 1.01x)
+5. ✅ Verified data loading fixed (fresh server with clean build)
+6. ✅ Committed fixes: f2a9d7f0c `fix: revert product card padding 72px → 8px and remove height constraint`
+7. ✅ Type-check, lint, build all passing
+
+**Gate Score Progress:**
+- Initial (broken): 35.78% (HEIGHT RATIO 8.46x = data not loading)
+- After padding fix: 23.91% (HEIGHT RATIO 1.01x = correct structure)
+- Target: < 11% (9.91% gap remaining)
+- Best known: 8.29% (Sept 8, 2026 commit 07da1523f)
+
+**Worst Bands (23.91% overall):**
+- y 1100-1200: 67.5% ← Product grid area
+- y 1200-1300: 63.1% ← Product grid area
+- y 1600-1700: 61.5%
+- y 1700-1800: 55.6%
+
+**Next Steps:**
+- Identify remaining CSS differences vs Sept 8 passing state
+- Investigate why bands 1100-1300 remain 60-67% different despite padding fix
+- Focus on product card layout/spacing/styling differences
+
+**המשך מ:** MOBILE_FIX_GATE_FAILOVER: Padding fixed, 23.91% current. Need to identify remaining CSS styling diffs causing 9.91% gap vs 8.29% target.
+
+---
+
 ## ✅ MAINTENANCE_LOOP_6 (Session: 2026-10-20 21:00 UTC — Mobile Gate Check)
 
 **Goal:** Recheck Mobile Gate score via `scripts/compare.mjs`. If above 11%, requeue mobile fix goal at head of queue. Report current score to docs/GATE-STATUS.md. Commit as `chore qa mobile gate check`. Push.
