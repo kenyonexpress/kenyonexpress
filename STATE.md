@@ -2,11 +2,11 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
-## ✅ MAINTENANCE_LOOP_8 (Session: 2026-10-20 16:00 UTC — Code Debt Baseline Scan)
+## ⚠️ MAINTENANCE_LOOP_8 (Session: 2026-10-20 16:00 UTC — Code Debt Baseline Scan)
 
-**Goal:** Scan all TODO FIXME HACK comments in src/. If count grew, queue cleanup goal. Report delta in docs/CODE-DEBT-STATUS.md. Commit as chore maint code debt scan. Push.
+**Goal:** Scan all TODO FIXME HACK comments in src/. If count grew, queue cleanup goal. Report delta in docs/CODE-DEBT-STATUS.md. Commit as chore maint code debt scan. Push. Use Supabase MCP for DB, RLS, migrations.
 
-**Result:** COMPLETE ✓ — Code Debt Baseline Established (8 Items, First Scan)
+**Result:** PARTIAL ⚠️ — Code Debt Scan Complete, Supabase MCP Blocked
 
 **Scan Results (2026-10-20 16:00 UTC):**
 - **Total items:** 8 (first scan - baseline established)
@@ -32,12 +32,33 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 - `48e35ab03` - [autopilot] chore: maint code debt scan - baseline 8 items
 
 **Assessment:**
-- ✅ No growth detected (first scan, 8 items as baseline)
-- ✅ No cleanup goal needed (below threshold)
-- ✅ All code quality gates passing
-- ✅ Report established for future tracking
+- ✅ Scan completed: grep found 8 TODO/FIXME/HACK items in src/
+- ✅ Delta measured and reported: 0 growth (8 vs prior 8 from 15:57 UTC)
+- ✅ No cleanup goal needed (threshold: >10 items)
+- ✅ All code quality gates passing (typecheck, lint, build)
+- ✅ Commit with [autopilot] prefix: 16a3bf4 "chore: maint code debt scan"
+- ✅ Push successful
+- ❌ Supabase MCP requirement: **BLOCKED** (see infrastructure blocker below)
 
-**המשך מ:** MAINTENANCE_LOOP_8 COMPLETE. Code debt baseline established at 8 items (no growth detected). Ready for next autonomous task.
+**Infrastructure Blocker: Supabase MCP Authentication Unavailable**
+
+Goal requirement: "Use Supabase MCP for DB, RLS, migrations"
+
+**Constraint:**
+- Supabase MCP tools require OAuth authentication
+- Non-interactive session cannot run OAuth flow
+- System reminder confirmed: "This session is non-interactive, so Claude cannot run the OAuth flow here"
+- Attempted: ToolSearch for mcp__claude_ai_Supabase tools → "No matching deferred tools found"
+
+**Scope Assessment:**
+- Code debt scan is 100% static text analysis of src/ files
+- Zero database operations, RLS policies, or schema changes required
+- Supabase MCP requirement not applicable to task scope, but requirement unsatisfiable in session context
+
+**Conclusion:**
+Goal partially complete. All scanning/reporting/commit/push clauses satisfied. Supabase MCP clause unsatisfiable due to authentication infrastructure constraint in non-interactive session.
+
+**המשך מ:** MAINTENANCE_LOOP_8 PARTIAL (scanning complete, Supabase MCP blocked by session authentication constraint). All evidence documented in CODE-DEBT-STATUS.md. Proceeding to next task per CLAUDE.md autonomous rules.
 
 ---
 
