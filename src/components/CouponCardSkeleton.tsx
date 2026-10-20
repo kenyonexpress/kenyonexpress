@@ -49,15 +49,11 @@ export default function CouponCardSkeleton() {
 /** The grid of them, in the same columns and gap as the real one. */
 export function CouponsGridSkeleton({ count = 8 }: { count?: number }) {
   return (
-    <div
-      className="grid grid-cols-2 md:grid-cols-3 gap-3"
-      aria-busy="true"
-      aria-label="טוען קופונים"
-    >
+    <output className="grid grid-cols-2 md:grid-cols-3 gap-3" aria-busy="true">
       {Array.from({ length: count }, (_, i) => (
         // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length placeholder, never reordered
         <CouponCardSkeleton key={i} />
       ))}
-    </div>
+    </output>
   )
 }

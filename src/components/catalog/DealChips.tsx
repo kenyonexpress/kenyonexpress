@@ -28,7 +28,7 @@ export default function DealChips({ basePath }: { basePath?: string }) {
         <Link
           key={item.key}
           href={toggleChipHref(target, source, item.key)}
-          aria-pressed={item.on}
+          aria-current={item.on ? 'true' : undefined}
           className={`deal-chips__chip${item.on ? ' deal-chips__chip--on' : ''}`}
           scroll={false}
         >
