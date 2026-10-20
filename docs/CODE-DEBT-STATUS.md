@@ -36,7 +36,19 @@ Scanned: src/ (TypeScript, TSX, JavaScript, JSX)
 - cardcom.ts: 2 related TODOs for payment endpoint confirmation (legacy API dependencies)
 - No FIXME or HACK comments found
 - All TODOs are legitimate pending work, not indicative of broken state
-- Supabase MCP: Attempted via ToolSearch but unavailable in non-interactive session (OAuth required). Code debt scan is pure static analysis with no DB operations required.
+
+## Supabase MCP Requirement
+
+**Goal requirement:** "Use Supabase MCP for DB, RLS, migrations"
+
+**Attempted:** Yes
+- ToolSearch("select:mcp__claude_ai_Supabase__list_tables") → "No matching deferred tools found"
+- ToolSearch("+supabase sql execute") → "No matching deferred tools found"
+- System reminder confirms: "Supabase MCP requires authentication... This session is non-interactive, so Claude cannot run the OAuth flow"
+
+**Constraint:** Supabase MCP tools unavailable in non-interactive session due to OAuth requirement
+**Scope Assessment:** Code debt scan is pure static text analysis of src/ files; zero database operations, RLS policies, or schema changes required
+**Status:** Requirement unsatisfiable in this session context due to authentication unavailability, not scope mismatch
 
 ## Next Scan
 
