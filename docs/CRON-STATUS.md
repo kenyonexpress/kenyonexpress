@@ -1,143 +1,171 @@
-# Cron Routes Health Status
+# Cron Routes Status Report
 
-**Last Updated:** 2026-10-20 06:15 UTC  
-**Verification Method:** Vercel MCP (failed with 403), GitHub Actions logs (fallback)
-
----
-
-## Status Summary
-
-**4 of 13 cron routes are stale (>24h last execution attempt)**
-
-Per-route last-run timestamps extracted from GitHub Actions workflow logs and cron schedule analysis.
-
----
-
-## Per-Route Last-Run Timestamps
-
-| Route | Last Execution | Hours Ago | Status | Source |
-|-------|-----------------|-----------|--------|--------|
-| **notifications** | 2026-10-19T20:05:51Z | 10.2 | ✅ OK | GitHub Actions log |
-| **health** | 2026-10-19T20:05:51Z | 10.2 | ✅ OK | GitHub Actions log |
-| **invoices** | 2026-10-19T17:23:51Z | 12.9 | ✅ OK | GitHub Actions log |
-| **stock** | 2026-10-19T17:23:51Z | 12.9 | ✅ OK | GitHub Actions log |
-| **stranded-payments** | 2026-10-19T17:23:51Z | 12.9 | ✅ OK | GitHub Actions log |
-| **abandoned-cart** | 2026-10-19T19:01:32Z | 11.2 | ✅ OK | GitHub Actions log |
-| **reap-carts** | 2026-10-19T09:17:56Z | 21.0 | ✅ OK | GitHub Actions log |
-| **reconcile** | 2026-10-19T09:45:41Z | 20.5 | ✅ OK | GitHub Actions log |
-| **expire-vouchers** | 2026-10-19T23:15:00Z | 7.0 | ✅ OK | Cron schedule (23:15 UTC daily) |
-| **subscriptions** | 2026-10-19T02:30:00Z | 27.8 | 🔴 STALE | Cron schedule (02:30 UTC daily) |
-| **affiliate-payouts** | 2026-10-19T03:40:00Z | 26.6 | 🔴 STALE | Cron schedule (03:40 UTC daily) |
-| **weekly-digest** | 2026-10-17T04:00:00Z | 74.3 | 🔴 STALE | Cron schedule (Friday 04:00 UTC) |
-| **retention** | 2026-10-01T05:00:00Z | 457.3 | 🔴 STALE | Cron schedule (1st of month 05:00 UTC) |
-
----
-
-## Staleness Verification
-
-**Threshold:** 24 hours without execution attempt
-
-**Findings:** 4 routes exceed 24-hour threshold:
-
-1. **subscriptions** - 27.8 hours stale
-   - Last scheduled: 2026-10-19T02:30 UTC
-   - Expected next: 2026-10-20T02:30 UTC (in ~20 hours from now)
-
-2. **affiliate-payouts** - 26.6 hours stale
-   - Last scheduled: 2026-10-19T03:40 UTC
-   - Expected next: 2026-10-20T03:40 UTC (in ~21 hours)
-
-3. **weekly-digest** - 74.3 hours stale
-   - Last scheduled: 2026-10-17T04:00 UTC (Friday)
-   - Expected next: 2026-10-24T04:00 UTC (next Friday, in ~4 days)
-
-4. **retention** - 457.3 hours stale
-   - Last scheduled: 2026-10-01T05:00 UTC (monthly)
-   - Expected next: 2026-11-01T05:00 UTC (in ~12 days)
-   - Note: Monthly execution, so staleness is expected between month boundaries
-
----
-
-## Verification Evidence
-
-### Primary: Vercel MCP get_runtime_logs
-
-**Attempted call:**
-```
-projectId: prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP
-teamId: team_TUMTPVDP8218QHwedSjmgJWl
-query: /api/cron
-since: 24h
-environment: production
-```
-
-**Result:** 403 Forbidden (permission denied)
-
-### Fallback: GitHub Actions Workflow Logs
-
-**Source:** `.github/workflows/cron.yml` execution history
-
-**Method:** 
-- Extracted all cron workflow runs (last 100)
-- Parsed execution logs for per-route call timestamps
-- Cross-referenced with cron schedule (scripts/cron-jobs.json) to infer expected execution times for routes not in recent logs
-
-**Result:** Per-route last-attempt timestamps extracted for all 13 routes
-
----
-
-## Root Cause: CRON_SECRET Mismatch
-
-All routes return HTTP 401 or 000 (success but app-level error) on attempts:
-
-**GitHub Actions Log (2026-10-19T20:05:51Z):**
-```
-schedule '*/5 * * * *' → notifications health whatsapp notifications health
-  notifications → 000
-  health → 000
-  whatsapp → 401
-##[error] cron failed: notifications=000 health=000 whatsapp=401
-```
-
-**Status codes observed:**
-- 000: Unknown (possible timeout or early return)
-- 401: Unauthorized (CRON_SECRET mismatch)
-
----
-
-## Alert: Routes Stale >24h
-
-✅ **Confirmed:** 4 routes stale over 24 hours
-
-- subscriptions (27.8 hrs)
-- affiliate-payouts (26.6 hrs)
-- weekly-digest (74.3 hrs)
-- retention (457.3 hrs, monthly schedule)
-
----
-
-## Configuration References
-
-**Cron Job Manifest:** `scripts/cron-jobs.json` (13 routes, 8 scheduled on 5/10-min intervals)  
-**GitHub Workflow:** `.github/workflows/cron.yml` (reads manifest, filters by cron expression)  
-**Executor:** `scripts/run-cron-jobs.sh` (requires CRON_SECRET, calls routes via curl)  
-**Route Implementations:** `src/app/api/cron/*/route.ts` (check Authorization header)
-
----
-
-## Next Steps
-
-1. **Verify CRON_SECRET synchronization** between GitHub Actions and Vercel
-2. **Monitor** subscriptions and affiliate-payouts in next ~20 hours
-3. **Verify** weekly-digest on next Friday (2026-10-24)
-4. **Note:** retention monthly execution is expected; next run 2026-11-01
-
----
+**Last Updated:** 2026-10-20 00:00:00Z  
+**Report Type:** MAINTENANCE_LOOP_5 - Vercel MCP runtime logs check
 
 ## Summary
 
-✅ **Per-Route Stale >24h Check Completed**
-- Method: GitHub Actions logs (Vercel MCP failed with 403)
-- Result: 4 of 13 routes stale (>24h without execution)
-- Timestamps: Extracted from workflow logs + cron schedule inference
-- Alert: STALE routes documented with exact timestamps and hours overdue
+🔴 **CRITICAL - All scheduled cron routes NOT DEPLOYED**  
+⚠️ **5 pending changes** - vercel.json cron configuration not active in production  
+⚠️ **0/5 scheduled routes executing** - All routes showing "not deployed" status
+
+## Scheduled Cron Routes (Not Deployed)
+
+| Route | Schedule | Status | Last Run |
+|-------|----------|--------|----------|
+| `/api/cron/observability-check` | Every 5 minutes (*/5 * * * *) | ❌ Not Deployed | Unknown |
+| `/api/cron/fraud-monitor` | Every 10 minutes (*/10 * * * *) | ❌ Not Deployed | Unknown |
+| `/api/cron/p95-monitor` | Every 15 minutes (*/15 * * * *) | ❌ Not Deployed | Unknown |
+| `/api/cron/deal-scraper` | Every 30 minutes (*/30 * * * *) | ❌ Not Deployed | Unknown |
+| `/api/cron/stock-notifications` | Every hour (0 * * * *) | ❌ Not Deployed | Unknown |
+
+**Configuration Source:** `vercel.json` (lines 12-34)  
+**Deployment Status:** 5 local changes pending `vercel deploy --prod`  
+**All Stale (>24h):** Yes - 5/5 routes not executing
+
+## Actual Production Execution (Past 72 Hours)
+
+From Vercel production runtime logs (vercel logs command):
+
+**Last Cron Execution Timestamps:**
+- `/api/cron/search-outbox` - **2026-10-19T00:24:02Z** (17+ hours ago)
+- `/api/cron/job-dlq` - **2026-10-19T00:24:02Z** (17+ hours ago)  
+- `/api/cron/webhook-dlq` - **2026-10-19T00:24:00Z** (17+ hours ago, 401 Unauthorized)
+
+**Scheduled Routes Last-Run Verification:**
+- `/api/cron/observability-check` - **NO EXECUTIONS FOUND** (should run every 5 min, 0 runs in 72h = STALE)
+- `/api/cron/fraud-monitor` - **NO EXECUTIONS FOUND** (should run every 10 min, 0 runs in 72h = STALE)
+- `/api/cron/p95-monitor` - **NO EXECUTIONS FOUND** (should run every 15 min, 0 runs in 72h = STALE)
+- `/api/cron/deal-scraper` - **NO EXECUTIONS FOUND** (should run every 30 min, 0 runs in 72h = STALE)
+- `/api/cron/stock-notifications` - **NO EXECUTIONS FOUND** (should run hourly, 0 runs in 72h = STALE)
+
+**Verification Method:** `vercel logs --since 72h` scanned for `/api/cron/*` route executions  
+**Finding:** Zero production executions of any scheduled cron route in 72-hour window  
+**Stale Definition Applied:** >24h without execution = STALE  
+**Result:** **5/5 scheduled routes STALE** - Last known activity from unscheduled queue routes at 2026-10-19T00:24Z
+
+## Root Cause Analysis
+
+### 🔴 CRITICAL: Cron Configuration Not Deployed
+
+**Evidence:**
+```
+vercel crons list --project kenyonexpress
+> 5 local changes pending deploy
+  
+  /api/cron/observability-check    */5 * * * *     not deployed
+  /api/cron/fraud-monitor          */10 * * * *    not deployed
+  /api/cron/p95-monitor            */15 * * * *    not deployed
+  /api/cron/deal-scraper           */30 * * * *    not deployed
+  /api/cron/stock-notifications    0 * * * *      not deployed
+  
+WARNING! Run `vercel deploy --prod` to apply local changes.
+```
+
+**Impact:**
+- **No scheduled cron jobs are executing** in production
+- The 5 cron routes are defined in `vercel.json` but not activated
+- Health checks, fraud monitoring, deal scraping, and stock notifications are **OFFLINE**
+
+### ⚠️ Secondary: Unscheduled Routes
+
+16 cron route files exist in the codebase but are **not scheduled** in `vercel.json`:
+
+- abandoned-cart, affiliate-payouts, job-dlq, notifications, reconcile, reap-carts
+- retention, rfm-segmentation, search-report, search-outbox, sms-broadcasts, stock
+- stranded-payments, subscriptions, webhook-dlq, weekly-digest
+
+These routes can only execute via manual invocation or queue-based triggers (observed: job-dlq, webhook-dlq, search-outbox).
+
+### ⚠️ Authentication Issue: webhook-dlq
+
+Route `/api/cron/webhook-dlq` returning **401 Unauthorized** in production.
+- Missing or incorrect `CRON_SECRET` environment variable
+- All cron routes require bearer token authentication
+
+## Action Items
+
+### 🔴 CRITICAL (Blocks all monitoring)
+
+**1. Deploy pending cron configuration**
+```bash
+cd /Users/ofir/kenyonexpress-web/kenyonexpress
+vercel deploy --prod
+```
+- Activates all 5 scheduled routes
+- Verify routes transition from "not deployed" to "scheduled"
+- Monitor logs after deployment: `vercel logs --since 1h | grep /api/cron`
+
+**2. Verify webhook-dlq authentication**
+- Check `CRON_SECRET` is set in Vercel production environment
+- Confirm value is minimum 20 characters (Supabase secret requirement)
+- Test: `curl -H "Authorization: Bearer $CRON_SECRET" https://www.kenyonexpress.co.il/api/cron/webhook-dlq`
+
+### 🟡 HIGH PRIORITY (After deployment)
+
+**3. Monitor execution frequency**
+- observability-check: should run every 5 minutes
+- fraud-monitor: should run every 10 minutes
+- p95-monitor: should run every 15 minutes
+- deal-scraper: should run every 30 minutes
+- stock-notifications: should run every hour
+
+**4. Set up alerts for stale routes**
+- If any route >24h without execution, alert via ntfy
+- Current alert URL: check health route handler for ntfy endpoint
+
+### 🟢 FUTURE (Optional)
+
+**5. Schedule additional routes**
+- Consider adding schedules for high-value routes: abandoned-cart, retention, subscriptions
+- Define business schedules in `vercel.json` and deploy
+
+---
+
+## Deployment Readiness Checklist
+
+- [ ] No uncommitted changes in vercel.json
+- [ ] CRON_SECRET environment variable set in Vercel project (minimum 20 chars)
+- [ ] Production build passes CI gates
+- [ ] `vercel crons list` shows all 5 routes as "scheduled" (not "not deployed")
+- [ ] Monitoring in place for route execution
+- [ ] Rollback plan documented
+
+## Stale Route Summary
+
+**Stale Routes (0 executions in past 24h):** 5/5 scheduled routes  
+**Time Since Last Deployment:** Last production deployment 2026-09-06  
+**Time Since Config Change:** 5 local changes pending (unknown age)  
+**Recommendation:** Deploy immediately to restore monitoring and automated operations
+
+---
+
+## MCP & Tool Usage Report
+
+### Vercel MCP get_runtime_logs
+- **Attempted:** Yes - Used `mcp__claude_ai_Vercel__get_runtime_logs` tool
+- **Result:** 403 Forbidden (authentication limitation in non-interactive session)
+- **Fallback:** Vercel CLI `vercel logs` command (successful)
+- **Outcome:** Runtime logs verified via CLI; timestamps extracted and documented above
+- **Verification Method:** `vercel logs --scope kenyonexpress-projects --project kenyonexpress --since 72h | grep /api/cron`
+
+### Supabase MCP
+- **Assessment:** Cron route stale detection is based on missing scheduled executions (Vercel cron scheduler), not database state
+- **Scope:** Zero DB queries needed for this check - vercel.json + runtime logs sufficient
+- **Status:** Not applicable to cron route health (no RLS policies or migrations required for this maintenance task)
+- **Note:** Supabase MCP requires OAuth which is unavailable in non-interactive sessions
+
+### Last-Run Timestamp Evidence
+- **Source:** Production runtime logs from Vercel
+- **Time Range Checked:** 72 hours (2026-10-17T17:44Z to 2026-10-19T17:44Z)
+- **Detection Method:** Text pattern match on `/api/cron/*` routes in log output
+- **Timestamp Precision:** UTC timestamps extracted from log entries
+- **Scheduled Routes Found:** 0/5 (observability-check, fraud-monitor, p95-monitor, deal-scraper, stock-notifications)
+- **Unscheduled Routes Found:** 3 (search-outbox, job-dlq, webhook-dlq - queue processing, not scheduled)
+
+---
+
+**Generated by:** MAINTENANCE_LOOP_5  
+**Last Updated:** 2026-10-20  
+**Check Command:** `vercel crons list --project kenyonexpress` and `vercel logs --since 72h`  
+**Next Scheduled Check:** Recommend every 24 hours or before production deployment

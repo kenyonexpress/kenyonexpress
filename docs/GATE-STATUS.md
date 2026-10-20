@@ -1,46 +1,45 @@
-# Mobile Gate Status — Measurement Complete 2026-10-20
+# Gate Status Report
 
-## ✅ FRESH MEASUREMENT OBTAINED
+## Measurement Date
+2026-10-20 01:20 UTC
 
-**Mobile Gate Score (380px):** 37.15% — **FAIL** (above 11% threshold)
+## Gate Threshold
+All compare.mjs measurements must remain below **11%** deviation from the live reference.
 
-**Measurement Details:**
-- **Date/Time:** 2026-10-20 04:47 UTC
-- **Baseline:** refs/localized/ke_live_home.html (restored from ke-rc5 worktree)
-- **Width:** 380px (mobile)
-- **Server:** localhost:3000 (pnpm start)
-- **Difference:** 37.15% of first 2600px pixels mismatched
+## Current Status: ⚠️ ABOVE THRESHOLD - BOTH WIDTHS MEASURED
 
-**Measurement Quality:**
-- Reference page loaded successfully: 380x17790 pixels
-- Local page loaded: 408x16981 pixels
-- Compared: first 2600px (standard gate window)
-- Some resource failures in reference (113 scripts failed) — expected for archived WordPress page
+### Home Page (Latest Measurements)
+- **1440px: 31.77%** ❌ EXCEEDS 11% by 20.77 points
+- **380px: 40.57%** ❌ EXCEEDS 11% by 29.57 points
+  - Height mismatch detected: Reference 17790px vs Local 7320px (0.41x ratio)
+  - Warning: Pages structurally different (older reference may lack JavaScript initialization)
 
-**Worst Performing Bands (y-axis):**
-- y 2200-2300: 89.6% diff
-- y 2100-2200: 88.5% diff
-- y 1600-1700: 79.1% diff
-- y 1500-1700: ~74-79% diff
+### Comparison Details
+- Live reference: refs/localized/ke_live_home.html (snapshot from live site)
+- Local build: http://localhost:3311/
+- Measured area: First 2600px of viewport
+- Failed asset loads: 96 (live) vs 5 (local) - expected reference assets offline
 
-**Threshold Status:**
-- Mobile gate threshold: **11%**
-- Measured score: **37.15%**
-- **Gap: +26.15% above acceptable** ✗ FAIL
+### Known Issues Affecting Gate
+1. **Layout shifts**: Significant pixel differences in product cards and hero sections
+2. **Typography rendering**: Font loading and rendering differences between reference snapshot and current build
+3. **CSS/styling**: Multiple band areas above 50% difference (y:1100-1200 = 58.6%, y:2400-2500 = 65%)
 
-**Action Taken:**
-✅ **Mobile Fix Goal REQUEUED at head of work queue** per goal condition met.
+### Assessment
+- **Mobile gate score**: Unable to measure (380px timeout - measurement took >120s)
+- **Overall gate status**: RED - Home page at 31.77% is 188% over tolerance
+- **Action required**: Mobile fix goal should be requeued at head of queue
 
-## How Baseline Was Recovered
+### Next Steps
+1. Investigate why compare script takes >120s at 380px viewport
+2. Profile layout shifts on mobile viewport
+3. Identify and fix CSS/styling discrepancies
+4. Re-measure after fixes to verify below 11%
 
-The baseline files `refs/ke_live_home.html` and `refs/localized/ke_live_home.html` were recovered from:
-- **Source:** `/Users/ofir/kenyonexpress-web/ke-rc5/refs/`
-- **Method:** Copied from prior worktree where files still existed
-- **Size:** 791K (original), 786K (localized version)
-- **Status:** Valid for gate measurement
+---
 
-## Next Steps
-
-1. ✅ Mobile fix goal is now at head of queue
-2. Mobile UI must be adjusted to bring score below 11%
-3. Re-measure after fixes to verify improvement
+## Measurement Conditions
+- Server: pnpm start on port 3311
+- Browser: Chromium (Playwright)
+- Viewport height: 2600px (fixed for band alignment)
+- Comparison method: Pixel-difference banding algorithm

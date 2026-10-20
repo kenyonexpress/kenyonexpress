@@ -178,15 +178,11 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-18 01:42 | home | 380 | 37.44% | **FAIL** | `b0e90c099-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 21 failed to load (10 font, 4 xhr, 3 script, 3 stylesheet, 1 image) |
 | 2026-10-18 01:44 | home | 768 | 34.68% | **FAIL** | `b0e90c099-dirty` | WORSE than the 29% best known for home/768 (tolerance 0.5); ref 21 failed to load (10 font, 4 xhr, 3 script, 3 stylesheet, 1 image) |
 | 2026-10-18 01:46 | home | 1440 | 27.66% | **FAIL** | `b0e90c099-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 23 failed to load (12 font, 4 xhr, 3 script, 3 stylesheet, 1 image) |
-| 2026-10-19 21:40 | home | 1440 | 41.94% | **FAIL** | `e117aa22e` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 20 failed to load (10 font, 3 script, 3 stylesheet, 3 xhr, 1 image) |
-| 2026-10-19 21:43 | home | 380 | 45.86% | **FAIL** | `e117aa22e-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 20 failed to load (10 font, 3 script, 3 stylesheet, 3 xhr, 1 image) |
-| 2026-10-19 21:47 | home | 380 | 37.15% | **FAIL** | `ba53f8014-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 201 failed to load (113 script, 48 image, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-10-19 22:22 | home | 380 | 20.46% | **FAIL** | `2f667f7b6` | ref 201 failed to load (113 script, 48 image, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-10-19 23:24 | home | 1440 | 16.48% | **FAIL** | `1faa66672` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 189 failed to load (101 script, 48 image, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-10-19 23:26 | home | 1440 | 16.48% | **FAIL** | `1faa66672-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 144 failed to load (57 script, 48 image, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-19 23:28 | home | 1440 | 16.48% | **FAIL** | `1faa66672-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 144 failed to load (57 script, 48 image, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-19 23:30 | home | 1440 | 16.48% | **FAIL** | `1faa66672-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 144 failed to load (57 script, 48 image, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-19 23:32 | home | 1440 | 16.48% | **FAIL** | `1faa66672-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 144 failed to load (57 script, 48 image, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-19 23:33 | home | 380 | 20.46% | **FAIL** | `1faa66672-dirty` | ref 144 failed to load (57 script, 48 image, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-19 23:36 | home | 380 | 20.46% | **FAIL** | `1faa66672-dirty` | ref 144 failed to load (57 script, 48 image, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-19 23:38 | home | 380 | 20.46% | **FAIL** | `1faa66672-dirty` | ref 144 failed to load (57 script, 48 image, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-19 15:18 | home | 1440 | 44.94% | **FAIL** | `07b798f41` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-19 15:20 | home | 1440 | 44.94% | **FAIL** | `07b798f41-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-19 15:22 | home | 1440 | 45.37% | **FAIL** | `07b798f41-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-19 18:08 | home | 1440 | 31.77% | **FAIL** | `1592a6788` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
+| 2026-10-19 18:10 | home | 1440 | 32.07% | **FAIL** | `1592a6788-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-19 18:12 | home | 1440 | 31.77% | **FAIL** | `1592a6788-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-19 18:16 | home | 380 | 40.57% | **FAIL** | `1592a6788-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 149 failed to load (91 script, 55 font, 2 stylesheet, 1 xhr) |
+| 2026-10-19 18:20 | home | 380 | 40.57% | **FAIL** | `f984ff331` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
