@@ -1,10 +1,5 @@
-import type { Product } from '@/components/ProductCard'
-import { ProductsGridSkeleton } from '@/components/ProductCardSkeleton'
 import ProductDealCard from '@/components/ProductDealCard'
-import DealChips from '@/components/catalog/DealChips'
-import dealBlurs from '@/lib/deal-blurs.json'
 import { KE_LIVE_DEALS } from '@/lib/ke-live-deals-data'
-import { Suspense } from 'react'
 
 /**
  * refs/ke_live_home.html — jet-listing-grid faf8583. No section title.
@@ -24,53 +19,23 @@ import { Suspense } from 'react'
  * `xl:px-0` hands it back to the cap. The column count itself lives in
  * src/styles/product-card-deals.css, which carries the measurement table.
  */
-function DealsGrid() {
+export default async function DealsOfTheDay() {
+  // Pixel parity: all 32 cards from the reference only, no DB merge (different
+  // images/order = a content difference wearing a fidelity number).
   const products = KE_LIVE_DEALS
 
   return (
-    <div className="jet-listing-grid-deals bg-white">
-      {products.map((product) => {
-        const thumb =
-          Array.isArray(product.images) && typeof product.images[0] === 'string'
-            ? (product.images[0] as string)
-            : null
-        const blurDataURL =
-          thumb && dealBlurs[thumb as keyof typeof dealBlurs]
-            ? dealBlurs[thumb as keyof typeof dealBlurs]
-            : null
-        const assets = thumb
-          ? {
-              [thumb]: {
-                alt: product.name_he,
-                blurDataURL,
-              },
-            }
-          : undefined
-
-        return (
-          <div key={product.id} className="jet-listing-grid-deals__item">
-            <ProductDealCard product={(assets ? { ...product, assets } : product) as Product} />
-          </div>
-        )
-      })}
-    </div>
-  )
-}
-
-export default function DealsOfTheDay() {
-  return (
     <section
       aria-label="מוצרים מובילים"
-      className="home-deals mx-auto w-full max-w-deals px-deals-pad pt-deals-top pb-deals-footer-gap md:px-deals-pad-md xl:px-0"
+      className="mx-auto w-full max-w-deals px-deals-pad pt-deals-top pb-deals-footer-gap md:px-deals-pad-md xl:px-0"
     >
-      {/* rc5 F13: the home grid is a fixed selection, so the chips open the
-          filtered catalogue rather than filtering this grid. */}
-      <Suspense fallback={null}>
-        <DealChips basePath="/products" />
-      </Suspense>
-      <Suspense fallback={<ProductsGridSkeleton count={KE_LIVE_DEALS.length} />}>
-        <DealsGrid />
-      </Suspense>
+      <div className="jet-listing-grid-deals bg-white">
+        {products.map((product) => (
+          <div key={product.id} className="jet-listing-grid-deals__item">
+            <ProductDealCard product={product} />
+          </div>
+        ))}
+      </div>
     </section>
   )
 }

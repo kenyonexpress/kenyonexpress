@@ -222,3 +222,6 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-20 09:15 | home | 1440 | n/a | **UNMEASURED** | `580ec7347-dirty` | screenshot failed: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/ Call log: [2m - navigating to "http://localhost:3000/", waiting until "domc |
 | 2026-10-20 09:16 | home | 1440 | 31.72% | **FAIL** | `580ec7347-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
 | 2026-10-20 09:21 | home | 1440 | 17.90% | **FAIL** | `580ec7347-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 189 failed to load (101 script, 48 image, 37 font, 2 stylesheet, 1 xhr) |
+| 2026-10-20 09:25 | home | 1440 | 17.90% | **FAIL** | `945b05bde-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 144 failed to load (57 script, 48 image, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-20 09:28 | home | 1440 | 17.90% | **FAIL** | `945b05bde-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 144 failed to load (57 script, 48 image, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-20 09:31 | home | 1440 | 17.90% | **FAIL** | `945b05bde-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 144 failed to load (57 script, 48 image, 37 font, 1 stylesheet, 1 xhr) |
