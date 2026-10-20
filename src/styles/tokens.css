@@ -319,7 +319,13 @@
      live wraps them onto three 37px rows. Ours hid them below md entirely,
      which is why our top bar was one row where live has three. */
   --spacing-topbar-handheld: 112px; /* + 1px border = live's 113 at 380 */
-  --spacing-header-handheld: 83px; /* + 1px border = live's 84 at 380 and 768 */
+  --spacing-header-handheld: 83px; /* + 1px border = live's 84 at 768 */
+  /* 48 and NOT 83 on a phone. The line above used to claim 84 "at 380 and
+     768"; probed in the live archive at 380 on 2026-10-20, header#masthead is
+     y113 h49 (hamburger 34x35 at y119, logo 100x26 at y124, 22px icons at
+     y125). The extra 35px pushed our hero, the features bar and every one of
+     31 product rows 35px below live's. */
+  --spacing-header-phone: 48px; /* + 1px border = live's 49 at 380 */
   /* 112/3, NOT 37. Three rows of a flat 37px are 111px inside a 112px box, and
      the leftover pixel is not harmless: it moves every divider between the top
      bar's three rows a little further from live's. Measured with

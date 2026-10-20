@@ -41,7 +41,7 @@ export default function HeroSection({
     <section
       aria-label="אזור ראשי"
       dir="rtl"
-      className="mx-auto flex h-auto w-full max-w-hero-row flex-col border-b border-border font-sans md:h-hero-tablet lg:h-hero-desktop lg:flex-row lg:items-stretch"
+      className="mx-auto flex h-hero-mobile w-full max-w-hero-row flex-col border-b border-border font-sans md:h-hero-tablet lg:h-hero-desktop lg:flex-row lg:items-stretch"
     >
       <HeroCategorySidebar />
       {/* Live (refs, 1440): the center column is the slider (728x370) with the
@@ -60,12 +60,16 @@ export default function HeroSection({
             fixed 370 at lg (the measured slot), flex-fill below. Two mounted
             instances meant two rotation timers and broke the e2e guard that
             counts exactly one [data-hero-slider]. */}
-        <div className="hero-mobile-slot flex min-h-0 flex-1 flex-col md:h-hero-slider-tablet md:min-h-hero-slider-tablet md:flex-none lg:block lg:h-hero-slider-desktop lg:min-h-hero-slider-desktop">
+        <div className="flex min-h-0 flex-1 flex-col md:h-hero-slider-tablet md:min-h-hero-slider-tablet md:flex-none lg:block lg:h-hero-slider-desktop lg:min-h-hero-slider-desktop">
           <HeroSlider slides={slides} />
         </div>
-        {/* rc5 F03: shown on phones too, as a single row that scrolls
-            sideways, two cells per screen. */}
-        <div className="hero-chips">
+        {/* `hidden md:block` is live's rule: the strip renders at 768 (y426
+            h170) and not at all at 380. rc5 F03 showed it on phones as a
+            two-cell scroll row; against the live reference that row plus the
+            text hero above it was the y200-700 band failure at 380 (measured
+            2026-10-20, 47.23% overall). The section is h-hero-mobile (213)
+            on a phone for the same reason, which is live's slider height. */}
+        <div className="hidden md:block">
           <CitiesRow />
         </div>
       </div>

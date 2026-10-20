@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process'
-import { copyFileSync, existsSync, rmSync } from 'node:fs'
+import { copyFileSync, existsSync, readFileSync, rmSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -308,8 +308,49 @@ const seedCart = async (target) => {
  */
 const missedLoads = { live: [], mine: [] }
 
+/**
+ * THE CONSENT SHEET IS NOT PART OF THE DESIGN, AND IT WAS INSIDE THE WINDOW.
+ *
+ * Our page ships the cookie-consent banner fixed to the bottom of the viewport
+ * for every visitor who has not decided, and the viewport here is 2600px tall,
+ * so the banner painted across y2350-2600 of OUR screenshot and was diffed
+ * against live's product cards. Measured 2026-10-20 at 380: bands y2200-2500
+ * carried it on top of the grid mismatch.
+ *
+ * The cookie is set on the LOCAL side only. The reference is a WordPress
+ * archive with no such banner, and the cookie is scoped to the local host
+ * anyway, so the live capture cannot see it. The decision is `denied`: it hides
+ * the banner without turning on any analytics in the measured build.
+ *
+ * The wording version is read from src/lib/analytics/consent.ts rather than
+ * hardcoded, because a stale version is exactly the case the banner is built to
+ * re-ask on: `granted.1` stopped hiding it when the wording moved to 2, and a
+ * script carrying the old number would have put the sheet back into the
+ * window with no error and a worse score that looked like a layout regression.
+ */
+const consentWordingVersion = () => {
+  const src = readFileSync(resolve('src/lib/analytics/consent.ts'), 'utf8')
+  const m = src.match(/CONSENT_WORDING_VERSION\s*=\s*(\d+)/)
+  if (!m)
+    throw new Error('compare: CONSENT_WORDING_VERSION not found in src/lib/analytics/consent.ts')
+  return Number(m[1])
+}
+
+const presetConsentDecided = async (url) => {
+  const u = new URL(url)
+  await ctx.addCookies([
+    {
+      name: 'ke_consent',
+      value: encodeURIComponent(`denied.${consentWordingVersion()}`),
+      domain: u.hostname,
+      path: '/',
+    },
+  ])
+}
+
 const shoot = async (url, out, side = null) => {
   const p = await ctx.newPage()
+  if (side === 'mine') await presetConsentDecided(url)
   if (side) {
     const note = (type, url) => missedLoads[side]?.push({ type, url })
     p.on('requestfailed', (r) => note(r.resourceType(), r.url()))

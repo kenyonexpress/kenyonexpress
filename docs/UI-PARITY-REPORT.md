@@ -232,3 +232,12 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-20 13:56 | home | 380 | 47.23% | **FAIL** | `f90f38679-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
 | 2026-10-20 13:57 | home | 768 | 42.02% | **FAIL** | `f90f38679-dirty` | WORSE than the 29% best known for home/768 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
 | 2026-10-20 14:00 | home | 380 | 47.23% | **FAIL** | `f90f38679-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-20 14:13 | home | 380 | 44.55% | **FAIL** | `b400414b3-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
+| 2026-10-20 14:20 | home | 380 | 11.40% | **FAIL** | `b400414b3-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-20 14:22 | home | 380 | 11.40% | **FAIL** | `b400414b3-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-20 14:30 | home | 380 | 9.33% | PASS | `b400414b3-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-20 14:32 | home | 768 | 41.82% | **FAIL** | `b400414b3-dirty` | WORSE than the 29% best known for home/768 (tolerance 0.5); ref 141 failed to load (101 script, 37 font, 2 stylesheet, 1 xhr) |
+| 2026-10-20 14:34 | home | 1440 | 32.00% | **FAIL** | `b400414b3-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-20 14:39 | home | 380 | 8.76% | PASS | `b400414b3-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-20 14:41 | home | 768 | 41.82% | **FAIL** | `b400414b3-dirty` | WORSE than the 29% best known for home/768 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-20 14:43 | home | 1440 | 30.05% | **FAIL** | `b400414b3-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |

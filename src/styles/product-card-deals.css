@@ -70,6 +70,44 @@
   .jet-listing-grid-deals__item .p_con {
     border-inline-end: none;
   }
+
+  /* THE 72px ITEM PADDING IS A DESKTOP NUMBER. Probed in the live archive at
+     380 on 2026-10-20: `.jet-listing-grid__item` is 548 tall with padding
+     8px/8px and `.p_con` inside it is 532 with its 24px padding. Ours was
+     533 inside 677, because this item kept the 72px it has at 1440. The card
+     interior already matched to the pixel; the 128px of extra padding per
+     row put the 31-row list at 22545px against live's 17790 and shifted every
+     band from the second card down. */
+  .jet-listing-grid-deals__item {
+    padding: 8px 0;
+  }
+
+  /* FOUR MORE PHONE NUMBERS, ALL FROM THE SAME CARD PROBE (live archive at
+     380, 2026-10-20, first card, fractional boxes):
+
+       live  item y408.4 h548.4 / .p_con h532.4 / price row h27.4
+             sale "₪949"   x49.0 w137.6 text-align:start (glyphs at the RIGHT
+             of the left half) / strike "₪1500" x194.6 w136.4, same
+             cart circle x291 w40, i.e. the inline-START in RTL
+       ours  item y409 h549 / .p_con h533 / price row h27
+             both prices text-align:end (glyphs at the LEFT of each half)
+             cart circle x49, the inline-end
+
+     The 0.6px card difference rounds to a whole pixel by the second row, and
+     a photograph one pixel off reads as a 20-40% band (card three's pool shot
+     was 39.4% at y1700). The cart comment further up says live puts the
+     circle "visually left"; its own measurement (x290 at 380) is the right
+     edge, so the circle was mirrored. Both halves of the price row were
+     mirrored the same way. The footer rules themselves sit AFTER the base
+     footer block further down: same specificity, so source order decides,
+     and a first draft placed here lost to the base rules and changed
+     nothing in the build (probed: cart still x49, row still 27). */
+  /* Live's grid opens at y408.4 under a features bar that ends at 406; ours
+     opened at 409 off the 3px desktop token. Doubled selector: Tailwind's
+     pt-deals-top utility loads after this file. */
+  .home-deals.home-deals {
+    padding-top: 2px;
+  }
 }
 
 .jet-listing-grid-deals__item:has(.p_con:hover) {
@@ -184,8 +222,10 @@
   fourth card the grid was 141px out of step and the 380 bands below y1100 were
   reading 50-74%. A per-card height error is the one kind that compounds.
 
-  The cart sits at the inline-end (visually left, RTL) on its own row, which is
-  where live puts it.
+  The cart circle: the measurement above (x290 at 380) is the RIGHT edge of a
+  380px viewport, which in RTL is the inline-START. The base rule below says
+  flex-end and the phone block further down corrects it; the base value is
+  what the 768-up row layout was measured with and is left alone.
 */
 .p_con__footer {
   display: flex;
@@ -219,6 +259,27 @@
 
   .p_con__footer .p_con__prices {
     min-height: 0;
+  }
+}
+
+/* The phone footer, measured (see the probe table in the 767px block above):
+   price row 27.4 tall, start-aligned glyphs, a 20px gap (live's footer is
+   87.4 = 27.4 + 20 + 40, so the 21 in the base block was one too many), and
+   the cart circle at the inline-start. Card total 532.4 against live's 532.4,
+   item 548.4 against 548.4. Placed after the base and 768-up blocks because
+   it shares their specificity. */
+@media (max-width: 767px) {
+  .p_con__footer {
+    gap: 20px;
+  }
+
+  .p_con__footer .p_con__prices {
+    min-height: 27.4px;
+    text-align: start;
+  }
+
+  .p_con__footer .atc {
+    align-self: flex-start;
   }
 }
 
@@ -364,74 +425,26 @@
   fill: var(--color-muted);
 }
 
-/* rc5 F03: the phone layout follows Electro's mobile home, not the retired
-   live site's one-card-per-row list. Everything here is below 768px only, so
-   the tablet and desktop geometry the gate measured is untouched.
-   - hero slot: clamp(240px, 55vw, 320px), full width
-   - category strip: one row, scrolls sideways (CitiesRow already nowrap)
-   - deals: two columns with a 12px gap, compact cards
-   - sections: 24px vertical padding */
-@media (max-width: 767px) {
-  .hero-mobile-slot {
-    flex: none;
-    height: clamp(240px, 55vw, 320px);
-  }
+/* THE PHONE LAYOUT IS THE LIVE SITE'S, NOT ELECTRO'S, AND THAT IS MEASURED.
 
-  .home-deals {
-    padding-block: 24px;
-    padding-inline: 12px;
-  }
+   rc5 F03 (e9ef18aab) put a block here that gave phones a clamp(240px, 55vw,
+   320px) hero slot, a two-column deals grid with compact 8px cards and a
+   brand-yellow 56px masthead, scored against electro-home-v7. The gate this
+   project is held to scores against refs/localized/ke_live_home.html, and
+   against that reference the block was the whole failure, measured 2026-10-20
+   at f90f38679 on the same server, the three widths back to back:
 
-  .jet-listing-grid-deals {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
-  }
+     380   47.23%   ours 380x6199 against live 380x17790: two 300px cards per
+                    row against one 548px card per row from y900 down, 15 of
+                    26 bands over 45%
+     768   42.02%
+     1440  31.28%
 
-  .jet-listing-grid-deals__item {
-    padding: 0;
-    max-width: none;
-    min-width: 0;
-  }
-
-  .jet-listing-grid-deals__item .p_con {
-    padding: 8px;
-    gap: 6px;
-  }
-
-  .p_con__title-wrap {
-    min-height: 0;
-  }
-
-  .p_con__title,
-  .jet-listing-grid-deals h2.p_con__title {
-    font-size: clamp(13px, 3.6vw, 16px);
-    line-height: 1.35;
-  }
-
-  .p_con__image {
-    width: 100%;
-    height: clamp(120px, 38vw, 180px);
-  }
-
-  .p_con__footer {
-    gap: 6px;
-    margin-top: 4px;
-  }
-}
-
-/* rc5 F03 pass 2: on a phone the masthead is Electro's handheld bar, a solid
-   brand-yellow strip 56px tall. --color-brand-primary is the same #fed700. */
-@media (max-width: 767px) {
-  .site-masthead {
-    background: var(--color-brand-primary);
-    border-bottom-color: var(--color-brand-primary);
-  }
-
-  .site-masthead > div:first-child {
-    height: 56px;
-  }
-}
+   Both 380 runs returned 47.23% with identical band profiles, so it was not
+   slider phase. The base rules above (one card per row below 768, 72px item
+   padding, stacked footer) ARE live's phone geometry, measured off the same
+   reference, and they now apply unopposed. docs/GATE-STATUS.md carries the
+   band table. */
 
 /* Add to cart animation */
 @keyframes atc-scale-bounce {
