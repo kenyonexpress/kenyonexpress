@@ -40,7 +40,7 @@ export async function signInWithEmail(
   const loginUrl = nextPath ? `/login?next=${encodeURIComponent(nextPath)}` : '/login'
   await page.goto(loginUrl)
   await expect(page.getByRole('heading', { name: 'כניסה לחשבון' })).toBeVisible()
-  await page.getByLabel('אימייל').fill(email)
+  await page.getByRole('textbox', { name: 'אימייל', exact: true }).fill(email)
   await page.getByLabel('סיסמה').fill(password)
   await page.getByRole('button', { name: 'כניסה', exact: true }).click()
   // Either the return path or a generic signed-in page; never stay on /login.

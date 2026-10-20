@@ -102,9 +102,12 @@ test.describe('full purchase to redeem @checkout @redeem @money', () => {
 
     // CI cannot complete real Google OAuth. Email/password hits the same
     // mergeGuestCart path the Google callback uses after the OAuth hop.
-    await signInWithEmail(page, E2E_CUSTOMER_EMAIL, E2E_CUSTOMER_PASSWORD, '/checkout')
-    await page.goto('/checkout')
-    await expect(page.getByRole('heading', { name: 'קופה' })).toBeVisible({ timeout: 15_000 })
+    await page.getByRole('textbox', { name: 'אימייל', exact: true }).fill(E2E_CUSTOMER_EMAIL)
+    await page.getByLabel('סיסמה').fill(E2E_CUSTOMER_PASSWORD)
+    await page.getByRole('button', { name: 'כניסה', exact: true }).click()
+    await page.waitForURL(/\/checkout/, { timeout: 20_000 })
+
+    await expect(page.getByRole('heading', { name: 'תשלום' })).toBeVisible({ timeout: 15_000 })
     await expect(page.getByText('קופון בדיקות אוטומטיות')).toBeVisible()
 
     await walkCheckoutStepsToConfirm(page)
@@ -176,7 +179,7 @@ test.describe('full purchase to redeem @checkout @redeem @money', () => {
     const google = page.getByRole('button', { name: /כניסה עם Google/ })
     await expect(google).toBeVisible()
     const googleBox = await google.boundingBox()
-    const emailBox = await page.getByLabel('אימייל').boundingBox()
+    const emailBox = await page.getByRole('textbox', { name: 'אימייל', exact: true }).boundingBox()
     expect(googleBox && emailBox && googleBox.y < emailBox.y).toBeTruthy()
   })
 })
