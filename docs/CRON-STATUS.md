@@ -1,7 +1,7 @@
 # Cron Routes Status
 
-**Last check:** 2026-10-20 22:18 UTC (MAINTENANCE_LOOP_5, fourth run today; MCP `get_runtime_logs` called in-session, 403 three times)
-**Status:** 🔴 CRITICAL, unchanged since 13:15 UTC (fourth consecutive measurement). No cron route has completed successfully in production in the last 7 days. 0 requests with status 2xx, 0 with 5xx; every hit is 401 or 404.
+**Last check:** 2026-10-20 23:27 UTC (MAINTENANCE_LOOP_5, fifth run today; MCP `get_runtime_logs` called in-session twice, 403 both times)
+**Status:** 🔴 CRITICAL, unchanged since 13:15 UTC (fifth consecutive measurement). No cron route has completed successfully in production in the last 7 days. 0 requests with status 2xx, 0 with 5xx; every hit is 401 or 404.
 
 ## How this was measured
 
@@ -35,6 +35,29 @@ gh run list --workflow=cron.yml ; gh run view <id> --log
 
 The CLI reads the same request-log store (`responseStatusCode`, `requestPath`, `timestamp`, `branch`, `deploymentId`).
 Cap: 100 rows per query, so counts below are "at least".
+
+## Re-measurement at 23:27 UTC (fifth run)
+
+MCP `get_runtime_logs` was called twice from this session against `team_TUMTPVDP8218QHwedSjmgJWl` /
+`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`: once filtered (`environment=production`, `query=/api/cron`, `since=7d`,
+`limit=100`, window 2026-10-13T23:27:38Z to 2026-10-20T23:27:38Z) and once as `group_by=requestPath`, `since=24h`.
+Both answered `Vercel API request failed (403: forbidden)` at page 0. Same grant failure as every earlier run; the
+CLI fallback was used with the same team and project.
+
+| Probe (24h window, 22:27 UTC 19.10 to 23:27 UTC 20.10) | Result |
+|---|---|
+| `vercel logs --status-code 200 --query "/api/cron"` | **0 rows** |
+| `vercel logs --query "/api/cron"` (any status) | at least 50 rows, every one 401 or 404 |
+| Latest attempt of any cron route | 2026-10-20 22:33:12 UTC: `webhook-dlq` 401, `job-dlq` 404, `search-outbox` 404 |
+| `vercel crons ls --project kenyonexpress` | all 5 paths still **not deployed** |
+| Production deployments (`vercel ls --prod`) | two, both 2 days old, no new deploy since the last check |
+| `gh run list --workflow=cron.yml` (last 6, all on `main`) | 6 of 6 **failure**, latest `39508937508` at 22:33 UTC |
+
+Latest scheduler run `39508937508` reproduces the same three defects: `invoices`, `stock`, `stranded-payments`
+answer `000` twice each (duplicate manifest names), `webhook-dlq` answers 401 (secret mismatch), `job-dlq` and
+`search-outbox` answer 404 (not on the deployed branch). Nothing changed between the 22:18 and 23:27 measurements,
+and no action in this loop can change it: the three owners are unchanged (deploy choice, Ofir's secret, a dedupe PR
+to protected `main`).
 
 ## Production deployment facts
 
@@ -97,11 +120,11 @@ Status breakdown over `/api/cron/*`: **2xx = 0**, 401 ≥ 50 (cap), 404 ≥ 50 (
 
 | Route | Last hit (UTC) | Status | Hits seen | Exists on deployed branch |
 |---|---|---|---|---|
-| whatsapp | 2026-10-20 12:54:19 | 401 | 8 | yes |
-| email-retry | 2026-10-20 11:56:52 | 404 | 6 | no |
-| webhook-dlq | 2026-10-20 10:20:12 | 401 | 8 | yes |
-| job-dlq | 2026-10-20 10:20:14 | 404 | 8 | no |
-| search-outbox | 2026-10-20 10:20:14 | 404 | 9 | no |
+| whatsapp | 2026-10-20 20:55:13 | 401 | 13 | yes |
+| email-retry | 2026-10-20 21:47:22 | 404 | 10 | no |
+| webhook-dlq | 2026-10-20 22:33:12 | 401 | 13 | yes |
+| job-dlq | 2026-10-20 22:33:12 | 404 | 12 | no |
+| search-outbox | 2026-10-20 22:33:12 | 404 | 13 | no |
 | wishlist-alerts | 2026-10-20 09:39:21 | 401 | 4 | yes |
 | affiliate-payouts | 2026-10-20 09:25:31 | 404 | 2 | no |
 | retention | 2026-10-20 09:25:31 | 401 | 3 | yes |
@@ -119,7 +142,7 @@ Status breakdown over `/api/cron/*`: **2xx = 0**, 401 ≥ 50 (cap), 404 ≥ 50 (
 | backup | 2026-10-20 09:25:28 | 404 | 4 | no |
 | daily-deals | 2026-10-20 09:25:28 | 404 | 4 | no |
 | expire-coupons | 2026-10-20 09:25:28 | 404 | 3 | no |
-| search-reindex | 2026-10-20 09:25:28 | 404 | 8 | no |
+| search-reindex | 2026-10-20 22:07:17 | 404 | 11 | no |
 | wishlist-digest | 2026-10-20 09:25:28 | 404 | 2 | no |
 | expire-cashback | 2026-10-20 09:25:27 | 404 | 3 | no |
 | cashback-settlement | 2026-10-19 09:54:26 | 404 | 1 | no |
@@ -263,6 +286,11 @@ The five `vercel.json` routes (`observability-check`, `fraud-monitor`, `p95-moni
 been applied since the 13:15 UTC check.
 
 ## History
+
+- 2026-10-20 23:27 UTC: fifth run. MCP `get_runtime_logs` called twice in-session (7d filtered, and
+  `group_by=requestPath` over 24h): both `403: forbidden` at page 0, 0 rows. CLI fallback over 24h: 0 rows with
+  status 200, at least 50 rows all 401 or 404, latest attempt 22:33:12 UTC. `crons ls` 5/5 not deployed, no new
+  production deployment, 6/6 latest `cron.yml` runs failed with the same `000`/401/404 pattern. All 5 routes stale.
 
 - 2026-10-20 22:24 UTC: three more `get_runtime_logs` variants from the same session, none untried before this:
   team slug `kenyonexpress-projects` + project name `kenyonexpress` answers `404: not_found. Project not found`;

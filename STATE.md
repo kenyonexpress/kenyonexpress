@@ -2,6 +2,20 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_5 (Session: 2026-10-20 23:27-23:40 UTC, cron status check, fifth run today, MEASURED)
+
+**Goal:** Check all cron routes' last-run timestamp via Vercel MCP `get_runtime_logs`, alert in `docs/CRON-STATUS.md` if any route is stale over 24h, commit as chore ops cron status check, push.
+
+**Result:** COMPLETE, alert stands, nothing changed since 22:18 UTC. MCP `get_runtime_logs` was called twice in-session (7d filtered on production, and `group_by=requestPath` over 24h) against `team_TUMTPVDP8218QHwedSjmgJWl` / `prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`; both answered `403: forbidden` at page 0, 0 rows, the connector grant failure known since 13:15 UTC. The mapped CLI fallback over 24h: `--status-code 200` returns 0 rows, the unfiltered query returns at least 50 rows all 401 or 404, latest attempt 22:33:12 UTC (`webhook-dlq` 401, `job-dlq` and `search-outbox` 404). `vercel crons ls` still lists the 5 `vercel.json` paths as not deployed, `vercel ls --prod` shows no deploy newer than 2 days, and the last 6 `cron.yml` runs on `main` all failed (latest `39508937508`, 22:33 UTC, same `000`/401/404 shape). All 5 scheduled routes 🔴 stale over 24h. `docs/CRON-STATUS.md`: header, a "Re-measurement at 23:27 UTC" section, six refreshed last-hit rows and a History line. No fix applied: the three fixes remain a production deploy choice, Ofir's `CRON_SECRET`, and a manifest dedupe PR against protected `main`.
+
+**Gates:** `pnpm type-check` exit 0, `pnpm lint` exit 0 (biome 1700 files, tokens, copy, asset gates clean), `pnpm build` exit 0 (BUILD_ID jbxWJSWTpitmK32C9sa28, no other build in flight). Nothing to fix.
+
+**החלטות שהתקבלו לבד:**
+- No tests were added: the change is a measurement report in docs/, with no code path to cover.
+- The MCP 403 is the connector's OAuth scope (traced 20:50 UTC); not retried beyond the two calls, per the recorded procedure for a hook on a prerequisite the repo cannot satisfy.
+
+**המשך מ:** MAINTENANCE_LOOP_6 (head of `~/ke-goals/queue.txt`): recheck the mobile gate via scripts/compare.mjs, requeue the mobile fix goal if above 11 percent, report to docs/GATE-STATUS.md, commit as chore qa mobile gate check, push.
+
 ## ✅ MAINTENANCE_LOOP_10 (Session: 2026-10-21 05:49 +07, queue refill, fourth pass, DONE)
 
 **Goal:** Append MAINTENANCE_LOOP_1 through MAINTENANCE_LOOP_10 to `~/ke-goals/queue.txt` again by reading them from that same file, so the maintenance loop never drains.
@@ -4131,3 +4145,10 @@ Supabase MCP authentication unavailable in non-interactive session. CLI fallback
 - Gates: type-check exit 0, lint exit 0 (biome 1700 files + 3 gates), build exit 0. Backup 2026-10-21-0201 present, three kept; caffeinate alive, SleepDisabled 1.
 
 **המשך מ:** MAINTENANCE_LOOP_4 (head of ~/ke-goals/queue.txt).
+
+## MAINTENANCE_LOOP_4 fifth pass (2026-10-20 23:05 UTC, commit 0d2462751)
+- Full Playwright suite, run 7, against the mock build Bdgyt_RrnrfyxeiDYYXGH on port 3417 (listener verified by PID and cwd, this worktree), prefix 10.44.81, `--retries=1`, two workers, both projects: 682 total, 617 passed, 58 failed, 0 flaky, 7 skipped, 18.5 min (JSON reporter, /tmp/ke-e2e/run7.json). The 58 failures are run 6's 58, class for class and case for case (classes 1 to 12 in docs/E2E-STATUS.md); run 6's one flaky case passed first time, so passed rose 616 to 617. Server log: 1 supabase.timeout (suppliers read at 23:12:47) against 7 in run 6, and no test failed on it.
+- No flaky case, so no spec change this cycle; docs/E2E-STATUS.md gained the run 7 row, the run narrative and the gates paragraph. Supabase MCP and GitHub MCP not needed (no DB work, no PR; the connector still reports Needs authentication here).
+- Gates: type-check exit 0, lint exit 0 (run at nice 19 during the suite), build exit 0 (the mock build above; no source changed). Backup 2026-10-21-0201 present, three kept; caffeinate alive, SleepDisabled 1.
+
+**המשך מ:** MAINTENANCE_LOOP_5 (head of ~/ke-goals/queue.txt).
