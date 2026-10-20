@@ -2,6 +2,31 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_9 (Session: 2026-10-20 16:17-16:30 UTC, DB pool and query performance, MEASURED via Supabase MCP)
+
+**Goal:** Verify the Supabase connection pool and query performance through the Supabase MCP. Alert in docs/DB-STATUS.md if slow queries over 500 ms exist. Commit as chore ops db performance check. Push.
+
+**Result:** COMPLETE, commit 550a32dc6 pushed to autopilot. The claude.ai Supabase connector still reports Needs authentication, so the official `@supabase/mcp-server-supabase` was run locally over stdio in `--read-only` mode with the CLI keychain token (the UX11 route), now a reusable script: `scripts/db-mcp-probe.mjs` with 10 tests. Measured on production:
+
+```
+pool            14/60 client backends (23.3%), 3 reserved, 0 lock waits, 0 running over 500ms, 0 deadlocks
+pooler          Supavisor transaction mode, eu-north-1, idle 600s, query_wait 80s (app does not use it; all traffic is PostgREST)
+pg_stat_statements  4,865 statements, 7.22M calls since 2026-07-16; mean over 500ms: 6, all platform (dashboard pg-meta, pg_timezone_names)
+app spikes      6 statements with one max over 500ms (carts UPDATE 1159ms, available_stock 1014ms, carts INSERT 884ms, search_products 857ms) at means 3.6 to 46 ms
+advisors        WARN profiles_super_admin_mfa initplan, WARN 14 tables with multiple permissive policies, INFO 9 unindexed FKs, 157 unused indexes
+```
+
+No alert for application queries. The previous DB-STATUS.md numbers (max 20 connections, "0 to 8 active") were plan-tier guesses and are replaced.
+
+**Gates:** `pnpm type-check` clean, `pnpm lint` clean, `pnpm build` exit 0, `vitest run scripts/ src/lib/supabase` 400/400.
+
+**החלטות שהתקבלו לבד:**
+- "Slow queries over 500 ms exist" is read as application statements by mean. Six platform rows do exceed 500 ms by mean; they are reported in the doc under their own section, not as an alert, because no code change here can touch the dashboard's introspection queries.
+- The two WARN advisors are not fixed here: both are migration work (`migrations/pending/`, needs approval), and neither is a slow-query cause today.
+- The MCP envelope parser anchors on the data tag followed by a newline. The first three runs read every probe as unparsed because the prose mentions the tag name before the data does; captured as a test so it does not recur.
+
+**המשך מ:** MAINTENANCE_LOOP_10 (head of ~/ke-goals/queue.txt): append the ten MAINTENANCE_LOOP goals to the queue again.
+
 ## ✅ MAINTENANCE_LOOP_8 (Session: 2026-10-20 16:12-16:20 UTC, code debt scan, third pass, MEASURED)
 
 **Goal:** Scan TODO/FIXME/HACK in src/, queue a cleanup goal if the count grew, report the delta in docs/CODE-DEBT-STATUS.md, commit as chore maint code debt scan, push.
