@@ -2,6 +2,43 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_8 (Session: 2026-10-20 16:00 UTC — Code Debt Baseline Scan)
+
+**Goal:** Scan all TODO FIXME HACK comments in src/. If count grew, queue cleanup goal. Report delta in docs/CODE-DEBT-STATUS.md. Commit as chore maint code debt scan. Push.
+
+**Result:** COMPLETE ✓ — Code Debt Baseline Established (8 Items, First Scan)
+
+**Scan Results (2026-10-20 16:00 UTC):**
+- **Total items:** 8 (first scan - baseline established)
+- **Previous count:** N/A (first scan)
+- **Delta:** +8 (baseline)
+- **Cleanup goal queued:** NO (threshold: >10 items)
+
+**Code Debt Breakdown:**
+1. stock-notifications/route.ts (1): TODO revalidateTag Next.js 16
+2. whatsapp.test.ts (1): TODO placeholder test env var
+3. cardcom.ts (2): TODO confirm payment endpoints + field names
+4. r2-migration.ts (4): TODO batch upload, query DB, update URLs, verify
+
+**Quality Gates:**
+- ✅ `pnpm type-check`: CLEAN
+- ✅ `pnpm lint`: CLEAN (all gates passing)
+- ✅ `pnpm build`: SUCCESS (all pages compiled)
+
+**Report:**
+- Created: docs/CODE-DEBT-STATUS.md with baseline scan results
+
+**Commit:**
+- `48e35ab03` - [autopilot] chore: maint code debt scan - baseline 8 items
+
+**Assessment:**
+- ✅ No growth detected (first scan, 8 items as baseline)
+- ✅ No cleanup goal needed (below threshold)
+- ✅ All code quality gates passing
+- ✅ Report established for future tracking
+
+**המשך מ:** MAINTENANCE_LOOP_8 COMPLETE. Code debt baseline established at 8 items (no growth detected). Ready for next autonomous task.
+
 ---
 
 ## ✅ MOBILE_FIX_GATE (Session: 2026-10-20 09:00—21:00 UTC — Home page compare.mjs score optimization)
