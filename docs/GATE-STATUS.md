@@ -1,24 +1,33 @@
 # Mobile Gate Status
 
-**Last Check:** 2026-10-20 15:36 UTC (DESKTOP_TABLET_FIX_GATE)  
+**Last Check:** 2026-10-20 17:53-18:05 UTC (MAINTENANCE_LOOP_6, recheck)  
 **Page:** home  
-**Commit:** working tree of `3494b7478` plus the DESKTOP_TABLET_FIX_GATE changes (rows carry `-dirty`; the commit that lands them is named in STATE.md)  
-**Server:** `pnpm start` on port 3341 from this worktree, fresh `pnpm build` (BUILD_ID pjXJXNi0IUuTBKIT-Rio0, listener verified by pid and cwd)  
-**Threshold:** 11%
+**Commit:** `6cccd8359` (clean tree at the 380 run; the 768 and 1440 rows carry `-dirty` only because the 380 row had already been appended to the ledger)  
+**Server:** `pnpm start` on port 3341 from this worktree, fresh `pnpm build` (BUILD_ID blsRNnREasLamyPVlhaHX, listener verified by pid and cwd)  
+**Threshold:** 11%  
+**Verdict:** all three widths PASS. No mobile fix goal requeued.
 
-| Viewport | Score | Status | Previous (14:39-14:43) | Best known (compare.mjs) | Lowest ledger row |
+| Viewport | Score | Status | Previous (15:31-15:36, `3494b7478-dirty`) | Delta | Lowest ledger row |
 |---|---|---|---|---|---|
-| 380 (mobile) | **8.50%** | **PASS** | 8.76% | 30.26% | 8.50% (this run) |
-| 768 | **9.80%** | **PASS** | 41.82% | 29% | 7.72% (07.09) |
-| 1440 | **8.10%** | **PASS** | 30.05% | 8.29% | 8.10% (this run) |
+| 380 (mobile) | **8.51%** | **PASS** | 8.50% | +0.01 | 8.50% (20.10 15:36) |
+| 768 | **10.33%** | **PASS** | 9.80% | +0.53 | 7.72% (07.09) |
+| 1440 | **8.53%** | **PASS** | 8.10% | +0.43 | 8.10% (20.10 15:34) |
 
-Ledger rows, verbatim from docs/UI-PARITY-REPORT.md, in the order the goal prescribes (768, 1440, 380), all on the same build:
+Ledger rows, verbatim from docs/UI-PARITY-REPORT.md, in run order:
 
 ```
-| 2026-10-20 15:31 | home | 768 | 9.80% | PASS | `3494b7478-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-20 15:34 | home | 1440 | 8.10% | PASS | `3494b7478-dirty` | ref 180 failed to load (103 script, 74 font, 2 stylesheet, 1 xhr) |
-| 2026-10-20 15:36 | home | 380 | 8.50% | PASS | `3494b7478-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-20 17:53 | home | 380 | 8.51% | PASS | `6cccd8359` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
+| 2026-10-20 18:01 | home | 768 | n/a | **UNMEASURED** | `6cccd8359-dirty` | screenshot failed: page.goto: Timeout 60000ms exceeded (reference archive, retried) |
+| 2026-10-20 18:02 | home | 1440 | 8.53% | PASS | `6cccd8359-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-20 18:05 | home | 768 | 10.33% | PASS | `6cccd8359-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
 ```
+
+## MAINTENANCE_LOOP_6 recheck notes (18:05)
+
+- **The 768 margin is now 0.67 points, down from 1.20.** Two commits touched the home page between the two checks: `10d74a69f` is the one that landed the 15:31 measurement itself, and `f7d8e9c90` (a11y: HeroSlider dot targets, DealChips, CategoryProductCard, category-page.css) is the only home-page change measured for the first time here. The 1440 row moved by a similar amount (+0.43), the 380 row did not move, so the drift is in the slider or chip layout at tablet and desktop widths, not in the phone block. Not isolated band by band in this loop; the gate is a check, not a fix.
+- **One 768 run was UNMEASURED** on a 60s `page.goto` timeout loading `refs/localized/ke_live_home.html`, the reference side. The immediate retry loaded in the usual time with the usual 96-request shortfall. The row stays in the ledger as the script wrote it.
+- **The 380 run reports 153 failed reference requests, not 96** (113 scripts and 2 stylesheets instead of 57 and 1). It was the first load of the archive in this session; the two later runs answered the usual 96. Cause not isolated. The pixel score did not move against the 96-shortfall run at 15:36 (8.51 vs 8.50), so the extra failures are requests the page re-issued, not assets that painted differently.
+- **Band profile at 380 is unchanged from 15:36:** y200-400 hero floor (55.6%, 34.1%), y1700 card-three photograph (20.1%), y2500 tab bar (15.1%), y100 header icons (14.9%). All four are the documented floors below.
 
 ## What moved 768 from 41.82% to 9.80% and 1440 from 30.05% to 8.10%
 
