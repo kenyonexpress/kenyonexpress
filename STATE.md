@@ -2,6 +2,20 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_5 (Session: 2026-10-20 19:56-20:10 UTC, cron status check, third run today, MEASURED)
+
+**Goal:** Check all cron routes' last-run timestamp via Vercel MCP `get_runtime_logs`, alert in `docs/CRON-STATUS.md` if any route is stale over 24h, commit as chore ops cron status check, push.
+
+**Result:** COMPLETE, alert stands. Vercel MCP reads `Connected · tools fetch failed — Request timed out` and four tool searches exposed nothing, so the mapped CLI fallback (`vercel --scope kenyonexpress-projects logs --project kenyonexpress --since 7d --json --query /api/cron`, plus `--status-code` for 200/201/204/500/502/503/504, `crons ls`, and `api /v13/deployments/<prod>`) was used again. 7-day window: 0 hits with any 2xx or 5xx status; the last 50 hits (09:25 to 19:24 UTC) are 401 = 30 and 404 = 20. Production is still `dpl_AP18UQwUQdhd3XWNo41seDQvAcuA` (`audit/final-audit` @ `337d1a2a`, `crons: []`), `vercel crons ls` lists the 5 `vercel.json` paths as not deployed, and they have 0 hits in 7 days, so all 5 are 🔴 stale over 24h. GitHub `cron.yml`: last 12 scheduled runs (09:07 to 19:24 UTC) all failed, latest `39483127046` with the same shape as 15:18 (three `000` from the duplicated manifest on `main`, `webhook-dlq` 401, `job-dlq` and `search-outbox` 404). New section "19:56 UTC re-measurement" and a History line added to `docs/CRON-STATUS.md`; header updated. No fix applied: every fix is a production deploy, a secret, or a `main` change.
+
+**Gates:** `pnpm type-check` clean, `pnpm lint` clean (biome 1698 files, tokens, copy and asset gates clean), `pnpm build` exit 0 (doc-only change).
+
+**החלטות שהתקבלו לבד:**
+- The MCP read was attempted (tool fetch timed out at the harness, same as 17:10 UTC) and not waited on: the grant failure (403 on log reads) was already proven twice from a fresh session on this date, and a timed-out tool list cannot be fixed from the repo. CLI fallback is the MCP's own documented mapping and reads the same request-log store.
+- No tests were added: the change is a measurement report in docs/, with no code path to cover.
+
+**המשך מ:** MAINTENANCE_LOOP_6 (head of `~/ke-goals/queue.txt`): mobile gate recheck via scripts/compare.mjs, report to docs/GATE-STATUS.md.
+
 ## ✅ MAINTENANCE_LOOP_2 (Session: 2026-10-20 18:38-18:48 UTC, dependency patch bumps, MEASURED, nothing to bump)
 
 **Goal:** Run `pnpm outdated`, bump patch versions for safe packages only, skip major and minor, one commit `chore deps bump patch versions`, push to `autopilot`. Only what is requested.

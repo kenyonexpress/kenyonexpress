@@ -1,6 +1,6 @@
 # Cron Routes Status
 
-**Last check:** 2026-10-20 17:10 UTC (MAINTENANCE_LOOP_5, re-run)
+**Last check:** 2026-10-20 19:56 UTC (MAINTENANCE_LOOP_5, third run today)
 **Status:** 🔴 CRITICAL, unchanged since 13:15 UTC. No cron route has completed successfully in production in the last 7 days. 0 requests with status 2xx, 0 with 5xx; every hit is 401 or 404.
 
 ## How this was measured
@@ -180,8 +180,47 @@ The five `vercel.json` routes (`observability-check`, `fraud-monitor`, `p95-moni
 `stock-notifications`) still have **0 hits** and remain 🔴 stale. Nothing changed between the two checks except the
 clock; no fix listed above has been applied.
 
+## 19:56 UTC re-measurement (same day, third run)
+
+Vercel MCP: `claude mcp list` again reads `claude.ai Vercel: https://mcp.vercel.com - ! Connected · tools fetch failed
+— Request timed out`. Four tool searches (`get_runtime_logs`, `list_projects`, `list_deployments`, keyword `runtime
+logs`) returned nothing, so no MCP read was possible from this session. CLI fallback with the same scope and project.
+
+| Metric | Value |
+|---|---|
+| Production deployment | still `dpl_AP18UQwUQdhd3XWNo41seDQvAcuA` (`audit/final-audit` @ `337d1a2a`, source `cli`, 2026-10-19 04:43 UTC), `crons: []` |
+| `vercel crons ls` | 5 paths, all **not deployed**, "5 local changes pending deploy" |
+| `/api/cron/*` hits, 7d, status 200/201/204 | **0 / 0 / 0** |
+| `/api/cron/*` hits, 7d, status 500/502/503/504 | **0 / 0 / 0 / 0** |
+| Last 50 hits (09:25 to 19:24 UTC) | 401 = 30, 404 = 20 |
+| Newest hit of any cron route | `search-outbox` 404 and `job-dlq` 404 at 19:24:12 UTC, `webhook-dlq` 401 at 19:24:09 UTC, from the GitHub scheduler |
+| GitHub `cron.yml`, last 12 scheduled runs (09:07 to 19:24 UTC) | **12 / 12 failed** |
+
+Latest run `39483127046` (19:24 UTC, schedule `*/10`): `invoices`, `stock`, `stranded-payments` answered `000` twice
+each (duplicated manifest on `main`, curl never reached Vercel), `webhook-dlq` 401, `job-dlq` 404, `search-outbox` 404.
+Identical failure shape to the 15:18 UTC run.
+
+Per route, last attempt in the 7-day window (all 401 or 404, none 2xx):
+
+| Route | Last attempt (UTC) | Status | Hits |
+|---|---|---|---|
+| job-dlq | 2026-10-20 19:24:12 | 404 | 4 |
+| search-outbox | 2026-10-20 19:24:12 | 404 | 4 |
+| webhook-dlq | 2026-10-20 19:24:09 | 401 | 6 |
+| whatsapp | 2026-10-20 17:47:25 | 401 | 3 |
+| email-retry | 2026-10-20 17:26:44 | 404 | 3 |
+| search-reindex | 2026-10-20 18:54:52 | 404 | 3 |
+| wishlist-alerts | 2026-10-20 09:39:21 | 401 | 2 |
+| all other manifest routes | 2026-10-20 09:25 burst | 401 or 404 | 1 to 2 |
+
+The five `vercel.json` routes (`observability-check`, `fraud-monitor`, `p95-monitor`, `deal-scraper`,
+`stock-notifications`) still have **0 hits in 7 days** and remain 🔴 stale over 24h. No fix from the list above has
+been applied since the 13:15 UTC check; only the clock moved.
+
 ## History
 
+- 2026-10-20 19:56 UTC: third run. MCP tools fetch timed out again (connected, no tools exposed); CLI fallback measured.
+  0×2xx, 0×5xx in 7d, 12/12 GitHub scheduled runs failed, deployment and `crons: []` unchanged. All 5 routes stale.
 - 2026-10-20 17:52 UTC: grant enumerated via MCP. One team, two projects (production and staging), `get_runtime_logs`
   403 on both. Log-read scope is absent from the connector grant; nothing further to try from the repo.
 - 2026-10-20 17:46 UTC: `get_runtime_logs` called from a fresh read-only session after the connector recovered:
