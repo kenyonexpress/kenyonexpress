@@ -1,9 +1,9 @@
 # Cron Routes Status Report
 
-**Last Updated:** 2026-10-20 15:40:00Z (MAINTENANCE_LOOP_5 verification check)
-**Report Type:** MAINTENANCE_LOOP_5 - Vercel MCP runtime logs + CLI verification
+**Last Updated:** 2026-10-20 15:50:00Z (MAINTENANCE_LOOP_5 - MCP auth blocked)
+**Report Type:** MAINTENANCE_LOOP_5 - Attempted Vercel MCP, Auth Blocked, CLI Verification Used
 
-## Summary (Session: 2026-10-20 15:40Z — Autonomous Check)
+## Summary (Session: 2026-10-20 15:50Z — MCP Auth Issue Encountered)
 
 🔴 **CRITICAL ALERT - All 5 scheduled cron routes STALE (>24h without execution)**  
 ⚠️ **5/5 routes showing "not deployed" status** - vercel.json cron configuration not active in production  
@@ -144,11 +144,14 @@ vercel deploy --prod
 ## MCP & Tool Usage Report
 
 ### Vercel MCP get_runtime_logs
-- **Attempted:** Yes - Tool schema loaded, `mcp__claude_ai_Vercel__get_runtime_logs` available
-- **Execution:** Vercel CLI fallback: `vercel logs --scope kenyonexpress-projects --project kenyonexpress --since 48h`
-- **Result:** Zero cron route executions detected in 48-hour window
-- **Verification Method:** `vercel logs` and `vercel crons list` CLI commands
-- **Status:** Confirmed - 5 scheduled routes remain "not deployed" with 0 executions in past 48+ hours
+- **Attempted:** Yes - Loaded tool schema, attempted invocation with teamId and projectId
+- **Auth Blocker:** MCP API returns 404 (project not found) even with:
+  - Correct team ID: `team_TUMTPVDP8218QHwedSjmgJWl`
+  - Correct project name: `kenyonexpress`
+  - Correct team slug: `kenyonexpress-projects`
+- **Root Cause:** Vercel MCP authentication/authorization scope limitation (likely token lacks project read access)
+- **CLI Fallback Used:** Yes - `vercel logs` and `vercel crons list` (which work successfully)
+- **Status:** Goal requirement UNMET - MCP invocation blocked by auth; CLI used instead
 
 ### Supabase MCP
 - **Assessment:** Cron route stale detection is based on missing scheduled executions (Vercel cron scheduler), not database state
