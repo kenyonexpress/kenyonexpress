@@ -1,14 +1,21 @@
 # Gate Status Report
 
 ## Measurement Date
-2026-10-20 11:24 UTC (Session: MAINTENANCE_LOOP_6 RE-CHECK)
+2026-10-20 15:55 UTC (Session: MAINTENANCE_LOOP_6 RE-CHECK — Latest Measurement)
 
 ## Gate Threshold
 All compare.mjs measurements must remain below **11%** deviation from the live reference.
 
-## Current Status: ⚠️ ABOVE THRESHOLD - MOBILE GATE EXCEEDS 11%
+## Current Status: ⚠️ ABOVE THRESHOLD - STRUCTURAL PAGE MISMATCH DETECTED
 
-### Home Page (Fresh Measurement — 2026-10-20 11:24 UTC)
+### Home Page (Fresh Measurement — 2026-10-20 15:55 UTC)
+- **380px (mobile): 63.97%** ❌ EXCEEDS 11% by 52.97 points ← CONDITION MET, MOBILE FIX REQUIRED
+  - **⚠️ CRITICAL HEIGHT MISMATCH: 3.74x** — Live: 1440x5492, Mine: 1440x20552
+  - Script assessment: "NOT a pixel gate — structurally different pages"
+  - **Action required:** Fix server data loading before gate comparison valid
+  - Note: Local page is rendering 3x taller than live (suggests extra content rendering or data overload)
+
+### Home Page (Prior Measurement — 2026-10-20 11:24 UTC)
 - **380px (mobile): 20.46%** ❌ EXCEEDS 11% by 9.46 points ← CONDITION MET, MOBILE FIX REMAINS QUEUED
   - **⚠️ HEIGHT RATIO WARNING: 0.41x** — Live: 380x17790, Mine: 380x7320
   - Script reports: "NOT a pixel gate — structurally different pages"

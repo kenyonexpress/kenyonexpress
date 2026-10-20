@@ -1,6 +1,6 @@
 # Lighthouse CI Status Report
 
-**Last Updated:** 2026-10-20 07:52 UTC (MAINTENANCE_LOOP_7 re-check)
+**Last Updated:** 2026-10-20 15:56 UTC (MAINTENANCE_LOOP_7 fresh check)
 **Measurement Method:** pnpm lighthouse:smoke (alternative to unavailable lhci:autorun)
 
 ## Summary
@@ -12,12 +12,12 @@
 
 | Page | Performance | Accessibility | SEO | Status |
 |------|-------------|----------------|-----|--------|
-| / (home) | 100 | 96 | 100 | ✅ PASS |
+| / (home) | 97 | 91 | 100 | ✅ PASS |
 
 ## Gate Status
 
-- **Performance Gate (target: 90+):** 100 ✅
-- **Accessibility Gate (target: 90+):** 96 ✅
+- **Performance Gate (target: 90+):** 97 ✅
+- **Accessibility Gate (target: 90+):** 91 ✅
 - **SEO Gate (target: 90+):** 100 ✅
 
 ## Notes
