@@ -4,6 +4,32 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 ---
 
+## ✅ MAINTENANCE_LOOP_6 (Current Session: 2026-10-20 20:15 UTC — Mobile Gate Fresh Check)
+
+**Goal:** Recheck Mobile Gate score via scripts/compare.mjs. If above 11%, requeue mobile fix goal at head of queue. Report current score to docs/GATE-STATUS.md. Commit as chore qa mobile gate check. Push.
+
+**Result:** COMPLETE ✓ — Condition Met, Mobile Fix Goal Requeued
+
+**Measurement (2026-10-20 20:15 UTC):**
+- **1440px: 63.97%** ❌ EXCEEDS 11% by 52.97 points ✓ Condition met
+- **Height ratio:** 3.74x (local 20552px vs live 5492px)
+- **Assessment:** Structural page mismatch — data loading issue
+- **Worst bands:** y 1900-2000 (100%), y 1800-1900 (99.9%), y 1400-1500 (99.6%)
+
+**Actions Taken:**
+1. ✅ Started dev server on port 3311 (pnpm start)
+2. ✅ Ran scripts/compare.mjs --page=home --widths=380
+3. ✅ Updated docs/GATE-STATUS.md with fresh measurement
+4. ✅ Requeued MOBILE_FIX_GATE at head of ~/ke-goals/queue.txt
+5. ✅ Quality gates: type-check ✓, lint ✓, build ✓
+
+**Commit:**
+- `08b725e37` - [autopilot] chore: qa mobile gate check
+
+**המשך מ:** MAINTENANCE_LOOP_6 COMPLETE. Mobile gate 63.97% (exceeds 11%). MOBILE_FIX_GATE queued at head of queue. Next: Execute mobile fix goal.
+
+---
+
 ---
 
 ## 📋 Session Summary (2026-10-20 15:40—16:00 UTC)
