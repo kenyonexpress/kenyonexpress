@@ -2,6 +2,21 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_9 (Session: 2026-10-20 18:20-18:30 UTC, Supabase pool and slow-query check, second measured pass, MEASURED, no alert)
+
+**Goal:** Verify Supabase connection pool and query performance via the Supabase MCP, alert in docs/DB-STATUS.md if slow queries over 500 ms exist, commit as chore ops db performance check, push.
+
+**Result:** COMPLETE, no alert. `scripts/db-mcp-probe.mjs` ran against production through the official `@supabase/mcp-server-supabase` (read-only, stdio, CLI keychain token) at 18:21 UTC; 13 tools listed, every probe answered. Pool: **14 of 60** client backends (23.3%), the same four clients as 16:24 UTC (PostgREST 11, exporter 1, admin 1, this probe 1), 0 lock waits, 0 statements running over 500 ms. pg_stat_statements since 2026-07-16: 4,869 statements, 7,248,798 calls (+4 and +27,501 over the two hours). Over 500 ms by mean: 6, all Supabase platform rows (dashboard timezone list, pg-meta listings, two one-off verification probes), 0 application. Application spikes by max: the identical 6 rows with identical max values while call counts grew, so nothing new spiked in the window. Advisors unchanged (1 WARN initplan on `profiles_super_admin_mfa`, 14 WARN multiple-permissive, 9 INFO unindexed FKs, 157 INFO unused indexes). DB 43 MB. docs/DB-STATUS.md refreshed with the deltas, logs/maint9/result.json replaced. Committed as 190d38e15, pushed.
+
+**Gates:** `scripts/db-mcp-probe.test.mjs` 10/10, `pnpm typecheck` clean, `pnpm lint` clean after `biome format --write` on the JSON log (biome checks committed logs/, the raw probe output fails the formatter), `pnpm build` exit 0 (BUILD_ID z-sOaMc3S8dyXG2eCZcrz).
+
+**החלטות שהתקבלו לבד:**
+- The claude.ai Supabase connector still reports "needs authentication"; the goal's MCP requirement was met with the same server run locally over stdio, as on 2026-10-20 16:24 (memory: supabase-mcp-via-local-official-server). No management-API fallback was needed.
+- The probe's machine clock reads 2026-10-20 18:21 UTC; the report keeps the measured timestamp rather than a wall date.
+- The historical summary table lower in this file still reads "MAINTENANCE_LOOP_9 Skipped" for cycle 1 (2026-10-19); that row describes that cycle and was left as is.
+
+**המשך מ:** MAINTENANCE_LOOP_10 (head of `~/ke-goals/queue.txt`): append MAINTENANCE_LOOP_1 through MAINTENANCE_LOOP_10 to `~/ke-goals/queue.txt` again so the loop continues.
+
 ## ✅ MAINTENANCE_LOOP_8 (Session: 2026-10-20 18:15-18:22 UTC, code debt scan, fourth pass, MEASURED)
 
 **Goal:** Scan all TODO, FIXME and HACK comments in src/, queue a cleanup goal if the count grew since the last scan, report the delta in docs/CODE-DEBT-STATUS.md, commit as chore maint code debt scan, push.
