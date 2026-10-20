@@ -105,8 +105,8 @@ importers:
         specifier: ^0.4.6
         version: 0.4.6(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       node-forge:
-        specifier: ^1.4.0
-        version: 1.4.0
+        specifier: github:digitalbazaar/forge
+        version: https://codeload.github.com/digitalbazaar/forge/tar.gz/723240415b25120d47146f982809fa69344ab890
       postgres:
         specifier: ^3.4.9
         version: 3.4.9
@@ -4301,8 +4301,9 @@ packages:
       encoding:
         optional: true
 
-  node-forge@1.4.0:
-    resolution: {integrity: sha512-LarFH0+6VfriEhqMMcLX2F7SwSXeWwnEAJEsYm5QKWchiVYVvJyV9v7UDvUv+w5HO23ZpQTXDv/GxdDdMyOuoQ==}
+  node-forge@https://codeload.github.com/digitalbazaar/forge/tar.gz/723240415b25120d47146f982809fa69344ab890:
+    resolution: {gitHosted: true, integrity: sha512-ctoipdl1OblxH5DKPDzDmbS8pNcdZbkXFbQ+UdGuDX0SpqgpBxLqaglzaQvRLwS3gfrTK+Zse6DAR2z+7ArbKQ==, tarball: https://codeload.github.com/digitalbazaar/forge/tar.gz/723240415b25120d47146f982809fa69344ab890}
+    version: 1.4.1-0
     engines: {node: '>= 6.13.0'}
 
   node-releases@2.0.59:
@@ -9063,7 +9064,7 @@ snapshots:
     dependencies:
       whatwg-url: 5.0.0
 
-  node-forge@1.4.0: {}
+  node-forge@https://codeload.github.com/digitalbazaar/forge/tar.gz/723240415b25120d47146f982809fa69344ab890: {}
 
   node-releases@2.0.59: {}
 
