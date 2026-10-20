@@ -264,6 +264,11 @@ been applied since the 13:15 UTC check.
 
 ## History
 
+- 2026-10-20 22:24 UTC: three more `get_runtime_logs` variants from the same session, none untried before this:
+  team slug `kenyonexpress-projects` + project name `kenyonexpress` answers `404: not_found. Project not found`;
+  `deploymentId=dpl_AP18UQwUQdhd3XWNo41seDQvAcuA` (24h) answers `403: forbidden`; staging project
+  `prj_7Ar3dFtaIqemo7bc1Fg7SMh11joY` (24h) answers `403: forbidden`. Every addressable form of the read is now
+  exhausted. Ofir was sent a high-priority ntfy alert with the connector re-authorization step.
 - 2026-10-20 22:18 UTC: fourth run. MCP tools loaded in-session on the first try; `get_runtime_logs` (plain and
   `group_by=requestPath`) and `get_runtime_errors` all 403 at page 0, 0 rows. CLI fallback: 0×2xx, 0×5xx in 7d,
   12/12 GitHub scheduled runs failed, deployment and `crons: []` unchanged. All 5 `vercel.json` routes stale.
