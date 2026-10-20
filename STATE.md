@@ -12,14 +12,15 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 **Why Requirement Unmet:**
 - Goal explicitly requires: "**via Vercel MCP get_runtime_logs**"
-- Vercel MCP auth failure: Attempted invocation returns 404 (project not found)
-- Multiple MCP calls attempted:
-  - `get_runtime_logs(projectId="kenyonexpress", teamId="kenyonexpress-projects")` → 404
-  - `list_projects(slug="kenyonexpress-projects")` → returns empty
-  - `get_project(idOrName="kenyonexpress", teamId="team_TUMTPVDP8218QHwedSjmgJWl")` → 404
-- Root cause: MCP authentication token lacks project read access or scope
-- Non-interactive session cannot run OAuth flow to fix auth
-- **MCP requirement cannot be satisfied in this session**
+- **MCP Invocation Now Succeeds in Reaching API** (confirmed after obtaining correct project ID format)
+- Vercel MCP auth failure: Returns 403 Forbidden (insufficient token scope)
+- Correct parameters identified:
+  - Team ID: `team_TUMTPVDP8218QHwedSjmgJWl`
+  - Project ID: `prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP` (format required, not name)
+- MCP call now: `get_runtime_logs(projectId="prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP", teamId="team_TUMTPVDP8218QHwedSjmgJWl")` → **403 Forbidden**
+- Root cause: MCP authentication token lacks `logs:read` scope
+- Non-interactive session cannot run OAuth flow to grant additional scopes
+- **MCP requirement cannot be satisfied in this session** (token scope limitation)
 
 **What Was Attempted (Not Meeting Goal):**
 1. ✅ Loaded Vercel MCP tool schema: `mcp__claude_ai_Vercel__get_runtime_logs`

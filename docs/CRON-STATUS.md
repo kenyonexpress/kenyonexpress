@@ -144,14 +144,21 @@ vercel deploy --prod
 ## MCP & Tool Usage Report
 
 ### Vercel MCP get_runtime_logs
-- **Attempted:** Yes - Loaded tool schema, attempted invocation with teamId and projectId
-- **Auth Blocker:** MCP API returns 404 (project not found) even with:
-  - Correct team ID: `team_TUMTPVDP8218QHwedSjmgJWl`
-  - Correct project name: `kenyonexpress`
-  - Correct team slug: `kenyonexpress-projects`
-- **Root Cause:** Vercel MCP authentication/authorization scope limitation (likely token lacks project read access)
-- **CLI Fallback Used:** Yes - `vercel logs` and `vercel crons list` (which work successfully)
-- **Status:** Goal requirement UNMET - MCP invocation blocked by auth; CLI used instead
+- **Attempted:** Yes - Loaded tool schema, invoked with correct project ID format
+- **Tool Invocation Status:** ✅ Successfully reaches Vercel API
+- **Auth Result:** 403 Forbidden - MCP token lacks `logs:read` scope
+- **Correct Parameters Discovered:**
+  - Team ID: `team_TUMTPVDP8218QHwedSjmgJWl`
+  - Project ID: `prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP` (requires `prj_*` format, not project name)
+  - Query: `/api/cron` (filters for cron route logs)
+  - Environment: `production`
+- **Root Cause:** MCP authentication token scope limitation (403, not 404)
+  - Tool is reachable and invocable
+  - Token is valid for other operations
+  - Token lacks specific `logs:read` permission
+- **Session Limitation:** Non-interactive session cannot run OAuth flow to grant additional scopes
+- **CLI Fallback Used:** Yes - `vercel logs` and `vercel crons list` (work with CLI auth)
+- **Status:** Goal requirement UNMET - MCP scope insufficient; CLI verification used instead
 
 ### Supabase MCP
 - **Assessment:** Cron route stale detection is based on missing scheduled executions (Vercel cron scheduler), not database state
