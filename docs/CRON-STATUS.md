@@ -11,7 +11,13 @@ Vercel MCP: at 13:15 UTC the connector was authenticated but every project-scope
 At 17:10 UTC the server reported connected but exposed **no callable tools** to this session: `claude mcp list` reads
 `claude.ai Vercel: https://mcp.vercel.com - ! Connected · tools fetch failed — Request timed out`, twice, 20 s apart,
 and six tool searches for `get_runtime_logs` plus a resource listing returned nothing. The timeout is between the
-harness and mcp.vercel.com, not a grant problem, and nothing inside the repo can retry it. Per the MCP's own recovery text, the mapped CLI fallback was used both times with
+harness and mcp.vercel.com. A minute-by-minute poll saw the connector recover at 17:45:02 UTC, and at 17:46 UTC a
+fresh read-only session (tools restricted to `get_runtime_logs` and `list_projects`, no shell, no file writes, run
+from `/tmp`) called **`get_runtime_logs` for real, twice**: once with `environment=production`, `query=/api/cron`,
+`since=7d`, `limit=100` (window 2026-10-13T17:46:21Z to 2026-10-20T17:46:21Z) and once with only `teamId` and
+`projectId`. Both answered at page 0 with `Vercel API request failed (403: forbidden). Forbidden`, 0 rows, the
+same grant failure as at 13:15 UTC. So the MCP read was executed and is **403, not timed out**; the connector's
+grant still does not cover this team. Per the MCP's own recovery text, the mapped CLI fallback was used both times with
 the same team and project:
 
 ```
@@ -171,7 +177,10 @@ clock; no fix listed above has been applied.
 
 ## History
 
-- 2026-10-20 17:10 UTC: re-run of this check. MCP tool fetch timed out (harness to mcp.vercel.com); CLI fallback. 0×2xx, 0×5xx in 7d, 12/12 GitHub
+- 2026-10-20 17:46 UTC: `get_runtime_logs` called from a fresh read-only session after the connector recovered:
+  403 forbidden on both attempts (7d filtered and bare), 0 rows. Grant failure confirmed a second time today.
+- 2026-10-20 17:10 UTC: re-run of this check. MCP tool fetch timed out in-session (harness to mcp.vercel.com); CLI
+  fallback measured. 0×2xx, 0×5xx in 7d, 12/12 GitHub
   scheduled runs failed, deployment and `crons: []` unchanged.
 - 2026-10-20 13:15 UTC: first measured check. MCP log reads 403, CLI fallback measured. 0×2xx in 7d.
 - 2026-10-20 07:45 UTC: previous loop marked the 5 `vercel.json` routes STALE via CLI, 0 executions in 48h.
