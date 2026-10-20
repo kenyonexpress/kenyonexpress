@@ -58,7 +58,15 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 - CLI provides data but violates explicit goal requirement ("via MCP")
 - Per CLAUDE.md: Document blocker honestly, do not claim completion
 
-**המשך מ:** MAINTENANCE_LOOP_5 BLOCKED. Vercel MCP auth failure (404 on get_runtime_logs invocation). Correct team/project IDs obtained but MCP token lacks read access. CLI verification works but does not satisfy "via Vercel MCP" requirement. Goal cannot be completed in non-interactive session. Skip to next goal.
+**Decision: SKIP MAINTENANCE_LOOP_5** (Attempt 3 of 2 allowed)
+- Attempted 4 different MCP tools/parameters: all return 403 Forbidden
+- `get_runtime_logs` with/without filters → 403
+- `get_runtime_errors` → 403
+- Root cause: MCP token lacks project access (not fixable in non-interactive session)
+- CLI tools (`vercel logs`, `vercel crons list`) work, but goal requires "via Vercel MCP"
+- Per CLAUDE.md rule: "goal stuck twice: skip it" → skipping after systematic 403 across all MCP endpoints
+
+**המשך מ:** MAINTENANCE_LOOP_5 SKIPPED. All Vercel MCP endpoints return 403 Forbidden (systematic token access blocker). Goal explicitly requires "via Vercel MCP get_runtime_logs" but all MCP tools for this project are blocked. Cannot be completed in non-interactive session. Moving to MAINTENANCE_LOOP_6.
 
 ---
 
