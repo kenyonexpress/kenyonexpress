@@ -219,6 +219,12 @@ been applied since the 13:15 UTC check; only the clock moved.
 
 ## History
 
+- 2026-10-20 20:50 UTC: the 403 was traced to its owner. `vercel api /v1/integrations/configurations?view=account`
+  and `?view=project` on team `kenyonexpress-projects` both return `[]`, so no Vercel-side integration or project
+  selection restricts the MCP. The CLI identity `kenyonexpress` is `OWNER` of the team (Pro plan). The log-read denial
+  therefore sits in the claude.ai connector's OAuth authorization (scopes picked on the Vercel consent screen), which
+  only Ofir can re-authorize in claude.ai connector settings. Nothing in the repo or the CLI can widen it. Last-run
+  timestamps for this check come from the CLI tables above; the MCP has produced 0 rows on every call today.
 - 2026-10-20 20:41 UTC: **`get_runtime_logs` called for real, twice**, from the fifth fresh read-only session of a
   150-second poll (attempts 1 to 4 at 20:23, 20:28, 20:32 and 20:36 UTC saw the server connect but expose no tools).
   Call 1: `environment=production`, `query=/api/cron`, `since=7d`, `limit=100`, window 2026-10-13T20:41:42Z to
