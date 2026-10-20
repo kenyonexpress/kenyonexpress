@@ -2,6 +2,20 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_10 (Session: 2026-10-20 23:30-23:45 UTC, queue regeneration, fourth pass)
+
+**Goal:** Append the ten MAINTENANCE_LOOP goals to `~/ke-goals/queue.txt` again by reading MAINTENANCE_LOOP_1 through MAINTENANCE_LOOP_10 from that file. This is the infinite-loop step. Only what is requested.
+
+**Result:** COMPLETE. Queue grew from 20 to 30 non-empty lines; lines 21 to 30 are MAINTENANCE_LOOP_1 through MAINTENANCE_LOOP_10 in order, each byte-identical to the goal text already in the file. Trailing newline preserved. Backup written beside the file as `queue.txt.bak-<epoch>` before the append. No repository file changed except this entry.
+
+**Gates:** `pnpm typecheck` clean, `pnpm lint` clean (biome 1695 files, tokens, copy and asset gates clean), `pnpm build` exit 0 (STATE.md-only change).
+
+**החלטות שהתקבלו לבד:**
+- Every earlier re-append had copied `grep -n` style line numbers into the goal text, so lines carried three or four tab-separated numbers before `MAINTENANCE_LOOP_N` and the prefix grew by one on each cycle. The ten new lines are appended without those prefixes. `refill.sh` sends the whole line as the `/goal` text, so the prefixes were noise the agent had to read past, never an identifier.
+- A bare `grep "MAINTENANCE_LOOP_1 "` matches the LOOP_10 line first, because that goal's text says "MAINTENANCE_LOOP_1 through". The first attempt appended LOOP_10 in slot 21; it was replaced with the real LOOP_1 line and all ten slots were re-verified against the originals.
+
+**המשך מ:** MAINTENANCE_LOOP_2 (head of `~/ke-goals/queue.txt`): pnpm outdated, bump patch versions only.
+
 ## ✅ MAINTENANCE_LOOP_9 (Session: 2026-10-20 16:17-16:30 UTC, DB pool and query performance, MEASURED via Supabase MCP)
 
 **Goal:** Verify the Supabase connection pool and query performance through the Supabase MCP. Alert in docs/DB-STATUS.md if slow queries over 500 ms exist. Commit as chore ops db performance check. Push.
