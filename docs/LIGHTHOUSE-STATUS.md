@@ -1,14 +1,21 @@
 # Lighthouse CI Status Report
 
-**Last Updated:** 2026-10-20 07:52 UTC (MAINTENANCE_LOOP_7 re-check)
+**Last Updated:** 2026-10-20 14:30 UTC (MAINTENANCE_LOOP_7 fresh re-check)  
+**Prior Measurement:** 2026-10-20 07:52 UTC  
 **Measurement Method:** pnpm lighthouse:smoke (alternative to unavailable lhci:autorun)
 
-## Summary
+## Summary (Current Session 14:30 UTC)
 
 ✅ **All measured pages PASS** — All scores ≥ 90  
 ℹ️ **Limited coverage** — Home page only (full CI not available locally)
 
-## Scores
+## Current Scores (2026-10-20 14:30 UTC)
+
+| Page | Performance | Accessibility | SEO | Status |
+|------|-------------|----------------|-----|--------|
+| / (home) | 98 | 91 | 100 | ✅ PASS |
+
+## Previous Scores (2026-10-20 07:52 UTC)
 
 | Page | Performance | Accessibility | SEO | Status |
 |------|-------------|----------------|-----|--------|
