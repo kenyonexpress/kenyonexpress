@@ -87,3 +87,43 @@ date should queue it. The sales query above is the one to rerun for items 3 to 5
 excludes mock transaction ids and test accounts is the number that matters, not `orders.status`.
 
 **Status:** COMPLETE
+
+## 2026-10-20 18:50 UTC - Backlog Scan (MAINTENANCE_LOOP_3, fourth run)
+
+**Scanned Files:**
+- docs/BACKLOG.md: exists, 7 items, unchanged (last commit 4b17cfb49, 2026-10-16).
+- docs/TODO.md: does not exist. `find` over the worktree (node_modules excluded) returns no TODO*.md.
+
+**Gates re-measured.** The 10-sales query from the third run was re-run against production
+(read-only select through the management API with the CLI keychain token, since the Supabase MCP
+connector is unauthorised in this session). Evidence: `logs/maint3/sales-gate-2026-10-20b.json`.
+
+| Measure | Third run | This run |
+|---------|-----------|----------|
+| orders, all statuses | 99 | 99 |
+| orders in paid / fulfilled / settled | 70 | 70 |
+| payments succeeded or settled | 71 | 71 |
+| real sales (real Cardcom txn id, non-test buyer) | 0 | 0 |
+| orders since the third run | n/a | 0 |
+| last order | 2026-10-15 03:04 UTC | 2026-10-15 03:04 UTC |
+
+Nothing moved. Real sales remain 0, so the launch, 10-sales and revenue gates are all still closed.
+
+**Backlog Items Analysis (today 2026-10-20 UTC, 2026-10-21 local):**
+1. Group-deals re-evaluation, dated 2026-10-23: 2 days out. BLOCKED.
+2. Crisp inbox, post-launch: 0 real sales, launch gate not passed. BLOCKED.
+3. Meta WhatsApp Business verification, after 10 sales: 0 real sales. BLOCKED.
+4. Israeli lawyer review of ToS and Privacy, after 10 sales: 0 real sales. BLOCKED.
+5. Capacitor or Expo native app, after revenue: 0 real revenue. BLOCKED.
+6. Courses monthly billing, Phase 2: BLOCKED.
+7. Tzimmer calendar, Phase 2: BLOCKED.
+
+**Unblocked Items Found:** 0
+
+**Action:** None. ~/ke-goals/queue.txt not modified (27 lines before and after).
+
+**Note:** `payments` has no `provider_transaction_id`; the column is `cardcom_transaction_id`
+(42703 on the first attempt). Item 1 becomes a candidate on 2026-10-23; the next run on or after
+that date should queue it.
+
+**Status:** COMPLETE
