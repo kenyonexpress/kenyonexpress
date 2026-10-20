@@ -4058,4 +4058,10 @@ Supabase MCP authentication unavailable in non-interactive session. CLI fallback
 - No src change since the previous check, yet 768 moved 0.55 points (10.33 to 9.78) and 1440 0.14; both back toward the 15:31 values, so the 17:53 pair was the outlier. Run-to-run spread at 768 on one build is about half a point. Reference shortfall varied (152, 190, 96 failed requests) without moving the 380 score.
 - docs/GATE-STATUS.md rewritten at the head with the new table and notes; previous notes kept below. type-check and lint clean, build exit 0.
 
-**המשך מ:** MAINTENANCE_LOOP_9 (head of ~/ke-goals/queue.txt).
+## MAINTENANCE_LOOP_2 (fourth pass): patch bumps, 21.10 00:30-00:45 local
+
+- `pnpm outdated` lists 17 packages, every one a minor or major jump (react 19.2.9 to 19.3.1 is a minor; biome, sentry, zod, vitest, typescript, jsdom and the rest are majors). None qualifies.
+- The outdated table hides in-minor patches, so every direct dependency was checked against the registry for a higher patch inside its installed minor (`npm view <pkg> versions` per package, all fetched). Zero found. The only hit was node-forge, pinned to `github:digitalbazaar/forge` at 1.4.1-0, where the registry's 1.4.0 is a downgrade; left alone.
+- No package.json or lockfile change, so no `chore(deps)` commit exists this pass. Gates on the unchanged tree: type-check exit 0, lint exit 0 (biome 1698 files plus tokens, copy and asset gates clean), `pnpm build` exit 0 on the first attempt.
+
+**המשך מ:** MAINTENANCE_LOOP_3 (head of ~/ke-goals/queue.txt).
