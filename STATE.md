@@ -2,6 +2,19 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_8 (Session: 2026-10-20 16:12-16:20 UTC, code debt scan, third pass, MEASURED)
+
+**Goal:** Scan TODO/FIXME/HACK in src/, queue a cleanup goal if the count grew, report the delta in docs/CODE-DEBT-STATUS.md, commit as chore maint code debt scan, push.
+
+**Result:** COMPLETE. Word-boundary and loose grep both return 8 on bbc6e97a1 (7 TODO, 1 test stub string, 0 FIXME, 0 HACK), identical to the 16:00 scan. Delta 0, no cleanup goal queued. Scan history table added to docs/CODE-DEBT-STATUS.md.
+
+**Gates:** `pnpm type-check` clean, `pnpm lint` clean, `pnpm build` exit 0 (doc-only change).
+
+**החלטות שהתקבלו לבד:**
+- Supabase MCP is still unauthenticated in this session; the scan needs no DB access, so the goal is complete without it (same reasoning as the 16:00 entry).
+
+**המשך מ:** MAINTENANCE_LOOP_9 (head of ~/ke-goals/queue.txt): Supabase connection pool and slow-query check via Supabase MCP, report to docs/DB-STATUS.md, commit as chore ops db performance check, push.
+
 ## ✅ A11Y_FIX_PRODUCTS_LIGHTHOUSE (Session: 2026-10-20 15:55-16:12 UTC, MEASURED)
 
 **Goal:** Lighthouse accessibility on /products 87 (target 90): fix aria-allowed-attr, color-contrast, target-size, image-redundant-alt, plus the 16x24 hero dots; keep compare.mjs under 11% at 380/768/1440; re-run lhci and quote the scores.

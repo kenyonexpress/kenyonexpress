@@ -1,14 +1,25 @@
 # Code Debt Status Report
 
-Last updated: 2026-10-20 16:00 UTC
+Last updated: 2026-10-20 16:13 UTC
 Scanned: src/ (TypeScript, TSX, JavaScript, JSX)
 
 ## Summary
 
 **Total code debt comments: 8**
-- Previous scan: 8 (2026-10-20 15:57 UTC via MAINTENANCE_LOOP_8)
-- Current scan: 8 (2026-10-20 16:00 UTC)
+- Previous scan: 8 (2026-10-20 16:00 UTC via MAINTENANCE_LOOP_8)
+- Current scan: 8 (2026-10-20 16:13 UTC, commit bbc6e97a1)
 - Delta: 0 (stable, no growth detected)
+- Cleanup goal queued: no (count did not grow)
+
+## Scan History
+
+| Scan (UTC) | Commit | TODO | FIXME | HACK | Total | Delta | Cleanup queued |
+|------------|--------|------|-------|------|-------|-------|----------------|
+| 2026-10-20 15:57 | 48e35ab03 | 8 | 0 | 0 | 8 | baseline | no |
+| 2026-10-20 16:00 | 13c54057b | 8 | 0 | 0 | 8 | 0 | no |
+| 2026-10-20 16:13 | bbc6e97a1 | 8 | 0 | 0 | 8 | 0 | no |
+
+Word-boundary scan (`\b(TODO|FIXME|HACK)\b`) and the loose scan below agree on 8; no false positives from identifiers.
 
 ## Findings
 
