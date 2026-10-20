@@ -2,20 +2,6 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
-## ✅ MAINTENANCE_LOOP_1 (Session: 2026-10-20 18:28-18:36 UTC, dependency security audit, sixth pass, MEASURED, nothing to fix)
-
-**Goal:** Run `pnpm audit` and fix critical and high vulnerabilities, one commit per fix named `chore security audit fix PACKAGE`, push to `autopilot`. Only what is requested.
-
-**Result:** COMPLETE, no fix needed. `pnpm audit --json` on c5c48190e reports 0 critical, 0 high, 0 moderate, 0 low, 0 info across 950 dependencies (548 prod, 297 dev, 179 optional); the human output says "No known vulnerabilities found". Zero fix commits were therefore made, which is the correct count and not a skip. The last pass that had work was b8e4bb09f (3 high: @sentry/nextjs, lint-staged, source-map-js), and nothing has regressed since.
-
-**Gates:** `pnpm typecheck` clean, `pnpm lint` clean (biome 1697 files, tokens, copy and asset gates clean), `pnpm build` exit 0 (308 static pages; the only `failed` strings in the log are the pre-existing `reviews.read_failed` 42501 prerender warnings, not build errors).
-
-**החלטות שהתקבלו לבד:**
-- No `docs/DEPENDENCIES.md` or `docs/KNOWN-ISSUES.md` #7 edit, even though both still describe an older "2 high + 1 low" `pnpm audit --prod` state: the goal forbids touching other files. Flagged here for a docs pass.
-- STATE.md is 3950 lines against the 300-line cap in its own header; not archived in this pass for the same reason.
-
-**המשך מ:** MAINTENANCE_LOOP_2 (head of `~/ke-goals/queue.txt`): `pnpm outdated`, bump patch versions for safe packages only, one commit `chore deps bump patch versions`.
-
 ## ✅ MAINTENANCE_LOOP_10 (Session: 2026-10-20 18:28-18:35 UTC, queue regeneration, fifth pass)
 
 **Goal:** Append the ten MAINTENANCE_LOOP goals to `~/ke-goals/queue.txt` again by reading MAINTENANCE_LOOP_1 through MAINTENANCE_LOOP_10 from that file. This is the infinite-loop step. Only what is requested.
