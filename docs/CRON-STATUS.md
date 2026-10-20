@@ -1,6 +1,6 @@
 # Cron Routes Status
 
-**Last check:** 2026-10-20 19:56 UTC (MAINTENANCE_LOOP_5, third run today)
+**Last check:** 2026-10-20 20:41 UTC (MAINTENANCE_LOOP_5, third run today; MCP `get_runtime_logs` called, 403)
 **Status:** 🔴 CRITICAL, unchanged since 13:15 UTC. No cron route has completed successfully in production in the last 7 days. 0 requests with status 2xx, 0 with 5xx; every hit is 401 or 404.
 
 ## How this was measured
@@ -219,6 +219,13 @@ been applied since the 13:15 UTC check; only the clock moved.
 
 ## History
 
+- 2026-10-20 20:41 UTC: **`get_runtime_logs` called for real, twice**, from the fifth fresh read-only session of a
+  150-second poll (attempts 1 to 4 at 20:23, 20:28, 20:32 and 20:36 UTC saw the server connect but expose no tools).
+  Call 1: `environment=production`, `query=/api/cron`, `since=7d`, `limit=100`, window 2026-10-13T20:41:42Z to
+  2026-10-20T20:41:42Z. Call 2: `teamId`, `projectId` and `query` only, default 50-minute window 19:51:43Z to 20:41:43Z.
+  Both: `Runtime log query failed at page 0: Vercel API request failed (403: forbidden). Forbidden`, 0 rows. Same
+  grant failure as 17:46 and 17:52 UTC. The MCP tool's own error text names the CLI mapping used above, so the CLI
+  numbers in the 19:56 section are the last-run timestamps for this check.
 - 2026-10-20 20:12 to 20:24 UTC: after the 19:56 run the MCP read was retried five ways, none reached Vercel.
   `claude mcp list` at 20:13, 20:14 and 20:18 UTC: `Connected · tools fetch failed — Request timed out`. Three in-session
   tool searches and a resource listing: nothing exposed. Raw probes of `https://mcp.vercel.com/`: GET answers 401 in
