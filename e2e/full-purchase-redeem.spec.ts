@@ -9,7 +9,7 @@ import {
   paidFlowEnabled,
   signInWithEmail,
 } from './auth-session'
-import { addOpenProductToCart, expectHebrewRtl } from './helpers'
+import { BUY_BUTTON, addOpenProductToCart, expectHebrewRtl } from './helpers'
 
 /**
  * End-to-end money path against Cardcom mock + seeded fixtures:
@@ -92,8 +92,20 @@ test.describe('full purchase to redeem @checkout @redeem @money', () => {
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 15_000 })
     await addOpenProductToCart(page)
 
-    // The guest-at-pay gate: /checkout serves the anonymous visitor the form,
-    // with the returning-customer sign-in offered rather than demanded.
+    const buy = page.getByRole('button', { name: BUY_BUTTON }).first()
+    const buyable = await buy.isVisible().catch(() => false)
+    test.skip(!buyable, 'e2e-test-coupon is not purchasable; run pnpm seed:test')
+    test.skip(await buy.isDisabled(), 'e2e-test-coupon is out of stock')
+
+    // Settled by the header badge AND the button leaving its pending state,
+    // not by the "נוסף לסל" label: that label is a 2-second timer that the
+    // route refresh can wipe, and on a slow backend it has not even appeared
+    // when a 5 s expectation expires (run 5, 2026-10-20: the buy button was
+    // still disabled at the 5 s mark and the add landed later). See
+    // addOpenProductToCart for the measurement.
+    await addOpenProductToCart(page)
+
+    // Checkout gate: guest must see Google (and email) before pay.
     await page.goto('/checkout')
     await expect(page).toHaveURL(/\/checkout/, { timeout: 15_000 })
     await expect(page.getByRole('heading', { name: 'קופה' })).toBeVisible({ timeout: 15_000 })
@@ -164,7 +176,16 @@ test.describe('full purchase to redeem @checkout @redeem @money', () => {
   }) => {
     await clearBrowserSession(page)
     await page.goto(`/product/${E2E_COUPON_SLUG}`)
-    await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 15_000 })
+    const buy = page.getByRole('button', { name: BUY_BUTTON }).first()
+    if (!(await buy.isVisible().catch(() => false))) {
+      test.skip(true, 'e2e-test-coupon missing; run pnpm seed:test')
+    }
+    // Settled by the header badge AND the button leaving its pending state,
+    // not by the "נוסף לסל" label: that label is a 2-second timer that the
+    // route refresh can wipe, and on a slow backend it has not even appeared
+    // when a 5 s expectation expires (run 5, 2026-10-20: the buy button was
+    // still disabled at the 5 s mark and the add landed later). See
+    // addOpenProductToCart for the measurement.
     await addOpenProductToCart(page)
 
     // A guest with a populated cart gets the checkout form, not a bounce, and

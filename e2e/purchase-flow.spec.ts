@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { BUY_BUTTON, expectHebrewRtl } from './helpers'
+import { BUY_BUTTON, addOpenProductToCart, expectHebrewRtl } from './helpers'
 
 /**
  * The whole customer journey in one pass: search -> product -> cart -> the
@@ -86,8 +86,13 @@ test.describe('search to checkout', () => {
     test.skip(!buyable, 'discovered product is not purchasable in this seed')
     test.skip(await buy.isDisabled(), 'discovered product is out of stock')
 
-    await buy.click()
-    await expect(page.getByRole('button', { name: /נוסף לסל/ }).first()).toBeVisible()
+    // Settled by the header badge AND the button leaving its pending state,
+    // not by the "נוסף לסל" label: that label is a 2-second timer that the
+    // route refresh can wipe, and on a slow backend it has not even appeared
+    // when a 5 s expectation expires (run 5, 2026-10-20: the buy button was
+    // still disabled at the 5 s mark and the add landed later). See
+    // addOpenProductToCart for the measurement.
+    await addOpenProductToCart(page)
 
     // 4. The cart must actually hold it.
     //
