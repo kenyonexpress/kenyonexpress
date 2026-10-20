@@ -1,26 +1,33 @@
 # Mobile Gate Status
 
-**Last Check:** 2026-10-20 20:51-21:03 UTC (MAINTENANCE_LOOP_6, second recheck; 03:51-04:03 local on 21.10)  
+**Last Check:** 2026-10-20 22:27-22:31 UTC (MAINTENANCE_LOOP_6, third recheck; 05:27-05:31 local on 21.10)  
 **Page:** home  
-**Commit:** `e887e9334` (clean tree at the 380 run; the 768 and 1440 rows carry `-dirty` only because the 380 row had already been appended to the ledger)  
-**Server:** `pnpm start` on port 3341 from this worktree, fresh `pnpm build` (BUILD_ID 8ecC2z390bYfojT6W652d, listener verified by pid and cwd). The build on disk before this run was unusable: `next start` died on a missing `.next/server/preview-props.json`, which is what a `next dev` run leaves behind when it shares `.next` with a production build.  
+**Commit:** `450762eda` (clean tree at the 380 run; the 768 and 1440 rows carry `-dirty` only because the 380 row had already been appended to the ledger)  
+**Server:** `pnpm start` on port 3342 from this worktree, fresh `pnpm build` (BUILD_ID yE-eIJreF6jDopm5y35I8, exit 0 first attempt, listener verified by pid 38547 and cwd). The build on disk before this run (BUILD_ID I2VHrd0PXTX) was not the one measured at 20:51 and carried a `preview-props.json`, so it was not reused.  
 **Threshold:** 11%  
 **Verdict:** all three widths PASS. No mobile fix goal requeued.
 
-| Viewport | Score | Status | Previous (17:53-18:05, `6cccd8359`) | Delta | Lowest ledger row |
+| Viewport | Score | Status | Previous (20:51-21:03, `e887e9334`) | Delta | Lowest ledger row |
 |---|---|---|---|---|---|
-| 380 (mobile) | **8.52%** | **PASS** | 8.51% | +0.01 | 8.50% (20.10 15:36) |
-| 768 | **9.78%** | **PASS** | 10.33% | -0.55 | 7.72% (07.09) |
-| 1440 | **8.39%** | **PASS** | 8.53% | -0.14 | 8.10% (20.10 15:34) |
+| 380 (mobile) | **8.51%** | **PASS** | 8.52% | -0.01 | 8.50% (20.10 15:36) |
+| 768 | **9.80%** | **PASS** | 9.78% | +0.02 | 7.72% (07.09) |
+| 1440 | **8.10%** | **PASS** | 8.39% | -0.29 | 8.10% (20.10 15:34, equalled here) |
 
 Ledger rows, verbatim from docs/UI-PARITY-REPORT.md, in run order:
 
 ```
-| 2026-10-20 20:51 | home | 380 | 8.52% | PASS | `e887e9334` | ref 152 failed to load (112 script, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-10-20 20:55 | home | 768 | 9.78% | PASS | `e887e9334-dirty` | ref 190 failed to load (113 script, 74 font, 2 stylesheet, 1 xhr) |
-| 2026-10-20 21:02 | home | 1440 | n/a | **UNMEASURED** | `e887e9334-dirty` | screenshot failed: page.goto: Timeout 60000ms exceeded (reference archive, retried) |
-| 2026-10-20 21:03 | home | 1440 | 8.39% | PASS | `e887e9334-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-20 22:27 | home | 380 | 8.51% | PASS | `450762eda` | ref 141 failed to load (101 script, 37 font, 2 stylesheet, 1 xhr) |
+| 2026-10-20 22:29 | home | 768 | 9.80% | PASS | `450762eda-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-20 22:31 | home | 1440 | 8.10% | PASS | `450762eda-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
 ```
+
+## MAINTENANCE_LOOP_6 third recheck notes (22:31)
+
+- **Still no home-page source change.** `git log e887e9334..450762eda -- src/` is empty; the eight commits in between are STATE, E2E-STATUS, CRON-STATUS and GATE-STATUS. This is therefore the third measurement of one source tree, and it lands exactly on the 15:31-15:36 run (8.50 / 9.80 / 8.10) rather than on the 17:53-18:05 run (8.51 / 10.33 / 8.53) or the 20:51-21:03 run (8.52 / 9.78 / 8.39). Three runs of the same page span 0.55 points at 768 and 0.43 at 1440, and 0.02 at 380. The 768 margin is 1.20 points on this run.
+- **The reference shortfall was the deterministic 96 on both the 768 and 1440 runs** for the first time in three loops. Only the 380 run, the first archive load in the session, reported more (141: 101 scripts, 2 stylesheets). The 380 score moved 0.01 against the previous 152-shortfall run, so the extra failures are still re-issued requests and not assets that paint. With the 768 shortfall back at 96, the 768 score came back to 9.80, the value of the other 96-shortfall run at 15:31; the 9.78 at 20:55 was the 190-shortfall run. That is consistent with the font re-issue being the half-point mover at 768, but one pair is not an isolation.
+- **No UNMEASURED row this loop.** All three archive loads finished under the 60s `page.goto` budget; the previous two loops each lost one run to that timeout. Total wall time for three widths was 4 minutes 20 seconds.
+- **Band profile unchanged at every width.** 380: y200-300 hero floor (55.6%, 34.1%), y1700 card-three photograph (20.1%), y2500 tab bar (15.1%). 768: y100-200 hero (31%, 33.2%), y400-500 strip (49.3%, 17.4%), y2400-2500 row four (17.5%, 34.1%). 1440: y200-300 (24.1%, 18.7%) and y500-600 (25.1%, 17.2%) hero side columns, y1600-1700 row-two photographs (16.2%, 19.4%). Each is a documented floor below.
+- **Not done this loop:** serving the reference from a local origin to pin the shortfall, the gate's own open item. Unchanged from the previous two loops.
 
 ## MAINTENANCE_LOOP_6 second recheck notes (21:03)
 

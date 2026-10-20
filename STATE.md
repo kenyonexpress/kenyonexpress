@@ -4085,3 +4085,10 @@ Supabase MCP authentication unavailable in non-interactive session. CLI fallback
 - CLI fallback (vercel logs --since 7d, crons ls, api /v13/deployments): 0 hits 2xx, 0 hits 5xx in 7d; last 50 hits are 401=30, 404=20; newest search-reindex 404 at 22:07:17 UTC from GitHub cron.yml; 12/12 scheduled GitHub runs failed; prod deployment dpl_AP18UQwUQdhd3XWNo41seDQvAcuA (audit/final-audit @ 337d1a2a) still has crons: []; all 5 vercel.json routes not deployed and stale over 24h. docs/CRON-STATUS.md updated with the fourth-run section and history entry. Gates: type-check exit 0, lint exit 0 (biome 1699 files + 3 gates), build exit 0. Backup 2026-10-21-0201 present, three kept; caffeinate alive.
 
 **המשך מ:** MAINTENANCE_LOOP_6 (head of ~/ke-goals/queue.txt).
+
+## MAINTENANCE_LOOP_6 third recheck (2026-10-20 22:27-22:31 UTC, commit 450762eda)
+- Fresh `pnpm build` (BUILD_ID yE-eIJreF6jDopm5y35I8, exit 0), `pnpm start` on 3342 from this worktree, listener checked by pid 38547 and cwd, killed by pid after the run. Home at 380 8.51% PASS, 768 9.80% PASS, 1440 8.10% PASS, threshold 11%. No mobile fix goal requeued; `~/ke-goals/queue.txt` untouched.
+- No src change since e887e9334, so this is the third run of one tree: it reproduces the 15:31-15:36 values to the hundredth at 768 and 1440 (9.80 / 8.10). Reference shortfall was the deterministic 96 on 768 and 1440; 380 (first archive load) reported 141. No UNMEASURED row this loop. docs/GATE-STATUS.md head rewritten for the third recheck; ledger rows appended by compare.mjs itself.
+- Gates: type-check exit 0, lint exit 0 (biome 1699 files + 3 gates), build exit 0. Backup 2026-10-21-0201 present, three kept; caffeinate alive, SleepDisabled 1.
+
+**המשך מ:** MAINTENANCE_LOOP_7 (head of ~/ke-goals/queue.txt).
