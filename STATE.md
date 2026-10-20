@@ -2,6 +2,20 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_8 (Session: 2026-10-20 18:15-18:22 UTC, code debt scan, fourth pass, MEASURED)
+
+**Goal:** Scan all TODO, FIXME and HACK comments in src/, queue a cleanup goal if the count grew since the last scan, report the delta in docs/CODE-DEBT-STATUS.md, commit as chore maint code debt scan, push.
+
+**Result:** COMPLETE, delta 0, nothing queued. Word-boundary and loose grep both read **8** on `43df16e43` (7 TODO comments, 1 test stub string in whatsapp.test.ts, 0 FIXME, 0 HACK), identical to the 16:13 scan on bbc6e97a1. Sixteen commits landed between the two scans; exactly one touched src/ (ee0abecc4, two lines in CouponCardSkeleton.tsx) and it carries no marker, so the findings list is byte-identical. Fourth row added to the scan history table in docs/CODE-DEBT-STATUS.md, header and summary moved to this pass. Committed as f721e56dc, pushed.
+
+**Gates:** `pnpm type-check` clean, `pnpm lint` clean (biome 1697 files, tokens, copy and asset gates clean), `pnpm build` exit 0 (BUILD_ID dC-Ajg3KGpNFcnMA6AeQp), doc-only change.
+
+**החלטות שהתקבלו לבד:**
+- The draft note first claimed "7 commits, none in src/" from memory; `git log 6d672d0b9..43df16e43 -- src/` showed 16 and one. The doc carries the measured numbers.
+- Supabase MCP is unauthenticated in this session (OAuth connector); the scan is static text analysis and needs no DB access, same reasoning as the three earlier passes.
+
+**המשך מ:** MAINTENANCE_LOOP_9 (head of `~/ke-goals/queue.txt`): Supabase connection pool and slow-query check via Supabase MCP, alert in docs/DB-STATUS.md if slow queries over 500 ms exist, commit as chore ops db performance check, push.
+
 ## ✅ MAINTENANCE_LOOP_7 (Session: 2026-10-20 18:10-18:20 UTC, Lighthouse CI, third pass, MEASURED, PASS)
 
 **Goal:** Run Lighthouse CI via `pnpm lhci:autorun`, queue an optimisation goal if any score is below 90, report scores to docs/LIGHTHOUSE-STATUS.md, commit as chore qa lighthouse check, push.
