@@ -2,6 +2,28 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_5 (Session: 2026-10-20 13:15 UTC, Cron Routes Check, repeat, MEASURED)
+
+**Goal:** Check all cron routes last-run timestamp via Vercel MCP get_runtime_logs. Alert in docs/CRON-STATUS.md if any route stale over 24h. Commit as chore ops cron status check. Push.
+
+**Result:** COMPLETE, and the two earlier "BLOCKED, needs OAuth" entries were wrong. Vercel MCP is authenticated: list_teams and list_projects answer. Every project-scoped read (get_runtime_logs, get_runtime_errors, list_deployments, get_project) returns 403 for team_TUMTPVDP8218QHwedSjmgJWl, a connector grant that does not cover the team. Used the MCP's own mapped CLI fallback (vercel --scope kenyonexpress-projects logs --project kenyonexpress) with the same team and project. Full table in docs/CRON-STATUS.md, commit e10f6fb7a.
+
+**Finding (7 days of production request logs):** /api/cron/* answered 0 x 2xx, >=50 x 401, >=50 x 404. Every cron route is stale > 24h, and the last successful run of any of them is older than the 7-day retention window. Three independent causes:
+1. The live production deployment (dpl_AP18UQwUQdhd3XWNo41seDQvAcuA, CLI deploy of audit/final-audit) has crons: []. That branch's vercel.json has no crons key, so `vercel crons ls` shows all 5 of this branch's schedules as "not deployed". Vercel's scheduler fires nothing.
+2. main's scripts/cron-jobs.json (d739d96b1, 19.10) duplicates 12 job names. run-cron-jobs.sh's jq select returns two paths, curl gets a URL with a newline and prints 000 in 10 ms. notifications, health, invoices, stock, stranded-payments, abandoned-cart, subscriptions, reap-carts, reconcile, expire-vouchers, retention, weekly-digest never leave GitHub. 8 of the last 8 scheduled runs failed.
+3. Jobs that do reach Vercel answer 401 (CRON_SECRET mismatch, open since 25.09) or 404 (11 manifest routes not on the deployed branch).
+
+**Gates:** `pnpm type-check` clean, `pnpm lint` clean (biome 1691 files, tokens, copy, asset gates), `pnpm build` exit 0.
+
+**החלטות שהתקבלו לבד:**
+- Did not touch vercel.json, scripts/cron-jobs.json on main, or any secret. All three fixes are a production deploy choice, an Ofir-only secret, or a PR against protected main; this goal is a status check.
+- Did not loop `vercel logs` over all 38 routes (about 60 s per call); aggregated the 401 and 404 result sets by path instead. Five vercel.json routes were queried individually: 0 rows each.
+- Memory note cron-routes-404-on-live-deployment rewritten with the three causes and the CLI recipe.
+
+**המשך מ:** MAINTENANCE_LOOP_5 COMPLETE. Cron is dead in production, three causes documented in docs/CRON-STATUS.md. Next goal from ~/ke-goals/queue.txt head: MAINTENANCE_LOOP_6 (mobile gate recheck). Fix candidates for a dedicated goal: dedupe main's cron-jobs.json, decide one scheduler, CRON_SECRET parity (Ofir).
+
+---
+
 ## ✅ MAINTENANCE_LOOP_3 (Session: 2026-10-20 11:46 UTC, Backlog Scan, repeat)
 
 **Goal:** Scan docs/BACKLOG.md and docs/TODO.md for unblocked items, queue any found to ~/ke-goals/queue.txt, report the count in docs/MAINT-LOG.md. Commit as chore maint scan backlog. Push.
