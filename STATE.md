@@ -4107,3 +4107,10 @@ Supabase MCP authentication unavailable in non-interactive session. CLI fallback
 - Supabase MCP still needs OAuth in this non-interactive session; the scan is static text, no DB operation was needed. Gates: type-check exit 0, lint exit 0 (biome 1699 files + 3 gates), build exit 0. Backup 2026-10-21-0201 present, three kept; caffeinate alive, SleepDisabled 1.
 
 **המשך מ:** MAINTENANCE_LOOP_9 (head of ~/ke-goals/queue.txt).
+
+## MAINTENANCE_LOOP_9 fourth measured pass (2026-10-20 22:45 UTC, commit d360b1382)
+- Supabase MCP reached the same way as the three earlier passes: the official `@supabase/mcp-server-supabase` over stdio in `--read-only` mode with the CLI keychain token (`scripts/db-mcp-probe.mjs`, 13 tools listed); the claude.ai connector still reports Needs authentication in this non-interactive session. Pooler and pgbouncer config re-read from the management API, byte-identical.
+- Pool 14 of 60 backends (23.3%), the same four clients (PostgREST 11 idle, exporter 1, admin 1, the probe 1), 0 lock waits, 0 statements running over 500 ms, 0 deadlocks, cache hit 100%. pg_stat_statements: 4,870 statements (no new ones), +31,074 calls and +10.4 s since 21:24 UTC; 6 rows over 500 ms by mean, all platform (dashboard, pg-meta, verification probes), 0 application. The 6 application spikes keep the identical maxima (1,159.2 / 1,013.8 / 883.6 / 857.1 / 525.3 / 515.6 ms) while calls grew (carts UPDATE +29, available_stock +213, carts INSERT +97, fn_record_search +24), so still historical, no alert. Advisors unchanged (1 WARN initplan, 14 WARN multiple-permissive, 9 unindexed FKs, 157 unused indexes). DB 44 MB, carts 3,683 live rows (+97).
+- docs/DB-STATUS.md head updated for the fourth pass, evidence in logs/maint9/ (result.json biome-formatted, lint covers logs/). Gates: probe tests 10/10, type-check exit 0, lint exit 0, build exit 0 (BUILD_ID Wa-oxnvhniSgvlQm7OGE5). Backup 2026-10-21-0201 present, three kept; caffeinate alive, SleepDisabled 1.
+
+**המשך מ:** MAINTENANCE_LOOP_10 (head of ~/ke-goals/queue.txt).
