@@ -129,6 +129,33 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 ---
 
+## ⏭️ MAINTENANCE_LOOP_4 (Session: 2026-10-20 — E2E SKIPPED, Stuck Three Times)
+
+**Goal:** Run full Playwright test suite with pnpm test:e2e. Report pass/fail/flaky counts to docs/E2E-STATUS.md. Fix any new flaky tests. Commit and push.
+
+**Result:** SKIPPED ⏭️ (Infrastructure blocker, third stuck attempt)
+
+**Attempts in This Session:**
+1. **Attempt 1:** Background task killed at [459/682] after 10-minute limit
+2. **Attempt 2:** Scheduled checkpoint, tests continued to timeout
+3. **Attempt 3 (user re-requested via /goal):** Foreground run (with 600s timeout) immediately backgrounded, then killed after 10-minute limit
+
+**Infrastructure Constraint:**
+- Full E2E suite: 682 tests × 4 browsers (Chromium, Firefox, WebKit, Mobile Chrome) × 2 workers
+- **Actual runtime required:** 20-30+ minutes
+- **System background task hard limit:** 10 minutes (cannot be extended)
+- **No workaround available:** Even foreground runs default to background after 600s with automatic 10-min kill
+
+**Decision:**
+Per CLAUDE.md rule "goal stuck three times: skip it" — infrastructure limit is absolute and unchangeable. No meaningful progress possible. Skipping to next goal.
+
+**Commits:**
+- No changes (no usable partial data to report)
+
+**המשך מ:** MAINTENANCE_LOOP_4 SKIPPED (stuck three times on hard 10-minute timeout). Infrastructure constraint unresolvable. Moving to next goal in queue: MOBILE_FIX_GATE or next maintenance loop.
+
+---
+
 ## ⏭️ MAINTENANCE_LOOP_4 (Session: 2026-10-20 — E2E SKIPPED, Stuck Twice)
 
 **Goal:** Run full Playwright test suite with pnpm test:e2e. Report pass/fail/flaky counts to docs/E2E-STATUS.md. Fix any new flaky tests.
