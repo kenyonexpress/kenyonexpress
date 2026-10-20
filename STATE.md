@@ -2,6 +2,20 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_2 (Session: 2026-10-20 18:38-18:48 UTC, dependency patch bumps, MEASURED, nothing to bump)
+
+**Goal:** Run `pnpm outdated`, bump patch versions for safe packages only, skip major and minor, one commit `chore deps bump patch versions`, push to `autopilot`. Only what is requested.
+
+**Result:** COMPLETE, zero bumps. `pnpm outdated --format=json` on 77dbffdd5 lists 17 packages and every one is a minor or major jump at the latest tag: react and react-dom 19.2.9 to 19.3.1 (minor), the other 15 are majors (@biomejs/biome 1.9.4 to 2.5.15, @sentry/nextjs and @sentry/node 10.71.0 to 11.8.0, @simplewebauthn/browser 13.3.0 to 14.0.0, @simplewebauthn/server 13.3.3 to 14.0.3, @testing-library/jest-dom 6.10.0 to 7.0.1, @types/node 22.20.5 to 26.6.5, @vitejs/plugin-react 4.7.0 to 6.1.2, @vitest/coverage-v8 3.2.7 to 5.0.5, jsdom 25.0.1 to 30.1.3, tailwind-merge 2.6.1 to 3.7.0, typescript 5.9.3 to 7.0.2, vitest 4.1.12 to 5.0.5, zod 3.25.76 to 4.6.7, @anthropic-ai/sdk 0.122.0 to 0.135.0). Because `pnpm outdated` compares against the latest tag only, every direct dependency was also checked against `npm view <name> versions` for a newer patch inside its installed minor: none exists. The single hit was node-forge, pinned in package.json to `github:digitalbazaar/forge` at 1.4.1-0, where npm's newest 1.4.x is 1.4.0; that is a downgrade off a deliberate pin and was left alone. No package.json or pnpm-lock.yaml change was therefore made, which is the correct count and not a skip.
+
+**Gates:** `pnpm typecheck` clean, `pnpm lint` clean (biome 1697 files, tokens, copy and asset gates clean), `pnpm build` exit 0 (the `error` strings in the log are the pre-existing partner API prerender bail-outs and `referrals.settings_read_failed` / `reviews.read_failed` warnings logged by the app during prerender, not build errors).
+
+**החלטות שהתקבלו לבד:**
+- The goal's named commit `chore deps bump patch versions` carries this STATE.md entry only, since there is no dependency diff to carry. The goal requires a commit and a push, and an empty commit would hide the measurement.
+- react 19.3.1 was not taken: it is a minor and the goal says skip minor.
+
+**המשך מ:** MAINTENANCE_LOOP_3 (next in `~/ke-goals/queue.txt`).
+
 ## ✅ MAINTENANCE_LOOP_10 (Session: 2026-10-20 18:28-18:35 UTC, queue regeneration, fifth pass)
 
 **Goal:** Append the ten MAINTENANCE_LOOP goals to `~/ke-goals/queue.txt` again by reading MAINTENANCE_LOOP_1 through MAINTENANCE_LOOP_10 from that file. This is the infinite-loop step. Only what is requested.
