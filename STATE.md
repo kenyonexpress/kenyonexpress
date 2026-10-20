@@ -2,6 +2,31 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ A11Y_FIX_PRODUCTS_LIGHTHOUSE (Session: 2026-10-20 15:55-16:12 UTC, MEASURED)
+
+**Goal:** Lighthouse accessibility on /products 87 (target 90): fix aria-allowed-attr, color-contrast, target-size, image-redundant-alt, plus the 16x24 hero dots; keep compare.mjs under 11% at 380/768/1440; re-run lhci and quote the scores.
+
+**Result:** COMPLETE, commit f7d8e9c90 pushed to autopilot. Rebuilt (BUILD_ID p1WRLxM6-YqBY2AbC5N4V), served by this worktree on 3361 (pid 28425, cwd verified), `pnpm lhci:autorun` desktop preset, 3 runs per URL:
+
+```
+/                          perf  98  a11y 100  bp 96  seo 100   FCP 0.4s LCP 1.1s TBT 0ms CLS 0.023
+/products                  perf  99  a11y 100  bp 96  seo 100   FCP 0.4s LCP 1.0s TBT 0ms CLS 0.008
+/product/אוזניות-איירפודס-3  perf  98  a11y 100  bp 96  seo 100   FCP 0.4s LCP 1.1s TBT 0ms CLS 0.010
+```
+
+Accessibility 100 in all nine runs (was 87/87/87 on /products, 96 on /). No a11y audit fails anywhere. Gate after the change: home 380 8.51%, 768 9.80%, 1440 8.10%, all PASS (ledger rows written). Per-audit fix table in docs/LIGHTHOUSE-STATUS.md.
+
+**Gates:** `pnpm type-check` clean, `pnpm lint` clean, `pnpm build` exit 0, touched unit tests green (hero-dot-target 5/5, PriceRangeSlider, deal-chips). Two pre-existing reds in src/components/category (InfiniteScrollLoader mock constructor, CategoryControlBar sort URL) are in files this goal did not touch and fail the same way on HEAD's logic.
+
+**החלטות שהתקבלו לבד:**
+- The hero dots moved: the gap is now derived from the hit box (16px, inline) instead of measured off live (15px desktop). Max visible shift 4px at 1440, 12px for the farthest dot at 380. The gate did not move (8.10% / 8.51%). This closes LIGHTHOUSE-AUDIT open question 1 without waiting for Ofir, because the goal asked for 24x24 explicitly.
+- `gap-4` was tried first and measured 14px (spacing unit 3.5px) with a 2px overlap; replaced by an inline px gap from the same constant. Not a tokens-gate violation (numeric inline style, same as the dot sizes).
+- Thumbnail alt is empty rather than a non-duplicate phrase: the goal said empty alt, and the link's h2 is the name. Image-search alt text on the archive is gone with it; the product page still carries full alts.
+- Observed, not fixed: at 380 the dot row sits at x1-127 of 380, not centred. `max-lg:start-1/2 max-lg:-translate-x-1/2` uses a physical translate in an RTL container, so the row is offset by half its width. Pre-existing (x5-125 before this goal), outside scope, and moving it would re-tune the 380/768 gate against live. Worth a goal of its own.
+- lhci autorun deleted the six tracked `.lighthouseci/lhr-*` files again; restored from HEAD, not committed.
+
+**המשך מ:** MAINTENANCE_LOOP_8 (head of ~/ke-goals/queue.txt): scan TODO/FIXME/HACK in src/, report the delta in docs/CODE-DEBT-STATUS.md, commit as chore maint code debt scan, push.
+
 ## ✅ MAINTENANCE_LOOP_7 (Session: 2026-10-20 15:40-15:55 UTC, Lighthouse CI, second pass, MEASURED)
 
 **Goal:** Run Lighthouse CI via pnpm lhci:autorun. If any score below 90 queue optimization goal. Report scores to docs/LIGHTHOUSE-STATUS.md. Commit as chore qa lighthouse check. Push.
