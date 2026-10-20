@@ -8,12 +8,12 @@
 
 **Status:** Partial completion - tests halted at 459/682 (67.3%)
 
-**Identified Issues (from 459/682 analyzed):**
+**Identified Issues (from 459/682 analyzed - ACTUAL COUNTS):**
 
 | Status | Count | % |
 |--------|-------|---|
-| ✅ Passed | ~260 | ~56.6% |
-| ❌ Failed | 199 | ~43.4% |
+| ✅ Passed | 230 | 50.1% |
+| ❌ Failed | 229 | 49.9% |
 | ⏭️ Skipped | 0 | 0% |
 | 🔄 Flaky (retried) | **0** | **0%** |
 
