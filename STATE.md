@@ -145,7 +145,71 @@ The score reduction from 63.97% to 17.9% represents a 71% improvement. The remai
 
 **Commit:** `a7a5c586a` - [autopilot] chore: qa lighthouse check
 
-**המשך מ:** MAINTENANCE_LOOP_7 COMPLETE. All Lighthouse scores above threshold. No optimization needed. Next: MAINTENANCE_LOOP_8 (Code debt scan).
+**המשך מ:** MAINTENANCE_LOOP_7 COMPLETE (15:56 UTC). All Lighthouse scores above threshold. No optimization needed. Next: MAINTENANCE_LOOP_8 (Code debt scan).
+
+---
+
+## ⚠️ MAINTENANCE_LOOP_7 (Session: 2026-10-20 09:38 — Fresh Comprehensive Audit)
+
+**Goal:** Run Lighthouse CI via pnpm lhci:autorun. If any score below 90, queue optimization goal. Report scores to docs/LIGHTHOUSE-STATUS.md. Commit as chore qa lighthouse check. Push.
+
+**Result:** REGRESSION DETECTED — 8 of 9 Pages Below Performance Threshold ⚠️
+
+**Fresh Audit Scores (2026-10-20 09:38 UTC):**
+- **Homepage Performance: 87** ❌ (threshold 90) — was 97 at 15:56, **regression of -10 points**
+- **Products Performance: 85** ❌
+- **Category Performance: 86** ❌
+- **Search Performance: 85** ❌
+- **Contact Performance: 85** ❌
+- **Account Performance: 87** ❌
+- **Privacy Performance: 81** ❌
+- **Terms Performance: 81** ❌
+- **Cart Performance: 92** ✅ (only page passing)
+
+**Comparison to Previous Run (15:56 UTC):**
+- Previous: Home page 97/91/100 (all passed)
+- Current: 8 pages below threshold, only Cart passes
+- **Evidence:** Performance variance suggests measurement artifact OR legitimate regression under different conditions
+
+**Measurement Method:** `pnpm run lighthouse:weekly` (covers 10 critical pages)
+
+**Actions Taken:**
+1. ✅ Built the project
+2. ✅ Started local server (pnpm start)
+3. ✅ Ran comprehensive weekly audit on top 10 pages
+4. ✅ Detected 8 failures on Performance metric
+5. ✅ Updated docs/LIGHTHOUSE-STATUS.md with findings
+6. ✅ Updated docs/WEEKLY-LIGHTHOUSE-REPORT.md with detailed report
+7. ✅ Quality gates: type-check ✓, lint ✓, build ✓
+8. ✅ Queuing PERFORMANCE_OPTIMIZATION goal per CLAUDE.md rules
+
+**Commit:** `fb3632461` - [autopilot] chore: qa lighthouse check - 8 pages below performance threshold
+
+**Analysis Notes:**
+- Per docs/PERFORMANCE-BUDGET.md: Lighthouse simulation throttling on localhost is unstable (2.7s real improvement shows as noise)
+- This measurement vs. previous: suggests either cache state variance, system load, or actual code regression
+- Accessibility scores remain strong (92-100)
+- SEO scores mostly strong (69-100)
+
+**המשך מ:** MAINTENANCE_LOOP_7 (09:38) COMPLETE. Performance regression detected. 8 pages below 90 threshold. PERFORMANCE_OPTIMIZATION goal queued. Next: Run optimization goal before proceeding to MAINTENANCE_LOOP_8.
+
+---
+
+## 🎯 PERFORMANCE_OPTIMIZATION (Queued by MAINTENANCE_LOOP_7)
+
+**Status:** QUEUED (awaiting execution)
+
+**Goal:** Analyze the 8 failing pages and identify performance bottlenecks. Prioritize fixes for highest-impact pages (privacy/terms at 81). Run optimizations per performance budget. Re-measure after fixes. Report improvements to docs/LIGHTHOUSE-STATUS.md.
+
+**Pages Requiring Optimization (Performance < 90):**
+1. Privacy Policy (81) — +9 points needed
+2. Terms & Conditions (81) — +9 points needed
+3. Products Catalog (85) — +5 points needed
+4. Search Results (85) — +5 points needed
+5. Contact Form (85) — +5 points needed
+6. Category (Hot Deals) (86) — +4 points needed
+7. Homepage (87) — +3 points needed
+8. User Account (87) — +3 points needed
 
 ---
 
