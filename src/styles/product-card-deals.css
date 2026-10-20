@@ -31,7 +31,7 @@
 */
 .jet-listing-grid-deals__item {
   box-sizing: border-box;
-  padding: 72px 0;
+  padding: 8px 0;
   max-width: 100%;
   flex: 0 0 100%;
 }
@@ -54,7 +54,6 @@
    last one in each row (nth-child(4n)) — lines at x 433 / 721 / 1009 */
 .jet-listing-grid-deals__item .p_con {
   border-inline-end: 1px solid var(--color-border);
-  height: 100%;
 }
 
 @media (min-width: 1200px) {

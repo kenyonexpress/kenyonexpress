@@ -229,3 +229,9 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-20 11:13 | home | 1440 | 30.85% | **FAIL** | `446cd3105-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
 | 2026-10-20 11:18 | home | 1440 | 35.78% | **FAIL** | `733e890b2-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
 | 2026-10-20 11:22 | home | 1440 | 35.78% | **FAIL** | `be8c10640-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-20 11:26 | home | 1440 | 30.85% | **FAIL** | `3cda36807` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-20 11:26 | home | 1440 | 30.85% | **FAIL** | `3cda36807-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-20 11:27 | home | 1440 | n/a | **UNMEASURED** | `3cda36807-dirty` | screenshot failed: page.waitForTimeout: Target page, context or browser has been closed |
+| 2026-10-20 11:28 | home | 1440 | 35.78% | **FAIL** | `3cda36807-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-20 11:29 | home | 1440 | 23.91% | **FAIL** | `3cda36807-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-20 11:31 | home | 1440 | 23.91% | **FAIL** | `3cda36807-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
