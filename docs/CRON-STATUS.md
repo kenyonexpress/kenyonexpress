@@ -8,8 +8,10 @@
 Vercel MCP: at 13:15 UTC the connector was authenticated but every project-scoped read (`get_runtime_logs`,
 `get_runtime_errors`, `list_deployments`, `get_project`) returned **403 forbidden** for
 `team_TUMTPVDP8218QHwedSjmgJWl` / `prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`; the connector's grant does not cover the team.
-At 17:10 UTC the server reported connected but exposed **no callable tools** to this session (three tool searches for
-`get_runtime_logs` returned nothing). Per the MCP's own recovery text, the mapped CLI fallback was used both times with
+At 17:10 UTC the server reported connected but exposed **no callable tools** to this session: `claude mcp list` reads
+`claude.ai Vercel: https://mcp.vercel.com - ! Connected · tools fetch failed — Request timed out`, twice, 20 s apart,
+and six tool searches for `get_runtime_logs` plus a resource listing returned nothing. The timeout is between the
+harness and mcp.vercel.com, not a grant problem, and nothing inside the repo can retry it. Per the MCP's own recovery text, the mapped CLI fallback was used both times with
 the same team and project:
 
 ```
@@ -169,7 +171,7 @@ clock; no fix listed above has been applied.
 
 ## History
 
-- 2026-10-20 17:10 UTC: re-run of this check. MCP exposed no tools; CLI fallback. 0×2xx, 0×5xx in 7d, 12/12 GitHub
+- 2026-10-20 17:10 UTC: re-run of this check. MCP tool fetch timed out (harness to mcp.vercel.com); CLI fallback. 0×2xx, 0×5xx in 7d, 12/12 GitHub
   scheduled runs failed, deployment and `crons: []` unchanged.
 - 2026-10-20 13:15 UTC: first measured check. MCP log reads 403, CLI fallback measured. 0×2xx in 7d.
 - 2026-10-20 07:45 UTC: previous loop marked the 5 `vercel.json` routes STALE via CLI, 0 executions in 48h.

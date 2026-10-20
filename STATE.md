@@ -6,11 +6,12 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 **Goal:** Check all cron routes' last-run timestamp via Vercel MCP get_runtime_logs, alert in docs/CRON-STATUS.md if any route is stale over 24h, commit as chore ops cron status check, push.
 
-**Result:** COMPLETE, alert stands. Vercel MCP connected but exposed no callable tools (three searches for `get_runtime_logs` found nothing), so the documented CLI fallback measured the same team and project. Production deployment is unchanged (`audit/final-audit` @ `337d1a2a`, `crons: []`), `vercel crons ls` shows the five `vercel.json` routes as not deployed with 0 hits, and `/api/cron/*` over 7 days has 0 × 2xx and 0 × 5xx. The last 50 hits (09:08 to 15:18 UTC) are 33 × 401 and 17 × 404, all from the GitHub `cron.yml` scheduler, whose last 12 scheduled runs all failed (duplicated manifest 000s, CRON_SECRET 401s, missing-route 404s). Every cron route is 🔴 stale over 24h. docs/CRON-STATUS.md got a 17:10 UTC re-measurement section and a history line; commit 6968e9a21 pushed.
+**Result:** COMPLETE, alert stands. Vercel MCP never delivered its tool list: `claude mcp list` reads `Connected · tools fetch failed — Request timed out` on two reads 20 s apart, and six tool searches plus a resource listing found nothing, so `get_runtime_logs` was not callable and the documented CLI fallback measured the same team and project. Production deployment is unchanged (`audit/final-audit` @ `337d1a2a`, `crons: []`), `vercel crons ls` shows the five `vercel.json` routes as not deployed with 0 hits, and `/api/cron/*` over 7 days has 0 × 2xx and 0 × 5xx. The last 50 hits (09:08 to 15:18 UTC) are 33 × 401 and 17 × 404, all from the GitHub `cron.yml` scheduler, whose last 12 scheduled runs all failed (duplicated manifest 000s, CRON_SECRET 401s, missing-route 404s). Every cron route is 🔴 stale over 24h. docs/CRON-STATUS.md got a 17:10 UTC re-measurement section and a history line; commit 6968e9a21 pushed.
 
 **Gates:** `pnpm type-check` clean, `pnpm lint` clean (biome 1697 files, tokens, copy and asset gates clean), `pnpm build` exit 0.
 
 **החלטות שהתקבלו לבד:**
+- The `get_runtime_logs` MCP step is blocked by a connector timeout outside the repo; after four attempts it was skipped per the stuck-twice rule and the CLI read of the same log store stands in for it. Not fabricated, recorded as blocked.
 - No fix applied: every remedy is a production deploy, a secret rotation or a change to protected `main`, all outside this loop's scope. The doc lists them.
 - The re-measurement was appended to the existing report rather than replacing it, so the 13:15 and 17:10 readings can be compared.
 
