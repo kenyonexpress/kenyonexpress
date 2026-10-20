@@ -1,14 +1,16 @@
 # Cron Routes Status
 
-**Last check:** 2026-10-20 13:15 UTC (MAINTENANCE_LOOP_5)
-**Status:** 🔴 CRITICAL. No cron route has completed successfully in production in the last 7 days. 0 requests with status 2xx.
+**Last check:** 2026-10-20 17:10 UTC (MAINTENANCE_LOOP_5, re-run)
+**Status:** 🔴 CRITICAL, unchanged since 13:15 UTC. No cron route has completed successfully in production in the last 7 days. 0 requests with status 2xx, 0 with 5xx; every hit is 401 or 404.
 
 ## How this was measured
 
-Vercel MCP is authenticated this session and `list_teams` / `list_projects` answer, but every read scoped to the project
-(`get_runtime_logs`, `get_runtime_errors`, `list_deployments`, `get_project`) returns **403 forbidden** for
-`team_TUMTPVDP8218QHwedSjmgJWl` / `prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`. The connector's grant does not cover the team.
-Per the MCP's own recovery text, the mapped CLI fallback was used with the same team and project:
+Vercel MCP: at 13:15 UTC the connector was authenticated but every project-scoped read (`get_runtime_logs`,
+`get_runtime_errors`, `list_deployments`, `get_project`) returned **403 forbidden** for
+`team_TUMTPVDP8218QHwedSjmgJWl` / `prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`; the connector's grant does not cover the team.
+At 17:10 UTC the server reported connected but exposed **no callable tools** to this session (three tool searches for
+`get_runtime_logs` returned nothing). Per the MCP's own recovery text, the mapped CLI fallback was used both times with
+the same team and project:
 
 ```
 vercel --scope kenyonexpress-projects logs --project kenyonexpress --since 7d --json --query "/api/cron/<route>"
@@ -144,9 +146,32 @@ stranded payments are not swept, reconcile does not run, abandoned-cart nudges d
    `main` is protected (PR + 4 checks); this branch's manifest is clean and could be the source.
 4. Set the repo variable `CRON_BASE_URL=https://kenyonexpress.co.il` once TLS on the apex is confirmed.
 
+## 17:10 UTC re-measurement (same day)
+
+Same CLI queries, `--since 48h` (50-row cap reached, window actually covers 09:08 to 15:18 UTC) plus `--since 3h`:
+
+| Metric | Value |
+|---|---|
+| Production deployment | still `dpl_AP18UQwUQdhd3XWNo41seDQvAcuA` (`audit/final-audit` @ `337d1a2a`), `crons: []` |
+| `vercel crons ls` | 5 paths, all **not deployed** |
+| `/api/cron/*` hits, 7d, status 2xx | **0** |
+| `/api/cron/*` hits, 7d, status 5xx | **0** |
+| Last 50 hits (09:08 to 15:18 UTC) | 401 = 33, 404 = 17 |
+| Newest hit of any cron route | `search-outbox` 404 at 15:18:18 UTC, from the GitHub scheduler |
+| GitHub `cron.yml`, last 12 scheduled runs (07:43 to 15:18 UTC) | **12 / 12 failed** |
+
+Latest run `39447136094` (15:18 UTC, schedule `*/10`): `invoices`, `stock`, `stranded-payments` answered `000` twice each
+(duplicated-manifest curl defect, never reached Vercel), `webhook-dlq` 401, `job-dlq` 404, `search-outbox` 404.
+
+The five `vercel.json` routes (`observability-check`, `fraud-monitor`, `p95-monitor`, `deal-scraper`,
+`stock-notifications`) still have **0 hits** and remain 🔴 stale. Nothing changed between the two checks except the
+clock; no fix listed above has been applied.
+
 ## History
 
-- 2026-10-20 13:15 UTC: this check. MCP log reads 403, CLI fallback measured. 0×2xx in 7d.
+- 2026-10-20 17:10 UTC: re-run of this check. MCP exposed no tools; CLI fallback. 0×2xx, 0×5xx in 7d, 12/12 GitHub
+  scheduled runs failed, deployment and `crons: []` unchanged.
+- 2026-10-20 13:15 UTC: first measured check. MCP log reads 403, CLI fallback measured. 0×2xx in 7d.
 - 2026-10-20 07:45 UTC: previous loop marked the 5 `vercel.json` routes STALE via CLI, 0 executions in 48h.
 - 2026-10-20 ~20:50 (session clock): a loop recorded "BLOCKED, MCP needs OAuth". Superseded: MCP is authenticated,
   the block is a team-scope 403 on the connector grant, not OAuth.
