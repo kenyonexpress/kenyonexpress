@@ -104,24 +104,20 @@ describe('ToastDemo component', () => {
     expect(grid).toHaveClass('grid-cols-2')
   })
 
-  it(
-    'should have loading button disabled when loading',
-    async () => {
-      render(<ToastDemo />)
-      const loadingBtn = screen.getByRole('button', { name: /Loading/i })
+  it('should have loading button disabled when loading', async () => {
+    render(<ToastDemo />)
+    const loadingBtn = screen.getByRole('button', { name: /Loading/i })
 
-      expect(loadingBtn).not.toBeDisabled()
-      fireEvent.click(loadingBtn)
+    expect(loadingBtn).not.toBeDisabled()
+    fireEvent.click(loadingBtn)
 
-      expect(loadingBtn).toBeDisabled()
+    expect(loadingBtn).toBeDisabled()
 
-      await waitFor(
-        () => {
-          expect(loadingBtn).not.toBeDisabled()
-        },
-        { timeout: 5000 },
-      )
-    },
-    { timeout: 5000 },
-  )
+    await waitFor(
+      () => {
+        expect(loadingBtn).not.toBeDisabled()
+      },
+      { timeout: 5000 },
+    )
+  })
 })
