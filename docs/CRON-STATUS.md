@@ -1,6 +1,6 @@
 # Cron Routes Status
 
-**Last check:** 2026-10-20 23:52 UTC (MAINTENANCE_LOOP_5, fifth run today; MCP `get_runtime_logs` called in-session twice, 403 both times; observability query 404; production DB side-effect ledger read)
+**Last check:** 2026-10-21 00:14 UTC (MAINTENANCE_LOOP_5, fifth run today; MCP `get_runtime_logs` called in-session twice, 403 both times; observability query 404; production DB side-effect ledger read)
 **Status:** 🔴 CRITICAL, unchanged since 13:15 UTC (fifth consecutive measurement). No cron route has completed successfully in production in the last 7 days. 0 requests with status 2xx, 0 with 5xx; every hit is 401 or 404.
 
 ## How this was measured
@@ -332,6 +332,13 @@ The five `vercel.json` routes (`observability-check`, `fraud-monitor`, `p95-moni
 been applied since the 13:15 UTC check.
 
 ## History
+
+- 2026-10-21 00:14 UTC: the grant's shape was pinned down. MCP `get_auth_user` answers `404: not_found. User not found`,
+  and `list_projects` with no team answers the same two team projects. The connector therefore holds a team-scoped
+  integration token with no user principal and no personal scope; log and observability reads need a scope that
+  token was not granted. There is no other team, project, account or endpoint to try from this side. Unblocking is
+  a reconnect of the Vercel connector in claude.ai settings with log read for `kenyonexpress-projects`; Ofir was
+  told at 23:58 UTC with that exact step.
 
 - 2026-10-20 23:52 UTC: fifth run, part two. `get_observability_schema` and `create_observability_query` via MCP:
   404 "Observability Data not found" (not a 403). Production tables read through the management API: the
