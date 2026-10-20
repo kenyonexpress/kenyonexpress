@@ -219,6 +219,14 @@ been applied since the 13:15 UTC check; only the clock moved.
 
 ## History
 
+- 2026-10-20 20:12 to 20:24 UTC: after the 19:56 run the MCP read was retried five ways, none reached Vercel.
+  `claude mcp list` at 20:13, 20:14 and 20:18 UTC: `Connected · tools fetch failed — Request timed out`. Three in-session
+  tool searches and a resource listing: nothing exposed. Raw probes of `https://mcp.vercel.com/`: GET answers 401 in
+  4.2 s (reachable), an unauthenticated `initialize` POST hung past 20 s once (HTTP 000) and then answered 401 in 3.9 s,
+  1.9 s and 17.3 s, so the endpoint's latency swings up to the harness's fetch timeout. A fresh read-only `claude -p`
+  session from `/tmp` saw no Vercel server at all; a fresh read-only session from the worktree got
+  `CONNECT_TIMEOUT: MCP server claude.ai Vercel connection timed out after 30000ms`. The 403 grant failure of 17:46 UTC
+  could not even be re-reached today; the blocker moved one layer down, to the connection. Nothing in the repo changes it.
 - 2026-10-20 19:56 UTC: third run. MCP tools fetch timed out again (connected, no tools exposed); CLI fallback measured.
   0×2xx, 0×5xx in 7d, 12/12 GitHub scheduled runs failed, deployment and `crons: []` unchanged. All 5 routes stale.
 - 2026-10-20 17:52 UTC: grant enumerated via MCP. One team, two projects (production and staging), `get_runtime_logs`

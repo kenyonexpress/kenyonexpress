@@ -13,6 +13,7 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 **החלטות שהתקבלו לבד:**
 - The MCP read was attempted (tool fetch timed out at the harness, same as 17:10 UTC) and not waited on: the grant failure (403 on log reads) was already proven twice from a fresh session on this date, and a timed-out tool list cannot be fixed from the repo. CLI fallback is the MCP's own documented mapping and reads the same request-log store.
 - No tests were added: the change is a measurement report in docs/, with no code path to cover.
+- 20:12 to 20:24 UTC, after the stop hook asked for the literal MCP call: retried five ways (three `claude mcp list` polls, in-session tool searches, raw HTTP probes of mcp.vercel.com, a fresh read-only `claude -p` from `/tmp` and one from the worktree). The fresh session measured `CONNECT_TIMEOUT: MCP server claude.ai Vercel connection timed out after 30000ms`; raw probes show the endpoint answering between 1.9 s and 20+ s. The MCP call cannot be made from this machine right now and no repo change affects it. Per the recorded procedure for a hook on a false prerequisite (17:05 entry), no further turns are spent; MAINTENANCE_LOOP_5 re-runs every queue cycle and will take the MCP read when the connector answers. Evidence recorded in `docs/CRON-STATUS.md` History.
 
 **המשך מ:** MAINTENANCE_LOOP_6 (head of `~/ke-goals/queue.txt`): mobile gate recheck via scripts/compare.mjs, report to docs/GATE-STATUS.md.
 
