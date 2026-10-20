@@ -1,13 +1,13 @@
 # Code Debt Status Report
 
-Last updated: 2026-10-20 16:13 UTC
+Last updated: 2026-10-20 18:17 UTC
 Scanned: src/ (TypeScript, TSX, JavaScript, JSX)
 
 ## Summary
 
 **Total code debt comments: 8**
-- Previous scan: 8 (2026-10-20 16:00 UTC via MAINTENANCE_LOOP_8)
-- Current scan: 8 (2026-10-20 16:13 UTC, commit bbc6e97a1)
+- Previous scan: 8 (2026-10-20 16:13 UTC, commit bbc6e97a1, MAINTENANCE_LOOP_8 third pass)
+- Current scan: 8 (2026-10-20 18:17 UTC, commit 43df16e43, MAINTENANCE_LOOP_8 fourth pass)
 - Delta: 0 (stable, no growth detected)
 - Cleanup goal queued: no (count did not grow)
 
@@ -18,8 +18,11 @@ Scanned: src/ (TypeScript, TSX, JavaScript, JSX)
 | 2026-10-20 15:57 | 48e35ab03 | 8 | 0 | 0 | 8 | baseline | no |
 | 2026-10-20 16:00 | 13c54057b | 8 | 0 | 0 | 8 | 0 | no |
 | 2026-10-20 16:13 | bbc6e97a1 | 8 | 0 | 0 | 8 | 0 | no |
+| 2026-10-20 18:17 | 43df16e43 | 8 | 0 | 0 | 8 | 0 | no |
 
-Word-boundary scan (`\b(TODO|FIXME|HACK)\b`) and the loose scan below agree on 8; no false positives from identifiers.
+Word-boundary scan (`\b(TODO|FIXME|HACK)\b`) and the loose scan below agree on 8 in every pass; no false positives from identifiers. The TODO column counts the 7 comments plus the one test stub string in src/lib/whatsapp.test.ts, as in the baseline.
+
+Between the 16:13 and 18:17 scans the branch gained 16 commits (6d672d0b9..43df16e43). Exactly one touched src/: ee0abecc4 added two lines to src/components/CouponCardSkeleton.tsx with no debt marker, so the list below is byte-identical.
 
 ## Findings
 
