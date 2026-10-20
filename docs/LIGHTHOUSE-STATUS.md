@@ -1,17 +1,33 @@
 # Lighthouse CI Status Report
 
-**Last Updated:** 2026-10-20 22:36 UTC (MAINTENANCE_LOOP_7, fifth pass)
+**Last Updated:** 2026-10-20 23:50 UTC (MAINTENANCE_LOOP_7, sixth pass)
 **Measurement Method:** `LHCI_BASE_URL=http://localhost:3361 COMPARE_PRODUCT_SLUG=<slug> pnpm lhci:autorun`
 (`@lhci/cli` 0.15.1 via `pnpm dlx`, Lighthouse 12.6.1, `desktop` preset, 3 runs per URL, lhci median)
-**Build:** commit `dea5b5d6a` (clean tree), fresh `pnpm build` exit 0, BUILD_ID `bQ2YvEbrGNi9s2Vv5VFYi`, served by `pnpm start` from this worktree on port 3361 (listener pid 43765, cwd verified as this checkout before the run, port free beforehand, killed by pid afterwards). The `.next` from the 05:34 gate build was complete and would have served, but a rebuild costs three minutes and removes the question of what it was built with.
-**Reports:** `.lighthouseci/reports/` (git-ignored, nothing uploaded; the 21:15 reports were moved out of the repo so the manifest holds only this pass)
+**Build:** commit `d40dcc729` (clean tree), fresh `pnpm build` exit 0, BUILD_ID `1GOAUu-1wqcwPGGvPXG2q`, served by `pnpm start` from this worktree on port 3361 (listener pid 86255, cwd verified as this checkout before the run, port free beforehand, killed by pid afterwards). `pnpm type-check` and `pnpm lint` ran clean alongside the build.
+**Reports:** `.lighthouseci/reports/` (git-ignored, nothing uploaded; the 22:36 reports were moved out of the repo so the manifest holds only this pass)
 
 ## Summary
 
 ✅ **Every category at or above 90 on all three URLs, in all nine runs.** No optimisation goal queued; `~/ke-goals/queue.txt` untouched.
-✅ **Performance 98 to 99** on the representative runs (target ≥ 90); the nine individual runs are 98 to 99
-✅ **Accessibility 100** in all nine runs (target ≥ 90), third consecutive pass holding the A11Y_FIX_PRODUCTS_LIGHTHOUSE result
+✅ **Performance 98 to 99** on the representative runs (target ≥ 90); the nine individual runs are 98 to 100
+✅ **Accessibility 100** in all nine runs (target ≥ 90), fourth consecutive pass holding the A11Y_FIX_PRODUCTS_LIGHTHOUSE result
 ✅ Best Practices 96 and SEO 100 everywhere
+
+| URL | Performance | Accessibility | Best Practices | SEO | FCP | LCP | TBT | CLS | Status |
+|-----|-------------|---------------|----------------|-----|-----|-----|-----|-----|--------|
+| `/` | 98 (98, 98, 99) | 100 (100, 100, 100) | 96 | 100 | 0.4 s | 1.0 s | 0 ms | 0.011 | ✅ PASS |
+| `/products` | 99 (98, 99, 100) | 100 (100, 100, 100) | 96 | 100 | 0.4 s | 0.9 s | 0 ms | 0.008 | ✅ PASS |
+| `/product/אוזניות-איירפודס-3` | 99 (99, 99, 98) | 100 (100, 100, 100) | 96 | 100 | 0.4 s | 0.9 s | 0 ms | 0.010 | ✅ PASS |
+
+The first number is lhci's representative (median) run, the bracket lists all three runs in order. Metrics are from the representative run.
+
+No weighted audit scores below 0.9 in any category except `errors-in-console` under Best Practices, which is the same five local-environment items as every previous pass (two `/_vercel/*` 404s, two "Refused to execute" on their `text/plain` answer, one `ERR_SSL_PROTOCOL_ERROR` on an https request to the plain-http localhost origin), checked item by item on all three representative reports. Nothing to fix in the tree.
+
+Against the 22:36 pass: `/` moved 99 to 98 and the product page 98 to 99, `/products` is identical. `git diff --stat dea5b5d6a d40dcc729 -- src package.json next.config.ts` is empty: the commits between the passes touch only `docs/`, `logs/` and STATE.md, so the one-point moves in both directions are the localhost run-to-run band described in `docs/PERFORMANCE-BUDGET.md`, not a code change. The only run with non-zero TBT was the first run on `/` (70 ms), which did not become the representative run.
+
+## Previous pass (2026-10-20 22:36 UTC, MAINTENANCE_LOOP_7, fifth pass)
+
+Build: commit `dea5b5d6a`, BUILD_ID `bQ2YvEbrGNi9s2Vv5VFYi`.
 
 | URL | Performance | Accessibility | Best Practices | SEO | FCP | LCP | TBT | CLS | Status |
 |-----|-------------|---------------|----------------|-----|-----|-----|-----|-----|--------|
@@ -19,11 +35,7 @@
 | `/products` | 99 (98, 99, 99) | 100 (100, 100, 100) | 96 | 100 | 0.4 s | 0.9 s | 0 ms | 0.019 | ✅ PASS |
 | `/product/אוזניות-איירפודס-3` | 98 (98, 99, 98) | 100 (100, 100, 100) | 96 | 100 | 0.4 s | 1.1 s | 0 ms | 0.010 | ✅ PASS |
 
-The first number is lhci's representative (median) run, the bracket lists all three runs in order. Metrics are from the representative run.
-
-No weighted audit scores below 0.9 in any category except `errors-in-console` under Best Practices, which is the same five local-environment items as every previous pass (two `/_vercel/*` 404s, two "Refused to execute" on their `text/plain` answer, one `ERR_SSL_PROTOCOL_ERROR` on an https request to the plain-http localhost origin), checked item by item on all three representative reports. Nothing to fix in the tree.
-
-Against the 21:15 pass: `/` and `/products` are identical to the point and to the metric, and the product page moved from 99 to 98 (LCP 0.9 s to 1.1 s, CLS 0.021 to 0.010). `git diff --stat e351b0bff..dea5b5d6a -- src` is empty: the sixteen commits between the passes touch 14 files, all under `docs/`, `e2e/`, `logs/` and STATE.md, so the one-point move is the localhost run-to-run band described in `docs/PERFORMANCE-BUDGET.md`, not a code change.
+All nine runs at or above 90; nothing was queued. The 21:15 to 22:36 shift (product page 99 to 98) was the same localhost band.
 
 ## Previous pass (2026-10-20 21:15 UTC, MAINTENANCE_LOOP_7, fourth pass)
 
