@@ -1,6 +1,6 @@
 # Cron Routes Status
 
-**Last check:** 2026-10-20 23:27 UTC (MAINTENANCE_LOOP_5, fifth run today; MCP `get_runtime_logs` called in-session twice, 403 both times)
+**Last check:** 2026-10-21 00:14 UTC (MAINTENANCE_LOOP_5, fifth run today; MCP `get_runtime_logs` called in-session twice, 403 both times; observability query 404; production DB side-effect ledger read)
 **Status:** 🔴 CRITICAL, unchanged since 13:15 UTC (fifth consecutive measurement). No cron route has completed successfully in production in the last 7 days. 0 requests with status 2xx, 0 with 5xx; every hit is 401 or 404.
 
 ## How this was measured
@@ -58,6 +58,52 @@ answer `000` twice each (duplicate manifest names), `webhook-dlq` answers 401 (s
 `search-outbox` answer 404 (not on the deployed branch). Nothing changed between the 22:18 and 23:27 measurements,
 and no action in this loop can change it: the three owners are unchanged (deploy choice, Ofir's secret, a dedupe PR
 to protected `main`).
+
+## True last-run evidence from production itself (23:52 UTC)
+
+The request logs only hold 7 days and show attempts, not outcomes. Production's own tables hold the outcome of every
+cron route that writes something, with no retention cap. Read via the Supabase management API (read-only, one
+`UNION ALL` statement, no rows written):
+
+| Route | Side effect dated | Latest value | Backlog waiting for the route |
+|---|---|---|---|
+| `notifications` | `notification_outbox.sent_at` / `push_sent_at` | **never** (both NULL on every row) | **232** rows never sent |
+| `health` (search floor) | `search_index_outbox.done_at` | **never** | **163** rows never drained |
+| `search-outbox` | `search_index_outbox.done_at` | **never** | same 163 |
+| `whatsapp` | `whatsapp_outbox.sent_at` | never (table empty of sent rows) | 0 |
+| `abandoned-cart` | `abandoned_cart_nudges.sent_at` | never | 0 |
+| `stock` | `stock_waitlist.notified_at` | never | 0 |
+| `stock` / `reap-carts` | `stock_reservations.released_at` | 2026-09-21 22:45:56 UTC | **10** expired reservations never released |
+| `reap-carts` | expired `carts` still present | oldest expiry 2026-10-05 22:26 UTC | **1,029** expired carts not reaped |
+| `expire-vouchers` | `vouchers.updated_at` | 2026-10-15 03:00:09 UTC | 0 past-expiry open vouchers |
+| `invoices` | `invoices.issued_at` | 2026-10-15 03:04:39 UTC | 0 unissued |
+| `subscriptions` | `subscriptions.last_charge_at` | never | 0 due |
+| `retention` (report refresh) | `report_cohort_retention.refreshed_at` | 2026-10-20 01:30:00 UTC | n/a |
+
+So the **true last successful run** of the routes that leave a trace is: never for `notifications`, `search-outbox`,
+`whatsapp`, `abandoned-cart`, `stock` waitlist and `subscriptions`; before 2026-09-21 for reservation release; before
+2026-10-05 for `reap-carts`. The 15.10 03:00 voucher and invoice timestamps are the newest writes to those tables
+and are not attributed to a route here. No table in production is named like a cron ledger (`information_schema`
+scan for cron, job, run, heartbeat, scheduler: 0 tables), so there is no per-route run log to read.
+
+### The one scheduler that is alive: pg_cron inside the database
+
+`cron.job` holds exactly one job and `cron.job_run_details` is its ledger:
+
+| Job | Schedule | Active | Runs | Last run (UTC) | Status |
+|---|---|---|---|---|---|
+| `report_tables_nightly` (`select public.refresh_report_tables()`) | `30 1 * * *` | yes | 47 succeeded, 0 failed, since 2026-09-04 | **2026-10-20 01:30:00** | 🟢 fresh (under 24h) |
+
+That is why `report_cohort_retention.refreshed_at` reads 01:30 today: the database refreshes the report tables on its
+own, independent of Vercel and of GitHub Actions. It is the only scheduled work on this system with a success in the
+last 24 hours.
+
+### Vercel observability via MCP
+
+`get_observability_schema` and `create_observability_query` (metric `vercel_requests`, grouped by path and status,
+7 days) both answer `404: not_found. Observability Data not found` for the team. Not a grant failure like the log
+reads; the observability data product is not present for this team, so there is no MCP-side path to a per-route
+count either.
 
 ## Production deployment facts
 
@@ -286,6 +332,19 @@ The five `vercel.json` routes (`observability-check`, `fraud-monitor`, `p95-moni
 been applied since the 13:15 UTC check.
 
 ## History
+
+- 2026-10-21 00:14 UTC: the grant's shape was pinned down. MCP `get_auth_user` answers `404: not_found. User not found`,
+  and `list_projects` with no team answers the same two team projects. The connector therefore holds a team-scoped
+  integration token with no user principal and no personal scope; log and observability reads need a scope that
+  token was not granted. There is no other team, project, account or endpoint to try from this side. Unblocking is
+  a reconnect of the Vercel connector in claude.ai settings with log read for `kenyonexpress-projects`; Ofir was
+  told at 23:58 UTC with that exact step.
+
+- 2026-10-20 23:52 UTC: fifth run, part two. `get_observability_schema` and `create_observability_query` via MCP:
+  404 "Observability Data not found" (not a 403). Production tables read through the management API: the
+  notification outbox has 232 rows and `sent_at` was never set on any, the search outbox has 163 rows never drained,
+  1,029 expired carts are unreaped since 05.10, 10 stock reservations expired unreleased since 21.09. pg_cron
+  `report_tables_nightly` is the only live scheduler: 47/47 succeeded, last 2026-10-20 01:30 UTC.
 
 - 2026-10-20 23:27 UTC: fifth run. MCP `get_runtime_logs` called twice in-session (7d filtered, and
   `group_by=requestPath` over 24h): both `403: forbidden` at page 0, 0 rows. CLI fallback over 24h: 0 rows with
