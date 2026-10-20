@@ -1,20 +1,12 @@
 # Gate Status Report
 
 ## Measurement Date
-2026-10-20 14:55 UTC (Session: MAINTENANCE_LOOP_6 autonomous maintenance check)  
-**Prior check:** 2026-10-20 14:25 UTC (Status verification)  
-**Baseline measurement:** 2026-10-20 11:24 UTC (Fresh measurement baseline)
+2026-10-20 11:24 UTC (Session: MAINTENANCE_LOOP_6 RE-CHECK)
 
 ## Gate Threshold
 All compare.mjs measurements must remain below **11%** deviation from the live reference.
 
-## Current Status: ⚠️ ABOVE THRESHOLD - MOBILE GATE EXCEEDS 11% (2026-10-20 14:55 UTC CHECK)
-
-**Autonomous Maintenance Check Result:** Status confirmed ABOVE THRESHOLD. Requeue condition MET.
-- ✅ Mobile gate 380px: **20.46%** (exceeds 11% by 9.46 points)
-- ✅ Requeue condition triggered: Mobile fix goal queued at head of queue
-- ✅ Desktop gate 1440px: 16.48% (also exceeds)
-- ⚠️ **Action:** Mobile fix goal is queued; next MAINTENANCE_LOOP must process it
+## Current Status: ⚠️ ABOVE THRESHOLD - MOBILE GATE EXCEEDS 11%
 
 ### Home Page (Fresh Measurement — 2026-10-20 11:24 UTC)
 - **380px (mobile): 20.46%** ❌ EXCEEDS 11% by 9.46 points ← CONDITION MET, MOBILE FIX REMAINS QUEUED
