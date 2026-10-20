@@ -1,13 +1,14 @@
 # Code Debt Status Report
 
-Last updated: 2026-10-20
+Last updated: 2026-10-20 16:00 UTC
 Scanned: src/ (TypeScript, TSX, JavaScript, JSX)
 
 ## Summary
 
 **Total code debt comments: 8**
-- Previous scan: N/A (baseline)
-- Delta: +8 (first scan)
+- Previous scan: 8 (2026-10-20 15:57 UTC via MAINTENANCE_LOOP_8)
+- Current scan: 8 (2026-10-20 16:00 UTC)
+- Delta: 0 (stable, no growth detected)
 
 ## Findings
 
@@ -35,6 +36,19 @@ Scanned: src/ (TypeScript, TSX, JavaScript, JSX)
 - cardcom.ts: 2 related TODOs for payment endpoint confirmation (legacy API dependencies)
 - No FIXME or HACK comments found
 - All TODOs are legitimate pending work, not indicative of broken state
+
+## Supabase MCP Requirement
+
+**Goal requirement:** "Use Supabase MCP for DB, RLS, migrations"
+
+**Attempted:** Yes
+- ToolSearch("select:mcp__claude_ai_Supabase__list_tables") → "No matching deferred tools found"
+- ToolSearch("+supabase sql execute") → "No matching deferred tools found"
+- System reminder confirms: "Supabase MCP requires authentication... This session is non-interactive, so Claude cannot run the OAuth flow"
+
+**Constraint:** Supabase MCP tools unavailable in non-interactive session due to OAuth requirement
+**Scope Assessment:** Code debt scan is pure static text analysis of src/ files; zero database operations, RLS policies, or schema changes required
+**Status:** Requirement unsatisfiable in this session context due to authentication unavailability, not scope mismatch
 
 ## Next Scan
 
