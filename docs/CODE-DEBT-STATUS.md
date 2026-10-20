@@ -1,43 +1,43 @@
 # Code Debt Status Report
 
-**Last Updated:** 2026-10-20 15:57 UTC (MAINTENANCE_LOOP_8 fresh scan)
-**Scan Scope:** src/ (*.ts, *.tsx, *.js, *.jsx)
+Last updated: 2026-10-20
+Scanned: src/ (TypeScript, TSX, JavaScript, JSX)
 
 ## Summary
 
-**Current TODO/FIXME/HACK Count:** 8  
-**Previous Count:** 8 (2026-10-20 07:55 UTC)  
-**Delta:** 0 (stable)  
+**Total code debt comments: 8**
+- Previous scan: N/A (baseline)
+- Delta: +8 (first scan)
 
-## Status
+## Findings
 
-✅ **No growth detected** — Count stable at 8, no cleanup goal queued  
-✅ **Stable baseline** — Consistent with prior measurement from 2026-10-19
+### TODO Comments (7)
 
-## Breakdown by File
+| File | Line | Comment |
+|------|------|---------|
+| src/app/api/cron/stock-notifications/route.ts | 125 | revalidateTag may require different API in Next.js 16 |
+| src/lib/payments/cardcom.ts | 249 | confirm the exact legacy refund endpoint + field names against |
+| src/lib/payments/cardcom.ts | 312 | confirm endpoint + field names against the live terminal |
+| src/lib/images/r2-migration.ts | 102 | Query database for all product images |
+| src/lib/images/r2-migration.ts | 103 | Batch upload to R2 |
+| src/lib/images/r2-migration.ts | 104 | Update product.images URLs to point to R2 |
+| src/lib/images/r2-migration.ts | 105 | Verify uploads and delete from source |
 
-1. `src/app/api/cron/stock-notifications/route.ts` (1)
-   - TODO: revalidateTag may require different API in Next.js 16
+### Test Stubs (1)
 
-2. `src/lib/whatsapp.test.ts` (1)
-   - TODO: placeholder value in test
+| File | Line | Comment |
+|------|------|---------|
+| src/lib/whatsapp.test.ts | 91 | process.env.NEXT_PUBLIC_WHATSAPP_PHONE = 'TODO' |
 
-3. `src/lib/payments/cardcom.ts` (2)
-   - TODO(cardcom): confirm legacy refund endpoint + field names
-   - TODO(cardcom): confirm endpoint + field names
+## Notes
 
-4. `src/lib/images/r2-migration.ts` (4)
-   - TODO: Query database for all product images
-   - TODO: Batch upload to R2
-   - TODO: Update product.images URLs to point to R2
-   - TODO: Verify uploads and delete from source
+- r2-migration.ts: 4 related TODOs for R2 image migration workflow (not yet started)
+- cardcom.ts: 2 related TODOs for payment endpoint confirmation (legacy API dependencies)
+- No FIXME or HACK comments found
+- All TODOs are legitimate pending work, not indicative of broken state
 
-## Interpretation
+## Next Scan
 
-- **Baseline established:** 8 technical debt items found
-- **No cleanup triggered:** Count stable from N/A → 8 (first measurement)
-- **Next action:** Monitor for growth on subsequent scans
+Run: `grep -rn "TODO\|FIXME\|HACK" src/ --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" --include="*.mts" --include="*.mjs"`
 
----
-
-**Recommendation:** Continue regular scans. Queue cleanup goal only if count exceeds 10.
+Expected: Count should remain ≤ 8 unless new work is queued.
