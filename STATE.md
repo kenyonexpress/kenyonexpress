@@ -4131,3 +4131,10 @@ Supabase MCP authentication unavailable in non-interactive session. CLI fallback
 - Gates: type-check exit 0, lint exit 0 (biome 1700 files + 3 gates), build exit 0. Backup 2026-10-21-0201 present, three kept; caffeinate alive, SleepDisabled 1.
 
 **המשך מ:** MAINTENANCE_LOOP_4 (head of ~/ke-goals/queue.txt).
+
+## MAINTENANCE_LOOP_4 fifth pass (2026-10-20 23:05 UTC, commit 0d2462751)
+- Full Playwright suite, run 7, against the mock build Bdgyt_RrnrfyxeiDYYXGH on port 3417 (listener verified by PID and cwd, this worktree), prefix 10.44.81, `--retries=1`, two workers, both projects: 682 total, 617 passed, 58 failed, 0 flaky, 7 skipped, 18.5 min (JSON reporter, /tmp/ke-e2e/run7.json). The 58 failures are run 6's 58, class for class and case for case (classes 1 to 12 in docs/E2E-STATUS.md); run 6's one flaky case passed first time, so passed rose 616 to 617. Server log: 1 supabase.timeout (suppliers read at 23:12:47) against 7 in run 6, and no test failed on it.
+- No flaky case, so no spec change this cycle; docs/E2E-STATUS.md gained the run 7 row, the run narrative and the gates paragraph. Supabase MCP and GitHub MCP not needed (no DB work, no PR; the connector still reports Needs authentication here).
+- Gates: type-check exit 0, lint exit 0 (run at nice 19 during the suite), build exit 0 (the mock build above; no source changed). Backup 2026-10-21-0201 present, three kept; caffeinate alive, SleepDisabled 1.
+
+**המשך מ:** MAINTENANCE_LOOP_5 (head of ~/ke-goals/queue.txt).

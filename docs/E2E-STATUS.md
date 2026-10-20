@@ -1,10 +1,10 @@
 # E2E Test Status
 
-**Last run:** 2026-10-20 21:49 UTC, run 6, MAINTENANCE_LOOP_4 fourth cycle
-**Base commit:** 5ba9efa96 on `autopilot`
+**Last run:** 2026-10-20 23:05 UTC, run 7, MAINTENANCE_LOOP_4 fifth cycle
+**Base commit:** 0d2462751 on `autopilot`
 **Recipe:** `CARDCOM_USE_MOCK=true CHECKOUT_ENABLED=true NEXT_PUBLIC_APP_URL=http://localhost:3417 pnpm build`,
 then `pnpm start` on port 3417 with the same three variables, then
-`E2E_BASE_URL=http://localhost:3417 E2E_FORWARDED_FOR_PREFIX=10.44.78 pnpm exec playwright test --retries=1 --reporter=list,json`.
+`E2E_BASE_URL=http://localhost:3417 E2E_FORWARDED_FOR_PREFIX=10.44.81 pnpm exec playwright test --retries=1 --reporter=list,json`.
 Two workers, both projects (chromium and mobile-chrome). A case counts as **flaky** only
 when it failed and then passed on a retry; a case that failed on every attempt is a
 **failure**. Counts come from the JSON reporter, never from the list output.
@@ -19,6 +19,20 @@ when it failed and then passed on a retry; a case that failed on every attempt i
 | 4, 36a9a8ae2, 16:42 UTC, `--retries=1`, fresh forwarded-for prefix | 682 | 614 | 59 | 2 | 7 | 16.4 min |
 | 5, 6d1951209, 19:01 UTC, `--retries=1`, fresh forwarded-for prefix | 682 | 612 | 60 | 3 | 7 | 21.5 min |
 | 6, 5ba9efa96, 21:49 UTC, `--retries=1`, prefix 10.44.79 | 682 | 616 | 58 | 1 | 7 | 19.8 min |
+| 7, 0d2462751, 23:05 UTC, `--retries=1`, prefix 10.44.81 | 682 | 617 | 58 | 0 | 7 | 18.5 min |
+
+Run 7 is the first full run on the run 6 spec fix (`openCartWithItems`), and the first
+run with **zero flaky cases**. Nothing under `src/` changed between 5ba9efa96 and
+0d2462751; the diff is `e2e/` (the helper and its eight call sites) plus docs and
+STATE.md, so run 7 measures that fix and the backend. The 58 failures are the same 58
+cases as run 6, class for class and case for case (classes 1 to 12 below, counts
+unchanged); the one case that was flaky in run 6 (cart: add from product page then see
+it in the cart, chromium) passed on its first attempt, at 23:08:14 in 14 s, and the
+passed count rose by one to 617. The server log holds **1 `supabase.timeout` event**
+(against 7 in run 6 and 83 in run 5): a `suppliers` read at 23:12:47 that no test
+failed on; every `/suppliers` case in both projects passed on its first attempt. No
+case failed that had not failed in run 6, no case needed a retry, and the run was 1.3
+minutes faster than run 6. There is nothing to fix in the specs this cycle.
 
 Run 6 is the first full run on the run 5 spec fixes. Nothing under `src/` changed
 between 6d1951209 and 5ba9efa96; the diff is `e2e/` only (helpers, a11y, and the six
@@ -31,6 +45,12 @@ case failed that had not failed in run 5. Run 5's three flaky cases all passed o
 first attempt. One new flaky case appeared, in the cart page, with the same shape as
 class 13; it is fixed below and verified.
 
+## Flaky (run 7)
+
+None. All 617 passes were first-attempt passes; the JSON reporter's `flaky` count is 0.
+The run 6 verification of `openCartWithItems` held in the full suite: the cart-page
+case that was flaky in run 6 passed first time on both projects.
+
 ## Flaky (run 6, passed on retry)
 
 | Case | Project | First attempt | Verdict and fix |
@@ -40,7 +60,7 @@ class 13; it is fixed below and verified.
 Run 5's three flaky cases (login keyboard reachability on mobile-chrome, cart scroll-lock
 on chromium, purchase-flow on chromium) passed on their first attempt in run 6.
 
-## Failures by class (run 6, 58; classes 1 to 12 unchanged from run 5)
+## Failures by class (run 7, 58; classes 1 to 12 unchanged from runs 5 and 6)
 
 | # | Class | Cases | Evidence | Kind |
 | -: | --- | ---: | --- | --- |
@@ -60,6 +80,12 @@ on chromium, purchase-flow on chromium) passed on their first attempt in run 6.
 | 14 | Two-second label | 0 in run 6 (1 in run 5) | purchase-flow on mobile-chrome, both attempts at 19:21: buy button still disabled at the 5 s mark, badge at 1, no server error in that minute. Same root as the chromium flake; fixed by the helper | spec, fixed |
 
 ## What changed in this loop
+
+Nothing under `e2e/` or `src/`. Run 7 produced no flaky case and no failure outside the
+twelve standing classes, so this cycle is a measurement only: this file and STATE.md.
+The previous cycle's change is kept below for the record.
+
+## What changed in the previous loop (run 6)
 
 1. `e2e/helpers.ts`: new `openCartWithItems(page)`. It goes to `/cart`, asserts the
    heading, waits up to `DISCOVERY_TIMEOUT` (15 s) for the order summary
@@ -104,7 +130,16 @@ No assertion was weakened and no test was skipped. The previous cycle's changes
 
 ## Gates after the changes
 
-`pnpm type-check` exit 0 and `pnpm lint` exit 0 (biome 1699 files, tokens, copy and
+Run 7: `pnpm type-check` exit 0 and `pnpm lint` exit 0 (biome, tokens, copy and asset
+gates clean) on 0d2462751, run at low priority while the suite was in flight. The mock
+build the suite ran against is the build gate for this cycle, since no source changed:
+`CARDCOM_USE_MOCK=true CHECKOUT_ENABLED=true NEXT_PUBLIC_APP_URL=http://localhost:3417
+pnpm build` exit 0, BUILD_ID Bdgyt_RrnrfyxeiDYYXGH, with the known partner-API
+prerender bail-out lines (4) and the prerender-complete fetch warnings only. The
+listener on 3417 was verified by PID and working directory (this worktree) before the
+suite started and stopped by that PID after it.
+
+Run 6: `pnpm type-check` exit 0 and `pnpm lint` exit 0 (biome 1699 files, tokens, copy and
 asset gates clean) on the run 6 spec change. `CARDCOM_USE_MOCK=true pnpm build`:
 exit 0, BUILD_ID 0aOBa0tEPai4rHxAThLex, with the known partner-API prerender
 bail-out lines only. The run itself used the mock build FMTW3mzSSC0NsGnOPr1zV on port
