@@ -4092,3 +4092,11 @@ Supabase MCP authentication unavailable in non-interactive session. CLI fallback
 - Gates: type-check exit 0, lint exit 0 (biome 1699 files + 3 gates), build exit 0. Backup 2026-10-21-0201 present, three kept; caffeinate alive, SleepDisabled 1.
 
 **המשך מ:** MAINTENANCE_LOOP_7 (head of ~/ke-goals/queue.txt).
+
+## MAINTENANCE_LOOP_7 fifth pass (2026-10-20 22:36 UTC, commit dea5b5d6a)
+- Fresh `pnpm build` (BUILD_ID bQ2YvEbrGNi9s2Vv5VFYi, exit 0), `pnpm start` on 3361 from this worktree (port free beforehand, listener pid 43765 checked by cwd, killed by pid after). `LHCI_BASE_URL=http://localhost:3361 COMPARE_PRODUCT_SLUG='אוזניות-איירפודס-3' pnpm lhci:autorun`, lhci 0.15.1, Lighthouse 12.6.1, desktop preset, 3 runs per URL, exit 0.
+- Representative runs: `/` perf 99 a11y 100 bp 96 seo 100; `/products` 99/100/96/100; product page 98/100/96/100. All nine runs 98 to 100 on performance, 100 on accessibility. Nothing below 90, no optimisation goal queued, `~/ke-goals/queue.txt` untouched at 23 lines. The only sub-0.9 weighted audit is `errors-in-console`, the same five localhost items as every pass.
+- `git diff --stat e351b0bff..dea5b5d6a -- src` is empty (16 commits, 14 files, all docs/e2e/logs/STATE.md), so the product page 99 to 98 is the localhost band. docs/LIGHTHOUSE-STATUS.md head rewritten for the fifth pass, the 21:15 pass demoted to history. The 21:15 reports were moved to /tmp/lhci-reports-prev-0536 (git-ignored output, not deleted); lhci's deletion of the stale tracked `.lighthouseci/lhr-*` files was reverted with `git checkout --` so the commit stays docs-only.
+- Gates: type-check exit 0, lint exit 0 (biome 1699 files + 3 gates), build exit 0. Backup 2026-10-21-0201 present, three kept; caffeinate alive.
+
+**המשך מ:** MAINTENANCE_LOOP_8 (head of ~/ke-goals/queue.txt).
