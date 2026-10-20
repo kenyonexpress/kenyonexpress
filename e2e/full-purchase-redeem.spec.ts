@@ -9,7 +9,7 @@ import {
   paidFlowEnabled,
   signInWithEmail,
 } from './auth-session'
-import { BUY_BUTTON, expectHebrewRtl } from './helpers'
+import { BUY_BUTTON, addOpenProductToCart, expectHebrewRtl } from './helpers'
 
 /**
  * End-to-end money path against Cardcom mock + seeded fixtures:
@@ -45,8 +45,13 @@ test.describe('full purchase to redeem @checkout @redeem @money', () => {
     test.skip(!buyable, 'e2e-test-coupon is not purchasable; run pnpm seed:test')
     test.skip(await buy.isDisabled(), 'e2e-test-coupon is out of stock')
 
-    await buy.click()
-    await expect(page.getByRole('button', { name: /נוסף לסל/ }).first()).toBeVisible()
+    // Settled by the header badge AND the button leaving its pending state,
+    // not by the "נוסף לסל" label: that label is a 2-second timer that the
+    // route refresh can wipe, and on a slow backend it has not even appeared
+    // when a 5 s expectation expires (run 5, 2026-10-20: the buy button was
+    // still disabled at the 5 s mark and the add landed later). See
+    // addOpenProductToCart for the measurement.
+    await addOpenProductToCart(page)
 
     // Checkout gate: guest must see Google (and email) before pay.
     await page.goto('/checkout')
@@ -121,8 +126,13 @@ test.describe('full purchase to redeem @checkout @redeem @money', () => {
     if (!(await buy.isVisible().catch(() => false))) {
       test.skip(true, 'e2e-test-coupon missing; run pnpm seed:test')
     }
-    await buy.click()
-    await expect(page.getByRole('button', { name: /נוסף לסל/ }).first()).toBeVisible()
+    // Settled by the header badge AND the button leaving its pending state,
+    // not by the "נוסף לסל" label: that label is a 2-second timer that the
+    // route refresh can wipe, and on a slow backend it has not even appeared
+    // when a 5 s expectation expires (run 5, 2026-10-20: the buy button was
+    // still disabled at the 5 s mark and the add landed later). See
+    // addOpenProductToCart for the measurement.
+    await addOpenProductToCart(page)
 
     await page.goto('/checkout')
     await expect(page).toHaveURL(/\/login\?.*next=%2Fcheckout/)
