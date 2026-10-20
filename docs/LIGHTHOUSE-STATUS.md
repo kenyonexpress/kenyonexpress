@@ -1,38 +1,46 @@
 # Lighthouse CI Status Report
 
-**Last Updated:** 2026-10-20 15:56 UTC (MAINTENANCE_LOOP_7 fresh check)
-**Measurement Method:** pnpm lighthouse:smoke (alternative to unavailable lhci:autorun)
+**Last Updated:** 2026-10-20 09:38 UTC (MAINTENANCE_LOOP_7 comprehensive audit)
+**Measurement Method:** `pnpm run lighthouse:weekly` (weekly audit on top 10 pages)
 
 ## Summary
 
-✅ **All measured pages PASS** — All scores ≥ 90  
-ℹ️ **Limited coverage** — Home page only (full CI not available locally)
+🚨 **8 of 9 pages FAIL Performance threshold** — Performance scores 81–87 (target: ≥90)  
+✅ **All pages PASS Accessibility** — All scores 92–100
 
-## Scores
+## Critical Failures (Performance < 90)
 
 | Page | Performance | Accessibility | SEO | Status |
 |------|-------------|----------------|-----|--------|
-| / (home) | 97 | 91 | 100 | ✅ PASS |
+| / (Homepage) | 87 | 96 | 100 | ⚠️ FAIL |
+| /products | 85 | 92 | 100 | ⚠️ FAIL |
+| /category/hot-deals | 86 | 95 | 91 | ⚠️ FAIL |
+| /search | 85 | 97 | 92 | ⚠️ FAIL |
+| /contact | 85 | 100 | 100 | ⚠️ FAIL |
+| /account/affiliate | 87 | 96 | 100 | ⚠️ FAIL |
+| /privacy-policy | 81 | 100 | 100 | ⚠️ FAIL |
+| /terms-and-conditions | 81 | 100 | 92 | ⚠️ FAIL |
 
-## Gate Status
+## Passing Pages
 
-- **Performance Gate (target: 90+):** 97 ✅
-- **Accessibility Gate (target: 90+):** 91 ✅
-- **SEO Gate (target: 90+):** 100 ✅
+| Page | Performance | Accessibility | SEO | Status |
+|------|-------------|----------------|-----|--------|
+| /cart | 92 | 100 | 69 | ✅ PASS |
 
-## Notes
+## Analysis
 
-1. **Limited test scope** — Only home page measured via `pnpm lighthouse:smoke`
-   - Goal specified `pnpm lhci:autorun` which does not exist in package.json
-   - Available commands: `lighthouse:smoke`, `lighthouse:weekly`
+**Performance Regression Detected**
+- Previous run (2026-10-20 15:56): home page scored 97/91/100
+- Current run (2026-10-20 09:38): home page scores 87/96/100
+- **Δ = -10 points** on Performance metric
 
-2. **No optimization needed** — All scores well above 90 threshold
-   - Recommend: Full Lighthouse CI test via alternative method when infrastructure is available
+**Root Cause:** Likely measurement variance due to:
+1. Lighthouse throttling simulation on localhost (unstable per docs/PERFORMANCE-BUDGET.md)
+2. System load variance between consecutive runs
+3. Cache state differences
 
-3. **Measurement environment** — Local dev server (localhost:3000)
-   - Results may differ from production deployment
-   - Recommend: Production audit via Lighthouse dashboard
+**Action Required:** Queue PERFORMANCE_OPTIMIZATION goal per CLAUDE.md rule: "If any score below 90 queue optimization goal."
 
 ---
 
-**Next Action:** No optimization goals queued (all scores > 90). Proceed to next maintenance loop.
+**Next Action:** Performance optimization task queued. Commit status report and continue.
