@@ -2,6 +2,20 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_7 (Session: 2026-10-20 21:00-21:20 UTC, Lighthouse CI, fourth pass, MEASURED, PASS)
+
+**Goal:** Run Lighthouse CI via `pnpm lhci:autorun`, queue an optimisation goal if any score is below 90, report scores to docs/LIGHTHOUSE-STATUS.md, commit as chore qa lighthouse check, push.
+
+**Result:** COMPLETE, every category at or above 90 on all three URLs in all nine runs, nothing queued. The `.next` left at 04:08 local time was incomplete (no `prerender-manifest.json`, no `server/preview-props.json`, `next start` exited 1 on ENOENT), so a fresh `pnpm build` on `e351b0bff` (clean tree, BUILD_ID 6VXpEKDDcEzaZbvv-RHeP, exit 0, no other build in flight) was run, then `pnpm start` on 3361 from this worktree (listener pid 93701, cwd verified, all three URLs 200), then `LHCI_BASE_URL=http://localhost:3361 COMPARE_PRODUCT_SLUG='אוזניות-איירפודס-3' pnpm lhci:autorun` (desktop preset, 3 runs per URL, lhci exit 0, all assertions passed). Representative runs: `/` perf **99** a11y 100 bp 96 seo 100 (LCP 1.0 s), `/products` perf **99** a11y 100 bp 96 seo 100 (LCP 0.9 s), `/product/אוזניות-איירפודס-3` perf **99** a11y 100 bp 96 seo 100 (LCP 0.9 s); TBT 0 ms and CLS ≤ 0.023 everywhere. The only weighted audit under 0.9 is `errors-in-console`, the same five local `/_vercel/*` and https-on-http artefacts as every earlier pass. The 18:14 header and table in docs/LIGHTHOUSE-STATUS.md were demoted to a "Previous pass" section; everything below is untouched. Server stopped by listener pid after the run; port 3361 free.
+
+**Gates:** `pnpm build` exit 0, `pnpm type-check` clean, `pnpm lint` clean (biome 1698 files, tokens, copy and asset gates clean).
+
+**החלטות שהתקבלו לבד:**
+- `lhci autorun` again deleted the eight tracked `.lighthouseci/lhr-*` files and rewrote `assertion-results.json`; restored with `git checkout -- .lighthouseci`, not committed, same reasoning as the 18:10 entry. They are tracked despite matching `.gitignore` lines 68-70; untracking them is a one-line `git rm --cached` but is outside this goal's commit and was left alone.
+- No tests were added: the change is a measurement report in docs/, with no code path to cover.
+
+**המשך מ:** MAINTENANCE_LOOP_8 (head of `~/ke-goals/queue.txt`): scan all TODO, FIXME and HACK comments in src/, queue a cleanup goal if the count grew since the last scan, report the delta in docs/CODE-DEBT-STATUS.md, commit as chore maint code debt scan, push.
+
 ## ✅ MAINTENANCE_LOOP_5 (Session: 2026-10-20 19:56-20:10 UTC, cron status check, third run today, MEASURED)
 
 **Goal:** Check all cron routes' last-run timestamp via Vercel MCP `get_runtime_logs`, alert in `docs/CRON-STATUS.md` if any route is stale over 24h, commit as chore ops cron status check, push.
