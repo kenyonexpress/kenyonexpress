@@ -19,7 +19,7 @@
     "ci:diff-gates": "pnpm lint:changed && pnpm typecheck:changed && pnpm gate:hardcoded",
     "format": "biome format --write .",
     "check": "biome check --write .",
-    "typecheck": "pnpm type-check",
+    "typecheck": "tsc --noEmit",
     "type-check": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
