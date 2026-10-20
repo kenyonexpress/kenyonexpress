@@ -3994,4 +3994,11 @@ Supabase MCP authentication unavailable in non-interactive session. CLI fallback
 
 - Second pass (commit 4a2caa1bc), after the goal hook asked for the cart scroll-lock and checkout CTA cases too: both were spec budgets below the server's own Supabase ceiling (10 s per call, ~8 serial calls in an add). helpers.ts: CART_WRITE_TIMEOUT 25 s, allowSlowBackend() lifts cart-writing tests to 60 s; checkout.spec CTA waits 15 s. Re-run 24/24 on the three cases, then cart.spec 21/21 + checkout.spec 14/14 with 5 timeouts in the log. Gates green again, mock build exit 0.
 
-**המשך מ:** MAINTENANCE_LOOP_5 (head of ~/ke-goals/queue.txt).
+## MAINTENANCE_LOOP_6 (second pass): mobile gate recheck, 21.10 03:51-04:03 local
+
+- Build on disk was unusable: `next start` died on a missing `.next/server/preview-props.json` (a `next dev` run had shared `.next`). Fresh `pnpm build` (BUILD_ID 8ecC2z390bYfojT6W652d), `pnpm start` on 3341, listener verified by pid and cwd, killed by pid afterwards.
+- home at commit `e887e9334`: 380 **8.52%**, 768 **9.78%**, 1440 **8.39%**, all PASS under 11%. No mobile fix goal requeued. One 1440 run UNMEASURED on the 60 s reference-archive goto timeout, retried and measured; the row stays in the ledger.
+- No src change since the previous check, yet 768 moved 0.55 points (10.33 to 9.78) and 1440 0.14; both back toward the 15:31 values, so the 17:53 pair was the outlier. Run-to-run spread at 768 on one build is about half a point. Reference shortfall varied (152, 190, 96 failed requests) without moving the 380 score.
+- docs/GATE-STATUS.md rewritten at the head with the new table and notes; previous notes kept below. type-check and lint clean, build exit 0.
+
+**המשך מ:** MAINTENANCE_LOOP_7 (head of ~/ke-goals/queue.txt).

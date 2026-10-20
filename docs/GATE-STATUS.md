@@ -1,26 +1,34 @@
 # Mobile Gate Status
 
-**Last Check:** 2026-10-20 17:53-18:05 UTC (MAINTENANCE_LOOP_6, recheck)  
+**Last Check:** 2026-10-20 20:51-21:03 UTC (MAINTENANCE_LOOP_6, second recheck; 03:51-04:03 local on 21.10)  
 **Page:** home  
-**Commit:** `6cccd8359` (clean tree at the 380 run; the 768 and 1440 rows carry `-dirty` only because the 380 row had already been appended to the ledger)  
-**Server:** `pnpm start` on port 3341 from this worktree, fresh `pnpm build` (BUILD_ID blsRNnREasLamyPVlhaHX, listener verified by pid and cwd)  
+**Commit:** `e887e9334` (clean tree at the 380 run; the 768 and 1440 rows carry `-dirty` only because the 380 row had already been appended to the ledger)  
+**Server:** `pnpm start` on port 3341 from this worktree, fresh `pnpm build` (BUILD_ID 8ecC2z390bYfojT6W652d, listener verified by pid and cwd). The build on disk before this run was unusable: `next start` died on a missing `.next/server/preview-props.json`, which is what a `next dev` run leaves behind when it shares `.next` with a production build.  
 **Threshold:** 11%  
 **Verdict:** all three widths PASS. No mobile fix goal requeued.
 
-| Viewport | Score | Status | Previous (15:31-15:36, `3494b7478-dirty`) | Delta | Lowest ledger row |
+| Viewport | Score | Status | Previous (17:53-18:05, `6cccd8359`) | Delta | Lowest ledger row |
 |---|---|---|---|---|---|
-| 380 (mobile) | **8.51%** | **PASS** | 8.50% | +0.01 | 8.50% (20.10 15:36) |
-| 768 | **10.33%** | **PASS** | 9.80% | +0.53 | 7.72% (07.09) |
-| 1440 | **8.53%** | **PASS** | 8.10% | +0.43 | 8.10% (20.10 15:34) |
+| 380 (mobile) | **8.52%** | **PASS** | 8.51% | +0.01 | 8.50% (20.10 15:36) |
+| 768 | **9.78%** | **PASS** | 10.33% | -0.55 | 7.72% (07.09) |
+| 1440 | **8.39%** | **PASS** | 8.53% | -0.14 | 8.10% (20.10 15:34) |
 
 Ledger rows, verbatim from docs/UI-PARITY-REPORT.md, in run order:
 
 ```
-| 2026-10-20 17:53 | home | 380 | 8.51% | PASS | `6cccd8359` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-10-20 18:01 | home | 768 | n/a | **UNMEASURED** | `6cccd8359-dirty` | screenshot failed: page.goto: Timeout 60000ms exceeded (reference archive, retried) |
-| 2026-10-20 18:02 | home | 1440 | 8.53% | PASS | `6cccd8359-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-20 18:05 | home | 768 | 10.33% | PASS | `6cccd8359-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-20 20:51 | home | 380 | 8.52% | PASS | `e887e9334` | ref 152 failed to load (112 script, 37 font, 2 stylesheet, 1 xhr) |
+| 2026-10-20 20:55 | home | 768 | 9.78% | PASS | `e887e9334-dirty` | ref 190 failed to load (113 script, 74 font, 2 stylesheet, 1 xhr) |
+| 2026-10-20 21:02 | home | 1440 | n/a | **UNMEASURED** | `e887e9334-dirty` | screenshot failed: page.goto: Timeout 60000ms exceeded (reference archive, retried) |
+| 2026-10-20 21:03 | home | 1440 | 8.39% | PASS | `e887e9334-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
 ```
+
+## MAINTENANCE_LOOP_6 second recheck notes (21:03)
+
+- **No home-page source change between the two checks.** The last commit touching `src/` is `ee0abecc4` (00:07 local on 21.10, E2E spec budgets); every commit after `6cccd8359` is docs or STATE. The 768 row still moved by 0.55 points (10.33 to 9.78) and the 1440 row by 0.14, with 380 unchanged to the hundredth. Both moved toward the previous run's values (9.80 and 8.10 at 15:31-15:34), so the 17:53-18:05 pair was the outlier, not this one. The spread between runs of the same source at 768 is therefore about half a point, which is the same width parity-log.mjs treats as "a real layout regression". The 768 margin is 1.22 points.
+- **The reference side failed 190 requests at 768, not 96 or 153.** 74 fonts instead of 37: the archive re-issued its font requests once. The 380 run reports 152 (112 scripts), a repeat of last loop's 153 at first load. Neither changed what the page painted: 380 is at 8.52 against 8.51 and 8.50 on 96-shortfall runs. Cause still not isolated; the failing requests are all to the dead `kenyonexpress.co.il/wp-content/` origin.
+- **One 1440 run was UNMEASURED** on the 60s `page.goto` timeout loading `refs/localized/ke_live_home.html`. Last loop it was the 768 run. The retry loaded in the usual time with the usual 96-request shortfall. The row stays in the ledger as the script wrote it. Two loops, two timeouts, one per loop, on different widths: the archive load is the slow side, not our server.
+- **Band profile at 380 is unchanged from both previous runs:** y200-400 hero floor (55.8%, 34.1%), y1700 card-three photograph (20.1%), y2500 tab bar (15.1%), y100 header icons (14.9%). At 1440 the bands over 15% are the same eight as before: y200-700 hero side columns and strip (17-26%), y1600-1800 row-two photographs (16%, 19%), y0 masthead 11.3%.
+- **Not done this loop:** isolating what moves 768 half a point between identical builds. The candidates are the reference's font re-issue (74 vs 37) and the archive's lazy images; a run that pins the shortfall would need the reference served from a local origin, which is the gate's own open item.
 
 ## MAINTENANCE_LOOP_6 recheck notes (18:05)
 

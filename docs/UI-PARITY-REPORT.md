@@ -256,3 +256,7 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-20 18:01 | home | 768 | n/a | **UNMEASURED** | `6cccd8359-dirty` | screenshot failed: page.goto: Timeout 60000ms exceeded. Call log: [2m - navigating to "file:///Users/ofir/kenyonexpress-autopilot/refs/localized/ke_live_home.h |
 | 2026-10-20 18:02 | home | 1440 | 8.53% | PASS | `6cccd8359-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
 | 2026-10-20 18:05 | home | 768 | 10.33% | PASS | `6cccd8359-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-20 20:51 | home | 380 | 8.52% | PASS | `e887e9334` | ref 152 failed to load (112 script, 37 font, 2 stylesheet, 1 xhr) |
+| 2026-10-20 20:55 | home | 768 | 9.78% | PASS | `e887e9334-dirty` | ref 190 failed to load (113 script, 74 font, 2 stylesheet, 1 xhr) |
+| 2026-10-20 21:02 | home | 1440 | n/a | **UNMEASURED** | `e887e9334-dirty` | screenshot failed: page.goto: Timeout 60000ms exceeded. Call log: [2m - navigating to "file:///Users/ofir/kenyonexpress-autopilot/refs/localized/ke_live_home.h |
+| 2026-10-20 21:03 | home | 1440 | 8.39% | PASS | `e887e9334-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
