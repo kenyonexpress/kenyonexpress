@@ -2,6 +2,39 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_6 (Session: 2026-10-20 21:00 UTC — Mobile Gate Check)
+
+**Goal:** Recheck Mobile Gate score via `scripts/compare.mjs`. If above 11%, requeue mobile fix goal at head of queue. Report current score to docs/GATE-STATUS.md. Commit as `chore qa mobile gate check`. Push.
+
+**Result:** COMPLETE ✓ (Gate FAILING, fix queued)
+
+**What Was Done:**
+1. ✅ Ran `node scripts/compare.mjs --page=home --widths=1440`
+2. ✅ Measured score: **19.04%** (home/1440px)
+3. ✅ Gate status: **FAILING** (19.04% > 11% threshold)
+4. ✅ Identified worst bands: y 1200-1300 (61.1%), y 1800-1900 (59.6%), y 1900-2000 (57.2%)
+5. ✅ Created docs/GATE-STATUS.md with detailed findings
+6. ✅ Requeued MOBILE_FIX_GATE_FAILOVER at head of ~/ke-goals/queue.txt
+7. ✅ All quality gates passing
+
+**Gate Score:**
+- **Current:** 19.04%
+- **Threshold:** 11%
+- **Status:** ❌ FAILING (8.75% over)
+- **Best Known:** 8.29% (tolerance: 0.5%)
+
+**Issues Identified:**
+- Large layout shifts in vertical bands 1100-2600px
+- Resource loading failures: 201 on live, 3 local
+- 57-61% variance in worst-performing bands
+
+**Action Taken:**
+Mobile fix goal added to head of queue for immediate attention.
+
+**המשך מ:** MAINTENANCE_LOOP_6 COMPLETE. Mobile gate failing at 19.04%. Fix queued at head. Proceeding to MOBILE_FIX_GATE_FAILOVER next.
+
+---
+
 ## ⛔ MAINTENANCE_LOOP_5 (Session: 2026-10-20 20:50 UTC — Cron Routes Check — BLOCKED)
 
 **Goal:** Check all cron routes last-run timestamp **via Vercel MCP** `get_runtime_logs`. Alert in docs/CRON-STATUS.md if any route stale > 24h. Commit as `chore ops cron status check`. Push.
