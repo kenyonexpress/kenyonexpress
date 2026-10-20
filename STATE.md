@@ -4073,3 +4073,11 @@ Supabase MCP authentication unavailable in non-interactive session. CLI fallback
 - 0 unblocked items, `~/ke-goals/queue.txt` untouched at 27 lines. Entry appended to `docs/MAINT-LOG.md`. Gates: type-check exit 0, lint exit 0, `pnpm build` exit 0. Commit `e8bde10d2` pushed to autopilot.
 
 **המשך מ:** MAINTENANCE_LOOP_4 (head of ~/ke-goals/queue.txt).
+
+## MAINTENANCE_LOOP_4 fourth cycle, run 6 (2026-10-20 21:49 UTC, commit 5ba9efa96)
+- Full suite on 5ba9efa96, mock build FMTW3mzSSC0NsGnOPr1zV, port 3417 (listener checked by PID and cwd), --retries=1, prefix 10.44.79: 682 total, 616 passed, 58 failed, 1 flaky, 7 skipped, 19.8 min. No src change since run 5, only the run 5 spec fixes; those held: classes 13 and 14 produced zero reds and run 5's three flaky cases passed first time. The 58 are classes 1 to 12, case for case.
+- Server log: 7 supabase.timeout events (83 in run 5), two on cart.get/cart.add at 21:52:15, five product reads later.
+- One new flaky: cart.spec "add to cart from product page then see it in the cart" on chromium, 21:53:18. Snapshot: badge "1 פריטים", /cart main reading the empty state; /cart has no loading branch and fills from one /api/cart fetch under the 10 s ceiling, the class 13 shape. Fixed in specs: helpers.ts openCartWithItems() waits DISCOVERY_TIMEOUT for the order summary; six cart.spec sites and two production-smoke sites use it; the empty-cart site keeps its bare goto. Verified cart.spec + production-smoke, both projects, --retries=0 --repeat-each=2, prefix 10.44.80: 46 passed, 0 failed, 0 flaky, 10 standing skips, 0 timeouts during it.
+- docs/E2E-STATUS.md rewritten at the head for run 6. Gates: type-check exit 0, lint exit 0 (biome 1699 files + 3 gates), CARDCOM_USE_MOCK build exit 0 (BUILD_ID 0aOBa0tEPai4rHxAThLex). Server killed by PID 16802 before the build. Backup 2026-10-21-0201 present, three kept; caffeinate alive.
+
+**המשך מ:** MAINTENANCE_LOOP_5 (head of ~/ke-goals/queue.txt).

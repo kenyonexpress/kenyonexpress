@@ -1,7 +1,7 @@
 # E2E Test Status
 
-**Last run:** 2026-10-20 19:01 UTC, run 5, MAINTENANCE_LOOP_4 third cycle
-**Base commit:** 6d1951209 on `autopilot`
+**Last run:** 2026-10-20 21:49 UTC, run 6, MAINTENANCE_LOOP_4 fourth cycle
+**Base commit:** 5ba9efa96 on `autopilot`
 **Recipe:** `CARDCOM_USE_MOCK=true CHECKOUT_ENABLED=true NEXT_PUBLIC_APP_URL=http://localhost:3417 pnpm build`,
 then `pnpm start` on port 3417 with the same three variables, then
 `E2E_BASE_URL=http://localhost:3417 E2E_FORWARDED_FOR_PREFIX=10.44.78 pnpm exec playwright test --retries=1 --reporter=list,json`.
@@ -18,28 +18,29 @@ when it failed and then passed on a retry; a case that failed on every attempt i
 | 3, cart-dependent mobile files, fresh forwarded-for address | 21 | 18 | 0 | 0 | 3 | 0.7 min |
 | 4, 36a9a8ae2, 16:42 UTC, `--retries=1`, fresh forwarded-for prefix | 682 | 614 | 59 | 2 | 7 | 16.4 min |
 | 5, 6d1951209, 19:01 UTC, `--retries=1`, fresh forwarded-for prefix | 682 | 612 | 60 | 3 | 7 | 21.5 min |
+| 6, 5ba9efa96, 21:49 UTC, `--retries=1`, prefix 10.44.79 | 682 | 616 | 58 | 1 | 7 | 19.8 min |
 
-Run 5 ran on the same spec and source files as run 4 (no `src/` or `e2e/` change
-between the two commits), so the diff of the two failure sets is a measurement of the
-backend and the specs, not of the product. Only one case moved out (coupons a11y on
-mobile-chrome, the run 4 fix) and two moved in: checkout "the cart CTA hands a guest
-straight to checkout" on chromium and purchase-flow "a shopper can find a product" on
-mobile-chrome. The server log of the run holds **83 `supabase.timeout` events** (10 s
-REST timeouts on `products`, `product_variants`, `reviews`, `available_stock` and five
-on `cart.get`), 60 of them between 19:02 and 19:09 UTC; run 4 had a quiet backend and
-ran 5 minutes faster. The three flaky cases and both incoming failures all sit inside
-or next to that window, and the breakdown below says which of them the specs could
-have absorbed and which they could not.
+Run 6 is the first full run on the run 5 spec fixes. Nothing under `src/` changed
+between 6d1951209 and 5ba9efa96; the diff is `e2e/` only (helpers, a11y, and the six
+add-to-cart call sites), so run 6 measures those fixes and the backend. The server log
+holds **7 `supabase.timeout` events** against 83 in run 5 (two on `cart.get` and
+`cart.add` at 21:52, five product reads between 21:56 and 22:06), and the run was 1.7
+minutes faster. The 58 failures are exactly classes 1 to 12 below, case for case: run 5's
+classes 13 and 14 (the budgets fixed in the previous cycle) produced zero reds, and no
+case failed that had not failed in run 5. Run 5's three flaky cases all passed on the
+first attempt. One new flaky case appeared, in the cart page, with the same shape as
+class 13; it is fixed below and verified.
 
-## Flaky (run 5, passed on retry)
+## Flaky (run 6, passed on retry)
 
 | Case | Project | First attempt | Verdict and fix |
 | --- | --- | --- | --- |
-| a11y: every interactive control on /login is reachable by keyboard | mobile-chrome | three `button.inline-flex ... px-3` reported unreachable: the Radix tab triggers of the login methods, every one at `tabindex="-1"` | **spec heuristic.** Radix Tabs follows the WAI-ARIA roving pattern: the `tablist` is the single Tab stop (`tabindex` goes -1 to 0 in a layout effect after hydration) and the tabs stay at -1 for the life of the page. Probed on the build: Tab press 5 lands on the active tab "אימייל" through the list. The case only ever PASSED when `domcontentloaded` beat the Suspense reveal of the login form, so the fast runs evaluated an empty page. Fixed in `e2e/a11y.spec.ts`: a `role="tab"` inside a focusable `tablist` is reachable, and the assertion is `expect.poll` so it reads the hydrated DOM. 8 of 8 after the fix (4 repeats x 2 projects). |
-| cart: the page scrolls behind the desktop dropdown and not behind the phone sheet | chromium | `page.goto` of the product page waited more than 30 s for `load`, at 19:06:34, which is the 30 s TEST timeout hit mid-navigation | **spec budget.** 12 Supabase timeouts in that minute and a `cart.get` timeout at 19:07:00; the retry at 19:07:11 passed in 12 s. The product page render chains several Supabase reads, each with a 10 s ceiling, so one slow read puts the navigation past a 30 s test. Fixed in `e2e/helpers.ts`: `openPurchasableProduct` and `addOpenProductToCart` raise the running test's budget to 60 s (never lower it), the same per-file pattern the money specs already use at 120 to 150 s. 8 of 8 before the budget change on a quiet minute, 8 of 8 after it with timeouts in the log. |
-| purchase-flow: a shopper can find a product, add it, and reach checkout | chromium | `button "נוסף לסל"` not visible within 5 s after the buy click, at 19:13:11 | **spec.** The snapshot at the 5 s mark shows the buy button still disabled and the header badge already at the optimistic 1, so the add had not been answered yet. The "נוסף לסל" label is a 2-second `setTimeout` in `ProductInfo.tsx`, which the shared `addOpenProductToCart` helper retired in favour of the settled badge. A quiet add measures 3.1 s on this laptop. Fixed: the spec calls the helper. The identical case on mobile-chrome failed on both attempts at 19:21 and is the second incoming failure below. 8 of 8 after the fix. |
+| cart: add to cart from product page then see it in the cart | chromium | 21:53:18, 25 s: `getByText('! צימר מאסטר')` not found within the 5 s default on `/cart`. The snapshot shows the header badge at "1 פריטים, 0 ₪" and the main column reading "סל הקניות שלך ריק כרגע." under the heading. `cart.get` and `cart.add` had both hit the 10 s Supabase ceiling at 21:52:15, one minute earlier. Retry at 21:53:43 passed in 16 s | **spec budget, class 13 shape.** `/cart` is prerendered and `CartPageView` has no loading branch: it draws the empty state until `CartBootstrap`'s one `/api/cart` fetch lands, and that read carries the server's 10 s ceiling. checkout.spec got the 15 s discovery budget for exactly this in the previous cycle; cart.spec line 46 and five sibling sites were still on 5 s. Fixed in `e2e/helpers.ts`: `openCartWithItems(page)` navigates to `/cart`, waits for the heading, then waits `DISCOVERY_TIMEOUT` for the order summary, which only renders in the non-empty branch, and returns it. Six sites in `cart.spec.ts` and two in `production-smoke.spec.ts` call it; the one site that expects an empty cart does not. Verified: cart.spec and production-smoke.spec, both projects, `--retries=0 --repeat-each=2`, prefix 10.44.80: 46 passed, 0 failed, 0 flaky, 10 skipped (the standing viewport and no-coupon skips, twice), 0 timeouts in the server log during it. |
 
-## Failures by class (run 5, 60)
+Run 5's three flaky cases (login keyboard reachability on mobile-chrome, cart scroll-lock
+on chromium, purchase-flow on chromium) passed on their first attempt in run 6.
+
+## Failures by class (run 6, 58; classes 1 to 12 unchanged from run 5)
 
 | # | Class | Cases | Evidence | Kind |
 | -: | --- | ---: | --- | --- |
@@ -51,47 +52,32 @@ have absorbed and which they could not.
 | 6 | Sticky cart bar at desktop | 8 | mobile-shell: class list lacks `md:hidden`, computed display at 768 and 1440 is not `none`, and the button case times out, both projects | spec vs design drift |
 | 7 | Keyboard navigation | 4 | home tab order (skip link is not the first Tab stop) and contact form input 8 without a label, both projects | product |
 | 8 | Homepage | 3 | three render-blocking stylesheets instead of one (both projects); `404 /category` from `MobileNavBar` "קטגוריות" on mobile-chrome | product |
-| 9 | Money flow | 2 | full-purchase-redeem, both chromium cases. In run 5 they died earlier than in run 4, on the same "נוסף לסל" label as the purchase-flow flake (19:09, inside the timeout burst); with the helper they reach the run 4 point again, `toHaveURL` on `/login?next=%2Fcheckout` for a guest who is handed `/checkout` directly | spec vs guest-checkout drift |
+| 9 | Money flow | 2 | full-purchase-redeem, both chromium cases. In run 5 they died earlier than in run 4, on the same "נוסף לסל" label as the purchase-flow flake (19:09, inside the timeout burst); with the helper they reach the run 4 point again, `toHaveURL` on `/login?next=%2Fcheckout` for a guest who is handed `/checkout` directly. Run 6 confirms: both cases now fail at that assertion, 21:55:56 | spec vs guest-checkout drift |
 | 10 | Login page | 2 | auth "shows magic link form on toggle": the toggle `/קישור מאובטח/` is now a tab named "קישור", 30 s timeout | spec drift (UX23) |
 | 11 | Archive page clamp | 2 | `/products?page=9999` renders page 1, not the last page | product |
 | 12 | Checkout CLS | 1 | `/checkout` shifted 0.4515 on mobile-chrome against a 0.1 budget (0.4692 in run 4) | product |
-| 13 | Spec budgets under the server's Supabase ceiling | 1 | checkout "the cart CTA hands a guest straight to checkout", chromium, 19:08:45 and 19:09:15: the header badge reads "1 פריטים" while `/cart` renders "סל הקניות שלך ריק כרגע"; `cart.get` timed out at 19:08:56 inside the first attempt. mobile-chrome passed at 19:18. On the first re-run 6 of 8, the two misses next to `cart.add` timeouts at 19:32:53 and 19:35:16: one add still pending at the helper's 15 s mark, one `/cart` CTA not there at 5 s. Fixed: the add waits 25 s (two slow calls plus the rest of the serial chain), the test gets 60 s, the CTA gets the 15 s the summary already had in purchase-flow. Second re-run 8 of 8, then cart.spec 21/21 and checkout.spec 14/14 with 5 timeouts in the log | spec, fixed |
-| 14 | Two-second label | 1 | purchase-flow on mobile-chrome, both attempts at 19:21: buy button still disabled at the 5 s mark, badge at 1, no server error in that minute. Same root as the chromium flake; fixed by the helper | spec, fixed |
+| 13 | Spec budgets under the server's Supabase ceiling | 0 in run 6 (1 in run 5) | checkout "the cart CTA hands a guest straight to checkout", chromium, 19:08:45 and 19:09:15: the header badge reads "1 פריטים" while `/cart` renders "סל הקניות שלך ריק כרגע"; `cart.get` timed out at 19:08:56 inside the first attempt. mobile-chrome passed at 19:18. On the first re-run 6 of 8, the two misses next to `cart.add` timeouts at 19:32:53 and 19:35:16: one add still pending at the helper's 15 s mark, one `/cart` CTA not there at 5 s. Fixed: the add waits 25 s (two slow calls plus the rest of the serial chain), the test gets 60 s, the CTA gets the 15 s the summary already had in purchase-flow. Second re-run 8 of 8, then cart.spec 21/21 and checkout.spec 14/14 with 5 timeouts in the log | spec, fixed |
+| 14 | Two-second label | 0 in run 6 (1 in run 5) | purchase-flow on mobile-chrome, both attempts at 19:21: buy button still disabled at the 5 s mark, badge at 1, no server error in that minute. Same root as the chromium flake; fixed by the helper | spec, fixed |
 
 ## What changed in this loop
 
-1. `e2e/a11y.spec.ts`: `unreachableControls` no longer reports a `role="tab"` whose
-   `tablist` is itself focusable (or holds a tab at `tabindex >= 0`), which is the
-   roving pattern Radix renders on `/login`. The three callers go through a new
-   `expectEveryControlReachable`, an `expect.poll` on the same function, so the read
-   happens on the hydrated DOM instead of at `domcontentloaded`. A control that stays
-   unreachable after hydration still fails.
-2. `e2e/purchase-flow.spec.ts`, `e2e/full-purchase-redeem.spec.ts` (2 places),
-   `e2e/physical-purchase.spec.ts`, `e2e/admin-refund.spec.ts`,
-   `e2e/admin-refund-to-wallet.spec.ts`: the inline `buy.click()` plus a 5 s wait on
-   the "נוסף לסל" label is replaced by `addOpenProductToCart(page)`, which waits up
-   to 15 s for the header badge to rise AND the button to leave its pending state,
-   the moment `settle()` has the server's answer. The skip checks on `buy` stay.
-   This is the same retirement `helpers.ts` documents for the seven cart specs; these
-   six call sites had been left on the old assertion.
-3. `e2e/helpers.ts`: `CART_WRITE_TIMEOUT` (25 s) replaces the 15 s discovery budget
-   on the add poll, and `allowSlowBackend()` lifts the running test to 60 s from
-   `openPurchasableProduct` and `addOpenProductToCart`, so every one of the nine
-   files that writes to the cart gets it without a per-file line. The comment carries
-   the arithmetic: a 10 s ceiling per Supabase call and an add path of about eight
-   serial calls. `DISCOVERY_TIMEOUT` is exported.
-4. `e2e/checkout.spec.ts`: the cart CTA wait is `DISCOVERY_TIMEOUT`; `/cart` is a
-   client view filled by one `/api/cart` fetch after hydration and shows the empty
-   state until that cart read lands.
+1. `e2e/helpers.ts`: new `openCartWithItems(page)`. It goes to `/cart`, asserts the
+   heading, waits up to `DISCOVERY_TIMEOUT` (15 s) for the order summary
+   (`complementary` "סיכום הזמנה"), and returns that locator. The comment on it carries
+   the mechanism: a static page, one post-hydration `/api/cart` fetch, no loading branch,
+   and a 10 s server ceiling per Supabase call.
+2. `e2e/cart.spec.ts`: the six `page.goto('/cart')` sites that follow an add go through
+   the helper (the product-name case, the summary case, both quantity cases, the reload
+   case and the empty-cart-button case). The one site that asserts an EMPTY cart after
+   a removal keeps its bare `goto`, because the helper would wait for a summary that
+   never comes.
+3. `e2e/production-smoke.spec.ts`: both cart sites go through the helper; the
+   product-name assertion now runs after the summary is on screen.
 
-No assertion was weakened and no test was skipped; the changes are time budgets and
-a reachability definition. Verification on the live build, `--retries=0
---repeat-each=4`, both projects, fresh forwarded-for prefix per run. First pass
-(changes 1 and 2): a11y login keyboard 8/8, cart scroll-lock 8/8, purchase-flow 8/8,
-checkout CTA 6/8, full-purchase-redeem 0/8 at the class 9 assertion instead of the
-label. Second pass (changes 3 and 4): checkout CTA 8/8, cart scroll-lock 8/8,
-purchase-flow 8/8, then the whole of cart.spec and checkout.spec once: 35 passed,
-0 failed, 3 skipped, with 5 `supabase.timeout` events in the server log during it.
+No assertion was weakened and no test was skipped. The previous cycle's changes
+(roving-tab exemption, `addOpenProductToCart` at six call sites, `CART_WRITE_TIMEOUT`,
+`allowSlowBackend()`, the checkout CTA budget) are listed in the git history of
+8fcd470d5 and 4a2caa1bc and held in run 6: zero reds in classes 13 and 14.
 
 ## Action items
 
@@ -99,13 +85,15 @@ purchase-flow 8/8, then the whole of cart.spec and checkout.spec once: 35 passed
   fixture users that exist in the database the server reads, or run `pnpm seed:test`
   against a disposable project. Class 1 cannot be measured until then.
 - The hosted Supabase project answers REST reads in more than 10 s in bursts (83
-  timeouts in run 5, 29 in the first 4-minute re-run, 5 in the second; a bare
+  timeouts in run 5, 7 in run 6, 0 in the run 6 verification; a bare
   `products` read from this laptop measured 0.31 to 0.96 s in between). It is the same
   latency that failed the MAINTENANCE_LOOP_3 build on its first attempt. The specs now
   budget for it (class 13); the backend itself is unchanged. The `/cart` page showing
   the empty state, CTA and all, until `/api/cart` answers, and staying on it silently
   when that fetch fails, is worth a product look of its own: a shopper on a slow link
   sees "your cart is empty" under a badge that says 1.
+  Run 6 reproduced it on `/cart` itself (the flaky row above). The specs now budget
+  for it everywhere; a loading branch in `CartPageView` would remove the class.
 - Give `MobileNavBar` "קטגוריות" a real target; `/category` has no index route.
 - Classes 2 to 5, 7, 8, 11 and 12 are product defects with a deterministic
   reproduction each; queue one goal per class rather than one for the suite.
@@ -116,6 +104,8 @@ purchase-flow 8/8, then the whole of cart.spec and checkout.spec once: 35 passed
 
 ## Gates after the changes
 
-`pnpm typecheck` clean and `pnpm lint` clean (biome 1698 files, tokens, copy and
-asset gates clean) after each of the two edit passes. `CARDCOM_USE_MOCK=true pnpm
-build`: exit 0 after the second pass as well (three mock builds in this loop, all exit 0; the build log carries the known prerender warnings only).
+`pnpm type-check` exit 0 and `pnpm lint` exit 0 (biome 1699 files, tokens, copy and
+asset gates clean) on the run 6 spec change. `CARDCOM_USE_MOCK=true pnpm build`:
+exit 0, BUILD_ID 0aOBa0tEPai4rHxAThLex, with the known partner-API prerender
+bail-out lines only. The run itself used the mock build FMTW3mzSSC0NsGnOPr1zV on port
+3417, listener verified by PID and working directory before the suite started.

@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { addOpenProductToCart, openPurchasableProduct } from './helpers'
+import { addOpenProductToCart, openCartWithItems, openPurchasableProduct } from './helpers'
 
 /**
  * The guest purchase path, run against the REAL deployment.
@@ -81,12 +81,8 @@ test.describe('production smoke: guest cart to checkout', () => {
       .toBeGreaterThan(before)
 
     // 3. The cart shows the product and a total.
-    await page.goto('/cart')
-    await expect(page.getByRole('heading', { name: 'סל הקניות' })).toBeVisible()
+    const summary = await openCartWithItems(page)
     if (name) await expect(page.getByText(name, { exact: false }).first()).toBeVisible()
-
-    const summary = page.getByRole('complementary', { name: 'סיכום הזמנה' })
-    await expect(summary).toBeVisible()
 
     // 4. THE MONEY INVARIANT. Every amount on the summary has to be a whole
     //    number of agorot, which on screen means at most two decimal places.
@@ -138,8 +134,7 @@ test.describe('production smoke: guest cart to checkout', () => {
 
     await couponLinks.first().click()
     await addOpenProductToCart(page)
-    await page.goto('/cart')
-    const summary = page.getByRole('complementary', { name: 'סיכום הזמנה' })
+    const summary = await openCartWithItems(page)
     await expect(summary.getByText('לתשלום באתר')).toBeVisible()
   })
 })

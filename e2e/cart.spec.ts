@@ -1,5 +1,5 @@
 import { type Page, expect, test } from '@playwright/test'
-import { addOpenProductToCart, openPurchasableProduct } from './helpers'
+import { addOpenProductToCart, openCartWithItems, openPurchasableProduct } from './helpers'
 
 /** Reads the item count the header badge advertises via its aria-label. */
 async function navCartCount(page: Page): Promise<number> {
@@ -40,8 +40,7 @@ test.describe('shopping cart (guest)', () => {
     const productName = (await page.getByRole('heading', { level: 1 }).textContent())?.trim()
     await addOpenProductToCart(page)
 
-    await page.goto('/cart')
-    await expect(page.getByRole('heading', { name: 'סל הקניות' })).toBeVisible()
+    await openCartWithItems(page)
     if (productName) {
       await expect(page.getByText(productName, { exact: false }).first()).toBeVisible()
     }
@@ -56,9 +55,7 @@ test.describe('shopping cart (guest)', () => {
     await openPurchasableProduct(page)
     await addOpenProductToCart(page)
 
-    await page.goto('/cart')
-    const summary = page.getByRole('complementary', { name: 'סיכום הזמנה' })
-    await expect(summary).toBeVisible()
+    const summary = await openCartWithItems(page)
     await expect(summary.getByText('לתשלום באתר')).toBeVisible()
     await expect(summary.getByText(/₪/).first()).toBeVisible()
   })
@@ -67,7 +64,7 @@ test.describe('shopping cart (guest)', () => {
     await openPurchasableProduct(page)
     await addOpenProductToCart(page)
 
-    await page.goto('/cart')
+    await openCartWithItems(page)
     await expect.poll(() => navCartCount(page), { timeout: 10_000 }).toBe(1)
 
     await page.getByRole('button', { name: 'הוסף כמות' }).first().click()
@@ -78,7 +75,7 @@ test.describe('shopping cart (guest)', () => {
     await openPurchasableProduct(page)
     await addOpenProductToCart(page)
 
-    await page.goto('/cart')
+    await openCartWithItems(page)
     await page.getByRole('button', { name: 'הוסף כמות' }).first().click()
     await expect.poll(() => navCartCount(page), { timeout: 10_000 }).toBe(2)
 
@@ -90,7 +87,7 @@ test.describe('shopping cart (guest)', () => {
     await openPurchasableProduct(page)
     await addOpenProductToCart(page)
 
-    await page.goto('/cart')
+    await openCartWithItems(page)
     await expect.poll(() => navCartCount(page), { timeout: 10_000 }).toBe(1)
 
     await page.reload()
@@ -102,7 +99,7 @@ test.describe('shopping cart (guest)', () => {
     await openPurchasableProduct(page)
     await addOpenProductToCart(page)
 
-    await page.goto('/cart')
+    await openCartWithItems(page)
     await page.getByRole('button', { name: 'רוקן עגלה' }).click()
 
     await expect(page.getByRole('button', { name: 'רוקן עגלה' })).toBeHidden({ timeout: 10_000 })

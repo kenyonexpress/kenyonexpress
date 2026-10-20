@@ -223,6 +223,31 @@ async function headerCartCount(page: Page): Promise<number> {
  * re-enables too, but `settle()` has put the count back to `before`, so the
  * condition stays false and the spec fails as it should.
  */
+/**
+ * /cart IS PRERENDERED AND SHOWS THE EMPTY STATE UNTIL `/api/cart` ANSWERS.
+ *
+ * The page is static; `CartBootstrap` fills the store with one fetch after
+ * hydration, and `CartPageView` has no loading branch: with zero items in the
+ * store it draws "סל הקניות שלך ריק כרגע." under a header badge that already counts the
+ * item. That fetch is a Supabase read with the server's own 10 s ceiling, so a
+ * spec that asserts the line items at the 5 s default reads the empty state on
+ * a slow minute and passes on the retry: run 6 (2026-10-20 21:53 UTC), first
+ * attempt "element(s) not found" on the product name with the badge at 1, the
+ * retry green in 16 s. checkout.spec had the same shape one run earlier.
+ *
+ * Every spec that puts something in the cart and then reads /cart goes through
+ * here, so the budget lives in one place. The order summary only renders in
+ * the non-empty branch, which makes it the marker that the read has landed.
+ * A spec that EXPECTS an empty cart must not use this.
+ */
+export async function openCartWithItems(page: Page): Promise<Locator> {
+  await page.goto('/cart')
+  await expect(page.getByRole('heading', { name: 'סל הקניות' })).toBeVisible()
+  const summary = page.getByRole('complementary', { name: 'סיכום הזמנה' })
+  await expect(summary).toBeVisible({ timeout: DISCOVERY_TIMEOUT })
+  return summary
+}
+
 export async function addOpenProductToCart(page: Page): Promise<void> {
   allowSlowBackend()
   const before = await headerCartCount(page)
