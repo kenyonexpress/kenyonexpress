@@ -2,6 +2,30 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_10 (Session: 2026-10-20 21:29 UTC, queue refill, third pass, DONE)
+
+**Goal:** Append MAINTENANCE_LOOP_1 through MAINTENANCE_LOOP_10 to `~/ke-goals/queue.txt` again by reading them from that same file, so the maintenance loop never drains.
+
+**Result:** COMPLETE. The first ten lines of `~/ke-goals/queue.txt` were appended to its tail (20 lines to 30). A `diff` of lines 1-10 against lines 21-30 is empty, so the copies are byte-identical. The queue file is outside the repo, so no code, test, or build changed; this block is the only repo edit. Nothing else was touched, per the goal's "ONLY do what is explicitly requested".
+
+**Gates:** `pnpm type-check` exit 0, `pnpm lint` exit 0 (biome 1698 files, tokens, copy, asset gates clean), `pnpm build` exit 0 (BUILD_ID q3I0LRdSD_EbRkSOQ45TF). Nothing to fix.
+
+**המשך מ:** MAINTENANCE_LOOP_1 (head of `~/ke-goals/queue.txt`): pnpm audit, fix critical and high, commit each fix as chore security audit fix PACKAGE, push to autopilot.
+
+## ✅ MAINTENANCE_LOOP_9 (Session: 2026-10-20 21:23-21:32 UTC, Supabase pool and slow-query check, third measured pass, MEASURED, no alert)
+
+**Goal:** Verify Supabase connection pool and query performance via the Supabase MCP, alert in docs/DB-STATUS.md if slow queries over 500 ms exist, commit as chore ops db performance check, push.
+
+**Result:** COMPLETE, no alert. `scripts/db-mcp-probe.mjs` ran at 21:24 UTC against production through the official `@supabase/mcp-server-supabase` (read-only, stdio, CLI keychain token), 13 tools listed, 41 s wall time. Pool **14 of 60** backends (23.3%), the same four clients as 16:24 and 18:21 (PostgREST 11, exporter 1, admin 1, this probe 1), 0 lock waits, 0 statements running over 500 ms, deadlocks 0, cache hit 100%. pg_stat_statements since 2026-07-16: 4,870 statements, 7,290,579 calls (+1 and +41,781 over three hours). Over 500 ms by mean: 6, all platform (dashboard timezone list, pg-meta listings, two one-off verification probes), **0 application**. Application spikes by max: the identical 6 rows with identical max values across all three passes while call counts grew (carts UPDATE +18, available_stock +278, carts INSERT +137, fn_record_search +42), so they are historical, not recurring. Advisors unchanged (1 WARN initplan, 14 WARN multiple-permissive, 9 INFO unindexed FKs, 157 INFO unused indexes). DB 43 MB to 44 MB (carts +138 live rows). Pooler and pgbouncer config re-read from the management API: byte-identical. docs/DB-STATUS.md refreshed with the deltas, logs/maint9/result.json replaced. Committed `90d19086c` by explicit path.
+
+**Gates:** `scripts/db-mcp-probe.test.mjs` 10/10, `pnpm type-check` clean, `pnpm lint` clean (biome 1698 files, tokens, copy, asset gates), `pnpm build` exit 0 (BUILD_ID VoB-oNCnhcE8F8WA1zeT1).
+
+**החלטות שהתקבלו לבד:**
+- The claude.ai Supabase connector still needs OAuth this session; the goal's MCP requirement was met with the same server run locally over stdio, as in the two earlier passes (memory: supabase-mcp-via-local-official-server).
+- STATE.md is 4,024 lines against a stated 300-line cap; no archive was done here because that is a separate goal and other sessions write to this file concurrently.
+
+**המשך מ:** MAINTENANCE_LOOP_10 (head of `~/ke-goals/queue.txt`): append MAINTENANCE_LOOP_1 through MAINTENANCE_LOOP_10 to `~/ke-goals/queue.txt` again so the loop continues.
+
 ## ✅ MAINTENANCE_LOOP_8 (Session: 2026-10-20 21:15-21:25 UTC, code debt scan, fifth pass, MEASURED, delta 0)
 
 **Goal:** Scan all TODO, FIXME and HACK comments in src/, queue a cleanup goal if the count grew since the last scan, report the delta in docs/CODE-DEBT-STATUS.md, commit as chore maint code debt scan, push.
