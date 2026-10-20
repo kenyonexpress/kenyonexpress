@@ -37,10 +37,14 @@
    the live archive at 380 the whole hero column is rgb(255,255,255): the
    slider is one phone image centred on white, 193px tall inside a 213px white
    section (probed 2026-10-20). Our tinted 380x213 box differed from live on
-   every pixel that was not text, which is most of the y200-400 bands. Below the
-   tablet breakpoint only; the desktop geometry the gate passed on is untouched.
-   Doubled selector for the same specificity reason as the rules above. */
-@media (max-width: 767px) {
+   every pixel that was not text, which is most of the y200-400 bands. The
+   same is true at 768: probed 2026-10-20, rs-module, rs-slide and rs-sbg are
+   all transparent inside a white column at 768 AND 1440, and the 768 capture
+   shows the copy and the phone shot on plain white. The tint was the whole
+   728x304 slot in the y100-400 bands of the 12.15% home/768 run. Below lg;
+   the 1440 geometry the gate passed on is untouched. Doubled selector for the
+   same specificity reason as the rules above. */
+@media (max-width: 1023px) {
   [data-hero-slider][data-hero-slider] {
     background-color: var(--color-surface);
   }

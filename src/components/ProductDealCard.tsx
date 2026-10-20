@@ -1,4 +1,5 @@
 import AddToCartButton from '@/components/cart/AddToCartButton'
+import { KE_LIVE_DEAL_TABLET_SQUARE } from '@/lib/ke-live-deals-data'
 import { shekelsFromIlsRounded } from '@/lib/money-format'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -154,6 +155,9 @@ export default function ProductDealCard({ product }: { product: Product }) {
               height={245}
               sizes={DEAL_IMAGE_SIZES}
               quality={50}
+              // The reference renders this card's 600x600 crop at 768 only;
+              // see KE_LIVE_DEAL_TABLET_SQUARE for the measurement.
+              data-thumb-md={KE_LIVE_DEAL_TABLET_SQUARE.has(product.id) ? 'square' : undefined}
               // `.p_con__image` pins the height to 245px and leaves the width
               // auto, which is live's aspect. No inline style: see the note in
               // ProductCard.tsx - an inline `height:auto` beats the class and
