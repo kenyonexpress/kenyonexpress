@@ -2,6 +2,34 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_8 (Session: 2026-10-20 18:15-18:22 UTC, code debt scan, fourth pass, MEASURED)
+
+**Goal:** Scan all TODO, FIXME and HACK comments in src/, queue a cleanup goal if the count grew since the last scan, report the delta in docs/CODE-DEBT-STATUS.md, commit as chore maint code debt scan, push.
+
+**Result:** COMPLETE, delta 0, nothing queued. Word-boundary and loose grep both read **8** on `43df16e43` (7 TODO comments, 1 test stub string in whatsapp.test.ts, 0 FIXME, 0 HACK), identical to the 16:13 scan on bbc6e97a1. Sixteen commits landed between the two scans; exactly one touched src/ (ee0abecc4, two lines in CouponCardSkeleton.tsx) and it carries no marker, so the findings list is byte-identical. Fourth row added to the scan history table in docs/CODE-DEBT-STATUS.md, header and summary moved to this pass. Committed as f721e56dc, pushed.
+
+**Gates:** `pnpm type-check` clean, `pnpm lint` clean (biome 1697 files, tokens, copy and asset gates clean), `pnpm build` exit 0 (BUILD_ID dC-Ajg3KGpNFcnMA6AeQp), doc-only change.
+
+**החלטות שהתקבלו לבד:**
+- The draft note first claimed "7 commits, none in src/" from memory; `git log 6d672d0b9..43df16e43 -- src/` showed 16 and one. The doc carries the measured numbers.
+- Supabase MCP is unauthenticated in this session (OAuth connector); the scan is static text analysis and needs no DB access, same reasoning as the three earlier passes.
+
+**המשך מ:** MAINTENANCE_LOOP_9 (head of `~/ke-goals/queue.txt`): Supabase connection pool and slow-query check via Supabase MCP, alert in docs/DB-STATUS.md if slow queries over 500 ms exist, commit as chore ops db performance check, push.
+
+## ✅ MAINTENANCE_LOOP_7 (Session: 2026-10-20 18:10-18:20 UTC, Lighthouse CI, third pass, MEASURED, PASS)
+
+**Goal:** Run Lighthouse CI via `pnpm lhci:autorun`, queue an optimisation goal if any score is below 90, report scores to docs/LIGHTHOUSE-STATUS.md, commit as chore qa lighthouse check, push.
+
+**Result:** COMPLETE, every category at or above 90 on all three URLs in all nine runs, nothing queued. Fresh `pnpm build` on `973c0abda` (clean tree, BUILD_ID lviikQdz_PELTAnyZo-Or), `pnpm start` on 3361 from this worktree (listener pid 98925, cwd verified), `LHCI_BASE_URL=http://localhost:3361 COMPARE_PRODUCT_SLUG='אוזניות-איירפודס-3' pnpm lhci:autorun` (desktop preset, 3 runs per URL, lhci exit 0, assertion results empty). Representative runs: `/` perf **100** a11y 100 bp 96 seo 100 (LCP 0.8 s), `/products` perf **99** a11y 100 bp 96 seo 100 (LCP 0.9 s), `/product/אוזניות-איירפודס-3` perf **99** a11y 100 bp 96 seo 100 (LCP 0.9 s); TBT 0 ms and CLS ≤ 0.023 everywhere. The only weighted audit under 0.9 is `errors-in-console`, the same five local `/_vercel/*` and https-on-http artefacts as every earlier pass. The 16:03 header and table in docs/LIGHTHOUSE-STATUS.md were demoted to a "Previous pass" section; the fix table and older history below it are untouched. Server stopped by listener pid after the run; port 3361 free.
+
+**Gates:** `pnpm build` exit 0, `pnpm type-check` clean, `pnpm lint` clean (biome 1697 files, tokens, copy and asset gates clean).
+
+**החלטות שהתקבלו לבד:**
+- Rebuilt instead of reusing the 18:09 `.next` (one minute old, same commit, no src file newer) because the baked `NEXT_PUBLIC_APP_URL` of that build was unknown and a mismatch reads SEO 92 on a phantom canonical (memory). One build, nothing else in flight.
+- `lhci autorun` deletes the eight tracked `.lighthouseci/lhr-*` files and rewrites `assertion-results.json` as part of its run; they were restored with `git checkout -- .lighthouseci` rather than committed, because they are an older session's artefacts and the goal's commit is the status doc only. The new reports live in the git-ignored `.lighthouseci/reports/`; the 16:03 reports were moved to /tmp so the manifest holds one pass.
+
+**המשך מ:** MAINTENANCE_LOOP_8 (head of `~/ke-goals/queue.txt`): scan all TODO, FIXME and HACK comments in src/, queue a cleanup goal if the count grew since the last scan, report the delta in docs/CODE-DEBT-STATUS.md, commit as chore maint code debt scan, push.
+
 ## ✅ MAINTENANCE_LOOP_6 (Session: 2026-10-20 17:45-18:10 UTC, mobile gate recheck, MEASURED, PASS)
 
 **Goal:** Recheck the mobile gate score via `scripts/compare.mjs`, requeue the mobile fix goal at the head of the queue if above 11%, report the score to docs/GATE-STATUS.md, commit as chore qa mobile gate check, push.
