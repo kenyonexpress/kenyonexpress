@@ -1737,3 +1737,29 @@ Running 682 tests using 2 workers
 
 
 [112/682] [chromium] › e2e/dialog-ux29.spec.ts:44:7 › UX29 Modal - Dialog Component › should close dialog when pressing Escape key on overlay
+  61) [chromium] › e2e/coupons.spec.ts:82:7 › coupons catalogue › the detail page names the split in shekels, not in percentages 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.getAttribute: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for locator('a[href^="/coupons/"]').first()
+
+
+      85 |   }) => {
+      86 |     await page.goto('/coupons')
+    > 87 |     const href = await page.locator('a[href^="/coupons/"]').first().getAttribute('href')
+         |                                                                     ^
+      88 |     test.skip(!href, 'no active coupon deals to open')
+      89 |
+      90 |     const html = await (await request.get(href as string)).text()
+        at /Users/ofir/kenyonexpress-autopilot/e2e/coupons.spec.ts:87:69
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/coupons-coupons-catalogue--5a889--shekels-not-in-percentages-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/coupons-coupons-catalogue--5a889--shekels-not-in-percentages-chromium/error-context.md
+
+
+[113/682] [chromium] › e2e/dialog-ux29.spec.ts:59:7 › UX29 Modal - Dialog Component › should trap focus within dialog (Tab key cycles through elements)
