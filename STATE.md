@@ -2,6 +2,20 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_3 (Session: 2026-10-20 16:37-16:50 UTC, backlog scan, third run)
+
+**Goal:** Scan docs/BACKLOG.md and docs/TODO.md for unblocked items, queue any found to `~/ke-goals/queue.txt`, report the count in docs/MAINT-LOG.md, commit as chore maint scan backlog, push.
+
+**Result:** COMPLETE, 0 unblocked items. BACKLOG.md is unchanged (7 items, last commit 4b17cfb49), TODO.md does not exist anywhere in the worktree. The two "after 10 sales" gates were measured on production through the read-only Supabase MCP server instead of being assumed: 99 orders, 71 succeeded payments, and every one of them is a mock transaction id placed by a test account (e2e, playwright, example.com). Real sales: 0, so items 2 to 5 stay blocked on evidence. Item 1 is dated 2026-10-23 and becomes a candidate then. Queue untouched. Evidence in `logs/maint3/`, entry in docs/MAINT-LOG.md, commit 0e92d9899 pushed.
+
+**Gates:** `pnpm typecheck` clean, `pnpm lint` clean (biome 1697 files, tokens, copy and asset gates clean), `pnpm build` exit 0.
+
+**החלטות שהתקבלו לבד:**
+- The sales gate was measured with a one-off query (not added to scripts/) because the rerun recipe is recorded in the MAINT-LOG entry and the driver already lives in `scripts/db-mcp-probe.mjs`.
+- A count that excludes mock transaction ids and test accounts is the number the "10 sales" gate means; `orders.status = paid` alone would have read 70 and falsely unblocked three items.
+
+**המשך מ:** MAINTENANCE_LOOP_4 (head of `~/ke-goals/queue.txt`): full Playwright suite via `pnpm test:e2e`, report counts to docs/E2E-STATUS.md.
+
 ## ✅ MAINTENANCE_LOOP_2 (Session: 2026-10-20 23:50-00:05 UTC, patch-version bump, no candidates)
 
 **Goal:** Run `pnpm outdated` and bump patch versions for safe packages. Skip major and minor. Commit as chore deps bump patch versions. Push to autopilot. Only what is requested.
