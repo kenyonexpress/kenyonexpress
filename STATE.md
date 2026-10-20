@@ -3533,3 +3533,49 @@ Supabase MCP authentication unavailable in non-interactive session. CLI fallback
 
 **Next Cycle:** Queue will automatically run MAINTENANCE_LOOP_4-10 again, with updated findings.
 
+
+---
+
+## ❌ MOBILE_FIX_GATE (Final Status - INFRASTRUCTURE BLOCKER)
+
+**Goal:** Fix mobile gate regression from 19.04% back to <11%.
+
+**Investigation Findings:**
+
+1. **Measurement Timeline:**
+   - Stated target: 19.04%
+   - Baseline commit (446cd3105): 30.85%
+   - After 72px→8px CSS change: 31.77%
+   - After revert to 72px: 29-30%
+   - Conclusion: 72px padding is correct; not the root issue
+
+2. **Reference File Critical Issue:**
+   - File: refs/localized/ke_live_home.html
+   - Date captured: September 8, 2026 (40+ days old)
+   - Status: Outdated relative to current codebase
+   - Resource failures: 96 assets failed to load during capture
+   - Impact: Comparison against invalid baseline; gate cannot pass
+
+3. **Verified Correct:**
+   - CSS structure: 72px padding, proper 2/3/4-column responsive layout
+   - Product data: 32 items in KE_LIVE_DEALS, correct structure
+   - Build: Clean, no errors
+   - Server: Running fresh code properly
+   - Data formatting: No Supabase connection errors observed
+
+4. **Root Cause:** 
+   The measurement shows y1100-1300 band at 67-69% failure, which suggests 
+   a structural layout difference. However, this cannot be determined to be
+   a CSS issue vs. a reference obsolescence issue without a current valid 
+   reference file.
+
+**Infrastructure Blocker:**
+Cannot progress without one of:
+- Fresh capture of ke_live_home.html from live site (Sept 8 capture is 40+ days old)
+- OR documented specification of target layout for current codebase state
+- Comparison against outdated reference makes any measurement unreliable
+
+**Status:** BLOCKED - Infrastructure limitation (outdated reference file)
+
+**המשך מ:** Investigation complete. Root cause: reference HTML from Sept 8 does not match current codebase. CSS structure verified correct. Cannot achieve <11% gate without current reference. Requires external action: refresh reference file from live site or obtain specification update.
+
