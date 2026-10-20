@@ -34,6 +34,38 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 ---
 
+## ✅ MAINTENANCE_LOOP_6 (Session: 2026-10-20 — Mobile Gate Check)
+
+**Goal:** Recheck Mobile Gate score via scripts/compare.mjs. If above 11%, requeue mobile fix goal at head of queue. Report current score to docs/GATE-STATUS.md. Commit as chore qa mobile gate check. Push.
+
+**Result:** COMPLETE ✓ — Mobile Fix Goal Queued
+
+**Mobile Gate Measurement (Fresh Run — 2026-10-20 07:47 UTC):**
+- **Overall score: 31.77%** at 380px (mobile)
+- **Threshold: 11%**
+- **Status: EXCEEDS threshold by 20.77 points** ✓ Condition met
+- **Pages structural ratio: 1.145x** (improved from prior 3.25x mismatch)
+- **Worst bands:** y 2400-2500 (65%), y 1900-2000 (61.9%), y 1100-1200 (58.6%)
+
+**Actions Taken:**
+1. ✅ Updated docs/GATE-STATUS.md with fresh measurement (2026-10-20 07:47Z)
+2. ✅ Queued MOBILE_FIX_GATE goal at head of ~/ke-goals/queue.txt
+3. ✅ Mobile fix goal includes full description and success criteria
+
+**Commit:**
+- (pending below)
+
+**Execution:**
+- Started dev server on PORT=3311 (pnpm start)
+- Ran `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=home --widths=380`
+- Measurement succeeded (structural pages similar, height ratio 1.145x usable)
+- Score 31.77% triggers mobile fix requirement
+- Queued mobile fix at head of queue for next session
+
+**המשך מ:** MAINTENANCE_LOOP_6 COMPLETE. Mobile gate measured at 31.77% (above 11% threshold). Mobile fix goal queued at head of queue. Next session begins with MOBILE_FIX_GATE.
+
+---
+
 ## ⏭️ MAINTENANCE_LOOP_4 (Session: 2026-10-20 — E2E SKIPPED, Stuck Twice)
 
 **Goal:** Run full Playwright test suite with pnpm test:e2e. Report pass/fail/flaky counts to docs/E2E-STATUS.md. Fix any new flaky tests.
