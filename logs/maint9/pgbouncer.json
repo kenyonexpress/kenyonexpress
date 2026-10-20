@@ -1,0 +1,9 @@
+{
+  "ignore_startup_parameters": "options,extra_float_digits",
+  "pool_mode": "transaction",
+  "connection_string": "postgres://postgres:[YOUR-PASSWORD]@db.ixvwfbuvfxxsjiywhbbb.supabase.co:6543/postgres",
+  "server_idle_timeout": 600,
+  "server_lifetime": 3600,
+  "query_wait_timeout": 80,
+  "reserve_pool_size": 1
+}
