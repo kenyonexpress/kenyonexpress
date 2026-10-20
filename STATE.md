@@ -2,6 +2,23 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_3 (Session: 2026-10-20 11:46 UTC, Backlog Scan, repeat)
+
+**Goal:** Scan docs/BACKLOG.md and docs/TODO.md for unblocked items, queue any found to ~/ke-goals/queue.txt, report the count in docs/MAINT-LOG.md. Commit as chore maint scan backlog. Push.
+
+**Result:** COMPLETE. 0 unblocked items. BACKLOG.md has 7 items, every one gated on a date (2026-10-23), a launch, a sales milestone, revenue or Phase 2. docs/TODO.md does not exist (no TODO.md anywhere under docs/). Queue untouched. Entry appended to docs/MAINT-LOG.md.
+
+**Gates:** `pnpm typecheck` clean, `pnpm lint` clean (biome 1691 files, tokens, copy, asset gates), `pnpm build` exit 0.
+
+**החלטות שהתקבלו לבד:**
+- Did not create docs/TODO.md. The goal reads an existing file; inventing an empty one would trip the docs index gate and record nothing.
+- Backlog item 1 (group-deals re-evaluation) unblocks on 2026-10-23. Left for the next MAINTENANCE_LOOP_3 run after that date instead of pre-queueing it.
+- STATE.md is 3591 lines against a 300-line cap. Not archived here: out of this goal's scope and a shared file other sessions append to. Candidate for a dedicated maintenance goal.
+
+**המשך מ:** MAINTENANCE_LOOP_3 COMPLETE. Next goal from ~/ke-goals/queue.txt head: MAINTENANCE_LOOP_4 (full Playwright e2e suite, report to docs/E2E-STATUS.md).
+
+---
+
 ## ✅ MAINTENANCE_LOOP_2 (Session: 2026-10-20 18:40 +07, Dependency Patch Bump)
 
 **Goal:** Run pnpm outdated, bump patch versions only, skip major and minor. Commit as chore deps bump patch versions. Push to autopilot.
