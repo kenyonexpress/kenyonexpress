@@ -1,0 +1,57 @@
+{
+  "ts": "2026-10-20T16:37:52.525Z",
+  "projectRef": "ixvwfbuvfxxsjiywhbbb",
+  "query": "select\n  p.status,\n  coalesce(p.cardcom_account_id,'(null)') as cardcom_account,\n  case when p.cardcom_transaction_id is null then 'no-txn'\n       when p.cardcom_transaction_id ~ '^(mock|test|e2e)' then 'mock-txn' else 'txn' end as txn_kind,\n  case when u.email ~* '(e2e|test|example\\.com|playwright|mock)' then 'test-user' else 'user' end as buyer_kind,\n  count(*)::int as n,\n  sum(coalesce(p.amount_ils_agorot, (p.amount_ils*100)::bigint))::bigint as agorot,\n  min(p.created_at)::date as first_at, max(p.created_at)::date as last_at\nfrom payments p join orders o on o.id=p.order_id left join auth.users u on u.id=o.user_id\nwhere p.kind='charge' or p.kind is not null\ngroup by 1,2,3,4 order by 5 desc",
+  "result": [
+    {
+      "status": "succeeded",
+      "cardcom_account": "platform",
+      "txn_kind": "mock-txn",
+      "buyer_kind": "test-user",
+      "n": 69,
+      "agorot": 1503300,
+      "first_at": "2026-09-10",
+      "last_at": "2026-10-15"
+    },
+    {
+      "status": "redirected",
+      "cardcom_account": "platform",
+      "txn_kind": "no-txn",
+      "buyer_kind": "test-user",
+      "n": 15,
+      "agorot": 208000,
+      "first_at": "2026-09-10",
+      "last_at": "2026-09-21"
+    },
+    {
+      "status": "refunded",
+      "cardcom_account": "(null)",
+      "txn_kind": "mock-txn",
+      "buyer_kind": "test-user",
+      "n": 2,
+      "agorot": 8000,
+      "first_at": "2026-09-21",
+      "last_at": "2026-09-21"
+    },
+    {
+      "status": "succeeded",
+      "cardcom_account": "(null)",
+      "txn_kind": "mock-txn",
+      "buyer_kind": "test-user",
+      "n": 2,
+      "agorot": 83500,
+      "first_at": "2026-07-21",
+      "last_at": "2026-07-21"
+    },
+    {
+      "status": "refunded",
+      "cardcom_account": "platform",
+      "txn_kind": "mock-txn",
+      "buyer_kind": "test-user",
+      "n": 2,
+      "agorot": 8000,
+      "first_at": "2026-09-21",
+      "last_at": "2026-09-21"
+    }
+  ]
+}

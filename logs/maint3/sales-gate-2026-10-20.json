@@ -1,0 +1,14 @@
+{
+  "ts": "2026-10-20T16:37:29.209Z",
+  "projectRef": "ixvwfbuvfxxsjiywhbbb",
+  "query": "select\n  (select count(*)::int from orders where status in ('paid','partially_fulfilled','fulfilled','platform_settled')) as paid_orders,\n  (select count(*)::int from orders) as all_orders,\n  (select count(*)::int from payments where status in ('succeeded','platform_settled')) as succeeded_payments,\n  (select max(created_at) from orders) as last_order_at,\n  now() as measured_at",
+  "result": [
+    {
+      "paid_orders": 70,
+      "all_orders": 99,
+      "succeeded_payments": 71,
+      "last_order_at": "2026-10-15 03:04:25.233507+00",
+      "measured_at": "2026-10-20 16:37:30.913799+00"
+    }
+  ]
+}
