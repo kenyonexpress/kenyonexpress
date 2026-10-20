@@ -119,5 +119,5 @@ describe('ToastDemo component', () => {
       },
       { timeout: 5000 },
     )
-  }, 5000)
+  })
 })

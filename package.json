@@ -118,7 +118,7 @@
     "@types/react-dom": "^19.3.0",
     "@types/web-push": "3.6.4",
     "@vitejs/plugin-react": "^4.3.4",
-    "@vitest/coverage-v8": "^5.0.5",
+    "@vitest/coverage-v8": "^4.1.12",
     "drizzle-kit": "^0.31.11",
     "fast-xml-parser": "^5.11.2",
     "husky": "^9.1.7",
@@ -128,7 +128,7 @@
     "storybook": "^10.6.2",
     "tailwindcss": "^4.3.3",
     "typescript": "^5",
-    "vitest": "^5.0.5"
+    "vitest": "^4.1.12"
   },
   "engines": {
     "node": ">=22.11.0",
