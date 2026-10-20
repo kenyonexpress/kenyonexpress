@@ -31,3 +31,17 @@
     white-space: normal;
   }
 }
+
+/* THE PHONE SLIDER SITS ON WHITE. At 1440 the slider paints the measured
+   blue-grey (--color-hero-slider-bg) behind the copy and the product shot. In
+   the live archive at 380 the whole hero column is rgb(255,255,255): the
+   slider is one phone image centred on white, 193px tall inside a 213px white
+   section (probed 2026-10-20). Our tinted 380x213 box differed from live on
+   every pixel that was not text, which is most of the y200-400 bands. Below the
+   tablet breakpoint only; the desktop geometry the gate passed on is untouched.
+   Doubled selector for the same specificity reason as the rules above. */
+@media (max-width: 767px) {
+  [data-hero-slider][data-hero-slider] {
+    background-color: var(--color-surface);
+  }
+}

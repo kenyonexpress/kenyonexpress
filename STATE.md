@@ -2,6 +2,40 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MOBILE_FIX_GATE (Session: 2026-10-20 14:05-14:50 UTC, home gate at 380, MEASURED, PASS)
+
+**Goal:** Fix home page compare.mjs score below 11% at 380 (was 47.23% twice). Three measured causes from docs/GATE-STATUS.md: two-card phone grid, text hero plus two category tiles in the hero band, consent sheet inside the 2600px capture. Verify at 380, 768, 1440 and quote the ledger rows.
+
+**Result:** COMPLETE for the goal's target. home/380 = **8.76% PASS** (47.23 -> 44.55 -> 11.40 -> 9.33 -> 8.76 across four measured builds). home/768 = 41.82% FAIL (was 42.02), home/1440 = 30.05% FAIL (was 31.28; the page is 1440px wide again, it was 1490). Ledger rows (docs/UI-PARITY-REPORT.md, 14:39 / 14:41 / 14:43):
+
+```
+| 2026-10-20 14:39 | home | 380 | 8.76% | PASS | `b400414b3-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-20 14:41 | home | 768 | 41.82% | **FAIL** | `b400414b3-dirty` | WORSE than the 29% best known for home/768 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-20 14:43 | home | 1440 | 30.05% | **FAIL** | `b400414b3-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+```
+
+**Measured, not assumed (each step built, served on 3341 by this session, measured):**
+1. All three named causes were one commit: rc5 F03 (e9ef18aab, 18.10) styled the phone home toward electro-home-v7 and admitted "gate still above 11 percent"; the gate on this branch scores against refs/localized/ke_live_home.html. Removing its 767px block (two-column grid, compact cards, clamp hero slot, yellow 56px masthead, TopBar hidden below md, city chips on phones) took 380 from 47.23% to 44.55%.
+2. The card INTERIOR already matched live (533 vs 532.4); the pitch did not. Probed boxes in the live archive at 380: item padding 8/8 (ours 72/72), header 49 (ours 84), hero column white (ours the slider tint). 44.55% -> 11.40%.
+3. Fractional geometry: live item 548.4, card 532.4, price row 27.4, footer gap 20 (ours 21), prices start-aligned (ours end), cart circle at x291 = inline-start (ours inline-end, mirrored; the CSS comment had it backwards against its own number), grid opens y408.4 (ours 409), logo x205 (ours 168, centred by justify-between because live's five-icon cluster is 220px wide and ours is 100). 11.40% -> 8.76%. The first draft of these footer rules sat BEFORE the base block, shared its specificity and lost silently (9.33%); moved after it.
+4. compare.mjs presets ke_consent=denied.<CONSENT_WORDING_VERSION> on the LOCAL capture only, version read from src/lib/analytics/consent.ts (scripts/_lcp-probe.mjs still hardcodes granted.1, which no longer hides the banner; not touched, noted). Three tests in scripts/compare-reference.test.mjs lock side, host scoping and the version read.
+5. Remaining 380 bands: y200-400 (56/34%) is live's phone photograph, a floor of ~53/35% we cannot paint (asset gate); y1700 (20%) is card three's photo one pixel off from live's fractional rounding; y2500 (19%) is the fixed MobileNavBar plus our WhatsApp circle on the left where live's is on the right.
+6. 1440 overflow: the twelve nowrap mega-menu links at px-3 pushed the shrink-0 icon cluster to x-46 and document.scrollWidth to 1490. px-2 (96px back) closes it; measured 1440 wide after.
+7. MobileDrawer: three tests failed since UX04 (18.10) because the panel stays mounted while closed. Fixed the component, not just the test: `aria-hidden` and `inert` while closed (a modal dialog and eight links were in the accessibility tree of every page), and the test scopes the close button to the dialog since the scrim shares its label.
+
+**Gates:** `pnpm type-check` clean, `pnpm lint` clean (biome 1691 files, tokens, copy, asset gates), `pnpm build` exit 0 four times (measured BUILD_ID moZnK1MATsfUvEtFgUieN). Focused vitest green: scripts/compare-reference.test.mjs (12), src/components/home, src/components/layout, src/lib/analytics (261). Full `pnpm test`: 145 failed / 6250 passed, all in files that import nothing changed here (fraud-review cookies-outside-request-scope, offline indexedDB, cron-auth, InfiniteScrollLoader scrollTo); the baseline under MAINTENANCE_LOOP_2 was 148, so three fewer.
+
+**החלטות שהתקבלו לבד:**
+- Reverted the WHOLE phone side of rc5 F03 (header too), not only the three listed causes: it was one commit measured against the wrong reference, and y0-200 was its worst header band (58.6%).
+- Did not hide the welcome copy on phones: measured, the hero bands sit at the floor set by live's photograph, so hiding text would have cost the page its h1 for about 3 points.
+- Did not fix 768 and 1440 here. Both regressed before this goal from UX commits since 16.10 (1440 last PASS 9.73% at 080e7761c; 768 last PASS 07.09). Causes are measured in docs/GATE-STATUS.md and a follow-up goal DESKTOP_TABLET_FIX_GATE is queued at the head of ~/ke-goals/queue.txt. Only the page-width overflow at 1440 was fixed, as a defect.
+- Left the fixed bottom tab bar and WhatsApp side as they are (0.7 of a point); real UI, and the WhatsApp side is a product decision.
+- Probe scripts (refs/_probe380.mjs, _probe-range.mjs, _probe-card.mjs, _probe-overflow.mjs) stay under gitignored refs/; they are measurement aids, not shipped tooling.
+
+**המשך מ:** MOBILE_FIX_GATE COMPLETE, home/380 8.76% PASS. Next goal is the head of ~/ke-goals/queue.txt: DESKTOP_TABLET_FIX_GATE (768 at 41.82%, 1440 at 30.05%, causes in docs/GATE-STATUS.md), then MAINTENANCE_LOOP_7 (Lighthouse).
+
+---
+
 ## ✅ MAINTENANCE_LOOP_6 (Session: 2026-10-20 13:57 UTC, Mobile Gate Recheck, repeat, MEASURED)
 
 **Goal:** Recheck Mobile Gate score via scripts/compare.mjs. If above 11 percent requeue mobile fix goal at head of queue. Report current score to docs/GATE-STATUS.md. Commit as chore qa mobile gate check. Push.

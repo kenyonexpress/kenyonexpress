@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import MobileDrawer from './MobileDrawer'
 
@@ -29,7 +29,12 @@ describe('MobileDrawer', () => {
       expect(screen.getByRole('dialog')).toBeInTheDocument()
     })
 
-    const closeButton = screen.getByRole('button', { name: /סגירת התפריט/ })
+    // Two controls carry this name while the drawer is open: the scrim and the
+    // panel's own close button. Scope to the panel so the test exercises the
+    // visible control and does not pass by hitting the scrim.
+    const closeButton = within(screen.getByRole('dialog')).getByRole('button', {
+      name: /סגירת התפריט/,
+    })
     fireEvent.click(closeButton)
     await waitFor(() => {
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument()

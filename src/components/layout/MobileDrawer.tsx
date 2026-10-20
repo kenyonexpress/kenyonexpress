@@ -110,6 +110,7 @@ export default function MobileDrawer() {
         type="button"
         onClick={close}
         tabIndex={open ? 0 : -1}
+        aria-hidden={!open}
         aria-label="סגירת התפריט"
         className={`fixed inset-0 z-50 bg-black/50 transition-opacity duration-300 motion-reduce:transition-none xl:hidden ${
           open ? 'opacity-100' : 'pointer-events-none opacity-0'
@@ -130,6 +131,16 @@ export default function MobileDrawer() {
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
+        // KEPT MOUNTED BUT NOT IN THE TREE WHILE CLOSED. The panel stays in
+        // the DOM so its transform can animate (see the note above), which
+        // left a modal dialog, a close button and eight category links in the
+        // accessibility tree of every page while nothing was open: a screen
+        // reader could land in it and Tab reached its links off-screen.
+        // `inert` removes it from focus and hit-testing, `aria-hidden` from
+        // the tree, both for exactly as long as it is closed. The tests read
+        // the closed state the same way assistive tech does.
+        aria-hidden={!open}
+        inert={!open}
         tabIndex={-1}
         dir="rtl"
         // RTL: the drawer slides in from the start (right in RTL), so it is anchored start and

@@ -53,24 +53,24 @@ import Link from 'next/link'
 export default function SiteHeader() {
   return (
     <>
-      {/* rc5 F03: the info strip is tablet-up. Electro's phone header is the
-          single masthead bar, and the strip's three lines are repeated in the
-          benefit bar under the hero. */}
-      <div className="hidden md:block">
-        <TopBar />
-      </div>
+      {/* The info strip renders at EVERY width. Live shows it on a 380 phone
+          as three stacked rows (plus the home greeting, 113px in all), and
+          rc5 F03's `hidden md:block` wrapper with a brand-yellow 56px masthead
+          made y0-200 the worst header band of the 2026-10-20 run (58.6%).
+          Electro's phone masthead is not what the gate measures against. */}
+      <TopBar />
 
-      <header
-        dir="rtl"
-        className="site-masthead sticky top-0 z-40 w-full border-b border-border bg-white"
-      >
+      <header dir="rtl" className="sticky top-0 z-40 w-full border-b border-border bg-white">
         {/*
-          h-header-handheld (49) below xl, h-header-masthead (109) from xl up:
-          live's 50 and 110 less their 1px border. `xl` and not `lg` because
-          live's own switch is `hidden-xl-up` / `d-xl-block` on the two header
-          variants -- the handheld header is what 768 AND 1024 get.
+          h-header-phone (48) below md, h-header-handheld (83) from md, and
+          h-header-masthead (109) from xl up: live's 49, 84 and 110 less their
+          1px border. `xl` and not `lg` for the masthead because live's own
+          switch is `hidden-xl-up` / `d-xl-block` on the two header variants --
+          the handheld header is what 768 AND 1024 get. The 380 row is a
+          separate, shorter number: measured y113 h49 in the live archive on
+          2026-10-20, where this row was 84 and sat the whole page 35px low.
         */}
-        <div className="mx-auto flex h-header-handheld max-w-page items-center justify-between gap-4 px-gutter xl:h-header-masthead">
+        <div className="mx-auto flex h-header-phone max-w-page items-center justify-between gap-4 px-gutter md:h-header-handheld xl:h-header-masthead">
           {/* HANDHELD (below xl), in live's order: hamburger on the right,
               logo centred, the two-icon cluster on the left. */}
           {/* THE HAMBURGER IS ON THE INLINE-START, WHICH IN RTL IS THE RIGHT,
@@ -82,7 +82,14 @@ export default function SiteHeader() {
               Both halves of MobileDrawer are xl:hidden internally. */}
           <MobileDrawer />
 
-          <Link href="/" aria-label="קניון אקספרס, לדף הבית" className="shrink-0">
+          {/* THE PHONE LOGO IS NOT CENTRED. Live at 380 puts it at x205-305,
+              26px off the hamburger, because its icon cluster on the other
+              side is 220px wide and overflows the viewport. Ours is 100px, so
+              justify-between centred the logo at x168 and the two 100x26 logos
+              overlapped on nothing. me-auto below md hands the free space to
+              the inline-end and the logo lands at x206 with the existing 16px
+              gap. From md up live's logo IS centred (x578 at 768). */}
+          <Link href="/" aria-label="קניון אקספרס, לדף הבית" className="shrink-0 max-md:me-auto">
             <SmartImage
               src={LOGO}
               alt="קניון EXPRESS"
