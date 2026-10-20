@@ -260,3 +260,6 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-20 20:55 | home | 768 | 9.78% | PASS | `e887e9334-dirty` | ref 190 failed to load (113 script, 74 font, 2 stylesheet, 1 xhr) |
 | 2026-10-20 21:02 | home | 1440 | n/a | **UNMEASURED** | `e887e9334-dirty` | screenshot failed: page.goto: Timeout 60000ms exceeded. Call log: [2m - navigating to "file:///Users/ofir/kenyonexpress-autopilot/refs/localized/ke_live_home.h |
 | 2026-10-20 21:03 | home | 1440 | 8.39% | PASS | `e887e9334-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-20 22:27 | home | 380 | 8.51% | PASS | `450762eda` | ref 141 failed to load (101 script, 37 font, 2 stylesheet, 1 xhr) |
+| 2026-10-20 22:29 | home | 768 | 9.80% | PASS | `450762eda-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-20 22:31 | home | 1440 | 8.10% | PASS | `450762eda-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
