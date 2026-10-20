@@ -4,6 +4,42 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 ---
 
+## ✅ MAINTENANCE_LOOP_3 (Session: 2026-10-20 — Backlog Scan)
+
+**Goal:** Scan docs/BACKLOG.md and docs/TODO.md for unblocked items. If any found, queue them to ~/ke-goals/queue.txt. Report count found in docs/MAINT-LOG.md. Commit as chore maint scan backlog. Push.
+
+**Result:** COMPLETE ✓
+
+**Scan Results:**
+- docs/BACKLOG.md: 7 items, all post-launch or externally gated
+  - Group-deals re-evaluation (gated to 2026-10-23)
+  - Crisp inbox (post-launch)
+  - WhatsApp Business verification (after 10 sales)
+  - Israeli lawyer review of ToS/Privacy (after 10 sales)
+  - Native app (Capacitor/Expo, after revenue)
+  - Courses monthly billing (Phase 2)
+  - Tzimmer calendar (Phase 2)
+- docs/TODO.md: Does not exist
+
+**Unblocked Items Found:** 0
+**Queue Changes:** None (no unblocked items)
+
+**Documentation Updated:**
+- docs/MAINT-LOG.md: Added 2026-10-20 scan entry with results
+
+**Commit:**
+- `ca5f98443` - [autopilot] chore: maint scan backlog
+
+**Execution:**
+- Checked both BACKLOG.md and TODO.md
+- Identified 0 unblocked items (all backlog items are externally gated)
+- Updated MAINT-LOG.md with scan results
+- Committed and pushed to autopilot
+
+**המשך מ:** MAINTENANCE_LOOP_3 COMPLETE. Backlog scan performed, 0 unblocked items found. All items remain post-launch/externally gated. Next goal: MAINTENANCE_LOOP_4.
+
+---
+
 ## ✅ MAINTENANCE_LOOP_2 (Session: 2026-10-20 — Patch Version Bumps)
 
 **Goal:** Run pnpm outdated and bump patch versions for safe packages. Skip major and minor. Commit as chore deps bump patch versions. Push to autopilot branch. Run pnpm typecheck, lint, build. Fix any failures. Commit with [autopilot] prefix. Push.
@@ -31,7 +67,7 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 - Ran full quality suite: type-check, lint, build all passing
 - Pushed to autopilot branch
 
-**המשך מ:** MAINTENANCE_LOOP_2 COMPLETE. All patch versions bumped safely. All quality gates passing. Pushed to autopilot. Next goal: MAINTENANCE_LOOP_3.
+**המשך מ:** MAINTENANCE_LOOP_2 COMPLETE. All patch versions bumped safely. All quality gates passing. Pushed to autopilot.
 
 ---
 
