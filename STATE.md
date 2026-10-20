@@ -3968,4 +3968,11 @@ Supabase MCP authentication unavailable in non-interactive session. CLI fallback
 - Evidence: logs/maint3/sales-gate-2026-10-20b.json. Item 1 (group deals) becomes a candidate on 2026-10-23.
 - Gates: lint, type-check and pnpm build green. First build attempt failed collecting /category/[slug] on transient Supabase REST 10s timeouts (REST probed at 0.3s right after, project ACTIVE_HEALTHY); the retry passed with one retried timeout.
 
-**המשך מ:** MAINTENANCE_LOOP_4 (head of ~/ke-goals/queue.txt).
+## MAINTENANCE_LOOP_4 third cycle, run 5 (2026-10-20 19:01 UTC, commit 8fcd470d5)
+- Full suite on 6d1951209, mock build, port 3417, --retries=1, prefix 10.44.78: 682 total, 612 passed, 60 failed, 3 flaky, 7 skipped, 21.5 min. Same spec and source files as run 4, so the diff measures backend and specs: one case out (coupons a11y mobile, run 4 fix), two in (checkout CTA chromium, purchase-flow mobile).
+- Server log: 83 supabase.timeout (10 s REST) events, 60 of them 19:02 to 19:09; every new red sits in or next to that window. A bare products read from the laptop measured 0.31 to 0.96 s between bursts. Same latency that failed the LOOP_3 build first attempt.
+- Flaky fixed in specs, no product change: a11y keyboard check exempts Radix roving tabs (tablist is the Tab stop, probed Tab 5 lands on "אימייל") and polls the hydrated DOM; six add-to-cart call sites in five specs move from the 2-second "נוסף לסל" label to addOpenProductToCart. Cart scroll-lock goto over 30 s is environment, untouched.
+- Verification, --retries=0, 4 repeats x 2 projects: login keyboard 8/8, cart scroll 8/8, purchase-flow 8/8, checkout CTA 6/8 (the two misses next to cart.add timeouts), full-purchase-redeem reaches class 9 again. docs/E2E-STATUS.md adds classes 13 (Supabase REST timeouts, environment) and 14 (two-second label, fixed).
+- Gates: typecheck, lint (biome 1698 files + 3 gates), mock build all green. Daily tar backup 2026-10-21-0201 on the Desktop verified (contains .git/HEAD), 10-17 backup pruned, three kept. refill.sh and caffeinate alive.
+
+**המשך מ:** MAINTENANCE_LOOP_5 (head of ~/ke-goals/queue.txt).
