@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { addOpenProductToCart, openPurchasableProduct } from './helpers'
+import { DISCOVERY_TIMEOUT, addOpenProductToCart, openPurchasableProduct } from './helpers'
 
 /**
  * These asserted the OLD gate: that an anonymous visit to /checkout bounced to
@@ -44,9 +44,14 @@ test.describe('checkout gate (guest)', () => {
     await openPurchasableProduct(page)
     await addOpenProductToCart(page)
 
+    // /cart is a client view filled by one fetch of /api/cart after hydration,
+    // and that fetch is a cart read with the same 10 s Supabase ceiling as any
+    // other. Until it lands the page shows the empty state, CTA and all. A 5 s
+    // wait here read "no CTA" on a cart that was holding the item (run 5
+    // re-run, 2026-10-20); the same budget the summary gets in purchase-flow.
     await page.goto('/cart')
     const cta = page.getByRole('link', { name: /המשך לתשלום/ })
-    await expect(cta.first()).toBeVisible()
+    await expect(cta.first()).toBeVisible({ timeout: DISCOVERY_TIMEOUT })
     await cta.first().click()
     await expect(page).toHaveURL(/\/checkout/, { timeout: 15000 })
     await expect(page.getByRole('heading', { name: 'קופה' })).toBeVisible()

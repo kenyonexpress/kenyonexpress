@@ -1,4 +1,4 @@
-import { type Locator, type Page, expect } from '@playwright/test'
+import { type Locator, type Page, expect, test } from '@playwright/test'
 
 /**
  * Catalog content is DB-driven and the slugs are Hebrew, so specs discover a
@@ -6,7 +6,44 @@ import { type Locator, type Page, expect } from '@playwright/test'
  * rots the moment the seed changes.
  */
 
-const DISCOVERY_TIMEOUT = 15_000
+export const DISCOVERY_TIMEOUT = 15_000
+
+/**
+ * THE SERVER'S OWN WORST CASE IS LONGER THAN A SPEC'S DEFAULT BUDGET.
+ *
+ * Every Supabase call made from the app carries a 10 s ceiling
+ * (`src/lib/supabase/timeout-fetch.ts`), and a cart write is not one call: the
+ * add action reads the cart row, checks the rate limit, validates the product
+ * twice (product + stock RPC each), writes the row and re-prices it, all in
+ * series. One slow call inside that chain is 10 s on its own, so a 15 s wait
+ * on the add and a 30 s budget for the whole test were both below what the
+ * product is allowed to take and still succeed.
+ *
+ * MEASURED 2026-10-20, run 5 and its re-run: 83 and then 29 `supabase.timeout`
+ * events in the server log, `cart.add` and `cart.get` among them. The spec
+ * reds in those windows were a product page `goto` past 30 s (the test
+ * timeout, hit mid-navigation), an add whose button was still pending at the
+ * 15 s mark with the badge already at 1, and a `/cart` whose CTA had not
+ * arrived in 5 s. Each retry passed in 9 to 12 s. The same cases were green in
+ * run 4 on a quiet backend.
+ *
+ * So a test that writes to the cart gets a budget the server can actually fit
+ * inside: 25 s for the add to settle (two slow calls plus the rest) and 60 s
+ * for the test. The assertions do not change; a refusal still rolls the badge
+ * back and still fails here. Raised from a helper rather than per file because
+ * the specs that write to the cart are spread over nine files, and the next
+ * one would be the one that forgot.
+ */
+export const CART_WRITE_TIMEOUT = 25_000
+const SLOW_BACKEND_TEST_TIMEOUT = 60_000
+
+/** Extends the running test's budget to the slow-backend one; never shortens it. */
+function allowSlowBackend(): void {
+  const info = test.info()
+  if (info.timeout !== 0 && info.timeout < SLOW_BACKEND_TEST_TIMEOUT) {
+    info.setTimeout(SLOW_BACKEND_TEST_TIMEOUT)
+  }
+}
 
 /** Assert the document root is Hebrew RTL (dir + lang). */
 export async function expectHebrewRtl(page: Page): Promise<void> {
@@ -50,6 +87,7 @@ export async function openFirstProduct(page: Page): Promise<void> {
  * openFirstProduct.
  */
 export async function openPurchasableProduct(page: Page): Promise<void> {
+  allowSlowBackend()
   await page.goto('/products')
   const links = page.locator('a[href^="/product/"]')
   await expect(links.first()).toBeVisible({ timeout: DISCOVERY_TIMEOUT })
@@ -186,6 +224,7 @@ async function headerCartCount(page: Page): Promise<number> {
  * condition stays false and the spec fails as it should.
  */
 export async function addOpenProductToCart(page: Page): Promise<void> {
+  allowSlowBackend()
   const before = await headerCartCount(page)
   const addButton = buyButton(page)
   await expect(addButton).toBeVisible()
@@ -194,7 +233,7 @@ export async function addOpenProductToCart(page: Page): Promise<void> {
   try {
     await expect
       .poll(async () => (await addButton.isEnabled()) && (await headerCartCount(page)) > before, {
-        timeout: DISCOVERY_TIMEOUT,
+        timeout: CART_WRITE_TIMEOUT,
       })
       .toBe(true)
   } catch {
@@ -204,7 +243,7 @@ export async function addOpenProductToCart(page: Page): Promise<void> {
     // count back, so the condition is false either way. What it cannot do is
     // say WHICH, and every caller inherited the same message -- "Timeout
     // 15000ms exceeded while waiting on the predicate" at this line -- for two
-    // completely different situations. STATE.md carries a whole paragraph
+    // completely different situations (now 25000ms). STATE.md carries a whole paragraph
     // explaining that a recurring set of these is not a regression, which is
     // the cost of a failure that does not name itself.
     //

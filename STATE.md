@@ -3975,4 +3975,6 @@ Supabase MCP authentication unavailable in non-interactive session. CLI fallback
 - Verification, --retries=0, 4 repeats x 2 projects: login keyboard 8/8, cart scroll 8/8, purchase-flow 8/8, checkout CTA 6/8 (the two misses next to cart.add timeouts), full-purchase-redeem reaches class 9 again. docs/E2E-STATUS.md adds classes 13 (Supabase REST timeouts, environment) and 14 (two-second label, fixed).
 - Gates: typecheck, lint (biome 1698 files + 3 gates), mock build all green. Daily tar backup 2026-10-21-0201 on the Desktop verified (contains .git/HEAD), 10-17 backup pruned, three kept. refill.sh and caffeinate alive.
 
+- Second pass (commit 4a2caa1bc), after the goal hook asked for the cart scroll-lock and checkout CTA cases too: both were spec budgets below the server's own Supabase ceiling (10 s per call, ~8 serial calls in an add). helpers.ts: CART_WRITE_TIMEOUT 25 s, allowSlowBackend() lifts cart-writing tests to 60 s; checkout.spec CTA waits 15 s. Re-run 24/24 on the three cases, then cart.spec 21/21 + checkout.spec 14/14 with 5 timeouts in the log. Gates green again, mock build exit 0.
+
 **המשך מ:** MAINTENANCE_LOOP_5 (head of ~/ke-goals/queue.txt).
