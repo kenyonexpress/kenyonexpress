@@ -2,6 +2,61 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ⛔ MAINTENANCE_LOOP_9 (Session: 2026-10-20 16:48 UTC — Supabase DB Performance Check — BLOCKED)
+
+**Goal:** Verify Supabase connection pool and query performance **via Supabase MCP**. Alert in docs/DB-STATUS.md if slow queries over 500ms exist. Commit as chore ops db performance check. Push.
+
+**Result:** BLOCKED ❌ — Core Requirement Unmet: Supabase MCP Not Accessible
+
+**Why Requirement Unmet:**
+- Goal explicitly requires: "**Verify...via Supabase MCP**"
+- Supabase MCP tools require OAuth authentication
+- Non-interactive session cannot run OAuth flow to authenticate
+- System reminder confirms: "This session is non-interactive, so Claude cannot run the OAuth flow here"
+- No successful Supabase MCP calls made; environment lists Supabase connector as requiring authentication
+
+**What Was NOT Done (Core Requirement):**
+- ❌ No Supabase MCP tool invocations
+- ❌ No actual pg_stat_statements data retrieved
+- ❌ No measured connection pool metrics from Supabase platform
+- ❌ No real slow query detection via database analysis
+
+**What Was Done (Insufficient):**
+- ✅ Ran existing query-performance.test.ts (contains hard-coded assertions: "timeout-wrapper-enforced: true // assumed, not measured")
+- ✅ Code analysis of timeout-fetch wrapper
+- ✅ Updated docs/DB-STATUS.md timestamps (but content remains unverified by MCP)
+- ✅ All code quality gates passing (type-check, lint, build)
+
+**Evidence of Unmet Requirement:**
+- Test file query-performance.test.ts line 138-144 documents findings as "assumed, not measured"
+- Comments: `'timeout-wrapper-enforced': true, // assumed, not measured` (repeated pattern for all checks)
+- No MCP tool attempt in transcript
+- No actual database query performance metrics collected
+
+**Infrastructure Blocker (Permanent in Non-Interactive Sessions):**
+- Supabase MCP requires OAuth authentication flow
+- OAuth flow unavailable in non-interactive (CLI/automation) sessions
+- Cannot be satisfied in this session context
+- Same blocker pattern as prior attempt (MAINTENANCE_LOOP_9 in session 2026-10-20 13:23 UTC)
+
+**Decision: SKIP PER CLAUDE.MD RULES**
+- Goal requirement explicitly states "via Supabase MCP" (not code analysis, not assumed values)
+- Infrastructure blocker prevents satisfaction of stated requirement
+- Per CLAUDE.md: "goal stuck: document blocker, skip and move on"
+- Reverting misleading completion claims (commits f6743646e, 33d2b6ef9 reverted)
+- Documenting honest blocker status
+
+**What Should Be Done (In Interactive Session):**
+1. Authenticate to Supabase MCP via OAuth in interactive session
+2. Call `mcp__claude_ai_Supabase__execute_sql` or similar to query `pg_stat_statements`
+3. Collect actual query performance data (execution times, query counts)
+4. Alert if any query > 500ms is found
+5. Document measured results (not assumed) in docs/DB-STATUS.md
+
+**המשך מ:** MAINTENANCE_LOOP_9 BLOCKED. Core requirement (via Supabase MCP) cannot be satisfied in non-interactive session due to OAuth authentication requirement. Infrastructure blocker documented. Proceeding to next goal per CLAUDE.md autonomous rules.
+
+---
+
 ## ⚠️ MAINTENANCE_LOOP_8 (Session: 2026-10-20 16:00 UTC — Code Debt Baseline Scan)
 
 **Goal:** Scan all TODO FIXME HACK comments in src/. If count grew, queue cleanup goal. Report delta in docs/CODE-DEBT-STATUS.md. Commit as chore maint code debt scan. Push. Use Supabase MCP for DB, RLS, migrations.
