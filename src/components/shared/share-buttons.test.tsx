@@ -50,11 +50,14 @@ describe('the floating WhatsApp button', () => {
     expect(html).toContain('aria-label="דברו איתנו בוואטסאפ"')
   })
 
-  it('sits in the RTL-correct corner, by logical property', () => {
-    // `end-5`, not `right-5`: the site is RTL and a physical property would put
-    // the button on the wrong side of every page.
+  it("sits in live's corner, by logical property", () => {
+    // `start-5`, not `right-5`: the site is RTL and a physical property would
+    // put the button on the wrong side under any other direction. START and
+    // not end: live's circle is bottom-RIGHT (probed 2026-10-20 at all three
+    // gate widths), and end-5 put ours bottom-left.
     const html = renderToStaticMarkup(<WhatsAppFloat />)
-    expect(html).toMatch(/\bend-5\b/)
+    expect(html).toMatch(/\bstart-5\b/)
+    expect(html).not.toMatch(/\bend-5\b/)
     expect(html).not.toMatch(/\bright-5\b/)
   })
 })

@@ -46,6 +46,34 @@ describe('BenefitBar', () => {
     expect(text).not.toContain('קנייה')
   })
 
+  it('lays the five cells in one clipped row from md, as live does at 768', () => {
+    // Probed in the live archive 2026-10-20 at 768: .features-list x39 w690
+    // holds five 180px .feature cells right-to-left and clips the fifth.
+    // Ours wrapped sm:w-1/2 into three rows and spilled under the 134px band.
+    const ul = html.match(/<ul[^>]*class="([^"]*)"/)?.[1] ?? ''
+    expect(ul).toContain('flex-nowrap')
+    expect(ul).toContain('overflow-hidden')
+    expect(ul).not.toContain('flex-wrap')
+    const li = html.match(/<li[^>]*class="([^"]*)"/)?.[1] ?? ''
+    expect(li).toContain('w-usp-cell-tablet')
+    expect(li).toContain('lg:w-1/5')
+    expect(li).not.toContain('sm:w-1/2')
+    // The list box: live's 690 at 768, the 1170 token from lg.
+    expect(html).toContain('md:max-w-usp-tablet')
+    expect(html).toContain('--usp-max:1170px')
+  })
+
+  it("sits 30px into the band at live's 81.4px list height", () => {
+    // Live's items are at y619 / y798 (768 / 1440); centring a 71px list in
+    // the 134px band put ours at y615 / y794.
+    const section = html.match(/<section[^>]*class="([^"]*)"/)?.[1] ?? ''
+    expect(section).toContain('md:pt-usp-offset')
+    expect(section).not.toContain('items-center')
+    const ul = html.match(/<ul[^>]*class="([^"]*)"/)?.[1] ?? ''
+    expect(ul).toContain('min-h-usp-list')
+    expect(ul).toContain('items-center')
+  })
+
   it('renders RTL with five cells', () => {
     expect(html).toContain('dir="rtl"')
     expect((html.match(/<li/g) ?? []).length).toBe(5)

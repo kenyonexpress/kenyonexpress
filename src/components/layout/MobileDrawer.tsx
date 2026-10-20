@@ -131,6 +131,15 @@ export default function MobileDrawer() {
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
+        // RTL: the drawer slides in from the start (right in RTL), so it is
+        // anchored START and translated +100% when closed. It was `end-0`,
+        // which under dir="rtl" is the LEFT edge: computed `left: 0`, then
+        // `translate: 100%` of its own width pushed it RIGHT, into the page.
+        // Probed 2026-10-20 on the closed drawer: x350 w350 at 768 (fully
+        // visible over the hero, the "vertical category list" in the 41.82%
+        // run) and x280 w280 at 380 (100px of it on screen). Live's closed
+        // panel sits at x769 at 768, i.e. just past the right edge, which is
+        // what start-0 + translate-x-full gives.
         // KEPT MOUNTED BUT NOT IN THE TREE WHILE CLOSED. The panel stays in
         // the DOM so its transform can animate (see the note above), which
         // left a modal dialog, a close button and eight category links in the
@@ -143,9 +152,7 @@ export default function MobileDrawer() {
         inert={!open}
         tabIndex={-1}
         dir="rtl"
-        // RTL: the drawer slides in from the start (right in RTL), so it is anchored start and
-        // translated +100% when closed.
-        className={`fixed inset-y-0 end-0 z-50 w-drawer-mobile overflow-y-auto bg-drawer outline-none transition-transform duration-300 motion-reduce:transition-none md:w-drawer-tablet xl:hidden ${
+        className={`fixed inset-y-0 start-0 z-50 w-drawer-mobile overflow-y-auto bg-drawer outline-none transition-transform duration-300 motion-reduce:transition-none md:w-drawer-tablet xl:hidden ${
           open ? 'translate-x-0' : 'translate-x-full'
         }`}
       >

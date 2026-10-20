@@ -35,6 +35,25 @@ import type { Product } from '@/components/ProductCard'
  * `ke-live-deals.test.ts` fails if an entry with no price and no category comes
  * back, which is the shape every import artifact of this kind has.
  */
+/**
+ * Cards whose reference thumbnail is SQUARE at 768 and not at 380 or 1440.
+ *
+ * WordPress ships a srcset per image and the live browser picks a candidate
+ * per viewport. Probed in the live archive on 2026-10-20 for the eight cards
+ * inside the 2600px capture: every pick keeps the original's aspect except
+ * `ke-deal-8893` at 768, where the browser takes the 600x600 hard crop
+ * (`...15.27.50-600x600`, rendered 245x245 at x115) while 380 gets the
+ * 600x750 variant and 1440 the 816x1020 original, both portrait. Ours
+ * rendered the portrait at every width (196x245 at x164), so at 768 the
+ * whole photograph differed and the two bands it spans read 26%.
+ *
+ * A WordPress hard crop is the centre of the resized image, which is what
+ * `object-fit: cover` on a square box paints from the same file, so no
+ * second asset is shipped: ProductDealCard sets `data-thumb-md="square"` and
+ * product-card-deals.css applies it between 768 and 1023 only.
+ */
+export const KE_LIVE_DEAL_TABLET_SQUARE: ReadonlySet<string> = new Set(['ke-deal-8893'])
+
 export const KE_LIVE_DEALS: Product[] = [
   {
     id: 'ke-deal-9132',

@@ -31,7 +31,14 @@
 */
 .jet-listing-grid-deals__item {
   box-sizing: border-box;
-  padding: 72px 0;
+  /* 8px AT EVERY WIDTH, NOT 72. The 72 was labelled "the desktop number" and
+     it was never live's: probed in the live archive on 2026-10-20,
+     `.jet-listing-grid__item` is 501 tall with `.elementor` 485 inside it at
+     BOTH 768 (y718.8 / y726.8) and 1440 (y898 / y906), i.e. 8px top and
+     bottom, the same as the 380 measurement further down. Ours was 629 at
+     both widths (p_con at y826 / y970), so every row below the first sat
+     128px lower than live's and the 768 page ran 11207 against 9152. */
+  padding: 8px 0;
   max-width: 100%;
   flex: 0 0 100%;
 }
@@ -75,16 +82,12 @@
     border-inline-end: none;
   }
 
-  /* THE 72px ITEM PADDING IS A DESKTOP NUMBER. Probed in the live archive at
-     380 on 2026-10-20: `.jet-listing-grid__item` is 548 tall with padding
-     8px/8px and `.p_con` inside it is 532 with its 24px padding. Ours was
-     533 inside 677, because this item kept the 72px it has at 1440. The card
-     interior already matched to the pixel; the 128px of extra padding per
-     row put the 31-row list at 22545px against live's 17790 and shifted every
-     band from the second card down. */
-  .jet-listing-grid-deals__item {
-    padding: 8px 0;
-  }
+  /* Probed in the live archive at 380 on 2026-10-20:
+     `.jet-listing-grid__item` is 548 tall with padding 8px/8px and `.p_con`
+     inside it is 532 with its 24px padding. Ours was 533 inside 677 while
+     this item carried 72px here; the 128px of extra padding per row put the
+     31-row list at 22545px against live's 17790. The 8px now lives in the
+     base rule above because 768 and 1440 measure the same. */
 
   /* FOUR MORE PHONE NUMBERS, ALL FROM THE SAME CARD PROBE (live archive at
      380, 2026-10-20, first card, fractional boxes):
@@ -188,6 +191,17 @@
   object-fit: cover;
   object-position: top center;
   display: block;
+}
+
+/* The reference's 768-only square thumbnail (KE_LIVE_DEAL_TABLET_SQUARE in
+   src/lib/ke-live-deals-data.ts). A WordPress hard crop is the centre of the
+   image, so `cover` from the centre on a 245px square paints the same pixels
+   as live's 600x600 file. 768 to 1023 only: live is portrait at 380 and 1440. */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .p_con__image[data-thumb-md="square"] {
+    width: 245px;
+    object-position: center center;
+  }
 }
 
 /* live: badge pinned to the LEFT edge (inline-end in RTL) of the image area */
@@ -445,7 +459,7 @@
      1440  31.28%
 
    Both 380 runs returned 47.23% with identical band profiles, so it was not
-   slider phase. The base rules above (one card per row below 768, 72px item
+   slider phase. The base rules above (one card per row below 768, 8px item
    padding, stacked footer) ARE live's phone geometry, measured off the same
    reference, and they now apply unopposed. docs/GATE-STATUS.md carries the
    band table. */

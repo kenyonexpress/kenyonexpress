@@ -41,7 +41,11 @@ export default function HeroSection({
     <section
       aria-label="אזור ראשי"
       dir="rtl"
-      className="mx-auto flex h-hero-mobile w-full max-w-hero-row flex-col border-b border-border font-sans md:h-hero-tablet lg:h-hero-desktop lg:flex-row lg:items-stretch"
+      // md:pe-hero-inset-tablet (40px; pe-10 is 35px off this root font size): at 768 live's slider is x40 w728 and the strip x39 w729,
+      // i.e. the column hugs the RIGHT edge and leaves 40px white on the left
+      // (inline-end in RTL). Probed 2026-10-20. At lg the row is centred by
+      // max-w-hero-row and the padding goes.
+      className="mx-auto flex h-hero-mobile w-full max-w-hero-row flex-col border-b border-border font-sans md:h-hero-tablet md:pe-hero-inset-tablet lg:h-hero-desktop lg:flex-row lg:items-stretch lg:pe-0"
     >
       <HeroCategorySidebar />
       {/* Live (refs, 1440): the center column is the slider (728x370) with the

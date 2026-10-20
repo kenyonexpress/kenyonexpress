@@ -2,6 +2,37 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ DESKTOP_TABLET_FIX_GATE (Session: 2026-10-20 14:50-15:40 UTC, home gate at 768 and 1440, MEASURED, PASS)
+
+**Goal:** home compare.mjs below 11% at 768 (was 41.82%) and 1440 (was 30.05%), 380 stays under 11 (was 8.76%). Probe boxes on both sides before changing CSS; verify 768, 1440, 380 on one build and quote the ledger rows.
+
+**Result:** COMPLETE. home/768 **9.80% PASS**, home/1440 **8.10% PASS** (new best, was 8.29), home/380 **8.50% PASS** (was 8.76). One build (BUILD_ID pjXJXNi0IUuTBKIT-Rio0) served on 3341 by this session, listener checked by pid and cwd. Ledger rows (docs/UI-PARITY-REPORT.md):
+
+```
+| 2026-10-20 15:31 | home | 768 | 9.80% | PASS | `3494b7478-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-20 15:34 | home | 1440 | 8.10% | PASS | `3494b7478-dirty` | ref 180 failed to load (103 script, 74 font, 2 stylesheet, 1 xhr) |
+| 2026-10-20 15:36 | home | 380 | 8.50% | PASS | `3494b7478-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+```
+
+**Measured, not assumed** (full table with numbers in docs/GATE-STATUS.md):
+1. The "category list over the hero" at 768 was the CLOSED MobileDrawer: `end-0` is the LEFT edge under dir="rtl" and `translate-x-full` slid it INTO the page (x350 w350 at 768, 100px visible at 380 too). `start-0`.
+2. Header 84 at 768 off a wrong token; live is 49 at 768 and 380 alike. `h-header-phone` through xl.
+3. Item padding 72px was never live's at any width: 8px at 380, 768 and 1440 (item 501 around a 485 card). Every row from the second down was 128px low at both widths; this was the "grid 70/90px lower" and most of both scores.
+4. CitiesRow five cells from md, BenefitBar one clipped row of 180px cells at md with live's 690px list, hero column inset 40px at 768, feature list 30px into the band and 81.4 tall (items were 4px high at 768 and 1440).
+5. Card 3's reference thumbnail is square at 768 only (WordPress srcset pick); a per-card flag plus a 768-1023 `cover` rule paints the same centre crop from the same file. 12.11% -> 9.80%.
+6. WhatsApp circle moved to live's bottom-right (`start-5`); the spec says only "bottom corner". Helped all three widths.
+7. Ruled out by measurement: original-resolution card photos (0.6 points for 735px downloads), the slider tint (under the 24-per-channel tolerance; made white below lg anyway to match live's transparent slider).
+
+**Gates:** `pnpm type-check` clean, `pnpm lint` clean (biome, tokens, copy, asset gates; the five raw px lengths became --spacing/--container tokens), `pnpm build` exit 0. Vitest on touched dirs (home, layout, shared, styles, ProductDealCard, ke-live-deals, compare-reference): 215 passed, 1 pre-existing failure untouched (src/styles/tokens.test.ts flags 66 `gray-*` utilities in src/app/(store)/developers/page.tsx from STEP 80, b39fdbeb9). New tests: CitiesRow.test.tsx, ProductDealCard.test.tsx, styles/product-card-deals.test.ts, plus assertions in BenefitBar, MobileDrawer and share-buttons tests.
+
+**החלטות שהתקבלו לבד:**
+- WhatsApp float side changed from the earlier "left alone" to live's right: the spec names no side and the pixel cost was 17-35% in the bottom band at every width.
+- The `--spacing-header-handheld` token is kept but unused, with its provenance corrected in place, rather than deleted, so the table above it stays readable.
+- The 1440 masthead (menu row where live has a search field) is recorded as about 0.8 points, not changed: standing rule, no search UI.
+- The developers-page `gray-*` failure is out of scope here and left for a cleanup goal.
+
+**המשך מ:** MAINTENANCE_LOOP_7 (head of ~/ke-goals/queue.txt): Lighthouse CI via pnpm lhci:autorun, report to docs/LIGHTHOUSE-STATUS.md.
+
 ## ✅ MOBILE_FIX_GATE (Session: 2026-10-20 14:05-14:50 UTC, home gate at 380, MEASURED, PASS)
 
 **Goal:** Fix home page compare.mjs score below 11% at 380 (was 47.23% twice). Three measured causes from docs/GATE-STATUS.md: two-card phone grid, text hero plus two category tiles in the hero band, consent sheet inside the 2600px capture. Verify at 380, 768, 1440 and quote the ledger rows.
