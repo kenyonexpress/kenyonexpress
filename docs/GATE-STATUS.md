@@ -1,26 +1,33 @@
 # Mobile Gate Status
 
-**Last Check:** 2026-10-20 22:27-22:31 UTC (MAINTENANCE_LOOP_6, third recheck; 05:27-05:31 local on 21.10)  
-**Page:** home  
-**Commit:** `450762eda` (clean tree at the 380 run; the 768 and 1440 rows carry `-dirty` only because the 380 row had already been appended to the ledger)  
-**Server:** `pnpm start` on port 3342 from this worktree, fresh `pnpm build` (BUILD_ID yE-eIJreF6jDopm5y35I8, exit 0 first attempt, listener verified by pid 38547 and cwd). The build on disk before this run (BUILD_ID I2VHrd0PXTX) was not the one measured at 20:51 and carried a `preview-props.json`, so it was not reused.  
-**Threshold:** 11%  
+**Last Check:** 2026-10-20 23:39-23:42 UTC (MAINTENANCE_LOOP_6, fourth recheck; 06:39-06:42 local on 21.10)
+**Page:** home
+**Commit:** `d413c5528` (clean tree at the 380 run; the 768 and 1440 rows carry `-dirty` only because the 380 row had already been appended to the ledger)
+**Server:** `pnpm start` on port 3342 from this worktree, fresh `pnpm build` (BUILD_ID Rp9lmnsd8jwIYocjAn-di, exit 0 first attempt, no other build or next-server in flight, listener verified by pid 81152 and cwd). The build on disk before this run (BUILD_ID KVV9UYDPAgFoSjftVMmr5, written 06:36 local by another session) was not reused.
+**Threshold:** 11%
 **Verdict:** all three widths PASS. No mobile fix goal requeued.
 
-| Viewport | Score | Status | Previous (20:51-21:03, `e887e9334`) | Delta | Lowest ledger row |
+| Viewport | Score | Status | Previous (22:27-22:31, `450762eda`) | Delta | Lowest ledger row |
 |---|---|---|---|---|---|
-| 380 (mobile) | **8.51%** | **PASS** | 8.52% | -0.01 | 8.50% (20.10 15:36) |
-| 768 | **9.80%** | **PASS** | 9.78% | +0.02 | 7.72% (07.09) |
-| 1440 | **8.10%** | **PASS** | 8.39% | -0.29 | 8.10% (20.10 15:34, equalled here) |
+| 380 (mobile) | **8.51%** | **PASS** | 8.51% | 0.00 | 8.50% (20.10 15:36) |
+| 768 | **9.80%** | **PASS** | 9.80% | 0.00 | 7.72% (07.09) |
+| 1440 | **8.10%** | **PASS** | 8.10% | 0.00 | 8.10% (20.10 15:34, equalled here) |
 
 Ledger rows, verbatim from docs/UI-PARITY-REPORT.md, in run order:
 
 ```
-| 2026-10-20 22:27 | home | 380 | 8.51% | PASS | `450762eda` | ref 141 failed to load (101 script, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-10-20 22:29 | home | 768 | 9.80% | PASS | `450762eda-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-20 22:31 | home | 1440 | 8.10% | PASS | `450762eda-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-20 23:39 | home | 380 | 8.51% | PASS | `d413c5528` | ref 154 failed to load (113 script, 37 font, 2 stylesheet, 1 image, 1 xhr) |
+| 2026-10-20 23:40 | home | 768 | 9.80% | PASS | `d413c5528-dirty` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
+| 2026-10-20 23:42 | home | 1440 | 8.10% | PASS | `d413c5528-dirty` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
 ```
 
+## MAINTENANCE_LOOP_6 fourth recheck notes (23:42)
+
+- **Fourth measurement of one source tree, and the first exact repeat.** `git log 450762eda..d413c5528 -- src/` is empty (the two commits in between are CRON-STATUS and STATE). All three widths landed on the previous run to the hundredth: 8.51 / 9.80 / 8.10. Across the four runs of this tree the 380 row has spanned 0.02 points, 768 0.55 and 1440 0.43; the 768 margin to the threshold is 1.20 points.
+- **The reference shortfall was 153 at all three widths this time (113 scripts, 2 stylesheets), not the deterministic 96.** The 380 row also lists 1 image, a figure the ledger has carried on six earlier 380 rows. The scores did not move against the 96-shortfall run at 22:29-22:31, so for this page the extra 57 script and 1 stylesheet failures are re-issued requests to the dead `wp-content/` origin and not assets that paint. The 768 row at 9.80 with a 153 shortfall weakens the 22:31 note's font-re-issue reading: the 190-shortfall run (74 fonts) read 9.78 and both 96- and 153-shortfall runs read 9.80, so the half-point 768 mover (10.33 at 18:05) is still not isolated to a request class.
+- **No UNMEASURED row this loop**, second loop in a row. All three archive loads finished under the 60s `page.goto` budget. Total wall time for three widths was about 4 minutes.
+- **Band profile unchanged at every width**, same bands and same percentages as the 22:31 run: 380 y200-300 hero floor (55.6%, 34.1%), y1700 (20.1%), y2500 (15.1%); 768 y100-200 (31%, 33.2%), y400-500 (49.3%, 17.4%), y2400-2500 (17.5%, 34.1%); 1440 y200-300 (24.1%, 18.7%), y500-600 (25.1%, 17.2%), y1600-1700 (16.2%, 19.4%). Each is a documented floor below.
+- **Not done this loop:** serving the reference from a local origin to pin the shortfall. Unchanged from the previous three loops; with four runs now agreeing to the hundredth at 380, the shortfall is a ledger-noise item and not a gate risk.
 ## MAINTENANCE_LOOP_6 third recheck notes (22:31)
 
 - **Still no home-page source change.** `git log e887e9334..450762eda -- src/` is empty; the eight commits in between are STATE, E2E-STATUS, CRON-STATUS and GATE-STATUS. This is therefore the third measurement of one source tree, and it lands exactly on the 15:31-15:36 run (8.50 / 9.80 / 8.10) rather than on the 17:53-18:05 run (8.51 / 10.33 / 8.53) or the 20:51-21:03 run (8.52 / 9.78 / 8.39). Three runs of the same page span 0.55 points at 768 and 0.43 at 1440, and 0.02 at 380. The 768 margin is 1.20 points on this run.
