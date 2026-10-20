@@ -1,17 +1,33 @@
 # Lighthouse CI Status Report
 
-**Last Updated:** 2026-10-20 18:14 UTC (MAINTENANCE_LOOP_7, third pass)
+**Last Updated:** 2026-10-20 21:15 UTC (MAINTENANCE_LOOP_7, fourth pass)
 **Measurement Method:** `LHCI_BASE_URL=http://localhost:3361 COMPARE_PRODUCT_SLUG=<slug> pnpm lhci:autorun`
 (`@lhci/cli` 0.15.1 via `pnpm dlx`, Lighthouse 12.6.1, `desktop` preset, 3 runs per URL, lhci median)
-**Build:** commit `973c0abda` (clean tree), fresh `pnpm build` exit 0, BUILD_ID `lviikQdz_PELTAnyZo-Or`, served by `pnpm start` from this worktree on port 3361 (listener pid 98925, cwd verified as this checkout before the run, no other node listener on the port)
-**Reports:** `.lighthouseci/reports/` (git-ignored, nothing uploaded; the 16:03 reports were moved aside so the manifest holds only this pass)
+**Build:** commit `e351b0bff` (clean tree), fresh `pnpm build` exit 0, BUILD_ID `6VXpEKDDcEzaZbvv-RHeP`, served by `pnpm start` from this worktree on port 3361 (listener pid 93701, cwd verified as this checkout before the run, no other node listener on the port). The `.next` left by the 04:08 local-time session was incomplete (no `prerender-manifest.json`, no `server/preview-props.json`; `next start` exited 1 on it), which is why a rebuild was required rather than chosen.
+**Reports:** `.lighthouseci/reports/` (git-ignored, nothing uploaded; the 18:14 reports were moved aside so the manifest holds only this pass)
 
 ## Summary
 
 ✅ **Every category at or above 90 on all three URLs, in all nine runs.** No optimisation goal queued.
-✅ **Performance 99-100** (target ≥ 90)
-✅ **Accessibility 100** in all nine runs (target ≥ 90), holding the A11Y_FIX_PRODUCTS_LIGHTHOUSE result
+✅ **Performance 99** on every representative run (target ≥ 90); the nine individual runs are 99 to 100
+✅ **Accessibility 100** in all nine runs (target ≥ 90), holding the A11Y_FIX_PRODUCTS_LIGHTHOUSE result for a second consecutive pass
 ✅ Best Practices 96 and SEO 100 everywhere
+
+| URL | Performance | Accessibility | Best Practices | SEO | FCP | LCP | TBT | CLS | Status |
+|-----|-------------|---------------|----------------|-----|-----|-----|-----|-----|--------|
+| `/` | 99 (99, 99, 99) | 100 (100, 100, 100) | 96 | 100 | 0.4 s | 1.0 s | 0 ms | 0.023 | ✅ PASS |
+| `/products` | 99 (99, 100, 99) | 100 (100, 100, 100) | 96 | 100 | 0.4 s | 0.9 s | 0 ms | 0.019 | ✅ PASS |
+| `/product/אוזניות-איירפודס-3` | 99 (99, 99, 99) | 100 (100, 100, 100) | 96 | 100 | 0.4 s | 0.9 s | 0 ms | 0.021 | ✅ PASS |
+
+The first number is lhci's representative (median) run, the bracket lists all three runs in order. Metrics are from the representative run.
+
+No weighted audit scores below 0.9 in any category except `errors-in-console` under Best Practices, which is the same five local-environment items as every previous pass (two `/_vercel/*` 404s, two "Refused to execute" on their `text/plain` answer, one `ERR_SSL_PROTOCOL_ERROR` on an https request to the plain-http localhost origin). Nothing to fix in the tree.
+
+Against the 18:14 pass: `/` moved from 100 to 99 (LCP 0.8 s to 1.0 s), `/products` and the product page held at 99 with LCP 0.9 s, and every other number is identical. The three commits since (`e351b0bff`, `e887e9334`, `ba4690d76`) are ledger rows in GATE-STATUS, CRON-STATUS and STATE.md, so the one-point move is the localhost run-to-run band described in `docs/PERFORMANCE-BUDGET.md`, not a code change.
+
+## Previous pass (2026-10-20 18:14 UTC, MAINTENANCE_LOOP_7, third pass)
+
+Build: commit `973c0abda`, BUILD_ID `lviikQdz_PELTAnyZo-Or`.
 
 | URL | Performance | Accessibility | Best Practices | SEO | FCP | LCP | TBT | CLS | Status |
 |-----|-------------|---------------|----------------|-----|-----|-----|-----|-----|--------|
@@ -19,11 +35,7 @@
 | `/products` | 99 (98, 99, 99) | 100 (100, 100, 100) | 96 | 100 | 0.4 s | 0.9 s | 0 ms | 0.008 | ✅ PASS |
 | `/product/אוזניות-איירפודס-3` | 99 (99, 98, 99) | 100 (100, 100, 100) | 96 | 100 | 0.4 s | 0.9 s | 0 ms | 0.021 | ✅ PASS |
 
-The first number is lhci's representative (median) run, the bracket lists all three runs in order. Metrics are from the representative run.
-
-No weighted audit scores below 0.9 in any category except `errors-in-console` under Best Practices, which is the same five local-environment items as every previous pass (two `/_vercel/*` 404s, two "Refused to execute" on their `text/plain` answer, one `ERR_SSL_PROTOCOL_ERROR` on an https request to the plain-http localhost origin). Nothing to fix in the tree.
-
-Against the 16:03 pass on the same laptop: `/` moved from 98 to 100 (LCP 1.1 s to 0.8 s) and the other two held at 99 with LCP 1.0-1.1 s to 0.9 s. The only commits since are docs and ledger rows (GATE-STATUS, CRON-STATUS, STATE.md), so the shift is the localhost run-to-run band described in `docs/PERFORMANCE-BUDGET.md`, not a code change.
+All nine runs at or above 90; nothing was queued. The 16:03 to 18:14 shift (`/` 98 to 100) was the same localhost band.
 
 ## Previous pass (2026-10-20 16:03 UTC, A11Y_FIX_PRODUCTS_LIGHTHOUSE)
 
