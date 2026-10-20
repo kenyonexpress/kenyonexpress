@@ -4,6 +4,31 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 ---
 
+## ⏭️ MAINTENANCE_LOOP_4 (Session: 2026-10-20 — E2E SKIPPED, Stuck Twice)
+
+**Goal:** Run full Playwright test suite with pnpm test:e2e. Report pass/fail/flaky counts to docs/E2E-STATUS.md. Fix any new flaky tests.
+
+**Result:** SKIPPED ⏭️ (Infrastructure blocker, second stuck attempt)
+
+**Why Skipped:**
+- Previous attempt (2026-10-19): Background task killed at [91/682] after 10-minute limit
+- Current attempt (2026-10-20): Background task killed at [459/682] after 10-minute limit
+- **Infrastructure constraint:** Full E2E suite (~682 tests × 4 browsers) requires 20-30+ minutes
+- Background task timeout capped at 10 minutes (hard system limit)
+- Cannot obtain meaningful pass/fail/flaky counts from partial runs
+
+**Decision:**
+Per CLAUDE.md rule "goal stuck twice: skip it, don't try thrice" — this goal cannot be executed in current infrastructure. Skipping to next goal.
+
+**Documentation:**
+- No partial results usable for reporting
+- E2E-STATUS.md not updated (insufficient data)
+- No commits made
+
+**המשך מ:** MAINTENANCE_LOOP_4 SKIPPED (stuck twice on timeout). Moving to MAINTENANCE_LOOP_5.
+
+---
+
 ## ✅ MAINTENANCE_LOOP_3 (Session: 2026-10-20 — Backlog Scan)
 
 **Goal:** Scan docs/BACKLOG.md and docs/TODO.md for unblocked items. If any found, queue them to ~/ke-goals/queue.txt. Report count found in docs/MAINT-LOG.md. Commit as chore maint scan backlog. Push.
