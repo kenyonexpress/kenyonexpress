@@ -1,7 +1,7 @@
 # Cron Routes Status
 
-**Last check:** 2026-10-20 20:41 UTC (MAINTENANCE_LOOP_5, third run today; MCP `get_runtime_logs` called, 403)
-**Status:** 🔴 CRITICAL, unchanged since 13:15 UTC. No cron route has completed successfully in production in the last 7 days. 0 requests with status 2xx, 0 with 5xx; every hit is 401 or 404.
+**Last check:** 2026-10-20 22:18 UTC (MAINTENANCE_LOOP_5, fourth run today; MCP `get_runtime_logs` called in-session, 403 three times)
+**Status:** 🔴 CRITICAL, unchanged since 13:15 UTC (fourth consecutive measurement). No cron route has completed successfully in production in the last 7 days. 0 requests with status 2xx, 0 with 5xx; every hit is 401 or 404.
 
 ## How this was measured
 
@@ -217,8 +217,56 @@ The five `vercel.json` routes (`observability-check`, `fraud-monitor`, `p95-moni
 `stock-notifications`) still have **0 hits in 7 days** and remain 🔴 stale over 24h. No fix from the list above has
 been applied since the 13:15 UTC check; only the clock moved.
 
+## 22:18 UTC re-measurement (same day, fourth run)
+
+Vercel MCP: the connector exposed its tools to this session on the first fetch, and three reads were made for real
+against `team_TUMTPVDP8218QHwedSjmgJWl` / `prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`:
+
+| Call | Filters | Answer |
+|---|---|---|
+| `get_runtime_logs` | `environment=production`, `query=/api/cron`, `since=7d`, `limit=100` (window 2026-10-13T22:18:25Z to 2026-10-20T22:18:25Z) | `Runtime log query failed at page 0: Vercel API request failed (403: forbidden)`, 0 rows |
+| `get_runtime_logs` | same, `group_by=requestPath` | `403: forbidden`, request `9p6lr-1792534705508` |
+| `get_runtime_errors` | `since=7d` | `403: forbidden. The specified project does not exist or you do not have access`, request `g7d7p-1792534706161` |
+
+Same grant failure as 17:46, 17:52 and 20:41 UTC; the connector lists the project but cannot read its logs. The
+tool's own recovery text names the CLI mapping, used below with the same scope and project.
+
+| Metric | Value |
+|---|---|
+| Production deployment | still `dpl_AP18UQwUQdhd3XWNo41seDQvAcuA` (`audit/final-audit` @ `337d1a2a`, source `cli`, 2026-10-19 04:43 UTC), `crons: []` |
+| `vercel crons ls` | 5 paths, all **not deployed**, "5 local changes pending deploy" |
+| `/api/cron/*` hits, 7d and 24h, status 2xx | **0** |
+| `/api/cron/*` hits, 7d and 24h, status 5xx | **0** |
+| Last 50 hits (09:25 to 22:07 UTC; the CLI returns 50 rows even with `--limit 100`) | 401 = 30, 404 = 20 |
+| Newest hit of any cron route | `search-reindex` 404 at 22:07:17 UTC, from the GitHub scheduler |
+| GitHub `cron.yml`, last 12 scheduled runs (10:20 to 22:07 UTC) | **12 / 12 failed** |
+
+Latest run `39505709803` (22:07 UTC, schedule `0 * * * *`): `abandoned-cart` answered `000` twice (duplicated manifest
+on `main`, curl never reached Vercel), `search-reindex` 404. Run `39503160389` (21:47 UTC, schedule `30 */6 * * *`):
+`email-retry` 404. Same failure shape as every run today.
+
+Per route, last attempt in the window (all 401 or 404, none 2xx):
+
+| Route | Last attempt (UTC) | Status | Hits |
+|---|---|---|---|
+| search-reindex | 2026-10-20 22:07:17 | 404 | 4 |
+| email-retry | 2026-10-20 21:47:22 | 404 | 4 |
+| whatsapp | 2026-10-20 20:55:13 | 401 | 4 |
+| job-dlq | 2026-10-20 19:24:12 | 404 | 3 |
+| search-outbox | 2026-10-20 19:24:12 | 404 | 4 |
+| webhook-dlq | 2026-10-20 19:24:09 | 401 | 5 |
+| wishlist-alerts | 2026-10-20 09:39:21 | 401 | 2 |
+| all other manifest routes | 2026-10-20 09:25 burst | 401 or 404 | 1 to 2 |
+
+The five `vercel.json` routes (`observability-check`, `fraud-monitor`, `p95-monitor`, `deal-scraper`,
+`stock-notifications`) still have **0 hits in 7 days** and remain 🔴 stale over 24h. No fix from the list above has
+been applied since the 13:15 UTC check.
+
 ## History
 
+- 2026-10-20 22:18 UTC: fourth run. MCP tools loaded in-session on the first try; `get_runtime_logs` (plain and
+  `group_by=requestPath`) and `get_runtime_errors` all 403 at page 0, 0 rows. CLI fallback: 0×2xx, 0×5xx in 7d,
+  12/12 GitHub scheduled runs failed, deployment and `crons: []` unchanged. All 5 `vercel.json` routes stale.
 - 2026-10-20 20:50 UTC: the 403 was traced to its owner. `vercel api /v1/integrations/configurations?view=account`
   and `?view=project` on team `kenyonexpress-projects` both return `[]`, so no Vercel-side integration or project
   selection restricts the MCP. The CLI identity `kenyonexpress` is `OWNER` of the team (Pro plan). The log-read denial
