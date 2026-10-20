@@ -16,8 +16,13 @@ fresh read-only session (tools restricted to `get_runtime_logs` and `list_projec
 from `/tmp`) called **`get_runtime_logs` for real, twice**: once with `environment=production`, `query=/api/cron`,
 `since=7d`, `limit=100` (window 2026-10-13T17:46:21Z to 2026-10-20T17:46:21Z) and once with only `teamId` and
 `projectId`. Both answered at page 0 with `Vercel API request failed (403: forbidden). Forbidden`, 0 rows, the
-same grant failure as at 13:15 UTC. So the MCP read was executed and is **403, not timed out**; the connector's
-grant still does not cover this team. Per the MCP's own recovery text, the mapped CLI fallback was used both times with
+same grant failure as at 13:15 UTC. So the MCP read was executed and is **403, not timed out**. A second probe at 17:52 UTC enumerated the
+grant: `list_teams` returns exactly one team, `kenyonexpress-projects` (`team_TUMTPVDP8218QHwedSjmgJWl`), and
+`list_projects` returns exactly two projects, `kenyonexpress` (`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`) and
+`kenyonexpress-staging` (`prj_7Ar3dFtaIqemo7bc1Fg7SMh11joY`). `get_runtime_logs` answered
+`Vercel API request failed (403: forbidden)` at page 0 for **both**, filtered and bare. There is no other team or
+project to try. The connector can list but cannot read logs; the fix is the connector's scope in claude.ai
+settings, which only Ofir can change. No last-run timestamp can come from MCP under the current grant. Per the MCP's own recovery text, the mapped CLI fallback was used both times with
 the same team and project:
 
 ```
@@ -177,6 +182,8 @@ clock; no fix listed above has been applied.
 
 ## History
 
+- 2026-10-20 17:52 UTC: grant enumerated via MCP. One team, two projects (production and staging), `get_runtime_logs`
+  403 on both. Log-read scope is absent from the connector grant; nothing further to try from the repo.
 - 2026-10-20 17:46 UTC: `get_runtime_logs` called from a fresh read-only session after the connector recovered:
   403 forbidden on both attempts (7d filtered and bare), 0 rows. Grant failure confirmed a second time today.
 - 2026-10-20 17:10 UTC: re-run of this check. MCP tool fetch timed out in-session (harness to mcp.vercel.com); CLI
