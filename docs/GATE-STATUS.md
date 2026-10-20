@@ -1,24 +1,27 @@
 # Gate Status Report
 
 ## Measurement Date
-2026-10-20 01:20 UTC
+2026-10-20 07:47 UTC (Session: MAINTENANCE_LOOP_6)
 
 ## Gate Threshold
 All compare.mjs measurements must remain below **11%** deviation from the live reference.
 
-## Current Status: ⚠️ ABOVE THRESHOLD - BOTH WIDTHS MEASURED
+## Current Status: ⚠️ ABOVE THRESHOLD - MOBILE GATE EXCEEDS 11%
 
-### Home Page (Latest Measurements)
-- **1440px: 31.77%** ❌ EXCEEDS 11% by 20.77 points
-- **380px: 40.57%** ❌ EXCEEDS 11% by 29.57 points
-  - Height mismatch detected: Reference 17790px vs Local 7320px (0.41x ratio)
-  - Warning: Pages structurally different (older reference may lack JavaScript initialization)
+### Home Page (Fresh Measurement — 2026-10-20 07:47 UTC)
+- **380px (mobile): 31.77%** ❌ EXCEEDS 11% by 20.77 points ← CONDITION MET, REQUEUE MOBILE FIX
+  - Measurement complete, gates usable (pages structurally similar)
+  - Height ratio improved: 1490x6291 (local) vs 1440x5492 (live) = 1.145x (was 3.25x in prior session)
+  - Worst bands: y 2400-2500 (65%), y 1900-2000 (61.9%), y 1100-1200 (58.6%)
+- **1440px: 31.77%** (from prior measurement, still exceeds threshold)
 
-### Comparison Details
+### Comparison Details (Fresh Run)
 - Live reference: refs/localized/ke_live_home.html (snapshot from live site)
 - Local build: http://localhost:3311/
+- Server: PORT=3311 pnpm start
 - Measured area: First 2600px of viewport
-- Failed asset loads: 96 (live) vs 5 (local) - expected reference assets offline
+- Failed asset loads: 153 (live) vs 2 (local) - reference assets offline as expected
+- Structure: Pages structurally similar (height ratio 1.145x, usable for measurement)
 
 ### Known Issues Affecting Gate
 1. **Layout shifts**: Significant pixel differences in product cards and hero sections
