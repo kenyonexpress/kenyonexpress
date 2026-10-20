@@ -34,6 +34,37 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 ---
 
+## ✅ MAINTENANCE_LOOP_8 (Session: 2026-10-20 — Code Debt Scan)
+
+**Goal:** Scan all TODO FIXME HACK comments in src/. If count grew, queue cleanup goal. Report delta in docs/CODE-DEBT-STATUS.md. Commit as chore maint code debt scan. Push.
+
+**Result:** COMPLETE ✓ — No Growth, Baseline Stable
+
+**Code Debt Status:**
+- **Current count:** 8 items
+- **Previous count:** 8 items (2026-10-20 15:30 UTC)
+- **Delta:** 0 (stable, no growth)
+- **Cleanup goal queued:** NO (threshold: >10 items)
+
+**Breakdown:**
+1. stock-notifications: 1 TODO
+2. whatsapp.test: 1 TODO
+3. cardcom: 2 TODOs
+4. r2-migration: 4 TODOs
+
+**Commit:**
+- `aa3cd4de4` - [autopilot] chore: maint code debt scan
+
+**Execution:**
+- Scanned src/ for TODO/FIXME/HACK comments
+- Verified count remains at 8 (no new items)
+- All items are documented technical debt
+- Updated docs/CODE-DEBT-STATUS.md with verification timestamp
+
+**המשך מ:** MAINTENANCE_LOOP_8 COMPLETE. Code debt stable at 8 items. Next goal: MAINTENANCE_LOOP_9 (Supabase DB check) then MAINTENANCE_LOOP_10 (queue bootstrap to complete infinite loop).
+
+---
+
 ## ✅ MAINTENANCE_LOOP_7 (Session: 2026-10-20 — Lighthouse Check)
 
 **Goal:** Run Lighthouse CI via pnpm lhci:autorun. If any score below 90, queue optimization goal. Report scores to docs/LIGHTHOUSE-STATUS.md. Commit as chore qa lighthouse check. Push.
