@@ -31,9 +31,9 @@
 */
 .jet-listing-grid-deals__item {
   box-sizing: border-box;
-  padding: 8px 0;
-  max-width: 50%;
-  flex: 0 0 50%;
+  padding: 72px 0;
+  max-width: 100%;
+  flex: 0 0 100%;
 }
 
 @media (min-width: 768px) {
