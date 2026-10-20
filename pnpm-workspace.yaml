@@ -7,7 +7,7 @@ allowBuilds:
   # 1 on, so `pnpm start` could not even reach the deps check.
   '@sentry/cli': false
   '@swc/core': true
-  core-js-pure: set this to true or false
+  core-js-pure: true
   esbuild: true
   sharp: true
 

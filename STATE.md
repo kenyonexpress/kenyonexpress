@@ -4,6 +4,42 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 ---
 
+## ⏳ MOBILE_FIX_GATE (Session: 2026-10-20 — Layout Investigation)
+
+**Goal:** Fix mobile page layout to score below 11% on compare.mjs gate. Current score: 31.77% at 380px. Investigate and fix worst bands (y 2400-2500 65%, y 1900-2000 61.9%).
+
+**Result:** INVESTIGATING — Baseline mismatch detected
+
+**Key Findings:**
+1. **Measurement baseline mismatch:** Goal specifies 31.77% at 380px, but worst bands listed (y 2400-2500: 65%, y 1900-2000: 61.9%) exactly match fresh 1440px measurement (16.48% overall)
+2. **Structural layout difference:** Live reference renders 1440x5433px; our current build renders 1490x6291px (+50px width, +858px height)
+3. **Problem bands:** y 1800-2500 region shows high pixel diffs (57-65%), concentrated in product grid area
+4. **Investigation attempts:**
+   - Removed `.text-product-title` class from ProductDealCard: No score change (still 16.48%)
+   - Reduced `.p_con` padding from 24px to 16px: Score WORSENED to 17.5%
+   - CSS modifications did not resolve visual diff
+
+**Current Measurements (2026-10-20 08:35Z):**
+- **1440px score:** 16.48% (target: <11%, exceeds by 5.48%)
+- **Worst bands:** y 1900-2000 (61.9%), y 2400-2500 (65.1%), y 1800-1900 (57.2%), y 2300-2400 (54.4%)
+- **380px measurement:** 20.46% overall with 0.41x height ratio (structural page issue, not comparable)
+
+**Architectural Assessment:**
+The +858px extra height in our rendering (6291 - 5433) divided by 8 product rows ≈ 107px extra per row. This suggests either:
+1. Content is rendering with different spacing (padding/margins/gap)
+2. Product cards are taller than live reference
+3. Additional content is being rendered (not matched to 32-product grid)
+4. Live reference HTML snapshot has degraded or differs from current code baseline
+
+**Decision:** Goal requires deeper architectural investigation beyond CSS tweaks. Root cause unclear from surface-level analysis. Staging commit with formatting cleanup while investigation continues.
+
+**Commits:**
+- `0844bc891` - [autopilot] chore: fix formatting issues (5 files)
+
+**המשך מ:** MOBILE_FIX_GATE UNDER INVESTIGATION. Baseline measurement (31.77%) does not match worst bands pattern. Current 1440px score: 16.48%. Root cause of y 1800-2500 pixel diff region requires: (1) audit of live reference HTML integrity, (2) frame-by-frame layout comparison, or (3) git history analysis of when score degraded from 8.29% to 16.48%.
+
+---
+
 ## ✅ MAINTENANCE_LOOP_5 (Session: 2026-10-20 — Cron Status Check)
 
 **Goal:** Check all cron routes last-run timestamp via Vercel MCP get_runtime_logs. Alert in docs/CRON-STATUS.md if any route stale over 24h. Commit as chore ops cron status check. Push.
