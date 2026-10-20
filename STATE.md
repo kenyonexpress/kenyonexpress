@@ -4065,3 +4065,11 @@ Supabase MCP authentication unavailable in non-interactive session. CLI fallback
 - No package.json or lockfile change, so no `chore(deps)` commit exists this pass. Gates on the unchanged tree: type-check exit 0, lint exit 0 (biome 1698 files plus tokens, copy and asset gates clean), `pnpm build` exit 0 on the first attempt.
 
 **המשך מ:** MAINTENANCE_LOOP_3 (head of ~/ke-goals/queue.txt).
+
+## MAINTENANCE_LOOP_3 (fifth pass): backlog scan, 21.10 00:44-00:52 local
+
+- `docs/BACKLOG.md` unchanged, 7 items. `docs/TODO.md` still does not exist (find over the worktree, node_modules excluded).
+- Sales gate re-measured on production, read-only select through the management API with the CLI keychain token: 99 orders, 70 paid, 71 succeeded payments, 0 real sales, 0 orders since the fourth run. Evidence `logs/maint3/sales-gate-2026-10-20c.json`. Every gated item stays BLOCKED; item 1 is dated 2026-10-23 and should be queued at the head as BACKLOG_1 by the first run on or after that date.
+- 0 unblocked items, `~/ke-goals/queue.txt` untouched at 27 lines. Entry appended to `docs/MAINT-LOG.md`. Gates: type-check exit 0, lint exit 0, `pnpm build` exit 0. Commit `e8bde10d2` pushed to autopilot.
+
+**המשך מ:** MAINTENANCE_LOOP_4 (head of ~/ke-goals/queue.txt).
