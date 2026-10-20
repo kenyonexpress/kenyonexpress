@@ -2,6 +2,26 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_2 (Session: 2026-10-20 18:40 +07, Dependency Patch Bump)
+
+**Goal:** Run pnpm outdated, bump patch versions only, skip major and minor. Commit as chore deps bump patch versions. Push to autopilot.
+
+**Result:** COMPLETE. One patch bump applied: react and react-dom 19.2.8 to 19.2.9. Commit 0022531c6, pushed to origin/autopilot.
+
+**Method (measured, not assumed):**
+1. `pnpm outdated` lists 17 packages, every one a major or minor jump (react 19.3, sentry 11, zod 4, biome 2, typescript 7, vitest 5, jsdom 30, @types/node 26, and so on). All skipped per goal.
+2. `pnpm outdated` compares only against the `latest` tag, so a patch inside the current minor is invisible there. Queried `npm view <pkg> versions` for all 66 dependencies and kept the highest x.y.Z within each installed x.y. Only react and react-dom had one (19.2.9, published 2026-10-19).
+3. Gates: `pnpm typecheck` clean, `pnpm lint` clean (biome 1691 files, tokens, copy, asset gates), `pnpm build` exit 0.
+4. `pnpm test`: 148 failed in 38 files, 6244 passed. Re-ran the same 38 files on react 19.2.8 with the pre-bump lockfile: identical 148 failed. Pre-existing, not caused by the bump (classes: `cookies` outside request scope, `indexedDB` missing in jsdom, migration ledger rows missing for 191 to 200 and 276 to 277, five cron routes without a caller check, `window.scrollTo` not implemented).
+
+**החלטות שהתקבלו לבד:**
+- The 148 pre-existing test failures were NOT touched. The goal says to fix failures of typecheck, lint and build, and all three pass. Fixing 38 unrelated test files would widen a deps-only commit past its stated scope. The failure inventory above is the handoff for a dedicated goal; the cron-route guard failures (fraud-monitor, sms-broadcasts, stock-notifications, p95-monitor, observability-check) are security findings and deserve to be queued first.
+- Prior MAINTENANCE_LOOP_2 entries (lines further down) reported "no patch updates available" because they read only `pnpm outdated`. That view hides in-minor patches; the npm registry check above is the method to reuse.
+
+**המשך מ:** MAINTENANCE_LOOP_2 COMPLETE. react 19.2.9 pushed. Next goal from ~/ke-goals/queue.txt head: MAINTENANCE_LOOP_3 (backlog scan). Open thread left for a dedicated goal: 148 pre-existing unit test failures, cron route guards first.
+
+---
+
 ## 🔄 MOBILE_FIX_GATE_FAILOVER (Session: 2026-10-20 22:30 UTC — Gate regression 19.04% → target <11%)
 
 **Goal:** Fix mobile gate regression from 19.04% back to < 11%. Gate failing on home/1440 due to large layout shifts in bands 1100-2600px.
