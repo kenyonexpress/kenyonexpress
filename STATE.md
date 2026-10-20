@@ -2,6 +2,12 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_8 (Session: 2026-10-20 21:15-21:25 UTC, code debt scan, fifth pass, MEASURED, delta 0)
+
+**Goal:** Scan all TODO, FIXME and HACK comments in src/, queue a cleanup goal if the count grew since the last scan, report the delta in docs/CODE-DEBT-STATUS.md, commit as chore maint code debt scan, push.
+
+**Result:** COMPLETE, count 8 on `9e07e3a57`, delta 0, no cleanup goal queued. Word-boundary scan (`\b(TODO|FIXME|HACK)\b`) and the loose scan both read 8: 7 TODO comments (stock-notifications cron 1, cardcom.ts 2, r2-migration.ts 4) plus the `'TODO'` phone stub in whatsapp.test.ts, 0 FIXME, 0 HACK. 21 commits since the 18:17 scan (43df16e43..9e07e3a57), none touching src/ (`git log 43df16e43..HEAD -- src/` empty), so the findings list is byte-identical. docs/CODE-DEBT-STATUS.md gained the fifth row and the inter-scan note. Gates: typecheck clean, lint clean (biome 1698 files + tokens, copy, asset gates), `pnpm build` exit 0. Supabase MCP still unauthenticated in this non-interactive session; the scan is static text analysis and needs no DB access. Committed `ca74f0681` by explicit path, pushed to autopilot, ntfy sent.
+
 ## ✅ MAINTENANCE_LOOP_7 (Session: 2026-10-20 21:00-21:20 UTC, Lighthouse CI, fourth pass, MEASURED, PASS)
 
 **Goal:** Run Lighthouse CI via `pnpm lhci:autorun`, queue an optimisation goal if any score is below 90, report scores to docs/LIGHTHOUSE-STATUS.md, commit as chore qa lighthouse check, push.
@@ -4015,4 +4021,4 @@ Supabase MCP authentication unavailable in non-interactive session. CLI fallback
 - No src change since the previous check, yet 768 moved 0.55 points (10.33 to 9.78) and 1440 0.14; both back toward the 15:31 values, so the 17:53 pair was the outlier. Run-to-run spread at 768 on one build is about half a point. Reference shortfall varied (152, 190, 96 failed requests) without moving the 380 score.
 - docs/GATE-STATUS.md rewritten at the head with the new table and notes; previous notes kept below. type-check and lint clean, build exit 0.
 
-**המשך מ:** MAINTENANCE_LOOP_7 (head of ~/ke-goals/queue.txt).
+**המשך מ:** MAINTENANCE_LOOP_9 (head of ~/ke-goals/queue.txt).
