@@ -3966,5 +3966,6 @@ Supabase MCP authentication unavailable in non-interactive session. CLI fallback
 ## MAINTENANCE_LOOP_3 fourth run (2026-10-20 18:50 UTC, commit ca1657946)
 - BACKLOG.md 7 items, all gated; TODO.md absent; sales gate re-measured on production: 0 real sales, 0 orders since the third run. Queue untouched (27 lines).
 - Evidence: logs/maint3/sales-gate-2026-10-20b.json. Item 1 (group deals) becomes a candidate on 2026-10-23.
+- Gates: lint, type-check and pnpm build green. First build attempt failed collecting /category/[slug] on transient Supabase REST 10s timeouts (REST probed at 0.3s right after, project ACTIVE_HEALTHY); the retry passed with one retried timeout.
 
 **המשך מ:** MAINTENANCE_LOOP_4 (head of ~/ke-goals/queue.txt).
