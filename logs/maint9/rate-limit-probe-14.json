@@ -1,0 +1,398 @@
+{
+  "ts": "2026-10-21T15:59:30Z",
+  "window": "14:34 to 15:58 UTC, fourteenth pass follow-up on check_rate_limit",
+  "probes": {
+    "rate_limits_table": [
+      {
+        "relname": "rate_limits",
+        "n_live_tup": 729,
+        "n_dead_tup": 192,
+        "n_tup_ins": 742,
+        "n_tup_upd": 13528,
+        "n_tup_hot_upd": 10566,
+        "n_tup_del": 10,
+        "seq_scan": 29,
+        "idx_scan": 14366,
+        "last_autovacuum": "2026-10-15 02:40:22.037344+00",
+        "last_autoanalyze": "2026-10-21 15:05:34.960989+00",
+        "autovacuum_count": 91,
+        "autoanalyze_count": 190,
+        "total": "328 kB"
+      }
+    ],
+    "settings": [
+      {
+        "name": "autovacuum_analyze_scale_factor",
+        "setting": "0.1"
+      },
+      {
+        "name": "autovacuum_analyze_threshold",
+        "setting": "50"
+      },
+      {
+        "name": "autovacuum_vacuum_scale_factor",
+        "setting": "0.2"
+      },
+      {
+        "name": "autovacuum_vacuum_threshold",
+        "setting": "50"
+      },
+      {
+        "name": "log_min_duration_statement",
+        "setting": "-1"
+      },
+      {
+        "name": "pg_stat_statements.track",
+        "setting": "top"
+      },
+      {
+        "name": "track_functions",
+        "setting": "none"
+      },
+      {
+        "name": "track_io_timing",
+        "setting": "off"
+      }
+    ],
+    "function_stats": [],
+    "check_rate_limit_row": [
+      {
+        "calls": 10998,
+        "total_ms": "116471.8",
+        "min_ms": "0.15",
+        "mean_ms": "10.59",
+        "max_ms": "1137.4",
+        "stddev_ms": "22.6710",
+        "shared_blks_hit": 1191342,
+        "shared_blks_read": 0,
+        "shared_blks_dirtied": 10799,
+        "shared_blks_written": 27,
+        "blk_read_ms": "0.0",
+        "blk_write_ms": "0.0",
+        "wal_records": 45735,
+        "wal_bytes": "31680368",
+        "stats_since": "2026-08-31 18:44:20.492362+00",
+        "query": "WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"p_key\", \"p_max_attempts\", \"p_window_seconds\" FROM json_to_record(pgrst_payload.json_d"
+      },
+      {
+        "calls": 3249,
+        "total_ms": "8096.5",
+        "min_ms": "0.16",
+        "mean_ms": "2.49",
+        "max_ms": "63.7",
+        "stddev_ms": "5.4731",
+        "shared_blks_hit": 229220,
+        "shared_blks_read": 4,
+        "shared_blks_dirtied": 647,
+        "shared_blks_written": 5,
+        "blk_read_ms": "0.0",
+        "blk_write_ms": "0.0",
+        "wal_records": 7319,
+        "wal_bytes": "1005141",
+        "stats_since": "2026-07-21 13:52:19.57086+00",
+        "query": "WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"p_key\", \"p_max_attempts\", \"p_window_seconds\" FROM json_to_record(pgrst_payload.json_d"
+      },
+      {
+        "calls": 9,
+        "total_ms": "1.6",
+        "min_ms": "0.12",
+        "mean_ms": "0.17",
+        "max_ms": "0.3",
+        "stddev_ms": "0.0618",
+        "shared_blks_hit": 122,
+        "shared_blks_read": 0,
+        "shared_blks_dirtied": 2,
+        "shared_blks_written": 0,
+        "blk_read_ms": "0.0",
+        "blk_write_ms": "0.0",
+        "wal_records": 79,
+        "wal_bytes": "10010",
+        "stats_since": "2026-09-21 14:38:07.102219+00",
+        "query": "-- 224_grant_recent_search_execute.sql\n--\n-- One GRANT. Without it the recent-search list can never have anything in it.\n--\n-- ========================================================================="
+      },
+      {
+        "calls": 6,
+        "total_ms": "22.7",
+        "min_ms": "0.33",
+        "mean_ms": "3.78",
+        "max_ms": "19.4",
+        "stddev_ms": "7.0031",
+        "shared_blks_hit": 229,
+        "shared_blks_read": 0,
+        "shared_blks_dirtied": 4,
+        "shared_blks_written": 0,
+        "blk_read_ms": "0.0",
+        "blk_write_ms": "0.0",
+        "wal_records": 34,
+        "wal_bytes": "3764",
+        "stats_since": "2026-07-21 14:31:09.628937+00",
+        "query": "WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"p_key\", \"p_max_attempts\", \"p_window_seconds\" FROM json_to_record(pgrst_payload.json_d"
+      },
+      {
+        "calls": 1,
+        "total_ms": "0.1",
+        "min_ms": "0.14",
+        "mean_ms": "0.14",
+        "max_ms": "0.1",
+        "stddev_ms": "0.0000",
+        "shared_blks_hit": 7,
+        "shared_blks_read": 0,
+        "shared_blks_dirtied": 1,
+        "shared_blks_written": 0,
+        "blk_read_ms": "0.0",
+        "blk_write_ms": "0.0",
+        "wal_records": 4,
+        "wal_bytes": "1049",
+        "stats_since": "2026-08-11 22:06:24.599418+00",
+        "query": "REVOKE EXECUTE ON FUNCTION public.check_rate_limit(text, integer, integer) FROM PUBLIC"
+      }
+    ],
+    "rate_limits_indexes": [
+      {
+        "indexrelname": "rate_limits_key_key",
+        "idx_scan": 14359,
+        "size": "64 kB"
+      },
+      {
+        "indexrelname": "rate_limits_window_idx",
+        "idx_scan": 5,
+        "size": "40 kB"
+      },
+      {
+        "indexrelname": "rate_limits_key_idx",
+        "idx_scan": 2,
+        "size": "64 kB"
+      },
+      {
+        "indexrelname": "rate_limits_pkey",
+        "idx_scan": 0,
+        "size": "56 kB"
+      }
+    ],
+    "activity_wait_events": [
+      {
+        "state": "idle",
+        "wait_event_type": "Client",
+        "wait_event": "ClientRead",
+        "n": 13
+      },
+      {
+        "state": "active",
+        "wait_event_type": null,
+        "wait_event": null,
+        "n": 1
+      }
+    ],
+    "new_pgss_rows_since_1434": [
+      {
+        "stats_since": "2026-10-21 14:36:08.477118+00",
+        "calls": 1,
+        "mean_ms": "1.7",
+        "max_ms": "1.7",
+        "rolname": "postgres",
+        "query": "select funcname, calls, total_time, self_time from pg_stat_user_functions where funcname=$1 -- source: POST /v1/projects/:ref/database/query -- user: pat:116698"
+      },
+      {
+        "stats_since": "2026-10-21 14:36:10.301565+00",
+        "calls": 1,
+        "mean_ms": "63.3",
+        "max_ms": "63.3",
+        "rolname": "postgres",
+        "query": "select calls, round(total_exec_time::numeric,$1) as total_ms, round(min_exec_time::numeric,$2) as min_ms, round(mean_exec_time::numeric,$3) as mean_ms, round(ma"
+      },
+      {
+        "stats_since": "2026-10-21 14:36:12.491064+00",
+        "calls": 1,
+        "mean_ms": "0.3",
+        "max_ms": "0.3",
+        "rolname": "postgres",
+        "query": "select indexrelname, idx_scan, pg_size_pretty(pg_relation_size(indexrelid)) as size from pg_stat_user_indexes where relname=$1 order by idx_scan desc -- source:"
+      },
+      {
+        "stats_since": "2026-10-21 14:36:16.042034+00",
+        "calls": 1,
+        "mean_ms": "17.6",
+        "max_ms": "17.6",
+        "rolname": "postgres",
+        "query": "select calls, round(mean_exec_time::numeric,$1) as mean_ms, round(max_exec_time::numeric,$2) as max_ms, stats_since, left(query,$3) as query from extensions.pg_"
+      },
+      {
+        "stats_since": "2026-10-21 14:37:21.242681+00",
+        "calls": 1,
+        "mean_ms": "68.8",
+        "max_ms": "68.8",
+        "rolname": "postgres",
+        "query": "select calls, round(mean_exec_time::numeric,$1) as mean_ms, round(total_exec_time::numeric,$2) as total_ms, round(max_exec_time::numeric,$3) as max_ms, left(que"
+      },
+      {
+        "stats_since": "2026-10-21 14:37:45.608432+00",
+        "calls": 1,
+        "mean_ms": "62.5",
+        "max_ms": "62.5",
+        "rolname": "postgres",
+        "query": "select s.indexrelname, s.idx_scan, s.idx_tup_read, pg_size_pretty(pg_relation_size(s.indexrelid)) as size, (select count(*) from extensions.pg_stat_statements p"
+      },
+      {
+        "stats_since": "2026-10-21 15:32:23.728419+00",
+        "calls": 1,
+        "mean_ms": "4.3",
+        "max_ms": "4.3",
+        "rolname": "postgres",
+        "query": "select j.jobid, j.jobname, j.schedule, j.active, (select count(*) from cron.job_run_details d where d.jobid=j.jobid and d.status=$1) as succeeded, (select count"
+      },
+      {
+        "stats_since": "2026-10-21 15:59:32.192554+00",
+        "calls": 1,
+        "mean_ms": "1.2",
+        "max_ms": "1.2",
+        "rolname": "supabase_read_only_user",
+        "query": "select relname, n_live_tup, n_dead_tup, n_tup_ins, n_tup_upd, n_tup_hot_upd, n_tup_del, seq_scan, idx_scan, last_autovacuum, last_autoanalyze, autovacuum_count,"
+      },
+      {
+        "stats_since": "2026-10-21 15:59:33.903794+00",
+        "calls": 1,
+        "mean_ms": "4.5",
+        "max_ms": "4.5",
+        "rolname": "supabase_read_only_user",
+        "query": "select name, setting from pg_settings where name in ($1,$2,$3,$4,$5,$6,$7,$8) order by name -- source: POST /v1/projects/:ref/database/query -- user: pat:116698"
+      },
+      {
+        "stats_since": "2026-10-21 15:59:35.502702+00",
+        "calls": 1,
+        "mean_ms": "118.4",
+        "max_ms": "118.4",
+        "rolname": "supabase_read_only_user",
+        "query": "select funcname, calls, round(total_time::numeric,$1) as total_ms from pg_stat_user_functions order by total_time desc limit $2 -- source: POST /v1/projects/:re"
+      },
+      {
+        "stats_since": "2026-10-21 15:59:37.213736+00",
+        "calls": 1,
+        "mean_ms": "36.1",
+        "max_ms": "36.1",
+        "rolname": "supabase_read_only_user",
+        "query": "select calls, round(total_exec_time::numeric,$1) as total_ms, round(min_exec_time::numeric,$2) as min_ms, round(mean_exec_time::numeric,$3) as mean_ms, round(ma"
+      },
+      {
+        "stats_since": "2026-10-21 15:59:38.827447+00",
+        "calls": 1,
+        "mean_ms": "0.3",
+        "max_ms": "0.3",
+        "rolname": "supabase_read_only_user",
+        "query": "select indexrelname, idx_scan, pg_size_pretty(pg_relation_size(indexrelid)) as size from pg_stat_user_indexes where relname=$1 order by idx_scan desc -- source:"
+      },
+      {
+        "stats_since": "2026-10-21 15:59:40.630207+00",
+        "calls": 1,
+        "mean_ms": "0.2",
+        "max_ms": "0.2",
+        "rolname": "supabase_read_only_user",
+        "query": "select state, wait_event_type, wait_event, count(*)::int as n from pg_stat_activity where backend_type=$1 group by 1,2,3 order by 4 desc -- source: POST /v1/pro"
+      }
+    ],
+    "app_spike_rows_unrounded": [
+      {
+        "calls": 1493,
+        "total_ms": "6077.8",
+        "mean_ms": "4.071",
+        "max_ms": "1159.2",
+        "stddev_ms": "31.6610",
+        "query": "WITH pgrst_source AS (UPDATE \"public\".\"carts\" SET \"expires_at\" = \"pgrst_body\".\"expires_at\""
+      },
+      {
+        "calls": 10998,
+        "total_ms": "116471.8",
+        "mean_ms": "10.590",
+        "max_ms": "1137.4",
+        "stddev_ms": "22.6710",
+        "query": "WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_p"
+      },
+      {
+        "calls": 21534,
+        "total_ms": "116973.2",
+        "mean_ms": "5.432",
+        "max_ms": "1013.8",
+        "stddev_ms": "15.7642",
+        "query": "WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_p"
+      },
+      {
+        "calls": 6906,
+        "total_ms": "37800.5",
+        "mean_ms": "5.474",
+        "max_ms": "883.6",
+        "stddev_ms": "17.4212",
+        "query": "WITH pgrst_source AS (INSERT INTO \"public\".\"carts\"(\"expires_at\", \"items\", \"session_id\") SE"
+      },
+      {
+        "calls": 887,
+        "total_ms": "41107.9",
+        "mean_ms": "46.345",
+        "max_ms": "857.1",
+        "stddev_ms": "65.9904",
+        "query": "WITH pgrst_source AS (SELECT \"pgrst_call\".* FROM (SELECT $1 AS json_data) pgrst_payload, L"
+      },
+      {
+        "calls": 2181,
+        "total_ms": "33952.0",
+        "mean_ms": "15.567",
+        "max_ms": "525.3",
+        "stddev_ms": "21.0350",
+        "query": "WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_p"
+      },
+      {
+        "calls": 2055,
+        "total_ms": "33788.8",
+        "mean_ms": "16.442",
+        "max_ms": "515.6",
+        "stddev_ms": "34.8566",
+        "query": "WITH pgrst_source AS ( SELECT \"public\".\"analytics_events\".\"session_id\", \"public\".\"analytic"
+      }
+    ],
+    "orders_index_scans": [
+      {
+        "indexrelname": "orders_pkey",
+        "idx_scan": 154517,
+        "idx_tup_read": 154772
+      },
+      {
+        "indexrelname": "orders_user_created_active_idx",
+        "idx_scan": 992,
+        "idx_tup_read": 41597
+      },
+      {
+        "indexrelname": "orders_created_at_idx",
+        "idx_scan": 989,
+        "idx_tup_read": 8727
+      },
+      {
+        "indexrelname": "idx_orders_paid_at_paid",
+        "idx_scan": 879,
+        "idx_tup_read": 4068
+      },
+      {
+        "indexrelname": "idx_orders_address_id",
+        "idx_scan": 832,
+        "idx_tup_read": 457
+      },
+      {
+        "indexrelname": "orders_user_id_idx",
+        "idx_scan": 652,
+        "idx_tup_read": 15236
+      },
+      {
+        "indexrelname": "idx_orders_created_at",
+        "idx_scan": 3,
+        "idx_tup_read": 15
+      },
+      {
+        "indexrelname": "idx_orders_pending_expiry",
+        "idx_scan": 2,
+        "idx_tup_read": 9
+      },
+      {
+        "indexrelname": "idx_orders_user_status",
+        "idx_scan": 2,
+        "idx_tup_read": 207
+      }
+    ]
+  }
+}
