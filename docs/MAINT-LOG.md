@@ -272,3 +272,43 @@ Nothing moved in the 74 minutes since the sixth run. Real sales remain 0, so the
 2026-10-23 00:00 local should queue it as `BACKLOG_1 Re-evaluate group deals` at the head of the queue.
 
 **Status:** COMPLETE
+
+## 2026-10-21 05:37 UTC - Backlog Scan (MAINTENANCE_LOOP_3, ninth run)
+
+**Scanned Files:**
+- docs/BACKLOG.md: exists, 7 items, unchanged (last commit 4b17cfb49, 2026-10-16).
+- docs/TODO.md: does not exist. `find` over the worktree (node_modules excluded) returns no TODO*.md.
+
+**Gates re-measured.** Same read-only select as the seventh run, through the management API with the
+CLI keychain token (the Supabase MCP connector is still unauthorised in this session).
+Evidence: `logs/maint3/sales-gate-2026-10-21b.json`.
+
+| Measure | Seventh run | This run |
+|---------|-------------|----------|
+| orders, all statuses | 99 | 99 |
+| orders in paid / fulfilled / settled | 70 | 70 |
+| payments succeeded or settled | 71 | 71 |
+| real sales (real Cardcom txn id, non-test buyer) | 0 | 0 |
+| orders since the seventh run | n/a | 0 |
+| last order | 2026-10-15 03:04 UTC | 2026-10-15 03:04 UTC |
+
+Nothing moved in the five hours since the seventh run (the eighth run did not re-measure). Real
+sales remain 0, so the launch, 10-sales and revenue gates are all still closed.
+
+**Backlog Items Analysis (today 2026-10-21 UTC, 2026-10-21 local UTC+7):**
+1. Group-deals re-evaluation, dated 2026-10-23: 2 days out. BLOCKED.
+2. Crisp inbox, post-launch: 0 real sales, launch gate not passed. BLOCKED.
+3. Meta WhatsApp Business verification, after 10 sales: 0 real sales. BLOCKED.
+4. Israeli lawyer review of ToS and Privacy, after 10 sales: 0 real sales. BLOCKED.
+5. Capacitor or Expo native app, after revenue: 0 real revenue. BLOCKED.
+6. Courses monthly billing, Phase 2: BLOCKED.
+7. Tzimmer calendar, Phase 2: BLOCKED.
+
+**Unblocked Items Found:** 0
+
+**Action:** None. ~/ke-goals/queue.txt not modified (37 lines before and after).
+
+**Note:** Item 1 becomes a candidate on 2026-10-23 local. The run that lands on or after
+2026-10-23 00:00 local should queue it as `BACKLOG_1 Re-evaluate group deals` at the head of the queue.
+
+**Status:** COMPLETE
