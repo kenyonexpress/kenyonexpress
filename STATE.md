@@ -2,6 +2,22 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_6 (Session: 2026-10-21 16:59-17:12 UTC, mobile gate recheck, thirteenth, DONE)
+
+**Goal:** Recheck the mobile gate score via scripts/compare.mjs, requeue a mobile fix goal at the head of the queue if above 11 percent, report the score to docs/GATE-STATUS.md, commit as chore qa mobile gate check, push.
+
+**Result:** DONE, all three widths PASS. `pnpm start` on 3351 from this worktree (pid 60783, cwd verified, only node listener, stopped by pid, port free after) on the 16:56 UTC build of HEAD `d55b0deac` (BUILD_ID `0Uk4GULmNN3iFan1hkn8L` in the served HTML, `gate:chunks` clean on 243 pages before the run). `compare.mjs --page=home --widths=380,768,1440`: 380 **8.53%**, 768 **9.79%**, 1440 **8.08%**, every width at the same hundredth as the previous seven runs. No `src/`, gate-script or reference change since the twelfth recheck (`git log 6a96520cc..HEAD -- src/ scripts/compare.mjs refs/` empty), so this is the eighth measurement of the same rendered tree. One new observation: the reference dropped 153 resources at all three widths (previously 153 / 96 / 96) and its 380 document was 18146 tall (previously 17790), and neither moved any band by a hundredth. No mobile fix goal requeued; `~/ke-goals/queue.txt` untouched. docs/GATE-STATUS.md gained the thirteenth block; docs/UI-PARITY-REPORT.md gained the three ledger rows the gate writes itself.
+
+**Gates:** `pnpm typecheck` exit 0, `pnpm lint` exit 0, `pnpm build` exit 0, `pnpm gate:chunks` clean. Backup 2026-10-21-2140 present and under 24h, three kept, nothing to delete; caffeinate alive (two processes), SleepDisabled 1.
+
+**החלטות שהתקבלו לבד:**
+- The 768 margin is 1.21 points and has not moved in eight runs; no fix goal is queued because the goal's trigger is above 11 percent only.
+- Serving the reference from a local origin to pin the archive shortfall stays an open item: this run showed the shortfall count does not change the score, which lowers its priority further.
+- Supabase MCP and GitHub MCP not needed: no DB, RLS, migration or PR in a gate measurement. No tests added: no src or script change.
+- MAINTENANCE_LOOP_7 is left to the loop harness, which pops `~/ke-goals/queue.txt` one goal per session; starting it here would put two agents on the same repo.
+
+**המשך מ:** MAINTENANCE_LOOP_7 (head of `~/ke-goals/queue.txt`): run Lighthouse CI via `pnpm lhci:autorun`, queue an optimization goal if any score is below 90, report scores to docs/LIGHTHOUSE-STATUS.md, commit as chore qa lighthouse check, push.
+
 ## ✅ MAINTENANCE_LOOP_4 (Session: 2026-10-21 16:15-16:58 UTC, e2e maintenance, fourteenth cycle, run 17, 0 flaky, DONE)
 
 **Goal:** Run the full Playwright suite with `pnpm test:e2e`, report pass/fail/flaky counts to docs/E2E-STATUS.md, fix any new flaky tests, commit as chore test e2e maintenance, push.
