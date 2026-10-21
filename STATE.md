@@ -2,6 +2,20 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_2 (Session: 2026-10-21 05:30-05:45 UTC, patch-version bump, eighth pass, MEASURED, nothing to bump)
+
+**Goal:** Run `pnpm outdated` and bump patch versions for safe packages. Skip major and minor. Commit as chore deps bump patch versions. Push to autopilot. Only what is requested.
+
+**Result:** COMPLETE, zero bumps. `pnpm outdated --format=json` on 2dba324b8 lists the same 17 packages as the seventh pass, each a minor or major jump at the latest tag (react and react-dom 19.2.9 to 19.3.1; the other 15 are majors, unchanged list, see `docs/DEPS-STATUS.md`). Because `pnpm outdated` compares against the latest tag only, all 66 direct dependencies were also checked with `npm view <name> versions` for a newer patch inside the installed major.minor: none exists (react 19.2.9 and next 16.4.2 are the newest of their minors). `pnpm outdated --compatible` is empty. `package.json` and `pnpm-lock.yaml` are unchanged; `docs/DEPS-STATUS.md` gains a pass-log row.
+
+**Gates:** `pnpm typecheck` exit 0, `pnpm lint` exit 0 (biome 1719 files, tokens, copy and asset gates clean), `pnpm build` exit 0 (311/311 static pages; the one warning is the known `cacheComponents` without `partialPrefetching` notice).
+
+**החלטות שהתקבלו לבד:**
+- The commit under the requested name carries only this STATE.md entry and the DEPS-STATUS row, because there is no dependency diff to carry; the commit body says so.
+- Supabase MCP and GitHub MCP were not needed: no DB, RLS, migration or PR is involved in a patch scan.
+
+**המשך מ:** MAINTENANCE_LOOP_3 (head of `~/ke-goals/queue.txt`): scan docs/BACKLOG.md and docs/TODO.md for unblocked items, queue any found, report the count in docs/MAINT-LOG.md, commit as chore maint scan backlog, push.
+
 ## ✅ F43 (Session: 2026-10-21 03:33-04:25 UTC, mobile gate 380 and 768, MEASURED, PASS, card title type + body tracking + gate flags)
 
 **Goal:** Bring the home page 380px parity gate under 11% against the Electro v7 reference, name the top three pixel-diff sources, fix them in `src/components/` layout CSS, re-run until under 11%, then check 768px the same way. Commit, push, STATE.
