@@ -2,6 +2,22 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_4 (Session: 2026-10-21 20:40-21:25 UTC, full Playwright suite, seventeenth cycle, run 20, 0 FLAKY)
+
+**Goal:** Run the full Playwright suite with pnpm test:e2e, report pass/fail/flaky counts to docs/E2E-STATUS.md, fix any new flaky tests, commit as chore test e2e maintenance, push. Only that.
+
+**Result:** COMPLETE, run 20 on `346ca8c02`, **680 cases, 661 passed, 12 failed, 0 flaky, 7 skipped, 25.5 min** (JSON reporter: start 20:45:18Z, duration 1,529,457 ms). First full run on the tree after the sixteenth cycle's pay-return fix (a753ab927, the only `src`/`e2e`/config commit since run 19). Cold mock build (`.next/cache/turbopack` moved to `/tmp/ke-e2e20/turbopack-cache-aside`, BUILD_ID `5K-o4cjP3IisW_B9vsyk6`, `pnpm gate:chunks` clean on 243 pages), `pnpm start` on 3417 verified by PID 87504 and cwd through lsof with the BUILD_ID read back from the served HTML, `E2E_FORWARDED_FOR_PREFIX=10.44.103`, `--retries=1`, `--reporter=list,json`, stopped by PID after, port free. The 12 reds are runs 13 to 18's 12 to the case, every one red on both attempts, every one at a laptop gap: class A admin fixture password refused (10: admin-product-crud 3x2, admin-refund 1x2, admin-refund-to-wallet 1x2, all 20 snapshots carry "כתובת אימייל או סיסמה שגויים") and class C phone-code send 502 (2: physical-purchase on both projects, `email.refused` 401 from `/api/checkout/phone-otp/send` at 20:57:19Z and 20:58:08Z). **The run 19 cross-run flake, `full-purchase-redeem` on chromium, passed first time in 89.4 s** under the 90 s `PAY_RETURN_TIMEOUT`, on a backend window still as slow as run 19's (referral-to-invoice leg 10 to 14 s on every order vs 7 to 10 s in run 18), so the fix holds at two workers in the whole suite. Server log: 0 `supabase.timeout`, 2 HTTP 5xx (both class C), 9 `purchase`, 9 `begin_checkout`, 9 `invoices.issued`, 1 `voucher_redeemed` (back from 0), 11 `email.refused`, 19 `analytics.track_failed`. No new flaky test, nothing to fix, nothing under `src/` or `e2e/` changed. docs/E2E-STATUS.md: header, run 20 table row, narrative, "Flaky (run 20)", "Failures by class (run 20, 12)", gates paragraph. Evidence in `/tmp/ke-e2e20/` (build, gate, server, list, typecheck, lint logs, `results.json` 917 KB, 24 snapshots).
+
+**Gates:** `pnpm typecheck` exit 0 and `pnpm lint` exit 0 (biome 1752 files, tokens, copy and asset gates clean), both run while the suite was in flight and again after the doc edit; `pnpm build` exit 0 twice (the cold mock build above and `QN5ws7LimBYop6cx00_tF` after the doc edit), `pnpm gate:chunks` clean on 243 prerendered pages after each. Backups: three kept (10-21-0201, 10-21-1241, 10-21-2140), newest under 24h, nothing to delete; caffeinate alive (pids 967, 11853), SleepDisabled 1.
+
+**החלטות שהתקבלו לבד:**
+- No spec or product change: zero flaky in the JSON reporter and the 12 reds are the standing environment gaps (admin password, phone-code mail key) that the action items in E2E-STATUS already name, so no test was edited and no vitest scope needed a re-run. Supabase MCP and GitHub MCP not needed (no DB work, no PR), work lands on autopilot directly.
+- Ran the second `pnpm build` after the doc edit as in the sixteenth cycle, even though docs are not a build input, so the gate line describes the committed tree.
+- `STATE.md` is still over its 300-line cap; archiving is a separate edit the goal does not name and was left alone.
+
+**המשך מ:** MAINTENANCE_LOOP_5 (head of `~/ke-goals/queue.txt`): check all cron routes' last-run timestamp via Vercel MCP get_runtime_logs, alert in docs/CRON-STATUS.md if any route is stale over 24h, commit as chore ops cron status check, push.
+
+
 ## ✅ MAINTENANCE_LOOP_3 (Session: 2026-10-21 20:40-20:55 UTC, backlog scan, eighteenth pass, 0 UNBLOCKED)
 
 **Goal:** Scan docs/BACKLOG.md and docs/TODO.md for unblocked items, queue any found to `~/ke-goals/queue.txt`, report the count in docs/MAINT-LOG.md, commit as chore maint scan backlog, push. Only that.
