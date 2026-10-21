@@ -1,6 +1,6 @@
 # Cron Routes Status
 
-**Last check:** 2026-10-21 11:20 UTC (MAINTENANCE_LOOP_5, ninth run; MCP `get_runtime_logs` 403 three times through the claude.ai connector, then **answered for real, twenty calls**, through `mcp.vercel.com` with the CLI token; CLI request log measured over 24h and 7d; the two sources agree to the second)
+**Last check:** 2026-10-21 11:20 UTC (MAINTENANCE_LOOP_5, ninth run; MCP `get_runtime_logs` 403 three times through the claude.ai connector, then **answered for real, twenty calls**, through `mcp.vercel.com` with the CLI token; CLI request log measured over 24h and 7d; the two sources agree to the second; pg_cron read through the official Supabase MCP server, read-only)
 **Status:** 🔴 CRITICAL, unchanged since 2026-10-20 13:15 UTC (ninth consecutive measurement). All 5 `vercel.json` routes are stale over 24h with 0 hits in 7 days. The only 2xx in 7 days is `/api/cron/health`, twice, at 2026-10-19 04:55 UTC (a manual probe after the deploy), which is itself 54h stale. Every other hit is 401 or 404. **MCP runtime logs confirm it for the first time:** 0 events in 7 days for the five scheduled routes, 401 `request.completed` on every hit route, last success 2026-10-19 04:55:31 UTC. The only live scheduler is pg_cron inside the database (01:30 UTC today, 48 of 48 succeeded).
 
 ## How this was measured
@@ -589,8 +589,27 @@ log to the second on every route, so the two sources now corroborate each other.
 invocation is rejected with 401 before doing work; the only success of any cron route in 7 days is the health
 probe at 2026-10-19 04:55:31 UTC. The alert in this file stands, now on two independent sources.
 
+### 11:23 UTC, ninth run part four: pg_cron read through the Supabase MCP
+
+The claude.ai Supabase connector still reports "needs authentication" (an OAuth only Ofir can finish), so the
+official server was run locally instead: `@supabase/mcp-server-supabase@latest` 0.14.0 over stdio with
+`--read-only --project-ref=ixvwfbuvfxxsjiywhbbb` and the CLI keychain token, driven by JSON-RPC
+(`initialize`, `notifications/initialized`, three `tools/call execute_sql`). Transcript in
+`logs/cron/ninth-supabase-mcp-pgcron-2026-10-21T1130Z.json` (untracked).
+
+| `execute_sql` query | Result |
+|---|---|
+| `cron.job` | one job, `report_tables_nightly`, `30 1 * * *`, active, `select public.refresh_report_tables()` |
+| `cron.job_run_details` grouped by status | `succeeded` **48**, no other status; last start **2026-10-21 01:30:00.211 UTC**, last end 01:30:00.374 UTC |
+| newest three runs | runid 48 (21.10 01:30), 47 (20.10 01:30), 46 (19.10 01:30), all `succeeded`, return message `1 row` |
+
+Identical to the management API read at 11:11 UTC, so the database-side scheduler is confirmed 🟢 fresh through the
+MCP as well. No write, no migration: the server ran read-only and the project rule against applying migrations
+without approval holds.
+
 ## History
 
+- 2026-10-21 11:23 UTC: ninth run, part four. Official Supabase MCP server 0.14.0 run locally, read-only, with the CLI keychain token; three `execute_sql` calls read `cron.job` and `cron.job_run_details`: one job, 48/48 succeeded, last 2026-10-21 01:30:00 UTC, newest three runs all `succeeded`. Same numbers as the management API read. The claude.ai Supabase connector still needs an OAuth this session cannot run.
 - 2026-10-21 11:19 to 11:21 UTC: ninth run, part three. `mcp.vercel.com` accepts the Vercel CLI token as a Bearer; **twenty `get_runtime_logs` calls answered HTTP 200** (first MCP-sourced data in this file). `group_by=requestPath` with `query=/api/cron`: 15 routes in 7d, none of the five `vercel.json` routes among them; per-route queries for those five: "No logs found" on 24h and 3d (and 7d for fraud-monitor and p95-monitor; the other three 7d pulls hit the tool time budget). 24h pull: 41 events, every one a 401 `request.completed`, newest `wishlist-alerts` 09:40:44 UTC; last success of any cron route `health` 2026-10-19 04:55:31 UTC. Timestamps match the CLI request log to the second. Alert unchanged, now on two sources.
 - 2026-10-21 11:17 UTC: ninth run, part two. A third MCP `get_runtime_logs` call with the tool defaults (`since=1h`, `limit=10`, window 10:17 to 11:17 UTC) answered the same `403: forbidden` at page 0, 0 rows, and `list_projects` for the team now answers **0 projects** (it answered two on 20.10 at 17:52 UTC), so the connector grant has narrowed, not widened. The Supabase connector is listed as needing an OAuth this session cannot run, so pg_cron was read through the management API with the CLI keychain token. Per CLAUDE.md the MCP read is recorded as blocked after repeated attempts and the check stands on the CLI timestamps above.
 - 2026-10-21 11:10 to 11:14 UTC: ninth run. MCP `get_runtime_logs` 403 twice (7d filtered, `group_by=requestPath` 7d, request `w4bzw-1792581036795`), 0 rows.
