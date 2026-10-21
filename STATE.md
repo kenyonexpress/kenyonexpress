@@ -2,6 +2,21 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_8 (Session: 2026-10-21 18:36-18:50 UTC, code debt scan, seventeenth pass, MEASURED, delta 0)
+
+**Goal:** Scan all TODO, FIXME and HACK comments in src/, queue a cleanup goal if the count grew since the last scan, report the delta in docs/CODE-DEBT-STATUS.md, commit as chore maint code debt scan, push.
+
+**Result:** COMPLETE, delta 0, no cleanup goal queued, `~/ke-goals/queue.txt` untouched (42 lines, head is MAINTENANCE_LOOP_9). Scan of HEAD `a9365b279` in this worktree: 8 TODO, 0 FIXME, 0 HACK, the loose grep and the word-boundary grep agree on 8, the same eight lines as every pass since the 20.10 baseline (one in `src/app/api/cron/stock-notifications/route.ts`, two `TODO(cardcom)` in `src/lib/payments/cardcom.ts`, four in `src/lib/images/r2-migration.ts`, one test stub string in `src/lib/whatsapp.test.ts`). Against the sixteenth pass's `624a75ef5` the branch gained 11 commits, none touching `src/` (`git log 624a75ef5..HEAD -- src/` empty, 0 markers in added lines of `git diff 624a75ef5..HEAD -- src/`); fourteenth byte-identical pass. Seventeenth row and narrative added to docs/CODE-DEBT-STATUS.md. Committed as `769d7196b` by explicit path and pushed to `origin/autopilot`. Working tree was clean at scan time.
+
+**Gates:** `pnpm type-check` exit 0, `pnpm lint` exit 0 (biome 1745 files, tokens, copy, asset gates clean), `pnpm build` exit 0, `pnpm gate:chunks` clean on 243 prerendered pages. Backup 2026-10-21-2140 present and under 24h, three kept (10-21-0201, 10-21-1241, 10-21-2140), nothing to delete; caffeinate alive (two processes), SleepDisabled 1. Nothing to fix.
+
+**החלטות שהתקבלו לבד:**
+- No tests added: the change is a measurement report in docs/ with no src or script change. GitHub MCP not needed: no PR, work lands on autopilot directly. Supabase MCP not needed: the scan is static text analysis with no DB work.
+- No src commits since the last scan, so the per-commit added-line check collapsed to a single empty range diff; recorded as such rather than re-listing the eight unchanged hits.
+- MAINTENANCE_LOOP_9 is left to the loop harness, which pops `~/ke-goals/queue.txt` one goal per session; starting it here would put two agents on the same repo.
+
+**המשך מ:** MAINTENANCE_LOOP_9 (head of `~/ke-goals/queue.txt`): verify the Supabase connection pool and query performance via Supabase MCP, alert in docs/DB-STATUS.md if slow queries over 500 ms exist, commit as chore ops db performance check, push.
+
 ## ✅ MAINTENANCE_LOOP_6 (Session: 2026-10-21 18:21-18:40 UTC, mobile gate recheck, fourteenth, DONE)
 
 **Goal:** Recheck the mobile gate score via scripts/compare.mjs, requeue a mobile fix goal at the head of the queue if above 11 percent, report the score to docs/GATE-STATUS.md, commit as chore qa mobile gate check, push.
@@ -5136,3 +5151,10 @@ Supabase MCP authentication unavailable in non-interactive session. CLI fallback
 - Gates: typecheck exit 0, lint exit 0 (biome 1745 files, tokens, copy and asset gates clean), build exit 0 (a6_jJHVQXI7HPTABaN3_R, the four Partner API bail-out lines are the known request.headers notice), gate:chunks exit 0 (243 prerendered pages, every chunk on disk). Backup 2026-10-21-2140 present and under 24h, three kept (10-21-0201, 10-21-1241, 10-21-2140), nothing to delete; caffeinate alive (pids 967, 11853), SleepDisabled 1.
 
 **המשך מ:** MAINTENANCE_LOOP_6 (head of ~/ke-goals/queue.txt): recheck the mobile gate score via scripts/compare.mjs, requeue the mobile fix goal if above 11 percent, report the score to docs/GATE-STATUS.md, commit as chore qa mobile gate check, push.
+
+## MAINTENANCE_LOOP_7 (2026-10-21 18:34 UTC, fifteenth pass)
+- Lighthouse CI on 32a68832c (no `src/`, `next.config.ts` or `package.json` change since the fourteenth pass's f618f1080; the eleven commits between touch only STATE.md, docs/ and logs/). Cold `pnpm build` exit 0 with `.next/cache/turbopack` moved to /tmp/ke-lh15 first, BUILD_ID zIrfmtc1R4HbtK0Z0ohz5, `pnpm gate:chunks` clean on 243 prerendered pages before serving, `pnpm start` on port 3401 (0 listeners beforehand, pid 12612, cwd verified by lsof as this worktree, BUILD_ID once in the served home HTML, killed by pid afterwards, port confirmed closed). `pnpm lhci:autorun` (@lhci/cli 0.15.1, Lighthouse 12.6.1, Chrome 155, desktop preset, 3 runs per URL) exit 0, no assertion warning, 9 reports on disk, nothing uploaded. Representative runs: `/` 99/100/96/100 (runs 99, 99, 98), `/products` 98/100/96/100 (98, 99, 100), `/product/אוזניות-איירפודס-3` 99/100/96/100 (99, 99, 98); LCP 1.0 / 1.0 / 0.9 s, FCP 0.5 / 0.4 / 0.4 s, TBT 0 ms in all nine, CLS 0.021 / 0.018 / 0.019. Every category at or above 90 in all nine runs, so no optimisation goal queued and ~/ke-goals/queue.txt untouched. Only weighted audit under 0.9 is `errors-in-console` (the same five local-environment items as every pass: two /_vercel/* 404s, their two "Refused to execute", one https prefetch against the http origin). docs/LIGHTHOUSE-STATUS.md header, summary table and comparison rewritten for the fifteenth pass, the fourteenth demoted to a "Previous pass" section.
+- Decided alone: no code or test change, same tree inside the localhost band (`/products` 99 to 98 on the representative run with a 100 among its three runs). The turbopack cache stays in /tmp/ke-lh15 so the next build is cold too. Supabase MCP and GitHub MCP not needed, no PR.
+- Gates: typecheck exit 0, lint exit 0 (biome, tokens, copy and asset gates clean), build exit 0 (zIrfmtc1R4HbtK0Z0ohz5, the four Partner API bail-out lines and the reviews.read_failed 42501 warnings are the known build-time noise), gate:chunks exit 0. Backup 2026-10-21-2140 present and under 24h, three kept (10-21-0201, 10-21-1241, 10-21-2140), nothing to delete; caffeinate alive (pids 967, 11853), SleepDisabled 1.
+
+**המשך מ:** MAINTENANCE_LOOP_8 (head of ~/ke-goals/queue.txt): scan all TODO, FIXME and HACK comments in src/, queue a cleanup goal if the count grew since the last scan, report the delta in docs/CODE-DEBT-STATUS.md, commit as chore maint code debt scan, push.
