@@ -4662,3 +4662,10 @@ Supabase MCP authentication unavailable in non-interactive session. CLI fallback
 - Gates: type-check exit 0, lint exit 0 (three gates clean, rerun after the doc edit), build exit 0 (qw6qJEGvOLDddXUYx7TQe), gate:chunks clean on 243 pages. Backup 2026-10-21-1241 present, three kept; caffeinate alive (two processes), SleepDisabled 1.
 
 **המשך מ:** MAINTENANCE_LOOP_8 (head of ~/ke-goals/queue.txt).
+
+## MAINTENANCE_LOOP_8 (2026-10-21 11:42 UTC, twelfth pass, commit 171e425c5)
+- Code debt scan on c9db7bdc1 (clean tree): word-boundary and loose greps over src/ (ts, tsx, js, jsx, mts, mjs) both return 8 TODO, 0 FIXME, 0 HACK, total 8, delta 0 against the eleventh pass on 025ad965a. The 22 commits between (025ad965a..c9db7bdc1) are the MAINTENANCE_LOOP_4 E2E run 13, the MAINTENANCE_LOOP_6 ninth mobile recheck, the MAINTENANCE_LOOP_7 tenth Lighthouse pass and their STATE.md, docs/ and logs/ updates; `git log 025ad965a..HEAD -- src/` is empty and the src diff adds no marker. The eight hits (cron stock-notifications revalidateTag, two cardcom endpoint confirmations, four r2-migration steps, one whatsapp test stub string) are byte-identical for a ninth consecutive pass. No cleanup goal queued, ~/ke-goals/queue.txt untouched. docs/CODE-DEBT-STATUS.md header, summary, history row and delta paragraph written. Committed 171e425c5, pushed.
+- Decided alone: the Supabase MCP clause of the goal stays unsatisfiable (connector needs OAuth, non-interactive session) and irrelevant to a static text scan; recorded in the doc's standing section, no retry.
+- Gates: typecheck exit 0, lint exit 0 (1731 files, three gates clean), build exit 0 (D0vQlbGvSouzz2PNN9FDw), gate:chunks clean on 243 pages. Backup 2026-10-21-1241 present, three kept; caffeinate alive (two processes), SleepDisabled 1.
+
+**המשך מ:** MAINTENANCE_LOOP_9 (head of ~/ke-goals/queue.txt).
