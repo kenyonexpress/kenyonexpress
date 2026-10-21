@@ -1,5 +1,36 @@
 # Mobile Gate Status
 
+**Last Check:** 2026-10-21 08:34-08:38 UTC (MOBILE_FIX_GATE, 1440 fix goal; local time 15:34-15:38 UTC+7)
+**Page:** home
+**Commit:** `d8d14274a` (HEAD of `autopilot`, clean `src/` since the seventh recheck's `9825db2e6`; the first row is on the clean tree, the second reads `-dirty` because it was run on the gate-script edit below plus the first row's own ledger write)
+**Server:** cold `pnpm build` after `rm -rf .next` (BUILD_ID `3uX7sNvIjx2SDDcdo99Hj`), `pnpm gate:chunks` clean (243 prerendered pages, every referenced chunk on disk), `pnpm start` on port 3351 from this worktree (listener pid 75431, cwd verified by `lsof`, stopped by pid afterwards). A stale `pnpm start` from another session on 3417 was left alone.
+**Threshold:** 11%
+**Verdict:** 1440 PASS at 8.08%, twice (08:34 on the clean tree, 08:38 with the gate-script edit). The goal's 23.91% is not this tree's number; see below. No CSS or layout change was made, because none was measured as needed.
+
+| Viewport | Score | Status | Goal's figure | Delta | Margin to 11% |
+|---|---|---|---|---|---|
+| 1440 | **8.08%** | **PASS** | 23.91% | -15.83 | 2.92 |
+
+Ledger rows, verbatim from docs/UI-PARITY-REPORT.md (UTC):
+
+```
+| 2026-10-21 08:34 | home | 1440 | 8.08% | PASS | `d8d14274a` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-21 08:38 | home | 1440 | 8.08% | PASS | `d8d14274a-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+```
+
+## MOBILE_FIX_GATE notes (08:38 UTC): where the 23.91% came from
+
+The goal quotes 23.91% at 1440 with worst bands y1100-1200 67.5%, y1200-1300 63.1% and y1600-1700 61.5%. On this tree those three bands read **6.2%, 2.7% and 16.2%**. The 23.91% row (ledger 08:27 UTC, commit `3e4bb1859-dirty`) was measured in the main checkout on `closeout/v1-final`, not on `autopilot`, and three things about that run are visible in its own report (`ac25c3440:docs/GATE-STATUS.md`):
+
+1. **It is a different source tree.** `closeout/v1-final` and `autopilot` diverged at `446cd3105`. Every home-page fix since (`3494b7478` 380 47.23% to 8.76%, `10d74a69f` 768 and 1440, `f7d8e9c90`, F41, F42, F43: 130 files in `src/`) is on `autopilot` only. The three `closeout/v1-final` commits after the fork (`be8c10640`, `3cda36807`, `f2a9d7f0c`, product-card padding and height) were written against that measurement; they are not on this branch and were not measured here.
+2. **Our page in that run was not hydrated.** Its report says "Local: 1490x5562px" at a 1440 viewport and "3 resources failed locally (2 scripts, 1 fetch)". Two dropped scripts on a local origin are a prerendered page's own chunks 404ing, the warm Turbopack cache defect `scripts/prerender-chunk-gate.mjs` was written for in `d195ad97f`. An unhydrated home is 50px wider than the viewport (the mega menu overflow recorded in step 3 of the 380 table below is a hydration-time fix) and the bands from the grid down slide against the reference. The same tree cold-built and hydrated is the 8.08% above.
+3. **Its reference dropped 48 images** (201 failed against the deterministic 96 here), so `refs/live-assets` was not resolving on that side either.
+
+**Gate hardening, so the next such row names itself.** `scripts/load-shortfall.mjs` gains `ownSideCaveat()`: when OUR side drops a script or stylesheet that is not in the expected local-origin set, or when our document is wider than the viewport it was shot at, compare.mjs prints a `WARNING:` line and the ledger row carries `OURS dropped N script (unhydrated, not a fidelity score)` and/or `OURS 1490px wide at 1440 (overflow)`. The caveat sits before the reference shortfall in the row because the notes cell clips at 160 characters. `scripts/compare.mjs` now reads `document.documentElement.scrollWidth` on our side before the shot. Healthy runs add no words: the two rows above are byte-identical in shape to the seventh recheck's. Nine tests in `scripts/load-shortfall.test.mjs`.
+
+**y1600-1800 at 1440, looked at again (refs/_diffmap.mjs, refs/_crop.mjs on this run's shots).** Per 40px column the diff is 70-97% across x440-700 and 1-47% elsewhere. x440-700 is row two's second card: live's archive paints a blank where ours paints the facial-treatment photograph (the same broken archive image the 768 row-four note records, `naturalWidth 0`). Cards one, three and four are codec-noise residual (JPEG against AVIF of one file). Neither is a layout offset; the band is a reference floor and nothing in CSS moves it without blanking our own image.
+
+
 **Last Check:** 2026-10-21 07:44-07:48 UTC (MAINTENANCE_LOOP_6, seventh recheck; local time 14:44-14:48 UTC+7)
 **Page:** home
 **Commit:** `9825db2e6` (clean tree at measurement; HEAD of `autopilot`, five `src/` commits after the sixth recheck's `c0a5bc67c`: F41, F42, F43 and the residual)
