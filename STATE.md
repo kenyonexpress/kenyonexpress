@@ -4730,3 +4730,10 @@ Supabase MCP authentication unavailable in non-interactive session. CLI fallback
 - Gates: typecheck exit 0, lint exit 0 (biome, tokens, copy and asset gates clean, rerun after the doc edit), build exit 0 (MhlxtWtJ9xHUL43bgs5yY, the build the suite ran against) with `pnpm gate:chunks` clean on 243 pages. Backup 2026-10-21-1241 present (today's), three kept; caffeinate alive (two processes), SleepDisabled 1. 3417 listener stopped by PID, port free after.
 
 **המשך מ:** MAINTENANCE_LOOP_5 (head of ~/ke-goals/queue.txt).
+
+## MAINTENANCE_LOOP_6 (2026-10-21 12:52 UTC, tenth recheck)
+- Mobile gate on e8c9ff899 (clean tree, no src/ commit since the ninth recheck's 3425ca36f; the commits between touch only STATE.md, docs/ and logs/cron/): home 380 8.53% / 768 9.79% / 1440 8.08%, all PASS under 11, fifth consecutive run identical to the hundredth. Server pnpm start on 3351 from this worktree (pid 18601, cwd verified by lsof, the only node listener, stopped by pid, port free after), on the previous loop item's build qVjnRFNtrsL_GjqY1JHTW (BUILD_ID in the served HTML) with gate:chunks clean before the run. Reference shortfall back to the first-load pattern, 153 at 380 and the deterministic 96 at 768 and 1440; every 380 band identical to the ninth recheck. No mobile fix goal requeued, ~/ke-goals/queue.txt untouched. docs/GATE-STATUS.md tenth recheck block prepended, three ledger rows in docs/UI-PARITY-REPORT.md.
+- Decided alone: Supabase and GitHub MCP not needed, no DB or PR work in this goal; no src or test edit on a tree that did not change.
+- Gates: type-check exit 0, lint exit 0 (1733 files, three gates clean), build exit 0 (Ic8hH9GHL-zlPohKkOg744), gate:chunks clean on 243 pages. Backup 2026-10-21-1241 present (today's), three kept; caffeinate alive (two processes), SleepDisabled 1.
+
+**המשך מ:** MAINTENANCE_LOOP_7 (head of ~/ke-goals/queue.txt).
