@@ -4325,3 +4325,9 @@ Supabase MCP authentication unavailable in non-interactive session. CLI fallback
 - Gates: type-check exit 0, lint exit 0, build exit 0. Caffeinate alive, SleepDisabled 1.
 
 **המשך מ:** MAINTENANCE_LOOP_8 (head of ~/ke-goals/queue.txt).
+
+## MAINTENANCE_LOOP_8 (2026-10-21 09:59 UTC, commit 280e8c6ac)
+- Scan of src/ (ts, tsx, js, jsx, mts, mjs) for TODO, FIXME, HACK: 8 TODO, 0 FIXME, 0 HACK, total 8. Word-boundary and loose grep agree. Previous scan (01:50 UTC, 1dc0a8a18) was 8, delta 0, no cleanup goal queued; `~/ke-goals/queue.txt` untouched. `git log 1dc0a8a18..HEAD -- src/` is empty across the intervening commits (25 total, all docs and STATE since 01:50), so the finding list is byte-identical for the ninth consecutive pass (stock-notifications cron 1, cardcom.ts 2, r2-migration.ts 4, whatsapp.test.ts stub 1). docs/CODE-DEBT-STATUS.md gained the ninth-pass header and table row with delta 0.
+- Gates: type-check exit 0, lint exit 0, build exit 0. Backup 2026-10-21-0201 present, three kept; caffeinate alive, SleepDisabled 1.
+
+**המשך מ:** MAINTENANCE_LOOP_9 (head of ~/ke-goals/queue.txt).
