@@ -2,6 +2,22 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_10 (Session: 2026-10-21 16:03-16:10 UTC, queue regeneration, tenth pass, DONE)
+
+**Goal:** Append 10 fresh MAINTENANCE_LOOP goals to `~/ke-goals/queue.txt` by reading MAINTENANCE_LOOP_1 through MAINTENANCE_LOOP_10 from that file and appending them again. Only what is requested.
+
+**Result:** DONE. The file ended with a newline (`xxd` on the last byte), so lines 1 through 10 (one full LOOP_1 to LOOP_10 cycle, read into `/tmp/ml-block.txt`) were appended verbatim at 16:04 UTC. Before the append the queue held 40 lines in four copies of the cycle, and `diff` showed all four byte-identical to the head block. Queue grew from 40 lines to 50; `diff` of lines 1-10 against lines 41-50 is empty, `grep -c '^MAINTENANCE_LOOP_'` reads 50, and the file still ends with a newline. The runner had already popped this pass's LOOP_10 line before the append, so the head is MAINTENANCE_LOOP_1 and the cycle continues without a refill trigger (refill fires below 20 lines).
+
+**Gates:** `pnpm type-check` exit 0, `pnpm lint` exit 0 (biome 1741 files, tokens, copy, asset gates clean), `pnpm build` exit 0, `pnpm gate:chunks` clean on 243 prerendered pages. No repository file other than this entry changed; `git status` was empty before and after the build on `c9f2761c8`. Backup 2026-10-21-2140 present and under 24h, three kept (10-21-0201, 10-21-1241, 10-21-2140), nothing to delete; caffeinate alive (two processes), SleepDisabled 1.
+
+**החלטות שהתקבלו לבד:**
+- The queue file lives outside the repo, so the commit carries only this STATE.md entry.
+- STATE.md is 4979 lines against its stated 300-line cap; not trimmed here because the goal is the queue append only (M18 in `~/ke-goals/maint-template.txt` owns the trim).
+- Supabase MCP and GitHub MCP not needed: no DB, RLS, migration or PR in a queue append. No tests added: no src or script change.
+- MAINTENANCE_LOOP_1 is left to the loop harness, which pops `~/ke-goals/queue.txt` one goal per session; starting it here would put two agents on the same repo.
+
+**המשך מ:** MAINTENANCE_LOOP_1 (head of `~/ke-goals/queue.txt`): run `pnpm audit`, fix critical and high vulnerabilities, commit each fix separately as chore security audit fix PACKAGE, push to autopilot.
+
 ## ✅ MAINTENANCE_LOOP_9 (Session: 2026-10-21 15:58-16:10 UTC, db performance check, fourteenth measured pass via Supabase MCP, no alert, watch item closed)
 
 **Goal:** Verify the Supabase connection pool and query performance via Supabase MCP, alert in docs/DB-STATUS.md if slow queries over 500 ms exist, commit as chore ops db performance check, push.
