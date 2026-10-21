@@ -4239,3 +4239,10 @@ Supabase MCP authentication unavailable in non-interactive session. CLI fallback
 - Gates: type-check exit 0, lint exit 0 (biome + 3 gates), vitest src/components/ui + src/lib/a11y 228 passed, mock build exit 0. Servers stopped by listener PID; port 3417 free. Backup 2026-10-21-0201 present, three kept; caffeinate alive, SleepDisabled 1.
 
 **המשך מ:** MAINTENANCE_LOOP_5 (head of ~/ke-goals/queue.txt).
+
+## MAINTENANCE_LOOP_6 fifth recheck (2026-10-21 01:36 UTC, commit 8694e11b6)
+- `scripts/compare.mjs --page=home` at 380, 768 and 1440 against a fresh `pnpm build` of da214d37d (BUILD_ID G88lyT8bM44g5JTula66v, exit 0) served by `pnpm start` on 3346 (listener pid 45127, cwd verified as this worktree, killed by pid afterwards; the 08:29 build on disk from another session was not reused). Scores 8.51% / 9.80% / 8.10%, all PASS under 11%, an exact repeat of the fourth recheck to the hundredth; 768 margin 1.20 points. No mobile fix goal requeued, `~/ke-goals/queue.txt` untouched at 24 lines.
+- Only `src/` change since d413c5528 is the Tabs trigger ink (LOOP_4 a11y fix), whose sole non-test importer is the closed LoginModal, so the home-page tree is unchanged for a fifth measurement. Reference shortfall 153 at all three widths, no UNMEASURED row (third loop in a row), band profile identical. docs/GATE-STATUS.md carries the fifth-recheck header, table, ledger rows and notes; docs/UI-PARITY-REPORT.md gained the three rows the script wrote.
+- Gates: type-check exit 0, lint exit 0 (biome 1701 files + 3 gates), build exit 0. Backup 2026-10-21-0201 present, three kept; caffeinate alive, SleepDisabled 1. Supabase and GitHub MCP not needed for this goal.
+
+**המשך מ:** MAINTENANCE_LOOP_7 (head of ~/ke-goals/queue.txt).
