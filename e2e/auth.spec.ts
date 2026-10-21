@@ -25,8 +25,10 @@ test.describe('Login page', () => {
     await expect(page.getByRole('link', { name: 'שכחתם סיסמה?' })).toBeVisible()
   })
 
-  test('shows magic link form on toggle', async ({ page }) => {
-    await page.getByRole('button', { name: /קישור מאובטח/ }).click()
+  test('shows magic link form on its tab', async ({ page }) => {
+    // The toggle button became a tab in the UX23 login modal ("קישור", next to
+    // "אימייל" and "Passkey"); the form behind it is unchanged.
+    await page.getByRole('tab', { name: 'קישור' }).click()
     await expect(page.getByLabel('אימייל לקישור כניסה')).toBeVisible()
     await expect(page.getByRole('button', { name: 'שלחו לי קישור' })).toBeVisible()
   })

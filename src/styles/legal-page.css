@@ -70,7 +70,10 @@
   margin: 0 0 16px;
   font-size: 14px;
   line-height: 23.996px;
-  color: #9f9f9f;
+  /* The live value, #9f9f9f, is 2.8:1 on white and failed the WCAG AA scan on
+     all four legal pages the moment F42 shipped this line. The muted token is
+     the same role at 5.3:1. */
+  color: var(--color-muted);
 }
 
 /* The counsel-review notice. Electro has no equivalent, so it takes the body

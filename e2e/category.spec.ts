@@ -163,19 +163,27 @@ test.describe('category archive', () => {
     await expect(page.getByText('לא נמצאו מוצרים התואמים את הבחירה שלך.')).toHaveCount(0)
   })
 
-  test('the shop archive clamps an out-of-range page the same way', async ({ page }) => {
-    // /products is the bigger archive and the one with more than one page, so
-    // it is where the clamp is visible as a page NUMBER rather than a fallback
-    // to page 1.
-    await page.goto('/products?page=9999')
-    const clampedCount = await page.locator(SETTLED_COUNT).first().textContent({ timeout: 15_000 })
+  test('the shop archive answers an out-of-range page with the catalogue, never the empty state', async ({
+    page,
+  }) => {
+    // /products stopped paginating with UX43 (2026-10-17): the grid loads the
+    // catalogue from its first page and appends with infinite scroll, so there
+    // is no page number to clamp TO and the count line prints the whole total
+    // on every URL. This used to require page=9999 to print a DIFFERENT count
+    // from page 1, which the archive can no longer do. What still matters is
+    // what the category test above pins: a stale or out-of-range page number
+    // in a bookmark must land on products and a count, not on the "nothing
+    // matches your selection" state that blames filters the shopper never set.
+    const response = await page.goto('/products?page=9999')
+    expect(response?.status()).toBe(200)
+    await expect(page.locator('a[href^="/product/"]').first()).toBeVisible({ timeout: 15_000 })
+    const count = await page.locator(SETTLED_COUNT).first().textContent({ timeout: 15_000 })
+    expect(count, 'the out-of-range page printed no count').toBeTruthy()
+    await expect(page.getByText('לא נמצאו מוצרים התואמים את הבחירה שלך.')).toHaveCount(0)
 
     await page.goto('/products')
     const total = await page.locator(SETTLED_COUNT).first().textContent({ timeout: 15_000 })
-
-    expect(clampedCount, 'the clamped page printed no count').toBeTruthy()
-    expect(clampedCount, 'page=9999 rendered the first page instead of the last').not.toBe(total)
-    await expect(page.getByText('לא נמצאו מוצרים התואמים את הבחירה שלך.')).toHaveCount(0)
+    expect(count, 'the count is the catalogue total on every page number').toBe(total)
   })
 
   test('a price filter narrows the archive without breaking it', async ({ page }) => {

@@ -126,6 +126,8 @@ describe('CartLineItem', () => {
 
   it('renders price information', () => {
     render(<CartLineItemWrapper item={mockItem} />)
-    expect(screen.getByText(/מחיר:/)).toBeInTheDocument()
+    // Two labels carry it: the unit-price row below 768 and the aria-hidden
+    // mobile label beside the line total, so a single-match query throws.
+    expect(screen.getAllByText(/מחיר:/).length).toBeGreaterThan(0)
   })
 })

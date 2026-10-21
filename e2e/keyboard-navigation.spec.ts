@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test'
+import { awaitStreamedReveal } from './helpers'
 
 /**
  * UX48: Comprehensive keyboard navigation testing for Hebrew RTL support.
@@ -52,33 +53,35 @@ test.describe('Keyboard Navigation - Hebrew RTL', () => {
     await page.goto('/contact')
     await page.waitForLoadState('domcontentloaded')
 
-    const inputs = page.locator('input, textarea')
-    const count = await inputs.count()
+    // ONE EVALUATE OVER THE REVEALED PAGE, NOT A LOCATOR LOOP. Two things
+    // were wrong with the loop this replaces. It judged each input with
+    // `Promise.any` over four probes, and `Promise.any` settles on the first
+    // promise to FULFIL, a `false` included, so the aria-label probe always
+    // won and an input named by a <label for> read as unlabelled: "input
+    // element 8" (the honeypot, which has a label) was red in every run. And
+    // it counted the inputs at domcontentloaded, while the page still held
+    // the streamed body twice (the Suspense fallback and the hidden boundary
+    // it is swapped for), then walked `nth(i)` as the count halved under it
+    // and waited on an index that no longer existed until the test timed out.
+    await awaitStreamedReveal(page)
+    const unlabelled = await page.evaluate(() =>
+      Array.from(
+        document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('input, textarea'),
+      )
+        .filter((el) => el.getAttribute('type') !== 'hidden')
+        .filter((el) => {
+          if (el.getAttribute('aria-label') || el.getAttribute('aria-labelledby')) return false
+          if (el.getAttribute('placeholder')) return false
+          if (el.closest('label')) return false
+          return !(el.id && document.querySelector(`label[for="${CSS.escape(el.id)}"]`))
+        })
+        .map((el) => `${el.tagName.toLowerCase()}[name=${el.getAttribute('name') ?? ''}]`),
+    )
 
-    for (let i = 0; i < count; i++) {
-      const input = inputs.nth(i)
-      const inputType = await input.getAttribute('type')
-
-      // Skip hidden inputs
-      if (inputType === 'hidden') continue
-
-      // Check for either a label or aria-label
-      const hasLabel = await Promise.any([
-        input.getAttribute('aria-label').then((v) => v !== null),
-        input.getAttribute('aria-labelledby').then((v) => v !== null),
-        input.getAttribute('placeholder').then((v) => v !== null),
-        input.getAttribute('id').then(async (id) => {
-          if (!id) return false
-          const label = page.locator(`label[for="${id}"]`)
-          return (await label.count()) > 0
-        }),
-      ]).catch(() => false)
-
-      expect(
-        hasLabel,
-        `input element ${i} on contact form must have label, aria-label, or placeholder`,
-      ).toBe(true)
-    }
+    expect(
+      unlabelled,
+      'every visible input on /contact needs a label, aria-label or placeholder',
+    ).toEqual([])
   })
 
   test('focus is visible on all interactive elements', async ({ page }) => {

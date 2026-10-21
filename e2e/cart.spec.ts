@@ -1,12 +1,12 @@
 import { type Page, expect, test } from '@playwright/test'
 import { addOpenProductToCart, openCartWithItems, openPurchasableProduct } from './helpers'
 
-/** Reads the item count the header badge advertises via its aria-label. */
+/** Reads the item count the header badge advertises in its accessible name (see helpers.ts). */
 async function navCartCount(page: Page): Promise<number> {
   const label = await page
     .getByRole('button', { name: /עגלת קניות, \d+ פריטים/ })
     .first()
-    .getAttribute('aria-label')
+    .evaluate((el) => el.getAttribute('aria-label') ?? el.textContent ?? '')
   const match = /עגלת קניות, (\d+) פריטים/.exec(label ?? '')
   return match ? Number(match[1]) : 0
 }

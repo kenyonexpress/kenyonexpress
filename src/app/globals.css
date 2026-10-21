@@ -129,19 +129,25 @@ html[data-consent="decided"] [data-consent-banner] {
   --reserve-pwa: 0rem;
 }
 
+/* THE ROOT IS 14px, NOT 16px (font-size: 0.875rem above), so every rem here is
+   worth 14px. The previous values were sized for a 16px root and came up short
+   at every width the a11y sweep measures: 14.5rem reserved 203px for a 214.5px
+   banner at 320, 8rem reserved 112px for a 120px banner at 640. Measured on the
+   production build 2026-10-21. 15.5rem is 217px, 9rem is 126px, 7.5rem is 105px
+   for the 101.25px single-row banner from 768 up. */
 html:not([data-consent="decided"]) {
-  --reserve-consent: 14.5rem;
+  --reserve-consent: 15.5rem;
 }
 
 @media (min-width: 640px) {
   html:not([data-consent="decided"]) {
-    --reserve-consent: 8rem;
+    --reserve-consent: 9rem;
   }
 }
 
 @media (min-width: 768px) {
   html:not([data-consent="decided"]) {
-    --reserve-consent: 7rem;
+    --reserve-consent: 7.5rem;
   }
 }
 

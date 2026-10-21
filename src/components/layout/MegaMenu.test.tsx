@@ -11,7 +11,7 @@ describe('MegaMenu', () => {
   it('displays category buttons', () => {
     render(<MegaMenu />)
     expect(screen.getByRole('button', { name: /דילים חמים/ })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /עד ₪99/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /עד \u206699/ })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /החדשים/ })).toBeInTheDocument()
   })
 
@@ -58,7 +58,7 @@ describe('MegaMenu', () => {
   it('navigates between categories with arrow keys', async () => {
     render(<MegaMenu />)
     const firstButton = screen.getByRole('button', { name: /דילים חמים/ })
-    const secondButton = screen.getByRole('button', { name: /עד ₪99/ })
+    const secondButton = screen.getByRole('button', { name: /עד \u206699/ })
 
     fireEvent.click(firstButton)
     await waitFor(() => {

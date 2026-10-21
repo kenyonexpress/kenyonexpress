@@ -61,8 +61,11 @@ test.describe('production smoke: guest cart to checkout', () => {
 
     const cartButton = page.getByRole('button', { name: /עגלת קניות, \d+ פריטים/ }).first()
     const before = Number(
-      /עגלת קניות, (\d+) פריטים/.exec((await cartButton.getAttribute('aria-label')) ?? '')?.[1] ??
-        0,
+      /עגלת קניות, (\d+) פריטים/.exec(
+        (await cartButton.evaluate(
+          (el) => el.getAttribute('aria-label') ?? el.textContent ?? '',
+        )) ?? '',
+      )?.[1] ?? 0,
     )
 
     // 2. Add to cart, and require the COUNTER to move. A button that responds
@@ -73,7 +76,9 @@ test.describe('production smoke: guest cart to checkout', () => {
         async () =>
           Number(
             /עגלת קניות, (\d+) פריטים/.exec(
-              (await cartButton.getAttribute('aria-label')) ?? '',
+              (await cartButton.evaluate(
+                (el) => el.getAttribute('aria-label') ?? el.textContent ?? '',
+              )) ?? '',
             )?.[1] ?? 0,
           ),
         { timeout: 15_000, message: 'the header cart counter never advanced' },

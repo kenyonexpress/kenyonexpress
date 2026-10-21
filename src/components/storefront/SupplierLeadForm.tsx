@@ -193,7 +193,8 @@ export default function SupplierLeadForm({
         </ol>
         <input type="hidden" name="agreement_hash" value={agreementHash} />
         <label className="mt-3 flex min-h-11 items-center gap-3 text-sm text-heading">
-          <input type="checkbox" name="agreement" required className="h-6 w-6 shrink-0" />
+          {/* h-7 is 24.5px at the 14px root; h-6 was 21px, under the 24px WCAG 2.5.8 floor. */}
+          <input type="checkbox" name="agreement" required className="h-7 w-7 shrink-0" />
           <span>קראתי ואני מאשר את הסכם ההצטרפות</span>
         </label>
         {/* The counterparty, printed under the clauses and outside the hashed
