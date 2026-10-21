@@ -405,6 +405,8 @@ export const SITE_CSS_METRICS: Record<string, string> = {
   '--text-pdp-body': '14px',
   '--leading-pdp-title': '32.0051px',
   '--leading-pdp-body': '23.996px',
+  '--leading-deal-title': '26.4px',
+  '--tracking-body': '-0.14px',
 
   '--weight-light': '300',
   '--weight-regular': '400',

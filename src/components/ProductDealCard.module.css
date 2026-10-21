@@ -1,0 +1,23 @@
+/* The deals card title's measured type, beside the component that renders it.
+
+   F43, MEASURED in the live archive on 2026-10-21 at 380, 768 AND 1440, on
+   every `h2.jet-listing-dynamic-field__content` in the 1440 viewport (twelve
+   titles): 22px over a 26.4px line (1.2), weight 500, margin-bottom 8px, and
+   the body's -0.14px letter-spacing inherited. Two lines are 52.8 + 8 = 60.8,
+   inside the 64px min-height of `.p_con__title-wrap`.
+
+   The shared base (`.p_con__title` in src/styles/product-card-deals.css) used
+   to carry a 32px line derived from that 64 and labelled "2 clamped lines",
+   at an inherited weight. It put every title glyph row 3px per line below
+   live's and wrapped long titles one word early. The featured grid's
+   ProductCard shares the base class and adds `text-product-title` (25px, the
+   product PAGE title), which is why the deal card's own numbers live here and
+   not on the base.
+
+   `h2.title`, not `.title`: the base selector is one class (0,1,0) and this
+   must out-rank it on line, weight and margin regardless of stylesheet order. */
+h2.title {
+  line-height: var(--leading-deal-title);
+  font-weight: var(--weight-medium);
+  margin: 0 0 8px;
+}

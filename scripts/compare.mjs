@@ -1,9 +1,10 @@
 import { spawn } from 'node:child_process'
-import { copyFileSync, existsSync, readFileSync, rmSync } from 'node:fs'
+import { copyFileSync, existsSync, readFileSync, rmSync, statSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { chromium } from '@playwright/test'
+import { parseCompareArgs } from './compare-args.mjs'
 import { loadShortfall } from './load-shortfall.mjs'
 import { appendParityFailure } from './parity-log.mjs'
 
@@ -33,152 +34,33 @@ const argOf = (name, dflt) => {
   return dflt
 }
 const page = argOf('page', 'home')
+// F43: the flags the goal queue uses (`--widths=`, `--baseline=`, `--live-url=`)
+// are parsed in compare-args.mjs, with their meaning and a test. Unknown flags
+// used to be ignored in silence; these three now do what they say.
+const ARGS = parseCompareArgs(process.argv.slice(2))
 // Width is an argument because the gate is quoted at three widths (380, 768,
 // 1440) and this was hardcoded to 1440, so the two phone widths had never once
 // been measured. Height stays 2600: the diff is banded down the page and the
 // bands must line up run to run for the numbers to be comparable.
-const VIEW = { width: Number(argOf('width', '1440')), height: 2600 }
-// THE GATE IS QUOTED AT THREE WIDTHS, SO IT IS ONE COMMAND.
-//
-// `--widths=380,768,1440` re-runs this script once per width and prints the
-// three numbers together. Every other flag is passed through untouched, so the
-// only difference between the children is `--width`.
-//
-// SEQUENTIAL, NOT PARALLEL. Each child launches its own Chromium and takes a
-// full-page capture of a page that is 17791px tall at 380; two of those at once
-// on this laptop is the same memory ceiling that already kills concurrent
-// builds here, and a run that gets OOM-killed halfway reports a partial gate.
-//
-// The driver exits on the FIRST non-zero child code. A width that refuses (5)
-// or fails a guard (3, 4) produced no number, and a summary that showed two
-// percentages and a blank third while exiting 0 would read as a pass.
-//
-// AND IT EXITS 6 WHEN A WIDTH IS SIMPLY OVER THE CEILING, WHICH NOTHING HERE
-// USED TO DO. diff-bands.mjs prints the percentage, writes PASS or FAIL into
-// docs/UI-PARITY-REPORT.md, and exits 0 either way; so did this driver. On
-// 2026-09-18 a run reported three FAILs at 27.32%, 25.85% and 11.37% and
-// exited 0. Anything gating on the exit status -- CI, a hook, a loop -- read
-// that as a green visual gate.
-//
-// Single-width runs keep the old behaviour, because that is what every
-// existing caller and every note in STATE.md was written against. Only this
-// multi-width driver, which is new, enforces the ceiling it prints.
-const WIDTHS = String(argOf('widths', ''))
-  .split(',')
-  .map((w) => w.trim())
-  .filter(Boolean)
-if (WIDTHS.length > 1) {
-  const passthrough = process.argv
-    .slice(2)
-    .filter(
-      (a, i, all) =>
-        a !== '--widths' &&
-        !a.startsWith('--widths=') &&
-        all[i - 1] !== '--widths' &&
-        a !== `--width=${VIEW.width}`,
-    )
-  /** @type {{width: string, pct: number | null, code: number}[]} */
-  const runs = []
-  let worst = 0
-  for (const w of WIDTHS) {
-    console.log(`\n=== width ${w} ===`)
-    const code = await new Promise((res) => {
-      const child = spawn(process.execPath, [process.argv[1], ...passthrough, `--width=${w}`], {
-        stdio: ['inherit', 'pipe', 'inherit'],
+const VIEW = { width: ARGS.width, height: 2600 }
+
+// `--widths=380,768,1440` is one run per width, in order, each a child with the
+// same arguments and a singular `--width=`. The parent exits with the first
+// non-zero code. Nothing else is shared: each child shoots, diffs and writes
+// its own ledger row, exactly as a hand-typed run would.
+if (ARGS.widths.length > 1) {
+  const rest = process.argv.slice(2).filter((a) => !a.startsWith('--widths='))
+  for (const w of ARGS.widths) {
+    const code = await new Promise((done) =>
+      spawn(process.execPath, [process.argv[1], ...rest, `--width=${w}`], {
+        stdio: 'inherit',
         cwd: process.cwd(),
-        env: process.env,
-      })
-      let out = ''
-      child.stdout.on('data', (chunk) => {
-        out += chunk
-        process.stdout.write(chunk)
-      })
-      // The child already appended its own row to docs/UI-PARITY-REPORT.md; this
-      // only reads the number back so the three can be printed side by side.
-      //
-      // Reads "both painted", not "OVERALL", since 22.09.2026 -- see the
-      // comment above appendParityRow() in diff-bands.mjs. The row this driver
-      // prints has to agree with the row already written to
-      // docs/UI-PARITY-REPORT.md, and that row is graded on the actionable
-      // component now, not on raw pixel mismatch that includes an unloaded
-      // reference image or a catalogue that moved on.
-      child.on('exit', (c) => {
-        const hit = out.match(/both painted ([\d.]+)%/)
-        runs.push({ width: w, pct: hit ? Number(hit[1]) : null, code: c ?? 1 })
-        res(c ?? 1)
-      })
-    })
-    if (code !== 0) {
-      worst = code
-      break
-    }
-  }
-  console.log(`\n=== ${page} parity, gate ${GATE_CEILING}% ===`)
-  let over = 0
-  for (const r of runs) {
-    const pct = r.pct === null ? '    n/a' : `${r.pct.toFixed(2)}%`.padStart(7)
-    const verdict =
-      r.pct === null ? `no number (exit ${r.code})` : r.pct <= GATE_CEILING ? 'PASS' : 'FAIL'
-    if (r.pct !== null && r.pct > GATE_CEILING) over++
-    console.log(`  ${String(r.width).padStart(4)}  ${pct}  ${verdict}`)
-  }
-  if (!worst && over) {
-    console.error(
-      `\n${over} of ${runs.length} widths are over the ${GATE_CEILING}% gate. Exiting 6.`,
+      }).on('exit', done),
     )
-    process.exit(6)
+    if (code !== 0) process.exit(code ?? 1)
   }
-  process.exit(worst)
+  process.exit(0)
 }
-// THE REFERENCE CAN BE A FROZEN CAPTURE, BECAUSE THE LIVE ONE IS GONE.
-//
-// Every LIVE_* constant below names kenyonexpress.co.il, and that host stopped
-// being the WooCommerce site: DNS was cut over, and as of 2026-09-18 the domain
-// does not resolve at all (no NS, no A, no SOA; `co.il` itself answers). So
-// enforceReference() refuses every run with exit 5, which is correct and also
-// means the gate CLAUDE.md makes mandatory cannot produce a number.
-//
-// docs/PARITY-REFERENCE.md worked that problem on 2026-09-09 and concluded only
-// three routes existed, all dead ends: re-capture (the tool cannot regenerate
-// its own input), the Wayback Machine (measured, 31 of 54 images unrecoverable),
-// or redefining the gate as drift-from-ourselves. It considered HTML archives
-// and missed what was sitting in the same directory.
-//
-//   refs/ke_live_380.png    380 x 17791
-//   refs/ke_live_768.png    768 x  8797
-//   refs/ke_live_1440.png  1440 x  4968
-//
-// Captured 2026-08-12, four weeks BEFORE the cutover, at exactly the three
-// widths the gate is quoted at. They are fully rendered: product photos, the
-// yellow header, the category rail, the hero. They are the reference, already
-// developed. The HTML archives fail because a browser has to re-fetch 143
-// subresources from a host that is gone; a PNG has nothing left to fetch.
-//
-// `--live-png=<path>` substitutes one for the live browser side. What it gives
-// up is real and is recorded in the report's notes column: the capture is
-// frozen at its date, so it cannot reflect a change live made afterwards -- but
-// live made no changes afterwards, it was replaced. Everything the gate
-// actually scores (layout, colour, type, spacing at three widths) is in the
-// pixels.
-// `--baseline=` is the same flag under the name the gate is quoted in, and
-// `{width}` inside it expands to this run's viewport. That placeholder is what
-// makes `--widths` usable: the width guard further down refuses a capture whose
-// width is not the run's, so one hardcoded path across three widths means two
-// of the three children refuse and only the matching one produces a number.
-//
-// AND SINCE 13.10.2026 A BARE RUN HAS A REFERENCE. The default used to be the
-// live navigation, which refuses (exit 5) on every page, so the command quoted
-// in CLAUDE.md produced a REFUSED row and no number. The owner's decision in
-// KEN-8 is that the reference is the Electro template, frozen: a run that names
-// no reference gets the page's capture from scripts/parity-baseline.mjs. An
-// explicit `--live=<url>` still navigates, and an explicit `--baseline=` or
-// `--live-png=` still wins. cart and checkout have no default capture and keep
-// refusing until one is made.
-const LIVE_PNG =
-  defaultBaselineFor(page, {
-    live: argOf('live', null),
-    livePng: argOf('live-png', null) ?? argOf('baseline', null),
-  })?.replaceAll('{width}', String(VIEW.width)) ?? null
 const LOCAL = process.env.LOCAL_BASE ?? 'http://localhost:3000'
 const LIVE_HOME = 'https://kenyonexpress.co.il/'
 const LIVE_PRODUCT = 'https://kenyonexpress.co.il/product/מוצר-לדוגמא/'
@@ -328,7 +210,15 @@ await ctx.addCookies([
 ])
 
 let liveUrl = argOf('live', null)
-let mineUrl = argOf('mine', null)
+// `--live-url=` is the goal queue's name for the SERVER UNDER TEST, i.e. our
+// build, while `--live=` above is the gate's name for the REFERENCE. Opposite
+// words for opposite sides; see compare-args.mjs. Said aloud so the console
+// shows which side the URL went to.
+let mineUrl = argOf('mine', null) ?? ARGS.underTest
+if (ARGS.underTest)
+  console.log(
+    `--live-url=${ARGS.underTest} is the page under test (ours); the reference is unchanged`,
+  )
 
 if (page === 'home') {
   liveUrl ??= REFERENCE('ke_live_home.html', LIVE_HOME)
@@ -1240,7 +1130,16 @@ const runShot = (side) => `refs/.run-${process.pid}-${side}.png`
 // dead runs on 2026-09-08 left six PASS rows from the day before standing as
 // the gate's latest word. See appendParityFailure in parity-log.mjs.
 try {
-  await shoot(liveUrl, runShot('live'), 'live')
+  if (ARGS.baseline) {
+    // A frozen reference, by request. No archive shot, no load shortfall to
+    // report, and the ledger row says so (COMPARE_NOTES below).
+    copyFileSync(ARGS.baseline.path, runShot('live'))
+    console.log(
+      `${runShot('live')} copied from ${ARGS.baseline.path} (frozen baseline, not a fresh shot of the archive)`,
+    )
+  } else {
+    await shoot(liveUrl, runShot('live'), 'live')
+  }
   await shoot(mineUrl, runShot('mine'), 'mine')
 } catch (err) {
   appendParityFailure({
@@ -1466,7 +1365,12 @@ await new Promise((resolvePromise, reject) => {
       // row, after a caller's own note rather than instead of it. A row saying
       // 30.26% with nothing beside it has been read as our layout's divergence
       // before, and the reference was missing 57 scripts at the time.
-      COMPARE_NOTES: [process.env.COMPARE_NOTES, `ref ${loadShortfall(missedLoads.live)}`]
+      COMPARE_NOTES: [
+        process.env.COMPARE_NOTES,
+        ARGS.baseline
+          ? `baseline ${ARGS.baseline.name} (frozen PNG, ${statSync(ARGS.baseline.path).mtime.toISOString()}), not a fresh archive shot`
+          : `ref ${loadShortfall(missedLoads.live)}`,
+      ]
         .filter(Boolean)
         .join('; '),
     },

@@ -26,6 +26,12 @@ body {
   color: var(--color-foreground);
   font-family: var(--font-sans), Arial, sans-serif;
   direction: rtl;
+  /* F43, MEASURED 2026-10-21: live's computed letter-spacing is -0.14px on
+     every element probed at 380, 768 and 1440 (deals card titles, prices,
+     category links), inherited from its body. Ours was `normal`, so each
+     Hebrew line ran about 1% wider than live's and long card titles wrapped
+     one word early. The token is in tokens.css next to the line heights. */
+  letter-spacing: var(--tracking-body);
 }
 
 /* THE TRUST BAR'S FIVE ITEMS DO NOT FIT ONE ROW ON THE NARROWEST PHONES.

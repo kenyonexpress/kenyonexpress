@@ -25,6 +25,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
+    "compare": "node scripts/compare.mjs",
     "seed:test": "node scripts/seed-test-data.mjs",
     "migrations:manifest": "node scripts/build-migration-manifest.mjs",
     "db:types": "supabase gen types typescript --linked --schema public > src/types/database.ts",

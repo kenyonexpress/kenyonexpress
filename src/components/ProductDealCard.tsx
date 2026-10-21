@@ -3,6 +3,7 @@ import { KE_LIVE_DEAL_TABLET_SQUARE } from '@/lib/ke-live-deals-data'
 import { shekelsFromIlsRounded } from '@/lib/money-format'
 import Image from 'next/image'
 import Link from 'next/link'
+import styles from './ProductDealCard.module.css'
 
 /** Same shape as `Product` on ProductCard; kept local so this file never
  *  imports the Client Component module (which would pull it into the server
@@ -135,16 +136,18 @@ export default function ProductDealCard({ product }: { product: Product }) {
         links from [21]: the href remains, the speculative fetch does not.
 
         TITLE TYPE IS MEASURED, NOT DERIVED (F43, 2026-10-21). Live's h2 is
-        22px / 26.4px / weight 500 / letter-spacing -0.14px with an 8px bottom
-        margin at 380, 768 and 1440; the wrap's 64px min-height holds two such
-        lines (60.8). The rule is `.p_con__title` in product-card-deals.css,
-        asserted by product-card-deals.test.ts. Do not add a `text-*` utility
+        22px / 26.4px / weight 500 with an 8px bottom margin at 380, 768 and
+        1440, over the body's -0.14px letter-spacing; the wrap's 64px
+        min-height holds two such lines (60.8). The shared base is
+        `.p_con__title` in src/styles/product-card-deals.css; the deal card's
+        own line, weight and margin are `styles.title` beside this file, and
+        product-card-deals.test.ts asserts both. Do not add a `text-*` utility
         here: ProductCard's `text-product-title` is the 25px product PAGE
         title and would override the measured card value.
       */}
       <div className="p_con__title-wrap">
         <Link href={`/product/${product.slug}`} className="hover:underline" prefetch={false}>
-          <h2 className="p_con__title">{product.name_he}</h2>
+          <h2 className={`p_con__title ${styles.title}`}>{product.name_he}</h2>
         </Link>
       </div>
 
