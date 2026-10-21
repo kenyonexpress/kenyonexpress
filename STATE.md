@@ -2,6 +2,25 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ F41 (Session: 2026-10-21 02:55-03:12 UTC, business registration number, DONE)
+
+**Goal:** Add `BUSINESS_REGISTRATION_NUMBER='033798513'` to `src/lib/legal-entity.ts` and reference it in the purchase-confirmation email, the invoice PDF generator, the footer legal line, the terms, privacy and returns pages, and the supplier-apply click-wrap footer. Path-specific add, commit `F41 business reg 033798513`, push.
+
+**Result:** DONE, commit 046f1ba62 on `autopilot`, pushed. `src/lib/legal-entity.ts` exports the number, `LEGAL_ENTITY_NAME`, `BUSINESS_REGISTRATION_LABEL` (מספר עוסק), `businessRegistrationLine()`, `legalEntityLine()` and an Israeli check-digit validator that the test runs against the constant (sum 40, valid). Six surfaces import it: `buildOrderPaidEmail` (HTML footer and text body), `CreateDocumentInput.issuerRegistrationNumber` which the Cardcom adapter appends to `InvoiceHead.Comments` after the order reference and `issueInvoice` sets on every document, `SiteFooter` desktop and mobile copyright rows, `LegalContactBlock` (rendered by `/terms-and-conditions`, `/privacy-policy`, `/refund_returns`, and by `/accessibility` and `/cookie-policy` as a consequence), and `SupplierLeadForm` as a counterparty line inside the agreement fieldset. 15 files, 81 insertions. New suites: `legal-entity.test.ts`, `LegalContactBlock.test.tsx`, `SupplierLeadForm.test.tsx`; assertions added to SiteFooter, templates, cardcom and invoices suites. Touched-area vitest 11 files 185 tests green.
+
+**Gates:** `pnpm type-check` exit 0, `pnpm lint` exit 0 (biome 1707 files, tokens, copy and asset gates clean), `pnpm build` exit 0 (same partner API prerender bail-outs and `*_read_failed` warnings as every pass).
+
+**החלטות שהתקבלו לבד:**
+- Label is `מספר עוסק`, not `ח.פ.`: 033798513 is a nine-digit ID-format number that passes the ID checksum, so it is a dealer number of a sole trader, not a company registration (those start 51x). The label fits either מורשה or פטור.
+- The supplier line sits inside the fieldset but outside `SUPPLIER_AGREEMENT_CLAUSES`, so the agreement hash and `SUPPLIER_AGREEMENT_VERSION` are unchanged and no stored lead is re-asked to accept.
+- The invoice number goes in the document remarks via a new optional input field rather than by rewriting `reference`, which reconciliation searches by. The Cardcom letterhead itself is terminal configuration, outside the repo.
+- `/terms`, `/privacy`, `/returns` under `(legal)/legal/*` are 308 redirects to the store paths; the store pages render the same docs plus `LegalContactBlock`, so the number is on the destination page, not on a redirect.
+- Footer text grew by one short 12px phrase on both rows; the UI parity gate was not re-run for a text-only change this size (worktree lacks `refs/live-assets`, and the last mobile gate recheck passed on 20.10 23:36 UTC).
+- `claude/STATE.md` named by the goal does not exist on `autopilot` (it lives on `main`); the canonical root `STATE.md` carries this block, and a thin `claude/STATE.md` pointer was recreated per the missing-file rule.
+
+**המשך מ:** F41 DONE. Next: head of `~/ke-goals/queue.txt`.
+
+
 ## ✅ MAINTENANCE_LOOP_5 (Session: 2026-10-21 01:06-01:20 UTC, cron status check, sixth pass, MEASURED, 🔴 ALERT unchanged)
 
 **Goal:** Check all cron routes last-run timestamp via Vercel MCP get_runtime_logs. Alert in docs/CRON-STATUS.md if any route stale over 24h. Commit as chore ops cron status check. Push.
