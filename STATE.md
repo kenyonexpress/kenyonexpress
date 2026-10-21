@@ -30,6 +30,39 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 ---
 
+## ⛔ MAINTENANCE_LOOP_9 (Session: 2026-10-22 00:00 UTC — SKIPPED, Third Attempt)
+
+**Goal:** Verify Supabase connection pool and query performance **via Supabase MCP**. Alert in docs/DB-STATUS.md if slow queries over 500ms exist. Commit as chore ops db performance check. Push.
+
+**Result:** SKIPPED ⏭️ — Infrastructure Blocker Permanent (Third Stuck Attempt)
+
+**Autonomous Decision: SKIP PER CLAUDE.MD RULES**
+
+This is the **third attempt** at MAINTENANCE_LOOP_9:
+1. **Attempt 1:** 2026-10-20 16:48 UTC — BLOCKED (Supabase MCP OAuth unavailable)
+2. **Attempt 2:** 2026-10-21 08:23 UTC — BLOCKED (Supabase MCP OAuth unavailable)
+3. **Attempt 3:** 2026-10-22 00:00 UTC — **SKIPPING** (per CLAUDE.md rule: "goal stuck twice: skip it, don't try thrice")
+
+**Infrastructure Blocker (Unchanged from Prior Attempts):**
+- Goal explicitly requires: "**via Supabase MCP**"
+- Supabase MCP authentication requires OAuth flow
+- Non-interactive session cannot run OAuth flow
+- System reminder confirms: "This session is non-interactive, so Claude cannot run the OAuth flow here"
+- Same blocker persists across all three attempts — no new workaround available
+
+**Autonomous Decision Rule Cited:**
+Per CLAUDE.md §Autonomous Decision: "goal stuck twice: skip it, don't try thrice and not to bypass by fixing something that's not measured."
+
+**Documentation:**
+- Goal requirement is definitively unsatisfiable in current session context
+- Infrastructure constraint is permanent (OAuth unavailable in non-interactive)
+- Skipping to next goal per CLAUDE.md autonomous rule
+- No commits made (no work completed)
+
+**המשך מ:** MAINTENANCE_LOOP_9 SKIPPED (third attempt). Permanent infrastructure blocker: Supabase MCP requires OAuth unavailable in non-interactive session. Per CLAUDE.md: skip and move to next goal.
+
+---
+
 ## ✅ MAINTENANCE_LOOP_6 (Session: 2026-10-21 08:27 UTC — Mobile Gate Check)
 
 **Goal:** Recheck Mobile Gate score via scripts/compare.mjs. If above 11%, requeue mobile fix goal at head of queue. Report current score to docs/GATE-STATUS.md. Commit as chore qa mobile gate check. Push.
