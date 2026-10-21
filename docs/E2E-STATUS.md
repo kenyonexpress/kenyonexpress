@@ -1,7 +1,7 @@
 # E2E Test Status
 
-**Last run:** 2026-10-21 11:05 UTC, run 13, MAINTENANCE_LOOP_4 tenth cycle
-**Base commit:** f1bf780f2 on `autopilot` (every fix of the ninth cycle included, 13021b20c)
+**Last run:** 2026-10-21 12:28 UTC, run 14, MAINTENANCE_LOOP_4 eleventh cycle
+**Base commit:** e372b2560 on `autopilot` (no `src/` or `e2e/` change since 13021b20c)
 **Recipe:** `CARDCOM_USE_MOCK=true CHECKOUT_ENABLED=true NEXT_PUBLIC_APP_URL=http://localhost:3417 pnpm build`,
 then `pnpm start` on port 3417 with the same three variables, then
 `E2E_BASE_URL=http://localhost:3417 E2E_FORWARDED_FOR_PREFIX=10.44.94 pnpm exec playwright test --retries=1 --reporter=list,json`.
@@ -26,6 +26,7 @@ when it failed and then passed on a retry; a case that failed on every attempt i
 | 11, d584c77b0, 2026-10-21 05:42 UTC, `--retries=1`, prefix 10.44.86, build r7OmwpfAttluHrQ7vq4dY | 680 | 660 | 13 | 0 | 7 | 15.9 min |
 | 12, d195ad97f, 2026-10-21 08:58 UTC, `--retries=1`, prefix 10.44.87, build CGToFZGca0ONVpVuw-rNa | 680 | 660 | 13 | 0 | 7 | 18.0 min |
 | 13, f1bf780f2, 2026-10-21 10:43 UTC, `--retries=1`, prefix 10.44.94, build XChiPmx_8z7lI11sfYzPl | 680 | 661 | 12 | 0 | 7 | 21.6 min |
+| 14, e372b2560, 2026-10-21 12:06 UTC, `--retries=1`, prefix 10.44.95, build MhlxtWtJ9xHUL43bgs5yY (cold) | 680 | 661 | 12 | 0 | 7 | 21.6 min |
 
 Run 9 is the full run on this cycle's fix and run 8 is the same tree before it. Nothing
 under `src/` or `e2e/` changed between 0d2462751 and 61e3d855f (STATE.md and docs only),
@@ -94,6 +95,36 @@ were unlinked at 10:43 UTC and the `supabase.timeout` count for the server is no
 (runs 9, 11 and 12 measured 0). The JSON reporter writes after the wipe and is intact
 (917 KB, 680 cases); the per-case screenshots, traces and `error-context.md` snapshots are
 intact too and are what the class table below cites. Future runs log to `/tmp` or `logs/`.
+
+Run 14 (MAINTENANCE_LOOP_4 eleventh cycle) re-measures the run 13 tree: `git log
+f1bf780f2..e372b2560 -- src e2e` is empty (STATE.md, docs and logs only between them), so the
+suite ran on the same product and the same specs, on a cold build (`.next/cache/turbopack`
+moved aside first, BUILD_ID MhlxtWtJ9xHUL43bgs5yY, `pnpm gate:chunks` clean on 243 pages
+before the server started; the 3417 listener verified by PID 97749 and working directory, the
+BUILD_ID read back from the served HTML, stopped by PID after). 680 cases, 661 passed,
+12 failed, 0 flaky, 7 skipped, 21.6 minutes (JSON reporter: start 12:06:50Z, duration
+1,295,272 ms; run 13 was 1,296,971 ms). The counts are run 13's to the case and the 12 reds
+are run 13's 12, every one red on both attempts, every one at one of the two laptop gaps
+(classes A and C below). This time the build log, the server log and the list output went to
+`/tmp/ke-e2e14/` (not `test-results/`), so the server-side count run 13 lost is back:
+**1 `supabase.timeout`** (12:24:24Z, a `products` read over 10 s; no case is red for it),
+2 HTTP 5xx in the whole run, both the phone-code send (class C), 9 `purchase` events against
+18 `begin_checkout` (nine paid orders in the money files, among them the four coupon refund
+journeys that then stop at class A, with 9 `invoices.issued`), and 2 `voucher_redeemed`.
+The 20-pass shortfall of run 10 has not recurred in four consecutive runs on this backend.
+
+## Flaky (run 14)
+
+None. All 661 passes were first-attempt passes, the 12 reds failed on both attempts, and the
+JSON reporter's `flaky` count is 0, as in runs 7 to 13. Nothing to fix under the "new flaky
+tests" heading, and nothing under `src/` or `e2e/` changed this cycle.
+
+## Failures by class (run 14, 12)
+
+| # | Class | Cases | Evidence | Kind |
+| -: | --- | ---: | --- | --- |
+| A | Admin fixture cannot sign in | 10 | admin-product-crud, all three cases on both projects (20 to 21 s per attempt), plus admin-refund and admin-refund-to-wallet on both projects (58 to 67 s per attempt, after the customer leg paid: `purchase` and `invoices.issued` for each): `page.waitForURL` 20 s at the admin sign-in on every attempt, and all 20 `error-context.md` snapshots (first attempt and retry, 10 cases) carry "כתובת אימייל או סיסמה שגויים" under the password field. Unchanged from runs 11 to 13: `.env.local` carries `E2E_ADMIN_EMAIL` only and the default password is refused by the hosted project | environment |
+| C | Shipping phone code cannot be sent from this laptop | 2 | physical-purchase. chromium, both attempts, 40 s: "the code step never appeared", the snapshots show "לא הצלחנו לשלוח קוד" on the address step. mobile-chrome, both attempts: the 120 s test timeout on the one-page layout's address step with "קוד חד-פעמי בוואטסאפ" on screen and "מיקוד *" still required. Server log: `email.refused` 401 "API key is invalid" from `/api/checkout/phone-otp/send` twice (12:15:29Z and the retry), each answered 502 to the page; the same `RESEND_API_KEY` refusal also logs 9 times from `checkout.begin` without failing those journeys | environment |
 
 ## Flaky (run 13)
 
@@ -362,6 +393,14 @@ and held again in runs 8 and 9: zero reds in classes 13 and 14, zero flaky cases
   without it the second run of the hour reports the limiter as 14 cart failures.
 
 ## Gates after the changes
+
+Run 14 tree (e372b2560 plus this doc and STATE.md, nothing under `src/`): `pnpm typecheck`
+exit 0, `pnpm lint` exit 0 (biome, tokens, copy and asset gates clean). The build gate is the
+cold mock build the suite ran against, `CARDCOM_USE_MOCK=true CHECKOUT_ENABLED=true
+NEXT_PUBLIC_APP_URL=http://localhost:3417 pnpm build` exit 0, BUILD_ID MhlxtWtJ9xHUL43bgs5yY,
+`pnpm gate:chunks` clean on 243 prerendered pages. The previous turbopack cache was moved to
+`/tmp/ke-e2e14/turbopack-cache-aside`, not deleted. No spec or product change this cycle, so
+no vitest scope to re-run.
 
 Run 12 tree: `pnpm typecheck` exit 0, `pnpm lint` exit 0 (biome 1726 files, tokens, copy and
 asset gates clean) on the final working tree. vitest on the touched areas:
