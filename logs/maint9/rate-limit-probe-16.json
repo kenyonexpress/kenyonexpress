@@ -1,0 +1,430 @@
+{
+  "ts": "2026-10-21T18:43:45Z",
+  "window": "17:19 to 18:42 UTC, sixteenth pass follow-up on check_rate_limit (watch item closed at 15:58; second confirmation window)",
+  "probes": {
+    "rate_limits_table": [
+      {
+        "relname": "rate_limits",
+        "n_live_tup": 748,
+        "n_dead_tup": 57,
+        "n_tup_ins": 761,
+        "n_tup_upd": 13779,
+        "n_tup_hot_upd": 10780,
+        "n_tup_del": 10,
+        "seq_scan": 29,
+        "idx_scan": 14636,
+        "last_autovacuum": "2026-10-21 16:24:38.823173+00",
+        "last_autoanalyze": "2026-10-21 17:46:42.724865+00",
+        "autovacuum_count": 92,
+        "autoanalyze_count": 192,
+        "total": "336 kB"
+      }
+    ],
+    "settings": [
+      {
+        "name": "autovacuum_analyze_scale_factor",
+        "setting": "0.1"
+      },
+      {
+        "name": "autovacuum_analyze_threshold",
+        "setting": "50"
+      },
+      {
+        "name": "autovacuum_vacuum_scale_factor",
+        "setting": "0.2"
+      },
+      {
+        "name": "autovacuum_vacuum_threshold",
+        "setting": "50"
+      },
+      {
+        "name": "log_min_duration_statement",
+        "setting": "-1"
+      },
+      {
+        "name": "pg_stat_statements.track",
+        "setting": "top"
+      },
+      {
+        "name": "track_functions",
+        "setting": "none"
+      },
+      {
+        "name": "track_io_timing",
+        "setting": "off"
+      }
+    ],
+    "function_stats": [],
+    "check_rate_limit_row": [
+      {
+        "calls": 11268,
+        "total_ms": "118672.1",
+        "min_ms": "0.15",
+        "mean_ms": "10.53",
+        "max_ms": "1137.4",
+        "stddev_ms": "22.4835",
+        "shared_blks_hit": 1200563,
+        "shared_blks_read": 0,
+        "shared_blks_dirtied": 10926,
+        "shared_blks_written": 28,
+        "blk_read_ms": "0.0",
+        "blk_write_ms": "0.0",
+        "wal_records": 46704,
+        "wal_bytes": "32088509",
+        "stats_since": "2026-08-31 18:44:20.492362+00",
+        "query": "WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"p_key\", \"p_max_attempts\", \"p_window_seconds\" FROM json_to_record(pgrst_payload.json_d"
+      },
+      {
+        "calls": 3249,
+        "total_ms": "8096.5",
+        "min_ms": "0.16",
+        "mean_ms": "2.49",
+        "max_ms": "63.7",
+        "stddev_ms": "5.4731",
+        "shared_blks_hit": 229220,
+        "shared_blks_read": 4,
+        "shared_blks_dirtied": 647,
+        "shared_blks_written": 5,
+        "blk_read_ms": "0.0",
+        "blk_write_ms": "0.0",
+        "wal_records": 7319,
+        "wal_bytes": "1005141",
+        "stats_since": "2026-07-21 13:52:19.57086+00",
+        "query": "WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"p_key\", \"p_max_attempts\", \"p_window_seconds\" FROM json_to_record(pgrst_payload.json_d"
+      },
+      {
+        "calls": 9,
+        "total_ms": "1.6",
+        "min_ms": "0.12",
+        "mean_ms": "0.17",
+        "max_ms": "0.3",
+        "stddev_ms": "0.0618",
+        "shared_blks_hit": 122,
+        "shared_blks_read": 0,
+        "shared_blks_dirtied": 2,
+        "shared_blks_written": 0,
+        "blk_read_ms": "0.0",
+        "blk_write_ms": "0.0",
+        "wal_records": 79,
+        "wal_bytes": "10010",
+        "stats_since": "2026-09-21 14:38:07.102219+00",
+        "query": "-- 224_grant_recent_search_execute.sql\n--\n-- One GRANT. Without it the recent-search list can never have anything in it.\n--\n-- ========================================================================="
+      },
+      {
+        "calls": 6,
+        "total_ms": "22.7",
+        "min_ms": "0.33",
+        "mean_ms": "3.78",
+        "max_ms": "19.4",
+        "stddev_ms": "7.0031",
+        "shared_blks_hit": 229,
+        "shared_blks_read": 0,
+        "shared_blks_dirtied": 4,
+        "shared_blks_written": 0,
+        "blk_read_ms": "0.0",
+        "blk_write_ms": "0.0",
+        "wal_records": 34,
+        "wal_bytes": "3764",
+        "stats_since": "2026-07-21 14:31:09.628937+00",
+        "query": "WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"p_key\", \"p_max_attempts\", \"p_window_seconds\" FROM json_to_record(pgrst_payload.json_d"
+      },
+      {
+        "calls": 1,
+        "total_ms": "0.1",
+        "min_ms": "0.14",
+        "mean_ms": "0.14",
+        "max_ms": "0.1",
+        "stddev_ms": "0.0000",
+        "shared_blks_hit": 7,
+        "shared_blks_read": 0,
+        "shared_blks_dirtied": 1,
+        "shared_blks_written": 0,
+        "blk_read_ms": "0.0",
+        "blk_write_ms": "0.0",
+        "wal_records": 4,
+        "wal_bytes": "1049",
+        "stats_since": "2026-08-11 22:06:24.599418+00",
+        "query": "REVOKE EXECUTE ON FUNCTION public.check_rate_limit(text, integer, integer) FROM PUBLIC"
+      }
+    ],
+    "rate_limits_indexes": [
+      {
+        "indexrelname": "rate_limits_key_key",
+        "idx_scan": 14629,
+        "size": "64 kB"
+      },
+      {
+        "indexrelname": "rate_limits_window_idx",
+        "idx_scan": 5,
+        "size": "40 kB"
+      },
+      {
+        "indexrelname": "rate_limits_key_idx",
+        "idx_scan": 2,
+        "size": "64 kB"
+      },
+      {
+        "indexrelname": "rate_limits_pkey",
+        "idx_scan": 0,
+        "size": "56 kB"
+      }
+    ],
+    "activity_wait_events": [
+      {
+        "state": "idle",
+        "wait_event_type": "Client",
+        "wait_event": "ClientRead",
+        "n": 13
+      },
+      {
+        "state": "active",
+        "wait_event_type": null,
+        "wait_event": null,
+        "n": 1
+      }
+    ],
+    "new_pgss_rows_since_1719": [
+      {
+        "stats_since": "2026-10-21 17:21:09.916096+00",
+        "calls": 1,
+        "mean_ms": "28.8",
+        "max_ms": "28.8",
+        "rolname": "postgres",
+        "query": "select stats_since, calls, round(mean_exec_time::numeric,$1) as mean_ms, round(max_exec_time::numeric,$2) as max_ms, r.rolname, left(query,$3) as query from ext"
+      },
+      {
+        "stats_since": "2026-10-21 17:21:11.836646+00",
+        "calls": 1,
+        "mean_ms": "25.3",
+        "max_ms": "25.3",
+        "rolname": "postgres",
+        "query": "select calls, round(total_exec_time::numeric,$1) as total_ms, round(mean_exec_time::numeric,$2) as mean_ms, round(max_exec_time::numeric,$3) as max_ms, round(st"
+      },
+      {
+        "stats_since": "2026-10-21 17:21:13.719882+00",
+        "calls": 1,
+        "mean_ms": "0.3",
+        "max_ms": "0.3",
+        "rolname": "postgres",
+        "query": "select indexrelname, idx_scan, idx_tup_read from pg_stat_user_indexes where relname=$1 order by idx_scan desc -- source: POST /v1/projects/:ref/database/query -"
+      },
+      {
+        "stats_since": "2026-10-21 17:21:15.750046+00",
+        "calls": 1,
+        "mean_ms": "0.6",
+        "max_ms": "0.6",
+        "rolname": "postgres",
+        "query": "select relname, n_live_tup, n_dead_tup, last_autovacuum, last_autoanalyze, autovacuum_count from pg_stat_user_tables where relname in ($1,$2,$3,$4,$5) order by "
+      },
+      {
+        "stats_since": "2026-10-21 17:22:54.643532+00",
+        "calls": 1,
+        "mean_ms": "63.2",
+        "max_ms": "63.2",
+        "rolname": "postgres",
+        "query": "select calls, round(mean_exec_time::numeric,$1) as mean_ms, round(max_exec_time::numeric,$2) as max_ms, round(total_exec_time::numeric,$3) as total_ms from exte"
+      },
+      {
+        "stats_since": "2026-10-21 18:16:02.919409+00",
+        "calls": 1,
+        "mean_ms": "3.8",
+        "max_ms": "3.8",
+        "rolname": "postgres",
+        "query": "select j.jobid, j.jobname, j.schedule, j.active, count(d.runid) filter (where d.status=$1) as succeeded, count(d.runid) filter (where d.status<>$2) as other, ma"
+      }
+    ],
+    "app_spike_rows_unrounded": [
+      {
+        "calls": 1513,
+        "total_ms": "6118.8",
+        "mean_ms": "4.044",
+        "max_ms": "1159.2",
+        "stddev_ms": "31.4526",
+        "query": "WITH pgrst_source AS (UPDATE \"public\".\"carts\" SET \"expires_at\" = \"pgrst_body\".\"expires_at\""
+      },
+      {
+        "calls": 11268,
+        "total_ms": "118672.1",
+        "mean_ms": "10.532",
+        "max_ms": "1137.4",
+        "stddev_ms": "22.4835",
+        "query": "WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_p"
+      },
+      {
+        "calls": 21818,
+        "total_ms": "118718.8",
+        "mean_ms": "5.441",
+        "max_ms": "1013.8",
+        "stddev_ms": "15.7001",
+        "query": "WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_p"
+      },
+      {
+        "calls": 6998,
+        "total_ms": "38443.6",
+        "mean_ms": "5.494",
+        "max_ms": "883.6",
+        "stddev_ms": "17.3200",
+        "query": "WITH pgrst_source AS (INSERT INTO \"public\".\"carts\"(\"expires_at\", \"items\", \"session_id\") SE"
+      },
+      {
+        "calls": 887,
+        "total_ms": "41107.9",
+        "mean_ms": "46.345",
+        "max_ms": "857.1",
+        "stddev_ms": "65.9904",
+        "query": "WITH pgrst_source AS (SELECT \"pgrst_call\".* FROM (SELECT $1 AS json_data) pgrst_payload, L"
+      },
+      {
+        "calls": 2229,
+        "total_ms": "35428.9",
+        "mean_ms": "15.895",
+        "max_ms": "525.3",
+        "stddev_ms": "21.2338",
+        "query": "WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_p"
+      },
+      {
+        "calls": 2055,
+        "total_ms": "33788.8",
+        "mean_ms": "16.442",
+        "max_ms": "515.6",
+        "stddev_ms": "34.8566",
+        "query": "WITH pgrst_source AS ( SELECT \"public\".\"analytics_events\".\"session_id\", \"public\".\"analytic"
+      }
+    ],
+    "invoices_index_scans": [
+      {
+        "indexrelname": "invoices_pkey",
+        "idx_scan": 139,
+        "idx_tup_read": 176
+      },
+      {
+        "indexrelname": "idx_invoices_due",
+        "idx_scan": 111,
+        "idx_tup_read": 291
+      },
+      {
+        "indexrelname": "invoices_order_doc_status_idx",
+        "idx_scan": 69,
+        "idx_tup_read": 35
+      },
+      {
+        "indexrelname": "idx_invoices_order",
+        "idx_scan": 25,
+        "idx_tup_read": 50
+      },
+      {
+        "indexrelname": "invoices_idempotency_key_key",
+        "idx_scan": 2,
+        "idx_tup_read": 3
+      },
+      {
+        "indexrelname": "idx_invoices_payment_id",
+        "idx_scan": 0,
+        "idx_tup_read": 0
+      },
+      {
+        "indexrelname": "invoices_series_internal_number_key",
+        "idx_scan": 0,
+        "idx_tup_read": 0
+      }
+    ],
+    "vacuum_moves": [
+      {
+        "relname": "audit_log",
+        "n_live_tup": 3422,
+        "n_dead_tup": 66,
+        "last_autovacuum": "2026-10-15 01:37:19.299012+00",
+        "last_autoanalyze": "2026-10-21 15:13:36.112575+00",
+        "autovacuum_count": 2
+      },
+      {
+        "relname": "carts",
+        "n_live_tup": 4413,
+        "n_dead_tup": 518,
+        "last_autovacuum": "2026-10-16 22:18:22.900355+00",
+        "last_autoanalyze": "2026-10-21 16:29:39.242742+00",
+        "autovacuum_count": 8
+      },
+      {
+        "relname": "invoices",
+        "n_live_tup": 137,
+        "n_dead_tup": 67,
+        "last_autovacuum": "2026-10-15 03:00:23.033161+00",
+        "last_autoanalyze": "2026-10-21 15:14:35.573971+00",
+        "autovacuum_count": 2
+      },
+      {
+        "relname": "notification_outbox",
+        "n_live_tup": 434,
+        "n_dead_tup": 25,
+        "last_autovacuum": "2026-10-02 08:45:48.643769+00",
+        "last_autoanalyze": "2026-10-21 17:57:43.328512+00",
+        "autovacuum_count": 6
+      },
+      {
+        "relname": "products",
+        "n_live_tup": 82,
+        "n_dead_tup": 64,
+        "last_autovacuum": "2026-10-21 09:20:18.762709+00",
+        "last_autoanalyze": "2026-10-21 17:47:42.862677+00",
+        "autovacuum_count": 9
+      },
+      {
+        "relname": "products",
+        "n_live_tup": 0,
+        "n_dead_tup": 0,
+        "last_autovacuum": null,
+        "last_autoanalyze": null,
+        "autovacuum_count": 0
+      },
+      {
+        "relname": "rate_limits",
+        "n_live_tup": 748,
+        "n_dead_tup": 57,
+        "last_autovacuum": "2026-10-21 16:24:38.823173+00",
+        "last_autoanalyze": "2026-10-21 17:46:42.724865+00",
+        "autovacuum_count": 92
+      },
+      {
+        "relname": "users",
+        "n_live_tup": 14,
+        "n_dead_tup": 10,
+        "last_autovacuum": "2026-10-21 13:43:31.161606+00",
+        "last_autoanalyze": "2026-10-21 05:07:06.909198+00",
+        "autovacuum_count": 13
+      },
+      {
+        "relname": "vouchers",
+        "n_live_tup": 0,
+        "n_dead_tup": 0,
+        "last_autovacuum": null,
+        "last_autoanalyze": null,
+        "autovacuum_count": 0
+      },
+      {
+        "relname": "vouchers",
+        "n_live_tup": 123,
+        "n_dead_tup": 6,
+        "last_autovacuum": "2026-10-21 09:50:20.278319+00",
+        "last_autoanalyze": "2026-10-21 12:12:26.888024+00",
+        "autovacuum_count": 1
+      }
+    ],
+    "release_expired_row": [
+      {
+        "calls": 365,
+        "mean_ms": "90.9",
+        "max_ms": "173.6",
+        "total_ms": "33196",
+        "query": "WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT \"public\".\"release_expired_order_discounts\"() pgrst_sca"
+      },
+      {
+        "calls": 1,
+        "mean_ms": "4.1",
+        "max_ms": "4.1",
+        "total_ms": "4",
+        "query": "CREATE OR REPLACE FUNCTION public.release_expired_order_discounts() RETURNS integer LANGUAGE plpgsql SECURITY DEFINER SE"
+      }
+    ]
+  }
+}

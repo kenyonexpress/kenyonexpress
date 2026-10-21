@@ -1,9 +1,9 @@
 # Database Status Report: Connection Pool and Query Performance
 
-**Last Updated:** 2026-10-21 17:19 UTC (MAINTENANCE_LOOP_9 fifteenth measured pass, through the Supabase MCP)
-**Previous Run:** 2026-10-21 15:58 UTC (fourteenth measured pass, `logs/maint9/result-14.json`. Before it: 14:34 UTC the thirteenth (`result-13.json`), 13:07 UTC the twelfth (`result-12.json`), 11:45 UTC the eleventh (`result-11.json`), 10:22 UTC the tenth (`result-10.json`), 08:14 UTC the ninth (`result-09.json`), 02:51 UTC the eighth (its header once said "10:00 UTC", the local wall clock; `result-08.json` carries the true `ts` of 02:51:00Z), 01:59 UTC the seventh, 01:53 UTC the sixth, 23:56 UTC the fifth, 22:45 UTC the fourth, 21:24 UTC the third, 18:21 UTC the second, 16:24 UTC the first, and the 13:23 UTC report before it was code analysis only)
+**Last Updated:** 2026-10-21 18:42 UTC (MAINTENANCE_LOOP_9 sixteenth measured pass, through the Supabase MCP)
+**Previous Run:** 2026-10-21 17:19 UTC (fifteenth measured pass, `logs/maint9/result-15.json`. Before it: 15:58 UTC the fourteenth (`result-14.json`), 14:34 UTC the thirteenth (`result-13.json`), 13:07 UTC the twelfth (`result-12.json`), 11:45 UTC the eleventh (`result-11.json`), 10:22 UTC the tenth (`result-10.json`), 08:14 UTC the ninth (`result-09.json`), 02:51 UTC the eighth (its header once said "10:00 UTC", the local wall clock; `result-08.json` carries the true `ts` of 02:51:00Z), 01:59 UTC the seventh, 01:53 UTC the sixth, 23:56 UTC the fifth, 22:45 UTC the fourth, 21:24 UTC the third, 18:21 UTC the second, 16:24 UTC the first, and the 13:23 UTC report before it was code analysis only)
 **Scope:** Supabase connection pool, pooler configuration, pg_stat_statements, performance advisors
-**Evidence:** `logs/maint9/result-15.json` (every probe row of this pass; `result-14.json`, `result-13.json`, `result-12.json`, `result-11.json`, `result-10.json`, `result-09.json`, `result-08.json` and `result.json` are the eight passes before it), `logs/maint9/pooler.json`, `logs/maint9/pgbouncer.json`, `logs/maint9/rate-limit-probe.json` (the 01:53 UTC follow-up on the `check_rate_limit` spike), `logs/maint9/rate-limit-probe-12.json` (the 13:07 UTC follow-up on that row's stddev movement), `logs/maint9/rate-limit-probe-13.json` (the 14:34 UTC re-check), `logs/maint9/rate-limit-probe-14.json` (the 15:58 UTC re-check that closed the watch item, section 4) and `logs/maint9/rate-limit-probe-15.json` (the 17:19 UTC confirmation window, with the unrounded spike rows and the `stats_since` attribution of the new statements)
+**Evidence:** `logs/maint9/result-16.json` (every probe row of this pass; `result-15.json`, `result-14.json`, `result-13.json`, `result-12.json`, `result-11.json`, `result-10.json`, `result-09.json`, `result-08.json` and `result.json` are the nine passes before it), `logs/maint9/pooler.json`, `logs/maint9/pgbouncer.json`, `logs/maint9/rate-limit-probe.json` (the 01:53 UTC follow-up on the `check_rate_limit` spike), `logs/maint9/rate-limit-probe-12.json` (the 13:07 UTC follow-up on that row's stddev movement), `logs/maint9/rate-limit-probe-13.json` (the 14:34 UTC re-check), `logs/maint9/rate-limit-probe-14.json` (the 15:58 UTC re-check that closed the watch item, section 4), `logs/maint9/rate-limit-probe-15.json` (the 17:19 UTC confirmation window) and `logs/maint9/rate-limit-probe-16.json` (the 18:43 UTC second confirmation window, with the unrounded spike rows, the `stats_since` attribution of the new statements and the `release_expired_order_discounts` row re-read)
 **Probe:** `scripts/db-mcp-probe.mjs` (the official `@supabase/mcp-server-supabase` run locally in `--read-only` mode; see the header comment for the token recipe)
 
 ---
@@ -11,10 +11,10 @@
 ## Executive Summary
 
 **Connection pool:** healthy. 14 of 60 backends in use (23.3%), 0 lock waits, 0 statements running longer than 500 ms at probe time, 0 deadlocks since the stats reset.
-**Query performance:** no application statement averages over 500 ms. Six statements do average over 500 ms, and all six are Supabase platform traffic (dashboard, pg-meta introspection, this report's own probes). Seven application statements have a recorded spike over 500 ms with single-digit or double-digit millisecond means; none of the seven maxima moved this pass. The `check_rate_limit` watch item closed at 15:58 stayed closed: 135 new calls at a 7.5 ms window mean, stddev down from 22.67 to 22.57 ms, and the variance arithmetic in section 4 bounds the slowest call in the window at about 150 ms, the quietest window since the row was first seen. `rate_limits` was autovacuumed (16:24:38 UTC, its first vacuum since 2026-10-15, dead rows 192 to 20) and autoanalyzed (16:26:38 UTC) inside this window with no slow call, so the autoanalyze-then-spike correlation is now two for five.
+**Query performance:** no application statement averages over 500 ms. Six statements do average over 500 ms, and all six are Supabase platform traffic (dashboard, pg-meta introspection, this report's own probes). Seven application statements have a recorded spike over 500 ms with single-digit or double-digit millisecond means; none of the seven maxima moved this pass. The `check_rate_limit` watch item closed at 15:58 stayed closed for a fourth consecutive window: 135 new calls at an 8.8 ms window mean, stddev down from 22.57 to 22.48 ms, and the variance arithmetic in section 4 bounds the slowest call in the window at about 193 ms. `rate_limits` was autoanalyzed again inside this window (17:46:42 UTC, live rows 738 to 748, dead 20 to 57, no vacuum) with no slow call, so the autoanalyze-then-spike correlation is now two for six.
 **Alert status:** no alert for application queries. No application mean is near 500 ms (the worst is `search_products` at 46.3 ms), so nothing crosses the alert line this report uses (mean over 500 ms). No watch item is open.
 
-What changed since the previous report (1 hour 21 minutes earlier, 15:58 to 17:19 UTC): no new slow path appeared, and no mean moved by more than 0.1 ms. The pool is the same 14 of 60 backends, the same four clients, the same 13 idle on `ClientRead`. pg_stat_statements tracks 4,926 distinct statements (+12 since 15:58; `stats_since` dates nine of them to 15:59 UTC, the fourteenth pass's own `rate-limit-probe-14` follow-up statements through the management API, two to 16:00 UTC, one-call index-scan and `pg_stat_statements` reads by the `postgres` role from another session, and the twelfth to 16:50 UTC, a one-call `cron.job` / `cron.job_run_details` read; none over 118.4 ms, none application traffic) and grew by 28,421 calls and 13.7 s of execution time, again real application traffic: carts UPDATE +10 calls, carts INSERT +46, `available_stock` +140, `check_rate_limit` +135, `fn_record_search` +24, the products select by slug +6 and the `seo_redirects` lookup +100; `search_products`, the `analytics_events` select and `release_expired_order_discounts` had no calls in the window. The 6 platform rows over 500 ms by mean are unchanged, call for call. The application spike list remains 7 and every max is identical to the millisecond while 355 calls were added across the seven rows; the only mean that moved is `fn_record_search` (15.6 to 15.7 ms). Five stddevs moved, four of them down (carts UPDATE 31.66 to 31.56, carts INSERT 17.42 to 17.37, `available_stock` 15.76 to 15.74 and `check_rate_limit` 22.67 to 22.57 unrounded) and one up by 0.017 ms (`fn_record_search` 21.035 to 21.052 on 24 calls at a 27.2 ms window mean; the sum-of-squares delta of 26,767 ms² bounds its slowest call at 164 ms). Temp files grew by 169 and every writer is the probe's own `pg_stat_statements` scan (one more call each) or pg-meta (no application statement writes temp). Advisor counts unchanged: 1 + 14 WARN, INFO 9 + 155 + 1, and the top-15 `unused_index` rows are the same fifteen; `idx_invoices_order`, which left the list in the window before, is at 16 scans now. Database size 47 MB (unchanged); audit_log grew from 3,144 to 3,283 live rows (8,072 to 8,504 kB, the same 139-row step as the three windows before), carts from 4,323 to 4,368 live (471 to 496 dead), vouchers from 105 to 114 live, notification_outbox from 378 to 406 live, refresh_tokens from 108 to 111 live and rate_limits from 729 to 738 live with dead rows down from 192 to 20 after its autovacuum; analytics_events stayed at 2,769 live rows (no insert and no read of it in the window), products dead rows rose from 46 to 55, and `users` from 4 dead rows to 7, which dropped it out of the ten largest tables in favour of `invoices` (288 kB, 128 live, 58 dead). Pooler and pgbouncer configuration re-read from the management API and byte-identical to the stored copies (same SHA-1 of the sorted JSON).
+What changed since the previous report (1 hour 23 minutes earlier, 17:19 to 18:42 UTC): no new slow path appeared, and no mean moved by more than 0.2 ms. The pool is the same 14 of 60 backends, the same four clients, the same 13 idle on `ClientRead`. pg_stat_statements tracks 4,932 distinct statements (+6 since 17:19; `stats_since` dates five of them to 17:21 and 17:22 UTC, the fifteenth pass's own `rate-limit-probe-15` follow-up statements through the MCP server as the `postgres` role, and the sixth to 18:16 UTC, the one-call `cron.job` / `cron.job_run_details` read of the MAINTENANCE_LOOP_5 pass; none over 63.2 ms, none application traffic) and grew by 28,241 calls and 14.8 s of execution time, again real application traffic: carts UPDATE +10 calls, carts INSERT +46, `available_stock` +144, `check_rate_limit` +135, `fn_record_search` +24, the products select by slug +5 and the `seo_redirects` lookup +107; `search_products`, the `analytics_events` select and `release_expired_order_discounts` (re-read directly: still 365 calls, 90.9 ms mean, 173.6 ms max) had no calls in the window. The 6 platform rows over 500 ms by mean are unchanged, call for call. The application spike list remains 7 and every max is identical to the millisecond while 359 calls were added across the seven rows; the means that moved are carts UPDATE (4.055 to 4.044 ms), `check_rate_limit` (10.552 to 10.532 ms) and `fn_record_search` (15.694 to 15.895 ms). Five stddevs moved, four of them down (carts UPDATE 31.56 to 31.45, carts INSERT 17.37 to 17.32, `available_stock` 15.74 to 15.70 and `check_rate_limit` 22.57 to 22.48 unrounded) and one up by 0.18 ms (`fn_record_search` 21.052 to 21.234 on 24 calls at a 34.3 ms window mean; the sum-of-squares delta of 47,836 ms² bounds its slowest call at 219 ms). Temp files grew by 163 and every writer is the probe's own `pg_stat_statements` scan (one more call each) or pg-meta (no application statement writes temp). Advisor counts unchanged: 1 + 14 WARN, INFO 9 + 155 + 1, every finding identical to the 17:19 set once the `observed_at` stamp is ignored, and the top-15 `unused_index` rows are the same fifteen; `idx_invoices_order` is at 25 scans now (16 at 17:19). Database size 48 MB (47 MB at 17:19); audit_log grew from 3,283 to 3,422 live rows (8,504 to 8,896 kB, the same 139-row step as the four windows before), carts from 4,368 to 4,413 live (496 to 518 dead), vouchers from 114 to 123 live, notification_outbox from 406 to 434 live (autoanalyzed 17:57:43 UTC), refresh_tokens from 111 to 114 live, invoices from 128 to 137 live (58 to 67 dead) and rate_limits from 738 to 748 live with dead rows back up from 20 to 57; analytics_events stayed at 2,769 live rows (no insert and no read of it in the window), products dead rows rose from 55 to 64 (autoanalyzed 17:47:42 UTC) and `users` from 7 dead rows to 10, still outside the ten largest tables. The ten largest tables are the same ten, with vouchers (344 kB) now ahead of rate_limits (336 kB). Pooler and pgbouncer configuration re-read from the management API and byte-identical to the stored copies (same SHA-1 of the sorted JSON).
 
 Across the fifteen measured passes (16:24, 18:21, 21:24, 22:45, 23:56, 01:53, 01:59, 02:51, 08:14, 10:22, 11:45, 13:07, 14:34, 15:58 and 17:19 UTC) all seven application spike maxima stand: six have not moved by a single millisecond since 16:24 UTC, and the seventh (check_rate_limit) has not moved since it was first seen at 01:53 UTC, through 1,384 new calls at a 10.6 ms mean. The 13:07 variance movement in that row did not repeat in any of the three passes since, so the watch item stays closed (section 4). No alert, no fix needed.
 
@@ -56,14 +56,14 @@ The application does not use the pooler port. Every application statement arrive
 
 | Application | Role | Backends | State |
 |---|---|---|---|
-| PostgREST 14.5 | authenticator | 11 | idle (persistent pool, oldest idle 54.0 days) |
+| PostgREST 14.5 | authenticator | 11 | idle (persistent pool, oldest idle 54.1 days) |
 | postgres_exporter | supabase_admin | 1 | idle |
 | (none) | supabase_admin | 1 | idle |
 | mgmt-api | supabase_read_only_user | 1 | active (this probe) |
 
-Totals: 14 client backends of 60 (23.3%), `numbackends` 16 including platform workers. Lock waits: 0. Statements older than 500 ms still running: 0. Deadlocks: 0. Buffer cache hit: 100.00%. Every idle backend is waiting on `ClientRead` (the 17:19 follow-up, `activity_wait_events` in `rate-limit-probe-15.json`), none on a lock or IO.
+Totals: 14 client backends of 60 (23.3%), `numbackends` 16 including platform workers. Lock waits: 0. Statements older than 500 ms still running: 0. Deadlocks: 0. Buffer cache hit: 100.00%. Every idle backend is waiting on `ClientRead` (the 18:43 follow-up, `activity_wait_events` in `rate-limit-probe-16.json`), none on a lock or IO.
 
-Transactions since the database stats were created: 8,806,428 commits and 646,299 rollbacks (6.8%); since the 15:58 UTC pass, 20,047 commits and 1,471 rollbacks. The rollback share is dominated by read-only wrappers that end in ROLLBACK by design (the MCP `--read-only` mode and the management-API rehearsals in `docs/RUNBOOK.md`), not by failed application writes.
+Transactions since the database stats were created: 8,826,400 commits and 647,824 rollbacks (6.8%); since the 17:19 UTC pass, 19,972 commits and 1,525 rollbacks. The rollback share is dominated by read-only wrappers that end in ROLLBACK by design (the MCP `--read-only` mode and the management-API rehearsals in `docs/RUNBOOK.md`), not by failed application writes.
 
 ### Auth server
 
@@ -77,26 +77,26 @@ Statistics window: since the reset on 2026-07-16 19:10 UTC (97 days).
 
 | Metric | Value |
 |---|---|
-| Distinct statements tracked | 4,926 (+12 since 15:58 UTC: nine from the fourteenth pass's own follow-up probes, two one-call reads by the `postgres` role from another session, one `cron.job` inspection, dated by `stats_since`) |
-| Total calls | 7,676,973 (+28,421 since 15:58 UTC) |
-| Total execution time | 3,142,362 ms (52.4 minutes over 97 days) |
+| Distinct statements tracked | 4,932 (+6 since 17:19 UTC: five from the fifteenth pass's own follow-up probes, one `cron.job` inspection at 18:16 UTC, dated by `stats_since`) |
+| Total calls | 7,705,214 (+28,241 since 17:19 UTC) |
+| Total execution time | 3,157,170 ms (52.6 minutes over 97 days) |
 | Statements with mean over 500 ms | 6 (0 application) |
 | Statements with max over 500 ms | 20 (7 application, 13 platform) |
-| Temp files written (pg_stat_database) | 167,558 (+169 since 15:58 UTC; every writer in `temp_spill` is this probe's own pg_stat_statements scan or pg-meta, no application statement) |
+| Temp files written (pg_stat_database) | 167,721 (+163 since 17:19 UTC; every writer in `temp_spill` is this probe's own pg_stat_statements scan or pg-meta, no application statement) |
 
 ### Application statements by total time
 
 | Calls | Mean ms | Total ms | Statement |
 |---|---|---|---|
-| 45,565 | 4.0 | 180,939 | `seo_redirects` lookup by source_path (proxy redirect check) |
-| 21,674 | 5.4 | 117,958 | rpc `available_stock(p_product_id)` (`src/lib/commerce/stock-live.ts`) |
-| 11,133 | 10.6 | 117,480 | rpc `check_rate_limit(p_key, p_max_attempts, p_window_seconds)` (`src/lib/utils/rate-limit.ts`) |
+| 45,672 | 4.0 | 181,384 | `seo_redirects` lookup by source_path (proxy redirect check) |
+| 21,818 | 5.4 | 118,719 | rpc `available_stock(p_product_id)` (`src/lib/commerce/stock-live.ts`) |
+| 11,268 | 10.5 | 118,672 | rpc `check_rate_limit(p_key, p_max_attempts, p_window_seconds)` (`src/lib/utils/rate-limit.ts`) |
 | 887 | 46.3 | 41,108 | rpc `search_products(q, max_results)` |
-| 6,952 | 5.5 | 38,127 | `carts` INSERT |
-| 163,578 | 0.2 | 36,805 | `products` select by slug |
-| 2,205 | 15.7 | 34,605 | rpc `fn_record_search` (`src/lib/search/record.ts`) |
+| 6,998 | 5.5 | 38,444 | `carts` INSERT |
+| 163,583 | 0.2 | 36,809 | `products` select by slug |
+| 2,229 | 15.9 | 35,429 | rpc `fn_record_search` (`src/lib/search/record.ts`) |
 | 2,055 | 16.4 | 33,789 | `analytics_events` select by event_name and occurred_at |
-| 365 | 90.9 | 33,196 | rpc `release_expired_order_discounts` (cron; outside the probe's top 15, row re-read directly, unchanged since 13:07) |
+| 365 | 90.9 | 33,196 | rpc `release_expired_order_discounts` (cron; outside the probe's top 15, row re-read directly at 18:43 UTC, unchanged since 13:07) |
 
 The busiest application read, the products select by slug, averages 0.2 ms. Nothing in the application path is near the 500 ms line on average.
 
@@ -123,17 +123,19 @@ Action: none in the application. The functions listing spilling 6.27 GB to temp 
 
 | Calls | Mean ms | Max ms | Stddev ms | Statement |
 |---|---|---|---|---|
-| 1,503 | 4.1 | 1,159.2 | 31.6 | `carts` UPDATE (expires_at, items) |
-| 11,133 | 10.6 | 1,137.4 | 22.6 | rpc `check_rate_limit` (`src/lib/utils/rate-limit.ts`) |
-| 21,674 | 5.4 | 1,013.8 | 15.7 | rpc `available_stock` |
-| 6,952 | 5.5 | 883.6 | 17.4 | `carts` INSERT |
+| 1,513 | 4.0 | 1,159.2 | 31.5 | `carts` UPDATE (expires_at, items) |
+| 11,268 | 10.5 | 1,137.4 | 22.5 | rpc `check_rate_limit` (`src/lib/utils/rate-limit.ts`) |
+| 21,818 | 5.4 | 1,013.8 | 15.7 | rpc `available_stock` |
+| 6,998 | 5.5 | 883.6 | 17.3 | `carts` INSERT |
 | 887 | 46.3 | 857.1 | 66.0 | rpc `search_products` |
-| 2,205 | 15.7 | 525.3 | 21.1 | rpc `fn_record_search` (`src/lib/search/record.ts`) |
+| 2,229 | 15.9 | 525.3 | 21.2 | rpc `fn_record_search` (`src/lib/search/record.ts`) |
 | 2,055 | 16.4 | 515.6 | 34.9 | `analytics_events` select |
 
-All seven have means under 50 ms and standard deviations an order of magnitude below the max in a 97-day window. The shape matches cold cache after a compute pause or a plan re-prepare, not a missing index: `carts` has 123,229 index scans against 60 sequential scans, and `analytics_events` 4,839 against 24. All seven max values held across the 16:24, 18:21, 21:24, 22:45, 23:56, 01:53, 01:59, 02:51, 08:14, 10:22, 11:45, 13:07, 14:34, 15:58 and 17:19 UTC runs while cumulative call counts grew (355 new application calls across the seven rows in the 15:58 to 17:19 window, on top of 390 in the window before). Every row moved by at most 0.1 ms in mean and 0.1 ms in stddev; the one upward stddev move (`fn_record_search`, +0.017 ms on 24 calls) resolves through the sum-of-squares arithmetic to a slowest possible call of 164 ms. The next subsection records the confirmation window for `check_rate_limit` after its closure. No alert, no fix needed.
+All seven have means under 50 ms and standard deviations an order of magnitude below the max in a 97-day window. The shape matches cold cache after a compute pause or a plan re-prepare, not a missing index: `carts` has 124,126 index scans against 60 sequential scans, and `analytics_events` 4,839 against 24. All seven max values held across the 16:24, 18:21, 21:24, 22:45, 23:56, 01:53, 01:59, 02:51, 08:14, 10:22, 11:45, 13:07, 14:34, 15:58, 17:19 and 18:42 UTC runs while cumulative call counts grew (359 new application calls across the seven rows in the 17:19 to 18:42 window, on top of 355 in the window before). Every row moved by at most 0.2 ms in mean and 0.2 ms in stddev; the one upward stddev move (`fn_record_search`, +0.182 ms on 24 calls at a 34.3 ms window mean) resolves through the sum-of-squares arithmetic to a slowest possible call of 219 ms, and the other three rows with new calls bound at 101 ms (`available_stock`, 144 calls), 60 ms (carts INSERT, 46 calls) and 9 ms (carts UPDATE, 10 calls). The next subsection records the confirmation window for `check_rate_limit` after its closure. No alert, no fix needed.
 
-### The `check_rate_limit` spike (first seen 01:53 UTC; max unmoved through 17:19 UTC, variance moved at 13:07 UTC, quiet at 14:34, 15:58 and 17:19 UTC, watch item closed)
+### The `check_rate_limit` spike (first seen 01:53 UTC; max unmoved through 18:42 UTC, variance moved at 13:07 UTC, quiet at 14:34, 15:58, 17:19 and 18:42 UTC, watch item closed)
+
+**18:42 UTC window (17:19 to 18:42, `logs/maint9/rate-limit-probe-16.json`).** 135 new calls and 1,191.7 ms of new execution (`total_exec_time` 117,480.4 to 118,672.1 ms), an 8.8 ms mean inside the window against 7.5 ms in the window before and 10.5 ms lifetime. Max unchanged at 1,137.4 ms; stddev down from 22.5660 to 22.4835 ms (unrounded in both follow-up files). Sum of squares from `calls × (stddev² + mean²)`: 6,945,468 ms² now against 6,908,325 ms² at 17:19 (two-decimal means; 6,945,942 against 6,908,795 from the three-decimal means), so the 135 new calls contributed about 37,150 ms². The square root of that delta, 193 ms, is the hardest upper bound on any single call in the window, under two fifths of the 500 ms line. `rate_limits` was autoanalyzed inside this window at 17:46:42 UTC (`autoanalyze_count` 191 to 192, `n_live_tup` 738 to 748, dead rows 20 to 57, `last_autovacuum` still 16:24:38 UTC) and produced no slow call, so the autoanalyze correlation is two for six across today's windows that held one (slow at 01:53 and 13:07, quiet at 14:34, 15:58, 17:19 and 18:42). `shared_blks_read` stays at 0 across all 11,268 calls (1,200,563 hits), `rate_limits_key_key` carries 14,629 of 14,636 index scans, `pg_stat_user_functions` is still empty, and the four attribution settings are unchanged (`track_functions = none`, `track_io_timing = off`, `log_min_duration_statement = -1`, `pg_stat_statements.track = top`). Fourth quiet window in a row; the watch item stays closed.
 
 **17:19 UTC window (15:58 to 17:19, `logs/maint9/rate-limit-probe-15.json`).** 135 new calls and 1,008.6 ms of new execution (`total_exec_time` 116,471.8 to 117,480.4 ms), a 7.5 ms mean inside the window against 9.9 ms in the window before and 10.6 ms lifetime: the quietest window since the row was first seen. Max unchanged at 1,137.4 ms; stddev down from 22.6710 to 22.5660 ms (unrounded in both follow-up files). Sum of squares from `calls × (stddev² + mean²)`: 6,908,325 ms² now against 6,886,094 ms² at 15:58 (both from the two-decimal means in the follow-up files; the 15:58 report quoted 6,886,157 from a differently rounded mean), so the 135 new calls contributed about 22,200 ms² (22,700 from the three-decimal means). The square root of that delta, about 150 ms, is the hardest upper bound on any single call in the window, under a third of the 500 ms line. Two autovacuum events sat inside this window: `rate_limits` was autovacuumed at 16:24:38 UTC (`autovacuum_count` 91 to 92, its first vacuum since 2026-10-15, `n_dead_tup` 192 to 20) and autoanalyzed at 16:26:38 UTC (`autoanalyze_count` 190 to 191, `n_live_tup` 729 to 738), and neither produced a slow call. The autoanalyze correlation is therefore two for five across today's windows that held one (slow at 01:53 and 13:07, quiet at 14:34, 15:58 and 17:19). `shared_blks_read` stays at 0 across all 11,133 calls, `rate_limits_key_key` carries 14,494 of 14,501 index scans, `pg_stat_user_functions` is still empty, and the four attribution settings are unchanged (`track_functions = none`, `track_io_timing = off`, `log_min_duration_statement = -1`, `pg_stat_statements.track = top`). The watch item stays closed; nothing in this window would have reopened it under any rule this report has used.
 
@@ -168,7 +170,7 @@ The `search_products` RPC is the one worth watching: a 46 ms mean with 66 ms std
 | auth_rls_initplan | WARN | 1 | `profiles.profiles_super_admin_mfa` re-evaluates `auth.<fn>()` per row. Wrap it in `(select ...)`. Candidate for the next migration batch in `migrations/pending/`. |
 | multiple_permissive_policies | WARN | 14 | banners, cashback_ledger, homepage_sections, payment_events, payout_statement_lines, payout_statements, refunds, supplier_branches (4 actions), support_ticket_messages, support_tickets, whatsapp_contacts. Each pair is an owner policy plus a staff policy; Postgres evaluates both on every row. Correct but slower. |
 | unindexed_foreign_keys | INFO | 9 | affiliate_attributions (3), affiliate_links, affiliate_payouts, auth_wa_otps, supplier_card_tokens (2), supplier_card_verifications. All low-row tables today. |
-| unused_index | INFO | 155 | Unchanged since 15:58 UTC, and the top-15 rows by size are the same fifteen. `idx_invoices_order`, which left the list between 14:34 and 15:58 UTC, is at 16 scans now; `idx_orders_user_status` at 2. Largest remaining is `idx_audit_log_action` at 152 kB. Total waste is small; no action. |
+| unused_index | INFO | 155 | Unchanged since 15:58 UTC (every finding identical to the 17:19 set once `observed_at` is ignored), and the top-15 rows by size are the same fifteen. `idx_invoices_order`, which left the list between 14:34 and 15:58 UTC, is at 25 scans now (16 at 17:19); `idx_orders_user_status` at 2. Largest remaining is `idx_audit_log_action` at 168 kB. Total waste is small; no action. |
 | auth_db_connections_absolute | INFO | 1 | See section 1. |
 
 None of these is a slow-query cause today. The two WARN rows are the only ones that scale with traffic, and both are policy shape, not data volume.
@@ -179,18 +181,18 @@ None of these is a slow-query cause today. The two WARN rows are the only ones t
 
 | Item | Value |
 |---|---|
-| Database size | 47 MB (unchanged since 15:58 UTC; 46 MB at 13:07 and 14:34 UTC; 45 MB at 10:22 and 11:45 UTC; 44 MB from 21:24 UTC on 20.10 through 08:14 UTC on 21.10; 43 MB at 18:21 UTC) |
-| Largest table | audit_log, 8,504 kB, 3,283 live rows (+139 since 15:58 UTC, the same step as the three windows before) |
-| carts | 2,768 kB, 4,368 live rows (496 dead), autovacuum 2026-10-16, autoanalyze 2026-10-21 16:29 UTC; grows every pass (+45 live rows since 15:58 UTC, guest carts from the storefront) |
+| Database size | 48 MB (47 MB at 15:58 and 17:19 UTC; 46 MB at 13:07 and 14:34 UTC; 45 MB at 10:22 and 11:45 UTC; 44 MB from 21:24 UTC on 20.10 through 08:14 UTC on 21.10; 43 MB at 18:21 UTC) |
+| Largest table | audit_log, 8,896 kB, 3,422 live rows (+139 since 17:19 UTC, the same step as the four windows before) |
+| carts | 2,816 kB, 4,413 live rows (518 dead), autovacuum 2026-10-16, autoanalyze 2026-10-21 16:29 UTC; grows every pass (+45 live rows since 17:19 UTC, guest carts from the storefront) |
 | analytics_events | 2,024 kB, 2,769 live rows (unchanged since 14:34 UTC), autovacuum 2026-10-21 |
-| products | 752 kB, 82 live rows, 55 dead rows, autovacuum 2026-10-21 09:20 UTC (66 dead before it ran, 10 at 10:22 UTC, 19 at 11:45 UTC, 28 at 13:07 UTC, 37 at 14:34 UTC, 46 at 15:58 UTC) |
-| rate_limits | 336 kB, 738 live rows, 20 dead (192 before the 16:24 UTC autovacuum), autovacuum 2026-10-21 16:24 UTC, autoanalyze 2026-10-21 16:26 UTC (section 4) |
-| invoices | 288 kB, 128 live rows, 58 dead, autovacuum 2026-10-15; entered the ten largest this pass as `users` (264 kB, 14 live, 7 dead, autovacuum 2026-10-21 13:43 UTC) fell below it |
+| products | 752 kB, 82 live rows, 64 dead rows, autovacuum 2026-10-21 09:20 UTC (66 dead before it ran, 10 at 10:22 UTC, 19 at 11:45 UTC, 28 at 13:07 UTC, 37 at 14:34 UTC, 46 at 15:58 UTC, 55 at 17:19 UTC), autoanalyze 2026-10-21 17:47 UTC |
+| rate_limits | 336 kB, 748 live rows, 57 dead (20 at 17:19 UTC, 192 before the 16:24 UTC autovacuum), autovacuum 2026-10-21 16:24 UTC, autoanalyze 2026-10-21 17:46 UTC (section 4) |
+| invoices | 288 kB, 137 live rows, 67 dead, autovacuum 2026-10-15; tenth largest since 17:19 UTC, `users` (14 live, 10 dead, autovacuum 2026-10-21 13:43 UTC) stays below it |
 | Replication slots | none (the application does not use Realtime; the `wal->>` poller rows in pg_stat_statements are historical platform traffic) |
 
 ---
 
-## 7. Verification Checklist (2026-10-21 17:19 UTC)
+## 7. Verification Checklist (2026-10-21 18:42 UTC)
 
 - [x] Supabase MCP reached (official server over stdio, `--read-only`, 13 tools listed)
 - [x] Pool measured from pg_stat_activity, not inferred from the plan tier
@@ -199,10 +201,10 @@ None of these is a slow-query cause today. The two WARN rows are the only ones t
 - [x] Statements classified as application versus platform (`classifyStatement`, tested)
 - [x] Performance advisors fetched
 - [x] No application statement with mean over 500 ms
-- [x] All seven max-over-500 application rows unmoved across fifteen passes from 16:24 UTC on 20.10 to 17:19 UTC on 21.10
-- [x] Re-checked `check_rate_limit` through 02:51, 08:14, 10:22, 11:45, 13:07, 14:34, 15:58 and 17:19 UTC; max unmoved through 1,384 new calls, the 13:07 stddev movement did not repeat in three consecutive windows (22.67 to 22.57 ms on 135 calls at a 7.5 ms window mean, slowest possible call in the window about 150 ms, through an autovacuum and an autoanalyze of `rate_limits`), follow-up probe recorded, watch item stays closed
-- [x] The 12 new pg_stat_statements rows since 15:58 UTC attributed by `stats_since` to the fourteenth pass's own follow-up probes (9), two one-call reads by the `postgres` role from another session and one `cron.job` inspection, none application traffic
-- [x] `unused_index` advisor unchanged at 155, top-15 list identical, no index was dropped
+- [x] All seven max-over-500 application rows unmoved across sixteen passes from 16:24 UTC on 20.10 to 18:42 UTC on 21.10
+- [x] Re-checked `check_rate_limit` through 02:51, 08:14, 10:22, 11:45, 13:07, 14:34, 15:58, 17:19 and 18:42 UTC; max unmoved through 1,519 new calls, the 13:07 stddev movement did not repeat in four consecutive windows (22.57 to 22.48 ms on 135 calls at an 8.8 ms window mean, slowest possible call in the window 193 ms, through another autoanalyze of `rate_limits`), follow-up probe recorded, watch item stays closed
+- [x] The 6 new pg_stat_statements rows since 17:19 UTC attributed by `stats_since` to the fifteenth pass's own follow-up probes (5) and one `cron.job` inspection at 18:16 UTC, none application traffic
+- [x] `unused_index` advisor unchanged at 155, every finding identical ignoring `observed_at`, top-15 list identical, no index was dropped
 - [x] Probe script under test: `scripts/db-mcp-probe.test.mjs` (10 tests, green this pass)
 - [ ] `profiles_super_admin_mfa` initplan fix (next migration batch, needs approval like every migration)
 - [ ] Re-run after Meilisearch is enabled in production to retire the `search_products` fallback row
@@ -228,6 +230,6 @@ node -e 'const r=require("./logs/maint9/result.json"); console.log(JSON.stringif
 
 ---
 
-**Report Status:** COMPLETE (measured 2026-10-21 17:19 UTC; fifteenth measured pass, all seven application spike maxima unmoved through 355 new application calls in the window, no application mean near 500 ms, no alert; the `check_rate_limit` watch item closed at 15:58 was quiet for a third consecutive window, the quietest on record, through an autovacuum and an autoanalyze of `rate_limits`, section 4)
+**Report Status:** COMPLETE (measured 2026-10-21 18:42 UTC; sixteenth measured pass, all seven application spike maxima unmoved through 359 new application calls in the window, no application mean near 500 ms, no alert; the `check_rate_limit` watch item closed at 15:58 was quiet for a fourth consecutive window, slowest possible call 193 ms, through another autoanalyze of `rate_limits`, section 4)
 **Next Review:** MAINTENANCE_LOOP cycle, or after any migration in the pending batch is applied
 **Escalation:** none required
