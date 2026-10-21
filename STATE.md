@@ -15,7 +15,7 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 At 768 the worst bands are the same hero (y100-600) and the bottom bar (y2400-2600).
 
-**Gates:** `pnpm type-check` exit 0, `pnpm lint` exit 0 (biome 1713 files, tokens, copy and asset gates clean). `pnpm build` not re-run: no source file changed and the served build is the HEAD build. Vitest not re-run for the same reason. Server stopped by listener PID after the runs.
+**Gates:** `pnpm type-check` exit 0, `pnpm lint` exit 0 (biome 1713 files, tokens, copy and asset gates clean). `pnpm build` exit 0 (310/310 static pages, compiled clean, same partner API prerender bail-outs as every pass). Vitest not re-run: no source file changed. Server stopped by listener PID after the runs.
 
 **החלטות שהתקבלו לבד:**
 - No CSS was edited. The gate is 2.5 points under the line at 380 and 1.2 at 768, and every remaining source is either a sourcing-rule floor, a money-format string, or a feature. A speculative 5px card nudge would buy about 1 point at 380 and risk the 768 and 1440 rows, which this goal does not re-measure; the 20.10 memory says the hero floor is fixed by alignment, not by the hero, and that alignment is already in.
