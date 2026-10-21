@@ -2,6 +2,20 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_2 (Session: 2026-10-21 08:50-08:56 UTC, patch bumps, eighth pass, MEASURED, zero bumps)
+
+**Goal:** Run `pnpm outdated`, bump patch versions for safe packages, skip major and minor, commit as chore deps bump patch versions, push to autopilot. Only what is requested.
+
+**Result:** COMPLETE, zero bumps. `pnpm outdated --format=json` on `b91326fe2` (clean tree, in sync with `origin/autopilot`) lists 18 packages and every one is a minor or major jump at the latest tag: lucide-react 1.59.0 to 1.60.0 (minor, new since the seventh pass), react and react-dom 19.2.9 to 19.3.1 (minor), and the same 15 majors as before (biome 1.9.4 to 2.5.15, sentry nextjs/node 10.71.0 to 11.8.0, simplewebauthn 13.x to 14.x, jest-dom 6.10.0 to 7.0.1, @types/node 22.20.5 to 26.6.5, plugin-react 4.7.0 to 6.1.2, coverage-v8 3.2.7 to 5.0.5, jsdom 25.0.1 to 30.1.3, tailwind-merge 2.6.1 to 3.7.0, typescript 5.9.3 to 7.0.2, vitest 4.1.12 to 5.0.5, zod 3.25.76 to 4.6.7, @anthropic-ai/sdk 0.122.0 to 0.135.0). Because `pnpm outdated` compares against the latest tag only, all 66 direct dependencies were also checked against `npm view <name> versions` for a newer patch inside the installed major.minor (installed version read from `node_modules/<name>/package.json`): none exists. The single hit was node-forge, pinned to `github:digitalbazaar/forge` at 1.4.1-0, where npm's newest 1.4.x is 1.4.0; that is a downgrade off a deliberate pin (pkpass PKCS#7 signing) and was left alone. `pnpm install --frozen-lockfile --offline` says "Already up to date". `package.json` and `pnpm-lock.yaml` unchanged.
+
+**Gates:** `pnpm typecheck` exit 0, `pnpm lint` exit 0 (biome 1723 files, tokens, copy, asset gates clean), `pnpm build` exit 0 (311 static pages, the partner-API prerender bail-out lines are the known build-time logs), `pnpm gate:chunks` clean on 243 prerendered pages. Backup 2026-10-21-1241 present, three kept; caffeinate alive (two processes), SleepDisabled 1.
+
+**החלטות שהתקבלו לבד:**
+- No patch exists, so no "chore deps bump patch versions" commit; this STATE.md entry is the closing ritual CLAUDE.md requires and the only file in the commit, the same reading as the LOOP_1 pass below.
+- Supabase MCP and GitHub MCP not needed: no DB, RLS, migration or PR in a dependency bump check.
+
+**המשך מ:** MAINTENANCE_LOOP_3 (head of `~/ke-goals/queue.txt`): scan docs/BACKLOG.md and docs/TODO.md for unblocked items, queue any found, report the count in docs/MAINT-LOG.md, commit as chore maint scan backlog, push.
+
 ## ✅ MAINTENANCE_LOOP_1 (Session: 2026-10-21 08:45-08:49 UTC, security audit, seventh pass, MEASURED, nothing to fix)
 
 **Goal:** Run `pnpm audit`, fix critical and high vulnerabilities, commit each fix separately as chore security audit fix PACKAGE, push to autopilot. Only what is requested.
