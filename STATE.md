@@ -2,6 +2,22 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_9 (Session: 2026-10-21 13:06-13:20 UTC, DB performance check, twelfth measured pass, MEASURED via Supabase MCP, no alert, one watch item)
+
+**Goal:** Verify the Supabase connection pool and query performance via Supabase MCP, alert in docs/DB-STATUS.md if slow queries over 500 ms exist, commit as chore ops db performance check, push.
+
+**Result:** COMPLETE, no alert. The claude.ai Supabase connector still needs an OAuth this non-interactive session cannot run, so the official `@supabase/mcp-server-supabase` was run locally over stdio in `--read-only` mode with the CLI keychain token through `scripts/db-mcp-probe.mjs` (13 tools listed, 20 probes, evidence `logs/maint9/result-12.json`, `ts` 13:07:05Z). Pool 14 of 60 backends (23.3%), 11 PostgREST idle plus exporter, admin and the probe itself, 0 lock waits, 0 statements running over 500 ms, 0 deadlocks, cache hit 100%. pg_stat_statements: 4,898 statements (+6, all one-call inspections from other sessions by `stats_since`), 7,587,941 calls (+27,221), 6 rows over 500 ms by mean (all platform, unchanged call for call), 0 application rows over 500 ms by mean, 7 application spike rows with every max identical to the millisecond through 354 new calls. One row moved under its max: `check_rate_limit` stddev 19.5 to 22.8 ms on 135 calls and 2,848 ms (21.1 ms window mean); the sum-of-squares arithmetic puts at least two calls over roughly 450 ms in the 11:45 to 13:07 window, all bounded by the unmoved 1,137.4 ms max. Follow-up probe (`logs/maint9/rate-limit-probe-12.json`): `rate_limits` autoanalyzed at 12:20:27 UTC inside the window, the same neighbour the 01:53 follow-up named (two for two); `shared_blks_read` 0 over all 10,697 calls so not disk; 702 live / 164 dead rows, 78% HOT updates, the UNIQUE index carries the traffic, so not bloat or a missing index; `track_functions = none`, `track_io_timing = off`, `log_min_duration_statement = -1`, `pg_stat_statements.track = top`, so no per-call attribution exists on this instance. Pooler and pgbouncer config re-read from the management API, SHA-1 identical to the stored copies. Advisors unchanged (1 + 14 WARN, 9 + 157 + 1 INFO). DB 46 MB (+1 MB). docs/DB-STATUS.md rewritten for the twelfth pass with the watch item in section 4; committed `3121edfe8` by explicit path with the two evidence files, pushed to `origin/autopilot`.
+
+**Gates:** `pnpm type-check` exit 0, `pnpm lint` exit 0 after formatting the two new evidence JSON files (biome, tokens, copy, asset gates clean, 1735 files), `pnpm build` exit 0, `pnpm gate:chunks` clean on 243 prerendered pages, `scripts/db-mcp-probe.test.mjs` 10/10 green. Backup 2026-10-21-1241 present and under 24h, three kept (10-18-0350, 10-21-0201, 10-21-1241), nothing to delete; caffeinate alive (two processes), SleepDisabled 1.
+
+**החלטות שהתקבלו לבד:**
+- Supabase MCP clause met through the official server run locally (the recipe in memory and in the probe header), read-only; the connector OAuth is Ofir's. GitHub MCP not needed: no PR, work lands on autopilot directly. No new tests: no src or script change, the probe's 10 tests cover the parser and classifier used this pass.
+- The `check_rate_limit` movement is recorded as a watch item, not an alert: the alert line is mean over 500 ms and the row's mean is 10.6 ms. No fix attempted, because the mechanism is a correlation (autoanalyze inside the window, twice) and the instrumentation that would prove it (`log_min_duration_statement = 500`) is a production Postgres config change, left for Ofir's approval and listed in the report's checklist.
+- MAINTENANCE_LOOP_10 is left to the loop harness, which pops `~/ke-goals/queue.txt` one goal per session; starting it here would put two agents on the same repo.
+
+**המשך מ:** MAINTENANCE_LOOP_10 (head of `~/ke-goals/queue.txt`): append MAINTENANCE_LOOP_1 through MAINTENANCE_LOOP_10 to `~/ke-goals/queue.txt` again from that file itself, nothing else.
+
+
 ## ✅ MAINTENANCE_LOOP_8 (Session: 2026-10-21 13:02-13:10 UTC, code debt scan, thirteenth pass, MEASURED, delta 0)
 
 **Goal:** Scan all TODO, FIXME and HACK comments in src/, queue a cleanup goal if the count grew since the last scan, report the delta in docs/CODE-DEBT-STATUS.md, commit as chore maint code debt scan, push.
