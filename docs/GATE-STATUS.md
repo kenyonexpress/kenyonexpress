@@ -1,5 +1,37 @@
 # Mobile Gate Status
 
+**Last Check:** 2026-10-21 11:27-11:30 UTC (MAINTENANCE_LOOP_6, ninth recheck; local time 18:27-18:30 UTC+7)
+**Page:** home
+**Commit:** `3425ca36f` (clean tree at measurement; HEAD of `autopilot`. `git log 26b9673fa..HEAD -- src/` is empty: nothing under `src/` changed since the eighth recheck, so this is the fourth measurement of the same rendered tree)
+**Server:** `pnpm start` on port 3351 from this worktree (listener pid 73150, cwd verified by `lsof`, the only node listener on the machine, stopped by pid afterwards) on the `pnpm build` of this same HEAD written at 11:25 UTC by the previous loop item's build gate (BUILD_ID `3Cux8fLs-MV9eLIjAPn7x`), `pnpm gate:chunks` clean before the run (243 prerendered pages, every referenced chunk on disk).
+**Threshold:** 11%
+**Verdict:** 380 PASS at 8.53%, 768 PASS at 9.79%, 1440 PASS at 8.08%. No mobile fix goal requeued; `~/ke-goals/queue.txt` untouched.
+
+| Viewport | Score | Status | Previous (eighth recheck, 10:04-10:08 UTC, `26b9673fa`) | Delta | Margin to 11% |
+|---|---|---|---|---|---|
+| 380 | **8.53%** | **PASS** | 8.53% | +0.00 | 2.47 |
+| 768 | **9.79%** | **PASS** | 9.79% | +0.00 | 1.21 |
+| 1440 | **8.08%** | **PASS** | 8.08% | +0.00 | 2.92 |
+
+Ledger rows, verbatim from docs/UI-PARITY-REPORT.md (UTC), in run order:
+
+```
+| 2026-10-21 11:27 | home | 380 | 8.53% | PASS | `3425ca36f` | ref 145 failed to load (113 script, 29 font, 2 stylesheet, 1 xhr) |
+| 2026-10-21 11:28 | home | 768 | 9.79% | PASS | `3425ca36f-dirty` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
+| 2026-10-21 11:30 | home | 1440 | 8.08% | PASS | `3425ca36f-dirty` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
+```
+
+## MAINTENANCE_LOOP_6 ninth recheck notes (11:30 UTC)
+
+- **Fourth consecutive run reading 8.53 / 9.79 / 8.08 to the hundredth** (F43 ledger, seventh, eighth and this recheck). No `src/` commit landed between the eighth recheck and this one, so an identical score is the expected result, not a coincidence. The 768 margin is 1.21 points, the narrowest of the three, unchanged.
+- **Reference shortfall moved and the scores did not.** The archive dropped 145 resources at 380 and 153 at 768 and 1440 against 141 / 96 / 96 last time; the script count is 113 on all three widths where the deterministic figure since the fifth recheck was 57 (101 on a cold first load). Every band at 380 is identical to the eighth recheck (y200-300 55.7%, y300-400 34.1%, y1700-1800 20.1%, y2500-2600 15.1%, y100-200 14.9%), so the extra dropped scripts paint nothing in the first 2600px. The 29 fonts at 380 against 37 later is the same first-load pattern as before. Recorded as an archive-side observation; not an action item for this loop.
+- **Gate-hardening caveat silent again:** our side dropped 6 / 6 / 5 resources, all on the expected local origin, no `OURS dropped` or `OURS ... wide` words in any row. Our document was 380 wide at 380 (380x18394 against the reference's 380x17790; the compared window is the first 2600px).
+- **768 worst bands:** y400-500 49.3%, y2500-2600 34.1%, y200-300 33.2%, y100-200 30.9%. **1440 worst bands:** y500-600 25.2%, y200-300 24.1%, y1700-1800 19.4%, y300-400 18.7%. Same floors as the eighth recheck.
+- **The `-dirty` suffix on the 768 and 1440 rows is the gate's own ledger write** (the 380 row modifies docs/UI-PARITY-REPORT.md before the two later children run). `git status` after the run listed that one file; `src/` was clean throughout.
+- **No UNMEASURED row.** Three widths took 3 minutes 40 seconds wall time including the 380 archive cold load.
+- **Not done this loop:** serving the reference from a local origin to pin the shortfall. Unchanged open item; nine consecutive runs agree to the hundredth at 380.
+
+
 **Last Check:** 2026-10-21 10:04-10:08 UTC (MAINTENANCE_LOOP_6, eighth recheck; local time 17:04-17:08 UTC+7)
 **Page:** home
 **Commit:** `26b9673fa` (clean tree at measurement; HEAD of `autopilot`, one `src/` commit after the MOBILE_FIX_GATE row's `d8d14274a`: `13021b20c`, the E2E run 12 product fixes to checkout saved card/wallet, vouchers suppliers embeds and the scan redirect, none on the home page)

@@ -4649,3 +4649,9 @@ Supabase MCP authentication unavailable in non-interactive session. CLI fallback
 - Gates: typecheck exit 0, lint exit 0 (1729 files, three gates clean), build exit 0 (y10Grw0jcW8eGZz48XOVr) with `pnpm gate:chunks` clean on 243 pages. Backup 2026-10-21-1241 present, three kept; caffeinate alive (two processes), SleepDisabled 1. 3417 listener stopped by PID.
 
 **המשך מ:** MAINTENANCE_LOOP_5 (head of ~/ke-goals/queue.txt).
+
+## MAINTENANCE_LOOP_6 (2026-10-21 11:30 UTC, ninth recheck, commit 06fe451f3)
+- Mobile gate on 3425ca36f (clean tree, no src/ commit since the eighth recheck's 26b9673fa): home 380 8.53% / 768 9.79% / 1440 8.08%, all PASS under 11, fourth consecutive run identical to the hundredth. Server pnpm start on 3351 from this worktree (pid 73150, cwd verified by lsof, the only node listener, stopped by pid), on the previous loop item's build 3Cux8fLs-MV9eLIjAPn7x with gate:chunks clean before the run. Reference shortfall moved to 145 / 153 / 153 (113 scripts on every width against the earlier 57) with every 380 band unchanged, recorded as an archive-side observation. No mobile fix goal requeued, ~/ke-goals/queue.txt untouched. docs/GATE-STATUS.md ninth recheck block prepended, three ledger rows in docs/UI-PARITY-REPORT.md. Committed 06fe451f3, pushed.
+- Gates: typecheck exit 0, lint exit 0 (1731 files, three gates clean), build exit 0 (cNLtSLciQTsM69VU_VhzG), gate:chunks clean on 243 pages. Backup 2026-10-21-1241 present, three kept; caffeinate alive (two processes), SleepDisabled 1.
+
+**המשך מ:** MAINTENANCE_LOOP_7 (head of ~/ke-goals/queue.txt).
