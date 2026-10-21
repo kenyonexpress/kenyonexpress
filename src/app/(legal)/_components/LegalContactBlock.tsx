@@ -1,3 +1,8 @@
+import {
+  BUSINESS_REGISTRATION_LABEL,
+  BUSINESS_REGISTRATION_NUMBER,
+  LEGAL_ENTITY_NAME,
+} from '@/lib/legal-entity'
 import { formatIsraeliPhoneDisplay, storeWhatsAppLink, storeWhatsAppNumber } from '@/lib/whatsapp'
 import Link from 'next/link'
 
@@ -62,6 +67,10 @@ export default function LegalContactBlock({
           </Link>
         </li>
         <li>כתובת האתר: www.kenyonexpress.co.il</li>
+        <li>
+          מפעילת האתר: {LEGAL_ENTITY_NAME}, {BUSINESS_REGISTRATION_LABEL}{' '}
+          <span dir="ltr">{BUSINESS_REGISTRATION_NUMBER}</span>
+        </li>
       </ul>
     </section>
   )

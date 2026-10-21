@@ -1,4 +1,5 @@
 import { buildVoucherEmail } from '@/lib/email/voucher-email'
+import { legalEntityLine } from '@/lib/legal-entity'
 import { formatAgorot, formatCouponCode } from '@/lib/vouchers/coupon-view'
 import { OFF_PAGE } from '@/styles/tokens'
 
@@ -172,6 +173,8 @@ export function buildOrderPaidEmail(
     '',
     `לפרטי ההזמנה: ${url}`,
     receiptUrl ? `לקבלה: ${receiptUrl}` : '',
+    '',
+    legalEntityLine(),
   ]
     .filter((line) => line !== '')
     .join('\n')
@@ -188,7 +191,9 @@ export function buildOrderPaidEmail(
         <a href="${escapeHtml(url)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">לפרטי ההזמנה</a>
         ${receiptUrl ? `<div style="font-size:13px;color:${MUTED};margin-top:12px;text-align:center"><a href="${escapeHtml(receiptUrl)}" style="color:${MUTED}">להורדת הקבלה</a></div>` : ''}
       </div>`,
-    'קיבלת את המייל הזה כי ביצעת רכישה ב-KenyonExpress.',
+    // The seller's identity on the confirmation, not only on the tax document
+    // that follows it: a receipt that names nobody is the one a bank disputes.
+    `קיבלת את המייל הזה כי ביצעת רכישה ב-KenyonExpress. ${legalEntityLine()}.`,
   )
 
   return { subject, html, text }

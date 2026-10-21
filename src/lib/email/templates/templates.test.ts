@@ -56,6 +56,18 @@ describe('every template renders RTL Hebrew with inline styles', () => {
   })
 })
 
+describe('order confirmation template', () => {
+  it('names the seller and its registration number in both bodies', () => {
+    const email = buildOrderConfirmationEmail({
+      orderId: 'a'.repeat(36),
+      totalAgorot: 12900,
+      siteUrl: SITE,
+    })
+    expect(email?.html).toContain('קניון אקספרס, מספר עוסק 033798513')
+    expect(email?.text).toContain('קניון אקספרס, מספר עוסק 033798513')
+  })
+})
+
 describe('refund template', () => {
   it('maps the fee through, and only when one was taken', () => {
     const withFee = buildRefundCompletedEmail({

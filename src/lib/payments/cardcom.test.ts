@@ -447,6 +447,23 @@ describe('CardcomProvider.createDocument', () => {
     expect(sentFields()['InvoiceHead.InvoiceType']).toBeUndefined()
   })
 
+  it('prints the issuer registration number in the remarks, after the reference', async () => {
+    respondForm({ ResponseCode: '0', InvoiceResponse_InvoiceNumber: '5001' })
+
+    await provider().createDocument(document({ issuerRegistrationNumber: '033798513' }))
+
+    // The reference stays first: it is what a human searches the terminal by.
+    expect(sentFields()['InvoiceHead.Comments']).toBe('KE-1 | מספר עוסק 033798513')
+  })
+
+  it('sends the bare reference when no issuer number is given', async () => {
+    respondForm({ ResponseCode: '0', InvoiceResponse_InvoiceNumber: '5001' })
+
+    await provider().createDocument(document())
+
+    expect(sentFields()['InvoiceHead.Comments']).toBe('KE-1')
+  })
+
   it('distinguishes a coupon receipt from a credit note, and lets env correct both', async () => {
     respondForm({ ResponseCode: '0', InvoiceResponse_InvoiceNumber: '5002' })
     await provider().createDocument(document({ documentType: 'coupon_receipt' }))
