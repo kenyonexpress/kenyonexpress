@@ -2,6 +2,22 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_8 (Session: 2026-10-21 15:52-15:58 UTC, code debt scan, fifteenth pass, MEASURED, delta 0)
+
+**Goal:** Scan all TODO, FIXME and HACK comments in src/, queue a cleanup goal if the count grew since the last scan, report the delta in docs/CODE-DEBT-STATUS.md, commit as chore maint code debt scan, push.
+
+**Result:** COMPLETE, delta 0, no cleanup goal queued, `~/ke-goals/queue.txt` untouched (head is MAINTENANCE_LOOP_9). Scan of HEAD `451801fe3` in this worktree: 8 TODO, 0 FIXME, 0 HACK, the loose grep and the word-boundary grep agree on 8, the same eight lines as every pass since the 20.10 baseline (one in `src/app/api/cron/stock-notifications/route.ts`, two `TODO(cardcom)` in `src/lib/payments/cardcom.ts`, four in `src/lib/images/r2-migration.ts`, one test stub string in `src/lib/whatsapp.test.ts`). Against the fourteenth pass's `611cbecbe` the branch gained 12 commits, none touching `src/` (`git log 611cbecbe..HEAD -- src/` empty, 0 markers in added lines of `git diff 611cbecbe..HEAD -- src/`); twelfth byte-identical pass. Fifteenth row and narrative added to docs/CODE-DEBT-STATUS.md, committed as `f44ca159f` by explicit path and pushed to `origin/autopilot`. Working tree was clean at scan time.
+
+**Gates:** `pnpm type-check` exit 0, `pnpm lint` exit 0 (biome, tokens, copy, asset gates clean), `pnpm build` exit 0, `pnpm gate:chunks` clean on 243 prerendered pages. Backup 2026-10-21-2140 present and under 24h, three kept (10-21-0201, 10-21-1241, 10-21-2140), nothing to delete; caffeinate alive (two processes), SleepDisabled 1. Nothing to fix.
+
+**החלטות שהתקבלו לבד:**
+- No tests added: the change is a measurement report in docs/ with no src or script change. GitHub MCP not needed: no PR, work lands on autopilot directly. Supabase MCP not needed: the scan is static text analysis with no DB work.
+- No src commits since the last scan, so the per-commit added-line check collapsed to a single empty range diff; recorded as such rather than re-listing the eight unchanged hits.
+- MAINTENANCE_LOOP_9 is left to the loop harness, which pops `~/ke-goals/queue.txt` one goal per session; starting it here would put two agents on the same repo.
+
+**המשך מ:** MAINTENANCE_LOOP_9 (head of `~/ke-goals/queue.txt`): verify the Supabase connection pool and query performance via Supabase MCP, alert in docs/DB-STATUS.md if slow queries over 500 ms exist, commit as chore ops db performance check, push.
+
+
 ## ✅ MAINTENANCE_LOOP_3 (Session: 2026-10-21 13:29-13:40 UTC, backlog scan, thirteenth run, MEASURED via Supabase MCP, zero unblocked)
 
 **Goal:** Scan docs/BACKLOG.md and docs/TODO.md for unblocked items, queue any found to `~/ke-goals/queue.txt`, report the count in docs/MAINT-LOG.md, commit as chore maint scan backlog, push.
@@ -4937,3 +4953,10 @@ Supabase MCP authentication unavailable in non-interactive session. CLI fallback
 - Gates: typecheck exit 0, lint exit 0 (biome 1739 files, tokens, copy and asset gates clean), build exit 0 (A55y7SPWumV5G8h3Tzt25, 311 static pages, the Partner API bail-out lines are the known request.headers notice), gate:chunks clean on 243 prerendered pages. Backup 2026-10-21-2140 present and under 24h, three kept (10-21-0201, 10-21-1241, 10-21-2140), nothing to delete; caffeinate alive (pids 967, 11853), SleepDisabled 1.
 
 **המשך מ:** MAINTENANCE_LOOP_7 (head of ~/ke-goals/queue.txt): run Lighthouse CI via pnpm lhci:autorun, queue an optimization goal if any score is below 90, report scores to docs/LIGHTHOUSE-STATUS.md, commit as chore qa lighthouse check, push.
+
+## MAINTENANCE_LOOP_7 (2026-10-21 15:51 UTC, thirteenth pass, on a138af7c5)
+- Lighthouse CI on a138af7c5 (clean tree, no src/ commit since the twelfth pass's 4177a590b; the commits between touch only STATE.md, docs/, e2e/ and logs/): home 99/100/96/100, products 99/100/96/100, product page 98/100/96/100 (perf/a11y/bp/seo, lhci median of 3), nine of nine runs at or above 90 in every category, nothing queued, ~/ke-goals/queue.txt untouched. Cold build with .next/cache/turbopack moved to /tmp/ke-lh13 first, BUILD_ID zv404qzyU-zyLLMF2iIy3, gate:chunks clean on 243 pages before the server started, pnpm start on 3381 from this worktree (pid 20253, cwd verified by lsof, 0 listeners beforehand, BUILD_ID present once in the served home HTML, first three chunks on disk, killed by pid, port free after). `LHCI_BASE_URL=http://localhost:3381 COMPARE_PRODUCT_SLUG='אוזניות-איירפודס-3' pnpm lhci:autorun`, lhci 0.15.1, Lighthouse 12.6.1, Chrome 155, desktop preset, exit 0, 2 min 32 s wall. FCP 0.5/0.4/0.4 s, LCP 1.0/1.0/1.1 s, TBT 0 ms in all nine runs, CLS 0.021/0.018/0.019. Only weighted audit under 0.9 is errors-in-console with the same five localhost items (two /_vercel/* 404s, their two refused-execute lines, one https prefetch against the http origin); 0 /_next/* failures. docs/LIGHTHOUSE-STATUS.md header and thirteenth-pass section written, twelfth pass demoted to a previous-pass block.
+- Decided alone: /products 98 to 99 and the CLS move (0.010/0.006/0.007 to 0.021/0.018/0.019, the eleventh pass's values) on an identical src tree are recorded as the localhost band, not as a change; the three /products runs read 0.018, 0.018, 0.006 so the shift is a per-run toss between two states. No src, test, script or schema change, so no tests added. Supabase MCP and GitHub MCP not needed (no DB work, no PR). The 14:27 reports were moved to /tmp/ke-lh13/prev-reports rather than deleted; .lighthouseci/assertion-results.json reverted after the run as in prior passes.
+- Gates: typecheck exit 0, lint exit 0 (biome 1739 files, tokens, copy and asset gates clean), build exit 0 (zv404qzyU-zyLLMF2iIy3, the build lhci measured), gate:chunks clean on 243 prerendered pages. Backup 2026-10-21-2140 present and under 24h, three kept (10-21-0201, 10-21-1241, 10-21-2140), nothing to delete; caffeinate alive (pids 967, 11853), SleepDisabled 1.
+
+**המשך מ:** MAINTENANCE_LOOP_8 (head of ~/ke-goals/queue.txt): scan all TODO, FIXME and HACK comments in src/, queue a cleanup goal if the count grew since the last scan, report the delta in docs/CODE-DEBT-STATUS.md, commit as chore maint code debt scan, push.
