@@ -1,24 +1,38 @@
 # Mobile Gate Status
 
-**Last Check:** 2026-10-21 09:46-09:55 UTC (MAINTENANCE_LOOP_6, sixth recheck; local time 09:46-09:55)
+**Last Check:** 2026-10-21 07:44-07:48 UTC (MAINTENANCE_LOOP_6, seventh recheck; local time 14:44-14:48 UTC+7)
 **Page:** home
-**Commit:** `c0a5bc67c` (clean tree at measurement; the previous E2E run and STATE updates before this loop)
-**Server:** `pnpm start` on port 3313 from this worktree, fresh `pnpm build` (exit 0, no other next-server in flight, listener verified by pid, killed by pid afterwards).
+**Commit:** `9825db2e6` (clean tree at measurement; HEAD of `autopilot`, five `src/` commits after the sixth recheck's `c0a5bc67c`: F41, F42, F43 and the residual)
+**Server:** `pnpm start` on port 3313 from this worktree (listener pid 45467, verified by `lsof`, killed by pid afterwards) on the `pnpm build` of this same HEAD written one minute before the run (BUILD_ID `Lmby_umlo2MjrjiU5wKoh`, 14:41 local, by the previous loop item's build gate). A stale `pnpm start` from 12:42 local was found on port 3417 and left alone; it was not the measured origin.
 **Threshold:** 11%
-**Verdict:** 1440px PASS at 8.1%. No mobile fix goal requeued.
+**Verdict:** 380 PASS at 8.53%, 768 PASS at 9.79%, 1440 PASS at 8.08%. No mobile fix goal requeued.
 
-| Viewport | Score | Status | Previous (01:32-01:36, `da214d37d`) | Delta | Lowest ledger row |
+| Viewport | Score | Status | Previous (F43 ledger, 04:11-04:17 UTC, `f52769b0a-dirty`) | Delta | Margin to 11% |
 |---|---|---|---|---|---|
-| 1440 | **8.1%** | **PASS** | 8.10% | +0.00 | 8.10% (20.10 15:34, 01:36, now 09:55) |
+| 380 | **8.53%** | **PASS** | 8.53% | +0.00 | 2.47 |
+| 768 | **9.79%** | **PASS** | 9.79% | +0.00 | 1.21 |
+| 1440 | **8.08%** | **PASS** | 8.08% | +0.00 | 2.92 |
 
-Ledger rows, verbatim from docs/UI-PARITY-REPORT.md, in run order:
+Ledger rows, verbatim from docs/UI-PARITY-REPORT.md (timestamps there are UTC), in run order:
 
 ```
-| 2026-10-21 01:32 | home | 380 | 8.51% | PASS | `da214d37d` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-10-21 01:34 | home | 768 | 9.80% | PASS | `da214d37d-dirty` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-10-21 01:36 | home | 1440 | 8.10% | PASS | `da214d37d-dirty` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-10-21 09:55 | home | 1440 | 8.1% | PASS | `c0a5bc67c` | ref 141 failed to load (101 script, 37 font, 2 stylesheet, 1 xhr) |
+| 2026-10-21 04:11 | home | 380 | 8.53% | PASS | `f52769b0a-dirty` | baseline electro-v7-380.png (frozen PNG, 2026-10-21T04:11:40.679Z), not a fresh archive shot |
+| 2026-10-21 04:13 | home | 768 | 9.79% | PASS | `f52769b0a-dirty` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
+| 2026-10-21 04:17 | home | 1440 | 8.08% | PASS | `f52769b0a-dirty` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
+| 2026-10-21 07:44 | home | 380 | 8.53% | PASS | `9825db2e6` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
+| 2026-10-21 07:46 | home | 768 | 9.79% | PASS | `9825db2e6-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-21 07:48 | home | 1440 | 8.08% | PASS | `9825db2e6-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
 ```
+
+## MAINTENANCE_LOOP_6 seventh recheck notes (07:48 UTC)
+
+- **First recheck of the F43 tree, and it repeats the F43 commit's own numbers to the hundredth at every width:** 8.53 / 9.79 / 8.08. The five `src/` commits since the sixth recheck (`046f1ba62` F41, `ff8bf9ea5` F42, `f52769b0a` and `5371d9ef6` F43, `2dba324b8` residual) are all measured here for the first time on a clean committed tree; the F43 ledger rows were `-dirty`. The 768 margin is 1.21 points, the narrowest of the three, unchanged.
+- **The ledger's `-dirty` suffix on the 768 and 1440 rows is the gate's own ledger write**, not a source change: the 380 row lands first and modifies docs/UI-PARITY-REPORT.md, so the two later children see a dirty tree. `git status` at the end of the run lists that one file.
+- **Reference shortfall was 153 on the first archive load (380) and the deterministic 96 on the two later widths**, the same first-load pattern recorded at 18:05, 21:03 and 22:31 on 20.10. Scores did not move against either shortfall figure.
+- **No UNMEASURED row.** Three widths took 5 minutes 30 seconds wall time, the 1440 archive load included.
+- **Timestamps:** the ledger writes UTC. The sixth recheck's header above the fold read "09:46-09:55 UTC" but those were local (UTC+7) clock readings; its ledger row is not in this worktree's ledger at all (the tail before this run ended at the F43 rows and the 04:19 cart row). This header states both clocks explicitly.
+- **Band profile at 1440 unchanged:** y500-600 25.2%, y200-300 24.1%, y1700-1800 19.4%, y300-400 18.7%, y600-700 17.2%, y1600-1700 16.2%, y0-100 11.2%. Each is a documented floor below (hero side columns, row-two photographs, masthead search field). At 768 the two bands read off this run's output are y2400 17.5% and y2500 34.1%, the row-four floor, unchanged; the earlier 768 bands scrolled out of the captured output and were not re-read.
+- **Not done this loop:** serving the reference from a local origin to pin the shortfall. Unchanged open item; with seven consecutive runs agreeing to the hundredth at 380 it remains ledger noise, not a gate risk.
 
 ## MAINTENANCE_LOOP_6 sixth recheck notes (09:55)
 
