@@ -24,8 +24,8 @@ importers:
         specifier: ^0.122.0
         version: 0.122.0(zod@3.25.76)
       '@marsidev/react-turnstile':
-        specifier: ^1.6.2
-        version: 1.6.2(react-dom@19.2.9(react@19.2.9))(react@19.2.9)
+        specifier: ^1.6.3
+        version: 1.6.3(react-dom@19.2.9(react@19.2.9))(react@19.2.9)
       '@mdx-js/loader':
         specifier: ^3.1.1
         version: 3.1.1(webpack@5.112.0(lightningcss@1.32.0)(sharp@0.35.5(@types/node@22.20.5)))
@@ -1016,8 +1016,8 @@ packages:
   '@levischuck/tiny-cbor@0.2.11':
     resolution: {integrity: sha512-llBRm4dT4Z89aRsm6u2oEZ8tfwL/2l6BwpZ7JcyieouniDECM5AqNgr/y08zalEIvW3RSK4upYyybDcmjXqAow==}
 
-  '@marsidev/react-turnstile@1.6.2':
-    resolution: {integrity: sha512-0CL9hNI/t39C8JfBCHQWj+A7llq2xdf9cjg0bYVbiywQlVS0bi1LTTTnF3S59OaBYgc+tMrxMedSDICJfaAkdg==}
+  '@marsidev/react-turnstile@1.6.3':
+    resolution: {integrity: sha512-JdMMArjEVDMs5jnGMBeXl3y6dkMuIXPG4Tu88Uo2Rkf8ujEw/iJ2Yp/3n4kDF3BjJ+bJB9WC19LPWc5a7/4srA==}
     peerDependencies:
       react: ^17.0.2 || ^18.0.0 || ^19.0
       react-dom: ^17.0.2 || ^18.0.0 || ^19.0
@@ -5501,7 +5501,7 @@ snapshots:
 
   '@levischuck/tiny-cbor@0.2.11': {}
 
-  '@marsidev/react-turnstile@1.6.2(react-dom@19.2.9(react@19.2.9))(react@19.2.9)':
+  '@marsidev/react-turnstile@1.6.3(react-dom@19.2.9(react@19.2.9))(react@19.2.9)':
     dependencies:
       react: 19.2.9
       react-dom: 19.2.9(react@19.2.9)
