@@ -1,7 +1,7 @@
 # Cron Routes Status
 
-**Last check:** 2026-10-21 06:41 UTC (MAINTENANCE_LOOP_5, seventh run; MCP `get_runtime_logs` called in-session four ways and `get_runtime_errors` once, 403 all five times; CLI fallback measured over 24h and 7d)
-**Status:** 🔴 CRITICAL, unchanged since 2026-10-20 13:15 UTC (seventh consecutive measurement). All 5 `vercel.json` routes are stale over 24h with 0 hits in 7 days. The only 2xx in 7 days is `/api/cron/health`, twice, at 2026-10-19 04:55 UTC (a manual probe after the deploy), which is itself almost 50h stale. Every other hit is 401 or 404. The only live scheduler is pg_cron inside the database (01:30 UTC today).
+**Last check:** 2026-10-21 09:54 UTC (MAINTENANCE_LOOP_5, eighth run; MCP `get_runtime_logs` called in-session twice, 403 both times; CLI fallback measured over 24h and 7d, one transient 504 retried)
+**Status:** 🔴 CRITICAL, unchanged since 2026-10-20 13:15 UTC (eighth consecutive measurement). All 5 `vercel.json` routes are stale over 24h with 0 hits in 7 days. The only 2xx in 7 days is `/api/cron/health`, twice, at 2026-10-19 04:55 UTC (a manual probe after the deploy), which is itself 53h stale. Every other hit is 401 or 404. The only live scheduler is pg_cron inside the database (01:30 UTC today, 48 of 48 succeeded).
 
 ## How this was measured
 
@@ -457,8 +457,59 @@ scheduler added six more failed runs, and the 32-route table in the sixth run st
 unchanged and none is reachable from this loop. Gates on this branch at the time of writing: `pnpm type-check`,
 `pnpm lint` and `pnpm build` all exit 0 (204 routes).
 
+## 09:54 UTC re-measurement, 21.10 (eighth run)
+
+MCP `get_runtime_logs` was called twice from this session against `team_TUMTPVDP8218QHwedSjmgJWl` /
+`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`: filtered (`environment=production`, `query=/api/cron`, `since=7d`, `limit=100`,
+window 2026-10-14T09:54:45Z to 2026-10-21T09:54:45Z) and `group_by=requestPath` over `24h`. Both answered
+`Vercel API request failed (403: forbidden)` at page 0, request `qlqh9-1792576491205`, 0 rows. Same grant failure as
+every run since 13:15 UTC on 20.10. The CLI fallback named in the tool's own recovery text was used with the same scope.
+The first CLI pull (`--since 7d --status-code 200`) answered `Response Error (504)` from the logs API; the retry a
+minute later returned rows, so the 504 was transient and is not counted as evidence.
+
+| Probe | Result |
+|---|---|
+| `vercel logs --since 7d --status-code 200 --query "/api/cron"` | 504 on the first call; retry: **2 rows**, both `/api/cron/health` on `audit/final-audit` at 2026-10-19 04:55:07 and 04:55:21 UTC, now **53h 04m** old |
+| `vercel logs --since 7d --status-code 5xx --query "/api/cron"` | **0 rows** |
+| `vercel logs --since 24h --query "/api/cron"` (any status, cap 50) | 50 rows, 01:30:57 to 09:40:42 UTC 21.10: 401 = 31, 404 = 19, 25 distinct paths |
+| Newest hit of any cron route | `wishlist-alerts` 401 at 09:40:42 UTC from the GitHub scheduler (run `39578795068`, schedule `45 4 * * *`) |
+| `vercel crons ls --project kenyonexpress` | 5 paths, all **not deployed**, "5 local changes pending deploy" |
+| Production alias `kenyonexpress.co.il` | still `dpl_AP18UQwUQdhd3XWNo41seDQvAcuA` (`audit/final-audit` @ `337d1a2a`, source `cli`, 2026-10-19 04:43 UTC), `crons: []` |
+| `vercel ls --prod` | newest three production deployments are all 2 days old, no new deploy since the seventh run |
+| GitHub `cron.yml`, last 8 scheduled runs (07:04 to 09:40 UTC 21.10, all on `main`) | **8 / 8 failed** |
+| pg_cron `report_tables_nightly` (management API, read-only) | **48** succeeded, 0 failed, last success **2026-10-21 01:30:00 UTC**, 🟢 fresh |
+
+The 09:21 UTC scheduler run swept the whole `main` manifest in one pass (09:21:54 to 09:21:59 UTC): every route
+that exists on the deployed branch answered 401 (secret mismatch) and every route that does not answered 404.
+That single sweep is why 24 of the 25 paths below share the 09:21 timestamp.
+
+**Per-route last attempt in the 24h window** (09:54 UTC 20.10 to 09:54 UTC 21.10, from the 50-row capped pull, so
+the window actually starts at 01:30 UTC 21.10; aggregated by path):
+
+| Route | Last attempt (UTC) | Status | Hits in pull |
+|---|---|---|---|
+| wishlist-alerts | 2026-10-21 09:40:42 | 401 | 2 |
+| affiliate-payouts | 2026-10-21 09:21:59 | 404 | 2 |
+| weekly-digest, retention, expire-vouchers, reconcile, reap-carts, subscriptions, abandoned-cart, stranded-payments, stock, invoices, health, notifications | 2026-10-21 09:21:57 to 09:21:58 | 401 | 2 each |
+| email-retry, daily-deals, backup, expire-coupons, search-reindex, search-outbox, expire-cashback, job-dlq | 2026-10-21 09:21:54 to 09:21:56 | 404 | 2 each |
+| wishlist-digest | 2026-10-21 09:21:56 | 404 | 1 |
+| whatsapp | 2026-10-21 09:21:55 | 401 | 3 |
+| webhook-dlq | 2026-10-21 09:21:54 | 401 | 2 |
+| observability-check, fraud-monitor, p95-monitor, deal-scraper, stock-notifications (`vercel.json`) | none | n/a | 0 |
+| rfm-segmentation, search-report, sms-broadcasts (`src` only) | none | n/a | 0 |
+
+Nothing changed since the 06:41 UTC run except the clock: the `health` 2xx aged from almost 50h to 53h, the GitHub
+scheduler added eight more failed runs, pg_cron logged its 48th success, and the 32-route table in the sixth run still
+holds (24 attempted and failed, 8 never called). The five `vercel.json` routes remain at **0 hits in 7 days**, 🔴 stale
+over 24h. The three owners (a production deploy that carries `vercel.json`, Ofir's `CRON_SECRET`, a manifest dedupe PR
+to protected `main`) are unchanged and none is reachable from this loop.
+
 ## History
 
+- 2026-10-21 09:54 to 09:58 UTC: eighth run. MCP `get_runtime_logs` 403 twice (7d filtered, `group_by=requestPath` 24h, request `qlqh9-1792576491205`), 0 rows.
+  CLI: first 7d pull answered 504 from the logs API, retry 2 × 200, both `health` on 19.10 04:55 UTC (53h 04m old); 0 × 5xx; 24h window 31 × 401 + 19 × 404
+  (cap 50, 25 paths, one full manifest sweep at 09:21 UTC); `crons ls` 5/5 not deployed; production alias unchanged on `dpl_AP18UQwUQdhd3XWNo41seDQvAcuA`;
+  8/8 latest `cron.yml` runs failed, newest `39578795068` at 09:40 UTC (`wishlist-alerts=401`); pg_cron nightly 48/48, last 01:30 UTC. All 5 routes stale over 24h.
 - 2026-10-21 06:41 to 06:46 UTC: seventh run. MCP 403 five times, 0 rows: `get_runtime_logs` 7d filtered, `group_by=requestPath` 24h,
   `deploymentId=dpl_AP18UQwUQdhd3XWNo41seDQvAcuA` 7d, staging project `prj_7Ar3dFtaIqemo7bc1Fg7SMh11joY` 7d, and `get_runtime_errors`
   scoped to the five `vercel.json` routes (request `wp6pv-1792565190546`, "project does not exist or you do not have access").
