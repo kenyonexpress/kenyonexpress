@@ -1,12 +1,34 @@
 # Lighthouse CI Status Report
 
-**Last Updated:** 2026-10-21 08:06 UTC (MAINTENANCE_LOOP_7, eighth pass)
+**Last Updated:** 2026-10-21 10:16 UTC (MAINTENANCE_LOOP_7, ninth pass)
 **Measurement Method:** `LHCI_BASE_URL=http://localhost:3361 COMPARE_PRODUCT_SLUG=<slug> pnpm lhci:autorun`
-(`@lhci/cli` 0.15.1 via `pnpm dlx`, Lighthouse 12.6.1, Chrome 155, `desktop` preset, 3 runs per URL, lhci median)
-**Build:** commit `4d08a6515` (clean tree), **cold** `pnpm build` exit 0 with `.next/cache/turbopack` moved aside first (see "Stale build cache" below), BUILD_ID `TYMhcyjg71hC5vYivmt-y`, served by `pnpm start` from this worktree on port 3361 (listener pid 55588, cwd verified as this checkout, served BUILD_ID verified in the HTML, port free beforehand, killed by pid afterwards). `pnpm type-check` and `pnpm lint` ran clean alongside the build; `pnpm gate:chunks` clean on 292 prerendered pages.
-**Reports:** `.lighthouseci/reports/` (git-ignored, nothing uploaded; the 01:46 reports and the discarded warm-cache run were moved out of the repo so the manifest holds only this pass)
+(`@lhci/cli` 0.15.1 via `pnpm dlx`, Lighthouse 12.6.1, Chrome 155.0.8059.85, `desktop` preset, 3 runs per URL, lhci median)
+**Build:** commit `b4b948d44` (clean tree), **cold** `pnpm build` exit 0 with `.next/cache/turbopack` moved to `/tmp/ke-lh9/` first, BUILD_ID `1JyKi5zx2YDf-1UfkZEuu`, `pnpm gate:chunks` clean on 243 prerendered pages before the server started, served by `pnpm start` from this worktree on port 3361 (listener pid 30184, cwd verified by `lsof` as this checkout, BUILD_ID verified in the served HTML, port free beforehand, killed by pid afterwards). `pnpm type-check` and `pnpm lint` ran clean alongside.
+**Reports:** `.lighthouseci/reports/` (git-ignored, nothing uploaded; the 08:06 reports were moved to `/tmp/ke-lh9/prev-reports` so the manifest holds only this pass)
 
 ## Summary
+
+✅ **Every category at or above 90 on all three URLs, in all nine runs.** No optimisation goal queued; `~/ke-goals/queue.txt` untouched.
+✅ **Performance 99 to 100** on the representative runs (target ≥ 90); the nine individual runs are 98 to 100
+✅ **Accessibility 100** in all nine runs (target ≥ 90), seventh consecutive pass holding the A11Y_FIX_PRODUCTS_LIGHTHOUSE result
+✅ Best Practices 96 and SEO 100 everywhere
+✅ Chunk gate clean before measuring, so the 100s are for a page that hydrates (see the eighth pass for the failure this guards)
+
+| URL | Performance | Accessibility | Best Practices | SEO | FCP | LCP | TBT | CLS | Status |
+|-----|-------------|---------------|----------------|-----|-----|-----|-----|-----|--------|
+| `/` | 100 (100, 100, 100) | 100 (100, 100, 100) | 96 | 100 | 0.4 s | 0.7 s | 0 ms | 0.010 | ✅ PASS |
+| `/products` | 99 (99, 99, 98) | 100 (100, 100, 100) | 96 | 100 | 0.4 s | 1.0 s | 0 ms | 0.006 | ✅ PASS |
+| `/product/אוזניות-איירפודס-3` | 99 (98, 99, 99) | 100 (100, 100, 100) | 96 | 100 | 0.4 s | 0.9 s | 0 ms | 0.019 | ✅ PASS |
+
+The first number is lhci's representative (median) run, the bracket lists all three runs in order. Metrics are from the representative run.
+
+No weighted audit scores below 0.9 in any category except `errors-in-console` under Best Practices, which is the same five local-environment items as every previous pass (two `/_vercel/*` 404s, two "Refused to execute" on their `text/plain` answer, one `ERR_SSL_PROTOCOL_ERROR` on an https request to the plain-http localhost origin), checked item by item on all three representative reports. No `/_next/*` request failed on any page, and the only failed requests on all three pages are the two `/_vercel/*` scripts.
+
+Against the 08:06 pass: `/` is identical at 100, `/products` is identical at 99, the product page moved 98 to 99. One `src/` commit landed in between (E2E run 12, `13021b20c`: checkout wizard saved-card panel, checkout return page test ids, vouchers supplier embeds, mock Cardcom frame return, `next.config.ts` scan redirect; 13 files) and none of it renders on the three measured pages. The one-point move is the localhost band described in `docs/PERFORMANCE-BUDGET.md`. TBT was 0 ms in all nine runs. The `CHROME_INTERSTITIAL_ERROR` of the 02:59 UTC attempt (stamped 09:59 local in `STATE.md`) did not reproduce for a second consecutive pass.
+
+## Previous pass (2026-10-21 08:06 UTC, MAINTENANCE_LOOP_7, eighth pass)
+
+Build: commit `4d08a6515`, BUILD_ID `TYMhcyjg71hC5vYivmt-y` (cold build, `.next/cache/turbopack` moved aside first).
 
 ✅ **Every category at or above 90 on all three URLs, in all nine runs.** No optimisation goal queued; `~/ke-goals/queue.txt` untouched.
 ✅ **Performance 98 to 100** on the representative runs (target ≥ 90); the nine individual runs are 98 to 100
