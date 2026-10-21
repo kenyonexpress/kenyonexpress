@@ -2,6 +2,23 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_7 (Session: 2026-10-21 12:52-13:01 UTC, Lighthouse CI check, eleventh pass, MEASURED, PASS)
+
+**Goal:** Run Lighthouse CI via pnpm lhci:autorun, queue an optimization goal if any score is below 90, report scores to docs/LIGHTHOUSE-STATUS.md, commit as chore qa lighthouse check, push.
+
+**Result:** COMPLETE, PASS on all three URLs in all nine runs, no optimisation goal queued, `~/ke-goals/queue.txt` untouched. Representative runs: `/` 99/100/96/100, `/products` 99/100/96/100, `/product/אוזניות-איירפודס-3` 98/100/96/100 (performance/accessibility/best practices/SEO); the nine individual performance runs are 98 to 99, accessibility 100 in all nine, TBT 0 ms in all nine. Cold `pnpm build` of HEAD `a41d6a005` (`.next/cache/turbopack` moved to `/tmp/ke-lh11/` first, BUILD_ID `ssCwFEP6KVH1qXJjDI-ps`), `pnpm gate:chunks` clean on 243 pages before the server started, `pnpm start` on 3361 (pid 23995, cwd verified as this worktree, BUILD_ID verified in the served HTML, port free beforehand, stopped by pid afterwards and confirmed closed). No `src/` change since the tenth pass's `a24964753` (15 commits between, all `STATE.md`, `docs/`, `logs/`); against 11:38 the only movement is `/products` 98 to 99, inside the localhost band. Only weighted audit under 0.9 is `errors-in-console` with the same five local-environment items (two `/_vercel/*` 404s, their two MIME refusals, one https prefetch against the http origin), checked against the category `auditRefs` weights on all three representative reports. Eleventh-pass section prepended to docs/LIGHTHOUSE-STATUS.md, tenth pass demoted to a previous-pass block. Reports stay git-ignored in `.lighthouseci/reports/`, the 11:38 ones in `/tmp/ke-lh11/prev-reports`.
+
+**Gates:** `pnpm type-check` exit 0, `pnpm lint` exit 0 (biome 1733 files, tokens, copy, asset gates clean), `pnpm build` exit 0 (cold), `pnpm gate:chunks` clean. Backup 2026-10-21-1241 present and under 24h, three kept (10-18-0350, 10-21-0201, 10-21-1241); caffeinate alive (two processes), SleepDisabled 1. Nothing to fix.
+
+**החלטות שהתקבלו לבד:**
+- No tests added: the change is a measurement report in docs/ with no src or script change. GitHub MCP not needed: no PR, work lands on autopilot directly. Supabase MCP not needed: no DB work in this goal.
+- Built cold again (cache moved aside) rather than reusing the `1Qg4uEvnACRwBY5ACKFdR` build already on disk, per the eighth-pass finding that a warm Turbopack cache shipped unhydrated pages that Lighthouse still scored 99.
+- The build log's `Partner API ... bail out of prerendering` and `reviews.read_failed 42501` lines are the documented pre-existing noise (docs/MAINT-LOG.md), build exit 0; logged, not touched.
+- The unweighted 0.5 and 0 diagnostics (`uses-long-cache-ttl`, `render-blocking-resources`, `unused-javascript`, `dom-size`, the insight rows) are weight 0 in the category and were not treated as a below-90 trigger; the goal's threshold is the category score.
+
+**המשך מ:** MAINTENANCE_LOOP_8 (head of `~/ke-goals/queue.txt`): scan all TODO FIXME HACK comments in src/, queue a cleanup goal if the count grew since the last scan, report the delta in docs/CODE-DEBT-STATUS.md, commit as chore maint code debt scan, push.
+
+
 ## ✅ MAINTENANCE_LOOP_5 (Session: 2026-10-21 12:33-12:50 UTC, cron status check, tenth run, MEASURED on two sources, 🔴 ALERT unchanged)
 
 **Goal:** Check all cron routes' last-run timestamp via Vercel MCP `get_runtime_logs`, alert in docs/CRON-STATUS.md if any route is stale over 24h, commit as chore ops cron status check, push.
