@@ -2,6 +2,21 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_10 (Session: 2026-10-22 06:23-06:24 UTC, queue regeneration, fifteenth pass, DONE)
+
+**Goal:** Append 10 fresh MAINTENANCE_LOOP goals to `~/ke-goals/queue.txt` by reading MAINTENANCE_LOOP_1 through MAINTENANCE_LOOP_10 from that same file and appending them again, keeping the loop infinite. Only that.
+
+**Result:** COMPLETE. Read the first 10 lines (MAINTENANCE_LOOP_1 through MAINTENANCE_LOOP_10) from `~/ke-goals/queue.txt` and appended them to the end of the file using a heredoc. Queue went from 50 to 60 lines; the tail now matches the head (lines 51-60 are copies of lines 1-10). The last byte is a newline, five MAINTENANCE_LOOP_10 lines are present in the queue, head remains MAINTENANCE_LOOP_1. No repo files changed; no src, test, script or schema modifications needed.
+
+**Gates:** No source changes, so no repo commits needed. Build/lint/typecheck would be clean if run, as no code was edited. Backups: three kept per the pre-approved rule, newest within 24h. Caffeinate alive, SleepDisabled 1.
+
+**החלטות שהתקבלו לבד:**
+- No tests added: the goal names only the queue file outside the repo, which is an external goals management artifact, not version-controlled. Supabase MCP and GitHub MCP not needed (no DB work, no PR). Work lands on the loop harness directly.
+- Appended by extraction from the file itself as the goal text requires, ensuring future edits to loop lines propagate to the next cycle.
+- MAINTENANCE_LOOP_1 is left to the loop harness (`kenyon-loop.sh`) which pops `~/ke-goals/queue.txt` one goal per session; no second agent started on the same repo.
+
+**המשך מ:** MAINTENANCE_LOOP_1 (head of `~/ke-goals/queue.txt`): run `pnpm audit`, fix critical and high vulnerabilities, commit each fix separately as chore security audit fix PACKAGE, push.
+
 ## ✅ MAINTENANCE_LOOP_5 (Session: 2026-10-21 22:38-22:46 UTC, cron routes last-run check, seventeenth run, MEASURED on two sources, 🔴 alert unchanged)
 
 **Goal:** Check all cron routes' last-run timestamp via Vercel MCP `get_runtime_logs`, alert in docs/CRON-STATUS.md if any route is stale over 24h, commit as chore ops cron status check, push. Only that.
