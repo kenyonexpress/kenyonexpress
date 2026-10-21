@@ -27,10 +27,7 @@ describe('SiteFooter', () => {
     expect(screen.getByRole('link', { name: 'צור קשר' })).toHaveAttribute('href', '/contact')
     expect(screen.getByRole('link', { name: 'תנאי שימוש' })).toHaveAttribute('href', '/terms')
     expect(screen.getByRole('link', { name: 'מדיניות פרטיות' })).toHaveAttribute('href', '/privacy')
-    expect(screen.getByRole('link', { name: 'מדיניות החזרות' })).toHaveAttribute(
-      'href',
-      '/refund_returns',
-    )
+    expect(screen.getByRole('link', { name: 'מדיניות החזרות' })).toHaveAttribute('href', '/returns')
   })
 
   it('renders copyright year', () => {

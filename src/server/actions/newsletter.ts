@@ -109,11 +109,11 @@ async function runSubscribeToNewsletter(
   const confirmUrl = `${siteUrl()}/newsletter/confirm?token=${token}`
   await sendEmail({
     to: email,
-    subject: 'אישור הרשמה לניוזלטר של קניון אקספרס',
+    subject: 'אישור הרשמה לניוזלטר של קניון EXPRESS',
     tag: 'newsletter_confirm',
     html: `<div dir="rtl" style="font-family:Heebo,Arial,Helvetica,sans-serif;text-align:right">
       <h1 style="font-size:20px">רגע לפני שנתחיל</h1>
-      <p>נרשמת לרשימת הדיוור של קניון אקספרס. לאישור ההרשמה יש ללחוץ:</p>
+      <p>נרשמת לרשימת הדיוור של קניון EXPRESS. לאישור ההרשמה יש ללחוץ:</p>
       <p><a href="${confirmUrl}" style="background:${OFF_PAGE.brand};color:${OFF_PAGE.ink};font-weight:700;padding:12px 20px;border-radius:8px;text-decoration:none;display:inline-block">אישור ההרשמה</a></p>
       <p style="color:${OFF_PAGE.muted};font-size:13px">אם לא נרשמת, אפשר להתעלם מהמייל הזה ולא יישלח אליך דבר.</p>
     </div>`,

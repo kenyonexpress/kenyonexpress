@@ -7,7 +7,7 @@ import '@/styles/category-page.css'
 
 export const metadata: Metadata = {
   title: 'דילים לפי עיר',
-  description: 'כל הערים שבהן יש דילים בקניון אקספרס.',
+  description: 'כל הערים שבהן יש דילים בקניון EXPRESS.',
   alternates: alternatesFor('/c'),
 }
 

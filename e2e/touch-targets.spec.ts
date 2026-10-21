@@ -32,9 +32,9 @@ const ROUTES = [
   '/login',
   '/mfa',
   '/offline',
-  '/privacy-policy',
+  '/privacy',
   '/products',
-  '/refund_returns',
+  '/returns',
   '/reset-password',
   '/search',
   '/signup',
@@ -42,7 +42,7 @@ const ROUTES = [
   '/supplier/access-denied',
   '/supplier/login',
   '/suppliers',
-  '/terms-and-conditions',
+  '/terms',
 ]
 const MIN_ANY = 24
 const MIN_PRIMARY = 40

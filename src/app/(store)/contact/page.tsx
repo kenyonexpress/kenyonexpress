@@ -6,7 +6,7 @@ import Link from 'next/link'
 
 export const metadata: Metadata = {
   title: 'צור קשר',
-  description: 'צרו קשר עם קניון אקספרס: שאלות, הצעות והערות על קופונים, הזמנות ומשלוחים.',
+  description: 'צרו קשר עם קניון EXPRESS: שאלות, הצעות והערות על קופונים, הזמנות ומשלוחים.',
   alternates: alternatesFor('/contact'),
 }
 
@@ -15,7 +15,7 @@ export const metadata: Metadata = {
  * info@kenyonexpress.co.il). Legal terms stay a separate content task.
  */
 export default function ContactPage() {
-  const waHref = storeWhatsAppLink('שלום, יש לי שאלה לקניון אקספרס')
+  const waHref = storeWhatsAppLink('שלום, יש לי שאלה לקניון EXPRESS')
   const waDisplay = formatIsraeliPhoneDisplay(storeWhatsAppNumber())
 
   return (

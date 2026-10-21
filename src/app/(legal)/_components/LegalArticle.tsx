@@ -1,20 +1,23 @@
 import Link from 'next/link'
 import type { LegalBlock, LegalDoc } from '../_content/types'
 import LegalFooterLinks from './LegalFooterLinks'
+import '@/styles/legal-page.css'
 
 /**
- * One renderer for every document in this route group.
+ * One renderer for every document in this route group, shaped 1:1 after the
+ * Electro template's terms page (refs/electro_terms_computed.json): breadcrumb,
+ * a centred title with the "last modified" line under it, then full-width
+ * sections of heading plus numbered clauses. Electro has no table of contents
+ * and none is rendered; every section keeps its stable `id`, so a support link
+ * to `#coupon-terms` still lands on the clause.
  *
  * The numbering is derived, not typed. A section is "3." because it is third,
  * and its clauses are "3.1", "3.2" because of their order inside it, so
  * inserting a clause cannot leave the document with two clause 4.2s. The number
- * is written into the heading text (not a CSS counter) because a customer
- * quoting "סעיף 7.2" to support must be able to select and copy it, and because
- * support links to `#coupon-terms` and the reader has to see they landed right.
+ * is written into the clause text (not a CSS counter) because a customer
+ * quoting "סעיף 7.2" to support must be able to select and copy it.
  *
- * Page frame is the site's measured one (`max-w-page` = 1320px container,
- * `max-w-3xl` reading measure), the same pair `/faq`, `/about` and the older
- * legal pages use, so a legal page does not invent a third rhythm.
+ * Every measurement lives in `src/styles/legal-page.css`; see the note there.
  */
 function Blocks({ blocks, sectionNumber }: { blocks: LegalBlock[]; sectionNumber: number }) {
   return (
@@ -29,10 +32,7 @@ function Blocks({ blocks, sectionNumber }: { blocks: LegalBlock[]; sectionNumber
 
         if (block.type === 'note') {
           return (
-            <p
-              key={key}
-              className="rounded-lg border-s-4 border-heading/40 bg-heading/5 px-4 py-3 font-medium"
-            >
+            <p key={key} className="legal-page__note">
               {block.text}
             </p>
           )
@@ -54,25 +54,17 @@ function Blocks({ blocks, sectionNumber }: { blocks: LegalBlock[]; sectionNumber
             // stop announces what it is.
             <section
               key={key}
-              className="overflow-x-auto"
+              className="legal-page__table-wrap"
               aria-label={block.caption ?? 'טבלה'}
               // biome-ignore lint/a11y/noNoninteractiveTabindex: scrolling IS the interaction here, which is the one case the rule's premise gets wrong.
               tabIndex={0}
             >
-              <table className="w-full min-w-[36rem] border-collapse text-start text-sm">
-                {block.caption && (
-                  <caption className="mb-2 text-start text-sm text-heading/75">
-                    {block.caption}
-                  </caption>
-                )}
+              <table className="legal-page__table">
+                {block.caption && <caption>{block.caption}</caption>}
                 <thead>
                   <tr>
                     {block.head.map((cell) => (
-                      <th
-                        key={cell}
-                        scope="col"
-                        className="border border-heading/15 bg-heading/5 px-3 py-2 text-start font-semibold text-heading"
-                      >
+                      <th key={cell} scope="col">
                         {cell}
                       </th>
                     ))}
@@ -88,9 +80,7 @@ function Blocks({ blocks, sectionNumber }: { blocks: LegalBlock[]; sectionNumber
                           one column over, which in a table of cancellation
                           windows would silently state the wrong rule. */}
                       {block.head.map((column, columnIndex) => (
-                        <td key={column} className="border border-heading/15 px-3 py-2 align-top">
-                          {row[columnIndex] ?? ''}
-                        </td>
+                        <td key={column}>{row[columnIndex] ?? ''}</td>
                       ))}
                     </tr>
                   ))}
@@ -102,21 +92,19 @@ function Blocks({ blocks, sectionNumber }: { blocks: LegalBlock[]; sectionNumber
 
         if (block.type === 'unordered') {
           return (
-            <ul key={key} className="list-disc space-y-2 pe-6">
+            <ul key={key}>
               {block.items.map((item) => (
-                <li key={item} className="ps-1">
-                  {item}
-                </li>
+                <li key={item}>{item}</li>
               ))}
             </ul>
           )
         }
 
         return (
-          <ol key={key} className="space-y-2">
+          <ol key={key}>
             {block.items.map((item, itemIndex) => (
-              <li key={item} className="flex gap-2">
-                <span className="shrink-0 font-semibold text-heading tabular-nums">
+              <li key={item}>
+                <span className="legal-page__clause-number">
                   {sectionNumber}.{itemIndex + 1}
                 </span>
                 <span>{item}</span>
@@ -144,75 +132,43 @@ export default function LegalArticle({
   })
 
   return (
-    <div className="mx-auto w-full max-w-page px-4 py-10">
-      <nav aria-label="נתיב ניווט" className="mb-6 text-sm text-heading/80">
-        <Link href="/" className="hit-44 hover:text-heading">
+    <div className="legal-page">
+      <nav aria-label="נתיב ניווט" className="legal-page__breadcrumb">
+        <Link href="/" className="hit-44">
           בית
         </Link>
-        <span aria-hidden="true" className="mx-2">
-          /
+        <span aria-hidden="true" className="legal-page__breadcrumb-delimiter">
+          ›
         </span>
-        <span className="text-heading">{doc.title}</span>
+        <span aria-current="page">{doc.title}</span>
       </nav>
 
-      <header className="mb-8 max-w-3xl">
-        <h1 className="text-3xl font-bold text-heading">{doc.title}</h1>
-        <p className="mt-2 text-sm text-heading/75">
+      <header className="legal-page__header">
+        <h1 className="legal-page__title">{doc.title}</h1>
+        <p className="legal-page__updated">
           עודכן לאחרונה: <time dateTime={doc.updatedAt}>{updated}</time>
         </p>
       </header>
 
       {doc.reviewNotice && (
         // Visible, not a comment. A page that looks final is treated as final.
-        <p
-          role="note"
-          className="mb-8 max-w-3xl rounded-lg border border-heading/20 bg-heading/5 px-4 py-3 text-sm leading-relaxed text-heading/80"
-        >
+        <p role="note" className="legal-page__notice">
           {doc.reviewNotice}
         </p>
       )}
 
-      <div className="max-w-3xl space-y-4 text-base leading-relaxed text-heading/90">
+      <div className="legal-page__intro">
         {doc.intro.map((text) => (
           <p key={text}>{text}</p>
         ))}
       </div>
 
-      <nav
-        aria-labelledby="legal-toc"
-        className="mt-8 max-w-3xl rounded-xl border border-heading/15 p-5"
-      >
-        <h2 id="legal-toc" className="text-lg font-bold text-heading">
-          תוכן העניינים
-        </h2>
-        {/* Each row is a 44px tap target.
-            A table of contents is navigation, not prose, so WCAG 2.5.8's
-            exemption for inline links in a sentence does not cover it - and
-            measured at 380px these rows were 24px tall, the smallest targets on
-            the page. The padding is on BOTH the number and the link so the two
-            keep the same box and stay aligned; putting it on the link alone
-            drops the number to the top of a taller row. */}
-        <ol className="mt-3 text-base">
-          {doc.sections.map((section, index) => (
-            <li key={section.id} className="flex gap-2">
-              <span className="shrink-0 py-2.5 text-heading/75 tabular-nums">{index + 1}.</span>
-              <a
-                href={`#${section.id}`}
-                className="block py-2.5 text-heading/85 underline underline-offset-4 hover:text-heading"
-              >
-                {section.title}
-              </a>
-            </li>
-          ))}
-        </ol>
-      </nav>
-
-      <article className="mt-10 max-w-3xl space-y-10 text-base leading-relaxed text-heading/90">
+      <article>
         {doc.sections.map((section, index) => (
-          // scroll-mt keeps the anchored heading clear of the sticky header
+          // scroll-margin keeps the anchored heading clear of the sticky header
           // when support links straight into a clause.
-          <section key={section.id} id={section.id} className="scroll-mt-28 space-y-4">
-            <h2 className="text-xl font-bold text-heading">
+          <section key={section.id} id={section.id} className="legal-page__section">
+            <h2>
               {index + 1}. {section.title}
             </h2>
             <Blocks blocks={section.blocks} sectionNumber={index + 1} />
@@ -220,9 +176,9 @@ export default function LegalArticle({
         ))}
       </article>
 
-      <div className="max-w-3xl">{children}</div>
+      {children}
 
-      <div className="mt-10 max-w-3xl border-t border-heading/15 pt-6">
+      <div className="legal-page__footer">
         <LegalFooterLinks current={doc.slug} />
       </div>
     </div>

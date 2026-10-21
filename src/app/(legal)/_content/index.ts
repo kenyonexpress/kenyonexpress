@@ -29,6 +29,28 @@ export const LEGAL_DOCS: readonly LegalDoc[] = [
 
 export type LegalSlug = LegalDoc['slug']
 
+/**
+ * Where each document is served (F42).
+ *
+ * Four of the five live on the short English paths under the `(legal)` route
+ * group; the cookie policy keeps `/cookie-policy` in the store group because
+ * it carries the consent-reset control. The WordPress-era addresses
+ * (`/terms-and-conditions`, `/privacy-policy`, `/refund_returns`,
+ * `/cancellation-policy`) and the old `/legal/*` stubs all 308 onto these, so
+ * this map is the one place a link to a legal page is spelled.
+ */
+export const LEGAL_DOC_PATHS: Readonly<Record<LegalSlug, string>> = {
+  terms: '/terms',
+  privacy: '/privacy',
+  cookies: '/cookie-policy',
+  returns: '/returns',
+  accessibility: '/accessibility',
+}
+
+export function legalDocPath(slug: LegalSlug): string {
+  return LEGAL_DOC_PATHS[slug]
+}
+
 export function getLegalDoc(slug: LegalSlug): LegalDoc {
   const doc = LEGAL_DOCS.find((candidate) => candidate.slug === slug)
   if (!doc) throw new Error(`Unknown legal document: ${slug}`)

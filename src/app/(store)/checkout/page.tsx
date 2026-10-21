@@ -1,10 +1,12 @@
 import { randomUUID } from 'node:crypto'
 import { validateCartView } from '@/lib/checkout/validate-cart'
+import { NO_VERIFICATION, type ShippingVerification } from '@/lib/checkout/verified-shipping'
 import { isCardTokenExpired } from '@/lib/payments/token-expiry'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { readWalletAccountAgorot } from '@/lib/supabase/optional-columns'
 import { createClient } from '@/lib/supabase/server'
 import { getCart } from '@/server/actions/cart'
+import { loadShippingVerification } from '@/server/checkout/verified-shipping'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
@@ -110,6 +112,7 @@ async function CheckoutPageBody({
   const validation = validateCartView(cart)
 
   let address = EMPTY_ADDRESS
+  let verification: ShippingVerification = NO_VERIFICATION
   let walletBalance = 0
   let savedCards: { id: string; last4: string | null; brand: string | null; isDefault: boolean }[] =
     []
@@ -156,6 +159,12 @@ async function CheckoutPageBody({
       zip: defaultAddress?.zip ?? '',
       email: user.email ?? '',
     }
+    // The verified-shipping gate (F42): after five paid physical orders the
+    // next one needs a complete address and a WhatsApp-verified phone. Read
+    // only when something ships; a coupon order has no address at all.
+    if (validation.requiresAddress) {
+      verification = await loadShippingVerification(admin, user.id, defaultAddress ?? null)
+    }
     walletBalance = wallet.balanceAgorot / 100
     savedCards = (tokens ?? [])
       // An expired card is still listed in /account so the customer can delete
@@ -180,6 +189,7 @@ async function CheckoutPageBody({
         clientRef={randomUUID()}
         needsAddress={validation.requiresAddress}
         address={address}
+        verification={verification}
         walletBalance={walletBalance}
         savedCards={savedCards}
         isAuthenticated={Boolean(user)}

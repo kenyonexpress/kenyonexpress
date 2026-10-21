@@ -22,7 +22,7 @@ async function handleGET(): Promise<NextResponse> {
   const xml = buildRssFeed(products, {
     siteUrl: site,
     title: 'KenyonExpress — דילים חדשים',
-    description: 'הדילים והקופונים החדשים ביותר בקניון אקספרס',
+    description: 'הדילים והקופונים החדשים ביותר בקניון EXPRESS',
     selfUrl: `${site}/feed.xml`,
     // The newest item's own timestamp, not the clock. `lastBuildDate` is what
     // a reader polls against, and a value that moves on every request tells it

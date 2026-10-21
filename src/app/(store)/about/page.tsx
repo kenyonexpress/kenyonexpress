@@ -6,7 +6,7 @@ import Link from 'next/link'
 export const metadata: Metadata = {
   title: 'אודות',
   description:
-    'מי אנחנו וכיצד עובדת רכישת קופון בקניון אקספרס: תשלום מקדים, שובר עם QR, יתרה בבית העסק, תוקף וזיכוי אוטומטי בפקיעה.',
+    'מי אנחנו וכיצד עובדת רכישת קופון בקניון EXPRESS: תשלום מקדים, שובר עם QR, יתרה בבית העסק, תוקף וזיכוי אוטומטי בפקיעה.',
   alternates: alternatesFor('/about'),
 }
 
@@ -43,7 +43,7 @@ export default function AboutPage() {
       </nav>
 
       <header className="mb-8 max-w-3xl">
-        <h1 className="text-3xl font-bold text-heading">אודות קניון אקספרס</h1>
+        <h1 className="text-3xl font-bold text-heading">אודות קניון EXPRESS</h1>
         <p className="mt-2 text-sm text-heading/75">עודכן לאחרונה: {updated}</p>
         <p className="mt-4 text-base leading-relaxed text-heading/80">{aboutIntro}</p>
       </header>

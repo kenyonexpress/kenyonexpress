@@ -88,8 +88,8 @@ test.describe('no sideways scroll at 320px', () => {
     '/legal/privacy',
     '/legal/returns',
     '/legal/accessibility',
-    '/terms-and-conditions',
-    '/privacy-policy',
+    '/terms',
+    '/privacy',
     '/offline',
     '/this-route-does-not-exist',
   ]) {
