@@ -4189,3 +4189,10 @@ Supabase MCP authentication unavailable in non-interactive session. CLI fallback
 - Gates: type-check exit 0, lint exit 0 (biome 1700 files + 3 gates), build exit 0. Backup 2026-10-21-0201 present, three kept; caffeinate alive, SleepDisabled 1.
 
 **המשך מ:** MAINTENANCE_LOOP_10 (head of ~/ke-goals/queue.txt).
+
+## MAINTENANCE_LOOP_10 sixth pass (2026-10-21 00:03 UTC, queue regeneration)
+- `~/ke-goals/queue.txt` grew from 20 to 30 non-empty lines: lines 21 to 30 are MAINTENANCE_LOOP_1 through MAINTENANCE_LOOP_10 in order, extracted per number with the first file-order match of `MAINTENANCE_LOOP_N .*` (so the "MAINTENANCE_LOOP_1 through" substring inside the LOOP_10 text is never picked), verified with `diff` against lines 1 to 10: identical. Trailing newline confirmed before the append; backup written beside the file as `queue.txt.bak-<epoch>` first. The old `grep -n` number prefixes seen in the fifth pass have drained; every line is clean now.
+- Steady state checked against refill.sh: it refills with 50 generated goals only when the count drops under 20 at the top of the loop, and LOOP_10 is popped at 21, leaving 20 for this append to raise back to 30. The cycle therefore never triggers the generator. No repository file changed except this entry; Supabase MCP and GitHub MCP not needed.
+- Gates: typecheck exit 0, lint exit 0 (biome 1700 files + 3 gates), build exit 0. Backup 2026-10-21-0201 present, three kept; refill.sh alive in tmux ke-autopilot, caffeinate alive, SleepDisabled 1.
+
+**המשך מ:** MAINTENANCE_LOOP_1 (head of ~/ke-goals/queue.txt).
