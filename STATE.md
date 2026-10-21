@@ -2,6 +2,20 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_10 (Session: 2026-10-21 08:42-08:44 UTC, queue regeneration, fifth pass, DONE)
+
+**Goal:** Append 10 fresh MAINTENANCE_LOOP goals to `~/ke-goals/queue.txt` by reading MAINTENANCE_LOOP_1 through MAINTENANCE_LOOP_10 from that file and appending them again. Only what is requested.
+
+**Result:** DONE. The file ended with a newline, so lines 1 through 10 (one full LOOP_1 to LOOP_10 cycle, taken from a copy at `/tmp/queue-before.txt`) were appended verbatim. Queue grew from 40 lines to 50; `diff` of lines 1-10 against lines 41-50 is empty and `grep -c '^MAINTENANCE_LOOP_'` reads 50. The runner had already popped this pass's LOOP_10 line before the append, so the head is now MAINTENANCE_LOOP_1 and the cycle continues without a refill trigger.
+
+**Gates:** no repository file other than this entry changed; `pnpm type-check`, `pnpm lint` and `pnpm build` results are in the commit body.
+
+**החלטות שהתקבלו לבד:**
+- The queue file lives outside the repo, so the commit carries only this STATE.md entry.
+- Supabase MCP and GitHub MCP not needed: no DB, RLS, migration or PR in a queue append.
+
+**המשך מ:** MAINTENANCE_LOOP_1 (head of `~/ke-goals/queue.txt`): run `pnpm audit`, fix critical and high vulnerabilities, commit each fix separately, push to autopilot.
+
 ## ✅ MOBILE_FIX_GATE (Session: 2026-10-21 08:27-08:45 UTC, home 1440 under 11%, MEASURED, PASS, no layout change needed)
 
 **Goal:** Bring the home page compare.mjs score at 1440 under 11% (quoted 23.91%, worst bands y1100-1200 67.5%, y1200-1300 63.1%, y1600-1700 61.5%), optimise CSS/layout in those bands, add tests, run type-check, lint, build, commit as [autopilot].
