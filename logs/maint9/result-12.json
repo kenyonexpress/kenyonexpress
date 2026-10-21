@@ -1,0 +1,2717 @@
+{
+  "ts": "2026-10-21T13:07:05.340Z",
+  "projectRef": "ixvwfbuvfxxsjiywhbbb",
+  "probes": {
+    "settings": [
+      {
+        "name": "idle_in_transaction_session_timeout",
+        "setting": "0",
+        "unit": "ms"
+      },
+      {
+        "name": "max_connections",
+        "setting": "60",
+        "unit": null
+      },
+      {
+        "name": "server_version",
+        "setting": "17.6",
+        "unit": null
+      },
+      {
+        "name": "shared_buffers",
+        "setting": "28672",
+        "unit": "8kB"
+      },
+      {
+        "name": "statement_timeout",
+        "setting": "120000",
+        "unit": "ms"
+      },
+      {
+        "name": "superuser_reserved_connections",
+        "setting": "3",
+        "unit": null
+      },
+      {
+        "name": "work_mem",
+        "setting": "2184",
+        "unit": "kB"
+      }
+    ],
+    "activity": [
+      {
+        "state": "idle",
+        "wait_event_type": "Client",
+        "n": 13,
+        "max_age_s": 4653622
+      },
+      {
+        "state": "active",
+        "wait_event_type": null,
+        "n": 1,
+        "max_age_s": 0
+      }
+    ],
+    "activity_by_app": [
+      {
+        "app": "PostgREST 14.5",
+        "usename": "authenticator",
+        "n": 11
+      },
+      {
+        "app": "",
+        "usename": "supabase_admin",
+        "n": 1
+      },
+      {
+        "app": "mgmt-api",
+        "usename": "supabase_read_only_user",
+        "n": 1
+      },
+      {
+        "app": "postgres_exporter",
+        "usename": "supabase_admin",
+        "n": 1
+      }
+    ],
+    "activity_total": [
+      {
+        "backends": 14,
+        "max_connections": 60,
+        "reserved": 3
+      }
+    ],
+    "long_running": [],
+    "database": [
+      {
+        "datname": "postgres",
+        "numbackends": 16,
+        "xact_commit": 8743910,
+        "xact_rollback": 641785,
+        "deadlocks": 0,
+        "temp_files": 167049,
+        "cache_hit_pct": "100.00",
+        "stats_reset": null
+      }
+    ],
+    "locks": [
+      {
+        "waiting": 0
+      }
+    ],
+    "pgss_present": [
+      {
+        "extname": "pg_stat_statements",
+        "extversion": "1.11"
+      }
+    ],
+    "pgss_reset": [
+      {
+        "stats_reset": "2026-07-16 19:10:08.475715+00"
+      }
+    ],
+    "pgss_summary": [
+      {
+        "statements": 4898,
+        "calls": 7587941,
+        "total_ms": "3095923",
+        "over_500_mean": 6,
+        "over_500_max": 20
+      }
+    ],
+    "slow_mean": [
+      {
+        "calls": 5,
+        "mean_ms": "1511.6",
+        "max_ms": "2070.9",
+        "total_ms": "7558",
+        "rows": 389,
+        "query": "with\n      tables as (SELECT\n  c.oid :: int8 AS id,\n  nc.nspname AS schema,\n  c.relname AS name,\n  c.relrowsecurity AS rls_enabled,\n  c.relforcerowsecurity AS rls_forced,\n  CASE\n    WHEN c.relreplident = $2 THEN $3\n    WHEN c.relreplident = $4 THEN $5\n    WHEN c.relreplident = $6 THEN $7\n    ELSE $8\n  END AS replica_identity,\n  pg_total_relation_size(format($9, nc.nspname, c.relname)) :: int8 AS b"
+      },
+      {
+        "calls": 1,
+        "mean_ms": "1206.6",
+        "max_ms": "1206.6",
+        "total_ms": "1207",
+        "rows": 52,
+        "query": "with page as (\n      select\n        c.oid,\n        c.relname,\n        c.relrowsecurity,\n        c.relforcerowsecurity,\n        c.relreplident,\n        nc.nspname as schema,\n        -- Computed once here so the final select can reference it for both the\n        -- raw byte count and pg_size_pretty without re-walking heap+toast+indexes.\n        pg_total_relation_size(c.oid) as bytes_raw\n      from p"
+      },
+      {
+        "calls": 1,
+        "mean_ms": "1133.6",
+        "max_ms": "1133.6",
+        "total_ms": "1134",
+        "rows": 16,
+        "query": "select tc.table_name, kcu.column_name, ccu.table_schema as ref_schema, ccu.table_name as ref_table, rc.delete_rule\nfrom information_schema.table_constraints tc\njoin information_schema.key_column_usage kcu on tc.constraint_name = kcu.constraint_name and tc.table_schema = kcu.table_schema\njoin information_schema.referential_constraints rc on tc.constraint_name = rc.constraint_name\njoin information_s"
+      },
+      {
+        "calls": 1,
+        "mean_ms": "744.9",
+        "max_ms": "744.9",
+        "total_ms": "745",
+        "rows": 1,
+        "query": "SELECT jsonb_object_agg(x.tablename, x.result) AS m FROM (\n  SELECT c.relname AS tablename, pg_temp.count_or_err(c.relname) AS result\n  FROM pg_class c WHERE c.relnamespace=$1::regnamespace AND c.relkind=$2\n) x"
+      },
+      {
+        "calls": 384,
+        "mean_ms": "703.6",
+        "max_ms": "1673.8",
+        "total_ms": "270194",
+        "rows": 56152,
+        "query": "with f as (\n      \n-- CTE with sane arg_modes, arg_names, and arg_types.\n-- All three are always of the same length.\n-- All three include all args, including OUT and TABLE args.\nwith functions as (\n  select\n    *,\n    -- proargmodes is null when all arg modes are IN\n    coalesce(\n      p.proargmodes,\n      array_fill($1::text, array[cardinality(coalesce(p.proallargtypes, p.proargtypes))])\n    ) as"
+      },
+      {
+        "calls": 594,
+        "mean_ms": "566.7",
+        "max_ms": "2557.4",
+        "total_ms": "336627",
+        "rows": 710424,
+        "query": "SELECT name FROM pg_timezone_names"
+      }
+    ],
+    "slow_max": [
+      {
+        "calls": 1473,
+        "mean_ms": "4.1",
+        "max_ms": "1159.2",
+        "stddev_ms": "31.9",
+        "query": "WITH pgrst_source AS (UPDATE \"public\".\"carts\" SET \"expires_at\" = \"pgrst_body\".\"expires_at\", \"items\" = \"pgrst_body\".\"items\" FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"expires_at\", \"items\" FROM json_to_record(pgrst_payload.json_data) AS _(\"expires_at\" timestamp with time zone, \"items\" jsonb) ) pgrst_body  WHERE  \"public\".\"carts\".\"id\" = $2 RETURNING \"public\".\"carts\".\"id\", \"public\".\"carts\".\"items\") SEL"
+      },
+      {
+        "calls": 10697,
+        "mean_ms": "10.6",
+        "max_ms": "1137.4",
+        "stddev_ms": "22.8",
+        "query": "WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"p_key\", \"p_max_attempts\", \"p_window_seconds\" FROM json_to_record(pgrst_payload.json_data) AS _(\"p_key\" text, \"p_max_attempts\" integer, \"p_window_seconds\" integer) LIMIT $4) pgrst_body , LATERAL (SELECT \"public\".\"check_rate_limit\"(\"p_key\" := pgrst_body.\"p_key\", \"p_max_attempts\" := pgrst_body.\"p_max_attemp"
+      },
+      {
+        "calls": 21230,
+        "mean_ms": "5.4",
+        "max_ms": "1013.8",
+        "stddev_ms": "15.8",
+        "query": "WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"p_product_id\" FROM json_to_record(pgrst_payload.json_data) AS _(\"p_product_id\" uuid) LIMIT $4) pgrst_body , LATERAL (SELECT \"public\".\"available_stock\"(\"p_product_id\" := pgrst_body.\"p_product_id\") pgrst_scalar) pgrst_call) SELECT $5::bigint AS total_result_set, $6 AS page_total, coalesce(json_agg(_postgre"
+      },
+      {
+        "calls": 383,
+        "mean_ms": "285.0",
+        "max_ms": "911.6",
+        "stddev_ms": "229.3",
+        "query": "SELECT\n    tbl.schemaname,\n    tbl.tablename,\n    tbl.quoted_name,\n    tbl.is_table,\n    json_agg(a) as columns\n  FROM\n    (\n      SELECT\n        n.nspname as schemaname,\n        c.relname as tablename,\n        (quote_ident(n.nspname) || $1 || quote_ident(c.relname)) as quoted_name,\n        $2 as is_table\n      FROM\n        pg_catalog.pg_class c\n        JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace\n      W"
+      },
+      {
+        "calls": 6803,
+        "mean_ms": "5.4",
+        "max_ms": "883.6",
+        "stddev_ms": "17.5",
+        "query": "WITH pgrst_source AS (INSERT INTO \"public\".\"carts\"(\"expires_at\", \"items\", \"session_id\") SELECT \"pgrst_body\".\"expires_at\", \"pgrst_body\".\"items\", \"pgrst_body\".\"session_id\" FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"expires_at\", \"items\", \"session_id\" FROM json_to_record(pgrst_payload.json_data) AS _(\"expires_at\" timestamp with time zone, \"items\" jsonb, \"session_id\" text) ) pgrst_body  RETURNING \"publi"
+      },
+      {
+        "calls": 887,
+        "mean_ms": "46.3",
+        "max_ms": "857.1",
+        "stddev_ms": "66.0",
+        "query": "WITH pgrst_source AS (SELECT \"pgrst_call\".* FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"q\", \"max_results\" FROM json_to_record(pgrst_payload.json_data) AS _(\"q\" text, \"max_results\" integer) LIMIT $4) pgrst_body , LATERAL \"public\".\"search_products\"(\"q\" := pgrst_body.\"q\", \"max_results\" := pgrst_body.\"max_results\") pgrst_call) SELECT $5::bigint AS total_result_set, pg_catalog.count(_postgrest_t) AS page"
+      },
+      {
+        "calls": 594,
+        "mean_ms": "127.5",
+        "max_ms": "761.0",
+        "stddev_ms": "124.9",
+        "query": "WITH\n-- Recursively get the base types of domains\nbase_types AS (\n  WITH RECURSIVE\n  recurse AS (\n    SELECT\n      oid,\n      typbasetype,\n      typnamespace AS base_namespace,\n      COALESCE(NULLIF(typbasetype, $2), oid) AS base_type\n    FROM pg_type\n    UNION\n    SELECT\n      t.oid,\n      b.typbasetype,\n      b.typnamespace AS base_namespace,\n      COALESCE(NULLIF(b.typbasetype, $3), b.oid) AS base_type\n    FROM re"
+      },
+      {
+        "calls": 131,
+        "mean_ms": "306.8",
+        "max_ms": "755.3",
+        "stddev_ms": "198.6",
+        "query": "SELECT\n  e.name,\n  n.nspname AS schema,\n  e.default_version,\n  x.extversion AS installed_version,\n  e.comment,\n  ev.schema AS default_version_schema\nFROM\n  pg_available_extensions e\n  LEFT JOIN pg_extension x ON e.name = x.extname\n  LEFT JOIN pg_namespace n ON x.extnamespace = n.oid\n  LEFT JOIN pg_available_extension_versions ev\n    ON ev.name = e.name AND ev.version = e.default_version"
+      },
+      {
+        "calls": 104125,
+        "mean_ms": "5.3",
+        "max_ms": "702.6",
+        "stddev_ms": "3.8",
+        "query": "SELECT wal->>$5 as type,\n       wal->>$6 as schema,\n       wal->>$7 as table,\n       COALESCE(wal->>$8, $9) as columns,\n       COALESCE(wal->>$10, $11) as record,\n       COALESCE(wal->>$12, $13) as old_record,\n       wal->>$14 as commit_timestamp,\n       subscription_ids,\n       errors,\n       slot_changes_count\nFROM realtime.list_changes($1, $2, $3, $4)"
+      },
+      {
+        "calls": 6,
+        "mean_ms": "488.2",
+        "max_ms": "597.6",
+        "stddev_ms": "100.0",
+        "query": "with\n      tables as (SELECT\n  c.oid :: int8 AS id,\n  nc.nspname AS schema,\n  c.relname AS name,\n  c.relrowsecurity AS rls_enabled,\n  c.relforcerowsecurity AS rls_forced,\n  CASE\n    WHEN c.relreplident = $2 THEN $3\n    WHEN c.relreplident = $4 THEN $5\n    WHEN c.relreplident = $6 THEN $7\n    ELSE $8\n  END AS replica_identity,\n  pg_total_relation_size(format($9, nc.nspname, c.relname)) :: int8 AS bytes,\n  pg_size_pret"
+      },
+      {
+        "calls": 11,
+        "mean_ms": "130.3",
+        "max_ms": "537.3",
+        "stddev_ms": "216.0",
+        "query": "select\n      m->>$1 as version,\n      m->>$2 as name,\n      case\n        when pg_catalog.jsonb_typeof(m->$3) = $4\n        then array(select pg_catalog.jsonb_array_elements_text(m->$5))\n        else $6\n      end as statements\n    from pg_catalog.jsonb_array_elements(\n      coalesce(\n        nullif(pg_catalog.current_setting($7, $8), $9)::pg_catalog.jsonb,\n        $10::pg_catalog.jsonb\n      )\n    ) as m\n    order by m"
+      },
+      {
+        "calls": 2133,
+        "mean_ms": "15.3",
+        "max_ms": "525.3",
+        "stddev_ms": "20.8",
+        "query": "WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"p_term\", \"p_hits\" FROM json_to_record(pgrst_payload.json_data) AS _(\"p_term\" text, \"p_hits\" integer) LIMIT $4) pgrst_body , LATERAL (SELECT \"public\".\"fn_record_search\"(\"p_term\" := pgrst_body.\"p_term\", \"p_hits\" := pgrst_body.\"p_hits\") pgrst_scalar) pgrst_call) SELECT $5::bigint AS total_result_set, $6 AS "
+      },
+      {
+        "calls": 97,
+        "mean_ms": "204.9",
+        "max_ms": "520.8",
+        "stddev_ms": "91.1",
+        "query": "SELECT case when pg_is_in_recovery() then $2 else (pg_walfile_name_offset(lsn)).file_name end, lsn::text, pg_is_in_recovery() FROM pg_backup_start($1, $3) lsn"
+      },
+      {
+        "calls": 2055,
+        "mean_ms": "16.4",
+        "max_ms": "515.6",
+        "stddev_ms": "34.9",
+        "query": "WITH pgrst_source AS ( SELECT \"public\".\"analytics_events\".\"session_id\", \"public\".\"analytics_events\".\"props\" FROM \"public\".\"analytics_events\" WHERE  \"public\".\"analytics_events\".\"event_name\" = $1 AND  \"public\".\"analytics_events\".\"occurred_at\" >= $2  ORDER BY \"public\".\"analytics_events\".\"occurred_at\" DESC  LIMIT $3 OFFSET $4 )  SELECT $5::bigint AS total_result_set, pg_catalog.count(_postgrest_t) AS page_total, coalesce"
+      }
+    ],
+    "top_total": [
+      {
+        "calls": 104125,
+        "mean_ms": "5.3",
+        "total_ms": "555697",
+        "query": "SELECT wal->>$5 as type,\n       wal->>$6 as schema,\n       wal->>$7 as table,\n       COALESCE(wal->>$8, $9) as columns,\n       COALESCE(wal->>$10, $11) as recor"
+      },
+      {
+        "calls": 594,
+        "mean_ms": "566.7",
+        "total_ms": "336627",
+        "query": "SELECT name FROM pg_timezone_names"
+      },
+      {
+        "calls": 384,
+        "mean_ms": "703.6",
+        "total_ms": "270194",
+        "query": "with f as (\n      \n-- CTE with sane arg_modes, arg_names, and arg_types.\n-- All three are always of the same length.\n-- All three include all args, including OU"
+      },
+      {
+        "calls": 45215,
+        "mean_ms": "4.0",
+        "total_ms": "179443",
+        "query": "WITH pgrst_source AS ( SELECT \"public\".\"seo_redirects\".\"source_path\", \"public\".\"seo_redirects\".\"target_path\", \"public\".\"seo_redirects\".\"status_code\" FROM \"publi"
+      },
+      {
+        "calls": 21230,
+        "mean_ms": "5.4",
+        "total_ms": "114843",
+        "query": "WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"p_product_id\" FROM json_to_record(pgrst_paylo"
+      },
+      {
+        "calls": 10697,
+        "mean_ms": "10.6",
+        "total_ms": "113334",
+        "query": "WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"p_key\", \"p_max_attempts\", \"p_window_seconds\" "
+      },
+      {
+        "calls": 383,
+        "mean_ms": "285.0",
+        "total_ms": "109155",
+        "query": "SELECT\n    tbl.schemaname,\n    tbl.tablename,\n    tbl.quoted_name,\n    tbl.is_table,\n    json_agg(a) as columns\n  FROM\n    (\n      SELECT\n        n.nspname as s"
+      },
+      {
+        "calls": 2171322,
+        "mean_ms": "0.0",
+        "total_ms": "91593",
+        "query": "select set_config('search_path', $1, true), set_config($2, $3, true), set_config('role', $4, true), set_config('request.jwt.claims', $5, true), set_config('requ"
+      },
+      {
+        "calls": 594,
+        "mean_ms": "127.5",
+        "total_ms": "75740",
+        "query": "WITH\n-- Recursively get the base types of domains\nbase_types AS (\n  WITH RECURSIVE\n  recurse AS (\n    SELECT\n      oid,\n      typbasetype,\n      typnamespace AS"
+      },
+      {
+        "calls": 887,
+        "mean_ms": "46.3",
+        "total_ms": "41108",
+        "query": "WITH pgrst_source AS (SELECT \"pgrst_call\".* FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"q\", \"max_results\" FROM json_to_record(pgrst_payload.js"
+      },
+      {
+        "calls": 131,
+        "mean_ms": "306.8",
+        "total_ms": "40195",
+        "query": "SELECT\n  e.name,\n  n.nspname AS schema,\n  e.default_version,\n  x.extversion AS installed_version,\n  e.comment,\n  ev.schema AS default_version_schema\nFROM\n  pg_a"
+      },
+      {
+        "calls": 6803,
+        "mean_ms": "5.4",
+        "total_ms": "36928",
+        "query": "WITH pgrst_source AS (INSERT INTO \"public\".\"carts\"(\"expires_at\", \"items\", \"session_id\") SELECT \"pgrst_body\".\"expires_at\", \"pgrst_body\".\"items\", \"pgrst_body\".\"se"
+      },
+      {
+        "calls": 163527,
+        "mean_ms": "0.2",
+        "total_ms": "36791",
+        "query": "WITH pgrst_source AS ( SELECT \"public\".\"products\".\"id\", \"public\".\"products\".\"slug\", \"public\".\"products\".\"name_he\", \"public\".\"products\".\"kenyon_price\", \"public\"."
+      },
+      {
+        "calls": 2055,
+        "mean_ms": "16.4",
+        "total_ms": "33789",
+        "query": "WITH pgrst_source AS ( SELECT \"public\".\"analytics_events\".\"session_id\", \"public\".\"analytics_events\".\"props\" FROM \"public\".\"analytics_events\" WHERE  \"public\".\"an"
+      },
+      {
+        "calls": 365,
+        "mean_ms": "90.9",
+        "total_ms": "33196",
+        "query": "WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT \"public\".\"release_expired_order_discounts\"() pgrst_scalar) pgrst_call) SELECT $3::bigint AS to"
+      }
+    ],
+    "top_calls": [
+      {
+        "calls": 2171322,
+        "mean_ms": "0.0",
+        "query": "select set_config('search_path', $1, true), set_config($2, $3, true), set_config('role', $4, true), set_config('request.jwt.claims', $5, true), set_config('requ"
+      },
+      {
+        "calls": 321176,
+        "mean_ms": "0.0",
+        "query": "SELECT mfa_factors.created_at, mfa_factors.factor_type, mfa_factors.friendly_name, mfa_factors.id, mfa_factors.last_challenged_at, mfa_factors.last_webauthn_cha"
+      },
+      {
+        "calls": 321176,
+        "mean_ms": "0.0",
+        "query": "SELECT identities.created_at, identities.email, identities.id, identities.identity_data, identities.last_sign_in_at, identities.provider, identities.provider_id"
+      },
+      {
+        "calls": 321146,
+        "mean_ms": "0.0",
+        "query": "SELECT sessions.aal, sessions.created_at, sessions.factor_id, sessions.id, sessions.ip, sessions.not_after, sessions.oauth_client_id, sessions.refresh_token_cou"
+      },
+      {
+        "calls": 321146,
+        "mean_ms": "0.0",
+        "query": "SELECT mfa_amr_claims.authentication_method, mfa_amr_claims.created_at, mfa_amr_claims.id, mfa_amr_claims.session_id, mfa_amr_claims.updated_at FROM mfa_amr_cla"
+      },
+      {
+        "calls": 320504,
+        "mean_ms": "0.0",
+        "query": "SELECT users.aud, users.banned_until, users.confirmation_sent_at, users.confirmation_token, users.confirmed_at, users.created_at, users.deleted_at, users.email,"
+      },
+      {
+        "calls": 300059,
+        "mean_ms": "0.1",
+        "query": "select set_config('search_path', $1, true), set_config('role', $2, true), set_config('request.jwt.claims', $3, true), set_config('request.method', $4, true), se"
+      },
+      {
+        "calls": 216195,
+        "mean_ms": "0.0",
+        "query": "SET client_encoding = 'UTF8'"
+      },
+      {
+        "calls": 216195,
+        "mean_ms": "0.0",
+        "query": "SET client_min_messages TO WARNING"
+      },
+      {
+        "calls": 213004,
+        "mean_ms": "0.0",
+        "query": "BEGIN ISOLATION LEVEL READ COMMITTED READ ONLY"
+      }
+    ],
+    "temp_spill": [
+      {
+        "calls": 384,
+        "mean_ms": "703.6",
+        "temp_blks_written": 802592,
+        "temp_written": "6270 MB",
+        "query": "with f as (\n      \n-- CTE with sane arg_modes, arg_names, and arg_types.\n-- All three are always of the same length.\n-- All three include all args, including OU"
+      },
+      {
+        "calls": 17,
+        "mean_ms": "28.9",
+        "temp_blks_written": 9341,
+        "temp_written": "73 MB",
+        "query": "select count(*)::int as statements, sum(calls)::bigint as calls, round(sum(total_exec_time)::numeric,$1) as total_ms, count(*) filter (where mean_exec_time>$2):"
+      },
+      {
+        "calls": 17,
+        "mean_ms": "80.6",
+        "temp_blks_written": 9341,
+        "temp_written": "73 MB",
+        "query": "select calls, round(mean_exec_time::numeric,$1) as mean_ms, left(query,$2) as query from extensions.pg_stat_statements where query not ilike $3 order by calls d"
+      },
+      {
+        "calls": 17,
+        "mean_ms": "76.9",
+        "temp_blks_written": 9341,
+        "temp_written": "73 MB",
+        "query": "select calls, round(mean_exec_time::numeric,$1) as mean_ms, round(total_exec_time::numeric,$2) as total_ms, left(query,$3) as query from extensions.pg_stat_stat"
+      },
+      {
+        "calls": 17,
+        "mean_ms": "27.4",
+        "temp_blks_written": 9340,
+        "temp_written": "73 MB",
+        "query": "select calls, round(mean_exec_time::numeric,$1) as mean_ms, round(max_exec_time::numeric,$2) as max_ms, round(total_exec_time::numeric,$3) as total_ms, rows, le"
+      },
+      {
+        "calls": 12,
+        "mean_ms": "23.9",
+        "temp_blks_written": 6601,
+        "temp_written": "52 MB",
+        "query": "select calls, round(mean_exec_time::numeric,$1) as mean_ms, round(max_exec_time::numeric,$2) as max_ms, round(stddev_exec_time::numeric,$3) as stddev_ms, left(q"
+      },
+      {
+        "calls": 12,
+        "mean_ms": "19.9",
+        "temp_blks_written": 6597,
+        "temp_written": "52 MB",
+        "query": "select calls, round(mean_exec_time::numeric,$1) as mean_ms, temp_blks_written, pg_size_pretty(temp_blks_written*$2) as temp_written, left(query,$3) as query fro"
+      },
+      {
+        "calls": 5,
+        "mean_ms": "21.7",
+        "temp_blks_written": 2739,
+        "temp_written": "21 MB",
+        "query": "select calls, round(mean_exec_time::numeric,$1) as mean_ms, round(max_exec_time::numeric,$2) as max_ms, left(query,$3) as query from extensions.pg_stat_statemen"
+      },
+      {
+        "calls": 1,
+        "mean_ms": "131.1",
+        "temp_blks_written": 1040,
+        "temp_written": "8320 kB",
+        "query": "select json_build_object(\n  $1, (select count(*) from public.fn_slow_statements($2, $3)),\n  $4, (select json_agg(json_build_object($5, role, $6, calls, $7, mean"
+      },
+      {
+        "calls": 1,
+        "mean_ms": "62.6",
+        "temp_blks_written": 1038,
+        "temp_written": "8304 kB",
+        "query": "select version() as v, (select count(*) from pg_stat_statements) as pgss_rows, (select n.nspname from pg_extension e join pg_namespace n on n.oid=e.extnamespace"
+      }
+    ],
+    "seq_scans": [
+      {
+        "relname": "carts",
+        "seq_scan": 60,
+        "seq_tup_read": 79833,
+        "idx_scan": 120350,
+        "n_live_tup": 4222
+      },
+      {
+        "relname": "audit_log",
+        "seq_scan": 25,
+        "seq_tup_read": 12720,
+        "idx_scan": 252,
+        "n_live_tup": 2866
+      },
+      {
+        "relname": "analytics_events",
+        "seq_scan": 24,
+        "seq_tup_read": 892,
+        "idx_scan": 4755,
+        "n_live_tup": 2685
+      }
+    ],
+    "unused_indexes": [
+      {
+        "table": "audit_log",
+        "index": "idx_audit_log_action",
+        "idx_scan": 0,
+        "size": "136 kB"
+      },
+      {
+        "table": "sessions",
+        "index": "user_id_created_at_idx",
+        "idx_scan": 0,
+        "size": "56 kB"
+      },
+      {
+        "table": "refresh_tokens",
+        "index": "refresh_tokens_updated_at_idx",
+        "idx_scan": 0,
+        "size": "48 kB"
+      },
+      {
+        "table": "audit_log",
+        "index": "idx_audit_log_request_id",
+        "idx_scan": 0,
+        "size": "40 kB"
+      },
+      {
+        "table": "one_time_tokens",
+        "index": "one_time_tokens_token_hash_hash_idx",
+        "idx_scan": 0,
+        "size": "32 kB"
+      },
+      {
+        "table": "one_time_tokens",
+        "index": "one_time_tokens_relates_to_hash_idx",
+        "idx_scan": 0,
+        "size": "32 kB"
+      },
+      {
+        "table": "flow_state",
+        "index": "flow_state_created_at_idx",
+        "idx_scan": 0,
+        "size": "16 kB"
+      },
+      {
+        "table": "refresh_tokens",
+        "index": "refresh_tokens_instance_id_idx",
+        "idx_scan": 0,
+        "size": "16 kB"
+      },
+      {
+        "table": "coupon_qr_codes",
+        "index": "coupon_qr_codes_batch_idx",
+        "idx_scan": 0,
+        "size": "16 kB"
+      },
+      {
+        "table": "users",
+        "index": "users_instance_id_idx",
+        "idx_scan": 0,
+        "size": "16 kB"
+      },
+      {
+        "table": "flow_state",
+        "index": "idx_user_id_auth_method",
+        "idx_scan": 0,
+        "size": "16 kB"
+      },
+      {
+        "table": "refresh_tokens",
+        "index": "refresh_tokens_instance_id_user_id_idx",
+        "idx_scan": 0,
+        "size": "16 kB"
+      },
+      {
+        "table": "categories",
+        "index": "categories_created_by_idx",
+        "idx_scan": 0,
+        "size": "16 kB"
+      },
+      {
+        "table": "suppliers",
+        "index": "suppliers_city_idx",
+        "idx_scan": 0,
+        "size": "16 kB"
+      },
+      {
+        "table": "sessions",
+        "index": "sessions_not_after_idx",
+        "idx_scan": 0,
+        "size": "16 kB"
+      }
+    ],
+    "replication_slots": [],
+    "table_sizes": [
+      {
+        "relname": "audit_log",
+        "n_live_tup": 2866,
+        "n_dead_tup": 66,
+        "total": "7248 kB",
+        "last_autovacuum": "2026-10-15"
+      },
+      {
+        "relname": "carts",
+        "n_live_tup": 4222,
+        "n_dead_tup": 409,
+        "total": "2656 kB",
+        "last_autovacuum": "2026-10-16"
+      },
+      {
+        "relname": "analytics_events",
+        "n_live_tup": 2685,
+        "n_dead_tup": 0,
+        "total": "1960 kB",
+        "last_autovacuum": "2026-10-01"
+      },
+      {
+        "relname": "products",
+        "n_live_tup": 82,
+        "n_dead_tup": 28,
+        "total": "752 kB",
+        "last_autovacuum": "2026-10-21"
+      },
+      {
+        "relname": "notification_outbox",
+        "n_live_tup": 322,
+        "n_dead_tup": 25,
+        "total": "424 kB",
+        "last_autovacuum": "2026-10-02"
+      },
+      {
+        "relname": "schema_migrations",
+        "n_live_tup": 177,
+        "n_dead_tup": 0,
+        "total": "424 kB",
+        "last_autovacuum": null
+      },
+      {
+        "relname": "refresh_tokens",
+        "n_live_tup": 101,
+        "n_dead_tup": 0,
+        "total": "336 kB",
+        "last_autovacuum": "2026-10-21"
+      },
+      {
+        "relname": "vouchers",
+        "n_live_tup": 87,
+        "n_dead_tup": 2,
+        "total": "328 kB",
+        "last_autovacuum": "2026-10-21"
+      },
+      {
+        "relname": "rate_limits",
+        "n_live_tup": 702,
+        "n_dead_tup": 164,
+        "total": "312 kB",
+        "last_autovacuum": "2026-10-15"
+      },
+      {
+        "relname": "users",
+        "n_live_tup": 14,
+        "n_dead_tup": 50,
+        "total": "264 kB",
+        "last_autovacuum": "2026-10-21"
+      }
+    ],
+    "db_size": [
+      {
+        "size": "46 MB"
+      }
+    ]
+  },
+  "tools": [
+    "search_docs",
+    "list_tables",
+    "list_extensions",
+    "list_migrations",
+    "execute_sql",
+    "query_logs",
+    "get_advisors",
+    "get_project_url",
+    "get_publishable_keys",
+    "generate_typescript_types",
+    "list_edge_functions",
+    "get_edge_function",
+    "list_branches"
+  ],
+  "advisors_performance": {
+    "result": {
+      "lints": [
+        {
+          "name": "unindexed_foreign_keys",
+          "title": "Unindexed foreign keys",
+          "level": "INFO",
+          "facing": "EXTERNAL",
+          "categories": ["PERFORMANCE"],
+          "description": "Identifies foreign key constraints without a covering index, which can impact database performance.",
+          "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0001_unindexed_foreign_keys",
+          "count": 9,
+          "findings": [
+            {
+              "detail": "Table \\`public.affiliate_attributions\\` has a foreign key \\`affiliate_attributions_affiliate_id_fkey\\` without a covering index. This can lead to suboptimal query performance.",
+              "metadata": {
+                "schema": "public",
+                "name": "affiliate_attributions",
+                "type": "table",
+                "fkey_name": "affiliate_attributions_affiliate_id_fkey",
+                "fkey_columns": [3]
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Table \\`public.affiliate_attributions\\` has a foreign key \\`affiliate_attributions_campaign_id_fkey\\` without a covering index. This can lead to suboptimal query performance.",
+              "metadata": {
+                "schema": "public",
+                "name": "affiliate_attributions",
+                "type": "table",
+                "fkey_name": "affiliate_attributions_campaign_id_fkey",
+                "fkey_columns": [4]
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Table \\`public.affiliate_attributions\\` has a foreign key \\`affiliate_attributions_link_id_fkey\\` without a covering index. This can lead to suboptimal query performance.",
+              "metadata": {
+                "schema": "public",
+                "name": "affiliate_attributions",
+                "type": "table",
+                "fkey_name": "affiliate_attributions_link_id_fkey",
+                "fkey_columns": [5]
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Table \\`public.affiliate_links\\` has a foreign key \\`affiliate_links_campaign_id_fkey\\` without a covering index. This can lead to suboptimal query performance.",
+              "metadata": {
+                "schema": "public",
+                "name": "affiliate_links",
+                "type": "table",
+                "fkey_name": "affiliate_links_campaign_id_fkey",
+                "fkey_columns": [3]
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Table \\`public.affiliate_payouts\\` has a foreign key \\`affiliate_payouts_affiliate_id_fkey\\` without a covering index. This can lead to suboptimal query performance.",
+              "metadata": {
+                "schema": "public",
+                "name": "affiliate_payouts",
+                "type": "table",
+                "fkey_name": "affiliate_payouts_affiliate_id_fkey",
+                "fkey_columns": [2]
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Table \\`public.auth_wa_otps\\` has a foreign key \\`auth_wa_otps_user_id_fkey\\` without a covering index. This can lead to suboptimal query performance.",
+              "metadata": {
+                "schema": "public",
+                "name": "auth_wa_otps",
+                "type": "table",
+                "fkey_name": "auth_wa_otps_user_id_fkey",
+                "fkey_columns": [3]
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Table \\`public.supplier_card_tokens\\` has a foreign key \\`supplier_card_tokens_supplier_id_fkey\\` without a covering index. This can lead to suboptimal query performance.",
+              "metadata": {
+                "schema": "public",
+                "name": "supplier_card_tokens",
+                "type": "table",
+                "fkey_name": "supplier_card_tokens_supplier_id_fkey",
+                "fkey_columns": [4]
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Table \\`public.supplier_card_tokens\\` has a foreign key \\`supplier_card_tokens_supplier_lead_id_fkey\\` without a covering index. This can lead to suboptimal query performance.",
+              "metadata": {
+                "schema": "public",
+                "name": "supplier_card_tokens",
+                "type": "table",
+                "fkey_name": "supplier_card_tokens_supplier_lead_id_fkey",
+                "fkey_columns": [3]
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Table \\`public.supplier_card_verifications\\` has a foreign key \\`supplier_card_verifications_supplier_lead_id_fkey\\` without a covering index. This can lead to suboptimal query performance.",
+              "metadata": {
+                "schema": "public",
+                "name": "supplier_card_verifications",
+                "type": "table",
+                "fkey_name": "supplier_card_verifications_supplier_lead_id_fkey",
+                "fkey_columns": [10]
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            }
+          ]
+        },
+        {
+          "name": "auth_rls_initplan",
+          "title": "Auth RLS Initialization Plan",
+          "level": "WARN",
+          "facing": "EXTERNAL",
+          "categories": ["PERFORMANCE"],
+          "description": "Detects if calls to \\`current_setting()\\` and \\`auth.<function>()\\` in RLS policies are being unnecessarily re-evaluated for each row",
+          "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0003_auth_rls_initplan",
+          "count": 1,
+          "findings": [
+            {
+              "detail": "Table \\`public.profiles\\` has a row level security policy \\`profiles_super_admin_mfa\\` that re-evaluates current_setting() or auth.<function>() for each row. This produces suboptimal query performance at scale. Resolve the issue by replacing \\`auth.<function>()\\` with \\`(select auth.<function>())\\`. See [docs](https://supabase.com/docs/guides/database/postgres/row-level-security#call-functions-with-select) for more info.",
+              "metadata": {
+                "schema": "public",
+                "name": "profiles",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            }
+          ]
+        },
+        {
+          "name": "unused_index",
+          "title": "Unused Index",
+          "level": "INFO",
+          "facing": "EXTERNAL",
+          "categories": ["PERFORMANCE"],
+          "description": "Detects if an index has never been used and may be a candidate for removal.",
+          "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index",
+          "count": 157,
+          "findings": [
+            {
+              "detail": "Index \\`suppliers_earth_idx\\` on table \\`public.suppliers\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "suppliers",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`suppliers_city_idx\\` on table \\`public.suppliers\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "suppliers",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`coupon_qr_batches_campaign_idx\\` on table \\`public.coupon_qr_batches\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "coupon_qr_batches",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`categories_created_by_idx\\` on table \\`public.categories\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "categories",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`coupon_qr_codes_batch_idx\\` on table \\`public.coupon_qr_codes\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "coupon_qr_codes",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_audit_log_action\\` on table \\`public.audit_log\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "audit_log",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`coupon_qr_codes_campaign_idx\\` on table \\`public.coupon_qr_codes\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "coupon_qr_codes",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`payment_events_payment_idx\\` on table \\`public.payment_events\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "payment_events",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`payment_events_failures_idx\\` on table \\`public.payment_events\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "payment_events",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`payment_events_low_profile_idx\\` on table \\`public.payment_events\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "payment_events",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`payment_events_stage_idx\\` on table \\`public.payment_events\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "payment_events",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`wp_migration_log_batch_idx\\` on table \\`wp_import.migration_log\\` has not been used",
+              "metadata": {
+                "schema": "wp_import",
+                "name": "migration_log",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`wp_migration_log_entity_idx\\` on table \\`wp_import.migration_log\\` has not been used",
+              "metadata": {
+                "schema": "wp_import",
+                "name": "migration_log",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`wp_migration_log_external_idx\\` on table \\`wp_import.migration_log\\` has not been used",
+              "metadata": {
+                "schema": "wp_import",
+                "name": "migration_log",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`wp_migration_log_failed_idx\\` on table \\`wp_import.migration_log\\` has not been used",
+              "metadata": {
+                "schema": "wp_import",
+                "name": "migration_log",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`wp_migration_log_applied_insert_idx\\` on table \\`wp_import.migration_log\\` has not been used",
+              "metadata": {
+                "schema": "wp_import",
+                "name": "migration_log",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_affiliates_code\\` on table \\`public.affiliates\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "affiliates",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_affiliates_status\\` on table \\`public.affiliates\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "affiliates",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_referrals_code\\` on table \\`public.referrals\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "referrals",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`escrow_holds_status_supplier_idx\\` on table \\`public.escrow_holds\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "escrow_holds",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`wp_validation_reports_batch_idx\\` on table \\`wp_import.validation_reports\\` has not been used",
+              "metadata": {
+                "schema": "wp_import",
+                "name": "validation_reports",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`wp_validation_reports_failed_idx\\` on table \\`wp_import.validation_reports\\` has not been used",
+              "metadata": {
+                "schema": "wp_import",
+                "name": "validation_reports",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`wp_media_storage_path_idx\\` on table \\`wp_import.media\\` has not been used",
+              "metadata": {
+                "schema": "wp_import",
+                "name": "media",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`payment_tokens_cardcom_account_idx\\` on table \\`public.payment_tokens\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "payment_tokens",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`payments_cardcom_account_idx\\` on table \\`public.payments\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "payments",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`settlement_events_supplier_idx\\` on table \\`public.settlement_events\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "settlement_events",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_coupon_codes_product_id\\` on table \\`public.coupon_codes\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "coupon_codes",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`settlement_events_order_idx\\` on table \\`public.settlement_events\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "settlement_events",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`settlement_events_item_idx\\` on table \\`public.settlement_events\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "settlement_events",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_cashback_rules_category_id\\` on table \\`public.cashback_rules\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "cashback_rules",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_abandoned_cart_nudges_recovered_order_id\\` on table \\`public.abandoned_cart_nudges\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "abandoned_cart_nudges",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_discount_redemptions_user_id\\` on table \\`public.discount_redemptions\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "discount_redemptions",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_escrow_holds_voucher_id\\` on table \\`public.escrow_holds\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "escrow_holds",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_escrow_holds_order_item_id\\` on table \\`public.escrow_holds\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "escrow_holds",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_invoices_payment_id\\` on table \\`public.invoices\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "invoices",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`id_map_batch_idx\\` on table \\`wp_import.id_map\\` has not been used",
+              "metadata": {
+                "schema": "wp_import",
+                "name": "id_map",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`refunds_due_idx\\` on table \\`public.refunds\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "refunds",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`wp_products_parent_idx\\` on table \\`wp_import.products\\` has not been used",
+              "metadata": {
+                "schema": "wp_import",
+                "name": "products",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`wp_products_status_idx\\` on table \\`wp_import.products\\` has not been used",
+              "metadata": {
+                "schema": "wp_import",
+                "name": "products",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`user_addresses_user_default_created_idx\\` on table \\`public.user_addresses\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "user_addresses",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`wp_customers_email_idx\\` on table \\`wp_import.customers\\` has not been used",
+              "metadata": {
+                "schema": "wp_import",
+                "name": "customers",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`media_assets_base_path_idx\\` on table \\`public.media_assets\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "media_assets",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`wp_products_slug_idx\\` on table \\`wp_import.products\\` has not been used",
+              "metadata": {
+                "schema": "wp_import",
+                "name": "products",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`wp_orders_customer_idx\\` on table \\`wp_import.orders\\` has not been used",
+              "metadata": {
+                "schema": "wp_import",
+                "name": "orders",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`wp_orders_status_idx\\` on table \\`wp_import.orders\\` has not been used",
+              "metadata": {
+                "schema": "wp_import",
+                "name": "orders",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`wp_orders_email_idx\\` on table \\`wp_import.orders\\` has not been used",
+              "metadata": {
+                "schema": "wp_import",
+                "name": "orders",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_cashback_rules_active\\` on table \\`public.cashback_rules\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "cashback_rules",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`wp_order_items_order_idx\\` on table \\`wp_import.order_items\\` has not been used",
+              "metadata": {
+                "schema": "wp_import",
+                "name": "order_items",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`wp_order_items_product_idx\\` on table \\`wp_import.order_items\\` has not been used",
+              "metadata": {
+                "schema": "wp_import",
+                "name": "order_items",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`wp_vouchers_open_idx\\` on table \\`wp_import.vouchers\\` has not been used",
+              "metadata": {
+                "schema": "wp_import",
+                "name": "vouchers",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_user_addresses_user_active\\` on table \\`public.user_addresses\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "user_addresses",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`supplier_branches_city_idx\\` on table \\`public.supplier_branches\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "supplier_branches",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`wp_media_sha256_idx\\` on table \\`wp_import.media\\` has not been used",
+              "metadata": {
+                "schema": "wp_import",
+                "name": "media",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`wp_media_status_idx\\` on table \\`wp_import.media\\` has not been used",
+              "metadata": {
+                "schema": "wp_import",
+                "name": "media",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`vendors_status_idx\\` on table \\`public.vendors\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "vendors",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`review_reports_open\\` on table \\`public.review_reports\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "review_reports",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`payment_discrepancies_open\\` on table \\`public.payment_discrepancies\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "payment_discrepancies",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`wp_url_inventory_undecided_idx\\` on table \\`wp_import.url_inventory\\` has not been used",
+              "metadata": {
+                "schema": "wp_import",
+                "name": "url_inventory",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`wp_issues_severity_idx\\` on table \\`wp_import.issues\\` has not been used",
+              "metadata": {
+                "schema": "wp_import",
+                "name": "issues",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`subscriptions_supplier_idx\\` on table \\`public.subscriptions\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "subscriptions",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`vouchers_redeemed_by_supplier_idx\\` on table \\`public.vouchers\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "vouchers",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`subscription_charges_subscription_idx\\` on table \\`public.subscription_charges\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "subscription_charges",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`voucher_redemptions_supplier_idx\\` on table \\`public.voucher_redemptions\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "voucher_redemptions",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`voucher_redemptions_scanner_idx\\` on table \\`public.voucher_redemptions\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "voucher_redemptions",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`seo_redirects_active_source_idx\\` on table \\`public.seo_redirects\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "seo_redirects",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`seo_redirects_wp_id_idx\\` on table \\`public.seo_redirects\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "seo_redirects",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`discount_campaigns_active_idx\\` on table \\`public.discount_campaigns\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "discount_campaigns",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`discount_campaigns_window_idx\\` on table \\`public.discount_campaigns\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "discount_campaigns",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`search_events_popular_idx\\` on table \\`public.search_events\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "search_events",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_payments_refund_of\\` on table \\`public.payments\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "payments",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`referral_signals_lookup_idx\\` on table \\`public.referral_signals\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "referral_signals",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`newsletter_user_idx\\` on table \\`public.newsletter_subscribers\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "newsletter_subscribers",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_newsletter_subscribers_user_id\\` on table \\`public.newsletter_subscribers\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "newsletter_subscribers",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`abandoned_cart_sent_idx\\` on table \\`public.abandoned_cart_nudges\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "abandoned_cart_nudges",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`user_recent_searches_recent_idx\\` on table \\`public.user_recent_searches\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "user_recent_searches",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_payment_webhook_events_payment_id\\` on table \\`public.payment_webhook_events\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "payment_webhook_events",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`search_index_dlq_status_created_idx\\` on table \\`public.search_index_dlq\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "search_index_dlq",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_invoices_order\\` on table \\`public.invoices\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "invoices",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`support_tickets_phone_open_idx\\` on table \\`public.support_tickets\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "support_tickets",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`scheduled_price_changes_by_product\\` on table \\`public.scheduled_price_changes\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "scheduled_price_changes",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`support_ticket_messages_ticket_idx\\` on table \\`public.support_ticket_messages\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "support_ticket_messages",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`product_images_deleted_at_idx\\` on table \\`public.product_images\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "product_images",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`push_tokens_user_enabled_idx\\` on table \\`public.push_tokens\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "push_tokens",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`push_tokens_device_idx\\` on table \\`public.push_tokens\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "push_tokens",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`voucher_redemptions_staff_idx\\` on table \\`public.voucher_redemptions\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "voucher_redemptions",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`user_consents_user_key_created_idx\\` on table \\`public.user_consents\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "user_consents",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`supplier_leads_status_idx\\` on table \\`public.supplier_leads\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "supplier_leads",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`payout_statements_supplier_idx\\` on table \\`public.payout_statements\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "payout_statements",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`payout_statement_lines_order_item_idx\\` on table \\`public.payout_statement_lines\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "payout_statement_lines",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`payout_statement_lines_coupon_idx\\` on table \\`public.payout_statement_lines\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "payout_statement_lines",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`payout_statement_lines_voucher_idx\\` on table \\`public.payout_statement_lines\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "payout_statement_lines",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_push_tokens_user_id\\` on table \\`public.push_tokens\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "push_tokens",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_split_executions_payment_id\\` on table \\`public.split_executions\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "split_executions",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_stock_reservations_product_id\\` on table \\`public.stock_reservations\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "stock_reservations",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_stock_reservations_variant_id\\` on table \\`public.stock_reservations\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "stock_reservations",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_supplier_leads_handled_by\\` on table \\`public.supplier_leads\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "supplier_leads",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_supplier_members_invited_by\\` on table \\`public.supplier_members\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "supplier_members",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_supplier_members_user_id\\` on table \\`public.supplier_members\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "supplier_members",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_supplier_staff_supplier_id\\` on table \\`public.supplier_staff\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "supplier_staff",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_vendors_profile_id\\` on table \\`public.vendors\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "vendors",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_voucher_redemptions_staff_id\\` on table \\`public.voucher_redemptions\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "voucher_redemptions",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_vouchers_gifted_by_user_id\\` on table \\`public.vouchers\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "vouchers",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_vouchers_redeemed_by_supplier_id\\` on table \\`public.vouchers\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "vouchers",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_vouchers_redeemed_by_user_id\\` on table \\`public.vouchers\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "vouchers",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_categories_batch_id\\` on table \\`wp_import.categories\\` has not been used",
+              "metadata": {
+                "schema": "wp_import",
+                "name": "categories",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_coupons_batch_id\\` on table \\`wp_import.coupons\\` has not been used",
+              "metadata": {
+                "schema": "wp_import",
+                "name": "coupons",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_customers_batch_id\\` on table \\`wp_import.customers\\` has not been used",
+              "metadata": {
+                "schema": "wp_import",
+                "name": "customers",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_issues_batch_id\\` on table \\`wp_import.issues\\` has not been used",
+              "metadata": {
+                "schema": "wp_import",
+                "name": "issues",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_media_batch_id\\` on table \\`wp_import.media\\` has not been used",
+              "metadata": {
+                "schema": "wp_import",
+                "name": "media",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_order_items_batch_id\\` on table \\`wp_import.order_items\\` has not been used",
+              "metadata": {
+                "schema": "wp_import",
+                "name": "order_items",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_orders_batch_id\\` on table \\`wp_import.orders\\` has not been used",
+              "metadata": {
+                "schema": "wp_import",
+                "name": "orders",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_products_batch_id\\` on table \\`wp_import.products\\` has not been used",
+              "metadata": {
+                "schema": "wp_import",
+                "name": "products",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_url_inventory_batch_id\\` on table \\`wp_import.url_inventory\\` has not been used",
+              "metadata": {
+                "schema": "wp_import",
+                "name": "url_inventory",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_vouchers_batch_id\\` on table \\`wp_import.vouchers\\` has not been used",
+              "metadata": {
+                "schema": "wp_import",
+                "name": "vouchers",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_vouchers_wp_order_id\\` on table \\`wp_import.vouchers\\` has not been used",
+              "metadata": {
+                "schema": "wp_import",
+                "name": "vouchers",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_wallet_entries_order_id\\` on table \\`public.wallet_entries\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "wallet_entries",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`ai_usage_agent_time_idx\\` on table \\`public.ai_usage\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "ai_usage",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`ai_usage_month_idx\\` on table \\`public.ai_usage\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "ai_usage",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_referrals_referred_first_order_id\\` on table \\`public.referrals\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "referrals",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`media_ingest_queue_sha256_idx\\` on table \\`public.media_ingest_queue\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "media_ingest_queue",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`media_ingest_queue_status_idx\\` on table \\`public.media_ingest_queue\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "media_ingest_queue",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`supplier_card_verifications_created_idx\\` on table \\`public.supplier_card_verifications\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "supplier_card_verifications",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`refunds_payment_id_idx\\` on table \\`public.refunds\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "refunds",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`subscriptions_origin_order_id_idx\\` on table \\`public.subscriptions\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "subscriptions",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`subscriptions_payment_token_id_idx\\` on table \\`public.subscriptions\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "subscriptions",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`affiliate_attributions_pending_idx\\` on table \\`public.affiliate_attributions\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "affiliate_attributions",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_orders_user_status\\` on table \\`public.orders\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "orders",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_orders_invoice_number\\` on table \\`public.orders\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "orders",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`order_items_created_at_idx\\` on table \\`public.order_items\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "order_items",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_order_items_settlement_status\\` on table \\`public.order_items\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "order_items",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_order_items_variant_id\\` on table \\`public.order_items\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "order_items",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`order_items_delivered_at_idx\\` on table \\`public.order_items\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "order_items",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_payments_low_profile\\` on table \\`public.payments\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "payments",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_audit_log_request_id\\` on table \\`public.audit_log\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "audit_log",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_wallet_transactions_wallet_id\\` on table \\`public.wallet_transactions\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "wallet_transactions",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_wallet_transactions_created_at\\` on table \\`public.wallet_transactions\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "wallet_transactions",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_profiles_affiliate_code\\` on table \\`public.profiles\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "profiles",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`discount_redemptions_by_user\\` on table \\`public.discount_redemptions\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "discount_redemptions",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`products_offer_valid_until_idx\\` on table \\`public.products\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "products",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`products_tags_gin\\` on table \\`public.products\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "products",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`products_whatsapp_enabled_idx\\` on table \\`public.products\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "products",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`coupon_deals_search_vector_gin\\` on table \\`public.coupon_deals\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "coupon_deals",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_coupons_vendor_id\\` on table \\`public.coupons\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "coupons",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`fraud_flags_order_idx\\` on table \\`public.fraud_flags\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "fraud_flags",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`coupon_deals_status_idx\\` on table \\`public.coupon_deals\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "coupon_deals",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`coupon_deals_vendor_id_idx\\` on table \\`public.coupon_deals\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "coupon_deals",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`coupon_deals_valid_idx\\` on table \\`public.coupon_deals\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "coupon_deals",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`idx_coupon_deals_created_by\\` on table \\`public.coupon_deals\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "coupon_deals",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`fraud_review_queue_status_idx\\` on table \\`public.fraud_review_queue\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "fraud_review_queue",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`cashback_ledger_created_by_idx\\` on table \\`public.cashback_ledger\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "cashback_ledger",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`cashback_ledger_wallet_entry_id_idx\\` on table \\`public.cashback_ledger\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "cashback_ledger",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`coupon_qr_batches_created_by_idx\\` on table \\`public.coupon_qr_batches\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "coupon_qr_batches",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`gift_cards_order_id_idx\\` on table \\`public.gift_cards\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "gift_cards",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`pickup_points_zone_id_idx\\` on table \\`public.pickup_points\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "pickup_points",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`stock_waitlist_variant_id_idx\\` on table \\`public.stock_waitlist\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "stock_waitlist",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`support_tickets_user_id_idx\\` on table \\`public.support_tickets\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "support_tickets",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Index \\`whatsapp_contacts_user_id_idx\\` on table \\`public.whatsapp_contacts\\` has not been used",
+              "metadata": {
+                "schema": "public",
+                "name": "whatsapp_contacts",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            }
+          ]
+        },
+        {
+          "name": "multiple_permissive_policies",
+          "title": "Multiple Permissive Policies",
+          "level": "WARN",
+          "facing": "EXTERNAL",
+          "categories": ["PERFORMANCE"],
+          "description": "Detects if multiple permissive row level security policies are present on a table for the same \\`role\\` and \\`action\\` (e.g. insert). Multiple permissive policies are suboptimal for performance as each policy must be executed for every relevant query.",
+          "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0006_multiple_permissive_policies",
+          "count": 14,
+          "findings": [
+            {
+              "detail": "Table \\`public.banners\\` has multiple permissive policies for role \\`authenticated\\` for action \\`SELECT\\`. Policies include \\`{\"banners: public read\",\"banners: staff write\"}\\`",
+              "metadata": {
+                "schema": "public",
+                "name": "banners",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Table \\`public.cashback_ledger\\` has multiple permissive policies for role \\`authenticated\\` for action \\`SELECT\\`. Policies include \\`{cashback_ledger_admin_select,cashback_ledger_owner_select}\\`",
+              "metadata": {
+                "schema": "public",
+                "name": "cashback_ledger",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Table \\`public.homepage_sections\\` has multiple permissive policies for role \\`authenticated\\` for action \\`SELECT\\`. Policies include \\`{\"homepage_sections: public read\",\"homepage_sections: staff write\"}\\`",
+              "metadata": {
+                "schema": "public",
+                "name": "homepage_sections",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Table \\`public.payment_events\\` has multiple permissive policies for role \\`authenticated\\` for action \\`SELECT\\`. Policies include \\`{payment_events_admin_read,payment_events_owner_read}\\`",
+              "metadata": {
+                "schema": "public",
+                "name": "payment_events",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Table \\`public.payout_statement_lines\\` has multiple permissive policies for role \\`authenticated\\` for action \\`SELECT\\`. Policies include \\`{\"payout_lines: admin all\",\"payout_lines: member select\"}\\`",
+              "metadata": {
+                "schema": "public",
+                "name": "payout_statement_lines",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Table \\`public.payout_statements\\` has multiple permissive policies for role \\`authenticated\\` for action \\`SELECT\\`. Policies include \\`{\"payout_statements: admin all\",\"payout_statements: member select\"}\\`",
+              "metadata": {
+                "schema": "public",
+                "name": "payout_statements",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Table \\`public.refunds\\` has multiple permissive policies for role \\`authenticated\\` for action \\`SELECT\\`. Policies include \\`{refunds_owner_read,refunds_staff_read}\\`",
+              "metadata": {
+                "schema": "public",
+                "name": "refunds",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Table \\`public.supplier_branches\\` has multiple permissive policies for role \\`authenticated\\` for action \\`DELETE\\`. Policies include \\`{supplier_branches_admin_all,supplier_branches_member_write}\\`",
+              "metadata": {
+                "schema": "public",
+                "name": "supplier_branches",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Table \\`public.supplier_branches\\` has multiple permissive policies for role \\`authenticated\\` for action \\`INSERT\\`. Policies include \\`{supplier_branches_admin_all,supplier_branches_member_write}\\`",
+              "metadata": {
+                "schema": "public",
+                "name": "supplier_branches",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Table \\`public.supplier_branches\\` has multiple permissive policies for role \\`authenticated\\` for action \\`SELECT\\`. Policies include \\`{supplier_branches_admin_all,supplier_branches_member_write,supplier_branches_public_read}\\`",
+              "metadata": {
+                "schema": "public",
+                "name": "supplier_branches",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Table \\`public.supplier_branches\\` has multiple permissive policies for role \\`authenticated\\` for action \\`UPDATE\\`. Policies include \\`{supplier_branches_admin_all,supplier_branches_member_write}\\`",
+              "metadata": {
+                "schema": "public",
+                "name": "supplier_branches",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Table \\`public.support_ticket_messages\\` has multiple permissive policies for role \\`authenticated\\` for action \\`SELECT\\`. Policies include \\`{support_ticket_messages_own_read,support_ticket_messages_staff_read}\\`",
+              "metadata": {
+                "schema": "public",
+                "name": "support_ticket_messages",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Table \\`public.support_tickets\\` has multiple permissive policies for role \\`authenticated\\` for action \\`SELECT\\`. Policies include \\`{support_tickets_own_read,support_tickets_staff_read}\\`",
+              "metadata": {
+                "schema": "public",
+                "name": "support_tickets",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            },
+            {
+              "detail": "Table \\`public.whatsapp_contacts\\` has multiple permissive policies for role \\`authenticated\\` for action \\`SELECT\\`. Policies include \\`{whatsapp_contacts_admin_read,whatsapp_contacts_own_read}\\`",
+              "metadata": {
+                "schema": "public",
+                "name": "whatsapp_contacts",
+                "type": "table"
+              },
+              "observed_at": "2026-10-21T13:07:44.841Z"
+            }
+          ]
+        },
+        {
+          "name": "auth_db_connections_absolute",
+          "title": "Auth DB Connection Strategy is not Percentage",
+          "level": "INFO",
+          "facing": "EXTERNAL",
+          "categories": ["PERFORMANCE"],
+          "description": "Using a percentage based allocation connection strategy for Auth can help to improve the server's performance when increasing instance size.",
+          "remediation": "https://supabase.com/docs/guides/deployment/going-into-prod",
+          "count": 1,
+          "findings": [
+            {
+              "detail": "Your project's Auth server is configured to use at most 10 connections. Increasing the instance size without manually adjusting this number will not improve the performance of the Auth server. Switch to a percentage based connection allocation strategy instead.",
+              "metadata": {
+                "entity": "Auth",
+                "type": "auth"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "summary": {
+    "pool": {
+      "backends": 14,
+      "maxConnections": 60,
+      "reserved": 3,
+      "utilisationPct": 23.3,
+      "waitingLocks": 0,
+      "longRunning": 0,
+      "statementTimeoutMs": "120000",
+      "idleInTxTimeoutMs": "0",
+      "byApp": [
+        {
+          "app": "PostgREST 14.5",
+          "usename": "authenticator",
+          "n": 11
+        },
+        {
+          "app": "",
+          "usename": "supabase_admin",
+          "n": 1
+        },
+        {
+          "app": "mgmt-api",
+          "usename": "supabase_read_only_user",
+          "n": 1
+        },
+        {
+          "app": "postgres_exporter",
+          "usename": "supabase_admin",
+          "n": 1
+        }
+      ]
+    },
+    "statements": {
+      "statements": 4898,
+      "calls": 7587941,
+      "total_ms": "3095923",
+      "over_500_mean": 6,
+      "over_500_max": 20,
+      "since": "2026-07-16 19:10:08.475715+00",
+      "slowMean": [
+        {
+          "calls": 5,
+          "mean_ms": "1511.6",
+          "max_ms": "2070.9",
+          "total_ms": "7558",
+          "rows": 389,
+          "query": "with\n      tables as (SELECT\n  c.oid :: int8 AS id,\n  nc.nspname AS schema,\n  c.relname AS name,\n  c.relrowsecurity AS rls_enabled,\n  c.relforcerowsecurity AS rls_forced,\n  CASE\n    WHEN c.relreplident = $2 THEN $3\n    WHEN c.relreplident = $4 THEN $5\n    WHEN c.relreplident = $6 THEN $7\n    ELSE $8\n  END AS replica_identity,\n  pg_total_relation_size(format($9, nc.nspname, c.relname)) :: int8 AS b",
+          "who": "platform"
+        },
+        {
+          "calls": 1,
+          "mean_ms": "1206.6",
+          "max_ms": "1206.6",
+          "total_ms": "1207",
+          "rows": 52,
+          "query": "with page as (\n      select\n        c.oid,\n        c.relname,\n        c.relrowsecurity,\n        c.relforcerowsecurity,\n        c.relreplident,\n        nc.nspname as schema,\n        -- Computed once here so the final select can reference it for both the\n        -- raw byte count and pg_size_pretty without re-walking heap+toast+indexes.\n        pg_total_relation_size(c.oid) as bytes_raw\n      from p",
+          "who": "platform"
+        },
+        {
+          "calls": 1,
+          "mean_ms": "1133.6",
+          "max_ms": "1133.6",
+          "total_ms": "1134",
+          "rows": 16,
+          "query": "select tc.table_name, kcu.column_name, ccu.table_schema as ref_schema, ccu.table_name as ref_table, rc.delete_rule\nfrom information_schema.table_constraints tc\njoin information_schema.key_column_usage kcu on tc.constraint_name = kcu.constraint_name and tc.table_schema = kcu.table_schema\njoin information_schema.referential_constraints rc on tc.constraint_name = rc.constraint_name\njoin information_s",
+          "who": "platform"
+        },
+        {
+          "calls": 1,
+          "mean_ms": "744.9",
+          "max_ms": "744.9",
+          "total_ms": "745",
+          "rows": 1,
+          "query": "SELECT jsonb_object_agg(x.tablename, x.result) AS m FROM (\n  SELECT c.relname AS tablename, pg_temp.count_or_err(c.relname) AS result\n  FROM pg_class c WHERE c.relnamespace=$1::regnamespace AND c.relkind=$2\n) x",
+          "who": "platform"
+        },
+        {
+          "calls": 384,
+          "mean_ms": "703.6",
+          "max_ms": "1673.8",
+          "total_ms": "270194",
+          "rows": 56152,
+          "query": "with f as (\n      \n-- CTE with sane arg_modes, arg_names, and arg_types.\n-- All three are always of the same length.\n-- All three include all args, including OUT and TABLE args.\nwith functions as (\n  select\n    *,\n    -- proargmodes is null when all arg modes are IN\n    coalesce(\n      p.proargmodes,\n      array_fill($1::text, array[cardinality(coalesce(p.proallargtypes, p.proargtypes))])\n    ) as",
+          "who": "platform"
+        },
+        {
+          "calls": 594,
+          "mean_ms": "566.7",
+          "max_ms": "2557.4",
+          "total_ms": "336627",
+          "rows": 710424,
+          "query": "SELECT name FROM pg_timezone_names",
+          "who": "platform"
+        }
+      ],
+      "slowMax": [
+        {
+          "calls": 1473,
+          "mean_ms": "4.1",
+          "max_ms": "1159.2",
+          "stddev_ms": "31.9",
+          "query": "WITH pgrst_source AS (UPDATE \"public\".\"carts\" SET \"expires_at\" = \"pgrst_body\".\"expires_at\", \"items\" = \"pgrst_body\".\"items\" FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"expires_at\", \"items\" FROM json_to_record(pgrst_payload.json_data) AS _(\"expires_at\" timestamp with time zone, \"items\" jsonb) ) pgrst_body  WHERE  \"public\".\"carts\".\"id\" = $2 RETURNING \"public\".\"carts\".\"id\", \"public\".\"carts\".\"items\") SEL",
+          "who": "app"
+        },
+        {
+          "calls": 10697,
+          "mean_ms": "10.6",
+          "max_ms": "1137.4",
+          "stddev_ms": "22.8",
+          "query": "WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"p_key\", \"p_max_attempts\", \"p_window_seconds\" FROM json_to_record(pgrst_payload.json_data) AS _(\"p_key\" text, \"p_max_attempts\" integer, \"p_window_seconds\" integer) LIMIT $4) pgrst_body , LATERAL (SELECT \"public\".\"check_rate_limit\"(\"p_key\" := pgrst_body.\"p_key\", \"p_max_attempts\" := pgrst_body.\"p_max_attemp",
+          "who": "app"
+        },
+        {
+          "calls": 21230,
+          "mean_ms": "5.4",
+          "max_ms": "1013.8",
+          "stddev_ms": "15.8",
+          "query": "WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"p_product_id\" FROM json_to_record(pgrst_payload.json_data) AS _(\"p_product_id\" uuid) LIMIT $4) pgrst_body , LATERAL (SELECT \"public\".\"available_stock\"(\"p_product_id\" := pgrst_body.\"p_product_id\") pgrst_scalar) pgrst_call) SELECT $5::bigint AS total_result_set, $6 AS page_total, coalesce(json_agg(_postgre",
+          "who": "app"
+        },
+        {
+          "calls": 383,
+          "mean_ms": "285.0",
+          "max_ms": "911.6",
+          "stddev_ms": "229.3",
+          "query": "SELECT\n    tbl.schemaname,\n    tbl.tablename,\n    tbl.quoted_name,\n    tbl.is_table,\n    json_agg(a) as columns\n  FROM\n    (\n      SELECT\n        n.nspname as schemaname,\n        c.relname as tablename,\n        (quote_ident(n.nspname) || $1 || quote_ident(c.relname)) as quoted_name,\n        $2 as is_table\n      FROM\n        pg_catalog.pg_class c\n        JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace\n      W",
+          "who": "platform"
+        },
+        {
+          "calls": 6803,
+          "mean_ms": "5.4",
+          "max_ms": "883.6",
+          "stddev_ms": "17.5",
+          "query": "WITH pgrst_source AS (INSERT INTO \"public\".\"carts\"(\"expires_at\", \"items\", \"session_id\") SELECT \"pgrst_body\".\"expires_at\", \"pgrst_body\".\"items\", \"pgrst_body\".\"session_id\" FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"expires_at\", \"items\", \"session_id\" FROM json_to_record(pgrst_payload.json_data) AS _(\"expires_at\" timestamp with time zone, \"items\" jsonb, \"session_id\" text) ) pgrst_body  RETURNING \"publi",
+          "who": "app"
+        },
+        {
+          "calls": 887,
+          "mean_ms": "46.3",
+          "max_ms": "857.1",
+          "stddev_ms": "66.0",
+          "query": "WITH pgrst_source AS (SELECT \"pgrst_call\".* FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"q\", \"max_results\" FROM json_to_record(pgrst_payload.json_data) AS _(\"q\" text, \"max_results\" integer) LIMIT $4) pgrst_body , LATERAL \"public\".\"search_products\"(\"q\" := pgrst_body.\"q\", \"max_results\" := pgrst_body.\"max_results\") pgrst_call) SELECT $5::bigint AS total_result_set, pg_catalog.count(_postgrest_t) AS page",
+          "who": "app"
+        },
+        {
+          "calls": 594,
+          "mean_ms": "127.5",
+          "max_ms": "761.0",
+          "stddev_ms": "124.9",
+          "query": "WITH\n-- Recursively get the base types of domains\nbase_types AS (\n  WITH RECURSIVE\n  recurse AS (\n    SELECT\n      oid,\n      typbasetype,\n      typnamespace AS base_namespace,\n      COALESCE(NULLIF(typbasetype, $2), oid) AS base_type\n    FROM pg_type\n    UNION\n    SELECT\n      t.oid,\n      b.typbasetype,\n      b.typnamespace AS base_namespace,\n      COALESCE(NULLIF(b.typbasetype, $3), b.oid) AS base_type\n    FROM re",
+          "who": "platform"
+        },
+        {
+          "calls": 131,
+          "mean_ms": "306.8",
+          "max_ms": "755.3",
+          "stddev_ms": "198.6",
+          "query": "SELECT\n  e.name,\n  n.nspname AS schema,\n  e.default_version,\n  x.extversion AS installed_version,\n  e.comment,\n  ev.schema AS default_version_schema\nFROM\n  pg_available_extensions e\n  LEFT JOIN pg_extension x ON e.name = x.extname\n  LEFT JOIN pg_namespace n ON x.extnamespace = n.oid\n  LEFT JOIN pg_available_extension_versions ev\n    ON ev.name = e.name AND ev.version = e.default_version",
+          "who": "platform"
+        },
+        {
+          "calls": 104125,
+          "mean_ms": "5.3",
+          "max_ms": "702.6",
+          "stddev_ms": "3.8",
+          "query": "SELECT wal->>$5 as type,\n       wal->>$6 as schema,\n       wal->>$7 as table,\n       COALESCE(wal->>$8, $9) as columns,\n       COALESCE(wal->>$10, $11) as record,\n       COALESCE(wal->>$12, $13) as old_record,\n       wal->>$14 as commit_timestamp,\n       subscription_ids,\n       errors,\n       slot_changes_count\nFROM realtime.list_changes($1, $2, $3, $4)",
+          "who": "realtime"
+        },
+        {
+          "calls": 6,
+          "mean_ms": "488.2",
+          "max_ms": "597.6",
+          "stddev_ms": "100.0",
+          "query": "with\n      tables as (SELECT\n  c.oid :: int8 AS id,\n  nc.nspname AS schema,\n  c.relname AS name,\n  c.relrowsecurity AS rls_enabled,\n  c.relforcerowsecurity AS rls_forced,\n  CASE\n    WHEN c.relreplident = $2 THEN $3\n    WHEN c.relreplident = $4 THEN $5\n    WHEN c.relreplident = $6 THEN $7\n    ELSE $8\n  END AS replica_identity,\n  pg_total_relation_size(format($9, nc.nspname, c.relname)) :: int8 AS bytes,\n  pg_size_pret",
+          "who": "platform"
+        },
+        {
+          "calls": 11,
+          "mean_ms": "130.3",
+          "max_ms": "537.3",
+          "stddev_ms": "216.0",
+          "query": "select\n      m->>$1 as version,\n      m->>$2 as name,\n      case\n        when pg_catalog.jsonb_typeof(m->$3) = $4\n        then array(select pg_catalog.jsonb_array_elements_text(m->$5))\n        else $6\n      end as statements\n    from pg_catalog.jsonb_array_elements(\n      coalesce(\n        nullif(pg_catalog.current_setting($7, $8), $9)::pg_catalog.jsonb,\n        $10::pg_catalog.jsonb\n      )\n    ) as m\n    order by m",
+          "who": "other"
+        },
+        {
+          "calls": 2133,
+          "mean_ms": "15.3",
+          "max_ms": "525.3",
+          "stddev_ms": "20.8",
+          "query": "WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"p_term\", \"p_hits\" FROM json_to_record(pgrst_payload.json_data) AS _(\"p_term\" text, \"p_hits\" integer) LIMIT $4) pgrst_body , LATERAL (SELECT \"public\".\"fn_record_search\"(\"p_term\" := pgrst_body.\"p_term\", \"p_hits\" := pgrst_body.\"p_hits\") pgrst_scalar) pgrst_call) SELECT $5::bigint AS total_result_set, $6 AS ",
+          "who": "app"
+        },
+        {
+          "calls": 97,
+          "mean_ms": "204.9",
+          "max_ms": "520.8",
+          "stddev_ms": "91.1",
+          "query": "SELECT case when pg_is_in_recovery() then $2 else (pg_walfile_name_offset(lsn)).file_name end, lsn::text, pg_is_in_recovery() FROM pg_backup_start($1, $3) lsn",
+          "who": "platform"
+        },
+        {
+          "calls": 2055,
+          "mean_ms": "16.4",
+          "max_ms": "515.6",
+          "stddev_ms": "34.9",
+          "query": "WITH pgrst_source AS ( SELECT \"public\".\"analytics_events\".\"session_id\", \"public\".\"analytics_events\".\"props\" FROM \"public\".\"analytics_events\" WHERE  \"public\".\"analytics_events\".\"event_name\" = $1 AND  \"public\".\"analytics_events\".\"occurred_at\" >= $2  ORDER BY \"public\".\"analytics_events\".\"occurred_at\" DESC  LIMIT $3 OFFSET $4 )  SELECT $5::bigint AS total_result_set, pg_catalog.count(_postgrest_t) AS page_total, coalesce",
+          "who": "app"
+        }
+      ],
+      "appSlowMean": [],
+      "appSpikes": [
+        {
+          "calls": 1473,
+          "mean_ms": "4.1",
+          "max_ms": "1159.2",
+          "stddev_ms": "31.9",
+          "query": "WITH pgrst_source AS (UPDATE \"public\".\"carts\" SET \"expires_at\" = \"pgrst_body\".\"expires_at\", \"items\" = \"pgrst_body\".\"items\" FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"expires_at\", \"items\" FROM json_to_record(pgrst_payload.json_data) AS _(\"expires_at\" timestamp with time zone, \"items\" jsonb) ) pgrst_body  WHERE  \"public\".\"carts\".\"id\" = $2 RETURNING \"public\".\"carts\".\"id\", \"public\".\"carts\".\"items\") SEL",
+          "who": "app"
+        },
+        {
+          "calls": 10697,
+          "mean_ms": "10.6",
+          "max_ms": "1137.4",
+          "stddev_ms": "22.8",
+          "query": "WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"p_key\", \"p_max_attempts\", \"p_window_seconds\" FROM json_to_record(pgrst_payload.json_data) AS _(\"p_key\" text, \"p_max_attempts\" integer, \"p_window_seconds\" integer) LIMIT $4) pgrst_body , LATERAL (SELECT \"public\".\"check_rate_limit\"(\"p_key\" := pgrst_body.\"p_key\", \"p_max_attempts\" := pgrst_body.\"p_max_attemp",
+          "who": "app"
+        },
+        {
+          "calls": 21230,
+          "mean_ms": "5.4",
+          "max_ms": "1013.8",
+          "stddev_ms": "15.8",
+          "query": "WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"p_product_id\" FROM json_to_record(pgrst_payload.json_data) AS _(\"p_product_id\" uuid) LIMIT $4) pgrst_body , LATERAL (SELECT \"public\".\"available_stock\"(\"p_product_id\" := pgrst_body.\"p_product_id\") pgrst_scalar) pgrst_call) SELECT $5::bigint AS total_result_set, $6 AS page_total, coalesce(json_agg(_postgre",
+          "who": "app"
+        },
+        {
+          "calls": 6803,
+          "mean_ms": "5.4",
+          "max_ms": "883.6",
+          "stddev_ms": "17.5",
+          "query": "WITH pgrst_source AS (INSERT INTO \"public\".\"carts\"(\"expires_at\", \"items\", \"session_id\") SELECT \"pgrst_body\".\"expires_at\", \"pgrst_body\".\"items\", \"pgrst_body\".\"session_id\" FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"expires_at\", \"items\", \"session_id\" FROM json_to_record(pgrst_payload.json_data) AS _(\"expires_at\" timestamp with time zone, \"items\" jsonb, \"session_id\" text) ) pgrst_body  RETURNING \"publi",
+          "who": "app"
+        },
+        {
+          "calls": 887,
+          "mean_ms": "46.3",
+          "max_ms": "857.1",
+          "stddev_ms": "66.0",
+          "query": "WITH pgrst_source AS (SELECT \"pgrst_call\".* FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"q\", \"max_results\" FROM json_to_record(pgrst_payload.json_data) AS _(\"q\" text, \"max_results\" integer) LIMIT $4) pgrst_body , LATERAL \"public\".\"search_products\"(\"q\" := pgrst_body.\"q\", \"max_results\" := pgrst_body.\"max_results\") pgrst_call) SELECT $5::bigint AS total_result_set, pg_catalog.count(_postgrest_t) AS page",
+          "who": "app"
+        },
+        {
+          "calls": 2133,
+          "mean_ms": "15.3",
+          "max_ms": "525.3",
+          "stddev_ms": "20.8",
+          "query": "WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"p_term\", \"p_hits\" FROM json_to_record(pgrst_payload.json_data) AS _(\"p_term\" text, \"p_hits\" integer) LIMIT $4) pgrst_body , LATERAL (SELECT \"public\".\"fn_record_search\"(\"p_term\" := pgrst_body.\"p_term\", \"p_hits\" := pgrst_body.\"p_hits\") pgrst_scalar) pgrst_call) SELECT $5::bigint AS total_result_set, $6 AS ",
+          "who": "app"
+        },
+        {
+          "calls": 2055,
+          "mean_ms": "16.4",
+          "max_ms": "515.6",
+          "stddev_ms": "34.9",
+          "query": "WITH pgrst_source AS ( SELECT \"public\".\"analytics_events\".\"session_id\", \"public\".\"analytics_events\".\"props\" FROM \"public\".\"analytics_events\" WHERE  \"public\".\"analytics_events\".\"event_name\" = $1 AND  \"public\".\"analytics_events\".\"occurred_at\" >= $2  ORDER BY \"public\".\"analytics_events\".\"occurred_at\" DESC  LIMIT $3 OFFSET $4 )  SELECT $5::bigint AS total_result_set, pg_catalog.count(_postgrest_t) AS page_total, coalesce",
+          "who": "app"
+        }
+      ]
+    },
+    "alert": false,
+    "advisors": [
+      {
+        "name": "unindexed_foreign_keys",
+        "level": "INFO",
+        "count": 9
+      },
+      {
+        "name": "auth_rls_initplan",
+        "level": "WARN",
+        "count": 1
+      },
+      {
+        "name": "unused_index",
+        "level": "INFO",
+        "count": 157
+      },
+      {
+        "name": "multiple_permissive_policies",
+        "level": "WARN",
+        "count": 14
+      },
+      {
+        "name": "auth_db_connections_absolute",
+        "level": "INFO",
+        "count": 1
+      }
+    ]
+  }
+}
