@@ -2,6 +2,21 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_10 (Session: 2026-10-21 13:15-13:25 UTC, queue regeneration, eighth pass, DONE)
+
+**Goal:** Append 10 fresh MAINTENANCE_LOOP goals to `~/ke-goals/queue.txt` by reading MAINTENANCE_LOOP_1 through MAINTENANCE_LOOP_10 from that file and appending them again. Only what is requested.
+
+**Result:** DONE. The file ended with a newline (`od -c` on the last byte), so lines 1 through 10 (one full LOOP_1 to LOOP_10 cycle, read from a copy at `/tmp/queue-before-loop10-1316.txt`) were appended verbatim at 13:16 UTC. Queue grew from 40 lines to 50; `diff` of lines 1-10 against lines 41-50 is empty, `grep -c '^MAINTENANCE_LOOP_'` reads 50, and the file still ends with a newline. The runner had already popped this pass's LOOP_10 line before the append, so the head is MAINTENANCE_LOOP_1 and the cycle continues without a refill trigger (refill fires below 20 lines).
+
+**Gates:** `pnpm type-check` exit 0, `pnpm lint` exit 0 (biome 1735 files, tokens, copy, asset gates clean), `pnpm build` exit 0, `pnpm gate:chunks` clean on 243 prerendered pages. No repository file other than this entry changed; `git status` was empty before and after the build on `e1c78ce56`. Backup 2026-10-21-1241 present and under 24h, three kept (10-18-0350, 10-21-0201, 10-21-1241), nothing to delete; caffeinate alive (two processes), SleepDisabled 1.
+
+**החלטות שהתקבלו לבד:**
+- The queue file lives outside the repo, so the commit carries only this STATE.md entry.
+- STATE.md is 4788 lines against its stated 300-line cap; not trimmed here because the goal is the queue append only (M18 in `~/ke-goals/maint-template.txt` owns the trim).
+- Supabase MCP and GitHub MCP not needed: no DB, RLS, migration or PR in a queue append. No tests added: no src or script change.
+
+**המשך מ:** MAINTENANCE_LOOP_1 (head of `~/ke-goals/queue.txt`): run `pnpm audit`, fix critical and high vulnerabilities, commit each fix separately as chore security audit fix PACKAGE, push to autopilot.
+
 ## ✅ MAINTENANCE_LOOP_9 (Session: 2026-10-21 13:06-13:20 UTC, DB performance check, twelfth measured pass, MEASURED via Supabase MCP, no alert, one watch item)
 
 **Goal:** Verify the Supabase connection pool and query performance via Supabase MCP, alert in docs/DB-STATUS.md if slow queries over 500 ms exist, commit as chore ops db performance check, push.
