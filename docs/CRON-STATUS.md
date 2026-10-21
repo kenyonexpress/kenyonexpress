@@ -538,6 +538,7 @@ dedupe PR to protected `main`) are unchanged and none is reachable from this loo
 
 ## History
 
+- 2026-10-21 11:17 UTC: ninth run, part two. A third MCP `get_runtime_logs` call with the tool defaults (`since=1h`, `limit=10`, window 10:17 to 11:17 UTC) answered the same `403: forbidden` at page 0, 0 rows, and `list_projects` for the team now answers **0 projects** (it answered two on 20.10 at 17:52 UTC), so the connector grant has narrowed, not widened. The Supabase connector is listed as needing an OAuth this session cannot run, so pg_cron was read through the management API with the CLI keychain token. Per CLAUDE.md the MCP read is recorded as blocked after repeated attempts and the check stands on the CLI timestamps above.
 - 2026-10-21 11:10 to 11:14 UTC: ninth run. MCP `get_runtime_logs` 403 twice (7d filtered, `group_by=requestPath` 7d, request `w4bzw-1792581036795`), 0 rows.
   CLI: 2 × 200 in 7d, both `health` on 19.10 04:55 UTC (54h 16m old); 0 × 5xx; 24h window 31 × 401 + 19 × 404 (cap 50, 25 paths, identical rows to the
   eighth run, newest 09:40:42 UTC, nothing hit after); `crons ls` 5/5 not deployed; production alias unchanged on `dpl_AP18UQwUQdhd3XWNo41seDQvAcuA`;
