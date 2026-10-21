@@ -1,7 +1,7 @@
 # Cron Routes Status
 
-**Last check:** 2026-10-21 01:06 UTC (MAINTENANCE_LOOP_5, sixth run; MCP `get_runtime_logs` called in-session twice, 403 both times; CLI fallback measured over 24h and 7d)
-**Status:** 🔴 CRITICAL, unchanged since 2026-10-20 13:15 UTC (sixth consecutive measurement). All 5 `vercel.json` routes are stale over 24h with 0 hits in 7 days. The only 2xx in 7 days is `/api/cron/health`, twice, at 2026-10-19 04:55 UTC (a manual probe after the deploy), which is itself 44h stale. Every other hit is 401 or 404.
+**Last check:** 2026-10-21 06:41 UTC (MAINTENANCE_LOOP_5, seventh run; MCP `get_runtime_logs` called in-session twice, 403 both times; CLI fallback measured over 24h and 7d)
+**Status:** 🔴 CRITICAL, unchanged since 2026-10-20 13:15 UTC (seventh consecutive measurement). All 5 `vercel.json` routes are stale over 24h with 0 hits in 7 days. The only 2xx in 7 days is `/api/cron/health`, twice, at 2026-10-19 04:55 UTC (a manual probe after the deploy), which is itself almost 50h stale. Every other hit is 401 or 404. The only live scheduler is pg_cron inside the database (01:30 UTC today).
 
 ## How this was measured
 
@@ -408,8 +408,61 @@ The five `vercel.json` routes (`observability-check`, `fraud-monitor`, `p95-moni
 (a production deploy that carries `vercel.json`, Ofir's `CRON_SECRET`, a manifest dedupe PR to protected `main`),
 and none moved between 00:14 and 01:06 UTC.
 
+## 06:41 UTC re-measurement, 21.10 (seventh run)
+
+MCP `get_runtime_logs` was called twice from this session against `team_TUMTPVDP8218QHwedSjmgJWl` /
+`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`: filtered (`environment=production`, `query=/api/cron`, `since=7d`, `limit=100`,
+window 2026-10-14T06:41:42Z to 2026-10-21T06:41:42Z) and `group_by=requestPath` over `24h`. Both answered
+`Vercel API request failed (403: forbidden)` at page 0, request `vs42s-1792564904160`, 0 rows. Same grant failure as
+every run since 13:15 UTC on 20.10. The CLI fallback named in the tool's own recovery text was used with the same scope.
+
+| Probe | Result |
+|---|---|
+| `vercel logs --since 7d --status-code 200 --query "/api/cron"` | **2 rows**, both `/api/cron/health` on `audit/final-audit` at 2026-10-19 04:55:07 and 04:55:21 UTC, now **49h 46m** old |
+| `vercel logs --since 7d --status-code 5xx --query "/api/cron"` | **0 rows** |
+| `vercel logs --since 24h --query "/api/cron"` (any status, cap 50) | 50 rows, 09:25:29 UTC 20.10 to 05:53:18 UTC 21.10: 401 = 26, 404 = 24 |
+| Newest hit of any cron route | `job-dlq` and `search-outbox` 404, `webhook-dlq` 401, at 05:53 UTC from the GitHub scheduler |
+| `vercel crons ls --project kenyonexpress` | 5 paths, all **not deployed**, "5 local changes pending deploy" |
+| Production alias `kenyonexpress.co.il` | still `dpl_AP18UQwUQdhd3XWNo41seDQvAcuA` (`audit/final-audit` @ `337d1a2a`, source `cli`, 2026-10-19 04:43 UTC), `crons: []` |
+| `vercel ls --prod` | the same two production deployments, both 2 days old, no new deploy |
+| GitHub `cron.yml`, last 6 scheduled runs (01:17 to 05:53 UTC 21.10, all on `main`) | **6 / 6 failed** |
+| pg_cron `report_tables_nightly` (management API, read-only) | last success **2026-10-21 01:30:00 UTC**, 0 failures, 🟢 fresh |
+
+Latest run `39552098825` (05:53 UTC, schedule `*/10 * * * *`): `invoices`, `stock`, `stranded-payments` answered `000`
+twice each (duplicate manifest names on `main`, curl never reached Vercel), `webhook-dlq` 401, `job-dlq` and
+`search-outbox` 404. Identical failure shape to every run since 25.09.
+
+**Per-route last attempt in the 24h window** (06:41 UTC 20.10 to 06:41 UTC 21.10, from the 50-row capped pull,
+aggregated by path; routes absent here had no attempt in that window):
+
+| Route | Last attempt (UTC) | Status | Hits 24h |
+|---|---|---|---|
+| job-dlq | 2026-10-21 05:53:18 | 404 | 6 |
+| search-outbox | 2026-10-21 05:53:18 | 404 | 6 |
+| webhook-dlq | 2026-10-21 05:53:16 | 401 | 8 |
+| email-retry | 2026-10-21 05:08:33 | 404 | 5 |
+| whatsapp | 2026-10-21 02:03:14 | 401 | 5 |
+| expire-coupons | 2026-10-21 01:30:59 | 404 | 1 |
+| expire-cashback | 2026-10-21 01:30:57 | 404 | 1 |
+| search-reindex | 2026-10-21 01:17:55 | 404 | 4 |
+| wishlist-alerts | 2026-10-20 09:39:21 | 401 | 1 |
+| affiliate-payouts, weekly-digest, retention, expire-vouchers, reconcile, reap-carts, subscriptions, abandoned-cart, stranded-payments, stock, invoices, health, notifications | 2026-10-20 09:25:29 to 09:25:31 | 401 or 404 | 1 each |
+| observability-check, fraud-monitor, p95-monitor, deal-scraper, stock-notifications (`vercel.json`) | none | n/a | 0 |
+| rfm-segmentation, search-report, sms-broadcasts (`src` only) | none | n/a | 0 |
+
+Nothing changed since the 01:06 UTC run except the clock: the `health` 2xx aged from 44h to almost 50h, the GitHub
+scheduler added six more failed runs, and the 32-route table in the sixth run still holds (24 attempted and failed,
+8 never called). The five `vercel.json` routes remain at **0 hits in 7 days**, 🔴 stale over 24h. The three owners
+(a production deploy that carries `vercel.json`, Ofir's `CRON_SECRET`, a manifest dedupe PR to protected `main`) are
+unchanged and none is reachable from this loop. Gates on this branch at the time of writing: `pnpm type-check`,
+`pnpm lint` and `pnpm build` all exit 0 (204 routes).
+
 ## History
 
+- 2026-10-21 06:41 UTC: seventh run. MCP `get_runtime_logs` 403 twice (7d filtered, `group_by=requestPath` 24h), 0 rows.
+  CLI: 2 × 200 in 7d, both `health` on 19.10 04:55 UTC (49h 46m old); 0 × 5xx; 24h window 26 × 401 + 24 × 404 (cap 50);
+  `crons ls` 5/5 not deployed; production alias unchanged on `dpl_AP18UQwUQdhd3XWNo41seDQvAcuA`; 6/6 latest `cron.yml`
+  runs failed, newest `39552098825` at 05:53 UTC; pg_cron nightly succeeded at 01:30 UTC. All 5 routes stale over 24h.
 - 2026-10-21 01:06 to 01:19 UTC: sixth run. MCP `get_runtime_logs` 403 three times (7d filtered, `group_by=requestPath` 24h,
   `source=function` 24h) and `get_runtime_errors` 403 once, 0 rows. All 32 routes tabulated individually: 24 attempted and failed, 8 never called.
   CLI: 2 × 200 in 7d, both `health` on 19.10 04:55 UTC (44h old); 0 × 5xx; 24h window 27 × 401 + 23 × 404; `crons ls`

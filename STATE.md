@@ -4423,3 +4423,9 @@ Supabase MCP authentication unavailable in non-interactive session. CLI fallback
 - Gates: type-check exit 0, lint exit 0, build exit 0. Backup 2026-10-21-0201 present, three kept; caffeinate alive, SleepDisabled 1.
 
 **המשך מ:** MAINTENANCE_LOOP_10 (head of ~/ke-goals/queue.txt).
+
+## MAINTENANCE_LOOP_5 (2026-10-21 06:41 UTC, seventh run)
+- Vercel MCP `get_runtime_logs` called twice in-session (7d filtered, group_by=requestPath 24h): 403 forbidden at page 0 both times, 0 rows, same team-scope grant failure as every run since 20.10 13:15 UTC. CLI fallback measured: 2 × 200 in 7d (both `/api/cron/health` at 19.10 04:55 UTC, now 49h 46m old), 0 × 5xx, 24h window 26 × 401 + 24 × 404 (cap 50), `crons ls` 5/5 not deployed, production alias still `dpl_AP18UQwUQdhd3XWNo41seDQvAcuA` with `crons: []`, 6/6 latest `cron.yml` runs failed (newest 39552098825 at 05:53 UTC). pg_cron `report_tables_nightly` succeeded at 01:30 UTC today (management API, read-only). All 5 vercel.json routes stale over 24h with 0 hits in 7d; docs/CRON-STATUS.md gained the seventh-run section, per-route 24h table, header and history entry. The three owners (production deploy carrying vercel.json, CRON_SECRET, manifest dedupe PR to main) are unchanged and outside this loop.
+- Gates: type-check exit 0, lint exit 0, build exit 0 (204 routes). Caffeinate and backup state not re-measured in this run.
+
+**המשך מ:** MAINTENANCE_LOOP_6 (head of ~/ke-goals/queue.txt).
