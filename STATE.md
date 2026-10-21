@@ -2,27 +2,28 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
-## ✅ F43 (Session: 2026-10-21 03:33-03:45 UTC, mobile gate 380 and 768, MEASURED, PASS, no CSS change)
+## ✅ F43 (Session: 2026-10-21 03:33-04:05 UTC, mobile gate 380 and 768, MEASURED, PASS, title type fixed)
 
 **Goal:** Bring the home page 380px parity gate under 11% against the Electro v7 reference, name the top three pixel-diff sources, fix them in layout CSS, re-run until under 11%, then check 768px the same way. Commit, push, STATE.
 
-**Result:** DONE on HEAD c1cba9105 with no source change. Measured on a fresh `pnpm start` of the HEAD build on port 3311 (BUILD_ID one minute younger than the commit, tree clean), reference `refs/electro_home_{380,768}.png` with `refs/live-assets` present (4 entries, identical to the main checkout, so no blank-image underread). `node scripts/compare.mjs --page=home --width=380` wrote **8.51% PASS** (`c1cba9105`), `--width=768` wrote **9.80% PASS**, both rows in `docs/UI-PARITY-REPORT.md` 03:34 and 03:36. The three numbers match the 20.10 23:36 recheck exactly, so the F41 and F42 commits moved nothing on the home page at either width. The goal's `--widths=`, `--baseline=` and `--live-url=` flags do not exist in `compare.mjs` (it takes `--width=` singular and `LOCAL_BASE`); the goal's predicted sources (header height, hero carousel height, category row spacing) are not what the bands show.
+**Result:** DONE. Final gate on the rebuilt tree: **380 8.54% PASS, 768 9.80% PASS, 1440 8.09% PASS** (rows in `docs/UI-PARITY-REPORT.md` 03:51-03:55, reference `refs/electro_home_*.png`, `refs/live-assets` present and identical to the main checkout). The first pass measured HEAD c1cba9105 at 8.51 / 9.80 / 8.10 with no change, so the gate was already clear; the second pass fixed the one layout fact the band crops proved wrong. The goal's `--widths=`, `--baseline=` and `--live-url=` flags do not exist in `compare.mjs` (it takes `--width=` singular and `LOCAL_BASE`), `src/app/page.tsx` and `tailwind.config.*` do not exist on this branch, and the goal's predicted sources (header height, hero carousel height, category row spacing) are not what the bands show.
 
-**Top three diff sources at 380, from band crops of `refs/live.png` and `refs/mine.png`:**
-1. **y200-400, 55.6% and 34.1%: the hero.** The live capture paints a quarantined iPhone photo (`refs/live-assets/_quarantine`) and its header glyphs render as fallback Latin letters because the archive's fonts fail to load (96 refs failed, 37 fonts). Ours paints the welcome text hero. This is the known floor from the 20.10 alignment pass (pitch 548.4, header 48): the band cannot close without copying a quarantined photo, which `docs/SOURCING-RULES.md` forbids.
-2. **y1700-1800, 20.1%: the deals product card.** Same card, same photo, same badge; ours sits about 5px lower and the price reads `3,900 ₪` against live's `₪3900`. The photo is high-frequency so a 5px offset scores as a fifth of the band. The price string is money-path formatting (`src/lib/money.ts`, he-IL), not layout CSS, and is out of scope.
-3. **y2500-2600, 15.1%: our fixed bottom tab bar** (חשבון, עגלה, חיפוש, קטגוריות, בית). The live page has only the WhatsApp and cart floats there. The bar is a storefront feature, not a parity defect.
+**Top three diff sources at 380, from band crops and 2D shift probes of `refs/live.png` against `refs/mine.png`:**
+1. **y200-400, 55.6% and 34.1%: the hero.** The live capture paints a quarantined iPhone photo (`refs/live-assets/_quarantine`) and its header glyphs render as fallback Latin letters because 37 archive fonts fail on every run. This is the floor the 20.10 alignment pass left (pitch 548.4, header 48); it cannot close without copying a quarantined photo, which `docs/SOURCING-RULES.md` forbids.
+2. **y1700-1800, 20.1%: the deals card photo.** The 2D probe finds the photo already at (0,0) on both axes, so the band is the image itself (different encode of the same source), not an offset. The price string `3,900 ₪` against live's `₪3900` is money-path formatting, out of scope.
+3. **y2500-2600, 15.1%: our fixed bottom tab bar.** Live has only the WhatsApp and cart floats there. A storefront feature, not a parity defect. The top-bar wrap in y0-100 (live fits three benefit items on row two, ours two) is the same font failure: live's 16px icons collapse to 7px fallback letters, so matching it would mean shrinking icons the real site draws at 16px.
 
-At 768 the worst bands are the same hero (y100-600) and the bottom bar (y2400-2600).
+**The fix (measured, `src/styles/product-card-deals.css`, documented in `src/components/ProductDealCard.tsx`):** the deals card title `h2` on live is **22px / 26.4px / weight 500 / letter-spacing -0.14px / margin-bottom 8px at 380, 768 and 1440** (probed on all twelve titles in the 1440 viewport). Ours was 22px / 32px / inherit (400) / normal / 0, a value derived from the 64px wrap and labelled "2 clamped lines". Title glyph rows now land within 1px of live (1032-1078 against 1033-1077; before, 1035-1086). Price spans get live's 1.714 line-height (23.996 at 14px, 27.424 at 16px; strike was 1px and sale 2px low). Gate delta is inside run noise (+0.03 at 380, 0 at 768, -0.01 at 1440) because the residual in those bands is Heebo against the reference's fallback face, which is a font-family decision outside this goal. Test: four new assertions in `src/styles/product-card-deals.test.ts`.
 
-**Gates:** `pnpm type-check` exit 0, `pnpm lint` exit 0 (biome 1713 files, tokens, copy and asset gates clean). `pnpm build` exit 0 (310/310 static pages, compiled clean, same partner API prerender bail-outs as every pass). Vitest not re-run: no source file changed. Server stopped by listener PID after the runs.
+**Gates:** `pnpm type-check` exit 0, `pnpm lint` exit 0 (biome 1713 files, tokens, copy and asset gates clean), `pnpm build` exit 0 (310/310 static pages). Vitest on the touched suites: `product-card-deals`, `font-weights`, `TopBar` green; `tokens.test.ts` has one red, `text-gray-500` in `src/components/home/HotCoupons.tsx`, present in HEAD since 53f9efbc4 (19.10) and untouched by this goal. Server stopped by listener PID after the runs.
 
 **החלטות שהתקבלו לבד:**
-- No CSS was edited. The gate is 2.5 points under the line at 380 and 1.2 at 768, and every remaining source is either a sourcing-rule floor, a money-format string, or a feature. A speculative 5px card nudge would buy about 1 point at 380 and risk the 768 and 1440 rows, which this goal does not re-measure; the 20.10 memory says the hero floor is fixed by alignment, not by the hero, and that alignment is already in.
-- The goal's commit paths (`src/components/`, `src/app/page.tsx`, `tailwind.config.*`, `globals.css`) have no change; the commit carries the two gate rows and the state files only.
+- Weight stays at live's 500 even though the reference pixels are lighter: the archive renders a fallback face with no medium cut, the real site declares 500, and the sourcing rule is the stylesheet, not the broken capture. A 400 would score fractionally better and be measurably wrong.
+- The hero band, the top-bar wrap and the bottom bar were not touched, for the reasons above; the header wrap in particular would require matching a failed icon font.
+- `ProductCard.tsx` (featured grid) keeps its 25px `text-product-title` override; that grid is below the 2600px gate viewport at every width and the product page title is its own measurement.
 - Daily backup exists for today (`~/Desktop/kenyonexpress-backup-2026-10-21-0201.tar.gz`, three kept), so no new tar.
 
-**המשך מ:** F43 DONE mobile 8.51%. Next: head of `~/ke-goals/queue.txt` (F44).
+**המשך מ:** F43 DONE mobile 8.54%. Next: head of `~/ke-goals/queue.txt` (F44).
 
 ## ✅ F42 (Session: 2026-10-21 10:05-10:35 UTC, legal pages, supplier refund clause, brand display, reviews removed, verified shipping, DONE)
 

@@ -157,13 +157,22 @@
   justify-content: flex-start;
 }
 
+/* F43, MEASURED in the live archive at 380, 768 AND 1440 on 2026-10-21: every
+   `h2.jet-listing-dynamic-field__content` title is 22px / 26.4px (1.2),
+   weight 500, letter-spacing -0.14px, margin-bottom 8px. Two lines are 52.8
+   + 8 = 60.8, inside the 64px min-height wrap above. The old 32px line was
+   derived from that 64 and read as "2 clamped lines"; it put every title
+   glyph 3px per line below live's, at weight 400 against 500, and wrapped
+   one word earlier on long titles (the 380 reference fits "...בפתח" on
+   line one; 32px/400/0 did not). The float 26.4 is live's computed value. */
 .p_con__title,
 .jet-listing-grid-deals h2.p_con__title {
   color: var(--color-link);
   font-size: 22px;
-  line-height: 32px; /* live: 2 clamped lines = 64px */
-  margin: 0;
-  font-weight: inherit;
+  line-height: 26.4px; /* live: 1.2, two lines 52.8 + 8 margin = 60.8 */
+  letter-spacing: -0.14px; /* live body letter-spacing, inherited by the h2 */
+  margin: 0 0 8px;
+  font-weight: var(--weight-medium);
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
@@ -310,9 +319,14 @@
   text-align: end;
 }
 
+/* F43, MEASURED 2026-10-21 at 380: live's price fields are 14px / 23.996px
+   (strike) and 16px / 27.424px (sale), i.e. line-height 1.714 on both, in a
+   27px row. Ours inherited the 21px body line (1.5) and sat the strike 1px
+   and the sale 2px below live's glyph rows. The row stays 27 either way. */
 .p_con__strike {
   color: var(--color-deal-price);
   font-size: 14px;
+  line-height: 1.714;
   font-weight: var(--weight-regular);
   text-decoration: line-through;
   flex-grow: 1;
@@ -321,6 +335,7 @@
 .p_con__sale {
   color: var(--color-deal-sale);
   font-size: 16px;
+  line-height: 1.714;
   font-weight: var(--weight-bold);
   flex-grow: 1;
 }
