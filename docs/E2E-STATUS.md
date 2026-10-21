@@ -1,7 +1,7 @@
 # E2E Test Status
 
-**Last run:** 2026-10-21 09:29 UTC, run 10, MAINTENANCE_LOOP_4 seventh cycle
-**Base commit:** c0a5bc67c on `autopilot` (run 9's fix committed)
+**Last run:** 2026-10-21 05:42 UTC, run 11, MAINTENANCE_LOOP_4 eighth cycle
+**Base commit:** d584c77b0 on `autopilot` (F41 to F43 and the residual e2e work of 2dba324b8 included)
 **Recipe:** `CARDCOM_USE_MOCK=true CHECKOUT_ENABLED=true NEXT_PUBLIC_APP_URL=http://localhost:3417 pnpm build`,
 then `pnpm start` on port 3417 with the same three variables, then
 `E2E_BASE_URL=http://localhost:3417 E2E_FORWARDED_FOR_PREFIX=10.44.85 pnpm exec playwright test --retries=1 --reporter=list,json`.
@@ -23,6 +23,7 @@ when it failed and then passed on a retry; a case that failed on every attempt i
 | 8, 61e3d855f, 2026-10-21 00:18 UTC, `--retries=1`, prefix 10.44.82, before the fix | 682 | 618 | 57 | 0 | 7 | 18.6 min |
 | 9, 61e3d855f + this cycle's fix, 00:44 UTC, `--retries=1`, prefix 10.44.85 | 682 | 619 | 56 | 0 | 7 | 17.1 min |
 | 10, c0a5bc67c, 09:29 UTC, `--retries=1`, prefix 10.44.85 (reruns from STATE.md update) | 682 | 599 | 76 | 0 | 7 | 25.0 min |
+| 11, d584c77b0, 2026-10-21 05:42 UTC, `--retries=1`, prefix 10.44.86, build r7OmwpfAttluHrQ7vq4dY | 680 | 660 | 13 | 0 | 7 | 15.9 min |
 
 Run 9 is the full run on this cycle's fix and run 8 is the same tree before it. Nothing
 under `src/` or `e2e/` changed between 0d2462751 and 61e3d855f (STATE.md and docs only),
@@ -48,10 +49,30 @@ and run 10 that would explain the delta, and no new flaky tests were detected (J
 still reports 0 flaky cases). The standing 56 failure classes are unchanged; the 20-pass
 shortfall is a measurement variance, not a defect in the code.
 
-## Flaky (run 9)
+Run 11 (MAINTENANCE_LOOP_4 eighth cycle) is the first full run on the tree after F41 to F43
+and the e2e work that 2dba324b8 brought in (the shared-customer lock, `otp-seed.ts`, the
+one-page checkout walk, the home, category and keyboard spec updates): 680 cases (two fewer,
+the reviews cases removed with F42), 660 passed, 13 failed, 0 flaky, 7 skipped, 15.9 minutes,
+the fastest full run so far, and **0 `supabase.timeout` events** in the server log. Every one
+of the 13 failed on both attempts, so none is a flake, and every one is in the admin and money
+files: classes 2 to 8 and 10 to 12 of run 9 (43 cases) are green in this run, which is the
+F41 to F43 work and the residual spec updates landing together, not a measurement swing. The
+13 are three causes, two of them chased to the spec and fixed this cycle (below) and one the
+fixture environment.
 
-None inside the run. All 619 passes were first-attempt passes and the JSON reporter's
-`flaky` count is 0, as it was in runs 7 and 8.
+## Flaky (run 11)
+
+None. All 660 passes were first-attempt passes, the 13 reds failed on both attempts, and the
+JSON reporter's `flaky` count is 0, as it was in runs 7 to 10. Nothing to fix under the
+"new flaky tests" heading; the deterministic reds were chased instead.
+
+## Failures by class (run 11, 13)
+
+| # | Class | Cases | Evidence | Kind |
+| -: | --- | ---: | --- | --- |
+| A | Admin fixture cannot sign in | 6 | admin-product-crud, all three cases on both projects: `waitForURL` 20 s after submit, the screenshot shows "כתובת אימייל או סיסמה שגויים" under the password field. `.env.local` carries `E2E_ADMIN_EMAIL` only and the default `E2eAdmin!pass1` is refused by the hosted project. Run 9's class 1, minus the six customer-fixture cases, which sign in now (the default customer password is accepted) | environment |
+| B | The fixture customer's cart is never emptied | 5 | admin-refund x2, admin-refund-to-wallet x2, full-purchase-redeem (chromium). On chromium: "the pay button never came on screen" after three "המשך" presses, the DOM snapshot shows the address step with `מיקוד *` "שדה חובה" and "יש לאמת את מספר הטלפון בוואטסאפ לפני שליחת ההזמנה", and the order summary reads **"קופון בדיקות אוטומטיות × 50" and "מוצר פיזי לבדיקות אוטומטיות × 19"**, the whole history of the fixture account. On mobile-chrome the pay button is on screen at once, is pressed with the gate open, and `waitForURL` waits 45 s for a navigation that cannot come. The retry trace of admin-refund (chromium) has the cause: `emptyCart` clicked "רוקן עגלה" at 132.0 s, its two expectations (empty text, badge 0) resolved at 132.3 s on the store's optimistic state, and the spec's `goto /product` at 132.3 s aborted the in-flight server action. Reproduced outside the runner against the same build: the clear answers in 1.8 s when left alone, and the cart is empty after a reload; the add that follows reads the untouched row otherwise. The badge went 0 -> 70 and passed, because the optimistic clear had persisted 0 to localStorage. One coupon or physical unit per journey per run is how the account reached 69 lines | spec, fixed |
+| C | Shipping phone code cannot be sent from this laptop | 2 | physical-purchase, both projects. chromium: "the code step never appeared" after "שליחת קוד אימות בוואטסאפ"; the page shows "לא הצלחנו לשלוח קוד. בדקו את המספר ונסו שוב." and the server log has `email.refused` 401 "API key is invalid" from `/api/checkout/phone-otp/send` and a 502 to the client, twice (05:48:09 and 05:48:46). The WhatsApp leg is not configured locally and the email fallback runs on a `RESEND_API_KEY` the provider rejects. mobile-chrome: the one-page layout never offered the code at all (`submitCheckout` only asked inside the step loop, which does not run when the pay button is visible on arrival), pressed pay with the gate open, and timed out on the navigation; fixed this cycle so the mobile case fails on the same honest message as chromium until the key is real | environment, plus one spec gap fixed |
 
 ## Flaky across runs (run 7 red, run 8 green, fixed this cycle)
 
@@ -87,7 +108,22 @@ on chromium, purchase-flow on chromium) passed on their first attempt in run 6.
 | 13 | Spec budgets under the server's Supabase ceiling | 0 in run 6 (1 in run 5) | checkout "the cart CTA hands a guest straight to checkout", chromium, 19:08:45 and 19:09:15: the header badge reads "1 פריטים" while `/cart` renders "סל הקניות שלך ריק כרגע"; `cart.get` timed out at 19:08:56 inside the first attempt. mobile-chrome passed at 19:18. On the first re-run 6 of 8, the two misses next to `cart.add` timeouts at 19:32:53 and 19:35:16: one add still pending at the helper's 15 s mark, one `/cart` CTA not there at 5 s. Fixed: the add waits 25 s (two slow calls plus the rest of the serial chain), the test gets 60 s, the CTA gets the 15 s the summary already had in purchase-flow. Second re-run 8 of 8, then cart.spec 21/21 and checkout.spec 14/14 with 5 timeouts in the log | spec, fixed |
 | 14 | Two-second label | 0 in run 6 (1 in run 5) | purchase-flow on mobile-chrome, both attempts at 19:21: buy button still disabled at the 5 s mark, badge at 1, no server error in that minute. Same root as the chromium flake; fixed by the helper | spec, fixed |
 
-## What changed in this loop
+## What changed in this loop (run 11)
+
+1. `e2e/helpers.ts`, `emptyCart`: the "רוקן עגלה" click is settled by the server action's
+   HTTP answer (a POST to `/cart` carrying the `next-action` header, status 200), then the
+   page is reloaded, the `/api/cart` read awaited, and the empty state, the absence of the
+   clear button and a zero badge are asserted on what the server returned. The old ending
+   trusted the optimistic store and let the spec navigate 0.3 s after the click, which aborted
+   the clear (class B). The comment on the helper carries the trace timings.
+2. `e2e/helpers.ts`, `submitCheckout`: `verifyShippingPhoneIfAsked` runs once before the
+   step loop as well as inside it, so the one-page layout below 992px gets the WhatsApp code
+   step when the spec seeded one (class C, mobile half). The helper is a no-op when the block
+   is not on screen.
+3. No product code changed. Class A and the chromium half of class C are the environment:
+   an admin password and an email key this laptop does not have.
+
+## What changed in the run 9 loop
 
 1. `e2e/helpers.ts`: new `awaitStreamedReveal(page)`. It waits (up to `DISCOVERY_TIMEOUT`)
    until the document holds no `div[hidden][id^="S:"]`, the containers React parks streamed
@@ -111,9 +147,16 @@ and held again in runs 8 and 9: zero reds in classes 13 and 14, zero flaky cases
 
 ## Action items
 
-- Set `E2E_CUSTOMER_*`, `E2E_SUPPLIER_*` and `E2E_ADMIN_PASSWORD` in `.env.local` for
-  fixture users that exist in the database the server reads, or run `pnpm seed:test`
-  against a disposable project. Class 1 cannot be measured until then.
+- Set `E2E_ADMIN_PASSWORD` (and `E2E_SUPPLIER_*`) in `.env.local` for fixture users that
+  exist in the database the server reads, or run `pnpm seed:test` against a disposable
+  project. The customer default signs in since run 11; the admin default does not, and
+  admin-product-crud (run 11 class A, six cases) cannot be measured until then.
+- Give the local server a mail key the provider accepts, or point `WHATSAPP_*` at a sandbox:
+  `/api/checkout/phone-otp/send` answers 502 on this laptop (`email.refused` 401) and the
+  physical-purchase journey cannot pass its verified-shipping gate here (run 11 class C).
+- The e2e-customer@ account is limited to 20 sign-ins an hour in a fixed window
+  (`login-account:` in `src/server/actions/auth.ts`); a full run spends about 14. Budget a
+  second money run inside the same hour, or set `E2E_PAID_FLOW=0` for it.
 - The hosted Supabase project answers REST reads in more than 10 s in bursts (83
   timeouts in run 5, 7 in run 6, 0 in the run 6 verification; a bare
   `products` read from this laptop measured 0.31 to 0.96 s in between). It is the same
