@@ -1,5 +1,36 @@
 # Mobile Gate Status
 
+**Last Check:** 2026-10-21 15:37-15:43 UTC (MAINTENANCE_LOOP_6, twelfth recheck; local time 22:37-22:43 UTC+7)
+**Page:** home
+**Commit:** `6a96520cc` (clean tree at measurement, 0/0 against `origin/autopilot` after fetch; HEAD of `autopilot`. `git log 5181a83a4..HEAD -- src/ scripts/compare.mjs refs/` is empty: nothing under `src/`, the gate script or the reference changed since the eleventh recheck, so this is the seventh measurement of the same rendered tree; the three commits between touch only STATE.md, docs/ and e2e/)
+**Server:** `pnpm start` on port 3351 from this worktree (listener pid 14573, cwd verified by `lsof`, the only node listener on the machine before the run, port had 0 listeners before start, stopped by pid afterwards, port free after) on the `pnpm build` of this same HEAD written at 15:35 UTC by the previous loop item's build gate (BUILD_ID `RT5bMD813gxa-aieJ0vD6`, present in the served HTML), `pnpm gate:chunks` clean before the run (243 prerendered pages, every referenced chunk on disk). The last `src/` commit (`13021b20c`, 09:51 UTC) predates the build.
+**Threshold:** 11%
+**Verdict:** 380 PASS at 8.53%, 768 PASS at 9.79%, 1440 PASS at 8.08%. No mobile fix goal requeued; `~/ke-goals/queue.txt` untouched (44 lines).
+
+| Viewport | Score | Status | Previous (eleventh recheck, 14:12-14:19 UTC, `5181a83a4`) | Delta | Margin to 11% |
+|---|---|---|---|---|---|
+| 380 | **8.53%** | **PASS** | 8.53% | +0.00 | 2.47 |
+| 768 | **9.79%** | **PASS** | 9.79% | +0.00 | 1.21 |
+| 1440 | **8.08%** | **PASS** | 8.08% | +0.00 | 2.92 |
+
+Ledger rows, verbatim from docs/UI-PARITY-REPORT.md (UTC), in run order:
+
+```
+| 2026-10-21 15:38 | home | 380 | 8.53% | PASS | `6a96520cc` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
+| 2026-10-21 15:40 | home | 768 | 9.79% | PASS | `6a96520cc-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-21 15:42 | home | 1440 | 8.08% | PASS | `6a96520cc-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+```
+
+## MAINTENANCE_LOOP_6 twelfth recheck notes (15:43 UTC)
+
+- **Seventh consecutive run reading 8.53 / 9.79 / 8.08 to the hundredth** (F43 ledger, seventh through eleventh rechecks and this one). No `src/` commit landed between the eleventh recheck and this one, so an identical score is the expected result. The 768 margin is 1.21 points, the narrowest of the three, unchanged.
+- **Reference shortfall was the cold first-load pattern at 380 and the deterministic one after:** 153 dropped at 380 (113 scripts, the same cold-archive figure as the tenth recheck) and 96 (57 scripts, 37 fonts) at 768 and 1440. Scores did not move against either figure. Every 380 band matches the eleventh recheck (y200-300 55.7%, y300-400 34.1%, y1700-1800 20.1%, y2500-2600 15.1%, y100-200 14.9%).
+- **Gate-hardening caveat silent again:** our side dropped 6 / 6 / 5 resources, all on the expected local origin, no `OURS dropped` or `OURS ... wide` words in any row. Our document was 380 wide at 380 (380x18394 against the reference's 380x17790; the compared window is the first 2600px). At 768 ours is 768x9124 against 768x9152, at 1440 ours is 1440x5464 against 1440x5492.
+- **768 worst bands:** y400-500 49.3%, y2500-2600 34.1%, y200-300 33.2%, y100-200 30.9%, y2400-2500 17.5%, y500-600 17.4%. **1440 worst bands:** y500-600 25.2%, y200-300 24.1%, y1700-1800 19.4%, y300-400 18.7%, y600-700 17.2%, y1600-1700 16.2%. Same floors as the eighth through eleventh rechecks.
+- **The `-dirty` suffix on the 768 and 1440 rows is the gate's own ledger write** (the 380 row modifies docs/UI-PARITY-REPORT.md before the two later children run). `git status` after the run listed that one file; `src/` was clean throughout.
+- **No UNMEASURED row.** Three widths took about 5 minutes 35 seconds wall time (15:37:52 to 15:43:28) including the 380 archive cold load.
+- **Not done this loop:** serving the reference from a local origin to pin the shortfall. Unchanged open item; twelve consecutive runs agree to the hundredth at 380.
+
 **Last Check:** 2026-10-21 14:12-14:19 UTC (MAINTENANCE_LOOP_6, eleventh recheck; local time 21:12-21:19 UTC+7)
 **Page:** home
 **Commit:** `5181a83a4` (clean tree at measurement; HEAD of `autopilot`. `git log e8c9ff899..HEAD -- src/` is empty: nothing under `src/` changed since the tenth recheck, so this is the sixth measurement of the same rendered tree; the ten commits between touch only STATE.md, docs/ and logs/)
