@@ -444,10 +444,47 @@ export async function emptyCart(page: Page): Promise<void> {
     .then(() => true)
     .catch(() => false)
   if (!hasItems) return
+
+  // THE EMPTY STATE IS OPTIMISTIC; THE CLEAR IS NOT.
+  //
+  // `clear()` in src/lib/cart/store.ts paints an empty cart and a zero badge
+  // before the server action has even been sent, so the two expectations
+  // that used to end this helper resolved 0.3 s after the click, the spec
+  // navigated to the product page, and the browser aborted the in-flight
+  // POST. Measured 2026-10-21 (run 11, admin-refund retry trace): click at
+  // 132.0 s, empty text and badge 0 at 132.3 s, goto /product at 132.3 s;
+  // the clear takes 1.8 s to answer when it is left alone. The add that
+  // followed then read the untouched row, and the checkout showed the whole
+  // history of the fixture customer, 50 coupons and 19 physical units, with
+  // the physical lines opening the verified-shipping gate on a coupon
+  // journey. The badge read 0 -> 70 as a success because the optimistic
+  // store had persisted 0 to localStorage.
+  //
+  // So the click is settled by the action's HTTP answer, and the result is
+  // then read back from the server with a reload rather than trusted from
+  // the store. The reload is what a shopper who refreshes would see.
+  const cleared = page.waitForResponse(
+    (response) =>
+      response.request().method() === 'POST' &&
+      Boolean(response.request().headers()['next-action']) &&
+      new URL(response.url()).pathname === '/cart',
+    { timeout: CART_WRITE_TIMEOUT },
+  )
   await clear.click()
+  expect((await cleared).status(), 'the clear-cart action answered').toBe(200)
+
+  const reread = page
+    .waitForResponse(
+      (response) => response.url().includes('/api/cart') && response.request().method() === 'GET',
+      { timeout: CART_WRITE_TIMEOUT },
+    )
+    .catch(() => null)
+  await page.reload()
+  await reread
   await expect(page.getByText('סל הקניות שלך ריק כרגע')).toBeVisible({
     timeout: CART_WRITE_TIMEOUT,
   })
+  await expect(clear, 'the cart still holds lines after the clear').toBeHidden()
   await expect.poll(() => headerCartCount(page), { timeout: CART_WRITE_TIMEOUT }).toBe(0)
 }
 
@@ -526,6 +563,13 @@ export async function submitCheckout(
   // By its text: the phone-verification block reuses the next button's class
   // for its own "שליחת קוד אימות" and "אימות" buttons.
   const next = form.locator('.checkout-nav__next:visible').filter({ hasText: /^המשך/ })
+  // Below 992px every step is on screen at once and the pay button is visible
+  // on arrival, so the loop below never runs and the phone step was never
+  // offered its code: measured 2026-10-21 (run 11), physical-purchase on
+  // mobile-chrome pressed pay with the gate open and waited 45 s for a
+  // navigation that could not come. Ask once here; the helper is a no-op
+  // when the block is not on screen, and the loop asks again per step.
+  await verifyShippingPhoneIfAsked(page, options.phoneVerification)
   for (let step = 0; step < 3 && !(await pay.isVisible()); step += 1) {
     await verifyShippingPhoneIfAsked(page, options.phoneVerification)
     await expect(next, 'no next button and no pay button on the checkout').toBeVisible()
