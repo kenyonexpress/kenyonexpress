@@ -2,6 +2,23 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_4 (Session: 2026-10-21 19:06-19:55 UTC, E2E maintenance, sixteenth cycle, run 19, one cross-run flake fixed)
+
+**Goal:** Run the full Playwright suite with `pnpm test:e2e`, report pass/fail/flaky counts to docs/E2E-STATUS.md, fix any new flaky tests, commit as chore test e2e maintenance, push.
+
+**Result:** Run 19 on HEAD `e29a69622` (nothing under `src/` or `e2e/` since run 18's `0e268cc7b`): cold mock build `SetZFtKno_KYvbEtLARvZ`, `gate:chunks` clean on 243 pages, server on 3417 verified by PID 33843 and cwd, prefix 10.44.101, `--retries=1`, JSON reporter: **680 cases, 660 passed, 13 failed, 0 flaky, 7 skipped, 27.3 min** (the slowest since run 10; 0 `supabase.timeout`, 2 HTTP 5xx both the phone-code send). Twelve reds are the standing laptop gaps (class A admin password, 10; class C phone code, 2). The thirteenth is new: `full-purchase-redeem` on chromium, green in runs 13 to 18, red on both attempts at the 45 s `/checkout/return` wait. Chased with the retry's trace and the server log: the checkout action completed 0.3 s past the wait on both attempts (sign-in POST 16.6 s, referral step 27 s in, invoice 14 s later, email refusal 4 s after that), every order's referral-to-invoice leg was 11 to 18 s against 7 to 10 s in run 18, and the admin-refund-to-wallet mobile first attempt missed the same wait. Fix: `PAY_RETURN_TIMEOUT = 90_000` exported from `e2e/helpers.ts` with the measurement, wired into the four money specs in place of the `45_000` literals (assertions unchanged); `full-purchase-redeem` describe budget 120 to 150 s and its post-sign-in wait 20 to 30 s. Run 19a, the spec on the same server with prefix 10.44.102 and `--retries=0`: 2 of 2 passed first time, the journey in 95 s on a still-slow window. docs/E2E-STATUS.md gained the run 19 and 19a rows, the narrative, class D, the change list and the gates paragraph. Logs, JSON, trace and the 26 snapshots in `/tmp/ke-e2e19/`.
+
+**Gates:** `pnpm typecheck` exit 0 (twice), `pnpm lint` exit 0 (biome 1748 files, tokens, copy, asset gates clean, twice), `pnpm build` exit 0 twice (the run build and `qK6mRwNrjjEgpGdivWuu2` after the edits), `pnpm gate:chunks` clean on 243 pages twice. Server stopped by PID, port 3417 free. Backup 2026-10-21-2140 under 24h, three kept, nothing to delete; caffeinate alive (pids 967, 11853), SleepDisabled 1.
+
+**החלטות שהתקבלו לבד:**
+- The red case failed on both attempts, so by this doc's definition it is a failure, not a flake; it is a flake across runs on an unchanged tree, which is the thing the goal's "new flaky tests" clause is for, so it was chased and fixed rather than filed as variance.
+- Budget raised in the shared helper for all four money specs, not in the one red file: run 19 shows a second spec (admin-refund-to-wallet, mobile) missing the same literal, and the next slow window would have moved whichever one was left at 45 s.
+- No `src/` change: the backend window is the hosted project's (every order finalized, every invoice issued, 0 timeouts), and the only thing reading it as a failure was the spec budget. `physical-purchase` keeps its 120 s describe budget so class C does not get 30 s longer per attempt.
+- Supabase MCP and GitHub MCP not needed: no DB work, no PR, work lands on autopilot directly.
+- MAINTENANCE_LOOP_5 is left to the loop harness, which pops `~/ke-goals/queue.txt` one goal per session; starting it here would put two agents on the same repo.
+
+**המשך מ:** MAINTENANCE_LOOP_5 (head of `~/ke-goals/queue.txt`).
+
 ## ✅ MAINTENANCE_LOOP_10 (Session: 2026-10-21 18:49-18:53 UTC, queue regeneration, twelfth pass, DONE)
 
 **Goal:** Append 10 fresh MAINTENANCE_LOOP goals to `~/ke-goals/queue.txt` by reading MAINTENANCE_LOOP_1 through MAINTENANCE_LOOP_10 from that same file and appending them again, keeping the loop infinite. Only that.

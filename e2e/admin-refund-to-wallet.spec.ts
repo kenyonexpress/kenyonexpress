@@ -2,6 +2,7 @@ import { expect } from '@playwright/test'
 import { E2E_COUPON_SLUG, paidFlowEnabled } from './auth-session'
 import {
   BUY_BUTTON,
+  PAY_RETURN_TIMEOUT,
   addOpenProductToCart,
   emptyCart,
   expectHebrewRtl,
@@ -60,9 +61,9 @@ test.describe('admin credit to wallet @money @admin', () => {
     await addOpenProductToCart(page)
     await page.goto('/checkout')
     await submitCheckout(page)
-    await page.waitForURL(/\/checkout\/return\?.*order_id=/, { timeout: 45_000 })
+    await page.waitForURL(/\/checkout\/return\?.*order_id=/, { timeout: PAY_RETURN_TIMEOUT })
     await expect(page.getByRole('heading', { name: 'התשלום הצליח!' })).toBeVisible({
-      timeout: 45_000,
+      timeout: PAY_RETURN_TIMEOUT,
     })
 
     const orderId = new URL(page.url()).searchParams.get('order_id')

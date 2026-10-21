@@ -8,6 +8,7 @@ import {
 } from './auth-session'
 import {
   BUY_BUTTON,
+  PAY_RETURN_TIMEOUT,
   addOpenProductToCart,
   emptyCart,
   expectHebrewRtl,
@@ -81,7 +82,7 @@ async function walkCheckoutStepsToConfirm(page: import('@playwright/test').Page)
 }
 
 test.describe('full purchase to redeem @checkout @redeem @money', () => {
-  test.describe.configure({ timeout: 120_000 })
+  test.describe.configure({ timeout: 150_000 })
 
   test.beforeEach(() => {
     test.skip(!paidFlowEnabled(), 'paid flow credentials disabled (E2E_PAID_FLOW=0)')
@@ -136,19 +137,21 @@ test.describe('full purchase to redeem @checkout @redeem @money', () => {
     await page.getByRole('textbox', { name: 'אימייל', exact: true }).fill(E2E_CUSTOMER_EMAIL)
     await page.getByLabel('סיסמה').fill(E2E_CUSTOMER_PASSWORD)
     await page.getByRole('button', { name: 'כניסה', exact: true }).click()
-    await page.waitForURL(/\/checkout/, { timeout: 20_000 })
+    // 30 s, not 20: the sign-in action (auth plus the guest-cart merge) measured
+    // 16.6 s in run 19 (2026-10-21) on the attempt whose pay press then missed
+    // the old return wait by 0.3 s; the same backend window, see PAY_RETURN_TIMEOUT.
+    await page.waitForURL(/\/checkout/, { timeout: 30_000 })
 
     await expect(page.getByText('קופון בדיקות אוטומטיות').first()).toBeVisible({
       timeout: 15_000,
     })
     await submitCheckout(page)
 
-    // Mock Cardcom's hosted page IS the return URL: the payment iframe loads
-    // /checkout/return and PaymentFrameBreakout moves the top window there.
-    // reconcile verifies the in-memory deal and finalizes (issues vouchers).
-    await page.waitForURL(/\/checkout\/return\?.*order_id=/, { timeout: 45_000 })
+    // Mock Cardcom redirects straight back to /checkout/return; reconcile
+    // verifies the in-memory deal and finalizes (issues vouchers).
+    await page.waitForURL(/\/checkout\/return\?.*order_id=/, { timeout: PAY_RETURN_TIMEOUT })
     await expect(page.getByRole('heading', { name: 'התשלום הצליח!' })).toBeVisible({
-      timeout: 45_000,
+      timeout: PAY_RETURN_TIMEOUT,
     })
     await expect(page.locator('.coupon-card__code').first()).toBeVisible()
     await expect(page.locator('.coupon-card__qr img').first()).toBeVisible()
