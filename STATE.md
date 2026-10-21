@@ -2,6 +2,20 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_5 (Session: 2026-10-21 01:06-01:20 UTC, cron status check, sixth pass, MEASURED, 🔴 ALERT unchanged)
+
+**Goal:** Check all cron routes last-run timestamp via Vercel MCP get_runtime_logs. Alert in docs/CRON-STATUS.md if any route stale over 24h. Commit as chore ops cron status check. Push.
+
+**Result:** COMPLETE, alert stands. MCP `get_runtime_logs` called twice in-session (7d filtered and `group_by=requestPath` 24h): `403: forbidden` at page 0 both times, 0 rows, same team-scoped grant failure as every run since 20.10 13:15 UTC. CLI fallback with the same scope: 2 × 200 in 7d, both `/api/cron/health` at 2026-10-19 04:55 UTC (44h stale, a post-deploy probe); 0 × 5xx; 24h window 27 × 401 + 23 × 404; `crons ls` 5/5 not deployed; `kenyonexpress.co.il` still on `dpl_AP18UQwUQdhd3XWNo41seDQvAcuA` with `crons: []`; 8/8 latest `cron.yml` runs failed, newest `39524285650` at 00:56 UTC with the same `000`/401/404 shape. All 5 `vercel.json` routes have 0 hits in 7d and are stale over 24h. Section and history line added to docs/CRON-STATUS.md, committed as c76659c2e, pushed.
+
+**Gates:** `pnpm type-check` exit 0, `pnpm lint` exit 0 (biome 1701 files, tokens, copy and asset gates clean), `pnpm build` exit 0.
+
+**החלטות שהתקבלו לבד:**
+- No fix attempted: the three owners (a production deploy carrying `vercel.json`, Ofir's `CRON_SECRET`, a manifest dedupe PR to protected `main`) are each outside this goal and unchanged since 00:14 UTC. Re-alerting Ofir was skipped; the 22:24 UTC high-priority ntfy already carries the connector re-authorization step and nothing new would be said.
+
+**המשך מ:** MAINTENANCE_LOOP_6 (head of `~/ke-goals/queue.txt`): recheck the mobile gate via scripts/compare.mjs, requeue the mobile fix goal if above 11 percent, report to docs/GATE-STATUS.md, commit as chore qa mobile gate check, push.
+
+
 ## ✅ MAINTENANCE_LOOP_2 (Session: 2026-10-21 00:05-00:15 UTC, patch-version bump, seventh pass, MEASURED, nothing to bump)
 
 **Goal:** Run `pnpm outdated` and bump patch versions for safe packages. Skip major and minor. Commit as chore deps bump patch versions. Push to autopilot. Only what is requested.
