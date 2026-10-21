@@ -1,7 +1,8 @@
 # E2E Test Status
 
-**Last run:** 2026-10-21 13:57 UTC, run 15, MAINTENANCE_LOOP_4 twelfth cycle
-**Base commit:** ab7fa416c on `autopilot` (no `src/` or `e2e/` change since 13021b20c)
+**Last run:** 2026-10-21 15:20 UTC, run 16, MAINTENANCE_LOOP_4 thirteenth cycle
+**Base commit:** 22dfe27dd on `autopilot` (no `src/` or `e2e/` change since 13021b20c; this cycle
+edits `e2e/keyboard-navigation.spec.ts` after the run, see "Flaky (run 16)")
 **Recipe:** `CARDCOM_USE_MOCK=true CHECKOUT_ENABLED=true NEXT_PUBLIC_APP_URL=http://localhost:3417 pnpm build`,
 then `pnpm start` on port 3417 with the same three variables, then
 `E2E_BASE_URL=http://localhost:3417 E2E_FORWARDED_FOR_PREFIX=10.44.96 pnpm exec playwright test --retries=1 --reporter=list,json`.
@@ -28,6 +29,7 @@ when it failed and then passed on a retry; a case that failed on every attempt i
 | 13, f1bf780f2, 2026-10-21 10:43 UTC, `--retries=1`, prefix 10.44.94, build XChiPmx_8z7lI11sfYzPl | 680 | 661 | 12 | 0 | 7 | 21.6 min |
 | 14, e372b2560, 2026-10-21 12:06 UTC, `--retries=1`, prefix 10.44.95, build MhlxtWtJ9xHUL43bgs5yY (cold) | 680 | 661 | 12 | 0 | 7 | 21.6 min |
 | 15, ab7fa416c, 2026-10-21 13:35 UTC, `--retries=1`, prefix 10.44.96, build 7HGQ9OvvKcLrCKwcnSBtf (cold) | 680 | 661 | 12 | 0 | 7 | 21.7 min |
+| 16, 22dfe27dd, 2026-10-21 14:58 UTC, `--retries=1`, prefix 10.44.97, build j7-WaVUWnKwnfghpaY4hR (cold) | 680 | 660 | 12 | 1 | 7 | 22.1 min |
 
 Run 9 is the full run on this cycle's fix and run 8 is the same tree before it. Nothing
 under `src/` or `e2e/` changed between 0d2462751 and 61e3d855f (STATE.md and docs only),
@@ -130,6 +132,69 @@ whole run, both `/api/checkout/phone-otp/send` (class C, 13:37:20Z and the retry
 13:38:23Z), 9 `purchase` events, 9 `begin_checkout` lines by a plain event-name count,
 9 `invoices.issued`, 1 `voucher_redeemed` and 11 `email.refused`. Fifth consecutive run
 without the run 10 shortfall.
+
+Run 16 (MAINTENANCE_LOOP_4 thirteenth cycle) re-measures the same tree a third time: `git log
+ab7fa416c..22dfe27dd -- src e2e playwright.config.ts` is empty (the commits between are the
+MAINTENANCE_LOOP_5 to LOOP_3 passes, STATE.md, docs and logs only), so the product and the
+specs are run 13's. Cold build as in runs 14 and 15 (`.next/cache/turbopack` moved to
+`/tmp/ke-e2e16/turbopack-cache-aside` first, BUILD_ID j7-WaVUWnKwnfghpaY4hR, `pnpm gate:chunks`
+clean on 243 pages before the server started; the 3417 listener verified by PID 93682 and
+working directory, the BUILD_ID read back from the served HTML, stopped by PID after, port
+free). 680 cases, 660 passed, 12 failed, **1 flaky**, 7 skipped, 22.1 minutes (JSON reporter:
+start 14:58:30Z, duration 1,324,325 ms; run 15 was 1,301,700 ms). The 12 reds are the same 12
+cases as runs 13 to 15, every one red on both attempts, every one at one of the two laptop
+gaps (classes A and C below). The one case that moved is `focus is visible on all interactive
+elements` in `keyboard-navigation.spec.ts` on mobile-chrome: the 30 s test timeout on its
+first attempt at 15:15:25Z, a pass in 652 ms on the retry, the first non-zero `flaky` count
+since run 6. It was chased to the spec and fixed this cycle (next section). Logs in
+`/tmp/ke-e2e16/`: **0 `supabase.timeout`** events, 9 `purchase`, 9 `begin_checkout`,
+9 `invoices.issued`, 1 `voucher_redeemed`, 11 `email.refused` (2 of them the phone-code send
+of class C) and 19 `analytics.track_failed` (19 in run 15 too, the pending-169 funnel-event
+rejection recorded in CLAUDE.md, no case red for it). Sixth consecutive run without the run 10
+shortfall.
+
+## Flaky (run 16)
+
+One: `keyboard-navigation.spec.ts` › `focus is visible on all interactive elements`,
+mobile-chrome, `timedOut` 30.1 s then `passed` 0.65 s. The failed attempt's `error-context.md`
+has the error at `locator.elementHandle`, "waiting for locator(':focus')", and a page snapshot
+whose active element is the document itself (`generic [active]` at the root, the skip link
+present but not focused). The retry passed on its first Tab.
+
+Cause, in the spec and not the product. The loop read `page.locator(':focus').elementHandle()`
+and then branched on a null handle to skip a Tab that focused nothing. That branch could never
+run: `elementHandle()` auto-waits for a match, `playwright.config.ts` sets no `actionTimeout`,
+so a Tab that left `<body>` active made the probe wait out the whole 30 s test timeout instead
+of returning null. The spec therefore hung on exactly the case its author wrote a guard for,
+and the suite read the hang as a flake because the next attempt's first Tab landed on the
+skip link. Why the Tab landed nowhere on this one attempt is not pinned (the attempt ran on
+a fresh worker, index 25, under the Pixel 5 emulation; the home page re-renders when the
+consent region and the streamed boundaries mount), and the fix does not depend on it.
+
+Fix (`e2e/keyboard-navigation.spec.ts`): wait for the skip link, the page's first tab stop, to
+be attached before the first Tab; probe focus with one `page.evaluate` over
+`document.activeElement` that returns null at once when the body or the root is active, so a
+Tab that focuses nothing is skipped as intended and never waited on; count the Tabs that did
+focus something and assert the count is above zero, so the test cannot pass by skipping every
+Tab. The style assertion is unchanged. Verified against the run 16 server with a fresh
+address (prefix 10.44.98): the whole file, `--repeat-each=5 --retries=0`, both projects,
+**90 passed, 0 failed, 0 flaky**, 43.9 s; the fixed case ran ten times (five per project)
+between 408 ms and 976 ms. `biome check` clean on the file.
+
+## Failures by class (run 16, 12)
+
+| # | Class | Cases | Evidence | Kind |
+| -: | --- | ---: | --- | --- |
+| A | Admin fixture cannot sign in | 10 | admin-product-crud, all three cases on both projects (20 to 21 s per attempt), plus admin-refund and admin-refund-to-wallet on both projects (60 to 73 s per attempt, after the customer leg paid: 9 `purchase` and 9 `invoices.issued` in the server log): JSON reporter error on all 20 attempts is `page.waitForURL: Timeout 20000ms exceeded` at the admin sign-in, the same durations and the same message as runs 11 to 15. The per-case `error-context.md` snapshots for this run were not re-read: the keyboard-spec verification re-run below emptied `test-results/` before they were opened (Playwright wipes it at run start), so the "כתובת אימייל או סיסמה שגויים" line is cited from runs 13 to 15, not re-measured here | environment |
+| C | Shipping phone code cannot be sent from this laptop | 2 | physical-purchase. chromium, both attempts, 40 s: "the code step never appeared". mobile-chrome, both attempts: the 120 s test timeout. Server log: `email.refused` 401 "API key is invalid" from `/api/checkout/phone-otp/send` twice (the first attempt and the retry), each answered 502 to the page (one `duration_ms` 2518); the same `RESEND_API_KEY` refusal logs 9 more times from `checkout.begin` without failing those journeys. Snapshots not re-read for the reason given in class A | environment |
+
+One measurement gap this run, recorded so the next cycle avoids it: the verification re-run of
+the keyboard file was started before the run 16 `error-context.md` snapshots were opened, and
+Playwright empties `test-results/` at run start, so the 24 failed-attempt snapshots of classes
+A and C are gone. The JSON reporter (`/tmp/ke-e2e16/results.json`, 920 KB, 680 cases, written
+outside `test-results/`), the list output and the server log are intact and are what the table
+cites. Next cycle: read or copy the snapshots before any re-run, or point the re-run at another
+output directory with `--output`.
 
 ## Flaky (run 15)
 
@@ -424,6 +489,18 @@ and held again in runs 8 and 9: zero reds in classes 13 and 14, zero flaky cases
   without it the second run of the hour reports the limiter as 14 cart failures.
 
 ## Gates after the changes
+
+Run 16 tree (22dfe27dd plus `e2e/keyboard-navigation.spec.ts`, this doc and STATE.md, nothing
+under `src/`): `pnpm typecheck` exit 0 twice (once while the suite was in flight and again
+after the spec edit; `e2e/` is inside the `**/*.ts` include of `tsconfig.json`), `pnpm lint`
+exit 0 (biome 1739 files, tokens, copy and asset gates clean, run after the spec and doc
+edits). The build gate is the
+cold mock build the suite ran against, `CARDCOM_USE_MOCK=true CHECKOUT_ENABLED=true
+NEXT_PUBLIC_APP_URL=http://localhost:3417 pnpm build` exit 0, BUILD_ID j7-WaVUWnKwnfghpaY4hR,
+`pnpm gate:chunks` clean on 243 prerendered pages; the spec edit after it is not part of the
+build. The previous turbopack cache was moved to `/tmp/ke-e2e16/turbopack-cache-aside`, not
+deleted. No product change this cycle, so no vitest scope to re-run; the spec change is
+verified by the 90-case Playwright re-run above.
 
 Run 15 tree (ab7fa416c plus this doc and STATE.md, nothing under `src/`): `pnpm typecheck`
 exit 0, `pnpm lint` exit 0 (biome, tokens, copy and asset gates clean, rerun after the doc
