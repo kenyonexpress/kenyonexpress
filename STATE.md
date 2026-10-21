@@ -4450,3 +4450,9 @@ Supabase MCP authentication unavailable in non-interactive session. CLI fallback
 - Gates: type-check exit 0, lint exit 0 (1722 files, three gates clean), build exit 0 (warm cache), `pnpm gate:chunks` clean on 243 prerendered pages. Backup 2026-10-21-1241 present, three kept; caffeinate alive (two processes), SleepDisabled 1.
 
 **המשך מ:** MAINTENANCE_LOOP_9 (head of ~/ke-goals/queue.txt).
+
+## MAINTENANCE_LOOP_9 (2026-10-21 08:14 UTC, ninth measured pass)
+- DB performance check through the Supabase MCP (official `@supabase/mcp-server-supabase` over stdio, `--read-only`, driven by `scripts/db-mcp-probe.mjs`; the claude.ai connector still needs an OAuth the session cannot run). Pool 14 of 60 backends (23.3%), 0 lock waits, 0 statements running over 500 ms, 0 deadlocks. pg_stat_statements: 4,883 statements, 7,485,521 calls, 6 rows over 500 ms by mean and all 6 are platform traffic (dashboard, pg-meta), 0 application rows. The 7 application spike maxima are identical to the millisecond through 1,202 new application calls since the 02:51 UTC pass (`check_rate_limit` 1,137.4 ms max unmoved across 483 calls since it was recorded, mean down to 10.4 ms). Pooler and pgbouncer config re-read from the management API, SHA-1 identical to the stored JSON. Advisors unchanged (1 + 14 WARN, 9 + 157 + 1 INFO). No alert; `docs/DB-STATUS.md` rewritten with the pass, evidence in `logs/maint9/result-09.json`. The eighth pass's header had stamped local 10:00 as UTC; corrected to 02:51 UTC from the JSON `ts`. Committed `f273765f6`, pushed.
+- Gates: type-check exit 0, lint exit 0 after `biome format` on the new JSON log (1723 files, three gates clean), build exit 0, `pnpm gate:chunks` clean on 243 prerendered pages, `scripts/db-mcp-probe.test.mjs` 10/10. Backup 2026-10-21-1241 present, three kept; caffeinate alive (two processes), SleepDisabled 1.
+
+**המשך מ:** MAINTENANCE_LOOP_10 (head of ~/ke-goals/queue.txt).
