@@ -4250,4 +4250,9 @@ Supabase MCP authentication unavailable in non-interactive session. CLI fallback
 - `/` 98 to 99 and product 99 to 98 against the 23:50 pass; only `src/` change since d40dcc729 is the Tabs trigger ink whose sole importer is the closed LoginModal, so it is the localhost band, not code. Only sub-0.9 weighted audit is `errors-in-console` with the same five localhost items (`/_vercel/*` 404s, SSL on plain http). docs/LIGHTHOUSE-STATUS.md carries the seventh-pass header, table and notes with the sixth pass demoted to a previous-pass section.
 - lhci autorun deletes the tracked `.lighthouseci/lhr-*.{json,html}` and rewrites `assertion-results.json` at collect time; restored with `git checkout -- .lighthouseci/` before committing so only the doc and STATE.md ship. Gates: type-check exit 0, lint exit 0 (biome 1701 files + 3 gates), build exit 0. Backup 2026-10-21-0201 present, three kept; caffeinate alive, SleepDisabled 1. Supabase and GitHub MCP not needed for this goal.
 
-**המשך מ:** MAINTENANCE_LOOP_8 (head of ~/ke-goals/queue.txt).
+## MAINTENANCE_LOOP_8 eighth pass (2026-10-21 01:50 UTC, commit 1dc0a8a18)
+- Word-boundary and loose scans of src/ (ts, tsx, js, jsx, mts, mjs) both return 8: 8 TODO, 0 FIXME, 0 HACK, delta 0 against the 23:53 seventh pass on d7badbab4. No cleanup goal queued, `~/ke-goals/queue.txt` untouched at 22 lines. The 8 are the same lines as every pass since the 15:57 baseline (stock-notifications cron 1, cardcom.ts 2, r2-migration.ts 4, whatsapp.test.ts stub 1).
+- 20 commits since d7badbab4; exactly one touched src/ (c0a5bc67c, Tabs trigger ink plus its test, 29 insertions) and its added lines hold no marker. docs/CODE-DEBT-STATUS.md gained the eighth-pass header, table row and paragraph, committed by path as e440bd798 and pushed.
+- Gates: type-check exit 0, lint exit 0 (biome 1701 files + 3 gates), build exit 0. Backup 2026-10-21-0201 present, three kept; caffeinate alive, SleepDisabled 1. Supabase MCP unauthenticated in this session and not needed for a static text scan; GitHub MCP not needed.
+
+**המשך מ:** MAINTENANCE_LOOP_9 (head of ~/ke-goals/queue.txt).
