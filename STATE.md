@@ -2,6 +2,21 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_5 (Session: 2026-10-21 09:54-10:05 UTC, cron status check, eighth run, MEASURED, 🔴 ALERT unchanged)
+
+**Goal:** Check all cron routes' last-run timestamp via Vercel MCP `get_runtime_logs`, alert in docs/CRON-STATUS.md if any route is stale over 24h, commit as chore ops cron status check, push.
+
+**Result:** COMPLETE, alert unchanged. MCP `get_runtime_logs` was called twice in-session (7d filtered and `group_by=requestPath` 24h): `403 forbidden` both times, 0 rows, same connector grant failure as every run since 20.10 13:15 UTC. The CLI fallback the tool itself names was measured with the same team and project: one transient 504 from the logs API on the first 7d pull, retry returned 2 × 200, both `/api/cron/health` at 2026-10-19 04:55 UTC (53h 04m old); 0 × 5xx in 7d; 24h window (cap 50) 31 × 401 + 19 × 404 across 25 paths, one full manifest sweep from the GitHub scheduler at 09:21 UTC; `vercel crons ls` 5/5 not deployed; production alias still `dpl_AP18UQwUQdhd3XWNo41seDQvAcuA` with `crons: []`; 8/8 latest `cron.yml` scheduled runs failed, newest `39578795068` at 09:40 UTC; pg_cron `report_tables_nightly` 48/48 succeeded, last 01:30 UTC (the only live scheduler). All 5 `vercel.json` routes: 0 hits in 7d, 🔴 stale over 24h. Eighth-run section, header and history appended to docs/CRON-STATUS.md. Committed `187a5c61f`, pushed.
+
+**Gates:** `pnpm type-check` exit 0, `pnpm lint` exit 0 (biome 1726 files, tokens, copy, asset gates clean), `pnpm build` exit 0, `pnpm gate:chunks` clean on 243 prerendered pages. Backup 2026-10-21-1241 present, three kept; caffeinate alive (two processes), SleepDisabled 1.
+
+**החלטות שהתקבלו לבד:**
+- The 504 on the first CLI log pull was retried once and the retry answered; the 504 is logged as transient and not counted as a cron finding.
+- No fix attempted: the three owners (a production deploy carrying `vercel.json`, Ofir's `CRON_SECRET`, a manifest dedupe PR to protected `main`) are all outside this loop's four allowed stops, unchanged since the sixth run.
+- Supabase MCP still needs an OAuth this session cannot run; pg_cron was read through the management API with the CLI keychain token, read-only, one statement.
+
+**המשך מ:** MAINTENANCE_LOOP_6 (head of `~/ke-goals/queue.txt`): recheck the mobile gate via scripts/compare.mjs, requeue the mobile fix goal at the head if above 11 percent, report the score to docs/GATE-STATUS.md, commit as chore qa mobile gate check, push.
+
 ## ✅ MAINTENANCE_LOOP_3 (Session: 2026-10-21 08:53-09:00 UTC, backlog scan, tenth run, MEASURED, zero unblocked)
 
 **Goal:** Scan docs/BACKLOG.md and docs/TODO.md for unblocked items, queue any found to `~/ke-goals/queue.txt`, report the count in docs/MAINT-LOG.md, commit as chore maint scan backlog, push.
