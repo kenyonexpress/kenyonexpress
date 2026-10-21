@@ -353,18 +353,55 @@ Latest run `39524285650` (00:56 UTC, schedule `*/10 * * * *`): `invoices`, `stoc
 twice each (duplicate manifest names on `main`, curl never reached Vercel), `webhook-dlq` 401, `job-dlq` and
 `search-outbox` 404. Identical failure shape to every run since 25.09.
 
-Per route, last attempt in the 24h window (all 401 or 404, none 2xx):
+MCP was called a third and fourth time at 01:11 UTC (`get_runtime_logs` with `source=function`, `since=24h`,
+`query=/api/cron/`; and `get_runtime_errors` with `routes=` the five `vercel.json` paths, `since=7d`): both
+`403: forbidden`, request `fq8rw-1792545105021`, 0 rows. Four MCP reads this run, four 403s.
 
-| Route | Last attempt (UTC) | Status | Hits |
-|---|---|---|---|
-| search-outbox | 2026-10-21 00:56:07 | 404 | 5 |
-| job-dlq | 2026-10-21 00:56:07 | 404 | 5 |
-| webhook-dlq | 2026-10-21 00:56:05 | 401 | 7 |
-| whatsapp | 2026-10-20 23:40:12 | 401 | 4 |
-| search-reindex | 2026-10-20 22:07:17 | 404 | 4 |
-| email-retry | 2026-10-20 21:47:22 | 404 | 4 |
-| wishlist-alerts | 2026-10-20 09:39:21 | 401 | 2 |
-| all other manifest routes (17) | 2026-10-20 09:25 burst | 401 or 404 | 1 to 2 |
+**Every route, individually, last attempt and last success over 7 days** (one `vercel logs --since 7d --limit 100
+--json --query "/api/cron/<route>"` per route, 32 routes = the union of `src/app/api/cron/` (21 directories),
+`vercel.json` (5), this branch's `scripts/cron-jobs.json` manifest (13) and every `/api/cron/*` path seen in the
+request log; "main scheduler" marks paths that only `main`'s `cron.yml` manifest calls and this branch does not
+ship). Hits are capped at 100 per query, so counts of 50 are "at least". Window 2026-10-14 01:17 to 2026-10-21 01:19 UTC.
+
+| Route | Defined in | Last attempt (UTC) | Status | Hits 7d | Last 2xx (UTC) | Over 24h |
+|---|---|---|---|---|---|---|
+| search-reindex | main scheduler | 2026-10-21 01:17:55 | 404 | 48 | never in 7d | 🔴 stale |
+| search-outbox | main scheduler | 2026-10-21 00:56:07 | 404 | 50 | never in 7d | 🔴 stale |
+| job-dlq | main scheduler | 2026-10-21 00:56:07 | 404 | 50 | never in 7d | 🔴 stale |
+| webhook-dlq | main scheduler | 2026-10-21 00:56:05 | 401 | 50 | never in 7d | 🔴 stale |
+| whatsapp | main scheduler | 2026-10-20 23:40:12 | 401 | 50 | never in 7d | 🔴 stale |
+| email-retry | main scheduler | 2026-10-20 21:47:22 | 404 | 34 | never in 7d | 🔴 stale |
+| wishlist-alerts | main scheduler | 2026-10-20 09:39:21 | 401 | 14 | never in 7d | 🔴 stale |
+| affiliate-payouts | manifest, src | 2026-10-20 09:25:31 | 404 | 2 | never in 7d | 🔴 stale |
+| weekly-digest | manifest, src | 2026-10-20 09:25:31 | 401 | 9 | never in 7d | 🔴 stale |
+| retention | manifest, src | 2026-10-20 09:25:31 | 401 | 8 | never in 7d | 🔴 stale |
+| expire-vouchers | manifest, src | 2026-10-20 09:25:30 | 401 | 14 | never in 7d | 🔴 stale |
+| reconcile | manifest, src | 2026-10-20 09:25:30 | 401 | 14 | never in 7d | 🔴 stale |
+| reap-carts | manifest, src | 2026-10-20 09:25:30 | 401 | 14 | never in 7d | 🔴 stale |
+| subscriptions | manifest, src | 2026-10-20 09:25:30 | 401 | 14 | never in 7d | 🔴 stale |
+| abandoned-cart | manifest, src | 2026-10-20 09:25:30 | 401 | 41 | never in 7d | 🔴 stale |
+| stranded-payments | manifest, src | 2026-10-20 09:25:29 | 401 | 44 | never in 7d | 🔴 stale |
+| stock | manifest, src | 2026-10-20 09:25:29 | 401 | 44 | never in 7d | 🔴 stale |
+| invoices | manifest, src | 2026-10-20 09:25:29 | 401 | 44 | never in 7d | 🔴 stale |
+| health | manifest, src | 2026-10-20 09:25:29 | 401 | 50 | 2026-10-19 04:55:21 | 🔴 stale |
+| notifications | manifest, src | 2026-10-20 09:25:29 | 401 | 44 | never in 7d | 🔴 stale |
+| daily-deals | main scheduler | 2026-10-20 09:25:28 | 404 | 14 | never in 7d | 🔴 stale |
+| wishlist-digest | main scheduler | 2026-10-20 09:25:28 | 404 | 8 | never in 7d | 🔴 stale |
+| backup | main scheduler | 2026-10-20 09:25:28 | 404 | 14 | never in 7d | 🔴 stale |
+| expire-coupons | main scheduler | 2026-10-20 09:25:28 | 404 | 14 | never in 7d | 🔴 stale |
+| deal-scraper | vercel.json, src | none in 7d | n/a | 0 | never in 7d | 🔴 stale |
+| fraud-monitor | vercel.json, src | none in 7d | n/a | 0 | never in 7d | 🔴 stale |
+| observability-check | vercel.json, src | none in 7d | n/a | 0 | never in 7d | 🔴 stale |
+| p95-monitor | vercel.json, src | none in 7d | n/a | 0 | never in 7d | 🔴 stale |
+| rfm-segmentation | src | none in 7d | n/a | 0 | never in 7d | 🔴 stale |
+| search-report | src | none in 7d | n/a | 0 | never in 7d | 🔴 stale |
+| sms-broadcasts | src | none in 7d | n/a | 0 | never in 7d | 🔴 stale |
+| stock-notifications | vercel.json, src | none in 7d | n/a | 0 | never in 7d | 🔴 stale |
+
+`search-reindex` moved from 22:07 UTC to 01:17:55 UTC between the first and second pull of this run: the GitHub
+scheduler fired again and got 404 again. The one `health` 2xx is 44h old. Every one of the 32 routes is stale over
+24h; 24 were attempted and failed, 8 (the 5 `vercel.json` routes plus `rfm-segmentation`, `search-report`,
+`sms-broadcasts`) were never called at all in 7 days.
 
 The five `vercel.json` routes (`observability-check`, `fraud-monitor`, `p95-monitor`, `deal-scraper`,
 `stock-notifications`) have **0 hits in 7 days** and remain 🔴 stale over 24h. The three owners are unchanged
@@ -373,7 +410,8 @@ and none moved between 00:14 and 01:06 UTC.
 
 ## History
 
-- 2026-10-21 01:06 UTC: sixth run. MCP `get_runtime_logs` 403 twice (7d filtered, `group_by=requestPath` 24h), 0 rows.
+- 2026-10-21 01:06 to 01:19 UTC: sixth run. MCP `get_runtime_logs` 403 three times (7d filtered, `group_by=requestPath` 24h,
+  `source=function` 24h) and `get_runtime_errors` 403 once, 0 rows. All 32 routes tabulated individually: 24 attempted and failed, 8 never called.
   CLI: 2 × 200 in 7d, both `health` on 19.10 04:55 UTC (44h old); 0 × 5xx; 24h window 27 × 401 + 23 × 404; `crons ls`
   5/5 not deployed; production alias unchanged on `dpl_AP18UQwUQdhd3XWNo41seDQvAcuA`; 8/8 latest `cron.yml` runs
   failed, newest `39524285650` at 00:56 UTC. All 5 routes stale over 24h. Nothing changed since 00:14 UTC.
