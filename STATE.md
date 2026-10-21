@@ -4874,3 +4874,10 @@ Supabase MCP authentication unavailable in non-interactive session. CLI fallback
 - Gates: typecheck exit 0, lint exit 0 (biome 1736 files, tokens, copy and asset gates clean, run twice, before and after the doc edit), build exit 0 (oK6kDT4D5LdyHVHWebe1x, same partner-API prerender bail-out warnings as every prior build), gate:chunks clean on 243 pages. Backup 2026-10-21-1241 present (today's), three kept; caffeinate alive (two processes), SleepDisabled 1.
 
 **המשך מ:** MAINTENANCE_LOOP_8 (head of ~/ke-goals/queue.txt).
+
+## MAINTENANCE_LOOP_8 (2026-10-21 14:31 UTC, fourteenth pass)
+- Code debt scan on 611cbecbe (clean tree): 8 TODO, 0 FIXME, 0 HACK in src/, loose and word-boundary greps agree on 8, the same eight lines as every pass since the 20.10 baseline (one in src/app/api/cron/stock-notifications/route.ts, two TODO(cardcom) in src/lib/payments/cardcom.ts, four in src/lib/images/r2-migration.ts, one test stub string in src/lib/whatsapp.test.ts). Delta 0 against the thirteenth pass on 10faafe83: 15 commits between them, none touched src/ (empty `git log 10faafe83..HEAD -- src/`), 0 markers in the added lines of the range diff. Eleventh byte-identical pass. No cleanup goal queued, ~/ke-goals/queue.txt untouched (head is MAINTENANCE_LOOP_9). docs/CODE-DEBT-STATUS.md header, summary, scan-history row and narrative paragraph updated. Committed 0e22ffa52, pushed.
+- Decided alone: no tests added, the change is a measurement report in docs/ with no src or script change. Supabase MCP not needed and still not authorised in this non-interactive session; the scan is static text analysis with no DB work. GitHub MCP not needed, no PR, work lands on autopilot directly. MAINTENANCE_LOOP_9 is left to the loop harness, which pops the queue one goal per session.
+- Gates: type-check exit 0, lint exit 0 (biome 1736 files, tokens, copy and asset gates clean), build exit 0, gate:chunks clean on 243 pages. Backup 2026-10-21-1241 present (today's), three kept, nothing to delete; caffeinate alive (two processes), SleepDisabled 1.
+
+**המשך מ:** MAINTENANCE_LOOP_9 (head of ~/ke-goals/queue.txt).
