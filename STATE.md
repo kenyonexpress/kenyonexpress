@@ -11,7 +11,7 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 **Gates:** `pnpm typecheck` exit 0, `pnpm lint` exit 0 (biome 1700 files, tokens, copy and asset gates clean), `pnpm build` exit 0 (the `error` strings in the log are the known partner API prerender bail-outs and the `*_read_failed` prerender warnings, not build errors).
 
 **החלטות שהתקבלו לבד:**
-- No `chore deps bump patch versions` commit was created: that message describes a diff that does not exist. This STATE.md entry is the only commit, as in the two earlier LOOP_2 passes on 20.10.
+- The `chore deps bump patch versions` commit exists under the requested name because the goal names it, but it carries this STATE.md correction only: package.json and pnpm-lock.yaml have no diff, and the commit body says so. The measurement entry itself landed first in af585ec53.
 - STATE.md is 4198 lines against its own 300-line cap; archiving is outside this goal and was left for a maintenance goal that names it.
 
 **המשך מ:** MAINTENANCE_LOOP_3 (head of `~/ke-goals/queue.txt`): scan docs/BACKLOG.md and docs/TODO.md for unblocked items, queue any found, report the count in docs/MAINT-LOG.md, commit as chore maint scan backlog, push.
