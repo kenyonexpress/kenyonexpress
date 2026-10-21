@@ -2,6 +2,22 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_5 (Session: 2026-10-21 22:38-22:46 UTC, cron routes last-run check, seventeenth run, MEASURED on two sources, 🔴 alert unchanged)
+
+**Goal:** Check all cron routes' last-run timestamp via Vercel MCP `get_runtime_logs`, alert in docs/CRON-STATUS.md if any route is stale over 24h, commit as chore ops cron status check, push. Only that.
+
+**Result:** COMPLETE, measured. The claude.ai connector's `get_runtime_logs` answered 403 once (`group_by=requestPath` 24h, request `gqjbk-1792622343814`, 0 rows, the same team-grant failure as every connector call since 20.10). `mcp.vercel.com` with the CLI token answered **nine `get_runtime_logs` calls HTTP 200, nine with data, no retry** (22:39:05 to 22:39:42 UTC, 2.2 s to 6.8 s, bodies to `/tmp/ke-cron17/*.sse`): 7d `group_by` lists 15 cron routes and none of the five `vercel.json` routes (six counts fell by one as 14.10 events left the window); 24h `group_by` 39 events; five per-route 3d pulls all "No logs found"; the 24h pull is 39 × 401 `request.completed`, newest `whatsapp` 21:35:51 UTC (one new runtime event since the sixteenth run); `health` 3d: last 200 at 2026-10-19 04:55:31 UTC, now **65h 44m** stale, 401 since. CLI request log over 24h from `/tmp` with `--scope`/`--project`: exit 0 first time, 28 × 401 + 22 × 404, 0 × 2xx, 0 × 5xx, three new rows (`whatsapp` 401 21:35:48, `email-retry` 404 21:53:30, `search-reindex` 404 22:06:41 UTC); the MCP and CLI rows for the new 401 share request id `lsjzk-1792618548995`. `crons ls`: no cron jobs deployed; production alias still `dpl_AP18UQwUQdhd3XWNo41seDQvAcuA` (`audit/final-audit` @ `337d1a2a`, `crons: []`). GitHub `cron.yml`: 10/10 latest runs failed, three new (`39680053866` 21:35, `39682349744` 21:53, `39684039276` 22:06 UTC) with the standing 000/401/404 pattern. pg_cron `report_tables_nightly` 48/48, last 2026-10-21 01:30 UTC (management API, one read-only statement). **All 5 `vercel.json` routes stale over 24h, 🔴 unchanged, seventeenth consecutive measurement.** docs/CRON-STATUS.md: header, "Seventeenth run" section, History bullet.
+
+**Gates:** `pnpm typecheck` exit 0, `pnpm lint` exit 0 (biome 1755 files, tokens, copy and asset gates clean); `pnpm build` exit 0 (`HE0RQkuVXabdQRcVLn8zC`), `pnpm gate:chunks` clean on 243 prerendered pages. Backups: three kept (10-21-1241, 10-21-2140, 10-22-0512), newest 25 minutes old at session start, nothing to make or delete; caffeinate alive (pids 967, 11853), SleepDisabled 1.
+
+**החלטות שהתקבלו לבד:**
+- The connector 403 was not retried unchanged (its own recovery text says not to); the mapped fallback plus the direct `mcp.vercel.com` call with the CLI token are the same tool against the same team and project, so the check stands on MCP data, not only on the CLI.
+- No tests added: the goal changes one doc and no src, script or schema; the Supabase read was one read-only SELECT through the management API because the claude.ai Supabase connector still needs an OAuth this session cannot run. GitHub MCP not needed (no PR), work lands on autopilot directly.
+- The three owners of the alert (a production deploy carrying `vercel.json`, Ofir's `CRON_SECRET`, a manifest dedupe PR to protected `main`) are each a production or secret change outside this loop's stop rules, so none was attempted; the doc's "What fixes it" section already names them.
+- STATE.md is still over its 300-line cap; archiving is a separate edit the goal does not name and was left alone.
+
+**המשך מ:** MAINTENANCE_LOOP_6 (head of `~/ke-goals/queue.txt`): recheck the mobile gate score via scripts/compare.mjs, requeue the mobile fix goal at the head if above 11 percent, report the score to docs/GATE-STATUS.md, commit as chore qa mobile gate check, push.
+
 ## ✅ MAINTENANCE_LOOP_4 (Session: 2026-10-21 22:09-22:45 UTC, full Playwright suite, eighteenth cycle, run 21, 0 FLAKY)
 
 **Goal:** Run the full Playwright suite with pnpm test:e2e, report pass/fail/flaky counts to docs/E2E-STATUS.md, fix any new flaky tests, commit as chore test e2e maintenance, push. Only that.
