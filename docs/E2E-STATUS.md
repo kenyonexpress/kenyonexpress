@@ -1,10 +1,10 @@
 # E2E Test Status
 
-**Last run:** 2026-10-21 09:16 UTC, run 12, MAINTENANCE_LOOP_4 ninth cycle
-**Base commit:** d195ad97f on `autopilot` (the shared-customer lock of c61778160 included)
+**Last run:** 2026-10-21 11:05 UTC, run 13, MAINTENANCE_LOOP_4 tenth cycle
+**Base commit:** f1bf780f2 on `autopilot` (every fix of the ninth cycle included, 13021b20c)
 **Recipe:** `CARDCOM_USE_MOCK=true CHECKOUT_ENABLED=true NEXT_PUBLIC_APP_URL=http://localhost:3417 pnpm build`,
 then `pnpm start` on port 3417 with the same three variables, then
-`E2E_BASE_URL=http://localhost:3417 E2E_FORWARDED_FOR_PREFIX=10.44.87 pnpm exec playwright test --retries=1 --reporter=list,json`.
+`E2E_BASE_URL=http://localhost:3417 E2E_FORWARDED_FOR_PREFIX=10.44.94 pnpm exec playwright test --retries=1 --reporter=list,json`.
 Two workers, both projects (chromium and mobile-chrome). A case counts as **flaky** only
 when it failed and then passed on a retry; a case that failed on every attempt is a
 **failure**. Counts come from the JSON reporter, never from the list output.
@@ -25,6 +25,7 @@ when it failed and then passed on a retry; a case that failed on every attempt i
 | 10, c0a5bc67c, 09:29 UTC, `--retries=1`, prefix 10.44.85 (reruns from STATE.md update) | 682 | 599 | 76 | 0 | 7 | 25.0 min |
 | 11, d584c77b0, 2026-10-21 05:42 UTC, `--retries=1`, prefix 10.44.86, build r7OmwpfAttluHrQ7vq4dY | 680 | 660 | 13 | 0 | 7 | 15.9 min |
 | 12, d195ad97f, 2026-10-21 08:58 UTC, `--retries=1`, prefix 10.44.87, build CGToFZGca0ONVpVuw-rNa | 680 | 660 | 13 | 0 | 7 | 18.0 min |
+| 13, f1bf780f2, 2026-10-21 10:43 UTC, `--retries=1`, prefix 10.44.94, build XChiPmx_8z7lI11sfYzPl | 680 | 661 | 12 | 0 | 7 | 21.6 min |
 
 Run 9 is the full run on this cycle's fix and run 8 is the same tree before it. Nothing
 under `src/` or `e2e/` changed between 0d2462751 and 61e3d855f (STATE.md and docs only),
@@ -70,6 +71,42 @@ had stopped them (a cart shared between two workers), and each then stopped at t
 in its way. Three of those were chased to code and fixed this cycle (one spec, two product,
 plus one in the lock itself), one is an environment gap filled locally, and classes A and C
 are the same laptop gaps as run 11. The verification re-runs are below the class table.
+
+Run 13 (MAINTENANCE_LOOP_4 tenth cycle) is the first full run on the tree after the ninth
+cycle's seven fixes landed together (13021b20c): 680 cases, 661 passed, 12 failed, 0 flaky,
+7 skipped, 21.6 minutes (JSON reporter: start 10:43:46Z, duration 1,296,971 ms). Nothing under
+`src/` or `e2e/` changed between 13021b20c and f1bf780f2 (STATE.md, docs and logs only), so
+this run measures the ninth cycle's fixes in the whole suite rather than in the file re-runs
+that verified them. The one case that moved is `full-purchase-redeem` on chromium: red in runs
+11 and 12, green on its first attempt here, which is re-run 6 of the ninth cycle confirmed by
+the full suite (guest cart, sign-in at the gate, mock pay, voucher with QR, the customer's
+coupons page, supplier lookup and redemption, end to end, at two workers). The 12 reds are
+run 12's remaining 12 to the case, every one red on both attempts, and every one stops at a
+laptop gap: the admin fixture's refused password (class A, now 10 cases, because the four
+coupon refund journeys pay their order and reach the admin sign-in with a live voucher behind
+them, exactly as re-run 2 of the ninth cycle measured) and the shipping phone code (class C,
+2 cases). No case in classes B1 or B2 remains: the desktop next-button locator, the
+`VOUCHER_QR_SECRET` gap and the two product defects under them are gone from the list.
+
+One measurement gap in this run: the build log, the server log and the list-reporter stdout
+were redirected into `test-results/`, which Playwright empties when a run starts, so all three
+were unlinked at 10:43 UTC and the `supabase.timeout` count for the server is not available
+(runs 9, 11 and 12 measured 0). The JSON reporter writes after the wipe and is intact
+(917 KB, 680 cases); the per-case screenshots, traces and `error-context.md` snapshots are
+intact too and are what the class table below cites. Future runs log to `/tmp` or `logs/`.
+
+## Flaky (run 13)
+
+None. All 661 passes were first-attempt passes, the 12 reds failed on both attempts, and the
+JSON reporter's `flaky` count is 0, as in runs 7 to 12. Nothing to fix under the "new flaky
+tests" heading.
+
+## Failures by class (run 13, 12)
+
+| # | Class | Cases | Evidence | Kind |
+| -: | --- | ---: | --- | --- |
+| A | Admin fixture cannot sign in | 10 | admin-product-crud, all three cases on both projects, plus admin-refund and admin-refund-to-wallet on both projects: `page.waitForURL` 20 s at `auth-session.ts:47` on every attempt, the retry snapshot shows "כתובת אימייל או סיסמה שגויים" under the password field. The refund journeys fail at their admin step (spec lines 32 and 39), 121 to 129 s in, after the customer leg; unchanged cause from runs 11 and 12: `.env.local` carries `E2E_ADMIN_EMAIL` only and the default password is refused by the hosted project | environment |
+| C | Shipping phone code cannot be sent from this laptop | 2 | physical-purchase. chromium, both attempts: "the code step never appeared", the snapshot shows "לא הצלחנו לשלוח קוד" on the address step. mobile-chrome, both attempts: the 120 s test timeout on the one-page layout's address step with "קוד חד-פעמי בוואטסאפ" on screen and "מיקוד *" still required. Same as run 12 (`RESEND_API_KEY` refused with 401 in runs 11 and 12; the server log of this run was lost, above) | environment |
 
 ## Flaky (run 12)
 
