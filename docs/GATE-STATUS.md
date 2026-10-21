@@ -1,26 +1,26 @@
 # Mobile Gate Status
 
-**Last Check:** 2026-10-20 21:00 UTC  
+**Last Check:** 2026-10-21 08:27 UTC  
 **Page:** home  
 **Viewport:** 1440px  
-**Current Score:** 19.04%  
+**Current Score:** 23.91%  
 **Threshold:** 11%  
-**Status:** ❌ FAILING (8.75% over threshold)
+**Status:** ❌ FAILING (12.91% over threshold)
 
 ## Comparison Results
 
-- **Live:** 1440x5433px
-- **Local:** 1490x6586px
+- **Live:** 1440x5492px
+- **Local:** 1490x5562px
 - **Compared:** 1440x2600px (first segment)
 - **Best Known:** 8.29% (tolerance: 0.5%)
 
 ## Worst Performing Bands
 
-1. y 1200-1300: **61.1%** (very large variance)
-2. y 1800-1900: **59.6%** (very large variance)
-3. y 1900-2000: **57.2%** (very large variance)
-4. y 1100-1200: **48.5%** (large variance)
-5. y 2400-2500: **48.0%** (large variance)
+1. y 1100-1200: **67.5%** (severe variance)
+2. y 1200-1300: **63.1%** (severe variance)
+3. y 1600-1700: **61.5%** (severe variance)
+4. y 1700-1800: **55.6%** (large variance)
+5. y 2100-2200: **54.8%** (large variance)
 
 ## Root Causes
 
