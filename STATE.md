@@ -2,6 +2,21 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_10 (Session: 2026-10-21 18:49-18:53 UTC, queue regeneration, twelfth pass, DONE)
+
+**Goal:** Append 10 fresh MAINTENANCE_LOOP goals to `~/ke-goals/queue.txt` by reading MAINTENANCE_LOOP_1 through MAINTENANCE_LOOP_10 from that same file and appending them again, keeping the loop infinite. Only that.
+
+**Result:** COMPLETE on `0669863b4`. Took a timestamped copy first (`queue.txt.bak-1792608686`), extracted the first occurrence of each of MAINTENANCE_LOOP_1 through MAINTENANCE_LOOP_10 from the head of the queue (exactly 10 lines, aborting otherwise), and appended them with `>>` so the loop's own `head -1` / `tail -n +2` pop never saw a partial file. Queue went from 40 to 50 lines, `diff <(head -10) <(tail -10)` is empty, the file is still newline-terminated, five MAINTENANCE_LOOP_10 lines are present, head remains MAINTENANCE_LOOP_1. No repo file changed beyond this block.
+
+**Gates:** `pnpm type-check` exit 0, `pnpm lint` exit 0 (biome 1747 files, tokens, copy, asset gates clean), `pnpm build` exit 0 (`UPAo7OyuBHS2cpQPT6YAK`, 311 static pages, the four Partner API `request.headers` bail-out lines are the known prerender notice), `pnpm gate:chunks` clean on 243 prerendered pages. Backup 2026-10-21-2140 present and under 24h, three kept (10-21-0201, 10-21-1241, 10-21-2140), nothing to delete; caffeinate alive (pids 967, 11853), SleepDisabled 1. Nothing to fix.
+
+**החלטות שהתקבלו לבד:**
+- No tests added: the goal names only the queue file outside the repo, so no src, test, script or schema change was made. Supabase MCP and GitHub MCP not needed (no DB work, no PR), work lands on autopilot directly.
+- Appended by extraction from the file itself rather than from a template, as the goal text requires, so any future edit to a loop line at the head propagates to the next cycle.
+- MAINTENANCE_LOOP_1 is left to the loop harness, which pops `~/ke-goals/queue.txt` one goal per session; starting it here would put two agents on the same repo.
+
+**המשך מ:** MAINTENANCE_LOOP_1 (head of `~/ke-goals/queue.txt`): run `pnpm audit`, fix critical and high vulnerabilities, commit each fix separately as chore security audit fix PACKAGE, push to autopilot.
+
 ## ✅ MAINTENANCE_LOOP_8 (Session: 2026-10-21 18:36-18:50 UTC, code debt scan, seventeenth pass, MEASURED, delta 0)
 
 **Goal:** Scan all TODO, FIXME and HACK comments in src/, queue a cleanup goal if the count grew since the last scan, report the delta in docs/CODE-DEBT-STATUS.md, commit as chore maint code debt scan, push.
