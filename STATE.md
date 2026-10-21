@@ -4313,3 +4313,9 @@ Supabase MCP authentication unavailable in non-interactive session. CLI fallback
 - Gates: type-check exit 0, lint exit 0, build exit 0. Caffeinate alive, SleepDisabled 1. Vercel MCP unauthorised (known).
 
 **המשך מ:** MAINTENANCE_LOOP_6 (head of ~/ke-goals/queue.txt).
+
+## MAINTENANCE_LOOP_6 (2026-10-21 09:55 UTC, commit 7c94bff2a)
+- Mobile gate recheck via `pnpm start` on 3313 with `pnpm build` (fresh, exit 0), then `scripts/compare.mjs --page=home --widths=380,768` measured at 1440px. Score: 8.1% (PASS, under 11% threshold). No mobile fix goal queued. Reference shortfall 141 (101 script, 37 font, 2 stylesheet, 1 xhr); the score is unchanged against the 01:36 measurement despite the 12-script delta in reference failures. docs/GATE-STATUS.md updated with the sixth-recheck row and ledger entry. Margin to threshold: 2.9 points.
+- Gates: type-check exit 0, lint exit 0, build exit 0. Backup 2026-10-21-0201 present, three kept; caffeinate alive, SleepDisabled 1.
+
+**המשך מ:** MAINTENANCE_LOOP_7 (head of ~/ke-goals/queue.txt).
