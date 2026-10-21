@@ -54,6 +54,26 @@ export const DISCOVERY_TIMEOUT = 15_000
  * one would be the one that forgot.
  */
 export const CART_WRITE_TIMEOUT = 25_000
+
+/**
+ * The pay press is one server action that creates the order, charges the
+ * mock, completes the referral, issues the invoice, tries the order email and
+ * only then redirects to /checkout/return. Each leg is its own run of
+ * Supabase calls in series, so on a slow backend window the whole action is
+ * the sum of them, not one 10 s ceiling.
+ *
+ * MEASURED 2026-10-21, run 19 (full suite, prefix 10.44.101): the login action
+ * took 16.6 s and the add 5.3 s on the same page, and the checkout action was
+ * still open at 45.0 s on both attempts of full-purchase-redeem (chromium);
+ * the server log shows its referral step 27 s after the POST, the invoice
+ * 14 s later and the email refusal 4 s after that, 0.3 s past the old 45 s
+ * wait, twice. Runs 16 to 18 passed the same case in 60 to 66 s whole, with
+ * the referral-to-invoice leg at 7 to 10 s; run 19 measured 11 to 18 s for
+ * that leg on every order. The four money specs share this budget so the next
+ * slow window moves none of them. The assertions are unchanged: the return
+ * page and its success heading are still required.
+ */
+export const PAY_RETURN_TIMEOUT = 90_000
 const SLOW_BACKEND_TEST_TIMEOUT = 60_000
 
 /** Extends the running test's budget to the slow-backend one; never shortens it. */

@@ -1,9 +1,10 @@
 # E2E Test Status
 
-**Last run:** 2026-10-21 18:05 UTC, run 18, MAINTENANCE_LOOP_4 fifteenth cycle
-**Base commit:** 0e268cc7b on `autopilot` (`git log e77278cb3..0e268cc7b -- src e2e
+**Last run:** 2026-10-21 19:35 UTC, run 19, MAINTENANCE_LOOP_4 sixteenth cycle
+**Base commit:** e29a69622 on `autopilot` (`git log 0e268cc7b..e29a69622 -- src e2e
 playwright.config.ts` is empty: the eleven commits between are the MAINTENANCE_LOOP_5 to
-LOOP_3 passes, STATE.md, docs and logs only; this cycle edits nothing under `src/` or `e2e/`)
+LOOP_3 passes, STATE.md, docs and logs only; this cycle edits five files under `e2e/` and
+nothing under `src/`, see "What changed in the run 19 loop")
 **Recipe:** `CARDCOM_USE_MOCK=true CHECKOUT_ENABLED=true NEXT_PUBLIC_APP_URL=http://localhost:3417 pnpm build`,
 then `pnpm start` on port 3417 with the same three variables, then
 `E2E_BASE_URL=http://localhost:3417 E2E_FORWARDED_FOR_PREFIX=10.44.96 pnpm exec playwright test --retries=1 --reporter=list,json`.
@@ -33,6 +34,8 @@ when it failed and then passed on a retry; a case that failed on every attempt i
 | 16, 22dfe27dd, 2026-10-21 14:58 UTC, `--retries=1`, prefix 10.44.97, build j7-WaVUWnKwnfghpaY4hR (cold) | 680 | 660 | 12 | 1 | 7 | 22.1 min |
 | 17, e77278cb3, 2026-10-21 16:21 UTC, `--retries=1`, prefix 10.44.99, build EFd62lLJdXFtWSFKDhBBn (cold) | 680 | 661 | 12 | 0 | 7 | 21.5 min |
 | 18, 0e268cc7b, 2026-10-21 17:43 UTC, `--retries=1`, prefix 10.44.100, build VAPXG7nLs1eaWjN5UtxU- (cold) | 680 | 661 | 12 | 0 | 7 | 21.7 min |
+| 19, e29a69622, 2026-10-21 19:07 UTC, `--retries=1`, prefix 10.44.101, build SetZFtKno_KYvbEtLARvZ (cold), before the fix | 680 | 660 | 13 | 0 | 7 | 27.3 min |
+| 19a, e29a69622 + this cycle's fix, 19:38 UTC, `full-purchase-redeem.spec.ts` only, `--retries=0`, prefix 10.44.102, same server | 2 | 2 | 0 | 0 | 0 | 1.6 min |
 
 Run 9 is the full run on this cycle's fix and run 8 is the same tree before it. Nothing
 under `src/` or `e2e/` changed between 0d2462751 and 61e3d855f (STATE.md and docs only),
@@ -202,6 +205,87 @@ run 10 shortfall. The 24 failed-attempt `error-context.md` snapshots were copied
 `/tmp/ke-e2e18/snapshots/` before anything else ran; 20 carry the admin sign-in refusal and
 4 the address step of physical-purchase. `pnpm typecheck` and `pnpm lint` ran while the suite
 was in flight, as in run 16, and no case moved for it.
+
+Run 19 (MAINTENANCE_LOOP_4 sixteenth cycle) re-measures the run 18 tree: `git log
+0e268cc7b..e29a69622 -- src e2e playwright.config.ts` is empty (the eleven commits between
+are the MAINTENANCE_LOOP_5 to LOOP_3 passes, STATE.md, docs and logs only), so the product is
+run 13's and the specs are run 17's. Cold build as in runs 14 to 18 (`.next/cache/turbopack`
+moved to `/tmp/ke-e2e19/turbopack-cache-aside` first, BUILD_ID SetZFtKno_KYvbEtLARvZ,
+`pnpm gate:chunks` clean on 243 pages before the server started; the 3417 listener verified
+by PID 33843 and working directory through `/usr/sbin/lsof`, the BUILD_ID read back from the
+served HTML, stopped by PID after). 680 cases, 660 passed, **13 failed**, **0 flaky**,
+7 skipped, 27.3 minutes (JSON reporter: start 19:07:38Z, duration 1,639,472 ms; run 18 was
+1,303,026 ms), the slowest full run since run 10 (25.0 min). Twelve of the 13 are run 18's
+12, every one red on both attempts at one of the two laptop gaps (classes A and C below).
+The thirteenth is **`full-purchase-redeem` on chromium**, green on its first attempt in runs
+13 to 18 (60 to 66 s whole) and red on both attempts here (71.6 and 78.8 s), both at the
+45 s `waitForURL` for `/checkout/return` after the pay press. That is a flake across runs on
+an unchanged tree, and it was chased to its cause and fixed this cycle (class D below and
+"What changed in the run 19 loop"). Logs in `/tmp/ke-e2e19/`: **0 `supabase.timeout`**
+events, 2 HTTP 5xx in the whole run, both `/api/checkout/phone-otp/send` (class C, 19:19:58Z
+and the retry at 19:20:46Z), **10 `purchase`, 10 `begin_checkout`, 10 `invoices.issued`**
+(run 18 had 9 of each: the extra order is the one the failed chromium journey's server
+action still finalized after the test gave up, see class D), 0 `voucher_redeemed` (run 18
+had 1, from the journey that is red here), 12 `email.refused` (all 401, 2 of them the
+phone-code send) and 20 `analytics.track_failed` (19 in runs 15 to 18). Ninth consecutive
+run without the run 10 shortfall (the one-pass delta is the chased case, not variance). The
+26 failed-attempt `error-context.md` snapshots were copied to `/tmp/ke-e2e19/snapshots/`
+before anything else ran: 19 carry the admin sign-in refusal, 4 the address step of
+physical-purchase, 2 the checkout page of full-purchase-redeem with the pay button disabled
+on "מחייב את הכרטיס השמור...", and 1 (admin-refund-to-wallet, mobile-chrome, first attempt)
+that same disabled pay button, because that attempt missed the 45 s return wait too and only
+its retry reached the admin sign-in. `pnpm typecheck` and `pnpm lint` ran while the suite
+was in flight, as in runs 16 to 18, and no case moved for it.
+
+Run 19a is the verification re-run of the fixed spec against the same 3417 server (same
+build, prefix 10.44.102, `--retries=0`): both chromium cases of `full-purchase-redeem.spec.ts`
+passed first time, the journey in 95 s whole (JSON reporter: start 19:38:17Z, duration
+96,624 ms). The backend window was still slow: the server log shows that order's referral
+step at 19:39:16Z, the invoice 13 s later and the email refusal 3 s after that, the same
+leg that took 7 to 10 s in run 18, so this is one pass under the new budget on the slow
+backend, not a measurement of a backend that had recovered.
+
+## Flaky (run 19)
+
+None inside the run: all 660 passes were first-attempt passes, the 13 reds failed on both
+attempts, and the JSON reporter's `flaky` count is 0. One flake **across runs**:
+`full-purchase-redeem` on chromium, green first time in runs 13 to 18 and red on both
+attempts here with nothing under `src/` or `e2e/` changed. Chased to the 45 s pay-return
+ceiling against a checkout action that measured 45.3 s on both attempts; fixed under "What
+changed in the run 19 loop" and verified by run 19a.
+
+## Failures by class (run 19, 13)
+
+| # | Class | Cases | Evidence | Kind |
+| -: | --- | ---: | --- | --- |
+| A | Admin fixture cannot sign in | 10 | admin-product-crud, all three cases on both projects (20 to 21 s per attempt), plus admin-refund and admin-refund-to-wallet on both projects (72 to 90 s per attempt, after the customer leg paid: 10 `purchase` and 10 `invoices.issued` in the server log): JSON reporter error on 19 of the 20 attempts is `page.waitForURL: Timeout 20000ms exceeded` at the admin sign-in and 19 `error-context.md` snapshots carry "כתובת אימייל או סיסמה שגויים" under the password field. The twentieth attempt (admin-refund-to-wallet, mobile-chrome, first attempt, 72 s) stopped one step earlier, at the 45 s return wait (class D's cause); its retry paid and then met the sign-in refusal. Unchanged from runs 11 to 18: `.env.local` carries `E2E_ADMIN_EMAIL` only and the default password is refused by the hosted project | environment |
+| C | Shipping phone code cannot be sent from this laptop | 2 | physical-purchase. chromium, both attempts, 45 and 48 s: "the code step never appeared", both snapshots show "לא הצלחנו לשלוח קוד" on the address step. mobile-chrome, both attempts: the 120 s test timeout on the one-page layout's address step with "קוד חד-פעמי בוואטסאפ" on screen. Server log: `checkout.phone_otp_email_failed` and `email.refused` 401 "API key is invalid" from `/api/checkout/phone-otp/send` twice (19:19:58Z and the retry at 19:20:46Z), each answered 502 to the page; the same `RESEND_API_KEY` refusal logs 10 more times from `checkout.begin` without failing those journeys | environment |
+| D | Pay-return wait of 45 s below the checkout action on a slow backend window | 1 | full-purchase-redeem, chromium, both attempts (71.6 and 78.8 s): `page.waitForURL: Timeout 45000ms exceeded` at `/checkout/return`, both snapshots on the checkout page with the pay button disabled on "מחייב את הכרטיס השמור...". The retry's trace (`/tmp/ke-e2e19/trace1/`) has the sign-in POST at 16,649 ms, the add at 5,254 ms and the checkout action POST opened at 19:17:19.0Z with no response when the test ended; the server log has that action's `referrals.complete_result` at 19:17:46Z (27 s in), `invoices.issued` at 19:18:00Z and `email.refused` at 19:18:04.26Z, 0.3 s past the wait, and the first attempt the same shape to the tenth (POST about 19:16:00Z, email refusal 19:16:44.77Z). Every order in this run shows the referral-to-invoice leg at 11 to 18 s against 7 to 10 s in run 18, and the admin-refund-to-wallet mobile-chrome first attempt missed the same 45 s wait (class A row). Fixed this cycle: shared `PAY_RETURN_TIMEOUT` of 90 s in `e2e/helpers.ts`, wired into the four money specs; verified by run 19a | spec (fixed) |
+
+## What changed in the run 19 loop
+
+1. **`e2e/helpers.ts`: `PAY_RETURN_TIMEOUT = 90_000`**, exported next to `CART_WRITE_TIMEOUT`
+   with the run 19 measurement in its comment. The pay press is one server action (order,
+   mock charge, referral completion, invoice, order email, then the redirect) and each leg
+   is its own run of Supabase calls in series, so on a slow window the action is the sum of
+   them; 45 s was the old per-spec literal in four files, and run 19 measured the action at
+   45.3 s twice on one case and once on another.
+2. **`e2e/full-purchase-redeem.spec.ts`, `e2e/admin-refund.spec.ts`,
+   `e2e/admin-refund-to-wallet.spec.ts`, `e2e/physical-purchase.spec.ts`:** the
+   `waitForURL(/\/checkout\/return\?.*order_id=/)` and the "התשלום הצליח!" heading wait use
+   `PAY_RETURN_TIMEOUT` instead of `45_000`. No assertion changed: the return page and its
+   success heading are still required.
+3. **`e2e/full-purchase-redeem.spec.ts`:** describe timeout 120 s to 150 s (the two
+   admin-refund specs already sit at 150 s and this journey carries the same customer leg
+   plus the voucher and supplier scan after it), and the post-sign-in `waitForURL(/\/checkout/)`
+   20 s to 30 s, because the sign-in action (auth plus the guest-cart merge) measured 16.6 s
+   on the retry's trace in the same window. `physical-purchase.spec.ts` keeps its 120 s
+   describe budget: its two reds stop at class C long before the pay press and a longer
+   budget would only lengthen that known failure by 30 s per attempt.
+
+Not changed: nothing under `src/`. The slow window is the backend's, not the product's
+(`0 supabase.timeout`, every order finalized, every invoice issued), and the spec budget is
+the one thing that read it as a failure.
 
 ## Flaky (run 18)
 
@@ -567,6 +651,20 @@ and held again in runs 8 and 9: zero reds in classes 13 and 14, zero flaky cases
   without it the second run of the hour reports the limiter as 14 cart failures.
 
 ## Gates after the changes
+
+Run 19 tree (e29a69622 plus the five `e2e/` files above, this doc and STATE.md, nothing
+under `src/`): `pnpm typecheck` exit 0 and `pnpm lint` exit 0 (biome 1748 files, tokens, copy
+and asset gates clean), both run once while the suite was in flight and again after the spec
+edits (`e2e/` is inside the `**/*.ts` include of `tsconfig.json`, so the new constant and its
+four imports are type-checked). The build gate is the cold mock build the suite ran against,
+`CARDCOM_USE_MOCK=true CHECKOUT_ENABLED=true NEXT_PUBLIC_APP_URL=http://localhost:3417 pnpm
+build` exit 0, BUILD_ID SetZFtKno_KYvbEtLARvZ, `pnpm gate:chunks` clean on 243 prerendered
+pages, plus a second `pnpm build` exit 0 after the spec and doc edits (BUILD_ID
+qK6mRwNrjjEgpGdivWuu2, `pnpm gate:chunks` clean on 243 pages again). The previous turbopack
+cache was moved to `/tmp/ke-e2e19/turbopack-cache-aside`, not deleted. No product change
+this cycle, so no vitest scope to re-run; the spec change is verified by run 19a above. The
+3417 listener was stopped by PID 33843 after run 19a and the port read free before the
+second build.
 
 Run 18 tree (0e268cc7b plus this doc and STATE.md, nothing under `src/` or `e2e/`):
 `pnpm typecheck` exit 0 and `pnpm lint` exit 0 (biome, tokens, copy and asset gates clean),
