@@ -1,0 +1,1086 @@
+{
+  "ts": "2026-10-21T23:11:16.913Z",
+  "window": "21:43 to 23:08 UTC, nineteenth pass follow-up: check_rate_limit window and the consume_order_stock watch item (second window of its two-window closing rule); one read-only MCP run",
+  "probes": {
+    "rate_limits_table": [
+      {
+        "relname": "rate_limits",
+        "n_live_tup": 782,
+        "n_dead_tup": 113,
+        "n_tup_ins": 795,
+        "n_tup_upd": 14157,
+        "n_tup_hot_upd": 11108,
+        "n_tup_del": 10,
+        "seq_scan": 29,
+        "idx_scan": 15048,
+        "last_autovacuum": "2026-10-21 16:24:38.823173+00",
+        "last_autoanalyze": "2026-10-21 22:29:55.758889+00",
+        "autovacuum_count": 92,
+        "autoanalyze_count": 196,
+        "total": "336 kB"
+      }
+    ],
+    "settings": [
+      {
+        "name": "log_min_duration_statement",
+        "setting": "-1"
+      },
+      {
+        "name": "pg_stat_statements.max",
+        "setting": "5000"
+      },
+      {
+        "name": "pg_stat_statements.track",
+        "setting": "top"
+      },
+      {
+        "name": "track_functions",
+        "setting": "none"
+      },
+      {
+        "name": "track_io_timing",
+        "setting": "off"
+      }
+    ],
+    "function_stats": [
+      {
+        "n": 0
+      }
+    ],
+    "check_rate_limit_row": [
+      {
+        "calls": 3249,
+        "total_exec_time": 8096.454547,
+        "mean_exec_time": 2.49198354786088,
+        "max_exec_time": 63.741344,
+        "min_exec_time": 0.159189,
+        "stddev_exec_time": 5.47306033621619,
+        "shared_blks_hit": 229220,
+        "shared_blks_read": 4,
+        "stats_since": "2026-07-21 13:52:19.57086+00"
+      },
+      {
+        "calls": 6,
+        "total_exec_time": 22.652214,
+        "mean_exec_time": 3.775369,
+        "max_exec_time": 19.399006,
+        "min_exec_time": 0.328283,
+        "stddev_exec_time": 7.00309930846286,
+        "shared_blks_hit": 229,
+        "shared_blks_read": 0,
+        "stats_since": "2026-07-21 14:31:09.628937+00"
+      },
+      {
+        "calls": 11680,
+        "total_exec_time": 122779.757161,
+        "mean_exec_time": 10.5119655103596,
+        "max_exec_time": 1137.366223,
+        "min_exec_time": 0.154579,
+        "stddev_exec_time": 22.3888170082916,
+        "shared_blks_hit": 1210560,
+        "shared_blks_read": 0,
+        "stats_since": "2026-08-31 18:44:20.492362+00"
+      }
+    ],
+    "rate_limits_indexes": [
+      {
+        "indexrelname": "rate_limits_key_key",
+        "idx_scan": 15041,
+        "idx_tup_read": 16522,
+        "idx_tup_fetch": 14248
+      },
+      {
+        "indexrelname": "rate_limits_window_idx",
+        "idx_scan": 5,
+        "idx_tup_read": 6,
+        "idx_tup_fetch": 5
+      },
+      {
+        "indexrelname": "rate_limits_key_idx",
+        "idx_scan": 2,
+        "idx_tup_read": 2,
+        "idx_tup_fetch": 2
+      },
+      {
+        "indexrelname": "rate_limits_pkey",
+        "idx_scan": 0,
+        "idx_tup_read": 0,
+        "idx_tup_fetch": 0
+      }
+    ],
+    "activity_wait_events": [
+      {
+        "state": "idle",
+        "wait_event_type": "Client",
+        "wait_event": "ClientRead",
+        "n": 13
+      },
+      {
+        "state": "active",
+        "wait_event_type": null,
+        "wait_event": null,
+        "n": 1
+      }
+    ],
+    "new_pgss_rows_since_2143": [
+      {
+        "calls": 2,
+        "mean_ms": "6.0",
+        "max_ms": "8.9",
+        "stats_since": "2026-10-21 21:45:43.486068+00",
+        "rolname": "supabase_read_only_user",
+        "query": "select relname, n_live_tup, n_dead_tup, n_tup_ins, n_tup_upd, n_tup_hot_upd, n_tup_del, seq_scan, idx_scan, last_autovacuum, last_autoanalyze, autovacuum_count, autoanalyze_count, pg_size_pretty(pg_total_relation_size($1"
+      },
+      {
+        "calls": 2,
+        "mean_ms": "3.5",
+        "max_ms": "5.7",
+        "stats_since": "2026-10-21 21:45:45.298632+00",
+        "rolname": "supabase_read_only_user",
+        "query": "select name, setting from pg_settings where name in ($1,$2,$3,$4,$5) order by name\n\n-- source: POST /v1/projects/:ref/database/query\n-- user: pat:11669897\n-- date: 2026-10-21T21:45:43.801Z"
+      },
+      {
+        "calls": 2,
+        "mean_ms": "108.8",
+        "max_ms": "113.1",
+        "stats_since": "2026-10-21 21:45:47.325189+00",
+        "rolname": "supabase_read_only_user",
+        "query": "select count(*)::int as n from pg_stat_user_functions\n\n-- source: POST /v1/projects/:ref/database/query\n-- user: pat:11669897\n-- date: 2026-10-21T21:45:45.820Z"
+      },
+      {
+        "calls": 2,
+        "mean_ms": "32.0",
+        "max_ms": "34.5",
+        "stats_since": "2026-10-21 21:45:48.920618+00",
+        "rolname": "supabase_read_only_user",
+        "query": "select calls, total_exec_time, mean_exec_time, max_exec_time, min_exec_time, stddev_exec_time, shared_blks_hit, shared_blks_read, stats_since from extensions.pg_stat_statements where query like $1 and query like $2\n\n-- s"
+      },
+      {
+        "calls": 2,
+        "mean_ms": "0.1",
+        "max_ms": "0.1",
+        "stats_since": "2026-10-21 21:45:50.589666+00",
+        "rolname": "supabase_read_only_user",
+        "query": "select indexrelname, idx_scan, idx_tup_read, idx_tup_fetch from pg_stat_user_indexes where relname=$1 order by idx_scan desc\n\n-- source: POST /v1/projects/:ref/database/query\n-- user: pat:11669897\n-- date: 2026-10-21T21:"
+      },
+      {
+        "calls": 1,
+        "mean_ms": "19.7",
+        "max_ms": "19.7",
+        "stats_since": "2026-10-21 21:45:54.011307+00",
+        "rolname": "supabase_read_only_user",
+        "query": "select s.calls, round(s.mean_exec_time::numeric,$1) as mean_ms, round(s.max_exec_time::numeric,$2) as max_ms, s.stats_since, r.rolname, left(s.query,$3) as query from extensions.pg_stat_statements s left join pg_roles r "
+      },
+      {
+        "calls": 1,
+        "mean_ms": "28.4",
+        "max_ms": "28.4",
+        "stats_since": "2026-10-21 21:45:55.67941+00",
+        "rolname": "supabase_read_only_user",
+        "query": "select calls, total_exec_time, mean_exec_time, max_exec_time, stddev_exec_time, shared_blks_read, left(query,$1) as query from extensions.pg_stat_statements where max_exec_time > $2 and query like $3 order by max_exec_ti"
+      },
+      {
+        "calls": 1,
+        "mean_ms": "19.6",
+        "max_ms": "19.6",
+        "stats_since": "2026-10-21 21:45:57.345176+00",
+        "rolname": "supabase_read_only_user",
+        "query": "select calls, rows, total_exec_time, min_exec_time, mean_exec_time, max_exec_time, stddev_exec_time, shared_blks_hit, shared_blks_read, shared_blks_dirtied, wal_records, wal_bytes, temp_blks_written, stats_since from ext"
+      },
+      {
+        "calls": 1,
+        "mean_ms": "24.3",
+        "max_ms": "24.3",
+        "stats_since": "2026-10-21 21:45:59.215182+00",
+        "rolname": "supabase_read_only_user",
+        "query": "select calls, total_exec_time, mean_exec_time, max_exec_time, stddev_exec_time from extensions.pg_stat_statements where query like $1 and query not like $2\n\n-- source: POST /v1/projects/:ref/database/query\n-- user: pat:1"
+      },
+      {
+        "calls": 1,
+        "mean_ms": "11.2",
+        "max_ms": "11.2",
+        "stats_since": "2026-10-21 21:46:00.853993+00",
+        "rolname": "supabase_read_only_user",
+        "query": "select date_trunc($1, consumed_at) as hour, count(*)::int as n from stock_reservations where consumed_at >= current_date group by 1 order by 1\n\n-- source: POST /v1/projects/:ref/database/query\n-- user: pat:11669897\n-- da"
+      },
+      {
+        "calls": 1,
+        "mean_ms": "0.1",
+        "max_ms": "0.1",
+        "stats_since": "2026-10-21 21:46:02.636524+00",
+        "rolname": "supabase_read_only_user",
+        "query": "select min(consumed_at) as first, max(consumed_at) as last, count(*)::int as n from stock_reservations where consumed_at > $1\n\n-- source: POST /v1/projects/:ref/database/query\n-- user: pat:11669897\n-- date: 2026-10-21T21"
+      },
+      {
+        "calls": 1,
+        "mean_ms": "0.1",
+        "max_ms": "0.1",
+        "stats_since": "2026-10-21 21:46:04.268991+00",
+        "rolname": "supabase_read_only_user",
+        "query": "select count(*) filter (where consumed_at is not null)::int as consumed, count(*) filter (where released_at is not null)::int as released, count(*) filter (where consumed_at is null and released_at is null)::int as open,"
+      },
+      {
+        "calls": 1,
+        "mean_ms": "6.9",
+        "max_ms": "6.9",
+        "stats_since": "2026-10-21 21:46:05.978078+00",
+        "rolname": "supabase_read_only_user",
+        "query": "select min(created_at) as first, max(created_at) as last, count(*)::int as n, count(*) filter (where status=$1)::int as paid from orders where created_at > $2\n\n-- source: POST /v1/projects/:ref/database/query\n-- user: pa"
+      },
+      {
+        "calls": 1,
+        "mean_ms": "3.9",
+        "max_ms": "3.9",
+        "stats_since": "2026-10-21 21:46:07.718661+00",
+        "rolname": "supabase_read_only_user",
+        "query": "select count(*)::int as orders, count(*) filter (where status=$1)::int as paid from orders\n\n-- source: POST /v1/projects/:ref/database/query\n-- user: pat:11669897\n-- date: 2026-10-21T21:46:06.293Z"
+      },
+      {
+        "calls": 1,
+        "mean_ms": "61.5",
+        "max_ms": "61.5",
+        "stats_since": "2026-10-21 21:46:09.353222+00",
+        "rolname": "supabase_read_only_user",
+        "query": "select entity_type, action, count(*)::int as n from audit_log where created_at > $1 group by 1,2 order by 3 desc, 1, 2\n\n-- source: POST /v1/projects/:ref/database/query\n-- user: pat:11669897\n-- date: 2026-10-21T21:46:07."
+      },
+      {
+        "calls": 1,
+        "mean_ms": "0.2",
+        "max_ms": "0.2",
+        "stats_since": "2026-10-21 21:46:11.056081+00",
+        "rolname": "supabase_read_only_user",
+        "query": "select count(*)::int as n, min(created_at) as first, max(created_at) as last from audit_log where created_at > $1\n\n-- source: POST /v1/projects/:ref/database/query\n-- user: pat:11669897\n-- date: 2026-10-21T21:46:09.683Z"
+      },
+      {
+        "calls": 1,
+        "mean_ms": "0.3",
+        "max_ms": "0.3",
+        "stats_since": "2026-10-21 21:46:14.436219+00",
+        "rolname": "supabase_read_only_user",
+        "query": "select n_tup_upd, n_tup_hot_upd, n_live_tup, n_dead_tup, idx_scan, seq_scan from pg_stat_user_tables where relname=$1\n\n-- source: POST /v1/projects/:ref/database/query\n-- user: pat:11669897\n-- date: 2026-10-21T21:46:12.9"
+      },
+      {
+        "calls": 1,
+        "mean_ms": "0.2",
+        "max_ms": "0.2",
+        "stats_since": "2026-10-21 21:46:16.372302+00",
+        "rolname": "supabase_read_only_user",
+        "query": "select indexrelname, idx_scan from pg_stat_user_indexes where indexrelname=$1\n\n-- source: POST /v1/projects/:ref/database/query\n-- user: pat:11669897\n-- date: 2026-10-21T21:46:14.991Z"
+      },
+      {
+        "calls": 1,
+        "mean_ms": "2.3",
+        "max_ms": "2.3",
+        "stats_since": "2026-10-21 21:46:18.034243+00",
+        "rolname": "supabase_read_only_user",
+        "query": "select c.relname, s.n_tup_ins from pg_class c join pg_namespace n on n.oid=c.relnamespace left join pg_stat_all_tables s on s.relid=c.oid where n.nspname=$1 and c.relname like $2 order by 1\n\n-- source: POST /v1/projects/"
+      },
+      {
+        "calls": 1,
+        "mean_ms": "0.0",
+        "max_ms": "0.0",
+        "stats_since": "2026-10-21 21:46:19.63476+00",
+        "rolname": "supabase_read_only_user",
+        "query": "select count(*)::int as n from realtime.subscription\n\n-- source: POST /v1/projects/:ref/database/query\n-- user: pat:11669897\n-- date: 2026-10-21T21:46:18.258Z"
+      },
+      {
+        "calls": 1,
+        "mean_ms": "28.4",
+        "max_ms": "28.4",
+        "stats_since": "2026-10-21 21:46:23.01273+00",
+        "rolname": "supabase_read_only_user",
+        "query": "select numbackends, xact_commit, xact_rollback, deadlocks, temp_files, pg_size_pretty(pg_database_size($1)) as size from pg_stat_database where datname=$2\n\n-- source: POST /v1/projects/:ref/database/query\n-- user: pat:11"
+      },
+      {
+        "calls": 1,
+        "mean_ms": "25.0",
+        "max_ms": "25.0",
+        "stats_since": "2026-10-21 21:46:24.668741+00",
+        "rolname": "supabase_read_only_user",
+        "query": "select count(*)::int as statements, sum(calls)::bigint as calls, round(sum(total_exec_time)::numeric,$1) as total_ms from extensions.pg_stat_statements\n\n-- source: POST /v1/projects/:ref/database/query\n-- user: pat:11669"
+      },
+      {
+        "calls": 1,
+        "mean_ms": "17.1",
+        "max_ms": "17.1",
+        "stats_since": "2026-10-21 21:46:26.449909+00",
+        "rolname": "supabase_read_only_user",
+        "query": "select calls, temp_blks_written, left(query,$1) as query from extensions.pg_stat_statements where temp_blks_written>$2 order by temp_blks_written desc limit $3\n\n-- source: POST /v1/projects/:ref/database/query\n-- user: p"
+      },
+      {
+        "calls": 1,
+        "mean_ms": "8.5",
+        "max_ms": "8.5",
+        "stats_since": "2026-10-21 21:46:52.230473+00",
+        "rolname": "supabase_read_only_user",
+        "query": "select schemaname, relname, n_live_tup, n_dead_tup, last_autovacuum, last_autoanalyze, autovacuum_count, autoanalyze_count, pg_size_pretty(pg_total_relation_size(relid)) as total from pg_stat_all_tables where relname in "
+      },
+      {
+        "calls": 1,
+        "mean_ms": "1.3",
+        "max_ms": "1.3",
+        "stats_since": "2026-10-21 21:46:53.966062+00",
+        "rolname": "supabase_read_only_user",
+        "query": "select schemaname, relname, last_autovacuum, last_autoanalyze, n_live_tup, n_dead_tup from pg_stat_all_tables where greatest(coalesce(last_autovacuum,$1), coalesce(last_autoanalyze,$2)) > $3 order by greatest(coalesce(la"
+      },
+      {
+        "calls": 1,
+        "mean_ms": "10.6",
+        "max_ms": "10.6",
+        "stats_since": "2026-10-21 21:46:55.604149+00",
+        "rolname": "supabase_read_only_user",
+        "query": "select count(*)::int as live from search_index_outbox\n\n-- source: POST /v1/projects/:ref/database/query\n-- user: pat:11669897\n-- date: 2026-10-21T21:46:54.208Z"
+      },
+      {
+        "calls": 1,
+        "mean_ms": "3.5",
+        "max_ms": "3.5",
+        "stats_since": "2026-10-21 21:46:57.285429+00",
+        "rolname": "supabase_read_only_user",
+        "query": "select column_name from information_schema.columns where table_schema=$1 and table_name=$2 order by ordinal_position\n\n-- source: POST /v1/projects/:ref/database/query\n-- user: pat:11669897\n-- date: 2026-10-21T21:46:55.90"
+      },
+      {
+        "calls": 1,
+        "mean_ms": "30.8",
+        "max_ms": "30.8",
+        "stats_since": "2026-10-21 21:46:59.059173+00",
+        "rolname": "supabase_read_only_user",
+        "query": "select r.rolname, count(*)::int as n, sum(s.calls)::int as calls, round(max(s.max_exec_time)::numeric,$1) as max_ms, min(s.stats_since) as first, max(s.stats_since) as last from extensions.pg_stat_statements s left join "
+      },
+      {
+        "calls": 1,
+        "mean_ms": "23.7",
+        "max_ms": "23.7",
+        "stats_since": "2026-10-21 21:47:01.0251+00",
+        "rolname": "supabase_read_only_user",
+        "query": "select s.calls, round(s.mean_exec_time::numeric,$1) as mean_ms, round(s.max_exec_time::numeric,$2) as max_ms, s.stats_since, r.rolname, left(s.query,$3) as query from extensions.pg_stat_statements s left join pg_roles r "
+      },
+      {
+        "calls": 1,
+        "mean_ms": "20.4",
+        "max_ms": "20.4",
+        "stats_since": "2026-10-21 21:47:02.65023+00",
+        "rolname": "supabase_read_only_user",
+        "query": "select date_trunc($1, s.stats_since) as minute, r.rolname, count(*)::int as n from extensions.pg_stat_statements s left join pg_roles r on r.oid=s.userid where s.stats_since > $2 group by 1,2 order by 1\n\n-- source: POST "
+      }
+    ],
+    "new_pgss_rows_summary": [
+      {
+        "rolname": "supabase_read_only_user",
+        "n": 30,
+        "calls": 36,
+        "max_ms": "113.1",
+        "first": "2026-10-21 21:45:43.486068+00",
+        "last": "2026-10-21 21:47:02.65023+00"
+      }
+    ],
+    "new_pgss_rows_app": [],
+    "new_pgss_rows_by_minute": [
+      {
+        "minute": "2026-10-21 21:45:00+00",
+        "rolname": "supabase_read_only_user",
+        "n": 9
+      },
+      {
+        "minute": "2026-10-21 21:46:00+00",
+        "rolname": "supabase_read_only_user",
+        "n": 19
+      },
+      {
+        "minute": "2026-10-21 21:47:00+00",
+        "rolname": "supabase_read_only_user",
+        "n": 2
+      }
+    ],
+    "app_spike_rows_unrounded": [
+      {
+        "calls": 1542,
+        "total_exec_time": 6191.213571,
+        "mean_exec_time": 4.01505419649805,
+        "max_exec_time": 1159.16868,
+        "stddev_exec_time": 31.1570419009611,
+        "shared_blks_read": 0,
+        "query": "WITH pgrst_source AS (UPDATE \"public\".\"carts\" SET \"expires_at\" = \"pgrst_body\".\"expires_at\", \"items\" = \"pgrst_body\".\"item"
+      },
+      {
+        "calls": 11680,
+        "total_exec_time": 122779.757161,
+        "mean_exec_time": 10.5119655103596,
+        "max_exec_time": 1137.366223,
+        "stddev_exec_time": 22.3888170082916,
+        "shared_blks_read": 0,
+        "query": "WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"p_key"
+      },
+      {
+        "calls": 22216,
+        "total_exec_time": 121849.673351,
+        "mean_exec_time": 5.48477103668529,
+        "max_exec_time": 1013.806771,
+        "stddev_exec_time": 15.6426639415236,
+        "shared_blks_read": 2,
+        "query": "WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"p_pro"
+      },
+      {
+        "calls": 7138,
+        "total_exec_time": 39616.6633219999,
+        "mean_exec_time": 5.55010693779768,
+        "max_exec_time": 883.551779,
+        "stddev_exec_time": 17.1821420704783,
+        "shared_blks_read": 21,
+        "query": "WITH pgrst_source AS (INSERT INTO \"public\".\"carts\"(\"expires_at\", \"items\", \"session_id\") SELECT \"pgrst_body\".\"expires_at\""
+      },
+      {
+        "calls": 887,
+        "total_exec_time": 41107.882671,
+        "mean_exec_time": 46.3448508128523,
+        "max_exec_time": 857.07454,
+        "stddev_exec_time": 65.9903636867496,
+        "shared_blks_read": 0,
+        "query": "WITH pgrst_source AS (SELECT \"pgrst_call\".* FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"q\", \"max_resul"
+      },
+      {
+        "calls": 164,
+        "total_exec_time": 27133.093876,
+        "mean_exec_time": 165.445694365854,
+        "max_exec_time": 544.681965,
+        "stddev_exec_time": 90.6090817602408,
+        "shared_blks_read": 0,
+        "query": "WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"p_ord"
+      },
+      {
+        "calls": 2301,
+        "total_exec_time": 37138.7999880001,
+        "mean_exec_time": 16.1402868265971,
+        "max_exec_time": 525.275512,
+        "stddev_exec_time": 21.1789291839226,
+        "shared_blks_read": 0,
+        "query": "WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"p_ter"
+      },
+      {
+        "calls": 2055,
+        "total_exec_time": 33788.83866,
+        "mean_exec_time": 16.4422572554745,
+        "max_exec_time": 515.646701,
+        "stddev_exec_time": 34.8565520901923,
+        "shared_blks_read": 0,
+        "query": "WITH pgrst_source AS ( SELECT \"public\".\"analytics_events\".\"session_id\", \"public\".\"analytics_events\".\"props\" FROM \"public"
+      }
+    ],
+    "consume_order_stock_rows": [
+      {
+        "calls": 164,
+        "rows": 164,
+        "total_exec_time": 27133.093876,
+        "min_exec_time": 20.608606,
+        "mean_exec_time": 165.445694365854,
+        "max_exec_time": 544.681965,
+        "stddev_exec_time": 90.6090817602408,
+        "shared_blks_hit": 92419,
+        "shared_blks_read": 0,
+        "shared_blks_dirtied": 2515,
+        "wal_records": 6659,
+        "wal_bytes": "3694453",
+        "temp_blks_written": 0,
+        "stats_since": "2026-09-10 09:37:28.573468+00"
+      }
+    ],
+    "release_expired_row": [
+      {
+        "calls": 365,
+        "total_exec_time": 33195.515878,
+        "mean_exec_time": 90.9466188438356,
+        "max_exec_time": 173.614253,
+        "stddev_exec_time": 21.6596985128603
+      },
+      {
+        "calls": 1,
+        "total_exec_time": 4.065029,
+        "mean_exec_time": 4.065029,
+        "max_exec_time": 4.065029,
+        "stddev_exec_time": 0
+      }
+    ],
+    "consumed_by_hour": [
+      {
+        "hour": "2026-10-21 09:00:00+00",
+        "n": 11
+      },
+      {
+        "hour": "2026-10-21 10:00:00+00",
+        "n": 9
+      },
+      {
+        "hour": "2026-10-21 12:00:00+00",
+        "n": 9
+      },
+      {
+        "hour": "2026-10-21 13:00:00+00",
+        "n": 9
+      },
+      {
+        "hour": "2026-10-21 15:00:00+00",
+        "n": 9
+      },
+      {
+        "hour": "2026-10-21 16:00:00+00",
+        "n": 9
+      },
+      {
+        "hour": "2026-10-21 17:00:00+00",
+        "n": 9
+      },
+      {
+        "hour": "2026-10-21 19:00:00+00",
+        "n": 11
+      },
+      {
+        "hour": "2026-10-21 20:00:00+00",
+        "n": 5
+      },
+      {
+        "hour": "2026-10-21 21:00:00+00",
+        "n": 4
+      },
+      {
+        "hour": "2026-10-21 22:00:00+00",
+        "n": 9
+      }
+    ],
+    "consumed_in_window": [
+      {
+        "first": "2026-10-21 22:14:02.414937+00",
+        "last": "2026-10-21 22:27:06.167983+00",
+        "n": 9
+      }
+    ],
+    "consumed_all_time": [
+      {
+        "consumed": 164,
+        "released": 17,
+        "open": 16,
+        "total": 197
+      }
+    ],
+    "orders_in_window": [
+      {
+        "first": "2026-10-21 22:13:55.183799+00",
+        "last": "2026-10-21 22:26:59.395136+00",
+        "n": 9,
+        "paid": 9
+      }
+    ],
+    "orders_total": [
+      {
+        "orders": 199,
+        "paid": 164
+      }
+    ],
+    "audit_rows_window": [
+      {
+        "entity_type": "wallet_accounts",
+        "action": "updated",
+        "n": 18
+      },
+      {
+        "entity_type": "invoices",
+        "action": "created",
+        "n": 9
+      },
+      {
+        "entity_type": "invoices",
+        "action": "updated",
+        "n": 9
+      },
+      {
+        "entity_type": "order",
+        "action": "status_change",
+        "n": 9
+      },
+      {
+        "entity_type": "order_items",
+        "action": "created",
+        "n": 9
+      },
+      {
+        "entity_type": "order_items",
+        "action": "updated",
+        "n": 9
+      },
+      {
+        "entity_type": "orders",
+        "action": "created",
+        "n": 9
+      },
+      {
+        "entity_type": "orders",
+        "action": "updated",
+        "n": 9
+      },
+      {
+        "entity_type": "payments",
+        "action": "created",
+        "n": 9
+      },
+      {
+        "entity_type": "payments",
+        "action": "updated",
+        "n": 9
+      },
+      {
+        "entity_type": "products",
+        "action": "updated",
+        "n": 9
+      },
+      {
+        "entity_type": "settlement_events",
+        "action": "created",
+        "n": 9
+      },
+      {
+        "entity_type": "vouchers",
+        "action": "created",
+        "n": 9
+      },
+      {
+        "entity_type": "wallet_entries",
+        "action": "created",
+        "n": 9
+      },
+      {
+        "entity_type": "voucher_redemptions",
+        "action": "created",
+        "n": 3
+      },
+      {
+        "entity_type": "vouchers",
+        "action": "updated",
+        "n": 1
+      }
+    ],
+    "audit_rows_window_total": [
+      {
+        "n": 139,
+        "first": "2026-10-21 22:13:55.183799+00",
+        "last": "2026-10-21 22:27:59.879115+00"
+      }
+    ],
+    "vacuum_moves": [
+      {
+        "schemaname": "auth",
+        "relname": "refresh_tokens",
+        "n_live_tup": 126,
+        "n_dead_tup": 1,
+        "last_autovacuum": "2026-10-21 04:34:05.472454+00",
+        "last_autoanalyze": "2026-10-21 09:49:20.067769+00",
+        "autovacuum_count": 2,
+        "autoanalyze_count": 11,
+        "total": "336 kB"
+      },
+      {
+        "schemaname": "auth",
+        "relname": "users",
+        "n_live_tup": 14,
+        "n_dead_tup": 22,
+        "last_autovacuum": "2026-10-21 13:43:31.161606+00",
+        "last_autoanalyze": "2026-10-21 19:39:47.972217+00",
+        "autovacuum_count": 13,
+        "autoanalyze_count": 14,
+        "total": "264 kB"
+      },
+      {
+        "schemaname": "public",
+        "relname": "analytics_events",
+        "n_live_tup": 2769,
+        "n_dead_tup": 0,
+        "last_autovacuum": "2026-10-21 14:06:32.33325+00",
+        "last_autoanalyze": "2026-10-15 02:15:20.915733+00",
+        "autovacuum_count": 2,
+        "autoanalyze_count": 19,
+        "total": "2024 kB"
+      },
+      {
+        "schemaname": "public",
+        "relname": "audit_log",
+        "n_live_tup": 3871,
+        "n_dead_tup": 0,
+        "last_autovacuum": "2026-10-21 19:11:47.445982+00",
+        "last_autoanalyze": "2026-10-21 19:24:47.983536+00",
+        "autovacuum_count": 3,
+        "autoanalyze_count": 18,
+        "total": "9528 kB"
+      },
+      {
+        "schemaname": "public",
+        "relname": "carts",
+        "n_live_tup": 4548,
+        "n_dead_tup": 607,
+        "last_autovacuum": "2026-10-16 22:18:22.900355+00",
+        "last_autoanalyze": "2026-10-21 16:29:39.242742+00",
+        "autovacuum_count": 8,
+        "autoanalyze_count": 47,
+        "total": "3008 kB"
+      },
+      {
+        "schemaname": "public",
+        "relname": "invoices",
+        "n_live_tup": 166,
+        "n_dead_tup": 22,
+        "last_autovacuum": "2026-10-21 19:24:47.107331+00",
+        "last_autoanalyze": "2026-10-21 20:51:51.041221+00",
+        "autovacuum_count": 3,
+        "autoanalyze_count": 6,
+        "total": "296 kB"
+      },
+      {
+        "schemaname": "public",
+        "relname": "notification_outbox",
+        "n_live_tup": 524,
+        "n_dead_tup": 25,
+        "last_autovacuum": "2026-10-02 08:45:48.643769+00",
+        "last_autoanalyze": "2026-10-21 22:27:55.715561+00",
+        "autovacuum_count": 6,
+        "autoanalyze_count": 13,
+        "total": "648 kB"
+      },
+      {
+        "schemaname": "public",
+        "relname": "order_items",
+        "n_live_tup": 235,
+        "n_dead_tup": 57,
+        "last_autovacuum": "2026-10-21 13:50:31.447865+00",
+        "last_autoanalyze": "2026-10-21 20:51:51.071652+00",
+        "autovacuum_count": 3,
+        "autoanalyze_count": 6,
+        "total": "248 kB"
+      },
+      {
+        "schemaname": "public",
+        "relname": "orders",
+        "n_live_tup": 199,
+        "n_dead_tup": 50,
+        "last_autovacuum": "2026-10-21 19:14:46.76372+00",
+        "last_autoanalyze": "2026-10-21 22:17:55.108098+00",
+        "autovacuum_count": 6,
+        "autoanalyze_count": 7,
+        "total": "256 kB"
+      },
+      {
+        "schemaname": "public",
+        "relname": "payments",
+        "n_live_tup": 190,
+        "n_dead_tup": 29,
+        "last_autovacuum": "2026-09-21 19:28:21.824663+00",
+        "last_autoanalyze": "2026-10-21 19:11:46.625669+00",
+        "autovacuum_count": 1,
+        "autoanalyze_count": 6,
+        "total": "232 kB"
+      },
+      {
+        "schemaname": "public",
+        "relname": "products",
+        "n_live_tup": 82,
+        "n_dead_tup": 26,
+        "last_autovacuum": "2026-10-21 19:12:46.694944+00",
+        "last_autoanalyze": "2026-10-21 17:47:42.862677+00",
+        "autovacuum_count": 10,
+        "autoanalyze_count": 9,
+        "total": "752 kB"
+      },
+      {
+        "schemaname": "public",
+        "relname": "rate_limits",
+        "n_live_tup": 782,
+        "n_dead_tup": 113,
+        "last_autovacuum": "2026-10-21 16:24:38.823173+00",
+        "last_autoanalyze": "2026-10-21 22:29:55.758889+00",
+        "autovacuum_count": 92,
+        "autoanalyze_count": 196,
+        "total": "336 kB"
+      },
+      {
+        "schemaname": "public",
+        "relname": "search_index_outbox",
+        "n_live_tup": 257,
+        "n_dead_tup": 0,
+        "last_autovacuum": "2026-10-19 04:55:52.875886+00",
+        "last_autoanalyze": "2026-10-21 19:11:46.642086+00",
+        "autovacuum_count": 12,
+        "autoanalyze_count": 15,
+        "total": "160 kB"
+      },
+      {
+        "schemaname": "public",
+        "relname": "stock_reservations",
+        "n_live_tup": 197,
+        "n_dead_tup": 50,
+        "last_autovacuum": "2026-10-21 15:11:35.368486+00",
+        "last_autoanalyze": "2026-10-21 21:02:51.597861+00",
+        "autovacuum_count": 2,
+        "autoanalyze_count": 6,
+        "total": "176 kB"
+      },
+      {
+        "schemaname": "public",
+        "relname": "vouchers",
+        "n_live_tup": 152,
+        "n_dead_tup": 9,
+        "last_autovacuum": "2026-10-21 09:50:20.278319+00",
+        "last_autoanalyze": "2026-10-21 20:47:50.896726+00",
+        "autovacuum_count": 1,
+        "autoanalyze_count": 3,
+        "total": "360 kB"
+      },
+      {
+        "schemaname": "public",
+        "relname": "wallet_accounts",
+        "n_live_tup": 17,
+        "n_dead_tup": 8,
+        "last_autovacuum": "2026-10-21 22:19:55.197117+00",
+        "last_autoanalyze": "2026-10-21 22:27:55.632971+00",
+        "autovacuum_count": 7,
+        "autoanalyze_count": 7,
+        "total": "96 kB"
+      }
+    ],
+    "vacuumed_in_window": [
+      {
+        "schemaname": "public",
+        "relname": "orders",
+        "last_autovacuum": "2026-10-21 19:14:46.76372+00",
+        "last_autoanalyze": "2026-10-21 22:17:55.108098+00",
+        "n_live_tup": 199,
+        "n_dead_tup": 50
+      },
+      {
+        "schemaname": "public",
+        "relname": "search_events",
+        "last_autovacuum": "2026-10-21 19:29:47.369474+00",
+        "last_autoanalyze": "2026-10-21 22:19:55.219631+00",
+        "n_live_tup": 33,
+        "n_dead_tup": 53
+      },
+      {
+        "schemaname": "public",
+        "relname": "wallet_accounts",
+        "last_autovacuum": "2026-10-21 22:19:55.197117+00",
+        "last_autoanalyze": "2026-10-21 22:27:55.632971+00",
+        "n_live_tup": 17,
+        "n_dead_tup": 8
+      },
+      {
+        "schemaname": "public",
+        "relname": "notification_outbox",
+        "last_autovacuum": "2026-10-02 08:45:48.643769+00",
+        "last_autoanalyze": "2026-10-21 22:27:55.715561+00",
+        "n_live_tup": 524,
+        "n_dead_tup": 25
+      },
+      {
+        "schemaname": "public",
+        "relname": "settlement_events",
+        "last_autovacuum": null,
+        "last_autoanalyze": "2026-10-21 22:27:55.744471+00",
+        "n_live_tup": 168,
+        "n_dead_tup": 6
+      },
+      {
+        "schemaname": "public",
+        "relname": "rate_limits",
+        "last_autovacuum": "2026-10-21 16:24:38.823173+00",
+        "last_autoanalyze": "2026-10-21 22:29:55.758889+00",
+        "n_live_tup": 782,
+        "n_dead_tup": 113
+      }
+    ],
+    "products_update_rows": [
+      {
+        "n_tup_upd": 880,
+        "n_tup_hot_upd": 32,
+        "n_live_tup": 82,
+        "n_dead_tup": 26,
+        "idx_scan": 1083103,
+        "seq_scan": 8898
+      },
+      {
+        "n_tup_upd": 0,
+        "n_tup_hot_upd": 0,
+        "n_live_tup": 0,
+        "n_dead_tup": 0,
+        "idx_scan": 0,
+        "seq_scan": 6
+      }
+    ],
+    "invoices_index_scans": [
+      {
+        "indexrelname": "idx_invoices_order",
+        "idx_scan": 54
+      }
+    ],
+    "realtime_partitions": [
+      {
+        "relname": "messages",
+        "n_tup_ins": 0
+      },
+      {
+        "relname": "messages_2026_10_02",
+        "n_tup_ins": 0
+      },
+      {
+        "relname": "messages_2026_10_02_inserted_at_topic_idx",
+        "n_tup_ins": null
+      },
+      {
+        "relname": "messages_2026_10_02_pkey",
+        "n_tup_ins": null
+      },
+      {
+        "relname": "messages_2026_10_03",
+        "n_tup_ins": 0
+      },
+      {
+        "relname": "messages_2026_10_03_inserted_at_topic_idx",
+        "n_tup_ins": null
+      },
+      {
+        "relname": "messages_2026_10_03_pkey",
+        "n_tup_ins": null
+      },
+      {
+        "relname": "messages_2026_10_04",
+        "n_tup_ins": 0
+      },
+      {
+        "relname": "messages_2026_10_04_inserted_at_topic_idx",
+        "n_tup_ins": null
+      },
+      {
+        "relname": "messages_2026_10_04_pkey",
+        "n_tup_ins": null
+      },
+      {
+        "relname": "messages_2026_10_05",
+        "n_tup_ins": 0
+      },
+      {
+        "relname": "messages_2026_10_05_inserted_at_topic_idx",
+        "n_tup_ins": null
+      },
+      {
+        "relname": "messages_2026_10_05_pkey",
+        "n_tup_ins": null
+      },
+      {
+        "relname": "messages_2026_10_06",
+        "n_tup_ins": 0
+      },
+      {
+        "relname": "messages_2026_10_06_inserted_at_topic_idx",
+        "n_tup_ins": null
+      },
+      {
+        "relname": "messages_2026_10_06_pkey",
+        "n_tup_ins": null
+      },
+      {
+        "relname": "messages_2026_10_07",
+        "n_tup_ins": 0
+      },
+      {
+        "relname": "messages_2026_10_07_inserted_at_topic_idx",
+        "n_tup_ins": null
+      },
+      {
+        "relname": "messages_2026_10_07_pkey",
+        "n_tup_ins": null
+      },
+      {
+        "relname": "messages_2026_10_08",
+        "n_tup_ins": 0
+      },
+      {
+        "relname": "messages_2026_10_08_inserted_at_topic_idx",
+        "n_tup_ins": null
+      },
+      {
+        "relname": "messages_2026_10_08_pkey",
+        "n_tup_ins": null
+      },
+      {
+        "relname": "messages_inserted_at_topic_index",
+        "n_tup_ins": null
+      },
+      {
+        "relname": "messages_pkey",
+        "n_tup_ins": null
+      }
+    ],
+    "realtime_subscriptions": [
+      {
+        "n": 0
+      }
+    ],
+    "search_outbox": [
+      {
+        "live": 257,
+        "oldest": "2026-09-08 03:04:20.401744+00",
+        "newest": "2026-10-21 22:27:06.167983+00"
+      }
+    ],
+    "db_xacts": [
+      {
+        "numbackends": 16,
+        "xact_commit": 8888293,
+        "xact_rollback": 652312,
+        "deadlocks": 0,
+        "temp_files": 168271,
+        "size": "49 MB"
+      }
+    ],
+    "pgss_counts": [
+      {
+        "statements": 4751,
+        "calls": 7791546,
+        "total_ms": "3211531"
+      }
+    ],
+    "pgss_least_used": [
+      {
+        "one_call_rows": 2114,
+        "le3_call_rows": 3163,
+        "rows": 4751
+      }
+    ],
+    "temp_spill_new": [
+      {
+        "calls": 384,
+        "temp_blks_written": 802592,
+        "query": "with f as (\n      \n-- CTE with sane arg_modes, arg_names, and arg_types.\n-- All three are always of the same length.\n-- "
+      },
+      {
+        "calls": 24,
+        "temp_blks_written": 13233,
+        "query": "select calls, round(mean_exec_time::numeric,$1) as mean_ms, round(total_exec_time::numeric,$2) as total_ms, left(query,$"
+      },
+      {
+        "calls": 24,
+        "temp_blks_written": 13233,
+        "query": "select calls, round(mean_exec_time::numeric,$1) as mean_ms, left(query,$2) as query from extensions.pg_stat_statements w"
+      },
+      {
+        "calls": 24,
+        "temp_blks_written": 13233,
+        "query": "select count(*)::int as statements, sum(calls)::bigint as calls, round(sum(total_exec_time)::numeric,$1) as total_ms, co"
+      },
+      {
+        "calls": 24,
+        "temp_blks_written": 13232,
+        "query": "select calls, round(mean_exec_time::numeric,$1) as mean_ms, round(max_exec_time::numeric,$2) as max_ms, round(total_exec"
+      },
+      {
+        "calls": 20,
+        "temp_blks_written": 11041,
+        "query": "select calls, round(mean_exec_time::numeric,$1) as mean_ms, temp_blks_written, pg_size_pretty(temp_blks_written*$2) as t"
+      }
+    ]
+  }
+}
