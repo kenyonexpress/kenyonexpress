@@ -2,6 +2,22 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_4 (Session: 2026-10-21 17:42-18:08 UTC, e2e maintenance, fifteenth cycle, run 18, 0 flaky, DONE)
+
+**Goal:** Run the full Playwright suite with `pnpm test:e2e`, report pass/fail/flaky counts to docs/E2E-STATUS.md, fix any new flaky tests, commit as chore test e2e maintenance, push.
+
+**Result:** DONE. Run 18 on 0e268cc7b (`git log e77278cb3..0e268cc7b -- src e2e playwright.config.ts` empty, so the same product and specs as run 17): cold mock build (turbopack cache moved to `/tmp/ke-e2e18/turbopack-cache-aside`, BUILD_ID VAPXG7nLs1eaWjN5UtxU-, `gate:chunks` clean on 243 pages), `pnpm start` on 3417 verified by PID 86407 and cwd via `/usr/sbin/lsof` and by the BUILD_ID in the served HTML, suite at two workers with `--retries=1` and prefix 10.44.100, logs in `/tmp/ke-e2e18/`. JSON reporter: 680 cases, 661 passed, 12 failed, **0 flaky**, 7 skipped, 1,303,026 ms (21.7 min). Counts identical to runs 13 to 15 and 17; the 12 reds are the same 12 cases as runs 13 to 17, each red on both attempts, each at a laptop gap (class A admin fixture password refused, 10 cases, all 20 snapshots carry "כתובת אימייל או סיסמה שגויים"; class C phone-code send 502 after `email.refused` 401, 2 cases). 0 `supabase.timeout`, 2 HTTP 5xx (both the phone-code send), 9 purchase / 9 begin_checkout / 9 invoices.issued / 1 voucher_redeemed, 19 `analytics.track_failed` as in runs 15 to 17. The 24 failed-attempt snapshots were copied aside before any other run. No new flaky test, so no spec edit. docs/E2E-STATUS.md gained the run 18 row, narrative, flaky and class sections and a gates paragraph. Server stopped by PID, port free, no `next-server` left.
+
+**Gates:** `pnpm typecheck` exit 0 twice, `pnpm lint` exit 0 twice (biome 1745 files, tokens, copy, asset gates clean; once while the suite was in flight, once after the doc edit), `pnpm build` exit 0 twice (the cold mock build the suite ran against and a second build after the doc edit, BUILD_ID tFCXVKRTTgz_mZQDz5Hz_), `pnpm gate:chunks` clean on 243 pages after each. Backup 2026-10-21-2140 present and under 24h, three kept (10-21-0201, 10-21-1241, 10-21-2140), nothing to delete; caffeinate alive (two processes), SleepDisabled 1.
+
+**החלטות שהתקבלו לבד:**
+- Classes A and C are environment gaps (admin fixture password, mail key), not product or spec defects, so no fix was attempted; both need a credential only Ofir can supply and the action items in the doc already name the remedy.
+- Supabase MCP and GitHub MCP not needed: no DB, RLS, migration or PR in an e2e measurement pass. No tests added: no src or script change.
+- STATE.md is at 5,099 lines against its 300-line cap because the loop harness appends three-line blocks from outside the repo; this block was added at the top as every LOOP_4 pass does and no archive was cut, since trimming shared history is outside this goal.
+- MAINTENANCE_LOOP_5 is left to the loop harness, which pops `~/ke-goals/queue.txt` one goal per session; starting it here would put two agents on the same repo.
+
+**המשך מ:** MAINTENANCE_LOOP_5 (head of `~/ke-goals/queue.txt`): check all cron routes' last-run timestamp via Vercel MCP get_runtime_logs, alert in docs/CRON-STATUS.md if any route is stale over 24h, commit as chore ops cron status check, push.
+
 ## ✅ MAINTENANCE_LOOP_9 (Session: 2026-10-21 17:19-17:35 UTC, Supabase DB performance check, fifteenth measured pass, MEASURED, no alert)
 
 **Goal:** Verify the Supabase connection pool and query performance via Supabase MCP, alert in docs/DB-STATUS.md if slow queries over 500 ms exist, commit as chore ops db performance check, push.

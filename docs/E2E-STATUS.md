@@ -1,9 +1,9 @@
 # E2E Test Status
 
-**Last run:** 2026-10-21 16:43 UTC, run 17, MAINTENANCE_LOOP_4 fourteenth cycle
-**Base commit:** e77278cb3 on `autopilot` (the only `src/` or `e2e/` change since 22dfe27dd is
-fd90e9ae0, the keyboard-focus probe fix of the thirteenth cycle; this cycle edits nothing
-under `src/` or `e2e/`)
+**Last run:** 2026-10-21 18:05 UTC, run 18, MAINTENANCE_LOOP_4 fifteenth cycle
+**Base commit:** 0e268cc7b on `autopilot` (`git log e77278cb3..0e268cc7b -- src e2e
+playwright.config.ts` is empty: the eleven commits between are the MAINTENANCE_LOOP_5 to
+LOOP_3 passes, STATE.md, docs and logs only; this cycle edits nothing under `src/` or `e2e/`)
 **Recipe:** `CARDCOM_USE_MOCK=true CHECKOUT_ENABLED=true NEXT_PUBLIC_APP_URL=http://localhost:3417 pnpm build`,
 then `pnpm start` on port 3417 with the same three variables, then
 `E2E_BASE_URL=http://localhost:3417 E2E_FORWARDED_FOR_PREFIX=10.44.96 pnpm exec playwright test --retries=1 --reporter=list,json`.
@@ -32,6 +32,7 @@ when it failed and then passed on a retry; a case that failed on every attempt i
 | 15, ab7fa416c, 2026-10-21 13:35 UTC, `--retries=1`, prefix 10.44.96, build 7HGQ9OvvKcLrCKwcnSBtf (cold) | 680 | 661 | 12 | 0 | 7 | 21.7 min |
 | 16, 22dfe27dd, 2026-10-21 14:58 UTC, `--retries=1`, prefix 10.44.97, build j7-WaVUWnKwnfghpaY4hR (cold) | 680 | 660 | 12 | 1 | 7 | 22.1 min |
 | 17, e77278cb3, 2026-10-21 16:21 UTC, `--retries=1`, prefix 10.44.99, build EFd62lLJdXFtWSFKDhBBn (cold) | 680 | 661 | 12 | 0 | 7 | 21.5 min |
+| 18, 0e268cc7b, 2026-10-21 17:43 UTC, `--retries=1`, prefix 10.44.100, build VAPXG7nLs1eaWjN5UtxU- (cold) | 680 | 661 | 12 | 0 | 7 | 21.7 min |
 
 Run 9 is the full run on this cycle's fix and run 8 is the same tree before it. Nothing
 under `src/` or `e2e/` changed between 0d2462751 and 61e3d855f (STATE.md and docs only),
@@ -177,6 +178,44 @@ phone-code send) and 19 `analytics.track_failed` (19 in runs 15 and 16 too). Sev
 consecutive run without the run 10 shortfall. The 24 failed-attempt `error-context.md`
 snapshots were copied to `/tmp/ke-e2e17/snapshots/` before anything else ran, closing the
 run 16 measurement gap.
+
+Run 18 (MAINTENANCE_LOOP_4 fifteenth cycle) re-measures the run 17 tree: `git log
+e77278cb3..0e268cc7b -- src e2e playwright.config.ts` is empty (the eleven commits between are
+the MAINTENANCE_LOOP_5 to LOOP_3 passes, STATE.md, docs and logs only), so the product is
+run 13's and the specs are run 17's. Cold build as in runs 14 to 17 (`.next/cache/turbopack`
+moved to `/tmp/ke-e2e18/turbopack-cache-aside` first, BUILD_ID VAPXG7nLs1eaWjN5UtxU-,
+`pnpm gate:chunks` clean on 243 pages before the server started; the 3417 listener verified
+by PID 86407 and working directory through `/usr/sbin/lsof`, the BUILD_ID read back from the
+served HTML, stopped by PID after, port free, no `next-server` process left). 680 cases,
+661 passed, 12 failed, **0 flaky**, 7 skipped, 21.7 minutes (JSON reporter: start
+17:43:14Z, duration 1,303,026 ms; run 17 was 1,288,706 ms). The counts are run 17's to the
+case, and the 12 reds are the same 12 cases as runs 13 to 17, every one red on both attempts
+(admin-product-crud 20.3 to 20.7 s per attempt, admin-refund and admin-refund-to-wallet 59 to
+69 s, physical-purchase 40 s on chromium and the 120 s timeout on mobile-chrome), every one at
+one of the two laptop gaps (classes A and C below). Logs in `/tmp/ke-e2e18/`:
+**0 `supabase.timeout`** events, 2 HTTP 5xx in the whole run, both
+`/api/checkout/phone-otp/send` (class C, 17:52:29Z and the retry at 17:53:09Z, 502 after
+2,215 and 2,283 ms), 9 `purchase`, 9 `begin_checkout`, 9 `invoices.issued`,
+1 `voucher_redeemed`, 11 `email.refused` (all 401, 2 of them the phone-code send) and
+19 `analytics.track_failed` (19 in runs 15 to 17 too). Eighth consecutive run without the
+run 10 shortfall. The 24 failed-attempt `error-context.md` snapshots were copied to
+`/tmp/ke-e2e18/snapshots/` before anything else ran; 20 carry the admin sign-in refusal and
+4 the address step of physical-purchase. `pnpm typecheck` and `pnpm lint` ran while the suite
+was in flight, as in run 16, and no case moved for it.
+
+## Flaky (run 18)
+
+None. All 661 passes were first-attempt passes, the 12 reds failed on both attempts, and the
+JSON reporter's `flaky` count is 0. Second consecutive run with no flake since the run 16
+keyboard focus probe was fixed. Nothing to fix under the "new flaky tests" heading, and
+nothing under `src/` or `e2e/` changed this cycle.
+
+## Failures by class (run 18, 12)
+
+| # | Class | Cases | Evidence | Kind |
+| -: | --- | ---: | --- | --- |
+| A | Admin fixture cannot sign in | 10 | admin-product-crud, all three cases on both projects (20.3 to 20.7 s per attempt), plus admin-refund and admin-refund-to-wallet on both projects (59 to 69 s per attempt, after the customer leg paid: 9 `purchase` and 9 `invoices.issued` in the server log): all 20 `error-context.md` snapshots (copied aside before any re-run) carry "כתובת אימייל או סיסמה שגויים" under the password field. Unchanged from runs 11 to 17: `.env.local` carries `E2E_ADMIN_EMAIL` only and the default password is refused by the hosted project | environment |
+| C | Shipping phone code cannot be sent from this laptop | 2 | physical-purchase. chromium, both attempts, 40 s: both snapshots show "לא הצלחנו לשלוח קוד" on the address step. mobile-chrome, both attempts: the 120 s test timeout on the one-page layout's address step with "קוד חד-פעמי בוואטסאפ" on screen. Server log: `email.refused` 401 "API key is invalid" from `/api/checkout/phone-otp/send` twice (17:52:29Z and the retry at 17:53:09Z), each answered 502 to the page; the same `RESEND_API_KEY` refusal logs 9 more times from `checkout.begin` without failing those journeys | environment |
 
 ## Flaky (run 17)
 
@@ -528,6 +567,15 @@ and held again in runs 8 and 9: zero reds in classes 13 and 14, zero flaky cases
   without it the second run of the hour reports the limiter as 14 cart failures.
 
 ## Gates after the changes
+
+Run 18 tree (0e268cc7b plus this doc and STATE.md, nothing under `src/` or `e2e/`):
+`pnpm typecheck` exit 0 and `pnpm lint` exit 0 (biome, tokens, copy and asset gates clean),
+both run while the suite was in flight and again after the doc edit. The build gate is the
+cold mock build the suite ran against, `CARDCOM_USE_MOCK=true CHECKOUT_ENABLED=true
+NEXT_PUBLIC_APP_URL=http://localhost:3417 pnpm build` exit 0, BUILD_ID VAPXG7nLs1eaWjN5UtxU-,
+`pnpm gate:chunks` clean on 243 prerendered pages, plus a second `pnpm build` exit 0 after
+the doc edit. The previous turbopack cache was moved to `/tmp/ke-e2e18/turbopack-cache-aside`,
+not deleted. No spec or product change this cycle, so no vitest scope to re-run.
 
 Run 17 tree (e77278cb3 plus this doc and STATE.md, nothing under `src/` or `e2e/`):
 `pnpm typecheck` exit 0, `pnpm lint` exit 0 (biome, tokens, copy and asset gates clean, run
