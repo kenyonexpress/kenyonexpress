@@ -269,3 +269,4 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-21 01:32 | home | 380 | 8.51% | PASS | `da214d37d` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
 | 2026-10-21 01:34 | home | 768 | 9.80% | PASS | `da214d37d-dirty` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
 | 2026-10-21 01:36 | home | 1440 | 8.10% | PASS | `da214d37d-dirty` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
+| 2026-10-21 02:46 | home | 1440 | 8.10% | PASS | `6a6b1c212` | ref 141 failed to load (101 script, 37 font, 2 stylesheet, 1 xhr) |
