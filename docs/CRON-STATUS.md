@@ -1,6 +1,6 @@
 # Cron Routes Status
 
-**Last check:** 2026-10-21 06:41 UTC (MAINTENANCE_LOOP_5, seventh run; MCP `get_runtime_logs` called in-session twice, 403 both times; CLI fallback measured over 24h and 7d)
+**Last check:** 2026-10-21 06:41 UTC (MAINTENANCE_LOOP_5, seventh run; MCP `get_runtime_logs` called in-session four ways and `get_runtime_errors` once, 403 all five times; CLI fallback measured over 24h and 7d)
 **Status:** 🔴 CRITICAL, unchanged since 2026-10-20 13:15 UTC (seventh consecutive measurement). All 5 `vercel.json` routes are stale over 24h with 0 hits in 7 days. The only 2xx in 7 days is `/api/cron/health`, twice, at 2026-10-19 04:55 UTC (a manual probe after the deploy), which is itself almost 50h stale. Every other hit is 401 or 404. The only live scheduler is pg_cron inside the database (01:30 UTC today).
 
 ## How this was measured
@@ -459,7 +459,9 @@ unchanged and none is reachable from this loop. Gates on this branch at the time
 
 ## History
 
-- 2026-10-21 06:41 UTC: seventh run. MCP `get_runtime_logs` 403 twice (7d filtered, `group_by=requestPath` 24h), 0 rows.
+- 2026-10-21 06:41 to 06:46 UTC: seventh run. MCP 403 five times, 0 rows: `get_runtime_logs` 7d filtered, `group_by=requestPath` 24h,
+  `deploymentId=dpl_AP18UQwUQdhd3XWNo41seDQvAcuA` 7d, staging project `prj_7Ar3dFtaIqemo7bc1Fg7SMh11joY` 7d, and `get_runtime_errors`
+  scoped to the five `vercel.json` routes (request `wp6pv-1792565190546`, "project does not exist or you do not have access").
   CLI: 2 × 200 in 7d, both `health` on 19.10 04:55 UTC (49h 46m old); 0 × 5xx; 24h window 26 × 401 + 24 × 404 (cap 50);
   `crons ls` 5/5 not deployed; production alias unchanged on `dpl_AP18UQwUQdhd3XWNo41seDQvAcuA`; 6/6 latest `cron.yml`
   runs failed, newest `39552098825` at 05:53 UTC; pg_cron nightly succeeded at 01:30 UTC. All 5 routes stale over 24h.
