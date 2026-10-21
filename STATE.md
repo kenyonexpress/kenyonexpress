@@ -2,6 +2,36 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_6 (Session: 2026-10-21 08:27 UTC — Mobile Gate Check)
+
+**Goal:** Recheck Mobile Gate score via scripts/compare.mjs. If above 11%, requeue mobile fix goal at head of queue. Report current score to docs/GATE-STATUS.md. Commit as chore qa mobile gate check. Push.
+
+**Result:** COMPLETE ✓ (Gate FAILING, mobile fix goal queued)
+
+**What Was Done:**
+1. ✅ Ran compare.mjs --page=home --widths=1440
+2. ✅ Measured score: **23.91%** (exceeds 11% threshold)
+3. ✅ Updated docs/GATE-STATUS.md with fresh measurement
+4. ✅ Identified worst bands: y1100-1200 (67.5%), y1200-1300 (63.1%), y1600-1700 (61.5%)
+5. ✅ Requeued MOBILE_FIX_GATE at head of ~/ke-goals/queue.txt
+6. ✅ All quality gates passing
+
+**Gate Score:**
+- **Current:** 23.91% at 1440px
+- **Threshold:** 11%
+- **Status:** ❌ FAILING (12.91% over threshold)
+- **Best Known:** 8.29% (tolerance: 0.5%)
+
+**Action Taken:**
+Mobile fix goal added to head of queue for immediate attention.
+
+**Commit:**
+- `ac25c3440` - [autopilot] chore qa mobile gate check: MAINTENANCE_LOOP_6
+
+**המשך מ:** MAINTENANCE_LOOP_6 COMPLETE. Mobile gate failing at 23.91%. Fix queued at head. MOBILE_FIX_GATE now in active queue. Proceeding to MAINTENANCE_LOOP_7.
+
+---
+
 ## ⛔ MAINTENANCE_LOOP_9 (Session: 2026-10-21 08:23 UTC — Supabase DB Performance Check — BLOCKED)
 
 **Goal:** Verify Supabase connection pool and query performance **via Supabase MCP**. Alert in docs/DB-STATUS.md if slow queries over 500ms exist. Commit as chore ops db performance check. Push.
