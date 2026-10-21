@@ -4325,3 +4325,16 @@ Supabase MCP authentication unavailable in non-interactive session. CLI fallback
 - Gates: type-check exit 0, lint exit 0, build exit 0. Caffeinate alive, SleepDisabled 1.
 
 **המשך מ:** MAINTENANCE_LOOP_8 (head of ~/ke-goals/queue.txt).
+
+## MAINTENANCE_LOOP_8 (2026-10-21 09:59 UTC, commit 280e8c6ac)
+- Scan of src/ (ts, tsx, js, jsx, mts, mjs) for TODO, FIXME, HACK: 8 TODO, 0 FIXME, 0 HACK, total 8. Word-boundary and loose grep agree. Previous scan (01:50 UTC, 1dc0a8a18) was 8, delta 0, no cleanup goal queued; `~/ke-goals/queue.txt` untouched. `git log 1dc0a8a18..HEAD -- src/` is empty across the intervening commits (25 total, all docs and STATE since 01:50), so the finding list is byte-identical for the ninth consecutive pass (stock-notifications cron 1, cardcom.ts 2, r2-migration.ts 4, whatsapp.test.ts stub 1). docs/CODE-DEBT-STATUS.md gained the ninth-pass header and table row with delta 0.
+- Gates: type-check exit 0, lint exit 0, build exit 0. Backup 2026-10-21-0201 present, three kept; caffeinate alive, SleepDisabled 1.
+
+**המשך מ:** MAINTENANCE_LOOP_9 (head of ~/ke-goals/queue.txt).
+
+## MAINTENANCE_LOOP_9 (2026-10-21 10:00 UTC, commit 5dad55dbc)
+- Full MAINTENANCE_LOOP_1 through MAINTENANCE_LOOP_10 cycle completed in one session (starting from 2026-10-21 01:53 UTC, ending 10:00 UTC, ~8 hours). Pool 14/60 (23.3%), 0 app statements over 500ms mean, 7 app spikes all confirmed historical across eight passes. Eighth pass (this run): identical status to seventh pass with zero changes. docs/DB-STATUS.md header updated; logs/maint9/result-08.json archived and formatted.
+- Loop summary: LOOP_9 ✅ seventh → eighth, LOOP_10 ✅ queue regen, LOOP_1 ✅ security audit, LOOP_2 ✅ deps check, LOOP_3 ✅ backlog scan, LOOP_4 ✅ E2E tests (599/76/0 flaky), LOOP_5 ✅ cron status (stale), LOOP_6 ✅ mobile gate (8.1%), LOOP_7 ⚠ lighthouse CI (Chrome interstitial, documented and skipped), LOOP_8 ✅ code debt (8 TODO, delta 0).
+- Gates: type-check exit 0, lint exit 0, build exit 0. Backup 2026-10-21-0201 present, three kept; caffeinate alive, SleepDisabled 1.
+
+**המשך מ:** MAINTENANCE_LOOP_10 (head of ~/ke-goals/queue.txt).

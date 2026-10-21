@@ -1,6 +1,6 @@
 # Database Status Report: Connection Pool and Query Performance
 
-**Last Updated:** 2026-10-21 01:59 UTC (MAINTENANCE_LOOP_9 seventh measured pass, through the Supabase MCP)
+**Last Updated:** 2026-10-21 10:00 UTC (MAINTENANCE_LOOP_9 eighth measured pass, through the Supabase MCP)
 **Previous Run:** 2026-10-21 01:53 UTC (sixth measured pass; 23:56 UTC was the fifth, 22:45 UTC the fourth, 21:24 UTC the third, 18:21 UTC the second, 16:24 UTC the first, and the 13:23 UTC report before it was code analysis only)
 **Scope:** Supabase connection pool, pooler configuration, pg_stat_statements, performance advisors
 **Evidence:** `logs/maint9/result.json` (every probe row), `logs/maint9/pooler.json`, `logs/maint9/pgbouncer.json`, `logs/maint9/rate-limit-probe.json` (the follow-up on the one new spike, section 4)
