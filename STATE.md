@@ -4551,3 +4551,10 @@ Supabase MCP authentication unavailable in non-interactive session. CLI fallback
 - Gates: typecheck exit 0, lint exit 0 (1726 files, three gates clean), build exit 0 (q9JR2WCyELCdB18tCMDAe) with `pnpm gate:chunks` clean on 243 pages, vitest on the touched areas 37 files / 414 passed. Backup 2026-10-21-1241 present, three kept; caffeinate alive (two processes), SleepDisabled 1. 3417 listener stopped by PID.
 
 **המשך מ:** MAINTENANCE_LOOP_5 (head of ~/ke-goals/queue.txt).
+
+## MAINTENANCE_LOOP_6 (2026-10-21 10:08 UTC, eighth recheck, commit 2007b5278)
+- Mobile gate on 26b9673fa (clean tree, `pnpm start` port 3351 from this worktree, pid 24763 and cwd verified by `lsof`, stopped by pid; build g0ShL3lKnGaKr3xKu55Xi of the same HEAD, chunk gate clean before the run): home 380 8.53%, 768 9.79%, 1440 8.08%, all PASS under 11%. Third consecutive run identical to the hundredth and the first measurement of the E2E run 12 tree (`13021b20c`, no home-page files). Reference shortfall 141 on the 380 cold load, 96 after; the 08:38 own-side caveat stayed silent (6 / 6 / 5 local-origin drops only). No mobile fix goal requeued. docs/GATE-STATUS.md gained the block at the top; the three ledger rows are in docs/UI-PARITY-REPORT.md. Committed 2007b5278, pushed.
+- Decided alone: reused the 10:02 UTC build of the same HEAD rather than rebuilding first (tree clean, chunk gate clean, BUILD_ID two minutes younger than the commit). The two `Partner API ... needs to bail out of prerendering` lines in the post-measurement build log are the route's own `console.error` inside its catch during static analysis (unchanged since STEP 80 `b39fdbeb9`, build exit 0); logged here, not touched.
+- Gates: typecheck exit 0, lint exit 0 (1726 files, three gates clean), build exit 0 (Z6Yz5J_tJLBM5FfB2Dy0E) with `pnpm gate:chunks` clean on 243 pages. Backup 2026-10-21-1241 present, three kept; caffeinate alive (two processes), SleepDisabled 1.
+
+**המשך מ:** MAINTENANCE_LOOP_7 (head of ~/ke-goals/queue.txt).
