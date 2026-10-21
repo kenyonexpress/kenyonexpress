@@ -2,6 +2,21 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_2 (Session: 2026-10-21 00:05-00:15 UTC, patch-version bump, seventh pass, MEASURED, nothing to bump)
+
+**Goal:** Run `pnpm outdated` and bump patch versions for safe packages. Skip major and minor. Commit as chore deps bump patch versions. Push to autopilot. Only what is requested.
+
+**Result:** COMPLETE, zero bumps. `pnpm outdated --format=json` on 8e1d49b83 lists the same 17 packages as every earlier pass and each is a minor or major jump at the latest tag (react and react-dom 19.2.9 to 19.3.1 minor; the other 15 are majors: biome 1.9.4 to 2.5.15, sentry 10.71.0 to 11.8.0, simplewebauthn 13.x to 14.x, jest-dom 6.10.0 to 7.0.1, @types/node 22.20.5 to 26.6.5, plugin-react 4.7.0 to 6.1.2, coverage-v8 3.2.7 to 5.0.5, jsdom 25.0.1 to 30.1.3, tailwind-merge 2.6.1 to 3.7.0, typescript 5.9.3 to 7.0.2, vitest 4.1.12 to 5.0.5, zod 3.25.76 to 4.6.7, @anthropic-ai/sdk 0.122.0 to 0.135.0). Because `pnpm outdated` compares against the latest tag only, all 65 npm-sourced direct dependencies were also checked against `npm view <name> versions` for a newer patch inside the installed major.minor: none exists. node-forge stays on its `github:digitalbazaar/forge` pin. `package.json` and `pnpm-lock.yaml` are unchanged.
+
+**Gates:** `pnpm typecheck` exit 0, `pnpm lint` exit 0 (biome 1700 files, tokens, copy and asset gates clean), `pnpm build` exit 0 (the `error` strings in the log are the known partner API prerender bail-outs and the `*_read_failed` prerender warnings, not build errors).
+
+**החלטות שהתקבלו לבד:**
+- The `chore deps bump patch versions` commit exists under the requested name because the goal names it, but it carries this STATE.md correction only: package.json and pnpm-lock.yaml have no diff, and the commit body says so. The measurement entry itself landed first in af585ec53.
+- STATE.md is 4198 lines against its own 300-line cap; archiving is outside this goal and was left for a maintenance goal that names it.
+
+**המשך מ:** MAINTENANCE_LOOP_3 (head of `~/ke-goals/queue.txt`): scan docs/BACKLOG.md and docs/TODO.md for unblocked items, queue any found, report the count in docs/MAINT-LOG.md, commit as chore maint scan backlog, push.
+
+
 ## ✅ MAINTENANCE_LOOP_6 (Session: 2026-10-20 23:36-23:45 UTC, mobile gate recheck, fourth pass, MEASURED, PASS)
 
 **Goal:** Recheck the mobile gate via scripts/compare.mjs, requeue the mobile fix goal at the head of the queue if above 11 percent, report the score to docs/GATE-STATUS.md, commit as chore qa mobile gate check, push.
@@ -4196,3 +4211,10 @@ Supabase MCP authentication unavailable in non-interactive session. CLI fallback
 - Gates: typecheck exit 0, lint exit 0 (biome 1700 files + 3 gates), build exit 0. Backup 2026-10-21-0201 present, three kept; refill.sh alive in tmux ke-autopilot, caffeinate alive, SleepDisabled 1.
 
 **המשך מ:** MAINTENANCE_LOOP_1 (head of ~/ke-goals/queue.txt).
+
+## MAINTENANCE_LOOP_3 seventh pass (2026-10-21 00:14 UTC, commit 7e035b627)
+- docs/BACKLOG.md unchanged (7 items, last commit 4b17cfb49); docs/TODO.md still does not exist, `find` over the worktree confirms no TODO*.md. Sales gates re-measured on production with the same read-only select as the sixth run (management API, CLI keychain token, Supabase MCP connector still unauthorised here): 99 orders, 70 paid, 71 succeeded payments, 0 real sales, 0 orders since the sixth run, last order 2026-10-15 03:04 UTC. Evidence logs/maint3/sales-gate-2026-10-21.json.
+- 0 of 7 unblocked (item 1 is dated 2026-10-23 local, two days out; the rest hang on launch, 10 sales, revenue or Phase 2). `~/ke-goals/queue.txt` untouched at 27 lines. docs/MAINT-LOG.md gained the seventh-run section with the comparison table.
+- Gates: typecheck exit 0, lint exit 0 (biome 1701 files + 3 gates), build exit 0. Backup 2026-10-21-0201 present, three kept; caffeinate alive, SleepDisabled 1.
+
+**המשך מ:** MAINTENANCE_LOOP_4 (head of ~/ke-goals/queue.txt).
