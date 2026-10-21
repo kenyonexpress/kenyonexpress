@@ -1,12 +1,34 @@
 # Lighthouse CI Status Report
 
-**Last Updated:** 2026-10-21 18:34 UTC (MAINTENANCE_LOOP_7, fifteenth pass)
-**Measurement Method:** `LHCI_BASE_URL=http://localhost:3401 COMPARE_PRODUCT_SLUG=<slug> pnpm lhci:autorun`
+**Last Updated:** 2026-10-21 20:06 UTC (MAINTENANCE_LOOP_7, sixteenth pass)
+**Measurement Method:** `LHCI_BASE_URL=http://localhost:3411 COMPARE_PRODUCT_SLUG=<slug> pnpm lhci:autorun`
 (`@lhci/cli` 0.15.1 via `pnpm dlx`, Lighthouse 12.6.1, Chrome 155, `desktop` preset, 3 runs per URL, lhci median)
-**Build:** commit `32a68832c` (clean tree, no `src/` change since the fourteenth pass's `f618f1080`; `git log f618f1080..32a68832c -- src/ next.config.ts package.json` is empty and the eleven commits between touch only `STATE.md`, `docs/` and `logs/`), **cold** `pnpm build` exit 0 with `.next/cache/turbopack` moved to `/tmp/ke-lh15/` first, BUILD_ID `zIrfmtc1R4HbtK0Z0ohz5`, `pnpm gate:chunks` clean on 243 prerendered pages before the server started, served by `pnpm start` from this worktree on port 3401 (listener pid 12612, cwd verified by `lsof` as this checkout, BUILD_ID present once in the served home HTML, port had 0 listeners beforehand, killed by pid afterwards and the port confirmed closed). `pnpm type-check` and `pnpm lint` ran clean alongside.
-**Reports:** `.lighthouseci/reports/` (git-ignored, nothing uploaded; the 17:12 reports were moved to `/tmp/ke-lh15/prev-reports` so the manifest holds only this pass)
+**Build:** commit `c6bd2d58a` (clean tree, no `src/` change since the fifteenth pass's `32a68832c`; `git log 32a68832c..c6bd2d58a -- src/ next.config.ts package.json` is empty and the eleven commits between touch only `STATE.md`, `docs/` and `logs/`), **cold** `pnpm build` exit 0 with `.next/cache/turbopack` moved to `/tmp/ke-lh16/` first, BUILD_ID `JHpX1BqW0nQ3rr5TdjYR2`, 311 static pages, `pnpm gate:chunks` clean on 243 prerendered pages before the server started, served by `pnpm start` from this worktree on port 3411 (listener pid 63223, cwd verified by `lsof` as this checkout, BUILD_ID present once in the served home HTML, port had 0 listeners beforehand, killed by pid afterwards and the port confirmed closed). `pnpm type-check` and `pnpm lint` ran clean after the measurement, not during it.
+**Reports:** `.lighthouseci/reports/` (git-ignored, nothing uploaded; the 18:34 reports were moved to `/tmp/ke-lh16/prev-reports` so the manifest holds only this pass)
 
 ## Summary
+
+✅ **Every category at or above 90 on all three URLs, in all nine runs.** No optimisation goal queued; `~/ke-goals/queue.txt` untouched.
+✅ **Performance 98 to 99** on the representative runs (target ≥ 90); the nine individual runs are 98 to 99
+✅ **Accessibility 100** in all nine runs (target ≥ 90), fourteenth consecutive pass holding the A11Y_FIX_PRODUCTS_LIGHTHOUSE result
+✅ Best Practices 96 and SEO 100 everywhere
+✅ Chunk gate clean before measuring, so the scores are for pages that hydrate (see the eighth pass for the failure this guards)
+
+| URL | Performance | Accessibility | Best Practices | SEO | FCP | LCP | TBT | CLS | Status |
+|-----|-------------|----------------|----------------|-----|-----|-----|-----|-----|--------|
+| `/` | 99 (99, 99, 99) | 100 (100, 100, 100) | 96 | 100 | 0.5 s | 1.0 s | 0 ms | 0.010 | ✅ PASS |
+| `/products` | 99 (98, 99, 99) | 100 (100, 100, 100) | 96 | 100 | 0.4 s | 0.9 s | 0 ms | 0.006 | ✅ PASS |
+| `/product/אוזניות-איירפודס-3` | 98 (98, 99, 98) | 100 (100, 100, 100) | 96 | 100 | 0.4 s | 1.1 s | 0 ms | 0.019 | ✅ PASS |
+
+The first number is lhci's representative (median) run, the bracket lists all three runs in chronological order. Metrics are from the representative run.
+
+No weighted audit below 0.9 in any category except `errors-in-console` under Best Practices (weight 1), which is the same five local-environment items as every previous pass (two `/_vercel/*` 404s, two "Refused to execute" on their `text/plain` answer, one `ERR_SSL_PROTOCOL_ERROR` on the https prefetch of `/login?next=/account/wishlist` against the plain-http localhost origin), checked item by item on all nine reports with the category `auditRefs` weights. No `/_next/*` request failed on any page; the only failed requests on all nine runs are the two `/_vercel/*` scripts and that one https prefetch (listed twice in the network table as two requests to one URL). Zero `runWarnings` on all nine reports.
+
+Against the 18:34 pass: `/` 99 unchanged (its three runs read 99, 99, 99 against 99, 99, 98), `/products` moved 98 to 99 on the representative run (98, 99, 99 against 98, 99, 100), the product page moved 99 to 98 (98, 99, 98 against 99, 99, 98). **No `src/` commit landed in between**, so this is the same tree inside the localhost band described in `docs/PERFORMANCE-BUDGET.md`; the two one-point moves cancel and every individual run is 98 or 99. LCP 1.0 / 0.9 / 1.1 s on the representative runs (the nine runs span 0.8 s to 1.1 s), against 1.0 / 1.0 / 0.9 s; FCP 0.5 s on the `/` representative run against 0.5 s, 0.4 s everywhere else; TBT 0 ms in all nine runs; CLS 0.010 / 0.006 / 0.019 against 0.021 / 0.018 / 0.019, the per-run toss between two layout states the thirteenth pass described (the three `/` runs read 0.021, 0.010, 0.010 and the three `/products` runs 0.006, 0.018, 0.006 this time), all far under the 0.1 good threshold. The `CHROME_INTERSTITIAL_ERROR` of the 02:59 UTC attempt did not reproduce for a ninth consecutive pass. Wall time for the nine runs 2 min 33 s (20:03:06 to 20:05:39 UTC, including the `pnpm dlx` resolve). The build log's 46 `reviews.read_failed 42501` lines and four Partner API bail-out lines are the documented pre-existing build-time noise (`docs/MAINT-LOG.md`), build exit 0.
+
+## Previous pass (2026-10-21 18:34 UTC, MAINTENANCE_LOOP_7, fifteenth pass)
+
+Build: commit `32a68832c`, BUILD_ID `zIrfmtc1R4HbtK0Z0ohz5` (cold build, `.next/cache/turbopack` moved aside first, chunk gate clean on 243 pages, served on port 3401).
 
 ✅ **Every category at or above 90 on all three URLs, in all nine runs.** No optimisation goal queued; `~/ke-goals/queue.txt` untouched.
 ✅ **Performance 98 to 99** on the representative runs (target ≥ 90); the nine individual runs are 98 to 100
