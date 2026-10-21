@@ -201,9 +201,16 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
-      // Printed QR cards and older docs name /scan; the live screen is under
-      // the supplier portal. Keep the short path as a permanent alias.
-      { source: '/scan', destination: '/supplier/scan', permanent: true },
+      // NO `/scan` -> `/supplier/scan` rule here. The scanner LIVES at /scan
+      // (app/(supplier)/scan/page.tsx, short enough to type at a till) and
+      // /supplier/scan is its legacy alias. From 2026-08-02 this list carried
+      // the opposite rule, a 308 to /supplier/scan, so the two redirects
+      // chased each other: measured 2026-10-21, a signed-in supplier opening
+      // either path looped between them until the browser gave up, and the
+      // full purchase-to-redeem journey never saw the scanner. The page under
+      // /supplier/scan keeps its redirect to /scan (e2e/coupon-scan.spec.ts
+      // pins that the old address lands on /scan or /login); a browser that
+      // cached the 308 keeps looping until that cache entry expires.
       // The business-join page lives at /suppliers; /supplier/apply is the
       // address the brief and outbound mail use, and /supplier/* is the
       // login-gated portal.

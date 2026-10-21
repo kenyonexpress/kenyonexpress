@@ -188,7 +188,15 @@ async function CheckoutReturnBody({ searchParams }: Props) {
                         longitude: coupon.productLongitude,
                       }}
                     />
-                    <div className="coupon-card__code" dir="ltr">
+                    {/* The two test ids are the money journey's handle on the
+                        voucher it just bought (e2e/full-purchase-redeem.spec.ts
+                        reads the code here and types it into the supplier
+                        scanner). They were on this card in e486b868e and fell
+                        off in a redesign; measured 2026-10-21, the spec reached
+                        this page with a paid order and a rendered card and
+                        failed on `getByTestId('coupon-code')`. Same ids as
+                        app/coupon/[id]/page.tsx. */}
+                    <div className="coupon-card__code" dir="ltr" data-testid="coupon-code">
                       {formatVoucherCode(coupon.code)}
                     </div>
                     {coupon.collect_amount_agorot > 0 && (
@@ -225,7 +233,7 @@ async function CheckoutReturnBody({ searchParams }: Props) {
                     </a>
                   </div>
                   {coupon.qrDataUrl && (
-                    <div className="coupon-card__qr">
+                    <div className="coupon-card__qr" data-testid="coupon-qr">
                       <Image
                         src={coupon.qrDataUrl}
                         alt={`קוד QR לקופון ${coupon.code}`}

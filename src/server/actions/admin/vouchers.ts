@@ -68,7 +68,7 @@ async function loadByCode(code: string): Promise<VoucherLookupRow | null> {
       `id, code, status, face_value_agorot, coupon_price_agorot,
        remaining_amount_due_agorot, expires_at, redeemed_at, supplier_id,
        product:products(name_he),
-       supplier:suppliers(name)`,
+       supplier:suppliers!vouchers_supplier_id_fkey(name)`,
     )
     .eq('code', code)
     .maybeSingle()

@@ -191,6 +191,27 @@ describe('the checkout confirm step', () => {
     expect(container.querySelector('[name="save_card"]')).toBeNull()
   })
 
+  it('offers the saved cards and the wallet on the confirm step, where the wizard pays', () => {
+    // Both blocks sit inside the confirm panel, and until 2026-10-21 each was
+    // also gated `step !== 'confirm'`: rendered on the one-page layout, where
+    // the step never leaves 'details', and unmounted on the wizard the moment
+    // its panel came on screen, so a desktop shopper never saw a saved card or
+    // the wallet and the post carried no token_id. A saved address answers the
+    // first two steps, so the stepper can jump straight to the last.
+    const { container } = renderCheckout({
+      address: { ...EMPTY_ADDRESS, id: 'addr-1' },
+      walletBalance: 25,
+      savedCards: [{ id: 'tok-1', last4: '4242', brand: 'visa', isDefault: true }],
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'אישור ותשלום' }))
+    expect(container.querySelector('.checkout-pay-btn')?.closest('[data-inactive]')).toBeNull()
+    expect(container.querySelectorAll('[name="token_id"]')).toHaveLength(2)
+    expect(container.querySelector<HTMLInputElement>('[name="token_id"]:checked')?.value).toBe(
+      'tok-1',
+    )
+    expect(container.querySelector('[name="apply_wallet_ils"]')).not.toBeNull()
+  })
+
   it('carries the client_ref it was handed, once', () => {
     // A fresh uuid per page load is minted by the server component; what this
     // guards is that the form posts exactly that one, since it is the
