@@ -814,3 +814,30 @@ MAINTENANCE_LOOP_4 because the runner pops this pass's line before the session s
 At the current cadence (roughly 85 minutes per full ten-goal cycle) that is about 13 cycles away.
 
 **Status:** COMPLETE
+
+## 2026-10-22 06:26 UTC - Backlog Scan (MAINTENANCE_LOOP_3, twentieth run)
+
+**Scanned Files:**
+- docs/BACKLOG.md: exists, 7 items, unchanged (last commit 4b17cfb49, 2026-10-16).
+- docs/TODO.md: does not exist. `find` over the worktree (node_modules excluded) returns no TODO*.md.
+
+**Backlog Items Analysis (today 2026-10-22 UTC, 2026-10-22 13:26 local UTC+7):**
+1. Group-deals re-evaluation, dated 2026-10-23: about 11 hours out local. BLOCKED.
+2. Crisp inbox, post-launch: 0 real sales, launch gate not passed. BLOCKED.
+3. Meta WhatsApp Business verification, after 10 sales: real sales remain 0 from the eighteenth run. BLOCKED.
+4. Israeli lawyer review of ToS and Privacy, after 10 sales: real sales remain 0 from the eighteenth run. BLOCKED.
+5. Capacitor or Expo native app, after revenue: 0 real revenue from the eighteenth run. BLOCKED.
+6. Courses monthly billing, Phase 2: BLOCKED.
+7. Tzimmer calendar, Phase 2: BLOCKED.
+
+**Unblocked Items Found:** 0
+
+**Action:** None. ~/ke-goals/queue.txt not modified.
+
+**Gates:** `pnpm typecheck` exit 0 (189ms), `pnpm lint` exit 0 (biome 1757 files), `pnpm build` exit 0 (311 static pages, 243 prerendered),
+`pnpm gate:chunks` clean on 243 prerendered pages.
+
+**Note:** Item 1 becomes a candidate on 2026-10-23 local (about 10.5 hours away). The run that lands on or after
+2026-10-23 00:00 local should queue it as `BACKLOG_1 Re-evaluate group deals` at the head of the queue.
+
+**Status:** COMPLETE
