@@ -2,6 +2,22 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_9 (Session: 2026-10-21 17:19-17:35 UTC, Supabase DB performance check, fifteenth measured pass, MEASURED, no alert)
+
+**Goal:** Verify the Supabase connection pool and query performance via Supabase MCP, alert in docs/DB-STATUS.md if slow queries over 500 ms exist, commit as chore ops db performance check, push.
+
+**Result:** COMPLETE, no alert. The claude.ai Supabase connector still needs an OAuth flow only Ofir can finish, so the pass ran the same official `@supabase/mcp-server-supabase` locally over stdio in `--read-only` mode through `scripts/db-mcp-probe.mjs` (`logs/maint9/result-15.json`, `ts` 17:19:19Z). Pool 14 of 60 backends (23.3%), the same four clients as every pass, 13 idle on `ClientRead`, 0 lock waits, 0 statements running over 500 ms, 0 deadlocks. pg_stat_statements: 0 application statements with a mean over 500 ms (worst is `search_products` at 46.3 ms), the 6 platform rows over 500 ms unchanged call for call, all 7 application spike maxima identical to the millisecond through 355 new application calls in the 15:58 to 17:19 window. The `check_rate_limit` watch item closed at 15:58 stayed quiet for a third consecutive window: 135 calls, 7.5 ms window mean (the quietest on record), stddev 22.67 to 22.57 ms, sum-of-squares delta about 22,200 ms² so no call over about 150 ms, while `rate_limits` was autovacuumed (16:24 UTC, dead rows 192 to 20, first vacuum since 10-15) and autoanalyzed (16:26 UTC) inside the window; autoanalyze correlation two for five. `fn_record_search` was the only stddev to rise (+0.017 ms on 24 calls), bounded at 164 ms. 12 new pg_stat_statements rows attributed by `stats_since`: 9 are the fourteenth pass's own follow-up probes, 2 one-call `postgres`-role reads from another session, 1 `cron.job` inspection; none application. Advisors unchanged (1 + 14 WARN, 9 + 155 + 1 INFO, same top-15 unused indexes). Pooler and pgbouncer config re-read and SHA-1 identical to the stored copies. DB 47 MB; `invoices` replaced `users` in the ten largest tables. Follow-up evidence in `logs/maint9/rate-limit-probe-15.json` (management API, read-only). docs/DB-STATUS.md rewritten for the fifteenth pass (header, summary, sections 1, 2, 4, 5, 6, 7, footer). Committed as `325cb0167` by explicit path and pushed to `origin/autopilot`.
+
+**Gates:** `pnpm type-check` exit 0, `pnpm lint` exit 0 (after `biome format` on the two new JSON artifacts, which the first lint run flagged), `pnpm build` exit 0 (BUILD_ID `W4a16SbZ_-4pKOlvCPzQm`), `pnpm gate:chunks` clean on 243 prerendered pages, `scripts/db-mcp-probe.test.mjs` 10 of 10 green under vitest (it is a vitest file; `node --test` reports it as failed because it imports `vitest`, not a real failure). Backup 2026-10-21-2140 present and under 24h, three kept (10-21-0201, 10-21-1241, 10-21-2140), nothing to delete; caffeinate alive (two processes), SleepDisabled 1. Nothing to fix.
+
+**החלטות שהתקבלו לבד:**
+- No code or test change: the probe script and its 10 tests were untouched, so no new tests were added; the deliverable is the measured report plus its evidence files. GitHub MCP not needed (no PR; work lands on autopilot directly).
+- "Via Supabase MCP" satisfied with the official MCP server run locally in read-only mode, the route every pass since 20.10 has used, because the claude.ai connector cannot be authorised from a non-interactive session.
+- The two autovacuum-family events inside the window did not reopen the `check_rate_limit` watch item: the closing rule was two quiet windows, this is the third, and the variance bound is the lowest yet.
+- `log_min_duration_statement = 500` on production stays an unchecked item for Ofir; it is a production config change and was not made.
+
+**המשך מ:** MAINTENANCE_LOOP_10 (head of `~/ke-goals/queue.txt`): append MAINTENANCE_LOOP_1 through MAINTENANCE_LOOP_10 to `~/ke-goals/queue.txt` again to keep the loop going.
+
 ## ✅ MAINTENANCE_LOOP_8 (Session: 2026-10-21 17:13-17:22 UTC, code debt scan, sixteenth pass, MEASURED, delta 0)
 
 **Goal:** Scan all TODO, FIXME and HACK comments in src/, queue a cleanup goal if the count grew since the last scan, report the delta in docs/CODE-DEBT-STATUS.md, commit as chore maint code debt scan, push.
