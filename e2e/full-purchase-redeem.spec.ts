@@ -177,7 +177,12 @@ test.describe('full purchase to redeem @checkout @redeem @money', () => {
     await expectHebrewRtl(scanPage)
 
     await scanPage.getByLabel('הקלדת קוד ידנית').fill(voucherCode)
-    await scanPage.getByRole('button', { name: 'המשך' }).click()
+    // "בדוק שובר", not "המשך": the manual-entry button is the lookup, and it
+    // has been named for it since the scanner split lookup from redemption.
+    // Measured 2026-10-21 (run 12), the first time this journey reached the
+    // scanner with a paid voucher: a click on a button that is not there ran
+    // the test out of its 120 s with the code already typed.
+    await scanPage.getByRole('button', { name: 'בדוק שובר' }).click()
     await expect(scanPage.getByRole('button', { name: /אשר ומַמֵש|אשר וממש/ })).toBeVisible()
     await scanPage.getByRole('button', { name: /אשר ומַמֵש|אשר וממש/ }).click()
 

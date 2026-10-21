@@ -34,7 +34,7 @@ const VOUCHER_SELECT = `id, code, qr_payload, status,
        face_value_agorot, coupon_price_agorot, remaining_amount_due_agorot,
        offer_valid_until, expires_at, issued_at, redeemed_at,
        product:products(name_he, slug),
-       supplier:suppliers(name)`
+       supplier:suppliers!vouchers_supplier_id_fkey(name)`
 
 /**
  * A voucher read, or a throw. Never a silent absence.
@@ -126,7 +126,7 @@ export async function getCustomerVoucher(id: string): Promise<CustomerVoucherDet
        face_value_agorot, coupon_price_agorot, remaining_amount_due_agorot,
        offer_valid_until, expires_at, issued_at, redeemed_at,
        product:products(name_he, slug, city, latitude, longitude),
-       supplier:suppliers(name, city, address, contact_phone, whatsapp)`,
+       supplier:suppliers!vouchers_supplier_id_fkey(name, city, address, contact_phone, whatsapp)`,
       )
       .eq('id', id)
       .eq('user_id', user.id)

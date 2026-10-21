@@ -561,8 +561,14 @@ export async function submitCheckout(
 
   const pay = form.locator('.checkout-pay-btn')
   // By its text: the phone-verification block reuses the next button's class
-  // for its own "שליחת קוד אימות" and "אימות" buttons.
-  const next = form.locator('.checkout-nav__next:visible').filter({ hasText: /^המשך/ })
+  // for its own "שליחת קוד אימות" and "אימות" buttons. `.first()` because the
+  // review step renders TWO visible next buttons, "המשך" in the left column's
+  // nav and "המשך לאישור" under the order panel, both wired to goNext
+  // (CheckoutForm.tsx, the `!isLastStep` nav and the `step === 'review'`
+  // button). Measured 2026-10-21 (run 12): once the shared-customer lock let a
+  // coupon journey reach review, the strict locator failed on both and the
+  // three coupon money specs died on "no next button" at the step that had two.
+  const next = form.locator('.checkout-nav__next:visible').filter({ hasText: /^המשך/ }).first()
   // Below 992px every step is on screen at once and the pay button is visible
   // on arrival, so the loop below never runs and the phone step was never
   // offered its code: measured 2026-10-21 (run 11), physical-purchase on
@@ -693,7 +699,12 @@ export const sharedCustomerTest = test.extend<{ sharedCustomer: undefined }>({
         releaseSharedCustomer()
       }
     },
-    { auto: true },
+    // Its own clock. Without `timeout` the wait for the lock is charged to the
+    // test's budget before `setTimeout` above can extend it: measured
+    // 2026-10-21 (run 12 re-run), the fifth journey of five waited behind four
+    // that took a minute each and died in "beforeEach" at 120 s without
+    // having opened a page.
+    { auto: true, timeout: LOCK_WAIT_MAX_MS + 60_000 },
   ],
 })
 

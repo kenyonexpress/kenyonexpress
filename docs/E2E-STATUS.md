@@ -1,10 +1,10 @@
 # E2E Test Status
 
-**Last run:** 2026-10-21 05:42 UTC, run 11, MAINTENANCE_LOOP_4 eighth cycle
-**Base commit:** d584c77b0 on `autopilot` (F41 to F43 and the residual e2e work of 2dba324b8 included)
+**Last run:** 2026-10-21 09:16 UTC, run 12, MAINTENANCE_LOOP_4 ninth cycle
+**Base commit:** d195ad97f on `autopilot` (the shared-customer lock of c61778160 included)
 **Recipe:** `CARDCOM_USE_MOCK=true CHECKOUT_ENABLED=true NEXT_PUBLIC_APP_URL=http://localhost:3417 pnpm build`,
 then `pnpm start` on port 3417 with the same three variables, then
-`E2E_BASE_URL=http://localhost:3417 E2E_FORWARDED_FOR_PREFIX=10.44.85 pnpm exec playwright test --retries=1 --reporter=list,json`.
+`E2E_BASE_URL=http://localhost:3417 E2E_FORWARDED_FOR_PREFIX=10.44.87 pnpm exec playwright test --retries=1 --reporter=list,json`.
 Two workers, both projects (chromium and mobile-chrome). A case counts as **flaky** only
 when it failed and then passed on a retry; a case that failed on every attempt is a
 **failure**. Counts come from the JSON reporter, never from the list output.
@@ -24,6 +24,7 @@ when it failed and then passed on a retry; a case that failed on every attempt i
 | 9, 61e3d855f + this cycle's fix, 00:44 UTC, `--retries=1`, prefix 10.44.85 | 682 | 619 | 56 | 0 | 7 | 17.1 min |
 | 10, c0a5bc67c, 09:29 UTC, `--retries=1`, prefix 10.44.85 (reruns from STATE.md update) | 682 | 599 | 76 | 0 | 7 | 25.0 min |
 | 11, d584c77b0, 2026-10-21 05:42 UTC, `--retries=1`, prefix 10.44.86, build r7OmwpfAttluHrQ7vq4dY | 680 | 660 | 13 | 0 | 7 | 15.9 min |
+| 12, d195ad97f, 2026-10-21 08:58 UTC, `--retries=1`, prefix 10.44.87, build CGToFZGca0ONVpVuw-rNa | 680 | 660 | 13 | 0 | 7 | 18.0 min |
 
 Run 9 is the full run on this cycle's fix and run 8 is the same tree before it. Nothing
 under `src/` or `e2e/` changed between 0d2462751 and 61e3d855f (STATE.md and docs only),
@@ -59,6 +60,124 @@ files: classes 2 to 8 and 10 to 12 of run 9 (43 cases) are green in this run, wh
 F41 to F43 work and the residual spec updates landing together, not a measurement swing. The
 13 are three causes, two of them chased to the spec and fixed this cycle (below) and one the
 fixture environment.
+
+Run 12 (MAINTENANCE_LOOP_4 ninth cycle) measured the tree after c61778160 and d195ad97f,
+the first full run with the shared-customer lock in `e2e/helpers.ts`: 680 cases, 660 passed,
+13 failed, 0 flaky, 7 skipped, 18.0 minutes, **0 `supabase.timeout` events** in the server
+log. The counts are run 11's to the case, and the 13 are the same 13 cases, every one red on
+both attempts; what moved is WHY. The lock let the coupon journeys past the point where run 11
+had stopped them (a cart shared between two workers), and each then stopped at the next thing
+in its way. Three of those were chased to code and fixed this cycle (one spec, two product,
+plus one in the lock itself), one is an environment gap filled locally, and classes A and C
+are the same laptop gaps as run 11. The verification re-runs are below the class table.
+
+## Flaky (run 12)
+
+None. All 660 passes were first-attempt passes, the 13 reds failed on both attempts, and the
+JSON reporter's `flaky` count is 0, as in runs 7 to 11. Nothing to fix under the "new flaky
+tests" heading; the deterministic reds were chased instead.
+
+## Failures by class (run 12, 13)
+
+| # | Class | Cases | Evidence | Kind |
+| -: | --- | ---: | --- | --- |
+| A | Admin fixture cannot sign in | 6 | admin-product-crud, all three cases on both projects: `waitForURL` 20 s after submit, "כתובת אימייל או סיסמה שגויים" under the password field. Unchanged from run 11: `.env.local` carries `E2E_ADMIN_EMAIL` only and the default password is refused by the hosted project | environment |
+| B1 | Desktop coupon journeys: two next buttons on the review step | 3 | admin-refund, admin-refund-to-wallet, full-purchase-redeem, chromium, both attempts, 14 to 17 s: `strict mode violation: locator('form.checkout-page__grid').locator('.checkout-nav__next:visible').filter({ hasText: /^המשך/ }) resolved to 2 elements`, "המשך" (the left column's nav) and "המשך לאישור" (under the order panel, `CheckoutForm.tsx` renders it when `step === 'review'`). Both call `goNext`. Run 11's chromium coupon journeys never reached review (class B, the shared cart), so the locator had never met the second button | spec, fixed |
+| B2 | Mobile coupon journeys: no voucher secret on this laptop | 2 | admin-refund, admin-refund-to-wallet, mobile-chrome, both attempts: pay pressed, `waitForURL` 45 s on `/checkout`. The snapshot's alert reads **"VOUCHER_QR_SECRET is not set; refusing to sign or verify voucher QR payloads"**. `.env.local` had no `VOUCHER_QR_SECRET` (`src/lib/env.ts` only requires it under a production boot without `ALLOW_INCOMPLETE_ENV`). The one-page layout posted the fixture's saved card, the order settled inline, and the voucher issue threw at the end of it; the desktop layout never got that far (B1, and then the two defects under it) | environment, filled locally |
+| C | Shipping phone code cannot be sent from this laptop | 2 | physical-purchase. chromium, both attempts: "the code step never appeared"; server log `email.refused` 401 "API key is invalid" from `/api/checkout/phone-otp/send` and a 502 to the page at 09:04:16 and 09:04:58. mobile-chrome, both attempts: the 120 s test timeout on the address step with the verification paragraph on screen, the lock wait having been charged to the test (fixed below) and the send answering 502 after it | environment |
+
+## Beneath B1: what the desktop journeys met next (re-run 1, prefix 10.44.88)
+
+With `.first()` on the next-button locator, the three coupon files were re-run on both
+projects (`--retries=0`, 6 cases): 1 passed, 5 failed, 4.2 minutes. The failures were not
+B1's, and they split by project:
+
+- **chromium, admin-refund and admin-refund-to-wallet:** past the review step, terms ticked,
+  pay pressed, and then `waitForURL(/\/checkout\/return/)` timed out at 45 s. The snapshot
+  shows the page swapped to the "תשלום מאובטח" section with an iframe for "הזמנה 24960f06",
+  and the server log has `begin_checkout` for each (09:17:56, 09:18:57) and **no purchase**.
+- **mobile-chrome, the same two specs:** paid. `begin_checkout` at 09:20:00 and 09:21:04,
+  `purchase` 9 and 7 seconds later, `invoices.issued` x2, the return page's heading seen,
+  and then the **admin** sign-in failed on "כתובת אימייל או סיסמה שגויים" (class A).
+- **chromium, full-purchase-redeem:** `Test timeout of 120000ms exceeded while running
+  "beforeEach" hook`, no page opened. It was fifth in line for the shared customer behind
+  four journeys of a minute or more each.
+
+Same build, same account, same cart: the layout decided whether the order was paid. Two
+product defects and one in the lock, each confirmed in the source:
+
+1. **The desktop wizard never posts a saved card or the wallet.** In `CheckoutForm.tsx` the
+   saved-card fieldset (`name="token_id"`) and the wallet box (`name="apply_wallet_ils"`) sit
+   inside the confirm panel, which the wizard shows only on the confirm step, and each ALSO
+   carried `step !== 'confirm' &&` (since 883a56eae, 2026-07-31). On the one-page layout
+   `step` never leaves `'details'`, so both rendered, the default radio was the fixture's
+   saved card, and the action took the `token_id` path: inline charge, `kind: 'paid'`,
+   redirect to `/checkout/return`. On the wizard both unmounted the moment their panel came
+   on screen, the post carried no `token_id`, and the action returned the hosted frame. A
+   desktop shopper with a saved card or wallet credit has never been offered either. Fixed:
+   both gates removed; `checkout-form-contract.test.tsx` gains a case that jumps the
+   stepper to "אישור ותשלום" with a saved address, a card and a balance, and asserts the two
+   radios (the saved one checked) and the wallet field are in the live confirm panel.
+2. **The mock Cardcom framed a page that refuses to be framed.** `mock-cardcom.ts` built its
+   own `${appUrl}/checkout/return?order_id=…&lp=…` as the "payment page" instead of returning
+   the caller's `successRedirectUrl`, which for the web checkout is
+   `/checkout/frame-return` (the session-free stub whose `FrameReturnBreakout` moves the top
+   window; `lib/security/frame-policy.ts`). `/checkout/return` answers
+   `X-Frame-Options: DENY` and a 307 to `/login` (measured with curl on the running build),
+   so inside the iframe it rendered nothing and the top window never moved. Fixed: the mock
+   returns `input.successRedirectUrl`, as the real adapter's hosted page eventually does;
+   `mock-cardcom.test.ts` pins it and the round trip through `verifyLowProfile`.
+3. **The lock wait was charged to the test.** `sharedCustomerTest`'s fixture extended the
+   test's budget by the time it waited, but only after the wait, which the test's own clock
+   had already been running through. Fixed: the fixture has its own `timeout`
+   (`LOCK_WAIT_MAX_MS + 60_000`), so a journey that queues behind four others is not killed
+   in "beforeEach" before it opens a page.
+
+## Verification (re-run 2, prefix 10.44.89, build 3r7M_n8pnvT5RlI0eIZkJ)
+
+Each re-run below is the coupon money files on the rebuilt mock build of the moment,
+`--retries=0`, a fresh forwarded-for prefix, the JSON reporter's counts. Every rebuild was
+followed by `pnpm gate:chunks` (clean, 243 pages) and the 3417 listener was verified by PID
+and working directory before each run.
+
+| Re-run | Build | Files, projects | Result | What stopped it |
+| --- | --- | --- | --- | --- |
+| 2, prefix 10.44.89, 09:31 UTC | 3r7M_n8pnvT5RlI0eIZkJ (fixes 1 to 3 above) | admin-refund, admin-refund-to-wallet, full-purchase-redeem, both projects, 6 cases | 1 passed, 5 failed, 0 flaky, 5.0 min. **Five journeys, five paid orders** (`begin_checkout` x5, `purchase` x5, `invoices.issued` x5), on chromium as on mobile-chrome | admin-refund and admin-refund-to-wallet, both projects: the **admin** sign-in, "כתובת אימייל או סיסמה שגויים" (class A). full-purchase-redeem: `getByTestId('coupon-code')` on `/checkout/return`, with "התשלום הצליח!", the card, the code `Z6XEF-CE946` and its QR all rendered |
+| 3, prefix 10.44.90, 09:38 UTC | zucRuhjAqSuACCqw-lhdC | full-purchase-redeem, chromium | 1 passed, 1 failed | `/account/coupons` rendered "משהו השתבש אצלנו": `voucher.customer_list_read_failed`, PGRST201 "more than one relationship was found for 'vouchers' and 'suppliers'" |
+| 4, prefix 10.44.91, 09:41 UTC | ItGjaV_Oc10Ksp0Zb8pAg | full-purchase-redeem, chromium | 1 passed, 1 failed | the supplier leg: `/supplier/scan` and `/scan` redirecting to each other (the call log shows eleven navigations between them), no scanner heading in 15 s |
+| 5, prefix 10.44.92, 09:45 UTC | q9JR2WCyELCdB18tCMDAe | full-purchase-redeem and coupon-scan, both projects, 14 cases | 13 passed, 1 failed; `curl /scan` 200, `/supplier/scan` 307 to `/login?next=` | the scanner on screen, the code typed into "הקלדת קוד ידנית", and the spec clicking a button named "המשך" that the scanner does not have ("בדוק שובר" since a0a35b86f, 2026-07-31) until the 120 s test budget ran out |
+| 6, prefix 10.44.93, 09:48 UTC | q9JR2WCyELCdB18tCMDAe (spec change only) | full-purchase-redeem, chromium | **2 passed, 0 failed**, 63 s | nothing. Guest cart, sign-in at the gate, mock pay, voucher with QR on the return page, the same voucher under `/account/coupons`, supplier lookup by code, "אשר ומַמֵש", "השובר מומש בהצלחה", "לגבייה מהלקוח עכשיו". The first time this journey has run to its end on this laptop |
+
+What re-runs 2 to 5 found, each confirmed in the source and fixed:
+
+4. **`/checkout/return` had lost its two test ids.** The coupon card renders the code and the
+   QR, but `data-testid="coupon-code"` and `coupon-qr` (present in e486b868e, used by the spec
+   and by `app/coupon/[id]/page.tsx`) had fallen off in a redesign. Restored on the card's code
+   element and its QR wrapper.
+5. **Every vouchers read embedded `suppliers` without a hint, and `/account/coupons` threw.**
+   `vouchers` has two foreign keys to `suppliers` (`supplier_id`, `redeemed_by_supplier_id`),
+   so a bare `suppliers(...)` embed is PGRST201 on every row. `getCustomerVouchers` throws on
+   it (rightly), and the customer's coupons page rendered the error boundary the moment the
+   account held a voucher. The 2026-10-05 and 2026-10-14 fixes had each landed on another
+   branch; on `autopilot` all six sites were bare: `queries/vouchers.ts` (two selects),
+   `payments/voucher-email.ts`, `actions/gifts.ts`, `actions/admin/vouchers.ts` and the two
+   admin coupon-code pages. All hinted `suppliers!vouchers_supplier_id_fkey(...)`, pinned by
+   `src/server/queries/vouchers-supplier-embed.test.ts`, which reads the six sources (the fake
+   Supabase builders in the unit tests never see PostgREST, so only a source test can hold
+   this).
+6. **`/scan` and `/supplier/scan` redirected to each other.** `next.config.ts` carried
+   `{ source: '/scan', destination: '/supplier/scan', permanent: true }` (934fbde8a,
+   2026-08-02), and `app/(supplier)/supplier/scan/page.tsx` has always been
+   `redirect('/scan')` (a0a35b86f): a signed-in supplier opening either address looped until
+   the browser gave up. The scanner lives at `/scan`. The config rule is removed (with the
+   measurement in its place); the page redirect stays, as `coupon-scan.spec.ts` pins that
+   the old address lands on `/scan` or `/login`. A browser that cached the 308 keeps looping
+   until that entry expires.
+7. **The spec named the scanner's lookup button "המשך".** It is "בדוק שובר". One-line spec fix.
+
+Not fixed, and now the only thing between the admin money specs and green: the admin
+fixture's password (class A). On both layouts admin-refund and admin-refund-to-wallet reach
+the admin sign-in with a paid order and a live voucher behind them.
 
 ## Flaky (run 11)
 
@@ -108,7 +227,26 @@ on chromium, purchase-flow on chromium) passed on their first attempt in run 6.
 | 13 | Spec budgets under the server's Supabase ceiling | 0 in run 6 (1 in run 5) | checkout "the cart CTA hands a guest straight to checkout", chromium, 19:08:45 and 19:09:15: the header badge reads "1 פריטים" while `/cart` renders "סל הקניות שלך ריק כרגע"; `cart.get` timed out at 19:08:56 inside the first attempt. mobile-chrome passed at 19:18. On the first re-run 6 of 8, the two misses next to `cart.add` timeouts at 19:32:53 and 19:35:16: one add still pending at the helper's 15 s mark, one `/cart` CTA not there at 5 s. Fixed: the add waits 25 s (two slow calls plus the rest of the serial chain), the test gets 60 s, the CTA gets the 15 s the summary already had in purchase-flow. Second re-run 8 of 8, then cart.spec 21/21 and checkout.spec 14/14 with 5 timeouts in the log | spec, fixed |
 | 14 | Two-second label | 0 in run 6 (1 in run 5) | purchase-flow on mobile-chrome, both attempts at 19:21: buy button still disabled at the 5 s mark, badge at 1, no server error in that minute. Same root as the chromium flake; fixed by the helper | spec, fixed |
 
-## What changed in this loop (run 11)
+## What changed in this loop (run 12)
+
+1. `e2e/helpers.ts`: the next-button locator takes `.first()` (B1); the shared-customer
+   fixture has its own `timeout` so the wait for the lock is not charged to the test (3).
+2. `src/app/(store)/checkout/CheckoutForm.tsx`: the saved-card fieldset and the wallet box
+   render on the confirm step (1); `checkout-form-contract.test.tsx` pins it.
+3. `src/lib/payments/mock-cardcom.ts`: `createLowProfile` returns the caller's
+   `successRedirectUrl` (2); `mock-cardcom.test.ts` is new.
+4. `src/app/(store)/checkout/return/page.tsx`: `coupon-code` and `coupon-qr` test ids (4).
+5. Six vouchers reads hinted `suppliers!vouchers_supplier_id_fkey` (5);
+   `src/server/queries/vouchers-supplier-embed.test.ts` is new.
+6. `next.config.ts`: the `/scan` -> `/supplier/scan` redirect removed (6).
+7. `e2e/full-purchase-redeem.spec.ts`: "בדוק שובר" (7).
+8. `.env.local` (local, ignored): `VOUCHER_QR_SECRET` (B2).
+
+Items 1, 2, 4, 5 and 6 change what a shopper or a supplier sees; 3, 7 and the helper are
+test infrastructure. None of this was flaky in the run-12 sense: every case was red on both
+attempts, and every fix was measured against a rebuilt server before it was kept.
+
+## What changed in the run 11 loop
 
 1. `e2e/helpers.ts`, `emptyCart`: the "רוקן עגלה" click is settled by the server action's
    HTTP answer (a POST to `/cart` carrying the `next-action` header, status 200), then the
@@ -150,7 +288,14 @@ and held again in runs 8 and 9: zero reds in classes 13 and 14, zero flaky cases
 - Set `E2E_ADMIN_PASSWORD` (and `E2E_SUPPLIER_*`) in `.env.local` for fixture users that
   exist in the database the server reads, or run `pnpm seed:test` against a disposable
   project. The customer default signs in since run 11; the admin default does not, and
-  admin-product-crud (run 11 class A, six cases) cannot be measured until then.
+  admin-product-crud (class A, six cases) plus the admin half of admin-refund and
+  admin-refund-to-wallet cannot be measured until then. Since run 12 the coupon journeys
+  reach that sign-in with a paid order behind them on both layouts.
+- `VOUCHER_QR_SECRET` is set in this laptop's `.env.local` since run 12 (a random 64-hex
+  value, local only, ignored by git). Without it every coupon order that settles inline
+  throws at voucher issue (run 12 class B2). It is not in `.env.example`'s required list
+  for a local `next start` and nothing warned; a new machine will hit B2 again until it
+  copies the line.
 - Give the local server a mail key the provider accepts, or point `WHATSAPP_*` at a sandbox:
   `/api/checkout/phone-otp/send` answers 502 on this laptop (`email.refused` 401) and the
   physical-purchase journey cannot pass its verified-shipping gate here (run 11 class C).
@@ -180,6 +325,22 @@ and held again in runs 8 and 9: zero reds in classes 13 and 14, zero flaky cases
   without it the second run of the hour reports the limiter as 14 cart failures.
 
 ## Gates after the changes
+
+Run 12 tree: `pnpm typecheck` exit 0, `pnpm lint` exit 0 (biome 1726 files, tokens, copy and
+asset gates clean) on the final working tree. vitest on the touched areas:
+`src/lib/payments`, `src/app/(store)/checkout`, `src/server/queries`, `src/server/actions`,
+`src/server/payments`: green, with four pre-existing reds in
+`src/server/actions/payments/refund.test.ts` (fee arithmetic, no import of anything touched
+here, red before and after). The build gate is the mock build the last verification ran
+against, `CARDCOM_USE_MOCK=true CHECKOUT_ENABLED=true NEXT_PUBLIC_APP_URL=http://localhost:3417
+pnpm build` exit 0, BUILD_ID q9JR2WCyELCdB18tCMDAe, made after the last `src/` and
+`next.config.ts` change (the spec edit after it is not part of the build), `pnpm gate:chunks`
+clean on 243 prerendered pages. Five rebuilds this cycle, all exit 0, each followed by the
+chunk gate. The 3417 listener was verified by PID and working directory before each run and
+stopped by PID at the end.
+
+### Earlier cycles
+
 
 Run 9 tree: `pnpm type-check` exit 0 and `pnpm lint` exit 0 (biome, tokens, copy and asset
 gates clean) on the final working tree; vitest on `src/components/ui` and `src/lib/a11y`

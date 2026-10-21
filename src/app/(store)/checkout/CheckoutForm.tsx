@@ -1000,13 +1000,16 @@ export default function CheckoutForm({
                 <p className="checkout-payment__note">תשלום מאובטח באשראי, באמצעות Cardcom.</p>
 
                 {/*
-                  Rendered on EVERY step, not gated on `step`: the wrapper above
-                  already hides the whole block until the confirm step, and the
-                  radios must exist in the DOM at the moment the form submits or
-                  `submitCheckout` reads an empty `token_id` and every returning
-                  customer is walked through the hosted page. The old condition
-                  here was `step !== 'confirm'`, the exact inverse of the
-                  wrapper's, so the picker could never be used.
+                  Not gated on the step. This block sits inside the confirm
+                  panel, which the wizard shows only on the confirm step, and
+                  until 2026-10-21 both this fieldset and the wallet box below
+                  carried an extra `step !== 'confirm'`: on the one-page layout
+                  (step never leaves 'details') they rendered and a saved card
+                  was charged inline, and on the wizard they unmounted the
+                  moment the panel became visible, so a desktop shopper never
+                  saw a saved card or the wallet and the post carried no
+                  token_id. Measured by the money specs: mobile-chrome paid,
+                  chromium went to the hosted frame with the same account.
                 */}
                 {savedCards.length > 0 && (
                   <fieldset className="checkout-cards">
