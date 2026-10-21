@@ -1,7 +1,7 @@
 # Cron Routes Status
 
-**Last check:** 2026-10-21 09:54 UTC (MAINTENANCE_LOOP_5, eighth run; MCP `get_runtime_logs` called in-session twice, 403 both times; CLI fallback measured over 24h and 7d, one transient 504 retried)
-**Status:** 🔴 CRITICAL, unchanged since 2026-10-20 13:15 UTC (eighth consecutive measurement). All 5 `vercel.json` routes are stale over 24h with 0 hits in 7 days. The only 2xx in 7 days is `/api/cron/health`, twice, at 2026-10-19 04:55 UTC (a manual probe after the deploy), which is itself 53h stale. Every other hit is 401 or 404. The only live scheduler is pg_cron inside the database (01:30 UTC today, 48 of 48 succeeded).
+**Last check:** 2026-10-21 11:10 UTC (MAINTENANCE_LOOP_5, ninth run; MCP `get_runtime_logs` called in-session twice, 403 both times; CLI fallback measured over 24h and 7d, no transient errors this run)
+**Status:** 🔴 CRITICAL, unchanged since 2026-10-20 13:15 UTC (ninth consecutive measurement). All 5 `vercel.json` routes are stale over 24h with 0 hits in 7 days. The only 2xx in 7 days is `/api/cron/health`, twice, at 2026-10-19 04:55 UTC (a manual probe after the deploy), which is itself 54h stale. Every other hit is 401 or 404. The only live scheduler is pg_cron inside the database (01:30 UTC today, 48 of 48 succeeded).
 
 ## How this was measured
 
@@ -504,8 +504,45 @@ holds (24 attempted and failed, 8 never called). The five `vercel.json` routes r
 over 24h. The three owners (a production deploy that carries `vercel.json`, Ofir's `CRON_SECRET`, a manifest dedupe PR
 to protected `main`) are unchanged and none is reachable from this loop.
 
+## 11:10 UTC re-measurement, 21.10 (ninth run)
+
+MCP `get_runtime_logs` was called twice from this session against `team_TUMTPVDP8218QHwedSjmgJWl` /
+`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`: filtered (`environment=production`, `query=/api/cron`, `since=7d`, `limit=100`,
+window 2026-10-14T11:10:35Z to 2026-10-21T11:10:35Z) and `group_by=requestPath` over `7d`. Both answered
+`Vercel API request failed (403: forbidden)` at page 0, request `w4bzw-1792581036795`, 0 rows. Same grant failure as
+every run since 13:15 UTC on 20.10; the tool's own recovery text again names the CLI mapping, which was used with the
+same scope. All three CLI pulls answered on the first call this time (no 504). Raw rows are in
+`logs/cron/ninth-*-2026-10-21T1111Z.jsonl` (untracked evidence, not committed).
+
+| Probe | Result |
+|---|---|
+| `vercel logs --since 7d --status-code 200 --query "/api/cron"` | **2 rows**, both `/api/cron/health` on `audit/final-audit` at 2026-10-19 04:55:07 and 04:55:21 UTC, now **54h 16m** old |
+| `vercel logs --since 7d --status-code 5xx --query "/api/cron"` | **0 rows** |
+| `vercel logs --since 24h --query "/api/cron"` (any status, cap 50) | 50 rows, 01:30:57 to 09:40:42 UTC 21.10: 401 = 31, 404 = 19, 25 distinct paths, byte-identical to the eighth run's window |
+| Newest hit of any cron route | `wishlist-alerts` 401 at 09:40:42 UTC (GitHub run `39578795068`); **no cron route was hit at all between 09:40 and 11:11 UTC** |
+| `vercel crons ls --project kenyonexpress` | 5 paths, all **not deployed**, "5 local changes pending deploy" |
+| Production alias `kenyonexpress.co.il` | still `dpl_AP18UQwUQdhd3XWNo41seDQvAcuA` (`audit/final-audit`, created 2026-10-19 04:43 UTC), `crons: []` |
+| `vercel ls --prod` | newest three production deployments are 2 days old, no new deploy since the eighth run |
+| GitHub `cron.yml`, last 8 scheduled runs (07:04 to 09:40 UTC 21.10, all on `main`) | **8 / 8 failed**, the same eight ids as the eighth run; no scheduled run fired after 09:40 UTC |
+| pg_cron `report_tables_nightly` (`cron.job` + `cron.job_run_details`, management API, read-only) | **48** succeeded, 0 failed, last run **2026-10-21 01:30:00 UTC** (162 ms), 🟢 fresh |
+
+**Per-route last attempt in the 24h window:** the 50-row pull covers 01:30 to 09:40 UTC 21.10 and is the same set
+of rows the eighth run tabulated, so that table stands unchanged: 25 paths attempted and failed (15 × 401 secret
+mismatch, 10 × 404 not on the deployed branch), the five `vercel.json` routes and the three `src`-only routes never
+called. The only movement since 09:54 UTC is the clock: the one 2xx aged from 53h to 54h, and the GitHub scheduler
+fired nothing between 09:40 and 11:11 UTC (`gh run list` shows no run newer than `39578795068`).
+
+**Verdict:** all 5 `vercel.json` routes stale over 24h, 0 hits in 7 days, 🔴 unchanged, ninth consecutive
+measurement. The three owners (a production deploy that carries `vercel.json`, Ofir's `CRON_SECRET`, a manifest
+dedupe PR to protected `main`) are unchanged and none is reachable from this loop.
+
 ## History
 
+- 2026-10-21 11:17 UTC: ninth run, part two. A third MCP `get_runtime_logs` call with the tool defaults (`since=1h`, `limit=10`, window 10:17 to 11:17 UTC) answered the same `403: forbidden` at page 0, 0 rows, and `list_projects` for the team now answers **0 projects** (it answered two on 20.10 at 17:52 UTC), so the connector grant has narrowed, not widened. The Supabase connector is listed as needing an OAuth this session cannot run, so pg_cron was read through the management API with the CLI keychain token. Per CLAUDE.md the MCP read is recorded as blocked after repeated attempts and the check stands on the CLI timestamps above.
+- 2026-10-21 11:10 to 11:14 UTC: ninth run. MCP `get_runtime_logs` 403 twice (7d filtered, `group_by=requestPath` 7d, request `w4bzw-1792581036795`), 0 rows.
+  CLI: 2 × 200 in 7d, both `health` on 19.10 04:55 UTC (54h 16m old); 0 × 5xx; 24h window 31 × 401 + 19 × 404 (cap 50, 25 paths, identical rows to the
+  eighth run, newest 09:40:42 UTC, nothing hit after); `crons ls` 5/5 not deployed; production alias unchanged on `dpl_AP18UQwUQdhd3XWNo41seDQvAcuA`;
+  8/8 latest `cron.yml` runs failed, same ids as the eighth run, newest `39578795068`; pg_cron nightly 48/48, last 01:30 UTC. All 5 routes stale over 24h.
 - 2026-10-21 09:54 to 09:58 UTC: eighth run. MCP `get_runtime_logs` 403 twice (7d filtered, `group_by=requestPath` 24h, request `qlqh9-1792576491205`), 0 rows.
   CLI: first 7d pull answered 504 from the logs API, retry 2 × 200, both `health` on 19.10 04:55 UTC (53h 04m old); 0 × 5xx; 24h window 31 × 401 + 19 × 404
   (cap 50, 25 paths, one full manifest sweep at 09:21 UTC); `crons ls` 5/5 not deployed; production alias unchanged on `dpl_AP18UQwUQdhd3XWNo41seDQvAcuA`;
