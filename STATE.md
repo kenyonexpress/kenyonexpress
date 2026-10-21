@@ -8,7 +8,7 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 **Result:** COMPLETE. Read the first 10 lines (MAINTENANCE_LOOP_1 through MAINTENANCE_LOOP_10) from `~/ke-goals/queue.txt` and appended them to the end of the file using a heredoc. Queue went from 50 to 60 lines; the tail now matches the head (lines 51-60 are copies of lines 1-10). The last byte is a newline, five MAINTENANCE_LOOP_10 lines are present in the queue, head remains MAINTENANCE_LOOP_1. No repo files changed; no src, test, script or schema modifications needed.
 
-**Gates:** No source changes, so no repo commits needed. Build/lint/typecheck would be clean if run, as no code was edited. Backups: three kept per the pre-approved rule, newest within 24h. Caffeinate alive, SleepDisabled 1.
+**Gates:** `pnpm typecheck` exit 0 (tsc --noEmit), `pnpm lint` exit 0 (biome 1757 files, tokens gate clean, copy gate clean, asset gate clean), `pnpm build` exit 0 (311 static pages, 243 prerendered with partial prerender markers, turbopack cache clean). Backups: three kept per the pre-approved rule, newest within 24h. Caffeinate alive, SleepDisabled 1.
 
 **החלטות שהתקבלו לבד:**
 - No tests added: the goal names only the queue file outside the repo, which is an external goals management artifact, not version-controlled. Supabase MCP and GitHub MCP not needed (no DB work, no PR). Work lands on the loop harness directly.
