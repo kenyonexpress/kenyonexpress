@@ -2,6 +2,21 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_3 (Session: 2026-10-21 20:40-20:55 UTC, backlog scan, eighteenth pass, 0 UNBLOCKED)
+
+**Goal:** Scan docs/BACKLOG.md and docs/TODO.md for unblocked items, queue any found to `~/ke-goals/queue.txt`, report the count in docs/MAINT-LOG.md, commit as chore maint scan backlog, push. Only that.
+
+**Result:** COMPLETE, 0 unblocked of 7, on `fb1983c9a`. docs/BACKLOG.md unchanged (7 items, last commit 4b17cfb49), docs/TODO.md absent (no TODO*.md anywhere in the worktree). Sales gate re-read through the Supabase MCP (official @supabase/mcp-server-supabase over stdio, --read-only, CLI keychain token, parser from scripts/db-mcp-probe.mjs): 181 orders (was 170), 146 paid, 151 succeeded payments, real sales 0, 11 new rows since the seventeenth run's cutoff and every one is the E2E fixture customer with a mock-tok-N id (odd 1 to 21) landing 19:09 to 19:39 UTC, the LOOP_4 Playwright run that the LOOP_9 seventeenth pass already dated through stock_reservations.consumed_at; the per-pass fixture increment moved from 9 to 11 (two retried specs), not traffic. Item 1 (group deals, 2026-10-23) is about 20 hours out local (03:41 on 22.10 UTC+7 at scan time). `~/ke-goals/queue.txt` untouched at 47 lines, head MAINTENANCE_LOOP_4. Evidence `logs/maint3/sales-gate-2026-10-21k.json` (biome-formatted), entry appended to docs/MAINT-LOG.md.
+
+**Gates:** `pnpm typecheck` exit 0, `pnpm lint` exit 0 (biome 1752 files, tokens, copy and asset gates clean), `pnpm build` exit 0 (BUILD_ID `OOfBFCXuQfcbHn7NJvrbN`, the 46 reviews.read_failed 42501 warnings and the four Partner API bail-out lines are the known build-time noise), `pnpm gate:chunks` clean on 243 prerendered pages. Backups: three kept (10-21-0201, 10-21-1241, 10-21-2140), newest under 24h, nothing to delete; caffeinate alive (pids 967, 11853), SleepDisabled 1. Nothing to fix.
+
+**החלטות שהתקבלו לבד:**
+- No src, test, script or schema change, so no tests added; GitHub MCP not needed (no PR), work lands on autopilot directly. The claude.ai Supabase connector still reports needs-authentication, so the local official server route from the memory file was used again, driven by the one-off runner left in /tmp/ke-maint3 from the seventeenth pass (it imports the repo parser).
+- The run that lands on or after 2026-10-23 00:00 local should queue `BACKLOG_1 Re-evaluate group deals` at the head of the queue; at roughly 85 minutes per ten-goal cycle that is about 14 cycles away.
+
+**המשך מ:** MAINTENANCE_LOOP_4 (head of `~/ke-goals/queue.txt`): run the full Playwright suite with pnpm test:e2e, report pass/fail/flaky counts to docs/E2E-STATUS.md, fix any new flaky tests, commit as chore test e2e maintenance, push.
+
+
 ## ✅ MAINTENANCE_LOOP_2 (Session: 2026-10-21 20:33-20:45 UTC, patch version bumps, fourteenth pass, ONE BUMP)
 
 **Goal:** Run `pnpm outdated` and bump patch versions for safe packages, skip minor and major, commit as chore deps bump patch versions, push to autopilot. Only that.
