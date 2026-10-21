@@ -1,8 +1,9 @@
 # E2E Test Status
 
-**Last run:** 2026-10-21 15:20 UTC, run 16, MAINTENANCE_LOOP_4 thirteenth cycle
-**Base commit:** 22dfe27dd on `autopilot` (no `src/` or `e2e/` change since 13021b20c; this cycle
-edits `e2e/keyboard-navigation.spec.ts` after the run, see "Flaky (run 16)")
+**Last run:** 2026-10-21 16:43 UTC, run 17, MAINTENANCE_LOOP_4 fourteenth cycle
+**Base commit:** e77278cb3 on `autopilot` (the only `src/` or `e2e/` change since 22dfe27dd is
+fd90e9ae0, the keyboard-focus probe fix of the thirteenth cycle; this cycle edits nothing
+under `src/` or `e2e/`)
 **Recipe:** `CARDCOM_USE_MOCK=true CHECKOUT_ENABLED=true NEXT_PUBLIC_APP_URL=http://localhost:3417 pnpm build`,
 then `pnpm start` on port 3417 with the same three variables, then
 `E2E_BASE_URL=http://localhost:3417 E2E_FORWARDED_FOR_PREFIX=10.44.96 pnpm exec playwright test --retries=1 --reporter=list,json`.
@@ -30,6 +31,7 @@ when it failed and then passed on a retry; a case that failed on every attempt i
 | 14, e372b2560, 2026-10-21 12:06 UTC, `--retries=1`, prefix 10.44.95, build MhlxtWtJ9xHUL43bgs5yY (cold) | 680 | 661 | 12 | 0 | 7 | 21.6 min |
 | 15, ab7fa416c, 2026-10-21 13:35 UTC, `--retries=1`, prefix 10.44.96, build 7HGQ9OvvKcLrCKwcnSBtf (cold) | 680 | 661 | 12 | 0 | 7 | 21.7 min |
 | 16, 22dfe27dd, 2026-10-21 14:58 UTC, `--retries=1`, prefix 10.44.97, build j7-WaVUWnKwnfghpaY4hR (cold) | 680 | 660 | 12 | 1 | 7 | 22.1 min |
+| 17, e77278cb3, 2026-10-21 16:21 UTC, `--retries=1`, prefix 10.44.99, build EFd62lLJdXFtWSFKDhBBn (cold) | 680 | 661 | 12 | 0 | 7 | 21.5 min |
 
 Run 9 is the full run on this cycle's fix and run 8 is the same tree before it. Nothing
 under `src/` or `e2e/` changed between 0d2462751 and 61e3d855f (STATE.md and docs only),
@@ -152,6 +154,43 @@ since run 6. It was chased to the spec and fixed this cycle (next section). Logs
 of class C) and 19 `analytics.track_failed` (19 in run 15 too, the pending-169 funnel-event
 rejection recorded in CLAUDE.md, no case red for it). Sixth consecutive run without the run 10
 shortfall.
+
+Run 17 (MAINTENANCE_LOOP_4 fourteenth cycle) is the first full run on the tree after the
+thirteenth cycle's keyboard-spec fix (fd90e9ae0): `git log 22dfe27dd..e77278cb3 -- src e2e
+playwright.config.ts` lists that one commit, `e2e/keyboard-navigation.spec.ts` only, so the
+product is run 13's and the specs are run 16's plus the focus-probe fix. Cold build as in runs
+14 to 16 (`.next/cache/turbopack` moved to `/tmp/ke-e2e17/turbopack-cache-aside` first,
+BUILD_ID EFd62lLJdXFtWSFKDhBBn, `pnpm gate:chunks` clean on 243 pages before the server
+started; the 3417 listener verified by PID 40648 and working directory, the BUILD_ID read back
+from the served HTML, stopped by PID after, port free). 680 cases, 661 passed, 12 failed,
+**0 flaky**, 7 skipped, 21.5 minutes (JSON reporter: start 16:21:45Z, duration 1,288,706 ms;
+run 16 was 1,324,325 ms). The counts are run 13's, 14's and 15's to the case, and the 12 reds
+are the same 12 cases as runs 13 to 16, every one red on both attempts, every one at one of the
+two laptop gaps (classes A and C below). The case that was flaky in run 16, `focus is visible
+on all interactive elements` on mobile-chrome, passed on its first attempt in 391 ms (chromium
+545 ms), so the thirteenth cycle's fix holds in the whole suite at two workers and not only in
+the 90-case file re-run that verified it. Logs in `/tmp/ke-e2e17/`: **0 `supabase.timeout`**
+events, 2 HTTP 5xx in the whole run, both `/api/checkout/phone-otp/send` (class C, 16:31:08Z
+and the retry at 16:31:49Z, 502 after 2,418 and 2,138 ms), 9 `purchase`, 9 `begin_checkout`,
+9 `invoices.issued`, 1 `voucher_redeemed`, 11 `email.refused` (all 401, 2 of them the
+phone-code send) and 19 `analytics.track_failed` (19 in runs 15 and 16 too). Seventh
+consecutive run without the run 10 shortfall. The 24 failed-attempt `error-context.md`
+snapshots were copied to `/tmp/ke-e2e17/snapshots/` before anything else ran, closing the
+run 16 measurement gap.
+
+## Flaky (run 17)
+
+None. All 661 passes were first-attempt passes, the 12 reds failed on both attempts, and the
+JSON reporter's `flaky` count is 0. The run 16 flake (the keyboard focus probe) did not recur:
+its fix is in this tree and the case passed first time on both projects. Nothing to fix under
+the "new flaky tests" heading, and nothing under `src/` or `e2e/` changed this cycle.
+
+## Failures by class (run 17, 12)
+
+| # | Class | Cases | Evidence | Kind |
+| -: | --- | ---: | --- | --- |
+| A | Admin fixture cannot sign in | 10 | admin-product-crud, all three cases on both projects (20 to 21 s per attempt), plus admin-refund and admin-refund-to-wallet on both projects (60 to 70 s per attempt, after the customer leg paid: 9 `purchase` and 9 `invoices.issued` in the server log): JSON reporter error on all 20 attempts is `page.waitForURL: Timeout 20000ms exceeded` at the admin sign-in, and all 20 `error-context.md` snapshots (copied aside before any re-run) carry "כתובת אימייל או סיסמה שגויים" under the password field. Unchanged from runs 11 to 16: `.env.local` carries `E2E_ADMIN_EMAIL` only and the default password is refused by the hosted project | environment |
+| C | Shipping phone code cannot be sent from this laptop | 2 | physical-purchase. chromium, both attempts, 40 s: "the code step never appeared", both snapshots show "לא הצלחנו לשלוח קוד" on the address step. mobile-chrome, both attempts: the 120 s test timeout on the one-page layout's address step with "קוד חד-פעמי בוואטסאפ" on screen. Server log: `email.refused` 401 "API key is invalid" from `/api/checkout/phone-otp/send` twice (16:31:08Z and the retry at 16:31:49Z), each answered 502 to the page; the same `RESEND_API_KEY` refusal logs 9 more times from `checkout.begin` without failing those journeys | environment |
 
 ## Flaky (run 16)
 
@@ -489,6 +528,15 @@ and held again in runs 8 and 9: zero reds in classes 13 and 14, zero flaky cases
   without it the second run of the hour reports the limiter as 14 cart failures.
 
 ## Gates after the changes
+
+Run 17 tree (e77278cb3 plus this doc and STATE.md, nothing under `src/` or `e2e/`):
+`pnpm typecheck` exit 0, `pnpm lint` exit 0 (biome, tokens, copy and asset gates clean, run
+after the doc edit). The build gate is the cold mock build the suite ran against,
+`CARDCOM_USE_MOCK=true CHECKOUT_ENABLED=true NEXT_PUBLIC_APP_URL=http://localhost:3417 pnpm
+build` exit 0, BUILD_ID EFd62lLJdXFtWSFKDhBBn, `pnpm gate:chunks` clean on 243 prerendered
+pages, plus a second `pnpm build` exit 0 after the doc edit. The previous turbopack cache was
+moved to `/tmp/ke-e2e17/turbopack-cache-aside`, not deleted. No spec or product change this
+cycle, so no vitest scope to re-run.
 
 Run 16 tree (22dfe27dd plus `e2e/keyboard-navigation.spec.ts`, this doc and STATE.md, nothing
 under `src/`): `pnpm typecheck` exit 0 twice (once while the suite was in flight and again

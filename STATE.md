@@ -2,6 +2,21 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_4 (Session: 2026-10-21 16:15-16:58 UTC, e2e maintenance, fourteenth cycle, run 17, 0 flaky, DONE)
+
+**Goal:** Run the full Playwright suite with `pnpm test:e2e`, report pass/fail/flaky counts to docs/E2E-STATUS.md, fix any new flaky tests, commit as chore test e2e maintenance, push.
+
+**Result:** DONE. Run 17 on e77278cb3 (the only `src/`/`e2e/` change since run 16 is fd90e9ae0, the keyboard focus-probe fix): cold mock build (turbopack cache moved to `/tmp/ke-e2e17/turbopack-cache-aside`, BUILD_ID EFd62lLJdXFtWSFKDhBBn, `gate:chunks` clean on 243 pages), `pnpm start` on 3417 verified by PID 40648 and cwd and by the BUILD_ID in the served HTML, suite at two workers with `--retries=1` and prefix 10.44.99, logs in `/tmp/ke-e2e17/`. JSON reporter: 680 cases, 661 passed, 12 failed, **0 flaky**, 7 skipped, 1,288,706 ms (21.5 min). Counts identical to runs 13 to 15; the 12 reds are the same 12 cases as runs 13 to 16, each red on both attempts, each at a laptop gap (class A admin fixture password refused, 10 cases, all 20 snapshots carry "כתובת אימייל או סיסמה שגויים"; class C phone-code send 502 after `email.refused` 401, 2 cases). The run 16 flake (`focus is visible on all interactive elements`, mobile-chrome) passed first time in 391 ms, so the thirteenth cycle's fix holds in the full suite. 0 `supabase.timeout`, 2 HTTP 5xx (both the phone-code send), 9 purchase / 9 begin_checkout / 9 invoices.issued / 1 voucher_redeemed. The 24 failed-attempt snapshots were copied aside before any other run, closing run 16's measurement gap. No new flaky test, so no spec edit. docs/E2E-STATUS.md gained the run 17 row, narrative, flaky and class sections and a gates paragraph. Server stopped by PID, port free.
+
+**Gates:** `pnpm typecheck` exit 0, `pnpm lint` exit 0 (biome 1742 files, tokens, copy, asset gates clean), `pnpm build` exit 0 twice (the cold mock build the suite ran against and a second build after the doc edit, BUILD_ID knp7mOk0p7jP0x4ZhMuNm), `pnpm gate:chunks` clean on 243 pages after each. Backup 2026-10-21-2140 present and under 24h, three kept, nothing to delete; caffeinate alive (two processes), SleepDisabled 1.
+
+**החלטות שהתקבלו לבד:**
+- Classes A and C are environment gaps (admin fixture password, mail key), not product or spec defects, so no fix was attempted; the action items in the doc already name the remedy and both need a credential only Ofir can supply.
+- Supabase MCP and GitHub MCP not needed: no DB, RLS, migration or PR in an e2e measurement pass. No tests added: no src or script change.
+- MAINTENANCE_LOOP_5 is left to the loop harness, which pops `~/ke-goals/queue.txt` one goal per session; starting it here would put two agents on the same repo.
+
+**המשך מ:** MAINTENANCE_LOOP_5 (head of `~/ke-goals/queue.txt`): check all cron routes' last-run timestamp via Vercel MCP get_runtime_logs, alert in docs/CRON-STATUS.md if any route is stale over 24h, commit as chore ops cron status check, push.
+
 ## ✅ MAINTENANCE_LOOP_10 (Session: 2026-10-21 16:03-16:10 UTC, queue regeneration, tenth pass, DONE)
 
 **Goal:** Append 10 fresh MAINTENANCE_LOOP goals to `~/ke-goals/queue.txt` by reading MAINTENANCE_LOOP_1 through MAINTENANCE_LOOP_10 from that file and appending them again. Only what is requested.
