@@ -29,3 +29,40 @@ describe('product-card-deals.css grid item', () => {
     expect(rule).toMatch(/object-position:\s*center center/)
   })
 })
+
+/**
+ * Card title and price type, measured in the live archive on 2026-10-21 at
+ * 380, 768 and 1440 (F43). The title is 22px / 26.4px / weight 500 /
+ * letter-spacing -0.14px with an 8px bottom margin on every width; the price
+ * fields are line-height 1.714 (23.996 at 14px, 27.424 at 16px). The old
+ * 32px / inherit-weight title was derived from the 64px wrap and put every
+ * glyph row 3px low and one word early on the wrap.
+ */
+describe('product-card-deals.css title and price type', () => {
+  const css = fs.readFileSync(path.resolve(__dirname, './product-card-deals.css'), 'utf-8')
+  const title =
+    css.match(/\n\.p_con__title,\n\.jet-listing-grid-deals h2\.p_con__title \{([^}]*)\}/)?.[1] ?? ''
+
+  it('sets the title to live\u2019s 22px / 26.4px at weight 500', () => {
+    expect(title).toMatch(/font-size:\s*22px;/)
+    expect(title).toMatch(/line-height:\s*26\.4px;/)
+    expect(title).toMatch(/font-weight:\s*var\(--weight-medium\);/)
+  })
+
+  it('carries live\u2019s -0.14px letter-spacing and 8px bottom margin', () => {
+    expect(title).toMatch(/letter-spacing:\s*-0\.14px;/)
+    expect(title).toMatch(/margin:\s*0 0 8px;/)
+  })
+
+  it('never returns to the 32px line that was derived from the wrap height', () => {
+    expect(title).not.toMatch(/line-height:\s*32px/)
+    expect(title).not.toMatch(/font-weight:\s*inherit/)
+  })
+
+  it('gives both price fields live\u2019s 1.714 line-height', () => {
+    for (const cls of ['p_con__strike', 'p_con__sale']) {
+      const rule = css.match(new RegExp(`\\n\\.${cls} \\{([^}]*)\\}`))?.[1] ?? ''
+      expect(rule, cls).toMatch(/line-height:\s*1\.714;/)
+    }
+  })
+})

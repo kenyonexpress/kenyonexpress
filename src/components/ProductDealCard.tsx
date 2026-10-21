@@ -133,6 +133,14 @@ export default function ProductDealCard({ product }: { product: Product }) {
         a DATA gap (those products are not imported yet - recorded in
         GO-LIVE.md), not a markup one. Same shape as the `built: false` footer
         links from [21]: the href remains, the speculative fetch does not.
+
+        TITLE TYPE IS MEASURED, NOT DERIVED (F43, 2026-10-21). Live's h2 is
+        22px / 26.4px / weight 500 / letter-spacing -0.14px with an 8px bottom
+        margin at 380, 768 and 1440; the wrap's 64px min-height holds two such
+        lines (60.8). The rule is `.p_con__title` in product-card-deals.css,
+        asserted by product-card-deals.test.ts. Do not add a `text-*` utility
+        here: ProductCard's `text-product-title` is the 25px product PAGE
+        title and would override the measured card value.
       */}
       <div className="p_con__title-wrap">
         <Link href={`/product/${product.slug}`} className="hover:underline" prefetch={false}>

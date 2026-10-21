@@ -273,3 +273,7 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-21 03:34 | home | 380 | 8.51% | PASS | `c1cba9105` | ref 141 failed to load (101 script, 37 font, 2 stylesheet, 1 xhr) |
 | 2026-10-21 03:36 | home | 768 | 9.80% | PASS | `c1cba9105-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
 | 2026-10-21 03:38 | home | 380 | 8.51% | PASS | `c1cba9105-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-21 03:51 | home | 380 | 8.54% | PASS | `c5ece7b62-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-21 03:53 | home | 768 | 9.80% | PASS | `c5ece7b62-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-21 03:55 | home | 1440 | 8.09% | PASS | `c5ece7b62-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-21 03:57 | home | 380 | 8.54% | PASS | `c5ece7b62-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
