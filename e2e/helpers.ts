@@ -356,3 +356,28 @@ export async function raiseInstallBanner(page: Page): Promise<Locator> {
   }
   return banner
 }
+
+/**
+ * WAIT FOR REACT TO REVEAL EVERY STREAMED SUSPENSE BOUNDARY BEFORE READING THE
+ * PAGE. A route whose body sits under `<Suspense>` arrives in the same HTML
+ * stream as the shell, but React parks it in `<div hidden id="S:n">` and swaps
+ * it into place from an inline script that runs AFTER `domcontentloaded`, once
+ * the boundary's stylesheets are in. Anything that reads the DOM between those
+ * two moments sees the fallback (or nothing) and not the page.
+ *
+ * MEASURED 2026-10-21 on /login, production build: at `domcontentloaded` the
+ * tabs existed but had no box (six hidden boundaries), and 75 to 150 ms later
+ * they were painted. An axe scan launched on `domcontentloaded` sometimes ran
+ * inside that window, skipped the whole hidden form, and reported the page
+ * clean; the same scan a tick later reported the real 1.4:1 contrast violation
+ * on the active tab. Run 7 failed it on both projects, run 8 on one. Waiting
+ * for the hidden boundaries to reach zero makes the scan read the page a
+ * visitor is shown, every time.
+ */
+export async function awaitStreamedReveal(page: Page): Promise<void> {
+  await page.waitForFunction(
+    () => document.querySelectorAll('div[hidden][id^="S:"]').length === 0,
+    undefined,
+    { timeout: DISCOVERY_TIMEOUT },
+  )
+}
