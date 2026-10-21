@@ -4623,3 +4623,10 @@ Supabase MCP authentication unavailable in non-interactive session. CLI fallback
 - Gates: type-check exit 0, lint exit 0 (1727 files, three gates clean), build exit 0 (29rVtTyE58hgJkzXIjy3H), gate:chunks clean on 243 pages, probe tests 10 of 10. Backup 2026-10-21-1241 present, three kept; caffeinate alive (two processes), SleepDisabled 1.
 
 **המשך מ:** MAINTENANCE_LOOP_10 (head of ~/ke-goals/queue.txt).
+
+## MAINTENANCE_LOOP_4 (2026-10-21 11:07 UTC, run 13, commit 9535cafa3)
+- Full Playwright suite on f1bf780f2, mock build XChiPmx_8z7lI11sfYzPl (chunk gate clean before the run), port 3417 verified by PID 49451 and cwd, prefix 10.44.94, `--retries=1`, JSON reporter: 680 cases, 661 passed, 12 failed (both attempts), 0 flaky, 7 skipped, 21.6 min. First full run on the ninth cycle's seven fixes: full-purchase-redeem (chromium) green on its first attempt in the whole suite, the other 12 are run 12's 12 to the case, all laptop gaps: admin fixture password refused (10, admin-product-crud x6 and the four coupon refund journeys, which now pay and reach the admin sign-in) and the shipping phone code (2, physical-purchase). No flaky test, nothing to fix; docs/E2E-STATUS.md header, summary row, run 13 paragraph, flaky and class sections written. Committed 9535cafa3, pushed.
+- Decided alone: no code change this cycle, since every red is deterministic and environment-bound (the admin password and the mail key are not reachable from here). The build, server and list-reporter logs were redirected into test-results/, which Playwright empties at run start, so the server's `supabase.timeout` count for this run is unavailable (0 in runs 9, 11, 12); recorded in the doc, future runs log to /tmp or logs/. test-results/ left uncommitted (gitignored).
+- Gates: typecheck exit 0, lint exit 0 (1729 files, three gates clean), build exit 0 (y10Grw0jcW8eGZz48XOVr) with `pnpm gate:chunks` clean on 243 pages. Backup 2026-10-21-1241 present, three kept; caffeinate alive (two processes), SleepDisabled 1. 3417 listener stopped by PID.
+
+**המשך מ:** MAINTENANCE_LOOP_5 (head of ~/ke-goals/queue.txt).
