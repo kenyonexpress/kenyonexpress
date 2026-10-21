@@ -2,6 +2,22 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_6 (Session: 2026-10-21 19:52-20:10 UTC, mobile gate recheck, fifteenth, DONE)
+
+**Goal:** Recheck the mobile gate score via scripts/compare.mjs, requeue a mobile fix goal at the head of the queue if above 11 percent, report the score to docs/GATE-STATUS.md, commit as chore qa mobile gate check, push.
+
+**Result:** DONE, all three widths PASS. `pnpm start` on 3351 from this worktree (pid 57712, cwd verified by `/usr/sbin/lsof`, only node listener, stopped by pid, port free after) on the 19:51 UTC build of HEAD `e8ae3776e` (BUILD_ID `DyEG49Oh433CcU0LMHMDO` in the served HTML, `gate:chunks` clean on 243 pages before the run). `compare.mjs --page=home --widths=380,768,1440`: 380 **8.53%**, 768 **9.79%**, 1440 **8.08%**, every width at the same hundredth as the previous nine runs. No `src/`, gate-script or reference change since the fourteenth recheck (`git log e87e3177b..HEAD -- src/ scripts/compare.mjs refs/` empty), so this is the tenth measurement of the same rendered tree. Reference shortfall read 153 at all three widths (the thirteenth recheck's pattern; the fourteenth read 153 / 96 / 96) and the 380 reference came back 17790 tall instead of 18146; no band moved by a hundredth. No mobile fix goal requeued; `~/ke-goals/queue.txt` untouched (44 lines, head MAINTENANCE_LOOP_7). docs/GATE-STATUS.md gained the fifteenth block; docs/UI-PARITY-REPORT.md gained the three ledger rows the gate writes itself.
+
+**Gates:** `pnpm typecheck` exit 0, `pnpm lint` exit 0 (biome 1748 files, tokens, copy, asset gates clean), `pnpm build` exit 0 (`jVxjpQxDkT9QwMsoRdTg3`, the four Partner API `request.headers` bail-out lines are the known prerender notice), `pnpm gate:chunks` clean on 243 prerendered pages. Backup 2026-10-21-2140 present and under 24h, three kept, nothing to delete; caffeinate alive (pids 967, 11853), SleepDisabled 1.
+
+**החלטות שהתקבלו לבד:**
+- The 768 margin is 1.21 points and has not moved in ten runs; no fix goal is queued because the goal's trigger is above 11 percent only.
+- Serving the reference from a local origin to pin the archive shortfall stays an open item; the shortfall count has flipped three times (96, 153, 96, 153) and the 380 reference height twice without touching a single band, so it stays low priority.
+- Supabase MCP and GitHub MCP not needed: no DB, RLS, migration or PR in a gate measurement. No tests added: no src or script change.
+- MAINTENANCE_LOOP_7 is left to the loop harness, which pops `~/ke-goals/queue.txt` one goal per session; starting it here would put two agents on the same repo.
+
+**המשך מ:** MAINTENANCE_LOOP_7 (head of `~/ke-goals/queue.txt`): run Lighthouse CI via `pnpm lhci:autorun`, queue an optimization goal if any score is below 90, report scores to docs/LIGHTHOUSE-STATUS.md, commit as chore qa lighthouse check, push.
+
 ## ✅ MAINTENANCE_LOOP_4 (Session: 2026-10-21 19:06-19:55 UTC, E2E maintenance, sixteenth cycle, run 19, one cross-run flake fixed)
 
 **Goal:** Run the full Playwright suite with `pnpm test:e2e`, report pass/fail/flaky counts to docs/E2E-STATUS.md, fix any new flaky tests, commit as chore test e2e maintenance, push.

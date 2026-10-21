@@ -1,5 +1,36 @@
 # Mobile Gate Status
 
+**Last Check:** 2026-10-21 19:52-19:58 UTC (MAINTENANCE_LOOP_6, fifteenth recheck; local time 2026-10-22 02:52-02:58 UTC+7)
+**Page:** home
+**Commit:** `e8ae3776e` (clean tree at measurement, 0/0 against `origin/autopilot` after fetch; HEAD of `autopilot`. `git log e87e3177b..HEAD -- src/ scripts/compare.mjs refs/` is empty: nothing under `src/`, the gate script or the reference changed since the fourteenth recheck, so this is the tenth measurement of the same rendered tree; the last `src/` commit is still `13021b20c` at 09:51 UTC; the five commits between touch only STATE.md, docs/ and logs/)
+**Server:** `pnpm start` on port 3351 from this worktree (listener pid 57712, cwd verified by `/usr/sbin/lsof -p`, the only node listener on the machine, port had 0 listeners before start, stopped by pid afterwards, port free after) on the `pnpm build` of this same HEAD written at 19:51 UTC by the previous loop item's build gate (BUILD_ID `DyEG49Oh433CcU0LMHMDO`, present in the served HTML), `pnpm gate:chunks` clean before the run (243 prerendered pages, every referenced chunk on disk).
+**Threshold:** 11%
+**Verdict:** 380 PASS at 8.53%, 768 PASS at 9.79%, 1440 PASS at 8.08%. No mobile fix goal requeued; `~/ke-goals/queue.txt` untouched (44 lines, head MAINTENANCE_LOOP_7).
+
+| Viewport | Score | Status | Previous (fourteenth recheck, 18:21-18:27 UTC, `e87e3177b`) | Delta | Margin to 11% |
+|---|---|---|---|---|---|
+| 380 | **8.53%** | **PASS** | 8.53% | +0.00 | 2.47 |
+| 768 | **9.79%** | **PASS** | 9.79% | +0.00 | 1.21 |
+| 1440 | **8.08%** | **PASS** | 8.08% | +0.00 | 2.92 |
+
+Ledger rows, verbatim from docs/UI-PARITY-REPORT.md (UTC), in run order:
+
+```
+| 2026-10-21 19:53 | home | 380 | 8.53% | PASS | `e8ae3776e` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
+| 2026-10-21 19:55 | home | 768 | 9.79% | PASS | `e8ae3776e-dirty` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
+| 2026-10-21 19:56 | home | 1440 | 8.08% | PASS | `e8ae3776e-dirty` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
+```
+
+## MAINTENANCE_LOOP_6 fifteenth recheck notes (19:58 UTC)
+
+- **Tenth consecutive run reading 8.53 / 9.79 / 8.08 to the hundredth** (F43 ledger, seventh through fourteenth rechecks and this one). No `src/` commit landed between the fourteenth recheck and this one, so an identical score is the expected result. The 768 margin is 1.21 points, the narrowest of the three, unchanged.
+- **Reference shortfall read 153 at all three widths** (113 scripts, 37 fonts, 2 stylesheets, 1 xhr), the thirteenth recheck's pattern rather than the fourteenth's 153 / 96 / 96. The 380 reference document came back at 380x17790 (the earlier height, not the 18146 of the thirteenth and fourteenth). Neither figure moved any score or any band by a hundredth, consistent with the dropped resources and the extra height sitting outside the compared 2600px window.
+- **Gate-hardening caveat silent again:** our side dropped 6 / 6 / 5 resources, all on the expected local origin, no `OURS dropped` or `OURS ... wide` words in any row. Our document was 380 wide at 380 (380x18394 against the reference's 380x17790; the compared window is the first 2600px). At 768 ours is 768x9124 against 768x9152, at 1440 ours is 1440x5464 against 1440x5492.
+- **380 worst bands:** y200-300 55.7%, y300-400 34.1%, y1700-1800 20.1%, y2500-2600 15.1%, y100-200 14.9%, y1000-1100 9.2%. **768 worst bands:** y400-500 49.3%, y2500-2600 34.1%, y200-300 33.2%, y100-200 30.9%, y2400-2500 17.5%, y500-600 17.4%. **1440 worst bands:** y500-600 25.2%, y200-300 24.1%, y1700-1800 19.4%, y300-400 18.7%, y600-700 17.2%, y1600-1700 16.2%. Same floors as the eighth through fourteenth rechecks.
+- **The `-dirty` suffix on the 768 and 1440 rows is the gate's own ledger write** (the 380 row modifies docs/UI-PARITY-REPORT.md before the two later children run). `git status` after the run listed that one file; `src/` was clean throughout.
+- **No UNMEASURED row.** Three widths took about 5 minutes 29 seconds wall time (19:52:44 to 19:58:13) including the 380 archive cold load. Run log kept at `/tmp/ke-gate-l6-run15.log`, server log at `/tmp/ke-gate-l6-run15-server.log` (outside the repo, per the test-results wipe rule).
+- **Not done this loop:** serving the reference from a local origin to pin the shortfall. Unchanged open item; fifteen consecutive runs agree to the hundredth at 380.
+
 **Last Check:** 2026-10-21 18:21-18:27 UTC (MAINTENANCE_LOOP_6, fourteenth recheck; local time 2026-10-22 01:21-01:27 UTC+7)
 **Page:** home
 **Commit:** `e87e3177b` (clean tree at measurement, 0/0 against `origin/autopilot` after fetch; HEAD of `autopilot`. `git log d55b0deac..HEAD -- src/ scripts/compare.mjs refs/` is empty: nothing under `src/`, the gate script or the reference changed since the thirteenth recheck, so this is the ninth measurement of the same rendered tree; the five commits between touch only STATE.md, docs/ and logs/)
