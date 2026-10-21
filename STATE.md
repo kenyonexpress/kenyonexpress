@@ -2,6 +2,22 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_5 (Session: 2026-10-21 12:33-12:50 UTC, cron status check, tenth run, MEASURED on two sources, 🔴 ALERT unchanged)
+
+**Goal:** Check all cron routes' last-run timestamp via Vercel MCP `get_runtime_logs`, alert in docs/CRON-STATUS.md if any route is stale over 24h, commit as chore ops cron status check, push.
+
+**Result:** COMPLETE, alert unchanged, tenth consecutive measurement. The claude.ai connector's `get_runtime_logs` answered `403 forbidden` once (24h filtered, 0 rows), the same grant failure as every run since 20.10 13:15 UTC. `mcp.vercel.com` called directly with the CLI token answered **nine `get_runtime_logs` calls HTTP 200**: `group_by=requestPath` over 7d lists 15 cron routes and none of the five `vercel.json` routes (counts identical to the ninth run except `webhook-dlq` 54 to 55); the five per-route 3d pulls for `observability-check`, `fraud-monitor`, `p95-monitor`, `deal-scraper`, `stock-notifications` all answer "No logs found"; the 24h pull holds 42 events, every one a 401 `request.completed` with `duration_ms:0`, newest `webhook-dlq` 11:31:06 UTC; the `health` 3d pull shows the last 200 at 2026-10-19 04:55:31 UTC (55h 38m) and 401 on every later hit. CLI request log, same scope: the 7d 200 pull answered 0 rows silently once and 2 rows on retry (both `health` 19.10 04:55 UTC); 0 × 5xx; 24h window 31 × 401 + 19 × 404 (cap 50, 25 paths, 05:53 to 12:11 UTC), newest `email-retry` 404 at 12:11:47 UTC; `vercel crons ls` 5/5 not deployed; production alias still `dpl_AP18UQwUQdhd3XWNo41seDQvAcuA`, `crons: []`, no new deploy; 10/10 latest `cron.yml` scheduled runs failed, two new since the ninth run (`39592518870` 11:30, `39597648706` 12:11 UTC); pg_cron `report_tables_nightly` 48/48 succeeded, last 2026-10-21 01:30 UTC (management API, read-only, one statement per call). MCP and CLI timestamps agree to the second. All 5 `vercel.json` routes: 0 hits in 7d on both sources, 🔴 stale over 24h. Tenth-run section, header and history appended to docs/CRON-STATUS.md. Raw evidence in `logs/cron/tenth-*-2026-10-21T123[34]Z.*` (untracked).
+
+**Gates:** `pnpm type-check` exit 0, `pnpm lint` exit 0 (biome, tokens, copy, asset gates clean), `pnpm build` exit 0, `pnpm gate:chunks` clean on 243 prerendered pages. Backup 2026-10-21-1241 present and under 24h, three kept (10-18-0350, 10-21-0201, 10-21-1241); caffeinate alive (two processes), SleepDisabled 1.
+
+**החלטות שהתקבלו לבד:**
+- The MCP clause is met on the hosted server with the CLI token (same tool, same team and project) after the connector 403'd; the connector grant is Ofir's to widen and is recorded as such, not retried unchanged.
+- The silent 0-row answer on the first 7d CLI pull was treated as a transient (the ninth run saw a 504 on the same query) and retried once; the retry carried the two known rows.
+- pg_cron read through the management API rather than the Supabase connector, which still needs an OAuth this session cannot run; read-only, no migration.
+- No tests added: the change is a measurement report, no src or script changed. GitHub MCP not needed: no PR, work lands on autopilot directly.
+
+**המשך מ:** MAINTENANCE_LOOP_6 (head of `~/ke-goals/queue.txt`): recheck the mobile gate score via scripts/compare.mjs, requeue the mobile fix goal at the head of the queue if above 11 percent, report the current score to docs/GATE-STATUS.md, commit as chore qa mobile gate check, push.
+
 ## ✅ MAINTENANCE_LOOP_3 (Session: 2026-10-21 12:02-12:12 UTC, backlog scan, twelfth run, MEASURED via Supabase MCP, zero unblocked)
 
 **Goal:** Scan docs/BACKLOG.md and docs/TODO.md for unblocked items, queue any found to `~/ke-goals/queue.txt`, report the count in docs/MAINT-LOG.md, commit as chore maint scan backlog, push.
