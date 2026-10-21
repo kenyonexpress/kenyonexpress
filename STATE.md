@@ -4443,3 +4443,10 @@ Supabase MCP authentication unavailable in non-interactive session. CLI fallback
 - Gates: type-check exit 0, lint exit 0 (1722 files), build exit 0 (cold), new test file 11/11, audits-are-wired + ci-gate-scope 31/31. Caffeinate and backup state not re-measured in this run.
 
 **המשך מ:** MAINTENANCE_LOOP_8 (head of ~/ke-goals/queue.txt).
+
+## MAINTENANCE_LOOP_8 (2026-10-21 08:11 UTC, tenth pass)
+- Code debt scan on HEAD `d195ad97f` (clean tree): word-boundary and loose grep over src/ (ts, tsx, js, jsx, mts, mjs) both give 8 TODO, 0 FIXME, 0 HACK, delta 0 against the ninth pass on `e3cbdec7e`. 23 commits in between, five touched src/ (F41 `046f1ba62`, F42 `ff8bf9ea5`, F43 `f52769b0a` and `5371d9ef6`, residual `2dba324b8`; 109 files, 2372 insertions, 877 deletions) and the added lines of each contain no marker. The eight hits are byte-identical for a seventh consecutive pass (cardcom.ts x2, r2-migration.ts x4, stock-notifications route x1, whatsapp.test.ts stub x1). No cleanup goal queued; `~/ke-goals/queue.txt` untouched. docs/CODE-DEBT-STATUS.md header, table row and tenth-pass note written, including a correction that the previous row's `09:59 UTC` stamp was local +07:00 time (02:59 UTC). Committed `34be65e8a`, pushed.
+- Supabase MCP still requires OAuth the session cannot run; the scan is static text analysis and needs no DB call. Vercel MCP connected but not needed.
+- Gates: type-check exit 0, lint exit 0 (1722 files, three gates clean), build exit 0 (warm cache), `pnpm gate:chunks` clean on 243 prerendered pages. Backup 2026-10-21-1241 present, three kept; caffeinate alive (two processes), SleepDisabled 1.
+
+**המשך מ:** MAINTENANCE_LOOP_9 (head of ~/ke-goals/queue.txt).
