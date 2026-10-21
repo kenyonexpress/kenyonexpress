@@ -86,10 +86,13 @@ export default function WhatsappOtpForm({ next }: { next?: string }) {
           {error}
         </p>
       )}
+      {/* Not `.account-btn`: that class lives in account.css, which the (auth)
+          layout never loads, so on /login the button had no padding and
+          measured 21px tall. These are the login form's own button styles. */}
       <button
         type="submit"
         disabled={pending}
-        className="account-btn w-full"
+        className="w-full min-h-11 rounded-lg border border-gray-300 bg-white py-2.5 text-sm font-semibold text-heading transition-colors hover:bg-gray-50 disabled:opacity-60"
         aria-label="שליחת קוד בוואטסאפ"
       >
         {pending ? 'שולחים...' : 'שליחת קוד בוואטסאפ'}

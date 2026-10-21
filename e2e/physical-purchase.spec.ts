@@ -1,12 +1,14 @@
-import { expect, test } from '@playwright/test'
+import { expect } from '@playwright/test'
+import { E2E_CUSTOMER_EMAIL, E2E_PHYSICAL_SLUG, paidFlowEnabled } from './auth-session'
 import {
-  E2E_CUSTOMER_EMAIL,
-  E2E_CUSTOMER_PASSWORD,
-  E2E_PHYSICAL_SLUG,
-  paidFlowEnabled,
-  signInWithEmail,
-} from './auth-session'
-import { BUY_BUTTON, addOpenProductToCart, expectHebrewRtl } from './helpers'
+  BUY_BUTTON,
+  addOpenProductToCart,
+  emptyCart,
+  expectHebrewRtl,
+  newSignedInContext,
+  submitCheckout,
+  sharedCustomerTest as test,
+} from './helpers'
 
 /**
  * A signed-in customer buys a PHYSICAL product (marathon step 10, journey b).
@@ -25,7 +27,7 @@ test.describe('logged-in physical purchase @checkout @money', () => {
   test('signed-in customer → physical product → mock pay → order, no voucher', async ({
     browser,
   }) => {
-    const ctx = await browser.newContext({ locale: 'he-IL', timezoneId: 'Asia/Jerusalem' })
+    const ctx = await newSignedInContext(browser, 'customer')
     const page = await ctx.newPage()
 
     // Fixture check BEFORE login, so an unseeded database self-skips rather
@@ -37,7 +39,7 @@ test.describe('logged-in physical purchase @checkout @money', () => {
     test.skip(!buyable, 'e2e-test-physical is not purchasable; run pnpm seed:test')
     test.skip(await buy.isDisabled(), 'e2e-test-physical is out of stock')
 
-    await signInWithEmail(page, E2E_CUSTOMER_EMAIL, E2E_CUSTOMER_PASSWORD)
+    await emptyCart(page)
     await page.goto(`/product/${E2E_PHYSICAL_SLUG}`)
 
     // Settled by the header badge AND the button leaving its pending state,
@@ -49,10 +51,15 @@ test.describe('logged-in physical purchase @checkout @money', () => {
     await addOpenProductToCart(page)
 
     await page.goto('/checkout')
-    await expect(page.getByRole('heading', { name: 'תשלום' })).toBeVisible({ timeout: 15_000 })
-    await expect(page.getByText('מוצר פיזי לבדיקות אוטומטיות')).toBeVisible()
-    await page.locator('input[name="accept_terms"]').check()
-    await page.getByRole('button', { name: 'מעבר לתשלום מאובטח' }).click()
+    await expect(page.getByText('מוצר פיזי לבדיקות אוטומטיות').first()).toBeVisible({
+      timeout: 15_000,
+    })
+    // The fixture is long past the five-physical-orders threshold, so the
+    // address step asks for the WhatsApp code; its saved address carries
+    // 052-123-4567. See submitCheckout and e2e/otp-seed.ts.
+    await submitCheckout(page, {
+      phoneVerification: { email: E2E_CUSTOMER_EMAIL, phoneE164: '+972521234567' },
+    })
 
     await page.waitForURL(/\/checkout\/return\?.*order_id=/, { timeout: 45_000 })
     await expect(page.getByRole('heading', { name: 'התשלום הצליח!' })).toBeVisible({

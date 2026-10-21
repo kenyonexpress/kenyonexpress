@@ -1,3 +1,4 @@
+import { CONSENT_DECIDED_ATTRIBUTE, CONSENT_DECIDED_VALUE } from '@/lib/analytics/consent'
 import { decideConsent } from '@/server/actions/consent'
 
 /**
@@ -34,6 +35,34 @@ const BANNER_STYLE = {
   boxShadow: 'var(--shadow-consent-banner)',
   fontFamily: 'Arial, Helvetica, sans-serif',
 } as const
+
+/**
+ * THE DECISION HAS TO HIDE THE BANNER ON THE SAME PAGE, AND THE ACTION ALONE
+ * DOES NOT. `decideConsent` sets the cookie and `redirect()`s back to the
+ * same path, and in the browser a server-action redirect is a client-side
+ * navigation: the document is not reloaded, so the pre-paint snippet that
+ * reads the cookie and marks <html> never runs again, and the CSS that hides
+ * the banner off that mark never fires. MEASURED 2026-10-21 on the production
+ * build: POST 200, `ke_consent=denied.2` in document.cookie, no attribute on
+ * <html>, banner still visible; it stayed until the next full load. To a
+ * visitor the button did nothing, and in the e2e suite it sat over the sticky
+ * buy bar and the cart's clear button and intercepted their clicks.
+ *
+ * So the banner is hidden at submit time, from a capturing listener on
+ * `document`, before the action runs. NOT by setting the <html> attribute
+ * alone: that was tried, and the attribute was there 1ms after the submit and
+ * gone 136ms later, when React re-rendered the root for the action's
+ * transition and reconciled <html> back to its own props (measured with a
+ * MutationObserver, 2026-10-21). So the listener also appends a <style> to
+ * <head> that hides the banner; React owns neither that node nor its effect,
+ * and the attribute is still set for anything else keyed on it. It is a
+ * second tiny inline script rather than a client component because this
+ * banner is the phone LCP element and deliberately has no bundle; CSP allows
+ * it the same way it allows the pre-paint snippet. The cookie is still what
+ * the next page load reads, and with script off the forms post natively and
+ * that load applies it.
+ */
+const SUBMIT_HIDES_SCRIPT = `(function(){document.addEventListener("submit",function(e){var f=e.target;if(!(f&&f.closest&&f.closest("[data-consent-banner]")))return;document.documentElement.setAttribute("${CONSENT_DECIDED_ATTRIBUTE}","${CONSENT_DECIDED_VALUE}");if(!document.getElementById("ke-consent-decided")){var s=document.createElement("style");s.id="ke-consent-decided";s.textContent="[data-consent-banner]{display:none}";document.head.appendChild(s)}},true)})()`
 
 const COPY_STYLE = {
   margin: 0,
@@ -73,6 +102,8 @@ export default function ConsentBanner() {
           </form>
         </div>
       </div>
+      {/* biome-ignore lint/security/noDangerouslySetInnerHtml: fixed string built from two module constants, no input reaches it */}
+      <script dangerouslySetInnerHTML={{ __html: SUBMIT_HIDES_SCRIPT }} />
     </section>
   )
 }

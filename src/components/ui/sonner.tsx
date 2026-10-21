@@ -16,7 +16,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
         success: (
           <div
             className="flex h-6 w-6 items-center justify-center rounded-full bg-green-100 text-green-700"
-            aria-label="Success"
+            aria-hidden="true"
           >
             <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
               <path
@@ -30,7 +30,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
         info: (
           <div
             className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-blue-700"
-            aria-label="Information"
+            aria-hidden="true"
           >
             <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
               <path
@@ -44,7 +44,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
         warning: (
           <div
             className="flex h-6 w-6 items-center justify-center rounded-full bg-amber-100 text-amber-700"
-            aria-label="Warning"
+            aria-hidden="true"
           >
             <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
               <path
@@ -58,7 +58,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
         error: (
           <div
             className="flex h-6 w-6 items-center justify-center rounded-full bg-red-100 text-red-700"
-            aria-label="Error"
+            aria-hidden="true"
           >
             <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
               <path
@@ -70,7 +70,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
           </div>
         ),
         loading: (
-          <div className="flex h-6 w-6 items-center justify-center" aria-label="Loading">
+          <div className="flex h-6 w-6 items-center justify-center" aria-hidden="true">
             <svg
               className="h-4 w-4 animate-spin text-blue-500"
               fill="none"

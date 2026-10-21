@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test'
+import { presetConsent } from './helpers'
 
 test.describe('Mobile Shell', () => {
   test.beforeEach(async ({ page }) => {
@@ -185,7 +186,14 @@ test.describe('Mobile Shell', () => {
 
   test.describe('StickyCartBar Interaction', () => {
     test('sticky cart bar button is enabled and clickable', async ({ page }) => {
+      // The press below is a cart write, which the server may take 25 s over
+      // on a slow minute (see CART_WRITE_TIMEOUT in helpers.ts); 30 s for the
+      // whole test timed out on both projects in every full run.
+      test.setTimeout(60_000)
       await page.setViewportSize({ width: 375, height: 667 })
+      // The consent banner is fixed to the bottom of the page, exactly where
+      // the sticky bar is, and intercepts the click until it is answered.
+      await presetConsent(page)
       await page.goto('/product/e2e-test-physical')
 
       const cartBar = page.locator('[data-sticky-cart-bar]')
@@ -194,16 +202,9 @@ test.describe('Mobile Shell', () => {
       const button = cartBar.locator('button')
       await expect(button).toBeEnabled()
 
-      // Dismiss consent banner if present to unblock clicks
-      const consentBanner = page.locator('[data-consent-banner]')
-      const bannerVisible = await consentBanner.isVisible().catch(() => false)
-      if (bannerVisible) {
-        const acceptButton = consentBanner.locator('button:first-child')
-        if (await acceptButton.isVisible().catch(() => false)) {
-          await acceptButton.click()
-          await page.waitForTimeout(200)
-        }
-      }
+      // (The banner used to be dismissed here by `button:first-child`, which
+      // matches BOTH its buttons, threw on strict mode inside a swallowed
+      // isVisible(), clicked nothing, and left the banner over the bar.)
 
       // Now click the sticky cart bar button
       await button.click()

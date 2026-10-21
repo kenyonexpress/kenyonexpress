@@ -1,5 +1,6 @@
 'use client'
 
+import { UNDER_99_LABEL } from '@/lib/ke-live-hero-data'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useCallback, useEffect, useId, useRef, useState } from 'react'
@@ -25,7 +26,9 @@ const MEGAMENU_ITEMS: MegaMenuItem[] = [
     brandLogos: [{ name: 'Apple' }, { name: 'Samsung' }, { name: 'Sony' }],
   },
   {
-    label: 'עד ₪99',
+    // Digits then sign, isolated: the live string puts ₪ left of the digits in
+    // RTL, and price-bidi.spec measures the glyph's x against the digit's.
+    label: UNDER_99_LABEL,
     href: '/category/under-99',
     featured: true,
     promoText: 'מציאות',

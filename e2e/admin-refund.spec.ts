@@ -1,14 +1,14 @@
-import { expect, test } from '@playwright/test'
+import { expect } from '@playwright/test'
+import { E2E_COUPON_SLUG, paidFlowEnabled } from './auth-session'
 import {
-  E2E_ADMIN_EMAIL,
-  E2E_ADMIN_PASSWORD,
-  E2E_COUPON_SLUG,
-  E2E_CUSTOMER_EMAIL,
-  E2E_CUSTOMER_PASSWORD,
-  paidFlowEnabled,
-  signInWithEmail,
-} from './auth-session'
-import { BUY_BUTTON, addOpenProductToCart, expectHebrewRtl } from './helpers'
+  BUY_BUTTON,
+  addOpenProductToCart,
+  emptyCart,
+  expectHebrewRtl,
+  newSignedInContext,
+  submitCheckout,
+  sharedCustomerTest as test,
+} from './helpers'
 
 /**
  * Admin cancel-and-refund, end to end (marathon step 10, journey d):
@@ -33,7 +33,7 @@ test.describe('admin cancel and refund @money @admin', () => {
     browser,
   }) => {
     // ---- leg 1: the customer pays ---------------------------------------
-    const customer = await browser.newContext({ locale: 'he-IL', timezoneId: 'Asia/Jerusalem' })
+    const customer = await newSignedInContext(browser, 'customer')
     const page = await customer.newPage()
 
     // Fixture check BEFORE any login: on an unseeded database (production is
@@ -44,7 +44,7 @@ test.describe('admin cancel and refund @money @admin', () => {
     const buyable = await buy.isVisible().catch(() => false)
     test.skip(!buyable, 'e2e-test-coupon is not purchasable; run pnpm seed:test')
 
-    await signInWithEmail(page, E2E_CUSTOMER_EMAIL, E2E_CUSTOMER_PASSWORD)
+    await emptyCart(page)
     await page.goto(`/product/${E2E_COUPON_SLUG}`)
 
     // Settled by the header badge AND the button leaving its pending state,
@@ -55,9 +55,7 @@ test.describe('admin cancel and refund @money @admin', () => {
     // addOpenProductToCart for the measurement.
     await addOpenProductToCart(page)
     await page.goto('/checkout')
-    await expect(page.getByRole('heading', { name: 'תשלום' })).toBeVisible({ timeout: 15_000 })
-    await page.locator('input[name="accept_terms"]').check()
-    await page.getByRole('button', { name: 'מעבר לתשלום מאובטח' }).click()
+    await submitCheckout(page)
     await page.waitForURL(/\/checkout\/return\?.*order_id=/, { timeout: 45_000 })
     await expect(page.getByRole('heading', { name: 'התשלום הצליח!' })).toBeVisible({
       timeout: 45_000,
@@ -68,14 +66,8 @@ test.describe('admin cancel and refund @money @admin', () => {
     await customer.close()
 
     // ---- leg 2: the admin refunds ----------------------------------------
-    const adminCtx = await browser.newContext({ locale: 'he-IL', timezoneId: 'Asia/Jerusalem' })
+    const adminCtx = await newSignedInContext(browser, 'admin')
     const adminPage = await adminCtx.newPage()
-    await signInWithEmail(
-      adminPage,
-      E2E_ADMIN_EMAIL,
-      E2E_ADMIN_PASSWORD,
-      `/admin/orders/${orderId}`,
-    )
     await adminPage.goto(`/admin/orders/${orderId}`)
     await expectHebrewRtl(adminPage)
     await expect(adminPage.getByRole('heading', { name: 'החזר לכרטיס' })).toBeVisible({

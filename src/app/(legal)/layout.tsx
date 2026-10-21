@@ -1,4 +1,3 @@
-import SkipLink from '@/components/a11y/SkipLink'
 import CartBootstrap from '@/components/cart/CartBootstrap'
 import { CartProvider } from '@/components/cart/CartProvider'
 import SiteFooter from '@/components/layout/SiteFooter'
@@ -34,7 +33,7 @@ export default function LegalLayout({ children }: { children: React.ReactNode })
   return (
     <CartProvider>
       <CartBootstrap />
-      <SkipLink />
+      {/* The skip link is in the root layout, ahead of the consent banner. */}
       <div className="min-h-screen flex flex-col bg-white">
         <SiteHeader />
         {/* tabIndex={-1} is load-bearing: without it the skip link moves the

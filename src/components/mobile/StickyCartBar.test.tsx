@@ -50,7 +50,7 @@ describe('StickyCartBar', () => {
     expect(container.querySelector('[data-sticky-cart-bar]')).toBeInTheDocument()
   })
 
-  it('renders with correct positioning classes for all screens', () => {
+  it('renders fixed to the bottom and hidden from md up', () => {
     const onAddToCart = vi.fn()
     const { container } = render(
       <StickyCartBar price={50000} onAddToCart={onAddToCart} isLoading={false} />,
@@ -58,9 +58,11 @@ describe('StickyCartBar', () => {
 
     const cartBar = container.querySelector('[data-sticky-cart-bar]')
     expect(cartBar).toHaveClass('fixed')
-    expect(cartBar).toHaveClass('bottom-0')
-    expect(cartBar).toHaveClass('md:bottom-auto')
-    expect(cartBar).toHaveClass('md:top-0')
+    // Above the h-14 bottom nav, not under it (see the component).
+    expect(cartBar).toHaveClass('bottom-14')
+    expect(cartBar).not.toHaveClass('bottom-0')
+    expect(cartBar).toHaveClass('md:hidden')
+    expect(cartBar).not.toHaveClass('md:top-0')
   })
 
   it('formats price as integer agorot correctly', () => {
@@ -89,7 +91,7 @@ describe('StickyCartBar', () => {
     expect(icons.length).toBeGreaterThan(0)
   })
 
-  it('is visible on all screen sizes (no md:hidden)', () => {
+  it('is mobile-only (md:hidden)', () => {
     const onAddToCart = vi.fn()
     const { container } = render(
       <StickyCartBar price={50000} onAddToCart={onAddToCart} isLoading={false} />,
@@ -97,7 +99,7 @@ describe('StickyCartBar', () => {
 
     const cartBar = container.querySelector('[data-sticky-cart-bar]')
     const classStr = cartBar?.className || ''
-    expect(classStr).not.toContain('md:hidden')
+    expect(classStr).toContain('md:hidden')
   })
 
   it('is sticky and has proper z-index', () => {

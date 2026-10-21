@@ -84,6 +84,17 @@ for (const route of ROUTES) {
           if (rect.width <= 2 || rect.height <= 2) continue
           const style = getComputedStyle(el)
           if (style.visibility === 'hidden' || style.display === 'none') continue
+          // A honeypot: a real input parked off-screen inside an aria-hidden
+          // wrapper so bots fill it and nobody else can. It keeps its 148x21
+          // box at x=-9999, which is no target at all. 2.5.8 is about targets a
+          // pointer can reach; this one is unreachable by design. The wrapper
+          // AND the position are both required, so a control merely scrolled
+          // out of view is still measured.
+          if (
+            el.closest('[aria-hidden="true"]') &&
+            (rect.right <= 0 || rect.left >= window.innerWidth)
+          )
+            continue
           // 2.5.8 exempts inline links in prose.
           if (el.tagName === 'A' && style.display === 'inline' && el.closest('p, li, td')) continue
           // THE ELEMENT'S OWN BOX IS NOT THE TAP TARGET WHEN `.hit-44` IS ON IT.

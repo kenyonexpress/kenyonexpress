@@ -1,4 +1,23 @@
-import { type Locator, type Page, expect, test } from '@playwright/test'
+import fs from 'node:fs'
+import path from 'node:path'
+import {
+  type Browser,
+  type BrowserContext,
+  type Locator,
+  type Page,
+  expect,
+  test,
+} from '@playwright/test'
+import { CONSENT_WORDING_VERSION, serializeConsent } from '../src/lib/analytics/consent'
+import {
+  E2E_ADMIN_EMAIL,
+  E2E_ADMIN_PASSWORD,
+  E2E_CUSTOMER_EMAIL,
+  E2E_CUSTOMER_PASSWORD,
+  E2E_SUPPLIER_EMAIL,
+  E2E_SUPPLIER_PASSWORD,
+  signInWithEmail,
+} from './auth-session'
 
 /**
  * Catalog content is DB-driven and the slugs are Hebrew, so specs discover a
@@ -181,12 +200,17 @@ export async function firstCategorySlug(page: Page): Promise<string | null> {
  */
 export const BUY_BUTTON = /הוסף לסל|קנה עכשיו/
 
-/** Reads the item count the header badge advertises via its aria-label. */
+/**
+ * Reads the item count the header badge advertises in its accessible name.
+ * The name is built from content (an sr-only run plus the visible price) since
+ * the aria-label failed axe's label-content-name-mismatch; an older build still
+ * carries the aria-label, so that is read first.
+ */
 async function headerCartCount(page: Page): Promise<number> {
   const label = await page
     .getByRole('button', { name: /עגלת קניות, \d+ פריטים/ })
     .first()
-    .getAttribute('aria-label')
+    .evaluate((el) => el.getAttribute('aria-label') ?? el.textContent ?? '')
     .catch(() => null)
   const match = /עגלת קניות, (\d+) פריטים/.exec(label ?? '')
   return match ? Number(match[1]) : 0
@@ -380,4 +404,345 @@ export async function awaitStreamedReveal(page: Page): Promise<void> {
     undefined,
     { timeout: DISCOVERY_TIMEOUT },
   )
+}
+
+/**
+ * THE FIXTURE CUSTOMER'S CART IS NEVER CLEARED BY THE SUITE, AND IT GROWS.
+ *
+ * Every money journey adds a line to e2e-customer@'s server cart and then
+ * pays, and a journey that died before the pay press left its line behind.
+ * Measured 2026-10-21 on the hosted project: 57 lines in that cart before a
+ * single spec had run, so the first thing a "buy one coupon" journey would
+ * have paid for was fifty-seven other things, and the stock check on the pay
+ * step refuses that ("אין מספיק במלאי לאחד הפריטים"). The money specs empty
+ * the cart right after signing in, through the page's own "רוקן עגלה" button,
+ * so each journey pays for exactly the line it added.
+ *
+ * /cart draws the empty state until /api/cart answers (see openCartWithItems),
+ * so a cart that is really empty and a cart that has not loaded look the same
+ * for a moment; the clear button is waited for, and its absence after the
+ * discovery budget is taken as empty.
+ */
+export async function emptyCart(page: Page): Promise<void> {
+  allowSlowBackend()
+  // The one read that fills the page is awaited by name, so "no clear button"
+  // means an empty cart and not a cart that has not loaded yet.
+  const cartRead = page
+    .waitForResponse(
+      (response) => response.url().includes('/api/cart') && response.request().method() === 'GET',
+      { timeout: CART_WRITE_TIMEOUT },
+    )
+    .catch(() => null)
+  await presetConsent(page)
+  await page.goto('/cart')
+  await expect(page.getByRole('heading', { name: 'סל הקניות' })).toBeVisible()
+  await cartRead
+
+  const clear = page.getByRole('button', { name: 'רוקן עגלה' })
+  const hasItems = await clear
+    .waitFor({ state: 'visible', timeout: 5_000 })
+    .then(() => true)
+    .catch(() => false)
+  if (!hasItems) return
+  await clear.click()
+  await expect(page.getByText('סל הקניות שלך ריק כרגע')).toBeVisible({
+    timeout: CART_WRITE_TIMEOUT,
+  })
+  await expect.poll(() => headerCartCount(page), { timeout: CART_WRITE_TIMEOUT }).toBe(0)
+}
+
+/**
+ * Records a consent decision in the context's cookie jar BEFORE a navigation,
+ * so the page arrives with the banner hidden by the pre-paint snippet. For a
+ * spec that only needs the banner out of the way of a click this is the cheap,
+ * deterministic form (the same preset home.spec uses); the submit path, which
+ * is the product behaviour, has its own test there.
+ */
+export async function presetConsent(page: Page, decision: 'granted' | 'denied' = 'denied') {
+  const baseURL = test.info().project.use.baseURL ?? 'http://localhost:3000'
+  await page.context().addCookies([
+    {
+      name: 'ke_consent',
+      value: serializeConsent({ decision, wordingVersion: CONSENT_WORDING_VERSION }),
+      domain: new URL(baseURL).hostname,
+      path: '/',
+    },
+  ])
+}
+
+/**
+ * Answers the consent banner with "לא תודה" when it is up, and waits for it to
+ * go. The banner is fixed to the bottom of every page and sits OVER whatever
+ * is there (a sticky buy bar, the cart's clear button at the end of a long
+ * list), so a click on those retries against "subtree intercepts pointer
+ * events" until the test times out. The decision is a server action that
+ * redirects back, which is why the banner's absence is awaited and not just
+ * the click.
+ */
+export async function dismissConsentBanner(page: Page): Promise<void> {
+  const banner = page.locator('[data-consent-banner]')
+  if (!(await banner.isVisible().catch(() => false))) return
+  await banner.getByRole('button', { name: 'לא תודה' }).click()
+  await expect(banner).toBeHidden({ timeout: DISCOVERY_TIMEOUT })
+}
+
+/**
+ * Walks the checkout to the pay press and presses it.
+ *
+ * THE CHECKOUT IS A FOUR-STEP WIZARD FROM 992px UP AND ONE LONG PAGE BELOW.
+ * The money specs were written against an older page with a "תשלום" heading
+ * and a "מעבר לתשלום מאובטח" button on arrival; neither exists. The page is
+ * headed "קופה", it opens on the personal-details step (prefilled for a
+ * signed-in customer with a saved address), "המשך" advances through address
+ * and review ("המשך לאישור"), and the terms checkbox and the pay button,
+ * "שליחת הזמנה", are in the confirm step's body. Below 992px there is no
+ * stepper and no next button: every step is on screen and the pay button is
+ * simply there (src/styles/checkout-page.css, the 991px block). So this
+ * presses whichever visible next button exists until the pay button is on
+ * screen, then accepts the terms and pays. A step that refuses to advance
+ * (a validation error) leaves the next button in place and the loop ends on
+ * the pay button never appearing, which is the honest failure.
+ */
+export async function submitCheckout(
+  page: Page,
+  options: {
+    /**
+     * For a PHYSICAL order by a customer past the verified-shipping threshold:
+     * the fixture's email and the E.164 phone on its saved address. The
+     * address step then asks for a WhatsApp code, and this seeds one the
+     * server accepts (see e2e/otp-seed.ts) and types it.
+     */
+    phoneVerification?: { email: string; phoneE164: string }
+  } = {},
+): Promise<void> {
+  allowSlowBackend()
+  await expect(page.getByRole('heading', { level: 1, name: 'קופה' })).toBeVisible({
+    timeout: DISCOVERY_TIMEOUT,
+  })
+  const form = page.locator('form.checkout-page__grid')
+  await expect(form).toBeVisible({ timeout: DISCOVERY_TIMEOUT })
+
+  const pay = form.locator('.checkout-pay-btn')
+  // By its text: the phone-verification block reuses the next button's class
+  // for its own "שליחת קוד אימות" and "אימות" buttons.
+  const next = form.locator('.checkout-nav__next:visible').filter({ hasText: /^המשך/ })
+  for (let step = 0; step < 3 && !(await pay.isVisible()); step += 1) {
+    await verifyShippingPhoneIfAsked(page, options.phoneVerification)
+    await expect(next, 'no next button and no pay button on the checkout').toBeVisible()
+    await next.click()
+    // The step swap is synchronous state, but the inactive step is hidden by
+    // CSS off a data attribute React writes on the next commit.
+    await page.waitForTimeout(250)
+  }
+  await expect(pay, 'the pay button never came on screen').toBeVisible()
+
+  await form.locator('input[name="accept_terms"]').check()
+  await pay.click()
+}
+
+/**
+ * The verified-shipping gate (F42): after five paid physical orders the
+ * address step holds a "שליחת קוד אימות בוואטסאפ" button and will not advance
+ * until a code is verified. The fixture customer is past the threshold. The
+ * send is pressed for real (the server writes its own row and tries
+ * WhatsApp, then email), a second row with a known code is seeded AFTER it so
+ * it is the newest live row for this phone, and that code is typed. Without
+ * `seed` the step is left as found and the caller's next press fails on the
+ * gate, which is the honest outcome for a spec that did not ask for this.
+ */
+async function verifyShippingPhoneIfAsked(
+  page: Page,
+  seed: { email: string; phoneE164: string } | undefined,
+): Promise<void> {
+  const block = page.getByTestId('shipping-phone-verification')
+  if (!seed || !(await block.isVisible().catch(() => false))) return
+
+  await block.getByRole('button', { name: 'שליחת קוד אימות בוואטסאפ' }).click()
+  const codeInput = block.locator('#co-phone-code')
+  await expect(codeInput, 'the code step never appeared').toBeVisible({
+    timeout: CART_WRITE_TIMEOUT,
+  })
+
+  const { seedCheckoutPhoneOtp } = await import('./otp-seed')
+  const code = '424242'
+  const seeded = await seedCheckoutPhoneOtp(seed.email, seed.phoneE164, code)
+  if (!seeded) {
+    test.skip(true, 'no service key in the test process; the shipping code cannot be seeded')
+  }
+  await codeInput.fill(code)
+  await block.getByRole('button', { name: 'אימות' }).click()
+  await expect(page.getByText('מספר הטלפון אומת')).toBeVisible({ timeout: CART_WRITE_TIMEOUT })
+}
+
+/**
+ * ONE FIXTURE CUSTOMER, TWO WORKERS, AND A SERVER-SIDE CART.
+ *
+ * Every money journey signs in as e2e-customer@, empties that account's cart,
+ * adds one product and pays for it. The chromium and mobile-chrome projects
+ * run in parallel workers, so two journeys were doing that to the SAME cart
+ * at once: measured 2026-10-21 (run 12), admin-refund on chromium emptied the
+ * cart and added the coupon, physical-purchase on mobile-chrome emptied it
+ * again and added the physical product, and admin-refund then reached a
+ * checkout holding a physical line, which opened the verified-shipping gate
+ * (postal code, WhatsApp code) on a coupon journey that had no business
+ * seeing it. Nothing in the product was wrong; the two tests shared a shopper.
+ *
+ * So the journeys take turns. The lock is a file created with `wx` (atomic on
+ * one machine, which is where the workers are) under test-results, holding
+ * the pid and the time, and a holder that died takes it to the grave for at
+ * most LOCK_STALE_MS. The time spent waiting is added to the test's own
+ * budget, so a journey that waited is not punished for the one before it.
+ *
+ * Specs opt in by taking `test` from here instead of from @playwright/test;
+ * the fixture is `auto`, so every test in such a file holds the lock for its
+ * whole duration.
+ */
+const SHARED_CUSTOMER_LOCK = path.join(process.cwd(), 'test-results', '.shared-customer.lock')
+const LOCK_STALE_MS = 5 * 60 * 1000
+const LOCK_WAIT_MAX_MS = 15 * 60 * 1000
+
+async function acquireSharedCustomer(): Promise<number> {
+  const started = Date.now()
+  fs.mkdirSync(path.dirname(SHARED_CUSTOMER_LOCK), { recursive: true })
+  for (;;) {
+    try {
+      fs.writeFileSync(
+        SHARED_CUSTOMER_LOCK,
+        JSON.stringify({ pid: process.pid, at: new Date().toISOString() }),
+        { flag: 'wx' },
+      )
+      return Date.now() - started
+    } catch {
+      try {
+        const age = Date.now() - fs.statSync(SHARED_CUSTOMER_LOCK).mtimeMs
+        if (age > LOCK_STALE_MS) fs.rmSync(SHARED_CUSTOMER_LOCK, { force: true })
+      } catch {
+        // Gone between the failed write and the stat: loop and try again.
+      }
+      if (Date.now() - started > LOCK_WAIT_MAX_MS) {
+        throw new Error('the shared fixture customer was never released by another worker')
+      }
+      await new Promise((resolve) => setTimeout(resolve, 500))
+    }
+  }
+}
+
+function releaseSharedCustomer(): void {
+  try {
+    const holder = JSON.parse(fs.readFileSync(SHARED_CUSTOMER_LOCK, 'utf8')) as { pid?: number }
+    if (holder.pid === process.pid) fs.rmSync(SHARED_CUSTOMER_LOCK, { force: true })
+  } catch {
+    // Already gone.
+  }
+}
+
+export const sharedCustomerTest = test.extend<{ sharedCustomer: undefined }>({
+  sharedCustomer: [
+    // Playwright requires a destructuring pattern here, and biome forbids an
+    // empty one; `browser` is what every money journey asks for anyway.
+    async ({ browser: _browser }, use, testInfo) => {
+      const waited = await acquireSharedCustomer()
+      if (testInfo.timeout !== 0) testInfo.setTimeout(testInfo.timeout + waited)
+      try {
+        await use(undefined)
+      } finally {
+        releaseSharedCustomer()
+      }
+    },
+    { auto: true },
+  ],
+})
+
+/**
+ * A browser context for a money journey, with ITS OWN client address.
+ *
+ * The journeys open their own contexts (`browser.newContext`) so a customer
+ * and an admin, or a customer and a supplier, can be signed in side by side.
+ * A context made that way does not inherit the project's `extraHTTPHeaders`,
+ * so it carried no `x-forwarded-for` and every money login in the run, on
+ * both workers, counted against the one real address: `login:<ip>` allows ten
+ * an hour, the run makes thirteen (physical x2, refund x2, wallet x2 at two
+ * logins each, the redeem journey at three), and the eleventh read "יותר מדי
+ * ניסיונות כניסה". Measured 2026-10-21 run 12, full-purchase-redeem on
+ * chromium, with the per-worker addresses of the page fixture untouched.
+ *
+ * Each journey now gets the worker's configured address with the last octet
+ * replaced by a hash of its own title, in 100..249, so no two journeys share
+ * a bucket and a retry of one cannot exhaust another's. Local only, like the
+ * header itself: Vercel overwrites it.
+ */
+export async function newFixtureContext(
+  browser: Browser,
+  options: { storageState?: string } = {},
+): Promise<BrowserContext> {
+  const info = test.info()
+  const base = (info.project.use.extraHTTPHeaders ?? {}) as Record<string, string>
+  const headers = { ...base }
+  const ip = headers['x-forwarded-for']
+  if (ip && /^\d+\.\d+\.\d+\.\d+$/.test(ip)) {
+    const title = info.titlePath.join(' / ')
+    let hash = 0
+    for (const char of title) hash = (hash * 31 + char.charCodeAt(0)) % 100_000
+    const octets = ip.split('.')
+    octets[3] = String(100 + (hash % 150))
+    headers['x-forwarded-for'] = octets.join('.')
+  }
+  return browser.newContext({
+    locale: 'he-IL',
+    timezoneId: 'Asia/Jerusalem',
+    extraHTTPHeaders: headers,
+    ...(options.storageState ? { storageState: options.storageState } : {}),
+  })
+}
+
+/**
+ * ONE REAL LOGIN PER ROLE PER RUN; EVERY OTHER CONTEXT REPLAYS IT.
+ *
+ * `login-account:<email>` allows twenty sign-ins an hour for one account, and
+ * a full run signed the fixture customer in thirteen times (every money
+ * journey, on both projects, plus the admin and supplier legs for theirs).
+ * Two runs inside an hour, or one run after a few standalone checks, and the
+ * fourteenth read "יותר מדי ניסיונות כניסה" on a correct password: measured
+ * 2026-10-21, runs 12 and 13, the chromium money journeys red at
+ * `waitForURL` after the login press with that sentence on the page.
+ *
+ * So the first journey to need a role signs in and stores the context's
+ * `storageState` under test-results/.auth (which Playwright wipes per run),
+ * and every later context for that role is created from it: the Supabase
+ * session cookies travel, the server refreshes them as it would for any
+ * returning visitor, and the limiter sees one attempt per role per run. The
+ * lock in `sharedCustomerTest` already serialises the journeys, so the cache
+ * is never written by two workers at once.
+ *
+ * `newFixtureContext` still gives each journey its own forwarded-for address
+ * for the per-IP ceiling and the cart-write limiter.
+ */
+export type FixtureRole = 'customer' | 'supplier' | 'admin'
+
+const AUTH_CACHE_DIR = path.join(process.cwd(), 'test-results', '.auth')
+const AUTH_CACHE_MAX_AGE_MS = 50 * 60 * 1000
+
+const ROLE_CREDENTIALS: Record<FixtureRole, { email: string; password: string }> = {
+  customer: { email: E2E_CUSTOMER_EMAIL, password: E2E_CUSTOMER_PASSWORD },
+  supplier: { email: E2E_SUPPLIER_EMAIL, password: E2E_SUPPLIER_PASSWORD },
+  admin: { email: E2E_ADMIN_EMAIL, password: E2E_ADMIN_PASSWORD },
+}
+
+export async function newSignedInContext(
+  browser: Browser,
+  role: FixtureRole,
+): Promise<BrowserContext> {
+  const file = path.join(AUTH_CACHE_DIR, `${role}.json`)
+  const fresh =
+    fs.existsSync(file) && Date.now() - fs.statSync(file).mtimeMs < AUTH_CACHE_MAX_AGE_MS
+  if (fresh) return newFixtureContext(browser, { storageState: file })
+
+  const context = await newFixtureContext(browser)
+  const page = await context.newPage()
+  const { email, password } = ROLE_CREDENTIALS[role]
+  await signInWithEmail(page, email, password)
+  await page.close()
+  fs.mkdirSync(AUTH_CACHE_DIR, { recursive: true })
+  await context.storageState({ path: file })
+  return context
 }

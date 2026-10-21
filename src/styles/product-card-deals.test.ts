@@ -39,14 +39,15 @@ describe('product-card-deals.css grid item', () => {
  * every glyph row 3px low and one word early on the wrap.
  *
  * The numbers are split across four files on purpose, and this pins the split:
- * the shared base here, the deal card's own line/weight/margin in a module
- * beside the component, the tokens in tokens.css, and the letter-spacing on
- * body in globals.css where live has it.
+ * the shared base here, the deal card's own line/weight/margin as the
+ * `--deal` modifier below it in this same file (it was a CSS module beside
+ * the component until F44: a module is its own chunk and its own
+ * render-blocking <link> on the homepage), the tokens in tokens.css, and the
+ * letter-spacing on body in globals.css where live has it.
  */
 describe('product-card-deals.css title and price type (F43)', () => {
   const read = (rel: string) => fs.readFileSync(path.resolve(__dirname, rel), 'utf-8')
   const css = read('./product-card-deals.css')
-  const module = read('../components/ProductDealCard.module.css')
   const component = read('../components/ProductDealCard.tsx')
   const tokens = read('./tokens.css')
   const globals = read('../app/globals.css')
@@ -56,20 +57,20 @@ describe('product-card-deals.css title and price type (F43)', () => {
     expect(base).toMatch(/font-size:\s*22px;/)
     expect(base).not.toMatch(/line-height/)
     expect(base).not.toMatch(/line-height:\s*32px/)
-    // One class, so the module's h2.title out-ranks it.
-    expect(css).not.toMatch(/h2\.p_con__title/)
+    // One class, so the element-qualified modifier out-ranks it.
+    expect(css).not.toMatch(/h2\.p_con__title\s*\{/)
   })
 
-  it('gives the deal card live\u2019s 26.4px line, weight 500 and 8px margin in its module', () => {
-    const rule = module.match(/\nh2\.title \{([^}]*)\}/)?.[1] ?? ''
+  it('gives the deal card live\u2019s 26.4px line, weight 500 and 8px margin in its modifier', () => {
+    const rule = css.match(/\nh2\.p_con__title--deal \{([^}]*)\}/)?.[1] ?? ''
     expect(rule).toMatch(/line-height:\s*var\(--leading-deal-title\);/)
     expect(rule).toMatch(/font-weight:\s*var\(--weight-medium\);/)
     expect(rule).toMatch(/margin:\s*0 0 8px;/)
   })
 
-  it('applies the module class next to the base class on the h2', () => {
-    expect(component).toMatch(/import styles from '\.\/ProductDealCard\.module\.css'/)
-    expect(component).toMatch(/className=\{`p_con__title \$\{styles\.title\}`\}/)
+  it('applies the modifier next to the base class on the h2, with no module', () => {
+    expect(component).not.toMatch(/\.module\.css/)
+    expect(component).toMatch(/className="p_con__title p_con__title--deal"/)
   })
 
   it('declares the measured tokens', () => {

@@ -1,11 +1,25 @@
 import { render } from '@testing-library/react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import ScrollRestoration from './ScrollRestoration'
+
+function setScrollY(value: number) {
+  Object.defineProperty(window, 'scrollY', { writable: true, configurable: true, value })
+}
+
+/** jsdom's location is http://localhost:3000/ in this suite, so the path is "/". */
+function saved(path: string, y: number) {
+  sessionStorage.setItem('scroll-y', JSON.stringify({ path, y }))
+}
 
 describe('ScrollRestoration', () => {
   beforeEach(() => {
     sessionStorage.clear()
-    window.scrollY = 0
+    setScrollY(0)
+    window.history.replaceState(null, '', '/')
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
   })
 
   it('renders without crashing', () => {
@@ -25,41 +39,85 @@ describe('ScrollRestoration', () => {
     }
   })
 
-  it('saves scroll position on beforeunload', () => {
-    Object.defineProperty(window, 'scrollY', {
-      writable: true,
-      configurable: true,
-      value: 250,
-    })
+  it('saves the scroll position WITH the path it belongs to on beforeunload', () => {
+    window.history.replaceState(null, '', '/product/x?y=1')
+    setScrollY(250)
 
     render(<ScrollRestoration />)
     window.dispatchEvent(new Event('beforeunload'))
 
-    expect(sessionStorage.getItem('scroll-y')).toBe('250')
-  })
-
-  it('restores scroll position on pageshow event', () => {
-    sessionStorage.setItem('scroll-y', '350')
-
-    const scrollToSpy = vi.spyOn(window, 'scrollTo')
-    render(<ScrollRestoration />)
-
-    const event = new PageTransitionEvent('pageshow', { persisted: true })
-    window.dispatchEvent(event)
-
-    expect(scrollToSpy).toHaveBeenCalledWith({
-      top: 350,
-      left: 0,
-      behavior: 'auto',
+    expect(JSON.parse(sessionStorage.getItem('scroll-y') ?? 'null')).toEqual({
+      path: '/product/x?y=1',
+      y: 250,
     })
   })
 
-  it('handles missing scroll-y in sessionStorage', () => {
-    const scrollToSpy = vi.spyOn(window, 'scrollTo')
+  it('restores on a persisted pageshow for the same path', () => {
+    saved('/', 350)
+    const scrollToSpy = vi.spyOn(window, 'scrollTo').mockImplementation(() => {})
     render(<ScrollRestoration />)
 
-    const event = new PageTransitionEvent('pageshow', { persisted: true })
-    window.dispatchEvent(event)
+    window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true }))
+
+    expect(scrollToSpy).toHaveBeenCalledWith({ top: 350, left: 0, behavior: 'auto' })
+  })
+
+  /**
+   * THE DEFECT THIS COMPONENT HAD. A product page scrolled 729px saved that
+   * number, and /checkout, a different page whose body had not streamed yet,
+   * was scrolled 729px on arrival: CLS 0.4515 on the production build at
+   * Pixel 5, measured 2026-10-21, all of it the footer leaving the viewport.
+   */
+  it('never applies a position saved on a different path', () => {
+    saved('/product/x', 729)
+    const scrollToSpy = vi.spyOn(window, 'scrollTo').mockImplementation(() => {})
+    render(<ScrollRestoration />)
+
+    window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true }))
+
+    expect(scrollToSpy).not.toHaveBeenCalled()
+  })
+
+  it('does not restore on an ordinary (non-persisted) pageshow', () => {
+    saved('/', 350)
+    const scrollToSpy = vi.spyOn(window, 'scrollTo').mockImplementation(() => {})
+    render(<ScrollRestoration />)
+
+    window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: false }))
+
+    expect(scrollToSpy).not.toHaveBeenCalled()
+  })
+
+  it('does not restore on mount for a forward navigation, only for back_forward', () => {
+    saved('/', 400)
+    const scrollToSpy = vi.spyOn(window, 'scrollTo').mockImplementation(() => {})
+    const entries = vi.spyOn(performance, 'getEntriesByType')
+
+    entries.mockReturnValue([{ type: 'navigate' } as unknown as PerformanceEntry])
+    const first = render(<ScrollRestoration />)
+    expect(scrollToSpy).not.toHaveBeenCalled()
+    first.unmount()
+
+    entries.mockReturnValue([{ type: 'back_forward' } as unknown as PerformanceEntry])
+    render(<ScrollRestoration />)
+    expect(scrollToSpy).toHaveBeenCalledWith({ top: 400, left: 0, behavior: 'auto' })
+  })
+
+  it('ignores an entry written by the old unscoped version (a bare number)', () => {
+    sessionStorage.setItem('scroll-y', '350')
+    const scrollToSpy = vi.spyOn(window, 'scrollTo').mockImplementation(() => {})
+    render(<ScrollRestoration />)
+
+    window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true }))
+
+    expect(scrollToSpy).not.toHaveBeenCalled()
+  })
+
+  it('handles missing scroll-y in sessionStorage', () => {
+    const scrollToSpy = vi.spyOn(window, 'scrollTo').mockImplementation(() => {})
+    render(<ScrollRestoration />)
+
+    window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true }))
 
     expect(scrollToSpy).not.toHaveBeenCalled()
   })
@@ -71,76 +129,21 @@ describe('ScrollRestoration', () => {
 
     expect(removeEventListenerSpy).toHaveBeenCalledWith('beforeunload', expect.any(Function))
     expect(removeEventListenerSpy).toHaveBeenCalledWith('pageshow', expect.any(Function))
-    removeEventListenerSpy.mockRestore()
   })
 
-  it('full flow: saves on beforeunload and restores on pageshow', () => {
-    Object.defineProperty(window, 'scrollY', {
-      writable: true,
-      configurable: true,
-      value: 500,
-    })
-
-    render(<ScrollRestoration />)
-    window.dispatchEvent(new Event('beforeunload'))
-    expect(sessionStorage.getItem('scroll-y')).toBe('500')
-
-    Object.defineProperty(window, 'scrollY', {
-      writable: true,
-      configurable: true,
-      value: 0,
-    })
-
-    const scrollToSpy = vi.spyOn(window, 'scrollTo')
-    const event = new PageTransitionEvent('pageshow', { persisted: true })
-    window.dispatchEvent(event)
-
-    expect(scrollToSpy).toHaveBeenCalledWith({
-      top: 500,
-      left: 0,
-      behavior: 'auto',
-    })
-  })
-
-  it('simulates back navigation: user scrolls → navigates away → returns to page with scroll restored', () => {
-    // Step 1: User scrolls down
-    Object.defineProperty(window, 'scrollY', {
-      writable: true,
-      configurable: true,
-      value: 750,
-    })
-
+  it('full flow: scroll, leave, come back with bfcache, restored on the same path', () => {
+    setScrollY(750)
     const { unmount } = render(<ScrollRestoration />)
 
-    // Step 2: User navigates away (beforeunload fires)
     window.dispatchEvent(new Event('beforeunload'))
-    expect(sessionStorage.getItem('scroll-y')).toBe('750')
-
-    // Step 3: Component unmounts (page leaves)
+    expect(JSON.parse(sessionStorage.getItem('scroll-y') ?? 'null')).toEqual({ path: '/', y: 750 })
     unmount()
 
-    // Step 4: User hits back button (new page instance, bfcache restores)
-    // Reset scrollY to simulate new page load at top
-    Object.defineProperty(window, 'scrollY', {
-      writable: true,
-      configurable: true,
-      value: 0,
-    })
-
-    const scrollToSpy = vi.spyOn(window, 'scrollTo')
-
-    // Step 5: New component instance with stored position
+    setScrollY(0)
+    const scrollToSpy = vi.spyOn(window, 'scrollTo').mockImplementation(() => {})
     render(<ScrollRestoration />)
+    window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true }))
 
-    // Step 6: Browser fires pageshow with persisted=true (back navigation)
-    const backNavEvent = new PageTransitionEvent('pageshow', { persisted: true })
-    window.dispatchEvent(backNavEvent)
-
-    // Step 7: Scroll restored to saved position
-    expect(scrollToSpy).toHaveBeenCalledWith({
-      top: 750,
-      left: 0,
-      behavior: 'auto',
-    })
+    expect(scrollToSpy).toHaveBeenCalledWith({ top: 750, left: 0, behavior: 'auto' })
   })
 })

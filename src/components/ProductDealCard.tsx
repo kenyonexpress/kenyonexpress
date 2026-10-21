@@ -3,7 +3,6 @@ import { KE_LIVE_DEAL_TABLET_SQUARE } from '@/lib/ke-live-deals-data'
 import { shekelsFromIlsRounded } from '@/lib/money-format'
 import Image from 'next/image'
 import Link from 'next/link'
-import styles from './ProductDealCard.module.css'
 
 /** Same shape as `Product` on ProductCard; kept local so this file never
  *  imports the Client Component module (which would pull it into the server
@@ -147,7 +146,7 @@ export default function ProductDealCard({ product }: { product: Product }) {
       */}
       <div className="p_con__title-wrap">
         <Link href={`/product/${product.slug}`} className="hover:underline" prefetch={false}>
-          <h2 className={`p_con__title ${styles.title}`}>{product.name_he}</h2>
+          <h2 className="p_con__title p_con__title--deal">{product.name_he}</h2>
         </Link>
       </div>
 
