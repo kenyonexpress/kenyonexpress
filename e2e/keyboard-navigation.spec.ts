@@ -87,26 +87,40 @@ test.describe('Keyboard Navigation - Hebrew RTL', () => {
   test('focus is visible on all interactive elements', async ({ page }) => {
     await page.goto('/')
     await page.waitForLoadState('domcontentloaded')
+    // The skip link is the page's first tab stop; a Tab pressed before it is
+    // in the document lands on <body> and there is nothing to measure.
+    await page.locator('a[href="#main-content"]').waitFor({ state: 'attached' })
 
-    // Tab through multiple elements and check focus is visible
+    // Tab through multiple elements and check focus is visible.
+    //
+    // THE FOCUS PROBE MUST NOT AUTO-WAIT. This loop used to read
+    // `page.locator(':focus').elementHandle()` and then branch on a null
+    // handle for "nothing is focused". That branch could never run:
+    // `elementHandle()` waits for a match, the config sets no action timeout,
+    // and a Tab that left <body> active (run 16, mobile-chrome, the snapshot
+    // shows the document itself as the active element) made the probe wait
+    // out the whole 30 s test timeout instead of returning null. The retry
+    // passed in 652 ms, so the suite called it flaky when the spec was hung
+    // on a locator that cannot answer "none". One evaluate over
+    // `document.activeElement` answers immediately either way.
     const elementsToCheck = 5
+    let focusedCount = 0
     for (let i = 0; i < elementsToCheck; i++) {
       await page.keyboard.press('Tab')
 
-      const focused = page.locator(':focus')
-      const focusedElement = await focused.elementHandle()
+      const focusStyle = await page.evaluate(() => {
+        const el = document.activeElement
+        if (!el || el === document.body || el === document.documentElement) return null
+        const style = window.getComputedStyle(el)
+        return {
+          outline: style.outline,
+          boxShadow: style.boxShadow,
+          borderColor: style.borderColor,
+        }
+      })
 
-      if (focusedElement) {
-        // Get computed style to verify focus indicator
-        const focusStyle = await focused.evaluate((el: Element) => {
-          const style = window.getComputedStyle(el)
-          return {
-            outline: style.outline,
-            boxShadow: style.boxShadow,
-            borderColor: style.borderColor,
-          }
-        })
-
+      if (focusStyle) {
+        focusedCount += 1
         // At least one focus indicator should be visible
         const hasIndicator =
           focusStyle.outline !== 'none' ||
@@ -116,6 +130,8 @@ test.describe('Keyboard Navigation - Hebrew RTL', () => {
         expect(hasIndicator, `element ${i} should have visible focus indicator`).toBe(true)
       }
     }
+
+    expect(focusedCount, 'five Tabs on the home page should focus something').toBeGreaterThan(0)
   })
 
   test('cart page keyboard navigation is complete', async ({ page }) => {
