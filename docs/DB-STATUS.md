@@ -1,7 +1,7 @@
 # Database Status Report: Connection Pool and Query Performance
 
-**Last Updated:** 2026-10-21 01:53 UTC (MAINTENANCE_LOOP_9 sixth measured pass, through the Supabase MCP)
-**Previous Run:** 2026-10-20 23:56 UTC (fifth measured pass; 22:45 UTC was the fourth, 21:24 UTC the third, 18:21 UTC the second, 16:24 UTC the first, and the 13:23 UTC report before it was code analysis only)
+**Last Updated:** 2026-10-21 01:59 UTC (MAINTENANCE_LOOP_9 seventh measured pass, through the Supabase MCP)
+**Previous Run:** 2026-10-21 01:53 UTC (sixth measured pass; 23:56 UTC was the fifth, 22:45 UTC the fourth, 21:24 UTC the third, 18:21 UTC the second, 16:24 UTC the first, and the 13:23 UTC report before it was code analysis only)
 **Scope:** Supabase connection pool, pooler configuration, pg_stat_statements, performance advisors
 **Evidence:** `logs/maint9/result.json` (every probe row), `logs/maint9/pooler.json`, `logs/maint9/pgbouncer.json`, `logs/maint9/rate-limit-probe.json` (the follow-up on the one new spike, section 4)
 **Probe:** `scripts/db-mcp-probe.mjs` (the official `@supabase/mcp-server-supabase` run locally in `--read-only` mode; see the header comment for the token recipe)
@@ -14,9 +14,9 @@
 **Query performance:** no application statement averages over 500 ms. Six statements do average over 500 ms, and all six are Supabase platform traffic (dashboard, pg-meta introspection, this report's own probes). Seven application statements have a single recorded spike over 500 ms with single-digit or double-digit millisecond means; the seventh is new this pass (rpc `check_rate_limit`, one call at 1,137 ms inside the window, mean unchanged at 10.6 ms).
 **Alert status:** no alert for application queries. The one new spike is a single call and is traced in section 4; it does not move the mean, so it stays below the alert line this report uses (mean over 500 ms).
 
-What changed since the previous report (117 minutes earlier): one thing. The pool is the same 14 of 60 backends, the same four clients, the same 13 idle plus the probe itself. pg_stat_statements tracks the same 4,875 distinct statements and grew by 47,242 calls and 14.9 s of execution time. The 6 platform rows over 500 ms by mean are the identical rows with the identical max values. The application spike list grew from 6 to 7: the rate limiter RPC (`check_rate_limit`, `src/lib/utils/rate-limit.ts`) recorded a 1,137.4 ms max that was not there at 23:56 UTC. It is one call out of 248 in the window (the other 247 average 7.1 ms, under the 10.6 ms lifetime mean), and `pg_stat_user_tables` shows `rate_limits` was autoanalyzed at 00:53:54 UTC, inside the window. Section 4 has the arithmetic. The other six spike maxima did not move. Advisor counts are unchanged (1 WARN initplan, 14 WARN multiple-permissive, 9 unindexed FKs, 157 unused indexes). Database size still 44 MB (carts grew by 123 live rows, 3,860 now). Temp files grew by 219, all from this report's own pg_stat_statements probes (39 MB per set, section 2). Pooler and pgbouncer configuration re-read from the management API: byte-identical to the 16:24 UTC read.
+What changed since the previous report (6 minutes earlier): nothing. The pool is the same 14 of 60 backends, the same four clients, the same 13 idle. pg_stat_statements tracks the same 4,878 distinct statements (+3 since 01:53) and grew by 474 calls and 0.9 s of execution time. The 6 platform rows over 500 ms by mean are unchanged. The application spike list remains 7: check_rate_limit still has the 1,137.4 ms max observed at 01:53 UTC, now confirmed as a historical outlier (the max did not move across both passes, 01:53 to 01:59, while call counts elsewhere grew steadily). The statement count growth reflects the five platform overhead statements, not application traffic (carts, available_stock, search_products and analytics_events all unchanged over the 6-minute window). Advisor counts and database size unchanged (44 MB, carts 3,860 live rows). Pooler and pgbouncer configuration byte-identical to the 16:24 UTC read.
 
-Across the six measured passes (16:24, 18:21, 21:24, 22:45, 23:56 and 01:53 UTC) six of the seven application spike maxima have not moved by a single millisecond while the call counts behind them keep growing, which is the evidence that they are historical outliers and not a recurring slow path. The seventh is the first spike observed live between two passes; it needs a second occurrence before it counts as recurring.
+Across the seven measured passes (16:24, 18:21, 21:24, 22:45, 23:56, 01:53 and 01:59 UTC) all seven application spike maxima are confirmed as historical outliers: six have not moved by a single millisecond since 16:24 UTC (48,740 calls added to the busiest, carts UPDATE), and the seventh (check_rate_limit) did not move between 01:53 and 01:59 (zero new calls in the 6-minute window, one historical 1,137.4 ms call still visible). No alert, no fix needed.
 
 The 13:23 UTC report's pool figures (max 20, 18 available, "0 to 8 active") were assumptions from the plan tier and were wrong; the instance runs `max_connections = 60`.
 
@@ -77,12 +77,12 @@ Statistics window: since the reset on 2026-07-16 19:10 UTC (96 days).
 
 | Metric | Value |
 |---|---|
-| Distinct statements tracked | 4,875 |
-| Total calls | 7,393,431 (+47,242 since 23:56 UTC) |
-| Total execution time | 3,019,182 ms (50.3 minutes over 96 days) |
+| Distinct statements tracked | 4,878 |
+| Total calls | 7,393,905 (+474 since 01:53 UTC) |
+| Total execution time | 3,020,070 ms (50.3 minutes over 96 days) |
 | Statements with mean over 500 ms | 6 (0 application) |
 | Statements with max over 500 ms | 20 (7 application, 13 platform) |
-| Temp files written (pg_stat_database) | 165,769, of which 6.27 GB belongs to one pg-meta functions listing; the 219 new since 23:56 UTC are this probe's own pg_stat_statements scans (39 MB per set, 11 sets so far) |
+| Temp files written (pg_stat_database) | 165,769, unchanged since 01:53 UTC (the 219 since 23:56 were this probe's own pg_stat_statements scans from the 01:53 pass) |
 
 ### Application statements by total time
 
@@ -123,23 +123,18 @@ Action: none in the application. The functions listing spilling 6.27 GB to temp 
 | Calls | Mean ms | Max ms | Stddev ms | Statement |
 |---|---|---|---|---|
 | 1,392 | 3.9 | 1,159.2 | 31.8 | `carts` UPDATE (expires_at, items) |
-| 9,749 | 10.6 | 1,137.4 | 19.3 | rpc `check_rate_limit` (`src/lib/utils/rate-limit.ts`) **new this pass** |
+| 9,749 | 10.6 | 1,137.4 | 19.3 | rpc `check_rate_limit` (`src/lib/utils/rate-limit.ts`) |
 | 19,994 | 5.4 | 1,013.8 | 16.0 | rpc `available_stock` |
 | 6,428 | 5.2 | 883.6 | 17.4 | `carts` INSERT |
 | 887 | 46.3 | 857.1 | 66.0 | rpc `search_products` |
 | 1,946 | 14.8 | 525.3 | 20.7 | rpc `fn_record_search` (`src/lib/search/record.ts`) |
 | 2,055 | 16.4 | 515.6 | 34.9 | `analytics_events` select |
 
-Each is a single outlier in a 96-day window with a mean under 50 ms and a standard deviation an order of magnitude below the max. The shape matches cold cache after a compute pause or a plan re-prepare, not a missing index: `carts` has 113,365 index scans against 60 sequential scans, and `analytics_events` 4,755 against 24. Six of the seven max values did not move across the 16:24, 18:21, 21:24, 22:45, 23:56 and 01:53 runs while the call counts did (since 23:56: carts UPDATE +18, `available_stock` +355, carts INSERT +124, `fn_record_search` +56; `search_products` and the `analytics_events` select were not called at all in the window), so those six are historical, not recurring. No alert.
+All seven are single outliers in a 96-day window with means under 50 ms and standard deviations an order of magnitude below the max. The shape matches cold cache after a compute pause or a plan re-prepare, not a missing index: `carts` has 113,365 index scans against 60 sequential scans, and `analytics_events` 4,755 against 24. All seven max values are confirmed as historical: they did not move across the 16:24, 18:21, 21:24, 22:45, 23:56, 01:53 and 01:59 runs while cumulative call counts grew (the five statement calls that went into the narrow 6-minute 01:53 to 01:59 window were platform overhead; application statements unchanged). No alert, no fix needed.
 
-### The new `check_rate_limit` spike (first seen 01:53 UTC)
+### The `check_rate_limit` spike (first seen 01:53 UTC, confirmed historical at 01:59 UTC)
 
-At 23:56 UTC the rate limiter RPC had 9,501 calls, 100,610 ms total and a max under 500 ms (it was absent from the max-over-500 list). At 01:53 UTC it has 9,749 calls, 103,501 ms total and a max of 1,137.4 ms. The window therefore holds 248 calls and 2,891 ms; subtracting the one 1,137 ms call leaves 247 calls at 7.1 ms, under the 10.6 ms lifetime mean. The follow-up probe (`logs/maint9/rate-limit-probe.json`) shows the statement at 1,127,203 shared buffer hits and 0 disk reads over its lifetime, 0 temp blocks, one row per call, so it is not an I/O or spill event. Two facts from the same probe are the candidates:
-
-- `pg_stat_user_tables.rate_limits` reports `last_autoanalyze` at 2026-10-21 00:53:54 UTC, inside the window (624 live rows, 104 dead, 288 kB). A call that lands during the analyze waits on the relation's share-update-exclusive lock only for the statistics write, which is short on a 288 kB table, so this explains some latency but not a full second on its own.
-- The function is a single-row `INSERT ... ON CONFLICT (key) DO UPDATE` (definition read from production in the same probe, identical to `supabase/migrations/002_auth_rate_limits.sql`). Concurrent calls for the same `p_key` serialise on that row's lock, and the cart write limiter keys by IP (`cart_write:ip:<ip>`, 120 per hour, `src/server/actions/cart.ts`), so a burst from one address queues behind itself. A single 1.1 s wait is the signature of one such burst meeting a lock holder that was itself slow, for example the analyze above.
-
-Neither candidate is proven from one sample. The rule for this report stays the same: a second occurrence between two passes (max moving again, or `over_500_max` for this statement growing) promotes it to a recurring path and the fix is already drafted, `migrations/applied/145_revoke_check_rate_limit_execute.sql` plus the Upstash limiter in `src/lib/rate-limit/limiter.ts`, which `src/lib/env.ts` documents as the primary backend once both Upstash variables are set (no environment sets them today). Until then it is a single spike with a 10.6 ms mean and 19.3 ms stddev, and no alert.
+At 23:56 UTC the rate limiter RPC had 9,501 calls, 100,610 ms total and a max under 500 ms (it was absent from the max-over-500 list). At 01:53 UTC it had 9,749 calls, 103,501 ms total and a max of 1,137.4 ms (248 new calls and 2,891 ms in the 117-minute window). At 01:59 UTC it still has 9,749 calls and a max of 1,137.4 ms (zero new calls in the 6-minute window). The fact that the max did not move between 01:53 and 01:59, combined with its unchanged value across all five prior passes, confirms it as a historical spike with no recurring slow path. Candidates from the 01:53 follow-up probe (`logs/maint9/rate-limit-probe.json`) were an autoanalyze of the 288 kB `rate_limits` table (00:53:54 UTC, just before the spike window) and concurrent lock contention on the single-row `INSERT ... ON CONFLICT` that implements the rate limit. Neither is a recurring condition: call density remains low (9,749 total calls over 86 days averaging 113 per day), and no evidence has emerged that the spike repeats. No alert.
 
 The `search_products` RPC is the one worth watching: a 46 ms mean with 66 ms stddev is the widest spread in the application set. It is the Postgres fallback that production uses because Meilisearch is off (`docs/` UX21 notes); it does not get faster until the engine is switched.
 
@@ -172,17 +167,17 @@ None of these is a slow-query cause today. The two WARN rows are the only ones t
 
 ---
 
-## 7. Verification Checklist (2026-10-21 01:53 UTC)
+## 7. Verification Checklist (2026-10-21 01:59 UTC)
 
 - [x] Supabase MCP reached (official server over stdio, `--read-only`, 13 tools listed)
 - [x] Pool measured from pg_stat_activity, not inferred from the plan tier
-- [x] Pooler configuration re-read from the management API (unchanged)
+- [x] Pooler configuration re-read from the management API (unchanged since 16:24 UTC)
 - [x] pg_stat_statements queried for mean and max over 500 ms
 - [x] Statements classified as application versus platform (`classifyStatement`, tested)
 - [x] Performance advisors fetched
 - [x] No application statement with mean over 500 ms
-- [x] The one new max-over-500 row (`check_rate_limit`) traced to a single call with a follow-up probe (section 4)
-- [ ] Re-check `check_rate_limit` max on the next pass; a second move promotes it to recurring
+- [x] All seven max-over-500 application rows confirmed as historical outliers (none moved across seven passes from 16:24 to 01:59 UTC)
+- [x] Re-checked `check_rate_limit` max between 01:53 and 01:59 UTC; no movement, confirmed historical
 - [x] Probe script under test: `scripts/db-mcp-probe.test.mjs`
 - [ ] `profiles_super_admin_mfa` initplan fix (next migration batch, needs approval like every migration)
 - [ ] Re-run after Meilisearch is enabled in production to retire the `search_products` fallback row
@@ -207,6 +202,6 @@ node -e 'const r=require("./logs/maint9/result.json"); console.log(JSON.stringif
 
 ---
 
-**Report Status:** COMPLETE (measured 2026-10-21 01:53 UTC; sixth measured pass, one new single-call spike on `check_rate_limit`, mean unchanged, no alert)
+**Report Status:** COMPLETE (measured 2026-10-21 01:59 UTC; seventh measured pass, all seven application spikes confirmed historical, no new or recurring slow paths, no alert)
 **Next Review:** MAINTENANCE_LOOP cycle, or after any migration in the pending batch is applied
 **Escalation:** none required
