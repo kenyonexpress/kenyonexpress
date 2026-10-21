@@ -4565,3 +4565,9 @@ Supabase MCP authentication unavailable in non-interactive session. CLI fallback
 - Gates: type-check exit 0, lint exit 0 (1726 files, three gates clean), build exit 0 (cold), gate:chunks clean. Backup 2026-10-21-1241 present, three kept; caffeinate alive (two processes), SleepDisabled 1. No stale listener on 3417 this time.
 
 **המשך מ:** MAINTENANCE_LOOP_8 (head of ~/ke-goals/queue.txt).
+
+## MAINTENANCE_LOOP_8 (2026-10-21 10:19 UTC, eleventh pass, commit 815498ecd)
+- Code debt scan of src/ on 025ad965a (clean tree): 8 TODO, 0 FIXME, 0 HACK, word-boundary and loose scans agree on 8, delta 0 against the tenth pass on d195ad97f. 18 commits since, exactly one touched src/ (13021b20c, E2E run 12) and its added lines carry no marker. The eight hits are byte-identical for an eighth consecutive pass (7 comments: stock-notifications revalidateTag, two cardcom endpoint confirmations, four r2-migration steps; plus the whatsapp.test.ts stub string). No cleanup goal queued, ~/ke-goals/queue.txt untouched. docs/CODE-DEBT-STATUS.md header, summary, history row and delta paragraph updated. Committed 815498ecd, pushed.
+- Gates: type-check exit 0, lint exit 0 (1726 files, three gates clean), build exit 0 (H1wAwbPqvOxafnu2L2sne), gate:chunks clean on 243 pages. Backup 2026-10-21-1241 present, three kept; caffeinate alive (two processes), SleepDisabled 1.
+
+**המשך מ:** MAINTENANCE_LOOP_9 (head of ~/ke-goals/queue.txt).
