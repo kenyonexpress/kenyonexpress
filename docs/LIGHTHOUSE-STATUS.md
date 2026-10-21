@@ -1,17 +1,54 @@
 # Lighthouse CI Status Report
 
-**Last Updated:** 2026-10-21 01:46 UTC (MAINTENANCE_LOOP_7, seventh pass)
+**Last Updated:** 2026-10-21 08:06 UTC (MAINTENANCE_LOOP_7, eighth pass)
 **Measurement Method:** `LHCI_BASE_URL=http://localhost:3361 COMPARE_PRODUCT_SLUG=<slug> pnpm lhci:autorun`
-(`@lhci/cli` 0.15.1 via `pnpm dlx`, Lighthouse 12.6.1, `desktop` preset, 3 runs per URL, lhci median)
-**Build:** commit `3548a74dc` (clean tree), fresh `pnpm build` exit 0, BUILD_ID `y_c6WB3ZaWssk9wRjl0jf`, served by `pnpm start` from this worktree on port 3361 (listener pid 51280, cwd verified as this checkout before the run, port free beforehand, killed by pid afterwards). `pnpm type-check` and `pnpm lint` ran clean alongside the build.
-**Reports:** `.lighthouseci/reports/` (git-ignored, nothing uploaded; the 23:50 reports were moved out of the repo so the manifest holds only this pass)
+(`@lhci/cli` 0.15.1 via `pnpm dlx`, Lighthouse 12.6.1, Chrome 155, `desktop` preset, 3 runs per URL, lhci median)
+**Build:** commit `4d08a6515` (clean tree), **cold** `pnpm build` exit 0 with `.next/cache/turbopack` moved aside first (see "Stale build cache" below), BUILD_ID `TYMhcyjg71hC5vYivmt-y`, served by `pnpm start` from this worktree on port 3361 (listener pid 55588, cwd verified as this checkout, served BUILD_ID verified in the HTML, port free beforehand, killed by pid afterwards). `pnpm type-check` and `pnpm lint` ran clean alongside the build; `pnpm gate:chunks` clean on 292 prerendered pages.
+**Reports:** `.lighthouseci/reports/` (git-ignored, nothing uploaded; the 01:46 reports and the discarded warm-cache run were moved out of the repo so the manifest holds only this pass)
 
 ## Summary
 
 ✅ **Every category at or above 90 on all three URLs, in all nine runs.** No optimisation goal queued; `~/ke-goals/queue.txt` untouched.
-✅ **Performance 98 to 99** on the representative runs (target ≥ 90); the nine individual runs are 98 to 99
-✅ **Accessibility 100** in all nine runs (target ≥ 90), fifth consecutive pass holding the A11Y_FIX_PRODUCTS_LIGHTHOUSE result
+✅ **Performance 98 to 100** on the representative runs (target ≥ 90); the nine individual runs are 98 to 100
+✅ **Accessibility 100** in all nine runs (target ≥ 90), sixth consecutive pass holding the A11Y_FIX_PRODUCTS_LIGHTHOUSE result
 ✅ Best Practices 96 and SEO 100 everywhere
+⚠️ **The first run of this pass measured a build that did not hydrate, and scored it 99.** Discarded, root-caused, gated. Details below.
+
+| URL | Performance | Accessibility | Best Practices | SEO | FCP | LCP | TBT | CLS | Status |
+|-----|-------------|---------------|----------------|-----|-----|-----|-----|-----|--------|
+| `/` | 100 (99, 100, 100) | 100 (100, 100, 100) | 96 | 100 | 0.4 s | 0.7 s | 0 ms | 0.021 | ✅ PASS |
+| `/products` | 99 (98, 99, 99) | 100 (100, 100, 100) | 96 | 100 | 0.4 s | 0.9 s | 0 ms | 0.006 | ✅ PASS |
+| `/product/אוזניות-איירפודס-3` | 98 (98, 98, 99) | 100 (100, 100, 100) | 96 | 100 | 0.4 s | 1.1 s | 0 ms | 0.007 | ✅ PASS |
+
+The first number is lhci's representative (median) run, the bracket lists all three runs in order. Metrics are from the representative run.
+
+No weighted audit scores below 0.9 in any category except `errors-in-console` under Best Practices, which is the same five local-environment items as every previous pass (two `/_vercel/*` 404s, two "Refused to execute" on their `text/plain` answer, one `ERR_SSL_PROTOCOL_ERROR` on an https request to the plain-http localhost origin), checked item by item on all three representative reports. No `/_next/*` request failed on any page.
+
+Against the 01:46 pass: `/` moved 99 to 100, `/products` is identical at 99, the product page is identical at 98. Five `src/` commits landed in between (F41 business registration number, F42 legal pages and reviews removal, F43 deal card title and body tracking, plus a residual), 111 files, and all three measured pages render different markup: the deals card title module on `/` and `/products`, the reviews block removed from the product page. The scores did not move outside the localhost band described in `docs/PERFORMANCE-BUDGET.md`. TBT was 0 ms in all nine runs.
+
+### Stale build cache: a 99 for a page that never hydrated
+
+The first `pnpm build` of this pass (BUILD_ID `jJ5wuG-zZd9m308zWyTfy`, 14:54 local) reused the Turbopack filesystem cache that Next 16 keeps on by default for builds (`experimental.turbopackFileSystemCacheForBuild`, `.next/cache/turbopack`, created by a build at 12:24 and shared by the 12:42, 14:52 and 14:54 builds). Its prerendered HTML for `/` and `/product/[slug]` listed a client chunk, `/_next/static/chunks/1k-r7teo-59oi.js`, that the same build did not write to `.next/static/chunks/`. The reference appeared nowhere else: not in any manifest, not in any other chunk, only in the four prerendered `route-cache` HTML and meta files.
+
+Measured consequences on that build, with a Playwright probe on the served pages:
+
+| Page | HTML source | `/_next/*` failures | Buttons with a React handler | Lighthouse perf |
+|------|-------------|---------------------|------------------------------|-----------------|
+| `/` | prerendered at build | 1 (404 `text/plain`, Chrome refused to execute) | **0 of 53** | 99 |
+| `/products` | rendered at request time | 0 | 50 of 50 | 99 |
+| `/product/אוזניות-איירפודס-3` | prerendered at build | 1 (same chunk) | **0 of 31** | 100 |
+
+The home page and the product page were a dead storefront: no add-to-cart, no menu, no cart drawer. Lighthouse scored them 99 and 100 with TBT 0 ms, because no JavaScript ran. `/products` was fine because its HTML comes from the live module graph at request time, not from the cached one.
+
+Fix applied for this pass: `.next/cache/turbopack` moved to `/tmp` (not deleted), cold `pnpm build` (27 s), and the same probe on the new build: 54 of 54, 50 of 50, 32 of 32 buttons hydrated, zero `/_next/*` failures. The table above is that build. The stale-cache lhci run (perf 99 / 99 / 100) is kept at `/tmp/ke-lh7/stale-cache-reports` and is not in the ledger.
+
+Guard added so this cannot pass silently again: `scripts/prerender-chunk-gate.mjs` (`pnpm gate:chunks`) scans every `.html` under `.next/server/app` and `.next/server/route-cache` and exits 1 if any referenced `/_next/static/chunks/*` is absent from `.next/static/chunks/`. Unit tests in `scripts/prerender-chunk-gate.test.mjs` pin the exact shape of this defect (11 tests). The "How to rerun" block below runs it before starting the server. It is not wired into `pnpm build` or CI yet: Vercel persists `.next/cache` between builds too, so whether production is exposed to the same cache behaviour is an open question that needs a deployed build to answer (`scripts/audit-deployed-build.mjs` territory), not a localhost one.
+
+Two leftovers found and left alone: a `pnpm start` from 12:42 local on port 3417 (this worktree, orphaned, no connections, now serving chunks from a BUILD_ID that no longer exists on disk) and a Lighthouse Chrome from 19.10 (pid 33615). Neither was mine to kill.
+
+## Previous pass (2026-10-21 01:46 UTC, MAINTENANCE_LOOP_7, seventh pass)
+
+Build: commit `3548a74dc`, BUILD_ID `y_c6WB3ZaWssk9wRjl0jf`.
 
 | URL | Performance | Accessibility | Best Practices | SEO | FCP | LCP | TBT | CLS | Status |
 |-----|-------------|---------------|----------------|-----|-----|-----|-----|-----|--------|
@@ -19,11 +56,7 @@
 | `/products` | 99 (98, 98, 99) | 100 (100, 100, 100) | 96 | 100 | 0.4 s | 0.9 s | 0 ms | 0.019 | ✅ PASS |
 | `/product/אוזניות-איירפודס-3` | 98 (99, 98, 98) | 100 (100, 100, 100) | 96 | 100 | 0.4 s | 1.1 s | 0 ms | 0.021 | ✅ PASS |
 
-The first number is lhci's representative (median) run, the bracket lists all three runs in order. Metrics are from the representative run.
-
-No weighted audit scores below 0.9 in any category except `errors-in-console` under Best Practices, which is the same five local-environment items as every previous pass (two `/_vercel/*` 404s, two "Refused to execute" on their `text/plain` answer, one `ERR_SSL_PROTOCOL_ERROR` on an https request to the plain-http localhost origin), checked item by item on all three representative reports. Nothing to fix in the tree.
-
-Against the 23:50 pass: `/` moved 98 to 99 and the product page 99 to 98, `/products` is identical at 99. The only `src/` change between d40dcc729 and 3548a74dc is the Tabs trigger ink (`src/components/ui/tabs.tsx` and its test, the LOOP_4 a11y fix), whose sole non-test importer is the closed LoginModal, so none of the three measured pages renders different markup. The one-point moves in both directions are the localhost run-to-run band described in `docs/PERFORMANCE-BUDGET.md`, not a code change. TBT was 0 ms in all nine runs this time.
+All nine runs at or above 90; nothing was queued. The only `src/` change against the 23:50 pass was the Tabs trigger ink (LOOP_4 a11y fix), not rendered on the measured pages; the one-point moves were the localhost band. A 09:59 UTC attempt between the seventh and eighth passes failed with `CHROME_INTERSTITIAL_ERROR` on every run and produced no scores (recorded in `STATE.md`); it did not reproduce here.
 
 ## Previous pass (2026-10-20 23:50 UTC, MAINTENANCE_LOOP_7, sixth pass)
 
@@ -168,6 +201,7 @@ The first MAINTENANCE_LOOP_7 pass could not run `pnpm lhci:autorun` (the script 
 
 ```bash
 pnpm build
+pnpm gate:chunks                                   # every chunk the prerendered HTML asks for must be on disk; if not, move .next/cache/turbopack aside and build cold
 PORT=3361 pnpm start &
 /usr/sbin/lsof -nP -iTCP:3361 -sTCP:LISTEN        # confirm the listener is this checkout
 LHCI_BASE_URL=http://localhost:3361 COMPARE_PRODUCT_SLUG='אוזניות-איירפודס-3' pnpm lhci:autorun
