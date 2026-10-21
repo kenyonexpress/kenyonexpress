@@ -4182,3 +4182,10 @@ Supabase MCP authentication unavailable in non-interactive session. CLI fallback
 - Supabase MCP still needs OAuth in this non-interactive session; the scan is static text, no DB operation was needed. Gates: typecheck exit 0, lint exit 0 (biome 1700 files + 3 gates), build exit 0. Backup 2026-10-21-0201 present, three kept; caffeinate alive, SleepDisabled 1.
 
 **המשך מ:** MAINTENANCE_LOOP_9 (head of ~/ke-goals/queue.txt).
+
+## MAINTENANCE_LOOP_9 fifth pass (2026-10-20 23:56 UTC, commit 440592918)
+- Probe through the official Supabase MCP server over stdio in read-only mode (scripts/db-mcp-probe.mjs, 13 tools listed; the claude.ai connector still reports Needs authentication here). Pool 14 of 60 backends (23.3%): 11 PostgREST idle, exporter, admin, and the probe itself; 0 lock waits, 0 statements running over 500 ms, 0 deadlocks, cache hit 100%. pg_stat_statements 4,875 statements (+5, all this session's own management-API reads), +24,536 calls and +8.0 s since the 22:45 UTC pass. 6 rows over 500 ms by mean, all platform (dashboard, pg-meta, verification sessions), 0 application; 6 application spikes over 500 ms by max with identical maxima to the previous four passes while calls grew (available_stock +158, carts INSERT +54, carts UPDATE +10, fn_record_search +24). No alert; summary.alert false.
+- Advisors unchanged (1 WARN initplan, 14 WARN multiple-permissive, 9 unindexed FKs, 157 unused indexes, 1 auth connections INFO). Pooler and pgbouncer config re-read from the management API: identical to the previous read. DB 44 MB, carts 3,737 live rows (+54). docs/DB-STATUS.md re-dated with the fifth-pass numbers in 22 places; logs/maint9/result.json refreshed and biome-formatted (the raw probe output fails lint until formatted). Probe unit tests 10 of 10.
+- Gates: type-check exit 0, lint exit 0 (biome 1700 files + 3 gates), build exit 0. Backup 2026-10-21-0201 present, three kept; caffeinate alive, SleepDisabled 1.
+
+**המשך מ:** MAINTENANCE_LOOP_10 (head of ~/ke-goals/queue.txt).
