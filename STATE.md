@@ -2,20 +2,6 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
-## ✅ MAINTENANCE_LOOP_1 (Session: 2026-10-21 11:55-12:05 UTC, security audit, ninth pass, DONE)
-
-**Goal:** Run `pnpm audit`, fix critical and high vulnerabilities, commit each fix separately as chore security audit fix PACKAGE, push to autopilot. Only what is requested.
-
-**Result:** DONE, nothing to fix. `pnpm audit` on 6ffc2e5c1 reports zero advisories at every severity (critical 0, high 0, moderate 0, low 0, info 0) across 950 dependencies (548 prod, 297 dev, 179 optional); `--json` returns an empty advisories map, so the registry answered and the result is a real zero rather than a network miss. `pnpm install --frozen-lockfile --offline` reports already up to date, so the lockfile matches `package.json`. No fix commits were produced because there was no package to fix.
-
-**Gates:** `pnpm typecheck` exit 0, `pnpm lint` exit 0 (biome 1732 files, tokens, copy, asset gates clean), `pnpm build` exit 0, `pnpm gate:chunks` clean on 243 prerendered pages. `git status` was empty before and after the build. Backup 2026-10-21-1241 present and under 24h, three kept (10-18-0350, 10-21-0201, 10-21-1241); caffeinate alive (two processes), SleepDisabled 1.
-
-**החלטות שהתקבלו לבד:**
-- The goal forbids touching unnamed files, and CLAUDE.md's closing ritual requires a STATE.md update; the three most recent passes (LOOP_8, 9, 10) wrote STATE.md, so this pass follows that precedent and the commit carries only this entry.
-- Supabase MCP and GitHub MCP not needed: no DB, RLS, migration or PR in a dependency audit.
-
-**המשך מ:** MAINTENANCE_LOOP_2 (head of `~/ke-goals/queue.txt`).
-
 ## ✅ MAINTENANCE_LOOP_10 (Session: 2026-10-21 11:51-12:00 UTC, queue regeneration, seventh pass, DONE)
 
 **Goal:** Append 10 fresh MAINTENANCE_LOOP goals to `~/ke-goals/queue.txt` by reading MAINTENANCE_LOOP_1 through MAINTENANCE_LOOP_10 from that file and appending them again. Only what is requested.
