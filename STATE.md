@@ -2,6 +2,38 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_3 (Session: 2026-10-21 20:40-20:55 UTC, backlog scan, eighteenth pass, 0 UNBLOCKED)
+
+**Goal:** Scan docs/BACKLOG.md and docs/TODO.md for unblocked items, queue any found to `~/ke-goals/queue.txt`, report the count in docs/MAINT-LOG.md, commit as chore maint scan backlog, push. Only that.
+
+**Result:** COMPLETE, 0 unblocked of 7, on `fb1983c9a`. docs/BACKLOG.md unchanged (7 items, last commit 4b17cfb49), docs/TODO.md absent (no TODO*.md anywhere in the worktree). Sales gate re-read through the Supabase MCP (official @supabase/mcp-server-supabase over stdio, --read-only, CLI keychain token, parser from scripts/db-mcp-probe.mjs): 181 orders (was 170), 146 paid, 151 succeeded payments, real sales 0, 11 new rows since the seventeenth run's cutoff and every one is the E2E fixture customer with a mock-tok-N id (odd 1 to 21) landing 19:09 to 19:39 UTC, the LOOP_4 Playwright run that the LOOP_9 seventeenth pass already dated through stock_reservations.consumed_at; the per-pass fixture increment moved from 9 to 11 (two retried specs), not traffic. Item 1 (group deals, 2026-10-23) is about 20 hours out local (03:41 on 22.10 UTC+7 at scan time). `~/ke-goals/queue.txt` untouched at 47 lines, head MAINTENANCE_LOOP_4. Evidence `logs/maint3/sales-gate-2026-10-21k.json` (biome-formatted), entry appended to docs/MAINT-LOG.md.
+
+**Gates:** `pnpm typecheck` exit 0, `pnpm lint` exit 0 (biome 1752 files, tokens, copy and asset gates clean), `pnpm build` exit 0 (BUILD_ID `OOfBFCXuQfcbHn7NJvrbN`, the 46 reviews.read_failed 42501 warnings and the four Partner API bail-out lines are the known build-time noise), `pnpm gate:chunks` clean on 243 prerendered pages. Backups: three kept (10-21-0201, 10-21-1241, 10-21-2140), newest under 24h, nothing to delete; caffeinate alive (pids 967, 11853), SleepDisabled 1. Nothing to fix.
+
+**החלטות שהתקבלו לבד:**
+- No src, test, script or schema change, so no tests added; GitHub MCP not needed (no PR), work lands on autopilot directly. The claude.ai Supabase connector still reports needs-authentication, so the local official server route from the memory file was used again, driven by the one-off runner left in /tmp/ke-maint3 from the seventeenth pass (it imports the repo parser).
+- The run that lands on or after 2026-10-23 00:00 local should queue `BACKLOG_1 Re-evaluate group deals` at the head of the queue; at roughly 85 minutes per ten-goal cycle that is about 14 cycles away.
+
+**המשך מ:** MAINTENANCE_LOOP_4 (head of `~/ke-goals/queue.txt`): run the full Playwright suite with pnpm test:e2e, report pass/fail/flaky counts to docs/E2E-STATUS.md, fix any new flaky tests, commit as chore test e2e maintenance, push.
+
+
+## ✅ MAINTENANCE_LOOP_2 (Session: 2026-10-21 20:33-20:45 UTC, patch version bumps, fourteenth pass, ONE BUMP)
+
+**Goal:** Run `pnpm outdated` and bump patch versions for safe packages, skip minor and major, commit as chore deps bump patch versions, push to autopilot. Only that.
+
+**Result:** COMPLETE, one patch applied on `a7abb4904`. `pnpm outdated` lists 18 rows, all minor or major (react and react-dom 19.2.9 → 19.3.1, lucide-react 1.59.0 → 1.60.0, @anthropic-ai/sdk 0.122.0 → 0.136.0, and the 14 majors unchanged since the first pass), so the latest-tag view offers nothing. The per-minor registry check (`npm view <name> versions` for every direct dependency, filtered to the major.minor installed under `node_modules/<name>/package.json`, 66 of 66 reached) found **@marsidev/react-turnstile 1.6.3**, published 2026-10-21 19:24 UTC, 27 minutes after the thirteenth pass. Bumped the specifier to `^1.6.3` by hand and ran `pnpm install`, so the lock diff is 5 lines for that one package. The published tarballs were unpacked and diffed: `package.json` changes only the version, `dist/index.d.ts` is a type namespace re-emit, `dist/index.js` is a bundler re-emit (`@__PURE__` annotations, if/else rewritten as ternaries) plus one behaviour fix, the injected `<script>` `onerror` handler now deletes the `window` onload callback only when the load fails, where 1.6.2 deleted it at setup time whenever an `onError` prop was passed. Peer range unchanged (`react ^17.0.2 || ^18 || ^19`). docs/DEPS-STATUS.md header, applied-patch section, assessment and pass-log row updated. Committed by explicit path (`package.json`, `pnpm-lock.yaml`, `docs/DEPS-STATUS.md`, `STATE.md`) and pushed to `origin/autopilot`.
+
+**Gates:** `pnpm typecheck` exit 0, `pnpm lint` exit 0 (biome 1751 files, tokens, copy, asset gates clean), `pnpm build` exit 0 (BUILD_ID `eo-r59nEo7vkcnp1rYJ6Y`), `pnpm gate:chunks` clean on 243 prerendered pages, `src/lib/security/turnstile.test.ts` and `src/components/storefront/SupplierLeadForm.test.tsx` 6 of 6 green under vitest. Backups: three kept (10-21-0201, 10-21-1241, 10-21-2140), newest under 24h, nothing to delete; caffeinate alive (pids 967, 11853), SleepDisabled 1. Nothing to fix.
+
+**החלטות שהתקבלו לבד:**
+- `pnpm up @marsidev/react-turnstile@1.6.3` was tried first and reverted: it also re-resolved rollup 4.64.10 → 4.64.12 and browserslist 4.29.3 → 4.29.4 for the vite and webpack snapshots as duplicate lock entries (+300 lock lines, 8 packages added) and rewrote `onlyBuiltDependencies` in `package.json` across six lines. Those transitive patches are not direct dependencies and are not what the goal names, so the specifier was edited by hand and `pnpm install` resolved the one package.
+- No tests added: the change is a dependency version, the two existing turnstile suites cover the wrapper and were run. Supabase MCP and GitHub MCP not needed (no DB work, no PR), work lands on autopilot directly.
+- `STATE.md` is 5302 lines against its own 300-line cap; archiving is a separate edit the goal does not name and was left alone.
+- MAINTENANCE_LOOP_1 left no commit between `a7abb4904` and this session (its passes make no repo change when `pnpm audit` is clean); the queue head is already MAINTENANCE_LOOP_3, popped by the harness.
+
+**המשך מ:** MAINTENANCE_LOOP_3 (head of `~/ke-goals/queue.txt`): scan docs/BACKLOG.md and docs/TODO.md for unblocked items, queue any found to `~/ke-goals/queue.txt`, report the count in docs/MAINT-LOG.md, commit as chore maint scan backlog, push.
+
+
 ## ✅ MAINTENANCE_LOOP_10 (Session: 2026-10-21 20:27-20:36 UTC, queue regeneration, thirteenth pass, DONE)
 
 **Goal:** Append 10 fresh MAINTENANCE_LOOP goals to `~/ke-goals/queue.txt` by reading MAINTENANCE_LOOP_1 through MAINTENANCE_LOOP_10 from that same file and appending them again, keeping the loop infinite. Only that.
