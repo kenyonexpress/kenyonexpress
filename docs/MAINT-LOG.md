@@ -248,3 +248,27 @@ Nothing moved in the 74 minutes since the sixth run. Real sales remain 0, so the
 2026-10-23 00:00 local should queue it as `BACKLOG_1 Re-evaluate group deals` at the head of the queue.
 
 **Status:** COMPLETE
+
+## 2026-10-21 02:04 UTC - Backlog Scan (MAINTENANCE_LOOP_3, eighth run)
+
+**Scanned Files:**
+- docs/BACKLOG.md: exists, 7 items, unchanged (last commit 4b17cfb49, 2026-10-16).
+- docs/TODO.md: does not exist. `find` over the worktree (node_modules excluded) returns no TODO*.md.
+
+**Backlog Items Analysis (today 2026-10-21 UTC and local):**
+1. Group-deals re-evaluation, dated 2026-10-23: 2 days out. BLOCKED.
+2. Crisp inbox, post-launch: 0 real sales, launch gate not passed. BLOCKED.
+3. Meta WhatsApp Business verification, after 10 sales: 0 real sales. BLOCKED.
+4. Israeli lawyer review of ToS and Privacy, after 10 sales: 0 real sales. BLOCKED.
+5. Capacitor or Expo native app, after revenue: 0 real revenue. BLOCKED.
+6. Courses monthly billing, Phase 2: BLOCKED.
+7. Tzimmer calendar, Phase 2: BLOCKED.
+
+**Unblocked Items Found:** 0
+
+**Action:** None. ~/ke-goals/queue.txt not modified.
+
+**Note:** Item 1 becomes a candidate on 2026-10-23 local. The run that lands on or after
+2026-10-23 00:00 local should queue it as `BACKLOG_1 Re-evaluate group deals` at the head of the queue.
+
+**Status:** COMPLETE
