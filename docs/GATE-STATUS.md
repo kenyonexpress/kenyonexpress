@@ -1,5 +1,36 @@
 # Mobile Gate Status
 
+**Last Check:** 2026-10-21 12:46-12:52 UTC (MAINTENANCE_LOOP_6, tenth recheck; local time 19:46-19:52 UTC+7)
+**Page:** home
+**Commit:** `e8c9ff899` (clean tree at measurement; HEAD of `autopilot`. `git log 3425ca36f..HEAD -- src/` is empty: nothing under `src/` changed since the ninth recheck, so this is the fifth measurement of the same rendered tree; the commits between touch only STATE.md, docs/ and logs/cron/)
+**Server:** `pnpm start` on port 3351 from this worktree (listener pid 18601, cwd verified by `lsof`, the only node listener on the machine, stopped by pid afterwards, port free after) on the `pnpm build` of this same HEAD written at 12:44 UTC by the previous loop item's build gate (BUILD_ID `qVjnRFNtrsL_GjqY1JHTW`, present in the served HTML), `pnpm gate:chunks` clean before the run (243 prerendered pages, every referenced chunk on disk). The last `src/` commit predates the build (09:51 UTC).
+**Threshold:** 11%
+**Verdict:** 380 PASS at 8.53%, 768 PASS at 9.79%, 1440 PASS at 8.08%. No mobile fix goal requeued; `~/ke-goals/queue.txt` untouched.
+
+| Viewport | Score | Status | Previous (ninth recheck, 11:27-11:30 UTC, `3425ca36f`) | Delta | Margin to 11% |
+|---|---|---|---|---|---|
+| 380 | **8.53%** | **PASS** | 8.53% | +0.00 | 2.47 |
+| 768 | **9.79%** | **PASS** | 9.79% | +0.00 | 1.21 |
+| 1440 | **8.08%** | **PASS** | 8.08% | +0.00 | 2.92 |
+
+Ledger rows, verbatim from docs/UI-PARITY-REPORT.md (UTC), in run order:
+
+```
+| 2026-10-21 12:47 | home | 380 | 8.53% | PASS | `e8c9ff899` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
+| 2026-10-21 12:48 | home | 768 | 9.79% | PASS | `e8c9ff899-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-21 12:50 | home | 1440 | 8.08% | PASS | `e8c9ff899-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+```
+
+## MAINTENANCE_LOOP_6 tenth recheck notes (12:52 UTC)
+
+- **Fifth consecutive run reading 8.53 / 9.79 / 8.08 to the hundredth** (F43 ledger, seventh, eighth, ninth and this recheck). No `src/` commit landed between the ninth recheck and this one, so an identical score is the expected result. The 768 margin is 1.21 points, the narrowest of the three, unchanged.
+- **Reference shortfall went back to the first-load pattern:** 153 dropped at 380 (the cold archive load, 113 scripts) and the deterministic 96 (57 scripts, 37 fonts) at 768 and 1440, the same split as the fifth to eighth rechecks. The ninth recheck's 113-script figure on all three widths did not recur. Scores did not move against either figure, and every 380 band is identical to the ninth recheck (y200-300 55.7%, y300-400 34.1%, y1700-1800 20.1%, y2500-2600 15.1%).
+- **Gate-hardening caveat silent again:** our side dropped 6 / 6 / 5 resources, all on the expected local origin, no `OURS dropped` or `OURS ... wide` words in any row. Our document was 380 wide at 380 (380x18394 against the reference's 380x17790; the compared window is the first 2600px). At 768 ours is 768x9124 against 768x9152, at 1440 ours is 1440x5464 against 1440x5492.
+- **768 worst bands:** y400-500 49.3%, y2500-2600 34.1%, y200-300 33.2%, y100-200 30.9%. **1440 worst bands:** y500-600 25.2%, y200-300 24.1%, y1700-1800 19.4%, y300-400 18.7%. Same floors as the eighth and ninth rechecks.
+- **The `-dirty` suffix on the 768 and 1440 rows is the gate's own ledger write** (the 380 row modifies docs/UI-PARITY-REPORT.md before the two later children run). `git status` after the run listed that one file; `src/` was clean throughout.
+- **No UNMEASURED row.** Three widths took 5 minutes 32 seconds wall time including the 380 archive cold load.
+- **Not done this loop:** serving the reference from a local origin to pin the shortfall. Unchanged open item; ten consecutive runs agree to the hundredth at 380.
+
 **Last Check:** 2026-10-21 11:27-11:30 UTC (MAINTENANCE_LOOP_6, ninth recheck; local time 18:27-18:30 UTC+7)
 **Page:** home
 **Commit:** `3425ca36f` (clean tree at measurement; HEAD of `autopilot`. `git log 26b9673fa..HEAD -- src/` is empty: nothing under `src/` changed since the eighth recheck, so this is the fourth measurement of the same rendered tree)
