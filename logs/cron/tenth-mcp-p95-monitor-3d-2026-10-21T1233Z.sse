@@ -1,0 +1,3 @@
+event: message
+data: {"result":{"content":[{"type":"text","text":"## Runtime Logs\n\n**Project:** prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP\n**Time range:** 2026-10-18T12:34:07.498Z → 2026-10-21T12:34:07.498Z\n\nNo logs found for the specified criteria."}]},"jsonrpc":"2.0","id":1}
+
