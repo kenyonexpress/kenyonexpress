@@ -1,12 +1,34 @@
 # Lighthouse CI Status Report
 
-**Last Updated:** 2026-10-21 13:01 UTC (MAINTENANCE_LOOP_7, eleventh pass)
-**Measurement Method:** `LHCI_BASE_URL=http://localhost:3361 COMPARE_PRODUCT_SLUG=<slug> pnpm lhci:autorun`
+**Last Updated:** 2026-10-21 14:27 UTC (MAINTENANCE_LOOP_7, twelfth pass)
+**Measurement Method:** `LHCI_BASE_URL=http://localhost:3371 COMPARE_PRODUCT_SLUG=<slug> pnpm lhci:autorun`
 (`@lhci/cli` 0.15.1 via `pnpm dlx`, Lighthouse 12.6.1, Chrome 155, `desktop` preset, 3 runs per URL, lhci median)
-**Build:** commit `a41d6a005` (clean tree, no `src/` change since the tenth pass's `a24964753`; `git log a24964753..a41d6a005 -- src/ next.config.ts package.json` is empty and the 15 commits between touch only `STATE.md`, `docs/` and `logs/`), **cold** `pnpm build` exit 0 with `.next/cache/turbopack` moved to `/tmp/ke-lh11/` first, BUILD_ID `ssCwFEP6KVH1qXJjDI-ps`, `pnpm gate:chunks` clean on 243 prerendered pages before the server started, served by `pnpm start` from this worktree on port 3361 (listener pid 23995, cwd verified by `lsof` as this checkout, BUILD_ID verified in the served HTML, port free beforehand, killed by pid afterwards and the port confirmed closed). `pnpm type-check` and `pnpm lint` ran clean alongside.
-**Reports:** `.lighthouseci/reports/` (git-ignored, nothing uploaded; the 11:38 reports were moved to `/tmp/ke-lh11/prev-reports` so the manifest holds only this pass)
+**Build:** commit `4177a590b` (clean tree, no `src/` change since the eleventh pass's `a41d6a005`; `git log a41d6a005..4177a590b -- src/ next.config.ts package.json` is empty and the commits between touch only `STATE.md`, `docs/` and `logs/`), **cold** `pnpm build` exit 0 with `.next/cache/turbopack` moved to `/tmp/ke-lh12/` first, BUILD_ID `oK6kDT4D5LdyHVHWebe1x`, `pnpm gate:chunks` clean on 243 prerendered pages before the server started, served by `pnpm start` from this worktree on port 3371 (listener pid 72701, cwd verified by `lsof` as this checkout, BUILD_ID present once in the served home HTML and the first three referenced chunks on disk under `.next/static/chunks/`, port had 0 listeners beforehand, killed by pid afterwards and the port confirmed closed). `pnpm type-check` and `pnpm lint` ran clean alongside.
+**Reports:** `.lighthouseci/reports/` (git-ignored, nothing uploaded; the 13:01 reports were moved to `/tmp/ke-lh12/prev-reports` so the manifest holds only this pass)
 
 ## Summary
+
+✅ **Every category at or above 90 on all three URLs, in all nine runs.** No optimisation goal queued; `~/ke-goals/queue.txt` untouched.
+✅ **Performance 98 to 99** on the representative runs (target ≥ 90); the nine individual runs are 98 to 99
+✅ **Accessibility 100** in all nine runs (target ≥ 90), tenth consecutive pass holding the A11Y_FIX_PRODUCTS_LIGHTHOUSE result
+✅ Best Practices 96 and SEO 100 everywhere
+✅ Chunk gate clean before measuring, so the scores are for pages that hydrate (see the eighth pass for the failure this guards)
+
+| URL | Performance | Accessibility | Best Practices | SEO | FCP | LCP | TBT | CLS | Status |
+|-----|-------------|----------------|----------------|-----|-----|-----|-----|-----|--------|
+| `/` | 99 (99, 99, 99) | 100 (100, 100, 100) | 96 | 100 | 0.4 s | 1.0 s | 0 ms | 0.010 | ✅ PASS |
+| `/products` | 98 (98, 99, 98) | 100 (100, 100, 100) | 96 | 100 | 0.4 s | 1.0 s | 0 ms | 0.006 | ✅ PASS |
+| `/product/אוזניות-איירפודס-3` | 98 (98, 98, 99) | 100 (100, 100, 100) | 96 | 100 | 0.4 s | 1.1 s | 0 ms | 0.007 | ✅ PASS |
+
+The first number is lhci's representative (median) run, the bracket lists all three runs in chronological order. Metrics are from the representative run.
+
+No weighted audit below 0.9 in any category except `errors-in-console` under Best Practices (weight 1), which is the same five local-environment items as every previous pass (two `/_vercel/*` 404s, two "Refused to execute" on their `text/plain` answer, one `ERR_SSL_PROTOCOL_ERROR` on the https prefetch of `/login?next=/account/wishlist` against the plain-http localhost origin), checked item by item on all three representative reports with the category `auditRefs` weights. No `/_next/*` request failed on any page; the only failed requests on all three pages are the two `/_vercel/*` scripts and that one https prefetch (listed twice in the network table as two requests to one URL).
+
+Against the 13:01 pass: `/` 99 unchanged, `/products` moved 99 to 98, the product page 98 unchanged. **No `src/` commit landed in between**, so this is the same tree inside the localhost band described in `docs/PERFORMANCE-BUDGET.md`. LCP 1.0 s on `/` and `/products`, 1.1 s on the product page, FCP 0.4 s and TBT 0 ms in all nine runs, CLS 0.010 / 0.006 / 0.007 (all far under the 0.1 good threshold). The `CHROME_INTERSTITIAL_ERROR` of the 02:59 UTC attempt did not reproduce for a fifth consecutive pass. Wall time for the nine runs 2 min 27 s (14:24:45 to 14:27:12 UTC).
+
+## Previous pass (2026-10-21 13:01 UTC, MAINTENANCE_LOOP_7, eleventh pass)
+
+Build: commit `a41d6a005`, BUILD_ID `ssCwFEP6KVH1qXJjDI-ps` (cold build, `.next/cache/turbopack` moved aside first, chunk gate clean on 243 pages, served on port 3361).
 
 ✅ **Every category at or above 90 on all three URLs, in all nine runs.** No optimisation goal queued; `~/ke-goals/queue.txt` untouched.
 ✅ **Performance 98 to 99** on the representative runs (target ≥ 90); the nine individual runs are 98 to 99
