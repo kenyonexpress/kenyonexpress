@@ -1,8 +1,8 @@
 import Link from 'next/link'
 
 export const metadata = {
-  title: 'תוכנית השותפים - קניון אקספרס',
-  description: 'ממליצים על דילים מקניון אקספרס ומקבלים עמלה לארנק על הזמנות ששולמו.',
+  title: 'תוכנית השותפים',
+  description: 'ממליצים על דילים מקניון EXPRESS ומקבלים עמלה לארנק על הזמנות ששולמו.',
 }
 
 export default function AffiliatePage() {

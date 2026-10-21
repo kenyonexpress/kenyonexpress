@@ -123,14 +123,12 @@ const PAGES: Array<{ name: string; path: string }> = [
   // prices or the badges that carry most of this site's colour pairings.
   { name: 'search results', path: '/search?q=%D7%9E%D7%95%D7%A6%D7%A8' },
   { name: 'category archive', path: '/category/hot-deals' },
-  // Both legal sets. Which one is binding is Ofir's open decision; until it is
-  // made, both are served and both have to be accessible.
-  { name: 'legal terms', path: '/legal/terms' },
-  { name: 'legal privacy', path: '/legal/privacy' },
-  { name: 'legal returns', path: '/legal/returns' },
-  { name: 'legal accessibility', path: '/legal/accessibility' },
-  { name: 'terms and conditions', path: '/terms-and-conditions' },
-  { name: 'privacy policy', path: '/privacy-policy' },
+  // The one legal set (F42): the old `/legal/*` and WordPress paths redirect
+  // onto these four, so these are the pages that have to be accessible.
+  { name: 'legal terms', path: '/terms' },
+  { name: 'legal privacy', path: '/privacy' },
+  { name: 'legal returns', path: '/returns' },
+  { name: 'legal accessibility', path: '/accessibility' },
 ]
 
 for (const { name, path } of PAGES) {

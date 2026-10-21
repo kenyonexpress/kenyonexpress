@@ -5,6 +5,7 @@ import MobileDrawer from '@/components/layout/MobileDrawer'
 import TopBar from '@/components/layout/TopBar'
 import SmartImage from '@/components/ui/SmartImage'
 import { LOGO } from '@/lib/assets'
+import { BRAND_DISPLAY_NAME } from '@/lib/brand'
 import Link from 'next/link'
 
 /**
@@ -92,10 +93,14 @@ export default function SiteHeader() {
               overlapped on nothing. me-auto below md hands the free space to
               the inline-end and the logo lands at x206 with the existing 16px
               gap. From md up live's logo IS centred (x578 at 768). */}
-          <Link href="/" aria-label="קניון אקספרס, לדף הבית" className="shrink-0 max-md:me-auto">
+          <Link
+            href="/"
+            aria-label={`${BRAND_DISPLAY_NAME}, לדף הבית`}
+            className="shrink-0 max-md:me-auto"
+          >
             <SmartImage
               src={LOGO}
-              alt="קניון EXPRESS"
+              alt={BRAND_DISPLAY_NAME}
               width={300}
               height={79}
               // Two measured sizes, not one scaled guess: 100x26 in the

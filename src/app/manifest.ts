@@ -1,3 +1,4 @@
+import { BRAND_DISPLAY_NAME } from '@/lib/brand'
 import { SITE } from '@/styles/tokens'
 import type { MetadataRoute } from 'next'
 
@@ -22,11 +23,8 @@ import type { MetadataRoute } from 'next'
  */
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    // The Hebrew name is what the launcher shows under the icon, and the
-    // launcher is the one surface where the Latin brand string reads as a
-    // foreign app. `short_name` must survive a ~12-character truncation.
-    name: 'קניון אקספרס',
-    short_name: 'קניון אקספרס',
+    name: BRAND_DISPLAY_NAME,
+    short_name: BRAND_DISPLAY_NAME,
     description: 'קופונים ומוצרים מעסקים בישראל',
     start_url: '/',
     scope: '/',

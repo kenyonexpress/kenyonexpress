@@ -1,0 +1,195 @@
+/* Legal documents: terms, privacy, returns, accessibility, cookies.
+ *
+ * Every number below is measured off the Electro template's
+ * /terms-and-conditions/ page (refs/electro_terms_computed.json, captured by
+ * scripts/capture-electro.mjs at 1440), not chosen. Electro gives the SHAPE:
+ * a 14px/24px breadcrumb with 25px above and 22px below, a centred 40px/500
+ * title over a grey 14px "last modified" line, a 40px gap, then full-width
+ * sections of a 25px/500 heading with 40px under it and 14px/24px body text,
+ * each section 40px apart. The live site gives the words. See
+ * docs/SOURCING-RULES.md.
+ *
+ * A stylesheet rather than Tailwind classes for the same reason checkout-page.css
+ * is one: the token gate refuses `[Npx]` utilities, and these are measured
+ * pixel values, not tokens.
+ */
+
+.legal-page {
+  max-width: var(--container-page, 1320px);
+  margin-inline: auto;
+  padding: 0 15px 40px;
+  color: var(--color-heading);
+  font-size: 14px;
+  line-height: 23.996px;
+}
+
+/* nav.woocommerce-breadcrumb: 14px, padding 25.004px 0 22.4px, delimiter
+   with 20px side margins. */
+.legal-page__breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  padding: 25px 0 22px;
+  font-size: 14px;
+  line-height: 23.996px;
+}
+
+.legal-page__breadcrumb a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.legal-page__breadcrumb a:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.legal-page__breadcrumb-delimiter {
+  margin-inline: 20px;
+  opacity: 0.6;
+}
+
+/* header.entry-header: margin-bottom 39.998px; h1.entry-title 39.998px/500,
+   line-height 47.9976px, letter-spacing -1px; p.entry-subtitle 14px grey
+   rgb(159,159,159) with 16px under it. Centred, as the capture shows. */
+.legal-page__header {
+  margin: 0 0 40px;
+  text-align: center;
+}
+
+.legal-page__title {
+  margin: 0;
+  font-size: 40px;
+  font-weight: 500;
+  line-height: 48px;
+  letter-spacing: -1px;
+  color: var(--color-heading);
+}
+
+.legal-page__updated {
+  margin: 0 0 16px;
+  font-size: 14px;
+  line-height: 23.996px;
+  color: #9f9f9f;
+}
+
+/* The counsel-review notice. Electro has no equivalent, so it takes the body
+   measure and only a left rule so it reads as a note and not as a clause. */
+.legal-page__notice {
+  margin: 0 0 40px;
+  padding: 12px 16px;
+  border-inline-start: 4px solid color-mix(in srgb, var(--color-heading) 40%, transparent);
+  background: color-mix(in srgb, var(--color-heading) 5%, transparent);
+  font-size: 14px;
+  line-height: 23.996px;
+}
+
+.legal-page__intro p,
+.legal-page__section p {
+  margin: 0 0 16px;
+}
+
+/* section.section.inner-bottom-xs: margin-bottom 39.998px. */
+.legal-page__section {
+  margin: 0 0 40px;
+  scroll-margin-top: 7rem;
+}
+
+/* h2 inside entry-content: 25.004px/500, line-height 40.0064px, margin-bottom
+   40.0064px. */
+.legal-page__section h2 {
+  margin: 0 0 40px;
+  font-size: 25px;
+  font-weight: 500;
+  line-height: 40px;
+  color: var(--color-heading);
+}
+
+/* ol: margin 0 0 16px, padding-inline-start 32px, items 14px/24px. */
+.legal-page__section ol,
+.legal-page__section ul {
+  margin: 0 0 16px;
+  padding: 0;
+  padding-inline-start: 32px;
+}
+
+.legal-page__section ol {
+  list-style: none;
+}
+
+.legal-page__section ol > li {
+  display: flex;
+  gap: 8px;
+}
+
+.legal-page__section ol > li > .legal-page__clause-number {
+  flex-shrink: 0;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.legal-page__section ul {
+  list-style: disc;
+}
+
+.legal-page__section ul > li {
+  padding-inline-start: 4px;
+}
+
+.legal-page__note {
+  margin: 0 0 16px;
+  padding: 12px 16px;
+  border-inline-start: 4px solid color-mix(in srgb, var(--color-heading) 40%, transparent);
+  background: color-mix(in srgb, var(--color-heading) 5%, transparent);
+  font-weight: 500;
+}
+
+.legal-page__table-wrap {
+  overflow-x: auto;
+  margin: 0 0 16px;
+}
+
+.legal-page__table {
+  width: 100%;
+  min-width: 36rem;
+  border-collapse: collapse;
+  text-align: start;
+}
+
+.legal-page__table caption {
+  margin-bottom: 8px;
+  text-align: start;
+  color: color-mix(in srgb, var(--color-heading) 75%, transparent);
+}
+
+.legal-page__table th,
+.legal-page__table td {
+  border: 1px solid color-mix(in srgb, var(--color-heading) 15%, transparent);
+  padding: 8px 12px;
+  text-align: start;
+  vertical-align: top;
+}
+
+.legal-page__table th {
+  background: color-mix(in srgb, var(--color-heading) 5%, transparent);
+  font-weight: 600;
+}
+
+.legal-page__footer {
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid color-mix(in srgb, var(--color-heading) 15%, transparent);
+}
+
+@media (max-width: 767px) {
+  .legal-page__title {
+    font-size: 28px;
+    line-height: 36px;
+  }
+
+  .legal-page__section h2 {
+    font-size: 22px;
+    line-height: 32px;
+    margin-bottom: 24px;
+  }
+}

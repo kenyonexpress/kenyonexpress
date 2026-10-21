@@ -30,17 +30,14 @@ import { describe, expect, it } from 'vitest'
  */
 
 const CANONICAL = [
-  'src/app/(store)/accessibility/page.tsx',
+  'src/app/(legal)/accessibility/page.tsx',
+  'src/app/(legal)/privacy/page.tsx',
+  'src/app/(legal)/returns/page.tsx',
+  'src/app/(legal)/terms/page.tsx',
   'src/app/(store)/cookie-policy/page.tsx',
-  'src/app/(store)/privacy-policy/page.tsx',
-  'src/app/(store)/refund_returns/page.tsx',
-  'src/app/(store)/terms-and-conditions/page.tsx',
 ]
 
-/**
- * Live, but linked from nowhere: `SiteFooter` points at the set above. Marked
- * `robots: noindex` in `src/app/(legal)/layout.tsx` until somebody chooses.
- */
+/** Redirect stubs only: each 308s onto the canonical path of the same document. */
 const UNLINKED = [
   'src/app/(legal)/legal/accessibility/page.tsx',
   'src/app/(legal)/legal/cookies/page.tsx',
@@ -72,7 +69,7 @@ function legalPages(): string[] {
       // `(store)/cookie-policy/` and this filter did not match it, so the
       // inventory that exists to notice a new legal page did not notice one.
       // A pattern that silently under-matches is worse here than no pattern.
-      .filter((file) => /terms|privacy|accessib|cookie|refund_returns|legal\//.test(file))
+      .filter((file) => /terms|privacy|accessib|cookie|returns|legal\//.test(file))
       .filter((file) => !file.includes('/checkout/'))
       .sort()
   )
@@ -90,7 +87,7 @@ describe('the legal document inventory', () => {
       resolve(process.cwd(), 'src/components/layout/SiteFooter.tsx'),
       'utf8',
     )
-    for (const href of ['/terms-and-conditions', '/privacy-policy', '/refund_returns']) {
+    for (const href of ['/terms', '/privacy', '/returns', '/accessibility']) {
       expect(footer, `SiteFooter no longer links ${href}`).toContain(href)
     }
     // /legal/* now redirects to these paths, so a footer link there would send
@@ -134,12 +131,12 @@ describe('the legal document inventory', () => {
     // The other half of the same property: the redirect above is only correct
     // if the newer text actually arrived where it points.
     for (const [path, slug] of [
-      ['terms-and-conditions', 'terms'],
-      ['privacy-policy', 'privacy'],
-      ['refund_returns', 'returns'],
+      ['terms', 'terms'],
+      ['privacy', 'privacy'],
+      ['returns', 'returns'],
       ['accessibility', 'accessibility'],
     ] as const) {
-      const page = readFileSync(resolve(process.cwd(), `src/app/(store)/${path}/page.tsx`), 'utf8')
+      const page = readFileSync(resolve(process.cwd(), `src/app/(legal)/${path}/page.tsx`), 'utf8')
       expect(page, `/${path} does not render the promoted document`).toContain(
         `getLegalDoc('${slug}')`,
       )
@@ -152,8 +149,8 @@ describe('the two cancellation policies agree about money', () => {
   const newer = readFileSync(resolve(process.cwd(), 'src/app/(legal)/_content/returns.ts'), 'utf8')
 
   it.each([
-    ['the older policy at /refund_returns', older],
-    ['the newer policy at /legal/returns', newer],
+    ['the older policy text in src/content/legal', older],
+    ['the served policy at /returns', newer],
   ])('%s states 5%% capped at 100 shekels', (_label, text) => {
     expect(text).toMatch(/5%/)
     expect(text).toMatch(/100/)

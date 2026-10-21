@@ -135,8 +135,8 @@ type SupplierJoin = {
 export function categoryMetaDescription(nameHe: string): string {
   const name = nameHe.trim()
   return name
-    ? `${name} בקניון אקספרס. דילים, קופונים ומוצרים במחירים של קניון אקספרס.`
-    : 'דילים, קופונים ומוצרים במחירים של קניון אקספרס.'
+    ? `${name} בקניון EXPRESS. דילים, קופונים ומוצרים במחירים של קניון EXPRESS.`
+    : 'דילים, קופונים ומוצרים במחירים של קניון EXPRESS.'
 }
 
 export async function getCategoryBySlug(slug: string): Promise<CategoryRow | null> {

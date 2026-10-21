@@ -882,3 +882,35 @@
     display: none;
   }
 }
+
+/* The WhatsApp phone check inside the address step (F42, verified shipping).
+   Same measures as the surrounding fields: 14px body, the section's 16px
+   rhythm, the form's own button classes for the two actions. */
+.checkout-verify {
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 4px;
+  font-size: 14px;
+  line-height: 23.996px;
+}
+
+.checkout-verify--done {
+  display: block;
+  color: #15803d;
+  border-color: #86efac;
+  background: #f0fdf4;
+}
+
+.checkout-verify__intro,
+.checkout-verify__sent {
+  margin: 0 0 12px;
+}
+
+.checkout-verify__btn {
+  width: auto;
+}
+
+.checkout-verify__code .checkout-nav {
+  margin-top: 12px;
+}

@@ -41,6 +41,7 @@ import '@/styles/home-handheld.css'
 import '@/styles/product-card-deals.css'
 import '@/styles/micro-interactions.css'
 import '@/styles/dark-mode.css'
+import { BRAND_DEFAULT_TITLE, BRAND_DISPLAY_NAME, BRAND_TITLE_TEMPLATE } from '@/lib/brand'
 
 const heebo = Heebo({
   variable: '--font-heebo',
@@ -56,21 +57,21 @@ const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il'
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: 'קניון אקספרס | קופונים ומבצעים',
-    template: '%s | קניון אקספרס',
+    default: BRAND_DEFAULT_TITLE,
+    template: BRAND_TITLE_TEMPLATE,
   },
   description: 'קופונים, מבצעים ומוצרים במחיר הכי טוב. בפריסה ארצית.',
   openGraph: {
     type: 'website',
     locale: 'he_IL',
-    siteName: 'קניון אקספרס',
-    title: 'קניון אקספרס | קופונים ומבצעים',
+    siteName: BRAND_DISPLAY_NAME,
+    title: BRAND_DEFAULT_TITLE,
     description: 'קופונים, מבצעים ומוצרים במחיר הכי טוב. בפריסה ארצית.',
     url: '/',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'קניון אקספרס | קופונים ומבצעים',
+    title: BRAND_DEFAULT_TITLE,
     description: 'קופונים, מבצעים ומוצרים במחיר הכי טוב. בפריסה ארצית.',
   },
   alternates: {
@@ -97,7 +98,7 @@ export const metadata: Metadata = {
     // NOT the Merchant feed: that one is pulled by a URL configured inside
     // Merchant Center and has no business being offered to browsers.
     types: {
-      'application/rss+xml': [{ url: '/feed.xml', title: 'קניון אקספרס — דילים חדשים' }],
+      'application/rss+xml': [{ url: '/feed.xml', title: `${BRAND_DISPLAY_NAME} — דילים חדשים` }],
     },
   },
   // iOS reads none of the manifest's icons and looks only for this link tag.

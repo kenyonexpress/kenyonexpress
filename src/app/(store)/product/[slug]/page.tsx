@@ -1,7 +1,5 @@
 import ViewTracker from '@/components/analytics/ViewTracker'
 import LocationPin from '@/components/product/LocationPin'
-import Reviews from '@/components/product/Reviews'
-import BoughtThisWeek from '@/components/storefront/BoughtThisWeek'
 import { CouponTerms } from '@/components/storefront/CouponPricing'
 import CouponQrExpiry from '@/components/storefront/CouponQrExpiry'
 import ProductGallery from '@/components/storefront/ProductGallery'
@@ -45,7 +43,7 @@ export async function generateMetadata({ params }: Props) {
     return {
       title: 'מוצר לא נמצא',
       robots: { index: false, follow: true },
-      description: 'המוצר לא נמצא או שאינו זמין בקניון אקספרס.',
+      description: 'המוצר לא נמצא או שאינו זמין בקניון EXPRESS.',
     }
   }
 
@@ -58,7 +56,7 @@ export async function generateMetadata({ params }: Props) {
     data.seo_description?.trim() ||
     data.short_description_he?.trim() ||
     data.description_he?.trim() ||
-    `${title} בקניון אקספרס. קופונים, מבצעים ומשלוחים.`
+    `${title} בקניון EXPRESS. קופונים, מבצעים ומשלוחים.`
 
   // A canonical, because the same product is reachable through more than one
   // path (category trails, search, share links with tracking parameters) and
@@ -389,14 +387,6 @@ export default async function ProductPage({ params }: Props) {
             whatsappEnabled={readWhatsAppEnabled(product)}
           />
         </div>
-
-        {/* Review submission only -- no review is displayed to visitors (the
-            business model routes them to admin moderation instead). The
-            per-session "can I review" gate streams via Suspense, the
-            StockScarcity pattern. */}
-        <Suspense fallback={null}>
-          <Reviews productId={product.id} />
-        </Suspense>
 
         {/* Related products */}
         <RelatedProducts categoryId={product.category_id} excludeId={product.id} />

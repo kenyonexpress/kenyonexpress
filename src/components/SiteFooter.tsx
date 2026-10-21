@@ -20,7 +20,7 @@ const columns: { title: string; links: FooterLink[] }[] = [
     links: [
       { label: 'שאלות נפוצות', href: '#' },
       { label: 'מעקב הזמנה', href: '#' },
-      { label: 'מדיניות החזרות', href: '/refund_returns' },
+      { label: 'מדיניות החזרות', href: '/returns' },
       { label: 'מימוש קופונים', href: '#' },
     ],
   },

@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
+import { BRAND_DISPLAY_NAME, BRAND_DISPLAY_PARTS, BRAND_TAGLINE } from '@/lib/brand'
 import { SITE } from '@/styles/tokens'
 import { ImageResponse } from 'next/og'
 
@@ -15,7 +16,7 @@ import { ImageResponse } from 'next/og'
  * build stays green.
  */
 
-export const alt = 'קניון אקספרס — קופונים ומבצעים'
+export const alt = `${BRAND_DISPLAY_NAME} — ${BRAND_TAGLINE}`
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
@@ -41,8 +42,24 @@ export default async function Image() {
         direction: 'rtl',
       }}
     >
-      <div style={{ display: 'flex', fontSize: 96, fontWeight: 700, color: SITE.brand.dark }}>
-        קניון אקספרס
+      {/* Two runs as two flex children, not one string: Satori has no bidi
+          pass, and a mixed Hebrew+Latin string would be placed by glyph
+          order. In a `direction: rtl` row the first child sits on the right,
+          which is where the Hebrew word belongs. */}
+      <div
+        style={{
+          display: 'flex',
+          gap: 28,
+          fontSize: 96,
+          fontWeight: 700,
+          color: SITE.brand.dark,
+        }}
+      >
+        {BRAND_DISPLAY_PARTS.map((part) => (
+          <span key={part} style={{ display: 'flex' }}>
+            {part}
+          </span>
+        ))}
       </div>
       <div style={{ display: 'flex', fontSize: 40, color: SITE.functional.heading, marginTop: 16 }}>
         {/* No comma. Satori has no bidi algorithm, so a neutral character

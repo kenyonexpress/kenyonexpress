@@ -38,7 +38,9 @@ export const checkoutAddressSchema = z.object({
 })
 
 /**
- * The billing-details form on /checkout, exactly as the form posts it.
+ * The shipping-details form on /checkout, exactly as the form posts it. There
+ * is no billing address anywhere on the site (F42): the only address asked for
+ * is the one a physical product ships to, and a coupon order asks for none.
  *
  * One schema validated in two places on purpose: the client runs it before the
  * submit so the shopper gets field-level Hebrew errors without a round trip,
@@ -228,6 +230,8 @@ export type CheckoutActionErrorCode =
   | 'COUPON_INVALID'
   | 'CONSENT_REQUIRED'
   | 'ADDRESS_REQUIRED'
+  /** The verified-shipping gate (lib/checkout/verified-shipping.ts) refused. */
+  | 'VERIFICATION_REQUIRED'
   | 'EXPIRED'
   | 'IDEMPOTENT_REPLAY'
   | 'PAYMENT_PROVIDER_ERROR'

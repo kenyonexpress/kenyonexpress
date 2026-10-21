@@ -2,8 +2,15 @@
 
 import { AFFILIATE_COOKIE } from '@/lib/affiliate/rules'
 import { appReturnUrl } from '@/lib/app/deep-links'
+import { toE164Israeli } from '@/lib/auth/phone-otp'
 import { checkOptionalIsraeliPostalCode } from '@/lib/checkout/israeli-postal-code'
 import { validateCartView } from '@/lib/checkout/validate-cart'
+import {
+  ADDRESS_COMPLETION_MESSAGE,
+  PHONE_VERIFICATION_MESSAGE,
+  isCompleteShippingAddress,
+  requiresVerifiedShipping,
+} from '@/lib/checkout/verified-shipping'
 import { agorot, agorotToIls, ilsToAgorot } from '@/lib/commerce/money'
 import {
   buildOrderItemMoneyRow,
@@ -53,6 +60,10 @@ import {
   stampOrderAttribution,
   trackServerEvent,
 } from '@/server/analytics/track'
+import {
+  countPaidPhysicalOrders,
+  isPhoneVerifiedForUser,
+} from '@/server/checkout/verified-shipping'
 import { type SettlementLineInput, calculateSettlement } from '@/server/domain/orders/settlement'
 import { finalizeOrder } from '@/server/payments/finalize'
 import { cookies, headers } from 'next/headers'
@@ -1272,7 +1283,66 @@ async function runSubmitCheckout(
   }
 
   let addressId: string | null = text('address_id') || null
-  const needsAddress = text('needs_address') === 'true'
+  // The form says so, but the cart decides: a physical line needs an address
+  // whatever the hidden field claims, and the verified-shipping gate below
+  // counts orders from the database, not from anything the browser sent.
+  const cartForGate = await getCart()
+  const needsAddress = text('needs_address') === 'true' || validateCartView(cartForGate).hasPhysical
+
+  const admin = createAdminClient()
+
+  // THE VERIFIED-SHIPPING GATE (F42, lib/checkout/verified-shipping.ts).
+  // After five paid physical orders the next one is refused unless the
+  // address is complete and the phone on it has a consumed WhatsApp code
+  // against this account. Decided here, before any row is written, so an
+  // incomplete address is never saved as the customer's new default.
+  const gated =
+    needsAddress && requiresVerifiedShipping(await countPaidPhysicalOrders(admin, user.id))
+  if (gated) {
+    let candidate: {
+      full_name: string
+      phone: string
+      city: string
+      street: string
+      street_number: string
+      zip: string
+    }
+    if (addressId) {
+      const { data: saved } = await admin
+        .from('user_addresses')
+        .select('user_id, full_name, phone, city, street, street_number, zip')
+        .eq('id', addressId)
+        .is('deleted_at', null)
+        .maybeSingle()
+      if (!saved || saved.user_id !== user.id) {
+        return { error: 'כתובת לא תקינה', code: 'ADDRESS_REQUIRED' }
+      }
+      candidate = {
+        full_name: saved.full_name,
+        phone: saved.phone,
+        city: saved.city,
+        street: saved.street,
+        street_number: saved.street_number ?? '',
+        zip: saved.zip ?? '',
+      }
+    } else {
+      candidate = {
+        full_name:
+          [text('first_name'), text('last_name')].filter(Boolean).join(' ') || text('full_name'),
+        phone: text('phone'),
+        city: text('city'),
+        street: text('street'),
+        street_number: text('street_number'),
+        zip: text('zip'),
+      }
+    }
+    if (!isCompleteShippingAddress(candidate)) {
+      return { error: ADDRESS_COMPLETION_MESSAGE, code: 'VERIFICATION_REQUIRED' }
+    }
+    if (!(await isPhoneVerifiedForUser(admin, user.id, toE164Israeli(candidate.phone)))) {
+      return { error: PHONE_VERIFICATION_MESSAGE, code: 'VERIFICATION_REQUIRED' }
+    }
+  }
 
   if (needsAddress && !addressId) {
     const city = text('city')
@@ -1293,7 +1363,18 @@ async function runSubmitCheckout(
     const zipCheck = checkOptionalIsraeliPostalCode(text('zip'))
     if (zipCheck && !zipCheck.ok) return { error: zipCheck.message }
 
-    const admin = createAdminClient()
+    // AUTO-SAVE ON THE FIRST PHYSICAL ORDER, and on a re-entered one. The new
+    // row becomes the default; `uniq_default_address_per_user` allows one, so
+    // the flag is cleared on the older rows first (the gate above makes a
+    // customer with a saved but incomplete address type a complete one, which
+    // lands here with a default already on file).
+    await admin
+      .from('user_addresses')
+      .update({ is_default: false })
+      .eq('user_id', user.id)
+      .eq('is_default', true)
+      .is('deleted_at', null)
+
     const { data: created, error: addressError } = await admin
       .from('user_addresses')
       .insert({

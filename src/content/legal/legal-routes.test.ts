@@ -5,13 +5,15 @@ import { describe, expect, it } from 'vitest'
 /**
  * The four legal URLs the launch checklist names must all resolve.
  *
- * Three of them are aliases, not pages, and that is the point. The policies
- * live at the WordPress paths the footer, existing links and indexed search
- * results already point at:
+ * The WordPress-era addresses are aliases, not pages, and that is the point.
+ * Since F42 the policies live at the short paths under `(legal)`, and the old
+ * paths the footer, existing links and indexed search results pointed at
+ * redirect there:
  *
- *   /cancellation-policy -> /refund_returns
- *   /terms               -> /terms-and-conditions
- *   /privacy             -> /privacy-policy
+ *   /cancellation-policy -> /returns
+ *   /refund_returns      -> /returns
+ *   /terms-and-conditions -> /terms
+ *   /privacy-policy      -> /privacy
  *
  * A second PAGE for the same policy is the failure this avoids. Two routes
  * rendering one cancellation policy drift, and then the site states two
@@ -24,9 +26,10 @@ import { describe, expect, it } from 'vitest'
 const config = readFileSync(resolve(process.cwd(), 'next.config.ts'), 'utf8')
 
 const ALIASES: ReadonlyArray<[string, string]> = [
-  ['/cancellation-policy', '/refund_returns'],
-  ['/terms', '/terms-and-conditions'],
-  ['/privacy', '/privacy-policy'],
+  ['/cancellation-policy', '/returns'],
+  ['/refund_returns', '/returns'],
+  ['/terms-and-conditions', '/terms'],
+  ['/privacy-policy', '/privacy'],
 ]
 
 describe('legal route aliases', () => {

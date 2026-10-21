@@ -44,7 +44,7 @@ describe('alternatesFor', () => {
     // without this tag /feed.xml exists and is undiscoverable.
     const types = alternatesFor('/')?.types ?? {}
     expect(types['application/rss+xml']).toEqual([
-      { url: '/feed.xml', title: 'קניון אקספרס — דילים חדשים' },
+      { url: '/feed.xml', title: 'קניון EXPRESS — דילים חדשים' },
     ])
   })
 

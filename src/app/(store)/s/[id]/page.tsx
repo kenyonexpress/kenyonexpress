@@ -39,13 +39,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!supplier) {
     return {
       title: 'ספק לא נמצא',
-      description: 'הספק לא נמצא או שאינו פעיל בקניון אקספרס.',
+      description: 'הספק לא נמצא או שאינו פעיל בקניון EXPRESS.',
       robots: { index: false, follow: true },
     }
   }
   const title = supplier.name
   const city = supplier.city ? ` ב${supplier.city}` : ''
-  const description = `${supplier.name}${city} בקניון אקספרס. קופונים, מבצעים ומוצרים.`
+  const description = `${supplier.name}${city} בקניון EXPRESS. קופונים, מבצעים ומוצרים.`
   const path = `/s/${id}`
   return {
     title,
