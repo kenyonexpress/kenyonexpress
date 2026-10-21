@@ -77,6 +77,24 @@ describe('Tabs component', () => {
     expect(tab1).toHaveAttribute('data-state', 'inactive')
   })
 
+  it('paints the active tab in dark text, never brand yellow on its white surface', () => {
+    // #fed700 on white is 1.4:1; axe flagged the login email tab on it
+    // (2026-10-21). The active surface is white, so the ink must be dark.
+    render(
+      <Tabs defaultValue="tab1">
+        <TabsList>
+          <TabsTrigger value="tab1">Tab 1</TabsTrigger>
+        </TabsList>
+        <TabsContent value="tab1">Content 1</TabsContent>
+      </Tabs>,
+    )
+
+    const classes = screen.getByRole('tab', { name: 'Tab 1' }).className.split(/\s+/)
+    expect(classes).toContain('data-[state=active]:bg-white')
+    expect(classes).toContain('data-[state=active]:text-brand-dark')
+    expect(classes).not.toContain('data-[state=active]:text-brand')
+  })
+
   it('applies custom className to TabsContent', () => {
     const { container } = render(
       <Tabs defaultValue="tab1">

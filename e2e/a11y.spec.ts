@@ -2,6 +2,7 @@ import AxeBuilder from '@axe-core/playwright'
 import { type Page, expect, test } from '@playwright/test'
 import {
   addOpenProductToCart,
+  awaitStreamedReveal,
   firstProductHref,
   openPurchasableProduct,
   raiseInstallBanner,
@@ -31,6 +32,10 @@ import {
 const WCAG_AA = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']
 
 async function scan(page: Page) {
+  // Streamed boundaries first (see the helper): a scan that starts on
+  // `domcontentloaded` can run before React has revealed the page body, and
+  // axe does not score what is hidden. Then the toasts.
+  await awaitStreamedReveal(page)
   await settleToasts(page)
   return new AxeBuilder({ page }).withTags(WCAG_AA).analyze()
 }

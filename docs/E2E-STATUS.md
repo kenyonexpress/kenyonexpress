@@ -1,10 +1,10 @@
 # E2E Test Status
 
-**Last run:** 2026-10-20 23:05 UTC, run 7, MAINTENANCE_LOOP_4 fifth cycle
-**Base commit:** 0d2462751 on `autopilot`
+**Last run:** 2026-10-21 00:44 UTC, run 9, MAINTENANCE_LOOP_4 sixth cycle
+**Base commit:** 61e3d855f on `autopilot` plus this cycle's four-file change (the commit that carries this report)
 **Recipe:** `CARDCOM_USE_MOCK=true CHECKOUT_ENABLED=true NEXT_PUBLIC_APP_URL=http://localhost:3417 pnpm build`,
 then `pnpm start` on port 3417 with the same three variables, then
-`E2E_BASE_URL=http://localhost:3417 E2E_FORWARDED_FOR_PREFIX=10.44.81 pnpm exec playwright test --retries=1 --reporter=list,json`.
+`E2E_BASE_URL=http://localhost:3417 E2E_FORWARDED_FOR_PREFIX=10.44.85 pnpm exec playwright test --retries=1 --reporter=list,json`.
 Two workers, both projects (chromium and mobile-chrome). A case counts as **flaky** only
 when it failed and then passed on a retry; a case that failed on every attempt is a
 **failure**. Counts come from the JSON reporter, never from the list output.
@@ -20,38 +20,35 @@ when it failed and then passed on a retry; a case that failed on every attempt i
 | 5, 6d1951209, 19:01 UTC, `--retries=1`, fresh forwarded-for prefix | 682 | 612 | 60 | 3 | 7 | 21.5 min |
 | 6, 5ba9efa96, 21:49 UTC, `--retries=1`, prefix 10.44.79 | 682 | 616 | 58 | 1 | 7 | 19.8 min |
 | 7, 0d2462751, 23:05 UTC, `--retries=1`, prefix 10.44.81 | 682 | 617 | 58 | 0 | 7 | 18.5 min |
+| 8, 61e3d855f, 2026-10-21 00:18 UTC, `--retries=1`, prefix 10.44.82, before the fix | 682 | 618 | 57 | 0 | 7 | 18.6 min |
+| 9, 61e3d855f + this cycle's fix, 00:44 UTC, `--retries=1`, prefix 10.44.85 | 682 | 619 | 56 | 0 | 7 | 17.1 min |
 
-Run 7 is the first full run on the run 6 spec fix (`openCartWithItems`), and the first
-run with **zero flaky cases**. Nothing under `src/` changed between 5ba9efa96 and
-0d2462751; the diff is `e2e/` (the helper and its eight call sites) plus docs and
-STATE.md, so run 7 measures that fix and the backend. The 58 failures are the same 58
-cases as run 6, class for class and case for case (classes 1 to 12 below, counts
-unchanged); the one case that was flaky in run 6 (cart: add from product page then see
-it in the cart, chromium) passed on its first attempt, at 23:08:14 in 14 s, and the
-passed count rose by one to 617. The server log holds **1 `supabase.timeout` event**
-(against 7 in run 6 and 83 in run 5): a `suppliers` read at 23:12:47 that no test
-failed on; every `/suppliers` case in both projects passed on its first attempt. No
-case failed that had not failed in run 6, no case needed a retry, and the run was 1.3
-minutes faster than run 6. There is nothing to fix in the specs this cycle.
+Run 9 is the full run on this cycle's fix and run 8 is the same tree before it. Nothing
+under `src/` or `e2e/` changed between 0d2462751 and 61e3d855f (STATE.md and docs only),
+so run 8 re-measured run 7's tree: 57 failures, one fewer than run 7, and the one case that
+moved was `a11y: login has no WCAG A/AA violations` on mobile-chrome, red in run 7 and
+green on its first attempt in run 8 with no retry. That is a flake across runs rather than
+inside one, and it was chased to its cause below: a real 1.4:1 contrast violation on the
+login page that the scan only sees when it runs after React has revealed the streamed
+form. Both halves were fixed, the a11y file was verified twice over on both projects, and
+run 9 then measured the whole suite on the fixed build: 56 failures, the 57 of run 8 minus
+the chromium login case, no case red that was not red in run 8, no retry needed anywhere,
+**0 `supabase.timeout` events** in the server log (5 in run 8, 1 in run 7), and the fastest
+full run so far at 17.1 minutes. The 56 are classes 1 to 12 below, case for case, with
+class 2 down from 8 to 6.
 
-Run 6 is the first full run on the run 5 spec fixes. Nothing under `src/` changed
-between 6d1951209 and 5ba9efa96; the diff is `e2e/` only (helpers, a11y, and the six
-add-to-cart call sites), so run 6 measures those fixes and the backend. The server log
-holds **7 `supabase.timeout` events** against 83 in run 5 (two on `cart.get` and
-`cart.add` at 21:52, five product reads between 21:56 and 22:06), and the run was 1.7
-minutes faster. The 58 failures are exactly classes 1 to 12 below, case for case: run 5's
-classes 13 and 14 (the budgets fixed in the previous cycle) produced zero reds, and no
-case failed that had not failed in run 5. Run 5's three flaky cases all passed on the
-first attempt. One new flaky case appeared, in the cart page, with the same shape as
-class 13; it is fixed below and verified.
+## Flaky (run 9)
 
-## Flaky (run 7)
+None inside the run. All 619 passes were first-attempt passes and the JSON reporter's
+`flaky` count is 0, as it was in runs 7 and 8.
 
-None. All 617 passes were first-attempt passes; the JSON reporter's `flaky` count is 0.
-The run 6 verification of `openCartWithItems` held in the full suite: the cart-page
-case that was flaky in run 6 passed first time on both projects.
+## Flaky across runs (run 7 red, run 8 green, fixed this cycle)
 
-## Flaky (run 6, passed on retry)
+| Case | Project | Evidence | Verdict and fix |
+| --- | --- | --- | --- |
+| a11y: login has no WCAG A/AA violations | mobile-chrome (and chromium, which stayed red) | Run 7: red on both projects. Run 8: chromium red on both attempts with `color-contrast (serious) x1` on `#radix-…-trigger-email`, mobile-chrome green first time. Reproduced outside the runner against the same build, 4 scans per device: chromium 3 of 4 red, Pixel 5 2 of 4 red, and every red reads the same numbers, foreground `#fed700` on `#ffffff`, ratio 1.4 against 4.5 required, on the active "אימייל" tab. Every green scan also had an EMPTY `incomplete` list for the rule, which is axe not seeing the element at all. Sampled the DOM right after `domcontentloaded`, 6 loads: the tabs existed but had no box and the page held six `div[hidden][id^="S:"]` streamed boundaries; 75 to 150 ms later the boundaries were gone and the tabs painted. The login body sits under `<Suspense fallback={null}>` and React reveals it from an inline script that runs after `domcontentloaded`, once its stylesheets are in. | **Two defects, both real.** (1) Spec: `scan()` started on `domcontentloaded` and sometimes ran inside the reveal window, so axe skipped the hidden form and reported the page clean. Fixed in `e2e/helpers.ts` with `awaitStreamedReveal(page)`, which waits up to `DISCOVERY_TIMEOUT` for the hidden streamed boundaries to reach zero; `scan()` in `a11y.spec.ts` calls it before the toast wait, so every axe scan in the file reads the page a visitor is shown. (2) Product: `TabsTrigger`'s active state was `text-brand` on `bg-white`, brand yellow #fed700 at 1.4:1, the exact pairing `tokens.css` already records as "not a text colour" and that the sign-up and forgotten-password links were moved off. Changed to `text-brand-dark` (#1a1a1a, 17.4:1); the white surface and shadow still mark the selected tab. `tabs.test.tsx` gained a case that pins the active classes. Verified: `a11y.spec.ts`, both projects, `--retries=0 --repeat-each=2`, prefix 10.44.84, on the rebuilt mock build: 164 cases, 140 passed, 20 failed, 0 flaky, 4 skipped; the 20 are the standing consent-banner, cart-panel and checkout cases of classes 2 and 3, each twice, and login passed all four times. The reveal wait produced no new red on any of the 19 scanned pages. Run 9 then confirmed it in the full suite. |
+
+## Flaky (run 6, passed on retry, kept for the record)
 
 | Case | Project | First attempt | Verdict and fix |
 | --- | --- | --- | --- |
@@ -60,12 +57,12 @@ case that was flaky in run 6 passed first time on both projects.
 Run 5's three flaky cases (login keyboard reachability on mobile-chrome, cart scroll-lock
 on chromium, purchase-flow on chromium) passed on their first attempt in run 6.
 
-## Failures by class (run 7, 58; classes 1 to 12 unchanged from runs 5 and 6)
+## Failures by class (run 9, 56; classes 1 and 3 to 12 unchanged from runs 5 to 8, class 2 minus the login pair)
 
 | # | Class | Cases | Evidence | Kind |
 | -: | --- | ---: | --- | --- |
 | 1 | Fixture users cannot sign in | 12 | admin-product-crud 6, admin-refund 2, admin-refund-to-wallet 2, physical-purchase 2: `waitForURL` 20 s timeout after submit, or the post-login locator never visible. `.env.local` carries `E2E_ADMIN_EMAIL` only; no `E2E_ADMIN_PASSWORD`, `E2E_CUSTOMER_*`, `E2E_SUPPLIER_*` | environment |
-| 2 | WCAG A/AA violations | 8 | a11y: `/cart` (2), every checkout step with validation errors (2), `/login` (2), the cart panel after add-to-cart (2). The coupons skeleton case of run 4 is gone on both projects | product |
+| 2 | WCAG A/AA violations | 6 | a11y: `/cart` (2), every checkout step with validation errors (2), the cart panel after add-to-cart (2). The `/login` pair of runs 4 to 8 is fixed this cycle (active tab ink, see the cross-run flake above); the coupons skeleton case of run 4 is gone on both projects | product |
 | 3 | Consent banner body reservation | 4 | body reserves 203 px for a 214.5 px banner at 320 px and 112 px for a 120 px banner at 640 px, both projects | product |
 | 4 | Touch targets under 24 px | 6 | `/contact`, `/login`, `/suppliers` x 2 projects | product |
 | 5 | Shekel sign left of digits | 6 | `/`, `/products`, `/category/hot-deals` at 1440 px, both projects; the category nav label "עד ₪99" | product copy |
@@ -81,29 +78,25 @@ on chromium, purchase-flow on chromium) passed on their first attempt in run 6.
 
 ## What changed in this loop
 
-Nothing under `e2e/` or `src/`. Run 7 produced no flaky case and no failure outside the
-twelve standing classes, so this cycle is a measurement only: this file and STATE.md.
-The previous cycle's change is kept below for the record.
+1. `e2e/helpers.ts`: new `awaitStreamedReveal(page)`. It waits (up to `DISCOVERY_TIMEOUT`)
+   until the document holds no `div[hidden][id^="S:"]`, the containers React parks streamed
+   Suspense content in until its inline reveal script runs. The comment on it carries the
+   measurement: tabs present but boxless at `domcontentloaded`, painted 75 to 150 ms later.
+2. `e2e/a11y.spec.ts`: `scan()` calls the helper before `settleToasts()`, so every axe scan
+   in the file (the 19 pages, the cart panel, the checkout steps) reads the revealed page.
+   No assertion was weakened and no test was skipped; the change makes a scan that could
+   pass by not looking fail honestly, and it did, until the product fix landed.
+3. `src/components/ui/tabs.tsx`: the active trigger is `text-brand-dark` instead of
+   `text-brand`. Only `LoginModal` renders these tabs, so the visible change is the
+   selected auth tab on `/login` going from yellow to dark text on its white pill.
+4. `src/components/ui/tabs.test.tsx`: one new case pins `data-[state=active]:bg-white` and
+   `data-[state=active]:text-brand-dark` on the trigger and forbids
+   `data-[state=active]:text-brand`.
 
-## What changed in the previous loop (run 6)
-
-1. `e2e/helpers.ts`: new `openCartWithItems(page)`. It goes to `/cart`, asserts the
-   heading, waits up to `DISCOVERY_TIMEOUT` (15 s) for the order summary
-   (`complementary` "סיכום הזמנה"), and returns that locator. The comment on it carries
-   the mechanism: a static page, one post-hydration `/api/cart` fetch, no loading branch,
-   and a 10 s server ceiling per Supabase call.
-2. `e2e/cart.spec.ts`: the six `page.goto('/cart')` sites that follow an add go through
-   the helper (the product-name case, the summary case, both quantity cases, the reload
-   case and the empty-cart-button case). The one site that asserts an EMPTY cart after
-   a removal keeps its bare `goto`, because the helper would wait for a summary that
-   never comes.
-3. `e2e/production-smoke.spec.ts`: both cart sites go through the helper; the
-   product-name assertion now runs after the summary is on screen.
-
-No assertion was weakened and no test was skipped. The previous cycle's changes
-(roving-tab exemption, `addOpenProductToCart` at six call sites, `CART_WRITE_TIMEOUT`,
-`allowSlowBackend()`, the checkout CTA budget) are listed in the git history of
-8fcd470d5 and 4a2caa1bc and held in run 6: zero reds in classes 13 and 14.
+The run 6 change (`openCartWithItems` at eight call sites) and the run 5 changes
+(roving-tab exemption, `addOpenProductToCart`, `CART_WRITE_TIMEOUT`, `allowSlowBackend()`,
+the checkout CTA budget) are in the git history of 6d737fb4a, 8fcd470d5 and 4a2caa1bc,
+and held again in runs 8 and 9: zero reds in classes 13 and 14, zero flaky cases.
 
 ## Action items
 
@@ -122,7 +115,11 @@ No assertion was weakened and no test was skipped. The previous cycle's changes
   for it everywhere; a loading branch in `CartPageView` would remove the class.
 - Give `MobileNavBar` "קטגוריות" a real target; `/category` has no index route.
 - Classes 2 to 5, 7, 8, 11 and 12 are product defects with a deterministic
-  reproduction each; queue one goal per class rather than one for the suite.
+  reproduction each; queue one goal per class rather than one for the suite. Class 2's
+  login pair was fixed this cycle because the flake investigation landed on it; the
+  remaining six are the cart panel's `aria-prohibited-attr` on an icon box and the mini
+  cart's `label-content-name-mismatch` (the `aria-label` "עגלת קניות, N פריטים, ₪" does not
+  contain the visible badge text), both read off run 9's error output.
 - Classes 6, 9 and 10 are specs describing an older design; update the spec or the
   design, not both.
 - Keep `E2E_FORWARDED_FOR_PREFIX` on a new value for every run inside the same hour;
@@ -130,17 +127,12 @@ No assertion was weakened and no test was skipped. The previous cycle's changes
 
 ## Gates after the changes
 
-Run 7: `pnpm type-check` exit 0 and `pnpm lint` exit 0 (biome, tokens, copy and asset
-gates clean) on 0d2462751, run at low priority while the suite was in flight. The mock
-build the suite ran against is the build gate for this cycle, since no source changed:
-`CARDCOM_USE_MOCK=true CHECKOUT_ENABLED=true NEXT_PUBLIC_APP_URL=http://localhost:3417
-pnpm build` exit 0, BUILD_ID Bdgyt_RrnrfyxeiDYYXGH, with the known partner-API
-prerender bail-out lines (4) and the prerender-complete fetch warnings only. The
-listener on 3417 was verified by PID and working directory (this worktree) before the
-suite started and stopped by that PID after it.
-
-Run 6: `pnpm type-check` exit 0 and `pnpm lint` exit 0 (biome 1699 files, tokens, copy and
-asset gates clean) on the run 6 spec change. `CARDCOM_USE_MOCK=true pnpm build`:
-exit 0, BUILD_ID 0aOBa0tEPai4rHxAThLex, with the known partner-API prerender
-bail-out lines only. The run itself used the mock build FMTW3mzSSC0NsGnOPr1zV on port
-3417, listener verified by PID and working directory before the suite started.
+Run 9 tree: `pnpm type-check` exit 0 and `pnpm lint` exit 0 (biome, tokens, copy and asset
+gates clean) on the final working tree; vitest on `src/components/ui` and `src/lib/a11y`
+14 files, 228 passed. The build gate is the mock build the suite ran against, made after
+the `tabs.tsx` change: `CARDCOM_USE_MOCK=true CHECKOUT_ENABLED=true
+NEXT_PUBLIC_APP_URL=http://localhost:3417 pnpm build` exit 0, BUILD_ID lrmzBq3pNPJs6xoJreXm_,
+with the known partner-API prerender bail-out lines and the prerender-complete fetch
+warnings only. The run 8 build (jU6juwd8vcWjDQjCKs6I4, same recipe) was also exit 0. The
+listener on 3417 was verified by PID and working directory (this worktree) before each
+run and stopped by that PID after it; port 3417 was free before the first build.

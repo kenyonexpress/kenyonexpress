@@ -4218,3 +4218,9 @@ Supabase MCP authentication unavailable in non-interactive session. CLI fallback
 - Gates: typecheck exit 0, lint exit 0 (biome 1701 files + 3 gates), build exit 0. Backup 2026-10-21-0201 present, three kept; caffeinate alive, SleepDisabled 1.
 
 **המשך מ:** MAINTENANCE_LOOP_4 (head of ~/ke-goals/queue.txt).
+
+## MAINTENANCE_LOOP_4 sixth pass (2026-10-21 01:03 UTC, commit c0a5bc67c)
+- Two full runs on 3417 with the mock recipe. Run 8 on 61e3d855f before any change: 682 tests, 618 passed, 57 failed, 0 flaky, 7 skipped, 18.6 min, 5 supabase.timeout. The single delta from run 7 was a11y login on mobile-chrome, red then green: a cross-run flake. Chased to two defects, both measured: the a11y scan starts on domcontentloaded and sometimes runs before React reveals the streamed login form (hidden S: boundaries, 75 to 150 ms), so axe skips it; and when it does see the form, the active TabsTrigger is text-brand #fed700 on white at 1.4:1. Fixed both (awaitStreamedReveal helper in scan(), text-brand-dark on the active trigger, unit test pins it). Verified a11y.spec on both projects twice (login green 4 of 4, no new red on 19 pages), then run 9 on the rebuilt build: 682 tests, 619 passed, 56 failed, 0 flaky, 7 skipped, 17.1 min, 0 supabase.timeout; the 56 are run 8 minus the chromium login case. docs/E2E-STATUS.md carries runs 8 and 9, the flake table and class 2 at 6.
+- Gates: type-check exit 0, lint exit 0 (biome + 3 gates), vitest src/components/ui + src/lib/a11y 228 passed, mock build exit 0. Servers stopped by listener PID; port 3417 free. Backup 2026-10-21-0201 present, three kept; caffeinate alive, SleepDisabled 1.
+
+**המשך מ:** MAINTENANCE_LOOP_5 (head of ~/ke-goals/queue.txt).
