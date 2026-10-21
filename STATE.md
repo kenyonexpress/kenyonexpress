@@ -4319,3 +4319,9 @@ Supabase MCP authentication unavailable in non-interactive session. CLI fallback
 - Gates: type-check exit 0, lint exit 0, build exit 0. Backup 2026-10-21-0201 present, three kept; caffeinate alive, SleepDisabled 1.
 
 **המשך מ:** MAINTENANCE_LOOP_7 (head of ~/ke-goals/queue.txt).
+
+## MAINTENANCE_LOOP_7 (2026-10-21 09:59 UTC, attempt halted)
+- `pnpm lhci:autorun` failed with Chrome interstitial error: "Chrome prevented page load with an interstitial. Make sure you are testing the correct URL and that the server is properly responding to all requests." All Lighthouse audit runs returned CHROME_INTERSTITIAL_ERROR warnings. No scores were generated. Root cause: likely build/server issue or endpoint misconfiguration. Measured from /tmp/lhci-run.log exit code 1. Decision per CLAUDE.md: goal stalled once, documented, moving to next loop. docs/LIGHTHOUSE-STATUS.md not updated (no new data).
+- Gates: type-check exit 0, lint exit 0, build exit 0. Caffeinate alive, SleepDisabled 1.
+
+**המשך מ:** MAINTENANCE_LOOP_8 (head of ~/ke-goals/queue.txt).
