@@ -1,7 +1,7 @@
 # Cron Routes Status
 
-**Last check:** 2026-10-21 14:08 UTC (MAINTENANCE_LOOP_5, eleventh run; MCP `get_runtime_logs` 403 once through the claude.ai connector (`group_by=requestPath` 24h, request `f8vns-1792591559487`), then **answered for real, nine calls**, through `mcp.vercel.com` with the CLI token; CLI request log measured over 24h; the two sources agree to the second; pg_cron read through the management API, read-only)
-**Status:** 🔴 CRITICAL, unchanged since 2026-10-20 13:15 UTC (eleventh consecutive measurement). All 5 `vercel.json` routes are stale over 24h with 0 hits in 7 days (MCP: "No logs found" on 3d for every one of the five; `group_by=requestPath` over 7d lists 15 cron routes and none of them). The only 2xx in 7 days is `/api/cron/health`, twice, at 2026-10-19 04:55 UTC (a manual probe after the deploy), now **57h 12m** stale. Every other hit is 401 or 404; the 24h MCP pull holds 42 events, every one a 401 `request.completed`, newest `whatsapp` at 13:09:52 UTC. The GitHub scheduler fired twice more since the tenth run (13:09 and 13:27 UTC), both failed. The only live scheduler is pg_cron inside the database (01:30 UTC today, 48 of 48 succeeded).
+**Last check:** 2026-10-21 15:28 to 15:33 UTC (MAINTENANCE_LOOP_5, twelfth run; MCP `get_runtime_logs` 403 once through the claude.ai connector (`group_by=requestPath` 24h, request `5jfvc-1792596532346`), then **answered for real, ten captured calls**, through `mcp.vercel.com` with the CLI token; CLI request log measured over 24h; the two sources agree to the second; pg_cron read through the management API, read-only)
+**Status:** 🔴 CRITICAL, unchanged since 2026-10-20 13:15 UTC (twelfth consecutive measurement). All 5 `vercel.json` routes are stale over 24h with 0 hits in 7 days (MCP: "No logs found" on 3d for every one of the five; `group_by=requestPath` over 7d lists 15 cron routes and none of them, counts identical to the eleventh run). The only 2xx in 7 days is `/api/cron/health`, twice, at 2026-10-19 04:55 UTC (a manual probe after the deploy), now **58h 37m** stale. Every other hit is 401 or 404; the 24h MCP pull holds 39 events, every one a 401 `request.completed`, newest `whatsapp` at 13:09:52 UTC. No new GitHub scheduler run since the eleventh run (newest still `39608085318` at 13:27 UTC, over two hours ago). The only live scheduler is pg_cron inside the database (01:30 UTC today, 48 of 48 succeeded).
 
 ## How this was measured
 
@@ -710,8 +710,45 @@ the CLI side because no function runs for a route that is not on the deployed br
 consecutive measurement. The three owners (a production deploy that carries `vercel.json`, Ofir's `CRON_SECRET`, a
 manifest dedupe PR to protected `main`) are unchanged and none is reachable from this loop. No write, no migration.
 
+## Twelfth run, 2026-10-21 15:28 to 15:33 UTC
+
+Connector first: `mcp__claude_ai_Vercel__get_runtime_logs` (`environment=production`, `query=/api/cron`, `since=24h`,
+`group_by=requestPath`) answered `Vercel API request failed (403: forbidden)` at page 0, request
+`5jfvc-1792596532346`, 0 rows. Same grant failure as every connector call since 20.10. Then `mcp.vercel.com` with the
+CLI token: twelve `get_runtime_logs` calls sent, ten captured (the first two went through a shell wrapper that
+dropped the body; they were re-sent and are counted below), HTTP 200 on every one, 2.9 s to 8.1 s each. The first
+7d `group_by` pull answered "This operation was aborted" (the tool's time budget) and answered on the retry:
+
+| MCP call (team `team_TUMTPVDP8218QHwedSjmgJWl`, project `prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`, production) | Result |
+|---|---|
+| `group_by=requestPath`, `query=/api/cron`, 7d (retry) | 15 routes: `health` 153, `webhook-dlq` 54, `whatsapp` 52, `invoices` / `notifications` / `stock` / `stranded-payments` 42 each, `abandoned-cart` 40, `expire-vouchers` / `reap-carts` / `reconcile` / `subscriptions` / `wishlist-alerts` 14 each, `weekly-digest` 10, `retention` 9. **None of the five `vercel.json` routes.** Counts identical to the eleventh run on every route |
+| `group_by=requestPath`, 24h | 15 routes, 39 events: `whatsapp` 7, `webhook-dlq` 6, thirteen routes at 2 each (42 in the eleventh run; three 20.10 events left the sliding window) |
+| per-route 3d pulls for `observability-check`, `fraud-monitor`, `p95-monitor`, `deal-scraper`, `stock-notifications` | **"No logs found"** on all five (window 2026-10-18T15:31Z to 2026-10-21T15:32Z) |
+| `query=/api/cron/health`, 3d, limit 100 | 8 events: 2 × `status:200` at 2026-10-19 04:55:21 and **04:55:31 UTC** (last success of any cron route, **58h 37m** old), 6 × `status:401` since, newest 2026-10-21 09:21:57 UTC |
+| `query=/api/cron`, 24h, limit 100 (window 15:32 UTC 20.10 to 15:32 UTC 21.10) | 39 events, **39 × `status:401`** `request.completed`, `duration_ms:0`, all on `dpl_AP18UQwUQdhd3XWNo41seDQvAcuA` / `audit/final-audit`; newest `whatsapp` 13:09:52 UTC, then `webhook-dlq` 11:31:06, `wishlist-alerts` 09:40:44, the 09:21 manifest sweep; oldest `whatsapp` 17:47:26 UTC 20.10 |
+
+**CLI and other sources, same scope:**
+
+| Probe | Result |
+|---|---|
+| `vercel logs --since 24h --query "/api/cron" --limit 100` (request log) | 50 rows (cap), 25 paths, 05:53 to 13:27 UTC: **31 × 401, 19 × 404, 0 × 2xx, 0 × 5xx**; newest `search-reindex` 404 at 2026-10-21 13:27:06 UTC (GitHub run `39608085318`), before it `whatsapp` 401 at 13:09:50 UTC (run `39605552989`). Identical rows to the eleventh run |
+| `vercel crons ls --project kenyonexpress` | 5 paths, all **not deployed**, "5 local changes pending deploy" |
+| Production alias `kenyonexpress.co.il` (`/v13/deployments`) | still `dpl_AP18UQwUQdhd3XWNo41seDQvAcuA`, created 2026-10-19 04:43 UTC, source `cli`, ref `audit/final-audit`, `crons: []` |
+| GitHub `cron.yml`, last 10 scheduled runs (07:48 to 13:27 UTC 21.10, all on `main`) | **10 / 10 failed**; the same ten ids as the eleventh run, **no new run in the 2h 06m since `39608085318`** (GitHub scheduler lag or a paused schedule; the workflow file on `main` is unchanged, nothing in this loop can tell which) |
+| pg_cron `report_tables_nightly` (`cron.job` + `cron.job_run_details`, management API with the CLI keychain token, one read-only statement at 15:32:23 UTC) | one active job `30 1 * * *`; **48** succeeded, 0 other; last start **2026-10-21 01:30:00.211 UTC**, end 01:30:00.374 UTC; 🟢 fresh (14h 02m) |
+
+The MCP runtime log and the CLI request log agree to the second on every route that reached a function
+(`whatsapp` 13:09:50 request vs 13:09:52 completion, `webhook-dlq` 11:31:04 vs 11:31:06), as in the eleventh run.
+No cron route was hit by anything between the eleventh run (14:08 UTC) and this one (15:33 UTC).
+
+**Verdict:** all 5 `vercel.json` routes stale over 24h, 0 hits in 7 days on both sources, 🔴 unchanged, twelfth
+consecutive measurement. The three owners (a production deploy that carries `vercel.json`, Ofir's `CRON_SECRET`, a
+manifest dedupe PR to protected `main`) are unchanged and none is reachable from this loop. No write, no migration.
+
 ## History
 
+- 2026-10-21 15:28 to 15:33 UTC: twelfth run. Connector `get_runtime_logs` 403 once (`group_by` 24h, request `5jfvc-1792596532346`, 0 rows); `mcp.vercel.com` with the CLI token answered **ten captured calls HTTP 200** (one 7d `group_by` aborted on the time budget, answered on retry): 7d `group_by` 15 routes, none of the five `vercel.json` routes, counts identical to the eleventh run; 24h `group_by` 15 routes, 39 events; five per-route 3d pulls all "No logs found"; 24h pull 39 × 401, newest `whatsapp` 13:09:52 UTC; `health` 3d: last 200 at 2026-10-19 04:55:31 UTC (58h 37m), 401 since.
+  CLI 24h: 31 × 401 + 19 × 404, 0 × 2xx, 0 × 5xx, identical rows to the eleventh run, newest `search-reindex` 404 at 13:27:06 UTC; `crons ls` 5/5 not deployed; production alias unchanged on `dpl_AP18UQwUQdhd3XWNo41seDQvAcuA`, `crons: []`; 10/10 latest `cron.yml` runs failed, no new run since 13:27 UTC; pg_cron nightly 48/48, last 01:30 UTC (management API, read-only). All 5 routes stale over 24h.
 - 2026-10-21 14:06 to 14:08 UTC: eleventh run. Connector `get_runtime_logs` 403 once (`group_by` 24h, request `f8vns-1792591559487`, 0 rows); `mcp.vercel.com` with the CLI token answered **nine calls HTTP 200** (one 7d `group_by` aborted on the time budget, answered on retry): 7d `group_by` 15 routes, none of the five `vercel.json` routes, counts identical to the tenth run except `webhook-dlq` 55 to 54 (sliding window); 24h `group_by` 15 routes, 42 events; five per-route 3d pulls all "No logs found"; 24h pull 42 × 401, newest `whatsapp` 13:09:52 UTC; `health` 3d: last 200 at 2026-10-19 04:55:31 UTC (57h 12m), 401 since.
   CLI 24h: 31 × 401 + 19 × 404, 0 × 2xx, 0 × 5xx, newest `search-reindex` 404 at 13:27:06 UTC; `crons ls` 5/5 not deployed; production alias unchanged on `dpl_AP18UQwUQdhd3XWNo41seDQvAcuA`, `crons: []`; 10/10 latest `cron.yml` runs failed, two new (`39605552989` 13:09, `39608085318` 13:27 UTC); pg_cron nightly 48/48, last 01:30 UTC (management API, read-only). All 5 routes stale over 24h.
 - 2026-10-21 12:33 to 12:40 UTC: tenth run. Connector `get_runtime_logs` 403 once (24h filtered, 0 rows); `mcp.vercel.com` with the CLI token answered **nine calls HTTP 200**: `group_by=requestPath` 7d (15 routes, none of the five `vercel.json` routes, counts identical to the ninth run except `webhook-dlq` 54 to 55) and 24h (15 routes, 42 events); five per-route 3d pulls for the `vercel.json` routes all "No logs found"; 24h pull 42 events, every one a 401 `request.completed`, newest `webhook-dlq` 11:31:06 UTC; `health` 3d pull: last 200 at 2026-10-19 04:55:31 UTC (55h 38m), 401 since.
