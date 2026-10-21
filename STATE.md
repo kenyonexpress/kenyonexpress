@@ -2,6 +2,28 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ F43 (Session: 2026-10-21 03:33-03:45 UTC, mobile gate 380 and 768, MEASURED, PASS, no CSS change)
+
+**Goal:** Bring the home page 380px parity gate under 11% against the Electro v7 reference, name the top three pixel-diff sources, fix them in layout CSS, re-run until under 11%, then check 768px the same way. Commit, push, STATE.
+
+**Result:** DONE on HEAD c1cba9105 with no source change. Measured on a fresh `pnpm start` of the HEAD build on port 3311 (BUILD_ID one minute younger than the commit, tree clean), reference `refs/electro_home_{380,768}.png` with `refs/live-assets` present (4 entries, identical to the main checkout, so no blank-image underread). `node scripts/compare.mjs --page=home --width=380` wrote **8.51% PASS** (`c1cba9105`), `--width=768` wrote **9.80% PASS**, both rows in `docs/UI-PARITY-REPORT.md` 03:34 and 03:36. The three numbers match the 20.10 23:36 recheck exactly, so the F41 and F42 commits moved nothing on the home page at either width. The goal's `--widths=`, `--baseline=` and `--live-url=` flags do not exist in `compare.mjs` (it takes `--width=` singular and `LOCAL_BASE`); the goal's predicted sources (header height, hero carousel height, category row spacing) are not what the bands show.
+
+**Top three diff sources at 380, from band crops of `refs/live.png` and `refs/mine.png`:**
+1. **y200-400, 55.6% and 34.1%: the hero.** The live capture paints a quarantined iPhone photo (`refs/live-assets/_quarantine`) and its header glyphs render as fallback Latin letters because the archive's fonts fail to load (96 refs failed, 37 fonts). Ours paints the welcome text hero. This is the known floor from the 20.10 alignment pass (pitch 548.4, header 48): the band cannot close without copying a quarantined photo, which `docs/SOURCING-RULES.md` forbids.
+2. **y1700-1800, 20.1%: the deals product card.** Same card, same photo, same badge; ours sits about 5px lower and the price reads `3,900 ₪` against live's `₪3900`. The photo is high-frequency so a 5px offset scores as a fifth of the band. The price string is money-path formatting (`src/lib/money.ts`, he-IL), not layout CSS, and is out of scope.
+3. **y2500-2600, 15.1%: our fixed bottom tab bar** (חשבון, עגלה, חיפוש, קטגוריות, בית). The live page has only the WhatsApp and cart floats there. The bar is a storefront feature, not a parity defect.
+
+At 768 the worst bands are the same hero (y100-600) and the bottom bar (y2400-2600).
+
+**Gates:** `pnpm type-check` exit 0, `pnpm lint` exit 0 (biome 1713 files, tokens, copy and asset gates clean). `pnpm build` not re-run: no source file changed and the served build is the HEAD build. Vitest not re-run for the same reason. Server stopped by listener PID after the runs.
+
+**החלטות שהתקבלו לבד:**
+- No CSS was edited. The gate is 2.5 points under the line at 380 and 1.2 at 768, and every remaining source is either a sourcing-rule floor, a money-format string, or a feature. A speculative 5px card nudge would buy about 1 point at 380 and risk the 768 and 1440 rows, which this goal does not re-measure; the 20.10 memory says the hero floor is fixed by alignment, not by the hero, and that alignment is already in.
+- The goal's commit paths (`src/components/`, `src/app/page.tsx`, `tailwind.config.*`, `globals.css`) have no change; the commit carries the two gate rows and the state files only.
+- Daily backup exists for today (`~/Desktop/kenyonexpress-backup-2026-10-21-0201.tar.gz`, three kept), so no new tar.
+
+**המשך מ:** F43 DONE mobile 8.51%. Next: head of `~/ke-goals/queue.txt` (F44).
+
 ## ✅ F42 (Session: 2026-10-21 10:05-10:35 UTC, legal pages, supplier refund clause, brand display, reviews removed, verified shipping, DONE)
 
 **Goal:** Four Hebrew RTL legal pages under `src/app/(legal)/` (terms, privacy, returns, accessibility) per Israeli law, designed 1:1 after the Electro terms page; supplier click-wrap clause giving the platform an unlimited refund right; remove every Google review link, review button and review form; brand display `קניון EXPRESS` in header, footer and meta with the registered `קניון אקספרס` kept for invoices and the legal seller block; checkout address flow with no billing address, shipping only for physical lines, auto-save on the first physical order, and after five physical orders a forced complete address plus WhatsApp OTP phone verification. Commit, push, STATE.
