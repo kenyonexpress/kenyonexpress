@@ -308,6 +308,10 @@ sales remain 0, so the launch, 10-sales and revenue gates are all still closed.
 
 **Action:** None. ~/ke-goals/queue.txt not modified (37 lines before and after).
 
+**Gates run:** `pnpm lint` clean, `pnpm type-check` clean, `pnpm build` exit 0 (203 routes). The two
+`Partner API ... bail out of prerendering` lines in the build log are the dynamic route logging
+Next's own prerender bail-out signal, not a failure.
+
 **Note:** Item 1 becomes a candidate on 2026-10-23 local. The run that lands on or after
 2026-10-23 00:00 local should queue it as `BACKLOG_1 Re-evaluate group deals` at the head of the queue.
 
