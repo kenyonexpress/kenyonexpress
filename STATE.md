@@ -2,6 +2,22 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_3 (Session: 2026-10-21 12:02-12:12 UTC, backlog scan, twelfth run, MEASURED via Supabase MCP, zero unblocked)
+
+**Goal:** Scan docs/BACKLOG.md and docs/TODO.md for unblocked items, queue any found to `~/ke-goals/queue.txt`, report the count in docs/MAINT-LOG.md, commit as chore maint scan backlog, push.
+
+**Result:** COMPLETE, 0 unblocked of 7. docs/BACKLOG.md unchanged since `4b17cfb49` (2026-10-16); docs/TODO.md does not exist and no TODO*.md exists anywhere in the worktree outside node_modules. The sales gate was re-measured on production with the same read-only select as the tenth and eleventh runs, this time as `execute_sql` through the official `@supabase/mcp-server-supabase` run locally over stdio in `--read-only` mode with the CLI keychain token (the claude.ai connector still needs an OAuth this session cannot run): 125 orders, 90 paid or fulfilled, 95 succeeded payments, 0 real sales, 9 orders since the eleventh run, last order 2026-10-21 10:59 UTC. The 9 new rows were broken down before being dismissed: all are the E2E fixture customer at test.kenyonexpress.local, status paid, `mock-tok-N` transaction ids (odd 1 to 17), placed 10:45 to 10:59 UTC by the MAINTENANCE_LOOP_4 run that followed the eleventh pass. Evidence `logs/maint3/sales-gate-2026-10-21e.json` (both result sets). Item 1 (group deals, 2026-10-23) is two days out; items 2 to 5 wait on launch, 10 sales or revenue; 6 and 7 are Phase 2. Queue untouched at 47 lines. Twelfth-run entry appended to docs/MAINT-LOG.md.
+
+**Gates:** `pnpm typecheck` exit 0, `pnpm lint` exit 0 (biome 1733 files, tokens, copy, asset gates clean), `pnpm build` exit 0, `pnpm gate:chunks` clean on 243 prerendered pages. Backup 2026-10-21-1241 present and under 24h, three kept (10-18-0350, 10-21-0201, 10-21-1241); caffeinate alive (two processes), SleepDisabled 1.
+
+**החלטות שהתקבלו לבד:**
+- Supabase MCP clause met with the local official server rather than the unauthorised connector; the query and the database are the same as the management-API runs, so the two evidence lineages are directly comparable, and they agree (the delta since the eleventh run is exactly the 9 fixture rows).
+- The 9 new orders are test traffic on two independent signals (fixture buyer domain and mock transaction id); the real-sales column is the gate, the raw order count is not.
+- Item 1 is dated, not gated, so it is not queued early; the run on or after 2026-10-23 00:00 local queues `BACKLOG_1 Re-evaluate group deals` at the head of the queue.
+- GitHub MCP not needed: no PR, work lands on autopilot directly as every maintenance pass does.
+
+**המשך מ:** MAINTENANCE_LOOP_4 (head of `~/ke-goals/queue.txt`): run the full Playwright suite, report pass/fail/flaky counts to docs/E2E-STATUS.md, fix new flaky tests, commit as chore test e2e maintenance, push.
+
 ## ✅ MAINTENANCE_LOOP_10 (Session: 2026-10-21 11:51-12:00 UTC, queue regeneration, seventh pass, DONE)
 
 **Goal:** Append 10 fresh MAINTENANCE_LOOP goals to `~/ke-goals/queue.txt` by reading MAINTENANCE_LOOP_1 through MAINTENANCE_LOOP_10 from that file and appending them again. Only what is requested.
