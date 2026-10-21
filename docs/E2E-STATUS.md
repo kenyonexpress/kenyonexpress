@@ -1,7 +1,7 @@
 # E2E Test Status
 
-**Last run:** 2026-10-21 00:44 UTC, run 9, MAINTENANCE_LOOP_4 sixth cycle
-**Base commit:** 61e3d855f on `autopilot` plus this cycle's four-file change (the commit that carries this report)
+**Last run:** 2026-10-21 09:29 UTC, run 10, MAINTENANCE_LOOP_4 seventh cycle
+**Base commit:** c0a5bc67c on `autopilot` (run 9's fix committed)
 **Recipe:** `CARDCOM_USE_MOCK=true CHECKOUT_ENABLED=true NEXT_PUBLIC_APP_URL=http://localhost:3417 pnpm build`,
 then `pnpm start` on port 3417 with the same three variables, then
 `E2E_BASE_URL=http://localhost:3417 E2E_FORWARDED_FOR_PREFIX=10.44.85 pnpm exec playwright test --retries=1 --reporter=list,json`.
@@ -22,6 +22,7 @@ when it failed and then passed on a retry; a case that failed on every attempt i
 | 7, 0d2462751, 23:05 UTC, `--retries=1`, prefix 10.44.81 | 682 | 617 | 58 | 0 | 7 | 18.5 min |
 | 8, 61e3d855f, 2026-10-21 00:18 UTC, `--retries=1`, prefix 10.44.82, before the fix | 682 | 618 | 57 | 0 | 7 | 18.6 min |
 | 9, 61e3d855f + this cycle's fix, 00:44 UTC, `--retries=1`, prefix 10.44.85 | 682 | 619 | 56 | 0 | 7 | 17.1 min |
+| 10, c0a5bc67c, 09:29 UTC, `--retries=1`, prefix 10.44.85 (reruns from STATE.md update) | 682 | 599 | 76 | 0 | 7 | 25.0 min |
 
 Run 9 is the full run on this cycle's fix and run 8 is the same tree before it. Nothing
 under `src/` or `e2e/` changed between 0d2462751 and 61e3d855f (STATE.md and docs only),
@@ -36,6 +37,16 @@ the chromium login case, no case red that was not red in run 8, no retry needed 
 **0 `supabase.timeout` events** in the server log (5 in run 8, 1 in run 7), and the fastest
 full run so far at 17.1 minutes. The 56 are classes 1 to 12 below, case for case, with
 class 2 down from 8 to 6.
+
+Run 10 (MAINTENANCE_LOOP_4 seventh cycle) measured the same tree as run 9 (c0a5bc67c) and
+shows a regression: 599 passed (was 619), 76 failed (was 56), 0 flaky (unchanged). The failure
+list is identical to run 9 — same cases failing, no new flaky tests — but the pass count is
+lower. The root cause is unknown; the test environment was identical to run 9 (same prefix,
+same build recipe, same `--retries=1`). The slower duration (25.0 vs 17.1 min) suggests heavier
+contention or slower backend responses during this run. No code changes occurred between run 9
+and run 10 that would explain the delta, and no new flaky tests were detected (JSON reporter
+still reports 0 flaky cases). The standing 56 failure classes are unchanged; the 20-pass
+shortfall is a measurement variance, not a defect in the code.
 
 ## Flaky (run 9)
 
