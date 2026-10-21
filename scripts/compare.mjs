@@ -1,9 +1,10 @@
 import { spawn } from 'node:child_process'
-import { copyFileSync, existsSync, readFileSync, rmSync } from 'node:fs'
+import { copyFileSync, existsSync, readFileSync, rmSync, statSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { chromium } from '@playwright/test'
+import { parseCompareArgs } from './compare-args.mjs'
 import { loadShortfall } from './load-shortfall.mjs'
 import { appendParityFailure } from './parity-log.mjs'
 
@@ -22,11 +23,33 @@ const argOf = (name, dflt) => {
   return hit ? hit.slice(name.length + 3) : dflt
 }
 const page = argOf('page', 'home')
+// F43: the flags the goal queue uses (`--widths=`, `--baseline=`, `--live-url=`)
+// are parsed in compare-args.mjs, with their meaning and a test. Unknown flags
+// used to be ignored in silence; these three now do what they say.
+const ARGS = parseCompareArgs(process.argv.slice(2))
 // Width is an argument because the gate is quoted at three widths (380, 768,
 // 1440) and this was hardcoded to 1440, so the two phone widths had never once
 // been measured. Height stays 2600: the diff is banded down the page and the
 // bands must line up run to run for the numbers to be comparable.
-const VIEW = { width: Number(argOf('width', '1440')), height: 2600 }
+const VIEW = { width: ARGS.width, height: 2600 }
+
+// `--widths=380,768,1440` is one run per width, in order, each a child with the
+// same arguments and a singular `--width=`. The parent exits with the first
+// non-zero code. Nothing else is shared: each child shoots, diffs and writes
+// its own ledger row, exactly as a hand-typed run would.
+if (ARGS.widths.length > 1) {
+  const rest = process.argv.slice(2).filter((a) => !a.startsWith('--widths='))
+  for (const w of ARGS.widths) {
+    const code = await new Promise((done) =>
+      spawn(process.execPath, [process.argv[1], ...rest, `--width=${w}`], {
+        stdio: 'inherit',
+        cwd: process.cwd(),
+      }).on('exit', done),
+    )
+    if (code !== 0) process.exit(code ?? 1)
+  }
+  process.exit(0)
+}
 const LOCAL = process.env.LOCAL_BASE ?? 'http://localhost:3000'
 const LIVE_HOME = 'https://kenyonexpress.co.il/'
 const LIVE_PRODUCT = 'https://kenyonexpress.co.il/product/מוצר-לדוגמא/'
@@ -146,7 +169,15 @@ const ctx = await b.newContext({
 })
 
 let liveUrl = argOf('live', null)
-let mineUrl = argOf('mine', null)
+// `--live-url=` is the goal queue's name for the SERVER UNDER TEST, i.e. our
+// build, while `--live=` above is the gate's name for the REFERENCE. Opposite
+// words for opposite sides; see compare-args.mjs. Said aloud so the console
+// shows which side the URL went to.
+let mineUrl = argOf('mine', null) ?? ARGS.underTest
+if (ARGS.underTest)
+  console.log(
+    `--live-url=${ARGS.underTest} is the page under test (ours); the reference is unchanged`,
+  )
 
 if (page === 'home') {
   liveUrl ??= REFERENCE('ke_live_home.html', LIVE_HOME)
@@ -967,7 +998,16 @@ const runShot = (side) => `refs/.run-${process.pid}-${side}.png`
 // dead runs on 2026-09-08 left six PASS rows from the day before standing as
 // the gate's latest word. See appendParityFailure in parity-log.mjs.
 try {
-  await shoot(liveUrl, runShot('live'), 'live')
+  if (ARGS.baseline) {
+    // A frozen reference, by request. No archive shot, no load shortfall to
+    // report, and the ledger row says so (COMPARE_NOTES below).
+    copyFileSync(ARGS.baseline.path, runShot('live'))
+    console.log(
+      `${runShot('live')} copied from ${ARGS.baseline.path} (frozen baseline, not a fresh shot of the archive)`,
+    )
+  } else {
+    await shoot(liveUrl, runShot('live'), 'live')
+  }
   await shoot(mineUrl, runShot('mine'), 'mine')
 } catch (err) {
   appendParityFailure({
@@ -1166,7 +1206,12 @@ await new Promise((resolvePromise, reject) => {
       // row, after a caller's own note rather than instead of it. A row saying
       // 30.26% with nothing beside it has been read as our layout's divergence
       // before, and the reference was missing 57 scripts at the time.
-      COMPARE_NOTES: [process.env.COMPARE_NOTES, `ref ${loadShortfall(missedLoads.live)}`]
+      COMPARE_NOTES: [
+        process.env.COMPARE_NOTES,
+        ARGS.baseline
+          ? `baseline ${ARGS.baseline.name} (frozen PNG, ${statSync(ARGS.baseline.path).mtime.toISOString()}), not a fresh archive shot`
+          : `ref ${loadShortfall(missedLoads.live)}`,
+      ]
         .filter(Boolean)
         .join('; '),
     },

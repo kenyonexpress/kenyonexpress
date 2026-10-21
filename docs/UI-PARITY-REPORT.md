@@ -277,3 +277,10 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-21 03:53 | home | 768 | 9.80% | PASS | `c5ece7b62-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
 | 2026-10-21 03:55 | home | 1440 | 8.09% | PASS | `c5ece7b62-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
 | 2026-10-21 03:57 | home | 380 | 8.54% | PASS | `c5ece7b62-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-21 04:01 | home | 768 | 9.80% | PASS | `f52769b0a` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-21 04:10 | home | 380 | 8.53% | PASS | `f52769b0a-dirty` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
+| 2026-10-21 04:11 | home | 380 | 8.53% | PASS | `f52769b0a-dirty` | baseline electro-v7-380.png (frozen PNG, 2026-10-21T04:11:40.679Z), not a fresh archive shot |
+| 2026-10-21 04:13 | home | 768 | 9.79% | PASS | `f52769b0a-dirty` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
+| 2026-10-21 04:15 | home | 768 | 9.79% | PASS | `f52769b0a-dirty` | baseline electro-v7-768.png (frozen PNG, 2026-10-21T04:15:09.755Z), not a fresh archive shot |
+| 2026-10-21 04:17 | home | 1440 | 8.08% | PASS | `f52769b0a-dirty` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
+| 2026-10-21 04:19 | cart | 768 | 25.58% | **FAIL** | `f52769b0a-dirty` | ref 168 failed to load (107 script, 61 stylesheet) |

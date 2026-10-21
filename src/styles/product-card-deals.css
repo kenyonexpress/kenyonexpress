@@ -153,22 +153,19 @@
   justify-content: flex-start;
 }
 
-/* F43, MEASURED in the live archive at 380, 768 AND 1440 on 2026-10-21: every
-   `h2.jet-listing-dynamic-field__content` title is 22px / 26.4px (1.2),
-   weight 500, letter-spacing -0.14px, margin-bottom 8px. Two lines are 52.8
-   + 8 = 60.8, inside the 64px min-height wrap above. The old 32px line was
-   derived from that 64 and read as "2 clamped lines"; it put every title
-   glyph 3px per line below live's, at weight 400 against 500, and wrapped
-   one word earlier on long titles (the 380 reference fits "...בפתח" on
-   line one; 32px/400/0 did not). The float 26.4 is live's computed value. */
-.p_con__title,
-.jet-listing-grid-deals h2.p_con__title {
+/* Shared base for the two cards that render `.p_con__title`: the featured
+   grid (ProductCard, which adds `text-product-title`) and the deals card
+   (ProductDealCard, whose measured line, weight and margin sit beside it in
+   src/components/ProductDealCard.module.css, F43 2026-10-21). No line-height
+   here on purpose: the old 32px was derived from the 64px wrap and labelled
+   "2 clamped lines"; live's deals title is 26.4px and the product-page title
+   32.0051px, and each owner sets its own. One class in the selector, also on
+   purpose, so the module's `h2.title` out-ranks this on what it owns. */
+.p_con__title {
   color: var(--color-link);
   font-size: 22px;
-  line-height: 26.4px; /* live: 1.2, two lines 52.8 + 8 margin = 60.8 */
-  letter-spacing: -0.14px; /* live body letter-spacing, inherited by the h2 */
-  margin: 0 0 8px;
-  font-weight: var(--weight-medium);
+  margin: 0;
+  font-weight: inherit;
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;

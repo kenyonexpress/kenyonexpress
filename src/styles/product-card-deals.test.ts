@@ -32,31 +32,54 @@ describe('product-card-deals.css grid item', () => {
 
 /**
  * Card title and price type, measured in the live archive on 2026-10-21 at
- * 380, 768 and 1440 (F43). The title is 22px / 26.4px / weight 500 /
- * letter-spacing -0.14px with an 8px bottom margin on every width; the price
- * fields are line-height 1.714 (23.996 at 14px, 27.424 at 16px). The old
- * 32px / inherit-weight title was derived from the 64px wrap and put every
- * glyph row 3px low and one word early on the wrap.
+ * 380, 768 and 1440 (F43). The deals title is 22px / 26.4px / weight 500 with
+ * an 8px bottom margin on every width, over the body's -0.14px letter-spacing;
+ * the price fields are line-height 1.714 (23.996 at 14px, 27.424 at 16px).
+ * The old 32px / inherit-weight title was derived from the 64px wrap and put
+ * every glyph row 3px low and one word early on the wrap.
+ *
+ * The numbers are split across four files on purpose, and this pins the split:
+ * the shared base here, the deal card's own line/weight/margin in a module
+ * beside the component, the tokens in tokens.css, and the letter-spacing on
+ * body in globals.css where live has it.
  */
-describe('product-card-deals.css title and price type', () => {
-  const css = fs.readFileSync(path.resolve(__dirname, './product-card-deals.css'), 'utf-8')
-  const title =
-    css.match(/\n\.p_con__title,\n\.jet-listing-grid-deals h2\.p_con__title \{([^}]*)\}/)?.[1] ?? ''
+describe('product-card-deals.css title and price type (F43)', () => {
+  const read = (rel: string) => fs.readFileSync(path.resolve(__dirname, rel), 'utf-8')
+  const css = read('./product-card-deals.css')
+  const module = read('../components/ProductDealCard.module.css')
+  const component = read('../components/ProductDealCard.tsx')
+  const tokens = read('./tokens.css')
+  const globals = read('../app/globals.css')
+  const base = css.match(/\n\.p_con__title \{([^}]*)\}/)?.[1] ?? ''
 
-  it('sets the title to live\u2019s 22px / 26.4px at weight 500', () => {
-    expect(title).toMatch(/font-size:\s*22px;/)
-    expect(title).toMatch(/line-height:\s*26\.4px;/)
-    expect(title).toMatch(/font-weight:\s*var\(--weight-medium\);/)
+  it('keeps the shared base at 22px with no line-height of its own', () => {
+    expect(base).toMatch(/font-size:\s*22px;/)
+    expect(base).not.toMatch(/line-height/)
+    expect(base).not.toMatch(/line-height:\s*32px/)
+    // One class, so the module's h2.title out-ranks it.
+    expect(css).not.toMatch(/h2\.p_con__title/)
   })
 
-  it('carries live\u2019s -0.14px letter-spacing and 8px bottom margin', () => {
-    expect(title).toMatch(/letter-spacing:\s*-0\.14px;/)
-    expect(title).toMatch(/margin:\s*0 0 8px;/)
+  it('gives the deal card live\u2019s 26.4px line, weight 500 and 8px margin in its module', () => {
+    const rule = module.match(/\nh2\.title \{([^}]*)\}/)?.[1] ?? ''
+    expect(rule).toMatch(/line-height:\s*var\(--leading-deal-title\);/)
+    expect(rule).toMatch(/font-weight:\s*var\(--weight-medium\);/)
+    expect(rule).toMatch(/margin:\s*0 0 8px;/)
   })
 
-  it('never returns to the 32px line that was derived from the wrap height', () => {
-    expect(title).not.toMatch(/line-height:\s*32px/)
-    expect(title).not.toMatch(/font-weight:\s*inherit/)
+  it('applies the module class next to the base class on the h2', () => {
+    expect(component).toMatch(/import styles from '\.\/ProductDealCard\.module\.css'/)
+    expect(component).toMatch(/className=\{`p_con__title \$\{styles\.title\}`\}/)
+  })
+
+  it('declares the measured tokens', () => {
+    expect(tokens).toMatch(/--leading-deal-title:\s*26\.4px;/)
+    expect(tokens).toMatch(/--tracking-body:\s*-0\.14px;/)
+  })
+
+  it('puts live\u2019s letter-spacing on body, where it is inherited from', () => {
+    const body = globals.match(/\nbody \{([^}]*)\}/)?.[1] ?? ''
+    expect(body).toMatch(/letter-spacing:\s*var\(--tracking-body\);/)
   })
 
   it('gives both price fields live\u2019s 1.714 line-height', () => {
