@@ -2,20 +2,6 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
-## ✅ MAINTENANCE_LOOP_1 (Session: 2026-10-21 10:27-10:34 UTC, security audit, eighth pass, MEASURED, nothing to fix)
-
-**Goal:** Run `pnpm audit`, fix critical and high vulnerabilities, commit each fix separately as chore security audit fix PACKAGE, push to autopilot. Only what is requested.
-
-**Result:** COMPLETE, zero fix commits. `pnpm audit` on `d53606000` (clean tree, 0/0 against `origin/autopilot`) reports "No known vulnerabilities found" and the JSON form reads 0 advisories at every severity (info, low, moderate, high, critical) over 950 dependencies (548 prod, 297 dev, 179 optional), the same counts as the seventh pass. False-negative checks repeated: `pnpm install --frozen-lockfile --offline` says "Already up to date" (lockfile in sync), the npm advisories bulk endpoint and `/-/ping` both answer 200 (registry reachable, not an offline miss), the three `pnpm.overrides` (webpack-dev-middleware, brace-expansion, source-map-js) are pinned fixes and `auditConfig` is absent, so nothing is excluded. `package.json` and `pnpm-lock.yaml` unchanged.
-
-**Gates:** `pnpm typecheck` exit 0, `pnpm lint` exit 0 (biome 1727 files, tokens, copy, asset gates clean), `pnpm build` exit 0 (`w9bjMbnvtkH0al438hPtH`, 311 static pages; the partner-API prerender bail-out and the `reviews.read_failed` 42501 lines are the known build-time logs), `pnpm gate:chunks` clean on 243 prerendered pages. Backup 2026-10-21-1241 present, three kept; caffeinate alive (two processes), SleepDisabled 1.
-
-**החלטות שהתקבלו לבד:**
-- The goal forbids touching unnamed files; this STATE.md entry is the closing ritual CLAUDE.md requires and the only file in the commit, the same reading as the seven earlier passes.
-- Supabase MCP and GitHub MCP not needed: no DB, RLS, migration or PR in a dependency audit.
-
-**המשך מ:** MAINTENANCE_LOOP_2 (head of `~/ke-goals/queue.txt`): run `pnpm outdated`, bump patch versions for safe packages, commit as chore deps bump patch versions, push to autopilot.
-
 ## ✅ MAINTENANCE_LOOP_10 (Session: 2026-10-21 10:27-10:34 UTC, queue regeneration, sixth pass, DONE)
 
 **Goal:** Append 10 fresh MAINTENANCE_LOOP goals to `~/ke-goals/queue.txt` by reading MAINTENANCE_LOOP_1 through MAINTENANCE_LOOP_10 from that file and appending them again. Only what is requested.
