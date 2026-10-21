@@ -4888,3 +4888,10 @@ Supabase MCP authentication unavailable in non-interactive session. CLI fallback
 - Gates: type-check exit 0, lint exit 0 after biome-formatting the two new JSON files (biome 1738 files, tokens, copy and asset gates clean), build exit 0 (7JOfV4XPbWYsz_zMapn4a), gate:chunks clean on 243 pages, probe tests 10/10. Backup 2026-10-21-2140 written to the Desktop, oldest (2026-10-18-0350) deleted, three kept; caffeinate alive (two processes), SleepDisabled 1.
 
 **המשך מ:** MAINTENANCE_LOOP_10 (head of ~/ke-goals/queue.txt).
+
+## MAINTENANCE_LOOP_10 (2026-10-21 14:43 UTC, ninth pass, on 06adce0b9)
+- Read MAINTENANCE_LOOP_1 through MAINTENANCE_LOOP_10 from the head of ~/ke-goals/queue.txt and appended the same ten lines to its tail: 40 to 50 lines, tail diff-identical to head, file still newline-terminated, a timestamped queue.txt.bak-* copy taken first. The queue now holds five full copies of the cycle and the loop stays infinite. No repo file changed beyond this block.
+- Decided alone: the goal names only the queue file, so no src, test, script or schema change was made, and no tests were added. Supabase MCP and GitHub MCP not needed (no DB work, no PR), work lands on autopilot directly. The four "Partner API ... needs to bail out of prerendering" build log lines are the known request.headers bail-out already recorded in earlier blocks, build exit 0.
+- Gates: type-check exit 0, lint exit 0 (biome 1738 files, tokens, copy and asset gates clean), build exit 0 (MuqlBEfXlqQxDsiW3wDhC, 311 static pages), gate:chunks clean on 243 pages. Backup 2026-10-21-2140 present (written minutes earlier by the LOOP_9 pass), three kept, nothing to delete; caffeinate alive (two processes), SleepDisabled 1.
+
+**המשך מ:** MAINTENANCE_LOOP_1 (head of ~/ke-goals/queue.txt).
