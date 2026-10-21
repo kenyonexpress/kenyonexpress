@@ -11,7 +11,7 @@ import {
   resolveVatPercent,
   splitVatInclusive,
 } from '@/lib/invoices/document'
-import { formatInvoiceNumber, invoiceSeries, resolveInvoiceIssuer } from '@/lib/invoices/issuer'
+import { BUSINESS_REGISTRATION_NUMBER } from '@/lib/legal-entity'
 import { log } from '@/lib/observability/log'
 import { getPaymentProvider } from '@/lib/payments'
 import { readAmountAgorot, resolvePaymentMoneySchema } from '@/lib/payments/payment-money-columns'
@@ -852,6 +852,7 @@ export async function issueInvoice(
       vatPercent: document.vatPercent,
       transactionId,
       reference: document.reference,
+      issuerRegistrationNumber: BUSINESS_REGISTRATION_NUMBER,
       sendByEmail: true,
     })
   } catch (error) {

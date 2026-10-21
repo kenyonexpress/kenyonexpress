@@ -1,6 +1,7 @@
 'use client'
 
 import TurnstileWidget from '@/components/shared/TurnstileWidget'
+import { legalEntityLine } from '@/lib/legal-entity'
 import { resetTurnstile } from '@/lib/security/turnstile-client'
 import { type SupplierLeadState, submitSupplierLead } from '@/server/actions/supplier-lead'
 import { useActionState, useEffect } from 'react'
@@ -195,6 +196,10 @@ export default function SupplierLeadForm({
           <input type="checkbox" name="agreement" required className="h-6 w-6 shrink-0" />
           <span>קראתי ואני מאשר את הסכם ההצטרפות</span>
         </label>
+        {/* The counterparty, printed under the clauses and outside the hashed
+            text: who the business is contracting with is not a term that a
+            version bump should ever re-ask them to accept. */}
+        <p className="mt-3 text-xs text-heading/75">הצד השני להסכם: {legalEntityLine()}.</p>
       </fieldset>
 
       <TurnstileWidget />

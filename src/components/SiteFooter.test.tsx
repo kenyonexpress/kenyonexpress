@@ -40,6 +40,15 @@ describe('SiteFooter', () => {
     expect(screen.getAllByText(/קניון EXPRESS/).length).toBeGreaterThan(0)
   })
 
+  it('prints the business registration number on the legal line, desktop and mobile', () => {
+    render(<SiteFooter />)
+    const lines = screen.getAllByText(/מספר עוסק 033798513/)
+    expect(lines.length).toBe(2)
+    for (const line of lines) {
+      expect(line.textContent).toMatch(/קניון EXPRESS\. מספר עוסק 033798513\. כל הזכויות שמורות\./)
+    }
+  })
+
   it('renders social media links with correct hrefs', () => {
     render(<SiteFooter />)
     const facebookLinks = screen.getAllByRole('link', { name: 'פייסבוק' })
