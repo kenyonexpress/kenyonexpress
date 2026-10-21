@@ -404,3 +404,54 @@ The E2E fixture rows now inflate `orders` and `payments` by 17 and 15; any futur
 delta must be read against the real-sales column, not the raw count.
 
 **Status:** COMPLETE
+
+## 2026-10-21 12:03 UTC - Backlog Scan (MAINTENANCE_LOOP_3, twelfth run)
+
+**Scanned Files:**
+- docs/BACKLOG.md: exists, 7 items, unchanged (last commit 4b17cfb49, 2026-10-16).
+- docs/TODO.md: does not exist. `find` over the worktree (node_modules excluded) returns no TODO*.md.
+
+**Gates re-measured through the Supabase MCP.** Same read-only select as the tenth and eleventh runs,
+this time issued as `execute_sql` through the official `@supabase/mcp-server-supabase` run locally over
+stdio in `--read-only` mode with the CLI keychain token (the claude.ai Supabase connector still needs an
+OAuth this session cannot run; the server is the same code the connector would call). The parser is the
+one exported by `scripts/db-mcp-probe.mjs`. Evidence, both result sets in one document:
+`logs/maint3/sales-gate-2026-10-21e.json`.
+
+| Measure | Eleventh run | This run |
+|---------|--------------|----------|
+| orders, all statuses | 116 | 125 |
+| orders in paid / fulfilled / settled | 81 | 90 |
+| payments succeeded or settled | 86 | 95 |
+| real sales (real Cardcom txn id, non-test buyer) | 0 | 0 |
+| orders since the eleventh run | 17 | 9 |
+| last order | 2026-10-21 09:49 UTC | 2026-10-21 10:59 UTC |
+
+The 9 new orders were broken down before being dismissed: every one belongs to the E2E fixture customer
+at `test.kenyonexpress.local`, every one is `paid` with a succeeded payment carrying a `mock-tok-N`
+transaction id (odd numbers 1 to 17), and they land between 10:45 and 10:59 UTC, which is the
+MAINTENANCE_LOOP_4 Playwright run that followed the eleventh pass. The real-sales column, which excludes
+mock transaction ids and test buyers, stays at 0. The launch, 10-sales and revenue gates are all still
+closed. The management-API figures of the eleventh run and the MCP figures of this run are the same
+query against the same database; the delta is entirely the fixture rows.
+
+**Backlog Items Analysis (today 2026-10-21 UTC, 2026-10-21 19:03 local UTC+7):**
+1. Group-deals re-evaluation, dated 2026-10-23: 2 days out. BLOCKED.
+2. Crisp inbox, post-launch: 0 real sales, launch gate not passed. BLOCKED.
+3. Meta WhatsApp Business verification, after 10 sales: 0 real sales. BLOCKED.
+4. Israeli lawyer review of ToS and Privacy, after 10 sales: 0 real sales. BLOCKED.
+5. Capacitor or Expo native app, after revenue: 0 real revenue. BLOCKED.
+6. Courses monthly billing, Phase 2: BLOCKED.
+7. Tzimmer calendar, Phase 2: BLOCKED.
+
+**Unblocked Items Found:** 0
+
+**Action:** None. ~/ke-goals/queue.txt not modified (47 lines before and after; its head is
+MAINTENANCE_LOOP_4 because the runner pops this pass's line before the session starts).
+
+**Note:** Item 1 becomes a candidate on 2026-10-23 local. The run that lands on or after
+2026-10-23 00:00 local should queue it as `BACKLOG_1 Re-evaluate group deals` at the head of the queue.
+Every MAINTENANCE_LOOP_4 pass now adds 9 to 17 fixture orders to the raw counts; read "orders since"
+against the real-sales column only.
+
+**Status:** COMPLETE
