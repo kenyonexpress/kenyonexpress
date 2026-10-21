@@ -2,6 +2,21 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_8 (Session: 2026-10-21 18:36-18:50 UTC, code debt scan, seventeenth pass, MEASURED, delta 0)
+
+**Goal:** Scan all TODO, FIXME and HACK comments in src/, queue a cleanup goal if the count grew since the last scan, report the delta in docs/CODE-DEBT-STATUS.md, commit as chore maint code debt scan, push.
+
+**Result:** COMPLETE, delta 0, no cleanup goal queued, `~/ke-goals/queue.txt` untouched (42 lines, head is MAINTENANCE_LOOP_9). Scan of HEAD `a9365b279` in this worktree: 8 TODO, 0 FIXME, 0 HACK, the loose grep and the word-boundary grep agree on 8, the same eight lines as every pass since the 20.10 baseline (one in `src/app/api/cron/stock-notifications/route.ts`, two `TODO(cardcom)` in `src/lib/payments/cardcom.ts`, four in `src/lib/images/r2-migration.ts`, one test stub string in `src/lib/whatsapp.test.ts`). Against the sixteenth pass's `624a75ef5` the branch gained 11 commits, none touching `src/` (`git log 624a75ef5..HEAD -- src/` empty, 0 markers in added lines of `git diff 624a75ef5..HEAD -- src/`); fourteenth byte-identical pass. Seventeenth row and narrative added to docs/CODE-DEBT-STATUS.md. Committed as `769d7196b` by explicit path and pushed to `origin/autopilot`. Working tree was clean at scan time.
+
+**Gates:** `pnpm type-check` exit 0, `pnpm lint` exit 0 (biome 1745 files, tokens, copy, asset gates clean), `pnpm build` exit 0, `pnpm gate:chunks` clean on 243 prerendered pages. Backup 2026-10-21-2140 present and under 24h, three kept (10-21-0201, 10-21-1241, 10-21-2140), nothing to delete; caffeinate alive (two processes), SleepDisabled 1. Nothing to fix.
+
+**החלטות שהתקבלו לבד:**
+- No tests added: the change is a measurement report in docs/ with no src or script change. GitHub MCP not needed: no PR, work lands on autopilot directly. Supabase MCP not needed: the scan is static text analysis with no DB work.
+- No src commits since the last scan, so the per-commit added-line check collapsed to a single empty range diff; recorded as such rather than re-listing the eight unchanged hits.
+- MAINTENANCE_LOOP_9 is left to the loop harness, which pops `~/ke-goals/queue.txt` one goal per session; starting it here would put two agents on the same repo.
+
+**המשך מ:** MAINTENANCE_LOOP_9 (head of `~/ke-goals/queue.txt`): verify the Supabase connection pool and query performance via Supabase MCP, alert in docs/DB-STATUS.md if slow queries over 500 ms exist, commit as chore ops db performance check, push.
+
 ## ✅ MAINTENANCE_LOOP_6 (Session: 2026-10-21 18:21-18:40 UTC, mobile gate recheck, fourteenth, DONE)
 
 **Goal:** Recheck the mobile gate score via scripts/compare.mjs, requeue a mobile fix goal at the head of the queue if above 11 percent, report the score to docs/GATE-STATUS.md, commit as chore qa mobile gate check, push.
