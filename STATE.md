@@ -2,6 +2,20 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_1 (Session: 2026-10-21 13:17-13:27 UTC, security audit, eighth pass, MEASURED, nothing to fix)
+
+**Goal:** Run `pnpm audit`, fix critical and high vulnerabilities, commit each fix separately as chore security audit fix PACKAGE, push to autopilot. Only what is requested.
+
+**Result:** COMPLETE, zero fix commits. `pnpm audit` on `d989c3f58` (clean tree, 0/0 against `origin/autopilot` after fetch) reports "No known vulnerabilities found" and the JSON form reads 0 advisories at every severity (info, low, moderate, high, critical) over 950 dependencies (548 prod, 297 dev, 179 optional), the same counts as the seventh pass. False negatives ruled out the same way: `pnpm install --frozen-lockfile --offline` says "Already up to date" (lockfile in sync), the npm advisories bulk endpoint answers 200 (registry reachable), and the three `pnpm.overrides` (webpack-dev-middleware, brace-expansion, source-map-js) are pinned fixes with no `auditConfig` exclusions. `package.json` and `pnpm-lock.yaml` unchanged. The first audit of this session ran by mistake in the main checkout on `closeout/v1-final` and also read 0 at every severity; the measured result above is the worktree's.
+
+**Gates:** `pnpm typecheck` exit 0, `pnpm lint` exit 0 (biome 1735 files, tokens, copy, asset gates clean), `pnpm build` exit 0 (`fVOHGYjFDBAj4vBMgACeU`), `pnpm gate:chunks` clean on 243 prerendered pages. `git status` empty before and after the build. Backup 2026-10-21-1241 present and under 24h, three kept (10-18-0350, 10-21-0201, 10-21-1241), nothing to delete; caffeinate alive (two processes), SleepDisabled 1.
+
+**החלטות שהתקבלו לבד:**
+- The goal forbids touching unnamed files; this STATE.md entry is the closing ritual CLAUDE.md requires and the only file in the commit, the same reading every prior LOOP_1 pass used.
+- Supabase MCP and GitHub MCP not needed: no DB, RLS, migration or PR in a dependency audit. No tests added: no src or script change.
+
+**המשך מ:** MAINTENANCE_LOOP_2 (head of `~/ke-goals/queue.txt`): run `pnpm outdated`, bump patch versions for safe packages, skip major and minor, commit as chore deps bump patch versions, push to autopilot.
+
 ## ✅ MAINTENANCE_LOOP_10 (Session: 2026-10-21 13:15-13:25 UTC, queue regeneration, eighth pass, DONE)
 
 **Goal:** Append 10 fresh MAINTENANCE_LOOP goals to `~/ke-goals/queue.txt` by reading MAINTENANCE_LOOP_1 through MAINTENANCE_LOOP_10 from that file and appending them again. Only what is requested.
