@@ -2,6 +2,22 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_7 (Session: 2026-10-21 21:33-21:45 UTC, Lighthouse CI, seventeenth pass, DONE)
+
+**Goal:** Run Lighthouse CI via pnpm lhci:autorun, queue an optimization goal if any score is below 90, report scores to docs/LIGHTHOUSE-STATUS.md, commit as chore qa lighthouse check, push.
+
+**Result:** DONE, every category at or above 90 in all nine runs, no optimisation goal queued. Lighthouse CI on HEAD `277a2ed22` (clean tree; the only non-doc change since the sixteenth pass's `c6bd2d58a` is the LOOP_2 bump of `@marsidev/react-turnstile` 1.6.2 to 1.6.3, `git log c6bd2d58a..HEAD -- src/ next.config.ts` empty, the other nine commits touch only STATE.md, docs/ and logs/). Cold `pnpm build` exit 0 with `.next/cache/turbopack` moved to /tmp/ke-lh17 first, BUILD_ID `nVSq8_xWlmoH7L7y_Zrh3`, 311 static pages, `pnpm gate:chunks` clean on 243 prerendered pages before serving, `pnpm start` on port 3421 (0 listeners beforehand, pid 13797, cwd verified by `/usr/sbin/lsof` as this worktree, BUILD_ID once in the served home HTML, killed by pid afterwards, port confirmed closed). `LHCI_BASE_URL=http://localhost:3421 COMPARE_PRODUCT_SLUG='אוזניות-איירפודס-3' pnpm lhci:autorun` (@lhci/cli 0.15.1, Lighthouse 12.6.1, Chrome 155, desktop preset, 3 runs per URL) exit 0, no assertion warning, zero runWarnings, 9 reports on disk, nothing uploaded, 2 min 27 s wall (21:34:23 to 21:36:50 UTC). Representative runs: `/` 99/100/96/100 (runs 99, 98, 100), `/products` 98/100/96/100 (98, 98, 100), `/product/אוזניות-איירפודס-3` 98/100/96/100 (98, 99, 98); LCP 0.9 / 1.0 / 1.1 s, FCP 0.4 s on all nine, TBT 0 ms in all nine, CLS 0.021 / 0.006 / 0.019. Only weighted audit under 0.9 is `errors-in-console` (the same five local-environment items as every pass: two /_vercel/* 404s, their two "Refused to execute", one https prefetch against the http origin); 0 /_next/* failures. docs/LIGHTHOUSE-STATUS.md header, summary table and comparison rewritten for the seventeenth pass, the sixteenth demoted to a "Previous pass" section. `~/ke-goals/queue.txt` untouched (43 lines, head MAINTENANCE_LOOP_8). Logs in /tmp/ke-lh17 (build, chunks, server, lhci, typecheck, lint).
+
+**Gates:** `pnpm typecheck` exit 0, `pnpm lint` exit 0 (biome 1752 files, tokens, copy, asset gates clean), `pnpm build` exit 0 after the doc edit (`xg86Ozgm63II6kCz_JUQn`, the 46 `reviews.read_failed 42501` lines and four Partner API bail-out lines are the known build-time noise), `pnpm gate:chunks` clean on 243 prerendered pages. Backups: three kept (10-21-0201, 10-21-1241, 10-21-2140), newest under 24h, nothing to delete; caffeinate alive (pids 967, 11853), SleepDisabled 1.
+
+**החלטות שהתקבלו לבד:**
+- No code or test change: same tree inside the localhost band (`/products` 99 to 98 on the representative run, every individual run 98 to 100), so no tests added. The Turnstile loader patch does not run on the three measured pages.
+- Type-check and lint ran after the Lighthouse run rather than alongside it so their CPU load could not touch the scores. The 20:06 reports moved to /tmp/ke-lh17/prev-reports and the turbopack cache to /tmp/ke-lh17 rather than deleted; `.lighthouseci/assertion-results.json` reverted with git checkout after the run (lhci rewrites it without a trailing newline, content unchanged `[]`).
+- Supabase MCP and GitHub MCP not needed (no DB work, no PR); the Supabase connector still needs an OAuth this session cannot run. Work lands on autopilot directly.
+
+**המשך מ:** MAINTENANCE_LOOP_8 (head of `~/ke-goals/queue.txt`): scan all TODO, FIXME and HACK comments in src/, queue a cleanup goal if the count grew since the last scan, report the delta in docs/CODE-DEBT-STATUS.md, commit as chore maint code debt scan, push.
+
+
 ## ✅ MAINTENANCE_LOOP_6 (Session: 2026-10-21 21:22-21:40 UTC, mobile gate recheck, sixteenth, DONE)
 
 **Goal:** Recheck the mobile gate score via scripts/compare.mjs, requeue a mobile fix goal at the head of the queue if above 11 percent, report the score to docs/GATE-STATUS.md, commit as chore qa mobile gate check, push.
