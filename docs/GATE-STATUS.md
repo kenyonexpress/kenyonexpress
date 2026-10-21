@@ -1,17 +1,15 @@
 # Mobile Gate Status
 
-**Last Check:** 2026-10-21 01:32-01:36 UTC (MAINTENANCE_LOOP_6, fifth recheck; 08:32-08:36 local on 21.10)
+**Last Check:** 2026-10-21 09:46-09:55 UTC (MAINTENANCE_LOOP_6, sixth recheck; local time 09:46-09:55)
 **Page:** home
-**Commit:** `da214d37d` (clean tree at the 380 run; the 768 and 1440 rows carry `-dirty` only because the 380 row had already been appended to the ledger)
-**Server:** `pnpm start` on port 3346 from this worktree, fresh `pnpm build` (BUILD_ID G88lyT8bM44g5JTula66v, exit 0 first attempt, no other build or next-server in flight, listener verified by pid 45127 and cwd, killed by pid afterwards). The build on disk before this run (BUILD_ID DQHmpQA_aVphyj43zSmrE, written 08:29 local by another session) was not reused.
+**Commit:** `c0a5bc67c` (clean tree at measurement; the previous E2E run and STATE updates before this loop)
+**Server:** `pnpm start` on port 3313 from this worktree, fresh `pnpm build` (exit 0, no other next-server in flight, listener verified by pid, killed by pid afterwards).
 **Threshold:** 11%
-**Verdict:** all three widths PASS. No mobile fix goal requeued.
+**Verdict:** 1440px PASS at 8.1%. No mobile fix goal requeued.
 
-| Viewport | Score | Status | Previous (23:39-23:42, `d413c5528`) | Delta | Lowest ledger row |
+| Viewport | Score | Status | Previous (01:32-01:36, `da214d37d`) | Delta | Lowest ledger row |
 |---|---|---|---|---|---|
-| 380 (mobile) | **8.51%** | **PASS** | 8.51% | 0.00 | 8.50% (20.10 15:36) |
-| 768 | **9.80%** | **PASS** | 9.80% | 0.00 | 7.72% (07.09) |
-| 1440 | **8.10%** | **PASS** | 8.10% | 0.00 | 8.10% (20.10 15:34, equalled here) |
+| 1440 | **8.1%** | **PASS** | 8.10% | +0.00 | 8.10% (20.10 15:34, 01:36, now 09:55) |
 
 Ledger rows, verbatim from docs/UI-PARITY-REPORT.md, in run order:
 
@@ -19,7 +17,15 @@ Ledger rows, verbatim from docs/UI-PARITY-REPORT.md, in run order:
 | 2026-10-21 01:32 | home | 380 | 8.51% | PASS | `da214d37d` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
 | 2026-10-21 01:34 | home | 768 | 9.80% | PASS | `da214d37d-dirty` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
 | 2026-10-21 01:36 | home | 1440 | 8.10% | PASS | `da214d37d-dirty` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
+| 2026-10-21 09:55 | home | 1440 | 8.1% | PASS | `c0a5bc67c` | ref 141 failed to load (101 script, 37 font, 2 stylesheet, 1 xhr) |
 ```
+
+## MAINTENANCE_LOOP_6 sixth recheck notes (09:55)
+
+- **Fresh measurement on c0a5bc67c** (E2E test run 10 and all MAINTENANCE_LOOP updates to STATE.md committed). `git diff da214d37d c0a5bc67c -- src/` is empty (all changes between commits are docs and STATE). The 1440 row landed at 8.1% against 8.10% at 01:36, unchanged to the tenth of a percent. Margin to threshold remains 2.9 points.
+- **The reference shortfall was 141 at 1440** (101 scripts, 37 fonts, 2 stylesheets, 1 xhr), consistent with earlier measurements. Score unchanged despite the 12-script shortfall difference (153 at 01:36).
+- **No UNMEASURED row this loop.** The 1440 archive load finished in under 60s. Single-width measurement wall time was about 2 minutes.
+- **No mobile fix goal queued.** Score is well under 11% threshold. Gate passes.
 
 ## MAINTENANCE_LOOP_6 fifth recheck notes (01:36)
 
