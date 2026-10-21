@@ -1,13 +1,13 @@
 # Mobile Gate Status
 
-**Last Check:** 2026-10-20 23:39-23:42 UTC (MAINTENANCE_LOOP_6, fourth recheck; 06:39-06:42 local on 21.10)
+**Last Check:** 2026-10-21 01:32-01:36 UTC (MAINTENANCE_LOOP_6, fifth recheck; 08:32-08:36 local on 21.10)
 **Page:** home
-**Commit:** `d413c5528` (clean tree at the 380 run; the 768 and 1440 rows carry `-dirty` only because the 380 row had already been appended to the ledger)
-**Server:** `pnpm start` on port 3342 from this worktree, fresh `pnpm build` (BUILD_ID Rp9lmnsd8jwIYocjAn-di, exit 0 first attempt, no other build or next-server in flight, listener verified by pid 81152 and cwd). The build on disk before this run (BUILD_ID KVV9UYDPAgFoSjftVMmr5, written 06:36 local by another session) was not reused.
+**Commit:** `da214d37d` (clean tree at the 380 run; the 768 and 1440 rows carry `-dirty` only because the 380 row had already been appended to the ledger)
+**Server:** `pnpm start` on port 3346 from this worktree, fresh `pnpm build` (BUILD_ID G88lyT8bM44g5JTula66v, exit 0 first attempt, no other build or next-server in flight, listener verified by pid 45127 and cwd, killed by pid afterwards). The build on disk before this run (BUILD_ID DQHmpQA_aVphyj43zSmrE, written 08:29 local by another session) was not reused.
 **Threshold:** 11%
 **Verdict:** all three widths PASS. No mobile fix goal requeued.
 
-| Viewport | Score | Status | Previous (22:27-22:31, `450762eda`) | Delta | Lowest ledger row |
+| Viewport | Score | Status | Previous (23:39-23:42, `d413c5528`) | Delta | Lowest ledger row |
 |---|---|---|---|---|---|
 | 380 (mobile) | **8.51%** | **PASS** | 8.51% | 0.00 | 8.50% (20.10 15:36) |
 | 768 | **9.80%** | **PASS** | 9.80% | 0.00 | 7.72% (07.09) |
@@ -16,10 +16,18 @@
 Ledger rows, verbatim from docs/UI-PARITY-REPORT.md, in run order:
 
 ```
-| 2026-10-20 23:39 | home | 380 | 8.51% | PASS | `d413c5528` | ref 154 failed to load (113 script, 37 font, 2 stylesheet, 1 image, 1 xhr) |
-| 2026-10-20 23:40 | home | 768 | 9.80% | PASS | `d413c5528-dirty` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-10-20 23:42 | home | 1440 | 8.10% | PASS | `d413c5528-dirty` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
+| 2026-10-21 01:32 | home | 380 | 8.51% | PASS | `da214d37d` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
+| 2026-10-21 01:34 | home | 768 | 9.80% | PASS | `da214d37d-dirty` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
+| 2026-10-21 01:36 | home | 1440 | 8.10% | PASS | `da214d37d-dirty` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
 ```
+
+## MAINTENANCE_LOOP_6 fifth recheck notes (01:36)
+
+- **One `src/` change since the fourth recheck, and it does not touch the home page.** `git diff d413c5528 da214d37d --stat -- src/` lists only `src/components/ui/tabs.tsx` and its test (the active TabsTrigger ink moved off brand yellow for the login a11y fix in MAINTENANCE_LOOP_4). The only non-test importer of Tabs is `src/components/auth/LoginModal.tsx`, which is closed at capture and paints nothing, so this is the fifth measurement of one home-page tree, and the second exact repeat: 8.51 / 9.80 / 8.10 to the hundredth at every width. Across five runs the 380 row has spanned 0.02 points, 768 0.55 and 1440 0.43; the 768 margin to the threshold is 1.20 points.
+- **The reference shortfall was 153 at all three widths** (113 scripts, 37 fonts, 2 stylesheets, 1 xhr), with no image on the 380 row this time (the fourth recheck's 380 row read 154 with 1 image). Scores unchanged against both the 96-shortfall runs and the 153-shortfall runs, so the extra 57 script and 1 stylesheet failures are still re-issued requests to the dead `wp-content/` origin and not assets that paint.
+- **No UNMEASURED row this loop**, third loop in a row. All three archive loads finished under the 60s `page.goto` budget. Total wall time for three widths was about 4 minutes.
+- **Band profile unchanged at every width**, same bands and same percentages as the 23:42 run: 380 y200-300 hero floor (55.6%, 34.1%), y1700 (20.1%), y2500 (15.1%); 768 y100-200 (31%, 33.2%), y400-500 (49.3%, 17.4%), y2400-2500 (17.5%, 34.1%); 1440 y200-300 (24.1%, 18.7%), y500-600 (25.1%, 17.2%), y1600-1700 (16.2%, 19.4%). Each is a documented floor below.
+- **Not done this loop:** serving the reference from a local origin to pin the shortfall. Unchanged from the previous four loops; with two consecutive exact repeats, the shortfall is a ledger-noise item and not a gate risk.
 
 ## MAINTENANCE_LOOP_6 fourth recheck notes (23:42)
 
