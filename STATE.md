@@ -2,6 +2,21 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_3 (Session: 2026-10-21 10:39-10:55 UTC, backlog scan, eleventh run, MEASURED, zero unblocked)
+
+**Goal:** Scan docs/BACKLOG.md and docs/TODO.md for unblocked items, queue any found to `~/ke-goals/queue.txt`, report the count in docs/MAINT-LOG.md, commit as chore maint scan backlog, push.
+
+**Result:** COMPLETE, 0 unblocked of 7. docs/BACKLOG.md unchanged since `4b17cfb49` (2026-10-16); docs/TODO.md does not exist and no TODO*.md exists anywhere in the worktree outside node_modules. The sales gate was re-measured on production with the same read-only select as the tenth run (management API, CLI keychain token; the claude.ai Supabase connector still needs an OAuth this session cannot run): 116 orders, 81 paid or fulfilled, 86 succeeded payments, 0 real sales, 17 orders since the tenth run, last order 2026-10-21 09:49 UTC. The 17 new rows were broken down before being dismissed: all are the E2E fixture customer at test.kenyonexpress.local with `mock-tok-N` transaction ids, placed 09:07 to 09:49 UTC by the MAINTENANCE_LOOP_4 Playwright run against the mock build. Evidence `logs/maint3/sales-gate-2026-10-21d.json` and `logs/maint3/sales-gate-breakdown-2026-10-21.json`. Item 1 (group deals, 2026-10-23) is two days out; items 2 to 5 wait on launch, 10 sales or revenue; 6 and 7 are Phase 2. Queue untouched at 47 lines. Eleventh-run entry appended to docs/MAINT-LOG.md.
+
+**Gates:** `pnpm type-check` exit 0, `pnpm lint` exit 0 (biome 1729 files, tokens, copy, asset gates clean), `pnpm build` exit 0, `pnpm gate:chunks` clean on 243 prerendered pages. Backup 2026-10-21-1241 present, three kept; caffeinate alive (two processes), SleepDisabled 1.
+
+**החלטות שהתקבלו לבד:**
+- The 17 new orders are counted as test traffic, not sales, on two independent signals (fixture buyer domain and mock transaction id); the real-sales column is the gate, the raw order count is not.
+- Item 1 is dated, not gated, so it is not queued early; the run on or after 2026-10-23 00:00 local queues `BACKLOG_1 Re-evaluate group deals` at the head of the queue.
+- GitHub MCP not needed: no PR, work lands on autopilot directly as every maintenance pass does.
+
+**המשך מ:** MAINTENANCE_LOOP_4 (head of `~/ke-goals/queue.txt` after this line is popped): run the full Playwright suite, report pass/fail/flaky counts to docs/E2E-STATUS.md, fix new flaky tests, commit as chore test e2e maintenance, push.
+
 ## ✅ MAINTENANCE_LOOP_2 (Session: 2026-10-21 10:30-10:45 UTC, patch-version bump, ninth pass, MEASURED, nothing to bump)
 
 **Goal:** Run `pnpm outdated` and bump patch versions for safe packages. Skip major and minor. Commit as chore deps bump patch versions. Push to autopilot. Only what is requested.
