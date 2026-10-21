@@ -2,6 +2,37 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_10 (Session: 2026-10-21 08:42-08:44 UTC, queue regeneration, fifth pass, DONE)
+
+**Goal:** Append 10 fresh MAINTENANCE_LOOP goals to `~/ke-goals/queue.txt` by reading MAINTENANCE_LOOP_1 through MAINTENANCE_LOOP_10 from that file and appending them again. Only what is requested.
+
+**Result:** DONE. The file ended with a newline, so lines 1 through 10 (one full LOOP_1 to LOOP_10 cycle, taken from a copy at `/tmp/queue-before.txt`) were appended verbatim. Queue grew from 40 lines to 50; `diff` of lines 1-10 against lines 41-50 is empty and `grep -c '^MAINTENANCE_LOOP_'` reads 50. The runner had already popped this pass's LOOP_10 line before the append, so the head is now MAINTENANCE_LOOP_1 and the cycle continues without a refill trigger.
+
+**Gates:** no repository file other than this entry changed; `pnpm type-check`, `pnpm lint` and `pnpm build` results are in the commit body.
+
+**החלטות שהתקבלו לבד:**
+- The queue file lives outside the repo, so the commit carries only this STATE.md entry.
+- Supabase MCP and GitHub MCP not needed: no DB, RLS, migration or PR in a queue append.
+
+**המשך מ:** MAINTENANCE_LOOP_1 (head of `~/ke-goals/queue.txt`): run `pnpm audit`, fix critical and high vulnerabilities, commit each fix separately, push to autopilot.
+
+## ✅ MOBILE_FIX_GATE (Session: 2026-10-21 08:27-08:45 UTC, home 1440 under 11%, MEASURED, PASS, no layout change needed)
+
+**Goal:** Bring the home page compare.mjs score at 1440 under 11% (quoted 23.91%, worst bands y1100-1200 67.5%, y1200-1300 63.1%, y1600-1700 61.5%), optimise CSS/layout in those bands, add tests, run type-check, lint, build, commit as [autopilot].
+
+**Result:** DONE by measurement, not by CSS. On this tree (`d8d14274a`, HEAD of `autopilot`, no `src/` change since the seventh recheck's `9825db2e6`) a cold `pnpm build` (`rm -rf .next`, BUILD_ID 3uX7sNvIjx2SDDcdo99Hj, `pnpm gate:chunks` clean), served on 3351 (pid 75431, cwd verified), reads **1440 8.08% PASS twice** (ledger 08:34 clean tree, 08:38 with the script edit). The three quoted bands read 6.2%, 2.7% and 16.2% here. The 23.91% row (08:27, `3e4bb1859-dirty`) was measured in the main checkout on `closeout/v1-final`, which forked from `autopilot` at `446cd3105` and carries none of the ten home-page fix commits (130 `src/` files); its own report shows our page at 1490px wide with 2 local scripts dropped, i.e. the warm-cache unhydrated page `d195ad97f` built `prerender-chunk-gate.mjs` for, and 48 reference images missing. Written up in `docs/GATE-STATUS.md` (new top section). y1600-1800 re-examined with refs/_diffmap.mjs: x440-700 is live's blank second card in row two (broken archive image), the rest codec noise; a reference floor, no CSS moves it.
+
+**Gate hardening (the "tests" of this goal):** `scripts/load-shortfall.mjs` `ownSideCaveat()` and its wiring in `scripts/compare.mjs`: when OUR side drops a script or stylesheet outside the expected local set, or our document is wider than the viewport, the console prints `WARNING:` and the ledger row carries `OURS dropped N script (unhydrated, not a fidelity score)` / `OURS 1490px wide at 1440 (overflow)`, placed before the reference shortfall so the 160-char cell keeps it. compare.mjs reads `document.documentElement.scrollWidth` on our side before the shot. Healthy runs add no words (verified: the 08:38 row is shape-identical to the 08:34 row). Nine new tests, `scripts/load-shortfall.test.mjs` 17/17; compare-args, compare-reference and parity-log suites 50/50.
+
+**Gates:** `pnpm type-check` exit 0, `pnpm lint` exit 0 (biome 1723 files, tokens, copy, asset gates clean), `pnpm build` exit 0 on this `src/` tree (the edits after it are `scripts/*.mjs` and docs, outside the build graph; `gate:chunks` clean). Server stopped by its listener pid; the foreign 3417 listener untouched.
+
+**החלטות שהתקבלו לבד:**
+- No CSS or layout edit: the gate passes with a 2.92-point margin on this branch and the quoted bands do not exist here. Changing layout to chase a number measured on another branch's unhydrated page would be an unmeasured change.
+- `closeout/v1-final` was not touched: another session is committing there (three "fix mobile gate" commits on 20.10), and that is rule 4. Its path to green is to take `autopilot`'s home-page commits, not new padding edits; noted in GATE-STATUS.
+- Supabase MCP and GitHub MCP not needed: no DB, RLS, migration or PR in a pixel gate.
+
+**המשך מ:** MAINTENANCE_LOOP_10 (head of `~/ke-goals/queue.txt`): append MAINTENANCE_LOOP_1 through _10 to the queue again.
+
 ## ✅ MAINTENANCE_LOOP_2 (Session: 2026-10-21 05:30-05:45 UTC, patch-version bump, eighth pass, MEASURED, nothing to bump)
 
 **Goal:** Run `pnpm outdated` and bump patch versions for safe packages. Skip major and minor. Commit as chore deps bump patch versions. Push to autopilot. Only what is requested.

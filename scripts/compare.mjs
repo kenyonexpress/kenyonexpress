@@ -5,7 +5,7 @@ import { resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { chromium } from '@playwright/test'
 import { parseCompareArgs } from './compare-args.mjs'
-import { loadShortfall } from './load-shortfall.mjs'
+import { loadShortfall, ownSideCaveat } from './load-shortfall.mjs'
 import { appendParityFailure } from './parity-log.mjs'
 
 // Usage: node scripts/compare.mjs [--page=home|product|category|products|search|cart|checkout]
@@ -379,6 +379,10 @@ const seedCart = async (target) => {
  * figure cannot be attributed to our layout on this evidence alone.
  */
 const missedLoads = { live: [], mine: [] }
+// How wide OUR document actually was at capture. A page wider than the
+// viewport it was shot at is a page whose layout had not settled (measured
+// 2026-10-21: an unhydrated home was 1490px at 1440), and the row must say so.
+const ownGeometry = { viewport: VIEW.width, scrollWidth: undefined }
 
 /**
  * THE CONSENT SHEET IS NOT PART OF THE DESIGN, AND IT WAS INSIDE THE WINDOW.
@@ -1005,6 +1009,11 @@ const shoot = async (url, out, side = null) => {
     gridTitles[external ? 'live' : 'mine'] = grid.titles
   }
 
+  if (side === 'mine') {
+    ownGeometry.scrollWidth = await p
+      .evaluate(() => document.documentElement.scrollWidth)
+      .catch(() => undefined)
+  }
   await p.screenshot({ path: out, fullPage: true })
   await p.close()
   console.log(`${out} written (${url})`)
@@ -1340,6 +1349,9 @@ await b.close()
 console.log(`=== compare --page=${page} ===`)
 console.log(`  reference: ${loadShortfall(missedLoads.live)}`)
 console.log(`  ours     : ${loadShortfall(missedLoads.mine)}`)
+// Loud, and it does not abort: the run completes and the row carries the caveat.
+const ownCaveat = ownSideCaveat(missedLoads.mine, ownGeometry)
+if (ownCaveat) console.log(`  WARNING: ${ownCaveat}`)
 await new Promise((resolvePromise, reject) => {
   const child = spawn(process.execPath, [resolve('scripts/diff-bands.mjs')], {
     stdio: 'inherit',
@@ -1367,6 +1379,9 @@ await new Promise((resolvePromise, reject) => {
       // before, and the reference was missing 57 scripts at the time.
       COMPARE_NOTES: [
         process.env.COMPARE_NOTES,
+        // Before the reference shortfall: the cell is clipped at 160 characters
+        // and this is the caveat that changes what the number means.
+        ownCaveat,
         ARGS.baseline
           ? `baseline ${ARGS.baseline.name} (frozen PNG, ${statSync(ARGS.baseline.path).mtime.toISOString()}), not a fresh archive shot`
           : `ref ${loadShortfall(missedLoads.live)}`,
