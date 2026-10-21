@@ -2,6 +2,22 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_4 (Session: 2026-10-21 22:09-22:45 UTC, full Playwright suite, eighteenth cycle, run 21, 0 FLAKY)
+
+**Goal:** Run the full Playwright suite with pnpm test:e2e, report pass/fail/flaky counts to docs/E2E-STATUS.md, fix any new flaky tests, commit as chore test e2e maintenance, push. Only that.
+
+**Result:** COMPLETE, run 21 on `95081cad5`, **680 cases, 661 passed, 12 failed, 0 flaky, 7 skipped, 21.0 min** (JSON reporter: start 22:12:19Z, duration 1,260,060 ms), the fastest full run since run 11. Re-measures the run 20 tree: `git log 346ca8c02..95081cad5 -- src e2e playwright.config.ts` is empty (nine maintenance commits between, STATE.md, docs and logs only). Cold mock build (`.next/cache/turbopack` moved to `/tmp/ke-e2e21/turbopack-cache-aside`, BUILD_ID `Vzi8iIGcYHNaqcmQOCSHg`, `pnpm gate:chunks` clean on 243 pages), `pnpm start` on 3417 verified by PID 35885 and cwd through lsof with the BUILD_ID read back from the served HTML, `E2E_FORWARDED_FOR_PREFIX=10.44.104`, `--retries=1`, `--reporter=list,json`, stopped by PID after, port free, no next-server left. The 12 reds are runs 13 to 20's 12 to the case, every one red on both attempts, every one at a laptop gap: class A admin fixture password refused (10: admin-product-crud 3x2 at 20.3 to 20.8 s, admin-refund 1x2 and admin-refund-to-wallet 1x2 at 59.5 to 66.8 s, all 20 snapshots carry "כתובת אימייל או סיסמה שגויים") and class C phone-code send 502 (2: physical-purchase on both projects, `email.refused` 401 from `/api/checkout/phone-otp/send` at 22:20:53Z and 22:21:32Z). `full-purchase-redeem` on chromium passed first time in 59.4 s, back inside the 60 to 66 s band of runs 13 to 18 (89.4 s in run 20): the backend window is back to run 18's pace, referral-to-invoice leg 7 to 8 s on every order against 10 to 14 s in run 20. Server log: 0 `supabase.timeout`, 2 HTTP 5xx (both class C), 9 `purchase`, 9 `begin_checkout`, 9 `invoices.issued`, 1 `voucher_redeemed`, 11 `email.refused` (all 401), 19 `analytics.track_failed`. No new flaky test, nothing to fix, nothing under `src/` or `e2e/` changed. docs/E2E-STATUS.md: header, run 21 table row, narrative, "Flaky (run 21)", "Failures by class (run 21, 12)", gates paragraph. Evidence in `/tmp/ke-e2e21/` (build, gate, server, list, typecheck, lint logs, `results.json` 917 KB, 24 snapshots).
+
+**Gates:** `pnpm typecheck` exit 0 and `pnpm lint` exit 0 (biome 1755 files, tokens, copy and asset gates clean), both run while the suite was in flight and lint again after the doc edit; `pnpm build` exit 0 twice (the cold mock build above and `rRBHmxrDZV5nNnBfbsI4y` after the doc edit), `pnpm gate:chunks` clean on 243 prerendered pages after each. Backups: a new 10-22-0512 tar made (newest was 7.5 h old and dated the previous local day), the 10-21-0201 one deleted under the pre-approved three-newest rule, three kept (10-21-1241, 10-21-2140, 10-22-0512); caffeinate alive (pids 967, 11853), SleepDisabled 1.
+
+**החלטות שהתקבלו לבד:**
+- No spec or product change: zero flaky in the JSON reporter and the 12 reds are the standing environment gaps (admin password, phone-code mail key) that the action items in E2E-STATUS already name, so no test was edited and no vitest scope needed a re-run. Supabase MCP and GitHub MCP not needed (no DB work, no PR), work lands on autopilot directly.
+- Ran the second `pnpm build` after the doc edit as in the sixteenth and seventeenth cycles, even though docs are not a build input, so the gate line describes the committed tree.
+- The daily backup was made in flight with the suite (tar of the main checkout, not this worktree, per the CLAUDE.md recipe); no case moved for it.
+- `STATE.md` is still over its 300-line cap; archiving is a separate edit the goal does not name and was left alone.
+
+**המשך מ:** MAINTENANCE_LOOP_5 (head of `~/ke-goals/queue.txt`): check all cron routes' last-run timestamp via Vercel MCP get_runtime_logs, alert in docs/CRON-STATUS.md if any route is stale over 24h, commit as chore ops cron status check, push.
+
 ## ✅ MAINTENANCE_LOOP_10 (Session: 2026-10-21 21:54-22:05 UTC, queue regeneration, fourteenth pass, DONE)
 
 **Goal:** Append 10 fresh MAINTENANCE_LOOP goals to `~/ke-goals/queue.txt` by reading MAINTENANCE_LOOP_1 through MAINTENANCE_LOOP_10 from that same file and appending them again, keeping the loop infinite. Only that.
