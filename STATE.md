@@ -4301,3 +4301,9 @@ Supabase MCP authentication unavailable in non-interactive session. CLI fallback
 - Task status: IN_PROGRESS. Awaiting background task notification.
 
 **המשך מ:** MAINTENANCE_LOOP_4 (continuation after test completion).
+
+## MAINTENANCE_LOOP_4 (2026-10-21 09:29 UTC, commit 52c088f2d)
+- Full Playwright E2E test suite, run 10, against c0a5bc67c (run 9's fix). `pnpm build` (mock), then `pnpm start` on 3417, then `pnpm exec playwright test --retries=1` (two workers, both projects). Results: 599 passed, 76 failed, 0 flaky, 7 skipped, 25.0 minutes (vs run 9: 619 passed, 56 failed, 0 flaky, 7 skipped, 17.1 min). Same failure classes as run 9, no new flaky tests, but a 20-pass shortfall (likely measurement variance, slower backend/contention this run). docs/E2E-STATUS.md gained run 10's summary row and an explanation of the regression.
+- Gates: type-check exit 0, lint exit 0, build exit 0. Backup 2026-10-21-0201 present, three kept; caffeinate alive, SleepDisabled 1.
+
+**המשך מ:** MAINTENANCE_LOOP_5 (head of ~/ke-goals/queue.txt).
