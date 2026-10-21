@@ -1,5 +1,37 @@
 # Mobile Gate Status
 
+**Last Check:** 2026-10-21 10:04-10:08 UTC (MAINTENANCE_LOOP_6, eighth recheck; local time 17:04-17:08 UTC+7)
+**Page:** home
+**Commit:** `26b9673fa` (clean tree at measurement; HEAD of `autopilot`, one `src/` commit after the MOBILE_FIX_GATE row's `d8d14274a`: `13021b20c`, the E2E run 12 product fixes to checkout saved card/wallet, vouchers suppliers embeds and the scan redirect, none on the home page)
+**Server:** `pnpm start` on port 3351 from this worktree (listener pid 24763, cwd verified by `lsof`, stopped by pid afterwards) on the `pnpm build` of this same HEAD written at 10:02 UTC by the previous loop item's build gate (BUILD_ID `g0ShL3lKnGaKr3xKu55Xi`), `pnpm gate:chunks` clean before the run (243 prerendered pages, every referenced chunk on disk). No other `next start` was running on the machine.
+**Threshold:** 11%
+**Verdict:** 380 PASS at 8.53%, 768 PASS at 9.79%, 1440 PASS at 8.08%. No mobile fix goal requeued.
+
+| Viewport | Score | Status | Previous (seventh recheck, 07:44-07:48 UTC, `9825db2e6`) | Delta | Margin to 11% |
+|---|---|---|---|---|---|
+| 380 | **8.53%** | **PASS** | 8.53% | +0.00 | 2.47 |
+| 768 | **9.79%** | **PASS** | 9.79% | +0.00 | 1.21 |
+| 1440 | **8.08%** | **PASS** | 8.08% | +0.00 | 2.92 |
+
+Ledger rows, verbatim from docs/UI-PARITY-REPORT.md (UTC), in run order:
+
+```
+| 2026-10-21 10:04 | home | 380 | 8.53% | PASS | `26b9673fa` | ref 141 failed to load (101 script, 37 font, 2 stylesheet, 1 xhr) |
+| 2026-10-21 10:06 | home | 768 | 9.79% | PASS | `26b9673fa-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-21 10:08 | home | 1440 | 8.08% | PASS | `26b9673fa-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+```
+
+## MAINTENANCE_LOOP_6 eighth recheck notes (10:08 UTC)
+
+- **Third consecutive run reading 8.53 / 9.79 / 8.08 to the hundredth** (F43 ledger, seventh recheck, this run), and the first measurement of the E2E run 12 tree. `git log d8d14274a..HEAD -- src/` lists only `13021b20c`; its files (checkout wizard, vouchers reads, `next.config.ts` redirect, return page test ids) do not render on the home page, and the scores confirm it. The 768 margin is 1.21 points, the narrowest of the three, unchanged.
+- **The gate-hardening caveat added at 08:38 stayed silent**, which is the healthy case: our side dropped 6 / 6 / 5 resources, all on the expected local origin, and no `OURS dropped` or `OURS ... wide` words appear in any row. Our document was 380 wide at 380.
+- **Reference shortfall was 141 on the first archive load (380) and the deterministic 96 on the two later widths**, the same first-load pattern as the fifth, sixth and seventh rechecks. Scores did not move against either figure.
+- **The `-dirty` suffix on the 768 and 1440 rows is the gate's own ledger write** (the 380 row modifies docs/UI-PARITY-REPORT.md before the two later children run). `git status` after the run listed that one file; `src/` was clean throughout.
+- **Band profile at 380 unchanged:** y200-300 55.7%, y300-400 34.1%, y1700-1800 20.1%, y2500-2600 15.1%, y100-200 14.9%. Each is a documented floor below (hero phone photograph, row-four archive image).
+- **No UNMEASURED row.** Three widths took 4 minutes 30 seconds wall time including the 380 archive cold load.
+- **Not done this loop:** serving the reference from a local origin to pin the shortfall. Unchanged open item; eight consecutive runs agree to the hundredth at 380.
+
+
 **Last Check:** 2026-10-21 08:34-08:38 UTC (MOBILE_FIX_GATE, 1440 fix goal; local time 15:34-15:38 UTC+7)
 **Page:** home
 **Commit:** `d8d14274a` (HEAD of `autopilot`, clean `src/` since the seventh recheck's `9825db2e6`; the first row is on the clean tree, the second reads `-dirty` because it was run on the gate-script edit below plus the first row's own ledger write)
