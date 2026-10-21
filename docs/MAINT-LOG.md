@@ -357,3 +357,50 @@ the ninth run's 37 are MAINTENANCE_LOOP_10's own append, not this scan's).
 2026-10-23 00:00 local should queue it as `BACKLOG_1 Re-evaluate group deals` at the head of the queue.
 
 **Status:** COMPLETE
+
+## 2026-10-21 10:40 UTC - Backlog Scan (MAINTENANCE_LOOP_3, eleventh run)
+
+**Scanned Files:**
+- docs/BACKLOG.md: exists, 7 items, unchanged (last commit 4b17cfb49, 2026-10-16).
+- docs/TODO.md: does not exist. `find` over the worktree (node_modules excluded) returns no TODO*.md.
+
+**Gates re-measured.** Same read-only select as the tenth run, through the management API with the
+CLI keychain token (the Supabase MCP connector is still unauthorised in this session).
+Evidence: `logs/maint3/sales-gate-2026-10-21d.json`, breakdown of the new rows in
+`logs/maint3/sales-gate-breakdown-2026-10-21.json`.
+
+| Measure | Tenth run | This run |
+|---------|-----------|----------|
+| orders, all statuses | 99 | 116 |
+| orders in paid / fulfilled / settled | 70 | 81 |
+| payments succeeded or settled | 71 | 86 |
+| real sales (real Cardcom txn id, non-test buyer) | 0 | 0 |
+| orders since the tenth run | n/a | 17 |
+| last order | 2026-10-15 03:04 UTC | 2026-10-21 09:49 UTC |
+
+The 17 new orders moved the raw counts for the first time in six days, so they were broken down
+before being dismissed: every one belongs to the E2E fixture customer at `test.kenyonexpress.local`,
+every succeeded payment carries a `mock-tok-N` transaction id, and they land between 09:07 and 09:49
+UTC, which is the MAINTENANCE_LOOP_4 Playwright run against the mock build. The real-sales column,
+which excludes mock transaction ids and test buyers, stays at 0. The launch, 10-sales and revenue
+gates are all still closed.
+
+**Backlog Items Analysis (today 2026-10-21 UTC, 2026-10-21 17:40 local UTC+7):**
+1. Group-deals re-evaluation, dated 2026-10-23: 2 days out. BLOCKED.
+2. Crisp inbox, post-launch: 0 real sales, launch gate not passed. BLOCKED.
+3. Meta WhatsApp Business verification, after 10 sales: 0 real sales. BLOCKED.
+4. Israeli lawyer review of ToS and Privacy, after 10 sales: 0 real sales. BLOCKED.
+5. Capacitor or Expo native app, after revenue: 0 real revenue. BLOCKED.
+6. Courses monthly billing, Phase 2: BLOCKED.
+7. Tzimmer calendar, Phase 2: BLOCKED.
+
+**Unblocked Items Found:** 0
+
+**Action:** None. ~/ke-goals/queue.txt not modified (47 lines before and after).
+
+**Note:** Item 1 becomes a candidate on 2026-10-23 local. The run that lands on or after
+2026-10-23 00:00 local should queue it as `BACKLOG_1 Re-evaluate group deals` at the head of the queue.
+The E2E fixture rows now inflate `orders` and `payments` by 17 and 15; any future "orders since"
+delta must be read against the real-sales column, not the raw count.
+
+**Status:** COMPLETE
