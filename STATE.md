@@ -4307,3 +4307,9 @@ Supabase MCP authentication unavailable in non-interactive session. CLI fallback
 - Gates: type-check exit 0, lint exit 0, build exit 0. Backup 2026-10-21-0201 present, three kept; caffeinate alive, SleepDisabled 1.
 
 **המשך מ:** MAINTENANCE_LOOP_5 (head of ~/ke-goals/queue.txt).
+
+## MAINTENANCE_LOOP_5 (2026-10-21 09:30 UTC)
+- Vercel MCP `get_runtime_logs` call attempted for cron routes; connector remains unauthorised (403 forbidden) for the team/project scope (documented in docs/CRON-STATUS.md at 01:06 UTC, unchanged since 2026-10-20 13:15). All 5 vercel.json cron routes are stale over 24h with 0 hits in 7 days; the last successful execution was 2026-10-19 04:55 UTC (a manual health probe). docs/CRON-STATUS.md already carries the CRITICAL alert and the CLI fallback measurements. No new status to report; the permission issue persists and only Ofir can fix the MCP scope in claude.ai settings.
+- Gates: type-check exit 0, lint exit 0, build exit 0. Caffeinate alive, SleepDisabled 1. Vercel MCP unauthorised (known).
+
+**המשך מ:** MAINTENANCE_LOOP_6 (head of ~/ke-goals/queue.txt).
