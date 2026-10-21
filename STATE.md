@@ -4429,3 +4429,9 @@ Supabase MCP authentication unavailable in non-interactive session. CLI fallback
 - Gates: type-check exit 0, lint exit 0, build exit 0 (204 routes). Caffeinate and backup state not re-measured in this run.
 
 **המשך מ:** MAINTENANCE_LOOP_6 (head of ~/ke-goals/queue.txt).
+
+## MAINTENANCE_LOOP_6 (2026-10-21 07:48 UTC, seventh recheck)
+- Mobile gate recheck on HEAD `9825db2e6` (clean tree, five `src/` commits after the sixth recheck: F41, F42, F43, residual): `pnpm start` on 3313 (listener pid verified by lsof, killed by pid afterwards) on the one-minute-old `pnpm build` of the same HEAD, then `scripts/compare.mjs --page=home --widths=380,768,1440`. Scores 8.53 / 9.79 / 8.08, all PASS under 11%, identical to the hundredth to the F43 commit's own `-dirty` ledger rows (04:11-04:17 UTC). 768 margin 1.21 points. Reference shortfall 153 on the first archive load, 96 on the two later widths. No UNMEASURED row; 5m30s wall for three widths. No mobile fix goal queued; `~/ke-goals/queue.txt` untouched. docs/GATE-STATUS.md header, table (now all three widths) and seventh-recheck notes written; ledger rows appended by the script. A stale `pnpm start` from 12:42 local on port 3417 was found and left alone.
+- Gates: type-check exit 0, lint exit 0, build exit 0 (204 routes). Backup 2026-10-21-1241 present, three kept; caffeinate alive, SleepDisabled 1.
+
+**המשך מ:** MAINTENANCE_LOOP_7 (head of ~/ke-goals/queue.txt).
