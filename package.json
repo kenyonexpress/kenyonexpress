@@ -14,6 +14,7 @@
     "lint:changed": "node scripts/lint-changed.mjs",
     "typecheck:changed": "node scripts/typecheck-changed.mjs",
     "gate:hardcoded": "node scripts/hardcoded-gate.mjs",
+    "gate:chunks": "node scripts/prerender-chunk-gate.mjs",
     "audit:hardcoded": "node scripts/audit-hardcoded.mjs",
     "test:rls": "bash scripts/run-rls-tests.sh",
     "ci:diff-gates": "pnpm lint:changed && pnpm typecheck:changed && pnpm gate:hardcoded",

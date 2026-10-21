@@ -4435,3 +4435,11 @@ Supabase MCP authentication unavailable in non-interactive session. CLI fallback
 - Gates: type-check exit 0, lint exit 0, build exit 0 (204 routes). Backup 2026-10-21-1241 present, three kept; caffeinate alive, SleepDisabled 1.
 
 **המשך מ:** MAINTENANCE_LOOP_7 (head of ~/ke-goals/queue.txt).
+
+## MAINTENANCE_LOOP_7 (2026-10-21 08:06 UTC, eighth pass)
+- `pnpm lhci:autorun` on a cold `pnpm build` of HEAD `4d08a6515` (BUILD_ID `TYMhcyjg71hC5vYivmt-y`, served on 3361, listener pid and served BUILD_ID verified): perf 100 / 99 / 98, a11y 100, bp 96, seo 100 on `/`, `/products`, `/product/אוזניות-איירפודס-3`; nine of nine runs at or above 90, TBT 0 ms in all nine, `errors-in-console` the same five localhost items. No optimisation goal queued; `~/ke-goals/queue.txt` untouched. docs/LIGHTHOUSE-STATUS.md header, table and eighth-pass notes written.
+- **Found and fixed on the way:** the first build of the pass (warm `.next/cache/turbopack`, Next 16's default-on `turbopackFileSystemCacheForBuild`, shared by four builds since 12:24 local) prerendered `/` and `/product/[slug]` with a reference to `/_next/static/chunks/1k-r7teo-59oi.js` that the build did not write. 404 as `text/plain`, Chrome refused it, 0 of 53 / 0 of 31 buttons hydrated, Lighthouse still said 99 and 100 (TBT 0 because no JS ran). `/products` (request-time HTML) hydrated 50/50. Cache moved to `/tmp/ke-lh7/turbopack-cache-aside` (not deleted), cold build 27 s, probe 54/54, 50/50, 32/32, zero `/_next/*` failures; that build is the one measured. New `scripts/prerender-chunk-gate.mjs` + 11 unit tests + `pnpm gate:chunks` turn the symptom into an exit code (clean on 292 prerendered pages). Not wired into `pnpm build`/CI; Vercel also persists `.next/cache`, so production exposure is an open question for a deployed-build audit.
+- Decided alone: left the orphaned 12:42 `pnpm start` on 3417 (this worktree, no connections) and the 19.10 Lighthouse Chrome (pid 33615) running; killed only my own listeners by pid.
+- Gates: type-check exit 0, lint exit 0 (1722 files), build exit 0 (cold), new test file 11/11, audits-are-wired + ci-gate-scope 31/31. Caffeinate and backup state not re-measured in this run.
+
+**המשך מ:** MAINTENANCE_LOOP_8 (head of ~/ke-goals/queue.txt).
