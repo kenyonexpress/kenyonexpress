@@ -462,6 +462,8 @@ unchanged and none is reachable from this loop. Gates on this branch at the time
 - 2026-10-21 06:41 to 06:46 UTC: seventh run. MCP 403 five times, 0 rows: `get_runtime_logs` 7d filtered, `group_by=requestPath` 24h,
   `deploymentId=dpl_AP18UQwUQdhd3XWNo41seDQvAcuA` 7d, staging project `prj_7Ar3dFtaIqemo7bc1Fg7SMh11joY` 7d, and `get_runtime_errors`
   scoped to the five `vercel.json` routes (request `wp6pv-1792565190546`, "project does not exist or you do not have access").
+  Then polled `get_runtime_logs` every 10 minutes from 06:47 to 07:39 UTC (five more calls, ten in total this run): 403 every time, the
+  grant did not change over the hour. Ofir re-alerted at 06:48 UTC (high priority) with the connector reconnect step.
   CLI: 2 × 200 in 7d, both `health` on 19.10 04:55 UTC (49h 46m old); 0 × 5xx; 24h window 26 × 401 + 24 × 404 (cap 50);
   `crons ls` 5/5 not deployed; production alias unchanged on `dpl_AP18UQwUQdhd3XWNo41seDQvAcuA`; 6/6 latest `cron.yml`
   runs failed, newest `39552098825` at 05:53 UTC; pg_cron nightly succeeded at 01:30 UTC. All 5 routes stale over 24h.
