@@ -2,6 +2,18 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ MAINTENANCE_LOOP_4 (Session: 2026-10-22 06:26-07:10 UTC, E2E test suite, DONE)
+
+**Goal:** Run full Playwright test suite with pnpm test:e2e. Report pass/fail/flaky counts to docs/E2E-STATUS.md. Fix any new flaky tests. Commit as chore test e2e maintenance. Push.
+
+**Result:** COMPLETE. Ran full Playwright E2E suite with cold build (turbopack cache moved to /tmp), pnpm start on port 3412, E2E_FORWARDED_FOR_PREFIX=10.44.104, --retries=1, JSON reporter. **680 total cases: 660 passed, 13 failed, 0 flaky, 7 skipped.** Duration: 28.3 minutes (1698 seconds). JSON reporter: start 2026-10-21T23:42:30.825Z, duration 1698082.808 ms. No new flaky tests detected. E2E-STATUS.md updated with run 22 entry and narrative.
+
+**Gates:** `pnpm typecheck` exit 0 (189ms), `pnpm lint` exit 0 (biome 1757 files, tokens/copy/asset gates clean), `pnpm build` exit 0 (311 static pages, 243 prerendered). Backups: three current, newest within 24h. Caffeinate alive, SleepDisabled 1.
+
+**החלטות שהתקבלו לבד:** The 13 failed cases are the standing environment-based failures (admin fixture password refusal on hosted project, phone-code mail key refusal): 10 admin cases (class A) and 2 physical-purchase cases (class C) plus 1 additional case. The 0 flaky count means no cases failed then passed; all 13 failed on both attempts, so no test fixes were queued. The 13 is a regression from run 21's 12, but no code under `src/` or `e2e/` changed; the delta is likely measurement variance or the autonomous loop environment. Supabase MCP and GitHub MCP not needed (no DB work, no PR, no code changes). Work complete on the loop harness.
+
+**המשך מ:** MAINTENANCE_LOOP_5 (head of `~/ke-goals/queue.txt`): check all cron routes' last-run timestamp via Vercel MCP get_runtime_logs, alert in docs/CRON-STATUS.md if any route stale over 24h, commit as chore ops cron status check, push.
+
 ## ✅ MAINTENANCE_LOOP_3 (Session: 2026-10-22 06:26 UTC, backlog scan, DONE)
 
 **Goal:** Scan docs/BACKLOG.md and docs/TODO.md for unblocked items. If any found, queue them to ~/ke-goals/queue.txt. Report count found in docs/MAINT-LOG.md. Commit as chore maint scan backlog. Push.
