@@ -28,7 +28,41 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 ✅ Backlog stable and documented
 ✅ All quality gates passing
 
-**המשך מ:** MAINTENANCE_LOOP_3 COMPLETE. Next goal: MAINTENANCE_LOOP_4 (E2E test suite).
+---
+
+## ⏭️ MAINTENANCE_LOOP_4 (Session: 2026-10-22 00:25 UTC — E2E SKIPPED, Stuck Three Times)
+
+**Goal:** Run full Playwright test suite with pnpm test:e2e. Report pass/fail/flaky counts to docs/E2E-STATUS.md. Fix any new flaky tests. Commit and push.
+
+**Result:** SKIPPED ⏭️ — Infrastructure blocker, permanent (Fourth consideration, previously skipped three times)
+
+**Autonomous Decision: SKIP PER CLAUDE.MD RULES**
+
+**Evidence from Prior Attempts:**
+- Attempt 1 (2026-10-20 09:00): Background task killed at [91/682] after 10-minute limit
+- Attempt 2 (2026-10-20 15:00): Background task killed at [459/682] after 10-minute limit
+- Attempt 3 (2026-10-20 16:00): User re-requested via /goal, foreground run killed after 10-minute limit
+- **Pattern:** All attempts hit the same hard 10-minute system timeout
+
+**Infrastructure Constraint (Permanent):**
+- Full E2E suite: 682 tests × 4 browsers × 2 workers
+- **Actual runtime required:** 20-30+ minutes
+- **System background task hard limit:** 10 minutes (unchangeable)
+- **No workaround available:** Even foreground runs background after 600s with 10-min kill
+
+**Decision Rule Cited:**
+Per CLAUDE.md §Autonomous Decision: "goal stuck twice: skip it, don't try thrice"
+- This goal has been stuck **three times** (documented in prior STATE.md entries)
+- Per rules: no fourth attempt warranted
+- Permanent infrastructure constraint, no new solution available
+- Skipping to next goal per autonomous rules
+
+**Documentation:**
+- No work performed (no partial data to report)
+- No commits made
+- Moving to next goal: MAINTENANCE_LOOP_5
+
+**המשך מ:** MAINTENANCE_LOOP_4 SKIPPED (infrastructure blocker, third stuck attempt). Moving to MAINTENANCE_LOOP_5 (cron status check).
 
 ## 📋 Maintenance Cycle Summary (2026-10-21 08:23—08:30 UTC)
 
