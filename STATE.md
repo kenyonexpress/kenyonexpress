@@ -51,7 +51,7 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 **Decision:** F42 and F43 objectives met. F44 blocked on external environment configuration. Moving to next queue item (MAINTENANCE_LOOP items).
 
-**המשך מ:** F42 & F43 COMPLETE & VERIFIED. F44 BLOCKED (env config). Ready for next goal in queue.
+**המשך מ: F42 DONE**
 
 ---
 
