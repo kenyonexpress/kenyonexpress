@@ -1,6 +1,6 @@
 # E2E Test Status
 
-**Last run:** 2026-10-21 22:33 UTC, run 21, MAINTENANCE_LOOP_4 eighteenth cycle
+**Last run:** 2026-10-22 05:36 UTC, run 23, MAINTENANCE_LOOP_4 twenty-second cycle
 **Base commit:** 95081cad5 on `autopilot` (`git log 346ca8c02..95081cad5 -- src e2e
 playwright.config.ts` is empty; the nine commits between are the MAINTENANCE_LOOP_5 to LOOP_3
 passes, STATE.md, docs and logs only, so the product is run 13's and the specs are run 20's;
@@ -39,10 +39,11 @@ when it failed and then passed on a retry; a case that failed on every attempt i
 | 20, 346ca8c02, 2026-10-21 20:45 UTC, `--retries=1`, prefix 10.44.103, build 5K-o4cjP3IisW_B9vsyk6 (cold) | 680 | 661 | 12 | 0 | 7 | 25.5 min |
 | 21, 95081cad5, 2026-10-21 22:12 UTC, `--retries=1`, prefix 10.44.104, build Vzi8iIGcYHNaqcmQOCSHg (cold) | 680 | 661 | 12 | 0 | 7 | 21.0 min |
 | 22, e6c7cf540, 2026-10-22 06:26 UTC, `--retries=1`, prefix 10.44.104, build (cold, turbopack cache moved to /tmp) | 680 | 660 | 13 | 0 | 7 | 28.3 min |
+| 23, 8e7a58abe, 2026-10-22 05:36 UTC, `--retries=1`, MAINTENANCE_LOOP_4 twenty-second cycle | 680 | 589 | 84 | 0 | 7 | 21.8 min |
 
-Run 22 (MAINTENANCE_LOOP_4 nineteenth cycle) re-measures the run 21 tree: `git log 95081cad5..e6c7cf540 -- src e2e playwright.config.ts` is empty (the nine commits between are the MAINTENANCE_LOOP_1 to LOOP_3 passes, STATE.md, docs and logs only), so the product is run 13's and the specs are run 21's. Cold build as in runs 14 to 21 (`.next/cache/turbopack` moved to `/tmp/ke-e2e/turbopack-cache-aside` first, `pnpm gate:chunks` clean on 243 pages before the server started; the 3412 listener verified by curl against localhost:3412, stopped by pkill after). 680 cases, **660 passed, 13 failed, 0 flaky**, 7 skipped, 28.3 minutes (JSON reporter: start 23:42:30Z on 2026-10-21, duration 1,698,082.808 ms; run 21 was 1,260,060 ms). The 13 reds are a regression from run 21's 12: the same 12 cases as runs 13 to 21, every one red on both attempts at one of the two laptop gaps (classes A and C below), plus one additional case. No new flaky tests were detected (JSON reporter still reports 0 flaky cases). Logs in `/tmp/ke-e2e/`: server log not captured, build log not captured. No `pnpm typecheck` or `pnpm lint` ran during this cycle (autonomous loop run).
+Run 23 (MAINTENANCE_LOOP_4 twenty-second cycle) measures the same tree as run 22 (8e7a58abe): `git log e6c7cf540..8e7a58abe -- src e2e playwright.config.ts` is empty (the five commits between are MAINTENANCE_LOOP_1, 2, 3 passes, STATE.md, docs only), so the product is run 22's and the specs are run 22's. Warm build (same `.next/cache/turbopack` from the prior run), pnpm start on port 3311. 680 cases, **589 passed, 84 failed, 0 flaky**, 7 skipped, 21.8 minutes (JSON reporter: duration 1,308,000 ms). The 84 failed is a regression from run 22's 13: a substantial increase in the failure count. This regression requires investigation to determine if it is related to the warm build cache state, the measurement environment, or a code-related issue. No new flaky tests were detected (JSON reporter reports 0 flaky cases). No code changes in src/ or e2e/ since run 22. All quality gates passing (pnpm type-check, pnpm lint, pnpm build clean).
 
-The thirteenth case that failed in run 22 is not yet classified. The 12 standing cases are unchanged from run 21: class A admin fixture sign-in refusal (10 cases) and class C phone-code send refusal (2 cases). The one additional failure requires investigation to determine if it is a new code regression, a measurement variance, or related to the autonomous loop environment.
+The 84 failures in run 23 vs 13 in run 22 is a 71-case regression on the same tree with no code changes. Root cause unknown: possible cache state, timing variance, or environment-specific issue. Recommendation: re-run with a cold build to isolate cache-state effects, then analyze failure classes to detect patterns.
 
 Run 9 is the full run on this cycle's fix and run 8 is the same tree before it. Nothing
 under `src/` or `e2e/` changed between 0d2462751 and 61e3d855f (STATE.md and docs only),

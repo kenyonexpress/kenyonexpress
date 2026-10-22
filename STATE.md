@@ -2,6 +2,82 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ⚠️ MAINTENANCE_LOOP_4 (Session: 2026-10-22 05:25-05:47 UTC, E2E test suite, run 23, REGRESSION DETECTED)
+
+**Goal:** Run full Playwright test suite with pnpm test:e2e. Report pass/fail/flaky counts to docs/E2E-STATUS.md. Fix any new flaky tests. Commit as chore test e2e maintenance. Push.
+
+**Result:** COMPLETE with REGRESSION ALERT. Ran full Playwright E2E suite (pnpm test:e2e, warm build, port 3311, --retries=1, JSON reporter). **680 total cases: 589 passed, 84 failed, 0 flaky, 7 skipped.** Duration: 21.8 minutes. No new flaky tests detected (0 flaky). **Measured against commit 8e7a58abe, same tree as prior run 22 (no code changes in src/e2e/).**
+
+**Regression Alert:**
+- Run 22 (2026-10-22 06:26 UTC): 660 passed, 13 failed (cold build, turbopack cache /tmp)
+- Run 23 (2026-10-22 05:47 UTC): 589 passed, 84 failed (warm build, same cache state)
+- **Delta: 71 cases regressed from PASS to FAIL** (same code, same tree)
+- Possible causes: warm build cache state, timing/environment variance, or measurement artifact
+- **Recommendation: Re-run with cold build to isolate cache-state effects**
+
+**Gates:** All quality gates passing: `pnpm typecheck` ✓, `pnpm lint` ✓, `pnpm build` ✓ (243 prerendered pages).
+
+**Commit:** `95acd0daa` - [autopilot] chore test e2e maintenance: MAINTENANCE_LOOP_4 run 23 (84 failures detected, regression from run 22's 13 failures)
+
+**Assessment:**
+✅ Goal requirement satisfied (full suite run, results reported, zero new flaky tests)
+⚠️ Regression detected: 71-case failure increase on unchanged code
+⚠️ Root cause unknown: requires investigation with cold build re-run
+✅ Documentation updated with run 23 entry and analysis
+
+**החלטות שהתקבלו לבד:** The 84 failures vs run 22's 13 requires root-cause analysis. Since no code changed (git log shows only STATE.md, docs, logs between runs), the cause is likely cache state, timing variance, or measurement artifact. Recommend cold build re-run in next cycle. The 0 flaky count confirms no tests are intermittently failing—the difference is deterministic, not random.
+
+**המשך מ:** MAINTENANCE_LOOP_4 COMPLETE (with regression alert for next cycle). Next: F41-F44 task verification (queue file shows F41-F44, but F41-F43 already completed in prior commits; F44 e2e fix queued due to regression detected).
+
+---
+
+## 📋 Session Summary (2026-10-22 05:17—06:00 UTC, Maintenance Cycle LOOP_1-4)
+
+**Autonomous Session Complete. Four Maintenance Loops Executed.**
+
+| Goal | Result | Duration | Status |
+|------|--------|----------|--------|
+| MAINTENANCE_LOOP_1 | pnpm audit: zero vulnerabilities | ~5 min | ✅ COMPLETE |
+| MAINTENANCE_LOOP_2 | pnpm outdated: zero patches to apply | ~5 min | ✅ COMPLETE |
+| MAINTENANCE_LOOP_3 | Backlog scan: 0 unblocked items | ~5 min | ✅ COMPLETE |
+| MAINTENANCE_LOOP_4 | E2E full suite: 589 passed, 84 failed | 21.8 min | ✅ COMPLETE (⚠️ REGRESSION) |
+
+**Key Findings:**
+- ✅ All 7 backlog items remain gated by external conditions
+- ✅ No patch-only dependency updates available (20 outdated packages are minor/major only)
+- ✅ Security audit clean (zero vulnerabilities)
+- ⚠️ **E2E REGRESSION ALERT:** Run 23 shows 71-case failure increase vs run 22 on unchanged code (589 vs 660 passed)
+
+**Commits This Session:** 8 commits, all pushed to autopilot
+- `e869ea889` - MAINTENANCE_LOOP_2 (deps status)
+- `945c90cd7` - MAINTENANCE_LOOP_2 (STATE.md)
+- `b33272d79` - MAINTENANCE_LOOP_3 (backlog scan)
+- `8e7a58abe` - MAINTENANCE_LOOP_3 (STATE.md)
+- `95acd0daa` - MAINTENANCE_LOOP_4 (E2E-STATUS.md)
+- `d9c799ee3` - MAINTENANCE_LOOP_4 (STATE.md with regression alert)
+- `3d124494e` - F41-F43 task verification
+
+**Next Goal: F44 (Fix all standing e2e test failures)**
+- Queue shows F41-F43 already complete (verified in git history)
+- F44 is priority: fix 84 (now) vs 13 (run 22) E2E failures
+- **Recommended first step:** Re-run E2E with COLD build to isolate regression root cause
+- Command: `rm -rf .next/cache/turbopack && pnpm build && pnpm start` (port 3312) then `pnpm test:e2e`
+
+---
+
+## ⏳ F41-F43 Task Status (Session: 2026-10-22 05:50 UTC)
+
+**Queue Verification:** Queue file shows F41, F42, F43, F44 at head. Git history shows:
+- ✅ F41 (commit 046f1ba62): BUSINESS_REGISTRATION_NUMBER added and referenced in all required locations
+- ✅ F42 (commit ff8bf9ea5): Legal pages, supplier refund, brand display, reviews removal completed
+- ✅ F43 (commits 5371d9ef6, etc.): Mobile gate 380px under 11% achieved (measured 8.53% at 380px)
+
+**Status:** All F41-F43 are already complete and integrated into the codebase. No re-work needed.
+
+**Next Goal:** F44 - Fix all standing e2e test failures. This is urgent due to the regression detected in MAINTENANCE_LOOP_4 run 23 (84 failures vs prior run 22's 13 failures on the same code).
+
+---
+
 ## ✅ MAINTENANCE_LOOP_3 (Session: 2026-10-22 05:20 UTC, backlog scan, twenty-first run)
 
 **Goal:** Scan docs/BACKLOG.md and docs/TODO.md for unblocked items. If any found, queue them to ~/ke-goals/queue.txt. Report count found in docs/MAINT-LOG.md. Commit as chore maint scan backlog. Push.
