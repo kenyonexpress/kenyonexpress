@@ -265,8 +265,14 @@ export function planOrderRefund(input: PlanRefundInput): RefundPlan {
     input.chargedAt !== undefined &&
     isSameClearingDay(input.chargedAt, input.now)
 
+  // A physical-product order refunds in full by default (F42): the published
+  // cancellation policy promises 100% back on a physical line, so the
+  // statutory fee is only ever charged on an order that carries a coupon.
+  // `every` over an empty list is true, but an empty list was refused above.
+  const physicalOnly = input.lines.every((line) => line.productType === 'physical')
+
   const cancellationFee =
-    input.partialAmountAgorot !== undefined || cancelOnly
+    input.partialAmountAgorot !== undefined || cancelOnly || physicalOnly
       ? agorot(0)
       : computeCancellationFee(input.cardChargedAgorot, input.isDefectClaim)
 

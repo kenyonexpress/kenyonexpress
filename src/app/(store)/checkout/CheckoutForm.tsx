@@ -1,5 +1,6 @@
 'use client'
 
+import ShippingPhoneVerification from '@/components/checkout/ShippingPhoneVerification'
 import TurnstileWidget from '@/components/shared/TurnstileWidget'
 import { trackCommerce } from '@/lib/analytics/commerce-client'
 import { track } from '@/lib/analytics/tracker'
@@ -18,6 +19,11 @@ import {
   previousStep,
   validateStep,
 } from '@/lib/checkout/steps'
+import {
+  NO_VERIFICATION,
+  PHONE_VERIFICATION_MESSAGE,
+  type ShippingVerification,
+} from '@/lib/checkout/verified-shipping'
 import { clampWalletIls } from '@/lib/checkout/wallet-input'
 import { type Agorot, parseIls, sumAgorot } from '@/lib/money'
 import { shekels } from '@/lib/money-format'
@@ -82,6 +88,7 @@ export default function CheckoutForm({
   clientRef,
   needsAddress,
   address,
+  verification = NO_VERIFICATION,
   walletBalance,
   savedCards = [],
   isAuthenticated,
@@ -92,6 +99,12 @@ export default function CheckoutForm({
   clientRef: string
   needsAddress: boolean
   address: CheckoutAddressPrefill
+  /**
+   * The verified-shipping gate (F42): after five paid physical orders the
+   * address must be complete and the phone WhatsApp-verified. Defaults to
+   * "not required", which is every coupon order and every new customer.
+   */
+  verification?: ShippingVerification
   walletBalance: number
   savedCards?: CheckoutSavedCard[]
   isAuthenticated: boolean
@@ -174,7 +187,19 @@ export default function CheckoutForm({
    * only inside `if (needsAddress && !addressId)` and takes the email from the
    * session.
    */
-  const savedAddressAnswersFor: CheckoutStep[] = address.id ? ['details', 'address'] : []
+  /**
+   * A saved address that the gate has judged INCOMPLETE is not offered as a
+   * summary: the fields come back, prefilled, and the shopper completes them.
+   * The saved row is then not posted by id, so the server inserts the complete
+   * one as the new default instead of shipping to the half address.
+   */
+  const gateRejectsSaved = verification.required && !verification.addressComplete
+  const useSavedAddress = Boolean(address.id) && !gateRejectsSaved
+  const savedAddressAnswersFor: CheckoutStep[] = useSavedAddress ? ['details', 'address'] : []
+
+  const [phoneVerified, setPhoneVerified] = useState(verification.phoneVerified)
+  const [verifiedPhone, setVerifiedPhone] = useState<string | null>(null)
+  const phoneGateOpen = needsAddress && verification.required
 
   /** Current values straight off the form, so the gate reads what is really there. */
   const readValues = (): StepValues => {
@@ -189,9 +214,20 @@ export default function CheckoutForm({
   }
 
   const checkStep = (target: CheckoutStep): StepErrors => {
-    if (savedAddressAnswersFor.includes(target)) return {}
-    return validateStep(target, readValues())
+    const errors: StepErrors = savedAddressAnswersFor.includes(target)
+      ? {}
+      : validateStep(target, readValues(), { requireComplete: verification.required })
+    // The phone check is not a field, so it is not in `validateStep`: it is a
+    // fact the server will re-read from the consumed code row.
+    if (target === 'address' && phoneGateOpen && !phoneVerified) {
+      errors.phone_verified = PHONE_VERIFICATION_MESSAGE
+    }
+    return errors
   }
+
+  /** The number to prove: the saved one, or whatever the details step holds now. */
+  const readPhoneForVerification = (): string =>
+    useSavedAddress ? address.phone : (readValues().phone ?? '')
 
   const goNext = () => {
     const errors = checkStep(step)
@@ -431,7 +467,10 @@ export default function CheckoutForm({
         <input type="hidden" name="client_ref" value={clientRef} />
         <input type="hidden" name="channel" value={channel} />
         <input type="hidden" name="needs_address" value={needsAddress ? 'true' : 'false'} />
-        {address.id && <input type="hidden" name="address_id" value={address.id} />}
+        {useSavedAddress && address.id && (
+          <input type="hidden" name="address_id" value={address.id} />
+        )}
+        {verifiedPhone && <input type="hidden" name="phone_verified_e164" value={verifiedPhone} />}
 
         <div className="checkout-col-main">
           <div className="checkout-step" data-inactive={step !== 'details' ? '' : undefined}>
@@ -440,7 +479,7 @@ export default function CheckoutForm({
                 <span>פרטים אישיים</span>
               </h2>
 
-              {address.id ? (
+              {useSavedAddress ? (
                 <p>{address.full_name}</p>
               ) : (
                 <>
@@ -550,7 +589,7 @@ export default function CheckoutForm({
                 <span>כתובת למשלוח</span>
               </h2>
 
-              {address.id ? (
+              {useSavedAddress ? (
                 <p>
                   {address.street} {address.street_number}, {address.city}
                 </p>
@@ -637,7 +676,15 @@ export default function CheckoutForm({
 
                   <div className="checkout-fields-row">
                     <div className="checkout-field">
-                      <label htmlFor="co-zip">מיקוד / תא דואר (אופציונלי)</label>
+                      <label htmlFor="co-zip">
+                        {verification.required ? (
+                          <>
+                            מיקוד <span className="checkout-field__required">*</span>
+                          </>
+                        ) : (
+                          'מיקוד / תא דואר (אופציונלי)'
+                        )}
+                      </label>
                       <input
                         id="co-zip"
                         name="zip"
@@ -657,6 +704,19 @@ export default function CheckoutForm({
                     <div />
                   </div>
                 </>
+              )}
+
+              {phoneGateOpen && (
+                <ShippingPhoneVerification
+                  readPhone={readPhoneForVerification}
+                  verified={phoneVerified}
+                  onVerified={(phoneE164) => {
+                    setVerifiedPhone(phoneE164)
+                    setPhoneVerified(true)
+                    setStepErrors(({ phone_verified: _dropped, ...rest }) => rest)
+                  }}
+                  error={errorFor('phone_verified')}
+                />
               )}
             </section>
 
@@ -754,7 +814,7 @@ export default function CheckoutForm({
         </div>
 
         {/* Visible on EVERY step, not just review/confirm. Live's checkout
-            keeps the "ההזמנה שלך" panel on screen beside the billing form the
+            keeps the "ההזמנה שלך" panel on screen beside the shipping form the
             whole way through (refs/live-checkout capture: panel x~120..470 at
             1440 while the form is filled), and hiding it until review left our
             second grid column empty on the step the compare gate actually
@@ -832,7 +892,19 @@ export default function CheckoutForm({
                 </div>
                 <p className="checkout-payment__note">תשלום מאובטח באשראי, באמצעות Cardcom.</p>
 
-                {step !== 'confirm' && savedCards.length > 0 && (
+                {/*
+                  Not gated on the step. This block sits inside the confirm
+                  panel, which the wizard shows only on the confirm step, and
+                  until 2026-10-21 both this fieldset and the wallet box below
+                  carried an extra `step !== 'confirm'`: on the one-page layout
+                  (step never leaves 'details') they rendered and a saved card
+                  was charged inline, and on the wizard they unmounted the
+                  moment the panel became visible, so a desktop shopper never
+                  saw a saved card or the wallet and the post carried no
+                  token_id. Measured by the money specs: mobile-chrome paid,
+                  chromium went to the hosted frame with the same account.
+                */}
+                {savedCards.length > 0 && (
                   <fieldset className="checkout-cards">
                     <legend className="checkout-cards__legend">אמצעי תשלום</legend>
                     {savedCards.map((card) => (
@@ -862,7 +934,7 @@ export default function CheckoutForm({
                   </fieldset>
                 )}
 
-                {step !== 'confirm' && walletBalance > 0 && (
+                {walletBalance > 0 && (
                   <div className="checkout-wallet">
                     <label htmlFor="co-wallet">
                       שימוש ביתרת ארנק (זמין: {shekels(walletBalanceAgorot)})

@@ -8,6 +8,8 @@ import {
 } from '@/components/icons/electro-icons'
 import SmartImage from '@/components/ui/SmartImage'
 import { LOGO_FOOTER } from '@/lib/assets'
+import { BRAND_DISPLAY_NAME } from '@/lib/brand'
+import { businessRegistrationLine } from '@/lib/legal-entity'
 import { storeWhatsAppLink } from '@/lib/whatsapp'
 import Link from 'next/link'
 
@@ -54,10 +56,10 @@ const SERVICE_LINKS: { label: string; href: string; built?: false }[] = [
   // The cookie policy is linked here rather than left as a section inside the
   // privacy policy because a consent banner has to point somewhere specific,
   // and "see the privacy policy" is not that.
-  { label: 'תקנון', href: '/terms-and-conditions' },
-  { label: 'מדיניות פרטיות', href: '/privacy-policy' },
+  { label: 'תקנון', href: '/terms' },
+  { label: 'מדיניות פרטיות', href: '/privacy' },
   { label: 'מדיניות עוגיות', href: '/cookie-policy' },
-  { label: 'ביטולים והחזרות', href: '/refund_returns' },
+  { label: 'ביטולים והחזרות', href: '/returns' },
   { label: 'הצהרת נגישות', href: '/accessibility' },
 ]
 
@@ -202,7 +204,7 @@ export default function SiteFooter() {
           <div className="hidden lg:block">
             <SmartImage
               src={LOGO_FOOTER}
-              alt="קניון EXPRESS"
+              alt={BRAND_DISPLAY_NAME}
               width={190}
               height={50}
               className="mb-5 h-footer-logo-h w-auto object-contain"
@@ -322,7 +324,7 @@ export default function SiteFooter() {
         <div className="mx-auto flex max-w-store-footer flex-col items-center gap-0.5 px-gutter py-4 text-center">
           <SmartImage
             src={LOGO_FOOTER}
-            alt="קניון EXPRESS"
+            alt={BRAND_DISPLAY_NAME}
             width={190}
             height={50}
             className="h-footer-logo-h w-auto object-contain"
@@ -337,7 +339,8 @@ export default function SiteFooter() {
             צור קשר
           </Link>
           <p className="m-0 text-micro text-white/70">
-            כל הזכויות שמורות © <strong className="font-bold">Kenyon Express</strong>
+            כל הזכויות שמורות © <strong className="font-bold">{BRAND_DISPLAY_NAME}</strong>.{' '}
+            {businessRegistrationLine()}.
           </p>
         </div>
       </div>
@@ -347,7 +350,8 @@ export default function SiteFooter() {
       <div className="hidden bg-bottom-bar text-heading lg:block">
         <div className="mx-auto flex max-w-store-footer flex-col items-center justify-between gap-3 px-4 py-3 sm:flex-row">
           <p className="m-0 text-sm">
-            כל הזכויות שמורות © <strong className="font-bold">Kenyon Express</strong>
+            כל הזכויות שמורות © <strong className="font-bold">{BRAND_DISPLAY_NAME}</strong>.{' '}
+            {businessRegistrationLine()}.
           </p>
           <ul className="flex items-center gap-2.5" aria-label="אמצעי תשלום">
             {['Visa', 'Mastercard', 'Discover', 'American Express'].map((label) => (

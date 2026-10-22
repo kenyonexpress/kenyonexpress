@@ -1,5 +1,6 @@
 'use client'
 
+import { UNDER_99_LABEL } from '@/lib/ke-live-hero-data'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useCallback, useEffect, useId, useRef, useState } from 'react'
@@ -25,7 +26,9 @@ const MEGAMENU_ITEMS: MegaMenuItem[] = [
     brandLogos: [{ name: 'Apple' }, { name: 'Samsung' }, { name: 'Sony' }],
   },
   {
-    label: 'עד ₪99',
+    // Digits then sign, isolated: the live string puts ₪ left of the digits in
+    // RTL, and price-bidi.spec measures the glyph's x against the digit's.
+    label: UNDER_99_LABEL,
     href: '/category/under-99',
     featured: true,
     promoText: 'מציאות',
@@ -199,7 +202,14 @@ export default function MegaMenu() {
                 aria-expanded={openIndex === index}
                 aria-haspopup="true"
                 aria-controls={openIndex === index ? `${panelIdPrefix}-${index}` : undefined}
-                className={`px-3 py-2 text-sm font-medium transition-all duration-200 whitespace-nowrap ease-out ${
+                // px-2, NOT px-3. Twelve nowrap items at px-3 were about 50px
+                // wider than the masthead's free width at 1440, and because the
+                // icon cluster beside this row is shrink-0 the overflow went
+                // there: probed 2026-10-20, the cart landed at x-46 and
+                // document.scrollWidth read 1490 in a 1440 viewport, so every
+                // desktop visitor could pan the page sideways and the parity
+                // gate photographed a 1490px page. 24 x 4px = 96px back.
+                className={`px-2 py-2 text-sm font-medium transition-all duration-200 whitespace-nowrap ease-out ${
                   openIndex === index
                     ? 'text-[color:var(--electro-text-primary)] bg-[color:var(--electro-surface-hover)] shadow-sm'
                     : 'text-[color:var(--electro-text-secondary)] hover:text-[color:var(--electro-text-primary)] hover:bg-[color:var(--electro-surface-hover)]'

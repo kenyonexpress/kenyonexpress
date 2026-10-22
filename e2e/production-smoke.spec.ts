@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { addOpenProductToCart, openPurchasableProduct } from './helpers'
+import { addOpenProductToCart, openCartWithItems, openPurchasableProduct } from './helpers'
 
 /**
  * The guest purchase path, run against the REAL deployment.
@@ -61,8 +61,11 @@ test.describe('production smoke: guest cart to checkout', () => {
 
     const cartButton = page.getByRole('button', { name: /עגלת קניות, \d+ פריטים/ }).first()
     const before = Number(
-      /עגלת קניות, (\d+) פריטים/.exec((await cartButton.getAttribute('aria-label')) ?? '')?.[1] ??
-        0,
+      /עגלת קניות, (\d+) פריטים/.exec(
+        (await cartButton.evaluate(
+          (el) => el.getAttribute('aria-label') ?? el.textContent ?? '',
+        )) ?? '',
+      )?.[1] ?? 0,
     )
 
     // 2. Add to cart, and require the COUNTER to move. A button that responds
@@ -73,7 +76,9 @@ test.describe('production smoke: guest cart to checkout', () => {
         async () =>
           Number(
             /עגלת קניות, (\d+) פריטים/.exec(
-              (await cartButton.getAttribute('aria-label')) ?? '',
+              (await cartButton.evaluate(
+                (el) => el.getAttribute('aria-label') ?? el.textContent ?? '',
+              )) ?? '',
             )?.[1] ?? 0,
           ),
         { timeout: 15_000, message: 'the header cart counter never advanced' },
@@ -81,12 +86,8 @@ test.describe('production smoke: guest cart to checkout', () => {
       .toBeGreaterThan(before)
 
     // 3. The cart shows the product and a total.
-    await page.goto('/cart')
-    await expect(page.getByRole('heading', { name: 'סל הקניות' })).toBeVisible()
+    const summary = await openCartWithItems(page)
     if (name) await expect(page.getByText(name, { exact: false }).first()).toBeVisible()
-
-    const summary = page.getByRole('complementary', { name: 'סיכום הזמנה' })
-    await expect(summary).toBeVisible()
 
     // 4. THE MONEY INVARIANT. Every amount on the summary has to be a whole
     //    number of agorot, which on screen means at most two decimal places.
@@ -138,8 +139,7 @@ test.describe('production smoke: guest cart to checkout', () => {
 
     await couponLinks.first().click()
     await addOpenProductToCart(page)
-    await page.goto('/cart')
-    const summary = page.getByRole('complementary', { name: 'סיכום הזמנה' })
+    const summary = await openCartWithItems(page)
     await expect(summary.getByText('לתשלום באתר')).toBeVisible()
   })
 })

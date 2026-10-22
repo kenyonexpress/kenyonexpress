@@ -350,9 +350,16 @@ describe('issueInvoice', () => {
     // The terminal that took the money is the terminal that issues the
     // document; the platform account has never heard of another one's deal.
     expect(createDocument.mock.calls[0]?.[1]).toBe('platform')
-    const sent = createDocument.mock.calls[0]?.[0] as { totalAgorot: number; transactionId: string }
+    const sent = createDocument.mock.calls[0]?.[0] as {
+      totalAgorot: number
+      transactionId: string
+      issuerRegistrationNumber: string
+    }
     expect(sent.totalAgorot).toBe(9_000)
     expect(sent.transactionId).toBe('deal-77')
+    // The issuer's dealer number rides on every document, so the PDF names the
+    // same entity the terms and the footer do.
+    expect(sent.issuerRegistrationNumber).toBe('033798513')
 
     const orderUpdate = findAll('orders', 'update').at(-1)?.payload as Record<string, unknown>
     expect(orderUpdate.invoice_number).toBe('A-4471')

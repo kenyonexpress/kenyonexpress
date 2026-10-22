@@ -74,7 +74,7 @@ export async function generateMetadata({ params, searchParams: spPromise }: Prop
   if (!category) {
     return {
       title: 'קטגוריה לא נמצאה',
-      description: 'הקטגוריה לא נמצאה או שאינה פעילה בקניון אקספרס.',
+      description: 'הקטגוריה לא נמצאה או שאינה פעילה בקניון EXPRESS.',
       robots: { index: false, follow: true },
     }
   }

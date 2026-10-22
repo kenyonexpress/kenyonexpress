@@ -1,6 +1,7 @@
 import CopyrightYear from '@/components/CopyrightYear'
 import FooterAccordion from '@/components/FooterAccordion'
 import { FaFacebook, FaInstagram } from '@/components/icons/electro-icons'
+import { businessRegistrationLine } from '@/lib/legal-entity'
 
 type FooterLink = { label: string; href: string }
 
@@ -19,7 +20,7 @@ const columns: { title: string; links: FooterLink[] }[] = [
     links: [
       { label: 'שאלות נפוצות', href: '#' },
       { label: 'מעקב הזמנה', href: '#' },
-      { label: 'מדיניות החזרות', href: '/refund_returns' },
+      { label: 'מדיניות החזרות', href: '/returns' },
       { label: 'מימוש קופונים', href: '#' },
     ],
   },
@@ -117,7 +118,7 @@ export default function SiteFooter() {
           {/* Payment Logos - Desktop */}
           <div className="border-t border-gray-800 py-6 flex items-center justify-between">
             <div className="text-xs text-gray-400">
-              © <CopyrightYear /> קניון EXPRESS. כל הזכויות שמורות.
+              © <CopyrightYear /> קניון EXPRESS. {businessRegistrationLine()}. כל הזכויות שמורות.
             </div>
             <div className="flex items-center gap-3">
               <span className="text-xs text-gray-400">אמצעי תשלום:</span>
@@ -138,7 +139,7 @@ export default function SiteFooter() {
 
         {/* Mobile Copyright */}
         <div className="px-4 py-4 text-center text-xs text-gray-400 border-t border-gray-800">
-          © <CopyrightYear /> קניון EXPRESS. כל הזכויות שמורות.
+          © <CopyrightYear /> קניון EXPRESS. {businessRegistrationLine()}. כל הזכויות שמורות.
         </div>
       </div>
     </footer>

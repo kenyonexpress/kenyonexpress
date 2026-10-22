@@ -63,3 +63,8 @@ wp_import/
 backups/
 .env*
 .image-staging/
+
+# Lighthouse CI run output (pnpm lhci:autorun); the summary lives in docs/LIGHTHOUSE-STATUS.md
+.lighthouseci/reports/
+.lighthouseci/lhr-*
+.lighthouseci/assertion-results.json

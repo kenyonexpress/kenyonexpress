@@ -1,0 +1,16 @@
+[
+  {
+    "identifier": "ixvwfbuvfxxsjiywhbbb",
+    "database_type": "PRIMARY",
+    "is_using_scram_auth": true,
+    "db_user": "postgres.ixvwfbuvfxxsjiywhbbb",
+    "db_host": "aws-1-eu-north-1.pooler.supabase.com",
+    "db_port": 6543,
+    "db_name": "postgres",
+    "connection_string": "postgresql://postgres.ixvwfbuvfxxsjiywhbbb:[YOUR-PASSWORD]@aws-1-eu-north-1.pooler.supabase.com:6543/postgres",
+    "connectionString": "postgresql://postgres.ixvwfbuvfxxsjiywhbbb:[YOUR-PASSWORD]@aws-1-eu-north-1.pooler.supabase.com:6543/postgres",
+    "default_pool_size": null,
+    "max_client_conn": null,
+    "pool_mode": "transaction"
+  }
+]

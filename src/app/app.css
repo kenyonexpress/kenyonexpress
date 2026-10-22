@@ -1,0 +1,22 @@
+/* THE ONE STYLESHEET THE ROOT LAYOUT IMPORTS.
+
+   Seven separate `import '...css'` lines in layout.tsx did not give one chunk:
+   Turbopack emitted globals.css as one request and the sheets imported after
+   the component imports as a second, and the homepage then carried three CSS
+   <link>s (plus next/font's own) where home.spec's "one render-blocking
+   stylesheet" gate has asked for one since the Lighthouse measurement quoted
+   in layout.tsx (304ms per extra chunk on mobile). One entry file with
+   @import lines is one module to the bundler, so it is one chunk.
+
+   Order is the cascade order the layout used, and the same caveat holds for
+   every file here: page-scoped BEM only (`.cart-page__*`,
+   `.jet-listing-grid-deals*`, `.hero-copy-column`), because all of it now
+   applies site-wide. */
+@import "./globals.css";
+/* The header cart is in the masthead on every route. */
+@import "../styles/mini-cart.css";
+@import "../styles/cart-page.css";
+@import "../styles/home-handheld.css";
+@import "../styles/product-card-deals.css";
+@import "../styles/micro-interactions.css";
+@import "../styles/dark-mode.css";

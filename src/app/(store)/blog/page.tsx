@@ -33,7 +33,7 @@ export default function BlogIndexPage() {
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Blog',
-    name: 'הבלוג של קניון אקספרס',
+    name: 'הבלוג של קניון EXPRESS',
     url: `${base}/blog`,
     blogPost: posts.map((post) => ({
       '@type': 'BlogPosting',

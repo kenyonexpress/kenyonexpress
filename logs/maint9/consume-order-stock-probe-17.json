@@ -1,0 +1,880 @@
+{
+  "ts": "2026-10-21T20:16:37.854Z",
+  "window": "seventeenth pass (18:42 to 20:12 UTC), consume_order_stock shape probe: reservation and products indexes, triggers and their bodies, consumption timing, audit_log and realtime tables (three read-only MCP runs merged: 2026-10-21T20:16:37.854Z, 2026-10-21T20:17:39.376Z, 2026-10-21T20:18:21.324Z)",
+  "probes": {
+    "stock_reservations_table": [
+      {
+        "relname": "products",
+        "n_live_tup": 82,
+        "n_dead_tup": 8,
+        "n_tup_ins": 57,
+        "n_tup_upd": 862,
+        "n_tup_hot_upd": 32,
+        "n_tup_del": 3,
+        "seq_scan": 8898,
+        "seq_tup_read": 558728,
+        "idx_scan": 1074945,
+        "last_autovacuum": "2026-10-21 19:12:46.694944+00",
+        "last_autoanalyze": "2026-10-21 17:47:42.862677+00",
+        "autovacuum_count": 10,
+        "autoanalyze_count": 9,
+        "total": "752 kB"
+      },
+      {
+        "relname": "products",
+        "n_live_tup": 0,
+        "n_dead_tup": 0,
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_hot_upd": 0,
+        "n_tup_del": 0,
+        "seq_scan": 6,
+        "seq_tup_read": 0,
+        "idx_scan": 0,
+        "last_autovacuum": null,
+        "last_autoanalyze": null,
+        "autovacuum_count": 0,
+        "autoanalyze_count": 0,
+        "total": "48 kB"
+      },
+      {
+        "relname": "stock_reservations",
+        "n_live_tup": 179,
+        "n_dead_tup": 32,
+        "n_tup_ins": 183,
+        "n_tup_upd": 179,
+        "n_tup_hot_upd": 14,
+        "n_tup_del": 0,
+        "seq_scan": 30120,
+        "seq_tup_read": 915281,
+        "idx_scan": 6894,
+        "last_autovacuum": "2026-10-21 15:11:35.368486+00",
+        "last_autoanalyze": "2026-10-21 16:25:38.810976+00",
+        "autovacuum_count": 2,
+        "autoanalyze_count": 5,
+        "total": "176 kB"
+      }
+    ],
+    "stock_reservations_indexes": [
+      {
+        "indexrelname": "stock_reservations_live_idx",
+        "idx_scan": 6604,
+        "idx_tup_read": 326,
+        "size": "16 kB",
+        "def": "CREATE INDEX stock_reservations_live_idx ON public.stock_reservations USING btree (product_id, expires_at) WHERE ((consumed_at IS NULL) AND (released_at IS NULL))"
+      },
+      {
+        "indexrelname": "stock_reservations_order_line_idx",
+        "idx_scan": 290,
+        "idx_tup_read": 109,
+        "size": "40 kB",
+        "def": "CREATE UNIQUE INDEX stock_reservations_order_line_idx ON public.stock_reservations USING btree (order_id, product_id, COALESCE(variant_id, '00000000-0000-0000-0000-000000000000'::uuid))"
+      },
+      {
+        "indexrelname": "stock_reservations_pkey",
+        "idx_scan": 0,
+        "idx_tup_read": 0,
+        "size": "16 kB",
+        "def": "CREATE UNIQUE INDEX stock_reservations_pkey ON public.stock_reservations USING btree (id)"
+      },
+      {
+        "indexrelname": "idx_stock_reservations_product_id",
+        "idx_scan": 0,
+        "idx_tup_read": 0,
+        "size": "16 kB",
+        "def": "CREATE INDEX idx_stock_reservations_product_id ON public.stock_reservations USING btree (product_id)"
+      },
+      {
+        "indexrelname": "idx_stock_reservations_variant_id",
+        "idx_scan": 0,
+        "idx_tup_read": 0,
+        "size": "16 kB",
+        "def": "CREATE INDEX idx_stock_reservations_variant_id ON public.stock_reservations USING btree (variant_id)"
+      }
+    ],
+    "products_indexes": [
+      {
+        "indexrelname": "products_slug_key",
+        "idx_scan": 395119,
+        "size": "16 kB"
+      },
+      {
+        "indexrelname": "products_pkey",
+        "idx_scan": 265545,
+        "size": "16 kB"
+      },
+      {
+        "indexrelname": "products_active_category_name_idx",
+        "idx_scan": 105676,
+        "size": "16 kB"
+      },
+      {
+        "indexrelname": "idx_products_published",
+        "idx_scan": 95702,
+        "size": "16 kB"
+      },
+      {
+        "indexrelname": "products_category_id_idx",
+        "idx_scan": 57434,
+        "size": "16 kB"
+      },
+      {
+        "indexrelname": "products_status_idx",
+        "idx_scan": 57385,
+        "size": "16 kB"
+      },
+      {
+        "indexrelname": "products_active_category_created_idx",
+        "idx_scan": 50892,
+        "size": "16 kB"
+      },
+      {
+        "indexrelname": "products_status_created_idx",
+        "idx_scan": 42314,
+        "size": "16 kB"
+      },
+      {
+        "indexrelname": "products_city_idx",
+        "idx_scan": 2455,
+        "size": "16 kB"
+      },
+      {
+        "indexrelname": "products_supplier_id_idx",
+        "idx_scan": 1318,
+        "size": "16 kB"
+      },
+      {
+        "indexrelname": "products_active_category_price_idx",
+        "idx_scan": 628,
+        "size": "16 kB"
+      },
+      {
+        "indexrelname": "products_brand_idx",
+        "idx_scan": 354,
+        "size": "16 kB"
+      },
+      {
+        "indexrelname": "idx_products_approval_pending",
+        "idx_scan": 53,
+        "size": "8192 bytes"
+      },
+      {
+        "indexrelname": "products_active_price_created_idx",
+        "idx_scan": 35,
+        "size": "16 kB"
+      },
+      {
+        "indexrelname": "idx_products_status_type",
+        "idx_scan": 16,
+        "size": "16 kB"
+      },
+      {
+        "indexrelname": "idx_products_approved_by",
+        "idx_scan": 7,
+        "size": "16 kB"
+      },
+      {
+        "indexrelname": "products_deleted_at_idx",
+        "idx_scan": 3,
+        "size": "16 kB"
+      },
+      {
+        "indexrelname": "products_created_by_idx",
+        "idx_scan": 3,
+        "size": "16 kB"
+      },
+      {
+        "indexrelname": "products_is_featured_idx",
+        "idx_scan": 2,
+        "size": "16 kB"
+      },
+      {
+        "indexrelname": "products_needs_pricing_idx",
+        "idx_scan": 2,
+        "size": "16 kB"
+      },
+      {
+        "indexrelname": "products_search_vector_gin",
+        "idx_scan": 2,
+        "size": "120 kB"
+      },
+      {
+        "indexrelname": "idx_products_batch_id",
+        "idx_scan": 0,
+        "size": "8192 bytes"
+      },
+      {
+        "indexrelname": "products_offer_valid_until_idx",
+        "idx_scan": 0,
+        "size": "8192 bytes"
+      },
+      {
+        "indexrelname": "products_tags_gin",
+        "idx_scan": 0,
+        "size": "16 kB"
+      },
+      {
+        "indexrelname": "products_whatsapp_enabled_idx",
+        "idx_scan": 0,
+        "size": "8192 bytes"
+      },
+      {
+        "indexrelname": "products_pkey",
+        "idx_scan": 0,
+        "size": "8192 bytes"
+      },
+      {
+        "indexrelname": "wp_products_parent_idx",
+        "idx_scan": 0,
+        "size": "8192 bytes"
+      },
+      {
+        "indexrelname": "wp_products_status_idx",
+        "idx_scan": 0,
+        "size": "8192 bytes"
+      },
+      {
+        "indexrelname": "wp_products_slug_idx",
+        "idx_scan": 0,
+        "size": "8192 bytes"
+      }
+    ],
+    "triggers": [
+      {
+        "relname": "products",
+        "tgname": "audit_products",
+        "proname": "audit_log_trigger_fn",
+        "tgenabled": "O"
+      },
+      {
+        "relname": "products",
+        "tgname": "enforce_product_approval",
+        "proname": "enforce_product_approval",
+        "tgenabled": "O"
+      },
+      {
+        "relname": "products",
+        "tgname": "products_broadcast_live",
+        "proname": "products_broadcast_live",
+        "tgenabled": "O"
+      },
+      {
+        "relname": "products",
+        "tgname": "products_enqueue_search_index",
+        "proname": "enqueue_search_index",
+        "tgenabled": "O"
+      },
+      {
+        "relname": "products",
+        "tgname": "products_track_stock_initial",
+        "proname": "tg_products_track_stock_initial",
+        "tgenabled": "O"
+      },
+      {
+        "relname": "products",
+        "tgname": "set_updated_at",
+        "proname": "set_updated_at",
+        "tgenabled": "O"
+      },
+      {
+        "relname": "products",
+        "tgname": "set_updated_at",
+        "proname": "set_updated_at",
+        "tgenabled": "O"
+      },
+      {
+        "relname": "stock_reservations",
+        "tgname": "set_updated_at",
+        "proname": "set_updated_at",
+        "tgenabled": "O"
+      }
+    ],
+    "explain_claim": {
+      "error": {
+        "name": "Error",
+        "message": "Failed to run sql query: ERROR:  42501: permission denied for table stock_reservations\n"
+      }
+    },
+    "explain_products": {
+      "error": {
+        "name": "Error",
+        "message": "Failed to run sql query: ERROR:  42501: permission denied for table products\n"
+      }
+    },
+    "products_update_rows": [
+      {
+        "calls": 62,
+        "mean_ms": "1.41",
+        "max_ms": "27.9",
+        "stddev_ms": "3.65",
+        "shared_blks_dirtied": 58,
+        "wal_records": 1310,
+        "stats_since": "2026-07-20 12:14:26.913049+00",
+        "query": "WITH pgrst_source AS (UPDATE \"public\".\"products\" SET \"supplier_id\" = \"pgrst_body\".\"supplier_id\" FROM (SELECT $1 AS json_data) pgrst_payload,"
+      },
+      {
+        "calls": 12,
+        "mean_ms": "0.07",
+        "max_ms": "0.1",
+        "stddev_ms": "0.00",
+        "shared_blks_dirtied": 0,
+        "wal_records": 0,
+        "stats_since": "2026-09-21 14:37:53.13852+00",
+        "query": "UPDATE public.products p\n   SET rating_sum = $1, rating_count = $2\n WHERE NOT EXISTS (\n   SELECT $3 FROM public.reviews r\n    WHERE r.produc"
+      },
+      {
+        "calls": 12,
+        "mean_ms": "0.32",
+        "max_ms": "0.4",
+        "stddev_ms": "0.03",
+        "shared_blks_dirtied": 3,
+        "wal_records": 338,
+        "stats_since": "2026-09-21 14:37:53.134815+00",
+        "query": "CREATE OR REPLACE FUNCTION public.fn_reviews_rating_cache()\nRETURNS trigger\nLANGUAGE plpgsql\nSECURITY DEFINER\nSET search_path = ''\nAS $$\nDEC"
+      },
+      {
+        "calls": 12,
+        "mean_ms": "0.12",
+        "max_ms": "1.2",
+        "stddev_ms": "0.34",
+        "shared_blks_dirtied": 0,
+        "wal_records": 0,
+        "stats_since": "2026-09-21 14:37:53.135875+00",
+        "query": "-- Backfill. Idempotent by construction: it assigns the computed value rather\n-- than adding to it, so re-running this file cannot drift the"
+      },
+      {
+        "calls": 3,
+        "mean_ms": "15.40",
+        "max_ms": "23.5",
+        "stddev_ms": "8.47",
+        "shared_blks_dirtied": 9,
+        "wal_records": 11,
+        "stats_since": "2026-07-19 13:58:24.405008+00",
+        "query": "-- 3. backfill kenyon_price from the legacy price_ils so existing rows keep a price\nDO $$\nBEGIN\n  IF EXISTS (\n        SELECT 1 FROM informat"
+      },
+      {
+        "calls": 2,
+        "mean_ms": "212.40",
+        "max_ms": "335.6",
+        "stddev_ms": "123.24",
+        "shared_blks_dirtied": 172,
+        "wal_records": 4795,
+        "stats_since": "2026-10-18 01:50:31.763479+00",
+        "query": "-- 279: physical products with no city read \"כל הארץ\" (nationwide).\n-- Data only, no schema change. Requested in the rc5 goal (listed there "
+      },
+      {
+        "calls": 2,
+        "mean_ms": "1.59",
+        "max_ms": "1.6",
+        "stddev_ms": "0.02",
+        "shared_blks_dirtied": 0,
+        "wal_records": 117,
+        "stats_since": "2026-08-31 14:53:35.894797+00",
+        "query": "UPDATE public.products SET coupon_price_ils = price_ils, updated_at = now()\nWHERE deleted_at IS NULL AND (type=$1 OR is_coupon_enabled)\n  AN"
+      },
+      {
+        "calls": 2,
+        "mean_ms": "33.08",
+        "max_ms": "66.2",
+        "stddev_ms": "33.08",
+        "shared_blks_dirtied": 58,
+        "wal_records": 1286,
+        "stats_since": "2026-07-29 03:15:46.540154+00",
+        "query": "-- Backfill from the column that already decided this.\nUPDATE public.products\nSET commission_type = CASE\n      WHEN type = $1::public.produc"
+      }
+    ],
+    "reservations_by_status": [
+      {
+        "total": 179,
+        "consumed": 146,
+        "released": 17,
+        "open": 16
+      }
+    ],
+    "consumed_by_hour": [
+      {
+        "hour": "2026-10-21 09:00:00+00",
+        "n": 11
+      },
+      {
+        "hour": "2026-10-21 10:00:00+00",
+        "n": 9
+      },
+      {
+        "hour": "2026-10-21 12:00:00+00",
+        "n": 9
+      },
+      {
+        "hour": "2026-10-21 13:00:00+00",
+        "n": 9
+      },
+      {
+        "hour": "2026-10-21 15:00:00+00",
+        "n": 9
+      },
+      {
+        "hour": "2026-10-21 16:00:00+00",
+        "n": 9
+      },
+      {
+        "hour": "2026-10-21 17:00:00+00",
+        "n": 9
+      },
+      {
+        "hour": "2026-10-21 19:00:00+00",
+        "n": 11
+      }
+    ],
+    "consumed_in_window": [
+      {
+        "n": 11,
+        "first": "2026-10-21 19:09:49.611418+00",
+        "last": "2026-10-21 19:39:16.319756+00"
+      }
+    ],
+    "consumed_all_time": [
+      {
+        "day": "2026-09-10",
+        "n": 1
+      },
+      {
+        "day": "2026-09-21",
+        "n": 18
+      },
+      {
+        "day": "2026-09-25",
+        "n": 3
+      },
+      {
+        "day": "2026-10-05",
+        "n": 4
+      },
+      {
+        "day": "2026-10-15",
+        "n": 44
+      },
+      {
+        "day": "2026-10-21",
+        "n": 76
+      }
+    ],
+    "trigger_defs": [
+      {
+        "proname": "audit_log_trigger_fn",
+        "def": "CREATE OR REPLACE FUNCTION public.audit_log_trigger_fn()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\ndeclare\n  hdrs jsonb;\n  v_before jsonb;\n  v_after jsonb;\n  v_ip inet;\n  v_redact constant text[] := array\n    ['cardcom_token', 'pin_hash', 'token_hash', 'confirm_token', 'unsubscribe_token', 'secret'];\nbegin\n  begin\n    hdrs := nullif(current_setting('request.headers', true), '')::jsonb;\n  exception when others then\n    hdrs := null;\n  end;\n\n  begin\n    v_ip := nullif(trim(split_part(\n      coalesce(hdrs->>'x-forwarded-for', hdrs->>'x-real-ip', ''), ',', 1)), '')::inet;\n  exception when others then\n    v_ip := null;\n  end;\n\n  if tg_op in ('UPDATE', 'DELETE') then\n    v_before := to_jsonb(old) - v_redact;\n  end if;\n  if tg_op in ('INSERT', 'UPDATE') then\n    v_after := to_jsonb(new) - v_redact;\n  end if;\n\n  insert into public.audit_log\n    (actor_id, actor_role, action, entity_type, entity_id,\n     changes, before, after, ip_address, user_agent, request_id)\n  values (\n    auth.uid(),\n    public.current_user_role()::text,\n    (case tg_op\n       when 'INSERT' then 'created'\n       when 'UPDATE' then 'updated'\n       when 'DELETE' then 'deleted'\n     end)::public.audit_action,\n    tg_table_name::text,\n    coalesce(v_after->>'id', v_before->>'id', ''),\n    case tg_op\n      when 'INSERT' then jsonb_build_object('new', v_after)\n      when 'UPDATE' then jsonb_build_object('old', v_before, 'new', v_after)\n      when 'DELETE' then jsonb_build_object('old', v_before)\n    end,\n    v_before,\n    v_after,\n    v_ip,\n    left(hdrs->>'user-agent', 500),\n    left(hdrs->>'x-request-id', 128)\n  );\n  return null;\nend;\n$function$\n"
+      },
+      {
+        "proname": "enforce_product_approval",
+        "def": "CREATE OR REPLACE FUNCTION public.enforce_product_approval()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\nBEGIN\n  IF auth.uid() IS NULL THEN\n    RETURN NEW; -- service role / internal jobs\n  END IF;\n\n  IF NOT public.is_admin() THEN\n    -- Non-admin (content_uploader by RLS): edits always require re-review.\n    IF NEW.approval_status NOT IN ('draft'::public.product_approval_status,\n                                   'pending'::public.product_approval_status) THEN\n      NEW.approval_status := 'pending'::public.product_approval_status;\n    END IF;\n    IF TG_OP = 'UPDATE'\n       AND OLD.approval_status = 'approved'::public.product_approval_status THEN\n      NEW.approval_status := 'pending'::public.product_approval_status;\n    END IF;\n    NEW.approved_by := NULL;\n    NEW.approved_at := NULL;\n    IF NEW.approval_status = 'pending'::public.product_approval_status\n       AND NEW.submitted_at IS NULL THEN\n      NEW.submitted_at := now();\n    END IF;\n    -- Publishing is blocked until an admin approves.\n    IF NEW.status = 'active'::public.product_status THEN\n      RAISE EXCEPTION 'product requires admin approval before publishing'\n        USING ERRCODE = '42501';\n    END IF;\n  ELSE\n    -- Admin path: activating a product implies approval.\n    IF NEW.status = 'active'::public.product_status\n       AND NEW.approval_status <> 'approved'::public.product_approval_status THEN\n      NEW.approval_status := 'approved'::public.product_approval_status;\n    END IF;\n    IF NEW.approval_status = 'approved'::public.product_approval_status\n       AND (TG_OP = 'INSERT'\n            OR OLD.approval_status <> 'approved'::public.product_approval_status) THEN\n      NEW.approved_by := auth.uid();\n      NEW.approved_at := now();\n    END IF;\n  END IF;\n\n  RETURN NEW;\nEND;\n$function$\n"
+      },
+      {
+        "proname": "enqueue_search_index",
+        "def": "CREATE OR REPLACE FUNCTION public.enqueue_search_index()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nBEGIN\n  IF TG_OP = 'DELETE' THEN\n    INSERT INTO public.search_index_outbox (product_id, op) VALUES (OLD.id, 'delete');\n    RETURN OLD;\n  END IF;\n  IF NEW.deleted_at IS NOT NULL OR NEW.status <> 'active' THEN\n    INSERT INTO public.search_index_outbox (product_id, op) VALUES (NEW.id, 'delete');\n  ELSE\n    INSERT INTO public.search_index_outbox (product_id, op) VALUES (NEW.id, 'upsert');\n  END IF;\n  RETURN NEW;\nEND\n$function$\n"
+      },
+      {
+        "proname": "products_broadcast_live",
+        "def": "CREATE OR REPLACE FUNCTION public.products_broadcast_live()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE\n  v_available integer;\nBEGIN\n  -- Every line below is inside the handler: a failure here must never reach\n  -- the UPDATE that fired it. See the header.\n  BEGIN\n    v_available := public.available_stock(NEW.id, NULL, NULL);\n    PERFORM realtime.send(\n      jsonb_build_object(\n        'product_id',     NEW.id,\n        'stock_quantity', NEW.stock_quantity,\n        'available',      v_available,\n        'kenyon_price',   NEW.kenyon_price,\n        'full_price',     NEW.full_price,\n        'status',         NEW.status,\n        'deleted_at',     NEW.deleted_at\n      ),\n      'live',\n      'product:' || NEW.id::text,\n      false\n    );\n  EXCEPTION WHEN OTHERS THEN\n    -- Swallowed on purpose. RAISE WARNING keeps it in the Postgres log,\n    -- which is where a dead channel is diagnosed.\n    RAISE WARNING 'products_broadcast_live: % (product %)', SQLERRM, NEW.id;\n  END;\n  RETURN NEW;\nEND;\n$function$\n"
+      },
+      {
+        "proname": "set_updated_at",
+        "def": "CREATE OR REPLACE FUNCTION public.set_updated_at()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\nBEGIN\n  NEW.updated_at := now();\n  RETURN NEW;\nEND;\n$function$\n"
+      },
+      {
+        "proname": "tg_products_track_stock_initial",
+        "def": "CREATE OR REPLACE FUNCTION public.tg_products_track_stock_initial()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'public'\nAS $function$\nBEGIN\n  IF NEW.stock_quantity IS NULL THEN RETURN NEW; END IF;\n  IF NEW.stock_initial IS NULL OR NEW.stock_quantity > COALESCE(OLD.stock_quantity, -1) THEN\n    NEW.stock_initial := GREATEST(COALESCE(NEW.stock_initial, 0), NEW.stock_quantity);\n  END IF;\n  RETURN NEW;\nEND;\n$function$\n"
+      }
+    ],
+    "trigger_schemas": [
+      {
+        "nspname": "public",
+        "relname": "products",
+        "tgname": "audit_products",
+        "tgtype": 29,
+        "def": "CREATE TRIGGER audit_products AFTER INSERT OR DELETE OR UPDATE ON public.products FOR EACH ROW EXECUTE FUNCTION audit_log_trigger_fn()"
+      },
+      {
+        "nspname": "public",
+        "relname": "products",
+        "tgname": "enforce_product_approval",
+        "tgtype": 23,
+        "def": "CREATE TRIGGER enforce_product_approval BEFORE INSERT OR UPDATE ON public.products FOR EACH ROW EXECUTE FUNCTION enforce_product_approval()"
+      },
+      {
+        "nspname": "public",
+        "relname": "products",
+        "tgname": "products_broadcast_live",
+        "tgtype": 17,
+        "def": "CREATE TRIGGER products_broadcast_live AFTER UPDATE OF stock_quantity, kenyon_price, full_price, status, deleted_at ON public.products FOR EACH ROW EXECUTE FUNCTION products_broadcast_live()"
+      },
+      {
+        "nspname": "public",
+        "relname": "products",
+        "tgname": "products_enqueue_search_index",
+        "tgtype": 29,
+        "def": "CREATE TRIGGER products_enqueue_search_index AFTER INSERT OR DELETE OR UPDATE ON public.products FOR EACH ROW EXECUTE FUNCTION enqueue_search_index()"
+      },
+      {
+        "nspname": "public",
+        "relname": "products",
+        "tgname": "products_track_stock_initial",
+        "tgtype": 23,
+        "def": "CREATE TRIGGER products_track_stock_initial BEFORE INSERT OR UPDATE OF stock_quantity ON public.products FOR EACH ROW EXECUTE FUNCTION tg_products_track_stock_initial()"
+      },
+      {
+        "nspname": "public",
+        "relname": "products",
+        "tgname": "set_updated_at",
+        "tgtype": 19,
+        "def": "CREATE TRIGGER set_updated_at BEFORE UPDATE ON public.products FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+      },
+      {
+        "nspname": "public",
+        "relname": "stock_reservations",
+        "tgname": "set_updated_at",
+        "tgtype": 19,
+        "def": "CREATE TRIGGER set_updated_at BEFORE UPDATE ON public.stock_reservations FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+      },
+      {
+        "nspname": "wp_import",
+        "relname": "products",
+        "tgname": "set_updated_at",
+        "tgtype": 19,
+        "def": "CREATE TRIGGER set_updated_at BEFORE UPDATE ON wp_import.products FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+      }
+    ],
+    "audit_log_indexes": [
+      {
+        "indexrelname": "idx_audit_log_entity",
+        "idx_scan": 44,
+        "size": "384 kB"
+      },
+      {
+        "indexrelname": "idx_audit_log_actor",
+        "idx_scan": 2,
+        "size": "184 kB"
+      },
+      {
+        "indexrelname": "idx_audit_log_action",
+        "idx_scan": 0,
+        "size": "176 kB"
+      },
+      {
+        "indexrelname": "audit_log_pkey",
+        "idx_scan": 6,
+        "size": "152 kB"
+      },
+      {
+        "indexrelname": "idx_audit_log_created_at",
+        "idx_scan": 200,
+        "size": "136 kB"
+      },
+      {
+        "indexrelname": "idx_audit_log_request_id",
+        "idx_scan": 0,
+        "size": "40 kB"
+      }
+    ],
+    "queue_tables": [
+      {
+        "schemaname": "public",
+        "relname": "fraud_review_queue",
+        "n_live_tup": 1,
+        "n_dead_tup": 0,
+        "n_tup_ins": 1,
+        "total": "64 kB"
+      },
+      {
+        "schemaname": "net",
+        "relname": "http_request_queue",
+        "n_live_tup": 1,
+        "n_dead_tup": 0,
+        "n_tup_ins": 1,
+        "total": "24 kB"
+      },
+      {
+        "schemaname": "public",
+        "relname": "media_ingest_queue",
+        "n_live_tup": 0,
+        "n_dead_tup": 0,
+        "n_tup_ins": 0,
+        "total": "40 kB"
+      },
+      {
+        "schemaname": "public",
+        "relname": "notification_outbox",
+        "n_live_tup": 468,
+        "n_dead_tup": 25,
+        "n_tup_ins": 517,
+        "total": "568 kB"
+      },
+      {
+        "schemaname": "public",
+        "relname": "popular_searches",
+        "n_live_tup": 0,
+        "n_dead_tup": 0,
+        "n_tup_ins": 0,
+        "total": "32 kB"
+      },
+      {
+        "schemaname": "public",
+        "relname": "search_events",
+        "n_live_tup": 33,
+        "n_dead_tup": 5,
+        "n_tup_ins": 34,
+        "total": "112 kB"
+      },
+      {
+        "schemaname": "public",
+        "relname": "search_index_dlq",
+        "n_live_tup": 0,
+        "n_dead_tup": 0,
+        "n_tup_ins": 0,
+        "total": "24 kB"
+      },
+      {
+        "schemaname": "public",
+        "relname": "search_index_outbox",
+        "n_live_tup": 239,
+        "n_dead_tup": 0,
+        "n_tup_ins": 312,
+        "total": "160 kB"
+      },
+      {
+        "schemaname": "public",
+        "relname": "user_recent_searches",
+        "n_live_tup": 0,
+        "n_dead_tup": 0,
+        "n_tup_ins": 0,
+        "total": "32 kB"
+      },
+      {
+        "schemaname": "public",
+        "relname": "whatsapp_outbox",
+        "n_live_tup": 0,
+        "n_dead_tup": 4,
+        "n_tup_ins": 4,
+        "total": "64 kB"
+      }
+    ],
+    "audit_rows_window": [
+      {
+        "entity_type": "wallet_accounts",
+        "action": "updated",
+        "n": 22
+      },
+      {
+        "entity_type": "orders",
+        "action": "updated",
+        "n": 13
+      },
+      {
+        "entity_type": "payments",
+        "action": "updated",
+        "n": 11
+      },
+      {
+        "entity_type": "payments",
+        "action": "created",
+        "n": 11
+      },
+      {
+        "entity_type": "products",
+        "action": "updated",
+        "n": 11
+      },
+      {
+        "entity_type": "order_items",
+        "action": "updated",
+        "n": 11
+      },
+      {
+        "entity_type": "orders",
+        "action": "created",
+        "n": 11
+      },
+      {
+        "entity_type": "order",
+        "action": "status_change",
+        "n": 11
+      },
+      {
+        "entity_type": "order_items",
+        "action": "created",
+        "n": 11
+      },
+      {
+        "entity_type": "invoices",
+        "action": "created",
+        "n": 11
+      },
+      {
+        "entity_type": "vouchers",
+        "action": "created",
+        "n": 11
+      },
+      {
+        "entity_type": "settlement_events",
+        "action": "created",
+        "n": 11
+      },
+      {
+        "entity_type": "wallet_entries",
+        "action": "created",
+        "n": 11
+      },
+      {
+        "entity_type": "invoices",
+        "action": "updated",
+        "n": 11
+      },
+      {
+        "entity_type": "voucher_redemptions",
+        "action": "created",
+        "n": 3
+      },
+      {
+        "entity_type": "vouchers",
+        "action": "updated",
+        "n": 1
+      }
+    ],
+    "audit_rows_today_products": [
+      {
+        "hour": "2026-10-21 09:00:00+00",
+        "n": 11
+      },
+      {
+        "hour": "2026-10-21 10:00:00+00",
+        "n": 9
+      },
+      {
+        "hour": "2026-10-21 12:00:00+00",
+        "n": 9
+      },
+      {
+        "hour": "2026-10-21 13:00:00+00",
+        "n": 9
+      },
+      {
+        "hour": "2026-10-21 15:00:00+00",
+        "n": 9
+      },
+      {
+        "hour": "2026-10-21 16:00:00+00",
+        "n": 9
+      },
+      {
+        "hour": "2026-10-21 17:00:00+00",
+        "n": 9
+      },
+      {
+        "hour": "2026-10-21 19:00:00+00",
+        "n": 11
+      }
+    ],
+    "realtime_tables": [
+      {
+        "schemaname": "realtime",
+        "relname": "messages",
+        "n_live_tup": 0,
+        "n_dead_tup": 0,
+        "n_tup_ins": 0,
+        "total": "0 bytes",
+        "last_autovacuum": null
+      },
+      {
+        "schemaname": "realtime",
+        "relname": "messages_2026_10_02",
+        "n_live_tup": 0,
+        "n_dead_tup": 0,
+        "n_tup_ins": 0,
+        "total": "24 kB",
+        "last_autovacuum": null
+      },
+      {
+        "schemaname": "realtime",
+        "relname": "messages_2026_10_03",
+        "n_live_tup": 0,
+        "n_dead_tup": 0,
+        "n_tup_ins": 0,
+        "total": "24 kB",
+        "last_autovacuum": null
+      },
+      {
+        "schemaname": "realtime",
+        "relname": "messages_2026_10_04",
+        "n_live_tup": 0,
+        "n_dead_tup": 0,
+        "n_tup_ins": 0,
+        "total": "24 kB",
+        "last_autovacuum": null
+      },
+      {
+        "schemaname": "realtime",
+        "relname": "messages_2026_10_05",
+        "n_live_tup": 0,
+        "n_dead_tup": 0,
+        "n_tup_ins": 0,
+        "total": "24 kB",
+        "last_autovacuum": null
+      },
+      {
+        "schemaname": "realtime",
+        "relname": "messages_2026_10_06",
+        "n_live_tup": 0,
+        "n_dead_tup": 0,
+        "n_tup_ins": 0,
+        "total": "24 kB",
+        "last_autovacuum": null
+      },
+      {
+        "schemaname": "realtime",
+        "relname": "messages_2026_10_07",
+        "n_live_tup": 0,
+        "n_dead_tup": 0,
+        "n_tup_ins": 0,
+        "total": "24 kB",
+        "last_autovacuum": null
+      },
+      {
+        "schemaname": "realtime",
+        "relname": "messages_2026_10_08",
+        "n_live_tup": 0,
+        "n_dead_tup": 0,
+        "n_tup_ins": 0,
+        "total": "24 kB",
+        "last_autovacuum": null
+      },
+      {
+        "schemaname": "realtime",
+        "relname": "schema_migrations",
+        "n_live_tup": 88,
+        "n_dead_tup": 0,
+        "n_tup_ins": 9,
+        "total": "24 kB",
+        "last_autovacuum": null
+      },
+      {
+        "schemaname": "realtime",
+        "relname": "subscription",
+        "n_live_tup": 0,
+        "n_dead_tup": 42,
+        "n_tup_ins": 1720,
+        "total": "160 kB",
+        "last_autovacuum": "2026-10-01 01:14:21.425312+00"
+      }
+    ],
+    "search_outbox_age": {
+      "error": {
+        "name": "Error",
+        "message": "Failed to run sql query: ERROR:  42703: column \"created_at\" does not exist\nLINE 1: select count(*)::int as n, min(created_at) as oldest, max(created_at) as newest from public.search_index_outbox\n                                       ^\n"
+      }
+    },
+    "audit_log_width": [
+      {
+        "avg_row": "2699 bytes",
+        "max_row": "13 kB"
+      }
+    ]
+  }
+}

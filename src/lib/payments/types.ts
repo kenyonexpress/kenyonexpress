@@ -121,6 +121,13 @@ export interface CreateDocumentInput {
   transactionId: string | null
   /** Printed on the document so a human can find the order it belongs to. */
   reference: string
+  /**
+   * The issuer's dealer number (מספר עוסק), printed in the document remarks
+   * next to the reference. The terminal prints its own letterhead, but the
+   * remark is the one line this code controls, and a document whose number
+   * matches the terms it was issued under is the one that survives a dispute.
+   */
+  issuerRegistrationNumber?: string
   /** Ask the provider to email the document to the customer. */
   sendByEmail: boolean
 }

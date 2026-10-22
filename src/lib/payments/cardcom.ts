@@ -403,7 +403,9 @@ export class CardcomProvider implements PaymentProvider {
       // The document is a receipt for money already taken, so it is issued
       // against the deal rather than as a standalone demand for payment.
       'InvoiceHead.IsAutoCreateUpdateAccount': 'true',
-      'InvoiceHead.Comments': input.reference,
+      'InvoiceHead.Comments': input.issuerRegistrationNumber
+        ? `${input.reference} | מספר עוסק ${input.issuerRegistrationNumber}`
+        : input.reference,
     }
 
     if (input.customerEmail) {

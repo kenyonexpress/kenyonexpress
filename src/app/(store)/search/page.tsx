@@ -40,7 +40,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   const q = firstStr((await searchParams).q).trim()
   return {
     title: q ? `תוצאות חיפוש: ${q}` : 'חיפוש מוצרים',
-    description: q ? `תוצאות חיפוש עבור "${q}" בקניון אקספרס` : 'חיפוש מוצרים בקניון אקספרס',
+    description: q ? `תוצאות חיפוש עבור "${q}" בקניון EXPRESS` : 'חיפוש מוצרים בקניון EXPRESS',
     // A results page is thin content that should never be indexed.
     robots: { index: false },
   }

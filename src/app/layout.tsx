@@ -1,6 +1,7 @@
 import ScrollRestoration from '@/components/ScrollRestoration'
 import ThemeProvider from '@/components/ThemeProvider'
 import ViewTransitionsNavigationWrapper from '@/components/ViewTransitionsNavigationWrapper'
+import SkipLink from '@/components/a11y/SkipLink'
 import AnalyticsProvider from '@/components/analytics/AnalyticsProvider'
 import ConsentBanner from '@/components/analytics/ConsentBanner'
 import ThirdPartyTags from '@/components/analytics/ThirdPartyTags'
@@ -14,31 +15,17 @@ import { SpeedInsights } from '@vercel/speed-insights/next'
 import type { Metadata, Viewport } from 'next'
 import { Heebo } from 'next/font/google'
 import { Suspense } from 'react'
-import './globals.css'
-// The header cart is in the masthead on every route, so its styles load here
-// rather than with the /cart page. See the note at the top of the file.
-import '@/styles/mini-cart.css'
 /**
- * The three below are imported HERE, not by the segment that uses them, and the
- * reason is the number of requests rather than the number of bytes.
- *
- * A stylesheet imported by a route segment gets its own chunk, and every chunk
- * is a render-blocking <link>. The homepage was shipping four: the root bundle
- * (84707 B) plus cart-page (5776), product-card-deals (2763) and home-handheld
- * (125). Lighthouse mobile charged 454ms for the first and 304ms for EACH of
- * the other three - 870ms total to deliver 8.6KB. Merged into the root bundle
- * they cost one request and no extra round trip.
- *
- * This is only safe because all three are page-scoped BEM (`.cart-page__*`,
- * `.jet-listing-grid-deals*`, `.hero-copy-column`): loading them on a route
- * that has none of those elements matches nothing. A file with bare element or
- * utility selectors does NOT belong here - it would now apply site-wide.
+ * ONE stylesheet import, on purpose. Every root-level sheet (globals, the
+ * masthead cart, the page-scoped BEM files for the cart page, the deals grid
+ * and the handheld hero) is pulled in by app.css with @import, so the bundler
+ * sees one CSS module and emits one chunk, which is one render-blocking
+ * <link>. Seven separate imports here gave three chunks on the homepage, and
+ * every chunk is a round trip: Lighthouse mobile charged 304ms for EACH extra
+ * one to deliver 8.6KB. The rule for what may go in app.css is in app.css.
  */
-import '@/styles/cart-page.css'
-import '@/styles/home-handheld.css'
-import '@/styles/product-card-deals.css'
-import '@/styles/micro-interactions.css'
-import '@/styles/dark-mode.css'
+import './app.css'
+import { BRAND_DEFAULT_TITLE, BRAND_DISPLAY_NAME, BRAND_TITLE_TEMPLATE } from '@/lib/brand'
 
 const heebo = Heebo({
   variable: '--font-heebo',
@@ -54,21 +41,21 @@ const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il'
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: 'קניון אקספרס | קופונים ומבצעים',
-    template: '%s | קניון אקספרס',
+    default: BRAND_DEFAULT_TITLE,
+    template: BRAND_TITLE_TEMPLATE,
   },
   description: 'קופונים, מבצעים ומוצרים במחיר הכי טוב. בפריסה ארצית.',
   openGraph: {
     type: 'website',
     locale: 'he_IL',
-    siteName: 'קניון אקספרס',
-    title: 'קניון אקספרס | קופונים ומבצעים',
+    siteName: BRAND_DISPLAY_NAME,
+    title: BRAND_DEFAULT_TITLE,
     description: 'קופונים, מבצעים ומוצרים במחיר הכי טוב. בפריסה ארצית.',
     url: '/',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'קניון אקספרס | קופונים ומבצעים',
+    title: BRAND_DEFAULT_TITLE,
     description: 'קופונים, מבצעים ומוצרים במחיר הכי טוב. בפריסה ארצית.',
   },
   alternates: {
@@ -95,7 +82,7 @@ export const metadata: Metadata = {
     // NOT the Merchant feed: that one is pulled by a URL configured inside
     // Merchant Center and has no business being offered to browsers.
     types: {
-      'application/rss+xml': [{ url: '/feed.xml', title: 'קניון אקספרס — דילים חדשים' }],
+      'application/rss+xml': [{ url: '/feed.xml', title: `${BRAND_DISPLAY_NAME} — דילים חדשים` }],
     },
   },
   // iOS reads none of the manifest's icons and looks only for this link tag.
@@ -183,6 +170,16 @@ export default function RootLayout({
             fixed positioning it can paint as soon as the parser reaches it,
             without waiting for the rest of the document or the big stylesheet.
           */}
+          {/*
+            The skip link has to be the FIRST Tab stop, and the consent banner
+            below is first in the body for LCP, so the link lives here rather
+            than in the route-group layouts that own the <main id="main-content">
+            it targets. With it in those layouts the banner's two buttons were the
+            first two Tab stops on every page (keyboard-navigation.spec, both
+            projects, every run). On a page without that target the link is a
+            harmless no-op; the store and legal layouts carry it.
+          */}
+          <SkipLink />
           <ConsentBanner />
           <ViewTransitionsNavigationWrapper>{children}</ViewTransitionsNavigationWrapper>
         </ThemeProvider>

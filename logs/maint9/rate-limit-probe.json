@@ -1,0 +1,102 @@
+{
+  "rl_stats": [
+    {
+      "calls": 9749,
+      "mean_ms": "10.6",
+      "max_ms": "1137.4",
+      "min_ms": "0.2",
+      "stddev_ms": "19.3",
+      "total_ms": "103501",
+      "rows": 9749,
+      "shared_blks_hit": 1127203,
+      "shared_blks_read": 0,
+      "temp_blks_written": 0,
+      "wal_bytes": "29713363"
+    },
+    {
+      "calls": 3249,
+      "mean_ms": "2.5",
+      "max_ms": "63.7",
+      "min_ms": "0.2",
+      "stddev_ms": "5.5",
+      "total_ms": "8096",
+      "rows": 3249,
+      "shared_blks_hit": 229220,
+      "shared_blks_read": 4,
+      "temp_blks_written": 0,
+      "wal_bytes": "1005141"
+    },
+    {
+      "calls": 9,
+      "mean_ms": "0.2",
+      "max_ms": "0.3",
+      "min_ms": "0.1",
+      "stddev_ms": "0.1",
+      "total_ms": "2",
+      "rows": 0,
+      "shared_blks_hit": 122,
+      "shared_blks_read": 0,
+      "temp_blks_written": 0,
+      "wal_bytes": "10010"
+    },
+    {
+      "calls": 6,
+      "mean_ms": "3.8",
+      "max_ms": "19.4",
+      "min_ms": "0.3",
+      "stddev_ms": "7.0",
+      "total_ms": "23",
+      "rows": 6,
+      "shared_blks_hit": 229,
+      "shared_blks_read": 0,
+      "temp_blks_written": 0,
+      "wal_bytes": "3764"
+    },
+    {
+      "calls": 1,
+      "mean_ms": "0.1",
+      "max_ms": "0.1",
+      "min_ms": "0.1",
+      "stddev_ms": "0.0",
+      "total_ms": "0",
+      "rows": 0,
+      "shared_blks_hit": 7,
+      "shared_blks_read": 0,
+      "temp_blks_written": 0,
+      "wal_bytes": "1049"
+    }
+  ],
+  "rl_table": [
+    {
+      "relname": "rate_limits",
+      "n_live_tup": 624,
+      "n_dead_tup": 104,
+      "seq_scan": 29,
+      "idx_scan": 13114,
+      "n_tup_ins": 637,
+      "n_tup_del": 10,
+      "last_autovacuum": "2026-10-15 02:40:22.037344+00",
+      "last_autoanalyze": "2026-10-21 00:53:54.914022+00",
+      "total": "288 kB"
+    },
+    {
+      "relname": "user_rate_limits",
+      "n_live_tup": 15,
+      "n_dead_tup": 8,
+      "seq_scan": 19,
+      "idx_scan": 8,
+      "n_tup_ins": 23,
+      "n_tup_del": 0,
+      "last_autovacuum": null,
+      "last_autoanalyze": null,
+      "total": "48 kB"
+    }
+  ],
+  "rl_def": [
+    {
+      "proname": "check_rate_limit",
+      "ret": "boolean",
+      "def": "CREATE OR REPLACE FUNCTION public.check_rate_limit(p_key text, p_max_attempts integer DEFAULT 10, p_window_seconds integer DEFAULT 3600)\n RETURNS boolean\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\ndeclare\n  v_attempts integer;\nbegin\n  insert into public.rate_limits (key, attempts, window_start)\n  values (p_key, 1, now())\n  on conflict (key) do update set\n    attempts = case\n      when rate_limits.window_start < now() - (p_window_seconds || ' seconds')::interval\n        then 1                              -- reset expired window\n        else rate_limits.attempts + 1       -- increment within window\n    end,\n    window_start = case\n      when rate_limits.window_start < now() - (p_window_seconds || ' seconds')::interval\n        then now()\n        else rate_limits.window_start\n    end\n  returning attempts into v_attempts;\n\n  return v_attempts <= p_max_attempts;\nend;\n$function$\n"
+    }
+  ]
+}

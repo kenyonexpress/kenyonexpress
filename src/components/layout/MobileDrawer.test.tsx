@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import MobileDrawer from './MobileDrawer'
 
@@ -29,7 +29,12 @@ describe('MobileDrawer', () => {
       expect(screen.getByRole('dialog')).toBeInTheDocument()
     })
 
-    const closeButton = screen.getByRole('button', { name: /סגירת התפריט/ })
+    // Two controls carry this name while the drawer is open: the scrim and the
+    // panel's own close button. Scope to the panel so the test exercises the
+    // visible control and does not pass by hitting the scrim.
+    const closeButton = within(screen.getByRole('dialog')).getByRole('button', {
+      name: /סגירת התפריט/,
+    })
     fireEvent.click(closeButton)
     await waitFor(() => {
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
@@ -48,6 +53,20 @@ describe('MobileDrawer', () => {
     fireEvent.keyDown(document, { key: 'Escape' })
     await waitFor(() => {
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    })
+  })
+
+  it('anchors the panel at the inline START so the closed translate leaves the viewport', async () => {
+    // `end-0` under dir="rtl" is the LEFT edge; with `translate-x-full` the
+    // closed panel then slid RIGHT into the page and was probed at x350 w350
+    // on a 768 viewport (2026-10-20). Live's closed panel is past the right
+    // edge, which is start-0 + translate-x-full in RTL.
+    render(<MobileDrawer />)
+    fireEvent.click(screen.getByRole('button', { name: /תפריט קטגוריות/ }))
+    await waitFor(() => {
+      const drawer = screen.getByRole('dialog')
+      expect(drawer).toHaveClass('start-0')
+      expect(drawer).not.toHaveClass('end-0')
     })
   })
 

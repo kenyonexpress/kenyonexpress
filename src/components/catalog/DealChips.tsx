@@ -28,7 +28,10 @@ export default function DealChips({ basePath }: { basePath?: string }) {
         <Link
           key={item.key}
           href={toggleChipHref(target, source, item.key)}
-          aria-pressed={item.on}
+          // A link may not carry aria-pressed (axe aria-allowed-attr, Lighthouse
+          // 2026-10-20). aria-current is the link-shaped way to say "this filter
+          // is the one applied", and the --on class keeps the painted state.
+          aria-current={item.on ? 'true' : undefined}
           className={`deal-chips__chip${item.on ? ' deal-chips__chip--on' : ''}`}
           scroll={false}
         >

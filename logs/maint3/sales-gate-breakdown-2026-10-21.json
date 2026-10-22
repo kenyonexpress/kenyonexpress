@@ -1,0 +1,98 @@
+{
+  "ts": "2026-10-21T10:39:50Z",
+  "projectRef": "ixvwfbuvfxxsjiywhbbb",
+  "via": "management API /database/query, read-only select, CLI keychain token",
+  "query": "select o.status, coalesce(regexp_replace(u.email,'^([^@]{0,6}).*@','\\1***@'),'(guest)') as buyer, coalesce(substr(p.cardcom_transaction_id,1,12),'(none)') as txn, p.status as pay_status, count(*)::int as n, min(o.created_at) as first_at, max(o.created_at) as last_at\nfrom orders o left join auth.users u on u.id=o.user_id left join payments p on p.order_id=o.id\nwhere o.created_at > '2026-10-21T08:53:56Z'\ngroup by 1,2,3,4 order by 6",
+  "result": [
+    {
+      "status": "pending",
+      "buyer": "e2e-cu***@test.kenyonexpress.local",
+      "txn": "mock-tok-1",
+      "pay_status": "succeeded",
+      "n": 1,
+      "first_at": "2026-10-21 09:07:18.04272+00",
+      "last_at": "2026-10-21 09:07:18.04272+00"
+    },
+    {
+      "status": "pending",
+      "buyer": "e2e-cu***@test.kenyonexpress.local",
+      "txn": "mock-tok-2",
+      "pay_status": "succeeded",
+      "n": 1,
+      "first_at": "2026-10-21 09:08:18.118642+00",
+      "last_at": "2026-10-21 09:08:18.118642+00"
+    },
+    {
+      "status": "pending",
+      "buyer": "e2e-cu***@test.kenyonexpress.local",
+      "txn": "mock-tok-3",
+      "pay_status": "succeeded",
+      "n": 1,
+      "first_at": "2026-10-21 09:09:18.870789+00",
+      "last_at": "2026-10-21 09:09:18.870789+00"
+    },
+    {
+      "status": "pending",
+      "buyer": "e2e-cu***@test.kenyonexpress.local",
+      "txn": "mock-tok-4",
+      "pay_status": "succeeded",
+      "n": 1,
+      "first_at": "2026-10-21 09:10:17.945872+00",
+      "last_at": "2026-10-21 09:10:17.945872+00"
+    },
+    {
+      "status": "pending",
+      "buyer": "e2e-cu***@test.kenyonexpress.local",
+      "txn": "(none)",
+      "pay_status": "redirected",
+      "n": 2,
+      "first_at": "2026-10-21 09:17:54.666621+00",
+      "last_at": "2026-10-21 09:18:55.624482+00"
+    },
+    {
+      "status": "paid",
+      "buyer": "e2e-cu***@test.kenyonexpress.local",
+      "txn": "mock-tok-3",
+      "pay_status": "succeeded",
+      "n": 3,
+      "first_at": "2026-10-21 09:19:58.956273+00",
+      "last_at": "2026-10-21 09:49:14.574419+00"
+    },
+    {
+      "status": "paid",
+      "buyer": "e2e-cu***@test.kenyonexpress.local",
+      "txn": "mock-tok-5",
+      "pay_status": "succeeded",
+      "n": 2,
+      "first_at": "2026-10-21 09:21:02.547159+00",
+      "last_at": "2026-10-21 09:33:37.291933+00"
+    },
+    {
+      "status": "paid",
+      "buyer": "e2e-cu***@test.kenyonexpress.local",
+      "txn": "mock-tok-1",
+      "pay_status": "succeeded",
+      "n": 4,
+      "first_at": "2026-10-21 09:31:50.791117+00",
+      "last_at": "2026-10-21 09:46:16.801514+00"
+    },
+    {
+      "status": "paid",
+      "buyer": "e2e-cu***@test.kenyonexpress.local",
+      "txn": "mock-tok-7",
+      "pay_status": "succeeded",
+      "n": 1,
+      "first_at": "2026-10-21 09:34:40.86483+00",
+      "last_at": "2026-10-21 09:34:40.86483+00"
+    },
+    {
+      "status": "paid",
+      "buyer": "e2e-cu***@test.kenyonexpress.local",
+      "txn": "mock-tok-9",
+      "pay_status": "succeeded",
+      "n": 1,
+      "first_at": "2026-10-21 09:35:43.876221+00",
+      "last_at": "2026-10-21 09:35:43.876221+00"
+    }
+  ]
+}

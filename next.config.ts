@@ -149,7 +149,7 @@ const nextConfig: NextConfig = {
       },
       // Static content pages (about, terms, privacy) - cache for 24 hours
       {
-        source: '/(about|terms-and-conditions|privacy-policy|refund_returns)/:path*',
+        source: '/(about|terms|privacy|returns|accessibility)/:path*',
         headers: cacheHeaders(86400, 86400),
       },
       // Home page - cache for 30 minutes (frequently updated with deals)
@@ -201,23 +201,29 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
-      // Printed QR cards and older docs name /scan; the live screen is under
-      // the supplier portal. Keep the short path as a permanent alias.
-      { source: '/scan', destination: '/supplier/scan', permanent: true },
+      // NO `/scan` -> `/supplier/scan` rule here. The scanner LIVES at /scan
+      // (app/(supplier)/scan/page.tsx, short enough to type at a till) and
+      // /supplier/scan is its legacy alias. From 2026-08-02 this list carried
+      // the opposite rule, a 308 to /supplier/scan, so the two redirects
+      // chased each other: measured 2026-10-21, a signed-in supplier opening
+      // either path looped between them until the browser gave up, and the
+      // full purchase-to-redeem journey never saw the scanner. The page under
+      // /supplier/scan keeps its redirect to /scan (e2e/coupon-scan.spec.ts
+      // pins that the old address lands on /scan or /login); a browser that
+      // cached the 308 keeps looping until that cache entry expires.
       // The business-join page lives at /suppliers; /supplier/apply is the
       // address the brief and outbound mail use, and /supplier/* is the
       // login-gated portal.
       { source: '/supplier/apply', destination: '/suppliers', permanent: true },
-      // The cancellation policy is asked for at /cancellation-policy, and it
-      // lives at /refund_returns. A redirect rather than a second page: the
-      // WordPress URL is what existing links, the footer and any indexed search
-      // result point at, and two routes rendering one policy is how they drift
-      // until the site states two different cancellation terms. 308 keeps the
-      // canonical on /refund_returns.
-      { source: '/cancellation-policy', destination: '/refund_returns', permanent: true },
-      // The English spellings the goal and the docs use, for the same reason.
-      { source: '/terms', destination: '/terms-and-conditions', permanent: true },
-      { source: '/privacy', destination: '/privacy-policy', permanent: true },
+      // The legal documents live on the short paths under `(legal)` (F42):
+      // /terms, /privacy, /returns, /accessibility. The WordPress-era URLs are
+      // what old links, old footers and indexed search results point at, and
+      // two routes rendering one policy is how they drift until the site
+      // states two different cancellation terms. 308 keeps one canonical.
+      { source: '/terms-and-conditions', destination: '/terms', permanent: true },
+      { source: '/privacy-policy', destination: '/privacy', permanent: true },
+      { source: '/refund_returns', destination: '/returns', permanent: true },
+      { source: '/cancellation-policy', destination: '/returns', permanent: true },
     ]
   },
   turbopack: {

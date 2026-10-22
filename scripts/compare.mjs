@@ -1,10 +1,11 @@
 import { spawn } from 'node:child_process'
-import { copyFileSync, existsSync, rmSync } from 'node:fs'
+import { copyFileSync, existsSync, readFileSync, rmSync, statSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { chromium } from '@playwright/test'
-import { loadShortfall } from './load-shortfall.mjs'
+import { parseCompareArgs } from './compare-args.mjs'
+import { loadShortfall, ownSideCaveat } from './load-shortfall.mjs'
 import { appendParityFailure } from './parity-log.mjs'
 
 // Usage: node scripts/compare.mjs [--page=home|product|category|products|search|cart|checkout]
@@ -22,11 +23,33 @@ const argOf = (name, dflt) => {
   return hit ? hit.slice(name.length + 3) : dflt
 }
 const page = argOf('page', 'home')
+// F43: the flags the goal queue uses (`--widths=`, `--baseline=`, `--live-url=`)
+// are parsed in compare-args.mjs, with their meaning and a test. Unknown flags
+// used to be ignored in silence; these three now do what they say.
+const ARGS = parseCompareArgs(process.argv.slice(2))
 // Width is an argument because the gate is quoted at three widths (380, 768,
 // 1440) and this was hardcoded to 1440, so the two phone widths had never once
 // been measured. Height stays 2600: the diff is banded down the page and the
 // bands must line up run to run for the numbers to be comparable.
-const VIEW = { width: Number(argOf('width', '1440')), height: 2600 }
+const VIEW = { width: ARGS.width, height: 2600 }
+
+// `--widths=380,768,1440` is one run per width, in order, each a child with the
+// same arguments and a singular `--width=`. The parent exits with the first
+// non-zero code. Nothing else is shared: each child shoots, diffs and writes
+// its own ledger row, exactly as a hand-typed run would.
+if (ARGS.widths.length > 1) {
+  const rest = process.argv.slice(2).filter((a) => !a.startsWith('--widths='))
+  for (const w of ARGS.widths) {
+    const code = await new Promise((done) =>
+      spawn(process.execPath, [process.argv[1], ...rest, `--width=${w}`], {
+        stdio: 'inherit',
+        cwd: process.cwd(),
+      }).on('exit', done),
+    )
+    if (code !== 0) process.exit(code ?? 1)
+  }
+  process.exit(0)
+}
 const LOCAL = process.env.LOCAL_BASE ?? 'http://localhost:3000'
 const LIVE_HOME = 'https://kenyonexpress.co.il/'
 const LIVE_PRODUCT = 'https://kenyonexpress.co.il/product/מוצר-לדוגמא/'
@@ -146,7 +169,15 @@ const ctx = await b.newContext({
 })
 
 let liveUrl = argOf('live', null)
-let mineUrl = argOf('mine', null)
+// `--live-url=` is the goal queue's name for the SERVER UNDER TEST, i.e. our
+// build, while `--live=` above is the gate's name for the REFERENCE. Opposite
+// words for opposite sides; see compare-args.mjs. Said aloud so the console
+// shows which side the URL went to.
+let mineUrl = argOf('mine', null) ?? ARGS.underTest
+if (ARGS.underTest)
+  console.log(
+    `--live-url=${ARGS.underTest} is the page under test (ours); the reference is unchanged`,
+  )
 
 if (page === 'home') {
   liveUrl ??= REFERENCE('ke_live_home.html', LIVE_HOME)
@@ -307,9 +338,54 @@ const seedCart = async (target) => {
  * figure cannot be attributed to our layout on this evidence alone.
  */
 const missedLoads = { live: [], mine: [] }
+// How wide OUR document actually was at capture. A page wider than the
+// viewport it was shot at is a page whose layout had not settled (measured
+// 2026-10-21: an unhydrated home was 1490px at 1440), and the row must say so.
+const ownGeometry = { viewport: VIEW.width, scrollWidth: undefined }
+
+/**
+ * THE CONSENT SHEET IS NOT PART OF THE DESIGN, AND IT WAS INSIDE THE WINDOW.
+ *
+ * Our page ships the cookie-consent banner fixed to the bottom of the viewport
+ * for every visitor who has not decided, and the viewport here is 2600px tall,
+ * so the banner painted across y2350-2600 of OUR screenshot and was diffed
+ * against live's product cards. Measured 2026-10-20 at 380: bands y2200-2500
+ * carried it on top of the grid mismatch.
+ *
+ * The cookie is set on the LOCAL side only. The reference is a WordPress
+ * archive with no such banner, and the cookie is scoped to the local host
+ * anyway, so the live capture cannot see it. The decision is `denied`: it hides
+ * the banner without turning on any analytics in the measured build.
+ *
+ * The wording version is read from src/lib/analytics/consent.ts rather than
+ * hardcoded, because a stale version is exactly the case the banner is built to
+ * re-ask on: `granted.1` stopped hiding it when the wording moved to 2, and a
+ * script carrying the old number would have put the sheet back into the
+ * window with no error and a worse score that looked like a layout regression.
+ */
+const consentWordingVersion = () => {
+  const src = readFileSync(resolve('src/lib/analytics/consent.ts'), 'utf8')
+  const m = src.match(/CONSENT_WORDING_VERSION\s*=\s*(\d+)/)
+  if (!m)
+    throw new Error('compare: CONSENT_WORDING_VERSION not found in src/lib/analytics/consent.ts')
+  return Number(m[1])
+}
+
+const presetConsentDecided = async (url) => {
+  const u = new URL(url)
+  await ctx.addCookies([
+    {
+      name: 'ke_consent',
+      value: encodeURIComponent(`denied.${consentWordingVersion()}`),
+      domain: u.hostname,
+      path: '/',
+    },
+  ])
+}
 
 const shoot = async (url, out, side = null) => {
   const p = await ctx.newPage()
+  if (side === 'mine') await presetConsentDecided(url)
   if (side) {
     const note = (type, url) => missedLoads[side]?.push({ type, url })
     p.on('requestfailed', (r) => note(r.resourceType(), r.url()))
@@ -852,6 +928,11 @@ const shoot = async (url, out, side = null) => {
     gridTitles[external ? 'live' : 'mine'] = grid.titles
   }
 
+  if (side === 'mine') {
+    ownGeometry.scrollWidth = await p
+      .evaluate(() => document.documentElement.scrollWidth)
+      .catch(() => undefined)
+  }
   await p.screenshot({ path: out, fullPage: true })
   await p.close()
   console.log(`${out} written (${url})`)
@@ -926,7 +1007,16 @@ const runShot = (side) => `refs/.run-${process.pid}-${side}.png`
 // dead runs on 2026-09-08 left six PASS rows from the day before standing as
 // the gate's latest word. See appendParityFailure in parity-log.mjs.
 try {
-  await shoot(liveUrl, runShot('live'), 'live')
+  if (ARGS.baseline) {
+    // A frozen reference, by request. No archive shot, no load shortfall to
+    // report, and the ledger row says so (COMPARE_NOTES below).
+    copyFileSync(ARGS.baseline.path, runShot('live'))
+    console.log(
+      `${runShot('live')} copied from ${ARGS.baseline.path} (frozen baseline, not a fresh shot of the archive)`,
+    )
+  } else {
+    await shoot(liveUrl, runShot('live'), 'live')
+  }
   await shoot(mineUrl, runShot('mine'), 'mine')
 } catch (err) {
   appendParityFailure({
@@ -1105,6 +1195,9 @@ await b.close()
 console.log(`=== compare --page=${page} ===`)
 console.log(`  reference: ${loadShortfall(missedLoads.live)}`)
 console.log(`  ours     : ${loadShortfall(missedLoads.mine)}`)
+// Loud, and it does not abort: the run completes and the row carries the caveat.
+const ownCaveat = ownSideCaveat(missedLoads.mine, ownGeometry)
+if (ownCaveat) console.log(`  WARNING: ${ownCaveat}`)
 await new Promise((resolvePromise, reject) => {
   const child = spawn(process.execPath, [resolve('scripts/diff-bands.mjs')], {
     stdio: 'inherit',
@@ -1125,7 +1218,15 @@ await new Promise((resolvePromise, reject) => {
       // row, after a caller's own note rather than instead of it. A row saying
       // 30.26% with nothing beside it has been read as our layout's divergence
       // before, and the reference was missing 57 scripts at the time.
-      COMPARE_NOTES: [process.env.COMPARE_NOTES, `ref ${loadShortfall(missedLoads.live)}`]
+      COMPARE_NOTES: [
+        process.env.COMPARE_NOTES,
+        // Before the reference shortfall: the cell is clipped at 160 characters
+        // and this is the caveat that changes what the number means.
+        ownCaveat,
+        ARGS.baseline
+          ? `baseline ${ARGS.baseline.name} (frozen PNG, ${statSync(ARGS.baseline.path).mtime.toISOString()}), not a fresh archive shot`
+          : `ref ${loadShortfall(missedLoads.live)}`,
+      ]
         .filter(Boolean)
         .join('; '),
     },

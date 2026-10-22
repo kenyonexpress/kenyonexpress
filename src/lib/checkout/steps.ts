@@ -88,7 +88,16 @@ export function validateDetailsStep(values: StepValues): StepErrors {
   return errors
 }
 
-export function validateAddressStep(values: StepValues): StepErrors {
+/**
+ * `requireComplete` is the verified-shipping gate (F42,
+ * lib/checkout/verified-shipping.ts): after five paid physical orders the
+ * postal code stops being optional. Nothing else about the step changes.
+ */
+export interface StepOptions {
+  requireComplete?: boolean
+}
+
+export function validateAddressStep(values: StepValues, options: StepOptions = {}): StepErrors {
   const errors: StepErrors = {}
   if (blank(values.city)) errors.city = REQUIRED_MESSAGE
   if (blank(values.street)) errors.street = REQUIRED_MESSAGE
@@ -97,9 +106,11 @@ export function validateAddressStep(values: StepValues): StepErrors {
   // Optional, but wrong-when-present is still wrong. The shared checker is the
   // same one the single-page form already used, so the 5-digit legacy code
   // keeps being accepted here exactly as it was. It answers `null` for an empty
-  // field, which is the "nothing to check" case and not a failure.
+  // field, which is the "nothing to check" case and not a failure, unless the
+  // gate has made the field mandatory.
   const zip = checkOptionalIsraeliPostalCode(values.zip ?? '')
   if (zip && !zip.ok) errors.zip = zip.message
+  else if (!zip && options.requireComplete) errors.zip = REQUIRED_MESSAGE
 
   return errors
 }
@@ -124,15 +135,19 @@ export function validateConfirmStep(values: StepValues): StepErrors {
   return errors
 }
 
-const VALIDATORS: Record<CheckoutStep, (values: StepValues) => StepErrors> = {
+const VALIDATORS: Record<CheckoutStep, (values: StepValues, options: StepOptions) => StepErrors> = {
   details: validateDetailsStep,
   address: validateAddressStep,
   review: validateReviewStep,
   confirm: validateConfirmStep,
 }
 
-export function validateStep(step: CheckoutStep, values: StepValues): StepErrors {
-  return VALIDATORS[step](values)
+export function validateStep(
+  step: CheckoutStep,
+  values: StepValues,
+  options: StepOptions = {},
+): StepErrors {
+  return VALIDATORS[step](values, options)
 }
 
 /**

@@ -1,5 +1,4 @@
 import { agorot } from '@/lib/commerce/money'
-import { loadCardcomEnv } from '@/lib/payments/env'
 import type {
   ChargeWithTokenInput,
   ChargeWithTokenResult,
@@ -49,11 +48,19 @@ export class MockCardcomProvider implements PaymentProvider {
       status: 'pending',
       transactionId,
     })
-    const env = loadCardcomEnv()
-    const redirectUrl = `${env.appUrl}/checkout/return?order_id=${encodeURIComponent(input.orderId)}&lp=${encodeURIComponent(lowProfileId)}`
+    // Where the real provider sends the shopper AFTER the hosted page: the
+    // caller's own success URL, which for the web checkout is the framable
+    // /checkout/frame-return stub (see lib/security/frame-policy.ts). The mock
+    // has no hosted page, so it hands that URL straight back as the "payment
+    // page", and the checkout iframe lands on the stub exactly as it would
+    // after Cardcom. Until 2026-10-21 this built its own
+    // `${appUrl}/checkout/return?...&lp=...` instead: that page answers
+    // X-Frame-Options: DENY and needs a session, so inside the iframe it
+    // rendered nothing, the top window never moved, and every desktop money
+    // spec waited 45 s on a checkout that had done its part.
     return {
       lowProfileId,
-      redirectUrl,
+      redirectUrl: input.successRedirectUrl,
       raw: { mock: true, lowProfileId, amountAgorot: input.amountAgorot },
     }
   }

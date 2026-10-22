@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { LEGAL_DOCS } from '../_content'
+import { LEGAL_DOCS, legalDocPath } from '../_content'
 
 /**
  * The four legal pages, as one link list.
@@ -36,7 +36,7 @@ export default function LegalFooterLinks({
                 </span>
               ) : (
                 <Link
-                  href={`/legal/${doc.slug}`}
+                  href={legalDocPath(doc.slug)}
                   title={doc.description}
                   className="text-heading/80 underline underline-offset-4 hover:text-heading"
                 >

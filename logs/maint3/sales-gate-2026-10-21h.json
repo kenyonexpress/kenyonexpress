@@ -1,0 +1,106 @@
+{
+  "ts": "2026-10-21T16:17:40.639Z",
+  "projectRef": "ixvwfbuvfxxsjiywhbbb",
+  "via": "official @supabase/mcp-server-supabase over stdio, --read-only, execute_sql, CLI keychain token",
+  "since": "2026-10-21T14:54:25Z",
+  "queries": {
+    "gate": "select\n  (select count(*)::int from orders) as all_orders,\n  (select count(*)::int from orders where status in ('paid','partially_fulfilled','fulfilled','platform_settled')) as paid_orders,\n  (select count(*)::int from payments where status in ('succeeded','platform_settled')) as succeeded_payments,\n  (select count(*)::int from payments p join orders o on o.id=p.order_id left join auth.users u on u.id=o.user_id\n     where p.status in ('succeeded','platform_settled')\n     and p.cardcom_transaction_id is not null\n     and p.cardcom_transaction_id !~ '^(mock|test|e2e)'\n     and coalesce(u.email,'') !~* '(e2e|test|example\\.com|playwright|mock)') as real_sales,\n  (select max(created_at) from orders) as last_order_at,\n  (select count(*)::int from orders where created_at > '2026-10-21T14:54:25Z') as orders_since_last_scan,\n  now() as measured_at",
+    "breakdown_since": "select o.status, coalesce(regexp_replace(u.email,'^([^@]{0,6}).*@','\\1***@'),'(guest)') as buyer, coalesce(substr(p.cardcom_transaction_id,1,12),'(none)') as txn, p.status as pay_status, count(*)::int as n, min(o.created_at) as first_at, max(o.created_at) as last_at\nfrom orders o left join auth.users u on u.id=o.user_id left join payments p on p.order_id=o.id\nwhere o.created_at > '2026-10-21T14:54:25Z'\ngroup by 1,2,3,4 order by 6"
+  },
+  "result": {
+    "gate": [
+      {
+        "all_orders": 152,
+        "paid_orders": 117,
+        "succeeded_payments": 122,
+        "real_sales": 0,
+        "last_order_at": "2026-10-21 15:14:02.073253+00",
+        "orders_since_last_scan": 9,
+        "measured_at": "2026-10-21 16:17:42.328887+00"
+      }
+    ],
+    "breakdown_since": [
+      {
+        "status": "paid",
+        "buyer": "e2e-cu***@test.kenyonexpress.local",
+        "txn": "mock-tok-1",
+        "pay_status": "succeeded",
+        "n": 1,
+        "first_at": "2026-10-21 15:00:03.709396+00",
+        "last_at": "2026-10-21 15:00:03.709396+00"
+      },
+      {
+        "status": "paid",
+        "buyer": "e2e-cu***@test.kenyonexpress.local",
+        "txn": "mock-tok-3",
+        "pay_status": "succeeded",
+        "n": 1,
+        "first_at": "2026-10-21 15:01:07.11301+00",
+        "last_at": "2026-10-21 15:01:07.11301+00"
+      },
+      {
+        "status": "paid",
+        "buyer": "e2e-cu***@test.kenyonexpress.local",
+        "txn": "mock-tok-5",
+        "pay_status": "succeeded",
+        "n": 1,
+        "first_at": "2026-10-21 15:02:08.721729+00",
+        "last_at": "2026-10-21 15:02:08.721729+00"
+      },
+      {
+        "status": "paid",
+        "buyer": "e2e-cu***@test.kenyonexpress.local",
+        "txn": "mock-tok-7",
+        "pay_status": "succeeded",
+        "n": 1,
+        "first_at": "2026-10-21 15:03:10.976614+00",
+        "last_at": "2026-10-21 15:03:10.976614+00"
+      },
+      {
+        "status": "paid",
+        "buyer": "e2e-cu***@test.kenyonexpress.local",
+        "txn": "mock-tok-9",
+        "pay_status": "succeeded",
+        "n": 1,
+        "first_at": "2026-10-21 15:05:35.614748+00",
+        "last_at": "2026-10-21 15:05:35.614748+00"
+      },
+      {
+        "status": "paid",
+        "buyer": "e2e-cu***@test.kenyonexpress.local",
+        "txn": "mock-tok-11",
+        "pay_status": "succeeded",
+        "n": 1,
+        "first_at": "2026-10-21 15:10:41.588472+00",
+        "last_at": "2026-10-21 15:10:41.588472+00"
+      },
+      {
+        "status": "paid",
+        "buyer": "e2e-cu***@test.kenyonexpress.local",
+        "txn": "mock-tok-13",
+        "pay_status": "succeeded",
+        "n": 1,
+        "first_at": "2026-10-21 15:11:46.375118+00",
+        "last_at": "2026-10-21 15:11:46.375118+00"
+      },
+      {
+        "status": "paid",
+        "buyer": "e2e-cu***@test.kenyonexpress.local",
+        "txn": "mock-tok-15",
+        "pay_status": "succeeded",
+        "n": 1,
+        "first_at": "2026-10-21 15:12:57.665396+00",
+        "last_at": "2026-10-21 15:12:57.665396+00"
+      },
+      {
+        "status": "paid",
+        "buyer": "e2e-cu***@test.kenyonexpress.local",
+        "txn": "mock-tok-17",
+        "pay_status": "succeeded",
+        "n": 1,
+        "first_at": "2026-10-21 15:14:02.073253+00",
+        "last_at": "2026-10-21 15:14:02.073253+00"
+      }
+    ]
+  }
+}

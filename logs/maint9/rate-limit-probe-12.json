@@ -1,0 +1,234 @@
+{
+  "ts": "2026-10-21T13:09:19Z",
+  "window": "11:45 to 13:07 UTC, check_rate_limit stddev 19.5 to 22.8 over 135 calls, max 1137.4 unchanged",
+  "probes": {
+    "rate_limits_table": [
+      {
+        "relname": "rate_limits",
+        "n_live_tup": 702,
+        "n_dead_tup": 164,
+        "n_tup_ins": 715,
+        "n_tup_upd": 13254,
+        "n_tup_hot_upd": 10326,
+        "n_tup_del": 10,
+        "seq_scan": 29,
+        "idx_scan": 14065,
+        "last_autovacuum": "2026-10-15 02:40:22.037344+00",
+        "last_autoanalyze": "2026-10-21 12:20:27.196852+00",
+        "autovacuum_count": 91,
+        "autoanalyze_count": 188,
+        "total": "312 kB"
+      }
+    ],
+    "settings": [
+      {
+        "name": "autovacuum_analyze_scale_factor",
+        "setting": "0.1"
+      },
+      {
+        "name": "autovacuum_analyze_threshold",
+        "setting": "50"
+      },
+      {
+        "name": "autovacuum_vacuum_scale_factor",
+        "setting": "0.2"
+      },
+      {
+        "name": "autovacuum_vacuum_threshold",
+        "setting": "50"
+      },
+      {
+        "name": "log_min_duration_statement",
+        "setting": "-1"
+      },
+      {
+        "name": "pg_stat_statements.track",
+        "setting": "top"
+      },
+      {
+        "name": "track_functions",
+        "setting": "none"
+      },
+      {
+        "name": "track_io_timing",
+        "setting": "off"
+      }
+    ],
+    "function_stats": [],
+    "check_rate_limit_row": [
+      {
+        "calls": 3249,
+        "total_ms": "8096.5",
+        "min_ms": "0.16",
+        "mean_ms": "2.49",
+        "max_ms": "63.7",
+        "stddev_ms": "5.47",
+        "shared_blks_hit": 229220,
+        "shared_blks_read": 4,
+        "shared_blks_dirtied": 647,
+        "shared_blks_written": 5,
+        "blk_read_ms": "0.0",
+        "blk_write_ms": "0.0",
+        "wal_records": 7319,
+        "wal_bytes": "1005141",
+        "stats_since": "2026-07-21 13:52:19.57086+00"
+      },
+      {
+        "calls": 6,
+        "total_ms": "22.7",
+        "min_ms": "0.33",
+        "mean_ms": "3.78",
+        "max_ms": "19.4",
+        "stddev_ms": "7.00",
+        "shared_blks_hit": 229,
+        "shared_blks_read": 0,
+        "shared_blks_dirtied": 4,
+        "shared_blks_written": 0,
+        "blk_read_ms": "0.0",
+        "blk_write_ms": "0.0",
+        "wal_records": 34,
+        "wal_bytes": "3764",
+        "stats_since": "2026-07-21 14:31:09.628937+00"
+      },
+      {
+        "calls": 10697,
+        "total_ms": "113333.5",
+        "min_ms": "0.15",
+        "mean_ms": "10.59",
+        "max_ms": "1137.4",
+        "stddev_ms": "22.85",
+        "shared_blks_hit": 1180055,
+        "shared_blks_read": 0,
+        "shared_blks_dirtied": 10661,
+        "shared_blks_written": 25,
+        "blk_read_ms": "0.0",
+        "blk_write_ms": "0.0",
+        "wal_records": 44582,
+        "wal_bytes": "31175789",
+        "stats_since": "2026-08-31 18:44:20.492362+00"
+      }
+    ],
+    "nested_rate_limits_statements": [
+      {
+        "calls": 26,
+        "mean_ms": "0.44",
+        "max_ms": "4.5",
+        "stddev_ms": "0.86",
+        "toplevel": true,
+        "query": "-- rate_limits: (key) duplicates the UNIQUE constraint's index, which is also -- the one already carrying the traffic (3,895 scans against 2). DROP INDEX IF EXISTS public.rate_limits_key_idx"
+      },
+      {
+        "calls": 9,
+        "mean_ms": "0.01",
+        "max_ms": "0.0",
+        "stddev_ms": "0.00",
+        "toplevel": true,
+        "query": "WITH pgrst_source AS ( SELECT \"public\".\"rate_limits\".* FROM \"public\".\"rate_limits\" LIMIT $1 OFFSET $2 ) SELECT $3::bigint AS total_result_set, pg_catalog.count(_postgrest_t) AS page_total, coalesce(js"
+      },
+      {
+        "calls": 9,
+        "mean_ms": "0.01",
+        "max_ms": "0.0",
+        "stddev_ms": "0.00",
+        "toplevel": true,
+        "query": "WITH pgrst_source AS ( SELECT \"public\".\"user_rate_limits\".* FROM \"public\".\"user_rate_limits\" LIMIT $1 OFFSET $2 ) SELECT $3::bigint AS total_result_set, pg_catalog.count(_postgrest_t) AS page_total, c"
+      },
+      {
+        "calls": 3,
+        "mean_ms": "0.36",
+        "max_ms": "0.8",
+        "stddev_ms": "0.30",
+        "toplevel": true,
+        "query": "select key, attempts, window_start from rate_limits where key like $1 and window_start > now() - interval $2 order by window_start -- source: POST /v1/projects/:ref/database/query -- user: pat:1166989"
+      },
+      {
+        "calls": 2,
+        "mean_ms": "0.05",
+        "max_ms": "0.0",
+        "stddev_ms": "0.00",
+        "toplevel": true,
+        "query": "select key, attempts, window_start, now() - window_start as age, (now() - window_start) > interval $1 as window_expired from rate_limits where key = $2"
+      },
+      {
+        "calls": 1,
+        "mean_ms": "2.22",
+        "max_ms": "2.2",
+        "stddev_ms": "0.00",
+        "toplevel": true,
+        "query": "select * from rate_limits where key ilike $1 or key ilike $2 order by 1 desc limit $3 -- source: POST /v1/projects/:ref/database/query -- user: pat:11669897 -- date: 2026-09-21T14:48:28.628Z"
+      },
+      {
+        "calls": 1,
+        "mean_ms": "4.84",
+        "max_ms": "4.8",
+        "stddev_ms": "0.00",
+        "toplevel": true,
+        "query": "-- apply sql from post body -- verify_supplier_staff_pin: move the rate limit inside the function. -- -- WHY. /api/supplier/app/pin already limits to 15/hour per user, but its own -- header says the R"
+      },
+      {
+        "calls": 1,
+        "mean_ms": "4.07",
+        "max_ms": "4.1",
+        "stddev_ms": "0.00",
+        "toplevel": true,
+        "query": "select (select count(*) from information_schema.tables where table_schema=$1 and table_name=$2) as t_019_user_rate_limits, (select count(*) from pg_proc p join pg_namespace n on n.oid=p.pronamespace w"
+      },
+      {
+        "calls": 1,
+        "mean_ms": "0.04",
+        "max_ms": "0.0",
+        "stddev_ms": "0.00",
+        "toplevel": true,
+        "query": "select key, attempts, window_start + interval $1 as window_ends from rate_limits where key like $2 -- source: POST /v1/projects/:ref/database/query -- user: pat:11669897 -- date: 2026-09-21T15:14:33.6"
+      },
+      {
+        "calls": 1,
+        "mean_ms": "1.83",
+        "max_ms": "1.8",
+        "stddev_ms": "0.00",
+        "toplevel": true,
+        "query": "select json_build_object( $1, (select coalesce(json_agg(t), $2::json) from public.orders t), $3, (select coalesce(json_agg(t), $4::json) from public.order_items t), $5, (select coalesce(json_agg(t), $"
+      }
+    ],
+    "rate_limits_indexes": [
+      {
+        "indexrelname": "rate_limits_pkey",
+        "idx_scan": 0,
+        "idx_tup_read": 0,
+        "size": "56 kB"
+      },
+      {
+        "indexrelname": "rate_limits_key_key",
+        "idx_scan": 14058,
+        "idx_tup_read": 15529,
+        "size": "56 kB"
+      },
+      {
+        "indexrelname": "rate_limits_key_idx",
+        "idx_scan": 2,
+        "idx_tup_read": 2,
+        "size": "56 kB"
+      },
+      {
+        "indexrelname": "rate_limits_window_idx",
+        "idx_scan": 5,
+        "idx_tup_read": 6,
+        "size": "40 kB"
+      }
+    ],
+    "activity_now": [
+      {
+        "state": "idle",
+        "wait_event_type": "Client",
+        "wait_event": "ClientRead",
+        "n": 13
+      },
+      {
+        "state": "active",
+        "wait_event_type": null,
+        "wait_event": null,
+        "n": 1
+      }
+    ]
+  }
+}

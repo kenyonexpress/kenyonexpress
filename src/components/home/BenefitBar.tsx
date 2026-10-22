@@ -77,11 +77,29 @@ export default function BenefitBar() {
   return (
     <section
       dir="rtl"
-      className="h-feature-bar-mobile w-full bg-white font-sans md:flex md:h-feature-bar md:items-center"
+      // md:pt-usp-offset (30px) and NOT items-center: probed 2026-10-20 at 768 and 1440,
+      // live's .features-list starts 30px into the 134px section (y612.4 in a
+      // section at 582.4; y791.3 in one at 761.3) and is 81.4 tall, with the
+      // 68px items centred in it at y619 / y798. Centring our 71px list put
+      // the items at y615 / y794, four pixels high on every band they touch.
+      className="h-feature-bar-mobile w-full bg-white font-sans md:h-feature-bar md:pt-usp-offset"
     >
-      <div className="mx-auto hidden w-full md:block" style={{ maxWidth: USP.maxWidth }}>
+      {/*
+        ONE ROW FROM md, WITH LIVE'S 768 BOX. Probed in the live archive on
+        2026-10-20 at 768: `.features-list` is x39 w690 (border 1px #ddd,
+        radius 8, overflow auto) and holds five `.feature` of 180px laid
+        right-to-left -- x548, 368, 188, 8 and -172 -- so four show and the
+        fifth is clipped by the list's own box. Ours wrapped `sm:w-1/2` into
+        three rows of two and spilled 75px under the 134px band (li at y719
+        inside a section ending at 751). At 1440 the list is 1170 wide and the
+        cells are fifths (234px), which is what lg keeps.
+      */}
+      <div
+        className="mx-auto hidden w-full md:block md:max-w-usp-tablet lg:max-w-[var(--usp-max)]"
+        style={{ '--usp-max': `${USP.maxWidth}px` } as React.CSSProperties}
+      >
         <ul
-          className="flex flex-wrap justify-between lg:flex-nowrap"
+          className="flex min-h-usp-list flex-nowrap items-center justify-start overflow-hidden lg:justify-between"
           style={{ border: `1px solid ${USP.borderColor}`, borderRadius: USP.borderRadius }}
         >
           {benefits.map((b, i) => {
@@ -95,7 +113,7 @@ export default function BenefitBar() {
                 // cannot be overridden by a media query and the narrowest
                 // phones need both smaller. See .benefit-bar__item in
                 // globals.css for the measurement.
-                className="benefit-bar__item w-full sm:w-1/2 lg:w-1/5 flex items-center justify-center"
+                className="benefit-bar__item flex w-usp-cell-tablet shrink-0 items-center justify-center lg:w-1/5"
                 style={
                   {
                     '--usp-gap': `${USP.gap}px`,

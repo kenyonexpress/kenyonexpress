@@ -114,8 +114,8 @@ type SupplierJoin = {
 export function categoryMetaDescription(nameHe: string): string {
   const name = nameHe.trim()
   return name
-    ? `${name} בקניון אקספרס. דילים, קופונים ומוצרים במחירים של קניון אקספרס.`
-    : 'דילים, קופונים ומוצרים במחירים של קניון אקספרס.'
+    ? `${name} בקניון EXPRESS. דילים, קופונים ומוצרים במחירים של קניון EXPRESS.`
+    : 'דילים, קופונים ומוצרים במחירים של קניון EXPRESS.'
 }
 
 export async function getCategoryBySlug(slug: string): Promise<CategoryRow | null> {
@@ -634,7 +634,7 @@ export async function getCategorySuppliersFilter(
   // This avoids fetching all products and computing counts in JavaScript
   const { data, error } = await supabase
     .from('products')
-    .select('supplier_id, suppliers(name_he)', { count: 'exact' })
+    .select('supplier_id, suppliers(name)', { count: 'exact' })
     .eq('category_id', categoryId)
     .eq('status', 'active')
     .is('deleted_at', null)
@@ -652,9 +652,9 @@ export async function getCategorySuppliersFilter(
   for (const row of data) {
     if (row.supplier_id) {
       const suppliers = Array.isArray(row.suppliers) ? row.suppliers : [row.suppliers]
-      const supplier = suppliers[0] as { name_he: string } | null
+      const supplier = suppliers[0] as { name: string } | null
       if (supplier) {
-        const current = supplierCounts.get(row.supplier_id) || { name: supplier.name_he, count: 0 }
+        const current = supplierCounts.get(row.supplier_id) || { name: supplier.name, count: 0 }
         current.count += 1
         supplierCounts.set(row.supplier_id, current)
       }

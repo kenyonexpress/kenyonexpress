@@ -27,7 +27,11 @@ export default function CitiesRow() {
           {CITIES.map((city) => (
             <li
               key={city.slug}
-              className="flex w-1/2 flex-[0_0_50%] border-e first:border-s lg:w-[20%] lg:flex-[0_0_20%]"
+              // 20% from md, not lg: live's li.category is 146px at 768
+              // (x622 w146, five across the 729 column) exactly as at 1440.
+              // Two 384px cells here were measured against that on
+              // 2026-10-20 as part of the 41.82% home/768 run.
+              className="flex w-1/2 flex-[0_0_50%] border-e first:border-s md:w-[20%] md:flex-[0_0_20%]"
               style={{ borderColor: C.borderColor }}
             >
               <Link

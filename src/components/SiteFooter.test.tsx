@@ -27,10 +27,7 @@ describe('SiteFooter', () => {
     expect(screen.getByRole('link', { name: 'צור קשר' })).toHaveAttribute('href', '/contact')
     expect(screen.getByRole('link', { name: 'תנאי שימוש' })).toHaveAttribute('href', '/terms')
     expect(screen.getByRole('link', { name: 'מדיניות פרטיות' })).toHaveAttribute('href', '/privacy')
-    expect(screen.getByRole('link', { name: 'מדיניות החזרות' })).toHaveAttribute(
-      'href',
-      '/refund_returns',
-    )
+    expect(screen.getByRole('link', { name: 'מדיניות החזרות' })).toHaveAttribute('href', '/returns')
   })
 
   it('renders copyright year', () => {
@@ -38,6 +35,15 @@ describe('SiteFooter', () => {
     const copyrightTexts = screen.getAllByText('2026')
     expect(copyrightTexts.length).toBeGreaterThan(0)
     expect(screen.getAllByText(/קניון EXPRESS/).length).toBeGreaterThan(0)
+  })
+
+  it('prints the business registration number on the legal line, desktop and mobile', () => {
+    render(<SiteFooter />)
+    const lines = screen.getAllByText(/מספר עוסק 033798513/)
+    expect(lines.length).toBe(2)
+    for (const line of lines) {
+      expect(line.textContent).toMatch(/קניון EXPRESS\. מספר עוסק 033798513\. כל הזכויות שמורות\./)
+    }
   })
 
   it('renders social media links with correct hrefs', () => {

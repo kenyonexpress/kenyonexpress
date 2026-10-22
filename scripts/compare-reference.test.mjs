@@ -83,3 +83,44 @@ describe('the snapshot is degraded and says so', () => {
     expect(localizer).toContain('IMAGE_EXT = /\\.(jpe?g|png|gif|webp|avif|svg)$/i')
   })
 })
+
+/**
+ * THE CONSENT SHEET WAS INSIDE THE COMPARED WINDOW.
+ *
+ * compare.mjs shoots a 2600px-tall viewport and our page pins the cookie
+ * banner to its bottom for an undecided visitor, so y2350-2600 of OUR shot was
+ * the banner diffed against live's product cards (measured 2026-10-20 at 380).
+ * The fix presets the `ke_consent` cookie on the LOCAL capture only, with the
+ * wording version read from consent.ts so a bump cannot silently put the sheet
+ * back. These lock the three properties that make that fix hold.
+ */
+describe('the consent banner is kept out of the local capture', () => {
+  const consent = readFileSync('src/lib/analytics/consent.ts', 'utf8')
+
+  it('presets the ke_consent cookie for the local side and never the live side', () => {
+    expect(compare).toMatch(/if \(side === 'mine'\) await presetConsentDecided\(url\)/)
+    expect(compare).not.toMatch(/if \(side === 'live'\) await presetConsentDecided/)
+  })
+
+  it('scopes the cookie to the host being shot, not to a hardcoded domain', () => {
+    const fn = compare.slice(
+      compare.indexOf('const presetConsentDecided ='),
+      compare.indexOf('const shoot ='),
+    )
+    expect(fn).toContain('domain: u.hostname')
+    expect(fn).not.toMatch(/domain:\s*'(localhost|kenyonexpress)/)
+  })
+
+  it('reads the wording version from consent.ts instead of carrying its own copy', () => {
+    const m = consent.match(/CONSENT_WORDING_VERSION\s*=\s*(\d+)/)
+    expect(m).not.toBeNull()
+    expect(compare).toContain("readFileSync(resolve('src/lib/analytics/consent.ts'), 'utf8')")
+    expect(compare).toMatch(/CONSENT_WORDING_VERSION\\s\*=\\s\*\(\\d\+\)/)
+    const fn = compare.slice(
+      compare.indexOf('const presetConsentDecided ='),
+      compare.indexOf('const shoot ='),
+    )
+    expect(fn).toContain('value: encodeURIComponent(`denied.${consentWordingVersion()}`)')
+    expect(fn).not.toMatch(/(denied|granted)\.\d/)
+  })
+})

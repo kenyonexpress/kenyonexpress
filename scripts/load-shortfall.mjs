@@ -47,3 +47,44 @@ export function loadShortfall(failures) {
   const tail = expected > 0 ? `, plus ${expected} expected on a local origin` : ''
   return `${real.length} failed to load (${parts.join(', ')})${tail}`
 }
+
+/**
+ * The caveat OUR side carries when it dropped something that paints or runs.
+ *
+ * MEASURED 2026-10-21. A 1440 home row read 23.91% with worst bands y1100-1300
+ * at 63-67%, and the sentence beside it said "3 resources failed locally
+ * (2 scripts, 1 fetch)". The two scripts were a prerendered page's own chunks
+ * 404ing out of a warm Turbopack cache (scripts/prerender-chunk-gate.mjs), so
+ * the page never hydrated, and the unhydrated page was 1490px wide at a 1440
+ * viewport. The same tree, cold-built and hydrated, read 8.08%. Nothing in the
+ * layout had moved; the number was a screenshot of a page that had not
+ * finished becoming itself, and the ledger row did not say so.
+ *
+ * Returns '' when our side only dropped the local-origin expected set (or
+ * nothing), so the common case adds no words to the row.
+ *
+ * @param {{type: string, url: string}[]} failures
+ * @param {{viewport?: number, scrollWidth?: number}} [geometry]
+ * @returns {string}
+ */
+export function ownSideCaveat(failures, geometry = {}) {
+  const real = failures.filter(({ url }) => !LOCAL_ONLY.some((rx) => rx.test(url)))
+  const parts = []
+  const dropped = {}
+  for (const { type } of real) {
+    if (type === 'script' || type === 'stylesheet') dropped[type] = (dropped[type] ?? 0) + 1
+  }
+  const droppedParts = Object.entries(dropped)
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .map(([type, n]) => `${n} ${type}`)
+  if (droppedParts.length > 0) {
+    // Short on purpose: the ledger cell is 160 characters and a regression
+    // note may already be using 85 of them.
+    parts.push(`OURS dropped ${droppedParts.join(', ')} (unhydrated, not a fidelity score)`)
+  }
+  const { viewport, scrollWidth } = geometry
+  if (Number.isFinite(viewport) && Number.isFinite(scrollWidth) && scrollWidth > viewport) {
+    parts.push(`OURS ${scrollWidth}px wide at ${viewport} (overflow)`)
+  }
+  return parts.join('; ')
+}

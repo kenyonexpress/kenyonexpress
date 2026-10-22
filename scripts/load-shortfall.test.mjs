@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { LOCAL_ONLY, loadShortfall } from './load-shortfall.mjs'
+import { LOCAL_ONLY, loadShortfall, ownSideCaveat } from './load-shortfall.mjs'
 
 const fail = (type, url) => ({ type, url })
 const VERCEL = 'http://localhost:3311/_vercel/insights/script.js'
@@ -70,5 +70,71 @@ describe('loadShortfall', () => {
 
   it('keeps the local-only list short enough to read', () => {
     expect(LOCAL_ONLY.length).toBeLessThan(5)
+  })
+
+  // MEASURED 2026-10-21: 23.91% at 1440 beside "2 scripts failed locally" was
+  // an unhydrated 1490px-wide page out of a warm Turbopack cache; the same
+  // tree cold-built read 8.08%. The row has to say which of those it is.
+  describe('ownSideCaveat', () => {
+    it('is empty when our side dropped nothing', () => {
+      expect(ownSideCaveat([])).toBe('')
+    })
+
+    it('is empty for the expected local-origin set', () => {
+      expect(
+        ownSideCaveat([fail('script', VERCEL), fail('script', SPEED), fail('fetch', UPGRADED)]),
+      ).toBe('')
+    })
+
+    it('is empty for a dropped image or fetch, which paints a glyph but still hydrates', () => {
+      expect(
+        ownSideCaveat([
+          fail('image', 'http://localhost:3311/images/hero.webp'),
+          fail('fetch', 'http://localhost:3311/api/x'),
+        ]),
+      ).toBe('')
+    })
+
+    it('names a dropped chunk as an unhydrated page, not a fidelity score', () => {
+      const line = ownSideCaveat([
+        fail('script', VERCEL),
+        fail('script', 'http://localhost:3311/_next/static/chunks/app/page-abc.js'),
+        fail('script', 'http://localhost:3311/_next/static/chunks/app/layout-def.js'),
+        fail('fetch', UPGRADED),
+      ])
+      expect(line).toBe('OURS dropped 2 script (unhydrated, not a fidelity score)')
+    })
+
+    it('names a dropped stylesheet the same way', () => {
+      expect(
+        ownSideCaveat([fail('stylesheet', 'http://localhost:3311/_next/static/css/a.css')]),
+      ).toBe('OURS dropped 1 stylesheet (unhydrated, not a fidelity score)')
+    })
+
+    it('reports a document wider than the viewport it was shot at', () => {
+      expect(ownSideCaveat([], { viewport: 1440, scrollWidth: 1490 })).toBe(
+        'OURS 1490px wide at 1440 (overflow)',
+      )
+    })
+
+    it('says nothing about width when the document fits or was not measured', () => {
+      expect(ownSideCaveat([], { viewport: 1440, scrollWidth: 1440 })).toBe('')
+      expect(ownSideCaveat([], { viewport: 1440, scrollWidth: undefined })).toBe('')
+    })
+
+    it('joins both caveats, scripts first', () => {
+      const line = ownSideCaveat(
+        [fail('script', 'http://localhost:3311/_next/static/chunks/app/page-abc.js')],
+        { viewport: 1440, scrollWidth: 1490 },
+      )
+      expect(line).toBe(
+        'OURS dropped 1 script (unhydrated, not a fidelity score); OURS 1490px wide at 1440 (overflow)',
+      )
+    })
+
+    it('stays short enough to survive the 160-character ledger cell beside a regression note', () => {
+      const line = ownSideCaveat([fail('script', 'http://localhost:3311/_next/static/chunks/a.js')])
+      expect(line.length).toBeLessThan(75)
+    })
   })
 })

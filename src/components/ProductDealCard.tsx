@@ -1,4 +1,5 @@
 import AddToCartButton from '@/components/cart/AddToCartButton'
+import { KE_LIVE_DEAL_TABLET_SQUARE } from '@/lib/ke-live-deals-data'
 import { shekelsFromIlsRounded } from '@/lib/money-format'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -132,10 +133,20 @@ export default function ProductDealCard({ product }: { product: Product }) {
         a DATA gap (those products are not imported yet - recorded in
         GO-LIVE.md), not a markup one. Same shape as the `built: false` footer
         links from [21]: the href remains, the speculative fetch does not.
+
+        TITLE TYPE IS MEASURED, NOT DERIVED (F43, 2026-10-21). Live's h2 is
+        22px / 26.4px / weight 500 with an 8px bottom margin at 380, 768 and
+        1440, over the body's -0.14px letter-spacing; the wrap's 64px
+        min-height holds two such lines (60.8). The shared base is
+        `.p_con__title` in src/styles/product-card-deals.css; the deal card's
+        own line, weight and margin are `styles.title` beside this file, and
+        product-card-deals.test.ts asserts both. Do not add a `text-*` utility
+        here: ProductCard's `text-product-title` is the 25px product PAGE
+        title and would override the measured card value.
       */}
       <div className="p_con__title-wrap">
         <Link href={`/product/${product.slug}`} className="hover:underline" prefetch={false}>
-          <h2 className="p_con__title">{product.name_he}</h2>
+          <h2 className="p_con__title p_con__title--deal">{product.name_he}</h2>
         </Link>
       </div>
 
@@ -154,6 +165,9 @@ export default function ProductDealCard({ product }: { product: Product }) {
               height={245}
               sizes={DEAL_IMAGE_SIZES}
               quality={50}
+              // The reference renders this card's 600x600 crop at 768 only;
+              // see KE_LIVE_DEAL_TABLET_SQUARE for the measurement.
+              data-thumb-md={KE_LIVE_DEAL_TABLET_SQUARE.has(product.id) ? 'square' : undefined}
               // `.p_con__image` pins the height to 245px and leaves the width
               // auto, which is live's aspect. No inline style: see the note in
               // ProductCard.tsx - an inline `height:auto` beats the class and

@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
+import { BRAND_DISPLAY_NAME, BRAND_DISPLAY_PARTS } from '@/lib/brand'
 import { buildOgCard } from '@/lib/og/product-card'
 import { loadProductBySlug } from '@/lib/product-detail'
 import { SITE } from '@/styles/tokens'
@@ -32,7 +33,7 @@ import { ImageResponse } from 'next/og'
  * `.next`), subset by Google Fonts to Hebrew + Latin at 44KB per weight.
  */
 
-export const alt = 'דיל בקניון אקספרס'
+export const alt = `דיל ב${BRAND_DISPLAY_NAME}`
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
@@ -62,7 +63,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
         priceIls: Number(data.product.kenyon_price ?? 0) || null,
         offer: data.couponOffer,
       })
-    : buildOgCard({ name: 'קניון אקספרס', supplierName: null, priceIls: null, offer: null })
+    : buildOgCard({ name: 'דיל', supplierName: null, priceIls: null, offer: null })
 
   return new ImageResponse(
     <div
@@ -85,7 +86,24 @@ export default async function Image({ params }: { params: Promise<{ slug: string
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <div style={{ fontSize: 34, fontWeight: 700, color: SITE.brand.dark }}>קניון אקספרס</div>
+          {/* Two script runs as two flex children: Satori has no bidi pass,
+              so one mixed Hebrew+Latin string would be placed by glyph order.
+              In this `direction: rtl` row the first child sits on the right. */}
+          <div
+            style={{
+              display: 'flex',
+              gap: 10,
+              fontSize: 34,
+              fontWeight: 700,
+              color: SITE.brand.dark,
+            }}
+          >
+            {BRAND_DISPLAY_PARTS.map((part) => (
+              <span key={part} style={{ display: 'flex' }}>
+                {part}
+              </span>
+            ))}
+          </div>
           {card.supplier && (
             <div style={{ fontSize: 28, color: SITE.functional.heading, marginTop: 6 }}>
               {card.supplier}

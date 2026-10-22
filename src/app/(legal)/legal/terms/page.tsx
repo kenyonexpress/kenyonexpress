@@ -1,7 +1,7 @@
 import { permanentRedirect } from 'next/navigation'
 
 /**
- * Permanently moved to `/terms-and-conditions`.
+ * Permanently moved to `/terms` (F42; it was `/terms-and-conditions` before that, which now redirects there too).
  *
  * This route group held the better-sourced legal text on paths nothing linked
  * to, while the linked, indexed paths served an older second set. Two indexable
@@ -15,5 +15,5 @@ import { permanentRedirect } from 'next/navigation'
  * canonical path instead of holding a second copy.
  */
 export default function Page() {
-  permanentRedirect('/terms-and-conditions')
+  permanentRedirect('/terms')
 }

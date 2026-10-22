@@ -2,6 +2,7 @@ import AxeBuilder from '@axe-core/playwright'
 import { type Page, expect, test } from '@playwright/test'
 import {
   addOpenProductToCart,
+  awaitStreamedReveal,
   firstProductHref,
   openPurchasableProduct,
   raiseInstallBanner,
@@ -31,6 +32,10 @@ import {
 const WCAG_AA = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']
 
 async function scan(page: Page) {
+  // Streamed boundaries first (see the helper): a scan that starts on
+  // `domcontentloaded` can run before React has revealed the page body, and
+  // axe does not score what is hidden. Then the toasts.
+  await awaitStreamedReveal(page)
   await settleToasts(page)
   return new AxeBuilder({ page }).withTags(WCAG_AA).analyze()
 }
@@ -118,14 +123,12 @@ const PAGES: Array<{ name: string; path: string }> = [
   // prices or the badges that carry most of this site's colour pairings.
   { name: 'search results', path: '/search?q=%D7%9E%D7%95%D7%A6%D7%A8' },
   { name: 'category archive', path: '/category/hot-deals' },
-  // Both legal sets. Which one is binding is Ofir's open decision; until it is
-  // made, both are served and both have to be accessible.
-  { name: 'legal terms', path: '/legal/terms' },
-  { name: 'legal privacy', path: '/legal/privacy' },
-  { name: 'legal returns', path: '/legal/returns' },
-  { name: 'legal accessibility', path: '/legal/accessibility' },
-  { name: 'terms and conditions', path: '/terms-and-conditions' },
-  { name: 'privacy policy', path: '/privacy-policy' },
+  // The one legal set (F42): the old `/legal/*` and WordPress paths redirect
+  // onto these four, so these are the pages that have to be accessible.
+  { name: 'legal terms', path: '/terms' },
+  { name: 'legal privacy', path: '/privacy' },
+  { name: 'legal returns', path: '/returns' },
+  { name: 'legal accessibility', path: '/accessibility' },
 ]
 
 for (const { name, path } of PAGES) {
@@ -194,10 +197,40 @@ async function unreachableControls(page: Page): Promise<string[]> {
         // the tabindex is negative. The two checks agree; without this clause
         // they would contradict each other.
         if (el.closest('[aria-hidden="true"]')) return false
+        // A ROVING TAB LIST PARKS EVERY TAB AT -1 ON PURPOSE. Radix Tabs (the
+        // login methods on /login) follows the WAI-ARIA tabs pattern: the
+        // `tablist` is the single Tab stop and arrow keys move between the
+        // tabs, so each `role="tab"` carries tabindex -1 for as long as the
+        // page lives. Measured on the built /login: Tab press 5 lands on the
+        // active tab "אימייל" through the list. Treating those tabs as
+        // unreachable failed this check 1 run in 3 on mobile-chrome -- and it
+        // only ever PASSED because the login form streams in a Suspense
+        // boundary and the fast runs evaluated before the tabs existed.
+        const tablist = el.closest('[role="tablist"]')
+        if (
+          el.getAttribute('role') === 'tab' &&
+          tablist &&
+          (Number(tablist.getAttribute('tabindex') ?? -1) >= 0 ||
+            tablist.querySelector('[role="tab"]:not([tabindex="-1"])'))
+        )
+          return false
         return Number(el.getAttribute('tabindex')) < 0
       })
       .map((el) => `${el.tagName.toLowerCase()}.${el.className}`.slice(0, 80))
   })
+}
+
+/**
+ * Polled, not read once. `domcontentloaded` fires while the page is still
+ * streaming and before hydration, and the tabindex ladder of a roving tab list
+ * is written by a layout effect AFTER hydration (the `tablist` goes -1 -> 0
+ * once its items register). A single read at that moment compares against a
+ * DOM that is not yet the one a keyboard user gets; `expect.poll` keeps
+ * reading until the page settles, and still fails on a control that is truly
+ * unreachable once it has.
+ */
+async function expectEveryControlReachable(page: Page): Promise<void> {
+  await expect.poll(() => unreachableControls(page)).toEqual([])
 }
 
 for (const path of [
@@ -214,7 +247,7 @@ for (const path of [
   test(`every interactive control on ${path} is reachable by keyboard`, async ({ page }) => {
     await page.goto(path)
     await page.waitForLoadState('domcontentloaded')
-    expect(await unreachableControls(page)).toEqual([])
+    await expectEveryControlReachable(page)
   })
 }
 
@@ -224,7 +257,7 @@ test('every interactive control on a product page is reachable by keyboard', asy
   const href = await firstProductHref(page)
   await page.goto(href)
   await page.waitForLoadState('domcontentloaded')
-  expect(await unreachableControls(page)).toEqual([])
+  await expectEveryControlReachable(page)
 })
 
 test('every control in the seeded checkout is reachable by keyboard', async ({ page }) => {
@@ -233,7 +266,7 @@ test('every control in the seeded checkout is reachable by keyboard', async ({ p
   await page.goto('/checkout')
   await page.waitForLoadState('domcontentloaded')
   expect(page.url(), 'checkout bounced to the cart; the seed did not stick').toContain('/checkout')
-  expect(await unreachableControls(page)).toEqual([])
+  await expectEveryControlReachable(page)
 })
 
 /**

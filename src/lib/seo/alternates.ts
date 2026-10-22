@@ -1,3 +1,4 @@
+import { BRAND_DISPLAY_NAME } from '@/lib/brand'
 import type { Metadata } from 'next'
 
 /**
@@ -35,7 +36,7 @@ import type { Metadata } from 'next'
  * browsers.
  */
 const FEED_URL = '/feed.xml'
-const FEED_TITLE = 'קניון אקספרס — דילים חדשים'
+const FEED_TITLE = `${BRAND_DISPLAY_NAME} — דילים חדשים`
 
 /**
  * Built fresh per call rather than shared as a frozen constant: Next types

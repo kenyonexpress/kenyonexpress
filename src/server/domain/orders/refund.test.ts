@@ -203,6 +203,24 @@ describe('planOrderRefund: same-day cancellation', () => {
   })
 
   it('credits, with the fee, once the day has turned', () => {
+    // A coupon line: the statutory fee applies to a coupon order. A physical
+    // order refunds in full (next test), which is what /returns promises.
+    const plan = planOrderRefund({
+      cardChargedAgorot: 10_000,
+      lines: [paidCoupon],
+      vouchers: [{ voucherId: 'v1', status: 'issued' }],
+      isDefectClaim: false,
+      chargedAt: charged,
+      now: new Date('2026-08-07T15:00:00Z'),
+    })
+    expect(plan.cancelOnly).toBe(false)
+    expect(plan.cancellationFeeAgorot).toBe(500)
+    expect(plan.refundAmountAgorot).toBe(9_500)
+  })
+
+  it('credits a physical-only order in full even after the day has turned (F42)', () => {
+    // /returns: "ברירת המחדל באתר היא החזר מלא (100%)" on a physical product.
+    // The fee is charged only when the order carries a coupon.
     const plan = planOrderRefund({
       cardChargedAgorot: 10_000,
       lines: [paidPhysical],
@@ -212,8 +230,8 @@ describe('planOrderRefund: same-day cancellation', () => {
       now: new Date('2026-08-07T15:00:00Z'),
     })
     expect(plan.cancelOnly).toBe(false)
-    expect(plan.cancellationFeeAgorot).toBe(500)
-    expect(plan.refundAmountAgorot).toBe(9_500)
+    expect(plan.cancellationFeeAgorot).toBe(0)
+    expect(plan.refundAmountAgorot).toBe(10_000)
   })
 
   it('takes the credit path when the charge time is unknown', () => {

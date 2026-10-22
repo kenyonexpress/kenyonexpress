@@ -84,10 +84,10 @@ export async function POST(request: Request) {
             body: JSON.stringify({
               from: 'notifications@kenyonexpress.com',
               to: row.email,
-              subject: `${productName} זמין שוב בקניון אקספרס!`,
+              subject: `${productName} זמין שוב בקניון EXPRESS!`,
               html: `
                 <h2>${productName} חזר למלאי!</h2>
-                <p>המוצר שרשמת לתביעה עליו זמין שוב בקניון אקספרס.</p>
+                <p>המוצר שרשמת לתביעה עליו זמין שוב בקניון EXPRESS.</p>
                 <p>כמות במלאי: ${stockLevel}</p>
                 <a href="https://kenyonexpress.com/product/${encodeURIComponent(productName)}">
                   לצפייה במוצר לחץ כאן

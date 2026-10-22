@@ -147,7 +147,11 @@ export default function CategoryProductCard({ product }: { product: CategoryProd
               // that takes its height from the image drops to 0.
               <Image
                 src={thumb}
-                alt={asset?.alt ?? product.name_he}
+                // Empty on purpose: the link's accessible name is the h2 beside
+                // it, and an alt that repeats it fails image-redundant-alt
+                // (Lighthouse on /products, 2026-10-20). Screen readers announce
+                // the link once instead of twice.
+                alt=""
                 width={186}
                 height={186}
                 sizes={THUMB_SIZES}

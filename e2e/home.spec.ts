@@ -6,17 +6,17 @@ import {
   CONSENT_WORDING_VERSION,
   serializeConsent,
 } from '../src/lib/analytics/consent'
+import { BRAND_DISPLAY_NAME } from '../src/lib/brand'
 
 test.describe('homepage', () => {
   test('loads with RTL layout and the Hebrew locale', async ({ page }) => {
     await page.goto('/')
 
-    // Hebrew, not the Latin brand name. The SEO pass made every customer-facing
-    // title Hebrew on purpose (`src/app/layout.tsx` serves
-    // "קניון אקספרס | קופונים ומבצעים"); this assertion was left behind and
-    // failed against the title the page actually serves. Carried over from the
-    // ke-verify worktree, which held it uncommitted.
-    await expect(page).toHaveTitle(/קניון אקספרס/)
+    // The brand as F42 fixed it: Hebrew plus Latin, "קניון EXPRESS", in the
+    // header, the footer and the title template (src/lib/brand.ts). The
+    // earlier Hebrew-only "קניון אקספרס" was the SEO pass's choice and is
+    // what this asserted until F42 replaced it everywhere customer-facing.
+    await expect(page).toHaveTitle(new RegExp(BRAND_DISPLAY_NAME))
     const html = page.locator('html')
     await expect(html).toHaveAttribute('dir', 'rtl')
     await expect(html).toHaveAttribute('lang', 'he')
@@ -309,6 +309,38 @@ test.describe('homepage', () => {
     )
   })
 
+  /**
+   * THE DECISION HAS TO TAKE EFFECT WITHOUT A RELOAD. The action sets the
+   * cookie and redirects, but a server-action redirect is a client-side
+   * navigation, so the pre-paint snippet never runs again: measured
+   * 2026-10-21 on the production build, "לא תודה" answered POST 200 with the
+   * cookie set and the banner still on screen until the next full load. The
+   * banner now marks <html> from a submit listener before the action runs.
+   */
+  test('declining hides the banner on the same page, without a reload', async ({ page }) => {
+    await page.goto('/')
+    const banner = page.locator('[data-consent-banner]')
+    await expect(banner).toBeVisible()
+
+    const decided = page.waitForResponse(
+      (response) => response.request().method() === 'POST' && response.url().endsWith('/'),
+      { timeout: 15_000 },
+    )
+    await banner.getByRole('button', { name: 'לא תודה' }).click()
+    await expect(banner).toBeHidden()
+
+    // And it STAYS hidden once the action's re-render has landed: the first
+    // fix set an <html> attribute that React took back 136ms later.
+    await decided
+    await page.waitForTimeout(500)
+    await expect(banner).toBeHidden()
+    await expect
+      .poll(async () => (await page.context().cookies()).some((c) => c.name === 'ke_consent'), {
+        timeout: 15_000,
+      })
+      .toBe(true)
+  })
+
   test('consent banner is hidden for a visitor who decided', async ({ context, page, baseURL }) => {
     await context.addCookies([
       {
@@ -420,11 +452,28 @@ test.describe('homepage', () => {
     await page.goto('/')
 
     const sheets = await page.evaluate(() =>
-      Array.from(document.querySelectorAll('link[rel="stylesheet"]'))
-        .map((l) => (l as HTMLLinkElement).getAttribute('href') ?? '')
-        // next/font injects its own <link> for the self-hosted Heebo; this is
-        // about the CSS chunks the app's own imports produce.
-        .filter((href) => href.endsWith('.css')),
+      Array.from(document.styleSheets)
+        .filter((sheet): sheet is CSSStyleSheet & { href: string } =>
+          Boolean(sheet.href?.endsWith('.css')),
+        )
+        // next/font injects its own <link> for the self-hosted Heebo, and on
+        // this build its href ends in .css like any other chunk, so the old
+        // href filter counted it. It is the one sheet made of nothing but
+        // @font-face rules and the font's own class rules (font-family and
+        // the --font-* variable), and that is how it is told apart. Not "has
+        // an @font-face": the app sheet carries the Electro icon font too.
+        // This is about the CSS chunks the app's own imports produce.
+        .filter((sheet) => {
+          const rules = Array.from(sheet.cssRules)
+          const fontOnly = (rule: CSSRule) =>
+            rule instanceof CSSFontFaceRule ||
+            (rule instanceof CSSStyleRule &&
+              Array.from(rule.style).every(
+                (property) => property.startsWith('font-') || property.startsWith('--font'),
+              ))
+          return !(rules.some((rule) => rule instanceof CSSFontFaceRule) && rules.every(fontOnly))
+        })
+        .map((sheet) => new URL(sheet.href).pathname),
     )
 
     expect(sheets, `homepage stylesheets: ${sheets.join(', ')}`).toHaveLength(1)

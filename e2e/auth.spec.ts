@@ -16,7 +16,7 @@ test.describe('Login page', () => {
   })
 
   test('shows email and password fields', async ({ page }) => {
-    await expect(page.getByLabel('אימייל')).toBeVisible()
+    await expect(page.getByRole('textbox', { name: 'אימייל', exact: true })).toBeVisible()
     await expect(page.getByLabel('סיסמה')).toBeVisible()
     await expect(page.getByRole('button', { name: 'כניסה', exact: true })).toBeVisible()
   })
@@ -25,8 +25,10 @@ test.describe('Login page', () => {
     await expect(page.getByRole('link', { name: 'שכחתם סיסמה?' })).toBeVisible()
   })
 
-  test('shows magic link form on toggle', async ({ page }) => {
-    await page.getByRole('button', { name: /קישור מאובטח/ }).click()
+  test('shows magic link form on its tab', async ({ page }) => {
+    // The toggle button became a tab in the UX23 login modal ("קישור", next to
+    // "אימייל" and "Passkey"); the form behind it is unchanged.
+    await page.getByRole('tab', { name: 'קישור' }).click()
     await expect(page.getByLabel('אימייל לקישור כניסה')).toBeVisible()
     await expect(page.getByRole('button', { name: 'שלחו לי קישור' })).toBeVisible()
   })
@@ -37,7 +39,7 @@ test.describe('Login page', () => {
 
   test('shows inline error on empty email submit', async ({ page }) => {
     // Native browser validation fires first — just check the input is required
-    const emailInput = page.getByLabel('אימייל')
+    const emailInput = page.getByRole('textbox', { name: 'אימייל', exact: true })
     await expect(emailInput).toHaveAttribute('required')
   })
 })
@@ -59,7 +61,7 @@ test.describe('Signup page', () => {
 
   test('has all required fields', async ({ page }) => {
     await expect(page.getByLabel('שם מלא')).toBeVisible()
-    await expect(page.getByLabel('אימייל')).toBeVisible()
+    await expect(page.getByRole('textbox', { name: 'אימייל', exact: true })).toBeVisible()
     await expect(page.getByLabel(/טלפון נייד/)).toBeVisible()
     await expect(page.getByLabel('סיסמה')).toBeVisible()
   })
@@ -76,7 +78,7 @@ test.describe('Forgot password page', () => {
 
   test('renders heading and email field', async ({ page }) => {
     await expect(page.getByRole('heading', { name: 'שחזור סיסמה' })).toBeVisible()
-    await expect(page.getByLabel('אימייל')).toBeVisible()
+    await expect(page.getByRole('textbox', { name: 'אימייל', exact: true })).toBeVisible()
     await expect(page.getByRole('button', { name: 'שלחו קישור לאיפוס' })).toBeVisible()
   })
 

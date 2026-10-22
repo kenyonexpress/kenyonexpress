@@ -1,3 +1,4 @@
+import { BRAND_DISPLAY_NAME } from '@/lib/brand'
 import type { CouponOffer } from '@/lib/commerce/coupon-offer'
 
 /**
@@ -274,14 +275,14 @@ export function buildSiteJsonLd(siteUrl: string): JsonLdNode[] {
     {
       '@context': SCHEMA,
       '@type': 'Organization',
-      name: 'KenyonExpress',
+      name: BRAND_DISPLAY_NAME,
       url: site,
       logo: `${site}/logo.png`,
     },
     {
       '@context': SCHEMA,
       '@type': 'WebSite',
-      name: 'KenyonExpress',
+      name: BRAND_DISPLAY_NAME,
       url: site,
       inLanguage: 'he-IL',
       potentialAction: {
