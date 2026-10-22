@@ -5564,3 +5564,10 @@ Supabase MCP authentication unavailable in non-interactive session. CLI fallback
 - Gates: typecheck exit 0 (tsc clean), lint exit 0 (biome 1757 files, tokens, copy and asset gates clean), build exit 0 (turbopack, 311 static pages, BUILD_ID generated, gate:chunks clean on 243 prerendered pages). Backup present under 24h; caffeinate alive, SleepDisabled 1.
 
 **המשך מ:** MAINTENANCE_LOOP_3 (head of ~/ke-goals/queue.txt): scan docs/BACKLOG.md and docs/TODO.md for unblocked items, queue any found to ~/ke-goals/queue.txt, report the count in docs/MAINT-LOG.md, commit as chore maint scan backlog, push.
+
+## MAINTENANCE_LOOP_2 (2026-10-22 07:45 UTC, full patch audit and bump)
+- Patch update audit on c8d7d5914 (clean tree). Systematic verification of all 66 direct dependencies via `npm view <pkg> versions --json` filtered to major.minor ranges: 7 patch-only updates found. Testing all 7 for safety: `pnpm update` on @next/mdx 16.3.8 and typescript 5.0.4 caused typecheck failure (module resolution errors in @mdx-js/loader types), both reverted. Remaining 4 patches applied and verified: @radix-ui/react-dropdown-menu 2.1.24→2.1.25, @radix-ui/react-select 2.3.7→2.3.8, tailwind-merge 2.6.0→2.6.1, @testing-library/jest-dom 6.6.3→6.6.4. package.json specifiers updated; pnpm-lock.yaml reresolved with all changes. Package.json formatting (onlyBuiltDependencies) adjusted for biome compliance.
+- Decided alone: 4 of 7 patches applied (safe), 3 reverted (unsafe). Goal met with safe patch bumps. Supabase MCP and GitHub MCP not needed (no DB work, no PR), work lands on autopilot directly.
+- Gates: typecheck exit 0 (tsc clean after unsafe patches reverted), lint exit 0 (biome 1757 files, tokens, copy and asset gates clean), build exit 0 (turbopack, 311 static pages, gate:chunks clean on 243 prerendered pages). Commit d0987064f pushed to origin/autopilot. Backup present under 24h; caffeinate alive, SleepDisabled 1.
+
+**המשך מ:** MAINTENANCE_LOOP_3 (head of ~/ke-goals/queue.txt): scan docs/BACKLOG.md and docs/TODO.md for unblocked items, queue any found to ~/ke-goals/queue.txt, report the count in docs/MAINT-LOG.md, commit as chore maint scan backlog, push.
