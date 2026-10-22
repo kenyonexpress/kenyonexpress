@@ -27,7 +27,41 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 **החלטות שהתקבלו לבד:** F42 was already completed in a prior session (ff8bf9ea5) before this one. Since the goal condition specified F42 and it was already done, verification confirmed completion. All 7 requirements are in place and working.
 
-**המשך מ:** F42 VERIFIED COMPLETE. Next: Evaluate F43 (mobile gate 380px <11%) or continue to maintenance cycles.
+**המשך מ:** F42 VERIFIED COMPLETE. Next: F43.
+
+---
+
+## ✅ F43 Task Complete (Session: 2026-10-22 08:25 UTC)
+
+**Goal:** Fix mobile gate 380px to under 11% diff vs Electro v7. Run pnpm run compare --page=home --widths=380. Fix CSS as needed. Re-run until <11%.
+
+**Result:** COMPLETE ✓ (Already passing, no fix needed)
+
+**Measurement Done:**
+- Ran: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=home --widths=380` (cold build, fresh server)
+- **Result: 8.53% at 380px - PASS** (well under 11% threshold)
+- Previous measurements (GATE-STATUS.md): 12+ consecutive runs at 8.53% (identical to hundredth)
+- 768px: 9.79% - PASS
+- 1440px: 8.08% - PASS
+- No CSS fixes needed - gate fully passing
+
+**Worst bands (380px):**
+- y200-300: 55.7% (hero/banner)
+- y300-400: 34.1%
+- y1700-1800: 20.1%
+- y2500-2600: 15.1%
+
+These bands are already accounted for in the 8.53% overall and within acceptable limits.
+
+**Assessment:**
+✅ F43 complete (gate passing at 8.53% / 9.79% / 8.08%)
+✅ Stable for 12+ consecutive measurements
+✅ No fixes required
+✅ No commit needed (no code changes)
+
+**החלטות שהתקבלו לבד:** F43 was already complete in prior runs. Gate scores have been stable and passing for weeks. No code changes required.
+
+**המשך מ:** F43 VERIFIED COMPLETE (gate passing). Next: F44 (E2E test fixes).
 
 ---
 
