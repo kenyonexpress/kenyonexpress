@@ -27,7 +27,20 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
 **החלטות שהתקבלו לבד:** The 84 failures vs run 22's 13 requires root-cause analysis. Since no code changed (git log shows only STATE.md, docs, logs between runs), the cause is likely cache state, timing variance, or measurement artifact. Recommend cold build re-run in next cycle. The 0 flaky count confirms no tests are intermittently failing—the difference is deterministic, not random.
 
-**המשך מ:** MAINTENANCE_LOOP_4 COMPLETE (with regression alert for next cycle). Next: MAINTENANCE_LOOP_5 (cron status check).
+**המשך מ:** MAINTENANCE_LOOP_4 COMPLETE (with regression alert for next cycle). Next: F41-F44 task verification (queue file shows F41-F44, but F41-F43 already completed in prior commits; F44 e2e fix queued due to regression detected).
+
+---
+
+## ⏳ F41-F43 Task Status (Session: 2026-10-22 05:50 UTC)
+
+**Queue Verification:** Queue file shows F41, F42, F43, F44 at head. Git history shows:
+- ✅ F41 (commit 046f1ba62): BUSINESS_REGISTRATION_NUMBER added and referenced in all required locations
+- ✅ F42 (commit ff8bf9ea5): Legal pages, supplier refund, brand display, reviews removal completed
+- ✅ F43 (commits 5371d9ef6, etc.): Mobile gate 380px under 11% achieved (measured 8.53% at 380px)
+
+**Status:** All F41-F43 are already complete and integrated into the codebase. No re-work needed.
+
+**Next Goal:** F44 - Fix all standing e2e test failures. This is urgent due to the regression detected in MAINTENANCE_LOOP_4 run 23 (84 failures vs prior run 22's 13 failures on the same code).
 
 ---
 
