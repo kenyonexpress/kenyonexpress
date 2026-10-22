@@ -62,7 +62,42 @@ Per CLAUDE.md §Autonomous Decision: "goal stuck twice: skip it, don't try thric
 - No commits made
 - Moving to next goal: MAINTENANCE_LOOP_5
 
-**המשך מ:** MAINTENANCE_LOOP_4 SKIPPED (infrastructure blocker, third stuck attempt). Moving to MAINTENANCE_LOOP_5 (cron status check).
+**המשך מ:** MAINTENANCE_LOOP_4 SKIPPED (infrastructure blocker, third stuck attempt). Moving to MAINTENANCE_LOOP_5.
+
+---
+
+## ⏭️ MAINTENANCE_LOOP_5 (Session: 2026-10-22 00:25 UTC — Cron Status Check — SKIPPED)
+
+**Goal:** Check all cron routes last-run timestamp **via Vercel MCP** `get_runtime_logs`. Alert in docs/CRON-STATUS.md if any route stale > 24h. Commit as `chore ops cron status check`. Push.
+
+**Result:** SKIPPED ⏭️ — Infrastructure blocker (OAuth unavailable)
+
+**Autonomous Decision: SKIP PER CLAUDE.MD RULES**
+
+**Evidence from Prior Attempts:**
+- Session 2026-10-20 20:50 UTC: Blocked (Vercel MCP OAuth required, not available)
+- Documentation: "Core requirement 'via Vercel MCP' cannot be satisfied in non-interactive session"
+- Status: Marked "SKIPPED PERMANENTLY" in prior STATE.md entries
+
+**Infrastructure Blocker (Permanent in Non-Interactive Sessions):**
+- Goal explicitly requires: "**via Vercel MCP get_runtime_logs**"
+- Vercel MCP requires OAuth authentication
+- Non-interactive session cannot run OAuth flow
+- System reminder confirms: OAuth unavailable in non-interactive sessions
+- Same blocker pattern as MAINTENANCE_LOOP_9 (Supabase MCP)
+
+**Decision Rule Cited:**
+Per CLAUDE.md §Autonomous Decision: "goal blocked: infrastructure constraint, document blocker, skip and move on"
+- Infrastructure blocker is permanent and unsolvable in current session context
+- No new solution available since prior blocking attempts
+- Skipping to next goal per autonomous rules
+
+**Documentation:**
+- No work performed (core requirement cannot be satisfied)
+- No commits made
+- Moving to next goal: MAINTENANCE_LOOP_6
+
+**המשך מ:** MAINTENANCE_LOOP_5 SKIPPED (infrastructure blocker: Vercel MCP OAuth unavailable). Moving to MAINTENANCE_LOOP_6 (mobile gate check).
 
 ## 📋 Maintenance Cycle Summary (2026-10-21 08:23—08:30 UTC)
 
