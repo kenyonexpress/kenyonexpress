@@ -225,101 +225,16 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-20 09:25 | home | 1440 | 17.90% | **FAIL** | `945b05bde-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 144 failed to load (57 script, 48 image, 37 font, 1 stylesheet, 1 xhr) |
 | 2026-10-20 09:28 | home | 1440 | 17.90% | **FAIL** | `945b05bde-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 144 failed to load (57 script, 48 image, 37 font, 1 stylesheet, 1 xhr) |
 | 2026-10-20 09:31 | home | 1440 | 17.90% | **FAIL** | `945b05bde-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 144 failed to load (57 script, 48 image, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-20 10:27 | home | 1440 | n/a | **UNMEASURED** | `de881e40e` | screenshot failed: page.waitForTimeout: Target page, context or browser has been closed |
-| 2026-10-20 10:27 | home | 1440 | 19.04% | **FAIL** | `de881e40e-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 144 failed to load (57 script, 48 image, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-20 10:30 | home | 1440 | 19.04% | **FAIL** | `de881e40e-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 201 failed to load (113 script, 48 image, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-10-20 13:53 | home | 1440 | 31.28% | **FAIL** | `f90f38679` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-10-20 13:56 | home | 380 | 47.23% | **FAIL** | `f90f38679-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-20 13:57 | home | 768 | 42.02% | **FAIL** | `f90f38679-dirty` | WORSE than the 29% best known for home/768 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-20 14:00 | home | 380 | 47.23% | **FAIL** | `f90f38679-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-20 14:13 | home | 380 | 44.55% | **FAIL** | `b400414b3-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-10-20 14:20 | home | 380 | 11.40% | **FAIL** | `b400414b3-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-20 14:22 | home | 380 | 11.40% | **FAIL** | `b400414b3-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-20 14:30 | home | 380 | 9.33% | PASS | `b400414b3-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-20 14:32 | home | 768 | 41.82% | **FAIL** | `b400414b3-dirty` | WORSE than the 29% best known for home/768 (tolerance 0.5); ref 141 failed to load (101 script, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-10-20 14:34 | home | 1440 | 32.00% | **FAIL** | `b400414b3-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-20 14:39 | home | 380 | 8.76% | PASS | `b400414b3-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-20 14:41 | home | 768 | 41.82% | **FAIL** | `b400414b3-dirty` | WORSE than the 29% best known for home/768 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-20 14:43 | home | 1440 | 30.05% | **FAIL** | `b400414b3-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-20 15:01 | home | 768 | 12.15% | **FAIL** | `3494b7478-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-20 15:06 | home | 768 | 12.11% | **FAIL** | `3494b7478-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-20 15:10 | home | 1440 | 8.23% | PASS | `3494b7478-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-20 15:21 | home | 380 | 8.50% | PASS | `3494b7478-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-20 15:28 | home | 768 | 9.80% | PASS | `3494b7478-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-20 15:31 | home | 768 | 9.80% | PASS | `3494b7478-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-20 15:34 | home | 1440 | 8.10% | PASS | `3494b7478-dirty` | ref 180 failed to load (103 script, 74 font, 2 stylesheet, 1 xhr) |
-| 2026-10-20 15:36 | home | 380 | 8.50% | PASS | `3494b7478-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-20 16:04 | home | 380 | 8.51% | PASS | `84b18715d-dirty` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-10-20 16:06 | home | 768 | 9.80% | PASS | `84b18715d-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-20 16:07 | home | 1440 | 8.10% | PASS | `84b18715d-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-20 17:53 | home | 380 | 8.51% | PASS | `6cccd8359` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-10-20 18:01 | home | 768 | n/a | **UNMEASURED** | `6cccd8359-dirty` | screenshot failed: page.goto: Timeout 60000ms exceeded. Call log: [2m - navigating to "file:///Users/ofir/kenyonexpress-autopilot/refs/localized/ke_live_home.h |
-| 2026-10-20 18:02 | home | 1440 | 8.53% | PASS | `6cccd8359-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-20 18:05 | home | 768 | 10.33% | PASS | `6cccd8359-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-20 20:51 | home | 380 | 8.52% | PASS | `e887e9334` | ref 152 failed to load (112 script, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-10-20 20:55 | home | 768 | 9.78% | PASS | `e887e9334-dirty` | ref 190 failed to load (113 script, 74 font, 2 stylesheet, 1 xhr) |
-| 2026-10-20 21:02 | home | 1440 | n/a | **UNMEASURED** | `e887e9334-dirty` | screenshot failed: page.goto: Timeout 60000ms exceeded. Call log: [2m - navigating to "file:///Users/ofir/kenyonexpress-autopilot/refs/localized/ke_live_home.h |
-| 2026-10-20 21:03 | home | 1440 | 8.39% | PASS | `e887e9334-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-20 22:27 | home | 380 | 8.51% | PASS | `450762eda` | ref 141 failed to load (101 script, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-10-20 22:29 | home | 768 | 9.80% | PASS | `450762eda-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-20 22:31 | home | 1440 | 8.10% | PASS | `450762eda-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-20 23:39 | home | 380 | 8.51% | PASS | `d413c5528` | ref 154 failed to load (113 script, 37 font, 2 stylesheet, 1 image, 1 xhr) |
-| 2026-10-20 23:40 | home | 768 | 9.80% | PASS | `d413c5528-dirty` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-10-20 23:42 | home | 1440 | 8.10% | PASS | `d413c5528-dirty` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-10-21 01:32 | home | 380 | 8.51% | PASS | `da214d37d` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-10-21 01:34 | home | 768 | 9.80% | PASS | `da214d37d-dirty` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-10-21 01:36 | home | 1440 | 8.10% | PASS | `da214d37d-dirty` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-10-21 02:46 | home | 1440 | 8.10% | PASS | `6a6b1c212` | ref 141 failed to load (101 script, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-10-21 03:34 | home | 380 | 8.51% | PASS | `c1cba9105` | ref 141 failed to load (101 script, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-10-21 03:36 | home | 768 | 9.80% | PASS | `c1cba9105-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-21 03:38 | home | 380 | 8.51% | PASS | `c1cba9105-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-21 03:51 | home | 380 | 8.54% | PASS | `c5ece7b62-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-21 03:53 | home | 768 | 9.80% | PASS | `c5ece7b62-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-21 03:55 | home | 1440 | 8.09% | PASS | `c5ece7b62-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-21 03:57 | home | 380 | 8.54% | PASS | `c5ece7b62-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-21 04:01 | home | 768 | 9.80% | PASS | `f52769b0a` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-21 04:10 | home | 380 | 8.53% | PASS | `f52769b0a-dirty` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-10-21 04:11 | home | 380 | 8.53% | PASS | `f52769b0a-dirty` | baseline electro-v7-380.png (frozen PNG, 2026-10-21T04:11:40.679Z), not a fresh archive shot |
-| 2026-10-21 04:13 | home | 768 | 9.79% | PASS | `f52769b0a-dirty` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-10-21 04:15 | home | 768 | 9.79% | PASS | `f52769b0a-dirty` | baseline electro-v7-768.png (frozen PNG, 2026-10-21T04:15:09.755Z), not a fresh archive shot |
-| 2026-10-21 04:17 | home | 1440 | 8.08% | PASS | `f52769b0a-dirty` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-10-21 04:19 | cart | 768 | 25.58% | **FAIL** | `f52769b0a-dirty` | ref 168 failed to load (107 script, 61 stylesheet) |
-| 2026-10-21 07:44 | home | 380 | 8.53% | PASS | `9825db2e6` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-10-21 07:46 | home | 768 | 9.79% | PASS | `9825db2e6-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-21 07:48 | home | 1440 | 8.08% | PASS | `9825db2e6-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-21 08:34 | home | 1440 | 8.08% | PASS | `d8d14274a` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-21 08:38 | home | 1440 | 8.08% | PASS | `d8d14274a-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-21 10:04 | home | 380 | 8.53% | PASS | `26b9673fa` | ref 141 failed to load (101 script, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-10-21 10:06 | home | 768 | 9.79% | PASS | `26b9673fa-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-21 10:08 | home | 1440 | 8.08% | PASS | `26b9673fa-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-21 11:27 | home | 380 | 8.53% | PASS | `3425ca36f` | ref 145 failed to load (113 script, 29 font, 2 stylesheet, 1 xhr) |
-| 2026-10-21 11:28 | home | 768 | 9.79% | PASS | `3425ca36f-dirty` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-10-21 11:30 | home | 1440 | 8.08% | PASS | `3425ca36f-dirty` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-10-21 12:47 | home | 380 | 8.53% | PASS | `e8c9ff899` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-10-21 12:48 | home | 768 | 9.79% | PASS | `e8c9ff899-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-21 12:50 | home | 1440 | 8.08% | PASS | `e8c9ff899-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-21 14:13 | home | 380 | 8.53% | PASS | `5181a83a4` | ref 141 failed to load (101 script, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-10-21 14:15 | home | 768 | 9.79% | PASS | `5181a83a4-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-21 14:17 | home | 1440 | 8.08% | PASS | `5181a83a4-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-21 15:38 | home | 380 | 8.53% | PASS | `6a96520cc` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-10-21 15:40 | home | 768 | 9.79% | PASS | `6a96520cc-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-21 15:42 | home | 1440 | 8.08% | PASS | `6a96520cc-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-21 17:00 | home | 380 | 8.53% | PASS | `d55b0deac` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-10-21 17:01 | home | 768 | 9.79% | PASS | `d55b0deac-dirty` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-10-21 17:03 | home | 1440 | 8.08% | PASS | `d55b0deac-dirty` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-10-21 18:22 | home | 380 | 8.53% | PASS | `e87e3177b` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-10-21 18:23 | home | 768 | 9.79% | PASS | `e87e3177b-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-21 18:25 | home | 1440 | 8.08% | PASS | `e87e3177b-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-21 19:53 | home | 380 | 8.53% | PASS | `e8ae3776e` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-10-21 19:55 | home | 768 | 9.79% | PASS | `e8ae3776e-dirty` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-10-21 19:56 | home | 1440 | 8.08% | PASS | `e8ae3776e-dirty` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-10-21 21:23 | home | 380 | 8.53% | PASS | `db8cd91d4` | ref 141 failed to load (101 script, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-10-21 21:25 | home | 768 | 9.79% | PASS | `db8cd91d4-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-21 21:26 | home | 1440 | 8.08% | PASS | `db8cd91d4-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-21 22:45 | home | 380 | 8.53% | PASS | `b5dc4ac66` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-10-21 22:47 | home | 768 | 9.79% | PASS | `b5dc4ac66-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-21 22:49 | home | 1440 | 8.08% | PASS | `b5dc4ac66-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-22 01:23 | home | 380 | 8.53% | PASS | `5ea9e0217` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-10-22 01:39 | home | 380 | n/a | **UNMEASURED** | `877e11a6b` | screenshot failed: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/ Call log: [2m - navigating to "http://localhost:3000/", waiting until "domc |
-| 2026-10-22 01:40 | home | 380 | 8.53% | PASS | `877e11a6b-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-22 01:42 | home | 768 | 9.79% | PASS | `877e11a6b-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-20 11:11 | home | 1440 | 63.97% | **FAIL** | `446cd3105` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
+| 2026-10-20 11:13 | home | 1440 | 30.85% | **FAIL** | `446cd3105-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-20 11:18 | home | 1440 | 35.78% | **FAIL** | `733e890b2-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-20 11:22 | home | 1440 | 35.78% | **FAIL** | `be8c10640-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-20 11:26 | home | 1440 | 30.85% | **FAIL** | `3cda36807` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-20 11:26 | home | 1440 | 30.85% | **FAIL** | `3cda36807-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-20 11:27 | home | 1440 | n/a | **UNMEASURED** | `3cda36807-dirty` | screenshot failed: page.waitForTimeout: Target page, context or browser has been closed |
+| 2026-10-20 11:28 | home | 1440 | 35.78% | **FAIL** | `3cda36807-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-20 11:29 | home | 1440 | 23.91% | **FAIL** | `3cda36807-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-20 11:31 | home | 1440 | 23.91% | **FAIL** | `3cda36807-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-20 11:35 | home | 1440 | 23.91% | **FAIL** | `f2a9d7f0c-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-21 08:27 | home | 1440 | 23.91% | **FAIL** | `3e4bb1859-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
+| 2026-10-22 00:28 | home | 1440 | 23.91% | **FAIL** | `a63d1c57f` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
