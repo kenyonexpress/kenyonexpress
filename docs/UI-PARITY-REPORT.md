@@ -320,3 +320,6 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-21 22:47 | home | 768 | 9.79% | PASS | `b5dc4ac66-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
 | 2026-10-21 22:49 | home | 1440 | 8.08% | PASS | `b5dc4ac66-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
 | 2026-10-22 01:23 | home | 380 | 8.53% | PASS | `5ea9e0217` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
+| 2026-10-22 01:39 | home | 380 | n/a | **UNMEASURED** | `877e11a6b` | screenshot failed: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/ Call log: [2m - navigating to "http://localhost:3000/", waiting until "domc |
+| 2026-10-22 01:40 | home | 380 | 8.53% | PASS | `877e11a6b-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-22 01:42 | home | 768 | 9.79% | PASS | `877e11a6b-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
