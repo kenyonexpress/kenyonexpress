@@ -9,6 +9,7 @@ import {
 import SmartImage from '@/components/ui/SmartImage'
 import { LOGO_FOOTER } from '@/lib/assets'
 import { BRAND_DISPLAY_NAME } from '@/lib/brand'
+import { businessRegistrationLine } from '@/lib/legal-entity'
 import { storeWhatsAppLink } from '@/lib/whatsapp'
 import Link from 'next/link'
 
@@ -338,7 +339,8 @@ export default function SiteFooter() {
             צור קשר
           </Link>
           <p className="m-0 text-micro text-white/70">
-            כל הזכויות שמורות © <strong className="font-bold">{BRAND_DISPLAY_NAME}</strong>
+            כל הזכויות שמורות © <strong className="font-bold">{BRAND_DISPLAY_NAME}</strong>.{' '}
+            {businessRegistrationLine()}.
           </p>
         </div>
       </div>
@@ -348,7 +350,8 @@ export default function SiteFooter() {
       <div className="hidden bg-bottom-bar text-heading lg:block">
         <div className="mx-auto flex max-w-store-footer flex-col items-center justify-between gap-3 px-4 py-3 sm:flex-row">
           <p className="m-0 text-sm">
-            כל הזכויות שמורות © <strong className="font-bold">{BRAND_DISPLAY_NAME}</strong>
+            כל הזכויות שמורות © <strong className="font-bold">{BRAND_DISPLAY_NAME}</strong>.{' '}
+            {businessRegistrationLine()}.
           </p>
           <ul className="flex items-center gap-2.5" aria-label="אמצעי תשלום">
             {['Visa', 'Mastercard', 'Discover', 'American Express'].map((label) => (

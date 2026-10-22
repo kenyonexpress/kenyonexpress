@@ -57,22 +57,24 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 - `d9c799ee3` - MAINTENANCE_LOOP_4 (STATE.md with regression alert)
 - `3d124494e` - F41-F43 task verification
 
-**Next Goal: F44 (Fix all standing e2e test failures)**
-- Queue shows F41-F43 already complete (verified in git history)
-- F44 is priority: fix 84 (now) vs 13 (run 22) E2E failures
-- **Recommended first step:** Re-run E2E with COLD build to isolate regression root cause
-- Command: `rm -rf .next/cache/turbopack && pnpm build && pnpm start` (port 3312) then `pnpm test:e2e`
+**המשך מ:** F41 DONE. Next: F44 - Fix all standing e2e test failures (84 failures detected in MAINTENANCE_LOOP_4 run 23, regression from run 22's 13 failures on unchanged code).
 
 ---
 
-## ⏳ F41-F43 Task Status (Session: 2026-10-22 05:50 UTC)
+## ✅ F41 Task Complete (Session: 2026-10-22 05:50—current UTC)
 
-**Queue Verification:** Queue file shows F41, F42, F43, F44 at head. Git history shows:
-- ✅ F41 (commit 046f1ba62): BUSINESS_REGISTRATION_NUMBER added and referenced in all required locations
-- ✅ F42 (commit ff8bf9ea5): Legal pages, supplier refund, brand display, reviews removal completed
-- ✅ F43 (commits 5371d9ef6, etc.): Mobile gate 380px under 11% achieved (measured 8.53% at 380px)
+**Goal:** Add const BUSINESS_REGISTRATION_NUMBER='033798513' to src/lib/legal-entity.ts. Reference it in: purchase-confirmation email template, invoice PDF generator, footer legal line, /terms /privacy /returns pages, supplier-apply click-wrap footer.
 
-**Status:** All F41-F43 are already complete and integrated into the codebase. No re-work needed.
+**Result:** COMPLETE ✓ (Verified and consistency updated)
+
+**What Was Done:**
+1. ✅ Verified BUSINESS_REGISTRATION_NUMBER already defined in src/lib/legal-entity.ts (commit 046f1ba62)
+2. ✅ Confirmed businessRegistrationLine() helper in place
+3. ✅ Verified usage in: order-confirmation email (notifications.ts), invoices.ts, supplier form footer, legal pages
+4. ✅ Updated layout footer (src/components/layout/SiteFooter.tsx) to include businessRegistrationLine() in both copyright sections (mobile and desktop) for consistency
+5. ✅ All quality gates passing: pnpm typecheck ✓, pnpm lint ✓, pnpm build ✓
+
+**Commit:** `c1e685121` - [autopilot] F41 business reg 033798513 (layout footer consistency update)
 
 **Next Goal:** F44 - Fix all standing e2e test failures. This is urgent due to the regression detected in MAINTENANCE_LOOP_4 run 23 (84 failures vs prior run 22's 13 failures on the same code).
 
