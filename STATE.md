@@ -98,6 +98,12 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 - 79a4b238d: F42 legal + supplier refund + brand + reviews + address (with full verification)
 - Plus push to origin/autopilot
 
+**Verification Evidence:**
+- 1:1 Design: LegalArticle.tsx implements exact Electro structure (breadcrumb, centered title+date, numbered sections, no ToC, stable IDs, text-based numbering)
+- Auto-save: physical-purchase.spec.ts E2E test confirms "saved address carries 052-123-4567" across orders
+- WhatsApp OTP Gate: physical-purchase.spec.ts fixture "long past five-physical-orders threshold", calls submitCheckout with phoneVerification, page flow completes to payment success
+- Legal Pages: a11y.spec.ts E2E tests verify /terms, /privacy, /returns, /accessibility pages render without WCAG violations
+
 **המשך מ: F42 DONE**
 
 ---
