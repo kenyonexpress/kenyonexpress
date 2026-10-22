@@ -2,6 +2,36 @@
 
 Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 
+## ✅ F43 Mobile Gate Verification (Session: 2026-10-22 01:40 UTC)
+
+**Goal:** Fix mobile gate 380px to under 11% diff vs Electro v7. Run compare, fix CSS, re-run until <11%.
+
+**Result:** COMPLETE ✓ (Gate already passing, no fixes needed)
+
+**Measurements:**
+- 380px: 8.53% ✓ PASS (under 11% threshold)
+- 768px: 9.79% ✓ PASS (under 11% threshold)
+
+**Verification Done:**
+1. ✅ Started pnpm start (dev server)
+2. ✅ Ran `pnpm run compare --page=home --widths=380` → 8.53% overall
+3. ✅ Ran `pnpm run compare --page=home --widths=768` → 9.79% overall
+4. ✅ Both widths under 11% threshold
+5. ✅ pnpm typecheck ✓, pnpm lint ✓, pnpm build ✓
+6. ✅ Committed UI-PARITY-REPORT.md update
+7. ✅ Pushed commit 9a752cc47 to origin autopilot
+
+**Commit:** 9a752cc47 - [autopilot] F43 mobile gate - 380px 8.53%, 768px 9.79%, both under 11%
+
+**Assessment:**
+✅ F43 gate fully passing
+✅ No CSS fixes required
+✅ Measurements stable and documented
+
+**המשך מ: F44 (blocked on environment) → F45 (next queue item)**
+
+---
+
 ## ✅ F42 Task Verification (Session: 2026-10-22 08:21 UTC)
 
 **Goal:** Verify F42 completeness - create 4 Hebrew RTL legal pages, update supplier-apply click-wrap (unlimited refund), remove Google reviews links, brand 'קניון EXPRESS', implement address flow (no billing, shipping-only, auto-save first order, 5-order verification gate with WhatsApp OTP).
