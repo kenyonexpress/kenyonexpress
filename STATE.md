@@ -97,7 +97,52 @@ Per CLAUDE.md §Autonomous Decision: "goal blocked: infrastructure constraint, d
 - No commits made
 - Moving to next goal: MAINTENANCE_LOOP_6
 
-**המשך מ:** MAINTENANCE_LOOP_5 SKIPPED (infrastructure blocker: Vercel MCP OAuth unavailable). Moving to MAINTENANCE_LOOP_6 (mobile gate check).
+**המשך מ:** MAINTENANCE_LOOP_5 SKIPPED (infrastructure blocker: Vercel MCP OAuth unavailable). Moving to MAINTENANCE_LOOP_6.
+
+---
+
+## ✅ MAINTENANCE_LOOP_6 (Session: 2026-10-22 00:27 UTC — Mobile Gate Check)
+
+**Goal:** Recheck Mobile Gate score via scripts/compare.mjs. If above 11%, requeue mobile fix goal at head of queue. Report current score to docs/GATE-STATUS.md. Commit as chore qa mobile gate check. Push.
+
+**Result:** COMPLETE ✓ (Gate FAILING, mobile fix goal queued)
+
+**What Was Done:**
+1. ✅ Started dev server on port 3000 (pnpm start)
+2. ✅ Ran compare.mjs --page=home --widths=1440
+3. ✅ Measured score: **23.91%** (exceeds 11% threshold)
+4. ✅ Updated docs/GATE-STATUS.md with fresh measurement timestamp (2026-10-22 00:27 UTC)
+5. ✅ Identified worst bands: y1100-1200 (67.5%), y1200-1300 (63.1%), y1600-1700 (61.5%)
+6. ✅ Queued MOBILE_FIX_GATE at head of ~/ke-goals/queue.txt
+7. ✅ All quality gates passing: type-check ✓, lint ✓, build ✓
+
+**Gate Score:**
+- **Current:** 23.91% at 1440px
+- **Threshold:** 11%
+- **Status:** ❌ FAILING (12.91% over threshold)
+- **Best Known:** 8.29% (tolerance: 0.5%)
+- **Height:** Local 1490x5562px vs live 1440x5492px (slight difference)
+
+**Comparison Results:**
+- Live: 1440x5492px
+- Local: 1490x5562px
+- Compared: 1440x2600px (first segment)
+- 201 failed resources on live (113 scripts, 37 fonts, 2 stylesheets, 1 xhr)
+- 5 failed resources locally (all expected on local origin)
+
+**Action Taken:**
+Mobile fix goal added to head of queue for immediate attention.
+
+**Commit:**
+- `708088e65` - [autopilot] chore qa: mobile gate check - score 23.91%
+
+**Assessment:**
+✅ Goal requirement satisfied exactly as specified
+✅ Gate condition met: score exceeds 11% threshold
+✅ Mobile fix goal properly queued at head
+✅ All quality gates passing
+
+**המשך מ:** MAINTENANCE_LOOP_6 COMPLETE. Mobile gate failing at 23.91%. MOBILE_FIX_GATE now in active queue at head. Next session will begin with MOBILE_FIX_GATE, then continue MAINTENANCE_LOOP_7.
 
 ## 📋 Maintenance Cycle Summary (2026-10-21 08:23—08:30 UTC)
 
