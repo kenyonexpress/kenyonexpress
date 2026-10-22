@@ -815,6 +815,35 @@ At the current cadence (roughly 85 minutes per full ten-goal cycle) that is abou
 
 **Status:** COMPLETE
 
+## 2026-10-22 05:17 UTC - Backlog Scan (MAINTENANCE_LOOP_3, twenty-first run)
+
+**Scanned Files:**
+- docs/BACKLOG.md: exists, 7 items, unchanged (last commit 4b17cfb49, 2026-10-16).
+- docs/TODO.md: does not exist. `find` over the worktree (node_modules excluded) returns no TODO*.md.
+
+**Gates not re-measured.** The nineteenth run's sales data from 2026-10-21 22:06 UTC is less than 7 hours old. Per CLAUDE.md rules, no measurement needed if < 8 hours old. All items remain blocked per the nineteenth run's snapshot: real sales 0, all external gates closed.
+
+**Backlog Items Analysis (today 2026-10-22 UTC, 2026-10-22 12:17 local UTC+7):**
+1. Group-deals re-evaluation, dated 2026-10-23: about 12 hours out local. BLOCKED.
+2. Crisp inbox, post-launch: 0 real sales (from run 19), launch gate not passed. BLOCKED.
+3. Meta WhatsApp Business verification, after 10 sales: 0 real sales (from run 19). BLOCKED.
+4. Israeli lawyer review of ToS and Privacy, after 10 sales: 0 real sales (from run 19). BLOCKED.
+5. Capacitor or Expo native app, after revenue: 0 real revenue (from run 19). BLOCKED.
+6. Courses monthly billing, Phase 2: BLOCKED.
+7. Tzimmer calendar, Phase 2: BLOCKED.
+
+**Unblocked Items Found:** 0
+
+**Action:** None. ~/ke-goals/queue.txt not modified.
+
+**Gates:** `pnpm typecheck` exit 0 (189ms), `pnpm lint` exit 0 (biome 1757 files), `pnpm build` exit 0 (243 prerendered),
+`pnpm gate:chunks` clean on 243 prerendered pages.
+
+**Note:** Item 1 becomes a candidate on 2026-10-23 local (about 11.5 hours away). The run that lands on or after
+2026-10-23 00:00 local should queue it as `BACKLOG_1 Re-evaluate group deals` at the head of the queue.
+
+**Status:** COMPLETE
+
 ## 2026-10-22 06:26 UTC - Backlog Scan (MAINTENANCE_LOOP_3, twentieth run)
 
 **Scanned Files:**
