@@ -278,7 +278,7 @@
      first card row is 3px at 1440 (bar ends 895, grid starts 898) and 2px at
      380. The old 30px was compensating for a feature bar that was the wrong
      height; with that fixed, 30 pushed the whole grid a row out of step. */
-  --spacing-deals-top: 150px;
+  --spacing-deals-top: 100px;
 
   /* --- The hero row, measured at all three widths ----------------------------
      HeroSection carried ONE inline height (HERO_SLIDER_HEIGHT = 593) at every
@@ -294,7 +294,7 @@
 
      The side columns are already `hidden lg:flex`; what was missing is that
      the ROW kept its desktop height with nothing in it. */
-  --spacing-hero-mobile: 300px;
+  --spacing-hero-mobile: 250px;
   --spacing-hero-tablet: 495px;
   /* 613, remeasured 2026-09-03. The old 593 was 20px short and had been
      cancelling out against a 50px margin on the feature bar and a 30px pad on
@@ -307,7 +307,7 @@
      `.feature` blocks are not rendered at all below md. From md up it is a
      flat 134px at BOTH 768 and 1440 -- ours was 223 at 768 and 76 at 1440,
      because it was sized by its content instead of by the measurement. */
-  --spacing-feature-bar-mobile: 31px;
+  --spacing-feature-bar-mobile: 50px;
   --spacing-feature-bar: 134px;
   /* Inside the 134px band, probed 2026-10-20 at 768 and 1440: the list starts
      30px into the section, is 81.4px tall (1px border round a 79.4px row),
