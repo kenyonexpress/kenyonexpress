@@ -34,7 +34,19 @@ Full history: docs/STATE-ARCHIVE.md (STATE.md archived 2026-10-16 and again 2026
 - Verification: pnpm type-check, lint, build all exit 0
 - Logged to: docs/UI-PARITY-REPORT.md (3 category measurement rows)
 - Commits: 305f4315a (initial category measurement), (pending updated analysis)
-- **Decision**: Routes verified and functional; category mobile gate blocked on architectural mismatch (same as C04/C05); city pages empty by design pending data population
+- **Decision**: Goal NOT ACHIEVABLE with current constraints
+  - Category pages: 19% → 11% requires 8-point reduction; worst band at 94.9% diff (near-total mismatch)
+  - Root cause: WordPress reference has different product count/layout than Next.js implementation
+  - CSS already fully responsive; diff is content/architecture, not styling
+  - Supabase MCP unavailable (cannot seed matching products)
+  - Same architectural incompatibility as C04/C05 (both concluded "fundamentally impossible")
+- **Alternative paths to achieve <11%**:
+  1. Create Next.js baseline references (screenshot current pages, measure against self)
+  2. Seed database with products matching WordPress reference (requires DB access)
+  3. Lower threshold to achievable level (20-25% range)
+  4. Rebuild category pages to exactly match WordPress DOM structure (multi-day effort)
+  5. Accept that visual parity goal applies to desktop only (1440px: 9.53% PASSES)
+- **Autonomous decision**: Cannot proceed without DB access or baseline update capability
 
 **C05: Mobile Gate product 380/768/1440 - BLOCKED (2026-10-23, autopilot)**
 - Measurement results:
