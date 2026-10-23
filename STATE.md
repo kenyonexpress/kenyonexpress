@@ -5,31 +5,63 @@ Working directory: /Users/ofir/kenyonexpress-autopilot (worktree)
 
 ## Current Status
 
-Continue from C28 DONE (2026-10-24): Voucher expiry reminders T-7 and T-1 via pg_cron. Feature already fully implemented and verified:
-- Migration 114 (enqueue_expiring_voucher_notices RPC) exists in supabase/migrations/114_push_tokens.sql
-- Migration 162 (pg_cron job ke-expire-vouchers at 23:15 UTC) applied per docs/MIGRATIONS-APPLIED.md line 71
-- Cron endpoint /api/cron/expire-vouchers calls RPC with buckets [7, 1] (lines 74-77)
-- Email template buildVoucherExpiringEmail in src/lib/email/notifications.ts (Hebrew RTL, "מחר" for T-1)
-- Push template couponExpiring in src/lib/push/templates.ts (Hebrew copy, deep links to APP_PATHS.coupon)
-- Typed entry point buildVoucherExpiryEmail in src/emails/expiry-reminders.ts
-- Planning logic src/lib/reminders/plan.ts (dueOffset, planReminder, channelsFor)
-- Tests passing: plan.test.ts (7 tests), route.test.ts (voucher lifecycle), templates.test.ts (push), emails.test.ts
-- Quality gates: pnpm type-check clean, pnpm lint clean (6377 files), pnpm build success
+Continue from C28 BLOCKED (2026-10-24): Voucher expiry reminders T-7 and T-1 via pg_cron.
 
-System sends push and email reminders 7 days before and 1 day before voucher expiry. WhatsApp only on explicit opt-in as wa.me link (never automated, per LOCKED wa.me-only). Dedupe key prevents duplicate sends: voucher_expiring:<id>:T7|T1. Job runs nightly after expire_vouchers sweep so expired vouchers are already out of issued status.
+**BLOCKER:** Goal explicitly requires "Use Supabase MCP for DB, RLS, migrations" but Supabase MCP unavailable (requires OAuth, non-interactive session).
 
-No code changes needed - infrastructure already shipped. Verification only.
+## What Was Done
 
-## Last Actions
-1. Verified migration 114 exists with enqueue_expiring_voucher_notices function
-2. Confirmed migration 162 applied (pg_cron job scheduled)
-3. Verified cron endpoint wires to RPC correctly
-4. Confirmed email and push templates exist
-5. Verified tests exist and pass
-6. Ran quality gates: type-check, lint, build all clean
+1. ✅ Verified code structure complete:
+   - Migration 114 (enqueue_expiring_voucher_notices) in supabase/migrations/114_push_tokens.sql
+   - Migration 162 (pg_cron schedule) in migrations/pending/162_cron_schedule.sql
+   - Cron endpoint /api/cron/expire-vouchers calls RPC with [7, 1]
+   - Email template buildVoucherExpiringEmail (Hebrew RTL)
+   - Push template couponExpiring (deep links)
+   - Planning logic src/lib/reminders/plan.ts
+   - Tests passing (plan.test.ts, route.test.ts, templates.test.ts)
+
+2. ✅ Quality gates in autopilot worktree:
+   - pnpm type-check: clean
+   - pnpm lint: clean (1790 files)
+   - pnpm build: success
+
+3. ✅ Documentation:
+   - docs/C28-SUPABASE-MCP-BLOCKER.md - blocker evidence
+   - docs/C28-RESULT.md - code verification (main checkout)
+
+## What CANNOT Be Done (Blocked by Supabase MCP OAuth)
+
+1. ❌ Verify migration 114 applied to production DB
+2. ❌ Verify migration 162 applied to production DB
+3. ❌ Apply migrations if not applied
+4. ❌ Verify RLS policies active
+5. ❌ Query production database
+6. ❌ Confirm pg_cron job actually scheduled
+
+## Blocker Evidence
+
+```
+ToolSearch("select:mcp__claude_ai_Supabase__*")
+→ "No matching deferred tools found"
+
+System reminder:
+"The following MCP servers require authentication before their tools can be used:
+- claude.ai Supabase
+This session is non-interactive, so Claude cannot run the OAuth flow here."
+```
 
 ## Decisions Made
-None - feature was already complete.
+
+- Documented blocker in docs/C28-SUPABASE-MCP-BLOCKER.md
+- Verified all code exists and compiles
+- Ran quality gates in autopilot worktree (as goal required)
+- Cannot satisfy "Use Supabase MCP" requirement without OAuth
+
+## Related Blockers
+
+- C26: Affiliate verification - same Supabase MCP blocker
+- C25, C22, C17: (referenced as having same blocker)
 
 ## Next
-Ready for next goal.
+
+Goal requires resolution of Supabase MCP OAuth blocker or redefining goal without Supabase MCP requirement.
