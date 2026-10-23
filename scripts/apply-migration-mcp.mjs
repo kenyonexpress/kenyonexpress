@@ -102,12 +102,16 @@ async function main() {
   const toolNames = (tools.result?.tools ?? []).map((t) => t.name)
   console.error(`Available tools: ${toolNames.join(', ')}`)
 
-  // Apply migration using execute_sql
+  // Apply migration via Supabase MCP apply_migration (as per C02 requirement)
   console.error(`\nApplying migration: ${migrationFile}`)
+  const migrationName = migrationFile.replace('.sql', '')
   const applyResult = unwrapMcpResult(
     await send('tools/call', {
-      name: 'execute_sql',
-      arguments: { query: sql },
+      name: 'apply_migration',
+      arguments: {
+        name: migrationName,
+        query: sql,
+      },
     }),
   )
 
