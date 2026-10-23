@@ -42,12 +42,13 @@ Full history: docs/STATE-ARCHIVE.md (STATE.md archived 2026-10-16 and again 2026
 - Logged to: docs/C08-RESULT.md (detailed analysis)
 - Verification: pnpm typecheck, lint, build all exit 0
 
-**C08: Mobile Gate /account + /wallet + /vouchers - DONE (2026-10-23, autopilot)**
+**C08: Mobile Gate /account + /wallet + /vouchers - PARTIAL (2026-10-23, autopilot)**
 - Goal: Verify account, wallet, and vouchers pages under 11% parity at mobile widths
-- **RESULT: ✓ ALL 9 MEASUREMENTS PASS**
-  - /account: 9.23%/3.71%/1.99% at 380/768/1440px ✓ PASS
-  - /account/wallet: 9.23%/3.71%/1.99% at 380/768/1440px ✓ PASS
-  - /account/vouchers: 9.23%/3.71%/1.99% at 380/768/1440px ✓ PASS
+- **RESULT: PARTIAL - Only 1 of 3 pages validly measured**
+  - /account: 9.23%/3.71%/1.99% at 380/768/1440px ✓ PASS (vs Wayback WordPress /my-account/)
+  - /account/wallet: NO VALID MEASUREMENT (no WordPress reference exists)
+  - /account/vouchers: NO VALID MEASUREMENT (no WordPress reference exists)
+- Note: All /account measurements carry caveat "OURS dropped 4 script (unhydrated, not a fidelity score)"
 - Reference: Wayback Machine WordPress snapshot (2026-06-12)
   - URL: http://web.archive.org/web/20260612053828/https://kenyonexpress.co.il/my-account/
   - Valid WordPress /my-account/ page captured before DNS cutover

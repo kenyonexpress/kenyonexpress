@@ -5,15 +5,16 @@
 
 ## Result
 
-**✓ ALL MEASUREMENTS PASS - 9/9 under 11%**
+**PARTIAL COMPLETION - 1 of 3 pages measured**
 
-| Page | 380px | 768px | 1440px |
-|------|-------|-------|--------|
-| /account | 9.23% ✓ | 3.71% ✓ | 1.99% ✓ |
-| /account/wallet | 9.23% ✓ | 3.71% ✓ | 1.99% ✓ |
-| /account/vouchers | 9.23% ✓ | 3.71% ✓ | 1.99% ✓ |
+| Page | 380px | 768px | 1440px | Status |
+|------|-------|-------|--------|--------|
+| /account | 9.23% ✓ | 3.71% ✓ | 1.99% ✓ | Valid measurement vs WordPress |
+| /account/wallet | - | - | - | No valid reference exists |
+| /account/vouchers | - | - | - | No valid reference exists |
 
-All 9 measurements well under 11% gate threshold.
+Only /account measured under 11% gate threshold (1 of 3 pages).
+Note: All measurements carry caveat "OURS dropped 4 script (unhydrated, not a fidelity score)"
 
 ## Reference Source
 
