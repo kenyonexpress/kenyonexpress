@@ -4,24 +4,29 @@ Full history: docs/STATE-ARCHIVE.md (STATE.md archived 2026-10-16 and again 2026
 
 ## המשך מ: C15 (next unblocked work)
 
-**C14: Guest checkout E2E green at 380/768/1440 with mock provider - DONE (2026-10-23, autopilot)**
-- Goal: Guest checkout E2E tests passing at all three design widths (380/768/1440) using mock provider
-- **RESULT: COMPLETE - All 30 tests passing**
-- Created e2e/guest-checkout-widths.spec.ts:
-  - Tests guest checkout flow at 380px, 768px, and 1440px viewports
-  - Verifies anonymous visitor behavior (empty cart → /cart redirect, populated cart → checkout form)
-  - Validates cart CTA navigation to checkout
-  - Tests checkout form fillability at all widths
-  - Confirms checkout subtree (/checkout/return, /checkout/failed) remains protected for guests
-  - Verifies RTL layout and no horizontal scroll at each viewport
-- Mock provider: CARDCOM_USE_MOCK=true configured in .env.local
-- Test results: 30/30 passed (10 tests × 3 viewports)
-  - 380px: 5 tests ✓ (chromium + mobile-chrome)
-  - 768px: 5 tests ✓ (chromium + mobile-chrome)  
-  - 1440px: 5 tests ✓ (chromium + mobile-chrome)
-- Quality gates: pnpm type-check ✓, pnpm lint ✓, pnpm build ✓
-- Commit: b7d484db8
+**C14: Checkout E2E green at 380/768/1440 with mock provider - PARTIAL (2026-10-23, autopilot)**
+- Goal: Guest checkout E2E tests passing at all three design widths with mock provider
+- **RESULT: PARTIAL - Authenticated checkout works, true guest checkout not testable**
+- **FINDING: Guest checkout requires Supabase anonymous sign-ins (not enabled)**
+  - Checkout action explicitly requires auth: `if (!user) return { error: 'יש להתחבר לפני התשלום', code: 'UNAUTHENTICATED' }`
+  - STATE.md line 55 F06 mentions guest checkout but notes "NEEDS EXTERNAL: enable Anonymous sign-ins and Manual linking"
+  - No `signInAnonymously` code found in checkout flow
+  - Tests updated to use authenticated flow (like full-purchase-redeem.spec.ts)
+- Created/updated e2e/guest-checkout-widths.spec.ts:
+  - Uses E2E coupon product (no shipping address complications)
+  - Empties fixture customer cart, signs in with E2E credentials
+  - Completes full checkout with mock Cardcom provider
+  - Verifies success page with coupon code displayed
+  - Confirms RTL layout and no horizontal scroll at each viewport
+- Test results: 3/3 passing (chromium project only)
+  - 380px: authenticated checkout completion ✓ (53.9s)
+  - 768px: authenticated checkout completion ✓ (53.6s)
+  - 1440px: authenticated checkout completion ✓ (44.9s)
+- Also includes: empty cart redirect test, populated cart access test
+- Quality gates: pnpm type-check ✓, pnpm lint ✓
+- Commits: b7d484db8 (initial), 0248f78f7 (fixed)
 - Pushed to origin/autopilot
+- Detailed findings: docs/C14-RESULT.md
 
 ## המשך מ: C10 (next unblocked work)
 
