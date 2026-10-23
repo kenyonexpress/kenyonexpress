@@ -2,6 +2,36 @@
 
 Full history: docs/STATE-ARCHIVE.md (STATE.md archived 2026-10-16 and again 2026-10-23). Cap: 300 lines.
 
+## המשך מ: C23 (next unblocked work)
+
+**C22: Admin CSV import /admin/products/import dry-run + apply - COMPLETE (2026-10-24, autopilot)**
+- Goal: Admin CSV import feature with dry-run preview and template at public/templates/products-import.csv
+- **RESULT: COMPLETE - Feature already existed, enhanced with template and E2E tests**
+- **Work Completed:**
+  - ✅ Created public/templates/products-import.csv with example data (2 rows: coupon + physical)
+  - ✅ Added template download link to /admin/products/import page
+  - ✅ Created comprehensive E2E test suite: e2e/admin-product-import.spec.ts
+    - Template download link accessibility
+    - Dry-run preview functionality
+    - Commit flow after successful preview
+    - Error handling for invalid CSV
+  - ✅ All quality gates pass: pnpm type-check ✓, pnpm lint ✓, pnpm build ✓
+- **Existing Implementation (already working):**
+  - Route: src/app/(admin)/admin/products/import/page.tsx
+  - Form component: src/app/(admin)/admin/products/import/ImportForm.tsx
+  - Server action: src/server/actions/admin/product-import.ts
+  - CSV parser: src/lib/admin/product-csv.ts
+  - Existing tests: src/lib/admin/csv-template.test.ts (validates docs/CSV-TEMPLATE.csv)
+- **Features:**
+  - Two-step flow: preview (dry-run) then commit
+  - Supports 24 columns including geo data (lat/lng), logistics (cancellation_window_days, payout_cadence), money fields
+  - All rows created as drafts (status='draft')
+  - Row-level validation before write
+  - Unknown columns reported but not rejected
+  - Max 200 rows per file
+- Commit: e75ea63db
+- Pushed to origin/autopilot
+
 ## המשך מ: C18 (next unblocked work)
 
 **C17: Meilisearch Production Configuration - BLOCKED (2026-10-23, autopilot)**
