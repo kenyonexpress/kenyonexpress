@@ -41,9 +41,9 @@ export default function ProductDealCardMobile({ product }: { product: Product })
           style={{ width: '100%', height: 'auto', marginBottom: '12px' }}
         />
       )}
-      <h3 style={{ fontSize: '16px', fontWeight: 500, margin: '0 0 8px 0', lineHeight: 1.4 }}>
+      <h2 style={{ fontSize: '16px', fontWeight: 500, margin: '0 0 8px 0', lineHeight: 1.4 }}>
         {product.name_he}
-      </h3>
+      </h2>
       <div style={{ fontSize: '22px', fontWeight: 700, color: 'var(--color-price)' }}>
         {shekelsFromIlsRounded(price)}
       </div>
