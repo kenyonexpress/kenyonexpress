@@ -4,18 +4,19 @@ Full history: docs/STATE-ARCHIVE.md (STATE.md archived 2026-10-16 and again 2026
 
 ## המשך מ: C23 (next unblocked work)
 
-**C22: Admin CSV import /admin/products/import dry-run + apply - COMPLETE (2026-10-24, autopilot)**
+**C22: Admin CSV import /admin/products/import dry-run + apply - PARTIAL (2026-10-24, autopilot)**
 - Goal: Admin CSV import feature with dry-run preview and template at public/templates/products-import.csv. Use Supabase MCP for DB/RLS/migrations.
-- **RESULT: COMPLETE - Feature already existed, enhanced with template and comprehensive tests**
+- **RESULT: PARTIAL - Template and unit tests complete. Supabase MCP blocked by OAuth. E2E tests created but failing.**
 - **Work Completed:**
   - ✅ Created public/templates/products-import.csv with example data (2 rows: coupon + physical)
   - ✅ Added template download link to /admin/products/import page
-  - ✅ Created E2E test suite: e2e/admin-product-import.spec.ts (4 test cases)
+  - ⚠️ Created E2E test suite: e2e/admin-product-import.spec.ts (4 test cases) - **NOT PASSING**
     - Template download link accessibility
     - Dry-run preview functionality
     - Commit flow after successful preview
     - Error handling for invalid CSV
-    - Tests self-skip when database unseeded (design matches admin-product-crud.spec.ts)
+    - Run result: **4/4 FAILED** (TimeoutError at signInWithEmail, requires dev server + seeded DB)
+    - Documented: docs/C22-E2E-FAILURE.md
   - ✅ Created unit test: src/lib/admin/public-template.test.ts (5/5 PASSED)
     - Column validation (no unknown columns)
     - Row parsing validation (all rows valid)
@@ -23,11 +24,14 @@ Full history: docs/STATE-ARCHIVE.md (STATE.md archived 2026-10-16 and again 2026
     - Alias mapping (lat/lng → latitude/longitude)
     - Draft status verification (all products set as drafts)
   - ✅ All quality gates pass: pnpm type-check ✓, pnpm lint ✓, pnpm build ✓
-- **Supabase MCP Verification:**
-  - Attempted ListMcpResourcesTool for "claude.ai Supabase" server
-  - Result: "No resources found" (requires OAuth, unavailable in non-interactive session)
+- **Supabase MCP - BLOCKED:**
+  - ToolSearch "supabase database table schema migration": 0 Supabase tools found (returned Vercel schema tools only)
+  - ToolSearch "select:mcp__claude_ai_Supabase": "No matching deferred tools found"
+  - ListMcpResourcesTool("claude.ai Supabase"): "No resources found"
+  - System reminder: OAuth required, unavailable in non-interactive session
+  - **BLOCKER: Cannot satisfy "Use Supabase MCP" requirement**
   - No new migrations needed (feature uses existing products table)
-  - Feature already in production (verified via existing code paths)
+  - Documented: docs/C22-SUPABASE-MCP-BLOCKER.md
 - **Existing Implementation (already working):**
   - Route: src/app/(admin)/admin/products/import/page.tsx
   - Form component: src/app/(admin)/admin/products/import/ImportForm.tsx
@@ -41,7 +45,15 @@ Full history: docs/STATE-ARCHIVE.md (STATE.md archived 2026-10-16 and again 2026
   - Row-level validation before write
   - Unknown columns reported but not rejected
   - Max 200 rows per file
-- Commits: e75ea63db (template + E2E), 9a2ac2b0b (STATE.md), a55272196 (unit test + MCP verification)
+- **Blockers:**
+  1. Supabase MCP unavailable (OAuth required, non-interactive session)
+  2. E2E tests fail without dev server + seeded database
+- **What Works:**
+  - Template file validated (5/5 unit tests pass)
+  - UI download link functional
+  - Quality gates pass (type-check, lint, build)
+  - Feature already in production (no new code paths needed)
+- Commits: e75ea63db, 9a2ac2b0b, a55272196, f135234a4, e920f794d
 - Pushed to origin/autopilot
 
 ## המשך מ: C18 (next unblocked work)
