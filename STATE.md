@@ -2,11 +2,19 @@
 
 Full history: docs/STATE-ARCHIVE.md (STATE.md archived 2026-10-16 and again 2026-10-23). Cap: 300 lines.
 
-## המשך מ: DONE (C26 complete, autopilot queue finished)
+## המשך מ: C26 (blocked on Supabase MCP OAuth)
 
-**C26: Affiliate System Verification - DONE-AS-SHIPPED (2026-10-24, autopilot)**
-- Goal: "C26|Affiliate /affiliate + per-campaign commission + wallet payout + 30d cookie. Tables affiliate_campaigns + clicks + payouts. RESULT.."
-- **RESULT: COMPLETE (verification only, no new code)**
+**C26: Affiliate System Verification - BLOCKED (2026-10-24, autopilot)**
+- Goal: "C26|Affiliate /affiliate + per-campaign commission + wallet payout + 30d cookie. Tables affiliate_campaigns + clicks + payouts. RESULT.. **Use Supabase MCP for DB, RLS, migrations.**"
+- **RESULT: BLOCKED - Supabase MCP requires OAuth unavailable in non-interactive sessions**
+- **BLOCKER: Supabase MCP authentication**
+  - ToolSearch("select:mcp__claude_ai_Supabase__*"): No matching deferred tools found
+  - ToolSearch("supabase database"): 0 Supabase tools (returned Vercel tools only)
+  - ListMcpResourcesTool("claude.ai Supabase"): "No resources found"
+  - System reminder: OAuth required, unavailable in non-interactive session
+  - **Cannot satisfy goal requirement: "Use Supabase MCP for DB, RLS, migrations"**
+  - Same blocker as C25, C22, C17
+  - Documentation: docs/C26-SUPABASE-MCP-BLOCKER.md
 - **System Already Exists** (shipped in F12, commit 10a784e9c):
   - User route: `/account/affiliate` with join form, link creator, stats dashboard
   - Admin routes: `/admin/affiliates` (list/approve), `/admin/affiliates/campaigns` (CRUD)
@@ -30,14 +38,20 @@ Full history: docs/STATE-ARCHIVE.md (STATE.md archived 2026-10-16 and again 2026
   - ✅ pnpm type-check: clean
   - ✅ pnpm lint: clean (biome + 3 gates)
   - ✅ pnpm build: 317 routes, affiliate pages confirmed
-- **Documentation:** docs/C26-AFFILIATE-VERIFICATION.md (complete system audit)
-- **Production Status:** Migration 283 in migrations/applied/; not listed in docs/MIGRATIONS-APPLIED.md (Supabase MCP needs OAuth)
-- **Interpretation:** Goal text incomplete ("RESULT.."), treated as verification request; all requested components exist and working
-- No code change (verification only)
-- Commits: docs only (this STATE.md update)
+- **Documentation:** 
+  - docs/C26-AFFILIATE-VERIFICATION.md (complete system audit via file reads)
+  - docs/C26-SUPABASE-MCP-BLOCKER.md (OAuth blocker evidence)
+- **What Could NOT Be Verified** (requires Supabase MCP):
+  - Production database schema (migration 283 applied or not)
+  - RLS policies active in production
+  - Production table contents
+- **Production Status:** Migration 283 in migrations/applied/ (file exists, production status unknown without Supabase MCP)
+- No code changes (system already complete)
+- No new tests needed (7/7 existing tests passing)
+- Commits: 9a0b4127e (initial verification), pending blocker update
 - Pushed to origin/autopilot
 
-## המשך מ: C26 (placeholder for next work)
+## המשך מ: C25 (next work, same blocker)
 
 **C25: Club tiers Bronze/Silver/Gold by 12-month spend - BLOCKED (2026-10-24, autopilot)**
 - Goal: Club tiers Bronze/Silver/Gold based on 12-month spend. Standing /account. Editable admin. Use Supabase MCP for DB, RLS, migrations.
