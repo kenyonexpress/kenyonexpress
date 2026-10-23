@@ -169,11 +169,8 @@ async function testSitemap() {
       return false
     }
 
-    // Verify some expected entries
-    const hasHome = xml.includes('<loc>http')
-    const hasSitemap = xml.includes('sitemap')
-
-    if (hasHome) {
+    // Verify URL entries exist
+    if (xml.includes('<loc>http')) {
       pass('Sitemap has valid URL entries')
     }
 
