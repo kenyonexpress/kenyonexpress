@@ -6,7 +6,13 @@
 
 ## Summary
 
-**RESULT: BLOCKED/UNACHIEVABLE - Current measurements invalid due to degraded references**
+**RESULT: GOAL UNACHIEVABLE - Measurement tooling broken due to degraded WordPress references**
+
+After attempting multiple approaches (degraded references, Next.js baselines, self-comparison), the goal cannot be achieved because:
+1. WordPress references are degraded (missing 37 fonts, 57 scripts) - invalid current measurements
+2. Baseline approach fails on cart pages due to cart state detection logic
+3. /thank-you page has no reference baseline (never existed before DNS cutover)
+4. Self-comparison approach times out on checkout page
 
 ### Cart Page
 - **Historical (2026-09-07, commit 8c4d4960b-dirty):**

@@ -262,3 +262,4 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-23 11:21 | category | 380 | 1.21% | PASS | `96662ba76-dirty` | OURS dropped 2 script (unhydrated, not a fidelity score); baseline nextjs_category_380.png (frozen PNG, 2026-10-23T11:17:25.690Z), not a fresh archive shot |
 | 2026-10-23 11:22 | category | 768 | 0.53% | PASS | `96662ba76-dirty` | OURS dropped 2 script (unhydrated, not a fidelity score); baseline nextjs_category_768.png (frozen PNG, 2026-10-23T11:17:28.310Z), not a fresh archive shot |
 | 2026-10-23 11:24 | category | 1440 | 0.31% | PASS | `96662ba76-dirty` | OURS dropped 2 script (unhydrated, not a fidelity score); baseline nextjs_category_1440.png (frozen PNG, 2026-10-23T11:17:31.056Z), not a fresh archive shot |
+| 2026-10-23 11:52 | cart | 380 | 39.99% | **FAIL** | `58338a806-dirty` | OURS dropped 2 script (unhydrated, not a fidelity score); ref 168 failed to load (107 script, 61 stylesheet) |
