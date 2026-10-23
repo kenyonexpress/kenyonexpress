@@ -42,6 +42,17 @@ Full history: docs/STATE-ARCHIVE.md (STATE.md archived 2026-10-16 and again 2026
 - Logged to: docs/C08-RESULT.md (detailed analysis)
 - Verification: pnpm typecheck, lint, build all exit 0
 
+**C08: Mobile Gate /account + /wallet + /vouchers - UNACHIEVABLE (2026-10-23, autopilot)**
+- Goal: Verify account, wallet, and vouchers pages under 11% parity at mobile widths
+- **RESULT: UNACHIEVABLE - No valid reference baseline exists**
+- Root cause: 11% gate measures fidelity to WordPress/Electro reference
+  - Account pages never existed in WordPress (new Next.js functionality)
+  - No reference snapshots captured (ke_live_account.html does not exist)
+  - Self-comparison produces meaningless 0% (already reverted in C07, commit 592c663a2)
+- Routes exist and render: /account ✓, /account/wallet ✓, /account/vouchers ✓
+- Logged to: docs/C08-FINAL.md
+- Verification: pnpm typecheck ✓, lint ✓, build ✓
+
 **C06: Mobile Gate /c/ routes (category + city) - DONE (2026-10-23, autopilot)**
 - Goal: Verify /c/category-slug and /c/city-slug routes under 11% at mobile widths
 - **RESULT: PASS - All widths under 11% with Next.js baselines**
