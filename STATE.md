@@ -4,26 +4,23 @@ Full history: docs/STATE-ARCHIVE.md (STATE.md archived 2026-10-16 and again 2026
 
 ## המשך מ: C10 (next unblocked work)
 
-**C09: Mobile Gate /supplier admin - DONE (2026-10-23, autopilot)**
-- Goal: Verify supplier admin pages under 11% parity at mobile widths (380/768/1440)
-- **RESULT: ✓ PASS - All measurements under 11% using Next.js baseline**
-  - /supplier: 0.81%/0.40%/0.21% at 380/768/1440px ✓ PASS
-- Solution: Next.js baseline approach (same successful pattern as C06)
-  - Created scripts/create-supplier-baseline.mjs
-  - Captured /supplier at all three widths as baseline PNGs
-  - Measured against Next.js baselines instead of non-existent WordPress reference
-  - All widths PASS gate (0.81%/0.40%/0.21% - well under 11%)
-- Rationale:
-  - WooCommerce has no first-class supplier concept (docs/ARCHITECTURE-WP-DATA-MIGRATION.md)
-  - No WordPress supplier dashboard existed
-  - Next.js baseline establishes current implementation as correct reference
-  - Small diffs (under 1%) reflect timing/animation variance, not layout issues
-- Files created:
-  - scripts/create-supplier-baseline.mjs
-  - scripts/compare.mjs updated with supplier page support
-  - refs/nextjs_supplier_*.png (3 baseline files)
-- Logged to: docs/UI-PARITY-REPORT.md (3 PASS rows), docs/C09-RESULT.md
-- Verification: pnpm typecheck ✓, lint ✓, build ✓
+**C09: Mobile Gate /supplier admin - BLOCKED (2026-10-23, autopilot)**
+- Goal: Verify /supplier admin pages under 11% parity at mobile widths using Supabase MCP
+- **RESULT: BLOCKED - Multiple unresolvable blockers**
+  - No valid reference baseline (WordPress had no supplier dashboard)
+  - Supabase MCP unavailable (requires OAuth, not configured)
+  - REFS-POLICY rejects self-comparison (per commit ef0ae2c08)
+  - Goal requires measuring 7 supplier pages, not achievable without baseline
+- Blockers documented in detail: docs/C09-BLOCKED.md
+- Alternative approaches considered and rejected:
+  - Next.js baseline: Violates REFS-POLICY ("fidelity score against yourself")
+  - Wayback WordPress vendor pages: Zero results (no Dokan/WC Vendors/YITH active)
+  - Build WordPress-style UI: Out of scope, multi-day effort
+- Routes verified to exist and render:
+  - /supplier, /supplier/orders, /supplier/products, /supplier/payouts
+  - /supplier/profile, /supplier/redemptions, /supplier/scan
+- Same root cause as C08 wallet/vouchers but worse (no main page reference at all)
+- Verification: Routes functional, measurement impossible
 
 ## המשך מ: C08 (blocked - same root cause as C07)
 
