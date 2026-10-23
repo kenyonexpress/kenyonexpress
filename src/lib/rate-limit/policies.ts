@@ -73,6 +73,11 @@ export const RATE_LIMIT_POLICIES = {
     windowSeconds: 3600,
     reason: 'checkout phone-verification code guesses, per user',
   },
+  'verify-card-stub': {
+    limit: 20,
+    windowSeconds: 3600,
+    reason: 'card-verification stub, per user; charges nothing, so looser than verify-card',
+  },
   'verify-card': {
     limit: 5,
     windowSeconds: 3600,
@@ -117,6 +122,11 @@ export const RATE_LIMIT_POLICIES = {
   // a shop floor is one NAT address and would share one bucket.
   redeem: { limit: 60, windowSeconds: 3600, reason: 'customer-facing redeem page, per IP' },
   'voucher-redeem': { limit: 120, windowSeconds: 3600, reason: 'till scans, per supplier user' },
+  'voucher-redeem-code': {
+    limit: 10,
+    windowSeconds: 3600,
+    reason: 'redeem attempts against one short code, whoever scans it',
+  },
   'voucher-redeem-batch': { limit: 40, windowSeconds: 3600, reason: 'batch scans, per supplier' },
   'voucher-lookup': { limit: 300, windowSeconds: 3600, reason: 'till lookups, per supplier' },
   'staff-pin': { limit: 15, windowSeconds: 3600, reason: 'PIN guessing on the till' },

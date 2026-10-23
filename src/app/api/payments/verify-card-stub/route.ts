@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto'
 import { agorot } from '@/lib/money'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { createClient } from '@/lib/supabase/server'
+import { checkRateLimit } from '@/lib/utils/rate-limit'
 import { type NextRequest, NextResponse } from 'next/server'
 
 /**
@@ -34,6 +35,10 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
   } = await supabase.auth.getUser()
   if (!user) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+  }
+
+  if (!(await checkRateLimit(`verify-card-stub:${user.id}`, 20, 3600))) {
+    return NextResponse.json({ error: 'rate_limited' }, { status: 429 })
   }
 
   const key = request.headers.get('idempotency-key')

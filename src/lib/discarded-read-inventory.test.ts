@@ -83,8 +83,12 @@ const INVENTORY: Record<string, number> = {
   'src/server/actions/gifts.ts': 2,
   'src/server/actions/newsletter.ts': 2,
   'src/server/actions/orders.ts': 1,
+  // Fails closed: an unreadable saved address is answered ADDRESS_REQUIRED.
+  'src/server/actions/payments/checkout.ts': 1,
   'src/server/actions/payments/refund.ts': 6,
   'src/server/domain/vouchers/issue.ts': 1,
+  // Fails closed: an unreadable OTP row, or a failed consume, is 'expired'.
+  'src/server/checkout/verified-shipping.ts': 2,
   'src/server/payments/finalize.ts': 6,
   'src/server/payments/gift-vouchers.ts': 1,
   'src/server/payments/invoices.ts': 10,

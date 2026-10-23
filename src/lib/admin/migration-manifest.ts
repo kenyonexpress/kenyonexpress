@@ -21,6 +21,12 @@ export interface MigrationEntry {
 
 export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
   {
+    number: '000',
+    file: '000_infrastructure_dependencies.sql',
+    state: 'pending',
+    hasPreflight: true,
+  },
+  {
     number: '122',
     file: '122_deny_all_on_server_only_tables.sql',
     state: 'applied',
@@ -509,6 +515,18 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
   {
     number: '288',
     file: '288_customer_rfm_segmentation.sql',
+    state: 'pending',
+    hasPreflight: true,
+  },
+  {
+    number: '289',
+    file: '289_cron_revenue_daily.sql',
+    state: 'pending',
+    hasPreflight: true,
+  },
+  {
+    number: '290',
+    file: '290_push_subscriptions_ensure.sql',
     state: 'pending',
     hasPreflight: true,
   },

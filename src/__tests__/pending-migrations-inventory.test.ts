@@ -211,6 +211,7 @@ describe('the pending migration inventory', () => {
     // helpers, so the revoke would 42501 every anonymous catalogue read) --
     // it burned its number and sits in migrations/cancelled/, asserted below.
     expect(sqlFilesIn(PENDING_DIR)).toEqual([
+      '000_infrastructure_dependencies.sql',
       '162_cron_schedule.sql',
       '169_analytics_server_event_names.sql',
       '170_composite_indexes_top_queries.sql',
@@ -238,6 +239,8 @@ describe('the pending migration inventory', () => {
       '287_sms_marketing.sql',
       '288_customer_rfm_segmentation.sql',
       '289_cron_revenue_daily.sql',
+      '290_push_subscriptions_ensure.sql',
+      'preflight_000.sql',
       'preflight_162.sql',
       'preflight_169.sql',
       'preflight_170.sql',
@@ -264,6 +267,7 @@ describe('the pending migration inventory', () => {
       'preflight_287.sql',
       'preflight_288.sql',
       'preflight_289.sql',
+      'preflight_290.sql',
     ])
   })
 

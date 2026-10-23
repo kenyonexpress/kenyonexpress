@@ -21,6 +21,7 @@ Every file below is **not applied** and now has a row and a preflight. Run the
 `preflight_<n>.sql` through `execute_sql` first; apply through MCP
 `apply_migration`, one at a time, never `db push`.
 
+- `000_infrastructure_dependencies.sql` - `admin_users`, the `observability` schema and a stub `has_permission`, the dependencies 190-196 assume. Applies before them.
 - `191_saved_payment_method.sql` - `payment_card_verifications` (the 1 agora card check) and `profiles.saved_payment_method`.
 - `192_notification_history.sql` - `notification_deliveries`, the per-recipient delivery and interaction record.
 - `192_observability_schema.sql` - the `observability` schema and its three helper functions. Shares 192 with the file above; `preflight_192.sql` covers both.
@@ -32,6 +33,7 @@ Every file below is **not applied** and now has a row and a preflight. Run the
 - `287_sms_marketing.sql` - SMS broadcasts, recipients, delivery events, unsubscribes and consent. **Renumbered from 132**, which is `132_search_index_outbox.sql` in `applied/`. The shorter earlier draft draft in `supabase/migrations/` numbered 131 was removed in favour of this one, which is the version `src/lib/sms/` is written against.
 - `288_customer_rfm_segmentation.sql` - RFM scores, segments and `fn_calculate_rfm_scores` / `fn_segment_users`. **Moved from `supabase/migrations/` as number 130**, where 130 collided with `130_payment_events.sql` in `applied/`.
 - `289_cron_revenue_daily.sql` - `revenue_daily` (integer agorot, deny-all RLS), `aggregate_daily_revenue(date)` and the pg_cron job `ke-revenue-daily` (22:30 UTC). Pure SQL, no HTTP. Does not re-schedule `ke-expire-vouchers` (162) and adds no search job: the outbox drain rides `ke-health` (162).
+- `290_push_subscriptions_ensure.sql` - idempotent `push_subscriptions` (rc5 F14 browser push): a no-op wherever 179 already ran, creates the table anywhere it did not. Service role writes only.
 - `193_weekend_and_free_shipping.sql` - **CANCELLED**, moved to `migrations/cancelled/`. The weekend chip shipped as 284 and the free-shipping chip reads `shipping_price_agorot = 0` (278), so this would only add a duplicate `weekend_only` and a redundant `free_shipping` column.
 
 ## 2026-10-18: 286 APPLIED - feature_flags (rc5 F19)
