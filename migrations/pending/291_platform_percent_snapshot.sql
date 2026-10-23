@@ -1,4 +1,4 @@
--- migration 130: platform_percent_snapshot on order_items
+-- migration 291: platform_percent_snapshot (was 130 under supabase/migrations) on order_items
 --
 -- CONTEXT
 --   products.platform_percent exists (migration 027) as the admin-editable field
@@ -58,7 +58,7 @@ BEGIN
        OR NEW.commission_bp IS DISTINCT FROM OLD.commission_bp
        OR NEW.upfront_bp IS DISTINCT FROM OLD.upfront_bp
        OR NEW.cashback_bp IS DISTINCT FROM OLD.cashback_bp
-       -- Guard the percent snapshot (from 130)
+       -- Guard the percent snapshot (from 291)
        OR NEW.platform_percent_snapshot IS DISTINCT FROM OLD.platform_percent_snapshot
     THEN
       RAISE EXCEPTION 'order item % belongs to a paid order; percent snapshots are frozen', OLD.id;

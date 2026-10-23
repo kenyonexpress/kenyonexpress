@@ -240,6 +240,7 @@ describe('the pending migration inventory', () => {
       '288_customer_rfm_segmentation.sql',
       '289_cron_revenue_daily.sql',
       '290_push_subscriptions_ensure.sql',
+      '291_platform_percent_snapshot.sql',
       'preflight_000.sql',
       'preflight_162.sql',
       'preflight_169.sql',
@@ -268,6 +269,7 @@ describe('the pending migration inventory', () => {
       'preflight_288.sql',
       'preflight_289.sql',
       'preflight_290.sql',
+      'preflight_291.sql',
     ])
   })
 

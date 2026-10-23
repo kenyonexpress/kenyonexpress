@@ -116,7 +116,7 @@ describe('the settlement path reads the percent from the order line', () => {
     // Failing closed is the correct direction: a missing snapshot means the
     // rate is unknown, and the alternative is paying somebody at a rate nobody
     // agreed to.
-    expect(finalize).toMatch(/has no platform_percent snapshot; refusing to issue/)
+    expect(finalize).toMatch(/has no platform_percent_snapshot; refusing to issue/)
   })
 
   it('never re-derives an order line rate by joining products', () => {

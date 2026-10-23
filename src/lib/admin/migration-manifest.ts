@@ -530,4 +530,10 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
     state: 'pending',
     hasPreflight: true,
   },
+  {
+    number: '291',
+    file: '291_platform_percent_snapshot.sql',
+    state: 'pending',
+    hasPreflight: true,
+  },
 ] as const

@@ -10,7 +10,12 @@ import { describe, expect, it } from 'vitest'
  * 42P01), which is the correct outcome: the migration must be applied before
  * the immutability guarantee holds.
  */
-describe('order_items.platform_percent_snapshot immutability', () => {
+const configured = Boolean(
+  (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY) &&
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+)
+
+describe.skipIf(!configured)('order_items.platform_percent_snapshot immutability', () => {
   it('blocks UPDATE of platform_percent_snapshot on a paid order', async () => {
     const admin = createAdminClient()
 
