@@ -253,3 +253,6 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-23 10:30 | product | 768 | 42.24% | **FAIL** | `e9fd812c0-dirty` | ref 59 failed to load (40 stylesheet, 18 script, 1 xhr) |
 | 2026-10-23 10:32 | product | 1440 | 26.08% | **FAIL** | `e9fd812c0-dirty` | ref 59 failed to load (40 stylesheet, 18 script, 1 xhr) |
 | 2026-10-23 10:33 | product | 1440 | 26.08% | **FAIL** | `e9fd812c0-dirty` | ref 59 failed to load (40 stylesheet, 18 script, 1 xhr) |
+| 2026-10-23 10:44 | category | 380 | 19.41% | **FAIL** | `9d9b5d9c8` | OURS dropped 2 script (unhydrated, not a fidelity score); ref 52 failed to load (35 font, 15 script, 1 stylesheet, 1 xhr) |
+| 2026-10-23 10:46 | category | 768 | 17.87% | **FAIL** | `9d9b5d9c8-dirty` | OURS dropped 2 script (unhydrated, not a fidelity score); ref 52 failed to load (35 font, 15 script, 1 stylesheet, 1 xhr) |
+| 2026-10-23 10:48 | category | 1440 | 9.53% | PASS | `9d9b5d9c8-dirty` | OURS dropped 2 script (unhydrated, not a fidelity score); ref 46 failed to load (29 font, 15 script, 1 stylesheet, 1 xhr) |

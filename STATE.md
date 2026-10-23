@@ -2,7 +2,35 @@
 
 Full history: docs/STATE-ARCHIVE.md (STATE.md archived 2026-10-16 and again 2026-10-23). Cap: 300 lines.
 
-## המשך מ: F45 (next unblocked work)
+## המשך מ: C07 (next unblocked work)
+
+**C06: Mobile Gate category pages 380/768/1440 - BLOCKED (2026-10-23, autopilot)**
+- Goal: Achieve category page <11% at all three mobile widths vs ke_live_category.html reference
+- **RESULT: BLOCKED** - Mobile widths (380px, 768px) exceed 11% gate; 1440px passes
+- Measurement results:
+  - 380px: 19.41% (gate: 11%, shortfall: 8.41 points) - **FAIL**
+  - 768px: 17.87% (gate: 11%, shortfall: 6.87 points) - **FAIL**
+  - 1440px: 9.53% (gate: 11%, within: 1.47 points) - PASS
+- Measurement details:
+  - Reference: ke_live_category.html (WordPress/WooCommerce product-category archive)
+  - Our build: Next.js category page at /category/hot-deals
+  - Measured with COMPARE_ALLOW_GRID_MISMATCH=1 (live shows 2 products, local shows 1)
+  - Reference failures: 46-52 failed to load (29-35 font, 15 script, 1 stylesheet, 1 xhr)
+  - Our build: 2 script failed (unhydrated, not a fidelity score)
+- Worst bands (380px): y1500-1600 (94.9%), y400-500 (78.1%), y1400-1500 (64.7%)
+- Worst bands (768px): y1300-1400 (86.1%), y1400-1500 (82.4%), y1500-1600 (70.8%)
+- Worst bands (1440px): y1300-1400 (69.6%), y900-1000 (44.4%), y800-900 (29.1%)
+- Root cause: Same fundamental incompatibility as C04/C05
+  - Platform: WordPress/WooCommerce vs Next.js custom category page
+  - Catalogue mismatch: Different product counts and content
+  - Mobile patterns: Structural differences in product grid and layout
+- **Decision**: BLOCKED - Mobile gate requires both 380px AND 768px under 11%; only 1440px passes
+  - Desktop (1440px) passes the gate comfortably at 9.53%
+  - Mobile widths would require significant mobile layout restructuring
+  - Alternative paths: Lower mobile threshold OR accept desktop-only parity OR defer as major mobile project
+- Logged to: docs/UI-PARITY-REPORT.md (3 rows appended automatically)
+- Verification: pnpm type-check, lint, build (pending)
+- Commits: (pending)
 
 **C05: Mobile Gate product 380/768/1440 - BLOCKED (2026-10-23, autopilot)**
 - Goal: Achieve product page <11% at all three mobile widths vs ke_live_product.html reference
