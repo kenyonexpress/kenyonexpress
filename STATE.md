@@ -2,6 +2,42 @@
 
 Full history: docs/STATE-ARCHIVE.md (STATE.md archived 2026-10-16 and again 2026-10-23). Cap: 300 lines.
 
+## המשך מ: C18 (next unblocked work)
+
+**C17: Meilisearch Production Configuration - BLOCKED (2026-10-23, autopilot)**
+- Goal: Configure MEILISEARCH_HOST + MEILISEARCH_API_KEY in Vercel prod, redeploy, verify /api/ready, rebuild index
+- **RESULT: BLOCKED - Requires external Meilisearch instance provisioning**
+- **Current State:**
+  - Vercel production has MEILISEARCH_HOST and MEILISEARCH_API_KEY set (encrypted values)
+  - Production search returns `"engine": "database"` (Postgres fallback active)
+  - `/api/ready` reports `"meilisearch": "ok"` (health ping passes)
+  - Actual search queries fail and fall back to Postgres ILIKE
+- **Root Cause:** Env vars exist but either:
+  - Point to a non-existent Meilisearch instance
+  - Have invalid/expired credentials  
+  - Point to a misconfigured instance
+- **Blockers:**
+  - Cannot provision Meilisearch Cloud instance (requires payment method, account setup)
+  - Cannot access encrypted Vercel env values to verify current credentials
+  - Cannot determine if instance exists at configured URL
+- **Work Completed:**
+  - ✅ Verified Vercel env vars exist for production target
+  - ✅ Tested production search behavior (database fallback confirmed)
+  - ✅ Tested `/api/ready` endpoint (returns 200, meilisearch "ok")
+  - ✅ Located setup scripts (`scripts/setup-meilisearch.mjs`)
+  - ✅ Documented Hebrew synonyms at `src/lib/search/hebrew-synonyms.ts`
+  - ✅ Documented docker-compose local setup
+  - ✅ Created comprehensive blocked-status doc: `docs/C17-MEILISEARCH-BLOCKED.md`
+- **Required Manual Actions:**
+  1. Provision Meilisearch Cloud instance (~$30/mo) or self-host
+  2. Update Vercel env vars with real credentials
+  3. Redeploy production
+  4. Run `scripts/setup-meilisearch.mjs` to create index
+  5. Verify search returns `"engine": "meilisearch"`
+- **Note:** Goal mentioned `docs/MEILI-SYNONYMS.json` but file doesn't exist; synonyms are in code at `src/lib/search/hebrew-synonyms.ts` and applied by setup script
+- **References:** Memory `production-meilisearch-silently-off.md` (same issue from 2026-10-14)
+- Commit: pending
+
 ## המשך מ: C17 (next unblocked work)
 
 **C16: Payment events + refunds + search outbox + state guards - BLOCKED (2026-10-23, autopilot)**
