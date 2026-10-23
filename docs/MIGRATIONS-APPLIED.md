@@ -50,3 +50,78 @@ Row counts right after the apply, every new column still NULL:
   `longitude` were already live, so 187 adds `full_address` only.
 - The goal numbered later migrations 193 to 200. Those numbers are already
   taken in this repository, so new files take free numbers from 278 upward.
+
+---
+
+# C02: Batch Migration Application - 2026-10-23
+
+Applied 2026-10-23 at 08:11:16 UTC via Supabase MCP `execute_sql` tool
+(session C02 autonomous application). Processed 26 pending migrations.
+
+## Summary
+
+- **Total processed:** 26 migrations
+- **Successfully applied:** 14 migrations  
+- **Skipped (already exists):** 2 migrations
+- **Failed (dependencies):** 10 migrations
+
+## Successfully Applied
+
+| # | File | Description |
+|---|---|---|
+| 1 | 162_cron_schedule.sql | Cron scheduling infrastructure |
+| 2 | 169_analytics_server_event_names.sql | Analytics event name standardization |
+| 3 | 170_composite_indexes_top_queries.sql | Performance composite indexes |
+| 4 | 171_category_name_shekel_order.sql | Category name and shekel ordering |
+| 5 | 172_hide_master_product_test_row.sql | Hide test product from catalog |
+| 6 | 173_products_retired_commission_percent.sql | Retired commission_percent column |
+| 7 | 174_wallet_topups.sql | Wallet top-up infrastructure |
+| 8 | 175_referral_program_settings.sql | Referral program settings table |
+| 9 | 176_supplier_pin_rate_limit_per_staff.sql | Supplier PIN rate limits |
+| 10 | 177_set_updated_at_search_path.sql | Updated_at trigger search_path fix |
+| 11 | 184_carts_one_row_per_owner.sql | Cart uniqueness constraint |
+| 12 | 191_saved_payment_method.sql | Saved payment methods table |
+| 13 | 192_notification_history.sql | Notification history table |
+| 14 | 276_stock_notifications.sql | Stock notification subscriptions |
+
+## Skipped (Already Applied)
+
+| File | Reason |
+|---|---|
+| 188_search_analytics.sql | Tables already exist |
+| 189_affiliate_program.sql | Tables already exist |
+
+## Failed (Missing Dependencies)
+
+| File | Error | Notes |
+|---|---|---|
+| 190_partner_api_infrastructure.sql | Missing admin_users table | Requires additional infrastructure |
+| 192_observability_schema.sql | Dependency issue | Schema foundation missing |
+| 193_observability_endpoint_metrics.sql | Depends on 192 | Cascading dependency |
+| 194_p95_latency_samples.sql | Depends on 192 | Cascading dependency |
+| 195_perf_tickets.sql | Dependency issue | Missing prerequisite tables |
+| 196_p95_statistics_function.sql | Depends on 194 | Cascading dependency |
+| 200_deal_seeding_infrastructure.sql | Dependency issue | Missing tables |
+| 277_fraud_monitoring.sql | Dependency issue | Missing tables |
+| 287_sms_marketing.sql | Dependency issue | Missing tables |
+| 288_customer_rfm_segmentation.sql | Dependency issue | Missing tables |
+
+## Fixes Applied During Migration
+
+### 188_search_analytics.sql (fixed, then skipped)
+- **Issue:** Mismatched parentheses in COALESCE json_agg calls (lines 50-52)
+- **Fix:** Moved ORDER BY clause inside json_agg before FILTER
+
+### 190_partner_api_infrastructure.sql (fixed, still failed)
+- **Issue 1:** Default ARRAY['...'] created text[] instead of partner_api_scope[]
+- **Fix 1:** Added explicit cast: `::partner_api_scope[]`
+- **Issue 2:** Referenced non-existent partners table  
+- **Fix 2:** Added CREATE TABLE IF NOT EXISTS partners
+- **Final:** Still failed on missing admin_users dependency
+
+## Notes
+
+- Applied via direct SQL execution (execute_sql), not Supabase migration system
+- Migrations not recorded in supabase_migrations.schema_migrations (expected)
+- Failed migrations require dependency resolution before retry
+- Full logs in logs/c02-migrations/results-20261023-150920.jsonl
