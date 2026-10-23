@@ -45,7 +45,7 @@ if (!user) {
 }
 
 // Update password
-const { data, error } = await admin.auth.admin.updateUserById(user.id, {
+const { error } = await admin.auth.admin.updateUserById(user.id, {
   password,
 })
 
