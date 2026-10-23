@@ -48,7 +48,7 @@ type OrderItemRow = {
   supplier_id: string | null
   quantity: number
   unit_price_agorot: number | null
-  platform_percent: number | null
+  platform_percent_snapshot: number | null
   upfront_percent: number | null
   commission_percent_snapshot: number | null
   paid_on_site_agorot: number | null
@@ -102,9 +102,9 @@ async function issueVouchersForItem(
       `coupon order item ${item.id}: product has no coupon_expiry_days; refusing to issue a voucher with an invented expiry`,
     )
   }
-  if (item.platform_percent === null || item.platform_percent === undefined) {
+  if (item.platform_percent_snapshot === null || item.platform_percent_snapshot === undefined) {
     throw new Error(
-      `coupon order item ${item.id} has no platform_percent snapshot; refusing to issue`,
+      `coupon order item ${item.id} has no platform_percent_snapshot; refusing to issue`,
     )
   }
 
@@ -150,7 +150,7 @@ async function issueVouchersForItem(
       userId,
       priceIls: agorotToIls(agorot(faceUnits[unit] ?? 0)),
       couponPriceIls: agorotToIls(agorot(paidUnits[unit] ?? 0)),
-      platformPercent: item.platform_percent,
+      platformPercent: item.platform_percent_snapshot,
       couponExpiryDays: expiryDays,
       offerValidUntil,
       rateColumn,
@@ -462,7 +462,7 @@ export async function finalizeOrder(input: {
       await admin
         .from('order_items')
         .select(
-          `id, order_id, product_id, product_type, supplier_id, quantity, ${orderItemPriceSelect(itemGeneration)}, platform_percent, upfront_percent, commission_percent_snapshot, paid_on_site_agorot, commission_agorot, face_value_agorot, balance_due_agorot, supplier_immediate_agorot, cashback_amount_agorot, settlement_status`,
+          `id, order_id, product_id, product_type, supplier_id, quantity, ${orderItemPriceSelect(itemGeneration)}, platform_percent_snapshot, upfront_percent, commission_percent_snapshot, paid_on_site_agorot, commission_agorot, face_value_agorot, balance_due_agorot, supplier_immediate_agorot, cashback_amount_agorot, settlement_status`,
         )
         .eq('order_id', order.id),
       'finalize.order_items_read_failed',
@@ -692,7 +692,7 @@ export async function finalizeOrder(input: {
         .map((i) => ({
           productId: i.product_id as string,
           supplierId: i.supplier_id ?? null,
-          platformPercent: i.platform_percent ?? null,
+          platformPercent: i.platform_percent_snapshot ?? null,
         }))
       if (recurringLines.length > 0) {
         const { data: billing, error: billingReadError } = await admin

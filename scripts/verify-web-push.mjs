@@ -53,10 +53,7 @@ console.log('🔍 C11 Web Push Verification\n')
 
 // Step 1: Check if push_subscriptions table exists
 console.log('1. Checking if push_subscriptions table exists...')
-const { data: tables, error: tableError } = await supabase
-  .from('push_subscriptions')
-  .select('id')
-  .limit(1)
+const { error: tableError } = await supabase.from('push_subscriptions').select('id').limit(1)
 
 if (tableError) {
   if (tableError.code === '42P01' || tableError.message.includes('does not exist')) {

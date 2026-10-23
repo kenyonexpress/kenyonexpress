@@ -122,7 +122,7 @@ type SubscriptionRow = {
   payment_token_id: string
   status: 'active'
   amount_agorot: number
-  platform_percent: number
+  platform_percent_snapshot: number
   billing_interval: string
   billing_interval_count: number
   next_charge_at: string
@@ -176,7 +176,7 @@ export async function createSubscriptionsForOrder(
           payment_token_id: input.paymentTokenId,
           status: 'active',
           amount_agorot: r.amountAgorot,
-          platform_percent: r.platformPercent,
+          platform_percent_snapshot: r.platformPercent,
           billing_interval: r.billingInterval,
           billing_interval_count: r.billingIntervalCount,
           next_charge_at: r.nextChargeAtIso,

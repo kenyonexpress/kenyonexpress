@@ -69,7 +69,7 @@ interface DueRow extends BillableSubscription {
   product_id: string
   billing_interval: string
   billing_interval_count: number
-  platform_percent: number
+  platform_percent_snapshot: number
   payment_token_id: string | null
   cardcom_account_id: string | null
 }
@@ -90,7 +90,7 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
     admin
       .from(pendingTable('subscriptions'))
       .select(
-        'id, product_id, status, amount_agorot, platform_percent, billing_interval, billing_interval_count, next_charge_at, last_charge_at, failed_attempts, payment_token_id, payment_tokens(cardcom_token, cardcom_account_id)',
+        'id, product_id, status, amount_agorot, platform_percent_snapshot, billing_interval, billing_interval_count, next_charge_at, last_charge_at, failed_attempts, payment_token_id, payment_tokens(cardcom_token, cardcom_account_id)',
       )
       .in('status', ['active', 'past_due'])
       .not('next_charge_at', 'is', null)
@@ -125,7 +125,7 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
       product_id: row.product_id,
       billing_interval: row.billing_interval,
       billing_interval_count: row.billing_interval_count ?? 1,
-      platform_percent: row.platform_percent,
+      platform_percent_snapshot: Number(row.platform_percent_snapshot),
       payment_token_id: row.payment_token_id,
       cardcom_account_id: token?.cardcom_account_id ?? null,
     }
@@ -145,7 +145,7 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
     const periodKey = subscription.next_charge_at as string
 
     const amount = agorot(subscription.amount_agorot)
-    const split = splitOnSiteCharge(amount, subscription.platform_percent)
+    const split = splitOnSiteCharge(amount, subscription.platform_percent_snapshot)
 
     let outcome: {
       success: boolean
