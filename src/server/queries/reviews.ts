@@ -1,6 +1,6 @@
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { log } from '@/lib/observability/log'
-import { TABLE_MISSING, summarizeRatings } from '@/lib/reviews/reviews'
+import { NOT_VERIFIED, TABLE_MISSING, summarizeRatings } from '@/lib/reviews/reviews'
 import type { RatingSummary } from '@/lib/reviews/reviews'
 import { createPublicClient } from '@/lib/supabase/anon'
 import { cacheLife, cacheTag } from 'next/cache'
@@ -62,7 +62,9 @@ export async function getProductReviews(productId: string, limit = 20): Promise<
   ])
 
   if (ratingsResult.error) {
-    if (ratingsResult.error.code !== TABLE_MISSING) {
+    // TABLE_MISSING: migration 154 not applied yet
+    // NOT_VERIFIED: anon role has no SELECT grant on reviews table
+    if (ratingsResult.error.code !== TABLE_MISSING && ratingsResult.error.code !== NOT_VERIFIED) {
       log.warn('reviews.read_failed', { productId, code: ratingsResult.error.code ?? null })
     }
     return NONE

@@ -1,5 +1,5 @@
 import { expect } from '@playwright/test'
-import { E2E_COUPON_SLUG, paidFlowEnabled } from './auth-session'
+import { E2E_COUPON_SLUG, adminTestsEnabled, paidFlowEnabled } from './auth-session'
 import {
   BUY_BUTTON,
   PAY_RETURN_TIMEOUT,
@@ -35,6 +35,7 @@ test.describe('admin credit to wallet @money @admin', () => {
 
   test.beforeEach(() => {
     test.skip(!paidFlowEnabled(), 'paid flow credentials disabled (E2E_PAID_FLOW=0)')
+    test.skip(!adminTestsEnabled(), 'E2E_ADMIN_PASSWORD not configured')
   })
 
   test('a wallet credit kills the live voucher instead of leaving it scannable', async ({
