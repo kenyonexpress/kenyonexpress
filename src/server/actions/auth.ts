@@ -593,32 +593,68 @@ export async function generatePasskeyAuthOptions(userId?: string): Promise<any> 
 export async function verifyPasskeyAuth(
   response: AuthenticationResponseJSON,
   expectedChallenge: string,
-): Promise<{ success: boolean; userId?: string; error?: string }> {
+): Promise<{ success: boolean; userId?: string; sessionToken?: string; error?: string }> {
   return withActionContext('auth.verify_passkey_auth', async () => {
     const result = await verifyPasskeyAuthentication(response, expectedChallenge)
 
     if (result?.success && result.userId) {
-      // Sign in the user with Supabase using admin session creation
       const admin = createAdminClient()
-      const { data, error } = await admin.auth.admin.getUserById(result.userId)
+      const { data: userData, error: userError } = await admin.auth.admin.getUserById(result.userId)
 
-      if (error || !data.user) {
+      if (userError || !userData.user) {
+        await recordAuthAttempt({
+          userId: result.userId,
+          attemptType: 'passkey',
+          success: false,
+        })
         return { success: false, error: 'User not found' }
       }
 
-      // Create a session for the user using admin API
-      const { data: sessionData, error: sessionError } = await admin.auth.admin.generateLink({
+      // Generate a one-time link that includes a session token
+      const { data: linkData, error: linkError } = await admin.auth.admin.generateLink({
         type: 'magiclink',
-        email: data.user.email || '',
+        email: userData.user.email || '',
+        options: {
+          redirectTo: siteUrl(),
+        },
       })
 
-      if (sessionError || !sessionData) {
+      if (linkError || !linkData) {
+        await recordAuthAttempt({
+          userId: result.userId,
+          attemptType: 'passkey',
+          success: false,
+        })
         return { success: false, error: 'Failed to create session' }
       }
 
-      return result
+      // Record successful passkey auth
+      await recordAuthAttempt({
+        userId: result.userId,
+        attemptType: 'passkey',
+        success: true,
+      })
+
+      // Return the session token from the generated link
+      // The client will use this to establish the session
+      const url = new URL(linkData.properties.action_link)
+      const token = url.searchParams.get('token')
+
+      if (!token) {
+        return { success: false, error: 'Failed to generate session token' }
+      }
+
+      return {
+        success: true,
+        userId: result.userId,
+        sessionToken: token,
+      }
     }
 
+    await recordAuthAttempt({
+      attemptType: 'passkey',
+      success: false,
+    })
     return result || { success: false, error: 'Verification failed' }
   })
 }
@@ -673,16 +709,179 @@ async function runSendWhatsAppOtp(_: AuthState, formData: FormData): Promise<Aut
     return { error: whatsAppOtpErrorHebrew(result.error || '') }
   }
 
-  // Store the code in a temporary session or similar
-  // For now, we'll use the same Supabase OTP mechanism but via WhatsApp
-  // This is a simplified implementation - in production you'd store the code
-  // in Redis or similar and verify it separately
+  // Store the code for verification
+  const { storeOtpCode } = await import('@/lib/auth/otp-store')
+  const storeResult = await storeOtpCode({
+    identifier: e164,
+    code,
+    channel: 'whatsapp',
+  })
+
+  if (!storeResult.success) {
+    log.error('auth.whatsapp_otp_store_failed', {})
+    return { error: 'שליחת הקוד נכשלה — נסו שוב' }
+  }
 
   return { success: e164 }
 }
 
 export async function sendWhatsAppOtp(_: AuthState, formData: FormData): Promise<AuthState> {
   return withActionContext('auth.send_whatsapp_otp', () => runSendWhatsAppOtp(_, formData))
+}
+
+async function runVerifyWhatsAppOtp(_: AuthState, formData: FormData): Promise<AuthState> {
+  if (!whatsAppOtpEnabled()) {
+    return { error: 'שירות WhatsApp אינו זמין כרגע' }
+  }
+
+  const ip = await getClientIp()
+  const allowed = await checkRateLimit(`whatsapp-verify:${ip}`, 20, 3600)
+  if (!allowed) {
+    return { error: 'יותר מדי ניסיונות — נסו שוב בעוד שעה' }
+  }
+
+  const parsed = phoneVerifySchema.safeParse({
+    phone: formData.get('phone'),
+    token: formData.get('token'),
+  })
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? 'נתונים לא תקינים' }
+  }
+
+  const e164 = toE164Israeli(parsed.data.phone)
+  if (!e164) {
+    return { error: 'מספר הטלפון אינו תקין' }
+  }
+
+  // Verify the OTP code
+  const { verifyOtpCode } = await import('@/lib/auth/otp-store')
+  const verifyResult = await verifyOtpCode({
+    identifier: e164,
+    code: parsed.data.token,
+    channel: 'whatsapp',
+  })
+
+  if (!verifyResult.success) {
+    await recordAuthAttempt({
+      phone: e164,
+      attemptType: 'whatsapp_otp',
+      success: false,
+      ipAddress: ip,
+    })
+    return { error: verifyResult.error || 'הקוד שגוי או פג תוקפו' }
+  }
+
+  // Attach phone to existing account or find user by phone
+  const admin = createAdminClient()
+
+  // Try to find existing user with this phone
+  const suffix = e164.slice(-7)
+  const { data: profiles } = await admin
+    .from('profiles')
+    .select('id, phone')
+    .ilike('phone', `%${suffix}`)
+    .limit(10)
+
+  let userId: string | null = null
+
+  if (profiles && profiles.length > 0) {
+    // Find exact match
+    for (const profile of profiles) {
+      if (toE164Israeli(profile.phone) === e164) {
+        userId = profile.id
+        break
+      }
+    }
+  }
+
+  // If no user found, create new one
+  if (!userId) {
+    const { data: newUser, error: createError } = await admin.auth.admin.createUser({
+      phone: e164,
+      phone_confirm: true,
+      user_metadata: { phone: e164 },
+    })
+
+    if (createError || !newUser.user) {
+      await recordAuthAttempt({
+        phone: e164,
+        attemptType: 'whatsapp_otp',
+        success: false,
+        ipAddress: ip,
+      })
+      return { error: 'יצירת המשתמש נכשלה' }
+    }
+
+    userId = newUser.user.id
+
+    // Create profile
+    await admin.from('profiles').insert({ id: userId, phone: e164 })
+  }
+
+  // Create session for the user
+  const { data: linkData, error: linkError } = await admin.auth.admin.generateLink({
+    type: 'magiclink',
+    email: `${userId}@whatsapp.placeholder`, // Placeholder email for phone-only users
+    options: {
+      redirectTo: siteUrl(),
+    },
+  })
+
+  if (linkError || !linkData) {
+    await recordAuthAttempt({
+      userId,
+      phone: e164,
+      attemptType: 'whatsapp_otp',
+      success: false,
+      ipAddress: ip,
+    })
+    return { error: 'יצירת חיבור נכשלה' }
+  }
+
+  // Record successful attempt
+  await recordAuthAttempt({
+    userId,
+    phone: e164,
+    attemptType: 'whatsapp_otp',
+    success: true,
+    ipAddress: ip,
+  })
+
+  // Get the session token from the generated link
+  const url = new URL(linkData.properties.action_link)
+  const token = url.searchParams.get('token')
+
+  if (!token) {
+    return { error: 'Failed to generate session token' }
+  }
+
+  // Exchange token for session using the client
+  const supabase = await createClient()
+  const { error: sessionError } = await supabase.auth.verifyOtp({
+    type: 'magiclink',
+    token_hash: token,
+  })
+
+  if (sessionError) {
+    return { error: 'יצירת חיבור נכשלה' }
+  }
+
+  // Merge guest cart and handle referral
+  const sessionId = await getGuestSessionId()
+  if (userId && sessionId) {
+    const merged = await mergeGuestCart(supabase, userId, sessionId)
+    if (merged) {
+      const cookieStore = await cookies()
+      cookieStore.delete(GUEST_SESSION_COOKIE)
+    }
+    await claimReferralOnce(userId, sessionId)
+  }
+
+  redirect(safeNext(formData.get('next')))
+}
+
+export async function verifyWhatsAppOtp(_: AuthState, formData: FormData): Promise<AuthState> {
+  return withActionContext('auth.verify_whatsapp_otp', () => runVerifyWhatsAppOtp(_, formData))
 }
 
 // ──────────────────────────────────────────────
