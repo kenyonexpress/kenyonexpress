@@ -164,7 +164,6 @@ export function buildOrderPaidEmail(
     items > 0 ? `פריטים: ${items}` : '',
     '',
     `לפרטי ההזמנה: ${url}`,
-    receiptUrl ? `לקבלה: ${receiptUrl}` : '',
     '',
     legalEntityLine(),
   ]
