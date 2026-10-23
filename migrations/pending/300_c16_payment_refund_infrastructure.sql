@@ -198,18 +198,45 @@ CREATE INDEX IF NOT EXISTS refunds_due_soon_idx
   ON public.refunds (refund_due_by)
   WHERE state NOT IN ('completed', 'rejected', 'failed');
 
--- Constraints
-ALTER TABLE public.refunds
-  ADD CONSTRAINT IF NOT EXISTS refunds_wallet_has_no_fee
-    CHECK (destination != 'wallet' OR cancellation_fee_agorot = 0);
+-- Constraints (wrapped in DO blocks for idempotency)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conname = 'refunds_wallet_has_no_fee' AND conrelid = 'public.refunds'::regclass
+  ) THEN
+    ALTER TABLE public.refunds
+      ADD CONSTRAINT refunds_wallet_has_no_fee
+        CHECK (destination != 'wallet' OR cancellation_fee_agorot = 0);
+  END IF;
+END
+$$;
 
-ALTER TABLE public.refunds
-  ADD CONSTRAINT IF NOT EXISTS refunds_granted_le_requested
-    CHECK (granted_agorot IS NULL OR granted_agorot <= requested_agorot);
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conname = 'refunds_granted_le_requested' AND conrelid = 'public.refunds'::regclass
+  ) THEN
+    ALTER TABLE public.refunds
+      ADD CONSTRAINT refunds_granted_le_requested
+        CHECK (granted_agorot IS NULL OR granted_agorot <= requested_agorot);
+  END IF;
+END
+$$;
 
-ALTER TABLE public.refunds
-  ADD CONSTRAINT IF NOT EXISTS refunds_fee_le_5pct_capped_100
-    CHECK (cancellation_fee_agorot <= LEAST((requested_agorot + 19) / 20, 10000));
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conname = 'refunds_fee_le_5pct_capped_100' AND conrelid = 'public.refunds'::regclass
+  ) THEN
+    ALTER TABLE public.refunds
+      ADD CONSTRAINT refunds_fee_le_5pct_capped_100
+        CHECK (cancellation_fee_agorot <= LEAST((requested_agorot + 19) / 20, 10000));
+  END IF;
+END
+$$;
 
 -- Trigger to enforce 14-day deadline (Consumer Protection Law 14ה)
 CREATE OR REPLACE FUNCTION public.fn_refunds_force_due_by()
