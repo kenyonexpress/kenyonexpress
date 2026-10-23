@@ -1,3 +1,4 @@
+import { recordAuthAttempt } from '@/lib/auth/auth-fallback'
 import {
   CHALLENGE_COOKIE,
   CHALLENGE_TTL_S,
@@ -87,9 +88,21 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
     log.warn('passkey.auth_verify_failed', {
       reason: err instanceof Error ? err.message : String(err),
     })
+    await recordAuthAttempt({
+      userId: credential.user_id as string,
+      attemptType: 'passkey',
+      success: false,
+      ipAddress: ip,
+    })
     return NextResponse.json({ ok: false, error: 'verification_failed' }, { status: 400 })
   }
   if (!verification.verified) {
+    await recordAuthAttempt({
+      userId: credential.user_id as string,
+      attemptType: 'passkey',
+      success: false,
+      ipAddress: ip,
+    })
     return NextResponse.json({ ok: false, error: 'verification_failed' }, { status: 400 })
   }
 
@@ -100,6 +113,13 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
       last_used_at: new Date().toISOString(),
     })
     .eq('id', credential.id)
+
+  await recordAuthAttempt({
+    userId: credential.user_id as string,
+    attemptType: 'passkey',
+    success: true,
+    ipAddress: ip,
+  })
 
   const session = await mintSessionFor(credential.user_id as string)
   if (!session.ok) {
