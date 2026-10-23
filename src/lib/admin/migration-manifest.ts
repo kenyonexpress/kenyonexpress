@@ -532,6 +532,12 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
   },
   {
     number: '291',
+    file: '291_pg_cron_scheduled_gifts.sql',
+    state: 'pending',
+    hasPreflight: true,
+  },
+  {
+    number: '291',
     file: '291_platform_percent_snapshot.sql',
     state: 'pending',
     hasPreflight: true,

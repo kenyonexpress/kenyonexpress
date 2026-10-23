@@ -66,6 +66,7 @@ export async function alertTeam(p: SupplierLeadPayload, subjectPrefix: string): 
 export async function createSupplierLead(
   p: SupplierLeadPayload,
   ip: string | null,
+  opts?: { verificationId?: string; userAgent?: string | null },
 ): Promise<{ ok: true; leadId: string } | { ok: false }> {
   const admin = createAdminClient()
   const { data: lead, error } = await admin
@@ -85,6 +86,19 @@ export async function createSupplierLead(
   if (error || !lead) {
     log.error('supplier_lead.insert_failed', { reason: error?.message ?? 'no row' })
     return { ok: false }
+  }
+
+  // C29: Record click-wrap agreement in dedicated supplier_agreements table
+  const { error: agreementError } = await admin.from('supplier_agreements' as never).insert({
+    supplier_lead_id: lead.id,
+    verification_id: opts?.verificationId ?? null,
+    version_hash: p.agreement_hash,
+    version_date: SUPPLIER_AGREEMENT_VERSION,
+    ip_address: ip && /^[0-9a-fA-F.:]+$/.test(ip) ? ip : null,
+    user_agent: opts?.userAgent?.slice(0, 512) ?? null,
+  } as never)
+  if (agreementError) {
+    log.error('supplier_lead.agreement_record_failed', { reason: agreementError.message })
   }
 
   const { error: acceptError } = await admin.from('audit_log').insert({
