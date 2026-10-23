@@ -11,15 +11,20 @@ import { getMyWishlist } from '@/server/queries/wishlist'
 export const metadata = { title: 'האזור האישי' }
 
 export default async function AccountOverviewPage() {
-  const [wallet, orders, coupons, tier, wishlistEntries, profile, addresses] = await Promise.all([
-    getWalletSummary(),
-    getMyOrders(),
-    getCustomerVouchers(),
-    getMyTier(),
-    getMyWishlist(),
-    getAccountProfile(),
-    getMyAddresses(),
-  ])
+  const [wallet, orders, allCoupons, tier, wishlistEntries, profile, addresses] = await Promise.all(
+    [
+      getWalletSummary(),
+      getMyOrders(),
+      getCustomerVouchers(),
+      getMyTier(),
+      getMyWishlist(),
+      getAccountProfile(),
+      getMyAddresses(),
+    ],
+  )
+
+  // Filter coupons on the server side before passing to client component
+  const coupons = allCoupons.filter((c) => isCouponPresentable(c))
 
   // Get staff status for settings tab
   const supabase = await createClient()
@@ -46,7 +51,6 @@ export default async function AccountOverviewPage() {
       profile={profile}
       addresses={addresses}
       isStaff={isStaff}
-      isCouponPresentable={isCouponPresentable}
     />
   )
 }

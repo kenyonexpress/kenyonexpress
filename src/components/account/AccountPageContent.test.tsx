@@ -72,7 +72,6 @@ const mockProps = {
   profile: { fullName: 'שם', email: 'user@test.com', phone: '0501234567' },
   addresses: [{ id: 'a1' } as any],
   isStaff: false,
-  isCouponPresentable: (c: CustomerVoucher) => c.status === 'issued',
 }
 
 describe('AccountPageContent', () => {
