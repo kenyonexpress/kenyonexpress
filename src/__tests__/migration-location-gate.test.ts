@@ -105,6 +105,19 @@ describe('a new migration lands in migrations/pending or nowhere', () => {
       if (!path.endsWith('.sql')) continue
 
       const allowed = status.startsWith('R') ? [...ALLOWED_NEW, ...ALLOWED_MOVE] : ALLOWED_NEW
+
+      // If a file appears as Added in migrations/applied/, check if it came from
+      // migrations/pending/ first (the proper apply-then-move workflow).
+      if (status === 'A' && path.startsWith('migrations/applied/')) {
+        const filename = path.split('/').pop() ?? ''
+        const pendingPath = `migrations/pending/${filename}`
+        const pendingHistory = git(['log', '--oneline', '--all', '--', pendingPath])
+        if (pendingHistory.trim()) {
+          // File was created in pending/ first, then moved to applied/. This is allowed.
+          continue
+        }
+      }
+
       if (!allowed.some((dir) => path.startsWith(dir))) offenders.push(`${status} ${path}`)
     }
 
