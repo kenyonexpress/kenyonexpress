@@ -2,7 +2,36 @@
 
 Full history: docs/STATE-ARCHIVE.md (STATE.md archived 2026-10-16 and again 2026-10-23). Cap: 300 lines.
 
-## המשך מ: C23 (next unblocked work)
+## המשך מ: C26 (next unblocked work)
+
+**C25: Club tiers Bronze/Silver/Gold by 12-month spend - COMPLETE (2026-10-24, autopilot)**
+- Goal: Club tiers Bronze/Silver/Gold based on 12-month spend. Standing /account. Editable admin.
+- **RESULT: ✅ COMPLETE - Pre-existing implementation verified and documented**
+- **System Components (all operational):**
+  - Database: migration 282 with `club_tiers` table + `v_user_tier` view
+  - Tiers: Bronze (0), Silver (500 ILS), Gold (2,000 ILS), Platinum (5,000 ILS)
+  - 12-month calculation: View sums paid orders from trailing 365 days (excludes cancelled/refunded/pending)
+  - Pure calculation (no stored tier state, always current)
+  - Backend: `src/server/queries/club.ts` with `getMyTier()` function
+  - Account UI: `/account` page displays tier, 12-month spend, progress to next tier
+  - Admin UI: `/admin/club-tiers` with inline editing (name, threshold, benefits, active/inactive)
+  - Server action: `src/server/actions/admin/club-tiers.ts` with validation and audit logging
+- **Security:**
+  - RLS: customers read active tiers only, `v_user_tier` is SECURITY INVOKER (customers see only their own row)
+  - RBAC: admin requires `discounts:read` + `discounts:write` permissions
+  - Integer agorot throughout (money.ts compliance)
+- **Tests:** 6/6 passing
+  - `src/server/queries/club.test.ts` (3 tests): view reading, lowest tier fallback, benefits filtering
+  - `src/lib/club/tiers.test.ts` (3 tests): 12-month calculation, threshold promotion, next-tier calculation
+- **Quality Gates:** All passing
+  - ✅ pnpm type-check: clean
+  - ✅ pnpm lint: clean
+  - ✅ pnpm build: successful
+- **Data-driven:** Tier config in database (not code constants), editable via admin UI
+- **No new code required:** System already fully implemented and operational
+- Documented: docs/C25-CLUB-TIERS-RESULT.md (234 lines, comprehensive verification)
+- Commit: bb14e3390
+- Pushed to origin/closeout/v1-final
 
 **C22: Admin CSV import /admin/products/import dry-run + apply - PARTIAL (2026-10-24, autopilot)**
 - Goal: Admin CSV import feature with dry-run preview and template at public/templates/products-import.csv. Use Supabase MCP for DB/RLS/migrations.
