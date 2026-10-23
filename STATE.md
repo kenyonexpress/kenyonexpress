@@ -4,6 +4,32 @@ Full history: docs/STATE-ARCHIVE.md (STATE.md archived 2026-10-16 and again 2026
 
 ## המשך מ: F45 (next unblocked work)
 
+**C05: Mobile Gate product 380/768/1440 - BLOCKED (2026-10-23, autopilot)**
+- Goal: Achieve product page <11% at all three mobile widths vs ke_live_product.html reference
+- **RESULT: BLOCKED on first attempt** - All three widths far exceed gate
+- Measurement results:
+  - 380px: 53.57% (gate: 11%, shortfall: 42.57 points)
+  - 768px: 42.24% (gate: 11%, shortfall: 31.24 points)
+  - 1440px: 26.08% (gate: 11%, shortfall: 15.08 points)
+- Measurement details:
+  - Reference: ke_live_product.html (old WordPress product page, 5326-7354px tall)
+  - Our build: Next.js product page (2600-3044px tall)
+  - Height ratios: 0.57x (380px), 0.43x (768px), 0.35x (1440px)
+  - Script warning: "These are structurally different pages, not the same page styled differently"
+  - Catalogue mismatch: Reference shows 1 product card, ours shows 4
+- Root cause: Same fundamental incompatibility as C04/F43
+  - Platform: WordPress/WooCommerce product page vs Next.js custom PDP
+  - Architecture: Different page structures, sections, and heights
+  - Content: Different product recommendations and catalogue
+- Comparison setup:
+  - Ran with COMPARE_ALLOW_GRID_MISMATCH=1 to measure despite catalogue differences
+  - Reference files: Copied refs/live-assets and ke_live_*.html from main checkout to worktree
+  - Localized with scripts/localize-live-refs.mjs (62% recovery rate for product page)
+- Verification: pnpm type-check, lint, build all exit 0
+- **Decision**: BLOCKED - same category as C04 (comparing fundamentally different architectures)
+  - Alternative paths: Use live Next.js deployment as reference OR lower threshold OR defer as major project
+- Commits: 6bd7e6c44 (measurement results documented in docs/UI-PARITY-REPORT.md)
+
 **C04: Mobile Gate home 380px - SKIPPED PER 3-ATTEMPT RULE (2026-10-23, autopilot)**
 - Goal: Achieve home 380px <11% vs electro-home-v7.html reference
 - **RESULT: SKIPPED after third attempt** - Goal condition cannot be met
