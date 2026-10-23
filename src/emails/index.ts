@@ -45,6 +45,13 @@ export {
   type GiftInput,
 } from '@/lib/email/templates/gift'
 
+// Email scheduling functions
+export {
+  scheduleExpiryReminders,
+  scheduleGiftCoupon,
+  schedulePurchaseConfirmation,
+} from './scheduler'
+
 // Re-export transport and types
 export {
   sendEmail,
