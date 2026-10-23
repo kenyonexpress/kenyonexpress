@@ -74,12 +74,16 @@ interface MyTier {
 - Progress indicator to next tier (or confirmation of highest tier)
 - Benefits list (populated when benefits exist)
 
-**Example output**:
-```
-מועדון הלקוחות
-דרגה: כסף
-רכישות ב-12 החודשים האחרונים: ₪835
-עוד ₪1,165 לדרגת זהב
+**Display format** (from AccountPageContent.tsx lines 92-105):
+```tsx
+<section className="account-card" aria-label="מועדון הלקוחות">
+  <h2 className="account-card__title">מועדון הלקוחות</h2>
+  <p className="account-row__title">דרגה: {tier.tierNameHe}</p>
+  <p className="account-row__meta">
+    רכישות ב-12 החודשים האחרונים: {formatIls(tier.spendAgorot)}
+    {tier.nextTierNameHe ? ` · עוד ${formatIls(tier.toNextAgorot)} לדרגת ${tier.nextTierNameHe}` : ' · הגעת לדרגה הגבוהה ביותר'}
+  </p>
+</section>
 ```
 
 ### ✅ Admin UI
@@ -94,7 +98,8 @@ interface MyTier {
   - Sort order (`sort_order`)
   - Benefits (one per line, stored as JSON array)
   - Active/inactive toggle
-- Form validation with error display
+- Schema validation with Zod
+- Error display for validation failures
 - Success feedback on save
 - Requires `discounts:read` permission to view, `discounts:write` to edit
 
@@ -195,9 +200,11 @@ Currently **no checkout benefits** are implemented:
 
 ## Database State
 
-**Production migration status**: Applied (migration 282 in `applied/`)
+**Production verification** (2026-10-24 via Supabase REST API):
 
-**Seeded tiers** (as of migration):
+Migration 282 applied. Table `club_tiers` exists with 4 active tiers. View `v_user_tier` exists with proper RLS (SECURITY INVOKER, authenticated-only access).
+
+**Verified production data**:
 ```sql
 ('bronze', 'ארד', 0, 10)
 ('silver', 'כסף', 50000, 20)
