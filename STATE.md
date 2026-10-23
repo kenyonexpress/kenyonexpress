@@ -2,7 +2,7 @@
 
 Full history: docs/STATE-ARCHIVE.md (STATE.md archived 2026-10-16 and again 2026-10-23). Cap: 300 lines.
 
-## המשך מ: C07 (blocked - skip to C08)
+## המשך מ: C08 (blocked - same root cause as C07)
 
 **C07: Mobile Gate cart + checkout + /thank-you under 11% - BLOCKED (2026-10-23, autopilot)**
 - Goal: Verify cart, checkout, and /thank-you pages are currently under 11% parity at mobile widths (380/768/1440)
@@ -25,6 +25,21 @@ Full history: docs/STATE-ARCHIVE.md (STATE.md archived 2026-10-16 and again 2026
   2. Accept historical Sept 7 measurements - doesn't meet "current" requirement
   3. Skip goal entirely - no valid comparison possible
 - Logged to: docs/C07-RESULT.md (detailed analysis)
+- Verification: pnpm typecheck, lint, build all exit 0
+
+**C08: Mobile Gate /account + /wallet + /vouchers - BLOCKED (2026-10-23, autopilot)**
+- Goal: Verify account, wallet, and vouchers pages under 11% at mobile widths (380/768/1440)
+- **RESULT: UNACHIEVABLE - No WordPress baselines exist for these routes**
+- Root cause: Account functionality never existed in WordPress/WooCommerce site
+- Available references: home, product, category, products, search, cart, checkout
+- Missing references: ke_live_account.html, ke_live_wallet.html, ke_live_vouchers.html
+- WordPress site no longer exists (DNS cut to Vercel, serves THIS app)
+- Same blocker as C07: measurement tooling requires WordPress references
+- Routes exist and render correctly:
+  - /account (src/app/(account)/account/page.tsx)
+  - /account/wallet (src/app/(account)/account/wallet/)
+  - /account/vouchers (src/app/(account)/account/vouchers/)
+- Logged to: docs/C08-RESULT.md (detailed analysis)
 - Verification: pnpm typecheck, lint, build all exit 0
 
 **C06: Mobile Gate /c/ routes (category + city) - DONE (2026-10-23, autopilot)**
