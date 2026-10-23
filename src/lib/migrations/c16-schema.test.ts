@@ -153,7 +153,6 @@ describe('C16 migration schema', () => {
   })
 
   it('uses IF NOT EXISTS for idempotency', () => {
-    const createStatements = migrationSql.match(/CREATE (TABLE|TYPE|INDEX)/gi) || []
     const ifNotExistsCount = migrationSql.match(/IF NOT EXISTS/gi)?.length || 0
 
     // Should have IF NOT EXISTS for most creates (not all, due to DO blocks for enums)
