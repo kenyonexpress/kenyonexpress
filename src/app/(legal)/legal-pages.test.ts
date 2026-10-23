@@ -40,12 +40,15 @@ describe('every legal document is reachable', () => {
   })
 
   it('serves every document at the path the registry says, from a real page file (F42)', () => {
-    // All five legal documents now live in the (legal) route group, each at the
-    // path the registry specifies. The file must exist and render that document,
-    // or `legalDocPath` points at a 404.
+    // `/cookie-policy` stays in the store group (it carries the consent-reset
+    // control); the other four are pages of this group. Either way the file
+    // must exist and render that document, or `legalDocPath` points at a 404.
     for (const doc of LEGAL_DOCS) {
       const path = legalDocPath(doc.slug)
-      const file = join(process.cwd(), 'src', 'app', '(legal)', path.slice(1), 'page.tsx')
+      const file =
+        doc.slug === 'cookies'
+          ? join(process.cwd(), 'src', 'app', '(store)', 'cookie-policy', 'page.tsx')
+          : join(process.cwd(), 'src', 'app', '(legal)', path.slice(1), 'page.tsx')
       const source = readFile(file, 'utf8')
       expect(source, `${path} does not render ${doc.slug}`).toContain(`getLegalDoc('${doc.slug}')`)
       expect(source).toContain(`alternatesFor('${path}')`)

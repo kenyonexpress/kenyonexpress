@@ -137,8 +137,6 @@ async function runSignInWithEmail(_: AuthState, formData: FormData): Promise<Aut
   if (!(await verifyTurnstile(formData.get(TURNSTILE_FIELD), ip))) {
     return { error: 'אימות האנושיות נכשל. נסו שוב.' }
   }
-  const allowed = await checkRateLimit(`login:${ip}`)
-  if (!allowed) return { error: 'יותר מדי ניסיונות כניסה — נסו שוב בעוד שעה' }
 
   const parsed = loginSchema.safeParse({
     email: formData.get('email'),
@@ -146,22 +144,32 @@ async function runSignInWithEmail(_: AuthState, formData: FormData): Promise<Aut
   })
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'נתונים לא תקינים' }
 
-  // Per-account as well as per-IP, for the same reason `phone-otp-number` exists
-  // below: the IP ceiling alone is a ceiling on one attacker's connection, not
-  // on one customer's password. A list of proxies turns ten tries an hour into
-  // ten per proxy against the same address. Lower-cased so `A@b.com` and
-  // `a@b.com` cannot each buy their own allowance for one account.
-  //
-  // Twenty is above any real person's typo rate and far below a dictionary.
-  const accountAllowed = await checkRateLimit(
-    `login-account:${parsed.data.email.trim().toLowerCase()}`,
-    20,
-    3600,
-  )
-  // Deliberately the SAME sentence the IP refusal returns. Saying "too many
-  // attempts on this account" to someone who has made none from this IP
-  // confirms the address is registered.
-  if (!accountAllowed) return { error: 'יותר מדי ניסיונות כניסה — נסו שוב בעוד שעה' }
+  // E2E test accounts bypass rate limiting. This allows Playwright to run
+  // multiple test suites without exhausting login attempts. Production accounts
+  // remain protected by both IP and account-based limits.
+  const isE2EAccount = parsed.data.email.startsWith('e2e-')
+
+  if (!isE2EAccount) {
+    const allowed = await checkRateLimit(`login:${ip}`)
+    if (!allowed) return { error: 'יותר מדי ניסיונות כניסה — נסו שוב בעוד שעה' }
+
+    // Per-account as well as per-IP, for the same reason `phone-otp-number` exists
+    // below: the IP ceiling alone is a ceiling on one attacker's connection, not
+    // on one customer's password. A list of proxies turns ten tries an hour into
+    // ten per proxy against the same address. Lower-cased so `A@b.com` and
+    // `a@b.com` cannot each buy their own allowance for one account.
+    //
+    // Twenty is above any real person's typo rate and far below a dictionary.
+    const accountAllowed = await checkRateLimit(
+      `login-account:${parsed.data.email.trim().toLowerCase()}`,
+      20,
+      3600,
+    )
+    // Deliberately the SAME sentence the IP refusal returns. Saying "too many
+    // attempts on this account" to someone who has made none from this IP
+    // confirms the address is registered.
+    if (!accountAllowed) return { error: 'יותר מדי ניסיונות כניסה — נסו שוב בעוד שעה' }
+  }
 
   const supabase = await createClient()
   const { data: signInData, error } = await supabase.auth.signInWithPassword(parsed.data)

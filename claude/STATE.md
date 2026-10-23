@@ -4,15 +4,7 @@ The canonical state file on this branch is the root `STATE.md`. This file
 exists because the goal queue names `claude/STATE.md`; it holds the resume
 line only, and the full block for each goal is in the root file.
 
-**המשך מ: F42 DONE**
-
-F42: verified on closeout/v1-final. Four legal pages (terms, privacy, returns, accessibility) under `src/app/(legal)/`, supplier click-wrap refund clause in `src/lib/legal/supplier-agreement.ts`, brand `קניון EXPRESS` in `src/lib/brand.ts`, storefront review forms removed, shipping-only address flow with the 5-order verified-shipping gate in `src/lib/checkout/verified-shipping.ts`. 19 test files, 234 tests pass. The apply page lives at `src/app/(store)/suppliers`, not `src/app/supplier/apply`.
-
-Previous: F41 DONE
-
-F41: `BUSINESS_REGISTRATION_NUMBER` already in `src/lib/legal-entity.ts` (merged in #93), wired into the order-confirmation email, invoice issuer, both footers, legal pages via `LegalContactBlock`, and the supplier click-wrap; 6 test files, 70 tests pass.
-
-Previous: F43 DONE mobile 8.53%
+**המשך מ: F43 DONE mobile 8.53%**
 
 Last goal: F43, home parity gate on the rebuilt tree, by the goal's literal
 `pnpm run compare` command and by a fresh archive shot: 380px 8.53% PASS,
@@ -21,5 +13,3 @@ Last goal: F43, home parity gate on the rebuilt tree, by the goal's literal
 -0.14px body letter-spacing in `src/app/globals.css`, gate flags
 `--widths`, `--baseline`, `--live-url` in `scripts/compare-args.mjs`. Rows in
 `docs/UI-PARITY-REPORT.md`, 2026-10-21.
-
-BLOCKED F43 re-run: baseline electro-v7-380.png does not exist (used electro-home-v7_380.png); :3311 serves kenyonexpress-autopilot and renders data fallback + 2 dropped scripts (41.20% 380, 40.89% 768, not a fidelity score); own build on :3312 500s on env (Invalid url). Last valid: 380 8.53%, 768 9.79%. No code changed.

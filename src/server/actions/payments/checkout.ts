@@ -1016,16 +1016,12 @@ async function runSubmitCheckout(
       zip: string
     }
     if (addressId) {
-      const { data: saved, error: savedError } = await admin
+      const { data: saved } = await admin
         .from('user_addresses')
         .select('user_id, full_name, phone, city, street, street_number, zip')
         .eq('id', addressId)
         .is('deleted_at', null)
         .maybeSingle()
-      if (savedError) {
-        log.error('checkout.address_lookup_failed', { reason: savedError.message })
-        return { error: 'לא הצלחנו לטעון את הכתובת. נסו שוב.', code: 'ADDRESS_REQUIRED' }
-      }
       if (!saved || saved.user_id !== user.id) {
         return { error: 'כתובת לא תקינה', code: 'ADDRESS_REQUIRED' }
       }

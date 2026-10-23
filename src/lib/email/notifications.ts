@@ -161,9 +161,14 @@ export function buildOrderPaidEmail(
     'התשלום התקבל וההזמנה שלך נקלטה.',
     `מספר הזמנה: ${ref}`,
     `סך הכל שולם באתר: ${total}`,
-    `לפרטי ההזמנה והורדת החשבונית: ${url}`,
+    items > 0 ? `פריטים: ${items}` : '',
+    '',
+    `לפרטי ההזמנה: ${url}`,
+    '',
     legalEntityLine(),
-  ].join('\n')
+  ]
+    .filter((line) => line !== '')
+    .join('\n')
 
   const html = shell(
     `<div dir="rtl" style="background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
