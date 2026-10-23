@@ -241,24 +241,26 @@ describe('buildInvoiceDeadEmail', () => {
   })
 })
 
-describe('the order confirmation links a receipt', () => {
+describe('the order confirmation links the order page only', () => {
   const SITE = 'https://kenyonexpress.co.il'
+  const payload = { order_id: 'order-9', order_ref: 'ORDER9', total_agorot: 5000, item_count: 1 }
 
-  it('links our own ownership-checked route, never a provider URL', () => {
-    // A raw provider link in an email is readable by every forward, screenshot
-    // and shared inbox that mail ever reaches.
-    const built = buildNotification(
-      'order_paid',
-      { order_id: 'order-9', order_ref: 'ORDER9', total_agorot: 5000, item_count: 1 },
-      SITE,
-    )
-    expect(built?.html).toContain('/account/orders/order-9/invoice')
-    expect(built?.text).toContain('/account/orders/order-9/invoice')
+  it('links the order page and carries no document link', () => {
+    const built = buildNotification('order_paid', payload, SITE)
+    expect(built?.html).toContain('/account/orders/order-9')
+    expect(built?.text).toContain('/account/orders/order-9')
+    expect(built?.html).not.toContain('/invoice')
+    expect(built?.text).not.toContain('/invoice')
   })
 
-  it('omits the link entirely when there is no order id to build one from', () => {
+  it('is six lines of plain text', () => {
+    expect(buildNotification('order_paid', payload, SITE)?.text.split('\n')).toHaveLength(6)
+  })
+
+  it('falls back to the orders list when there is no order id', () => {
     const built = buildNotification('order_paid', { order_ref: 'X', total_agorot: 100 }, SITE)
     expect(built?.html).not.toContain('/invoice')
+    expect(built?.html).toContain('/account/orders')
   })
 })
 
