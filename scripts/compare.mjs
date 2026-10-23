@@ -261,9 +261,21 @@ if (page === 'home') {
   // local add-to-cart is blocked by the stock Supabase demo key.
   liveUrl ??= REFERENCE('ke_live_cart.html', LIVE_CART)
   mineUrl ??= `${LOCAL}/cart`
+} else if (page === 'account') {
+  // Account page has no default reference (new Next.js functionality).
+  // Must be measured with explicit --baseline (e.g., Wayback Machine snapshot).
+  // The liveUrl comes from the baseline file, mineUrl is the page under test.
+  if (!ARGS.baseline) {
+    console.error(
+      'compare: --page=account requires --baseline (no default reference exists).\nExample: --baseline=wayback_account_380.png --live-url=http://localhost:3311/account',
+    )
+    process.exit(2)
+  }
+  liveUrl ??= `file://${ARGS.baseline.path}`
+  mineUrl ??= `${LOCAL}/account`
 } else {
   console.error(
-    `unknown --page=${page} (use home, product, category, products, search, cart or checkout)`,
+    `unknown --page=${page} (use home, product, category, products, search, cart, checkout or account)`,
   )
   process.exit(2)
 }
