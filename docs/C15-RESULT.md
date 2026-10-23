@@ -12,9 +12,13 @@ Renamed `order_items.platform_percent` to `platform_percent_snapshot` to explici
 
 ### 1. Migration 130_platform_percent_snapshot.sql
 
-- **Action**: Renamed column `platform_percent` → `platform_percent_snapshot` on `order_items` table
+- **Action**: 
+  1. Renamed column `platform_percent` → `platform_percent_snapshot` on `order_items` table
+  2. Updated `fn_order_items_snapshot_lock()` trigger to guard the renamed column
 - **Type**: Metadata-only DDL (no data movement)
-- **Immutability**: Enforced via comment; no UPDATE permitted after finalize
+- **Immutability**: **Enforced at database level via trigger**
+  - The trigger raises an exception if any UPDATE attempts to change `platform_percent_snapshot` on an order_item whose order has `paid_at` set
+  - Follows the same pattern as migration 062's protection of `platform_bp`, `commission_bp`, etc.
 - **Backward compatibility**: Older rows may have NULL (no default exists per CONTRADICTIONS.md C1)
 
 ### 2. Code Updates
@@ -35,6 +39,7 @@ Updated all references to use the new column name:
 - `src/server/payments/settlement-events.test.ts`: All test fixtures
 - `src/server/payments/finalize-reads-fail-loudly.test.ts`: Mock order item
 - `src/server/payments/subscription-create.test.ts`: Subscription row fixture
+- `src/server/payments/platform-percent-immutability.test.ts`: **NEW** - Verifies trigger blocks UPDATE on paid orders
 
 #### Linter Fix (Unrelated)
 - `scripts/verify-web-push.mjs`: Removed unused `tables` variable
@@ -72,9 +77,23 @@ order_items.platform_percent_snapshot (captured at finalize, immutable)
 settlement_events.platform_percent_snapshot (copied on charge_settled)
 ```
 
+## Immutability Enforcement
+
+Migration 130 updates the existing `fn_order_items_snapshot_lock()` trigger (from migration 062) to add `platform_percent_snapshot` to the guarded set. The trigger:
+
+1. Fires `BEFORE UPDATE` on every `order_items` row
+2. Checks if the order has `paid_at` set
+3. Blocks the UPDATE with `RAISE EXCEPTION` if any percent snapshot changed
+
+This is **database-level enforcement**, not just application-level. Any direct SQL UPDATE, admin tool, or rogue script that attempts to change the snapshot on a paid order will be rejected with:
+
+```
+ERROR: order item <id> belongs to a paid order; percent snapshots are frozen
+```
+
 ## Migration Status
 
-**Not yet applied to production.** Migration 130 is in `supabase/migrations/` but requires Supabase MCP OAuth to apply. The column rename is safe (metadata-only) and backward-compatible.
+**Not yet applied to production.** Migration 130 is in `supabase/migrations/` but requires Supabase MCP OAuth to apply. The column rename is safe (metadata-only) and backward-compatible. The trigger update is also safe (recreates an existing trigger with one additional guarded column).
 
 ## Related Files
 
