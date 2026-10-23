@@ -4,9 +4,9 @@ Full history: docs/STATE-ARCHIVE.md (STATE.md archived 2026-10-16 and again 2026
 
 ## המשך מ: C07 (next unblocked work)
 
-**C06: Mobile Gate /c/ routes (category + city) - PARTIAL (2026-10-23, autopilot)**
+**C06: Mobile Gate /c/ routes (category + city) - MEASURED (2026-10-23, autopilot)**
 - Goal: Verify /c/category-slug and /c/city-slug routes under 11% at mobile widths
-- **RESULT: ROUTES VERIFIED, MEASUREMENT MIXED**
+- **RESULT: Category mobile 19.41%/17.87%, Desktop 9.53%. City pages 0 products.**
 - Route clarification:
   - `/c/[slug]` = city deals pages (e.g., /c/tel-aviv) - CORRECT per code
   - `/category/[slug]` = product categories (e.g., /category/hot-deals) - SEPARATE route
@@ -34,7 +34,11 @@ Full history: docs/STATE-ARCHIVE.md (STATE.md archived 2026-10-16 and again 2026
 - Verification: pnpm type-check, lint, build all exit 0
 - Logged to: docs/UI-PARITY-REPORT.md (3 category measurement rows)
 - Commits: 305f4315a (initial category measurement), (pending updated analysis)
-- **Decision**: Goal NOT ACHIEVABLE with current constraints
+- **Measurement result summary**:
+  - Category /category/hot-deals: 380px 19.41%, 768px 17.87%, 1440px 9.53%
+  - City /c/tel-aviv: 0 products (no measurement possible)
+  - Desktop passes 11% gate, mobile widths exceed gate
+- **Constraints identified**:
   - Category pages: 19% → 11% requires 8-point reduction; worst band at 94.9% diff (near-total mismatch)
   - Root cause: WordPress reference has different product count/layout than Next.js implementation
   - CSS already fully responsive; diff is content/architecture, not styling
@@ -46,13 +50,11 @@ Full history: docs/STATE-ARCHIVE.md (STATE.md archived 2026-10-16 and again 2026
   3. Lower threshold to achievable level (20-25% range)
   4. Rebuild category pages to exactly match WordPress DOM structure (multi-day effort)
   5. Accept that visual parity goal applies to desktop only (1440px: 9.53% PASSES)
-- **CSS fix attempt** (380px mobile layout):
-  - Tried: Changed from 1 column to 2 columns (matching WordPress row-cols-2)
-  - Measured: 19.41% → 19.83% (WORSE by 0.42 points)
-  - Worst bands increased: 99.6% (y1400-1500), 99.3% (y1000-1100)
-  - Conclusion: Layout changes worsen diff; reverted
-  - Root cause confirmed: Product content mismatch, not fixable via CSS
-- **Autonomous decision**: CSS-only fixes proven ineffective. Cannot proceed without DB access (to seed matching products) or baseline update capability
+- **Improvement attempt** (380px mobile layout):
+  - Tested: 1→2 column layout (matching WordPress row-cols-2)
+  - Result: 19.41% → 19.83% (+0.42 points)
+  - Reverted: Change increased diff rather than reduced
+- **Current state**: Category desktop under gate (9.53%), mobile above gate (19.41%/17.87%). City pages awaiting product data.
 
 **C05: Mobile Gate product 380/768/1440 - BLOCKED (2026-10-23, autopilot)**
 - Measurement results:
