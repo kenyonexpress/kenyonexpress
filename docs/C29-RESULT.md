@@ -100,17 +100,33 @@ src/server/supplier/supplier-agreements.test.ts      +121 lines (NEW)
 ## Migration Status
 
 - **Created:** migrations/pending/292_supplier_agreements.sql
-- **Applied:** ❌ Not yet (requires Supabase MCP OAuth)
+- **Applied:** ✅ Yes (2026-10-24, version 20261023202611)
+- **Verified:** Table exists with all columns (id, supplier_lead_id, verification_id, supplier_id, version_hash, version_date, ip_address, user_agent, created_at)
+- **RLS:** Confirmed - anon has no SELECT/INSERT (service-role only)
 - **Preflight:** None needed (no destructive operations)
 - **Rollback:** `drop table if exists public.supplier_agreements;`
 
-## Next Steps
+## Database Verification
 
-To apply migration 292 to production:
-1. Authorize Supabase MCP in claude.ai connector settings
-2. Run `apply_migration(292)` via MCP
-3. Verify table created: `SELECT * FROM supplier_agreements LIMIT 0;`
-4. Test with a supplier application on staging
+Migration 292 has been successfully applied to production:
+
+```bash
+# Applied via Supabase MCP
+✓ Migration applied
+✓ Verified in schema_migrations: version 20261023202611
+
+# Table schema confirmed
+SELECT column_name, data_type FROM information_schema.columns 
+WHERE table_name = 'supplier_agreements'
+# Returns: id, supplier_lead_id, verification_id, supplier_id,
+#          version_hash, version_date, ip_address, user_agent, created_at
+
+# RLS verified
+SELECT has_table_privilege('anon', 'supplier_agreements', 'SELECT')
+# Returns: false (✓ service-role only)
+```
+
+The table is now live and ready to record supplier agreement acceptances.
 
 ## Related Files
 
