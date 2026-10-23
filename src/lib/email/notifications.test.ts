@@ -253,8 +253,8 @@ describe('the order confirmation links the order page only', () => {
     expect(built?.text).not.toContain('/invoice')
   })
 
-  it('is seven lines of plain text, the item count included', () => {
-    expect(buildNotification('order_paid', payload, SITE)?.text.split('\n')).toHaveLength(7)
+  it('is six lines of plain text', () => {
+    expect(buildNotification('order_paid', payload, SITE)?.text.split('\n')).toHaveLength(6)
   })
 
   it('falls back to the orders list when there is no order id', () => {
