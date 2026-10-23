@@ -237,6 +237,7 @@ describe('the pending migration inventory', () => {
       '277_fraud_monitoring.sql',
       '287_sms_marketing.sql',
       '288_customer_rfm_segmentation.sql',
+      '289_cron_revenue_daily.sql',
       'preflight_162.sql',
       'preflight_169.sql',
       'preflight_170.sql',
@@ -262,6 +263,7 @@ describe('the pending migration inventory', () => {
       'preflight_277.sql',
       'preflight_287.sql',
       'preflight_288.sql',
+      'preflight_289.sql',
     ])
   })
 
