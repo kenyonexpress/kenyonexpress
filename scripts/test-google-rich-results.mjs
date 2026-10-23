@@ -63,7 +63,7 @@ async function fetchJsonLd(url) {
       .map((match) => {
         try {
           return JSON.parse(match[1])
-        } catch (e) {
+        } catch {
           return null
         }
       })
