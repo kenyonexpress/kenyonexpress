@@ -346,9 +346,11 @@ export default function CheckoutForm({
     return !check || check.ok
   }
 
-  // The single gate that makes this a guest checkout: the form is filled, and
-  // only the press of "pay" needs an identity. A guest is stashed and sent to
-  // Google here instead of being turned away at the door.
+  // Guest-first: pressing "pay" never asks for Google. The server gives a
+  // shopper without a session an anonymous one, and the return page offers
+  // Google afterwards to keep the details and the saved card. Only when the
+  // server answers GUEST_UNAVAILABLE does `loginThenResume` stash the form and
+  // fall back to signing in first.
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     const form = event.currentTarget
     const zip = (form.elements.namedItem('zip') as HTMLInputElement | null)?.value ?? ''
@@ -371,25 +373,25 @@ export default function CheckoutForm({
       }
     }
 
-    if (!isAuthenticated) {
-      event.preventDefault()
-      const data = new FormData(form)
-      const stash: Record<string, string> = {}
-      for (const name of RESUME_FIELDS) {
-        const value = data.get(name)
-        if (typeof value === 'string' && value !== '') stash[name] = value
-      }
-      try {
-        window.sessionStorage.setItem(RESUME_KEY, JSON.stringify(stash))
-      } catch {
-        // A blocked sessionStorage costs the refill, not the checkout.
-      }
-      track('checkout_step', { step: 'guest_login' })
-      googleFormRef.current?.requestSubmit()
-      return
-    }
-
     track('checkout_step', { step: 'payment_redirect' })
+  }
+
+  const loginThenResume = () => {
+    const form = formRef.current
+    if (!form) return
+    const data = new FormData(form)
+    const stash: Record<string, string> = {}
+    for (const name of RESUME_FIELDS) {
+      const value = data.get(name)
+      if (typeof value === 'string' && value !== '') stash[name] = value
+    }
+    try {
+      window.sessionStorage.setItem(RESUME_KEY, JSON.stringify(stash))
+    } catch {
+      // A blocked sessionStorage costs the refill, not the checkout.
+    }
+    track('checkout_step', { step: 'guest_login' })
+    googleFormRef.current?.requestSubmit()
   }
 
   const authError = googleState && 'error' in googleState ? googleState.error : null
@@ -995,7 +997,11 @@ export default function CheckoutForm({
                 {!usingSavedCard && (
                   <label className="checkout-terms">
                     <input type="checkbox" name="save_card" defaultChecked />
-                    <span>שמירת כרטיס לתשלום מהיר בפעם הבאה</span>
+                    <span>
+                      {isAuthenticated
+                        ? 'שמירת כרטיס לתשלום מהיר בפעם הבאה'
+                        : 'שמירת הכרטיס לתשלום בלחיצה אחת בפעם הבאה (לאחר התשלום תוכלו לשמור את החשבון עם Google)'}
+                    </span>
                   </label>
                 )}
 
@@ -1019,6 +1025,16 @@ export default function CheckoutForm({
                       </button>
                     )}
                   </div>
+                )}
+                {failureCode === 'GUEST_UNAVAILABLE' && (
+                  <button
+                    type="button"
+                    className="checkout-error__retry"
+                    onClick={loginThenResume}
+                    disabled={busy}
+                  >
+                    התחברות עם Google והמשך
+                  </button>
                 )}
                 {authError && (
                   <div className="checkout-error" role="alert">

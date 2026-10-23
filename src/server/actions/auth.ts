@@ -129,6 +129,39 @@ async function runSignInWithGoogle(_: AuthState, formData: FormData): Promise<Au
   return null
 }
 
+/**
+ * Post-payment: attach Google to the anonymous checkout user so the order, the
+ * address and the saved card stay on the same account. `linkIdentity` keeps the
+ * user id; `signInWithOAuth` would create a second user and orphan the order.
+ */
+async function runLinkGoogleAfterCheckout(_: AuthState, formData: FormData): Promise<AuthState> {
+  const next = safeNext(formData.get('next'))
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user?.is_anonymous) return { error: 'אין הזמנת אורח לשמירה' }
+  const { data, error } = await supabase.auth.linkIdentity({
+    provider: 'google',
+    options: {
+      redirectTo: authRedirect(`/auth/callback?next=${encodeURIComponent(next)}`),
+      scopes: 'openid email profile',
+    },
+  })
+  if (error) return { error: toHebrew(error.message) }
+  if (data.url) redirect(data.url)
+  return null
+}
+
+export async function linkGoogleAfterCheckout(
+  _: AuthState,
+  formData: FormData,
+): Promise<AuthState> {
+  return withActionContext('auth.link_google_after_checkout', () =>
+    runLinkGoogleAfterCheckout(_, formData),
+  )
+}
+
 // ──────────────────────────────────────────────
 // Email / Password sign-in
 // ──────────────────────────────────────────────

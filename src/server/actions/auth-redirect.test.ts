@@ -62,9 +62,9 @@ describe('the app origin', () => {
   it('reaches the auth redirects through siteUrl', () => {
     const auth = code(join(SRC, 'server/actions/auth.ts'))
 
-    // The three ways into an account: Google, the magic link, the reset mail.
+    // The ways into an account: Google, Google link after checkout, the magic link, the reset mail.
     expect(auth).toContain("import { siteUrl } from '@/lib/site-url'")
-    expect(auth.match(/authRedirect\(/g) ?? []).toHaveLength(4) // 1 definition + 3 uses
+    expect(auth.match(/authRedirect\(/g) ?? []).toHaveLength(5) // 1 definition + 4 uses
     expect(auth).not.toContain('process.env.NEXT_PUBLIC_APP_URL')
   })
 
@@ -75,6 +75,7 @@ describe('the app origin', () => {
     const paths = [...auth.matchAll(/authRedirect\(\s*[`'"]([^`'"]*)/g)].map((m) => m[1])
     expect(paths.filter(Boolean)).toEqual([
       '/auth/callback?next=${encodeURIComponent(next)}',
+      '/auth/callback?next=${encodeURIComponent(next)}', // linkIdentity after checkout
       '/auth/callback',
       '/auth/callback?next=/reset-password',
     ])
