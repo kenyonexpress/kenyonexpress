@@ -28,10 +28,6 @@ Full history: docs/STATE-ARCHIVE.md (archived 2026-10-16). Cap: 300 lines.
 ## המשך מ: F45 (next unblocked work)
 
 **F41: BUSINESS_REGISTRATION_NUMBER Audit Complete**
-## המשך מ: F45 (next unblocked work)
->>>>>>> 762d5e208 ([autopilot] STATE.md: F44 status update - environment fixes complete, blocked on production secrets)
-
-**F41: BUSINESS_REGISTRATION_NUMBER Audit Complete**
 
 | Task | Result | Status |
 |------|--------|--------|
