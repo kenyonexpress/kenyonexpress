@@ -4,9 +4,21 @@ Full history: docs/STATE-ARCHIVE.md (STATE.md archived 2026-10-16 and again 2026
 
 ## המשך מ: C17 (next unblocked work)
 
-**C16: Payment events + refunds + search outbox + state guards - COMPLETE (2026-10-23, autopilot)**
-- Goal: Consolidated migration for payment_events, refunds, search_index_outbox tables and state guards on orders.status, payments.status
-- **RESULT: COMPLETE - Production-ready migration created with comprehensive tests**
+**C16: Payment events + refunds + search outbox + state guards - BLOCKED (2026-10-23, autopilot)**
+- Goal: Use Supabase MCP for DB, RLS, migrations. Create migration for payment_events, refunds, search_index_outbox tables and state guards.
+- **RESULT: BLOCKED - Supabase MCP requires OAuth unavailable in non-interactive sessions**
+- **BLOCKER: Supabase MCP authentication**
+  - ToolSearch for Supabase tools: No matching deferred tools found
+  - ListMcpResourcesTool for "claude.ai Supabase": Server exists but requires OAuth
+  - System reminder: "This session is non-interactive, so Claude cannot run the OAuth flow"
+  - OAuth must be configured via claude.ai connector settings in interactive session
+- **ALTERNATIVE VERIFICATION: Used Supabase Management API (read-only)**
+  - Discovered all C16 components already exist in production (migrations 130, 131, 132 applied)
+  - payment_events: EXISTS (38-event enum, used by payment-events.ts)
+  - refunds: EXISTS (14-day deadline, constraints enforced, used by refund-record.ts)  
+  - search_index_outbox: EXISTS (durable queue, matches spec)
+  - State guards: Assumed present (not verifiable via read-only API)
+- **WORK COMPLETED (cannot satisfy MCP requirement):**
 - Components delivered:
   1. **payment_events table**: 38-event lifecycle journal with webhook deduplication
   2. **refunds table**: Statutory refund record with 14-day deadline enforcement (Consumer Protection Law 14ה)
