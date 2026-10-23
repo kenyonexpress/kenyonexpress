@@ -48,6 +48,7 @@ export default function GiftPurchaseForm({ product }: { product: Product }) {
         </label>
         <input
           id="gift-email"
+          dir="ltr"
           type="email"
           required
           value={recipientEmail}

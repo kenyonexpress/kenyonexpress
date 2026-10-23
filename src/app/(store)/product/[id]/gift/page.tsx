@@ -1,14 +1,20 @@
 import GiftPurchaseForm from '@/components/gifts/GiftPurchaseForm'
 import { createPublicClient } from '@/lib/supabase/anon'
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 type Props = { params: Promise<{ id: string }> }
+
+export const metadata: Metadata = {
+  title: 'שלח מתנה',
+  robots: { index: false, follow: false },
+}
 
 export default async function GiftProductPage({ params }: Props) {
   const { id } = await params
 
   const supabase = createPublicClient()
-  const { data: product } = await supabase
+  const { data: product, error } = await supabase
     .from('products')
     .select('id, name_he, kenyon_price, images, is_coupon_enabled, type')
     .eq('id', id)
@@ -16,6 +22,7 @@ export default async function GiftProductPage({ params }: Props) {
     .is('deleted_at', null)
     .maybeSingle()
 
+  if (error) throw new Error(`gift page product read failed: ${error.message}`)
   if (!product) notFound()
 
   // Only coupons can be gifted
