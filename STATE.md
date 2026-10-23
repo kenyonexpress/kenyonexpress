@@ -179,3 +179,4 @@ Continue from Z06 DONE-AS-SHIPPED (re-run 5 2026-10-24): unchanged. CSV import a
 Continue from Z06 DONE-AS-SHIPPED (re-run 6 2026-10-24): unchanged. CSV import accepts 185/187/278 columns; 5-row test c26f15fac on origin, product-csv tests green (10 passed), branch in sync. Live-DB import not run: Supabase MCP needs OAuth. No code change.
 Continue from Z07 DONE-AS-SHIPPED (re-run 4 2026-10-24): unchanged. verify-card-stub on origin (3735bb4c2), 4 tests green, branch in sync. No code change.
 Continue from Z07 DONE-AS-SHIPPED (re-run 5 2026-10-24): unchanged. verify-card-stub on origin (3735bb4c2), 4 tests green, branch in sync. No code change.
+Continue from Z07 DONE-AS-SHIPPED (re-run 6 2026-10-24): unchanged. verify-card-stub on origin (3735bb4c2), branch in sync. No code change.
