@@ -125,3 +125,78 @@ Applied 2026-10-23 at 08:11:16 UTC via Supabase MCP `execute_sql` tool
 - Migrations not recorded in supabase_migrations.schema_migrations (expected)
 - Failed migrations require dependency resolution before retry
 - Full logs in logs/c02-migrations/results-20261023-150920.jsonl
+
+---
+
+# C02 Update: Additional 8 Migrations Applied - 2026-10-23
+
+After fixing dependency and syntax issues, applied 8 more migrations, bringing total to 22 of 26.
+
+## Newly Applied (Round 2)
+
+| # | File | Status |
+|---|---|---|
+| 15 | 190_partner_api_infrastructure.sql | ✓ Applied (after adding user_id to partners, has_permission stub) |
+| 16 | 192_observability_schema.sql | ✓ Applied (after moving endpoint_metrics table before functions) |
+| 17 | 193_observability_endpoint_metrics.sql | ✓ Applied (after fixing is_admin → is_super_admin) |
+| 18 | 194_p95_latency_samples.sql | ✓ Applied (after fixing CREATE POLICY IF NOT EXISTS) |
+| 19 | 195_perf_tickets.sql | ✓ Applied (after fixing CREATE POLICY IF NOT EXISTS) |
+| 20 | 196_p95_statistics_function.sql | ✓ Applied (no changes needed) |
+| 21 | 287_sms_marketing.sql | ✓ Applied (no changes needed) |
+| 22 | 200_deal_seeding_infrastructure.sql | ✓ Applied (after fixing table order, user_roles → admin_users) |
+
+## Infrastructure Added
+
+Created `000_infrastructure_dependencies.sql` to provide missing infrastructure:
+- `admin_users` table (user_id, is_super_admin, timestamps)
+- `observability` schema
+- `has_permission(TEXT)` stub function (returns FALSE for non-super-admins)
+
+## Fixes Applied (Round 2)
+
+### 190_partner_api_infrastructure.sql
+- Added `user_id UUID` column to partners table
+- Added `has_permission()` stub function to infrastructure dependencies
+
+### 192_observability_schema.sql  
+- Moved `observability.endpoint_metrics` table creation to beginning (before functions that reference it)
+
+### 193_observability_endpoint_metrics.sql
+- Changed to `CREATE TABLE IF NOT EXISTS` (table now created in 192)
+- Fixed `is_admin` → `is_super_admin` and auth.users → admin_users
+
+### 194_p95_latency_samples.sql
+- Removed `IF NOT EXISTS` from CREATE POLICY (not valid PostgreSQL syntax)
+- Added `DROP POLICY IF EXISTS` before CREATE
+- Added FOR ALL TO service_role
+
+### 195_perf_tickets.sql
+- Same CREATE POLICY fixes as 194
+- Fixed both service_role and authenticated policies
+
+### 200_deal_seeding_infrastructure.sql
+- Moved `deal_sources` table before `pending_deals` (FK dependency)
+- Removed duplicate deal_sources definition
+- Changed user_roles check → admin_users check in RLS policy
+
+### 277_fraud_monitoring.sql
+- Changed all `profile_id` references → `user_id`
+- Changed `public.profiles` → `auth.users`
+- Updated index names accordingly
+
+### 288_customer_rfm_segmentation.sql
+- Fixed RETURNING clause: `segment_type` → `segment_id`
+
+## Remaining Failures
+
+| File | Error | Blockers |
+|---|---|---|
+| 277_fraud_monitoring.sql | Column "status" does not exist | Unknown - needs investigation |
+| 288_customer_rfm_segmentation.sql | Return type mismatch in function | Function signature issue after RETURNING fix |
+
+## Summary
+
+- **Total applied:** 22 migrations
+- **Total skipped:** 2 migrations (188, 189 - already applied)
+- **Total processed:** 24 of 26
+- **Remaining:** 2 migrations blocked

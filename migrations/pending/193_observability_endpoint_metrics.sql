@@ -1,7 +1,7 @@
 -- STEP 90: Observability endpoint metrics tracking
 -- Stores p95, p99, error rate metrics per endpoint for SLA monitoring
 
-CREATE TABLE observability.endpoint_metrics (
+CREATE TABLE IF NOT EXISTS observability.endpoint_metrics (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   endpoint_path text NOT NULL,
   method text NOT NULL CHECK (method IN ('GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD')),
@@ -68,7 +68,7 @@ ALTER TABLE observability.sla_alerts ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Admin can read endpoint metrics" ON observability.endpoint_metrics
   FOR SELECT USING (
     auth.role() = 'authenticated' AND
-    (SELECT is_admin FROM auth.users WHERE id = auth.uid())
+    (SELECT is_super_admin FROM admin_users WHERE user_id = auth.uid())
   );
 
 CREATE POLICY "Service role can read endpoint metrics" ON observability.endpoint_metrics
@@ -83,7 +83,7 @@ CREATE POLICY "Service role can update endpoint metrics" ON observability.endpoi
 CREATE POLICY "Admin can read alerts" ON observability.sla_alerts
   FOR SELECT USING (
     auth.role() = 'authenticated' AND
-    (SELECT is_admin FROM auth.users WHERE id = auth.uid())
+    (SELECT is_super_admin FROM admin_users WHERE user_id = auth.uid())
   );
 
 CREATE POLICY "Service role can manage alerts" ON observability.sla_alerts

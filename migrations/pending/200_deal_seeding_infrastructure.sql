@@ -19,6 +19,29 @@
 --   5. Audit trail of all deals processed
 --
 -- ============================================================================
+-- DEAL SOURCES TABLE: approved scraping sources (moved before pending_deals for FK)
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS public.deal_sources (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  name text NOT NULL UNIQUE,
+  url text NOT NULL,
+  description text,
+  scraper_type text NOT NULL CHECK (scraper_type IN ('http', 'api', 'static', 'webhook')),
+  scraper_config jsonb NOT NULL DEFAULT '{}',
+  last_scraped_at timestamp with time zone,
+  scrape_interval_minutes integer DEFAULT 1440,
+  rate_limit_per_hour integer DEFAULT 100,
+  min_price_agorot integer DEFAULT 0,
+  max_price_agorot integer,
+  allowed_categories text[] DEFAULT '{}',
+  require_image boolean DEFAULT true,
+  is_active boolean DEFAULT true,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now()
+);
+
+-- ============================================================================
 -- PENDING DEALS TABLE: scraped content awaiting review
 -- ============================================================================
 
@@ -90,53 +113,8 @@ CREATE INDEX IF NOT EXISTS pending_deals_category_id_idx
 CREATE INDEX IF NOT EXISTS pending_deals_scraped_at_idx
   ON public.pending_deals(scraped_at DESC);
 
--- ============================================================================
--- DEAL SOURCES TABLE: approved scraping sources
--- ============================================================================
-
-CREATE TABLE IF NOT EXISTS public.deal_sources (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-
-  -- Source info
-  name text NOT NULL UNIQUE,
-  url text NOT NULL,
-  description text,
-
-  -- Scraping rules
-  scraper_type text NOT NULL CHECK (scraper_type IN ('http', 'api', 'static', 'webhook')),
-  scraper_config jsonb NOT NULL DEFAULT '{}', -- format depends on scraper_type
-
-  -- Rate limiting and scheduling
-  last_scraped_at timestamp with time zone,
-  scrape_interval_minutes integer DEFAULT 1440, -- daily default
-  rate_limit_per_hour integer DEFAULT 100,
-
-  -- Filtering rules
-  min_price_agorot integer DEFAULT 0,
-  max_price_agorot integer,
-  allowed_categories text[] DEFAULT '{}', -- empty = all categories allowed
-
-  -- Quality gates
-  require_image boolean DEFAULT true,
-  require_stock_info boolean DEFAULT true,
-  minimum_stock_quantity integer DEFAULT 1,
-
-  -- Status
-  is_active boolean NOT NULL DEFAULT true,
-  is_verified boolean NOT NULL DEFAULT false, -- legal/compliance approval
-
-  -- Audit
-  created_by uuid NOT NULL REFERENCES auth.users(id) ON DELETE RESTRICT,
-  created_at timestamp with time zone NOT NULL DEFAULT now(),
-  updated_at timestamp with time zone NOT NULL DEFAULT now(),
-  metadata jsonb DEFAULT '{}' -- vendor-specific metadata
-);
-
-CREATE INDEX IF NOT EXISTS deal_sources_is_active_idx
-  ON public.deal_sources(is_active)
-  WHERE is_active = true;
-CREATE INDEX IF NOT EXISTS deal_sources_last_scraped_idx
-  ON public.deal_sources(last_scraped_at DESC);
+-- NOTE: deal_sources table definition moved earlier in file (before pending_deals)
+-- to satisfy foreign key dependency. See line ~25.
 
 -- ============================================================================
 -- DEAL DUPLICATES TABLE: deduplication tracking
@@ -246,9 +224,9 @@ CREATE POLICY pending_deals_admin_read
   FOR SELECT
   USING (
     EXISTS (
-      SELECT 1 FROM public.user_roles ur
-      WHERE ur.user_id = auth.uid()
-        AND ur.role IN ('admin', 'moderator')
+      SELECT 1 FROM admin_users
+      WHERE user_id = auth.uid()
+        AND is_super_admin = true
     )
   );
 

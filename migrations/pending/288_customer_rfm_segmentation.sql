@@ -298,7 +298,7 @@ AS $$
   FROM user_segments us
   WHERE us.seg_rank = 1
   ON CONFLICT (user_id, segment_id) DO NOTHING
-  RETURNING user_id, segment_type;
+  RETURNING user_id, segment_id;
 $$;
 
 -- ---------------------------------------------------------------------------

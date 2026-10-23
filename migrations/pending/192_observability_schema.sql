@@ -2,6 +2,27 @@
 
 CREATE SCHEMA IF NOT EXISTS observability;
 
+-- Endpoint metrics table (moved from 193 to fix dependency order)
+CREATE TABLE IF NOT EXISTS observability.endpoint_metrics (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  endpoint_path text NOT NULL,
+  method text NOT NULL CHECK (method IN ('GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD')),
+  p50_ms integer,
+  p95_ms integer NOT NULL DEFAULT 300,
+  p99_ms integer,
+  total_requests bigint NOT NULL DEFAULT 0,
+  error_count bigint NOT NULL DEFAULT 0,
+  error_rate_percent numeric(5, 2) NOT NULL DEFAULT 0,
+  sla_target_percent numeric(5, 2) NOT NULL DEFAULT 99.9,
+  sla_breached boolean NOT NULL DEFAULT false,
+  status text NOT NULL DEFAULT 'ok' CHECK (status IN ('ok', 'degraded', 'down')),
+  last_error_at timestamp with time zone,
+  last_error_message text,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  UNIQUE (endpoint_path, method)
+);
+
 -- Update timestamp helper function
 CREATE OR REPLACE FUNCTION observability.update_timestamp()
 RETURNS TRIGGER AS $$

@@ -30,16 +30,21 @@ CREATE INDEX IF NOT EXISTS idx_perf_tickets_github
 ALTER TABLE observability.perf_tickets ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policy: Allow service role full access
-CREATE POLICY IF NOT EXISTS perf_tickets_service_role_all
+DROP POLICY IF EXISTS perf_tickets_service_role_all ON observability.perf_tickets;
+CREATE POLICY perf_tickets_service_role_all
   ON observability.perf_tickets
+  FOR ALL
+  TO service_role
   USING (true)
   WITH CHECK (true);
 
 -- RLS Policy: Allow authenticated users to read
-CREATE POLICY IF NOT EXISTS perf_tickets_authenticated_read
+DROP POLICY IF EXISTS perf_tickets_authenticated_read ON observability.perf_tickets;
+CREATE POLICY perf_tickets_authenticated_read
   ON observability.perf_tickets
   FOR SELECT
-  USING (auth.role() = 'authenticated');
+  TO authenticated
+  USING (true);
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON observability.perf_tickets TO service_role;
 GRANT SELECT ON observability.perf_tickets TO authenticated;

@@ -33,7 +33,7 @@ $$;
 CREATE TABLE IF NOT EXISTS public.fraud_signals (
   id                    uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   order_id              uuid NOT NULL REFERENCES public.orders(id) ON DELETE CASCADE,
-  profile_id            uuid REFERENCES public.profiles(id) ON DELETE SET NULL,
+  user_id            uuid REFERENCES auth.users(id) ON DELETE SET NULL,
   signal_type           fraud_signal_type NOT NULL,
   severity              text NOT NULL CHECK (severity IN ('low', 'medium', 'high', 'critical')),
 
@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS public.fraud_signals (
 );
 
 CREATE INDEX idx_fraud_signals_order_id ON public.fraud_signals(order_id);
-CREATE INDEX idx_fraud_signals_profile_id ON public.fraud_signals(profile_id);
+CREATE INDEX idx_fraud_signals_user_id ON public.fraud_signals(user_id);
 CREATE INDEX idx_fraud_signals_signal_type ON public.fraud_signals(signal_type);
 CREATE INDEX idx_fraud_signals_detected_at ON public.fraud_signals(detected_at DESC);
 CREATE INDEX idx_fraud_signals_auto_flagged ON public.fraud_signals(auto_flagged) WHERE auto_flagged = true;
@@ -67,7 +67,7 @@ CREATE INDEX idx_fraud_signals_auto_flagged ON public.fraud_signals(auto_flagged
 CREATE TABLE IF NOT EXISTS public.fraud_flags (
   id                    uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   order_id              uuid NOT NULL UNIQUE REFERENCES public.orders(id) ON DELETE CASCADE,
-  profile_id            uuid REFERENCES public.profiles(id) ON DELETE SET NULL,
+  user_id            uuid REFERENCES auth.users(id) ON DELETE SET NULL,
 
   -- Auto-determined risk level based on signals
   risk_level            text NOT NULL CHECK (risk_level IN ('low', 'medium', 'high', 'critical')) DEFAULT 'medium',
@@ -93,7 +93,7 @@ CREATE TABLE IF NOT EXISTS public.fraud_flags (
 );
 
 CREATE INDEX idx_fraud_flags_order_id ON public.fraud_flags(order_id);
-CREATE INDEX idx_fraud_flags_profile_id ON public.fraud_flags(profile_id);
+CREATE INDEX idx_fraud_flags_user_id ON public.fraud_flags(user_id);
 CREATE INDEX idx_fraud_flags_status ON public.fraud_flags(status);
 CREATE INDEX idx_fraud_flags_risk_level ON public.fraud_flags(risk_level);
 CREATE INDEX idx_fraud_flags_created_at ON public.fraud_flags(created_at DESC);
