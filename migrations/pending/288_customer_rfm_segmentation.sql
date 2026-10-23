@@ -292,13 +292,18 @@ AS $$
       AND rfm.recency_days <= cs.max_recency_days
       AND rfm.frequency_count >= cs.min_frequency_count
       AND rfm.monetary_total_ils >= cs.min_monetary_total_ils
+  ),
+  inserted AS (
+    INSERT INTO public.user_segment_tags (user_id, segment_id, reason)
+    SELECT us.user_id, us.segment_id, 'Automatic RFM segmentation'
+    FROM user_segments us
+    WHERE us.seg_rank = 1
+    ON CONFLICT (user_id, segment_id) DO NOTHING
+    RETURNING user_id, segment_id
   )
-  INSERT INTO public.user_segment_tags (user_id, segment_id, reason)
-  SELECT us.user_id, us.segment_id, 'Automatic RFM segmentation'
+  SELECT us.user_id, us.segment_type
   FROM user_segments us
-  WHERE us.seg_rank = 1
-  ON CONFLICT (user_id, segment_id) DO NOTHING
-  RETURNING user_id, segment_id;
+  WHERE us.seg_rank = 1;
 $$;
 
 -- ---------------------------------------------------------------------------

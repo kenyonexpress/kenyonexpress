@@ -79,7 +79,7 @@ CREATE TABLE IF NOT EXISTS public.fraud_flags (
 
   -- Review lifecycle
   status                text NOT NULL CHECK (status IN ('pending', 'approved', 'rejected', 'manual_review')) DEFAULT 'pending',
-  reviewed_by           uuid REFERENCES public.profiles(id) ON DELETE SET NULL,
+  reviewed_by           uuid REFERENCES auth.users(id) ON DELETE SET NULL,
   reviewed_at           timestamp with time zone,
   review_notes          text,
 
