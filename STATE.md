@@ -226,3 +226,5 @@ Continue from F38 BLOCKED retry: re-queued, no new evidence. Gate unreachable (s
 Continue from F38 BLOCKED retry: re-queued, no new evidence. Gate unreachable (scripts/parity-baselines.json best-known home 380=30.26, 768=29.0; only 1440=8.29 is under 11 percent; ref lacks fonts/JS, LTR English). No baselines for product/category/cart/checkout/account. Vitest 14 red (F36). No code changed. RESULT BLOCKED parity under 11 percent unreachable at 380/768, no baselines for other pages
 
 Continue from F38 BLOCKED retry 3: re-queued, evidence unchanged (no src change since F35; vitest still 14 failed in 11 files, 6537 pass). Parity <11% unreachable at 380/768 (best-known home 380=30.26, 768=29.0; 1440=8.29 ok), no baselines for product/category/cart/checkout/account. No code changed. RESULT BLOCKED parity under 11 percent unreachable, vitest 14 red
+
+Continue from F39 DONE: CHANGELOG.md created (none existed), tagged v1.0.0-mvp-rc3. RESULT DONE
