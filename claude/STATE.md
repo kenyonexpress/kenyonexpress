@@ -21,3 +21,5 @@ Last goal: F43, home parity gate on the rebuilt tree, by the goal's literal
 -0.14px body letter-spacing in `src/app/globals.css`, gate flags
 `--widths`, `--baseline`, `--live-url` in `scripts/compare-args.mjs`. Rows in
 `docs/UI-PARITY-REPORT.md`, 2026-10-21.
+
+BLOCKED F43 re-run: baseline electro-v7-380.png does not exist (used electro-home-v7_380.png); :3311 serves kenyonexpress-autopilot and renders data fallback + 2 dropped scripts (41.20% 380, 40.89% 768, not a fidelity score); own build on :3312 500s on env (Invalid url). Last valid: 380 8.53%, 768 9.79%. No code changed.
