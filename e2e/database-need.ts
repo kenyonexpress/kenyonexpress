@@ -58,6 +58,7 @@ export const NEEDS_DATABASE_SPECS = {
   'auth.spec.ts': 'signs in as the fixture customer',
   'coupon-scan.spec.ts': 'redeems a seeded voucher as a supplier',
   'full-purchase-redeem.spec.ts': 'buys, then redeems what it bought',
+  'guest-upgrade.spec.ts': 'signs in as the fixture customer and reads a seeded order',
   'physical-purchase.spec.ts': 'places an order against the mock terminal',
   'production-smoke.spec.ts': 'runs against a deployed origin, not localhost',
   'purchase-flow.spec.ts': 'places an order against the mock terminal',
