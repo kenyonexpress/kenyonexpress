@@ -2,7 +2,22 @@
 
 Full history: docs/STATE-ARCHIVE.md (STATE.md archived 2026-10-16 and again 2026-10-23). Cap: 300 lines.
 
-## המשך מ: F01
+## המשך מ: F43
+
+**F42: Hebrew RTL Legal Pages - DONE (2026-10-23, autopilot)**
+- All 5 legal pages verified complete and compliant:
+  - `/terms` - Terms of Service with age 18 requirement (Legal Capacity and Guardianship Law section 2)
+  - `/privacy` - Privacy Policy with Amendment 13 disclosure
+  - `/cookie-policy` - Cookie Policy with full disclosure table
+  - `/returns` - Returns and Cancellation Policy with 14-day window
+  - `/accessibility` - Accessibility Statement (IS 5568 level AA)
+- Tel Aviv jurisdiction confirmed in terms (line 318)
+- Business dealer number 033798513 (מספר עוסק) integrated via lib/legal-entity.ts
+- Electro paragraph style applied via LegalArticle component (shaped 1:1 after Electro template)
+- All pages in Hebrew RTL with proper legal content per Israeli law
+- Tests passing: 54/54 in legal-pages.test.ts
+- F42 was previously implemented in commit e55ec97a8, verification completed this session
+- pnpm type-check, lint, build all pass
 
 **F01: Baseline - DONE (2026-10-23, closeout/v1-final)**
 - pnpm install, type-check, lint (biome + tokens/copy/asset gates) and test all exit 0: 548 files passed, 6509 tests passed, 25 skipped.
