@@ -217,3 +217,5 @@ Continue from F37 BLOCKED F36 (tests 2x green): audit found requested coverage a
 Continue from F37 BLOCKED F36 retry: vitest re-run unchanged, 14 failed in 11 files (6537 pass). Red is src/migration drift outside tests/ e2e/ scope. RESULT BLOCKED vitest 14 red, 2x green unreachable.
 
 Continue from F37 BLOCKED F36 retry 3: vitest unchanged, 14 failed in 11 files (6537 pass). Red is src/migration drift outside tests/ e2e/ scope. RESULT BLOCKED vitest 14 red, 2x green unreachable.
+
+Continue from F37 DONE: audit only, no workflow edits needed. .github/workflows/ci.yml already runs lint (biome + gates), typecheck, vitest coverage, build, bundle/migration gates, pixel-gate 380/768/1440, Playwright e2e (db, no-db, preview). main protection already on (strict, no force push; required: lint gates, typecheck, unit tests, build, pr-size-guard). Playwright jobs not in required list: e2e needs live Supabase, left advisory. Note vitest has 14 red from F36 so required unit-tests check will fail on main PRs until fixed. RESULT DONE
