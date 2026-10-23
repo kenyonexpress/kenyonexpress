@@ -13,6 +13,13 @@ export default async function ImportProductsPage() {
         המוצרים נוצרים כטיוטה. עמודות חובה: slug, name_he, type, kenyon_price. עמודות נתמכות:{' '}
         <span dir="ltr">{PRODUCT_CSV_COLUMNS.join(', ')}</span>. עד 200 שורות בקובץ.
       </p>
+      <a
+        href="/templates/products-import.csv"
+        download="products-import.csv"
+        className="inline-flex items-center gap-2 rounded border border-gray-300 bg-white px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+      >
+        הורדת תבנית דוגמה
+      </a>
       <ImportForm />
     </div>
   )
