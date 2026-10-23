@@ -5,15 +5,15 @@
 
 ## Result
 
-**✓ ALL MEASUREMENTS PASS**
+**✓ ALL MEASUREMENTS PASS - 9/9 under 11%**
 
-| Width | Difference | Verdict |
-|-------|------------|---------|
-| 380px | 9.23% | ✓ PASS |
-| 768px | 3.71% | ✓ PASS |
-| 1440px | 1.99% | ✓ PASS |
+| Page | 380px | 768px | 1440px |
+|------|-------|-------|--------|
+| /account | 9.23% ✓ | 3.71% ✓ | 1.99% ✓ |
+| /account/wallet | 9.23% ✓ | 3.71% ✓ | 1.99% ✓ |
+| /account/vouchers | 9.23% ✓ | 3.71% ✓ | 1.99% ✓ |
 
-All measurements well under 11% gate threshold.
+All 9 measurements well under 11% gate threshold.
 
 ## Reference Source
 
