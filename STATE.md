@@ -5,19 +5,20 @@ Full history: docs/STATE-ARCHIVE.md (STATE.md archived 2026-10-16 and again 2026
 ## המשך מ: F43
 
 **F42: Hebrew RTL Legal Pages - DONE (2026-10-23, autopilot)**
-- All 5 legal pages verified complete and compliant:
-  - `/terms` - Terms of Service with age 18 requirement (Legal Capacity and Guardianship Law section 2)
-  - `/privacy` - Privacy Policy with Amendment 13 disclosure
-  - `/cookie-policy` - Cookie Policy with full disclosure table
-  - `/returns` - Returns and Cancellation Policy with 14-day window
-  - `/accessibility` - Accessibility Statement (IS 5568 level AA)
-- Tel Aviv jurisdiction confirmed in terms (line 318)
-- Business dealer number 033798513 (מספר עוסק) integrated via lib/legal-entity.ts
-- Electro paragraph style applied via LegalArticle component (shaped 1:1 after Electro template)
-- All pages in Hebrew RTL with proper legal content per Israeli law
-- Tests passing: 54/54 in legal-pages.test.ts
-- F42 was previously implemented in commit e55ec97a8, verification completed this session
-- pnpm type-check, lint, build all pass
+- All 5 legal pages now under src/app/(legal)/ as required:
+  - src/app/(legal)/terms/ → `/terms` with age 18 requirement (Legal Capacity Law §2)
+  - src/app/(legal)/privacy/ → `/privacy` with Amendment 13 disclosure
+  - src/app/(legal)/cookie-policy/ → `/cookie-policy` with full disclosure table
+  - src/app/(legal)/returns/ → `/returns` with 14-day distance-selling window
+  - src/app/(legal)/accessibility/ → `/accessibility` (IS 5568 level AA)
+- Tel Aviv jurisdiction: confirmed in terms.ts line 318
+- Business ID 033798513: integrated via lib/legal-entity.ts, displayed in LegalContactBlock
+- Electro paragraph style: legal-page.css measurements from Electro /terms-and-conditions/
+  (14px/24px breadcrumb, 40px/500 title, 25px/500 headings, per CSS lines 3-14)
+- All Hebrew RTL with proper legal content per Israeli law
+- Tests: 54/54 passing in legal-pages.test.ts
+- Builds: type-check clean, lint clean, pnpm build exit 0
+- Implementation: e55ec97a8 (initial), be89501dd (cookie-policy moved to (legal))
 
 **F01: Baseline - DONE (2026-10-23, closeout/v1-final)**
 - pnpm install, type-check, lint (biome + tokens/copy/asset gates) and test all exit 0: 548 files passed, 6509 tests passed, 25 skipped.
@@ -42,3 +43,5 @@ Full history: docs/STATE-ARCHIVE.md (STATE.md archived 2026-10-16 and again 2026
 BLOCKED F02 homepage electro-v7: gate unreachable by layout work alone. Measured on a clean prod build of closeout/v1-final (SENTRY_DSN= override needed, .env.production holds a literal placeholder that fails env.ts), compare.mjs --page=home --baseline=electro-home-v7_<w>.png: 380 39.31%, 768 40.89% (height ratio 1.73x), 1440 29.60%. Reference is the LTR English Electro demo (demo products, remote images); ours is RTL Hebrew with different content and no header search, so mirrored columns and different imagery dominate the diff. Also: refs/electro-home-v7.html as --live= is refused (12 lazy/remote images never load from file://, fonts blocked by CORS); only the PNG baselines work. TopBar has no "בחר אזור" and no "בקרבתי" chip exists in src already, so those two removals are no-ops. No code changed. Needs Ofir: a Hebrew/RTL v7 baseline PNG, or a different gate for this item.
 
 BLOCKED F03 product page: three spec conflicts, no code changed. (1) "Google reviews link only" contradicts the LOCKED rule "no reviews, no Google-review links"; needs Ofir to say which wins. (2) The commit paths src/app/products/ does not exist; the PDP is src/app/(store)/product/[slug]/ and most pieces are already present (SupplierInfo WhatsApp/tel/Waze, WhatsAppShareButton, CouponTerms, full_price/original_price_agorot columns), so the real delta is unclear: "fallback to service" has no defined target while the CS phone is LOCKED out, and "original_price from VAT-inclusive unit price" does not say which table (products.full_price is shekel float, order/coupon rows carry original_price_agorot). (3) The <11% gate at 380/768/1440 against refs/electro-home-v7.html is the same unreachable gate as F02 (LTR English demo vs RTL Hebrew; 29-41% measured), and it cannot be met by PDP work alone. Needs Ofir: decision on (1), the intended fallback and price source in (2), and an RTL v7 baseline PNG for (3).
+
+BLOCKED F04 category filter chips: no code changed. (1) Commit paths src/app/categories/ and src/components/filters/ do not exist; category code lives in src/app/(store)/category/ and src/components/category/ (plus src/components/catalog/DealChips.tsx, src/lib/catalog/deal-chips.ts), so the specified git add would stage nothing. (2) The under-11% gate at 380/768/1440 vs Electro v7 cannot close: only home baselines exist (refs/electro-home-v7_*.png, no category baseline), and the home measurement was 29-41% (LTR English demo vs RTL Hebrew). Needs Ofir: confirm the real paths, and an RTL v7 category baseline PNG or a different gate.
