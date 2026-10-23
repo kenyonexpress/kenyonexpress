@@ -25,7 +25,7 @@ console.log('🔍 Verifying Migration 130: platform_percent_snapshot\n')
 
 // 1. Try to select the new column
 console.log('1. Checking if platform_percent_snapshot column exists...')
-const { data: newData, error: newError } = await supabase
+const { error: newError } = await supabase
   .from('order_items')
   .select('id, platform_percent_snapshot')
   .limit(1)
@@ -45,7 +45,7 @@ console.log('✓ Column platform_percent_snapshot exists and is selectable')
 
 // 2. Try to select the old column (should fail)
 console.log('\n2. Checking if old column platform_percent was removed...')
-const { data: oldData, error: oldError } = await supabase
+const { error: oldError } = await supabase
   .from('order_items')
   .select('id, platform_percent')
   .limit(1)
