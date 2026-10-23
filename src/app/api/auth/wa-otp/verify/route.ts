@@ -1,3 +1,4 @@
+import { recordAuthAttempt } from '@/lib/auth/auth-fallback'
 import { toE164Israeli } from '@/lib/auth/phone-otp'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
@@ -72,6 +73,12 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
       .from('auth_wa_otps' as never)
       .update({ attempts: row.attempts + 1 } as never)
       .eq('id', row.id)
+    await recordAuthAttempt({
+      userId: row.user_id,
+      phone,
+      attemptType: 'whatsapp_otp',
+      success: false,
+    })
     return NextResponse.json({ ok: false, error: 'wrong_code' }, { status: 400 })
   }
 
@@ -91,11 +98,25 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
 
   const session = await mintSessionFor(row.user_id)
   if (!session.ok) {
+    await recordAuthAttempt({
+      userId: row.user_id,
+      phone,
+      attemptType: 'whatsapp_otp',
+      success: false,
+    })
     return NextResponse.json(
       { ok: false, error: session.reason === 'no_email' ? 'no_email' : 'session_failed' },
       { status: session.reason === 'no_email' ? 409 : 500 },
     )
   }
+
+  await recordAuthAttempt({
+    userId: row.user_id,
+    phone,
+    attemptType: 'whatsapp_otp',
+    success: true,
+  })
+
   return NextResponse.json({ ok: true })
 }
 
