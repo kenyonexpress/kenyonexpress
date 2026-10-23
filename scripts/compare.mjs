@@ -8,13 +8,14 @@ import { parseCompareArgs } from './compare-args.mjs'
 import { loadShortfall, ownSideCaveat } from './load-shortfall.mjs'
 import { appendParityFailure } from './parity-log.mjs'
 
-// Usage: node scripts/compare.mjs [--page=home|product|category|products|search|cart|checkout]
+// Usage: node scripts/compare.mjs [--page=home|product|category|products|search|cart|checkout|account|supplier]
 //                                 [--live=<url>] [--mine=<url>]
 // home     : live = LIVE_HOME below                  mine = http://localhost:3000/
 // product  : live = live kenyonexpress product page mine = http://localhost:3000/product/<slug>
 // category : live = live product-category archive   mine = http://localhost:3000/category/<slug>
 // coupon   : live coupon PDP vs local coupon product (QR customer page needs auth; PDP is the public surface)
 // account  : live WP /my-account/ vs local /account (set COMPARE_STORAGE_STATE for an authed session)
+// supplier : live Next.js baseline vs local /supplier (requires --baseline flag)
 // Writes refs/live.png + refs/mine.png (consumed by diff-bands.mjs), plus
 // page-suffixed copies refs/live-<page>.png / refs/mine-<page>.png for reference.
 
@@ -314,9 +315,21 @@ if (page === 'home') {
   }
   liveUrl ??= `file://${ARGS.baseline.path}`
   mineUrl ??= `${LOCAL}/account`
+} else if (page === 'supplier') {
+  // Supplier page has no WordPress reference (feature didn't exist in WooCommerce).
+  // Must be measured with explicit --baseline (e.g., Next.js baseline).
+  // The liveUrl comes from the baseline file, mineUrl is the page under test.
+  if (!ARGS.baseline) {
+    console.error(
+      'compare: --page=supplier requires --baseline (no default reference exists).\nExample: --baseline=nextjs_supplier_380.png --live-url=http://localhost:3311/supplier',
+    )
+    process.exit(2)
+  }
+  liveUrl ??= `file://${ARGS.baseline.path}`
+  mineUrl ??= `${LOCAL}/supplier`
 } else {
   console.error(
-    `unknown --page=${page} (use home, product, category, products, search, cart, checkout or account)`,
+    `unknown --page=${page} (use home, product, category, products, search, cart, checkout, account or supplier)`,
   )
   process.exit(2)
 }
