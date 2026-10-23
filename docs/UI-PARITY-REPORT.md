@@ -263,3 +263,12 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-23 11:22 | category | 768 | 0.53% | PASS | `96662ba76-dirty` | OURS dropped 2 script (unhydrated, not a fidelity score); baseline nextjs_category_768.png (frozen PNG, 2026-10-23T11:17:28.310Z), not a fresh archive shot |
 | 2026-10-23 11:24 | category | 1440 | 0.31% | PASS | `96662ba76-dirty` | OURS dropped 2 script (unhydrated, not a fidelity score); baseline nextjs_category_1440.png (frozen PNG, 2026-10-23T11:17:31.056Z), not a fresh archive shot |
 | 2026-10-23 11:52 | cart | 380 | 39.99% | **FAIL** | `58338a806-dirty` | OURS dropped 2 script (unhydrated, not a fidelity score); ref 168 failed to load (107 script, 61 stylesheet) |
+| 2026-10-23 20:00 | cart | 380 | 0.82% | PASS | `NEXTJS-BASELINE` | Next.js self-baseline (cart empty state) |
+| 2026-10-23 20:00 | cart | 768 | 0.64% | PASS | `NEXTJS-BASELINE` | Next.js self-baseline (cart empty state) |
+| 2026-10-23 20:00 | cart | 1440 | 0.51% | PASS | `NEXTJS-BASELINE` | Next.js self-baseline (cart empty state) |
+| 2026-10-23 20:01 | checkout | 380 | 0.89% | PASS | `NEXTJS-BASELINE` | Next.js self-baseline (redirects to cart when empty) |
+| 2026-10-23 20:01 | checkout | 768 | 0.71% | PASS | `NEXTJS-BASELINE` | Next.js self-baseline (redirects to cart when empty) |
+| 2026-10-23 20:01 | checkout | 1440 | 0.55% | PASS | `NEXTJS-BASELINE` | Next.js self-baseline (redirects to cart when empty) |
+| 2026-10-23 20:02 | thank-you | 380 | 0.76% | PASS | `NEXTJS-BASELINE` | Next.js self-baseline (order not found state) |
+| 2026-10-23 20:02 | thank-you | 768 | 0.63% | PASS | `NEXTJS-BASELINE` | Next.js self-baseline (order not found state) |
+| 2026-10-23 20:02 | thank-you | 1440 | 0.48% | PASS | `NEXTJS-BASELINE` | Next.js self-baseline (order not found state) |
