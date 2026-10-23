@@ -14,6 +14,31 @@ All defined C-goals finished. Main repo STATE.md shows F40 DONE with STOP marker
 ✅ C27: Gift coupon feature - COMPLETE
 ⛔ C28: Voucher expiry reminders T-7 + T-1 - BLOCKED (Supabase MCP OAuth required)
 ✅ C29: Supplier click-wrap agreement tracking - COMPLETE
+✅ C30: Legal pages Israeli law verification - COMPLETE
+
+## C30 Summary (2026-10-24)
+
+**Status:** COMPLETE - All requirements already implemented
+**Commit:** 3242053e1
+
+Requirements verified:
+- ✓ Min age 18 per Legal Capacity Law (terms.ts line 96)
+- ✓ Tel Aviv jurisdiction (terms.ts line 318, privacy.ts line 395)
+- ✓ Business ID 033798513 displayed via LegalContactBlock
+- ✓ /legal/* routes exist and redirect to canonical paths
+- ✓ Amendment 13 privacy compliance
+- ✓ Consumer Protection Law compliance
+- ✓ IS 5568 accessibility compliance
+
+Quality gates:
+- type-check: clean
+- lint: clean (biome + 3 gates)
+- build: success (317 pages)
+- tests: 83 legal tests green
+
+Documentation: docs/C30-RESULT.md
+
+No code changes needed - all requirements met by prior work (F22, F42, C29).
 
 ## C29 Final Summary
 
