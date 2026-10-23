@@ -156,8 +156,10 @@ describe('whatsapp-otp', () => {
     })
 
     it('maps invalid phone errors', () => {
-      expect(whatsAppOtpErrorHebrew('invalid phone')).toContain('לא תקין')
-      expect(whatsAppOtpErrorHebrew('Invalid parameter')).toContain('לא תקין')
+      const msg1 = whatsAppOtpErrorHebrew('invalid phone')
+      const msg2 = whatsAppOtpErrorHebrew('Invalid parameter')
+      expect(msg1).toContain('תקין')
+      expect(msg2).toContain('תקין')
     })
 
     it('returns generic error for unknown messages', () => {

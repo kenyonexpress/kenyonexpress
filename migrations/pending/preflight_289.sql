@@ -53,5 +53,21 @@ CREATE POLICY "Users can read own auth attempts"
   ON auth_attempts FOR SELECT
   USING (auth.uid() = user_id);
 
+-- OTP code storage for WhatsApp/Email/SMS verification
+CREATE TABLE IF NOT EXISTS otp_codes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  identifier TEXT NOT NULL, -- email or phone number
+  code TEXT NOT NULL,
+  channel TEXT NOT NULL, -- "whatsapp" | "email" | "sms"
+  expires_at TIMESTAMPTZ NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX otp_codes_identifier_idx ON otp_codes(identifier);
+CREATE INDEX otp_codes_expires_at_idx ON otp_codes(expires_at);
+
+-- No RLS needed - accessed via service role only
+
 COMMENT ON TABLE passkey_credentials IS 'WebAuthn passkey credentials for passwordless authentication';
 COMMENT ON TABLE auth_attempts IS 'Authentication attempt tracking for fallback logic and security monitoring';
+COMMENT ON TABLE otp_codes IS 'Temporary OTP code storage for WhatsApp/Email/SMS verification with expiration';
