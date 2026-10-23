@@ -51,12 +51,14 @@ export default function ShipmentClient({ lines }: { lines: ShipmentLine[] }) {
           value={carrier}
           onChange={(e) => setCarrier(e.target.value)}
           placeholder="מוביל (למשל: חבילה פלוס)"
+          aria-label="מוביל"
           className="rounded-lg border border-gray-200 px-3 py-1.5 text-sm"
         />
         <input
           value={tracking}
           onChange={(e) => setTracking(e.target.value)}
           placeholder="מספר מעקב"
+          aria-label="מספר מעקב"
           dir="ltr"
           className="rounded-lg border border-gray-200 px-3 py-1.5 text-sm"
         />

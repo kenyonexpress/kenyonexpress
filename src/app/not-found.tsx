@@ -47,6 +47,7 @@ export default async function NotFound() {
                 type="text"
                 name="q"
                 placeholder="חפשו מוצר..."
+                aria-label="חיפוש מוצר"
                 className="w-full rounded-lg border border-border bg-white px-4 py-3 text-right text-base placeholder-muted focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/20"
                 autoComplete="off"
               />
