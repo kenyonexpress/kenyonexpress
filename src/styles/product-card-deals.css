@@ -31,13 +31,6 @@
 */
 .jet-listing-grid-deals__item {
   box-sizing: border-box;
-  /* 8px AT EVERY WIDTH, NOT 72. The 72 was labelled "the desktop number" and
-     it was never live's: probed in the live archive on 2026-10-20,
-     `.jet-listing-grid__item` is 501 tall with `.elementor` 485 inside it at
-     BOTH 768 (y718.8 / y726.8) and 1440 (y898 / y906), i.e. 8px top and
-     bottom, the same as the 380 measurement further down. Ours was 629 at
-     both widths (p_con at y826 / y970), so every row below the first sat
-     128px lower than live's and the 768 page ran 11207 against 9152. */
   padding: 8px 0;
   max-width: 100%;
   flex: 0 0 100%;
@@ -61,7 +54,6 @@
    last one in each row (nth-child(2n) for 2-column, nth-child(3n) for 3-column, nth-child(4n) for 4-column) */
 .jet-listing-grid-deals__item .p_con {
   border-inline-end: 1px solid var(--color-border);
-  height: 100%;
 }
 
 @media (min-width: 768px) and (max-width: 1199px) {
@@ -81,40 +73,6 @@
   .jet-listing-grid-deals__item:nth-child(2n) .p_con {
     border-inline-end: none;
   }
-
-  /* Probed in the live archive at 380 on 2026-10-20:
-     `.jet-listing-grid__item` is 548 tall with padding 8px/8px and `.p_con`
-     inside it is 532 with its 24px padding. Ours was 533 inside 677 while
-     this item carried 72px here; the 128px of extra padding per row put the
-     31-row list at 22545px against live's 17790. The 8px now lives in the
-     base rule above because 768 and 1440 measure the same. */
-
-  /* FOUR MORE PHONE NUMBERS, ALL FROM THE SAME CARD PROBE (live archive at
-     380, 2026-10-20, first card, fractional boxes):
-
-       live  item y408.4 h548.4 / .p_con h532.4 / price row h27.4
-             sale "₪949"   x49.0 w137.6 text-align:start (glyphs at the RIGHT
-             of the left half) / strike "₪1500" x194.6 w136.4, same
-             cart circle x291 w40, i.e. the inline-START in RTL
-       ours  item y409 h549 / .p_con h533 / price row h27
-             both prices text-align:end (glyphs at the LEFT of each half)
-             cart circle x49, the inline-end
-
-     The 0.6px card difference rounds to a whole pixel by the second row, and
-     a photograph one pixel off reads as a 20-40% band (card three's pool shot
-     was 39.4% at y1700). The cart comment further up says live puts the
-     circle "visually left"; its own measurement (x290 at 380) is the right
-     edge, so the circle was mirrored. Both halves of the price row were
-     mirrored the same way. The footer rules themselves sit AFTER the base
-     footer block further down: same specificity, so source order decides,
-     and a first draft placed here lost to the base rules and changed
-     nothing in the build (probed: cart still x49, row still 27). */
-  /* Live's grid opens at y408.4 under a features bar that ends at 406; ours
-     opened at 409 off the 3px desktop token. Doubled selector: Tailwind's
-     pt-deals-top utility loads after this file. */
-  .home-deals.home-deals {
-    padding-top: 2px;
-  }
 }
 
 .jet-listing-grid-deals__item:has(.p_con:hover) {
@@ -130,13 +88,11 @@
   padding: 24px;
   background: var(--color-surface);
   transition: box-shadow 0.3s, transform 200ms ease-out;
-  height: 100%;
 }
 
 .p_con:hover {
   position: relative;
   z-index: 999;
-  transform: scale(1.02);
   box-shadow: 0 3px 16px 0 rgba(0, 0, 0, 0.1);
 }
 
@@ -157,17 +113,11 @@
   justify-content: flex-start;
 }
 
-/* Shared base for the two cards that render `.p_con__title`: the featured
-   grid (ProductCard, which adds `text-product-title`) and the deals card
-   (ProductDealCard, whose measured line, weight and margin sit beside it in
-   src/components/ProductDealCard.module.css, F43 2026-10-21). No line-height
-   here on purpose: the old 32px was derived from the 64px wrap and labelled
-   "2 clamped lines"; live's deals title is 26.4px and the product-page title
-   32.0051px, and each owner sets its own. One class in the selector, also on
-   purpose, so the module's `h2.title` out-ranks this on what it owns. */
-.p_con__title {
+.p_con__title,
+.jet-listing-grid-deals h2.p_con__title {
   color: var(--color-link);
   font-size: 22px;
+  line-height: 32px; /* live: 2 clamped lines = 64px */
   margin: 0;
   font-weight: inherit;
   display: -webkit-box;
@@ -197,17 +147,6 @@
   object-fit: cover;
   object-position: top center;
   display: block;
-}
-
-/* The reference's 768-only square thumbnail (KE_LIVE_DEAL_TABLET_SQUARE in
-   src/lib/ke-live-deals-data.ts). A WordPress hard crop is the centre of the
-   image, so `cover` from the centre on a 245px square paints the same pixels
-   as live's 600x600 file. 768 to 1023 only: live is portrait at 380 and 1440. */
-@media (min-width: 768px) and (max-width: 1023px) {
-  .p_con__image[data-thumb-md="square"] {
-    width: 245px;
-    object-position: center center;
-  }
 }
 
 /* live: badge pinned to the LEFT edge (inline-end in RTL) of the image area */
@@ -246,10 +185,8 @@
   fourth card the grid was 141px out of step and the 380 bands below y1100 were
   reading 50-74%. A per-card height error is the one kind that compounds.
 
-  The cart circle: the measurement above (x290 at 380) is the RIGHT edge of a
-  380px viewport, which in RTL is the inline-START. The base rule below says
-  flex-end and the phone block further down corrects it; the base value is
-  what the 768-up row layout was measured with and is left alone.
+  The cart sits at the inline-end (visually left, RTL) on its own row, which is
+  where live puts it.
 */
 .p_con__footer {
   display: flex;
@@ -286,27 +223,6 @@
   }
 }
 
-/* The phone footer, measured (see the probe table in the 767px block above):
-   price row 27.4 tall, start-aligned glyphs, a 20px gap (live's footer is
-   87.4 = 27.4 + 20 + 40, so the 21 in the base block was one too many), and
-   the cart circle at the inline-start. Card total 532.4 against live's 532.4,
-   item 548.4 against 548.4. Placed after the base and 768-up blocks because
-   it shares their specificity. */
-@media (max-width: 767px) {
-  .p_con__footer {
-    gap: 20px;
-  }
-
-  .p_con__footer .p_con__prices {
-    min-height: 27.4px;
-    text-align: start;
-  }
-
-  .p_con__footer .atc {
-    align-self: flex-start;
-  }
-}
-
 .p_con__prices {
   display: flex;
   flex-direction: row;
@@ -316,14 +232,9 @@
   text-align: end;
 }
 
-/* F43, MEASURED 2026-10-21 at 380: live's price fields are 14px / 23.996px
-   (strike) and 16px / 27.424px (sale), i.e. line-height 1.714 on both, in a
-   27px row. Ours inherited the 21px body line (1.5) and sat the strike 1px
-   and the sale 2px below live's glyph rows. The row stays 27 either way. */
 .p_con__strike {
   color: var(--color-deal-price);
   font-size: 14px;
-  line-height: 1.714;
   font-weight: var(--weight-regular);
   text-decoration: line-through;
   flex-grow: 1;
@@ -332,7 +243,6 @@
 .p_con__sale {
   color: var(--color-deal-sale);
   font-size: 16px;
-  line-height: 1.714;
   font-weight: var(--weight-bold);
   flex-grow: 1;
 }
@@ -455,26 +365,74 @@
   fill: var(--color-muted);
 }
 
-/* THE PHONE LAYOUT IS THE LIVE SITE'S, NOT ELECTRO'S, AND THAT IS MEASURED.
+/* rc5 F03: the phone layout follows Electro's mobile home, not the retired
+   live site's one-card-per-row list. Everything here is below 768px only, so
+   the tablet and desktop geometry the gate measured is untouched.
+   - hero slot: clamp(240px, 55vw, 320px), full width
+   - category strip: one row, scrolls sideways (CitiesRow already nowrap)
+   - deals: two columns with a 12px gap, compact cards
+   - sections: 24px vertical padding */
+@media (max-width: 767px) {
+  .hero-mobile-slot {
+    flex: none;
+    height: clamp(240px, 55vw, 320px);
+  }
 
-   rc5 F03 (e9ef18aab) put a block here that gave phones a clamp(240px, 55vw,
-   320px) hero slot, a two-column deals grid with compact 8px cards and a
-   brand-yellow 56px masthead, scored against electro-home-v7. The gate this
-   project is held to scores against refs/localized/ke_live_home.html, and
-   against that reference the block was the whole failure, measured 2026-10-20
-   at f90f38679 on the same server, the three widths back to back:
+  .home-deals {
+    padding-block: 24px;
+    padding-inline: 12px;
+  }
 
-     380   47.23%   ours 380x6199 against live 380x17790: two 300px cards per
-                    row against one 548px card per row from y900 down, 15 of
-                    26 bands over 45%
-     768   42.02%
-     1440  31.28%
+  .jet-listing-grid-deals {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
 
-   Both 380 runs returned 47.23% with identical band profiles, so it was not
-   slider phase. The base rules above (one card per row below 768, 8px item
-   padding, stacked footer) ARE live's phone geometry, measured off the same
-   reference, and they now apply unopposed. docs/GATE-STATUS.md carries the
-   band table. */
+  .jet-listing-grid-deals__item {
+    padding: 0;
+    max-width: none;
+    min-width: 0;
+  }
+
+  .jet-listing-grid-deals__item .p_con {
+    padding: 8px;
+    gap: 6px;
+  }
+
+  .p_con__title-wrap {
+    min-height: 0;
+  }
+
+  .p_con__title,
+  .jet-listing-grid-deals h2.p_con__title {
+    font-size: clamp(13px, 3.6vw, 16px);
+    line-height: 1.35;
+  }
+
+  .p_con__image {
+    width: 100%;
+    height: clamp(120px, 38vw, 180px);
+  }
+
+  .p_con__footer {
+    gap: 6px;
+    margin-top: 4px;
+  }
+}
+
+/* rc5 F03 pass 2: on a phone the masthead is Electro's handheld bar, a solid
+   brand-yellow strip 56px tall. --color-brand-primary is the same #fed700. */
+@media (max-width: 767px) {
+  .site-masthead {
+    background: var(--color-brand-primary);
+    border-bottom-color: var(--color-brand-primary);
+  }
+
+  .site-masthead > div:first-child {
+    height: 56px;
+  }
+}
 
 /* Add to cart animation */
 @keyframes atc-scale-bounce {
@@ -551,27 +509,4 @@
 .push-prompt__actions button:first-child {
   background: var(--color-brand-primary);
   border-color: var(--color-brand-primary);
-}
-
-/* The deals card title's measured type (F43, MEASURED in the live archive on
-   2026-10-21 at 380, 768 AND 1440, on every h2.jet-listing-dynamic-field__content
-   in the 1440 viewport, twelve titles): 22px over a 26.4px line (1.2), weight
-   500, margin-bottom 8px, and the body's -0.14px letter-spacing inherited. Two
-   lines are 52.8 + 8 = 60.8, inside the 64px min-height of .p_con__title-wrap.
-
-   The shared base (.p_con__title above) used to carry a 32px line derived
-   from that 64 and labelled "2 clamped lines", at an inherited weight. It put
-   every title glyph row 3px per line below live's and wrapped long titles one
-   word early. The featured grid's ProductCard shares the base class and adds
-   text-product-title (25px, the product PAGE title), which is why the deal
-   card's own numbers are a modifier and not the base.
-
-   h2.p_con__title--deal, element plus class (0,1,1): the base selector is one
-   class (0,1,0) and this must out-rank it on line, weight and margin regardless
-   of order. It was a CSS module beside the component; a module is its own
-   chunk and its own render-blocking <link> on the homepage (home.spec). */
-h2.p_con__title--deal {
-  line-height: var(--leading-deal-title);
-  font-weight: var(--weight-medium);
-  margin: 0 0 8px;
 }
