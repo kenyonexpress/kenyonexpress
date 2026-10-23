@@ -48,10 +48,11 @@ Icons:
 - `/icons/icon-maskable-512.png` (512x512, purpose: `maskable`)
 - `/icons/apple-touch-icon.png` (180x180, for iOS)
 
-**Icon generation:** `scripts/generate-pwa-icons.mjs` generates all icons from `public/logo.png` with:
+**Icon generation:** `scripts/generate-pwa-icons-electro.mjs` generates all icons from Electro v7 `ec-shopping-bag.svg` with:
 - Brand yellow background (`#fed700`)
-- Proper padding for each purpose (78% for `any`, 60% for `maskable`)
+- Proper padding for each purpose (70% for `any`, 50% for `maskable`)
 - Prevents cropped-logo bug on Android launchers
+- Uses authentic Electro v7 icon from theme's icon font
 
 ### 3. Install Prompt (`src/components/pwa/InstallPrompt.tsx`)
 
@@ -152,20 +153,25 @@ The project uses a custom PWA implementation instead of `@ducanh2912/next-pwa` b
 - ✅ Firefox (service worker, manifest)
 - ✅ All modern browsers (service worker, Web App Manifest)
 
-## Electro v7 Icons
+## Electro v7 Icons ✅
 
 Current implementation:
-- App icons generated from `public/logo.png` (133x102 brand mark)
+- **App icons generated from Electro v7 `ec-shopping-bag.svg`**
+- Source: `public/icons/electro/ec-shopping-bag.svg` from Electro v7 theme
 - Placed on yellow brand background (`#fed700`)
-- Proper padding for maskable icons
+- Proper padding for maskable icons (50% safe box)
+- Generator script: `scripts/generate-pwa-icons-electro.mjs`
 
-Available Electro v7 icons (not currently used for app icon):
-- `public/icons/electro/ec-shopping-bag.svg`
-- `public/icons/electro/ec-favorites.svg`
-- `public/icons/electro/ec-tag.svg`
-- And 12 more UI icons
+Why the shopping bag icon:
+- Authentic Electro v7 icon from theme's font-electro
+- Universal shopping symbol (recognized across cultures)
+- Matches the storefront's UI iconography
+- Clean, professional appearance on all launcher backgrounds
 
-The current logo.png approach is correct: it uses the KenyonExpress brand mark rather than a generic shopping icon, ensuring brand recognition on user home screens.
+Other available Electro v7 icons (15 total):
+- `ec-favorites.svg`, `ec-tag.svg`, `ec-add-to-cart.svg`
+- `ec-payment.svg`, `ec-support.svg`, `ec-customers.svg`
+- And 9 more UI icons from the Electro v7 theme
 
 ## Files Modified/Created
 
@@ -176,8 +182,8 @@ Created:
 - `src/components/pwa/InstallPrompt.tsx` - Install prompt UI
 - `src/components/pwa/ServiceWorkerRegistrar.tsx` - SW registration
 - `src/components/pwa/PurchaseMarker.tsx` - Post-purchase flag setter
-- `scripts/generate-pwa-icons.mjs` - Icon generator
-- `public/icons/icon-*.png` - App icons
+- `scripts/generate-pwa-icons-electro.mjs` - Icon generator using Electro v7 icon
+- `public/icons/icon-*.png` - App icons (generated from ec-shopping-bag.svg)
 - `src/app/pwa-surface.test.ts` - PWA integration tests
 - `src/app/manifest.test.ts` - Manifest and SW tests
 
