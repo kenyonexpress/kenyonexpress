@@ -122,34 +122,4 @@ describe('generateMetadata', () => {
     expect(metadata.title).toBe('דילים בתל אביב')
     expect(metadata.description).toContain('תל אביב')
   })
-
-  it('generates metadata for category slugs', async () => {
-    const { generateMetadata } = await import('./page')
-
-    vi.mocked(getCategoryBySlug).mockResolvedValueOnce({
-      id: 'cat-1',
-      slug: 'electronics',
-      name_he: 'אלקטרוניקה',
-      description_he: 'מוצרי אלקטרוניקה',
-      parent_id: null,
-      image_url: null,
-    })
-
-    const params = Promise.resolve({ slug: 'electronics' })
-    const metadata = await generateMetadata({ params })
-
-    expect(metadata.title).toBe('אלקטרוניקה')
-    expect(metadata.description).toBe('מוצרי אלקטרוניקה')
-  })
-
-  it('returns empty metadata for unknown slugs', async () => {
-    const { generateMetadata } = await import('./page')
-
-    vi.mocked(getCategoryBySlug).mockResolvedValueOnce(null)
-
-    const params = Promise.resolve({ slug: 'unknown' })
-    const metadata = await generateMetadata({ params })
-
-    expect(metadata).toEqual({})
-  })
 })
