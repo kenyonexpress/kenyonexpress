@@ -28,7 +28,7 @@ describe('submitContactForm', () => {
   it('rejects a short message', async () => {
     const result = await submitContactForm(
       { ok: false },
-      form({ name: 'דני', email: 'a@b.co', message: 'קצר' }),
+      form({ channel: 'service', name: 'דני', email: 'a@b.co', message: 'קצר' }),
     )
     expect(result.ok).toBe(false)
     expect(sendEmail).not.toHaveBeenCalled()
@@ -38,6 +38,7 @@ describe('submitContactForm', () => {
     const result = await submitContactForm(
       { ok: false },
       form({
+        channel: 'site-issue',
         name: 'דני כהן',
         email: 'dani@example.com',
         message: 'שלום, יש לי שאלה על הזמנה',
@@ -52,6 +53,7 @@ describe('submitContactForm', () => {
     const result = await submitContactForm(
       { ok: false },
       form({
+        channel: 'site-issue',
         name: 'דני כהן',
         email: 'dani@example.com',
         message: 'שלום, יש לי שאלה על הזמנה של קופון',
@@ -70,6 +72,7 @@ describe('submitContactForm', () => {
     const result = await submitContactForm(
       { ok: false },
       form({
+        channel: 'site-issue',
         name: 'דני כהן',
         email: 'dani@example.com',
         message: 'שלום, יש לי שאלה על הזמנה של קופון',
