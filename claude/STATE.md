@@ -4,7 +4,11 @@ The canonical state file on this branch is the root `STATE.md`. This file
 exists because the goal queue names `claude/STATE.md`; it holds the resume
 line only, and the full block for each goal is in the root file.
 
-**המשך מ: F41 DONE**
+**המשך מ: F42 DONE**
+
+F42: verified on closeout/v1-final. Four legal pages (terms, privacy, returns, accessibility) under `src/app/(legal)/`, supplier click-wrap refund clause in `src/lib/legal/supplier-agreement.ts`, brand `קניון EXPRESS` in `src/lib/brand.ts`, storefront review forms removed, shipping-only address flow with the 5-order verified-shipping gate in `src/lib/checkout/verified-shipping.ts`. 19 test files, 234 tests pass. The apply page lives at `src/app/(store)/suppliers`, not `src/app/supplier/apply`.
+
+Previous: F41 DONE
 
 F41: `BUSINESS_REGISTRATION_NUMBER` already in `src/lib/legal-entity.ts` (merged in #93), wired into the order-confirmation email, invoice issuer, both footers, legal pages via `LegalContactBlock`, and the supplier click-wrap; 6 test files, 70 tests pass.
 
