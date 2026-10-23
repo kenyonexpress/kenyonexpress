@@ -35,6 +35,7 @@ import {
   loadCardcomEnv,
 } from '@/lib/payments'
 import { selectAccountForSuppliers } from '@/lib/payments/accounts'
+import { ensureGuestIdentity } from '@/lib/payments/guest-identity'
 import {
   paymentMoneyWrite,
   readAmountAgorot,
@@ -359,15 +360,25 @@ async function runBeginCheckout(
     return { ok: false, error: 'התשלום מושבת כרגע, נסו שוב מאוחר יותר', code: 'CHECKOUT_DISABLED' }
   }
 
+  // Ensure the shopper has an identity (authenticated or anonymous guest)
+  const identity = await ensureGuestIdentity()
+  if (!identity.ok) {
+    return { ok: false, error: identity.error, code: identity.code }
+  }
+
+  const userId = identity.userId
+
+  // Re-fetch user for the rest of the flow
   const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) {
+    // This should not happen since ensureGuestIdentity succeeded, but guard anyway
     return { ok: false, error: 'יש להתחבר לפני התשלום', code: 'UNAUTHENTICATED' }
   }
 
-  const allowed = await checkRateLimit(`begin_checkout:user:${user.id}`, 10, 60)
+  const allowed = await checkRateLimit(`begin_checkout:user:${userId}`, 10, 60)
   if (!allowed) {
     return { ok: false, error: 'יותר מדי ניסיונות תשלום, המתינו דקה', code: 'RATE_LIMITED' }
   }
