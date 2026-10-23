@@ -122,6 +122,7 @@ describe('the pending migration inventory', () => {
       '284_products_weekend_only.sql',
       '285_auth_wa_otps.sql',
       '286_feature_flags.sql',
+      '292_supplier_agreements.sql',
     ])
   })
 
@@ -240,6 +241,7 @@ describe('the pending migration inventory', () => {
       '288_customer_rfm_segmentation.sql',
       '289_cron_revenue_daily.sql',
       '290_push_subscriptions_ensure.sql',
+      '291_pg_cron_scheduled_gifts.sql',
       '291_platform_percent_snapshot.sql',
       'preflight_000.sql',
       'preflight_162.sql',
