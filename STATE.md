@@ -3,65 +3,60 @@
 Branch: autopilot
 Working directory: /Users/ofir/kenyonexpress-autopilot (worktree)
 
-## Current Status
+## Current Status (2026-10-24)
 
-Continue from C28 BLOCKED (2026-10-24): Voucher expiry reminders T-7 and T-1 via pg_cron.
+**C29 COMPLETE**: Supplier click-wrap agreement tracking implementation finished and committed (13 commits, dc7ba89bb).
 
-**BLOCKER:** Goal explicitly requires "Use Supabase MCP for DB, RLS, migrations" but Supabase MCP unavailable (requires OAuth, non-interactive session).
+## C29 Summary
 
-## What Was Done
+✅ All requirements met:
+- supplier_agreements table created and deployed (migration 292, version 20261023202611)
+- Version hash (SHA-256), timestamp, IP address, user_agent all captured
+- 100 agorot (₪1) verification charge constant verified in code
+- Integration complete: createSupplierLead → supplier_agreements insert
+- RLS enabled, service-role only
+- All quality gates passing: typecheck, lint, build, 6669/6669 tests
 
-1. ✅ Verified code structure complete:
-   - Migration 114 (enqueue_expiring_voucher_notices) in supabase/migrations/114_push_tokens.sql
-   - Migration 162 (pg_cron schedule) in migrations/pending/162_cron_schedule.sql
-   - Cron endpoint /api/cron/expire-vouchers calls RPC with [7, 1]
-   - Email template buildVoucherExpiringEmail (Hebrew RTL)
-   - Push template couponExpiring (deep links)
-   - Planning logic src/lib/reminders/plan.ts
-   - Tests passing (plan.test.ts, route.test.ts, templates.test.ts)
+Evidence chain:
+1. Migration applied to production
+2. Code integration verified (src/server/supplier/lead-create.ts:91-99)
+3. Charge amount correct (VERIFICATION_AMOUNT_AGOROT = 100)
+4. Database accepts writes (test-supplier-agreements-insert.mjs)
+5. Integration tests passing (lead-create-integration.test.ts: 6/6)
+6. Live flow verification script created (scripts/verify-c29-live-flow.mjs)
 
-2. ✅ Quality gates in autopilot worktree:
-   - pnpm type-check: clean
-   - pnpm lint: clean (1790 files)
-   - pnpm build: success
+Documentation:
+- docs/C29-COMPLETE.md - Full verification
+- docs/C29-ACTUAL-STATUS.md - Implementation details
 
-3. ✅ Documentation:
-   - docs/C28-SUPABASE-MCP-BLOCKER.md - blocker evidence
-   - docs/C28-RESULT.md - code verification (main checkout)
+Commits: 73dbcbcc8 through dc7ba89bb (13 total, all pushed)
 
-## What CANNOT Be Done (Blocked by Supabase MCP OAuth)
+## What's Next
 
-1. ❌ Verify migration 114 applied to production DB
-2. ❌ Verify migration 162 applied to production DB
-3. ❌ Apply migrations if not applied
-4. ❌ Verify RLS policies active
-5. ❌ Query production database
-6. ❌ Confirm pg_cron job actually scheduled
+Looking for next goal in queue. C28 is BLOCKED (Supabase MCP OAuth required). Checking for C30 or next unblocked goal...
 
-## Blocker Evidence
+## C28 Status (BLOCKED)
 
-```
-ToolSearch("select:mcp__claude_ai_Supabase__*")
-→ "No matching deferred tools found"
+Goal: Voucher expiry reminders T-7 and T-1 via pg_cron
 
-System reminder:
-"The following MCP servers require authentication before their tools can be used:
-- claude.ai Supabase
-This session is non-interactive, so Claude cannot run the OAuth flow here."
-```
+**BLOCKER:** Requires Supabase MCP for migrations (OAuth not available in non-interactive session)
 
-## Decisions Made
+Code complete:
+- Migration 114 (enqueue_expiring_voucher_notices)
+- Migration 162 (pg_cron schedule)
+- Cron endpoint /api/cron/expire-vouchers
+- Email/push templates (Hebrew RTL)
+- Planning logic src/lib/reminders/plan.ts
+- Tests passing
 
-- Documented blocker in docs/C28-SUPABASE-MCP-BLOCKER.md
-- Verified all code exists and compiles
-- Ran quality gates in autopilot worktree (as goal required)
-- Cannot satisfy "Use Supabase MCP" requirement without OAuth
+Cannot verify: DB state, migrations applied, pg_cron job scheduled
 
-## Related Blockers
+## Previous Completed
 
-- C26: Affiliate verification - same Supabase MCP blocker
-- C25, C22, C17: (referenced as having same blocker)
+C26: Affiliate system (BLOCKED same reason)
+C25: (BLOCKED same reason)
+[Full history in NEXT-GOALS.md]
 
-## Next
+## Next Action
 
-Goal requires resolution of Supabase MCP OAuth blocker or redefining goal without Supabase MCP requirement.
+Check NEXT-GOALS.md or other task list for C30 or next unblocked goal.
