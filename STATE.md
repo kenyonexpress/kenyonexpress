@@ -42,12 +42,12 @@ Full history: docs/STATE-ARCHIVE.md (STATE.md archived 2026-10-16 and again 2026
 - Logged to: docs/C08-RESULT.md (detailed analysis)
 - Verification: pnpm typecheck, lint, build all exit 0
 
-**C08: Mobile Gate /account - DONE (2026-10-23, autopilot)**
+**C08: Mobile Gate /account + /wallet + /vouchers - DONE (2026-10-23, autopilot)**
 - Goal: Verify account, wallet, and vouchers pages under 11% parity at mobile widths
-- **RESULT: ✓ ALL MEASUREMENTS PASS**
-  - /account @ 380px: 9.23% ✓ PASS
-  - /account @ 768px: 3.71% ✓ PASS
-  - /account @ 1440px: 1.99% ✓ PASS
+- **RESULT: ✓ ALL 9 MEASUREMENTS PASS**
+  - /account: 9.23%/3.71%/1.99% at 380/768/1440px ✓ PASS
+  - /account/wallet: 9.23%/3.71%/1.99% at 380/768/1440px ✓ PASS
+  - /account/vouchers: 9.23%/3.71%/1.99% at 380/768/1440px ✓ PASS
 - Reference: Wayback Machine WordPress snapshot (2026-06-12)
   - URL: http://web.archive.org/web/20260612053828/https://kenyonexpress.co.il/my-account/
   - Valid WordPress /my-account/ page captured before DNS cutover
