@@ -4,10 +4,21 @@ Full history: docs/STATE-ARCHIVE.md (STATE.md archived 2026-10-16 and again 2026
 
 ## המשך מ: C26 (next unblocked work)
 
-**C25: Club tiers Bronze/Silver/Gold by 12-month spend - COMPLETE (2026-10-24, autopilot)**
-- Goal: Club tiers Bronze/Silver/Gold based on 12-month spend. Standing /account. Editable admin.
-- **RESULT: ✅ COMPLETE - Pre-existing implementation verified and documented**
-- **System Components (all operational):**
+**C25: Club tiers Bronze/Silver/Gold by 12-month spend - BLOCKED (2026-10-24, autopilot)**
+- Goal: Club tiers Bronze/Silver/Gold based on 12-month spend. Standing /account. Editable admin. Use Supabase MCP for DB, RLS, migrations.
+- **RESULT: BLOCKED - Supabase MCP requires OAuth unavailable in non-interactive sessions**
+- **BLOCKER: Supabase MCP authentication**
+  - ListMcpResourcesTool("claude.ai Supabase"): "No resources found"
+  - ToolSearch for Supabase tools: No matching deferred tools found
+  - System reminder: "This session is non-interactive, so Claude cannot run the OAuth flow"
+  - Cannot satisfy "Use Supabase MCP for DB, RLS, migrations" requirement
+  - Same blocker as C16, C17, C22
+- **Alternative Verification (via REST API, not Supabase MCP):**
+  - REST API confirmed club_tiers table exists with 4 tiers
+  - REST API error 42501 suggests v_user_tier view exists
+  - Migration 282 file found in migrations/applied/
+  - **WARNING: RLS policies and view definition NOT verified via Supabase MCP**
+- **System Components (pre-existing, not created for this goal):**
   - Database: migration 282 with `club_tiers` table + `v_user_tier` view
   - Tiers: Bronze (0), Silver (500 ILS), Gold (2,000 ILS), Platinum (5,000 ILS)
   - 12-month calculation: View sums paid orders from trailing 365 days (excludes cancelled/refunded/pending)
@@ -28,9 +39,18 @@ Full history: docs/STATE-ARCHIVE.md (STATE.md archived 2026-10-16 and again 2026
   - ✅ pnpm lint: clean
   - ✅ pnpm build: successful
 - **Data-driven:** Tier config in database (not code constants), editable via admin UI
-- **No new code required:** System already fully implemented and operational
-- Documented: docs/C25-CLUB-TIERS-RESULT.md (234 lines, comprehensive verification)
-- Commit: bb14e3390
+- **Work Completed (cannot satisfy MCP requirement):**
+  - Found pre-existing implementation (migration 282, admin UI, account display)
+  - Ran tests: 6/6 passing
+  - Quality gates: type-check ✓, lint ✓, build ✓
+  - Documented system in docs/C25-CLUB-TIERS-RESULT.md
+  - Attempted REST API verification (docs/C25-DATABASE-VERIFICATION.md)
+- **Cannot Complete Without:**
+  - Supabase MCP OAuth configuration (requires interactive session)
+  - Proper RLS policy verification
+  - View definition confirmation
+  - Migration application verification in production
+- Commits: bb14e3390, ad18110a1
 - Pushed to origin/closeout/v1-final
 
 **C22: Admin CSV import /admin/products/import dry-run + apply - PARTIAL (2026-10-24, autopilot)**
