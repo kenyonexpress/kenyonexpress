@@ -8,7 +8,7 @@
 --
 -- NOT APPLIED. Run preflight_277.sql first.
 
-BEGIN;
+-- BEGIN; -- Removed to allow individual statement execution for better error messages
 
 -- ============================================================================
 -- 1. Fraud Signal Types Enum
@@ -237,7 +237,7 @@ AS $$
     AND o.created_at > now() - (p_hours || ' hours')::interval;
 $$;
 
-COMMIT;
+-- COMMIT; -- Removed to match BEGIN removal
 
 -- ============================================================================
 -- ROLLBACK
