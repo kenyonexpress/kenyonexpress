@@ -103,7 +103,7 @@ CREATE INDEX idx_fraud_flags_created_at ON public.fraud_flags(created_at DESC);
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS public.chargeback_history (
   id                    uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  profile_id            uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  user_id            uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
 
   -- Chargeback details from provider
   provider              text NOT NULL,  -- 'cardcom', etc.
@@ -121,7 +121,7 @@ CREATE TABLE IF NOT EXISTS public.chargeback_history (
   updated_at            timestamp with time zone NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_chargeback_history_profile_id ON public.chargeback_history(profile_id);
+CREATE INDEX idx_chargeback_history_user_id ON public.chargeback_history(user_id);
 CREATE INDEX idx_chargeback_history_chargeback_date ON public.chargeback_history(chargeback_date DESC);
 
 -- ============================================================================
@@ -150,9 +150,9 @@ CREATE POLICY fraud_flags_service_all ON public.fraud_flags
 CREATE POLICY fraud_flags_owner_read ON public.fraud_flags
   FOR SELECT TO authenticated
   USING (
-    profile_id = auth.uid() OR EXISTS (
+    user_id = auth.uid() OR EXISTS (
       SELECT 1 FROM public.orders o
-      WHERE o.id = fraud_flags.order_id AND o.profile_id = auth.uid()
+      WHERE o.id = fraud_flags.order_id AND o.user_id = auth.uid()
     )
   );
 
@@ -166,7 +166,7 @@ CREATE POLICY chargeback_history_service_all ON public.chargeback_history
 
 CREATE POLICY chargeback_history_owner_read ON public.chargeback_history
   FOR SELECT TO authenticated
-  USING (profile_id = auth.uid());
+  USING (user_id = auth.uid());
 
 -- ============================================================================
 -- 6. Helper Functions for Fraud Detection
@@ -188,9 +188,9 @@ BEGIN
 END;
 $$;
 
--- Get chargeback count for a profile in the last 90 days
+-- Get chargeback count for a user in the last 90 days
 CREATE OR REPLACE FUNCTION public.fn_profile_recent_chargebacks(
-  p_profile_id uuid,
+  p_user_id uuid,
   p_days integer DEFAULT 90
 )
 RETURNS integer
@@ -199,14 +199,14 @@ STABLE
 AS $$
   SELECT COUNT(*)::integer
   FROM public.chargeback_history
-  WHERE profile_id = p_profile_id
+  WHERE user_id = p_user_id
     AND chargeback_date > now() - (p_days || ' days')::interval
     AND resolved = false;
 $$;
 
--- Get recent order velocity for a profile (orders in last N hours)
+-- Get recent order velocity for a user (orders in last N hours)
 CREATE OR REPLACE FUNCTION public.fn_profile_order_velocity(
-  p_profile_id uuid,
+  p_user_id uuid,
   p_hours integer DEFAULT 24
 )
 RETURNS integer
@@ -215,7 +215,7 @@ STABLE
 AS $$
   SELECT COUNT(*)::integer
   FROM public.orders
-  WHERE profile_id = p_profile_id
+  WHERE user_id = p_user_id
     AND created_at > now() - (p_hours || ' hours')::interval;
 $$;
 
