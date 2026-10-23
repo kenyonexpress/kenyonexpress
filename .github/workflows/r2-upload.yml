@@ -1,0 +1,87 @@
+name: Upload Assets to Cloudflare R2
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Run in dry-run mode (no actual upload)'
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+  upload-r2:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.x'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check R2 configuration
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: ${{ vars.R2_BUCKET }}
+        run: |
+          echo "R2 Config Check:"
+          echo "  R2_ACCOUNT_ID: ${R2_ACCOUNT_ID:0:10}..."
+          echo "  R2_ACCESS_KEY_ID: ${R2_ACCESS_KEY_ID:+set}"
+          echo "  R2_SECRET_ACCESS_KEY: ${R2_SECRET_ACCESS_KEY:+set}"
+          echo "  R2_BUCKET: ${R2_BUCKET:-not set}"
+
+      - name: Verify assets manifest
+        run: |
+          if [ ! -f refs/live-assets/manifest.json ]; then
+            echo "ERROR: Asset manifest not found. Run scripts/ingest-live-assets.mjs first."
+            exit 1
+          fi
+
+          ASSET_COUNT=$(node -e "const m = require('./refs/live-assets/manifest.json'); console.log(m.assets.filter(a => !a.quarantined && !a.error).length)")
+          echo "Found $ASSET_COUNT valid assets ready for upload"
+
+      - name: Upload to R2 (dry-run)
+        if: inputs.dry_run == true
+        run: node scripts/upload-r2.mjs --dry-run
+
+      - name: Upload to R2 (live)
+        if: inputs.dry_run == false
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: ${{ vars.R2_BUCKET }}
+        run: |
+          echo "Starting R2 upload of 375 assets..."
+          node scripts/upload-r2.mjs --prefix=live-assets/
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## R2 Upload Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            echo "✅ Dry-run completed - no assets uploaded" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "To upload for real, run this workflow again with dry_run=false" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "✅ Upload completed" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Assets are now available at:" >> $GITHUB_STEP_SUMMARY
+            echo "https://cdn.kenyonexpress.co.il/live-assets/" >> $GITHUB_STEP_SUMMARY
+          fi
