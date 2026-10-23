@@ -155,13 +155,23 @@ export default function LoginModal({
   )
 
   // Check if user should be shown email fallback after failed attempts
+  // Note: This runs on every login page load. Since we don't have user identity
+  // before login, we check based on IP address patterns stored in localStorage
+  // as a client-side fingerprint. This is best-effort - the real check happens
+  // server-side in the auth routes.
   useEffect(() => {
     async function checkFallback() {
       try {
-        const result = await checkAuthFallback({})
-        if (result.shouldFallback) {
-          setShowFallbackMessage(true)
-          setActiveTab('magic') // Auto-switch to email magic link tab
+        // Try to get email from localStorage if user was recently attempting login
+        const recentEmail =
+          typeof window !== 'undefined' ? localStorage.getItem('login_attempt_email') : null
+
+        if (recentEmail) {
+          const result = await checkAuthFallback({ email: recentEmail })
+          if (result.shouldFallback) {
+            setShowFallbackMessage(true)
+            setActiveTab('magic') // Auto-switch to email magic link tab
+          }
         }
       } catch {
         // Silently fail - fallback check is best-effort
