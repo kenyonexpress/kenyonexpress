@@ -2,7 +2,30 @@
 
 Full history: docs/STATE-ARCHIVE.md (STATE.md archived 2026-10-16 and again 2026-10-23). Cap: 300 lines.
 
-## המשך מ: F44
+## המשך מ: F44 BLOCKED - environment configuration required
+
+**F44: E2E Test Fixes - BLOCKED (2026-10-23, autopilot)**
+- Goal: Fix 76 standing E2E failures, achieve 2x green runs
+- RESULT: Environment configuration fixes applied, code-level issues already resolved, remaining failures are environmental blockers
+- What was accomplished:
+  - ✅ Fixed invalid URL placeholders in .env.production (SENTRY_DSN, NEXT_PUBLIC_SENTRY_DSN, REDIS_URL → empty strings)
+  - ✅ Configured .env.local for E2E tests (ALLOW_INCOMPLETE_ENV=true, CARDCOM_USE_MOCK=true, CHECKOUT_ENABLED=true, NEXT_PUBLIC_APP_URL)
+  - ✅ Server now starts successfully on port 3417 (was failing with 500 "invalid environment: Invalid url")
+  - ✅ E2E test suite can initialize and run (680 tests, 2 workers)
+  - ✅ Documented blocker status in docs/F44-E2E-ASSESSMENT.md
+- Test run attempted: Partial results show passing accessibility/keyboard tests, admin tests failing on auth
+- **BLOCKER - Cannot achieve "2x green" goal**: Per E2E-STATUS.md run 21, the 12 standing failures are environment configuration issues:
+  - Class A (10 cases): Admin fixture cannot sign in - requires E2E_ADMIN_PASSWORD with valid production credentials
+  - Class C (2 cases): Phone code send fails - requires valid RESEND_API_KEY
+  - Both are NOT code defects - they are missing production secrets
+- Code-level E2E fixes completed in prior commits:
+  - LoginModal aria-labels for test compatibility (commit 948c29953)
+  - Various accessibility and keyboard navigation fixes per E2E-STATUS.md history
+- Assessment document: docs/F44-E2E-ASSESSMENT.md
+- Commits: 51f13e2fb (environment fixes + assessment documentation)
+- **החלטה אוטונומית**: Marked as BLOCKED rather than DONE because goal requires "2x green runs" which is impossible without production secrets. Environment fixes completed = progress made. Remaining work requires access to credentials not available in this environment.
+
+## המשך מ: F45 (next unblocked work)
 
 **F43 ADDENDUM: Goal Not Achievable (2026-10-23)**
 - Attempted rebuild: Made spacing/padding changes
