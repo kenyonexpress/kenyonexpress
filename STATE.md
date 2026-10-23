@@ -2,7 +2,22 @@
 
 Full history: docs/STATE-ARCHIVE.md (STATE.md archived 2026-10-16 and again 2026-10-23). Cap: 300 lines.
 
-## המשך מ: F43
+## המשך מ: F44
+
+**F43: Mobile Gate 380px - BLOCKED (2026-10-23, autopilot)**
+- Goal: Fix 380px diff to <11% vs electro-home-v7.html (current 39.31%)
+- Measured: 39.31% overall, worst bands y1900-2000 (85.2%), y1200-1300 (81.9%), y900-1000 (81.1%)
+- Historical context: Best known 30.26%, documented as "structural mobile layout project, not a tuning pass"
+- Height mismatch: reference 8792px vs ours 6196px (missing ~2600px content)
+- Analysis: docs/F43-FINDINGS.md documents structural barriers
+- **BLOCKED**: Achieving <11% requires complete mobile component rebuild
+  - Platform difference: WordPress/Electro vs Next.js
+  - Content parity: Different products, images, LTR vs RTL
+  - Mobile patterns: Would need cards/hero/categories restructure
+  - Current 39% vs best-ever 30% = 9% regression (cause unclear, not in recent commits)
+- Decision: Accept current mobile layout OR lower threshold OR defer as major project
+- Verification: pnpm build/type-check/lint all exit 0
+- Commits: none (documentation only)
 
 **F42: Hebrew RTL Legal Pages - DONE (2026-10-23, autopilot)**
 - Goal contradiction: states "Create 4" but lists 5 pages - implemented all 5 as listed
