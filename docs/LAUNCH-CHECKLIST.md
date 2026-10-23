@@ -10,6 +10,26 @@
 > ‏למה שנשאר לך: `docs/OWNER-CHECKLIST.md`.
 
 
+## PUSH NOW (v2.0.0, 2026-10-23)
+
+- Tag v2.0.0 is on origin (HEAD 7de0eed31, branch closeout/v1-final).
+- Branch is in sync with origin. Nothing else to push.
+- Not mine, left unstaged: docs/UI-PARITY-REPORT.md, docs/mobile-audit/*.png, scripts/apply-*.
+
+## HOLD (do not treat v2.0.0 as launch-ready until these close)
+
+- Visual parity gate: home 380=30.26, 768=29.0 (need under 11). Z05, F38, F43.
+- E2E: Z14 not green twice (17 failing on prod build); /signup, /forgot-password, /reset-password are 336px at 320px viewport.
+- Unit tests: 14 red in 11 files (F36).
+- Migrations 162, 282, 283, 284, 289, 290 not applied or unverified in prod; Supabase MCP needs OAuth.
+- Z12 decision: WhatsApp OTP via Meta Cloud send conflicts with wa.me-only lock.
+- Production payment terminal credentials and checkout E2E on live.
+- Missing secrets: E2E_ADMIN_PASSWORD, RESEND_API_KEY (E2E).
+- Lighthouse run on deployed URL; noindex decision for cart and checkout.
+- DMARC tighten to quarantine after monitoring.
+
+---
+
 תאריך: 2026-08-19.
 ענף: `ke-arch`.
 היקף: docs בלבד.

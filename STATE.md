@@ -3,6 +3,7 @@
 Branch: closeout/v1-final. Tag: v1.0.0-mvp-rc3. Full history: docs/STATE-ARCHIVE.md. Cap: 300 lines.
 
 LAUNCH-READY: pending-cardcom
+SHOWABLE: yes
 
 ## DONE-list
 - F08-F12: core items, see archive
@@ -48,3 +49,4 @@ Continue from Z12 BLOCKED: F15 passkeys already built (commit 89e88f149): /api/a
 Continue from Z13 DONE-AS-SHIPPED: F19 already built (commits 3906e67bc, c34d96a05): admin toggle at /admin/feature-flags (setMaintenanceMode server action, audit log, feature_flags key maintenance_mode from applied migration 286), proxy 503/redirect to /maintenance with MAINTENANCE_MODE env or DB flag (payments, webhooks, crons, admin, login exempt), Turnstile widget + verifyTurnstile on contact, signup, login, reset, checkout, supplier form; inert unless NEXT_PUBLIC_TURNSTILE_SITE_KEY / TURNSTILE_SECRET_KEY set, fail-closed once secret is set. Security + maintenance tests 46 green. No code change, no UI change, no visual gate, no migration.
 Continue from Z14 BLOCKED: Playwright full suite not green twice. Run 1 (pnpm dev, 2 workers): 34 failed/631 passed/15 skipped; 20 were render-mode specs that need the prod build. Run 2 (pnpm build + start on 3100, 2 workers): 17 failed/648 passed/15 skipped (11.3m). Remaining reds: /signup, /forgot-password, /reset-password are 336px wide at 320px viewport (rtl-mobile, both projects); mobile-chrome home.spec (5) and purchase-flow product-open, likely homepage/stock reads failing in prerender (fetch rejects, fn_record_recent_search permission denied, Supabase timeouts); admin-product-crud split-to-100 (both projects); physical-purchase and full-purchase-redeem mock-pay waitForURL 20s timeouts. Needs product fixes then two consecutive green runs. Logs: /tmp/z14-run1.log, /tmp/z14-run2.log.
 Continue from Z15 DONE: 14 pages at 380/390/430 = 42 measurements, all HTTP 200, zero sideways scroll. Recorded in docs/MOBILE-AUDIT-FINAL.md. Caveat: server on 3311 may predate latest build; <380 widths (Z14 /signup 336 at 320) not covered. No code change.
+Continue from Z16 DONE: tag v2.0.0 (annotated, 7de0eed31) pushed; docs/LAUNCH-CHECKLIST.md has PUSH NOW and HOLD sections; SHOWABLE: yes set per instruction. Caveat: visual, E2E and unit gates still red (see HOLD). Backlog items 1-7 are post-launch or externally gated (group-deals re-eval dated 2026-10-23, Crisp, Meta verification, lawyer, native app, courses billing, tzimmer); none is code-actionable now.
