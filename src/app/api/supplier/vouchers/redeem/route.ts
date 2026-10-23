@@ -245,6 +245,15 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
     return respond({ outcome: 'not_found', message: OUTCOME_MESSAGES.not_found }, 404)
   }
 
+  // Per voucher, on top of the per-member ceiling above: one code hammered
+  // from several tills (or by a guesser rotating accounts) hits its own bucket.
+  // Ten an hour is far above a real counter, which scans a code once, maybe
+  // twice on a retry; an idempotent replay of the same scan is one of those.
+  const codeAllowed = await checkRateLimit(`voucher-redeem-code:${shortCode}`, 10, 3600)
+  if (!codeAllowed) {
+    return respond({ outcome: 'rate_limited', message: OUTCOME_MESSAGES.rate_limited }, 429)
+  }
+
   const { data, error } = await supabase.rpc('redeem_voucher', {
     p_code: shortCode,
     p_scan_method: method,
