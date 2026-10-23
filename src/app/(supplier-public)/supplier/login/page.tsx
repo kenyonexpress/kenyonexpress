@@ -48,8 +48,10 @@ async function SupplierLoginRedirect() {
 export default function SupplierLoginPage() {
   return (
     <main
+      id="main-content"
+      tabIndex={-1}
       dir="rtl"
-      className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-4 py-12"
+      className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-4 py-12 focus:outline-none"
     >
       <Suspense fallback={null}>
         <SupplierLoginRedirect />

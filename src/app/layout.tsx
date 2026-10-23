@@ -221,9 +221,16 @@ export default function RootLayout({
           origin through Vercel's rewrite, so no third-party request leaves the
           page and no cookie is set, which is why they sit outside the consent
           gate that GA4 and Meta are behind.
+
+          Only loaded in production - the scripts rely on Vercel's platform
+          infrastructure and produce console errors on localhost.
         */}
-        <VercelAnalytics />
-        <SpeedInsights />
+        {process.env.NEXT_PUBLIC_VERCEL_ENV === 'production' && (
+          <>
+            <VercelAnalytics />
+            <SpeedInsights />
+          </>
+        )}
       </body>
     </html>
   )
