@@ -23,3 +23,5 @@ Full history: docs/STATE-ARCHIVE.md (STATE.md archived 2026-10-16 and again 2026
 **Open, not part of F01**
 - F43 mobile gate 380: BLOCKED earlier on an outdated reference HTML (see docs/STATE-ARCHIVE.md).
 - Add-to-cart / dialog E2E timeouts (needs DB initialisation).
+
+BLOCKED F02 homepage electro-v7: gate unreachable by layout work alone. Measured on a clean prod build of closeout/v1-final (SENTRY_DSN= override needed, .env.production holds a literal placeholder that fails env.ts), compare.mjs --page=home --baseline=electro-home-v7_<w>.png: 380 39.31%, 768 40.89% (height ratio 1.73x), 1440 29.60%. Reference is the LTR English Electro demo (demo products, remote images); ours is RTL Hebrew with different content and no header search, so mirrored columns and different imagery dominate the diff. Also: refs/electro-home-v7.html as --live= is refused (12 lazy/remote images never load from file://, fonts blocked by CORS); only the PNG baselines work. TopBar has no "בחר אזור" and no "בקרבתי" chip exists in src already, so those two removals are no-ops. No code changed. Needs Ofir: a Hebrew/RTL v7 baseline PNG, or a different gate for this item.
