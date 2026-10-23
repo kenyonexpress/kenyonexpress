@@ -58,6 +58,23 @@ const ALLOWED: Record<string, string> = {
   'components/cart/CartBootstrap.tsx':
     'Browser, and carries its own AbortController so an unmount cancels the bootstrap rather than leaking it.',
 
+  'app/error.tsx':
+    'Browser error boundary: probes our own /api/health to tell the visitor whether the site is down, and a hung probe costs the page nothing.',
+  'components/auth/PasskeyManager.tsx':
+    'Browser, to our own passkey routes, inside a WebAuthn ceremony the browser already bounds with its own prompt timeout.',
+  'components/auth/PasskeySignIn.tsx':
+    'Browser, to our own passkey routes, inside a WebAuthn ceremony the browser already bounds with its own prompt timeout.',
+  'components/auth/WhatsappOtpForm.tsx':
+    'Browser call to our own origin from a form that shows its own pending state; the server side of the route is rate limited and bounded.',
+  'components/checkout/CardVerificationStep.tsx':
+    'Browser, and it opens a payment page: a client timeout cannot cancel the server-side verification row, only invite a second one.',
+  'components/checkout/ShippingPhoneVerification.tsx':
+    'Browser call to our own origin from a form that shows its own pending state; the server side of the route is rate limited and bounded.',
+  'components/push/PushPrompt.tsx':
+    'Browser, fire-and-forget subscribe to our own origin after the permission prompt; a hang costs the page nothing.',
+  'lib/offline/sync.ts':
+    'Browser replay of the offline queue to our own origin; a stalled item stays queued and is retried with backoff, which is its own ceiling.',
+
   // --- Deliberately unbounded, on the voucher-burn path -------------------
   'app/(supplier)/scan/ScanClient.tsx':
     'The redeem POST burns a voucher. A timeout cannot cancel it -- the request may have arrived and only the response may be lost -- so it would only invite a retry that can burn twice, because a scan reset rotates the idempotency key. Bounding it needs a server-side idempotency window, not a client timer. The lookup call in the same file IS bounded.',

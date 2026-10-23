@@ -36,7 +36,14 @@ const rel = (path: string) => relative(SRC, path)
  * - `app/error.tsx` is a client error boundary. It runs in the browser, where
  *   there is no server request to correlate to.
  */
-const ALLOWED_CONSOLE = new Set(['lib/observability/log.ts', 'app/error.tsx'])
+const ALLOWED_CONSOLE = new Set([
+  'lib/observability/log.ts',
+  'app/error.tsx',
+  // Client-side: a 'use client' hook and a development-only warning in a helper
+  // that client components import. Neither runs in a request.
+  'lib/offline/useOfflineMode.ts',
+  'lib/typography.ts',
+])
 
 describe('raw console in src/', () => {
   it('is confined to the sink and the client error boundary', () => {

@@ -130,7 +130,7 @@ describe('FooterAccordion', () => {
       expect(button).toHaveClass('px-4')
       expect(button).toHaveClass('text-right')
       expect(button).toHaveClass('text-white')
-      expect(button).toHaveClass('font-bold')
+      expect(button).toHaveClass('text-button-small')
     }
   })
 

@@ -95,4 +95,4 @@ async function handlePOST(req: NextRequest): Promise<Response> {
   }
 }
 
-export const POST = withRequestLog('rfm-segmentation', handlePOST)
+export const GET = withRequestLog('rfm-segmentation', handlePOST)

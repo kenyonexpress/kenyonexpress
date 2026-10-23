@@ -42,7 +42,7 @@ const manifest = JSON.parse(read(MANIFEST_PATH)) as {
 const jobs = manifest.jobs
 
 describe('the scheduled job inventory', () => {
-  it('names the twelve jobs and nothing else', () => {
+  it('names the twenty-one jobs and nothing else', () => {
     // A new cron route is a deliberate diff here. An undeclared one would be a
     // handler that exists, is reachable, and is never called by anything.
     expect(jobs.map((job) => job.name)).toEqual([
@@ -59,6 +59,14 @@ describe('the scheduled job inventory', () => {
       'retention',
       'weekly-digest',
       'affiliate-payouts',
+      'observability-check',
+      'fraud-monitor',
+      'p95-monitor',
+      'deal-scraper',
+      'stock-notifications',
+      'sms-broadcasts',
+      'rfm-segmentation',
+      'search-report',
     ])
   })
 

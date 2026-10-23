@@ -142,31 +142,23 @@ export function buildOrderPaidEmail(
   const name = asText(payload.customer_name)
   const total = formatAgorot(asNumber(payload.total_agorot))
   const items = asNumber(payload.item_count)
-  const url = `${trimSite(siteUrl)}/account/orders`
 
   /**
-   * The receipt link points at OUR route, not at the provider's URL, and the
-   * route re-checks ownership before it redirects. A tax document handed out as
-   * a raw provider link is readable by anything that ever sees the mail - a
-   * forward, a screenshot, a shared inbox.
-   *
-   * It is also why the link can be included at all despite the document not
-   * existing yet when this mail is built: the invoice cron and the notification
-   * cron are separate jobs, so the receipt is usually issued minutes after the
-   * confirmation goes out. A link resolved at CLICK time has no race; an
-   * embedded URL would have had to wait for one.
+   * One link only: the order page. The thank-you and the invoice download live
+   * there behind the session, so the mail never carries a document link (a
+   * forward or screenshot of it would otherwise expose a tax document).
    */
   const orderId = asText(payload.order_id)
-  const receiptUrl = orderId ? `${trimSite(siteUrl)}/account/orders/${orderId}/invoice` : null
+  const url = orderId
+    ? `${trimSite(siteUrl)}/account/orders/${orderId}`
+    : `${trimSite(siteUrl)}/account/orders`
 
   const subject = `ההזמנה שלך התקבלה · ${ref}`
   const greeting = name ? `שלום ${name},` : 'שלום,'
 
   const text = [
     greeting,
-    '',
     'התשלום התקבל וההזמנה שלך נקלטה.',
-    '',
     `מספר הזמנה: ${ref}`,
     `סך הכל שולם באתר: ${total}`,
     items > 0 ? `פריטים: ${items}` : '',
@@ -188,8 +180,7 @@ export function buildOrderPaidEmail(
           <div>סך הכל שולם באתר: <strong>${escapeHtml(total)}</strong></div>
           ${items > 0 ? `<div style="color:${MUTED}">${items} פריטים</div>` : ''}
         </div>
-        <a href="${escapeHtml(url)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">לפרטי ההזמנה</a>
-        ${receiptUrl ? `<div style="font-size:13px;color:${MUTED};margin-top:12px;text-align:center"><a href="${escapeHtml(receiptUrl)}" style="color:${MUTED}">להורדת הקבלה</a></div>` : ''}
+        <a href="${escapeHtml(url)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">לפרטי ההזמנה והורדת החשבונית</a>
       </div>`,
     // The seller's identity on the confirmation, not only on the tax document
     // that follows it: a receipt that names nobody is the one a bank disputes.

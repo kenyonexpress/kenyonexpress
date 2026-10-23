@@ -31,7 +31,8 @@
 */
 .jet-listing-grid-deals__item {
   box-sizing: border-box;
-  padding: 8px 0;
+  padding: 0;
+  margin-bottom: 0;
   max-width: 100%;
   flex: 0 0 100%;
 }
@@ -109,11 +110,9 @@
   justify-content: flex-start;
 }
 
-.p_con__title,
-.jet-listing-grid-deals h2.p_con__title {
+.p_con__title {
   color: var(--color-link);
   font-size: 22px;
-  line-height: 32px; /* live: 2 clamped lines = 64px */
   margin: 0;
   font-weight: inherit;
   display: -webkit-box;
@@ -121,6 +120,15 @@
   -webkit-line-clamp: 2;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* The deal card's own line, weight and margin (F43/F44): 26.4px line, weight
+   500, 8px under the title. Element-qualified so it out-ranks the one-class
+   base above; the base carries no line-height for the same reason. */
+h2.p_con__title--deal {
+  line-height: var(--leading-deal-title);
+  font-weight: var(--weight-medium);
+  margin: 0 0 8px;
 }
 
 .p_con__image-wrap {
@@ -143,6 +151,16 @@
   object-fit: cover;
   object-position: top center;
   display: block;
+}
+
+/* Tablet only: thumbnails flagged data-thumb-md="square" are square files that
+   sit at 245px wide between 768 and 1023 and nowhere else. */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .p_con__image[data-thumb-md="square"] {
+    width: 245px;
+    object-fit: cover;
+    object-position: center center;
+  }
 }
 
 /* live: badge pinned to the LEFT edge (inline-end in RTL) of the image area */
@@ -231,6 +249,7 @@
 .p_con__strike {
   color: var(--color-deal-price);
   font-size: 14px;
+  line-height: 1.714;
   font-weight: var(--weight-regular);
   text-decoration: line-through;
   flex-grow: 1;
@@ -239,6 +258,7 @@
 .p_con__sale {
   color: var(--color-deal-sale);
   font-size: 16px;
+  line-height: 1.714;
   font-weight: var(--weight-bold);
   flex-grow: 1;
 }
@@ -400,8 +420,7 @@
     min-height: 0;
   }
 
-  .p_con__title,
-  .jet-listing-grid-deals h2.p_con__title {
+  .p_con__title {
     font-size: clamp(13px, 3.6vw, 16px);
     line-height: 1.35;
   }

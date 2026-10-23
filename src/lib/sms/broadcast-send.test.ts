@@ -1,93 +1,50 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { isSmsConfigured } from './broadcast-send'
 import { isWithinQuietHours } from './twilio-webhook'
 
 describe('SMS Broadcast Send', () => {
   describe('isSmsConfigured', () => {
+    // `process.env.X = undefined` stores the string 'undefined', which is truthy,
+    // so "missing" is expressed with an empty value through vi.stubEnv.
+    const SET = {
+      TWILIO_ACCOUNT_SID: 'AC123456789',
+      TWILIO_AUTH_TOKEN: 'auth_token_value',
+      TWILIO_PHONE_NUMBER: '+1234567890',
+    }
+
+    function configure(overrides: Partial<Record<keyof typeof SET, string>> = {}) {
+      for (const [name, value] of Object.entries({ ...SET, ...overrides })) {
+        vi.stubEnv(name, value)
+      }
+    }
+
+    afterEach(() => {
+      vi.unstubAllEnvs()
+    })
+
     it('returns true when all required SMS environment variables are set', () => {
-      const originalAccountSid = process.env.TWILIO_ACCOUNT_SID
-      const originalAuthToken = process.env.TWILIO_AUTH_TOKEN
-      const originalPhoneNumber = process.env.TWILIO_PHONE_NUMBER
-
-      process.env.TWILIO_ACCOUNT_SID = 'AC123456789'
-      process.env.TWILIO_AUTH_TOKEN = 'auth_token_value'
-      process.env.TWILIO_PHONE_NUMBER = '+1234567890'
-
-      const result = isSmsConfigured()
-      expect(result).toBe(true)
-
-      // Restore original values
-      process.env.TWILIO_ACCOUNT_SID = originalAccountSid
-      process.env.TWILIO_AUTH_TOKEN = originalAuthToken
-      process.env.TWILIO_PHONE_NUMBER = originalPhoneNumber
+      configure()
+      expect(isSmsConfigured()).toBe(true)
     })
 
     it('returns false when TWILIO_ACCOUNT_SID is missing', () => {
-      const originalSid = process.env.TWILIO_ACCOUNT_SID
-      const originalToken = process.env.TWILIO_AUTH_TOKEN
-      const originalPhone = process.env.TWILIO_PHONE_NUMBER
-
-      process.env.TWILIO_ACCOUNT_SID = undefined
-      process.env.TWILIO_AUTH_TOKEN = 'token'
-      process.env.TWILIO_PHONE_NUMBER = '+1234567890'
-
-      const result = isSmsConfigured()
-      expect(result).toBe(false)
-
-      process.env.TWILIO_ACCOUNT_SID = originalSid
-      process.env.TWILIO_AUTH_TOKEN = originalToken
-      process.env.TWILIO_PHONE_NUMBER = originalPhone
+      configure({ TWILIO_ACCOUNT_SID: '' })
+      expect(isSmsConfigured()).toBe(false)
     })
 
     it('returns false when TWILIO_AUTH_TOKEN is missing', () => {
-      const originalSid = process.env.TWILIO_ACCOUNT_SID
-      const originalToken = process.env.TWILIO_AUTH_TOKEN
-      const originalPhone = process.env.TWILIO_PHONE_NUMBER
-
-      process.env.TWILIO_ACCOUNT_SID = 'AC123456789'
-      process.env.TWILIO_AUTH_TOKEN = undefined
-      process.env.TWILIO_PHONE_NUMBER = '+1234567890'
-
-      const result = isSmsConfigured()
-      expect(result).toBe(false)
-
-      process.env.TWILIO_ACCOUNT_SID = originalSid
-      process.env.TWILIO_AUTH_TOKEN = originalToken
-      process.env.TWILIO_PHONE_NUMBER = originalPhone
+      configure({ TWILIO_AUTH_TOKEN: '' })
+      expect(isSmsConfigured()).toBe(false)
     })
 
     it('returns false when TWILIO_PHONE_NUMBER is missing', () => {
-      const originalSid = process.env.TWILIO_ACCOUNT_SID
-      const originalToken = process.env.TWILIO_AUTH_TOKEN
-      const originalPhone = process.env.TWILIO_PHONE_NUMBER
-
-      process.env.TWILIO_ACCOUNT_SID = 'AC123456789'
-      process.env.TWILIO_AUTH_TOKEN = 'auth_token_value'
-      process.env.TWILIO_PHONE_NUMBER = undefined
-
-      const result = isSmsConfigured()
-      expect(result).toBe(false)
-
-      process.env.TWILIO_ACCOUNT_SID = originalSid
-      process.env.TWILIO_AUTH_TOKEN = originalToken
-      process.env.TWILIO_PHONE_NUMBER = originalPhone
+      configure({ TWILIO_PHONE_NUMBER: '' })
+      expect(isSmsConfigured()).toBe(false)
     })
 
     it('returns false when all SMS configuration is missing', () => {
-      const originalSid = process.env.TWILIO_ACCOUNT_SID
-      const originalToken = process.env.TWILIO_AUTH_TOKEN
-      const originalPhone = process.env.TWILIO_PHONE_NUMBER
-
-      process.env.TWILIO_ACCOUNT_SID = undefined
-      process.env.TWILIO_AUTH_TOKEN = undefined
-      process.env.TWILIO_PHONE_NUMBER = undefined
-
-      const result = isSmsConfigured()
-      expect(result).toBe(false)
-
-      process.env.TWILIO_ACCOUNT_SID = originalSid
-      process.env.TWILIO_AUTH_TOKEN = originalToken
-      process.env.TWILIO_PHONE_NUMBER = originalPhone
+      configure({ TWILIO_ACCOUNT_SID: '', TWILIO_AUTH_TOKEN: '', TWILIO_PHONE_NUMBER: '' })
+      expect(isSmsConfigured()).toBe(false)
     })
   })
 

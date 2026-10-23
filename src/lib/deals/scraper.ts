@@ -5,7 +5,10 @@
  * deduplicates, validates images, and stages for approval.
  */
 
+import { fetchWithTimeout } from '@/lib/http/fetch-with-timeout'
+import { log } from '@/lib/observability/log'
 import { createClient } from '@/lib/supabase/server'
+import { slugify } from '@/lib/utils/slugify'
 
 export interface DealScraperConfig {
   sourceId: string
@@ -54,7 +57,7 @@ export async function scrapeLiveSite(): Promise<ScrapedDeal[]> {
   const deals: ScrapedDeal[] = []
 
   try {
-    const response = await fetch(`${LIVE_SITE}/api/products`, {
+    const response = await fetchWithTimeout(`${LIVE_SITE}/api/products`, {
       headers: {
         'User-Agent': 'KenyonExpress-Scraper/1.0',
         Accept: 'application/json',
@@ -146,10 +149,19 @@ export async function ingestScrapedDeals(
   const errors: string[] = []
 
   // Resolve category IDs
-  const { data: categories } = await client
+  const { data: categories, error: categoriesError } = await client
     .from('categories')
     .select('id, slug')
     .in('slug', deals.map((d) => d.categorySlug || 'hot-deals').filter(Boolean))
+  if (categoriesError) {
+    // Staging every deal with no category is worse than staging none.
+    log.error('deal_scraper.category_lookup_failed', { error: categoriesError })
+    return {
+      inserted: 0,
+      duplicates: 0,
+      errors: [`category lookup failed: ${categoriesError.message}`],
+    }
+  }
 
   const categoryMap = new Map(
     (categories || []).map((c: { id: string; slug: string }) => [c.slug, c.id]),
@@ -161,13 +173,19 @@ export async function ingestScrapedDeals(
       const contentHash = computeHash(deal.nameHe, deal.priceAgorot, deal.supplierId)
 
       // Check for existing deal with same hash
-      const { data: existing } = await client
+      const { data: existing, error: existingError } = await client
         .from('pending_deals')
         .select('id')
         .eq('content_hash', contentHash)
         .eq('source_id', sourceId)
         .neq('approval_status', 'rejected')
         .limit(1)
+
+      if (existingError) {
+        // Not knowing is not "new": inserting would stage a duplicate.
+        errors.push(`${deal.nameHe}: duplicate check failed: ${existingError.message}`)
+        continue
+      }
 
       if (existing && existing.length > 0) {
         duplicates += 1
@@ -224,18 +242,6 @@ export function computeHash(nameHe: string, priceAgorot: number, supplierId?: st
 }
 
 /**
- * Convert Hebrew string to URL-safe slug.
- */
-function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .replace(/[^֐-׿\w\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .slice(0, 50)
-}
-
-/**
  * Fetch and validate deal image, updating validation status.
  */
 export async function validateDealImage(
@@ -251,7 +257,7 @@ export async function validateDealImage(
   }
 
   try {
-    const response = await fetch(imageUrl, {
+    const response = await fetchWithTimeout(imageUrl, {
       method: 'HEAD',
       headers: {
         'User-Agent': 'KenyonExpress-Scraper/1.0',
@@ -322,12 +328,17 @@ export async function validatePendingDeals(
   const client = await createClient()
 
   // Fetch pending deals with unvalidated images
-  const { data: deals } = await client
+  const { data: deals, error: dealsError } = await client
     .from('pending_deals')
     .select('id, image_url')
     .eq('source_id', sourceId)
     .eq('image_validation_status', 'pending')
     .limit(limit)
+
+  if (dealsError) {
+    log.error('deal_scraper.pending_read_failed', { error: dealsError })
+    return { validated: 0, passed: 0, failed: 0 }
+  }
 
   if (!deals || deals.length === 0) {
     return { validated: 0, passed: 0, failed: 0 }

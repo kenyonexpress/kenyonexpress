@@ -1,3 +1,6 @@
+import { fetchWithTimeout } from '@/lib/http/fetch-with-timeout'
+import { log } from './log'
+
 /**
  * Real integration layer for Sentry, PostHog, Axiom, and Vercel Analytics
  * Fetches actual observability data from external APIs
@@ -45,12 +48,12 @@ export async function fetchSentryStats(): Promise<SentryStats | null> {
     const sentryProject = process.env.NEXT_PUBLIC_SENTRY_PROJECT || 'kenyonexpress'
 
     if (!sentryToken) {
-      console.warn('[integrations] SENTRY_AUTH_TOKEN not configured, skipping')
+      log.warn('integrations.sentry_auth_token_not_configured_skipping')
       return null
     }
 
     // Fetch from Sentry API: stats for last 24 hours
-    const response = await fetch(
+    const response = await fetchWithTimeout(
       `https://sentry.io/api/0/projects/${sentryOrg}/${sentryProject}/stats/`,
       {
         headers: { Authorization: `Bearer ${sentryToken}` },
@@ -58,7 +61,7 @@ export async function fetchSentryStats(): Promise<SentryStats | null> {
     )
 
     if (!response.ok) {
-      console.error(`[integrations] Sentry API error: ${response.status}`)
+      log.error('integrations.sentry_api_error', { status: response.status })
       return null
     }
 
@@ -67,7 +70,7 @@ export async function fetchSentryStats(): Promise<SentryStats | null> {
     const totalEvents = data.reduce((sum, [, count]) => sum + count, 0)
 
     // Fetch error rate from issues
-    const issuesResponse = await fetch(
+    const issuesResponse = await fetchWithTimeout(
       `https://sentry.io/api/0/projects/${sentryOrg}/${sentryProject}/issues/`,
       {
         headers: { Authorization: `Bearer ${sentryToken}` },
@@ -91,7 +94,7 @@ export async function fetchSentryStats(): Promise<SentryStats | null> {
       criticalErrors: criticalCount,
     }
   } catch (err) {
-    console.error('[integrations] Failed to fetch Sentry stats:', err)
+    log.error('integrations.failed_to_fetch_sentry_stats', { err })
     return null
   }
 }
@@ -106,12 +109,12 @@ export async function fetchPostHogStats(): Promise<PostHogStats | null> {
     const phHost = process.env.POSTHOG_HOST || 'https://us.posthog.com'
 
     if (!phToken) {
-      console.warn('[integrations] POSTHOG_API_TOKEN not configured, skipping')
+      log.warn('integrations.posthog_api_token_not_configured_skipping')
       return null
     }
 
     // Fetch insights from PostHog
-    const response = await fetch(`${phHost}/api/projects/current/insights/?limit=10`, {
+    const response = await fetchWithTimeout(`${phHost}/api/projects/current/insights/?limit=10`, {
       headers: {
         Authorization: `Bearer ${phToken}`,
         'Content-Type': 'application/json',
@@ -119,7 +122,7 @@ export async function fetchPostHogStats(): Promise<PostHogStats | null> {
     })
 
     if (!response.ok) {
-      console.error(`[integrations] PostHog API error: ${response.status}`)
+      log.error('integrations.posthog_api_error', { status: response.status })
       return null
     }
 
@@ -152,7 +155,7 @@ export async function fetchPostHogStats(): Promise<PostHogStats | null> {
       eventVolume,
     }
   } catch (err) {
-    console.error('[integrations] Failed to fetch PostHog stats:', err)
+    log.error('integrations.failed_to_fetch_posthog_stats', { err })
     return null
   }
 }
@@ -167,12 +170,12 @@ export async function fetchAxiomStats(): Promise<AxiomStats | null> {
     const axiomDataset = process.env.AXIOM_DATASET
 
     if (!axiomToken || !axiomDataset) {
-      console.warn('[integrations] AXIOM_TOKEN or AXIOM_DATASET not configured, skipping')
+      log.warn('integrations.axiom_token_or_axiom_dataset_not')
       return null
     }
 
     // Query Axiom for error logs in last hour
-    const response = await fetch('https://api.axiom.co/v1/datasets/query', {
+    const response = await fetchWithTimeout('https://api.axiom.co/v1/datasets/query', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${axiomToken}`,
@@ -186,7 +189,7 @@ export async function fetchAxiomStats(): Promise<AxiomStats | null> {
     })
 
     if (!response.ok) {
-      console.error(`[integrations] Axiom API error: ${response.status}`)
+      log.error('integrations.axiom_api_error', { status: response.status })
       return null
     }
 
@@ -207,7 +210,7 @@ export async function fetchAxiomStats(): Promise<AxiomStats | null> {
       errorLogs,
     }
   } catch (err) {
-    console.error('[integrations] Failed to fetch Axiom stats:', err)
+    log.error('integrations.failed_to_fetch_axiom_stats', { err })
     return null
   }
 }
@@ -222,12 +225,12 @@ export async function fetchVercelStats(): Promise<VercelStats | null> {
     const vercelProjectId = process.env.VERCEL_PROJECT_ID
 
     if (!vercelToken || !vercelProjectId) {
-      console.warn('[integrations] VERCEL_TOKEN or VERCEL_PROJECT_ID not configured, skipping')
+      log.warn('integrations.vercel_token_or_vercel_project_id')
       return null
     }
 
     // Fetch deployments
-    const deploymentsResponse = await fetch(
+    const deploymentsResponse = await fetchWithTimeout(
       `https://api.vercel.com/v6/deployments?projectId=${vercelProjectId}&limit=10`,
       {
         headers: { Authorization: `Bearer ${vercelToken}` },
@@ -235,7 +238,7 @@ export async function fetchVercelStats(): Promise<VercelStats | null> {
     )
 
     if (!deploymentsResponse.ok) {
-      console.error(`[integrations] Vercel deployments API error: ${deploymentsResponse.status}`)
+      log.error('integrations.vercel_deployments_api_error', { status: deploymentsResponse.status })
       return null
     }
 
@@ -245,7 +248,7 @@ export async function fetchVercelStats(): Promise<VercelStats | null> {
     const deploymentCount = deploymentsData.deployments?.length || 0
 
     // Fetch analytics
-    const analyticsResponse = await fetch(
+    const analyticsResponse = await fetchWithTimeout(
       `https://api.vercel.com/v1/projects/${vercelProjectId}/analytics?since=3600`,
       {
         headers: { Authorization: `Bearer ${vercelToken}` },
@@ -279,7 +282,7 @@ export async function fetchVercelStats(): Promise<VercelStats | null> {
       bandwidth: analyticsData.bandwidth || 0,
     }
   } catch (err) {
-    console.error('[integrations] Failed to fetch Vercel stats:', err)
+    log.error('integrations.failed_to_fetch_vercel_stats', { err })
     return null
   }
 }

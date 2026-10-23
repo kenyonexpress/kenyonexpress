@@ -15,10 +15,10 @@ vi.mock('@/lib/supabase/server', () => ({
 }))
 
 vi.mock('next/cache', () => ({
-  revalidateTag: vi.fn(),
+  updateTag: vi.fn(),
 }))
 
-vi.mock('@/lib/logger', () => ({
+vi.mock('@/lib/observability/log', () => ({
   log: {
     error: vi.fn(),
     warn: vi.fn(),
@@ -108,7 +108,7 @@ describe('Stock Notifications', () => {
 
     it('should successfully subscribe to notification', async () => {
       const { createClient } = await import('@/lib/supabase/server')
-      const { revalidateTag } = await import('next/cache')
+      const { updateTag } = await import('next/cache')
 
       const mockClient = {
         auth: {
@@ -145,7 +145,7 @@ describe('Stock Notifications', () => {
 
       const result = await subscribeToStockNotification('product-123')
       expect(result.success).toBe(true)
-      expect(vi.mocked(revalidateTag)).toHaveBeenCalledWith('product_product-123')
+      expect(vi.mocked(updateTag)).toHaveBeenCalledWith('product_product-123')
     })
   })
 

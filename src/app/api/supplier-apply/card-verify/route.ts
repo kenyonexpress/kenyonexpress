@@ -1,3 +1,4 @@
+import { withRequestLog } from '@/lib/observability/with-request-log'
 import { completeSupplierCardVerification } from '@/server/supplier/card-verification'
 import { NextResponse } from 'next/server'
 
@@ -27,4 +28,4 @@ async function handle(request: Request): Promise<Response> {
 
 // GET only: Cardcom calls the legacy IndicatorUrl with a GET (KB AA-00436),
 // and the browser comes back on the redirect with a GET too.
-export const GET = handle
+export const GET = withRequestLog('/api/supplier-apply/card-verify', handle)

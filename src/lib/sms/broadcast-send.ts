@@ -65,10 +65,16 @@ export async function sendSmsBroadcast(broadcastId: string): Promise<{
   for (const { user_id: userId } of segmentUsers || []) {
     try {
       // Check if user is unsubscribed
-      const { data: unsubscribed } = await db.rpc('fn_is_sms_unsubscribed', {
-        p_user_id: userId,
-        p_segment_name: broadcast.segment_name,
-      })
+      const { data: unsubscribed, error: unsubscribedError } = await db.rpc(
+        'fn_is_sms_unsubscribed',
+        {
+          p_user_id: userId,
+          p_segment_name: broadcast.segment_name,
+        },
+      )
+      // An unanswered opt-out question is a "no": texting someone who opted out
+      // is the one mistake here that cannot be taken back.
+      if (unsubscribedError) throw new Error(`opt-out check failed: ${unsubscribedError.message}`)
 
       if (unsubscribed) {
         skipped++

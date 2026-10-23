@@ -152,16 +152,30 @@ export function artDirectedSources(sourceUrl: string) {
   }
 }
 
-/** Configuration for R2 account when enabled */
+/**
+ * Configuration for R2 account when enabled.
+ *
+ * Getters, not values: read at module load, a variable set after import (a test
+ * stub, a late-loaded env file) would never be seen and `isR2Enabled()` would
+ * answer for the environment as it was at import time.
+ */
 export const R2_CONFIG = {
   /** Account ID from Cloudflare dashboard */
-  accountId: process.env.CLOUDFLARE_ACCOUNT_ID || '',
+  get accountId() {
+    return process.env.CLOUDFLARE_ACCOUNT_ID || ''
+  },
   /** R2 bucket name */
-  bucketName: process.env.CLOUDFLARE_R2_BUCKET || 'kenyonexpress-images',
+  get bucketName() {
+    return process.env.CLOUDFLARE_R2_BUCKET || 'kenyonexpress-images'
+  },
   /** R2 public domain (cdn.kenyonexpress.co.il once DNS is set up) */
-  publicDomain: process.env.CLOUDFLARE_R2_PUBLIC_DOMAIN || '',
+  get publicDomain() {
+    return process.env.CLOUDFLARE_R2_PUBLIC_DOMAIN || ''
+  },
   /** API token for R2 management */
-  apiToken: process.env.CLOUDFLARE_R2_API_TOKEN || '',
+  get apiToken() {
+    return process.env.CLOUDFLARE_R2_API_TOKEN || ''
+  },
 }
 
 /**

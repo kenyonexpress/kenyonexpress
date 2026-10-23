@@ -9,270 +9,253 @@ import {
   requestManualReview,
 } from '../fraud-review'
 
-// Mock Supabase client
-vi.mock('@supabase/supabase-js', () => ({
-  createClient: vi.fn(() => ({
-    from: vi.fn(() => ({
-      select: vi.fn(),
-      update: vi.fn(),
-      insert: vi.fn(),
-      eq: vi.fn(),
-      gt: vi.fn(),
-      order: vi.fn(),
-      single: vi.fn(),
-      maybeSingle: vi.fn(),
-      range: vi.fn(),
-    })),
-  })),
+/**
+ * The fraud-review actions decide on other customers' orders, so the contract
+ * under test is mostly WHO may call them: no session, a customer session and an
+ * admin session are three different answers. The Supabase client is a recording
+ * stub: every builder method returns the builder, and awaiting it yields
+ * whatever `result` holds.
+ */
+
+type Result = { data: unknown; error: { message: string } | null }
+
+const state = {
+  user: null as { id: string } | null,
+  role: 'customer' as string | null,
+  result: { data: [], error: null } as Result,
+  calls: [] as Array<{ table: string; method: string; args: unknown[] }>,
+}
+
+function builderFor(table: string) {
+  const builder: Record<string, unknown> = {}
+  for (const method of [
+    'select',
+    'update',
+    'insert',
+    'eq',
+    'gt',
+    'order',
+    'range',
+    'single',
+    'maybeSingle',
+  ]) {
+    builder[method] = (...args: unknown[]) => {
+      state.calls.push({ table, method, args })
+      return builder
+    }
+  }
+  // biome-ignore lint/suspicious/noThenProperty: a PostgREST builder is a thenable
+  builder.then = (resolve: (value: unknown) => unknown) =>
+    resolve(
+      table === 'profiles'
+        ? { data: state.role ? { role: state.role } : null, error: null }
+        : { ...state.result },
+    )
+  return builder
+}
+
+vi.mock('@/lib/supabase/server', () => ({
+  createClient: async () => ({
+    auth: {
+      getUser: async () => ({ data: { user: state.user }, error: null }),
+    },
+    from: (table: string) => builderFor(table),
+  }),
 }))
 
-// Mock Clerk auth
-vi.mock('@clerk/nextjs/server', () => ({
-  auth: vi.fn(),
-}))
+const signedOut = () => {
+  state.user = null
+}
+const asCustomer = () => {
+  state.user = { id: 'user-1' }
+  state.role = 'customer'
+}
+const asAdmin = () => {
+  state.user = { id: 'admin-1' }
+  state.role = 'admin'
+}
+
+const callsTo = (table: string, method: string) =>
+  state.calls.filter((c) => c.table === table && c.method === method)
+
+beforeEach(() => {
+  state.user = null
+  state.role = 'customer'
+  state.result = { data: [], error: null }
+  state.calls = []
+})
 
 describe('Fraud Review Actions', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
+  describe('who may call them', () => {
+    const everyAction: Array<[string, () => Promise<{ error?: string }>]> = [
+      ['getFlaggedOrders', () => getFlaggedOrders()],
+      ['getFlaggedOrderDetails', () => getFlaggedOrderDetails('flag-1')],
+      ['approveFlaggedOrder', () => approveFlaggedOrder('flag-1')],
+      ['rejectFlaggedOrder', () => rejectFlaggedOrder('flag-1')],
+      ['requestManualReview', () => requestManualReview('flag-1')],
+      ['getFraudStatistics', () => getFraudStatistics()],
+      ['getProfileChargebackHistory', () => getProfileChargebackHistory('profile-1')],
+    ]
+
+    it.each(everyAction)('%s turns away a visitor with no session', async (_name, call) => {
+      signedOut()
+      const result = await call()
+      expect(result.error).toContain('authenticated')
+      expect(state.calls).toEqual([])
+    })
+
+    it.each(everyAction)('%s turns away a signed-in customer', async (_name, call) => {
+      asCustomer()
+      const result = await call()
+      expect(result.error).toBe('Not authorized')
+      // Only the role lookup happened; nothing touched the fraud tables.
+      expect(state.calls.every((c) => c.table === 'profiles')).toBe(true)
+    })
   })
 
   describe('getFlaggedOrders', () => {
-    it('should require authentication', async () => {
-      vi.mock('@clerk/nextjs/server', () => ({
-        auth: vi.fn(() => ({ userId: null })),
-      }))
+    it('fetches pending flags by default', async () => {
+      asAdmin()
+      state.result = { data: [{ id: 'flag-1' }], error: null }
 
       const result = await getFlaggedOrders()
-      expect(result).toHaveProperty('error')
-      expect(result.error).toContain('authenticated')
+
+      expect(result).toEqual({ data: [{ id: 'flag-1' }] })
+      expect(callsTo('fraud_flags', 'eq')[0]?.args).toEqual(['status', 'pending'])
     })
 
-    it('should fetch pending orders by default', async () => {
-      vi.mock('@clerk/nextjs/server', () => ({
-        auth: vi.fn(() => ({ userId: 'user-123' })),
-      }))
-
-      // Mock successful response
-      const result = await getFlaggedOrders()
-      expect(result).toHaveProperty('data')
+    it('respects the status filter', async () => {
+      asAdmin()
+      await getFlaggedOrders('approved')
+      expect(callsTo('fraud_flags', 'eq')[0]?.args).toEqual(['status', 'approved'])
     })
 
-    it('should respect status filter', async () => {
-      vi.mock('@clerk/nextjs/server', () => ({
-        auth: vi.fn(() => ({ userId: 'user-123' })),
-      }))
-
-      const result = await getFlaggedOrders('approved')
-      expect(result).toHaveProperty('data')
+    it('pages with offset and limit', async () => {
+      asAdmin()
+      await getFlaggedOrders('pending', 20, 40)
+      expect(callsTo('fraud_flags', 'range')[0]?.args).toEqual([40, 59])
     })
 
-    it('should support pagination', async () => {
-      vi.mock('@clerk/nextjs/server', () => ({
-        auth: vi.fn(() => ({ userId: 'user-123' })),
-      }))
-
-      const result = await getFlaggedOrders('pending', 20, 40)
-      expect(result).toHaveProperty('data')
+    it('reports a failed read instead of an empty list', async () => {
+      asAdmin()
+      state.result = { data: null, error: { message: 'boom' } }
+      await expect(getFlaggedOrders()).resolves.toEqual({
+        error: 'Failed to fetch flagged orders: boom',
+      })
     })
   })
 
   describe('getFlaggedOrderDetails', () => {
-    it('should require authentication', async () => {
-      vi.mock('@clerk/nextjs/server', () => ({
-        auth: vi.fn(() => ({ userId: null })),
-      }))
+    it('fetches one flag with its order and signals', async () => {
+      asAdmin()
+      state.result = { data: { id: 'flag-1', fraud_signals: [] }, error: null }
 
-      const result = await getFlaggedOrderDetails('flag-123')
-      expect(result).toHaveProperty('error')
-    })
+      const result = await getFlaggedOrderDetails('flag-1')
 
-    it('should fetch complete flag details', async () => {
-      vi.mock('@clerk/nextjs/server', () => ({
-        auth: vi.fn(() => ({ userId: 'user-123' })),
-      }))
-
-      const result = await getFlaggedOrderDetails('flag-123')
-      expect(result).toHaveProperty('data')
-    })
-
-    it('should include related order and signals data', async () => {
-      vi.mock('@clerk/nextjs/server', () => ({
-        auth: vi.fn(() => ({ userId: 'user-123' })),
-      }))
-
-      const result = await getFlaggedOrderDetails('flag-123')
-      if (result.data) {
-        // Should include order and fraud_signals
-        expect(typeof result.data).toBe('object')
-      }
+      expect(result).toEqual({ data: { id: 'flag-1', fraud_signals: [] } })
+      expect(callsTo('fraud_flags', 'eq')[0]?.args).toEqual(['id', 'flag-1'])
+      expect(String(callsTo('fraud_flags', 'select')[0]?.args[0])).toContain('fraud_signals')
     })
   })
 
   describe('approveFlaggedOrder', () => {
-    it('should require authentication', async () => {
-      vi.mock('@clerk/nextjs/server', () => ({
-        auth: vi.fn(() => ({ userId: null })),
-      }))
+    it('marks the flag approved and records the reviewer and notes', async () => {
+      asAdmin()
+      state.result = { data: { id: 'flag-1' }, error: null }
 
-      const result = await approveFlaggedOrder('flag-123')
-      expect(result).toHaveProperty('error')
-    })
+      const result = await approveFlaggedOrder('flag-1', 'False alarm')
 
-    it('should update flag status to approved', async () => {
-      vi.mock('@clerk/nextjs/server', () => ({
-        auth: vi.fn(() => ({ userId: 'user-123' })),
-      }))
-
-      const result = await approveFlaggedOrder('flag-123', 'False alarm')
-      if (!result.error) {
-        expect(result).toHaveProperty('success')
-        expect(result.success).toBe(true)
-      }
-    })
-
-    it('should record reviewer and notes', async () => {
-      vi.mock('@clerk/nextjs/server', () => ({
-        auth: vi.fn(() => ({ userId: 'user-123' })),
-      }))
-
-      const result = await approveFlaggedOrder('flag-123', 'Legitimate order')
-      expect(result).toBeTruthy()
+      expect(result).toMatchObject({ success: true })
+      expect(callsTo('fraud_flags', 'update')[0]?.args[0]).toMatchObject({
+        status: 'approved',
+        reviewed_by: 'admin-1',
+        review_notes: 'False alarm',
+      })
     })
   })
 
   describe('rejectFlaggedOrder', () => {
-    it('should require authentication', async () => {
-      vi.mock('@clerk/nextjs/server', () => ({
-        auth: vi.fn(() => ({ userId: null })),
-      }))
+    it('records the chosen action on the flag', async () => {
+      asAdmin()
+      state.result = { data: { id: 'flag-1', order_id: 'order-1' }, error: null }
 
-      const result = await rejectFlaggedOrder('flag-123')
-      expect(result).toHaveProperty('error')
+      const result = await rejectFlaggedOrder('flag-1', 'hold', 'Suspicious activity')
+
+      expect(result).toMatchObject({ success: true })
+      expect(callsTo('fraud_flags', 'update')[0]?.args[0]).toMatchObject({
+        status: 'rejected',
+        action: 'hold',
+        reviewed_by: 'admin-1',
+      })
+      expect(callsTo('orders', 'update')).toHaveLength(0)
     })
 
-    it('should update flag with action', async () => {
-      vi.mock('@clerk/nextjs/server', () => ({
-        auth: vi.fn(() => ({ userId: 'user-123' })),
-      }))
-
-      const result = await rejectFlaggedOrder('flag-123', 'hold', 'Suspicious activity')
-      if (!result.error) {
-        expect(result).toHaveProperty('success')
+    it('leaves the order alone unless the action is cancel', async () => {
+      asAdmin()
+      state.result = { data: { id: 'flag-1', order_id: 'order-1' }, error: null }
+      for (const action of ['hold', 'require_verification'] as const) {
+        await rejectFlaggedOrder('flag-1', action)
       }
+      expect(callsTo('orders', 'update')).toHaveLength(0)
     })
 
-    it('should support multiple action types', async () => {
-      vi.mock('@clerk/nextjs/server', () => ({
-        auth: vi.fn(() => ({ userId: 'user-123' })),
-      }))
+    it('cancels the order when the action is cancel', async () => {
+      asAdmin()
+      state.result = { data: { id: 'flag-1', order_id: 'order-1' }, error: null }
 
-      const actions: Array<'hold' | 'cancel' | 'require_verification'> = [
-        'hold',
-        'cancel',
-        'require_verification',
-      ]
+      await rejectFlaggedOrder('flag-1', 'cancel')
 
-      for (const action of actions) {
-        const result = await rejectFlaggedOrder('flag-123', action)
-        expect(result).toBeTruthy()
-      }
-    })
-
-    it('should cancel order if action is cancel', async () => {
-      vi.mock('@clerk/nextjs/server', () => ({
-        auth: vi.fn(() => ({ userId: 'user-123' })),
-      }))
-
-      const result = await rejectFlaggedOrder('flag-123', 'cancel')
-      // Should update both fraud_flags and orders tables
-      expect(result).toBeTruthy()
+      expect(callsTo('orders', 'update')[0]?.args[0]).toMatchObject({ status: 'cancelled' })
+      expect(callsTo('orders', 'eq')[0]?.args).toEqual(['id', 'order-1'])
     })
   })
 
   describe('requestManualReview', () => {
-    it('should require authentication', async () => {
-      vi.mock('@clerk/nextjs/server', () => ({
-        auth: vi.fn(() => ({ userId: null })),
-      }))
+    it('moves the flag to manual_review with the notes', async () => {
+      asAdmin()
+      state.result = { data: { id: 'flag-1' }, error: null }
 
-      const result = await requestManualReview('flag-123')
-      expect(result).toHaveProperty('error')
-    })
+      const result = await requestManualReview('flag-1', 'Needs human review')
 
-    it('should update flag status to manual_review', async () => {
-      vi.mock('@clerk/nextjs/server', () => ({
-        auth: vi.fn(() => ({ userId: 'user-123' })),
-      }))
-
-      const result = await requestManualReview('flag-123', 'Needs human review')
-      if (!result.error) {
-        expect(result).toHaveProperty('success')
-      }
+      expect(result).toMatchObject({ success: true })
+      expect(callsTo('fraud_flags', 'update')[0]?.args[0]).toMatchObject({
+        status: 'manual_review',
+        review_notes: 'Needs human review',
+      })
     })
   })
 
   describe('getFraudStatistics', () => {
-    it('should require authentication', async () => {
-      vi.mock('@clerk/nextjs/server', () => ({
-        auth: vi.fn(() => ({ userId: null })),
-      }))
+    it('returns the last 24 hours of counts', async () => {
+      asAdmin()
 
       const result = await getFraudStatistics()
-      expect(result).toHaveProperty('error')
+
+      expect(result).toMatchObject({
+        data: { statusCounts: [], riskCounts: [], topSignals: [], period: '24h' },
+      })
     })
 
-    it('should return statistics for last 24 hours', async () => {
-      vi.mock('@clerk/nextjs/server', () => ({
-        auth: vi.fn(() => ({ userId: 'user-123' })),
-      }))
-
-      const result = await getFraudStatistics()
-      if (!result.error) {
-        expect(result.data).toHaveProperty('statusCounts')
-        expect(result.data).toHaveProperty('riskCounts')
-        expect(result.data).toHaveProperty('topSignals')
-      }
-    })
-
-    it('should include period information', async () => {
-      vi.mock('@clerk/nextjs/server', () => ({
-        auth: vi.fn(() => ({ userId: 'user-123' })),
-      }))
-
-      const result = await getFraudStatistics()
-      if (!result.error) {
-        expect(result.data?.period).toBe('24h')
-      }
+    it('fails as a whole when any of the three reads fails', async () => {
+      asAdmin()
+      state.result = { data: null, error: { message: 'boom' } }
+      await expect(getFraudStatistics()).resolves.toEqual({ error: 'Failed to fetch statistics' })
     })
   })
 
   describe('getProfileChargebackHistory', () => {
-    it('should require authentication', async () => {
-      vi.mock('@clerk/nextjs/server', () => ({
-        auth: vi.fn(() => ({ userId: null })),
-      }))
+    it("returns one profile's chargebacks, newest first", async () => {
+      asAdmin()
+      state.result = { data: [{ id: 'cb-1' }], error: null }
 
-      const result = await getProfileChargebackHistory('profile-123')
-      expect(result).toHaveProperty('error')
-    })
+      const result = await getProfileChargebackHistory('profile-1')
 
-    it('should fetch chargeback history for profile', async () => {
-      vi.mock('@clerk/nextjs/server', () => ({
-        auth: vi.fn(() => ({ userId: 'user-123' })),
-      }))
-
-      const result = await getProfileChargebackHistory('profile-123')
-      expect(result).toHaveProperty('data')
-    })
-
-    it('should order by chargeback date descending', async () => {
-      vi.mock('@clerk/nextjs/server', () => ({
-        auth: vi.fn(() => ({ userId: 'user-123' })),
-      }))
-
-      const result = await getProfileChargebackHistory('profile-123')
-      // Should be ordered by chargeback_date DESC
-      expect(result).toBeTruthy()
+      expect(result).toEqual({ data: [{ id: 'cb-1' }] })
+      expect(callsTo('chargeback_history', 'eq')[0]?.args).toEqual(['profile_id', 'profile-1'])
+      expect(callsTo('chargeback_history', 'order')[0]?.args).toEqual([
+        'chargeback_date',
+        { ascending: false },
+      ])
     })
   })
 })

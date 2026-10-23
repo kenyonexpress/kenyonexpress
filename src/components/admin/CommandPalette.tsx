@@ -127,6 +127,7 @@ export default function CommandPalette() {
             }
           }}
           placeholder="מס׳ חשבונית, אימייל או טלפון…"
+          aria-label="חיפוש מהיר"
           className="h-12 w-full rounded-t-lg border-b border-black/10 bg-transparent px-4 text-sm outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gray-900"
         />
 

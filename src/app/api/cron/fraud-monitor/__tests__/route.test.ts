@@ -1,5 +1,6 @@
+import { NextRequest } from 'next/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { POST } from '../route'
+import { GET } from '../route'
 
 // Mock Supabase client
 vi.mock('@supabase/supabase-js', () => ({
@@ -38,30 +39,30 @@ describe('/api/cron/fraud-monitor', () => {
 
   describe('Authorization', () => {
     it('should reject missing authorization header', async () => {
-      const request = new Request('http://localhost:3000/api/cron/fraud-monitor', {
-        method: 'POST',
+      const request = new NextRequest('http://localhost:3000/api/cron/fraud-monitor', {
+        method: 'GET',
         headers: {},
       })
 
-      const response = await POST(request)
+      const response = await GET(request)
       expect(response.status).toBe(401)
     })
 
     it('should reject invalid bearer token', async () => {
-      const request = new Request('http://localhost:3000/api/cron/fraud-monitor', {
-        method: 'POST',
+      const request = new NextRequest('http://localhost:3000/api/cron/fraud-monitor', {
+        method: 'GET',
         headers: {
           authorization: 'Bearer invalid-token',
         },
       })
 
-      const response = await POST(request)
+      const response = await GET(request)
       expect(response.status).toBe(401)
     })
 
     it('should accept valid bearer token', async () => {
-      const request = new Request('http://localhost:3000/api/cron/fraud-monitor', {
-        method: 'POST',
+      const request = new NextRequest('http://localhost:3000/api/cron/fraud-monitor', {
+        method: 'GET',
         headers: {
           authorization: 'Bearer test-secret',
         },
@@ -80,33 +81,33 @@ describe('/api/cron/fraud-monitor', () => {
 
       // Should proceed beyond auth check
       // (actual processing would fail due to mocks, but auth should pass)
-      const response = await POST(request)
+      const response = await GET(request)
       expect(response.status).not.toBe(401)
     })
   })
 
   describe('Response Format', () => {
     it('should return JSON response on success', async () => {
-      const request = new Request('http://localhost:3000/api/cron/fraud-monitor', {
-        method: 'POST',
+      const request = new NextRequest('http://localhost:3000/api/cron/fraud-monitor', {
+        method: 'GET',
         headers: {
           authorization: 'Bearer test-secret',
         },
       })
 
-      const response = await POST(request)
+      const response = await GET(request)
       expect(response.headers.get('content-type')).toContain('application/json')
     })
 
     it('should include required fields in success response', async () => {
-      const request = new Request('http://localhost:3000/api/cron/fraud-monitor', {
-        method: 'POST',
+      const request = new NextRequest('http://localhost:3000/api/cron/fraud-monitor', {
+        method: 'GET',
         headers: {
           authorization: 'Bearer test-secret',
         },
       })
 
-      const response = await POST(request)
+      const response = await GET(request)
       if (response.status === 200) {
         const data = await response.json()
         expect(data).toHaveProperty('success')
@@ -120,27 +121,27 @@ describe('/api/cron/fraud-monitor', () => {
 
   describe('Error Handling', () => {
     it('should return 500 on database error', async () => {
-      const request = new Request('http://localhost:3000/api/cron/fraud-monitor', {
-        method: 'POST',
+      const request = new NextRequest('http://localhost:3000/api/cron/fraud-monitor', {
+        method: 'GET',
         headers: {
           authorization: 'Bearer test-secret',
         },
       })
 
-      const response = await POST(request)
+      const response = await GET(request)
       // Response depends on mock setup
       expect([200, 500]).toContain(response.status)
     })
 
     it('should return error response on exception', async () => {
-      const request = new Request('http://localhost:3000/api/cron/fraud-monitor', {
-        method: 'POST',
+      const request = new NextRequest('http://localhost:3000/api/cron/fraud-monitor', {
+        method: 'GET',
         headers: {
           authorization: 'Bearer test-secret',
         },
       })
 
-      const response = await POST(request)
+      const response = await GET(request)
       const contentType = response.headers.get('content-type')
       expect(contentType).toContain('application/json')
     })
@@ -148,28 +149,28 @@ describe('/api/cron/fraud-monitor', () => {
 
   describe('Cron Operation', () => {
     it('should process orders from last 30 minutes', async () => {
-      const request = new Request('http://localhost:3000/api/cron/fraud-monitor', {
-        method: 'POST',
+      const request = new NextRequest('http://localhost:3000/api/cron/fraud-monitor', {
+        method: 'GET',
         headers: {
           authorization: 'Bearer test-secret',
         },
       })
 
-      const response = await POST(request)
+      const response = await GET(request)
       // The request is made to fetch orders from the last 30 minutes
       // Actual verification depends on Supabase mock setup
       expect([200, 500]).toContain(response.status)
     })
 
     it('should skip already-flagged orders', async () => {
-      const request = new Request('http://localhost:3000/api/cron/fraud-monitor', {
-        method: 'POST',
+      const request = new NextRequest('http://localhost:3000/api/cron/fraud-monitor', {
+        method: 'GET',
         headers: {
           authorization: 'Bearer test-secret',
         },
       })
 
-      const response = await POST(request)
+      const response = await GET(request)
       // Logic checks for existing fraud_flags
       expect([200, 500]).toContain(response.status)
     })

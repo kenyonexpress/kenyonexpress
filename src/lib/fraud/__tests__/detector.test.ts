@@ -16,7 +16,7 @@ describe('Fraud Detection', () => {
       const order = {
         id: 'test-order-1',
         profileId: 'profile-1',
-        amount: 50000, // 500₪
+        amount: 60000, // 600₪, above the 500₪ threshold (the check is strictly greater)
         deliveryCountry: 'IL',
         deliveryCity: 'Tel Aviv',
         createdAt: new Date(),
@@ -85,7 +85,7 @@ describe('Fraud Detection', () => {
         createdAt: new Date(),
       }
 
-      const signal = await detectVelocityAbuse(order, 8)
+      const signal = await detectVelocityAbuse(order, 9) // 'high' is 9-10, 'critical' above 10
 
       expect(signal).not.toBeNull()
       expect(signal?.signalType).toBe('velocity_abuse')
@@ -143,7 +143,7 @@ describe('Fraud Detection', () => {
         createdAt: new Date(),
       }
 
-      const signal = await detectChargebackRisk(order, 2)
+      const signal = await detectChargebackRisk(order, 3) // 'high' is exactly 3, 'critical' above
 
       expect(signal).not.toBeNull()
       expect(signal?.signalType).toBe('chargeback_risk')
@@ -183,7 +183,7 @@ describe('Fraud Detection', () => {
       const order = {
         id: 'test-order-1',
         profileId: 'profile-1',
-        amount: 50000,
+        amount: 60000, // above the 500₪ default threshold
         createdAt: new Date(),
       }
 

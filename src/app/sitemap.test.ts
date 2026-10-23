@@ -40,10 +40,9 @@ describe('lastmod is derived, not the clock', () => {
  *
  * The cookie policy was live, linked from the footer, canonical-tagged and
  * absent from this file, because the sitemap builds its legal entries from
- * `LEGAL_PAGE_SLUGS` (the `src/content/legal` registry) and the cookie policy
- * belongs to the other one (`(legal)/_content`). Two registries is a known and
- * deliberately tolerated state - see `legal-duplication.test.ts` - so the thing
- * that has to be checked is not "unify them" but "neither one leaks a page".
+ * `LEGAL_PAGE_SLUGS` while the cookie policy lived in `(legal)/_content`. F42
+ * collapsed that to one registry, so the thing to check is that the sitemap
+ * maps all of it.
  *
  * Source-scanned rather than executed: calling `sitemap()` needs a Supabase
  * client and the `use cache` runtime, and the failure being guarded here is a
@@ -51,19 +50,16 @@ describe('lastmod is derived, not the clock', () => {
  */
 describe('the sitemap lists every legal page the site serves', () => {
   it('has an entry for each canonical legal path', () => {
-    // The four from src/content/legal arrive via LEGAL_PAGE_SLUGS, which is
-    // spread from the registry, so those are covered by construction. The
-    // cookie policy is the one that has to be named.
-    expect(src).toContain('LEGAL_PAGE_SLUGS.map')
-    expect(src).toContain('${base}/cookie-policy')
+    // One registry since F42: every document in LEGAL_DOCS is mapped, cookie
+    // policy included, at the path legalDocPath says it is served from.
+    expect(src).toContain('LEGAL_DOCS.map')
+    expect(src).toContain('legalDocPath(doc.slug)')
   })
 
-  it('gives the cookie policy a real date rather than the clock', () => {
-    const entry = src.split('\n').find((line) => line.includes('`${base}/cookie-policy`')) ?? ''
-    expect(entry).not.toBe('')
+  it('gives each legal page its own date rather than the clock', () => {
     // The document carries its own updatedAt; using it is the difference
     // between a lastmod that means something and one Google discards.
-    expect(src).toContain("getLegalDoc('cookies').updatedAt")
+    expect(src).toContain('new Date(doc.updatedAt)')
   })
 
   it('never lists a path robots.txt disallows', () => {

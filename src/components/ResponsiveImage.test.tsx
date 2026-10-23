@@ -139,7 +139,11 @@ describe('ResponsiveImage', () => {
     )
 
     const img = screen.getByAltText('Test')
-    expect(img).toHaveAttribute('fetchpriority', 'high')
+    // Next 16 preloads a priority image through the document head instead of
+    // stamping fetchpriority on the tag; what stays observable is that the
+    // image is not deferred.
+    expect(img).not.toHaveAttribute('loading', 'lazy')
+    expect(img).toHaveAttribute('decoding', 'async')
   })
 
   it('uses dealCard widths for dealCard type', () => {

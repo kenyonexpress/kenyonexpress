@@ -1,4 +1,4 @@
--- Preflight checks for migration 132: SMS Marketing tables
+-- Preflight checks for migration 287: SMS Marketing tables
 --
 -- Verifies that tables don't already exist and constraints can be applied
 

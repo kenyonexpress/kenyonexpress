@@ -1,6 +1,14 @@
+import { log } from '@/lib/observability/log'
+import { withRequestLog } from '@/lib/observability/with-request-log'
+import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
 import { type NextRequest, NextResponse } from 'next/server'
 
-export async function POST(request: NextRequest) {
+async function handlePOST(request: NextRequest) {
+  const ip = await getClientIp()
+  if (!(await checkRateLimit(`offline-sync:${ip}`, 120, 600))) {
+    return NextResponse.json({ error: 'rate_limited' }, { status: 429 })
+  }
+
   try {
     const body = await request.json()
     const { action, payload } = body
@@ -21,7 +29,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Unknown action' }, { status: 400 })
     }
   } catch (error) {
-    console.error('Sync error:', error)
+    log.error('sync.sync_error', { error })
     return NextResponse.json({ error: 'Sync failed' }, { status: 500 })
   }
 }
@@ -57,3 +65,5 @@ async function handleUpdateQuantity(payload: unknown) {
 
   return NextResponse.json({ success: true })
 }
+
+export const POST = withRequestLog('/api/offline/sync', handlePOST)

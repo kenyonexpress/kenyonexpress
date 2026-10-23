@@ -15,6 +15,24 @@ migration, so the apply order across the two branches is undefined.
 Until the owner picks a mainline branch, **apply nothing from either side.**
 The full measured table is in `docs/MIGRATION-NUMBER-COLLISIONS.md`.
 
+## 2026-10-23: F01 baseline - twelve files that had no row, and the numbers they clashed on
+
+Every file below is **not applied** and now has a row and a preflight. Run the
+`preflight_<n>.sql` through `execute_sql` first; apply through MCP
+`apply_migration`, one at a time, never `db push`.
+
+- `191_saved_payment_method.sql` - `payment_card_verifications` (the 1 agora card check) and `profiles.saved_payment_method`.
+- `192_notification_history.sql` - `notification_deliveries`, the per-recipient delivery and interaction record.
+- `192_observability_schema.sql` - the `observability` schema and its three helper functions. Shares 192 with the file above; `preflight_192.sql` covers both.
+- `193_observability_endpoint_metrics.sql` - `observability.endpoint_metrics` and `sla_alerts`. Needs 192_observability_schema first.
+- `194_p95_latency_samples.sql`, `195_perf_tickets.sql`, `196_p95_statistics_function.sql` - the p95 monitor's samples, tickets and `get_p95_stats`. Were also sitting in `supabase/migrations/` as 132-134, numbers that mean `search_index_outbox`, `supplier_branches` and `order_items_delivered_at` in `applied/`; the byte-identical copies there were removed.
+- `200_deal_seeding_infrastructure.sql` - `pending_deals`, `deal_sources`, `deal_duplicates`, `deal_validations`.
+- `276_stock_notifications.sql` - back-in-stock subscriptions.
+- `277_fraud_monitoring.sql` - fraud signals, flags and the chargeback history table.
+- `287_sms_marketing.sql` - SMS broadcasts, recipients, delivery events, unsubscribes and consent. **Renumbered from 132**, which is `132_search_index_outbox.sql` in `applied/`. The shorter earlier draft draft in `supabase/migrations/` numbered 131 was removed in favour of this one, which is the version `src/lib/sms/` is written against.
+- `288_customer_rfm_segmentation.sql` - RFM scores, segments and `fn_calculate_rfm_scores` / `fn_segment_users`. **Moved from `supabase/migrations/` as number 130**, where 130 collided with `130_payment_events.sql` in `applied/`.
+- `193_weekend_and_free_shipping.sql` - **CANCELLED**, moved to `migrations/cancelled/`. The weekend chip shipped as 284 and the free-shipping chip reads `shipping_price_agorot = 0` (278), so this would only add a duplicate `weekend_only` and a redundant `free_shipping` column.
+
 ## 2026-10-18: 286 APPLIED - feature_flags (rc5 F19)
 
 `286_feature_flags.sql` creates world-readable `feature_flags` (no secrets by

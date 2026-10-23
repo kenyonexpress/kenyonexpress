@@ -67,6 +67,7 @@ export default async function AdminVendorsPage({ searchParams }: Props) {
             name="q"
             defaultValue={q}
             placeholder="חיפוש לפי שם..."
+            aria-label="חיפוש לפי שם"
             className="border border-gray-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand"
           />
         </form>

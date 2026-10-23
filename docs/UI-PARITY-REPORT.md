@@ -238,3 +238,12 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-20 11:35 | home | 1440 | 23.91% | **FAIL** | `f2a9d7f0c-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
 | 2026-10-21 08:27 | home | 1440 | 23.91% | **FAIL** | `3e4bb1859-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
 | 2026-10-22 00:28 | home | 1440 | 23.91% | **FAIL** | `a63d1c57f` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
+| 2026-10-23 05:12 | home | 1440 | 29.60% | **FAIL** | `b0feeebf8` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); baseline electro-home-v7_1440.png (frozen PNG, 2026-10-01T02:01:02.904Z), not a fresh archive sho |
+| 2026-10-23 05:42 | home | 380 | 39.31% | **FAIL** | `78c37f1d6` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); baseline electro-home-v7_380.png (frozen PNG, 2026-10-01T02:01:01.055Z), not a fresh archive shot |
+| 2026-10-23 05:51 | home | 380 | 36.50% | **FAIL** | `9e84c5b29-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); OURS dropped 2 script, 1 stylesheet (unhydrated, not a fidelity score); OURS 408px wide at 380 (o |
+| 2026-10-23 05:53 | home | 380 | 36.50% | **FAIL** | `cc55b8ebb-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); OURS dropped 2 script, 1 stylesheet (unhydrated, not a fidelity score); OURS 408px wide at 380 (o |
+| 2026-10-23 06:01 | home | 380 | 20.91% | **FAIL** | `dd0a33b48-dirty` | baseline electro-home-v7_380.png (frozen PNG, 2026-10-01T02:01:01.055Z), not a fresh archive shot |
+| 2026-10-23 06:03 | home | 380 | 20.91% | **FAIL** | `dd0a33b48-dirty` | baseline electro-home-v7_380.png (frozen PNG, 2026-10-01T02:01:01.055Z), not a fresh archive shot |
+| 2026-10-23 06:06 | home | 380 | 20.91% | **FAIL** | `e9e571c7e-dirty` | baseline electro-home-v7_380.png (frozen PNG, 2026-10-01T02:01:01.055Z), not a fresh archive shot |
+| 2026-10-23 06:11 | home | 380 | 20.91% | **FAIL** | `873865f0f-dirty` | baseline electro-home-v7_380.png (frozen PNG, 2026-10-01T02:01:01.055Z), not a fresh archive shot |
+| 2026-10-23 06:14 | home | 380 | 20.91% | **FAIL** | `8a974a4f4-dirty` | baseline electro-home-v7_380.png (frozen PNG, 2026-10-01T02:01:01.055Z), not a fresh archive shot |

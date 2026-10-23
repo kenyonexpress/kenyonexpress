@@ -1,3 +1,6 @@
+import { fetchWithTimeout } from '@/lib/http/fetch-with-timeout'
+import { log } from './log'
+
 /**
  * ntfy.sh alert integration for SLA violations
  * Sends notifications to ntfy.sh/kenyon-ofir-limit
@@ -71,7 +74,7 @@ ${payload.method} ${payload.endpoint}
     `.trim()
 
     // Send to ntfy.sh
-    const response = await fetch(ntfyUrl, {
+    const response = await fetchWithTimeout(ntfyUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'text/plain; charset=utf-8',
@@ -83,14 +86,17 @@ ${payload.method} ${payload.endpoint}
     })
 
     if (!response.ok) {
-      console.error(`[ntfy] Failed to send alert: ${response.status} ${response.statusText}`)
+      log.error('ntfy.failed_to_send_alert', {
+        status: response.status,
+        statusText: response.statusText,
+      })
       return false
     }
 
-    console.log(`[ntfy] Alert sent: ${title}`)
+    log.info('ntfy.alert_sent', { title })
     return true
   } catch (err) {
-    console.error('[ntfy] Error sending alert:', err)
+    log.error('ntfy.error_sending_alert', { err })
     return false
   }
 }

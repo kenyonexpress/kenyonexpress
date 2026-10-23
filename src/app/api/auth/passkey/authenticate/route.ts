@@ -54,11 +54,15 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
   if (!claims) return NextResponse.json({ ok: false, error: 'challenge_expired' }, { status: 400 })
 
   const admin = createAdminClient()
-  const { data: credential } = await admin
+  const { data: credential, error: credentialError } = await admin
     .from('webauthn_credentials')
     .select('id, user_id, public_key, counter, transports')
     .eq('id', body.response.id)
     .maybeSingle()
+  if (credentialError) {
+    log.error('passkey.credential_lookup_failed', { reason: credentialError.message })
+    return NextResponse.json({ ok: false, error: 'internal' }, { status: 500 })
+  }
   if (!credential) {
     return NextResponse.json({ ok: false, error: 'unknown_passkey' }, { status: 400 })
   }

@@ -1,4 +1,5 @@
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
+import { log } from '@/lib/observability/log'
 import { createPublicClient } from '@/lib/supabase/anon'
 import type { Database } from '@/types/database'
 import { cacheLife, cacheTag } from 'next/cache'
@@ -40,7 +41,7 @@ export async function getHotCoupons(): Promise<HotCoupon[]> {
     .limit(6)
 
   if (error) {
-    console.error('Failed to fetch hot coupons:', error)
+    log.error('hot_coupons.failed_to_fetch_hot_coupons', { error })
     return []
   }
 

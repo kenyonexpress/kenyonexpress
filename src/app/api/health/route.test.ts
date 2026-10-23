@@ -7,6 +7,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
  */
 
 const select = vi.fn()
+const meiliHealthCheck = vi.fn()
+
+vi.mock('@/lib/search/meili-request', () => ({
+  meiliHealthCheck: () => meiliHealthCheck(),
+}))
 
 vi.mock('@/lib/supabase/admin', () => ({
   createAdminClient: () => ({ from: () => ({ select }) }),
@@ -23,6 +28,7 @@ const probe = () => new Request('http://localhost/api/health') as NextRequest
 beforeEach(() => {
   vi.clearAllMocks()
   select.mockResolvedValue({ error: null })
+  meiliHealthCheck.mockResolvedValue({ ok: true })
 })
 
 describe('/api/health', () => {
@@ -58,7 +64,22 @@ describe('/api/health', () => {
 
     expect(body).not.toContain('password')
     expect(body).not.toContain('FATAL')
-    expect(Object.keys(JSON.parse(body)).sort()).toEqual(['database', 'latency_ms', 'ok'])
+    // `search_detail` appears only when search is down, and carries a code, not text.
+    expect(Object.keys(JSON.parse(body)).sort()).toEqual(['database', 'latency_ms', 'ok', 'search'])
+  })
+
+  it('answers 503 when search is down, with a code and no error text', async () => {
+    meiliHealthCheck.mockResolvedValue({ ok: false, code: 'index_unreachable' })
+
+    const res = await GET(probe())
+
+    expect(res.status).toBe(503)
+    await expect(res.json()).resolves.toMatchObject({
+      ok: false,
+      database: 'ok',
+      search: 'down',
+      search_detail: 'index_unreachable',
+    })
   })
 
   it('is never cached', async () => {

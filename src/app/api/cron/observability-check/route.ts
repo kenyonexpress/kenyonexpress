@@ -5,6 +5,7 @@
  * Requires CRON_SECRET authentication via Bearer token
  */
 
+import { log } from '@/lib/observability/log'
 import { getEndpointMetrics } from '@/lib/observability/metrics'
 import {
   type NtfyAlertPayload,
@@ -12,6 +13,7 @@ import {
   sendNtfyAlert,
 } from '@/lib/observability/ntfy-alert'
 import { withRequestLog } from '@/lib/observability/with-request-log'
+import { bearerMatches } from '@/lib/security/constant-time'
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
@@ -19,24 +21,8 @@ import { NextResponse } from 'next/server'
 async function handleGET(request: NextRequest) {
   const startedAt = performance.now()
 
-  // Verify cron authentication
-  const authHeader = request.headers.get('authorization') || ''
-  const secret = authHeader.replace('Bearer ', '')
-  const expectedSecret = process.env.CRON_SECRET
-
-  if (!secret || !expectedSecret) {
-    return NextResponse.json(
-      { error: 'Missing authentication' },
-      {
-        status: 401,
-        headers: { 'cache-control': 'no-store' },
-      },
-    )
-  }
-
-  // Use constant-time comparison to prevent timing attacks
-  const isValid = secret === expectedSecret
-  if (!isValid) {
+  // Verify cron authentication (constant-time; an unset secret closes the route)
+  if (!bearerMatches(request.headers.get('authorization'), process.env.CRON_SECRET ?? '')) {
     return NextResponse.json(
       { error: 'Unauthorized' },
       {
@@ -239,7 +225,7 @@ async function handleGET(request: NextRequest) {
       { headers: { 'cache-control': 'no-store' } },
     )
   } catch (err) {
-    console.error('[observability-check] Error:', err)
+    log.error('observability_check.error', { err })
     const message = err instanceof Error ? err.message : 'Unknown error'
 
     return NextResponse.json(

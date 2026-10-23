@@ -1,3 +1,4 @@
+import { log } from '@/lib/observability/log'
 import { createClient } from '@supabase/supabase-js'
 
 let supabase: ReturnType<typeof createClient> | null = null
@@ -211,11 +212,15 @@ export async function detectFraudSignals(order: OrderData): Promise<FraudSignal[
   let profile: ProfileData | null = null
   if (order.profileId) {
     const client = getSupabaseClient()!
-    const { data } = await (client
+    const { data, error: profileError } = await (client
       .from('profiles')
       .select('id, created_at')
       .eq('id', order.profileId)
       .single() as any)
+
+    // Without the profile the new-account check is skipped, not failed: the
+    // other detectors still run, and the failure is on record.
+    if (profileError) log.warn('fraud.profile_lookup_failed', { error: profileError })
 
     if (data) {
       profile = {
