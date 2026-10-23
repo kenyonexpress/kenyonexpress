@@ -2,6 +2,27 @@
 
 Full history: docs/STATE-ARCHIVE.md (STATE.md archived 2026-10-16 and again 2026-10-23). Cap: 300 lines.
 
+## המשך מ: C15 (next unblocked work)
+
+**C14: Guest checkout E2E green at 380/768/1440 with mock provider - DONE (2026-10-23, autopilot)**
+- Goal: Guest checkout E2E tests passing at all three design widths (380/768/1440) using mock provider
+- **RESULT: COMPLETE - All 30 tests passing**
+- Created e2e/guest-checkout-widths.spec.ts:
+  - Tests guest checkout flow at 380px, 768px, and 1440px viewports
+  - Verifies anonymous visitor behavior (empty cart → /cart redirect, populated cart → checkout form)
+  - Validates cart CTA navigation to checkout
+  - Tests checkout form fillability at all widths
+  - Confirms checkout subtree (/checkout/return, /checkout/failed) remains protected for guests
+  - Verifies RTL layout and no horizontal scroll at each viewport
+- Mock provider: CARDCOM_USE_MOCK=true configured in .env.local
+- Test results: 30/30 passed (10 tests × 3 viewports)
+  - 380px: 5 tests ✓ (chromium + mobile-chrome)
+  - 768px: 5 tests ✓ (chromium + mobile-chrome)  
+  - 1440px: 5 tests ✓ (chromium + mobile-chrome)
+- Quality gates: pnpm type-check ✓, pnpm lint ✓, pnpm build ✓
+- Commit: b7d484db8
+- Pushed to origin/autopilot
+
 ## המשך מ: C10 (next unblocked work)
 
 **C09: Mobile Gate /supplier admin - BLOCKED (2026-10-23, autopilot)**
