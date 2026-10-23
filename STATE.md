@@ -2,7 +2,26 @@
 
 Full history: docs/STATE-ARCHIVE.md (STATE.md archived 2026-10-16 and again 2026-10-23). Cap: 300 lines.
 
-## המשך מ: F44 BLOCKED - environment configuration required
+## המשך מ: F45 (next unblocked work)
+
+**C04: Mobile Gate home 380px - MEASUREMENT COMPLETED (2026-10-23, autopilot)**
+- Goal: Measure home 380px vs electro-home-v7.html reference, target <11%
+- **RESULT: 47.35%** at 380px width (FAILED - 36.35 points above target)
+- Measurement details:
+  - Reference: electro-home-v7_380.png (8792px height)
+  - Our build: 5224px height
+  - Height ratio: 0.59x (structurally different pages)
+  - Worst bands: y200-300 (100%), y1900-2000 (80.4%), y2000-2100 (65.5%)
+  - Comparison note: "HEIGHT RATIO 0.59x — the percentage above is NOT a pixel gate"
+- Context: Worse than F43's 39.31% measurement, confirming BLOCKED status
+- Root cause (per F43): WordPress/Electro vs Next.js structural incompatibility
+  - Reference is LTR English Electro demo with different DOM structure
+  - Our build is RTL Hebrew with different content and layout patterns
+  - Missing ~3568px of content (8792px vs 5224px)
+- **Status: BLOCKED** - Cannot achieve <11% without complete mobile component rebuild
+- Verification: pnpm type-check, lint, build all exit 0
+- Measurement command: `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=home --widths=380 --live=file:///Users/ofir/kenyonexpress-autopilot/refs/electro-home-v7.html --baseline=electro-home-v7_380.png`
+- Decision: Same as F43 - accept current layout OR lower threshold OR defer as major project
 
 **F44: E2E Test Fixes - BLOCKED (2026-10-23, autopilot)**
 - Goal: Fix 76 standing E2E failures, achieve 2x green runs

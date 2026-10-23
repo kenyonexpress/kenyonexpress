@@ -247,3 +247,5 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-23 06:06 | home | 380 | 20.91% | **FAIL** | `e9e571c7e-dirty` | baseline electro-home-v7_380.png (frozen PNG, 2026-10-01T02:01:01.055Z), not a fresh archive shot |
 | 2026-10-23 06:11 | home | 380 | 20.91% | **FAIL** | `873865f0f-dirty` | baseline electro-home-v7_380.png (frozen PNG, 2026-10-01T02:01:01.055Z), not a fresh archive shot |
 | 2026-10-23 06:14 | home | 380 | 20.91% | **FAIL** | `8a974a4f4-dirty` | baseline electro-home-v7_380.png (frozen PNG, 2026-10-01T02:01:01.055Z), not a fresh archive shot |
+| 2026-10-23 10:13 | home | 380 | n/a | **UNMEASURED** | `96c9124bd` | screenshot failed: page.goto: Protocol error (Page.navigate): Cannot navigate to invalid URL Call log: [2m - navigating to "refs/electro-home-v7.html", waiting |
+| 2026-10-23 10:14 | home | 380 | 47.35% | **FAIL** | `96c9124bd-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); baseline electro-home-v7_380.png (frozen PNG, 2026-10-23T10:12:52.766Z), not a fresh archive shot |
