@@ -37,3 +37,4 @@ LAUNCH-READY: pending-cardcom
 1. Cardcom-prod-creds: set production credentials in the host env, then re-run checkout E2E on live. Next after this closes: Meilisearch-env.
 
 Continue from F40 DONE: final STATE.md written, LAUNCH-READY: pending-cardcom. STOP.
+Continue from Z05 DONE-AS-SHIPPED: F05 cancel-and-refund, app-only notifications toggle, migrations 185 and 280 were already built and applied (commit da60e5c63); no new code. Order domain and email tests 387/388 green (1 red: order_paid six-line email, pre-existing, outside this item). No new migration needed. UI visual gate (<11 pct at 380/768/1440) not closable: no RTL Electro v7 account baseline (same gate as F38). BLOCKED Z05 visual gate. Supabase MCP still needs OAuth for pending 162 and 289.
