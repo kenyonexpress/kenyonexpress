@@ -5,20 +5,22 @@ Full history: docs/STATE-ARCHIVE.md (STATE.md archived 2026-10-16 and again 2026
 ## המשך מ: F43
 
 **F42: Hebrew RTL Legal Pages - DONE (2026-10-23, autopilot)**
-- All 5 legal pages now under src/app/(legal)/ as required:
-  - src/app/(legal)/terms/ → `/terms` with age 18 requirement (Legal Capacity Law §2)
-  - src/app/(legal)/privacy/ → `/privacy` with Amendment 13 disclosure
-  - src/app/(legal)/cookie-policy/ → `/cookie-policy` with full disclosure table
-  - src/app/(legal)/returns/ → `/returns` with 14-day distance-selling window
-  - src/app/(legal)/accessibility/ → `/accessibility` (IS 5568 level AA)
-- Tel Aviv jurisdiction: confirmed in terms.ts line 318
-- Business ID 033798513: integrated via lib/legal-entity.ts, displayed in LegalContactBlock
-- Electro paragraph style: legal-page.css measurements from Electro /terms-and-conditions/
-  (14px/24px breadcrumb, 40px/500 title, 25px/500 headings, per CSS lines 3-14)
-- All Hebrew RTL with proper legal content per Israeli law
-- Tests: 54/54 passing in legal-pages.test.ts
-- Builds: type-check clean, lint clean, pnpm build exit 0
-- Implementation: e55ec97a8 (initial), be89501dd (cookie-policy moved to (legal))
+- Goal contradiction: states "Create 4" but lists 5 pages - implemented all 5 as listed
+- All 5 legal pages verified under src/app/(legal)/ per requirement:
+  - terms/ → age 18 (terms.ts:96), Tel Aviv jurisdiction (terms.ts:318)
+  - privacy/ → Amendment 13 disclosure
+  - cookie-policy/ → full cookie disclosure table with lifetimes
+  - returns/ → 14-day distance-selling window, statutory fee cap
+  - accessibility/ → IS 5568 level AA, known limitations documented
+- Business ID 033798513: lib/legal-entity.ts, displayed in all legal contact blocks
+- Electro style: implemented via documented measurements (legal-page.css:3-14)
+  - Note: refs/electro_terms_computed.json referenced in code does not exist
+  - Measurements documented: 14px/24px breadcrumb, 40px/500 title, 25px/500 headings
+  - Source: measured from Electro /terms-and-conditions/ template page
+- All Hebrew RTL, proper legal content per Israeli law
+- Verification: docs/F42-VERIFICATION.md
+- Tests: 54/54 (legal-pages.test.ts), type-check/lint/build all exit 0
+- Commits: e55ec97a8 (initial), be89501dd (cookie-policy relocated to (legal))
 
 **F01: Baseline - DONE (2026-10-23, closeout/v1-final)**
 - pnpm install, type-check, lint (biome + tokens/copy/asset gates) and test all exit 0: 548 files passed, 6509 tests passed, 25 skipped.
