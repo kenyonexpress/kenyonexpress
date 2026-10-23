@@ -4,7 +4,10 @@ import {
   determineRiskLevel,
   shouldAutoFlag,
 } from '@/lib/fraud/detector'
+import { log } from '@/lib/observability/log'
 import { sendNtfyAlert } from '@/lib/observability/ntfy-alert'
+import { withRequestLog } from '@/lib/observability/with-request-log'
+import { bearerMatches } from '@/lib/security/constant-time'
 import { createClient } from '@supabase/supabase-js'
 
 let supabase: ReturnType<typeof createClient> | null = null
@@ -28,13 +31,10 @@ function getSupabaseClient() {
  * Environment Variables Required:
  * - CRON_SECRET: Bearer token for authorization
  */
-export async function POST(request: Request): Promise<Response> {
+async function handlePOST(request: Request): Promise<Response> {
   try {
     // Verify CRON_SECRET authorization
-    const authHeader = request.headers.get('authorization')
-    const bearerToken = authHeader?.replace(/^Bearer\s+/i, '')
-
-    if (!bearerToken || bearerToken !== process.env.CRON_SECRET) {
+    if (!bearerMatches(request.headers.get('authorization'), process.env.CRON_SECRET ?? '')) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -71,14 +71,24 @@ export async function POST(request: Request): Promise<Response> {
     for (const order of orders || []) {
       try {
         // Check if order already has flags
-        const { data: existingFlag } = await (client
+        const { data: existingFlag, error: existingFlagError } = await (client
           .from('fraud_flags' as any)
           .select('id')
           .eq('order_id', order.id)
           .maybeSingle() as any)
 
+        if (existingFlagError) {
+          // Cannot tell whether it is flagged; a second flag is worse than
+          // waiting for the next run.
+          log.error('fraud_monitor.existing_flag_lookup_failed', {
+            order_id: order.id,
+            error: existingFlagError,
+          })
+          continue
+        }
+
         if (existingFlag) {
-          // Already flagged, skip
+          continue // Already flagged
         }
 
         // Detect fraud signals for this order
@@ -116,7 +126,10 @@ export async function POST(request: Request): Promise<Response> {
             .insert(signalPayload)
 
           if (signalError) {
-            console.error(`Failed to record signal for order ${order.id}:`, signalError)
+            log.error('fraud_monitor.failed_to_record_signal_for_order', {
+              id: order.id,
+              error: signalError,
+            })
           }
         }
 
@@ -140,7 +153,7 @@ export async function POST(request: Request): Promise<Response> {
           const { error: flagError } = await (client as any).from('fraud_flags').insert(flagPayload)
 
           if (flagError) {
-            console.error(`Failed to flag order ${order.id}:`, flagError)
+            log.error('fraud_monitor.failed_to_flag_order', { id: order.id, error: flagError })
           } else {
             flaggedCount++
 
@@ -159,7 +172,7 @@ export async function POST(request: Request): Promise<Response> {
           }
         }
       } catch (orderError) {
-        console.error(`Error processing order ${order.id}:`, orderError)
+        log.error('fraud_monitor.error_processing_order', { id: order.id, error: orderError })
       }
     }
 
@@ -171,7 +184,7 @@ export async function POST(request: Request): Promise<Response> {
       timestamp: new Date().toISOString(),
     })
   } catch (error) {
-    console.error('Fraud monitor cron error:', error)
+    log.error('fraud_monitor.fraud_monitor_cron_error', { error })
     await sendNtfyAlert({
       endpoint: '/api/cron/fraud-monitor',
       method: 'POST',
@@ -187,3 +200,5 @@ export async function POST(request: Request): Promise<Response> {
     )
   }
 }
+
+export const GET = withRequestLog('/api/cron/fraud-monitor', handlePOST)

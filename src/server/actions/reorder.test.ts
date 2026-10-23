@@ -5,6 +5,11 @@ import * as cartActions from './cart'
 import { reorderFromOrder } from './reorder'
 
 vi.mock('@/server/queries/orders')
+vi.mock('@/lib/supabase/server', () => ({
+  createClient: async () => ({
+    auth: { getUser: async () => ({ data: { user: { id: 'user-1' } } }) },
+  }),
+}))
 vi.mock('./cart')
 
 describe('reorderFromOrder', () => {

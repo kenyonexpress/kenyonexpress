@@ -1,5 +1,7 @@
 // Partner API: Read-only products endpoint
 
+import { log } from '@/lib/observability/log'
+import { withRequestLog } from '@/lib/observability/with-request-log'
 import {
   authenticatePartnerRequest,
   createRateLimitHeaders,
@@ -10,7 +12,7 @@ import { type NextRequest, NextResponse } from 'next/server'
 
 const REQUIRED_SCOPE = 'products:read' as const
 
-export async function GET(req: NextRequest) {
+async function handleGET(req: NextRequest) {
   const startTime = Date.now()
 
   try {
@@ -98,7 +100,7 @@ export async function GET(req: NextRequest) {
       },
     )
   } catch (error) {
-    console.error('Partner API products error:', error)
+    log.error('products.partner_api_products_error', { error })
 
     return new NextResponse(
       JSON.stringify({
@@ -112,3 +114,5 @@ export async function GET(req: NextRequest) {
     )
   }
 }
+
+export const GET = withRequestLog('/api/partners/v1/products', handleGET)

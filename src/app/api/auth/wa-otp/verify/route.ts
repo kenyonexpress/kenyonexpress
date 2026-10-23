@@ -1,4 +1,5 @@
 import { toE164Israeli } from '@/lib/auth/phone-otp'
+import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
@@ -43,7 +44,7 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
   }
 
   const admin = createAdminClient()
-  const { data } = await admin
+  const { data, error: lookupError } = await admin
     .from('auth_wa_otps' as never)
     .select('id, user_id, code_hash, attempts, expires_at')
     .eq('phone_e164', phone)
@@ -52,6 +53,10 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
     .order('created_at', { ascending: false })
     .limit(1)
     .maybeSingle()
+  if (lookupError) {
+    log.error('wa_otp.lookup_failed', { reason: lookupError.message })
+    return NextResponse.json({ ok: false, error: 'internal' }, { status: 500 })
+  }
   const row = data as {
     id: string
     user_id: string
@@ -71,13 +76,17 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
   }
 
   // Consume first, conditionally, so two concurrent right answers sign in once.
-  const { data: consumed } = await admin
+  const { data: consumed, error: consumeError } = await admin
     .from('auth_wa_otps' as never)
     .update({ consumed_at: new Date().toISOString() } as never)
     .eq('id', row.id)
     .is('consumed_at', null)
     .select('id')
     .maybeSingle()
+  if (consumeError) {
+    log.error('wa_otp.consume_failed', { reason: consumeError.message })
+    return NextResponse.json({ ok: false, error: 'internal' }, { status: 500 })
+  }
   if (!consumed) return NextResponse.json({ ok: false, error: 'expired' }, { status: 400 })
 
   const session = await mintSessionFor(row.user_id)

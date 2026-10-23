@@ -41,7 +41,7 @@ describe('CategoryControlBar', () => {
   it('changes sort when select changes', async () => {
     render(<CategoryControlBar value="newest" />)
     const select = screen.getByLabelText('מיון מוצרים') as HTMLSelectElement
-    fireEvent.change(select, { target: { value: 'price_asc' } })
+    fireEvent.change(select, { target: { value: 'price' } })
 
     expect(mockPush).toHaveBeenCalled()
     const callArgs = mockPush.mock.calls[0]?.[0]
@@ -99,7 +99,7 @@ describe('CategoryControlBar', () => {
     ;(useSearchParams as any).mockReturnValue(new URLSearchParams('min=100&max=500'))
     render(<CategoryControlBar value="newest" />)
     const select = screen.getByLabelText('מיון מוצרים') as HTMLSelectElement
-    fireEvent.change(select, { target: { value: 'price_asc' } })
+    fireEvent.change(select, { target: { value: 'price' } })
 
     expect(mockPush).toHaveBeenCalled()
     const callArgs = mockPush.mock.calls[0]?.[0]

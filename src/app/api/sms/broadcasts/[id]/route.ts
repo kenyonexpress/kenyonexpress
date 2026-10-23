@@ -63,9 +63,11 @@ async function handleGET(
       return Response.json({ error: 'Broadcast not found' }, { status: 404 })
     }
 
-    const { data: statsData } = await db.rpc('fn_get_sms_broadcast_stats', {
+    const { data: statsData, error: statsError } = await db.rpc('fn_get_sms_broadcast_stats', {
       p_broadcast_id: broadcastId,
     })
+    // The detail is still worth returning without its rates; say so in the log.
+    if (statsError) log.warn('sms.broadcast.stats_failed', { reason: statsError.message })
 
     const stats =
       statsData && Array.isArray(statsData) && statsData[0]

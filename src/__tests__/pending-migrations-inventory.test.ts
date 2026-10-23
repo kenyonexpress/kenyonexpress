@@ -223,6 +223,20 @@ describe('the pending migration inventory', () => {
       '177_set_updated_at_search_path.sql',
       '184_carts_one_row_per_owner.sql',
       '188_search_analytics.sql',
+      '189_affiliate_program.sql',
+      '190_partner_api_infrastructure.sql',
+      '191_saved_payment_method.sql',
+      '192_notification_history.sql',
+      '192_observability_schema.sql',
+      '193_observability_endpoint_metrics.sql',
+      '194_p95_latency_samples.sql',
+      '195_perf_tickets.sql',
+      '196_p95_statistics_function.sql',
+      '200_deal_seeding_infrastructure.sql',
+      '276_stock_notifications.sql',
+      '277_fraud_monitoring.sql',
+      '287_sms_marketing.sql',
+      '288_customer_rfm_segmentation.sql',
       'preflight_162.sql',
       'preflight_169.sql',
       'preflight_170.sql',
@@ -235,6 +249,19 @@ describe('the pending migration inventory', () => {
       'preflight_177.sql',
       'preflight_184.sql',
       'preflight_188.sql',
+      'preflight_189.sql',
+      'preflight_190.sql',
+      'preflight_191.sql',
+      'preflight_192.sql',
+      'preflight_193.sql',
+      'preflight_194.sql',
+      'preflight_195.sql',
+      'preflight_196.sql',
+      'preflight_200.sql',
+      'preflight_276.sql',
+      'preflight_277.sql',
+      'preflight_287.sql',
+      'preflight_288.sql',
     ])
   })
 
@@ -258,7 +285,11 @@ describe('the pending migration inventory', () => {
   it('keeps the cancelled revoke where nobody will apply it', () => {
     // A cancelled migration is not deleted: the number stays burned and the
     // file is the only written record of WHY the revoke must not happen.
-    expect(sqlFilesIn(CANCELLED_DIR)).toEqual(['165_revoke_anon_helpers.sql', 'preflight_165.sql'])
+    expect(sqlFilesIn(CANCELLED_DIR)).toEqual([
+      '165_revoke_anon_helpers.sql',
+      '193_weekend_and_free_shipping.sql',
+      'preflight_165.sql',
+    ])
   })
 
   // ---- direction 2: manifest -> disk -------------------------------------

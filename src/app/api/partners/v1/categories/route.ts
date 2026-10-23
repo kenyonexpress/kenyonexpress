@@ -1,5 +1,7 @@
 // Partner API: Read-only categories endpoint
 
+import { log } from '@/lib/observability/log'
+import { withRequestLog } from '@/lib/observability/with-request-log'
 import {
   authenticatePartnerRequest,
   createRateLimitHeaders,
@@ -10,7 +12,7 @@ import { type NextRequest, NextResponse } from 'next/server'
 
 const REQUIRED_SCOPE = 'categories:read' as const
 
-export async function GET(req: NextRequest) {
+async function handleGET(req: NextRequest) {
   const startTime = Date.now()
 
   try {
@@ -77,7 +79,7 @@ export async function GET(req: NextRequest) {
       },
     )
   } catch (error) {
-    console.error('Partner API categories error:', error)
+    log.error('categories.partner_api_categories_error', { error })
 
     return new NextResponse(
       JSON.stringify({
@@ -91,3 +93,5 @@ export async function GET(req: NextRequest) {
     )
   }
 }
+
+export const GET = withRequestLog('/api/partners/v1/categories', handleGET)

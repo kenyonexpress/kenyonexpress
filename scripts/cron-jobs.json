@@ -1,5 +1,5 @@
 {
-  "$comment": "The single source of truth for the twelve scheduled jobs. docs/CRON-EXTERNAL.md, .github/workflows/cron.yml and src/app/api/cron/ are all checked against this file by src/__tests__/cron-schedule-inventory.test.ts, so a schedule cannot be changed in one place and stay stale in the others.",
+  "$comment": "The single source of truth for the twenty-one scheduled jobs. docs/CRON-EXTERNAL.md, .github/workflows/cron.yml and src/app/api/cron/ are all checked against this file by src/__tests__/cron-schedule-inventory.test.ts, so a schedule cannot be changed in one place and stay stale in the others.",
   "defaultBaseUrl": "https://kenyonexpress.vercel.app",
   "jobs": [
     {
@@ -66,6 +66,46 @@
       "name": "affiliate-payouts",
       "path": "/api/cron/affiliate-payouts",
       "cron": "40 3 * * *"
+    },
+    {
+      "name": "observability-check",
+      "path": "/api/cron/observability-check",
+      "cron": "*/5 * * * *"
+    },
+    {
+      "name": "fraud-monitor",
+      "path": "/api/cron/fraud-monitor",
+      "cron": "*/10 * * * *"
+    },
+    {
+      "name": "p95-monitor",
+      "path": "/api/cron/p95-monitor",
+      "cron": "*/15 * * * *"
+    },
+    {
+      "name": "deal-scraper",
+      "path": "/api/cron/deal-scraper",
+      "cron": "*/30 * * * *"
+    },
+    {
+      "name": "stock-notifications",
+      "path": "/api/cron/stock-notifications",
+      "cron": "0 * * * *"
+    },
+    {
+      "name": "sms-broadcasts",
+      "path": "/api/cron/sms-broadcasts",
+      "cron": "*/10 * * * *"
+    },
+    {
+      "name": "rfm-segmentation",
+      "path": "/api/cron/rfm-segmentation",
+      "cron": "20 1 * * *"
+    },
+    {
+      "name": "search-report",
+      "path": "/api/cron/search-report",
+      "cron": "0 6 * * 1"
     }
   ]
 }

@@ -4,7 +4,9 @@
  * Detects sustained high-latency conditions and triggers perf investigations
  */
 
+import { fetchWithTimeout } from '@/lib/http/fetch-with-timeout'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { log } from './log'
 
 export interface P95LatencySample {
   endpoint_path: string
@@ -42,13 +44,13 @@ export async function recordP95Sample(
     })
 
     if (error) {
-      console.warn('[p95-monitor] Failed to record sample:', error)
+      log.warn('p95_monitor.failed_to_record_sample', { error })
       return false
     }
 
     return true
   } catch (err) {
-    console.error('[p95-monitor] Error recording p95 sample:', err)
+    log.error('p95_monitor.error_recording_p95_sample', { err })
     return false
   }
 }
@@ -68,7 +70,7 @@ export async function checkSustainedViolations(): Promise<P95Violation[]> {
       .gte('sample_time', new Date(Date.now() - 15 * 60 * 1000).toISOString())
 
     if (routesError) {
-      console.error('[p95-monitor] Failed to fetch routes:', routesError)
+      log.error('p95_monitor.failed_to_fetch_routes', { error: routesError })
       return []
     }
 
@@ -87,7 +89,7 @@ export async function checkSustainedViolations(): Promise<P95Violation[]> {
           .order('sample_time', { ascending: true })
 
         if (samplesError) {
-          console.warn('[p95-monitor] Failed to fetch samples for route:', samplesError)
+          log.warn('p95_monitor.failed_to_fetch_samples_for_route', { error: samplesError })
           continue
         }
 
@@ -125,7 +127,7 @@ export async function checkSustainedViolations(): Promise<P95Violation[]> {
 
     return violations
   } catch (err) {
-    console.error('[p95-monitor] Error checking violations:', err)
+    log.error('p95_monitor.error_checking_violations', { err })
     return []
   }
 }
@@ -150,13 +152,13 @@ export async function getP95Samples(
       .order('sample_time', { ascending: false })
 
     if (error) {
-      console.error('[p95-monitor] Failed to fetch samples:', error)
+      log.error('p95_monitor.failed_to_fetch_samples', { error })
       return []
     }
 
     return (data || []) as P95LatencySample[]
   } catch (err) {
-    console.error('[p95-monitor] Error fetching samples:', err)
+    log.error('p95_monitor.error_fetching_samples', { err })
     return []
   }
 }
@@ -184,7 +186,7 @@ export async function getP95Statistics(
     })
 
     if (error) {
-      console.error('[p95-monitor] Failed to fetch statistics:', error)
+      log.error('p95_monitor.failed_to_fetch_statistics', { error })
       return null
     }
 
@@ -195,7 +197,7 @@ export async function getP95Statistics(
       sample_count: number
     } | null
   } catch (err) {
-    console.error('[p95-monitor] Error fetching statistics:', err)
+    log.error('p95_monitor.error_fetching_statistics', { err })
     return null
   }
 }
@@ -243,22 +245,25 @@ This route has sustained p95 latency above 500ms for the entire 15-minute monito
 
     const labels = ['perf', 'auto-generated', 'p95-monitor']
 
-    const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/issues`, {
-      method: 'POST',
-      headers: {
-        Authorization: `token ${githubToken}`,
-        'Content-Type': 'application/json',
-        Accept: 'application/vnd.github.v3+json',
+    const response = await fetchWithTimeout(
+      `https://api.github.com/repos/${owner}/${repo}/issues`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `token ${githubToken}`,
+          'Content-Type': 'application/json',
+          Accept: 'application/vnd.github.v3+json',
+        },
+        body: JSON.stringify({
+          title,
+          body,
+          labels,
+        }),
       },
-      body: JSON.stringify({
-        title,
-        body,
-        labels,
-      }),
-    })
+    )
 
     if (!response.ok) {
-      console.error('[p95-monitor] Failed to create GitHub issue:', response.statusText)
+      log.error('p95_monitor.failed_to_create_github_issue', { detail: response.statusText })
       return null
     }
 
@@ -266,7 +271,7 @@ This route has sustained p95 latency above 500ms for the entire 15-minute monito
 
     return `#${issue.number}`
   } catch (err) {
-    console.error('[p95-monitor] Error creating GitHub issue:', err)
+    log.error('p95_monitor.error_creating_github_issue', { err })
     return null
   }
 }
@@ -286,13 +291,13 @@ export async function cleanupOldSamples(daysToKeep = 30): Promise<boolean> {
       .lt('sample_time', cutoffDate.toISOString())
 
     if (error) {
-      console.warn('[p95-monitor] Failed to cleanup old samples:', error)
+      log.warn('p95_monitor.failed_to_cleanup_old_samples', { error })
       return false
     }
 
     return true
   } catch (err) {
-    console.error('[p95-monitor] Error cleaning up samples:', err)
+    log.error('p95_monitor.error_cleaning_up_samples', { err })
     return false
   }
 }

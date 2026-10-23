@@ -16,23 +16,21 @@ import {
   scrapeLiveSite,
   validatePendingDeals,
 } from '@/lib/deals/scraper'
+import { fetchWithTimeout } from '@/lib/http/fetch-with-timeout'
+import { log } from '@/lib/observability/log'
+import { withRequestLog } from '@/lib/observability/with-request-log'
+import { bearerMatches } from '@/lib/security/constant-time'
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-const CRON_SECRET = process.env.CRON_SECRET
-
 /**
- * Verify cron request is authorized.
+ * Verify cron request is authorized. No secret configured closes the route:
+ * this endpoint writes with the service credentials, so an unset variable must
+ * never read as "development mode".
  */
 function isAuthorized(request: NextRequest): boolean {
-  if (!CRON_SECRET) {
-    console.warn('CRON_SECRET not set - allowing request (development mode)')
-    return true
-  }
-
-  const authHeader = request.headers.get('authorization')
-  return authHeader === `Bearer ${CRON_SECRET}`
+  return bearerMatches(request.headers.get('authorization'), process.env.CRON_SECRET ?? '')
 }
 
 /**
@@ -40,7 +38,7 @@ function isAuthorized(request: NextRequest): boolean {
  *
  * Scrapes deals from approved sources and stages for review.
  */
-export async function POST(request: NextRequest): Promise<NextResponse> {
+async function handlePOST(request: NextRequest): Promise<NextResponse> {
   // Verify authorization
   if (!isAuthorized(request)) {
     return NextResponse.json(
@@ -144,7 +142,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     )
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
-    console.error('Deal scraper cron error:', message)
+    log.error('deal_scraper.deal_scraper_cron_error', { detail: message })
 
     await sendNtfyAlert('Deal Scraper Error', message, 'critical')
 
@@ -163,7 +161,7 @@ async function sendNtfyAlert(
   const ntfyTopic = process.env.NTFY_TOPIC || 'kenyon-ofir-limit'
 
   try {
-    await fetch(`https://ntfy.sh/${ntfyTopic}`, {
+    await fetchWithTimeout(`https://ntfy.sh/${ntfyTopic}`, {
       method: 'POST',
       headers: {
         Title: title,
@@ -172,6 +170,8 @@ async function sendNtfyAlert(
       body: message,
     })
   } catch (error) {
-    console.error('Failed to send ntfy alert:', error)
+    log.error('deal_scraper.failed_to_send_ntfy_alert', { error })
   }
 }
+
+export const GET = withRequestLog('/api/cron/deal-scraper', handlePOST)

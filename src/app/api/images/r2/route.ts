@@ -9,6 +9,7 @@
  * GET /api/images/r2/cdn-cgi/image/width=400,format=avif/products/sku123.jpg
  */
 
+import { fetchWithTimeout } from '@/lib/http/fetch-with-timeout'
 import { R2_CONFIG, isR2Enabled } from '@/lib/images/optimizer'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { type NextRequest, NextResponse } from 'next/server'
@@ -43,7 +44,7 @@ async function handleGET(request: NextRequest) {
     const cfUrl = `${R2_CONFIG.publicDomain}/cdn-cgi/image/${options}${sourceUrl}`
 
     // Fetch from Cloudflare with appropriate headers
-    const response = await fetch(cfUrl, {
+    const response = await fetchWithTimeout(cfUrl, {
       method: 'GET',
       headers: {
         'User-Agent': request.headers.get('user-agent') || 'KenyonExpress/1.0',
@@ -92,7 +93,7 @@ async function handleHEAD(request: NextRequest) {
 
   try {
     const cfUrl = `${R2_CONFIG.publicDomain}${pathname.replace('/api/images/r2', '')}`
-    const response = await fetch(cfUrl, { method: 'HEAD' })
+    const response = await fetchWithTimeout(cfUrl, { method: 'HEAD' })
 
     return new NextResponse(null, {
       status: response.status,

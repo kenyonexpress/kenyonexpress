@@ -25,7 +25,7 @@ describe('ToastDemo component', () => {
 
   it('should display title and description', () => {
     render(<ToastDemo />)
-    expect(screen.getByText('Toast Notification Demo')).toBeInTheDocument()
+    expect(screen.getByText('הדגמת התראות Toast')).toBeInTheDocument()
     expect(screen.getByText(/Click any button below/)).toBeInTheDocument()
   })
 

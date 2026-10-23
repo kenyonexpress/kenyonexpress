@@ -34,6 +34,7 @@ vi.mock('@/lib/supabase/anon', () => {
     'select',
     'eq',
     'is',
+    'gt',
     'or',
     'gte',
     'lte',

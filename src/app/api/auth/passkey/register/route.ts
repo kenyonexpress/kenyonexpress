@@ -41,10 +41,15 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
   const admin = createAdminClient()
 
   if (body?.step === 'options') {
-    const { data: existing } = await admin
+    const { data: existing, error: existingError } = await admin
       .from('webauthn_credentials')
       .select('id, transports')
       .eq('user_id', user.id)
+    // Without the list the new passkey could be registered twice on one device.
+    if (existingError) {
+      log.error('passkey.existing_lookup_failed', { reason: existingError.message })
+      return NextResponse.json({ ok: false, error: 'internal' }, { status: 500 })
+    }
     const options = await generateRegistrationOptions({
       rpName,
       rpID,

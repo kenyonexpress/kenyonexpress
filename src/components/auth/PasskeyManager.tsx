@@ -24,10 +24,14 @@ export default function PasskeyManager() {
   const [error, setError] = useState<string | null>(null)
 
   const load = useCallback(async () => {
-    const { data } = await createClient()
+    const { data, error: loadError } = await createClient()
       .from('webauthn_credentials')
       .select('id, friendly_name, created_at, last_used_at')
       .order('created_at', { ascending: false })
+    if (loadError) {
+      setError('לא הצלחנו לטעון את מפתחות הגישה. נסו לרענן את הדף.')
+      return
+    }
     setItems((data ?? []) as Credential[])
   }, [])
 

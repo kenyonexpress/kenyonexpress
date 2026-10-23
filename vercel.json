@@ -8,27 +8,5 @@
   "env": {
     "VERCEL_CDN_REGIONS": "fra1,dub1",
     "VERCEL_EDGE_HEBREW": "true"
-  },
-  "crons": [
-    {
-      "path": "/api/cron/observability-check",
-      "schedule": "*/5 * * * *"
-    },
-    {
-      "path": "/api/cron/fraud-monitor",
-      "schedule": "*/10 * * * *"
-    },
-    {
-      "path": "/api/cron/p95-monitor",
-      "schedule": "*/15 * * * *"
-    },
-    {
-      "path": "/api/cron/deal-scraper",
-      "schedule": "*/30 * * * *"
-    },
-    {
-      "path": "/api/cron/stock-notifications",
-      "schedule": "0 * * * *"
-    }
-  ]
+  }
 }

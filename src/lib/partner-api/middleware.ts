@@ -1,5 +1,6 @@
 // Partner API middleware for authentication and rate limiting
 
+import { log } from '@/lib/observability/log'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { type NextRequest, NextResponse } from 'next/server'
 import { type PartnerApiScope, extractApiKey, hasScopePermission, hashApiKey } from './index'
@@ -151,7 +152,7 @@ export async function logPartnerApiRequest(
     })
   } catch (error) {
     // Log error but don't fail the request
-    console.error('Failed to log API request:', error)
+    log.error('middleware.failed_to_log_api_request', { error })
   }
 }
 

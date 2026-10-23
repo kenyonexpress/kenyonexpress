@@ -1,3 +1,9 @@
+-- CANCELLED 2026-10-23 (F01): superseded before it was ever applied. The weekend
+-- chip shipped as 284_products_weekend_only.sql (applied) and the free-shipping
+-- chip needs no column: it reads shipping_price_agorot = 0 (278, applied). This
+-- file would add a second `weekend_only` plus a redundant `free_shipping`
+-- column. The number 193 stays burned; the other 193 is
+-- 193_observability_endpoint_metrics.sql.
 -- 193_weekend_and_free_shipping.sql
 --
 -- Weekend-only and free-shipping product chips for the UI.

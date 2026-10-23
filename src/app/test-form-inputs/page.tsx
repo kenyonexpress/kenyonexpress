@@ -74,6 +74,7 @@ export default function TestFormInputsPage() {
               </label>
               <input
                 id="email-input"
+                dir="ltr"
                 type="email"
                 placeholder="example@domain.com"
                 className="w-full flex h-10 rounded-md border border-[--electro-border] bg-[--electro-white] px-3 py-2 text-sm placeholder:text-[--electro-text-tertiary] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[--electro-info]"
@@ -86,6 +87,7 @@ export default function TestFormInputsPage() {
               </label>
               <input
                 id="phone-input"
+                dir="ltr"
                 type="tel"
                 placeholder="+972 50 123 4567"
                 className="w-full flex h-10 rounded-md border border-[--electro-border] bg-[--electro-white] px-3 py-2 text-sm placeholder:text-[--electro-text-tertiary] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[--electro-info]"
@@ -201,6 +203,7 @@ export default function TestFormInputsPage() {
               </label>
               <input
                 id="he-email"
+                dir="ltr"
                 type="email"
                 placeholder="example@domain.com"
                 className="w-full flex h-10 rounded-md border border-[--electro-border] bg-[--electro-white] px-3 py-2 text-sm placeholder:text-[--electro-text-tertiary] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[--electro-info]"
@@ -213,6 +216,7 @@ export default function TestFormInputsPage() {
               </label>
               <input
                 id="he-phone"
+                dir="ltr"
                 type="tel"
                 placeholder="+972 50 123 4567"
                 className="w-full flex h-10 rounded-md border border-[--electro-border] bg-[--electro-white] px-3 py-2 text-sm placeholder:text-[--electro-text-tertiary] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[--electro-info]"

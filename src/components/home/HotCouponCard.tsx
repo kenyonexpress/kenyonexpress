@@ -72,15 +72,15 @@ export default function HotCouponCard({ coupon }: HotCouponCardProps) {
   }
 
   return (
-    <article className="hot-coupon-card rounded-lg border border-gray-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md">
+    <article className="hot-coupon-card rounded-lg border border-border bg-white p-4 shadow-sm transition-shadow hover:shadow-md">
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
           {/* Product name */}
-          <h3 className="font-semibold text-gray-900 text-sm line-clamp-2">{coupon.name_he}</h3>
+          <h3 className="font-semibold text-foreground text-sm line-clamp-2">{coupon.name_he}</h3>
 
           {/* Supplier name if available */}
           {coupon.supplier?.name && (
-            <p className="text-xs text-gray-500 mt-1">{coupon.supplier.name}</p>
+            <p className="text-xs text-muted-foreground mt-1">{coupon.supplier.name}</p>
           )}
 
           {/* Pricing info */}
@@ -89,11 +89,11 @@ export default function HotCouponCard({ coupon }: HotCouponCardProps) {
               <span className="text-lg font-bold text-brand-red">
                 {shekelsFromIls(offer.paidOnlineIls)}
               </span>
-              <span className="text-xs text-gray-500 line-through">
+              <span className="text-xs text-muted-foreground line-through">
                 {shekelsFromIls(offer.fullPriceIls)}
               </span>
             </div>
-            <p className="text-xs text-gray-600">
+            <p className="text-xs text-muted-foreground">
               + {shekelsFromIls(offer.balanceAtBusinessIls)} בחנות
             </p>
           </div>
@@ -101,7 +101,7 @@ export default function HotCouponCard({ coupon }: HotCouponCardProps) {
           {/* Discount badge */}
           {offer.discountPercent > 0 && (
             <div className="mt-2 inline-block rounded-full bg-brand-yellow px-2.5 py-1">
-              <span className="text-xs font-semibold text-gray-900">
+              <span className="text-xs font-semibold text-foreground">
                 {offer.discountPercent}% הנחה
               </span>
             </div>
@@ -110,12 +110,12 @@ export default function HotCouponCard({ coupon }: HotCouponCardProps) {
       </div>
 
       {/* Code section */}
-      <div className="mt-4 rounded-lg bg-gray-50 p-3">
-        <p className="text-xs text-gray-600 mb-2">קוד קופון:</p>
+      <div className="mt-4 rounded-lg bg-muted p-3">
+        <p className="text-xs text-muted-foreground mb-2">קוד קופון:</p>
         <button
           type="button"
           onClick={copyCode}
-          className="w-full py-2 px-3 bg-white border border-gray-200 rounded-md font-mono font-bold text-center hover:bg-gray-100 transition-colors text-sm"
+          className="w-full py-2 px-3 bg-white border border-border rounded-md font-mono font-bold text-center hover:bg-muted transition-colors text-sm"
           title="לחץ להעתקה"
         >
           {couponCode}

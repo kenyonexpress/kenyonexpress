@@ -11,11 +11,14 @@ export const metadata = { title: 'דגלי מערכת' }
  * table, and this repository does not apply migrations from an agent.
  */
 async function MaintenanceToggle() {
-  const { data } = await createAdminClient()
+  const { data, error } = await createAdminClient()
     .from('feature_flags' as never)
     .select('bool_value, updated_at')
     .eq('key', 'maintenance_mode')
     .maybeSingle()
+  // A toggle that shows OFF because the read failed would invite a second,
+  // contradictory click. Let the error boundary say so instead.
+  if (error) throw new Error(`feature_flags read failed: ${error.message}`)
   const on = (data as { bool_value?: boolean } | null)?.bool_value === true
   return (
     <form

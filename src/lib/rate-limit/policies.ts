@@ -58,6 +58,27 @@ export const RATE_LIMIT_POLICIES = {
     windowSeconds: 3600,
     reason: 'reset mail to one address from rotating IPs',
   },
+  'checkout-otp-send': {
+    limit: 5,
+    windowSeconds: 3600,
+    reason: 'checkout phone-verification SMS, per user',
+  },
+  'checkout-otp-send-ip': {
+    limit: 20,
+    windowSeconds: 3600,
+    reason: 'checkout phone-verification SMS, per IP',
+  },
+  'checkout-otp-verify': {
+    limit: 10,
+    windowSeconds: 3600,
+    reason: 'checkout phone-verification code guesses, per user',
+  },
+  'verify-card': {
+    limit: 5,
+    windowSeconds: 3600,
+    reason: 'card-verification payment page creation, per user',
+  },
+  'offline-sync': { limit: 120, windowSeconds: 600, reason: 'offline queue replay, per IP' },
   'update-password': { limit: 10, windowSeconds: 3600, reason: 'session-bound password change' },
 
   // -- Commerce. Higher, because a real shopper trips these by shopping.
@@ -70,7 +91,6 @@ export const RATE_LIMIT_POLICIES = {
   // caught it. Keyed on the user, not the IP, because the action can only touch
   // that user's own row - the limit bounds a held-down button, not an attacker.
   'referral-code': { limit: 10, windowSeconds: 3600, reason: 'referral code mint, per user' },
-  'review-submit': { limit: 5, windowSeconds: 3600, reason: 'review spam, per user' },
   'wishlist-toggle': { limit: 60, windowSeconds: 3600, reason: 'held-down heart, per user' },
 
   // Keyed on the user, never on IP, and deliberately generous rather than tight:

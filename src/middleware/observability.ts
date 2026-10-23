@@ -4,6 +4,7 @@
  * This middleware runs on all requests and feeds data into observability system
  */
 
+import { log } from '@/lib/observability/log'
 import { recordEndpointMetric } from '@/lib/observability/metrics'
 import type { NextResponse } from 'next/server'
 
@@ -19,7 +20,7 @@ export async function recordMetrics(
 ) {
   // Fire and forget - don't block request
   recordEndpointMetric(endpoint, method, responseTimeMs, statusCode).catch((err) => {
-    console.error('[middleware] Failed to record metric:', err)
+    log.error('middleware.failed_to_record_metric', { err })
   })
 }
 

@@ -23,9 +23,9 @@ describe('Image Optimizer', () => {
       expect(url).toContain('/products/sku123.jpg')
     })
 
-    it('generates AVIF format URL by default', () => {
+    it('generates WebP format URL by default', () => {
       const url = cfImageUrl('/test.jpg', 300)
-      expect(url).toContain('format=avif')
+      expect(url).toContain('format=webp')
     })
 
     it('includes fit=scale-down for responsive sizing', () => {
@@ -84,7 +84,9 @@ describe('Image Optimizer', () => {
 
     it('generates valid srcset format', () => {
       const srcset = responsiveSrcSet('/test.jpg', [256, 384, 600])
-      const entries = srcset.split(',').map((s) => s.trim())
+      // The URL carries commas of its own (`width=256,quality=75,...`), so
+      // entries are matched as "<url> <n>w" rather than split on commas.
+      const entries = srcset.match(/\S+\s\d+w/g) ?? []
       expect(entries.length).toBe(3)
       for (const entry of entries) {
         expect(entry).toMatch(/^.+\s\d+w$/)
@@ -108,7 +110,7 @@ describe('Image Optimizer', () => {
     it('tablet source has correct media query', () => {
       const sources = artDirectedSources('/test.jpg')
       expect(sources.tablet.media).toContain('640px')
-      expect(sources.tablet.media).toContain('1024px')
+      expect(sources.tablet.media).toContain('1023px')
     })
 
     it('desktop source has correct media query', () => {

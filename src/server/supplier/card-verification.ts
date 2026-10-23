@@ -146,11 +146,12 @@ export async function completeSupplierCardVerification(
   }
   if (!claimed) {
     // Someone else processed it, or it never existed. Report what is there.
-    const { data: current } = await admin
+    const { data: current, error: currentError } = await admin
       .from('supplier_card_verifications' as never)
       .select('status')
       .eq('id', id)
       .maybeSingle()
+    if (currentError) return 'pending'
     const status = (current as { status?: string } | null)?.status
     return status === 'verified' ? 'verified' : status === 'failed' ? 'failed' : 'pending'
   }

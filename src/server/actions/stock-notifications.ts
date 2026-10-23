@@ -1,19 +1,22 @@
 'use server'
 
+import { withActionContext } from '@/lib/observability/action-context'
 import { createClient } from '@/lib/supabase/server'
 import { updateTag } from 'next/cache'
 
 import { log } from '@/lib/observability/log'
 
-export async function subscribeToStockNotification(
+type StockNotificationResult = { success: boolean; error?: string }
+
+async function runSubscribeToStockNotification(
   productId: string,
   email?: string,
-): Promise<{ success: boolean; error?: string }> {
+): Promise<StockNotificationResult> {
   try {
     const supabase = await createClient()
-    const { data: user } = await supabase.auth.getUser()
+    const { data: user, error: authError } = await supabase.auth.getUser()
 
-    if (!user?.user?.id) {
+    if (authError || !user?.user?.id) {
       return { success: false, error: 'Not authenticated' }
     }
 
@@ -23,13 +26,13 @@ export async function subscribeToStockNotification(
     }
 
     // Get current stock level
-    const { data: product } = await supabase
+    const { data: product, error: productError } = await supabase
       .from('products')
       .select('stock_quantity')
       .eq('id', productId)
       .single()
 
-    if (!product) {
+    if (productError || !product) {
       return { success: false, error: 'Product not found' }
     }
 
@@ -67,14 +70,14 @@ export async function subscribeToStockNotification(
   }
 }
 
-export async function unsubscribeFromStockNotification(
+async function runUnsubscribeFromStockNotification(
   notificationId: string,
-): Promise<{ success: boolean; error?: string }> {
+): Promise<StockNotificationResult> {
   try {
     const supabase = await createClient()
-    const { data: user } = await supabase.auth.getUser()
+    const { data: user, error: authError } = await supabase.auth.getUser()
 
-    if (!user?.user?.id) {
+    if (authError || !user?.user?.id) {
       return { success: false, error: 'Not authenticated' }
     }
 
@@ -103,18 +106,18 @@ export async function unsubscribeFromStockNotification(
   }
 }
 
-export async function getStockNotifications(
-  productId: string,
-): Promise<{ subscribed: boolean; notificationId?: string }> {
+type StockSubscription = { subscribed: boolean; notificationId?: string }
+
+async function runGetStockNotifications(productId: string): Promise<StockSubscription> {
   try {
     const supabase = await createClient()
-    const { data: user } = await supabase.auth.getUser()
+    const { data: user, error: authError } = await supabase.auth.getUser()
 
-    if (!user?.user?.id) {
+    if (authError || !user?.user?.id) {
       return { subscribed: false }
     }
 
-    const { data } = await supabase
+    const { data, error: readError } = await supabase
       .from('stock_notifications')
       .select('id')
       .eq('product_id', productId)
@@ -122,6 +125,11 @@ export async function getStockNotifications(
       .is('unsubscribed_at', null)
       .is('notified_at', null)
       .single()
+
+    // PGRST116 is `.single()` finding no row: simply not subscribed.
+    if (readError && readError.code !== 'PGRST116') {
+      log.error('stock.get_notifications_read_failed', { error_message: readError.message })
+    }
 
     return {
       subscribed: !!data,
@@ -133,4 +141,25 @@ export async function getStockNotifications(
     })
     return { subscribed: false }
   }
+}
+
+export async function subscribeToStockNotification(
+  productId: string,
+  email?: string,
+): Promise<StockNotificationResult> {
+  return withActionContext('stock.subscribe', () =>
+    runSubscribeToStockNotification(productId, email),
+  )
+}
+
+export async function unsubscribeFromStockNotification(
+  notificationId: string,
+): Promise<StockNotificationResult> {
+  return withActionContext('stock.unsubscribe', () =>
+    runUnsubscribeFromStockNotification(notificationId),
+  )
+}
+
+export async function getStockNotifications(productId: string): Promise<StockSubscription> {
+  return withActionContext('stock.get_notifications', () => runGetStockNotifications(productId))
 }

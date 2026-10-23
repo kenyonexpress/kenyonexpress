@@ -1,4 +1,7 @@
+import { fetchWithTimeout } from '@/lib/http/fetch-with-timeout'
 import { log } from '@/lib/observability/log'
+import { withRequestLog } from '@/lib/observability/with-request-log'
+import { bearerMatches } from '@/lib/security/constant-time'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 /**
@@ -7,12 +10,10 @@ import { createAdminClient } from '@/lib/supabase/admin'
  *
  * Runs every hour via Vercel cron: `0 * * * *`
  */
-export async function POST(request: Request) {
+async function handlePOST(request: Request) {
   try {
     // Verify CRON_SECRET
-    const authHeader = request.headers.get('authorization')
-    const cronSecret = process.env.CRON_SECRET
-    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+    if (!bearerMatches(request.headers.get('authorization'), process.env.CRON_SECRET ?? '')) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -75,7 +76,7 @@ export async function POST(request: Request) {
       for (const row of rows) {
         try {
           // Send email notification via Resend
-          const emailResponse = await fetch('https://api.resend.com/emails', {
+          const emailResponse = await fetchWithTimeout('https://api.resend.com/emails', {
             method: 'POST',
             headers: {
               Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
@@ -128,7 +129,7 @@ export async function POST(request: Request) {
 
     // Send alert if any notifications were sent
     if (emailCount > 0) {
-      await fetch('https://ntfy.sh/kenyon-ofir-limit', {
+      await fetchWithTimeout('https://ntfy.sh/kenyon-ofir-limit', {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain' },
         body: `📦 Stock Notifications: ${emailCount} users notified of ${productMap.size} products back in stock`,
@@ -149,7 +150,7 @@ export async function POST(request: Request) {
       error: error instanceof Error ? error.message : 'Unknown error',
     })
 
-    await fetch('https://ntfy.sh/kenyon-ofir-limit', {
+    await fetchWithTimeout('https://ntfy.sh/kenyon-ofir-limit', {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain' },
       body: `⚠️ Stock Notifications Cron Failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -158,3 +159,5 @@ export async function POST(request: Request) {
     return Response.json({ error: 'Cron job failed' }, { status: 500 })
   }
 }
+
+export const GET = withRequestLog('/api/cron/stock-notifications', handlePOST)

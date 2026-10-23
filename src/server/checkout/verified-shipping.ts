@@ -149,7 +149,7 @@ export async function verifyCheckoutPhoneOtp(
   phoneE164: string,
   code: string,
 ): Promise<VerifyOtpResult> {
-  const { data } = await admin
+  const { data, error: readError } = await admin
     .from('auth_wa_otps' as never)
     .select('id, code_hash, attempts, expires_at')
     .eq('user_id', userId)
@@ -159,6 +159,9 @@ export async function verifyCheckoutPhoneOtp(
     .order('created_at', { ascending: false })
     .limit(1)
     .maybeSingle()
+  // A failed read is not "no code": answering `expired` would send the customer
+  // back to request another SMS for what is our fault.
+  if (readError) throw new Error(`checkout otp lookup failed: ${readError.message}`)
   const row = data as { id: string; code_hash: string; attempts: number } | null
   if (!row || row.attempts >= WA_OTP_MAX_ATTEMPTS) return 'expired'
 
@@ -170,12 +173,13 @@ export async function verifyCheckoutPhoneOtp(
     return 'wrong_code'
   }
 
-  const { data: consumed } = await admin
+  const { data: consumed, error: consumeError } = await admin
     .from('auth_wa_otps' as never)
     .update({ consumed_at: new Date().toISOString() } as never)
     .eq('id', row.id)
     .is('consumed_at', null)
     .select('id')
     .maybeSingle()
+  if (consumeError) throw new Error(`checkout otp consume failed: ${consumeError.message}`)
   return consumed ? 'ok' : 'expired'
 }

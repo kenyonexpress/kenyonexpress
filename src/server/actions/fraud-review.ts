@@ -1,29 +1,52 @@
 'use server'
 
+import { isAdminRole } from '@/lib/admin/roles'
+import { withActionContext } from '@/lib/observability/action-context'
+import { log } from '@/lib/observability/log'
 import { createClient } from '@/lib/supabase/server'
 
 /**
- * Get flagged orders pending review
+ * Every action here reads or decides on other customers' fraud flags, so a
+ * signed-in session is not enough: the caller must hold an admin role. Without
+ * the role check any customer could approve, reject or cancel an order.
  */
-export async function getFlaggedOrders(
-  status: 'pending' | 'approved' | 'rejected' | 'manual_review' = 'pending',
-  limit = 50,
-  offset = 0,
-) {
+async function requireFraudReviewer() {
   const client = await createClient()
 
-  // Get authenticated user
   const {
     data: { user },
     error: authError,
   } = await client.auth.getUser()
 
   if (authError || !user) {
-    return { error: 'Not authenticated' }
+    return { error: 'Not authenticated' } as const
   }
 
-  // Verify user is an admin
-  const { data: flags, error } = (
+  const { data: profile, error: roleError } = await client
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+  if (roleError || !profile || !isAdminRole(profile.role)) {
+    return { error: 'Not authorized' } as const
+  }
+
+  return { client, user } as const
+}
+
+/**
+ * Get flagged orders pending review
+ */
+async function runGetFlaggedOrders(
+  status: 'pending' | 'approved' | 'rejected' | 'manual_review' = 'pending',
+  limit = 50,
+  offset = 0,
+) {
+  const gate = await requireFraudReviewer()
+  if ('error' in gate) return { error: gate.error }
+  const { client } = gate
+
+  const { data: flags, error } = await (
     client.from('fraud_flags' as any).select(
       `
       id,
@@ -54,19 +77,12 @@ export async function getFlaggedOrders(
 /**
  * Get details for a single flagged order
  */
-export async function getFlaggedOrderDetails(flagId: string) {
-  const client = await createClient()
+async function runGetFlaggedOrderDetails(flagId: string) {
+  const gate = await requireFraudReviewer()
+  if ('error' in gate) return { error: gate.error }
+  const { client } = gate
 
-  const {
-    data: { user },
-    error: authError,
-  } = await client.auth.getUser()
-
-  if (authError || !user) {
-    return { error: 'Not authenticated' }
-  }
-
-  const { data: flag, error } = (
+  const { data: flag, error } = await (
     client.from('fraud_flags' as any).select(
       `
       id,
@@ -115,17 +131,10 @@ export async function getFlaggedOrderDetails(flagId: string) {
 /**
  * Approve a flagged order (reviewer decision: fraud cleared)
  */
-export async function approveFlaggedOrder(flagId: string, notes = '') {
-  const client = await createClient()
-
-  const {
-    data: { user },
-    error: authError,
-  } = await client.auth.getUser()
-
-  if (authError || !user) {
-    return { error: 'Not authenticated' }
-  }
+async function runApproveFlaggedOrder(flagId: string, notes = '') {
+  const gate = await requireFraudReviewer()
+  if ('error' in gate) return { error: gate.error }
+  const { client, user } = gate
 
   const { data: flag, error: updateError } = await (client
     .from('fraud_flags' as any)
@@ -150,21 +159,14 @@ export async function approveFlaggedOrder(flagId: string, notes = '') {
 /**
  * Reject a flagged order (reviewer decision: fraud confirmed)
  */
-export async function rejectFlaggedOrder(
+async function runRejectFlaggedOrder(
   flagId: string,
   action: 'hold' | 'cancel' | 'require_verification' = 'hold',
   notes = '',
 ) {
-  const client = await createClient()
-
-  const {
-    data: { user },
-    error: authError,
-  } = await client.auth.getUser()
-
-  if (authError || !user) {
-    return { error: 'Not authenticated' }
-  }
+  const gate = await requireFraudReviewer()
+  if ('error' in gate) return { error: gate.error }
+  const { client, user } = gate
 
   const { data: flag, error: updateError } = await (client
     .from('fraud_flags' as any)
@@ -196,7 +198,10 @@ export async function rejectFlaggedOrder(
       .eq('id', flag.order_id)
 
     if (orderError) {
-      console.error(`Failed to cancel order ${flag.order_id}:`, orderError)
+      log.error('fraud_review.failed_to_cancel_order', {
+        order_id: flag.order_id,
+        error: orderError,
+      })
     }
   }
 
@@ -206,17 +211,10 @@ export async function rejectFlaggedOrder(
 /**
  * Mark a flagged order for manual review
  */
-export async function requestManualReview(flagId: string, notes = '') {
-  const client = await createClient()
-
-  const {
-    data: { user },
-    error: authError,
-  } = await client.auth.getUser()
-
-  if (authError || !user) {
-    return { error: 'Not authenticated' }
-  }
+async function runRequestManualReview(flagId: string, notes = '') {
+  const gate = await requireFraudReviewer()
+  if ('error' in gate) return { error: gate.error }
+  const { client } = gate
 
   const { data: flag, error: updateError } = await (client
     .from('fraud_flags' as any)
@@ -239,17 +237,10 @@ export async function requestManualReview(flagId: string, notes = '') {
 /**
  * Get fraud statistics for the dashboard
  */
-export async function getFraudStatistics() {
-  const client = await createClient()
-
-  const {
-    data: { user },
-    error: authError,
-  } = await client.auth.getUser()
-
-  if (authError || !user) {
-    return { error: 'Not authenticated' }
-  }
+async function runGetFraudStatistics() {
+  const gate = await requireFraudReviewer()
+  if ('error' in gate) return { error: gate.error }
+  const { client } = gate
 
   const last24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
 
@@ -289,17 +280,10 @@ export async function getFraudStatistics() {
 /**
  * Get chargeback history for a profile
  */
-export async function getProfileChargebackHistory(profileId: string) {
-  const client = await createClient()
-
-  const {
-    data: { user },
-    error: authError,
-  } = await client.auth.getUser()
-
-  if (authError || !user) {
-    return { error: 'Not authenticated' }
-  }
+async function runGetProfileChargebackHistory(profileId: string) {
+  const gate = await requireFraudReviewer()
+  if ('error' in gate) return { error: gate.error }
+  const { client } = gate
 
   const { data: chargebacks, error } = await (client
     .from('chargeback_history' as any)
@@ -312,4 +296,52 @@ export async function getProfileChargebackHistory(profileId: string) {
   }
 
   return { data: chargebacks }
+}
+
+export async function getFlaggedOrders(
+  status: 'pending' | 'approved' | 'rejected' | 'manual_review' = 'pending',
+  limit = 50,
+  offset = 0,
+) {
+  return withActionContext('fraud_review.get_flagged_orders', () =>
+    runGetFlaggedOrders(status, limit, offset),
+  )
+}
+
+export async function getFlaggedOrderDetails(flagId: string) {
+  return withActionContext('fraud_review.get_flagged_order_details', () =>
+    runGetFlaggedOrderDetails(flagId),
+  )
+}
+
+export async function approveFlaggedOrder(flagId: string, notes = '') {
+  return withActionContext('fraud_review.approve_flagged_order', () =>
+    runApproveFlaggedOrder(flagId, notes),
+  )
+}
+
+export async function rejectFlaggedOrder(
+  flagId: string,
+  action: 'hold' | 'cancel' | 'require_verification' = 'hold',
+  notes = '',
+) {
+  return withActionContext('fraud_review.reject_flagged_order', () =>
+    runRejectFlaggedOrder(flagId, action, notes),
+  )
+}
+
+export async function requestManualReview(flagId: string, notes = '') {
+  return withActionContext('fraud_review.request_manual_review', () =>
+    runRequestManualReview(flagId, notes),
+  )
+}
+
+export async function getFraudStatistics() {
+  return withActionContext('fraud_review.get_fraud_statistics', () => runGetFraudStatistics())
+}
+
+export async function getProfileChargebackHistory(profileId: string) {
+  return withActionContext('fraud_review.get_profile_chargeback_history', () =>
+    runGetProfileChargebackHistory(profileId),
+  )
 }
