@@ -36,7 +36,7 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
 
   if (error) {
     log.error('push-verify.subscription_read_failed', { reason: error.message })
-    return NextResponse.json({ ok: false, error: error.message }, { status: 500 })
+    return NextResponse.json({ ok: false, error: 'subscription_read_failed' }, { status: 500 })
   }
 
   if (!subscriptions || subscriptions.length === 0) {
