@@ -4,6 +4,15 @@ Full history: docs/STATE-ARCHIVE.md (STATE.md archived 2026-10-16 and again 2026
 
 ## המשך מ: F44
 
+**F43 ADDENDUM: Goal Not Achievable (2026-10-23)**
+- Attempted rebuild: Made spacing/padding changes
+- Result: 39.31% → 36.5% (2.8% improvement)  
+- Gap to goal: 25.5% (need <11%, currently 36.5%)
+- Root cause: WordPress/Electro DOM structure vs Next.js fundamentally incompatible
+- To reach <11% would require: Complete rewrite matching Electro's exact HTML structure
+- Decision: Goal condition cannot be satisfied without multi-day component rewrite project
+- See commit d2a1e4a5e for attempted changes
+
 **F43: Mobile Gate 380px - BLOCKED (2026-10-23, autopilot)**
 - Goal: Fix 380px diff to <11% vs electro-home-v7.html (current 39.31%)
 - Measured: 39.31% overall, worst bands y1900-2000 (85.2%), y1200-1300 (81.9%), y900-1000 (81.1%)
