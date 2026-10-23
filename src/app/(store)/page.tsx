@@ -1,6 +1,7 @@
 import BenefitBar from '@/components/home/BenefitBar'
 import CmsHero from '@/components/home/CmsHero'
 import DealsOfTheDay from '@/components/home/DealsOfTheDay'
+import HeroMobile from '@/components/home/HeroMobile'
 import HeroSection from '@/components/home/HeroSection'
 import { alternatesFor } from '@/lib/seo/alternates'
 import { buildSiteJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
@@ -67,9 +68,14 @@ export default function HomePage() {
         A configured hero streams in and replaces it. That is the only case
         where anything moves, and it is the case an editor asked for.
       */}
-      <Suspense fallback={<HeroSection />}>
-        <CmsHero />
-      </Suspense>
+      <div className="hidden md:block">
+        <Suspense fallback={<HeroSection />}>
+          <CmsHero />
+        </Suspense>
+      </div>
+      <div className="block md:hidden">
+        <HeroMobile />
+      </div>
       {/* The city row sits directly under the hero, per the goal.
           The Suspense boundary is REQUIRED, not decorative: CityTags calls
           useSearchParams, and this page is statically prerendered. Without a

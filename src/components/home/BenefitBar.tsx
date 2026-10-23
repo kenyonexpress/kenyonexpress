@@ -82,7 +82,7 @@ export default function BenefitBar() {
       // section at 582.4; y791.3 in one at 761.3) and is 81.4 tall, with the
       // 68px items centred in it at y619 / y798. Centring our 71px list put
       // the items at y615 / y794, four pixels high on every band they touch.
-      className="h-feature-bar-mobile w-full bg-white font-sans md:h-feature-bar md:pt-usp-offset"
+      className="hidden md:block md:h-feature-bar md:pt-usp-offset w-full bg-white font-sans"
     >
       {/*
         ONE ROW FROM md, WITH LIVE'S 768 BOX. Probed in the live archive on
