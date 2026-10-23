@@ -42,10 +42,6 @@ function fail(text) {
   log(`✗ ${text}`, 'red')
 }
 
-function warn(text) {
-  log(`⚠ ${text}`, 'yellow')
-}
-
 /**
  * Verify JSON-LD implementation files exist
  */

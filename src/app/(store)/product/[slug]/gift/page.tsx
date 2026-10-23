@@ -3,7 +3,7 @@ import { createPublicClient } from '@/lib/supabase/anon'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
-type Props = { params: Promise<{ id: string }> }
+type Props = { params: Promise<{ slug: string }> }
 
 export const metadata: Metadata = {
   title: 'שלח מתנה',
@@ -11,13 +11,14 @@ export const metadata: Metadata = {
 }
 
 export default async function GiftProductPage({ params }: Props) {
-  const { id } = await params
+  const { slug: rawSlug } = await params
+  const slug = decodeURIComponent(rawSlug)
 
   const supabase = createPublicClient()
   const { data: product, error } = await supabase
     .from('products')
     .select('id, name_he, kenyon_price, images, is_coupon_enabled, type')
-    .eq('id', id)
+    .eq('slug', slug)
     .eq('status', 'active')
     .is('deleted_at', null)
     .maybeSingle()
