@@ -5,6 +5,7 @@
  * Requires CRON_SECRET authentication via Bearer token
  */
 
+import { log } from '@/lib/observability/log'
 import { sendNtfyAlert } from '@/lib/observability/ntfy-alert'
 import {
   checkSustainedViolations,
@@ -12,6 +13,7 @@ import {
   createPerformanceTicket,
 } from '@/lib/observability/p95-monitor'
 import { withRequestLog } from '@/lib/observability/with-request-log'
+import { bearerMatches } from '@/lib/security/constant-time'
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
@@ -19,12 +21,8 @@ import { NextResponse } from 'next/server'
 async function handleGET(request: NextRequest) {
   const startedAt = performance.now()
 
-  // Verify cron authentication
-  const authHeader = request.headers.get('authorization') || ''
-  const secret = authHeader.replace('Bearer ', '')
-  const expectedSecret = process.env.CRON_SECRET
-
-  if (!secret || !expectedSecret || secret !== expectedSecret) {
+  // Verify cron authentication (constant-time; an unset secret closes the route)
+  if (!bearerMatches(request.headers.get('authorization'), process.env.CRON_SECRET ?? '')) {
     return NextResponse.json(
       { error: 'Unauthorized' },
       {
@@ -48,13 +46,23 @@ async function handleGET(request: NextRequest) {
     // Process each violation
     for (const violation of violations) {
       // Check if ticket already exists for this violation
-      const { data: existingTicket } = await admin
+      const { data: existingTicket, error: existingTicketError } = await admin
         .from('observability.perf_tickets')
         .select('*')
         .eq('endpoint_path', violation.endpoint_path)
         .eq('method', violation.method)
         .is('resolved_at', null)
         .limit(1)
+
+      if (existingTicketError) {
+        // Opening a second ticket for a violation that already has one is the
+        // failure this guards against; try again on the next run.
+        log.error('p95_monitor.ticket_lookup_failed', {
+          endpoint: violation.endpoint_path,
+          error: existingTicketError,
+        })
+        continue
+      }
 
       if (existingTicket && existingTicket.length > 0) {
         // Update existing ticket with new observation
@@ -123,7 +131,7 @@ async function handleGET(request: NextRequest) {
       { headers: { 'cache-control': 'no-store' } },
     )
   } catch (err) {
-    console.error('[p95-monitor] Error:', err)
+    log.error('p95_monitor.error', { err })
     const message = err instanceof Error ? err.message : 'Unknown error'
 
     return NextResponse.json(

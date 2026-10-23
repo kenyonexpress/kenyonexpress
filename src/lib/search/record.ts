@@ -57,19 +57,3 @@ export async function recordRecentSearch(client: SupabaseClient, term: string): 
     })
   }
 }
-
-export async function recordSearchClick(
-  term: string,
-  productId: string,
-  position: number,
-): Promise<void> {
-  try {
-    await fetch('/api/search/record-click', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ term, productId, position }),
-    })
-  } catch {
-    // Fire-and-forget: don't interrupt user flow
-  }
-}

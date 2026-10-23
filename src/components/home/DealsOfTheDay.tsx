@@ -1,4 +1,5 @@
 import ProductDealCard from '@/components/ProductDealCard'
+import ProductDealCardMobile from '@/components/ProductDealCardMobile'
 import { KE_LIVE_DEALS } from '@/lib/ke-live-deals-data'
 
 /**
@@ -32,7 +33,12 @@ export default async function DealsOfTheDay() {
       <div className="jet-listing-grid-deals bg-white">
         {products.map((product) => (
           <div key={product.id} className="jet-listing-grid-deals__item">
-            <ProductDealCard product={product} />
+            <div className="hidden md:block">
+              <ProductDealCard product={product} />
+            </div>
+            <div className="block md:hidden">
+              <ProductDealCardMobile product={product} />
+            </div>
           </div>
         ))}
       </div>

@@ -23,6 +23,7 @@ import {
   previewRecurringMoney,
   readRecurringProductFields,
 } from '@/lib/commerce/recurring'
+import { agorot, agorotToIls, parseIls } from '@/lib/money'
 import { readWhatsAppEnabled } from '@/lib/supplier-contact'
 import { slugify } from '@/lib/utils/slugify'
 import { type ProductFormState, upsertProduct } from '@/server/actions/admin/products'
@@ -66,6 +67,15 @@ interface Props {
 
 const INITIAL_STATE: ProductFormState = null
 
+/** Shekel text to integer agorot for the hidden field; junk posts as-is so the server rejects it. */
+function safeAgorot(text: string): string {
+  try {
+    return String(parseIls(text.trim()))
+  } catch {
+    return text.trim()
+  }
+}
+
 function variantToFormData(v: ProductVariant): VariantDraft {
   return {
     _key: v.id,
@@ -92,6 +102,11 @@ export default function ProductForm({
   )
   const [variantDrafts, setVariantDrafts] = useState<VariantDraft[]>(
     initVariants.filter((v) => !v.deleted_at).map(variantToFormData),
+  )
+  const [shippingIls, setShippingIls] = useState(
+    product?.shipping_price_agorot != null
+      ? String(agorotToIls(agorot(product.shipping_price_agorot)))
+      : '',
   )
   const [nameHe, setNameHe] = useState(product?.name_he ?? '')
   const [slugVal, setSlugVal] = useState(product?.slug ?? '')
@@ -1173,49 +1188,71 @@ export default function ProductForm({
             דורש משלוח פיזי
           </label>
         </div>
-        <div className="flex items-center gap-3">
-          <input
-            id="is_physical_shipping"
-            type="checkbox"
-            checked={isPhysicalShipping}
-            onChange={(e) => {
-              setIsPhysicalShipping(e.target.checked)
-              if (e.target.checked) setCity('')
-            }}
-            className="w-4 h-4 rounded border-gray-300 text-brand focus:ring-brand"
-          />
-          <label htmlFor="is_physical_shipping" className="text-sm font-medium text-gray-700">
-            מוצר פיזי שנשלח הביתה
-          </label>
-        </div>
-        <div>
-          <label htmlFor="city" className="block text-xs font-medium text-gray-700 mb-1">
-            עיר {!isPhysicalShipping && '*'}
-          </label>
-          <input
-            id="city"
-            type="text"
-            value={isPhysicalShipping ? 'כל הארץ' : city}
-            onChange={(e) => !isPhysicalShipping && setCity(e.target.value)}
-            disabled={isPhysicalShipping}
-            required={!isPhysicalShipping}
-            placeholder="תל אביב, ירושלים..."
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand disabled:bg-gray-50 disabled:text-gray-500"
-          />
-        </div>
-        <div>
-          <label htmlFor="full_address" className="block text-xs font-medium text-gray-700 mb-1">
-            כתובת מלאה
-          </label>
-          <input
-            id="full_address"
-            type="text"
-            value={fullAddress}
-            onChange={(e) => setFullAddress(e.target.value)}
-            placeholder="רוטשילד 15 תל אביב"
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
-          />
-          <p className="mt-1 text-xs text-gray-500">מוצג בדף פרטי המוצר בלבד, לא בקלפים</p>
+        {/* Migrations 185/187/278. Shipping is typed in shekels and posted as
+            integer agorot; the payout cycle is the supplier payout days. */}
+        <div className="grid grid-cols-3 gap-4">
+          {!hidePricing && (
+            <div>
+              <label
+                htmlFor="shipping_price_ils"
+                className="block text-xs font-medium text-gray-700 mb-1"
+              >
+                מחיר משלוח (₪)
+              </label>
+              <input
+                id="shipping_price_ils"
+                type="text"
+                inputMode="decimal"
+                value={shippingIls}
+                onChange={(e) => setShippingIls(e.target.value)}
+                dir="ltr"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              />
+              <input
+                type="hidden"
+                name="shipping_price_agorot"
+                value={shippingIls.trim() === '' ? '' : safeAgorot(shippingIls)}
+              />
+            </div>
+          )}
+          <div>
+            <label
+              htmlFor="payout_cadence"
+              className="block text-xs font-medium text-gray-700 mb-1"
+            >
+              ימי תשלום לספק
+            </label>
+            <select
+              id="payout_cadence"
+              name="payout_cadence"
+              defaultValue={product?.payout_cadence ?? ''}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+            >
+              <option value="">לא צוין</option>
+              <option value="weekly">כל 7 ימים</option>
+              <option value="biweekly">כל 14 ימים</option>
+              <option value="monthly">כל 30 ימים</option>
+            </select>
+          </div>
+          <div>
+            <label
+              htmlFor="cancellation_window_days"
+              className="block text-xs font-medium text-gray-700 mb-1"
+            >
+              חלון ביטול (ימים)
+            </label>
+            <input
+              id="cancellation_window_days"
+              name="cancellation_window_days"
+              type="number"
+              min="0"
+              max="365"
+              step="1"
+              defaultValue={product?.cancellation_window_days ?? ''}
+              dir="ltr"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+            />
+          </div>
         </div>
         {/* The WhatsApp opt-in. Default false and no fallback to true: ticking
             this publishes a link that opens a chat with a real business, so it

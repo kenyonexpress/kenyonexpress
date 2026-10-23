@@ -1,6 +1,7 @@
 'use server'
 
 import { contactEmail } from '@/lib/contact-address'
+import { CONTACT_CHANNEL_SLUGS, contactChannelLabel } from '@/lib/contact-channels'
 import { sendEmail } from '@/lib/email/resend'
 import { withActionContext } from '@/lib/observability/action-context'
 import { TURNSTILE_FIELD, verifyTurnstile } from '@/lib/security/turnstile'
@@ -14,6 +15,7 @@ import { z } from 'zod'
  */
 
 const schema = z.object({
+  channel: z.enum(CONTACT_CHANNEL_SLUGS, { message: 'נא לבחור נושא' }),
   name: z.string().trim().min(2, 'נא למלא שם').max(80, 'השם ארוך מדי'),
   email: z.string().trim().email('כתובת מייל לא תקינה').max(254),
   message: z.string().trim().min(10, 'ההודעה קצרה מדי').max(2000, 'ההודעה ארוכה מדי'),
@@ -41,6 +43,7 @@ async function runSubmitContactForm(
   formData: FormData,
 ): Promise<ContactState> {
   const parsed = schema.safeParse({
+    channel: formData.get('channel'),
     name: formData.get('name'),
     email: formData.get('email'),
     message: formData.get('message'),
@@ -63,7 +66,8 @@ async function runSubmitContactForm(
     return { ok: false, error: 'יותר מדי ניסיונות. נסו שוב מאוחר יותר.' }
   }
 
-  const { name, email, message } = parsed.data
+  const { name, email, message, channel } = parsed.data
+  const channelLabel = contactChannelLabel(channel)
   const safeName = escapeHtml(name)
   const safeEmail = escapeHtml(email)
   const safeMessage = escapeHtml(message).replaceAll('\n', '<br/>')
@@ -71,14 +75,15 @@ async function runSubmitContactForm(
   const result = await sendEmail({
     to: contactTo(),
     replyTo: email,
-    subject: `צור קשר: ${name}`,
+    subject: `צור קשר (${channelLabel}): ${name}`,
     html: `<div dir="rtl" style="font-family:Arial,Helvetica,sans-serif;text-align:right">
       <h1 style="font-size:18px;margin:0 0 12px">פנייה חדשה מהאתר</h1>
+      <p style="margin:0 0 8px"><strong>נושא:</strong> ${channelLabel}</p>
       <p style="margin:0 0 8px"><strong>שם:</strong> ${safeName}</p>
       <p style="margin:0 0 8px"><strong>מייל:</strong> ${safeEmail}</p>
       <p style="margin:16px 0 0">${safeMessage}</p>
     </div>`,
-    text: `פנייה חדשה מהאתר\nשם: ${name}\nמייל: ${email}\n\n${message}`,
+    text: `פנייה חדשה מהאתר\nנושא: ${channelLabel}\nשם: ${name}\nמייל: ${email}\n\n${message}`,
   })
 
   if (!result.ok && !result.skipped) {

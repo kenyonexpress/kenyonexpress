@@ -34,6 +34,7 @@ vi.mock('@/lib/supabase/read-replica', () => {
     'select',
     'eq',
     'is',
+    'gt',
     'or',
     'gte',
     'lte',

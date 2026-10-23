@@ -1,4 +1,4 @@
-# The scheduled jobs, run from Actions.
+# The twenty-one scheduled jobs, run from Actions.
 #
 # `vercel.json` declares the same jobs under its `crons` key (restored
 # 2026-09-10 by explicit goal; the inventory test keeps it byte-identical to
@@ -53,12 +53,10 @@ on:
     - cron: '15 23 * * *'
     - cron: '0 5 1 * *'
     - cron: '0 4 * * 5'
-    - cron: '20 2 * * *'
-    - cron: '45 4 * * *'
-    - cron: '0 5 * * 5'
-    - cron: '0 3 * * *'
-    - cron: '30 */6 * * *'
-    - cron: '45 23 * * *'
+    - cron: '*/15 * * * *'
+    - cron: '*/30 * * * *'
+    - cron: '20 1 * * *'
+    - cron: '0 6 * * 1'
   workflow_dispatch:
     inputs:
       job:

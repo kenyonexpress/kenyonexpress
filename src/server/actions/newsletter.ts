@@ -31,7 +31,7 @@ import { z } from 'zod'
 const CONSENT_WORDING_VERSION = 'newsletter-v1'
 
 const schema = z.object({
-  email: z.string().email('כתובת מייל לא תקינה').max(254),
+  email: z.string().trim().email('כתובת מייל לא תקינה').max(254),
 })
 
 export type NewsletterState = { ok: boolean; message?: string; error?: string }

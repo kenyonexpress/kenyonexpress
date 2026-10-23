@@ -33,9 +33,18 @@ export class SyncManager {
   constructor(db: OfflineDB) {
     this.db = db
     if (typeof window !== 'undefined') {
-      window.addEventListener('online', () => this.handleOnline())
-      window.addEventListener('offline', () => this.handleOffline())
+      window.addEventListener('online', this.onOnline)
+      window.addEventListener('offline', this.onOffline)
     }
+  }
+
+  private onOnline = () => this.handleOnline()
+  private onOffline = () => this.handleOffline()
+
+  dispose() {
+    if (typeof window === 'undefined') return
+    window.removeEventListener('online', this.onOnline)
+    window.removeEventListener('offline', this.onOffline)
   }
 
   private handleOnline() {
@@ -127,7 +136,9 @@ export class SyncManager {
 let syncManagerInstance: SyncManager | null = null
 
 export async function initSyncManager(db: OfflineDB): Promise<SyncManager> {
-  if (syncManagerInstance) return syncManagerInstance
+  // A manager holds the handle it was built with; a closed handle is dead, so
+  // a new db means a new manager (and the old one stops listening).
+  syncManagerInstance?.dispose()
   syncManagerInstance = new SyncManager(db)
   return syncManagerInstance
 }

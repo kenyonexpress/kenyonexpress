@@ -46,6 +46,7 @@ export default function ApprovalActionsClient({ productId, productName }: Props)
           value={reason}
           onChange={(e) => setReason(e.target.value)}
           placeholder="סיבת דחייה..."
+          aria-label="סיבת דחייה"
           className="w-48 rounded-lg border border-gray-300 px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand"
         />
         <button

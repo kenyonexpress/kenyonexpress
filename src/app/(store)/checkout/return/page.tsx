@@ -1,3 +1,4 @@
+import PasskeyBanner from '@/components/auth/PasskeyBanner'
 import LocationPin from '@/components/product/LocationPin'
 import PushPrompt from '@/components/push/PushPrompt'
 import PurchaseMarker from '@/components/pwa/PurchaseMarker'
@@ -156,6 +157,7 @@ async function CheckoutReturnBody({ searchParams }: Props) {
         <PurchaseMarker />
         <h1 className="checkout-success__title">התשלום הצליח!</h1>
         <PushPrompt />
+        <PasskeyBanner />
         <p className="checkout-success__sub">
           הזמנה {order.id.slice(0, 8).toUpperCase()} · שולם באתר{' '}
           {shekels(agorot(orderMoney.totalAgorot))}

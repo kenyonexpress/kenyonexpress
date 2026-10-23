@@ -35,11 +35,16 @@ async function walletAccountFor(
   admin: ReturnType<typeof createAdminClient>,
   userId: string,
 ): Promise<string | null> {
-  const { data } = await admin
+  const { data, error: readError } = await admin
     .from('wallet_accounts')
     .select('id')
     .eq('user_id', userId)
     .maybeSingle()
+  // Falling through to the insert on a failed read is how a second account gets made.
+  if (readError) {
+    log.error('affiliate.wallet_read_failed', { reason: readError.message })
+    return null
+  }
   if (data?.id) return data.id
   const { data: created, error } = await admin
     .from('wallet_accounts')
@@ -48,11 +53,12 @@ async function walletAccountFor(
     .single()
   if (error) {
     // A concurrent creator won; read it back.
-    const { data: again } = await admin
+    const { data: again, error: againError } = await admin
       .from('wallet_accounts')
       .select('id')
       .eq('user_id', userId)
       .maybeSingle()
+    if (againError) log.error('affiliate.wallet_reread_failed', { reason: againError.message })
     return again?.id ?? null
   }
   return (created as { id: string }).id
@@ -84,11 +90,16 @@ export async function settleAffiliateCommissions(
     return summary
   }
 
-  const { data: house } = await admin
+  const { data: house, error: houseError } = await admin
     .from('wallet_accounts')
     .select('id')
     .eq('code', HOUSE_ACCOUNT)
     .maybeSingle()
+  if (houseError) {
+    log.error('affiliate.house_account_read_failed', { reason: houseError.message })
+    summary.failed += 1
+    return summary
+  }
 
   for (const row of (data ?? []) as unknown as Pending[]) {
     summary.scanned += 1

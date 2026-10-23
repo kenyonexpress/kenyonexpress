@@ -1,9 +1,16 @@
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
+import { bearerMatches } from '@/lib/security/constant-time'
 import { isSmsConfigured, sendSmsBroadcast } from '@/lib/sms/broadcast-send'
 import { createAdminClient } from '@/lib/supabase/admin'
 
-async function handleGET(_request: Request): Promise<Response> {
+async function handleGET(request: Request): Promise<Response> {
+  // Sending SMS to customers is the one thing this route must never do for a
+  // stranger: an unset secret closes it.
+  if (!bearerMatches(request.headers.get('authorization'), process.env.CRON_SECRET ?? '')) {
+    return Response.json({ status: 'error', message: 'Unauthorized' }, { status: 401 })
+  }
+
   try {
     // Check if SMS is configured
     if (!isSmsConfigured()) {

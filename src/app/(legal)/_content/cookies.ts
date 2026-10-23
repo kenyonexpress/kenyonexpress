@@ -39,6 +39,7 @@ import type { LegalDoc } from './types'
  *   ke_a_session       analytics/session.ts           sessionStorage, 30min idle
  *   ke_theme           lib/theme.ts                   localStorage
  *   ke_push_prompt_dismissed  components/push/PushPrompt.tsx  localStorage
+ *   ke_passkey_banner_dismissed  components/auth/PasskeyBanner.tsx  localStorage
  */
 export const cookiesDoc: LegalDoc = {
   slug: 'cookies',
@@ -146,6 +147,12 @@ export const cookiesDoc: LegalDoc = {
               'ke_push_prompt_dismissed',
               'אחסון מקומי',
               'זוכר שבחרתם "לא עכשיו" בהצעה להפעיל התראות, כדי שלא תוצג שוב. שומר ערך בלבד, אינו נשלח לשרת',
+              'עד למחיקה בדפדפן',
+            ],
+            [
+              'ke_passkey_banner_dismissed',
+              'אחסון מקומי',
+              'זוכר שבחרתם "לא עכשיו" בהצעה להתחבר בעתיד עם זיהוי פנים או טביעת אצבע, כדי שלא תוצג שוב. שומר ערך בלבד, אינו נשלח לשרת',
               'עד למחיקה בדפדפן',
             ],
           ],

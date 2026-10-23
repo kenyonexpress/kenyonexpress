@@ -63,11 +63,14 @@ async function AffiliateContent({ searchParams }: Props) {
     '',
   )
 
-  const { data: affiliate } = await supabase
+  const { data: affiliate, error: affiliateError } = await supabase
     .from('affiliates')
     .select('id, status, created_at')
     .eq('user_id', user.id)
     .maybeSingle()
+  // Not an affiliate and "could not tell" are different pages: the first offers
+  // the join form, the second must not.
+  if (affiliateError) throw new Error(`affiliates read failed: ${affiliateError.message}`)
 
   if (!affiliate) {
     return (

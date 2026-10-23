@@ -70,12 +70,6 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
   },
   {
     number: '132',
-    file: '132_sms_marketing.sql',
-    state: 'pending',
-    hasPreflight: true,
-  },
-  {
-    number: '132',
     file: '132_search_index_outbox.sql',
     state: 'applied',
     hasPreflight: false,
@@ -387,6 +381,12 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
     hasPreflight: true,
   },
   {
+    number: '191',
+    file: '191_saved_payment_method.sql',
+    state: 'pending',
+    hasPreflight: true,
+  },
+  {
     number: '192',
     file: '192_notification_history.sql',
     state: 'pending',
@@ -402,37 +402,43 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
     number: '193',
     file: '193_observability_endpoint_metrics.sql',
     state: 'pending',
+    hasPreflight: true,
+  },
+  {
+    number: '193',
+    file: '193_weekend_and_free_shipping.sql',
+    state: 'cancelled',
     hasPreflight: false,
   },
   {
     number: '194',
     file: '194_p95_latency_samples.sql',
     state: 'pending',
-    hasPreflight: false,
+    hasPreflight: true,
   },
   {
     number: '195',
     file: '195_perf_tickets.sql',
     state: 'pending',
-    hasPreflight: false,
+    hasPreflight: true,
   },
   {
     number: '196',
     file: '196_p95_statistics_function.sql',
     state: 'pending',
-    hasPreflight: false,
+    hasPreflight: true,
   },
   {
     number: '200',
     file: '200_deal_seeding_infrastructure.sql',
     state: 'pending',
-    hasPreflight: false,
+    hasPreflight: true,
   },
   {
     number: '276',
     file: '276_stock_notifications.sql',
     state: 'pending',
-    hasPreflight: false,
+    hasPreflight: true,
   },
   {
     number: '277',
@@ -493,5 +499,17 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
     file: '286_feature_flags.sql',
     state: 'applied',
     hasPreflight: false,
+  },
+  {
+    number: '287',
+    file: '287_sms_marketing.sql',
+    state: 'pending',
+    hasPreflight: true,
+  },
+  {
+    number: '288',
+    file: '288_customer_rfm_segmentation.sql',
+    state: 'pending',
+    hasPreflight: true,
   },
 ] as const

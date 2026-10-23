@@ -36,11 +36,15 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
   // spellings of the same number: +972..., 05XXXXXXXX and 05X-XXXXXXX.
   const local = `0${phone.slice(4)}`
   const variants = [phone, local, `${local.slice(0, 3)}-${local.slice(3)}`]
-  const { data: matches } = await admin
+  const { data: matches, error: matchError } = await admin
     .from('profiles')
     .select('id, email')
     .in('phone', variants)
     .limit(2)
+  if (matchError) {
+    log.error('wa_otp.profile_lookup_failed', { reason: matchError.message })
+    return NextResponse.json({ ok: false, error: 'internal' }, { status: 500 })
+  }
   // Two accounts on one number is ambiguous; sign neither in by phone. A
   // deleted account has its phone cleared (account.ts), so it never matches.
   const profile = matches && matches.length === 1 ? matches[0] : null

@@ -15,7 +15,11 @@ describe('InfiniteScrollLoader', () => {
       disconnect: vi.fn() as any,
     }
 
-    global.IntersectionObserver = vi.fn(() => mockObserver) as any
+    // `new IntersectionObserver()` needs a constructor; an arrow function is not one.
+    // biome-ignore lint/complexity/useArrowFunction: see above
+    global.IntersectionObserver = vi.fn(function () {
+      return mockObserver
+    }) as any
   })
 
   afterEach(() => {

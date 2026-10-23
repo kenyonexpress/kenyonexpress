@@ -118,9 +118,14 @@ file is in a repository.
 11 https://kenyonexpress.vercel.app/api/cron/retention           GET  0 5 1 * *     Authorization: Bearer <CRON_SECRET>
 13 https://kenyonexpress.vercel.app/api/cron/affiliate-payouts   GET  40 3 * * *    Authorization: Bearer <CRON_SECRET>
 12 https://kenyonexpress.vercel.app/api/cron/weekly-digest       GET  0 4 * * 5     Authorization: Bearer <CRON_SECRET>
-13 https://kenyonexpress.vercel.app/api/cron/backup              GET  20 2 * * *    Authorization: Bearer <CRON_SECRET>
-14 https://kenyonexpress.vercel.app/api/cron/wishlist-alerts     GET  45 4 * * *    Authorization: Bearer <CRON_SECRET>
-15 https://kenyonexpress.vercel.app/api/cron/wishlist-digest     GET  0 5 * * 5     Authorization: Bearer <CRON_SECRET>
+14 https://kenyonexpress.vercel.app/api/cron/observability-check  GET  */5 * * * *    Authorization: Bearer <CRON_SECRET>
+15 https://kenyonexpress.vercel.app/api/cron/fraud-monitor        GET  */10 * * * *   Authorization: Bearer <CRON_SECRET>
+16 https://kenyonexpress.vercel.app/api/cron/p95-monitor          GET  */15 * * * *   Authorization: Bearer <CRON_SECRET>
+17 https://kenyonexpress.vercel.app/api/cron/deal-scraper         GET  */30 * * * *   Authorization: Bearer <CRON_SECRET>
+18 https://kenyonexpress.vercel.app/api/cron/stock-notifications  GET  0 * * * *      Authorization: Bearer <CRON_SECRET>
+19 https://kenyonexpress.vercel.app/api/cron/sms-broadcasts       GET  */10 * * * *   Authorization: Bearer <CRON_SECRET>
+20 https://kenyonexpress.vercel.app/api/cron/rfm-segmentation     GET  20 1 * * *     Authorization: Bearer <CRON_SECRET>
+21 https://kenyonexpress.vercel.app/api/cron/search-report        GET  0 6 * * 1      Authorization: Bearer <CRON_SECRET>
 ```
 
 Verified against the code at HEAD, not from memory: all ten handlers export
@@ -156,6 +161,14 @@ deliberate and harmless: both are sweeps with a wide window, not appointments.
 | 11 | 05:00 ב-1 לחודש | `0 5 1 * *` | `https://kenyonexpress.vercel.app/api/cron/retention` |
 | 13 | 03:40 daily | `40 3 * * *` | `https://kenyonexpress.vercel.app/api/cron/affiliate-payouts` |
 | 12 | שישי ~06:00 ישראל | `0 4 * * 5` | `https://kenyonexpress.vercel.app/api/cron/weekly-digest` |
+| 14 | every 5 min | `*/5 * * * *` | `https://kenyonexpress.vercel.app/api/cron/observability-check` |
+| 15 | every 10 min | `*/10 * * * *` | `https://kenyonexpress.vercel.app/api/cron/fraud-monitor` |
+| 16 | every 15 min | `*/15 * * * *` | `https://kenyonexpress.vercel.app/api/cron/p95-monitor` |
+| 17 | every 30 min | `*/30 * * * *` | `https://kenyonexpress.vercel.app/api/cron/deal-scraper` |
+| 18 | hourly | `0 * * * *` | `https://kenyonexpress.vercel.app/api/cron/stock-notifications` |
+| 19 | every 10 min | `*/10 * * * *` | `https://kenyonexpress.vercel.app/api/cron/sms-broadcasts` |
+| 20 | 01:20 daily | `20 1 * * *` | `https://kenyonexpress.vercel.app/api/cron/rfm-segmentation` |
+| 21 | Monday 06:00 | `0 6 * * 1` | `https://kenyonexpress.vercel.app/api/cron/search-report` |
 
 Those are the schedules `vercel.json` carried, kept exactly, so nothing about
 timing changes with the scheduler.
@@ -189,6 +202,14 @@ timing changes with the scheduler.
 - **`abandoned-cart`** queues the recovery nudge.
 - **`subscriptions`** bills the recurring plans.
 - **`reap-carts`** deletes expired guest carts.
+- **`observability-check`** evaluates endpoint SLA metrics and sends the ntfy alert.
+- **`fraud-monitor`** scores recent orders and auto-flags the suspicious ones.
+- **`p95-monitor`** checks for sustained p95 latency violations and opens the performance ticket.
+- **`deal-scraper`** stages new deals for approval.
+- **`stock-notifications`** notifies subscribers of products that are back in stock.
+- **`sms-broadcasts`** sends the SMS broadcasts scheduled for now or earlier.
+- **`rfm-segmentation`** recalculates RFM scores and segments the customers.
+- **`search-report`** builds the weekly search report.
 - **`affiliate-payouts`** pays matured affiliate commissions into wallets (migration 283).
 - **`expire-vouchers`** marks vouchers past their date as expired.
 - **`expire-coupons`** stamps printed QR coupon codes (migration 182/217) whose

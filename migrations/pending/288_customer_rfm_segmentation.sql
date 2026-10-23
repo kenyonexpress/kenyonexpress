@@ -1,4 +1,4 @@
--- PENDING 130: Customer Segmentation — RFM analysis (Recency, Frequency, Monetary)
+-- PENDING 288 (was 130 in supabase/migrations, which collided with applied 130, payment_events): Customer Segmentation — RFM analysis (Recency, Frequency, Monetary)
 -- ================================================================================
 --
 -- Implements RFM customer segmentation infrastructure:

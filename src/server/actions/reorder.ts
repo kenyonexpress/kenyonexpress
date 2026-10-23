@@ -1,5 +1,7 @@
 'use server'
 
+import { withActionContext } from '@/lib/observability/action-context'
+import { createClient } from '@/lib/supabase/server'
 import { getOrderDetail } from '@/server/queries/orders'
 import { addToCart } from './cart'
 
@@ -10,12 +12,27 @@ import { addToCart } from './cart'
  * are available. Returns success even if some items fail to add (e.g.,
  * deleted products).
  */
-export async function reorderFromOrder(orderId: string): Promise<{
+type ReorderResult = {
   success: boolean
   addedCount: number
   failedCount: number
   errors: string[]
-}> {
+}
+
+async function runReorderFromOrder(orderId: string): Promise<ReorderResult> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) {
+    return {
+      success: false,
+      addedCount: 0,
+      failedCount: 0,
+      errors: ['יש להתחבר כדי להזמין שוב'],
+    }
+  }
+
   const order = await getOrderDetail(orderId)
   if (!order) {
     return {
@@ -57,4 +74,8 @@ export async function reorderFromOrder(orderId: string): Promise<{
     failedCount,
     errors: errors.slice(0, 3), // Limit to first 3 errors
   }
+}
+
+export async function reorderFromOrder(orderId: string): Promise<ReorderResult> {
+  return withActionContext('account.reorder', () => runReorderFromOrder(orderId))
 }

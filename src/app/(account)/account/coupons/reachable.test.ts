@@ -19,7 +19,8 @@ import { describe, expect, it } from 'vitest'
 const APP = join(process.cwd(), 'src/app')
 const COUPONS_PAGE = join(APP, '(account)/account/coupons/page.tsx')
 const NAV = join(process.cwd(), 'src/components/account/AccountNav.tsx')
-const OVERVIEW = join(APP, '(account)/account/page.tsx')
+// The overview page is a thin server wrapper; the card with the link is here.
+const OVERVIEW = join(process.cwd(), 'src/components/account/AccountPageContent.tsx')
 
 function read(file: string): string {
   return readFileSync(file, 'utf8')

@@ -1,6 +1,7 @@
 'use client'
 
 import TurnstileWidget from '@/components/shared/TurnstileWidget'
+import { CONTACT_CHANNELS } from '@/lib/contact-channels'
 import { type ContactState, submitContactForm } from '@/server/actions/contact'
 import { useActionState, useId } from 'react'
 
@@ -33,6 +34,28 @@ export default function ContactForm() {
           tabIndex={-1}
           autoComplete="off"
         />
+      </div>
+
+      <div>
+        <label
+          htmlFor={`${baseId}-channel`}
+          className="mb-1.5 block text-sm font-medium text-heading"
+        >
+          נושא הפנייה
+        </label>
+        <select
+          id={`${baseId}-channel`}
+          name="channel"
+          required
+          defaultValue={CONTACT_CHANNELS[0].slug}
+          className={fieldClass}
+        >
+          {CONTACT_CHANNELS.map((c) => (
+            <option key={c.slug} value={c.slug}>
+              {c.label}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div>

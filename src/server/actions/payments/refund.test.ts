@@ -121,7 +121,9 @@ function seedHappyPath(overrides: { succeededAt?: string | null; items?: unknown
     data: overrides.items ?? [
       {
         id: 'line-1',
-        product_type: 'physical',
+        // A coupon line, because the statutory 5% fee is only ever charged on an
+        // order that carries one (F42): a physical-only order refunds in full.
+        product_type: 'coupon',
         settlement_status: 'paid',
         supplier_id: 'sup-1',
         supplier_immediate_agorot: 0,
@@ -259,7 +261,7 @@ describe('refundOrder: supplier debits', () => {
       items: [
         {
           id: 'line-1',
-          product_type: 'physical',
+          product_type: 'coupon',
           settlement_status: 'split_executed',
           supplier_id: 'sup-1',
           supplier_immediate_agorot: 7_000,
@@ -277,6 +279,25 @@ describe('refundOrder: supplier debits', () => {
       supplier_due_agorot: 7_000,
       idempotency_key: 'supplier_debit:line-1',
     })
+  })
+
+  it('refunds a physical-only order in full, with no cancellation fee (F42)', async () => {
+    seedHappyPath({
+      items: [
+        {
+          id: 'line-1',
+          product_type: 'physical',
+          settlement_status: 'paid',
+          supplier_id: 'sup-1',
+          supplier_immediate_agorot: 0,
+        },
+      ],
+    })
+    await refundOrder({ orderId: 'order-1', reason: 'test' })
+
+    expect(refundByTransactionId).toHaveBeenCalledWith(
+      expect.objectContaining({ amountAgorot: 10_000, transactionId: 'tx-9' }),
+    )
   })
 
   it('journals the refund itself even when nothing is owed back', async () => {

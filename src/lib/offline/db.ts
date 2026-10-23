@@ -208,6 +208,7 @@ function createOfflineDBInstance(database: IDBPDatabase<CatalogSchema>): Offline
 
     close() {
       database.close()
+      if (db === database) db = null
     },
 
     async clear() {

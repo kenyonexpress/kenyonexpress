@@ -1,3 +1,4 @@
+import { withRequestLog } from '@/lib/observability/with-request-log'
 import { createPublicClient } from '@/lib/supabase/public'
 import { type NextRequest, NextResponse } from 'next/server'
 
@@ -5,10 +6,7 @@ import { type NextRequest, NextResponse } from 'next/server'
  * Mobile app endpoint for product details. Used by the deep-link product page
  * to fetch full product information from a notification link.
  */
-export async function GET(
-  _request: NextRequest,
-  { params }: { params: Promise<{ slug: string }> },
-) {
+async function handleGET(_request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
 
   if (!slug || typeof slug !== 'string') {
@@ -31,3 +29,5 @@ export async function GET(
     headers: { 'cache-control': 'public, max-age=3600' },
   })
 }
+
+export const GET = withRequestLog('/api/mobile/products/[slug]', handleGET)

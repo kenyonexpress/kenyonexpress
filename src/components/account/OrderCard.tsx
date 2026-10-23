@@ -24,7 +24,7 @@ export default function OrderCard({ order }: OrderCardProps) {
       if (result.success) {
         setMessage({
           type: 'success',
-          text: `${result.addedCount} פריט${result.addedCount > 1 ? 'ים' : ''} נוסף${result.addedCount > 1 ? 'ו' : ''} לעגלה`,
+          text: `${result.addedCount} ${result.addedCount > 1 ? 'פריטים נוספו' : 'פריט נוסף'} לעגלה`,
         })
       } else {
         setMessage({

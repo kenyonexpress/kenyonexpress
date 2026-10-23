@@ -7,6 +7,7 @@
  * This is a placeholder for when R2 becomes available.
  */
 
+import { fetchWithTimeout } from '@/lib/http/fetch-with-timeout'
 import { R2_CONFIG, isR2Enabled } from './optimizer'
 
 export interface ImageMigrationStats {
@@ -48,7 +49,7 @@ export async function uploadToR2(
 
   try {
     // Placeholder: Fetch image from source
-    const response = await fetch(imageUrl)
+    const response = await fetchWithTimeout(imageUrl)
     if (!response.ok) {
       return {
         success: false,

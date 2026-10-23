@@ -5,6 +5,7 @@ import { withRequestLog } from '@/lib/observability/with-request-log'
 import { getPaymentProvider, loadCardcomEnv } from '@/lib/payments'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
+import { checkRateLimit } from '@/lib/utils/rate-limit'
 import { type NextRequest, NextResponse } from 'next/server'
 
 const VERIFICATION_AMOUNT_AGOROT = agorot(1)
@@ -17,6 +18,11 @@ async function handlePOST(_request: NextRequest): Promise<NextResponse> {
 
   if (!user) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+  }
+
+  // Each call opens a hosted payment page with the provider; bound a held-down button.
+  if (!(await checkRateLimit(`verify-card:${user.id}`, 5, 3600))) {
+    return NextResponse.json({ error: 'rate_limited' }, { status: 429 })
   }
 
   const admin = createAdminClient()
@@ -136,11 +142,18 @@ async function completeCardVerification(
   }
 
   if (!claimed) {
-    const { data: current } = await admin
+    const { data: current, error: currentError } = await admin
       .from('payment_card_verifications')
       .select('status')
       .eq('id', id)
       .maybeSingle()
+    if (currentError) {
+      log.error('verify_card.status_read_failed', {
+        verification_id: id,
+        reason: currentError.message,
+      })
+      return 'pending'
+    }
     const status = (current as { status?: string } | null)?.status
     return status === 'verified' ? 'verified' : status === 'failed' ? 'failed' : 'pending'
   }

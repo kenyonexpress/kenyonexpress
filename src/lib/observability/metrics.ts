@@ -1,4 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/admin'
+import { log } from './log'
 
 export interface EndpointMetric {
   id: string
@@ -55,7 +56,7 @@ export async function recordEndpointMetric(
     })
 
     if (error) {
-      console.error('[observability] Failed to record metric:', error)
+      log.error('observability.failed_to_record_metric', { error })
       return null
     }
 
@@ -66,7 +67,7 @@ export async function recordEndpointMetric(
 
     return data
   } catch (err) {
-    console.error('[observability] Error recording metric:', err)
+    log.error('observability.error_recording_metric', { err })
     return null
   }
 }
@@ -83,13 +84,13 @@ export async function checkAndTriggerSLAAlert(metricId: string) {
     })
 
     if (error) {
-      console.error('[observability] Failed to check SLA breach:', error)
+      log.error('observability.failed_to_check_sla_breach', { error })
       return false
     }
 
     return data as boolean
   } catch (err) {
-    console.error('[observability] Error checking SLA:', err)
+    log.error('observability.error_checking_sla', { err })
     return false
   }
 }
@@ -107,13 +108,13 @@ export async function getEndpointMetrics(): Promise<EndpointMetric[]> {
       .order('updated_at', { ascending: false })
 
     if (error) {
-      console.error('[observability] Failed to fetch metrics:', error)
+      log.error('observability.failed_to_fetch_metrics', { error })
       return []
     }
 
     return (data || []) as EndpointMetric[]
   } catch (err) {
-    console.error('[observability] Error fetching metrics:', err)
+    log.error('observability.error_fetching_metrics', { err })
     return []
   }
 }
@@ -132,13 +133,13 @@ export async function getUnresolvedAlerts(): Promise<SLAAlert[]> {
       .order('triggered_at', { ascending: false })
 
     if (error) {
-      console.error('[observability] Failed to fetch alerts:', error)
+      log.error('observability.failed_to_fetch_alerts', { error })
       return []
     }
 
     return (data || []) as SLAAlert[]
   } catch (err) {
-    console.error('[observability] Error fetching alerts:', err)
+    log.error('observability.error_fetching_alerts', { err })
     return []
   }
 }
@@ -161,13 +162,13 @@ export async function getEndpointMetric(
       .single()
 
     if (error && error.code !== 'PGRST116') {
-      console.error('[observability] Failed to fetch metric:', error)
+      log.error('observability.failed_to_fetch_metric', { error })
       return null
     }
 
     return (data || null) as EndpointMetric | null
   } catch (err) {
-    console.error('[observability] Error fetching metric:', err)
+    log.error('observability.error_fetching_metric', { err })
     return null
   }
 }
@@ -190,13 +191,13 @@ export async function updateEndpointStatus(
       .eq('method', method)
 
     if (error) {
-      console.error('[observability] Failed to update status:', error)
+      log.error('observability.failed_to_update_status', { error })
       return false
     }
 
     return true
   } catch (err) {
-    console.error('[observability] Error updating status:', err)
+    log.error('observability.error_updating_status', { err })
     return false
   }
 }
@@ -214,13 +215,13 @@ export async function acknowledgeAlert(alertId: string): Promise<boolean> {
       .eq('id', alertId)
 
     if (error) {
-      console.error('[observability] Failed to acknowledge alert:', error)
+      log.error('observability.failed_to_acknowledge_alert', { error })
       return false
     }
 
     return true
   } catch (err) {
-    console.error('[observability] Error acknowledging alert:', err)
+    log.error('observability.error_acknowledging_alert', { err })
     return false
   }
 }
@@ -238,13 +239,13 @@ export async function resolveAlert(alertId: string): Promise<boolean> {
       .eq('id', alertId)
 
     if (error) {
-      console.error('[observability] Failed to resolve alert:', error)
+      log.error('observability.failed_to_resolve_alert', { error })
       return false
     }
 
     return true
   } catch (err) {
-    console.error('[observability] Error resolving alert:', err)
+    log.error('observability.error_resolving_alert', { err })
     return false
   }
 }
