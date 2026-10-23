@@ -99,12 +99,9 @@ describe('auth-fallback', () => {
       expect(Array.isArray(attempts)).toBe(true)
     })
 
-    it('filters by attempt type', async () => {
-      // This test requires proper mock chaining which is complex
-      // The actual implementation is tested via integration tests
-      // Keeping this as a placeholder for real DB testing
-      expect(true).toBe(true)
-    })
+    // Note: 'filters by attempt type' test removed - requires real DB
+    // The mock chaining for Supabase query builder is complex and error-prone
+    // This functionality is verified in integration tests with real database
   })
 
   describe('countConsecutiveFailures', () => {
@@ -116,13 +113,9 @@ describe('auth-fallback', () => {
     })
   })
 
-  describe('shouldFallbackToEmail', () => {
-    it('has correct default threshold', () => {
-      // The default threshold is 3 as defined in the module
-      // Integration tests with real DB verify the full flow
-      expect(3).toBe(3)
-    })
-  })
+  // shouldFallbackToEmail tests removed: require real database connection
+  // The mock Supabase client cannot properly chain .eq() after .order()
+  // This functionality is verified in integration tests with actual database
 
   describe('getAuthStats', () => {
     it('returns stats structure', async () => {

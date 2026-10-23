@@ -142,7 +142,14 @@ export default function LoginModal({
   const [showFallbackMessage, setShowFallbackMessage] = useState(false)
 
   const [emailState, emailAction, emailPending] = useActionState<AuthState, FormData>(
-    signInWithEmail,
+    async (prevState: AuthState, formData: FormData) => {
+      // Store email for fallback tracking
+      const email = formData.get('email')
+      if (email && typeof email === 'string') {
+        localStorage.setItem('login_attempt_email', email)
+      }
+      return signInWithEmail(prevState, formData)
+    },
     null,
   )
   const [googleState, googleAction, googlePending] = useActionState<AuthState, FormData>(
@@ -155,14 +162,9 @@ export default function LoginModal({
   )
 
   // Check if user should be shown email fallback after failed attempts
-  // Note: This runs on every login page load. Since we don't have user identity
-  // before login, we check based on IP address patterns stored in localStorage
-  // as a client-side fingerprint. This is best-effort - the real check happens
-  // server-side in the auth routes.
   useEffect(() => {
     async function checkFallback() {
       try {
-        // Try to get email from localStorage if user was recently attempting login
         const recentEmail =
           typeof window !== 'undefined' ? localStorage.getItem('login_attempt_email') : null
 
@@ -171,6 +173,14 @@ export default function LoginModal({
           if (result.shouldFallback) {
             setShowFallbackMessage(true)
             setActiveTab('magic') // Auto-switch to email magic link tab
+
+            // Automatically send email OTP on fallback
+            const formData = new FormData()
+            formData.append('email', recentEmail)
+            if (next) formData.append('next', next)
+
+            // Trigger magic link send
+            magicAction(formData)
           }
         }
       } catch {
@@ -178,7 +188,7 @@ export default function LoginModal({
       }
     }
     checkFallback()
-  }, [])
+  }, [magicAction, next])
 
   const topError =
     getError(googleState) ??
