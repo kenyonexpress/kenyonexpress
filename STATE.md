@@ -2,6 +2,29 @@
 
 Full history: docs/STATE-ARCHIVE.md (STATE.md archived 2026-10-16 and again 2026-10-23). Cap: 300 lines.
 
+## המשך מ: C09 (unmeasurable - same root cause as C08 wallet/vouchers)
+
+**C09: Mobile Gate /supplier admin - UNMEASURABLE (2026-10-23, autopilot)**
+- Goal: Verify supplier admin pages under 11% parity at mobile widths (380/768/1440)
+- **RESULT: UNMEASURABLE - No WordPress reference exists**
+  - /supplier: NO VALID MEASUREMENT (no WordPress reference exists)
+  - /supplier/orders: NO VALID MEASUREMENT (no WordPress reference exists)
+  - /supplier/products: NO VALID MEASUREMENT (no WordPress reference exists)
+  - /supplier/payouts: NO VALID MEASUREMENT (no WordPress reference exists)
+  - /supplier/profile: NO VALID MEASUREMENT (no WordPress reference exists)
+- Root cause: Supplier functionality never existed in WordPress/WooCommerce
+  - "WooCommerce has no first-class supplier concept" (docs/ARCHITECTURE-WP-DATA-MIGRATION.md)
+  - No WordPress supplier dashboard existed
+  - No Wayback Machine snapshots available
+  - refs/localized/ has no ke_live_supplier* files
+- Same blocker as C08 wallet/vouchers: entire feature set is new to Next.js
+- Routes verified to exist and render:
+  - /supplier (src/app/(supplier)/supplier/page.tsx)
+  - /supplier/orders, /supplier/products, /supplier/payouts, /supplier/profile
+  - /supplier/redemptions, /supplier/scan
+- Logged to: docs/C09-RESULT.md
+- Verification: Routes exist, no measurement possible
+
 ## המשך מ: C08 (blocked - same root cause as C07)
 
 **C07: Mobile Gate cart + checkout + /thank-you under 11% - BLOCKED (2026-10-23, autopilot)**
