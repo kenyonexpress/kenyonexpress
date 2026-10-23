@@ -1,31 +1,25 @@
 import { expect, test } from '@playwright/test'
-import {
-  E2E_COUPON_SLUG,
-  E2E_CUSTOMER_EMAIL,
-  E2E_CUSTOMER_PASSWORD,
-  paidFlowEnabled,
-} from './auth-session'
+import { E2E_COUPON_SLUG, paidFlowEnabled } from './auth-session'
 import {
   BUY_BUTTON,
   DISCOVERY_TIMEOUT,
   PAY_RETURN_TIMEOUT,
   addOpenProductToCart,
-  emptyCart,
-  newFixtureContext,
-  newSignedInContext,
   submitCheckout,
 } from './helpers'
 
 /**
- * Checkout completion at the three design widths (380 / 768 / 1440) with mock provider.
+ * Guest checkout at the three design widths (380 / 768 / 1440) with mock provider.
  *
- * C14: Ensures checkout flow completes successfully at all three viewport widths
- * that the design was signed off at, using the mock payment provider.
+ * C14: Ensures guest checkout flow completes successfully at all three viewport widths
+ * using anonymous Supabase sessions and the mock payment provider.
  *
- * NOTE: True "guest" checkout (anonymous sessions) requires Supabase configuration
- * (enable anonymous sign-ins + manual linking) which is not available in test env.
- * The checkout action explicitly requires auth: `if (!user) return UNAUTHENTICATED`.
- * Tests use authenticated flow like full-purchase-redeem.spec.ts.
+ * REQUIRES Supabase project configuration (NOT code, external dashboard settings):
+ * - Enable Anonymous sign-ins in project settings
+ * - Enable Manual linking in project settings
+ *
+ * Without these settings, ensureGuestIdentity falls back to requiring authentication
+ * and tests will fail with UNAUTHENTICATED error.
  *
  * Uses E2E coupon product (no shipping address needed).
  */
@@ -77,17 +71,11 @@ for (const width of WIDTHS) {
       ).toBeLessThanOrEqual(clientWidth + 1)
     })
 
-    test('authenticated user completes checkout with mock payment provider', async ({
-      browser,
+    test('guest completes checkout with mock payment provider (anonymous session)', async ({
+      page,
     }) => {
-      // Empty fixture customer cart first
-      const prep = await newSignedInContext(browser, 'customer')
-      await emptyCart(await prep.newPage())
-      await prep.close()
-
-      // Create customer context and add product
-      const customer = await newFixtureContext(browser)
-      const page = await customer.newPage()
+      // Clear any existing session to ensure true guest flow
+      await page.context().clearCookies()
 
       await page.goto(`/product/${E2E_COUPON_SLUG}`)
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible({
@@ -101,13 +89,9 @@ for (const width of WIDTHS) {
 
       await addOpenProductToCart(page)
 
-      // Sign in before checkout (required by checkout action)
-      await page.goto('/login?next=%2Fcheckout')
-      await expect(page).toHaveURL(/\/login\?.*next=%2Fcheckout/, { timeout: 15_000 })
-      await page.getByRole('textbox', { name: 'אימייל', exact: true }).fill(E2E_CUSTOMER_EMAIL)
-      await page.getByLabel('סיסמה').fill(E2E_CUSTOMER_PASSWORD)
-      await page.getByRole('button', { name: 'כניסה', exact: true }).click()
-      await page.waitForURL(/\/checkout/, { timeout: 30_000 })
+      // Go directly to checkout as guest (no sign-in)
+      await page.goto('/checkout')
+      await expect(page).toHaveURL(/\/checkout/, { timeout: 15000 })
 
       // Verify checkout heading
       await expect(page.getByRole('heading', { level: 1, name: 'קופה' })).toBeVisible({
@@ -120,6 +104,7 @@ for (const width of WIDTHS) {
       })
 
       // Navigate through steps and submit
+      // Guest checkout should create anonymous session automatically on pay press
       await submitCheckout(page)
 
       // Mock provider redirects to /checkout/return with order_id
@@ -135,8 +120,6 @@ for (const width of WIDTHS) {
 
       // Verify RTL maintained on success page
       await expect(page.locator('html')).toHaveAttribute('dir', 'rtl')
-
-      await customer.close()
     })
 
     test('checkout subtree remains protected for guests at this width', async ({ page }) => {
