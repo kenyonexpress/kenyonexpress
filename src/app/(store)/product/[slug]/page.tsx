@@ -87,10 +87,19 @@ export async function generateMetadata({ params }: Props) {
 }
 
 /**
- * Prerendered at build time, capped. See `listProductSlugsForPrerender`.
+ * Prerender only ONE product at build time for Cache Components validation.
+ *
+ * The `use cache` functions in product-detail.ts timeout when called for 200
+ * products in sequence during build. With Cache Components enabled, Next.js
+ * requires at least one result for build-time validation, so we return exactly
+ * one: the rest are generated on-demand and cached at runtime.
+ *
+ * Build error with empty array or full list (200 products):
+ * - Empty: "generateStaticParams must return at least one result"
+ * - Full: "A `use cache` function took too long during prerendering"
  */
 export async function generateStaticParams() {
-  const slugs = await listProductSlugsForPrerender()
+  const slugs = await listProductSlugsForPrerender(1)
   return slugs.map((slug) => ({ slug }))
 }
 
