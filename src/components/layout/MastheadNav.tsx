@@ -31,6 +31,7 @@ export default function MastheadNav() {
       >
         <Link
           href="/account/wishlist"
+          prefetch={false}
           aria-label="המועדפים שלי"
           className="hit-44 -m-1 p-1 transition-opacity hover:opacity-70"
           style={{ color: ICON.color }}

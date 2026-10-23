@@ -49,7 +49,7 @@ export default function UserMenuDropdown() {
       </button>
 
       <DropdownMenuContent align="end" className="w-56">
-        <Link href="/account" className="block">
+        <Link href="/account" prefetch={false} className="block">
           <button
             type="button"
             className="w-full text-start px-2 py-1.5 text-sm hover:bg-accent rounded"

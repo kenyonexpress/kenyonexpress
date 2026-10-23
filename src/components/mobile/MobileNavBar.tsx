@@ -32,6 +32,7 @@ export default function MobileNavBar() {
           <Link
             key={href}
             href={href}
+            prefetch={href === '/account' ? false : undefined}
             data-testid={testId}
             aria-current={active ? 'page' : undefined}
             className={`flex flex-col items-center justify-center flex-1 h-full gap-1 transition-colors ${

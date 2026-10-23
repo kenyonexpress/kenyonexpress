@@ -35,9 +35,9 @@ import Link from 'next/link'
  * When a `built: false` page ships, delete the flag and prefetch comes back.
  */
 const PERSONAL_LINKS: { label: string; href: string; built?: false }[] = [
-  { label: 'החשבון שלי', href: '/account' },
+  { label: 'החשבון שלי', href: '/account', built: false },
   { label: 'סל הקניות', href: '/cart' },
-  { label: 'הזמנות', href: '/account/orders' },
+  { label: 'הזמנות', href: '/account/orders', built: false },
 ]
 
 const SERVICE_LINKS: { label: string; href: string; built?: false }[] = [
