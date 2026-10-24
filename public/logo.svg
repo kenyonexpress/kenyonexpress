@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="120" viewBox="0 0 400 120">
+  <rect width="400" height="120" fill="#ffffff"/>
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@700&amp;display=swap');
+      .logo-text {
+        font-family: 'Heebo', Arial, sans-serif;
+        font-weight: 700;
+        font-size: 48px;
+        fill: #fed700;
+      }
+      .tagline {
+        font-family: 'Heebo', Arial, sans-serif;
+        font-weight: 400;
+        font-size: 24px;
+        fill: #333333;
+      }
+    </style>
+  </defs>
+  <text x="200" y="60" class="logo-text" text-anchor="middle" dominant-baseline="middle" direction="rtl">קניון EXPRESS</text>
+</svg>

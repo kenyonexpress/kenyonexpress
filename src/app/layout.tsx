@@ -62,6 +62,14 @@ export const metadata: Metadata = {
     title: BRAND_DEFAULT_TITLE,
     description: 'קופונים, מבצעים ומוצרים במחיר הכי טוב. בפריסה ארצית.',
     url: '/',
+    images: [
+      {
+        url: '/og-default.png',
+        width: 1200,
+        height: 630,
+        alt: `${BRAND_DISPLAY_NAME} - הדילים הכי זולים בישראל`,
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
@@ -104,7 +112,11 @@ export const metadata: Metadata = {
     statusBarStyle: 'default',
   },
   icons: {
-    apple: '/icons/apple-touch-icon.png',
+    icon: [
+      { url: '/favicon.ico', sizes: '32x32' },
+      { url: '/logo.svg', type: 'image/svg+xml' },
+    ],
+    apple: '/apple-touch-icon.png',
   },
 }
 
