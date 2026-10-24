@@ -236,7 +236,11 @@ All autonomous infrastructure work complete. Production launch requires owner ac
 
 **BLOCKED C51. RESULT.**
 
-Reason: Cannot send email autonomously (no email tool, Gmail MCP requires OAuth unavailable in non-interactive session). User must manually send SEND-THIS-EMAIL.txt to support@supabase.com. Expected resolution: 24-48h after user sends email.
+Attempted: Gmail MCP create_draft to support@supabase.com
+Failed: "MCP server 'claude.ai Gmail' needs you to sign in again (run /mcp to re-authenticate)"
+System: "This session is non-interactive, so Claude cannot run the OAuth flow here"
+
+Reason: Cannot send email autonomously. Gmail MCP requires OAuth which is unavailable in non-interactive session. User must manually send SEND-THIS-EMAIL.txt to support@supabase.com. Expected resolution: 24-48h after user sends email.
 
 Files created:
 - SEND-THIS-EMAIL.txt (email draft)

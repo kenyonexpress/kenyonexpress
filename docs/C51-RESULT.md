@@ -15,6 +15,22 @@ C51 task to email Supabase support for 2FA recovery cannot be completed autonomo
 
 ## What Was Done
 
+### 0. Attempted Email via Gmail MCP ❌
+
+**Attempted:** `mcp__claude_ai_Gmail__create_draft` with email to support@supabase.com
+
+**Result:** FAILED - OAuth authentication required
+```
+MCP server "claude.ai Gmail" needs you to sign in again (run /mcp to re-authenticate)
+```
+
+**System Reminder Confirms:**
+```
+This session is non-interactive, so Claude cannot run the OAuth flow here.
+```
+
+**Conclusion:** Cannot send email autonomously. Gmail MCP requires OAuth which is unavailable in non-interactive session.
+
 ### 1. Documentation Created ✅
 
 **docs/C51-SUPABASE-2FA-RECOVERY.md**
