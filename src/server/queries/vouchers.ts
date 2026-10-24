@@ -12,6 +12,7 @@ export interface CustomerVoucher {
   id: string
   code: string
   qr_payload: string
+  redemption_code: string | null
   status: 'issued' | 'redeemed' | 'expired' | 'cancelled' | 'refunded'
   face_value_agorot: number
   coupon_price_agorot: number
@@ -30,7 +31,7 @@ export interface CustomerVoucher {
   supplier: { name: string | null } | null
 }
 
-const VOUCHER_SELECT = `id, code, qr_payload, status,
+const VOUCHER_SELECT = `id, code, qr_payload, redemption_code, status,
        face_value_agorot, coupon_price_agorot, remaining_amount_due_agorot,
        offer_valid_until, expires_at, issued_at, redeemed_at,
        product:products(name_he, slug),

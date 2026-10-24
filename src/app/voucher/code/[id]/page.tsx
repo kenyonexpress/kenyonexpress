@@ -10,7 +10,6 @@ import {
 import { voucherQrDataUrl } from '@/lib/vouchers/qr-image'
 import { getCustomerVoucher } from '@/server/queries/vouchers'
 import type { Metadata } from 'next'
-import Image from 'next/image'
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { Suspense } from 'react'
@@ -61,11 +60,8 @@ async function VoucherCodeBody({ params }: Props) {
   // Generate QR for scannable redemption
   const qrDataUrl = status.presentable ? await voucherQrDataUrl(voucher.qr_payload) : null
 
-  // Format the 8-digit redemption code if available
-  // Note: The voucher.code is the 10-char alphanumeric code
-  // For now, we display it as-is; integration with DB redemption_code field
-  // happens when migration adds that column
-  const displayCode = voucher.code ? formatRedemptionCode(voucher.code.slice(0, 8)) : null
+  // Format the 8-digit redemption code from database
+  const displayCode = voucher.redemption_code ? formatRedemptionCode(voucher.redemption_code) : null
 
   return (
     <main dir="rtl" className="mx-auto min-h-screen max-w-md bg-gray-50 px-4 py-6">
@@ -87,13 +83,12 @@ async function VoucherCodeBody({ params }: Props) {
           <section className="border-b border-gray-100 bg-white px-5 py-6">
             <div className="flex flex-col items-center gap-3">
               <div className="rounded-lg border-2 border-gray-200 bg-white p-3">
-                <Image
+                <img
                   src={qrDataUrl}
                   alt="קוד QR לסריקה"
-                  width={200}
-                  height={200}
-                  className="h-[200px] w-[200px]"
-                  unoptimized
+                  width={240}
+                  height={240}
+                  className="rounded-xl"
                 />
               </div>
               <p className="text-center text-sm text-gray-600">סרוק את הקוד בקופה</p>
