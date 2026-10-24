@@ -18,9 +18,9 @@ import { computeCancellationFee } from '@/server/domain/orders/refund'
 import { describe, expect, it } from 'vitest'
 
 describe('C61: Order Cancellation Integration', () => {
-  const STATUTORY_14_DAYS = 14
-  const FEE_CAP_ILS = 100
-  const FEE_PERCENT = 5
+  const _STATUTORY_14_DAYS = 14
+  const _FEE_CAP_ILS = 100
+  const _FEE_PERCENT = 5
 
   describe('Israeli 14-day consumer protection law', () => {
     it('enforces 14-day statutory minimum', () => {

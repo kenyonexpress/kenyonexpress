@@ -153,7 +153,7 @@ describe('C61: End-to-end Cancellation Flow', () => {
     expect(typeof requestOrderRefund).toBe('function')
 
     // The function signature should accept these parameters
-    const params = {
+    const _params = {
       orderId: 'test-order',
       ground: 'distance_sale_14d' as const,
       reasonHe: 'Test reason',
@@ -208,7 +208,7 @@ describe('C61: End-to-end Cancellation Flow', () => {
         {
           orderItemId: 'item-1',
           productType: 'physical',
-          settlementStatus: 'pending',
+          settlementStatus: 'unsettled',
           supplierId: 'supplier-1',
           supplierReleasedAgorot: 0,
         },
@@ -237,7 +237,7 @@ describe('C61: End-to-end Cancellation Flow', () => {
         {
           orderItemId: 'item-1',
           productType: 'physical',
-          settlementStatus: 'pending',
+          settlementStatus: 'unsettled',
           supplierId: 'supplier-1',
           supplierReleasedAgorot: 0,
         },
