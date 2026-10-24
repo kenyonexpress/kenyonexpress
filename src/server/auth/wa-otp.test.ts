@@ -19,3 +19,11 @@ describe('WhatsApp sign-in codes', () => {
     expect(otpMatches('+972501234567', '12345', stored, env)).toBe(false)
   })
 })
+
+describe('limits', () => {
+  it('allows three attempts', async () => {
+    const m = await import('./wa-otp')
+    expect(m.WA_OTP_MAX_ATTEMPTS).toBe(3)
+    expect(m.WA_OTP_TTL_MS).toBe(600000)
+  })
+})

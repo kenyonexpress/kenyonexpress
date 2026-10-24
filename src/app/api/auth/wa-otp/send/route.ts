@@ -1,8 +1,8 @@
 import { toE164Israeli } from '@/lib/auth/phone-otp'
+import { sendEmail } from '@/lib/email/resend'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
 import { sendWhatsappOtp } from '@/lib/whatsapp/meta-cloud'
 import { WA_OTP_TTL_MS, hashOtp, newOtpCode } from '@/server/auth/wa-otp'
@@ -10,8 +10,9 @@ import { type NextRequest, NextResponse } from 'next/server'
 
 /**
  * Sends a sign-in code to an existing account's phone over WhatsApp
- * (rc5 F15). When WhatsApp is not configured, or cannot deliver, the code
- * goes to the account's email instead through Supabase's email OTP.
+ * (rc5 F15). Only when Meta rejects the approved template does the same code
+ * go to the account's email through Resend; any other failure sends nothing
+ * and the caller can retry.
  *
  * The answer is the same whether or not the number belongs to an account, so
  * the endpoint cannot be used to discover who is registered.
@@ -68,16 +69,19 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
   if (sent.ok) return NextResponse.json({ ...GENERIC, channel: 'whatsapp' })
   if (!sent.skipped) log.warn('wa_otp.send_failed', { reason: sent.reason })
 
-  // Fallback: the account's email, through Supabase's own one-time code.
-  if (profile.email) {
-    const supabase = await createClient()
-    const { error } = await supabase.auth.signInWithOtp({
-      email: profile.email,
-      options: { shouldCreateUser: false },
+  // Fallback only when Meta refused the template. The same code is emailed and
+  // is verified with the phone like a WhatsApp one.
+  if ('templateRejected' in sent && sent.templateRejected && profile.email) {
+    const mail = await sendEmail({
+      to: profile.email,
+      subject: 'קוד הכניסה שלך לקניון EXPRESS',
+      html: `<div dir="rtl"><p>קוד הכניסה שלך:</p><p style="font-size:24px;letter-spacing:4px"><b>${code}</b></p><p>הקוד תקף ל-10 דקות.</p></div>`,
+      text: `קוד הכניסה שלך: ${code} (תקף ל-10 דקות)`,
     })
-    if (error) log.warn('wa_otp.email_fallback_failed', { reason: error.message })
+    if (!mail.ok) log.warn('wa_otp.email_fallback_failed', { reason: mail.reason })
+    return NextResponse.json({ ...GENERIC, channel: 'email' })
   }
-  return NextResponse.json({ ...GENERIC, channel: 'email' })
+  return NextResponse.json({ ...GENERIC, channel: 'whatsapp' })
 }
 
 export const POST = withRequestLog('/api/auth/wa-otp/send', handlePOST)

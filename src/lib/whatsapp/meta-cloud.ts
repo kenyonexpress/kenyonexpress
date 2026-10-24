@@ -6,7 +6,8 @@ import { fetchWithTimeout } from '@/lib/http/fetch-with-timeout'
  * template name is META_WA_OTP_TEMPLATE (default `otp_code`, language he).
  *
  * Inert without META_WABA_TOKEN and META_WABA_PHONE_ID: the caller gets a
- * skipped result and falls back to the email code.
+ * skipped result. Only a template Meta refuses (`templateRejected`) sends the
+ * caller to the email fallback.
  */
 const GRAPH = 'https://graph.facebook.com/v21.0'
 
@@ -17,7 +18,15 @@ export function isMetaWhatsappConfigured(env: NodeJS.ProcessEnv = process.env): 
 export type MetaSendResult =
   | { ok: true; messageId: string | null }
   | { ok: false; skipped: true; reason: string }
-  | { ok: false; skipped?: false; reason: string }
+  | { ok: false; skipped?: false; reason: string; templateRejected?: boolean }
+
+/**
+ * Meta's template errors: 132000-132099 (missing, unapproved, paused,
+ * disabled, parameter mismatch) and 131058 (hsm/template not allowed).
+ */
+export function isTemplateRejection(code: number | undefined): boolean {
+  return code !== undefined && ((code >= 132000 && code <= 132099) || code === 131058)
+}
 
 export async function sendWhatsappOtp(
   phoneE164: string,
@@ -54,7 +63,15 @@ export async function sendWhatsappOtp(
     }),
   }).catch((err: unknown) => err as Error)
   if (res instanceof Error) return { ok: false, reason: res.message }
-  if (!res.ok) return { ok: false, reason: `meta_${res.status}` }
+  if (!res.ok) {
+    const err = (await res.json().catch(() => null)) as { error?: { code?: number } } | null
+    const rejected = isTemplateRejection(err?.error?.code)
+    return {
+      ok: false,
+      reason: rejected ? `meta_template_${err?.error?.code}` : `meta_${res.status}`,
+      ...(rejected ? { templateRejected: true } : {}),
+    }
+  }
   const json = (await res.json().catch(() => null)) as { messages?: { id?: string }[] } | null
   return { ok: true, messageId: json?.messages?.[0]?.id ?? null }
 }

@@ -12,3 +12,13 @@ describe('Meta WhatsApp Cloud API sender', () => {
     })
   })
 })
+
+describe('template rejection', () => {
+  it('flags Meta template error codes only', async () => {
+    const { isTemplateRejection } = await import('./meta-cloud')
+    expect(isTemplateRejection(132001)).toBe(true)
+    expect(isTemplateRejection(132015)).toBe(true)
+    expect(isTemplateRejection(131047)).toBe(false)
+    expect(isTemplateRejection(undefined)).toBe(false)
+  })
+})
