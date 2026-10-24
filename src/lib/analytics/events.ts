@@ -77,7 +77,7 @@ export type Utm = z.infer<typeof utmSchema>
 // cap here mirrors the ingest function so an oversized event is rejected before
 // it costs a database round-trip.
 const propsSchema = z
-  .record(z.unknown())
+  .record(z.string(), z.unknown())
   .refine((p) => new TextEncoder().encode(JSON.stringify(p)).length <= PROPS_MAX_BYTES, {
     message: 'props exceeds 4KB',
   })

@@ -32,12 +32,12 @@ export const productImportRowSchema = z.object({
   name_en: z.preprocess(emptyToNull, z.string().nullable().optional()),
   description_he: z.preprocess(emptyToNull, z.string().nullable().optional()),
   type: z.enum(['physical', 'coupon', 'recurring'], {
-    errorMap: () => ({ message: 'סוג מוצר חייב להיות physical, coupon או recurring' }),
+    message: 'סוג מוצר חייב להיות physical, coupon או recurring',
   }),
   kenyon_price: z.preprocess(
     emptyToNull,
     z.coerce
-      .number({ invalid_type_error: 'מחיר בקניון חייב להיות מספר' })
+      .number({ message: 'מחיר בקניון חייב להיות מספר' })
       .min(0, 'מחיר לא יכול להיות שלילי')
       .nullable()
       .optional(),
@@ -45,7 +45,7 @@ export const productImportRowSchema = z.object({
   full_price: z.preprocess(
     emptyToNull,
     z.coerce
-      .number({ invalid_type_error: 'מחיר מלא חייב להיות מספר' })
+      .number({ message: 'מחיר מלא חייב להיות מספר' })
       .min(0, 'מחיר לא יכול להיות שלילי')
       .nullable()
       .optional(),
@@ -53,7 +53,7 @@ export const productImportRowSchema = z.object({
   platform_percent: z.preprocess(
     emptyToNull,
     z.coerce
-      .number({ invalid_type_error: 'עמלת פלטפורמה חייבת להיות מספר' })
+      .number({ message: 'עמלת פלטפורמה חייבת להיות מספר' })
       .min(0, 'עמלה לא יכולה להיות שלילית')
       .max(100, 'עמלה לא יכולה לעלות על 100')
       .nullable()
