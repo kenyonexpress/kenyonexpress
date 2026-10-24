@@ -1,6 +1,6 @@
 # M-Cycle Status
 
-**Last Run:** 2026-10-24T05:30:15.335Z
+**Last Run:** 2026-10-24T05:34:53.537Z
 **Mode:** LIVE
 **Result:** ❌ CRITICAL FAILURES
 
@@ -9,58 +9,40 @@
 | Metric | Count |
 |--------|-------|
 | Total Tasks | 18 |
-| Passed | 9 |
-| Failed | 9 |
+| Passed | 10 |
+| Failed | 8 |
 | Skipped | 0 |
-| Critical Failures | 2 |
+| Critical Failures | 1 |
 
 ## Task Results
 
 | ID | Task | Status | Duration | Critical |
 |----|------|--------|----------|----------|
-| M01 | Type Check | ✅ PASS | 3369ms | Yes |
-| M02 | Lint Check | ❌ FAIL | 2496ms | Yes |
-| M03 | Build Test | ✅ PASS | 25025ms | Yes |
-| M04 | E2E Health | ✅ PASS | 82ms | No |
-| M05 | DB Performance | ⚠️ WARN | 82ms | No |
-| M06 | Lighthouse Smoke | ⚠️ WARN | 12621ms | No |
-| M07 | Prerender Chunks | ✅ PASS | 216ms | No |
-| M08 | Code Debt Scan | ✅ PASS | 399ms | No |
-| M09 | Deps Status | ✅ PASS | 30039ms | No |
-| M10 | Cron Status | ⚠️ WARN | 119ms | No |
-| M11 | Gate Status | ✅ PASS | 58ms | No |
-| M12 | Secret Audit | ✅ PASS | 751ms | Yes |
-| M13 | Money Constraints | ❌ FAIL | 59ms | Yes |
-| M14 | Role Separation | ⚠️ WARN | 59ms | No |
-| M15 | Canonical Host | ⚠️ WARN | 4530ms | No |
-| M16 | Deployed Build | ✅ PASS | 2447ms | No |
-| M17 | Default Branch | ⚠️ WARN | 143ms | No |
-| M18 | Backup Health | ⚠️ WARN | 1758ms | No |
+| M01 | Type Check | ✅ PASS | 3222ms | Yes |
+| M02 | Lint Check | ✅ PASS | 2843ms | Yes |
+| M03 | Build Test | ✅ PASS | 13590ms | Yes |
+| M04 | E2E Health | ✅ PASS | 84ms | No |
+| M05 | DB Performance | ⚠️ WARN | 153ms | No |
+| M06 | Lighthouse Smoke | ⚠️ WARN | 8291ms | No |
+| M07 | Prerender Chunks | ✅ PASS | 158ms | No |
+| M08 | Code Debt Scan | ✅ PASS | 402ms | No |
+| M09 | Deps Status | ✅ PASS | 30037ms | No |
+| M10 | Cron Status | ⚠️ WARN | 204ms | No |
+| M11 | Gate Status | ✅ PASS | 68ms | No |
+| M12 | Secret Audit | ✅ PASS | 689ms | Yes |
+| M13 | Money Constraints | ❌ FAIL | 56ms | Yes |
+| M14 | Role Separation | ⚠️ WARN | 55ms | No |
+| M15 | Canonical Host | ⚠️ WARN | 5452ms | No |
+| M16 | Deployed Build | ✅ PASS | 2327ms | No |
+| M17 | Default Branch | ⚠️ WARN | 158ms | No |
+| M18 | Backup Health | ⚠️ WARN | 3349ms | No |
 
 ## Failed Tasks
-
-### M02: Lint Check
-
-**Status:** ❌ CRITICAL FAILURE
-**Duration:** 2496ms
-
-```
-    197     │ - ········'utf8',
-    198     │ - ······)
-        192 │ + ······const·docContent·=·fs.readFileSync(path.join(projectRoot,·'docs',·'M-CYCLE.md'),·'utf8')
-    199 193 │   
-    200 194 │         expect(docContent).toContain('./scripts/start-m-cycle-tmux.sh')
-  
-
-check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  × Some errors were emitted while running checks.
-```
 
 ### M05: DB Performance
 
 **Status:** ⚠️ NON-CRITICAL FAILURE
-**Duration:** 82ms
+**Duration:** 153ms
 
 ```
 ❌ Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -69,7 +51,7 @@ check ━━━━━━━━━━━━━━━━━━━━━━━━�
 ### M06: Lighthouse Smoke
 
 **Status:** ⚠️ NON-CRITICAL FAILURE
-**Duration:** 12621ms
+**Duration:** 8291ms
 
 ```
 Runtime error encountered: Chrome prevented page load with an interstitial. Make sure you are testing the correct URL and that the server is properly responding to all requests.
@@ -78,7 +60,7 @@ Runtime error encountered: Chrome prevented page load with an interstitial. Make
 ### M10: Cron Status
 
 **Status:** ⚠️ NON-CRITICAL FAILURE
-**Duration:** 119ms
+**Duration:** 204ms
 
 ```
     deployed build answers 404 and the alarm goes red on every run it is due.
@@ -96,7 +78,7 @@ See docs/MIGRATION-NUMBER-COLLISIONS.md for the same root cause.
 ### M13: Money Constraints
 
 **Status:** ❌ CRITICAL FAILURE
-**Duration:** 59ms
+**Duration:** 56ms
 
 ```
 audit-money-constraints: no SUPABASE_DB_URL and no --from file.
@@ -113,7 +95,7 @@ looking, so this refuses.
 ### M14: Role Separation
 
 **Status:** ⚠️ NON-CRITICAL FAILURE
-**Duration:** 59ms
+**Duration:** 55ms
 
 ```
 audit-role-separation: no input. Set SUPABASE_DB_URL, or run --sql through the Supabase MCP
@@ -124,7 +106,7 @@ audit-role-separation: no input. Set SUPABASE_DB_URL, or run --sql through the S
 ### M15: Canonical Host
 
 **Status:** ⚠️ NON-CRITICAL FAILURE
-**Duration:** 4530ms
+**Duration:** 5452ms
 
 ```
 Command failed: node /Users/ofir/kenyonexpress-web/kenyonexpress/scripts/audit-canonical-host.mjs
@@ -133,7 +115,7 @@ Command failed: node /Users/ofir/kenyonexpress-web/kenyonexpress/scripts/audit-c
 ### M17: Default Branch
 
 **Status:** ⚠️ NON-CRITICAL FAILURE
-**Duration:** 143ms
+**Duration:** 158ms
 
 ```
 Command failed: node /Users/ofir/kenyonexpress-web/kenyonexpress/scripts/audit-default-branch-config.mjs
@@ -142,7 +124,7 @@ Command failed: node /Users/ofir/kenyonexpress-web/kenyonexpress/scripts/audit-d
 ### M18: Backup Health
 
 **Status:** ⚠️ NON-CRITICAL FAILURE
-**Duration:** 1758ms
+**Duration:** 3349ms
 
 ```
 ⚠️  RPO EXCEEDED: Latest backup is 48h old (limit: 23h)
@@ -151,4 +133,4 @@ Command failed: node /Users/ofir/kenyonexpress-web/kenyonexpress/scripts/audit-d
 
 ## Next Cycle
 
-Expected: 2026-10-24T07:30:15.335Z (2 hours)
+Expected: 2026-10-24T07:34:53.537Z (2 hours)
