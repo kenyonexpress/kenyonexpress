@@ -40,10 +40,10 @@ The observability dashboard provides real-time visibility into:
          │   External Integrations                │
          ├────────────────────────────────────────┤
          │ • ntfy.sh - Real-time alert push       │
-         │ • Sentry - Error tracking              │
-         │ • PostHog - Event analytics            │
+         │ • Sentry - Error tracking + source maps│
+         │ • PostHog - Event analytics (SDK-free) │
          │ • Vercel - Deployment metrics          │
-         │ • Axiom - Structured logging           │
+         │ • Axiom - Structured logging drain     │
          └────────────────────────────────────────┘
 ```
 
@@ -351,10 +351,79 @@ Weekly:
 - [ ] Real user monitoring (RUM) integration
 - [ ] Distributed tracing (OpenTelemetry)
 
+## External Observability Services
+
+### Sentry (Error Tracking)
+
+Production error tracking with source map support for readable stack traces.
+
+**Configuration:**
+- Organization: `kenyonexpress`
+- Project: `kenyonexpress-web`
+- Environment: `production`
+- Source maps: Uploaded on build, deleted from deployment
+
+**Key features:**
+- Payment path errors tagged `area:payments` for critical monitoring
+- Dual delivery: Sentry + ntfy.sh (bypasses Sentry outage)
+- PII scrubber redacts headers, cookies, tokens before upload
+- 10% transaction sampling for performance traces
+
+**Verification:** `docs/C35-OBSERVABILITY-THRESHOLDS.md` section 1
+
+### PostHog (Product Analytics)
+
+SDK-free product analytics using direct `/capture/` endpoint.
+
+**Why SDK-free:**
+- Avoids automation detection (webdriver, HeadlessChrome UA)
+- No bundler bloat from unused features
+- Works across all runtimes (server, edge, browser)
+
+**Key features:**
+- Browser events: `view_product`, `add_to_cart`, `checkout_step`
+- Server events: `purchase`, `voucher_redeemed` (reliable across navigation)
+- Cookie mirroring: `ke_ph_id` syncs distinct_id between client/server
+- Funnel integrity: same user ID from browse → purchase
+
+**Verification:** `docs/C35-OBSERVABILITY-THRESHOLDS.md` section 2
+
+### Axiom (Structured Logging)
+
+Log drain for structured JSON logs with request correlation.
+
+**Configuration:**
+- Dataset: `kenyonexpress-production`
+- Retention: 30 days
+- Quota: 500 MB/month (free tier)
+
+**Key features:**
+- Every log line carries `request_id` for correlation
+- Dual output: console (Vercel drain) + Axiom HTTP ingest
+- Same PII scrubber as Sentry (single source of truth)
+- Level filtering: `LOG_LEVEL=info` (default) suppresses debug
+
+**Verification:** `docs/C35-OBSERVABILITY-THRESHOLDS.md` section 3
+
+## Thresholds & Operational Limits
+
+**Comprehensive thresholds document:** `docs/C35-OBSERVABILITY-THRESHOLDS.md`
+
+Quick reference:
+- **Sentry**: <1% error rate (warning), <5% critical; payment errors always critical
+- **PostHog**: <10% capture drop rate (warning), >5% cart→purchase conversion baseline
+- **Axiom**: <10k events/hour normal, >100k/hour possible log loop
+
+**Cross-service correlation:**
+- `request_id`: ties Axiom logs together
+- `order_id`: ties Sentry errors to PostHog purchase events  
+- `distinct_id`: ties PostHog browser + server events
+
 ## References
 
-- [Sentry Documentation](https://docs.sentry.io/)
-- [PostHog Docs](https://posthog.com/docs)
-- [Axiom Logging](https://axiom.co/)
-- [Vercel Analytics](https://vercel.com/analytics)
-- [ntfy.sh](https://ntfy.sh/)
+- **Thresholds & Limits**: `docs/C35-OBSERVABILITY-THRESHOLDS.md`
+- **Sentry**: https://docs.sentry.io/ (error tracking, source maps)
+- **PostHog**: https://posthog.com/docs (product analytics, funnels)
+- **Axiom**: https://axiom.co/docs (structured logging, retention)
+- **Vercel**: https://vercel.com/docs/observability (deployment logs)
+- **ntfy.sh**: https://ntfy.sh/ (push notifications)
