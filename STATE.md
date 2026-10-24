@@ -222,12 +222,11 @@ d205bf459 STATE: Z10 re-run 2 done-as-shipped
 39471148a [autopilot] C39 BLOCKED - documented in STATE.md
 939a3f9f2 docs: STATE Z10 chips data layer done as shipped
 111ccbfa3 state: Z09 re-run 3 verified
-81183d23c STATE: Z09 re-run 2 DONE-AS-SHIPPED
-d4a3f0046 state: Z09 affiliate verified as shipped
-8f6f4c18f state: Z08 re-run 10 unchanged
 ```
 
 ## המשך מ: Next unblocked autonomous work
+
+Continue from G08 DONE (2026-10-24): F06 admin CSV bulk import. Page src/app/(admin)/admin/products/import (dry-run preview then confirm-apply, migration 185 columns) already shipped; added src/app/api/admin/products/import/route.ts (POST multipart, admin-only 403 JSON, mode=commit to write, reuses importProductsCsv). src/lib/admin tests 261/261 pass, tsc + biome clean on the route.
 
 Continue from C55 DONE (2026-10-24): Google Search Console DNS verification + sitemap ready. DNS TXT record verified: google-site-verification=7_-kZsP6HnHTkq5qR--mZyLYx-EE3WSz6C1sxnbr0-I (publicly visible via dig). Sitemap accessible at https://www.kenyonexpress.co.il/sitemap.xml (200 OK, valid XML, correct content-type). Robots.txt references sitemap correctly. All automated checks passed: 5/5 (DNS TXT ✅, sitemap accessible ✅, XML valid ✅, content-type ✅, robots references sitemap ✅). Verification script created: scripts/verify-google-search-console.mjs. Documentation: docs/C55-GOOGLE-SEARCH-CONSOLE-SETUP.md (comprehensive manual), docs/C55-RESULT.md (verification results). Quality gates: type-check ✅, lint ✅ (6418 files), build ✅ (273 pages). Manual browser action required: verify property in GSC web interface and submit sitemap URL. Commit f242791c0 pushed to origin/closeout/v1-final.
 
