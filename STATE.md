@@ -15,6 +15,7 @@ Working directory: /Users/ofir/kenyonexpress-autopilot (worktree)
 ✅ C30: Legal pages Israeli law verification
 ⚠️ C33: Lighthouse benchmarking - INCOMPLETE
 ✅ C37: Feature flags + maintenance_mode via Supabase config, Phase 2 flags OFF
+✅ C50: Branching strategy actual workflow documentation
 
 ## C33 Final Status (2026-10-24)
 
@@ -101,18 +102,18 @@ C33 marked INCOMPLETE. Localhost testing environment cannot satisfy Perf > 90 re
 
 ## המשך מ:
 
-C43 COMPLETE (531f602ff)
+C50 COMPLETE (30c59c1f5)
 
-Comprehensive manual intervention guide created:
-- docs/MANUAL.md: 7 prioritized items requiring Ofir's action
-- 3 CRITICAL (production launch blockers): Cardcom, Vercel deploy, Meilisearch, GitHub secrets
-- 2 HIGH (core functionality): Supabase MCP OAuth, Lighthouse performance
-- 2 MEDIUM (quality): E2E coverage
-- Includes step-by-step actions, verification criteria, cost estimates
-- Launch sequence recommendation (2-4 hours total)
-- Quality gates: type-check clean, lint clean, build success (273 routes)
+Branching strategy reality documented:
+- docs/C50-BRANCHING-STRATEGY-ACTUAL.md: Measured actual workflow
+- Work branch: autopilot (not closeout/v1-final as CLAUDE.md states)
+- Auto-merger: autopilot → main every 5 min via -X theirs
+- Divergence: 410/404 commits between closeout/v1-final and autopilot
+- LaunchAgent: com.kenyonexpress.auto-merger.plist active at 5-min interval
+- Dedicated merge worktree: /Users/ofir/ke-merger
+- Quality gates: type-check clean, lint clean, build 273 pages
 
-All autonomous documentation work complete. Manual items await owner intervention.
+All autonomous documentation work complete. Branching workflow verified and documented.
 
 ## Completed Items
 
@@ -121,6 +122,7 @@ C38|pg_cron+pg_net for queue/reminders - BLOCKED (Supabase MCP OAuth)
 C40|DNS verification NS+A+Resend - DONE (765f4f559)
 C41|Vercel production deploy - BLOCKED (see C41-ACTUAL-RESULT.md)
 C43|Manual intervention guide - DONE (531f602ff)
+C50|Branching strategy documentation - DONE (30c59c1f5)
 
 ## C41 Summary (2026-10-24)
 
