@@ -61,3 +61,19 @@ export async function voucherQrDataUrl(
     return null
   }
 }
+
+/**
+ * A data URL for a QR that carries a plain public URL (the affiliate share
+ * link). Same null-on-failure contract as `voucherQrDataUrl`: the link text is
+ * always rendered beside the image.
+ */
+export async function urlQrDataUrl(
+  url: string,
+  options: { width?: number } = {},
+): Promise<string | null> {
+  try {
+    return await QRCode.toDataURL(url, { margin: 1, width: options.width ?? 200 })
+  } catch {
+    return null
+  }
+}
