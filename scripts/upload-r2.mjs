@@ -18,8 +18,18 @@
  * which is the same trade this repo already made for blurhash and for the same
  * reason: four transitive packages here are pinned to close advisories.
  *
+ * RATE LIMITING. R2 operations are capped at 50/min to avoid excessive API costs.
+ * A sliding window tracks the last 60 seconds of operations.
+ *
+ * RESUME. State is tracked in refs/live-assets/.upload-state.json. If interrupted,
+ * re-run and it skips uploaded objects. Use --force to ignore state and re-upload.
+ *
+ * COST CAP. Use --max-ops=N to stop after N operations. Prevents runaway costs.
+ *
  * Usage:
  *   node scripts/upload-r2.mjs --dry-run          # verify without credentials
+ *   node scripts/upload-r2.mjs --max-ops=100      # upload up to 100 objects
+ *   node scripts/upload-r2.mjs --force            # ignore state, re-upload all
  *   R2_ACCOUNT_ID=... R2_ACCESS_KEY_ID=... R2_SECRET_ACCESS_KEY=... \
  *   R2_BUCKET=... node scripts/upload-r2.mjs --prefix=live-assets/
  *
@@ -27,11 +37,12 @@
  */
 
 import { createHash, createHmac } from 'node:crypto'
-import { existsSync, readFileSync, statSync } from 'node:fs'
+import { existsSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { extname, join, resolve } from 'node:path'
 
 const MANIFEST = resolve('refs/live-assets/manifest.json')
 const ROOT = resolve('refs/live-assets')
+const STATE_FILE = resolve('refs/live-assets/.upload-state.json')
 
 const flag = (name) => process.argv.includes(`--${name}`)
 const arg = (name, dflt) => {
@@ -40,7 +51,10 @@ const arg = (name, dflt) => {
 }
 
 const DRY = flag('dry-run')
+const FORCE = flag('force')
 const PREFIX = arg('prefix', 'live-assets/')
+const MAX_OPS = arg('max-ops', null) ? Number.parseInt(arg('max-ops', '0'), 10) : null
+const RATE_LIMIT = 50 // operations per minute
 
 const CONTENT_TYPE = {
   '.avif': 'image/avif',
@@ -103,6 +117,82 @@ function signedHeaders({ method, host, path, body, accessKeyId, secretAccessKey,
     ...headers,
     Authorization: `AWS4-HMAC-SHA256 Credential=${accessKeyId}/${scope}, SignedHeaders=${signed.join(';')}, Signature=${signature}`,
   }
+}
+
+// ---- state management ---------------------------------------------------
+
+function loadState() {
+  if (!existsSync(STATE_FILE)) return { uploaded: new Set(), timestamp: Date.now() }
+  try {
+    const data = JSON.parse(readFileSync(STATE_FILE, 'utf8'))
+    return { uploaded: new Set(data.uploaded || []), timestamp: data.timestamp || Date.now() }
+  } catch {
+    return { uploaded: new Set(), timestamp: Date.now() }
+  }
+}
+
+function saveState(uploaded) {
+  writeFileSync(
+    STATE_FILE,
+    JSON.stringify({ uploaded: Array.from(uploaded), timestamp: Date.now() }, null, 2),
+    'utf8',
+  )
+}
+
+// ---- rate limiting ------------------------------------------------------
+
+class RateLimiter {
+  constructor(maxOpsPerMinute) {
+    this.maxOps = maxOpsPerMinute
+    this.window = []
+  }
+
+  async waitIfNeeded() {
+    const now = Date.now()
+    const cutoff = now - 60000 // 60 seconds ago
+    this.window = this.window.filter((t) => t > cutoff)
+
+    if (this.window.length >= this.maxOps) {
+      const oldestOp = this.window[0]
+      const waitMs = oldestOp + 60000 - now
+      if (waitMs > 0) {
+        process.stdout.write(` [rate limit: waiting ${Math.ceil(waitMs / 1000)}s] `)
+        await new Promise((resolve) => setTimeout(resolve, waitMs))
+        return this.waitIfNeeded()
+      }
+    }
+
+    this.window.push(Date.now())
+  }
+}
+
+// ---- progress display ---------------------------------------------------
+
+function formatBytes(bytes) {
+  if (bytes < 1024) return `${bytes}B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)}KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)}MB`
+}
+
+function formatDuration(ms) {
+  const sec = Math.floor(ms / 1000)
+  if (sec < 60) return `${sec}s`
+  const min = Math.floor(sec / 60)
+  const s = sec % 60
+  return `${min}m ${s}s`
+}
+
+function showProgress(current, total, bytes, totalBytes, startTime) {
+  const pct = ((current / total) * 100).toFixed(1)
+  const elapsed = Date.now() - startTime
+  const rate = elapsed > 0 ? current / elapsed : 0
+  const eta = rate > 0 ? (total - current) / rate : 0
+
+  process.stdout.write(
+    `\r  ${current}/${total} (${pct}%) · ${formatBytes(bytes)}/${formatBytes(totalBytes)} · ` +
+      `elapsed ${formatDuration(elapsed)} · ETA ${formatDuration(eta)}` +
+      `${' '.repeat(10)}`,
+  )
 }
 
 // ---- the blockers -------------------------------------------------------
@@ -191,13 +281,49 @@ if (missing.length > 0) {
 
 const { R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET } = process.env
 const host = `${R2_ACCOUNT_ID}.r2.cloudflarestorage.com`
+
+// Load state
+const state = FORCE ? { uploaded: new Set(), timestamp: Date.now() } : loadState()
+const limiter = new RateLimiter(RATE_LIMIT)
+
 let sent = 0
 let failed = 0
+let skipped = 0
+let bytesSent = 0
+const startTime = Date.now()
 
-for (const object of objects) {
+// Filter out already-uploaded objects
+const toUpload = objects.filter((o) => {
+  if (state.uploaded.has(o.key)) {
+    skipped += 1
+    return false
+  }
+  return true
+})
+
+if (skipped > 0) {
+  console.log(`\n  Resuming: ${skipped} objects already uploaded, ${toUpload.length} remaining`)
+}
+
+// Apply cost cap
+const cappedUpload = MAX_OPS ? toUpload.slice(0, MAX_OPS - state.uploaded.size) : toUpload
+if (MAX_OPS && cappedUpload.length < toUpload.length) {
+  console.log(
+    `\n  Cost cap: uploading ${cappedUpload.length} of ${toUpload.length} remaining (max-ops=${MAX_OPS})`,
+  )
+}
+
+console.log('') // newline before progress
+
+for (const object of cappedUpload) {
+  await limiter.waitIfNeeded()
+
   const body = readFileSync(object.file)
   const path = `/${R2_BUCKET}/${object.key}`
   const contentType = CONTENT_TYPE[extname(object.file).toLowerCase()] ?? 'application/octet-stream'
+
+  showProgress(sent + failed, cappedUpload.length, bytesSent, totalBytes, startTime)
+
   try {
     const response = await fetch(`https://${host}${path}`, {
       method: 'PUT',
@@ -213,13 +339,32 @@ for (const object of objects) {
       body,
     })
     if (!response.ok) throw new Error(`HTTP ${response.status} ${await response.text()}`)
+
     sent += 1
-    process.stdout.write('.')
+    bytesSent += body.length
+    state.uploaded.add(object.key)
+    saveState(state.uploaded)
   } catch (error) {
     failed += 1
     console.error(`\n  failed ${object.key}: ${String(error).slice(0, 120)}`)
   }
 }
 
-console.log(`\n\nuploaded ${sent}, failed ${failed}`)
+showProgress(sent + failed, cappedUpload.length, bytesSent, totalBytes, startTime)
+console.log('\n')
+
+const remaining = toUpload.length - cappedUpload.length
+if (remaining > 0) {
+  console.log(
+    `\nCost cap reached. ${remaining} objects remain. Re-run without --max-ops or increase the limit.`,
+  )
+}
+
+if (skipped > 0 || state.uploaded.size > 0) {
+  console.log(
+    `\nTotal progress: ${state.uploaded.size} uploaded, ${objects.length - state.uploaded.size} remaining`,
+  )
+}
+
+console.log(`\nSession: uploaded ${sent}, failed ${failed}, skipped ${skipped}`)
 process.exit(failed > 0 ? 1 : 0)
