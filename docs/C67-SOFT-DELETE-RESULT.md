@@ -86,9 +86,18 @@ All tests use live policies with real credentials (non-destructive reads only).
 |-------|--------|
 | Type Check | ✅ Pass |
 | Lint | ✅ Pass |
-| Build | ⚠️  Pre-existing error (product page prerender timeout, unrelated to migration) |
-| Git Commit | ✅ 8ccd5d252 |
+| Build | ❌ Fail (network timeouts: Google Fonts + Supabase during prerender) |
+| Supabase MCP | ✅ Verified production state (migration 131 not yet applied) |
+| Git Commit | ✅ 8ccd5d252, 32026fcd1 |
 | Git Push | ✅ Complete |
+
+**Build Failure Details**:
+Multiple build attempts failed due to network connectivity issues:
+1. Google Fonts timeout fetching Heebo font (should be self-hosted per config comments)
+2. Supabase query timeouts during static page generation (prerendering)
+3. Product page "use cache" functions timing out during prerender
+
+These are environmental/network issues, NOT code issues introduced by the migration. The migration adds database columns and RLS policies which do not affect build-time behavior. The application code already respects soft delete (verified in `src/lib/related-products.ts:76` which checks `.is('deleted_at', null)`).
 
 ## Design Decisions
 
@@ -138,11 +147,31 @@ The following aspects were intentionally preserved:
 2. `src/db/__tests__/soft-delete-rls.test.ts` - RLS test suite (new)
 3. `src/server/queries/account.ts` - Format fix (lint)
 
+## Supabase MCP Verification
+
+Used the official `@supabase/mcp-server-supabase` to verify production database state:
+
+```json
+{
+  "projectRef": "ixvwfbuvfxxsjiywhbbb",
+  "lastMigration": "299_cookie_consent",
+  "migrationStatus": "131_soft_delete_consolidation NOT applied (as expected - in pending/)"
+}
+```
+
+**Verification Results**:
+- ✅ Production database accessible via MCP
+- ✅ Migration 131 confirmed NOT yet applied (correct state)
+- ✅ Last applied migration: 299_cookie_consent
+- ✅ Database ready to receive migration 131
+
 ## Next Steps
 
-1. ✅ Migration ready to apply to staging/production
-2. ✅ Tests ready to run after migration
-3. ⚠️  Note: Existing product page build error needs separate investigation (unrelated to this migration)
+1. ✅ Migration ready to apply to staging/production (awaiting approval per CLAUDE.md)
+2. ✅ Tests ready to run after migration application
+3. ⚠️  Build failures due to network connectivity need investigation (separate from this task)
+   - Google Fonts timeout (font should be self-hosted per config)
+   - Supabase timeout during prerendering (may need timeout increase or fallback)
 
 ## Rollback Plan
 
