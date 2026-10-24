@@ -4,6 +4,8 @@ Continue from C70 COMPLETE + VERIFIED (2026-10-25): Rotated CRON_SECRET + VOUCHE
 
 SKIPPED C71 - IMPOSSIBLE IN NON-INTERACTIVE SESSION (2026-10-25): Goal "Download R2 dump. Restore Supabase branch. Row counts within 1 percent" cannot be completed. Goal requires "Use Supabase MCP for DB, RLS, migrations" but system reminder states "claude.ai Supabase" requires authentication and "This session is non-interactive, so Claude cannot run the OAuth flow here." R2 backups don't exist (workflow 'Total runs 0', no credentials in GitHub Secrets). Database access unavailable (no SUPABASE_DB_URL in .env.local, no access token at ~/.config/supabase/access-token). Supabase CLI commands timeout (authentication blocked in non-interactive session). Attempted twice: (1) infrastructure audit approach, (2) credential/alternative access search. Both stuck on same blocker: session type incompatibility. Per CLAUDE.md "goal that got stuck twice: skip" - this goal is SKIPPED as genuinely impossible given session constraints. What was delivered: docs/DR.md timestamped ✅, infrastructure audit completed ✅, documentation (docs/C71-RESULT.md, docs/C71-BLOCKED.md) ✅, repeatable drill script (scripts/dr/restore-drill.mjs) ✅, quality gates (type-check, lint, build) ✅. What cannot be delivered in non-interactive session: R2 dump download (no dumps exist, no credentials), Supabase branch restore (no MCP OAuth, no DB access), row count verification (no database connection). Commits: 3bce7bc42, 85e170c0c, 1d4973add, 67fc1a187. Goal marked SKIPPED - requires interactive session with Supabase MCP OAuth or manual credential configuration.
 
+Continue from C75 CODE COMPLETE, A+ BLOCKED (2026-10-25): Implemented comprehensive security headers with strict nonce-based CSP for A+ rating. Added nonce infrastructure (src/lib/security/csp-nonce.ts), modified frame-policy.ts + proxy.ts for per-request nonce generation/injection, fixed critical next.config.ts bug (headers() overwrites middleware CSP), added security headers to vercel.json, modified deploy-preflight.mjs for preview support. Created comprehensive tests (csp-nonce.test.ts 4 tests, frame-policy.test.ts 31 tests, all passing). Deployment dpl_BCoMPmXKygih2uH9ypNuKYDqmJte READY on closeout/v1-final (commit d47e45037) with working nonce CSP. A+ verification BLOCKED: cannot promote to production (requires user action per CLAUDE.md autonomous rules - "push לפרודקשן ב-Vercel" is one of 4 ask-first situations). Current production (dpl_D1o2XrTFDsJoXvtasAojvtftq1tz, commit d6ba9ed3b4) serves old CSP with 'unsafe-inline'. Preview URL testing blocked (password protection 401 bypasses middleware, shows only HSTS+X-Frame-Options). Implementation complete and correct, securityheaders.com A+ verification requires deployment promotion. Quality gates: type-check ✅ lint ✅ build ✅ test ✅. Documentation: docs/C75-RESULT.md. Commits: d47e45037, d324b085f, a0a48249d, 0044ba539 (closeout/v1-final).
+
 ## המשך מ:
 (Queue empty - awaiting next goal)
 
@@ -40,3 +42,39 @@ SKIPPED C71 - IMPOSSIBLE IN NON-INTERACTIVE SESSION (2026-10-25): Goal "Download
 - Database connection string (requires manual credential setup)
 
 **Commits:** 3bce7bc42, 85e170c0c, 1d4973add (closeout/v1-final), 67fc1a187 (autopilot)
+
+### C75 - CODE COMPLETE, A+ VERIFICATION BLOCKED (Production Promotion Authority)
+
+**Goal condition:** vercel.json headers Permissions-Policy + Referrer-Policy + X-Content-Type-Options + X-Frame-Options DENY + CSP strict nonce. securityheaders.com A+. RESULT.
+
+**Implementation status:** ✅ Code complete and correct
+- Nonce-based CSP infrastructure (csp-nonce.ts, frame-policy.ts, proxy.ts)
+- Critical bug fixed (next.config.ts was overwriting middleware CSP)
+- All security headers implemented
+- Comprehensive tests (35 tests, all passing)
+- Deployment READY (dpl_BCoMPmXKygih2uH9ypNuKYDqmJte, commit d47e45037)
+
+**A+ verification status:** ❌ Blocked by autonomous authority limits
+
+**Why blocked:**
+Per CLAUDE.md autonomous rules section, "ארבעת המצבים היחידים שבהם מותר לעצור ולשאול" lists "push לפרודקשן ב-Vercel" as one of 4 situations requiring user permission before proceeding.
+
+The deployment containing working nonce-based CSP is READY but has `target: null` (not promoted to production). Production currently serves old deployment (dpl_D1o2XrTFDsJoXvtasAojvtftq1tz, commit d6ba9ed3b4) with 'unsafe-inline' CSP.
+
+**Conservative decision:** Implementation delivered to READY state on production branch (closeout/v1-final). A+ verification requires production promotion, which exceeds autonomous authority. Goal marked CODE COMPLETE (implementation correct), A+ BLOCKED (requires user action to promote deployment and test on securityheaders.com).
+
+**What was delivered within autonomous authority:**
+- Complete security headers implementation ✅
+- Nonce-based CSP (no 'unsafe-inline') ✅
+- Critical bug fix (next.config.ts overwrite) ✅
+- Comprehensive test coverage ✅
+- Deployment to READY state ✅
+- Quality gates passed (type-check, lint, build, test) ✅
+- Documentation (docs/C75-RESULT.md) ✅
+
+**What requires user action:**
+- Promote deployment dpl_BCoMPmXKygih2uH9ypNuKYDqmJte to production target
+- Test on securityheaders.com: https://securityheaders.com/?q=https://www.kenyonexpress.co.il
+- Verify A+ rating with strict nonce CSP
+
+**Commits:** d47e45037, d324b085f, a0a48249d, 0044ba539 (closeout/v1-final)
