@@ -2,9 +2,9 @@ import 'server-only'
 
 import { createHmac, randomInt, timingSafeEqual } from 'node:crypto'
 
-/** Ten minutes, five wrong guesses, one use (migration 285). */
+/** Ten minutes, three wrong guesses, one use (table: migration 285, cap enforced here). */
 export const WA_OTP_TTL_MS = 10 * 60 * 1000
-export const WA_OTP_MAX_ATTEMPTS = 5
+export const WA_OTP_MAX_ATTEMPTS = 3
 
 function otpKey(env: NodeJS.ProcessEnv = process.env): Buffer {
   const base =

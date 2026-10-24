@@ -3,7 +3,6 @@ import { toE164Israeli } from '@/lib/auth/phone-otp'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit } from '@/lib/utils/rate-limit'
 import { mintSessionFor } from '@/server/auth/mint-session'
 import { WA_OTP_MAX_ATTEMPTS, otpMatches } from '@/server/auth/wa-otp'
@@ -11,31 +10,17 @@ import { type NextRequest, NextResponse } from 'next/server'
 
 /**
  * Checks a WhatsApp sign-in code and signs the account in (rc5 F15). Only the
- * newest live code for the number counts; five wrong guesses burn it. With
- * `email` instead of `phone`, it verifies the email fallback code through
- * Supabase.
+ * newest live code for the number counts; three wrong guesses burn it. The
+ * emailed fallback code is the same code, so it is checked here too.
  */
 async function handlePOST(request: NextRequest): Promise<NextResponse> {
   const body = (await request.json().catch(() => null)) as {
     phone?: unknown
-    email?: unknown
     code?: unknown
   } | null
   const code = typeof body?.code === 'string' ? body.code.trim() : ''
   if (!/^[0-9]{6}$/.test(code)) {
     return NextResponse.json({ ok: false, error: 'invalid_code' }, { status: 400 })
-  }
-
-  if (typeof body?.email === 'string') {
-    const email = body.email.trim().toLowerCase()
-    if (!(await checkRateLimit(`wa-otp-verify:${email}`, 10, 3600))) {
-      return NextResponse.json({ ok: false, error: 'rate_limited' }, { status: 429 })
-    }
-    const supabase = await createClient()
-    const { error } = await supabase.auth.verifyOtp({ email, token: code, type: 'email' })
-    return error
-      ? NextResponse.json({ ok: false, error: 'wrong_code' }, { status: 400 })
-      : NextResponse.json({ ok: true })
   }
 
   const phone = typeof body?.phone === 'string' ? toE164Israeli(body.phone) : null
