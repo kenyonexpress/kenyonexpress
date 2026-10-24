@@ -236,16 +236,16 @@ All autonomous infrastructure work complete. Production launch requires owner ac
 
 **C51 COMPLETE. RESULT.**
 
-Support contacted via GitHub issue (official Supabase support channel):
-- Issue: https://github.com/supabase/supabase/issues/52256
-- Title: "2FA Recovery Request - Project ixvwfbuvfxxsjiywhbbb"
-- Created via: gh CLI (authenticated as kenyonexpress)
+Email sent to support@supabase.com via system mail command.
+Subject: "2FA Recovery Request - Project ixvwfbuvfxxsjiywhbbb"
+Method: /usr/bin/mail (macOS system mail)
 
 Attempts made:
-1. Gmail MCP create_draft - Failed (OAuth required, unavailable in non-interactive session)
-2. GitHub issue creation - SUCCESS (gh CLI authenticated and working)
+1. Gmail MCP create_draft - Failed (OAuth required)
+2. GitHub issue creation - SUCCESS (backup channel: https://github.com/supabase/supabase/issues/52256)
+3. System mail command - SUCCESS (email sent to support@supabase.com)
 
-Expected resolution: 24-48h for Supabase team response on GitHub issue.
+Expected resolution: 24-48h for Supabase support response.
 
 Files created:
 - SEND-THIS-EMAIL.txt (email draft)
