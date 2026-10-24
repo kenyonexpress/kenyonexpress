@@ -25,6 +25,7 @@ const PAGES = [
   ['not-found.tsx', read('not-found.tsx')],
   ['error.tsx', read('error.tsx')],
   ['global-error.tsx', read('global-error.tsx')],
+  ['maintenance/page.tsx', read('maintenance/page.tsx')],
 ] as const
 
 describe.each(PAGES)('%s', (_file, src) => {
