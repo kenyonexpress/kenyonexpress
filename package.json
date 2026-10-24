@@ -9,7 +9,7 @@
     "start": "next start",
     "storybook": "storybook dev -p 6006",
     "storybook:build": "storybook build",
-    "lint": "biome check . && node scripts/tokens-gate.mjs && node scripts/copy-gate.mjs && node scripts/asset-gate.mjs",
+    "lint": "biome check . && node scripts/tokens-gate.mjs && node scripts/copy-gate.mjs && node scripts/asset-gate.mjs && node scripts/brand-assets-gate.mjs",
     "lint:tokens": "node scripts/tokens-gate.mjs",
     "lint:copy": "node scripts/copy-gate.mjs",
     "lint:assets": "node scripts/asset-gate.mjs",
