@@ -97,15 +97,46 @@ export default defineConfig({
   },
   projects: [
     {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      name: 'chromium-380',
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 380, height: 800 },
+      },
     },
     {
-      // Phone viewport for RTL + layout regressions. Paid money flow stays on
-      // desktop chromium only (tagged via grep invert) so CI time stays bounded.
-      name: 'mobile-chrome',
-      use: { ...devices['Pixel 5'] },
-      testIgnore: [/full-purchase-redeem\.spec\.ts/],
+      name: 'chromium-768',
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 768, height: 1024 },
+      },
+    },
+    {
+      name: 'chromium-1440',
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 1440, height: 900 },
+      },
+    },
+    {
+      name: 'webkit-380',
+      use: {
+        ...devices['Desktop Safari'],
+        viewport: { width: 380, height: 800 },
+      },
+    },
+    {
+      name: 'webkit-768',
+      use: {
+        ...devices['Desktop Safari'],
+        viewport: { width: 768, height: 1024 },
+      },
+    },
+    {
+      name: 'webkit-1440',
+      use: {
+        ...devices['Desktop Safari'],
+        viewport: { width: 1440, height: 900 },
+      },
     },
   ],
   // An externally supplied base URL means the app is already running somewhere

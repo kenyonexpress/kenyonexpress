@@ -358,25 +358,64 @@ Weekly:
 Production error tracking with source map support for readable stack traces.
 
 **Configuration:**
-- Organization: `kenyonexpress`
-- Project: `kenyonexpress-web`
-- Environment: `production`
-- Source maps: Uploaded on build, deleted from deployment
+```bash
+SENTRY_DSN=https://...@de.sentry.io/...
+SENTRY_ORG=kenyonexpress  # Hardcoded default in next.config.ts
+SENTRY_PROJECT=kenyonexpress-web  # Hardcoded default
+SENTRY_AUTH_TOKEN=sntrys_...  # Must have project:releases scope
+SENTRY_ENVIRONMENT=production
+```
+
+**Thresholds:**
+| Metric | Threshold | Alert Level | Action |
+|--------|-----------|-------------|--------|
+| Error rate | >1% of requests | Warning | Investigate within 2h |
+| Error rate | >5% of requests | Critical | Immediate investigation |
+| Payment path errors | Any error | Critical | Immediate (dual: Sentry + ntfy) |
+| Error volume | >100 errors/hour | Warning | Review error types |
+| Source map upload | Failed | Critical | Required for debugging |
 
 **Key features:**
-- Payment path errors tagged `area:payments` for critical monitoring
-- Dual delivery: Sentry + ntfy.sh (bypasses Sentry outage)
+- Payment path errors tagged `area:payments`, dual delivery (Sentry + ntfy bypass)
 - PII scrubber redacts headers, cookies, tokens before upload
 - 10% transaction sampling for performance traces
+- Source maps uploaded then deleted from deployment
 
-**Verification:** `docs/C35-OBSERVABILITY-THRESHOLDS.md` section 1
+**Verification:**
+```bash
+# Check build logs for:
+grep "Successfully uploaded source maps" <build-log>
+# Should NOT see: "[@sentry/nextjs] Warning: No org provided"
+
+# Test stack traces show TypeScript line numbers in Sentry UI
+```
+
+**Common failures:**
+- Missing org/project: upload silently skipped (fixed with hardcoded defaults)
+- Invalid token: 401 error in build logs
+- Token missing `project:releases` scope: 403 error
 
 ### PostHog (Product Analytics)
 
-SDK-free product analytics using direct `/capture/` endpoint.
+SDK-free product analytics using direct `/capture/` endpoint (no posthog-js).
+
+**Configuration:**
+```bash
+NEXT_PUBLIC_POSTHOG_KEY=phc_...
+NEXT_PUBLIC_POSTHOG_HOST=https://us.i.posthog.com
+```
+
+**Thresholds:**
+| Metric | Threshold | Alert Level | Action |
+|--------|-----------|-------------|--------|
+| Capture drop rate | >10% events lost | Warning | Check network/CSP |
+| Capture drop rate | >50% events lost | Critical | Service degraded |
+| Funnel completion | <5% cart→purchase | Warning | Investigate checkout UX |
+| Event volume | >100k events/day | Info | Quota approaching |
+| Server event delivery | <80% success | Warning | Check /capture/ endpoint |
 
 **Why SDK-free:**
-- Avoids automation detection (webdriver, HeadlessChrome UA)
+- Avoids automation detection (navigator.webdriver, HeadlessChrome UA)
 - No bundler bloat from unused features
 - Works across all runtimes (server, edge, browser)
 
@@ -385,43 +424,114 @@ SDK-free product analytics using direct `/capture/` endpoint.
 - Server events: `purchase`, `voucher_redeemed` (reliable across navigation)
 - Cookie mirroring: `ke_ph_id` syncs distinct_id between client/server
 - Funnel integrity: same user ID from browse → purchase
+- ~40% Israeli traffic blocks PostHog (ad blockers), non-blocking for UX
 
-**Verification:** `docs/C35-OBSERVABILITY-THRESHOLDS.md` section 2
+**Verification:**
+```bash
+# Browser console:
+window.localStorage.getItem('ke_ph_distinct_id')  # Should return UUID
+
+# Check PostHog UI: live events appear within 10s
+# Verify distinct_id matches localStorage value
+```
 
 ### Axiom (Structured Logging)
 
 Log drain for structured JSON logs with request correlation.
 
 **Configuration:**
-- Dataset: `kenyonexpress-production`
-- Retention: 30 days
-- Quota: 500 MB/month (free tier)
+```bash
+AXIOM_TOKEN=xaat-...
+AXIOM_DATASET=kenyonexpress-production
+LOG_LEVEL=info  # Optional, defaults to 'info'
+```
+
+**Thresholds:**
+| Metric | Threshold | Alert Level | Action |
+|--------|-----------|-------------|--------|
+| Ingest rate | >10k events/hour | Info | Normal production load |
+| Ingest rate | >100k events/hour | Warning | Possible log loop |
+| Ingest failures | >1% rejected | Warning | Check token/quota |
+| Ingest failures | >10% rejected | Critical | Service degraded |
+| Error-level logs | >50/hour | Warning | Review error patterns |
+| Error-level logs | >500/hour | Critical | Systemic issue |
 
 **Key features:**
 - Every log line carries `request_id` for correlation
 - Dual output: console (Vercel drain) + Axiom HTTP ingest
 - Same PII scrubber as Sentry (single source of truth)
-- Level filtering: `LOG_LEVEL=info` (default) suppresses debug
+- Level filtering: debug(10), info(20), warn(30), error(40)
+- Redaction: headers/cookies dropped, tokens/secrets redacted
 
-**Verification:** `docs/C35-OBSERVABILITY-THRESHOLDS.md` section 3
+**Log levels:**
+- `debug`: Development debugging only
+- `info`: Normal operations (default threshold)
+- `warn`: Degraded but functional
+- `error`: Failures requiring review
 
-## Thresholds & Operational Limits
+**Verification:**
+```typescript
+import { log } from '@/lib/observability/log'
 
-**Comprehensive thresholds document:** `docs/C35-OBSERVABILITY-THRESHOLDS.md`
+log.info('test.verification', { component: 'c35', value: 123 })
 
-Quick reference:
-- **Sentry**: <1% error rate (warning), <5% critical; payment errors always critical
-- **PostHog**: <10% capture drop rate (warning), >5% cart→purchase conversion baseline
-- **Axiom**: <10k events/hour normal, >100k/hour possible log loop
+// Should appear in Axiom as:
+// { "ts": "...", "level": "info", "event": "test.verification",
+//   "request_id": "req_...", "component": "c35", "value": 123 }
+```
 
-**Cross-service correlation:**
-- `request_id`: ties Axiom logs together
-- `order_id`: ties Sentry errors to PostHog purchase events  
-- `distinct_id`: ties PostHog browser + server events
+## Service Thresholds & Operational Limits
+
+### Cross-Service Correlation
+
+**Request tracing:**
+- `request_id`: ties all Axiom logs from one request together
+- `order_id`: ties Sentry payment errors to PostHog purchase events
+- `distinct_id`: ties PostHog browser + server events together
+
+**Incident investigation pattern:**
+1. Alert received (Sentry, ntfy, or SLA breach)
+2. Check Axiom: filter by `request_id` or `event` for full flow
+3. Check Sentry: review stack trace (requires source maps uploaded)
+4. Check PostHog: verify funnel didn't drop before error
+5. Check `/admin/observability`: endpoint-level SLA metrics
+
+### Operational Limits
+
+**Sentry:**
+- Plan: Developer (5k errors/month included)
+- Hard limit: 10k errors/month (billing increases after)
+- Transaction quota: 10% sample rate ≈ 7k transactions/month
+
+**PostHog:**
+- Plan: Free tier (1M events/month)
+- Hard limit: Captures beyond 1M dropped
+- Current: <10k funnel events/month (page views dominate)
+
+**Axiom:**
+- Plan: Free tier (500 MB/month, 30-day retention)
+- Hard limit: Ingest throttled beyond quota
+- Current: ~50-100 MB/month (info-level only)
+
+## Troubleshooting External Services
+
+### Sentry source maps not uploaded
+**Symptoms**: Production errors show minified stack traces  
+**Check**: Build logs for "No org provided" or 401 errors  
+**Fix**: Verify `SENTRY_AUTH_TOKEN` set, token has `project:releases` scope
+
+### PostHog events not appearing
+**Symptoms**: PostHog UI shows zero events  
+**Check**: Browser console `localStorage.getItem('ke_ph_distinct_id')` returns UUID  
+**Fix**: Verify `NEXT_PUBLIC_POSTHOG_KEY` set, CSP allows host, disable ad blocker
+
+### Axiom logs missing
+**Symptoms**: Axiom dataset empty or stale  
+**Check**: Both `AXIOM_TOKEN` and `AXIOM_DATASET` must be set  
+**Fix**: Verify env vars, test with explicit log.info() call
 
 ## References
 
-- **Thresholds & Limits**: `docs/C35-OBSERVABILITY-THRESHOLDS.md`
 - **Sentry**: https://docs.sentry.io/ (error tracking, source maps)
 - **PostHog**: https://posthog.com/docs (product analytics, funnels)
 - **Axiom**: https://axiom.co/docs (structured logging, retention)
