@@ -512,4 +512,16 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
     state: 'pending',
     hasPreflight: true,
   },
+  {
+    number: '293',
+    file: '293_phase2_feature_flags.sql',
+    state: 'pending',
+    hasPreflight: true,
+  },
+  {
+    number: '300',
+    file: '300_c16_payment_refund_infrastructure.sql',
+    state: 'pending',
+    hasPreflight: true,
+  },
 ] as const
