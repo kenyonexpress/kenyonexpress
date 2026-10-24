@@ -9,6 +9,8 @@ import type { ChipFilterable } from '@/lib/catalog/deal-chips'
 import { getCategoryBySlug } from '@/lib/category-page'
 import { getCityProducts } from '@/lib/city-page'
 import { alternatesFor } from '@/lib/seo/alternates'
+import { buildBreadcrumbJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
+import { siteUrl } from '@/lib/site-url'
 import type { Metadata } from 'next'
 import { notFound, redirect } from 'next/navigation'
 import { Suspense } from 'react'
@@ -57,9 +59,34 @@ export default async function CombinedSlugPage({ params }: Props) {
   const city = cityBySlugName(slug)
   if (city) {
     const products = await getCityProducts(city.name)
+    const base = siteUrl()
+    const breadcrumbLd = buildBreadcrumbJsonLd(
+      [
+        { name: 'בית', path: '/' },
+        { name: 'ערים', path: '/c' },
+        { name: city.name, path: `/c/${city.slug}` },
+      ],
+      base,
+    )
+    const itemListLd = {
+      '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      name: `דילים ב${city.name}`,
+      url: `${base}/c/${city.slug}`,
+    }
 
     return (
       <div className="category-page">
+        <script
+          type="application/ld+json"
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: JSON-LD has no other insertion point, and jsonLdScript escapes every angle bracket.
+          dangerouslySetInnerHTML={{ __html: jsonLdScript(breadcrumbLd) }}
+        />
+        <script
+          type="application/ld+json"
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: JSON-LD has no other insertion point, and jsonLdScript escapes every angle bracket.
+          dangerouslySetInnerHTML={{ __html: jsonLdScript(itemListLd) }}
+        />
         <div className="category-page__inner">
           <CategoryBreadcrumb
             items={[

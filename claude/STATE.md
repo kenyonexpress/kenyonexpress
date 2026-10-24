@@ -90,3 +90,11 @@ RESULT: DONE
 C11: no P0 items in docs/BIG-SITE-GAP.md (C10 matrix: P0 none), nothing to build. No code changes.
 RESULT: DONE
 המשך מ: C11 DONE
+
+C12: JSON-LD added to /c and /c/<city>; docs/REDIRECTS.md and docs/L11-GROWTH-REPORT.md written; rest already present.
+RESULT: DONE
+המשך מ: C12 DONE
+
+C13: hardening audited and verified (Upstash limits, Turnstile, CSP/HSTS, gitleaks, flags, maintenance all present, 135 tests pass). Sentry extra alert rules DONE-DEFERRED (no SENTRY_AUTH_TOKEN). See docs/L12-HARDEN-REPORT.md
+RESULT: DONE
+המשך מ: C13 DONE

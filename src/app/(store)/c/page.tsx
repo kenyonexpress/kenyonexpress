@@ -1,6 +1,8 @@
 import CategoryBreadcrumb from '@/components/category/CategoryBreadcrumb'
 import { CITIES } from '@/data/cities'
 import { alternatesFor } from '@/lib/seo/alternates'
+import { buildBreadcrumbJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
+import { siteUrl } from '@/lib/site-url'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import '@/styles/category-page.css'
@@ -12,8 +14,20 @@ export const metadata: Metadata = {
 }
 
 export default function CitiesIndexPage() {
+  const breadcrumbLd = buildBreadcrumbJsonLd(
+    [
+      { name: 'בית', path: '/' },
+      { name: 'ערים', path: '/c' },
+    ],
+    siteUrl(),
+  )
   return (
     <div className="category-page">
+      <script
+        type="application/ld+json"
+        // biome-ignore lint/security/noDangerouslySetInnerHtml: JSON-LD has no other insertion point, and jsonLdScript escapes every angle bracket.
+        dangerouslySetInnerHTML={{ __html: jsonLdScript(breadcrumbLd) }}
+      />
       <div className="category-page__inner">
         <CategoryBreadcrumb items={[{ label: 'בית', href: '/' }, { label: 'ערים' }]} />
         <header className="category-page__header">
