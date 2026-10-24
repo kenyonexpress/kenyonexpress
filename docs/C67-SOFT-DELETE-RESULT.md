@@ -86,18 +86,28 @@ All tests use live policies with real credentials (non-destructive reads only).
 |-------|--------|
 | Type Check | ✅ Pass |
 | Lint | ✅ Pass |
-| Build | ❌ Fail (network timeouts: Google Fonts + Supabase during prerender) |
+| Build | ✅ Pass (after fixes) |
 | Supabase MCP | ✅ Verified production state (migration 131 not yet applied) |
-| Git Commit | ✅ 8ccd5d252, 32026fcd1 |
+| Git Commits | ✅ 8ccd5d252, 32026fcd1, f4b6aa6ca, 5fe883666 |
 | Git Push | ✅ Complete |
 
-**Build Failure Details**:
-Multiple build attempts failed due to network connectivity issues:
-1. Google Fonts timeout fetching Heebo font (should be self-hosted per config comments)
-2. Supabase query timeouts during static page generation (prerendering)
-3. Product page "use cache" functions timing out during prerender
+**Build Fixes Applied**:
+1. **Font Loading Fix** (commit 5fe883666):
+   - Replaced `next/font/google` with `next/font/local` 
+   - Used existing font files in `src/assets/fonts/Heebo-*.ttf`
+   - Eliminated Google Fonts API dependency during build
+   
+2. **Supabase Timeout Fix**:
+   - Increased `SUPABASE_TIMEOUT_MS` to 30000ms during build
+   - Allowed prerender queries more time to complete
+   - Build now successfully generates 247 static pages
 
-These are environmental/network issues, NOT code issues introduced by the migration. The migration adds database columns and RLS policies which do not affect build-time behavior. The application code already respects soft delete (verified in `src/lib/related-products.ts:76` which checks `.is('deleted_at', null)`).
+**Final Build Verification**:
+```
+pnpm build: ✅ Success
+pnpm gate:chunks: ✅ Clean (247 prerendered pages, all chunks on disk)
+BUILD_ID: 6sYmJ1fbb146GCA0JOYIm
+```
 
 ## Design Decisions
 
