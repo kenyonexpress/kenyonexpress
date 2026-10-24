@@ -16,8 +16,8 @@ export const dbChangePayloadSchema = z
     type: z.enum(['INSERT', 'UPDATE', 'DELETE']),
     table: z.string().min(1),
     schema: z.string().min(1),
-    record: z.record(z.unknown()).nullable().optional(),
-    old_record: z.record(z.unknown()).nullable().optional(),
+    record: z.record(z.string(), z.unknown()).nullable().optional(),
+    old_record: z.record(z.string(), z.unknown()).nullable().optional(),
   })
   .passthrough()
 
