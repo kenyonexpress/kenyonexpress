@@ -3962,6 +3962,9 @@ export type Database = {
           payout_hold_business_days: number
           status: string
           updated_at: string
+          verification_status: Database["public"]["Enums"]["supplier_verification_status"]
+          verified_at: string | null
+          verified_by: string | null
           website: string | null
           whatsapp: string | null
         }
@@ -3985,6 +3988,9 @@ export type Database = {
           payout_hold_business_days?: number
           status?: string
           updated_at?: string
+          verification_status?: Database["public"]["Enums"]["supplier_verification_status"]
+          verified_at?: string | null
+          verified_by?: string | null
           website?: string | null
           whatsapp?: string | null
         }
@@ -4008,6 +4014,9 @@ export type Database = {
           payout_hold_business_days?: number
           status?: string
           updated_at?: string
+          verification_status?: Database["public"]["Enums"]["supplier_verification_status"]
+          verified_at?: string | null
+          verified_by?: string | null
           website?: string | null
           whatsapp?: string | null
         }
@@ -5661,19 +5670,25 @@ export type Database = {
         | 'reconciliation_amount_differs'
       payment_kind: 'charge' | 'refund'
       payment_status:
-        | 'initiated'
-        | 'redirected'
-        | 'succeeded'
-        | 'failed'
-        | 'refunded'
-        | 'platform_settled'
-      payout_line_type: 'physical_delivery' | 'coupon_redemption' | 'adjustment'
-      payout_status: 'draft' | 'pending_approval' | 'approved' | 'paid' | 'cancelled'
-      product_approval_status: 'draft' | 'pending' | 'approved' | 'rejected'
-      product_status: 'draft' | 'active' | 'paused' | 'sold_out' | 'archived'
-      product_type: 'coupon' | 'physical' | 'service' | 'recurring'
-      referral_status: 'pending' | 'completed' | 'rejected' | 'flagged'
-      refund_destination: 'original_method' | 'wallet'
+        | "initiated"
+        | "redirected"
+        | "succeeded"
+        | "failed"
+        | "refunded"
+        | "platform_settled"
+      payout_line_type: "physical_delivery" | "coupon_redemption" | "adjustment"
+      payout_status:
+        | "draft"
+        | "pending_approval"
+        | "approved"
+        | "paid"
+        | "cancelled"
+      product_approval_status: "draft" | "pending" | "approved" | "rejected"
+      product_status: "draft" | "active" | "paused" | "sold_out" | "archived"
+      product_type: "coupon" | "physical" | "service" | "recurring"
+      supplier_verification_status: "unverified" | "pending" | "verified"
+      referral_status: "pending" | "completed" | "rejected" | "flagged"
+      refund_destination: "original_method" | "wallet"
       refund_ground:
         | 'distance_sale_14d'
         | 'defect'
@@ -5929,13 +5944,24 @@ export const Constants = {
         'refunded',
         'platform_settled',
       ],
-      payout_line_type: ['physical_delivery', 'coupon_redemption', 'adjustment'],
-      payout_status: ['draft', 'pending_approval', 'approved', 'paid', 'cancelled'],
-      product_approval_status: ['draft', 'pending', 'approved', 'rejected'],
-      product_status: ['draft', 'active', 'paused', 'sold_out', 'archived'],
-      product_type: ['coupon', 'physical', 'service', 'recurring'],
-      referral_status: ['pending', 'completed', 'rejected', 'flagged'],
-      refund_destination: ['original_method', 'wallet'],
+      payout_line_type: [
+        "physical_delivery",
+        "coupon_redemption",
+        "adjustment",
+      ],
+      payout_status: [
+        "draft",
+        "pending_approval",
+        "approved",
+        "paid",
+        "cancelled",
+      ],
+      product_approval_status: ["draft", "pending", "approved", "rejected"],
+      product_status: ["draft", "active", "paused", "sold_out", "archived"],
+      product_type: ["coupon", "physical", "service", "recurring"],
+      referral_status: ["pending", "completed", "rejected", "flagged"],
+      supplier_verification_status: ["unverified", "pending", "verified"],
+      refund_destination: ["original_method", "wallet"],
       refund_ground: [
         'distance_sale_14d',
         'defect',
