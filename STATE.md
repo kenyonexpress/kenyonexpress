@@ -341,4 +341,51 @@ supabase login --help → Only accepts existing tokens
 
 **RESULT: BLOCKED** - Distribution complete, rotation impossible without C51 resolution.
 
-## המשך מ: BLOCKED C52 - Awaiting C51 2FA recovery to enable token rotation
+## C53: Batch Location Edit for Pending Products - COMPLETE (2026-10-24)
+
+**Status:** ✅ COMPLETE
+**Commit:** 55e3e6ae8
+
+**What Was Done:**
+1. ✅ Renamed /admin/products/missing-location to /admin/products/pending-location
+2. ✅ Created PendingLocationClient with batch selection UI
+3. ✅ Added setBatchProductLocation server action
+4. ✅ Batch editing supports up to 100 products at once
+5. ✅ Added comprehensive tests (15 test cases, all passing)
+6. ✅ Updated all references in codebase
+7. ✅ Quality gates: typecheck ✅, lint ✅, build ✅ (273 routes), tests ✅
+
+**Features Implemented:**
+- Checkbox selection UI for multiple products
+- Batch update with single city/address for all selected
+- Real-time selection count display
+- Cancel/reset selection
+- Maintains single-product edit via "Edit Product" link
+- Up to 100 products per batch (validated by schema)
+- Atomic updates (all succeed or all fail)
+- Audit logging for each product update
+
+**Files Created:**
+- src/app/(admin)/admin/products/pending-location/PendingLocationClient.tsx
+- src/app/(admin)/admin/products/pending-location/page.tsx
+- src/server/actions/admin/product-location.test.ts
+
+**Files Modified:**
+- src/server/actions/admin/product-location.ts (added batch action)
+- src/app/(admin)/admin/products/page.tsx (updated link)
+- migrations/pending/README.md (updated path reference)
+
+**Testing:**
+- Schema validation tests: 15/15 passing
+- Single product schema tests: 6/6 passing
+- Batch product schema tests: 9/9 passing
+- Edge cases covered: empty IDs, invalid UUIDs, >100 IDs, whitespace trimming
+
+**Context:**
+Migration 279 set 66 physical products to nationwide default "כל הארץ" (all of Israel).
+This admin interface enables efficient batch assignment of real cities to those products,
+replacing the previous one-by-one editing workflow.
+
+**RESULT: COMPLETE.** All autonomous work done, all quality gates passed, committed and pushed.
+
+## המשך מ: C53 COMPLETE
