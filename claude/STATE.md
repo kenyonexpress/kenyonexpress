@@ -49,4 +49,6 @@ M14-c181 2026-10-25: Sentry release vs HEAD 82d2981. Code side OK: sentry.server
 RESULT: BLOCKED M14-c181 sentry creds invalid, cannot read releases
 M04-c182 2026-10-25: pnpm type-check clean (tsc --noEmit, 0 errors). Drift committed: home page DealChips (rc5 F13) + regenerated docs reports.
 RESULT: DONE
-המשך מ: M05-c182 DONE
+M06-c182 2026-10-25: pnpm build succeeds (all routes generated). Drift committed: docs/M-CYCLE-STATUS.md regenerated timestamps.
+RESULT: DONE
+המשך מ: M06-c182 DONE
