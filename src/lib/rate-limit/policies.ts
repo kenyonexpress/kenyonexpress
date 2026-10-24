@@ -207,11 +207,24 @@ export const RATE_LIMIT_POLICIES = {
   'wa-otp-verify': { limit: 10, windowSeconds: 3600, reason: 'WhatsApp code guesses, per phone' },
   'passkey-register': { limit: 20, windowSeconds: 3600, reason: 'passkey enrolment, per user' },
   'passkey-auth': { limit: 30, windowSeconds: 600, reason: 'passkey sign-in, per IP' },
+  // rc5+ WhatsApp OTP (parallel to wa-otp-* for different auth flow)
+  'whatsapp-otp': { limit: 5, windowSeconds: 3600, reason: 'WhatsApp OTP send, per IP' },
+  'whatsapp-otp-number': {
+    limit: 5,
+    windowSeconds: 3600,
+    reason: 'WhatsApp OTP send to one number, per phone',
+  },
+  'whatsapp-verify': { limit: 20, windowSeconds: 3600, reason: 'WhatsApp OTP verify, per IP' },
 
   // -- Vouchers and the supplier till. Keyed on the supplier user, never on IP:
   // a shop floor is one NAT address and would share one bucket.
   redeem: { limit: 60, windowSeconds: 3600, reason: 'customer-facing redeem page, per IP' },
   'voucher-redeem': { limit: 120, windowSeconds: 3600, reason: 'till scans, per supplier user' },
+  'voucher-redeem-code': {
+    limit: 10,
+    windowSeconds: 3600,
+    reason: 'per-code redemption attempts, protects against code guessing',
+  },
   'voucher-redeem-batch': { limit: 40, windowSeconds: 3600, reason: 'batch scans, per supplier' },
   'voucher-lookup': { limit: 300, windowSeconds: 3600, reason: 'till lookups, per supplier' },
   'staff-pin': { limit: 15, windowSeconds: 3600, reason: 'PIN guessing on the till' },
