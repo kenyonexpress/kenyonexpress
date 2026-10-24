@@ -101,16 +101,18 @@ C33 marked INCOMPLETE. Localhost testing environment cannot satisfy Perf > 90 re
 
 ## המשך מ:
 
-C37 COMPLETE (eb7ebf3d8)
+C43 COMPLETE (531f602ff)
 
-Feature flags system implemented:
-- Migration 293: Phase 2 flags seeded in feature_flags table (all OFF)
-- Supabase config integration with 30s cache, fails open to env vars  
-- Admin UI with toggle functionality + audit logging
-- 25 tests passing (supabase-flags, integration, server actions)
-- Quality gates: type-check clean, lint clean, build success
+Comprehensive manual intervention guide created:
+- docs/MANUAL.md: 7 prioritized items requiring Ofir's action
+- 3 CRITICAL (production launch blockers): Cardcom, Vercel deploy, Meilisearch, GitHub secrets
+- 2 HIGH (core functionality): Supabase MCP OAuth, Lighthouse performance
+- 2 MEDIUM (quality): E2E coverage
+- Includes step-by-step actions, verification criteria, cost estimates
+- Launch sequence recommendation (2-4 hours total)
+- Quality gates: type-check clean, lint clean, build success (273 routes)
 
-Pending migration application via Supabase MCP (OAuth required)
+All autonomous documentation work complete. Manual items await owner intervention.
 
 ## Completed Items
 
@@ -118,6 +120,7 @@ C37|Feature flags Phase 2 - DONE (eb7ebf3d8)
 C38|pg_cron+pg_net for queue/reminders - BLOCKED (Supabase MCP OAuth)
 C40|DNS verification NS+A+Resend - DONE (765f4f559)
 C41|Vercel production deploy - BLOCKED (see C41-ACTUAL-RESULT.md)
+C43|Manual intervention guide - DONE (531f602ff)
 
 ## C41 Summary (2026-10-24)
 
