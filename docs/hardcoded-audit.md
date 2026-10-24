@@ -123,11 +123,11 @@ Total hits: 2595 (hex colors: 310, px values: 2285).
 | src/components/CouponCard.tsx | 59 | `248px` | (none - candidate for new token) |
 | src/components/LeftSidebar.tsx | 62 | `768px` | (none - candidate for new token) |
 | src/components/LeftSidebar.tsx | 62 | `320px` | (none - candidate for new token) |
-| src/components/ProductCard.tsx | 337 | `639px` | (none - candidate for new token) |
-| src/components/ProductCard.tsx | 337 | `47px` | (none - candidate for new token) |
-| src/components/ProductCard.tsx | 337 | `1023px` | (none - candidate for new token) |
-| src/components/ProductCard.tsx | 337 | `44px` | (none - candidate for new token) |
-| src/components/ProductCard.tsx | 337 | `204px` | (none - candidate for new token) |
+| src/components/ProductCard.tsx | 351 | `639px` | (none - candidate for new token) |
+| src/components/ProductCard.tsx | 351 | `47px` | (none - candidate for new token) |
+| src/components/ProductCard.tsx | 351 | `1023px` | (none - candidate for new token) |
+| src/components/ProductCard.tsx | 351 | `44px` | (none - candidate for new token) |
+| src/components/ProductCard.tsx | 351 | `204px` | (none - candidate for new token) |
 | src/components/ProductDealCardMobile.tsx | 48 | `16px` | (none - candidate for new token) |
 | src/components/ProductDealCardMobile.tsx | 48 | `12px` | (none - candidate for new token) |
 | src/components/ProductDealCardMobile.tsx | 50 | `1px` | (none - candidate for new token) |

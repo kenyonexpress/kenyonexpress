@@ -97,11 +97,14 @@ export type CategoryProductRow = {
  * `latitude`/`longitude` are optional because they arrive with 136 and
  * are not selected yet. Typed here so the geo helpers compile against the
  * shape they will have, without the query pretending the columns exist.
+ * `name` and `verification_status` are from migration 297.
  */
 type SupplierJoin = {
+  name: string
   city: string | null
   latitude?: number | null
   longitude?: number | null
+  verification_status: 'unverified' | 'pending' | 'verified'
 }
 
 /**
@@ -389,7 +392,8 @@ export async function getCategoryProducts(opts: {
       // empty grid. That exact failure is why src/lib/supabase/optional-columns.ts
       // exists. Add the two columns to this string when 136 is applied;
       // `supplierLocation` already prefers them the moment they are present.
-      'id, slug, name_he, kenyon_price, full_price, images, stock_quantity, created_at, type, city, latitude, longitude, categories!products_category_id_fkey(name_he, slug), suppliers(city)',
+      // `name` and `verification_status` are from migration 297.
+      'id, slug, name_he, kenyon_price, full_price, images, stock_quantity, created_at, type, city, latitude, longitude, categories!products_category_id_fkey(name_he, slug), suppliers(name, city, verification_status)',
       { count: 'exact' },
     )
     .eq('status', 'active')
@@ -520,7 +524,7 @@ export async function getShopProducts(opts: {
   let query = supabase
     .from('products')
     .select(
-      'id, slug, name_he, kenyon_price, full_price, images, stock_quantity, created_at, type, city, categories!products_category_id_fkey(name_he, slug)',
+      'id, slug, name_he, kenyon_price, full_price, images, stock_quantity, created_at, type, city, categories!products_category_id_fkey(name_he, slug), suppliers(name, city, verification_status)',
       { count: 'exact' },
     )
     .eq('status', 'active')
