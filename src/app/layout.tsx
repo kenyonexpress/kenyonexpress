@@ -13,7 +13,7 @@ import { SITE } from '@/styles/tokens'
 import { Analytics as VercelAnalytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import type { Metadata, Viewport } from 'next'
-import { Heebo } from 'next/font/google'
+import localFont from 'next/font/local'
 import { Suspense } from 'react'
 /**
  * ONE stylesheet import, on purpose. Every root-level sheet (globals, the
@@ -27,10 +27,20 @@ import { Suspense } from 'react'
 import './app.css'
 import { BRAND_DEFAULT_TITLE, BRAND_DISPLAY_NAME, BRAND_TITLE_TEMPLATE } from '@/lib/brand'
 
-const heebo = Heebo({
+const heebo = localFont({
+  src: [
+    {
+      path: '../assets/fonts/Heebo-Regular.ttf',
+      weight: '400',
+      style: 'normal',
+    },
+    {
+      path: '../assets/fonts/Heebo-Bold.ttf',
+      weight: '700',
+      style: 'normal',
+    },
+  ],
   variable: '--font-heebo',
-  subsets: ['latin', 'hebrew'],
-  weight: ['300', '400', '500', '700', '900'],
   display: 'swap',
   // LCP paragraph is Arial on purpose ([24]); do not preload Heebo onto that path.
   preload: false,
