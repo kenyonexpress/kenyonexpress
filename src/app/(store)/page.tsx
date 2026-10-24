@@ -1,3 +1,4 @@
+import DealChips from '@/components/catalog/DealChips'
 import BenefitBar from '@/components/home/BenefitBar'
 import CitiesRow from '@/components/home/CitiesRow'
 import CmsHero from '@/components/home/CmsHero'
@@ -101,6 +102,12 @@ export default function HomePage() {
         The hero's own copy is now `hidden md:block`, which is live's rule.
       */}
       <BenefitBar />
+      {/* rc5 F13: chips above the grid; the home grid is a fixed selection, so they open /products filtered. */}
+      <div className="container mx-auto">
+        <Suspense fallback={null}>
+          <DealChips basePath="/products" />
+        </Suspense>
+      </div>
       <DealsOfTheDay />
       {/* Below the grid on purpose. It renders nothing on the server and
           nothing for a browser with no history, which is every run of the
