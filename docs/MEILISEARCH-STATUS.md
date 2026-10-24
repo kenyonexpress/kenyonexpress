@@ -184,22 +184,22 @@ curl 'http://localhost:3399/api/search?q=חופשה'
 
 ## Actions Needed
 
-### ⛔ BLOCKER: No Meilisearch Instance Exists
+### ⚠️ Production Status: Instance Healthy But Unseeded
 
-**Evidence:**
-- `https://search.kenyonexpress.co.il/health` → `DEPLOYMENT_NOT_FOUND`
-- Vercel env vars exist but point to non-existent host
-- All search queries fall back to database
+**Evidence (2026-10-25):**
+- `/api/ready` → `"meilisearch": "ok"` (instance is reachable and healthy)
+- `/api/search/suggest?q=חופשה` → `"engine": "database"` (searches fall back)
+- Health check passes (confirms instance exists and responds)
+- Searches return database engine (indicates empty or unreachable index)
 
-**Why Autonomous Creation Is Impossible:**
-- Meilisearch Cloud has no public API (documented in `MEILISEARCH-INSTANCE-CREATION-BLOCKED.md`)
-- All cloud platforms require:
-  - Manual account creation via web
-  - Email verification
-  - Payment method authorization
-  - Terms acceptance via UI
+**Why Autonomous Seeding Is Blocked:**
+- MEILISEARCH_HOST env var exists but is encrypted by Vercel
+- Cannot decrypt production secrets via API or CLI
+- `vercel env pull` returns "[SENSITIVE]" placeholders
+- Seeding requires the actual instance URL + API key
 
 **What Is Complete:**
+✅ Production instance exists and is healthy (health check: "ok")
 ✅ All code written and tested  
 ✅ Hebrew synonyms (64 entries from 13 groups)  
 ✅ Index configuration with Hebrew tuning  
@@ -207,7 +207,22 @@ curl 'http://localhost:3399/api/search?q=חופשה'
 ✅ Hebrew search verified locally  
 ✅ All validation passing (type-check, lint, build)  
 
-**Required Manual Action:** Create Meilisearch Cloud instance (5 minutes via web dashboard)
+**Required Manual Action:** Seed production Meilisearch index
+
+Two options:
+1. **Via local script** (requires decrypted credentials):
+   ```bash
+   # Get MEILISEARCH_HOST from Vercel dashboard
+   MEILISEARCH_HOST=<from-dashboard> \
+   MEILISEARCH_API_KEY=<from-dashboard> \
+   node scripts/setup-meilisearch.mjs
+   ```
+
+2. **Via production deployment** (create API route):
+   - Add `/api/admin/seed-search` route that calls `setup-meilisearch.mjs` logic
+   - Protect with CRON_SECRET
+   - Trigger once to seed the index
+   - Remove route after seeding
 
 ### 1. Create Paris Region Instance
 
