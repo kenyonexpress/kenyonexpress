@@ -1,6 +1,19 @@
 # Supabase pgTAP Tests
 
-This directory contains pgTAP test files for testing Row Level Security (RLS) policies and other database constraints.
+**⚠️ NOTE:** Test files have been moved to `tests/sql/` to comply with `migration-location-gate.test.ts`.
+
+The repository's migration gate only allows new .sql files in specific directories (see `ALLOWED_NEW` in `src/__tests__/migration-location-gate.test.ts`). `supabase/tests/` is not in that list, but `tests/sql/` is.
+
+**Current test file locations:**
+- `tests/sql/rls_orders.test.sql`
+- `tests/sql/rls_products.test.sql`
+- `tests/sql/rls_vouchers.test.sql`
+
+This README remains here for documentation purposes.
+
+---
+
+This directory originally contained pgTAP test files for testing Row Level Security (RLS) policies and other database constraints.
 
 ## Prerequisites
 
@@ -20,7 +33,7 @@ supabase start
 supabase test db
 
 # Run specific test file
-supabase test db --file supabase/tests/rls_products.test.sql
+supabase test db --file tests/sql/rls_products.test.sql
 ```
 
 ### Against Supabase Branch (Recommended for Pre-Production)
@@ -75,7 +88,7 @@ ROLLBACK;  -- Clean up test data
 
 ## Adding New Tests
 
-1. Create a new `*.test.sql` file in `supabase/tests/`
+1. Create a new `*.test.sql` file in `tests/sql/`
 2. Follow the pgTAP test pattern (BEGIN, plan, tests, finish, ROLLBACK)
 3. Test RLS policies for different roles:
    - `anon` - Unauthenticated users
