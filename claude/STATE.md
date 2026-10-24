@@ -82,3 +82,7 @@ RESULT: BLOCKED compare-gate-unreachable-vs-reference
 C09: PWA verified end to end (manifest, SW, offline, install criteria 0 errors). Fixed prod-CSP nonce blocking all hydration/SW registration (proxy.ts), sw.js revalidation header, banner brand text. See docs/L8-PWA-REPORT.md
 RESULT: DONE
 המשך מ: C09 DONE
+
+C10: BIG-SITE-GAP audit written, docs/BIG-SITE-GAP.md (EXISTS/PARTIAL/MISSING matrix, P0 none, 13 P1, 8 P2). Static audit only.
+RESULT: DONE
+המשך מ: C10 DONE
