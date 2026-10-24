@@ -14,4 +14,10 @@ Last goal: F43, home parity gate on the rebuilt tree, by the goal's literal
 `--widths`, `--baseline`, `--live-url` in `scripts/compare-args.mjs`. Rows in
 `docs/UI-PARITY-REPORT.md`, 2026-10-21.
 
-המשך מ: G09 DONE
+המשך מ: G10 DONE
+
+G10 (F11 club tiers): schema already applied as migrations/applied/282_club_tiers.sql (189 is taken by 189_affiliate_program), so no duplicate migration was written to pending. Editor at /admin/club-tiers (/admin/clubs redirects). Added public /club (src/app/(main)/club/page.tsx) listing active tiers + benefits, listPublicTiers() in src/server/queries/club.ts, sitemap entry.
+
+המשך מ: G11 DONE
+
+G11 (F12 affiliate): schema, per-campaign commission_bp (admin) snapshotted per order, wallet payout cron already live as migrations/applied/283_affiliate_campaigns.sql (188 is taken by 188_search_analytics, so no duplicate 188_affiliate.sql written). Added QR per link (urlQrDataUrl in src/lib/vouchers/qr-image.ts) and pending-earnings line on /account/affiliate.

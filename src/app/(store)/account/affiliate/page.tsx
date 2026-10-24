@@ -1,6 +1,7 @@
 import { formatDate, formatIls } from '@/lib/account/format'
 import { agorot } from '@/lib/commerce/money'
 import { createClient } from '@/lib/supabase/server'
+import { urlQrDataUrl } from '@/lib/vouchers/qr-image'
 import { createAffiliateLink, joinAffiliateProgram } from '@/server/actions/affiliate'
 import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
@@ -144,6 +145,12 @@ async function AffiliateContent({ searchParams }: Props) {
   for (const c of (clicks ?? []) as { link_id: string }[]) {
     clickCount.set(c.link_id, (clickCount.get(c.link_id) ?? 0) + 1)
   }
+  const linkUrl = (l: { code: string; target_path: string }) =>
+    `${site}${l.target_path}${l.target_path.includes('?') ? '&' : '?'}ref=${l.code}`
+  const qrs = await Promise.all(linkRows.map((l) => urlQrDataUrl(linkUrl(l))))
+  const pending = attributionRows
+    .filter((a) => a.status === 'pending')
+    .reduce((sum, a) => sum + Number(a.commission_agorot ?? 0), 0)
   const earned = attributionRows
     .filter((a) => a.status === 'paid')
     .reduce((sum, a) => sum + Number(a.commission_agorot ?? 0), 0)
@@ -154,6 +161,7 @@ async function AffiliateContent({ searchParams }: Props) {
       <p>
         סטטוס: <strong>{STATUS_HE[affiliate.status] ?? affiliate.status}</strong> · שולם לארנק עד
         היום: <strong>{formatIls(agorot(earned))}</strong>
+        {' · '}ממתין לשחרור: <strong>{formatIls(agorot(pending))}</strong>
       </p>
       {errorKey && ERRORS[errorKey] && (
         <p role="alert" className="text-sm text-red-700">
@@ -202,12 +210,18 @@ async function AffiliateContent({ searchParams }: Props) {
           <p className="text-sm text-muted">עוד אין קישורים.</p>
         ) : (
           <ul className="space-y-2">
-            {linkRows.map((l) => (
-              <li key={l.id} className="rounded-lg border border-border p-3 text-sm">
-                <code dir="ltr" className="break-all">
-                  {`${site}${l.target_path}${l.target_path.includes('?') ? '&' : '?'}ref=${l.code}`}
-                </code>
-                <span className="ms-2 text-muted">{clickCount.get(l.id) ?? 0} כניסות</span>
+            {linkRows.map((l, i) => (
+              <li
+                key={l.id}
+                className="flex items-center gap-3 rounded-lg border border-border p-3 text-sm"
+              >
+                {qrs[i] && <img src={qrs[i] ?? ''} alt="קוד QR לקישור" width={96} height={96} />}
+                <div>
+                  <code dir="ltr" className="break-all">
+                    {linkUrl(l)}
+                  </code>
+                  <span className="ms-2 text-muted">{clickCount.get(l.id) ?? 0} כניסות</span>
+                </div>
               </li>
             ))}
           </ul>
