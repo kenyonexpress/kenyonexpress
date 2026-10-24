@@ -243,9 +243,10 @@ Email delivery: Handed to local MTA (/usr/bin/mail exit 0), delivery confirmatio
 
 BLOCKED: Required Supabase MCP work cannot proceed:
 - Goal requires: "Use Supabase MCP for DB, RLS, migrations"
-- Blocker: claude.ai Supabase MCP requires OAuth authentication
-- Session: Non-interactive, OAuth flow unavailable (per system-reminder)
-- Evidence: ToolSearch loaded tools, but all require authentication
+- Found: 59 pending migrations in migrations/pending/
+- Attempted: 4 access methods (MCP, REST API, CLI, Management API)
+- All blocked: MCP (OAuth), REST API (invalid JWT), CLI (interactive login), Management API (requires auth)
+- Evidence: docs/C51-SUPABASE-WORK-BLOCKED.md (full attempt log)
 - Will remain blocked until: (1) Support grants 2FA access, (2) OAuth configured in claude.ai
 
 Expected unblock: 24-48h after support response + OAuth setup.
