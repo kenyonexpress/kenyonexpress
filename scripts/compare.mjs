@@ -177,6 +177,9 @@ const b = await chromium.launch()
 const ctx = await b.newContext({
   viewport: VIEW,
   deviceScaleFactor: 1,
+  // The production CSP is style-src 'self' + nonce, which refuses the harness's own
+  // addStyleTag (hides the dev badge). The harness is not the page under test.
+  bypassCSP: true,
   ...(STORAGE_STATE && existsSync(STORAGE_STATE) ? { storageState: STORAGE_STATE } : {}),
 })
 

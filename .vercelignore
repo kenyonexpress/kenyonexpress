@@ -24,7 +24,6 @@
 /supabase/
 /e2e/
 /.husky/
-/refs/
 
 # Test and config files, safe to strip: nothing shipped imports them.
 **/*.test.ts

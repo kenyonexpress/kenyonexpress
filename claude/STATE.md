@@ -75,3 +75,7 @@ C06: BLOCKED, supabase-anon-key-401, account pages need a session (guest gets 30
 C07: DONE, admin product upload verified end to end (manual + CSV): create, publish, /product/<slug> 200, delete, cleanup. Fixed free_shipping insert failure, unreachable CSV commit, weak dry-run validation. See docs/L6-ADMIN-REPORT.md
 RESULT: DONE
 המשך מ: C07 DONE
+
+C08: BLOCKED, compare gate not met (home 46/41/30%, product 43/34/23% at 380/768/1440; Electro snapshot structurally unreachable, no /c baseline). Zero sideways scroll PASSED on all 14 pages at 380. See docs/L7-MOBILE-REPORT.md
+RESULT: BLOCKED compare-gate-unreachable-vs-reference
+המשך מ: C08 BLOCKED
