@@ -2,11 +2,11 @@ C47 BACKLOG PROCESSED - 2026-10-24
 
 **ALL 7 ITEMS COMPLETED:**
 
-Implementations (4 items, 30 tests):
-- Item 1: Group-deals bulk purchase discounts (10 tests)
-- Item 2: Crisp chat integration (5 tests)
-- Item 6: Courses monthly billing (8 tests)
-- Item 7: Tzimmer calendar (7 tests)
+Implementations (4 items, 30 tests + 3 migrations):
+- Item 1: Group-deals bulk purchase (schema + migration 294 + RLS, 10 tests)
+- Item 2: Crisp chat integration (component + tests, 5 tests)
+- Item 6: Courses billing (schema + migration 295 + RLS, 8 tests)
+- Item 7: Tzimmer calendar (schema + migration 296 + RLS, 7 tests)
 
 Preparations (3 items, 9 tests):
 - Item 3: Meta WhatsApp verification (docs + milestone tracker, 9 tests)
