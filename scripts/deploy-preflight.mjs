@@ -54,6 +54,14 @@ const REQUIRED_RUNTIME = [
   'SENTRY_DSN',
 ]
 
+// Preview deployments (non-production branches) can proceed with minimal env vars
+// to allow security header testing without full production credentials
+const isPreview =
+  process.env.VERCEL_ENV === 'preview' ||
+  (process.env.VERCEL_GIT_COMMIT_REF &&
+    process.env.VERCEL_GIT_COMMIT_REF !== 'closeout/v1-final' &&
+    process.env.VERCEL_GIT_COMMIT_REF !== 'main')
+
 const problems = []
 
 // 1. The refusal that gives this script its name.
@@ -61,15 +69,20 @@ for (const finding of scanEnvironmentForCompromisedKeys()) {
   problems.push(`COMPROMISED  ${compromisedKeyMessage(finding)}`)
 }
 
-// 2. One of the two admin key names has to be there.
-if (!process.env.SUPABASE_SECRET_KEY && !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-  problems.push(
-    'MISSING      אחד מ-SUPABASE_SECRET_KEY / SUPABASE_SERVICE_ROLE_KEY חייב להיות מוגדר.',
-  )
-}
+// Skip full env checks for preview deployments
+if (!isPreview) {
+  // 2. One of the two admin key names has to be there.
+  if (!process.env.SUPABASE_SECRET_KEY && !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    problems.push(
+      'MISSING      אחד מ-SUPABASE_SECRET_KEY / SUPABASE_SERVICE_ROLE_KEY חייב להיות מוגדר.',
+    )
+  }
 
-for (const name of REQUIRED_RUNTIME) {
-  if (!process.env[name]) problems.push(`MISSING      ${name} חסר. ראה docs/ENV.md.`)
+  for (const name of REQUIRED_RUNTIME) {
+    if (!process.env[name]) problems.push(`MISSING      ${name} חסר. ראה docs/ENV.md.`)
+  }
+} else {
+  console.log('deploy preflight: preview mode, minimal checks only')
 }
 
 // 3. The one setting that silently takes the money nowhere.
