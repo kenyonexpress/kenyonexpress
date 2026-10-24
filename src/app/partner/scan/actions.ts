@@ -98,11 +98,12 @@ export async function redeemVoucherFromQr(qrPayload: string): Promise<RedeemResu
   }
 
   // 5. Call redeem_voucher() RPC - this marks redeemed_at and records in voucher_redemptions
-  // The RPC is idempotent via conditional UPDATE (status = 'issued')
+  // The RPC is idempotent via p_idempotency_key: same key returns same result
+  // Key MUST be stable across retries: user+code, NOT timestamp
   const { data, error } = await supabase.rpc('redeem_voucher', {
     p_code: shortCode,
     p_scan_method: 'camera',
-    p_idempotency_key: `partner-scan:${shortCode}:${Date.now()}`,
+    p_idempotency_key: `partner-scan:${user.id}:${shortCode}`,
   })
 
   if (error) {
