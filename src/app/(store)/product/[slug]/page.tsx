@@ -223,6 +223,8 @@ export default async function ProductPage({ params }: Props) {
     siteUrl,
   )
 
+  const productUrl = `${siteUrl}/product/${encodeURIComponent(slug)}`
+
   return (
     <div data-pdp="container" className="pdp">
       <div className="pdp__inner">
@@ -297,6 +299,7 @@ export default async function ProductPage({ params }: Props) {
             basePrice={basePrice}
             oldPrice={oldPrice}
             baseStock={product.stock_quantity}
+            productUrl={productUrl}
             /*
               The one live read on this page, behind its own boundary. The
               product load is `'use cache'` for an hour, and availability moves

@@ -41,6 +41,8 @@ interface Props {
   basePrice: number
   oldPrice: number | null
   baseStock: number | null
+  /** Product URL for WhatsApp share. Optional with fallback to avoid breaking existing tests. */
+  productUrl?: string
   /**
    * The live "only X left" line, rendered by the page inside its own Suspense
    * boundary. Passed as a NODE rather than as numbers because reading those
@@ -109,6 +111,7 @@ export default function ProductInfo({
   basePrice,
   oldPrice: cachedOldPrice,
   baseStock,
+  productUrl = '',
   scarcitySlot = null,
   purchaseCountSlot = null,
   sku,
@@ -430,7 +433,7 @@ export default function ProductInfo({
             and this line used to send a friend "₪200" for a deal the page
             beside it quotes at ₪80. See lib/share/message.ts. */}
         <span className="inline-flex items-center gap-4">
-          <WhatsAppShareButton productId={productId} message="ראה דיל:" appendCurrentUrl />
+          <WhatsAppShareButton productId={productId} message={`ראה דיל: ${productUrl}`} />
           <FacebookShareButton />
           <ShareButton
             title={name}
