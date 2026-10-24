@@ -31,14 +31,9 @@ function loadSettings() {
   const pick = (name) => {
     const match = src.match(new RegExp(`export const ${name} = (\\[[\\s\\S]*?\\]) as const`))
     if (!match) throw new Error(`could not read ${name} from meili-settings.ts`)
-    // Strip the // comments first: the arrays carry rationale comments, and a
-    // comment inside the literal is a syntax error to JSON.parse. Safe here
-    // because none of the string values contains a slash.
-    const literal = match[1]
-      .replace(/\/\/[^\n]*/g, '')
-      .replace(/'/g, '"')
-      .replace(/,(\s*])/g, '$1')
-    return JSON.parse(literal)
+    // Strip comments before parsing
+    const cleaned = match[1].replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '')
+    return JSON.parse(cleaned.replace(/'/g, '"').replace(/,(\s*])/g, '$1'))
   }
   const typo = src.match(/minWordSizeForTypos: \{ oneTypo: (\d+), twoTypos: (\d+) \}/)
   if (!typo) throw new Error('could not read minWordSizeForTypos from meili-settings.ts')
