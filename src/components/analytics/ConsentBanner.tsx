@@ -1,5 +1,9 @@
+'use client'
+
 import { CONSENT_DECIDED_ATTRIBUTE, CONSENT_DECIDED_VALUE } from '@/lib/analytics/consent'
 import { decideConsent } from '@/server/actions/consent'
+import { useState } from 'react'
+import ConsentSettings from './ConsentSettings'
 
 /**
  * Cookie consent for behavioral analytics. Accept and decline carry equal
@@ -14,9 +18,8 @@ import { decideConsent } from '@/server/actions/consent'
  * with inline Arial + fixed geometry paints with the HTML stream. Shrinking it
  * so the hero image won dropped Performance into the 70s.
  *
- * Server Component + form actions ([25]): there is no client bundle for the
- * banner. The decision writes a cookie and redirects; the pre-paint snippet
- * hides the banner on the next response.
+ * C63: Added Settings button for granular consent control (Analytics, Marketing).
+ * Now a Client Component to manage settings modal state.
  */
 const BANNER_STYLE = {
   position: 'fixed',
@@ -73,37 +76,53 @@ const COPY_STYLE = {
 } as const
 
 export default function ConsentBanner() {
+  const [showSettings, setShowSettings] = useState(false)
+
   return (
-    <section data-consent-banner="" aria-label="הסכמה לאיסוף נתוני שימוש" style={BANNER_STYLE}>
-      <div className="mx-auto flex max-w-4xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p style={COPY_STYLE}>
-          אנחנו אוספים נתוני שימוש באתר (עמודים שנצפו, פריטים שנוספו לעגלה) כדי לשפר אותו ולמדוד
-          פרסום. חלק מהנתונים מועברים ל-Google Analytics ול-Meta, בלי שם, מייל או טלפון. בלי אישור
-          שום כלי חיצוני לא נטען כלל. הזמנות ותשלומים נשמרים בכל מקרה, כחלק מהשירות.
-        </p>
-        <div className="flex shrink-0 gap-2" style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}>
-          <form action={decideConsent}>
-            <input type="hidden" name="decision" value="denied" />
+    <>
+      <section data-consent-banner="" aria-label="הסכמה לאיסוף נתוני שימוש" style={BANNER_STYLE}>
+        <div className="mx-auto flex max-w-4xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p style={COPY_STYLE}>
+            אנחנו אוספים נתוני שימוש באתר (עמודים שנצפו, פריטים שנוספו לעגלה) כדי לשפר אותו ולמדוד
+            פרסום. חלק מהנתונים מועברים ל-Google Analytics ול-Meta, בלי שם, מייל או טלפון. בלי אישור
+            שום כלי חיצוני לא נטען כלל. הזמנות ותשלומים נשמרים בכל מקרה, כחלק מהשירות.
+          </p>
+          <div
+            className="flex shrink-0 flex-col gap-2 sm:flex-row"
+            style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}
+          >
             <button
-              type="submit"
+              type="button"
+              onClick={() => setShowSettings(true)}
               className="min-h-11 rounded-lg border border-black/15 px-4 py-2 text-sm font-medium text-black/70 transition-colors hover:bg-black/[0.04]"
             >
-              לא תודה
+              הגדרות
             </button>
-          </form>
-          <form action={decideConsent}>
-            <input type="hidden" name="decision" value="granted" />
-            <button
-              type="submit"
-              className="min-h-11 rounded-lg bg-brand-primary px-4 py-2 text-sm font-bold text-heading transition-opacity hover:opacity-90"
-            >
-              אישור
-            </button>
-          </form>
+            <form action={decideConsent}>
+              <input type="hidden" name="decision" value="denied" />
+              <button
+                type="submit"
+                className="min-h-11 w-full rounded-lg border border-black/15 px-4 py-2 text-sm font-medium text-black/70 transition-colors hover:bg-black/[0.04] sm:w-auto"
+              >
+                לא תודה
+              </button>
+            </form>
+            <form action={decideConsent}>
+              <input type="hidden" name="decision" value="granted" />
+              <button
+                type="submit"
+                className="min-h-11 w-full rounded-lg bg-brand-primary px-4 py-2 text-sm font-bold text-heading transition-opacity hover:opacity-90 sm:w-auto"
+              >
+                אישור
+              </button>
+            </form>
+          </div>
         </div>
-      </div>
-      {/* biome-ignore lint/security/noDangerouslySetInnerHtml: fixed string built from two module constants, no input reaches it */}
-      <script dangerouslySetInnerHTML={{ __html: SUBMIT_HIDES_SCRIPT }} />
-    </section>
+        {/* biome-ignore lint/security/noDangerouslySetInnerHtml: fixed string built from two module constants, no input reaches it */}
+        <script dangerouslySetInnerHTML={{ __html: SUBMIT_HIDES_SCRIPT }} />
+      </section>
+
+      <ConsentSettings isOpen={showSettings} onClose={() => setShowSettings(false)} />
+    </>
   )
 }
