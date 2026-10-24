@@ -13,9 +13,9 @@ Comprehensive observability infrastructure verification and documentation comple
 
 ### 1. Comprehensive Thresholds Documentation
 
-**File**: `docs/C35-OBSERVABILITY-THRESHOLDS.md` (412 lines)
+**Integrated into**: `docs/OBSERVABILITY.md` (External Observability Services section)
 
-Complete operational guide covering:
+Complete operational thresholds covering:
 
 **Sentry (Error Tracking)**:
 - Error rate thresholds: >1% warning, >5% critical
@@ -189,8 +189,7 @@ After any Sentry-touching deploy:
 
 ## Documentation Paths
 
-- **Thresholds & verification**: `docs/C35-OBSERVABILITY-THRESHOLDS.md`
-- **Main observability guide**: `docs/OBSERVABILITY.md`
+- **Main observability guide with thresholds**: `docs/OBSERVABILITY.md`
 - **Internal metrics dashboard**: `/admin/observability`
 - **Sentry config test**: `src/__tests__/sentry-build-config.test.ts`
 - **Memory notes**:
