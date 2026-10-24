@@ -1,5 +1,9 @@
 # `migrations/pending/`
 
+## 2026-10-25: 303 added (C68)
+
+- `303_comprehensive_audit_triggers.sql` - PENDING (C68). Adds audit triggers for 20 verified existing tables (orders, vouchers, payments, invoices, settlements, carts, etc.). All triggers use existing audit_log_trigger_fn() to capture who/what/before/after/at. Requires MCP apply_migration.
+
 ## 2026-10-24: 293, 295 and 300 added (C37, C64, C16)
 
 - `293_phase2_feature_flags.sql` - PENDING. Seeds Phase 2 feature flags (physical_products, courses_monthly, tzimmer_calendar, monthly_billing) all OFF. Extends 286's feature_flags table. Requires MCP apply_migration.
